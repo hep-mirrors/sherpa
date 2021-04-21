@@ -13,7 +13,7 @@ using namespace std;
 Ladder_Generator_QT::Ladder_Generator_QT() :
   Ladder_Generator_Base(),
   m_partonic(Sigma_Partonic(xs_mode::Regge)),
-  m_S(sqr(rpa->gen.Ecms())), m_shatmin(m_qt2min),
+  m_S(sqr(rpa->gen.Ecms())), m_qt2minFF(0.), m_shatmin(m_qt2min), m_seff(0.), 
   m_fixflavour(true)
 {
   for (size_t i=0;i<2;i++) m_Ebeam[i] = rpa->gen.PBeam(i)[0];
@@ -34,6 +34,7 @@ Ladder * Ladder_Generator_QT::operator()(const Vec4D & pos) {
 bool Ladder_Generator_QT::FixInitialPartons() {
   m_shat = m_partonic.MakeEvent(m_fixflavour);
   if (m_shat<0.) return false;
+  m_sigmahat      = m_partonic.SigmaHat();
   for (size_t beam=0;beam<2;beam++) {
     m_ylimits[beam] = (beam==0 ? 1.: -1.) * (m_Ymax + ran->Get()*m_deltaY);
     m_q[beam]       = m_partonic.X(beam) * rpa->gen.PBeam(beam);
@@ -56,8 +57,10 @@ bool Ladder_Generator_QT::MakeTrialLadder() {
     if (TrialEmission(dir)) AddEmission(dir,pit);
   } while (m_y[0][0]>m_y[1][0]);
   if (LastEmissions()) {
-    for (size_t dir=0;dir<2;dir++) p_ladder->AddRapidity(m_y[dir][1],m_flavs[dir],m_k[dir]);
-    p_ladder->GetProps()->insert(pit, T_Prop(colour_type::octet, m_qT, m_qt2min));
+    for (size_t dir=0;dir<2;dir++)
+      p_ladder->AddRapidity(m_y[dir][1],m_flavs[dir],m_k[dir]);
+    p_ladder->GetProps()->insert(pit,
+				 T_Prop(colour_type::octet, m_qT, m_qt2min));
     return true;
   }
   return false;
@@ -65,7 +68,8 @@ bool Ladder_Generator_QT::MakeTrialLadder() {
 
 void Ladder_Generator_QT::AddEmission(size_t dir, TPropList::iterator & pit) {
   p_ladder->AddRapidity(m_y[dir][1],m_flavs[dir],m_k[dir]);
-  p_ladder->GetProps()->insert(pit, T_Prop(colour_type::octet, m_qT, m_qt2min));
+  p_ladder->GetProps()->insert(pit,
+			       T_Prop(colour_type::octet, m_qT, m_qt2min));
   if (dir==1) pit--;
   m_q[dir]      -= m_k[dir];	
   m_y[dir][1]    = m_y[dir][0];
@@ -101,15 +105,19 @@ bool Ladder_Generator_QT::LastEmissions() {
   MakeTransverseUnitVector();
   //long int trials = 1000;
   Form_Factor * ff = NULL;
-  if (dabs(m_y[0][1])>dabs(m_y[1][1]) && dabs(m_y[0][1])>m_Ymax) ff = p_eikonal->FF(0);
-  if (dabs(m_y[1][1])>dabs(m_y[0][1]) && dabs(m_y[1][1])>m_Ymax) ff = p_eikonal->FF(1);
+  if (dabs(m_y[0][1])>dabs(m_y[1][1]) && dabs(m_y[0][1])>m_Ymax)
+    ff = p_eikonal->FF(0);
+  if (dabs(m_y[1][1])>dabs(m_y[0][1]) && dabs(m_y[1][1])>m_Ymax)
+    ff = p_eikonal->FF(1);
   //do {
   m_qT = MakePropMomentum(qt2min, qt2max,ff); 
   for (size_t beam=0;beam<2;beam++) m_k[beam] = MakeFSMomentum(beam);
   if ((m_k[0]+m_k[1]).Abs2()<m_seff) {
     m_weight = (ReggeWeight(m_qt2, m_y[0][1], m_y[1][1]) *
-		LDCWeight(m_qt2, m_qt2prev[0]) * LDCWeight(m_qt2, m_qt2prev[1]) *
-		AlphaSWeight(m_k[0].PPerp2())  * AlphaSWeight(m_k[1].PPerp2()));
+		LDCWeight(m_qt2, m_qt2prev[0]) *
+		LDCWeight(m_qt2, m_qt2prev[1]) *
+		AlphaSWeight(m_k[0].PPerp2())  *
+		AlphaSWeight(m_k[1].PPerp2()));
     return true;
   }
   //} while ((trials--)>0); 
@@ -122,26 +130,31 @@ bool Ladder_Generator_QT::FixSimpleKinematics() {
 		   sqr(sinh(m_ylimits[0])+sinh(m_ylimits[1])));
   size_t trials = 0;
   do {
-    m_qt2 = sqrt(p_eikonal->FF(0)->SelectQT2(qt2max)*p_eikonal->FF(0)->SelectQT2(qt2max));
+    m_qt2 = sqrt(p_eikonal->FF(0)->SelectQT2(qt2max,0.)*
+		 p_eikonal->FF(0)->SelectQT2(qt2max,0.));
     if ((trials++)>1000) return false;
   } while (m_qt2*factor>m_shat);
   MakeTransverseUnitVector();
   double qt = sqrt(m_qt2);
-  for (size_t i=0;i<2;i++) m_k[i]  = qt * (Vec4D(cosh(m_ylimits[i]),0,0,sinh(m_ylimits[i])) +
-					   (i==0?1.:-1.) * m_eqt);
+  for (size_t i=0;i<2;i++)
+    m_k[i]  = qt * (Vec4D(cosh(m_ylimits[i]),0,0,sinh(m_ylimits[i])) +
+		    (i==0?1.:-1.) * m_eqt);
   return true;
 }
 
-double Ladder_Generator_QT::AbsorptionWeight(const Vec4D & k,const double & y) {
+double Ladder_Generator_QT::
+AbsorptionWeight(const Vec4D & k,const double & y) {
   return m_density.AbsorptionWeight(y);
 }
 
 void Ladder_Generator_QT::SelectPropagatorColours() {
   // Iterate over propagators and assign colours different than octet
-  LadderMap::iterator lit1=p_ladder->GetEmissions()->begin(), lit2 = lit1; lit2++;
+  LadderMap::iterator lit1=p_ladder->GetEmissions()->begin(),
+    lit2 = lit1; lit2++;
   TPropList::iterator pit1=p_ladder->GetProps()->begin(), pit2=pit1;
   double y1,y2,wt1,wt8,ratio1,ratio2=0.;
-  while (lit2!=p_ladder->GetEmissions()->end() && pit1!=p_ladder->GetProps()->end()) {
+  while (lit2!=p_ladder->GetEmissions()->end() &&
+	 pit1!=p_ladder->GetProps()->end()) {
     y1     = lit1->first;
     y2     = lit2->first;
     wt1    = m_density.SingletWeight(y2,y1);
@@ -161,6 +174,12 @@ void Ladder_Generator_QT::SelectPropagatorColours() {
 }
 
 void Ladder_Generator_QT::CalculateWeight() {
+  /*Vec4D Pcms       = (p_ladder->InPart(0)->Momentum() +
+		      p_ladder->InPart(1)->Momentum()); 
+  double Y         = Pcms.Y(), SHat = Pcms.Abs2();
+  double sigma_act = m_partonic.dSigma(SHat,Y);
+  msg_Out()<<METHOD<<" yields "<<(sigma_act/m_sigmahat)<<".\n";
+  */
   m_weight *= TWeight();
 }
 

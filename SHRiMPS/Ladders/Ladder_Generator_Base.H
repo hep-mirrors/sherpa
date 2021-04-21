@@ -22,10 +22,11 @@ namespace SHRIMPS {
     TPropList              * p_props;
     size_t                   m_dir;
     double                   m_B, m_b1, m_b2, m_E[2], m_weight;
-    double                   m_shat, m_qt2, m_ylimits[2], m_y[2][2], m_qt2prev[2];
+    double                   m_shat, m_qt2, m_ylimits[2], m_y[2][2];
+    double                   m_qt2prev[2];
     ATOOLS::Vec4D            m_eqt, m_qt, m_qtprev[2];
 
-    bool                m_test;
+    bool                     m_test;
     std::map<std::string,ATOOLS::Histogram * > m_histos;
 
 
@@ -35,11 +36,14 @@ namespace SHRIMPS {
     virtual void   ConstructISKinematics();
     virtual void   ConstructSimpleLadder();
     virtual double AlphaSWeight(const double & kt2);
-    virtual double ReggeWeight(const double & qt2, const double & y1, const double y2);
+    virtual double ReggeWeight(const double & qt2, const double & y1,
+			       const double y2);
     virtual double LDCWeight(const double & qt2, const double & qt2prev);
     virtual double TWeight();
     virtual void   MakeTransverseUnitVector();
-    inline virtual const double AlphaS(const double q2) const { return (*p_alphaS)(q2);}
+    inline virtual const double AlphaS(const double q2) const {
+      return (*p_alphaS)(q2);
+    }
  public:
     Ladder_Generator_Base();
     virtual ~Ladder_Generator_Base() {}
@@ -56,7 +60,8 @@ namespace SHRIMPS {
     inline virtual void InitCollision(Omega_ik * eikonal,const double & B) {
       p_eikonal  = eikonal; m_B = B; m_density.SetEikonal(p_eikonal);
     }
-    inline virtual void SetImpactParameters(const double & b1,const double & b2) {
+    inline virtual void SetImpactParameters(const double & b1,
+					    const double & b2) {
       m_b1 = b1; m_b2 = b2;
     }
     inline virtual void SetMaximalScale(const double & E1,const double & E2) {

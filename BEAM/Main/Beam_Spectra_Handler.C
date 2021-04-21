@@ -109,8 +109,8 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Default_Reader * reader
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
-  std::vector<double> beam;
-  if (!reader->ReadVector(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  std::vector<double> beam(2,0.0);
+  reader->ReadVector(beam,"BEAM_"+number);
   int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));

@@ -60,9 +60,9 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_mode(eventtype::StandardPerturbative), 
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_mehandler(NULL), p_harddecays(NULL), p_beamremnants(NULL),
-  p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
-  p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL),
-  p_variations(NULL)
+  p_reconnections(NULL),  p_fragmentation(NULL), p_softcollisions(NULL),
+  p_hdhandler(NULL), p_mihandler(NULL), p_softphotons(NULL),
+  p_evtreader(NULL), p_variations(NULL)
 {
   m_path=std::string("");
   m_file=std::string("Run.dat");

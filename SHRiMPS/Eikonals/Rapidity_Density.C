@@ -38,7 +38,8 @@ using namespace std;
 Rapidity_Density::Rapidity_Density(const double & Delta,const double & lambda,
 				   const double & Ymax,
 				   const absorption::code & absorp) :
-  m_Delta(Delta), m_lambda(lambda), m_Ymax(Ymax), m_absorp(absorp)
+  m_Delta(Delta), m_lambda(lambda), m_Ymax(Ymax), m_b1(0.), m_b2(0.),
+  m_absorp(absorp)
 {}
 
 void Rapidity_Density::Test(Omega_ik * eikonal) {
@@ -56,7 +57,8 @@ SetImpactParameters(const double & b1, const double & b2) {
 }
 
 double Rapidity_Density::AbsorptionWeight(double y) {
-  double O_ik = m_lambda/2.*(*p_omegaik)(m_b1,m_b2,y), O_ki = m_lambda/2.*(*p_omegaki)(m_b1,m_b2,y);
+  double O_ik = m_lambda/2.*(*p_omegaik)(m_b1,m_b2,y);
+  double O_ki = m_lambda/2.*(*p_omegaki)(m_b1,m_b2,y);
   switch (m_absorp) {
   case absorption::exponential:
     return exp(-(O_ik+O_ki));

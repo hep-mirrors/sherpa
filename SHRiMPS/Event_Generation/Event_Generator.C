@@ -6,8 +6,9 @@
 using namespace SHRIMPS;
 
 Event_Generator::Event_Generator(Cross_Sections * xsecs,const bool & test) :
-  m_runmode(MBpars.RunMode()),m_thisevent(m_runmode),
-  p_inelastic(NULL), p_elastic(NULL), p_active(NULL), m_xsec(0.)
+  m_runmode(MBpars.RunMode()), m_thisevent(m_runmode),
+  p_inelastic(NULL), p_elastic(NULL), p_soft_diffractive(NULL),
+  p_active(NULL), m_xsec(0.)
 {
   InitGenerator(xsecs,test);
 }
@@ -18,7 +19,7 @@ Event_Generator::~Event_Generator()
 }
 
 void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
-  switch (MBpars.RunMode()) {
+  switch (m_runmode) {
   case run_mode::inelastic_events:
     p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
     m_xsec     += p_inelastic->XSec();

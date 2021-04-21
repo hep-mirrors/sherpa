@@ -14,7 +14,8 @@ namespace SHRIMPS {
   private:
     Sigma_Partonic  m_partonic;
     double          m_Ebeam[2];
-    double          m_S, m_maxsigma, m_qt2minFF, m_shatmin, m_shat, m_seff;
+    double          m_S, m_maxsigma, m_qt2minFF, m_shatmin, m_seff;
+    double          m_sigmahat;
     bool            m_fixflavour;
     ATOOLS::Flavour m_flavs[2];
     ATOOLS::Vec4D   m_qT, m_q[2], m_k[2];
@@ -32,7 +33,8 @@ namespace SHRIMPS {
     inline double QT2Min(size_t dir=2) {
       double qt2min = m_qt2min;
       for (size_t beam=0;beam<2;beam++) {
-	if ((dir==2 || dir==beam) && (ATOOLS::dabs(m_y[beam][1])>m_Ymax)) qt2min = m_qt2minFF;
+	if ((dir==2 || dir==beam) &&
+	    (ATOOLS::dabs(m_y[beam][1])>m_Ymax)) qt2min = m_qt2minFF;
       }
       return qt2min;
     }

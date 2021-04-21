@@ -27,19 +27,20 @@ Sigma_Partonic::~Sigma_Partonic() {
 
 void Sigma_Partonic::Initialise() {
   if (!Calculate()) {
-    msg_Error()<<METHOD<<" fails: integration did not converge.  Will exit the run.\n";
+    msg_Error()<<METHOD<<" fails: integration did not converge.  "
+	       <<"Will exit the run.\n";
     exit(1);
   }
 }
 
 const double Sigma_Partonic::MakeEvent(const bool & fixflavour) {
-  double s, y, Jac, dsigma;
+  double Jac, dsigma;
   for (size_t i=0;i<m_Nmaxtrials;i++) {
-    Jac    = MakePoint(s,y); 
-    dsigma = Jac * dSigma(s,y);
-    if (dsigma>m_maxdsigma*ran->Get()) {
+    Jac      = MakePoint(m_shat,m_yhat); 
+    m_dsigma = dSigma(m_shat,m_yhat);
+    if (Jac * m_dsigma>m_maxdsigma*ran->Get()) {
       SelectFlavours(fixflavour); 
-      return s;
+      return m_shat;
     }
   }
   return -1.;
@@ -81,16 +82,20 @@ const bool Sigma_Partonic::Calculate() {
     if (accu<m_accu) {
       m_Nmaxtrials = int(1000.*sigma/m_maxdsigma);
       msg_Out()<<METHOD<<" succeeds after "<<N<<" points:\n"
-	       <<"  sigma = "<<(sigma*rpa->Picobarn()*1.e-9)<<" mb +/- "<<(100.*accu)<<" %, "
+	       <<"  sigma = "<<(sigma*rpa->Picobarn()*1.e-9)<<" mb "
+	       <<"+/- "<<(100.*accu)<<" %, "
 	       <<"max value = "<<m_maxdsigma<<";\n"
-	       <<"  expected unweighting efficiency = "<<1./double(m_Nmaxtrials)<<" "
-	       <<"from "<<sigma<<" and "<<m_maxdsigma<<" ==> "<<m_Nmaxtrials<<"\n";
+	       <<"  expected unweighting efficiency = "
+	       <<1./double(m_Nmaxtrials)<<" "
+	       <<"from "<<sigma<<" and "<<m_maxdsigma<<" ==> "
+	       <<m_Nmaxtrials<<"\n";
       return true;
     }
     iter++;
   } while (iter<100 && accu>m_accu);
   msg_Out()<<METHOD<<" integration after "<<N<<" points dos not converge:\n"
-	   <<"   sigma = "<<(sigma*rpa->Picobarn()*1.e-9)<<" mb +/- "<<(100.*accu)<<" %, "
+	   <<"   sigma = "<<(sigma*rpa->Picobarn()*1.e-9)<<" mb "
+	   <<"+/- "<<(100.*accu)<<" %, "
 	   <<"max value = "<<m_maxdsigma<<".\n";
   return false;
 }

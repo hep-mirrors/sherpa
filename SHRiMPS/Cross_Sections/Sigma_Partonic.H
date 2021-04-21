@@ -20,7 +20,7 @@ namespace SHRIMPS {
     MODEL::Strong_Coupling * p_alphaS;
     xs_mode::code   m_mode;
     double          m_Ymax, m_S, m_eta, m_smin, m_tmin;
-    double          m_accu, m_sigma, m_maxdsigma;
+    double          m_accu, m_sigma, m_maxdsigma, m_shat, m_yhat, m_dsigma;
     long int        m_Nmaxtrials;
     double          m_x[2], m_xpdf[2];
     ATOOLS::Flavour m_flavs[2];
@@ -33,7 +33,6 @@ namespace SHRIMPS {
     }
     const double ME2(const double & s);
     const double MakePoint(double & s,double & y);
-    const double dSigma(const double & s,const double & y);
     const bool   Calculate();
     void  SelectFlavours(const bool & fixflavour);
   public:
@@ -42,13 +41,19 @@ namespace SHRIMPS {
 
     void       Initialise(); 
     const double MakeEvent(const bool & fixflavour);
+    const double dSigma(const double & s,const double & y);
     void SetPDF(const size_t & beam,Continued_PDF * pdf) { p_pdf[beam] = pdf; }
     void SetEta(const double & eta=0.)   { m_eta  = eta; }
     void SetTmin(const double & tmin=1.) { m_tmin = tmin; }
     void SetSmin(const double & smin=1.) { m_smin = smin; }
-    const double & SigmaTot() const { return m_sigma; }
+    const double          & SigmaTot() const { return m_sigma; }
+    const double          & SigmaHat() const { return m_dsigma; }
+    const double          & SHat()     const { return m_shat; }
+    const double          & YHat()     const { return m_yhat; }
     const double          & X(const size_t beam)    const { return m_x[beam]; }
-    const ATOOLS::Flavour & Flav(const size_t beam) const { return m_flavs[beam]; }
+    const ATOOLS::Flavour & Flav(const size_t beam) const {
+      return m_flavs[beam];
+    }
   };
 }
 #endif

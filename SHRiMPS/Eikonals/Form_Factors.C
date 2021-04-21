@@ -163,12 +163,12 @@ double Form_Factor::operator()(const double q) {
 
 double Form_Factor::
 SelectQT2(const double & qt2max,const double & qt2min) const {
-  double qt2(0.), pref(m_Lambda2/(1.+m_kappa)), effexp(1./pref),random;
+  double qt2(0.), pref(m_Lambda2/(1.+m_kappa)), effexp(1./pref), random(0.);
   switch (m_form) {
   case ff_form::Gauss:
     do {
-      random = ATOOLS::ran->Get();
-      qt2 = -pref*log(1.-random*(1.-exp(-qt2max/pref)));
+      random = ATOOLS::ran->Get();      
+      qt2 = -pref*log(1.-ATOOLS::ran->Get()*(1.-exp(-qt2max/pref)));
     } while (qt2<qt2min);
     break;
   case ff_form::dipole:
