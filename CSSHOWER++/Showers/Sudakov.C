@@ -225,7 +225,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
   }
 }
 
-bool Sudakov::Generate(Parton * split) 
+bool Sudakov::Generate(Parton * split,double kt2win) 
 {
   m_weight=1.0;
   ClearSpecs();
@@ -328,7 +328,7 @@ bool Sudakov::Generate(Parton * split)
   m_x = 0.0;
   
   bool success(false);
-  while (m_kperp2>=m_k0sqf) {
+  while (m_kperp2>=Max(m_k0sqf,kt2win)) {
     ProduceT();
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
