@@ -114,7 +114,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
       (key.m_type==cstp::FF || key.m_type==cstp::FI)) m_symf=2.0;
   m_polfac=key.p_v->in[0].IntSpin()+1;
   if (key.p_v->in[0].IntSpin()==2 && IsZero(key.p_v->in[0].Mass())) m_polfac=2.0;
-  if ((key.m_type == cstp::FI || key.m_type == cstp::IF) &&ckey.m_ewmode==2 ) m_on=0; // remove lepton as recoilers
+  // if ((key.m_type == cstp::FI || key.m_type == cstp::IF) &&ckey.m_ewmode==2 ) m_on=0; // remove lepton as recoilers
   msg_Debugging()<<"Init("<<m_on<<") "<<p_lf->FlA()<<"->"
 		 <<p_lf->FlB()<<","<<p_lf->FlC()
 		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(10)
