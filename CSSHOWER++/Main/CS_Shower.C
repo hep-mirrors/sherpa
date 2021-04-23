@@ -280,7 +280,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
   std::map<Parton*,Cluster_Leg*> almap;
   std::map<Cluster_Leg*,Parton*> apmap;
   for (Cluster_Amplitude *campl(ampl);campl;campl=campl->Next()) {
-    msg_Debugging()<<*campl<<"\n";
     Parton *split(NULL);
     std::map<Parton*,Cluster_Leg*> lmap;
     std::map<Cluster_Leg*,Parton*> pmap;
@@ -495,14 +494,16 @@ Singlet *CS_Shower::TranslateAmplitude
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(m_respectq2?ampl->MuQ2():xit->second.second);
     // This is where I modifed stuff - will need to formalise this much much better.
-    parton->SetStart(sqrt(cl->KT2(0)*cl->KT2(0)));
+    //msg_Out()<<METHOD<<"(my stuff): "<<cl->KT2(0)<<"\n";
+    //parton->SetStart(sqrt(cl->KT2(0)*cl->KT2(0)));
     if (m_respectq2)
       if (IsDecay(ampl,cl)) parton->SetStart(xit->second.second);
     if (cl->KT2(0)>=0.0) parton->SetSoft(0,cl->KT2(0)); 
     if (cl->KT2(1)>=0.0) parton->SetSoft(1,cl->KT2(1)); 
     if (xit->second.first) singlet->SetNMax(1);
     parton->SetVeto(ktveto2);
-    //msg_Out()<<METHOD<<"("<<parton->Id()<<"): "<<sqrt(parton->KtStart())<<", veto = "<<parton->KtVeto()<<" from\n"
+    //msg_Out()<<METHOD<<"("<<parton->Id()<<"): "
+    //<<sqrt(parton->KtStart())<<", veto = "<<parton->KtVeto()<<" from\n"
     //	     <<"   "<<(*cl)<<"\n";
     singlet->push_back(parton);
     parton->SetSing(singlet);
@@ -533,7 +534,7 @@ Singlet *CS_Shower::TranslateAmplitude
     }
     if ((flow[0] && (*sit)->GetLeft()==NULL) ||
 	(flow[1] && (*sit)->GetRight()==NULL)) {
-      msg_Out()<<METHOD<<" has a problem with\n"<<(*ampl)<<"\n";
+      msg_Error()<<METHOD<<" has a problem with\n"<<(*ampl)<<"\n";
       THROW(fatal_error,"Missing colour partner");
     }
   }
