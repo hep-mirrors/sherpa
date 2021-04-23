@@ -9,6 +9,7 @@ namespace RECONNECTIONS {
   class Reconnection_Handler {
   private:
     bool m_on;
+    long unsigned int   m_nfails;
     Reconnection_Base * p_reconnector;
     void AddReconnectionBlob(ATOOLS::Blob_List * blobs);
  public:

@@ -42,18 +42,20 @@ bool Reconnection_Base::HarvestParticles(Blob_List * blobs) {
   // fragmentation blob(s), with incoming coloured particles.
   // TODO: Will have to check how this works with two hadronization blobs, for
   //       example in e+e- -> W+W- -> 4 quarks or, more tricky, pp -> WW -> 4 quarks
+  m_found=false;
   Blob * blob;
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
     blob = (*bit);
     if (!blob->Has(blob_status::needs_reconnections)) continue;
+    m_found = true;
     blob->SetTypeSpec("Colour Reconnections");
     for (int i=0;i<blob->NInP();i++) HarvestParticleInfo(blob->InParticle(i));
     blob->UnsetStatus(blob_status::needs_reconnections |
 		      blob_status::needs_hadronization);
   }
-  //msg_Out()<<METHOD<<" harvested "
-  //	   <<m_cols[0].size()<<" colours and "<<m_cols[1].size()<<" anti-colours.\n";
-  return (!m_cols[0].empty() && !m_cols[1].empty());
+  msg_Out()<<METHOD<<" harvested "
+  	   <<m_cols[0].size()<<" colours and "<<m_cols[1].size()<<" anti-colours.\n";
+  return (m_cols[0].size()==m_cols[1].size());
 }
 
 void Reconnection_Base::HarvestParticleInfo(ATOOLS::Particle * part) {

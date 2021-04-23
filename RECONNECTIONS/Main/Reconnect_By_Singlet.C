@@ -12,8 +12,9 @@ Reconnect_By_Singlet::Reconnect_By_Singlet() :
 
 Reconnect_By_Singlet::~Reconnect_By_Singlet() {}
 
-bool Reconnect_By_Singlet::operator()(Blob_List *const blobs) {
-  if (!HarvestParticles(blobs)) return false;
+int Reconnect_By_Singlet::operator()(Blob_List *const blobs) {
+  if (!HarvestParticles(blobs))               return -1;
+  if (m_cols[0].empty() && m_cols[1].empty()) return 0;
   MakeSinglets();
   //if (m_analysis) FillMassesInHistogram(m_histomap["Reconn_MassBefore"]);
   m_weights.FillTables();

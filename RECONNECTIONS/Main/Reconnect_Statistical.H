@@ -23,7 +23,7 @@ namespace RECONNECTIONS {
     Reconnect_Statistical();
     ~Reconnect_Statistical();
 
-    bool   operator()(ATOOLS::Blob_List *const blobs);
+    int    operator()(ATOOLS::Blob_List *const blobs);
     void   Reset();
     double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
   };

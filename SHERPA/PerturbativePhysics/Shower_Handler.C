@@ -39,9 +39,9 @@ void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist)
   if (p_shower && p_shower->ExtractPartons(_bloblist)) {
     Blob * showerblob = _bloblist->FindLast(btp::Shower);
     if (!showerblob->MomentumConserved() && msg->LevelIsDebugging()) {
-      msg_Out()<<"Error in "<<METHOD<<": shower violates four-momentum conservation "
-	       <<showerblob->CheckMomentumConservation()<<":\n"
-	       <<(*showerblob);
+      msg_Error()<<"Error in "<<METHOD<<": shower violates four-momentum conservation "
+		 <<showerblob->CheckMomentumConservation()<<":\n"
+		 <<(*showerblob);
     }
     return;
   }

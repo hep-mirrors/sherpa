@@ -538,12 +538,14 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
-  okay = okay && InitializeTheBeamRemnants();
-  //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheSoftCollisions();
+  }
+  okay = okay && InitializeTheBeamRemnants();
+  //  only if events:
+  if (rpa->gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();

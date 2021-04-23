@@ -155,6 +155,9 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
   for (int i=0;i<psblob->NOutP();++i)
     psblob->OutParticle(i)->SetStatus(part_status::decayed);
   
+  psblob->SetStatus(blob_status::needs_beams |
+		    blob_status::needs_reconnections);
+  
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit)
       (*sit)->ExtractPartons(psblob,p_ms);

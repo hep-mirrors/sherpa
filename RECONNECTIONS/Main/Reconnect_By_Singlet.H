@@ -31,7 +31,7 @@ namespace RECONNECTIONS {
     Reconnect_By_Singlet();
     ~Reconnect_By_Singlet();
 
-    bool   operator()(ATOOLS::Blob_List *const blobs);
+    int    operator()(ATOOLS::Blob_List *const blobs);
     void   Reset();
     double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
   };

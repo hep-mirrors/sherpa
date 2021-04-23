@@ -13,7 +13,8 @@ namespace RECONNECTIONS {
     ATOOLS::ParticleSet                        m_parts[2];
     std::map<unsigned int, ATOOLS::Particle *> m_cols[2];
     ATOOLS::Part_List                          m_particles;
-
+    bool                                       m_found;
+    
     bool                                        m_analysis;
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
@@ -27,7 +28,7 @@ namespace RECONNECTIONS {
 
     virtual void   Initialize();
     virtual void   Reset();
-    virtual bool   operator()(ATOOLS::Blob_List *const blobs) = 0;
+    virtual int    operator()(ATOOLS::Blob_List *const blobs) = 0;
     virtual double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) = 0;
 
     ATOOLS::Part_List              * GetParticles()               { return &m_particles; }

@@ -30,8 +30,9 @@ void Reconnect_Statistical::Reset() {
   Reconnection_Base::Reset();
 }
 
-bool Reconnect_Statistical::operator()(Blob_List *const blobs) {
-  if (!HarvestParticles(blobs)) return false;
+int Reconnect_Statistical::operator()(Blob_List *const blobs) {
+  if (!HarvestParticles(blobs))               return -1;
+  if (m_cols[0].empty() && m_cols[1].empty()) return 0;
   m_norm = TotalLength()/pow(m_parts[0].size(),m_kappa);
   //msg_Out()<<METHOD<<" with "<<m_particles.size()<<" "
   //	   <<"["<<m_parts[0].size()<<"/"<<m_parts[1].size()<<"] particles: "

@@ -11,10 +11,15 @@ using namespace std;
 
 Reconnection_Handler::Reconnection_Handler(const bool & on) :
   m_on(on),
-  p_reconnector(new Reconnect_Statistical())
+  p_reconnector(new Reconnect_Statistical()),
+  m_nfails(0)
 {}
 
 Reconnection_Handler::~Reconnection_Handler() {
+  if (m_on) {
+    msg_Info()<<METHOD<<": reconnection handler winds down with "
+	      <<m_nfails<<" errors overall.\n";
+  }
   delete p_reconnector;
 }
 
@@ -28,13 +33,25 @@ void Reconnection_Handler::Reset() {
 
 Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
 						    Particle_List *const parts) {
+  msg_Out()<<METHOD<<" on = "<<m_on<<"\n";
   if (!m_on) return Return_Value::Nothing;
-  if ((*p_reconnector)(blobs)) {
-    AddReconnectionBlob(blobs);
+  switch ((*p_reconnector)(blobs)) {
+  case -1:
+    // things went wrong, try new event and hope it works better
+    msg_Out()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
+	     <<"   Ask for new event and hope for the best.\n";
     p_reconnector->Reset();
-    return Return_Value::Success; 
+    m_nfails++;
+    return Return_Value::New_Event;
+  case 1:
+    // added colour reconnections, but produce a reconnection blob.
+    AddReconnectionBlob(blobs);
+  case 0:
+    // didn't find any blob that needed reconnections
+    break;
   }
-  return Return_Value::New_Event;
+  p_reconnector->Reset();
+  return Return_Value::Success; 
 }
 
 void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
