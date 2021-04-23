@@ -33,13 +33,12 @@ void Reconnection_Handler::Reset() {
 
 Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
 						    Particle_List *const parts) {
-  msg_Out()<<METHOD<<" on = "<<m_on<<"\n";
   if (!m_on) return Return_Value::Nothing;
   switch ((*p_reconnector)(blobs)) {
   case -1:
     // things went wrong, try new event and hope it works better
-    msg_Out()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
-	     <<"   Ask for new event and hope for the best.\n";
+    msg_Tracking()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
+		  <<"   Ask for new event and hope for the best.\n";
     p_reconnector->Reset();
     m_nfails++;
     return Return_Value::New_Event;

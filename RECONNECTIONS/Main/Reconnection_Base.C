@@ -53,8 +53,8 @@ bool Reconnection_Base::HarvestParticles(Blob_List * blobs) {
     blob->UnsetStatus(blob_status::needs_reconnections |
 		      blob_status::needs_hadronization);
   }
-  msg_Out()<<METHOD<<" harvested "
-  	   <<m_cols[0].size()<<" colours and "<<m_cols[1].size()<<" anti-colours.\n";
+  //msg_Out()<<METHOD<<" harvested "
+  //	   <<m_cols[0].size()<<" colours and "<<m_cols[1].size()<<" anti-colours.\n";
   return (m_cols[0].size()==m_cols[1].size());
 }
 
