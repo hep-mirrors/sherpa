@@ -235,7 +235,12 @@ operator()(const Process_Info &pi) const
   std::vector<int> ids(fl.size());
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
   MCFM::Process_Info mpi(ids,pi.m_ii.m_ps.size(),
-			 pi.m_maxcpl[0],pi.m_maxcpl[1]);
+			 pi.m_maxcpl[0],pi.m_maxcpl[1]+addcpl);
+  DecayInfo_Vector decins(pi.m_fi.GetDecayInfos());
+  for (size_t i(0);i<decins.size();++i) {
+    mpi.m_decids.push_back(decins[i]->m_id);
+    mpi.m_decfls.push_back((long int)(decins[i]->m_fl));
+  }
   int pid(MCFM_Interface::GetMCFM().InitializeProcess(mpi));
   if (pid>=0) return new MCFM_Virtual(pi,fl,pid);
   return NULL;
