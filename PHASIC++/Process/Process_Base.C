@@ -38,10 +38,10 @@ Process_Base::Process_Base():
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL)
+  p_apmap(NULL),
+  m_last {0, 0.0},
+  m_lastb {0, 0.0}
 {
-  m_last = Event_Weights {0, 0.0};
-  m_lastb = 0.0;
   if (s_usefmm<0)
     s_usefmm =
       Settings::GetMainSettings()["PB_USE_FMM"].SetDefault(0).Get<int>();
