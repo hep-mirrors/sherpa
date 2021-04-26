@@ -28,11 +28,12 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   double fs_as_fac{ s["CSS_FS_AS_FAC"].Get<double>() };
   double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
   const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
-  m_use_bbw   = s["CSS_USE_BBW"].Get<int>();
-  m_reweight  = s["CSS_REWEIGHT"].Get<bool>();
-  m_kscheme   = s["CSS_KIN_SCHEME"].Get<int>();
-  m_recdec    = s["CSS_RECO_DECAYS"].Get<int>();
-  m_maxpart   = s["CSS_MAXPART"].Get<int>();
+  m_use_bbw           = s["CSS_USE_BBW"].Get<int>();
+  m_reweight          = s["CSS_REWEIGHT"].Get<bool>();
+  m_maxreweightfactor = s["CSS_MAX_REWEIGHT_FACTOR"].Get<double>();
+  m_kscheme           = s["CSS_KIN_SCHEME"].Get<int>();
+  m_recdec            = s["CSS_RECO_DECAYS"].Get<int>();
+  m_maxpart           = s["CSS_MAXPART"].Get<int>();
   if (type) {
     kfmode=s["MI_CSS_KFACTOR_SCHEME"].Get<int>();
     k0sqf=s["MI_CSS_FS_PT2MIN"].Get<double>();
@@ -636,12 +637,16 @@ double Shower::Reweight(Variation_Parameters* varparams,
     } else {
       rewfactor = 1.0 + (1.0 - accrewfactor) * (1.0 - rejwgt) / rejwgt;
     }
-    if (rewfactor < -9.0 || rewfactor > 11.0) {
-      varparams->IncrementOrInitialiseWarningCounter(
-          "vetoed large reweighting factor");
-      continue;
-    }
     overallrewfactor *= rewfactor;
+  }
+
+  // guard against gigantic accumulated reweighting factors
+  if (std::abs(overallrewfactor) > m_maxreweightfactor) {
+    msg_Debugging() << "Veto large CSS Sudakov reweighting factor for parton: "
+                    << splitter;
+    varparams->IncrementOrInitialiseWarningCounter(
+        "vetoed large reweighting factor for parton");
+    return 1.0;
   }
 
   return overallrewfactor;

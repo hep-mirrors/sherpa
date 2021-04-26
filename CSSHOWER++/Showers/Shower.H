@@ -35,6 +35,7 @@ namespace CSSHOWER {
 
     ATOOLS::Event_Weights m_weights;
     bool m_reweight;
+    double m_maxreweightfactor;
 
     double m_lastcpl;
 

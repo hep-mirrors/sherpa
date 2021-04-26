@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Enum_Flags.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #define ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS 0
 
@@ -28,9 +29,10 @@ namespace ATOOLS {
   struct ScaleFactorExpansions {
     enum code {
       None            = 0,
-      First           = 1,
-      Second          = 1<<1,
-      SevenPoint      = 1<<2  // vary independently, but exclude (up,down) and (down,up) variations
+      MuF             = 1,
+      MuR             = 1<<1,
+      SevenPoint      = 1<<2,  // vary independently, but exclude (up,down) and (down,up) variations
+      QCUT            = 1<<3
     };
   };
   DEFINE_ENUM_FLAG_OPERATORS(ScaleFactorExpansions::code)
@@ -63,19 +65,20 @@ namespace ATOOLS {
     void LoadLHAPDFInterfaceIfNecessary();
 #endif
     void InitialiseParametersVector();
-    static std::vector<std::string> VariationArguments();
-    static std::vector<std::string> VariationArgumentParameters(std::string);
-    void AddParameters(std::vector<std::string>);
+    void AddParameters(Scoped_Settings&);
     struct PDFs_And_AlphaS {
       PDFs_And_AlphaS();
+      PDFs_And_AlphaS(double alphasmz);
       PDFs_And_AlphaS(std::string pdfname, int pdfmember);
       std::vector<PDF::PDF_Base *> m_pdfs;
       MODEL::Running_AlphaS *p_alphas;
+      bool m_shoulddeletepdf {false};
+      bool m_shoulddeletealphas {false};
     };
     void AddParameterExpandingScaleFactors(std::vector<std::string> scalestringparams,
                                            ScaleFactorExpansions::code,
                                            std::vector<Variations::PDFs_And_AlphaS>);
-    void AddParameters(double, double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfsandalphas);
+    void AddParameters(double, double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfs, bool deletealphas);
     std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf);
 
     Parameters_Vector m_parameters_vector;
@@ -135,11 +138,13 @@ namespace ATOOLS {
                          PDF::PDF_Base *pdf1,
                          PDF::PDF_Base *pdf2,
                          MODEL::Running_AlphaS *alphas,
-                         bool deletepdfsandalphas):
+                         bool deletepdfs,
+                         bool deletealphas):
       m_muR2fac(muR2fac), m_muF2fac(muF2fac),
       m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac), m_Qcutfac(Qcutfac),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
-      m_deletepdfsandalphas(deletepdfsandalphas),
+      m_deletepdfs(deletepdfs),
+      m_deletealphas(deletealphas),
       m_name(GenerateName())
     {};
     ~Variation_Parameters();
@@ -150,6 +155,8 @@ namespace ATOOLS {
     void FillReweightingFactorsHisto(std::string name, double value) { m_rewfachisto.Fill(name, value); }
 #endif
 
+    bool IsTrivial() const;
+
     const double m_muR2fac, m_muF2fac;
     const double m_showermuR2fac, m_showermuF2fac, m_Qcutfac;
     //! Pointers to the beam PDFs, which can be NULL for (semi-)leptonic events
@@ -157,7 +164,8 @@ namespace ATOOLS {
     PDF::PDF_Base * const p_pdf2;
     MODEL::Running_AlphaS * const p_alphas;
     //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
-    const bool m_deletepdfsandalphas;
+    const bool m_deletepdfs;
+    const bool m_deletealphas;
     const std::string m_name;
 
   private:
