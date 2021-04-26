@@ -78,7 +78,7 @@ namespace PHASIC {
 
     ATOOLS::ME_Weight_Info m_mewgtinfo;
 
-    double m_last, m_lastb, m_symfac, m_issymfac;
+    double m_lastb, m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
     bool   m_hasinternalscale;
@@ -264,7 +264,7 @@ namespace PHASIC {
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
 
-    inline double Last() const { return m_last; }
+    inline double Last() const { return m_eventweights.Nominal(); }
     inline double LastB() const { return m_lastb; }
 
     inline bool LookUp() const { return m_lookup; }

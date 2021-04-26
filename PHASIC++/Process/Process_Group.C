@@ -55,15 +55,14 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
 ATOOLS::Event_Weights Process_Group::Differential(const Vec4D_Vector &p,
                                                   Weight_Type type)
 {
-  m_lastb=m_last=0.0;
+  m_lastb=0.0;
   m_eventweights=0.0;
   p_int->SetMomenta(p);
   for (size_t i(0);i<m_procs.size();++i) {
     m_eventweights+=m_procs[i]->Differential(p, type);
-    m_last+=m_procs[i]->Last();
     m_lastb+=m_procs[i]->LastB();
   }
-  if (IsNan(m_last))
+  if (IsNan(m_eventweights.Nominal()))
     msg_Error()<<METHOD<<"(): "<<om::red
 		<<"Cross section is 'nan'."<<om::reset<<std::endl;
   return m_eventweights;
