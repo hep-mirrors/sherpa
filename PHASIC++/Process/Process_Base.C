@@ -40,7 +40,7 @@ Process_Base::Process_Base():
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
   p_apmap(NULL)
 {
-  m_eventweights = Event_Weights {0, 0.0};
+  m_last = Event_Weights {0, 0.0};
   m_lastb = 0.0;
   if (s_usefmm<0)
     s_usefmm =
