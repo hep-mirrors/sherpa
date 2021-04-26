@@ -616,7 +616,7 @@ LOPS, NLO, NLOPS, MEPS\@LO, MEPS\@NLO and MENLOPS).
 However, the reweighting of parton shower emissions has to be enabled explicitly,
 using :option:`CSS_REWEIGHT: true`.  This should work out of the box for both scale
 and PDF variations.  If numerical issues are encountered, one can try to
-increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 0).
+increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 5, measured in GeV).
 This disables shower variations for emissions at scales below the value.
 An additional safeguard against rare spuriously large shower variation
 weights is implemented as @code{CSS_MAX_REWEIGHT_FACTOR} (default: 1e3).
