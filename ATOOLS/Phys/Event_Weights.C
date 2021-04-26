@@ -38,9 +38,13 @@ Event_Weights& Event_Weights::operator=(double c)
 
 Event_Weights& Event_Weights::operator+=(const Event_Weights& other)
 {
-  assert(weights.size() == other.weights.size());
-  for (int i {0}; i < weights.size(); ++i)
-    weights[i] += other.weights[i];
+  if (!ContainsVariations() && (*this)[0] == 0.0) {
+    *this = other;
+  } else if (other.ContainsVariations() || other[0] != 0.0) {
+    assert(weights.size() == other.weights.size());
+    for (int i {0}; i < weights.size(); ++i)
+      weights[i] += other.weights[i];
+  }
   return *this;
 }
 
