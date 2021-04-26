@@ -637,9 +637,9 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
   m_eventweights *= m_last;
   if (type != Weight_Type::nominal && m_eventweights.ContainsVariations()) {
     if (GetSubevtList() == nullptr) {
-      RefactoredReweightBVI(type, scales->Amplitudes());
+      ReweightBVI(type, scales->Amplitudes());
     } else {
-      RefactoredReweightRS(type, scales->Amplitudes());
+      ReweightRS(type, scales->Amplitudes());
     }
   }
   m_last -= m_dadseventweights.Nominal();
@@ -714,8 +714,8 @@ void Single_Process::CalculateFlux(const Vec4D_Vector& p)
   m_lastflux /= m_issymfac;
 }
 
-void Single_Process::RefactoredReweightBVI(Weight_Type type,
-                                           ClusterAmplitude_Vector& ampls)
+void Single_Process::ReweightBVI(Weight_Type type,
+                                 ClusterAmplitude_Vector& ampls)
 {
   BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last};
   m_eventweights.Apply(
@@ -790,8 +790,8 @@ void Single_Process::RefactoredReweightBVI(Weight_Type type,
       });
 }
 
-void Single_Process::RefactoredReweightRS(Weight_Type type,
-                                          ClusterAmplitude_Vector& ampls)
+void Single_Process::ReweightRS(Weight_Type type,
+                                ClusterAmplitude_Vector& ampls)
 {
   BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last};
   auto last_subevt_idx = GetSubevtList()->size() - 1;
