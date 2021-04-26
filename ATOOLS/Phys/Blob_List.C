@@ -306,8 +306,8 @@ bool Blob_List::ColorConservation() const
   std::map<int,Particle*> flows;
   for (Particle_List::const_iterator pit=outgoing.begin();
        pit!=outgoing.end();++pit) {
-    int real=(*pit)->GetFlow()->Code(1);
-    int anti=-(*pit)->GetFlow()->Code(2);
+    int real=(*pit)->GetFlow(1);
+    int anti=-(*pit)->GetFlow(2);
     if (real!=0) {
       if (anti!=0 && real==-anti) {
 	msg_Error()<<"Blob_List::ColorConservation(): "
