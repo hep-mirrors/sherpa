@@ -1,7 +1,5 @@
 #include "PHASIC++/Selectors/Fastjet_Selector_Base.H"
 
-#ifdef USING__FASTJET
-
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PHASIC;
@@ -11,8 +9,7 @@ Fastjet_Selector_Base::Fastjet_Selector_Base(const std::string& name,
                                              Process_Base* const proc,
                                              Scoped_Settings s):
   Selector_Base(name, proc),
-  m_eekt(0), p_jdef(0),
-  p_siscplug(nullptr), p_eecamplug(nullptr), p_jadeplug(nullptr)
+  m_eekt(0), p_jdef(0)
 {
   // parameter/mode settings
   const auto algo = s["Algorithm"]          .SetDefault("")  .Get<std::string>();
@@ -27,35 +24,27 @@ Fastjet_Selector_Base::Fastjet_Selector_Base(const std::string& name,
   m_eta   = s["EtaMax"].SetDefault("None").UseMaxDoubleReplacements().Get<double>();
   m_y     = s["YMax"]  .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
 
-  fastjet::RecombinationScheme recom;
-  if      (reco=="E")     recom=fastjet::E_scheme;
-  else if (reco=="pt")    recom=fastjet::pt_scheme;
-  else if (reco=="pt2")   recom=fastjet::pt2_scheme;
-  else if (reco=="Et")    recom=fastjet::Et_scheme;
-  else if (reco=="Et2")   recom=fastjet::Et2_scheme;
-  else if (reco=="BIpt")  recom=fastjet::BIpt_scheme;
-  else if (reco=="BIpt2") recom=fastjet::BIpt2_scheme;
+  fjcore::RecombinationScheme recom;
+  if      (reco=="E")     recom=fjcore::E_scheme;
+  else if (reco=="pt")    recom=fjcore::pt_scheme;
+  else if (reco=="pt2")   recom=fjcore::pt2_scheme;
+  else if (reco=="Et")    recom=fjcore::Et_scheme;
+  else if (reco=="Et2")   recom=fjcore::Et2_scheme;
+  else if (reco=="BIpt")  recom=fjcore::BIpt_scheme;
+  else if (reco=="BIpt2") recom=fjcore::BIpt2_scheme;
   else THROW(fatal_error, "Unknown recombination scheme \"" + reco + "\".");
 
   bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
 
-  fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
-  if (algo=="cambridge") ja = fastjet::cambridge_algorithm;
-  if (algo=="antikt")    ja = fastjet::antikt_algorithm;
-  if (algo=="siscone")   p_siscplug = new fastjet::SISConePlugin(m_delta_r, m_f);
-  if (ee) {
-    if (algo=="eecambridge") p_eecamplug = new fastjet::EECambridgePlugin(m_delta_r);
-    if (algo=="jade")        p_jadeplug  = new fastjet::JadePlugin();
-  }
+  fjcore::JetAlgorithm ja(fjcore::kt_algorithm);
+  if (algo=="cambridge") ja = fjcore::cambridge_algorithm;
+  if (algo=="antikt")    ja = fjcore::antikt_algorithm;
 
-  if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
-  else if (p_eecamplug) p_jdef=new fastjet::JetDefinition(p_eecamplug);
-  else if (p_jadeplug) p_jdef=new fastjet::JetDefinition(p_jadeplug);
-  else if (ee) {
-    p_jdef=new fastjet::JetDefinition(fastjet::ee_kt_algorithm);
+  if (ee) {
+    p_jdef=new fjcore::JetDefinition(fjcore::ee_kt_algorithm);
     m_eekt=1;
   }
-  else p_jdef=new fastjet::JetDefinition(ja,m_delta_r,recom);
+  else p_jdef=new fjcore::JetDefinition(ja,m_delta_r);
 
   m_smin = Max(sqr(m_ptmin),sqr(m_etmin));
 }
@@ -63,9 +52,6 @@ Fastjet_Selector_Base::Fastjet_Selector_Base(const std::string& name,
 Fastjet_Selector_Base::~Fastjet_Selector_Base()
 {
   delete p_jdef;
-  if (p_siscplug) delete p_siscplug;
-  if (p_eecamplug) delete p_eecamplug;
-  if (p_jadeplug) delete p_jadeplug;
 }
 
 void Fastjet_Selector_Base::PrintCommonInfoLines(std::ostream& str, size_t width)
@@ -81,5 +67,3 @@ void Fastjet_Selector_Base::PrintCommonInfoLines(std::ostream& str, size_t width
      <<width<<"  EtaMax: maximum jet eta (default: None)\n"
      <<width<<"  YMax: maximum jet rapidity (default: None)\n";
 }
-
-#endif
