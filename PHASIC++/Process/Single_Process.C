@@ -137,8 +137,8 @@ double Single_Process::NfSchemeConversionTerms() const
   }
   // scheme dependent return value
   msg_Debugging()<<"B = "<<m_lastbxs<<" ,  C_nf = "<<res<<std::endl
-                 <<" => "<<(m_nfconvscheme==2?0.:m_last)+m_lastbxs*res<<std::endl;
-  return (m_nfconvscheme==2?-m_last:0.)+m_lastbxs*res;
+                 <<" => "<<(m_nfconvscheme==2?0.:m_lastxs)+m_lastbxs*res<<std::endl;
+  return (m_nfconvscheme==2?-m_lastxs:0.)+m_lastbxs*res;
 }
 
 double Single_Process::CollinearCounterTerms
