@@ -34,11 +34,9 @@ namespace CSSHOWER {
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
 
     ATOOLS::Event_Weights m_weights;
+    bool m_reweight;
 
     double m_lastcpl;
-
-    /// the maximum number of reweighted emissions
-    unsigned int m_maxrewem;
 
     void   ResetScales(const double &kt2);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
@@ -64,6 +62,7 @@ namespace CSSHOWER {
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
     int    ReconstructDaughters(Singlet *const split,double &jcv,
 				Parton *const pi,Parton *const pj);
+    double Reweight(ATOOLS::Variation_Parameters*, Parton& splitter);
     void SetMS(const ATOOLS::Mass_Selector *const ms);
     double EFac(const std::string &sfk) const;
     inline Sudakov *GetSudakov() { return &m_sudakov; }
