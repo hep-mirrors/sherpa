@@ -212,6 +212,13 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             }
           }
         }
+        if (p_wgtinfo->m_wass.size()) {
+          for (size_t i(0);i<p_wgtinfo->m_wass.size();++i) {
+            asscontrib::type ass=static_cast<asscontrib::type>(1<<i);
+            wc["Reweight_"+ToString(ass)]
+                =p_wgtinfo->m_wass[i];
+          }
+        }
         wc["Reweight_Type"]=p_wgtinfo->m_type;
       }
       if (p_subevtlist) {
