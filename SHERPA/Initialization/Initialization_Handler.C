@@ -870,6 +870,7 @@ bool Initialization_Handler::InitializeTheHardDecays()
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
+  if (m_mode!=eventtype::StandardPerturbative) return true;
   if (p_mehandler) delete p_mehandler;
   p_mehandler = new Matrix_Element_Handler(p_model);
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
