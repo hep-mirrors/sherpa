@@ -116,7 +116,7 @@ double Recola_Born::Calc(const Vec4D_Vector& momenta) {
   METOOLS::DivArrD vres; std::vector<double> ass;
   set_alphas_rcl(AlphaQCD(),sqrt(m_mur2),Recola_Interface::GetDefaultFlav());
   Recola_Interface::EvaluateProcess(m_recola_id, momenta, 0, m_oqcd,
-                                    vres, m_born, ass);
+                                    vres, m_born, ass, false);
 
   if (msg_LevelIsDebugging()) {
     timing->Stop();
