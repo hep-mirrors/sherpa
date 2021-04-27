@@ -15,14 +15,14 @@ void Reconnect_Statistical::SetParameters() {
   // Pmode is the mode for the distance measure in momentum space.
   // 0 - mode is "linear":    dist = log(1+sij/Q0^2)
   // 1 - mode is "power law": dist = exp[eta * log(1+sij/Q0^2) ] 
-  auto  s = Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
-  m_Pmode     = s["RECONNECTIONS::PMODE"].SetDefault(0).Get<int>();
-  m_Q02       = sqr(s["RECONNECTIONS::Q_0"].SetDefault(1.00).Get<double>());
-  m_etaQ      = sqr(s["RECONNECTIONS::etaQ"].SetDefault(0.16).Get<double>());
-  m_R02       = sqr(s["RECONNECTIONS::R_0"].SetDefault(1.00).Get<double>());
-  m_etaR      = sqr(s["RECONNECTIONS::etaR"].SetDefault(0.16).Get<double>());
-  m_reshuffle = 1./(s["RECONNECTIONS::RESHUFFLE"].SetDefault(1./3.).Get<double>());
-  m_kappa     = 1./(s["RECONNECTIONS::KAPPA"].SetDefault(2.).Get<double>());
+  auto s = Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
+  m_Pmode     = s["PMODE"].SetDefault(0).Get<int>();
+  m_Q02       = sqr(s["Q_0"].SetDefault(1.00).Get<double>());
+  m_etaQ      = sqr(s["etaQ"].SetDefault(0.16).Get<double>());
+  m_R02       = sqr(s["R_0"].SetDefault(1.00).Get<double>());
+  m_etaR      = sqr(s["etaR"].SetDefault(0.16).Get<double>());
+  m_reshuffle = 1./(s["Reshuffle"].SetDefault(1./3.).Get<double>());
+  m_kappa     = 1./(s["kappa"].SetDefault(2.).Get<double>());
 }
 
 void Reconnect_Statistical::Reset() {

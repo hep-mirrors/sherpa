@@ -916,8 +916,8 @@ bool Initialization_Handler::InitializeTheShowers()
 bool Initialization_Handler::InitializeTheSoftCollisions() 
 {
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
-  p_softcollisions = new Soft_Collision_Handler(p_beamspectra,
-                                                m_isrhandlers[isr::hard_process]);
+  p_softcollisions =
+    new Soft_Collision_Handler(p_beamspectra,m_isrhandlers[isr::hard_process]);
   msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
   return 1;
 }
@@ -1084,8 +1084,10 @@ void Initialization_Handler::SetGlobalVariables()
   rpa->gen.SetVariable("FACTORIZATION_SCALE_FACTOR", ToString(fsf));
   rpa->gen.SetVariable("RENORMALIZATION_SCALE_FACTOR", ToString(rsf));
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
-		 <<"  fac scale: "<<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
-		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
+		 <<"  fac scale: "
+		 <<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
+		 <<"  ren scale: "
+		 <<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
 
   // TODO: remove from rpa?
   double virtfrac = s["VIRTUAL_EVALUATION_FRACTION"].Get<double>();

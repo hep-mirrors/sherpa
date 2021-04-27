@@ -8,6 +8,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace SHRIMPS;
+using namespace ATOOLS;
 
 MinBias_Parameters SHRIMPS::MBpars;
 
@@ -63,29 +64,32 @@ void MinBias_Parameters::Init() {
 
 void MinBias_Parameters::RegisterDefaults() const
 {
-  ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
-  s["Shrimps_Mode"].SetDefault("Inelastic");
+  const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
+  s["Mode"].SetDefault("Inelastic");
   s["MB_Weight_Mode"].SetDefault("Unweighted");
   s["bmax"].SetDefault(10.0);
   s["accu"].SetDefault(5e-4);
-  s["FF_Form"].SetDefault("dipole");
-  s["Lambda2"].SetDefault(1.7);
-  s["beta02(mb)"].SetDefault(25.0);
-  s["kappa"].SetDefault(0.6);
-  s["xi"].SetDefault(0.2);
   s["bsteps_FF"].SetDefault(64);
-  s["Absorption"].SetDefault("factorial");
+  s["Absorption"].SetDefault("exponential");
+  s["FF_Form"].SetDefault("dipole");
   s["deltaY"].SetDefault(1.5);
-  s["lambda"].SetDefault(0.5);
-  s["Delta"].SetDefault(0.3);
+  s["beta02(mb)"].SetDefault(25.0);
+  s["Lambda2"].SetDefault(1.2);
+  s["kappa"].SetDefault(0.55);
+  s["xi"].SetDefault(0.2);
+  s["lambda"].SetDefault(0.25);
+  s["Delta"].SetDefault(0.4);
+  s["Q_0^2"].SetDefault(1.0);
+  s["Q_as^2"].SetDefault(1.0);
+  s["KT_shower"].SetDefault(5.);
 }
 
 void MinBias_Parameters::FillRunParameters() {
-  ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
-  std::string runmode = s["Shrimps_Mode"].Get<std::string>();
+  const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
+  std::string runmode = s["Mode"].Get<std::string>();
   if (runmode==std::string("TestShrimps") || runmode==std::string("Test")) 
     m_runmode = m_run_params.runmode = run_mode::test;
-  if (runmode==std::string("Xsecs") || runmode==std::string("XSecs")) 
+  else if (runmode==std::string("Xsecs") || runmode==std::string("XSecs")) 
     m_runmode = m_run_params.runmode = run_mode::xsecs_only;
   else if (runmode==std::string("Elastic")) 
     m_runmode = m_run_params.runmode = run_mode::elastic_events;
@@ -108,15 +112,15 @@ void MinBias_Parameters::FillRunParameters() {
   else if (weightmode==std::string("Weighted")) 
     m_run_params.weightmode = weight_mode::weighted;
 
-  m_originalY = log(ATOOLS::rpa->gen.Ecms()/
-		    ATOOLS::Flavour(kf_p_plus).HadMass());
+  m_originalY = log(rpa->gen.Ecms()/
+		    Flavour(kf_p_plus).HadMass());
   m_NGWstates = (m_runmode!=run_mode::test)?2:1;
   m_bmax      = s["bmax"].Get<double>();
   m_accu      = s["accu"].Get<double>();
 }
 
 void MinBias_Parameters::FillFormFactorParameters() {
-  ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
+  const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
   std::string ffform = s["FF_Form"].Get<std::string>();
   if (ffform==std::string("dipole") && m_runmode!=run_mode::test) 
     m_ff_params.form = ff_form::dipole;
@@ -125,7 +129,7 @@ void MinBias_Parameters::FillFormFactorParameters() {
   m_ff_params.norm        = 1./sqrt(m_NGWstates);
   m_ff_params.Lambda2     = s["Lambda2"].Get<double>();
   m_ff_params.beta02      = 
-    sqrt(1.e9*s["beta02(mb)"].Get<double>()/ATOOLS::rpa->Picobarn());
+    sqrt(1.e9*s["beta02(mb)"].Get<double>()/rpa->Picobarn());
   // kappa will obtain a sign for the second GW state - this is hardwired
   // in the initialization routine in Shrimps.  
   m_ff_params.kappa       = s["kappa"].Get<double>();
@@ -136,7 +140,7 @@ void MinBias_Parameters::FillFormFactorParameters() {
 }
 
 void MinBias_Parameters::FillEikonalParameters() {
-  ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
+  const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
   std::string absorption = s["Absorption"].Get<std::string>();
   if (absorption==std::string("exponential"))
     m_eik_params.absorp  = absorption::exponential;
@@ -154,19 +158,21 @@ void MinBias_Parameters::FillEikonalParameters() {
 }
 
 void MinBias_Parameters::UpdateForNewEnergy(const double & energy) {
-  m_originalY = log(energy/ATOOLS::Flavour(kf_p_plus).HadMass());
+  m_originalY = log(energy/Flavour(kf_p_plus).HadMass());
   m_eik_params.originalY = m_originalY;
   m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY; 
 }
 
 
 void MinBias_Parameters::FillLadderParameters() {
-  ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
-  m_ladder_params.Q02  = s["Q_0^2"].SetDefault(1.).Get<double>();
-  m_ladder_params.Qas2  = s["Q_as^2"].SetDefault(1.).Get<double>();
+  const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
+  m_ladder_params.Q02  = s["Q_0^2"].Get<double>();
+  m_ladder_params.Qas2 = s["Q_as^2"].Get<double>();
 }
 
 void MinBias_Parameters::FillShowerLinkParameters() {
+  const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
+  m_showerlink_params.KT2min = sqr(s["KT_shower"].Get<double>());
 }
 
 

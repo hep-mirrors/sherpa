@@ -9,8 +9,10 @@ using namespace std;
 Colour_Reconnection_Handler::Colour_Reconnection_Handler() :
   p_reconnections(NULL)
 {
-  Settings& s = Settings::GetMainSettings();
-  m_on = s["COLOUR_RECONNECTIONS"].SetDefault(true).Get<bool>();
+  const Scoped_Settings& s =
+    Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
+  string mode = s["Mode"].SetDefault(string("Off")).Get<string>(); 
+  m_on = (mode!=string("Off"));
   p_reconnections = new Reconnection_Handler(m_on);
   p_reconnections->Initialize();
 }

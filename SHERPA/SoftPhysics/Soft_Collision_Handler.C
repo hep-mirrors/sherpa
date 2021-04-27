@@ -25,10 +25,8 @@ Soft_Collision_Handler::Soft_Collision_Handler(BEAM::Beam_Spectra_Handler *beam,
 {
   Settings& s = Settings::GetMainSettings();
   m_dir = s.GetPath();
-  m_softcollisionmodel = s["SOFT_COLLISIONS"]
-    .SetDefault("None")
-    .UseNoneReplacements()
-    .Get<string>();
+  m_softcollisionmodel = s["SOFT_COLLISIONS"].SetDefault("None")
+    .UseNoneReplacements().Get<string>();
   if (m_softcollisionmodel==string("Shrimps")) {
     p_shrimps = new Shrimps(beam, isr);
     p_cluster = p_shrimps->GetClusterAlgorithm();

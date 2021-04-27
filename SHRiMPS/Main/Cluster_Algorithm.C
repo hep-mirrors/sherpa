@@ -13,7 +13,8 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Cluster_Algorithm::Cluster_Algorithm(const double & Ymax,const double & minkt2):
-  p_ampl(NULL), p_clus(NULL), p_jf(new JF()), p_jets(new Soft_Jet_Criterion()),
+  p_ampl(NULL), p_clus(NULL),
+  p_jf(new JF()), p_jets(new Soft_Jet_Criterion()),
   m_Ymax(Ymax), m_minkt2(minkt2)
 {
   m_histomap[std::string("startvspt")] = new Histogram(0,0.0,100.0,100);
@@ -50,10 +51,10 @@ double Cluster_Algorithm::
 PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const
 {
   double pti2  = pi.PPerp2(), ptj2  = pj.PPerp2();    
-  if (dabs(pi.Y())>m_Ymax || dabs(pj.Y())>m_Ymax) return Max(16., pti2);
+  if (dabs(pi.Y())>m_Ymax || dabs(pj.Y())>m_Ymax) return Max(m_minkt2, pti2);
   double ptij2 = 2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-
 				    cos(pi.Phi()-pj.Phi()));
-  return Max(16.,ptij2);
+  return Max(m_minkt2,ptij2);
 }
 
 void Cluster_Algorithm::InitLeg(Cluster_Leg * leg,const double & kt2,
@@ -111,7 +112,7 @@ double Cluster_Algorithm::SetShowerScales() {
       if (i==j) continue;
       Cluster_Leg * spect = legs[j];
       connected = ColorConnected(split->Col(),spect->Col()); 
-      if (connected==0) kt2test = 16.;
+      if (connected==0) kt2test = m_minkt2;
       else {
 	sijtest   = (split->Mom()+spect->Mom()).Abs2();
 	if (sijtest>sij) sij = sijtest;

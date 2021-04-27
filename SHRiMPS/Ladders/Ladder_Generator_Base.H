@@ -12,6 +12,7 @@ namespace SHRIMPS {
   class Ladder_Generator_Base {
   protected:
     double                   m_Ymax, m_deltaY, m_qt2min, m_kt2min;
+    double                   m_kt2minShower;
     MODEL::Strong_Coupling * p_alphaS;
     Rapidity_Density         m_density;
     ME_Correction            m_mecorrection;
@@ -67,9 +68,9 @@ namespace SHRIMPS {
     inline virtual void SetMaximalScale(const double & E1,const double & E2) {
       m_E[0] = E1; m_E[1] = E2;
     }
-    inline virtual const double Ymax()   const { return m_Ymax; }
-    inline virtual const double KT2min() const { return m_kt2min; }
-    inline virtual const double Weight() const { return m_weight; } 
+    inline virtual const double Ymax()         const { return m_Ymax; }
+    inline virtual const double KT2min()       const { return m_kt2minShower; }
+    inline virtual const double Weight()       const { return m_weight; } 
   };
 }
 #endif

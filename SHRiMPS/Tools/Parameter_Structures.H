@@ -147,6 +147,7 @@ namespace SHRIMPS {
 
   struct ShowerLink_Parameters {
   public:
+    double KT2min;
     ShowerLink_Parameters() {}
   };
 }

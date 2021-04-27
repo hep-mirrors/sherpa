@@ -15,11 +15,13 @@ Ladder_Generator_Base::Ladder_Generator_Base() :
   m_deltaY(MBpars.GetEikonalParameters().cutoffY),
   m_qt2min(MBpars.GetLadderParameters().Q02),
   m_kt2min(MBpars.GetLadderParameters().Q02),
+  m_kt2minShower(MBpars.GetShowerLinkParameters().KT2min),
   p_alphaS(new Strong_Coupling(static_cast<Running_AlphaS *>
 			       (s_model->GetScalarFunction(string("alpha_S"))),
 			       asform::smooth,
 			       MBpars.GetLadderParameters().Qas2)),
-  m_density(MBpars.GetEikonalParameters().Delta, MBpars.GetEikonalParameters().lambda,m_Ymax,
+  m_density(MBpars.GetEikonalParameters().Delta,
+	    MBpars.GetEikonalParameters().lambda,m_Ymax,
 	    MBpars.GetEikonalParameters().absorp),
   m_mecorrection(ME_Correction(m_kt2min)),
  p_ladder(0)
