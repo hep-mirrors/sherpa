@@ -591,9 +591,11 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]);
         rivetversion="$($CONDITIONAL_RIVETDIR/bin/rivet-config --version)"
         AC_MSG_CHECKING(for Rivet version)
-        AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
-          AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
-            AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+        AX_COMPARE_VERSION([${rivetversion}],[ge],[3.1.1],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
+          AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ AC_MSG_ERROR(Rivet version 3.0.0-3.1.0 not supported -- please use 3.1.1 or above.) ], [
+            AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
+              AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+            ])
           ])
         ])
       else
