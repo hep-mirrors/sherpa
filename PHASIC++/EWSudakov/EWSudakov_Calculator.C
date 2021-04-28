@@ -47,6 +47,7 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   m_c_coeff_ignores_vector_bosons =
       s["EWSUDAKOV_C_COEFF_IGNORES_VECTOR_BOSONS"].SetDefault(false).Get<bool>();
   SetHighEnergyScheme(s["EWSUDAKOV_HIGH_ENERGY_SCHEME"].SetDefault("Default").Get<std::string>());
+  m_includesubleading = s["EWSUDAKOV_INCLUDE_SUBLEADING"].SetDefault(false).Get<bool>();
 }
 
 EWSudakov_Calculator::~EWSudakov_Calculator()
@@ -181,7 +182,10 @@ EWSudakov_Log_Corrections_Map EWSudakov_Calculator::CorrectionsMap()
       } else { /// for the moment I don't have the other schemes
         const double rkl =
             std::abs((base_ampl.Mom(k) + base_ampl.Mom(l)).Abs2());
-        logs[{EWSudakov_Log_Type::lSSC, {k, l}}] = ls * std::log(rkl / s);
+        double log = ls * std::log(rkl / s);
+        if (m_includesubleading)
+          log += sqr(std::log(rkl / s)) / 2.0; // last term in eq. (3.3)
+        logs[{EWSudakov_Log_Type::lSSC, {k, l}}] = log;
       }
     }
   }

@@ -86,6 +86,7 @@ namespace PHASIC {
     bool m_checkinvariantratios;
     bool m_checkcoeff, m_checkkfac;
     std::string m_checklogfile;
+    bool m_includesubleading;
 
     // intermediate results
     mutable Coeff_Map m_coeffs;
