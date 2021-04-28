@@ -9,9 +9,9 @@ namespace PHASIC {
   private:
     Phase_Space_Handler * p_psh;
     
-    bool CreateBeamIntegrator(const double & minalpha);
-    bool CreateISRIntegrator(const double & minalpha);
-    bool CreateFSRIntegrator(const double & minalpha);
+    bool CreateBeamIntegrator();
+    bool CreateISRIntegrator();
+    bool CreateFSRIntegrator();
   public:
     Channel_Creator(Phase_Space_Handler * psh);
     ~Channel_Creator();

@@ -39,6 +39,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()),
   p_flavours(proc->Process()->Flavours()),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin+m_nout),
+  m_enhance(1.0),
   m_initialized(false),
   m_sintegrator(0), m_killedpoints(0),
   m_printpspoint(false)
@@ -46,7 +47,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   RegisterDefaults();
   InitParameters(error);
   p_process->SetPSHandler(this);
-  
+
   p_lab.resize(m_nvec);
 
   if (CreateIntegrators()) {
@@ -70,9 +71,7 @@ bool Phase_Space_Handler::CreateIntegrators() {
 double Phase_Space_Handler::Integrate() 
 {
   CheckSinglePoint();
-  if (p_process->Points()>0 &&
-      (p_process->TotalError()<dabs(m_error*p_process->TotalXS()) ||
-       p_process->TotalError()<m_abserror)) 
+  if (p_process->Points()>0)
     return p_process->TotalXS()*rpa->Picobarn();
   p_integrator = new Phase_Space_Integrator(this);
   if (!InitIncoming()) return 0.;
@@ -248,7 +247,6 @@ void Phase_Space_Handler::RegisterDefaults() const
   settings["MAX_TRIALS"].SetDefault(1000000);
   settings["FINISH_OPTIMIZATION"].SetDefault(true);
   settings["PRINT_PS_POINTS"].SetDefault(false);
-  settings["INT_MINALPHA"].SetDefault(0.0);
   settings["PS_PT_FILE"].SetDefault("");
   settings["TCHANNEL_ALPHA"].SetDefault(0.9);
   settings["SCHANNEL_ALPHA"].SetDefault(0.75);

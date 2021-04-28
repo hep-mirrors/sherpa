@@ -56,7 +56,7 @@ namespace PHASIC {
     static ATOOLS::Integration_Info * p_info;
 
     double m_enhance, m_ISsymmetryfactor, m_psweight, m_meweight;
-    
+
     psmode::code m_cmode;
     double    m_thkill, m_error, m_abserror;
     bool      m_initialized, m_sintegrator, m_fin_opt, m_printpspoint;

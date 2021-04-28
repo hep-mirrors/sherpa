@@ -60,8 +60,7 @@ namespace PHASIC {
     std::vector<Single_Channel *> channels;
     std::map<std::string,double>  m_erans;
     bool m_readin;
-    double m_minalpha;
-    int m_lastdice,m_optcnt;
+    int m_lastdice;
     int m_otype;
   public:
     Multi_Channel(std::string name);
@@ -106,8 +105,6 @@ namespace PHASIC {
     virtual void    Print();
     virtual void    WriteOut(std::string);
     virtual bool    ReadIn(std::string);
-
-    inline void SetMinAlpha(const double& minalpha) { m_minalpha=minalpha; }
 
     size_t NChannels() const;
 

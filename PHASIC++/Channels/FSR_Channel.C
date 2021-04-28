@@ -321,7 +321,8 @@ void Decay2Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran=0) {
 }
 
 void Decay2Channel::GenerateWeight(ATOOLS::Vec4D * p) {
-  m_weight = 1. / ( CE.Isotropic2Weight(p[1],p[2],-1.,1.) * pow(2.*M_PI,2.*3.-4.) );
+  double d1, d2;
+  m_weight = 1. / ( CE.Isotropic2Weight(p[1],p[2],d1,d2,-1.,1.) * pow(2.*M_PI,2.*3.-4.) );
 }
 
 void Decay2Channel::ISRInfo(int & _type,double & _mass,double & _width) {
