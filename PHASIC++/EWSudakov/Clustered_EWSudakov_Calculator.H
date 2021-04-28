@@ -37,6 +37,7 @@ namespace PHASIC {
     PHASIC::Process_Base* proc;
 
     double m_resdist;
+    bool m_disabled;
 
   };
 

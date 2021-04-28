@@ -17,14 +17,24 @@ Clustered_EWSudakov_Calculator::Clustered_EWSudakov_Calculator(Process_Base* _pr
     Settings::GetMainSettings()["ME_QED"] };
   m_resdist =
     meqedsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
+  m_disabled =
+    Settings::GetMainSettings()["EWSUDAKOV_CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
 
   //auto level = msg->Level();
   //msg->SetLevel(15);
+
   const Flavour_Vector& flavs = proc->Flavours();
-  AddCalculators(flavs, 0);
-  for (size_t i {0}; i < flavs.size(); ++i)
-    msg_Debugging() << flavs[i] << ' ';
-  msg_Out() << "added " << calculators.size() << " calculators\n";
+
+  if (m_disabled) {
+    calculators.emplace(
+        std::make_pair(flavs, new EWSudakov_Calculator{proc}));
+  } else {
+    AddCalculators(flavs, 0);
+    for (size_t i {0}; i < flavs.size(); ++i)
+      msg_Debugging() << flavs[i] << ' ';
+    msg_Debugging() << "added " << calculators.size() << " calculators\n";
+  }
+
   //msg->SetLevel(level);
 }
 
@@ -112,8 +122,12 @@ void Clustered_EWSudakov_Calculator::AddCalculator(const Flavour_Vector& flavs, 
 EWSudakov_Log_Corrections_Map
 Clustered_EWSudakov_Calculator::CorrectionsMap(Vec4D_Vector mom)
 {
-  auto level = msg->Level();
-  msg->SetLevel(15);
+  //auto level = msg->Level();
+  //msg->SetLevel(15);
+
+  if (m_disabled) {
+    return calculators.begin()->second->CorrectionsMap(mom);
+  }
 
   Flavour_Vector flavs = proc->Flavours();
   size_t nflavs {flavs.size()};
@@ -174,7 +188,7 @@ Clustered_EWSudakov_Calculator::CorrectionsMap(Vec4D_Vector mom)
     msg_Debugging() << flav.Kfcode() << " ";
   }
   msg_Debugging() << '\n';
-  msg->SetLevel(level);
+  //msg->SetLevel(level);
   assert(calculators.find(flavs) != calculators.end());
   return calculators[flavs]->CorrectionsMap(mom);
 }
