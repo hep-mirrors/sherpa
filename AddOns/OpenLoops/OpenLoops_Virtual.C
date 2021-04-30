@@ -48,17 +48,6 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta)
 
   OpenLoops_Interface::EvaluateLoop(m_ol_id, momenta, m_born, m_res);
 
-  if (shouldprinttime) {
-    timing->Stop();
-    PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" user="<<timing->UserTime()
-               <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
-    msg_Out()<<"B     = "<<m_born<<std::endl;
-    msg_Out()<<"V_fin = "<<m_res.Finite()<<std::endl;
-    msg_Out()<<"V_e1  = "<<m_res.IR()<<std::endl;
-    msg_Out()<<"V_e2  = "<<m_res.IR2()<<std::endl;
-    delete timing;
-  }
-
   // factor which by Sherpa convention has to be divided out at this stage
   // if both types of subtraction, still take alphas out
   double coupling(1.);
@@ -66,13 +55,24 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta)
   else if (m_stype&sbt::qed) coupling=AlphaQED();
   else THROW(fatal_error,"Unknown coupling.");
 
+  if (shouldprinttime) {
+    timing->Stop();
+    PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" user="<<timing->UserTime()
+               <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
+    double factor=coupling/2.0/M_PI;
+    msg_Out()<<"B     = "<<m_born<<std::endl;
+    msg_Out()<<"V_fin = "<<m_res.Finite()<<" -> "<<m_res.Finite()/m_born/factor<<std::endl;
+    msg_Out()<<"V_e1  = "<<m_res.IR()<<" -> "<<m_res.IR()/m_born/factor<<std::endl;
+    msg_Out()<<"V_e2  = "<<m_res.IR2()<<" -> "<<m_res.IR2()/m_born/factor<<std::endl;
+    delete timing;
+  }
+
   // if Born vanishes, do not divide by it, reset mode for this event
   if (!(m_mode&1) && m_born==0.) {
     m_mode|=1;
     msg_Tracking()<<METHOD<<"(): switch to mode 1, Born vanishes"<<std::endl;
   }
   double factor=((m_mode&1)?1.:m_born)*coupling/2.0/M_PI;
-  msg_Debugging()<<"cpl="<<coupling/2.0/M_PI<<std::endl;
   m_res.Finite()/=factor;
   m_res.IR()/=factor;
   m_res.IR2()/=factor;

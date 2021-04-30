@@ -99,9 +99,9 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass())
       return Event_Weights{0, 0.0};
+    m_eventweights *= (m_psweight = CalculatePS());
     m_eventweights  = CalculateME(weighttype);
     m_meweight      = m_eventweights.Nominal();
-    m_eventweights *= (m_psweight = CalculatePS());
     m_eventweights *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
     p_lab           = process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
