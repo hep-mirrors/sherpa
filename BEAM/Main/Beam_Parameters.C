@@ -337,7 +337,7 @@ void Beam_Parameters::InitializeFlav(kf_code flav) {
       initialize_diquarks=true;
     }
     else if (flav==kf_n) {
-      s_kftable[flav] = new Particle_Info(kf_n,0.939566,7.424e-28,0,0,1,1,
+      s_kftable[flav] = new Particle_Info(kf_n,0.939566,7.424e-28,0,1,1,1,
 					  "n","n");
       initialize_diquarks=true;
     }
