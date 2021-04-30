@@ -168,9 +168,11 @@ pages:
   stage: deploy
   script:
     - cd Manual
-    - git fetch
+    - git branch -r | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done
+    - git fetch --all
     - git checkout master  # we only build with master config, because
                            # this will get uploaded globaly
+    - git pull
     - pip3 install -r requirements.txt
     - pip3 install sphinx-multiversion
     - bash .build_versioned.sh build

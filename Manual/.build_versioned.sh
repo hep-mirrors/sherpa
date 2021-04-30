@@ -23,6 +23,8 @@ sphinx-multiversion Manual/source/ $OUTDIR/_multi -- -c $MV_CONFDIR -A mode=html
                     & sphinx-multiversion Manual/source/ $OUTDIR/_single -- -c $MV_CONFDIR -b singlehtml -A mode=singlehtml -A pdf=sherpamanual.pdf \
                     & sphinx-multiversion Manual/source/ $OUTDIR/_pdf -- -c $MV_CONFDIR -b latex
 
+wait
+
 ## rename single_page html files
 cd $OUTDIR
 find _single/ -iname "index.html" -exec rename .html _single.html '{}' \;
