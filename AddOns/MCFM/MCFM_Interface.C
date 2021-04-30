@@ -19,17 +19,17 @@ using namespace ATOOLS;
 
 namespace SHERPA {
 
+  inline std::string str_tolower(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(),
+		   [](unsigned char c){ return tolower(c); });
+    return s;
+  }
+
   class MCFM_Interface: public PHASIC::ME_Generator_Base {
   private:
 
     static MCFM::CXX_Interface s_mcfm;
     static MODEL::Running_AlphaS *p_as;
-
-    inline std::string str_tolower(std::string s) {
-      std::transform(s.begin(), s.end(), s.begin(),
-		     [](unsigned char c){ return tolower(c); });
-      return s;
-    }
 
   public:
 
@@ -55,9 +55,6 @@ namespace SHERPA {
       if (!FileExists(pdname))
 	Copy(MCFM_PATH+std::string("/share/process.DAT"),pdname);
       std::map<std::string,std::string> params;
-      std::string modelname(str_tolower(model->Name()));
-      if (modelname=="smehc") modelname="heft";
-      params["model"]=modelname;
       params["n_flav"]=ToString(Flavour(kf_jet).Size()/2,16);
       params["down_mass"]=ToString(Flavour(kf_d).Mass(),16);
       params["up_mass"]=ToString(Flavour(kf_u).Mass(),16);
@@ -236,6 +233,9 @@ operator()(const Process_Info &pi) const
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
   MCFM::Process_Info mpi(ids,pi.m_ii.m_ps.size(),
 			 pi.m_maxcpl[0],pi.m_maxcpl[1]+addcpl);
+  std::string modelname(str_tolower(MODEL::s_model->Name()));
+  if (modelname=="smehc") modelname="heft";
+  mpi.m_model=str_tolower(modelname);
   DecayInfo_Vector decins(pi.m_fi.GetDecayInfos());
   for (size_t i(0);i<decins.size();++i) {
     mpi.m_decids.push_back(decins[i]->m_id);
