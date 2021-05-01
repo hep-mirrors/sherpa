@@ -695,6 +695,9 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     // below
     if (subkey == "Selectors"
         || subkey == "Cut_Core"
+        || subkey == "Decay"
+        || subkey == "DecayOS"
+        || subkey == "No_Decay"
         || subkey == "CKKW")
       continue;
 

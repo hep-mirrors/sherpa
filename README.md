@@ -3,7 +3,7 @@
 Sherpa is an event-generation framework for high-energy
 particle collisions.
 
-For more information, visit [our homepage](http://sherpa.hepforge.org)
+For more information, visit [our homepage](http://sherpa-team.gitlab.io)
 or our [project site on GitLab](https://gitlab.com/sherpa-team/sherpa).
 You can file a bug report on our [issue tracker](https://gitlab.com/sherpa-team/sherpa/issues)
 or send us an [e-mail](sherpa@projects.hepforge.org).
