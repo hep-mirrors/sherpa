@@ -228,26 +228,7 @@ void LHAPDF_CPP_Interface::CalculateSpec(const double& x,const double& Q2) {
 }
 
 double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
-  if (IsBad(m_x) || IsBad(m_Q2) || m_Q2<0.0) {
-    msg_Error()<<METHOD<<"(): Encountered bad (x,Q2)=("<<m_x<<","<<m_Q2<<"), "
-                       <<"returning zero."<<std::endl;
-    return 0.;
-  }
-  int kfc = m_anti*int(infl);
-  if (int(infl)==kf_gluon || int(infl)==kf_photon)
-    kfc = int(infl);
-  for (size_t i(0);i<m_disallowedflavour.size();++i) {
-    if (kfc==m_disallowedflavour[i]) {
-      m_xfx[kfc]=0.;
-      m_calculated[kfc]=true;
-      break;
-    }
-  }
-  if (!m_calculated[kfc]) {
-    m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
-    m_calculated[kfc]=true;
-  }
-  return m_rescale*m_xfx[kfc];
+  return GetXPDF(infl.Kfcode(), infl.IsAnti());
 }
 
 double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
