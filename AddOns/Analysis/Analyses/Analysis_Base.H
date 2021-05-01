@@ -33,9 +33,9 @@ namespace ANALYSIS {
 
     Analysis_Object &operator+=(const Analysis_Object &obj);
 
-    void EndEvaluation(double scale=1.0);
+    virtual void EndEvaluation(double scale=1.0);
     void Restore(double scale=1.0);
-    void Output(const std::string & pname);
+    virtual void Output(const std::string & pname);
 
   };// end of class Analysis_Base
 

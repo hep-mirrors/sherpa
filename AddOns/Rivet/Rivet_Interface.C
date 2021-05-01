@@ -304,7 +304,12 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     }
   }
 
-  HEPMCNS::GenEvent event;
+#ifndef  RIVET_ENABLE_HEPMC_3
+  HepMC::GenEvent event;
+#else
+  std::shared_ptr<HepMC3::GenRunInfo> run_info = std::make_shared<HepMC3::GenRunInfo>();
+  HepMC3::GenEvent event(run_info);
+#endif
   if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event);
   else                  m_hepmc2.Sherpa2HepMC(bl, event);
   std::vector<HEPMCNS::GenEvent*> subevents(m_hepmc2.GenSubEventList());
