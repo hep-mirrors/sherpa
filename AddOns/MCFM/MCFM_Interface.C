@@ -274,6 +274,9 @@ operator()(const Process_Info &pi) const
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
   MCFM::Process_Info mpi(ids,pi.m_ii.m_ps.size(),
 			 pi.m_maxcpl[0],pi.m_maxcpl[1]);
+  std::string modelname(str_tolower(MODEL::s_model->Name()));
+  if (modelname=="smehc") modelname="heft";
+  mpi.m_model=str_tolower(modelname);
   int pid(MCFM_Interface::GetMCFM().InitializeProcess(mpi));
   if (pid>=0) return new MCFM_Born(pi,fl,pid);
   return NULL;
