@@ -135,6 +135,12 @@ namespace ATOOLS {
   template<> bool ToType<bool>(const std::string& value,
                                const size_t precision);
 
+  /// specialisation to handle conversion of strings like "inf" etc.
+  /// NOTE that not all compilers give the same for inf in the above generic
+  /// implementation
+  template<> double ToType<double>(const std::string& value,
+                                   const size_t precision);
+
   std::string StringTrim(const std::string&);
 
   std::string StringReplace(const std::string &original,
