@@ -310,6 +310,14 @@ are:
       event number. The interval length can be adjusted with
       ``EVENT_DISPLAY_INTERVAL``.
 
+:samp:`{8}`
+      Sherpa prints the name of the hard process for the 
+      last event at each print out.
+
+:samp:`{16}`
+      Sherpa prints the elapsed time and time left in 
+      seconds only.
+
 The settings are additive such that multiple settings can be employed
 at the same time.
 
@@ -317,7 +325,7 @@ at the same time.
 
    When running the code on a cluster or in a grid environment,
    BATCH_MODE should always contain setting 1
-   (i.e. ``BATCH_MODE=[1|3|5|7]``).
+   (i.e. ``BATCH_MODE: 1`` or ``3`` or ``5`` etc.).
 
    The command line option :option:`-b` should therefore not be used
    in this case, see :ref:`Command line`.

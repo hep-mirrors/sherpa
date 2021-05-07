@@ -632,3 +632,10 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
 
   return true;
 }
+
+std::string Event_Handler::CurrentProcess() const
+{
+  if (p_signal) return p_signal->TypeSpec();
+  return "<unknown>";
+}
+
