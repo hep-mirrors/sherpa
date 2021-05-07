@@ -231,6 +231,10 @@ of overwriting the previous one (default when using @ref{LOG_FILE}).
 @item @var{4} Sherpa increases the on-screen event counter in constant 
 steps of 100 instead of an increase relative to the current event 
 number. The interval length can be adjusted with @code{EVENT_DISPLAY_INTERVAL}.
+@item @var{8} Sherpa prints the name of the hard process for the 
+last event at each print out.
+@item @var{16} Sherpa prints the elapsed time and time left in 
+seconds only.
 @end itemize
 The settings are additive such that multiple settings can be employed 
 at the same time.
