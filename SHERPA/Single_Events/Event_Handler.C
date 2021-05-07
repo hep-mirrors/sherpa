@@ -589,3 +589,10 @@ bool Event_Handler::WeightIsGood(const double& weight)
 
   return true;
 }
+
+std::string Event_Handler::CurrentProcess() const
+{
+  if (p_signal) return p_signal->TypeSpec();
+  return "<unknown>";
+}
+

@@ -67,6 +67,8 @@ namespace SHERPA {
     double TotalVarMPI();
     double TotalErrMPI();
 
+    std::string CurrentProcess() const;
+
   };
 
 
