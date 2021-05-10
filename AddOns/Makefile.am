@@ -10,6 +10,8 @@ SUBDIRS       =	\
 		HZTool \
 		OpenLoops \
 		Recola \
+		MadLoop \
+		MCFM \
 		PGS \
 		Delphes \
 		Rivet \

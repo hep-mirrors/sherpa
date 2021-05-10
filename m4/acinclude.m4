@@ -664,6 +664,28 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(RECOLA_SUPPORT, test "$recola" = "true")
 
   AC_ARG_ENABLE(
+    madloop,
+    AS_HELP_STRING([--enable-madloop=/path/to/madloop],[Enable Madloop.]),
+    [ AC_MSG_CHECKING(for Madloop installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Madloop not enabled); madloop=false ;;
+        *)   MADLOOP_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             madloop=true;
+             if test -d "${MADLOOP_PREFIX}"; then
+                AC_MSG_RESULT([${MADLOOP_PREFIX}]);
+             else
+                AC_MSG_WARN(${MADLOOP_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ madloop=false ]
+  )
+  if test "$madloop" = "true" ; then
+    AC_DEFINE_UNQUOTED([MADLOOP_PREFIX], "$MADLOOP_PREFIX", [Madloop installation prefix])
+  fi
+  AM_CONDITIONAL(MADLOOP_SUPPORT, test "$madloop" = "true")
+
+  AC_ARG_ENABLE(
     mcfm,
     AS_HELP_STRING([--enable-mcfm=/path/to/mcfm],[Enable MCFM.]),
     [ AC_MSG_CHECKING(for MCFM installation directory);

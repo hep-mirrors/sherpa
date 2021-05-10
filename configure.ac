@@ -237,6 +237,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  AddOns/BlackHat/Makefile \
 	  AddOns/OpenLoops/Makefile \
 	  AddOns/Recola/Makefile \
+	  AddOns/MadLoop/Makefile \
           AddOns/MCFM/Makefile \
           AddOns/LH_OLE/Makefile \
 	  AddOns/HZTool/Makefile \
