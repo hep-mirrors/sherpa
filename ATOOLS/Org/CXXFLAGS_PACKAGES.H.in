@@ -64,6 +64,9 @@
 /* GoSam installation prefix */
 #undef GOSAM_PREFIX
 
+/* MadLoop installation prefix */
+#undef MADLOOP_PREFIX
+
 /* using MCFM */
 #undef USING__MCFM
 
