@@ -8,4 +8,4 @@ libSherpaTauPi_la_SOURCES = \
 	TauPi_LC.C \
 	Model.C
 
-libSherpaSM_la_LIBADD = @MODELMAINLIB@ @ATOOLSLIBS@
+libSherpaTauPi_la_LIBADD = @MODELMAINLIB@ @ATOOLSLIBS@
