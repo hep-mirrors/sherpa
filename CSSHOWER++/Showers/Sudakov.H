@@ -17,7 +17,7 @@ namespace CSSHOWER {
   class Shower;
 
   class Sudakov : public Splitting_Function_Group {
-    double m_k0sqi, m_k0sqf, m_k0sq_gsplit_fac, m_phi;
+    double m_k0sqi, m_k0sqf, m_k0sq_gsplit_fac, m_sphi;
     double m_deltaz, m_st, m_sz, m_sy, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
     int m_qcdmode,m_ewmode;
