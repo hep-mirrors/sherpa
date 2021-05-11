@@ -117,12 +117,10 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 
 void Sudakov::SetCoupling(MODEL::Model_Base *md,
 			  const double &k0sqi,const double &k0sqf,
-			  const double &isfac,const double &fsfac,
-			  const double &k0sq_gsplit_fac)
+			  const double &isfac,const double &fsfac)
 {
   m_k0sqi=k0sqi;
   m_k0sqf=k0sqf;
-  m_k0sq_gsplit_fac=k0sq_gsplit_fac;
   for (std::vector<Splitting_Function_Base*>::iterator
 	 sit(m_splittings.begin());sit!=m_splittings.end();)
     if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi,m_k0sqf,isfac,fsfac)) {
@@ -342,9 +340,6 @@ bool Sudakov::Generate(Parton * split)
     m_z = Z();
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
     if (m_kperp2<k0sq)  return false;
-    if (p_selected->GetFlavourA().IsGluon() &&
-	p_selected->GetFlavourB().IsQuark() &&
-	m_kperp2<k0sq*m_k0sq_gsplit_fac) return false;
     double Q2 = 0.;
     m_type=split->GetType()==pst::FS?
       (split->GetSpect()->GetType()==pst::FS?cstp::FF:cstp::FI):
