@@ -94,6 +94,12 @@ void Clustered_EWSudakov_Calculator::AddCalculator(const Flavour_Vector& flavs, 
   pi.m_mincpl[1] -= clusterings;
   pi.m_maxcpl[1] -= clusterings;
 
+  // subtract 1 from the QCD order if we are dealing with V and/or I events
+  if (proc->Info().Has(nlo_type::loop) || proc->Info().Has(nlo_type::vsub)) {
+    pi.m_mincpl[0] -= 1;
+    pi.m_maxcpl[0] -= 1;
+  }
+
   // initialize process
   auto clustered_proc =
     proc->Generator()->Generators()->InitializeProcess(pi, false);
