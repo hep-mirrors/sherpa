@@ -212,6 +212,7 @@ void Initialization_Handler::RegisterDefaults()
   // Sherpa section on master for details
   s["CSS_FS_PT2MIN"].SetDefault(1.0);
   s["CSS_IS_PT2MIN"].SetDefault(2.0);
+  s["CSS_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   s["CSS_FS_AS_FAC"].SetDefault(1.0);
   s["CSS_IS_AS_FAC"].SetDefault(1.0);
   s["CSS_SCALE_FACTOR"].SetDefault(1.);
@@ -252,6 +253,7 @@ void Initialization_Handler::RegisterDefaults()
   s["MI_CSS_KFACTOR_SCHEME"].SetDefault(0);
   s["MI_CSS_IS_PT2MIN"].SetDefault(4.0);
   s["MI_CSS_FS_PT2MIN"].SetDefault(1.0);
+  s["MI_CSS_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   s["MI_CSS_IS_AS_FAC"].SetDefault(0.66);
   s["MI_CSS_FS_AS_FAC"].SetDefault(0.66);
   s["MI_CSS_KIN_SCHEME"].SetDefault(1);

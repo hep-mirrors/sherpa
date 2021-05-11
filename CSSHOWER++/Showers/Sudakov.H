@@ -17,7 +17,7 @@ namespace CSSHOWER {
   class Shower;
 
   class Sudakov : public Splitting_Function_Group {
-    double m_k0sqi, m_k0sqf, m_sphi;
+    double m_k0sqi, m_k0sqf, m_k0sq_gsplit_fac, m_phi;
     double m_deltaz, m_st, m_sz, m_sy, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
     int m_qcdmode,m_ewmode;
@@ -48,7 +48,8 @@ namespace CSSHOWER {
     void InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     void SetCoupling(MODEL::Model_Base *md,
 		     const double &k0sqi,const double &k0sqf,
-		     const double &isfac,const double &fsfac);
+		     const double &isfac,const double &fsfac,
+		     const double &k0sq_gsplit_fac);
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
