@@ -847,7 +847,7 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
   if (unique) {
     for (std::vector<int>::iterator
 	   sidit(sids.begin());sidit!=sids.end();++sidit)
-      if (*sidit==iqbs.front()) sidit=sids.erase(sidit);
+      if (*sidit==iqbs.front()) sidit=--sids.erase(sidit);
     sids.push_back(iqbs.front());
   }
   std::vector<int> idr(sids.size()+1), idc(sids.size()+1);
