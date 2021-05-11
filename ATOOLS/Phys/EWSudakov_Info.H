@@ -44,6 +44,8 @@ namespace ATOOLS {
       : public std::map<EWSudakov_Log_Type, double> {
   public:
     double KFactor() const;
+    friend std::ostream& operator<<(std::ostream&,
+                                    const EWSudakov_Log_Corrections_Map&);
   };
 
   struct Mandelstam_Variables {

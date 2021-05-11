@@ -49,3 +49,15 @@ double EWSudakov_Log_Corrections_Map::KFactor() const
   }
   return kfac;
 }
+
+std::ostream& operator<<(std::ostream& o,
+                         const EWSudakov_Log_Corrections_Map& m)
+{
+  o << "1 - K_EWSud = " << m.KFactor() << " (";
+  bool is_first {true};
+  for (const auto &kv : m) {
+    o << kv.first << ": " << (is_first ? "" : ", ") << kv.second;
+    is_first = false;
+  }
+  return o << ')';
+}

@@ -27,8 +27,13 @@ double Sudakov_KFactor::KFactor(const int mode)
   const auto level = msg->Level();
   m_corrections_map = m_calc.CorrectionsMap(p_proc->Integrator()->Momenta());
   m_weight = m_corrections_map.KFactor();
-  if (std::abs(m_weight) > 500) {
-    msg_Info() << "WARNING: K factor is really large: " << m_weight << '\n';
+  if (std::abs(m_weight) > 10) {
+    msg_Error() << "KFactor from EWSud is large: " << m_weight << " -> ignore\n"
+                << m_corrections_map << '\n';
+    for (auto& kv : m_corrections_map) {
+      kv.second = 0.0;
+    }
+    m_weight = 1.0;
   }
   return m_weight;
 }
