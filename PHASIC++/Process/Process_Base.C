@@ -768,7 +768,7 @@ std::string Process_Base::ShellName(std::string name) const
 
 void Process_Base::ConstructColorMatrix()
 {
-  DEBUG_VAR(m_name);
+  DEBUG_FUNC(m_name);
   if (IsMapped()) return;
   std::string file(rpa->gen.Variable("SHERPA_CPP_PATH")
 		   +"/Process/Sherpa/"+m_name+".col");
@@ -844,6 +844,12 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
     iqbs.push_back(sids.back());
   }
   int unique(iqbs.size()==1?1:0);
+  if (unique) {
+    for (std::vector<int>::iterator
+	   sidit(sids.begin());sidit!=sids.end();++sidit)
+      if (*sidit==iqbs.front()) sidit=sids.erase(sidit);
+    sids.push_back(iqbs.front());
+  }
   std::vector<int> idr(sids.size()+1), idc(sids.size()+1);
   idc.front()=idr.front()=iq;
   if (unique) idc.back()=idr.back()=iqbs.front();
