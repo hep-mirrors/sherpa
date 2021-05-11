@@ -91,10 +91,6 @@ void Clustered_EWSudakov_Calculator::AddCalculator(const Flavour_Vector& flavs, 
   pi.m_mincpl = proc->Info().m_mincpl;
   pi.m_maxacpl = proc->Info().m_maxacpl;
   pi.m_minacpl = proc->Info().m_minacpl;
-  pi.m_maxcpl[2] = 99;
-  pi.m_mincpl[2] = 0;
-  pi.m_maxacpl[2] = 99;
-  pi.m_minacpl[2] = 0;
   pi.m_mincpl[1] -= clusterings;
   pi.m_maxcpl[1] -= clusterings;
 
