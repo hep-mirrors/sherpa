@@ -917,12 +917,20 @@ void Single_Process::CalculateAssociatedContributionVariations()
         // m_wass[1] is the subleading Born
         // m_wass[2] is the subsubleading Born, etc
         if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
-          if (i == 0) {
-            const double relfac {m_mewgtinfo.m_wass[i] / m_mewgtinfo.m_B};
-            Deltaassnew *= 1.0 + relfac;
-            Deltaassnewexp *= exp(relfac);
+          const double relfac {m_mewgtinfo.m_wass[i] / m_mewgtinfo.m_B};
+          if (1.0 + relfac > 10.0) {
+            msg_Error() << "KFactor from EWVirt is large: " << relfac << " -> ignore\n";
+            Deltaassnew = 1.0;
+            Deltaassnewexp = 1.0;
+            Bassnew = 0.0;
+            break;
+          } else {
+            if (i == 0) {
+              Deltaassnew *= 1.0 + relfac;
+              Deltaassnewexp *= exp(relfac);
+            }
+            Bassnew += m_mewgtinfo.m_wass[i];
           }
-          Bassnew += m_mewgtinfo.m_wass[i];
         }
         if ((orderqcd - i) == 0)
           break;
