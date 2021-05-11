@@ -926,7 +926,8 @@ void Initialization_Handler::SetGlobalVariables()
   int svmode = sdr.GetValue<double>("CSS_SCALE_VARIATION_SCHEME",1);
   int freezemode = sdr.GetValue<double>("CSS_ALPHAS_FREEZE_MODE",0);
   double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",1.0);
-  double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",2.00);
+  double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",2.0);
+  double gsplit_fac = sdr.GetValue<double>("CSS_PT2MIN_GSPLIT_FACTOR",1.0);
   double fs_as_fac = sdr.GetValue<double>("CSS_FS_AS_FAC",1.0);
   double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.5);
   double as_var_fac = sdr.GetValue<double>("CSS_SCALE_FACTOR",1.);
@@ -938,6 +939,7 @@ void Initialization_Handler::SetGlobalVariables()
   rpa->gen.SetVariable("CSS_ALPHAS_FREEZE_MODE",ToString(freezemode));
   rpa->gen.SetVariable("CSS_FS_PT2MIN",ToString(k0sqf));
   rpa->gen.SetVariable("CSS_IS_PT2MIN",ToString(k0sqi));
+  rpa->gen.SetVariable("CSS_PT2MIN_GSPLIT_FACTOR",ToString(gsplit_fac));
   rpa->gen.SetVariable("CSS_FS_AS_FAC",ToString(fs_as_fac));
   rpa->gen.SetVariable("CSS_IS_AS_FAC",ToString(is_as_fac));
   rpa->gen.SetVariable("CSS_SCALE_FACTOR",ToString(as_var_fac));

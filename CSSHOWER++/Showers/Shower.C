@@ -24,6 +24,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   int scs=ToType<int>(rpa->gen.Variable("CSS_SCALE_SCHEME"));
   double k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   double k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
+  double gsplit_fac=ToType<double>(rpa->gen.Variable("CSS_PT2MIN_GSPLIT_FACTOR"));
   double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
@@ -36,6 +37,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
     kfmode=dataread->GetValue<int>("MI_CSS_KFACTOR_SCHEME",0);
     k0sqf=dataread->GetValue<double>("MI_CSS_FS_PT2MIN",1.0);
     k0sqi=dataread->GetValue<double>("MI_CSS_IS_PT2MIN",4.0);
+    gsplit_fac=dataread->GetValue<double>("CSS_PT2MIN_GSPLIT_FACTOR",1.0);
     fs_as_fac=dataread->GetValue<double>("MI_CSS_FS_AS_FAC",0.66);
     is_as_fac=dataread->GetValue<double>("MI_CSS_IS_AS_FAC",0.66);
     m_kscheme = dataread->GetValue<int>("MI_CSS_KIN_SCHEME",1);
@@ -51,7 +53,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   m_sudakov.SetMassThreshold(mth);
   m_sudakov.SetScaleScheme(scs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
-  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
+  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac,gsplit_fac);
   m_sudakov.SetReweightScaleCutoff(dataread->GetValue<double>(
         "CSS_REWEIGHT_SCALE_CUTOFF", 5.0));
   m_kinFF.SetEvolScheme(evol);
