@@ -205,6 +205,7 @@ void Comix::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
   s["PARTIAL_COMMIT"].SetDefault(0);
+  s["CYCLIC_QCD_GAUGE"].SetDefault(false);
   s["PMODE"].SetDefault("D");
   s["WF_MODE"].SetDefault(0);  // wave function mode
   s["PG_MODE"].SetDefault(0);  // print graph mode

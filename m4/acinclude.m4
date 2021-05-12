@@ -948,6 +948,56 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_DELPHESINCS)
 
   AC_ARG_ENABLE(
+    ginac,
+    AS_HELP_STRING([--enable-ginac=/path/to/ginac],[Enable ginac.]),
+    [ AC_MSG_CHECKING(for GINAC installation directory);
+      case "${enableval}" in
+        no) AC_MSG_RESULT(GINAC not enabled); ginac=false;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_GINACLIBS="-Wl,-rpath -Wl,${enableval}/lib -L${enableval}/lib -lginac"
+              CONDITIONAL_GINACINCS="-I${enableval}/include"
+              ginac=true;
+              AC_MSG_RESULT(${enableval});
+            else
+              AC_MSG_ERROR(Did not find GINAC directory '${enableval}'.);
+            fi;
+      esac;
+    ],
+    [ ginac=false ]
+  )
+  if test "$ginac" = "true" ; then
+    AC_DEFINE([USING__GINAC], "1", [using ginac])
+  fi
+  AM_CONDITIONAL(GINAC_SUPPORT, test "$ginac" = "true")
+  AC_SUBST(CONDITIONAL_GINACLIBS)
+  AC_SUBST(CONDITIONAL_GINACINCS)
+
+  AC_ARG_ENABLE(
+    cln,
+    AS_HELP_STRING([--enable-cln=/path/to/cln],[Enable cln.]),
+    [ AC_MSG_CHECKING(for CLN installation directory);
+      case "${enableval}" in
+        no) AC_MSG_RESULT(CLN not enabled); cln=false;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_CLNLIBS="-Wl,-rpath -Wl,${enableval}/lib -L${enableval}/lib -lcln"
+              CONDITIONAL_CLNINCS="-I${enableval}/include"
+              cln=true;
+              AC_MSG_RESULT(${enableval});
+            else
+              AC_MSG_ERROR(Did not find CLN directory '${enableval}'.);
+            fi;
+      esac;
+    ],
+    [ cln=false ]
+  )
+  if test "$cln" = "true" ; then
+    AC_DEFINE([USING__CLN], "1", [using cln])
+  fi
+  AM_CONDITIONAL(CLN_SUPPORT, test "$cln" = "true")
+  AC_SUBST(CONDITIONAL_CLNLIBS)
+  AC_SUBST(CONDITIONAL_CLNINCS)
+
+  AC_ARG_ENABLE(
     gzip,
     AS_HELP_STRING([--enable-gzip],[Enable gzip support (for compressed event output)]),
     [ case "${enableval}" in

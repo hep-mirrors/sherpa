@@ -70,4 +70,10 @@
 /* using Delphes */
 #undef USING__DELPHES
 
+/* using Ginac */
+#undef USING__GINAC
+
+/* using CLN */
+#undef USING__CLN
+
 #endif

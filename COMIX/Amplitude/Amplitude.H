@@ -94,7 +94,7 @@ namespace COMIX {
 
     size_t m_nin, m_nout, m_dec;
     size_t m_n, m_wfmode, m_pgmode, m_ngpl;
-    bool m_sccmur;
+    bool m_sccmur, m_cyclic;
     size_t m_minntc, m_maxntc;
     char   m_pmode;
 
@@ -168,6 +168,7 @@ namespace COMIX {
     bool ConstructChirs();
 
     void SetGauge(const size_t &n);
+    void SetCyclicQCDGauge(const int mode);
 
     void CalcJL();
 

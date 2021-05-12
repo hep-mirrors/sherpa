@@ -43,6 +43,7 @@ Amplitude::Amplitude():
   m_sccmur = s["USR_WGT_MODE"].Get<bool>();
   p_dinfo->SetType(0);
   p_dinfo->SetMassive(0);
+  m_cyclic = comixsettings["CYCLIC_QCD_GAUGE"].Get<bool>();
   m_pmode = comixsettings["PMODE"].Get<std::string>()[0];
   m_wfmode = comixsettings["WF_MODE"].Get<int>();
   m_pgmode = comixsettings["PG_MODE"].Get<int>();
@@ -1123,6 +1124,7 @@ void *Amplitude::TCalcJL(void *arg)
 void Amplitude::CalcJL()
 {
   SetCouplings();
+  if (m_cyclic) SetCyclicQCDGauge(0);
   for (size_t i(0);i<m_n;++i) 
     m_cur[1][i]->ConstructJ(m_p[i],m_ch[i],m_cl[i][0],m_cl[i][1],m_wfmode);
   for (size_t i(m_n);i<m_cur[1].size();++i) m_cur[1][i]->Evaluate();
@@ -1835,6 +1837,28 @@ void Amplitude::SetGauge(const size_t &n)
   for (size_t j(1);j<m_cur.size();++j)
     for (size_t i(0);i<m_cur[j].size();++i) m_cur[j][i]->SetGauge(k);
   for (size_t i(0);i<m_scur.size();++i) m_scur[i]->SetGauge(k);
+}
+
+void Amplitude::SetCyclicQCDGauge(const int mode)
+{
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): {\n";
+#endif
+  for (size_t i(0);i<m_cur[1].size();++i) {
+    if (!m_fl[i].Strong()) continue;
+    Vec4D k;
+    size_t j(i+1);
+    for (;j<m_fl.size();++j)
+      if (m_fl[j].Strong()) { k=m_p[j]; break; }
+    if (j==m_fl.size()) k=m_p[j=0];
+#ifdef DEBUG__BG
+    msg_Debugging()<<"  "<<i<<" -> p["<<j<<"]=Vec4"<<k<<"\n";
+#endif
+    m_cur[1][i]->SetGauge(k);
+  }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"}\n";
+#endif
 }
 
 bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)

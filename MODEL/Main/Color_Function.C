@@ -67,6 +67,7 @@ std::string Color_Function::String() const
   case cf::None:
   case cf::Unknown: return "1";
   }
+  return "";
 }
 
 Color_Function::~Color_Function() {

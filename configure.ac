@@ -124,6 +124,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  MODEL/SM/Makefile \
 	  MODEL/HEFT/Makefile \
 	  MODEL/SMEHC/Makefile \
+	  MODEL/SMH/Makefile \
 	  MODEL/TauPi/Makefile \
 	  MODEL/UFO/Makefile \
 	  MODEL/UFO/Sherpa-generate-model \
