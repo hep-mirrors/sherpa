@@ -245,7 +245,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         proc->SetVariationWeights(p_variationweights);
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
         proc->SetVariationWeights(NULL);
-        ran->Get();
       } else {
         p_variationweights->InitialiseWeights();
       }
