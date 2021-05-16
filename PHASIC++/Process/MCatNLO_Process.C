@@ -515,7 +515,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   if (p_ampl->Leg(0)->Mom().PPlus()>p_ampl->Leg(1)->Mom().PPlus())
     std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
   ampl=p_ampl;
-  if ((!m_psmode&2)) ampl->SetNLO(ampl->NLO()|4);
+  if (!(m_psmode&2)) ampl->SetNLO(ampl->NLO()|4);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->Weight()<<" )\n";
