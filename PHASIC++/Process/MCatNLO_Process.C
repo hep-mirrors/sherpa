@@ -585,7 +585,7 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
   }
   p_selected=p_bproc;
   ampl=p_ampl;
-  if ((!m_psmode&2)) ampl->SetNLO(4);
+  if (!(m_psmode&2)) ampl->SetNLO(4);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->WeightsMap().Nominal()<<" )\n";
