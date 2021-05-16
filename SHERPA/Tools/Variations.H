@@ -176,6 +176,8 @@ namespace SHERPA {
 
     void Reset();
 
+    void InitialiseWeights(Variations_Type::code t=Variations_Type::main);
+
     /*!
      * Multiply each weight with the result of the passed reweighting function
      *
@@ -188,7 +190,7 @@ namespace SHERPA {
                                    Variations_Type::code t=Variations_Type::main)
     {
       if (!AreWeightsInitialised(t)) {
-        InitialiseWeights(Subevent_Weights_Vector(1, 1.0), t);
+        InitialiseWeights(t);
       }
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
       m_reweighting = true;
