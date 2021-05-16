@@ -324,11 +324,9 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     }
     if (hasvars) {
       // re-run with same rng state and include the calculation of variations
-      // this time; note that afterwards we also re-consume the random number
-      // which was used above for the unweighting
+      // this time
       ran->RestoreStatus();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
-      ran->Get();
       if (info==NULL)
         return false;
       m_evtinfo=*info;
