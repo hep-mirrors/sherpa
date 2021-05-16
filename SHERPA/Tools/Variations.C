@@ -592,6 +592,11 @@ size_t Variation_Weights::GetNumberOfSubevents() const
   return it->second[0].size();
 }
 
+void Variation_Weights::InitialiseWeights(const Variations_Type::code t)
+{
+  InitialiseWeights(Subevent_Weights_Vector(1, 1.0), t);
+}
+
 void Variation_Weights::InitialiseWeights(const Subevent_Weights_Vector & subweights,
                                           const Variations_Type::code t)
 {
@@ -614,10 +619,14 @@ namespace SHERPA {
   std::ostream& operator<<(std::ostream& s, const Variations& v)
   {
     const Variations::Parameters_Vector * const paramsvec(v.GetParametersVector());
-    s << "Named variations:" << std::endl;
+    s << "Named variations:";
+    if (paramsvec->empty()) {
+      return s << " None\n";
+    }
+    s << '\n';
     for (Variations::Parameters_Vector::const_iterator it(paramsvec->begin());
          it != paramsvec->end(); ++it) {
-      s << (*it)->m_name << std::endl;
+      s << (*it)->m_name << '\n';
     }
     return s;
   }
