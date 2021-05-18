@@ -12,7 +12,7 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 		     REMNANTS::Remnant_Handler *const remnants,
 		     Soft_Collision_Handler *const softcollisions):
   p_remnants(remnants), p_shrimps(softcollisions->GetShrimps()),
-  p_beam(beam), m_fill(true)
+  p_beam(beam), m_fill(true), m_vmode(false)
 {
   if (p_shrimps) {
     m_name = std::string("Shrimps");

@@ -550,7 +550,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   EventInfo evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   evtinfo.WriteTo(event);
-  
+
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
   HepMC::GenVertex * vertex, * psvertex(NULL);

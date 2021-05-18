@@ -874,6 +874,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   p_mehandler = new Matrix_Element_Handler(p_model);
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
   p_mehandler->SetRemnantHandler(p_remnants);
+  if (m_mode!=eventtype::StandardPerturbative) return true;
   auto ret = p_mehandler->InitializeProcesses(p_beamspectra,
                                               m_isrhandlers[isr::hard_process]);
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."

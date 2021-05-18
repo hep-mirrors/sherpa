@@ -166,7 +166,7 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
-  else {
+  else if (mode==eventtype::StandardPerturbative) {
     p_eventhandler->AddEventPhase(
         new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
@@ -182,7 +182,20 @@ bool Sherpa::InitializeTheEventHandler()
           p_inithandler->GetSoftPhotonHandler()));
     p_eventhandler->AddEventPhase(
         new Multiple_Interactions(p_inithandler->GetMIHandler()));
+    p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
+    p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
+						    p_inithandler->GetFragmentationHandler()));
+    p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
+
+  }
+  else if (mode==eventtype::MinimumBias) {
     p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
+    p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
+                                                    p_inithandler->GetHardDecayHandler(),
+						    p_inithandler->GetHDHandler(),
+						    p_inithandler->GetMIHandler(),
+						    p_inithandler->GetSoftCollisionHandler(),
+						    p_inithandler->GetShowerHandlers()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
 						    p_inithandler->GetFragmentationHandler()));

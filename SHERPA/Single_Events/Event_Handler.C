@@ -53,9 +53,9 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
   std::string name = phase->Name();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
-      msg_Out()<<"WARNING in Event_Handler::AddEventPhase"
-	       <<"("<<type<<":"<<name<<") "
-	       <<"already included."<<std::endl;
+      msg_Info()<<"WARNING in Event_Handler::AddEventPhase"
+		<<"("<<type<<":"<<name<<") "
+		<<"already included."<<std::endl;
       return;
     }
   }
@@ -231,6 +231,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       }
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
+    //msg_Out()<<"** try "<<(*pit)->Name()<<"\n";
     Return_Value::code rv((*pit)->Treat(&m_blobs));
     //msg_Out()<<"       "<<(*pit)->Name()<<" yields "<<rv<<"\n";
     if (rv!=Return_Value::Nothing)

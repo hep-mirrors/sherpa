@@ -28,10 +28,9 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
   Perturbative_Interface * interface;
   shIter=showers.find(isr::hard_process);
   interface = new Perturbative_Interface(_mehandler,
-                                         _dechandler,
+					 _dechandler,
 					 shIter->second);
   if (interface!=NULL) m_interfaces.insert(make_pair("SignalMEs",interface));
-
   shIter=showers.find(isr::hard_subprocess);
   interface = new Perturbative_Interface(_hdhandler, shIter->second);
   if (interface!=NULL) 
@@ -173,12 +172,15 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
     blob->AddData("MI_Scale",new Blob_Data<double>(scale));
     msg_Debugging()<<"} -> p_T = "<<scale<<"\n";
   }
+  //msg_Out()<<METHOD<<" arrives with stat = "<<stat<<", type = "<<blob->Type()<<"\n"
+  //	   <<(*blob)<<"\n"<<(*interface->Amplitude())<<"\n";
   switch (stat) {
   case Return_Value::Success:
     if (blob->Type()!=::btp::Hadron_Decay) 
       DefineInitialConditions(blob,bloblist, interface);
     if (blob->NInP()==1) shower = interface->PerformDecayShowers();
     if (blob->NInP()==2) shower = interface->PerformShowers();
+    //msg_Out()<<" --- performed shower\n";
     switch (shower) {
     case 1:
       // No Sudakov rejection

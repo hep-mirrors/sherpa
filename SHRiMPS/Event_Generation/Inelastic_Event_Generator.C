@@ -35,8 +35,7 @@ void Inelastic_Event_Generator::Initialise() {
     for (size_t j=0;j<(*eikonals)[i].size();j++) {
       Omega_ik * eikonal = (*eikonals)[i][j];
       m_Bgrids[eikonal] = sigma.FillBGrid(eikonal);
-      m_sigma += m_xsecs[eikonal] =
-	m_Bgrids[eikonal]->back()*rpa->Picobarn();
+      m_sigma += m_xsecs[eikonal] = m_Bgrids[eikonal]->back() * rpa->Picobarn();
     }
   }
   msg_Info()<<METHOD<<" yields effective inelastic cross section "
@@ -68,7 +67,7 @@ bool Inelastic_Event_Generator::MakePrimaryScatterBlobs(ATOOLS::Blob_List * blob
   Blob * blob     = NULL;
   if (m_mustinit) {
     blob = blobs->FindFirst(btp::Soft_Collision);
-    blob->AddData("Weight",new Blob_Data<double>(m_xsec));
+    blob->AddData("Weight",new Blob_Data<double>(m_sigma));
     blob->AddData("Factorisation_Scale",new Blob_Data<double>(1.));
     blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
     m_mustinit = false;

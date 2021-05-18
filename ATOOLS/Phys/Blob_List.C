@@ -312,7 +312,7 @@ bool Blob_List::ColorConservation() const
       if (anti!=0 && real==-anti) {
 	msg_Error()<<"Blob_List::ColorConservation(): "
 		   <<"Color singlet gluon "<<**pit<<std::endl;
-	msg_Out()<<(*this)<<"\n";
+	msg_Error()<<(*this)<<"\n";
 	//exit(1);
 	return false;
       }

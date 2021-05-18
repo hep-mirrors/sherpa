@@ -11,7 +11,10 @@ using namespace ATOOLS;
 
 Cross_Sections::Cross_Sections() :
   p_selected(NULL),
-  m_xstot(0.), m_slope(0.), m_xsinel(0.), m_xsel(0.)
+  m_xstot(0.), m_slope(0.), m_xsinel(0.), m_xsel(0.),
+  m_sigma_inelastic(Sigma_Inelastic()),
+  m_sigma_elastic(Sigma_Elastic()),
+  m_sigma_SD(Sigma_SD())
 {  }
 
 Cross_Sections::~Cross_Sections()

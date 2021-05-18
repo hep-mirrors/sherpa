@@ -33,10 +33,14 @@ Return_Value::code Remnant_Handler::FillBeamBlobs(Blob_List * blobs,const double
   //	   <<(*blobs);
   InitialiseCollision(blobs);
   for (size_t beam=0;beam<2;beam++) {
-    if (!m_hadrons[beam]->FillBeamBlob(blobs, B)) return Return_Value::New_Event;
+    if (!m_hadrons[beam]->FillBeamBlob(blobs, B)) {
+      //msg_Out()<<" --> New Event.\n";
+      return Return_Value::New_Event;
+    }
   }
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++)
     (*bit)->UnsetStatus(blob_status::needs_beams);
+  //msg_Out()<<" --> Success.\n";
   return Return_Value::Success;
 }
  

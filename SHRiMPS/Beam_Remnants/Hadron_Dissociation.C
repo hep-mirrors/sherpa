@@ -28,7 +28,10 @@ void Hadron_Dissociation::Reset() {
 bool Hadron_Dissociation::FillBeamBlob(Blob_List * blobs, const double & B) {
   AddBeamBlob(blobs, B);
   HarvestCollision(blobs);
-  if (m_outmom[0] < 2.) return false;
+  if (m_outmom[0] < 2.) {
+    msg_Out()<<METHOD<<" arrives at residual mom = "<<m_outmom<<"\n"; 
+    return false;
+  }
   if (!CompensateFlavours() ||
       !CompensateColours()) {
     msg_Error()<<METHOD<<" could not compensate flavours or colours.  Exit.\n"

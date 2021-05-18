@@ -22,23 +22,30 @@ void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
   switch (m_runmode) {
   case run_mode::inelastic_events:
     p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
-    m_xsec     += p_inelastic->XSec();
     break; 
   case run_mode::elastic_events:
     p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
-    m_xsec   += p_elastic->XSec();
     break;
   case run_mode::soft_diffractive_events:
     p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),test);
-    m_xsec            += p_soft_diffractive->XSec();
     break;
-  } 
+  }
 } 
 
 void Event_Generator::Initialise() {
-  if (p_inelastic)        p_inelastic->Initialise();
-  if (p_elastic)          p_elastic->Initialise();
-  if (p_soft_diffractive) p_inelastic->Initialise();
+  if (p_inelastic) {
+    p_inelastic->Initialise();
+    m_xsec += p_inelastic->XSec();
+  }
+  if (p_elastic) {
+    p_elastic->Initialise();
+    m_xsec += p_elastic->XSec();
+  }
+  if (p_soft_diffractive) {
+    p_inelastic->Initialise();
+    m_xsec += p_soft_diffractive->XSec();
+  }
+  msg_Info()<<METHOD<<" with sigma = "<<m_xsec<<" pb\n";
 }
 
 void Event_Generator::Reset() {
