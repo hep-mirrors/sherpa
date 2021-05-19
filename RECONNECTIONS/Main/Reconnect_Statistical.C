@@ -9,7 +9,9 @@ using namespace std;
 
 Reconnect_Statistical::Reconnect_Statistical() : Reconnection_Base() {}
 
-Reconnect_Statistical::~Reconnect_Statistical() {}
+Reconnect_Statistical::~Reconnect_Statistical() {
+  m_collist.clear();
+}
 
 void Reconnect_Statistical::SetParameters() {
   // Pmode is the mode for the distance measure in momentum space.
@@ -47,6 +49,7 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
     if (!AttemptSwap(col)) return false;;
   }
   UpdateColours();
+  m_collist.clear();
   return true;
 }
 

@@ -47,7 +47,7 @@ namespace SHRIMPS {
     }
  public:
     Ladder_Generator_Base();
-    virtual ~Ladder_Generator_Base() {}
+    virtual ~Ladder_Generator_Base();
 
     virtual void Initialise() {}
     virtual void Test();

@@ -50,6 +50,7 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
       ResetPartLists();
       return Return_Value::Error;
     }
+    delete p_partlist; /// does this help?
     m_partlists.pop_front();
   }
   return Return_Value::Success;

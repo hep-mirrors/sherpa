@@ -30,6 +30,8 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
     delete p_dtransitions;
     p_dtransitions=NULL;
   }
+  m_switchmap.clear();
+  m_parametermap.clear();
 }
 
 void Hadronisation_Parameters::Init(string shower)

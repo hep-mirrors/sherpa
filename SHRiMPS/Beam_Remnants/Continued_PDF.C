@@ -25,13 +25,16 @@ Continued_PDF::Continued_PDF(PDF::PDF_Base * pdf,
   m_pdfpartons.push_back(Flavour(kf_b).Bar());
   for (std::list<Flavour>::iterator flit=m_pdfpartons.begin();
        flit!=m_pdfpartons.end();flit++) {
-    m_xpdfmax[(*flit)] = m_xmaxpdf[(*flit)] = 0.;
+    Flavour flav = (*flit); 
+    m_xpdfmax[flav] = 0.; m_xmaxpdf[(*flit)] = 0.;
   }
   CalculateNorms();
   Scan();
 }
 
-Continued_PDF::~Continued_PDF() {}
+Continued_PDF::~Continued_PDF() {
+  m_pdfpartons.clear();
+}
 
 void Continued_PDF::CalculateNorms() {
   Sea_Kernel sea(p_pdf,m_bunch,&m_pdfpartons,m_Q02);

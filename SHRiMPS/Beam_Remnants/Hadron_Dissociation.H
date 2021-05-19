@@ -45,7 +45,7 @@ namespace SHRIMPS {
   public:
     Hadron_Dissociation() {};
     Hadron_Dissociation(const int & beam,BEAM::Beam_Base * beambase,Continued_PDF * pdf);
-    ~Hadron_Dissociation() {}
+    ~Hadron_Dissociation();
 
     void Reset();
     bool FillBeamBlob(ATOOLS::Blob_List * blobs, const double & B=0.);

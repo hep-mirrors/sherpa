@@ -17,6 +17,10 @@ Hadron_Dissociation(const int & beam,Beam_Base * beambase,Continued_PDF * pdf) :
   p_blob(NULL)
 { }
 
+Hadron_Dissociation::~Hadron_Dissociation() {
+  if (p_pdf) delete p_pdf;
+}
+
 void Hadron_Dissociation::Reset() {
   m_outmom = m_beamvec;
   for (size_t i=0;i<2;i++) m_beamcols[i].clear();

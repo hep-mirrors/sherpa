@@ -1,6 +1,6 @@
 #include "SHERPA/Single_Events/Jet_Evolution.H"
-
 #include "SHERPA/PerturbativePhysics/Perturbative_Interface.H"
+#include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/NLO_Types.H"
@@ -19,12 +19,19 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
                              Decay_Handler_Base *_hdhandler,
 			     MI_Handler *_mihandler,
 			     Soft_Collision_Handler *_schandler,
-                             const Shower_Handler_Map& showers)
+                             const Shower_Handler_Map& showers,
+			     Beam_Remnant_Handler * _brhandler)
 {
   Shower_Handler_Map::const_iterator shIter=showers.find(isr::hard_process);
   m_name      = string("Jet_Evolution:")+shIter->second->ShowerGenerator();
   m_type      = eph::Perturbative;
 
+  msg_Out()<<METHOD<<" for:\n"
+	   <<"  ME   = "<<_mehandler<<"\n"
+	   <<"  Dec  = "<<_dechandler<<"\n"
+	   <<"  MI   = "<<_hdhandler<<"\n"
+	   <<"  Soft = "<<_schandler<<"\n";
+  
   Perturbative_Interface * interface;
   shIter=showers.find(isr::hard_process);
   interface = new Perturbative_Interface(_mehandler,
@@ -45,7 +52,7 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
     if (interface!=NULL) 
       m_interfaces.insert(make_pair("SoftCollisions",interface));
   }
-  p_remnants = _mehandler->Remnants();
+  p_remnants = _brhandler->GetRemnants();
 }
 
 Jet_Evolution::~Jet_Evolution() 

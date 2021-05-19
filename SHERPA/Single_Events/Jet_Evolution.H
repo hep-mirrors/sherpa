@@ -15,7 +15,8 @@ namespace REMNANTS { class Remnant_Handler; }
 namespace SHERPA {
 
   class Hard_Decay_Handler;
-
+  class Beam_Remnant_Handler;
+  
   class Jet_Evolution: public Event_Phase_Handler {
   private :
     REMNANTS::Remnant_Handler * p_remnants;
@@ -39,7 +40,7 @@ namespace SHERPA {
 
     Jet_Evolution(Matrix_Element_Handler *, Hard_Decay_Handler*,
                   Decay_Handler_Base *,MI_Handler *, Soft_Collision_Handler *,
-                  const Shower_Handler_Map &);
+                  const Shower_Handler_Map &,Beam_Remnant_Handler *);
 
     ~Jet_Evolution();
 

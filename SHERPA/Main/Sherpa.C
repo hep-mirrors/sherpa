@@ -175,7 +175,8 @@ bool Sherpa::InitializeTheEventHandler()
 						    p_inithandler->GetHDHandler(),
 						    p_inithandler->GetMIHandler(),
 						    p_inithandler->GetSoftCollisionHandler(),
-						    p_inithandler->GetShowerHandlers()));
+						    p_inithandler->GetShowerHandlers(),
+						    p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(
         new Signal_Process_FS_QED_Correction(
           p_inithandler->GetMatrixElementHandler(),
@@ -195,7 +196,8 @@ bool Sherpa::InitializeTheEventHandler()
 						    p_inithandler->GetHDHandler(),
 						    p_inithandler->GetMIHandler(),
 						    p_inithandler->GetSoftCollisionHandler(),
-						    p_inithandler->GetShowerHandlers()));
+						    p_inithandler->GetShowerHandlers(),
+						    p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
 						    p_inithandler->GetFragmentationHandler()));

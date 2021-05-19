@@ -27,6 +27,9 @@ Ladder_Generator_Base::Ladder_Generator_Base() :
  p_ladder(0)
 {}
 
+Ladder_Generator_Base::~Ladder_Generator_Base() {
+  delete p_alphaS;
+}
 
 
 void Ladder_Generator_Base::InitLadder(const Vec4D & pos) {
