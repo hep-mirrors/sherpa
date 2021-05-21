@@ -121,7 +121,7 @@ double Ladder_Generator_Base::AlphaSWeight(const double & kt2) {
 double Ladder_Generator_Base::ReggeWeight(const double & qt2, const double & y1,
 					  const double y2) {
   return (qt2>m_qt2min ? 
-	  exp(-3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min))  : 1.);
+	  exp(-3.*AlphaS(qt2)/(4.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min))  : 1.);
 }
 
 double Ladder_Generator_Base::LDCWeight(const double & qt2, const double & qt2prev) {
@@ -129,8 +129,9 @@ double Ladder_Generator_Base::LDCWeight(const double & qt2, const double & qt2pr
 }
 
 double Ladder_Generator_Base::TWeight() {
+  return 1.;
   if (p_ladder->GetProps()->size()==1) return 1.;
-  double qt2max = m_qt2min, qt2, Q2;
+  double qt2max = m_qt2min, tmax = m_qt2min, qt2, Q2;
   colour_type::code ctype=colour_type::octet;
   for (TPropList::iterator pit=p_ladder->GetProps()->begin();
        pit!=p_ladder->GetProps()->end();pit++) {
@@ -141,7 +142,7 @@ double Ladder_Generator_Base::TWeight() {
     }
   }
   return (ctype==colour_type::triplet ? 1:
-	  ctype==colour_type::singlet ? sqr(m_qt2min/qt2max) : m_qt2min/qt2max);
+	  ctype==colour_type::singlet ? m_qt2min/qt2max : m_qt2min/qt2max);
 }
 
 		 

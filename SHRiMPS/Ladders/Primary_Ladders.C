@@ -59,14 +59,17 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     p_laddergenerator->SetMaximalScale(Min(m_E[0],m_Ecms/4.),Min(m_E[1],m_Ecms/4.));
     Ladder * ladder = (*p_laddergenerator)(position);
     if (m_test && ladder) FillAnalysis(ladder,"trial");
-    if (IsAllowed(ladder) && m_colourgenerator(ladder)) {	
+    bool added = false;
+    if (IsAllowed(ladder) && p_laddergenerator->Weight()>ran->Get() &&
+	m_colourgenerator(ladder)) {	
       p_laddergenerator->QuarkReplace();
       Add(ladder);
       Ngen++;
       trials = 0;
+      added  = true;
       if (m_test) FillAnalysis(ladder,"accept");
     }
-    else {
+    if (!added) {
       if (ladder) delete ladder;
       trials++;
       if (Ngen>0 && trials>100) break;

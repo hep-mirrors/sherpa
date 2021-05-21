@@ -26,12 +26,6 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
   m_name      = string("Jet_Evolution:")+shIter->second->ShowerGenerator();
   m_type      = eph::Perturbative;
 
-  msg_Out()<<METHOD<<" for:\n"
-	   <<"  ME   = "<<_mehandler<<"\n"
-	   <<"  Dec  = "<<_dechandler<<"\n"
-	   <<"  MI   = "<<_hdhandler<<"\n"
-	   <<"  Soft = "<<_schandler<<"\n";
-  
   Perturbative_Interface * interface;
   shIter=showers.find(isr::hard_process);
   interface = new Perturbative_Interface(_mehandler,

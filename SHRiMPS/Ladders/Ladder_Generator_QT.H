@@ -18,7 +18,7 @@ namespace SHRIMPS {
     double          m_sigmahat;
     bool            m_fixflavour;
     ATOOLS::Flavour m_flavs[2];
-    ATOOLS::Vec4D   m_qT, m_q[2], m_k[2];
+    ATOOLS::Vec4D   m_qT, m_q[2], m_k[2], m_qini[2];
     
     bool   FixInitialPartons();
     bool   MakeTrialLadder();

@@ -21,8 +21,7 @@ Ladder_Generator_QT::Ladder_Generator_QT() :
 
 Ladder * Ladder_Generator_QT::operator()(const Vec4D & pos) {
   InitLadder(pos);
-  if (FixInitialPartons() &&
-      MakeTrialLadder()) {
+  if (FixInitialPartons() && MakeTrialLadder()) {
     ConstructISKinematics();
     SelectPropagatorColours();
     CalculateWeight();
@@ -32,12 +31,12 @@ Ladder * Ladder_Generator_QT::operator()(const Vec4D & pos) {
 }
 
 bool Ladder_Generator_QT::FixInitialPartons() {
-  m_shat = m_partonic.MakeEvent(m_fixflavour);
+  m_shat     = m_partonic.MakeEvent(m_fixflavour);
   if (m_shat<0.) return false;
-  m_sigmahat      = m_partonic.SigmaHat();
+  m_sigmahat = m_partonic.SigmaHat();
   for (size_t beam=0;beam<2;beam++) {
     m_ylimits[beam] = (beam==0 ? 1.: -1.) * (m_Ymax + ran->Get()*m_deltaY);
-    m_q[beam]       = m_partonic.X(beam) * rpa->gen.PBeam(beam);
+    m_qini[beam]    = m_q[beam] = m_partonic.X(beam) * rpa->gen.PBeam(beam);
     m_flavs[beam]   = m_partonic.Flav(beam);
   }
   return true;
@@ -109,18 +108,21 @@ bool Ladder_Generator_QT::LastEmissions() {
     ff = p_eikonal->FF(0);
   if (dabs(m_y[1][1])>dabs(m_y[0][1]) && dabs(m_y[1][1])>m_Ymax)
     ff = p_eikonal->FF(1);
-  //do {
-  m_qT = MakePropMomentum(qt2min, qt2max,ff); 
-  for (size_t beam=0;beam<2;beam++) m_k[beam] = MakeFSMomentum(beam);
-  if ((m_k[0]+m_k[1]).Abs2()<m_seff) {
-    m_weight = (ReggeWeight(m_qt2, m_y[0][1], m_y[1][1]) *
-		LDCWeight(m_qt2, m_qt2prev[0]) *
-		LDCWeight(m_qt2, m_qt2prev[1]) *
-		AlphaSWeight(m_k[0].PPerp2())  *
-		AlphaSWeight(m_k[1].PPerp2()));
-    return true;
-  }
-  //} while ((trials--)>0); 
+  size_t trials = 1000;
+  do {
+    m_qT = MakePropMomentum(qt2min, qt2max,ff); 
+    for (size_t beam=0;beam<2;beam++) m_k[beam] = MakeFSMomentum(beam);
+    if ((m_k[0]+m_k[1]).Abs2()<m_seff) {
+      double weight = (ReggeWeight(m_qt2, m_y[0][1], m_y[1][1]) *
+		       LDCWeight(m_qt2, m_qt2prev[0]) *
+		       LDCWeight(m_qt2, m_qt2prev[1]) *
+		       AlphaSWeight(m_k[0].PPerp2())  *
+		       AlphaSWeight(m_k[1].PPerp2()) *
+		       AbsorptionWeight(m_k[0], m_y[0][1]) *
+		       AbsorptionWeight(m_k[1], m_y[1][1]));
+      if (weight>ran->Get()) return true;
+    }
+  } while ((trials--)>0); 
   return false;
 }
 
@@ -145,6 +147,8 @@ bool Ladder_Generator_QT::FixSimpleKinematics() {
 double Ladder_Generator_QT::
 AbsorptionWeight(const Vec4D & k,const double & y) {
   return m_density.AbsorptionWeight(y);
+  //return (1.-exp(-m_kt2min/(k.PPerp2()+m_kt2min)))/(1.-exp(-1.)) *
+  //  m_density.AbsorptionWeight(y);
 }
 
 void Ladder_Generator_QT::SelectPropagatorColours() {
@@ -174,12 +178,11 @@ void Ladder_Generator_QT::SelectPropagatorColours() {
 }
 
 void Ladder_Generator_QT::CalculateWeight() {
-  /*Vec4D Pcms       = (p_ladder->InPart(0)->Momentum() +
-		      p_ladder->InPart(1)->Momentum()); 
+  Vec4D Pcms       = (p_ladder->InPart(0)->Momentum() +
+  		      p_ladder->InPart(1)->Momentum()); 
   double Y         = Pcms.Y(), SHat = Pcms.Abs2();
   double sigma_act = m_partonic.dSigma(SHat,Y);
-  msg_Out()<<METHOD<<" yields "<<(sigma_act/m_sigmahat)<<".\n";
-  */
+  m_weight  = (sigma_act/m_sigmahat);
   m_weight *= TWeight();
 }
 

@@ -99,7 +99,8 @@ bool Inelastic_Event_Generator::InitEvent(Blob_List * blobs) {
   p_eikonal  = 0; m_B = -1;
   for (size_t trials=0;trials<1000;trials++) {
     if (SelectEikonal() && SelectB()) {
-      m_Nladders = Max(1, int(1./p_eikonal->Prefactor() * ran->Poissonian((*p_eikonal)(m_B))+0.5) );
+      m_Nladders = 1 + int(1./p_eikonal->Prefactor() *
+			   ran->Poissonian((*p_eikonal)(m_B)));
       if (m_Nladders>0) return true;
     }
   }
