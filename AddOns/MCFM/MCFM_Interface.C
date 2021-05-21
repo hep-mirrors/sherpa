@@ -75,6 +75,7 @@ namespace SHERPA {
       params["W_width"]=ToString(Flavour(kf_Wplus).Width(),16);
       params["charm_yukawa"]=ToString(std::abs(model->ComplexConstant("yuk(4)")),16);
       params["bottom_yukawa"]=ToString(std::abs(model->ComplexConstant("yuk(5)")),16);
+      params["top_yukawa"]=ToString(std::abs(model->ComplexConstant("yuk(6)")),16);
       params["tau_yukawa"]=ToString(std::abs(model->ComplexConstant("yuk(15)")),16);
       params["ew_scheme"]="4";
       params["alpha_EM"]=ToString(model->ScalarConstant("alpha_QED"),16);
