@@ -779,7 +779,16 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
         msg_Debugging()<<"    splf_fin = "<<kernel->I_Fin()<<std::endl;
       }
 
-      double lsc(log(4.*M_PI*mur2/dabs(sik)/Eps_Scheme_Factor(mom)));
+
+      double lsc(0.);
+      if (!p_loopme || !(p_loopme->fixedIRscale())) 
+        lsc = log(4.*M_PI*mur2/dabs(sik)/Eps_Scheme_Factor(mom));
+      else{
+        double irscale=p_loopme->IRscale();
+        lsc = log(4.*M_PI*sqr(irscale)/dabs(sik)/Eps_Scheme_Factor(mom));
+      }
+
+      //double lsc(log(4.*M_PI*mur2/dabs(sik)/Eps_Scheme_Factor(mom)));
       msg_Debugging()<<"lsc="<<lsc<<std::endl;
       splf  += splf1*lsc + splf2*0.5*sqr(lsc);
       splf1 += splf2*lsc;

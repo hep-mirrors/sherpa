@@ -23,6 +23,9 @@ namespace Recola {
   {
     m_procmap[m_recola_id]=pi;
     Settings& s = Settings::GetMainSettings();
+    m_providespoles=false;
+    m_fixedIRscale=true;
+
     m_IRscale=s["RECOLA_IR_SCALE"].Get<double>();
     m_UVscale=s["RECOLA_UV_SCALE"].Get<double>();
     m_modebackup=m_mode=Recola_Interface::s_vmode;
@@ -70,7 +73,6 @@ namespace Recola {
     double aqcd=AlphaQCD(); 
     int flav=Recola_Interface::GetDefaultFlav();
     set_alphas_rcl(aqcd,sqrt(m_mur2),flav);
-
     Recola_Interface::EvaluateLoop(m_recola_id, momenta, m_born, m_res, m_asscontribs);
 
     if (msg_LevelIsDebugging()) {

@@ -20,6 +20,8 @@ namespace PHASIC {
     double m_born, m_norm;
     double m_mur2, m_accu;
     int m_mode, m_drmode, m_colmode;
+    bool m_providespoles, m_fixedIRscale;
+    double m_IRscale, m_UVscale;
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
     const std::vector<std::vector<double> > *p_dsij;
     const std::vector<size_t> *p_plist;
@@ -50,6 +52,11 @@ namespace PHASIC {
     inline double ME_E1() { return m_res.GetIR(); }
     inline double ME_E2() { return m_res.GetIR2(); }
     inline double ME_Born() { return m_born; }
+    
+    inline bool ProvidesPoles() const { return m_providespoles; }
+    inline bool fixedIRscale() const  { return m_fixedIRscale; }
+    inline double IRscale() const { return m_IRscale; }
+    inline double UVscale() const { return m_UVscale; }
 
     inline void SetCalcAssContribs(const bool calcass) { m_calcass=calcass; }
     inline size_t ME_AssContribs_Size() { return m_asscontribs.size(); }

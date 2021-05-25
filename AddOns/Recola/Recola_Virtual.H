@@ -12,8 +12,8 @@ namespace Recola {
     bool m_ismapped;
     std::map<int,PHASIC::Process_Info> m_procmap;
     int m_modebackup;
-    double m_IRscale;
-    double m_UVscale;
+    //double m_IRscale;
+    //double m_UVscale;
     size_t m_voqcd, m_boqcd;
 
   public:
