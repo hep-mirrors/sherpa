@@ -35,7 +35,7 @@ LBS_Compton_Peak_Uniform(const double exponent,const double pole,
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum = 2;
-  p_vegas  = new Vegas(2,100,m_name,0);
+  p_vegas  = new Vegas(2,100,m_name);
   p_rans   = new double[2];
 }
 
@@ -115,7 +115,7 @@ LBS_Compton_Peak_Forward(const double exponent,const double pole,
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
+  p_vegas = new Vegas(2,100,m_name);
   p_rans  = new double[2];
 }
 
@@ -195,7 +195,7 @@ LBS_Compton_Peak_Backward(const double exponent,const double pole,
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
+  p_vegas = new Vegas(2,100,m_name);
   p_rans  = new double[2];
 }
 
@@ -273,7 +273,7 @@ LBS_Compton_Peak_Central(const double exponent,const double pole,
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum=2;
-  p_vegas = new Vegas(m_rannum,100,m_name,0);
+  p_vegas = new Vegas(m_rannum,100,m_name);
   p_rans  = new double[2];
 }
 

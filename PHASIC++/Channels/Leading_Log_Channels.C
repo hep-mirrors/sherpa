@@ -32,7 +32,7 @@ Leading_Log_Uniform::Leading_Log_Uniform(const double beta,const double factor,
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum = 2;
-  p_vegas  = new Vegas(2,100,m_name,0);
+  p_vegas  = new Vegas(2,100,m_name);
   p_rans   = new double[2];
 }
 
@@ -103,7 +103,7 @@ Leading_Log_Forward(const double beta,const double factor,const double yexponent
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
+  p_vegas = new Vegas(2,100,m_name);
   p_rans  = new double[2];
 }
 
@@ -170,7 +170,7 @@ Leading_Log_Backward(const double beta,const double factor,const double yexponen
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
+  p_vegas = new Vegas(2,100,m_name);
   p_rans  = new double[2];
 }
 
@@ -239,7 +239,7 @@ Leading_Log_Central(const double beta,const double factor,
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum=2;
-  p_vegas = new Vegas(m_rannum,100,m_name,0);
+  p_vegas = new Vegas(m_rannum,100,m_name);
   p_rans  = new double[2];
 }
 

@@ -23,7 +23,7 @@ Exponential_RelicDensity(const double exponent,const double mass1,const double m
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_zchannel = m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum   = 1;
-  p_vegas    = new Vegas(m_rannum,100,m_name,0);
+  p_vegas    = new Vegas(m_rannum,100,m_name);
   p_rans     = new double[m_rannum];
 }
 
@@ -70,7 +70,7 @@ Exponential_DM_Annihilation(const double exponent,const double mass1,const doubl
   m_cosgridkey.Assign(m_cosxikey.Info(),1,0,info);
   m_zchannel = m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum   = 2;
-  p_vegas    = new Vegas(m_rannum,100,m_name,0);
+  p_vegas    = new Vegas(m_rannum,100,m_name);
   p_rans     = new double[m_rannum];
 }
 

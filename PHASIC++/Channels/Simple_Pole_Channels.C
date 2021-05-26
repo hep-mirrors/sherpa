@@ -21,7 +21,7 @@ Simple_Pole_RelicDensity(const double exponent, const std::string cinfo,
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_zchannel = m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum   = 1;
-  p_vegas    = new Vegas(m_rannum,100,m_name,0);
+  p_vegas    = new Vegas(m_rannum,100,m_name);
   p_rans     = new double[m_rannum];
 	msg_Out()<<"exponent="<<m_exponent<<"\n"; //debugging
 }
@@ -69,7 +69,7 @@ Simple_Pole_DM_Annihilation(const double exponent, const double mass1, const dou
   m_cosgridkey.Assign(m_cosxikey.Info(),1,0,info);
   m_zchannel = m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum   = 2;
-  p_vegas    = new Vegas(m_rannum,100,m_name,0);
+  p_vegas    = new Vegas(m_rannum,100,m_name);
   p_rans     = new double[m_rannum];
 }
 
@@ -124,7 +124,7 @@ Simple_Pole_Uniform::Simple_Pole_Uniform(const double exponent,const std::string
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum = 2;
-  p_vegas  = new Vegas(2,100,m_name,0);
+  p_vegas  = new Vegas(2,100,m_name);
   p_rans   = new double[2];
 }
 
@@ -185,7 +185,7 @@ Simple_Pole_Forward::Simple_Pole_Forward(const double sexponent,const double yex
 	m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
+  p_vegas = new Vegas(2,100,m_name);
   p_rans  = new double[2];
 }
 
@@ -246,7 +246,7 @@ Simple_Pole_Backward::Simple_Pole_Backward(const double sexponent,const double y
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
+  p_vegas = new Vegas(2,100,m_name);
   p_rans  = new double[2];
 }
 
@@ -306,7 +306,7 @@ Simple_Pole_Central::Simple_Pole_Central(const double exponent,const std::string
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum=2;
-  p_vegas = new Vegas(m_rannum,100,m_name,0);
+  p_vegas = new Vegas(m_rannum,100,m_name);
   p_rans  = new double[2];
 }
 

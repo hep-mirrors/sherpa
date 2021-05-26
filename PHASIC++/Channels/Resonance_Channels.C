@@ -26,7 +26,7 @@ Resonance_RelicDensity(const double mass,const double width,
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum  = 1;
-  p_vegas = new Vegas(m_rannum,100,m_name,0);
+  p_vegas = new Vegas(m_rannum,100,m_name);
   p_rans    = new double[m_rannum];
 }
 
@@ -75,7 +75,7 @@ Resonance_DM_Annihilation(const double mass,const double width,const double mass
   m_cosgridkey.Assign(m_cosxikey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum  = 2; // this should be 3
-  p_vegas = new Vegas(m_rannum,100,m_name,0);
+  p_vegas = new Vegas(m_rannum,100,m_name);
   p_rans  = new double[m_rannum];
 }
 
@@ -129,7 +129,7 @@ Resonance_Uniform(const double mass,const double width,
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum = 2;
-  p_vegas  = new Vegas(m_rannum,100,m_name,0);
+  p_vegas  = new Vegas(m_rannum,100,m_name);
   p_rans   = new double[2];
 }
 
@@ -193,7 +193,7 @@ Resonance_Forward(const double mass,const double width,const double yexponent,
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
+  p_vegas = new Vegas(2,100,m_name);
   p_rans  = new double[2];
 }
 
@@ -257,7 +257,7 @@ Resonance_Backward(const double mass,const double width,const double yexponent,
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
+  p_vegas = new Vegas(2,100,m_name);
   p_rans  = new double[2];
 }
 
@@ -317,7 +317,7 @@ Resonance_Central(const double mass,const double width,
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_rannum=2;
-  p_vegas = new Vegas(m_rannum,100,m_name,0);
+  p_vegas = new Vegas(m_rannum,100,m_name);
   p_rans  = new double[2];
 }
 
