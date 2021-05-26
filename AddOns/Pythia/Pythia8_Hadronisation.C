@@ -287,7 +287,7 @@ private:
       Set variable for what should handle decays.
       If Sherpa does them they need to be turned off for Pythia and BreitWigner smearing needs to be turned off.
     */
-    m_pythiadecays = m_settings["PYTHIA8_DECAYS"].SetDefault(false).Get<bool>();
+    m_pythiadecays = m_settings["PYTHIA8"]["DECAYS"].SetDefault(false).Get<bool>();
     if  (!m_pythiadecays) {
       m_pythia.readString("HadronLevel:Decay = off");
       PRINT_INFO("Setting particles on-shell to allow sherpa decays.");
@@ -300,8 +300,8 @@ private:
       Apply all Pythia settings that are adjusted in the yaml via the readString mechanism.
      */
     PRINT_INFO("Applying Pythia8 settings");
-    m_settings["PYTHIA8_PARAMETERS"].SetDefault("");
-    for (auto& proc : m_settings["PYTHIA8_PARAMETERS"].GetItems()) {
+    m_settings["PYTHIA8"]["PARAMETERS"].SetDefault("");
+    for (auto& proc : m_settings["PYTHIA8"]["PARAMETERS"].GetItems()) {
       auto keys = proc.GetKeys();
       if (keys.size() != 1) {
     	if (!msg_LevelIsTracking()) msg_Info()<<"\n";
@@ -320,18 +320,24 @@ private:
       Settings for one are adjusted to match those of the other depending on which option is chosen.
       Also possible to only adjust the settings for some particles.
      */
-    bool SherpaValues = m_settings["SHERPA_VALUES"].SetDefault(true).Get<bool>();
-    bool MatchQuarks = m_settings["MATCH_QUARKS"].SetDefault(true).Get<bool>();
-    bool MatchDiQuarks = m_settings["MATCH_DIQUARKS"].SetDefault(true).Get<bool>();
-    bool MatchHadrons = m_settings["MATCH_HADRONS"].SetDefault(true).Get<bool>();
-    bool MatchOther;     // Leptons + Bosons
-    if (SherpaValues) {
-      MatchOther = m_settings["MATCH_OTHER"].SetDefault(true).Get<bool>();
+    bool SherpaValues;
+    if (m_pythiadecays) {
+      SherpaValues = m_settings["PYTHIA8"]["SHERPA_MASSES"].SetDefault(false).Get<bool>();
     }
     else {
-      MatchOther = m_settings["MATCH_OTHER"].SetDefault(false).Get<bool>();
+      SherpaValues = m_settings["PYTHIA8"]["SHERPA_MASSES"].SetDefault(true).Get<bool>();
     }
-    bool MatchOnlyUnstable = m_settings["MATCH_ONLY_UNSTALBE"].SetDefault(false).Get<bool>();
+    bool MatchQuarks = m_settings["PYTHIA8"]["MATCH_QUARKS"].SetDefault(true).Get<bool>();
+    bool MatchDiQuarks = m_settings["PYTHIA8"]["MATCH_DIQUARKS"].SetDefault(true).Get<bool>();
+    bool MatchHadrons = m_settings["PYTHIA8"]["MATCH_HADRONS"].SetDefault(true).Get<bool>();
+    bool MatchOther;     // Leptons + Bosons
+    if (SherpaValues) {
+      MatchOther = m_settings["PYTHIA8"]["MATCH_OTHER"].SetDefault(true).Get<bool>();
+    }
+    else {
+      MatchOther = m_settings["PYTHIA8"]["MATCH_OTHER"].SetDefault(false).Get<bool>();
+    }
+    bool MatchOnlyUnstable = m_settings["PYTHIA8"]["MATCH_ONLY_UNSTABLE"].SetDefault(false).Get<bool>();
 
     PRINT_INFO("Harmonizing particle masses and widths!");
     if (SherpaValues){
@@ -347,14 +353,14 @@ private:
     /*
       Sherpa quark and diquark masses are initialized to the same ones that are used for standard hadronization with Ahadic.
      */
-    double mglue=  m_settings["HADRONIZATION_MASSES"]["M_GLUE"].SetDefault(0.00).Get<double>();
-    double mud =   m_settings["HADRONIZATION_MASSES"]["M_UP_DOWN"].SetDefault(0.30).Get<double>();
-    double ms =    m_settings["HADRONIZATION_MASSES"]["M_STRANGE"].SetDefault(0.40).Get<double>();
-    double mc =    m_settings["HADRONIZATION_MASSES"]["M_CHARM"].SetDefault(1.80).Get<double>();
-    double mb =    m_settings["HADRONIZATION_MASSES"]["M_BOTTOM"].SetDefault(5.10).Get<double>();
-    double mdiq =  m_settings["HADRONIZATION_MASSES"]["M_DIQUARK_OFFSET"].SetDefault(0.30).Get<double>();
-    double bind0 = m_settings["HADRONIZATION_MASSES"]["M_BIND_0"].SetDefault(0.12).Get<double>();
-    double bind1 = m_settings["HADRONIZATION_MASSES"]["M_BIND_1"].SetDefault(0.50).Get<double>();
+    double mglue=  m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_GLUE"].SetDefault(0.00).Get<double>();
+    double mud =   m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_UP_DOWN"].SetDefault(0.30).Get<double>();
+    double ms =    m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_STRANGE"].SetDefault(0.40).Get<double>();
+    double mc =    m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_CHARM"].SetDefault(1.80).Get<double>();
+    double mb =    m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_BOTTOM"].SetDefault(5.10).Get<double>();
+    double mdiq =  m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_DIQUARK_OFFSET"].SetDefault(0.30).Get<double>();
+    double bind0 = m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_BIND_0"].SetDefault(0.12).Get<double>();
+    double bind1 = m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_BIND_1"].SetDefault(0.50).Get<double>();
     Flavour(kf_gluon).SetHadMass(mglue);
     Flavour(kf_d).SetHadMass(mud);
     Flavour(kf_u).SetHadMass(mud);

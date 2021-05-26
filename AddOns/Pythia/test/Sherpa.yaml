@@ -5,22 +5,24 @@ SHERPA_LDADD: SherpaPythia
 FRAGMENTATION: Pythia8
 MI_HANDLER: None
 
-PYTHIA8_PARAMETERS:
-  - StringZ:aLund: 0.68
-  - StringZ:bLund: 0.98
-  - StringFlav:probStoUD: 0.217
-  - Random:setSeed: 1
-  - Init:showChangedParticleData: off
-  - Check:nErrList: 10000
-  - Check:history: on
+PYTHIA8:
+  PARAMETERS:
+    - StringZ:aLund: 0.68
+    - StringZ:bLund: 0.98
+    - StringFlav:probStoUD: 0.217
+    - Random:setSeed: 1
+    - Init:showChangedParticleData: off
+    - Check:nErrList: 10000
+    - Check:history: on
+  # - Check:mTolErr: 1e-3
 
-PYTHIA8_DECAYS: false
-SHERPA_VALUES: false
-MATCH_DIQUARKS: true
-MATCH_QUARKS: true
-MATCH_HADRONS: true
-MATCH_OTHER: false
-MATCH_ONLY_UNSTABLE: false
+  DECAYS: true
+  SHERPA_MASSES: false
+  MATCH_DIQUARKS: true
+  MATCH_QUARKS: true
+  MATCH_HADRONS: true
+  MATCH_OTHER: false
+  MATCH_ONLY_UNSTABLE: false
 
 PROCESSES:
 - 93 93 -> 11 -12:

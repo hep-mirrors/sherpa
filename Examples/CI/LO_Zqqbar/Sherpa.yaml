@@ -6,14 +6,15 @@ SHERPA_LDADD: SherpaPythia
 FRAGMENTATION: Pythia8
 MI_HANDLER: None
 
-PYTHIA8_PARAMETERS:
-  - StringZ:aLund: 0.68
-  - StringZ:bLund: 0.98
-  - StringFlav:probStoUD: 0.217
-  - Random:setSeed: 1
-  - Init:showChangedParticleData: off
-  - Check:nErrList: 10000
-  - Check:history: on
+PYTHIA8:
+  PARAMETERS:
+    - StringZ:aLund: 0.68
+    - StringZ:bLund: 0.98
+    - StringFlav:probStoUD: 0.217
+    - Random:setSeed: 1
+    - Init:showChangedParticleData: off
+    - Check:nErrList: 10000
+    - Check:history: on
 
 
 
