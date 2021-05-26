@@ -584,7 +584,7 @@ integrating them separately. This can help improve the integration/unweighting
 efficiency. Note: Only works with Comix so far.
 Example for usage:
 
-.. code-block::
+.. code-block:: yaml
 
    Process 93 93 -> 11 -11 93
    Special Group(0-1,4)

@@ -579,7 +579,7 @@ versions prior to 1.2.2. Currently available options are
   and one power at the transverse momentum squared of the gluon.
   Assuming the Higgs mass to be 120 GeV, the corresponding reweighting would read
 
-  .. code-block::
+  .. code-block:: yaml
 
      SCALES:    VAR{...}{PPerp2(p[3])}
        COUPLINGS: "Alpha_QCD 1"
