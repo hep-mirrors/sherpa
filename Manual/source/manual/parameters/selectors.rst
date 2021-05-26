@@ -336,7 +336,7 @@ the matrix element level. Its syntax is
        - [<min1>, <max1>]
        - ...
        - [<minn>, <maxn>]
-       Ordering: "[<order1>,...,<orderm>]"
+       Ordering: [<order1>, ..., <orderm>]
 
 The ``Variable`` parameter defines the name of the variable to cut
 on. The keywords for available predefined can be figured by running
@@ -392,7 +392,7 @@ Examples
        Flavs: 90
        Ranges:
        - [50, E_CMS]
-       Ordering: "[PT_UP]"
+       Ordering: [PT_UP]
 
    # using bool operations to restrict eta of the electron to |eta| < 1.1 or
    # 1.5 < |eta| < 2.5
@@ -408,7 +408,7 @@ Examples
        Flavs: [93, 93]
        Ranges:
        - [-100, 0]
-       Ordering: "[PT_UP,PT_UP]"
+       Ordering: [PT_UP, PT_UP]
 
    # restricting electron+photon mass to be outside of [87.0,97.0]
    - VariableSelector:

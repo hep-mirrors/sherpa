@@ -112,7 +112,7 @@ test-LO_Z:
   script:
     - mkdir test-LO_Z
     - cd test-LO_Z
-    - ../build/install/bin/Sherpa -f ../Examples/CI/LO_Z/Sherpa.yaml
+    - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
 
 test-clang-strict-LO_Z:
   <<: *test
@@ -121,7 +121,7 @@ test-clang-strict-LO_Z:
   script:
     - mkdir test-clang-strict-LO_Z
     - cd test-clang-strict-LO_Z
-    - ../build-clang-strict/install/bin/Sherpa -f ../Examples/CI/LO_Z/Sherpa.yaml
+    - ../build-clang-strict/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
 
 #
 # Deploy

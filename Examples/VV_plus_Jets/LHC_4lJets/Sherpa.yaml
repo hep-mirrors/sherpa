@@ -24,7 +24,7 @@ SELECTORS:
     Variable: PT
     Flavs: 90
     Ranges: [[5.0, E_CMS], [5.0, E_CMS]]
-    Ordering: "[PT_UP]"
+    Ordering: [PT_UP]
 - [Mass, 11, -11, 10.0, E_CMS]
 - [Mass, 13, -13, 10.0, E_CMS]
 - [Mass, 15, -15, 10.0, E_CMS]

@@ -13,6 +13,7 @@ enum optionIndex {
   UNKNOWN,
   HELP,
   VERSION,
+  CMDLINE_DEBUG,
 
   // options that will be mapped to SHERPA parameters
   RUNDATA,
@@ -51,7 +52,7 @@ const ATOOLS::Option_Parser::Descriptor usage[] = {
     "",
     "",
     ATOOLS::Option_Parser::Arg::None,
-    "USAGE: Sherpa [options] ['<parameter>: <value>'] ['TAGS: {<tag>: <value>}']\n\nOptions:"
+    "USAGE: Sherpa [options] ['<parameter>: <value>'] ['TAGS: {<tag>: <value>}'] [Sherpa.yaml]\n\nOptions:"
   },
   {
     HELP,
@@ -70,12 +71,20 @@ const ATOOLS::Option_Parser::Descriptor usage[] = {
     "  --version, -v  \tPrint version and exit."
   },
   {
+    CMDLINE_DEBUG,
+    REGULAR,
+    "c",
+    "cmdline-debug",
+    ATOOLS::Option_Parser::Arg::None,
+    "  --cmdline-debug, -c  \tPrint command line after parsing to YAML and exit."
+  },
+  {
     RUNDATA,
     REGULAR,
     "f",
     "run-data",
     ATOOLS::Option_Parser::Arg::Required,
-    "  --run-data, -f <file>  \tRead run data from <file>."
+    "  --run-data, -f <file>  \tRead run data from <file>. [DEPRECATED, use positional arguments instead]"
   },
   {
     PATH,
@@ -245,7 +254,7 @@ const ATOOLS::Option_Parser::Descriptor usage[] = {
     ATOOLS::Option_Parser::Arg::None,
     "\nExamples:\n"
     "  Sherpa -e 1k\n"
-    "  Sherpa -w Unweighted\n"
+    "  Sherpa -w Unweighted MySherpaConfig.yaml\n"
   },
   {0, 0, 0, 0, 0, 0}
 };
