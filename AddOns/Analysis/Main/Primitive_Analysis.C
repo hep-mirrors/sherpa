@@ -95,6 +95,7 @@ Primitive_Analysis * Primitive_Analysis::GetSubAnalysis
   Primitive_Analysis * ana = new Primitive_Analysis(p_ana,m_name.substr(11)+key,mode);
   if (master) ana->SetPartner(p_partner);
   ana->SetMaxJetTag(m_maxjettag);
+  ana->SetVarType(m_vartype);
   ana->SetVarId(m_varid);
 
   for (size_t i=0;i<m_objects.size();i++) {
@@ -217,15 +218,19 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   }
 
   if (m_mode&ANALYSIS::split_vars) {
-    m_nvar = s_variations->Size();
-    if (m_nvar) {
+    m_hasvar = s_variations->HasVariations();
+    if (m_hasvar) {
       int mode=(m_mode^ANALYSIS::split_vars)|ANALYSIS::output_this;
-      for (size_t i {0}; i < m_nvar; ++i) {
-        std::string name(s_variations->GetVariationNameAt(i));
-        Primitive_Analysis *ana=GetSubAnalysis(bl,name,mode,false);
-        ana->SetVarId(i+1);
-        ana->DoAnalysis(bl,value);
-        m_called.insert(ana);
+      for (const auto type : s_variations->ManagedVariationTypes()) {
+        auto nvar = s_variations->Size(type);
+        for (size_t i {0}; i < nvar; ++i) {
+          std::string name(s_variations->GetVariationNameAt(i,type));
+          Primitive_Analysis *ana=GetSubAnalysis(bl,name,mode,false);
+          ana->SetVarType(type);
+          ana->SetVarId(i+1);
+          ana->DoAnalysis(bl,value);
+          m_called.insert(ana);
+        }
       }
       if (m_mode&ANALYSIS::do_menlo) return;
     }
@@ -287,7 +292,14 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   if (value == 0.0) {
     weight = 0.0;
   } else {
-    weight = bl->Weights()[m_varid];
+    const auto& wgtmap = bl->WeightsMap();
+    if (m_varid == 0) {
+      weight = wgtmap.Nominal();
+    } else {
+      const auto weights = wgtmap.Combine(m_vartype);
+      weight = weights[m_varid];
+      weight *= wgtmap.NominalIgnoringVariationType(m_vartype);
+    }
   }
   // do nonsplittable (helper and legacy objects) first
   if (m_mode&ANALYSIS::fill_helper) {
@@ -363,7 +375,15 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
     p_sub=(*nlos)[j];
     if ((*nlos)[j]->m_results.Nominal() == 0.)
       continue;
-    double weight((*nlos)[j]->m_results[m_varid]);
+    double weight {0.0};
+    const auto& wgtmap = (*nlos)[j]->m_results;
+    if (m_varid == 0) {
+      weight = wgtmap.Nominal();
+    } else {
+      const auto weights = wgtmap.Combine(m_vartype);
+      weight = weights[m_varid];
+      weight *= wgtmap.NominalIgnoringVariationType(m_vartype);
+    }
     m_pls[finalstate_list]=(*nlos)[j]->CreateParticleList();
   
     // do nonsplittable (helper and legacy objects) first
@@ -434,7 +454,7 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
     }
 
   if (m_mode&ANALYSIS::do_menlo) {
-    if ((m_mode&ANALYSIS::split_vars) && m_nvar) {
+    if ((m_mode&ANALYSIS::split_vars) && m_hasvar) {
       for (Analysis_List::iterator it=m_subanalyses.begin();
 	   it!=m_subanalyses.end();++it) {
 	std::string dir=resdir+OutputPath()+std::string("/")+it->first;

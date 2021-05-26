@@ -529,7 +529,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     InitializeTheHardDecays();
     InitializeTheBeamRemnants();
     InitializeTheIO();
-    InitializeTheReweighting();
+    InitializeTheReweighting(Variations_Mode::all);
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
@@ -548,8 +548,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
-    okay = okay && InitializeTheReweighting();
     okay = okay && InitializeTheFilter();
+    okay = okay && InitializeTheReweighting(Variations_Mode::all);
+  } else {
+    okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);
   }
   return okay;
 }
@@ -1028,15 +1030,17 @@ bool Initialization_Handler::InitializeTheAnalyses()
   return true;
 }
 
-bool Initialization_Handler::InitializeTheReweighting()
+bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
 {
   if (p_variations) {
     delete p_variations;
   }
-  Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
-  p_variations = new Variations();
+  if (mode != Variations_Mode::nominal_only)
+    Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
+  p_variations = new Variations(mode);
   s_variations = p_variations;
-  msg_Info()<<"Initialized the Reweighting."<<endl;
+  if (mode != Variations_Mode::nominal_only)
+    msg_Info()<<"Initialized the Reweighting."<<endl;
   return true;
 }
 
@@ -1056,7 +1060,9 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   msg_Events()<<"===================================================================\n"
               <<"Start calculating the hard cross sections. This may take some time.\n";
   as->SetActiveAs(isr::hard_process);
+  p_variations->DisableVariations();
   int ok = p_mehandler->CalculateTotalXSecs();
+  p_variations->EnableVariations();
   if (ok) {
     msg_Events()<<"Calculating the hard cross sections has been successful.\n"
 		<<"====================================================================\n";

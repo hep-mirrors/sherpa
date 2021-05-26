@@ -4,10 +4,10 @@
 #include "DIRE/Tools/Parton.H"
 #include "DIRE/Shower/Kernel.H"
 #include "DIRE/Tools/Amplitude.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 
 namespace ATOOLS {
-  class Variation_Parameters;
+  class QCD_Variation_Params;
 }
 namespace MODEL {
   class Model_Base;
@@ -116,7 +116,7 @@ namespace DIRE {
 
     Cluster_Definitions *p_cluster;
 
-    ATOOLS::Event_Weights m_weights;
+    ATOOLS::Weights_Map m_weightsmap;
     bool m_reweight;
 
     Kernel_Vector m_cks;
@@ -139,7 +139,7 @@ namespace DIRE {
     Splitting GeneratePoint(const Amplitude &a,const double &t,
 			    const unsigned int &nem);
 
-    void Reweight(ATOOLS::Variation_Parameters* params,
+    void Reweight(ATOOLS::QCD_Variation_Params* params,
                   size_t varindex,
                   const Reweight_Args& a);
 
@@ -174,7 +174,10 @@ namespace DIRE {
     inline double PDFMin(const int i) const { return m_pdfmin[i]; }
 
     inline double GetWeight() const { return m_weight; }
-    inline const ATOOLS::Event_Weights& GetWeights() const { return m_weights; }
+    inline const ATOOLS::Weights_Map& GetWeightsMap() const
+    {
+      return m_weightsmap;
+    }
 
     inline int KFactorScheme() const  { return m_kfac; }
     inline int CouplingScheme() const { return m_cpl;  }

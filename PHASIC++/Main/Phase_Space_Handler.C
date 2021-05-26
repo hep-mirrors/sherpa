@@ -80,41 +80,41 @@ double Phase_Space_Handler::Integrate()
   return 0.;
 }
 
-Event_Weights
+Weights_Map
 Phase_Space_Handler::Differential(Process_Integrator *const process,
-				  ATOOLS::Weight_Type weighttype,
-				  const psmode::code mode) 
+				  Variations_Mode varmode,
+				  const psmode::code mode)
 {
-  m_cmode        = mode;
-  p_active       = process;
-  m_eventweights = Event_Weights{0, 0.0};
+  m_cmode  = mode;
+  p_active = process;
+  m_wgtmap = 0.0;
   // check for failure to generate a meaningful phase space point
   if (!process->Process()->GeneratePoint() ||
       !m_pspoint(process,m_cmode))
-    return Event_Weights{0, 0.0};
+    return 0.0;
   for (size_t i(0);i<p_lab.size();++i) {
-    if (p_lab[i].Nan()) return Event_Weights{0, 0.0};
+    if (p_lab[i].Nan()) return 0.0;
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass())
-      return Event_Weights{0, 0.0};
-    m_eventweights *= (m_psweight = CalculatePS());
-    m_eventweights  = CalculateME(weighttype);
-    m_meweight      = m_eventweights.Nominal();
-    m_eventweights *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
-    p_lab           = process->Momenta();
+      return 0.0;
+    m_psweight = CalculatePS();
+    m_wgtmap   = CalculateME(varmode);
+    m_wgtmap  *= m_psweight;
+    m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+    p_lab      = process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
     ManageWeights(m_psweight*m_ISsymmetryfactor);
   }
   // trigger failed, return 0.
   else ManageWeights(0.0);
   // stability checks may lead to event weight set to 0 in case of failure
-  if (CheckStability()) 
-    m_eventweights *= (m_enhance = m_psenhance.Factor(p_process->Process(),
-						      p_process->TotalXS()));
-  else m_eventweights *= 0.; 
-  return m_eventweights;
+  if (CheckStability())
+    m_wgtmap *= (m_enhance = m_psenhance.Factor(p_process->Process(),
+                                                p_process->TotalXS()));
+  else m_wgtmap *= 0.;
+  return m_wgtmap;
 }
 
 
@@ -123,8 +123,8 @@ void Phase_Space_Handler::PrintIntermediate() {
   msg->SetPrecision(15);
   msg_Out()<<"==========================================================\n"
 	   <<p_active->Process()->Name()
-	   <<"  ME = "<<m_eventweights<<" ,  PS = "<<m_psweight<<"  ->  "
-	   <<m_eventweights*m_psweight<<std::endl;
+	   <<"  ME = "<<m_wgtmap.Nominal()<<" ,  PS = "<<m_psweight<<"  ->  "
+	   <<m_wgtmap.Nominal()*m_psweight<<std::endl;
   if (p_active->Process()->GetSubevtList()) {
     NLO_subevtlist * subs(p_active->Process()->GetSubevtList());
     for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i])<<"\n";
@@ -147,11 +147,11 @@ void Phase_Space_Handler::ManageWeights(const double & factor) {
 bool Phase_Space_Handler::CheckStability() {
   // meaningful result - no problems down the line
   if (p_active->TotalXS() &&
-      dabs(m_eventweights.Nominal()/p_active->TotalXS())>dabs(m_thkill)) {
+      dabs(m_wgtmap.Nominal()/p_active->TotalXS())>dabs(m_thkill)) {
     if (m_thkill<0.0) {
       msg_Info()<<METHOD<<"(): Skip point in '"<<p_active->Process()->Name()<<"', "
-		<<"weight = "<<m_eventweights.Nominal()*rpa->Picobarn()<<", thkill = "<<m_thkill<<",\n"
-		<<"   totalxs = "<<p_active->TotalXS()<<", result = "<<m_eventweights.Nominal()<<".\n";
+		<<"weight = "<<m_wgtmap.Nominal()*rpa->Picobarn()<<", thkill = "<<m_thkill<<",\n"
+		<<"   totalxs = "<<p_active->TotalXS()<<", result = "<<m_wgtmap.Nominal()<<".\n";
       return false;
     }
     // outputb tricky phase space point for further analysis, if necessary
@@ -161,7 +161,7 @@ bool Phase_Space_Handler::CheckStability() {
 		     std::ios_base::app);
     sf.precision(16);
     sf<<"(P"<<m_killedpoints<<"){ # w = "
-      <<m_eventweights<<", ME = "<<m_eventweights.Nominal()/m_psweight<<", PS = "<<m_psweight<<"\n";
+      <<m_wgtmap<<", ME = "<<m_wgtmap.Nominal()/m_psweight<<", PS = "<<m_psweight<<"\n";
     for (size_t i(0);i<p_lab.size();++i) sf<<"  p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";\n";
     sf<<"}(P"<<m_killedpoints<<");\n";
     ++m_killedpoints;
@@ -178,9 +178,8 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
   p_isrhandler->SetRunMode(1);
-  auto values = Differential(cur, Weight_Type::all, (psmode::code)mode);
-  bool zero(values == 0.0);
-  if (zero || IsBad(values.Nominal()))
+  auto wgtmap = Differential(cur, Variations_Mode::all, (psmode::code)mode);
+  if (wgtmap.IsZero() || IsBad(wgtmap.Nominal()))
     return NULL;
   cur->SetMomenta(p_lab);
   int fl1(0), fl2(0);
@@ -194,9 +193,8 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   xf2=p_isrhandler->XF2(0);
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
-  auto res = new Weight_Info(
-      values.Nominal(), dxs, 1.0, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
-  res->m_weights = m_eventweights;
+  auto res =
+      new Weight_Info(wgtmap, dxs, 1.0, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
   return res;
 }
 
@@ -284,7 +282,7 @@ void Phase_Space_Handler::CheckSinglePoint()
     }
     Process_Base *proc(p_active->Process());
     proc->Trigger(p_lab);
-    CalculateME(Weight_Type::nominal);
+    CalculateME(Variations_Mode::nominal_only);
     msg->SetPrecision(16);
     msg_Out()<<"// "<<proc->Name()<<"\n";
     for (size_t i(0);i<p_lab.size();++i)

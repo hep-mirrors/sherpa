@@ -2,7 +2,7 @@
 #define SHERPA_PerturbativePhysics_Perturbative_Interface_H
 
 #include "ATOOLS/Phys/Blob_List.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Org/Return_Value.H"
 
 namespace ATOOLS {
@@ -31,12 +31,13 @@ namespace SHERPA {
     Shower_Handler         *p_shower;        
 
     ATOOLS::Blob *p_hard;
+    ATOOLS::Blob_List *p_bloblist;
 
     ATOOLS::Poincare m_cms;
 
     ATOOLS::Cluster_Amplitude *p_ampl;
 
-    ATOOLS::Event_Weights m_weights;
+    ATOOLS::Weights_Map m_weightsmap;
     double m_globalkfac, m_maxkfac;
     int    m_bbarmode;
 
@@ -56,16 +57,17 @@ namespace SHERPA {
 
     ~Perturbative_Interface();
 
-    ATOOLS::Return_Value::code DefineInitialConditions(ATOOLS::Blob *blob);
+    ATOOLS::Return_Value::code DefineInitialConditions(ATOOLS::Blob*,
+                                                       ATOOLS::Blob_List*);
 
-    bool FillBlobs(ATOOLS::Blob_List *blobs); 
+    bool FillBlobs();
 
     int  PerformShowers();
     int  PerformDecayShowers();
 
     void CleanUp();
 
-    inline ATOOLS::Event_Weights Weights() const { return m_weights; }
+    inline ATOOLS::Weights_Map WeightsMap() const { return m_weightsmap; }
 
     inline Matrix_Element_Handler    * MEHandler() const { return p_me; }
     inline ATOOLS::Cluster_Amplitude * Amplitude() const { return p_ampl; }

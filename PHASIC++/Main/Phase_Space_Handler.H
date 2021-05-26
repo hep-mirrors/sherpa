@@ -7,10 +7,10 @@
 #include "PHASIC++/Main/Phase_Space_Variation_Weights.H"
 
 #include "PHASIC++/Selectors/Cut_Data.H"
-#include "ATOOLS/Phys/Event_Weights.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Org/Info_Key.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Phys/Weights.H"
 #include <list>
 
 namespace ATOOLS { 
@@ -48,14 +48,14 @@ namespace PHASIC {
     ATOOLS::Vec4D_Vector         p_lab;
 
     Process_Integrator          * p_process, *p_active;
-    Phase_Space_Integrator      * p_integrator;  
+    Phase_Space_Integrator      * p_integrator;
     Phase_Space_Point             m_pspoint;
     Phase_Space_Enhance           m_psenhance;
-    
-    ATOOLS::Event_Weights         m_eventweights;
+
+    ATOOLS::Weights_Map           m_wgtmap;
     static ATOOLS::Integration_Info * p_info;
 
-    double m_enhance, m_ISsymmetryfactor, m_psweight, m_meweight;
+    double m_enhance, m_ISsymmetryfactor, m_psweight;
 
     psmode::code m_cmode;
     double    m_thkill, m_error, m_abserror;
@@ -93,18 +93,18 @@ namespace PHASIC {
       m_initialized = true;
       return m_pspoint.MakeIncoming();
     }
-    
+
     double Integrate();
     ATOOLS::Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
-    inline ATOOLS::Event_Weights Differential(ATOOLS::Weight_Type weighttype) {
-      return Differential(p_process,weighttype);
+    inline ATOOLS::Weights_Map Differential(ATOOLS::Variations_Mode varmode) {
+      return Differential(p_process, varmode);
     }
-    ATOOLS::Event_Weights Differential(Process_Integrator *const process,
-				       ATOOLS::Weight_Type weighttype,
-				       const psmode::code mode=psmode::normal_call);
+    ATOOLS::Weights_Map Differential(Process_Integrator *const process,
+                                     ATOOLS::Variations_Mode,
+                                     const psmode::code mode=psmode::normal_call);
 
-    inline ATOOLS::Event_Weights CalculateME(ATOOLS::Weight_Type weighttype)  {
-      return p_active->Process()->Differential(p_lab, weighttype);
+    inline ATOOLS::Weights_Map CalculateME(ATOOLS::Variations_Mode varmode)  {
+      return p_active->Process()->Differential(p_lab, varmode);
     }
     inline double CalculatePS()  { return m_pspoint.CalculateWeight(); }
     inline double Weight(ATOOLS::Vec4D_Vector &moms) {
@@ -115,7 +115,6 @@ namespace PHASIC {
     void   AddPoint(const double xs);
     double EnhanceFunction();
 
-    
     static void TestPoint(ATOOLS::Vec4D *const p,const Process_Info *info,
                           const ATOOLS::Mass_Selector* ms,const int mode=0);
     static void TestPoint(ATOOLS::Vec4D *const p,
@@ -131,7 +130,7 @@ namespace PHASIC {
     inline static void DeleteInfo() {
       if (p_info) { delete p_info; p_info=NULL; }
     }
-    
+
     void   WriteOut(const std::string &path);
     bool   ReadIn(const std::string &path,const size_t exclude=0);
 

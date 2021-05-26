@@ -53,15 +53,15 @@ Single_Dipole_Term::~Single_Dipole_Term()
   p_scale=NULL;
 }
 
-Event_Weights COMIX::Single_Dipole_Term::Differential(
+Weights_Map COMIX::Single_Dipole_Term::Differential(
     const Cluster_Amplitude &ampl,
-    Weight_Type type,
+    Variations_Mode varmode,
     int mode)
 {
   DEBUG_FUNC(Name());
   m_zero=false;
   p_rsint->ColorIntegrator()->SetPoint(&ampl);
-  return PHASIC::Process_Base::Differential(ampl,type,mode);
+  return PHASIC::Process_Base::Differential(ampl,varmode,mode);
 }
 
 double COMIX::Single_Dipole_Term::Partonic(const Vec4D_Vector &p, int mode)

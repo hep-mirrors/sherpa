@@ -77,7 +77,7 @@ namespace PHASIC {
 
     ATOOLS::ME_Weight_Info m_mewgtinfo;
 
-    ATOOLS::Event_Weights m_last, m_lastb;
+    ATOOLS::Weights_Map m_last, m_lastb;
     double m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
@@ -136,7 +136,7 @@ namespace PHASIC {
     /*!
      * Calculate the nominal differential
      *
-     * Use the Weight_Type argument to steer if only the nominal, or the
+     * Use the Variations_Mode argument to steer if only the nominal, or the
      * nominal plus all on-the-fly variations are calculated and returned.
      *
      * The nominal differential can be retrieved using Last, the Born part of
@@ -147,12 +147,12 @@ namespace PHASIC {
      * Subclasses implementing this virtual function must make sure to set
      * update the corresponding member variables.
      */
-    virtual ATOOLS::Event_Weights Differential(const ATOOLS::Vec4D_Vector&,
-                                               ATOOLS::Weight_Type) = 0;
+    virtual ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector&,
+                                             ATOOLS::Variations_Mode) = 0;
 
-    virtual ATOOLS::Event_Weights Differential(const ATOOLS::Cluster_Amplitude&,
-                                               ATOOLS::Weight_Type type=ATOOLS::Weight_Type::nominal,
-                                               int mode=0);
+    virtual ATOOLS::Weights_Map Differential(const ATOOLS::Cluster_Amplitude&,
+                                             ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::nominal_only,
+                                             int mode=0);
 
     virtual bool GeneratePoint();
     virtual void AddPoint(const double &value);
@@ -183,7 +183,7 @@ namespace PHASIC {
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);
     virtual void SetNLOMC(PDF::NLOMC_Base *const mc);
-    const ATOOLS::Event_Weights& EventWeights() const { return m_last; }
+    const ATOOLS::Weights_Map& WeightsMap() const { return m_last; }
     virtual void SetSelector(const Selector_Key &key);
     virtual void SetCaller(Process_Base *const proc);
 

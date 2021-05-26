@@ -294,7 +294,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   if (m_eventmode!=0) {
     const auto max = p_proc->Integrator()->Max();
     const auto disc = max * ran->Get();
-    const auto abswgt = std::abs(m_evtinfo.Weight());
+    const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     if (abswgt < disc) {
       return false;
     }
@@ -312,7 +312,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   }
 
   // trial event is accepted, apply weight factor
-  m_evtinfo.m_weights*=wf;
+  m_evtinfo.m_weightsmap["ME"]*=wf;
   if (p_proc->GetSubevtList()) {
     (*p_proc->GetSubevtList())*=wf;
     p_proc->GetSubevtList()->MultMEwgt(wf);
@@ -1223,7 +1223,7 @@ double Matrix_Element_Handler::GetWeight
       for (size_t j(0);j<ampl.Legs().size();++j)
 	ampl.Leg(j)->SetCol(ColorID(ci->I()[j],ci->J()[j]));
       if (mode&1) ci->SetWOn(false);
-      double res(pit->second->Differential(ampl,Weight_Type::nominal));
+      double res(pit->second->Differential(ampl,Variations_Mode::nominal_only));
       ci->SetWOn(true);
       return res;
     }

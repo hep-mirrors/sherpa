@@ -754,17 +754,16 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
   msg_Debugging()<<keys<<std::endl;
   for (size_t i(0);i<keys.size();++i) {
     std::string cur(keys[i]);
-    if (m_splitvariations && cur.find("MUR")!=std::string::npos &&
-                             cur.find("MUF")!=std::string::npos &&
-                             cur.find("PDF")!=std::string::npos) {
-      wgtmap[cur]=wc[cur];
+    // use a heuristic to detect variation weight names
+    if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
+      wgtmap[cur] = wc[cur];
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
     else if (cur=="NTrials") ntrials=wc[cur];
     else if (cur=="Reweight_Type" && wc[cur]&64) xstype=1;
   }
 #else
-  // lookup all evt-wgts with name "MUR<fac>_MUF<fac>_PDF<id>"
+  // lookup all evt-wgts with a variation weight name
   // at the moment the only way to do that is to filter the printout
   // accuracy limited to print out accu of 6 digits, must suffice
   MyStrStream str;
@@ -781,9 +780,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     // name is between leading bracket and ","
     wgt=ToType<double>(cur.substr(cur.find(",")+1,cur.find(")")-1));
     cur=cur.substr(1,cur.find(",")-1);
-    if (m_splitvariations && cur.find("MUR")!=std::string::npos &&
-                             cur.find("MUF")!=std::string::npos &&
-                             cur.find("PDF")!=std::string::npos) {
+    if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
       wgtmap[cur]=wgt;
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wgt;

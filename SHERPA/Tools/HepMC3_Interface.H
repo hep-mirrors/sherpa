@@ -54,7 +54,7 @@ namespace SHERPA {
   private:
     ATOOLS::Blob * p_sp;
     bool m_usenamedweights, m_extendedweights;
-    std::vector<ATOOLS::Variations_Type> m_variationtypes;
+    std::vector<ATOOLS::Variations_Source> m_variationsources;
     std::vector<double> m_orders;
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
     double m_mur2, m_muf12, m_muf22, m_muq2;
@@ -65,8 +65,7 @@ namespace SHERPA {
     ATOOLS::ME_Weight_Info * p_wgtinfo;
     ATOOLS::PDF_Info * p_pdfinfo;
     ATOOLS::NLO_subevtlist * p_subevtlist;
-    ATOOLS::Event_Weights m_weights;
-    ATOOLS::Event_Weights m_showerweights;
+    ATOOLS::Weights_Map m_wgtmap;
 
     void ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 
