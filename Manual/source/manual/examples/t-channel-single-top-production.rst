@@ -11,7 +11,7 @@ Things to notice:
 * We use OpenLoops to compute the virtual corrections
   :cite:`Cascioli2011va`.
 
-* We match matrix elements and parton showers using the MC@@NLO
+* We match matrix elements and parton showers using the MC\@NLO
   technique for massive particles, as described in
   :cite:`Hoeche2013mua`.
 

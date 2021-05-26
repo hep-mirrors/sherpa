@@ -49,7 +49,7 @@ They can be configured with the following parameters.
 
 :OPTION:`PDF_LIBRARY`
   This parameter takes the list of PDF interfaces to load.  The
-  following options are distributed with Sherpa: @table @code
+  following options are distributed with Sherpa:
 
   :option:`LHAPDFSherpa`
     Use PDF's from LHAPDF :cite:`Whalley2005nh`. The interface is only

@@ -171,7 +171,7 @@ correlations are preserved.  An example would be
 .. code-block:: yaml
 
     - 11 -11 -> 6[a] -6[b]:
-       Decay:     
+       Decay:
        - 6[a] -> 5 24[c]
        - -6[b] -> -5 -24[d]
        - 24[c] -> -13 14
@@ -194,7 +194,7 @@ spin correlations are preserved.  An example would be
 .. code-block:: yaml
 
    - 11 -11 -> 6[a] -6[b]:
-       DecayOS:     
+       DecayOS:
        - 6[a] -> 5 24[c]
        - -6[b] -> -5 -24[d]
        - 24[c] -> -13 14
@@ -215,7 +215,7 @@ example would be
 
    - 93 93 -> 6[a] -24[b] 93{1}:
        Decay: 6[a] -> 5 24[c]
-       DecayOS:  
+       DecayOS:
        - 24[c] -> -13 14
        - -24[b] -> 11 -12
        No_Decay: -6
@@ -508,8 +508,8 @@ NLO_Order
 =========
 
 Specifies the relative order of the NLO correction wrt. the considered
-Born process. For example, ``NLO_Order: @{QCD: 1, EW: 0@``} specifies
-a QCD correction while ``NLO_Order: @{QCD: 0, EW: 1@``} specifies an
+Born process. For example, ``NLO_Order: {QCD: 1, EW: 0}`` specifies
+a QCD correction while ``NLO_Order: {QCD: 0, EW: 1}`` specifies an
 EW correction.
 
 .. _Subdivide_Virtual:
@@ -519,7 +519,7 @@ Subdivide_Virtual
 
 Allows to split the virtual contribution to the total cross section
 into pieces.  Currently supported options when run with
-@url{http://projects.hepforge.org/blackhat,BlackHat} are
+`BlackHat <https://projects.hepforge.org/blackhat>`_ are
 :option:`LeadingColor` and :option:`FullMinusLeadingColor`. For
 high-multiplicity calculations these settings allow to adjust the
 relative number of points in the sampling to reduce the overall

@@ -415,10 +415,8 @@ choices or easily implement a user defined scale.
   ``Cone``, ``kt``, ``CA`` or ``antikt``, while ``<dR>`` is
   the respecitve algorithm's angular distance parameter.
 
-  @comment
-
 :option:`TAU_B2`
-  @comment Square of the beam thrust.
+  Square of the beam thrust.
 
 :option:`MU_F2, MU_R2, MU_Q2`
   Tags holding the values of the factorisation, renormalisation scale and

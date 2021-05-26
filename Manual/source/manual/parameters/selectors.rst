@@ -33,7 +33,7 @@ based on event properties.  The corresponding syntax is
 
 Parameters that accept numbers can also be given in a form that is
 understood by the internal algebra interpreter, see
-:ref:`Interpreter`.  The selectors act on @emph{all} particles in the
+:ref:`Interpreter`.  The selectors act on *all* particles in the
 event.  Their respective keywords are
 
 :option:`[N, <kf>, <min value>, <max value>]`
@@ -77,7 +77,7 @@ The corresponding  syntax is
 :option:`<min value>` and :option:`<max value>` are floating point
 numbers, which can also be given in a form that is understood by the
 internal algebra interpreter, see :ref:`Interpreter`.  The selectors
-act on @emph{all} possible particles with the given flavour. Their
+act on *all* possible particles with the given flavour. Their
 respective keywords are
 
 :option:`PT`
@@ -114,7 +114,7 @@ based on two particle kinematics.  The corresponding is
 :option:`<min value>` and :option:`<max value>` are floating point
 numbers, which can also be given in a form that is understood by the
 internal algebra interpreter, see :ref:`Interpreter`.  The selectors
-act on @emph{all} possible particles with the given flavour. Their
+act on *all* possible particles with the given flavour. Their
 respective keywords are
 
 :option:`Mass`

@@ -319,11 +319,15 @@ This can be done by one of the following methods:
 
 
    #. During integration add ``AMEGIC: { NLO_BVI_MODE: <num> }`` to
-        your configuration. ``<num>`` takes the following values:
-        ``1``-``B``, ``2``-``I``, and ``4``-``V``. The values are
-        additive, i.e.  ``3``-``BI``. @b{Note:} The cross section
-        displayed during integration will match the parts selected by
-        ``NLO_BVI_MODE``.
+      your configuration. ``<num>`` takes the following values:
+      ``1``-``B``, ``2``-``I``, and ``4``-``V``. The values are
+      additive, i.e.  ``3``-``BI``.
+
+
+      .. note::
+
+         The cross section displayed during integration will match the parts
+         selected by ``NLO_BVI_MODE``.
 
    #. During event generation remove the switch again and the events
       will carry the correct weight.
