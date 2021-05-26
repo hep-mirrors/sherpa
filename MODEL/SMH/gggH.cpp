@@ -7,6 +7,28 @@ const double z2 = M_PI*M_PI/6.;
 
 using namespace std;
 
+std::pair<std::complex<double>,std::complex<double> >
+F14ggg(double mb, double mh, double s12, double s13, double s23) {
+  double mh2 = mh*mh;
+  std::complex<double> T1=Omegagggppp1l(mb, mh, s12, s13, s23);
+  std::complex<double> T2=Omegagggppm1l(mb, mh, s12, s13, s23);
+  std::complex<double> T3=Omegagggppm1l(mb, mh, s13, s12, s23);
+  std::complex<double> T4=Omegagggppm1l(mb, mh, s23, s13, s12);
+  std::complex<double> F1=0.5*(mh2/s12/s23*T1 + 1./mh2*(s12/s23*T2 + s13*s13/s12/s23*T3 + s23/s12*T4));
+  std::complex<double> F4=-mh2/s12/s13/s23*T1 - 1./mh2*(s12/s13/s23*T2 + s13/s12/s23*T3 - s23/s12/s13*T4);
+  return std::make_pair(F1,F4);
+}
+
+std::pair<std::complex<double>,std::complex<double> >
+F23ggg(double mb, double mh, double s12, double s13, double s23) {
+  std::pair<std::complex<double>,std::complex<double> > F141=F14ggg(mb, mh, s13, s12, s23);
+  std::pair<std::complex<double>,std::complex<double> > F142=F14ggg(mb, mh, s23, s13, s12);
+  std::complex<double> F4=F4ggg(mb, mh, s12, s13, s23);
+  std::complex<double> F2=-s23/s12*F141.first - s23/2.*(F141.second - F4);
+  std::complex<double> F3=-s12/s13*F142.first - s12/2.*(F142.second - F4);
+  return std::make_pair(F2,F3);
+}
+
 complex<double> F1ggg(double mb, double mh, double s12, double s13, double s23) {
   double mh2 = mh*mh;
   return 0.5*(mh2/s12/s23*Omegagggppp1l(mb, mh, s12, s13, s23) + 1./mh2*(s12/s23*Omegagggppm1l(mb, mh, s12, s13, s23) + s13*s13/s12/s23*Omegagggppm1l(mb, mh, s13, s12, s23) + s23/s12*Omegagggppm1l(mb, mh, s23, s13, s12)));

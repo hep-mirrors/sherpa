@@ -44,9 +44,9 @@ namespace METOOLS {
 	Vec4D pa(p_v->J(0)->P()), pb(p_v->J(1)->P()), pc(p_v->J(2)->P());
 	double s12((pa+pb).Abs2()), s23((pb+pc).Abs2()), s13((pa+pc).Abs2());
 	Complex F1(F1ggg(m_mb,m_mh,s12,s13,s23));
-	Complex F2(F1ggg(m_mb,m_mh,s12,s13,s23));
-	Complex F3(F1ggg(m_mb,m_mh,s12,s13,s23));
-	Complex F4(F1ggg(m_mb,m_mh,s12,s13,s23));	
+	Complex F2(F2ggg(m_mb,m_mh,s12,s13,s23));
+	Complex F3(F3ggg(m_mb,m_mh,s12,s13,s23));
+	Complex F4(F4ggg(m_mb,m_mh,s12,s13,s23));
 	CScalarType *j(CScalarType::New
 		       ((a*b)*(c*pb)*F1+
 			(b*c)*(a*pc)*F2+
@@ -55,22 +55,60 @@ namespace METOOLS {
 	j->SetS(a.S()|b.S()|c.S());
 	return j;
       }
+      if (0) {// HEFT in Comix notation
+	const CVec4Type &a(*jj[m_n[1]]->template Get<CVec4Type>());
+	const CVec4Type &b(*jj[m_n[2]]->template Get<CVec4Type>());
+	const CScalarType &e(*jj[m_n[0]]->template Get<CScalarType>());
+	CVec4Type pa(p_v->J(m_n[1])->P()), pb(p_v->J(m_n[2])->P());
+	CVec4Type pe(p_v->J(m_n[0])->P()), pc(-pa-pb-pe);
+	CVec4Type pab(pa+pb), pae(pa+pe), pbe(pb+pe);
+	Complex sab(pab.Abs2()), sae(pae.Abs2()), sbe(pbe.Abs2());
+	CVec4Type ab(((a*b)*(pa-pb)+(a*(pb+pab))*b-(b*(pab+pa))*a)/sab);
+	CVec4Type ae((e[0]*(a*(pa*pae)-(a*pae)*pa))/-sae);
+	CVec4Type be((e[0]*(b*(pb*pbe)-(b*pbe)*pb))/-sbe);
+	CVec4Type *abe(CVec4Type::New
+		       ((ae*b)*(pae-pb)+(ae*(pb-pc))*b+(b*(pc-pae))*ae
+			+(a*be)*(pa-pbe)+(a*(pbe-pc))*be+(be*(pc-pa))*a
+			+e[0]*(ab*(pab*pc)-(ab*pc)*pab)
+			+e[0]*((a*b)*(pa-pb)+(a*(pb-pc))*b+(b*(pc-pa))*a)));
+	abe->SetS(a.S()|b.S()|e.S());
+	return abe;
+      }
+      if (0) {// HEFT in form factor notation
+	const CVec4Type &a(*jj[m_n[1]]->template Get<CVec4Type>());
+	const CVec4Type &b(*jj[m_n[2]]->template Get<CVec4Type>());
+	const CScalarType &e(*jj[m_n[0]]->template Get<CScalarType>());
+	CVec4Type pa(p_v->J(m_n[1])->P()), pb(p_v->J(m_n[2])->P());
+	CVec4Type pe(p_v->J(m_n[0])->P()), pc(-pa-pb-pe);
+	CVec4Type pab(pa+pb), pbc(pb+pc), pac(pa+pc);
+	Complex sab(pab.Abs2()), sac(pac.Abs2()), sbc(pbc.Abs2());
+	Complex F1(-1.-sac/sab-(sab+sac)/sbc);
+	Complex F2(-1.-sbc/sac-(sac+sbc)/sab);
+	Complex F3(-1.-sab/sbc-(sab+sbc)/sac);
+	Complex F4(2./sab+2./sac+2./sbc);
+	CVec4Type *j(CVec4Type::New
+		     (e[0]*((a*b)*pb*F1
+			    +(b*pa)*a*F2
+			    +(a*pc)*b*F3
+			    +(a*pc)*(b*pa)*CVec4Type(pb)*F4)));
+	j->SetS(a.S()|b.S()|e.S());
+	return j;
+      }
       const CVec4Type &a(*jj[m_n[1]]->template Get<CVec4Type>());
       const CVec4Type &b(*jj[m_n[2]]->template Get<CVec4Type>());
       const CScalarType &e(*jj[m_n[0]]->template Get<CScalarType>()); 
       Vec4D pa(p_v->J(m_n[1])->P()), pb(p_v->J(m_n[2])->P());
       Vec4D pe(p_v->J(m_n[0])->P()), pc(-pa-pb-pe);
-      double s12((pa+pb).Abs2()), s23((pb+pc).Abs2()), s13((pa+pc).Abs2());
-      Complex F1(F1ggg(m_mb,m_mh,s12,s13,s23));
-      Complex F2(F1ggg(m_mb,m_mh,s12,s13,s23));
-      Complex F3(F1ggg(m_mb,m_mh,s12,s13,s23));
-      Complex F4(F1ggg(m_mb,m_mh,s12,s13,s23));	
+      double sab((pa+pb).Abs2()), sbc((pb+pc).Abs2()), sac((pa+pc).Abs2());
+      std::pair<Complex,Complex> F14(F14ggg(m_mb,m_mh,sab,sac,sbc));
+      std::pair<Complex,Complex> F23(F23ggg(m_mb,m_mh,sab,sac,sbc));
       CVec4Type *j(CVec4Type::New
-		   (e[0]*((a*b)*CVec4Type(pb)*F1
-			  +(b*ATOOLS::Vec4<SType>(pa))*a*F2
-			  +(a*ATOOLS::Vec4<SType>(pc))*b*F3
-			  +(a*ATOOLS::Vec4<SType>(pc))
-			  *(b*ATOOLS::Vec4<SType>(pa))*CVec4Type(pb)*F4)));
+		   (e[0]*m_mb*m_mb*
+		    ((a*b)*CVec4Type(pb)*F14.first
+		     +(b*ATOOLS::Vec4<SType>(pa))*a*F23.first
+		     +(a*ATOOLS::Vec4<SType>(pc))*b*F23.second
+		     +(a*ATOOLS::Vec4<SType>(pc))
+		     *(b*ATOOLS::Vec4<SType>(pa))*CVec4Type(pb)*F14.second)));
       j->SetS(a.S()|b.S()|e.S());
       return j;
     }

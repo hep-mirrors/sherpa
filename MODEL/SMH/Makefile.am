@@ -5,6 +5,7 @@ include ../../git.make
 
 libSherpaSMH_la_SOURCES = \
 	Git_Info.C \
+	handyg_wrapper.f90 \
 	gpl.cpp \
 	gggH.cpp \
 	qqgH.cpp \
@@ -19,6 +20,7 @@ localinc_HEADERS = \
 	gggH.h \
 	qqgH.h
 
+libSherpaSMH_la_FCFLAGS = $(AM_FCFLAGS) @CONDITIONAL_HANDYGINCS@
+
 libSherpaSMH_la_LIBADD = \
-	$(CONDITIONAL_GINACLIBS) \
-	$(CONDITIONAL_CLNLIBS)
+	$(CONDITIONAL_HANDYGLIBS)

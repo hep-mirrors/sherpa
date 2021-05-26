@@ -870,7 +870,7 @@ void SMH::InitEFTVertices()
   m_v.back().Lorentz.push_back("HGGG");
   m_v.back().cpl.push_back(ghgg*g3);
   m_v.back().order[0]=3;
-  m_v.back().order.push_back(2);
+  m_v.back().order.push_back(1);
   for (size_t i(1);i<4;++i) {
     Flavour flav(i);
     m_v.push_back(Single_Vertex());
