@@ -14,8 +14,8 @@
 (processes){
   Process 93 93 -> 6 -6;
   Loop_Generator OpenLoops;
-  NLO_QCD_Mode Fixed_Order;
-  NLO_QCD_Part RS;
+  NLO_Mode Fixed_Order;
+  NLO_Part RS;
   Integrator Rambo;
   Max_Order (3,0);
   End process;

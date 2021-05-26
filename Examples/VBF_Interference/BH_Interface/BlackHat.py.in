@@ -26,8 +26,8 @@ SHERPA_LDADD:\n\
 INIT_ONLY: 2\n\
 PROCESSES:\n\
 - "+str(fl[0])+" "+str(fl[1])+" -> "+' '.join(str(n) for n in fl[2:])+":\n\
-    NLO_QCD_Mode: 1\n\
-    NLO_QCD_Part: V\n\
+    NLO_Mode: 1\n\
+    NLO_Part: V\n\
     Loop_Generator: BlackHat\n\
     Enable_MHV: 12\n\
     Order: \"(3,2,2)\"  # gF+2j signal\n\

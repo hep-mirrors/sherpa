@@ -296,7 +296,7 @@ This can be done by one of the following methods:
 
 #. Employ a dummy virtual (requires no computing time, returns a
    finite value as its result) to optimise the grid. This only works
-   if ``V`` is not the only ``NLO_QCD_Part`` specified.
+   if ``V`` is not the only ``NLO_Part`` specified.
 
    #. During integration set the ``Loop_Generator`` to ``Dummy``. The
       grid will then be optimised to the phase space distribution of
@@ -315,7 +315,7 @@ This can be done by one of the following methods:
 #. Suppress the evaluation of the virtual and/or the integrated
    subtraction terms. This only works if Amegic is used as the matrix
    element generator for the ``BVI`` pieces and ``V`` is not the only
-   ``NLO_QCD_Part`` specified.
+   ``NLO_Part`` specified.
 
 
    #. During integration add ``AMEGIC: { NLO_BVI_MODE: <num> }`` to

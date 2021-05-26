@@ -16,12 +16,12 @@ TAGS: {
 SCALES: VAR{$(FSF)*sqr(125)}{$(RSF)*sqr(125)}
 PROCESSES:
 - 93 93 -> 25:
-    NLO_QCD_Mode: Fixed_Order,
-    NLO_QCD_Part: B,
+    NLO_Mode: Fixed_Order,
+    NLO_Part: B,
     Order: {QCD: 2, EW: 1},
 - 93 93 -> 25:
-    NLO_QCD_Mode: Fixed_Order,
-    NLO_QCD_Part: RS,
+    NLO_Mode: Fixed_Order,
+    NLO_Part: RS,
     Enhance_Factor: $(RSENH),
     Order: {QCD: 2, EW: 1},
 RIVET: {

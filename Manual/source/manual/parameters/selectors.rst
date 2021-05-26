@@ -249,7 +249,7 @@ up to the specified values. This is useful e.g. in calculations with massive
 b-quarks which shall nonetheless satisfy jet criteria.
 
 The second option :option:`FastjetFinder` allows to use the `FastJet
-<http://www.fastjet.fr>`_ plugin if enabled during configuration(*).
+<http://www.fastjet.fr>`_ plugin, through fjcore.
 It takes the following arguments: ``<Algorithm>`` can take the values
 ``kt,antikt,cambridge,siscone,eecambridge,jade``, ``<N>`` is the
 minimum number of jets to be found, ``<PTMin>`` and ``<ETMin>`` are
@@ -268,7 +268,7 @@ The selector :option:`FastjetVeto` allows to use the `FastJet
 <http://www.fastjet.fr>`_ plugin to apply jet veto cuts. Its syntax is
 identical to :option:`FastjetFinder`.
 
-If `FastJet <http://www.fastjet.fr>`_ is enabled, the momenta and
+The momenta and
 nodal values of the jets found with FastJet can also be used to
 calculate more elaborate selector criteria. The syntax of this
 selector is
@@ -315,12 +315,6 @@ are added with a relative sign as constituents, i.e. a jet containing
 b and anti-b is not tagged.  Note that only ``<epression>``,
 ``<algorithm>``, ``<n>`` and ``<ptmin>`` are relevant when using the
 lepton-lepton collider algorithms.
-
-(*) If FastJet has not been enabled during configuration of your
-Sherpa installation, you can still build a FastJet-based selector
-plugin by including the content of any necessary functions (e.g. from
-``Fastjet_Helpers.{H,C``}) explicitly and linking against FastJet at
-compile time of the plugin.
 
 .. _Universal selector:
 
@@ -460,11 +454,3 @@ that allows a specification later. The syntax is
 
 The :ref:`Minimum selector` can be used if constructed with other
 selectors mentioned in this section
-
-.. note::
-
-   If FastJet has not been enabled during configuration of your Sherpa
-   installation, you can still build a FastJet-based selector plugin
-   by including the content of any necessary functions (e.g. from
-   ``Fastjet_Helpers.{H,C}``) explicitly and linking against FastJet
-   at compile time of the plugin.
