@@ -2,6 +2,8 @@ from itertools import chain
 from copy import deepcopy
 from tensor import tensor
 from templates import lorentz_calc_template
+from sym_var import sym_var
+from sympy import Symbol
 from code_snippets import *
 from lorentz_structures import C,Gamma,Gamma5,Metric,P,ProjM,ProjP,Epsilon,Identity,mink_metric,is_ffv,is_vvv
 from ufo_exception import ufo_exception
@@ -65,10 +67,12 @@ class s_lorentz(object):
         # is_ffv cannot differentiate between ffv and
         # similar structures with arbitrary scalars
         # attached, so check here for correct spin structure
-        if (sorted(self.ufo_lorentz.spins) == sorted([2,2,3])) and is_ffv(self.get_cpl_tensor()):
+        # currents with form factors are never usual FFV, so get_cpl_tensor has empty form_factor arg
+        if (sorted(self.ufo_lorentz.spins) == sorted([2,2,3])) and is_ffv(self.get_cpl_tensor({})):
             self._mapped_name = "FFV"
         # similarly, is_vvv can't tell if we have scalars attached
-        elif (self.ufo_lorentz.spins == [3,3,3]) and is_vvv(self.get_cpl_tensor()):
+        # currents with form factors are never usual VVV, so get_cpl_tensor has empty form_factor arg
+        elif (self.ufo_lorentz.spins == [3,3,3]) and is_vvv(self.get_cpl_tensor({})):
             self._mapped_name = "VVV"
         else:
             self._mapped_name =None
@@ -102,7 +106,7 @@ class s_lorentz(object):
 
     def form_factors_implementations(self, parameter_map):
         evaluated_form_factors = {}
-        wrapped_parameter_map = {k: tensor([c_variable(v)], None) for k, v in parameter_map.items()}
+        wrapped_parameter_map = {k: tensor([sym_var(Symbol(v, complex=True))], None) for k, v in parameter_map.items()}
         for k, v in self._form_factors.items():
             evaluated_form_factors[k] = eval(v, globals(), wrapped_parameter_map)
         return evaluated_form_factors
@@ -211,7 +215,7 @@ class s_lorentz(object):
         form_factor_symbols = {}
         for ff_name, ff_implementation in form_factor_map.items():
             imp += get_form_factor_declaration(ff_name, ff_implementation)
-            form_factor_symbols[ff_name] = tensor([c_variable(ff_name)], None)
+            form_factor_symbols[ff_name] = tensor([sym_var(Symbol(ff_name, complex=True))], None)
 
         # optimized version for massless spinors:
         # can ask Comix via the 'C_Spinor::On()' 
