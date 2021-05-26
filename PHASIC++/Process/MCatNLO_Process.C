@@ -261,13 +261,15 @@ Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   p_bproc->Generator()->ShiftMasses(crampl);
   p_bproc->Generator()->SetMassMode(mm);
   int rmode = rampl->ColorMap().empty() ? 128 : 0;
-  Weights rs {rsproc->Differential(*crampl, Variations_Mode::all, rmode)["ME"]};
-  Weights r {rsproc->GetSubevtList()->back()->m_results["ME"]};
+  Weights rs = rsproc->Differential(*crampl, Variations_Mode::all, rmode)
+                   .AbsoluteValues("ME");
+  Weights r = rsproc->GetSubevtList()->back()->m_results.AbsoluteValues("ME");
   if (rmode && r.Nominal() == 0.0 &&
       rsproc->Differential(*crampl, Variations_Mode::nominal_only, 64).Nominal() != 0.0) {
     for (int i(0); i < 100 && r.Nominal() == 0.0; ++i) {
-      rs = rsproc->Differential(*crampl, Variations_Mode::all, rmode)["ME"];
-      r = rsproc->GetSubevtList()->back()->m_results["ME"];
+      rs = rsproc->Differential(*crampl, Variations_Mode::all, rmode)
+               .AbsoluteValues("ME");
+      r = rsproc->GetSubevtList()->back()->m_results.AbsoluteValues("ME");
     }
   }
   crampl->Delete();
@@ -289,11 +291,13 @@ Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   p_bproc->Generator()->SetMassMode(mm);
   bproc->GetMEwgtinfo()->m_type = mewgttype::none;
   int bmode = ampl.ColorMap().empty() ? 128 : 0;
-  Weights b {bproc->Differential(*campl, Variations_Mode::all, bmode)["ME"]};
+  Weights b = bproc->Differential(*campl, Variations_Mode::all, bmode)
+                   .AbsoluteValues("ME");
   if (bmode && b.Nominal() == 0.0 &&
       bproc->Differential(*campl, Variations_Mode::nominal_only, 64).Nominal() != 0.0) {
     for (int i(0); i < 100 && b.Nominal() == 0.0; ++i) {
-      b = bproc->Differential(*campl, Variations_Mode::all, bmode)["ME"];
+      b = bproc->Differential(*campl, Variations_Mode::all, bmode)
+              .AbsoluteValues("ME");
     }
   }
   if (b.Nominal() == 0.0) {
@@ -301,7 +305,8 @@ Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
     return 0.0;
   }
   bviproc->BBarMC()->GenerateEmissionPoint(*campl);
-  Weights bvi {bviproc->Differential(*campl, Variations_Mode::all, bmode)["ME"]};
+  Weights bvi = bviproc->Differential(*campl, Variations_Mode::all, bmode)
+                    .AbsoluteValues("ME");
   campl->Delete();
 
   // eventually calculate local K factor
@@ -582,7 +587,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       const double Ssel(p_bviproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Bsel / Ssel);
       const double wgtfac(selwgtratio);
-      winfo->m_weightsmap["ME"] *= wgtfac;
+      winfo->m_weightsmap *= wgtfac;
       winfo->m_weightsmap *= Swgts;
       *(p_selected->Selected()->GetMEwgtinfo()) *= Swgts.Nominal()*wgtfac;
     }
@@ -596,7 +601,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       const double RSsel(p_rsproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Rsel / RSsel);
       const double wgtfac(selwgtratio);
-      winfo->m_weightsmap["ME"] *= wgtfac;
+      winfo->m_weightsmap *= wgtfac;
       winfo->m_weightsmap *= Hwgts;
       *p_selected->Selected()->GetMEwgtinfo() *= Hwgts.Nominal()*wgtfac;
     }

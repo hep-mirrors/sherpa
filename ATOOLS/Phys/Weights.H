@@ -98,7 +98,7 @@ namespace ATOOLS {
         Weights&,
         std::function<double(double, size_t varindex, Qcut_Variation_Params*)>);
 
-    friend std::ostream& operator<<(std::ostream& out, const Weights& w);
+    friend std::ostream& operator<<(std::ostream&, const Weights&);
 
     friend Weights_Map;
 
@@ -128,17 +128,33 @@ namespace ATOOLS {
     // general information getters
     bool HasVariations() const;
     bool IsZero() const;
+    double BaseWeight() const { return base_weight; }
 
     // calculate nominal values, either including all entries or excluding
     // those that have a certain variation type
     double Nominal() const;
     double NominalIgnoringVariationType(Variations_Type) const;
 
+    // return Weights entries for a given name, either as-is ("Relative"), or
+    // multiplied by the base weight ("Absolute")
+    Weights& RelativeValues(const std::string& k) { return (*this)[k]; }
+    Weights RelativeValues(const std::string& k) const;
+    Weights AbsoluteValues(const std::string& k) const;
+
     /// Calculate the product of all entries that share the same type, e.g. to
     /// get the combined QCD or Qcut variations from different sources. Note
     /// that this returns a Weights object, that contains the nominal product
     /// and the entry-by-entry product of all variations.
     Weights Combine(Variations_Type type) const;
+
+    /// Assign a value to the base weight
+    Weights_Map& operator=(double w) { base_weight = w; return *this; }
+
+    /// Multiply or divide the base weight
+    Weights_Map& operator*=(double w) { base_weight *= w; return *this; }
+    friend Weights_Map operator*(Weights_Map, double);
+    Weights_Map& operator/=(double w) { base_weight /= w; return *this; }
+    friend Weights_Map operator/(Weights_Map, double);
 
     /// Multiply by another weights map. If both maps share a key, the
     /// associated set of weights are multiplied with each other. If a key
@@ -148,27 +164,43 @@ namespace ATOOLS {
     /// weight of unit.
     Weights_Map& operator*=(const Weights_Map&);
 
-    /// Add or subtract another weights map. This makes the same implicit
-    /// assumption as stated for multiplication above. Also note that only the
-    /// entry with the key "ME" are considered to contain absolute values,
-    /// whereas all non-"ME" entries are treated as relative values (i.e. they
-    /// are added together weighted by the nominal value in "ME"). To make this
-    /// behaviour as explicit as possible and to prevent suprises, an "ME"
-    /// entry must be present in both maps.
+    /// Add or subtract another weights map. This also makes the same implicit
+    /// assumption that non-existing values are implicitly set to unity.
     Weights_Map& operator+=(const Weights_Map&);
     Weights_Map& operator-=(const Weights_Map&);
 
     friend std::ostream& operator<<(std::ostream&, const Weights_Map&);
 
   private:
+
+    // generate variants where entries are absolute, or relative (the default);
+    // this is used internally to simplify the addition/subtraction of weights
+    // maps
+    void MakeRelative();
+    void MakeAbsolute();
+
     // make sure class users use our Clear() instead map's clear()
     using std::map<std::string, Weights>::clear;
 
-    /// This member variable is mainly used to allow functions that return
-    /// Weights_Map instances to just return 0.0, which is then used to
-    /// implicitly construct an instance with `base_weight = 0.0` via the
-    /// default constructor. Otherwise it should usually be 1.0.
+    /// While the Weights object in the map store relative factors due to
+    /// specific variations or additional factors (like branching ratios), the
+    /// base weight gives the overall scale of all weights. This is always
+    /// taken as a prefactor when retrieving weights through Weights_Map member
+    /// functions. A weights map that is implicitly constructed from a double
+    /// (e.g. by returning 0.0 from a function that has Weights_Map as its
+    /// return type) will have its base_weight set to this double, while it is
+    /// otherwise empty.
     double base_weight;
+
+    /// This is similar to the base weight, but is only applied to the nominal
+    /// values of each Weights entry. This should usually be 1.0 or 0.0. While
+    /// this seems redundant at first, it is not. Since all nominal values will
+    /// always be applied as prefactors when calculating variations, it can be
+    /// useful to store a zero in this member variable and set the actual
+    /// nominal to a finite value like 1.0, even though it is formally zero. By
+    /// this trick, we can have non-zero variations while all nominals are
+    /// zero.
+    double nominals_prefactor {1.0};
   };
 
   template <class T> Weights& Weights::operator*=(const std::vector<T>& rhs)
@@ -203,6 +235,14 @@ namespace ATOOLS {
     return *this;
   }
 
+  Weights operator*(Weights, double);
+  Weights operator/(Weights, double);
+  Weights operator*(Weights, Weights);
+  Weights operator+(Weights, Weights);
+  Weights operator-(Weights, Weights);
+
+  std::ostream& operator<<(std::ostream&, const Weights&);
+
   void Reweight(
       Weights&,
       std::function<double(double, QCD_Variation_Params&)>);
@@ -221,6 +261,12 @@ namespace ATOOLS {
   void ReweightAll(
       Weights&,
       std::function<double(double, size_t varindex, Qcut_Variation_Params*)>);
+
+  Weights_Map operator*(Weights_Map, double);
+  Weights_Map operator/(Weights_Map, double);
+
+  std::ostream& operator<<(std::ostream&, const Weights_Map&);
+
 } // namespace ATOOLS
 
 #endif
