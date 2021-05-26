@@ -9,13 +9,13 @@
 
 using namespace ATOOLS;
 
-Data_Reader::Data_Reader(): 
+Data_Reader::Data_Reader():
   Read_Write_Base(2,0), m_allowunits(false)
 {
   SetInFileMode(fom::permanent);
 }
 
-Data_Reader::~Data_Reader() 
+Data_Reader::~Data_Reader()
 {
   CloseInFile(0);
   CloseInFile(1);
@@ -29,7 +29,7 @@ Data_Reader::Data_Reader(const std::string &wordsep,const std::string &linesep,
 }
 
 void Data_Reader::SetString(const std::string string, bool multiline)
-{ 
+{
   if (multiline) {
     size_t linebreak = string.find("\n");
     if (linebreak!=std::string::npos) {
@@ -45,7 +45,7 @@ void Data_Reader::SetString(const std::string string, bool multiline)
     }
   }
   else {
-    m_string=string; 
+    m_string=string;
     FileContent(1).clear();
     AddFileContent(m_string,1);
 #ifdef DEBUG__Data_Reader
@@ -75,8 +75,13 @@ Read_Type Data_Reader::Convert(std::string cur) const
   if (typeid(value)==typeid(int) || typeid(value)==typeid(unsigned int) ||
       typeid(value)==typeid(long) ||
       typeid(value)==typeid(float) ||	typeid(value)==typeid(double)) {
-    if (!AllowNans()) 
-      if (cur=="nan" || cur=="inf" || cur=="NAN" || cur=="INF") cur="1";
+    if (!AllowNans()){
+      if (cur=="nan" || cur=="inf" || cur=="NAN" || cur=="INF"){
+	cur="1";
+      } else if (cur=="-nan" || cur=="-inf" || cur=="-NAN" || cur=="-INF") {
+	cur="-1";
+      }
+    }
     if (AllowUnits()) cur=ReplaceUnits(cur);
     if (Interprete()) cur=Interpreter()->Interprete(StripEscapes(cur));
   }
@@ -106,7 +111,7 @@ Read_Type Data_Reader::ReadValue(const std::string &parameter,
   return Convert<Read_Type>(cur);
 }
 
-template <class Read_Type> std::vector<Read_Type> 
+template <class Read_Type> std::vector<Read_Type>
 Data_Reader::ReadVector(const std::string &parameter,const size_t &file)
 {
   if (file==0) OpenInFile(file);
@@ -132,7 +137,7 @@ Data_Reader::ReadVector(const std::string &parameter,const size_t &file)
 	else {
 	  if (i>last) values.clear();
 	  values.push_back(Convert<Read_Type>(cur));
-	  for (++j;j<FileContent(file)[i].size();++j) 
+	  for (++j;j<FileContent(file)[i].size();++j)
 	    values.push_back(Convert<Read_Type>(FileContent(file)[i][j]));
 	  last=i;
 	}
@@ -146,7 +151,7 @@ Data_Reader::ReadVector(const std::string &parameter,const size_t &file)
   return values;
 }
 
-template <class Read_Type> std::vector< std::vector<Read_Type> > 
+template <class Read_Type> std::vector< std::vector<Read_Type> >
 Data_Reader::ReadMatrix(const std::string &parameter,const size_t &file)
 {
   if (file==0) OpenInFile(file);
@@ -163,7 +168,7 @@ Data_Reader::ReadMatrix(const std::string &parameter,const size_t &file)
 	  else cur="";
 	}
 	values.push_back(std::vector<Read_Type>(1,Convert<Read_Type>(cur)));
-	for (++j;j<FileContent(file)[i].size();++j) 
+	for (++j;j<FileContent(file)[i].size();++j)
 	  values.back().push_back(Convert<Read_Type>
 				  (FileContent(file)[i][j]));
       }
@@ -173,60 +178,60 @@ Data_Reader::ReadMatrix(const std::string &parameter,const size_t &file)
       values.empty()) return values;
   std::vector< std::vector<Read_Type> > nvalues;
   size_t max(std::numeric_limits<int>::max());
-  for (size_t j(0);j<values.size();++j) 
+  for (size_t j(0);j<values.size();++j)
     if (max>values[j].size()) max=values[j].size();
   nvalues.resize(max,std::vector<Read_Type>
 		 (values.size(),Default<Read_Type>()));
-  for (size_t i(0);i<max;++i)  
-    for (size_t j(0);j<values.size();++j) 
+  for (size_t i(0);i<max;++i)
+    for (size_t j(0);j<values.size();++j)
       nvalues[i][j]=values[j][i];
   return nvalues;
 }
 
 template <class Read_Type > bool Data_Reader::
-ReadFromFile(Read_Type &result,std::string parameter) 
-{ 
+ReadFromFile(Read_Type &result,std::string parameter)
+{
   if ((result=ReadValue<Read_Type>(parameter,0))!=
-      Default<Read_Type>()) return true; 
-  return false; 
+      Default<Read_Type>()) return true;
+  return false;
 }
 
 template <class Read_Type > bool Data_Reader::
-ReadFromString(Read_Type &result,std::string parameter) 
-{ 
+ReadFromString(Read_Type &result,std::string parameter)
+{
   if ((result=ReadValue<Read_Type>(parameter,1))!=
-      Default<Read_Type>()) return true; 
-  return false; 
+      Default<Read_Type>()) return true;
+  return false;
 }
 
 template <class Read_Type > bool Data_Reader::
-VectorFromFile(std::vector<Read_Type> &result,std::string parameter) 
-{ 
-  if ((result=ReadVector<Read_Type>(parameter,0)).size()!=0) return true; 
-  return false; 
+VectorFromFile(std::vector<Read_Type> &result,std::string parameter)
+{
+  if ((result=ReadVector<Read_Type>(parameter,0)).size()!=0) return true;
+  return false;
 }
 
 template <class Read_Type> bool Data_Reader::
-VectorFromString(std::vector<Read_Type> &result,std::string parameter) 
-{ 
-  if ((result=ReadVector<Read_Type>(parameter,1)).size()!=0) return true; 
-  return false; 
+VectorFromString(std::vector<Read_Type> &result,std::string parameter)
+{
+  if ((result=ReadVector<Read_Type>(parameter,1)).size()!=0) return true;
+  return false;
 }
 
 template <class Read_Type> bool Data_Reader::
 MatrixFromFile(std::vector<std::vector<Read_Type> > &result,
-	       std::string parameter) 
-{ 
-  if ((result=ReadMatrix<Read_Type>(parameter,0)).size()!=0) return true; 
-  else return false; 
+	       std::string parameter)
+{
+  if ((result=ReadMatrix<Read_Type>(parameter,0)).size()!=0) return true;
+  else return false;
 }
 
 template <class Read_Type> bool Data_Reader::
 MatrixFromString(std::vector<std::vector<Read_Type> > &result,
-		 std::string parameter) 
-{ 
-  if ((result=ReadMatrix<Read_Type>(parameter,1)).size()!=0) return true; 
-  else return false; 
+		 std::string parameter)
+{
+  if ((result=ReadMatrix<Read_Type>(parameter,1)).size()!=0) return true;
+  else return false;
 }
 
 std::string Data_Reader::GetStringNormalisingNoneLikeValues(const std::string &parameter,
@@ -335,7 +340,7 @@ namespace ATOOLS {
   template bool Data_Reader::MatrixFromFile<bool>
   (std::vector<std::vector<bool> > &,std::string);
   template bool Data_Reader::MatrixFromFile<int>
-  (std::vector<std::vector<int> > &,std::string); 
+  (std::vector<std::vector<int> > &,std::string);
   template bool Data_Reader::MatrixFromFile<unsigned int>
   (std::vector<std::vector<unsigned int> > &,std::string);
   template bool Data_Reader::MatrixFromFile<long int>
