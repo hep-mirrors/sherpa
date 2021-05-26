@@ -37,7 +37,7 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res) :
   if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  p_vegas = new Vegas(m_rannum,100,m_name,0);
+  p_vegas = new Vegas(m_rannum,100,m_name);
 }
 
 S1Channel::~S1Channel()
@@ -127,7 +127,7 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res) :
   if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  p_vegas = new Vegas(m_rannum,100,m_name,0);
+  p_vegas = new Vegas(m_rannum,100,m_name);
 }
 
 T1Channel::~T1Channel()
@@ -216,7 +216,7 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res) :
   if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  p_vegas = new Vegas(m_rannum,100,m_name,0);
+  p_vegas = new Vegas(m_rannum,100,m_name);
 }
 
 U1Channel::~U1Channel()

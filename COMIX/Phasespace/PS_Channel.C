@@ -106,7 +106,7 @@ Vegas *PS_Channel::GetVegas(const std::string &tag,int nd)
 {
   Vegas_Map::iterator vit(m_vmap.find(tag));
   if (vit!=m_vmap.end()) return vit->second;
-  Vegas *vegas(new Vegas(nd,m_nvints,"CDBG_"+tag,0));
+  Vegas *vegas(new Vegas(nd,m_nvints,"CDBG_"+tag));
   m_vmap[tag] = vegas;
   if (m_vmode&8) vegas->SetAutoRefine();
   if (!(m_vmode&4)) vegas->SetOutputMode(0);
