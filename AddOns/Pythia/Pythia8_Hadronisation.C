@@ -1,6 +1,7 @@
 #include "ATOOLS/Phys/Fragmentation_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Message.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -37,17 +38,9 @@ public:
 
     m_pythia.readString("Check:mTolErr = 1e-1");
 
-
     AssignDecays();
-
     ApplyPythiaSettings();
-
-    // Settings for compressing and flagging partonic decays
-    m_shrink = m_settings["COMPRESS_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
-    m_flagpartonics = m_settings["FLAG_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
-
     HarmonizeMasses();
-
 
     m_pythia.init();
 
@@ -341,41 +334,12 @@ private:
 
     PRINT_INFO("Harmonizing particle masses and widths!");
     if (SherpaValues){
-      InitializeQuarkDiQuarkMasses();
+      ReadMassParameters();
       ModifyPythiaValues(MatchQuarks,MatchDiQuarks,MatchHadrons,MatchOther,MatchOnlyUnstable);
     }
     else {
       ModifySherpaValues(MatchQuarks,MatchDiQuarks,MatchHadrons,MatchOther,MatchOnlyUnstable);
     }
-  }
-
-  void InitializeQuarkDiQuarkMasses() {
-    /*
-      Sherpa quark and diquark masses are initialized to the same ones that are used for standard hadronization with Ahadic.
-     */
-    double mglue=  m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_GLUE"].SetDefault(0.00).Get<double>();
-    double mud =   m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_UP_DOWN"].SetDefault(0.30).Get<double>();
-    double ms =    m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_STRANGE"].SetDefault(0.40).Get<double>();
-    double mc =    m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_CHARM"].SetDefault(1.80).Get<double>();
-    double mb =    m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_BOTTOM"].SetDefault(5.10).Get<double>();
-    double mdiq =  m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_DIQUARK_OFFSET"].SetDefault(0.30).Get<double>();
-    double bind0 = m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_BIND_0"].SetDefault(0.12).Get<double>();
-    double bind1 = m_settings["PYTHIA8"]["HADRONIZATION_MASSES"]["M_BIND_1"].SetDefault(0.50).Get<double>();
-    Flavour(kf_gluon).SetHadMass(mglue);
-    Flavour(kf_d).SetHadMass(mud);
-    Flavour(kf_u).SetHadMass(mud);
-    Flavour(kf_s).SetHadMass(ms);
-    Flavour(kf_c).SetHadMass(mc);
-    Flavour(kf_b).SetHadMass(mb);
-    Flavour(kf_ud_0).SetHadMass((2.*mud+mdiq)*(1.+bind0));
-    Flavour(kf_uu_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
-    Flavour(kf_ud_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
-    Flavour(kf_dd_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
-    Flavour(kf_su_0).SetHadMass((ms+mud+mdiq)*(1.+bind0));
-    Flavour(kf_sd_0).SetHadMass((ms+mud+mdiq)*(1.+bind0));
-    Flavour(kf_su_1).SetHadMass((ms+mud+mdiq)*(1.+bind1));
-    Flavour(kf_sd_1).SetHadMass((ms+mud+mdiq)*(1.+bind1));
-    Flavour(kf_ss_1).SetHadMass((2.*ms+mdiq)*(1.+bind1));
   }
 
   void ModifyPythiaValues(bool MatchQuarks,bool MatchDiQuarks,bool MatchHadrons,bool MatchOther,bool MatchOnlyUnstable) {
@@ -427,41 +391,8 @@ private:
     }
   }
 
-  // Shrink partonic blobs
-  // Deletes the partonic decay products from the decay blob and replaces them
-  // with the results of their shower+fragmentation.
-  // Also removes the fragmentation and shower blob.
-  void Shrink(Blob_List * bloblist) {
-    list<Blob *> deleteblobs;
-    // Particle_Vector * parts;
-    for (Blob_List::reverse_iterator blit=bloblist->rbegin();
-         blit!=bloblist->rend();++blit) {
-      Blob * blob = (*blit);
-      if (blob->Type()==btp::Fragmentation) {
-        Blob * showerblob(blob->InParticle(0)->ProductionBlob());
-        Blob * decblob(showerblob->InParticle(0)->ProductionBlob());
-        if (decblob->Type()!=btp::Hadron_Decay) continue;
-        showerblob->DeleteInParticles(0);
-        showerblob->DeleteOutParticles(0);
-        deleteblobs.push_back(blob);
-        deleteblobs.push_back(showerblob);
-        while (!blob->GetOutParticles().empty()) {
-          Particle * part =
-            blob->RemoveOutParticle(blob->GetOutParticles().front());
-          decblob->AddToOutParticles(part);
-        }
-        decblob->SetStatus(blob_status::needs_hadrondecays);
-        decblob->AddData("Partonic",new Blob_Data<int>(m_flagpartonics));
-      }
-    }
-    for (list<Blob *>::iterator blit=deleteblobs.begin();
-         blit!=deleteblobs.end();blit++) bloblist->Delete((*blit));
-  }
-
   Pythia8::Pythia m_pythia;
-  bool m_shrink;
   bool m_pythiadecays;
-  bool m_flagpartonics;
   Settings& m_settings = Settings::GetMainSettings();
   std::set<int> m_processed;
 };
