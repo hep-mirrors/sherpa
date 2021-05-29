@@ -1,14 +1,6 @@
 
-GITTAG = AddOns/MCFM
-include ../../git.make
-
 MCFM_SOURCES  =	\
-		Git_Info.C \
-		MCFM_gg_hgg.C \
 		MCFM_Interface.C
-
-MCFM_ADDS     =	\
-		MCFM_Wrapper.H
 
 if MCFM_SUPPORT
 pkglib_LTLIBRARIES    =	libSherpaMCFM.la
@@ -17,11 +9,11 @@ libSherpaMCFM_la_SOURCES      =	$(MCFM_SOURCES)
 
 libSherpaMCFM_la_LIBADD       =	@CONDITIONAL_MCFMLIBS@
 
-libSherpaMCFM_la_CPPFLAGS     =	$(AM_CPPFLAGS)
+libSherpaMCFM_la_CPPFLAGS     =	$(AM_CPPFLAGS) -fopenmp @CONDITIONAL_MCFMINCS@
 
-MCFM_EXTRA_DIST = $(MCFM_ADDS)
+MCFM_EXTRA_DIST =
 else
-MCFM_EXTRA_DIST = $(MCFM_SOURCES) $(MCFM_ADDS)
+MCFM_EXTRA_DIST = $(MCFM_SOURCES)
 endif
 
-EXTRA_DIST = $(MCFM_EXTRA_DIST) install_mcfm.sh
+EXTRA_DIST = $(MCFM_EXTRA_DIST)

@@ -735,20 +735,22 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     mcfm,
-    AS_HELP_STRING([--enable-mcfm=/path/to/mcfm],[Enable MCFM.]),
+    AC_HELP_STRING([--enable-mcfm=/path/to/mcfm], [Enable MCFM.]),
     [ AC_MSG_CHECKING(for MCFM installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(MCFM not enabled); mcfm=false ;;
         yes)  if test -d "$MCFMDIR"; then
                 CONDITIONAL_MCFMDIR="$MCFMDIR"
-                CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib/libMCFM.a"
+                CONDITIONAL_MCFMLIBS="-Wl,-R -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(\$MCFMDIR is not a valid path.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_MCFMDIR}]); mcfm=true;;
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_MCFMDIR="${enableval}"
-                CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib/libMCFM.a"
+                CONDITIONAL_MCFMLIBS="-Wl,-R -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
@@ -759,9 +761,11 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   if test "$mcfm" = "true" ; then
     AC_DEFINE([USING__MCFM], "1", [Using MCFM])
+    AC_DEFINE_UNQUOTED([MCFM_PATH], "$CONDITIONAL_MCFMDIR", [MCFM directory])
   fi
   AC_SUBST(CONDITIONAL_MCFMDIR)
   AC_SUBST(CONDITIONAL_MCFMLIBS)
+  AC_SUBST(CONDITIONAL_MCFMINCS)
   AM_CONDITIONAL(MCFM_SUPPORT, test "$mcfm" = "true")
 
   AC_ARG_ENABLE(
