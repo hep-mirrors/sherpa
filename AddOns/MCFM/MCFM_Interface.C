@@ -53,7 +53,7 @@ namespace SHERPA {
       p_as=(MODEL::Running_AlphaS*)model->GetScalarFunction("alpha_S");
       std::string pdname(rpa->gen.Variable("SHERPA_CPP_PATH")+"/process.DAT");
       if (!FileExists(pdname))
-	Copy(MCFM_PATH+std::string("/share/process.DAT"),pdname);
+	Copy(MCFM_PATH+std::string("/share/MCFM/process.DAT"),pdname);
       std::map<std::string,std::string> params;
       params["n_flav"]=ToString(Flavour(kf_jet).Size()/2,16);
       params["down_mass"]=ToString(Flavour(kf_d).Mass(),16);
