@@ -419,5 +419,3 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   TestCh->GeneratePoint(p,(Cut_Data*)(NULL));
   delete TestCh;
 }
-
-

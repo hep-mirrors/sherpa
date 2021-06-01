@@ -36,9 +36,7 @@ Process_Base::Process_Base():
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
   m_mcmode(0), m_cmode(0),
-  m_lookup(false), m_use_biweight(true),
-  m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL)
+  m_lookup(false), m_use_biweight(true), p_apmap(NULL)
 {
   if (s_usefmm<0)
     s_usefmm =
@@ -743,9 +741,4 @@ std::string Process_Base::ShellName(std::string name) const
   for (size_t i(0);(i=name.find('[',i))!=std::string::npos;name.replace(i,1,"I"));
   for (size_t i(0);(i=name.find(']',i))!=std::string::npos;name.replace(i,1,"I"));
   return name;
-}
-
-
-const ATOOLS::Vec4D_Vector & Process_Base::Momenta() const {
-  return p_int->Momenta();
 }

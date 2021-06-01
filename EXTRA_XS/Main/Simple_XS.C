@@ -79,6 +79,7 @@ bool Simple_XS::Initialize(Model_Base *const model,
 
 Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
 {
+  msg_Out()<<METHOD<<":\n"<<pi<<"\n";
   bool oneisgroup(pi.m_ii.IsGroup()||pi.m_fi.IsGroup());
   if (oneisgroup) {
     Process_Group* newxs = new Process_Group();
