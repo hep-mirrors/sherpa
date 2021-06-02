@@ -5,6 +5,7 @@
 
 using namespace std;
 
+void Fggg(double mb, double mh, double s, double t, double u,std::complex<double> *F);
 std::pair<std::complex<double>,std::complex<double> >
 F14ggg(double mb, double mh, double s12, double s13, double s23);
 std::pair<std::complex<double>,std::complex<double> >
