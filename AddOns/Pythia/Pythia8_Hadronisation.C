@@ -122,7 +122,7 @@ private:
       py = part->Momentum()[2];
       pz = part->Momentum()[3];
       e = part->Momentum()[0];
-      m = part->Momentum().Mass();
+      m = part->FinalMass();
       pevt.append( id, status, col, acol, px, py, pz, e, m);
       pevt[i].vProd(part->XProd()[1],part->XProd()[2],part->XProd()[3],part->XProd()[0]);
     }
