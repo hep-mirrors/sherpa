@@ -102,18 +102,18 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
     m_wgtmap  *= m_psweight;
+    m_wgtmap  *= (m_enhance = m_psenhance.Factor(p_process->Process(),
+                                                 p_process->TotalXS()));
     m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
     p_lab      = process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
-    ManageWeights(m_psweight*m_ISsymmetryfactor);
+    ManageWeights(m_psweight*m_enhance*m_ISsymmetryfactor);
   }
   // trigger failed, return 0.
   else ManageWeights(0.0);
   // stability checks may lead to event weight set to 0 in case of failure
-  if (CheckStability())
-    m_wgtmap *= (m_enhance = m_psenhance.Factor(p_process->Process(),
-                                                p_process->TotalXS()));
-  else m_wgtmap *= 0.;
+  if (!CheckStability())
+    m_wgtmap *= 0.;
   return m_wgtmap;
 }
 
@@ -123,8 +123,11 @@ void Phase_Space_Handler::PrintIntermediate() {
   msg->SetPrecision(15);
   msg_Out()<<"==========================================================\n"
 	   <<p_active->Process()->Name()
-	   <<"  ME = "<<m_wgtmap.Nominal()<<" ,  PS = "<<m_psweight<<"  ->  "
-	   <<m_wgtmap.Nominal()*m_psweight<<std::endl;
+	   <<"  ME = "<<m_wgtmap.Nominal()
+           <<" ,  PS = "<<m_psweight
+           <<" ,  enh = "<<m_enhance
+           <<"  ->  "
+	   <<m_wgtmap.Nominal()*m_psweight*m_enhance<<std::endl;
   if (p_active->Process()->GetSubevtList()) {
     NLO_subevtlist * subs(p_active->Process()->GetSubevtList());
     for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i])<<"\n";
@@ -194,7 +197,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
   auto res =
-      new Weight_Info(wgtmap, dxs, 1.0, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
+      new Weight_Info(wgtmap, dxs, m_enhance, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
   return res;
 }
 

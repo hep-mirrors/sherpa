@@ -32,7 +32,10 @@ namespace PHASIC {
 
     void SetObservable(const std::string &enhanceobs,Process_Base * const process);
     void SetFunction(const std::string &enhancefunc,Process_Base * const process);
-    
+    void SetFactor(double f) {
+      m_factor = f;
+    }
+
     void AddPoint(const double xs,Process_Base * const process);
     void Optimize();
     void ReadIn(const std::string &path);

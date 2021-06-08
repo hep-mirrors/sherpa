@@ -151,7 +151,11 @@ namespace PHASIC {
     }
     inline void SetEnhanceFunction(const std::string &enhancefunc) {
       m_psenhance.SetFunction(enhancefunc,p_process->Process());
-    }    
+    }
+    inline void SetEnhance(const double& enhance)
+    {
+      m_psenhance.SetFactor(enhance);
+    }
     inline void SetOSMass(const double &osmass) { m_pspoint.SetOSMass(osmass); }
     inline void SetError(const double error)    { m_error=error; }
     inline void SetAbsError(const double error) { m_abserror=error; }
@@ -159,7 +163,6 @@ namespace PHASIC {
     inline void SetBeamIntegrator(Multi_Channel * channels) { m_pspoint.SetBeamIntegrator(channels); }
     inline void SetISRIntegrator(Multi_Channel * channels)  { m_pspoint.SetISRIntegrator(channels); }
     inline void SetFSRIntegrator(Multi_Channel * channels)  { m_pspoint.SetFSRIntegrator(channels); }
-    
 
     inline BEAM::Beam_Spectra_Handler   * GetBeamSpectra() const { return p_beamhandler; }
     inline PDF::ISR_Handler              * GetISRHandler() const { return p_isrhandler; }

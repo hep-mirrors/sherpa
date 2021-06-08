@@ -39,16 +39,14 @@ double Phase_Space_Enhance::Factor(Process_Base *const process,const double & to
   double obs=p_histo?p_histo->Xmin():0.0;
   if (!process->Info().Has(nlo_type::rsub)) obs=(*p_obs)(p_moms,p_flavs,m_nflavs);
   else {
-    double nobs(0.0);
-    for (size_t i(0);i<process->Size();++i) {
-      NLO_subevtlist* nlos=(*process)[i]->GetSubevtList();
-      if (nlos->back()->m_result==0.0) continue;
-      obs+=log((*p_obs)(nlos->back()->p_mom,
-			nlos->back()->p_fl,nlos->back()->m_n));
-      nobs+=1.0;
+    // fixed-order RS, read out with R kinematics
+    if (process->Info().m_nlomode==1) {
+      obs=(*p_obs)(p_moms,p_flavs,m_nflavs);
     }
-    if (nobs) obs=exp(obs/nobs);
-    else obs=1.0;
+    // MC@NLO H, read out with H kinematics
+    else {
+      obs=(*p_obs)(p_moms,p_flavs,m_nflavs);
+    }
   }
   if (p_histo==NULL) return obs;
   if (obs>=p_histo->Xmax()) obs=p_histo->Xmax()-1e-12;
@@ -119,18 +117,19 @@ void Phase_Space_Enhance::SetFunction(const std::string &enhancefunc,
 void Phase_Space_Enhance::AddPoint(const double xs,Process_Base * process) {
   if (p_histo) {
     if (!process->Info().Has(nlo_type::rsub)) {
-      double val((*p_obs)(p_moms,p_flavs,m_nflavs));
-      p_histo_current->Insert(val,xs/m_factor);
+      double obs((*p_obs)(p_moms,p_flavs,m_nflavs));
+      p_histo_current->Insert(obs,xs/m_factor);
     }
     else {
-      for (size_t i(0);i<process->Size();++i) {
-	NLO_subevtlist* nlos=(*process)[i]->GetSubevtList();
-	for (size_t j(0);j<nlos->size();++j) {
-	  if ((*nlos)[j]->m_result==0.0) continue;
-	  double val((*p_obs)((*nlos)[j]->p_mom,
-			      (*nlos)[j]->p_fl,(*nlos)[j]->m_n));
-	  p_histo_current->Insert(val,(*nlos)[j]->m_result/m_factor);
-	}
+      // fixed-order RS, fill with RS weight and R kinematics
+      if (process->Info().m_nlomode==1) {
+        double obs((*p_obs)(p_moms,p_flavs,m_nflavs));
+        p_histo_current->Insert(obs,xs/m_factor);
+      }
+      // MC@NLO H, read out with H kinematics
+      else {
+        double obs((*p_obs)(p_moms,p_flavs,m_nflavs));
+        p_histo_current->Insert(obs,xs/m_factor);
       }
     }
   }
