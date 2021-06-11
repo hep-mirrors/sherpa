@@ -81,6 +81,8 @@ namespace PHASIC {
     double m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
+    bool   m_hasinternalscale;
+    double m_internalscale;
     MODEL::Coupling_Map m_cpls;
 
     NLOTypeStringProcessMap_Map *p_apmap;
@@ -217,11 +219,12 @@ namespace PHASIC {
     // inline functions
     inline void SetParent(Process_Base *const proc) { p_parent=proc; }
 
-    inline size_t NIn() const  { return m_nin;  }
-    inline size_t NOut() const { return m_nout; }
-
+    inline size_t NIn()                             const { return m_nin;  }
+    inline size_t NOut()                            const { return m_nout; }
+    const ATOOLS::Vec4D_Vector          &Momenta()  const;
     inline const ATOOLS::Flavour_Vector &Flavours() const { return m_flavs; }
     inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs) { m_flavs = flavs; }
+    inline virtual std::vector<std::vector<int> > * Colours() const { return NULL; }
 
     inline const std::string &Name() const        { return m_name;    }
     inline const std::string &ResultsName() const { return m_resname; }
@@ -253,6 +256,9 @@ namespace PHASIC {
     inline void SetMEwgtinfo(const ATOOLS::ME_Weight_Info i) { m_mewgtinfo=i; }
 
     inline Process_Integrator *Integrator() const { return p_int; }
+    
+    inline virtual const bool   HasInternalScale() const { return m_hasinternalscale; }
+    inline virtual const double InternalScale()    const { return m_internalscale; }
 
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
@@ -283,7 +289,8 @@ namespace PHASIC {
     inline Cut_Data          * Cuts() const { return p_cuts; }
     inline Combined_Selector * Selector() const 
     { return p_mapproc?p_mapproc->p_selector:p_selector; }
-
+    inline virtual const double SPrimeMin() const { return -1.; }
+    inline virtual const double SPrimeMax() const { return -1.; }
     template <class PType> inline PType *Get() 
     { return dynamic_cast<PType*>(this); }
     template <class PType> inline const PType *Get() const 
@@ -292,7 +299,7 @@ namespace PHASIC {
     inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }
 
     inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
-
+    virtual bool FillFinalState(const ATOOLS::Vec4D_Vector &p) { return true; }
   };// end of class Process_Base
 
   class Order_Flavour {

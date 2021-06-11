@@ -63,7 +63,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
   p_flavours=proc->Process()->Flavours();
   p_fsrchannels = new FSR_Channels(this,"fsr_"+proc->Process()->Name());
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
-  m_osmass=(m_nout==1?p_flavours[m_nin].Mass():0.0);
+  m_osmass=(m_nout==1 && p_flavours[2].Kfcode()!=999?p_flavours[2].Mass():0.0);
   if (m_nin==2) {
     m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
     if (p_beamhandler) {
@@ -251,7 +251,7 @@ Weights_Map Phase_Space_Handler::Differential(Variations_Mode varmode)
 void Phase_Space_Handler::CalculateME(Variations_Mode varmode)
 {
   m_wgtmap = p_active->Process()->Differential(p_lab, varmode);
-  m_result=p_active->Process()->Last();
+  m_result = p_active->Process()->Last();
 }
 
 double Phase_Space_Handler::Weight(Vec4D_Vector &plab)
@@ -311,7 +311,13 @@ Weights_Map Phase_Space_Handler::Differential(
       p_isrhandler->SetLimits(m_isrspkey.Doubles(),m_isrykey.Doubles(),
 			      m_isrxkey.Doubles());
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
-      if (p_isrhandler->On()>0) { 
+      if (p_isrhandler->On()>0) {
+	if (m_nin==2 && m_nout==1 && p_flavours[2].Kfcode()==999) {
+	  if (p_active->Process()->SPrimeMin()>0.) 
+	    m_isrspkey[0] = p_active->Process()->SPrimeMin();
+	  if (p_active->Process()->SPrimeMax()>0.)
+	    m_isrspkey[1] = p_active->Process()->SPrimeMax();
+	}
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
@@ -320,8 +326,8 @@ Weights_Map Phase_Space_Handler::Differential(
 		   p_active->Process()->Flavours()[1],ran->Get())?2.0:1.0;
     if (!p_isrhandler->MakeISR(m_osmass?m_isrspkey[4]:m_isrspkey[3],
 			       m_beamykey[2]+m_isrykey[2],
-			     p_lab,process->Process()->
-			     Selected()->Flavours())) {
+			       p_lab,process->Process()->
+			       Selected()->Flavours())) {
       if (p_beamchannels) p_beamchannels->NoGenerate();    
       if (p_isrchannels)  p_isrchannels->NoGenerate();    
       p_fsrchannels->NoGenerate();
@@ -603,10 +609,8 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     Flavour_Vector fl_f(info->m_fi.GetExternal());
     Flavour_Vector fl_tot(fl_i);
     fl_tot.insert(fl_tot.end(),fl_f.begin(),fl_f.end());
-    //
     Single_Channel * TestCh = new Rambo(fl_i.size(),fl_f.size(),&fl_tot.front(),ms);
     TestCh->GeneratePoint(p,(Cut_Data*)(NULL));
-    //
     delete TestCh;
   }
 }
@@ -800,10 +804,16 @@ bool Phase_Space_Handler::CreateIntegrators()
       if (!p_isrchannels->Initialize()) return false;
     }
   }
-  msg_Tracking()<<"Initialized Phase_Space_Integrator (\n\t";
-  if (p_beamchannels) msg_Tracking()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
-  if (p_isrchannels) msg_Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
-  if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<std::endl;
+  if (msg_LevelIsTracking()) {
+    msg_Out()<<"Initialized Phase_Space_Integrator {\n\t";
+    if (p_beamchannels)
+      msg_Out()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
+    if (p_isrchannels)
+      msg_Out()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
+    if (p_fsrchannels)
+      msg_Out()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<";\n";
+    msg_Out()<<"}\n";
+  }
   return true;
 }
 
