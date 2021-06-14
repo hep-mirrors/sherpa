@@ -42,7 +42,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_dmode(1), m_initialized(0), m_sintegrator(0),
-  m_maxtrials(1000000), m_E(ATOOLS::rpa->gen.Ecms()), m_s(m_E*m_E),
+  m_E(ATOOLS::rpa->gen.Ecms()), m_s(m_E*m_E),
   m_printpspoint(false)
 {
   RegisterDefaults();
@@ -50,10 +50,9 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
   m_thkill = s["IB_THRESHOLD_KILL"].Get<double>();
   m_error = s["INTEGRATION_ERROR"].Get<double>();
   m_abserror = s["ABS_ERROR"].Get<double>();
-  m_maxtrials = s["MAX_TRIALS"].Get<int>();
   m_fin_opt = s["FINISH_OPTIMIZATION"].Get<bool>();
   m_enhancexs = s["ENHANCE_XS"].Get<int>();
-  m_printpspoint = s["PRINT_PS_POINTS"].Get<int>();
+  m_printpspoint = s["PRINT_PS_POINTS"].Get<bool>();
   SetEnhanceObservable(eobs);
   SetEnhanceFunction(efunc);
 
@@ -110,7 +109,6 @@ void Phase_Space_Handler::RegisterDefaults() const
   const double error{ s["ERROR"].Get<double>() };
   s["INTEGRATION_ERROR"].SetDefault(error);
   s["ABS_ERROR"].SetDefault(0.0);
-  s["MAX_TRIALS"].SetDefault(1000000);
   s["FINISH_OPTIMIZATION"].SetDefault(true);
   s["ENHANCE_XS"].SetDefault(0);
   s["PRINT_PS_POINTS"].SetDefault(0);

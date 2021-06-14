@@ -317,3 +317,15 @@ bool Settings::IsDefaultSynonym(const Settings_Keys& settings_keys,
   const auto& v = it->second;
   return (std::find(v.begin(), v.end(), value) != v.end());
 }
+
+void Settings::SetSynonyms(const Settings_Keys& settings_keys,
+                           const std::vector<std::string>& synonyms)
+{
+  const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+  const auto it = m_synonyms.find(keys);
+  if (m_synonyms.find(keys) != m_synonyms.end())
+    if (synonyms != it->second)
+      THROW(fatal_error, "A different synonyms list for "
+          + keys.back() + " has already been set.");
+  m_synonyms[keys] = synonyms;
+}

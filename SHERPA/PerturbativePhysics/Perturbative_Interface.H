@@ -37,7 +37,7 @@ namespace SHERPA {
 
     ATOOLS::Cluster_Amplitude *p_ampl;
 
-    ATOOLS::Weights_Map m_weightsmap;
+    ATOOLS::Weights_Map m_weightsmap, m_lkfweightsmap;
     double m_globalkfac, m_maxkfac;
     int    m_bbarmode;
 

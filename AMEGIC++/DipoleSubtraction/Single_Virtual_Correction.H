@@ -40,7 +40,7 @@ namespace AMEGIC {
     PHASIC::Virtual_ME2_Base         * p_loopme;
 
     double *                p_reqborn;
-    double                  m_cmur[2];
+    std::vector<double>     m_cmur,m_wass;
     double                  m_x0,m_x1,m_eta0,m_eta1,m_z0,m_z1;
 
     bool   m_force_init, m_sccmur, m_murcoeffvirt, m_loopmapped;

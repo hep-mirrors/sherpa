@@ -97,6 +97,7 @@ EventInfo3::EventInfo3(const EventInfo3 &evtinfo) :
   m_orders(evtinfo.m_orders),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
   m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
+  m_userhook(false), m_userweight(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),m_muq2(0.),
   m_alphas(0.), m_alpha(0.),
   m_userhook(false), m_userweight(0.), m_type(evtinfo.m_type),
@@ -806,6 +807,12 @@ void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
     cross_section->set_cross_section(xs,err);
     event.set_cross_section(cross_section);
 
+}
+
+bool HepMC3_Interface::StartsLikeVariationName(const std::string& s)
+{
+  return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0 ||
+          s.find("ASS") == 0);
 }
 
 void HepMC3_Interface::DeleteGenSubEventList()

@@ -100,7 +100,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
       if (col==0) continue;
       std::vector<size_t> js;
       for (size_t j(0);j<ampl->Legs().size();++j)
-	if (i!=j && oc[j].m_j==col && cs.find(j)==cs.end()) 
+	if (i!=j && oc[j].m_j==col && cs.find(j)==cs.end())
 	  js.push_back(j);
       if (js.empty()) {
 	msg_Debugging()<<"color singlet "<<*cl<<"\n";
@@ -228,7 +228,7 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
   case 1: {
     sol=SetRandomColors(ampl);
     break;
-  } 
+  }
   case 2: {
     sol=SetSumSqrColors(ampl);
     if (!sol) sol=SetRandomColors(ampl);
@@ -294,7 +294,7 @@ void Color_Setter::SetColors(ATOOLS::Cluster_Amplitude *ampl)
 	  ampl->Leg(i)->SetCol(ColorID(0,0));
 	}
       while (true) {
-	std::random_shuffle(atids.begin(),atids.end(),*ran);
+      std::shuffle(atids.begin(),atids.end(),*ran);
 	size_t i(0);
 	for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
 	if (i==atids.size()) break;
@@ -307,7 +307,7 @@ void Color_Setter::SetColors(ATOOLS::Cluster_Amplitude *ampl)
     }
   }
   for (Cluster_Amplitude *campl(ampl->Prev());campl;campl=campl->Prev()) {
-    Cluster_Amplitude *next(campl->Next()); 
+    Cluster_Amplitude *next(campl->Next());
     Cluster_Leg *lij=NULL;
     for (size_t i(0);i<next->Legs().size();++i)
       if (next->Leg(i)->K()) {

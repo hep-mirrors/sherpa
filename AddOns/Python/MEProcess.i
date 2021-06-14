@@ -67,11 +67,20 @@ public:
 	    PyErr_SetString(PyExc_TypeError,"Momenta must have four components");
 	    return NULL;
 	  }
-	  vec4_vec.push_back(ATOOLS::Vec4D( PyFloat_AsDouble(PySequence_GetItem(momentum,0)),
-					    PyFloat_AsDouble(PySequence_GetItem(momentum,1)),
-					    PyFloat_AsDouble(PySequence_GetItem(momentum,2)),
-					    PyFloat_AsDouble(PySequence_GetItem(momentum,3)) ));
+          PyObject* m0 = PySequence_GetItem(momentum,0);
+          PyObject* m1 = PySequence_GetItem(momentum,1);
+          PyObject* m2 = PySequence_GetItem(momentum,2);
+          PyObject* m3 = PySequence_GetItem(momentum,3);
+	  vec4_vec.push_back(ATOOLS::Vec4D( PyFloat_AsDouble(m0),
+					    PyFloat_AsDouble(m1),
+					    PyFloat_AsDouble(m2),
+					    PyFloat_AsDouble(m3) ));
 	  $self->SetMomenta(vec4_vec);
+          Py_DECREF(momentum);
+          Py_DECREF(m0);
+          Py_DECREF(m1);
+          Py_DECREF(m2);
+          Py_DECREF(m3);
 	}
       return PyInt_FromLong(1);
     };

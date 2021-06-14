@@ -100,14 +100,12 @@ build-manual:
 
 .test_template: &test
   stage: test
-  dependencies:
-    - build
   variables:
     GIT_STRATEGY: none  # we only need the artifacts from the build
 
 test-LO_Z:
   <<: *test
-  dependencies:
+  needs:
     - build
   script:
     - mkdir test-LO_Z
@@ -116,7 +114,7 @@ test-LO_Z:
 
 test-clang-strict-LO_Z:
   <<: *test
-  dependencies:
+  needs:
     - build-clang-strict
   script:
     - mkdir test-clang-strict-LO_Z
@@ -139,7 +137,7 @@ trigger_pages:
     - when: never
   script:
     - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
-  dependencies:
+  needs: []
 
 # build the dist-tarball
 dist:

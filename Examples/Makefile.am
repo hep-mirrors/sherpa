@@ -47,27 +47,11 @@ nobase_dist_examples_DATA         =	\
 		H_in_GluonFusion/LHC_HInterference/Sherpa.yaml \
 		H_in_GluonFusion/LHC_HJets/Sherpa.yaml \
 		H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml \
-		H_in_TTBar/LHC_TTH_MCatNLO/lib.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/intlib.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/libqq.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/libglu.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/matri.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/boxlib.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/boxlib_qq.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/penta_qq.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p1new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p2new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p3new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p4new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p5new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p6new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Virtual.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Interface.C \
-		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct-TTH \
 		H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml \
 		Soft_QCD/Run.Xsecs.dat \
 		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
 		Tops_plus_Jets/LHC_Tops/Sherpa.yaml \
+		Tops_plus_Jets/LHC_Tops/Sherpa.EWapprox.yaml \
 		Tops_plus_V/LHC_TTW/Sherpa.yaml \
 		UFO_MSSM/MSSM/__init__.py \
 		UFO_MSSM/MSSM/build_restrict.py \

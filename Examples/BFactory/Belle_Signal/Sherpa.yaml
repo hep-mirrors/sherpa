@@ -10,7 +10,7 @@ PARTICLE_DATA:
   5: {Massive: 1}
 MASSIVE_PS: 3
 ME_GENERATORS: Internal
-SCALES: VAR{sqr(91.2)}
+CORE_SCALE: VAR{sqr(91.2)}
 
 PROCESSES:
 #

@@ -66,8 +66,8 @@ void Matrix_Element_Handler::RegisterMainProcessDefaults(
 {
   procsettings["Cut_Core"].SetDefault(0);
   procsettings["CKKW"].SetDefault("");
-  procsettings.DeclareVectorSettingsWithEmptyDefault({
-      "Decay", "DecayOS", "No_Decay" });
+  procsettings.DeclareVectorSettingsWithEmptyDefault(
+      {"Decay", "DecayOS", "No_Decay"});
 }
 
 Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
@@ -614,7 +614,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
   Settings& s = Settings::GetMainSettings();
   args.pi.m_scale = s["SCALES"].Get<std::string>();
   const auto couplings = s["COUPLINGS"].GetVector<std::string>();
-  args.pi.m_coupling = MakeString(couplings, 0);
+  args.pi.m_coupling = MakeString(couplings);
   args.pi.m_kfactor = s["KFACTOR"].Get<std::string>();
   args.pi.m_cls = (cls::scheme)s["COLOUR_SCHEME"].Get<int>();
   args.pi.m_hls = (hls::scheme)s["HELICITY_SCHEME"].Get<int>();
@@ -720,8 +720,10 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
         || subkey == "Max_Amplitude_Order"
         || subkey == "Min_Amplitude_Order"
         || subkey == "NLO_Order") {
-      // translate back into a single string to use ExtractMPvalues below
       value = MakeOrderString(proc[rawsubkey]);
+    } else if (subkey == "Associated_Contributions") {
+      value = MakeString(
+          proc[rawsubkey].SetDefault<std::string>({}).GetVector<std::string>());
     } else {
       value = proc[rawsubkey].SetDefault("").Get<std::string>();
     }
@@ -754,6 +756,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "NLO_Part")           ExtractMPvalues(value, range, nf, args.pbi.m_vnlopart);
     else if (subkey == "NLO_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vnlocpl);
     else if (subkey == "Subdivide_Virtual")  ExtractMPvalues(value, range, nf, args.pbi.m_vnlosubv);
+    else if (subkey == "Associated_Contributions") ExtractMPvalues(value, range, nf, args.pbi.m_vasscontribs);
     else if (subkey == "ME_Generator")       ExtractMPvalues(value, range, nf, args.pbi.m_vmegen);
     else if (subkey == "RS_ME_Generator")    ExtractMPvalues(value, range, nf, args.pbi.m_vrsmegen);
     else if (subkey == "Loop_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_vloopgen);
@@ -957,6 +960,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
           }
         }
 	if (GetMPvalue(args.pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
+	if (GetMPvalue(args.pbi.m_vasscontribs,nfs,pnid,ds))
+          cpi.m_fi.m_asscontribs=ToType<asscontrib::type>(ds);
 	if (GetMPvalue(args.pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(args.pbi.m_vrsmegen,nfs,pnid,ds)) cpi.m_rsmegenerator=ds;
 	else cpi.m_rsmegenerator=cpi.m_megenerator;
@@ -1196,10 +1201,10 @@ namespace SHERPA {
 }
 
 std::string Matrix_Element_Handler::MakeString
-(const std::vector<std::string> &in,const size_t &first) const
+(const std::vector<std::string> &in) const
 {
-  std::string out(in.size()>first?in[first]:"");
-  for (size_t i(first+1);i<in.size();++i) out+=" "+in[i];
+  std::string out(in.size()>0?in[0]:"");
+  for (size_t i(1);i<in.size();++i) out+=" "+in[i];
   return out;
 }
 
@@ -1217,8 +1222,7 @@ std::string Matrix_Element_Handler::MakeOrderString(Scoped_Settings&& s) const
       ordervalues.resize(orderidx + 1, "-1");
     ordervalues[orderidx] = order;
   }
-  // translate back into a single string to use ExtractMPvalues below
-  return MakeString(ordervalues, 0);
+  return MakeString(ordervalues);
 }
 
 double Matrix_Element_Handler::GetWeight

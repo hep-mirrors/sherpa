@@ -15,6 +15,7 @@ namespace PHASIC {
     bool   m_zero, m_pdfcts, m_dads;
     size_t m_nfconvscheme;
     ATOOLS::Cluster_Sequence_Info m_csi;
+    std::vector<ATOOLS::asscontrib::type> m_asscontrib;
 
     //! Override in a subclass that calculates KP terms to enable their reweighting
     virtual double KPTerms(int mode, double scalefac2=1.0) { return 0.; };
@@ -155,6 +156,7 @@ namespace PHASIC {
     void UpdateMEWeightInfo(Scale_Setter_Base*);
     void ReweightBVI(ATOOLS::ClusterAmplitude_Vector&);
     void ReweightRS(ATOOLS::ClusterAmplitude_Vector&);
+    void CalculateAssociatedContributionVariations();
 
   };// end of class Single_Process
 

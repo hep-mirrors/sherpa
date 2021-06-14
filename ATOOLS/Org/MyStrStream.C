@@ -29,6 +29,24 @@ namespace ATOOLS {
     return true;
   }
 
+  template <> double ToType(const std::string &value,
+		            const size_t precision) {
+    MyStrStream converter;
+    double converted;
+    converter.precision(precision);
+    converter<<value;
+    converter>>converted;
+    if (converter.fail()) {
+      if (value == "inf")
+        converted = std::numeric_limits<double>::infinity();
+      else if (value == "-inf")
+        converted = -std::numeric_limits<double>::infinity();
+      else
+        THROW(fatal_error, "Failed to parse " + value);
+    }
+    return converted;
+  }
+
   std::string StringTrim(const std::string& untrimmed)
   {
     std::string s{ untrimmed };

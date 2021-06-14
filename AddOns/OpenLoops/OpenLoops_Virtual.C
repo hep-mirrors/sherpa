@@ -18,13 +18,15 @@ OpenLoops_Virtual::OpenLoops_Virtual(const Process_Info& pi,
                                      const Flavour_Vector& flavs,
                                      int ol_id) :
   Virtual_ME2_Base(pi, flavs), m_ol_id(ol_id), m_ismapped(false),
-  m_modebackup(m_mode)
+  m_modebackup(m_mode),
+  m_ol_asscontribs(OpenLoops_Interface::ConvertAssociatedContributions(pi.m_fi.m_asscontribs))
 {
   DEBUG_FUNC("");
   msg_Debugging()<<PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi)
                  <<" -> "<<OpenLoops_Interface::s_procmap[m_ol_id]
                  <<" ("<<m_ol_id<<")"<<std::endl;
   m_modebackup=m_mode=OpenLoops_Interface::s_vmode;
+  m_asscontribs.resize(m_ol_asscontribs);
 }
 
 void OpenLoops_Virtual::SwitchMode(const int mode)
@@ -65,6 +67,18 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta)
     msg_Out()<<"V_fin = "<<m_res.Finite()<<" -> "<<m_res.Finite()/m_born/factor<<std::endl;
     msg_Out()<<"V_e1  = "<<m_res.IR()<<" -> "<<m_res.IR()/m_born/factor<<std::endl;
     msg_Out()<<"V_e2  = "<<m_res.IR2()<<" -> "<<m_res.IR2()/m_born/factor<<std::endl;
+  }
+  for (size_t i(0);i<m_ol_asscontribs;++i) {
+    m_asscontribs[i]=0.;
+    if (msg_LevelIsDebugging()) timing->Start();
+    OpenLoops_Interface::EvaluateAssociated(m_ol_id, momenta, i+1, m_asscontribs[i]);
+    if (shouldprinttime) {
+      timing->Stop();
+      PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" = "<<m_asscontribs[i]<<" user="<<timing->UserTime()
+                 <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
+    }
+  }
+  if (shouldprinttime) {
     delete timing;
   }
 
@@ -77,6 +91,7 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta)
   m_res.Finite()/=factor;
   m_res.IR()/=factor;
   m_res.IR2()/=factor;
+  for (size_t i(0);i<m_ol_asscontribs;++i) m_asscontribs[i]/=factor;
 }
 
 bool OpenLoops_Virtual::IsMappableTo(const PHASIC::Process_Info& pi)

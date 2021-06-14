@@ -237,13 +237,13 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
   return ampl;
 }
 
-ATOOLS::Weights_Map MCatNLO_Process::Differential(const Vec4D_Vector &p,
-                                                  Variations_Mode varmode)
+Weights_Map MCatNLO_Process::Differential(const Vec4D_Vector &p,
+					  Variations_Mode varmode)
 {
   THROW(fatal_error,"Invalid function call");
 }
 
-Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
+Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
 {
   DEBUG_FUNC(Name());
 
@@ -261,15 +261,13 @@ Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   p_bproc->Generator()->ShiftMasses(crampl);
   p_bproc->Generator()->SetMassMode(mm);
   int rmode = rampl->ColorMap().empty() ? 128 : 0;
-  Weights rs = rsproc->Differential(*crampl, Variations_Mode::all, rmode)
-                   .AbsoluteValues("ME");
-  Weights r = rsproc->GetSubevtList()->back()->m_results.AbsoluteValues("ME");
+  Weights_Map rs = rsproc->Differential(*crampl, Variations_Mode::all, rmode);
+  Weights_Map r = rsproc->GetSubevtList()->back()->m_results;
   if (rmode && r.Nominal() == 0.0 &&
       rsproc->Differential(*crampl, Variations_Mode::nominal_only, 64).Nominal() != 0.0) {
     for (int i(0); i < 100 && r.Nominal() == 0.0; ++i) {
-      rs = rsproc->Differential(*crampl, Variations_Mode::all, rmode)
-               .AbsoluteValues("ME");
-      r = rsproc->GetSubevtList()->back()->m_results.AbsoluteValues("ME");
+      rs = rsproc->Differential(*crampl, Variations_Mode::all, rmode);
+      r = rsproc->GetSubevtList()->back()->m_results;
     }
   }
   crampl->Delete();
@@ -291,13 +289,11 @@ Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   p_bproc->Generator()->SetMassMode(mm);
   bproc->GetMEwgtinfo()->m_type = mewgttype::none;
   int bmode = ampl.ColorMap().empty() ? 128 : 0;
-  Weights b = bproc->Differential(*campl, Variations_Mode::all, bmode)
-                   .AbsoluteValues("ME");
+  Weights_Map b = bproc->Differential(*campl, Variations_Mode::all, bmode);
   if (bmode && b.Nominal() == 0.0 &&
       bproc->Differential(*campl, Variations_Mode::nominal_only, 64).Nominal() != 0.0) {
     for (int i(0); i < 100 && b.Nominal() == 0.0; ++i) {
-      b = bproc->Differential(*campl, Variations_Mode::all, bmode)
-              .AbsoluteValues("ME");
+      b = bproc->Differential(*campl, Variations_Mode::all, bmode);
     }
   }
   if (b.Nominal() == 0.0) {
@@ -305,44 +301,65 @@ Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
     return 0.0;
   }
   bviproc->BBarMC()->GenerateEmissionPoint(*campl);
-  Weights bvi = bviproc->Differential(*campl, Variations_Mode::all, bmode)
-                    .AbsoluteValues("ME");
+  Weights_Map bvi = bviproc->Differential(*campl, Variations_Mode::all, bmode);
   campl->Delete();
 
   // eventually calculate local K factor
+  msg_Debugging() << "Calc'ing LocalKFactor weights.\n";
   const double random(ran->Get());
-  Weights kfacs;
-  ReweightAll(kfacs,
-      [this, &bvi, &b, &rs, &r, &random, &ampl](
-        double varweight,
-        size_t varindex,
-        QCD_Variation_Params* varparams) -> double {
-    const LocalKFactorInfo info = CalculateLocalKFactorInfo(
-        bvi[varindex], b[varindex], rs[varindex], r[varindex]);
-    if (info.s == 0.0 && info.h == 0.0)
-      return 0.0;
-    // select S or H and return corresponding K factor; update cluster
-    // amplitudes if this is the nominal calculation (i.e. varparams == nullptr)
-    const double selectionwgt {dabs(info.s) / (dabs(info.s) + dabs(info.h))};
-    if (selectionwgt > random) {
-      const double kfac {info.s / selectionwgt};
-      msg_Debugging() << "S selected ( w = " << kfac << " )\n";
-      if (!varparams && m_kfacmode / 10) {
-        for (Cluster_Amplitude* campl(ampl.Next()); campl;
-             campl = campl->Next()) {
-          campl->SetLKF(bvi[varindex] / b[varindex]);
-          campl->SetNLO(2);
-        }
+
+  // Below, we'll Iterate through all weight tuples, calculating the
+  // corresponding K factors. For this, we use the absolute version of the
+  // variations, which makes it more straightforward to deal with each
+  // variation individually in the loop below.
+  bvi.MakeAbsolute();
+  b.MakeAbsolute();
+  rs.MakeAbsolute();
+  r.MakeAbsolute();
+
+  // Copy BVI variations to get the same variations structure; the actual K
+  // factor data is set in the loop below; note that via bvi.MakeAbsolute(), we
+  // can be certain that global factors such as base_weight and
+  // nominal_prefactor are set to 1.0
+  Weights_Map kfacs = bvi;
+
+  for (const auto& kv : bvi) {
+    const std::string& key = kv.first;
+    const Weights& weights = kv.second;
+    const auto num_weights = weights.Size();
+    for (int i {0}; i < num_weights; i++) {
+      msg_Debugging() << weights.Name(i) << '\n';
+
+      const LocalKFactorInfo info = CalculateLocalKFactorInfo(
+          bvi.Get(key, i), b.Get(key, i), rs.Get(key, i), r.Get(key, i));
+      if (info.s == 0.0 && info.h == 0.0) {
+        kfacs[key][i] = 0.0;
+        continue;
       }
-      return kfac;
-    } else {
-      const double kfac {info.h / (1.0 - selectionwgt)};
-      msg_Debugging() << "H selected ( w = " << kfac << " )\n";
-      if (!varparams && m_kfacmode / 10)
-        ampl.SetNLO(m_hpsmode);
-      return kfac;
+      // select S or H and set corresponding K factor; update cluster
+      // amplitudes if this is the nominal calculation
+      const double selectionwgt {dabs(info.s) / (dabs(info.s) + dabs(info.h))};
+      if (selectionwgt > random) {
+        const double kfac {info.s / selectionwgt};
+        msg_Debugging() << "S selected ( w = " << kfac << " )\n";
+        if (key == "ME" && i == 0 && m_kfacmode / 10) {
+          for (Cluster_Amplitude* campl(ampl.Next()); campl;
+              campl = campl->Next()) {
+            campl->SetLKF(bvi[key][i] / b[key][i]);
+            campl->SetNLO(2);
+          }
+        }
+        kfacs[key][i] = kfac;
+      } else {
+        const double kfac {info.h / (1.0 - selectionwgt)};
+        msg_Debugging() << "H selected ( w = " << kfac << " )\n";
+        if (key == "ME" && i == 0 && m_kfacmode / 10)
+          ampl.SetNLO(m_hpsmode);
+        kfacs[key][i] = kfac;
+      }
     }
-  });
+  }
+  kfacs.MakeRelative();
   return kfacs;
 }
 

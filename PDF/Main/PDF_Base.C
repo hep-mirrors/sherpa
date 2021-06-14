@@ -14,6 +14,22 @@
 using namespace PDF;
 using namespace ATOOLS;
 
+namespace PDF {
+  PDF_Defaults *pdfdefs(NULL);
+}
+
+PDF_Defaults::PDF_Defaults()
+{
+  m_deflib[kf_p_plus] = "NNPDFSherpa";
+  m_defset[kf_p_plus] = "NNPDF31_nnlo_as_0118_mc";
+
+  m_deflib[kf_e] = "PDFESherpa";
+  m_defset[kf_e] = "PDFe";
+
+  m_deflib[kf_photon] = "GRVSherpa";
+  m_defset[kf_photon] = "GRV";
+}
+
 std::ostream &PDF::operator<<(std::ostream &ostr,const PDF::PDF_AS_Info &asi)
 {
   return ostr<<"\\alpha_s of order="<<asi.m_order

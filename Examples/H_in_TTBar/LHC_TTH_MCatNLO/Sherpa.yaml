@@ -4,7 +4,7 @@ BEAM_ENERGIES: 6500
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
 # to use a dedicated loop library you can run `scons` in this Example directory and replace OpenLoops with TTH throughout this run card
 
-SCALES: VAR{sqr(175+125/2)}
+CORE_SCALE: VAR{sqr(175+125/2)}
 
 PARTICLE_DATA:
   5: {Yukawa: 4.92}

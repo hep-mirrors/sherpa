@@ -15,9 +15,13 @@ namespace ATOOLS {
   public:
 
     // constructors
-    Yaml_Reader();
+    Yaml_Reader(const std::string& name="");
     Yaml_Reader(std::istream&);
     Yaml_Reader(const std::string& path, const std::string& filename);
+
+    std::string Name() const;
+
+    std::vector<Settings_Keys> AllSettingsKeys();
 
     std::vector<std::string> GetKeys(const Settings_Keys& scopekeys);
     bool IsScalar(const Settings_Keys& scopekeys);
@@ -94,11 +98,18 @@ namespace ATOOLS {
 
     void Parse(std::istream&);
 
+    std::string m_name;
+
   private:
 
     SHERPA_YAML::Node m_node;
 
     SHERPA_YAML::Node NodeForKeys(const Settings_Keys& scopekeys);
+
+    void AddSettingsKeys(
+        std::vector<Settings_Keys>&,
+        Settings_Keys&,
+        SHERPA_YAML::Node&);
 
   };
 

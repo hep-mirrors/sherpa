@@ -89,6 +89,11 @@ operator()(const Process_Info &pi) const
       return new Singlet_QCD_Virtual(pi,fl);
     }
     if (pi.m_fi.m_ps.size()!=2) return NULL;
+    if (pi.m_fi.m_asscontribs!=asscontrib::none) {
+      msg_Error()<<"DY_QCD_Virtual(): Error: cannot provide requested "
+                 <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
+      return NULL;
+    }
     Flavour_Vector fl=pi.ExtractFlavours();
     for (size_t i(0);i<fl.size();++i)
       if (fl[i].IsMassive()) return NULL;

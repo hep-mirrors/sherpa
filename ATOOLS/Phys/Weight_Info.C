@@ -55,6 +55,7 @@ ME_Weight_Info &ME_Weight_Info::operator*=(const double &scal)
     for (size_t i(0);i<m_wren.size();++i) m_wren[i]*=scal;
   if (m_type&mewgttype::KP)
     for (size_t i(0);i<m_wfac.size();++i) m_wfac[i]*=scal;
+  for (size_t i(0);i<m_wass.size();++i) m_wass[i]*=scal;
   for (size_t i(0);i<m_dadsinfos.size();++i) m_dadsinfos[i].m_wgt*=scal;
   for (size_t i(0);i<m_rdainfos.size();++i) m_rdainfos[i].m_wgt*=scal;
   return *this;
@@ -76,6 +77,7 @@ void ME_Weight_Info::Reset()
   m_mur2=m_muf2=0.;
   if (m_type&mewgttype::VI) for (size_t i(0);i<m_wren.size();++i) m_wren[i]=0.;
   if (m_type&mewgttype::KP) for (size_t i(0);i<m_wfac.size();++i) m_wfac[i]=0.;
+  for (size_t i(0);i<m_wass.size();++i) m_wass[i]=0.;
 }
 
 std::ostream & ATOOLS::operator<<(std::ostream & s,
@@ -90,6 +92,7 @@ std::ostream & ATOOLS::operator<<(std::ostream & s,
    <<", x1p="<<mwi.m_y1<<", x2p="<<mwi.m_y2<<std::endl;
   if (mwi.m_type&mewgttype::VI) s<<"wren="<<mwi.m_wren<<std::endl;
   if (mwi.m_type&mewgttype::KP) s<<"wfac="<<mwi.m_wfac<<std::endl;
+  s<<"ass="<<mwi.m_wass<<std::endl;
   for (size_t i(0);i<mwi.m_dadsinfos.size();++i)
     s<<mwi.m_dadsinfos[i]<<std::endl;
   for (size_t i(0);i<mwi.m_rdainfos.size();++i)
