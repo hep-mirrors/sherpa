@@ -17,6 +17,16 @@ namespace EXTRAXS {
     std::set<std::pair<size_t,size_t> > m_ccombs;
     std::map<size_t,ATOOLS::Flavour_Vector> m_cfls;
 
+    bool                   m_localFS, m_stashed;
+    ATOOLS::Flavour_Vector m_original_flavs;
+    ATOOLS::Vec4D_Vector   m_original_momenta;
+    size_t                 m_original_nout;
+
+    void StashOriginalFlavours();
+    void RestoreOriginalFlavours();
+    void OverwriteOriginalWithLocalFlavoursAndMomenta();
+  protected:
+    double m_sprimemin, m_sprimemax;
   public:
 
     // constructors
@@ -34,12 +44,19 @@ namespace EXTRAXS {
     bool Combinable(const size_t &idi, const size_t &idj);
 
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
+    bool FillFinalState(const ATOOLS::Vec4D_Vector &p);
 
+    // functions overwritten here
+    std::vector<std::vector<int> > * Colours() const;
+
+    
+    const bool HasInternalScale() const;
+    const double InternalScale() const;
     // inline functions
-    inline ME2_Base *GetME() const { return p_born_me2; }
-
+    inline ME2_Base   * GetME()     const { return p_born_me2; }
+    inline const double SPrimeMin() const { return m_sprimemin; }
+    inline const double SPrimeMax() const { return m_sprimemax; }
   };
-
 }// end of namespace EXTRAXS
 
 #endif

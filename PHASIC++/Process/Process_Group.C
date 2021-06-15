@@ -302,7 +302,9 @@ bool Process_Group::ConstructProcess(Process_Info &pi)
 bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
 {
   if (ci==m_nin+m_nout) {
-    if (!ConstructProcess(pi)) return false;
+    if (!ConstructProcess(pi)) {
+      return false;
+    }
     std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			+"/Process/Sherpa/"+m_name);
     if (pi.m_megenerator.length()) mapfile+="__"+pi.m_megenerator;
@@ -358,25 +360,30 @@ bool Process_Group::ConstructProcesses()
     m_resname+=")";
     msg_Debugging()<<"Group "<<m_blocks<<"\n";
   }
-  msg_Debugging()<<"checking for '"<<mapfile<<"' ... "<<std::flush;
+  msg_Debugging()<<METHOD<<" in PHASIC: checking for '"<<mapfile<<"' ... "<<std::flush;
   if (FileExists(mapfile)) {
     msg_Debugging()<<"found"<<std::endl;
     My_In_File map(mapfile);
     if (!map.Open()) THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
     long int cfl, cnt;
     *map>>cfl;
+    msg_Debugging()<<map<<"\n"<<cfl<<"\n";
     while (!map->eof()) {
+      size_t i=0; i++;
+      msg_Debugging()<<"  in loop: "<<i<<"\n";
       for (cnt=0;cnt<m_nin+m_nout && !map->eof();++cnt) {
         SetFlavour(cpi.m_ii,cpi.m_fi,Flavour(std::abs(cfl),cfl<0),cnt);
         *map>>cfl;
       }
       int construct(ConstructProcess(cpi));
+      msg_Debugging()<<" ... "<<cpi<<"\n";
       if (m_blocks.empty()) {
 	if (cnt!=m_nin+m_nout || cfl || !construct)
 	  THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
       }
       *map>>cfl;
     }
+    msg_Debugging()<<METHOD<<" in PHASIC (mapping ok), with "<<m_procs.size()<<".\n";  
     return m_procs.size();
   }
   msg_Debugging()<<"not found"<<std::endl;

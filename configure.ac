@@ -145,6 +145,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  EXTRA_XS/Main/Makefile \
 	  EXTRA_XS/Two2Two/Makefile \
 	  EXTRA_XS/NLO/Makefile \
+	  EXTRA_XS/Special/Makefile \
           EXTRA_XS/One2Two/Makefile \
 	  EXTRA_XS/One2Three/Makefile \
 	  EXTRA_XS/Makefile \
