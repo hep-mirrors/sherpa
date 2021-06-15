@@ -348,9 +348,6 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
   if (key.first!="") out+="."+key.first;
   if (key.second!=0) out+=".j"+ToString(key.second);
   out+=".yoda";
-#ifdef HAVE_LIBZ
-  out+=".gz";
-#endif
   return out;
 }
 
