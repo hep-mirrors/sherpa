@@ -119,11 +119,13 @@ bool My_File<FileType>::OpenDB(std::string file)
 template <class FileType>
 bool My_File<FileType>::CloseDB(std::string file,int mode)
 {
+#ifdef USING__MPI
   if (mpi->Rank()) {
     int success;
     mpi->Bcast(&success,1,MPI_INT);
     return success;
   }
+#endif
   std::string path(file);
   while (file.length() && file[file.length()-1]=='/')
     file.erase(file.length()-1,1);
@@ -131,7 +133,9 @@ bool My_File<FileType>::CloseDB(std::string file,int mode)
   ZipArchive_Map::iterator ait(s_ziparchives.find(path));
   if (ait==s_ziparchives.end()) {
     int success(false);
+#ifdef USING__MPI
     mpi->Bcast(&success,1,MPI_INT);
+#endif
     return success;
   }
   ZipArchive *zf(ait->second.first);
@@ -158,7 +162,9 @@ bool My_File<FileType>::CloseDB(std::string file,int mode)
     else zf->open(ZipArchive::WRITE);
   }
   int success(true);
+#ifdef USING__MPI
   mpi->Bcast(&success,1,MPI_INT);
+#endif
   return success;
 }
 
