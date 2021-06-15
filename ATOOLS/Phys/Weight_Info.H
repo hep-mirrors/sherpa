@@ -30,8 +30,8 @@ namespace ATOOLS {
   }
 
   struct Weight_Info {
-    double m_dxs, m_ntrial;
     Weights_Map m_weightsmap;
+    double m_dxs, m_ntrial;
     PDF_Info m_pdf;
     Weight_Info(const Weights_Map &weightsmap={0.0},
                 const double &dxs=0.0, const double &ntrial=0.0,
