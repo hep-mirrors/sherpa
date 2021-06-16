@@ -20,6 +20,7 @@ Ahadic::Ahadic(string shower) :
   m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters)),
   m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
 {  
+  ReadMassParameters();
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
   m_beamparticles.Init();
@@ -27,10 +28,6 @@ Ahadic::Ahadic(string shower) :
   m_singletchecker.Init();
   m_gluondecayer.Init();
   m_clusterdecayer.Init();
-
-  Settings& s = Settings::GetMainSettings();
-  m_shrink = s["COMPRESS_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
-  m_flagpartonics = s["FLAG_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
 }
 
 
@@ -112,33 +109,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   //msg_Out()<<(*blob)<<"\n"
   //	   <<"######################################################################\n";
   return Return_Value::Success;
-}
-  
-void Ahadic::Shrink(Blob_List * bloblist) {
-  list<Blob *> deleteblobs;
-  Particle_Vector * parts;
-  for (Blob_List::reverse_iterator blit=bloblist->rbegin();
-       blit!=bloblist->rend();++blit) {
-    Blob * blob = (*blit);
-    if (blob->Type()==btp::Fragmentation) {
-      Blob * showerblob(blob->InParticle(0)->ProductionBlob());
-      Blob * decblob(showerblob->InParticle(0)->ProductionBlob());
-      if (decblob->Type()!=btp::Hadron_Decay) continue;
-      showerblob->DeleteInParticles(0);
-      showerblob->DeleteOutParticles(0);
-      deleteblobs.push_back(blob);
-      deleteblobs.push_back(showerblob);
-      while (!blob->GetOutParticles().empty()) {
-	Particle * part = 
-	  blob->RemoveOutParticle(blob->GetOutParticles().front());
-	decblob->AddToOutParticles(part);
-      }
-      decblob->SetStatus(blob_status::needs_hadrondecays);
-      decblob->AddData("Partonic",new Blob_Data<int>(m_flagpartonics));
-    }
-  }
-  for (list<Blob *>::iterator blit=deleteblobs.begin();
-       blit!=deleteblobs.end();blit++) bloblist->Delete((*blit));
 }
 
 bool Ahadic::ExtractSinglets(Blob * blob)

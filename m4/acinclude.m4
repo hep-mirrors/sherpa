@@ -1009,6 +1009,61 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(PYTHIA_SUPPORT, test "$pythia" = "true")
 
   AC_ARG_ENABLE(
+    pythia8,
+    AS_HELP_STRING([--enable-pythia8=/path/to/pythia8], [Enable Pythia8 support and specify where it is installed.]),
+    [ AC_MSG_CHECKING(for Pythia8 installation directory);
+      pythia8=true;
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Pythia8 not enabled); pythia82=false; pythia83=false ;;
+        yes) if test -x "`which pythia8-config`"; then
+               CONDITIONAL_PYTHIA8DIR=`pythia8-config --prefix`;
+             fi;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_PYTHIA8DIR=${enableval};
+            fi;;
+      esac;
+      if test -x "$CONDITIONAL_PYTHIA8DIR/bin/pythia8-config"; then
+        CONDITIONAL_PYTHIA8LDADD="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --ldflags)";
+        CONDITIONAL_PYTHIA8CPPFLAGS="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --cxxflags)";
+        AC_MSG_RESULT([${CONDITIONAL_PYTHIA8DIR}]);
+      else
+        AC_MSG_RESULT([Unable to find pythia8-config in the specifed path ${CONDITIONAL_PYTHIA8DIR}]);
+        AC_MSG_CHECKING(Trying to proceed without pythia8-config);
+        pythia8noconfiglibs=false;
+        pythia8noconfigincludes=false;
+        if test -f "${enableval}/lib/libpythia8.so"; then
+           CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib -lpythia8";
+           pythia8noconfiglibs=true;
+        fi;
+        if test -f "${enableval}/lib/libpythia8.dyld"; then
+           CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib -lpythia8";
+           pythia8noconfiglibs=true;
+        fi;
+        if test -f "${enableval}/lib64/libpythia8.so"; then
+           CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib64 -lpythia8";
+           pythia8noconfiglibs=true;
+        fi;
+        if test -f "${enableval}/include/Pythia8/Pythia.h"; then
+           CONDITIONAL_PYTHIA8CPPFLAGS="-I${enableval}/Pythia8";
+           pythia8noconfigincludes=true;
+        fi;
+        if "$pythia8noconfiglibs" = "true" &&  "$pythia8noconfigincludes" = "true"; then
+           AC_MSG_RESULT([Found Pythia8 libraries and includes in ${CONDITIONAL_PYTHIA8DIR}]);
+        else
+           AC_MSG_ERROR(Unable to find Pythia8 headers and libraries from the specified path. );
+        fi;
+      fi;
+    ],
+    [ pythia8=false ]
+  )
+  AC_SUBST(CONDITIONAL_PYTHIA8LDADD)
+  AC_SUBST(CONDITIONAL_PYTHIA8CPPFLAGS)
+  AM_CONDITIONAL(PYTHIA8_SUPPORT, test "$pythia8" = "true")
+  if test "$pythia8" = "true" ; then
+    AC_DEFINE([USING__PYTHIA8], "1", [Pythia8 interface enabled])
+  fi
+
+  AC_ARG_ENABLE(
     hepevtsize,
     AS_HELP_STRING([--enable-hepevtsize=HEPEVT_SIZE],[HEPEVT common block size @<:@default=10000@:>@]),
     [ AC_MSG_CHECKING(whether HEPEVT common block size is defined);
