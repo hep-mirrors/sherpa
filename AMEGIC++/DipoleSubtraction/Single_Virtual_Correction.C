@@ -57,7 +57,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   Scoped_Settings amegicsettings{ s["AMEGIC"] };
   p_fsmc=NULL;
   m_checkborn = amegicsettings["CHECK_BORN"].Get<size_t>();
-  m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
+  m_checkpoles = s["CHECK_POLES"].Get<size_t>();
   m_checkfinite = amegicsettings["CHECK_FINITE"].Get<size_t>();
   m_checkthreshold = amegicsettings["CHECK_THRESHOLD"].Get<double>();
   m_force_init = amegicsettings["LOOP_ME_INIT"].Get<size_t>();
