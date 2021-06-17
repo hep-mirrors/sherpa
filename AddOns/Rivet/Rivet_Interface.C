@@ -51,7 +51,7 @@ namespace SHERPARIVET {
 
     size_t m_nevt;
     bool   m_finished;
-    bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort, m_usegzip;
+    bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
 
     Rivet_Map         m_rivet;
     SHERPA__HepMC_Interface       m_hepmc2;
@@ -240,7 +240,6 @@ bool Rivet_Interface::Init()
     if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
       THROW(fatal_error, "Internal error.");
     }
-    m_usegzip = s["USE_GZIP"].SetDefault(1).Get<int>();
 
     // configure HepMC interface
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
@@ -348,6 +347,9 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
   if (key.first!="") out+="."+key.first;
   if (key.second!=0) out+=".j"+ToString(key.second);
   out+=".yoda";
+#ifdef HAVE_LIBZ
+  out+=".gz";
+#endif
   return out;
 }
 
@@ -358,9 +360,9 @@ bool Rivet_Interface::Finish()
     const double wgtfrac = it.second->sumW()/GetRivet("",0)->sumW();
     const double totalxs = it.second->nominalCrossSection();
     const double thisxs  = totalxs*wgtfrac;
-    it.second->setCrossSection(thisxs, 0.0);
+    it.second->setCrossSection(thisxs, 0.0, true);
     it.second->finalize();
-    it.second->writeData(OutputPath(it.first)+std::string(m_usegzip?".gz":""));
+    it.second->writeData(OutputPath(it.first));
   }
   m_finished=true;
   return true;
@@ -1039,7 +1041,6 @@ bool Rivet_Interface::Finish()
 {
   std::string ending("");
   ending=".yoda";
-  if (m_usegzip) ending+=".gz";
   for (RivetScaleVariationMap::iterator mit(m_rivet.begin());
        mit!=m_rivet.end();++mit) {
     std::string out=m_outpath;
