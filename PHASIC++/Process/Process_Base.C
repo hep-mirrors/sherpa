@@ -557,6 +557,11 @@ void Process_Base::FillOnshellConditions()
       (m_decins[i]->m_id,sqr(m_decins[i]->m_fl.Mass()));
 }
 
+bool Process_Base::FillFinalState(const ATOOLS::Vec4D_Vector &p)
+{
+  return true;
+}
+
 void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
                                   std::vector<std::vector<Complex> >& cols)
 {
