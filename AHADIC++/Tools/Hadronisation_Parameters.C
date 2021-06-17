@@ -64,7 +64,9 @@ void Hadronisation_Parameters::Init(string shower)
 void Hadronisation_Parameters::ReadParameters()
 {
   ReadGeneralSwitches();
-  ReadMassParameters();
+  auto s = Settings::GetMainSettings()["AHADIC"];
+  m_parametermap[string("minmass2")] =
+    s["MIN_MASS2"].SetDefault(0.10).Get<double>(); 
   ReadPoppingParameters();
   ReadMesonWeights();
   ReadSplittingParameters();
@@ -231,43 +233,6 @@ void Hadronisation_Parameters::ReadPoppingParameters()
     s["P_QQ1_by_P_QQ0"].SetDefault(1.00).Get<double>();
 }
 
-void Hadronisation_Parameters::ReadMassParameters()
-{
-  auto s = Settings::GetMainSettings()["AHADIC"];
-  m_parametermap[string("minmass2")] =
-    s["MIN_MASS2"].SetDefault(0.10).Get<double>();
-  m_parametermap[string("Mass_glue")] =
-    s["M_GLUE"].SetDefault(0.00).Get<double>();
-  Flavour(kf_gluon).SetHadMass(m_parametermap["Mass_glue"]);
-  double mud = m_parametermap[string("Mass_updown")] =
-    s["M_UP_DOWN"].SetDefault(0.30).Get<double>();
-  double ms = m_parametermap[string("Mass_strange")] =
-    s["M_STRANGE"].SetDefault(0.40).Get<double>();
-  double mc = m_parametermap[string("Mass_charm")] =
-    s["M_CHARM"].SetDefault(1.80).Get<double>();
-  double mb = m_parametermap[string("Mass_bottom")] =
-    s["M_BOTTOM"].SetDefault(5.10).Get<double>();
-  double mdiq = m_parametermap[string("Mass_diquark")] =
-    s["M_DIQUARK_OFFSET"].SetDefault(0.30).Get<double>();
-  double bind0 = m_parametermap[string("Mass_bind0")] =
-    s["M_BIND_0"].SetDefault(0.12).Get<double>();
-  double bind1 = m_parametermap[string("Mass_bind1")] =
-    s["M_BIND_1"].SetDefault(0.50).Get<double>();
-  Flavour(kf_d).SetHadMass(mud);
-  Flavour(kf_u).SetHadMass(mud);
-  Flavour(kf_s).SetHadMass(ms);
-  Flavour(kf_c).SetHadMass(mc);
-  Flavour(kf_b).SetHadMass(mb);
-  Flavour(kf_ud_0).SetHadMass((2.*mud+mdiq)*(1.+bind0));
-  Flavour(kf_uu_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
-  Flavour(kf_ud_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
-  Flavour(kf_dd_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
-  Flavour(kf_su_0).SetHadMass((ms+mud+mdiq)*(1.+bind0));
-  Flavour(kf_sd_0).SetHadMass((ms+mud+mdiq)*(1.+bind0));
-  Flavour(kf_su_1).SetHadMass((ms+mud+mdiq)*(1.+bind1));
-  Flavour(kf_sd_1).SetHadMass((ms+mud+mdiq)*(1.+bind1));
-  Flavour(kf_ss_1).SetHadMass((2.*ms+mdiq)*(1.+bind1));
-}
 
 void Hadronisation_Parameters::ReadGeneralSwitches()
 {
