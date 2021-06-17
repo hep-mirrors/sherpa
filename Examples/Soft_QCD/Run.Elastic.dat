@@ -1,34 +1,37 @@
-(run){
-  OUTPUT              = 2
-  YFS_MODE            = 0
-  EVENT_TYPE          = MinimumBias 
-  SOFT_COLLISIONS     = Shrimps
-  Shrimps_Mode        = Inelastic # Soft-Diffractive Elastic
+BEAMS:         [2212, 2212]
+BEAM_ENERGIES: 3500.
+EVENTS: 1M
 
-  deltaY     =  1.;
-  Lambda2    =  1.2;
-  beta02(mb) =  20.0;
-  kappa      =  0.55;
-  xi         =  0.2;
-  lambda     =  0.25;
-  Delta      =  0.4;
+EVENT_TYPE:           MinimumBias
+ME_SIGNAL_GENERATOR:  None
+SOFT_COLLISIONS:      Shrimps
+RESPECT_MASSIVE_FLAG: 0;
+SHOWER_GENERATOR:     CSS
+FRAGMENTATION:        Ahadic
 
-  # analysis
-  ANALYSIS Rivet
-  ANALYSIS_OUTPUT Inelastic7000
-}(run)
+MAX_PROPER_LIFETIME:  10.
+YFS_MODE:             0
+  
+SHRIMPS:
+   Mode:        Elastic #Inelastic Soft-Diffractive 
+   Absorption:  exponential
+   deltaY:      1.
+   beta02(mb):  20.0 # 25.0
+   Lambda2:     1.2
+   kappa:       0.55
+   xi:          0.2
+   lambda:      0.25
+   Delta:       0.4
+   Q_0^2:       1.0
+   Q_as^2:      1.0
 
-(beam){
-  BEAM_1 =  2212; BEAM_ENERGY_1 = 3500.;
-  BEAM_2 =  2212; BEAM_ENERGY_2 = 3500.;
-}(beam)
+ANALYSIS:         Rivet
+ANALYSIS_OUTPUT:  Elastic7000
 
-(me){
-  ME_SIGNAL_GENERATOR = None
-}(me)
+RIVET:
+  ANALYSES: [ TOTEM_2012_I1220862, TOTEM_2011_I922651 ]
+  
+# TOTEM_2012_I1115294 TOTEM_2014_I1328627 ALICE_2012_I1181770 
 
-(analysis){
-  BEGIN_RIVET {
-  -a TOTEM_2012_I1220862 TOTEM_2012_I1115294 TOTEM_2014_I1328627 ALICE_2012_I1181770
-  } END_RIVET
-}(analysis)
+
+

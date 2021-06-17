@@ -70,6 +70,14 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       SetAlphaS();
       SetAlpha();
     }
+    else if (sp->Type()==btp::Elastic_Collision) {
+        ReadIn(db,"Renormalization_Scale",false);
+        if (db) m_mur2=db->Get<double>();
+        else m_mur2=1.;
+        PRINT_VAR(m_mur2);
+        SetAlphaS();
+        SetAlpha();
+    }
     else {
       ReadIn(db,"UserHook",false);
       if (db) {
@@ -78,6 +86,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       }
       ReadIn(db,"Renormalization_Scale",false);
       if (db) m_mur2=db->Get<double>();
+      PRINT_VAR(m_mur2);
       SetAlphaS();
       SetAlpha();
     }

@@ -65,24 +65,24 @@ namespace ATOOLS {
 
   struct btp {
     enum code {
-      Signal_Process              =     1,
-      Hard_Decay                  =     2,
-      Hard_Collision              =     4,
-      Soft_Collision              =     8,
-      Elastic_Collision           =     9,
-      Soft_Diffractive_Collision  =    10,
-      Quasi_Elastic_Collision     =    11,
-      Shower                      =    16,
-      QED_Radiation               =    32,
-      Beam                        =   256,
-      Bunch                       =   512,
-      Fragmentation               =  1024,
-      Cluster_Formation           =  2048,
-      Cluster_Decay               =  4096,
-      Hadron_Decay                =  8192,
-      Hadron_Mixing               = 16384,
-      Hadron_To_Parton            = 32768,
-      Unspecified                 = 65536
+      Signal_Process              =      1,
+      Hard_Decay                  =      2,
+      Hard_Collision              =      4,
+      Soft_Collision              =      8,
+      Shower                      =     16,
+      QED_Radiation               =     32,
+      Beam                        =    256,
+      Bunch                       =    512,
+      Fragmentation               =   1024,
+      Cluster_Formation           =   2048,
+      Cluster_Decay               =   4096,
+      Hadron_Decay                =   8192,
+      Hadron_Mixing               =  16384,
+      Hadron_To_Parton            =  32768,
+      Elastic_Collision           =  65536,
+      Soft_Diffractive_Collision  = 131072,
+      Quasi_Elastic_Collision     = 262144,
+      Unspecified                 = 524288
     };
   };// end of struct btp
 
