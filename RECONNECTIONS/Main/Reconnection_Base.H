@@ -24,7 +24,7 @@ namespace RECONNECTIONS {
     void FillMassesInHistogram(ATOOLS::Histogram * histo);
   public:
     Reconnection_Base();
-    ~Reconnection_Base();
+    virtual ~Reconnection_Base();
 
     virtual void   Initialize();
     virtual void   Reset();
