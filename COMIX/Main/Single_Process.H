@@ -12,6 +12,7 @@ namespace COMIX {
   class Amplitude;
 
   typedef std::set<PS_Generator*> PSGenerator_Set;
+  typedef std::vector<std::vector<Complex> > Hard_Matrix;
 
   class Single_Process: 
     public PHASIC::Single_Process, public Process_Base {
@@ -75,9 +76,10 @@ namespace COMIX {
     const Hard_Matrix *ComputeHardMatrix
     (ATOOLS::Cluster_Amplitude *const ampl,const int mode);
     double Partonic(const ATOOLS::Vec4D_Vector &p,int mode);
-    ATOOLS::Weights_Map Differential(const ATOOLS::Cluster_Amplitude& ampl,
-                                     ATOOLS::Variations_Mode type=ATOOLS::Variations_Mode::nominal_only,
-                                     int mode=0);
+    ATOOLS::Weights_Map Differential
+    (const ATOOLS::Cluster_Amplitude& ampl,
+     ATOOLS::Variations_Mode type=ATOOLS::Variations_Mode::nominal_only,
+     int mode=0);
     
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
