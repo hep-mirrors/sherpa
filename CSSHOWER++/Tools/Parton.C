@@ -93,6 +93,18 @@ void Parton::UpdateColours(int newr,int newa)
 		   <<newr<<","<<newa<<") {\n";
   {
     msg_Indent();
+    if (this==p_sing->GetSplit()) {
+      int oldr(GetFlow(1)), olda(GetFlow(2));
+      Parton *left(p_sing->GetLeft()), *right(p_sing->GetRight());
+      if (oldr) {
+	if (left->GetFlow(1)==oldr) left->UpdateColours(newr,left->GetFlow(2));
+	if (right->GetFlow(1)==oldr) right->UpdateColours(newr,right->GetFlow(2));
+      }
+      if (olda) {
+	if (left->GetFlow(2)==olda) left->UpdateColours(left->GetFlow(1),newa);
+	if (right->GetFlow(2)==olda) right->UpdateColours(right->GetFlow(1),newa);
+      }
+    }
     SetFlow(1,newr);
     SetFlow(2,newa);
     p_left=p_right=NULL;
@@ -103,26 +115,6 @@ void Parton::UpdateColours(int newr,int newa)
     }
     msg_IODebugging()<<*this;
     if (p_next) p_next->UpdateColours(newr,newa);
-    if (this==p_sing->GetSplit()) {
-      int oldr(GetFlow(1)), olda(GetFlow(2));
-      Parton *left(p_sing->GetLeft()), *right(p_sing->GetRight());
-      if (left->GetFlow(1)==oldr) {
-	if (left->GetFlow(2)==olda)
-	  left->UpdateColours(newr,newa);
-	else left->UpdateColours(newr,left->GetFlow(2));
-      }
-      else if (left->GetFlow(2)==olda) {
-	left->UpdateColours(left->GetFlow(1),newa);
-      }
-      if (right->GetFlow(1)==oldr) {
-	if (right->GetFlow(2)==olda)
-	  right->UpdateColours(newr,newa);
-	else right->UpdateColours(newr,right->GetFlow(2));
-      }
-      else if (right->GetFlow(2)==olda) {
-	right->UpdateColours(right->GetFlow(1),newa);
-      }
-    }
   }
   msg_IODebugging()<<"}\n";
 }

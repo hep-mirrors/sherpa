@@ -147,7 +147,11 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   }
   newpB->SetId(split->Id());
   newpC->SetId(split->Id());
+  if (split==split->GetSing()->GetSplit())
+    split->GetSing()->SetSplit(newpB);
   split->GetSing()->ArrangeColours(split,newpB,newpC);
+  if (newpB==split->GetSing()->GetSplit())
+    split->GetSing()->SetSplit(split);
   newpB->SetPrev(split->GetPrev());
   newpC->SetPrev(split->GetPrev());
   double m2=split->Mass2();
@@ -161,7 +165,11 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   split->GetSing()->RemoveParton(newpC);
   if (rd==1 && (p_actual->NLO()&16)) rd=0;
   if (rd<=0) {
+    if (split==split->GetSing()->GetSplit())
+      split->GetSing()->SetSplit(newpB);
     split->GetSing()->RearrangeColours(split,newpB,newpC);
+    if (newpB==split->GetSing()->GetSplit())
+      split->GetSing()->SetSplit(split);
     if (split->GetNext()) {
       newpB->GetNext()->SetPrev(split);
       split->SetNext(newpB->GetNext());
