@@ -32,6 +32,10 @@ void Virtual_ME2_Base::SwitchMode(const int mode)
 {
 }
 
+void Virtual_ME2_Base::SetPoleCheck(const int check)
+{
+}
+
 double Virtual_ME2_Base::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
 {
   //MSbar

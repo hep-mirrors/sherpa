@@ -7,3 +7,5 @@ libSherpaTauPi_la_SOURCES = \
 	Git_Info.C \
 	TauPi_LC.C \
 	Model.C
+
+libSherpaTauPi_la_LIBADD = @MODELMAINLIB@ @ATOOLSLIBS@

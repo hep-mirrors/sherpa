@@ -1,7 +1,6 @@
 #include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include <iomanip>
 #include <stdlib.h>
