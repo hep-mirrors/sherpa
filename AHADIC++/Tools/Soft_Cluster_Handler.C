@@ -60,16 +60,19 @@ bool Soft_Cluster_Handler::MustPromptDecay(const Flavour & flav1,
 
 int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
 {
-  if (force &&
-      (*cluster)[0]->Flavour().IsGluon() && (*cluster)[1]->Flavour().IsGluon()) {
-    return TreatTwoGluons(cluster);
-  }
   FillFlavours(cluster);
-  if (IsEqual(m_mass,p_singletransitions->GetLightestMass(m_flavs),1.e-6)) {
+  double m_lightest = p_singletransitions->GetLightestMass(m_flavs); 
+  if (IsEqual(m_mass,m_lightest,1.e-6)) {
     m_hads[0] = p_singletransitions->GetLightestTransition(m_flavs);
     Proto_Particle * part = new Proto_Particle(m_hads[0],cluster->Momentum(),false);
     p_hadrons->push_back(part);
     return 1;
+  }
+  if (force) {
+    if ((*cluster)[0]->Flavour().IsGluon() && (*cluster)[1]->Flavour().IsGluon()) {
+      return TreatTwoGluons(cluster);
+    }
+    //if (m_lightest>m_mass) return -1;
   }
   if (!force) {
     switch (CheckOutsideRange()) {

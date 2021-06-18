@@ -18,7 +18,8 @@ Ladder::~Ladder() {
   m_tprops.clear();
 }
 
-Ladder_Particle * Ladder::AddRapidity(const double y,const Flavour & flav,const Vec4D & mom) {
+Ladder_Particle * Ladder::
+AddRapidity(const double y,const Flavour & flav,const Vec4D & mom) {
   return &(m_emissions[y] = Ladder_Particle(flav,mom,m_position));
 }
 
@@ -42,34 +43,46 @@ void Ladder::UpdatePropagatorKinematics() {
     tpit++;
     lmit++;
   }
-}
-
-void Ladder::ExtractHardTwo2Two(double & y1,double & y2,double & shat,double & that) {
-  LadderMap::iterator lmit = m_emissions.begin(), lwin=lmit;
-  TPropList::iterator tpit = m_tprops.begin(),    twin=tpit;
-  that = 0.;
-  while (tpit!=m_tprops.end()) {
-    if (tpit->Q2()>that) {
-      twin = tpit;
-      lwin = lmit;
-      that = tpit->Q2();
+  LadderMap::reverse_iterator lmrit = m_emissions.rbegin();
+  TPropList::reverse_iterator tprit = m_tprops.rbegin();
+  q = m_inpart[1].Momentum();
+  while (tprit!=m_tprops.rend()) {
+    if (tprit->Q()[0]<0.) {
+      q -= lmrit->second.Momentum();
+      tprit->SetQ2(dabs(q.Abs2()));
+      tprit->SetQ(q);
+      tprit++;
+      lmrit++;
     }
-    tpit++; lmit++;
+    else break;
   }
-  y1      = lwin->first;
-  Vec4D q = lwin->second.Momentum(); 
-  lwin++;
-  y2      = lwin->first;
-  q      += lwin->second.Momentum(); 
-  shat    = q.Abs2();
 }
 
-void Ladder::ExtractExternalTwo2Two(double & y1,double & y2,double & shat) {
-  y1   = m_emissions.begin()->first;
-  y2   = m_emissions.rbegin()->first;
-  shat = (m_emissions.begin()->second.Momentum() +
-	  m_emissions.rbegin()->second.Momentum()).Abs2();
-  //shat = (m_inpart[0].Momentum()+m_inpart[1].Momentum()).Abs2();
+bool Ladder::ExtractHardest(TPropList::iterator & winner,
+			    const double & qt2min) {
+  winner        = m_tprops.end();
+  double qt2max = 0., qt2;
+  TPropList::iterator pit;
+  for (pit=m_tprops.begin();pit!=m_tprops.end();pit++) {
+    qt2      = pit->QT2();	 
+    if (qt2>qt2max) {
+      winner = pit;
+      qt2max = qt2;
+    }
+  }
+  return (winner!=m_tprops.end());
+}
+
+void Ladder::HardestIncomingMomenta(const TPropList::iterator & winner,
+				    Vec4D & q0,Vec4D & q1) {
+  q0 = m_inpart[0].Momentum(); q1 = m_inpart[1].Momentum();
+  TPropList::iterator pit = winner;
+  pit++;
+  if (pit!=m_tprops.end()) q1 = pit->Q();
+  if (winner==m_tprops.begin()) return;
+  pit = winner;
+  pit--;
+  q0 = pit->Q();
 }
 
 void Ladder::Reset(const bool & all) { 

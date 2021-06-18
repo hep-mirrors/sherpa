@@ -1,5 +1,4 @@
 #include "SHRiMPS/Ladders/Primary_Ladders.H"
-#include "SHRiMPS/Ladders/Ladder_Generator_LDC.H"
 #include "SHRiMPS/Ladders/Ladder_Generator_QT.H"
 #include "SHRiMPS/Ladders/Ladder_Generator_KT.H"
 #include "SHRiMPS/Ladders/Ladder_Generator_Eik.H"
@@ -12,7 +11,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders() :
-  p_laddergenerator(new Ladder_Generator_QT()),
+  p_laddergenerator(new Ladder_Generator_KT()),
   m_Ecms(rpa->gen.Ecms()/2.),
   m_test(false)
 {
@@ -42,7 +41,9 @@ Primary_Ladders::~Primary_Ladders() {
   }
 }
 
-void Primary_Ladders::Initialise() { p_laddergenerator->Initialise(); }
+void Primary_Ladders::Initialise(Remnant_Handler * remnants) {
+  p_laddergenerator->Initialise(remnants);
+}
 
 void Primary_Ladders::Test() { return; } //if (m_test) p_laddergenerator->Test(); }
 
@@ -56,32 +57,28 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
   while (Ngen<N) {
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
-    p_laddergenerator->SetMaximalScale(Min(m_E[0],m_Ecms/4.),Min(m_E[1],m_Ecms/4.));
+    //p_laddergenerator->SetMaximalScale(Min(m_E[0],m_Ecms/4.),Min(m_E[1],m_Ecms/4.));
+    p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
     Ladder * ladder = (*p_laddergenerator)(position);
     if (m_test && ladder) FillAnalysis(ladder,"trial");
-    bool added = false;
-    if (IsAllowed(ladder) && p_laddergenerator->Weight()>ran->Get() &&
-	m_colourgenerator(ladder)) {	
+    if (IsAllowed(ladder) && m_colourgenerator(ladder)) {	
       p_laddergenerator->QuarkReplace();
       Add(ladder);
       Ngen++;
       trials = 0;
-      added  = true;
       if (m_test) FillAnalysis(ladder,"accept");
+      //msg_Out()<<"     --- generated "<<Ngen<<" new ladders.\n";
     }
-    if (!added) {
+    else {
       if (ladder) delete ladder;
-      trials++;
-      if (Ngen>0 && trials>100) break;
+      if (Ngen>0 && (trials++)>100) break;
     }
   }
-  //msg_Out()<<"     ---      made "<<Ngen<<" new ladders at B.\n"
-  //	   <<"     -------------------------------------------------------------\n";
   return true;
 }
  
 void Primary_Ladders::Reset() {
-   m_E[0] = m_E[1] = m_Ecms;
+  m_E[0] = m_E[1] = m_Ecms;
   while (!m_ladders.empty()) {
     delete (m_ladders.back());
     m_ladders.pop_back();
@@ -112,7 +109,7 @@ void Primary_Ladders::FillAnalysis(Ladder * ladder,const std::string & tag) {
        pit!=ladder->GetEmissions()->end();pit++) {
     m_histos[std::string("Yasym_")+tag]->Insert(dabs(pit->first), pit->first>0.?1.:-1.);
     if (pit->second.Momentum().PPerp()>2.5)
-      m_histos[std::string("Yasym_")+tag+std::string("_highpt")]->Insert(dabs(pit->first),
-									 pit->first>0.?1.:-1.);
+      m_histos[std::string("Yasym_")+tag+std::string("_highpt")]->
+	Insert(dabs(pit->first),pit->first>0.?1.:-1.);
   }
 }

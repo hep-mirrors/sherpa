@@ -90,9 +90,7 @@ void Shrimps::InitialiseTheEventGenerator() {
   p_xsecs = new Cross_Sections();
   p_xsecs->CalculateCrossSections();
   p_generator = new Event_Generator(p_xsecs,false);
-  p_generator->SetCluster(&m_cluster);
-  p_generator->SetRemantHandler(p_remnants);
-  p_generator->Initialise();
+  p_generator->Initialise(p_remnants,&m_cluster);
   p_remnants->SetColourGenerator(p_generator->GetColourGenerator());
   m_cluster.SetYmax(p_generator->Ymax());
   m_cluster.SetMinKT2(p_generator->MinKT2());

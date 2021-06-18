@@ -11,26 +11,32 @@ using namespace ATOOLS;
 using namespace std;
 
 Ladder_Generator_Base::Ladder_Generator_Base() :
-  m_Ymax(MBpars.GetEikonalParameters().Ymax),
-  m_deltaY(MBpars.GetEikonalParameters().cutoffY),
-  m_qt2min(MBpars.GetLadderParameters().Q02),
-  m_kt2min(MBpars.GetLadderParameters().Q02),
-  m_kt2minShower(MBpars.GetShowerLinkParameters().KT2min),
   p_alphaS(new Strong_Coupling(static_cast<Running_AlphaS *>
 			       (s_model->GetScalarFunction(string("alpha_S"))),
 			       asform::smooth,
 			       MBpars.GetLadderParameters().Qas2)),
+  m_partonic(Sigma_Partonic(p_alphaS, xs_mode::Regge)),
+  m_Ymax(MBpars.GetEikonalParameters().Ymax),
+  m_deltaY(MBpars.GetEikonalParameters().cutoffY),
+  m_qt2min(MBpars.GetLadderParameters().Q02),
+  m_qt2minFF(0.), 
+  m_kt2min(MBpars.GetLadderParameters().Q02),
+  m_kt2minShower(MBpars.GetShowerLinkParameters().KT2min),
   m_density(MBpars.GetEikonalParameters().Delta,
 	    MBpars.GetEikonalParameters().lambda,m_Ymax,
 	    MBpars.GetEikonalParameters().absorp),
-  m_mecorrection(ME_Correction(m_kt2min)),
- p_ladder(0)
+  m_me(MEs(&m_partonic)),
+  p_ladder(0)
 {}
 
 Ladder_Generator_Base::~Ladder_Generator_Base() {
   delete p_alphaS;
 }
 
+
+void Ladder_Generator_Base::Initialise(Remnant_Handler * remnants) {
+  m_partonic.Initialise(remnants);
+}
 
 void Ladder_Generator_Base::InitLadder(const Vec4D & pos) {
   m_shat      = 4.*m_E[0]*m_E[1];
@@ -43,16 +49,19 @@ void Ladder_Generator_Base::InitLadder(const Vec4D & pos) {
 void Ladder_Generator_Base::ConstructSimpleLadder() {
   size_t dir    = (dabs(p_emissions->begin()->first) >
 		   dabs(p_emissions->rbegin()->first) ? 0 : 1);
-  double qt2max = sqr(m_E[dir]/(cosh(dir==0 ?
-				     p_ladder->GetEmissions()->begin()->first :
-				     p_ladder->GetEmissions()->rbegin()->first)));
+  double qt2max = sqr(m_E[dir]/
+		      (cosh(dir==0 ?
+			    p_ladder->GetEmissions()->begin()->first :
+			    p_ladder->GetEmissions()->rbegin()->first)));
   do {
     m_qt2 = p_eikonal->FF(dir)->SelectQT2(qt2max);
   } while (ReggeWeight(m_qt2,m_ylimits[0],m_ylimits[1]) < ran->Get());
   MakeTransverseUnitVector();
   Vec4D k[2];
-  k[0] = sqrt(m_qt2)*(Vec4D(cosh(m_ylimits[0]),0.,0.,sinh(m_ylimits[0])) + m_eqt);
-  k[1] = sqrt(m_qt2)*(Vec4D(cosh(m_ylimits[1]),0.,0.,sinh(m_ylimits[1])) - m_eqt);
+  k[0] = sqrt(m_qt2)*(Vec4D(cosh(m_ylimits[0]),0.,0.,sinh(m_ylimits[0])) +
+		      m_eqt);
+  k[1] = sqrt(m_qt2)*(Vec4D(cosh(m_ylimits[1]),0.,0.,sinh(m_ylimits[1])) -
+		      m_eqt);
   p_emissions->begin()->second.SetMomentum(k[0]);
   p_emissions->rbegin()->second.SetMomentum(k[1]);
   T_Prop & prop = *p_props->begin();
@@ -62,7 +71,6 @@ void Ladder_Generator_Base::ConstructSimpleLadder() {
 }
 
 void Ladder_Generator_Base::ConstructISKinematics() {
-  p_ladder->UpdatePropagatorKinematics();
   Vec4D Ksum = p_ladder->FSMomentum();
   for (size_t i=0;i<2;i++) {
     p_ladder->InPart(i)->SetMomentum(i==0 ?
@@ -72,7 +80,43 @@ void Ladder_Generator_Base::ConstructISKinematics() {
   }
   p_emissions->begin()->second.SetBeam(p_ladder->InPart(0)->Beam());
   p_emissions->rbegin()->second.SetBeam(p_ladder->InPart(1)->Beam());
+  p_ladder->UpdatePropagatorKinematics();
 }
+
+double Ladder_Generator_Base::TotalReggeWeight() {
+  LadderMap::iterator lit1=p_emissions->begin(), lit2=lit1; lit2++;
+  TPropList::iterator pit=p_props->begin();
+  double weight = 1.;
+  while (lit2!=p_emissions->end() && pit!=p_props->end()) {
+    weight *= ReggeWeight(dabs(pit->Q2()),lit1->first,lit2->first);
+    pit++; lit1++; lit2++;
+  }
+  return weight;
+}
+
+double Ladder_Generator_Base::RescaleLadder(const Vec4D & P_in) {
+  Vec4D  P_out(0.,0.,0.,0.);
+  for (LadderMap::iterator lit=p_emissions->begin();
+       lit!=p_emissions->end();lit++)
+    P_out += lit->second.Momentum();
+  double factor = sqrt(P_in.Abs2()/P_out.Abs2()), weight = 1.;
+  for (LadderMap::iterator lit=p_emissions->begin();
+       lit!=p_emissions->end();lit++) {
+    Vec4D oldp = lit->second.Momentum(), newp = factor*oldp; 
+    lit->second.SetMomentum(newp);
+    if (dabs(newp.Y())<m_Ymax)
+      weight  *= AlphaSWeight(newp.PPerp2())/AlphaSWeight(oldp.PPerp2());
+  }
+  for (TPropList::iterator pit=p_props->begin();pit!=p_props->end();pit++) {
+    Vec4D oldq    = pit->Q(),   newq   = factor*oldq;
+    double oldqt2 = pit->QT2(), newqt2 = sqr(factor)*oldqt2;
+    pit->SetQ(newq);
+    pit->SetQT2(newqt2);
+    weight *= oldqt2/newqt2;
+  }
+  return weight;
+}
+
 
 void Ladder_Generator_Base::MakeTransverseUnitVector() {
   double phi = 2.*M_PI*ran->Get();
@@ -80,7 +124,8 @@ void Ladder_Generator_Base::MakeTransverseUnitVector() {
 }
 
 void Ladder_Generator_Base::ResetFSFlavours() {
-  for (LadderMap::iterator lit=p_emissions->begin();lit!=p_emissions->end();lit++) {
+  for (LadderMap::iterator lit=p_emissions->begin();
+       lit!=p_emissions->end();lit++) {
     lit->second.SetFlavour(Flavour(kf_gluon));
   }
   for (TPropList::iterator pit=p_props->begin();pit!=p_props->end();pit++) {
@@ -118,33 +163,17 @@ double Ladder_Generator_Base::AlphaSWeight(const double & kt2) {
   return AlphaS(kt2)/AlphaS(0.);
 }
 
-double Ladder_Generator_Base::ReggeWeight(const double & qt2, const double & y1,
-					  const double y2) {
+double Ladder_Generator_Base::
+ReggeWeight(const double & qt2, const double & y1,const double y2) {
   return (qt2>m_qt2min ? 
-	  exp(-3.*AlphaS(qt2)/(4.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min))  : 1.);
+	  exp(-3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min)) :
+	  1.);
 }
 
-double Ladder_Generator_Base::LDCWeight(const double & qt2, const double & qt2prev) {
+double Ladder_Generator_Base::
+LDCWeight(const double & qt2, const double & qt2prev) {
   return qt2/Max(qt2,qt2prev);
 }
-
-double Ladder_Generator_Base::TWeight() {
-  return 1.;
-  if (p_ladder->GetProps()->size()==1) return 1.;
-  double qt2max = m_qt2min, tmax = m_qt2min, qt2, Q2;
-  colour_type::code ctype=colour_type::octet;
-  for (TPropList::iterator pit=p_ladder->GetProps()->begin();
-       pit!=p_ladder->GetProps()->end();pit++) {
-    qt2      = pit->QT2();
-    if (qt2>qt2max) {
-      qt2max = qt2;
-      ctype  = pit->Col();
-    }
-  }
-  return (ctype==colour_type::triplet ? 1:
-	  ctype==colour_type::singlet ? m_qt2min/qt2max : m_qt2min/qt2max);
-}
-
 		 
 void Ladder_Generator_Base::Test() {
   vector<vector<Omega_ik *> > * eikonals(MBpars.GetEikonals());
@@ -171,11 +200,13 @@ void Ladder_Generator_Base::Test() {
 		d3     = m_density(y);
 		d4     = m_density(-y);
 		asym34 = (d3-d4)/(d3+d4);
-		msg_Out()<<"  y = "<<y<<", asym = "<<(asym12+asym34)<<" ["<<asym12<<" and "<<asym34<<"] "
+		msg_Out()<<"  y = "<<y<<", asym = "<<(asym12+asym34)
+			 <<" ["<<asym12<<" and "<<asym34<<"] "
 			 <<"from d's = "<<d1<<", "<<d2<<", "<<d3<<", and "<<d4<<"\n";
 	      }
 	      else {
-		msg_Out()<<"  y = "<<y<<", asym = "<<asym12<<" from d's = "<<d1<<", and "<<d2<<"\n";
+		msg_Out()<<"  y = "<<y<<", asym = "<<asym12
+			 <<" from d's = "<<d1<<", and "<<d2<<"\n";
 	      }
 	    }
 	  }
@@ -203,7 +234,8 @@ void Ladder_Generator_Base::Test() {
 		asym34 = (d3-d4)/(d3+d4);
 	      }
 	      else {
-		msg_Out()<<"  y = "<<y<<", asym = "<<asym12<<" from d's = "<<d1<<", and "<<d2<<"\n";
+		msg_Out()<<"  y = "<<y<<", asym = "
+			 <<asym12<<" from d's = "<<d1<<", and "<<d2<<"\n";
 	      }
 	    }
 	  }

@@ -1,4 +1,5 @@
 #include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
+#include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
@@ -10,22 +11,20 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
   
-Sigma_Partonic::Sigma_Partonic(const xs_mode::code & mode) :
-  p_alphaS(new Strong_Coupling(static_cast<Running_AlphaS *>
-			       (s_model->GetScalarFunction(string("alpha_S"))),
-			       asform::smooth,
-			       MBpars.GetLadderParameters().Qas2)),
-  m_mode(mode),
+Sigma_Partonic::Sigma_Partonic(MODEL::Strong_Coupling * alphaS,
+			       const xs_mode::code & mode) :
+  p_alphaS(alphaS), m_mode(mode), m_fixflavour(true), 
   m_Ymax(MBpars.GetEikonalParameters().originalY),
   m_S(sqr(rpa->gen.Ecms())),
-  m_eta(0.08), m_smin(1.), m_tmin(1.),
-  m_accu(0.005), m_sigma(0.), m_maxdsigma(0.) {}
+  m_eta(0.08), m_smin(1.), m_tmin(0.),
+  m_accu(0.005), m_sigma(0.), m_maxdsigma(0.),
+  m_Nmaxtrials(100)
+{}
 
-Sigma_Partonic::~Sigma_Partonic() {
-  delete p_alphaS;
-}
+Sigma_Partonic::~Sigma_Partonic() {}
 
-void Sigma_Partonic::Initialise() {
+void Sigma_Partonic::Initialise(Remnant_Handler * remnants) {
+  for (size_t beam=0;beam<2;beam++) p_pdf[beam]=remnants->GetPDF(beam);
   if (!Calculate()) {
     msg_Error()<<METHOD<<" fails: integration did not converge.  "
 	       <<"Will exit the run.\n";
@@ -33,13 +32,13 @@ void Sigma_Partonic::Initialise() {
   }
 }
 
-const double Sigma_Partonic::MakeEvent(const bool & fixflavour) {
+const double Sigma_Partonic::MakeEvent() {
   double Jac, dsigma;
   for (size_t i=0;i<m_Nmaxtrials;i++) {
     Jac      = MakePoint(m_shat,m_yhat); 
     m_dsigma = dSigma(m_shat,m_yhat);
     if (Jac * m_dsigma>m_maxdsigma*ran->Get()) {
-      SelectFlavours(fixflavour); 
+      SelectFlavours(m_fixflavour); 
       return m_shat;
     }
   }
@@ -47,10 +46,11 @@ const double Sigma_Partonic::MakeEvent(const bool & fixflavour) {
 }
 
 void Sigma_Partonic::SelectFlavours(const bool & fixflavour) {
+  //msg_Out()<<"         "<<METHOD<<"("<<fixflavour<<")\n";
+  m_flavs[0] = m_flavs[1] = Flavour(kf_gluon);
+  if (fixflavour) return;
   for (size_t i=0;i<2;i++) {
-    m_flavs[i] = Flavour(kf_gluon);
-    if (fixflavour) continue;
-    double disc = m_xpdf[i]*ran->Get();
+    double disc = 0.999999 * m_xpdf[i]*ran->Get();
     for (list<Flavour>::const_iterator flit=p_pdf[i]->GetFlavours().begin();
 	 flit!=p_pdf[i]->GetFlavours().end();flit++) {
       if (p_pdf[i]->XPDF((*flit))<1.e-4) continue;
@@ -61,6 +61,13 @@ void Sigma_Partonic::SelectFlavours(const bool & fixflavour) {
       }
     }
   }
+}
+
+const double Sigma_Partonic::
+PDF(const size_t beam,const double & x,const double & Q2) {
+  if (x<1.e-6) return 0.;
+  p_pdf[beam]->Calculate(x,Q2);
+  return p_pdf[beam]->XPDF(Flavour(kf_gluon));  
 }
 
 const bool Sigma_Partonic::Calculate() {
@@ -112,6 +119,7 @@ const double Sigma_Partonic::dSigma(const double & s,const double & y) {
   double flux = 1/(2.*s), Enorm = sqrt(s/m_S)/2., scale = 0.;
   for (size_t i=0;i<2;i++) {
     m_x[i]    = Enorm * (i==0 ? exp(y) : exp(-y));
+    if (m_x[i]<1.e-6 || m_x[i]>0.9999999) return 0.;
     m_xpdf[i] = 0.;
     p_pdf[i]->Calculate(m_x[i],scale);
     for (list<Flavour>::const_iterator flit=p_pdf[i]->GetFlavours().begin();

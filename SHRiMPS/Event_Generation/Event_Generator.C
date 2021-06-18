@@ -32,9 +32,10 @@ void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
   }
 } 
 
-void Event_Generator::Initialise() {
+void Event_Generator::
+Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
   if (p_inelastic) {
-    p_inelastic->Initialise();
+    p_inelastic->Initialise(remnants,cluster);
     m_xsec += p_inelastic->XSec();
   }
   if (p_elastic) {
@@ -42,7 +43,7 @@ void Event_Generator::Initialise() {
     m_xsec += p_elastic->XSec();
   }
   if (p_soft_diffractive) {
-    p_inelastic->Initialise();
+    p_soft_diffractive->Initialise();
     m_xsec += p_soft_diffractive->XSec();
   }
   msg_Info()<<METHOD<<" with sigma = "<<m_xsec<<" pb\n";

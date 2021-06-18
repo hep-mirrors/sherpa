@@ -30,7 +30,7 @@ namespace SHRIMPS {
     Event_Generator(Cross_Sections * xsecs,const bool & test);
     ~Event_Generator();
 
-    void Initialise();
+    void Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster);
     void Reset();
     bool DressShowerBlob(ATOOLS::Blob * blob);
     int  MinimumBiasEvent(ATOOLS::Blob_List * blobs);
@@ -46,12 +46,6 @@ namespace SHRIMPS {
     inline double         Smin()   const { return p_active->Smin(); }
     inline double         B()      const { return p_active->B(); }
     
-    inline void SetCluster(Cluster_Algorithm * cluster) {
-      if (p_inelastic) p_inelastic->SetCluster(cluster);
-    }
-    inline void SetRemantHandler(Remnant_Handler * remnants) {
-      if (p_inelastic) p_inelastic->SetRemnantHandler(remnants);
-    }
 			   
     inline double MinKT2() {
       if (p_active) return p_active->KT2min();

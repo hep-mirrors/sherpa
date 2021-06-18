@@ -51,10 +51,11 @@ double Cluster_Algorithm::
 PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const
 {
   double pti2  = pi.PPerp2(), ptj2  = pj.PPerp2();    
-  if (dabs(pi.Y())>m_Ymax || dabs(pj.Y())>m_Ymax) return Max(m_minkt2, pti2);
-  double ptij2 = 2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-
-				    cos(pi.Phi()-pj.Phi()));
-  return Max(m_minkt2,ptij2);
+  if      (dabs(pi.Y())>m_Ymax && dabs(pj.Y())>m_Ymax) return Max(m_minkt2, pti2);
+  else if (dabs(pi.Y())>m_Ymax || dabs(pj.Y())>m_Ymax) return Max(4.*m_minkt2, pti2);
+  double ptij2 = Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-
+				 cos(pi.Phi()-pj.Phi()));
+  return Max(4.*m_minkt2,ptij2);
 }
 
 void Cluster_Algorithm::InitLeg(Cluster_Leg * leg,const double & kt2,

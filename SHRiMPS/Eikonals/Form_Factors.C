@@ -163,6 +163,7 @@ double Form_Factor::operator()(const double q) {
 
 double Form_Factor::
 SelectQT2(const double & qt2max,const double & qt2min) const {
+  //msg_Out()<<"            "<<METHOD<<"("<<qt2max<<", "<<qt2min<<")\n";
   double qt2(0.), pref(m_Lambda2/(1.+m_kappa)), effexp(1./pref), random(0.);
   switch (m_form) {
   case ff_form::Gauss:

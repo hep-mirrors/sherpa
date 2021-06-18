@@ -24,15 +24,12 @@ namespace SHRIMPS {
     ~Primary_Ladders();
     
     bool operator()(Omega_ik * eikonal,const double & B,const size_t & N);
-    void Initialise();
+    void Initialise(Remnant_Handler * remnants);
     void Test();
     void Reset();
 
     inline Colour_Generator    * GetColourGenerator()  { return &m_colourgenerator; }
     inline std::list<Ladder *> * GetLadders()          { return &m_ladders; }
-    inline void                  SetRemnantHandler(Remnant_Handler * remnants) {
-      p_laddergenerator->SetRemnantHandler(remnants);
-    }
     inline const double Ymax()   const { return p_laddergenerator->Ymax(); }
     inline const double KT2min() const { return p_laddergenerator->KT2min(); }
   };

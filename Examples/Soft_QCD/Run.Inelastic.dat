@@ -6,6 +6,8 @@ ME_SIGNAL_GENERATOR:  None
 SOFT_COLLISIONS:      Shrimps
 RESPECT_MASSIVE_FLAG: 0;
 SHOWER_GENERATOR:     CSS
+#CSS_FS_PT2MIN:        1000000.
+#CSS_MAXEM:            0
 FRAGMENTATION:        Ahadic
 
 MAX_PROPER_LIFETIME:  10.
@@ -13,36 +15,36 @@ YFS_MODE:             0
   
 SHRIMPS:
    Mode:        Inelastic
-   Absorption:  exponential
-   deltaY:      1.
+   Absorption:  factorial
+   deltaY:      1.5
    beta02(mb):  25.0
    Lambda2:     1.2
-   kappa:       0.55
-   xi:          0.2
-   lambda:      0.25
-   Delta:       0.4
+   kappa:       0.60   # 0.55
+   xi:          0.1
+   lambda:      0.25   # 0.25
+   Delta:       0.4    # 0.4
    Q_0^2:       1.0
    Q_as^2:      1.0
-   KT_shower:   5.0
+   KT_shower:   1.0
  
 COLOUR_RECONNECTIONS:
   Mode:        On
-  Q_0:         1.
+  Q_0:         2.
   eta_Q:       0.16
-  R_0:         1.
+  R_0:         2.
   eta_R:       0.16
-  Reshuffle:   0.33 
-  kappa:       2.
+  Reshuffle:   0.33
+  kappa:       1.
 
 AHADIC:
-  ALPHA_B:   2.5  ###  2.5
-  BETA_B:   -0.5  ### -0.5
-  GAMMA_B:   2.0  ###  2.0
+  ALPHA_B:   2.5   ###  2.5
+  BETA_B:   -0.5   ### -0.5
+  GAMMA_B:   4.0   ###  2.0
 
 
 
 ANALYSIS:         Rivet
-ANALYSIS_OUTPUT:  Default
+ANALYSIS_OUTPUT:  KT2
 
 RIVET:
   ANALYSES: [ ATLAS_2012_I1084540, ATLAS_2010_S8918562, ATLAS_2010_S8894728, ATLAS_2011_S8994773, TOTEM_2012_I1115294, CMS_2011_S8978280, CMS_2011_S9120041, CMS_2011_S9215166 ]

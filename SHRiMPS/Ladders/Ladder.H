@@ -22,18 +22,19 @@ namespace SHRIMPS {
     Ladder(const ATOOLS::Vec4D & position=ATOOLS::Vec4D(0.,0.,0.,0.));
     ~Ladder();
 
-    Ladder_Particle * AddRapidity(const double y,
-				  const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_gluon),
-				  const ATOOLS::Vec4D & mom=ATOOLS::Vec4D(0.,0.,0.,0.));
+    Ladder_Particle *
+    AddRapidity(const double y,
+		const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_gluon),
+		const ATOOLS::Vec4D & mom=ATOOLS::Vec4D(0.,0.,0.,0.));
     void DeleteRapidity(LadderMap::iterator yiter);
     void AddPropagator(T_Prop prop);
     void UpdatePropagatorKinematics();
     void Reset(const bool & all=true);
     void ResetFS();
-    void OutputRapidities();
-    
-    void ExtractHardTwo2Two(double & y1,double & y2,double & shat,double & that);
-    void ExtractExternalTwo2Two(double & y1,double & y2,double & shat);
+    void OutputRapidities();    
+    bool ExtractHardest(TPropList::iterator & winner,const double & qt2min=0.);
+    void HardestIncomingMomenta(const TPropList::iterator & winner,
+				ATOOLS::Vec4D & q0,ATOOLS::Vec4D & q1);
     
     inline LadderMap * GetEmissions() { return &m_emissions; }
     inline TPropList * GetProps()     { return &m_tprops; }

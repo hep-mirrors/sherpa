@@ -27,7 +27,8 @@ Inelastic_Event_Generator::~Inelastic_Event_Generator() {
   m_Bgrids.clear();
 }
 
-void Inelastic_Event_Generator::Initialise() {
+void Inelastic_Event_Generator::
+Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
   m_sigma = 0.;
   Sigma_Inelastic sigma;
   vector<vector<Omega_ik *> > * eikonals(MBpars.GetEikonals());
@@ -40,8 +41,9 @@ void Inelastic_Event_Generator::Initialise() {
   }
   msg_Info()<<METHOD<<" yields effective inelastic cross section "
 	    <<"sigma = "<<m_sigma/1.e9<<" mbarn.\n";
-  m_primaries.Initialise();
-  m_primaries.Test();
+  p_cluster  = cluster;
+  m_primaries.Initialise(remnants);
+  //m_primaries.Test();
   Reset();
 }
 
@@ -51,6 +53,10 @@ void Inelastic_Event_Generator::Reset() {
 }
 
 int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,const bool & flag) {
+  //msg_Out()<<"######################################################################\n"
+  //	   <<"######################################################################\n"
+  //	   <<"######################################################################\n"
+  //	   <<METHOD<<"\n";
   if (m_mustinit) {
     Blob * blob(blobs->FindFirst(btp::Soft_Collision));
     if (!blob ||
@@ -99,8 +105,8 @@ bool Inelastic_Event_Generator::InitEvent(Blob_List * blobs) {
   p_eikonal  = 0; m_B = -1;
   for (size_t trials=0;trials<1000;trials++) {
     if (SelectEikonal() && SelectB()) {
-      m_Nladders = 1 + int(1./p_eikonal->Prefactor() *
-			   ran->Poissonian((*p_eikonal)(m_B)));
+      m_Nladders = int(1./p_eikonal->Prefactor() *
+		       ran->Poissonian((*p_eikonal)(m_B)));
       if (m_Nladders>0) return true;
     }
   }

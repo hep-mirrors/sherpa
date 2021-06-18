@@ -77,34 +77,34 @@ void Event_Handler::EmptyEventPhases()
 void Event_Handler::PrintGenericEventStructure()
 {
   if (!msg_LevelIsInfo()) return;
-  msg_Out()<<"----------------------------------------------------------\n"
+  msg_Info()<<"----------------------------------------------------------\n"
 	    <<"-- SHERPA generates events with the following structure --\n"
 	    <<"----------------------------------------------------------\n";
-  msg_Out()<<"Event generation   : ";
+  msg_Info()<<"Event generation   : ";
   switch (ToType<size_t>(rpa->gen.Variable("EVENT_GENERATION_MODE"))) {
   case 0:
-    msg_Out()<<"Weighted"<<std::endl;
+    msg_Info()<<"Weighted"<<std::endl;
     break;
   case 1:
-    msg_Out()<<"Unweighted"<<std::endl;
+    msg_Info()<<"Unweighted"<<std::endl;
     break;
   case 2:
-    msg_Out()<<"Partially unweighted"<<std::endl;
+    msg_Info()<<"Partially unweighted"<<std::endl;
     break;
   default:
-    msg_Out()<<"Unknown"<<std::endl;
+    msg_Info()<<"Unknown"<<std::endl;
     break;
   }
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      msg_Out()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
+      msg_Info()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
     }
   }
   if (p_variations && !p_variations->GetParametersVector()->empty()) {
-    msg_Out()<<"Reweighting        : "
+    msg_Info()<<"Reweighting        : "
 	     <<p_variations->GetParametersVector()->size()<<" variations.\n";
   }
-  msg_Out()<<"---------------------------------------------------------\n";
+  msg_Info()<<"---------------------------------------------------------\n";
 }
 
 void Event_Handler::Reset()
@@ -203,11 +203,11 @@ bool Event_Handler::AnalyseEvent() {
 }
 
 int Event_Handler::IterateEventPhases(eventtype::code & mode) {
-  //msg_Out()<<"===============================================================================\n"
-  //	   <<"===============================================================================\n"
-  //	   <<"===============================================================================\n"
-  //	   <<"===============================================================================\n"
-  //	   <<"===============================================================================\n\n\n";
+  //msg_Out()<<"===========================================================================\n"
+  //	   <<"===========================================================================\n"
+  //	   <<"===========================================================================\n"
+  //	   <<"===========================================================================\n"
+  //	   <<"===========================================================================\n\n\n";
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;
@@ -511,11 +511,11 @@ void Event_Handler::Finish() {
       <<" %"<<om::reset<<" )";
   getline(conv,res);
   int md(msg->Modifiable()?26:-4);
-  msg_Out()<<om::bold<<'+'<<std::string(res.length()-md,'-')<<"+\n";
-  msg_Out()<<'|'<<std::string(res.length()-md,' ')<<"|\n";
-  msg_Out()<<'|'<<om::reset<<"  "<<res<<"  "<<om::bold<<"|\n";
-  msg_Out()<<'|'<<std::string(res.length()-md,' ')<<"|\n";
-  msg_Out()<<'+'<<std::string(res.length()-md,'-')<<'+'<<om::reset<<std::endl;
+  msg_Out()<<om::bold<<'+'<<std::string(res.length()-md,'-')<<"+\n"
+	   <<'|'<<std::string(res.length()-md,' ')<<"|\n"
+	   <<'|'<<om::reset<<"  "<<res<<"  "<<om::bold<<"|\n"
+	   <<'|'<<std::string(res.length()-md,' ')<<"|\n"
+	   <<'+'<<std::string(res.length()-md,'-')<<'+'<<om::reset<<std::endl;
 }
 
 void Event_Handler::MPISync()

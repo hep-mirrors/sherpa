@@ -23,7 +23,8 @@ namespace SHRIMPS {
     ~Remnant_Handler();
 
     void Reset();
-    ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List * blobs,const double & B=0.);
+    ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List * blobs,
+					     const double & B=0.);
     void SetBeamBlob(ATOOLS::Blob *const beamblob,const int & beam);
 
     inline void SetFormFactors(Form_Factor * ff1,Form_Factor * ff2) {

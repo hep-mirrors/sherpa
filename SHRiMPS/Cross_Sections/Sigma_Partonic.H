@@ -8,6 +8,8 @@
 #include <list>
 
 namespace SHRIMPS {
+  class Remnant_Handler;
+  
   struct xs_mode {
     enum code {
       perturbative = 1,
@@ -18,11 +20,12 @@ namespace SHRIMPS {
   class Sigma_Partonic {
     Continued_PDF          * p_pdf[2];
     MODEL::Strong_Coupling * p_alphaS;
-    xs_mode::code   m_mode;
+    xs_mode::code            m_mode;
+    bool                     m_fixflavour;
     double          m_Ymax, m_S, m_eta, m_smin, m_tmin;
-    double          m_accu, m_sigma, m_maxdsigma, m_shat, m_yhat, m_dsigma;
-    long int        m_Nmaxtrials;
-    double          m_x[2], m_xpdf[2];
+    double          m_accu, m_sigma, m_maxdsigma;
+    int             m_Nmaxtrials;
+    double          m_shat, m_yhat, m_dsigma, m_x[2], m_xpdf[2];
     ATOOLS::Flavour m_flavs[2];
     
 
@@ -36,12 +39,14 @@ namespace SHRIMPS {
     const bool   Calculate();
     void  SelectFlavours(const bool & fixflavour);
   public:
-    Sigma_Partonic(const xs_mode::code & mode=xs_mode::Regge);
+    Sigma_Partonic(MODEL::Strong_Coupling * alphaS,
+		   const xs_mode::code & mode=xs_mode::Regge);
     ~Sigma_Partonic();
 
-    void       Initialise(); 
-    const double MakeEvent(const bool & fixflavour);
+    void Initialise(Remnant_Handler * remnants); 
+    const double MakeEvent();
     const double dSigma(const double & s,const double & y);
+    const double PDF(const size_t beam,const double & x,const double & Q2);
     void SetPDF(const size_t & beam,Continued_PDF * pdf) { p_pdf[beam] = pdf; }
     void SetEta(const double & eta=0.)   { m_eta  = eta; }
     void SetTmin(const double & tmin=1.) { m_tmin = tmin; }
@@ -50,6 +55,8 @@ namespace SHRIMPS {
     const double          & SigmaHat() const { return m_dsigma; }
     const double          & SHat()     const { return m_shat; }
     const double          & YHat()     const { return m_yhat; }
+    const double          & Smin()     const { return m_smin; }
+    const double          & Tmin()     const { return m_tmin; }
     const double          & X(const size_t beam)    const { return m_x[beam]; }
     const ATOOLS::Flavour & Flav(const size_t beam) const {
       return m_flavs[beam];

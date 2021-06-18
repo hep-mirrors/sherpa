@@ -29,7 +29,7 @@ bool Beam_Particles_Shifter::operator()() {
 }
 
 void Beam_Particles_Shifter::ExtractBeamParticles() {
-  //msg_Out()<<"      --- "<<METHOD<<" for "<<p_singlets->size()<<" singlets.\n";
+  msg_Out()<<"      --- "<<METHOD<<" for "<<p_singlets->size()<<" singlets.\n";
   m_beamparts.clear();
   Singlet * singlet, * bsinglet;
   Vec4D  mom(0.,0.,0.,0.);
@@ -64,7 +64,7 @@ void Beam_Particles_Shifter::ExtractBeamParticles() {
 }
 
 bool Beam_Particles_Shifter::ShiftBeamParticles() {
-  //msg_Out()<<"     --- "<<METHOD<<" for "<<m_beamparts.size()<<" particles.\n";
+  msg_Out()<<"     --- "<<METHOD<<" for "<<m_beamparts.size()<<" particles.\n";
   size_t n = m_beamparts.size(), i(0);
   if (n<=1) return true;
   Vec4D  * moms   = new Vec4D[n];
@@ -89,7 +89,7 @@ bool Beam_Particles_Shifter::ShiftBeamParticles() {
 }
 
 void Beam_Particles_Shifter::RescueLightClusters() {
-  //msg_Out()<<"    --- "<<METHOD<<" for "<<p_singlets->size()<<" singlets.\n";
+  msg_Out()<<"    --- "<<METHOD<<" for "<<p_singlets->size()<<" singlets.\n";
   Singlet * sing;
   Flavour flav, trip, anti;
   bool    beam, decayed;
@@ -105,18 +105,32 @@ void Beam_Particles_Shifter::RescueLightClusters() {
     }
     if (beam) {
       double mass = sqrt(sing->Mass2());
+      msg_Out()<<"     - beam singlet (size = "<<sing->size()<<") with mass = "<<mass
+      	       <<"["<<trip<<" "<<anti<<"]\n";
       if (p_softclusters->MustPromptDecay(trip,anti,mass)) {
+	msg_Out()<<"     - cluster must decay.\n";
 	if (sing->size()>2) {
 	  sing->StripSingletOfGluons();
+	  msg_Out()<<"     - stripped singlet off gluons.\n";
 	}
 	Cluster cluster((*sing->begin()),(*sing->rbegin()));
-	if (p_softclusters->Treat(&cluster,true)==1) {
+	msg_Out()<<"     - try to trivially decay cluster "
+		 <<"["<<cluster[0]->Flavour()<<", "<<cluster[1]->Flavour()<<"] "
+		 <<mass<<">"<<p_softclusters->MinSingleMass(cluster[0]->Flavour(),
+							    cluster[1]->Flavour())<<":\n"
+		 <<cluster<<"\n";
+	if (mass>p_softclusters->MinSingleMass(cluster[0]->Flavour(),
+					       cluster[1]->Flavour()) && 
+	    p_softclusters->Treat(&cluster,true)==1) {
+	  msg_Out()<<"     - resulting cluster decayed.\n";
 	  decayed = true;
 	}
 	else {
+	  msg_Out()<<"     - couldn't trivially decay cluster:\n"<<cluster<<"\n";
 	  Flavour transition = p_softclusters->LowestTransition(trip,anti);
 	  double  transmass  = transition.Mass();
 	  Proto_Particle * recoiler = GetRecoilPartner(transmass,cluster.Momentum(),sing);
+	  msg_Out()<<"     - recoil partner = "<<recoiler<<"\n";
 	  if (recoiler && ShuffleMomenta(recoiler,&cluster,transition,transmass)) {
 	    decayed = true;
 	  }
@@ -157,6 +171,7 @@ ShuffleMomenta(Proto_Particle * recoiler,Cluster * cluster,const Flavour & targe
 Proto_Particle *Beam_Particles_Shifter::
 GetRecoilPartner(const double & targetmass,const ATOOLS::Vec4D & mom,
 		 const Singlet * veto) {
+  msg_Out()<<"     - "<<METHOD<<"(target = "<<targetmass<<", veto = "<<veto<<")\n";
   Proto_Particle * recoiler(NULL);
   double pt2max = 1.e6, pt2, mass;
   list<Proto_Particle *> * hadrons = p_softclusters->GetHadrons();

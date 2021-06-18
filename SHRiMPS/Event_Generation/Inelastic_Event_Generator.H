@@ -35,14 +35,14 @@ namespace SHRIMPS {
     ~Inelastic_Event_Generator();
 
     void Reset();
-    void Initialise();
+    void Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster);
     int  GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag=false);
 
 
-    inline Colour_Generator * GetColourGenerator()  { return m_primaries.GetColourGenerator(); }
-    inline void   SetCluster(Cluster_Algorithm * cluster)       { p_cluster  = cluster; }
-    inline void   SetRemnantHandler(Remnant_Handler * remnants) {
-      m_primaries.SetRemnantHandler(remnants);
+    inline Colour_Generator * GetColourGenerator()  {
+      return m_primaries.GetColourGenerator();
+    }
+    inline void   SetCluster(Cluster_Algorithm * cluster) {
     }
     inline double XSec(Omega_ik * eikonal=NULL) {
       if (eikonal!=NULL) return m_xsecs[eikonal];

@@ -1,8 +1,9 @@
 #ifndef SHRIMPS_Ladders_Ladder_Generator_Base_H
 #define SHRIMPS_Ladders_Ladder_Generator_Base_H
 
+#include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
 #include "SHRiMPS/Eikonals/Rapidity_Density.H"
-#include "SHRiMPS/Ladders/ME_Correction.H"
+#include "SHRiMPS/Ladders/MEs.H"
 #include "SHRiMPS/Ladders/Ladder.H"
 #include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
 #include "MODEL/Main/Strong_Coupling.H"
@@ -11,13 +12,13 @@
 namespace SHRIMPS {
   class Ladder_Generator_Base {
   protected:
-    double                   m_Ymax, m_deltaY, m_qt2min, m_kt2min;
-    double                   m_kt2minShower;
+    Sigma_Partonic           m_partonic;
+    double                   m_Ymax, m_deltaY;
+    double                   m_qt2min, m_qt2minFF, m_kt2min, m_kt2minShower;
     MODEL::Strong_Coupling * p_alphaS;
     Rapidity_Density         m_density;
-    ME_Correction            m_mecorrection;
+    MEs                      m_me;
     Omega_ik               * p_eikonal;
-    Continued_PDF          * p_pdf[2];
     Ladder                 * p_ladder;
     LadderMap              * p_emissions;
     TPropList              * p_props;
@@ -36,11 +37,12 @@ namespace SHRIMPS {
     virtual void   ResetFSFlavours();
     virtual void   ConstructISKinematics();
     virtual void   ConstructSimpleLadder();
+    virtual double RescaleLadder(const ATOOLS::Vec4D & P_in);
+    virtual double TotalReggeWeight();
     virtual double AlphaSWeight(const double & kt2);
     virtual double ReggeWeight(const double & qt2, const double & y1,
 			       const double y2);
     virtual double LDCWeight(const double & qt2, const double & qt2prev);
-    virtual double TWeight();
     virtual void   MakeTransverseUnitVector();
     inline virtual const double AlphaS(const double q2) const {
       return (*p_alphaS)(q2);
@@ -49,15 +51,11 @@ namespace SHRIMPS {
     Ladder_Generator_Base();
     virtual ~Ladder_Generator_Base();
 
-    virtual void Initialise() {}
+    virtual void Initialise(Remnant_Handler * remnants);
     virtual void Test();
     virtual Ladder * operator()(const ATOOLS::Vec4D & pos) = 0;
     virtual void QuarkReplace();
     
-    inline virtual void SetRemnantHandler(Remnant_Handler * remnants) {
-      for (size_t beam=0;beam<2;beam++) p_pdf[beam] = remnants->GetPDF(beam);
-      m_mecorrection.SetPDFs(p_pdf[0],p_pdf[1]);
-    }
     inline virtual void InitCollision(Omega_ik * eikonal,const double & B) {
       p_eikonal  = eikonal; m_B = B; m_density.SetEikonal(p_eikonal);
     }

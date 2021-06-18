@@ -6,6 +6,9 @@
 #include "ATOOLS/Phys/Blob_List.H"
 
 namespace SHRIMPS {
+  class Remnant_Handler;
+  class Cluster_Algorithm;
+  
   class Event_Generator_Base {
   protected:
     Omega_ik * p_eikonal;
@@ -15,7 +18,8 @@ namespace SHRIMPS {
       p_eikonal(NULL), m_xsec(sigma->XSec()), m_smin(0.) {} 
     ~Event_Generator_Base()   {};
     virtual void Reset()      {}
-    virtual void Initialise() {}
+    virtual void Initialise(Remnant_Handler * remnants=NULL,
+			    Cluster_Algorithm * cluster=NULL) {}
     virtual int  GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag=false) = 0;
     virtual Omega_ik   * GetEikonal()      const { return p_eikonal;}
     virtual const double XSec()            const { return m_xsec; }

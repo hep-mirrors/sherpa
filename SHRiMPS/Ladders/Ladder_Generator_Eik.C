@@ -10,7 +10,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-Ladder_Generator_Eik::Ladder_Generator_Eik() : Ladder_Generator_Base() { }
+Ladder_Generator_Eik::Ladder_Generator_Eik() : Ladder_Generator_Base() {}
 
 Ladder_Generator_Eik::~Ladder_Generator_Eik() {}
 
@@ -25,12 +25,12 @@ Ladder * Ladder_Generator_Eik::operator()(const Vec4D & pos) {
   else {
     size_t trials = 0;
     do {
-      m_weight=0.;
       if ((trials++)>1000) { delete p_ladder; return NULL; }
       if (SelectPropagatorQTs()) {
 	ConstructISKinematics();
 	CalculateWeight();
       }
+      else m_weight = 0.;
     } while (m_weight<ran->Get());
   }
   return p_ladder;
@@ -144,6 +144,7 @@ bool Ladder_Generator_Eik::SelectPropagatorQT(const size_t dir,T_Prop & prop) {
 }
 
 void Ladder_Generator_Eik::CalculateWeight() {
-  m_weight  = AlphaSWeight(m_lastk.PPerp2()) * TWeight();
+  m_weight  = AlphaSWeight(m_lastk.PPerp2());
+  m_weight *= m_me(p_ladder,m_qt2min); 
 }
 

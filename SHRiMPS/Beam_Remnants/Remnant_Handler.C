@@ -13,9 +13,10 @@ Remnant_Handler::Remnant_Handler(BEAM::Beam_Spectra_Handler * beamspectra,
   p_colourgenerator(NULL)
 {
   for (int beam=0;beam<2;beam++) {
-    m_hadrons.push_back(new Hadron_Dissociation(beam,beamspectra->GetBeam(beam),
-						new Continued_PDF(isr->PDF(beam),
-								  isr->Flav(beam))));
+    m_hadrons.
+      push_back(new Hadron_Dissociation(beam,beamspectra->GetBeam(beam),
+					new Continued_PDF(isr->PDF(beam),
+							  isr->Flav(beam))));
   }
 }
 
@@ -28,19 +29,16 @@ void Remnant_Handler::Reset() {
   for (int beam=0;beam<2;beam++) m_hadrons[beam]->Reset();
 }
 
-Return_Value::code Remnant_Handler::FillBeamBlobs(Blob_List * blobs,const double & B) {
-  //msg_Out()<<"\n\n\n\n-------------------------------------------------------\n\n"
-  //	   <<(*blobs);
+Return_Value::code Remnant_Handler::
+FillBeamBlobs(Blob_List * blobs,const double & B) {
   InitialiseCollision(blobs);
   for (size_t beam=0;beam<2;beam++) {
     if (!m_hadrons[beam]->FillBeamBlob(blobs, B)) {
-      //msg_Out()<<" --> New Event.\n";
       return Return_Value::New_Event;
     }
   }
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++)
     (*bit)->UnsetStatus(blob_status::needs_beams);
-  //msg_Out()<<" --> Success.\n";
   return Return_Value::Success;
 }
  
