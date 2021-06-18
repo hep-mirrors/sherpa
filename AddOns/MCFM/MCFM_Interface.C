@@ -44,8 +44,7 @@ namespace SHERPA {
       msg_Info()<<s_mcfm.GetFinishMessage(1);
     }
 
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr)
     {
@@ -233,7 +232,7 @@ operator()(const Process_Info &pi) const
   std::vector<int> ids(fl.size());
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
   MCFM::Process_Info mpi(ids,pi.m_ii.m_ps.size(),
-			 pi.m_maxcpl[0],pi.m_maxcpl[1]+addcpl);
+			 pi.m_maxcpl[0],pi.m_maxcpl[1]);
   std::string modelname(str_tolower(MODEL::s_model->Name()));
   if (modelname=="smehc") modelname="heft";
   mpi.m_model=str_tolower(modelname);

@@ -13,4 +13,4 @@ endif
 
 EXTRA_DIST = $(MADLOOP_EXTRA_DIST)
 
-nodist_bin_SCRIPTS = sconsloops
+nobase_dist_pkgdata_SCRIPTS = sconsloops

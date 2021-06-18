@@ -1,16 +1,18 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "PHASIC++/Process/Tree_ME2_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 #define ML5_BOOST_TO_CMS
 
@@ -69,23 +71,26 @@ namespace ML5 {
 
     void PrepareTerminate();
 
+    void RegisterDefaults()
+    {
+      Settings &s=Settings::GetMainSettings();
+      s["ML5_LIBPATH"].SetDefault("Process/OLP");
+      s["ML5_MODEL"].SetDefault(Flavour(kf_b).IsMassive()?
+				"loop_sm":"loop_sm-no_b_mass");
+      s["ML5_MODE"].SetDefault(0);
+    }
+
     // member functions
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr)
     {
-      Data_Reader read(" ",";","!","=");
-      read.SetInputPath(path);
-      read.SetInputFile(file);
-      std::string filename(file);
-      if (filename.find('.')!=std::string::npos)
-	filename=filename.substr(0,filename.find('.'));
-      s_path=read.GetValue<std::string>("ML5_LIBPATH","Process/OLP/"+filename);
-      s_model=read.GetValue<std::string>
-	("ML5_MODEL",Flavour(kf_b).IsMassive()?"loop_sm":"loop_sm-no_b_mass");
-      s_mode=read.GetValue<int>("ML5_MODE",0);
-      s_init=!FileExists(s_path+".db");
+      RegisterDefaults();
+      Settings &s=Settings::GetMainSettings();
+      s_path=s["ML5_LIBPATH"].Get<std::string>();
+      s_model=s["ML5_MODEL"].Get<std::string>();
+      s_mode=s["ML5_MODE"].Get<int>();
+      s_init=!FileExists(s_path+".zip");
       My_In_File::OpenDB(s_path+"/");
 #ifdef USING__MPI
       if (MPI::COMM_WORLD.Get_rank()==0) {
@@ -168,12 +173,6 @@ namespace ML5 {
     int  PerformTests() { return 1; }
     bool NewLibraries() { return s_init; }
 
-    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {}
-
-    ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const size_t &mode)
-    { return NULL; }
-
     inline static std::string Path() { return s_path; }
 
     inline static int Init() { return s_init; }
@@ -224,21 +223,19 @@ namespace ML5 {
 	card<<"> ";
 	for (size_t i(nin);i<flavs.size();++i)
 	  card<<(long int)(flavs[i])<<" ";
-	int loqcd=pi.m_fi.m_nloqcdtype==nlo_type::loop;
-	int loew=pi.m_fi.m_nloewtype==nlo_type::loop;
+	int loqcd=pi.m_fi.m_nlocpl[0]==1;
+	int loew=pi.m_fi.m_nlocpl[1]==1;
 	if (pi.m_maxcpl[0]!=99) card<<"QCD="<<(pi.m_maxcpl[0]-loqcd)<<" ";
 	if (pi.m_maxcpl[1]!=99) card<<"QED="<<(pi.m_maxcpl[1]-loew)<<" ";
 	if (loqcd) card<<"[virt=QCD]";
 	if (loew) card<<"[virt=QED]";
-	if (pi.m_maxcpl[0]!=99) card<<" QCD="<<2*pi.m_maxcpl[0];
-	if (pi.m_maxcpl[1]!=99) card<<" QED="<<2*pi.m_maxcpl[1];
+	if (pi.m_maxcpl[0]!=99) card<<" QCD="<<pi.m_maxcpl[0];
+	if (pi.m_maxcpl[1]!=99) card<<" QED="<<pi.m_maxcpl[1];
 	card<<" @"<<ML5_Interface::PId()<<"\n";
-	My_In_File::ExecDB(cn+"/","begin");
 	My_Out_File mapfile(cn+"/"+pn+".map");
 	if (!mapfile.Open()) THROW(fatal_error,"Cannot write map file");
 	*mapfile<<pn<<" "<<ML5_Interface::PId()<<"\n";
 	mapfile.Close();
-	My_In_File::ExecDB(cn+"/","commit");
 	ML5_Interface::PId()++;
       }
       My_In_File mapfile(cn+"/"+pn+".map");
@@ -339,44 +336,45 @@ namespace ML5 {
   protected:
     ME_Function p_me;
     double *p_p, *p_res, *p_prec, m_prec;
-    size_t m_id;
+    size_t m_id, m_order_qcd, m_order_ew;
     std::string m_libname;
   public:
 
-    ML5_LoopSquared(const Process_Info& pi,
-	     const Flavour_Vector& flavs):
-      Tree_ME2_Base(pi,flavs),
+    ML5_LoopSquared(const External_ME_Args &args):
+      Tree_ME2_Base(args),
       p_res(NULL), p_prec(NULL), m_prec(-1.0)
     {
+      m_order_qcd=args.m_orders[0];
+      m_order_ew=args.m_orders[1];
       std::string cn(ML5_Interface::Path()), cpn;
-      std::string pn(Process_Base::GenerateName(pi.m_ii,pi.m_fi));
+      std::string pn(ToString(args.m_inflavs.size())+"_"+
+		     ToString(args.m_outflavs.size()));
+      for (size_t i(0);i<args.m_inflavs.size();++i)
+	pn+="__"+ToString((long int)args.m_inflavs[i]);
+      for (size_t i(0);i<args.m_outflavs.size();++i)
+	pn+="__"+ToString((long int)args.m_outflavs[i]);
       if (ML5_Interface::Init()) {
 #ifdef USING__MPI
 	if (MPI::COMM_WORLD.Get_rank())
 	  THROW(fatal_error,"Initialization not possible in MPI mode");
 #endif
-	size_t nin(pi.m_ii.m_ps.size());
 	std::ofstream card((cn+".mg5").c_str(),std::ios::app);
 	card<<"add process ";
-	for (size_t i(0);i<nin;++i)
-	  card<<(long int)(flavs[i])<<" ";
+	for (size_t i(0);i<args.m_inflavs.size();++i)
+	  card<<(long int)(args.m_inflavs[i])<<" ";
 	card<<"> ";
-	for (size_t i(nin);i<flavs.size();++i)
-	  card<<(long int)(flavs[i])<<" ";
-	int loqcd=pi.m_fi.m_nloqcdtype==nlo_type::loop;
-	int loew=pi.m_fi.m_nloewtype==nlo_type::loop;
-	if (pi.m_maxcpl[0]!=99) card<<"QCD="<<(pi.m_maxcpl[0]-loqcd)<<" ";
-	if (pi.m_maxcpl[1]!=99) card<<"QED="<<(pi.m_maxcpl[1]-loew)<<" ";
-	card<<pi.m_loopgenerator.substr(3);
-	if (pi.m_maxcpl[0]!=99) card<<" QCD="<<2*pi.m_maxcpl[0];
-	if (pi.m_maxcpl[1]!=99) card<<" QED="<<2*pi.m_maxcpl[1];
+	for (size_t i(0);i<args.m_outflavs.size();++i)
+	  card<<(long int)(args.m_outflavs[i])<<" ";
+	if (args.m_orders[0]!=99) card<<"QCD="<<(args.m_orders[0]-1)<<" ";
+	if (args.m_orders[1]!=99) card<<"QED="<<(args.m_orders[1])<<" ";
+	card<<"[virt=QCD] ";
+	if (args.m_orders[0]!=99) card<<"QCD="<<(args.m_orders[0])<<" ";
+	if (args.m_orders[1]!=99) card<<"QED="<<(args.m_orders[1])<<" ";
 	card<<" @"<<ML5_Interface::PId()<<"\n";
-	My_In_File::ExecDB(cn+"/","begin");
 	My_Out_File mapfile(cn+"/"+pn+".map");
 	if (!mapfile.Open()) THROW(fatal_error,"Cannot write map file");
 	*mapfile<<pn<<" "<<ML5_Interface::PId()<<"\n";
 	mapfile.Close();
-	My_In_File::ExecDB(cn+"/","commit");
 	ML5_Interface::PId()++;
       }
       My_In_File mapfile(cn+"/"+pn+".map");
@@ -385,7 +383,7 @@ namespace ML5 {
       if (cpn!=pn) msg_Info()<<METHOD<<"():"<<om::red<<" Process '"<<pn
 			     <<"' is mapped onto '"<<cpn<<"'!\n"<<om::reset;
       msg_Info()<<"!";
-      p_p = new double[4*flavs.size()];
+      p_p = new double[4*(args.m_inflavs.size()+args.m_outflavs.size())];
       std::string bp=rpa->gen.Variable("SHERPA_RUN_PATH");
       bp+="/"+cn+"/SubProcesses/MadLoop5_resources";
       m_libname="ML5_P"+ToString(m_id);
@@ -465,9 +463,8 @@ namespace ML5 {
       return p_res[1]/m_norm;
     }
 
-    int OrderQCD(const int &id) { return 99; }
-
-    int OrderEW(const int &id) { return 99; }
+    int OrderQCD(const int &id=-1) const { return m_order_qcd; }
+    int OrderEW(const int &id=-1) const  { return m_order_ew;  }
 
   };// end of class ML5_Tree
 
@@ -555,13 +552,11 @@ operator()(const Process_Info &pi) const
   return new ML5_Process(pi,fl,1);
 }
 
-DECLARE_TREEME2_GETTER(ML5_Process,"ML5_Process")
+DECLARE_TREEME2_GETTER(ML5_LoopSquared,"ML5_Process")
 Tree_ME2_Base *ATOOLS::Getter
-<Tree_ME2_Base,Process_Info,ML5_Process>::
-operator()(const Process_Info &pi) const
+<Tree_ME2_Base,External_ME_Args,ML5_LoopSquared>::
+operator()(const External_ME_Args &args) const
 {
-  if (pi.m_loopgenerator.find("ML5")!=0) return NULL;
-  if (pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl(pi.ExtractFlavours());
-  return new ML5_LoopSquared(pi,fl);
+  if (args.m_source!="ML5") return NULL;
+  return new ML5_LoopSquared(args);
 }
