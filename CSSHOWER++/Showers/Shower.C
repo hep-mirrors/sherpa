@@ -150,8 +150,6 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   split->GetSing()->ArrangeColours(split,newpB,newpC);
   newpB->SetPrev(split->GetPrev());
   newpC->SetPrev(split->GetPrev());
-  newpB->SetFixSpec(split->FixSpec());
-  newpB->SetOldMomentum(split->OldMomentum());
   double m2=split->Mass2();
   split->SetMass2(newpB->Mass2());
   Flavour fls(split->GetFlavour());
@@ -207,8 +205,6 @@ int Shower::MakeKinematics
   DEBUG_FUNC("");
   Parton *spect(split->GetSpect()), *pj(NULL);
   Vec4D peo(split->Momentum()), pso(spect->Momentum());
-  Vec4D pem(split->OldMomentum()), psm(spect->OldMomentum());
-  Vec4D pef(split->FixSpec()), psf(spect->FixSpec());
   int stype(-1), stat(-1);
   double mc2(m_kinFF.MS()->Mass2(flc)), mi2(0.0);
   if (split->GetType()==pst::FS) {
@@ -245,10 +241,6 @@ int Shower::MakeKinematics
   if (stat==-1) {
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
-    split->SetOldMomentum(pem);
-    spect->SetOldMomentum(psm);
-    split->SetFixSpec(pef);
-    spect->SetFixSpec(psf);
     delete pj;
     return stat;
   }
@@ -267,16 +259,13 @@ int Shower::MakeKinematics
   split->GetSing()->AddParton(pj);
   if (stype) split->GetSing()->BoostAllFS(pi,pj,spect);
   int ustat(UpdateDaughters(split,pi,pj,jcv,mode));
-  if (ustat<=0 || split->GetSing()->GetLeft()) {
+  if (ustat<=0 || (split->GetSing()->GetLeft() &&
+		   !(split->GetSing()->GetSplit()->Stat()&2))) {
     if (stype) split->GetSing()->BoostBackAllFS(pi,pj,spect);
     delete pi;
     pj->DeleteAll();
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
-    split->SetOldMomentum(pem);
-    spect->SetOldMomentum(psm);
-    split->SetFixSpec(pef);
-    spect->SetFixSpec(psf);
     return ustat;
   }
   const double split_weight {split->Weight()};
@@ -291,6 +280,9 @@ int Shower::MakeKinematics
                      });
   }
   split->GetSing()->SplitParton(split,pi,pj);
+  for (PLiter plit(split->GetSing()->begin());
+       plit!=split->GetSing()->end();++plit)
+    (*plit)->UpdateDaughters();
   return 1;
 }
 
