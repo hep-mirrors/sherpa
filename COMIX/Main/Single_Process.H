@@ -80,7 +80,7 @@ namespace COMIX {
     (const ATOOLS::Cluster_Amplitude& ampl,
      ATOOLS::Variations_Mode type=ATOOLS::Variations_Mode::nominal_only,
      int mode=0);
-    
+
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     bool GeneratePoint();

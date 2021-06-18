@@ -84,7 +84,7 @@ Calculate(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode)
 {
   while (!m_ampls.empty()) { m_ampls.back()->Delete(); m_ampls.pop_back(); }
   m_ampls.clear();
-  m_p  = p_proc->Momenta();
+  m_p  = p_proc->Integrator()->Momenta();
   m_f  = p_proc->Flavours();
   std::vector<std::vector<int> > * cols = p_proc->Colours();
   if (cols==NULL) {

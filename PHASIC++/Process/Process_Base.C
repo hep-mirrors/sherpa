@@ -562,6 +562,11 @@ bool Process_Base::FillFinalState(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
+std::vector<std::vector<int> > *Process_Base::Colours() const
+{
+  return NULL;
+}
+
 void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
                                   std::vector<std::vector<Complex> >& cols)
 {

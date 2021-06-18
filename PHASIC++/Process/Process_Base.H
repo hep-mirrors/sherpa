@@ -212,6 +212,8 @@ namespace PHASIC {
     virtual void FillOnshellConditions();
     virtual bool FillFinalState(const ATOOLS::Vec4D_Vector &p);
 
+    virtual std::vector<std::vector<int> > *Colours() const;
+
     static void SortFlavours(ATOOLS::Cluster_Amplitude *const ampl,
 			     const int mode=1);
     static void SortFlavours(Process_Info &pi,const int mode=1);
@@ -232,10 +234,8 @@ namespace PHASIC {
 
     inline size_t NIn()                             const { return m_nin;  }
     inline size_t NOut()                            const { return m_nout; }
-    const ATOOLS::Vec4D_Vector          &Momenta()  const;
     inline const ATOOLS::Flavour_Vector &Flavours() const { return m_flavs; }
     inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs) { m_flavs = flavs; }
-    inline virtual std::vector<std::vector<int> > * Colours() const { return NULL; }
 
     inline const std::string &Name() const        { return m_name;    }
     inline const std::string &ResultsName() const { return m_resname; }
