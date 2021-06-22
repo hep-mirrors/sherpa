@@ -144,8 +144,9 @@ bool Ahadic::CheckSinglets()
 bool Ahadic::DecayGluons() {
   //msg_Out()<<"   ### "<<METHOD<<"\n";
   while (!m_singlet_list.empty()) {
-    if (m_gluondecayer(m_singlet_list.front())) 
+    if (m_gluondecayer(m_singlet_list.front())) {
       m_singlet_list.pop_front();
+    }
     else {
       msg_Error()<<METHOD<<" could not decay all gluons.\n";
       return false;
