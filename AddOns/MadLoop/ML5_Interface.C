@@ -341,7 +341,7 @@ namespace ML5 {
   public:
 
     ML5_LoopSquared(const External_ME_Args &args):
-      Tree_ME2_Base(args),
+      Tree_ME2_Base(args), p_me(NULL),
       p_res(NULL), p_prec(NULL), m_prec(-1.0)
     {
       m_order_qcd=args.m_orders[0];
@@ -425,6 +425,7 @@ namespace ML5 {
     {
       void *module(NULL);
       if (p_me==NULL) {
+	if (ML5_Interface::Init()) return 1.0;
 	module=s_loader->LoadLibrary(m_libname);
 	if (module==NULL) THROW(normal_exit,"Missing loop library");
 	p_me = (ME_Function)s_loader->GetLibraryFunction
