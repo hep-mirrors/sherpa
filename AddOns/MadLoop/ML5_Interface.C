@@ -345,7 +345,7 @@ namespace ML5 {
 
     ML5_LoopSquared(const Process_Info& pi,
 	     const Flavour_Vector& flavs):
-      Tree_ME2_Base(pi,flavs),
+      Tree_ME2_Base(pi,flavs), p_me(NULL),
       p_res(NULL), p_prec(NULL), m_prec(-1.0)
     {
       std::string cn(ML5_Interface::Path()), cpn;
@@ -367,7 +367,7 @@ namespace ML5 {
 	int loew=pi.m_fi.m_nloewtype==nlo_type::loop;
 	if (pi.m_maxcpl[0]!=99) card<<"QCD="<<(pi.m_maxcpl[0]-loqcd)<<" ";
 	if (pi.m_maxcpl[1]!=99) card<<"QED="<<(pi.m_maxcpl[1]-loew)<<" ";
-	card<<pi.m_loopgenerator.substr(3);
+	card<<"[virt=QCD]";
 	if (pi.m_maxcpl[0]!=99) card<<" QCD="<<2*pi.m_maxcpl[0];
 	if (pi.m_maxcpl[1]!=99) card<<" QED="<<2*pi.m_maxcpl[1];
 	card<<" @"<<ML5_Interface::PId()<<"\n";
@@ -427,6 +427,7 @@ namespace ML5 {
     {
       void *module(NULL);
       if (p_me==NULL) {
+	if (ML5_Interface::Init()) return 1.0;
 	module=s_loader->LoadLibrary(m_libname);
 	if (module==NULL) THROW(normal_exit,"Missing loop library");
 	p_me = (ME_Function)s_loader->GetLibraryFunction
