@@ -27,10 +27,11 @@ PARTICLE_DATA:
 PROCESSES:
 # The subtracted real emission piece
 - 93 93 -> 90 91 93:
+    Order: {QCD: 1, EW: 2}
+    NLO_Order: {QCD: 1, EW: 0}
     NLO_Mode: Fixed_Order
     NLO_Part: RS
     Integration_Error: 0.0275
-    Order: {QCD: Any, EW: 2}
 SELECTORS:
 - FastjetFinder:
     Algorithm: antikt

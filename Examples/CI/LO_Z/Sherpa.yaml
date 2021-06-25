@@ -4,7 +4,7 @@ BEAM_ENERGIES: 7000
 
 PROCESSES:
 - 93 93 -> 11 -11:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
     Integration_Error: 0.05
 
 SELECTORS:

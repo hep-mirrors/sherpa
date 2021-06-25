@@ -30,7 +30,7 @@ ANALYSIS_OUTPUT: test
 
 PROCESSES:
 - 93 93 -> 13 -13 93{1}:
-    Order: {QCD: Any, EW: Any}
+    Order: {QCD: 0, EW: 2}
     CKKW: "$(QCUT)"
     Integration_Error: 0.02
 

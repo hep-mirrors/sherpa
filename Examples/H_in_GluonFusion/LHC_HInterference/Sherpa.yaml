@@ -20,7 +20,7 @@ RUN_MASS_BELOW_POLE: 1
 PROCESSES:
 - 93 93 -> 22 22:
     NLO_Mode: Fixed_Order
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 2, EW: 2}
     NLO_Order: {QCD: 1, EW: 0}
     Enable_MHV: 12
     Loop_Generator: Higgs

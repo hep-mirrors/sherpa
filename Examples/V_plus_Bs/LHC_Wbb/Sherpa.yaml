@@ -27,14 +27,14 @@ PROCESSES:
     ME_Generator: Amegic
     RS_ME_Generator: Comix
     Loop_Generator: Wbb
-    Order: {QCD: Any, EW: 1}
+    Order: {QCD: 2, EW: 1}
 - 93 93 -> -24 5 -5:
     NLO_Mode: MC@NLO
     NLO_Order: {QCD: 1, EW: 0}
     ME_Generator: Amegic
     RS_ME_Generator: Comix
     Loop_Generator: Wbb
-    Order: {QCD: Any, EW: 1}
+    Order: {QCD: 2, EW: 1}
 
 SELECTORS:
 - FastjetFinder:

@@ -12,8 +12,8 @@ MASSIVE_PS: 3
 
 PROCESSES:
 - 11 -11 -> 93 93:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
 - 11 -11 -> 4 -4:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
 - 11 -11 -> 5 -5:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}

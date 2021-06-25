@@ -35,7 +35,7 @@ PROCESSES:
     ME_Generator: Amegic
     RS_ME_Generator: Comix
     Loop_Generator: LHOLE
-    Order: {QCD: Any, EW: 1}
+    Order: {QCD: 2, EW: 1}
 
 SELECTORS:
 - FastjetFinder:
