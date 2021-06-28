@@ -561,8 +561,16 @@ int Matrix_Element_Handler::InitializeProcesses(
   msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<" / "
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
-  if (m_gens.NewLibraries())
-    THROW(normal_exit,"Source code created. Run './makelibs' to compile.");
+  if (m_gens.NewLibraries()) {
+    if (rpa->gen.Variable("SHERPA_CPP_PATH")=="") {
+      THROW(normal_exit,"Source code created. Run './makelibs' to compile.");
+    }
+    else {
+      THROW(normal_exit,"Source code created in "
+                        +rpa->gen.Variable("SHERPA_CPP_PATH")
+                        +std::string(". Run './makelibs' there to compile."));
+    }
+  }
   return res;
 }
 
