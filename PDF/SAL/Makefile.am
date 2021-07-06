@@ -6,10 +6,10 @@ include ../../git.make
 libSALSherpa_la_SOURCES       =	\
 				Git_Info.C \
 				sal.cpp \
-				SALph_Fortran_Interface.C 
+				SALph_CPP_Interface.C 
 
 localinc_HEADERS      =	\
-			SALph_Fortran_Interface.H \
+			SALph_CPP_Interface.H \
 			sal.h \
 			math_ut.h
 

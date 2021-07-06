@@ -1,5 +1,5 @@
 /*
- * SALph_Fortran_Interface.C
+ * SALph_CPP_Interface.C
  *
  *  Created on: 1 Jul 2021
  *      Author: pmeinzinger
@@ -9,7 +9,8 @@
  * TODO: Check if the correct output is handed over: either f_p or x*f_p
  */
 
-#include "PDF/SAL/SALph_Fortran_Interface.H"
+#include "SALph_CPP_Interface.H"
+
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Message.H"
@@ -20,9 +21,9 @@
 using namespace PDF;
 using namespace ATOOLS;
 
-SALph_Fortran_Interface::SALph_Fortran_Interface(const ATOOLS::Flavour _bunch) {
-	m_xmin = 1.e-4;
-	m_xmax = 0.95;
+SALph_CPP_Interface::SALph_CPP_Interface(const ATOOLS::Flavour _bunch) {
+	m_xmin = 1.e-5;
+	m_xmax = 0.9999;
 	m_q2min = 2.;
 	m_q2max = 8.e4;
 	m_nf = 6;
@@ -41,11 +42,12 @@ SALph_Fortran_Interface::SALph_Fortran_Interface(const ATOOLS::Flavour _bunch) {
 	m_partons.insert(Flavour(kf_quark).Bar());
 }
 
-PDF_Base* SALph_Fortran_Interface::GetCopy() {
-	return new SALph_Fortran_Interface(m_bunch);
+PDF_Base* SALph_CPP_Interface::GetCopy() {
+	return new SALph_CPP_Interface(m_bunch);
 }
 
-void SALph_Fortran_Interface::CalculateSpec(const double &_x,
+// TODO: Check if the returned values are in the correct convention, i.e. including or excluding a factor x
+void SALph_CPP_Interface::CalculateSpec(const double &_x,
 		const double &_Q2) {
 	float x = _x / m_rescale, Q2 = _Q2;
 
@@ -62,7 +64,7 @@ void SALph_Fortran_Interface::CalculateSpec(const double &_x,
 	m_t = f[6];
 }
 
-double SALph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
+double SALph_CPP_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
 	double value = 0.;
 
 	if (infl.Kfcode() == kf_gluon)
@@ -86,7 +88,7 @@ double SALph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
 	return m_rescale * value;
 }
 
-double SALph_Fortran_Interface::GetXPDF(const kf_code &kf, bool anti) {
+double SALph_CPP_Interface::GetXPDF(const kf_code &kf, bool anti) {
 	double value = 0.;
 
 	if (kf == kf_gluon)
@@ -115,7 +117,7 @@ DECLARE_PDF_GETTER(SALph_Getter);
 PDF_Base* SALph_Getter::operator()(const Parameter_Type &args) const {
 	if (!args.m_bunch.IsPhoton())
 		return NULL;
-	return new SALph_Fortran_Interface(args.m_bunch);
+	return new SALph_CPP_Interface(args.m_bunch);
 }
 
 void SALph_Getter::PrintInfo(std::ostream &str, const size_t width) const {
