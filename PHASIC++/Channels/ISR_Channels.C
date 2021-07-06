@@ -133,12 +133,13 @@ bool ISR_Channels::CreateChannels()
 	    (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo(),isr));
 	}
 	else {
-	Add(new Simple_Pole_Forward_V
-	    (m_isrparams[i].parameters[0],
-	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
-	Add(new Simple_Pole_Backward_V
-	    (m_isrparams[i].parameters[0],
-	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+		// TODO: Suspicion: Bug which leads to mapping error. Workaround: comment out following lines
+//	Add(new Simple_Pole_Forward_V
+//	    (m_isrparams[i].parameters[0],
+//	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+//	Add(new Simple_Pole_Backward_V
+//	    (m_isrparams[i].parameters[0],
+//	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
 	}
       }
       else if (isr==3 && ep) {

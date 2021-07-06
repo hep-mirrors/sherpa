@@ -87,10 +87,11 @@ bool Beam_Channels::CreateChannels()
     case 0:
       Add(new Simple_Pole_Central_V(m_beamparams[i].parameters[0]," beam",p_psh->GetInfo(),beam));
       if (beam==3) {
-	Add(new Simple_Pole_Forward_V(m_beamparams[i].parameters[0],
-				      m_beamparams[i].parameters[1]," beam",p_psh->GetInfo()));
-	Add(new Simple_Pole_Backward_V(m_beamparams[i].parameters[0],
-				       m_beamparams[i].parameters[1]," beam",p_psh->GetInfo()));
+    	  // TODO: Suspicion: Bug which leads to mapping error. Workaround: comment out following lines
+//	Add(new Simple_Pole_Forward_V(m_beamparams[i].parameters[0],
+//				      m_beamparams[i].parameters[1]," beam",p_psh->GetInfo()));
+//	Add(new Simple_Pole_Backward_V(m_beamparams[i].parameters[0],
+//				       m_beamparams[i].parameters[1]," beam",p_psh->GetInfo()));
       }
       break;
     case 1:
