@@ -496,7 +496,6 @@ void SMH::FixCKM()
 void SMH::FixEFT()
 {
   Settings& s = Settings::GetMainSettings();
-  Complex eh(2./3.,0.);
   double ph(-2.*47./18.); double pfac(1.);
   if (s["FINITE_TOP_MASS"].Get<bool>()) {
     double hm=Flavour(kf_h0).Mass();
@@ -512,12 +511,8 @@ void SMH::FixEFT()
             + 5248./90475.*sqr(sqr(tauW)) + 1280./29939.*tauW*sqr(sqr(tauW))
             + 54528./1646645.*sqr(tauW*sqr(tauW));
   }
-  if (s["DEACTIVATE_GGH"].Get<int>())
-    eh=Complex(0.,0.);
-  if (s["DEACTIVATE_PPH"].Get<int>())
-    ph=0.;
+  if (s["DEACTIVATE_PPH"].Get<int>()) ph=0.;
   p_constants->insert(std::make_pair(std::string("h0_pp_fac"),ph*pfac));
-  p_constants->insert(std::make_pair(std::string("h0_gg_fac"),real(eh)));
 }
 
 void SMH::InitVertices()
@@ -834,8 +829,7 @@ void SMH::InitEFTVertices()
   Settings& s = Settings::GetMainSettings();
   const double as{ s["ALPHAS_GGH"].Get<double>() };
   const double aqed{ 1.0/s["1/ALPHAQED_PPH"].Get<double>() };
-  Kabbala ghgg("g_hgg",ScalarConstant("h0_gg_fac")*
-	       as/(2.0*M_PI*ComplexConstant("cvev")));
+  Kabbala ghgg("g_hgg",as/(2.0*M_PI*ComplexConstant("cvev")));
   Kabbala ghpp("g_hpp",ScalarConstant("h0_pp_fac")*
 	       aqed/(2.0*M_PI*ComplexConstant("cvev")));
   Kabbala g3("g_3",sqrt(4.*M_PI*ScalarConstant("alpha_S")));
@@ -870,7 +864,7 @@ void SMH::InitEFTVertices()
   m_v.back().Lorentz.push_back("HGGG");
   m_v.back().cpl.push_back(ghgg*g3);
   m_v.back().order[0]=3;
-  m_v.back().order.push_back(1);
+  m_v.back().order.push_back(2);
   for (size_t i(1);i<4;++i) {
     Flavour flav(i);
     m_v.push_back(Single_Vertex());

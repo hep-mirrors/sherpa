@@ -1,5 +1,4 @@
 #include "gpl.h"
-#include <ginac/ginac.h>
 
 extern "C" {
   struct dpx { double r, i;
@@ -8,8 +7,6 @@ extern "C" {
   dpx gpl1_(dpx *w1,dpx *x);
   dpx gpl2_(dpx *w1,dpx *w2,dpx *x);
 }
-
-using namespace GiNaC;
 
 double GPL(double w1, double arg) {
   dpx _w1(w1), _x(arg);
