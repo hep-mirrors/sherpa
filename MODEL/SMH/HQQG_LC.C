@@ -1,10 +1,12 @@
 #include "METOOLS/Explicit/Lorentz_Calculator.H"
 #include "METOOLS/Currents/C_Spinor.H"
 #include "METOOLS/Currents/C_Vector.H"
+#include "METOOLS/Currents/C_Scalar.H"
 #include "METOOLS/Explicit/Vertex.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "MODEL/SMH/qqgH.h"
 
 using namespace ATOOLS;
 
@@ -197,38 +199,101 @@ namespace METOOLS {
   template <typename SType>
   class HQQG_Calculator: public Lorentz_Calculator, 
 			public HQQG_Worker<SType> {
+  private:
+
+    int m_n[3];
+    double m_mh;
+    std::vector<double> m_mq;
+
   public:
     
     typedef CSpinor<SType> CSpinorType;
     typedef CVec4<SType> CVec4Type;
+    typedef CScalar<SType> CScalarType;
 
     HQQG_Calculator(const Vertex_Key &key):
-      Lorentz_Calculator(key) {}
+      Lorentz_Calculator(key)
+    {
+      m_mh=Flavour(kf_h0).Mass();
+      for (size_t i(0);i<6;++i)
+	if (Flavour((kf_code)i).Yuk())
+	  m_mq.push_back(Flavour((kf_code)i).Yuk());
+      if (p_v->V()->id.back()==3) { m_n[0]=0; m_n[1]=2;/*q*/ m_n[2]=1;/*Q*/ }
+      if (p_v->V()->id.back()==2) { m_n[0]=1; m_n[1]=2;/*Q*/ m_n[2]=0;/*g*/ }
+      if (p_v->V()->id.back()==1) { m_n[0]=2; m_n[1]=0;/*q*/ m_n[2]=1;/*g*/ }
+    }
 
     std::string Label() const { return "HQQG"; }
 
     CObject *Evaluate(const CObject_Vector &jj)
     {
-      if (p_v->V()->id.back()==2) {
-	CSpinorType *a(jj[1]->Get<CSpinorType>());
-	CSpinorType *b(jj[0]->Get<CSpinorType>());
-	bool cl(this->CalcLeft(*a,*b)), cr(this->CalcRight(*a,*b));
+      if (p_v->V()->id.back()==0) THROW(fatal_error,"Invalid call");
+      if (p_v->V()->id.back()==3) {
+	const CSpinorType &a(*jj[m_n[1]]->Get<CSpinorType>());
+	const CSpinorType &b(*jj[m_n[2]]->Get<CSpinorType>());
+	const CScalarType &e(*jj[m_n[0]]->template Get<CScalarType>());
+	bool cl(this->CalcLeft(a,b)), cr(this->CalcRight(a,b));
 	if (!(cl || cr)) return NULL;
-	CVec4Type *j(NULL);
-	if (cl && cr) j=this->LorentzLeftRight(*a,*b);
-	else if (cl) j=this->LorentzLeft(*a,*b);
-	else if (cr) j=this->LorentzRight(*a,*b);
-	return j;
+	Vec4D pa(p_v->J(m_n[1])->P()), pb(p_v->J(m_n[2])->P());
+	Vec4D pe(p_v->J(m_n[0])->P()), pc(-pa-pb-pe);
+	Complex F[2]={0.,0.};
+#ifdef USING__HEFT
+	double sab((pa+pb).Abs2());
+	F[0]=Complex(0.,2./3.)*1./sab;
+	F[1]=Complex(0.,2./3.)*1./sab;
+#else
+	double sac((pa+pc).Abs2()), sbc((pb+pc).Abs2());
+	for (size_t i(0);i<m_mq.size();++i) {
+	  F[0]+=F1qqg(m_mq[i],m_mh,sac,sbc);
+	  F[1]+=F2qqg(m_mq[i],m_mh,sac,sbc);
+	}
+#endif
+	CVec4Type *j1(NULL);
+	if (cl && cr) j1=this->LorentzLeftRight(a,b);
+	else if (cl) j1=this->LorentzLeft(a,b);
+	else if (cr) j1=this->LorentzRight(a,b);
+	CVec4Type j2(e[0]*(*j1*pc)*(CVec4Type(pa)*F[0]+CVec4Type(pb)*F[1]));
+	j1->Multiply(e[0]*(-(pc*pa)*F[0]-(pc*pb)*F[1]));
+	j1->Add(&j2);
+	return j1;
       }
-      const CSpinorType &a(*jj[p_v->V()->id.back()]->Get<CSpinorType>());
-      const CVec4Type &b(*jj[1-p_v->V()->id.back()]->Get<CVec4Type>());
+      const CSpinorType &a(*jj[m_n[1]]->Get<CSpinorType>());
+      const CVec4Type &c(*jj[m_n[2]]->Get<CVec4Type>());
+      const CScalarType &e(*jj[m_n[0]]->template Get<CScalarType>());
       bool cl(this->CalcLeft(a)), cr(this->CalcRight(a));
       if (!(cl || cr)) return NULL;
-      CSpinorType *j(NULL);
-      if (cl && cr) j=this->LorentzLeftRight(a,b);
-      else if (cl) j=this->LorentzLeft(a,b);
-      else if (cr) j=this->LorentzRight(a,b);
-      return j;
+      Vec4D pa(p_v->J(m_n[1])->P()), pc(p_v->J(m_n[2])->P());
+      Vec4D pe(p_v->J(m_n[0])->P()), pb(-pa-pc-pe);
+      CSpinorType *j1(NULL), *j2(NULL);
+      if (cl && cr) {
+	j1=this->LorentzLeftRight(a,CVec4Type(pc));
+	j2=this->LorentzLeftRight(a,c);
+      }
+      else if (cl) {
+	j1=this->LorentzLeft(a,CVec4Type(pc));
+	j2=this->LorentzLeft(a,c);
+      }
+      else if (cr) {
+	j1=this->LorentzRight(a,CVec4Type(pc));
+	j2=this->LorentzRight(a,c);
+      }
+      Complex F[2]={0.,0.};
+#ifdef USING__HEFT
+      double sab((pa+pb).Abs2());
+      F[0]=Complex(0.,2./3.)*1./sab;
+      F[1]=Complex(0.,2./3.)*1./sab;
+#else
+      double sac((pa+pc).Abs2()), sbc((pb+pc).Abs2());
+      for (size_t i(0);i<m_mq.size();++i) {
+	F[0]+=F1qqg(m_mq[i],m_mh,sac,sbc);
+	F[1]+=F2qqg(m_mq[i],m_mh,sac,sbc);
+      }
+#endif
+      j1->Multiply(e[0]*((c*pa)*F[0]+(c*pb)*F[1]));
+      j2->Multiply(e[0]*(-(pc*pa)*F[0]-(pc*pb)*F[1]));
+      j1->Add(j2);
+      j2->Delete();
+      return j1;
     }
 
   };// end of class HQQG_Calculator

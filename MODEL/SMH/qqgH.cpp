@@ -19,16 +19,12 @@ complex<double> F2qqg(double mb, double mh, double s13, double s23) {
 
 complex<double> Omegaqqgmpp1l(double mb, double mh, double s12, double s13, double s23) {
   if (s12 > 0 && s13 > 0 && s23 > 0 && s13 < mh*mh && s23 < mh*mh && s12 <= mh*mh - s13 - s23) {
-    cout << "1a" << endl;
     return Omegaqqgmpp1l1a(mb, mh, s12, s13, s23);
   } else if (s12 > 0 && s13 < 0 && s23 < 0) {
-    cout << "2a" << endl;
     return Omegaqqgmpp1l2a(mb, mh, s12, s13, s23);
   } else if (s12 < 0 && s13 > 0 && s23 < 0) {
-    cout << "3a" << endl;
     return Omegaqqgmpp1l3a(mb, mh, s12, s13, s23);
   } else if (s12 < 0 && s13 < 0 && s23 > 0) {
-    cout << "4a" << endl;
     return Omegaqqgmpp1l4a(mb, mh, s12, s13, s23);
   } else {
     return 0.0;
