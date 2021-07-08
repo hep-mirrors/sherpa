@@ -159,6 +159,7 @@ void Initialization_Handler::RegisterDefaults()
   s["SHOW_PS_GENERATORS"].SetDefault(0);
   s["SHOW_NLOMC_GENERATORS"].SetDefault(0);
   s["SHOW_SHOWER_GENERATORS"].SetDefault(0);
+  s["SHOW_KFACTOR_SYNTAX"].SetDefault(0);
   s["SHOW_SCALE_SYNTAX"].SetDefault(0);
   s["SHOW_SELECTOR_SYNTAX"].SetDefault(0);
   s["SHOW_MODEL_SYNTAX"].SetDefault(0);
@@ -408,6 +409,12 @@ void Initialization_Handler::ShowParameterSyntax()
   if (helpi>0) {
     msg->SetLevel(2);
     PDF::Shower_Base::ShowSyntax(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
+  helpi = s["SHOW_KFACTOR_SYNTAX"].Get<int>();
+  if (helpi>0) {
+    msg->SetLevel(2);
+    PHASIC::KFactor_Setter_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
   helpi = s["SHOW_SCALE_SYNTAX"].Get<int>();
