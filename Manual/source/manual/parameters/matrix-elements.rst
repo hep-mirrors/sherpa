@@ -569,7 +569,9 @@ KFACTOR
 
 This parameter specifies how to evaluate potential K-factors in the hard
 process. This is equivalent to the :option:`COUPLINGS` specification of Sherpa
-versions prior to 1.2.2. Currently available options are
+versions prior to 1.2.2. To list all available
+K-factors, the tag ``SHOW_KFACTOR_SYNTAX: 1`` can be specified
+on the command line. Currently available options are
 
 :option:`None`
   No reweighting
