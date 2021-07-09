@@ -1,4 +1,39 @@
-#include "AddOns/OpenLoops/EWVirtKFactor_Setter.H"
+#include "ATOOLS/Math/Vec4.H"
+#include "ATOOLS/Math/Vector.H"
+#include "MODEL/Main/Coupling_Data.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
+#include "PHASIC++/Scales/KFactor_Setter_Base.H"
+
+namespace ATOOLS {
+  class NLO_subevt;
+}
+
+namespace PHASIC {
+
+  class EWVirtKFactor_Setter : public PHASIC::KFactor_Setter_Base {
+  private:
+    ATOOLS::Vec4D_Vector m_p;
+    PHASIC::Virtual_ME2_Base* p_ewloop;
+    MODEL::Coupling_Map m_cpls;
+    double m_deltaew;
+
+    void CopyMomenta();
+    void CopyMomenta(const ATOOLS::NLO_subevt& evt);
+
+    void InitEWVirt();
+    void CalcEWCorrection();
+
+  public:
+
+    EWVirtKFactor_Setter(const PHASIC::KFactor_Setter_Arguments &args);
+    ~EWVirtKFactor_Setter();
+
+    // Default KFactor method
+    double KFactor(const int mode=0);
+    // KFactor for Comix, not yet tested or validated
+    double KFactor(const ATOOLS::NLO_subevt& evt);
+  };
+}
 
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Flavour.H"
@@ -11,7 +46,6 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 
 
-using namespace OpenLoops;
 using namespace PHASIC;
 using namespace ATOOLS;
 
@@ -70,13 +104,13 @@ void EWVirtKFactor_Setter::InitEWVirt()
     loop_pi.m_maxcpl[i]+=loop_pi.m_fi.m_nlocpl[i]-p_proc->Info().m_fi.m_nlocpl[i];
     loop_pi.m_mincpl[i]+=loop_pi.m_fi.m_nlocpl[i]-p_proc->Info().m_fi.m_nlocpl[i];
   }
-  loop_pi.m_loopgenerator="OpenLoops";
-  msg_Debugging()<<"Load OpenLoops process for "<<p_proc->Name()
+  msg_Debugging()<<"Load "<<loop_pi.m_loopgenerator
+                 <<" process for "<<p_proc->Name()
                  <<" of order "<<loop_pi.m_mincpl<<" .. "<<loop_pi.m_maxcpl
                  <<std::endl;
   p_ewloop=PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
   if (!p_ewloop) {
-    THROW(not_implemented,"Couldn't find OpenLoops EW Virtual for "
+    THROW(not_implemented,"Couldn't find EW Virtual for "
                           +p_proc->Name());
   }
   MODEL::s_model->GetCouplings(m_cpls);
