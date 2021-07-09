@@ -11,8 +11,7 @@ OPENLOOPS_SOURCES      =	\
 			Spin_Color_Correlated_ME2.C \
 			GGH_Process_Manager.C \
 			GGH_KFactor_Setter.C \
-			GGH_Decay_KFactor_Setter.C \
-			EWVirtKFactor_Setter.C
+			GGH_Decay_KFactor_Setter.C
 
 OPENLOOPS_ADDS         =	\
 			OpenLoops_Virtual.H \
@@ -21,8 +20,7 @@ OPENLOOPS_ADDS         =	\
 			Color_Correlated_ME2.H \
 			Spin_Color_Correlated_ME2.H \
 			GGH_Process_Manager.H \
-			GGH_KFactor_Setter.H \
-			EWVirtKFactor_Setter.H 
+			GGH_KFactor_Setter.H
 
 if OPENLOOPS_SUPPORT
 pkglib_LTLIBRARIES    =	libSherpaOpenLoops.la
