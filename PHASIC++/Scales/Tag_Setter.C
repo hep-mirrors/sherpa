@@ -85,7 +85,8 @@ namespace PHASIC {
     inline H_TY2(Scale_Setter_Base *const setter):
       Function("H_TY2"), p_setter(setter) {}
 
-    Term *Evaluate(const std::vector<Term*> &args) const
+    Term *Evaluate(Algebra_Interpreter *const interpreter,
+		   const std::vector<Term*> &args) const
     {
       double htyfac(args[0]->Get<double>()), htyexp(args[1]->Get<double>());
       Vec4D psum(0.,0.,0.,0.);
@@ -96,7 +97,7 @@ namespace PHASIC {
       for (size_t i(p_setter->NIn());i<p.size();++i) 
         hty+=p[i].PPerp()*exp(htyfac*pow(std::abs(p[i].Y()-yboost),htyexp));
       Term *res(Term::New(sqr(hty)));
-      p_interpreter->AddTerm(res);
+      interpreter->AddTerm(res);
       return res;
     }
 

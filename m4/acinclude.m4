@@ -224,12 +224,12 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   MODELDIR="\${top_srcdir}/MODEL"
   MODELBUILDDIR="\${top_builddir}/MODEL"
-  MODELLIBS="-L\${MODELBUILDDIR}/Main \	
-             -lModelMain \
-	     -L\${MODELBUILDDIR}/UFO \
-	     -lModelUFO"
+  MODELMAINLIB="\${MODELBUILDDIR}/Main/libModelMain.la"
+  MODELLIBS="\${MODELMAINLIB} \
+	\${MODELBUILDDIR}/UFO/libModelUFO.la"
   AC_SUBST(MODELDIR)
   AC_SUBST(MODELBUILDDIR)
+  AC_SUBST(MODELMAINLIB)
   AC_SUBST(MODELLIBS)
   
   PDFDIR="\${top_srcdir}/PDF"
@@ -664,6 +664,28 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(RECOLA_SUPPORT, test "$recola" = "true")
 
   AC_ARG_ENABLE(
+    madloop,
+    AS_HELP_STRING([--enable-madloop=/path/to/madloop],[Enable Madloop.]),
+    [ AC_MSG_CHECKING(for Madloop installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Madloop not enabled); madloop=false ;;
+        *)   MADLOOP_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             madloop=true;
+             if test -d "${MADLOOP_PREFIX}"; then
+                AC_MSG_RESULT([${MADLOOP_PREFIX}]);
+             else
+                AC_MSG_WARN(${MADLOOP_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ madloop=false ]
+  )
+  if test "$madloop" = "true" ; then
+    AC_DEFINE_UNQUOTED([MADLOOP_PREFIX], "$MADLOOP_PREFIX", [Madloop installation prefix])
+  fi
+  AM_CONDITIONAL(MADLOOP_SUPPORT, test "$madloop" = "true")
+
+  AC_ARG_ENABLE(
     mcfm,
     AS_HELP_STRING([--enable-mcfm=/path/to/mcfm],[Enable MCFM.]),
     [ AC_MSG_CHECKING(for MCFM installation directory);
@@ -671,24 +693,16 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         no)  AC_MSG_RESULT(MCFM not enabled); mcfm=false ;;
         yes)  if test -d "$MCFMDIR"; then
                 CONDITIONAL_MCFMDIR="$MCFMDIR"
-                if test -f "$CONDITIONAL_MCFMDIR/lib/libMCFM.a"; then
-                  CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib/libMCFM.a"
-                fi
-                if test -f "$CONDITIONAL_MCFMDIR/lib64/libMCFM.a"; then
-                  CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib64/libMCFM.a"
-                fi
+                CONDITIONAL_MCFMLIBS="-Wl,-R -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(\$MCFMDIR is not a valid path.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_MCFMDIR}]); mcfm=true;;
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_MCFMDIR="${enableval}"
-                if test -f "$CONDITIONAL_MCFMDIR/lib/libMCFM.a"; then
-                  CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib/libMCFM.a"
-                fi
-                if test -f "$CONDITIONAL_MCFMDIR/lib64/libMCFM.a"; then
-                  CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib64/libMCFM.a"
-                fi
+                CONDITIONAL_MCFMLIBS="-Wl,-R -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
@@ -699,9 +713,11 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   if test "$mcfm" = "true" ; then
     AC_DEFINE([USING__MCFM], "1", [Using MCFM])
+    AC_DEFINE_UNQUOTED([MCFM_PATH], "$CONDITIONAL_MCFMDIR", [MCFM directory])
   fi
   AC_SUBST(CONDITIONAL_MCFMDIR)
   AC_SUBST(CONDITIONAL_MCFMLIBS)
+  AC_SUBST(CONDITIONAL_MCFMINCS)
   AM_CONDITIONAL(MCFM_SUPPORT, test "$mcfm" = "true")
 
   AC_ARG_ENABLE(

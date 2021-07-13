@@ -420,3 +420,9 @@ void Process_Group::FillOnshellConditions()
   for (size_t i(0);i<m_procs.size();++i)
     m_procs[i]->FillOnshellConditions();
 }
+
+void Process_Group::ConstructColorMatrix()
+{
+  for (size_t i=0;i<m_procs.size();i++)
+    m_procs[i]->ConstructColorMatrix();
+}

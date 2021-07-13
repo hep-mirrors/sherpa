@@ -36,6 +36,8 @@ namespace PHASIC {
     virtual Process_Base *GetProcess(const PHASIC::Process_Info &pi) const = 0;
     virtual bool Initialize(Process_Base *const proc) = 0;
 
+    void ConstructColorMatrix();
+
     void DeSelect();
     bool SelectOne(const int mode);
 

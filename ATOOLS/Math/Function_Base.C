@@ -109,10 +109,11 @@ namespace ATOOLS {
     inline Function_Wrapper(Function_Base *const f):
       Function(f->Name()), p_f(f) {}
 
-    Term *Evaluate(const std::vector<Term*> &args) const
+    Term *Evaluate(Algebra_Interpreter *const interpreter,
+		   const std::vector<Term*> &args) const
     {
       Term *res(Term::New((*p_f)(args[0]->Get<double>())));
-      p_interpreter->AddTerm(res);
+      interpreter->AddTerm(res);
       return res;
     }
 
@@ -128,7 +129,8 @@ namespace ATOOLS {
     inline GMean_Function_Wrapper(Function_Base *const f):
       Function("GMean_"+f->Name()), p_f(f) {}
 
-    Term *Evaluate(const std::vector<Term*> &args) const
+    Term *Evaluate(Algebra_Interpreter *const interpreter,
+		   const std::vector<Term*> &args) const
     {
       msg_Debugging()<<"GMean_"<<p_f->Name()<<"(): {\n";
       double ym(1.0), xm(1.0);
@@ -148,7 +150,7 @@ namespace ATOOLS {
 	p_f->Name()<<"(): Could not solve for x."<<std::endl; 
       msg_Debugging()<<"} -> y = "<<ym<<" -> x = "<<xm<<"\n";
       Term *res(Term::New(xm));
-      p_interpreter->AddTerm(res);
+      interpreter->AddTerm(res);
       return res;
     }
 

@@ -67,8 +67,14 @@
 /* Recola installation prefix */
 #undef RECOLA_PREFIX
 
+/* MadLoop installation prefix */
+#undef MADLOOP_PREFIX
+
 /* using MCFM */
 #undef USING__MCFM
+
+/* MCFM directory */
+#undef MCFM_PATH
 
 /* using Delphes */
 #undef USING__DELPHES

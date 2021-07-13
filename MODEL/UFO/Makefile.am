@@ -14,6 +14,8 @@ localinc_HEADERS = \
 	UFO_Model.H \
 	UFO_Color_Functions.H
 
+libModelUFO_la_LIBADD = @MODELMAINLIB@ @ATOOLSLIBS@
+
 if ENABLE_UFO
 
 nodist_bin_SCRIPTS = Sherpa-generate-model

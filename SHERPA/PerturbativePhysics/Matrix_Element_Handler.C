@@ -379,6 +379,9 @@ int Matrix_Element_Handler::InitializeProcesses
   */
   p_beam=beam; p_isr=isr; p_model=model;
   if (!m_gens.InitializeGenerators(model,beam,isr)) return false;
+  Data_Reader reader(" ",";","!","=");
+  int initonly=reader.GetValue<int>("INIT_ONLY",0);
+  if (initonly&4) return 1;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
 #ifdef USING__MPI
@@ -426,7 +429,7 @@ void Matrix_Element_Handler::BuildProcesses()
   read.SetInputFile(m_file);
   // set color scheme
   read.SetTags(cls::ColorSchemeTags());
-  cls::scheme cls((cls::scheme)read.GetValue<int>("COLOUR_SCHEME",1));
+  cls::scheme cls((cls::scheme)read.GetValue<int>("COLOUR_SCHEME",0));
   read.SetTags(std::map<std::string,std::string>());
   // set helicity scheme
   read.SetTags(hls::HelicitySchemeTags());

@@ -8,6 +8,8 @@
 
 namespace COMIX {
 
+  typedef std::vector<std::vector<Complex> > Hard_Matrix;
+
   class Amplitude;
 
   typedef std::set<PS_Generator*> PSGenerator_Set;
@@ -17,6 +19,7 @@ namespace COMIX {
   protected:
 
     Amplitude      *p_bg;
+    Hard_Matrix    *p_hc;
     Single_Process *p_map;
 
     PHASIC::Virtual_ME2_Base *p_loop;
@@ -45,6 +48,8 @@ namespace COMIX {
     double KPTerms(const int mode,
                    double scalefac2=1.0);
 
+    void ComputeHardMatrix(const int mode);
+
   public:
 
     // constructors
@@ -61,6 +66,9 @@ namespace COMIX {
     void ConstructPSVertices(PS_Generator *ps);
 
     Amplitude *GetAmplitude() const;
+
+    const Hard_Matrix *ComputeHardMatrix
+    (ATOOLS::Cluster_Amplitude *const ampl,const int mode);
     
     double Partonic(const ATOOLS::Vec4D_Vector &p,const int mode);
     double Differential(const ATOOLS::Cluster_Amplitude &ampl,

@@ -168,7 +168,7 @@ bool Recola_Interface::Initialize(const string &path,const string &file,
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
   s_getPDF_default = reader.GetValue<int>("RECOLA_GETPDF_DEFAULT",0);
 
-  if(stat(s_recolaprefix.c_str(),&st) != 0) s_recolaprefix = RECOLA_PREFIX;
+  if(stat(s_recolaprefix.c_str(),&st) != 0) s_recolaprefix = RECOLA_PREFIX+std::string("/lib");
   s_recolaprefix = reader.GetValue<string>("RECOLA_PREFIX", s_recolaprefix);
   msg_Info()<<"Initialising Recola generator from "<<s_recolaprefix<<endl;
 

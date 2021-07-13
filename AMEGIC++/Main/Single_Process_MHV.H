@@ -5,7 +5,6 @@
 
 #include "AMEGIC++/Main/Polarisation.H"
 #include "AMEGIC++/Amplitude/Amplitude_Handler.H"
-#include "ATOOLS/Math/Permutation.H"
 // #include "ATOOLS/Phys/Spin_Correlation_Tensor.H"
 #include <vector>
 #include "AMEGIC++/Amplitude/Zfunctions/Mom.H"

@@ -6,3 +6,5 @@ include ../../git.make
 libSherpaSM_la_SOURCES = \
 	Git_Info.C \
 	Model.C
+
+libSherpaSM_la_LIBADD = @MODELMAINLIB@ @ATOOLSLIBS@

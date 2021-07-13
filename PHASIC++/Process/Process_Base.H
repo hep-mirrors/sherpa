@@ -49,6 +49,11 @@ namespace PHASIC {
   typedef std::map<nlo_type::code,StringProcess_Map*>
   NLOTypeStringProcessMap_Map;
 
+  struct Color_Matrix {
+    std::vector<std::vector<int> > m_perms;
+    std::vector<std::vector<double> > m_colfacs;
+  };// end of struct Color_Matrix
+
   class Process_Base {
   protected:
 
@@ -86,6 +91,8 @@ namespace PHASIC {
 
     NLOTypeStringProcessMap_Map *p_apmap;
 
+    Color_Matrix m_cols;
+
     static int s_usefmm;
 
     static void SortFlavours(Subprocess_Info &info,FMMap *const fmm=0);
@@ -113,6 +120,9 @@ namespace PHASIC {
 
     std::string ShellName(std::string name="") const;
 
+    Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;
+
+    virtual void ConstructColorMatrix();
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
@@ -270,6 +280,9 @@ namespace PHASIC {
     inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }
 
     inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
+
+    inline const Color_Matrix &ColorMatrix(const int map=0) const
+    { return map?(p_mapproc?p_mapproc->m_cols:m_cols):m_cols; }
 
   };// end of class Process_Base
 

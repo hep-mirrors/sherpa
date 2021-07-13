@@ -1,0 +1,81 @@
+#!/bin/bash
+
+make_shared() {
+if test $(uname) = "Darwin"; then
+  ldn=$(printf $1 | sed -e's/[.]a/.dylib/g');
+else
+  ldn=$(printf $1 | sed -e's/[.]a/.so/g');
+fi
+test -f $ldn && return;
+echo "Creating "$ldn;
+mkdir $1.mdl; cd $1.mdl;
+ar -x ../$1;
+if test $(uname) = "Darwin"; then
+  gcc -shared -Wl,-undefined -Wl,dynamic_lookup *.o -o ../$ldn;
+else
+  ld -shared *.o -o ../$ldn;
+fi
+cd ..; rm -rf $1.mdl
+}
+
+make_scons() {
+libname="ML5_"$(basename $(pwd) | sed 's|_.*||g')
+sources=$(for i in $(echo *.f | sed 's|check[^ \t]*.f||g'); do printf $i | sed "s/^/'/1;s/$/',/1" | tr '\n' ' '; done | sed 's/,$//1')
+echo "Import('env')
+lenv=env.Clone() " > SConscript
+
+if test $(basename $(pwd)) != "DHELAS"; then
+	echo "if lenv['PLATFORM']=='darwin':
+   lenv.Append( LINKFLAGS='-Wl,-undefined -Wl,dynamic_lookup -Wl,-flat_namespace' )
+	" >> SConscript
+else
+	echo "if lenv['PLATFORM']=='darwin':
+   lenv.Append( LINKFLAGS='-Wl,-undefined -Wl,dynamic_lookup' )
+	" >> SConscript
+fi
+
+echo "proclib = lenv.SharedLibrary('${libname}',[${sources}])
+lenv.Install('\${libdir}',proclib)
+lenv.Alias('install',['\${libdir}'])" >> SConscript
+}
+
+procdir="Process/OLP2";
+test -z "$1" || procdir=$1;
+
+basedir=$PWD;
+if test -z "$2"; then
+echo "import os
+vars = Variables()
+vars.Add(PathVariable('libdir','lib path',os.getcwd()+'/"$procdir"/lib',PathVariable.PathIsDirCreate))
+vars.Add('FORTRANFLAGS','The Fortran Flags',['-O','-w','-fPIC','-ffixed-line-length-132'])
+env = Environment(variables=vars,FORTRANPATH = '\${libdir}/collier_include')
+env['ENV']=os.environ
+" > SConstruct;
+fi;
+test "$procdir" = "x" && exit 0;
+printf "Processing ("$(echo $procdir/Source/MODEL $procdir/Source/DHELAS $procdir/SubProcesses/P* | wc -w)") ";
+for i in $procdir/Source/MODEL $procdir/Source/DHELAS $procdir/SubProcesses/P*; do
+  test -d $i || continue;
+  cd $i; printf ".";
+  make_scons;
+  subdir=$(printf $PWD | sed 's|'${basedir}'||1;s|/||1')
+  echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
+  cd $basedir;
+done;
+echo " done";
+cd $procdir/lib
+make_shared libcts.a
+if [ -e "libiregi.a" ]; then
+  make_shared libiregi.a
+fi
+if [ -e "collier_lib/libcollier.a" ]; then
+  cd collier_lib/
+  make_shared libcollier.a
+  cd ..
+fi
+if [ -e "ninja_lib/libninja.a" ]; then
+  cd ninja_lib/
+  #make_shared libninja.a
+  cp libninja.so.0 libninja.so
+  cd ..
+fi

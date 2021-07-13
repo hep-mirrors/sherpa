@@ -39,7 +39,8 @@ bool COMIX::Process_Base::Initialize(std::map<std::string,std::string> *const pm
 {
   p_pmap=pmap;
   p_umprocs=procs;
-  p_proc->Integrator()->SetColorScheme(cls::sample);
+  if (p_proc->Info().m_cls==cls::unknown) p_proc->Info().m_cls=cls::sample;
+  p_proc->Integrator()->SetColorScheme(p_proc->Info().m_cls);
   return true;
 }
 
