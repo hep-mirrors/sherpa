@@ -19,7 +19,7 @@ using namespace std;
 S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res) :
   Single_Channel(_nin,_nout,fl)
 {  
-  if (m_nout != 2 || m_nin!=2) {
+  if (m_nin != 2 || m_nout!=2) {
     msg_Error()<<"Tried to initialize S1Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
     Abort();
   }
@@ -363,4 +363,71 @@ void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"1->2 decay integrator";
+}
+
+
+NoChannel::NoChannel(int _nin,int _nout,Flavour * fl,Flavour res) :
+  Single_Channel(_nin,_nout,fl)
+{  
+  if (_nin != 2 || !(_nout==1 && fl[2].Kfcode()==999)) {
+    msg_Error()<<"Tried to initialize NoChannel for = "<<_nin<<" -> "<<_nout<<endl;
+    Abort();
+  }
+
+  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
+  pt2min = 0.;
+  E      = 0.5 * sqrt(s);
+  m_name   = "NoChannel";
+
+  mass = width = 0.; 
+  type = 0;
+}
+
+void NoChannel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran=0) {
+  p[2] = p[0]+p[1];
+}
+
+void NoChannel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts) { m_weight = 1.; }
+
+void NoChannel::ISRInfo(int & _type,double & _mass,double & _width) {
+  _type = type; _mass = mass; _width = width;
+}
+
+std::string NoChannel::ChID() { return std::string("NoChannel"); }
+
+namespace PHASIC {
+
+  class No_Channel_Generator: public Channel_Generator {
+  public:
+    
+    No_Channel_Generator(const Channel_Generator_Key &key):
+    Channel_Generator(key) {}
+
+    int GenerateChannels()
+    {
+      p_mc->Add(new NoChannel(p_proc->NIn(),p_proc->NOut(),
+			      (Flavour*)&p_proc->Flavours().front()));
+      return 0;
+    }
+
+  };// end of class No_Channel_Generator
+
+}// end of namespace PHASIC
+
+DECLARE_GETTER(No_Channel_Generator,"NChannel",
+	       Channel_Generator,Channel_Generator_Key);
+
+Channel_Generator *ATOOLS::Getter
+<Channel_Generator,Channel_Generator_Key,No_Channel_Generator>::
+operator()(const Channel_Generator_Key &args) const
+{
+  return new No_Channel_Generator(args);
+}
+
+
+void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
+		    No_Channel_Generator>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"2->1 NoChannel integrator for Instanton production";
 }

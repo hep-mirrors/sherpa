@@ -37,10 +37,10 @@ namespace EXTRAXS {
     double alphaqed2 = sqr(MODEL::s_model->ScalarConstant("alpha_QED"));
     double alphas2 = sqr(MODEL::s_model->ScalarConstant("alpha_S"));
 
-    for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+    for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
 
-    p_colours[0][0] = p_colours[1][1] = 500;
-    p_colours[0][1] = p_colours[1][0] = 501;
+    m_colours[0][0] = m_colours[1][1] = 500;
+    m_colours[0][1] = m_colours[1][0] = 501;
     
     
     double qcharge[6] = {-1., 2, -1., 2., -1., 2.};
@@ -62,10 +62,10 @@ namespace EXTRAXS {
 
     // sym factor for two photons
     m_fac /= 2.0;
-    m_cfls[3]  = new Flavour_Vector;
-    m_cfls[12] = new Flavour_Vector;
-    m_cfls[3]->push_back(kf_gluon);
-    m_cfls[12]->push_back(kf_gluon);
+    m_cfls[3]  = Flavour_Vector{};
+    m_cfls[12] = Flavour_Vector{};
+    m_cfls[3].push_back(kf_gluon);
+    m_cfls[12].push_back(kf_gluon);
   }
   
   double gg_yy::operator()(const ATOOLS::Vec4D_Vector& mom)

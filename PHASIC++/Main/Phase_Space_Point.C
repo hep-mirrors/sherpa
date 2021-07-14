@@ -44,7 +44,7 @@ void Phase_Space_Point::Init(Phase_Space_Handler * psh) {
     m_masses[i] = flavours[i].Mass(); 
     if (i<m_nin) m_masses2[i] = sqr(m_masses[i]);
   }
-  m_osmass = (m_nout==1?m_masses[m_nin]:0.0);
+  m_osmass = (m_nout==1 && flavours[2].Kfcode()!=999?m_masses[m_nin]:0.0);
   m_beamspkey.Assign(std::string("BEAM::s'"),5,0,p_pshandler->GetInfo());
   m_beamykey.Assign(std::string("BEAM::y"),3,0,p_pshandler->GetInfo());
   p_beamhandler->AssignKeys(p_pshandler->GetInfo());
@@ -159,6 +159,12 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     if (!(m_mode&psmode::no_gen_isr)) {
       p_isrhandler->SetLimits();
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
+      if (m_nin==2 && m_nout==1 && process->Process()->Selected()->Flavours()[2].Kfcode()==999) {
+        if (p_pshandler->Active()->Process()->SPrimeMin()>0.) 
+          m_isrspkey[0] = p_pshandler->Active()->Process()->SPrimeMin();
+        if (p_pshandler->Active()->Process()->SPrimeMax()>0.)
+          m_isrspkey[1] = p_pshandler->Active()->Process()->SPrimeMax();
+      }
       p_isrchannels->GeneratePoint();
     }
     m_sprime = m_osmass?m_isrspkey[4]:m_isrspkey[3];

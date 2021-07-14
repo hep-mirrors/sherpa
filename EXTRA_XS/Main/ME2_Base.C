@@ -1,5 +1,6 @@
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "PHASIC++/Process/External_ME_Args.H"
 
 #define COMPILE__Getter_Function
@@ -12,25 +13,20 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 ME2_Base::ME2_Base(const External_ME_Args& args) : 
-  Tree_ME2_Base(args), m_oew(99), m_oqcd(99), m_sintt(7)
+  Tree_ME2_Base(args), m_oew(99), m_oqcd(99), m_sintt(7),
+  m_sprimemin(-1.), m_sprimemax(-1.), 
+  m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms()))
 {
   m_symfac= Flavour::FSSymmetryFactor(args.m_outflavs);
   m_symfac*=Flavour::ISSymmetryFactor(args.m_inflavs);
-  p_colours = new int*[m_flavs.size()];
+  m_colours.resize(m_flavs.size());
   for (size_t i(0);i<m_flavs.size();++i) {
-    p_colours[i] = new int[2];
-    p_colours[i][0]=p_colours[i][1]=0;
+    m_colours[i].resize(2);
+    m_colours[i][0]=m_colours[i][1]=0;
   }
 }
 
-ME2_Base::~ME2_Base() {
-  for (std::map<size_t,Flavour_Vector *>::iterator flit=m_cfls.begin();
-       flit!=m_cfls.end();flit++)
-    if (flit->second) delete flit->second;
-  m_cfls.clear();
-  for (size_t i(0);i<m_flavs.size();++i) delete [] p_colours[i];
-  delete [] p_colours;
-}
+ME2_Base::~ME2_Base() { }
 
 double ME2_Base::Calc(const ATOOLS::Vec4D_Vector &p)
 {

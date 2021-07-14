@@ -38,10 +38,19 @@ void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist)
 {
   if (p_shower && p_shower->ExtractPartons(_bloblist)) {
     Blob * showerblob = _bloblist->FindLast(btp::Shower);
-    if (!showerblob->MomentumConserved() && msg->LevelIsDebugging()) {
-      msg_Out()<<"Error in "<<METHOD<<": shower violates four-momentum conservation "
-	       <<showerblob->CheckMomentumConservation()<<":\n"
-	       <<(*showerblob);
+    if (!showerblob->MomentumConserved()) {
+      msg_Debugging()<<"Error in "<<METHOD<<": "
+		     <<"shower violates four-momentum conservation "
+		     <<showerblob->CheckMomentumConservation()<<":\n"
+		     <<(*showerblob);
+      Vec4D extra = showerblob->CheckMomentumConservation();
+      if (showerblob->InParticle(0)->Flav()==Flavour(kf_instanton) &&
+	  extra.PSpat2()<1.e-8) {
+	for (size_t i=1;i<3;i++) {
+	  showerblob->InParticle(i)->
+	    SetMomentum(showerblob->InParticle(i)->Momentum()-extra/2.);
+	}
+      }
     }
     return;
   }

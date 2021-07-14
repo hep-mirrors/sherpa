@@ -292,20 +292,21 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
   if (m_eventmode!=0) {
-    const auto max = p_proc->Integrator()->Max();
-    const auto disc = max * ran->Get();
+    const auto maxwt  = p_proc->Integrator()->Max();
+    const auto disc   = maxwt * ran->Get();
     const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
-    if (abswgt < disc)
+    if (abswgt < disc) {
       return false;
-    if (abswgt > max * m_ovwth) {
+    }
+    if (abswgt > maxwt * m_ovwth) {
       Return_Value::IncWarning(METHOD);
       msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()
                  << "' exceeds maximum by "
-                 << abswgt / max - 1.0 << "." << std::endl;
+                 << (abswgt / maxwt - 1.0) << "." << std::endl;
       m_weightfactor = m_ovwth;
-      wf *= max * m_ovwth / abswgt;
+      wf *= maxwt * m_ovwth / abswgt;
     } else {
-      m_weightfactor = abswgt / max;
+      m_weightfactor = abswgt / maxwt;
       wf /= Min(1.0, m_weightfactor);
     }
   }

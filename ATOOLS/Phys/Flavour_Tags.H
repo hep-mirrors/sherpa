@@ -57,6 +57,7 @@
 // Regge stuff
 #define      kf_reggeon                   110
 #define      kf_pomeron                   990
+#define      kf_instanton                 999
 // susy
 #define      kf_Chargino1                 1000024
 #define      kf_Chargino2                 1000037

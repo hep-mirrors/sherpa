@@ -74,7 +74,7 @@ XS_f1f1_f1f1::XS_f1f1_f1f1(const Process_Info& pi, const Flavour_Vector& fl):
   m_aqed(MODEL::s_model->ScalarConstant("alpha_QED")),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
-  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
 }
 
 double XS_f1f1_f1f1::operator()(const Vec4D_Vector& mom) 
@@ -128,12 +128,12 @@ bool XS_f1f1_f1f1::SetColours(const Vec4D_Vector& mom)
 bool XS_f1f1_f1f1::SetColours() 
 {
   if (M_t > (M_t+M_u) * ran->Get()) {
-    p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-    p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+    m_colours[2][m_anti] = m_colours[0][m_anti] = Flow::Counter();
+    m_colours[3][m_anti] = m_colours[1][m_anti] = Flow::Counter();
     return true;
   }
-  p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-  p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+  m_colours[3][m_anti] = m_colours[0][m_anti] = Flow::Counter();
+  m_colours[2][m_anti] = m_colours[1][m_anti] = Flow::Counter();
   return false;
 }
 
@@ -206,7 +206,7 @@ XS_f1f1b_f1f1b::XS_f1f1b_f1f1b(const Process_Info& pi, const Flavour_Vector& fl)
   m_aqed(MODEL::s_model->ScalarConstant("alpha_QED")),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
-  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
 }
 
 double XS_f1f1b_f1f1b::operator()(const Vec4D_Vector& mom) 
@@ -267,17 +267,17 @@ bool XS_f1f1b_f1f1b::SetColours()
 
   if (M_t > (M_t+M_s) * ran->Get()) {
     if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) {
-      p_colours[3][1-m_anti2] = p_colours[0][m_anti1] = Flow::Counter();
-      p_colours[2][m_anti2]   = p_colours[1][1-m_anti1] = Flow::Counter();
+      m_colours[3][1-m_anti2] = m_colours[0][m_anti1] = Flow::Counter();
+      m_colours[2][m_anti2]   = m_colours[1][1-m_anti1] = Flow::Counter();
     }
     else {
-      p_colours[2][m_anti2]   = p_colours[0][m_anti1] = Flow::Counter();
-      p_colours[3][1-m_anti2] = p_colours[1][1-m_anti1] = Flow::Counter();
+      m_colours[2][m_anti2]   = m_colours[0][m_anti1] = Flow::Counter();
+      m_colours[3][1-m_anti2] = m_colours[1][1-m_anti1] = Flow::Counter();
     }
     return true;
   }
-  p_colours[0][m_anti1] = p_colours[1][1-m_anti1] = Flow::Counter();
-  p_colours[2][m_anti2] = p_colours[3][1-m_anti2] = Flow::Counter();
+  m_colours[0][m_anti1] = m_colours[1][1-m_anti1] = Flow::Counter();
+  m_colours[2][m_anti2] = m_colours[3][1-m_anti2] = Flow::Counter();
   return false;
 }
 
@@ -369,7 +369,7 @@ XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const Process_Info& pi, const Flavour_Vector& fl)
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
-  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   if (m_W_on) {
     kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[2].Kfcode();
     if (fl[0].IsQuark() && fl[2].IsQuark()) { 
@@ -437,17 +437,17 @@ bool XS_f1f1b_f2f2b::SetColours()
 {
   if (M_t > (M_t+M_s) * ran->Get()) {
     if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) {
-      p_colours[3][1-m_anti2] = p_colours[0][m_anti1] = Flow::Counter();
-      p_colours[2][m_anti2]   = p_colours[1][1-m_anti1] = Flow::Counter();
+      m_colours[3][1-m_anti2] = m_colours[0][m_anti1] = Flow::Counter();
+      m_colours[2][m_anti2]   = m_colours[1][1-m_anti1] = Flow::Counter();
     }
     else {
-      p_colours[2][m_anti2]   = p_colours[0][m_anti1] = Flow::Counter();
-      p_colours[3][1-m_anti2] = p_colours[1][1-m_anti1] = Flow::Counter();
+      m_colours[2][m_anti2]   = m_colours[0][m_anti1] = Flow::Counter();
+      m_colours[3][1-m_anti2] = m_colours[1][1-m_anti1] = Flow::Counter();
     }
     return true;
   }
-  p_colours[0][m_anti1] = p_colours[1][1-m_anti1] = Flow::Counter();
-  p_colours[2][m_anti2] = p_colours[3][1-m_anti2] = Flow::Counter();
+  m_colours[0][m_anti1] = m_colours[1][1-m_anti1] = Flow::Counter();
+  m_colours[2][m_anti2] = m_colours[3][1-m_anti2] = Flow::Counter();
   return false;
 }
 
@@ -546,7 +546,7 @@ XS_f1f2_f1f2::XS_f1f2_f1f2(const Process_Info& pi, const Flavour_Vector& fl) :
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
-  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   if (m_W_on) {
     kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
     if (fl[0].IsQuark() && fl[1].IsQuark()) { 
@@ -619,22 +619,22 @@ bool XS_f1f2_f1f2::SetColours()
 {
   if (M_t > (M_t+M_u) * ran->Get()) {
     if (m_rev) {
-      p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-      p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+      m_colours[3][m_anti] = m_colours[0][m_anti] = Flow::Counter();
+      m_colours[2][m_anti] = m_colours[1][m_anti] = Flow::Counter();
     }
     else {
-      p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-      p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+      m_colours[2][m_anti] = m_colours[0][m_anti] = Flow::Counter();
+      m_colours[3][m_anti] = m_colours[1][m_anti] = Flow::Counter();
     }
     return true;
   }
   if (!m_rev) {
-    p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-    p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+    m_colours[3][m_anti] = m_colours[0][m_anti] = Flow::Counter();
+    m_colours[2][m_anti] = m_colours[1][m_anti] = Flow::Counter();
   }
   else {
-    p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-    p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+    m_colours[2][m_anti] = m_colours[0][m_anti] = Flow::Counter();
+    m_colours[3][m_anti] = m_colours[1][m_anti] = Flow::Counter();
   }
   return false;
 }
@@ -734,7 +734,7 @@ XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const Process_Info& pi, const Flavour_Vector& fl)
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
-  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   if (m_W_on) {
     kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
     if (fl[0].IsQuark() && fl[1].IsQuark()) { 
@@ -804,17 +804,17 @@ bool XS_f1f2b_f1f2b::SetColours()
 {
   if (M_t > (M_t+M_s) * ran->Get()) {
     if (m_rev) {
-      p_colours[3][m_anti]   = p_colours[0][m_anti]   = Flow::Counter();
-      p_colours[2][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
+      m_colours[3][m_anti]   = m_colours[0][m_anti]   = Flow::Counter();
+      m_colours[2][1-m_anti] = m_colours[1][1-m_anti] = Flow::Counter();
     }
     else {
-      p_colours[2][m_anti]   = p_colours[0][m_anti]   = Flow::Counter();
-      p_colours[3][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
+      m_colours[2][m_anti]   = m_colours[0][m_anti]   = Flow::Counter();
+      m_colours[3][1-m_anti] = m_colours[1][1-m_anti] = Flow::Counter();
     }
     return true;
   }
-  p_colours[0][m_anti]       = p_colours[1][1-m_anti]       = Flow::Counter();
-  p_colours[2+m_rev][m_anti] = p_colours[3-m_rev][1-m_anti] = Flow::Counter();
+  m_colours[0][m_anti]       = m_colours[1][1-m_anti]       = Flow::Counter();
+  m_colours[2+m_rev][m_anti] = m_colours[3-m_rev][1-m_anti] = Flow::Counter();
   return false;
 }
 
@@ -911,7 +911,7 @@ XS_f1f2_f3f4::XS_f1f2_f3f4(const Process_Info& pi, const Flavour_Vector& fl) :
            (2.*std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW"))))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
 {
-  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
   kf_code kfc3 = fl[2].Kfcode(), kfc4 = fl[3].Kfcode();
 
@@ -964,12 +964,12 @@ bool XS_f1f2_f3f4::SetColours(const Vec4D_Vector& mom)
 bool XS_f1f2_f3f4::SetColours() 
 {
   if (m_rev) {
-    p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-    p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+    m_colours[3][m_anti] = m_colours[0][m_anti] = Flow::Counter();
+    m_colours[2][m_anti] = m_colours[1][m_anti] = Flow::Counter();
   }
   else {
-    p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-    p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+    m_colours[2][m_anti] = m_colours[0][m_anti] = Flow::Counter();
+    m_colours[3][m_anti] = m_colours[1][m_anti] = Flow::Counter();
   }
   return true;
 }
@@ -1094,7 +1094,7 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const Process_Info& pi, const Flavour_Vector& fl)
            (2.*std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW"))))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
 {
-  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
   kf_code kfc3 = fl[2].Kfcode(), kfc4 = fl[3].Kfcode();
 
@@ -1108,8 +1108,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const Process_Info& pi, const Flavour_Vector& fl)
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2);
     }
-    //p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = 500;
-    //p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = 501;
+    //m_colours[1][1-m_anti]       = m_colours[0][m_anti]       = 500;
+    //m_colours[3-m_rev][1-m_anti] = m_colours[2+m_rev][m_anti] = 501;
   }
   else if (fl[0].IsDowntype() && fl[1].IsUptype()) {
     if (fl[2].IsDowntype()) {
@@ -1121,8 +1121,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const Process_Info& pi, const Flavour_Vector& fl)
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2);
     }
-    //p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = 500;
-    //p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = 501;
+    //m_colours[1][1-m_anti]       = m_colours[0][m_anti]       = 500;
+    //m_colours[3-m_rev][1-m_anti] = m_colours[2+m_rev][m_anti] = 501;
   }
   else if (fl[0].IsUptype() && fl[1].IsUptype()) {
     m_schannel = false;
@@ -1135,8 +1135,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const Process_Info& pi, const Flavour_Vector& fl)
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2);
     }    
-    //p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = 500;
-    //p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = 501;
+    //m_colours[2+m_rev][m_anti]   = m_colours[0][m_anti]   = 500;
+    //m_colours[3-m_rev][1-m_anti] = m_colours[1][1-m_anti] = 501;
   }
   else if (fl[0].IsDowntype() && fl[1].IsDowntype()) {
     m_schannel = false;
@@ -1149,8 +1149,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const Process_Info& pi, const Flavour_Vector& fl)
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2);
     }    
-    //p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = 500;
-    //p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = 501;
+    //m_colours[2+m_rev][m_anti]   = m_colours[0][m_anti]   = 500;
+    //m_colours[3-m_rev][1-m_anti] = m_colours[1][1-m_anti] = 501;
   }
 }
 
@@ -1182,34 +1182,34 @@ bool XS_f1f2b_f3f4b::SetColours()
 {
   if (m_schannel) {
     if (m_rev) {
-      p_colours[1][1-m_anti]=p_colours[0][m_anti] = Flow::Counter();
-      p_colours[2][1-m_anti]=p_colours[3][m_anti] = Flow::Counter();
+      m_colours[1][1-m_anti]=m_colours[0][m_anti] = Flow::Counter();
+      m_colours[2][1-m_anti]=m_colours[3][m_anti] = Flow::Counter();
     }
     else{
-      p_colours[1][1-m_anti]=p_colours[0][m_anti] = Flow::Counter();
-      p_colours[2][m_anti]=p_colours[3][1-m_anti] = Flow::Counter();
+      m_colours[1][1-m_anti]=m_colours[0][m_anti] = Flow::Counter();
+      m_colours[2][m_anti]=m_colours[3][1-m_anti] = Flow::Counter();
     }
     //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(s);
   }
   else {
    if (m_rev){ 
      if (m_anti){
-      p_colours[2][0]=p_colours[1][1-m_anti] = Flow::Counter();
-      p_colours[3][1]=p_colours[0][m_anti] = Flow::Counter();
+      m_colours[2][0]=m_colours[1][1-m_anti] = Flow::Counter();
+      m_colours[3][1]=m_colours[0][m_anti] = Flow::Counter();
      }
       else {
-       p_colours[3][0]=p_colours[0][m_anti] = Flow::Counter();
-       p_colours[2][1]=p_colours[1][1-m_anti] = Flow::Counter();
+       m_colours[3][0]=m_colours[0][m_anti] = Flow::Counter();
+       m_colours[2][1]=m_colours[1][1-m_anti] = Flow::Counter();
      }
     }
     else{
      if (m_anti){
-       p_colours[3][0]=p_colours[1][1-m_anti] = Flow::Counter();
-       p_colours[2][1]=p_colours[0][m_anti] = Flow::Counter();
+       m_colours[3][0]=m_colours[1][1-m_anti] = Flow::Counter();
+       m_colours[2][1]=m_colours[0][m_anti] = Flow::Counter();
      }
      else {
-       p_colours[2][0]=p_colours[0][m_anti] = Flow::Counter();
-       p_colours[3][1]=p_colours[1][1-m_anti] = Flow::Counter();
+       m_colours[2][0]=m_colours[0][m_anti] = Flow::Counter();
+       m_colours[3][1]=m_colours[1][1-m_anti] = Flow::Counter();
      }
     }
    }

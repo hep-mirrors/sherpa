@@ -43,16 +43,16 @@ XS_PP_ffbar::XS_PP_ffbar(const External_ME_Args& args) :
         *sqr(sqr(m_flavs[2].Charge()))
         *(m_flavs[2].Strong()?3.0:1.0);
   m_m2=sqr(m_flavs[2].Mass());
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_oew=2; m_oqcd=0;
-  m_cfls[PropID(0,2)] = new Flavour_Vector;
-  m_cfls[PropID(1,2)] = new Flavour_Vector;
-  m_cfls[PropID(0,3)] = new Flavour_Vector;
-  m_cfls[PropID(1,3)] = new Flavour_Vector;
-  m_cfls[PropID(0,2)]->push_back(m_flavs[2]);
-  m_cfls[PropID(1,2)]->push_back(m_flavs[2]);
-  m_cfls[PropID(0,3)]->push_back(m_flavs[3]);
-  m_cfls[PropID(1,3)]->push_back(m_flavs[3]);
+  m_cfls[PropID(0,2)] = Flavour_Vector{};
+  m_cfls[PropID(1,2)] = Flavour_Vector{};
+  m_cfls[PropID(0,3)] = Flavour_Vector{};
+  m_cfls[PropID(1,3)] = Flavour_Vector{};
+  m_cfls[PropID(0,2)].push_back(m_flavs[2]);
+  m_cfls[PropID(1,2)].push_back(m_flavs[2]);
+  m_cfls[PropID(0,3)].push_back(m_flavs[3]);
+  m_cfls[PropID(1,3)].push_back(m_flavs[3]);
 }
 
 double XS_PP_ffbar::operator()(const Vec4D_Vector& mom)
@@ -72,7 +72,7 @@ double XS_PP_ffbar::operator()(const Vec4D_Vector& mom)
 bool XS_PP_ffbar::SetColours(const Vec4D_Vector& mom)
 {
   size_t nc(m_qcd?Flow::Counter():0);
-  p_colours[2+m_r][0]=p_colours[3-m_r][1]=nc;
+  m_colours[2+m_r][0]=m_colours[3-m_r][1]=nc;
   return true;
 }
 
