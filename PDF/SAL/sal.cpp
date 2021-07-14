@@ -46,7 +46,8 @@ enum {gluon, d_quark, u_quark, s_quark, c_quark, b_quark, t_quark};
     return n == fread(v, sizeof(double), n, f);
   }
 #else
-  char* DEF_INPUT="SAL.dat";
+  // TODO: make wrapper for the path to the SAL.dat file
+  char* DEF_INPUT="/home/pmeinzinger/git/sherpa/PDF/SAL/SAL.dat";
 
   //===================================
   static int GetByte(FILE* f, unsigned char *v, int n=1) {

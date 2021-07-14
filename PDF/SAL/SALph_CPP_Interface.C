@@ -46,7 +46,6 @@ PDF_Base* SALph_CPP_Interface::GetCopy() {
 	return new SALph_CPP_Interface(m_bunch);
 }
 
-// TODO: Check if the returned values are in the correct convention, i.e. including or excluding a factor x
 void SALph_CPP_Interface::CalculateSpec(const double &_x,
 		const double &_Q2) {
 	float x = _x / m_rescale, Q2 = _Q2;
@@ -55,13 +54,13 @@ void SALph_CPP_Interface::CalculateSpec(const double &_x,
 	double f[7];
 
 	SALPDF(x, Q2, f);
-	m_g = f[0];
-	m_d = f[1];
-	m_u = f[2];
-	m_s = f[3];
-	m_c = f[4];
-	m_b = f[5];
-	m_t = f[6];
+	m_g = x*f[0];
+	m_d = x*f[1];
+	m_u = x*f[2];
+	m_s = x*f[3];
+	m_c = x*f[4];
+	m_b = x*f[5];
+	m_t = x*f[6];
 }
 
 double SALph_CPP_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
@@ -82,6 +81,7 @@ double SALph_CPP_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
 	else if (infl.Kfcode() == kf_t)
 		value = m_t;
 
+	// TODO: Check if the returned values are in the correct convention, i.e. including or excluding a factor x or a factor alpha_em
 	value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
 			sqr(rpa->gen.Ecms()));
 
@@ -104,8 +104,8 @@ double SALph_CPP_Interface::GetXPDF(const kf_code &kf, bool anti) {
 	else if (kf == kf_b)
 		value = m_b;
 	else if (kf == kf_t)
-			value = m_t;
-
+		value = m_t;
+		
 	value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
 			sqr(rpa->gen.Ecms()));
 
