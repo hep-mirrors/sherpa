@@ -59,6 +59,9 @@ namespace OpenLoops {
                              double& res, METOOLS::DivArrD& virt);
     static void EvaluateLoop2(int id, const ATOOLS::Vec4D_Vector& momenta,
                               double& res);
+    static void EvaluateAssociated(int id, const ATOOLS::Vec4D_Vector& momenta,
+                                   int ass, double& res);
+    static int ConvertAssociatedContributions(const asscontrib::type at);
 
     /* Returns <1,2,...|p_{mu_i}T_iT_j p_{nu_i}|1,2,...> / p^2 with
        i=emitter, j=spectator */

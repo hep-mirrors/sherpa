@@ -28,6 +28,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/KF_Table.H"
+#include "PDF/Main/PDF_Base.H"
 #include <cstring>
 
 using namespace SHERPA;
@@ -55,6 +56,7 @@ Sherpa::Sherpa(int argc, char* argv[]) :
   Settings::InitializeMainSettings(argc, argv);
   ATOOLS::ran = new Random(1234);
   ATOOLS::s_loader = new Library_Loader();
+  PDF::pdfdefs = new PDF::PDF_Defaults();
   m_trials = 0;
   m_debuginterval = 0;
   m_debugstep = -1;
@@ -86,6 +88,7 @@ Sherpa::~Sherpa()
     Settings::FinalizeMainSettings();
   exh->RemoveTerminatorObject(this);
   delete ATOOLS::s_loader;
+  delete PDF::pdfdefs;
   delete ATOOLS::rpa;
   delete ATOOLS::ran;
 #ifdef USING__MPI
