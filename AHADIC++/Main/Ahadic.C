@@ -1,6 +1,5 @@
 #include <cassert>
 #include "AHADIC++/Main/Ahadic.H"
-#include "AHADIC++/Tools/Hadron_Init.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Org/Message.H"
@@ -28,6 +27,10 @@ Ahadic::Ahadic(string shower) :
   m_singletchecker.Init();
   m_gluondecayer.Init();
   m_clusterdecayer.Init();
+
+  Settings& s = Settings::GetMainSettings();
+  m_shrink = s["COMPRESS_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
+  m_flagpartonics = s["FLAG_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
 }
 
 
@@ -77,6 +80,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     }
     blit++;      
   }
+  if (m_shrink) Shrink(blobs);
   return Return_Value::Success;
 }  
 
@@ -110,6 +114,33 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   return Return_Value::Success;
 }
   
+void Ahadic::Shrink(Blob_List * bloblist) {
+  list<Blob *> deleteblobs;
+  Particle_Vector * parts;
+  for (Blob_List::reverse_iterator blit=bloblist->rbegin();
+       blit!=bloblist->rend();++blit) {
+    Blob * blob = (*blit);
+    if (blob->Type()==btp::Fragmentation) {
+      Blob * showerblob(blob->InParticle(0)->ProductionBlob());
+      Blob * decblob(showerblob->InParticle(0)->ProductionBlob());
+      if (decblob->Type()!=btp::Hadron_Decay) continue;
+      showerblob->DeleteInParticles(0);
+      showerblob->DeleteOutParticles(0);
+      deleteblobs.push_back(blob);
+      deleteblobs.push_back(showerblob);
+      while (!blob->GetOutParticles().empty()) {
+	Particle * part = 
+	  blob->RemoveOutParticle(blob->GetOutParticles().front());
+	decblob->AddToOutParticles(part);
+      }
+      decblob->SetStatus(blob_status::needs_hadrondecays);
+      decblob->AddData("Partonic",new Blob_Data<int>(m_flagpartonics));
+    }
+  }
+  for (list<Blob *>::iterator blit=deleteblobs.begin();
+       blit!=deleteblobs.end();blit++) bloblist->Delete((*blit));
+}
+
 bool Ahadic::ExtractSinglets(Blob * blob)
 {
   //msg_Out()<<"   ### "<<METHOD<<"\n";
@@ -210,3 +241,5 @@ void Ahadic::CleanUp(Blob * blob) {
   Reset();
   if(blob) blob->DeleteOutParticles(0);
 }
+
+DEFINE_FRAGMENTATION_GETTER(Ahadic, "Ahadic")

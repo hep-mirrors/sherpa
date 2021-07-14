@@ -3,13 +3,11 @@
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
-#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 
 namespace SHERPA {
   class Beam_Remnants : public Event_Phase_Handler {
   private :
     Beam_Remnant_Handler  * p_beamremnanthandler;
-    Fragmentation_Handler * p_fragmentationhandler;
   public :
     Beam_Remnants(Beam_Remnant_Handler *);
     ~Beam_Remnants();

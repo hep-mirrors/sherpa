@@ -18,6 +18,7 @@
 #include "Rivet/Config/RivetConfig.hh"
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
+#include "YODA/Config/BuildConfig.h"
 #ifdef RIVET_ENABLE_HEPMC_3
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "HepMC3/GenEvent.h"
@@ -51,7 +52,7 @@ namespace SHERPARIVET {
 
     size_t m_nevt;
     bool   m_finished;
-    bool   m_splitjetconts, m_splitSH, m_splitcoreprocs,
+    bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs,
       m_ignorebeams, m_usehepmcshort, m_skipweights;
     size_t m_hepmcoutputprecision, m_xsoutputprecision;
 
@@ -59,8 +60,6 @@ namespace SHERPARIVET {
     SHERPA__HepMC_Interface       m_hepmc2;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
-
-    void RegisterDefaults() const;
 
     Rivet::AnalysisHandler* GetRivet(std::string proc,
                                      int jetcont);
@@ -96,12 +95,11 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   Analysis_Interface("Rivet"),
   m_outpath(outpath), m_tag(tag),
   m_nevt(0), m_finished(false),
-  m_splitjetconts(false), m_splitSH(false),
+  m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
   m_splitcoreprocs(false),
   m_ignoreblobs(ignoreblobs),
   m_hepmcoutputprecision(15), m_xsoutputprecision(6)
 {
-  RegisterDefaults();
   if (m_outpath[m_outpath.size()-1]=='/')
     m_outpath=m_outpath.substr(0,m_outpath.size()-1);
   if (m_outpath.rfind('/')!=std::string::npos)
@@ -121,30 +119,6 @@ Rivet_Interface::~Rivet_Interface()
     delete it->second;
   }
   m_rivet.clear();
-}
-
-void Rivet_Interface::RegisterDefaults() const
-{
-  Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
-  s["JETCONTS"].SetDefault(0);
-  s["SPLITSH"].SetDefault(0);
-  s["SPLITCOREPROCS"].SetDefault(0);
-  s["USE_HEPMC_SHORT"].SetDefault(0);
-  s["USE_HEPMC_NAMED_WEIGHTS"].SetDefault(true);
-#ifndef HEPMC_HAS_NAMED_WEIGHTS
-  s["USE_HEPMC_NAMED_WEIGHTS"].OverrideScalar(false);
-#endif
-  s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false);
-  s["USE_HEPMC_TREE_LIKE"].SetDefault(false);
-  s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].SetDefault(false);
-  s["PRINT_SUMMARY"].SetDefault(1);
-  s["EVENTBYEVENTXS"].SetDefault(0);
-  s["IGNOREBEAMS"].SetDefault(0);
-  s["SKIPWEIGHTS"].SetDefault(1);
-  s["HEPMC_OUTPUT_PRECISION"].SetDefault(15);
-  s["XS_OUTPUT_PRECISION"].SetDefault(6);
-  s["-l"].SetDefault(20);
-  s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
 }
 
 AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
@@ -257,19 +231,21 @@ bool Rivet_Interface::Init()
 {
   if (m_nevt==0) {
     Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
-    m_splitjetconts = s["JETCONTS"].Get<int>();
-    m_splitSH = s["SPLITSH"].Get<int>();
-    m_splitcoreprocs = s["SPLITCOREPROCS"].Get<int>();
-    m_usehepmcshort = s["USE_HEPMC_SHORT"].Get<int>();
+    m_splitjetconts = s["JETCONTS"].SetDefault(0).Get<int>();
+    m_splitSH = s["SPLITSH"].SetDefault(0).Get<int>();
+    m_splitpm = s["SPLITPM"].SetDefault(0).Get<int>();
+    m_splitcoreprocs = s["SPLITCOREPROCS"].SetDefault(0).Get<int>();
+    m_usehepmcshort = s["USE_HEPMC_SHORT"].SetDefault(0).Get<int>();
     if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
       THROW(fatal_error, "Internal error.");
     }
-    m_ignorebeams = s["IGNOREBEAMS"].Get<int>();
-    m_skipweights = s["SKIPWEIGHTS"].Get<int>();
+    m_ignorebeams = s["IGNOREBEAMS"].SetDefault(0).Get<int>();
+    m_skipweights = s["SKIPWEIGHTS"].SetDefault(1).Get<int>();
 
-    m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].Get<int>();
-    m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].Get<int>();
-    Log::setLevel("Rivet", s["-l"].Get<int>());
+    m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].SetDefault(15).Get<int>();
+    m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].SetDefault(6).Get<int>();
+    Log::setLevel("Rivet", s["-l"].SetDefault(20).Get<int>());
+    s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
     m_analyses = s["ANALYSES"].GetVector<std::string>();
 
     // configure HepMC interface
@@ -277,13 +253,13 @@ bool Rivet_Interface::Init()
       m_hepmc2.Ignore(m_ignoreblobs[i]);
     }
     m_hepmc2.SetHepMCNamedWeights(
-        s["USE_HEPMC_NAMED_WEIGHTS"].Get<bool>());
+        s["USE_HEPMC_NAMED_WEIGHTS"].SetDefault(true).Get<bool>());
     m_hepmc2.SetHepMCExtendedWeights(
-        s["USE_HEPMC_EXTENDED_WEIGHTS"].Get<bool>());
+        s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>());
     m_hepmc2.SetHepMCTreeLike(
-        s["USE_HEPMC_TREE_LIKE"].Get<bool>());
+        s["USE_HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>());
     m_hepmc2.SetHepMCIncludeMEOnlyVariations(
-        s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].Get<bool>());
+        s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>());
   }
   return true;
 }
@@ -363,6 +339,9 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
         }
       }
     }
+    if (m_splitpm) {
+      GetRivet(event.weights()[0]<0?"M":"P",0)->analyze(event);
+    }
   }
 
   ++m_nevt;
@@ -371,7 +350,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 
 bool Rivet_Interface::Finish()
 {
-  PRINT_FUNC(m_outpath+".yoda");
+  PRINT_FUNC(m_outpath);
   for (auto& it : m_rivet) {
     std::string out = m_outpath;
     if (it.first.first!="") out+="."+it.first.first;
@@ -381,7 +360,11 @@ bool Rivet_Interface::Finish()
     const double thisxs  = totalxs*wgtfrac;
     it.second->setCrossSection(thisxs, 0.0, true);
     it.second->finalize();
+#ifdef HAVE_LIBZ
+    it.second->writeData(out+".yoda.gz");
+#else
     it.second->writeData(out+".yoda");
+#endif
   }
   m_finished=true;
   return true;
@@ -557,7 +540,8 @@ namespace SHERPARIVET {
 
     size_t m_nevt;
     bool   m_finished;
-    bool   m_splitjetconts, m_splitSH, m_splitcoreprocs, m_splitvariations,
+    bool   m_splitjetconts, m_splitSH, m_splitpm,
+           m_splitcoreprocs, m_splitvariations,
            m_ignorebeams, m_usehepmcshort,
            m_printsummary,
            m_evtbyevtxs;
@@ -567,8 +551,6 @@ namespace SHERPARIVET {
     SHERPA::HepMC2_Interface       m_hepmc2;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
-
-    void RegisterDefaults() const;
 
     void ExtractVariations(const HepMC::GenEvent& evt,
                            const std::vector<HepMC::GenEvent*>& subevents);
@@ -673,13 +655,12 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   Analysis_Interface("Rivet"),
   m_outpath(outpath), m_tag(tag),
   m_nevt(0), m_finished(false),
-  m_splitjetconts(false), m_splitSH(false),
+  m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
   m_splitcoreprocs(false), m_splitvariations(true),
   m_ignoreblobs(ignoreblobs),
   m_printsummary(true), m_evtbyevtxs(false),
   m_hepmcoutputprecision(15), m_xsoutputprecision(6)
 {
-  RegisterDefaults();
   if (m_outpath[m_outpath.size()-1]=='/')
     m_outpath=m_outpath.substr(0,m_outpath.size()-1);
   if (m_outpath.rfind('/')!=std::string::npos)
@@ -699,30 +680,6 @@ Rivet_Interface::~Rivet_Interface()
     delete it->second;
   }
   m_rivet.clear();
-}
-
-void Rivet_Interface::RegisterDefaults() const
-{
-  Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
-  s["JETCONTS"].SetDefault(0);
-  s["SPLITSH"].SetDefault(0);
-  s["SPLITCOREPROCS"].SetDefault(0);
-  s["SPLITVARIATIONS"].SetDefault(1);
-  s["USE_HEPMC_SHORT"].SetDefault(0);
-  s["USE_HEPMC_NAMED_WEIGHTS"].SetDefault(true);
-#ifndef HEPMC_HAS_NAMED_WEIGHTS
-  s["USE_HEPMC_NAMED_WEIGHTS"].OverrideScalar(false);
-#endif
-  s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false);
-  s["USE_HEPMC_TREE_LIKE"].SetDefault(false);
-  s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].SetDefault(false);
-  s["PRINT_SUMMARY"].SetDefault(1);
-  s["EVENTBYEVENTXS"].SetDefault(0);
-  s["IGNOREBEAMS"].SetDefault(0);
-  s["HEPMC_OUTPUT_PRECISION"].SetDefault(15);
-  s["XS_OUTPUT_PRECISION"].SetDefault(6);
-  s["-l"].SetDefault(20);
-  s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
 }
 
 void Rivet_Interface::ExtractVariations
@@ -940,21 +897,22 @@ bool Rivet_Interface::Init()
 {
   if (m_nevt==0) {
     Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
-    m_splitjetconts = s["JETCONTS"].Get<int>();
-    m_splitSH = s["SPLITSH"].Get<int>();
-    m_splitcoreprocs = s["SPLITCOREPROCS"].Get<int>();
-    m_splitvariations = s["SPLITVARIATIONS"].Get<int>();
-    m_usehepmcshort = s["USE_HEPMC_SHORT"].Get<int>();
+    m_splitjetconts = s["JETCONTS"].SetDefault(0).Get<int>();
+    m_splitSH = s["SPLITSH"].SetDefault(0).Get<int>();
+    m_splitcoreprocs = s["SPLITCOREPROCS"].SetDefault(0).Get<int>();
+    m_splitvariations = s["SPLITVARIATIONS"].SetDefault(1).Get<int>();
+    m_usehepmcshort = s["USE_HEPMC_SHORT"].SetDefault(0).Get<int>();
     if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
       THROW(fatal_error, "Internal error.");
     }
-    m_printsummary = s["PRINT_SUMMARY"].Get<int>();
-    m_evtbyevtxs = s["EVENTBYEVENTXS"].Get<int>();
-    m_ignorebeams = s["IGNOREBEAMS"].Get<int>();
+    m_printsummary = s["PRINT_SUMMARY"].SetDefault(1).Get<int>();
+    m_evtbyevtxs = s["EVENTBYEVENTXS"].SetDefault(0).Get<int>();
+    m_ignorebeams = s["IGNOREBEAMS"].SetDefault(0).Get<int>();
 
-    m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].Get<int>();
-    m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].Get<int>();
-    Log::setLevel("Rivet", s["-l"].Get<int>());
+    m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].SetDefault(15).Get<int>();
+    m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].SetDefault(6).Get<int>();
+    Log::setLevel("Rivet", s["-l"].SetDefault(20).Get<int>());
+    s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
     m_analyses = s["ANALYSES"].GetVector<std::string>();
     for (size_t i(0);i<m_analyses.size();++i) {
       if (m_analyses[i]==std::string("MC_XS")) break;
@@ -966,13 +924,13 @@ bool Rivet_Interface::Init()
       m_hepmc2.Ignore(m_ignoreblobs[i]);
     }
     m_hepmc2.SetHepMCNamedWeights(
-        s["USE_HEPMC_NAMED_WEIGHTS"].Get<bool>());
+        s["USE_HEPMC_NAMED_WEIGHTS"].SetDefault(true).Get<bool>());
     m_hepmc2.SetHepMCExtendedWeights(
-        s["USE_HEPMC_EXTENDED_WEIGHTS"].Get<bool>());
+        s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>());
     m_hepmc2.SetHepMCTreeLike(
-        s["USE_HEPMC_TREE_LIKE"].Get<bool>());
+        s["USE_HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>());
     m_hepmc2.SetHepMCIncludeMEOnlyVariations(
-        s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].Get<bool>());
+        s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>());
   }
   return true;
 }
@@ -1052,6 +1010,9 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
             GetRivet(rivetmap,type,parts)->analyze(event);
           }
         }
+      }
+      if (m_splitpm) {
+        GetRivet(rivetmap,event.weights()[0]<0?"M":"P",0)->analyze(event);
       }
     }
   }

@@ -3,7 +3,7 @@
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
-#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
+#include "ATOOLS/Phys/Fragmentation_Base.H"
 #include "SHERPA/SoftPhysics/Singlet_Sorter.H"
 
 namespace SHERPA {
@@ -11,11 +11,11 @@ namespace SHERPA {
   private :
     bool m_on;
     Colour_Reconnection_Handler * p_reconnectionhandler;
-    Fragmentation_Handler       * p_fragmentationhandler;
+    ATOOLS::Fragmentation_Base  * p_fragmentationhandler;
     Singlet_Sorter                m_singlets;
   public :
     Hadronization(Colour_Reconnection_Handler *,
-		  Fragmentation_Handler *);
+		  ATOOLS::Fragmentation_Base *);
     ~Hadronization();
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);

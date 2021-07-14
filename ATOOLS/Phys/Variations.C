@@ -238,6 +238,8 @@ void Variations::InitialiseParametersVector()
 
 void Variations::AddParameters(Scoped_Settings& s)
 {
+  if (s.IsScalar() && s.Get<std::string>() == "None")
+    return;
   // parse scale factors and QCUT factors, and check whether they are requested
   // to be expanded to x -> [x, 1/x] via an appended asterisk
   std::vector<std::string> scalestringparams;

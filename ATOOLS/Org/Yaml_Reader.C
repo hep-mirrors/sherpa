@@ -58,6 +58,12 @@ std::vector<std::string> Yaml_Reader::GetKeys(const Settings_Keys& scopekeys)
   return keys;
 }
 
+bool Yaml_Reader::IsScalar(const Settings_Keys& scopekeys)
+{
+  const auto node = NodeForKeys(scopekeys);
+  return node.IsScalar();
+}
+
 bool Yaml_Reader::IsList(const Settings_Keys& scopekeys)
 {
   const auto node = NodeForKeys(scopekeys);
