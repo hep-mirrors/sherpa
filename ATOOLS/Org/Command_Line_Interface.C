@@ -13,6 +13,7 @@
 using namespace ATOOLS;
 
 Command_Line_Interface::Command_Line_Interface(int argc, char* argv[])
+  : Yaml_Reader{"command line"}
 {
   // skip program name argv[0] if present
   if (argc > 0) {

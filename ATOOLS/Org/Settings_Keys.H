@@ -27,6 +27,8 @@ namespace ATOOLS {
     std::string GetName() const;
     size_t GetIndex() const;
 
+    bool operator==(const Setting_Key&) const;
+
   private:
 
     const std::string name;

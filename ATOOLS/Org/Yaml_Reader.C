@@ -8,7 +8,8 @@
 
 using namespace ATOOLS;
 
-Yaml_Reader::Yaml_Reader()
+Yaml_Reader::Yaml_Reader(const std::string& name)
+  : m_name{name}
 { }
 
 Yaml_Reader::Yaml_Reader(std::istream& s)
@@ -17,6 +18,7 @@ Yaml_Reader::Yaml_Reader(std::istream& s)
 }
 
 Yaml_Reader::Yaml_Reader(const std::string& path, const std::string& filename)
+  : m_name {(path.empty() ? "" : path + "/") + filename}
 {
   assert(filename != "");
   My_File<std::ifstream> file {path, filename};
@@ -34,6 +36,11 @@ Yaml_Reader::Yaml_Reader(const std::string& path, const std::string& filename)
   }
 }
 
+std::string Yaml_Reader::Name() const
+{
+  return m_name;
+}
+
 void Yaml_Reader::Parse(std::istream& s)
 {
   m_node = SHERPA_YAML::Load(s);
@@ -43,6 +50,47 @@ bool Yaml_Reader::IsParameterCustomised(const Settings_Keys& keys)
 {
   const auto node = NodeForKeys(keys);
   return !node.IsNull();
+}
+
+std::vector<Settings_Keys> Yaml_Reader::AllSettingsKeys()
+{
+  std::vector<Settings_Keys> keys_vec;
+  Settings_Keys base_keys;
+  AddSettingsKeys(keys_vec, base_keys, m_node);
+  return keys_vec;
+}
+
+void Yaml_Reader::AddSettingsKeys(
+  std::vector<Settings_Keys>& keys_vec,
+  Settings_Keys& current_keys,
+  SHERPA_YAML::Node& node)
+{
+  switch (node.Type()) {
+    case SHERPA_YAML::NodeType::Null:
+      break;
+    case SHERPA_YAML::NodeType::Scalar:
+      if (keys_vec.size() == 0 || keys_vec.back() != current_keys)
+        keys_vec.push_back(current_keys);
+      break;
+    case SHERPA_YAML::NodeType::Sequence:
+      for (auto it = node.begin(); it != node.end(); ++it) {
+        auto element = *it;
+        AddSettingsKeys(keys_vec, current_keys, element);
+      }
+      break;
+    case SHERPA_YAML::NodeType::Map:
+      for (auto it = node.begin(); it != node.end(); ++it) {
+        auto key = it->first;
+        auto value = it->second;
+        current_keys.push_back(key.as<std::string>());
+        if (keys_vec.size() == 0 || keys_vec.back() != current_keys)
+          AddSettingsKeys(keys_vec, current_keys, value);
+        current_keys.pop_back();
+      }
+      break;
+    case SHERPA_YAML::NodeType::Undefined:
+      break;
+  }
 }
 
 std::vector<std::string> Yaml_Reader::GetKeys(const Settings_Keys& scopekeys)

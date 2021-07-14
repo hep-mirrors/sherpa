@@ -13,7 +13,7 @@ YFS:
   MODE: 0
 
 # scales, tags for scale variations
-SCALES: VAR{Abs2(p[2]+p[3])}
+CORE_SCALE: VAR{Abs2(p[2]+p[3])}
 
 # me generator settings
 ME_GENERATORS: Comix
