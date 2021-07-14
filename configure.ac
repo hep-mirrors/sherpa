@@ -149,7 +149,6 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  EXTRA_XS/NLO/Makefile \
           EXTRA_XS/One2Two/Makefile \
 	  EXTRA_XS/One2Three/Makefile \
-	  EXTRA_XS/Special/Makefile \
 	  EXTRA_XS/Makefile \
 	  EXTAMP/Makefile \
 	  AMEGIC++/Main/Makefile \
