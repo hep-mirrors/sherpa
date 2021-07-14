@@ -1,6 +1,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include <vector>
 #include <algorithm>
+#include <limits>
 
 #include "ATOOLS/Org/Exception.H"
 
