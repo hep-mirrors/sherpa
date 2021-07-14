@@ -59,7 +59,8 @@ PROCESSES:
     KFactor: HHF2
     Order: {QCD: Any, EW: 0, HEFT: 1}
 
-RIVET: { -a: [MC_QCD_PARTONS, MC_HJETS] }
+RIVET: 
+  --analyses: [MC_QCD_PARTONS, MC_HJETS]
 
 INTERNAL_ANALYSES:
   - {

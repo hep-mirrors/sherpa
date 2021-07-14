@@ -39,6 +39,6 @@ SELECTORS:
     ETMin: 0
     DR: 0.4
 RIVET:
-  -a: ATLAS_2012_I1083318
+  --analyses: ATLAS_2012_I1083318
   USE_HEPMC_SHORT: 1
-  IGNOREBEAMS: 1
+  --ignore-beams: 1

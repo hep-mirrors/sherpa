@@ -31,8 +31,8 @@ namespace ATOOLS {
 
   private:
 
-    const std::string name;
-    const size_t index;
+    std::string name;
+    size_t index;
 
   };
 

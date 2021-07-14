@@ -18,8 +18,7 @@ PROCESSES:
     NLO_Mode: Fixed_Order
     NLO_Part: RS
     Order: {QCD: 2, EW: 1}
-RIVET: {
-  -a: MC_PHOTONPHOTON_JOEY_STABLE,
-  USE_HEPMC_SHORT: 1,
-  IGNOREBEAMS: 1
-}
+RIVET:
+  --analyses: MC_PHOTONPHOTON_JOEY_STABLE
+  USE_HEPMC_SHORT: 1
+  --ignore-beams: 1

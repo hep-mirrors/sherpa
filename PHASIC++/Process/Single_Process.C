@@ -883,7 +883,7 @@ Single_Process::ReweightBornLike(ATOOLS::QCD_Variation_Params& varparams,
                           &m_mewgtinfo.m_clusseqinfo));
   if (csi.m_pdfwgt == 0.0) {
     return 0.0;
-  } 
+  }
   const double alphasratio(AlphaSRatio(info.m_muR2, muR2new, varparams.p_alphas));
   const double alphasfac(pow(alphasratio, info.m_orderqcd));
   const double newweight(info.m_wgt * alphasfac * csi.m_pdfwgt);
@@ -1002,8 +1002,8 @@ double Single_Process::AlphaSRatio(
 
 
 bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
-					const bool create) 
-{ 
+					const bool create)
+{
   p_int->Reset();
   auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
@@ -1142,7 +1142,7 @@ Cluster_Amplitude *Single_Process::Cluster
 	ampl->Leg(i)->SetCol(ColorID(0,0));
       }
     while (true) {
-      std::random_shuffle(atids.begin(),atids.end(),*ran);
+      std::shuffle(atids.begin(),atids.end(),*ran);
       size_t i(0);
       for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
       if (i==atids.size()) break;
@@ -1160,7 +1160,7 @@ Cluster_Amplitude *Single_Process::Cluster
       ampl->CreateLeg(i<m_nin?-p_int->Momenta()[i]:p_int->Momenta()[i],
 		      i<m_nin?m_flavs[i].Bar():m_flavs[i],
 		      ColorID(ci[i],cj[i]));
-  }  
+  }
   ampl->SetMuF2(ScaleSetter(1)->Scale(stp::fac));
   ampl->SetMuR2(ScaleSetter(1)->Scale(stp::ren));
   ampl->SetMuQ2(ScaleSetter(1)->Scale(stp::res));
