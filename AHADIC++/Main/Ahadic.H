@@ -31,8 +31,6 @@ namespace AHADIC {
 
     ATOOLS::Vec4D m_totmom; 
 
-    bool        m_shrink, m_flagpartonics;
-
     bool ExtractSinglets(ATOOLS::Blob * blob);
     bool ShiftBeamParticles();
     bool CheckSinglets();
@@ -42,7 +40,6 @@ namespace AHADIC {
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob * blob, int retry=0);
     void FillOutgoingParticles(ATOOLS::Blob * blob);
-    void Shrink(ATOOLS::Blob_List *);
 
     bool SanityCheck(ATOOLS::Blob * blob,double norm2);
     void CleanUp(ATOOLS::Blob * blob);

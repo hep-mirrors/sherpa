@@ -33,7 +33,6 @@ namespace AHADIC {
     
     void ReadParameters();
     void ReadGeneralSwitches();
-    void ReadMassParameters();
     void ReadPoppingParameters();
     void ReadMesonWeights();
     void ReadSplittingParameters();

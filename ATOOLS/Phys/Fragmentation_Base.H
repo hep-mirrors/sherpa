@@ -10,6 +10,9 @@ namespace ATOOLS {
   class Fragmentation_Base {
   protected:
     std::string m_name;
+    bool        m_shrink, m_flagpartonics;
+    void Shrink(ATOOLS::Blob_List *);
+    void ReadMassParameters();
   public:
     Fragmentation_Base();
     virtual ~Fragmentation_Base();
