@@ -657,46 +657,25 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   UpdateMEWeightInfo(scales);
 
-  // perform on-the-fly reweighting
+  // perform QCD reweighting of BVI or RS events
   m_last *= nominal;
-  if (varmode != Variations_Mode::nominal_only) {
+  if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
     if (GetSubevtList() == nullptr) {
-
-      // QCD variations
       ReweightBVI(scales->Amplitudes());
-
-      // associated contribution variations
-      {
-        auto orderqcd = m_mewgtinfo.m_oqcd;
-        if (m_mewgtinfo.m_type & mewgttype::VI ||
-            m_mewgtinfo.m_type & mewgttype::KP) {
-          orderqcd--;
-        }
-        for (const auto& asscontrib : m_asscontrib) {
-          double Bassnew {0.0};
-          for (size_t i(0); i < m_mewgtinfo.m_wass.size(); ++i) {
-            // m_wass[0] is EW Sudakov-type correction
-            // m_wass[1] is the subleading Born
-            // m_wass[2] is the subsubleading Born, etc
-            if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
-              Bassnew += m_mewgtinfo.m_wass[i];
-            }
-            if ((orderqcd - i) == 0)
-              break;
-          }
-          const std::string key = ToString<asscontrib::type>(asscontrib);
-          m_last["ASSOCIATED_CONTRIBUTIONS"][key] =
-              (m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
-               m_mewgtinfo.m_KP + Bassnew) *
-              m_csi.m_pdfwgt / m_last["ME"].Nominal();
-        }
-      }
-
     } else {
       ReweightRS(scales->Amplitudes());
     }
   }
-  m_last -= m_dadswgtmap;
+
+  if (m_dads) {
+    m_last -= m_dadswgtmap;
+  }
+
+  // calculate associated contributions variations (not for DADS events)
+  if (varmode != Variations_Mode::nominal_only
+      && (GetSubevtList() != nullptr || !m_pinfo.Has(nlo_type::rsub))) {
+    CalculateAssociatedContributionVariations();
+  }
 
   // propagate (potentially) re-clustered momenta
   if (GetSubevtList() == nullptr) {
@@ -716,15 +695,20 @@ void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
   m_mewgtinfo.Reset();
   m_last.Clear();
   m_lastb.Clear();
-  m_dadswgtmap.Clear();
   if (varmode != Variations_Mode::nominal_only) {
     m_last["ME"] = Weights {Variations_Type::qcd};
     m_lastb["ME"] = Weights {Variations_Type::qcd};
-    m_dadswgtmap["ME"] = Weights {Variations_Type::qcd};
   }
   m_last = 1.0;
-  m_dadswgtmap = 0.0;
   m_lastb = 0.0;
+
+  if (m_dads) {
+    m_dadswgtmap.Clear();
+    if (varmode != Variations_Mode::nominal_only) {
+      m_dadswgtmap["ME"] = Weights {Variations_Type::qcd};
+    }
+    m_dadswgtmap = 0.0;
+  }
 }
 
 void Single_Process::UpdateIntegratorMomenta(const Vec4D_Vector& p)
@@ -888,6 +872,77 @@ void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
   for (int i {0}; i <= last_subevt_idx; ++i) {
     auto sub = (*GetSubevtList())[i];
     m_last += sub->m_results;
+  }
+}
+
+void Single_Process::CalculateAssociatedContributionVariations()
+{
+  // we need to at least set them to 1.0, if there is no genuine contribution,
+  // since it's always expected by the output handlers, that all variation
+  // weights are filled consistently across events
+  for (const auto& asscontrib : m_asscontrib) {
+    const std::string key = ToString<asscontrib::type>(asscontrib);
+    m_last["ASSOCIATED_CONTRIBUTIONS"][key] = 1.0;
+    m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] = 1.0;
+    m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] = 1.0;
+  }
+
+  if (m_asscontrib.empty() || !(m_mewgtinfo.m_type & mewgttype::VI))
+    return;
+
+  if (GetSubevtList() == nullptr) {
+
+    // calculate BVIKP - DADS as the reference point for the additive correction
+    const double BVIKP {
+      m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI + m_mewgtinfo.m_KP};
+    const double DADS {
+      m_dads ? m_dadswgtmap.Nominal("ME") / m_csi.m_pdfwgt : 0.0};
+    const double BVIKPDADS {BVIKP - DADS};
+    if (IsBad(BVIKPDADS))
+      return;
+
+    // calculate order in QCD
+    auto orderqcd = m_mewgtinfo.m_oqcd;
+    if (m_mewgtinfo.m_type & mewgttype::VI ||
+        m_mewgtinfo.m_type & mewgttype::KP) {
+      orderqcd--;
+    }
+
+    for (const auto& asscontrib : m_asscontrib) {
+
+      // collect terms
+      double Bassnew {0.0}, Deltaassnew {1.0}, Deltaassnewexp {1.0};
+      for (size_t i(0); i < m_mewgtinfo.m_wass.size(); ++i) {
+        // m_wass[0] is EW Sudakov-type correction
+        // m_wass[1] is the subleading Born
+        // m_wass[2] is the subsubleading Born, etc
+        if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
+          const double relfac {m_mewgtinfo.m_wass[i] / m_mewgtinfo.m_B};
+          if (1.0 + relfac > 10.0) {
+            msg_Error() << "KFactor from EWVirt is large: " << relfac << " -> ignore\n";
+            Deltaassnew = 1.0;
+            Deltaassnewexp = 1.0;
+            Bassnew = 0.0;
+            break;
+          } else {
+            if (i == 0) {
+              Deltaassnew *= 1.0 + relfac;
+              Deltaassnewexp *= exp(relfac);
+            }
+            Bassnew += m_mewgtinfo.m_wass[i];
+          }
+        }
+        if ((orderqcd - i) == 0)
+          break;
+      }
+
+      // store variations
+      const std::string key = ToString<asscontrib::type>(asscontrib);
+      m_last["ASSOCIATED_CONTRIBUTIONS"][key] = (BVIKPDADS + Bassnew) / BVIKPDADS;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] = Deltaassnew;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] = Deltaassnewexp;
+    }
+
   }
 }
 

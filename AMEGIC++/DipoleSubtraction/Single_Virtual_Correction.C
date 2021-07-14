@@ -1004,8 +1004,9 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     V=Calc_V(mom)*m_lastki;
   }
 
-  for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
-    m_wass[i]=m_dsijqcd[0][0]*p_kpterms_qcd->Coupling()*p_loopme->ME_AssContribs(i);
+  if (p_loopme)
+    for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
+      m_wass[i]=m_dsijqcd[0][0]*p_kpterms_qcd->Coupling()*p_loopme->ME_AssContribs(i);
 
   if (m_checkpoles)  CheckPoleCancelation(mom);
   if (m_checkfinite) CheckFinite(I,V);
@@ -1014,8 +1015,9 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   m_lastbxs=B;
   m_lastv=V;
   m_lasti=I;
-  for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
-    m_wass[i] *= m_lastk;
+  if (p_loopme)
+    for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
+      m_wass[i] *= m_lastk;
   double M2(B+V+I);
 
 

@@ -126,20 +126,20 @@ namespace ATOOLS {
     void Clear();
 
     // general information getters
+    double Get(const std::string&, size_t) const;
     bool HasVariations() const;
     bool IsZero() const;
     double BaseWeight() const { return base_weight; }
 
-    // calculate nominal values, either including all entries or excluding
-    // those that have a certain variation type
+    // calculate nominal values, either including all entries, for a single
+    // entry `k`, or excluding those that have a certain variation type
     double Nominal() const;
+    double Nominal(const std::string& k) const;
     double NominalIgnoringVariationType(Variations_Type) const;
 
-    // return Weights entries for a given name, either as-is ("Relative"), or
-    // multiplied by the base weight ("Absolute")
+    // return relative Weights entries for a given name
     Weights& RelativeValues(const std::string& k) { return (*this)[k]; }
     Weights RelativeValues(const std::string& k) const;
-    Weights AbsoluteValues(const std::string& k) const;
 
     /// Calculate the product of all entries that share the same type, e.g. to
     /// get the combined QCD or Qcut variations from different sources. Note
@@ -171,16 +171,19 @@ namespace ATOOLS {
 
     friend std::ostream& operator<<(std::ostream&, const Weights_Map&);
 
-  private:
-
     // generate variants where entries are absolute, or relative (the default);
-    // this is used internally to simplify the addition/subtraction of weights
-    // maps
+    // this can be used to simplify operations dealing with individual entries
+    // one-by-one, in particular when doing additions/subtractions
     void MakeRelative();
     void MakeAbsolute();
 
+  private:
+
     // make sure class users use our Clear() instead map's clear()
     using std::map<std::string, Weights>::clear;
+
+    // same as Nominal(), but excluding the nominals_prefactor
+    double NominalIgnoringPrefactor() const;
 
     /// While the Weights object in the map store relative factors due to
     /// specific variations or additional factors (like branching ratios), the
@@ -201,6 +204,8 @@ namespace ATOOLS {
     /// this trick, we can have non-zero variations while all nominals are
     /// zero.
     double nominals_prefactor {1.0};
+
+    bool is_absolute {false};
   };
 
   template <class T> Weights& Weights::operator*=(const std::vector<T>& rhs)

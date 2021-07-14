@@ -55,6 +55,8 @@ extern "C" {
 std::string OpenLoops_Interface::s_olprefix = std::string("");
 bool OpenLoops_Interface::s_ignore_model = false;
 bool OpenLoops_Interface::s_exit_on_error = true;
+bool OpenLoops_Interface::s_ass_func = false;
+int  OpenLoops_Interface::s_ass_ew = 0;
 std::map<std::string, std::string> OpenLoops_Interface::s_evgen_params;
 
 // private static member definitions
@@ -120,6 +122,11 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   if (!s_loader->LoadLibrary("openloops"))
     THROW(fatal_error, "Failed to load libopenloops.");
 
+  // check for existance of separate access to associated contribs
+  void *assfunc(s_loader->GetLibraryFunction("openloops",
+                                             "ol_evaluate_associated"));
+  if (assfunc) s_ass_func=true;
+
   ol_set_init_error_fatal(0);
 
   // set OL verbosity
@@ -152,6 +159,8 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   // set remaining OL parameters specified by user
   for (const auto& key : s["OL_PARAMETERS"].GetKeys()) {
     const auto val = s["OL_PARAMETERS"][key].SetDefault("").Get<std::string>();
+    if (key == "add_associated_ew")
+      s_ass_ew = ToType<int>(val);
     s_evgen_params[key] = val;
     SetParameter(key, val);
   }
@@ -280,11 +289,16 @@ int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
     olprocname += ToString((long int)fsflavs[i]) + " ";
   msg_Debugging()<<"looking for "<<shprocname<<" ("<<olprocname<<")\n";
 
+  // exit if ass contribs requested but not present
+  if (!s_ass_func && ConvertAssociatedContributions(fs.m_asscontribs))
+    THROW(fatal_error,"Separate evaluation of associated EW contribution not "
+                      +std::string("supported in used OpenLoops version."));
+
   // set negative of requested associated amps such that they are only
   // initialised, but not computed by default
-  SetParameter("add_associated_ew",-ConvertAssociatedContributions(fs.m_asscontribs));
+  if (s_ass_ew==0) SetParameter("add_associated_ew",-ConvertAssociatedContributions(fs.m_asscontribs));
   int procid(ol_register_process(olprocname.c_str(), amptype));
-  SetParameter("add_associated_ew",0);
+  if (s_ass_ew==0) SetParameter("add_associated_ew",0);
   if (s_procmap.find(procid)==s_procmap.end())
     s_procmap[procid]=shprocname;
   msg_Tracking()<<"OpenLoops_Interface process list:"<<std::endl;
