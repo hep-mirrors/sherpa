@@ -249,7 +249,6 @@ void Phase_Space_Handler::RegisterDefaults() const
   settings["ERROR"].SetDefault(0.01);
   settings["INTEGRATION_ERROR"].SetDefault(settings["ERROR"].Get<double>());
   settings["ABS_ERROR"].SetDefault(0.0);
-  settings["MAX_TRIALS"].SetDefault(1000000);
   settings["FINISH_OPTIMIZATION"].SetDefault(true);
   settings["PRINT_PS_POINTS"].SetDefault(false);
   settings["PS_PT_FILE"].SetDefault("");
