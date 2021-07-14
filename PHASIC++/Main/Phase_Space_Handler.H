@@ -55,7 +55,7 @@ namespace PHASIC {
     ATOOLS::Weights_Map           m_wgtmap;
     static ATOOLS::Integration_Info * p_info;
 
-    double m_enhance, m_ISsymmetryfactor, m_psweight;
+    double m_enhanceweight, m_ISsymmetryfactor, m_psweight;
 
     psmode::code m_cmode;
     double    m_thkill, m_error, m_abserror;
@@ -66,7 +66,7 @@ namespace PHASIC {
 
     void RegisterDefaults() const;
     void InitParameters(const double & error);
-    
+
     bool MakeIncoming(ATOOLS::Vec4D *const p);
     void CorrectMomenta(ATOOLS::Vec4D_Vector &p);
     void ManageWeights(const double & factor);
@@ -82,7 +82,8 @@ namespace PHASIC {
   public:
 
     //constructor
-    Phase_Space_Handler(Process_Integrator *,double error=-1.);
+    Phase_Space_Handler(Process_Integrator *,double error,
+                        const std::string eobs,const std::string efunc);
 
     //destructor
     ~Phase_Space_Handler();
@@ -113,7 +114,6 @@ namespace PHASIC {
     }
 
     void   AddPoint(const double xs);
-    double EnhanceFunction();
 
     static void TestPoint(ATOOLS::Vec4D *const p,const Process_Info *info,
                           const ATOOLS::Mass_Selector* ms,const int mode=0);
@@ -146,14 +146,9 @@ namespace PHASIC {
     inline void EndOptimize() {
       m_pspoint.EndOptimize(m_error);
     }
-    inline void SetEnhanceObservable(const std::string &enhanceobs) {
-      m_psenhance.SetObservable(enhanceobs,p_process->Process());
-    }
-    inline void SetEnhanceFunction(const std::string &enhancefunc) {
-      m_psenhance.SetFunction(enhancefunc,p_process->Process());
-    }
-    inline void SetEnhance(const double& enhance)
+    inline void SetEnhanceWeight(const double& enhance)
     {
+      m_enhanceweight = enhance;
       m_psenhance.SetFactor(enhance);
     }
     inline void SetOSMass(const double &osmass) { m_pspoint.SetOSMass(osmass); }
@@ -174,7 +169,7 @@ namespace PHASIC {
     inline Process_Integrator *                  Process() const { return p_process; }
     inline Process_Integrator *            Active()  const { return p_active;  }
     inline const double &                 PSWeight() const { return m_psweight; }
-    inline const double &                  Enhance() const { return m_enhance;  }
+    inline const double &            EnhanceWeight() const { return m_enhanceweight;  }
     inline const double &                    Error() const { return m_error; }
     inline const double &                 AbsError() const { return m_abserror; }
     inline Multi_Channel *          BeamIntegrator() const { return m_pspoint.BeamIntegrator(); }

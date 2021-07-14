@@ -33,13 +33,14 @@ using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
-Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
+Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
+                                         const std::string eobs,
+                                         const std::string efunc):
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
   p_integrator(NULL), 
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()),
   p_flavours(proc->Process()->Flavours()),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin+m_nout),
-  m_enhance(1.0),
   m_initialized(false),
   m_sintegrator(0), m_killedpoints(0),
   m_printpspoint(false)
@@ -53,7 +54,10 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   if (CreateIntegrators()) {
     m_pspoint.Init(this);
     m_psenhance.Init(this);
-    m_enhance = m_psenhance.Factor(p_process->Process(),p_process->TotalXS());
+    m_psenhance.SetObservable(eobs,p_process->Process());
+    m_psenhance.SetFunction(efunc,p_process->Process());
+    m_enhanceweight = m_psenhance.Factor(p_process->Process(),
+                                         p_process->TotalXS());
   }
   else THROW(fatal_error,"Cretion of integrators failed.")
 }
@@ -102,12 +106,12 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
     m_wgtmap  *= m_psweight;
-    m_wgtmap  *= (m_enhance = m_psenhance.Factor(p_process->Process(),
-                                                 p_process->TotalXS()));
+    m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->Process(),
+                                                       p_process->TotalXS()));
     m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
     p_lab      = process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
-    ManageWeights(m_psweight*m_enhance*m_ISsymmetryfactor);
+    ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
   }
   // trigger failed, return 0.
   else ManageWeights(0.0);
@@ -125,9 +129,9 @@ void Phase_Space_Handler::PrintIntermediate() {
 	   <<p_active->Process()->Name()
 	   <<"  ME = "<<m_wgtmap.Nominal()
            <<" ,  PS = "<<m_psweight
-           <<" ,  enh = "<<m_enhance
+           <<" ,  enh = "<<m_enhanceweight
            <<"  ->  "
-	   <<m_wgtmap.Nominal()*m_psweight*m_enhance<<std::endl;
+	   <<m_wgtmap.Nominal()*m_psweight*m_enhanceweight<<std::endl;
   if (p_active->Process()->GetSubevtList()) {
     NLO_subevtlist * subs(p_active->Process()->GetSubevtList());
     for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i])<<"\n";
@@ -197,7 +201,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
   auto res =
-      new Weight_Info(wgtmap, dxs, m_enhance, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
+      new Weight_Info(wgtmap, dxs, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
   return res;
 }
 
@@ -207,9 +211,8 @@ void Phase_Space_Handler::AddPoint(const double _value)
   double value(_value);
   if (p_process->TotalXS()==0.0) value=(_value?1.0:0.0);
   if (value!=0.0) {
-    double enhancexs = m_psenhance();
-    m_pspoint.AddPoint(value*enhancexs);
-    m_psenhance.AddPoint(value*enhancexs,p_process->Process());
+    m_pspoint.AddPoint(value);
+    m_psenhance.AddPoint(value,p_process->Process());
   }
 }
 

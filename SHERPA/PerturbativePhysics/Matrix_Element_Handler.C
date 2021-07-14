@@ -289,7 +289,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // calculate weight factor and/or apply unweighting and weight threshold
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
-  double enhance = p_proc->Integrator()->PSHandler()->Enhance();
+  double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
   if (m_eventmode!=0) {
     const auto max = p_proc->Integrator()->Max();

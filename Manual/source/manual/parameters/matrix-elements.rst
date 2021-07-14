@@ -6,7 +6,7 @@ Matrix elements
 ***************
 
 
-The following parameters are used to steer the matrix element setup:
+The following parameters are used to steer the matrix element calculation setup. To learn how to specify the hard scattering process and further process-specific options in its calculation, please also refer to :ref:`Processes`.
 
 .. contents::
    :local:

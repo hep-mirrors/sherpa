@@ -403,7 +403,7 @@ void Process_Integrator::SetRSEnhanceFactor(const double &rsfac)
 
 void Process_Integrator::AddPoint(const double value) 
 {
-  double enhance = p_pshandler->Enhance();
+  double enhance = p_pshandler->EnhanceWeight();
 #ifdef USING__MPI
   m_msn++;
   m_mssum    += value/enhance;

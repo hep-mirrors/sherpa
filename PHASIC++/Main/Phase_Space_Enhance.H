@@ -14,6 +14,7 @@ namespace PHASIC {
   private:
     Enhance_Observable_Base * p_obs, * p_func;
     ATOOLS::Histogram       * p_histo, * p_histo_current;    
+    double                    m_func_min, m_func_max;
     int                       m_xs;
     double                    m_factor;
     ATOOLS::Vec4D           * p_moms;
