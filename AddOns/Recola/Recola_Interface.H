@@ -21,6 +21,7 @@ namespace Recola {
     static bool         s_exit_on_error;
     static double       s_light_fermion_threshold;
     static size_t       s_recolaProcIndex;
+    static size_t       s_use_iop_in_ewapprox;
     static bool         s_processesGenerated;
     static size_t       s_default_flav;
     static double       s_default_alphaqcd;
@@ -76,6 +77,7 @@ namespace Recola {
     static void EvaluateBorn(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres);
 
     static bool   ExitOnError()              { return s_exit_on_error; }
+    static size_t UseIopInEWapprox()         { return s_use_iop_in_ewapprox; }
     static size_t GetFixedFlav()             { return s_fixed_flav; }
     static size_t GetDefaultFlav()           { return s_default_flav; }
     static void   SetDefaultFlav(int nlight) { s_default_flav=nlight; }

@@ -27,6 +27,7 @@ namespace Recola {
   bool           Recola_Interface::s_ignore_model = false;
   bool           Recola_Interface::s_exit_on_error= true;
   double         Recola_Interface::s_light_fermion_threshold=0.1;
+  size_t         Recola_Interface::s_use_iop_in_ewapprox = 0;
   size_t         Recola_Interface::s_recolaProcIndex = 0;
   bool           Recola_Interface::s_processesGenerated = false;
   size_t         Recola_Interface::s_getPDF_default = 0;
@@ -158,6 +159,7 @@ namespace Recola {
     s["RECOLA_COMPUTE_POLES"].SetDefault(0);
     s["RECOLA_COLLIER_CACHE"].SetDefault(-1);
     s["RECOLA_VMODE"].SetDefault(0);
+    s["RECOLA_USE_I_IN_EWAPPROX"].SetDefault(0);
     
     // find RECOLA installation prefix with several overwrite options
     char *var=NULL;
@@ -207,6 +209,7 @@ namespace Recola {
     string recolaOutput = s["RECOLA_OUTPUT"].Get<std::string>();
     set_output_file_rcl(recolaOutput.c_str());
     s_vmode = s["RECOLA_VMODE"].Get<int>();
+    s_use_iop_in_ewapprox = s["RECOLA_USE_I_IN_EWAPPROX"].Get<size_t>();
     msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
 
     
@@ -531,7 +534,8 @@ namespace Recola {
     msg_Out()<<"Process generation in Recola completed..." << endl;
   }
 
-  void Recola_Interface::EvaluateLoop(int id, const Vec4D_Vector& momenta, double& bornres, METOOLS::DivArrD& virt,
+  void Recola_Interface::EvaluateLoop(int id, const Vec4D_Vector& momenta, double& bornres, 
+                                      METOOLS::DivArrD& virt,
                                       std::vector<double> &asscontribs)
   {
     vector<double> pp(4*momenta.size());
