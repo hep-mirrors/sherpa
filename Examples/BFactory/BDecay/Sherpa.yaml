@@ -10,8 +10,8 @@ DECAYER: 511
 
 # initialise rest for Sherpa not to complain
 # model parameters
-ME_GENERATORS: Internal
 SCALES: VAR{sqr(91.2)}
 
 PROCESSES:
-- 11 -11 -> 13 -13: {}
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
