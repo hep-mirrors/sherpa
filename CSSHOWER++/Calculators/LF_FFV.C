@@ -231,29 +231,44 @@ double LF_FFV_FF::operator()
    const double scale,const double Q2)
 {
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
-  double mi2   = sqr(p_ms->Mass(m_flavs[1]));
-  double mui2  = mi2/Q2;
+  double mui2  = sqr(p_ms->Mass(m_flavs[1]))/Q2;
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
+  double SF    = 0., J = 0., longpol = (1.-z)/2.;
   //the massless case
-  double massless = ( 2./(1.-z+z*y) - (1.+z) );
   if (muij2==0. && mui2==0. && muk2==0.) {
-    double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
-    return value * JFF(y,0.0,0.0,0.0,0.0);
+    SF = ( 2./(1.-z+z*y) - (1.+z) );
+    J  = JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
     //the massive case
-    double vtijk = Lambda(1.,muij2,muk2), vijk = sqr(2.*muk2+(1.-mui2-muk2)*(1.-y))-4.*muk2;
-    if (vtijk<0.0 || vijk<0.0) return 0.0;
+    double vtijk = Lambda(1.,muij2,muk2);
+    double vijk  = sqr(2.*muk2+(1.-mui2-muk2)*(1.-y))-4.*muk2;
+    if (vtijk<0. || vijk<0.) return 0.;
     vtijk = sqrt(vtijk)/(1.-muij2-muk2);
     vijk  = sqrt(vijk)/((1.-mui2-muk2)*(1.-y));
-    double pipj  = Q2*(1.0-mui2-muk2)*y/2.0;
-    double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
-    massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2));
-    double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
-    return value * JFF(y,mui2,0.0,muk2,muij2);
+    // old expression commented out ////////////////////////
+    //double mupipj = 1./2. * (1.0-mui2-muk2)*y;
+    //SF    = ( (2./(1.-z+z*y) - vtijk/vijk*(1.+z + mui2/mupipj)) /
+    //	      ((1.-mui2-muk2)+1./y*(mui2-muij2)) );
+    /////////////////////////////////////////////////////////
+    // new stuff below //////////////////////////////////////
+    double vjki  = 1.-( 4.*mui2*((1.-mui2-muk2)*(1.-y)*(1.-z)+muk2) /
+    			sqr((1.-mui2-muk2)*(y+(1.-y)*z)) );
+    if (vjki<0.) return 0.;
+    vjki = sqrt(vjki);
+    double mupipj = 1./2. * (1.0-mui2-muk2)*y;
+    double mupjpk = 1./2. * (1.0-mui2-muk2)*(1.-y)*(1.-z);
+    // comment: I am not sure about the overall denominator
+    //          where does it come from?
+    SF = ( (2./(1.-z+z*y) - vtijk/vijk * (1.+z) -
+    	    vtijk/vijk * mui2/mupipj * mupjpk/(mupipj+mupjpk) -
+    	    vtijk/vjki * muk2/mupjpk * mupipj/(mupipj+mupjpk) ) /
+    	   ((1.-mui2-muk2)+1./y*(mui2-muij2)) );
+    J = JFF(y,mui2,0.0,muk2,muij2);
   } 
+  double value = (2.0 * p_cf->Coupling(scale,0) * SF +
+		  p_cf->Coupling(scale,1) * longpol);
+  return value * J;
 }
 
 double LF_FFV_FF::OverIntegrated
