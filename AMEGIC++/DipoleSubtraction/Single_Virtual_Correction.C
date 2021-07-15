@@ -169,6 +169,7 @@ void Single_Virtual_Correction::SelectLoopProcess()
     p_loopme->SetCouplings(m_cpls);
     p_loopme->SetNorm(m_Norm);
     p_loopme->SetSubType(m_stype);
+    p_loopme->SetPoleCheck(m_checkpoles);
     m_drmode=p_loopme->DRMode();
   }
 }
@@ -932,6 +933,10 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D_Vector 
   if (p_loopme->Mode()==0) {
     p1*=cplfac*m_lastb;
     p2*=cplfac*m_lastb;
+  }
+  else {
+    p1*=cplfac;
+    p2*=cplfac;
   }
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);

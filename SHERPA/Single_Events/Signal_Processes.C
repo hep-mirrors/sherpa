@@ -149,7 +149,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   }
   for (unsigned int i=proc->NIn();
        i<proc->NIn()+proc->NOut();i++) {
-    particle = new Particle(0,proc->Flavours()[i],proc->Momenta()[i]);
+    particle = new Particle(0,proc->Flavours()[i],
+			    proc->Integrator()->Momenta()[i]);
     particle->SetNumber(0);
     for (size_t j(0);j<decs.size();++j)
       if (decs[j]->m_id&(1<<i)) particle->SetMEId(1<<i);

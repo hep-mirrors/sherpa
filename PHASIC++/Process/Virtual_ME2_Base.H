@@ -35,6 +35,7 @@ namespace PHASIC {
     // themselves but need it for the renormalization scale dependence
     virtual void Calc(const ATOOLS::Vec4D_Vector& momenta,
 		      const double& born2) { return Calc(momenta); }
+    virtual void SetPoleCheck(const int check=0);
 
     virtual void Calc(const ATOOLS::Vec4D_Vector& momenta)=0;
     

@@ -908,6 +908,8 @@ Complex Amplitude_Handler::Zvalue(int ihel)
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
   msg_Debugging()<<"2: #graphs: "<<graphs.size()<<std::endl;
+  double gsfac(p_aqcd?sqrt(p_aqcd->Factor()):1.0);
+  double gwfac(p_aqed?sqrt(p_aqed->Factor()):1.0);
   for (size_t i=0;i<graphs.size();i++) {
     if (m_aon.size() && !m_aon[i]) continue;
     double cplfac(1.0);
@@ -915,16 +917,16 @@ Complex Amplitude_Handler::Zvalue(int ihel)
     if (p_aqcd && order.size()>0 && order[0]) {
 #ifdef DEBUG__BG
       msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<order[0]
-		     <<" = "<<pow(p_aqcd->Factor(),order[0]/2.0)<<"\n";
+		     <<" = "<<intpow(gsfac,order[0])<<"\n";
 #endif
-      cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
-    }  
+      cplfac *= intpow(gsfac,order[0]);
+    }
     if (p_aqed && order.size()>1 && order[1]) {
 #ifdef DEBUG__BG
       msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<order[1]
-		     <<" = "<<pow(p_aqed->Factor(),order[1]/2.0)<<"\n";
+		     <<" = "<<intpow(gwfac,order[1])<<"\n";
 #endif
-      cplfac *= pow(p_aqed->Factor(),order[1]/2.0); 
+      cplfac *= intpow(gwfac,order[1]);
     }
 #ifdef DEBUG__BG
     msg_Debugging()<<"  graph "<<i<<" -> "<<cplfac<<"\n";

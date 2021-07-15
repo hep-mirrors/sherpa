@@ -6,10 +6,57 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Math/Permutation.H"
 #include <cassert>
 
 namespace AMEGIC {
+  class Permutation {
+  private:
+    int   m_n;
+    int** p_an;
+    int   *p_per,*p_snum;
+  public:
+    Permutation(int n) : m_n(n)
+    {
+      p_per = new int[m_n];
+      p_snum = new int[m_n];
+      p_an  = new int*[m_n];
+      for (int i=0;i<m_n;i++) p_an[i]= new int[m_n];
+      for (int i=0;i<m_n;i++) p_an[0][i]=i;
+    }
+    ~Permutation()
+    {
+      for (int i=0;i<m_n;i++) delete[] p_an[i];
+      delete[] p_an;
+      delete[] p_snum;
+      delete[] p_per;
+    }
+    int MaxNumber()
+    {
+      int pn=1;
+      for(int i=2;i<=m_n;i++) pn*=i;
+      return pn;
+    }
+    int *Get(int n)
+    {
+      int x = MaxNumber();
+      for(int i=m_n;i>0;i--) {
+	n = n%x;
+	x/=i;
+	p_snum[m_n-i]=n/x;
+      }
+      p_per[0]=p_snum[0];
+      for(int i=1;i<m_n;i++) {
+	int j=0; int k=0;
+	while (j<m_n-i) {
+	  if (p_an[i-1][k]==p_per[i-1]) k++;
+	  p_an[i][j]=p_an[i-1][k];
+	  j++;k++;
+	}
+	p_per[i]=p_an[i][p_snum[i]];
+      }
+      return p_per;
+    }
+  };
   class Compare_Pre_Amplitudes {
   public:
     int operator()(const AMEGIC::Pre_Amplitude & a, const AMEGIC::Pre_Amplitude & b) {

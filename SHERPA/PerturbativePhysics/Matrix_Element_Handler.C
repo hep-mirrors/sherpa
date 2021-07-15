@@ -49,7 +49,7 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
 
   s["COLOUR_SCHEME"]
-    .SetDefault(1)
+    .SetDefault(0)
     .SetReplacementList(cls::ColorSchemeTags());
 
   s["HELICITY_SCHEME"]
@@ -508,6 +508,9 @@ int Matrix_Element_Handler::InitializeProcesses(
   p_beam=beam;
   p_isr=isr;
   if (!m_gens.InitializeGenerators(p_model,beam,isr)) return false;
+  Settings& s = Settings::GetMainSettings();
+  int initonly=s["INIT_ONLY"].Get<int>();
+  if (initonly&4) return 1;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
@@ -566,7 +569,6 @@ int Matrix_Element_Handler::InitializeProcesses(
 void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();
-
   // init processes
   msg_Info()<<METHOD<<"(): Looking for processes "
 	    <<"["<<m_gens.size()<<" generators, "
