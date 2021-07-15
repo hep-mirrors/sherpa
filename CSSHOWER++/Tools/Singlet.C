@@ -119,6 +119,7 @@ int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2)
   if (part2->GetNext()) part2->GetNext()->GetSing()->AddParton(part2->GetNext());
 
   plit++;
+  if (mother==p_split) p_split=part1;
   delete mother; 
   plit = erase(plit);
   if (flav.StrongCharge()==8 && 
@@ -344,7 +345,10 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
       daughter1->SetFlow(2,0);
     }
   }
-  daughter1->UpdateColours(daughter1->GetFlow(1),daughter1->GetFlow(2));
+  int newr(daughter1->GetFlow(1)), newa(daughter1->GetFlow(2));
+  daughter1->SetFlow(1,mother->GetFlow(1));
+  daughter1->SetFlow(2,mother->GetFlow(2));
+  daughter1->UpdateColours(newr,newa);
   daughter2->UpdateColours(daughter2->GetFlow(1),daughter2->GetFlow(2));
   for (iterator pit(begin());pit!=end();++pit)
     if (*pit==daughter1) *pit=mother;
