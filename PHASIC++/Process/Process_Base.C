@@ -179,6 +179,11 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
   }
   if (mode&4) SetUseBIWeight(false);
   if (mode&128) while (!this->GeneratePoint()); 
+  else {
+    std::shared_ptr<Color_Integrator> ci=
+      Integrator()->ColorIntegrator();
+    if (ci!=nullptr) ci->SetPoint(&ampl);
+  }
   auto wgtmap = this->Differential(p, varmode);
   wgtmap/=m_issymfac;
   NLO_subevtlist *subs(this->GetSubevtList());

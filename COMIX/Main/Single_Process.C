@@ -133,13 +133,12 @@ bool COMIX::Single_Process::Initialize
     else THROW(fatal_error,"Cannot do NLO QCD+EW");
     msg_Debugging()<<"Subtraction type: "<<(sbt::subtype)(stype+1)<<"\n";
   }
+  m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
-  if (m_pinfo.m_fi.NLOType()&nlo_type::vsub) {
-    smode=2;
+  else {
+    if (m_pinfo.m_fi.NLOType()&nlo_type::vsub) smode|=2;
     if (m_pinfo.m_fi.NLOType()&nlo_type::born) smode|=4;
-  }
-  if (m_pinfo.m_fi.NLOType()&nlo_type::loop) {
-    smode|=16;
+    if (m_pinfo.m_fi.NLOType()&nlo_type::loop) smode|=16;
     if (m_checkpoles) smode|=8;
   }
   msg_Debugging()<<"Subtraction Mode: "<<smode<<std::endl;
@@ -213,7 +212,6 @@ bool COMIX::Single_Process::Initialize
       p_loop->SetSubType((sbt::subtype)(stype+1));
       m_mewgtinfo.m_type|=mewgttype::VI;
       int helpi;
-      m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
     }
     p_bg->SetLoopME(p_loop);
     p_bg->FillCombinations(m_ccombs,m_cflavs);

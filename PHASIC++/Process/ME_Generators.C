@@ -12,7 +12,7 @@ using namespace PHASIC;
 
 ME_Generators::ME_Generators()
 {
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process");
+  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   Settings& s = Settings::GetMainSettings();
   std::vector<std::string> megens{ s["ME_GENERATORS"]
     .SetDefault({"Comix", "Amegic", "Internal"})

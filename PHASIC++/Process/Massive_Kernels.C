@@ -698,16 +698,18 @@ double Massive_Kernels::Kb2(int type)
 
 double Massive_Kernels::Kb3(int type,double x)
 {
+  double me(0.0);
+  if (m_subtype==2) me=2.*log((2.-x)/(1.-x));
   if (m_stype==sbt::qed && type==4) return 0.;
   switch(type) {
   case 1:
-    return (-(1.+x)*log((1.-x)/x)+(1.-x));
+    return (-(1.+x)*log((1.-x)/x)+(1.-x)+2.*me);
   case 2:
     return m_CFbyCA*((1.+sqr(1.-x))/x*log((1.-x)/x)+x);
   case 3:
     return m_TRbyCF*((x*x+sqr(1.-x))*log((1.-x)/x)+2.*x*(1.-x));
   case 4:
-    return 2.*(((1.-x)/x-1.+x*(1.-x))*log((1.-x)/x));
+    return 2.*(((1.-x)/x-1.+x*(1.-x))*log((1.-x)/x)+me);
   }
   return 0.;
 }
@@ -829,20 +831,20 @@ double Massive_Kernels::Kt3(int type,double x)
   case 1:
     ax*=(1.+x*x)/(1.-x);
     if (m_subtype==1) ax+=-(1.-x);
+    if (m_subtype==2) ax+=2.-(1.-x)-4.*log((2.-x)/(1.-x));
     return -(1.+x)*log(1.-x)+ax;
   case 2:
     ax*=(1.+sqr(1.-x))/x;
-    if (m_subtype==1) ax+=(1.-x)+2.*log(x)/x;
-    if (m_subtype==2) ax+=2.*log(x)/x;
+    if (m_subtype&3) ax+=(1.-x)+2.*log(x)/x;
     return m_CFbyCA*((1.+sqr(1.-x))/x*log(1.-x)+ax);
   case 3:
     ax*=(1.-2.*x*(1.-x));
-    if (m_subtype==1) ax+=-(1.-x)*(1.-3.*x);
+    if (m_subtype&3) ax+=-(1.-x)*(1.-3.*x);
     return m_TRbyCF*((x*x+sqr(1.-x))*log(1.-x)+ax);
   case 4:
     ax*=x/(1.-x)+(1.-x)/x+x*(1.-x);
     if (m_subtype==1) ax+=0.5*(1.-x*(4.-3.*x)+2.*log(x)/x);
-    if (m_subtype==2) ax+=log(x)/x;
+    if (m_subtype==2) ax+=0.5*(3.-x*(4.-3.*x)+2.*log(x)/x-4.*log((2.-x)/(1.-x)));
     return 2.*((1.-x)/x-1.+x*(1.-x))*log(1.-x)+2.*ax;
   }
   return 0.;
@@ -966,6 +968,60 @@ double Massive_Kernels::t2(int type,int spin,double muq2)
   }
   }
   return aterm;
+}
+
+double Massive_Kernels::t2c(int type,int spin,double muq2,double saj)
+{
+  if (m_subtype==1) {
+    double gc=0.0, muq(sqrt(muq2));
+    switch(spin) {// FS parton, spectator must be massless
+    case 1:// muq is scaled quark mass
+      if (muq2==0.) gc+=-1./4.;
+      else gc+=-1./4.*(1.+muq2)/(1.-muq2)-muq2/(1.-muq2)*(1.+(2.+muq2)/(1.-muq2)*log(muq2)/2.);
+    case 2:// muq is irrelevant
+      gc+=1./36.-1./18.*m_TR*m_nf/m_CA;
+      for (size_t i(0);i<m_nmf;++i) {
+        double mui2=sqr(m_massflav[i])/saj, rho1=sqrt(1.-4.*mui2);
+        if (mui2>1.0) continue;
+        gc+=m_TR/m_CA*((rho1*(-1.-154.*mui2+64.*pow(mui2,3)-152.*sqr(mui2))+
+                        12.*mui2*log((1.-rho1)/(1.+rho1))*(-4.-17.*mui2+4.*sqr(mui2)))/(18.*sqr(1.-2.*mui2)));
+      }
+    }
+    switch(type) {// IS parton, must be massless
+    case 1:// muq is scaled spectator mass
+      if (muq2==0.) gc+=-1./4.;
+      else gc+=-(1.-muq)*(1.+3.*muq)/(4.*sqr(1.+muq));
+    case 2:// muq is scaled spectator mass
+      if (muq2==0.) {
+        gc+=1./36.-1./18.*m_TR*m_nf/m_CA;
+        for (size_t i(0);i<m_nmf;++i) {
+          double mui2=sqr(m_massflav[i])/saj;
+          if (mui2>1.0) continue;
+          double rho1=sqrt(1.-4.*mui2);
+          gc+=m_TR/m_CA*((rho1*(-1.-154.*mui2+64.*pow(mui2,3)-152.*sqr(mui2))+
+                          12.*mui2*log((1.-rho1)/(1.+rho1))*(-4.-17.*mui2+4.*sqr(mui2)))/(18.*sqr(1.-2.*mui2)));
+        }
+      }
+      else {
+        gc+=(1./2.-pow(muq/(1.+muq),3))/18.
+          +muq2/(3.*(1.-muq2))*log(2.*muq/(1.+muq))+muq2/(2.*pow(1.+muq,3));
+        gc+=m_nf*m_TR/m_CA*(-1./18.-muq2*(9.-muq)/(9.*pow(1.+muq,3))
+                            -2.*muq2/(3.*(1.-muq2))*log(2.*muq/(1.+muq)));
+        for (size_t i(0);i<m_nmf;++i) {
+          double mui2=sqr(m_massflav[i])/saj;
+          if (mui2>1.0) continue;
+          double rho1=sqrt(1.-4.*sqr(m_massflav[i]/(sqrt(saj*(1.+muq2))-sqrt(saj*muq))));
+          double rho2=sqrt(1.-4.*sqr(m_massflav[i])/saj);
+	  gc+=m_TR/m_CA*(-(((3.-2.*mui2)/(3.*(1.-muq2))-(3+2*mui2-(2*mui2*(9+5*mui2))/(1-2*mui2-muq2))/(3.*(1-2*mui2-muq2)))*
+                           log((1-rho1)/(1+rho1)))-(2*muq2*((-8*mui2*rho1)/(1-muq2)-log((1-rho1)/(1+rho1))+log((-rho1+rho2)/(rho1+rho2))*pow(rho2,3)))/(3.*(1-muq2))-
+                         (rho1*(65./6.-15*mui2+(8*mui2)/(3.*(1-muq))-4*muq+muq2/6.-(2*(36-148*mui2-26*muq+77*mui2*muq+59*sqr(mui2)))/(3.*(1-2*mui2-muq2))+
+                                (4*(-49*mui2+10*(1-muq)+39*mui2*muq-30*pow(mui2,3)+127*sqr(mui2)-77*muq*sqr(mui2)))/(3.*sqr(1-2*mui2-muq2))))/(3.*(1-muq2)));
+        }
+      }
+    }
+    return gc;
+  }
+  return 0.;
 }
 
 double Massive_Kernels::t3(int type,int spin,double muq2,double x)

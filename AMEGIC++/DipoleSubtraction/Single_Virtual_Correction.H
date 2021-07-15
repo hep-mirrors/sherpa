@@ -48,7 +48,7 @@ namespace AMEGIC {
     size_t m_pspisrecscheme, m_pspfsrecscheme;
     size_t m_pspissplscheme, m_pspfssplscheme;
     double m_checkthreshold;
-    int    m_bvimode, m_user_bvimode, m_epsmode, m_drmode, m_checkloopmap;
+    int    m_bvimode, m_user_bvimode, m_epsmode, m_drmode, m_checkloopmap, m_calcv;
 
     double m_bsum, m_vsum, m_isum, m_n;
     double m_mbsum, m_mvsum, m_misum, m_mn;
@@ -189,6 +189,8 @@ namespace AMEGIC {
     bool           AllowAsSpecInPFF(const size_t& i,const size_t& k);
 
     void           PrintDSij();
+
+    inline void SetCalcV(const int calcv) { m_calcv=calcv; }
   };
 }
 

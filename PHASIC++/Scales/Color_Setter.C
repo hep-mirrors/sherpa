@@ -36,6 +36,42 @@ Color_Setter::~Color_Setter()
   m_pmap.clear();
 }
 
+Process_Base *Color_Setter::GetProcess(Cluster_Amplitude *const ampl)
+{
+  StringProcess_Map *pm(m_pmap[nlo_type::lo]);
+  std::string name(Process_Base::GenerateName(ampl));
+  StringProcess_Map::const_iterator pit(pm->find(name));
+  if (pit!=pm->end()) return pit->second;
+  return NULL;
+}
+
+bool Color_Setter::Initialize(Cluster_Amplitude *const ampl)
+{
+  Process_Info pi;
+  pi.m_megenerator="Comix";
+  for (size_t i(0);i<ampl->NIn();++i) {
+    Flavour fl(ampl->Leg(i)->Flav().Bar());
+    if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
+    pi.m_ii.m_ps.push_back(Subprocess_Info(fl,"",""));
+  }
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    Flavour fl(ampl->Leg(i)->Flav());
+    if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
+    pi.m_fi.m_ps.push_back(Subprocess_Info(fl,"",""));
+  }
+  PHASIC::Process_Base *proc=ampl->Proc<Process_Base>()->
+    Generator()->Generators()->InitializeProcess(pi,false);
+  m_procs.push_back(proc);
+  proc->SetSelector(Selector_Key{});
+  proc->SetScale
+    (Scale_Setter_Arguments
+     (MODEL::s_model,"VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}","Alpha_QCD 1"));
+  proc->SetKFactor(KFactor_Setter_Arguments("None"));
+  proc->Get<COMIX::Process_Base>()->Tests();
+  proc->FillProcessMap(&m_pmap);
+  return true;
+}
+
 bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
 {
   size_t trials(0), vc(1);
@@ -117,6 +153,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
 bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
 {
   std::shared_ptr<Color_Integrator> colint(p_xs->Integrator()->ColorIntegrator());
+  colint->SetPoint(ampl);
   colint->GenerateOrders();
   const Idx_Matrix &orders(colint->Orders());
   std::vector<double> psum(orders.size());
@@ -142,7 +179,7 @@ bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
 	cl->SetCol(ColorID(0,0));
       }
     }
-    msg_Debugging()<<"odering "<<orders[i]<<"\n";
+    msg_Debugging()<<"ordering "<<orders[i]<<"\n";
     msg_Debugging()<<*ampl<<"\n";
     csum += psum[i] = dabs(static_cast<double>(
         p_xs->Differential(*ampl, Variations_Mode::nominal_only, 1 | 4)));
@@ -180,60 +217,9 @@ bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
 
 bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
 {
-  StringProcess_Map *pm(m_pmap[nlo_type::lo]);
   Process_Base::SortFlavours(ampl);
-  std::string name(Process_Base::GenerateName(ampl));
-  StringProcess_Map::const_iterator pit(pm->find(name));
-  p_xs=NULL;
-  if (pit!=pm->end() && pit->second && pit->second->
-      Integrator()->ColorIntegrator()!=NULL) p_xs=pit->second;
-  if (p_xs==NULL) {
-    if (pit!=pm->end()) return false;
-    {
-      My_In_File::OpenDB
-	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
-      My_In_File::OpenDB
-	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
-      Process_Info pi;
-      pi.m_megenerator="Comix";
-      for (size_t i(0);i<ampl->NIn();++i) {
-	Flavour fl(ampl->Leg(i)->Flav().Bar());
-	if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
-	pi.m_ii.m_ps.push_back(Subprocess_Info(fl,"",""));
-      }
-      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-	Flavour fl(ampl->Leg(i)->Flav());
-	if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
-	pi.m_fi.m_ps.push_back(Subprocess_Info(fl,"",""));
-      }
-      PHASIC::Process_Base *proc=
-	ampl->Proc<Process_Base>()->
-	Generator()->Generators()->InitializeProcess(pi,false);
-      if (proc==NULL) {
-	My_In_File::CloseDB
-	  (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
-	My_In_File::CloseDB
-	  (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
-	(*pm)[name]=NULL;
-	return false;
-      }
-      m_procs.push_back(proc);
-      proc->SetSelector(Selector_Key{});
-      proc->SetScale
-	(Scale_Setter_Arguments
-	 (MODEL::s_model,"VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}","Alpha_QCD 1"));
-      proc->SetKFactor(KFactor_Setter_Arguments("None"));
-      proc->Get<COMIX::Process_Base>()->Tests();
-      proc->FillProcessMap(&m_pmap);
-      My_In_File::CloseDB
-	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
-      My_In_File::CloseDB
-	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
-      if ((pit=pm->find(name))==pm->end()) THROW(fatal_error,"Internal error");
-      p_xs=pit->second;
-    }
-    if (p_xs==NULL) return false;
-  }
+  p_xs=GetProcess(ampl);
+  if (p_xs==NULL) return false;
   msg_Debugging()<<*ampl<<"\n";
   auto colint(p_xs->Integrator()->ColorIntegrator());
   PHASIC::Int_Vector ci(colint->I()), cj(colint->J());

@@ -166,7 +166,6 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,
 	m_iresult = p_partner->Result()*m_sfactor;
 	m_maxcpl=p_partner->MaxOrders();
 	m_mincpl=p_partner->MinOrders();
-	m_ntchanmin=p_partner->NTchanMin();
 	m_stype=p_partner->GetSubType();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 
@@ -274,14 +273,13 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   else p_BS = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);
   p_BS->Setk0(s_gauge);
   p_shand = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
-  int ntchanmin(m_ntchanmin);
   const bool cvp{
     amegicsettings["CUT_MASSIVE_VECTOR_PROPAGATORS"].Get<bool>() };
   p_ampl = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,
-                                 model,top,m_maxcpl,m_mincpl,ntchanmin,&m_cpls,
+                                 model,top,m_maxcpl,m_mincpl,
+				 m_pinfo.m_ntchan,m_pinfo.m_mtchan,&m_cpls,
                                  p_BS,p_shand,m_print_graphs,!directload,cvp,
                                  m_ptypename+"/"+m_libname);
-  m_ntchanmin=ntchanmin;
 
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<METHOD<<"(): No diagrams for "<<m_name<<"."<<std::endl;
@@ -462,12 +460,11 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
 
 
-  int ntchanmin(m_ntchanmin);
   const bool cvp{
     amegicsettings["CUT_MASSIVE_VECTOR_PROPAGATORS"].Get<bool>() };
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,
+				   m_pinfo.m_ntchan,m_pinfo.m_mtchan,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
-  m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<METHOD<<"(): No diagrams for "<<m_name<<"."<<endl;
     return 0;
@@ -1179,7 +1176,6 @@ void Single_LOProcess::Minimize()
 
   m_maxcpl    = p_partner->MaxOrders();
   m_mincpl    = p_partner->MinOrders();
-  m_ntchanmin = p_partner->NTchanMin();
 }
 
 bool Single_LOProcess::CheckIQCDMappability() const

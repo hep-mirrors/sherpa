@@ -27,6 +27,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   double k0sqi{ s["CSS_IS_PT2MIN"].Get<double>() };
   double fs_as_fac{ s["CSS_FS_AS_FAC"].Get<double>() };
   double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
+  double is_pdf_fac{ s["CSS_PDF_FAC"].Get<double>() };
   const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
   m_use_bbw           = s["CSS_USE_BBW"].Get<int>();
   m_reweight          = s["CSS_REWEIGHT"].Get<bool>();
@@ -52,6 +53,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_sudakov.SetShower(this);
   m_sudakov.SetMassThreshold(mth);
   m_sudakov.SetScaleScheme(scs);
+  m_sudakov.SetFacScaleFactor(is_pdf_fac);
   std::pair<double, double> pdfmin;
   pdfmin.first = s["CSS_PDF_MIN"].Get<double>();
   pdfmin.second = s["CSS_PDF_MIN_X"].Get<double>();

@@ -21,6 +21,8 @@ namespace PHASIC {
     double m_mur2, m_accu;
     int m_mode, m_drmode, m_colmode;
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
+    const std::vector<std::vector<double> > *p_dsij;
+    const std::vector<size_t> *p_plist;
     std::vector<double> m_asscontribs;
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
@@ -61,6 +63,9 @@ namespace PHASIC {
     inline int Mode() const    { return m_mode;    }
     inline int DRMode() const  { return m_drmode;  }
     inline int ColMode() const { return m_colmode; }
+
+    inline void SetDSij(const std::vector<std::vector<double> > *const dsij) { p_dsij=dsij; }
+    inline void SetPList(const std::vector<size_t> *const plist) { p_plist=plist; }
 
     inline std::string Name() { return m_name; }
 

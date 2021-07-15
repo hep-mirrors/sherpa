@@ -134,7 +134,9 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   SetParameter("verbose",ol_verbosity);
 
   // tell OL about the current model and check whether accepted
-  if (!s_ignore_model) SetParameter("model", model->Name());
+  std::string modelname(model->Name());
+  if (modelname=="SMEHC") modelname="HEFT";
+  if (!s_ignore_model) SetParameter("model", modelname);
 
   // Propagate model parameters to OpenLoops
   if(dynamic_cast<UFO::UFO_Model*>(model))
