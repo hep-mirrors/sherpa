@@ -177,6 +177,7 @@ double LF_VVV1_FF::operator()
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(1.-z+z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    massive *= 1./(1.-muk2);
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
@@ -233,6 +234,7 @@ double LF_VVV2_FF::operator()
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(z+y-z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    massive *= 1./(1.-muk2);
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
