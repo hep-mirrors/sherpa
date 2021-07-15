@@ -156,35 +156,25 @@ double LF_VVV1_FF::operator()
 {
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
   //the massless case
-  double SF = 0., J = 0.;
+  double massless = 2. * ( 1./(1.-z+z*y) -1. + z*(1.-z)/2.0 );
   if (muk2==0.) {
-    SF = 2./(1.-z+z*y) + z*(1.-z)-2.;
-    J  = JFF(y,0.0,0.0,0.0,0.0);
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless;
+    return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
     //the massive case
     double vijk = sqr(2.*muk2+(1.-muk2)*(1.-y))-4.*muk2;
-    if (vijk<0.0) return 0.;
+    if (vijk<0.0) return 0.0;
     vijk = sqrt(vijk)/((1.-muk2)*(1.-y));
-    // old expression commented out ////////////////////////
-    //double zm = 0.5*(1.- vijk), zp = 0.5*(1.+ vijk);
-    //SF = ( 2./(1.-z+z*y) +
-    //	   (z*(1.-z)-2. - (1.-s_kappa)*zp*zm)/vijk );
-    //SF = ( 2./(1.-z+z*y) +
-    //	   (z*(1.-z)-2. - (1.-s_kappa)*sqr(1-vijk*vijk)/4.)/vijk );    
-    /////////////////////////////////////////////////////////
-    // new stuff below //////////////////////////////////////
-    // Here's the problem:
-    // I do not see anything that resembles the mass terms
-    double vjki  = 1.;
-    double mupipj = 1./2. * (1.0-muk2)*y;
-    double mupjpk = 1./2. * (1.0-muk2)*(1.-y)*(1.-z);
-    SF = ( 2./(1.-z+z*y) +
-	   (z*(1.-z)-2. - (1.-s_kappa)/4.* sqr(1-vijk*vijk))/vijk );    
-    J = JFF(y,0.0,0.0,muk2,0.0);
+    double zm = 0.5*(1.- vijk);  
+    double zp = 0.5*(1.+ vijk);
+    double massive = 2. * ( 1./(1.-z+z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    double pipj  = Q2*(1.0-muk2)*y/2.0;
+    double pkpj  = Q2*(1.0-muk2)*(1.-y)*(1.-z)/2.0;
+    massive -= Q2*muk2/pkpj*pipj/(pipj+pkpj);
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive;
+    return value * JFF(y,0.0,0.0,muk2,0.0);
   }
-  double value = 2.0 * p_cf->Coupling(scale,0) * SF;
-  return value * J;
 }
 
 double LF_VVV1_FF::OverIntegrated
@@ -223,6 +213,9 @@ double LF_VVV2_FF::operator()
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(z+y-z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    double pipj  = Q2*(1.0-muk2)*y/2.0;
+    double pkpi  = Q2*(1.0-muk2)*(1.-y)*z/2.0;
+    massive -= Q2*muk2/pkpi*pipj/(pipj+pkpi);
     double value = 2.0 * p_cf->Coupling(scale,0) * massive;
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
