@@ -174,6 +174,8 @@ double LF_VVV1_FF::operator()
     //	   (z*(1.-z)-2. - (1.-s_kappa)*sqr(1-vijk*vijk)/4.)/vijk );    
     /////////////////////////////////////////////////////////
     // new stuff below //////////////////////////////////////
+    // Here's the problem:
+    // I do not see anything that resembles the mass terms
     double vjki  = 1.;
     double mupipj = 1./2. * (1.0-muk2)*y;
     double mupjpk = 1./2. * (1.0-muk2)*(1.-y)*(1.-z);

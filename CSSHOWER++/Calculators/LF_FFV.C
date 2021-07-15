@@ -258,8 +258,12 @@ double LF_FFV_FF::operator()
     vjki = sqrt(vjki);
     double mupipj = 1./2. * (1.0-mui2-muk2)*y;
     double mupjpk = 1./2. * (1.0-mui2-muk2)*(1.-y)*(1.-z);
-    // comment: I am not sure about the overall denominator
-    //          where does it come from?
+    double vjki  = 1.-( 4.*mui2*((1.-mui2-muk2)*(1.-y)*(1.-z)+muk2) /
+    			sqr((1.-mui2-muk2)*(y+(1.-y)*z)) );
+    if (vjki<0.) return 0.;
+    vjki = sqrt(vjki);
+    double mupipj = 1./2. * (1.0-mui2-muk2)*y;
+    double mupjpk = 1./2. * (1.0-mui2-muk2)*(1.-y)*(1.-z);
     SF = ( (2./(1.-z+z*y) - vtijk/vijk * (1.+z) -
     	    vtijk/vijk * mui2/mupipj * mupjpk/(mupipj+mupjpk) -
     	    vtijk/vjki * muk2/mupjpk * mupipj/(mupipj+mupjpk) ) /
