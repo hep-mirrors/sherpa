@@ -107,24 +107,24 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
   // generic parameter for non-perturbative transverse momentum
   m_parametermap[string("kT_0")]   =
-    s["KT_0"].SetDefault(0.95).Get<double>();
+    s["KT_0"].SetDefault(0.83).Get<double>();
   // gluon fragmentation
   m_parametermap[string("alphaG")] =
-    s["ALPHA_G"].SetDefault(1.86).Get<double>();
+    s["ALPHA_G"].SetDefault(0.87).Get<double>();
   // light quark fragmentation
   m_parametermap[string("alphaL")] =
-    s["ALPHA_L"].SetDefault(2.76).Get<double>();
+    s["ALPHA_L"].SetDefault(3.26).Get<double>();
   m_parametermap[string("betaL")]  =
-    s["BETA_L"].SetDefault(0.50).Get<double>();
+    s["BETA_L"].SetDefault(0.11).Get<double>();
   m_parametermap[string("gammaL")] =
-    s["GAMMA_L"].SetDefault(0.72).Get<double>();
+    s["GAMMA_L"].SetDefault(0.39).Get<double>();
   // di-quark fragmentation
   m_parametermap[string("alphaD")] =
-    s["ALPHA_D"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
+    s["ALPHA_D"].SetDefault(m_shower ? 3.26 : 3.26).Get<double>();
   m_parametermap[string("betaD")]  =
-    s["BETA_D"].SetDefault(0.25).Get<double>();
+    s["BETA_D"].SetDefault(0.11).Get<double>();
   m_parametermap[string("gammaD")] =
-    s["GAMMA_D"].SetDefault(0.50).Get<double>();
+    s["GAMMA_D"].SetDefault(0.39).Get<double>();
   // beam particle fragmentation
   m_parametermap[string("alphaB")] =
     s["ALPHA_B"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
@@ -134,9 +134,9 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["GAMMA_B"].SetDefault(0.50).Get<double>();
   // heavy quark fragmentation function
   m_parametermap[string("alphaH")] =
-    s["ALPHA_H"].SetDefault(1.26).Get<double>();
+    s["ALPHA_H"].SetDefault(2.5).Get<double>();
   m_parametermap[string("betaH")]  =
-    s["BETA_H"].SetDefault(1.12).Get<double>();
+    s["BETA_H"].SetDefault(1.05).Get<double>();
   m_parametermap[string("gammaH")] =
     s["GAMMA_H"].SetDefault(m_shower ? 0.05 : 0.05).Get<double>();
   // Probably irrelevant as long as they are small.
@@ -149,6 +149,8 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["DI_PION_THRESHOLD"].SetDefault(0.300).Get<double>();
   m_parametermap[string("open_threshold")] =
     s["OPEN_THRESHOLD"].SetDefault(0.100).Get<double>();
+  Settings & sets = Settings::GetMainSettings();
+  m_parametermap[string("kT_max")] = sets["CSS_FS_PT2MIN"].Get<double>();
 }
 
 void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
@@ -200,9 +202,9 @@ void Hadronisation_Parameters::ReadMesonWeights()
     s["MULTI_WEIGHT_R0L0_DELTA_3/2"].SetDefault(0.15).Get<double>();
   // Individual hadrons or groups of hadrons
   m_parametermap[string("eta_modifier")]   =
-    s["ETA_MODIFIER"].SetDefault(5.8).Get<double>();
+    s["ETA_MODIFIER"].SetDefault(1.5).Get<double>();
   m_parametermap[string("eta_prime_modifier")]   =
-    s["ETA_PRIME_MODIFIER"].SetDefault(5.9).Get<double>();
+    s["ETA_PRIME_MODIFIER"].SetDefault(1.5).Get<double>();
   m_parametermap[string("Singlet_Baryon_modifier")]    =
     s["SINGLETBARYON_MODIFIER"].SetDefault(1.80).Get<double>();
   m_parametermap[string("CharmBaryon_Enhancement")]    =
@@ -222,15 +224,15 @@ void Hadronisation_Parameters::ReadPoppingParameters()
   auto s = Settings::GetMainSettings()["AHADIC"];
   double strange;
   m_parametermap[string("Strange_fraction")] = strange =
-    s["STRANGE_FRACTION"].SetDefault(0.75).Get<double>();
+    s["STRANGE_FRACTION"].SetDefault(0.53).Get<double>();
   m_parametermap[string("Baryon_fraction")]        =
-    s["BARYON_FRACTION"].SetDefault(0.26).Get<double>();
+    s["BARYON_FRACTION"].SetDefault(0.15).Get<double>();
   m_parametermap[string("P_qs_by_P_qq")]           =
-    (s["P_QS_by_P_QQ_norm"].SetDefault(0.37).Get<double>())*strange;
+    (s["P_QS_by_P_QQ_norm"].SetDefault(0.51).Get<double>())*strange;
   m_parametermap[string("P_ss_by_P_qq")]           =
-    (s["P_SS_by_P_QQ_norm"].SetDefault(0.01).Get<double>())*sqr(strange);
+    (s["P_SS_by_P_QQ_norm"].SetDefault(0.028).Get<double>())*sqr(strange);
   m_parametermap[string("P_di_1_by_P_di_0")]       =
-    s["P_QQ1_by_P_QQ0"].SetDefault(0.50).Get<double>();
+    s["P_QQ1_by_P_QQ0"].SetDefault(1.50).Get<double>();
 }
 
 

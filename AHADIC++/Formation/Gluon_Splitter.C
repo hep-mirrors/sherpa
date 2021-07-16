@@ -48,7 +48,7 @@ bool Gluon_Splitter::CalculateXY() {
     M2     = m_mdec2[0];
     m_z[0] = M2/((1.-m_z[1])*m_Q2);
   }
-  if (M2/m_m2[0] > 1e6 && M2/m_kt2 > 1e6) {
+  if ((M2/m_m2[0] > 1e6 && M2/m_kt2 > 1e6) || m_kt2<1.e-12) {
     // Use Taylor expansion to first order in m12/M2 and kt2/M2 to avoid
     // numerical instability for x, y -> 1.0
     m_x = 1.0 - m_kt2/M2;
@@ -182,6 +182,8 @@ Cluster * Gluon_Splitter::MakeCluster() {
 					       p_part[0]->IsBeam() || p_part[1]->IsBeam());
   newp12->SetKT2_Max(m_kt2);
   // Take care of sequence in cluster = triplet + anti-triplet
-  Cluster * cluster(m_barrd?new Cluster(newp12,p_part[0]):new Cluster(p_part[0],newp12));
+  Cluster * cluster(m_barrd?
+		    new Cluster(newp12,p_part[0]):
+		    new Cluster(p_part[0],newp12));
   return cluster;
 }
