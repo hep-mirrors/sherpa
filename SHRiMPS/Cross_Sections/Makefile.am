@@ -20,7 +20,7 @@ localinc_HEADERS   = \
 			Sigma_Base.H \
 			Sigma_Total.H \
 			Sigma_Inelastic.H \
-			Sigma_Elastic.H
+			Sigma_Elastic.H \
 			Sigma_SD.H \
 			Sigma_Partonic.H
 

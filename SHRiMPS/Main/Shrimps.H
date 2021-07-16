@@ -47,7 +47,9 @@ namespace SHRIMPS {
     void ReadEnergiesFromFile(std::set<double> & energies,
 			      std::string infile);
     void WriteOutElasticsYodaFile(const double & energy,std::string dirname);
-    void WriteOutXSecsYodaFile(const std::set<double> & energies,
+    void WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
+                   const std::set<double> & energies_inel,
+                   const std::set<double> & energies_el,
 			       const std::vector<double> & xsectot,
 			       const std::vector<double> & xsecinel,
 			       const std::vector<double> & xsecelas,

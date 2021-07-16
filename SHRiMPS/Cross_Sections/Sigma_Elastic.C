@@ -20,7 +20,7 @@ double Sigma_Elastic::dSigma_dt::operator()(double B) {
 Sigma_Elastic::Sigma_Elastic() :
   m_tmin(0), m_tmax(1.), m_summed(0.), m_steps(1000),
   m_delta((m_tmax-m_tmin)/m_steps)
-{}
+{ }
 
 
 double Sigma_Elastic::GetValue(const double & B) { 
@@ -69,6 +69,7 @@ void Sigma_Elastic::FillDiffQGrid() {
 
 void Sigma_Elastic::FillIntQGridAndNormalize() {
   m_intgrid.push_back(0.);
+  m_summed = 0.;
   double average, binvalue;
   for (size_t i=1;i<m_steps;i++) {
     average   = (m_diffgrid[i-1]+m_diffgrid[i])/2.;

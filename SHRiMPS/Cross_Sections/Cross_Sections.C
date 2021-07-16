@@ -15,7 +15,7 @@ Cross_Sections::Cross_Sections() :
   m_sigma_inelastic(Sigma_Inelastic()),
   m_sigma_elastic(Sigma_Elastic()),
   m_sigma_SD(Sigma_SD())
-{  }
+{ }
 
 Cross_Sections::~Cross_Sections()
 { }
@@ -38,7 +38,8 @@ void Cross_Sections::CalculateCrossSections()
 	    <<"   sigma_inel                = "<<m_xsinel/1.e9<<" mb\n"   
 	    <<"   sigma_el                  = "<<m_xsel/1.e9<<" mb\n"   
 	    <<"      test: int dt dsigma/dt = "<<m_sigma_elastic.Summed()/1.e9<<" mb\n"
-	    <<"   sigma_SD0                 = "<<m_xsSD[0]/1.e9<<" mb\n"
+        <<"      ratio: = "<<m_xsel/m_sigma_elastic.Summed()<<"\n"
+        <<"   sigma_SD0                 = "<<m_xsSD[0]/1.e9<<" mb\n"
 	    <<"   sigma_SD1                 = "<<m_xsSD[1]/1.e9<<" mb\n"
 	    <<"   sigma_DD                  = "<<m_xsDD/1.e9<<" mb.\n"
 	    <<"===========================================================\n";

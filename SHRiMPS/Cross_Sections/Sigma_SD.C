@@ -15,8 +15,6 @@ double Sigma_SD::SD_Term::operator()(double B) {
 Sigma_SD::Sigma_SD() :
   m_tmin(0.), m_tmax(1.), m_steps(1), m_delta(1.) {
   for (size_t i=0;i<2;i++) m_summed[i] = 0.;
-  m_tgrids.resize(p_eikonals->size());
-  for (size_t i=0;i<p_eikonals->size();i++) m_tgrids[i].resize(p_eikonals->size());
 }
 
 double Sigma_SD::GetValue(const double & B)         { return 0.; }
@@ -27,6 +25,10 @@ void Sigma_SD::FillGrids(Sigma_Elastic * sigma_el) {
   m_tmax  = sigma_el->Tmax();
   m_steps = sigma_el->Steps();
   m_delta = (m_tmax-m_tmin)/double(m_steps);
+  msg_Out()<<METHOD<<" for ["<<m_tmin<<", "<<m_tmax<<"] in "<<m_steps<<" steps of "
+       <<"size = "<<m_delta<<"\n";
+  m_tgrids.resize(p_eikonals->size());
+  for (size_t i=0;i<p_eikonals->size();i++) m_tgrids[i].resize(p_eikonals->size());
 
   FillTGrids();
   for (size_t diff=0;diff<3;diff++) {
@@ -47,7 +49,7 @@ void Sigma_SD::FillTGrids() {
 	term.SetEikonal((*p_eikonals)[i][j]);
 	value = integrator.Integrate(0.,MBpars.GetEikonalParameters().bmax,
 				     MBpars.GetEikonalParameters().accu,1.);
-	if (dabs(value<0.)) value = 0.;
+    if (dabs(value<0.)) value = 0.;
 	m_tgrids[i][j].push_back(value);
       }
     }

@@ -76,7 +76,7 @@ void Shrimps::InitialiseSingleChannelEikonals()
       creator.SetFormFactors((*ffs)[i],(*ffs)[j]);
       Omega_ik * eikonal(creator.InitialiseEikonal());
       MBpars.AddEikonal(i,j,eikonal);
-      //msg_Out()<<"   * ["<<i<<j<<"]: "<<eikonal<<"|"
+      //msg_Out()<<"   * ["<<i<<j<<"]: "<<eikonal<<"\n";
     }
   }
 }
@@ -118,9 +118,19 @@ void Shrimps::GenerateXsecs() {
   ATOOLS::MakeDir(dirname);
 
   InitialiseFormFactors();
-  std::set<double> energies, elastics;
-  ReadEnergiesFromFile(energies,"energies_xsecs.dat");
+  std::set<double> energies, energies_tot, energies_inel, energies_el, elastics;
+  ReadEnergiesFromFile(energies_tot,"energies_xsecs_tot.dat");
+  ReadEnergiesFromFile(energies_inel,"energies_xsecs_inel.dat");
+  ReadEnergiesFromFile(energies_el,"energies_xsecs_el.dat");
   ReadEnergiesFromFile(elastics,"energies_elastics.dat");
+  energies = energies_tot;
+  for (std::set<double>::iterator siter = energies_inel.begin(); siter != energies_inel.end(); ++siter) {
+      if (energies.find(*siter) == energies.end()) energies.insert(*siter);
+  }
+  for (std::set<double>::iterator siter = energies_el.begin(); siter != energies_el.end(); ++siter) {
+      PRINT_VAR(*siter);
+      if (energies.find(*siter) == energies.end()) energies.insert(*siter);
+  }
 
   std::vector<double> xsectot, xsecinel, xsecelas;
 
@@ -132,25 +142,67 @@ void Shrimps::GenerateXsecs() {
     InitialiseSingleChannelEikonals();
     msg_Info()<<"Calculate cross sections for c.m. energy E = "<<energy<<"\n";
     p_xsecs->CalculateCrossSections();
-    xsectot.push_back(p_xsecs->SigmaTot()/1.e9);
-    xsecinel.push_back(p_xsecs->SigmaInel()/1.e9);
-    xsecelas.push_back(p_xsecs->SigmaEl()/1.e9);
-    //msg_Out()<<"** "<<energy<<" -> "
-    //	     <<"xstot = "<<p_xsecs->SigmaTot()<<", "
-    //	     <<"xsinel = "<<p_xsecs->SigmaInel()<<", "
-    //	     <<"xsel = "<<p_xsecs->SigmaEl()<<".\n";
+    if (energies_tot.find(energy) != energies_tot.end()) xsectot.push_back(p_xsecs->SigmaTot()/1.e9);
+    if (energies_inel.find(energy) != energies_inel.end()) xsecinel.push_back(p_xsecs->SigmaInel()/1.e9);
+    if (energies_el.find(energy) != energies_el.end()) xsecelas.push_back(p_xsecs->SigmaEl()/1.e9);
+    msg_Out()<<"** "<<energy<<" -> "
+             <<"xstot = "<<p_xsecs->SigmaTot()<<", "
+             <<"xsinel = "<<p_xsecs->SigmaInel()<<", "
+             <<"xsel = "<<p_xsecs->SigmaEl()<<".\n";
     if (elastics.find(energy)!=elastics.end()) {
       WriteOutElasticsYodaFile(energy,dirname);
     }
   }
-  WriteOutXSecsYodaFile(energies, xsectot, xsecinel, xsecelas, dirname);
+  WriteOutXSecsYodaFile(energies_tot, energies_inel, energies_el, xsectot, xsecinel, xsecelas, dirname);
 }
 
 void Shrimps::WriteOutElasticsYodaFile(const double & energy,
 				       std::string dirname) {
+    std::string Estring(ATOOLS::ToString(energy));
+    std::set<double> tvals;
+    std::string infile(std::string("tvals_dsigma_el_dt_"+Estring+".dat"));
+    ReadEnergiesFromFile(tvals,infile);
+
+    std::string filename(dirname+std::string("/Dsigma_el_by_dt_"+Estring+".dat"));
+    std::ofstream was;
+    was.open(filename.c_str());
+    was<<"# BEGIN HISTO1D /DSIGMA_EL_BY_DT_"+Estring+"/d01-x01-y01\n";
+    was<<"Path=/DSIGMA_EL_BY_DT_"+Estring+"/d01-x01-y01"<<std::endl;
+
+    double value(0.),vallow,valhigh,a,b;
+    double t,tlow, thigh;
+    const double & tmin = p_xsecs->GetSigmaElastic()->Tmin();
+    const double & tmax = p_xsecs->GetSigmaElastic()->Tmax();
+    const size_t & steps = p_xsecs->GetSigmaElastic()->Steps();
+    const std::vector<double> & eldiffgrid = p_xsecs->GetSigmaElastic()->GetDiffGrid();
+    unsigned int ilow, ihigh;
+
+    //     msg_Out()<<"Calculating differential elastic cross sections for tuning."<<std::endl;
+    for (std::set<double>::iterator iter=tvals.begin(); iter != tvals.end(); iter++) {
+//       msg_Out()<<"calculating for t = "<<tvals[i]<<" GeV^2"<<std::endl;
+        t = *iter;
+      ilow=int((t-tmin)/(tmax-tmin)*steps);
+      if(ilow>steps) ilow=steps-1;
+      ihigh=int((t-tmin)/(tmax-tmin)*steps)+1;
+      if(ihigh>steps) ilow=steps;
+      tlow=tmin+(tmax-tmin)*ilow/steps;
+      thigh=tmin+(tmax-tmin)*ihigh/steps;
+      vallow=eldiffgrid[ilow];
+      valhigh=eldiffgrid[ihigh];
+      a=(valhigh-vallow)/(thigh-tlow);
+      b=vallow-a*tlow;
+      value=a*t+b;
+
+      was<<t<<"   "<<t<<"   "<<value<<"   0.0   0.0\n";
+    }
+    was<<"# END HISTO1D\n"<<std::endl;
+    was.close();
+
 }
 
-void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies,
+void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
+                    const std::set<double> & energies_inel,
+                    const std::set<double> & energies_el,
 				    const std::vector<double> & xsectot,
 				    const std::vector<double> & xsecinel,
 				    const std::vector<double> & xsecelas,
@@ -161,8 +213,8 @@ void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies,
   was<<"# BEGIN HISTO1D /XSECS/total\n";
   was<<"Path=/XSECS/total"<<std::endl;
   size_t i(0);
-  for (std::set<double>::iterator energy_iter=energies.begin();
-       energy_iter!=energies.end();energy_iter++) {
+  for (std::set<double>::iterator energy_iter=energies_tot.begin();
+       energy_iter!=energies_tot.end();energy_iter++) {
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsectot[i++]<<"   0.0   0.0\n";
   }
@@ -170,8 +222,8 @@ void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies,
   was<<"# BEGIN HISTO1D /XSECS/inel\n";
   was<<"Path=/XSECS/inel"<<std::endl;
   i = 0;
-  for (std::set<double>::iterator energy_iter=energies.begin();
-       energy_iter!=energies.end();energy_iter++) {
+  for (std::set<double>::iterator energy_iter=energies_inel.begin();
+       energy_iter!=energies_inel.end();energy_iter++) {
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsecinel[i++]<<"   0.0   0.0\n";
   }
@@ -179,8 +231,8 @@ void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies,
   was<<"# BEGIN HISTO1D /XSECS/el\n";
   was<<"Path=/XSECS/el"<<std::endl;
   i = 0;
-  for (std::set<double>::iterator energy_iter=energies.begin();
-       energy_iter!=energies.end();energy_iter++) {
+  for (std::set<double>::iterator energy_iter=energies_el.begin();
+       energy_iter!=energies_el.end();energy_iter++) {
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsecelas[i++]<<"   0.0   0.0\n";
   }

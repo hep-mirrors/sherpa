@@ -15,7 +15,7 @@ namespace SHRIMPS {
     double                  m_accu;
     double                  m_sigma;
   public:
-    Sigma_Base() : p_eikonals(MBpars.GetEikonals()), m_sigma(0.) {}
+    Sigma_Base() : p_eikonals(MBpars.GetEikonals()), m_sigma(0.) { }
 
     virtual void   SetEikonal(Omega_ik * eikonal)    { p_eikonal = eikonal; }
     virtual void   SetSigma(const double & sigma=-1) { m_sigma = sigma; }
