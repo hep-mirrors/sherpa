@@ -150,7 +150,7 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_parametermap[string("open_threshold")] =
     s["OPEN_THRESHOLD"].SetDefault(0.100).Get<double>();
   Settings & sets = Settings::GetMainSettings();
-  m_parametermap[string("kT_max")] = sets["CSS_FS_PT2MIN"].Get<double>();
+  m_parametermap[string("kT_max")] = sqrt(sets["CSS_FS_PT2MIN"].Get<double>());
 }
 
 void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
