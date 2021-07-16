@@ -25,6 +25,7 @@ void Soft_Cluster_Handler::Init() {
   m_open_threshold     = (2.*p_constituents->MinMass()+
 			  hadpars->Get("open_threshold"));
   m_chi                = hadpars->Get("mass_exponent");
+  m_ktmax              = hadpars->Get("kT_max");
   m_ktorder            = (hadpars->Switch("KT_Ordering")>0);
   m_ktselector.Init(false);
 }
@@ -61,13 +62,15 @@ bool Soft_Cluster_Handler::MustPromptDecay(const Flavour & flav1,
 int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
 {
   if (force &&
-      (*cluster)[0]->Flavour().IsGluon() && (*cluster)[1]->Flavour().IsGluon()) {
+      (*cluster)[0]->Flavour().IsGluon() &&
+      (*cluster)[1]->Flavour().IsGluon()) {
     return TreatTwoGluons(cluster);
   }
   FillFlavours(cluster);
   if (IsEqual(m_mass,p_singletransitions->GetLightestMass(m_flavs),1.e-6)) {
     m_hads[0] = p_singletransitions->GetLightestTransition(m_flavs);
-    Proto_Particle * part = new Proto_Particle(m_hads[0],cluster->Momentum(),false);
+    Proto_Particle * part = new Proto_Particle(m_hads[0],cluster->Momentum(),
+					       false);
     p_hadrons->push_back(part);
     return 1;
   }
@@ -154,10 +157,14 @@ void Soft_Cluster_Handler::FillFlavours(Cluster * cluster) {
 int Soft_Cluster_Handler::Decay() {
   m_hads[0] = m_hads[1] = Flavour(kf_none);
   double decweight(DecayWeight());
-  if (decweight>0. && FixKinematics()) return 1;
+  if (decweight>0.) {
+    if (FixKinematics()) return 1;
+  }
   m_hads[0] = Flavour(kf_none); m_hads[1] = Flavour(kf_photon);
   double radweight = RadiationWeight();
-  if (radweight>0. && FixKinematics()) return 1;
+  if (radweight>0.) {
+    if (FixKinematics()) return 1;
+  }
   if (m_flavs.first==m_flavs.second.Bar() && TreatSingletCluster()) return 1;
   return -1;
 }
@@ -178,17 +185,17 @@ bool Soft_Cluster_Handler::FixKinematics() {
                       << " Assume it's a numerical inaccuracy and set it to"
                       << " threshold.";
       p1 = 0.0;
-    } else {
+    }
+    else {
       msg_Error() << METHOD << "(): There is not enough energy in the cluster."
-                  << " Return false and hope for the best.\n";
+                  << " Return false and hope for the best.\n"
+		  <<(*p_cluster)<<"\n";
       return false;
     }
   }
-  double ktmax = (m_ktorder?
-		  Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),(*p_cluster)[1]->KT2_Max()))):p1);
-  //double ktfac = 1.;
-  //m_ktfac*Max(1.,M2/(4.*p_constituents->Mass(m_flavs.first)*
-  //		    p_constituents->Mass(m_flavs.second)));
+  double ktmax = Min(m_ktmax,(m_ktorder?
+			      Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
+					      (*p_cluster)[1]->KT2_Max()))):p1));
   double pt, pl;
   bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
   if (true || lead) {

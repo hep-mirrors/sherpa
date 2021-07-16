@@ -35,6 +35,7 @@ void Splitter_Base::Init(const bool & isgluon) {
   p_constituents      = hadpars->GetConstituents();
   m_flavourselector.InitWeights();
   m_ktorder  = (hadpars->Switch("KT_Ordering")>0);
+  m_ktmax    = hadpars->Get("kT_max");
   m_ktselector.Init(isgluon);
   m_zselector.Init(this);
   m_minmass  = m_flavourselector.MinimalMass();
@@ -167,21 +168,21 @@ bool Splitter_Base::MakeKinematics() {
 void Splitter_Base::MakeTransverseMomentum() {
   m_ktfac  = Max(1.,m_Q2/(4.*m_minQ[0]*m_minQ[1]));
   m_kt2max = Min(p_part[0]->KT2_Max(),p_part[1]->KT2_Max());
-  m_ktmax  = (m_ktorder?
-	      Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
-	      (m_Emax-2.*m_popped_mass)/2.);
+  double ktmax  = Min(m_ktmax,
+		      (m_ktorder?
+		       Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
+		       (m_Emax-2.*m_popped_mass)/2.));
   // have to make this a parameter for the beam breakup?
-  //if (p_part[0]->IsBeam() || p_part[1]->IsBeam()) m_ktmax = Min(5.0,m_ktmax);
-  if (m_ktmax<0.) {
-    msg_Error()<<METHOD<<" yields error ktmax = "<<m_ktmax
+  //if (p_part[0]->IsBeam() || p_part[1]->IsBeam()) ktmax = Min(5.0,m_ktmax);
+  if (ktmax<0.) {
+    msg_Error()<<METHOD<<" yields error ktmax = "<<ktmax
 	       <<" from "<<m_Emax<<", "<<m_popped_mass<<" vs. "
 	       <<" min = "<<m_minmass<<".\n";
     abort();
   }
-  m_ktmax = (m_Emax-2.*m_popped_mass)/2.;
   m_ktfac = 1.;
   bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
-  m_kt    = m_ktselector(m_ktmax,m_ktfac);
+  m_kt    = m_ktselector(ktmax,m_ktfac);
   m_kt2   = m_kt*m_kt;
   m_phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);
