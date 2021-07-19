@@ -159,27 +159,40 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     if (!(m_mode&psmode::no_gen_isr)) {
       p_isrhandler->SetLimits();
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
-      if (m_nin==2 && m_nout==1 && process->Process()->Selected()->Flavours()[2].Kfcode()==999) {
+      if (m_nin==2 && m_nout==1 &&
+	  process->Process()->Selected()->Flavours()[2].Kfcode()==999) {
         if (p_pshandler->Active()->Process()->SPrimeMin()>0.) 
           m_isrspkey[0] = p_pshandler->Active()->Process()->SPrimeMin();
         if (p_pshandler->Active()->Process()->SPrimeMax()>0.)
           m_isrspkey[1] = p_pshandler->Active()->Process()->SPrimeMax();
       }
       p_isrchannels->GeneratePoint();
+      //msg_Out()<<METHOD<<":\n"
+      //       <<"*   s = "<<m_isrspkey[3]<<" "
+      //       <<"in ["<<m_isrspkey[0]<<", "<<m_isrspkey[1]<<"], "
+      //       <<"key[2] = "<<m_isrspkey[2]<<",\n"
+      //       <<"*   y = "<<m_isrykey[2]<<" "
+      //       <<"in ["<<m_isrykey[0]<<", "<<m_isrykey[1]<<"]\n";
     }
     m_sprime = m_osmass?m_isrspkey[4]:m_isrspkey[3];
     m_y     += m_isrykey[2];
+    //msg_Out()<<"*** s = "<<m_sprime<<", y = "<<m_y<<"\n";
     m_ISsymmetryfactor =
       p_isrhandler->GenerateSwap(p_pshandler->Active()->Process()->Flavours()[0],
 				 p_pshandler->Active()->Process()->Flavours()[1])?2.0:1.0;
   }
-  return p_isrhandler->MakeISR(m_sprime,m_y,p_moms,process->Process()->Selected()->Flavours());
+  return p_isrhandler->MakeISR(m_sprime,m_y,p_moms,
+			       process->Process()->Selected()->Flavours());
 }
 
 bool Phase_Space_Point::DefineFSRKinematics() {
   ran->Get();
   p_pshandler->Cuts()->Update(m_sprime,m_y);
   p_fsrchannels->GeneratePoint(p_moms,p_pshandler->Cuts());
+  //msg_Out()<<METHOD<<" (s = "<<m_sprime<<", y ="<<m_y<<"):\n"
+  //	   <<"*   "<<p_moms[0]<<" ("<<p_pshandler->Flavs()[0]<<")\n"
+  //	   <<"*   "<<p_moms[1]<<" ("<<p_pshandler->Flavs()[1]<<")\n"
+  //	   <<"*   "<<p_moms[2]<<" ("<<p_pshandler->Flavs()[2]<<")\n";
   return true;
 }
 
@@ -206,6 +219,9 @@ bool Phase_Space_Point::MakeIncoming()
     double E1 = x*Eprime, E2 = (1.-x)*Eprime, pz = sqrt(sqr(E1)-m_masses2[0]);
     p_moms[0] = Vec4D(E1,0.,0.,pz);
     p_moms[1] = Vec4D(E2,0.,0.,-pz);
+    //msg_Out()<<METHOD<<" (s = "<<m_sprime<<")\n"
+    //	     <<"*   "<<p_moms[0]<<"\n"
+    //	     <<"*   "<<p_moms[1]<<"\n";
     return true;
   }
   msg_Error()<<"Error in"<<METHOD<<":\n"
@@ -225,7 +241,8 @@ void Phase_Space_Point::BoostSystem() {
 }
 
 void Phase_Space_Point::CorrectMomenta() {
-  if (m_nin!=2) return;
+  if (m_nin!=2 ||
+      (m_nin==2 && m_nout==1 && p_pshandler->Flavs()[2].Kfcode()==999)) return;
   Vec4D  momsum(0.,0.,0.,0.);
   size_t imax(0);
   double Emax(0.0);
@@ -257,6 +274,10 @@ void Phase_Space_Point::CorrectMomenta() {
       p_moms[i][0]=E0[i]+E1[i]*eps+E2[i]*sqr(eps);
   }
   for (size_t i(0);i<m_nin;++i) p_moms[i]=-p_moms[i];
+  //msg_Out()<<METHOD<<"\n"
+  //	   <<"*   "<<p_moms[0]<<"\n"
+  //	   <<"*   "<<p_moms[1]<<"\n"
+  //	   <<"*   "<<p_moms[2]<<"\n";
 }
 
 double Phase_Space_Point::CalculateWeight() {
