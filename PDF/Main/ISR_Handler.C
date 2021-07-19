@@ -213,10 +213,10 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
   }
   if (sp<m_splimits[0] || sp>m_splimits[1]) {
     msg_Error()<<METHOD<<"(..): "<<om::red
-		       <<"s' out of bounds.\n"<<om::reset
-		       <<"  s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
-		       <<", "<<m_splimits[1]<<", "<<m_splimits[2]
-		       <<" vs. "<<sp<<std::endl;
+	       <<"s' out of bounds.\n"<<om::reset
+	       <<"  s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
+	       <<", "<<m_splimits[1]<<", "<<m_splimits[2]
+	       <<" vs. "<<sp<<std::endl;
     return false;
   }
   Vec4D pa(p_beam[0]->OutMomentum()), pb(p_beam[1]->OutMomentum());
@@ -245,14 +245,21 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
     yt=exp(yt);
     m_x[0]=tau*yt;
     m_x[1]=tau/yt;
+    //msg_Out()<<METHOD<<" (s = "<<sp<<", y = "<<y<<"):\n"
+    //	     <<"   tau = "<<tau<<", yt = "<<log(yt)<<" --> "<<yt<<", "
+    //	     <<"x1 = "<<m_x[0]<<", x2 = "<<m_x[1]<<"\n";
   }
   else {
     THROW(fatal_error,"Invalid ISR mode");
   }
   if (PDF(0) && (m_x[0]<PDF(0)->XMin() || m_x[0]>PDF(0)->XMax())) return false;
   if (PDF(1) && (m_x[1]<PDF(1)->XMin() || m_x[1]>PDF(1)->XMax())) return false;
+  //msg_Out()<<"*   pp = "<<pp<<", pm = "<<pm<<"\n"
+  //	   <<"*   s1, 2 = "<<s1<<", "<<s2<<", st = "<<st<<"\n";
   p[0]=p_cms[0]=m_x[0]*pp+s1/st/m_x[0]*pm;
   p[1]=p_cms[1]=m_x[1]*pm+s2/st/m_x[1]*pp;
+  //msg_Out()<<"*   p[0] = "<<p[0]<<"\n"
+  //	   <<"*   p[1] = "<<p[1]<<"\n";
   if (m_swap) {
     std::swap<Vec4D>(p[0],p[1]);
     std::swap<Vec4D>(p_cms[0],p_cms[1]);
@@ -262,6 +269,8 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
   m_cmsboost.Boost(p[1]);
   // m_x[0]=p_cms[0].PPlus()/pa.PPlus();
   // m_x[1]=p_cms[1].PMinus()/pb.PMinus();
+  //msg_Out()<<"*   --> p[0] = "<<p[0]<<"\n"
+  //	   <<"*   --> p[1] = "<<p[1]<<"\n";
   if (m_x[0]>=1.0) m_x[0]=1.0-1.0e-12;
   if (m_x[1]>=1.0) m_x[1]=1.0-1.0e-12;
   return true;
@@ -343,6 +352,9 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
     std::swap<Vec4D>(p1,p2);
     std::swap<double>(Q12,Q22);
   }
+  //msg_Out()<<METHOD<<"(mode = "<<m_mode<<", Q2 = "<<Q12<<"):\n"
+  //	   <<"*   p1 = "<<p1<<"  ("<<fl1<<")\n"
+  //	   <<"*   p2 = "<<p2<<"  ("<<fl2<<")\n";
   x1=CalcX(p1);
   x2=CalcX(p2);
   if (IsBad(x1) || IsBad(x2) || IsBad(Q12) || IsBad(Q22)) {

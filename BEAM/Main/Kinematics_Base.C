@@ -17,10 +17,4 @@ Kinematics_Base::Kinematics_Base(Beam_Base * beams[2]) :
 
 Kinematics_Base::~Kinematics_Base() {}
 
-void Kinematics_Base::SetLimits()
-{
-  double           m_splimits[3], m_ylimits[2], m_exponent[2];
-  ATOOLS::Info_Key m_sprimekey, m_ykey, m_costhetakey;
-
-}
 
