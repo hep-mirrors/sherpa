@@ -832,8 +832,8 @@ double Channel_Elements::GenerateYUniform(const double tau,const Double_Containe
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
     msg_Error()<<"Channel_Elements::GenerateYUniform("<<tau<<","<<xinfo<<","
-		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
-		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+	       <<yinfo<<"): "<<" Y out of bounds !\n"
+	       <<"   ymin, ymax vs. y : "<<ymin<<" "<<ymax<<" vs. "<<y<<"\n";
   // If y is close to any bound, set it to this bound
     if (ATOOLS::IsEqual(y, ymin))
        { msg_Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
@@ -857,6 +857,8 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   ymin=ATOOLS::Max(yinfo[0],ymin);
+  msg_Out()<<METHOD<<": "<<yinfo[2]<<" in ["<<ymin<<", "<<ymax<<"] from "
+	   <<"x = ["<<xinfo[0]<<", "<<xinfo[1]<<"]\n";
   if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
   ran = (yinfo[2]-ymin)/(ymax-ymin);
   return (ymax-ymin);

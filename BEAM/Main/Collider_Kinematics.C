@@ -51,7 +51,7 @@ void Collider_Kinematics::InitSystem() {
        (dabs((m_fixp_cms[1] - p_beams[1]->InMomentum()).Abs2()) > 0.0000001));
   m_on = (m_mode != collidermode::monochromatic);
 }
-  
+
 void Collider_Kinematics::InitIntegration() {
   Beam_Parameters parameters;
   //check for if they have been initialised to other values
@@ -61,13 +61,13 @@ void Collider_Kinematics::InitIntegration() {
   m_xmax = p_beams[0]->Xmax()*p_beams[1]->Xmax();
   m_smin = m_S*Max(m_xmin, sminratio);
   m_smax = m_S*Min(m_xmax, smaxratio);
-  // TODO: the rapidity interval can be done in a better way.
+  // the rapidity interval can be done in a better way. ==> to do
   m_ymin = -10.;
   m_ymax = 10.;
   m_exponent[0] = .5;
   m_exponent[1] = .98 * ( p_beams[0]->Exponent() + p_beams[1]->Exponent());
 }
-  
+
 bool Collider_Kinematics::operator()(ATOOLS::Vec4D * moms) {
   switch (m_mode) {
   case collidermode::monochromatic:
@@ -89,7 +89,7 @@ bool Collider_Kinematics::MakeMonochromaticBeams(ATOOLS::Vec4D * moms) {
   return true;
 }
 
-bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D * moms) {  
+bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D * moms) {
   m_sprime = m_sprimekey[3];
   double y = m_ykey[2];
   if ( (m_sprime<m_smin) ||
@@ -111,16 +111,21 @@ bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D * moms) {
 void Collider_Kinematics::CalculateAndSetX(size_t beam,const ATOOLS::Vec4D & p) {
   Vec4D q = p;
   m_CMSBoost.BoostBack(q);
-  m_xkey[3*beam+2] = 2.*q[0]/p_beams[beam]->Energy();
-  p_beams[beam]->SetX(m_xkey[3*beam+2]);
+  m_xkey[beam][2] = 2.*q[0]/p_beams[beam]->Energy();
+  p_beams[beam]->SetX(m_xkey[beam][2]);
 }
 
 void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid+string("s'"),5,0,info);
   m_ykey.Assign(m_keyid+string("y"),3,0,info);
-  m_xkey.Assign(m_keyid+string("x"),6,0,info);
+  for (size_t i=0;i<2;i++) {
+    m_xkey[i].Assign(m_keyid+string("x_")+string(i),3,0,info);
+    m_xkey[i][0] = 0.;
+    m_xkey[i][1] = 1.;
+    m_xkey[i][2] = 0.;
+  }
   m_sprimekey[0] = Max(m_smin, m_sminPS);
-  m_sprimekey[1] = m_sprimekey[2] = m_smax;
+  m_sprimekey[1] = m_smax;
   m_sprimekey[2] = m_S;
   m_sprimekey[3] = m_S;
   m_sprimekey[4] = -m_S;
@@ -130,11 +135,15 @@ void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
 }
 
 void Collider_Kinematics::SetLimits() {
+  //msg_Out()<<METHOD<<":\n"
+  //	   <<"*  s = Min("<<m_smin<<", "<<m_sminPS<<")  -> "<<m_smax<<",\n"
+  //	   <<"*  y in ["<<m_ymin<<", "<<m_ymax<<"]\n";
   m_sprimekey[0] = Max(m_smin, m_sminPS);
   m_sprimekey[1] = m_sprimekey[2] = m_smax;
   m_sprimekey[3] = m_S;
-  m_ykey[0]      = m_ymin;
-  m_ykey[1]      = m_ymax;
+  double yfroms  = 0.5*log(m_smax/m_smin);
+  m_ykey[0]      = m_ymin = -yfroms;
+  m_ykey[1]      = m_ymax =  yfroms;
   m_ykey[2]      = 0.;
   for (size_t i=0;i<2;i++) {
     double p = i==0?
@@ -153,4 +162,3 @@ void Collider_Kinematics::SetLimits() {
   double sprimemax = Min(m_smax,m_S*exp(m_xkey[1]+m_xkey[4]));
   if (sprimemax>sqr(m_m[0]+m_m[1])) m_sprimekey[1] = sprimemax;
 }
-
