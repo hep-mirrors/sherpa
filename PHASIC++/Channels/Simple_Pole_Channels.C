@@ -134,8 +134,12 @@ void Simple_Pole_Uniform::GeneratePoint(const double *rns)
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
+  msg_Out()<<METHOD<<" check s: sred = "<<m_spkey[3]<<" = "<<sred<<", "
+	   <<"in ["<<m_spkey[0]<<", "<<m_spkey[1]<<"] < "<<m_spkey[2]<<"\n";
   m_ykey[2]=CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
 				p_rans[1],m_mode);
+  msg_Out()<<METHOD<<" generates kinematics for s = "<<m_spkey[3]<<" & "
+	   <<"y = "<<m_ykey[2]<<" in ["<<m_ykey[0]<<", "<<m_ykey[1]<<"]\n";
 }
 
 void Simple_Pole_Uniform::GenerateWeight(const int & mode)
@@ -149,6 +153,8 @@ void Simple_Pole_Uniform::GenerateWeight(const int & mode)
   if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
+    msg_Out()<<METHOD<<" tries to calculate y-weight for "
+	     <<m_ykey[2]<<" in ["<<m_ykey[0]<<", "<<m_ykey[1]<<"]\n";
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
@@ -158,6 +164,10 @@ void Simple_Pole_Uniform::GenerateWeight(const int & mode)
   p_rans[0] = m_sgridkey[0];
   p_rans[1] = m_ygridkey[0];
   double pw= p_vegas->GenerateWeight(p_rans);
+  msg_Out()<<METHOD<<" with weights = "<<(m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT)
+	   <<" & "<<(m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT)<<"\n"
+	   <<"* weight = "<<pw<<" * "<<m_spkey.Weight()<<" * "<<m_ykey.Weight()
+	   <<"/"<<m_spkey[2]<<"\n";
   m_weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 

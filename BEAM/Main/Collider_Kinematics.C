@@ -58,6 +58,8 @@ void Collider_Kinematics::InitIntegration() {
   m_xmax = p_beams[0]->Xmax()*p_beams[1]->Xmax();
   m_smin = m_S*Max(m_xmin, sminratio);
   m_smax = m_S*Min(m_xmax, smaxratio);
+  msg_Out()<<METHOD<<": x in ["<<m_xmin<<", "<<m_xmax<<"], "
+	   <<"smax = "<<smaxratio<<" --> ["<<m_smin<<", "<<m_smax<<"]\n";
   // the rapidity interval can be done in a better way. ==> to do
   m_ymin = -10.;
   m_ymax = 10.;
@@ -108,29 +110,39 @@ bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D * moms) {
 void Collider_Kinematics::CalculateAndSetX(size_t beam,const ATOOLS::Vec4D & p) {
   Vec4D q = p;
   m_CMSBoost.BoostBack(q);
-  m_xkey[3*beam+2] = 2.*q[0]/p_beams[beam]->Energy();
-  p_beams[beam]->SetX(m_xkey[3*beam+2]);
+  m_xkey[beam][2] = 2.*q[0]/p_beams[beam]->Energy();
+  p_beams[beam]->SetX(m_xkey[beam][2]);
 }
 
 void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid+string("s'"),5,0,info);
   m_ykey.Assign(m_keyid+string("y"),3,0,info);
-  m_xkey.Assign(m_keyid+string("x"),6,0,info);
+  for (size_t i=0;i<2;i++) {
+    m_xkey[i].Assign(m_keyid+string("x_")+string(i),3,0,info);
+    m_xkey[i][0] = 0.;
+    m_xkey[i][1] = 1.;
+    m_xkey[i][2] = 0.;
+  }
   m_sprimekey[0] = Max(m_smin, m_sminPS);
-  m_sprimekey[1] = m_sprimekey[2] = m_smax;
+  m_sprimekey[1] = m_smax;
   m_sprimekey[2] = m_S;
   m_sprimekey[3] = m_S;
+  m_sprimekey[4] = -m_S;
   m_ykey[0]      = m_ymin;
   m_ykey[1]      = m_ymax;
   m_ykey[2]      = 0.;
 }
 
 void Collider_Kinematics::SetLimits() {
+  //msg_Out()<<METHOD<<":\n"
+  //	   <<"*  s = Min("<<m_smin<<", "<<m_sminPS<<")  -> "<<m_smax<<",\n"
+  //	   <<"*  y in ["<<m_ymin<<", "<<m_ymax<<"]\n";
   m_sprimekey[0] = Max(m_smin, m_sminPS);
   m_sprimekey[1] = m_sprimekey[2] = m_smax;
   m_sprimekey[3] = m_S;
-  m_ykey[0]      = m_ymin;
-  m_ykey[1]      = m_ymax;
+  double yfroms  = 0.5*log(m_smax/m_smin);
+  m_ykey[0]      = m_ymin = -yfroms;
+  m_ykey[1]      = m_ymax =  yfroms;
   m_ykey[2]      = 0.;
   for (size_t i=0;i<2;i++) {
     double p = i==0?
@@ -139,8 +151,8 @@ void Collider_Kinematics::SetLimits() {
     double e  = p_beams[i]->OutMomentum()[0];
     m_xkey[3*i]   = -0.5*(IsZero(m_m[i],1.e-13)?
 			  numeric_limits<double>::max():log(p/m_m[i]));
-    m_xkey[3*i+1] = log (Min(p_beams[i]->Xmax(),
-			     (e/p*(1.0+sqrt(1.0-sqr(m_m[i]/e))))));
+    m_xkey[3*i+1] = log(Min(p_beams[i]->Xmax(),
+			    (e/p*(1.0+sqrt(1.0-sqr(m_m[i]/e))))));
   }
   // sprime's with masses - still need to check for masses
   double sprimemin = Max(m_sprimekey[0],m_S*exp(m_xkey[0]+m_xkey[3]));

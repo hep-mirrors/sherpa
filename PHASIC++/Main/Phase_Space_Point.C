@@ -109,7 +109,7 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
   // (m_sprime = m_fixedsprime and m_y = m_fixedy)
   Reset(mode);
   if (m_nin==2) {
-    if (!DefineBeamKinematics())        return false;
+    if (!DefineBeamKinematics()) return false;
     if (!DefineISRKinematics(process))  {
       if (p_beamchannels) p_beamchannels->NoGenerate();    
       if (p_isrchannels)  p_isrchannels->NoGenerate();    
@@ -123,7 +123,7 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
       }
     }
   }
-  if (!DefineFSRKinematics())         return false;
+  if (!DefineFSRKinematics()) return false;
   CorrectMomenta();
   return true;
 }
@@ -134,6 +134,7 @@ bool Phase_Space_Point::DefineBeamKinematics() {
   // -- s' only for relic density mode (integration over frame implicit)
   // -- s', y = E1/(E1+E2), and cos(theta) for DM annihilation mode
   if (p_beamhandler->On() && p_beamchannels!=NULL) {
+    p_beamhandler->SetSprimeMin(m_smin);
     p_beamhandler->SetLimits();
     p_beamchannels->GeneratePoint(int(p_beamhandler->ColliderMode()));
     if (!p_beamhandler->MakeBeams(p_moms)) return false;
@@ -281,19 +282,26 @@ void Phase_Space_Point::CorrectMomenta() {
 }
 
 double Phase_Space_Point::CalculateWeight() {
-  if (!Check4Momentum()) m_weight = 0.;
+  msg_Out()<<METHOD<<":\n";
+  if (!Check4Momentum()) {
+    msg_Out()<<"*   check of four momenta failed.\n";
+    m_weight = 0.;
+  }
   else {
     m_weight=1.0;
     if (p_isrchannels && !(m_mode&psmode::no_gen_isr)) {
       p_isrchannels->GenerateWeight(p_isrhandler->On());
       m_weight *= p_isrchannels->Weight();
+      msg_Out()<<"*   isr  = "<<p_isrchannels->Weight()<<"\n";
     }
     if (p_beamchannels) {
       p_beamchannels->GenerateWeight(int(p_beamhandler->ColliderMode()));
       m_weight *= p_beamchannels->Weight();
+      msg_Out()<<"*   beam = "<<p_beamchannels->Weight()<<"\n";
     }
     p_fsrchannels->GenerateWeight(p_moms,p_cuts);
     m_weight *= p_fsrchannels->Weight();
+    msg_Out()<<"*   fsr  = "<<p_fsrchannels->Weight()<<"\n";
   }
   return m_weight;
 }
