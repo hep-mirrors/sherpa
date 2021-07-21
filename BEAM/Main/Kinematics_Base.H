@@ -28,8 +28,8 @@ namespace BEAM {
     virtual void SetLimits()                                      = 0;
     virtual inline void SetSprimeMin(const double & smin) { m_sminPS = smin; }
     virtual inline void SetSprimeMax(const double & smax) { m_smaxPS = smax; }
-    virtual inline const double & SprimeMin() const { return m_smin; }
-    virtual inline const double & SprimeMax() const { return m_smax; }
+    virtual inline const double & SprimeMin() const { return ATOOLS::Max(m_smin, m_sminPS); }
+    virtual inline const double & SprimeMax() const { return ATOOLS::Min(m_smax, m_smaxPS); }
     virtual inline const double   Sprime()          { return m_S; }
     virtual inline const double   Y()               { return 0.; }
     

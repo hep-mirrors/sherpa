@@ -93,7 +93,10 @@ void Phase_Space_Point::InitCuts(Process_Integrator *const process)
   process->Process()->InitCuts(p_cuts);
   process->Process()->FillOnshellConditions();
   process->Process()->BuildCuts(p_cuts);
-  if (m_nin>1) m_smin=ATOOLS::Max(sqr(process->ISRThreshold()),p_cuts->Smin());
+  if (m_nin>1) {
+      m_smin=ATOOLS::Max(sqr(process->ISRThreshold()),p_cuts->Smin());
+      process->ISR()->SetFixedSprimeMin(m_smin);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -134,6 +137,7 @@ bool Phase_Space_Point::DefineBeamKinematics() {
   // -- s' only for relic density mode (integration over frame implicit)
   // -- s', y = E1/(E1+E2), and cos(theta) for DM annihilation mode
   if (p_beamhandler->On() && p_beamchannels!=NULL) {
+    p_beamhandler->SetSprimeMin(m_smin);
     p_beamhandler->SetLimits();
     p_beamchannels->GeneratePoint(int(p_beamhandler->ColliderMode()));
     if (!p_beamhandler->MakeBeams(p_moms)) return false;
