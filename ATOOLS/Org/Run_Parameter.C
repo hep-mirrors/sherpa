@@ -436,7 +436,7 @@ void Run_Parameter::Gen::WriteCitationInfo()
 }
 
 void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
-  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(rpa->gen.Ecms()));
+  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(_ecms));
   m_ecms    = _ecms;
 }
 void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) { 
