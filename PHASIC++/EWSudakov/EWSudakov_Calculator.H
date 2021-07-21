@@ -30,6 +30,9 @@ namespace PHASIC {
     CorrectionsMap(const ATOOLS::Vec4D_Vector& mom);
     const std::set<ATOOLS::EWSudakov_Log_Type>& ActiveLogTypes() const
     { return m_activelogtypes; }
+    const EWGroupConstants& GetEWGroupConstants() const {
+      return m_ewgroupconsts;
+    }
 
   private:
     HighEnergySchemes m_helimitscheme;

@@ -127,6 +127,30 @@ void Clustered_EWSudakov_Calculator::AddCalculator(const Flavour_Vector& flavs, 
       std::make_pair(flavs, new EWSudakov_Calculator{clustered_proc}));
 }
 
+double Clustered_EWSudakov_Calculator::CalcIClustered(
+    const std::map<double, std::vector<long int>> restab,
+    const Vec4D_Vector &mom, const Flavour_Vector &flavs)
+{
+  double ClusteredIOperator{0.0};
+  const auto EWConsts {calculators[flavs]->GetEWGroupConstants()};
+  for(const auto& clij: restab){
+    const auto i {clij.second[0]};
+    const auto j {clij.second[1]};
+    const double Qi  {flavs[i].Charge()};
+    const double Qj  {flavs[j].Charge()};
+    const double sij {(mom[i] + mom[j]).Abs2()};
+    const double mi2 {sqr(flavs[i].Mass())};
+    const double mj2 {sqr(flavs[j].Mass())};
+    ClusteredIOperator += 2. * sqr(log(EWConsts.m_mw2 / sij));
+    if(mi2 != 0.0)
+      ClusteredIOperator -= sqr(log(mi2/EWConsts.m_mw2));
+    if(mj2 != 0.0)
+      ClusteredIOperator -= sqr(log(mj2/EWConsts.m_mw2));
+    ClusteredIOperator *= Qi * Qj;
+  }
+  return EWConsts.delta_prefactor * ClusteredIOperator;  
+}
+
 EWSudakov_Log_Corrections_Map
 Clustered_EWSudakov_Calculator::CorrectionsMap(Vec4D_Vector mom)
 {
@@ -138,8 +162,10 @@ Clustered_EWSudakov_Calculator::CorrectionsMap(Vec4D_Vector mom)
   }
 
   Flavour_Vector flavs = proc->Flavours();
+  double ClusteredIOperator{0.0};
 
-  if (m_zzhack) {
+      if (m_zzhack)
+  {
     // TODO: delete this hack and the corresponding switch later
 
     assert(flavs[2].Kfcode() == kf_e);
@@ -156,8 +182,9 @@ Clustered_EWSudakov_Calculator::CorrectionsMap(Vec4D_Vector mom)
     mom[2] += mom[4];
     flavs.erase(flavs.begin() + 4);
     mom.erase(mom.begin() + 4);
-
-  } else {
+  }
+  else
+  {
 
     msg_Debugging() << "Will use input process for EWSudakov: ";
     for (const auto& flav : flavs) {
@@ -206,6 +233,7 @@ Clustered_EWSudakov_Calculator::CorrectionsMap(Vec4D_Vector mom)
       }
     }
     std::set<size_t> removelist;
+    ClusteredIOperator  = CalcIClustered(restab,mom,flavs);
     for (const auto& mdist : clusterings) {
       if (restab[mdist][2] == kf_Wplus) {
         flavs[restab[mdist][0]] =
@@ -231,5 +259,7 @@ Clustered_EWSudakov_Calculator::CorrectionsMap(Vec4D_Vector mom)
   msg->SetLevel(level);
 
   assert(calculators.find(flavs) != calculators.end());
-  return calculators[flavs]->CorrectionsMap(mom);
+  EWSudakov_Log_Corrections_Map CorrectionsMaps {calculators[flavs]->CorrectionsMap(mom)};
+  CorrectionsMaps[EWSudakov_Log_Type::lI] = ClusteredIOperator;
+  return CorrectionsMaps;
 }

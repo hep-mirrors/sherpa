@@ -13,6 +13,7 @@ namespace ATOOLS {
     lC,       ///< collinear non-Yukawa corrections \propto \log(s/m_mW2)
     lYuk,     ///< collinear Yukawa corrections \propto \log(s/m_mW2)
     lPR,      ///< parameter renormalisation corrections \propto \log(s/m_mW2)
+    lI,       ///< I operator corresponding to clustered pairs
   };
 
   /** High energy schemes:

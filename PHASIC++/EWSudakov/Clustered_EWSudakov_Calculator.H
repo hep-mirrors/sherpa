@@ -25,6 +25,9 @@ namespace PHASIC {
 
     void AddCalculators(const ATOOLS::Flavour_Vector&, size_t clusterings);
     void AddCalculator(const ATOOLS::Flavour_Vector&, size_t clusterings);
+    double CalcIClustered(const std::map<double, std::vector<long int>> restab,
+                          const ATOOLS::Vec4D_Vector &mom,
+                          const ATOOLS::Flavour_Vector &flavs);
 
     // the objects that will do the actual calculation, but do not need to know
     // anything about the clustering, which will be handled by

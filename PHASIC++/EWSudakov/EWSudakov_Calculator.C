@@ -24,7 +24,8 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
     EWSudakov_Log_Type::lSSC,
     EWSudakov_Log_Type::lC,
     EWSudakov_Log_Type::lYuk,
-    EWSudakov_Log_Type::lPR
+    EWSudakov_Log_Type::lPR,
+    EWSudakov_Log_Type::lI
   },
   m_ampls{ p_proc, m_activelogtypes },
   m_comixinterface{ p_proc, m_ampls },
@@ -201,7 +202,7 @@ EWSudakov_Log_Corrections_Map EWSudakov_Calculator::CorrectionsMap()
   // coeff type).
   auto kfac = 1.0;
   EWSudakov_Log_Corrections_Map kfacs;
-  const auto delta_prefactor = m_ewgroupconsts.m_aew/4./M_PI;
+  const auto delta_prefactor = m_ewgroupconsts.delta_prefactor;
   for (const auto& coeffkv : m_coeffs) {
     auto delta_c_num = 0.0;
     for (size_t i {0}; i < m_spinampls[0].size(); ++i) {

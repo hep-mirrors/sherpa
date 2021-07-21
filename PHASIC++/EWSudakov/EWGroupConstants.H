@@ -85,6 +85,8 @@ namespace PHASIC {
     const double m_sw2, m_cw2, m_sw, m_sw_denner_pozzorini, m_cw, m_aew,
       m_mw2, m_mw, m_mz, m_mt, m_mh0, m_cvev;
 
+    /// prefactor for all coefficients
+    const double delta_prefactor {m_aew/4./M_PI};
   };
 
 }

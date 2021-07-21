@@ -18,6 +18,8 @@ EWSudakov_Log_Type ATOOLS::EWSudakovLogTypeFromString(const std::string& logt)
     return EWSudakov_Log_Type::lYuk;
   else if (logt == "PR")
     return EWSudakov_Log_Type::lPR;
+  else if (logt == "I")
+    return EWSudakov_Log_Type::lI;
   else
     THROW(fatal_error,
           "Can not convert " + logt + " to EW Sudakov log type.");
@@ -38,6 +40,8 @@ std::ostream& ATOOLS::operator<<(std::ostream& os, const EWSudakov_Log_Type& t)
       return os << "Yuk";
     case EWSudakov_Log_Type::lPR:
       return os << "PR";
+    case EWSudakov_Log_Type::lI:
+      return os << "I";
   }
 }
 
