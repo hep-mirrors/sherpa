@@ -58,7 +58,7 @@ void Collider_Kinematics::InitIntegration() {
   m_xmax = p_beams[0]->Xmax()*p_beams[1]->Xmax();
   m_smin = m_S*Max(m_xmin, sminratio);
   m_smax = m_S*Min(m_xmax, smaxratio);
-  // the rapidity interval can be done in a better way. ==> to do
+  // TODO: the rapidity interval can be done in a better way.
   m_ymin = -10.;
   m_ymax = 10.;
   m_exponent[0] = .5;
@@ -120,6 +120,7 @@ void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
   m_sprimekey[1] = m_sprimekey[2] = m_smax;
   m_sprimekey[2] = m_S;
   m_sprimekey[3] = m_S;
+  m_sprimekey[4] = -m_S;
   m_ykey[0]      = m_ymin;
   m_ykey[1]      = m_ymax;
   m_ykey[2]      = 0.;
@@ -137,9 +138,10 @@ void Collider_Kinematics::SetLimits() {
       p_beams[0]->OutMomentum().PPlus():
       p_beams[1]->OutMomentum().PMinus();
     double e  = p_beams[i]->OutMomentum()[0];
-    m_xkey[3*i]   = -0.5*(IsZero(m_m[i],1.e-13)?
-			  numeric_limits<double>::max():log(p/m_m[i]));
-    m_xkey[3*i+1] = log (Min(p_beams[i]->Xmax(),
+    m_xkey[3*i]   = IsZero(m_m[i],1.e-13)?
+                    -0.5*std::numeric_limits<double>::max():
+                    2.*log(m_m[i]/p);
+    m_xkey[3*i+1] = log(Min(p_beams[i]->Xmax(),
 			     (e/p*(1.0+sqrt(1.0-sqr(m_m[i]/e))))));
   }
   // sprime's with masses - still need to check for masses
