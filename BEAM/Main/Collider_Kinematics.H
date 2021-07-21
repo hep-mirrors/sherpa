@@ -12,8 +12,7 @@ namespace BEAM {
     double           m_Ecms, m_E1, m_E2;
     double           m_ymin, m_ymax, m_xmin, m_xmax;
     bool             m_asymmetric;
-    ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
-    double           m_logtau, m_sprime, m_x[2];
+    ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey[2];
 
     void CalculateAndSetX(size_t beam,const ATOOLS::Vec4D & p);
     void InitSystem();
