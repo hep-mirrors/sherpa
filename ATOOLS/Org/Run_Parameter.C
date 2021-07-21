@@ -435,8 +435,8 @@ void Run_Parameter::Gen::WriteCitationInfo()
 	   <<", subject 'generate'.\n"<<std::string(72,'-')<<std::endl;
 }
 
-void  Run_Parameter::Gen::SetEcms(double _ecms) {
-  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(rpa->gen.Ecms()));
+void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
+  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(_ecms));
   m_ecms    = _ecms;
 }
 
