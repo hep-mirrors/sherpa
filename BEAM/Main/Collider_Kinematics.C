@@ -143,7 +143,7 @@ void Collider_Kinematics::SetLimits() {
   m_sprimekey[3] = m_S;
   double yfroms  = 0.5*log(m_smax/m_smin);
   m_ykey[0]      = m_ymin = -yfroms;
-  m_ykey[1]      = m_ymax =  yfroms;
+  m_ykey[1]      = m_ymax = -yfroms;
   m_ykey[2]      = 0.;
   for (size_t i=0;i<2;i++) {
     double p = i==0?
