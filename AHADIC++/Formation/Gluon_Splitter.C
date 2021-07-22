@@ -185,5 +185,16 @@ Cluster * Gluon_Splitter::MakeCluster() {
   Cluster * cluster(m_barrd?
 		    new Cluster(newp12,p_part[0]):
 		    new Cluster(p_part[0],newp12));
+  // this is for a simple analysis only
+  m_lastmass = sqrt(dabs(cluster->Momentum().Abs2()));
+  m_lastB    = (newp12->Flavour()==Flavour(kf_b) ||
+		newp12->Flavour()==Flavour(kf_b).Bar() ||
+		p_part[0]->Flavour()==Flavour(kf_b) ||
+		p_part[0]->Flavour()==Flavour(kf_b).Bar());
+  m_lastC    = (!m_lastB &&
+		(newp12->Flavour()==Flavour(kf_b) ||
+		 newp12->Flavour()==Flavour(kf_b).Bar() ||
+		 p_part[0]->Flavour()==Flavour(kf_b) ||
+		 p_part[0]->Flavour()==Flavour(kf_b).Bar()));
   return cluster;
 }
