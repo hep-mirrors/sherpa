@@ -438,7 +438,6 @@ double Channel_Elements::ThresholdMomenta(double mass,double smin,double smax,do
 
 double Channel_Elements::ThresholdWeight(double sexp,double mass,double smin,double smax,double s)
 {
-  //cout<<"Channel_Elements::ThresholdWeight "<<sexp<<" "<<mass<<" "<<smin<<" "<<smax<<" "<<s<<endl;
   if ((s<=smin) && (s>=smax)) return 0.;
   double sgmin=sqrt(sqr(smin)+sqr(sqr(mass)));
   double sgmax=sqrt(sqr(smax)+sqr(sqr(mass)));
@@ -457,7 +456,6 @@ double Channel_Elements::ThresholdWeight(double sexp,double mass,double smin,dou
 
 double Channel_Elements::ThresholdWeight(double sexp,double mass,double smin,double smax,double s,double &ran)
 {
-  //cout<<"Channel_Elements::ThresholdWeight "<<sexp<<" "<<mass<<" "<<smin<<" "<<smax<<" "<<s<<endl;
   if (s<smin||s>smax||smin==smax) {
     ran=-1.;
     return 0.;
@@ -534,10 +532,8 @@ double Channel_Elements::LLPropMomenta(double sexp,double pole,
 				       double ran)
 {
   double s;
-//   cout<<"LLPropMomenta: "<<sexp<<" "<<pole<<" "<<smin<<" "<<smax<<" ";
   if (smin==smax) s=smax;
   else s = Channel_Basics::PeakedDist(pole,sexp,smin,smax,-1,ran);
-//   cout<<s<<endl;
   if (!(s>0) && !(s<0) && s!=0) msg_Error()<<"LLPropMomenta produced a nan !"<<endl;
   if ((s<smin) || (s>smax))     msg_Error()<<"LLPropMomenta out of bounds !"<<endl;
   return s;
@@ -551,7 +547,6 @@ double Channel_Elements::MassivePropWeight(double mass,double width,int lim,
   if (lim==0) return mw/(M_PI*((s-mass2)*(s-mass2)+mw*mw));
   else {
     if ((s<smin) || (s>smax) || smin==smax) {
-      //cout<<s<<" "<<smin<<" "<<smax<<endl;
       return 0.;
     }
     double upper  = (smax-mass2)/mw;
@@ -606,9 +601,7 @@ double Channel_Elements::MassivePropMomenta(double mass,double width,int lim,
     double ymax=atan((smin-mass2)/mw);
     double ymin=atan((smax-mass2)/mw);
     s = mass2+mw*tan(ymin + ran*(ymax-ymin));
-//     std::cout<<" smin/max "<<smin<<" "<<smax<<" "<<mass<<" "<<width<<" "<<ran<<" => "<<s<<std::endl;
   }
-//   cout<<"MPMom :  "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<" "<<mass<<" "<<width<<endl;
   if (!(s>0) && !(s<0) && s!=0)
     msg_Error()<<"MassivePropMomenta produced a nan !"<<endl;
   return s;
@@ -645,14 +638,9 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   Channel_Basics::Boost(1,pin,p1outh,help);
   help=p1in;
   Channel_Basics::Boost(1,pin,p1inh,help);
-//     if(!IsEqual(sqrt(s),pin[0])){
-//       cout<<"2 bp1out="<<p1out<<"->"<<p1outh<<endl;
-//       cout<<"2 bp1in= "<<p1in<<"->"<<p1inh<<endl;
-//     }
+
   Poincare Rot(Vec4D(1.,0.,0.,1.),p1inh);
   Rot.RotateBack(p1outh);
-//    cout<<" p1outh="<<p1outh<<endl;
-//    cout<<" sphi/ct="<<p1outh[2]/p1outh.PPerp()<<"/"<<p1outh[3]/p1outh.PSpat()<<endl;
 
   double pa1;
   if (dabs(a-ctmax)<1.e-14) pa1 = 0.;
@@ -706,8 +694,6 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
   if (a<=1.0+1.0e-6) a = 1.0+1.0e-6;
   if (a<aminct) a=aminct;
-//      cout<<"TChannelMomenta"<<endl;
-//      cout<<" a="<<a<<" "<<a-ctmin<<" "<<a-ctmax<<endl;
   if (dabs(a-ctmax)<1.e-14) a=ctmax;
   aminct = Channel_Basics::Tj1(ctexp,a-ctmin,a-ctmax,ran1);
   double ct = a - aminct;
@@ -715,27 +701,14 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   if (aminctflag==1) st = sqrt(aminct*(1.+ct));
                 else st = sqrt(1.-sqr(ct));
   double phi = 2.*M_PI*ran2;
-  p1outh     = Vec4D(p1outh[0],p1outmass*Vec3D(st*cos(phi),st*::sin(phi),ct)); 
-//     if(!IsEqual(sqrt(s),pin[0])){
-//       cout.precision(12);
-//      cout<<"1 p1outh="<<p1outh<<endl;
-//      cout<<"1 sphi/ct/a="<<::sin(phi)<<"/"<<ct<<"/"<<endl;
-//      cout<<"1 rans "<<ran1<<" "<<ran2<<endl;
-//     }
+  p1outh     = Vec4D(p1outh[0],p1outmass*Vec3D(st*cos(phi),st*::sin(phi),ct));
   Vec4D help;
   Channel_Basics::Boost(1,pin,help,p1in);
-//     if(!IsEqual(sqrt(s),pin[0])){
-//       cout<<"1 bp1in= "<<p1in<<"<-"<<help<<endl;
-//       cout<<"1 p1inh= "<<p1inh<<endl;
-//     }
 
   Poincare Rot(p1inh,help);
   help = p1outh;
   Rot.Rotate(help);
   Channel_Basics::Boost(0,pin,help,p1out);
-//     if(!IsEqual(sqrt(s),pin[0])){
-//       cout<<"1 bp1out="<<p1out<<"<-"<<help<<"<-"<<p1outh<<endl;
-//     }
 
   p2out = pin+(-1.)*p1out;
 
@@ -814,18 +787,18 @@ double Channel_Elements::GenerateYUniform(const double tau,const Double_Containe
   /*!
     The boundaries for y are
     \begin{align}
-    \frac{1}{2}\log\frac{x_{1, min}^2}{\tau} \le y \le \frac{1}{2}\frac{x_{1, max}^2}{\tau}
-    \frac{1}{2}\log\frac{\tau}{x_{2, max}^2} \le y \le \frac{1}{2}\frac{\tau}{x_{2, min}^2}
+    \frac{1}{2}\log\frac{x_{1, min}^2}{\tau} \le y \le \log\frac{1}{2}\frac{x_{1, max}^2}{\tau}
+    \frac{1}{2}\log\frac{\tau}{x_{2, max}^2} \le y \le \log\frac{1}{2}\frac{\tau}{x_{2, min}^2}
     \end{align}
     where $x_{1/2, max}$ stem from the corresponding Base or the hard process respectively and
-    x_{1, min} = xinfo[0] x_{1, max} = xinfo[1]
-    x_{2, min} = xinfo[2] x_{2, max} = xinfo[3]
+    x_{1, min} = xinfo[0] x_{1, max} = xinfo[2]
+    x_{2, min} = xinfo[1] x_{2, max} = xinfo[3]
   */
   double logtau=0.5*log(tau);
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=ymin+(ymax-ymin)*ran;
@@ -854,11 +827,11 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   msg_Out()<<METHOD<<": "<<yinfo[2]<<" in ["<<ymin<<", "<<ymax<<"] from "
-	   <<"x = ["<<xinfo[0]<<", "<<xinfo[1]<<"]\n";
+	   <<"x = ["<<xinfo[0]<<", "<<xinfo[2]<<"]\n";
   if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
   ran = (yinfo[2]-ymin)/(ymax-ymin);
   return (ymax-ymin);
@@ -873,7 +846,7 @@ double Channel_Elements::GenerateYCentral(const double tau,const Double_Containe
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=pre*tan(ran*atan(ymax/pre)+(1.-ran)*atan(ymin/pre));
@@ -898,7 +871,7 @@ double Channel_Elements::WeightYCentral(const double tau,const Double_Container 
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
@@ -916,7 +889,7 @@ double Channel_Elements::GenerateYForward(const double yexponent,const double ta
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   double ypeak = ymax-xinfo[3];
@@ -935,7 +908,6 @@ double Channel_Elements::GenerateYForward(const double yexponent,const double ta
       { msg_Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
 	 y = ymax; }
   }
-  //std::cout<<ymin<<" "<<ymax<<" vs. "<<y<<endl;
   return y;
 }
 
@@ -946,7 +918,7 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
@@ -970,10 +942,10 @@ double Channel_Elements::GenerateYBackward(const double yexponent,const double t
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymin = ATOOLS::Max(yinfo[0],ymin);
   ymax = ATOOLS::Min(yinfo[1],ymax);
-  double y = -Channel_Basics::PeakedDist(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1,ran);
+  double y = -Channel_Basics::PeakedDist(-ymin-xinfo[2],yexponent,-ymax,-ymin,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
     msg_Error()<<"Channel_Elements::GenerateYBackward("<<logtau<<","<<xinfo<<","
@@ -998,12 +970,12 @@ double Channel_Elements::WeightYBackward(const double yexponent,const double tau
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
-  double wt = Channel_Basics::PeakedWeight(-ymin-xinfo[1],yexponent,-ymax,-ymin,-yinfo[2],-1,ran)*
-    pow(-ymin-xinfo[1]+yinfo[2],yexponent);
+  double wt = Channel_Basics::PeakedWeight(-ymin-xinfo[2],yexponent,-ymax,-ymin,-yinfo[2],-1,ran)*
+    pow(-ymin-xinfo[2]+yinfo[2],yexponent);
     if (!(wt>0) && !(wt<0) && wt!=0) {
       msg_Error()<<"WeightYBackward produces a nan!"<<endl
 			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;

@@ -27,6 +27,7 @@ Collider_Weight::~Collider_Weight() {}
 void Collider_Weight::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid+std::string("s'"),5,0,info);
   m_ykey.Assign(m_keyid+std::string("y"),3,0,info);
+  // Convention for m_xkey: [x_{min,beam0}, x_{min,beam1}, x_{max,beam0}, x_{max,beam1}]
   m_xkey.Assign(m_keyid+std::string("x"),4,0,info);
 }
 
@@ -36,12 +37,12 @@ bool Collider_Weight::Calculate(const double & scale) {
   case collidermode::monochromatic:
     return true;
   case collidermode::spectral_1:
-    return p_beams[0]->CalculateWeight(m_xkey[2],scale);
+    return p_beams[0]->CalculateWeight(m_xkey[4],scale);
   case collidermode::spectral_2:
     return p_beams[1]->CalculateWeight(m_xkey[5],scale);
   case collidermode::both_spectral:
-    return (p_beams[0]->CalculateWeight(m_xkey[2],scale) &&
-	    p_beams[0]->CalculateWeight(m_xkey[5],scale));
+    return (p_beams[0]->CalculateWeight(m_xkey[4],scale) &&
+	    p_beams[1]->CalculateWeight(m_xkey[5],scale));
   case collidermode::unknown:
     THROW(fatal_error,"Unknown collider mode, impossible to calculate weight.");
   }
