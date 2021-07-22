@@ -638,7 +638,6 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   Channel_Basics::Boost(1,pin,p1outh,help);
   help=p1in;
   Channel_Basics::Boost(1,pin,p1inh,help);
-
   Poincare Rot(Vec4D(1.,0.,0.,1.),p1inh);
   Rot.RotateBack(p1outh);
 
@@ -830,8 +829,8 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
   double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   ymin=ATOOLS::Max(yinfo[0],ymin);
-  msg_Out()<<METHOD<<": "<<yinfo[2]<<" in ["<<ymin<<", "<<ymax<<"] from "
-	   <<"x = ["<<xinfo[0]<<", "<<xinfo[2]<<"]\n";
+  /*msg_Out()<<METHOD<<": "<<yinfo[2]<<" in ["<<ymin<<", "<<ymax<<"] from "
+	   <<"x = ["<<xinfo[0]<<", "<<xinfo[2]<<"]\n";*/
   if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
   ran = (yinfo[2]-ymin)/(ymax-ymin);
   return (ymax-ymin);

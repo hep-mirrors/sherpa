@@ -89,7 +89,6 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
 				  Variations_Mode varmode,
 				  const psmode::code mode)
 {
-  msg_Out()<<"=======================================================\n";
   m_cmode  = mode;
   p_active = process;
   m_wgtmap = 0.0;
@@ -100,23 +99,16 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   for (size_t i(0);i<p_lab.size();++i) {
     if (p_lab[i].Nan()) return 0.0;
   }
-  msg_Out()<<"* after point:\n"
-	   <<"*       "<<p_lab[0]<<" + "<<p_lab[1]<<"\n"
-	   <<"    --> "<<p_lab[2]<<" + "<<p_lab[3]<<"\n"; 
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass()) return 0.0;
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
-    msg_Out()<<"* ME weight = "<<m_wgtmap;
     m_wgtmap  *= m_psweight;
     m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->Process(),
                                                        p_process->TotalXS()));
     m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
     p_lab      = process->Momenta();
-    msg_Out()<<"* after trigger & calculating: ps = "<<m_psweight<<"\n"
-	     <<"*       "<<p_lab[0]<<" + "<<p_lab[1]<<"\n"
-	     <<"    --> "<<p_lab[2]<<" + "<<p_lab[3]<<"\n"; 
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
     ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
   }
