@@ -13,7 +13,6 @@
 
 using namespace ATOOLS;
 using namespace PDF;
-using namespace std;
 
 static int s_nozeropdf=-1;
 
@@ -245,21 +244,14 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
     yt=exp(yt);
     m_x[0]=tau*yt;
     m_x[1]=tau/yt;
-    //msg_Out()<<METHOD<<" (s = "<<sp<<", y = "<<y<<"):\n"
-    //	     <<"   tau = "<<tau<<", yt = "<<log(yt)<<" --> "<<yt<<", "
-    //	     <<"x1 = "<<m_x[0]<<", x2 = "<<m_x[1]<<"\n";
   }
   else {
     THROW(fatal_error,"Invalid ISR mode");
   }
   if (PDF(0) && (m_x[0]<PDF(0)->XMin() || m_x[0]>PDF(0)->XMax())) return false;
   if (PDF(1) && (m_x[1]<PDF(1)->XMin() || m_x[1]>PDF(1)->XMax())) return false;
-  //msg_Out()<<"*   pp = "<<pp<<", pm = "<<pm<<"\n"
-  //	   <<"*   s1, 2 = "<<s1<<", "<<s2<<", st = "<<st<<"\n";
   p[0]=p_cms[0]=m_x[0]*pp+s1/st/m_x[0]*pm;
   p[1]=p_cms[1]=m_x[1]*pm+s2/st/m_x[1]*pp;
-  //msg_Out()<<"*   p[0] = "<<p[0]<<"\n"
-  //	   <<"*   p[1] = "<<p[1]<<"\n";
   if (m_swap) {
     std::swap<Vec4D>(p[0],p[1]);
     std::swap<Vec4D>(p_cms[0],p_cms[1]);
@@ -269,8 +261,6 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
   m_cmsboost.Boost(p[1]);
   // m_x[0]=p_cms[0].PPlus()/pa.PPlus();
   // m_x[1]=p_cms[1].PMinus()/pb.PMinus();
-  //msg_Out()<<"*   --> p[0] = "<<p[0]<<"\n"
-  //	   <<"*   --> p[1] = "<<p[1]<<"\n";
   if (m_x[0]>=1.0) m_x[0]=1.0-1.0e-12;
   if (m_x[1]>=1.0) m_x[1]=1.0-1.0e-12;
   return true;
@@ -308,6 +298,7 @@ void ISR_Handler::Reset()
 void ISR_Handler::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign("ISR::s'",5,0,info);
   m_ykey.Assign("ISR::y",3,0,info);
+  // Convention for m_xkey: [x_{min,beam0}, x_{min,beam1}, x_{max,beam0}, x_{max,beam1}]
   m_xkey.Assign("ISR::x",4,0,info);
   SetLimits();
 }
@@ -321,17 +312,17 @@ void ISR_Handler::SetLimits()
   m_xkey[0] = ((m_mass2[0]==0.0)?
 	       -0.5*std::numeric_limits<double>::max():
 	       log(m_mass2[0]/sqr(p_beam[0]->OutMomentum().PPlus())));
-  m_xkey[2] = ((m_mass2[1]==0.0)?
+  m_xkey[1] = ((m_mass2[1]==0.0)?
 	       -0.5*std::numeric_limits<double>::max():
 	       log(m_mass2[1]/sqr(p_beam[1]->OutMomentum().PMinus())));
   double e1 = p_beam[0]->OutMomentum()[0];
-  m_xkey[1] = ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
+  m_xkey[2] = ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
 			  (1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1());
   double e2 = p_beam[1]->OutMomentum()[0];
   m_xkey[3] = ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
 			  (1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2());
-  m_sprimekey[1] = m_splimits[1] = Min(m_splimits[1],m_splimits[2]*m_xkey[1]*m_xkey[3]);
-  m_xkey[1] = log(m_xkey[1]);
+  m_sprimekey[1] = m_splimits[1] = Min(m_splimits[1],m_splimits[2]*m_xkey[2]*m_xkey[3]);
+  m_xkey[2] = log(m_xkey[2]);
   m_xkey[3] = log(m_xkey[3]);
 }
 
@@ -352,9 +343,6 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
     std::swap<Vec4D>(p1,p2);
     std::swap<double>(Q12,Q22);
   }
-  //msg_Out()<<METHOD<<"(mode = "<<m_mode<<", Q2 = "<<Q12<<"):\n"
-  //	   <<"*   p1 = "<<p1<<"  ("<<fl1<<")\n"
-  //	   <<"*   p2 = "<<p2<<"  ("<<fl2<<")\n";
   x1=CalcX(p1);
   x2=CalcX(p2);
   if (IsBad(x1) || IsBad(x2) || IsBad(Q12) || IsBad(Q22)) {
@@ -387,7 +375,7 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
   if ((cmode==1 && PDF(0)==NULL) ||
       (cmode==2 && PDF(1)==NULL)) return 1.0;
   const auto include_both_pdfs = (cmode == 3);
-  // checking remnant kinematics only makes sense when both PDFs are included;
+  // Checking remnant kinematics only makes sense when both PDFs are included;
   // NOTE: the check is done here because CheckRemnantKinematics internally
   // calls the PDF’s CalculateSpec, which overwrites its m_Q member; we don't
   // want this to happen after the following switch-statement, where this is

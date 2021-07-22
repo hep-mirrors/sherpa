@@ -80,7 +80,7 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D * moms) {
 }
 
 bool Collider_Kinematics::MakeMonochromaticBeams(ATOOLS::Vec4D * moms) {
-  for (size_t beam=0;beam<2;beam++) m_xkey[3*beam+2] = 1.;
+  for (size_t beam=0;beam<2;beam++) m_xkey[beam+2] = 1.;
   moms[0] = m_fixp_cms[0];
   moms[1] = m_fixp_cms[1];
   return true;
@@ -108,13 +108,14 @@ bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D * moms) {
 void Collider_Kinematics::CalculateAndSetX(size_t beam,const ATOOLS::Vec4D & p) {
   Vec4D q = p;
   m_CMSBoost.BoostBack(q);
-  m_xkey[3*beam+2] = 2.*q[0]/p_beams[beam]->Energy();
-  p_beams[beam]->SetX(m_xkey[3*beam+2]);
+  m_xkey[beam+2] = 2.*q[0]/p_beams[beam]->Energy();
+  p_beams[beam]->SetX(m_xkey[beam+2]);
 }
 
 void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid+string("s'"),5,0,info);
   m_ykey.Assign(m_keyid+string("y"),3,0,info);
+  // Convention for m_xkey: [x_{min,beam0}, x_{min,beam1}, x_{max,beam0}, x_{max,beam1}, x_{val,beam0}, x_{val,beam1}]
   m_xkey.Assign(m_keyid+string("x"),6,0,info);
   m_sprimekey[0] = Max(m_smin, m_sminPS);
   m_sprimekey[1] = m_sprimekey[2] = m_smax;
@@ -130,25 +131,25 @@ void Collider_Kinematics::SetLimits() {
   m_sprimekey[0] = Max(m_smin, m_sminPS);
   m_sprimekey[1] = m_sprimekey[2] = m_smax;
   m_sprimekey[3] = m_S;
-  double yfroms  = 0.5*log(m_smax/m_smin);
-  m_ykey[0]      = m_ymin = -yfroms;
-  m_ykey[1]      = m_ymax = -yfroms;
+  // double yfroms  = 0.5*log(m_smax/m_smin);
+  m_ykey[0]      = m_ymin;// = -yfroms;
+  m_ykey[1]      = m_ymax;// = -yfroms;
   m_ykey[2]      = 0.;
   for (size_t i=0;i<2;i++) {
     double p = i==0?
       p_beams[0]->OutMomentum().PPlus():
       p_beams[1]->OutMomentum().PMinus();
     double e  = p_beams[i]->OutMomentum()[0];
-    m_xkey[3*i]   = IsZero(m_m[i],1.e-13)?
+    m_xkey[i]   = IsZero(m_m[i],1.e-13)?
                     -0.5*std::numeric_limits<double>::max():
                     2.*log(m_m[i]/p);
-    m_xkey[3*i+1] = log(Min(p_beams[i]->Xmax(),
+    m_xkey[i+2] = log(Min(p_beams[i]->Xmax(),
 			     (e/p*(1.0+sqrt(1.0-sqr(m_m[i]/e))))));
   }
   // sprime's with masses - still need to check for masses
-  double sprimemin = Max(m_sprimekey[0],m_S*exp(m_xkey[0]+m_xkey[3]));
+  double sprimemin = Max(m_sprimekey[0],m_S*exp(m_xkey[0]+m_xkey[1]));
   if (sprimemin>sqr(m_m[0]+m_m[1])) m_sprimekey[0] = sprimemin;
-  double sprimemax = Min(m_smax,m_S*exp(m_xkey[1]+m_xkey[4]));
+  double sprimemax = Min(m_smax,m_S*exp(m_xkey[2]+m_xkey[3]));
   if (sprimemax>sqr(m_m[0]+m_m[1])) m_sprimekey[1] = sprimemax;
 }
 
