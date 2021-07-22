@@ -171,16 +171,9 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
           m_isrspkey[1] = p_pshandler->Active()->Process()->SPrimeMax();
       }
       p_isrchannels->GeneratePoint();
-      //msg_Out()<<METHOD<<":\n"
-      //       <<"*   s = "<<m_isrspkey[3]<<" "
-      //       <<"in ["<<m_isrspkey[0]<<", "<<m_isrspkey[1]<<"], "
-      //       <<"key[2] = "<<m_isrspkey[2]<<",\n"
-      //       <<"*   y = "<<m_isrykey[2]<<" "
-      //       <<"in ["<<m_isrykey[0]<<", "<<m_isrykey[1]<<"]\n";
     }
     m_sprime = m_osmass?m_isrspkey[4]:m_isrspkey[3];
     m_y     += m_isrykey[2];
-    //msg_Out()<<"*** s = "<<m_sprime<<", y = "<<m_y<<"\n";
     m_ISsymmetryfactor =
       p_isrhandler->GenerateSwap(p_pshandler->Active()->Process()->Flavours()[0],
 				 p_pshandler->Active()->Process()->Flavours()[1])?2.0:1.0;
@@ -193,10 +186,6 @@ bool Phase_Space_Point::DefineFSRKinematics() {
   ran->Get();
   p_pshandler->Cuts()->Update(m_sprime,m_y);
   p_fsrchannels->GeneratePoint(p_moms,p_pshandler->Cuts());
-  //msg_Out()<<METHOD<<" (s = "<<m_sprime<<", y ="<<m_y<<"):\n"
-  //	   <<"*   "<<p_moms[0]<<" ("<<p_pshandler->Flavs()[0]<<")\n"
-  //	   <<"*   "<<p_moms[1]<<" ("<<p_pshandler->Flavs()[1]<<")\n"
-  //	   <<"*   "<<p_moms[2]<<" ("<<p_pshandler->Flavs()[2]<<")\n";
   return true;
 }
 
@@ -223,9 +212,6 @@ bool Phase_Space_Point::MakeIncoming()
     double E1 = x*Eprime, E2 = (1.-x)*Eprime, pz = sqrt(sqr(E1)-m_masses2[0]);
     p_moms[0] = Vec4D(E1,0.,0.,pz);
     p_moms[1] = Vec4D(E2,0.,0.,-pz);
-    //msg_Out()<<METHOD<<" (s = "<<m_sprime<<")\n"
-    //	     <<"*   "<<p_moms[0]<<"\n"
-    //	     <<"*   "<<p_moms[1]<<"\n";
     return true;
   }
   msg_Error()<<"Error in"<<METHOD<<":\n"
@@ -278,16 +264,10 @@ void Phase_Space_Point::CorrectMomenta() {
       p_moms[i][0]=E0[i]+E1[i]*eps+E2[i]*sqr(eps);
   }
   for (size_t i(0);i<m_nin;++i) p_moms[i]=-p_moms[i];
-  //msg_Out()<<METHOD<<"\n"
-  //	   <<"*   "<<p_moms[0]<<"\n"
-  //	   <<"*   "<<p_moms[1]<<"\n"
-  //	   <<"*   "<<p_moms[2]<<"\n";
 }
 
 double Phase_Space_Point::CalculateWeight() {
-  msg_Out()<<METHOD<<":\n";
   if (!Check4Momentum()) {
-    msg_Out()<<"*   check of four momenta failed.\n";
     m_weight = 0.;
   }
   else {
@@ -295,16 +275,13 @@ double Phase_Space_Point::CalculateWeight() {
     if (p_isrchannels && !(m_mode&psmode::no_gen_isr)) {
       p_isrchannels->GenerateWeight(p_isrhandler->On());
       m_weight *= p_isrchannels->Weight();
-      msg_Out()<<"*   isr  = "<<p_isrchannels->Weight()<<"\n";
     }
     if (p_beamchannels) {
       p_beamchannels->GenerateWeight(int(p_beamhandler->ColliderMode()));
       m_weight *= p_beamchannels->Weight();
-      msg_Out()<<"*   beam = "<<p_beamchannels->Weight()<<"\n";
     }
     p_fsrchannels->GenerateWeight(p_moms,p_cuts);
     m_weight *= p_fsrchannels->Weight();
-    msg_Out()<<"*   fsr  = "<<p_fsrchannels->Weight()<<"\n";
   }
   return m_weight;
 }

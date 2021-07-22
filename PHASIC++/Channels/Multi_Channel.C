@@ -351,8 +351,8 @@ void Multi_Channel::GeneratePoint(int mode)
 
 void Multi_Channel::GenerateWeight(int mode)
 {
-  msg_Out()<<METHOD<<"(mode = "<<mode<<") for "
-	   <<channels.size()<<" channels.\n";
+  /*msg_Out()<<METHOD<<"(mode = "<<mode<<") for "
+	   <<channels.size()<<" channels.\n";*/
   if (channels.size()==1) {
     channels[0]->GenerateWeight();
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
@@ -362,8 +362,8 @@ void Multi_Channel::GenerateWeight(int mode)
   for (size_t i=0;i<channels.size();++i) {
     if (channels[i]->Alpha()>0.) {
       channels[i]->GenerateWeight();
-      msg_Out()<<"* ["<<i<<"] alpha = "<<channels[i]->Alpha()<<" : "
-	       <<channels[i]->Weight()<<" ("<<channels[i]->Name()<<")\n";
+      /*msg_Out()<<"* ["<<i<<"] alpha = "<<channels[i]->Alpha()<<" : "
+	       <<channels[i]->Weight()<<" ("<<channels[i]->Name()<<")\n";*/
       if (!(channels[i]->Weight()>0)&&
 	  !(channels[i]->Weight()<0)&&(channels[i]->Weight()!=0)) {
 	msg_Error()<<"Multi_Channel::GenerateWeight(): ("<<this->name
