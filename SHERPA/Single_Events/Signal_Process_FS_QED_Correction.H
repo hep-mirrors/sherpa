@@ -31,7 +31,7 @@ namespace SHERPA {
   private :
     bool                      m_on;
     bool                      m_qed;
-    bool                      m_forceqedonnloqcd;
+    bool                      m_onme;
     Matrix_Element_Handler  * p_mehandler;
     Soft_Photon_Handler     * p_sphotons;
     ATOOLS::NLO_subevtlist  * p_newsublist;
