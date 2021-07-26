@@ -10,7 +10,7 @@ Beam_Base::Beam_Base(beamspectrum::code _type,const ATOOLS::Flavour _beam,
 		     const int _dir) :
   m_type(_type), m_beam(_beam), m_bunch(m_beam), m_dir(_dir),
   m_energy(_energy), m_polarisation(_polarisation),
-  m_x(1.), m_Q2(0.), m_weight(1.)
+  m_x(1.), m_Q2(0.), m_weight(1.), m_on(false)
 {
   Init();
 }

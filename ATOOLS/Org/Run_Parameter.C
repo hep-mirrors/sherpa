@@ -436,7 +436,12 @@ void Run_Parameter::Gen::WriteCitationInfo()
 }
 
 void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
-  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(_ecms));
+  if (Settings::GetMainSettings().GetGlobalTags().find("E_CMS") !=
+      Settings::GetMainSettings().GetGlobalTags().end()) {
+    Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(_ecms));
+  }
+  else msg_Info()<<METHOD<<" tries to set tag 'E_CMS' again.\n"
+		 <<"   Ignore and hope for the best.\n";
   m_ecms    = _ecms;
 }
 

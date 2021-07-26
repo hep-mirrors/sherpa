@@ -45,8 +45,9 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   size_t mode = 0;
   for (short int i=0;i<2;i++) {
     p_BeamBase[i] = m_parameters.InitSpectrum(i);
+    msg_Out()<<METHOD<<"(i = "<<i<<"): "<<p_BeamBase[i]->On()<<"\n";
     if (p_BeamBase[i]==NULL) return false;
-    if (p_BeamBase[i]->On()) m_mode += i+1;
+    if (p_BeamBase[i]->On()) mode += i+1;
     if (p_BeamBase[i]->PolarisationOn()) m_polarisation += i+1;
   }
   switch (mode) {
@@ -60,6 +61,7 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
   rpa->gen.SetPBeam(0,p_BeamBase[0]->InMomentum());
   rpa->gen.SetPBeam(1,p_BeamBase[1]->InMomentum());
+  msg_Out()<<METHOD<<"(mode = "<<int(m_collidermode)<<")\n";
   return true;
 }
 
@@ -106,10 +108,12 @@ bool Beam_Spectra_Handler::InitTheWeight()
 
 void Beam_Spectra_Handler::Output() {
   msg_Info()<<"Beam_Spectra_Handler: type = "<<m_type<<endl
-	   <<"    for "<<p_BeamBase[0]->Beam()
-	    <<" (on = "<<p_BeamBase[0]->On()<<", p = "<<p_BeamBase[0]->InMomentum()<<")"<<endl
-	   <<"    and "<<p_BeamBase[1]->Beam()
-	    <<" (on = "<<p_BeamBase[0]->On()<<", p = "<<p_BeamBase[1]->InMomentum()<<")."<<endl;
+	    <<"    for "<<p_BeamBase[0]->Beam()
+	    <<" (on = "<<p_BeamBase[0]->On()<<", "
+	    <<"p = "<<p_BeamBase[0]->InMomentum()<<")"<<endl
+	    <<"    and "<<p_BeamBase[1]->Beam()
+	    <<" (on = "<<p_BeamBase[0]->On()<<", "
+	    <<"p = "<<p_BeamBase[1]->InMomentum()<<")."<<endl;
 }
 
 /* ----------------------------------------------------------------
