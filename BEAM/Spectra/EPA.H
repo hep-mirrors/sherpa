@@ -40,8 +40,6 @@ namespace BEAM {
 
     bool   CalculateWeight(double, double);
     double Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
-    bool   On() { return 1; }
-
   };// end of class EPA
 
 }// end of namespace BEAM

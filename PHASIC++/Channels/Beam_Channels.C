@@ -241,11 +241,11 @@ void Beam_Channels::AddSimplePole(const size_t & chno,const size_t & mode) {
 	 yit!=m_yexponents.end();yit++) {
       if (dabs(*yit)<1.e-3) {
 	Add(new Simple_Pole_Uniform(spex,m_keyid,p_psh->GetInfo(),mode));
-	Add(new Simple_Pole_Central(spex,m_keyid,p_psh->GetInfo(),mode));
+	//Add(new Simple_Pole_Central(spex,m_keyid,p_psh->GetInfo(),mode));
       }
       else if (mode==3) {
-	Add(new Simple_Pole_Forward(spex,(*yit),m_keyid,p_psh->GetInfo(),mode));
-	Add(new Simple_Pole_Backward(spex,(*yit),m_keyid,p_psh->GetInfo(),mode));
+	//Add(new Simple_Pole_Forward(spex,(*yit),m_keyid,p_psh->GetInfo(),mode));
+	//Add(new Simple_Pole_Backward(spex,(*yit),m_keyid,p_psh->GetInfo(),mode));
       }
     }
   }

@@ -136,6 +136,7 @@ bool Phase_Space_Point::DefineBeamKinematics() {
   // -- s' and rapidity y for collider mode,
   // -- s' only for relic density mode (integration over frame implicit)
   // -- s', y = E1/(E1+E2), and cos(theta) for DM annihilation mode
+  msg_Out()<<METHOD<<"(mode = "<<int(p_beamhandler->ColliderMode())<<")\n";
   if (p_beamhandler->On() && p_beamchannels!=NULL) {
     p_beamhandler->SetSprimeMin(m_smin);
     p_beamhandler->SetLimits();
@@ -267,10 +268,9 @@ void Phase_Space_Point::CorrectMomenta() {
 }
 
 double Phase_Space_Point::CalculateWeight() {
-  if (!Check4Momentum()) {
-    m_weight = 0.;
-  }
-  else {
+  msg_Out()<<METHOD<<"(mode = "<<int(p_beamhandler->ColliderMode())<<")\n";
+  m_weight = 0.;
+  if (Check4Momentum()) {
     m_weight=1.0;
     if (p_isrchannels && !(m_mode&psmode::no_gen_isr)) {
       p_isrchannels->GenerateWeight(p_isrhandler->On());

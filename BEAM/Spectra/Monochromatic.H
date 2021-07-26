@@ -12,7 +12,6 @@ namespace BEAM {
     ATOOLS::Flavour Remnant();
     bool        CalculateWeight(const double,const double);
     double      Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
-    bool        On() { return 0; }
   };
   /*!
     \file 

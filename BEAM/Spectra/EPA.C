@@ -19,9 +19,10 @@ EPA::EPA(const Flavour _beam,const double _energy,
 {
   Settings& s = Settings::GetMainSettings();
   RegisterDefaults();
-  m_bunch=Flavour(kf_photon);
-  m_vecout=Vec4D(m_energy,0.,0.,_dir*m_energy);
-
+  m_bunch  = Flavour(kf_photon);
+  m_vecout = Vec4D(m_energy,0.,0.,_dir*m_energy);
+  m_on     = true;
+  
   std::vector<double> q2Max{ s["EPA_q2Max"].GetVector<double>() };
   if (q2Max.size() != 1 && q2Max.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `EPA_q2Max'.");
@@ -44,6 +45,7 @@ EPA::EPA(const Flavour _beam,const double _energy,
        'qmi' calculation in CalculateWeight */
     THROW(critical_error,"Too big p_T cut ( "+ToString(m_pt_min)+")");
   }
+  msg_Out()<<METHOD<<": "<<m_vecout<<", pt in ["<<m_pt_min<<", "<<m_q2Max<<"]\n";
   if (s["EPA_Debug"].Get<bool>()) {
     std::vector<std::string> files{
       s["EPA_Debug_Files"].GetVector<std::string>() };
