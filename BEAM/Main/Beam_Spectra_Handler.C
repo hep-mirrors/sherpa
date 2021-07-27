@@ -42,10 +42,8 @@ Beam_Spectra_Handler::~Beam_Spectra_Handler() {
 }
 
 bool Beam_Spectra_Handler::InitTheBeams() {
-  size_t mode = 0;
   for (short int i=0;i<2;i++) {
     p_BeamBase[i] = m_parameters.InitSpectrum(i);
-    msg_Out()<<METHOD<<"(i = "<<i<<"): "<<p_BeamBase[i]->On()<<"\n";
     if (p_BeamBase[i]==NULL) return false;
     if (p_BeamBase[i]->On()) mode += i+1;
     if (p_BeamBase[i]->PolarisationOn()) m_polarisation += i+1;
@@ -61,7 +59,6 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
   rpa->gen.SetPBeam(0,p_BeamBase[0]->InMomentum());
   rpa->gen.SetPBeam(1,p_BeamBase[1]->InMomentum());
-  msg_Out()<<METHOD<<"(mode = "<<int(m_collidermode)<<")\n";
   return true;
 }
 

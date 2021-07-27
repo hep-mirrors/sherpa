@@ -45,7 +45,6 @@ EPA::EPA(const Flavour _beam,const double _energy,
        'qmi' calculation in CalculateWeight */
     THROW(critical_error,"Too big p_T cut ( "+ToString(m_pt_min)+")");
   }
-  msg_Out()<<METHOD<<": "<<m_vecout<<", pt in ["<<m_pt_min<<", "<<m_q2Max<<"]\n";
   if (s["EPA_Debug"].Get<bool>()) {
     std::vector<std::string> files{
       s["EPA_Debug_Files"].GetVector<std::string>() };
