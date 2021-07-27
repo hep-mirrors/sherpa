@@ -891,7 +891,7 @@ double Channel_Elements::GenerateYForward(const double yexponent,const double ta
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   double ypeak = ymax-xinfo[3];
-  if (yexponent>=1. && ATOOLS::IsEqual(ypeak,ymax)) ypeak*=1.00000001;
+  if (ATOOLS::IsEqual(ypeak,ymax)) ypeak*=1.00000001;
 
   double y=Channel_Basics::PeakedDist(ypeak,yexponent,ymin,ymax,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
@@ -921,7 +921,7 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
   ymax=ATOOLS::Min(yinfo[1],ymax);
   if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
   double ypeak = ymax-xinfo[3];
-  if (yexponent>=1. && ATOOLS::IsEqual(ypeak,ymax)) ypeak*=1.00000001;
+  if (ATOOLS::IsEqual(ypeak,ymax)) ypeak*=1.00000001;
 
   double wt = Channel_Basics::PeakedWeight(ypeak,yexponent,ymin,ymax,yinfo[2],-1,ran)*
     pow(ypeak-yinfo[2],yexponent);
