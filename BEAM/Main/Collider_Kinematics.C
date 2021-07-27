@@ -117,6 +117,7 @@ void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
   m_ykey.Assign(m_keyid+string("y"),3,0,info);
   // Convention for m_xkey:
   // [x_{min,beam0}, x_{min,beam1}, x_{max,beam0}, x_{max,beam1}, x_{val,beam0}, x_{val,beam1}]
+  // The limits, i.e. index 0,1,2,3 are saved as log(x), the values are saved linearly.
   m_xkey.Assign(m_keyid+string("x"),6,0,info);
   m_sprimekey[0] = Max(m_smin, m_sminPS);
   m_sprimekey[1] = m_sprimekey[2] = m_smax;

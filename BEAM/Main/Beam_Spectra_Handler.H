@@ -15,7 +15,7 @@ namespace BEAM {
     beammode::code     m_beammode;
     collidermode::code m_collidermode;
     bool               m_on;
-    int                m_polarisation;
+    int                m_mode,m_polarisation;
     std::string        m_name,m_type;
 
     bool InitTheBeams();

@@ -45,10 +45,10 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   for (short int i=0;i<2;i++) {
     p_BeamBase[i] = m_parameters.InitSpectrum(i);
     if (p_BeamBase[i]==NULL) return false;
-    if (p_BeamBase[i]->On()) mode += i+1;
+    if (p_BeamBase[i]->On()) m_mode += i+1;
     if (p_BeamBase[i]->PolarisationOn()) m_polarisation += i+1;
   }
-  switch (mode) {
+  switch (m_mode) {
   case 1: m_collidermode = collidermode::spectral_1; break;
   case 2: m_collidermode = collidermode::spectral_2; break;
   case 3: m_collidermode = collidermode::both_spectral; break;
