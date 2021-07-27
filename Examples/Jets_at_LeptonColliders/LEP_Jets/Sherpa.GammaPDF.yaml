@@ -1,6 +1,5 @@
-BEAMS:         [11, -11]
-BEAM_ENERGIES: [500., 500.]
-BEAM_SPECTRA:  [EPA, EPA]
+BEAMS:         [22, 22]
+BEAM_ENERGIES: [45.6, 45.6]
 
 PDF_LIBRARY: GRVSherpa
 ME_GENERATORS: [Comix]
@@ -16,9 +15,9 @@ ORDER_ALPHAS: 1
 
 
 PROCESSES:
-- 1 -1 -> 3 -3:
+- 93 93 -> 13 -13:
     Order: {QCD: Any, EW: 2}
 
 SELECTORS:
-- [Mass, 3, -3, 10., 10000.]
-- [PT, 3, 2., 10000.]
+- [Mass, 13, -13, 10., 10000000.]
+- [PT, 13, 5., 100000000.]

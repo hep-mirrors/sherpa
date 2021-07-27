@@ -802,8 +802,9 @@ double Channel_Elements::GenerateYUniform(const double tau,const Double_Containe
   ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=ymin+(ymax-ymin)*ran;
   if (ATOOLS::IsZero(y)) y=0.;
-  msg_Out()<<METHOD<<": "<<yinfo[2]<<" in ["<<ymin<<", "<<ymax<<"] from "
-	   <<"x = ["<<xinfo[0]<<", "<<xinfo[2]<<"]\n";
+  //msg_Out()<<METHOD<<": "<<yinfo[2]<<" in ["<<ymin<<", "<<ymax<<"] from "
+  //	   <<"x1 = ["<<xinfo[0]<<", "<<xinfo[2]<<"], "
+  //	   <<"x2 = ["<<xinfo[1]<<", "<<xinfo[3]<<"]\n";
   if (y<ymin || y>ymax){
     msg_Error()<<"Channel_Elements::GenerateYUniform("<<tau<<","<<xinfo<<","
 	       <<yinfo<<"): "<<" Y out of bounds !\n"
@@ -826,15 +827,16 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
   /*
     See GenerateYUniform for details
   */
-  msg_Out()<<METHOD<<"(mode = "<<mode<<")\n";
+  //msg_Out()<<METHOD<<"(mode = "<<mode<<")\n";
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   ymin=ATOOLS::Max(yinfo[0],ymin);
-  msg_Out()<<METHOD<<": "<<yinfo[2]<<" in ["<<ymin<<", "<<ymax<<"] from "
-	   <<"x = ["<<xinfo[0]<<", "<<xinfo[2]<<"]\n";
+  //msg_Out()<<METHOD<<": "<<yinfo[2]<<" in ["<<ymin<<", "<<ymax<<"] from "
+  //	   <<"x1 = ["<<xinfo[0]<<", "<<xinfo[2]<<"], "
+  //	   <<"x2 = ["<<xinfo[1]<<", "<<xinfo[3]<<"]\n";
   if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
   ran = (yinfo[2]-ymin)/(ymax-ymin);
   return (ymax-ymin);

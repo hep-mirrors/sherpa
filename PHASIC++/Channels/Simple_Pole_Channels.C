@@ -23,7 +23,7 @@ Simple_Pole_RelicDensity(const double exponent, const std::string cinfo,
   m_rannum   = 1;
   p_vegas    = new Vegas(m_rannum,100,m_name);
   p_rans     = new double[m_rannum];
-	msg_Out()<<"exponent="<<m_exponent<<"\n"; //debugging
+  //msg_Out()<<"exponent="<<m_exponent<<"\n"; //debugging
 }
 
 void Simple_Pole_RelicDensity::GeneratePoint(const double *rns)
@@ -136,15 +136,15 @@ void Simple_Pole_Uniform::GeneratePoint(const double *rns)
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
 				p_rans[1],m_mode);
-  msg_Out()<<"-----------------------------------------------\n"
-	   <<METHOD<<"(mode = "<<m_mode<<"): s' = "<<m_spkey[3]<<", y = "<<m_ykey[2]<<"\n"
-	   <<"* randoms = "<<p_rans[0]<<" & "<<p_rans[1]<<"\n"
-	   <<"-----------------------------------------------\n";
+  //msg_Out()<<"-----------------------------------------------\n"
+  //	   <<METHOD<<"(mode = "<<m_mode<<"): s' = "<<m_spkey[3]<<", y = "<<m_ykey[2]<<"\n"
+  //	   <<"* randoms = "<<p_rans[0]<<" & "<<p_rans[1]<<"\n"
+  //	   <<"-----------------------------------------------\n";
 }
 
 void Simple_Pole_Uniform::GenerateWeight(const int & mode)
 {
-  msg_Out()<<METHOD<<"(mode = "<<m_mode<<"): s' = "<<m_spkey[3]<<", y = "<<m_ykey[2]<<"\n";
+  //msg_Out()<<METHOD<<"(mode = "<<m_mode<<"): s' = "<<m_spkey[3]<<", y = "<<m_ykey[2]<<"\n";
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
       m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],
@@ -154,20 +154,20 @@ void Simple_Pole_Uniform::GenerateWeight(const int & mode)
   if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-    msg_Out()<<"* check y limits "<<m_ykey[2]<<" in ["<<m_ykey[0]<<", "<<m_ykey[1]<<"]\n";
+    //msg_Out()<<"* check y limits "<<m_ykey[2]<<" in ["<<m_ykey[0]<<", "<<m_ykey[1]<<"]\n";
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
 				m_ygridkey[0],m_mode);
-      msg_Out()<<"* sred = "<<sred<<" --> "<<m_ygridkey[0]<<"\n";
+      //msg_Out()<<"* sred = "<<sred<<" --> "<<m_ygridkey[0]<<"\n";
     }
   }
   p_rans[0] = m_sgridkey[0];
   p_rans[1] = m_ygridkey[0];
-  msg_Out()<<"-----------------------------------------------\n"
-	   <<"* randoms = "<<p_rans[0]<<" & "<<p_rans[1]<<"\n";
+  //msg_Out()<<"-----------------------------------------------\n"
+  //	   <<"* randoms = "<<p_rans[0]<<" & "<<p_rans[1]<<"\n";
   double pw= p_vegas->GenerateWeight(p_rans);
-  msg_Out()<<"-----------------------------------------------\n";
+  //msg_Out()<<"-----------------------------------------------\n";
   m_weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
