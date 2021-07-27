@@ -81,7 +81,6 @@ void Beam_Parameters::RegisterDefaults()
 }
 
 Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
-  msg_Out()<<METHOD<<"(num = "<<num<<"): "<<m_beamspec[num]<<"\n";
   switch (GetSpectrum(num)) {
   case beamspectrum::monochromatic :
     return InitializeMonochromatic(num);
@@ -92,7 +91,6 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
   case beamspectrum::simple_Compton :
     return InitializeSimpleCompton(num);
   case beamspectrum::EPA :
-    msg_Out()<<"* Init EPA.\n";
     return InitializeEPA(num);
   case beamspectrum::DM :
     return InitializeDM_beam(num);

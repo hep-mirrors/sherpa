@@ -126,7 +126,7 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
      msg_Tracking()<<"   Found "<<p_psh->BeamIntegrator()->NChannels()
                    <<" Beam Integrators."<<endl;
    }
-   if ((p_psh->ISRIntegrator())) {
+   if (p_psh->ISRIntegrator()) {
      (p_psh->ISRIntegrator())->Reset();
      msg_Tracking()<<"   Found "<<p_psh->ISRIntegrator()->NChannels()
                    <<" ISR Integrators."<<endl;
