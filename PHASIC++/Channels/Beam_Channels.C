@@ -213,7 +213,7 @@ bool Beam_Channels::CreateChannels()
       AddLaserBackscattering(i,mode);
       break;
     case channel_type::exponential:
-			AddExponential(i,mode);
+      AddExponential(i,mode);
       break;
     case channel_type::leadinglog:
     case channel_type::unknown:

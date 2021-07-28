@@ -37,16 +37,19 @@ InitializeRemnants(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam) {
       else if (flav.IsLepton())
 	p_remnants[i] = new Electron_Remnant(isr->PDF(i),i);
       else if (flav.IsPhoton()) {
-	// TODO: This is a bit more tricky once we assume a photon with hadronic structure.
-	// Without a structure we do not need a remnant and will get away with No_Remnant.
+	// TODO: This is a bit more tricky once we assume a photon with
+	// hadronic structure.   Without a structure we do not need a
+	// remnant and will get away with No_Remnant.
 	msg_Error()<<METHOD<<": Photon remnants not implemented yet.\n"
 		   <<"   Will continue and assume point-particles.\n";
+	exit(1);
       }
     }
     if (p_remnants[i]==NULL) p_remnants[i] = new No_Remnant(i);
   }
-  // Finish the initialisation of the Remnant_Bases: make sure they know each other,
-  // their beam, the Colour_Generator, and hand them also to the ISR_Handler.
+  // Finish the initialisation of the Remnant_Bases: make sure they know
+  // each other, their beam, the Colour_Generator, and hand them also to
+  // the ISR_Handler.
   // TODO: this latter part may become obsolete - I will have to check this.
   for (size_t i=0;i<2;++i) {
     p_remnants[i]->SetPartner(p_remnants[1-i]);
@@ -58,32 +61,41 @@ InitializeRemnants(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam) {
 }
 
 void Remnant_Handler::DefineRemnantStrategy() {
-  // Pretty self-explanatory.  This covers the way of how we make sure that potential intrinsic
-  // transverse momenta in the beam breakups do not lead to violation of four-momentum
-  // conservation.  We have pretty much 4 options:
+  // Pretty self-explanatory.  This covers the way of how we make sure that
+  // potential intrinsic transverse momenta in the beam breakups do not lead
+  // to violation of four-momentum conservation.  We have pretty much 4
+  // options:
   // - simple, where the remnants do not break up;
-  // - ll where the breakup is collinear only and we only need to boost the system in the end;
-  // - DIS, where one breakup is collinear and the other involves transverse momenta; and
+  // - ll where the breakup is collinear only and we only need to boost
+  //   the system in the end;
+  // - DIS, where one breakup is collinear and the other involves transverse
+  //   momenta; and
   //   (TODO: this is the one I still need to implement)
   // - hh, where both breakups generate transverse momenta.
-  // For the latter two we will realize four-momentum conservation through insertion of a
-  // "soft" blob, mainly a garbage collection where we collect partiles and shuffle them
-  // in a pretty minimal fashion.
-  if (p_remnants[0]->Type()==rtp::intact && p_remnants[1]->Type()==rtp::intact)
+  // For the latter two we will realize four-momentum conservation through
+  // insertion of a "soft" blob, mainly a garbage collection where we collect
+  // particles and shuffle them in a pretty minimal fashion.
+  if (p_remnants[0]->Type()==rtp::intact &&
+      p_remnants[1]->Type()==rtp::intact)
     m_type = strat::simple;
-  else if (p_remnants[0]->Type()==rtp::lepton && p_remnants[1]->Type()==rtp::lepton)
+  else if (p_remnants[0]->Type()==rtp::lepton &&
+	   p_remnants[1]->Type()==rtp::lepton)
     m_type = strat::ll;
-  else if (p_remnants[0]->Type()==rtp::hadron && (p_remnants[1]->Type()==rtp::lepton ||
-						  p_remnants[1]->Type()==rtp::intact))
+  else if (p_remnants[0]->Type()==rtp::hadron &&
+	   (p_remnants[1]->Type()==rtp::lepton ||
+	    p_remnants[1]->Type()==rtp::intact))
     m_type = strat::DIS1;
   else if ((p_remnants[0]->Type()==rtp::lepton ||
-	    p_remnants[0]->Type()==rtp::intact) && p_remnants[1]->Type()==rtp::hadron)
+	    p_remnants[0]->Type()==rtp::intact) &&
+	   p_remnants[1]->Type()==rtp::hadron)
     m_type = strat::DIS2;
-  else if (p_remnants[0]->Type()==rtp::hadron && p_remnants[1]->Type()==rtp::hadron)
+  else if (p_remnants[0]->Type()==rtp::hadron &&
+	   p_remnants[1]->Type()==rtp::hadron)
     m_type = strat::hh;
   else {
     msg_Error()<<METHOD<<" throws error: no strategy found for remnants "
-	       <<int(p_remnants[0]->Type())<<" & "<<int(p_remnants[1]->Type())<<"\n"
+	       <<int(p_remnants[0]->Type())<<" & "
+	       <<int(p_remnants[1]->Type())<<"\n"
 	       <<"   Will exit the run.\n";
     exit(1);
   }
@@ -97,13 +109,15 @@ InitializeKinematicsAndColours() {
 }
 
 bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
-  // This method is called after each successful parton shower off a hard scatter.
-  // It extracts the two initial particles from the shower and extracts them
-  // from the corresponding beam remnant.
+  // This method is called after each successful parton shower off a hard
+  // scatter.  It extracts the two initial particles from the shower and
+  // extracts them from the corresponding beam remnant.
   
-  // Make sure only shower blobs with exactly two initiators are treated, and only once.
+  // Make sure only shower blobs with exactly two initiators are treated,
+  // and only once.
   if (!(showerblob->Type()==btp::Shower) ||
-      m_treatedshowerblobs.find(showerblob)!=m_treatedshowerblobs.end()) return true;
+      m_treatedshowerblobs.find(showerblob)!=m_treatedshowerblobs.end())
+    return true;
   size_t countIn = 0;
   for (size_t i=0;i<showerblob->NInP();++i) {
     if (!showerblob->InParticle(i)->ProductionBlob()) countIn++;
@@ -123,25 +137,27 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
 }
 
 void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
-  // After each showering step, we try to compensate some of the colours.  In the absence
-  // of multiple parton interactions this will not involve anything complicated with colours.
-  // In each step, the shower initiators are checked for being a valence quark.  In case they
-  // are, remnants (equivalent to recoilers) are generated, usually diquarks for protons,
-  // if they are seaquarks, suitable spectators are generated.  The colours of the shower
-  // initiators and, possibly, spectators will be added to a stack which will in turn partially
-  // replace the new colours.  This is handled in the Colour_Generator.
+  // After each showering step, we try to compensate some of the colours.
+  // In the absence of multiple parton interactions this will not involve
+  // anything complicated with colours.  In each step, the shower initiators
+  // are checked for being a valence quark.  In case they are, remnants
+  // (equivalent to recoilers) are generated, usually diquarks for protons,
+  // if they are seaquarks, suitable spectators are generated.  The colours
+  // of the shower initiators and, possibly, spectators will be added to a
+  // stack which will in turn partially replace the new colours.  This is
+  // handled in the Colour_Generator.
   m_colours.ConnectColours(showerblob);
 }
 
 Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
 						  Particle_List *const particlelist)
 {
-  // Adding the blobs related to the breakup of incident beams: one for each beam,
-  // plus, potentially a third one to balance transverse momenta. 
+  // Adding the blobs related to the breakup of incident beams: one for each
+  // beam, plus, potentially a third one to balance transverse momenta. 
   InitBeamAndSoftBlobs(bloblist);
   // Fill in the transverse momenta through the Kinematics_Generator.
-  // Check for colour connected parton-pairs including beam partons and add soft gluons in
-  // between them if their invariant mass is too large.
+  // Check for colour connected parton-pairs including beam partons and
+  // add soft gluons in between them if their invariant mass is too large.
   // This still needs debugging - therefore it is commented out.
   if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist)) {
     // || !m_decorrelator(p_softblob)) {
@@ -149,30 +165,34 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
     msg_Error()<<"Warning in "<<METHOD<<": return new event\n";
     return Return_Value::New_Event;
   }
-  //for (size_t beam=0;beam<2;beam++) msg_Out()<<(*p_remnants[beam]->GetBlob())<<"\n";
+  //for (size_t beam=0;beam<2;beam++)
+  //msg_Out()<<(*p_remnants[beam]->GetBlob())<<"\n";
   //msg_Out()<<(*p_softblob)<<"\n";
   Reset();
   return Return_Value::Success;
 }
 
 void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
-  // Making a new blob (softblob) to locally compensate 4 momentum.  Ultimately,
-  // it will reflect different strategies of how to compensate intrinsic kperp:
-  // hadron colliders vs. DIS
-  // For hh collisions, the softblob is inserted after the beam blobs and before the parton 
-  // shower blobs, to capture the kperp of both beams, pair-by-pair of the shower initiators, 
-  // to combine them into one transverse momentum, "kicking" the full shower blob around.
-  // In this way we can guarantee that the kperps between the two beams and their recoils
-  // are compensated by each other.
-  // For DIS we do not want to change the kinematics of the incident lepton, so we cannot use
-  // the other beam for the recoils.  Instad we take the full coloured final state after the
-  // shower for the kperp compensation.  Effectively we distribute the kperp of the shower
-  // initiator over all coloured FS particles and then shuffle their momenta together with
-  // the beam remnants.  To visualise this better, here the soft blob is inserted after both
-  // beam and shower blobs.
+  // Making a new blob (softblob) to locally compensate 4 momentum.
+  // Ultimately, it will reflect different strategies of how to compensate
+  // intrinsic kperp: hadron colliders vs. DIS
+  // For hh collisions, the softblob is inserted after the beam blobs and
+  // before the parton shower blobs, to capture the kperp of both beams,
+  // pair-by-pair of the shower initiators, to combine them into one
+  // transverse momentum, "kicking" the full shower blob around.  In this
+  // way we can guarantee that the kperps between the two beams and their
+  // recoils are compensated by each other.
+  // For DIS we do not want to change the kinematics of the incident lepton,
+  // so we cannot use the other beam for the recoils.  Instad we take the
+  // full coloured final state after the shower for the kperp compensation.
+  // Effectively we distribute the kperp of the shower initiator over all
+  // coloured FS particles and then shuffle their momenta together with the
+  // beam remnants.  To visualise this better, here the soft blob is
+  // inserted after both beam and shower blobs.
   if (!(m_type==strat::simple || m_type==strat::ll)) {
     p_softblob = m_kinematics.MakeSoftBlob();
-    if (m_type==strat::DIS1 || m_type==strat::DIS2) bloblist->push_back(p_softblob);
+    if (m_type==strat::DIS1 || m_type==strat::DIS2)
+      bloblist->push_back(p_softblob);
     else bloblist->push_front(p_softblob);
   }
   // Look for shower blobs that need beams and unset the flag
@@ -181,7 +201,8 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
     }
   }
-  // Remnant bases will generate their beam blobs, reset the incoming four-momenta
+  // Remnant bases will generate their beam blobs, reset the incoming
+  // four-momenta
   m_colours.ResetFlags();
   for (size_t beam=0;beam<2;beam++) {
     bloblist->push_front(p_remnants[beam]->MakeBlob());

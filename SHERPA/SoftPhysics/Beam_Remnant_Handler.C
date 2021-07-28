@@ -23,7 +23,8 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 
 
-Return_Value::code Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
+Return_Value::code
+Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
 {
   if (!m_fill) return TreatNoFill(bloblist);
   for (Blob_List::iterator bit=bloblist->begin();
@@ -74,6 +75,7 @@ FillBunchBlobs(Blob_List *const  bloblist,
     if ((*bit)->Has(blob_status::needs_beams) && 
 	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
+      msg_Out()<<(**bit)<<"\n";
       bunch = FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0));
       bloblist->push_front(bunch);
       if (m_beam>2) {
@@ -89,6 +91,8 @@ FillBunchBlobs(Blob_List *const  bloblist,
 
 Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle) 
 {
+  msg_Out()<<METHOD<<"("<<beam<<"): particle = "
+	   <<particle->Flav()<<": "<<particle->Momentum()<<"\n";
   Blob *blob = new Blob();
   blob->SetType(btp::Bunch);
   blob->SetBeam(beam);
@@ -100,11 +104,13 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle)
   blob->AddToOutParticles(particle);
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
       IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0])) {
+    msg_Out()<<METHOD<<" with fixed particle.\n";
     Particle *p = new Particle(*particle);
     p->SetNumber(0);
     blob->AddToInParticles(p);
   }
   else {
+    msg_Out()<<METHOD<<" with new particle.\n";
     Particle *p = new Particle(-1,p_beam->GetBeam(beam)->Beam(),
 			       p_beam->GetBeam(beam)->InMomentum());
     p->SetNumber(0);
@@ -119,6 +125,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle)
     blob->AddToOutParticles(p);
   }
   m_beam++;
+  msg_Out()<<(*blob)<<"\n";
   return blob;
 }
 

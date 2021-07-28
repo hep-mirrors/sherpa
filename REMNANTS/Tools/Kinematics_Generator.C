@@ -45,6 +45,7 @@ void Kinematics_Generator::SetKinType(Remnant_Handler * const rhandler) {
     m_kintype = kin_type::hh;
     break;
   }
+  msg_Out()<<METHOD<<" yields "<<m_kintype<<"\n";
 }
 
 void Kinematics_Generator::Reset() {
@@ -83,6 +84,7 @@ bool Kinematics_Generator::CollinearKinematics() {
     // By far and large here we have a fixed spectator, if necessary, and assign
     // the four-momentum difference between incoming beam particle and outgoing
     // shower initiator to it.
+    msg_Out()<<METHOD<<"\n";
     if (!p_remnants[beam]->FillBlob()) return false;
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }

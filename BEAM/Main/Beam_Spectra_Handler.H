@@ -40,6 +40,8 @@ namespace BEAM {
       p_weight->AssignKeys(info);
     }
     inline void SetLimits() { p_kinematics->SetLimits(); }
+    inline void BoostInCMS(ATOOLS::Vec4D & p) { p_kinematics->BoostInCMS(p); }
+    inline void BoostInLab(ATOOLS::Vec4D & p) { p_kinematics->BoostInLab(p); }
     inline void BoostInCMS(ATOOLS::Vec4D *p,const size_t & n) {
       p_kinematics->BoostInCMS(p,n);
     }

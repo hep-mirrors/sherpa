@@ -43,7 +43,8 @@ namespace REMNANTS {
 
     bool m_check, m_output;
     
-    void InitializeRemnants(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
+    void InitializeRemnants(PDF::ISR_Handler * isr,
+			    BEAM::Beam_Spectra_Handler * beam);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup(ATOOLS::Blob_List * bloblist);
