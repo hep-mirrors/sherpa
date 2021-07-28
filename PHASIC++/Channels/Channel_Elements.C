@@ -943,7 +943,10 @@ double Channel_Elements::GenerateYBackward(const double yexponent,const double t
   double ymax=ATOOLS::Min(xinfo[2]-logtau,logtau-xinfo[1]);
   ymin = ATOOLS::Max(yinfo[0],ymin);
   ymax = ATOOLS::Min(yinfo[1],ymax);
-  double y = -Channel_Basics::PeakedDist(-ymin-xinfo[2],yexponent,-ymax,-ymin,-1,ran);
+  double ypeak = -ymin-xinfo[2];
+  if (ATOOLS::IsEqual(ypeak,-ymin)) ypeak*=1.00000001;
+
+  double y = -Channel_Basics::PeakedDist(ypeak,yexponent,-ymax,-ymin,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
     msg_Error()<<"Channel_Elements::GenerateYBackward("<<logtau<<","<<xinfo<<","
@@ -972,7 +975,10 @@ double Channel_Elements::WeightYBackward(const double yexponent,const double tau
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
-  double wt = Channel_Basics::PeakedWeight(-ymin-xinfo[2],yexponent,-ymax,-ymin,-yinfo[2],-1,ran)*
+  double ypeak = -ymin-xinfo[2];
+  if (ATOOLS::IsEqual(ypeak,-ymin)) ypeak*=1.00000001;
+
+  double wt = Channel_Basics::PeakedWeight(ypeak,yexponent,-ymax,-ymin,-yinfo[2],-1,ran)*
     pow(-ymin-xinfo[2]+yinfo[2],yexponent);
     if (!(wt>0) && !(wt<0) && wt!=0) {
       msg_Error()<<"WeightYBackward produces a nan!"<<endl
