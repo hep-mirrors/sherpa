@@ -9,6 +9,8 @@ Photon_Remnant::Photon_Remnant(const unsigned int _m_beam):
 bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,
 			      ATOOLS::Particle_List *particlelist)
 {
+  msg_Out()<<METHOD<<" not fully implemented yet.  Will exit.\n";
+  exit(1);
   if (p_partner==NULL) {
     THROW(critical_error,"Partner Remnant not set.");
   }

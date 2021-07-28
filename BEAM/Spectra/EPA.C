@@ -264,20 +264,7 @@ Beam_Base *EPA::Copy()
   return new EPA(*this);
 }
 
-double EPA::Weight(Flavour fl)                
-{ 
-  return m_weight; 
-}
 
-ATOOLS::Vec4D EPA::OutMomentum()              
-{ 
-  return m_x*m_vecout; 
-}
-
-ATOOLS::Flavour EPA::Remnant()                
-{ 
-  return m_beam;
-}
 
 
 

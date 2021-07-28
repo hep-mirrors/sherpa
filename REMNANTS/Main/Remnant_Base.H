@@ -52,9 +52,11 @@ namespace REMNANTS {
 
     virtual bool Extract(ATOOLS::Particle *parton);
     virtual bool TestExtract(ATOOLS::Particle *parton);
-    virtual bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom)=0;
+    virtual bool TestExtract(const ATOOLS::Flavour &flav,
+			     const ATOOLS::Vec4D &mom)=0;
     virtual ATOOLS::Blob * MakeBlob();
-    virtual bool FillBlob(ATOOLS::ParticleMomMap *ktmap=NULL,const bool & copy=true)=0;
+    virtual bool FillBlob(ATOOLS::ParticleMomMap *ktmap=NULL,
+			  const bool & copy=true)=0;
     virtual void MakeSpectator(ATOOLS::Particle * parton) {}
     
     virtual void Reset(const bool & DIS=false);
@@ -64,7 +66,7 @@ namespace REMNANTS {
     inline void SetBeam(BEAM::Beam_Base * beam)      { p_beam = beam; }
     inline BEAM::Beam_Base * GetBeam() const         { return p_beam; }
     inline ATOOLS::Blob * GetBlob()                  { return p_beamblob; }
-    inline ATOOLS::Vec4D & InMomentum()              { return m_pbeam; }
+    inline const ATOOLS::Vec4D & InMomentum() const  { return p_beam->OutMomentum(); }
     inline void SetScale2(const double & scale2)     { m_scale2 = scale2; }
     inline ATOOLS::Part_List * GetExtracted()        { return &m_extracted; }
     inline ATOOLS::Part_List * GetSpectators()       { return &m_spectators; }

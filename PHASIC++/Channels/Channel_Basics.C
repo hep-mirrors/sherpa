@@ -101,8 +101,8 @@ double Channel_Basics::PeakedDist(double a,double cn,double cxm,double cxp,int k
     res = k * (pow(ran*pow(a+k*cxp,ce)+(1.-ran)*pow(a+k*cxm,ce),1/ce)-a);
   }
   else {
-//     if (cxp<-a) res = -k * (exp(ran*log(-k*a-cxp)+(1.-ran)*log(-k*a-cxm))-a);
-//            else res = k * (exp(ran*log(a+k*cxp)+(1.-ran)*log(a+k*cxm))-a);
+    //     if (cxp<-a) res = -k * (exp(ran*log(-k*a-cxp)+(1.-ran)*log(-k*a-cxm))-a);
+    //            else res = k * (exp(ran*log(a+k*cxp)+(1.-ran)*log(a+k*cxm))-a);
     res = k *( (a+k*cxm)*pow( (a+k*cxp)/(a+k*cxm) , ran) - a);
   }
   return res;

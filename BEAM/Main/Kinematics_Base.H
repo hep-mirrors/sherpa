@@ -42,11 +42,11 @@ namespace BEAM {
     virtual inline const double & Exponent(const size_t & i) const {
       return m_exponent[i];
     }
-
+    virtual inline void BoostInCMS(ATOOLS::Vec4D & p) { m_CMSBoost.Boost(p); }    
     virtual inline void BoostInCMS(ATOOLS::Vec4D* p,const size_t & n) {
       for (size_t i=0; i<n; ++i) m_CMSBoost.Boost(p[i]);
-    }
-    
+    }    
+    virtual inline void BoostInLab(ATOOLS::Vec4D & p) { m_CMSBoost.BoostBack(p); }
     virtual inline void BoostInLab(ATOOLS::Vec4D* p,const size_t & n) {
       for (size_t i=0; i<n; ++i) m_CMSBoost.BoostBack(p[i]);
     }

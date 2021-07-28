@@ -101,6 +101,7 @@ bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D * moms) {
   // defining the boost
   double coshy = exp(y)+exp(-y), sinhy = exp(y)-exp(-y);
   m_CMSBoost   = Poincare(Vec4D(coshy,0.,0.,sinhy));
+  //msg_Out()<<METHOD<<":"<<moms[0]<<", "<<moms[1]<<"\n";
   for (size_t i=0;i<2;i++) CalculateAndSetX(i,moms[i]);
   return true;
 }
@@ -108,7 +109,10 @@ bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D * moms) {
 void Collider_Kinematics::CalculateAndSetX(size_t beam,const ATOOLS::Vec4D & p) {
   Vec4D q = p;
   m_CMSBoost.BoostBack(q);
-  p_beams[beam]->SetX(2.*q[0]/p_beams[beam]->Energy());
+  p_beams[beam]->SetX(q[0]/p_beams[beam]->Energy());
+  p_beams[beam]->SetOutMomentum(q);
+  //msg_Out()<<METHOD<<"("<<beam<<"): "<<q[0]<<"/"<<p_beams[beam]->Energy()
+  //	   <<" --> "<<p_beams[beam]->X()<<", p = "<<p[0]<<"\n";
   m_xkey[beam+4] = p_beams[beam]->X();
 }
 

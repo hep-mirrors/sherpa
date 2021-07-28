@@ -34,12 +34,7 @@ namespace BEAM {
     ~EPA();
 
     Beam_Base *Copy();     
-
-    ATOOLS::Vec4D   OutMomentum();
-    ATOOLS::Flavour Remnant();
-
     bool   CalculateWeight(double, double);
-    double Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
   };// end of class EPA
 
 }// end of namespace BEAM
