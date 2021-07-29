@@ -8,7 +8,7 @@ using namespace PDF;
 using namespace ATOOLS;
 
 extern "C" {
-void partons_(float &, float &, float *);
+void partons_(double &, double &, double *);
 }
 
 CJKLph_Fortran_Interface::CJKLph_Fortran_Interface(const ATOOLS::Flavour _bunch) {
@@ -37,17 +37,17 @@ PDF_Base *CJKLph_Fortran_Interface::GetCopy() {
 }
 
 void CJKLph_Fortran_Interface::CalculateSpec(const double &_x, const double &_Q2) {
-    float x = _x / m_rescale, Q2 = _Q2;
+    double x = _x / m_rescale, Q2 = _Q2;
 
-    float f[11];
+    double f[11];
 
     partons_(x, Q2, f);
-    m_g = f[6];
-    m_d = f[7];
-    m_u = f[8];
-    m_s = f[9];
-    m_c = f[10];
-    m_b = f[11];
+    m_g = f[5];
+    m_d = f[6];
+    m_u = f[7];
+    m_s = f[8];
+    m_c = f[9];
+    m_b = f[10];
 }
 
 double CJKLph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
