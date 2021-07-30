@@ -48,11 +48,11 @@ PDF_Base* SALph_CPP_Interface::GetCopy() {
 
 void SALph_CPP_Interface::CalculateSpec(const double &_x,
 		const double &_Q2) {
-	float x = _x / m_rescale, Q2 = _Q2;
+	double x = _x / m_rescale, Q2 = _Q2;
 
+        if(x<m_xmin || x>m_xmax) return;
 	// indeces correspond to G,d,u,s,c,b,t
 	double f[7];
-
 	SALPDF(x, Q2, f);
 	m_g = x*f[0];
 	m_d = x*f[1];
