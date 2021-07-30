@@ -202,7 +202,7 @@ bool EPA::CalculateWeight(double x,double q2)
   //                           omega = E-E' - energy of emitted photon
   const double alpha = m_aqed;
   m_x = x; m_Q2 = q2;
-  if (x>=1.) {
+  if (x>=1.-m_mass/m_energy) {
     m_weight=0.0;
     return 1;
   }
