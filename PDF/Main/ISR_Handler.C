@@ -305,9 +305,7 @@ bool ISR_Handler::AllowSwap(const ATOOLS::Flavour &f1,
   return ok[0] && ok[1];
 }
 
-void ISR_Handler::Reset() {
-  m_splimits[1] = m_fixed_smax * Upper1() * Upper2();
-}
+void ISR_Handler::Reset() { m_splimits[1] = m_fixed_smax; }
 
 void ISR_Handler::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign("ISR::s'", 5, 0, info);
@@ -485,9 +483,9 @@ double ISR_Handler::Flux(const Vec4D &p1) { return 0.5 / p1.Mass(); }
 
 double ISR_Handler::CalcX(const ATOOLS::Vec4D &p) {
   if (p[3] > 0.)
-    return Min(1.0, p.PPlus() / p_beam[0]->OutMomentum().PPlus());
+    return Min(PDF(0)->XMax(), p.PPlus() / p_beam[0]->OutMomentum().PPlus());
   else
-    return Min(1.0, p.PMinus() / p_beam[1]->OutMomentum().PMinus());
+    return Min(PDF(1)->XMax(), p.PMinus() / p_beam[1]->OutMomentum().PMinus());
 }
 
 bool ISR_Handler::BoostInCMS(Vec4D *p, const size_t n) {
