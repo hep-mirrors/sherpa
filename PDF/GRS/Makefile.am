@@ -13,8 +13,8 @@ libGRSSherpa_la_SOURCES       =	\
 localinc_HEADERS      =	\
 			GRSph_Fortran_Interface.H 
 
-nobase_dist_pkgdata_DATA         =	\
+nobase_dist_pkgdata_DATA      =	\
             GRSGrid/grsg99d.grid \
-            GRSGrid/grsg99log.grid \
+            GRSGrid/grsg99lo.grid \
             GRSGrid/grsg99m.grid \
             GRSGrid/grsg99nlo.grid

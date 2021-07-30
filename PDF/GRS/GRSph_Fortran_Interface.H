@@ -9,8 +9,9 @@ namespace PDF {
   private:
     int iset;
     std::string m_path;
-    float   m_d,m_u,m_s,m_g;
+    double m_d, m_u, m_s, m_g;
     int m_nf;
+
   public:
     GRSph_Fortran_Interface(const ATOOLS::Flavour);
     PDF_Base * GetCopy();
