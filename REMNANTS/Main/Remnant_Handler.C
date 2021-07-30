@@ -42,7 +42,6 @@ InitializeRemnants(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam) {
 	// remnant and will get away with No_Remnant.
 	msg_Error()<<METHOD<<": Photon remnants not implemented yet.\n"
 		   <<"   Will continue and assume point-particles.\n";
-	exit(1);
       }
     }
     if (p_remnants[i]==NULL) p_remnants[i] = new No_Remnant(i);
