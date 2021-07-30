@@ -123,6 +123,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  PDF/SAL/Makefile \
 	  PDF/SASG/Makefile \
 	  PDF/CJKL/Makefile \
+	  PDF/GRS/Makefile \
 	  PDF/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/SM/Makefile \

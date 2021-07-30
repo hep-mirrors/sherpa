@@ -9,7 +9,7 @@ using namespace ATOOLS;
 
 extern "C" {
 // GRSG99(ISET,X,Q2,UL,DL,SL,GL)
-void grsg99_(int &, double &, double &, float &, float &, float &, float &);
+void grsg99_(int &, double &, double &, double &, double &, double &, double &);
 }
 
 extern "C" {
@@ -54,7 +54,7 @@ GRSph_Fortran_Interface::GRSph_Fortran_Interface(const ATOOLS::Flavour _bunch) {
   m_partons.insert(Flavour(kf_jet));
   m_partons.insert(Flavour(kf_quark));
   m_partons.insert(Flavour(kf_quark).Bar());
-  MakeFortranString(input.mfile, m_path + std::string("/lo2002.dat"), 128);
+  MakeFortranString(input.mfile, m_path + std::string("/grsg99lo.grid"), 128);
 }
 
 PDF_Base *GRSph_Fortran_Interface::GetCopy() {
