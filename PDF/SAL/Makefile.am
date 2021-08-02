@@ -13,4 +13,5 @@ localinc_HEADERS      =	\
 			sal.h \
 			math_ut.h
 
-libSALSherpa_la_LIBADD = @PDFLIBS@ @ATOOLSLIBS@
+nobase_dist_pkgdata_DATA = \
+            SALGrid/SAL.dat
