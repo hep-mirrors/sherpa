@@ -10,7 +10,7 @@ using namespace PDF;
 using namespace ATOOLS;
 
 extern "C" {
-// TODO: interface the iset and IP2 variables.
+// TODO: interface the IP2 variable.
 // CALL SASGAM(ISET,X,Q2,P2,IP2,F2GM,XPDFGM)
 void sasgam_(int &, float &, float &, float &, int &, float &, float *);
 }
@@ -130,7 +130,7 @@ void SASGph_Getter::PrintInfo(std::ostream &str, const size_t width) const {
          " - SAS1D: SaS set 1D ('DIS',   Q0 = 0.6 GeV)\n"
          " - SAS1M: SaS set 1M ('MSbar', Q0 = 0.6 GeV)\n"
          " - SAS2D: SaS set 2D ('DIS',   Q0 =  2  GeV)\n"
-         " - SAS2M: SaS set 2M ('MSbar', Q0 =  2  GeV)  ";
+         " - SAS2M: SaS set 2M ('MSbar', Q0 =  2  GeV)\n";
 }
 
 SASGph_Getter *p_get_sasg[4];

@@ -18,13 +18,14 @@
   sdfi1[pn][iq] (double)
 */
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <string>
-#include <cstdlib>
-#include <cmath>
 #include "sal.h"
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <string>
 
 using namespace std;
 

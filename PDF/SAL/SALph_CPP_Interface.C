@@ -120,7 +120,7 @@ PDF_Base *SALph_Getter::operator()(const Parameter_Type &args) const {
 }
 
 void SALph_Getter::PrintInfo(std::ostream &str, const size_t width) const {
-  str << "SAL photon PDF, http://th-www.if.uj.edu.pl/~wojteks/SAL/code.html";
+  str << "SAL photon PDF, see Eur.Phys.J.C 45 (2006) 633-641 (hep-ph/0504003)";
 }
 
 SALph_Getter *p_get_sal;
