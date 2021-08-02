@@ -26,8 +26,7 @@ void VA_0_PP_strange::SetModelParameters( struct GeneralModel _md )
     case 1 : p_ff = new KS(_md);
     break;
   }
-  p_ff->SetMasses2( m_ms[0], m_ms[1], sqr(Flavour(kf_eta).HadMass()) );
-  
+  p_ff->SetMasses2( m_ms[0], m_ms[1], sqr(Flavour(kf_eta).HadMass()) );  
 }
 
 
@@ -40,7 +39,7 @@ void VA_0_PP_strange::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   Complex termK = m_Delta_KP/q2*(FS-FV)+FV;
   Complex termP = m_Delta_KP/q2*(FS-FV)-FV;
   
-  Insert((m_global*termK)*moms[p_i[1]]+(m_global*termP)*moms[p_i[0]],0);
+  Insert( (m_global*termK)*moms[p_i[1]]+(m_global*termP)*moms[p_i[0]],0);
 }
 
 
@@ -198,7 +197,19 @@ Complex VA_0_PP_strange::KS::ScalarFormFactor( double s )
   return m_R0.BreitWigner(s);
 }
 
-DEFINE_CURRENT_GETTER(VA_0_PP_strange,"VA_0_PP_strange")
+//DEFINE_CURRENT_GETTER(VA_0_PP_strange,"VA_0_PP_strange")
+
+DECLARE_GETTER(VA_0_PP_strange,"VA_0_PP_strange",Current_Base,ME_Parameters);			
+
+Current_Base *ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_PP_strange>::	
+operator()(const ME_Parameters &parameters) const  {
+  msg_Out()<<"---------------------------------------------------------------------\n"
+	   <<"GETTER for VA_0_PP_strange: "
+	   <<parameters.flavs[parameters.indices[1]]<<" "
+	   <<parameters.flavs[parameters.indices[0]]<<"\n"
+	   <<"Formfactor = "<<int(parameters.model("FORM_FACTOR",1) )<<"\n";
+  return new VA_0_PP_strange(parameters.flavs, parameters.indices, "VA_0_PP_strange");
+}
 
 void ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_PP_strange>::
 PrintInfo(std::ostream &st,const size_t width) const {

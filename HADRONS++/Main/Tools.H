@@ -15,29 +15,13 @@
 
 namespace HADRONS
 {
-
-  /** 
-   * Object containing all parameters needed to initialise a HD_ME_Base
-   * or Current_Base. This is necessary as argument for the Getter_Function
-   * of these objects.
-   */
-  struct ME_Parameters {
-    const ATOOLS::Flavour_Vector& flavs;
-    const std::vector<int>& indices;
-    ME_Parameters(const ATOOLS::Flavour_Vector& _flavs,
-                  const std::vector<int>& _indices) :
-      flavs(_flavs), indices(_indices)
-    {}
-  };
-
   /**
    * A map with all relevant parameters for a certain decay amplitude.
    * It is a map that both contains the name of the parameter (as it is written
    * in the decay channel file) and its (double precision) value.
    */
   struct GeneralModel: public std::map<std::string,double> {
-    std::map<kf_code, kf_code> m_aliases;
-    
+    std::map<kf_code, kf_code> m_aliases;    
   public:
     /** 
      * Returns the value of the parameter with the name <var>tag</var>.
@@ -58,6 +42,23 @@ namespace HADRONS
      */    
     void AddParameters(const std::string& parameters);
   };
+
+  
+  /** 
+   * Object containing all parameters needed to initialise a HD_ME_Base
+   * or Current_Base. This is necessary as argument for the Getter_Function
+   * of these objects.
+   */
+  struct ME_Parameters {
+    GeneralModel model;
+    const ATOOLS::Flavour_Vector& flavs;
+    const std::vector<int>& indices;
+    ME_Parameters(const ATOOLS::Flavour_Vector& _flavs,
+                  const std::vector<int>& _indices) :
+      flavs(_flavs), indices(_indices)
+    {}
+  };
+
 
   /** 
    * Utility class providing some regularly needed tools. They are all

@@ -1,0 +1,23 @@
+# collider setup
+BEAMS:  [11, -11]
+BEAM_ENERGIES: [7., 4.]
+
+# general settings
+EVENT_TYPE: HadronDecay
+
+# specify hadron to be decayed
+DECAYER: 15
+
+# initialise rest for Sherpa not to complain
+# model parameters
+SCALES: VAR{sqr(91.2)}
+
+PROCESSES:
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Analysis
+
+RIVET:
+  --analyses: [BABAR_2018_I1679886, BELLE_2007_I753243, ALEPH_2014_I1267648]

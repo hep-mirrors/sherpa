@@ -99,7 +99,8 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     ProcessResult(content);
   }
   else { // if DC file does not exist yet
-    PRINT_INFO("Decay channel file "<<m_filename<<" in "<<m_path<<" does not exist yet. Will use Isotropic decay.");
+    PRINT_INFO("Decay channel file "<<m_filename<<" in "
+	       <<m_path<<" does not exist yet. Will use Isotropic decay.");
     msg_Tracking()<<"No DC file yet in :"<<m_path<<"/"<<m_filename<<".\n";
     int n=NOut()+1;
     vector<int> decayindices(n);
@@ -142,7 +143,8 @@ void Hadron_Decay_Channel::ProcessOptions(const string& content)
 void Hadron_Decay_Channel::ProcessPhasespace(const string& content,
                                              const GeneralModel& model_for_ps)
 {
-  vector<vector<string> > ps_svv = Process(content,"<Phasespace>","</Phasespace>");
+  vector<vector<string> >
+    ps_svv = Process(content,"<Phasespace>","</Phasespace>");
   
   int nr_of_channels=0;
   for (size_t i=0;i<ps_svv.size();i++) {
@@ -173,13 +175,17 @@ void Hadron_Decay_Channel::ProcessME(const string& content,
 
   for (size_t i=0;i<me_svv.size();i++) {
     if(me_svv[i].size()==3) {
-      msg_Tracking()<<"Selecting ME for "<<Name()<<endl;
+      msg_Tracking()<<"Selecting ME for "<<Name()<<"\n";
       HD_ME_Base* me = SelectME( me_svv[i][2] );
       me->SetPath(m_path);
       msg_Tracking()<<"  "<<me->Name()<<endl;
       GeneralModel me_model = m_startmd;
-      me_model.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
-      model_for_ps.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
+      me_model.AddParameters(SubString(content,
+				       "<"+me_svv[i][2]+">",
+				       "</"+me_svv[i][2]+">"));
+      model_for_ps.AddParameters(SubString(content,
+					   "<"+me_svv[i][2]+">",
+					   "</"+me_svv[i][2]+">"));
       me->SetModelParameters( me_model );
       Complex factor = Complex(ToType<double>(ip.Interprete(me_svv[i][0])),
                                ToType<double>(ip.Interprete(me_svv[i][1])));
@@ -188,19 +194,31 @@ void Hadron_Decay_Channel::ProcessME(const string& content,
       nr_of_mes++;
     }
     if(me_svv[i].size()==4) {
-      msg_Tracking()<<"Selecting currents for "<<Name()<<endl;
+      if (m_physicalflavours[0]==Flavour(kf_tau)) {
+	msg_Out()<<METHOD<<": "<<m_physicalflavours[0]<<": "<<Name()<<"\n";
+      }
+      msg_Out()<<"============================================================\n"
+	       <<"Selecting currents for "<<Name()<<endl;
       Current_Base* current1 = SelectCurrent(me_svv[i][2]);
       current1->SetPath(m_path);
       GeneralModel current1_model = m_startmd;
-      current1_model.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
-      model_for_ps.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
+      current1_model.AddParameters(SubString(content,
+					     "<"+me_svv[i][2]+">",
+					     "</"+me_svv[i][2]+">"));
+      model_for_ps.AddParameters(SubString(content,
+					   "<"+me_svv[i][2]+">",
+					   "</"+me_svv[i][2]+">"));
       current1->SetModelParameters( current1_model );
 
       Current_Base* current2 = SelectCurrent(me_svv[i][3]);
       current2->SetPath(m_path);
       GeneralModel current2_model = m_startmd;
-      current2_model.AddParameters(SubString(content,"<"+me_svv[i][3]+">","</"+me_svv[i][3]+">"));
-      model_for_ps.AddParameters(SubString(content,"<"+me_svv[i][3]+">","</"+me_svv[i][3]+">"));
+      current2_model.AddParameters(SubString(content,
+					     "<"+me_svv[i][3]+">",
+					     "</"+me_svv[i][3]+">"));
+      model_for_ps.AddParameters(SubString(content,
+					   "<"+me_svv[i][3]+">",
+					   "</"+me_svv[i][3]+">"));
       current2->SetModelParameters( current2_model );
 
       msg_Tracking()<<"  "<<current1->Name()<<endl;
@@ -332,8 +350,10 @@ void Hadron_Decay_Channel::WriteOut(bool newfile, string path, string file)
     string resultline;
     size_t found_begin = content.find("<Result>");
     size_t found_end = content.find("</Result>");
-    resultline="<Result>\n  "+ToString(m_iwidth)+" "+ToString(m_ideltawidth)+" "+ToString(m_max)+";\n</Result>\n";
-    if (found_begin!=string::npos) content.replace(found_begin,found_end,resultline);
+    resultline="<Result>\n  "+ToString(m_iwidth)+" "
+      +ToString(m_ideltawidth)+" "+ToString(m_max)+";\n</Result>\n";
+    if (found_begin!=string::npos)
+      content.replace(found_begin,found_end,resultline);
     else content.append(resultline);
     msg_IODebugging()<<content<<endl;
     *to<<content;
@@ -416,6 +436,9 @@ Current_Base* Hadron_Decay_Channel::SelectCurrent(string current_string)
   for(int i=0; i<n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
   ME_Parameters fi(m_physicalflavours, indices);
 
+  if (m_physicalflavours[0]==Flavour(kf_tau)) {
+    msg_Out()<<METHOD<<": "<<resultstrings[0]<<".\n";
+  }
   Current_Base* current=Current_Getter_Function::GetObject(resultstrings[0],fi);
   if(current==NULL) {
     msg_Error()<<METHOD<<": Current '"<<resultstrings[0]<<"' specified in "
@@ -452,8 +475,10 @@ HD_ME_Base * Hadron_Decay_Channel::SelectME(string me_string)
 
   HD_ME_Base* me = HD_ME_Getter_Function::GetObject(resultstrings[0],fi);
   if(me==NULL) {
-    msg_Error()<<METHOD<<": Error. Matrix element \""<<me_string<<"\" specified in "
-      <<m_path<<m_filename<<" was not recognized as a valid ME. Will abort."<<endl;
+    msg_Error()<<METHOD<<": Error. "
+	       <<"Matrix element \""<<me_string<<"\" specified in "
+	       <<m_path<<m_filename<<" was not recognized as a valid ME.\n"
+	       <<"   Will abort.\n";
     Abort();
   }
   return me;
