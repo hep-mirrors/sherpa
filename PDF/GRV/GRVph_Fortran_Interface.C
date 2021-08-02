@@ -23,8 +23,8 @@ GRVph_Fortran_Interface::GRVph_Fortran_Interface(const ATOOLS::Flavour _bunch)
   m_set="GRV";
   m_bunch = _bunch;
   m_d = m_u = m_s = m_c = m_b = m_g = 0.;
-  
-  for (int i=1;i<6;i++) {
+
+  for (int i = 1; i < m_nf + 1; i++) {
     m_partons.insert(Flavour((kf_code)(i)));
     m_partons.insert(Flavour((kf_code)(i)).Bar());
   }
