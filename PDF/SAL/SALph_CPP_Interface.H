@@ -14,7 +14,6 @@
 namespace PDF {
   class SALph_CPP_Interface : public PDF_Base {
   private:
-    //std::string m_set,m_path;
     float   m_d,m_u,m_s,m_c,m_b,m_t,m_g;
     int m_nf;
   public:
