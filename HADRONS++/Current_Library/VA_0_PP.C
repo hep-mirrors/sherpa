@@ -5,12 +5,24 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
+/////////////////////////////////////////////////////////////////////////////////
+//
+// If you want to test the formfactors, you have to work with the .dat files
+// for the individual decays - for example, if you want to test K+pi final states
+// you need to replace the "VA_0_PP_strange" name tag in the .dat file with
+// "VA_0_PP".
+// Also, at the moment we do not yet transfer parameters from the dat files into
+// the code - so you need to explicitly change the defaults in the model("name",default)
+// structures - see the comments marked with *** in the code.
+//
+/////////////////////////////////////////////////////////////////////////////////
 
 VA_0_PP::VA_0_PP(const ME_Parameters &parameters,const std::string& name) :
   Current_Base(parameters.flavs, parameters.indices, name)
 {
   double CG = 1.;
   if (name==std::string("VA_0_PP_pipi")) {
+    // *** make this model("Form_Factor",1) a model("Form_Factor",2)
     if (int(parameters.model("FORM_FACTOR",1))==1)
       p_ff = new VA_0_PP::FF_KS_pipi(parameters.model);
     else
@@ -38,8 +50,13 @@ void VA_0_PP::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   double q2 = (moms[p_i[1]] + moms[p_i[0]] ).Abs2();
   // this is a two-component vector for left-handed current and right-handed current:
-  // J^\mu = \langle PP | \bar u Gamma^{\mu L} d | 0\rangle +
-  //         \langle PP | \bar u Gamma^{\mu R} d | 0\rangle
+  // J^\mu = \langle P(1)P(0) | \bar u Gamma^{\mu L} d | 0\rangle +
+  //         \langle P(1)P(0) | \bar u Gamma^{\mu R} d | 0\rangle
+  //       ~ (p_1-p_0)^\mu * F_V(q^2) +
+  //         |m_1^2-m_0^2|/q^2 * (p_1+p_0)^\mu * [F_S(q^2)-F_V(q^2)]
+  // If we had more form factors we would have to expand this equation,
+  // and produce the form factors in the FormFactor base class and their
+  // KS and RChT realisations.
   // Of course, the right-handed component is always zero for EW interactions in
   // the Standard Model.
   Insert( m_global * ( (moms[p_i[1]]-moms[p_i[0]]) * p_ff->F_V(q2) +
@@ -62,6 +79,10 @@ VA_0_PP::FF_KS_pipi::FF_KS_pipi(const GeneralModel & model) :
 
 void VA_0_PP::FF_KS_pipi::FillResonances(const GeneralModel & model) {
   int running_width  = int( model("RUNNING_WIDTH", 1 ) );
+  // constructor of the ResonanceFavour needs: PDG code, mass, width, and whether the
+  // width is running.  we also need the "weight" or prefactor in the combination
+  // of the resonance contributions in the form factor.
+  // *** change the masses/widths/prefactors in the code if you want to.
   m_Vresonances.push_back(make_pair(ResonanceFlavour( kf_rho_770_plus,
 						      model("Mass_rho(770)+",  0.7769 ),
 						      model("Width_rho(770)+", 0.149 ),
@@ -87,6 +108,9 @@ Complex VA_0_PP::FF_KS_pipi::F_V(const double & q2) {
   Complex fv(0.,0.);
   for (list<pair<ResonanceFlavour, double> >::iterator rit=m_Vresonances.begin();
        rit!=m_Vresonances.end();rit++) {
+    // each term is: weight/prefactor * Breit-Wigner "propagator" term
+    // the calculaion of the second term depends on whether the width is
+    // momentum-dependent and is performed in the "ResonanceFlavour" class
     fv += rit->second * rit->first.BreitWigner(q2);
   }
   return fv/m_Vresonance_norm;
@@ -154,6 +178,7 @@ Complex VA_0_PP::FF_KS_Kpi::F_S(const double & q2) {
 //
 // we need to implement https://arxiv.org/pdf/1902.02273.pdf:
 // this means more resonances in the for-loop - prepared in FillResonances
+//
 ////////////////////////////////////////////////////////////////////
 
 VA_0_PP::FF_RChT_pipi::FF_RChT_pipi(const GeneralModel & model) :
@@ -256,6 +281,15 @@ void VA_0_PP::FF_RChT_Kpi::FillResonances(const GeneralModel & model) {
     m_Sresonance_norm += rit->second;
   }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//
+// the form factors need to be filled with the terms in VA_0_PP_strange and checked against
+// the underlying literature.
+// A lot of the literature is authored by someone called P. Roig.
+// https://inspirehep.net/literature?sort=mostrecent&size=25&page=1&q=f%20a%20roig%2C%20p&ui-citation-summary=true
+//
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 Complex VA_0_PP::FF_RChT_Kpi::F_V(const double & q2) {
   Complex sum(0.,0.);

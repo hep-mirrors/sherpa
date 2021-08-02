@@ -9,6 +9,8 @@ namespace HADRONS {
   class VA_0_PP : public Current_Base {
     class FormFactor {
     protected:
+      // a list of resonances and the prefactors that we use when combinung them
+      // in the overall form factor calculation.
       std::list<std::pair<ResonanceFlavour, double> > m_Vresonances, m_Sresonances;
       double  m_Vresonance_norm, m_Sresonance_norm;
       virtual void FillResonances(const GeneralModel & model)=0;
