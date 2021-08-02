@@ -14,7 +14,7 @@ using namespace PHASIC;
 using namespace std;
 
 
-/* 
+/*
    In all the differential cross sections the factor 1/16 Pi is cancelled
    by the factor 4 Pi for each alpha. Hence one Pi remains in the game.
 */
@@ -49,10 +49,10 @@ XS_ee_ffbar::XS_ee_ffbar(const External_ME_Args& args)
   m_oqcd=0;
   MZ2    = sqr(ATOOLS::Flavour(kf_Z).Mass());
   GZ2    = sqr(ATOOLS::Flavour(kf_Z).Width());
- 
+
   alpha  = MODEL::s_model->ScalarConstant("alpha_QED");
   sin2tw = std::abs(MODEL::s_model->ComplexConstant(string("csin2_thetaW")));
-  if (ATOOLS::Flavour(kf_Z).IsOn()) 
+  if (ATOOLS::Flavour(kf_Z).IsOn())
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
   else
     kappa  = 0.;
@@ -60,13 +60,13 @@ XS_ee_ffbar::XS_ee_ffbar(const External_ME_Args& args)
   mass     = m_flavs[2].Mass();
   qe       = m_flavs[0].Charge();
   qf       = m_flavs[2].Charge();
-  ae       = m_flavs[0].IsoWeak();      
+  ae       = m_flavs[0].IsoWeak();
   af       = m_flavs[2].IsoWeak();
   ve       = ae - 2.*qe*sin2tw;
   vf       = af - 2.*qf*sin2tw;
   colfac   = 1.;
 
-  kswitch  = 0;  
+  kswitch  = 0;
   fac      = 2./(3.*M_PI);
   fin      = 2.*M_PI/9. - 7./(3.*M_PI) + 9./(3.*M_PI);
 
@@ -115,7 +115,7 @@ double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
   term2 = (1.+2.*t/s) * (4. * qe*qf*ae*af * chi1 + 8. * ae*ve*af*vf * chi2);
 
   // Divide by two ????
-  return sqr(4.*M_PI*alpha) * CouplingFactor(0,2) * colfac * (term1+term2); 
+  return sqr(4.*M_PI*alpha) * CouplingFactor(0,2) * colfac * (term1+term2);
 }
 
 DECLARE_TREEME2_GETTER(XS_ee_ffbar,"XS_ee_ffbar")
@@ -127,10 +127,10 @@ operator()(const External_ME_Args& args) const
   const Flavour_Vector fl=args.Flavours();
   if (fl.size()!=4) return NULL;
   if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() &&
-       fl[0].IsQuark() && fl[1]==fl[0].Bar()) ||   
+       fl[0].IsQuark() && fl[1]==fl[0].Bar()) ||
       (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
        fl[2].IsQuark() && fl[3]==fl[2].Bar()) ||
-      (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsLepton() && 
+      (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsLepton() &&
        fl[3]==fl[2].Bar() && abs(int(fl[2].Kfcode())-int(fl[0].Kfcode()))>1)) {
     if ((args.m_orders[0]==0 || args.m_orders[0]==99) && args.m_orders[1]==2) {
       msg_Debugging()<<METHOD<<": "<<fl.size()<<" "
