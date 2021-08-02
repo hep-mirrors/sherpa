@@ -133,9 +133,6 @@ operator()(const External_ME_Args& args) const
       (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsLepton() && 
        fl[3]==fl[2].Bar() && abs(int(fl[2].Kfcode())-int(fl[0].Kfcode()))>1)) {
     if ((args.m_orders[0]==0 || args.m_orders[0]==99) && args.m_orders[1]==2) {
-      msg_Out()<<METHOD<<": "<<fl.size()<<" "
-	       <<"("<<fl[0]<<" + "<<fl[1]<<" --> "<<fl[2]<<" + "<<fl[3]<<"), "
-	       <<"orders = {"<<args.m_orders[0]<<", "<<args.m_orders[1]<<"}.\n";
       return new XS_ee_ffbar(args);
     }
   }
