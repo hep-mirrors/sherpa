@@ -126,9 +126,9 @@ PDF_Base *GRSph_Getter::operator()(const Parameter_Type &args) const {
 }
 
 void GRSph_Getter::PrintInfo(std::ostream &str, const size_t width) const {
-  str << "GRS photon PDF, see Phys. Rev. D60(1999)054019"
-         "The following sets can be chosen"
-         " - GRSLO for leading order"
+  str << "GRS photon PDF, see Phys. Rev. D60(1999)054019\n"
+         "The following sets can be chosen\n"
+         " - GRSLO for leading order\n"
          " - GRSMSbar for next-to-leading order in MSbar\n"
          " - GRSDISg for next-to-leading order in DISgamma\n";
 }
