@@ -8,7 +8,7 @@ namespace PDF {
 class CJKph_Fortran_Interface : public PDF_Base {
 private:
   std::string m_path;
-  float m_d, m_u, m_s, m_c, m_b, m_g;
+  double m_d, m_u, m_s, m_c, m_b, m_g;
   int m_nf, m_iset;
 
 public:

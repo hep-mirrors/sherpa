@@ -109,7 +109,7 @@
       XX = X
       QQ2 = Q2
 
-      if ((XX.LE.1.d-5).OR.(XX.GE.1.d0)) then
+      if ((XX.LE.1.d-5).OR.(XX.GT.1.d0)) then
          print *,'X out of range: ',XX
          stop
       endif

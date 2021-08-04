@@ -79,13 +79,15 @@ void CJKph_Fortran_Interface::CalculateSpec(const double &_x,
       msg_Error() << "Error in SALph_Fortran_Interface.C " << std::endl
                   << "   path " << m_path << " not found " << std::endl;
 
-    // TODO: Check the use of the Chi^2 in the fortran code
+    // For an explanation of the use of the chi's, check hep-ph/0310029.
     if (m_set == std::string("CJK1LO")) {
-      double chi_c, chi_b = 1.;
+      double chi_c = x * (1. + 4. * 1.3 * 1.3 / Q2);
+      double chi_b = x * (1. + 4. * 4.2 * 4.2 / Q2);
       double f_gamma = 0.;
       cjk1grid_(m_iset, iopt, x, chi_c, chi_b, Q2, pdf, f_gamma);
     } else if (m_set == std::string("CJK2LO")) {
-      double chi_c, chi_b = 1.;
+      double chi_c = x * (1. + 4. * 1.3 * 1.3 / Q2);
+      double chi_b = x * (1. + 4. * 4.2 * 4.2 / Q2);
       double f_gamma = 0.;
       cjk2grid_(m_iset, iopt, x, chi_c, chi_b, Q2, pdf, f_gamma);
     } else if (m_set == std::string("CJKHO")) {
@@ -120,8 +122,12 @@ double CJKph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
   else if (infl.Kfcode() == kf_b)
     value = m_b;
 
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-                                          sqr(rpa->gen.Ecms()));
+  // There seems to be an error in the CJK2 script: it outputs x*PDF, not
+  // x*PDF/alfa as given in the header. This means that the multiplication below
+  // is not necessary for the CJK2 set.
+  if (m_set != std::string("CJK2LO"))
+    value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
+                                            sqr(rpa->gen.Ecms()));
 
   return m_rescale * value;
 }
@@ -142,8 +148,10 @@ double CJKph_Fortran_Interface::GetXPDF(const kf_code &kf, bool anti) {
   else if (kf == kf_b)
     value = m_b;
 
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-                                          sqr(rpa->gen.Ecms()));
+  // See above
+  if (m_set != std::string("CJK2LO"))
+    value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
+                                            sqr(rpa->gen.Ecms()));
 
   return m_rescale * value;
 }
