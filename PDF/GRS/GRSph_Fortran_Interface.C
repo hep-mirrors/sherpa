@@ -12,19 +12,6 @@ extern "C" {
 void grsg99_(int &, double &, double &, double &, double &, double &, double &);
 }
 
-extern "C" {
-extern struct { char mfile[128]; } mrinput_;
-#define input mrinput_
-}
-
-inline void MakeFortranString(char *output, std::string input,
-                              unsigned int length) {
-  for (unsigned int i = 0; i < length; ++i)
-    output[i] = (char)32;
-  for (size_t j = 0; j < input.length(); ++j)
-    output[j] = (char)input[j];
-}
-
 GRSph_Fortran_Interface::GRSph_Fortran_Interface(const ATOOLS::Flavour _bunch,
                                                  const std::string _set) {
   /*
@@ -67,7 +54,6 @@ GRSph_Fortran_Interface::GRSph_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_partons.insert(Flavour(kf_jet));
   m_partons.insert(Flavour(kf_quark));
   m_partons.insert(Flavour(kf_quark).Bar());
-  MakeFortranString(input.mfile, m_path + std::string("/grsg99lo.grid"), 128);
 }
 
 PDF_Base *GRSph_Fortran_Interface::GetCopy() {
@@ -78,7 +64,17 @@ void GRSph_Fortran_Interface::CalculateSpec(const double &_x,
                                             const double &_Q2) {
   double x = _x / m_rescale, Q2 = _Q2;
 
+  char buffer[1024];
+  char *err = getcwd(buffer, 1024);
+  if (chdir(m_path.c_str()) != 0 || err == nullptr)
+    msg_Error() << "Error in GRSph_Fortran_Interface.C " << std::endl
+                << "   path " << m_path << " not found " << std::endl;
+
   grsg99_(m_iset, x, Q2, m_u, m_d, m_s, m_g);
+
+  if (chdir(buffer) != 0)
+    msg_Error() << "Error in GRSph_Fortran_Interface.C " << std::endl
+                << "   path " << m_path << " not found." << std::endl;
 }
 
 double GRSph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
@@ -93,8 +89,7 @@ double GRSph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
   else if (infl.Kfcode() == kf_s)
     value = m_s;
 
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-                                          sqr(rpa->gen.Ecms()));
+  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
 
   return m_rescale * value;
 }
@@ -111,8 +106,7 @@ double GRSph_Fortran_Interface::GetXPDF(const kf_code &kf, bool anti) {
   else if (kf == kf_s)
     value = m_s;
 
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-                                          sqr(rpa->gen.Ecms()));
+  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
 
   return m_rescale * value;
 }

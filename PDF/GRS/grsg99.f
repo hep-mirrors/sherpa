@@ -35,8 +35,6 @@ C...
       SUBROUTINE GRSG99(ISET,X,Q2,UL,DL,SL,GL)
 C...
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      character*128 mfile
-      common/mrinput/mfile
       INTEGER ISET,IINI,IIREAD, ISETSAV 
       PARAMETER (NPART=4, NX=51, NQ=34, NARG=2)
       DIMENSION XUF(NX,NQ), XDF(NX,NQ), XSF(NX,NQ), XGF(NX,NQ)
@@ -83,15 +81,15 @@ C...
       IF (ISET.EQ.1) THEN
        ISETSAV=1  
        IIREAD=11
-       OPEN(11,FILE=mfile)
+       OPEN(11,FILE='grsg99lo.grid')
       ELSE IF (ISET.EQ.2) THEN
        ISETSAV=2  
        IIREAD=22
-       OPEN(22,FILE=mfile)
+       OPEN(22,FILE='grsg99m.grid')
       ELSE IF (ISET.EQ.3) THEN
        ISETSAV=3  
        IIREAD=33
-       OPEN(33,FILE=mfile)
+       OPEN(33,FILE='grsg99d.grid')
       ELSE
         WRITE(6,93)
   93    FORMAT (2X,'PARTON INTERPOLATION: ISET OUT OF RANGE')
