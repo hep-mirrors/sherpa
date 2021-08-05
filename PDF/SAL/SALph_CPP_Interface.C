@@ -81,8 +81,7 @@ double SALph_CPP_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
   else if (infl.Kfcode() == kf_t)
     value = m_t;
 
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-                                          sqr(rpa->gen.Ecms()));
+  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
 
   return m_rescale * value;
 }
@@ -105,8 +104,7 @@ double SALph_CPP_Interface::GetXPDF(const kf_code &kf, bool anti) {
   else if (kf == kf_t)
     value = m_t;
 
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-                                          sqr(rpa->gen.Ecms()));
+  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
 
   return m_rescale * value;
 }
