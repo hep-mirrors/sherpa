@@ -483,9 +483,11 @@ double ISR_Handler::Flux(const Vec4D &p1) { return 0.5 / p1.Mass(); }
 
 double ISR_Handler::CalcX(const ATOOLS::Vec4D &p) {
   if (p[3] > 0.)
-    return Min(PDF(0)->XMax(), p.PPlus() / p_beam[0]->OutMomentum().PPlus());
+    return Min(PDF(0)?PDF(0)->XMax():1.,
+	       p.PPlus() / p_beam[0]->OutMomentum().PPlus());
   else
-    return Min(PDF(1)->XMax(), p.PMinus() / p_beam[1]->OutMomentum().PMinus());
+    return Min(PDF(1)?PDF(1)->XMax():1.,
+	       p.PMinus() / p_beam[1]->OutMomentum().PMinus());
 }
 
 bool ISR_Handler::BoostInCMS(Vec4D *p, const size_t n) {
