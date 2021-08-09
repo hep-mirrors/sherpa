@@ -37,11 +37,11 @@ InitializeRemnants(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam) {
       else if (flav.IsLepton())
 	p_remnants[i] = new Electron_Remnant(isr->PDF(i),i);
       else if (flav.IsPhoton()) {
-	// TODO: This is a bit more tricky once we assume a photon with
-	// hadronic structure.   Without a structure we do not need a
-	// remnant and will get away with No_Remnant.
-	msg_Error()<<METHOD<<": Photon remnants not implemented yet.\n"
-		   <<"   Will continue and assume point-particles.\n";
+        // TODO: This is a bit more tricky once we assume a photon with
+        // hadronic structure.   Without a structure we do not need a
+        // remnant and will get away with No_Remnant.
+        msg_Error() << METHOD << ": Photon remnants not implemented yet.\n";
+        p_remnants[i] = new Photon_Remnant(isr->PDF(i), i);
       }
     }
     if (p_remnants[i]==NULL) p_remnants[i] = new No_Remnant(i);
@@ -91,12 +91,17 @@ void Remnant_Handler::DefineRemnantStrategy() {
   else if (p_remnants[0]->Type()==rtp::hadron &&
 	   p_remnants[1]->Type()==rtp::hadron)
     m_type = strat::hh;
+  else if (p_remnants[0]->Type() == rtp::photon ||
+           p_remnants[1]->Type() == rtp::photon)
+    m_type = strat::simple; // TODO: check if this can be done, or if new type
+                            // has to be introduced
   else {
-    msg_Error()<<METHOD<<" throws error: no strategy found for remnants "
-	       <<int(p_remnants[0]->Type())<<" & "
-	       <<int(p_remnants[1]->Type())<<"\n"
-	       <<"   Will exit the run.\n";
-    exit(1);
+    msg_Error() << METHOD << " throws error: no strategy found for remnants "
+                << p_remnants[0]->Type() << " & " << p_remnants[1]->Type()
+                << "\n"
+                << "   Will use the simple strategy the run.\n";
+    // exit(1);
+    m_type = strat::simple;
   }
 }
 
