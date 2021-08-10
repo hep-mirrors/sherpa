@@ -56,7 +56,6 @@ namespace Recola {
   void Recola_Virtual::Calc(const Vec4D_Vector& momenta) {
     m_mode=m_modebackup;
     if (!Recola_Interface::checkProcGeneration()){
-        std::cout<<"process generation started..."<<std::endl;
         Recola_Interface::GenerateProcesses(AlphaQED(),AlphaQCD(),
                                             m_IRscale,m_UVscale,m_mur2);
     }
@@ -109,19 +108,7 @@ namespace Recola {
 
 
   bool Recola_Virtual::IsMappableTo(const PHASIC::Process_Info& pi){
-    Process_Info looppi(pi);
-    Process_Info mappi(Recola_Interface::s_procmap[m_recola_id]);
-    if (looppi.m_fi.m_nlotype!=nlo_type::lo) looppi.m_fi.m_nlotype=nlo_type::loop;
-
-    std::string nameloop(PHASIC::Process_Base::GenerateName(looppi.m_ii,looppi.m_fi));
-    std::string namemap(PHASIC::Process_Base::GenerateName(mappi.m_ii,mappi.m_fi));
-
-    DEBUG_FUNC(nameloop);
-    if (namemap==nameloop) m_ismapped=true;
-    else                   m_ismapped=false;
-    msg_Debugging()<<(m_ismapped?"yes":"no")<<std::endl;
-
-    return m_ismapped;
+    return false;
   }
 
 }

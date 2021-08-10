@@ -27,6 +27,7 @@ namespace Recola {
     static double       s_default_scale;
     static size_t       s_fixed_flav;
     static int          s_ewscheme;
+    static int          s_amptype;
     static bool         s_compute_poles;
     static size_t       s_getPDF_default;
 
@@ -68,12 +69,12 @@ namespace Recola {
                                     const double& muIR, const double& muUV,
                                     const double& muR2);
 
-    static int RegisterBorn(const PHASIC::External_ME_Args& args,
+    static int RegisterProcess(const PHASIC::External_ME_Args& args,
                    const int& amptype);
 
     static void EvaluateLoop(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, METOOLS::DivArrD& virt, 
                              std::vector<double> &asscontribs);
-    static void EvaluateBorn(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres);
+    static void EvaluateBorn(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, int amptype);
 
     static bool   ExitOnError()              { return s_exit_on_error; }
     static size_t GetFixedFlav()             { return s_fixed_flav; }
@@ -82,6 +83,7 @@ namespace Recola {
     static double GetDefaultAlphaQCD()       { return s_default_alphaqcd; }
     static double GetDefaultScale()          { return s_default_scale; }
     static size_t GetPDFDefault()            { return s_getPDF_default; }
+    static int    GetAmpType()               { return s_amptype; }
 
     static std::vector<double> GetPDFMasses() { return s_pdfmass; }
 
