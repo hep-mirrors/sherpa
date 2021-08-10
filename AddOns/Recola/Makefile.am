@@ -1,9 +1,11 @@
 RECOLA_SOURCES= \
 				Recola_Interface.C \
+				Recola_Born.C \
 				Recola_Virtual.C 
 
 RECOLA_ADDS= 	\
 				Recola_Interface.H \ 
+				Recola_Born.H \
 				Recola_Virtual.H 
 
 if RECOLA_SUPPORT

@@ -760,6 +760,30 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_DEFINE_UNQUOTED([MADLOOP_PREFIX], "$MADLOOP_PREFIX", [Madloop installation prefix])
   fi
   AM_CONDITIONAL(MADLOOP_SUPPORT, test "$madloop" = "true")
+  
+  AC_ARG_ENABLE(
+    recola,
+    AC_HELP_STRING([--enable-recola=/path/to/recola], [Enable Recola.]),
+    [ AC_MSG_CHECKING(for Recola installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Recola not enabled); recola=false ;;
+        *)   RECOLA_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             recola=true;
+             if test -d "${RECOLA_PREFIX}"; then
+                AC_MSG_RESULT([${RECOLA_PREFIX}]);
+        CONDITIONAL_RECOLAINCS="-I$RECOLA_PREFIX/include";RECOLA_PREFIX
+             else
+                AC_MSG_WARN(${RECOLA_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ recola=false ]
+  )
+  if test "$recola" = "true" ; then
+    AC_DEFINE_UNQUOTED([RECOLA_PREFIX], "$RECOLA_PREFIX", [Recola installation prefix])
+  fi
+  AC_SUBST(CONDITIONAL_RECOLAINCS)    
+  AM_CONDITIONAL(RECOLA_SUPPORT, test "$recola" = "true")
 
   AC_ARG_ENABLE(
     mcfm,
