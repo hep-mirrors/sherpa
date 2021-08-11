@@ -1,4 +1,3 @@
-#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "BEAM/Main/Beam_Base.H"
@@ -11,26 +10,7 @@ using namespace ATOOLS;
 
 Photon_Remnant::Photon_Remnant(PDF::PDF_Base *pdf, const unsigned int beam)
     : Remnant_Base(rtp::photon, beam), p_pdf(pdf), p_partons(&(pdf->Partons())),
-      m_beamflav(pdf->Bunch()), p_remnant(nullptr), p_recoiler(nullptr),
-      p_spectator(nullptr), m_alpha(0.), m_gamma(1.), m_beta(-1.5),
-      m_invb(1. / (m_beta + 1)), m_LambdaQCD(0.25) {
-  m_scale2 = Max(4.0, pdf->Q2Min());
-}
-
-bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,
-                              ATOOLS::Particle_List *particlelist) {
-  if (p_partner == nullptr) {
-    THROW(critical_error, "Partner Remnant not set.");
-  }
-  for (auto &pmit : m_extracted) {
-    beamblob->AddToOutParticles(pmit);
-    if (particlelist != nullptr) {
-      pmit->SetNumber(particlelist->size());
-      particlelist->push_back(pmit);
-    }
-  }
-  return true;
-}
+      m_beamflav(pdf->Bunch()) {}
 
 Particle *Photon_Remnant::MakeParticle(const Flavour &flav) {
   Particle *part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
@@ -46,11 +26,11 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
     MakeRemnants();
   // Possibly adjust final pending colours with extra gluons - in prinicple one
   // may have to check that they are not singlets ....
-  CompensateColours();
+  // CompensateColours();
   // Assume all remnant bases already produced a beam blob = p_beamblob
-  MakeLongitudinalMomenta(ktmap, copy);
-  bool colourconserved = p_beamblob->CheckColour(true);
-  if (!colourconserved) {
+  MakeLongitudinalMomenta();
+  p_beamblob->AddStatus(blob_status::needs_reconnections);
+  if (!p_beamblob->CheckColour(true)) {
     msg_Error() << "Error in " << METHOD << " for \n" << (*p_beamblob) << "\n";
     p_colours->Output();
     return false;
@@ -59,10 +39,13 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
 }
 
 void Photon_Remnant::CompensateColours() {
+  /* Should not be necessary at the moment, as colours are always compensated
+   * within the remnant.
+   * */
   while (!p_colours->Colours(m_beam, 0).empty() &&
          !p_colours->Colours(m_beam, 1).empty()) {
     Particle *gluon = MakeParticle(Flavour(kf_gluon));
-    for (size_t i = 0; i < 2; i++)
+    for (int i = 0; i < 2; i++)
       gluon->SetFlow(i + 1, p_colours->NextColour(m_beam, i));
     m_spectators.push_back(gluon);
   }
@@ -71,17 +54,18 @@ void Photon_Remnant::CompensateColours() {
 void Photon_Remnant::Reset(const bool &DIS) {
   Remnant_Base::Reset();
   while (!m_spectators.empty()) {
-    Particle *part = m_spectators.front();
+    // TODO: Check if this is necessary
+    /*Particle *part = m_spectators.front();
     if (part->ProductionBlob())
-      part->ProductionBlob()->RemoveOutParticle(part);
+     part->ProductionBlob()->RemoveOutParticle(part);
     if (part->DecayBlob())
-      part->DecayBlob()->RemoveInParticle(part);
-    delete part;
+     part->DecayBlob()->RemoveInParticle(part);
+    delete part;*/
     m_spectators.pop_front();
   }
   m_spectators.clear();
   m_residualE = p_beam->OutMomentum()[0];
-  p_remnant = p_recoiler = nullptr;
+  p_remnant = nullptr;
 }
 
 void Photon_Remnant::Output() {
@@ -91,10 +75,6 @@ void Photon_Remnant::Output() {
     msg_Out() << " " << p_parton;
   }
   msg_Out() << "}.\n";
-}
-
-Flavour Photon_Remnant::RemnantFlavour(const Flavour &flav) {
-  return Flavour(-1. * flav.Kfcode());
 }
 
 bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
@@ -118,92 +98,65 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   return true;
 }
 
-void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
-                                             const bool &copy) {
+void Photon_Remnant::MakeLongitudinalMomenta() {
   // Calculate the total momentum that so far has been extracted through
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
   // rest is taken by the quark.
-  // TODO: check if spectators are handled correctly
   Vec4D availMom;
   availMom = p_beam->OutMomentum();
-  for (Part_Iterator pmit = m_extracted.begin(); pmit != m_extracted.end();
-       pmit++) {
-    availMom -= (*pmit)->Momentum();
-    p_beamblob->AddToOutParticles(*pmit);
+  for (auto pmit : m_extracted) {
+    availMom -= pmit->Momentum();
+    p_beamblob->AddToOutParticles(pmit);
   }
-  for (Part_Iterator pmit = m_spectators.begin(); pmit != m_spectators.end();
-       pmit++) {
-    Particle *part = (*pmit);
-    part->SetMomentum(availMom);
+  availMom *= 1. / (double)m_spectators.size();
+  double factor = -1.;
+  for (auto part : m_spectators) {
+    Vec4D offset = Vec4D(1.e-4, 0., 1.e-4, 0.);
+    part->SetMomentum(availMom + factor * offset);
+    factor *= -1;
     p_beamblob->AddToOutParticles(part);
   }
 }
 
 void Photon_Remnant::MakeSpectator(Particle *parton) {
-  // If a shower initiator is a sea-quark or antiquark, a corresponding
-  // antiflavour has to be added to the spectators.
-  p_spectator = nullptr;
-  Flavour flav = parton->Flav();
-  if (flav.IsQuark()) {
-    p_spectator = MakeParticle(flav.Bar());
-    p_spectator->SetFlow((flav.Bar().IsAnti() ? 2 : 1), -1);
-    p_colours->AddColour(m_beam, (flav.Bar().IsAnti() ? 1 : 0), p_spectator);
-    m_spectators.push_front(p_spectator);
-    msg_Out() << METHOD << ": Spectator created for beam " << m_beam
-              << " with colour "
-              << p_spectator->GetFlow((flav.Bar().IsAnti() ? 2 : 1)) << "\n";
-    msg_Out() << METHOD << ": p_colours = " << p_colours << "\n";
-  }
-  if (flav.IsGluon()) {
-    // TODO: Get quark-antiquark pair with colours corresponding to the gluon
-  }
+  /* As of now, we only use one interaction in the photon processes.
+   * Treatment of Multiple Parton Interactions will need special considerations
+   * and will be implemented later on.
+   * */
 }
 
 bool Photon_Remnant::MakeRemnants() {
-  // If no valence quark has been extracted to date, a quark-diquark
-  // pair must be constructed.  the idea is to pick one of the three flavours
-  // at random for the quark, add it to the spectators, then construct the
-  // "conjugate" diquark and add it as well to the spectators
-  /*  Flavour flav;
-    size_t index;
-      int random = int(ran->Get() * (p_partons->size()-3));
-      std::_Rb_tree_const_iterator<Flavour> flit = p_partons->begin();
-      for (size_t i = 0; i < random; i++)
-        flit++;
-      flav = (*flit);
-      Particle *part = MakeParticle(flav);
-      index = ((flav.IsQuark() && !flav.IsAnti()) ||
-               (flav.IsDiQuark() && flav.IsAnti()))
-                  ? 0
-                  : 1;
-      part->SetFlow(index + 1, p_colours->NextColour(m_beam, index));
-      m_spectators.push_back(part);
-
-      p_remnant = p_recoiler = MakeParticle(RemnantFlavour(flav));
-      p_remnant->SetFlow(2 - index, p_colours->NextColour(m_beam, 1 - index));
-      m_spectators.push_front(p_recoiler);
-      return true;*/
-  size_t index;
-  if (!m_extracted.empty()) {
-    // TODO: this below is actually redundant at the moment, because we're
-    // trying to implement for one remnant particle only
-    for (auto &pmit : m_extracted) {
-      Flavour flav = pmit->Flav();
-      // Particle *part = MakeParticle(flav);
-      index = (flav.IsQuark() && !flav.IsAnti()) ? 0 : 1;
-      // part->SetFlow(index + 1, p_colours->NextColour(m_beam, index));
-      // m_spectators.push_back(part);
-      p_remnant = p_recoiler = MakeParticle(flav);
-      p_remnant->SetFlow(2 - index, p_colours->NextColour(m_beam, 1 - index));
-      // p_colours->AddColour(m_beam, index, p_remnant);
-      msg_Out() << METHOD << ": Remnant created for beam " << m_beam
-                << " with colour " << p_remnant->GetFlow(index + 1) << "\n";
-      msg_Out() << METHOD << ": p_colours = " << p_colours << "\n";
-      // m_spectators.push_front(p_recoiler);
-    }
-    return true;
+  /* The remnant is constructed from the extracted shower initiators.
+   * If it is a quark, we only have to generate the corresponding antiparticle.
+   * If it is a gluon, we have to construct a quark-antiquark pair with
+   * corresponding colours.
+   * */
+  if (m_extracted.empty()) {
+    msg_Out() << METHOD
+              << ": No remnants have been extracted, please check. \n";
+    return false;
   }
-  msg_Out() << METHOD << ": No remnants have been extracted, please check. \n";
-  return false;
+  // TODO: the for-loop below is actually redundant at the moment, because
+  // we're trying to implement for one remnant particle only
+  for (auto pmit : m_extracted) {
+    if (pmit->Flav().IsGluon()) {
+      // TODO: implement the gluon treatment
+      // For now, implement simple treatment by always using down-quarks
+      int factor = 1;
+      for (int i = 1; i < 3; i++) {
+        p_remnant = MakeParticle(factor * kf_d);
+        p_remnant->SetFlow(i, pmit->GetFlow(3 - i));
+        m_spectators.push_front(p_remnant);
+        factor = -1;
+      }
+      return true;
+    } else {
+      p_remnant = MakeParticle(pmit->Flav().Bar());
+      size_t index = p_remnant->Flav().IsAnti() ? 1 : 0;
+      p_remnant->SetFlow(index + 1, pmit->GetFlow(2 - index));
+      m_spectators.push_front(p_remnant);
+      return true;
+    }
+  }
 }
