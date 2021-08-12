@@ -1,6 +1,6 @@
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "BEAM/Main/Beam_Base.H"
 #include "REMNANTS/Main/Photon_Remnant.H"
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include <algorithm>
@@ -144,8 +144,16 @@ bool Photon_Remnant::MakeRemnants() {
       // TODO: implement the gluon treatment
       // For now, implement simple treatment by always using down-quarks
       int factor = 1;
+      Flavour flav;
+      double rand = ran->Get();
+      if (rand < 4. / 6.)
+        flav = kf_d;
+      else if (rand < 5. / 6.)
+        flav = kf_u;
+      else
+        flav = kf_s;
       for (int i = 1; i < 3; i++) {
-        p_remnant = MakeParticle(factor * kf_d);
+        p_remnant = MakeParticle(factor * flav);
         p_remnant->SetFlow(i, pmit->GetFlow(3 - i));
         m_spectators.push_front(p_remnant);
         factor = -1;
