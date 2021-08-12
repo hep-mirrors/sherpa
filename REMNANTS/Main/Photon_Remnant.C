@@ -137,12 +137,18 @@ bool Photon_Remnant::MakeRemnants() {
               << ": No remnants have been extracted, please check. \n";
     return false;
   }
+  if (m_extracted.size() > 1.) {
+    msg_Error() << METHOD
+                << ": Mulitple Interactions are not yet implemented in the "
+                   "photon remnant!\n";
+  }
   // TODO: the for-loop below is actually redundant at the moment, because
   // we're trying to implement for one remnant particle only
   for (auto pmit : m_extracted) {
     if (pmit->Flav().IsGluon()) {
       // TODO: implement the gluon treatment
-      // For now, implement simple treatment by always using down-quarks
+      // For now, implement simple treatment by choosing between the light
+      // quarks according to their squared charge
       int factor = 1;
       Flavour flav;
       double rand = ran->Get();
