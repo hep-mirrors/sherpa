@@ -3,7 +3,7 @@
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Simple_Pole_Channels.H"
 
-#include <stdio.h>
+#include <cstdio>
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -161,7 +161,8 @@ void Simple_Pole_Uniform::GenerateWeight(const int &mode) {
     }
   }
   p_rans[0] = m_sgridkey[0];
-  p_rans[1] = m_ygridkey[0];
+  if (mode == 3)
+    p_rans[1] = m_ygridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
   m_weight = pw * m_spkey.Weight() * m_ykey.Weight() / m_spkey[2];
 }
@@ -360,7 +361,8 @@ void Simple_Pole_Central::GenerateWeight(const int &mode) {
     }
   }
   p_rans[0] = m_sgridkey[0];
-  p_rans[1] = m_ygridkey[0];
+  if (mode == 3)
+    p_rans[1] = m_ygridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
   m_weight = pw * m_spkey.Weight() * m_ykey.Weight() / m_spkey[2];
 }
