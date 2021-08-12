@@ -37,10 +37,6 @@ InitializeRemnants(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam) {
       else if (flav.IsLepton())
 	p_remnants[i] = new Electron_Remnant(isr->PDF(i),i);
       else if (flav.IsPhoton()) {
-        // TODO: This is a bit more tricky once we assume a photon with
-        // hadronic structure.   Without a structure we do not need a
-        // remnant and will get away with No_Remnant.
-        msg_Error() << METHOD << ": Photon remnants not implemented yet.\n";
         p_remnants[i] = new Photon_Remnant(isr->PDF(i), i);
       }
     }
