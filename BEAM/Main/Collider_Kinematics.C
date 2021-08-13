@@ -96,7 +96,7 @@ bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D *moms) {
       m_sprimekey[0] >= m_sprimekey[1])
     return false;
   double Eprime = sqrt(m_sprime);
-  double x = (m_sprime - m_m2[0] - m_m2[1]) / (2. * m_sprime);
+  double x = (m_sprime + m_m2[0] - m_m2[1]) / (2. * m_sprime);
   double E1 = x * Eprime, E2 = Eprime - E1;
   // c.m. momenta
   moms[0] = Vec4D(E1, 0., 0., sqrt(sqr(E1) - m_m2[0]));
