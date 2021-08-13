@@ -146,17 +146,11 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
       return false;
     }
     if (p_isrchannels) {
-      Poincare *isrboost = p_isrhandler->GetCMSBoost();
-      // msg_Out()<<"before isrboost: "<<p_moms[0]<<", "<<p_moms[1]<<"\n";
       for (size_t i = 0; i < 2; i++)
-        isrboost->BoostBack(p_moms[i]);
-      // msg_Out()<<"after isrboost:  "<<p_moms[0]<<", "<<p_moms[1]<<"\n";
-    }
-    if (p_beamchannels) {
-      // msg_Out()<<"before beamboost: "<<p_moms[0]<<", "<<p_moms[1]<<"\n";
+        p_isrhandler->GetCMSBoost()->BoostBack(p_moms[i]);
+    } else if (p_beamchannels) {
       for (size_t i = 0; i < 2; i++)
         p_beamhandler->BoostInLab(p_moms[i]);
-      // msg_Out()<<"after beamboost:  "<<p_moms[0]<<", "<<p_moms[1]<<"\n";
     }
   }
   if (!DefineFSRKinematics())
