@@ -112,6 +112,7 @@ void Photon_Remnant::MakeLongitudinalMomenta() {
   availMom *= 1. / (double)m_spectators.size();
   double factor = -1.;
   for (auto part : m_spectators) {
+    // TODO: implement smeared offset or alternative treatment
     Vec4D offset = Vec4D(1.e-4, 0., 1.e-4, 0.);
     part->SetMomentum(availMom + factor * offset);
     factor *= -1;
@@ -167,7 +168,7 @@ bool Photon_Remnant::MakeRemnants() {
       return true;
     } else {
       p_remnant = MakeParticle(pmit->Flav().Bar());
-      size_t index = p_remnant->Flav().IsAnti() ? 1 : 0;
+      int index = p_remnant->Flav().IsAnti() ? 1 : 0;
       p_remnant->SetFlow(index + 1, pmit->GetFlow(2 - index));
       m_spectators.push_front(p_remnant);
       return true;
