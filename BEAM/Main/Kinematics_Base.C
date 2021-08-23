@@ -10,10 +10,12 @@ Kinematics_Base::Kinematics_Base(Beam_Base * beams[2]) :
 {
   for (size_t i=0;i<2;i++) {
     p_beams[i] = beams[i];
-    m_m[i]     = p_beams[i]->Bunch().Mass(); m_m2[i] = sqr(m_m[i]);
-    m_Plab    += p_beams[i]->InMomentum();
+    m_m[i] = p_beams[i]->Bunch().Mass();
+    m_m2[i] = sqr(m_m[i]);
+    m_Plab += p_beams[i]->InMomentum();
   }
   m_S = m_Plab.Abs2();
+  m_Y_offset = m_Plab.Y();
 }
 
 Kinematics_Base::~Kinematics_Base() {}

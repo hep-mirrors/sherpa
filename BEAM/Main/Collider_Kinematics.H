@@ -26,7 +26,7 @@ namespace BEAM {
     ~Collider_Kinematics();
 
     inline const double Sprime() { return m_sprimekey[3]; }
-    inline const double Y()      { return m_ykey[2]; }
+    inline const double Y() { return m_ykey[2] + m_Y_offset; }
     void AssignKeys(ATOOLS::Integration_Info *const info);
     void SetLimits();
     bool operator()(ATOOLS::Vec4D * moms);

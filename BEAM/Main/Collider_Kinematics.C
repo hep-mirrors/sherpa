@@ -92,19 +92,21 @@ bool Collider_Kinematics::MakeMonochromaticBeams(ATOOLS::Vec4D *moms) {
 
 bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D * moms) {
   m_sprime = m_sprimekey[3];
-  double y = m_ykey[2];
+  double y = m_ykey[2] + m_Y_offset;
   if ((m_sprime < m_sprimekey[0]) ||
       //(m_sprime>1.00000001*m_smax) ||
       m_sprimekey[0] >= m_sprimekey[1])
     return false;
   double Eprime = sqrt(m_sprime);
   double x = (m_sprime + m_m2[0] - m_m2[1]) / (2. * m_sprime);
-  double E1 = x * Eprime, E2 = Eprime - E1;
+  double E1 = x * Eprime;
+  double E2 = Eprime - E1;
   // c.m. momenta
   moms[0] = Vec4D(E1, 0., 0., sqrt(sqr(E1) - m_m2[0]));
   moms[1] = Vec4D(E2, (-1.) * Vec3D(moms[0]));
   // defining the boost
-  double coshy = .5 * (exp(y) + exp(-y)), sinhy = .5 * (exp(y) - exp(-y));
+  double coshy = .5 * (exp(y) + exp(-y));
+  double sinhy = .5 * (exp(y) - exp(-y));
   m_CMSBoost = Poincare(Vec4D(coshy, 0., 0., sinhy));
   for (size_t i = 0; i < 2; i++)
     CalculateAndSetX(i, moms[i]);
