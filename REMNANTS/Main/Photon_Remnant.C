@@ -9,8 +9,8 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 
 Photon_Remnant::Photon_Remnant(PDF::PDF_Base *pdf, const unsigned int beam)
-    : Remnant_Base(rtp::photon, beam), p_pdf(pdf), p_partons(&(pdf->Partons())),
-      m_beamflav(pdf->Bunch()) {}
+    : Remnant_Base(rtp::photon, beam), p_pdf(pdf),
+      p_partons(&(pdf->Partons())) {}
 
 Particle *Photon_Remnant::MakeParticle(const Flavour &flav) {
   Particle *part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
@@ -54,13 +54,6 @@ void Photon_Remnant::CompensateColours() {
 void Photon_Remnant::Reset(const bool &DIS) {
   Remnant_Base::Reset();
   while (!m_spectators.empty()) {
-    // TODO: Check if this is necessary
-    /*Particle *part = m_spectators.front();
-    if (part->ProductionBlob())
-     part->ProductionBlob()->RemoveOutParticle(part);
-    if (part->DecayBlob())
-     part->DecayBlob()->RemoveInParticle(part);
-    delete part;*/
     m_spectators.pop_front();
   }
   m_spectators.clear();
@@ -110,12 +103,8 @@ void Photon_Remnant::MakeLongitudinalMomenta() {
     p_beamblob->AddToOutParticles(pmit);
   }
   availMom *= 1. / (double)m_spectators.size();
-  double factor = -1.;
   for (auto part : m_spectators) {
-    // TODO: implement smeared offset or alternative treatment
-    Vec4D offset = Vec4D(1.e-4, 0., 1.e-4, 0.);
-    part->SetMomentum(availMom + factor * offset);
-    factor *= -1;
+    part->SetMomentum(availMom);
     p_beamblob->AddToOutParticles(part);
   }
 }
@@ -174,4 +163,6 @@ bool Photon_Remnant::MakeRemnants() {
       return true;
     }
   }
+  msg_Error() << METHOD << ": Remnants could not be created. \n";
+  return false;
 }
