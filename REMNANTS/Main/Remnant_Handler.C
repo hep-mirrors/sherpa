@@ -23,7 +23,7 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler *isr,
 
 Remnant_Handler::~Remnant_Handler() {
   for (size_t i(0); i < 2; ++i) {
-    if (p_remnants[i] != NULL)
+    if (p_remnants[i] != nullptr)
       delete p_remnants[i];
   }
 }
@@ -31,9 +31,9 @@ Remnant_Handler::~Remnant_Handler() {
 void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler *isr,
                                          BEAM::Beam_Spectra_Handler *beam) {
   for (size_t i = 0; i < 2; ++i) {
-    p_remnants[i] = NULL;
+    p_remnants[i] = nullptr;
     Flavour flav = isr->Flav(i);
-    if (isr->PDF(i) != 0) {
+    if (isr->PDF(i) != nullptr) {
       if (flav.IsHadron())
         p_remnants[i] = new Hadron_Remnant(isr->PDF(i), i);
       else if (flav.IsLepton())
@@ -42,7 +42,7 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler *isr,
         p_remnants[i] = new Photon_Remnant(isr->PDF(i), i);
       }
     }
-    if (p_remnants[i] == NULL)
+    if (p_remnants[i] == nullptr)
       p_remnants[i] = new No_Remnant(i);
   }
   // Finish the initialisation of the Remnant_Bases: make sure they know
@@ -94,11 +94,15 @@ void Remnant_Handler::DefineRemnantStrategy() {
            (p_remnants[1]->Type() == rtp::hadron ||
             p_remnants[1]->Type() == rtp::photon))
     m_type = strat::hh;
+  else if ((p_remnants[0]->Type() == rtp::lepton &&
+            p_remnants[1]->Type() == rtp::intact) ||
+           (p_remnants[0]->Type() == rtp::intact &&
+            p_remnants[1]->Type() == rtp::lepton))
+    m_type = strat::simple;
   else {
     msg_Error() << METHOD << " throws error: no strategy found for remnants "
                 << p_remnants[0]->Type() << " & " << p_remnants[1]->Type()
-                << "\n"
-                << "   Will use the simple strategy the run.\n";
+                << "\n";
     exit(1);
   }
 }
@@ -131,7 +135,7 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
   // be added to the Colour_Generator in each beam.
   for (size_t i = 0; i < showerblob->NInP(); ++i) {
     Particle *part = showerblob->InParticle(i);
-    if (part->ProductionBlob() != NULL)
+    if (part->ProductionBlob() != nullptr)
       continue;
     // Make sure extraction works out - mainly subject to energy conservation
     if (!Extract(part, part->Beam()))
@@ -170,9 +174,6 @@ Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
     msg_Error() << "Warning in " << METHOD << ": return new event\n";
     return Return_Value::New_Event;
   }
-  // for (size_t beam=0;beam<2;beam++)
-  // msg_Out()<<(*p_remnants[beam]->GetBlob())<<"\n";
-  // msg_Out()<<(*p_softblob)<<"\n";
   Reset();
   return Return_Value::Success;
 }
@@ -202,11 +203,9 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
       bloblist->push_front(p_softblob);
   }
   // Look for shower blobs that need beams and unset the flag
-  for (Blob_List::iterator bit = bloblist->begin(); bit != bloblist->end();
-       ++bit) {
-    if ((*bit)->Has(blob_status::needs_beams) &&
-        (*bit)->Type() == btp::Shower) {
-      (*bit)->UnsetStatus(blob_status::needs_beams);
+  for (auto &bit : *bloblist) {
+    if (bit->Has(blob_status::needs_beams) && bit->Type() == btp::Shower) {
+      bit->UnsetStatus(blob_status::needs_beams);
     }
   }
   // Remnant bases will generate their beam blobs, reset the incoming
