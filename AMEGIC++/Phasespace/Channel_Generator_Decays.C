@@ -125,8 +125,8 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
 
   Step0(1,plist,rannum,chf,flav,maxnumb);
   ClearDeclarations();
-  chf<<"  double vw = p_vegas->GenerateWeight(rans);"<<endl;
-  chf<<"  if (wt!=0.) wt = vw/wt/pow(2.*M_PI,"<<nout<<"*3.-4.);"<<endl;
+  chf << "  double vw = p_vegas->GenerateWeight(p_rans);" << endl;
+  chf << "  if (wt!=0.) wt = vw/wt/pow(2.*M_PI," << nout << "*3.-4.);" << endl;
   chf<<endl<<"  m_weight = wt;"<<endl; 
   chf<<"}"<<endl<<endl;
   
