@@ -238,11 +238,11 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 
   Step0(1,m_topos[echflag],rannum,chf);
   ClearDeclarations();
-  chf<<"  double vw = p_vegas->GenerateWeight(rans);"<<endl;
-  chf<<"  if (wt!=0.) wt = vw/wt/pow(2.*M_PI,"<<nout<<"*3.-4.);"<<endl;
-  chf<<endl<<"  weight = wt;"<<endl; 
-  chf<<"}"<<endl<<endl;
-    
+  chf << "  double vw = p_vegas->GenerateWeight(p_rans);" << endl;
+  chf << "  if (wt!=0.) wt = vw/wt/pow(2.*M_PI," << nout << "*3.-4.);" << endl;
+  chf << endl << "  m_weight = wt;" << endl;
+  chf << "}" << endl << endl;
+
   //Constructor
   chf	<<name<<"::"<<name<<"(int nin,int nout,Flavour* fl,Integration_Info * const info)"<<endl
 	<<"       : Single_Channel(nin,nout,fl)"<<endl
@@ -608,7 +608,8 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
 {
   if (p->left==0) {
     string m = LinkedMasses(p);
-    AddToVariables(flag,m,string("p_ms")+GetMassIndex(m)+string("]"),0,sf);
+    AddToVariables(flag, m, string("p_ms[") + GetMassIndex(m) + string("]"), 0,
+                   sf);
     return;
   }
   string lm,rm;
@@ -631,8 +632,10 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
 		   string("_max)-sqrt(s") + prt + string("_min))"),0,sf);    
   }
   if (prt.length()==1) {
-    AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
-		   string("_max)-sqrt(p_ms") + GetMassIndex(prt) + string("]))"),0,sf);
+    AddToVariables(flag, mummy + string("_max"),
+                   string("sqr(sqrt(s") + clm + string("_max)-sqrt(p_ms[") +
+                       GetMassIndex(prt) + string("]))"),
+                   0, sf);
   }
   
   if (rm.length()>1 && lm.length()>1) sclmp = p;
@@ -811,8 +814,8 @@ void Channel_Generator_UniV::CalcSmin(int flag,const char* min,string lm,ofstrea
 		   string("cuts->GetscutAmegic(std::string(\"") + Order(lm) + string("\"))"),0,sf);
   }
   else {
-    AddToVariables(flag,Order(lm) + string("_") + string(min),
-		   string("p_ms") + GetMassIndex(lm) + string("]"),0,sf);
+    AddToVariables(flag, Order(lm) + string("_") + string(min),
+                   string("p_ms[") + GetMassIndex(lm) + string("]"), 0, sf);
   }
   /*  string s("");
 
