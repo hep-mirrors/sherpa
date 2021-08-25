@@ -655,7 +655,8 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
 {
   if (p->left==0) {
     string m = LinkedMasses(p);
-    AddToVariables(flag,m,string("p_ms")+GetMassIndex(m)+string("]"),0,sf);
+    AddToVariables(flag, m, string("p_ms[") + GetMassIndex(m) + string("]"), 0,
+                   sf);
     return;
   }
   string lm,rm;
@@ -774,8 +775,10 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
 		       string(")-sqrt(s") + lm + string("_min))"),0,sf);    
       }
       else {
-	AddToVariables(flag,rm + string("_max"),string("sqr(sqrt(s") + mummy +
-		       string(")-sqrt(p_ms") + GetMassIndex(lm) + string("]))"),0,sf);
+        AddToVariables(flag, rm + string("_max"),
+                       string("sqr(sqrt(s") + mummy + string(")-sqrt(p_ms[") +
+                           GetMassIndex(lm) + string("]))"),
+                       0, sf);
       }
     }
     GenerateMassFwd(flag,p->right,rannum,sf);
@@ -791,7 +794,8 @@ void Channel_Generator_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstre
 {
   if (p->left==0) {
     string m = LinkedMasses(p);
-    AddToVariables(flag,m,string("p_ms")+GetMassIndex(m)+string("]"),0,sf);
+    AddToVariables(flag, m, string("p_ms[") + GetMassIndex(m) + string("]"), 0,
+                   sf);
     return;
   }
   string lm,rm;
@@ -857,8 +861,10 @@ void Channel_Generator_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstre
 		     string(")-sqrt(s") + lm + string("_min))"),0,sf);    
     }
     else {
-      AddToVariables(flag,rm + string("_max"),string("sqr(sqrt(s") + mummy +
-		     string(")-sqrt(p_ms") + GetMassIndex(lm) + string("]))"),0,sf);
+      AddToVariables(flag, rm + string("_max"),
+                     string("sqr(sqrt(s") + mummy + string(")-sqrt(p_ms[") +
+                         GetMassIndex(lm) + string("]))"),
+                     0, sf);
     }
   }
   GenerateMassFwd(flag,p->right,rannum,sf);
@@ -947,8 +953,8 @@ void Channel_Generator_NPV::CalcSmin(int flag,const char* min,string lm,ofstream
 		   string("cuts->GetscutAmegic(std::string(\"") + Order(lm) + string("\"))"),0,sf);
   }
   else {
-    AddToVariables(flag,Order(lm) + string("_") + string(min),
-		   string("p_ms") + GetMassIndex(lm) + string("]"),0,sf);
+    AddToVariables(flag, Order(lm) + string("_") + string(min),
+                   string("p_ms[") + GetMassIndex(lm) + string("]"), 0, sf);
   }
   /*  string s("");
 
