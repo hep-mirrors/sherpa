@@ -28,8 +28,7 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
   // may have to check that they are not singlets ....
   // CompensateColours();
   // Assume all remnant bases already produced a beam blob = p_beamblob
-  MakeLongitudinalMomenta();
-  p_beamblob->AddStatus(blob_status::needs_reconnections);
+  MakeLongitudinalMomenta(ktmap, copy);
   if (!p_beamblob->CheckColour(true)) {
     msg_Error() << "Error in " << METHOD << " for \n" << (*p_beamblob) << "\n";
     p_colours->Output();
@@ -54,11 +53,17 @@ void Photon_Remnant::CompensateColours() {
 void Photon_Remnant::Reset(const bool &DIS) {
   Remnant_Base::Reset();
   while (!m_spectators.empty()) {
+    Particle *part = m_spectators.front();
+    if (part->ProductionBlob())
+      part->ProductionBlob()->RemoveOutParticle(part);
+    if (part->DecayBlob())
+      part->DecayBlob()->RemoveInParticle(part);
+    delete part;
     m_spectators.pop_front();
   }
   m_spectators.clear();
   m_residualE = p_beam->OutMomentum()[0];
-  p_remnant = nullptr;
+  p_remnant = p_recoiler = nullptr;
 }
 
 void Photon_Remnant::Output() {
@@ -79,7 +84,7 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   // Still enough energy?
   if (mom[0] > m_residualE) {
     msg_Error() << METHOD << ": too much momentum " << mom[0] << " "
-                << "> E = " << m_residualE << ".\n";
+                << "> E = " << m_residualE << " for beam " << m_beam << "\n";
     return false;
   }
   // Still enough energy?  And in range?
@@ -91,7 +96,8 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   return true;
 }
 
-void Photon_Remnant::MakeLongitudinalMomenta() {
+void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
+                                             const bool &copy) {
   // Calculate the total momentum that so far has been extracted through
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
@@ -100,13 +106,48 @@ void Photon_Remnant::MakeLongitudinalMomenta() {
   availMom = p_beam->OutMomentum();
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();
-    p_beamblob->AddToOutParticles(pmit);
+    if (copy) {
+      Particle *pcopy = new Particle(*pmit);
+      pcopy->SetNumber();
+      pcopy->SetBeam(m_beam);
+      p_beamblob->AddToOutParticles(pcopy);
+    } else
+      p_beamblob->AddToOutParticles(pmit);
+    (*ktmap)[pmit] = Vec4D();
   }
-  availMom *= 1. / (double)m_spectators.size();
-  for (auto part : m_spectators) {
-    part->SetMomentum(availMom);
-    p_beamblob->AddToOutParticles(part);
+  for (auto pmit : m_spectators) {
+    Particle *part = pmit;
+    if (part == m_spectators.back())
+      part->SetMomentum(availMom);
+    else {
+      part->SetMomentum(SelectZ(part->Flav()) * availMom);
+      availMom -= part->Momentum();
+    }
+    if (copy) {
+      Particle *pcopy = new Particle(*part);
+      pcopy->SetNumber();
+      pcopy->SetBeam(m_beam);
+      p_beamblob->AddToOutParticles(pcopy);
+    } else
+      p_beamblob->AddToOutParticles(part);
+    (*ktmap)[part] = Vec4D();
   }
+}
+
+double Photon_Remnant::SelectZ(const Flavour &flav) {
+  // function adapted from Hadron_remnant.C
+  double m_alpha = 0., m_gamma = 1., m_beta = -1.5, m_invb = 1. / (m_beta + 1),
+         m_LambdaQCD = 0.25;
+  double wt = 1.;
+  double zmin = Max(m_LambdaQCD, flav.HadMass()) / m_residualE, z,
+         zmax(1. - 1. / m_residualE);
+  zmax -= double(m_spectators.size() - 1) * 0.3 / m_residualE;
+  double wtmax = pow((1. - zmin), m_alpha) * exp(-m_gamma / zmax);
+  do {
+    z = zmin + (zmax - zmin) * ran->Get();
+    wt = pow((1. - z), m_alpha) * exp(-m_gamma / z);
+  } while (wt < wtmax * ran->Get());
+  return 1. - z;
 }
 
 void Photon_Remnant::MakeSpectator(Particle *parton) {
@@ -149,17 +190,17 @@ bool Photon_Remnant::MakeRemnants() {
       else
         flav = kf_s;
       for (int i = 1; i < 3; i++) {
-        p_remnant = MakeParticle(factor * flav);
+        p_remnant = p_recoiler = MakeParticle(factor * flav);
         p_remnant->SetFlow(i, pmit->GetFlow(3 - i));
-        m_spectators.push_front(p_remnant);
+        m_spectators.push_front(p_recoiler);
         factor = -1;
       }
       return true;
     } else {
-      p_remnant = MakeParticle(pmit->Flav().Bar());
+      p_remnant = p_recoiler = MakeParticle(pmit->Flav().Bar());
       int index = p_remnant->Flav().IsAnti() ? 1 : 0;
       p_remnant->SetFlow(index + 1, pmit->GetFlow(2 - index));
-      m_spectators.push_front(p_remnant);
+      m_spectators.push_front(p_recoiler);
       return true;
     }
   }
