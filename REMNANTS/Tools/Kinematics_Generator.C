@@ -45,7 +45,6 @@ void Kinematics_Generator::SetKinType(Remnant_Handler * const rhandler) {
     m_kintype = kin_type::hh;
     break;
   }
-  //msg_Out()<<METHOD<<" yields "<<m_kintype<<"\n";
 }
 
 void Kinematics_Generator::Reset() {
@@ -84,7 +83,6 @@ bool Kinematics_Generator::CollinearKinematics() {
     // By far and large here we have a fixed spectator, if necessary, and assign
     // the four-momentum difference between incoming beam particle and outgoing
     // shower initiator to it.
-    //msg_Out()<<METHOD<<"\n";
     if (!p_remnants[beam]->FillBlob()) return false;
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }
@@ -126,15 +124,13 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t & beam) {
   size_t maxnum = 100;
   double scale  = 1.;
   do {
-    if (p_remnants[beam]->Type()==rtp::hadron) {
-      m_kperpGenerator.CreateBreakupKinematics(beam,&m_ktmap[beam],scale);
+    if (p_remnants[beam]->Type() == rtp::hadron ||
+        p_remnants[beam]->Type() == rtp::photon) {
+      m_kperpGenerator.CreateBreakupKinematics(beam, &m_ktmap[beam], scale);
     }
     maxnum--;
     if (maxnum==0)   {
       maxnum = 100; scale *= 0.1;
-      //if (scale=1.e-3)
-      //msg_Error()<<"Warning: "<<METHOD
-      //<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
     }
     if (scale<1.e-3) scale = 0.;
   } while (!CheckDIS(beam) && scale>0.);
@@ -191,8 +187,9 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
   double scale  = 1.;
   do {
     for (short unsigned int beam=0;beam<2;++beam) {
-      if (p_remnants[beam]->Type()==rtp::hadron) {
-	m_kperpGenerator.CreateBreakupKinematics(beam,&m_ktmap[beam],scale);
+      if (p_remnants[beam]->Type() == rtp::hadron ||
+          p_remnants[beam]->Type() == rtp::photon) {
+        m_kperpGenerator.CreateBreakupKinematics(beam, &m_ktmap[beam], scale);
       }
     }
     maxnum--;

@@ -13,11 +13,13 @@ private:
   ATOOLS::Flavour m_beamflav;
 
   ATOOLS::Particle *p_remnant = nullptr;
+  ATOOLS::Particle *p_recoiler = nullptr;
 
   void MakeSpectator(ATOOLS::Particle *parton);
   void CompensateColours();
   bool MakeRemnants();
-  void MakeLongitudinalMomenta();
+  void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap, const bool &copy);
+  double SelectZ(const ATOOLS::Flavour &flav);
   ATOOLS::Particle *MakeParticle(const ATOOLS::Flavour &flav);
   void Output();
 
@@ -30,6 +32,8 @@ public:
 
   bool TestExtract(const ATOOLS::Flavour &flav, const ATOOLS::Vec4D &mom);
   void Reset(const bool &DIS);
+
+  inline ATOOLS::Particle *GetRecoiler() { return p_recoiler; }
 }; // end of class Remnant_Base
 
 } // end of namespace REMNANTS
