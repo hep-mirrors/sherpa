@@ -338,6 +338,13 @@ HepMC3_Interface::HepMC3_Interface() :
     s["HEPMC_INCLUDE_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
+  
+  m_runinfo = std::make_shared<HepMC::GenRunInfo>();
+  HepMC::GenRunInfo::ToolInfo generator;
+  generator.name = std::string("SHERPA");
+  generator.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
+  generator.description = "Used generator";
+  m_runinfo->tools().push_back(generator);
 }
 
 HepMC3_Interface::~HepMC3_Interface()
@@ -354,6 +361,7 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   const auto weight(blobs->Weight());
   event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
+  event.set_run_info(m_runinfo);
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
   Blob *mp(blobs->FindFirst(btp::Hard_Collision));  
@@ -535,8 +543,7 @@ std::shared_ptr<HepMC::GenParticle> HepMC3_Interface::MakeGenParticle(
 
 // HS: Short-hand that takes a blob list, creates a new GenEvent and
 // calls the actual Sherpa2HepMC
-bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-				   std::shared_ptr<HepMC::GenRunInfo> run)
+bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -548,7 +555,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   for (size_t i=0; i<m_subeventlist.size();++i)
     { m_subeventlist[i]->clear(); delete m_subeventlist[i];}
   m_subeventlist.clear();
-  p_event = new HepMC::GenEvent(run);
+  p_event = new HepMC::GenEvent();
   return Sherpa2HepMC(blobs, *p_event);
 }
 
@@ -560,6 +567,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   DEBUG_FUNC("");
   event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
+  event.set_run_info(m_runinfo);
   if (!m_hepmctree) event.add_attribute("cycles",std::make_shared<HepMC::IntAttribute>(1));
   // Signal Process blob --- there is only one
   Blob *sp(blobs->FindFirst(btp::Signal_Process));

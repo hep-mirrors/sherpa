@@ -88,6 +88,7 @@ namespace SHERPA {
     std::set<ATOOLS::btp::code> m_ignoreblobs;
 
     HepMC3::GenEvent *p_event;
+    std::shared_ptr<HepMC3::GenRunInfo> m_runinfo;
     std::vector<HepMC3::GenEvent*> m_subeventlist;
 
     std::shared_ptr<HepMC3::GenParticle> MakeGenParticle(const ATOOLS::Vec4D&,
@@ -103,7 +104,7 @@ namespace SHERPA {
 
     // member functions
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC3::GenEvent& event);
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs,                       std::shared_ptr<HepMC3::GenRunInfo> run= std::shared_ptr<HepMC3::GenRunInfo>());
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs);
     bool Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob *,     HepMC3::GenVertexPtr &, HepMC3::GenEvent& event ); 
     bool Sherpa2HepMC(ATOOLS::Particle *, HepMC3::GenParticlePtr &);
 

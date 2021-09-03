@@ -74,12 +74,6 @@ switch (m_iotype)
     }
 
  p_xs= std::make_shared<HepMC::GenCrossSection>();
- m_run_info= std::make_shared<HepMC::GenRunInfo>();
- HepMC::GenRunInfo::ToolInfo tool;
- tool.name = std::string("SHERPA-MC");
- tool.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
- tool.description = std::string(SHERPA_NAME);
- m_run_info->tools().push_back(tool);
 }
 
 Output_HepMC3_Genevent::~Output_HepMC3_Genevent()
@@ -95,7 +89,7 @@ void Output_HepMC3_Genevent::SetXS(const double& xs, const double& xserr)
 
 void Output_HepMC3_Genevent::Output(Blob_List* blobs) 
 {
-  m_hepmc3.Sherpa2HepMC(blobs, m_run_info);
+  m_hepmc3.Sherpa2HepMC(blobs);
   HepMC::GenEvent* q=m_hepmc3.GenEvent();
   if (q) 
   {
