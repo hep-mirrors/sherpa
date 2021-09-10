@@ -57,7 +57,6 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
   while (Ngen<N) {
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
-    //p_laddergenerator->SetMaximalScale(Min(m_E[0],m_Ecms/4.),Min(m_E[1],m_Ecms/4.));
     p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
     Ladder * ladder = (*p_laddergenerator)(position);
     if (m_test && ladder) FillAnalysis(ladder,"trial");
@@ -67,7 +66,6 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
       Ngen++;
       trials = 0;
       if (m_test) FillAnalysis(ladder,"accept");
-      //msg_Out()<<"     --- generated "<<Ngen<<" new ladders.\n";
     }
     else {
       if (ladder) delete ladder;

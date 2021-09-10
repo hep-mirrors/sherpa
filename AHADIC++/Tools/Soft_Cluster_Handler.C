@@ -69,7 +69,8 @@ int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
     return 1;
   }
   if (force) {
-    if ((*cluster)[0]->Flavour().IsGluon() && (*cluster)[1]->Flavour().IsGluon()) {
+    if ((*cluster)[0]->Flavour().IsGluon() &&
+	(*cluster)[1]->Flavour().IsGluon()) {
       return TreatTwoGluons(cluster);
     }
     //if (m_lightest>m_mass) return -1;
@@ -182,7 +183,7 @@ bool Soft_Cluster_Handler::FixKinematics() {
                       << " threshold.";
       p1 = 0.0;
     } else {
-      msg_Error() << METHOD << "(): There is not enough energy in the cluster."
+      msg_Tracking() << METHOD << "(): There is not enough energy in the cluster."
                   << " Return false and hope for the best.\n";
       return false;
     }

@@ -19,7 +19,8 @@ Ahadic::Ahadic(string shower) :
   m_sformer(Singlet_Former(&m_singlet_list)),
   m_singletchecker(Singlet_Checker(&m_singlet_list, &m_softclusters)),
   m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters)),
-  m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
+  m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters)),
+  m_fails(0)
 {  
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
@@ -33,6 +34,7 @@ Ahadic::Ahadic(string shower) :
 
 Ahadic::~Ahadic() 
 {
+  msg_Info()<<"AHADIC failed "<<m_fails<<" times to create sane hadrons.\n";
   Reset();
 }
 
@@ -81,16 +83,14 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 }  
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
-  msg_Out()<<"######################################################################\n";
-  //	   <<(*blob)<<"\n";
   Reset();
   m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
-    msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
-	       <<(*blob);
+    msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n";
+    msg_Tracking()<<(*blob)<<"  leaving AHADIC and hoping for the best.\n";
     Reset(blob);
-    msg_Error()<<"  leaving AHADIC and hoping for the best.\n";
+    m_fails++;
     return Return_Value::New_Event;
   }
   blob->UnsetStatus(blob_status::needs_hadronization);
@@ -103,16 +103,17 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
 	       <<blob->CheckMomentumConservation()
 	       <<" ("<<blob->CheckMomentumConservation().Abs2()<<")\n";
     Reset(blob);
+    m_fails++;
     return Return_Value::Retry_Event;
   }
-  msg_Out()//<<(*blob)<<"\n"
-  	   <<"######################################################################\n";
+  //msg_Out()//<<(*blob)<<"\n"
+  //	   <<"######################################################################\n";
   return Return_Value::Success;
 }
   
 bool Ahadic::ExtractSinglets(Blob * blob)
 {
-  msg_Out()<<"   ### "<<METHOD<<"\n";
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   if (!m_sformer.Extract(blob)) {
     msg_Error()<<METHOD<<" could not extract singlet.\n";
     return false;
@@ -122,7 +123,7 @@ bool Ahadic::ExtractSinglets(Blob * blob)
 
 bool Ahadic::ShiftBeamParticles()
 {
-  msg_Out()<<"   ### "<<METHOD<<"\n";
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   if (!m_beamparticles()) {
     msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
     return false;
@@ -132,7 +133,7 @@ bool Ahadic::ShiftBeamParticles()
 
 bool Ahadic::CheckSinglets()
 {
-  msg_Out()<<"   ### "<<METHOD<<"\n";
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   if (!m_singletchecker()) {
     msg_Error()<<METHOD<<" singlets did not check out.\n";
     return false;
@@ -141,7 +142,7 @@ bool Ahadic::CheckSinglets()
 }
 
 bool Ahadic::DecayGluons() {
-  msg_Out()<<"   ### "<<METHOD<<"\n";
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   while (!m_singlet_list.empty()) {
     if (m_gluondecayer(m_singlet_list.front())) 
       m_singlet_list.pop_front();
@@ -150,19 +151,19 @@ bool Ahadic::DecayGluons() {
       return false;
     }
   }
-  msg_Out()<<m_cluster_list.size()<<" clusters.\n";
+  //msg_Out()<<m_cluster_list.size()<<" clusters.\n";
   return true;
 }
 
 bool Ahadic::DecayClusters() {
-  msg_Out()<<"   ### "<<METHOD<<"\n";
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   bool success = m_clusterdecayer();
   if (!success) msg_Error()<<METHOD<<" could not decay all clusters.\n";
   return success;
 }
 
 void Ahadic::FillOutgoingParticles(Blob * blob) {
-  msg_Out()<<"   ### "<<METHOD<<" for "<<m_hadron_list.size()<<"\n";
+  //msg_Out()<<"   ### "<<METHOD<<" for "<<m_hadron_list.size()<<"\n";
   while (!m_hadron_list.empty()) {
     Particle * part = (*m_hadron_list.front())();
     part->SetNumber();
@@ -199,8 +200,9 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
       (norm2<0. && norm2>0.)) {
     msg_Error()<<"ERROR in "<<METHOD<<" :\n"
 	       <<"   Momentum violation in blob: "
-	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
-	       <<(*blob)<<"\n";
+	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n";
+    msg_Tracking()<<(*blob)<<"\n";
+    m_fails++;
     return false;
   }
   return true;

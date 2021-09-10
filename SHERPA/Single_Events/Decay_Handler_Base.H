@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
 
 namespace ATOOLS {
   class Blob_List;
@@ -29,10 +30,11 @@ namespace SHERPA {
 
   class Decay_Handler_Base : public ATOOLS::Mass_Selector {
   protected:
-    SHERPA::Soft_Photon_Handler* p_softphotons;
-    PHASIC::Decay_Map* p_decaymap;
-    ATOOLS::Blob_List* p_bloblist;
-    ATOOLS::Cluster_Amplitude* p_ampl;
+    SHERPA::Soft_Photon_Handler * p_softphotons;
+    PHASIC::Decay_Map           * p_decaymap;
+    ATOOLS::Blob_List           * p_bloblist;
+    ATOOLS::Cluster_Amplitude   * p_ampl;
+    ATOOLS::Momenta_Stretcher     m_stretcher;
     bool m_spincorr, m_decaychainend, m_cluster;
     int m_mass_smearing;
     size_t m_qedmode;

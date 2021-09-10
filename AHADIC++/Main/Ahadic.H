@@ -30,6 +30,8 @@ namespace AHADIC {
 
     ATOOLS::Vec4D m_totmom; 
 
+    long int m_fails;
+    
     bool ExtractSinglets(ATOOLS::Blob * blob);
     bool ShiftBeamParticles();
     bool CheckSinglets();

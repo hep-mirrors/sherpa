@@ -2,7 +2,6 @@
 #include "AHADIC++/Tools/Multiplet_Constructor.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -15,7 +14,8 @@ using namespace std;
 
 Hadronisation_Parameters* AHADIC::hadpars = NULL;
 
-Hadronisation_Parameters::Hadronisation_Parameters() : m_shower(0) {}
+Hadronisation_Parameters::Hadronisation_Parameters() :
+  m_shower(0), m_stretcher(Momenta_Stretcher("AHADIC")) {}
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_constituents!=NULL) {
@@ -283,7 +283,6 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,
                                              ATOOLS::Vec4D* moms,
                                              const double* masses)
 {
-  Momenta_Stretcher stretcher;
   if (n==1) return false;
   bool success(true);
   if (n!=2) {
@@ -311,17 +310,17 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,
       msg_Error()<<"   Will possibly lead to retrying the event.\n";
       return false;
     }
-    if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);
-    if (!success) std::cout<<METHOD<<" failed for ZeroThem(0,"<<n<<").\n";
-    success = success && stretcher.MassThem(0,n,moms,masses);
-    if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<").\n";
+    if (prepare) success = success && m_stretcher.ZeroThem(0,n,moms,1.e-10);
+    //if (!success) std::cout<<METHOD<<" failed for ZeroThem(0,"<<n<<").\n";
+    success = success && m_stretcher.MassThem(0,n,moms,masses);
+    //if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<").\n";
     if (boost) {
       for (int i=0;i<n;i++) rest.BoostBack(moms[i]);
     }
   }
   else {
-    success = stretcher.MassThem(0,n,moms,masses,1.e-10);
-    if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<"), 2nd.\n";
+    success = m_stretcher.MassThem(0,n,moms,masses,1.e-10);
+    //if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<"), 2nd.\n";
   }
   if (!success && msg->LevelIsDebugging()) {
     msg_Debugging()<<"Error in "<<METHOD<<" : "<<"\n"

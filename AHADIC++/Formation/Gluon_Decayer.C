@@ -27,6 +27,8 @@ void Gluon_Decayer::Reset() {}
 
 bool Gluon_Decayer::operator()(Singlet * singlet) {
   p_singlet = singlet;
+  //msg_Out()<<"   - "<<METHOD<<" for "<<p_singlet->size()<<", "
+  //	   <<"front = "<<p_singlet->front()->Flavour()<<"\n";
   if (p_singlet->front()->Flavour().IsGluon() && !SplitGluonRing()) {
     // protection for low-mass two-gluon systems.
     if (p_singlet->size()==2) {
@@ -110,6 +112,7 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
 bool Gluon_Decayer::SplitGluonRing() {
   // Reorder to make sure first & second gluon have highest combined mass
   p_singlet->Reorder(FirstGluon());
+  //msg_Out()<<"   - "<<METHOD<<" try to break ring.\n";
   return m_breaker(p_singlet);
 }
 

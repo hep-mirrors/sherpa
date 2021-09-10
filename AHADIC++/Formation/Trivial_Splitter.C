@@ -43,7 +43,9 @@ bool Trivial_Splitter::operator()(Singlet * singlet) {
   p_part2    = (*ppit2);
   m_spectmom = p_singlet->back()->Momentum();
   if (!InitKinematics(false)) return Rescue();
+  size_t trials = 0;
   do {
+    if ((trials++)>1000) return false;
     SelectFlavour();
   } while (!FixTrialKinematics() || !CheckKinematics());
 

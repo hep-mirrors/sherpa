@@ -29,9 +29,10 @@ SHRIMPS:
  
 COLOUR_RECONNECTIONS:
   Mode:        On
-  Q_0:         2.
+  PMODE:       0
+  Q_0:         1.
   eta_Q:       0.16
-  R_0:         2.
+  R_0:         1.
   eta_R:       0.16
   Reshuffle:   0.33
   kappa:       1.
@@ -44,7 +45,7 @@ AHADIC:
 
 
 ANALYSIS:         Rivet
-ANALYSIS_OUTPUT:  KT2
+ANALYSIS_OUTPUT:  KT_CRkappa1
 
 RIVET:
   ANALYSES: [ ATLAS_2012_I1084540, ATLAS_2010_S8918562, ATLAS_2010_S8894728, ATLAS_2011_S8994773, TOTEM_2012_I1115294, CMS_2011_S8978280, CMS_2011_S9120041, CMS_2011_S9215166 ]
