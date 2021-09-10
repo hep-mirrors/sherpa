@@ -53,15 +53,20 @@ bool Collider_Weight::Calculate(const double &scale) {
 }
 
 const double Collider_Weight::operator()(ATOOLS::Flavour *flin) {
+  ATOOLS::Flavour flavour1 = kf_none, flavour2 = kf_none;
+  if (flin != nullptr) {
+    flavour1 = flin[0];
+    flavour2 = flin[1];
+  }
   switch (m_mode) {
   case collidermode::monochromatic:
     return 1.;
   case collidermode::spectral_1:
-    return p_beams[0]->Weight(flin[0]);
+    return p_beams[0]->Weight(flavour1);
   case collidermode::spectral_2:
-    return p_beams[1]->Weight(flin[1]);
+    return p_beams[1]->Weight(flavour2);
   case collidermode::both_spectral:
-    return p_beams[0]->Weight(flin[0]) * p_beams[1]->Weight(flin[1]);
+    return p_beams[0]->Weight(flavour1) * p_beams[1]->Weight(flavour2);
   case collidermode::unknown:
     msg_Error() << "Error in " << METHOD << ": unknown mode.\n"
                 << "   Will exit the run.\n";
