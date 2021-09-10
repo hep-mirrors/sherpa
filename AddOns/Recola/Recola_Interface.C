@@ -249,16 +249,15 @@ namespace Recola {
     s_light_fermion_threshold = s["RECOLA_LIGHT_FERMION_THRESHOLD"].Get<double>();
     set_light_fermions_rcl(s_light_fermion_threshold);
     set_delta_ir_rcl(0.0,M_PI*M_PI/6.0); // adapts the conventions from COLLIER to Catani-Seymour
-                                         // This is true only for Recola 1.4
-    
     
     PDF::PDF_Base *pdf=isr->PDF(0);
     auto pdfnf = -1;
     auto cmass = 0.0;
     auto bmass = 0.0;
     auto tmass = 0.0;
+    bool hadronic_beam = pdf?pdf->Bunch().IsHadron():0; 
     
-    if (pdf) {
+    if (hadronic_beam) {
       pdfnf=pdf->ASInfo().m_flavs.size();
       s_default_alphaqcd=pdf->ASInfo().m_asmz;
       s_default_scale=pdf->ASInfo().m_mz2;
@@ -270,7 +269,7 @@ namespace Recola {
       tmass=pdf->ASInfo().m_flavs[5].m_mass;
       if(pdf->ASInfo().m_flavs.size()<6) tmass=Flavour(kf_t).Mass();
     } 
-    else {
+      else {
       pdfnf = MODEL::as->Nf(1.e20);
       s_default_alphaqcd=MODEL::as->AsMZ();
       s_default_scale=Flavour{kf_Z}.Mass();
@@ -282,7 +281,7 @@ namespace Recola {
     }
 
 
-    if (pdf) {
+    if (hadronic_beam) {
       for (int i=0; i<3; i++){
         if (i<pdfnf) s_pdfmass[i]=pdf->ASInfo().m_flavs[i].m_thres;
       }
