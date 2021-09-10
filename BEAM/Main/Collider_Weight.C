@@ -6,16 +6,16 @@ using namespace ATOOLS;
 Collider_Weight::Collider_Weight(Kinematics_Base *kinematics)
     : Weight_Base(kinematics), m_mode(collidermode::unknown) {
   if (p_beams[0]->Type() == beamspectrum::monochromatic &&
-      p_beams[0]->Type() == beamspectrum::monochromatic)
+      p_beams[1]->Type() == beamspectrum::monochromatic)
     m_mode = collidermode::monochromatic;
   else if (p_beams[0]->Type() != beamspectrum::monochromatic &&
-           p_beams[0]->Type() == beamspectrum::monochromatic)
+           p_beams[1]->Type() == beamspectrum::monochromatic)
     m_mode = collidermode::spectral_1;
   else if (p_beams[0]->Type() == beamspectrum::monochromatic &&
-           p_beams[0]->Type() != beamspectrum::monochromatic)
+           p_beams[1]->Type() != beamspectrum::monochromatic)
     m_mode = collidermode::spectral_2;
   else if (p_beams[0]->Type() != beamspectrum::monochromatic &&
-           p_beams[0]->Type() != beamspectrum::monochromatic)
+           p_beams[1]->Type() != beamspectrum::monochromatic)
     m_mode = collidermode::both_spectral;
   if (m_mode == collidermode::unknown)
     THROW(fatal_error, "Bad settings for collider mode.");
