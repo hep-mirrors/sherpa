@@ -128,7 +128,6 @@ void Shrimps::GenerateXsecs() {
       if (energies.find(*siter) == energies.end()) energies.insert(*siter);
   }
   for (std::set<double>::iterator siter = energies_el.begin(); siter != energies_el.end(); ++siter) {
-      PRINT_VAR(*siter);
       if (energies.find(*siter) == energies.end()) energies.insert(*siter);
   }
 

@@ -44,7 +44,13 @@ void Form_Factor::FillFourierTransformGrid() {
 		<<"   accuracy goal = "<<m_accu<<";\n"
 		<<"   start evaluating in (naively) "<<(2*m_bsteps)
 		<<" steps up to b = "<<m_bmax<<".\n";
+  size_t ntry(0);
   do {
+    ntry++;
+    if (ntry > 12) {
+        msg_Error()<<METHOD<<" Form factor doesn't seem to converge, will exit run now\n";
+        exit(1);
+    }
     m_bsteps *= 2;
     m_deltab /= 2.;
     FillTestGrid();
