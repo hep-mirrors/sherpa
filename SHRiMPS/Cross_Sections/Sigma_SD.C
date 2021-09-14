@@ -21,6 +21,11 @@ double Sigma_SD::GetValue(const double & B)         { return 0.; }
 double Sigma_SD::GetCombinedValue(const double & B) { return 0.; }
 
 void Sigma_SD::FillGrids(Sigma_Elastic * sigma_el) {
+  m_tgrids.clear();
+  for (size_t i = 0; i < 3; ++i) {
+    m_intgrids[i].clear();
+    m_diffgrids[i].clear();
+  }
   m_tmin  = sigma_el->Tmin();
   m_tmax  = sigma_el->Tmax();
   m_steps = sigma_el->Steps();
