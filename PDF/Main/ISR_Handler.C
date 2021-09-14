@@ -255,15 +255,16 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D *p,
     return false;
   p[0] = p_cms[0] = m_x[0] * pp + s1 / st / m_x[0] * pm;
   p[1] = p_cms[1] = m_x[1] * pm + s2 / st / m_x[1] * pp;
-  if (m_swap) {
+  // TODO: check if this swapping of the momenta is necessary. In a setup with
+  // EPA it can lead to a wrong assignment of the partons to the Remnants and
+  // therefore a violation of momentum conservation
+  if (m_swap && false) {
     std::swap<Vec4D>(p[0], p[1]);
     std::swap<Vec4D>(p_cms[0], p_cms[1]);
   }
   m_cmsboost = Poincare(p_cms[0] + p_cms[1]);
   m_cmsboost.Boost(p[0]);
   m_cmsboost.Boost(p[1]);
-  // m_x[0]=p_cms[0].PPlus()/pa.PPlus();
-  // m_x[1]=p_cms[1].PMinus()/pb.PMinus();
   if (m_x[0] >= 1.0)
     m_x[0] = 1.0 - 1.0e-12;
   if (m_x[1] >= 1.0)
