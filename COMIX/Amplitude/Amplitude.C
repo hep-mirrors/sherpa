@@ -1512,8 +1512,17 @@ bool Amplitude::EvaluateAll(const bool& mode)
 	  Sub()->Sub()->In().front()->Kin();
 	m_p[0]=-m_p[0];
 	m_p[1]=-m_p[1];
-	double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
-		      dabs(kin->JIJT()->P()*kin->JK()->P())));
+	//double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
+	//	      dabs(kin->JIJT()->P()*kin->JK()->P())));
+  
+  double lf(0.);
+  if (!p_loop || !(p_loop->fixedIRscale())) 
+      lf = log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
+  else{
+      double irscale=p_loop->IRscale();
+      lf = log(2.0*M_PI*sqr(irscale)/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
+  }
+
 	m_p[0]=-m_p[0];
 	m_p[1]=-m_p[1];
 #ifdef DEBUG__BG
