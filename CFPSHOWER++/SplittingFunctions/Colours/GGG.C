@@ -7,8 +7,8 @@ namespace CFPSHOWER {
   class GGG : public Gauge_Base {
   public:
     GGG(const Kernel_Info & info) : Gauge_Base(info) {
-      m_charge = 3./2.;
-      SetName("8-8-8");
+      m_charge = m_CA/2.;
+      m_name   = std::string("8-8-8");
       m_colors.resize(2);
     }
     const double Scale(const Splitting & split) const;
@@ -20,7 +20,9 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 const double GGG::Scale(const Splitting & split) const {
-  double kt2 = (split.Mom(0)*split.Mom(1))*(split.Mom(1)*split.Mom(2))/(split.Mom(0)*split.Mom(2));
+  double kt2 = ( 2.*(split.Mom(0)*split.Mom(1))*(split.Mom(1)*split.Mom(2))/
+		 (split.Mom(0)*split.Mom(2)) );
+  //msg_Out()<<METHOD<<": kt2 = "<<kt2<<" from T = "<<split.T()<<"\n";
   switch (m_type) {
   case kernel_type::FF:
     if (m_muRscheme==muR_scheme::KT2) return kt2;
@@ -43,16 +45,22 @@ bool GGG::SetColours(Splitting & split) {
     if (ran->Get()>0.5) same0 = false; else same1 = false;
   }
   unsigned int newcol = Flow::Counter();
-  // starting position: splitter anti-colour = spectator colour:
-  // soft gluon inherits anti-colour and hard gluon keeps colour
-  m_colors[0] = Color(splitter->GetColor()[0],newcol);
-  m_colors[1] = Color(newcol,splitter->GetColor()[1]);
-  // if splitter colour = spectator anti-colour:
-  // soft gluon inherits colour and hard gluon keep anti-colour,
+  // splitter colour = spectator anti-colour:
+  if (same0) { 
+    m_colors[0] = Color(newcol,splitter->GetColor()[1]);
+    m_colors[1] = Color(splitter->GetColor()[0],newcol);
+  }
+  else if (same1) {
+    m_colors[1] = Color(newcol,splitter->GetColor()[1]);
+    m_colors[0] = Color(splitter->GetColor()[0],newcol);
+  }
+  //msg_Out()<<METHOD<<" for "<<splitter->Id()<<": "
+  //	   <<"["<<splitter->GetColor()[0]<<" "<<splitter->GetColor()[1]<<"] "
+  //       <<" --> ["<<m_colors[0][0]<<" "<<m_colors[0][1]<<"] + "
+  //	   <<"["<<m_colors[1][0]<<" "<<m_colors[1][1]<<"]\n";
   // this is equivalent to swapping the default.
-  if (same0)  swap(m_colors[0],m_colors[1]);
   // if we use the "swapped" splitting function, the roles of soft and
-  // hard gluon are interchange - in other words, colours have to swap.
+  // hard gluon are interchanged - in other words, colours have to swap.
   if (m_tagsequence[0]==1) swap(m_colors[0],m_colors[1]);
   return true;
 }

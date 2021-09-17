@@ -500,7 +500,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   for (Particle_List::iterator it=pl.begin(); it!=pl.end(); ++it) {
     if ((*it)->Momentum().Nan()) {
       msg_Error()<<METHOD<<" encountered NaN in momentum. Ignoring event:"
-                 <<endl<<*bl<<endl;
+                 <<std::endl<<*bl<<std::endl;
       return true;
     }
   }
@@ -627,10 +627,11 @@ bool Rivet_Interface::Finish()
     }
     for (Rivet_Map::iterator it=mit->second->RivetMap().begin();
          it!=mit->second->RivetMap().end(); ++it) {
-      const double wgtfrac = it->second->sumOfWeights()/mit->second->SumOfWeights();
-      const double totalxs = it->second->crossSection();
+      const double wgtfrac = (it->second->sumW()/
+			      mit->second->SumOfWeights());
+      const double totalxs = it->second->nominalCrossSection();
       const double thisxs  = totalxs*wgtfrac;
-      it->second->setCrossSection(thisxs);
+      it->second->setCrossSection(thisxs, 0.0, true);
       std::string jout=out;
       if (it->first.first!="") jout+="."+it->first.first;
       if (it->first.second!=0) jout+=".j"+ToString(it->first.second);

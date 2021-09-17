@@ -22,9 +22,10 @@ namespace CFPSHOWER {
   class Kernel_Constructor {
   private:
     Shower * p_shower;
-    double   m_asfactor[2], m_muR2factor, m_muF2factor, m_pdfmin[2];
-    int      m_kinscheme, m_muRscheme, m_cplscheme, m_MEcorrs, m_SForder, m_logtype;
-    int      m_kfactor, m_softcorr, m_endpoint;
+    int      m_kinscheme, m_SForder, m_logtype, m_kfactor, m_muRscheme;
+    int      m_softcorr, m_endpoint, m_cplscheme, m_MEcorrs;
+    double   m_asfactor[2], m_muR2factor, m_muF2factor;
+    double   m_pdfmin, m_pdfxmin;
     
     MODEL::Model_Base           * p_model;
     PDF::PDF_Base               * p_pdf[2];
@@ -48,7 +49,7 @@ namespace CFPSHOWER {
     Kernel_Constructor(Shower * shower);
     ~Kernel_Constructor();
 
-    inline std::map<ATOOLS::Flavour, Kernels *> * operator()(const size_t & i) {
+    inline std::map<ATOOLS::Flavour, Kernels *> *operator()(const size_t & i) {
       return p_kernels[i];
     }
     bool Init(MODEL::Model_Base * const model,PDF::ISR_Handler * const isr);

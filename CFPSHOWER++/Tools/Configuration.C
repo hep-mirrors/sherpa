@@ -16,12 +16,17 @@ Configuration::Configuration(Cluster_Amplitude * const ampl,
 			     Cluster_Definitions * cluster) :
   p_ampl(ampl), m_t(p_ampl->KT2()), m_t0(-1.), m_pos(Vec4D(0.,0.,0.,0.))
 {
+  //msg_Out()<<"************************************************************\n"
+  //	   <<"************************************************************\n"
+  //	   <<"************************************************************\n"
+  //	   <<METHOD<<":\n"<<(*ampl)<<"\n";
   if (!p_ampl) return;
   Fill(lmap);
   if (p_ampl->Prev()) m_tveto = p_ampl->Prev()->KT2();
 }
 
 void Configuration::Fill(map<Cluster_Leg*,Parton*> & lmap) {
+  SanitizeSingletGluons();
   for (size_t i(0);i<p_ampl->Legs().size();++i) {
     Cluster_Leg * leg = p_ampl->Leg(i);
     Parton * parton   = new Parton(leg->Flav(),leg->Mom());
@@ -33,7 +38,39 @@ void Configuration::Fill(map<Cluster_Leg*,Parton*> & lmap) {
     push_back(parton);
     lmap[leg] = parton;
   }
+  for (Parton_List::iterator pit1=begin();pit1!=end();pit1++) {
+    if ((*pit1)->Beam()!=0) continue;
+    if ((*pit1)->Flav().IsGluon() &&
+	(*pit1)->GetColor()[0]==(*pit1)->GetColor()[1]) {
+      msg_Out()<<"Gotcha: "
+	       <<"["<<(*pit1)->GetColor()[0]<<" "<<(*pit1)->GetColor()[1]<<"], "
+	       <<(*pit1)->Mom()<<"\n";
+      exit(1);
+    }
+  }
   EstablishRelations();
+}
+
+void Configuration::SanitizeSingletGluons() {
+  if (p_ampl->Legs().size()!=4) return;
+  Cluster_Leg * leg2 = p_ampl->Leg(2), * leg3 = p_ampl->Leg(3);  
+  if (leg2->Flav().IsGluon() && leg2->Col().Singlet()) {
+    if (leg3->Flav().IsGluon() && leg3->Col().Singlet()) {
+      if (leg2->Col().m_i!=leg3->Col().m_i) {
+	leg2->SetCol(ATOOLS::ColorID(leg2->Col().m_i,leg3->Col().m_i));
+      }
+      else {
+	leg2->SetCol(ATOOLS::ColorID(leg2->Col().m_i,leg2->Col().m_i+1));
+      }
+      leg3->SetCol(leg2->Col().Conj());
+      //msg_Out()<<METHOD<<" fixed colour:\n"<<(*p_ampl)<<"\n";
+    }
+    else {
+      msg_Error()<<METHOD<<" found a singlet gluon in 2->2 amplitude,\n"
+		 <<"  but no partner gluon to compensate colours properly.\n"
+		 <<"  Will continue and hope for the best.\n";
+    }
+  }
 }
 
 size_t Configuration::NPartons() {

@@ -13,7 +13,7 @@ namespace CFPSHOWER {
     Cluster_Definitions        * p_cluster;
     ATOOLS::Mass_Selector      * p_massselector;
 
-    double m_muQ2;
+    double m_muQ2, m_weight;
     bool   m_test;
 
     ATOOLS::Cluster_Amplitude * InitConfigs(ATOOLS::Cluster_Amplitude * const ampl);

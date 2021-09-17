@@ -12,7 +12,8 @@ namespace CFPSHOWER {
     Kernels() {}
     ~Kernels();
 
-    double CalcIntegrals(Splitting & split,const ATOOLS::Mass_Selector * ms);
+    double CalcIntegrals(Splitting & split,Configuration & config,
+			 const ATOOLS::Mass_Selector * ms);
     inline std::vector<double> & GetIntegrals() { return m_integrals; }
   };
 

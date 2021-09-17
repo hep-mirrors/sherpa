@@ -4,10 +4,6 @@
 #include "CFPSHOWER++/Shower/Kernels.H"
 #include "CFPSHOWER++/Tools/Configuration.H"
 
-namespace ATOOLS {
-  class Default_Reader;
-}
-
 namespace MODEL {
   class Model_Base;
   class Running_AlphaS;
@@ -57,9 +53,8 @@ namespace CFPSHOWER {
 
     void Reset(); 
     inline void SetMassSelector(const ATOOLS::Mass_Selector * ms) { p_msel = ms; }
-    inline const ATOOLS::Mass_Selector * GetMassSelector()         const { return p_msel; }
-
-    inline Cluster_Definitions   * const GetClusterDefinitions()   const { return p_cluster; }
+    inline const ATOOLS::Mass_Selector * GetMassSelector()     const { return p_msel; }
+    inline Cluster_Definitions * const GetClusterDefinitions() const { return p_cluster; }
     inline const double & Weight() const { return m_weight; }
   };
 }

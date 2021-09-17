@@ -30,8 +30,8 @@ ostream & CFPSHOWER::operator<<(ostream &s,const log_type::code & type) {
 
 ostream & CFPSHOWER::operator<<(ostream &s,const kin_type::code & type) {
   switch (int(type)) {
-  case 1: s<<"PanGlobal";break;
   case 2: s<<"Catani-Seymour";break;
+  case 1: s<<"Alaric";break;
   default: s<<"unknown";break;
   }
   return s;
@@ -139,11 +139,10 @@ const string Kernel_Info::KinName() const {
   }
   name += "_";
   switch (m_kintype) {
-  case kin_type::CS:
+  case kin_type::CataniSeymour:
     name += "Catani-Seymour"; break;
-  case kin_type::PanGlobal:
-    if (m_logtype==log_type::coll) name += "Catani-Seymour";
-    if (m_logtype==log_type::soft) name += "PanGlobal";
+  case kin_type::Alaric:
+    name += "Alaric";
     break;
   case kernel_type::none:
     name += "None"; break;
@@ -179,22 +178,23 @@ const string Kernel_Info::SFName() const {
   default:
     break;
   }
-  switch (m_split.IntSpin()) {
-  case 2: name += "V"; break;
-  case 1: name += "F"; break;
-  case 0: name += "S"; break;
-  }
-  for (size_t i=0;i<m_flavs.size();i++) {
-    switch (m_flavs[i].IntSpin()) {
+  switch (m_logtype) {
+  case log_type::soft: name += "Soft"; break;
+  case log_type::coll:
+    name += "Coll_";
+    switch (m_split.IntSpin()) {
     case 2: name += "V"; break;
     case 1: name += "F"; break;
     case 0: name += "S"; break;
     }
-  }
-  name += "_";
-  switch (m_logtype) {
-  case log_type::soft: name += "Soft"; break;
-  case log_type::coll: name += "Coll"; break;
+    for (size_t i=0;i<m_flavs.size();i++) {
+      switch (m_flavs[i].IntSpin()) {
+      case 2: name += "V"; break;
+      case 1: name += "F"; break;
+      case 0: name += "S"; break;
+      }
+    }
+    break;
   case log_type::none: 
   default:
     break;

@@ -6,6 +6,8 @@ include ../../git.make
 
 libPhasicChannels_la_SOURCES  =	\
 				Git_Info.C \
+				Transverse_Kinematics.C \
+				Antenna_Kinematics.C \
 				CSS_Kinematics.C \
 				Channel_Basics.C \
 				Channel_Elements.C \
@@ -32,6 +34,8 @@ libPhasicChannels_la_SOURCES  =	\
                                 BBar_Emission_Generator.C
 
 localinc_HEADERS      =	\
+			Transverse_Kinematics.H \
+			Antenna_Kinematics.H \
 			CSS_Kinematics.H \
 			Channel_Basics.H \
 			Channel_Elements.H \

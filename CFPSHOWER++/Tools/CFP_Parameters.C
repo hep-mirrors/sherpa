@@ -1,7 +1,6 @@
 #include "CFPSHOWER++/Tools/CFP_Parameters.H"
-#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Exception.H"
 
 using namespace CFPSHOWER;
 using namespace ATOOLS;
@@ -12,40 +11,49 @@ CFP_Parameters * CFPSHOWER::cfp_pars = NULL;
 
 CFP_Parameters::CFP_Parameters() {}
 
-bool CFP_Parameters::Init(Default_Reader *const reader)
+bool CFP_Parameters::Init()
 {
-  m_switches["muR_scheme"]      = reader->Get<int>("CSS_MUR_SCHEME",1);
-  m_switches["kinematics"]      = reader->Get<int>("CSS_KIN_SCHEME",1);
-  m_switches["kfactor"]         = reader->Get<int>("CSS_KFACTOR_SCHEME",0);
-  m_switches["endpoint"]        = reader->Get<int>("CSS_ENDPOINT_SCHEME",0);
-  m_switches["softcorrections"] = reader->Get<int>("CSS_SOFTCORRECTION_SCHEME",0);
-  m_switches["couplings"]       = reader->Get<int>("CSS_COUPLING_SCHEME",1);
-  m_switches["ME_corrections"]  = reader->Get<int>("CSS_ME_CORRECTION",0);
-  m_switches["SF_order"]        = reader->Get<unsigned int>("CSS_SF_ORDER",1);
-  m_switches["Log_Type"]        = reader->Get<unsigned int>("CSS_LOG_TYPE",2);
-  m_switches["max_emissions"]   = reader->Get<unsigned int>
-    ("CSS_MAXEM",100000); //std::numeric_limits<unsigned int>::max());
-  m_switches["max_particles"]   = reader->Get<unsigned int>
-    ("CSS_MAXPART",100000); //std::numeric_limits<unsigned int>::max());
-  m_parameters["recalc_fac"]    = reader->Get<double>("CSS_RECALC_FACTOR",4.0);
-  m_parameters["PDF_min"]       = reader->Get<double>("CSS_PDF_MIN",1.0e-4);
-  m_parameters["PDF_min_X"]     = reader->Get<double>("CSS_PDF_MIN_X",1.0e-2);
-  m_parameters["NLO_enhance"]   = reader->Get<double>("CSS_TC_ENHANCE",1.0);
-  m_parameters["pt2min(FS)"]    = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_parameters["pt2min(IS)"]    = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  m_parameters["k_alpha(FS)"]   = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
-  m_parameters["k_alpha(IS)"]   = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
-  m_parameters["k_muR"]         = ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-  m_parameters["k_muF"]         = ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
-  /*
-  m_rcf=reader->Get<double>("CSS_RECALC_FACTOR",4.0);
-  m_maxrewem=reader->Get<unsigned int>
-    ("REWEIGHT_MAXEM",std::numeric_limits<unsigned int>::max());
-  m_rewtmin=reader->Get<double>("CSS_REWEIGHT_SCALE_CUTOFF", 5.0);
-  m_oef=reader->Get<double>("CSS_OEF",3.0);
-  */
+  msg_Out()<<"Entering "<<METHOD<<"==================================\n";
+  m_switches[string("kinematics")]      = 2;  //CS Kinematics
+  m_switches[string("kfactor")]         = 1; 
+  m_switches[string("endpoint")]        = 0;
+  m_switches[string("softcorrections")] = 0;
+  m_switches[string("couplings")]       = 1;
+  m_switches[string("ME_corrections")]  = 0;
+  m_switches[string("SF_order")]        = 1;
+  m_switches[string("Log_Type")]        = 2;
+  m_switches[string("max_emissions")]   = 1;
+  m_switches[string("max_particles")]   = 100000;
+  m_switches[string("muR_scheme")]      = 1;
+  m_parameters[string("PDF_min")]       = 1.e-4; 
+  m_parameters[string("PDF_min_X")]     = 1.e-4;
+  m_parameters[string("pt2min(FS)")]    = 1.;
+  m_parameters[string("pt2min(IS)")]    = 1.;
+  m_parameters[string("k_alpha(FS)")]   = 1.;
+  m_parameters[string("k_alpha(IS)")]   = 1.;
+  m_parameters[string("k_muR")]         = 1.;
+  m_parameters[string("k_muF")]         = 1.;
   Output();
+  msg_Out()<<"Leaving "<<METHOD<<"==================================\n";
   return true;
+  //auto s = Settings::GetMainSettings();
+  /*
+  m_switches["kinematics"]      = s["CSS_KIN_SCHEME"].SetDefault(1).Get<int>();
+  m_switches["kfactor"]         = s["CSS_KFACTOR_SCHEME"].SetDefault(0).Get<int>();
+  m_switches["endpoint"]        = s["CSS_ENDPOINT_SCHEME"].SetDefault(0).Get<int>();
+  m_switches["softcorrections"] = s["CSS_SOFTCORRECTION_SCHEME"].SetDefault(0).Get<int>();
+  m_switches["couplings"]       = s["CSS_COUPLING_SCHEME"].SetDefault(1).Get<int>();
+  m_switches["ME_corrections"]  = s["CSS_ME_CORRECTION"].SetDefault(0).Get<int>();
+  m_switches["SF_order"]        = s["CSS_SF_ORDER"].SetDefault(1).Get<int>();
+  m_switches["Log_Type"]        = s["CSS_LOG_TYPE"].SetDefault(2).Get<int>();
+  m_switches["max_emissions"]   = s["CSS_MAXEM"].SetDefault(10000).Get<int>();
+  m_switches["max_particles"]   = s["CSS_MAXPART"].SetDefault(10000).Get<int>();
+  //m_switches["muR_scheme"]    = s["CSS_MUR_SCHEME"].SetDefault(1).Get<int>();
+  m_parameters["recalc_fac"]    = s["CSS_RECALC_FACTOR"].SetDefault(4.0).Get<double>();
+  m_parameters["PDF_min"]       = s["CSS_PDF_MIN"].SetDefault(1.0e-4).Get<double>();
+  m_parameters["PDF_min_X"]     = s["CSS_PDF_MIN_X"].SetDefault(1.0e-2).Get<double>();
+  m_parameters["NLO_enhance"]   = s["CSS_TC_ENHANCE"].SetDefault(1.0).Get<double>();
+  */
 }
 
 int CFP_Parameters::operator[](string keyword) 

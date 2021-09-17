@@ -33,9 +33,9 @@ namespace CFPSHOWER {
   
   struct kin_type {
     enum code {
-      CS        = 2, // not debugged yet
-      PanGlobal = 1,
-      none      = 0
+      CataniSeymour = 2, 
+      Alaric        = 1,
+      none          = 0
     };
   };
   std::ostream &operator<<(std::ostream &s,const kin_type::code & type);

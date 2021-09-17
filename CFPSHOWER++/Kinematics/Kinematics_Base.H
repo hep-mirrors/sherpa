@@ -13,26 +13,26 @@ namespace CFPSHOWER {
   protected:
     std::string    m_name;
     kin_type::code m_scheme;
-    double         m_weight;
+    ATOOLS::Vec4D  m_psplit, m_pspect, m_pboth;
+    double         m_msplit, m_mspect, m_msplit2, m_mspect2, m_m[2], m_m2[2];
+    double         m_Q2, m_Q, m_z[2], m_y, m_weight;
+    bool           m_ismassive;
 
     std::map<Parton *, ATOOLS::Vec4D> m_allmomenta;
     std::map<Parton *, double>        m_allmasses2;
     
     static double Lambda(const double & a,const double & b,const double & c);
     static double Lambda2(const double & a,const double & b,const double & c);
+    virtual void InitSystem(Splitting & split, const ATOOLS::Mass_Selector * msel);
   public:
     Kinematics_Base(const Kernel_Info & info);
     ~Kinematics_Base();
-    
-    virtual void Init(const Splitting & split, Configuration & config,
+    virtual bool Init(Splitting & split, Configuration & config,
 		      const ATOOLS::Mass_Selector * msel)                       = 0;
     virtual bool operator()(Splitting & split, Configuration & config)          = 0;
-    virtual void CalculateInvariants(Splitting & split, Configuration & config) = 0;
     virtual void CalculateJacobean(Splitting & split,Configuration & config)    = 0;
     virtual bool UpdateSystem(Splitting & split, Configuration & config)        = 0;
 
-    inline virtual void SetName(const std::string & name)        { m_name   = name; }
-    inline virtual void SetScheme(const kin_type::code & scheme) { m_scheme = scheme; }
     inline virtual const double            & Weight()        const { return m_weight; }
     inline virtual const std::string       & Name()          const { return m_name; }
     inline virtual const kin_type::code    & Scheme()        const { return m_scheme; }

@@ -15,17 +15,35 @@ Kinematics_Base::Kinematics_Base(const Kernel_Info & info) :
 
 Kinematics_Base::~Kinematics_Base() {}
 
-double Kinematics_Base::Lambda(const double & a,const double & b,const double & c) {
+void Kinematics_Base::InitSystem(Splitting & split, const Mass_Selector * msel)  {
+  m_psplit  = split.GetSplitter()->Mom();
+  m_pspect  = split.GetSpectator()->Mom();
+  m_pboth   = m_psplit + m_pspect;
+  m_msplit  = msel->Mass(split.GetSplitter()->Flav());
+  m_msplit2 = sqr(m_msplit);
+  m_mspect  = msel->Mass(split.GetSpectator()->Flav());
+  m_mspect2 = sqr(m_mspect);
+  m_Q2      = m_pboth.Abs2();
+  m_Q       = sqrt(m_Q2);
+  m_ismassive = (m_mspect>0. || m_m[0]>0. || m_m[1]>0.);
+  m_allmomenta.clear();
+  m_allmasses2.clear();
+}
+
+double Kinematics_Base::
+Lambda(const double & a,const double & b,const double & c) {
   double lambda2 = Lambda2(a,b,c); 
   if (lambda2<0.) {
-    msg_Error()<<"Error in "<<METHOD<<"("<<a<<", "<<b<<", "<<c<<") yields nan.\n"
+    msg_Error()<<"Error in "<<METHOD
+	       <<"("<<a<<", "<<b<<", "<<c<<") yields nan.\n"
 	       <<"   return 0. and hope for the best.\n";
     return 0.;
   }
   return sqrt(lambda2);
 }
 
-double Kinematics_Base::Lambda2(const double & a,const double & b,const double & c) {
+double Kinematics_Base::
+Lambda2(const double & a,const double & b,const double & c) {
   return sqr(a-b-c)-4.*b*c;
 }
 

@@ -2,7 +2,6 @@
 #include "CFPSHOWER++/Shower/Kernel.H"
 #include "CFPSHOWER++/SplittingFunctions/SF_Base.H"
 #include "CFPSHOWER++/Shower/Cluster_Definitions.H"
-#include "CFPSHOWER++/Tools/CFP_Parameters.H"
 #include "CFPSHOWER++/Tools/Kernel_Constructor.H"
 #include "CFPSHOWER++/Tools/Kernel_Info.H"
 #include "MODEL/Main/Model_Base.H"
@@ -11,7 +10,6 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -38,43 +36,46 @@ Shower::~Shower()
 }
 
 void Shower::Reset() {
-  while (!m_splittings.empty()) { delete m_splittings.back(); m_splittings.pop_back(); }
+  while (!m_splittings.empty()) {
+    delete m_splittings.back();
+    m_splittings.pop_back();
+  }
 }
 
 bool Shower::Evolve(Configuration * config) {
-  msg_Out()<<"\n\n\n"
-  	   <<"####################################################################"
-  	   <<"#########################\n"
-  	   <<METHOD<<"\n"
-  	   <<"####################################################################"
-  	   <<"#########################\n";
+  //msg_Out()<<"\n\n\n"
+  //	   <<"################################################################"
+  //	   <<"#########################\n"
+  //	   <<METHOD<<"\n"
+  //	   <<"################################################################"
+  //	   <<"#########################\n";
   p_config = config;
   // Initialisation - will have to be shifted to a new method (or some Reset()).
   m_weight = 1.; m_nem = 0;
   if (p_config->T0()<0.) p_config->SetT0(m_t0min);
   // Logic here:
-  // 1. As long as we find possible splittings (p_winner) and we have not exhausted
-  //    the number of possible emissions (m_nmax_em>m_nem), we continue with the
-  //    evolution of the configuration, in step 2.
+  // 1. As long as we find possible splittings (p_winner) and we have not
+  //    exhausted the number of possible emissions (m_nmax_em>m_nem), we
+  //    continue with the evolution of the configuration, in step 2.
   // 2. We iterate over all partons in the configuration that have not yet been
   //    switched off and check if they can evolve in Evolve(Parton *):
   //    - If successful this yields a winning splitting, p_winner.  Then we add
-  //      the combined acceptance weight for the splitter and rejection weights for
-  //      all splittings that failed for this and other partons in the configuration,
-  //      in AddWeight().  The winner sets the maximal t for the next evolution step,
-  //      and we have to reset the minimal t, t0.  Finally we perform the actual
-  //      splitting, in PerformSplitting(), by adding the splitting products and
-  //      updating kinematics and colours.  
+  //      the combined acceptance weight for the splitter and rejection weights
+  //      for all splittings that failed for this and other partons in the
+  //      configuration, in AddWeight().  The winner sets the maximal t for
+  //      the next evolution step, and we have to reset the minimal t, t0.
+  //      Finally we perform the actual splitting, in PerformSplitting(), by
+  //      adding the splitting products and updating kinematics and colours.  
   //    - If we are not successful we go to step 3.
   // 3. If the evolution of the configuration is over we add a final weight,
   //    consisting of all rejection weights of failed splittings.
   do {
     p_winner = NULL;
     size_t i=0;
-    //msg_Out()<<"================================================================================\n"
-    //	     <<METHOD<<": next evolution step starting at "<<config->T()
-    //	     <<" --> "<<config->T0()<<"\n"
-    //	     <<"================================================================================\n";
+    //msg_Out()<<"============================================================\n"
+    //	     <<METHOD<<" for configuration: next evolution step starting at "
+    //	     <<config->T()<<" --> "<<config->T0()<<"\n"
+    //	     <<"============================================================\n";
     for (Parton_List::reverse_iterator pit=p_config->rbegin();
 	 pit!=p_config->rend();pit++) {
       if ((*pit)->On() && !Evolve(*pit)) continue;
@@ -88,7 +89,8 @@ bool Shower::Evolve(Configuration * config) {
 	m_nem++;
       }
       else {
-	for (Parton_List::iterator pit=p_config->begin();pit!=p_config->end();pit++) {
+	for (Parton_List::iterator pit=p_config->begin();
+	     pit!=p_config->end();pit++) {
 	  (*pit)->ClearWeights();
 	}
 	delete p_winner;
@@ -96,12 +98,14 @@ bool Shower::Evolve(Configuration * config) {
     }
   } while (p_winner && m_nem<m_nmax_em);
   AddWeight(p_config->T0());
+  //msg_Out()<<METHOD<<" terminates with weight = "<<m_weight<<"\n";
   return true;
 }
 
 void Shower::AddWeight(const double & t) {
   double stepweight = 1., partweight;
-  for (Parton_List::iterator pit=p_config->begin();pit!=p_config->end();pit++) {
+  for (Parton_List::iterator pit=p_config->begin();
+       pit!=p_config->end();pit++) {
     Parton * part = (*pit);
     stepweight *= partweight = part->GetWeight(t);
     part->ClearWeights();
@@ -111,22 +115,23 @@ void Shower::AddWeight(const double & t) {
 
 bool Shower::Evolve(Parton * splitter) {
   // Initialise the integrated splitting kernel, summed over all spectators (at
-  // least one in QCD, and maximally two).  If splittings are kinematically allowed,
-  // the sum will be larger than one and we will generate a test splitting through
-  // GenerateTestSplitting().  This test includes splitting parameters t and z,
-  // plus corresponding kinematics information (y, z, as well as all masses
-  // involved), from which we also construct the four-momenta of the decay products
-  // and the spectator.  The kinematics will subsequently be fully realised
-  // in PerformSplitting(), by adding the decay products to the configuration, by
-  // switching off the splitter, and by updating the spectator kinematics and the
-  // colour connections.
+  // least one in QCD, and maximally two).  If splittings are kinematically
+  // allowed, the sum will be larger than one and we will generate a test
+  // splitting through GenerateTestSplitting().  This test includes splitting
+  // parameters t and z, plus corresponding kinematics information (y, z, as
+  // well as all masses involved), from which we also construct the
+  // four-momenta of the decay products and the spectator(s).  The kinematics
+  // will subsequently be fully realised in PerformSplitting(), by adding the
+  // decay products to the configuration, by switching off the splitter, and
+  // by updating the spectator kinematics and the colour connections.
   
   if (splitter->GetSpectators()->size()<=0) return false;
   bool success = false;
+  //msg_Out()<<"===========================================================\n"
+  //	   <<METHOD<<" for "<<splitter->Flav()<<" ("<<splitter->Id()<<")\n";
   double sum  = InitialiseIntegrals(splitter);
+  //msg_Out()<<"--> total for evolution: sum = "<<sum<<".\n";
   if (sum>0.) {
-    //msg_Out()<<"========================================================================\n"
-    //<<METHOD<<" for "<<splitter->Flav()<<", sum = "<<sum<<"\n";
     Splitting * split = GenerateTestSplitting(splitter,sum);
     if (split) {
       success = true;
@@ -134,10 +139,10 @@ bool Shower::Evolve(Parton * splitter) {
       // this splitting is the winner.  If we already have a winner, there are
       // two possibilities:
       // 1. the t of the current splitting is larger than the winner to date.
-      //    In this case, we delete the winner and replace it with the current trial
-      //    splitting (this should become obsolete now).
-      // 2. the t of the current splitter is below the current winner's t.  Then
-      //    we just delete the current splitting.  
+      //    In this case, we delete the winner and replace it with the current
+      //    trial splitting (this should become obsolete now).
+      // 2. the t of the current splitter is below the current winner's t.  
+      //    Then we just delete the current splitting.  
       if (p_winner==NULL) {
 	//msg_Out()<<"   --> success for t = "<<split->T()<<"\n";
 	p_winner = split;
@@ -152,6 +157,7 @@ bool Shower::Evolve(Parton * splitter) {
       if (p_winner) { p_config->SetT0(p_winner->T()); }
     }
   }
+  //if (!success) msg_Out()<<"   --> no splitting for "<<splitter->Flav()<<"\n";
   return success;
 }
 
@@ -163,17 +169,24 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
   m_integrals.resize(spectators->size());
   m_splitkernels.resize(spectators->size());
   double sum = 0.;
-  size_t i = 0;
+  size_t i   = 0;
   for (Parton_List::const_iterator spit=spectators->begin();
        spit!=spectators->end();spit++) {
     Parton * spectator = (*spit);
-    // Select the list of applicable kernels depending on the kinematic configuration
-    // and the flavour of the splitter.  
-    kernel_type::code type = GetCode((splitter->Beam()>0),(spectator->Beam()>0));
-    map<Flavour, Kernels *>::iterator kit = p_kernels[int(type)]->find(splitter->Flav());
+    //msg_Out()<<METHOD<<" for split = "<<splitter->Id()<<", "
+    //	     <<"spect = "<<spectator->Id()<<" ("<<spectators->size()<<"): "
+    //	     <<"t > "<<p_config->T0()<<"\n";
+    // Select the list of applicable kernels depending on the kinematic
+    // configuration and the flavour of the splitter.  
+    kernel_type::code type = GetCode((splitter->Beam()>0),
+				     (spectator->Beam()>0));
+    map<Flavour, Kernels *>::iterator kit =
+      p_kernels[int(type)]->find(splitter->Flav());
     if (kit==p_kernels[int(type)]->end()) {
       // didn't find any meaningful splitting for the type (FF, FI, IF, or II):
       // add a zero weight.
+      //msg_Out()<<"--- did not find any kernel in a list with "
+      //     <<p_kernels[int(type)]->size()<<" entries.\n";
       vector<double> help; help.resize(1); help.push_back(0.);
       m_integrals[i] = help;
     }
@@ -182,10 +195,12 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
       // calculate the integrals and store the vector of results for
       // later selection of winning kernel
       Kernels * kernels = kit->second;
-      // Initialise a container (Splitting) split holding the information defining the
-      // potential splitting.
+      // Initialise a container (Splitting) split holding the information
+      // defining the potential splitting.
+      //msg_Out()<<"------------------------------------------------------------\n"
+      //       <<"Integrals for "<<splitter->Id()<<" - "<<spectator->Id()<<":\n";
       Splitting split(splitter,spectator,p_config->T(),p_config->T0());
-      if (kernels) sum += kernels->CalcIntegrals(split,p_msel);
+      if (kernels) sum += kernels->CalcIntegrals(split,*p_config,p_msel);
       m_integrals[i]    = kernels->GetIntegrals();
       m_splitkernels[i] = kernels; 
     }
@@ -197,20 +212,21 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
 Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) {
   const Parton_List * spectators = splitter->GetSpectators();
   double t = p_config->T(), tstart = t, t0 = p_config->T0();
-  //msg_Out()<<"-------------------------------------------------------------------------\n"
+  //msg_Out()<<"-------------------------------------------------------------\n"
   //	   <<METHOD<<"(t = "<<t<<", t0 = "<<t0<<") "
-  //	   <<"for "<<splitter->Flav()<<", sum = "<<sum<<", "
+  //	   <<"for id = "<<splitter->Id()<<", sum = "<<sum<<", "
   //	   <<spectators->size()<<" spectators.\n";
   while (t>t0) {
     t *= exp(log(ran->Get())/sum);
     if (t<t0) return NULL;
     double disc = sum * ran->Get(), specsum;
-    size_t i = 0;
+    size_t i    = 0;
     for (Parton_List::const_iterator spit=spectators->begin();
 	 spit!=spectators->end();spit++) {
-      // Select the list of applicable kernels depending on the kinematic configuration
-      // and the flavour of the splitter.  Initialise a container "Splitting" for the
-      // information defining the potential splitting.
+      // Select the list of applicable kernels depending on the kinematic
+      // configuration and the flavour of the splitter.  Initialise a
+      // container "Splitting" for the information defining the potential
+      // splitting.
       bool active = true;
       disc -= specsum = m_integrals[i].back();
       if (disc<=0. && active) {
@@ -223,12 +239,16 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
 	    Splitting * split  = new Splitting(splitter,spectator,t,t0);
 	    split->SetTstart(tstart);
 	    // Veto and adding of weights is embedded here.
-	    // Generate z, phi, run the veto algorithm, and construct the kinematics.
-	    // Veto (accept/reject) with exact operator divided by over estimator.
-	    // If everything works out, the splitting is allowed and we keep it.
-	    // Rejected splittings add to the overall rejection weight related to
-	    // the splitter parton.
-	    if (kernel->Generate(*split,*p_config,p_msel,m_weightover)) return split;
+	    // Generate z, phi, run the veto algorithm, and construct the
+	    // kinematics. Veto (accept/reject) with exact operator divided
+	    // by over estimator.
+	    // If everything works out, the splitting is allowed and we keep
+	    // it. Rejected splittings add to the overall rejection weight
+	    // related to the splitter parton.
+	    if (kernel->Generate(*split,*p_config,p_msel,m_weightover)) {
+	      //msg_Out()<<"--> viable splitting for t = "<<split->T()<<"\n";
+	      return split;
+	    }
 	    delete split;
 	    active = false;
 	    break;
@@ -246,8 +266,9 @@ bool Shower::PerformSplitting() {
   /*
   if (p_winner->IsEndPoint()) {
     if (!p_winner->GetKernel()->UpdateSystem(*p_winner,*p_config)) {
-      msg_Error()<<METHOD<<" failed to update to endpoint kinematics for:\n"<<(*p_winner)
-		 <<"   Return false and hope for the best.\n";
+      msg_Error()<<METHOD<<" failed to update to endpoint kinematics for:\n"
+      <<(*p_winner)
+      <<"   Return false and hope for the best.\n";
       return false;
     }
   }
@@ -284,12 +305,16 @@ void Shower::EstablishSoftPartners() {
 }
   
 void Shower::EstablishSpectators(Parton * splitter) {
+  //msg_Out()<<"----------------------------------------------------------------\n"
+  //	   <<METHOD<<" for splitter = "<<splitter->Id()
+  //	   <<" ["<<splitter->GetColor()[0]<<" "<<splitter->GetColor()[1]<<"]\n";
   const Parton_List * spectators = splitter->GetSpectators();
   vector<unsigned int> cols;  cols.resize(2);
   for (size_t i=0;i<p_winner->NPartons();i++) {
     Parton * offspring = p_winner->GetParton(i);
     if (offspring==NULL) continue;
     for (size_t col=0;col<2;col++) { cols[col] = offspring->GetColor()[col]; }
+    //msg_Out()<<"* "<<i<<": "<<(*offspring)<<" ("<<cols[0]<<" "<<cols[1]<<")\n";
     for (size_t j=i+1;j<p_winner->NPartons();j++) {
       Parton * compare = p_winner->GetParton(j);
       if (compare==NULL) continue;
@@ -298,6 +323,8 @@ void Shower::EstablishSpectators(Parton * splitter) {
 	  if (!offspring->FindSpectator(compare)) {
 	    offspring->AddSpectator(compare);
 	    compare->AddSpectator(offspring);
+	    //msg_Out()<<"Colour "<<cols[col]<<" yields link "
+	    //	     <<offspring->Id()<<"  <> "<<compare->Id()<<"\n";
 	  }
 	}
       }
@@ -305,12 +332,16 @@ void Shower::EstablishSpectators(Parton * splitter) {
     for (Parton_List::const_iterator spec=spectators->begin();
 	 spec!=spectators->end();spec++) {
       Parton * spectator = (*spec);
+      //msg_Out()<<"now check connections with "<<spectator->Id()<<": "
+      //       <<"["<<spectator->GetColor()[0]<<" "<<spectator->GetColor()[1]<<"] "
+      //       <<"vs ["<<cols[0]<<" "<<cols[1]<<"]\n";
       for (size_t col=0;col<2;col++) {
 	if (cols[col]!=0 && cols[col]==spectator->GetColor()[1-col]) {
 	  if (!offspring->FindSpectator(spectator)) {
 	    offspring->AddSpectator(spectator);
 	  }
-	  if (!spectator->FindSpectator(offspring)) spectator->AddSpectator(offspring);
+	  if (!spectator->FindSpectator(offspring))
+	    spectator->AddSpectator(offspring);
 	}
       }
     }
@@ -323,26 +354,33 @@ void Shower::EstablishSpectators(Parton * splitter) {
   }
   //msg_Out()<<"   switch off "<<(*splitter)<<"\n";
   splitter->SwitchOff();
+  //msg_Out()<<"----------------------------------------------------------------\n";
 }
 
 bool Shower::Init(MODEL::Model_Base * const model,
 		  PDF::ISR_Handler * const isr)
 {
-  // Shower parameters and switches are pulled from the map in the CFP_Parameter
+  // Shower parameters and switches are pulled from the map in the
+  // CFP_Parameter
   // - parton shower cutoffs for FS and IS showering
   // - order of the splitting function and details of terms included
   // - scale setting schemes
   // - eventually recoil schemes
-  m_t0[0]       = (*cfp_pars)("pt2min(FS)");
-  m_t0[1]       = (*cfp_pars)("pt2min(IS)");
+  m_t0[0]       = 1.; //(*cfp_pars)("pt2min(FS)");
+  m_t0[1]       = 1.; //(*cfp_pars)("pt2min(IS)");
   m_t0min       = Min(m_t0[0], m_t0[1]);
-  m_kinscheme   = (*cfp_pars)["kinematics"];
-  m_nmax_em     = (*cfp_pars)["max_emissions"];
+  m_kinscheme   = 2;  //(*cfp_pars)["kinematics"];
+  m_nmax_em     = 2; //(*cfp_pars)["max_emissions"];
   m_weightover  = 3.;
-
+  //msg_Out()<<"### "<<METHOD<<" initialises kernel constructor.\n";
   Kernel_Constructor kernelconstructor(this);
   kernelconstructor.Init(model,isr);
-  for (size_t i=0;i<5;i++) p_kernels[i] = kernelconstructor(i);
+  //msg_Out()<<"### "<<METHOD<<" kernel constructor ready to be harvested.\n";
+  for (size_t i=0;i<5;i++) {
+    p_kernels[i] = kernelconstructor(i);
+    //msg_Out()<<"   for i = "<<i<<": found "
+    //<<p_kernels[i]->size()<<" kernels.\n";
+  }
   return true;
 }
 

@@ -1,5 +1,4 @@
 #include "CFPSHOWER++/Main/CFP_Shower.H"
-#include "CFPSHOWER++/Tools/CFP_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -12,10 +11,6 @@ using namespace std;
 CFP_Shower::CFP_Shower(const Shower_Key &key) :
   Shower_Base("CFP_Shower"), p_massselector(NULL), m_test(false)
 {
-  msg_Info()<<"In "<<METHOD<<" will start initializing the shower.\n";
-  cfp_pars = new CFP_Parameters();
-  if (!cfp_pars->Init(key.p_reader))
-    THROW(fatal_error,"Could not initialize CFP parameters.");
   m_shower.Init(key.p_model, key.p_isr);
   Parton::Reset(0);
   p_cluster = m_shower.GetClusterDefinitions();
@@ -28,23 +23,22 @@ bool CFP_Shower::
 PrepareShower(Cluster_Amplitude * const ampl,const bool & soft) {
   p_massselector = ampl->MS();
   m_shower.SetMassSelector(p_massselector);
-  Configuration * config = MakeSimpleFFConfiguration();
-  m_configs.push_back(config);
-  return true;
+  //Configuration * config = MakeSimpleFFConfiguration();
+  //m_configs.push_back(config);
+  //return true;
   std::map<Cluster_Leg *,Parton *> lmap;
   Cluster_Amplitude * current = InitConfigs(ampl);
   // Starting from the hardest part of the history, work backwards to the full
-  // parton configuration.  In each step find the splitter-spectator pair and the
-  // three resulting partons and fill an ME splitting - their sequence represents
-  // the parton shower history of the ME event
+  // parton configuration.  In each step find the splitter-spectator pair
+  // and the three resulting partons and fill an ME splitting - their
+  // sequence represents the parton shower history of the ME event
   while (current) {
     Configuration * config = new Configuration(current,lmap,p_cluster);
     m_configs.push_back(config);
-    //msg_Out()<<METHOD<<" created configuration from\n"<<(*current)<<"\n"
-    //<<(*config)<<"\n";
     current=current->Prev();
   }
   m_configs.front()->SetT(m_muQ2);
+  //msg_Out()<<METHOD<<":\n"<<(*ampl)<<"\n"<<(*m_configs.front())<<"\n";
   return true;
 }
 
@@ -53,7 +47,8 @@ Cluster_Amplitude * CFP_Shower::InitConfigs(Cluster_Amplitude * const ampl) {
   // TODO: maybe we should add a security measure here?
   p_massselector = ampl->MS();
   m_shower.SetMassSelector(p_massselector);
-  // Find the innermost, hardest cluster amplitude and extract the overall parton shower starting scale
+  // Find the innermost, hardest cluster amplitude and extract the overall
+  // parton shower starting scale
   Cluster_Amplitude * current = ampl;
   while (current->Next()) current = current->Next();
   m_muQ2 = current->MuQ2();
@@ -68,12 +63,12 @@ Configuration * CFP_Shower::Convert(Cluster_Amplitude * const ampl,
 }
 
 int CFP_Shower::PerformShowers() {
+  //msg_Out()<<"#########################################################\n"
+  //	   <<"#########################################################\n"
+  //	   <<"#########################################################\n"
+  //	   <<METHOD<<":\n";
   m_weight = 1.;
   for (size_t i=0;i<m_configs.size();i++) {
-    //msg_Out()<<"############################################################\n"
-    //	     <<"############################################################\n"
-    //	     <<"############################################################\n"
-    //	     <<METHOD<<" for \n"<<(*m_configs[i]);
     if (m_shower.Evolve(m_configs[i])) m_weight *= m_shower.Weight();
   }
   m_shower.Reset();
@@ -103,14 +98,19 @@ bool CFP_Shower::ExtractPartons(Blob_List *const bl) {
   //if (nois) msg_Out()<<(*blob)<<"\n";
   while (!m_configs.empty()) {
     Configuration * config = m_configs.back();
-    //msg_Out()<<"Extract partons from configuration ("<<m_configs.size()<<") with "
-    //	     <<config->size()<<"("<<Parton::Count()<<") partons.\n";
+    //msg_Out()<<"Extract partons from configuration "
+    //	     <<"("<<m_configs.size()<<") with "
+    //	     <<config->size()<<"("<<Parton::Count()<<") partons:\n"
+    //	     <<(*config)<<"\n";
     while (!config->empty()) {
       Parton * parton = config->back();
-      //msg_Out()<<config->size()<<" ("<<Parton::Count()<<") left: "<<(*parton);
-      if (!(parton->Beam()>0 && nois) && parton->On()) ExtractParton(blob,parton);
+      //msg_Out()<<config->size()<<" ("<<Parton::Count()<<") left: "
+      //       <<"["<<parton->On()<<"]"<<(*parton);
+      if (!(parton->Beam()>0 && nois) && parton->On())
+	ExtractParton(blob,parton);
       delete parton;
       config->pop_back();
+      //msg_Out()<<config->size()<<" ("<<Parton::Count()<<") left.\n";
     }
     delete config;
     m_configs.pop_back();
@@ -125,12 +125,18 @@ bool CFP_Shower::ExtractPartons(Blob_List *const bl) {
 }
 
 void CFP_Shower::ExtractParton(Blob *const blob,Parton *const parton) {
+  //msg_Out()<<" --> "<<parton->Flav()<<": "<<parton->Mom()<<" "
+  //	   <<"("<<parton->Beam()<<")\n";
   Particle * part = (parton->Beam()>0?
 		     new Particle(-1,parton->Flav().Bar(),-parton->Mom(),'I'):
 		     new Particle(-1,parton->Flav(),parton->Mom(),'F'));
+  //msg_Out()<<" --> "<<part<<"\n";
   part->SetNumber(0);
   part->SetFinalMass(p_massselector->Mass(parton->Flav()));
   if (parton->Beam()==0) {
+    //msg_Out()<<"Colour:\n";
+    //msg_Out()<<"   ["<<parton->GetColor()[0]<<", "
+    //<<parton->GetColor()[1]<<"]\n";
     part->SetFlow(1,parton->GetColor()[0]);
     part->SetFlow(2,parton->GetColor()[1]);
     blob->AddToOutParticles(part);
@@ -140,7 +146,8 @@ void CFP_Shower::ExtractParton(Blob *const blob,Parton *const parton) {
     part->SetFlow(2,parton->GetColor()[0]);
     part->SetBeam(parton->Beam()-1);
     blob->AddToInParticles(part);
-  } 
+  }
+  //msg_Out()<<" --> "<<(*part)<<"\n";
 }
 
 void CFP_Shower::CleanUp() {
@@ -151,7 +158,8 @@ void CFP_Shower::CleanUp() {
 PDF::Cluster_Definitions_Base * CFP_Shower::GetClusterDefinitions() {}
 
 void CFP_Shower::TestShower(const double & E,const Flavour & flav) {
-  msg_Info()<<"In "<<METHOD<<" will start trivial testing for FF configuration:\n";
+  msg_Info()<<"In "<<METHOD
+	    <<" will start trivial testing for FF configuration:\n";
   for (size_t i=0;i<1000;i++) {
     Configuration * config = MakeSimpleFFConfiguration(E,flav);
     m_shower.Evolve(config);

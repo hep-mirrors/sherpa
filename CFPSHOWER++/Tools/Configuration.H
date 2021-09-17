@@ -12,6 +12,7 @@ namespace CFPSHOWER {
     ATOOLS::Vec4D m_pos;
   private:
     void Fill(std::map<ATOOLS::Cluster_Leg*,Parton*> & lmap);
+    void SanitizeSingletGluons();
     void EstablishRelations();
     void EstablishHistories(std::map<ATOOLS::Cluster_Leg*,Parton*> & lmap,
 			    Cluster_Definitions * cluster);

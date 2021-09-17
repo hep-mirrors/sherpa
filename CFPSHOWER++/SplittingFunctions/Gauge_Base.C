@@ -40,7 +40,10 @@ Gauge_Base::Gauge_Base(const Kernel_Info & info) :
 }
 
 double Gauge_Base::operator()(const Splitting & split) {
-  return (*p_alphaS)(m_muR2factor*Scale(split));
+  double scale = Scale(split);
+  //msg_Out()<<METHOD<<"("<<m_muR2factor<<" * "<<scale<<") = "
+  //	   <<(*p_alphaS)(m_muR2factor*scale)<<"\n";
+  return (*p_alphaS)(m_muR2factor*scale);
 }
 
 const double Gauge_Base::OverEstimate(const Splitting & split) const {
@@ -48,8 +51,11 @@ const double Gauge_Base::OverEstimate(const Splitting & split) const {
 }
 
 const double Gauge_Base::Scale(const Splitting & split) const {
+  //msg_Out()<<METHOD<<"(t = "<<split.T()<<")\n";
+  return split.T();
   if (m_muRscheme==muR_scheme::KT2) {
-    double kt2 = (split.Mom(0)*split.Mom(1))*(split.Mom(1)*split.Mom(2))/(split.Mom(0)*split.Mom(2));
+    double kt2 = (split.Mom(0)*split.Mom(1))*
+      (split.Mom(1)*split.Mom(2))/(split.Mom(0)*split.Mom(2));
     return kt2;
   }
   return split.T();

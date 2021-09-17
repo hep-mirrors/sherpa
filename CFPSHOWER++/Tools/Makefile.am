@@ -8,7 +8,6 @@ libCFPTools_la_SOURCES = \
 	Color.C \
 	Parton.C \
 	Configuration.C  \
-	CFP_Parameters.C \
 	Splitting.C \
 	Kernel_Constructor.C \
 	Kernel_Info.C
@@ -17,8 +16,7 @@ localinc_HEADERS   = \
 	Color.H  \
 	Parton.H  \
 	Configuration.H  \
-	CFP_Parameters.H \
 	Kernel_Constructor.H \
 	Kernel_Info.H \
-	Weight.H
+	Weight.H 
 

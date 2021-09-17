@@ -31,17 +31,10 @@ namespace CFPSHOWER {
   
   class SF_Base {
   protected:
-    ATOOLS::Flavour        m_split, m_spect;
-    double                 m_msplit, m_msplit2, m_mspect, m_mspect2, m_msum;
+    ATOOLS::Flavour        m_split;
     ATOOLS::Flavour_Vector m_flavs;
     std::vector<size_t>    m_tags;
-    std::vector<double>    m_m, m_m2;
-
     size_t                 m_nout;
-    bool                   m_ismassive;
-    double                 m_Q2, m_Q;
-    ATOOLS::Vec4D          m_psplit, m_pspect, m_pboth;
-    
     std::string            m_name;
     kernel_type::code      m_type;
     double                 m_weight;
@@ -50,30 +43,20 @@ namespace CFPSHOWER {
   public:
     SF_Base(const Kernel_Info & info);
     ~SF_Base() {}
-    virtual double operator()(const Splitting & split)                    = 0;
-    virtual double Integral(const Splitting & split)                const = 0;
-    virtual double OverEstimate(const Splitting & split)            const = 0;
-    virtual void   GeneratePoint(Splitting & split)                 const = 0;
-    
-    virtual bool   Init(const Splitting & split,const ATOOLS::Mass_Selector * msel);
-    
-    virtual inline const size_t size()                              const { return m_flavs.size(); }
-    virtual inline const ATOOLS::Flavour & GetSplit()               const { return m_split; }
-    virtual inline const ATOOLS::Flavour_Vector & GetFlavs()        const { return m_flavs; }
-    virtual inline const ATOOLS::Flavour & Flav(const size_t & pos) const { return m_flavs[pos]; }
-    virtual inline const std::vector<size_t> & Tags()               const { return m_tags; }
-    virtual inline const size_t & Tags(const size_t & pos)          const { return m_tags[pos]; }
-    virtual inline const kernel_type::code & Type()                 const { return m_type; }
-    virtual inline const std::string & Name()                       const { return m_name; }
-    virtual inline const double & Jacobean()                        const { return m_weight; }
-    virtual inline void SetName(const std::string & name)                 { m_name = name; }
-
-    virtual inline const bool IsSubtract(subtract::code sub=subtract::undefined) const {
-      return (sub==subtract::undefined ? m_subtract>0 : int(sub & m_subtract)>0);
-    }
+    virtual double operator()(const Splitting & split) = 0;
+    virtual double Integral(const Splitting & split)      const = 0;
+    virtual double OverEstimate(const Splitting & split)  const = 0;
+    virtual void   GeneratePoint(Splitting & split)       const = 0;    
+    virtual inline const size_t size()                    const { return m_nout; } 
+    virtual inline const ATOOLS::Flavour & GetSplit()     const { return m_split; }
+    virtual inline const ATOOLS::Flavour_Vector & Flavs() const { return m_flavs; }
+    virtual inline const std::vector<size_t> & Tags()     const { return m_tags; }
+    virtual inline const kernel_type::code & Type()       const { return m_type; }
+    virtual inline const std::string & Name()             const { return m_name; }
   };
   
-  typedef ATOOLS::Getter_Function<SF_Base,Kernel_Info,std::less<std::string> > SF_Getter;
+  typedef ATOOLS::Getter_Function<SF_Base,Kernel_Info,
+				  std::less<std::string> > SF_Getter;
 }
 
 #endif

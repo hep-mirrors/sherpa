@@ -19,34 +19,11 @@ std::ostream & CFPSHOWER::operator<<(std::ostream &s,const subtract::code & sub)
 }
 
 SF_Base::SF_Base(const Kernel_Info & info) :
-  m_split(info.GetSplit()), m_nout(info.GetFlavs().size()),
-  m_flavs(info.GetFlavs()), m_tags(info.TagSequence()),
-  m_ismassive(false),
+  m_split(info.GetSplit()), 
+  m_flavs(info.GetFlavs()), m_tags(info.TagSequence()), m_nout(m_flavs.size()),
   m_type(info.Type()),
   m_name("generic SF"),
-  m_CMW(info.KFactor()), m_softcorr(info.SoftCorrection()), m_endpoint(info.Endpoint()),
-  m_subtract(subtract::none),
+  m_CMW(info.KFactor()), m_softcorr(info.SoftCorrection()),
+  m_endpoint(info.Endpoint()), m_subtract(subtract::none),
   m_weight(0.)
-{
-  m_m.resize(m_nout);
-  m_m2.resize(m_nout);
-}  
-
-bool SF_Base:: Init(const Splitting & split,const ATOOLS::Mass_Selector * msel) {
-  m_msplit = msel->Mass(m_split); m_msplit2 = sqr(m_msplit);
-  m_spect  = split.GetSpectator()->Flav();
-  m_mspect = msel->Mass(m_spect); m_mspect2 = sqr(m_mspect);
-  if (m_mspect>0.) m_ismassive = true;
-  for (size_t i=0;i<m_nout;i++) {
-    m_m[i]  = msel->Mass(m_flavs[i]);
-    if (m_m[i]<1.e-6) m_m[i] = m_m2[i] = 0.; 
-    else m_m2[i] = sqr(m_m[i]);
-    if (m_m[i]>0.) m_ismassive = true;
-  }
-  m_psplit = split.GetSplitter()->Mom();
-  m_pspect = split.GetSpectator()->Mom();
-  m_pboth  = m_psplit + m_pspect;
-  m_Q2     = m_pboth.Abs2();  m_Q = sqrt(m_Q2);
-  return true;
-}
-
+{ }  

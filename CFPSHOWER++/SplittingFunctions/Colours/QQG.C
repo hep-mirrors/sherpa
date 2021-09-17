@@ -10,8 +10,8 @@ namespace CFPSHOWER {
   public:
     QQG(const Kernel_Info & info) : Gauge_Base(info) {
       m_charge = m_CF;
+      m_name   = std::string("3-3-8");
       m_colors.resize(2);
-      SetName("3-3-8");
     }
     inline const double Charge(const double & scale) const { return m_charge; }    
     const double Scale(const Splitting & split) const;
@@ -24,7 +24,8 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 const double QQG::Scale(const Splitting & split) const {
-  double kt2 = (split.Mom(0)*split.Mom(1))*(split.Mom(1)*split.Mom(2))/(split.Mom(0)*split.Mom(2));
+  double kt2 = (2.*(split.Mom(0)*split.Mom(1))*(split.Mom(1)*split.Mom(2))/
+		(split.Mom(0)*split.Mom(2)));
   switch (m_type) {
   case kernel_type::FF:
     if (m_muRscheme==muR_scheme::KT2) return kt2;
