@@ -29,6 +29,7 @@ Collider_Kinematics::Collider_Kinematics(Beam_Base **beams)
 Collider_Kinematics::~Collider_Kinematics() {}
 
 void Collider_Kinematics::InitSystem() {
+  PRINT_FUNC("");
   // cms system from beam momenta - this is for potentially asymmetric
   // collisions.
   m_E1 = p_beams[0]->Energy();
@@ -38,6 +39,8 @@ void Collider_Kinematics::InitSystem() {
   rpa->gen.SetEcms(m_Ecms);
   rpa->gen.SetPBeam(0, p_beams[0]->InMomentum());
   rpa->gen.SetPBeam(1, p_beams[1]->InMomentum());
+
+  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(m_Ecms));
 
   double x = (m_S + m_m2[0] - m_m2[1]) / (2. * m_S);
   double E1 = x * m_Ecms, pz = sqrt(sqr(E1) - m_m2[0]);
