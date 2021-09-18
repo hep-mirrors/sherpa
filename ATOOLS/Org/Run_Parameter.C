@@ -435,14 +435,8 @@ void Run_Parameter::Gen::WriteCitationInfo()
 	   <<", subject 'generate'.\n"<<std::string(72,'-')<<std::endl;
 }
 
-void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
-  if (Settings::GetMainSettings().GetGlobalTags().find("E_CMS") !=
-      Settings::GetMainSettings().GetGlobalTags().end()) {
-    Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(_ecms));
-  }
-  else msg_Info()<<METHOD<<" tries to set tag 'E_CMS' again.\n"
-		 <<"   Ignore and hope for the best.\n";
-  m_ecms    = _ecms;
+void  Run_Parameter::Gen::SetEcms(double _ecms) {
+  m_ecms = _ecms;
 }
 
 void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) {
