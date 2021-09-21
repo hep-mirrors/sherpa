@@ -3,6 +3,7 @@
 #include "CFPSHOWER++/Shower/Kernel.H"
 #include "CFPSHOWER++/SplittingFunctions/SF_Base.H"
 #include "CFPSHOWER++/Shower/Cluster_Definitions.H"
+#include "CFPSHOWER++/Tools/CFP_Parameters.H"
 #include "CFPSHOWER++/Tools/Kernel_Info.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
@@ -30,21 +31,22 @@ Init(MODEL::Model_Base * const model,PDF::ISR_Handler * const isr)
   // - scale setting schemes
   // - eventually recoil schemes
   msg_Out()<<"Entering "<<METHOD<<" ===========================\n";
-  m_kinscheme   = 1; // 1 = Alaric, 2 = CS
-  m_SForder     = 1; // order as = 1
-  m_logtype     = 2; // this needs working, atm: 1 = soft only, 2 = both
-  m_kfactor     = 0; // order as = 1
-  m_muRscheme   = 1;
-  m_softcorr    = 0;
-  m_endpoint    = 0;
-  m_cplscheme   = 1;
-  m_MEcorrs     = 0;
-  m_asfactor[0] = 1.;
-  m_asfactor[1] = 1.;
-  m_muR2factor  = 1.;
-  m_muF2factor  = 1.;
-  m_pdfmin      = 1.e-4;
-  m_pdfxmin     = 1.e-4;
+  m_kinscheme   = (*cfp_pars)["kinematics"]; 
+  m_SForder     = (*cfp_pars)["SF_order"]; 
+  m_SFtype      = (*cfp_pars)["SF_Type"]; 
+  m_logtype     = (*cfp_pars)["Log_Type"]; 
+  m_kfactor     = (*cfp_pars)["kfactor"]; 
+  m_muRscheme   = (*cfp_pars)["muR_scheme"]; 
+  m_softcorr    = (*cfp_pars)["softcorrections"]; 
+  m_endpoint    = (*cfp_pars)["endpoint"]; 
+  m_cplscheme   = (*cfp_pars)["couplings"]; 
+  m_MEcorrs     = (*cfp_pars)["ME_corrections"];
+  m_asfactor[0] = (*cfp_pars)("k_alpha(FS)");
+  m_asfactor[1] = (*cfp_pars)("k_alpha(IS)");
+  m_muR2factor  = (*cfp_pars)("k_muR");
+  m_muF2factor  = (*cfp_pars)("k_muF");
+  m_pdfmin      = (*cfp_pars)("PDF_min");
+  m_pdfxmin     = (*cfp_pars)("PDF_min_X");
   msg_Out()<<"=== fixed parameters and switches.\n";
 
   p_as    = (MODEL::Running_AlphaS*)(model->GetScalarFunction("alpha_S"));
@@ -144,17 +146,23 @@ MakeKernels(Flavour_Vector & flavs,
     //for (size_t i=0;i<newflavs.size();i++) msg_Out()<<newflavs[i]<<" ";
     //msg_Out()<<" with "<<m_permutations[order-1].size()<<" permutations.\n";
   }
+  if (m_logtype & int(logtype)==false) {
+    msg_Out()<<METHOD<<" for "<<m_logtype<<" & "<<logtype<<" for "
+	     <<split<<" -> "<<flavs[1]<<" "<<flavs[2]<<"\n";
+    return;
+  }
   for (list<vector<size_t> >::iterator lit=m_permutations[order-1].begin();
        lit!=m_permutations[order-1].end();lit++) {
     //msg_Out()<<METHOD<<" with "<<muR_scheme::code(m_muRscheme)<<" from "
     //<<m_muRscheme<<"\n";
-    Kernel_Info info(split,newflavs,(*lit),logtype,
-		     kin_type::code(m_kinscheme),
+    Kernel_Info info(split,newflavs,(*lit),
+		     logtype,kin_type::code(m_kinscheme),
 		     muR_scheme::code(m_muRscheme),
 		     kernel_type::code(type));
     info.SetAlphaS(p_as);
     info.SetKFactor(m_kfactor);
     info.SetSoftCorrection(m_softcorr);
+    info.SetSFType(m_SFtype);
     info.SetEndpoint(m_endpoint);
     info.SetCplScheme(m_cplscheme);
     info.SetAsFactor(((type==kernel_type::FF || type==kernel_type::FI) ?
@@ -261,6 +269,7 @@ void Kernel_Constructor::MakeKernelsFromKernels(const kernel_type::code & type) 
       for (multiset<Flavour>::iterator fit=sit->begin();fit!=sit->end();fit++)
 	flavs.push_back(*fit);
       for (size_t logtype=1;logtype<m_logtype+1;logtype++) {
+	if (m_logtype & logtype==false) continue;
 	MakeKernels(flavs,log_type::code(logtype),type);
       }
       sit = additions.erase(sit);

@@ -73,7 +73,7 @@ Kernel_Info::Kernel_Info(ATOOLS::Flavour & split,ATOOLS::Flavour_Vector & flavs,
 			 muR_scheme::code muRscheme,
 			 kernel_type::code type) :
   m_split(split), m_flavs(flavs), m_tagsequence(tagsequence),
-  m_kintype(kintype), m_logtype(logtype), m_muRscheme(muRscheme), m_type(type),
+  m_logtype(logtype), m_kintype(kintype), m_muRscheme(muRscheme), m_type(type),
   p_alphaS(NULL), p_alpha(NULL),
   m_kfactor(0), m_softcorr(0), m_endpoint(0),
   m_asfactor(1.), m_muR2factor(1.)

@@ -1,4 +1,5 @@
 #include "CFPSHOWER++/Main/CFP_Shower.H"
+#include "CFPSHOWER++/Tools/CFP_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -11,13 +12,17 @@ using namespace std;
 CFP_Shower::CFP_Shower(const Shower_Key &key) :
   Shower_Base("CFP_Shower"), p_massselector(NULL), m_test(false)
 {
+  cfp_pars = new CFP_Parameters();
+  cfp_pars->Init(key.p_reader);
   m_shower.Init(key.p_model, key.p_isr);
   Parton::Reset(0);
   p_cluster = m_shower.GetClusterDefinitions();
   if (m_test) TestShower();
 }
   
-CFP_Shower::~CFP_Shower() {}
+CFP_Shower::~CFP_Shower() {
+  delete cfp_pars;
+}
 
 bool CFP_Shower::
 PrepareShower(Cluster_Amplitude * const ampl,const bool & soft) {

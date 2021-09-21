@@ -58,7 +58,7 @@ namespace CFPSHOWER {
     kernel_type::code         m_type;
     MODEL::Running_AlphaS   * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
-    int    m_kfactor, m_softcorr, m_endpoint, m_cplscheme;            
+    int    m_SFtype, m_kfactor, m_softcorr, m_endpoint, m_cplscheme;            
     double m_asfactor, m_muR2factor;
     void AdjustFlavours();
     void AdjustFlavours12();
@@ -68,7 +68,7 @@ namespace CFPSHOWER {
     Kernel_Info(ATOOLS::Flavour & split,
 		ATOOLS::Flavour_Vector & flavs,
 		const std::vector<size_t> & tagsequence,
-		log_type::code logtype,
+	        log_type::code logtype,
 		kin_type::code kintype,
 		muR_scheme::code muRscheme,
 		kernel_type::code type);
@@ -81,6 +81,7 @@ namespace CFPSHOWER {
     inline void SetAlphaQED(MODEL::Running_AlphaQED * alpha) { p_alpha      = alpha; }
     inline void SetKFactor(const int & kfactor)              { m_kfactor    = kfactor; }
     inline void SetSoftCorrection(const int & softcorr)      { m_softcorr   = softcorr; }
+    inline void SetSFType(const int & SFtype)                { m_SFtype     = SFtype; }
     inline void SetEndpoint(const int & endpoint)            { m_endpoint   = endpoint; }
     inline void SetCplScheme(const int & cplscheme)          { m_cplscheme  = cplscheme; }
     inline void SetAsFactor(const double & asfactor)         { m_asfactor   = asfactor; }
@@ -95,6 +96,7 @@ namespace CFPSHOWER {
     inline const std::vector<size_t>    & TagSequence()    const { return m_tagsequence; }
     inline MODEL::Running_AlphaS        * GetAlphaS()      const { return p_alphaS; }
     inline MODEL::Running_AlphaQED      * GetAlpha()       const { return p_alpha; }
+    inline const int                    & SFType()         const { return m_SFtype; } 
     inline const int                    & KFactor()        const { return m_kfactor; }
     inline const int                    & Endpoint()       const { return m_endpoint; }
     inline const int                    & SoftCorrection() const { return m_softcorr; }

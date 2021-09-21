@@ -61,6 +61,7 @@ operator()(const Parameter_Type & info) const
   return NULL;
   if (info.Type()==kernel_type::FF &&
       info.LogType()==log_type::coll  &&
+      int(info.SFType() & 2)>0 &&
       info.GetSplit().IsVector() &&
       info.GetFlavs().size()==2 &&
       info.GetFlavs()[0].IsVector() && info.GetFlavs()[1].IsVector()) {

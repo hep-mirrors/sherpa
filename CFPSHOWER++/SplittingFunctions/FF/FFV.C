@@ -60,7 +60,7 @@ operator()(const Parameter_Type & info) const
 {
   if (info.Type()==kernel_type::FF &&
       info.LogType()==log_type::coll &&
-      info.KinType()==kin_type::CataniSeymour &&
+      int(info.SFType() & 1)>0 &&
       info.GetSplit().IsFermion() &&
       info.GetFlavs().size()==2 &&
       info.GetFlavs()[0].IsFermion() && info.GetFlavs()[1].IsVector()) {

@@ -4,6 +4,7 @@
 #include "CFPSHOWER++/Shower/Cluster_Definitions.H"
 #include "CFPSHOWER++/Tools/Kernel_Constructor.H"
 #include "CFPSHOWER++/Tools/Kernel_Info.H"
+#include "CFPSHOWER++/Tools/CFP_Parameters.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -366,11 +367,11 @@ bool Shower::Init(MODEL::Model_Base * const model,
   // - order of the splitting function and details of terms included
   // - scale setting schemes
   // - eventually recoil schemes
-  m_t0[0]       = 1.; //(*cfp_pars)("pt2min(FS)");
-  m_t0[1]       = 1.; //(*cfp_pars)("pt2min(IS)");
+  m_t0[0]       = (*cfp_pars)("pt2min(FS)");
+  m_t0[1]       = (*cfp_pars)("pt2min(IS)");
   m_t0min       = Min(m_t0[0], m_t0[1]);
-  m_kinscheme   = 2;  //(*cfp_pars)["kinematics"];
-  m_nmax_em     = 2; //(*cfp_pars)["max_emissions"];
+  m_kinscheme   = (*cfp_pars)["kinematics"];
+  m_nmax_em     = (*cfp_pars)["max_emissions"];
   m_weightover  = 3.;
   //msg_Out()<<"### "<<METHOD<<" initialises kernel constructor.\n";
   Kernel_Constructor kernelconstructor(this);

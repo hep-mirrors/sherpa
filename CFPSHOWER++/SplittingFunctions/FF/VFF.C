@@ -60,7 +60,7 @@ operator()(const Parameter_Type & info) const
   //	   <<info.GetFlavs()[1]<<" ("<<info.TagSequence()[1]<<")\n";
   if (info.Type()==kernel_type::FF &&
       info.LogType()==log_type::coll &&
-      info.KinType()==kin_type::CataniSeymour &&
+      int(info.SFType() & 4)>0 &&
       info.GetSplit().IsVector() && 
       info.GetFlavs().size()==2 &&
       info.GetFlavs()[0].IsFermion() && info.GetFlavs()[0].IsAnti() &&

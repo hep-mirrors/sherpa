@@ -22,7 +22,7 @@ namespace CFPSHOWER {
   class Kernel_Constructor {
   private:
     Shower * p_shower;
-    int      m_kinscheme, m_SForder, m_logtype, m_kfactor, m_muRscheme;
+    int      m_SFtype, m_kinscheme, m_SForder, m_logtype, m_kfactor, m_muRscheme;
     int      m_softcorr, m_endpoint, m_cplscheme, m_MEcorrs;
     double   m_asfactor[2], m_muR2factor, m_muF2factor;
     double   m_pdfmin, m_pdfxmin;

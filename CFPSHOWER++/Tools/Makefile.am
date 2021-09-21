@@ -10,7 +10,8 @@ libCFPTools_la_SOURCES = \
 	Configuration.C  \
 	Splitting.C \
 	Kernel_Constructor.C \
-	Kernel_Info.C
+	Kernel_Info.C \
+	CFP_Parameters.C
 
 localinc_HEADERS   = \
 	Color.H  \
@@ -18,5 +19,7 @@ localinc_HEADERS   = \
 	Configuration.H  \
 	Kernel_Constructor.H \
 	Kernel_Info.H \
-	Weight.H 
+	Weight.H  \
+	CFP_Parameters.H
+
 

@@ -83,7 +83,8 @@ operator()(const Parameter_Type & info) const
 {
   if (info.Type()==kernel_type::FF &&
       info.LogType()==log_type::soft &&
-      info.GetFlavs().size()==2) {
+      info.GetFlavs().size()==2 &&
+      ( int(info.SFType() & 1)>0 || int(info.SFType() & 2)>0 ) ) {
     if ((info.GetSplit().IsFermion() &&
 	 info.GetFlavs()[0].IsFermion() && info.TagSequence()[0]==0 &&
 	 info.GetFlavs()[1].IsVector() && info.TagSequence()[1]==1) ||
