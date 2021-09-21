@@ -18,17 +18,28 @@
   SHOWER_GENERATOR Dire
   #
   SCALES VAR{Abs2(p[2]+p[3])};
-  CSS_FS_AS_FAC 1; CSS_FS_PT2MIN 1;
+  CSS_FS_AS_FAC 1.;
+  #CSS_IS_AS_FAC 1.;
+  CSS_FS_PT2MIN 1.;
+  #CSS_IS_PT2MIN 1.;
 
-  CSS_MAXEM = 2
+  
+  CSS_KIN_SCHEME            = 2
+  CSS_KFACTOR_SCHEME        = 0
+  CSS_ENDPOINT_SCHEME       = 0
+  CSS_SOFTCORRECTION_SCHEME = 0
+  CSS_COUPLING_SCHEME       = 1
+  CSS_LOG_TYPE              = 3
+  CSS_SF_TYPE               = 1
+  CSS_MAXEM          = 2
 
   RESPECT_MASSIVE_FLAG 1;
   CSS_TC_ENHANCE 5;           # this is for the 1->3 splittings
   PDF_LIBRARY LHAPDFSherpa; USE_PDF_ALPHAS 7;
   #
   # analysis
-  ANALYSIS Rivet
-  ANALYSIS_OUTPUT DireG2_noggg
+  #ANALYSIS Rivet
+  #ANALYSIS_OUTPUT DireG2_noggg
 }(run)
 
 (processes){

@@ -43,7 +43,7 @@ Init(MODEL::Model_Base * const model,PDF::ISR_Handler * const isr)
   m_MEcorrs     = (*cfp_pars)["ME_corrections"];
   m_asfactor[0] = (*cfp_pars)("k_alpha(FS)");
   m_asfactor[1] = (*cfp_pars)("k_alpha(IS)");
-  m_muR2factor  = (*cfp_pars)("k_muR");
+  m_muR2factor  = 1.; //(*cfp_pars)("k_muR");
   m_muF2factor  = (*cfp_pars)("k_muF");
   m_pdfmin      = (*cfp_pars)("PDF_min");
   m_pdfxmin     = (*cfp_pars)("PDF_min_X");
@@ -96,6 +96,7 @@ bool Kernel_Constructor::InitializeKernels(MODEL::Model_Base * const model) {
 
 void Kernel_Constructor::
 MakeKernelsFromVertices(MODEL::Model_Base * const model) {
+  msg_Out()<<METHOD<<":\n";
   set<vector<Flavour> > constructed;
   const Vertex_Table *vtab(model->VertexTable());
   for (Vertex_Table::const_iterator vlit=vtab->begin();
@@ -111,7 +112,7 @@ MakeKernelsFromVertices(MODEL::Model_Base * const model) {
       if (constructed.find(vertex->in)!=constructed.end()) return;
       constructed.insert(vertex->in);
       for (size_t type=1;type<2;type++) {
-	for (size_t logtype=1;logtype<m_logtype+1;logtype++) {
+	for (size_t logtype=1;logtype<3;logtype++) {
 	  MakeKernels(vertex->in,log_type::code(logtype),
 		      kernel_type::code(type));
 	}
@@ -146,11 +147,21 @@ MakeKernels(Flavour_Vector & flavs,
     //for (size_t i=0;i<newflavs.size();i++) msg_Out()<<newflavs[i]<<" ";
     //msg_Out()<<" with "<<m_permutations[order-1].size()<<" permutations.\n";
   }
-  if (m_logtype & int(logtype)==false) {
-    msg_Out()<<METHOD<<" for "<<m_logtype<<" & "<<logtype<<" for "
-	     <<split<<" -> "<<flavs[1]<<" "<<flavs[2]<<"\n";
-    return;
+  if (int(m_logtype & int(logtype))==0) return;
+  if (flavs.size()==3) {
+    if (split.IsQuark() && ((flavs[1].IsQuark() && flavs[2].IsGluon()) ||
+			    (flavs[2].IsQuark() && flavs[1].IsGluon())) &&
+	int(m_SFtype & 1)==0) return;
+    if (split.IsGluon() && flavs[1].IsGluon() && flavs[2].IsGluon() &&
+	int(m_SFtype & 2)==0) return;
+    if (split.IsGluon() && flavs[1].IsQuark() && flavs[2].IsQuark() &&
+	int(m_SFtype & 4)==0) return;
   }
+  //msg_Out()<<METHOD<<"("<<flavs.size()<<") for log = "<<m_logtype<<" & "<<logtype<<"  = "
+  //	   <<(m_logtype & int(logtype))<<", SF = "<<m_SFtype<<"("<<int(m_SFtype & 2)<<")"
+  //	   <<" for "<<split<<" -> "<<flavs[1]<<" "<<flavs[2]<<"\n"
+  //	   <<"flav check: "<<split.IsGluon()<<" "<<flavs[1].IsGluon()<<" "<<flavs[2].IsGluon()<<"\n";
+	   
   for (list<vector<size_t> >::iterator lit=m_permutations[order-1].begin();
        lit!=m_permutations[order-1].end();lit++) {
     //msg_Out()<<METHOD<<" with "<<muR_scheme::code(m_muRscheme)<<" from "
@@ -268,8 +279,7 @@ void Kernel_Constructor::MakeKernelsFromKernels(const kernel_type::code & type) 
       flavs.push_back(splitter.Bar());
       for (multiset<Flavour>::iterator fit=sit->begin();fit!=sit->end();fit++)
 	flavs.push_back(*fit);
-      for (size_t logtype=1;logtype<m_logtype+1;logtype++) {
-	if (m_logtype & logtype==false) continue;
+      for (size_t logtype=1;logtype<3;logtype++) {
 	MakeKernels(flavs,log_type::code(logtype),type);
       }
       sit = additions.erase(sit);

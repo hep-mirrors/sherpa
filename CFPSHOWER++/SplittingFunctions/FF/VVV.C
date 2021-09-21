@@ -58,7 +58,6 @@ DECLARE_GETTER(FF_Coll_VVV,"FF_Coll_VVV",SF_Base,Kernel_Info);
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,FF_Coll_VVV>::
 operator()(const Parameter_Type & info) const
 {
-  return NULL;
   if (info.Type()==kernel_type::FF &&
       info.LogType()==log_type::coll  &&
       int(info.SFType() & 2)>0 &&

@@ -28,7 +28,7 @@ bool CFP_Parameters::Init(Default_Reader * dataread) {
   m_switches[string("muR_scheme")]      = dataread->GetValue<int>("CSS_MUR_SCHEME",1);
   //                                      1 = soft, 2 = coll, 3 = both
   m_switches[string("Log_Type")]        = dataread->GetValue<int>("CSS_LOG_TYPE",3);
-  //                                      1 = q->qg, 2 = g->gg, 4 = g->qq, 8 = all
+  //                                      1 = q->qg, 2 = g->gg, 4 = g->qq, 7 = all
   m_switches[string("SF_Type")]         = dataread->GetValue<int>("CSS_SF_TYPE",8);
                                              
   m_parameters[string("PDF_min")]       = dataread->GetValue<double>("CSS_PDF_MIN",1.e-4); 

@@ -53,11 +53,6 @@ DECLARE_GETTER(FF_Coll_VFF,"FF_Coll_VFF",SF_Base,Kernel_Info);
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,FF_Coll_VFF>::
 operator()(const Parameter_Type & info) const
 {
-  return NULL;
-  //msg_Out()<<"*** VFF Getter for "
-  //	   <<info.GetSplit()<<" --> "
-  //	   <<info.GetFlavs()[0]<<" ("<<info.TagSequence()[0]<<") "
-  //	   <<info.GetFlavs()[1]<<" ("<<info.TagSequence()[1]<<")\n";
   if (info.Type()==kernel_type::FF &&
       info.LogType()==log_type::coll &&
       int(info.SFType() & 4)>0 &&

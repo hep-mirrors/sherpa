@@ -83,13 +83,14 @@ operator()(const Parameter_Type & info) const
 {
   if (info.Type()==kernel_type::FF &&
       info.LogType()==log_type::soft &&
-      info.GetFlavs().size()==2 &&
-      ( int(info.SFType() & 1)>0 || int(info.SFType() & 2)>0 ) ) {
+      info.GetFlavs().size()==2) {
     if ((info.GetSplit().IsFermion() &&
 	 info.GetFlavs()[0].IsFermion() && info.TagSequence()[0]==0 &&
-	 info.GetFlavs()[1].IsVector() && info.TagSequence()[1]==1) ||
+	 info.GetFlavs()[1].IsVector() && info.TagSequence()[1]==1 &&
+	 int(info.SFType() & 1)>0 ) ||
 	(info.GetSplit().IsVector() &&
-	 info.GetFlavs()[0].IsVector() && info.GetFlavs()[1].IsVector()))
+	 info.GetFlavs()[0].IsVector() && info.GetFlavs()[1].IsVector() &&
+	 int(info.SFType() & 2)>0 ) )
     return new FF_Soft(info);
   }
   return NULL;
