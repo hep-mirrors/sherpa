@@ -24,27 +24,28 @@
   #CSS_IS_PT2MIN 1.;
 
   
-  CSS_KIN_SCHEME            = 2
-  CSS_KFACTOR_SCHEME        = 0
-  CSS_ENDPOINT_SCHEME       = 0
-  CSS_SOFTCORRECTION_SCHEME = 0
-  CSS_COUPLING_SCHEME       = 1
-  CSS_LOG_TYPE              = 3
-  CSS_SF_TYPE               = 1
-  CSS_MAXEM          = 2
+  CSS_KIN_SCHEME            = 2    # 1 = CSS, 2 = ALARIC
+  CSS_KFACTOR_SCHEME        = 1    # order of K-factor   
+  CSS_ENDPOINT_SCHEME       = 0    # not yet fully done
+  CSS_SOFTCORRECTION_SCHEME = 0    # not yet fully done
+  CSS_COUPLING_SCHEME       = 1    # not yet fully done
+  CSS_MUR_SCHEME            = 1    # 0 = t, 1 = kt2
+  CSS_LOG_TYPE              = 3    # 1 = soft, 2 = coll
+  CSS_SF_TYPE               = 1    # 1 = q->qg, 2 = g->gg, 4 = g->qq 
+  CSS_MAXEM                 = 100
 
   RESPECT_MASSIVE_FLAG 1;
   CSS_TC_ENHANCE 5;           # this is for the 1->3 splittings
   PDF_LIBRARY LHAPDFSherpa; USE_PDF_ALPHAS 7;
   #
   # analysis
-  #ANALYSIS Rivet
-  #ANALYSIS_OUTPUT CFPG2_noggg
+  ANALYSIS Rivet
+  ANALYSIS_OUTPUT Alaric_qq_NoG_kt2
 }(run)
 
 (processes){
-  Process 11 -11 -> 21 21
-  Order (*,0,2);
+  Process 11 -11 -> 1 -1
+  Order (*,2,0);
   End process;
 }(processes)
 
