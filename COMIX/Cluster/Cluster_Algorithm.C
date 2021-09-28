@@ -26,6 +26,7 @@ Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):
   m_lfrac(0.0)
 {
   Data_Reader read(" ",";","#","=");
+  m_configcheck=read.GetValue<int>("COMIX_CLUSTER_CONFIG_CHECK",0);
   m_corecheck=read.GetValue<int>("COMIX_CLUSTER_CORE_CHECK",0);
   m_ordered=read.GetValue<int>("COMIX_CLUSTER_ORDERED",0);
   m_nocluster=read.GetValue<int>("COMIX_NO_CLUSTER",0);
@@ -710,6 +711,7 @@ bool Cluster_Algorithm::Cluster
  Current *const fcur,const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord,
  const int ord)
 {
+  if (!CheckConfig(p_ampl)) return false;
   if (p_ampl->Legs().size()==3) {
     DEBUG_FUNC(m_nmin<<" "<<*p_ampl);
     if (p_ampl->NIn()==1 || m_nmin==1) {
@@ -764,6 +766,18 @@ bool Cluster_Algorithm::Cluster
   return CheckOrdering(kt2ord,nkt2ord);
 }
 
+bool Cluster_Algorithm::CheckConfig(ATOOLS::Cluster_Amplitude *const ampl) const
+{
+  if (!m_configcheck) return true;
+  PHASIC::Process_Base::SortFlavours(ampl);
+  std::string name(PHASIC::Process_Base::GenerateName(ampl));
+  StringProcess_Map *pm((*p_xs->AllProcs())[nlo_type::lo]);
+  StringProcess_Map::const_iterator pit(pm->find(name));
+  if (pit==pm->end()) msg_Debugging()<<"invalid configuration\n";
+  else                msg_Debugging()<<"valid configuration\n";
+  return pit!=pm->end();
+}
+
 bool Cluster_Algorithm::CheckCore(ATOOLS::Cluster_Amplitude *const ampl) const
 {
   if (!m_corecheck) return true;
@@ -772,6 +786,7 @@ bool Cluster_Algorithm::CheckCore(ATOOLS::Cluster_Amplitude *const ampl) const
   StringProcess_Map *pm((*p_xs->AllProcs())[nlo_type::lo]);
   StringProcess_Map::const_iterator pit(pm->find(name));
   if (pit==pm->end()) msg_Debugging()<<"invalid core configuration\n";
+  else                msg_Debugging()<<"valid core configuration\n";
   return pit!=pm->end();
 }
 

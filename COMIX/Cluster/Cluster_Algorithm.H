@@ -68,7 +68,7 @@ namespace COMIX {
 
     SizeT_Map m_id;
 
-    size_t m_wmode, m_corecheck, m_nocluster, m_ordered, m_nmin, m_dipolecheck, m_skip4096;
+    size_t m_wmode, m_configcheck, m_corecheck, m_nocluster, m_ordered, m_nmin, m_dipolecheck, m_skip4096;
     double m_lfrac;
 
     ATOOLS::ColorID GetColor(Current *const j,
@@ -106,6 +106,7 @@ namespace COMIX {
 			     const Cluster_Amplitude *ampl,
 			     const int mode=0) const;
 
+    bool CheckConfig(ATOOLS::Cluster_Amplitude *const ampl) const;
     bool CheckCore(ATOOLS::Cluster_Amplitude *const ampl) const;
     void SetCoreParams(Cluster_Amplitude *const ampl) const;
 
