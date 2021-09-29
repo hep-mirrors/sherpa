@@ -3,6 +3,8 @@ pkglib_LTLIBRARIES    =	libCJKSherpa.la
 GITTAG = PDF/CJK
 include ../../git.make
 
+AM_FFLAGS=-std=legacy
+
 libCJKSherpa_la_SOURCES       =	\
 				Git_Info.C \
 				CJKL.f \
