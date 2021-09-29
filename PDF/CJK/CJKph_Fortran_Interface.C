@@ -31,7 +31,8 @@ CJKph_Fortran_Interface::CJKph_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_iset = 0;
   m_set = _set;
   m_path = "";
-  if (_set == std::string("CJK1LO"))
+  if (_set == std::string("CJKLLO")) {}
+  else if (_set == std::string("CJK1LO"))
     m_path = rpa->gen.Variable("SHERPA_SHARE_PATH") + "/CJK1Grid";
   else if (_set == std::string("CJK2LO"))
     m_path = rpa->gen.Variable("SHERPA_SHARE_PATH") + "/CJK2Grid";
@@ -39,7 +40,7 @@ CJKph_Fortran_Interface::CJKph_Fortran_Interface(const ATOOLS::Flavour _bunch,
     m_path = rpa->gen.Variable("SHERPA_SHARE_PATH") + "/CJKHOGrid";
   else {
     msg_Out() << "Warning: Unknown option for CJK photon PDF. Will fall back "
-                 "to the default LO parametrizations";
+                 "to the default LO parametrizations.\n";
     m_set = "CJKLLO";
   }
 
