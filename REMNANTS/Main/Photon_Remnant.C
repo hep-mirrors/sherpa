@@ -184,9 +184,9 @@ bool Photon_Remnant::MakeRemnants() {
       Flavour flav;
       double rand = ran->Get();
       if (rand < 4. / 6.)
-        flav = kf_d;
-      else if (rand < 5. / 6.)
         flav = kf_u;
+      else if (rand < 5. / 6.)
+        flav = kf_d;
       else
         flav = kf_s;
       for (int i = 1; i < 3; i++) {
