@@ -43,6 +43,7 @@ void FF_Coll_VFF::GeneratePoint(Splitting & split) const {
 }
 
 double FF_Coll_VFF::B1(const Splitting & split) const {
+  return sqr(1.-split.Z())+sqr(split.Z());
   double pin = split.Mom(0)*split.GetKinSpect();
   double pjn = split.Mom(1)*split.GetKinSpect();
   return (sqr(pin)+sqr(pjn))/sqr(pin+pjn);

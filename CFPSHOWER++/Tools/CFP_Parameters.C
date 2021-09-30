@@ -25,6 +25,8 @@ bool CFP_Parameters::Init(Default_Reader * dataread) {
   m_switches[string("SF_order")]        = dataread->GetValue<int>("CSS_SF_ORDER",1);
   m_switches[string("max_emissions")]   = dataread->GetValue<int>("CSS_MAXEM",100000);
   m_switches[string("max_particles")]   = dataread->GetValue<int>("CSS_MAXPART",100000);
+  // kt2_pipj_for_gqq = 11, kt2_all          = 10
+  // T_pipj_for_gqq   = 1,  T_all            = 0
   m_switches[string("muR_scheme")]      = dataread->GetValue<int>("CSS_MUR_SCHEME",1);
   //                                      1 = soft, 2 = coll, 3 = both
   m_switches[string("Log_Type")]        = dataread->GetValue<int>("CSS_LOG_TYPE",3);

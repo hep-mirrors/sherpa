@@ -39,8 +39,10 @@ ostream & CFPSHOWER::operator<<(ostream &s,const kin_type::code & type) {
 
 ostream & CFPSHOWER::operator<<(ostream &s,const muR_scheme::code & scheme) {
   switch (int(scheme)) {
-  case 1: s<<"muR^2 = KT^2";break;
-  case 0: s<<"muR^2 = t";break;
+  case 11: s<<"muR^2 = KT^2 (M^2 for g->qq)";break;
+  case 10: s<<"muR^2 = KT^2";break;
+  case 1:  s<<"muR^2 = t (M^2 for g->qq)";break;
+  case 0:  s<<"muR^2 = t";break;
   default: s<<"unknown";break;
   }
   return s;

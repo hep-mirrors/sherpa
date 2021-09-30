@@ -31,6 +31,7 @@ namespace CFPSHOWER {
     inline ~Kernel() {
       delete p_sf;
       delete p_gauge;
+      delete p_kin;
     }
     
     double Integral(Splitting & split,Configuration & config,

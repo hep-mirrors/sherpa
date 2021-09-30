@@ -42,8 +42,10 @@ namespace CFPSHOWER {
 
   struct muR_scheme {
     enum code {
-      KT2 = 1,
-      T   = 0
+      KT2_pipj_for_gqq = 11,
+      KT2_all          = 10,
+      T_pipj_for_gqq   = 1,
+      T_all            = 0
     };
   };
   std::ostream &operator<<(std::ostream &s,const muR_scheme::code & type);

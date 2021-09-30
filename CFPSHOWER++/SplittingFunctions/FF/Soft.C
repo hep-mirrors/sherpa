@@ -69,6 +69,7 @@ double FF_Soft::A1(const Splitting & split) const {
     double pin  = split.Mom(0)*split.GetKinSpect();
     double pjn  = split.Mom(1)*split.GetKinSpect();
     double pkn  = split.Mom(2)*split.GetKinSpect();
+    //return 2.*pipk/(pipj+pjpk);
     return 2.*pipk*pin/(pipj*pkn+pjpk*pin);
   }
   else if (m_kin==kin_type::CataniSeymour)

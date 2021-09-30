@@ -40,25 +40,16 @@ Gauge_Base::Gauge_Base(const Kernel_Info & info) :
 }
 
 double Gauge_Base::operator()(const Splitting & split) {
-  double scale = Scale(split);
-  //msg_Out()<<METHOD<<"("<<m_muR2factor<<" * "<<scale<<") = "
-  //	   <<(*p_alphaS)(m_muR2factor*scale)<<"\n";
-  return (*p_alphaS)(m_muR2factor*scale);
+  //msg_Out()<<METHOD<<"("<<m_muR2factor<<" * "<<Scale(split)<<" vs. "
+  //	   <<split.T()<<") = "
+  //	   <<(*p_alphaS)(m_muR2factor*Scale(split))
+  //	   <<": "<<(*p_alphaS)(1.)<<" .. "<<(*p_alphaS)(16.)<<"\n";
+  // return 0.118;
+  return (*p_alphaS)(m_muR2factor*Scale(split));
 }
 
 const double Gauge_Base::OverEstimate(const Splitting & split) const {
   if (p_alphaS) return (*p_alphaS)(m_muR2factor*split.Tcut());
-}
-
-const double Gauge_Base::Scale(const Splitting & split) const {
-  //msg_Out()<<METHOD<<"(t = "<<split.T()<<")\n";
-  return split.T();
-  if (m_muRscheme==muR_scheme::KT2) {
-    double kt2 = (split.Mom(0)*split.Mom(1))*
-      (split.Mom(1)*split.Mom(2))/(split.Mom(0)*split.Mom(2));
-    return kt2;
-  }
-  return split.T();
 }
 
 const double Gauge_Base::Beta0(const double & NF) const {

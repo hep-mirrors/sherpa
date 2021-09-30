@@ -10,6 +10,7 @@ namespace CFPSHOWER {
     double CalculateY(Splitting & split);
   public:
     FF_CS_Kinematics(const Kernel_Info & info);
+    ~FF_CS_Kinematics() {}
     bool Init(Splitting & split, Configuration & config,
 	      const ATOOLS::Mass_Selector * msel);
     bool operator()(Splitting & split, Configuration & config);

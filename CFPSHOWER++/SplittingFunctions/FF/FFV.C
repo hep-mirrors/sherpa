@@ -34,22 +34,23 @@ double FF_Coll_FFV::operator()(const Splitting & split) {
 }
 
 double FF_Coll_FFV::Integral(const Splitting & split) const {
-  return 1./2.;
+  return 1.;
 }
 
 double FF_Coll_FFV::OverEstimate(const Splitting & split) const {
-  return 1.-split.Z();
+  return 1.;
 }
 
 void FF_Coll_FFV::GeneratePoint(Splitting & split) const {
-  split.SetZ(1.-sqrt(1.-ran->Get()));
+  split.SetZ(ran->Get());
   split.SetPhi(2.*M_PI*ran->Get());
 }
 
 double FF_Coll_FFV::B1(const Splitting & split) const {
+  return 1.-split.Z();
   double pin = split.Mom(0)*split.GetKinSpect();
   double pjn = split.Mom(1)*split.GetKinSpect();
-  return (pin)/(pin+pjn);
+  return (pjn)/(pin+pjn);
 }
 
 

@@ -20,7 +20,7 @@ namespace CFPSHOWER {
 		      PHASIC::Ant_Args & kinargs);
   public:
     FF_Alaric_Kinematics(const Kernel_Info & info);
-    ~FF_Alaric_Kinematics();
+    ~FF_Alaric_Kinematics() {}
     
     bool Init(Splitting & split, Configuration & config,
 	      const ATOOLS::Mass_Selector * msel);
@@ -65,33 +65,35 @@ void FF_Alaric_Kinematics::FixKTilde(Splitting & split, Configuration & config)
 
 Vec4D FF_Alaric_Kinematics::Nvector(Splitting & split, Configuration & config)
 {
-  return m_KTilde+(1.-split.Z())*m_psplit;
+  return m_KTilde-split.Mom(1);
 }
 
 bool FF_Alaric_Kinematics::
 operator()(Splitting & split, Configuration & config) {
   if (!KinCheck(split)) return false;
-  PHASIC::Ant_Args kinargs(m_y,m_x,split.Phi());
-  FillConfig(split,config,kinargs);
+  PHASIC::Ant_Args antargs(m_y,m_x,split.Phi());
+  FillConfig(split,config,antargs);
   if (ConstructFSAntenna(split.Mass2(0), split.Mass2(1), m_mspect2,
-			 m_psplit, m_pspect, kinargs)<0) return false;
-  split.SetMom(0,kinargs.m_pi);
-  split.SetMom(1,kinargs.m_pj);
-  split.SetMom(2,kinargs.m_pk);
+			 m_psplit, m_pspect, antargs)<0) return false;
+  split.SetMom(0,antargs.m_pi);
+  split.SetMom(1,antargs.m_pj);
+  split.SetMom(2,antargs.m_pk);
   split.SetKinSpect(Nvector(split,config));
-  split.SetAllMoms(kinargs.m_p);
+  split.SetAllMoms(antargs.m_p);
   split.SetKT2(CalculateKT2(split));
   //msg_Out()<<METHOD<<"(pi = "<<kinargs.m_pi<<", pj = "<<kinargs.m_pj<<", "
   //	   <<"Kt = "<<m_KTilde<<")\n"
   //	   <<"-------------------------------------------------------------\n";
-  return (split.KT2()>split.Tcut());
+  return split.T()>split.Tcut();
 }
 
 bool FF_Alaric_Kinematics::KinCheck(Splitting & split) {
   if (split.Q2()<sqr(split.Mass(0)+split.Mass(1)+m_mspect)) return false;
   split.SetY(m_y = CalculateY(split));
   m_x = CalculateX(split);
-  return (m_y>=0.0 && m_y<=1.0);
+  //msg_Out()<<METHOD<<": Q2 = "<<m_QTilde2<<", t = "<<split.T()<<", "
+  //	   <<"y = "<<m_y<<", z = "<<split.Z()<<", x = "<<m_x<<"\n";
+  return true;
 }
 
 double FF_Alaric_Kinematics::CalculateX(Splitting & split) {
@@ -122,7 +124,7 @@ FillConfig(Splitting & split, Configuration & config,PHASIC::Ant_Args & kinargs)
 
 void FF_Alaric_Kinematics::
 CalculateJacobean(Splitting & split,Configuration & config) {
-  m_weight = 1.+split.Y();
+  m_weight = 1.;
 }
 
 

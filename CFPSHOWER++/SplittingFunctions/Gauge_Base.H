@@ -38,7 +38,7 @@ namespace CFPSHOWER {
     virtual const double SoftEndpoint(const Splitting & split);
     virtual const double K(const Splitting & split) const;
     virtual const double KMax(const Splitting & split) const;
-    virtual const double Scale(const Splitting & split) const;
+    virtual const double Scale(const Splitting & split) const = 0;
     virtual const double OverEstimate(const Splitting & split) const;
     virtual inline const double Charge(const double & scale=0.) const {
       return m_charge;

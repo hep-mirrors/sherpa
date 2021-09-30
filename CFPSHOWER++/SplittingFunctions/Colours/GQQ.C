@@ -24,11 +24,15 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 const double GQQ::Scale(const Splitting & split) const {
-  double kt2 = (2.*(split.Mom(0)*split.Mom(1))*(split.Mom(1)*split.Mom(2)) /
-		(split.Mom(0)*split.Mom(2)));
   switch (m_type) {
   case kernel_type::FF:
-    if (m_muRscheme==muR_scheme::KT2) return kt2;
+    if (m_muRscheme==muR_scheme::KT2_pipj_for_gqq ||
+	m_muRscheme==muR_scheme::T_pipj_for_gqq)
+      return 2.*split.Mom(0)*split.Mom(1);
+    if (m_muRscheme==muR_scheme::KT2_all) 
+      return (2.*(split.Mom(0)*split.Mom(1))*(split.Mom(1)*split.Mom(2)) /
+	      (split.Mom(0)*split.Mom(2)));
+    return split.T();
     break;
   default:
     break;

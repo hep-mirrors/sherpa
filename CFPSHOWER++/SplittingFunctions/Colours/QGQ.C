@@ -14,6 +14,7 @@ namespace CFPSHOWER {
     }
     
     inline const double Charge(const double & scale) const { return m_charge; }
+    const double Scale(const Splitting & split) const { return 1.;}
     bool SetColours(Splitting & split);
   };
 }

@@ -21,7 +21,7 @@ CFP_Shower::CFP_Shower(const Shower_Key &key) :
 }
   
 CFP_Shower::~CFP_Shower() {
-  delete cfp_pars;
+  if (cfp_pars) { delete cfp_pars; cfp_pars=NULL; }
 }
 
 bool CFP_Shower::
