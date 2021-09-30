@@ -13,8 +13,8 @@ public:
   Collider_Weight(Kinematics_Base *kinematics);
   ~Collider_Weight();
 
-  void AssignKeys(ATOOLS::Integration_Info *const info);
-  bool Calculate(const double &scale);
+  void AssignKeys(ATOOLS::Integration_Info *const info) override;
+  bool Calculate(const double &scale) override;
   const double operator()(ATOOLS::Flavour *flin = NULL) override;
 };
 } // namespace BEAM
