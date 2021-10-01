@@ -84,10 +84,19 @@ Process_Base *Single_Process::operator[](const size_t &i)
   return NULL;
 }
 
-Weight_Info *Single_Process::OneEvent(const int wmode,const int mode)
-{
-  p_selected=this;
-  return p_int->PSHandler()->OneEvent(this,mode);
+Weight_Info *Single_Process::OneEvent(const int wmode,const int mode) {
+  p_selected = this;
+  auto psh = p_int->PSHandler();
+  if (p_int->ISR()) {
+    if (m_nin == 2) {
+      if (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
+          m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) {
+        p_int->ISR()->SetPartonMasses(m_flavs);
+      }
+    }
+  }
+  psh->InitCuts();
+  return p_int->PSHandler()->OneEvent(this, mode);
 }
 
 double Single_Process::KFactor(const int mode) const
@@ -1112,8 +1121,6 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
     }
   }
   psh->InitCuts();
-  if (p_int->ISR())
-    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   psh->CreateIntegrators();
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
