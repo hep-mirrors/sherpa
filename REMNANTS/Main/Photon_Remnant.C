@@ -135,19 +135,15 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
 }
 
 double Photon_Remnant::SelectZ(const Flavour &flav) {
-  // function adapted from Hadron_remnant.C
-  double m_alpha = 0., m_gamma = 1., m_beta = -1.5, m_invb = 1. / (m_beta + 1),
-         m_LambdaQCD = 0.25;
-  double wt = 1.;
-  double zmin = Max(m_LambdaQCD, flav.HadMass()) / m_residualE, z,
-         zmax(1. - 1. / m_residualE);
-  zmax -= double(m_spectators.size() - 1) * 0.3 / m_residualE;
-  double wtmax = pow((1. - zmin), m_alpha) * exp(-m_gamma / zmax);
-  do {
-    z = zmin + (zmax - zmin) * ran->Get();
-    wt = pow((1. - z), m_alpha) * exp(-m_gamma / z);
-  } while (wt < wtmax * ran->Get());
-  return 1. - z;
+  double random = ran->Get();
+  if (isnan(random) || random >= 1. || random <= 0.) {
+    msg_Error() << METHOD
+                << ": Something went wrong in the momentum distribution for "
+                   "the photon remnants. \n"
+                << " Will retry. \n";
+    return SelectZ(flav);
+  }
+  return random;
 }
 
 void Photon_Remnant::MakeSpectator(Particle *parton) {
@@ -174,7 +170,7 @@ bool Photon_Remnant::MakeRemnants() {
                    "photon remnant!\n";
   }
   // TODO: the for-loop below is actually redundant at the moment, because
-  // we're trying to implement for one remnant particle only
+  // we're trying to implement for one interacting particle only
   for (auto pmit : m_extracted) {
     if (pmit->Flav().IsGluon()) {
       // TODO: implement the gluon treatment
