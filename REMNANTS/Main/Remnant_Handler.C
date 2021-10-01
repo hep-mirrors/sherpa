@@ -171,7 +171,9 @@ Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
   if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist)) {
     // || !m_decorrelator(p_softblob)) {
     Reset();
-    msg_Error() << "Warning in " << METHOD << ": return new event\n";
+    msg_Error()
+        << "Warning in " << METHOD
+        << ": FillBlobs or CheckBreamBreakup failed. Will return new event\n";
     return Return_Value::New_Event;
   }
   Reset();
