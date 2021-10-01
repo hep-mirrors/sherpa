@@ -125,11 +125,6 @@ void Phase_Space_Point::InitCuts(Process_Integrator *const process) {
 
 bool Phase_Space_Point::operator()(Process_Integrator *const process,
                                    const psmode::code &mode) {
-  // msg_Out()<<"\n\n\n"
-  //	   <<"=====================================================\n"
-  //	   <<METHOD<<"(beam = "<<p_beamchannels<<", isr =
-  //"<<p_isrchannels<<")\n"
-  //	   <<"=====================================================\n";
   p_pshandler->GetInfo()->ResetAll();
   // start with beam kinematics: s' and y taken from the external beams
   // (m_sprime = m_fixedsprime and m_y = m_fixedy)
@@ -168,11 +163,8 @@ bool Phase_Space_Point::DefineBeamKinematics() {
     p_beamhandler->SetSprimeMin(m_smin);
     p_beamhandler->SetLimits();
     p_beamchannels->GeneratePoint(int(p_beamhandler->ColliderMode()));
-    // msg_Out()<<METHOD<<"(s' = "<<p_beamhandler->Sprime()<<", "
-    //	     <<"y = "<<p_beamhandler->Y()<<"):\n";
     if (!p_beamhandler->MakeBeams(p_moms))
       return false;
-    // msg_Out()<<"* "<<p_moms[0]<<", "<<p_moms[1]<<"\n";
   }
   m_sprime = p_beamhandler->Sprime();
   m_y = p_beamhandler->Y();
