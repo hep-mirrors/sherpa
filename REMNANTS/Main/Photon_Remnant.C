@@ -81,16 +81,25 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
+  m_x = mom[0] / (m_rescale ? m_residualE : p_beam->OutMomentum()[0]);
   // Still enough energy?
   if (mom[0] > m_residualE) {
-    msg_Error() << METHOD << ": too much momentum " << mom[0] << " "
-                << "> E = " << m_residualE << " for beam " << m_beam << "\n";
+    msg_Debugging() << METHOD << ": too much momentum " << mom[0] << " "
+                    << "> E = " << m_residualE << " for beam " << m_beam
+                    << "\n";
     return false;
   }
-  // Still enough energy?  And in range?
-  m_x = mom[0] / (m_rescale ? m_residualE : p_beam->OutMomentum()[0]);
+  // Still in range?
   if (m_x < p_pdf->XMin() || m_x > p_pdf->XMax()) {
     msg_Error() << METHOD << ": out of limits, x = " << m_x << ".\n";
+    return false;
+  }
+  // Needed for the parton shower: check that the parton in the parton shower
+  // does not take all energy, thus not leaving any parameter space for the
+  // remnants. This condition ensures that the KPerpGenerator can generate the
+  // quark masses
+  double e_ph = m_rescale ? m_residualE : p_beam->OutMomentum()[0];
+  if (e_ph - mom[0] < flav.HadMass()) {
     return false;
   }
   return true;
@@ -172,6 +181,10 @@ bool Photon_Remnant::MakeRemnants() {
   // TODO: the for-loop below is actually redundant at the moment, because
   // we're trying to implement for one interacting particle only
   for (auto pmit : m_extracted) {
+    /*    msg_Out() << METHOD
+                  << ": available beam momentum = " << p_beam->OutMomentum()
+                  << "\n extracted particle momentum = " << pmit->Momentum()
+                  << "\n";*/
     if (pmit->Flav().IsGluon()) {
       // TODO: implement the gluon treatment
       // For now, implement simple treatment by choosing between the light
