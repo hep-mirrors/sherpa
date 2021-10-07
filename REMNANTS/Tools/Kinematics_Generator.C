@@ -218,14 +218,20 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     }
     if (scale < 1.e-3) {
       msg_Error() << "Warning: " << METHOD
-                  << ": Not able to create the breakup kinematics. \n";
+                  << ": Not able to create the breakup kinematics for "
+                  << p_remnants[0]->GetExtracted()[0] << " and "
+                  << p_remnants[1]->GetExtracted()[0]
+                  << " and the corresponding remnants are "
+                  << p_remnants[0]->GetSpectators()[0] << " and "
+                  << p_remnants[1]->GetSpectators()[0] << "\n";
+      // exit(1);
       scale = 0.;
     }
   } while (!CheckHH() && scale > 0.);
   if (scale < 1. && scale > 0.) {
-    msg_Error() << "Warning: " << METHOD
-                << " reduced overall prescale for kt to scale = " << scale
-                << "\n";
+    msg_Info() << "Warning: " << METHOD
+               << " reduced overall prescale for kt to scale = " << scale
+               << "\n";
   }
   // Fill particles from remnant break-up into soft blob, unless we have simple
   // collinear kinematics with no momentum shuffling
@@ -461,8 +467,12 @@ bool Kinematics_Generator::CheckRemnants() {
     totmass += masses.back();
   }
   // If there is no solution, do not even try to fix it.
-  if (tot.Abs2() < sqr(totmass))
+  if (tot.Abs2() < sqr(totmass)) {
+    msg_Out() << METHOD
+              << ": Total momentum not sufficient: totmass = " << totmass
+              << ", tot = " << tot << ", tot.Abs2 = " << tot.Abs2() << "\n";
     return false;
+  }
   Poincare residualcms(tot);
   // After boosting into their c.m. frame, use the Momenta_Stretcher to rescale
   // particles onto their mass shells and to account for their transvers
@@ -474,7 +484,6 @@ bool Kinematics_Generator::CheckRemnants() {
     if (msg->LevelIsDebugging()) {
       msg_Out() << METHOD << " throws error: rescaling impossible.\n";
       for (size_t beam = 0; beam < 2; beam++) {
-        Particle *recoiler = p_remnants[beam]->GetRecoiler();
         for (Part_Iterator plit = p_spectators[beam]->begin();
              plit != p_spectators[beam]->end(); plit++) {
           mom = (*plit)->Momentum() + m_ktmap[beam][(*plit)];
