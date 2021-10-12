@@ -125,7 +125,8 @@ PDF_Base *SASGph_Getter::operator()(const Parameter_Type &args) const {
 }
 
 void SASGph_Getter::PrintInfo(std::ostream &str, const size_t width) const {
-  str << "SASG photon PDF, see PRD45(1992)3986 and PRD46(1992)1973\n"
+  str << "SASG photon PDF, see Z. Phys. C68 (1995) 607 and Phys. Lett. B376 "
+         "(1996) 193.\n"
          "The following sets can be used: \n"
          " - SAS1D: SaS set 1D ('DIS',   Q0 = 0.6 GeV)\n"
          " - SAS1M: SaS set 1M ('MSbar', Q0 = 0.6 GeV)\n"
