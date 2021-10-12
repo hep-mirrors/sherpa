@@ -316,14 +316,22 @@ bool Beam_Parameters::SpecifySpectra() {
     sprintf(help,"%i",num+1);
     string number   = string(help);
     string bs{ (num == 0) ? beam_spectra.front() : beam_spectra.back() };
-    if      (bs=="Monochromatic")        m_beamspec[num]=beamspectrum::monochromatic;
-    else if (bs=="Gaussian")             m_beamspec[num]=beamspectrum::Gaussian;
-    else if (bs=="Laser_Backscattering") m_beamspec[num]=beamspectrum::laser_backscattering;
-    else if (bs=="Simple_Compton")       m_beamspec[num]=beamspectrum::simple_Compton;
-    else if (bs=="EPA")                  m_beamspec[num]=beamspectrum::EPA;
-    else if (bs=="DM_beam")              m_beamspec[num]=beamspectrum::DM;
-    else if (bs=="Spectrum_Reader")      m_beamspec[num]=beamspectrum::spectrum_reader;
-    else                                 m_beamspec[num]=beamspectrum::unknown;
+    if (bs == "Monochromatic" || bs == "None")
+      m_beamspec[num] = beamspectrum::monochromatic;
+    else if (bs == "Gaussian")
+      m_beamspec[num] = beamspectrum::Gaussian;
+    else if (bs == "Laser_Backscattering")
+      m_beamspec[num] = beamspectrum::laser_backscattering;
+    else if (bs == "Simple_Compton")
+      m_beamspec[num] = beamspectrum::simple_Compton;
+    else if (bs == "EPA")
+      m_beamspec[num] = beamspectrum::EPA;
+    else if (bs == "DM_beam")
+      m_beamspec[num] = beamspectrum::DM;
+    else if (bs == "Spectrum_Reader")
+      m_beamspec[num] = beamspectrum::spectrum_reader;
+    else
+      m_beamspec[num] = beamspectrum::unknown;
   }
   return (m_beamspec[0]!=beamspectrum::unknown && m_beamspec[1]!=beamspectrum::unknown);
 }
