@@ -77,7 +77,7 @@ void CJKph_Fortran_Interface::CalculateSpec(const double &_x,
     char buffer[1024];
     char *err = getcwd(buffer, 1024);
     if (chdir(m_path.c_str()) != 0 || err == nullptr)
-      msg_Error() << "Error in SALph_Fortran_Interface.C " << std::endl
+      msg_Error() << "Error in CJKph_Fortran_Interface.C " << std::endl
                   << "   path " << m_path << " not found " << std::endl;
 
     // For an explanation of the use of the chi's, check hep-ph/0310029.
@@ -95,7 +95,7 @@ void CJKph_Fortran_Interface::CalculateSpec(const double &_x,
       cjkhogrid_(iopt, x, Q2, pdf);
     }
     if (chdir(buffer) != 0)
-      msg_Error() << "Error in SALph_Fortran_Interface.C " << std::endl
+      msg_Error() << "Error in CJKph_Fortran_Interface.C " << std::endl
                   << "   path " << m_path << " not found." << std::endl;
   }
 
