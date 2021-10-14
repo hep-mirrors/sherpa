@@ -31,8 +31,8 @@ CJKph_Fortran_Interface::CJKph_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_iset = 0;
   m_set = _set;
   m_path = "";
-  if (_set == std::string("CJKLLO")) {}
-  else if (_set == std::string("CJK1LO"))
+  if (_set == std::string("CJKLLO")) {
+  } else if (_set == std::string("CJK1LO"))
     m_path = rpa->gen.Variable("SHERPA_SHARE_PATH") + "/CJK1Grid";
   else if (_set == std::string("CJK2LO"))
     m_path = rpa->gen.Variable("SHERPA_SHARE_PATH") + "/CJK2Grid";
@@ -127,8 +127,7 @@ double CJKph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
   // x*PDF/alfa as given in the header. This means that the multiplication below
   // is not necessary for the CJK2 set.
   if (m_set != std::string("CJK2LO"))
-    value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-                                            sqr(rpa->gen.Ecms()));
+    value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
 
   return m_rescale * value;
 }
@@ -151,8 +150,7 @@ double CJKph_Fortran_Interface::GetXPDF(const kf_code &kf, bool anti) {
 
   // See above
   if (m_set != std::string("CJK2LO"))
-    value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-                                            sqr(rpa->gen.Ecms()));
+    value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
 
   return m_rescale * value;
 }
