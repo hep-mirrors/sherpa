@@ -208,7 +208,7 @@ private:
         // Check for particles that should be stable but are only intermediary
         else if (flav.IsStable() && pevt[d].status() < 0) {
           // Is fine for gluons or quarks as these are from partonic decays and thus hadronizing and not unexpectedly decaying.
-          if (pevt[d].status() == 21 || pevt[d].status() < 9) {
+          if (Id == 21 || Id < 9) {
             msg_Tracking() << "Particle " <<  m_pythia.particleData.name(abs(Id)) << " with id " << abs(Id) << " is quark or gluon from partonic decay. Continuing with daughters." << std::endl;
           }
           // This should not happen.(And has not in testing)
@@ -268,13 +268,12 @@ private:
     HandleDaughters(bloblist, blob, pevt, i);
   }
 
-
   void AssignDecays() {
     /*
       Set variable for what should handle decays.
       If Sherpa does them they need to be turned off for Pythia and BreitWigner smearing needs to be turned off.
     */
-    m_pythiadecays = m_settings["PYTHIA8"]["DECAYS"].SetDefault(false).Get<bool>();
+    m_pythiadecays = m_settings["PYTHIA8"]["DECAYS"].SetDefault(true).Get<bool>();
     if  (!m_pythiadecays) {
       m_pythia.readString("HadronLevel:Decay = off");
       PRINT_INFO("Setting particles on-shell to allow sherpa decays.");
@@ -308,12 +307,7 @@ private:
       Also possible to only adjust the settings for some particles.
      */
     bool SherpaValues;
-    if (m_pythiadecays) {
-      SherpaValues = m_settings["PYTHIA8"]["SHERPA_MASSES"].SetDefault(false).Get<bool>();
-    }
-    else {
-      SherpaValues = m_settings["PYTHIA8"]["SHERPA_MASSES"].SetDefault(true).Get<bool>();
-    }
+    SherpaValues = m_settings["PYTHIA8"]["SHERPA_MASSES"].SetDefault((m_pythiadecays) ? false : true).Get<bool>();
     bool MatchQuarks = m_settings["PYTHIA8"]["MATCH_QUARKS"].SetDefault(true).Get<bool>();
     bool MatchDiQuarks = m_settings["PYTHIA8"]["MATCH_DIQUARKS"].SetDefault(true).Get<bool>();
     bool MatchHadrons = m_settings["PYTHIA8"]["MATCH_HADRONS"].SetDefault(true).Get<bool>();
