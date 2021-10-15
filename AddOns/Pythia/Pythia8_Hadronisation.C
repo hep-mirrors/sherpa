@@ -10,7 +10,6 @@
 #include<set>
 #include "Pythia8/Pythia.h"
 
-
 using namespace ATOOLS;
 using namespace std;
 
@@ -43,7 +42,6 @@ public:
     HarmonizeMasses();
 
     m_pythia.init();
-
   }
 
   ~Pythia8_Hadronisation()
@@ -215,8 +213,8 @@ private:
           }
           // This should not happen.(And has not in testing)
           else {
-          msg_Error() << "Particle " <<  m_pythia.particleData.name(abs(Id)) << " with id " << abs(Id) << " was supposed to be stable but is only intermediary." << std::endl;
-          THROW(fatal_error,"Particle is supposed to be stable.");
+            msg_Error() << "Particle " <<  m_pythia.particleData.name(abs(Id)) << " with id " << abs(Id) << " was supposed to be stable but is only intermediary." << std::endl;
+            THROW(fatal_error,"Particle is supposed to be stable.");
           }
           HandleDaughters(bloblist, decayblob, pevt, d);
         }
@@ -246,8 +244,6 @@ private:
       }
     }
   }
-
-
 
   void HandleDecays(Blob_List * bloblist, Pythia8::Event& pevt, Particle* inpart, int i)
   /*
