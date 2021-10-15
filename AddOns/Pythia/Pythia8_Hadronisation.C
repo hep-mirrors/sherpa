@@ -34,8 +34,14 @@ public:
     m_pythia.readString("Next:numberShowInfo = 0");
     m_pythia.readString("Next:numberShowProcess = 0");
     m_pythia.readString("Next:numberShowEvent = 0");
-
+    m_pythia.readString("Main:timesAllowErrors = 500");
     m_pythia.readString("Check:mTolErr = 1e-1");
+    const double maxproperlifetime{m_settings["MAX_PROPER_LIFETIME"].SetDefault(-1.0).Get<double>()};
+    if (maxproperlifetime > 0.0) {
+      std::cout << maxproperlifetime << std::endl;
+      m_pythia.readString("ParticleDecays:limitTau0 = on");
+      m_pythia.readString("ParticleDecays:tau0Max = "+std::to_string(maxproperlifetime));
+    }
 
     AssignDecays();
     ApplyPythiaSettings();
@@ -375,6 +381,9 @@ private:
         flav.SetMass(m_pythia.particleData.m0(PythiaID));
         if (m_pythia.particleData.mWidth(PythiaID)){
           flav.SetWidth(m_pythia.particleData.mWidth(PythiaID));
+        }
+        if (m_pythia.settings.flag("ParticleDecays:limitTau0") && m_pythia.particleData.tau0(PythiaID)>m_pythia.settings.parm("ParticleDecays:tau0Max")) {
+          m_pythia.particleData.mayDecay(PythiaID, false);
         }
         flav.SetStable(!(m_pythia.particleData.mayDecay(PythiaID) && m_pythia.particleData.canDecay(PythiaID)));
       }
