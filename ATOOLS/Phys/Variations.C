@@ -700,10 +700,14 @@ namespace ATOOLS {
   {
     const Variations::Parameters_Vector * const paramsvec(v.GetParametersVector());
     s << "Named variations:" << std::endl;
+    if (paramsvec->empty()) {
+      return s << " None\n";
+    }
+    s << '\n';
     for (Variations::Parameters_Vector::const_iterator it(paramsvec->begin());
          it != paramsvec->end(); ++it) {
       s << (*it)->m_name << " (" << (*it)->m_deletepdfs << ","
-        << (*it)->m_deletealphas << ")" << std::endl;
+        << (*it)->m_deletealphas << ")" << '\n';
     }
     return s;
   }
