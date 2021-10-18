@@ -715,6 +715,32 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_DEFINE_UNQUOTED([OPENLOOPS_PREFIX], "$OPENLOOPS_PREFIX", [Openloops installation prefix])
   fi
   AM_CONDITIONAL(OPENLOOPS_SUPPORT, test "$openloops" = "true")
+  
+  AC_ARG_ENABLE(
+    ggvvamp,
+    AS_HELP_STRING([--enable-ggvvamp=/path/to/ggvvamp],[Enable ggvvamp.]),
+    [ AC_MSG_CHECKING(for ggvvamp installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(ggvvamp not enabled); ggvvamp=false ;;
+        *)   GGVVAMP_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             ggvvamp=true;
+             if test -d "${GGVVAMP_PREFIX}"; then
+                AC_MSG_RESULT([${GGVVAMP_PREFIX}]);
+                CONDITIONAL_GGVVAMPINCS="-I$GGVVAMP_PREFIX/include";
+                CONDITIONAL_GGVVAMPLIBS="-L$GGVVAMP_PREFIX/lib";
+             else
+                AC_MSG_WARN(${GGVVAMP_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ ggvvamp=false ]
+  )
+  if test "$ggvvamp" = "true" ; then
+    AC_DEFINE_UNQUOTED([GGVVAMP_PREFIX], "$GGVVAMP_PREFIX", [ggvvamp installation prefix])
+  fi
+  AC_SUBST(CONDITIONAL_GGVVAMPINCS)
+  AC_SUBST(CONDITIONAL_GGVVAMPLIBS)
+  AM_CONDITIONAL(GGVVAMP_SUPPORT, test "$ggvvamp" = "true")
 
   AC_ARG_ENABLE(
     gosam,
