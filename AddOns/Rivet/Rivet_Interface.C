@@ -714,11 +714,15 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
       wgtmap[cur] = wc[cur];
     }
-    else if (cur.find("EWSud_")==0) {
-      const auto& contrib = wc[cur];
-      if (m_splitewsudakovcontribs)
-        wgtmap[cur]=1.0+contrib;
-      ewsudakovkfac+=contrib;
+    else if (cur == "EWSud_KFactor") {
+      ewsudakovkfac = wc[cur];
+      wgtmap[cur] = ewsudakovkfac;
+    }
+    else if (m_splitewsudakovcontribs && cur.find("EWSud_KFactorExp")==0) {
+      wgtmap[cur] = wc[cur];
+    }
+    else if (m_splitewsudakovcontribs && cur.find("EWSud_")==0) {
+      wgtmap[cur]=1.0+wc[cur];
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
     else if (cur=="NTrials") ntrials=wc[cur];
@@ -747,11 +751,15 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
       wgtmap[cur]=wgt;
     }
-    else if (cur.find("EWSud_")==0) {
-      const auto& contrib = wgt;
-      if (m_splitewsudakovcontribs)
-        wgtmap[cur]=1.0+contrib;
-      ewsudakovkfac+=contrib;
+    else if (cur == "EWSud_KFactor") {
+      ewsudakovkfac = wgt;
+      wgtmap[cur] = ewsudakovkfac;
+    }
+    else if (m_splitewsudakovcontribs && cur.find("EWSud_KFactorExp")==0) {
+      wgtmap[cur] = wgt;
+    }
+    else if (m_splitewsudakovcontribs && cur.find("EWSud_")==0) {
+      wgtmap[cur]=1.0+wgt;
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wgt;
     else if (cur=="NTrials") ntrials=wgt;
