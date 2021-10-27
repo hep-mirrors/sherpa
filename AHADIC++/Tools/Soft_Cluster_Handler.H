@@ -34,6 +34,10 @@ namespace AHADIC {
     double RadiationWeight();
     double Annihilation();
     bool   FixKinematics();
+    double TransitionThreshold(const ATOOLS::Flavour & fl1,
+			       const ATOOLS::Flavour & fl2);
+    double DecayThreshold(const ATOOLS::Flavour & fl1,
+			  const ATOOLS::Flavour & fl2);
     bool   DiQuarkToQuarks(const ATOOLS::Flavour & di,
 			   ATOOLS::Flavour & q1,ATOOLS::Flavour & q2);
     bool   AnnihilateFlavour(const ATOOLS::Flavour & one1,
