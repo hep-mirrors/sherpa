@@ -42,9 +42,8 @@ bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
   // will assume clusters have to decay, if they are lighter than heaviest
   // single (one-hadron) transition or lighter than heaviest decay into
   // two hadrons
-  return (m_mass2 < (p_doubletransitions->GetHeaviestMass(m_flavs) *
-		     p_doubletransitions->GetLightestMass(m_flavs)) ||
-	  m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
+  return (m_mass < TransitionThreshold(m_flavs.first,m_flavs.second) ||
+	  m_mass < DecayThreshold(m_flavs.first,m_flavs.second));
 }
 
 bool Soft_Cluster_Handler::MustPromptDecay(const Flavour & flav1,
@@ -54,9 +53,24 @@ bool Soft_Cluster_Handler::MustPromptDecay(const Flavour & flav1,
   m_flavs.second = flav2;
   m_mass         = mass;
   m_mass2        = mass*mass;
-  return (m_mass2 < (p_doubletransitions->GetHeaviestMass(m_flavs) *
-		     p_doubletransitions->GetLightestMass(m_flavs)) ||
-	  m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
+  return (m_mass < TransitionThreshold(m_flavs.first,m_flavs.second) ||
+	  m_mass < DecayThreshold(m_flavs.first,m_flavs.second));
+}
+
+double Soft_Cluster_Handler::TransitionThreshold(const ATOOLS::Flavour & fl1,
+						 const ATOOLS::Flavour & fl2) {
+  m_flavs.first  = fl1;
+  m_flavs.second = fl2;
+  return (p_singletransitions->GetLightestMass(m_flavs) * m_light       + 
+	  p_singletransitions->GetHeaviestMass(m_flavs) * (1.-m_light)); 
+}
+
+double Soft_Cluster_Handler::DecayThreshold(const ATOOLS::Flavour & fl1,
+					    const ATOOLS::Flavour & fl2) {
+  m_flavs.first  = fl1;
+  m_flavs.second = fl2;
+  return (p_doubletransitions->GetLightestMass(m_flavs) * m_light       + 
+	  p_doubletransitions->GetHeaviestMass(m_flavs) * (1.-m_light)); 
 }
 
 int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
@@ -98,10 +112,8 @@ int Soft_Cluster_Handler::CheckOutsideRange() {
   // maybe just force off-shell hadron?
   // at the moment this leads to hadronization throwing a new event.
   if (m_mass<=0.999999*Min(mass_single,mass_double)) return -1;
-  double mass_dec =
-    p_doubletransitions->GetLightestMass(m_flavs) * m_light       + 
-    p_doubletransitions->GetHeaviestMass(m_flavs) * (1.-m_light); 
-  if (m_mass>mass_dec) return 1;
+  if (m_mass>TransitionThreshold(m_flavs.first,m_flavs.second) &&
+      m_mass>DecayThreshold(m_flavs.first,m_flavs.second)) return 1;
   return 0;
 }
 
