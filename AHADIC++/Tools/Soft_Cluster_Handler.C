@@ -27,6 +27,7 @@ void Soft_Cluster_Handler::Init() {
   m_chi                = hadpars->Get("mass_exponent");
   m_ktmax              = hadpars->Get("kT_max");
   m_ktorder            = (hadpars->Switch("KT_Ordering")>0);
+  m_zeta               = hadpars->Get("prompt_decay_exponent");
   m_ktselector.Init(false);
 }
 
@@ -42,8 +43,10 @@ bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
   // will assume clusters have to decay, if they are lighter than heaviest
   // single (one-hadron) transition or lighter than heaviest decay into
   // two hadrons
-  return (m_mass < TransitionThreshold(m_flavs.first,m_flavs.second) ||
-	  m_mass < DecayThreshold(m_flavs.first,m_flavs.second));
+  double m_thres1 = TransitionThreshold(m_flavs.first,m_flavs.second);
+  double m_thres2 = DecayThreshold(m_flavs.first,m_flavs.second);
+  if (m_zeta>0.) return (exp(-m_zeta*(m_mass/m_thres2-1.)) < ran->Get());
+  return (m_mass < m_thres1 || m_mass < m_thres2);
 }
 
 bool Soft_Cluster_Handler::MustPromptDecay(const Flavour & flav1,
@@ -209,17 +212,17 @@ bool Soft_Cluster_Handler::FixKinematics() {
 			      Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
 					      (*p_cluster)[1]->KT2_Max()))):p1));
   double pt, pl;
-  bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
-  if (true || lead) {
-    pt = m_ktselector(ktmax,1.);
-    pl = sqrt(p1*p1-pt*pt);
-  }
-  else {
-    double cost = 1.-2.*ran->Get();
-    double sint = (ran->Get()>0.5?-1:1.)*sqrt(1.-cost*cost);
-    pt = p1*sint;
-    pl = p1*cost;
-  }
+  //bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
+  //if (true || lead) {
+  pt = m_ktselector(ktmax,1.);
+  pl = sqrt(p1*p1-pt*pt);
+  //}
+  //else {
+  //double cost = 1.-2.*ran->Get();
+  //double sint = (ran->Get()>0.5?-1:1.)*sqrt(1.-cost*cost);
+  //pt = p1*sint;
+  //pl = p1*cost;
+  // }
   double phi   = 2.*M_PI*ran->Get();
   m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
   m_moms[1]    = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);

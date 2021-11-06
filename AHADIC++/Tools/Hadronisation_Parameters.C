@@ -160,6 +160,8 @@ void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
   auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("mass_exponent")]          =
     s["MASS_EXPONENT"].SetDefault(0.0).Get<double>();
+  m_parametermap[string("prompt_decay_exponent")]          =
+    s["PROMPT_DECAY_EXPONENT"].SetDefault(-1.0).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadMesonWeights()
