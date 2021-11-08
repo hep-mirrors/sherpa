@@ -38,7 +38,6 @@ public:
     m_pythia.readString("Check:mTolErr = 1e-1");
     const double maxproperlifetime{m_settings["MAX_PROPER_LIFETIME"].SetDefault(-1.0).Get<double>()};
     if (maxproperlifetime > 0.0) {
-      std::cout << maxproperlifetime << std::endl;
       m_pythia.readString("ParticleDecays:limitTau0 = on");
       m_pythia.readString("ParticleDecays:tau0Max = "+std::to_string(maxproperlifetime));
     }
