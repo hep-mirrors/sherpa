@@ -34,7 +34,10 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
 
   m_aqed = s["EPA_AlphaQED"].Get<double>();
 
-  m_xmin = s["EPA_Xmin"].Get<double>();
+  std::vector<double> xmin{s["EPA_Xmin"].GetVector<double>()};
+  if (xmin.size() != 1 && xmin.size() != 2)
+    THROW(fatal_error, "Specify either one or two values for `EPA_Xmin'.");
+  m_xmin = (_dir > 0) ? xmin.front() : xmin.back();
 
   std::vector<int> formfactors{s["EPA_Form_Factor"].GetVector<int>()};
   if (formfactors.size() != 1 && formfactors.size() != 2)
@@ -212,9 +215,28 @@ bool EPA::CalculateWeight(double x, double q2) {
     return 1;
   }
   if (m_beam.Kfcode() == kf_e) {
+    // TODO: Formel für Q^2_min kontrollieren: s. Budnev Eq. 6.11 und Thesis v.
+    // Neil Scott MacDonald Eq. 1.7
+    double q2min = Max(sqr(m_mass * m_x) / (1 - m_x), 10e-8);
+    double f = alpha / M_PI *
+               ((1 - m_x + sqr(m_x) / 2) * log(m_q2Max / q2min) -
+                sqr(1 - m_x / 2) * log((sqr(m_vecout[0]) + m_q2Max) /
+                                       (sqr(m_vecout[0]) + q2min)) -
+                sqr(m_x * m_mass) / q2min * (1 - q2min / m_q2Max));
+    /*
     // based on Eq. 5.18 in Budnev (1975), doi:10/d6rtsc
+    // The formula is simplified to (after integration of Q^2):
+    // dn = alpha/pi * dx/x * [(1-x+x^2/2) * ln(Q^2_max/Q^2_min) + (1-x) *
+    // (Q^2_min/Q^2_max - 1)]
     double f = alpha / M_PI / m_x *
-               ((1 + sqr(1 - m_x)) * log(m_energy / m_mass) - (1 - m_x));
+               ((1 - m_x + sqr(m_x) / 2) * log(m_q2Max / sqr(m_mass)) -
+                (1 - m_x) * (1 - m_q2Max / sqr(m_mass)));
+    // Alternatively, take the logarithmic approximation:
+    // dn = alpha/pi * dx/x * ln(Q^2_max / x^2 / m )
+    // where m is the mass of the produced particle(?), i.e. lambda_QCD =
+    // 0.25GeV
+    // double f = alpha / M_PI /m_x * log(m_q2Max/m_x/m_x/0.25);
+     */
     if (f < 0)
       f = 0.;
     m_weight = f;
