@@ -79,6 +79,7 @@ public:
           }
 	}
 	FillFragmentationBlob(blobs, blob, event);
+        break;
       }
     }
     if (m_shrink) Shrink(blobs);
