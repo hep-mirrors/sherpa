@@ -40,7 +40,7 @@ namespace PDF {
   class ISR_Handler {
 
   protected:
-    ISR_Base **p_isrbase;
+    ISR_Base *p_isrbase[2];
 
     std::string   m_name;
     isrmode::code m_type;

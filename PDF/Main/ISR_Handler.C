@@ -57,8 +57,10 @@ std::ostream &PDF::operator<<(std::ostream &s, const PDF::isrmode::code mode) {
 }
 
 ISR_Handler::ISR_Handler(ISR_Base **isrbase)
-    : p_isrbase(isrbase), m_rmode(0), m_swap(0), m_info_lab(8), m_info_cms(8),
+    : m_rmode(0), m_swap(0), m_info_lab(8), m_info_cms(8),
       m_freezePDFforLowQ(false) {
+  p_isrbase[0] = isrbase[0];
+  p_isrbase[1] = isrbase[1];
   Settings &s = Settings::GetMainSettings();
   m_freezePDFforLowQ = s["FREEZE_PDF_FOR_LOW_Q"].SetDefault(false).Get<bool>();
   if (s_nozeropdf < 0) {
@@ -98,16 +100,7 @@ void ISR_Handler::FixType() {
     m_type = isrmode::none;
 }
 
-ISR_Handler::~ISR_Handler() {
-  if (p_isrbase) {
-    for (int i = 0; i < 2; i++) {
-      if (p_isrbase[i])
-        delete p_isrbase[i];
-    }
-    delete[] p_isrbase;
-    p_isrbase = 0;
-  }
-}
+ISR_Handler::~ISR_Handler() {}
 
 void ISR_Handler::Output() {
   if (msg_LevelIsTracking() || msg_LevelIsInfo())
@@ -258,7 +251,7 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D *p,
   // TODO: check if this swapping of the momenta is necessary. In a setup with
   // EPA it can lead to a wrong assignment of the partons to the Remnants and
   // therefore a violation of momentum conservation
-  if (m_swap && false) {
+  if (m_swap) {
     std::swap<Vec4D>(p[0], p[1]);
     std::swap<Vec4D>(p_cms[0], p_cms[1]);
   }
