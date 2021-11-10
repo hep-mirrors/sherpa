@@ -49,15 +49,17 @@ namespace EXTRAXS {
     bool FillFinalState(const ATOOLS::Vec4D_Vector &p);
 
     // functions overwritten here
-    std::vector<std::vector<int> > * Colours() const;
+    std::vector<std::vector<int>> *Colours() const;
 
-    
     const bool HasInternalScale() const;
     const double InternalScale() const;
     // inline functions
-    inline ME2_Base   * GetME()     const { return p_born_me2; }
+    inline ME2_Base *GetME() const { return p_born_me2; }
     inline const double SPrimeMin() const { return m_sprimemin; }
     inline const double SPrimeMax() const { return m_sprimemax; }
+
+    void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes> &amps,
+                        std::vector<std::vector<Complex>> &cols) {}
   };
 }// end of namespace EXTRAXS
 
