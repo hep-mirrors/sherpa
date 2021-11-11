@@ -25,23 +25,51 @@ Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
 
 double Sudakov_KFactor::KFactor(const int mode)
 {
-  const auto level = msg->Level();
-  m_corrections_map = m_calc.CorrectionsMap(p_proc->Integrator()->Momenta());
-  m_weight = m_corrections_map.KFactor();
-  if (std::abs(m_weight) > m_maxweight) {
-    msg_Error() << "KFactor from EWSud is large: " << m_weight << " -> ignore\n"
-                << m_corrections_map << '\n';
-    for (auto& kv : m_corrections_map) {
-      kv.second = 0.0;
-    }
-    m_weight = 1.0;
-  }
+  Calculate();
+  Validate();
   return m_weight;
 }
 
 double Sudakov_KFactor::KFactor(const ATOOLS::NLO_subevt &evt)
 {
   return m_weight = 1.0;
+}
+
+void Sudakov_KFactor::CalculateAndFillWeightsMap(Weights_Map& w)
+{
+  Calculate();
+  Validate();
+  w["EWSudakov"]["KFactor"] = m_weight;
+  w["EWSudakov"]["KFactorExp"] = m_expweight;
+  for (const auto t : ActiveLogTypes()) {
+    w["EWSudakov"][ToString<EWSudakov_Log_Type>(t)] = m_corrections_map[t];
+  }
+}
+
+void Sudakov_KFactor::ResetWeightsMap(Weights_Map& w)
+{
+  w["EWSudakov"]["KFactor"] = 1.0;
+  w["EWSudakov"]["KFactorExp"] = 1.0;
+  for (const auto t : ActiveLogTypes()) {
+    w["EWSudakov"][ToString<EWSudakov_Log_Type>(t)] = 0.0;
+  }
+}
+
+void Sudakov_KFactor::Calculate()
+{
+  m_corrections_map = m_calc.CorrectionsMap(p_proc->Integrator()->Momenta());
+  m_weight = m_corrections_map.KFactor();
+  m_expweight = exp(m_weight - 1.0);
+}
+
+void Sudakov_KFactor::Validate()
+{
+  if (std::abs(m_weight) > m_maxweight) {
+    m_weight = 1.0;
+  }
+  if (std::abs(m_expweight) > m_maxweight) {
+    m_expweight = 1.0;
+  }
 }
 
 DECLARE_GETTER(Sudakov_KFactor,"EWSudakov",
@@ -56,5 +84,6 @@ operator()(const KFactor_Setter_Arguments &args) const
 void ATOOLS::Getter<KFactor_Setter_Base,KFactor_Setter_Arguments,Sudakov_KFactor>::
 PrintInfo(std::ostream &str, const size_t width) const
 {
-  str << "EW Sudakov K-Factor is implemented in ref ... \n";
+  // TODO: Add ZZ paper reference
+  str << "EW Sudakov K-Factor is implemented in arXiv:2006.14635.\n";
 }
