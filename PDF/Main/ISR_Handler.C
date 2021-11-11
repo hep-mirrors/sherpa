@@ -246,16 +246,12 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D *p,
     return false;
   if (PDF(1) && (m_x[1] < PDF(1)->XMin() || m_x[1] > PDF(1)->XMax()))
     return false;
-  p[0] = p_cms[0] = m_x[0] * pp + s1 / st / m_x[0] * pm;
-  p[1] = p_cms[1] = m_x[1] * pm + s2 / st / m_x[1] * pp;
-  // TODO: check if this swapping of the momenta is necessary. In a setup with
-  // EPA it can lead to a wrong assignment of the partons to the Remnants and
-  // therefore a violation of momentum conservation
+  p[0] = m_x[0] * pp + s1 / st / m_x[0] * pm;
+  p[1] = m_x[1] * pm + s2 / st / m_x[1] * pp;
   if (m_swap) {
     std::swap<Vec4D>(p[0], p[1]);
-    std::swap<Vec4D>(p_cms[0], p_cms[1]);
   }
-  m_cmsboost = Poincare(p_cms[0] + p_cms[1]);
+  m_cmsboost = Poincare(p[0] + p[1]);
   m_cmsboost.Boost(p[0]);
   m_cmsboost.Boost(p[1]);
   if (m_x[0] >= 1.0)
@@ -477,11 +473,11 @@ double ISR_Handler::Flux(const Vec4D &p1) { return 0.5 / p1.Mass(); }
 
 double ISR_Handler::CalcX(const ATOOLS::Vec4D &p) {
   if (p[3] > 0.)
-    return Min(PDF(0)?PDF(0)->XMax():1.,
-	       p.PPlus() / p_beam[0]->OutMomentum().PPlus());
+    return Min(PDF(0) ? PDF(0)->XMax() : 1.,
+               p.PPlus() / p_beam[0]->OutMomentum().PPlus());
   else
-    return Min(PDF(1)?PDF(1)->XMax():1.,
-	       p.PMinus() / p_beam[1]->OutMomentum().PMinus());
+    return Min(PDF(1) ? PDF(1)->XMax() : 1.,
+               p.PMinus() / p_beam[1]->OutMomentum().PMinus());
 }
 
 bool ISR_Handler::BoostInCMS(Vec4D *p, const size_t n) {

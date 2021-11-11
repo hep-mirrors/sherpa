@@ -53,7 +53,7 @@ namespace PDF {
     double m_fixed_smin, m_fixed_smax;
 
     ATOOLS::Poincare m_cmsboost;
-    ATOOLS::Vec4D    m_fixvecs[2], p_cms[2];
+    ATOOLS::Vec4D m_fixvecs[2];
 
     std::vector<double> m_info_lab, m_info_cms;
 
