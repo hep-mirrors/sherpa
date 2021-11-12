@@ -9,21 +9,19 @@ namespace BEAM {
     collidermode::code m_mode;
 
   ATOOLS::Vec4D m_fixp_cms[2], m_p_plus, m_p_minus;
-  double m_Ecms, m_E1, m_E2;
+  double m_Ecms;
   double m_ymin, m_ymax, m_xmin, m_xmax;
-  bool m_asymmetric;
   ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
   double m_sprime;
 
-    void CalculateAndSetX(size_t beam,const ATOOLS::Vec4D & p);
-    void InitSystem();
-    void InitIntegration();
-    bool MakeMonochromaticBeams(ATOOLS::Vec4D *moms);
-    bool MakeSpectral1Beams(ATOOLS::Vec4D *moms);
-    bool MakeSpectral2Beams(ATOOLS::Vec4D *moms);
-    bool MakeCollinearBeams(ATOOLS::Vec4D *moms);
-    double CalculateTau();
-    void CalculateSudakovMomenta();
+  void InitSystem();
+  void InitIntegration();
+  bool MakeMonochromaticBeams(ATOOLS::Vec4D *moms);
+  bool MakeSpectral1Beams(ATOOLS::Vec4D *moms);
+  bool MakeSpectral2Beams(ATOOLS::Vec4D *moms);
+  bool MakeCollinearBeams(ATOOLS::Vec4D *moms);
+  double CalculateTau();
+  void CalculateSudakovMomenta();
 
   public:
     Collider_Kinematics(Beam_Base ** beams);
