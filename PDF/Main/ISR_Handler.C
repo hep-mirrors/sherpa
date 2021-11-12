@@ -100,8 +100,6 @@ void ISR_Handler::FixType() {
     m_type = isrmode::none;
 }
 
-ISR_Handler::~ISR_Handler() {}
-
 void ISR_Handler::Output() {
   if (msg_LevelIsTracking() || msg_LevelIsInfo())
     msg_Out() << "ISR_Handler: type = " << m_type << "\n"

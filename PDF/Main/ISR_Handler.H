@@ -70,7 +70,7 @@ namespace PDF {
 
   public:
     ISR_Handler(ISR_Base **isrbase);
-    ~ISR_Handler();
+    ~ISR_Handler() {}
 
     void Init(double *splimits);
 
