@@ -252,8 +252,6 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D *p,
     std::swap<Vec4D>(p[0], p[1]);
   }
   m_cmsboost = Poincare(p[0] + p[1]);
-  m_cmsboost.Boost(p[0]);
-  m_cmsboost.Boost(p[1]);
   if (m_x[0] >= 1.0)
     m_x[0] = 1.0 - 1.0e-12;
   if (m_x[1] >= 1.0)
