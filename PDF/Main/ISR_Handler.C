@@ -213,28 +213,30 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D *p,
                 << std::endl;
     return false;
   }
-  Vec4D pa(p_beam[0]->OutMomentum()), pb(p_beam[1]->OutMomentum());
-  double papb(pa * pb), sa(pa.Abs2()), sb(pb.Abs2());
-  double gam(papb + sqrt(sqr(papb) - sa * sb));
-  double aa(sa / gam), ab(sb / gam), bet(1.0 / (1.0 - aa * ab));
-  Vec4D pp(bet * (pa - aa * pb)), pm(bet * (pb - ab * pa));
-  double s1(sqr(flavs[0].Mass())), s2(sqr(flavs[1].Mass()));
-  double st(2.0 * pp * pm), tau(0.5 / st * (sp - s1 - s2));
-  if (tau * tau < s1 * s2 / (st * st)) {
+  Vec4D p0 = p_beam[0]->OutMomentum();
+  Vec4D p1 = p_beam[1]->OutMomentum();
+  double gam = p0 * p1 + sqrt(sqr(p0 * p1) - p0.Abs2() * p1.Abs2());
+  double bet = 1.0 / (1.0 - p0.Abs2() / gam * p1.Abs2() / gam);
+  Vec4D pp = bet * (p0 - p0.Abs2() / gam * p1),
+        pm = bet * (p1 - p1.Abs2() / gam * p0);
+  double s = 2.0 * pp * pm;
+  double tau = 0.5 / s * (sp - m_mass2[0] - m_mass2[1]);
+  if (tau * tau < m_mass2[0] * m_mass2[1] / (s * s)) {
     msg_Error() << METHOD << "(): s' out of range." << std::endl;
     return false;
   }
-  tau += sqrt(tau * tau - s1 * s2 / (st * st));
+  tau += sqrt(tau * tau - m_mass2[0] * m_mass2[1] / (s * s));
   if (m_mode == 1) {
-    m_x[1] = pb.PMinus() / pm.PMinus();
+    m_x[1] = p1.PMinus() / pm.PMinus();
     m_x[0] = tau / m_x[1];
   } else if (m_mode == 2) {
-    m_x[0] = pa.PPlus() / pp.PPlus();
+    m_x[0] = p0.PPlus() / pp.PPlus();
     m_x[1] = tau / m_x[0];
   } else if (m_mode == 3) {
-    double yt(y - 0.5 * log((tau + s2 / st) / (tau + s1 / st)));
+    double yt =
+        exp(y - 0.5 * log((tau + m_mass2[1] / s) / (tau + m_mass2[0] / s)) -
+            (pp + pm).Y());
     tau = sqrt(tau);
-    yt = exp(yt);
     m_x[0] = tau * yt;
     m_x[1] = tau / yt;
   } else {
@@ -244,8 +246,8 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D *p,
     return false;
   if (PDF(1) && (m_x[1] < PDF(1)->XMin() || m_x[1] > PDF(1)->XMax()))
     return false;
-  p[0] = m_x[0] * pp + s1 / st / m_x[0] * pm;
-  p[1] = m_x[1] * pm + s2 / st / m_x[1] * pp;
+  p[0] = m_x[0] * pp + m_mass2[0] / s / m_x[0] * pm;
+  p[1] = m_x[1] * pm + m_mass2[1] / s / m_x[1] * pp;
   if (m_swap) {
     std::swap<Vec4D>(p[0], p[1]);
   }
