@@ -15,7 +15,6 @@ Kinematics_Base::Kinematics_Base(Beam_Base * beams[2]) :
     m_Plab += p_beams[i]->InMomentum();
   }
   m_S = m_Plab.Abs2();
-  m_Y_offset = m_Plab.Y();
 }
 
 Kinematics_Base::~Kinematics_Base() {}

@@ -13,7 +13,7 @@ namespace BEAM {
     Beam_Base * p_beams[2];
     bool        m_on;
     std::string m_keyid;
-    double m_m[2], m_m2[2], m_x[2], m_S, m_Y_offset;
+    double m_m[2], m_m2[2], m_x[2], m_S;
     double m_smin, m_smax, m_sminPS, m_smaxPS, m_exponent[2];
 
     ATOOLS::Vec4D    m_Plab;
