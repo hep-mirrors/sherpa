@@ -68,12 +68,23 @@ void Collider_Kinematics::InitIntegration() {
   m_exponent[1] = .98 * (p_beams[0]->Exponent() + p_beams[1]->Exponent());
 }
 
-bool Collider_Kinematics::operator()(ATOOLS::Vec4D * moms) {
+bool Collider_Kinematics::operator()(ATOOLS::Vec4D *moms) {
+  m_sprime = m_sprimekey[3];
+  if (m_sprime < m_sprimekey[0] || m_sprime > m_sprimekey[1]) {
+    msg_Error() << METHOD << "(..): " << om::red << "s' out of bounds.\n"
+                << om::reset
+                << "  s'_{min}, s'_{max 1,2} vs. s': " << m_sprimekey[0] << ", "
+                << m_sprimekey[1] << ", " << m_sprimekey[2] << " vs. "
+                << m_sprime << std::endl;
+    return false;
+  }
   switch (m_mode) {
   case collidermode::monochromatic:
     return MakeMonochromaticBeams(moms);
   case collidermode::spectral_1:
+    return MakeSpectral1Beams(moms);
   case collidermode::spectral_2:
+    return MakeSpectral2Beams(moms);
   case collidermode::both_spectral:
     return MakeCollinearBeams(moms);
   case collidermode::unknown:
@@ -91,36 +102,76 @@ bool Collider_Kinematics::MakeMonochromaticBeams(ATOOLS::Vec4D *moms) {
   return true;
 }
 
-bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D * moms) {
-  m_sprime = m_sprimekey[3];
-  double y = m_ykey[2] + m_Y_offset;
-  if ((m_sprime < m_sprimekey[0]) ||
-      //(m_sprime>1.00000001*m_smax) ||
-      m_sprimekey[0] >= m_sprimekey[1])
-    return false;
-  double Eprime = sqrt(m_sprime);
-  double x = (m_sprime + m_m2[0] - m_m2[1]) / (2. * m_sprime);
-  double E1 = x * Eprime;
-  double E2 = Eprime - E1;
-  // c.m. momenta
-  moms[0] = Vec4D(E1, 0., 0., sqrt(sqr(E1) - m_m2[0]));
-  moms[1] = Vec4D(E2, (-1.) * Vec3D(moms[0]));
-  // defining the boost
-  double coshy = .5 * (exp(y) + exp(-y));
-  double sinhy = .5 * (exp(y) - exp(-y));
-  m_CMSBoost = Poincare(Vec4D(coshy, 0., 0., sinhy));
-  for (size_t i = 0; i < 2; i++)
-    CalculateAndSetX(i, moms[i]);
+bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D *moms) {
+  CalculateSudakovMomenta();
+  double tau = sqrt(CalculateTau());
+  double yt =
+      exp(m_ykey[2] - 0.5 * log((tau + m_m2[1] / m_S) / (tau + m_m2[0] / m_S)));
+  m_x[0] = m_xkey[4] = tau * yt;
+  m_x[1] = m_xkey[5] = tau / yt;
+  moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
+  moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
+  for (size_t i = 0; i < 2; ++i) {
+    p_beams[i]->SetOutMomentum(moms[i]);
+  }
+  m_CMSBoost = Poincare(moms[0] + moms[1]);
+  m_CMSBoost.Boost(moms[0]);
+  m_CMSBoost.Boost(moms[1]);
   return true;
 }
 
-void Collider_Kinematics::CalculateAndSetX(size_t beam,
-                                           const ATOOLS::Vec4D &p) {
-  Vec4D q = p;
-  m_CMSBoost.BoostBack(q);
-  p_beams[beam]->SetX(q[0] / p_beams[beam]->Energy());
-  p_beams[beam]->SetOutMomentum(q);
-  m_xkey[beam + 4] = p_beams[beam]->X();
+bool Collider_Kinematics::MakeSpectral1Beams(ATOOLS::Vec4D *moms) {
+  CalculateSudakovMomenta();
+  m_x[1] = m_xkey[5] =
+      1.; // Should actually be p_beams[1]->InMomentum().PMinus() /
+          // m_p_minus.PMinus(), but leads to violation of momentum conservation
+          // during event generation
+  m_x[0] = m_xkey[4] = CalculateTau() / m_x[1];
+  moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
+  moms[1] = p_beams[1]->InMomentum();
+  for (size_t i = 0; i < 2; ++i) {
+    p_beams[i]->SetOutMomentum(moms[i]);
+  }
+  m_CMSBoost = Poincare(moms[0] + moms[1]);
+  m_CMSBoost.Boost(moms[0]);
+  m_CMSBoost.Boost(moms[1]);
+  return true;
+}
+
+bool Collider_Kinematics::MakeSpectral2Beams(ATOOLS::Vec4D *moms) {
+  CalculateSudakovMomenta();
+  m_x[0] = m_xkey[4] =
+      1.; // Should actually be p_beams[0]->InMomentum().PPlus() /
+          // m_p_plus.PPlus(), see above
+  m_x[1] = m_xkey[5] = CalculateTau() / m_x[0];
+  moms[0] = p_beams[0]->InMomentum();
+  moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
+  for (size_t i = 0; i < 2; ++i) {
+    p_beams[i]->SetOutMomentum(moms[i]);
+  }
+  m_CMSBoost = Poincare(moms[0] + moms[1]);
+  m_CMSBoost.Boost(moms[0]);
+  m_CMSBoost.Boost(moms[1]);
+  return true;
+}
+
+double Collider_Kinematics::CalculateTau() {
+  double tau = 0.5 / m_S * (m_sprime - m_m2[0] - m_m2[1]);
+  if (tau * tau < m_m2[0] * m_m2[1] / (m_S * m_S)) {
+    msg_Error() << METHOD << "(): s' out of range." << std::endl;
+    return false;
+  }
+  tau += sqrt(tau * tau - m_m2[0] * m_m2[1] / (m_S * m_S));
+  return tau;
+}
+
+void Collider_Kinematics::CalculateSudakovMomenta() {
+  Vec4D pa = p_beams[0]->InMomentum();
+  Vec4D pb = p_beams[1]->InMomentum();
+  double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
+  double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
+  m_p_plus = bet * (pa - pa.Abs2() / gam * pb);
+  m_p_minus = bet * (pb - pb.Abs2() / gam * pa);
 }
 
 void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
