@@ -19,8 +19,11 @@ namespace AHADIC {
 
     bool      FillParticlesInLists();
     bool      CheckKinematics();
+    bool      CheckConstituentKinematics(const ATOOLS::Vec4D & newmom11,
+					 const ATOOLS::Vec4D & newmom12);
     Cluster * MakeCluster();
-    void      UpdateSpectator();
+    void      ReplaceClusterWithHadron(const ATOOLS::Flavour & fl,ATOOLS::Vec4D & mom);
+    void      UpdateSpectator(const ATOOLS::Vec4D & clumom);
   public:
     Gluon_Splitter(std::list<Cluster *> * cluster_list,
 		   Soft_Cluster_Handler * softclusters) :

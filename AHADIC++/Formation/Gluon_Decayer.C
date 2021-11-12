@@ -103,6 +103,9 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
       break;
     case -1:
     default:
+      msg_Out()<<METHOD<<" failed at intermediate step:\n"
+	       <<(*part1)<<"\n"
+	       <<(*part2)<<"\n";
       return false;
     }
   }
@@ -218,6 +221,10 @@ bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,
     delete cluster;
     break;
   case -1:
+    if (p_softclusters->Rescue(cluster)) {
+      delete cluster;
+      break;
+    }
     delete cluster;
     return false;
   default:

@@ -70,7 +70,8 @@ void Splitter_Base::FillMasses() {
   if (p_part[2]!=0) {
     m_flavs2.second = m_barrd?p_part[2]->Flavour().Bar():p_part[2]->Flavour();
   }
-  m_Q2    = (p_part[0]->Momentum()+p_part[1]->Momentum()).Abs2();
+  m_Qvec  = p_part[0]->Momentum()+p_part[1]->Momentum();
+  m_Q2    = m_Qvec.Abs2();
   m_Q     = sqrt(m_Q2);
   m_E     = m_Q/2.;
   m_Emax  = m_Q;
@@ -99,8 +100,8 @@ void Splitter_Base::ConstructLightCone(const double & kt2) {
 }
 
 void Splitter_Base::ConstructPoincare() {
-  Vec4D mom1(p_part[0]->Momentum()), mom2(p_part[1]->Momentum());
-  m_boost = Poincare(mom1+mom2);
+  Vec4D mom1(p_part[0]->Momentum());
+  m_boost = Poincare(m_Qvec);
   m_boost.Boost(mom1);
   m_rotat = Poincare(mom1,m_E*s_AxisP); 
 }
