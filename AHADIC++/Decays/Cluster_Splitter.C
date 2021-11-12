@@ -230,8 +230,67 @@ double Cluster_Splitter::DeltaM(const size_t & cl) {
 
 
 bool Cluster_Splitter::FillParticlesInLists() {
-  for (size_t i=0;i<2;i++) p_cluster_list->push_back(MakeCluster(i));
+  size_t shuffle = MakeAndCheckClusters();
+  if (shuffle) MakeNewMomenta(shuffle);
+  for (size_t i=0;i<2;i++) {
+    if (shuffle&(i+1)) FillHadronAndDeleteCluster(i);
+    else if (shuffle)  UpdateAndFillCluster(i);
+    else p_cluster_list->push_back(p_out[i]);
+  }
+  //if (shuffle) 
+  //msg_Out()<<m_cms<<" -> "<<(m_newmom[0]+m_newmom[1])<<"\n = "<<m_newmom[0]<<" + "<<m_newmom[1]<<"\n";
   return true;
+}
+
+size_t Cluster_Splitter::MakeAndCheckClusters() {
+  size_t  shuffle = 0;
+  for (size_t i=0;i<2;i++) {
+    p_out[i]     = MakeCluster(i);
+    m_cms       += m_mom[i] = p_out[i]->Momentum();
+    m_mass2[i]   = m_mom[i].Abs2();
+    if (p_softclusters->PromptTransit(p_out[i],m_fl[i])) shuffle += (i+1);
+    else m_fl[i] = Flavour(kf_none);
+  }
+  return shuffle;
+}
+
+void Cluster_Splitter::MakeNewMomenta(size_t shuffle) {    
+  double mt2[2], alpha[2], beta[2];
+  for (size_t i=0;i<2;i++) {
+    mt2[i]    = (shuffle&(i+1) ? sqr(m_fl[i].Mass()) : m_mass2[i] ) + m_kt2;
+  }
+  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0]))/(2.*m_Q2); 
+  beta[0]     = mt2[0]/(m_Q2*alpha[0]);
+  alpha[1]    = 1.-alpha[0];
+  beta[1]     = 1.-beta[0];
+  m_newmom[0] = m_E*(alpha[0]*s_AxisP + beta[0]*s_AxisM)+m_ktvec;
+  m_newmom[1] = Vec4D(m_Q,0.,0.,0.)-m_newmom[0];
+}
+
+void Cluster_Splitter::FillHadronAndDeleteCluster(size_t i) {
+  delete p_out[i];
+  m_rotat.RotateBack(m_newmom[i]);
+  m_boost.BoostBack(m_newmom[i]);
+  p_softclusters->GetHadrons()->push_back(new Proto_Particle(m_fl[i],m_newmom[i],false));
+}
+
+void Cluster_Splitter::UpdateAndFillCluster(size_t i) {
+  Poincare BoostIn(m_mom[i]);
+  Poincare BoostOut(m_newmom[i]);
+  //Vec4D check(0.,0.,0.,0.);
+  for (size_t j=0;j<2;j++) {
+    Vec4D partmom = (*p_out[i])[j]->Momentum(); 
+    BoostIn.Boost(partmom);
+    BoostOut.BoostBack(partmom);
+    m_rotat.RotateBack(partmom);
+    m_boost.BoostBack(partmom);
+    //check += partmom;
+    (*p_out[i])[j]->SetMomentum(partmom);
+  }
+  m_rotat.RotateBack(m_newmom[i]);
+  m_boost.BoostBack(m_newmom[i]);
+  p_out[i]->SetMomentum(m_newmom[i]);
+  p_cluster_list->push_back(p_out[i]);
 }
 
 Cluster * Cluster_Splitter::MakeCluster(size_t i) {
@@ -267,9 +326,6 @@ Cluster * Cluster_Splitter::MakeCluster(size_t i) {
 		       p_part[0]->IsBeam()||p_part[1]->IsBeam());
   newp->SetKT2_Max(m_kt2);
   Cluster * cluster(i==0?new Cluster(p_part[0],newp):new Cluster(newp,p_part[1]));
-  //msg_Out()<<"   make cluster("<<cluster<<":"<<(*cluster)[0]->Flavour()<<" "
-  //	   <<(*cluster)[1]->Flavour()<<"), "
-  //	   <<"m = "<<sqrt(cluster->Momentum().Abs2())<<"\n";
   if (m_analyse) {
     if (m_Q>91.) {
       if (i==1) {

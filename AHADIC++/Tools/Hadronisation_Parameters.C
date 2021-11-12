@@ -139,10 +139,15 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["BETA_H"].SetDefault(1.05).Get<double>();
   m_parametermap[string("gammaH")] =
     s["GAMMA_H"].SetDefault(m_shower ? 0.05 : 0.05).Get<double>();
-  // Probably irrelevant as long as they are small.
-  // We will probably not have to tune them.
+  // These guys make a lot of difference - especially the transition ones, once we switch them on. 
+  m_switchmap["direct_transition"] =
+    s["DIRECT_TRANSITIONS"].SetDefault(0).Get<int>();
   m_parametermap[string("decay_threshold")] =
     s["DECAY_THRESHOLD"].SetDefault(0.0).Get<double>();
+  m_parametermap[string("transition_threshold")] =
+    s["TRANSITION_THRESHOLD"].SetDefault(0.0).Get<double>();
+  // Probably irrelevant as long as they are small.
+  // We will probably not have to tune them.
   m_parametermap[string("piphoton_threshold")] =
     s["PI_PHOTON_THRESHOLD"].SetDefault(0.150).Get<double>();
   m_parametermap[string("dipion_threshold")] =

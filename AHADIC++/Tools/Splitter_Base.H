@@ -26,6 +26,7 @@ namespace AHADIC {
     size_t m_attempts;
     
     Proto_Particle * p_part[3];
+    ATOOLS::Vec4D    m_Qvec;
     bool   m_barrd;
     double m_minmass;
     double m_Q2, m_Q, m_E, m_mass[3], m_m2[3], m_Emax;
