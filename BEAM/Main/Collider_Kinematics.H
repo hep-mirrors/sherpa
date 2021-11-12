@@ -4,9 +4,9 @@
 #include "BEAM/Main/Kinematics_Base.H"
 
 namespace BEAM {
-  class Collider_Kinematics : public Kinematics_Base {
-  private:
-    collidermode::code m_mode;
+class Collider_Kinematics : public Kinematics_Base {
+private:
+  collidermode::code m_mode;
 
   ATOOLS::Vec4D m_fixp_cms[2], m_p_plus, m_p_minus;
   double m_Ecms;
@@ -23,15 +23,15 @@ namespace BEAM {
   double CalculateTau();
   void CalculateSudakovMomenta();
 
-  public:
-    Collider_Kinematics(Beam_Base ** beams);
-    ~Collider_Kinematics();
+public:
+  Collider_Kinematics(Beam_Base **beams);
+  ~Collider_Kinematics();
 
-    inline const double Sprime() { return m_sprimekey[3]; }
-    inline const double Y() { return m_ykey[2]; }
-    void AssignKeys(ATOOLS::Integration_Info *const info);
-    void SetLimits();
-    bool operator()(ATOOLS::Vec4D * moms);
-  };
+  inline const double Sprime() { return m_sprimekey[3]; }
+  inline const double Y() { return m_ykey[2]; }
+  void AssignKeys(ATOOLS::Integration_Info *const info);
+  void SetLimits();
+  bool operator()(ATOOLS::Vec4D *moms);
+};
 }
 #endif

@@ -140,13 +140,6 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
       p_fsrchannels->NoGenerate();
       return false;
     }
-    if (p_isrchannels) {
-      for (size_t i = 0; i < 2; i++)
-        p_isrhandler->GetCMSBoost()->BoostBack(p_moms[i]);
-    } else if (p_beamchannels) {
-      for (size_t i = 0; i < 2; i++)
-        p_beamhandler->BoostInLab(p_moms[i]);
-    }
   }
   if (!DefineFSRKinematics())
     return false;

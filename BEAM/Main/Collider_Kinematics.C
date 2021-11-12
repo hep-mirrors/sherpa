@@ -110,8 +110,6 @@ bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D *moms) {
     p_beams[i]->SetOutMomentum(moms[i]);
   }
   m_CMSBoost = Poincare(moms[0] + moms[1]);
-  m_CMSBoost.Boost(moms[0]);
-  m_CMSBoost.Boost(moms[1]);
   return true;
 }
 
@@ -128,8 +126,6 @@ bool Collider_Kinematics::MakeSpectral1Beams(ATOOLS::Vec4D *moms) {
     p_beams[i]->SetOutMomentum(moms[i]);
   }
   m_CMSBoost = Poincare(moms[0] + moms[1]);
-  m_CMSBoost.Boost(moms[0]);
-  m_CMSBoost.Boost(moms[1]);
   return true;
 }
 
@@ -145,8 +141,6 @@ bool Collider_Kinematics::MakeSpectral2Beams(ATOOLS::Vec4D *moms) {
     p_beams[i]->SetOutMomentum(moms[i]);
   }
   m_CMSBoost = Poincare(moms[0] + moms[1]);
-  m_CMSBoost.Boost(moms[0]);
-  m_CMSBoost.Boost(moms[1]);
   return true;
 }
 
