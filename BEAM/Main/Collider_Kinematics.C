@@ -32,8 +32,6 @@ void Collider_Kinematics::InitSystem() {
   PRINT_FUNC("");
   // cms system from beam momenta - this is for potentially asymmetric
   // collisions.
-  m_E1 = p_beams[0]->Energy();
-  m_E2 = p_beams[1]->Energy();
   m_Ecms = sqrt(m_S);
 
   rpa->gen.SetEcms(m_Ecms);
@@ -46,9 +44,6 @@ void Collider_Kinematics::InitSystem() {
   double E1 = x * m_Ecms, pz = sqrt(sqr(E1) - m_m2[0]);
   m_fixp_cms[0] = Vec4D(E1, 0., 0., pz);
   m_fixp_cms[1] = Vec4D(m_Ecms - E1, 0., 0., -pz);
-  m_asymmetric =
-      ((dabs((m_fixp_cms[0] - p_beams[0]->InMomentum()).Abs2()) > 0.0000001) ||
-       (dabs((m_fixp_cms[1] - p_beams[1]->InMomentum()).Abs2()) > 0.0000001));
   m_on = (m_mode != collidermode::monochromatic);
 }
 
@@ -104,11 +99,11 @@ bool Collider_Kinematics::MakeMonochromaticBeams(ATOOLS::Vec4D *moms) {
 
 bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D *moms) {
   CalculateSudakovMomenta();
-  double tau = sqrt(CalculateTau());
-  double yt =
-      exp(m_ykey[2] - 0.5 * log((tau + m_m2[1] / m_S) / (tau + m_m2[0] / m_S)));
-  m_x[0] = m_xkey[4] = tau * yt;
-  m_x[1] = m_xkey[5] = tau / yt;
+  double tau = CalculateTau();
+  double yt = exp(m_ykey[2] - 0.5 * log((tau + m_m2[1]) / (tau + m_m2[0])) -
+                  m_Plab.Y());
+  m_x[0] = m_xkey[4] = sqrt(tau) * yt;
+  m_x[1] = m_xkey[5] = sqrt(tau) / yt;
   moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
   moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
   for (size_t i = 0; i < 2; ++i) {
@@ -156,7 +151,7 @@ bool Collider_Kinematics::MakeSpectral2Beams(ATOOLS::Vec4D *moms) {
 }
 
 double Collider_Kinematics::CalculateTau() {
-  double tau = 0.5 / m_S * (m_sprime - m_m2[0] - m_m2[1]);
+  double tau = (m_sprime - m_m2[0] - m_m2[1]) / m_S / 2.;
   if (tau * tau < m_m2[0] * m_m2[1] / (m_S * m_S)) {
     msg_Error() << METHOD << "(): s' out of range." << std::endl;
     return false;
