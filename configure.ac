@@ -177,6 +177,9 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  CFPSHOWER++/SplittingFunctions/FF/Makefile \
 	  CFPSHOWER++/Kinematics/Makefile \
 	  CFPSHOWER++/Kinematics/FF/Makefile \
+	  CFPSHOWER++/Kinematics/FI/Makefile \
+	  CFPSHOWER++/Kinematics/IF/Makefile \
+	  CFPSHOWER++/Kinematics/II/Makefile \
 	  CFPSHOWER++/Shower/Makefile \
 	  CFPSHOWER++/Main/Makefile \
 	  CFPSHOWER++/Makefile \

@@ -208,6 +208,9 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 	\${CFPBUILDDIR}/SplittingFunctions/Colours/libCFPSplittingFunctionsColours.la \
 	\${CFPBUILDDIR}/Kinematics/libCFPKinematics.la \
 	\${CFPBUILDDIR}/Kinematics/FF/libCFPKinematicsFF.la \
+	\${CFPBUILDDIR}/Kinematics/FI/libCFPKinematicsFI.la \
+	\${CFPBUILDDIR}/Kinematics/IF/libCFPKinematicsIF.la \
+	\${CFPBUILDDIR}/Kinematics/II/libCFPKinematicsII.la \
 	\${CFPBUILDDIR}/Shower/libCFPShower.la \
 	\${CFPBUILDDIR}/Tools/libCFPTools.la"
   AC_SUBST(CFPDIR)
