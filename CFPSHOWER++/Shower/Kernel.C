@@ -82,13 +82,37 @@ bool Kernel::UpdateSystem(Splitting & split,Configuration & config) {
 
 double Kernel::GetXPDF(const double & x,const double & Q2,
 		       const ATOOLS::Flavour & flav,const size_t beam) {
-  PDF::PDF_Base * pdf = p_pdf[beam];
+  if (beam<1 || beam>2) {
+    msg_Error()<<"Error in "<<METHOD<<"(beam = "<<beam<<"):\n"
+	       <<"   We should not arrive here.  Will exit for debugging reasons.\n";
+    exit(1);
+    return 0.;
+  }
+  PDF::PDF_Base * pdf = p_pdf[beam-1];
   if (pdf==NULL)                          return 0.;
   if (x<pdf->XMin()   || x>pdf->XMax() ||
       Q2<pdf->Q2Min() || Q2>pdf->Q2Max()) return 0.;
   if (Q2<sqr(2.*flav.Mass(true)))         return 0.;
   pdf->Calculate(x,Q2);
   return pdf->GetXPDF(flav.Bar());
+}
+
+double Kernel::DynamicPDFThreshold(const double & x) const {
+  return m_pdfminvalue * log(1.-x) / log(1.0 - m_pdfxmin);
+}
+
+bool Kernel::HasPDFSupport(Splitting & split) {
+  if (split.Beam()<1 || split.Beam()>2) {
+    msg_Error()<<"Error in "<<METHOD<<"(beam = "<<split.Beam()<<"):\n"
+	       <<"   We should not arrive here.  Will exit for debugging reasons.\n";
+    exit(1);
+    return 0.;
+  }
+  PDF::PDF_Base * pdf = p_pdf[split.Beam()-1];
+  if (pdf==NULL ||
+      split.Eta() > pdf->XMax()  || split.Eta() < pdf->XMin() ||
+      split.Q2() <= pdf->Q2Min() || split.Q2() >= pdf->Q2Max()) return false;
+  return true;
 }
 
 Weight * Kernel::MakeWeight(const Splitting & split,const double & overfac) {
@@ -169,14 +193,14 @@ operator()(const Parameter_Type & info) const
   kernel->SetGauge(gauge);
   kernel->SetKinematics(kin);
   //if (msg_LevelIsDebugging()) {
-    msg_Out()<<"***** Found "<<kernel->GetSplit()<<" --> ";
-    for (size_t i=0;i<kernel->GetFlavs().size();i++)
-      msg_Out()<<kernel->GetFlavs()[i]<<" ("<<kernel->GetSF()->Tags()[i]<<") ";
-    msg_Out()<<" ["
-	     <<kernel->GetSF()->Name()<<" + "
-	     <<kernel->GetGauge()->Name()<<" + "
-	     <<kernel->GetKinematics()->Name()<<"]\n";
-    //}
+  msg_Out()<<"***** Found "<<kernel->GetSplit()<<" --> ";
+  for (size_t i=0;i<kernel->GetFlavs().size();i++)
+    msg_Out()<<kernel->GetFlavs()[i]<<" ("<<kernel->GetSF()->Tags()[i]<<") ";
+  msg_Out()<<" ["
+	   <<kernel->GetSF()->Name()<<" + "
+	   <<kernel->GetGauge()->Name()<<" + "
+	   <<kernel->GetKinematics()->Name()<<"]\n";
+  //}
   return kernel;
 }
 

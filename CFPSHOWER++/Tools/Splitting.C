@@ -35,10 +35,10 @@ Splitting::Splitting(Parton * splitter,Parton * spectator,
   if (splitter!=NULL && spectator!=NULL) {
     m_psplit  = p_splitter->Mom();
     m_pspect  = p_spectator->Mom();
-    m_pdipole = m_psplit + m_pspect;
-    m_Q2      = m_pdipole.Abs2();  m_Q = sqrt(m_Q2);
-    //m_Q2      = dabs(((p_splitter->Beam()>0?1.:-1.)  * m_psplit +
-    //		      (p_spectator->Beam()>0?1.:-1.) * m_pspect).Abs2());
+    m_pdipole = ( (p_splitter->Beam()>0?1.:-1.)  * m_psplit +
+		  (p_spectator->Beam()>0?1.:-1.) * m_pspect);
+    m_Q2      = dabs(m_pdipole.Abs2());
+    m_Q       = sqrt(m_Q2);
   }
   s_cnt++;
 }

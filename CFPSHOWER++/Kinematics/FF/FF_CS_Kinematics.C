@@ -48,12 +48,15 @@ bool FF_CS_Kinematics::KinCheck(Splitting & split) {
 }
 
 double FF_CS_Kinematics::CalculateY(Splitting & split) {
-  return split.T()/((1.-split.Z())*split.Z()*split.Q2());
+  return ( ( split.T() / ((1.-split.Z())*split.Z()) +
+	     split.Mass2(0) * split.Z()/(1.-split.Z()) +
+	     split.Mass2(1) * (1.-split.Z())/split.Z()) /
+	   ( split.Q2()-split.Mass2(0)-split.Mass2(1)-m_mspect2) );
 }
 
 bool FF_CS_Kinematics::operator()(Splitting & split, Configuration & config) {
   if (!KinCheck(split)) return false;
-  PHASIC::Kin_Args kinargs(m_y,split.Z(),split.Phi());
+  PHASIC::Kin_Args kinargs(split.Y(),split.Z(),split.Phi());
   if (PHASIC::ConstructFFDipole(split.Mass2(0),split.Mass2(1),
 				m_msplit2,m_mspect2,
 				m_psplit,m_pspect,kinargs) < 0) return false;

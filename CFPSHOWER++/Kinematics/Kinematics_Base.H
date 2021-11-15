@@ -9,10 +9,13 @@
 #include "ATOOLS/Org/Getter_Function.H"
 
 namespace CFPSHOWER {
+  class Kernel;
+  
   class Kinematics_Base {
   protected:
     std::string    m_name;
     kin_type::code m_scheme;
+    Kernel *       p_kernel;
     ATOOLS::Vec4D  m_psplit, m_pspect, m_pboth;
     double         m_msplit, m_mspect, m_msplit2, m_mspect2, m_m[2], m_m2[2];
     double         m_Q2, m_Q, m_z[2], m_y, m_weight;
@@ -27,12 +30,15 @@ namespace CFPSHOWER {
   public:
     Kinematics_Base(const Kernel_Info & info);
     ~Kinematics_Base();
+
+    inline void  SetKernel(Kernel * kernel) { p_kernel = kernel; }
     virtual bool Init(Splitting & split, Configuration & config,
 		      const ATOOLS::Mass_Selector * msel)                       = 0;
     virtual bool operator()(Splitting & split, Configuration & config)          = 0;
     virtual void CalculateJacobean(Splitting & split,Configuration & config)    = 0;
     virtual bool UpdateSystem(Splitting & split, Configuration & config)        = 0;
 
+    
     inline virtual const double            & Weight()        const { return m_weight; }
     inline virtual const std::string       & Name()          const { return m_name; }
     inline virtual const kin_type::code    & Scheme()        const { return m_scheme; }

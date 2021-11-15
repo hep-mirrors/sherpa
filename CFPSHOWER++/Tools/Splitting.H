@@ -25,6 +25,7 @@ namespace CFPSHOWER {
     size_t m_nout;
     double        m_msplit, m_msplit2, m_mspect, m_mspect2, m_masssum;
     ATOOLS::Vec4D m_psplit, m_pspect, m_pdipole, m_systot, m_kinspect;
+    ATOOLS::Poincare_Sequence  m_poincare;
     std::vector<double>        m_masses, m_masses2;
     std::vector<ATOOLS::Vec4D> m_moms, m_allmoms;
     std::vector<Parton *>      m_partons;
@@ -53,27 +54,32 @@ namespace CFPSHOWER {
       m_allmoms.clear();
       std::copy(moms.begin(), moms.end(), std::back_inserter(m_allmoms));
     }
-
-    inline Kernel      * GetKernel()               const { return p_kernel; }
-    inline Parton      * GetSplitter()             const { return p_splitter; }
-    inline Parton      * GetSpectator()            const { return p_spectator; }
-    inline Weight      * GetWeight()               const { return p_weight; }
-    inline Parton      * GetParton(const size_t i) const { return m_partons[i]; }
+    inline void SetPoincare(ATOOLS::Poincare_Sequence poincare) {
+      m_poincare = poincare;
+    }
+   
+    inline Kernel * GetKernel()               const { return p_kernel; }
+    inline Parton * GetSplitter()             const { return p_splitter; }
+    inline Parton * GetSpectator()            const { return p_spectator; }
+    inline Weight * GetWeight()               const { return p_weight; }
+    inline size_t   Beam()                    const { return p_splitter->Beam(); }
+    inline Parton * GetParton(const size_t i) const { return m_partons[i]; }
     //inline int UpdatePos(Parton * part) {
     //  if (m_updatemap.find(part)==m_updatemap.end()) return -1;
     //  return m_updatemap[part];
     //}
-    inline ATOOLS::Vec4D GetCMSTot()               const { return m_pdipole; }
-    inline ATOOLS::Vec4D GetSysTot()               const { return m_systot; }
-    inline ATOOLS::Vec4D GetKinSpect()             const { return m_kinspect; }
-    inline ATOOLS::Vec4D Mom(const size_t pos)     const { return m_moms[pos]; }
-    inline size_t        NumberP()                 const { return m_allmoms.size(); }
-    inline ATOOLS::Vec4D P(const size_t pos)       const { return m_allmoms[pos]; }
-    inline double        Mass(const size_t pos)    const { return m_masses[pos]; }
-    inline double        Mass2(const size_t pos)   const { return m_masses2[pos]; }
-    inline double        MassSum()                 const { return m_masssum; }
-    inline double        Mass2Splitter()           const { return m_msplit2;} 
-    inline double        Mass2Spectator()          const { return m_mspect2;} 
+    inline ATOOLS::Poincare_Sequence GetPoincare()   { return m_poincare; }
+    inline ATOOLS::Vec4D GetCMSTot()           const { return m_pdipole; }
+    inline ATOOLS::Vec4D GetSysTot()           const { return m_systot; }
+    inline ATOOLS::Vec4D GetKinSpect()         const { return m_kinspect; }
+    inline ATOOLS::Vec4D Mom(const size_t pos) const { return m_moms[pos]; }
+    inline ATOOLS::Vec4D P(const size_t pos)   const { return m_allmoms[pos]; }
+    inline size_t NumberP()               const { return m_allmoms.size(); }
+    inline double Mass(const size_t pos)  const { return m_masses[pos]; }
+    inline double Mass2(const size_t pos) const { return m_masses2[pos]; }
+    inline double MassSum()               const { return m_masssum; }
+    inline double Mass2Splitter()         const { return m_msplit2;} 
+    inline double Mass2Spectator()        const { return m_mspect2;} 
     
     inline void SetTstart(const double & tstart) { m_tstart = tstart; }
     inline void SetTcut(const double & tcut)     { m_tcut   = tcut; }
@@ -97,10 +103,11 @@ namespace CFPSHOWER {
     inline const double & Eta()      const { return m_eta; }
     inline const double & KT2()      const { return m_kt2; }
     inline const double & Q2()       const { return m_Q2; }
+    inline const double & Q()        const { return m_Q; }
     inline const double & IntPhi()   const { return m_IntPhi; }
     inline const size_t   NPartons() const { return m_partons.size(); }
     inline const size_t   NOut()     const { return m_nout; }
-    inline static size_t Count()           { return s_cnt; }
+    inline static size_t  Count()          { return s_cnt; }
   };
 
   std::ostream &operator<<(std::ostream &s,Splitting & split);

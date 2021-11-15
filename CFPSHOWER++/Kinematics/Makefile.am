@@ -1,4 +1,4 @@
-SUBDIRS = FF 
+SUBDIRS = FF FI IF II
 
 pkglib_LTLIBRARIES = libCFPKinematics.la
 

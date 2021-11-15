@@ -131,9 +131,7 @@ CalculateJacobean(Splitting & split,Configuration & config) {
 bool FF_Alaric_Kinematics::
 UpdateSystem(Splitting & split, Configuration & config) {
   Parton_List::iterator pit=config.begin();
-  for (size_t i=0;i<split.NumberP();i++,pit++) {
-    (*pit)->SetMom(split.P(i));
-  }
+  for (size_t i=0;i<split.NumberP();i++,pit++) (*pit)->SetMom(split.P(i));
   split.GetSpectator()->SetMom(split.Mom(2));
   return true;
 }

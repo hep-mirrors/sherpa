@@ -1,4 +1,5 @@
 #include "CFPSHOWER++/Kinematics/Kinematics_Base.H"
+#include "CFPSHOWER++/Shower/Kernel.H"
 #define COMPILE__Getter_Function
 #define PARAMETER_TYPE CFPSHOWER::Kernel_Info
 #define OBJECT_TYPE    CFPSHOWER::Kinematics_Base
@@ -10,21 +11,21 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 Kinematics_Base::Kinematics_Base(const Kernel_Info & info) :
-  m_name("unknown"), m_scheme(kin_type::none)
+  m_name("unknown"), m_scheme(kin_type::none), p_kernel(NULL)
 {}
 
 Kinematics_Base::~Kinematics_Base() {}
 
 void Kinematics_Base::InitSystem(Splitting & split, const Mass_Selector * msel)  {
   m_psplit  = split.GetSplitter()->Mom();
-  m_pspect  = split.GetSpectator()->Mom();
-  m_pboth   = m_psplit + m_pspect;
   m_msplit  = msel->Mass(split.GetSplitter()->Flav());
   m_msplit2 = sqr(m_msplit);
+  m_pspect  = split.GetSpectator()->Mom();
   m_mspect  = msel->Mass(split.GetSpectator()->Flav());
   m_mspect2 = sqr(m_mspect);
-  m_Q2      = m_pboth.Abs2();
-  m_Q       = sqrt(m_Q2);
+  m_pboth   = split.GetCMSTot();
+  m_Q2      = split.Q2();
+  m_Q       = split.Q();
   m_ismassive = (m_mspect>0. || m_m[0]>0. || m_m[1]>0.);
   m_allmomenta.clear();
   m_allmasses2.clear();

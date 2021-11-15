@@ -157,10 +157,13 @@ MakeKernels(Flavour_Vector & flavs,
     if (split.IsGluon() && flavs[1].IsQuark() && flavs[2].IsQuark() &&
 	int(m_SFtype & 4)==0) return;
   }
-  //msg_Out()<<METHOD<<"("<<flavs.size()<<") for log = "<<m_logtype<<" & "<<logtype<<"  = "
-  //	   <<(m_logtype & int(logtype))<<", SF = "<<m_SFtype<<"("<<int(m_SFtype & 2)<<")"
+  //msg_Out()<<METHOD<<"("<<flavs.size()<<") for log = "
+  // <<m_logtype<<" & "<<logtype<<"  = "
+  //	   <<(m_logtype & int(logtype))<<", SF = "<<m_SFtype
+  // <<"("<<int(m_SFtype & 2)<<")"
   //	   <<" for "<<split<<" -> "<<flavs[1]<<" "<<flavs[2]<<"\n"
-  //	   <<"flav check: "<<split.IsGluon()<<" "<<flavs[1].IsGluon()<<" "<<flavs[2].IsGluon()<<"\n";
+  //	   <<"flav check: "<<split.IsGluon()<<" "
+  // <<flavs[1].IsGluon()<<" "<<flavs[2].IsGluon()<<"\n";
 	   
   for (list<vector<size_t> >::iterator lit=m_permutations[order-1].begin();
        lit!=m_permutations[order-1].end();lit++) {
@@ -195,7 +198,8 @@ MakeKernels(Flavour_Vector & flavs,
     (*p_kernels[int(info.Type())])[info.GetSplit()]->push_back(kernel);
     /*
       if (newflavs.size()>2) {
-      msg_Out()<<"     * Add kernel to ["<<info.Type()<<"]["<<info.GetSplit()<<"]: "
+      msg_Out()<<"     * Add kernel to ["<<info.Type()<<"]["
+      <<info.GetSplit()<<"]: "
       <<info;
     }
     */
