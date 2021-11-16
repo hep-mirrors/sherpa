@@ -248,18 +248,6 @@ bool Phase_Space_Point::MakeIncoming() {
   return false;
 }
 
-void Phase_Space_Point::BoostSystem() {
-  if (p_isrchannels)
-    p_isrhandler->BoostInLab(p_moms, m_nvec);
-  if (p_beamchannels)
-    p_beamhandler->BoostInLab(p_moms, m_nvec);
-  // This is for the case of fixed beams and captures asymmetric initial states
-  if (p_fixedISboost) {
-    for (int i = 0; i < m_nvec; ++i)
-      p_fixedISboost->BoostBack(p_moms[i]);
-  }
-}
-
 void Phase_Space_Point::CorrectMomenta() {
   if (m_nin != 2 ||
       (m_nin == 2 && m_nout == 1 && p_pshandler->Flavs()[2].Kfcode() == 999))
