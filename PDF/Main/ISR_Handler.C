@@ -286,7 +286,7 @@ bool ISR_Handler::AllowSwap(const ATOOLS::Flavour &f1,
     ok[1] = 1;
   else
     for (size_t j(0); j < f1.Size(); ++j)
-      if (p_isrbase[0]->PDF()->Contains(f1[j])) {
+      if (p_isrbase[1]->PDF()->Contains(f1[j])) {
         ok[1] = 1;
         break;
       }
