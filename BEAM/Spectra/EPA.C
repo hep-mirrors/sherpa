@@ -212,31 +212,14 @@ bool EPA::CalculateWeight(double x, double q2) {
   m_Q2 = q2;
   if (x >= 1. - m_mass / m_energy || x < m_xmin) {
     m_weight = 0.0;
-    return 1;
+    return true;
   }
   if (m_beam.Kfcode() == kf_e) {
-    // TODO: Formel für Q^2_min kontrollieren: s. Budnev Eq. 6.11 und Thesis v.
-    // Neil Scott MacDonald Eq. 1.7
-    double q2min = Max(sqr(m_mass * m_x) / (1 - m_x), 10e-8);
-    double f = alpha / M_PI *
-               ((1 - m_x + sqr(m_x) / 2) * log(m_q2Max / q2min) -
-                sqr(1 - m_x / 2) * log((sqr(m_vecout[0]) + m_q2Max) /
-                                       (sqr(m_vecout[0]) + q2min)) -
-                sqr(m_x * m_mass) / q2min * (1 - q2min / m_q2Max));
-    /*
-    // based on Eq. 5.18 in Budnev (1975), doi:10/d6rtsc
-    // The formula is simplified to (after integration of Q^2):
-    // dn = alpha/pi * dx/x * [(1-x+x^2/2) * ln(Q^2_max/Q^2_min) + (1-x) *
-    // (Q^2_min/Q^2_max - 1)]
-    double f = alpha / M_PI / m_x *
-               ((1 - m_x + sqr(m_x) / 2) * log(m_q2Max / sqr(m_mass)) -
-                (1 - m_x) * (1 - m_q2Max / sqr(m_mass)));
-    // Alternatively, take the logarithmic approximation:
-    // dn = alpha/pi * dx/x * ln(Q^2_max / x^2 / m )
-    // where m is the mass of the produced particle(?), i.e. lambda_QCD =
-    // 0.25GeV
-    // double f = alpha / M_PI /m_x * log(m_q2Max/m_x/m_x/0.25);
-     */
+    double q2min = sqr(m_mass * m_x) / (1 - m_x);
+    double q2max = m_q2Max;
+    double f = alpha / M_PI / 2 / m_x *
+               ((1 + sqr(1 - m_x)) * log(q2max / q2min) +
+                2 * sqr(m_mass * m_x) * (1 / q2min - 1 / q2max));
     if (f < 0)
       f = 0.;
     m_weight = f;
@@ -244,7 +227,7 @@ bool EPA::CalculateWeight(double x, double q2) {
                     << ") = " << f << ", "
                     << "energy = " << m_energy << ", "
                     << "mass = " << m_mass << ".\n";
-    return 1;
+    return true;
   } else if (m_beam.Kfcode() == kf_p_plus) {
     const double qz = 0.71;
     double f, qmi, qma;
@@ -259,7 +242,7 @@ bool EPA::CalculateWeight(double x, double q2) {
     if (f < 0)
       f = 0.;
     m_weight = f;
-    return 1;
+    return true;
   } else if (m_beam.IsIon()) { // n(x)
     const int atomicNumber = m_beam.GetAtomicNumber();
     const double radius = 1.2 / .197 * pow(atomicNumber, 1. / 3.);
@@ -285,9 +268,9 @@ bool EPA::CalculateWeight(double x, double q2) {
     // x_omega=m_x*m_energy/omega0
 
     m_weight = f;
-    return 1;
+    return true;
   }
-  return 0;
+  return false;
 }
 
 Beam_Base *EPA::Copy() { return new EPA(*this); }
