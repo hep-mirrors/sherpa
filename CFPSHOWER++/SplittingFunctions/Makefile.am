@@ -1,4 +1,4 @@
-SUBDIRS = Colours FF 
+SUBDIRS = Colours FF FI IF II
 
 pkglib_LTLIBRARIES = libCFPSplittingFunctions.la
 
