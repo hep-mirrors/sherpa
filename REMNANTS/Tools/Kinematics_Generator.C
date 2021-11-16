@@ -438,7 +438,7 @@ bool Kinematics_Generator::CheckRemnants() {
   vector<Vec4D> moms;
   vector<double> masses;
   vector<Particle *> parts;
-  Vec4D tot(0., 0., 0., 0.), mom, kt[2];
+  Vec4D tot(0., 0., 0., 0.), mom;
   double totmass(0.);
   for (size_t beam = 0; beam < 2; beam++) {
     Particle *recoiler = p_remnants[beam]->GetRecoiler();

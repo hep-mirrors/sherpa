@@ -55,7 +55,6 @@ namespace PHASIC {
     bool   DefineBeamKinematics();
     bool   DefineISRKinematics(Process_Integrator *const process);
     bool   DefineFSRKinematics();
-    void   BoostSystem();
     bool   Check4Momentum();
     void   CorrectMomenta();
 
