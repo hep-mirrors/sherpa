@@ -34,6 +34,8 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
 
   m_aqed = s["EPA_AlphaQED"].Get<double>();
 
+  m_theta_max = s["EPA_Theta_max"].Get<double>();
+
   std::vector<double> xmin{s["EPA_Xmin"].GetVector<double>()};
   if (xmin.size() != 1 && xmin.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `EPA_Xmin'.");
@@ -71,6 +73,7 @@ void EPA::RegisterDefaults() {
   s["EPA_ptMin"].SetDefault(0.0);
   s["EPA_Form_Factor"].SetDefault(m_beam.FormFactor());
   s["EPA_AlphaQED"].SetDefault(0.0072992701);
+  s["EPA_Theta_max"].SetDefault(0.3);
   s["EPA_Xmin"].SetDefault(0);
   s["EPA_Debug"].SetDefault(false);
   s["EPA_Debug_Files"].SetDefault("EPA_debugOutput");
@@ -215,9 +218,13 @@ bool EPA::CalculateWeight(double x, double q2) {
     return true;
   }
   if (m_beam.Kfcode() == kf_e) {
+    // Maximal angle for the scattered electron
+    // compare hep-ph/9610406 and hep-ph/9310350
     double q2min = sqr(m_mass * m_x) / (1 - m_x);
-    double q2max = m_q2Max;
-    double f = alpha / M_PI / 2 / m_x *
+    double q2max = q2min + sqr(m_energy) * (1 - m_x) * sqr(m_theta_max);
+    // removed factor 1 / m_x here, to account for Jacobian in ds^prime
+    // integration
+    double f = alpha / M_PI / 2 *
                ((1 + sqr(1 - m_x)) * log(q2max / q2min) +
                 2 * sqr(m_mass * m_x) * (1 / q2min - 1 / q2max));
     if (f < 0)

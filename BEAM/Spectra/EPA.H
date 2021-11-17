@@ -16,7 +16,7 @@ namespace BEAM {
       double GetCosInt(double X);
     };
 
-    double m_mass, m_charge, m_q2Max, m_pt_min, m_aqed, m_xmin;
+    double m_mass, m_charge, m_q2Max, m_pt_min, m_aqed, m_xmin, m_theta_max;
 
     void RegisterDefaults();
 
