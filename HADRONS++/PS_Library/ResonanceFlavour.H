@@ -13,7 +13,7 @@ namespace HADRONS {
     protected:
       std::string         m_name;
       double              m_mass, m_width, m_mass2;
-
+      double              m_gamma, m_delta, m_phi1, m_phi2, m_massfactor;
     public:
       SimpleResonanceFlavour() {}
       SimpleResonanceFlavour( std::string name, double _mass, double _width );
@@ -23,6 +23,11 @@ namespace HADRONS {
       double      Mass2() { return m_mass2; }
       double      Width() { return m_width; }
       double      MassWidth() { return m_mass*m_width; }
+      inline void SetSAmplitudesAndPhases(double gamma=0., double delta=0.,
+                                          double phi1=0., double phi2=0.) {
+        m_gamma = gamma; m_delta = delta; m_phi1 = phi1; m_phi2 = phi2;                                      
+      }
+      inline void SetMassFactor(const double massfactor=1.) { m_massfactor = massfactor; }
       std::string Name() { return m_name; }
   };
 

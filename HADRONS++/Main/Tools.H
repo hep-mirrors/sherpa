@@ -12,6 +12,8 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Matrix.H"
 #include "PHASIC++/Decays/Decay_Table.H"
+#include <complex>
+
 
 namespace HADRONS
 {
@@ -79,7 +81,7 @@ namespace HADRONS
      */
 
     static double   Lambda(double a,double b,double c);
-    static Complex  BreitWigner( double s, double Mass2, double MassWidth );
+    static Complex  BreitWigner( double s, double Mass2, double MassWidth ); //double MG_K, double m_MK2
     static Complex  BreitWignerFix( double s, double Mass2, double MassWidth );
     
     static double   OffShellMassWidth( double s, double Mass2, 

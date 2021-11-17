@@ -24,7 +24,8 @@ double ResonanceFlavour::Sqrt_Lambda( double a, double b, double c)
 
 SimpleResonanceFlavour::SimpleResonanceFlavour( std::string name, double _mass,
                                                 double _width ) 
-  : m_name(name), m_mass(_mass), m_width(_width), m_mass2(sqr(_mass))
+  : m_name(name), m_mass(_mass), m_width(_width), m_mass2(sqr(_mass)),
+  m_gamma(0.), m_delta(0.), m_phi(0.), m_phi2(0.), m_massfactor(1.)
 {
 }
   
@@ -214,13 +215,15 @@ double ResonanceFlavour::TwoBodyResonanceMassWidth( double s, double m1, double 
 Complex ResonanceFlavour::BreitWigner( double s )
 {
   double MG;
+  double sreal = s*(m_gamma*cos(m_phi1) + m_delta*cos(m_phi2));
+  double simag = s*(m_gamma*sin(m_phi1) + m_delta*sin(m_phi2));
   if( m_running ) {
     MG = OffShellMassWidth(s);
-    return Complex(m_mass2,0.)/Complex( m_mass2-s, -1.*MG );
+    return Complex(m_massfactor * m_mass2 + sreal, simag)/Complex( m_mass2-s, -1.*MG );
   }
   else {
     MG = m_mass * m_width;
-    return Complex(m_mass2, -1.*MG)/Complex( m_mass2-s, -1.*MG );
+    return Complex(m_massfactor * m_mass2, -1.*MG)/Complex( m_mass2-s, -1.*MG );
   }
 }
  

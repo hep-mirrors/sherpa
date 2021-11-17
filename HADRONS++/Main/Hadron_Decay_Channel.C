@@ -403,7 +403,7 @@ bool Hadron_Decay_Channel::SetColorFlow(ATOOLS::Blob* blob)
       return true;
     }
     else if(n_q==0 && n_g==n) {
-      outparts[0]->SetFlow(2,-1);
+      outparts[0]->SetFlow(2,1);
       outparts[0]->SetFlow(1,-1);
       for(int i=1;i<n-1;++i) {
         unsigned int c=Flow::Counter();

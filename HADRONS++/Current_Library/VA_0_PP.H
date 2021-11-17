@@ -64,15 +64,53 @@ namespace HADRONS {
     };    
 
     class FF_RChT_Kpi : public FormFactor {
+      double  m_m2_pi, m_m2_K, m_m2_eta, m_DeltaM2, m_SigmaM2, m_Sigma_KP, m_Delta_KP;
+      double  m_piK_threshold, m_etaK_threshold;
+      double  m_fpi, m_mK2, m_fpi2, m_mu2, m_mPi2, m_mEta2, m_MK02, m_cd, m_cm, q2;
+      void    FillResonances(const GeneralModel & model);
+    public:
+      FF_RChT_Kpi(const GeneralModel & model);
+      Complex F_V(const double & q2, double s);
+      Complex F_S(const double & q2);
+    };  
+    /////////////////////////////////////////////////////////////////
+    // Resonance Chiral Theory form factors
+    /////////////////////////////////////////////////////////////////
+    class FF_RChT2_pipi : public FormFactor {
+      double  m_fpi, m_m2_pi, m_m2_K;
+      void    FillResonances(const GeneralModel & model);
+      Complex A_Loop( double x, double y );
+    public:
+      FF_RChT2_pipi(const GeneralModel & model);
+      Complex F_V(const double & q2);
+      Complex F_S(const double & q2) { return Complex(0.,0.);
+      Complex CalcA(double m_m);}
+    };    
+
+    class FF_RChT2_Kpi : public FormFactor {
       double  m_m2_pi, m_m2_K, m_m2_eta, m_DeltaM2, m_SigmaM2;
       double  m_piK_threshold, m_etaK_threshold;
       double  m_fpi, m_fpi2, m_mu2, m_cd, m_cm;
       void    FillResonances(const GeneralModel & model);
     public:
-      FF_RChT_Kpi(const GeneralModel & model);
-      Complex F_V(const double & q2);
+      FF_RChT2_Kpi(const GeneralModel & model);
+      Complex F_V(const double & q2, double s);
       Complex F_S(const double & q2);
-    };    
+      Complex CalcA(double m_m);};
+
+    
+    /////////////////////////////////////////////////////////////////
+    // Resonance Gounaris-Sakurai Chiral Theory form factors
+    /////////////////////////////////////////////////////////////////
+    class FF_GS_pipi : public FormFactor {
+      double  m_fpi, m_m2_pi, m_m2_K, q2;
+      void    FillResonances(const GeneralModel & model);
+      Complex A_Loop( double x, double y );
+    public:
+      Complex FF_RChT2_pipi(const GeneralModel & model);
+      Complex F_V(const double & q2);
+      Complex F_S(const double & q2) { return Complex(0.,0.); }
+    };          
   };
 }
 #endif
