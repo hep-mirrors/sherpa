@@ -114,13 +114,6 @@ Complex VA_0_PP::FF_KS_pipi::F_V(const double & q2) {
     // the calculaion of the second term depends on whether the width is
     // momentum-dependent and is performed in the "ResonanceFlavour" class
     fv += rit->second * rit->first.BreitWigner(q2);
-      if (rit->first.KfCode()==kf_rho_770_plus){
-
-      }
-      else{
-
-      }
-
   }
   return fv/m_Vresonance_norm;
 }
@@ -216,6 +209,7 @@ void VA_0_PP::FF_RChT_pipi::FillResonances(const GeneralModel & model) {
     m_Vresonance_norm += rit->second;
   }
 }
+
 Complex VA_0_PP::FF_RChT_pipi::F_V(const double & q2) {
   Complex sum(0.,0.);
   double  prefactor = -q2/(96.*sqr(M_PI*m_fpi)); 
@@ -353,99 +347,73 @@ Complex HADRONS::VA_0_PP::FF_RChT_Kpi::F_S(const double & q2, double s) {
 VA_0_PP::FF_RChT2_pipi::FF_RChT2_pipi(const GeneralModel& model) :
   VA_0_PP::FormFactor(model)
 {
-  m_fpi   = SQRT_05 * model("fpi", 0.1307 ); 
-  double m_m2_pi = Flavour(kf_pi_plus).HadMass() ;
-  double m_m2_K  = Flavour(kf_K_plus).HadMass() ;
-  double phi1 = -0.36;
-  double phi2 = -0.02;
-  //Gammarho1450 = 535;
-  //Gammarho1700 = 412;
+  m_fpi  = SQRT_05 * model("fpi", 0.1307 ); 
+  m_m_pi = Flavour(kf_pi_plus).HadMass(); m_m2_pi = sqr(m_m_pi);
+  m_m_K  = Flavour(kf_K_plus).HadMass();  m_m2_K  = sqr(m_m_K);
   FillResonances(model);  
 }
 
  void VA_0_PP::FF_RChT2_pipi::FillResonances(const GeneralModel & model) { //2.35
   int running_width  = int( model("RUNNING_WIDTH", 1 ) );
   m_Vresonances.push_back(make_pair(ResonanceFlavour( kf_rho_770_plus,
-						                                          model("Mass_rho(770)+",  0.7736 ),
-						                                          model("Width_rho(770)+", 0.149 ),
-						                                          running_width ),
-//                  model("phi1", -0.66 ), model("phi2", -0.44 )
-				                            1.));
-  m_Vresonances.back().first.SetSAmplitudesAndPhases(model("gamma",0.),model("delta",0),
-                                               model("phi1",-0.13),model("phi2",-0.66));
+						      model("Mass_rho(770)+",  0.7736 ),
+						      model("Width_rho(770)+", 0.149 ),
+						      running_width ),
+				    1.));
+  m_Vresonances.back().first.SetMassFactor(1.);
+  m_Vresonances.back().first.SetSAmplitudesAndPhases(model("gamma",0.15),model("delta",-0.12),
+						     model("phi1",-0.36),model("phi2",-0.02));
   m_Vresonances.push_back(make_pair(ResonanceFlavour( kf_rho_1450_plus,
 						      model("Mass_rho(1450)+",  1.376 ),
-						      model("Width_rho(1450)+", 0.603 ),				     
+						      model("Width_rho(1450)+", 0.603 ),
 						      running_width ),
-				    model("delta", -0.13 ), model("phi1", -0.66 ) ));
+				    1.));
+  m_Vresonances.back().first.SetMassFactor(0);
+  m_Vresonances.back().first.SetSAmplitudesAndPhases(-model("gamma",0.15),0.,
+						     model("phi1",-0.36),0.);
   m_Vresonances.push_back(make_pair(ResonanceFlavour( kf_rho_1700_plus,
 						      model("Mass_rho(1700)+",  1.718 ),
-						      model("Width_rho(1700)+", 0.465 ),				     
+						      model("Width_rho(1700)+", 0.465 ),
 						      running_width ),
-				    model("gamma", 0.15 ), model("phi2", -0.44 ) ));    
+				    1.));
+  m_Vresonances.back().first.SetMassFactor(0.);
+  m_Vresonances.back().first.SetSAmplitudesAndPhases(0.,-model("delta",-0.12),
+						     0.,model("phi2",-0.02));
 
   for (list<pair<ResonanceFlavour, double> >::iterator rit=m_Vresonances.begin();
        rit!=m_Vresonances.end();rit++) {
     msg_Out()<<"* "<<rit->first.KfCode()<<" --> "<<rit->second<<"\n";
-    m_Vresonance_norm += rit->second;
   }
+  m_Vresonance_norm = 1.;
 }
 
-Complex HADRONS::VA_0_PP::FF_RChT2_pipi::CalcA(double m_m){
-  Complex sigma = sqrt(1.-(4.*pow(m_m,2.)/q2));
-  Complex A = log10(pow(m_m/mu,2.)+8.*pow(m_m,2.)/q2-(5./3.)+pow(sigma,3.)*log10((sigma+1.)/(sigma-1.)));
-  return sigma, A;
+Complex VA_0_PP::FF_RChT2_pipi::Sigma(const double & m2,const double & s) {
+  return sqrt(1.-4.*m2/s);
+}
+
+Complex VA_0_PP::FF_RChT2_pipi::CalcA(const double & m2,const double & s,const double & mu2) {
+  Complex sigma = Sigma(m2,s);
+  return (mu2<0. ? 0. : log(m2/mu2)) + 8.*m2/s - 5./3. + pow(sigma,3.)*log((sigma+1.)/(sigma-1.));
 }
 
 Complex VA_0_PP::FF_RChT2_pipi::F_V(const double & q2) {
   Complex sum(0.,0.);
-    /*Complex term;
-    if (rit->first.Running()) {
-      double running_width = -rit->second * rit->first.Mass2()  * prefactor * sum_loop.imag();
-      term = Tools::BreitWigner(q2, rit->first.Mass2(), running_width);
-    }
-    else {
-      term = Tools::BreitWignerFix(q2, rit->first.Mass2(), rit->first.MassWidth() );
-    }
-    sum +=  term * exp(prefactor*sum_loop.real());*/
+  Complex A_K  = CalcA(m_m2_K,q2,q2);
+  Complex A_pi = CalcA(m_m2_pi,q2,q2);
 
-//mu
-  
-  Complex sigma_K = HADRONS::VA_0_PP::FF_RChT2_pipi::CalcA(m_m2_pi);
-  Complex sigma_pi = HADRONS::VA_0_PP::FF_RChT2_pipi::CalcA(m_m2_pi);
-  Complex A_k = HADRONS::VA_0_PP::FF_RChT2_pipi::CalcA(m_m2_K);
-  Complex A_pi = HADRONS::VA_0_PP::FF_RChT2_pipi::CalcA(m_m2_K);
-
-	
-
-  //Gamma 2.14
-  double Gamma(const double & q2, const double & width, const double & mass) {
-    double Mass2 = sqr(mass), m_m2_pi = sqr(Flavour(kf_pi_plus).Mass());
-    if (q2<4.*m_m2_pi) return 0.;
-    return rit->first.MassWidth*q2*pow(A_pi,3)*(q2-4.*pow(m_m2_K,2.))/((pow(rit->first.Mass2,2)*(pow(sqrt(1.-(4.*pow(m_m,2.)/(pow(rit->first.Mass2,2))),3); 
-  }
-  Complex VA_0_PP::FF_RChT2_pipi::F_V(const double & q2){
-  Complex fv(0.,0.);
   for (list<pair<ResonanceFlavour, double> >::iterator rit=m_Vresonances.begin();
        rit!=m_Vresonances.end();rit++) {
-    fv += rit->second * rit->first.BreitWigner(q2);
+    Complex BW = rit->second * rit->first.BreitWignerPhases(q2), arg;
     if (rit->first.KfCode()==kf_rho_770_plus) {
-      Complex Gammarho = (pow(rit->first.Mass2,2.)*q2/(96.*pow(m_m2_pi*m_fpi,2.))*(pow(A_pi,3.)*(q2-4*pow(m_m2_pi,2.))+0.5*pow(A_K,3.)*(q2-4.*pow(m_m2_K,2.)))); //should be 2.11
-	    Complex C1 = (pow(rit->first.Mass2,2.) + q2*(gamma*exp(-I*phi1)+delta*exp(-I*phi2)))/(pow(rit->first.Mass2,2.)-q2-I*rit->first.Mass2*Gammarho);
-      double expon1= ((-q2/96.*pow(m_m2_pi*m_fpi,2.))*(A_pi+0.5*A_K)); 
-    }
-    else if (rit->first.KfCode()==kf_rho_1450_plus) {
-      Complex C2 = gamma*((q2*exp(-I*phi1))/((pow(rit->first.Mass2,2.)-q2-I*rit->first.Mass2*Gamma(q2,width,mass))));
-      Complex expon2 = -((q2*running_width*pow(rit->first.Mass2,2.))/(m_m2_pi*pow(rit->first.Mass2*sigma_pi,3.)*pow(rit->first.Mass2,2.))*real(A_pi)); 
+      arg = real(q2/(96.*sqr(M_PI*m_fpi))*(A_pi+A_K/2.));
     }
     else {
-    	Complex C3 = delta*((q2*exp(-I*phi2))/((pow(rit->first.Mass2,2.)-q2-I*rit->first.Mass2*Gamma))); 
-      Complex expon3 = -((q2*running_width*pow(rit->first.Mass2,2.))/(m_m2_pi*pow(rit->first.Mass2*sigma_pi,3.)*pow(rit->first.Mass2,2.))*real(A_pi)); 
+      arg  = (q2*rit->first.TwoBodyResonanceMassWidth(q2,m_m_pi)/
+	      (M_PI * sqr(rit->first.Mass2()) * pow(Sigma(rit->first.Mass2(),q2),3))*real(A_pi));
     }
-    Complex sum = C1*expon1-C2*expon2-C3*expon3; // eq 2.13
+    sum += BW * exp(-arg);
   }
-  return fv/m_Vresonance_norm;
-};
+  return sum;
 }
 
 

@@ -41,7 +41,6 @@ namespace HADRONS {
     int                 m_body;
     
     double TwoBodyResonanceMassWidth( double s, double m1, double m2 ); 
-    double TwoBodyResonanceMassWidth( double s, double m ); 
     double TwoBodyResonanceMassWidth_12( double s, double m ); 
     double ThreeBodyResonanceMassWidth( double s );
     
@@ -60,8 +59,10 @@ namespace HADRONS {
     void    InitialiseThreeBodyResonance( ResonanceFlavour &res1, ResonanceFlavour &res2, double beta=0. );
     void    InitialiseThreeBodyResonance( ResonanceFlavour &res1 );
     
+    double  TwoBodyResonanceMassWidth( double s, double m ); 
     Complex BreitWigner( double s ); 
     Complex BreitWignerAlt( double s ); 
+    Complex BreitWignerPhases( double s ); 
     double  OffShellMassWidth( double s ); 
     int     Running() const { return m_running; }
     kf_code KfCode()  const { return m_kfc; }
