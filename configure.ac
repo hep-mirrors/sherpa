@@ -107,6 +107,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
           METOOLS/Loops/Makefile \
           METOOLS/Makefile \
 	  BEAM/Main/Makefile \
+	  BEAM/Spectra/Makefile \
 	  BEAM/Makefile \
 	  PDF/Main/Makefile \
 	  PDF/Electron/Makefile \
@@ -123,6 +124,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/SM/Makefile \
 	  MODEL/HEFT/Makefile \
+	  MODEL/SMDM/Makefile \
 	  MODEL/SMEHC/Makefile \
 	  MODEL/TauPi/Makefile \
 	  MODEL/UFO/Makefile \

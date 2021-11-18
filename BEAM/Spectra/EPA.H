@@ -28,8 +28,7 @@ namespace BEAM {
 
   public:
 
-    EPA(const ATOOLS::Flavour beam,const double mass,
-	const double charge,const double energy,const double pol,
+    EPA(const ATOOLS::Flavour beam,const double energy,const double pol,
 	const int dir);
 
     ~EPA();

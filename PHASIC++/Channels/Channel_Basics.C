@@ -27,24 +27,24 @@ void Channel_Basics::Rotat(int lflag,Vec4D& p1 ,Vec4D p2,double** rot)
 	cp[i] = pp[i][2]/st[i];
 	sp[i] = pp[i][1]/st[i];
       }
-      r[i][0][0]=  cp[i]; 
-      r[i][0][1]=  sp[i]*ct[i]; 
-      r[i][0][2]=  st[i]*sp[i]; 
-      r[i][1][0]=  -sp[i]; 
-      r[i][1][1]=  ct[i]*cp[i];   
+      r[i][0][0]=  cp[i];
+      r[i][0][1]=  sp[i]*ct[i];
+      r[i][0][2]=  st[i]*sp[i];
+      r[i][1][0]=  -sp[i];
+      r[i][1][1]=  ct[i]*cp[i];
       r[i][1][2]=  cp[i]*st[i];
       r[i][2][0]=  0.;
-      r[i][2][1]=  -st[i]; 
+      r[i][2][1]=  -st[i];
       r[i][2][2]=  ct[i];
     }
     for (i=0;i<3;i++) {
       for (l=0;l<3;l++) {
 	rot[i][l] = 0.;
-	for (k=0;k<3;k++) 
+	for (k=0;k<3;k++)
 	  rot[i][l] += r[0][i][k]*r[1][l][k];
       }
     }
-    
+
     Vec4D p1new;
     p1new[0] = p2[0];
     for (short int i=0;i<3;i++) {
@@ -76,12 +76,12 @@ void Channel_Basics::Boost(int lflag,Vec4D q,Vec4D& ph,Vec4D& p)
   if (lflag==0) {
     p[0] = (q[0]*ph[0]+Vec3D(q)*Vec3D(ph))/rsq;
     double c1 = (ph[0]+p[0])/(rsq+q[0]);
-    p = Vec4D(p[0],Vec3D(ph)+c1*Vec3D(q));  
+    p = Vec4D(p[0],Vec3D(ph)+c1*Vec3D(q));
   }
   else {
     ph[0] = q*p/rsq;
     double c1 = (p[0]+ph[0])/(rsq+q[0]);
-    ph = Vec4D(ph[0],Vec3D(p)-c1*Vec3D(q));  
+    ph = Vec4D(ph[0],Vec3D(p)-c1*Vec3D(q));
   }
 }
 
@@ -152,9 +152,24 @@ double Channel_Basics::PeakedWeight(double a,double cn,
   return wt;
 }
 
+double Channel_Basics::ExponentialDist(double ca,double cxm,double cxp,double ran)
+{
+  double res = 0.;
+  if (!IsZero(ca))  res = -log(ran*exp(-ca*cxp) + (1-ran)*exp(-ca*cxm))/ca;
+  else              msg_Error()<<"Flat distribution specified, expected exponential"<<endl;
+  return res;
+}
+double Channel_Basics::ExponentialWeight(double ca,double cxm,double cxp)
+{
+  double wt = 0;
+  if (!IsZero(ca))  wt = ca/(exp(-ca*cxm) - exp(-ca*cxp)); // 1/integral 
+  else              msg_Error()<<"Flat distribution specified, expected exponential"<<endl;
+  return wt;
+}
+
 double Channel_Basics::BoundaryPeakedDist(double cxm,double cxp,double ran)
   //  1/(x(1-x))
-{ 
+{
   double fxp=1./cxp-1.;
   double fxm=1./cxm-1.;
   double pw = pow(fxm/fxp,ran);
@@ -193,7 +208,7 @@ double Channel_Basics::Hj1(double cn,double amcxm,double amcxp)
 
 
 double Channel_Basics::PseudoAngleCut(double m1_sq,double E1,
-				      double m2_sq,double E2) 
+				      double m2_sq,double E2)
 {
   double mu1_sq = m1_sq/sqr(E1);
   double mu2_sq = m2_sq/sqr(E2);
@@ -244,5 +259,3 @@ FlatWeight(double alpha,double min,double max,double s,double &R)
   R=(pow(log(s),p)-Imin)/(Imax-Imin);
   return (Imax-Imin)/p;
 }
-
-

@@ -601,14 +601,17 @@ void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();
   // init processes
-  msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
+  msg_Info()<<METHOD<<"(): Looking for processes "
+	    <<"["<<m_gens.size()<<" generators, "
+	    <<s["PROCESSES"].GetItems().size()<<" processes]"<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
     if (!msg_LevelIsTracking()) msg_Info()<<"\n";
       THROW(missing_input, std::string{"Missing PROCESSES definition.\n\n"} +
                                Strings::ProcessesSyntaxExamples);
   }
-
+  
+  msg_Info()<<"\n";
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
     const auto keys = proc.GetKeys();

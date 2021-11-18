@@ -516,7 +516,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheRemnants();
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
-  okay = okay && p_beamspectra->Init();
   p_model->InitializeInteractionModel();
   okay = okay && InitializeTheAnalyses();
   if (!CheckBeamISRConsistency()) return 0.;
@@ -854,6 +853,7 @@ bool Initialization_Handler::InitializeThePDFs()
 		 <<"   Abort program."<<endl;
       Abort();
     }
+    m_isrhandlers[id]->Output();
   }
   msg_Info() << "Initialized the ISR." << endl;
   return 1;

@@ -435,8 +435,8 @@ void Run_Parameter::Gen::WriteCitationInfo()
 	   <<", subject 'generate'.\n"<<std::string(72,'-')<<std::endl;
 }
 
-void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
-  m_ecms    = _ecms;
+void  Run_Parameter::Gen::SetEcms(double _ecms) {
+  m_ecms = _ecms;
 }
 void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) { 
   m_pbeam[i]=pbeam;

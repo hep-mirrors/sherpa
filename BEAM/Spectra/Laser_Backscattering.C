@@ -1,4 +1,4 @@
-#include "BEAM/Main/Laser_Backscattering.H"
+#include "BEAM/Spectra/Laser_Backscattering.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
@@ -14,7 +14,7 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
 					   const double _energyL,const double _polarisationL,
 					   const int _mode,const int _angles,
 					   const int _nonlin,const int _dir) :
-  Beam_Base(string("Laser_Backscattering"),_beam,_energy,_polarisation,_dir),
+  Beam_Base(beamspectrum::laser_backscattering,_beam,_energy,_polarisation,_dir),
   m_energyL(_energyL), m_polarisationL(_polarisationL), m_mode(_mode), m_angles(_angles)
 {
   m_bunch        = Flavour(kf_photon);

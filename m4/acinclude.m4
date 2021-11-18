@@ -157,7 +157,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   BEAMDIR="\${top_srcdir}/BEAM"
   BEAMBUILDDIR="\${top_builddir}/BEAM"
-  BEAMLIBS="\${BEAMBUILDDIR}/Main/libBeam.la"
+  BEAMLIBS="\${BEAMBUILDDIR}/Main/libBeamMain.la \
+  	\${BEAMBUILDDIR}/Spectra/libBeamSpectra.la"
   AC_SUBST(BEAMDIR)
   AC_SUBST(BEAMBUILDDIR)
   AC_SUBST(BEAMLIBS)

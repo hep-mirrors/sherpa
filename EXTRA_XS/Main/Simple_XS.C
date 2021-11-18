@@ -86,8 +86,8 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     if (!newxs->ConstructProcesses()) {
-      msg_Debugging()<<METHOD<<"(): Construct failed for '"
-		     <<newxs->Name()<<"'\n";
+      msg_Debugging()<<METHOD<<": group construction failed for "
+		     <<newxs->Name()<<"\n";
       delete newxs;
       return NULL;
     }

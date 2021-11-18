@@ -1,11 +1,15 @@
 #ifndef PHASIC_Main_Phase_Space_Handler_H
 #define PHASIC_Main_Phase_Space_Handler_H
 
+#include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Main/Phase_Space_Point.H"
+#include "PHASIC++/Main/Phase_Space_Enhance.H"
+#include "PHASIC++/Main/Phase_Space_Variation_Weights.H"
+
 #include "PHASIC++/Selectors/Cut_Data.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Org/Info_Key.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Phys/Weights.H"
 #include <list>
 
@@ -25,88 +29,51 @@ namespace PDF {
 }
 
 namespace PHASIC {
-  class Process_Integrator;
   class Multi_Channel;
+  class Beam_Channels;
+  class ISR_Channels;
   class Subprocess_Info;
   class Process_Info;
-  class Enhance_Observable_Base;
-
-  struct psm {
-    
-    enum code {
-      normal_call = 0,
-      no_lim_isr  = 32,
-      no_gen_isr  = 64
-    };
-
-  };// end of struct psm
-
-  inline psm::code 
-  operator|(const psm::code &c1,const psm::code &c2)
-  { return (psm::code)((int)c1|(int)c2); }
-  inline psm::code 
-  operator&(const psm::code &c1,const psm::code &c2)
-  { return (psm::code)((int)c1&(int)c2); }
-
 
   class Phase_Space_Integrator;
   class Process_Base;
 
   class Phase_Space_Handler {
   private: 
+    BEAM::Beam_Spectra_Handler * p_beamhandler;
+    PDF::ISR_Handler           * p_isrhandler;
+    std::string                  m_name;
+    int                          m_nin, m_nout, m_nvec;
+    ATOOLS::Flavour_Vector       p_flavours;
+    ATOOLS::Vec4D_Vector         p_lab;
 
-    std::string m_name;
+    Process_Integrator          * p_process, *p_active;
+    Phase_Space_Integrator      * p_integrator;
+    Phase_Space_Point             m_pspoint;
+    Phase_Space_Enhance           m_psenhance;
 
-    Process_Integrator     *p_process, *p_active;
-    Phase_Space_Integrator *p_integrator;  
-    Cut_Data               *p_cuts;  
+    ATOOLS::Weights_Map           m_wgtmap;
+    static ATOOLS::Integration_Info * p_info;
 
-    Enhance_Observable_Base* p_enhanceobs;
-    ATOOLS::Histogram *p_enhancehisto, *p_enhancehisto_current;
+    double m_enhanceweight, m_ISsymmetryfactor, m_psweight;
 
-    Enhance_Observable_Base* p_enhancefunc;
-    double m_enhancefunc_min, m_enhancefunc_max;
-
-    static ATOOLS::Integration_Info *p_info;
-
-    ATOOLS::Info_Key m_isrspkey, m_isrykey, m_isrxkey;
-    ATOOLS::Info_Key m_beamspkey, m_beamykey;
-
-    BEAM::Beam_Spectra_Handler *p_beamhandler;
-    PDF::ISR_Handler           *p_isrhandler;
-
-    Multi_Channel *p_fsrchannels, *p_isrchannels, *p_beamchannels;
-
-    ATOOLS::Flavour_Vector p_flavours;
-    ATOOLS::Vec4D_Vector   p_lab;
-
-    ATOOLS::Poincare *p_massboost;
-
-    int  m_nin, m_nout, m_nvec, m_dmode, m_enhancexs;
-    bool m_initialized, m_sintegrator, m_fin_opt;
-
-    long int m_killedpoints;
-
-    double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight, m_thkill;
-    double m_result, m_error, m_abserror, m_enhanceweight, m_osmass;
-    ATOOLS::Weights_Map m_wgtmap;
-
+    psmode::code m_cmode;
+    double    m_thkill, m_error, m_abserror;
+    bool      m_initialized, m_sintegrator, m_fin_opt, m_printpspoint;
+    long int  m_killedpoints;
     std::vector<std::vector<double> > m_stats;
 
-    psm::code m_cmode;
-
-    bool m_printpspoint;
 
     void RegisterDefaults() const;
-    void SetEnhanceObservable(const std::string &enhanceobs);
-    void SetEnhanceFunction(const std::string &enhancefunc);
+    void InitParameters(const double & error);
 
     bool MakeIncoming(ATOOLS::Vec4D *const p);
     void CorrectMomenta(ATOOLS::Vec4D_Vector &p);
-    bool Check4Momentum(const ATOOLS::Vec4D_Vector &p);
+    void ManageWeights(const double & factor);
+    bool CheckStability();
 
+    void PrintIntermediate();
     void CheckSinglePoint();
-
     static void TestPoint(ATOOLS::Vec4D *const p,
 			  ATOOLS::Vec4D_Vector cp,ATOOLS::Flavour_Vector fl,
 			  const Subprocess_Info *info,size_t &n,
@@ -121,32 +88,36 @@ namespace PHASIC {
     //destructor
     ~Phase_Space_Handler();
 
-    // member functions
-    void WriteOut(const std::string &path);
-    bool ReadIn(const std::string &path,const size_t exclude=0);
-    bool InitIncoming();
     bool CreateIntegrators();
-    bool UpdateIntegrators();
-    void InitCuts();
+    inline void InitCuts() { m_pspoint.InitCuts(p_process); }
+    inline bool InitIncoming() {
+      m_initialized = true;
+      return m_pspoint.MakeIncoming();
+    }
 
     double Integrate();
-    ATOOLS::Weights_Map Differential(ATOOLS::Variations_Mode);
-    ATOOLS::Weights_Map Differential(Process_Integrator* const process,
-                                     ATOOLS::Variations_Mode,
-                                     const psm::code mode = psm::normal_call);
-
     ATOOLS::Weight_Info *OneEvent(
         Process_Base *const proc,
         ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
         const int mode=0);
+    inline ATOOLS::Weights_Map Differential(ATOOLS::Variations_Mode varmode) {
+      return Differential(p_process, varmode);
+    }
+    ATOOLS::Weights_Map Differential(Process_Integrator *const process,
+                                     ATOOLS::Variations_Mode,
+                                     const psmode::code mode=psmode::normal_call);
 
-    void AddPoint(const double xs);
 
-    void CalculateME(ATOOLS::Variations_Mode);
-    void CalculatePS();
-    void CalculateEnhance();
+    inline ATOOLS::Weights_Map CalculateME(ATOOLS::Variations_Mode varmode)  {
+      return p_active->Process()->Differential(p_lab, varmode);
+    }
+    inline double CalculatePS()  { return m_pspoint.CalculateWeight(); }
+    inline double Weight(ATOOLS::Vec4D_Vector &moms) {
+      m_pspoint.SetMomenta(&moms.front());
+      return m_pspoint.CalculateWeight();
+    }
 
-    double Weight(ATOOLS::Vec4D_Vector &plab);
+    void   AddPoint(const double xs);
 
     static void TestPoint(ATOOLS::Vec4D *const p,const Process_Info *info,
                           const ATOOLS::Mass_Selector* ms,const int mode=0);
@@ -155,58 +126,64 @@ namespace PHASIC {
 			  const ATOOLS::Flavour_Vector &flavs,
 			  const ATOOLS::Mass_Selector* ms);
 
-    void MPISync();
-    void Optimize();
-    void EndOptimize();
 
-    static ATOOLS::Integration_Info* GetInfo();
+    inline static ATOOLS::Integration_Info* GetInfo() {
+      if (p_info==NULL) p_info = new ATOOLS::Integration_Info();
+      return p_info;
+    }
+    inline static void DeleteInfo() {
+      if (p_info) { delete p_info; p_info=NULL; }
+    }
 
-    static void DeleteInfo();
+    void   WriteOut(const std::string &path);
+    bool   ReadIn(const std::string &path,const size_t exclude=0);
 
-    void AddStats(const std::vector<double> &stats);
+    inline void MPISync() {
+      m_pspoint.MPISync();
+      p_process->MPISync();
+    }
+    inline void Optimize() {
+      m_pspoint.Optimize(m_error);
+      p_process->ResetMax(2);
+      m_psenhance.Optimize();
+    }
+    inline void EndOptimize() {
+      m_pspoint.EndOptimize(m_error);
+    }
+    inline void SetEnhanceWeight(const double& enhance)
+    {
+      m_enhanceweight = enhance;
+      m_psenhance.SetFactor(enhance);
+    }
+    inline void SetOSMass(const double &osmass) { m_pspoint.SetOSMass(osmass); }
+    inline void SetError(const double error)    { m_error=error; }
+    inline void SetAbsError(const double error) { m_abserror=error; }
 
-    // inline functions
-    inline const ATOOLS::Flavour_Vector &Flavs() const { return p_flavours; }
+    inline void SetBeamIntegrator(Multi_Channel * channels) { m_pspoint.SetBeamIntegrator(channels); }
+    inline void SetISRIntegrator(Multi_Channel * channels)  { m_pspoint.SetISRIntegrator(channels); }
+    inline void SetFSRIntegrator(Multi_Channel * channels)  { m_pspoint.SetFSRIntegrator(channels); }
 
-    inline Cut_Data* Cuts() const { return p_cuts; }
-
-    inline double   Error() const     { return m_error;     }
-
-    inline void SetFSRIntegrator(Multi_Channel *const fsr)
-    { p_fsrchannels=fsr;  }
- 
-    inline Multi_Channel* BeamIntegrator() const  
-    { return p_beamchannels; }
-    inline Multi_Channel* ISRIntegrator() const   
-    { return p_isrchannels;  }
-    inline Multi_Channel* FSRIntegrator() const   
-    { return p_fsrchannels;  }
-
-    inline Process_Integrator* Process() const { return p_process; }
-    inline Process_Integrator* Active() const  { return p_active;  }
-
-    inline double PSWeight() const { return m_psweight; }
-    inline double EnhanceWeight() const  { return m_enhanceweight;  }
-    inline void SetEnhanceWeight(const double& enhanceweight)
-    { m_enhanceweight = enhanceweight; }
-
-    inline double AbsError() const { return m_abserror; }
-
-    inline void SetError(const double error) 
-    { m_error=error; }
-    inline void SetAbsError(const double error) 
-    { m_abserror=error; }
-
-    inline Phase_Space_Integrator* Integrator() const 
-    { return p_integrator; }
-
-    inline const std::vector<std::vector<double> > Stats() const
-    { return m_stats; }
-
-    inline void SetOSMass(const double &osmass) { m_osmass=osmass; }
-
-    const ATOOLS::Vec4D_Vector &Momenta() { return p_lab; }
-
+    inline BEAM::Beam_Spectra_Handler   * GetBeamSpectra() const { return p_beamhandler; }
+    inline PDF::ISR_Handler              * GetISRHandler() const { return p_isrhandler; }
+    inline Phase_Space_Integrator           * Integrator() const { return p_integrator; }
+    inline const std::vector<std::vector<double> > Stats() const { return m_stats; }
+    inline ATOOLS::Vec4D_Vector &                Momenta()       { return p_lab; }
+    inline ATOOLS::Flavour_Vector &                Flavs()       { return p_flavours; }
+    inline Cut_Data                               * Cuts()       { return m_pspoint.Cuts(); }
+    inline Process_Integrator *                  Process() const { return p_process; }
+    inline Process_Integrator *            Active()  const { return p_active;  }
+    inline const double &                 PSWeight() const { return m_psweight; }
+    inline const double &            EnhanceWeight() const { return m_enhanceweight;  }
+    inline const double &                    Error() const { return m_error; }
+    inline const double &                 AbsError() const { return m_abserror; }
+    inline Multi_Channel *          BeamIntegrator() const { return m_pspoint.BeamIntegrator(); }
+    inline Multi_Channel *           ISRIntegrator() const { return m_pspoint.ISRIntegrator(); }
+    inline Multi_Channel *           FSRIntegrator() const { return m_pspoint.FSRIntegrator(); }
+    inline void AddStats(const std::vector<double> &stats) {
+      std::vector<double> nstats(1,m_stats.size()+1);
+      nstats.insert(nstats.end(),stats.begin(),stats.end());
+      m_stats.push_back(nstats); 
+    }
   };// end of class Phase_Space_Handler
 
   /*!

@@ -12,34 +12,30 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-RamboKK::RamboKK(int _nin,int _nout,const Flavour * fl)// : nin(_nin), nout(_nout)
+RamboKK::RamboKK(int _nin,int _nout,const Flavour * fl) :
+  Single_Channel(_nin,_nout,fl),
+  m_massflag(false)
 {
-  nin=_nin;nout=_nout;
-  xm2 = new double[nin+nout];
-  p2  = new double[nin+nout];  
-  E   = new double[nin+nout];
-  ms  = new double[nin+nout];
-  rans= 0;
-  rannum=0;
-  massflag = 0;
-  for (short int i=0;i<nin+nout;i++) {
-    ms[i] = ATOOLS::sqr(fl[i].Mass());
-    if (!ATOOLS::IsZero(ms[i])) massflag = 1;
+  xm2 = new double[m_nin+m_nout];
+  p2  = new double[m_nin+m_nout];  
+  E   = new double[m_nin+m_nout];
+  for (short int i=0;i<m_nin+m_nout;i++) {
+    if (!ATOOLS::IsZero(p_ms[i])) m_massflag = true;
   } 
 
   double   pi2log = log(M_PI/2.);
-  double * Z      = new double[nout+1];
+  double * Z      = new double[m_nout+1];
   Z[2] = pi2log;
-  for (short int k=3;k<=nout;k++) Z[k] = Z[k-1]+pi2log-2.*log(double(k-2));
-  for (short int k=3;k<=nout;k++) Z[k] = Z[k]-log(double(k-1));
-  Z_N  = Z[nout];
+  for (short int k=3;k<=m_nout;k++) Z[k] = Z[k-1]+pi2log-2.*log(double(k-2));
+  for (short int k=3;k<=m_nout;k++) Z[k] = Z[k]-log(double(k-1));
+  Z_N  = Z[m_nout];
   delete[] Z;
 
   kkp=-1;mpss=1.;
   int mode = MODEL::s_model->ScalarNumber(std::string("KK_mode"));
-  for (int i=nin;i<nin+nout;i++) {
+  for (int i=m_nin;i<m_nin+m_nout;i++) {
     if(fl[i].IsKK() && (mode==1 || mode==2 || mode==5)){
-      if(ATOOLS::IsZero(ms[i])){
+      if(ATOOLS::IsZero(p_ms[i])){
 	msg_Error()<<"Error in RamboKK: "<<endl
 		   <<"   Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
 	Abort();
@@ -57,8 +53,8 @@ RamboKK::RamboKK(int _nin,int _nout,const Flavour * fl)// : nin(_nin), nout(_nou
 
       double mm=rpa->gen.Ecms();
       prevET = mm;
-      for(int j=nin;j<nin+nout;j++)
-	if(j!=i) mm -= sqrt(ms[j]);
+      for(int j=m_nin;j<m_nin+m_nout;j++)
+	if(j!=i) mm -= sqrt(p_ms[j]);
       maxm2=sqr(mm);
       maxn=sqrt(maxm2*r2);
       mpss=2.*pow(sqrt(M_PI)*maxn,double(ed))/ed/gam;
@@ -89,7 +85,7 @@ void RamboKK::Set_KKmass()
     ms2*=4*sqr(M_PI)/r2;
   }
   while (ms2>maxm2);
-  ms[kkp]=ms2;
+  p_ms[kkp]=ms2;
   delete[] nv;
 }
 
@@ -97,26 +93,26 @@ void RamboKK::Set_KKmass()
 void RamboKK::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
 Vec4D sump(0.,0.,0.,0.);
-  for (short int i=0;i<nin;i++) sump += p[i];
+  for (short int i=0;i<m_nin;i++) sump += p[i];
   double ET = sqrt(sump.Abs2());
-  weight    = 1.;
-  if (massflag) MassiveWeight(p,ET);
-  weight   *= exp((2.*nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,nout*3.-4.);
-  weight   *= mpss;
+  m_weight    = 1.;
+  if (m_massflag) MassiveWeight(p,ET);
+  m_weight   *= exp((2.*m_nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,m_nout*3.-4.);
+  m_weight   *= mpss;
 }
 
 void RamboKK::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {  
 
   Vec4D sump(0.,0.,0.,0.);
-  for (short int i=0;i<nin;i++) sump += p[i];
+  for (short int i=0;i<m_nin;i++) sump += p[i];
 
   double ET = sqrt(sump.Abs2());
 
   if (!IsEqual(ET,prevET) && kkp>-1) {
     double mm = prevET = ET;
-    for(int j=nin;j<nin+nout;j++)
-      if(j!=kkp) mm -= sqrt(ms[j]);
+    for(int j=m_nin;j<m_nin+m_nout;j++)
+      if(j!=kkp) mm -= sqrt(p_ms[j]);
     maxm2=sqr(mm);
     maxn=sqrt(maxm2*r2);
     mpss=2.*pow(sqrt(M_PI)*maxn,double(ed))/ed/gam;
@@ -129,7 +125,7 @@ void RamboKK::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   Vec4D R;
   Vec3D B;
   
-  for(i=nin;i<nin+nout;i++) {
+  for(i=m_nin;i<m_nin+m_nout;i++) {
     C     = 2*ran->Get()-1;
     S     = sqrt(1-C*C);
     F     = 2*M_PI*ran->Get();
@@ -144,14 +140,14 @@ void RamboKK::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   A    = 1.0/(1.0+G);
   X    = ET/RMAS;
   
-  for(i=nin;i<nin+nout;i++) {
+  for(i=m_nin;i<m_nin+m_nout;i++) {
     e     = p[i][0];
     BQ    = B*Vec3D(p[i]);
     p[i]  = X*Vec4D((G*e+BQ),Vec3D(p[i])+B*(e+A*BQ));
   }
 
-  weight = 1.;
-  // if (massflag) 
+  m_weight = 1.;
+  // if (m_massflag) 
   MassivePoint(p,ET);// The boost is numerically not very precise, MassivePoint is always called for momentum conservation
 }
 
@@ -165,9 +161,9 @@ void RamboKK::MassiveWeight(Vec4D* p,double ET)
   accu  = ET * pow(10.,-14.);
 
   double xmt = 0.; 
-  for (short int i=nin;i<nin+nout;i++) {
+  for (short int i=m_nin;i<m_nin+m_nout;i++) {
     xm2[i]   = 0.;
-    xmt     += sqrt(ms[i]);
+    xmt     += sqrt(p_ms[i]);
     p2[i]    = sqr(Vec3D(p[i]).Abs());
   }
   double x   = 1./sqrt(1.-sqr(xmt/ET));
@@ -179,7 +175,7 @@ void RamboKK::MassiveWeight(Vec4D* p,double ET)
   short int iter = 0; 
   for (;;) {
     f0 = -ET;g0 = 0.;x2 = x*x;
-    for (short int i=nin;i<nin+nout;i++) {
+    for (short int i=m_nin;i<m_nin+m_nout;i++) {
       E[i] = sqrt(xm2[i]+x2*p2[i]);
       f0  += E[i];
       g0  += p2[i]/E[i];
@@ -195,13 +191,13 @@ void RamboKK::MassiveWeight(Vec4D* p,double ET)
   double v;
   
   // Calculate Momenta + Weight 
-  for (short int i=nin;i<nin+nout;i++) {
+  for (short int i=m_nin;i<m_nin+m_nout;i++) {
     v    = Vec3D(p[i]).Abs();
     wt2 *= v/p[i][0];
     wt3 += v*v/p[i][0];
   }  
   x      = 1./x;
-  weight = exp((2.*nout-3.)*log(x)+log(wt2/wt3*ET));
+  m_weight = exp((2.*m_nout-3.)*log(x)+log(wt2/wt3*ET));
 }
 
 void RamboKK::MassivePoint(Vec4D* p,double ET)
@@ -213,9 +209,9 @@ void RamboKK::MassivePoint(Vec4D* p,double ET)
   double xmt = 0.;
   double x;
  
-  for (short int i=nin;i<nin+nout;i++) {
-    xmt   += sqrt(ms[i]);
-    xm2[i] = ms[i];
+  for (short int i=m_nin;i<m_nin+m_nout;i++) {
+    xmt   += sqrt(p_ms[i]);
+    xm2[i] = p_ms[i];
     p2[i]  = sqr(p[i][0]);
   }
 
@@ -229,7 +225,7 @@ void RamboKK::MassivePoint(Vec4D* p,double ET)
   short int iter = 0; 
   for (;;) {
     f0 = -ET;g0 = 0.;x2 = x*x;
-    for (short int i=nin;i<nin+nout;i++) {
+    for (short int i=m_nin;i<m_nin+m_nout;i++) {
       E[i] = sqrt(xm2[i]+x2*p2[i]);
       f0  += E[i];
       g0  += p2[i]/E[i];
@@ -241,7 +237,7 @@ void RamboKK::MassivePoint(Vec4D* p,double ET)
   }
   
   // Construct Momenta
-  for (short int i=nin;i<nin+nout;i++) p[i] = Vec4D(E[i],x*Vec3D(p[i]));
+  for (short int i=m_nin;i<m_nin+m_nout;i++) p[i] = Vec4D(E[i],x*Vec3D(p[i]));
 }
 
 namespace PHASIC {

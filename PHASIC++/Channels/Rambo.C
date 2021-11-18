@@ -10,23 +10,21 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 
-Rambo::Rambo(int _nin,int _nout,const Flavour * fl, const Mass_Selector* _ms) :
-  p_ms(_ms)
+Rambo::Rambo(size_t _nin,size_t _nout,const Flavour * fl, const Mass_Selector* _ms) :
+  p_masssel(_ms)
 {
   std::vector<double> masses(_nin+_nout, 0.0);
-  for (short int i=0;i<_nin+_nout;i++) 
-    {
-      masses[i]=0.0;
-      for (size_t j(0);j<fl[i].Size();++j) 
-	masses[i]+=p_ms ? p_ms->Mass(fl[i][j]) : fl[i][j].Mass();
-      masses[i]/=fl[i].Size();
-    }
+  for (short int i=0;i<_nin+_nout;i++) {
+    masses[i]=0.0;
+    for (size_t j(0);j<fl[i].Size();++j) 
+      masses[i]+=p_masssel ? p_masssel->Mass(fl[i][j]) : fl[i][j].Mass();
+    masses[i]/=fl[i].Size();
+  }
   Init(_nin,_nout, masses);
 }
 
-Rambo::Rambo(size_t _nin,
-	     std::vector<double> masses) 
-  : p_ms(NULL)
+Rambo::Rambo(size_t _nin,std::vector<double> masses) :
+  p_masssel(NULL)
 {
   Init(_nin, masses.size()-_nin, masses);
 }
@@ -35,27 +33,28 @@ void Rambo::Init(const size_t& _nin,
 		 const size_t& _nout,
 		 const std::vector<double>& masses)
 {
-  nin=_nin; nout=_nout;
-  xm2 = new double[nin+nout+1];
-  p2  = new double[nin+nout+1];  
-  E   = new double[nin+nout+1];
-  ms  = new double[nin+nout+1];
-  rans= 0;
-  rannum=0;
+  m_nin    = _nin;
+  m_nout   = _nout;
+  xm2      = new double[m_nin+m_nout+1];
+  p2       = new double[m_nin+m_nout+1];  
+  E        = new double[m_nin+m_nout+1];
+  p_ms     = new double[m_nin+m_nout+1];
+  p_rans   = 0;
+  m_rannum = 0;
   massflag = 0;
 
-  for (short int i=0;i<nin+nout;i++)
+  for (short int i=0;i<m_nin+m_nout;i++)
     {
-      ms[i]=sqr(masses[i]);
-      if (!ATOOLS::IsZero(ms[i])) massflag = 1;
+      p_ms[i]=sqr(masses[i]);
+      if (!ATOOLS::IsZero(p_ms[i])) massflag = 1;
     } 
 
   double   pi2log = log(M_PI/2.);
-  double * Z      = new double[nout+1];
+  double * Z      = new double[m_nout+1];
   Z[2] = pi2log;
-  for (short int k=3;k<=nout;k++) Z[k] = Z[k-1]+pi2log-2.*log(double(k-2));
-  for (short int k=3;k<=nout;k++) Z[k] = Z[k]-log(double(k-1));
-  Z_N  = Z[nout];
+  for (short int k=3;k<=m_nout;k++) Z[k] = Z[k-1]+pi2log-2.*log(double(k-2));
+  for (short int k=3;k<=m_nout;k++) Z[k] = Z[k]-log(double(k-1));
+  Z_N  = Z[m_nout];
   delete[] Z;
 }
 
@@ -71,19 +70,19 @@ Rambo::~Rambo()
 void Rambo::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
   Vec4D sump(0.,0.,0.,0.);
-  for (short int i=0;i<nin;i++) sump += p[i];
+  for (short int i=0;i<m_nin;i++) sump += p[i];
   double ET = sqrt(sump.Abs2());
-  weight    = 1.;
+  m_weight    = 1.;
   if (massflag) MassiveWeight(p,ET);
-  weight   *= exp((2.*nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,nout*3.-4.);
+  m_weight   *= exp((2.*m_nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,m_nout*3.-4.);
 }
 
 ATOOLS::Vec4D_Vector Rambo::GeneratePoint(const double& E)
 {
-  ATOOLS::Vec4D_Vector p; p.resize(nin+nout);
-  if (E<ms[0]+ms[1]) THROW(fatal_error, "sqrt(s) smaller than particle masses");
-  double x=1.0/2.0+(ms[0]*ms[0]-ms[1]*ms[1])/(2.0*E*E);
-  p[0]=ATOOLS::Vec4D(x*E,0.0,0.0,sqrt(ATOOLS::sqr(x*E)-ms[0]*ms[0]));
+  ATOOLS::Vec4D_Vector p; p.resize(m_nin+m_nout);
+  if (E<p_ms[0]+p_ms[1]) THROW(fatal_error, "sqrt(s) smaller than particle masses");
+  double x=1.0/2.0+(p_ms[0]*p_ms[0]-p_ms[1]*p_ms[1])/(2.0*E*E);
+  p[0]=ATOOLS::Vec4D(x*E,0.0,0.0,sqrt(ATOOLS::sqr(x*E)-p_ms[0]*p_ms[0]));
   p[1]=ATOOLS::Vec4D((1.0-x)*E,ATOOLS::Vec3D(-p[0]));
   GeneratePoint(&p[0]);
   return p;
@@ -92,7 +91,7 @@ ATOOLS::Vec4D_Vector Rambo::GeneratePoint(const double& E)
 void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {
   Vec4D sump(0.,0.,0.,0.);
-  for (short int i=0;i<nin;i++) sump += p[i];
+  for (short int i=0;i<m_nin;i++) sump += p[i];
 
   double ET = sqrt(sump.Abs2());
   
@@ -101,7 +100,7 @@ void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   Vec4D R;
   Vec3D B;
 
-  for(i=nin;i<nin+nout;i++) {
+  for(i=m_nin;i<m_nin+m_nout;i++) {
     C     = 2*ran->Get()-1;
     S     = sqrt(1-C*C);
     F     = 2*M_PI*ran->Get();
@@ -116,13 +115,13 @@ void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   A    = 1.0/(1.0+G);
   X    = ET/RMAS;
   
-  for(i=nin;i<nin+nout;i++) {
+  for(i=m_nin;i<m_nin+m_nout;i++) {
     e     = p[i][0];
     BQ    = B*Vec3D(p[i]);
     p[i]  = X*Vec4D((G*e+BQ),Vec3D(p[i])+B*(e+A*BQ));
   }
 
-  weight = 1.;
+  m_weight = 1.;
   //if (massflag)
   MassivePoint(p,ET); // The boost is numerically not very precise, MassivePoint is always called for momentum conservation
 }
@@ -137,9 +136,9 @@ void Rambo::MassiveWeight(Vec4D* p,double ET)
   accu  = ET * pow(10.,-14.);
 
   double xmt = 0.; 
-  for (short int i=nin;i<nin+nout;i++) {
+  for (short int i=m_nin;i<m_nin+m_nout;i++) {
     xm2[i]   = 0.;
-    xmt     += sqrt(ms[i]);
+    xmt     += sqrt(p_ms[i]);
     p2[i]    = sqr(Vec3D(p[i]).Abs());
   }
   double x   = 1./sqrt(1.-sqr(xmt/ET));
@@ -151,7 +150,7 @@ void Rambo::MassiveWeight(Vec4D* p,double ET)
   short int iter = 0; 
   for (;;) {
     f0 = -ET;g0 = 0.;x2 = x*x;
-    for (short int i=nin;i<nin+nout;i++) {
+    for (short int i=m_nin;i<m_nin+m_nout;i++) {
       E[i] = sqrt(xm2[i]+x2*p2[i]);
       f0  += E[i];
       g0  += p2[i]/E[i];
@@ -167,13 +166,13 @@ void Rambo::MassiveWeight(Vec4D* p,double ET)
   double v;
   
   // Calculate Momenta + Weight 
-  for (short int i=nin;i<nin+nout;i++) {
+  for (short int i=m_nin;i<m_nin+m_nout;i++) {
     v    = Vec3D(p[i]).Abs();
     wt2 *= v/p[i][0];
     wt3 += v*v/p[i][0];
   }  
   x      = 1./x;
-  weight = exp((2.*nout-3.)*log(x)+log(wt2/wt3*ET));
+  m_weight = exp((2.*m_nout-3.)*log(x)+log(wt2/wt3*ET));
 }
 
 void Rambo::MassivePoint(Vec4D* p,double ET)
@@ -185,9 +184,9 @@ void Rambo::MassivePoint(Vec4D* p,double ET)
   double xmt = 0.;
   double x;
  
-  for (short int i=nin;i<nin+nout;i++) {
-    xmt   += sqrt(ms[i]);
-    xm2[i] = ms[i];
+  for (short int i=m_nin;i<m_nin+m_nout;i++) {
+    xmt   += sqrt(p_ms[i]);
+    xm2[i] = p_ms[i];
     p2[i]  = sqr(p[i][0]);
   }
 
@@ -201,7 +200,7 @@ void Rambo::MassivePoint(Vec4D* p,double ET)
   short int iter = 0; 
   for (;;) {
     f0 = -ET;g0 = 0.;x2 = x*x;
-    for (short int i=nin;i<nin+nout;i++) {
+    for (short int i=m_nin;i<m_nin+m_nout;i++) {
       E[i] = sqrt(xm2[i]+x2*p2[i]);
       f0  += E[i];
       g0  += p2[i]/E[i];
@@ -213,7 +212,7 @@ void Rambo::MassivePoint(Vec4D* p,double ET)
   }
   
   // Construct Momenta
-  for (short int i=nin;i<nin+nout;i++) p[i] = Vec4D(E[i],x*Vec3D(p[i]));
+  for (short int i=m_nin;i<m_nin+m_nout;i++) p[i] = Vec4D(E[i],x*Vec3D(p[i]));
 }
 
 namespace PHASIC {

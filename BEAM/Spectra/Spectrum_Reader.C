@@ -1,4 +1,4 @@
-#include "BEAM/Main/Spectrum_Reader.H"
+#include "BEAM/Spectra/Spectrum_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/MathTools.H"
@@ -98,7 +98,7 @@ public:
 Spectrum_Reader::Spectrum_Reader(const Flavour beam, const double energy, 
    const double polarisation, const double energy_laser, 
    const double polarisation_laser,const std::string fname, const int dir) :
-  Beam_Base(std::string("Spectrum_Reader"),beam,energy,polarisation,dir),
+  Beam_Base(beamspectrum::spectrum_reader,beam,energy,polarisation,dir),
   m_fname(fname), m_energy_laser(energy_laser), m_polarisation_laser(polarisation_laser)
 {
   m_weight=1.;

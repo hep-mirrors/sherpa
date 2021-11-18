@@ -1,4 +1,4 @@
-#include "BEAM/Main/EPA.H"
+#include "BEAM/Spectra/EPA.H"
 
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -12,11 +12,10 @@
 using namespace BEAM;
 using namespace ATOOLS;
 
-EPA::EPA(const Flavour _beam,const double _mass,
-	 const double _charge,const double _energy,
+EPA::EPA(const Flavour _beam,const double _energy,
 	 const double _pol, const int _dir):
-  Beam_Base("EPA",_beam,_energy,_pol,_dir),
-  m_mass(_mass), m_charge(_charge)
+  Beam_Base(beamspectrum::EPA,_beam,_energy,_pol,_dir),
+  m_mass(_beam.Mass(true)), m_charge(_beam.Charge())
 {
   Settings& s = Settings::GetMainSettings();
   RegisterDefaults();

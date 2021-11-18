@@ -9,7 +9,10 @@ Structure_Function::Structure_Function(PDF::PDF_Base * _p_pdf,ATOOLS::Flavour _m
   ISR_Base(_p_pdf)
 {
   m_bunch = _m_bunch;
-  m_type  = std::string("(SF)");
+  if (m_bunch.IsChargedLepton()) m_type = isrtype::lepton;
+  else if (m_bunch.IsPhoton() ||
+	   m_bunch.IsHadron())   m_type = isrtype::hadron;
+  //m_type  = std::string("(SF)");
 }
 
 bool Structure_Function::CalculateWeight(double x,double z,double kp2,double q2,int warn) 

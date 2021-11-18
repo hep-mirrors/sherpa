@@ -7,7 +7,7 @@ Intact::Intact(ATOOLS::Flavour _bunch):
   ISR_Base(NULL)
 {
   m_bunch  = _bunch;
-  m_type   = std::string("(None)");
+  m_type   = isrtype::intact;
   m_weight = 1.;
 }
 
