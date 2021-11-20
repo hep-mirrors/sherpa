@@ -481,6 +481,5 @@ void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,
       <<iit->second->Checksum()<<" <===\n";
   }
   if (shouldprintversioninfo) str<<prefix<<"}\n";
-  str<<std::endl;
   Git_Info::SetCheck(true);
 }

@@ -453,8 +453,7 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
 	    <<"                                                                             "<<std::endl
 	    <<"     for news, bugreports, updates and new releases.                         "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"-----------------------------------------------------------------------------"<<std::endl
-	    <<std::endl;
+	    <<"-----------------------------------------------------------------------------"<<std::endl;
   rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");

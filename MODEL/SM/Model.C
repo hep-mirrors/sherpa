@@ -151,7 +151,6 @@ void Standard_Model::FixEWParameters()
   double MZ=Flavour(kf_Z).Mass(), GZ=Flavour(kf_Z).Width();
   double MH=Flavour(kf_h0).Mass(), GH=Flavour(kf_h0).Width();
   std::string ewschemename(""),ewrenschemename("");
-  PRINT_VAR(ewscheme);
   switch (ewscheme) {
   case ew_scheme::UserDefined:
     // all SM parameters given explicitly

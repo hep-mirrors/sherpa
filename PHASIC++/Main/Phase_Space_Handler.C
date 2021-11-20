@@ -231,7 +231,7 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
 
 bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
 {
-  msg_Info()<<"Read in channels from directory : "<<pID<<std::endl;
+  msg_Info()<<"Read in channels from directory: "<<pID<<std::endl;
   if (m_pspoint.ReadIn(pID,exclude)) {
     m_psenhance.ReadIn(pID);
     Data_Reader reader;
