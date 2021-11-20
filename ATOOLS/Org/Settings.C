@@ -114,7 +114,15 @@ std::vector<std::string> Settings::GetKeys(const Settings_Keys& scopekeys)
   std::vector<std::string> keys;
   for (auto& reader : m_yamlreaders) {
     std::vector<std::string> yamlkeys{ reader->GetKeys(scopekeys) };
-    keys.insert(keys.end(), yamlkeys.begin(), yamlkeys.end());
+    if (!yamlkeys.empty()) {
+      keys.insert(keys.end(), yamlkeys.begin(), yamlkeys.end());
+      if (!scopekeys.ContainsNoIndizes()) {
+        // we do not want to merge keys from different YAML documents when we
+        // are somehow within a YAML sequence, since we do not have a clear
+        // correspondence between elements of different sequences
+        return keys;
+      }
+    }
   }
   keys.erase(AllUnique(keys.begin(), keys.end()), keys.end());
   return keys;
