@@ -181,6 +181,7 @@ bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
       nonOption.append(num_scopes - 1, '}');
 
     m_yamlstream << nonOption << '\n';
+    m_yamlstream << "---\n";  // YAML document end marker
   }
 
   if (!legacysyntaxtags.empty()) {

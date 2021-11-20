@@ -102,14 +102,16 @@ namespace ATOOLS {
 
   private:
 
-    SHERPA_YAML::Node m_node;
+    std::vector<SHERPA_YAML::Node> m_nodes;
 
     SHERPA_YAML::Node NodeForKeys(const Settings_Keys& scopekeys);
+    SHERPA_YAML::Node NodeForKeysInNode(const Settings_Keys& scopekeys,
+                                        const SHERPA_YAML::Node&);
 
     void AddSettingsKeys(
         std::vector<Settings_Keys>&,
         Settings_Keys&,
-        SHERPA_YAML::Node&);
+        const SHERPA_YAML::Node&);
 
   };
 
