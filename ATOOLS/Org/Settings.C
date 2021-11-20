@@ -145,17 +145,13 @@ std::string Settings::GetPath()
 
 String_Vector Settings::GetConfigFiles()
 {
-  for (auto& reader : m_yamlreaders) {
-    const auto filenames
-      = reader->GetVector<std::string>(Settings_Keys{"RUNDATA"});
-    if (!filenames.empty())
-      return filenames;
-  }
+  auto s = (*this)["RUNDATA"];
   if (FileExists(GetPath() + "Sherpa.yaml")) {
-    return {"Sherpa.yaml"};
+    s.SetDefault("Sherpa.yaml");
   } else {
-    return {};
+    s.SetDefault(std::vector<std::string>{});
   }
+  return s.GetVector<std::string>();
 }
 
 bool Settings::IsScalar(const Settings_Keys& keys)
