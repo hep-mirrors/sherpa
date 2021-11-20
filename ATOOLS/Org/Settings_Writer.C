@@ -114,13 +114,15 @@ void Settings_Writer::WriteSettings(Settings& s)
   file << "date: " << rpa->gen.Timer().TimeString(0) << "\n";
   file << "...\n\n";
 
-  file << "Unused settings\n";
-  file << "-------------------\n";
-  file << "Parameters that have never been read by Sherpa during its"
-       << " run are listed here. If you did expect the setting to be used,"
-       << " check its spelling, and note that Sherpa setting names are case"
-       << "-sensitive.\n\n";
-  file << unused.str();
+  if (did_find_unused) {
+    file << "Unused settings\n";
+    file << "-------------------\n";
+    file << "Parameters that have never been read by Sherpa during its"
+         << " run are listed here. If you did expect the setting to be used,"
+         << " check its spelling, and note that Sherpa setting names are case"
+         << "-sensitive.\n\n";
+    file << unused.str();
+  }
 
   file << "Customised settings\n";
   file << "-------------------\n";
