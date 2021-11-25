@@ -23,6 +23,7 @@ Ahadic::Ahadic(string shower) :
   ReadMassParameters();
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
+  m_sformer.Init();
   m_beamparticles.Init();
   m_softclusters.Init();
   m_singletchecker.Init();

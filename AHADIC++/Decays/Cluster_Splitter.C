@@ -11,7 +11,8 @@ Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters) :
   Splitter_Base(cluster_list,softclusters),
   m_output(false) 
-{ }
+{
+}
 
 void Cluster_Splitter::Init(const bool & isgluon) {
   Splitter_Base::Init(false);
@@ -63,16 +64,17 @@ bool Cluster_Splitter::MakeLongitudinalMomenta() {
 }
 
 void Cluster_Splitter::FixCoefficients() {
-  // here there are significant differences.
+  // this is where the magic happens.  
   m_mode = m_defmode;
   double sum_mass = 0, massfac;
+  double threshold = p_softclusters->DecayThreshold(p_part[0]->Flavour(),p_part[1]->Flavour()); 
   for (size_t i=0;i<2;i++) {
     Proto_Particle * part = p_part[i];
     Flavour flav = part->Flavour();
     massfac      = 1.;
     size_t flcnt = 0;
     if (p_part[i]->IsLeading() ||
-	     (m_mode==0 && p_part[1-i]->IsLeading())) {
+	(m_mode==0 && p_part[1-i]->IsLeading())) {
       flcnt   = 1;
       massfac = 2.;
     }
@@ -82,8 +84,8 @@ void Cluster_Splitter::FixCoefficients() {
       flcnt  = 3;
       m_mode = m_beammode;
     }
-    m_a[i] = m_alpha[flcnt];
-    m_b[i] = m_beta[flcnt];
+    m_a[i] = m_alpha[flcnt]; // * m_Q/threshold
+    m_b[i] = m_beta[flcnt]  * threshold/m_Q;
     m_c[i] = m_gamma[flcnt];
     sum_mass += massfac * p_constituents->Mass(flav);
   }
@@ -237,8 +239,21 @@ bool Cluster_Splitter::FillParticlesInLists() {
     else if (shuffle)  UpdateAndFillCluster(i);
     else p_cluster_list->push_back(p_out[i]);
   }
-  //if (shuffle) 
-  //msg_Out()<<m_cms<<" -> "<<(m_newmom[0]+m_newmom[1])<<"\n = "<<m_newmom[0]<<" + "<<m_newmom[1]<<"\n";
+  /*
+  if (shuffle>0) 
+    msg_Out()<<METHOD<<" shuffled momenta:\n"
+	     <<m_cms<<" -> "<<(m_newmom[0]+m_newmom[1])<<"\n = "<<m_newmom[0]<<" + "<<m_newmom[1]<<"\n";
+  else {
+    msg_Out()<<METHOD<<" didn't shuffle momenta:\n"
+	     <<m_cms<<"("<<sqrt(m_cms.Abs2())<<") -> \n"<<(*p_out[0])<<(*p_out[1]);
+    double mass1_0 = sqrt(((*p_out[0])[0]->Momentum()+(*p_out[0])[1]->Momentum()).Abs2());
+    double mass2_0 = sqrt(((*p_out[1])[0]->Momentum()+(*p_out[1])[1]->Momentum()).Abs2());
+    double mass1_1 = sqrt(((*p_out[0])[0]->Momentum()+(*p_out[1])[0]->Momentum()).Abs2());
+    double mass2_1 = sqrt(((*p_out[0])[1]->Momentum()+(*p_out[1])[1]->Momentum()).Abs2());
+    msg_Out()<<"--> mass shuffle "<<mass1_0<<" + "<<mass2_0<<" --> "
+	     <<mass1_1<<" + "<<mass2_1<<"\n\n";
+  }
+  */
   return true;
 }
 
@@ -325,7 +340,11 @@ Cluster * Cluster_Splitter::MakeCluster(size_t i) {
     new Proto_Particle(m_newflav[i],newmom12,false,
 		       p_part[0]->IsBeam()||p_part[1]->IsBeam());
   newp->SetKT2_Max(m_kt2);
-  Cluster * cluster(i==0?new Cluster(p_part[0],newp):new Cluster(newp,p_part[1]));
+  Cluster * cluster;
+  if (i==0) cluster = new Cluster(p_part[0],newp);
+  if (i==1) cluster = new Cluster(newp,p_part[1]);
+  newp->SetGeneration(p_part[i]->Generation()+1);
+  p_part[i]->SetGeneration(p_part[i]->Generation()+1);
   if (m_analyse) {
     if (m_Q>91.) {
       if (i==1) {
