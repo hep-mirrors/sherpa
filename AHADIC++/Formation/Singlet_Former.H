@@ -10,6 +10,7 @@ namespace AHADIC {
   private:
     std::list<Singlet *>        * p_singlets;
     std::list<ATOOLS::Particle *> m_colparts;
+    double m_kt2max;
     
     void ExtractOutgoingCols(ATOOLS::Blob * blob);
     Singlet          * MakeAnother();
@@ -18,6 +19,7 @@ namespace AHADIC {
   public:
     Singlet_Former(std::list<Singlet *> * singlets);
     ~Singlet_Former();
+    void Init();
     bool Extract(ATOOLS::Blob * blob);
   };
 }
