@@ -46,12 +46,12 @@ public:
 
     String_BlobDataBase_Map::iterator search_mewinfo = bdmap.find("MEWeightInfo");
     if (search_mewinfo==bdmap.end()) {
-        THROW(fatal_error,"No MEWeightinfo found in singnal blob!");
-      }
+      THROW(fatal_error,"No MEWeightinfo found in signal blob!");
+    }
     String_BlobDataBase_Map::iterator search_weight = bdmap.find("Weight");
     if (search_weight==bdmap.end()) {
-        THROW(fatal_error,"No Weight found in singnal blob!");
-      }
+      THROW(fatal_error,"No Weight found in signal blob!");
+    }
 
     ME_Weight_Info  * me_w_info = search_mewinfo->second->Get<ME_Weight_Info *>();
     double weight_bl = search_weight->second->Get<double>();
@@ -105,17 +105,18 @@ public:
     new_weight = weight_bl* (1. - correction* born_weight/sum_meweight);
 
     weight = new_weight;
-    p_bl->FindFirst(btp::Signal_Process)->AddData("Weight",new Blob_Data<double>(new_weight));
+
+    (*p_bl->FindFirst(btp::Signal_Process))["Weight"]->Set(new_weight);
 
 
 	// TODO: calculate counter-terms based on the muR variations. not done yet, since numerical impact is small.
     String_BlobDataBase_Map::iterator search_varweights = bdmap.find("Variation_Weights");
     if (search_varweights==bdmap.end()) {
-            THROW(fatal_error,"No VarWeight found in singnal blob!");
-        }
+      THROW(fatal_error,"No VarWeight found in signal blob!");
+    }
     Variation_Weights  var_weights= search_varweights->second->Get<Variation_Weights >();
     var_weights*=(1. - correction* born_weight/sum_meweight);
-    p_bl->FindFirst(btp::Signal_Process)->AddData("Variation_Weights",new Blob_Data<Variation_Weights>(var_weights));
+    (*p_bl->FindFirst(btp::Signal_Process))["Variation_Weights"]->Set(var_weights);
 
     return Return_Value::Nothing;
     }
