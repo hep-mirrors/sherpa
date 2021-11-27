@@ -570,6 +570,12 @@ SHERPA::Subevent_Weights_Vector Single_Process::ReweightSubevents(
   NLO_subevtlist *sevtlist = GetSubevtList();
   if (!sevtlist) THROW(fatal_error, "Missing subevents.");
 
+  if (m_mewgtinfo.m_oqcd == 99) {
+    THROW(not_implemented, "O(AlphaS)=99 detected before reweighting RS event.\n"
+        "   This is likely due to the ME generator/hard process\n"
+        "   not supporting on-the-fly reweighting.");
+  }
+
   // obtain ME wgt info and subevents fetch common info
   BornLikeReweightingInfo info;
   info.m_orderqcd = m_mewgtinfo.m_oqcd;
@@ -605,6 +611,12 @@ double Single_Process::ReweightWithoutSubevents(
 
   if (GetSubevtList()) {
     THROW(fatal_error, "Unexpected subevents.");
+  }
+
+  if (m_mewgtinfo.m_oqcd == 99) {
+    THROW(not_implemented, "O(AlphaS)=99 detected before reweighting B or BVI event.\n"
+        "   This is likely due to the ME generator/hard process\n"
+        "   not supporting on-the-fly reweighting.");
   }
 
   // fetch common info
