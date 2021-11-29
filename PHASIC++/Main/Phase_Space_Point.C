@@ -130,6 +130,7 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
   // (m_sprime = m_fixedsprime and m_y = m_fixedy)
   Reset(mode);
   if (m_nin == 2) {
+    m_y = (p_moms[0] + p_moms[1]).Y();
     if (!DefineBeamKinematics())
       return false;
     if (!DefineISRKinematics(process)) {
@@ -160,7 +161,7 @@ bool Phase_Space_Point::DefineBeamKinematics() {
       return false;
   }
   m_sprime = p_beamhandler->Sprime();
-  m_y = p_beamhandler->Y();
+  m_y += p_beamhandler->Y();
   return true;
 }
 
@@ -207,7 +208,6 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
 }
 
 bool Phase_Space_Point::DefineFSRKinematics() {
-  ran->Get();
   p_pshandler->Cuts()->Update(m_sprime, m_y);
   p_fsrchannels->GeneratePoint(p_moms, p_pshandler->Cuts());
   return true;
