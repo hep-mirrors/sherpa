@@ -222,9 +222,7 @@ bool EPA::CalculateWeight(double x, double q2) {
     // compare hep-ph/9610406 and hep-ph/9310350
     double q2min = sqr(m_mass * m_x) / (1 - m_x);
     double q2max = q2min + sqr(m_energy) * (1 - m_x) * sqr(m_theta_max);
-    // removed factor 1 / m_x here, to account for Jacobian in ds^prime
-    // integration
-    double f = alpha / M_PI / 2 *
+    double f = alpha / M_PI / 2 / m_x *
                ((1 + sqr(1 - m_x)) * log(q2max / q2min) +
                 2 * sqr(m_mass * m_x) * (1 / q2min - 1 / q2max));
     if (f < 0)
