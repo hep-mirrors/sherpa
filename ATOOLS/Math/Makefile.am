@@ -1,4 +1,3 @@
-
 GITTAG = ATOOLS/Math
 include ../../git.make
 
@@ -64,6 +63,7 @@ localinc_HEADERS          =	\
 
 if GZIP_SUPPORT
 Sobol/%.gz: Sobol/%
+	mkdir -p Sobol
 	gzip < $< > $@
 SOBOL_EXT = .gz
 else
