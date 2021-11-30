@@ -11,7 +11,6 @@ SUBDIRS       =	\
 		OpenLoops \
 		Recola \
 		MadLoop \
-		MCFM \
 		PGS \
 		Delphes \
 		Rivet \
