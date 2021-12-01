@@ -114,7 +114,17 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
 {
   DEBUG_FUNC("use named weights: "<<m_usenamedweights
              <<", extended weights: "<<m_extendedweights);
-  std::map<std::string,double> wc;
+  class WeightContainer: public std::vector< std::pair<std::string, double> > {
+  public:
+  double& operator[](const std::string s) {
+    for (auto a = this->begin(); a != this->end(); ++a)
+    if (a->first == s) return a->second;
+    this->push_back(std::pair<std::string,double>(s, 0.0));
+    return this->back().second; 
+ }
+};
+  WeightContainer wc;
+
   if (m_usenamedweights) {
 
  // fill standard entries to ensure backwards compatability
@@ -246,7 +256,7 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
   
   std::vector<std::string> w_names;
   std::vector<double> w_values;
-  for (std::map<std::string,double>::iterator it=wc.begin(); it!=wc.end();++it)
+  for (auto it = wc.begin(); it != wc.end(); ++it)
   { w_names.push_back(it->first); w_values.push_back(it->second);}
   evt.run_info()->set_weight_names(w_names);
   evt.weights()=w_values;
