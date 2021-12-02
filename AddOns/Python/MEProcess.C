@@ -29,6 +29,8 @@ MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
   m_ncolinds(0), m_npsp(0), m_nin(0), m_nout(0), p_colint(NULL)
 {
   m_kpz[0]=m_kpz[1]=0.;
+  ATOOLS::Settings::GetMainSettings()
+    .DeclareMatrixSettingsWithEmptyDefault({"MOMENTA"});
 }
 
 MEProcess::~MEProcess()
