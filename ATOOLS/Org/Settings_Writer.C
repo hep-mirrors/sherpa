@@ -66,8 +66,39 @@ void Settings_Writer::WriteSettings(Settings& s)
     if (iscustomised) {
       vals.push_back(s.m_overrides[keysetpair.first]);
       Settings_Keys keys{ keysetpair.first };
-      for (auto it = s.m_yamlreaders.rbegin(); it != s.m_yamlreaders.rend(); ++it)
-        vals.push_back((*it)->GetMatrix<std::string>(keys));
+      for (auto it = s.m_yamlreaders.rbegin();
+           it != s.m_yamlreaders.rend();
+           ++it) {
+        auto new_vals =
+          (*it)->GetFlattenedStringVectorWithDelimiters(keys, "{{", "}}");
+        int maxdim = 0, curdim = 0;
+        for (const auto& val : new_vals) {
+          if (val == "{{") {
+            maxdim = std::max(maxdim, ++curdim);
+          } else if (val == "}}") {
+            --curdim;
+          }
+        }
+        String_Matrix pruned_new_vals;
+        pruned_new_vals.emplace_back();
+        for (const auto& val : new_vals) {
+          if (val == "{{") {
+            ++curdim;
+          } else if (val == "}}") {
+            if (curdim > 1 && curdim < maxdim) {
+              pruned_new_vals.emplace_back();
+            }
+            --curdim;
+            if (curdim == 0 && maxdim > 2 && &val != &new_vals.back()) {
+              pruned_new_vals.back().push_back("-- AND --");
+              pruned_new_vals.emplace_back();
+            }
+          } else {
+            pruned_new_vals.back().push_back(val);
+          }
+        }
+        vals.push_back(pruned_new_vals);
+      }
       if (!finalvals.empty()) {
         vals.push_back(*finalvals.begin());
         for (auto it = ++finalvals.begin(); it != finalvals.end(); ++it) {

@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Settings_Keys.H"
 #include "ATOOLS/YAML/yaml-cpp/yaml.h"
 #include <iostream>
 
@@ -30,6 +31,11 @@ namespace ATOOLS {
     size_t GetItemsCount(const Settings_Keys& scopekeys);
 
     bool IsParameterCustomised(const Settings_Keys& scopekeys);
+
+    std::vector<std::string> GetFlattenedStringVectorWithDelimiters(
+        const Settings_Keys&,
+        const std::string& open_delimiter="{{",
+        const std::string& close_delimiter="}}");
 
     template <typename T>
     T GetScalar(const Settings_Keys& keys)
@@ -75,9 +81,17 @@ namespace ATOOLS {
         auto ismatrix = true;
         auto isvector = true;
         for (const auto& subnode : node) {
-          if (!subnode.IsSequence())
+          if (subnode.IsSequence()) {
+            for (const auto& subsubnode : subnode) {
+              if (!subsubnode.IsScalar())
+                THROW(invalid_input,
+                    "Attempting to read a more than 2-dimensional setting: "
+                    + keys.Name());
+            }
+          } else {
             ismatrix = false;
-          if (subnode.Type() != SHERPA_YAML::NodeType::Scalar)
+          }
+          if (!subnode.IsScalar())
             isvector = false;
           if (!isvector && !ismatrix)
             break;

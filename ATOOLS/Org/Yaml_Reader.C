@@ -1,6 +1,5 @@
 #include "ATOOLS/Org/Yaml_Reader.H"
 
-#include "ATOOLS/Org/Settings_Keys.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_File.H"
 
@@ -137,6 +136,37 @@ size_t Yaml_Reader::GetItemsCount(const Settings_Keys& scopekeys)
     return 0;
   else
     return 1;
+}
+
+std::vector<std::string> Yaml_Reader::GetFlattenedStringVectorWithDelimiters(
+    const Settings_Keys& keys,
+    const std::string& open_delimiter,
+    const std::string& close_delimiter)
+{
+  std::vector<std::string> values;
+  const auto node = NodeForKeys(keys);
+  if (node.IsNull())
+    return values;
+
+  // auto-wrap scalars in a vector
+  if (node.IsScalar()) {
+    values.push_back(node.as<std::string>());
+  } else if (node.IsSequence()) {
+    const auto items_count = GetItemsCount(keys);
+    for (int i {0}; i < items_count; ++i) {
+      auto subkeys = keys;
+      subkeys.emplace_back(i);
+      const auto newvalues =
+        GetFlattenedStringVectorWithDelimiters(subkeys,
+                                               open_delimiter,
+                                               close_delimiter);
+      values.push_back(open_delimiter);
+      values.insert(values.end(), newvalues.begin(), newvalues.end());
+      values.push_back(close_delimiter);
+    }
+  }
+
+  return values;
 }
 
 SHERPA_YAML::Node Yaml_Reader::NodeForKeys(const Settings_Keys& keys)
