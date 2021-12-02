@@ -82,8 +82,6 @@ size_t MEProcess::NumberOfPoints()
 void MEProcess::ReadProcess(size_t n)
 {
   DEBUG_FUNC("n="<<n);
-  p_amp->Delete();
-  p_amp=ATOOLS::Cluster_Amplitude::New();
   size_t id{ 0 };
 
   if (NumberOfPoints() == 0)

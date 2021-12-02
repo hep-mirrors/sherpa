@@ -19,12 +19,12 @@ int main(int argc,char* argv[])
 
     // create a MEProcess instance
     MEProcess Process(Generator);
+    Process.Initialize();
 
     msg_Out()<<"n="<<Process.NumberOfPoints()<<std::endl;
     for (size_t n(1);n<=Process.NumberOfPoints();++n) {
       // set momenta from file
       Process.ReadProcess(n);
-      Process.Initialize();
 
       msg_Out()<<"Calculating matrix element values for phase space point "<<n<<":\n";
       msg_Out()<<*Process.GetAmp()<<std::endl;
