@@ -7,6 +7,8 @@
 
 namespace PHASIC {
   
+  enum class UnweightingMode { HitOrMiss = 0, Accept };
+
   class ME_Generators;
 
   struct Process_Info {
@@ -23,7 +25,7 @@ namespace PHASIC {
     size_t m_nlomode, m_amegicmhv, m_ntchanmin, m_ntchanmax;
 
     std::string m_scale, m_coupling, m_kfactor, m_gpath, m_addname;
-    std::string m_megenerator, m_rsmegenerator, m_loopgenerator;
+    std::string m_megenerator, m_rsmegenerator, m_loopgenerator, m_loopgenerator_unwt;
 
     std::string m_selectorfile, m_integrator, m_rsintegrator;
 
@@ -32,6 +34,8 @@ namespace PHASIC {
     ME_Generators* p_gens;
 
     ATOOLS::Flavour_Vector m_nodecs;
+
+    PHASIC::UnweightingMode *m_unw_mode;
 
   public:
 
@@ -42,8 +46,9 @@ namespace PHASIC {
       m_nminq(0), m_nmaxq(99), m_ckkw(0),
       m_nmax(0), m_itmin(5000), m_rsitmin(5000),
       m_nlomode(0), m_amegicmhv(1), m_ntchanmin(0), m_ntchanmax(99),
-      m_scale("VAR"), m_kfactor("NO"), m_loopgenerator("Internal"),
-      m_selectorfile(""), m_mpiprocess(false), p_gens(NULL) {}
+      m_scale("VAR"), m_kfactor("NO"), 
+      m_loopgenerator("Internal"), m_loopgenerator_unwt("Internal"),
+      m_selectorfile(""), m_mpiprocess(false), p_gens(NULL), m_unw_mode(NULL) { }
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
     bool Has(nlo_type::code nlotype) const;
@@ -52,6 +57,9 @@ namespace PHASIC {
 		const ATOOLS::Flavour &flij);
 
     std::vector<ATOOLS::Flavour_Vector> ExtractMPL() const;
+
+    // pass pointer to unweighting-mode member of the MEH
+    void SetUnweightingMode(PHASIC::UnweightingMode& m) { m_unw_mode = &m; }
 
     bool operator<(const Process_Info &pi) const;
 
