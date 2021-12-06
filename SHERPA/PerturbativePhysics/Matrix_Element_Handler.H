@@ -47,12 +47,12 @@ namespace SHERPA {
     struct Processblock_Info {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrsefac;
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
-	m_vsfile, m_vnloqcdmode, m_vnloqcdpart, m_vnloewmode, m_vnloewpart,
-	m_vnlosubv, m_vasscontribs, m_vmegen, m_vrsmegen, m_vloopgen, m_vint,
-	m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl,
-	m_vacpl, m_vmaxacpl, m_vminacpl, m_vaddname;
+      m_vsfile, m_vnloqcdmode, m_vnloqcdpart, m_vnloewmode, m_vnloewpart,
+      m_vnlosubv, m_vasscontribs, m_vmegen, m_vrsmegen, m_vloopgen, m_vloopgen_unwt, m_vint,
+      m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl,
+      m_vacpl, m_vmaxacpl, m_vminacpl, m_vaddname;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
-        m_vntchanmin, m_vntchanmax, m_vitmin, m_vrsitmin;
+      m_vntchanmin, m_vntchanmax, m_vitmin, m_vrsitmin;
 
       std::string m_gycut;
       int m_cutcore;
@@ -63,6 +63,7 @@ namespace SHERPA {
 
     PHASIC::ME_Generators  m_gens;
     PHASIC::Process_Vector m_procs;
+    PHASIC::UnweightingMode m_unw_mode;
 
     PHASIC::Process_Base *p_proc;
 
@@ -157,6 +158,10 @@ namespace SHERPA {
     inline int EventGenerationMode() const { return m_eventmode; }
 
     inline ATOOLS::Weight_Info WeightInfo() const { return m_evtinfo; }
+
+    const PHASIC::UnweightingMode GetUnweightingMode() const { return m_unw_mode; }
+
+    void SetUnweightingMode(const PHASIC::UnweightingMode mode) { m_unw_mode = mode; }
 
     inline BEAM::Beam_Spectra_Handler *GetBeam() const { return p_beam; }
     inline PDF::ISR_Handler           *GetISR() const  { return p_isr;  }

@@ -35,7 +35,7 @@ using namespace ATOOLS;
 Matrix_Element_Handler::Matrix_Element_Handler
 (const std::string &dir,const std::string &file,
  const std::string &processfile,const std::string &selectorfile):
-  m_gens(dir, file),
+  m_gens(dir, file), m_unw_mode(UnweightingMode::HitOrMiss),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
@@ -184,13 +184,13 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     double disc(m_sum*ran->Get()), csum(0.0);
     Process_Base *proc(NULL);
     for (size_t i(0);i<m_procs.size();++i) {
-      if ((csum+=m_procs[i]->Integrator()->
-	   SelectionWeight(m_eventmode))>=disc) {
-	proc=m_procs[i];
-	break;
+      if ((csum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode))>=disc) {
+        proc=m_procs[i];
+        break;
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
+    SetUnweightingMode(UnweightingMode::HitOrMiss);
     p_variationweights->Reset();
     proc->SetVariationWeights(NULL);
     const bool hasvars(
@@ -237,6 +237,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         m_weightfactor = abswgt / max;
         wf /= Min(1.0, m_weightfactor);
       }
+      SetUnweightingMode(UnweightingMode::Accept);
       if (hasvars) {
         // re-run with same rng state and include the calculatin of variations
         // this time; note that afterwards we also re-consume the random number
@@ -266,6 +267,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 (const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
 {
   Process_Info cpi(pi);
+  cpi.SetUnweightingMode(m_unw_mode);
   std::set<Process_Info> trials;
   std::vector<Process_Base*> procs;
   std::vector<Flavour_Vector> fls(pi.ExtractMPL());
@@ -665,6 +667,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vrsmegen,nf);
 	}
+	if (cur[0]=="Unweighting_Loop_Generator") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vloopgen_unwt,nf);
+	}
 	if (cur[0]=="Loop_Generator") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vloopgen,nf);
@@ -887,6 +893,11 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  m_gens.LoadGenerator(ds);
 	  cpi.m_loopgenerator=ds;
 	}
+	if (GetMPvalue(pbi.m_vloopgen_unwt,nfs,pnid,ds)) {
+	  m_gens.LoadGenerator(ds);
+	  cpi.m_loopgenerator_unwt=ds;
+	}
+  else cpi.m_loopgenerator_unwt = cpi.m_loopgenerator;
 	if (GetMPvalue(pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
 	if (GetMPvalue(pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
 	else cpi.m_rsintegrator=cpi.m_integrator;

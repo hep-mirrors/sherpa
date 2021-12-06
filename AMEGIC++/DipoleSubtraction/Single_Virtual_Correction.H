@@ -38,7 +38,7 @@ namespace AMEGIC {
     PHASIC::Flavour_Kernels * p_flkern;
     PHASIC::Massive_Kernels * p_masskern;
     PHASIC::KP_Terms      * p_kpterms;
-    PHASIC::Virtual_ME2_Base* p_loopme;  
+    PHASIC::Virtual_ME2_Base* p_loopme, *p_loopme_unwt, *p_loopme_main;
 
     bool m_force_init, m_sccmur, m_murcoeffvirt, m_kpcemode;
     bool m_checkborn, m_checkpoles, m_checkfinite;
@@ -105,7 +105,8 @@ namespace AMEGIC {
     Helicity *          GetHelicity()                  { return p_partner->GetLOProcess()->GetHelicity(); }    
     double              Result()                       { return m_iresult; } 
 
-    void                SelectLoopProcess();
+    void                SelectLoopProcess(PHASIC::Virtual_ME2_Base*& loopme, const std::string& loopgen);
+    void                SetLoopME();
     /*------------------------------------------------------------------------------
 
       Process management

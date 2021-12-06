@@ -36,7 +36,8 @@ using namespace std;
 Single_Virtual_Correction::Single_Virtual_Correction() :
   m_cmur(2,0.), m_wass(4,0.),
   p_psgen(0), p_partner(this), p_LO_process(NULL),
-  p_dipole(0), p_kpterms(0), p_loopme(0),
+  p_dipole(0), p_kpterms(0), 
+  p_loopme(0), p_loopme_unwt(0), p_loopme_main(0),
   m_bsum(0.0), m_vsum(0.0), m_isum(0.0), m_n(0.0),
   m_mbsum(0.0), m_mvsum(0.0), m_misum(0.0), m_mn(0.0),
   m_loopmapped(true)
@@ -123,11 +124,13 @@ Single_Virtual_Correction::~Single_Virtual_Correction()
   m_cpls.clear();
   p_selector=NULL;
   p_scale=NULL;
-  if (p_psgen)      {delete p_psgen; p_psgen=0;}
-  if (p_LO_process) {delete p_LO_process; p_LO_process=0;}
-  if (p_dipole)     {delete p_dipole; p_dipole=0;}
-  if (p_kpterms)    {delete p_kpterms; p_kpterms=0;}
-  if (p_loopme)     {delete p_loopme; p_loopme=0;}
+  if (p_psgen)       { delete p_psgen; p_psgen = 0; }
+  if (p_LO_process)  { delete p_LO_process; p_LO_process = 0; }
+  if (p_dipole)      { delete p_dipole; p_dipole = 0; }
+  if (p_kpterms)     { delete p_kpterms; p_kpterms = 0; }
+  if (p_loopme_unwt) { delete p_loopme_unwt; p_loopme_unwt = 0; }
+  if (p_loopme_main) { delete p_loopme_main; p_loopme_main = 0; }
+  p_loopme=NULL;
 }
 
 /*------------------------------------------------------------------------------
@@ -170,19 +173,21 @@ const Flavour_Vector &AMEGIC::Single_Virtual_Correction::CombinedFlavour
   Initializing libraries, amplitudes, etc.
 
   ------------------------------------------------------------------------------*/
-void Single_Virtual_Correction::SelectLoopProcess()
+void Single_Virtual_Correction::SelectLoopProcess(PHASIC::Virtual_ME2_Base*& loopme,
+                                                  const std::string& loopgen)
 {
-  p_loopme=NULL;
+  loopme = nullptr;
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop || m_force_init) {
     Process_Info loop_pi(m_pinfo);
+    loop_pi.m_loopgenerator = loopgen;
     loop_pi.m_fi.m_nloqcdtype=nlo_type::loop;
-    p_loopme=PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
-    if (!p_loopme) {
+    loopme = PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
+    if (!loopme) {
       THROW(not_implemented, "Couldn't find virtual ME for this process.");
     }
-    p_loopme->SetCouplings(*p_LO_process->CouplingMap());
-    p_loopme->SetNorm(m_Norm);
-    p_loopme->SetPoleCheck(m_checkpoles);
+    loopme->SetCouplings(*p_LO_process->CouplingMap());
+    loopme->SetNorm(m_Norm);
+    loopme->SetPoleCheck(m_checkpoles);
   }
 }
 
@@ -284,7 +289,11 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   }
 
   if (p_partner==this || !m_loopmapped) {
-    SelectLoopProcess();
+    SelectLoopProcess(p_loopme_main, m_pinfo.m_loopgenerator);
+    if (m_pinfo.m_loopgenerator_unwt != m_pinfo.m_loopgenerator) {
+      SelectLoopProcess(p_loopme_unwt, m_pinfo.m_loopgenerator_unwt);
+    }
+    else p_loopme_unwt = p_loopme_main;
   }
 
   if (p_partner==this) {
@@ -413,7 +422,12 @@ void Single_Virtual_Correction::Minimize()
   if (p_psgen)      { delete p_psgen; p_psgen=0; }
   if (p_dipole)     { delete p_dipole; p_dipole=0;}
   if (p_kpterms)    { delete p_kpterms; p_kpterms=0;}
-  if (p_loopme && m_loopmapped) { delete p_loopme; p_loopme=0;}
+  if (p_loopme_unwt && m_loopmapped) { 
+    delete p_loopme_unwt; p_loopme = p_loopme_unwt = nullptr;
+  }
+  if (p_loopme_main && m_loopmapped) { 
+    delete p_loopme_main; p_loopme = p_loopme_main = nullptr;
+  }
 
   m_maxcpl     = p_partner->MaxOrders();
   m_mincpl     = p_partner->MinOrders();
@@ -437,6 +451,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
 {
   m_lastxs = m_lastdxs = m_lastbxs = 0.;
   double wgt(1.0);
+  SetLoopME();
   int bvimode(p_partner->m_bvimode);
   if (!lookup && m_user_bvimode!=0) {
     double sum(((m_user_bvimode&1)?dabs(m_bsum):0.0)+
@@ -1086,3 +1101,13 @@ void Single_Virtual_Correction::FillProcessMap(NLOTypeStringProcessMap_Map *apma
   Process_Base::FillProcessMap(apmap);
   p_LO_process->SetProcMap(apmap);
 }
+
+void Single_Virtual_Correction::SetLoopME() {
+  if (*(p_partner->GetUnweightingMode()) == PHASIC::UnweightingMode::HitOrMiss) {
+    p_partner->p_loopme = p_partner->p_loopme_unwt;
+  }
+  else if (*(p_partner->GetUnweightingMode()) == PHASIC::UnweightingMode::Accept) {
+    p_partner->p_loopme = p_partner->p_loopme_main;
+  }
+}
+
