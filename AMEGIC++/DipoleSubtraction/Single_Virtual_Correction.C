@@ -128,8 +128,13 @@ Single_Virtual_Correction::~Single_Virtual_Correction()
   if (p_LO_process)  { delete p_LO_process; p_LO_process = 0; }
   if (p_dipole)      { delete p_dipole; p_dipole = 0; }
   if (p_kpterms)     { delete p_kpterms; p_kpterms = 0; }
-  if (p_loopme_unwt) { delete p_loopme_unwt; p_loopme_unwt = 0; }
+  // if no dedicated loop provider has been specified
+  // both pointers will point at the same tool
+  if (p_loopme_unwt == p_loopme_main) { 
+    delete p_loopme_main; p_loopme_main = p_loopme_unwt = 0;
+  }
   if (p_loopme_main) { delete p_loopme_main; p_loopme_main = 0; }
+  if (p_loopme_unwt) { delete p_loopme_unwt; p_loopme_unwt = 0; }
   p_loopme=NULL;
 }
 
