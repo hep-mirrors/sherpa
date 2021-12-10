@@ -6,6 +6,7 @@ GITTAG = PHASIC++/EWSudakov
 include ../../git.make
 
 libPhasicEWSudakov_la_SOURCES = \
+        Variation_Generator.C \
 	Coefficient_Checker.C \
 	KFactor_Checker.C \
 	Comix_Interface.C \
@@ -18,6 +19,7 @@ libPhasicEWSudakov_la_SOURCES = \
 	EWSudakov_Calculator.C \
 	Clustered_EWSudakov_Calculator.C
 localinc_HEADERS = \
+        Variation_Generator.H \
 	Coefficient_Checker.H \
 	KFactor_Checker.H \
 	Comix_Interface.H \
