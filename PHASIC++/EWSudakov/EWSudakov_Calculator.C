@@ -262,6 +262,10 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
           for (size_t l{ 0 }; l < k; ++l)
             m_coeffs[{key, {k, l}}].resize(nspinampls);
         break;
+      case EWSudakov_Log_Type::lI:
+        // This is calculated *before* potential clusterings, i.e. in the
+        // Clustered_EWSudakov_Calculator
+        break;
     }
   }
   for (size_t i{0}; i < nspinampls; ++i) {
@@ -300,6 +304,10 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
           break;
         case EWSudakov_Log_Type::lPR:
           m_coeffs[{key, {}}][i] = lsPRCoeff();
+          break;
+        case EWSudakov_Log_Type::lI:
+          // This is calculated *before* potential clusterings, i.e. in the
+          // Clustered_EWSudakov_Calculator
           break;
       }
     }
