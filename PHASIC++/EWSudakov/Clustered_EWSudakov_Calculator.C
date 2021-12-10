@@ -20,8 +20,10 @@ Clustered_EWSudakov_Calculator::Clustered_EWSudakov_Calculator(Process_Base* _pr
   m_resdist =
     meqedsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
   m_disabled =
-    Settings::GetMainSettings()["EWSUDAKOV_CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
-
+    Settings::GetMainSettings()["EWSUDAKOV"]["CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
+  if(Settings::GetMainSettings()["EWSUDAKOV_CLUSTERING_DISABLED"].IsCustomised()){
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUDAKOV: CLUSTERING_DISABLED");
+  }
   auto ampl = EWSudakov_Amplitudes::CreateAmplitude(proc);
   const Flavour_Vector& flavs = ampl->Flavs();
 
@@ -115,7 +117,7 @@ double Clustered_EWSudakov_Calculator::CalcIClustered(
       ClusteredIOperator -= sqr(log(mj2/EWConsts.m_mw2));
     ClusteredIOperator *= Qi * Qj;
   }
-  return EWConsts.delta_prefactor * ClusteredIOperator;  
+  return EWConsts.delta_prefactor * ClusteredIOperator;
 }
 
 EWSudakov_Log_Corrections_Map

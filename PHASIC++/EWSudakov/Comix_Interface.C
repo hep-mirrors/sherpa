@@ -112,7 +112,11 @@ void Comix_Interface::InitializeProcesses(const Cluster_Amplitude_PM& ampls)
   DEBUG_FUNC("");
   auto& s = Settings::GetMainSettings();
   const auto graph_path =
-      s["PRINT_EWSUDAKOV_GRAPHS"].SetDefault("").Get<std::string>();
+      s["EWSUDAKOV"]["PRINT_GRAPHS"].SetDefault("").Get<std::string>();
+  if(s["PRINT_EWSUDAKOV_GRAPHS"].IsCustomised()){
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUDAKOV: PRINT_GRAPHS");
+  }
+
   for (const auto& kv : ampls) {
     const auto& ampl = kv.second;
     PHASIC::Process_Base* proc = GetProcess(*ampl);

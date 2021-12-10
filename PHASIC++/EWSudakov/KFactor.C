@@ -20,7 +20,11 @@ Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
   m_calc{ p_proc }
 {
   auto& s = Settings::GetMainSettings();
-  m_maxweight = s["EWSUDAKOV_MAX_KFACTOR"].SetDefault(10.0).Get<double>();
+  m_maxweight = s["EWSUDAKOV"]["MAX_KFACTOR"].SetDefault(10.0).Get<double>();
+  if(Settings::GetMainSettings()["EWSUDAKOV_MAX_KFACTOR"].IsCustomised()){
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUDAKOV:MAX_KFACTOR");
+  }
+
 }
 
 double Sudakov_KFactor::KFactor(const int mode)
