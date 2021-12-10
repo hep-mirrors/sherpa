@@ -12,28 +12,34 @@
 // TODO: Migrate this to Cluster_Amplitude on master and use it everywhere
 // when doing this we can get rid of custom smart pointers on master
 namespace ATOOLS {
-  auto delAmpl = [](Cluster_Amplitude* ampl) { ampl->Delete(); };
+
+  struct ClusterAmplitudeDeleterFunctor {
+    void operator()(Cluster_Amplitude* ampl) {
+      ampl->Delete();
+    }
+  };
+
   using Cluster_Amplitude_UP =
-    std::unique_ptr<Cluster_Amplitude, decltype(delAmpl)>;
-  Cluster_Amplitude_UP MakeClusterAmpl()
+    std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>;
+  inline Cluster_Amplitude_UP MakeClusterAmpl()
   {
-    return std::unique_ptr<Cluster_Amplitude, decltype(delAmpl)>{
-      Cluster_Amplitude::New(), delAmpl };
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>{
+      Cluster_Amplitude::New()};
   }
-  Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude_UP& ampl)
+  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude_UP& ampl)
   {
-    return std::unique_ptr<Cluster_Amplitude, decltype(delAmpl)>{
-      ampl->Copy(), delAmpl };
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>{
+      ampl->Copy()};
   }
-  Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude* ampl)
+  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude* ampl)
   {
-    return std::unique_ptr<Cluster_Amplitude, decltype(delAmpl)>{
-      ampl->Copy(), delAmpl };
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>{
+      ampl->Copy()};
   }
-  Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude& ampl)
+  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude& ampl)
   {
-    return std::unique_ptr<Cluster_Amplitude, decltype(delAmpl)>{
-      ampl.Copy(), delAmpl };
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>{
+      ampl.Copy()};
   }
 }
 
