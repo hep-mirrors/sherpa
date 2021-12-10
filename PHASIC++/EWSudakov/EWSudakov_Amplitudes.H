@@ -9,40 +9,6 @@
 #include <memory>
 #include <map>
 
-// TODO: Migrate this to Cluster_Amplitude on master and use it everywhere
-// when doing this we can get rid of custom smart pointers on master
-namespace ATOOLS {
-
-  struct ClusterAmplitudeDeleterFunctor {
-    void operator()(Cluster_Amplitude* ampl) {
-      ampl->Delete();
-    }
-  };
-
-  using Cluster_Amplitude_UP =
-    std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>;
-  inline Cluster_Amplitude_UP MakeClusterAmpl()
-  {
-    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>{
-      Cluster_Amplitude::New()};
-  }
-  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude_UP& ampl)
-  {
-    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>{
-      ampl->Copy()};
-  }
-  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude* ampl)
-  {
-    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>{
-      ampl->Copy()};
-  }
-  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude& ampl)
-  {
-    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitudeDeleterFunctor>{
-      ampl.Copy()};
-  }
-}
-
 namespace PHASIC {
 
   class Process_Base;

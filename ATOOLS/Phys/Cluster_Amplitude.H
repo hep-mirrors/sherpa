@@ -221,6 +221,35 @@ namespace ATOOLS {
 
   typedef std::vector<Cluster_Amplitude*> ClusterAmplitude_Vector;
 
+  struct ClusterAmplitude_Deleter {
+    void operator()(Cluster_Amplitude* ampl) {
+      ampl->Delete();
+    }
+  };
+
+  using Cluster_Amplitude_UP =
+    std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>;
+  inline Cluster_Amplitude_UP MakeClusterAmpl()
+  {
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>{
+      Cluster_Amplitude::New()};
+  }
+  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude_UP& ampl)
+  {
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>{
+      ampl->Copy()};
+  }
+  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude* ampl)
+  {
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>{
+      ampl->Copy()};
+  }
+  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude& ampl)
+  {
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>{
+      ampl.Copy()};
+  }
+
 }// end of namespace ATOOLS
 
 #endif
