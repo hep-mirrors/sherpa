@@ -43,22 +43,24 @@ void Clustered_EWSudakov_Calculator::AddCalculators(const Cluster_Amplitude_UP& 
 {
   DEBUG_FUNC(*ampl);
   ClusterLeg_Vector& legs = ampl->Legs();
-  for (auto lit = legs.begin(); lit != legs.end(); ++lit) {
-    if ((*lit)->Flav().IsLepton()) {
-      for (auto ljt = ++lit; ljt != legs.end(); ++ljt) {
+  size_t n_legs = legs.size();
+  for (size_t i {ampl->NIn()}; i < n_legs; ++i) {
+    if (ampl->Flav(i).IsLepton()) {
+      for (size_t j {i + 1}; j < n_legs; ++j) {
         auto clustered_kfc = kf_none;
-        if ((*lit)->Flav() == (*ljt)->Flav().Bar()) {
+        if (ampl->Flav(i) == ampl->Flav(j).Bar()) {
           clustered_kfc = kf_Z;
-        } else if ((*lit)->Flav() == (*ljt)->Flav().IsoWeakPartner()) {
+        } else if (ampl->Flav(i) == ampl->Flav(j).IsoWeakPartner()) {
           clustered_kfc = kf_Wplus;
         }
         if (clustered_kfc != kf_none) {
           Flavour flav {clustered_kfc};
-          if (clustered_kfc == kf_Wplus && ((*lit)->Flav().Charge() + (*ljt)->Flav().Charge() < 0)) {
+          if (clustered_kfc == kf_Wplus
+              && (ampl->Flav(i).Charge() + ampl->Flav(j).Charge() < 0)) {
             flav = flav.Bar();
           }
           Cluster_Amplitude_UP new_ampl = CopyClusterAmpl(ampl);
-          new_ampl->CombineLegs(*lit, *ljt, flav);
+          new_ampl->CombineLegs(new_ampl->Leg(i), new_ampl->Leg(j), flav);
           AddCalculators(new_ampl, clusterings + 1);
           break;
         }
