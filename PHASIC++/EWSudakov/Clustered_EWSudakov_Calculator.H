@@ -41,11 +41,9 @@ namespace PHASIC {
 
     double m_resdist;
     bool m_disabled;
-    bool m_zzhack;
 
   };
 
 }
 
 #endif
-

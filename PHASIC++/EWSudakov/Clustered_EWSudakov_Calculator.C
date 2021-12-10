@@ -21,8 +21,6 @@ Clustered_EWSudakov_Calculator::Clustered_EWSudakov_Calculator(Process_Base* _pr
     meqedsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
   m_disabled =
     Settings::GetMainSettings()["EWSUDAKOV_CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
-  m_zzhack =
-    Settings::GetMainSettings()["EWSUDAKOV_ZZHACK_ENABLED"].SetDefault(false).Get<bool>();
 
   const Flavour_Vector& flavs = proc->Flavours();
 
@@ -151,8 +149,7 @@ double Clustered_EWSudakov_Calculator::CalcIClustered(
 EWSudakov_Log_Corrections_Map
 Clustered_EWSudakov_Calculator::CorrectionsMap(Vec4D_Vector mom)
 {
-  auto level = msg->Level();
-  //msg->SetLevel(15);
+  DEBUG_FUNC(mom);
 
   if (m_disabled) {
     return calculators.begin()->second->CorrectionsMap(mom);
@@ -161,99 +158,80 @@ Clustered_EWSudakov_Calculator::CorrectionsMap(Vec4D_Vector mom)
   Flavour_Vector flavs = proc->Flavours();
   double ClusteredIOperator{0.0};
 
-      if (m_zzhack)
-  {
-    // TODO: delete this hack and the corresponding switch later
-
-    assert(flavs[2].Kfcode() == kf_e);
-    assert(flavs[3].Kfcode() == kf_mu);
-    assert(flavs[4].Kfcode() == kf_e);
-    assert(flavs[5].Kfcode() == kf_mu);
-
-    flavs[3] = Flavour{kf_Z};
-    mom[3] += mom[5];
-    flavs.erase(flavs.begin() + 5);
-    mom.erase(mom.begin() + 5);
-
-    flavs[2] = Flavour{kf_Z};
-    mom[2] += mom[4];
-    flavs.erase(flavs.begin() + 4);
-    mom.erase(mom.begin() + 4);
-  }
-  else
-  {
-
-    msg_Debugging() << "Will use input process for EWSudakov: ";
+  if (msg_LevelIsDebugging()) {
+    msg_Out() << "Will use input process for EWSudakov: ";
     for (const auto& flav : flavs) {
-      msg_Debugging() << flav.ShellName() << " ";
+      msg_Out() << flav.ShellName() << " ";
     }
-    msg_Debugging() << '\n';
+    msg_Out() << '\n';
+  }
 
-    size_t nflavs {flavs.size()};
-    std::map<double, std::vector<long int>> restab;
-    for (long int i {0}; i < nflavs; ++i) {
-      if (flavs[i].IsLepton()) {
-        for (long int j {i + 1}; j < nflavs; ++j) {
-          long int kf {kf_none};
-          if (flavs[j] == flavs[i].Bar()) {
-            kf = kf_Z;
-          } else if (flavs[j] == flavs[i].IsoWeakPartner()) {
-            kf = kf_Wplus;
-          }
-          if (kf != kf_none) {
-            Flavour resonance{kf};
-            double invariant_mass {(mom[i]+mom[j]).Mass()};
-            double mdist{
-              std::abs(invariant_mass - resonance.Mass()) / resonance.Width()};
-            msg_Debugging()<<"found resonance candidate " << i << ", " << j << " -> " << kf << " (" << mdist << ")";
-            if (mdist < m_resdist) {
-              msg_Debugging()<<"-> accept\n";
-              long int ida[3]={i,j,kf};
-              restab[mdist]=std::vector<long int>(ida,ida+3);
-            } else {
-              msg_Debugging()<<"-> reject\n";
-            }
+  size_t nflavs {flavs.size()};
+  std::map<double, std::vector<long int>> restab;
+  for (long int i {0}; i < nflavs; ++i) {
+    if (flavs[i].IsLepton()) {
+      for (long int j {i + 1}; j < nflavs; ++j) {
+        long int kf {kf_none};
+        if (flavs[j] == flavs[i].Bar()) {
+          kf = kf_Z;
+        } else if (flavs[j] == flavs[i].IsoWeakPartner()) {
+          kf = kf_Wplus;
+        }
+        if (kf != kf_none) {
+          Flavour resonance{kf};
+          double invariant_mass {(mom[i]+mom[j]).Mass()};
+          double mdist{
+            std::abs(invariant_mass - resonance.Mass()) / resonance.Width()};
+          msg_Debugging() << "found resonance candidate " << i << ", " << j <<
+            " -> " << kf << " (" << mdist << ") ";
+          if (mdist < m_resdist) {
+            msg_Debugging()<<"-> accept\n";
+            long int ida[3]={i,j,kf};
+            restab[mdist]=std::vector<long int>(ida,ida+3);
+          } else {
+            msg_Debugging()<<"-> reject\n";
           }
         }
       }
     }
-
-    // replace resonances starting with the least off-shell one
-    std::vector<double> clusterings;
-    std::unordered_set<size_t> clustered_indizes;
-    for (const auto& mdist_ida_pair : restab) {
-      if (clustered_indizes.find(mdist_ida_pair.second[0]) == clustered_indizes.end()
-          && clustered_indizes.find(mdist_ida_pair.second[1]) == clustered_indizes.end()) {
-        clusterings.push_back(mdist_ida_pair.first);
-        clustered_indizes.insert(mdist_ida_pair.second[0]);
-        clustered_indizes.insert(mdist_ida_pair.second[1]);
-      }
-    }
-    std::set<size_t> removelist;
-    ClusteredIOperator  = CalcIClustered(restab,mom,flavs);
-    for (const auto& mdist : clusterings) {
-      if (restab[mdist][2] == kf_Wplus) {
-        flavs[restab[mdist][0]] =
-          Flavour{kf_Wplus, (flavs[restab[mdist][1]].Charge() + flavs[restab[mdist][2]].Charge() < 0)};
-      } else {
-        flavs[restab[mdist][0]] =
-          Flavour{kf_Z};
-      }
-      mom[restab[mdist][0]] += mom[restab[mdist][1]];
-      removelist.insert(restab[mdist][1]);
-    }
-    for (auto i = removelist.rbegin(); i != removelist.rend(); ++ i) {
-      flavs.erase(flavs.begin() + *i);
-      mom.erase(mom.begin() + *i);
-    }
-    msg_Debugging() << "Will use clustered process for EWSudakov: ";
-    for (const auto& flav : flavs) {
-      msg_Debugging() << flav.ShellName() << " ";
-    }
-    msg_Debugging() << '\n';
   }
 
-  msg->SetLevel(level);
+  // replace resonances starting with the least off-shell one
+  std::vector<double> clusterings;
+  std::unordered_set<size_t> clustered_indizes;
+  for (const auto& mdist_ida_pair : restab) {
+    if (clustered_indizes.find(mdist_ida_pair.second[0]) == clustered_indizes.end()
+        && clustered_indizes.find(mdist_ida_pair.second[1]) == clustered_indizes.end()) {
+      clusterings.push_back(mdist_ida_pair.first);
+      clustered_indizes.insert(mdist_ida_pair.second[0]);
+      clustered_indizes.insert(mdist_ida_pair.second[1]);
+    }
+  }
+  std::set<size_t> removelist;
+  ClusteredIOperator  = CalcIClustered(restab,mom,flavs);
+  for (const auto& mdist : clusterings) {
+    if (restab[mdist][2] == kf_Wplus) {
+      flavs[restab[mdist][0]] =
+        Flavour{kf_Wplus, (flavs[restab[mdist][1]].Charge() + flavs[restab[mdist][2]].Charge() < 0)};
+    } else {
+      flavs[restab[mdist][0]] =
+        Flavour{kf_Z};
+    }
+    mom[restab[mdist][0]] += mom[restab[mdist][1]];
+    removelist.insert(restab[mdist][1]);
+  }
+  for (auto i = removelist.rbegin(); i != removelist.rend(); ++ i) {
+    flavs.erase(flavs.begin() + *i);
+    mom.erase(mom.begin() + *i);
+  }
+
+  if (msg_LevelIsDebugging()) {
+    msg_Out() << "Will use clustered process for EWSudakov: ";
+    for (const auto& flav : flavs) {
+      msg_Out() << flav.ShellName() << " ";
+    }
+    msg_Out() << '\n';
+  }
 
   assert(calculators.find(flavs) != calculators.end());
   EWSudakov_Log_Corrections_Map CorrectionsMaps {calculators[flavs]->CorrectionsMap(mom)};
