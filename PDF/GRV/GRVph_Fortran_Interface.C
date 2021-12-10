@@ -10,16 +10,19 @@ using namespace ATOOLS;
 extern "C" {
 void grvglo_(float &, float &, float &, float &, float &, float &, float &,
              float &);
+void grvgho_(float &, float &, float &, float &, float &, float &, float &,
+             float &);
 }
 
-GRVph_Fortran_Interface::GRVph_Fortran_Interface(const ATOOLS::Flavour _bunch) {
+GRVph_Fortran_Interface::GRVph_Fortran_Interface(const ATOOLS::Flavour _bunch,
+                                                 const std::string _set) {
   m_xmin = 1.e-5;
   m_xmax = 1.;
   m_q2min = .25;
   m_q2max = 1.e6;
   m_nf = 5;
 
-  m_set = "GRV";
+  m_set = _set;
   m_bunch = _bunch;
   m_d = m_u = m_s = m_c = m_b = m_g = 0.;
 
@@ -34,14 +37,20 @@ GRVph_Fortran_Interface::GRVph_Fortran_Interface(const ATOOLS::Flavour _bunch) {
 }
 
 PDF_Base *GRVph_Fortran_Interface::GetCopy() {
-  return new GRVph_Fortran_Interface(m_bunch);
+  return new GRVph_Fortran_Interface(m_bunch, m_set);
 }
 
 void GRVph_Fortran_Interface::CalculateSpec(const double &_x,
                                             const double &_Q2) {
   float x = _x / m_rescale, Q2 = _Q2;
 
-  grvglo_(x, Q2, m_u, m_d, m_s, m_c, m_b, m_g);
+  if (m_set == std::string("GRVLO"))
+    grvglo_(x, Q2, m_u, m_d, m_s, m_c, m_b, m_g);
+  else if (m_set == std::string("GRVHO"))
+    grvgho_(x, Q2, m_u, m_d, m_s, m_c, m_b, m_g);
+  else
+    msg_Error() << "Error in GRVph_Fortran_Interface.C " << std::endl
+                << "   set " << m_set << " not found." << std::endl;
 }
 
 double GRVph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
@@ -91,15 +100,25 @@ DECLARE_PDF_GETTER(GRVph_Getter);
 PDF_Base *GRVph_Getter::operator()(const Parameter_Type &args) const {
   if (!args.m_bunch.IsPhoton())
     return NULL;
-  return new GRVph_Fortran_Interface(args.m_bunch);
+  return new GRVph_Fortran_Interface(args.m_bunch, args.m_set);
 }
 
 void GRVph_Getter::PrintInfo(std::ostream &str, const size_t width) const {
-  str << "GRV photon PDF, see PRD45(1992)3986 and PRD46(1992)1973";
+  str << "GRV photon PDF library, see PRD45(1992)3986 and PRD46(1992)1973 \n"
+      << "The two sets are \n"
+      << " - GRVLO \n"
+      << " - GRVHO \n";
 }
 
-GRVph_Getter *p_get_grv;
+GRVph_Getter *p_get_grv[2];
 
-extern "C" void InitPDFLib() { p_get_grv = new GRVph_Getter("GRV"); }
+extern "C" void InitPDFLib() {
+  p_get_grv[0] = new GRVph_Getter("GRVLO");
+  p_get_grv[1] = new GRVph_Getter("GRVHO");
+}
 
-extern "C" void ExitPDFLib() { delete p_get_grv; }
+extern "C" void ExitPDFLib() {
+  for (int i = 0; i < 2; ++i) {
+    delete p_get_grv[i];
+  }
+}

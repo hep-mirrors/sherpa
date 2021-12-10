@@ -11,7 +11,7 @@ private:
   int m_nf;
 
 public:
-  GRVph_Fortran_Interface(const ATOOLS::Flavour);
+  GRVph_Fortran_Interface(const ATOOLS::Flavour, const std::string);
   PDF_Base *GetCopy();
 
   void CalculateSpec(const double &, const double &);
