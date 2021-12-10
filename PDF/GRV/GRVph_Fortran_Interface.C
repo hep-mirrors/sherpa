@@ -50,7 +50,7 @@ void GRVph_Fortran_Interface::CalculateSpec(const double &_x,
     grvgho_(x, Q2, m_u, m_d, m_s, m_c, m_b, m_g);
   else
     msg_Error() << "Error in GRVph_Fortran_Interface.C " << std::endl
-                << "   set " << m_set << " not found." << std::endl;
+                << "   path " << m_set << " not found." << std::endl;
 }
 
 double GRVph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
