@@ -566,7 +566,7 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 0}] = -5.25;
 
   } else {
-    THROW(not_implemented, "No test for this proc");
+    THROW(not_implemented, "No EWSudakov coeff test for this proc: " + procname);
   }
   return coeffs;
 }

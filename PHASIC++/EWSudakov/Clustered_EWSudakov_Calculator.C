@@ -13,6 +13,8 @@ using namespace SHERPA;
 Clustered_EWSudakov_Calculator::Clustered_EWSudakov_Calculator(Process_Base* _proc)
   : proc{_proc}
 {
+  DEBUG_FUNC(proc->Name());
+
   Scoped_Settings meqedsettings{
     Settings::GetMainSettings()["ME_QED"] };
   m_resdist =
@@ -22,22 +24,18 @@ Clustered_EWSudakov_Calculator::Clustered_EWSudakov_Calculator(Process_Base* _pr
   m_zzhack =
     Settings::GetMainSettings()["EWSUDAKOV_ZZHACK_ENABLED"].SetDefault(false).Get<bool>();
 
-  //auto level = msg->Level();
-  //msg->SetLevel(15);
-
   const Flavour_Vector& flavs = proc->Flavours();
 
-  if (m_disabled) {
-    calculators.emplace(
-        std::make_pair(flavs, new EWSudakov_Calculator{proc}));
-  } else {
+  // Add calculator for the unclustered base process
+  calculators.emplace(
+      std::make_pair(flavs, new EWSudakov_Calculator{proc}));
+
+  // Add calculators for clustered processes
+  if (!m_disabled) {
     AddCalculators(flavs, 0);
-    for (size_t i {0}; i < flavs.size(); ++i)
-      msg_Debugging() << flavs[i] << ' ';
-    msg_Debugging() << "added " << calculators.size() << " calculators\n";
   }
 
-  //msg->SetLevel(level);
+  msg_Debugging() << "Added " << calculators.size() << " calculators\n";
 }
 
 void Clustered_EWSudakov_Calculator::AddCalculators(const Flavour_Vector& flavs, size_t clusterings)
@@ -64,7 +62,6 @@ void Clustered_EWSudakov_Calculator::AddCalculators(const Flavour_Vector& flavs,
       }
     }
   }
-  AddCalculator(flavs, clusterings);
 }
 
 Clustered_EWSudakov_Calculator::~Clustered_EWSudakov_Calculator()
