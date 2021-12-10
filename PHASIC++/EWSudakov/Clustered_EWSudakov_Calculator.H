@@ -23,8 +23,8 @@ namespace PHASIC {
 
   private:
 
-    void AddCalculators(const ATOOLS::Flavour_Vector&, size_t clusterings);
-    void AddCalculator(const ATOOLS::Flavour_Vector&, size_t clusterings);
+    void AddCalculators(const ATOOLS::Cluster_Amplitude_UP&, size_t clusterings);
+    void AddCalculator(const ATOOLS::Cluster_Amplitude_UP&, size_t clusterings);
     double CalcIClustered(const std::map<double, std::vector<long int>> restab,
                           const ATOOLS::Vec4D_Vector &mom,
                           const ATOOLS::Flavour_Vector &flavs);
@@ -38,6 +38,9 @@ namespace PHASIC {
     std::map<ATOOLS::Flavour_Vector, std::unique_ptr<EWSudakov_Calculator>> calculators;
 
     PHASIC::Process_Base* proc;
+
+    /// the default COMIX interface used to create clustered processes
+    Comix_Interface* p_comixinterface;
 
     double m_resdist;
     bool m_disabled;

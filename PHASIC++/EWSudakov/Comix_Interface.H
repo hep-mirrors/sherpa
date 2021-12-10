@@ -29,17 +29,20 @@ public:
   void FillSpinAmplitudes(std::vector<METOOLS::Spin_Amplitudes>&,
                           const ATOOLS::Cluster_Amplitude&) const;
 
+  // facilities to generate a process from a given amplitude (via an
+  // intermediate Process_Info)
+  Process_Base* GetProcess(const ATOOLS::Cluster_Amplitude& ampl) const;
+  Process_Info CreateProcessInfo(const ATOOLS::Cluster_Amplitude*,
+                                 const std::string& graph_path="");
+  Process_Base* InitializeProcess(const Process_Info&);
+
 protected:
   Comix_Interface(Process_Base*, const std::string& procname_suffix);
   void InitializeProcesses(const Cluster_Amplitude_PM&);
-  void InitializeProcess(const Process_Info&);
   const Process_Base* p_proc;
   std::string m_procname_suffix;
 
 private:
-  Process_Info CreateProcessInfo(const ATOOLS::Cluster_Amplitude*,
-                                 const std::string& graph_path);
-  Process_Base* GetProcess(const ATOOLS::Cluster_Amplitude& ampl) const;
   virtual NLOTypeStringProcessMap_Map& ProcessMap() { return s_apmap; }
   virtual const NLOTypeStringProcessMap_Map& ProcessMap() const
   {

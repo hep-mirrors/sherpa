@@ -33,6 +33,9 @@ namespace PHASIC {
     const EWGroupConstants& GetEWGroupConstants() const {
       return m_ewgroupconsts;
     }
+    Comix_Interface& GetComixInterface() {
+      return m_comixinterface;
+    }
 
   private:
     HighEnergySchemes m_helimitscheme;
@@ -78,7 +81,7 @@ namespace PHASIC {
     EWSudakov_Amplitudes m_ampls;
 
     /// the default COMIX interface used for all logs except the PR logs
-    const Comix_Interface m_comixinterface;
+    Comix_Interface m_comixinterface;
 
     /// the COMIX interface for using dynamic EW parameters used for the PR logs
     HE_Comix_Interface m_comixinterface_he;

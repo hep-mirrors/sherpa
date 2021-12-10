@@ -119,6 +119,16 @@ namespace ATOOLS {
     {
       Leg(i)->SetMom(i < NIn() ? -p : p);
     }
+    Flavour_Vector Flavs() const
+    {
+      Flavour_Vector flavs;
+      const auto size = m_legs.size();
+      flavs.reserve(size);
+      for (size_t i {0}; i < size; ++i) {
+        flavs.push_back(Flav(i));
+      }
+      return flavs;
+    }
     Flavour Flav(size_t i) const
     {
       return (i < NIn() ? Leg(i)->Flav().Bar() : Leg(i)->Flav());

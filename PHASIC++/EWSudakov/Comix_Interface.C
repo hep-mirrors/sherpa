@@ -165,13 +165,13 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
   return pi;
 }
 
-void Comix_Interface::InitializeProcess(const Process_Info& pi)
+PHASIC::Process_Base* Comix_Interface::InitializeProcess(const Process_Info& pi)
 {
   auto proc = p_proc->Generator()->Generators()->InitializeProcess(pi, false);
   if (proc == NULL) {
     msg_Debugging() << "WARNING: Comix_Interface::InitializeProcess can not"
                     << "initialize process for process info: " << pi << '\n';
-    return;
+    return nullptr;
   }
   proc->SetSelector(Selector_Key{});
   proc->SetScale(Scale_Setter_Arguments(
@@ -182,6 +182,7 @@ void Comix_Interface::InitializeProcess(const Process_Info& pi)
   proc->FillProcessMap(&ProcessMap());
   msg_Debugging() << "Comix_Interface::InitializeProcess initialized "
                   << proc->Name() << '\n';
+  return proc;
 }
 
 void Comix_Interface::AdaptToProcessColorScheme()

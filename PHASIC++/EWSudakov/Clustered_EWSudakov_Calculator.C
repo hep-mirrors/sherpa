@@ -22,40 +22,45 @@ Clustered_EWSudakov_Calculator::Clustered_EWSudakov_Calculator(Process_Base* _pr
   m_disabled =
     Settings::GetMainSettings()["EWSUDAKOV_CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
 
-  const Flavour_Vector& flavs = proc->Flavours();
+  auto ampl = EWSudakov_Amplitudes::CreateAmplitude(proc);
+  const Flavour_Vector& flavs = ampl->Flavs();
 
-  // Add calculator for the unclustered base process
+  // Add calculator for the unclustered base process and capture its Comix
+  // interface, which we will use to build clustered processes
   calculators.emplace(
       std::make_pair(flavs, new EWSudakov_Calculator{proc}));
+  p_comixinterface = &calculators.begin()->second->GetComixInterface();
 
   // Add calculators for clustered processes
   if (!m_disabled) {
-    AddCalculators(flavs, 0);
+    AddCalculators(ampl, 0);
   }
 
   msg_Debugging() << "Added " << calculators.size() << " calculators\n";
 }
 
-void Clustered_EWSudakov_Calculator::AddCalculators(const Flavour_Vector& flavs, size_t clusterings)
+void Clustered_EWSudakov_Calculator::AddCalculators(const Cluster_Amplitude_UP& ampl, size_t clusterings)
 {
-  DEBUG_FUNC(clusterings);
-  size_t nflavs {flavs.size()};
-  for (size_t i {0}; i < nflavs; ++i)
-    msg_Debugging() << flavs[i];
-  msg_Debugging() << '\n';
-  for (size_t i {0}; i < nflavs; ++i) {
-    if (flavs[i].IsLepton()) {
-      for (size_t j {i + 1}; j < nflavs; ++j) {
-        if (flavs[j] == flavs[i].Bar()) {
-          Flavour_Vector newflavs = flavs;
-          newflavs[i] = Flavour{kf_Z};
-          newflavs.erase(newflavs.begin() + j);
-          AddCalculators(newflavs, clusterings + 1);
-        } else if (flavs[j] == flavs[i].IsoWeakPartner()) {
-          Flavour_Vector newflavs = flavs;
-          newflavs[i] = Flavour{kf_Wplus, (flavs[i].Charge() + flavs[j].Charge() < 0)};
-          newflavs.erase(newflavs.begin() + j);
-          AddCalculators(newflavs, clusterings + 1);
+  DEBUG_FUNC(*ampl);
+  ClusterLeg_Vector& legs = ampl->Legs();
+  for (auto lit = legs.begin(); lit != legs.end(); ++lit) {
+    if ((*lit)->Flav().IsLepton()) {
+      for (auto ljt = ++lit; ljt != legs.end(); ++ljt) {
+        auto clustered_kfc = kf_none;
+        if ((*lit)->Flav() == (*ljt)->Flav().Bar()) {
+          clustered_kfc = kf_Z;
+        } else if ((*lit)->Flav() == (*ljt)->Flav().IsoWeakPartner()) {
+          clustered_kfc = kf_Wplus;
+        }
+        if (clustered_kfc != kf_none) {
+          Flavour flav {clustered_kfc};
+          if (clustered_kfc == kf_Wplus && ((*lit)->Flav().Charge() + (*ljt)->Flav().Charge() < 0)) {
+            flav = flav.Bar();
+          }
+          Cluster_Amplitude_UP new_ampl = CopyClusterAmpl(ampl);
+          new_ampl->CombineLegs(*lit, *ljt, flav);
+          AddCalculators(new_ampl, clusterings + 1);
+          break;
         }
       }
     }
@@ -66,56 +71,21 @@ Clustered_EWSudakov_Calculator::~Clustered_EWSudakov_Calculator()
 {
 }
 
-void Clustered_EWSudakov_Calculator::AddCalculator(const Flavour_Vector& flavs, size_t clusterings)
+void Clustered_EWSudakov_Calculator::AddCalculator(const Cluster_Amplitude_UP& ampl, size_t clusterings)
 {
+  const Flavour_Vector& flavs = ampl->Flavs();
   auto it = calculators.find(flavs);
   if (it != calculators.end())
     return;
 
-  // build process info for clustered process
-  Process_Info pi;
-  pi.m_addname = "__Sudakov";
-  pi.m_megenerator = "Comix";
-  for (size_t i{0}; i < proc->NIn(); ++i) {
-    pi.m_ii.m_ps.push_back(Subprocess_Info(flavs[i], "", ""));
+  // Create clustered process using the base calculator's COMIX interface
+  PHASIC::Process_Base* clustered_proc = p_comixinterface->GetProcess(*ampl);
+  if (!clustered_proc) {
+    Process_Info pi = p_comixinterface->CreateProcessInfo(ampl.get());
+    pi.m_mincpl[1] -= clusterings;
+    pi.m_maxcpl[1] -= clusterings;
+    clustered_proc = p_comixinterface->InitializeProcess(pi);
   }
-  for (size_t i{proc->NIn()}; i < proc->NIn() + proc->NOut() - clusterings; ++i) {
-    pi.m_fi.m_ps.push_back(Subprocess_Info(flavs[i], "", ""));
-  }
-  pi.m_maxcpl = proc->Info().m_maxcpl;
-  pi.m_mincpl = proc->Info().m_mincpl;
-  pi.m_maxacpl = proc->Info().m_maxacpl;
-  pi.m_minacpl = proc->Info().m_minacpl;
-  pi.m_maxcpl[2] = 99;
-  pi.m_mincpl[2] = 0;
-  pi.m_maxacpl[2] = 99;
-  pi.m_minacpl[2] = 0;
-  pi.m_mincpl[1] -= clusterings;
-  pi.m_maxcpl[1] -= clusterings;
-
-  // subtract 1 from the QCD order if we are dealing with V and/or I events
-  if (proc->Info().Has(nlo_type::loop) || proc->Info().Has(nlo_type::vsub)) {
-    pi.m_mincpl[0] -= 1;
-    pi.m_maxcpl[0] -= 1;
-  }
-
-  // initialize process
-  auto clustered_proc =
-    proc->Generator()->Generators()->InitializeProcess(pi, false);
-  if (clustered_proc == NULL) {
-    msg_Debugging()
-      << "WARNING: Clustered_EWSudakov_Calculator::AddCalculator can not"
-      << "initialize process for process info: " << pi << '\n';
-    return;
-  }
-  clustered_proc->SetSelector(Selector_Key{});
-  clustered_proc->SetScale(Scale_Setter_Arguments(
-        MODEL::s_model, "VAR{" + ToString(sqr(rpa->gen.Ecms())) + "}",
-        "Alpha_QCD 1"));
-  clustered_proc->SetKFactor(KFactor_Setter_Arguments("None"));
-  msg_Debugging()
-    << "Clustered_EWSudakov_Calculator::AddCalculator initialized "
-    << clustered_proc->Name() << '\n';
 
   // add calculator
   calculators.emplace(
