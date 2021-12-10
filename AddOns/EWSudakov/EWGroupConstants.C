@@ -1,4 +1,4 @@
-#include "PHASIC++/EWSudakov/EWGroupConstants.H"
+#include "AddOns/EWSudakov/EWGroupConstants.H"
 
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"

@@ -1,4 +1,4 @@
-#include "PHASIC++/EWSudakov/HE_Comix_Interface.H"
+#include "AddOns/EWSudakov/HE_Comix_Interface.H"
 
 #include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"

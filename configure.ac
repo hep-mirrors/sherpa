@@ -143,9 +143,6 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  PHASIC++/Selectors/Makefile \
 	  PHASIC++/Scales/Makefile \
 	  PHASIC++/Enhance/Makefile \
-	  PHASIC++/EWSudakov/Makefile \
-	  PHASIC++/EWSudakov/Tests/Makefile \
-	  PHASIC++/EWSudakov/Tests/run.sh \
 	  PHASIC++/Decays/Makefile \
 	  PHASIC++/Makefile \
 	  EXTRA_XS/Main/Makefile \
@@ -260,6 +257,9 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  AddOns/Weights/Makefile \
 	  AddOns/Root/Makefile \
 	  AddOns/DiHiggsNLO/Makefile \
+	  AddOns/EWSudakov/Makefile \
+	  AddOns/EWSudakov/Tests/Makefile \
+	  AddOns/EWSudakov/Tests/run.sh \
 	  AddOns/Makefile \
 	  Makefile ])
 AC_OUTPUT

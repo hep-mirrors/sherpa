@@ -1,8 +1,8 @@
-#include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
+#include "AddOns/EWSudakov/EWSudakov_Amplitudes.H"
 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "PHASIC++/EWSudakov/EWGroupConstants.H"
+#include "AddOns/EWSudakov/EWGroupConstants.H"
 #include "PHASIC++/Process/Process_Base.H"
 
 #include <numeric>

@@ -2,7 +2,7 @@
 #define PHASIC__EWSudakov__Comix_Interface_H
 
 #include "METOOLS/Main/Spin_Structure.H"
-#include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
+#include "AddOns/EWSudakov/EWSudakov_Amplitudes.H"
 #include "PHASIC++/Process/Process_Base.H"
 
 namespace ATOOLS {

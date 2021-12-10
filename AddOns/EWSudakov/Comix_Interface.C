@@ -1,4 +1,4 @@
-#include "PHASIC++/EWSudakov/Comix_Interface.H"
+#include "AddOns/EWSudakov/Comix_Interface.H"
 
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"

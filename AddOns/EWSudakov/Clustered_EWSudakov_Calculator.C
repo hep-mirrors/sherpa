@@ -1,4 +1,4 @@
-#include "PHASIC++/EWSudakov/Clustered_EWSudakov_Calculator.H"
+#include "AddOns/EWSudakov/Clustered_EWSudakov_Calculator.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"

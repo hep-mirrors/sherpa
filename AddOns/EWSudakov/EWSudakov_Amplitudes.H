@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
-#include "PHASIC++/EWSudakov/EWSudakov.H"
+#include "AddOns/EWSudakov/EWSudakov.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 
 #include <memory>

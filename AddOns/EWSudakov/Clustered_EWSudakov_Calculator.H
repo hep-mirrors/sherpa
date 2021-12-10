@@ -2,7 +2,7 @@
 #define PHASIC__EWSudakov__Clustered__Calculator_H
 
 #include "ATOOLS/Phys/Flavour.H"
-#include "PHASIC++/EWSudakov/EWSudakov_Calculator.H"
+#include "AddOns/EWSudakov/EWSudakov_Calculator.H"
 
 namespace SHERPA {
   class Resonance_Finder;

@@ -1,8 +1,8 @@
 #ifndef PHASIC_EWSudakov_KFactorChecker_H
 #define PHASIC_EWSudakov_KFactorChecker_H
 
-#include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
-#include "PHASIC++/EWSudakov/EWSudakov_Calculator.H"
+#include "AddOns/EWSudakov/EWSudakov_Amplitudes.H"
+#include "AddOns/EWSudakov/EWSudakov_Calculator.H"
 
 #include <string>
 #include <map>

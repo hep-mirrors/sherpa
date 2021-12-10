@@ -1,4 +1,4 @@
-#include "PHASIC++/EWSudakov/EWSudakov.H"
+#include "AddOns/EWSudakov/EWSudakov.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/Flavour.H"
 

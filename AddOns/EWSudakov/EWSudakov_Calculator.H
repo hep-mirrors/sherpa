@@ -3,9 +3,9 @@
 
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Phys/EWSudakov_Info.H"
-#include "PHASIC++/EWSudakov/HE_Comix_Interface.H"
-#include "PHASIC++/EWSudakov/EWGroupConstants.H"
-#include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
+#include "AddOns/EWSudakov/HE_Comix_Interface.H"
+#include "AddOns/EWSudakov/EWGroupConstants.H"
+#include "AddOns/EWSudakov/EWSudakov_Amplitudes.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 
 #include "PHASIC++/Process/Process_Base.H"

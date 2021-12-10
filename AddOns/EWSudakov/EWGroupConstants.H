@@ -1,7 +1,7 @@
 #ifndef PHASIC__EWSudakov__EWGoupConstants_H
 #define PHASIC__EWSudakov__EWGoupConstants_H
 
-#include "PHASIC++/EWSudakov/EWSudakov.H"
+#include "AddOns/EWSudakov/EWSudakov.H"
 
 #include "MODEL/Main/Model_Base.H"
 

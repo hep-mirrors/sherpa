@@ -1,5 +1,5 @@
-#include "PHASIC++/EWSudakov/KFactor.H"
-#include "PHASIC++/EWSudakov/Comix_Interface.H"
+#include "AddOns/EWSudakov/KFactor.H"
+#include "AddOns/EWSudakov/Comix_Interface.H"
 
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"

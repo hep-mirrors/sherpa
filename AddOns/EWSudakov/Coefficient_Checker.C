@@ -1,4 +1,4 @@
-#include "PHASIC++/EWSudakov/Coefficient_Checker.H"
+#include "AddOns/EWSudakov/Coefficient_Checker.H"
 #include "METOOLS/Main/Spin_Structure.H"
 
 using namespace PHASIC;

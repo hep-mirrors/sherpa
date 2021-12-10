@@ -2,7 +2,7 @@
 #define PHASIC__EWSUDAKOV__KFactor__H
 
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
-#include "PHASIC++/EWSudakov/Clustered_EWSudakov_Calculator.H"
+#include "AddOns/EWSudakov/Clustered_EWSudakov_Calculator.H"  // TODO: no AddOns dependency allowed
 
 namespace PHASIC {
   class Sudakov_KFactor: public KFactor_Setter_Base {

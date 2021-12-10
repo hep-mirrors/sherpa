@@ -3,7 +3,7 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Phys/Variations.H"
-#include "PHASIC++/EWSudakov/KFactor.H"
+#include "AddOns/EWSudakov/KFactor.H"
 
 namespace PHASIC {
 

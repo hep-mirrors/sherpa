@@ -1,7 +1,7 @@
 #ifndef PHASIC__EWSudakov__HE_Comix_Interface_H
 #define PHASIC__EWSudakov__HE_Comix_Interface_H
 
-#include "PHASIC++/EWSudakov/Comix_Interface.H"
+#include "AddOns/EWSudakov/Comix_Interface.H"
 
 namespace MODEL {
   class EWParameters;
