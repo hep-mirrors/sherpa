@@ -98,7 +98,8 @@ EventInfo3::EventInfo3(const EventInfo3 &evtinfo) :
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
   m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),m_muq2(0.),
-  m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
+  m_alphas(0.), m_alpha(0.),
+  m_userhook(false), m_userweight(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
   m_wgtmap(evtinfo.m_wgtmap)
@@ -115,7 +116,17 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
 {
   DEBUG_FUNC("use named weights: "<<m_usenamedweights
              <<", extended weights: "<<m_extendedweights);
-  std::map<std::string,double> wc;
+  class WeightContainer: public std::vector< std::pair<std::string, double> > {
+  public:
+  double& operator[](const std::string s) {
+    for (auto a = this->begin(); a != this->end(); ++a)
+    if (a->first == s) return a->second;
+    this->push_back(std::pair<std::string,double>(s, 0.0));
+    return this->back().second; 
+ }
+};
+  WeightContainer wc;
+
   if (m_usenamedweights) {
 
  // fill standard entries to ensure backwards compatability
@@ -205,6 +216,13 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
             }
           }
         }
+        if (p_wgtinfo->m_wass.size()) {
+          for (size_t i(0);i<p_wgtinfo->m_wass.size();++i) {
+            asscontrib::type ass=static_cast<asscontrib::type>(1<<i);
+            wc["Reweight_"+ToString(ass)]
+                =p_wgtinfo->m_wass[i];
+          }
+        }
         wc["Reweight_Type"]=p_wgtinfo->m_type;
       }
       if (p_subevtlist) {
@@ -270,7 +288,7 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
 
   std::vector<std::string> w_names;
   std::vector<double> w_values;
-  for (std::map<std::string,double>::iterator it=wc.begin(); it!=wc.end();++it)
+  for (auto it = wc.begin(); it != wc.end(); ++it)
   { w_names.push_back(it->first); w_values.push_back(it->second);}
   evt.run_info()->set_weight_names(w_names);
   evt.weights()=w_values;
@@ -337,6 +355,13 @@ HepMC3_Interface::HepMC3_Interface() :
     s["HEPMC_INCLUDE_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
+  
+  m_runinfo = std::make_shared<HepMC::GenRunInfo>();
+  HepMC::GenRunInfo::ToolInfo generator;
+  generator.name = std::string("SHERPA");
+  generator.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
+  generator.description = "Used generator";
+  m_runinfo->tools().push_back(generator);
 }
 
 HepMC3_Interface::~HepMC3_Interface()
@@ -353,6 +378,7 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   const auto weight(blobs->Weight());
   event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
+  event.set_run_info(m_runinfo);
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
   Blob *mp(blobs->FindFirst(btp::Hard_Collision));  
@@ -534,8 +560,7 @@ std::shared_ptr<HepMC::GenParticle> HepMC3_Interface::MakeGenParticle(
 
 // HS: Short-hand that takes a blob list, creates a new GenEvent and
 // calls the actual Sherpa2HepMC
-bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-				   std::shared_ptr<HepMC::GenRunInfo> run)
+bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -547,7 +572,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   for (size_t i=0; i<m_subeventlist.size();++i)
     { m_subeventlist[i]->clear(); delete m_subeventlist[i];}
   m_subeventlist.clear();
-  p_event = new HepMC::GenEvent(run);
+  p_event = new HepMC::GenEvent();
   return Sherpa2HepMC(blobs, *p_event);
 }
 
@@ -559,6 +584,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   DEBUG_FUNC("");
   event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
+  event.set_run_info(m_runinfo);
   if (!m_hepmctree) event.add_attribute("cycles",std::make_shared<HepMC::IntAttribute>(1));
   // Signal Process blob --- there is only one
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
@@ -805,6 +831,12 @@ void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
     cross_section->set_cross_section(xs,err);
     event.set_cross_section(cross_section);
 
+}
+
+bool HepMC3_Interface::StartsLikeVariationName(const std::string& s)
+{
+  return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0 ||
+          s.find("ASS") == 0);
 }
 
 void HepMC3_Interface::DeleteGenSubEventList()

@@ -70,24 +70,28 @@ XS_ee_ffbar::XS_ee_ffbar(const External_ME_Args& args)
   fac      = 2./(3.*M_PI);
   fin      = 2.*M_PI/9. - 7./(3.*M_PI) + 9./(3.*M_PI);
 
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  if (m_flavs[0].IsLepton() && m_flavs[1].IsLepton()) {
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
+  if (m_flavs[0].IsLepton() && m_flavs[1].IsLepton() &&
+      m_flavs[2].IsQuark() && m_flavs[3].IsQuark()) {
     barred = m_flavs[2].IsAnti();
-    p_colours[2][barred] = p_colours[3][1-barred] = 500;
+    m_colours[2][barred] = m_colours[3][1-barred] = 500;
     colfac = 3.;
   }
 
-  if (m_flavs[0].IsQuark() && m_flavs[1].IsQuark())  {
+  if (m_flavs[0].IsQuark() && m_flavs[1].IsQuark() &&
+      m_flavs[2].IsLepton() && m_flavs[3].IsLepton())  {
     barred = m_flavs[0].IsAnti();
-    p_colours[0][barred] = p_colours[1][1-barred] = 500;
+    m_colours[0][barred] = m_colours[1][1-barred] = 500;
     colfac  = 1./3.;
     kswitch = 1;
   }
 
-  m_cfls[3].push_back(kf_photon);
-  m_cfls[3].push_back(kf_Z);
-  m_cfls[12].push_back(kf_photon);
-  m_cfls[12].push_back(kf_Z);
+  for (size_t i=3;i<13;i+=9) {
+    Flavour_Vector flavs;
+    flavs.push_back(kf_photon);
+    flavs.push_back(kf_Z);
+    m_cfls[i] = flavs;
+  }
 }
 
 double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
@@ -122,11 +126,16 @@ operator()(const External_ME_Args& args) const
 
   const Flavour_Vector fl=args.Flavours();
   if (fl.size()!=4) return NULL;
-  if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() && fl[0].IsQuark() && 
-       fl[1]==fl[0].Bar()) ||   
-      (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsQuark() && 
-       fl[3]==fl[2].Bar())) {
-    if (args.m_orders[0]==0 && args.m_orders[1]==2) {
+  if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() &&
+       fl[0].IsQuark() && fl[1]==fl[0].Bar()) ||   
+      (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
+       fl[2].IsQuark() && fl[3]==fl[2].Bar()) ||
+      (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsLepton() && 
+       fl[3]==fl[2].Bar() && abs(int(fl[2].Kfcode())-int(fl[0].Kfcode()))>1)) {
+    if ((args.m_orders[0]==0 || args.m_orders[0]==99) && args.m_orders[1]==2) {
+      msg_Debugging()<<METHOD<<": "<<fl.size()<<" "
+	       <<"("<<fl[0]<<" + "<<fl[1]<<" --> "<<fl[2]<<" + "<<fl[3]<<"), "
+	       <<"orders = {"<<args.m_orders[0]<<", "<<args.m_orders[1]<<"}.\n";
       return new XS_ee_ffbar(args);
     }
   }

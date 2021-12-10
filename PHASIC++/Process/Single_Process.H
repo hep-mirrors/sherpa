@@ -19,6 +19,7 @@ namespace PHASIC {
     size_t m_nfconvscheme;
     ATOOLS::Cluster_Sequence_Info m_csi;
     bool m_ewsudakov_rs;
+    std::vector<ATOOLS::asscontrib::type> m_asscontrib;
 
     //! Override in a subclass that calculates KP terms to enable their reweighting
     virtual double KPTerms(int mode, double scalefac2=1.0) { return 0.; };
@@ -31,7 +32,10 @@ namespace PHASIC {
     size_t Size() const override;
     Process_Base *operator[](const size_t &i) override;
 
-    ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) override;
+    ATOOLS::Weight_Info *OneEvent(
+        const int wmode,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        const int mode=0) override;
 
     double KFactor(const int mode=0) const;
 
@@ -65,7 +69,15 @@ namespace PHASIC {
      * m_mewgtinfo. These information can be retrieved using Last, LastB,
      * LastXS and GetMEwgtinfo.
     */
-    virtual double Partonic(const ATOOLS::Vec4D_Vector &p, int mode=0) = 0;
+    virtual double Partonic(
+        const ATOOLS::Vec4D_Vector &p,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        int mode=0) = 0;
+
+    inline virtual const double SPrimeMin() const override { return -1.; }
+    inline virtual const double SPrimeMax() const override { return -1.; }
+    inline virtual const bool   HasInternalScale() const override { return false; }
+    inline virtual const double InternalScale()    const override { return -1.; }
 
     virtual bool Combinable(const size_t &idi,
                             const size_t &idj);
@@ -160,6 +172,7 @@ namespace PHASIC {
     void UpdateMEWeightInfo(Scale_Setter_Base*);
     void ReweightBVI(ATOOLS::ClusterAmplitude_Vector&);
     void ReweightRS(ATOOLS::ClusterAmplitude_Vector&);
+    void CalculateAssociatedContributionVariations();
 
   };// end of class Single_Process
 

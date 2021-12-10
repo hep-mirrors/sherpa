@@ -64,7 +64,9 @@ Weights_Map COMIX::Single_Dipole_Term::Differential(
   return PHASIC::Process_Base::Differential(ampl,varmode,mode);
 }
 
-double COMIX::Single_Dipole_Term::Partonic(const Vec4D_Vector &p, int mode)
+double COMIX::Single_Dipole_Term::Partonic(const Vec4D_Vector &p,
+                                           Variations_Mode varmode,
+                                           int mode)
 {
   Single_Dipole_Term *sp(this);
   if (mode==1) return m_lastxs;

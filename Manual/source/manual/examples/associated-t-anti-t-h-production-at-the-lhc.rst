@@ -18,11 +18,7 @@ quarks or leptons.
 
 Things to notice:
 
-* The virtual matrix elements can be interfaced either from OpenLoops
-  or from :cite:`Reina2001sf`, :cite:`Reina2001bc`,
-  :cite:`Dawson2002tg`, :cite:`Dawson2003zu`.  In the latter case, the
-  shared library necessary for running this setup is built using
-  `scons -f SConstruct-TTH <http://www.scons.org/>`_.
+* The virtual matrix elements is interfaced from OpenLoops.
 
 * The top quarks are stable in the hard matrix elements.
   They are decayed using the internal decay module, indicated by

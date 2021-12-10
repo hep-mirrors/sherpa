@@ -27,7 +27,7 @@ Things to notice:
 
 * The settings necessary for NLO accuracy are restricted to the
   2->2,3,4 processes using the ``2->2-4`` key below the ``# set up
-  MC@NLO ...`` comment.  The example can be converted into a simple
+  NLO+PS ...`` comment.  The example can be converted into a simple
   MENLOPS setup by using ``2->2`` instead, or into an MEPS setup by
   removing these lines altogether.  Thus one can study the effect of
   incorporating higher-order matrix elements.

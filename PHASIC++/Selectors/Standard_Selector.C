@@ -695,7 +695,7 @@ void IMass_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   m_flav1=flav1;
   m_flav2=flav2;
   m_massmin=Max(min,m_flav1.SelMass()+m_flav2.SelMass());
-  m_massmax=Min(max,(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0]));
+  m_massmax=Min(max,1.00000001*rpa->gen.Ecms()); //(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0]));
 
   for (size_t i=m_nin;i<m_n;i++) {
     for (size_t j=i+1;j<m_n;j++) {

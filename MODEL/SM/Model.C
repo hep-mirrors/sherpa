@@ -114,6 +114,7 @@ void Standard_Model::ParticleInit()
   s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.385,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
   s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
   s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
+  s_kftable[kf_instanton] = new Particle_Info(kf_instanton,0.0,0.0,0,8,0,-1,1,0,0,"Instanton","Instanton","Instanton","Instanton");
   ReadParticleData();
 }
 
@@ -150,7 +151,6 @@ void Standard_Model::FixEWParameters()
   double MZ=Flavour(kf_Z).Mass(), GZ=Flavour(kf_Z).Width();
   double MH=Flavour(kf_h0).Mass(), GH=Flavour(kf_h0).Width();
   std::string ewschemename(""),ewrenschemename("");
-  PRINT_VAR(ewscheme);
   switch (ewscheme) {
   case ew_scheme::UserDefined:
     // all SM parameters given explicitly
@@ -633,7 +633,10 @@ void Standard_Model::InitEWVertices()
     for (short int i=1;i<17;++i) {
       if (i==7) i=11;
       Flavour flav((kf_code)i);
-      if (!flav.IsOn() || flav.Yuk()==0.0) continue;
+      if (!flav.IsOn() || flav.Yuk()==0.0) {
+	p_complexconstants->insert(make_pair("yuk("+ToString(i)+")",0.));
+	continue;
+      }
       double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
 	ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));
       Kabbala M;
@@ -641,6 +644,8 @@ void Standard_Model::InitEWVertices()
         M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",
 		  sqrt(m*m-Complex(0.0,m*flav.Width())));
       else M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",m);
+      p_complexconstants->insert
+	(make_pair("yuk("+ToString(i)+")",M.Value()));
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle(flav.Bar());
       m_v.back().AddParticle(flav);

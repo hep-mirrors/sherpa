@@ -35,10 +35,10 @@ extern "C" Single_Channel * Getter_C2_2(int nin,int nout,Flavour* fl,Integration
 void C2_2::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
 {
   double *ran = p_vegas->GeneratePoint(_ran);
-  for(int i=0;i<rannum;i++) rans[i]=ran[i];
+  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   Vec4D p23=p[0]+p[1];
-  double s3 = ms[3];
-  double s2 = ms[2];
+  double s3 = p_ms[3];
+  double s2 = p_ms[2];
   CE.Isotropic2Momenta(p23,s2,s3,p[2],p[3],ran[0],ran[1]);
 }
 
@@ -50,27 +50,27 @@ void C2_2::GenerateWeight(Vec4D* p,Cut_Data * cuts)
     m_kI_2_3<<CE.Isotropic2Weight(p[2],p[3],m_kI_2_3[0],m_kI_2_3[1]);
   wt *= m_kI_2_3.Weight();
 
-  rans[0]= m_kI_2_3[0];
-  rans[1]= m_kI_2_3[1];
-  double vw = p_vegas->GenerateWeight(rans);
+  p_rans[0]= m_kI_2_3[0];
+  p_rans[1]= m_kI_2_3[1];
+  double vw = p_vegas->GenerateWeight(p_rans);
   if (wt!=0.) wt = vw/wt/pow(2.*M_PI,2*3.-4.);
 
-  weight = wt;
+  m_weight = wt;
   if (m_onshell) {
-    weight/=M_PI*2.0;
-    weight*=Flavour((kf_code)(25)).Mass()*Flavour((kf_code)(25)).Width()*M_PI;
+    m_weight/=M_PI*2.0;
+    m_weight*=Flavour((kf_code)(25)).Mass()*Flavour((kf_code)(25)).Width()*M_PI;
   }
 }
 
 C2_2::C2_2(int nin,int nout,Flavour* fl,Integration_Info * const info)
        : Single_Channel(nin,nout,fl)
 {
-  name = std::string("C2_2");
-  rannum = 2;
-  rans  = new double[rannum];
+  m_name = std::string("C2_2");
+  m_rannum = 2;
+  p_rans  = new double[m_rannum];
   m_kI_2_3.Assign(std::string("I_2_3"),2,0,info);
   m_kZR25_125.Assign(std::string("ZR25_125"),2,0,info);
-  p_vegas = new Vegas(rannum,100,name);
+  p_vegas = new Vegas(m_rannum,100,m_name);
   m_onshell = Settings::GetMainSettings()["HIGGS_ON_SHELL"].Get<bool>();
 }
 
@@ -90,7 +90,7 @@ void C2_2::ISRInfo(int & type,double & mass,double & width)
 void C2_2::AddPoint(double Value)
 {
   Single_Channel::AddPoint(Value);
-  p_vegas->AddPoint(Value,rans);
+  p_vegas->AddPoint(Value,p_rans);
 }
 std::string C2_2::ChID()
 {

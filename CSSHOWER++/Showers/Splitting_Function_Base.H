@@ -28,6 +28,7 @@ namespace CSSHOWER {
     cstp::code m_type;
     double m_lastint, m_lastacceptwgt, m_lastscale;
     double m_symf, m_polfac, m_lpdf, m_efac, m_mth;
+    double m_facscalefactor;
     int m_on, m_qcd, m_scs;
     std::vector<Parton*> m_specs;
     Parton *p_spec;
@@ -105,6 +106,8 @@ namespace CSSHOWER {
     inline void SetScaleScheme(const int &scs) { m_scs=scs; }
 
     inline int ScaleScheme() const { return m_scs; }
+
+    inline void SetFacScaleFactor(const double fac) { m_facscalefactor=fac; }
 
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };

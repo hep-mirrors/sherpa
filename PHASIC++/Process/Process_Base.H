@@ -49,6 +49,11 @@ namespace PHASIC {
   typedef std::map<ATOOLS::nlo_type::code,StringProcess_Map*>
   NLOTypeStringProcessMap_Map;
 
+  struct Color_Matrix {
+    std::vector<std::vector<int> > m_perms;
+    std::vector<std::vector<double> > m_colfacs;
+  };// end of struct Color_Matrix
+
   class Process_Base {
   protected:
 
@@ -81,9 +86,13 @@ namespace PHASIC {
     double m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
+    bool   m_hasinternalscale;
+    double m_internalscale;
     MODEL::Coupling_Map m_cpls;
 
     NLOTypeStringProcessMap_Map *p_apmap;
+
+    Color_Matrix m_cols;
 
     static int s_usefmm;
 
@@ -114,6 +123,9 @@ namespace PHASIC {
 
     std::string ShellName(std::string name="") const;
 
+    Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;
+
+    virtual void ConstructColorMatrix();
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
@@ -130,7 +142,10 @@ namespace PHASIC {
     virtual size_t Size() const = 0;
     virtual Process_Base *operator[](const size_t &i) = 0;
 
-    virtual ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) = 0;
+    virtual ATOOLS::Weight_Info *OneEvent(
+        const int wmode,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        const int mode=0) = 0;
 
     /*!
      * Calculate the nominal differential
@@ -177,6 +192,7 @@ namespace PHASIC {
     virtual bool FillIntegrator(Phase_Space_Handler *const psh);
     virtual bool InitIntegrator(Phase_Space_Handler *const psh);
     virtual void UpdateIntegrator(Phase_Space_Handler *const psh);
+    virtual bool FillResonances(ATOOLS::Flavour_Vector & flavs) { return false; }
 
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);
@@ -199,6 +215,9 @@ namespace PHASIC {
 			       const std::string efunc);
 
     virtual void FillOnshellConditions();
+    virtual bool FillFinalState(const ATOOLS::Vec4D_Vector &p);
+
+    virtual std::vector<std::vector<int> > *Colours() const;
 
     static void SortFlavours(ATOOLS::Cluster_Amplitude *const ampl,
 			     const int mode=1);
@@ -218,9 +237,8 @@ namespace PHASIC {
     // inline functions
     inline void SetParent(Process_Base *const proc) { p_parent=proc; }
 
-    inline size_t NIn() const  { return m_nin;  }
-    inline size_t NOut() const { return m_nout; }
-
+    inline size_t NIn()                             const { return m_nin;  }
+    inline size_t NOut()                            const { return m_nout; }
     inline const ATOOLS::Flavour_Vector &Flavours() const { return m_flavs; }
     inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs) { m_flavs = flavs; }
 
@@ -254,6 +272,9 @@ namespace PHASIC {
     inline void SetMEwgtinfo(const ATOOLS::ME_Weight_Info i) { m_mewgtinfo=i; }
 
     inline Process_Integrator *Integrator() const { return p_int; }
+    
+    inline virtual const bool   HasInternalScale() const { return m_hasinternalscale; }
+    inline virtual const double InternalScale()    const { return m_internalscale; }
 
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
@@ -284,7 +305,8 @@ namespace PHASIC {
     inline Cut_Data          * Cuts() const { return p_cuts; }
     inline Combined_Selector * Selector() const 
     { return p_mapproc?p_mapproc->p_selector:p_selector; }
-
+    inline virtual const double SPrimeMin() const { return -1.; }
+    inline virtual const double SPrimeMax() const { return -1.; }
     template <class PType> inline PType *Get() 
     { return dynamic_cast<PType*>(this); }
     template <class PType> inline const PType *Get() const 
@@ -293,6 +315,9 @@ namespace PHASIC {
     inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }
 
     inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
+
+    inline const Color_Matrix &ColorMatrix(const int map=0) const
+    { return map?(p_mapproc?p_mapproc->m_cols:m_cols):m_cols; }
 
   };// end of class Process_Base
 

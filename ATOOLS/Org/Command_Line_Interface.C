@@ -13,6 +13,7 @@
 using namespace ATOOLS;
 
 Command_Line_Interface::Command_Line_Interface(int argc, char* argv[])
+  : Yaml_Reader{"command line"}
 {
   // skip program name argv[0] if present
   if (argc > 0) {
@@ -180,6 +181,7 @@ bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
       nonOption.append(num_scopes - 1, '}');
 
     m_yamlstream << nonOption << '\n';
+    m_yamlstream << "---\n";  // YAML document end marker
   }
 
   if (!legacysyntaxtags.empty()) {

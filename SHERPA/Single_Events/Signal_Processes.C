@@ -117,8 +117,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 		       Cluster(proc->Integrator()->Momenta(),m_cmode);
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
-  for (size_t i=0;i<proc->NIn();i++) 
-    cms += proc->Integrator()->Momenta()[i];
+  for (size_t i=0;i<proc->NIn();i++) cms += proc->Integrator()->Momenta()[i];
   blob->SetCMS(cms);
   blob->DeleteOwnedParticles();
   blob->ClearAllData();

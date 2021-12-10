@@ -28,20 +28,23 @@ PARTICLE_DATA:
 PROCESSES:
 # The Born piece
 - 93 93 -> 90 91 93:
+    Order: {QCD: 1, EW: 2}
+    NLO_Order: {QCD: 1, EW: 0}
     NLO_Mode: Fixed_Order
     NLO_Part: B
-    Order: {QCD: Any, EW: 2}
 # The virtual piece
 - 93 93 -> 90 91 93:
+    Order: {QCD: 1, EW: 2}
+    NLO_Order: {QCD: 1, EW: 0}
     NLO_Mode: Fixed_Order
     NLO_Part: V
     Loop_Generator: $(LGEN)
-    Order: {QCD: Any, EW: 2}
 # The integrated subtraction piece
 - 93 93 -> 90 91 93:
+    Order: {QCD: 1, EW: 2}
+    NLO_Order: {QCD: 1, EW: 0}
     NLO_Mode: Fixed_Order
     NLO_Part: I
-    Order: {QCD: Any, EW: 2}
 SELECTORS:
 - FastjetFinder:
     Algorithm: antikt
@@ -50,6 +53,6 @@ SELECTORS:
     ETMin: 0
     DR: 0.4
 RIVET:
-  -a: ATLAS_2012_I1083318
+  --analyses: ATLAS_2012_I1083318
   USE_HEPMC_SHORT: 1
-  IGNOREBEAMS: 1
+  --ignore-beams: 1

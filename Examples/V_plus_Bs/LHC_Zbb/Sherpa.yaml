@@ -24,7 +24,7 @@ PARTICLE_DATA:
 
 MI_HANDLER: None
 FRAGMENTATION: None
-SCALES: VAR{H_T2+sqr(91.188)}
+CORE_SCALE: VAR{H_T2+sqr(91.188)}
 PDF_LIBRARY: MSTW08Sherpa
 PDF_SET: mstw2008nlo_nf4
 
@@ -35,7 +35,7 @@ PROCESSES:
     ME_Generator: Amegic
     RS_ME_Generator: Comix
     Loop_Generator: LHOLE
-    Order: {QCD: Any, EW: 1}
+    Order: {QCD: 2, EW: 1}
 
 SELECTORS:
 - FastjetFinder:

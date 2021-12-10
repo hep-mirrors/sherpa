@@ -1,6 +1,5 @@
 #include <cassert>
 #include "AHADIC++/Main/Ahadic.H"
-#include "AHADIC++/Tools/Hadron_Init.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Org/Message.H"
@@ -21,6 +20,7 @@ Ahadic::Ahadic(string shower) :
   m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters)),
   m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
 {  
+  ReadMassParameters();
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
   m_beamparticles.Init();
@@ -77,6 +77,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     }
     blit++;      
   }
+  if (m_shrink) Shrink(blobs);
   return Return_Value::Success;
 }  
 
@@ -109,7 +110,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   //	   <<"######################################################################\n";
   return Return_Value::Success;
 }
-  
+
 bool Ahadic::ExtractSinglets(Blob * blob)
 {
   //msg_Out()<<"   ### "<<METHOD<<"\n";
@@ -143,8 +144,9 @@ bool Ahadic::CheckSinglets()
 bool Ahadic::DecayGluons() {
   //msg_Out()<<"   ### "<<METHOD<<"\n";
   while (!m_singlet_list.empty()) {
-    if (m_gluondecayer(m_singlet_list.front())) 
+    if (m_gluondecayer(m_singlet_list.front())) {
       m_singlet_list.pop_front();
+    }
     else {
       msg_Error()<<METHOD<<" could not decay all gluons.\n";
       return false;
@@ -210,3 +212,5 @@ void Ahadic::CleanUp(Blob * blob) {
   Reset();
   if(blob) blob->DeleteOutParticles(0);
 }
+
+DEFINE_FRAGMENTATION_GETTER(Ahadic, "Ahadic")

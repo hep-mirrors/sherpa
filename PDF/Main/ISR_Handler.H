@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Info_Key.H"
 #include "PDF/Main/ISR_Base.H"
 
 namespace ATOOLS   { class Blob_Data_Base; }
@@ -19,6 +20,19 @@ namespace PDF {
     };
   };
 
+  struct isrmode {
+    enum code {
+      none           = 0,
+      hadron_hadron  = 1,
+      lepton_hadron  = 2,
+      hadron_lepton  = 3,
+      lepton_lepton  = 4,
+      unknown        = 99
+    };
+  };
+  std::ostream& operator<<(std::ostream&,const isrmode::code mode);
+
+  
   class ISR_Handler;
   typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
   typedef std::vector<double> Double_Vector;
@@ -26,14 +40,15 @@ namespace PDF {
   class ISR_Handler {
 
   protected:
-
     ISR_Base **p_isrbase;
 
-    std::string m_name, m_type;
+    std::string   m_name;
+    isrmode::code m_type;
 
     int m_mode, m_rmode, m_swap; 
 
     double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
+    ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
     double m_splimits[3],m_ylimits[2];
     double m_fixed_smin, m_fixed_smax;
 
@@ -47,6 +62,9 @@ namespace PDF {
 
     double m_xf1[2], m_xf2[2];
 
+    bool m_freezePDFforLowQ;
+
+    void FixType();
     bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
 				double &x,int beam,bool swaped);
 
@@ -55,7 +73,6 @@ namespace PDF {
     ~ISR_Handler();
 
     void Init(double *splimits);
-    void SetPDFMember() const;
 
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
     bool CheckConsistency(ATOOLS::Flavour *partons);
@@ -63,9 +80,8 @@ namespace PDF {
     void SetMasses(const ATOOLS::Flavour_Vector &fl); 
 
     bool MakeISR(const double &sp,const double &y,
-		 ATOOLS::Vec4D_Vector &p,const ATOOLS::Flavour_Vector &flavs);
-    bool GenerateSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2,
-		      const double &ran);
+		 ATOOLS::Vec4D * p,const ATOOLS::Flavour_Vector &flavs);
+    bool GenerateSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2);
     bool AllowSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2) const;
 
     double PDFWeight(const int mode,
@@ -79,28 +95,27 @@ namespace PDF {
     bool BoostInLab(ATOOLS::Vec4D *p,const size_t n);
     ATOOLS::Poincare* GetCMSBoost() { return &m_cmsboost; }
 
-    void SetSprimeMin(const double spmin);
-    void SetSprimeMax(const double spmax);
-
-    void SetFixedSprimeMin(const double spmin);
-    void SetFixedSprimeMax(const double spmax);
-
-    void SetLimits(Double_Vector &spkey,Double_Vector &ykey,
-		   Double_Vector &xkey);
+    void AssignKeys(ATOOLS::Integration_Info *const info);
+    void SetLimits();
     void Reset();
     void Reset(const size_t i) const; 
 
     ATOOLS::Blob_Data_Base* Info(const int frame) const;
 
+    inline void SetSprimeMin(const double spmin) { m_splimits[0]=ATOOLS::Max(m_fixed_smin,spmin); }
+    inline void SetSprimeMax(const double spmax) { m_splimits[1]=ATOOLS::Min(m_fixed_smax,spmax); }
+    inline void SetFixedSprimeMin(const double spmin) { m_fixed_smin = m_splimits[0] = spmin; }
+    inline void SetFixedSprimeMax(const double spmax) { m_fixed_smax = m_splimits[1] = spmax; }
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
     inline void SetYMin(const double ymin)      { m_ylimits[0]  = ymin; }
     inline void SetYMax(const double ymax)      { m_ylimits[1]  = ymax; }
     inline void SetName(const std::string name) { m_name = name;        }
     inline std::string Name() const             { return m_name; }
-    inline std::string Type() const             { return m_type; }
-    inline int On() const                       { return m_mode;    }
-    inline double *SprimeRange()                { return m_splimits;    }
-    inline double *YRange()                     { return m_ylimits;     }
+    inline const isrtype::code Type(const int & i=-1) const { return p_isrbase[i]->Type(); }
+    inline const isrmode::code & Mode() const   { return m_type; } 
+    inline int    On() const                    { return m_mode;    }
+    inline double * SprimeRange()               { return m_splimits;    }
+    inline double * YRange()                    { return m_ylimits;     }
     inline double  Exponent(const int i) const  { return m_exponent[i]; }
     inline double SprimeMin() const             { return m_splimits[0]; }
     inline double SprimeMax() const             { return m_splimits[1]; }
@@ -111,11 +126,11 @@ namespace PDF {
     inline double Upper2() const                { return p_isrbase[1]->XMax(); }
     inline double X1() const                    { return m_x[0]; }
     inline double X2() const                    { return m_x[1]; }
-    inline double  MuF2(int beam) const         { return m_mu2[beam]; }
-    inline void SetMuF2(double mu2, int beam)   { m_mu2[beam]=mu2; }
+    inline double MuF2(int beam) const          { return m_mu2[beam]; }
+    inline void   SetMuF2(double mu2, int beam) { m_mu2[beam]=mu2; }
     inline double XF1(int beam) const           { return m_xf1[beam]; }
     inline double XF2(int beam) const           { return m_xf2[beam]; }
-    inline int Swap() const { return m_swap; }
+    inline int Swap() const                     { return m_swap; }
 
     inline void SetPDF(PDF_Base *pdf) {
       SetPDF(pdf, 0); SetPDF(pdf, 1);
@@ -126,6 +141,11 @@ namespace PDF {
     inline PDF_Base * PDF(const size_t beam) {
       return (beam<2?p_isrbase[beam]->PDF():NULL);
     }
+    inline void SetPDFMember() const {
+      for (int i=0;i<2;++i)
+	if (p_isrbase[i]->On()) p_isrbase[i]->PDF()->SetPDFMember();
+    }
+
     inline ATOOLS::Flavour  Flav(const size_t beam) {
       return p_isrbase[beam]->Flavour();
     }
@@ -143,6 +163,8 @@ namespace PDF {
       return beam<2?p_remnants[beam]:NULL;
     }
     inline void SetRunMode(const int &rmode) { m_rmode=rmode; }
+
+    void Output();
   };// end of class ISR_Handler
   
   /*!

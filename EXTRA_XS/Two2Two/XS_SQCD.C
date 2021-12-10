@@ -228,7 +228,7 @@ using namespace ATOOLS;
 XS_q1q2_sQ1sQ2::XS_q1q2_sQ1sQ2(const Process_Info &pi,const Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
@@ -255,8 +255,8 @@ bool XS_q1q2_sQ1sQ2::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is u
     */
-    p_colours[0][m_a] = p_colours[3-r][m_a] = Flow::Counter();
-    p_colours[1][m_a] = p_colours[2+r][m_a] = Flow::Counter();
+    m_colours[0][m_a] = m_colours[3-r][m_a] = Flow::Counter();
+    m_colours[1][m_a] = m_colours[2+r][m_a] = Flow::Counter();
   }
   else {
     /*
@@ -268,8 +268,8 @@ bool XS_q1q2_sQ1sQ2::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is s
     */
-    p_colours[0][m_a]   = p_colours[1][m_p]   = Flow::Counter();
-    p_colours[2+r][m_a] = p_colours[3-r][m_p] = Flow::Counter();
+    m_colours[0][m_a]   = m_colours[1][m_p]   = Flow::Counter();
+    m_colours[2+r][m_a] = m_colours[3-r][m_p] = Flow::Counter();
   }
   return 1; 
 }
@@ -302,7 +302,7 @@ bool XS_q1q2_sQ1sQ2::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_q1q2_sQ1LsQ2R::XS_q1q2_sQ1LsQ2R(const PHASIC::Process_Info &pi,const ATOOLS::Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
@@ -332,8 +332,8 @@ bool XS_q1q2_sQ1LsQ2R::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is u
     */
-    p_colours[0][m_a] = p_colours[3-r][m_a] = Flow::Counter();
-    p_colours[1][m_a] = p_colours[2+r][m_a] = Flow::Counter();
+    m_colours[0][m_a] = m_colours[3-r][m_a] = Flow::Counter();
+    m_colours[1][m_a] = m_colours[2+r][m_a] = Flow::Counter();
   }
   else {
     /*
@@ -345,8 +345,8 @@ bool XS_q1q2_sQ1LsQ2R::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is s
     */
-    p_colours[0][m_a]   = p_colours[1][m_p]   = Flow::Counter();
-    p_colours[2+r][m_a] = p_colours[3-r][m_p] = Flow::Counter();
+    m_colours[0][m_a]   = m_colours[1][m_p]   = Flow::Counter();
+    m_colours[2+r][m_a] = m_colours[3-r][m_p] = Flow::Counter();
   }
   return 1; 
 }
@@ -384,7 +384,7 @@ bool XS_q1q2_sQ1LsQ2R::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_q1qbar2_sQ1sQbar2::XS_q1qbar2_sQ1sQbar2(const Process_Info &pi,const Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
@@ -413,8 +413,8 @@ bool XS_q1qbar2_sQ1sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is s
   */
-  p_colours[0][m_a]   = p_colours[1][m_p]   = Flow::Counter();
-  p_colours[2+r][m_a] = p_colours[3-r][m_p] = Flow::Counter();
+  m_colours[0][m_a]   = m_colours[1][m_p]   = Flow::Counter();
+  m_colours[2+r][m_a] = m_colours[3-r][m_p] = Flow::Counter();
   return 1; 
 }
 
@@ -442,7 +442,7 @@ bool XS_q1qbar2_sQ1sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_q1qbar1_sQ2sQbar2::XS_q1qbar1_sQ2sQbar2(const PHASIC::Process_Info &pi,const ATOOLS::Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
   m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
@@ -469,8 +469,8 @@ bool XS_q1qbar1_sQ2sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
 
     shower scale is t
   */
-  p_colours[0][m_a] = p_colours[2+r][m_a] = Flow::Counter();
-  p_colours[1][m_p] = p_colours[3-r][m_p] = Flow::Counter();
+  m_colours[0][m_a] = m_colours[2+r][m_a] = Flow::Counter();
+  m_colours[1][m_p] = m_colours[3-r][m_p] = Flow::Counter();
   return 1; 
 }
 
@@ -496,7 +496,7 @@ bool XS_q1qbar1_sQ2sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_q1q1_sQ1sQ1::XS_q1q1_sQ1sQ1(const Process_Info &pi,const Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_msquark2=sqr(fl[2].Mass());
@@ -527,8 +527,8 @@ bool XS_q1q1_sQ1sQ1::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is u
     */
-    p_colours[3][m_a] = p_colours[0][m_a] = Flow::Counter();
-    p_colours[2][m_a] = p_colours[1][m_a] = Flow::Counter();
+    m_colours[3][m_a] = m_colours[0][m_a] = Flow::Counter();
+    m_colours[2][m_a] = m_colours[1][m_a] = Flow::Counter();
   }
   else {
     msg_Debugging()<<"xs: qq->sqsq, set scale t "<<t<<"\n";
@@ -541,8 +541,8 @@ bool XS_q1q1_sQ1sQ1::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is t
     */
-    p_colours[2][m_a] = p_colours[0][m_a] = Flow::Counter();
-    p_colours[3][m_a] = p_colours[1][m_a] = Flow::Counter();
+    m_colours[2][m_a] = m_colours[0][m_a] = Flow::Counter();
+    m_colours[3][m_a] = m_colours[1][m_a] = Flow::Counter();
   }
   return true;
 }
@@ -572,7 +572,7 @@ bool XS_q1q1_sQ1sQ1::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_q1q1_sQ1LsQ1R::XS_q1q1_sQ1LsQ1R(const Process_Info &pi,const Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_msq32=sqr(fl[2].Mass());
@@ -606,8 +606,8 @@ bool XS_q1q1_sQ1LsQ1R::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is u
     */
-    p_colours[3][m_a] = p_colours[0][m_a] = Flow::Counter();
-    p_colours[2][m_a] = p_colours[1][m_a] = Flow::Counter();
+    m_colours[3][m_a] = m_colours[0][m_a] = Flow::Counter();
+    m_colours[2][m_a] = m_colours[1][m_a] = Flow::Counter();
   }
   else {
     msg_Debugging()<<"xs: qq->sqsq, set scale t "<<t<<"\n";
@@ -620,8 +620,8 @@ bool XS_q1q1_sQ1LsQ1R::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is t
     */
-    p_colours[2][m_a] = p_colours[0][m_a] = Flow::Counter();
-    p_colours[3][m_a] = p_colours[1][m_a] = Flow::Counter();
+    m_colours[2][m_a] = m_colours[0][m_a] = Flow::Counter();
+    m_colours[3][m_a] = m_colours[1][m_a] = Flow::Counter();
   }
   return true;
 }
@@ -651,7 +651,7 @@ bool XS_q1q1_sQ1LsQ1R::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_q1qbar1_sQ1sQbar1::XS_q1qbar1_sQ1sQbar1(const Process_Info &pi,const Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
   m_r=!SuperPartner(fl[2],fl[0]);
@@ -685,8 +685,8 @@ bool XS_q1qbar1_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is t
     */
-    p_colours[0][m_a] = p_colours[2+m_r][m_a] = Flow::Counter();	
-    p_colours[1][m_p] = p_colours[3-m_r][m_p] = Flow::Counter();
+    m_colours[0][m_a] = m_colours[2+m_r][m_a] = Flow::Counter();	
+    m_colours[1][m_p] = m_colours[3-m_r][m_p] = Flow::Counter();
   }
   else {
     msg_Debugging()<<"xs: qqb->sqsqb, set scale s "<<s<<"\n";
@@ -699,8 +699,8 @@ bool XS_q1qbar1_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is s
     */
-    p_colours[0][m_a]   = p_colours[1][m_p]   = Flow::Counter();	
-    p_colours[2+m_r][m_a] = p_colours[3-m_r][m_p] = Flow::Counter();
+    m_colours[0][m_a]   = m_colours[1][m_p]   = Flow::Counter();	
+    m_colours[2+m_r][m_a] = m_colours[3-m_r][m_p] = Flow::Counter();
   }
   return true;
 }
@@ -726,7 +726,7 @@ bool XS_q1qbar1_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_q1qbar1_GluinoGluino::XS_q1qbar1_GluinoGluino(const Process_Info &pi,const Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
   int flav = abs(fl[0].Kfcode());
@@ -763,8 +763,8 @@ bool XS_q1qbar1_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
   double Mu = 2.*pT2/s*(((sqr(t3)-sqr(deltaL)))/((u4-deltaL)*(t3-deltaL)) +
 			((sqr(t3)-sqr(deltaR)))/((u4-deltaR)*(t3-deltaR)))
     + sqr(deltaL)/sqr(u4-deltaL) + sqr(deltaR)/sqr(u4-deltaR);
-  p_colours[0][m_a] = Flow::Counter();
-  p_colours[1][m_p] = Flow::Counter();
+  m_colours[0][m_a] = Flow::Counter();
+  m_colours[1][m_p] = Flow::Counter();
   if (Mt > (Mt+Mu) * ran->Get()) {
     msg_Debugging()<<"xs: qqb->GluinoGluino, set scale s/t "<<s<<"/"<<t<<"\n";
     /*
@@ -776,9 +776,9 @@ bool XS_q1qbar1_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is s / t
     */
-    p_colours[2][m_a] = p_colours[0][m_a];
-    p_colours[3][m_p] = p_colours[1][m_p];
-    p_colours[2][m_p] = p_colours[3][m_a] = Flow::Counter();
+    m_colours[2][m_a] = m_colours[0][m_a];
+    m_colours[3][m_p] = m_colours[1][m_p];
+    m_colours[2][m_p] = m_colours[3][m_a] = Flow::Counter();
   }
   else {
     msg_Debugging()<<"xs: qqb->GluinoGluino, set scale s/u "<<s<<"/"<<u<<"\n";
@@ -791,9 +791,9 @@ bool XS_q1qbar1_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is s / u
     */
-    p_colours[3][m_a] = p_colours[0][m_a];
-    p_colours[2][m_p] = p_colours[1][m_p];
-    p_colours[3][m_p] = p_colours[2][m_a] = Flow::Counter();
+    m_colours[3][m_a] = m_colours[0][m_a];
+    m_colours[2][m_p] = m_colours[1][m_p];
+    m_colours[3][m_p] = m_colours[2][m_a] = Flow::Counter();
   }
   return true;
 }
@@ -819,7 +819,7 @@ bool XS_q1qbar1_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_gg_sQ1sQbar1::XS_gg_sQ1sQbar1(const Process_Info &pi,const Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_r=fl[2].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_msquark2=sqr(fl[2].Mass());
@@ -843,8 +843,8 @@ bool XS_gg_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
   double fac((sqr(s*pT2)+sqr(m_msquark2*s))/sqr(s*t3*u4));
   double Mt(fac*sqr(u4));
   double Mu(fac*sqr(t3));
-  p_colours[0][0] = Flow::Counter();
-  p_colours[0][1] = Flow::Counter();
+  m_colours[0][0] = Flow::Counter();
+  m_colours[0][1] = Flow::Counter();
   if (Mt*(1-m_r) +Mu*m_r > (Mt+Mu) * ran->Get()) {
     msg_Debugging()<<"xs: gg->sqsqb, set scale t/s "<<t<<"/"<<s<<"\n";
     /*
@@ -856,9 +856,9 @@ bool XS_gg_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is s / t
     */
-    p_colours[2+m_r][0] = p_colours[0][0];
-    p_colours[3-m_r][1] = p_colours[1][1] = Flow::Counter();
-    p_colours[1][0] = p_colours[0][1];
+    m_colours[2+m_r][0] = m_colours[0][0];
+    m_colours[3-m_r][1] = m_colours[1][1] = Flow::Counter();
+    m_colours[1][0] = m_colours[0][1];
   }
   else {
     msg_Debugging()<<"xs: gg->sqsqb, set scale u/s "<<u<<"/"<<s<<"\n";
@@ -871,9 +871,9 @@ bool XS_gg_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is u / s
     */
-    p_colours[2+m_r][0] = p_colours[1][0] = Flow::Counter();
-    p_colours[3-m_r][1] = p_colours[0][1];
-    p_colours[1][1] = p_colours[0][0];
+    m_colours[2+m_r][0] = m_colours[1][0] = Flow::Counter();
+    m_colours[3-m_r][1] = m_colours[0][1];
+    m_colours[1][1] = m_colours[0][0];
   }
   return true;
 }
@@ -903,7 +903,7 @@ bool XS_gg_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_q1g_sQ1Gluino::XS_q1g_sQ1Gluino(const Process_Info &pi,const Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_iniq=0;
   m_swaput=0;
   if (fl[1].IsQuark()){
@@ -942,8 +942,8 @@ bool XS_q1g_sQ1Gluino::SetColours(const ATOOLS::Vec4D_Vector &p)
   double fac((-u4-2.*(m_msquark2-m_mgluino2)*(1.+m_mgluino2/t3+m_msquark2/u4)));
   double Ms(fac*sqr(u4)/(s*t3*u4));
   double Mu(fac*sqr(s)/(s*t3*u4));
-  p_colours[m_iniq][m_a] = Flow::Counter();
-  p_colours[m_finq][m_a] = Flow::Counter();
+  m_colours[m_iniq][m_a] = Flow::Counter();
+  m_colours[m_finq][m_a] = Flow::Counter();
   if (Mu > (Ms+Mu) * ran->Get()) {
     /*
       1====+----2, if fl[2].IsSquark() 
@@ -954,9 +954,9 @@ bool XS_q1g_sQ1Gluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is t/u
     */
-    p_colours[5-m_finq][m_a] = p_colours[m_iniq][m_a];
-    p_colours[5-m_finq][m_p] = p_colours[1-m_iniq][m_p] = Flow::Counter();
-    p_colours[1-m_iniq][m_a] = p_colours[m_finq][m_a];
+    m_colours[5-m_finq][m_a] = m_colours[m_iniq][m_a];
+    m_colours[5-m_finq][m_p] = m_colours[1-m_iniq][m_p] = Flow::Counter();
+    m_colours[1-m_iniq][m_a] = m_colours[m_finq][m_a];
   }
   else {
     /*
@@ -968,9 +968,9 @@ bool XS_q1g_sQ1Gluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is s/t
     */
-    p_colours[5-m_finq][m_p] = p_colours[m_finq][m_a];
-    p_colours[1-m_iniq][m_a] = p_colours[5-m_finq][m_a] = Flow::Counter();
-    p_colours[1-m_iniq][m_p] = p_colours[m_iniq][m_a];
+    m_colours[5-m_finq][m_p] = m_colours[m_finq][m_a];
+    m_colours[1-m_iniq][m_a] = m_colours[5-m_finq][m_a] = Flow::Counter();
+    m_colours[1-m_iniq][m_p] = m_colours[m_iniq][m_a];
   }
   return true;
 }
@@ -996,7 +996,7 @@ bool XS_q1g_sQ1Gluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 XS_gg_GluinoGluino::XS_gg_GluinoGluino(const Process_Info &pi,const Flavour_Vector &fl): 
   ME2_Base(pi,fl) 
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
 }
@@ -1015,8 +1015,8 @@ bool XS_gg_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 {
   double s((p[0]+p[1]).Abs2()), t((p[0]-p[2]).Abs()), u((p[0]-p[3]).Abs2());
   msg_Debugging()<<"xs: gg->GluinoGluino, set scale s "<<s<<"\n";
-  p_colours[0][0] = Flow::Counter();
-  p_colours[1][1] = Flow::Counter();
+  m_colours[0][0] = Flow::Counter();
+  m_colours[1][1] = Flow::Counter();
   
   double u4(u-m_mgluino2);
   double t3(t-m_mgluino2);
@@ -1037,10 +1037,10 @@ bool XS_gg_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 
       shower scale is s/t/u
     */
-    p_colours[2][0] = p_colours[0][0];
-    p_colours[3][1] = p_colours[1][1];
-    p_colours[0][1] = p_colours[1][0] = Flow::Counter();
-    p_colours[2][1] = p_colours[3][0] = Flow::Counter();
+    m_colours[2][0] = m_colours[0][0];
+    m_colours[3][1] = m_colours[1][1];
+    m_colours[0][1] = m_colours[1][0] = Flow::Counter();
+    m_colours[2][1] = m_colours[3][0] = Flow::Counter();
   }
   else {
     if (rr-Mst-Msu < 0.) {
@@ -1053,10 +1053,10 @@ bool XS_gg_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 	   
 	shower scale is s/t/u
       */
-      p_colours[3][0] = p_colours[0][0];
-      p_colours[2][1] = p_colours[1][1];
-      p_colours[0][1] = p_colours[1][0] = Flow::Counter();
-      p_colours[3][1] = p_colours[2][0] = Flow::Counter();
+      m_colours[3][0] = m_colours[0][0];
+      m_colours[2][1] = m_colours[1][1];
+      m_colours[0][1] = m_colours[1][0] = Flow::Counter();
+      m_colours[3][1] = m_colours[2][0] = Flow::Counter();
     }
     else {
       /*
@@ -1068,10 +1068,10 @@ bool XS_gg_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
 	   
 	shower scale is s/t/u
       */
-      p_colours[2][0] = p_colours[0][0];
-      p_colours[3][1] = p_colours[0][1] = Flow::Counter();
-      p_colours[2][1] = p_colours[1][1];
-      p_colours[3][0] = p_colours[1][0] = Flow::Counter();
+      m_colours[2][0] = m_colours[0][0];
+      m_colours[3][1] = m_colours[0][1] = Flow::Counter();
+      m_colours[2][1] = m_colours[1][1];
+      m_colours[3][0] = m_colours[1][0] = Flow::Counter();
     }
   }
   return true;

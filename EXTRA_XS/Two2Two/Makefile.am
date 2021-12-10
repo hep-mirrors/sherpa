@@ -9,4 +9,5 @@ libExtraXS2_2_la_SOURCES      =	Git_Info.C \
 				XS_QCD.C \
 				ee_Y4S_BB.C \
 				gg_yy.C \
-				yy_bobo.C
+				yy_bobo.C \
+				DMDM_mumu.C 

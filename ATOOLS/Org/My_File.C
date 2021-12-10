@@ -119,12 +119,25 @@ bool My_File<FileType>::OpenDB(std::string file)
 template <class FileType>
 bool My_File<FileType>::CloseDB(std::string file,int mode)
 {
+#ifdef USING__MPI
+  if (mpi->Rank()) {
+    int success;
+    mpi->Bcast(&success,1,MPI_INT);
+    return success;
+  }
+#endif
   std::string path(file);
   while (file.length() && file[file.length()-1]=='/')
     file.erase(file.length()-1,1);
   file+=".zip";
   ZipArchive_Map::iterator ait(s_ziparchives.find(path));
-  if (ait==s_ziparchives.end()) return false;
+  if (ait==s_ziparchives.end()) {
+    int success(false);
+#ifdef USING__MPI
+    mpi->Bcast(&success,1,MPI_INT);
+#endif
+    return success;
+  }
   ZipArchive *zf(ait->second.first);
   const std::vector<std::string> &files(ait->second.second);
   for (size_t i(0);i<files.size();++i) {
@@ -148,7 +161,11 @@ bool My_File<FileType>::CloseDB(std::string file,int mode)
     if (mode) delete zf;
     else zf->open(ZipArchive::WRITE);
   }
-  return true;
+  int success(true);
+#ifdef USING__MPI
+  mpi->Bcast(&success,1,MPI_INT);
+#endif
+  return success;
 }
 
 template <class FileType>
@@ -270,9 +287,6 @@ bool My_File<FileType>::Close()
   if (p_file == nullptr)
     return false;
   auto os = dynamic_cast<std::ofstream*>(p_file.get());
-#ifdef USING__MPI
-  if (mpi->Rank()==0)
-#endif
   if (os) {
     bool indb(false);
     for (ZipArchive_Map::iterator zit(s_ziparchives.begin());
@@ -287,6 +301,9 @@ bool My_File<FileType>::Close()
 	indb=true;
 	break;
       }
+#ifdef USING__MPI
+    if (mpi->Rank()==0)
+#endif
     if (!indb) {
       std::ofstream file(m_path+m_file);
       file<<p_stream->str();

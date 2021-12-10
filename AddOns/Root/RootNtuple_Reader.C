@@ -65,7 +65,9 @@ namespace SHERPA {
     size_t Size() const override { return 0; }
     Process_Base* operator[](const size_t& i) override { return NULL; }
 
-    Weight_Info* OneEvent(const int wmode, const int mode = 0) override
+    Weight_Info* OneEvent(const int wmode,
+                          Variations_Mode varmode=Variations_Mode::all,
+                          const int mode=0)
     {
       return NULL;
     }

@@ -5,11 +5,12 @@ SUBDIRS       =	\
 		Pythia \
 		Higgs \
 		BlackHat \
-		MCFM \
 		LH_OLE \
 		HZTool \
 		OpenLoops \
 		GoSam \
+		MadLoop \
+		MCFM \
 		PGS \
 		Delphes \
 		Rivet \

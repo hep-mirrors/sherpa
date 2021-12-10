@@ -13,10 +13,8 @@
 #include "HepMC3/WriterAscii.h"
 #include "HepMC3/WriterAsciiHepMC2.h"
 #include "HepMC3/WriterHEPEVT.h"
-#ifdef USING__HEPMC3__WRITERROOTTREE
+#ifdef USING__HEPMC3__ROOT
 #include "HepMC3/WriterRootTree.h"
-#endif
-#ifdef USING__HEPMC3__WRITERROOT
 #include "HepMC3/WriterRoot.h"
 #endif
 
@@ -57,17 +55,17 @@ switch (m_iotype)
     }
     break;
     case 3:
-#ifdef USING__HEPMC3__WRITERROOT
+#ifdef USING__HEPMC3__ROOT
         p_writer=new HepMC::WriterRoot(m_basename);
 #else
-        THROW(fatal_error,"Asked for Root output, but Sherpa was compiled without Root output support.");
+        THROW(fatal_error,"Asked for Root output, but Sherpa/HepMC3 was compiled without Root output support.");
 #endif
         break;
     case 4:
-#ifdef USING__HEPMC3__WRITERROOTTREE
+#ifdef USING__HEPMC3__ROOT
         p_writer=new HepMC::WriterRootTree(m_basename);
 #else
-        THROW(fatal_error,"Asked for RootTree output, but Sherpa was compiled without RootTree output support.");
+        THROW(fatal_error,"Asked for RootTree output, but Sherpa/HepMC3 was compiled without RootTree output support.");
 #endif
         break;
     default:
@@ -76,12 +74,6 @@ switch (m_iotype)
     }
 
  p_xs= std::make_shared<HepMC::GenCrossSection>();
- m_run_info= std::make_shared<HepMC::GenRunInfo>();
- HepMC::GenRunInfo::ToolInfo tool;
- tool.name = std::string("SHERPA-MC");
- tool.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
- tool.description = std::string(SHERPA_NAME);
- m_run_info->tools().push_back(tool);
 }
 
 Output_HepMC3_Genevent::~Output_HepMC3_Genevent()
@@ -97,7 +89,7 @@ void Output_HepMC3_Genevent::SetXS(const double& xs, const double& xserr)
 
 void Output_HepMC3_Genevent::Output(Blob_List* blobs) 
 {
-  m_hepmc3.Sherpa2HepMC(blobs, m_run_info);
+  m_hepmc3.Sherpa2HepMC(blobs);
   HepMC::GenEvent* q=m_hepmc3.GenEvent();
   if (q) 
   {

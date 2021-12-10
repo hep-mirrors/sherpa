@@ -23,6 +23,16 @@ size_t Setting_Key::GetIndex() const
   return index;
 }
 
+bool Setting_Key::operator==(const Setting_Key& rhs) const
+{
+  if (IsIndex() != rhs.IsIndex())
+    return false;
+  if (IsIndex())
+    return index == rhs.index;
+  else
+    return name == rhs.name;
+}
+
 Settings_Keys::Settings_Keys(const std::vector<std::string>& strings)
 {
   reserve(strings.size());

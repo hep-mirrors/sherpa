@@ -46,7 +46,7 @@ compilation has to be configured with the following options:
 
 .. code-block:: shell-session
 
-   $ ./configure --enable-hepmc2=/path/to/hepmc2 --enable-rivet=/path/to/rivet
+   $ ./configure --enable-hepmc3=/path/to/hepmc3 --enable-rivet=/path/to/rivet
 
 (Note: Both paths are equal if you used the Rivet bootstrap script.)
 
@@ -58,15 +58,32 @@ To use the interface, you need to enable it using the
 
    ANALYSIS: Rivet
    RIVET:
-     ANALYSES:
+     --analyses:
        - D0_2008_S7662670
        - CDF_2007_S7057202
        - D0_2004_S5992206
        - CDF_2008_S7828950
 
-The ``ANALYSES`` list specifies which Rivet analyses to run and the
+The analyses list specifies which Rivet analyses to run and the
 histogram output file can be changed with the normal ``ANALYSIS_OUTPUT``
 switch.
+
+Further Rivet options (especially for Rivet v3) can be passed through
+the interface. The following ones are currently implemented:
+
+.. code-block:: yaml
+
+   ANALYSIS: Rivet
+   RIVET:
+     --analyses:
+       - MC_ZINC
+     --ignore-beams: 1
+     --skip-weights: 0
+     --match_weights: ".*MUR.*"
+     --unmatch-weights: "NTrials"
+     --nominal-weight: "Weight"
+     --weight-cap: 100.0
+     --nlo-smearing: 0.1
 
 You can also use ``rivet-mkhtml`` (distributed with Rivet) to create
 plot webpages from Rivet's output files:

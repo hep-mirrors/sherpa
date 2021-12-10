@@ -79,7 +79,6 @@ bool Simple_XS::Initialize(Model_Base *const model,
 
 Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
 {
-  msg_Out()<<METHOD<<":\n"<<pi<<"\n";
   bool oneisgroup(pi.m_ii.IsGroup()||pi.m_fi.IsGroup());
   if (oneisgroup) {
     Process_Group* newxs = new Process_Group();
@@ -87,8 +86,8 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     if (!newxs->ConstructProcesses()) {
-      msg_Debugging()<<METHOD<<"(): Construct failed for '"
-		     <<newxs->Name()<<"'\n";
+      msg_Debugging()<<METHOD<<": group construction failed for "
+		     <<newxs->Name()<<"\n";
       delete newxs;
       return NULL;
     }
@@ -103,8 +102,8 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     if (!newxs->Initialize()) {
-      msg_Out()<<METHOD<<"(): Init failed for '"
-	       <<newxs->Name()<<"'\n";
+      msg_Debugging()<<METHOD<<"(): Init failed for '"
+		     <<newxs->Name()<<"'\n";
       delete newxs;
       return NULL;
     }

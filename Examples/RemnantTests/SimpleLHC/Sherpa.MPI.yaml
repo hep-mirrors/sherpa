@@ -30,7 +30,7 @@ ANALYSIS_OUTPUT: test
 
 PROCESSES:
 - 93 93 -> 13 -13 93{1}:
-    Order: {QCD: Any, EW: Any}
+    Order: {QCD: 0, EW: 2}
     CKKW: "$(QCUT)"
     Integration_Error: 0.02
 
@@ -38,7 +38,7 @@ SELECTORS:
 - [Mass, 13, -13, 66, 116]
 
 RIVET:
-  -a:
+  --analyses:
     - ATLAS_2016_I1424838
     - ATLAS_2014_I1315949
     - ATLAS_2011_S9131140

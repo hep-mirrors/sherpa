@@ -28,6 +28,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/KF_Table.H"
+#include "PDF/Main/PDF_Base.H"
 #include <cstring>
 
 using namespace SHERPA;
@@ -56,6 +57,7 @@ Sherpa::Sherpa(int argc, char* argv[]) :
   Settings::InitializeMainSettings(argc, argv);
   ATOOLS::ran = new Random(1234);
   ATOOLS::s_loader = new Library_Loader();
+  PDF::pdfdefs = new PDF::PDF_Defaults();
   m_trials = 0;
   m_debuginterval = 0;
   m_debugstep = -1;
@@ -82,9 +84,12 @@ Sherpa::~Sherpa()
 #ifdef USING__HEPMC3
   if (p_hepmc3)       { delete p_hepmc3;       p_hepmc3       = NULL; }
 #endif
-  Settings::FinalizeMainSettings();
+  Settings& s = Settings::GetMainSettings();
+  if (s["CHECK_SETTINGS"].SetDefault(true).Get<bool>())
+    Settings::FinalizeMainSettings();
   exh->RemoveTerminatorObject(this);
   delete ATOOLS::s_loader;
+  delete PDF::pdfdefs;
   delete ATOOLS::rpa;
   delete ATOOLS::ran;
 #ifdef USING__MPI
@@ -186,7 +191,7 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Minimum_Bias(s_inithandler->GetSoftCollisionHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(s_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(s_inithandler->GetColourReconnectionHandler(),
-						    s_inithandler->GetFragmentationHandler()));
+						    s_inithandler->GetFragmentation()));
     p_eventhandler->AddEventPhase(new Hadron_Decays(s_inithandler->GetHDHandler()));
 
   }
@@ -284,16 +289,26 @@ bool Sherpa::GenerateOneEvent(bool reset)
 	 (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
 	i<rpa->gen.NumberOfEvents()) {
       double diff=rpa->gen.Timer().RealTime()-m_evt_starttime;
-      msg_Info()<<"  Event "<<i<<(m_showtrials?"("+ToString(m_trials)+")":"")<<" ( "
-		<<FormatTime(size_t(diff))<<" elapsed / "
-		<<FormatTime(size_t((nevt-i)/(double)i*diff))
-		<<" left ) -> ETA: "<<rpa->gen.Timer().
-	StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
+      msg_Info()<<"  Event "<<i;
+      if (m_showtrials)
+        msg_Info()<<"("+ToString(m_trials)+")";
+      msg_Info()<<" ( ";
+      if (rpa->gen.BatchMode()&16) {
+        msg_Info()<<diff<<"s elapsed / "
+                  <<((nevt-i)/(double)i*diff)<<"s";
+      } else {
+        msg_Info()<<FormatTime(size_t(diff))<<" elapsed / "
+                  <<FormatTime(size_t((nevt-i)/(double)i*diff));
+      }
+      msg_Info()<<" left ) -> ETA: "<<rpa->gen.Timer().
+        StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
       double xs(GetEventHandler()->TotalXSMPI());
       double err(GetEventHandler()->TotalErrMPI());
       if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
       msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
 		<<((int(err/xs*10000))/100.0)<<" % )  ";
+      if (rpa->gen.BatchMode()&8)
+        msg_Info()<<"  Process was "<<p_eventhandler->CurrentProcess()<<"  ";
       if (!(rpa->gen.BatchMode()&2))
 	msg_Info()<<mm(1,mm::up);
       if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
@@ -439,8 +454,7 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
 	    <<"                                                                             "<<std::endl
 	    <<"     for news, bugreports, updates and new releases.                         "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"-----------------------------------------------------------------------------"<<std::endl
-	    <<std::endl;
+	    <<"-----------------------------------------------------------------------------"<<std::endl;
   rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");

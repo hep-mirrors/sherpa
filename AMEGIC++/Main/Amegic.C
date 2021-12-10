@@ -110,7 +110,6 @@ bool Amegic::Initialize(MODEL::Model_Base *const model,
   s_partcommit = amegicsettings["PARTIAL_COMMIT"].Get<int>();
 
   ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
-  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
 
   return true;
 }
@@ -158,15 +157,11 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
       return NULL;
     }
     if (!newxs->Get<AMEGIC::Process_Group>()->ConstructProcesses()) {
-      if (!s_partcommit)
-	My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
       msg_Debugging()<<METHOD<<"(): Construct failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
       return NULL;
     }
-    if (!s_partcommit)
-      My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
     newxs->Get<AMEGIC::Process_Group>()->WriteMappingFile();
     msg_Tracking()<<"Initialized '"<<newxs->Name()<<"'\n";
     if (msg_LevelIsTracking()) newxs->Get<AMEGIC::Process_Group>()->PrintProcessSummary();
@@ -185,34 +180,16 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
 	m_flavs.push_back(newxs->Flavours()[i]);
     }
     Phase_Space_Handler::TestPoint(p_testmoms,&newxs->Info(),this);
-    Vec4D sum;
-    Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
-    msg_Debugging()<<"After boost:\n";
-    for (size_t i(0);i<nis+nfs;++i) {
-      lab.Boost(p_testmoms[i]);
-      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-    }
-    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
-    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
-    msg_Debugging()<<"After rotation {\n";
-    for (size_t i(0);i<nis+nfs;++i) {
-      rot.Rotate(p_testmoms[i]);
-      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-    }
-    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
+    PrepareTestMoms(p_testmoms,newxs->NIn(),newxs->NOut());
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);
     newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath);
     if (!newxs->Get<AMEGIC::Process_Base>()->
 	InitAmplitude(p_amodel,&top,m_umprocs,m_errprocs)) {
-      My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
       return NULL;
     }
-    My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
   }
   if (add) Add(newxs,1);
   else m_rsprocs.push_back(newxs);
@@ -227,7 +204,6 @@ int Amegic::PerformTests()
   for (size_t i(0);i<m_rsprocs.size();++i) 
     if (m_rsprocs[i]->Get<AMEGIC::Amegic_Base>()->NewLibs()) return -1;
   Minimize();
-  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return tests;
 }
 

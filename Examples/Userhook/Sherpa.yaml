@@ -10,7 +10,7 @@ USERHOOKS: Example
 
 PROCESSES:
 - 93 93 -> 11 -11:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
 
 SELECTORS:
 - [Mass, 11, -11, 66, 116]

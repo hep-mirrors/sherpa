@@ -70,6 +70,12 @@ Scoped_Settings& Scoped_Settings::SetDefaultSynonyms(const String_Vector& list)
   return *this;
 }
 
+Scoped_Settings& Scoped_Settings::SetSynonyms(const String_Vector& list)
+{
+  m_rootsettings->SetSynonyms(m_scopes, list);
+  return *this;
+}
+
 Scoped_Settings& Scoped_Settings::UseNoneReplacements()
 {
   static std::map<std::string, std::string> nonelist{

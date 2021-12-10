@@ -67,7 +67,7 @@ Particle_Info::Particle_Info
  const int formfactor, const std::string &idname, const std::string &antiname):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(0),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
-  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), m_spin(0), 
+  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), m_spin(spin), 
   m_stable(1), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 
   m_idname(idname), m_antiname(antiname)

@@ -52,8 +52,8 @@ namespace CSSHOWER {
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
-    bool   Generate(Parton *);
-    bool   Generate(Parton *,Parton *,double,double&,double&,double&,double&);
+    bool   Generate(Parton *,double);
+    bool   Generate(Parton *,Parton *,double,double,double&,double&,double&,double&);
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1);
 

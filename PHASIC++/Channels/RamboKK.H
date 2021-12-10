@@ -5,10 +5,8 @@
 
 namespace PHASIC {
   class RamboKK : public Single_Channel {
-    //int      nin,nout;
-    //double * ms;
     //! Flag to see wether massive or massless points are to be generated.
-    bool     massflag;
+    bool     m_massflag;
     //! Constants needed for the weight and the phase space distribution.
     double   Z_N, * xm2, * p2, * E;
     //! Maximal number of iterations to generate the massive weight

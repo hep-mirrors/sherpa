@@ -36,8 +36,8 @@ namespace ATOOLS {
   std::ostream& operator<<(std::ostream&, const Variations_Type&);
 
   class Variations;
-  class QCD_Variation_Params;
-  class Qcut_Variation_Params;
+  struct QCD_Variation_Params;
+  struct Qcut_Variation_Params;
 
   extern Variations* s_variations;
 

@@ -9,6 +9,9 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Poincare.H"
 
+#include <sys/stat.h>
+#include <unistd.h>
+
 using namespace OLE;
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -28,6 +31,7 @@ extern "C" void OLP_Option(const char * assignment, int* success);
     static int s_oleinit;
     int m_nf;
     void RegisterDefaults() const;
+    int m_version;
   public:
     LH_OLE_Interface(const Process_Info& pi,const Flavour_Vector& flavs,bool active);
     ~LH_OLE_Interface() {
@@ -77,18 +81,22 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
     m_gosammode=true;
   }
   m_needcmsboost = s["LHOLE_BOOST_TO_CMS"].Get<bool>();
-  ifstream ifile;
-  ifile.open(contractfn.c_str());
 
   string fname("");
-  if (ifile) {
+  if (access( contractfn.c_str(), F_OK ) != -1)  {
     contract=1;
     fname=contractfn;
-    ifile.close();
   }
-  else fname=orderfn;
+  else {
+    fname=orderfn;
+  }
 
+  m_version=s["LHOLE_BLHA_VERSION"].Get<int>();
+  if (m_version!=1&&m_version!=2)
+    THROW(fatal_error,"Wrong LHOLE_BLHA_VERSION value. Only 1 or 2 is accepted.");
   LH_OLE_Communicator lhfile(fname);
+
+  if (m_version==1) {
   if (!contract) {
     if (lhfile.FileStatus()==0) {
       lhfile.AddParameter("MatrixElementSquareType  CHsummed");
@@ -129,6 +137,56 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
       lhfile.AddProcess(2,m_pn-2,flavs);
     }
     return;
+  }
+  }
+
+  if (m_version==2) {
+    if (!contract) {
+      if (lhfile.FileStatus()==0) {
+        lhfile.AddParameter("InterfaceVersion BLHA2");
+        /* Should be this fixed?*/
+        lhfile.AddParameter("CorrectionType           QCD");
+        if (m_drmode==1) lhfile.AddParameter("IRregularisation         DRED");
+        else lhfile.AddParameter("IRregularisation         CDR");
+
+        lhfile.AddParameter("OperationMode            CouplingsStrippedOff");
+        std::string widthscheme("FixedWidthScheme");
+        if (MODEL::s_model->ScalarNumber(std::string("WidthScheme")))
+          widthscheme=std::string("ComplexMassScheme");
+        lhfile.AddParameter("ResonanceTreatment       "+widthscheme);
+        lhfile.AddParameter("EWRenormalisationScheme  alphaMZ");
+        /* Should be quarks only here?*/
+        int tmparr[] = { kf_c, kf_b, kf_t, kf_Wplus, kf_Z, kf_h0};
+        vector<int> pdgids (tmparr, tmparr + sizeof(tmparr) / sizeof(tmparr[0]) );
+        std::string massive_string="";
+        for (size_t i=0; i<pdgids.size(); ++i)  if (Flavour(pdgids[i]).Mass()>0.0)   massive_string+=(" "+ToString(pdgids[i]));
+        if (massive_string.length()) lhfile.AddParameter("MassiveParticles "+massive_string);
+
+        if (!m_gosammode) {
+          lhfile.AddParameter("");
+          lhfile.AddParameter("Z_mass                   "+ToString(Flavour(kf_Z).Mass()));
+          lhfile.AddParameter("Z_width                  "+ToString(Flavour(kf_Z).Width()));
+          lhfile.AddParameter("W_mass                   "+ToString(Flavour(kf_Wplus).Mass()));
+          lhfile.AddParameter("W_width                  "+ToString(Flavour(kf_Wplus).Width()));
+          lhfile.AddParameter("sin_th_2                 "+ToString(std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW")))));
+          lhfile.AddParameter("H_mass                   "+ToString(Flavour(kf_h0).Mass()));
+          lhfile.AddParameter("H_width                  "+ToString(Flavour(kf_h0).Width()));
+          lhfile.AddParameter("top_mass                 "+ToString(Flavour(kf_t).Mass()));
+          lhfile.AddParameter("top_width                "+ToString(Flavour(kf_t).Width()));
+          lhfile.AddParameter("bottom_mass              "+ToString(Flavour(kf_b).Mass()));
+          lhfile.AddParameter("bottom_width             "+ToString(Flavour(kf_b).Width()));
+        }
+        lhfile.AddParameter("");
+        lhfile.AddParameter("# process list");
+      }
+      if(lhfile.CheckProcess(2,m_pn-2,flavs)==-1) {
+        lhfile.AddParameter("AmplitudeType Loop");
+        lhfile.AddParameter("CouplingPower QCD        "+ToString(pi.m_maxcpl[0]-1));
+        lhfile.AddParameter("CouplingPower QED        "+ToString(pi.m_maxcpl[1]));
+        lhfile.AddProcess(2,m_pn-2,flavs);
+      }
+      return;
+    }
   }
 
   if (lhfile.CheckParameterStatus()!=1) {
@@ -195,6 +253,7 @@ void LH_OLE_Interface::RegisterDefaults() const
   s["LHOLE_ORDERFILE"].SetDefault("OLE_order.lh");
   s["LHOLE_CONTRACTFILE"].SetDefault("OLE_contract.lh");
   s["LHOLE_IR_REGULARISATION"].SetDefault("DRED");
+  s["LHOLE_BLHA_VERSION"].SetDefault(1);
   const auto olp = s["LHOLE_OLP"].SetDefault("").Get<std::string>();
   s["LHOLE_BOOST_TO_CMS"].SetDefault(false);
   if (olp == "GoSam")

@@ -1,10 +1,10 @@
 # If you have questions or requests contact Valentin Boettcher <hiro@protagon.space> (Gitlab: vale9811)
 
-image: "registry.gitlab.com/vale9811/sherpa-docker-build/slim"
+image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 
 variables:
   DOCKER_DRIVER: overlay2
-  CONFIGURE_FLAGS: --enable-analysis --enable-analysis  --with-libzip=install
+  CONFIGURE_FLAGS: --enable-analysis --enable-analysis  --with-libzip=/usr
   MAKE_FLAGS: -j4
 
 .build_template: &build
@@ -68,14 +68,14 @@ build-clang-strict:
 
 build-manual:
   stage: build
-  image: registry.gitlab.com/vale9811/sherpa-docker-build
+  image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
     - autoreconf -i
     - mkdir -p build
     - cd Manual
     - pip3 install -r requirements.txt
     - cd ../build
-    - ../configure --enable-manual --with-libzip=install
+    - ../configure --enable-manual --with-libzip=/usr
     - cd Manual
     - make
     - make sherpamanual_html
@@ -100,14 +100,12 @@ build-manual:
 
 .test_template: &test
   stage: test
-  dependencies:
-    - build
   variables:
     GIT_STRATEGY: none  # we only need the artifacts from the build
 
 test-LO_Z:
   <<: *test
-  dependencies:
+  needs:
     - build
   script:
     - mkdir test-LO_Z
@@ -116,7 +114,7 @@ test-LO_Z:
 
 test-clang-strict-LO_Z:
   <<: *test
-  dependencies:
+  needs:
     - build-clang-strict
   script:
     - mkdir test-clang-strict-LO_Z
@@ -139,7 +137,7 @@ trigger_pages:
     - when: never
   script:
     - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
-  dependencies:
+  needs: []
 
 # build the dist-tarball
 dist:
@@ -148,7 +146,7 @@ dist:
     - if: '$CI_COMMIT_TAG'
       when: always
     - when: never
-  image: registry.gitlab.com/vale9811/sherpa-docker-build
+  image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
     - autoreconf -i
     - cd Manual
@@ -169,7 +167,7 @@ dist:
 
 # Build Manual
 pages:
-  image: registry.gitlab.com/vale9811/sherpa-docker-build
+  image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   stage: deploy
   script:
     - cd Manual

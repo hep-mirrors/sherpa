@@ -310,6 +310,14 @@ are:
       event number. The interval length can be adjusted with
       ``EVENT_DISPLAY_INTERVAL``.
 
+:samp:`{8}`
+      Sherpa prints the name of the hard process for the 
+      last event at each print out.
+
+:samp:`{16}`
+      Sherpa prints the elapsed time and time left in 
+      seconds only.
+
 The settings are additive such that multiple settings can be employed
 at the same time.
 
@@ -317,7 +325,7 @@ at the same time.
 
    When running the code on a cluster or in a grid environment,
    BATCH_MODE should always contain setting 1
-   (i.e. ``BATCH_MODE=[1|3|5|7]``).
+   (i.e. ``BATCH_MODE: 1`` or ``3`` or ``5`` etc.).
 
    The command line option :option:`-b` should therefore not be used
    in this case, see :ref:`Command line`.
@@ -681,6 +689,36 @@ To include the ME-only variations along with the full variations in the
 HepMC/Rivet output, you can use ``HEPMC_INCLUDE_ME_ONLY_VARIATIONS:
 true`` and ``RIVET: { INCLUDE_HEPMC_ME_ONLY_VARIATIONS: true }``,
 respectively.
+
+.. _Associated contributions variations:
+
+Associated contributions variations
+===================================
+
+Similar to :ref:`Scale and PDF variations`,
+Sherpa can also compute alternative event weights for different
+combinations of associated EW contributions.
+This can be evoked with the following syntax:
+
+.. code-block:: yaml
+
+   ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
+   - [EW]
+   - [EW, LO1]
+   - [EW, LO1, LO2]
+   - [EW, LO1, LO2, LO3]
+
+Each entry of ``ASSOCIATED_CONTRIBUTIONS_VARIATIONS`` defines a variation and
+the different associated contributions that should be taken into account for
+the corresponding alternative weight.
+
+The additional event weights can then be written into the event
+output.  However, this is currently only supported for
+``HepMC_GenEvent`` and ``HepMC_Short`` with versions >=2.06 and
+``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weight
+names are either ``ASS<contrib>`` or ``MULTIASS<contrib>``,
+for additive and multiplicative combinations, correspondingly.
+
 
 .. _MPI parallelization:
 

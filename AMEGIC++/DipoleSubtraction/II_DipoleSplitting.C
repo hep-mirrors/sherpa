@@ -37,7 +37,7 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
     m_Q2*(1.-m_xijk-m_vi)/m_xijk*m_vi;
 
   double zijk(m_xijk);
-  if (m_subtype==1) zijk=m_xijk+m_vi;
+  if (m_subtype&3) zijk=m_xijk+m_vi;
 //   m_pt1  =    m_pj;
 //   m_pt2  =-1.*m_vi*m_pk;
   m_pt1  =    m_pj-m_vi*m_pk;
@@ -46,6 +46,7 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   switch (m_ftype) {
   case spt::q2qg:
     m_sff = 2./(1.-m_xijk)-(1.+zijk);
+    if (m_subtype==2) m_sff = 2.*zijk/(1.-m_xijk)+(1.-zijk);
     m_av  = m_sff;
     break;
   case spt::q2gq:
@@ -60,6 +61,7 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   case spt::g2gg:
     m_sff = m_xijk/(1.-m_xijk)+zijk*(1.-zijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
+    if (m_subtype==2) m_sff += zijk/(1.-m_xijk)-m_xijk/(1.-m_xijk);
     if (m_subtype&3) m_av += 1.0/(m_xijk+m_vi)-1.0/m_xijk;
     break;
   case spt::none:

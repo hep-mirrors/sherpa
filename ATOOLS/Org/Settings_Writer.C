@@ -10,6 +10,42 @@ using namespace ATOOLS;
 
 void Settings_Writer::WriteSettings(Settings& s)
 {
+  // check for settings that have not been used
+  MyStrStream unused;
+  bool did_find_unused {false};
+  for (const auto& reader : s.m_yamlreaders) {
+    bool did_print_file_header {false};
+    auto keys_vec = reader->AllSettingsKeys();
+    for (const auto& keys : keys_vec) {
+      const auto it = s.m_usedvalues.find(keys.IndizesRemoved());
+      if (it == s.m_usedvalues.end()) {
+        did_find_unused = true;
+        if (!did_print_file_header) {
+          unused << "### " << reader->Name() << '\n';
+          did_print_file_header = true;
+        }
+        unused << "- ";
+        for (int i {0}; i < keys.size(); i++) {
+          if (!keys[i].IsIndex()) {
+            if (i != 0)
+              unused << ':';
+            unused << keys[i].GetName();
+          }
+        }
+        unused << '\n';
+      }
+    }
+    if (did_print_file_header)
+      unused << '\n';
+  }
+  unused << '\n';
+  if (did_find_unused) {
+    msg_Error() << "WARNING: Some settings that have been defined in the input\n"
+                << "files and/or the command line have not been used. For more\n"
+                << "details, see the Settings Report.\n";
+  }
+
+
   // order output in rows of customised settings and uncustomised settings
   MyStrStream customised, uncustomised;
   for (const auto& keysetpair : s.m_usedvalues) {
@@ -30,8 +66,39 @@ void Settings_Writer::WriteSettings(Settings& s)
     if (iscustomised) {
       vals.push_back(s.m_overrides[keysetpair.first]);
       Settings_Keys keys{ keysetpair.first };
-      for (auto it = s.m_yamlreaders.rbegin(); it != s.m_yamlreaders.rend(); ++it)
-        vals.push_back((*it)->GetMatrix<std::string>(keys));
+      for (auto it = s.m_yamlreaders.rbegin();
+           it != s.m_yamlreaders.rend();
+           ++it) {
+        auto new_vals =
+          (*it)->GetFlattenedStringVectorWithDelimiters(keys, "{{", "}}");
+        int maxdim = 0, curdim = 0;
+        for (const auto& val : new_vals) {
+          if (val == "{{") {
+            maxdim = std::max(maxdim, ++curdim);
+          } else if (val == "}}") {
+            --curdim;
+          }
+        }
+        String_Matrix pruned_new_vals;
+        pruned_new_vals.emplace_back();
+        for (const auto& val : new_vals) {
+          if (val == "{{") {
+            ++curdim;
+          } else if (val == "}}") {
+            if (curdim > 1 && curdim < maxdim) {
+              pruned_new_vals.emplace_back();
+            }
+            --curdim;
+            if (curdim == 0 && maxdim > 2 && &val != &new_vals.back()) {
+              pruned_new_vals.back().push_back("-- AND --");
+              pruned_new_vals.emplace_back();
+            }
+          } else {
+            pruned_new_vals.back().push_back(val);
+          }
+        }
+        vals.push_back(pruned_new_vals);
+      }
       if (!finalvals.empty()) {
         vals.push_back(*finalvals.begin());
         for (auto it = ++finalvals.begin(); it != finalvals.end(); ++it) {
@@ -78,18 +145,26 @@ void Settings_Writer::WriteSettings(Settings& s)
   file << "date: " << rpa->gen.Timer().TimeString(0) << "\n";
   file << "...\n\n";
 
-  //file << "Sherpa run-time settings\n";
-  //file << "===================\n";
-  file << "Note that parameters that are never accessed by Sherpa during its"
-       << " run will not be listed below. On the other hand, \"accessed\" does"
-       << " not necessarily mean that the parameter had any effect on the"
-       << " run.\n\n";
-  file << "In rare cases, an alternative default value is being used."
-       << " These alternatives will be separated by \"`-- AND --`\" from the"
-       << " standard default, which will always be listed on top.\n\n";
+  if (did_find_unused) {
+    file << "Unused settings\n";
+    file << "-------------------\n";
+    file << "Parameters that have never been read by Sherpa during its"
+         << " run are listed here. If you did expect the setting to be used,"
+         << " check its spelling, and note that Sherpa setting names are case"
+         << "-sensitive.\n\n";
+    file << unused.str();
+  }
 
   file << "Customised settings\n";
   file << "-------------------\n";
+  file << "The parameters listed here have been customised in some way and"
+       << " they have been read by Sherpa during its run."
+       << " The last column lists the actual value used"
+       << " after taking into account all setting sources (default values,"
+       << " overrides, input files and the command line).\n\n";
+  file << "In some cases, an alternative default value is being used."
+       << " These alternatives will be separated by \"`-- AND --`\" from the"
+       << " standard default, which will always be listed on top.\n\n";
   file << "Note that parameters that can take on different values because they"
        << " are set within a list, for example `param: [{x: 1}, {x: 2}, ...]`,"
        << " will not appear in the config-file or command-line columns. They"
@@ -106,8 +181,12 @@ void Settings_Writer::WriteSettings(Settings& s)
     file << "|-";
   file << "|-|-|\n";
   file << customised.str();
+
   file << "Settings kept at their default value\n";
   file << "-------------------\n";
+  file << "The parameter listed here have not been customised, but they have"
+       << " been read by Sherpa during its run.\n\n";
+
   file << "| parameter | default value |\n";
   file << "|-|-|\n";
   file << uncustomised.str();

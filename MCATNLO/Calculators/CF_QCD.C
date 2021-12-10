@@ -59,7 +59,7 @@ namespace MCATNLO {
     //! Buffer of max alphas values to avoid re-calculations
     std::map<MODEL::Running_AlphaS *, std::vector<double> > m_altcplmax;
 
-    double m_q, m_k0sq;
+    double m_q, m_k0sq, m_kfac[7];
 
   public:
 
@@ -84,6 +84,8 @@ namespace MCATNLO {
 	  if (key.p_v->in[2].StrongCharge()==8) m_q/=2.0;
 	}
       }
+      for (size_t nf(0);nf<7;++nf)
+        m_kfac[nf]=exp(-(67.0-3.0*ATOOLS::sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));
     }
 
     double B0(const double &nf) const
@@ -209,9 +211,7 @@ double CF_QCD::CplFac(const double &scale) const
   if (m_kfmode==-1) return 1.0;
   if (m_kfmode==0) return m_cplfac;
   QCD_Coupling_Info cplinfo = CurrentCouplingInfo();
-  double nf=cplinfo.Coupling()->Nf(scale);
-  double kfac=exp(-(67.0-3.0*sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));
-  return m_cplfac*kfac;
+  return m_cplfac*m_kfac[as->Nf(scale)];
 }
 
 void CF_QCD::ColorPoint(Parton *const p) const

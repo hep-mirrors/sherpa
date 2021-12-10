@@ -105,7 +105,8 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
   m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
-  m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
+  m_alphas(0.), m_alpha(0.),
+  m_userhook(false), m_userweight(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
   m_wgtmap(evtinfo.m_wgtmap)
@@ -211,6 +212,13 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             }
           }
         }
+        if (p_wgtinfo->m_wass.size()) {
+          for (size_t i(0);i<p_wgtinfo->m_wass.size();++i) {
+            asscontrib::type ass=static_cast<asscontrib::type>(1<<i);
+            wc["Reweight_"+ToString(ass)]
+                =p_wgtinfo->m_wass[i];
+          }
+        }
         wc["Reweight_Type"]=p_wgtinfo->m_type;
       }
       if (p_subevtlist) {
@@ -229,10 +237,9 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       Weights_Map& wgtmap =
           (idx == -1) ? m_wgtmap : (*p_subevtlist)[idx]->m_results;
 
+      // QCD variations
       for (const auto& source : m_variationsources) {
-
         for (const auto type : s_variations->ManagedVariationTypes()) {
-
           // calculate contributions
           Weights weights = Weights {type};
           double relfac {1.0};
@@ -254,7 +261,6 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             }
             relfac *= wgtmap.BaseWeight();
           }
-
           // do remaining combination and output resulting weights
           size_t num_vars = weights.Size() - 1;
           for (size_t i(0); i < num_vars; ++i) {
@@ -276,6 +282,16 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
         const auto size = ewsudit->second.Size();
         for (int i {1}; i < size; ++i) {
           wc["EWSud_" + ewsudit->second.Name(i)] = ewsudit->second[i];
+        }
+      }
+
+      // associated contributions variations
+      const auto it = wgtmap.find("ASSOCIATED_CONTRIBUTIONS");
+      if (it != wgtmap.end()) {
+        const auto asscontribs = it->second;
+        const auto num_asscontribvars = asscontribs.Size() - 1;
+        for (size_t i(0); i < num_asscontribvars; ++i) {
+          wc["ASS" + asscontribs.Name(i + 1)] = asscontribs[i + 1] * wgtmap.Nominal();
         }
       }
     }
@@ -778,7 +794,8 @@ void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event,
 
 bool HepMC2_Interface::StartsLikeVariationName(const std::string& s)
 {
-  return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0);
+  return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0 ||
+          s.find("ASS") == 0);
 }
 
 void HepMC2_Interface::DeleteGenSubEventList()

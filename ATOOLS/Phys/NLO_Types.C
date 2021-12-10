@@ -28,6 +28,29 @@ std::istream &ATOOLS::operator>>(std::istream &str,nlo_type::code &c)
   return str;
 }
 
+std::ostream & ATOOLS::operator<<(std::ostream & s,
+                                  const ATOOLS::asscontrib::type & at)
+{
+  if (at==asscontrib::none)  s<<"none";
+  if (at&asscontrib::EW)     s<<"EW";
+  if (at&asscontrib::LO1)    s<<"LO1";
+  if (at&asscontrib::LO2)    s<<"LO2";
+  if (at&asscontrib::LO3)    s<<"LO3";
+  return s;
+}
+
+std::istream &ATOOLS::operator>>(std::istream &s,ATOOLS::asscontrib::type &at)
+{
+  std::string tag;
+  getline(s,tag);
+  at=asscontrib::none;
+  if (tag.find("EW")!=std::string::npos)  at|=asscontrib::EW;
+  if (tag.find("LO1")!=std::string::npos) at|=asscontrib::LO1;
+  if (tag.find("LO2")!=std::string::npos) at|=asscontrib::LO2;
+  if (tag.find("LO3")!=std::string::npos) at|=asscontrib::LO3;
+  return s;
+}
+
 std::ostream &ATOOLS::operator<<(std::ostream &str,const nlo_mode::code &c)
 {
   if      (c==nlo_mode::none)       return str<<"none";

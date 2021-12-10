@@ -34,17 +34,15 @@ PROCESSES:
     2->1:
       Special: MapOff
     KFactor: HNNLO
-    Order: {QCD: Any, EW: 0, HEFT: 1}
+    Order: {QCD: 0, EW: 0, HEFT: 1}
+    NLO_Order: {QCD: 1, EW: 0}
 
 SELECTORS:
-- [NNLOqT, 1e0]
+- [NNLOqT, 1.]
 
-RIVET: {
-  "-a": [
-    MC_QCD_PARTONS,
-    MC_HJETS
-    ]
-}
+RIVET:
+  --analyses: [MC_QCD_PARTONS, MC_HJETS]
+
 INTERNAL_ANALYSES:
   - {
     LEVEL: MENLO,

@@ -124,6 +124,7 @@ namespace PHASIC {
 
     double t1(int type,int spin,double muq,double x);
     double t2(int type,int spin,double muq);
+    double t2c(int type,int spin,double muq2,double saj);
     double t3(int type,int spin,double muq,double x);
     double t4(int type,int spin,double muq,double x);
     double t5(int type,double x,double xp);

@@ -5,15 +5,13 @@
 
 namespace PHASIC {
   class Rambo : public Single_Channel {
-    //int      nin,nout;
-    //double * ms;
     bool     massflag;
     double   Z_N, * xm2, * p2, * E;
     short int itmax;
     double accu;
-    const ATOOLS::Mass_Selector* p_ms;
+    const ATOOLS::Mass_Selector* p_masssel;
   public:
-    Rambo(int,int,const ATOOLS::Flavour *,const ATOOLS::Mass_Selector* ms=NULL);
+    Rambo(size_t,size_t,const ATOOLS::Flavour *,const ATOOLS::Mass_Selector* ms=NULL);
     Rambo(size_t nin, std::vector<double> masses);
     ~Rambo();
     void Init(const size_t& nin, const size_t& nout, const std::vector<double>& masses);

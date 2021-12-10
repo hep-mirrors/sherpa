@@ -4,8 +4,8 @@
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
-#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
+#include "SHERPA/SoftPhysics/Hadron_Init.H"
 #include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
@@ -25,6 +25,7 @@
 #include "ATOOLS/Math/Scaling.H"
 #include "ATOOLS/Phys/Spinor.H"
 #include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/Fragmentation_Base.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Math/Variable.H"
 #include "ATOOLS/Org/Data_Writer.H"
@@ -158,6 +159,7 @@ void Initialization_Handler::RegisterDefaults()
   s["SHOW_PS_GENERATORS"].SetDefault(0);
   s["SHOW_NLOMC_GENERATORS"].SetDefault(0);
   s["SHOW_SHOWER_GENERATORS"].SetDefault(0);
+  s["SHOW_KFACTOR_SYNTAX"].SetDefault(0);
   s["SHOW_SCALE_SYNTAX"].SetDefault(0);
   s["SHOW_SELECTOR_SYNTAX"].SetDefault(0);
   s["SHOW_MODEL_SYNTAX"].SetDefault(0);
@@ -176,6 +178,7 @@ void Initialization_Handler::RegisterDefaults()
   s["SCALE_FACTOR"].SetDefault(1.0);
   s["FACTORIZATION_SCALE_FACTOR"].SetDefault(1.0);
   s["RENORMALIZATION_SCALE_FACTOR"].SetDefault(1.0);
+  s["RESUMMATION_SCALE_FACTOR"].SetDefault(1.0);
   s["USR_WGT_MODE"].SetDefault(true);
 
   s["OVERRIDE_PDF_INFO"].SetDefault(false);
@@ -213,6 +216,7 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_IS_PT2MIN"].SetDefault(2.0);
   s["CSS_FS_AS_FAC"].SetDefault(1.0);
   s["CSS_IS_AS_FAC"].SetDefault(1.0);
+  s["CSS_PDF_FAC"].SetDefault(1.0);
   s["CSS_SCALE_FACTOR"].SetDefault(1.);
   s["CSS_MASS_THRESHOLD"].SetDefault(0.0);
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
@@ -407,6 +411,12 @@ void Initialization_Handler::ShowParameterSyntax()
     PDF::Shower_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
+  helpi = s["SHOW_KFACTOR_SYNTAX"].Get<int>();
+  if (helpi>0) {
+    msg->SetLevel(2);
+    PHASIC::KFactor_Setter_Base::ShowSyntax(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
   helpi = s["SHOW_SCALE_SYNTAX"].Get<int>();
   if (helpi>0) {
     msg->SetLevel(2);
@@ -506,7 +516,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheRemnants();
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
-  okay = okay && p_beamspectra->Init();
   p_model->InitializeInteractionModel();
   okay = okay && InitializeTheAnalyses();
   if (!CheckBeamISRConsistency()) return 0.;
@@ -674,16 +683,17 @@ bool Initialization_Handler::InitializeThePDFs()
   for (int beam(0);beam<=1;++beam) {
     std::string deflib("None");
     if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_p_plus) {
-      deflib="NNPDFSherpa";
-      defset[beam]="NNPDF31_nnlo_as_0118_mc";
+      deflib=PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus);
+      defset[beam]=PDF::pdfdefs->DefaultPDFSet(kf_p_plus);
     }
-    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e || p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_mu) {
-      deflib="PDFESherpa";
-      defset[beam]="PDFe";
+    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e ||
+	     p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_mu) {
+      deflib=PDF::pdfdefs->DefaultPDFLibrary(kf_e);
+      defset[beam]=PDF::pdfdefs->DefaultPDFSet(kf_e);
     }
     else if (p_beamspectra->GetBeam(beam)->Bunch().IsPhoton()) {
-      deflib="GRVSherpa";
-      defset[beam]="GRV";
+      deflib=PDF::pdfdefs->DefaultPDFLibrary(kf_photon);
+      defset[beam]=PDF::pdfdefs->DefaultPDFSet(kf_photon);
     }
     std::vector<std::string> pdflibs{
       s["PDF_LIBRARY"].GetVector<std::string>() };
@@ -843,6 +853,7 @@ bool Initialization_Handler::InitializeThePDFs()
 		 <<"   Abort program."<<endl;
       Abort();
     }
+    m_isrhandlers[id]->Output();
   }
   msg_Info() << "Initialized the ISR." << endl;
   return 1;
@@ -942,8 +953,17 @@ bool Initialization_Handler::InitializeTheFragmentation()
 {
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   as->SetActiveAs(isr::hard_subprocess);
-  const auto shower = m_showerhandlers[isr::hard_process]->ShowerGenerator();
-  p_fragmentation = new Fragmentation_Handler(shower);
+  Settings& s = Settings::GetMainSettings();
+  string fragmentationmodel = s["FRAGMENTATION"].Get<std::string>();
+  if (fragmentationmodel!="None") {
+    Hadron_Init().Init();
+    ATOOLS::OutputHadrons(msg->Tracking());
+  }
+  p_fragmentation = Fragmentation_Getter::GetObject
+    (fragmentationmodel,
+     Fragmentation_Getter_Parameters(m_showerhandlers[isr::hard_process]->ShowerGenerator()));
+  if (p_fragmentation==NULL)
+    THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Fragmentation_Handler."<<endl;
   return 1;
@@ -967,10 +987,10 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 #ifdef USING__PYTHIA
     as->SetActiveAs(isr::hard_subprocess);
     Lund_Interface * lund(NULL);
-    if (p_fragmentation->GetLundInterface()==NULL) {
+    if (p_fragmentation==NULL) {
       lund = new Lund_Interface();
     }
-    else lund = p_fragmentation->GetLundInterface();
+    else lund = dynamic_cast<Lund_Interface*>(p_fragmentation);
     Lund_Decay_Handler* hd=new Lund_Decay_Handler(lund);
     as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
@@ -1010,8 +1030,17 @@ bool Initialization_Handler::InitializeTheAnalyses()
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
         THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
-      if (!s_loader->LoadLibrary("SherpaHepMCOutput")&& !s_loader->LoadLibrary("SherpaHepMC3Output")) 
-        THROW(missing_module,"Cannot load HepMC library (--enable-hepmc2 or --enable-hepmc3).");
+      bool hepmc_loaded {false};
+#ifdef USING__HEPMC2
+      hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMCOutput") != nullptr);
+#endif
+#ifdef USING__HEPMC3
+      hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMC3Output") != nullptr);
+#endif
+      if (!hepmc_loaded) {
+        THROW(missing_module,
+              "Cannot load HepMC library (--enable-hepmc2 and/or --enable-hepmc3).");
+      }
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
         THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
     }
@@ -1079,11 +1108,14 @@ void Initialization_Handler::SetGlobalVariables()
   double sf(s["SCALE_FACTOR"].Get<double>());
   double fsf(sf*s["FACTORIZATION_SCALE_FACTOR"].Get<double>());
   double rsf(sf*s["RENORMALIZATION_SCALE_FACTOR"].Get<double>());
+  double qsf(sf*s["RESUMMATION_SCALE_FACTOR"].Get<double>());
   rpa->gen.SetVariable("FACTORIZATION_SCALE_FACTOR", ToString(fsf));
   rpa->gen.SetVariable("RENORMALIZATION_SCALE_FACTOR", ToString(rsf));
+  rpa->gen.SetVariable("RESUMMATION_SCALE_FACTOR", ToString(qsf));
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
 		 <<"  fac scale: "<<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
-		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
+		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n"
+		 <<"  res scale: "<<rpa->gen.Variable("RESUMMATION_SCALE_FACTOR")<<"\n}\n";
 
   // TODO: remove from rpa?
   double virtfrac = s["VIRTUAL_EVALUATION_FRACTION"].Get<double>();

@@ -1,4 +1,5 @@
 #include "AMEGIC++/Main/Amegic_Base.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include <cassert>
@@ -9,12 +10,34 @@ using namespace PHASIC;
 
 int AMEGIC::Amegic_Base::s_partcommit=0;
 
-Amegic_Base::Amegic_Base() : p_pinfo(0), m_ntchanmin(-99)
+Amegic_Base::Amegic_Base() : p_pinfo(0)
 {}
 
 Amegic_Base::~Amegic_Base()
 {
   if (p_pinfo) delete p_pinfo;
+}
+
+void Amegic_Base::PrepareTestMoms
+(Vec4D *const moms,const size_t &nin,const size_t &nout) const
+{
+  Vec4D sum;
+  Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
+  msg_Debugging()<<"After boost:\n";
+  for (size_t i(0);i<nin+nout;++i) {
+    lab.Boost(moms[i]);
+    sum+=i<nin?-moms[i]:moms[i];
+    msg_Debugging()<<"  p["<<i<<"] = "<<moms[i]<<"\n";
+  }
+  msg_Debugging()<<"} -> sum = "<<sum<<"\n";
+  Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
+  msg_Debugging()<<"After rotation:\n";
+  for (size_t i(0);i<nin+nout;++i) {
+    rot.Rotate(moms[i]);
+    sum+=i<nin?-moms[i]:moms[i];
+    msg_Debugging()<<"  p["<<i<<"] = "<<moms[i]<<"\n";
+  }
+  msg_Debugging()<<"} -> sum = "<<sum<<"\n";
 }
 
 Pol_Info AMEGIC::Amegic_Base::ExtractPolInfo(const PHASIC::Subprocess_Info &spi)

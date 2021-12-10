@@ -141,6 +141,7 @@ void AMEGIC::Single_Process_External::Minimize()
 }
 
 double AMEGIC::Single_Process_External::Partonic(const Vec4D_Vector &moms,
+                                                 Variations_Mode varmode,
                                                  int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
@@ -169,7 +170,9 @@ double AMEGIC::Single_Process_External::DSigma(const ATOOLS::Vec4D_Vector &_moms
 double AMEGIC::Single_Process_External::operator()(const ATOOLS::Vec4D* mom)
 {
   Vec4D_Vector moms(mom,&mom[m_nin+m_nout]);
-  return p_me2->Calc(moms)*(m_lastk=KFactor(2));
+  double res(p_me2->Calc(moms)*(m_lastk=KFactor()));
+  DEBUG_VAR(Name()<<" "<<res);
+  return res;
 }
 
 bool AMEGIC::Single_Process_External::Combinable

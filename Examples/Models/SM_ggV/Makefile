@@ -15,6 +15,7 @@ OBJECTS=$(SOURCES:.C=.o)
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 	LIB_SUFFIX=dylib
+	LDFLAGS+= -Wl,-undefined -Wl,dynamic_lookup
 else
 	LIB_SUFFIX=so
 endif

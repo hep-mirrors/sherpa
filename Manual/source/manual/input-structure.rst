@@ -208,5 +208,5 @@ and then be used in the configuration file like:
    RESULT_DIRECTORY: Result_$(QCUT)
    PROCESSES:
    - 93 93 -> 11 -11 93{$(NJET)}:
-       Order: {QCD: Any, EW: 2}
+       Order: {QCD: 0, EW: 2}
        CKKW: $(QCUT)

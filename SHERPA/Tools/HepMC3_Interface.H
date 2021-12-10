@@ -24,16 +24,6 @@ namespace HepMC3 {
   class GenRunInfo;
   class GenParticle;
   class GenCrossSection;
-  class Writer;
-  class WriterAscii;
-  class WriterAsciiHepMC2;
-  class WriterHEPEVT;
-#ifdef USING__HEPMC3__WRITERROOTTREE
-  class WriterRootTree;
-#endif
-#ifdef USING__HEPMC3__WRITERROOT
-  class WriterRoot;
-#endif
 
 using GenVertexPtr = std::shared_ptr<GenVertex>;
 using GenParticlePtr = std::shared_ptr<GenParticle>;
@@ -98,6 +88,7 @@ namespace SHERPA {
     std::set<ATOOLS::btp::code> m_ignoreblobs;
 
     HepMC3::GenEvent *p_event;
+    std::shared_ptr<HepMC3::GenRunInfo> m_runinfo;
     std::vector<HepMC3::GenEvent*> m_subeventlist;
 
     std::shared_ptr<HepMC3::GenParticle> MakeGenParticle(const ATOOLS::Vec4D&,
@@ -113,7 +104,7 @@ namespace SHERPA {
 
     // member functions
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC3::GenEvent& event);
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs,                       std::shared_ptr<HepMC3::GenRunInfo> run= std::shared_ptr<HepMC3::GenRunInfo>());
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs);
     bool Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob *,     HepMC3::GenVertexPtr &, HepMC3::GenEvent& event ); 
     bool Sherpa2HepMC(ATOOLS::Particle *, HepMC3::GenParticlePtr &);
 
@@ -142,6 +133,9 @@ namespace SHERPA {
     inline bool HepMCTreeLike()                { return m_hepmctree; }
     inline void SetHepMCIncludeMEOnlyVariations(bool x)
     { m_includemeonlyweights=x; }
+
+    // For RivetInterface to check if a weight container key could be a variation weight name
+    bool StartsLikeVariationName(const std::string&);
 
     void DeleteGenSubEventList();
 

@@ -45,7 +45,7 @@ void Singlet_Former::FormSinglets() {
 
 Singlet * Singlet_Former::MakeAnother() {
   Singlet * partlist = new Singlet();
-  Particle * part = FindStart();
+  Particle * part    = FindStart();
   partlist->push_back(new Proto_Particle(*part));
   if (part->Flav().IsQuark()) partlist->back()->SetLeading(true);
   if (part->Beam()>-1)        partlist->back()->SetBeam(true);

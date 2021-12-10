@@ -21,6 +21,10 @@ namespace PHASIC {
     double m_mur2, m_accu;
     int m_mode, m_drmode, m_colmode;
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
+    const std::vector<std::vector<double> > *p_dsij;
+    const std::vector<size_t> *p_plist;
+    bool m_calcass;
+    std::vector<double> m_asscontribs;
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
                   const ATOOLS::Flavour_Vector& flavs);
@@ -32,6 +36,7 @@ namespace PHASIC {
     // themselves but need it for the renormalization scale dependence
     virtual void Calc(const ATOOLS::Vec4D_Vector& momenta,
 		      const double& born2) { return Calc(momenta); }
+    virtual void SetPoleCheck(const int check=0);
 
     virtual void Calc(const ATOOLS::Vec4D_Vector& momenta)=0;
     
@@ -46,6 +51,10 @@ namespace PHASIC {
     inline double ME_E2() { return m_res.GetIR2(); }
     inline double ME_Born() { return m_born; }
 
+    inline void SetCalcAssContribs(const bool calcass) { m_calcass=calcass; }
+    inline size_t ME_AssContribs_Size() { return m_asscontribs.size(); }
+    inline double ME_AssContribs(size_t i) { return m_asscontribs[i]; }
+
     inline void SetSubType(const ATOOLS::sbt::subtype& st) { m_stype=st; }
     inline void SetRenScale(const double& mur2) { m_mur2=mur2; }
     inline void SetNorm(const double& norm) { m_norm=norm; }
@@ -57,6 +66,9 @@ namespace PHASIC {
     inline int Mode() const    { return m_mode;    }
     inline int DRMode() const  { return m_drmode;  }
     inline int ColMode() const { return m_colmode; }
+
+    inline void SetDSij(const std::vector<std::vector<double> > *const dsij) { p_dsij=dsij; }
+    inline void SetPList(const std::vector<size_t> *const plist) { p_plist=plist; }
 
     inline std::string Name() { return m_name; }
 

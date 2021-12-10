@@ -159,7 +159,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   BEAMDIR="\${top_srcdir}/BEAM"
   BEAMBUILDDIR="\${top_builddir}/BEAM"
-  BEAMLIBS="\${BEAMBUILDDIR}/Main/libBeam.la"
+  BEAMLIBS="\${BEAMBUILDDIR}/Main/libBeamMain.la \
+  	\${BEAMBUILDDIR}/Spectra/libBeamSpectra.la"
   AC_SUBST(BEAMDIR)
   AC_SUBST(BEAMBUILDDIR)
   AC_SUBST(BEAMLIBS)
@@ -183,7 +184,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 	\${EXTRAXSBUILDDIR}/Two2Two/libExtraXS2_2.la \
 	\${EXTRAXSBUILDDIR}/One2Two/libExtraXS1_2.la \
 	\${EXTRAXSBUILDDIR}/One2Three/libExtraXS1_3.la \
-	\${EXTRAXSBUILDDIR}/NLO/libExtraXSNLO.la"
+	\${EXTRAXSBUILDDIR}/NLO/libExtraXSNLO.la \
+	\${EXTRAXSBUILDDIR}/Special/libExtraXSSpecial.la"
   AC_SUBST(EXTRAXSDIR)
   AC_SUBST(EXTRAXSBUILDDIR)
   AC_SUBST(EXTRAXSLIBS)
@@ -261,10 +263,12 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   MODELDIR="\${top_srcdir}/MODEL"
   MODELBUILDDIR="\${top_builddir}/MODEL"
-  MODELLIBS="\${MODELBUILDDIR}/Main/libModelMain.la \
+  MODELMAINLIB="\${MODELBUILDDIR}/Main/libModelMain.la"
+  MODELLIBS="\${MODELMAINLIB} \
 	\${MODELBUILDDIR}/UFO/libModelUFO.la"
   AC_SUBST(MODELDIR)
   AC_SUBST(MODELBUILDDIR)
+  AC_SUBST(MODELMAINLIB)
   AC_SUBST(MODELLIBS)
   
   PDFDIR="\${top_srcdir}/PDF"
@@ -375,7 +379,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 [
   AC_ARG_ENABLE(
     versioning,
-    AC_HELP_STRING([--enable-versioning], [Add version tag to executables and library/header directories, such that multiple Sherpa versions can live in the same prefix.]),
+    AS_HELP_STRING([--enable-versioning],[Add version tag to executables and library/header directories, such that multiple Sherpa versions can live in the same prefix.]),
     [ AC_MSG_CHECKING(whether to enable versioning)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no);
@@ -395,7 +399,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     multithread,
-    AC_HELP_STRING([--enable-multithread], [Enable multithreading]),
+    AS_HELP_STRING([--enable-multithread],[Enable multithreading]),
     [ AC_MSG_CHECKING(for multithreading)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no); multithread=false ;;
@@ -412,7 +416,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   
   AC_ARG_ENABLE(
     analysis,
-    AC_HELP_STRING([--enable-analysis], [Enable analysis]),
+    AS_HELP_STRING([--enable-analysis],[Enable analysis]),
     [ AC_MSG_CHECKING(for analysis)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no); analysis=false ;;
@@ -423,15 +427,60 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(USING__Analysis, test "$analysis" = "true" )
 
   AC_ARG_ENABLE(
+    root,
+    AS_HELP_STRING([--enable-root=/path/to/root],[Enable ROOT support and specify where it is installed if non-standard.]),
+    [ AC_MSG_CHECKING(for ROOT installation directory)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(ROOT not enabled); root=false;;
+        yes) if test -d "$ROOTSYS"; then
+               CONDITIONAL_ROOTDIR=$ROOTSYS
+               CONDITIONAL_ROOTINCS="-I$ROOTSYS/include -I$($ROOTSYS/bin/root-config --incdir)";
+               CONDITIONAL_ROOTLIBS="-L$ROOTSYS/lib $($ROOTSYS/bin/root-config --glibs)"
+               CONDITIONAL_ROOTFLAGS="$($ROOTSYS/bin/root-config --cflags)"
+             elif test -x "`which root-config`"; then
+               CONDITIONAL_ROOTDIR=`root-config --prefix`;
+               CONDITIONAL_ROOTINCS=-I`root-config --incdir`;
+               CONDITIONAL_ROOTLIBS=`root-config --glibs`;
+               CONDITIONAL_ROOTFLAGS=`root-config --cflags`;
+                if ! test -d "$CONDITIONAL_ROOTDIR"; then
+                  AC_MSG_ERROR(root-config --prefix returned a path that is not available. Please check your ROOT installation and set \$ROOTSYS manually.);
+                fi
+             else
+               AC_MSG_ERROR(\$ROOTSYS is not a valid path and root-config was not found.);
+             fi;
+             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
+        *)   if test -d "${enableval}"; then
+               CONDITIONAL_ROOTDIR="${enableval}"
+               CONDITIONAL_ROOTINCS="-I${enableval}/include -I${enableval}/include/root";
+               CONDITIONAL_ROOTLIBS="-L${enableval}/lib $(${enableval}/bin/root-config --glibs)";
+               CONDITIONAL_ROOTFLAGS="$(${enableval}/bin/root-config --cflags)";
+             else
+               AC_MSG_ERROR(${enableval} is not a valid path.);
+             fi;
+             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
+      esac ],
+    [ root=false ]
+  )
+  if test "$root" = "true" ; then
+    AC_DEFINE([USING__ROOT], "1", [using ROOT])
+    fi
+  AC_SUBST(CONDITIONAL_ROOTDIR)
+  AC_SUBST(CONDITIONAL_ROOTINCS)
+  AC_SUBST(CONDITIONAL_ROOTLIBS)
+  AC_SUBST(CONDITIONAL_ROOTFLAGS)
+  AM_CONDITIONAL(ROOT_SUPPORT, test "$root" = "true")
+  
+
+  AC_ARG_ENABLE(
     hepmc2,
-    AC_HELP_STRING([--enable-hepmc2=/path/to/hepmc], [Enable HepMC (version 2.x) support and specify where it is installed.]),
+    AS_HELP_STRING([--enable-hepmc2=/path/to/hepmc],[Enable HepMC (version 2.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC2 installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC2 not enabled); hepmc2=false ;;
         yes)  if test -d "$HEPMC2DIR"; then
                 CONDITIONAL_HEPMC2DIR="$HEPMC2DIR"
                 CONDITIONAL_HEPMC2INCS="-I$HEPMC2DIR/include"
-                CONDITIONAL_HEPMC2LIBS="-L$HEPMC2DIR/lib -R$HEPMC2DIR/lib -L$HEPMC2DIR/lib64 -R$HEPMC2DIR/lib64 -lHepMC";
+                CONDITIONAL_HEPMC2LIBS="-L$HEPMC2DIR/lib -Wl,-rpath -Wl,$HEPMC2DIR/lib -L$HEPMC2DIR/lib64 -Wl,-rpath -Wl,$HEPMC2DIR/lib64 -lHepMC";
               else
                 AC_MSG_ERROR(\$HEPMC2DIR is not a valid path.);
               fi;
@@ -439,7 +488,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_HEPMC2DIR="${enableval}"
                 CONDITIONAL_HEPMC2INCS="-I${enableval}/include"
-                CONDITIONAL_HEPMC2LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC";
+                CONDITIONAL_HEPMC2LIBS="-L${enableval}/lib -Wl,-rpath -Wl,${enableval}/lib -L${enableval}/lib64 -Wl,-rpath -Wl,${enableval}/lib64 -lHepMC";
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
@@ -474,9 +523,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_HEPMC2LIBS)
   AM_CONDITIONAL(HEPMC2_SUPPORT, test "$hepmc2" = "true")
 
- AC_ARG_ENABLE(
+  AC_ARG_ENABLE(
     hepmc3root,
-    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.1+) ROOT support]),
+    AS_HELP_STRING([--enable-hepmc3root],[Enable HepMC (version 3.1+) ROOT support]),
     [ 
     case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC3 ROOT support not enabled); hepmc3root=false ;;
@@ -484,13 +533,13 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     
           esac
     ],
-    [ hepmc3root=true ]
+    [ hepmc3root=${root} ]
   )
 
 
   AC_ARG_ENABLE(
     hepmc3,
-    AC_HELP_STRING([--enable-hepmc3=/path/to/hepmc], [Enable HepMC (version 3.x) support and specify where it is installed.]),
+    AS_HELP_STRING([--enable-hepmc3=/path/to/hepmc],[Enable HepMC (version 3.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC3 installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC3 not enabled);   ;;
@@ -502,36 +551,27 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
             fi;;
       esac;
       if test -x "$CONDITIONAL_HEPMC3DIR/bin/HepMC3-config"; then      
-              AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true
-              CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags)";
-              CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs)";
-              if test "$hepmc3root" = "true" ; then
-                      CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags --rootIO)";
-                      CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs  --rootIO)";              
-                      SAVE_CXXFLAGS="${CXXFLAGS}"
-                      CXXFLAGS="${CXXFLAGS} $CONDITIONAL_HEPMC3INCS"
-                      AC_LANG_PUSH([C++])
-                      AC_CHECK_HEADERS([HepMC3/WriterRootTree.h],[hepmc3writerroottree=true;] , [hepmc3writerroottree=false;])
-                      AC_CHECK_HEADERS([HepMC3/WriterRoot.h],[hepmc3writerroot=true;] , [hepmc3writerroot=false;])
-                      AC_LANG_POP([C++])
-                      CXXFLAGS="${SAVE_CXXFLAGS}"
-              fi
+        AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true
+        CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags)";
+        CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs)";
+        if test "$hepmc3root" = "true" ; then
+          CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags --rootIO) ${CONDITIONAL_ROOTINCS}";
+          CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs  --rootIO) ${CONDITIONAL_ROOTLIBS}";
+          if ! test -f "$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --includedir)/HepMC3/WriterRoot.h" -a -f "$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --includedir)/HepMC3/WriterRootTree.h"; then
+             AC_MSG_ERROR(HepMC3 installation does not contain ROOT support.);
+          fi;
+        fi;
       else
-              AC_MSG_ERROR(Unable to use HepMC3 from specified path.);
+        AC_MSG_ERROR(Unable to use HepMC3 from specified path);
       fi;
-      ],
+    ],
     [ hepmc3=false ]
   )
-    if test "$hepmc3" = "true" ; then
+  if test "$hepmc3" = "true" ; then
     AC_DEFINE([USING__HEPMC3], "1", [Using HEPMC3])
-    fi
+  fi
   if test "$hepmc3root" = "true" ; then
-    if test "$hepmc3writerroot" = "true"; then
-      AC_DEFINE([USING__HEPMC3__WRITERROOT], "1", [WriterRoot.h available])
-    fi
-    if test "$hepmc3writerroottree" = "true"; then
-      AC_DEFINE([USING__HEPMC3__WRITERROOTTREE], "1", [WriterRootTree.h available])
-    fi
+    AC_DEFINE([USING__HEPMC3__ROOT], "1", [HepMC3 with ROOT support])
   fi
   AC_SUBST(CONDITIONAL_HEPMC3DIR)
   AC_SUBST(CONDITIONAL_HEPMC3INCS)
@@ -541,7 +581,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     rivet,
-    AC_HELP_STRING([--enable-rivet=/path/to/rivet], [Enable Rivet support and specify where it is installed.]),
+    AS_HELP_STRING([--enable-rivet=/path/to/rivet],[Enable Rivet support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for Rivet installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(Rivet not enabled); rivet2=false; rivet3=false ;;
@@ -558,9 +598,11 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]);
         rivetversion="$($CONDITIONAL_RIVETDIR/bin/rivet-config --version)"
         AC_MSG_CHECKING(for Rivet version)
-        AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
-          AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
-            AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+        AX_COMPARE_VERSION([${rivetversion}],[ge],[3.1.1],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
+          AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ AC_MSG_ERROR(Rivet version 3.0.0-3.1.0 not supported -- please use 3.1.1 or above.) ], [
+            AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
+              AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+            ])
           ])
         ])
       else
@@ -623,7 +665,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     blackhat,
-    AC_HELP_STRING([--enable-blackhat=/path/to/blackhat], [Enable BLACKHAT.]),
+    AS_HELP_STRING([--enable-blackhat=/path/to/blackhat],[Enable BLACKHAT.]),
     [ AC_MSG_CHECKING(for BLACKHAT installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(BLACKHAT not enabled); blackhat=false ;;
@@ -658,7 +700,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     openloops,
-    AC_HELP_STRING([--enable-openloops=/path/to/openloops], [Enable OpenLoops.]),
+    AS_HELP_STRING([--enable-openloops=/path/to/openloops],[Enable OpenLoops.]),
     [ AC_MSG_CHECKING(for OpenLoops installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(OpenLoops not enabled); openloops=false ;;
@@ -680,7 +722,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     gosam,
-    AC_HELP_STRING([--enable-gosam=/path/to/gosam], [Enable GoSam.]),
+    AS_HELP_STRING([--enable-gosam=/path/to/gosam],[Enable GoSam.]),
     [ AC_MSG_CHECKING(for GoSam installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(GoSam not enabled); gosam=false ;;
@@ -701,21 +743,45 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(GOSAM_SUPPORT, test "$gosam" = "true")
 
   AC_ARG_ENABLE(
+    madloop,
+    AS_HELP_STRING([--enable-madloop=/path/to/madloop],[Enable Madloop.]),
+    [ AC_MSG_CHECKING(for Madloop installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Madloop not enabled); madloop=false ;;
+        *)   MADLOOP_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             madloop=true;
+             if test -d "${MADLOOP_PREFIX}"; then
+                AC_MSG_RESULT([${MADLOOP_PREFIX}]);
+             else
+                AC_MSG_WARN(${MADLOOP_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ madloop=false ]
+  )
+  if test "$madloop" = "true" ; then
+    AC_DEFINE_UNQUOTED([MADLOOP_PREFIX], "$MADLOOP_PREFIX", [Madloop installation prefix])
+  fi
+  AM_CONDITIONAL(MADLOOP_SUPPORT, test "$madloop" = "true")
+
+  AC_ARG_ENABLE(
     mcfm,
-    AC_HELP_STRING([--enable-mcfm=/path/to/mcfm], [Enable MCFM.]),
+    AS_HELP_STRING([--enable-mcfm=/path/to/mcfm],[Enable MCFM.]),
     [ AC_MSG_CHECKING(for MCFM installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(MCFM not enabled); mcfm=false ;;
         yes)  if test -d "$MCFMDIR"; then
                 CONDITIONAL_MCFMDIR="$MCFMDIR"
-                CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib/libMCFM.a"
+                CONDITIONAL_MCFMLIBS="-Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(\$MCFMDIR is not a valid path.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_MCFMDIR}]); mcfm=true;;
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_MCFMDIR="${enableval}"
-                CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib/libMCFM.a"
+                CONDITIONAL_MCFMLIBS="-Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
@@ -726,14 +792,16 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   if test "$mcfm" = "true" ; then
     AC_DEFINE([USING__MCFM], "1", [Using MCFM])
+    AC_DEFINE_UNQUOTED([MCFM_PATH], "$CONDITIONAL_MCFMDIR", [MCFM directory])
   fi
   AC_SUBST(CONDITIONAL_MCFMDIR)
   AC_SUBST(CONDITIONAL_MCFMLIBS)
+  AC_SUBST(CONDITIONAL_MCFMINCS)
   AM_CONDITIONAL(MCFM_SUPPORT, test "$mcfm" = "true")
 
   AC_ARG_ENABLE(
     lhole,
-    AC_HELP_STRING([--enable-lhole], [Enable Les Houches One-Loop Generator interface.]),
+    AS_HELP_STRING([--enable-lhole],[Enable Les Houches One-Loop Generator interface.]),
     [ AC_MSG_CHECKING(for LHOLE)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no); lhole=false ;;
@@ -743,55 +811,10 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   AM_CONDITIONAL(USING__LHOLE, test "$lhole" = "true" )
 
-  AC_ARG_ENABLE(
-    root,
-    AC_HELP_STRING([--enable-root=/path/to/root], [Enable ROOT support and specify where it is installed if non-standard.]),
-    [ AC_MSG_CHECKING(for ROOT installation directory)
-      case "${enableval}" in
-        no)  AC_MSG_RESULT(ROOT not enabled); root=false;;
-        yes) if test -d "$ROOTSYS"; then
-               CONDITIONAL_ROOTDIR=$ROOTSYS
-               CONDITIONAL_ROOTINCS="-I$ROOTSYS/include -I$($ROOTSYS/bin/root-config --incdir)";
-               CONDITIONAL_ROOTLIBS="-L$ROOTSYS/lib $($ROOTSYS/bin/root-config --glibs)"
-               CONDITIONAL_ROOTFLAGS="$($ROOTSYS/bin/root-config --cflags)"
-             elif test -x "`which root-config`"; then
-               CONDITIONAL_ROOTDIR=`root-config --prefix`;
-               CONDITIONAL_ROOTINCS=-I`root-config --incdir`;
-               CONDITIONAL_ROOTLIBS=`root-config --glibs`;
-               CONDITIONAL_ROOTFLAGS=`root-config --cflags`;
-                if ! test -d "$CONDITIONAL_ROOTDIR"; then
-                  AC_MSG_ERROR(root-config --prefix returned a path that is not available. Please check your ROOT installation and set \$ROOTSYS manually.);
-                fi
-             else
-               AC_MSG_ERROR(\$ROOTSYS is not a valid path and root-config was not found.);
-             fi;
-             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
-        *)   if test -d "${enableval}"; then
-               CONDITIONAL_ROOTDIR="${enableval}"
-               CONDITIONAL_ROOTINCS="-I${enableval}/include -I${enableval}/include/root";
-               CONDITIONAL_ROOTLIBS="-L${enableval}/lib $(${enableval}/bin/root-config --glibs)";
-               CONDITIONAL_ROOTFLAGS="$(${enableval}/bin/root-config --cflags)";
-             else
-               AC_MSG_ERROR(${enableval} is not a valid path.);
-             fi;
-             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
-      esac ],
-    [ root=false ]
-  )
-  if test "$root" = "true" ; then
-    AC_DEFINE([USING__ROOT], "1", [using ROOT])
-    fi
-  AC_SUBST(CONDITIONAL_ROOTDIR)
-  AC_SUBST(CONDITIONAL_ROOTINCS)
-  AC_SUBST(CONDITIONAL_ROOTLIBS)
-  AC_SUBST(CONDITIONAL_ROOTFLAGS)
-  AM_CONDITIONAL(ROOT_SUPPORT, test "$root" = "true")
-  
-
   lhapdfversion=5
   AC_ARG_ENABLE(
     lhapdf,
-    AC_HELP_STRING([--enable-lhapdf=/path/to/lhapdf], [Enable LHAPDF support and specify where it is installed.]),
+    AS_HELP_STRING([--enable-lhapdf=/path/to/lhapdf],[Enable LHAPDF support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for LHAPDF installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
@@ -830,7 +853,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     hztool,
-    AC_HELP_STRING([--enable-hztool=/path/to/hztool], [Enable hztool for analysis.]),
+    AS_HELP_STRING([--enable-hztool=/path/to/hztool],[Enable hztool for analysis.]),
     [ AC_MSG_CHECKING(for hztool installation directory);
       case "${enableval}" in
         no) AC_MSG_RESULT(hztool not enabled); hztool=false;;
@@ -869,7 +892,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     cernlib,
-    AC_HELP_STRING([--enable-cernlib=/path/to/cernlib], [Enable cernlib.]),
+    AS_HELP_STRING([--enable-cernlib=/path/to/cernlib],[Enable cernlib.]),
     [ AC_MSG_CHECKING(for cernlib installation directory);
       case "${enableval}" in
         no) AC_MSG_RESULT(cernlib not enabled); cernlib=false;;
@@ -912,7 +935,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     pgs,
-    AC_HELP_STRING([--enable-pgs=/path/to/pgs], [Enable pgs.]),
+    AS_HELP_STRING([--enable-pgs=/path/to/pgs],[Enable pgs.]),
     [ AC_MSG_CHECKING(for PGS installation directory);
       case "${enableval}" in
         no) AC_MSG_RESULT(PGS not enabled); pgs=false;;
@@ -936,7 +959,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     delphes,
-    AC_HELP_STRING([--enable-delphes=/path/to/delphes], [Enable delphes.]),
+    AS_HELP_STRING([--enable-delphes=/path/to/delphes],[Enable delphes.]),
     [ AC_MSG_CHECKING(for DELPHES installation directory);
       case "${enableval}" in
         no) AC_MSG_RESULT(DELPHES not enabled); delphes=false;;
@@ -961,7 +984,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     gzip,
-    AC_HELP_STRING([--enable-gzip], [Enable gzip support (for compressed event output)]),
+    AS_HELP_STRING([--enable-gzip],[Enable gzip support (for compressed event output)]),
     [ case "${enableval}" in
         no)   AC_MSG_RESULT(gzip not enabled); zlib=false ;;
         yes)  AC_CHECK_LIB(z, inflateEnd, [libz_found=yes], [libz_found=no])
@@ -1003,7 +1026,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     pythia,
-    AC_HELP_STRING([--enable-pythia], [Enable fragmentation/decay interface to
+    AS_HELP_STRING([--enable-pythia],[Enable fragmentation/decay interface to
     Pythia.]),
     [ AC_MSG_CHECKING(whether to enable Pythia interface);
       case "${enableval}" in
@@ -1018,8 +1041,63 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(PYTHIA_SUPPORT, test "$pythia" = "true")
 
   AC_ARG_ENABLE(
+    pythia8,
+    AS_HELP_STRING([--enable-pythia8=/path/to/pythia8], [Enable Pythia8 support and specify where it is installed.]),
+    [ AC_MSG_CHECKING(for Pythia8 installation directory);
+      pythia8=true;
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Pythia8 not enabled); pythia82=false; pythia83=false ;;
+        yes) if test -x "`which pythia8-config`"; then
+               CONDITIONAL_PYTHIA8DIR=`pythia8-config --prefix`;
+             fi;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_PYTHIA8DIR=${enableval};
+            fi;;
+      esac;
+      if test -x "$CONDITIONAL_PYTHIA8DIR/bin/pythia8-config"; then
+        CONDITIONAL_PYTHIA8LDADD="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --ldflags)";
+        CONDITIONAL_PYTHIA8CPPFLAGS="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --cxxflags)";
+        AC_MSG_RESULT([${CONDITIONAL_PYTHIA8DIR}]);
+      else
+        AC_MSG_RESULT([Unable to find pythia8-config in the specifed path ${CONDITIONAL_PYTHIA8DIR}]);
+        AC_MSG_CHECKING(Trying to proceed without pythia8-config);
+        pythia8noconfiglibs=false;
+        pythia8noconfigincludes=false;
+        if test -f "${enableval}/lib/libpythia8.so"; then
+           CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib -lpythia8";
+           pythia8noconfiglibs=true;
+        fi;
+        if test -f "${enableval}/lib/libpythia8.dyld"; then
+           CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib -lpythia8";
+           pythia8noconfiglibs=true;
+        fi;
+        if test -f "${enableval}/lib64/libpythia8.so"; then
+           CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib64 -lpythia8";
+           pythia8noconfiglibs=true;
+        fi;
+        if test -f "${enableval}/include/Pythia8/Pythia.h"; then
+           CONDITIONAL_PYTHIA8CPPFLAGS="-I${enableval}/Pythia8";
+           pythia8noconfigincludes=true;
+        fi;
+        if "$pythia8noconfiglibs" = "true" &&  "$pythia8noconfigincludes" = "true"; then
+           AC_MSG_RESULT([Found Pythia8 libraries and includes in ${CONDITIONAL_PYTHIA8DIR}]);
+        else
+           AC_MSG_ERROR(Unable to find Pythia8 headers and libraries from the specified path. );
+        fi;
+      fi;
+    ],
+    [ pythia8=false ]
+  )
+  AC_SUBST(CONDITIONAL_PYTHIA8LDADD)
+  AC_SUBST(CONDITIONAL_PYTHIA8CPPFLAGS)
+  AM_CONDITIONAL(PYTHIA8_SUPPORT, test "$pythia8" = "true")
+  if test "$pythia8" = "true" ; then
+    AC_DEFINE([USING__PYTHIA8], "1", [Pythia8 interface enabled])
+  fi
+
+  AC_ARG_ENABLE(
     hepevtsize,
-    AC_HELP_STRING([--enable-hepevtsize=HEPEVT_SIZE], [HEPEVT common block size @<:@default=10000@:>@]),
+    AS_HELP_STRING([--enable-hepevtsize=HEPEVT_SIZE],[HEPEVT common block size @<:@default=10000@:>@]),
     [ AC_MSG_CHECKING(whether HEPEVT common block size is defined);
       if test ${enableval} -gt 0 2>/dev/null ; then
          HEPEVT_CB_SIZE=${enableval}
@@ -1037,7 +1115,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     binreloc,
-    AC_HELP_STRING([--enable-binreloc], [Enable binrelocing]),
+    AS_HELP_STRING([--enable-binreloc],[Enable binrelocing]),
     [ AC_MSG_CHECKING(whether to install relocatable Sherpa)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no); binreloc=false ;;
@@ -1050,7 +1128,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   fi
 
   AC_ARG_ENABLE(pyext,
-    AC_HELP_STRING([--enable-pyext], [Enable Python API]),
+    AS_HELP_STRING([--enable-pyext],[Enable Python API]),
     [ AC_MSG_CHECKING(for Python extension)
       case "${enableval}" in
         no) AC_MSG_RESULT(no); pyext=false ;;

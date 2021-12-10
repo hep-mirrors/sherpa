@@ -1,0 +1,14 @@
+Name: MC_INSTANTON
+Year: 2021
+Summary: A MC analysis to highlight some features of Instanton production at the LHC
+Experiment: 
+Collider: LHC
+InspireID: 
+Status: UNVALIDATED
+Authors: frank.krauss@durham.ac.uk
+NeedCrossSection: no
+Beams: [p+, p+]
+Description: Simplistic MC analysis for instanton production at the LHC 
+Keywords: [QCD, Instanton, LHC]
+BibKey: 
+

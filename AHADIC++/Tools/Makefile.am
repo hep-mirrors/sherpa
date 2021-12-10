@@ -12,7 +12,6 @@ libAhadicTools_la_SOURCES = \
 		Multiplet_Constructor.C \
 		Single_Transitions.C \
 		Double_Transitions.C \
-		Hadron_Init.C \
                 Hadronisation_Parameters.C \
 		Soft_Cluster_Handler.C \
 		Singlet_Tools.C \
@@ -32,7 +31,6 @@ localinc_HEADERS   = \
 		Multiplet_Constructor.H \
                 Single_Transitions.H \
                 Double_Transitions.H \
-		Hadron_Init.H \
                 Hadronisation_Parameters.H \
 		Soft_Cluster_Handler.H \
 		Singlet_Tools.H \
