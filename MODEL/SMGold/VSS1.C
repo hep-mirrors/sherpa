@@ -18,7 +18,7 @@ namespace METOOLS {
     typedef std::complex<SType> SComplex;
 
     const SComplex I = SComplex(0.0,1.0);
-    
+
     VSS1_Calculator(const Vertex_Key &key):
       Lorentz_Calculator(key) {}
 
@@ -38,16 +38,16 @@ namespace METOOLS {
 	const double& p13 = p1[ATOOLS::Spinor<SType>::R3()];
 	const CScalar <SType> & j2 = *(jj[1]->Get< CScalar <SType> >());
 	const SComplex & j20 = j2[0];
-	const ATOOLS::Vec4D & p2 = p_v->J(1)->P();
-	const double& p20 = p2[0];
-	const double& p21 = p2[ATOOLS::Spinor<SType>::R1()];
-	const double& p22 = p2[ATOOLS::Spinor<SType>::R2()];
-	const double& p23 = p2[ATOOLS::Spinor<SType>::R3()];
-	ATOOLS::Vec4D p0 = -p1-p2;
-	const double& p00 = p0[0];
-	const double& p01 = p0[ATOOLS::Spinor<SType>::R1()];
-	const double& p02 = p0[ATOOLS::Spinor<SType>::R2()];
-	const double& p03 = p0[ATOOLS::Spinor<SType>::R3()];
+	//const ATOOLS::Vec4D & p2 = p_v->J(1)->P();
+	// //	const double& p20 = p2[0];
+	// const double& p21 = p2[ATOOLS::Spinor<SType>::R1()];
+	// const double& p22 = p2[ATOOLS::Spinor<SType>::R2()];
+	// const double& p23 = p2[ATOOLS::Spinor<SType>::R3()];
+	//	ATOOLS::Vec4D p0 = -p1-p2;
+	// const double& p00 = p0[0];
+	// const double& p01 = p0[ATOOLS::Spinor<SType>::R1()];
+	// const double& p02 = p0[ATOOLS::Spinor<SType>::R2()];
+	// const double& p03 = p0[ATOOLS::Spinor<SType>::R3()];
 	CVec4<SType>* j0 = NULL;
 	j0 = CVec4<SType>::New();
 	(*j0)[0] = j10*j20*p10;
@@ -67,17 +67,17 @@ namespace METOOLS {
 	const SComplex & j02 = j0[ATOOLS::Spinor<SType>::R2()];
 	const SComplex & j03 = j0[ATOOLS::Spinor<SType>::R3()];
 	const ATOOLS::Vec4D & p0 = p_v->J(1)->P();
-	const double& p00 = p0[0];
-	const double& p01 = p0[ATOOLS::Spinor<SType>::R1()];
-	const double& p02 = p0[ATOOLS::Spinor<SType>::R2()];
-	const double& p03 = p0[ATOOLS::Spinor<SType>::R3()];
+	// const double& p00 = p0[0];
+	// const double& p01 = p0[ATOOLS::Spinor<SType>::R1()];
+	// const double& p02 = p0[ATOOLS::Spinor<SType>::R2()];
+	// const double& p03 = p0[ATOOLS::Spinor<SType>::R3()];
 	const CScalar <SType> & j2 = *(jj[0]->Get< CScalar <SType> >());
 	const SComplex & j20 = j2[0];
 	const ATOOLS::Vec4D & p2 = p_v->J(0)->P();
-	const double& p20 = p2[0];
-	const double& p21 = p2[ATOOLS::Spinor<SType>::R1()];
-	const double& p22 = p2[ATOOLS::Spinor<SType>::R2()];
-	const double& p23 = p2[ATOOLS::Spinor<SType>::R3()];
+	//const double& p20 = p2[0];
+	// const double& p21 = p2[ATOOLS::Spinor<SType>::R1()];
+	// const double& p22 = p2[ATOOLS::Spinor<SType>::R2()];
+	// const double& p23 = p2[ATOOLS::Spinor<SType>::R3()];
 	ATOOLS::Vec4D p1 = -p0-p2;
 	const double& p10 = p1[0];
 	const double& p11 = p1[ATOOLS::Spinor<SType>::R1()];
@@ -97,11 +97,11 @@ namespace METOOLS {
 	const SComplex & j01 = j0[ATOOLS::Spinor<SType>::R1()];
 	const SComplex & j02 = j0[ATOOLS::Spinor<SType>::R2()];
 	const SComplex & j03 = j0[ATOOLS::Spinor<SType>::R3()];
-	const ATOOLS::Vec4D & p0 = p_v->J(0)->P();
-	const double& p00 = p0[0];
-	const double& p01 = p0[ATOOLS::Spinor<SType>::R1()];
-	const double& p02 = p0[ATOOLS::Spinor<SType>::R2()];
-	const double& p03 = p0[ATOOLS::Spinor<SType>::R3()];
+	//const ATOOLS::Vec4D & p0 = p_v->J(0)->P();
+	// const double& p00 = p0[0];
+	// const double& p01 = p0[ATOOLS::Spinor<SType>::R1()];
+	// const double& p02 = p0[ATOOLS::Spinor<SType>::R2()];
+	// const double& p03 = p0[ATOOLS::Spinor<SType>::R3()];
 	const CScalar <SType> & j1 = *(jj[1]->Get< CScalar <SType> >());
 	const SComplex & j10 = j1[0];
 	const ATOOLS::Vec4D & p1 = p_v->J(1)->P();
@@ -109,11 +109,11 @@ namespace METOOLS {
 	const double& p11 = p1[ATOOLS::Spinor<SType>::R1()];
 	const double& p12 = p1[ATOOLS::Spinor<SType>::R2()];
 	const double& p13 = p1[ATOOLS::Spinor<SType>::R3()];
-	ATOOLS::Vec4D p2 = -p0-p1;
-	const double& p20 = p2[0];
-	const double& p21 = p2[ATOOLS::Spinor<SType>::R1()];
-	const double& p22 = p2[ATOOLS::Spinor<SType>::R2()];
-	const double& p23 = p2[ATOOLS::Spinor<SType>::R3()];
+	//ATOOLS::Vec4D p2 = -p0-p1;
+	// const double& p20 = p2[0];
+	// const double& p21 = p2[ATOOLS::Spinor<SType>::R1()];
+	// const double& p22 = p2[ATOOLS::Spinor<SType>::R2()];
+	// const double& p23 = p2[ATOOLS::Spinor<SType>::R3()];
 	CScalar<SType>* j2 = NULL;
 	j2 = CScalar<SType>::New(1.0*j00*j10*p10 - 1.0*j01*j10*p11 - 1.0*j02*j10*p12 - 1.0*j03*j10*p13);
 	j2->SetS(j0.S()|j1.S());

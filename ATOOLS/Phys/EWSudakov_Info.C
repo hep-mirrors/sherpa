@@ -42,6 +42,8 @@ std::ostream& ATOOLS::operator<<(std::ostream& os, const EWSudakov_Log_Type& t)
       return os << "PR";
     case EWSudakov_Log_Type::lI:
       return os << "I";
+    default:
+      return os;
   }
 }
 
@@ -54,8 +56,8 @@ double EWSudakov_Log_Corrections_Map::KFactor() const
   return kfac;
 }
 
-std::ostream& ATOOLS::operator<<(std::ostream& o,
-                                 const EWSudakov_Log_Corrections_Map& m)
+std::ostream& operator<<(std::ostream& o,
+			 const EWSudakov_Log_Corrections_Map& m)
 {
   o << "1 - K_EWSud = " << m.KFactor() << " (";
   bool is_first {true};

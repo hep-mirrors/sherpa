@@ -4,14 +4,15 @@
 #include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Phys/Decay_Info.H"
 
-#include <vector>
 #include <map>
+#include <memory>
+#include <vector>
 
 namespace ATOOLS {
 
   typedef std::map<int,int> CI_Map;
 
-  class ClusterAmplitude_PVector: 
+  class ClusterAmplitude_PVector:
     public std::vector<Cluster_Amplitude*> {
   public:
 
@@ -200,18 +201,18 @@ namespace ATOOLS {
 
     inline Mass_Selector *MS() const { return p_ms; }
 
-    template <class Type> inline Type *JF() const 
+    template <class Type> inline Type *JF() const
     { return static_cast<Type*>(p_jf); }
-    template <class Type> inline Type *CA() const 
+    template <class Type> inline Type *CA() const
     { return static_cast<Type*>(p_ca); }
-    
-    template <class Type> inline Type *Proc() const 
+
+    template <class Type> inline Type *Proc() const
     { return static_cast<Type*>(p_proc); }
-    template <class Type> inline Type *Procs() const 
+    template <class Type> inline Type *Procs() const
     { return static_cast<Type*>(p_procs); }
-    template <class Type> inline Type *IInfo() const 
+    template <class Type> inline Type *IInfo() const
     { return static_cast<Type*>(p_iinfo); }
-    template <class Type> inline Type *DInfo() const 
+    template <class Type> inline Type *DInfo() const
     { return static_cast<Type*>(p_dinfo); }
 
   };// end of class Cluster_Amplitude
