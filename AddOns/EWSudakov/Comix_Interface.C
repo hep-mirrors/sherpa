@@ -182,7 +182,9 @@ PHASIC::Process_Base* Comix_Interface::InitializeProcess(const Process_Info& pi)
       MODEL::s_model, "VAR{" + ToString(sqr(rpa->gen.Ecms())) + "}",
       "Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
-  //proc->Get<COMIX::Process_Base>()->Tests();
+  // NOTE: The way Comix is initializing its processes, Tests() is actually not
+  // optional, but part of the procedure. It e.g. sets up the color integrator.
+  proc->Get<COMIX::Process_Base>()->Tests();
   proc->FillProcessMap(&ProcessMap());
   msg_Debugging() << "Comix_Interface::InitializeProcess initialized "
                   << proc->Name() << '\n';
@@ -196,7 +198,6 @@ void Comix_Interface::AdaptToProcessColorScheme()
     // for some reason, this is needed when summing colours; if colour are
     // sampled, however, we can't have this because it then triggers the
     // generation of a new random colour point each time we call Differential()
-    //
     m_differentialmode |= 128;
   }
 }

@@ -8,11 +8,6 @@
 
 using namespace ATOOLS;
 
-Hard_Process_Variation_Generator_Base::
-Hard_Process_Variation_Generator_Base(const Args& args):
-  p_proc {args.p_proc}
-{};
-
 void Hard_Process_Variation_Generator_Base::ShowSyntax(const size_t i)
 {
   if (!msg_LevelIsInfo() || i==0) return;

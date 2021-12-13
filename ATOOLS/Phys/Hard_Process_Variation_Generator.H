@@ -10,36 +10,31 @@ namespace ATOOLS {
   struct Weights_Map;
 
   struct Hard_Process_Variation_Generator_Arguments {
-    PHASIC::Process_Base *p_proc;
+    PHASIC::Process_Base* p_proc;
   };
+
+  namespace {
+    using Args = Hard_Process_Variation_Generator_Arguments;
+  }
 
   class Hard_Process_Variation_Generator_Base {
 
   public:
-
-    using Args = Hard_Process_Variation_Generator_Arguments;
-
-    using Hard_Process_Variation_Generator_Getter_Function =
-      ATOOLS::Getter_Function<Hard_Process_Variation_Generator_Base, Args>;
-
-    Hard_Process_Variation_Generator_Base(const Args&);
 
     virtual ~Hard_Process_Variation_Generator_Base() = default;
 
     virtual void GenerateAndFillWeightsMap(Weights_Map&) = 0;
     virtual void ResetWeightsMap(Weights_Map&) = 0;
 
-    std::string WeightNameForVariation(const std::string&);
+    virtual std::string WeightNameForVariation(const std::string&) = 0;
 
     static void ShowSyntax(const size_t i);
 
-  protected:
-
-    PHASIC::Process_Base* p_proc;
-
   };
+
+  using Hard_Process_Variation_Generator_Getter_Function =
+    ATOOLS::Getter_Function<Hard_Process_Variation_Generator_Base, Args>;
 
 }
 
 #endif
-

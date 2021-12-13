@@ -15,6 +15,7 @@
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Phys/Hard_Process_Variation_Generator.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -74,6 +75,8 @@ Single_Process::~Single_Process()
   for (Coupling_Map::const_iterator
 	 cit(m_cpls.begin());cit!=m_cpls.end();++cit)
     delete cit->second;
+  for (auto gen : m_hard_process_variation_generators)
+    delete gen;
 }
 
 size_t Single_Process::Size() const
@@ -692,6 +695,12 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
   }
 
+  if (varmode != Variations_Mode::nominal_only) {
+    for (auto& gen : m_hard_process_variation_generators) {
+      gen->GenerateAndFillWeightsMap(m_last);
+    }
+  }
+
   // propagate (potentially) re-clustered momenta
   if (GetSubevtList() == nullptr) {
     UpdateIntegratorMomenta(scales->Amplitudes());
@@ -1184,6 +1193,30 @@ void Single_Process::SetEWSudakovKFactor(const KFactor_Setter_Arguments &args)
   KFactor_Setter_Arguments cargs(args);
   cargs.p_proc=this;
   p_ewsudakov_kfactor.reset(new Sudakov_KFactor {cargs});
+}
+
+void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
+{
+  if (mode == Variations_Mode::nominal_only)
+    return;
+  // Parse settings for hard process variation generators; note that this can
+  // not be done in the ctor, because the matrix element handler has not yet
+  // fully configured the process at this point, and some variation generators
+  // might require that (an example would be EWSud)
+  Settings& s = Settings::GetMainSettings();
+  for (auto varitem : s["VARIATIONS"].GetItems()) {
+    if (varitem.IsScalar()) {
+      const auto name = varitem.Get<std::string>();
+      if (name == "None") {
+        return;
+      } else {
+        m_hard_process_variation_generators.push_back(
+            Hard_Process_Variation_Generator_Getter_Function::
+            GetObject(name, Hard_Process_Variation_Generator_Arguments{this})
+            );
+      }
+    }
+  }
 }
 
 void Single_Process::SetLookUp(const bool lookup)

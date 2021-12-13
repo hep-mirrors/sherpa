@@ -597,6 +597,13 @@ int Matrix_Element_Handler::InitializeProcesses(
   return res;
 }
 
+int Matrix_Element_Handler::InitializeTheReweighting(Variations_Mode mode)
+{
+  for (auto& proc : m_procs)
+    proc->InitializeTheReweighting(mode);
+  return 1; // success
+}
+
 void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();

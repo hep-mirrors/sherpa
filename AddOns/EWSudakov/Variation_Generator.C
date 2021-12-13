@@ -2,6 +2,7 @@
 
 #include <ostream>
 
+using namespace PHASIC;
 using namespace ATOOLS;
 using namespace EWSud;
 
@@ -9,8 +10,27 @@ using Base = Hard_Process_Variation_Generator_Base;
 using Args = Hard_Process_Variation_Generator_Arguments;
 
 Variation_Generator::Variation_Generator(const Args& args):
-  Base {args}
-{}
+  m_kfactor{KFactor_Setter_Arguments{"EWSud", args.p_proc}}
+{
+  PRINT_FUNC(args.p_proc);
+}
+
+void Variation_Generator::GenerateAndFillWeightsMap(Weights_Map& wgtmap)
+{
+  m_kfactor.CalculateAndFillWeightsMap(wgtmap);
+}
+
+void Variation_Generator::ResetWeightsMap(Weights_Map& wgtmap)
+{
+  m_kfactor.ResetWeightsMap(wgtmap);
+}
+
+std::string
+Variation_Generator::WeightNameForVariation(const std::string& varname)
+{
+  // TODO: implement
+  return "";
+}
 
 DECLARE_GETTER(Variation_Generator, "EWSud", Base, Args);
 

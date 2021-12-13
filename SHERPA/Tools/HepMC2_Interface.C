@@ -285,6 +285,8 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
         }
       }
 
+      // TODO: Variations should have a map "wgtmapkey"->Variation_Generator
+
       // associated contributions variations
       const auto it = wgtmap.find("ASSOCIATED_CONTRIBUTIONS");
       if (it != wgtmap.end()) {

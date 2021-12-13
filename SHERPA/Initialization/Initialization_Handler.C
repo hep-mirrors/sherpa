@@ -1067,6 +1067,8 @@ bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
     Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   p_variations = new Variations(mode);
   s_variations = p_variations;
+  if (p_mehandler)
+    p_mehandler->InitializeTheReweighting(mode);
   if (mode != Variations_Mode::nominal_only)
     msg_Info()<<"Initialized the Reweighting."<<endl;
   return true;

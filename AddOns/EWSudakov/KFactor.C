@@ -24,7 +24,6 @@ Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
   if(Settings::GetMainSettings()["EWSUDAKOV_MAX_KFACTOR"].IsCustomised()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUDAKOV:MAX_KFACTOR");
   }
-
 }
 
 double Sudakov_KFactor::KFactor(const int mode)

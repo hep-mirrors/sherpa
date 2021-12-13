@@ -109,11 +109,8 @@ Variations::Variations(Variations_Mode mode)
 
 Variations::~Variations()
 {
-  for (Parameters_Vector::const_iterator it = m_parameters_vector.begin();
-       it != m_parameters_vector.end();
-       ++it) {
-    delete *it;
-  }
+  for (auto params : m_parameters_vector)
+    delete params;
 }
 
 
@@ -238,8 +235,10 @@ void Variations::InitialiseParametersVector()
 
 void Variations::AddParameters(Scoped_Settings& s)
 {
-  if (s.IsScalar() && s.Get<std::string>() == "None")
+  if (s.IsScalar()) {
     return;
+  }
+
   // parse scale factors and QCUT factors, and check whether they are requested
   // to be expanded to x -> [x, 1/x] via an appended asterisk
   std::vector<std::string> scalestringparams;
