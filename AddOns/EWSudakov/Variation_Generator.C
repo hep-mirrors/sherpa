@@ -13,11 +13,20 @@ Variation_Generator::Variation_Generator(const Args& args):
   m_kfactor{KFactor_Setter_Arguments{"EWSud", args.p_proc}}
 {
   PRINT_FUNC(args.p_proc);
+  auto s = Settings::GetMainSettings()["EWSUDAKOV"];
+  m_ewsudakov_rs = s["RS"].SetDefault(true).Get<bool>();
+  if(Settings::GetMainSettings()["EWSUDAKOV_RS"].IsCustomised()){
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUDAKOV: RS");
+  }
 }
 
 void Variation_Generator::GenerateAndFillWeightsMap(Weights_Map& wgtmap)
 {
-  m_kfactor.CalculateAndFillWeightsMap(wgtmap);
+  if (m_kfactor.Process()->GetSubevtList() == nullptr || m_ewsudakov_rs) {
+    m_kfactor.CalculateAndFillWeightsMap(wgtmap);
+  } else {
+    ResetWeightsMap(wgtmap);
+  }
 }
 
 void Variation_Generator::ResetWeightsMap(Weights_Map& wgtmap)

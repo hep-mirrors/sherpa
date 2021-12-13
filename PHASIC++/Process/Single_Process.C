@@ -8,7 +8,6 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PHASIC++/Channels/CS_Dipole.H"
-#include "AddOns/EWSudakov/KFactor.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
@@ -38,7 +37,6 @@ Single_Process::Single_Process():
   Settings& s = Settings::GetMainSettings();
   m_pdfcts = s["MEPSNLO_PDFCT"].SetDefault(true).Get<bool>();
   m_dads = s["MCNLO_DADS"].SetDefault(true).Get<bool>();
-  m_ewsudakov_rs = s["EWSUDAKOV_RS"].SetDefault(true).Get<bool>();
 
   std::string ncs{ s["NLO_NF_CONVERSION_TERMS"]
     .SetDefault("None")
@@ -684,17 +682,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     CalculateAssociatedContributionVariations();
   }
 
-  // calculate and store EWSudakov corrections
-  // TODO: this ignores variations from subevents and DADS
-  // contributions, we may want to add those
-  if (varmode != Variations_Mode::nominal_only && p_ewsudakov_kfactor) {
-    if (GetSubevtList() == nullptr || m_ewsudakov_rs) {
-      p_ewsudakov_kfactor->CalculateAndFillWeightsMap(m_last);
-    } else {
-      p_ewsudakov_kfactor->ResetWeightsMap(m_last);
-    }
-  }
-
   if (varmode != Variations_Mode::nominal_only) {
     for (auto& gen : m_hard_process_variation_generators) {
       gen->GenerateAndFillWeightsMap(m_last);
@@ -1186,13 +1173,6 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::
     GetObject(m_pinfo.m_kfactor=cargs.m_kfac,cargs);
   if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
-}
-
-void Single_Process::SetEWSudakovKFactor(const KFactor_Setter_Arguments &args)
-{
-  KFactor_Setter_Arguments cargs(args);
-  cargs.p_proc=this;
-  p_ewsudakov_kfactor.reset(new Sudakov_KFactor {cargs});
 }
 
 void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)

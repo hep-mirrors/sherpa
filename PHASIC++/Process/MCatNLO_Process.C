@@ -744,15 +744,6 @@ void MCatNLO_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_bproc->SetKFactor(args);
 }
 
-void MCatNLO_Process::SetEWSudakovKFactor(const KFactor_Setter_Arguments& args)
-{
-  p_bviproc->SetEWSudakovKFactor(args);
-  p_ddproc->SetEWSudakovKFactor(args);
-  p_rsproc->SetEWSudakovKFactor(args);
-  p_rproc->SetEWSudakovKFactor(args);
-  p_bproc->SetEWSudakovKFactor(args);
-}
-
 void MCatNLO_Process::SetFixedScale(const std::vector<double> &s)
 {
   p_bviproc->SetFixedScale(s);

@@ -130,7 +130,6 @@ namespace PHASIC {
 
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
     virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;
-    virtual void SetEWSudakovKFactor(const KFactor_Setter_Arguments &args) {};
     virtual void InitializeTheReweighting(ATOOLS::Variations_Mode) {};
 
     virtual void SetFixedScale(const std::vector<double> &s);

@@ -8,7 +8,9 @@ BEAM_ENERGIES: 5000000.0
 
 # use a stricter high-energy limit to avoid edge cases where individual
 # invariants are not that large
-EWSUDAKOV_CHECKINVARIANTRATIOS: true
+EWSUDAKOV:
+  CHECKINVARIANTRATIOS: true
+  CHECK: true
 
 RANDOM_SEED: 1
 

@@ -237,13 +237,6 @@ namespace PHASIC {
      */
     void SetKFactor(const KFactor_Setter_Arguments &args) override;
     /*!
-     * @param args KFactor_Setter_Arguments KFactor setter arguments
-     *
-     * Inherited from Process_Base, calls SetEWSudakovKFactor for all
-     * subprocesses
-     */
-    void SetEWSudakovKFactor(const KFactor_Setter_Arguments &args) override;
-    /*!
      * @param s vector<double> Fixed scales
      *
      * Inherited from Process_Base, calls SetFixedScale for all subprocesses

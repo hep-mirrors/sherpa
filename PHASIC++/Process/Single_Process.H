@@ -3,7 +3,6 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Phys/Variations.H"
-#include "AddOns/EWSudakov/KFactor.H"
 
 namespace ATOOLS {
   class Hard_Process_Variation_Generator_Base;
@@ -15,14 +14,11 @@ namespace PHASIC {
 
   protected:
 
-    std::unique_ptr<Sudakov_KFactor> p_ewsudakov_kfactor;
-
     double m_lastxs, m_lastbxs, m_dsweight, m_lastflux;
     ATOOLS::Weights_Map m_dadswgtmap;
     bool   m_zero, m_pdfcts, m_dads;
     size_t m_nfconvscheme;
     ATOOLS::Cluster_Sequence_Info m_csi;
-    bool m_ewsudakov_rs;
     std::vector<ATOOLS::asscontrib::type> m_asscontrib;
 
     //! Override in a subclass that calculates KP terms to enable their reweighting
@@ -61,7 +57,6 @@ namespace PHASIC {
 
     void SetScale(const Scale_Setter_Arguments &args) override;
     void SetKFactor(const KFactor_Setter_Arguments &args) override;
-    void SetEWSudakovKFactor(const KFactor_Setter_Arguments &args) override;
     void InitializeTheReweighting(ATOOLS::Variations_Mode) override;
 
     ATOOLS::Cluster_Amplitude *Cluster(const ATOOLS::Vec4D_Vector &p,
