@@ -717,6 +717,32 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   fi
   AM_CONDITIONAL(OPENLOOPS_SUPPORT, test "$openloops" = "true")
 
+  
+  AC_ARG_ENABLE(
+    recola,
+    AC_HELP_STRING([--enable-recola=/path/to/recola], [Enable Recola.]),
+    [ AC_MSG_CHECKING(for Recola installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Recola not enabled); recola=false ;;
+        *)   RECOLA_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             recola=true;
+             if test -d "${RECOLA_PREFIX}"; then
+                AC_MSG_RESULT([${RECOLA_PREFIX}]);
+		CONDITIONAL_RECOLAINCS="-I$RECOLA_PREFIX/include";
+             else
+                AC_MSG_WARN(${RECOLA_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ recola=false ]
+  )
+  if test "$recola" = "true" ; then
+    AC_DEFINE_UNQUOTED([RECOLA_PREFIX], "$RECOLA_PREFIX", [Recola installation prefix])
+  fi
+  AC_SUBST(CONDITIONAL_RECOLAINCS)
+  AM_CONDITIONAL(RECOLA_SUPPORT, test "$recola" = "true")
+
+
   AC_ARG_ENABLE(
     gosam,
     AS_HELP_STRING([--enable-gosam=/path/to/gosam],[Enable GoSam.]),
