@@ -29,8 +29,10 @@ Clustered_EWSudakov_Calculator::Clustered_EWSudakov_Calculator(Process_Base* _pr
 
   // Add calculator for the unclustered base process and capture its Comix
   // interface, which we will use to build clustered processes
+  auto base_calculator =
+    std::unique_ptr<EWSudakov_Calculator>(new EWSudakov_Calculator{proc});
   calculators.emplace(
-      std::make_pair(flavs, new EWSudakov_Calculator{proc}));
+      std::make_pair(flavs, std::move(base_calculator)));
   p_comixinterface = &calculators.begin()->second->GetComixInterface();
 
   // Add calculators for clustered processes
@@ -92,8 +94,10 @@ void Clustered_EWSudakov_Calculator::AddCalculator(const Cluster_Amplitude_UP& a
   }
 
   // add calculator
+  auto calculator = std::unique_ptr<EWSudakov_Calculator>(
+      new EWSudakov_Calculator{clustered_proc});
   calculators.emplace(
-      std::make_pair(flavs, new EWSudakov_Calculator{clustered_proc}));
+      std::make_pair(flavs, std::move(calculator)));
 }
 
 double Clustered_EWSudakov_Calculator::CalcIClustered(
