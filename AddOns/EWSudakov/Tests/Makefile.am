@@ -5,10 +5,6 @@
 # configuration options common to all tests
 TEST_PROCS = eePP eeWW eeZP eeZZ eebb eedd eemumu eett eeuu duWZ duWP uuPG udWG uuZG
 
-# define VERBOSE, such that the test suite log file is printed when tests fail;
-# this is useful in particular to diagnose issues that happen in the CI only
-VERBOSE = 1
-
 # define tests and the script used to run each test (via Automake)
 TESTS = $(TEST_PROCS:=.yaml)
 LOG_COMPILER = bash run.sh
