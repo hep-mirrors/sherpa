@@ -26,9 +26,10 @@ cd "$setup_name"
 # worse: an outdated one is found, e.g. in the install directory, such that
 # `make check` would work properly only after `make install`, which is not
 # as it should be!) when calling Sherpa, so we should link them here such
-# that Library_Loader uses them, since # it's first looking for libraries in
-# the run directory, before searching in the install path or in
-# (DY)LD_LIBRARY_PATH. In our case, we only need the SMGold model.
+# that Library_Loader uses them, since it's first looking for libraries in the
+# run directory, before searching in the install path or in
+# (DY)LD_LIBRARY_PATH.
 ln -s "$PWD/../../../../MODEL/SMGold/.libs/libSherpaSMGold@LIB_SUFFIX@" .
+ln -s "$PWD/../../../../AddOns/EWSudakov/.libs/libSherpaEWSud@LIB_SUFFIX@" .
 
 "$sherpa" "${sherpa_args[@]}" "RUNDATA: [$base_conf_path, $setup_conf_path]"
