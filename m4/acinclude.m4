@@ -301,7 +301,6 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 	\${PHASICBUILDDIR}/Process/libPhasicProcess.la \
 	\${PHASICBUILDDIR}/Selectors/libPhasicSelectors.la \
 	\${PHASICBUILDDIR}/Scales/libPhasicScales.la \
-	\${PHASICBUILDDIR}/EWSudakov/libPhasicEWSudakov.la \
 	\${PHASICBUILDDIR}/Enhance/libPhasicEnhance.la \
 	\${PHASICBUILDDIR}/Decays/libPhasicDecays.la"
   AC_SUBST(PHASICDIR)

@@ -879,6 +879,12 @@ bool Initialization_Handler::InitializeTheHardDecays()
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
+#ifdef USING__EWSud
+  // in case that KFACTOR=EWSud is used we need to be ready when the ME handler
+  // sets up the KFactor setters
+  if (!s_loader->LoadLibrary("SherpaEWSud"))
+    THROW(missing_module,"Cannot load EWsud library.");
+#endif
   if (p_mehandler) delete p_mehandler;
   p_mehandler = new Matrix_Element_Handler(p_model);
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);

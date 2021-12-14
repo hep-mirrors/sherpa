@@ -35,6 +35,7 @@ libToolsPhys_la_SOURCES       =	\
 				Variations.C \
 				Weights.C \
 				Hard_Process_Variation_Generator.C \
+				Hard_Process_Variation_Weight_Names.C \
 				EWSudakov_Info.C
 
 localinc_HEADERS      =	\
@@ -68,6 +69,7 @@ localinc_HEADERS      =	\
 			Variations.H \
 			Weights.H \
 			Hard_Process_Variation_Generator.H \
+			Hard_Process_Variation_Weight_Names.H \
 			EWSudakov_Info.H
 
 libToolsPhys_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_LHAPDFINCS@

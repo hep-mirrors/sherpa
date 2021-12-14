@@ -1,12 +1,15 @@
+if USING__EWSud
+
 SUBDIRS = Tests
 
-pkglib_LTLIBRARIES    =	libPhasicEWSudakov.la
+endif
 
-GITTAG = PHASIC++/EWSudakov
+GITTAG = AddOns/EWSudakov
 include ../../git.make
 
-libPhasicEWSudakov_la_SOURCES = \
+EWSUD_SOURCES = \
         Variation_Generator.C \
+        Variation_Weight_Names.C \
 	Coefficient_Checker.C \
 	KFactor_Checker.C \
 	Comix_Interface.C \
@@ -18,8 +21,9 @@ libPhasicEWSudakov_la_SOURCES = \
 	KFactor.C \
 	EWSudakov_Calculator.C \
 	Clustered_EWSudakov_Calculator.C
-localinc_HEADERS = \
+EWSUD_ADDS = \
         Variation_Generator.H \
+        Variation_Weight_Names.H \
 	Coefficient_Checker.H \
 	KFactor_Checker.H \
 	Comix_Interface.H \
@@ -30,3 +34,14 @@ localinc_HEADERS = \
 	KFactor.H \
 	EWSudakov_Calculator.H \
 	Clustered_EWSudakov_Calculator.H
+
+if USING__EWSud
+
+pkglib_LTLIBRARIES    =	libSherpaEWSud.la
+libSherpaEWSud_la_SOURCES  =	$(EWSUD_SOURCES)
+localinc_HEADERS      = $(EWSUD_ADDS)
+EWSUD_EXTRA_DIST = $(EWSUD_ADDS)
+
+endif
+
+EXTRA_DIST = $(EWSUD_EXTRA_DIST)

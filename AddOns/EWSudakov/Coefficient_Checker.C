@@ -50,8 +50,7 @@ bool Coefficient_Checker::CheckCoeff(const Coeff_Value& coeff, Complex ref,
 				     const EWSudakov_Log_Type ewlt) const
 {
   auto res = true;
-  auto prec = std::abs(ref.real())*0.1;
-  //(std::abs(ref) < 10.0) ? 1.e-2 : 1.e-1;
+  auto prec = std::max(std::abs(ref.real())*0.1, 0.05);
   if (ewlt == EWSudakov_Log_Type::lPR) prec = std::abs(ref.real())*0.3;
   const auto singlecoeffres =
       (IsBad(coeff.real()) || std::abs(coeff.real() - ref) <= prec);
