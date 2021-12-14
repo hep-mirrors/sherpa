@@ -15,10 +15,9 @@ test_dir="${1%/*}"
 setup_conf="${setup_conf_path##*/}"
 setup_name="${setup_conf%.yaml}"
 
-# older versions of autotools might not be clever enough to refer to src dir
-# input files automatically, we'll do it explicitly here
-setup_conf_path="${srcdir}/${setup_name}.yaml"
-base_conf_path="${srcdir}/Base.yaml"
+# fix paths
+setup_conf_path="../${setup_name}.yaml"
+base_conf_path="../Base.yaml"
 
 # create/clean and enter a working directory
 rm -rf "$setup_name"

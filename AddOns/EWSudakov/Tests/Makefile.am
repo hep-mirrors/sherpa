@@ -13,3 +13,10 @@ LOG_COMPILER = bash run.sh
 # Automake doesn't know about this output, so add it manually to `make clean`
 clean-local:
 	-rm -rf $(TEST_PROCS)
+	-rm -rf *.yaml
+
+$(TESTS): %.yaml: Base.yaml
+	-cp $(srcdir)/Setups/$@ .
+
+Base.yaml:
+	-cp $(srcdir)/Setups/Base.yaml .
