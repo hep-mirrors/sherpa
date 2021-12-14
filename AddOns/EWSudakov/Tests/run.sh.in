@@ -11,11 +11,14 @@ done
 
 # the only remaining arg is the TEST itself
 setup_conf_path="$1"
+test_dir="${1%/*}"
 setup_conf="${setup_conf_path##*/}"
 setup_name="${setup_conf%.yaml}"
 
-test_dir="${1%/*}"
-base_conf_path="${test_dir}/Base.yaml"
+# older versions of autotools might not be clever enough to refer to src dir
+# input files automatically, we'll do it explicitly here
+setup_conf_path="${srcdir}/${setup_name}.yaml"
+base_conf_path="${srcdir}/Base.yaml"
 
 # create/clean and enter a working directory
 rm -rf "$setup_name"
