@@ -101,10 +101,10 @@ double Clustered_EWSudakov_Calculator::CalcIClustered(
     const Vec4D_Vector &mom, const Flavour_Vector &flavs)
 {
   double ClusteredIOperator{0.0};
-  const auto EWConsts {calculators[flavs]->GetEWGroupConstants()};
+  const auto& EWConsts = calculators[flavs]->GetEWGroupConstants();
   for(const auto& clij: restab){
-    const auto i {clij.second[0]};
-    const auto j {clij.second[1]};
+    const auto i = clij.second[0];
+    const auto j = clij.second[1];
     const double Qi  {flavs[i].Charge()};
     const double Qj  {flavs[j].Charge()};
     const double sij {(mom[i] + mom[j]).Abs2()};
