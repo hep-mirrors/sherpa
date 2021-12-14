@@ -20,8 +20,7 @@ Virtual_ME2_Base::Virtual_ME2_Base(const Process_Info& pi,
   m_mode(0), m_drmode(0), m_colmode(0),
   p_aqcd(NULL), p_aqed(NULL),
   p_dsij(NULL), p_plist(NULL),
-  m_calcass(true)
-  m_providespoles(true),
+  m_calcass(true), m_providespoles(true),
   m_fixedIRscale(false), m_IRscale(0.), m_UVscale(0.)
 {
   m_name=PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi);
