@@ -4,7 +4,7 @@ RECOLA_SOURCES= \
 				Recola_Virtual.C 
 
 RECOLA_ADDS= 	\
-				Recola_Interface.H \ 
+				Recola_Interface.H \
 				Recola_Born.H \
 				Recola_Virtual.H 
 
