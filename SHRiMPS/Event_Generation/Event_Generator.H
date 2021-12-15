@@ -24,7 +24,9 @@ namespace SHRIMPS {
     Soft_Diffractive_Event_Generator * p_soft_diffractive;
     Event_Generator_Base             * p_active;
 
-    double m_xsec;
+    double m_xsec, m_xsec_inel, m_xsec_elas, m_xsec_diff;
+    bool   m_eventsuccessful, m_mustinit;
+
     void InitGenerator(Cross_Sections * xsecs,const bool & test);
   public:
     Event_Generator(Cross_Sections * xsecs,const bool & test);

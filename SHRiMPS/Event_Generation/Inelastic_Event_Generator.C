@@ -62,7 +62,7 @@ int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,const bool & flag
     if (!blob ||
 	!blob->Has(blob_status::needs_minBias)) return 0;
     if (!InitEvent(blobs) ||
-	!m_primaries(p_eikonal,m_B,m_Nladders)) return 0;
+    !m_primaries(p_eikonal,m_B,m_Nladders)) return -1;
   }
   return MakePrimaryScatterBlobs(blobs);
 }
