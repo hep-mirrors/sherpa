@@ -10,12 +10,14 @@
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Phys/Fragmentation_Base.H"
+#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <list>
 
 namespace AHADIC {
-  class Ahadic {
+  class Ahadic : public ATOOLS::Fragmentation_Base {
   private:
     std::list<Singlet *>        m_singlet_list; 
     std::list<Cluster *>        m_cluster_list; 
@@ -30,8 +32,6 @@ namespace AHADIC {
 
     ATOOLS::Vec4D m_totmom; 
 
-    long int m_fails;
-    
     bool ExtractSinglets(ATOOLS::Blob * blob);
     bool ShiftBeamParticles();
     bool CheckSinglets();
@@ -45,7 +45,7 @@ namespace AHADIC {
     bool SanityCheck(ATOOLS::Blob * blob,double norm2);
     void CleanUp(ATOOLS::Blob * blob);
   public:
-    Ahadic(std::string shower="Dire");
+    Ahadic(std::string shower);
     ~Ahadic();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);

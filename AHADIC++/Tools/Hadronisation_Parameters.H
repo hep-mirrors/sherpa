@@ -4,7 +4,6 @@
 #include "AHADIC++/Tools/Constituents.H"
 #include "AHADIC++/Tools/Double_Transitions.H"
 #include "AHADIC++/Tools/Single_Transitions.H"
-#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Math/Vector.H"
 
 #include <map>
@@ -28,14 +27,12 @@ namespace AHADIC {
     Constituents       * p_constituents;
     Single_Transitions * p_stransitions;
     Double_Transitions * p_dtransitions;
-
-    ATOOLS::Momenta_Stretcher    m_stretcher;
+    
     std::map<std::string,int>    m_switchmap;
     std::map<std::string,double> m_parametermap;
     
     void ReadParameters();
     void ReadGeneralSwitches();
-    void ReadMassParameters();
     void ReadPoppingParameters();
     void ReadMesonWeights();
     void ReadSplittingParameters();

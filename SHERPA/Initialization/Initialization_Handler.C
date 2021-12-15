@@ -4,8 +4,8 @@
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
-#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
+#include "SHERPA/SoftPhysics/Hadron_Init.H"
 #include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
@@ -25,6 +25,7 @@
 #include "ATOOLS/Math/Scaling.H"
 #include "ATOOLS/Phys/Spinor.H"
 #include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/Fragmentation_Base.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Math/Variable.H"
 #include "ATOOLS/Org/Data_Writer.H"
@@ -946,8 +947,17 @@ bool Initialization_Handler::InitializeTheFragmentation()
 {
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   as->SetActiveAs(isr::hard_subprocess);
-  const auto shower = m_showerhandlers[isr::hard_process]->ShowerGenerator();
-  p_fragmentation = new Fragmentation_Handler(shower);
+  Settings& s = Settings::GetMainSettings();
+  string fragmentationmodel = s["FRAGMENTATION"].Get<std::string>();
+  if (fragmentationmodel!="None") {
+    Hadron_Init().Init();
+    ATOOLS::OutputHadrons(msg->Tracking());
+  }
+  p_fragmentation = Fragmentation_Getter::GetObject
+    (fragmentationmodel,
+     Fragmentation_Getter_Parameters(m_showerhandlers[isr::hard_process]->ShowerGenerator()));
+  if (p_fragmentation==NULL)
+    THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Fragmentation_Handler."<<endl;
   return 1;
@@ -971,7 +981,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 #ifdef USING__PYTHIA
     as->SetActiveAs(isr::hard_subprocess);
     Lund_Interface * lund(NULL);
-    if (p_fragmentation->GetLundInterface()==NULL) {
+    if (p_fragmentation==NULL) {
       lund = new Lund_Interface();
     }
     else lund = p_fragmentation->GetLundInterface();

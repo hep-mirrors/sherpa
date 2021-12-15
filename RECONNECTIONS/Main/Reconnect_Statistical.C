@@ -36,13 +36,9 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
   if (!HarvestParticles(blobs))               return -1;
   if (m_cols[0].empty() && m_cols[1].empty()) return 0;
   m_norm = TotalLength()/pow(m_parts[0].size(),m_kappa);
-  //msg_Out()<<METHOD<<" with "<<m_particles.size()<<" "
-  //	   <<"["<<m_parts[0].size()<<"/"<<m_parts[1].size()<<"] particles: "
-  //	   <<"norm = "<<m_norm<<"\n";
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
        cit!=m_cols[0].end();cit++) m_collist.push_back(cit->first);
   size_t N = m_collist.size();
-  //msg_Out()<<"   engaging in "<<sqr(N)<<" reshuffling attempts.\n";
   unsigned int col[2];
   for (size_t i=0;i<sqr(N);i++) {
     if (!SelectColourPair(N,col[0],col[1])) break;
@@ -78,28 +74,12 @@ bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
   for (size_t i=0;i<2;i++) {
     for (size_t j=0;j<2;j++) part[2*i+j] = m_cols[i][col[j]];
   }
-  //msg_Out()<<METHOD<<"("<<col[0]<<", "<<col[1]<<"): "
-  //	   <<"["<<part[0]->Number()<<"/"<<part[1]->Number()<<"] & "
-  //	   <<"["<<part[2]->Number()<<"/"<<part[3]->Number()<<"]\n";
   double dist0  = Distance(part[0],part[2]), dist1  = Distance(part[1],part[3]);
   double ndist0 = Distance(part[0],part[3]), ndist1 = Distance(part[1],part[2]);
   double prob   = exp(-((ndist0+ndist1)-(dist0+dist1))/m_norm);
-  //msg_Out()<<"Swap in "<<col[0]<<" <---> "<<col[1]<<": "
-  //	   <<"["<<part[0]->Number()<<"|"<<part[2]->Number()<<"]"
-  //	   <<"["<<part[1]->Number()<<"|"<<part[3]->Number()<<"] = "
-  //	   <<(dist0+dist1)<<" vs. "
-  //	   <<"["<<part[0]->Number()<<"|"<<part[3]->Number()<<"]"
-  //	   <<"["<<part[1]->Number()<<"|"<<part[2]->Number()<<"] = "
-  //	   <<(ndist0+ndist1)<<": prob = "<<prob<<".\n";
-  if (  prob>ran->Get() ) {
-    //msg_Out()<<" --> Yay! Swap entries: "
-    //	     <<col[0]<<" = "<<part[2]->Number()<<" ("<<m_cols[1][col[0]]->Number()<<") and "
-    //	     <<col[1]<<" = "<<part[3]->Number()<<" ("<<m_cols[1][col[1]]->Number()<<")\n";
+  if (prob>ran->Get()) {
     m_cols[1][col[0]] = part[3];
     m_cols[1][col[1]] = part[2];
-    //msg_Out()<<" --> becomes: "
-    //	     <<col[0]<<" = "<<part[3]->Number()<<" ("<<m_cols[1][col[0]]->Number()<<") and "
-    //	     <<col[1]<<" = "<<part[2]->Number()<<" ("<<m_cols[1][col[1]]->Number()<<")\n";
   }
   return true;
 }
@@ -108,9 +88,7 @@ void Reconnect_Statistical::UpdateColours() {
   for (size_t i=0;i<2;i++) {
     for (map<unsigned int,Particle *>::iterator cit=m_cols[i].begin();
 	 cit!=m_cols[i].end();cit++) {
-      //msg_Out()<<"   ("<<i<<") "<<cit->second->Number()<<": "<<cit->second->GetFlow(i+1)<<" --> ";
       cit->second->SetFlow(i+1,cit->first);
-      //msg_Out()<<cit->second->GetFlow(i+1)<<"\n";
     }
   }
 }
@@ -147,7 +125,6 @@ double Reconnect_Statistical::TotalLength() {
     part2 = m_cols[1].find(cit->first)->second;
     total += Distance(part1,part2);
   }
-  //msg_Out()<<METHOD<<" = "<<total<<" --------------------------------------\n";
   return total;
 }
 

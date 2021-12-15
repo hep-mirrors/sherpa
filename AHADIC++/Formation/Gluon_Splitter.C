@@ -48,7 +48,7 @@ bool Gluon_Splitter::CalculateXY() {
     M2     = m_mdec2[0];
     m_z[0] = M2/((1.-m_z[1])*m_Q2);
   }
-  if (M2/m_m2[0] > 1e6 && M2/m_kt2 > 1e6) {
+  if ((M2/m_m2[0] > 1e6 && M2/m_kt2 > 1e6) || m_kt2<1.e-12) {
     // Use Taylor expansion to first order in m12/M2 and kt2/M2 to avoid
     // numerical instability for x, y -> 1.0
     m_x = 1.0 - m_kt2/M2;
@@ -111,28 +111,45 @@ bool Gluon_Splitter::CheckKinematics() {
 
 bool Gluon_Splitter::FillParticlesInLists() {
   Cluster * cluster = MakeCluster();
-  switch (p_softclusters->Treat(cluster)) {
-  case 1:
+  if (cluster==NULL) return false;
+  Vec4D  mom = cluster->Momentum();
+  Flavour fl = Flavour(kf_none);
+  if (p_softclusters->PromptTransit(cluster,fl)) {
+    ReplaceClusterWithHadron(fl,mom);
     delete cluster;
-    break;
-  case -1:
-    delete cluster;
-    return false;
-  default:
-    p_cluster_list->push_back(cluster);
-    break;
   }
-  UpdateSpectator();
+  else {
+    switch (p_softclusters->Treat(cluster)) {
+    case 1:
+      delete cluster;
+      break;
+    case -1:
+      delete cluster;
+      return false;
+    default:
+      p_cluster_list->push_back(cluster);
+      break;
+    }
+  }
+  UpdateSpectator(mom);
   return true;
 }
 
-void Gluon_Splitter::UpdateSpectator() {
+void Gluon_Splitter::ReplaceClusterWithHadron(const Flavour & fl,Vec4D & mom) {
+  double M2 = m_Q2, mt12 = sqr(fl.Mass())+m_kt2, mt22 = m_m2[1]+m_kt2; 
+  double alpha1 = ((M2+mt12-mt22)+sqrt(sqr(M2+mt12-mt22)-4.*M2*mt12))/(2.*M2);
+  double beta1  = mt12/(M2*alpha1);
+  mom = m_E*(alpha1*s_AxisP + beta1*s_AxisM)+m_ktvec;
+  m_rotat.RotateBack(mom);
+  m_boost.BoostBack(mom);
+  p_softclusters->GetHadrons()->push_back(new Proto_Particle(fl,mom,false));
+}
+
+
+void Gluon_Splitter::UpdateSpectator(const Vec4D & clumom) {
   // Replace splitted gluon with (anti-)(di-)quark and correct momentum
-  Vec4D newmom2 = m_E*((1.-m_z[0])*s_AxisP+m_z[1]*s_AxisM)-m_ktvec;
-  m_rotat.RotateBack(newmom2);
-  m_boost.BoostBack(newmom2);
   p_part[1]->SetFlavour(m_newflav[1]);
-  p_part[1]->SetMomentum(newmom2);
+  p_part[1]->SetMomentum(m_Qvec-clumom);
   p_part[1]->SetKT2_Max(m_kt2);
 }
 
@@ -153,25 +170,7 @@ Cluster * Gluon_Splitter::MakeCluster() {
   m_boost.BoostBack(newmom11);
   m_rotat.RotateBack(newmom12);
   m_boost.BoostBack(newmom12);
-  if (dabs(newmom11.Abs2()-m_m2[0]) > 1.e-3*m_Q2 ||
-      dabs(newmom12.Abs2())         > 1.e-3*m_Q2) {
-    Vec4D newmom2  = m_E*((1.-m_z[0])*s_AxisP+m_z[1]*s_AxisM) - m_ktvec;
-    m_rotat.RotateBack(newmom2);
-    m_boost.BoostBack(newmom2);
-    msg_Error()<<"Error in "<<METHOD<<": masses not respected.\n"
-	       <<newmom11<<" -> "<<sqrt(dabs(newmom11.Abs2()))
-	       <<" vs. "<<m_mass[0]<<"\n"
-	       <<newmom12<<" -> "<<sqrt(dabs(newmom12.Abs2()))
-	       <<" vs. "<<m_popped_mass<<" from "<<m_newflav[0]<<"\n"
-      	       <<newmom2<<" -> "<<sqrt(dabs(newmom2.Abs2()))
-	       <<" vs. "<<m_popped_mass<<" from "<<m_newflav[0]<<"\n"
-	       <<"*** from {x, y, z1, z2, kt} = "
-	       <<"{"<<m_x<<", "<<m_y<<", "<<m_z[0]<<", "<<m_z[1]<<", "<<m_kt<<"}, "
-	       <<" Q = "<<m_Q<<", M = "<<sqrt(m_Q2*m_z[0]*(1.-m_z[1])-m_kt2)<<", "
-	       <<"ktvec = "<<m_ktvec<<"("<<m_ktvec.Abs()<<").\n"
-	       <<"*** mom = "
-	       <<p_part[0]->Momentum()<<"("<<p_part[0]->Flavour()<<") and "
-	       <<p_part[1]->Momentum()<<"("<<p_part[1]->Flavour()<<").\n";
+  if (!CheckConstituentKinematics(newmom11,newmom12)) {
     m_kin_fails++;
     return NULL;
   }
@@ -182,6 +181,43 @@ Cluster * Gluon_Splitter::MakeCluster() {
 					       p_part[0]->IsBeam() || p_part[1]->IsBeam());
   newp12->SetKT2_Max(m_kt2);
   // Take care of sequence in cluster = triplet + anti-triplet
-  Cluster * cluster(m_barrd?new Cluster(newp12,p_part[0]):new Cluster(p_part[0],newp12));
+  Cluster * cluster(m_barrd?
+		    new Cluster(newp12,p_part[0]):
+		    new Cluster(p_part[0],newp12));
+  // this is for a simple analysis only
+  m_lastmass = sqrt(dabs(cluster->Momentum().Abs2()));
+  m_lastB    = (newp12->Flavour()==Flavour(kf_b) ||
+		newp12->Flavour()==Flavour(kf_b).Bar() ||
+		p_part[0]->Flavour()==Flavour(kf_b) ||
+		p_part[0]->Flavour()==Flavour(kf_b).Bar());
+  m_lastC    = (!m_lastB &&
+		(newp12->Flavour()==Flavour(kf_b) ||
+		 newp12->Flavour()==Flavour(kf_b).Bar() ||
+		 p_part[0]->Flavour()==Flavour(kf_b) ||
+		 p_part[0]->Flavour()==Flavour(kf_b).Bar()));
   return cluster;
+}
+
+bool Gluon_Splitter::CheckConstituentKinematics(const ATOOLS::Vec4D & newmom11,
+						const ATOOLS::Vec4D & newmom12) {
+  if (dabs(newmom11.Abs2()-m_m2[0]) < 1.e-3*m_Q2 &&
+      dabs(newmom12.Abs2())         < 1.e-3*m_Q2) return true;
+  Vec4D newmom2  = m_E*((1.-m_z[0])*s_AxisP+m_z[1]*s_AxisM) - m_ktvec;
+  m_rotat.RotateBack(newmom2);
+  m_boost.BoostBack(newmom2);
+  msg_Error()<<"Error in "<<METHOD<<": masses not respected.\n"
+	     <<newmom11<<" -> "<<sqrt(dabs(newmom11.Abs2()))
+	     <<" vs. "<<m_mass[0]<<"\n"
+	     <<newmom12<<" -> "<<sqrt(dabs(newmom12.Abs2()))
+	     <<" vs. "<<m_popped_mass<<" from "<<m_newflav[0]<<"\n"
+	     <<newmom2<<" -> "<<sqrt(dabs(newmom2.Abs2()))
+	     <<" vs. "<<m_popped_mass<<" from "<<m_newflav[0]<<"\n"
+	     <<"*** from {x, y, z1, z2, kt} = "
+	     <<"{"<<m_x<<", "<<m_y<<", "<<m_z[0]<<", "<<m_z[1]<<", "<<m_kt<<"}, "
+	     <<" Q = "<<m_Q<<", M = "<<sqrt(m_Q2*m_z[0]*(1.-m_z[1])-m_kt2)<<", "
+	     <<"ktvec = "<<m_ktvec<<"("<<m_ktvec.Abs()<<").\n"
+	     <<"*** mom = "
+	     <<p_part[0]->Momentum()<<"("<<p_part[0]->Flavour()<<") and "
+	     <<p_part[1]->Momentum()<<"("<<p_part[1]->Flavour()<<").\n";
+  return false;
 }

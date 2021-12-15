@@ -6,12 +6,12 @@ using namespace ATOOLS;
 using namespace std;
 
 Hadronization::Hadronization(Colour_Reconnection_Handler * reconnections,
-			     Fragmentation_Handler * fragmentation) :
-  m_on(fragmentation->Mode()>0),
+			     Fragmentation_Base * fragmentation) :
+  m_on(fragmentation->Name()!="None"),
   p_reconnectionhandler(reconnections),
   p_fragmentationhandler(fragmentation)
 {
-  m_name = std::string("Hadronization:")+p_fragmentationhandler->FragmentationModel();
+  m_name = std::string("Hadronization:")+p_fragmentationhandler->Name();
   m_type = eph::Hadronization;
 }
 
@@ -39,7 +39,7 @@ Return_Value::code Hadronization::Treat(ATOOLS::Blob_List* bloblist)
   }
   Return_Value::code ret = (*p_reconnectionhandler)(bloblist);
   if (ret!=Return_Value::Success && ret!=Return_Value::Nothing) exit(1);
-  return (*p_fragmentationhandler)(bloblist);
+  return p_fragmentationhandler->Hadronize(bloblist);
 }
 
 void Hadronization::CleanUp(const size_t & mode) {}

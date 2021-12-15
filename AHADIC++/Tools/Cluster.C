@@ -41,7 +41,7 @@ void Cluster::Clear() {
 
 void Cluster::Reset() {
   if (!s_clusters.empty()) {
-    msg_Tracking()<<METHOD<<" has to erase "<<s_clusters.size()<<" clusters.\n";
+    msg_Error()<<METHOD<<" has to erase "<<s_clusters.size()<<" clusters.\n";
     for (std::set<Cluster *>::iterator sit=s_clusters.begin();
 	 sit!=s_clusters.end();sit++) {
       delete (*sit);
@@ -50,6 +50,7 @@ void Cluster::Reset() {
 }
 
 namespace AHADIC {
+
   std::ostream& operator<<(std::ostream& str, const Cluster &cluster) {
   str<<"Cluster ["<<cluster.m_parts.first->Flavour()<<", "
      <<cluster.m_parts.second->Flavour()<<"] "

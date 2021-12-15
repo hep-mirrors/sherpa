@@ -1,7 +1,8 @@
-﻿#include "AHADIC++/Tools/Hadronisation_Parameters.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Multiplet_Constructor.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -14,8 +15,7 @@ using namespace std;
 
 Hadronisation_Parameters* AHADIC::hadpars = NULL;
 
-Hadronisation_Parameters::Hadronisation_Parameters() :
-  m_shower(0), m_stretcher(Momenta_Stretcher("AHADIC")) {}
+Hadronisation_Parameters::Hadronisation_Parameters() : m_shower(0) {}
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_constituents!=NULL) {
@@ -30,8 +30,6 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
     delete p_dtransitions;
     p_dtransitions=NULL;
   }
-  m_switchmap.clear();
-  m_parametermap.clear();
 }
 
 void Hadronisation_Parameters::Init(string shower)
@@ -66,7 +64,9 @@ void Hadronisation_Parameters::Init(string shower)
 void Hadronisation_Parameters::ReadParameters()
 {
   ReadGeneralSwitches();
-  ReadMassParameters();
+  auto s = Settings::GetMainSettings()["AHADIC"];
+  m_parametermap[string("minmass2")] =
+    s["MIN_MASS2"].SetDefault(0.10).Get<double>(); 
   ReadPoppingParameters();
   ReadMesonWeights();
   ReadSplittingParameters();
@@ -107,24 +107,24 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
   // generic parameter for non-perturbative transverse momentum
   m_parametermap[string("kT_0")]   =
-    s["KT_0"].SetDefault(1.00).Get<double>();
+    s["KT_0"].SetDefault(0.83).Get<double>();
   // gluon fragmentation
   m_parametermap[string("alphaG")] =
-    s["ALPHA_G"].SetDefault(1.25).Get<double>();
+    s["ALPHA_G"].SetDefault(0.87).Get<double>();
   // light quark fragmentation
   m_parametermap[string("alphaL")] =
-    s["ALPHA_L"].SetDefault(2.50).Get<double>();
+    s["ALPHA_L"].SetDefault(3.26).Get<double>();
   m_parametermap[string("betaL")]  =
-    s["BETA_L"].SetDefault(0.10).Get<double>();
+    s["BETA_L"].SetDefault(0.11).Get<double>();
   m_parametermap[string("gammaL")] =
-    s["GAMMA_L"].SetDefault(0.50).Get<double>();
+    s["GAMMA_L"].SetDefault(0.39).Get<double>();
   // di-quark fragmentation
   m_parametermap[string("alphaD")] =
-    s["ALPHA_D"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
+    s["ALPHA_D"].SetDefault(m_shower ? 3.26 : 3.26).Get<double>();
   m_parametermap[string("betaD")]  =
-    s["BETA_D"].SetDefault(0.25).Get<double>();
+    s["BETA_D"].SetDefault(0.11).Get<double>();
   m_parametermap[string("gammaD")] =
-    s["GAMMA_D"].SetDefault(0.50).Get<double>();
+    s["GAMMA_D"].SetDefault(0.39).Get<double>();
   // beam particle fragmentation
   m_parametermap[string("alphaB")] =
     s["ALPHA_B"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
@@ -134,21 +134,30 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["GAMMA_B"].SetDefault(0.50).Get<double>();
   // heavy quark fragmentation function
   m_parametermap[string("alphaH")] =
-    s["ALPHA_H"].SetDefault(2.50).Get<double>();
+    s["ALPHA_H"].SetDefault(2.5).Get<double>();
   m_parametermap[string("betaH")]  =
-    s["BETA_H"].SetDefault(0.75).Get<double>();
+    s["BETA_H"].SetDefault(1.05).Get<double>();
   m_parametermap[string("gammaH")] =
-    s["GAMMA_H"].SetDefault(m_shower ? 0.10 : 0.10).Get<double>();
-  // Probably irrelevant as long as they are small.
-  // We will probably not have to tune them.
+    s["GAMMA_H"].SetDefault(m_shower ? 0.05 : 0.05).Get<double>();
+  // These guys make a lot of difference - especially the transition ones, once we switch them on. 
+  m_switchmap["direct_transition"] =
+    s["DIRECT_TRANSITIONS"].SetDefault(0).Get<int>();
   m_parametermap[string("decay_threshold")] =
     s["DECAY_THRESHOLD"].SetDefault(0.0).Get<double>();
+  m_parametermap[string("transition_threshold")] =
+    s["TRANSITION_THRESHOLD"].SetDefault(0.0).Get<double>();
+  // Probably irrelevant as long as they are small.
+  // We will probably not have to tune them.
   m_parametermap[string("piphoton_threshold")] =
     s["PI_PHOTON_THRESHOLD"].SetDefault(0.150).Get<double>();
   m_parametermap[string("dipion_threshold")] =
     s["DI_PION_THRESHOLD"].SetDefault(0.300).Get<double>();
   m_parametermap[string("open_threshold")] =
     s["OPEN_THRESHOLD"].SetDefault(0.100).Get<double>();
+  Settings & sets = Settings::GetMainSettings();
+  m_parametermap[string("kT_max")] =
+    s["PT_MAX"].SetDefault(sqrt(sets["CSS_FS_PT2MIN"].
+				Get<double>())).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
@@ -156,6 +165,8 @@ void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
   auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("mass_exponent")]          =
     s["MASS_EXPONENT"].SetDefault(0.0).Get<double>();
+  m_parametermap[string("prompt_decay_exponent")]          =
+    s["PROMPT_DECAY_EXPONENT"].SetDefault(-1.0).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadMesonWeights()
@@ -200,9 +211,9 @@ void Hadronisation_Parameters::ReadMesonWeights()
     s["MULTI_WEIGHT_R0L0_DELTA_3/2"].SetDefault(0.15).Get<double>();
   // Individual hadrons or groups of hadrons
   m_parametermap[string("eta_modifier")]   =
-    s["ETA_MODIFIER"].SetDefault(3.00).Get<double>();
+    s["ETA_MODIFIER"].SetDefault(1.5).Get<double>();
   m_parametermap[string("eta_prime_modifier")]   =
-    s["ETA_PRIME_MODIFIER"].SetDefault(3.00).Get<double>();
+    s["ETA_PRIME_MODIFIER"].SetDefault(1.5).Get<double>();
   m_parametermap[string("Singlet_Baryon_modifier")]    =
     s["SINGLETBARYON_MODIFIER"].SetDefault(1.80).Get<double>();
   m_parametermap[string("CharmBaryon_Enhancement")]    =
@@ -222,54 +233,17 @@ void Hadronisation_Parameters::ReadPoppingParameters()
   auto s = Settings::GetMainSettings()["AHADIC"];
   double strange;
   m_parametermap[string("Strange_fraction")] = strange =
-    s["STRANGE_FRACTION"].SetDefault(0.50).Get<double>();
+    s["STRANGE_FRACTION"].SetDefault(0.53).Get<double>();
   m_parametermap[string("Baryon_fraction")]        =
-    s["BARYON_FRACTION"].SetDefault(0.18).Get<double>();
+    s["BARYON_FRACTION"].SetDefault(0.15).Get<double>();
   m_parametermap[string("P_qs_by_P_qq")]           =
-    (s["P_QS_by_P_QQ_norm"].SetDefault(0.48).Get<double>())*strange;
+    (s["P_QS_by_P_QQ_norm"].SetDefault(0.51).Get<double>())*strange;
   m_parametermap[string("P_ss_by_P_qq")]           =
-    (s["P_SS_by_P_QQ_norm"].SetDefault(0.02).Get<double>())*sqr(strange);
+    (s["P_SS_by_P_QQ_norm"].SetDefault(0.028).Get<double>())*sqr(strange);
   m_parametermap[string("P_di_1_by_P_di_0")]       =
-    s["P_QQ1_by_P_QQ0"].SetDefault(1.00).Get<double>();
+    s["P_QQ1_by_P_QQ0"].SetDefault(1.50).Get<double>();
 }
 
-void Hadronisation_Parameters::ReadMassParameters()
-{
-  auto s = Settings::GetMainSettings()["AHADIC"];
-  m_parametermap[string("minmass2")] =
-    s["MIN_MASS2"].SetDefault(0.10).Get<double>();
-  m_parametermap[string("Mass_glue")] =
-    s["M_GLUE"].SetDefault(0.00).Get<double>();
-  Flavour(kf_gluon).SetHadMass(m_parametermap["Mass_glue"]);
-  double mud = m_parametermap[string("Mass_updown")] =
-    s["M_UP_DOWN"].SetDefault(0.30).Get<double>();
-  double ms = m_parametermap[string("Mass_strange")] =
-    s["M_STRANGE"].SetDefault(0.40).Get<double>();
-  double mc = m_parametermap[string("Mass_charm")] =
-    s["M_CHARM"].SetDefault(1.80).Get<double>();
-  double mb = m_parametermap[string("Mass_bottom")] =
-    s["M_BOTTOM"].SetDefault(5.10).Get<double>();
-  double mdiq = m_parametermap[string("Mass_diquark")] =
-    s["M_DIQUARK_OFFSET"].SetDefault(0.30).Get<double>();
-  double bind0 = m_parametermap[string("Mass_bind0")] =
-    s["M_BIND_0"].SetDefault(0.12).Get<double>();
-  double bind1 = m_parametermap[string("Mass_bind1")] =
-    s["M_BIND_1"].SetDefault(0.50).Get<double>();
-  Flavour(kf_d).SetHadMass(mud);
-  Flavour(kf_u).SetHadMass(mud);
-  Flavour(kf_s).SetHadMass(ms);
-  Flavour(kf_c).SetHadMass(mc);
-  Flavour(kf_b).SetHadMass(mb);
-  Flavour(kf_ud_0).SetHadMass((2.*mud+mdiq)*(1.+bind0));
-  Flavour(kf_uu_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
-  Flavour(kf_ud_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
-  Flavour(kf_dd_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
-  Flavour(kf_su_0).SetHadMass((ms+mud+mdiq)*(1.+bind0));
-  Flavour(kf_sd_0).SetHadMass((ms+mud+mdiq)*(1.+bind0));
-  Flavour(kf_su_1).SetHadMass((ms+mud+mdiq)*(1.+bind1));
-  Flavour(kf_sd_1).SetHadMass((ms+mud+mdiq)*(1.+bind1));
-  Flavour(kf_ss_1).SetHadMass((2.*ms+mdiq)*(1.+bind1));
-}
 
 void Hadronisation_Parameters::ReadGeneralSwitches()
 {
@@ -283,6 +257,7 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,
                                              ATOOLS::Vec4D* moms,
                                              const double* masses)
 {
+  Momenta_Stretcher stretcher;
   if (n==1) return false;
   bool success(true);
   if (n!=2) {
@@ -310,17 +285,17 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,
       msg_Error()<<"   Will possibly lead to retrying the event.\n";
       return false;
     }
-    if (prepare) success = success && m_stretcher.ZeroThem(0,n,moms,1.e-10);
-    //if (!success) std::cout<<METHOD<<" failed for ZeroThem(0,"<<n<<").\n";
-    success = success && m_stretcher.MassThem(0,n,moms,masses);
-    //if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<").\n";
+    if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);
+    if (!success) std::cout<<METHOD<<" failed for ZeroThem(0,"<<n<<").\n";
+    success = success && stretcher.MassThem(0,n,moms,masses);
+    if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<").\n";
     if (boost) {
       for (int i=0;i<n;i++) rest.BoostBack(moms[i]);
     }
   }
   else {
-    success = m_stretcher.MassThem(0,n,moms,masses,1.e-10);
-    //if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<"), 2nd.\n";
+    success = stretcher.MassThem(0,n,moms,masses,1.e-10);
+    if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<"), 2nd.\n";
   }
   if (!success && msg->LevelIsDebugging()) {
     msg_Debugging()<<"Error in "<<METHOD<<" : "<<"\n"
