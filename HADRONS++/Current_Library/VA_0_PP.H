@@ -71,8 +71,9 @@ namespace HADRONS {
     public:
       FF_RChT_Kpi(const GeneralModel & model);
       Complex F_V(const double & q2, double s);
-      Complex F_S(const double & q2);
+      Complex F_S(const double & q2, double s);
     };  
+    
     /////////////////////////////////////////////////////////////////
     // Resonance Chiral Theory form factors
     /////////////////////////////////////////////////////////////////
@@ -107,10 +108,9 @@ namespace HADRONS {
       double  m_fpi, m_m2_pi, m_m2_K, q2;
       void    FillResonances(const GeneralModel & model);
       Complex A_Loop( double x, double y );
-    public:
-      Complex FF_RChT2_pipi(const GeneralModel & model);
+      public:
+      FF_GS_pipi(const GeneralModel & model);
       Complex F_V(const double & q2);
-      Complex F_S(const double & q2) { return Complex(0.,0.); }
     };          
   };
 }

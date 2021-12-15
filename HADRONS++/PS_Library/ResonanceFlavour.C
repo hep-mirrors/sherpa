@@ -25,7 +25,7 @@ double ResonanceFlavour::Sqrt_Lambda( double a, double b, double c)
 SimpleResonanceFlavour::SimpleResonanceFlavour( std::string name, double _mass,
                                                 double _width ) : 
   m_name(name), m_mass(_mass), m_width(_width), m_mass2(sqr(_mass)),
-  m_gamma(0.), m_delta(0.), m_phi(0.), m_phi2(0.), m_massfactor(1.)
+  m_gamma(0.), m_delta(0.), m_phi1(0.), m_phi2(0.), m_massfactor(1.)
 {
 }
   

@@ -417,15 +417,17 @@ Complex VA_0_PP::FF_RChT2_pipi::F_V(const double & q2) {
 }
 
 
+
+
+
+
 ////////////////////////////////////////////////////////////////////
 //
 // Gounaris-Sakurai parametrization Vector Form Factor in
 // Resonance Chiral Theory for pi+pi https://arxiv.org/abs/1509.09140
+// https://arxiv.org/pdf/hep-ph/0611163.pdf
 //
 ////////////////////////////////////////////////////////////////////
-
-//##
-
 
 VA_0_PP::FF_GS_pipi::FF_GS_pipi(const GeneralModel & model) :
   VA_0_PP::FormFactor(model)
@@ -437,9 +439,10 @@ VA_0_PP::FF_GS_pipi::FF_GS_pipi(const GeneralModel & model) :
 }
 
 void VA_0_PP::FF_GS_pipi::FillResonances(const GeneralModel & model) {
+  
   int running_width  = int( model("RUNNING_WIDTH", 1 ) );
-  m_Vresonances.push_back(make_pair(ResonanceFlavour( kf_rho_770_plus,
-						      model("Mass_rho(770)+",  0.7746 ), //table VII https://journals.aps.org/prd/pdf/10.1103/PhysRevD.78.072006
+  m_Vresonances.push_back(make_pair(ResonanceFlavour( kf_rho_770_plus, //table VII https://journals.aps.org/prd/pdf/10.1103/PhysRevD.78.072006
+						      model("Mass_rho(770)+",  0.7746 ),
 						      model("Width_rho(770)+", 0.148 ),
 						      running_width ),
 				    1.));
@@ -447,24 +450,27 @@ void VA_0_PP::FF_GS_pipi::FillResonances(const GeneralModel & model) {
 						      model("Mass_rho(1450)+",  1.446 ),
 						      model("Width_rho(1450)+", 0.434 ),				     
 						      running_width ),
-				    model("beta", 0.15 ) )); 
+				    model("beta", -0.167 ) ));
   m_Vresonances.push_back(make_pair(ResonanceFlavour( kf_rho_1700_plus,
 						      model("Mass_rho(1700)+",  1.728 ),
 						      model("Width_rho(1700)+", 0.164 ),				     
 						      running_width ),
-				    model("gamma", 0.037 ) ));
+				    model("gamma", -0.050 ) ));
   for (list<pair<ResonanceFlavour, double> >::iterator rit=m_Vresonances.begin();
        rit!=m_Vresonances.end();rit++) {
-    msg_Out()<<"* "<<rit->first.KfCode()<<" --> "<<rit->second<<"\n";
     m_Vresonance_norm += rit->second;
   }
+
 }
 Complex VA_0_PP::FF_GS_pipi::F_V(const double & q2) {
-  Complex sum(0.,0.);
-  term1 = Tools::BreitWignerrhoprime(q2, 1.446, 0.434);
-  term2 = Tools::BreitWignerrhobiprime(q2,1.728,0.164);
-  complex sum += (1/(1+beta+gamma))*(BWGS+beta*term1+gamma*term2);
-  return sum;
+  Complex fv(0.,0.);
+  Complex term(0.,0.);
+  for (list<pair<ResonanceFlavour, double> >::iterator rit=m_Vresonances.begin();
+       rit!=m_Vresonances.end();rit++) {
+    term = rit->second * rit->first.BreitWigner(q2);
+    fv  += (1./m_Vresonance_norm)*term;
+  }
+  return fv;
 }
 
 

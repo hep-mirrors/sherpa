@@ -27,6 +27,7 @@ namespace HADRONS {
                                           double phi1=0., double phi2=0.) {
         m_gamma = gamma; m_delta = delta; m_phi1 = phi1; m_phi2 = phi2;                                      
       }
+   
       inline void SetMassFactor(const double massfactor=1.) { m_massfactor = massfactor; }
       std::string Name() { return m_name; }
   };
