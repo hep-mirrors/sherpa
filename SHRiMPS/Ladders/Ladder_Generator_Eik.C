@@ -1,3 +1,4 @@
+//emission k_t's can become small, maybe such emissions need to be kicked out
 #include "SHRiMPS/Ladders/Ladder_Generator_Eik.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "MODEL/Main/Model_Base.H"
@@ -118,6 +119,7 @@ bool Ladder_Generator_Eik::SelectPropagatorQTs() {
 
 bool Ladder_Generator_Eik::SelectPropagatorQT(const size_t dir,T_Prop & prop) {
   double qt2max = m_shat/(4.*sqr(cosh(m_y[dir][0]))), weight;
+  double qt2min = m_qt2min/sqr(cosh(m_y[dir][0]));
   size_t trials = 0;
   m_qt2 = 0.;
   MakeTransverseUnitVector();
@@ -129,10 +131,11 @@ bool Ladder_Generator_Eik::SelectPropagatorQT(const size_t dir,T_Prop & prop) {
     }
     else {
       m_qt2  = (prop.Col()==colour_type::octet ?
-		m_qt2min * pow(qt2max/m_qt2min,ran->Get()) :
-		m_qt2min*qt2max / (qt2max - ran->Get()*(qt2max-m_qt2min)) );
+        qt2min * pow(qt2max/qt2min,ran->Get()) : //p(qt2) = 1/qt2
+        //qt2min * pow((qt2max+qt2min)/qt2min,ran->Get()) - qt2min : //p(qt2) = 1/(qt2+qt2min)
+        qt2min*qt2max / (qt2max - ran->Get()*(qt2max-qt2min)) ); //p(qt2) = ln(qt2)
       weight = ( AlphaSWeight((m_qtprev[dir]-sqrt(m_qt2)*m_eqt).PPerp2()) *
-		 LDCWeight(m_qt2,m_qt2prev[dir]) );
+         LDCWeight(m_qt2,m_qtprev[dir].PPerp2()) );
     }
     weight *= (prop.Col()==colour_type::octet ?
 	       ReggeWeight(m_qt2,m_y[dir][0],m_y[1-dir][1]) :

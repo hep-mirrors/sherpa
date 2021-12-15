@@ -165,14 +165,17 @@ double Ladder_Generator_Base::AlphaSWeight(const double & kt2) {
 
 double Ladder_Generator_Base::
 ReggeWeight(const double & qt2, const double & y1,const double y2) {
-  return (qt2>m_qt2min ? 
-	  exp(-3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min)) :
-	  1.);
+  //return exp(-3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min));
+  return (qt2>m_qt2min ?
+      exp(-3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min)) :
+      1.);
+      //exp(3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min)));
+  // 3/pi oder 3/(2pi)? qt2min = qt2min(y)? log((qt2+m_qt2min)/m_qt2min) ?
 }
 
 double Ladder_Generator_Base::
 LDCWeight(const double & qt2, const double & qt2prev) {
-  return qt2/Max(qt2,qt2prev);
+  return qt2/Max(qt2,qt2prev); //quadrieren?
 }
 		 
 void Ladder_Generator_Base::Test() {
