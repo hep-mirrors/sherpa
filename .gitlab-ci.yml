@@ -105,7 +105,7 @@ build-manual:
   variables:
     GIT_STRATEGY: none  # we only need the artifacts from the build
 
-test-LO_Z:
+test-LO_Z: &test_lo_z
   <<: *test
   needs:
     - build
@@ -113,6 +113,15 @@ test-LO_Z:
     - mkdir test-LO_Z
     - cd test-LO_Z
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
+
+test-LO_Z-Amegic:
+  <<: *test_lo_z
+  script:
+    - mkdir test-LO_Z-Amegic
+    - cd test-LO_Z-Amegic
+    - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
+    - ./makelibs
+    - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
 
 test-clang-strict-LO_Z:
   <<: *test
