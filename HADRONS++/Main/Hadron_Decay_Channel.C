@@ -195,10 +195,10 @@ void Hadron_Decay_Channel::ProcessME(const string& content,
     }
     if(me_svv[i].size()==4) {
       if (m_physicalflavours[0]==Flavour(kf_tau)) {
-	msg_Out()<<METHOD<<": "<<m_physicalflavours[0]<<": "<<Name()<<"\n";
+	msg_Out()<<METHOD<<": "<<m_physicalflavours[0]<<": "<<Name()<<"\n"
+		 <<"============================================================\n"
+		 <<"Selecting currents for "<<Name()<<endl;
       }
-      msg_Out()<<"============================================================\n"
-	       <<"Selecting currents for "<<Name()<<endl;
       Current_Base* current1 = SelectCurrent(me_svv[i][2]);
       current1->SetPath(m_path);
       GeneralModel current1_model = m_startmd;
@@ -463,8 +463,8 @@ HD_ME_Base * Hadron_Decay_Channel::SelectME(string me_string)
   }
   if(int(resultstrings.size())!=NOut()+2) {
     msg_Error()<<METHOD<<" Error: Number of indices in \""<<me_string<<"\" ("
-      <<int(resultstrings.size())-1<<") in "<<m_path<<m_filename<<" doesn't "
-      <<"equal number of particles ("<<NOut()+1<<"). Will abort."<<endl;
+	       <<int(resultstrings.size())-1<<") in "<<m_path<<m_filename<<" doesn't "
+	       <<"equal number of particles ("<<NOut()+1<<"). Will abort."<<endl;
     Abort();
   }
 

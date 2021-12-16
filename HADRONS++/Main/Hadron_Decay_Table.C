@@ -65,17 +65,20 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       Hadron_Decay_Channel* hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
       int charge = Flav().IntCharge();
       double mass = Flav().HadMass();
+      if (Flav()==Flavour(kf_tau)) msg_Out()<<"* "<<Flav()<<" -->";
       for (size_t j=0;j<helpkfc.size();++j) {
         Flavour flav = Flavour(abs(helpkfc[j]));
         if (helpkfc[j]<0) flav = flav.Bar();
         hdc->AddDecayProduct(flav);
 	charge-=flav.IntCharge();
 	mass-=flav.HadMass();
+	if (Flav()==Flavour(kf_tau)) msg_Out()<<" "<<flav;
       }
       if (mass<0.) { 
 	msg_Tracking()<<"Found too low mass.";
 	BR = 0.; dBR = 0.; continue; 
       }
+      if (Flav()==Flavour(kf_tau)) msg_Out()<<" = "<<BR<<".\n";
       totBR += BR;
       hdc->SetWidth(BR*m_flavwidth);
       hdc->SetDeltaWidth(dBR*m_flavwidth);

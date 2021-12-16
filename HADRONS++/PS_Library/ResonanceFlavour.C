@@ -167,9 +167,9 @@ double ResonanceFlavour::OffShellMassWidth( double s )
       return TwoBodyResonanceMassWidth(s,Flavour(kf_pi).HadMass(), Flavour(kf_K_plus).HadMass());
   }
   msg_Error()<<"WARNING in ResonanceFlavour::OffShellMassWidth(double s) : "<<endl
-    <<"     OffShellWidth of "<<m_name<<" hasn't been implemented yet."<<endl
-    <<"     Will ignore and return on-shell mass width"<<endl;
-  cout<<om::red<<"I changed my mind. Will abort."<<om::reset<<endl; Abort();
+	     <<"     OffShellWidth of "<<m_name<<" hasn't been implemented yet."<<endl
+	     <<"     Will ignore and return on-shell mass width"<<endl;
+  //cout<<om::red<<"I changed my mind. Will abort."<<om::reset<<endl; Abort();
   return m_mass*m_width;
 }
 
