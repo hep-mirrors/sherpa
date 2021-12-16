@@ -23,7 +23,11 @@ PHOTONS_ME_Base::PHOTONS_ME_Base(const Particle_Vector_Vector& pvv) :
   m_sqrt2(1.41421356237),
   m_i(Complex(0.,1.)),
   p_boost(NULL), p_rot(NULL),
-  m_pvv_zero(pvv)
+  m_pvv_zero(pvv),
+  m_ew(Photons::s_ew_corr),
+  m_ew_scheme(Photons::s_ew_scheme),
+  m_nnlo_qed(Photons::s_nnlo_qed),
+  m_dev(Photons::s_dev), m_xi(Photons::s_xi)
 {
   double  MW  = Flavour(kf_Wplus).Mass();
   double  MZ  = Flavour(kf_Z).Mass();
@@ -41,6 +45,13 @@ PHOTONS_ME_Base::PHOTONS_ME_Base(const Particle_Vector_Vector& pvv) :
   }
   m_sW = sqrt(std::abs(sw2));
   m_cW = sqrt(std::abs(cw2));
+  #ifndef USING__YFS_NNLO
+  if (m_nnlo_qed == 1) {
+    msg_Error() << METHOD << " YFS NNLO corrections not compiled properly. Please reconfigure "
+    << "with option '--enable-yfs-nnlo'. Will calculate using NLO corrections for the "
+    << "being.\n";
+  }
+#endif
 }
 
 PHOTONS_ME_Base::~PHOTONS_ME_Base() {
@@ -55,7 +66,7 @@ PHOTONS_ME_Base * PHOTONS_ME_Base::GetIRsubtractedME
   for (PHOTONS_ME_Getter::Getter_List::const_iterator git(glist.begin());
        git!=glist.end();++git) {
     PHOTONS_ME_Base * pme = (*git)->GetObject(pvv);
-    if (pme) return pme;
+    if (pme && pme->Name() != "Collinear_Approximation_FF" && pme->Name() != "Collinear_Approximation_FI") return pme;
   }
   return NULL;
 }
@@ -64,6 +75,7 @@ PHOTONS_ME_Base * PHOTONS_ME_Base::GetIRsubtractedME
 (const std::string& tag, const Particle_Vector_Vector& pvv)
 {
   PHOTONS_ME_Base * pme = PHOTONS_ME_Getter::GetObject(tag, pvv);
+  if (!pme && (tag == "Collinear_Approximation_FF" || tag == "Collinear_Approximation_FI")) return NULL;
   if (!pme) THROW(fatal_error, "Did not find IR subtracted ME "+tag);
   return pme;
 }

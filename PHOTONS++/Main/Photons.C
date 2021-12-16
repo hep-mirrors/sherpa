@@ -55,6 +55,11 @@ int    PHOTONS::Photons::s_firecscheme   = 0;
 
 double PHOTONS::Photons::s_alpha                = 0.;
 double PHOTONS::Photons::s_alpha_input          = 0.;
+double PHOTONS::Photons::s_xi                   = 0.1;
+double PHOTONS::Photons::s_dev                  = 0.1;
+int    PHOTONS::Photons::s_ew_scheme            = 2;
+int    PHOTONS::Photons::s_ew_corr              = 1;
+int    PHOTONS::Photons::s_nnlo_qed             = 0;
 bool   PHOTONS::Photons::s_userunningparameters = false;
 
 #ifdef PHOTONS_DEBUG
@@ -101,6 +106,19 @@ Photons::Photons() :
   s_uvcutoff = s["UV_CUTOFF"].Get<double>();
   s_alpha_input   = s["1/ALPHAQED"].Get<double>();
   s_alpha_input = (s_alpha_input?1./s_alpha_input:MODEL::aqed->AqedThomson());
+  s_ew_corr = s["EW_CORRECTIONS"].Get<int>();
+  s_nnlo_qed = s["NNLO_QED"].Get<int>();
+  s_dev = s["RV_STABILITY"].Get<double>();
+  s_xi = s["RV_SCALING"].Get<double>();
+  // EW scheme: 1 = alpha(MZ) (default), 2 = alpha(0), 3 = Gmu
+  s_ew_scheme = s["EW_SCHEME"].Get<int>();
+  if (s_ew_scheme == 2) s_alpha_input = MODEL::aqed->AqedThomson(); // For consistency
+  else if (s_ew_scheme == 3) {
+    double GF = 1.16639e-5;
+    double  MW2  = sqr(Flavour(kf_Wplus).Mass());
+    double  MZ2  = sqr(Flavour(kf_Z).Mass());
+    s_alpha_input = GF*MW2*(1.-MW2/MZ2)*sqrt(2.)/M_PI;
+  }
   s_userunningparameters = (bool)s["USE_RUNNING_PARAMETERS"].Get<int>();
   std::string irframe = s["IR_CUTOFF_FRAME"].Get<std::string>();
   if      (irframe == "Multipole_CMS")      s_ircutoffframe = 0;
@@ -188,6 +206,11 @@ void Photons::RegisterDefaults()
   s["IR_CUTOFF"].SetDefault(1E-3);
   s["UV_CUTOFF"].SetDefault(std::numeric_limits<double>::max());
   s["1/ALPHAQED"].SetDefault(0.);
+  s["EW_CORRECTIONS"].SetDefault(1);
+  s["EW_SCHEME"].SetDefault(2);
+  s["NNLO_QED"].SetDefault(0);
+  s["RV_STABILITY"].SetDefault(0.1);
+  s["RV_SCALING"].SetDefault(0.1);
   s["USE_RUNNING_PARAMETERS"].SetDefault(0);
   s["IR_CUTOFF_FRAME"].SetDefault("Multipole_CMS");
   s["MAXEM"].SetDefault(std::numeric_limits<int>::max());

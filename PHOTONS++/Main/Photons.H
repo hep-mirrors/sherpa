@@ -52,7 +52,12 @@ namespace PHOTONS {
     static double               s_ircutoff;
     static double               s_uvcutoff;
     static int                  s_ircutoffframe;
+    static int                  s_ew_scheme;
+    static int                  s_ew_corr;
+    static int                  s_nnlo_qed;
     static double               s_accu;
+    static double               s_dev;
+    static double               s_xi;
     static int                  s_nmax;
     static int                  s_nmin;
     static double               s_drcut;
