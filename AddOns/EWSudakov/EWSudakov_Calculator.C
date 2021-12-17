@@ -12,6 +12,7 @@
 
 using namespace PHASIC;
 using namespace ATOOLS;
+using namespace EWSud;
 
 Histogram EWSudakov_Calculator::m_kfachisto(0, -5.0, 5.0, 50);
 size_t EWSudakov_Calculator::m_numonshellwarning {0};
@@ -264,9 +265,9 @@ EWSudakov_Log_Corrections_Map EWSudakov_Calculator::CorrectionsMap()
       m_ampls.MandelstamU() };
     if (checker.CheckKFactor(
             kfacs.KFactor(), mandelstam, m_ewgroupconsts)) {
-      THROW(normal_exit, "Finish after checking EW Sudakov K factor.");
+      THROW(normal_exit, "Finish after checking EWSud K factor.");
     } else {
-      THROW(fatal_error, "EWSudakov K factor for this process is not equal to"
+      THROW(fatal_error, "EWSud K factor for this process is not equal to"
                          " the results in hep-ph/0408308.");
     }
   }
@@ -362,9 +363,9 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
       m_ampls.MandelstamU() };
     if (checker.CheckCoeffs(
             m_coeffs, m_spinampls[0], mandelstam, m_ewgroupconsts)) {
-      THROW(normal_exit, "Finish after checking EW Sudakov coefficients.");
+      THROW(normal_exit, "Finish after checking EWSud coefficients.");
     } else {
-      THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
+      THROW(fatal_error, "EWSud coeffs for this process are not equal to"
                          " the results in hep-ph/0010201.");
     }
   }

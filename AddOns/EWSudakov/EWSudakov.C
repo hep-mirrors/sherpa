@@ -6,7 +6,7 @@
 
 using namespace ATOOLS;
 
-namespace PHASIC {
+namespace EWSud {
 
   std::ostream& operator<<(std::ostream& os, const Leg_Kfcode_Map& legmap)
   {

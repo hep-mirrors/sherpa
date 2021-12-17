@@ -4,6 +4,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace METOOLS;
+using namespace EWSud;
 
 bool KFactor_Checker::CheckKFactor(
     double kfac,

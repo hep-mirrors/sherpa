@@ -9,6 +9,7 @@
 using namespace ATOOLS;
 using namespace MODEL;
 using namespace PHASIC;
+using namespace EWSud;
 
 std::unique_ptr<MODEL::Model_Base> HE_Comix_Interface::p_model_he {nullptr};
 NLOTypeStringProcessMap_Map HE_Comix_Interface::s_apmap_he;

@@ -22,7 +22,7 @@ namespace EWSud {
 
   private:
 
-    PHASIC::Sudakov_KFactor m_kfactor;
+    Sudakov_KFactor m_kfactor;
     bool m_ewsudakov_rs;
 
   };

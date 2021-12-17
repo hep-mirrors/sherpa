@@ -10,7 +10,7 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 
-namespace PHASIC {
+namespace EWSud {
 
   using Coeff_Map_Key = std::pair<ATOOLS::EWSudakov_Log_Type, Leg_Index_Set>;
   using Coeff_Value = Complex;
@@ -24,7 +24,7 @@ namespace PHASIC {
 
   public:
 
-    EWSudakov_Calculator(Process_Base*);
+    EWSudakov_Calculator(PHASIC::Process_Base*);
     ~EWSudakov_Calculator();
     ATOOLS::EWSudakov_Log_Corrections_Map
     CorrectionsMap(const ATOOLS::Vec4D_Vector& mom);
@@ -75,7 +75,7 @@ namespace PHASIC {
                                       const std::vector<int>&,
                                       const Comix_Interface* interface=nullptr);
 
-    Process_Base* p_proc;
+    PHASIC::Process_Base* p_proc;
     std::set<ATOOLS::EWSudakov_Log_Type> m_activelogtypes;
     bool m_c_coeff_ignores_vector_bosons;
     EWSudakov_Amplitudes m_ampls;

@@ -13,6 +13,7 @@
 
 using namespace PHASIC;
 using namespace ATOOLS;
+using namespace EWSud;
 
 
 Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
@@ -75,7 +76,7 @@ void Sudakov_KFactor::Validate()
   }
 }
 
-DECLARE_GETTER(Sudakov_KFactor,"EWSudakov",
+DECLARE_GETTER(Sudakov_KFactor,"EWSud",
                KFactor_Setter_Base,KFactor_Setter_Arguments);
 
 KFactor_Setter_Base *ATOOLS::Getter<KFactor_Setter_Base,KFactor_Setter_Arguments,Sudakov_KFactor>::
@@ -87,6 +88,5 @@ operator()(const KFactor_Setter_Arguments &args) const
 void ATOOLS::Getter<KFactor_Setter_Base,KFactor_Setter_Arguments,Sudakov_KFactor>::
 PrintInfo(std::ostream &str, const size_t width) const
 {
-  // TODO: Add ZZ paper reference
-  str << "EW Sudakov K-Factor is implemented in arXiv:2006.14635.\n";
+  str << "EWSud is implemented in arXiv:2006.14635 and arXiv:2111.13453.\n";
 }

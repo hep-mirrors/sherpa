@@ -5,7 +5,7 @@
 
 #include "MODEL/Main/Model_Base.H"
 
-namespace PHASIC {
+namespace EWSud {
 
   class EWGroupConstants {
   private:

@@ -7,7 +7,7 @@
 #include <cassert>
 
 using namespace ATOOLS;
-using namespace PHASIC;
+using namespace EWSud;
 
 EWGroupConstants::EWGroupConstants():
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
@@ -22,7 +22,7 @@ EWGroupConstants::EWGroupConstants():
   // here, we can define constants directly in the language of DP when
   // appropriate.  Note that we use the unsigned version of \sin\theta_W in
   // particular for the couplings, because they are multiplied with ME ratios
-  // by the EW Sudakov calculator, and those ME ratios are calculated by
+  // by the EWSud calculator, and those ME ratios are calculated by
   // Sherpa, such that an extra minus sign in the couplings would not properly
   // cancel against those ME ratios.
   m_sw{ sqrt(m_sw2) },

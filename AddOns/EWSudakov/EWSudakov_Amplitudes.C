@@ -10,6 +10,7 @@
 
 using namespace PHASIC;
 using namespace ATOOLS;
+using namespace EWSud;
 
 const Cluster_Ampl_Key EWSudakov_Amplitudes::s_baseamplkey
 = Leg_Kfcode_Map{};

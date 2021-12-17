@@ -7,7 +7,7 @@
 #include <string>
 #include <map>
 
-namespace PHASIC {
+namespace EWSud {
 
   class KFactor_Checker {
 

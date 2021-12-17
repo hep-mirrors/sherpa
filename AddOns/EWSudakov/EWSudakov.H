@@ -15,7 +15,7 @@
  *  as far as possible to make comparisons and checks more straightforward.
  */
 
-namespace PHASIC {
+namespace EWSud {
 
   using Two_Leg_Indizes = std::array<size_t, 2>;
   using Leg_Index_Set = std::set<size_t>;

@@ -11,18 +11,19 @@ using namespace COMIX;
 using namespace ATOOLS;
 using namespace MODEL;
 using namespace METOOLS;
+using namespace EWSud;
 
 NLOTypeStringProcessMap_Map Comix_Interface::s_apmap;
 
-Comix_Interface::Comix_Interface(Process_Base* proc,
+Comix_Interface::Comix_Interface(PHASIC::Process_Base* proc,
                                  const EWSudakov_Amplitudes& ampls)
-    : p_proc {proc}, m_procname_suffix {"Sudakov"}, m_differentialmode {2 | 4}
+    : p_proc {proc}, m_procname_suffix {"EWSud"}, m_differentialmode {2 | 4}
 {
   AdaptToProcessColorScheme();
   InitializeProcesses(ampls.All());
 }
 
-Comix_Interface::Comix_Interface(Process_Base* proc,
+Comix_Interface::Comix_Interface(PHASIC::Process_Base* proc,
                                  const std::string& procname_suffix)
     : p_proc {proc},
       m_procname_suffix {procname_suffix},
@@ -39,7 +40,7 @@ Complex Comix_Interface::GetSpinAmplitude(ATOOLS::Cluster_Amplitude& ampl,
   // during process set-up, flavours (in the proc info) are implicitly sorted,
   // hence we also need to sort them here, where we step out of the EWSudakov
   // module (in which we don't order flavours, to have a simpler book-keeping
-  Process_Base::SortFlavours(campl.get());
+  PHASIC::Process_Base::SortFlavours(campl.get());
 
   auto ait = m_spinampls.find(&ampl);
   if (ait == m_spinampls.end()) {
@@ -85,7 +86,7 @@ void Comix_Interface::FillSpinAmplitudes(std::vector<Spin_Amplitudes>& spinampls
 {
   Cluster_Amplitude_UP campl {CopyClusterAmpl(ampl)};
   SetScales(*campl);
-  Process_Base* proc = GetProcess(*campl);
+  PHASIC::Process_Base* proc = GetProcess(*campl);
   if (proc == nullptr)
     return;
   proc->Differential(*campl, Variations_Mode::nominal_only, m_differentialmode);
@@ -99,7 +100,7 @@ Comix_Interface::GetProcess(const ATOOLS::Cluster_Amplitude& ampl) const
   const auto loprocmapit = ProcessMap().find(nlo_type::lo);
   if (loprocmapit == ProcessMap().end())
     return nullptr;
-  std::string pname {Process_Base::GenerateName(&ampl)};
+  std::string pname {PHASIC::Process_Base::GenerateName(&ampl)};
   auto pit = loprocmapit->second->find(pname);
   if (pit == loprocmapit->second->end()) {
     return nullptr;

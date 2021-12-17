@@ -9,6 +9,7 @@
 using namespace ATOOLS;
 using namespace PHASIC;
 using namespace SHERPA;
+using namespace EWSud;
 
 Clustered_EWSudakov_Calculator::Clustered_EWSudakov_Calculator(Process_Base* _proc)
   : proc{_proc}

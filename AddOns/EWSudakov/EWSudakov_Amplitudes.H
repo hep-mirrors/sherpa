@@ -10,8 +10,10 @@
 #include <map>
 
 namespace PHASIC {
-
   class Process_Base;
+}
+
+namespace EWSud {
 
   using Cluster_Ampl_Key = Leg_Kfcode_Map;
   using Cluster_Amplitude_UPM =
@@ -21,7 +23,7 @@ namespace PHASIC {
 
   /**
    * helper class that generates and stores the amplitudes needed to calculate
-   * EW Sudakov corrections, when using methods that accept a spin combination,
+   * EWSud corrections, when using methods that accept a spin combination,
    * it automatically replaces longitudinal vector bosons with the
    * corresponding Goldstone bosons
    */
@@ -31,7 +33,7 @@ namespace PHASIC {
 
   public:
     EWSudakov_Amplitudes(
-        Process_Base*,
+        PHASIC::Process_Base*,
         const std::set<ATOOLS::EWSudakov_Log_Type>& _activecoeffs);
     ~EWSudakov_Amplitudes();
     ATOOLS::Cluster_Amplitude& BaseAmplitude() noexcept;
@@ -43,7 +45,7 @@ namespace PHASIC {
     size_t NumberOfLegs() noexcept { return BaseAmplitude().Legs().size(); }
 
     void UpdateMomenta(const ATOOLS::Vec4D_Vector& mom);
-    void UpdateColors(const Int_Vector& I, const Int_Vector& J);
+    void UpdateColors(const PHASIC::Int_Vector& I, const PHASIC::Int_Vector& J);
     double MandelstamS();
     double MandelstamT();
     double MandelstamU();
@@ -56,16 +58,16 @@ namespace PHASIC {
 
     // helper methods for the construction
     Cluster_Amplitude_UPM CreateAmplitudes(
-        Process_Base*,
+        PHASIC::Process_Base*,
         const std::set<ATOOLS::EWSudakov_Log_Type>& activecoeffs) const;
-    static ATOOLS::Cluster_Amplitude_UP CreateAmplitude(Process_Base*);
+    static ATOOLS::Cluster_Amplitude_UP CreateAmplitude(PHASIC::Process_Base*);
     static ATOOLS::Cluster_Amplitude_UP
     CreateSU2TransformedAmplitude(const ATOOLS::Cluster_Amplitude_UP& ampl,
                                   const Leg_Kfcode_Map_Signed&);
 
   private:
 
-    /// all amplitudes that might be needed for EW Sudakov corrections
+    /// all amplitudes that might be needed for EWSud corrections
     Cluster_Amplitude_UPM ampls;
     Cluster_Amplitude_PM all_ampls, goldstone_only_ampls;
 

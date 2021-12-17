@@ -51,6 +51,6 @@ operator()(const Args& args) const
 void ATOOLS::Getter<Base, Args, Variation_Generator>::
 PrintInfo(std::ostream& str, const size_t width) const
 { 
-  str << "Generator for EWSud(akov) variations"; 
+  str << "EWSud is implemented in arXiv:2006.14635 and arXiv:2111.13453.\n";
 }
 

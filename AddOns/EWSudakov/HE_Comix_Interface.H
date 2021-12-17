@@ -7,12 +7,12 @@ namespace MODEL {
   class EWParameters;
 }
 
-namespace PHASIC {
+namespace EWSud {
 
 class HE_Comix_Interface : public Comix_Interface {
 
 public:
-  HE_Comix_Interface(Process_Base*, const EWSudakov_Amplitudes&);
+  HE_Comix_Interface(PHASIC::Process_Base*, const EWSudakov_Amplitudes&);
   void ResetWithEWParameters(const MODEL::EWParameters&);
 
 protected:
@@ -20,12 +20,12 @@ protected:
 
 private:
   bool InitializeHighEnergyModel();
-  virtual NLOTypeStringProcessMap_Map& ProcessMap() override;
-  virtual const NLOTypeStringProcessMap_Map& ProcessMap() const override;
+  virtual PHASIC::NLOTypeStringProcessMap_Map& ProcessMap() override;
+  virtual const PHASIC::NLOTypeStringProcessMap_Map& ProcessMap() const override;
   /// we only want a single model for all interfaces (each process has its own
-  /// Sudakov K factor and HE Comix interface), hence we make it static
+  /// EWSud K factor and HE Comix interface), hence we make it static
   static std::unique_ptr<MODEL::Model_Base> p_model_he;
-  static NLOTypeStringProcessMap_Map s_apmap_he;
+  static PHASIC::NLOTypeStringProcessMap_Map s_apmap_he;
 };
 
 } // namespace PHASIC

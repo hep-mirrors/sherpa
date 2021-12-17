@@ -9,14 +9,14 @@ namespace ATOOLS {
 class Cluster_Amplitude;
 }
 
-namespace PHASIC {
+namespace EWSud {
 
 class EWSudakov_Amplitudes;
 
 class Comix_Interface {
 
 public:
-  Comix_Interface(Process_Base*, const EWSudakov_Amplitudes&);
+  Comix_Interface(PHASIC::Process_Base*, const EWSudakov_Amplitudes&);
 
   /// does not assume that a flavour-sorted Cluster Amplitude is passed,
   /// spin amplitudes for all spins are cached, and can be reset using
@@ -31,28 +31,27 @@ public:
 
   // facilities to generate a process from a given amplitude (via an
   // intermediate Process_Info)
-  Process_Base* GetProcess(const ATOOLS::Cluster_Amplitude& ampl) const;
-  Process_Info CreateProcessInfo(const ATOOLS::Cluster_Amplitude*,
-                                 const std::string& graph_path="");
-  Process_Base* InitializeProcess(const Process_Info&);
+  PHASIC::Process_Base* GetProcess(const ATOOLS::Cluster_Amplitude& ampl) const;
+  PHASIC::Process_Info CreateProcessInfo(const ATOOLS::Cluster_Amplitude*,
+                                         const std::string& graph_path="");
+  PHASIC::Process_Base* InitializeProcess(const PHASIC::Process_Info&);
 
 protected:
-  Comix_Interface(Process_Base*, const std::string& procname_suffix);
+  Comix_Interface(PHASIC::Process_Base*, const std::string& procname_suffix);
   void InitializeProcesses(const Cluster_Amplitude_PM&);
-  const Process_Base* p_proc;
+  const PHASIC::Process_Base* p_proc;
   std::string m_procname_suffix;
 
 private:
-  virtual NLOTypeStringProcessMap_Map& ProcessMap() { return s_apmap; }
-  virtual const NLOTypeStringProcessMap_Map& ProcessMap() const
-  {
-    return s_apmap;
-  }
+  virtual PHASIC::NLOTypeStringProcessMap_Map& ProcessMap()
+  { return s_apmap; }
+  virtual const PHASIC::NLOTypeStringProcessMap_Map& ProcessMap() const
+  { return s_apmap; }
   void AdaptToProcessColorScheme();
   void SetScales(ATOOLS::Cluster_Amplitude&) const;
 
   int m_differentialmode;
-  static NLOTypeStringProcessMap_Map s_apmap;
+  static PHASIC::NLOTypeStringProcessMap_Map s_apmap;
 
   /// caches for spin amplitudes and for permutations and permutation signs due
   /// to re-ordering fermions in the final state

@@ -7,7 +7,6 @@ PARTICLE_DATA:
     Mass: 80.35
   6:
     Mass: 175
-
   11:
     Yukawa: 0.000511
 

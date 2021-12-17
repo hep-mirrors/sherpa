@@ -2,14 +2,14 @@
 #define PHASIC__EWSUDAKOV__KFactor__H
 
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
-#include "AddOns/EWSudakov/Clustered_EWSudakov_Calculator.H"  // TODO: no AddOns dependency allowed
+#include "AddOns/EWSudakov/Clustered_EWSudakov_Calculator.H"
 
-namespace PHASIC {
-  class Sudakov_KFactor: public KFactor_Setter_Base {
+namespace EWSud {
+  class Sudakov_KFactor: public PHASIC::KFactor_Setter_Base {
   public:
-    Sudakov_KFactor(const KFactor_Setter_Arguments &args);
-    double KFactor(const int mode=0);
-    double KFactor(const ATOOLS::NLO_subevt &evt);
+    Sudakov_KFactor(const PHASIC::KFactor_Setter_Arguments &args);
+    double KFactor(const int mode=0) override;
+    double KFactor(const ATOOLS::NLO_subevt &evt) override;
     void CalculateAndFillWeightsMap(ATOOLS::Weights_Map&);
     void ResetWeightsMap(ATOOLS::Weights_Map&);
   private:

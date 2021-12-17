@@ -4,6 +4,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace METOOLS;
+using namespace EWSud;
 
 bool Coefficient_Checker::CheckCoeffs(
     const Coeff_Map& coeffs,
@@ -27,7 +28,7 @@ bool Coefficient_Checker::CheckCoeffs(
       const auto idx = spinampls.GetNumber(helicities);
       const auto coeffsit = coeffs.find(key);
       if (coeffsit == coeffs.end())
-        THROW(fatal_error, "EW Sudakov coeffs not found");
+        THROW(fatal_error, "EWSud coeffs not found.");
       if (!CheckCoeff(coeffsit->second[idx], helrefpair.second,
 		      helicities, coeffsit->first.first))
         res = false;

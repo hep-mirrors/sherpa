@@ -4,20 +4,15 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "AddOns/EWSudakov/EWSudakov_Calculator.H"
 
-namespace SHERPA {
-  class Resonance_Finder;
-}
-
-namespace PHASIC {
+namespace EWSud {
 
   class Clustered_EWSudakov_Calculator {
 
   public:
 
-    Clustered_EWSudakov_Calculator(Process_Base*);
+    Clustered_EWSudakov_Calculator(PHASIC::Process_Base*);
     ~Clustered_EWSudakov_Calculator();
-    ATOOLS::EWSudakov_Log_Corrections_Map
-    CorrectionsMap(ATOOLS::Vec4D_Vector);
+    ATOOLS::EWSudakov_Log_Corrections_Map CorrectionsMap(ATOOLS::Vec4D_Vector);
     const std::set<ATOOLS::EWSudakov_Log_Type>& ActiveLogTypes() const
     { return calculators.begin()->second->ActiveLogTypes(); }
 
@@ -34,7 +29,8 @@ namespace PHASIC {
     // Clustered_EWSudakov_Calculator, before it calls its calculator to do the
     // actual work; note that there might be several possible clusterings (e.g.
     // eenunu -> ZZ/WW), such that we allow for the possibility of having
-    // several calculators
+    // several calculators; the first calculator will always be the "base"
+    // calculator, i.e. the one for the completely unclustered process
     std::map<ATOOLS::Flavour_Vector, std::unique_ptr<EWSudakov_Calculator>> calculators;
 
     PHASIC::Process_Base* proc;
