@@ -271,9 +271,9 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  AddOns/Weights/Makefile \
 	  AddOns/Root/Makefile \
 	  AddOns/DiHiggsNLO/Makefile \
-	  AddOns/EWSudakov/Makefile \
-	  AddOns/EWSudakov/Tests/Makefile \
-	  AddOns/EWSudakov/Tests/run.sh \
+	  AddOns/EWSud/Makefile \
+	  AddOns/EWSud/Tests/Makefile \
+	  AddOns/EWSud/Tests/run.sh \
 	  AddOns/Makefile \
 	  Makefile ])
 AC_OUTPUT

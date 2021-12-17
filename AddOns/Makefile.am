@@ -18,7 +18,7 @@ SUBDIRS       =	\
 		Root \
 		Weights \
 		DiHiggsNLO \
-		EWSudakov 
+		EWSud
 
 nobase_dist_pkgdata_DATA = \
 			HEPEVT/HEPEVT_Interface.C \
