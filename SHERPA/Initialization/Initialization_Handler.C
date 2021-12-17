@@ -517,7 +517,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
   p_model->InitializeInteractionModel();
-  okay = okay && InitializeTheAnalyses();
   if (!CheckBeamISRConsistency()) return 0.;
   if (m_mode==eventtype::EventReader) {
     std::string infile;
@@ -536,6 +535,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
     msg_Events()<<"SHERPA will read in the events."<<std::endl
   		<<"   The full framework is not needed."<<std::endl;
+    InitializeTheAnalyses();
     InitializeTheHardDecays();
     InitializeTheBeamRemnants();
     InitializeTheIO();
@@ -543,14 +543,13 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
-  if (rpa->gen.NumberOfEvents()>0) {
-  }
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheBeamRemnants();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheAnalyses();
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheSoftCollisions();

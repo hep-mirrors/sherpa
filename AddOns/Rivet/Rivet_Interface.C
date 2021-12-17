@@ -528,7 +528,6 @@ namespace SHERPARIVET {
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm,
            m_splitcoreprocs, m_splitvariations,
-	   m_splitewsudakovcontribs,
            m_ignorebeams, m_usehepmcshort,
            m_printsummary,
            m_evtbyevtxs;
@@ -644,7 +643,6 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   m_nevt(0), m_finished(false),
   m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
   m_splitcoreprocs(false), m_splitvariations(true),
-  m_splitewsudakovcontribs(true),
   m_ignoreblobs(ignoreblobs),
   m_printsummary(true), m_evtbyevtxs(false),
   m_hepmcoutputprecision(15), m_xsoutputprecision(6)
@@ -689,7 +687,6 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
   std::map<std::string,double> wgtmap;
   double ntrials(1.);
   size_t xstype(0);
-  auto ewsudakovkfac = 1.0;
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
 #ifdef HEPMC_HAS_WORKING_NAMED_WEIGHTS // replace by final HepMC-2.07 variable
   std::vector<std::string> keys(wc.keys());
@@ -699,16 +696,6 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     // use a heuristic to detect variation weight names
     if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
       wgtmap[cur] = wc[cur];
-    }
-    else if (cur == "EWSud_KFactor") {
-      ewsudakovkfac = wc[cur];
-      wgtmap[cur] = ewsudakovkfac;
-    }
-    else if (m_splitewsudakovcontribs && cur.find("EWSud_KFactorExp")==0) {
-      wgtmap[cur] = wc[cur];
-    }
-    else if (m_splitewsudakovcontribs && cur.find("EWSud_")==0) {
-      wgtmap[cur]=1.0+wc[cur];
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
     else if (cur=="NTrials") ntrials=wc[cur];
@@ -737,16 +724,6 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
       wgtmap[cur]=wgt;
     }
-    else if (cur == "EWSud_KFactor") {
-      ewsudakovkfac = wgt;
-      wgtmap[cur] = ewsudakovkfac;
-    }
-    else if (m_splitewsudakovcontribs && cur.find("EWSud_KFactorExp")==0) {
-      wgtmap[cur] = wgt;
-    }
-    else if (m_splitewsudakovcontribs && cur.find("EWSud_")==0) {
-      wgtmap[cur]=1.0+wgt;
-    }
     else if (cur=="Weight")  wgtmap["nominal"]=wgt;
     else if (cur=="NTrials") ntrials=wgt;
     else if (cur=="Reweight_Type" && ((int)wgt)&64) xstype=1;
@@ -757,14 +734,6 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
   ntrials=wc[3];
   xstype=(((wc.size()==5&&((int)wc[4]&64))||(wc.size()==11&&((int)wc[10]&64)))?1:0);
 #endif /* HEPMC_HAS_NAMED_WEIGHTS */
-  if (!m_splitewsudakovcontribs) {
-    wgtmap["nominal"] *= ewsudakovkfac;
-  } else {
-    for (auto& kv : wgtmap) {
-      if (kv.first.find("EWSud_") == 0)
-        kv.second *= wgtmap["nominal"];
-    }
-  }
   if (msg_LevelIsDebugging()) {
     for (std::map<std::string,double>::iterator wit(wgtmap.begin());
          wit!=wgtmap.end();++wit)
@@ -920,7 +889,6 @@ bool Rivet_Interface::Init()
     m_splitSH = s["SPLITSH"].SetDefault(0).Get<int>();
     m_splitcoreprocs = s["SPLITCOREPROCS"].SetDefault(0).Get<int>();
     m_splitvariations = s["SPLITVARIATIONS"].SetDefault(1).Get<int>();
-    m_splitewsudakovcontribs = s["SPLITEWSUDAKOVCONTRIBS"].SetDefault(1).Get<bool>();
     m_usehepmcshort = s["USE_HEPMC_SHORT"].SetDefault(0).Get<int>();
     if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
       THROW(fatal_error, "Internal error.");

@@ -819,8 +819,10 @@ void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event,
 
 bool HepMC2_Interface::StartsLikeVariationName(const std::string& s)
 {
+  // TODO: After adopting the weight name conventions of the community, we can
+  // just check that the name does *not* start with AUX, USER, IRREG, etc.
   return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0 ||
-          s.find("ASS") == 0);
+          s.find("ASS") == 0 || s.find("EWSud") == 0);
 }
 
 void HepMC2_Interface::DeleteGenSubEventList()
