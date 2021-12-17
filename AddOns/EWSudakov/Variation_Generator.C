@@ -12,7 +12,6 @@ using Args = Hard_Process_Variation_Generator_Arguments;
 Variation_Generator::Variation_Generator(const Args& args):
   m_kfactor{KFactor_Setter_Arguments{"EWSud", args.p_proc}}
 {
-  PRINT_FUNC(args.p_proc);
   auto s = Settings::GetMainSettings()["EWSUDAKOV"];
   m_ewsudakov_rs = s["RS"].SetDefault(true).Get<bool>();
   if(Settings::GetMainSettings()["EWSUDAKOV_RS"].IsCustomised()){

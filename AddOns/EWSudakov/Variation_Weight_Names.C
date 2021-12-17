@@ -14,7 +14,7 @@ Variation_Weight_Names::Variation_Weight_Names(const Args& args)
 
 std::string Variation_Weight_Names::WeightMapKey() const
 {
-  return "EWSud";
+  return "EWSudakov";
 }
 
 std::string

@@ -109,7 +109,9 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_userhook(false), m_userweight(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
-  m_wgtmap(evtinfo.m_wgtmap)
+  m_wgtmap(evtinfo.m_wgtmap),
+  p_hard_process_variation_weight_names(
+      evtinfo.p_hard_process_variation_weight_names)
 {
 }
 
@@ -276,16 +278,19 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
         }
       }
 
-      // TODO: port to HepMC3 interface
-      const auto ewsudit = wgtmap.find("EWSudakov");
-      if (ewsudit != wgtmap.end()) {
-        const auto size = ewsudit->second.Size();
-        for (int i {1}; i < size; ++i) {
-          wc["EWSud_" + ewsudit->second.Name(i)] = ewsudit->second[i];
+      if (p_hard_process_variation_weight_names) {
+        for (const auto& weight_names : *p_hard_process_variation_weight_names) {
+          const auto it = wgtmap.find(weight_names->WeightMapKey());
+          if (it != wgtmap.end()) {
+            const auto size = it->second.Size();
+            // iterate weights, skipping the nominal entry
+            for (int i {1}; i < size; ++i) {
+              wc[weight_names->WeightNameForVariation(it->second.Name(i))]
+                = it->second[i] * wgtmap.Nominal();
+            }
+          }
         }
       }
-
-      // TODO: Variations should have a map "wgtmapkey"->Variation_Generator
 
       // associated contributions variations
       const auto it = wgtmap.find("ASSOCIATED_CONTRIBUTIONS");
@@ -359,6 +364,20 @@ HepMC2_Interface::HepMC2_Interface() :
     s["HEPMC_INCLUDE_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
+
+  for (auto varitem : s["VARIATIONS"].GetItems()) {
+    if (varitem.IsScalar()) {
+      const auto name = varitem.Get<std::string>();
+      if (name == "None") {
+        return;
+      } else {
+        auto* names = Hard_Process_Variation_Weight_Names_Getter_Function::
+          GetObject(name, Hard_Process_Variation_Weight_Names_Arguments{});
+        if (names)
+          m_hard_process_variation_weight_names.push_back(names);
+      }
+    }
+  }
 }
 
 HepMC2_Interface::~HepMC2_Interface()
@@ -382,6 +401,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   if (!mp) event.set_mpi(-1);
   EventInfo evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
+  evtinfo.SetHardProcessVariationWeightNames(
+      &m_hard_process_variation_weight_names);
   // when subevtlist, fill hepmc-subevtlist
   if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
@@ -566,6 +587,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
   EventInfo evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
+  evtinfo.SetHardProcessVariationWeightNames(
+      &m_hard_process_variation_weight_names);
   evtinfo.WriteTo(event);
   
   m_blob2genvertex.clear();

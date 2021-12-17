@@ -45,7 +45,7 @@ void Sudakov_KFactor::CalculateAndFillWeightsMap(Weights_Map& w)
   w["EWSudakov"]["KFactor"] = m_weight;
   w["EWSudakov"]["KFactorExp"] = m_expweight;
   for (const auto t : ActiveLogTypes()) {
-    w["EWSudakov"][ToString<EWSudakov_Log_Type>(t)] = m_corrections_map[t];
+    w["EWSudakov"][ToString<EWSudakov_Log_Type>(t)] = 1.0 + m_corrections_map[t];
   }
 }
 
@@ -54,7 +54,7 @@ void Sudakov_KFactor::ResetWeightsMap(Weights_Map& w)
   w["EWSudakov"]["KFactor"] = 1.0;
   w["EWSudakov"]["KFactorExp"] = 1.0;
   for (const auto t : ActiveLogTypes()) {
-    w["EWSudakov"][ToString<EWSudakov_Log_Type>(t)] = 0.0;
+    w["EWSudakov"][ToString<EWSudakov_Log_Type>(t)] = 1.0;
   }
 }
 
