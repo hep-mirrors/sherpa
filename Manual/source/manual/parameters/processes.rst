@@ -504,7 +504,7 @@ They can be combined, eg. @code{[EW, LO1, LO2, LO3]}.
 Please note, the associated contributions will not be
 added to the nominal event weight but instead are available to
 be included in the on-the-fly calculation of alternative event
-weights, cf. :ref:`Associated contributions variations`.
+weights, cf. :ref:`EWVirt`.
 
 
 .. _Integrator:

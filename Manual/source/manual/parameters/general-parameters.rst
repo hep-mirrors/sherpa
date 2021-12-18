@@ -420,7 +420,7 @@ The following formats are currently available:
   (http://phystev.in2p3.fr/wiki/2013:groups:tools:hepmc) of indicating
   interaction types through the GenVertex type-flag.  Multiple event
   weights can also be enabled with HepMC versions >=2.06, cf.
-  :ref:`Scale and PDF variations`. The following additional
+  :ref:`On-the-fly event weight variations`. The following additional
   customisations can be used
 
   ``HEPMC_USE_NAMED_WEIGHTS: <false|true>`` Enable filling weights
@@ -535,14 +535,19 @@ directly to gzipped files instead of plain text. The option
 :option:`--enable-gzip` must be given during installation to enable
 this feature.
 
-.. _Scale and PDF variations:
+.. _On-the-fly event weight variations:
 
-Scale and PDF variations
-========================
+On-the-fly event weight variations
+==================================
 
-Sherpa can compute alternative event weights for different scale, PDF and
-AlphaS(MZ) choices on-the-fly, resulting in alternative weights for the
-generated event. This can be evoked with the following syntax:
+Sherpa can compute alternative event weights on-the-fly, resulting in
+alternative weights for the generated event.
+An important example is the variation of QCD scales and input PDF,
+which is evoked using the following syntax:
+
+.. _VARIATIONS:
+
+.. index:: VARIATIONS
 
 .. code-block:: yaml
 
@@ -562,6 +567,9 @@ generated event. This can be evoked with the following syntax:
 The key word ``VARIATIONS`` takes a list of variations.  Each variation is
 specified by a set of scale factors, and a PDF choice (or AlphaS(MZ) choice,
 see below).
+There are also on-the-fly variations for approximate electroweak corrections,
+this is discussed in its own section, :ref:`Approximate Electroweak
+Corrections`.
 
 Scale factors can be given for the renormalisation, factorisation and for the
 merging scale.  The corresponding keys are ``MuR2``, ``MuF2`` and ``QCUT``,
@@ -689,36 +697,6 @@ To include the ME-only variations along with the full variations in the
 HepMC/Rivet output, you can use ``HEPMC_INCLUDE_ME_ONLY_VARIATIONS:
 true`` and ``RIVET: { INCLUDE_HEPMC_ME_ONLY_VARIATIONS: true }``,
 respectively.
-
-.. _Associated contributions variations:
-
-Associated contributions variations
-===================================
-
-Similar to :ref:`Scale and PDF variations`,
-Sherpa can also compute alternative event weights for different
-combinations of associated EW contributions.
-This can be evoked with the following syntax:
-
-.. code-block:: yaml
-
-   ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
-   - [EW]
-   - [EW, LO1]
-   - [EW, LO1, LO2]
-   - [EW, LO1, LO2, LO3]
-
-Each entry of ``ASSOCIATED_CONTRIBUTIONS_VARIATIONS`` defines a variation and
-the different associated contributions that should be taken into account for
-the corresponding alternative weight.
-
-The additional event weights can then be written into the event
-output.  However, this is currently only supported for
-``HepMC_GenEvent`` and ``HepMC_Short`` with versions >=2.06 and
-``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weight
-names are either ``ASS<contrib>`` or ``MULTIASS<contrib>``,
-for additive and multiplicative combinations, correspondingly.
-
 
 .. _MPI parallelization:
 
