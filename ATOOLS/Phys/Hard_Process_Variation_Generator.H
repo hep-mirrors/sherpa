@@ -26,8 +26,6 @@ namespace ATOOLS {
     virtual void GenerateAndFillWeightsMap(Weights_Map&) = 0;
     virtual void ResetWeightsMap(Weights_Map&) = 0;
 
-    virtual std::string WeightNameForVariation(const std::string&) = 0;
-
     static void ShowSyntax(const size_t i);
 
   };

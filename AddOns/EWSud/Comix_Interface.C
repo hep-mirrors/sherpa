@@ -56,8 +56,7 @@ Complex Comix_Interface::GetSpinAmplitude(ATOOLS::Cluster_Amplitude& ampl,
     // calculate leg permutation (in particular by calling SortFlavours above)
     for (const auto* leg : campl->Legs()) {
       if (IdCount(leg->Id()) > 1)
-        // TODO: handle multi-ID legs
-        THROW(not_implemented, "Clustering not supported yet.");
+        THROW(not_implemented, "EWSud does not support multi ID legs.");
       m_permutations[&ampl].push_back(ID(leg->Id()).front());
     }
     pit = m_permutations.find(&ampl);
@@ -141,7 +140,6 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
   }
 
   // set external particles
-  // TODO: do we need the parton -> jet transformation?
   for (size_t i{0}; i < ampl->NIn(); ++i) {
     Flavour fl(ampl->Leg(i)->Flav().Bar());
     pi.m_ii.m_ps.push_back(Subprocess_Info(fl, "", ""));

@@ -18,8 +18,6 @@ namespace EWSud {
 
     void ResetWeightsMap(ATOOLS::Weights_Map&) override;
 
-    std::string WeightNameForVariation(const std::string&) override;
-
   private:
 
     Sudakov_KFactor m_kfactor;

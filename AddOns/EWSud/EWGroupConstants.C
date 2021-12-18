@@ -195,7 +195,7 @@ Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
     return {{signed_kf, -sign * IZLefthandedLepton}};
   } else if (signed_kf == kf_chi) {
     return {{kf_h0, {0.0, -1.0 / (2 * m_cw * m_sw)}}};
-  } else if (signed_kf == kf_h0) { //TODO double check this with ENO
+  } else if (signed_kf == kf_h0) {
     return {{kf_chi, {0.0, 1.0 / (2 * m_cw * m_sw)}}};
   } else if (flav.IsLepton()) {
     if (pol == 0) {

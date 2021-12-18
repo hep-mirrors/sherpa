@@ -33,13 +33,6 @@ void Variation_Generator::ResetWeightsMap(Weights_Map& wgtmap)
   m_kfactor.ResetWeightsMap(wgtmap);
 }
 
-std::string
-Variation_Generator::WeightNameForVariation(const std::string& varname)
-{
-  // TODO: implement
-  return "";
-}
-
 DECLARE_GETTER(Variation_Generator, "EWSud", Base, Args);
 
 Base* ATOOLS::Getter<Base, Args, Variation_Generator>::
