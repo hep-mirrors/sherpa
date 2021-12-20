@@ -26,9 +26,10 @@ MODEL::Model_Base *HIGGS::Higgs_Tree::s_model=NULL;
 Higgs_Tree::Higgs_Tree(const Process_Info &pi,
 		       const Flavour_Vector &flavs,
 		       int mode,int io,int spin,
-		       double kg,double kq):
+		       double kg,double kq,bool orderqcd_overestimate):
   Tree_ME2_Base(pi,flavs), m_int(mode), m_io(io),
-  m_spin(spin), m_kg(kg), m_kq(kq)
+  m_spin(spin), m_kg(kg), m_kq(kq),
+  m_orderqcd_overestimate(orderqcd_overestimate)
 {
   m_mh=Flavour(kf_h0).Mass();
   m_gh=Flavour(kf_h0).Width();
@@ -406,6 +407,8 @@ int Higgs_Tree::OrderQCD(const int &id)
     // mixed case, can not return a well-defined value; for reweighting you
     // have to generate the contributions separately, in particular
     // interference terms are not supported yet
+    if (m_orderqcd_overestimate)
+      return 3;
     return 99;
   }
 }
@@ -473,6 +476,8 @@ operator()(const Process_Info &pi) const
     int spin=read.GetValue<int>("HIGGS_INTERFERENCE_SPIN",0);
     double kg=read.GetValue<double>("HIGGS_INTERFERENCE_KAPPAG",1.0);
     double kq=read.GetValue<double>("HIGGS_INTERFERENCE_KAPPAQ",1.0);
+    bool orderqcd_overestimate
+      = read.GetValue<int>("HIGGS_INTERFERENCE_OQCD_OVERESTIMATE",0);
     Flavour_Vector fl(pi.ExtractFlavours());
     if (fl.size()==4) {
       if (fl[2].IsPhoton() && fl[3].IsPhoton()) {
@@ -480,7 +485,7 @@ operator()(const Process_Info &pi) const
 	    (((mode&4)||(spin!=0)) &&
 	     fl[0].IsQuark() && fl[1]==fl[0].Bar())) {
 	  msg_Info()<<"!";
-	  return new Higgs_Tree(pi,fl,mode,io,spin,kg,kq);
+	  return new Higgs_Tree(pi,fl,mode,io,spin,kg,kq,orderqcd_overestimate);
 	}
       }
     }
@@ -491,7 +496,8 @@ operator()(const Process_Info &pi) const
 	  (fl[0].IsQuark() && fl[1].IsGluon() && fl[4]==fl[0]) ||
 	  (fl[0].IsQuark() && fl[1]==fl[0].Bar() && fl[4].IsGluon())) {
 	msg_Info()<<"!";
-	return new Higgs_Tree(pi,fl,mode,io,spin,kg,kq);
+	return new Higgs_Tree(pi,fl,mode,io,spin,kg,kq,
+            orderqcd_overestimate);
       }
     }
   }

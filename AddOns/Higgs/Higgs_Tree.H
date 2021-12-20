@@ -26,12 +26,19 @@ namespace HIGGS {
     AMEGIC::Basic_Sfuncs *p_bs;
     std::vector<int>      m_b;
 
+    // When background and signal is mixed, the QCD coupling order is undefined
+    // (some terms are of order 2, other of order 3), so generally we return a
+    // nonsense value of 99 in OrderQCD. When this is true, the overestimate of
+    // 3 will be returned instead.
+    bool m_orderqcd_overestimate;
+
   public:
 
     Higgs_Tree(const PHASIC::Process_Info& pi,
 	       const ATOOLS::Flavour_Vector& flavs,
 	       int mode,int io,int spin,
-	       double kg,double kq);
+	       double kg,double kq,
+               bool orderqcd_overestimate);
 
     ~Higgs_Tree();
 
