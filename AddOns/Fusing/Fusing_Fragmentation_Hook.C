@@ -28,7 +28,6 @@ class Fusing_Fragmentation_Hook : public Userhook_Base {
 
 private:
   MODEL::Running_AlphaS *p_as;
-  Blob_List * p_bl;
   Sherpa* p_sherpa;
   size_t m_tops_in_proc;
   bool m_nlo, m_check_ho;
@@ -64,16 +63,15 @@ public:
   ~Fusing_Fragmentation_Hook() {}
 
   ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs/*, double &weight*/) {
-    p_bl = blobs;
+    DEBUG_FUNC(blobs->size());
 
-    ATOOLS::String_BlobDataBase_Map  bdmap = p_bl->FindFirst(ATOOLS::btp::Shower)->GetData();
-
+    auto bdmap = blobs->FindFirst(ATOOLS::btp::Shower)->GetData();
     auto search = bdmap.find("AllAmplitudes");
     if (search==bdmap.end()) {
-      THROW(fatal_error,"No matching amplitude found in blob. This algorithm works only with rel-2-2-7 or later!");
+      THROW(fatal_error,"No matching amplitude found in blob.");
     }
-
     ATOOLS::Cluster_Amplitude * ampl = search->second->Get<ATOOLS::Cluster_Amplitude*>();
+
     bool veto   = true;
 
     //find first amplitude with a bb-pair
@@ -92,39 +90,33 @@ public:
     // redo veto for certain configurations (see code below)
     if (veto && m_check_ho) {
       if (CheckHigherOrder(ampl)){
-        msg_Debugging() << "skip Fusing Veto, configuration is of higher order.";
+        DEBUG_INFO("skip Fusing Veto, configuration is of higher order.");
         veto=false;
       }
     }
 
-    bool retval=!veto;
-    //retval=false: veto Event
-    //retval=true:  keep Event
+    if (veto) DEBUG_INFO("veto configuration.");
 
-    // TODO fusing: check with Eno how to store these weights
+    if (m_store) {
+      // if m_store: store additional weight (zero) in bloblist and skip veto
+      // TODO fusing: check with Eno how to store these weights
+      auto bdmap_signal = blobs->FindFirst(btp::Signal_Process)->GetData();
+      auto search_weight = bdmap_signal.find("Weight");
+      if (search_weight==bdmap_signal.end()) {
+        THROW(fatal_error,"No Weight found in signal blob!");
+      }
+      double new_weight = search_weight->second->Get<double>();
+      if (veto) new_weight=0;
 
-    auto search_weight = bdmap.find("Weight");
-    if (search_weight==bdmap.end()) {
-      THROW(fatal_error,"No Weight found in singnal blob!");
+      blobs->FindFirst(ATOOLS::btp::Signal_Process)->AddData("UserHook",new ATOOLS::Blob_Data<double>(new_weight));
+      return Return_Value::Nothing;
     }
-    double weight_bl = search_weight->second->Get<double>();
-
-    if (retval==false){
-      msg_Debugging() << "false, veto configuration.  \n";
+    else {
+      if (veto) return Return_Value::New_Event;
+      else return Return_Value::Nothing;
     }
-
-    // if not storing weights:  do either Veto or not
-    if (!m_store) {
-      if (retval) return Return_Value::Nothing;
-      else return Return_Value::New_Event;
-    }
-    // if m_store: store additional weight(zero) in bloblist and slip veto
-    double new_weight = weight_bl;
-    if (retval==false) new_weight=0;
-
-    p_bl->FindFirst(ATOOLS::btp::Signal_Process)->AddData("UserHook",new ATOOLS::Blob_Data<double>(new_weight));
-    return Return_Value::Nothing;
   }
+
 
   ///////////////////////   helper functions Veto
 
@@ -191,7 +183,7 @@ public:
   bool CheckHigherOrder (ATOOLS::Cluster_Amplitude *ampl){
     /*check for configurations as bb->ttbb or bb->bb which should not be vetoed,
      * since this is not part of 4F ttbb.
-     implemantation: redo veto, if bb-> x bb (j) and in x is no particle of the 93 container.
+     implementation: redo veto, if bb-> x bb (j) and in x is no particle of the 93 container.
 
      returns true, if such a config is found
     */
