@@ -611,10 +611,7 @@ Complex Calculator::TransformedAmplitudeValue(
     const Comix_Interface* interface)
 {
   auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
-  /// TODO: Make the following a bit prettier. At the moment
-  /// this is simply a flag to catch that the momentum
-  /// stretcher has failed. May want to have a enum
-  if (transformedampl.Flag() & (1 << 4)) {
+  if (transformedampl.Flag() == m_ampls.StretcherFailFlag) {
     ++m_numonshellwarning;
     return 0.0;
   }

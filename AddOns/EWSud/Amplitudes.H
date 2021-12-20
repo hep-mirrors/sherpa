@@ -64,6 +64,8 @@ namespace EWSud {
     CreateSU2TransformedAmplitude(const ATOOLS::Cluster_Amplitude_UP& ampl,
                                   const Leg_Kfcode_Map_Signed&);
 
+    size_t StretcherFailFlag = (1<<4);
+
   private:
 
     /// all amplitudes that might be needed for EWSud corrections

@@ -100,7 +100,7 @@ void Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
     }
     const auto did_stretch = stretcher.StretchMomenta(particles, new_moms);
     if (!did_stretch) {
-      ampl.second->SetFlag(1 << 4);
+      ampl.second->SetFlag(StretcherFailFlag);
       continue;
     }
     for (int j {0}; j < NumberOfLegs(); ++j) {
