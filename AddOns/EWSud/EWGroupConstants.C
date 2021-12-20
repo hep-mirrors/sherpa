@@ -63,7 +63,6 @@ double EWGroupConstants::dsw2sw2(const double t2) const
 
 double EWGroupConstants::dalphaalpha(const double t2) const
 {
-  // TODO: check factor of 2
   return -DiagonalBew(ATOOLS::Flavour(kf_photon),0)*log(t2/m_mw2)/4./M_PI
 	      + 2.*deltaZem();
 }
@@ -87,7 +86,6 @@ double EWGroupConstants::deltaZem() const
 double EWGroupConstants::dmw2mw2(const double t2) const
 {
   /// Eq. 5.4
-  /// TODO: re-check this Cewphi (second line)
   return (-(DiagonalBew(Flavour(kf_Wplus),0)-
 	    4.*DiagonalCew(Flavour(kf_h0),0))
 	  - 3.*sqr(m_mt)/2./m_sw2/m_mw2)*log(t2/m_mw2)/4./M_PI;
@@ -96,7 +94,6 @@ double EWGroupConstants::dmw2mw2(const double t2) const
 double EWGroupConstants::dmz2mz2(const double t2) const
 {
   /// Eq. 5.4
-  /// TODO: re-check this Cewphi (second line)
   return (-(DiagonalBew(Flavour(kf_Z),0)-
 	    4.*DiagonalCew(Flavour(kf_h0),0))
 	  - 3.*sqr(m_mt)/2./m_sw2/m_mw2)*log(t2/m_mw2)/4./M_PI;
