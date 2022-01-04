@@ -638,7 +638,7 @@ Complex Calculator::TransformedAmplitudeValue(
 }
 
 
-namespace PHASIC {
+namespace EWSud {
 
   std::ostream& operator<<(std::ostream& os, const Coeff_Map_Key& k)
   {
