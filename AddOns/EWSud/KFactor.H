@@ -15,10 +15,10 @@ namespace EWSud {
   private:
     void Calculate();
     void Validate();
-    const std::set<ATOOLS::EWSudakov_Log_Type>& ActiveLogTypes() const
+    const std::set<EWSudakov_Log_Type>& ActiveLogTypes() const
     { return m_calc.ActiveLogTypes(); }
     Clustered_Calculator m_calc;
-    ATOOLS::EWSudakov_Log_Corrections_Map m_corrections_map;
+    EWSudakov_Log_Corrections_Map m_corrections_map;
     double m_maxweight;
     double m_expweight;
   };

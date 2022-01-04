@@ -12,8 +12,8 @@ namespace EWSud {
 
     Clustered_Calculator(PHASIC::Process_Base*);
     ~Clustered_Calculator();
-    ATOOLS::EWSudakov_Log_Corrections_Map CorrectionsMap(ATOOLS::Vec4D_Vector);
-    const std::set<ATOOLS::EWSudakov_Log_Type>& ActiveLogTypes() const
+    EWSudakov_Log_Corrections_Map CorrectionsMap(ATOOLS::Vec4D_Vector);
+    const std::set<EWSudakov_Log_Type>& ActiveLogTypes() const
     { return calculators.begin()->second->ActiveLogTypes(); }
 
   private:

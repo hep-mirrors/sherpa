@@ -33,7 +33,7 @@ namespace EWSud {
 
   public:
     Amplitudes(PHASIC::Process_Base*,
-               const std::set<ATOOLS::EWSudakov_Log_Type>& _activecoeffs);
+               const std::set<EWSudakov_Log_Type>& _activecoeffs);
     ~Amplitudes();
     ATOOLS::Cluster_Amplitude& BaseAmplitude() noexcept;
     ATOOLS::Cluster_Amplitude&
@@ -58,7 +58,7 @@ namespace EWSud {
     // helper methods for the construction
     Cluster_Amplitude_UPM CreateAmplitudes(
         PHASIC::Process_Base*,
-        const std::set<ATOOLS::EWSudakov_Log_Type>& activecoeffs) const;
+        const std::set<EWSudakov_Log_Type>& activecoeffs) const;
     static ATOOLS::Cluster_Amplitude_UP CreateAmplitude(PHASIC::Process_Base*);
     static ATOOLS::Cluster_Amplitude_UP
     CreateSU2TransformedAmplitude(const ATOOLS::Cluster_Amplitude_UP& ampl,

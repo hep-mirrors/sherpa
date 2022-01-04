@@ -15,7 +15,7 @@ namespace EWSud {
 
     Coefficient_Checker(
         const std::string& _procname,
-        const std::set<ATOOLS::EWSudakov_Log_Type>& _activecoeffs)
+        const std::set<EWSudakov_Log_Type>& _activecoeffs)
         : procname {_procname}, activecoeffs {_activecoeffs}
     { }
 
@@ -26,24 +26,24 @@ namespace EWSud {
     // check coefficients against a ref value when available
     bool CheckCoeffs(const Coeff_Map& coeffs,
                      const METOOLS::Spin_Amplitudes&,
-                     const ATOOLS::Mandelstam_Variables&,
+                     const Mandelstam_Variables&,
                      const EWGroupConstants&);
 
   private:
 
     using HelicityCoeffMap = std::map<std::vector<int>, double>;
     std::map<Coeff_Map_Key, HelicityCoeffMap>
-    ReferenceCoeffs(const ATOOLS::Mandelstam_Variables&, const EWGroupConstants&);
+    ReferenceCoeffs(const Mandelstam_Variables&, const EWGroupConstants&);
 
     const std::string procname;
-    const std::set<ATOOLS::EWSudakov_Log_Type> activecoeffs;
+    const std::set<EWSudakov_Log_Type> activecoeffs;
 
     std::string logfilename;
 
     bool CheckCoeff(const Coeff_Value&,
                     Complex ref,
                     const std::vector<int>& helicities,
-		    const ATOOLS::EWSudakov_Log_Type ewlt) const;
+		    const EWSudakov_Log_Type ewlt) const;
 
   };
 

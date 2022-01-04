@@ -3,7 +3,6 @@
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Weights.H"
-#include "ATOOLS/Phys/EWSudakov_Info.H"
 #include <ostream>
 #include <vector>
 

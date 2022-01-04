@@ -2,7 +2,6 @@
 #define EWSudakov__Calculator_H
 
 #include "ATOOLS/Math/Histogram.H"
-#include "ATOOLS/Phys/EWSudakov_Info.H"
 #include "AddOns/EWSud/HE_Comix_Interface.H"
 #include "AddOns/EWSud/EWGroupConstants.H"
 #include "AddOns/EWSud/Amplitudes.H"
@@ -12,11 +11,11 @@
 
 namespace EWSud {
 
-  using Coeff_Map_Key = std::pair<ATOOLS::EWSudakov_Log_Type, Leg_Index_Set>;
+  using Coeff_Map_Key = std::pair<EWSudakov_Log_Type, Leg_Index_Set>;
   using Coeff_Value = Complex;
   using Coeff_Map_Value = std::vector<Coeff_Value>;
   using Coeff_Map = std::map<Coeff_Map_Key, Coeff_Map_Value>;
-  using HighEnergySchemes = ATOOLS::EWSudakovHighEnergySchemes;
+  using HighEnergySchemes = EWSudakovHighEnergySchemes;
 
   std::ostream& operator<<(std::ostream& os, const Coeff_Map_Key&);
 
@@ -26,9 +25,9 @@ namespace EWSud {
 
     Calculator(PHASIC::Process_Base*);
     ~Calculator();
-    ATOOLS::EWSudakov_Log_Corrections_Map
+    EWSudakov_Log_Corrections_Map
     CorrectionsMap(const ATOOLS::Vec4D_Vector& mom);
-    const std::set<ATOOLS::EWSudakov_Log_Type>& ActiveLogTypes() const
+    const std::set<EWSudakov_Log_Type>& ActiveLogTypes() const
     { return m_activelogtypes; }
     const EWGroupConstants& GetEWGroupConstants() const {
       return m_ewgroupconsts;
@@ -67,7 +66,7 @@ namespace EWSud {
     /// calculate l_PR(s) coefficients
     Coeff_Value lsPRCoeff();
 
-    ATOOLS::EWSudakov_Log_Corrections_Map CorrectionsMap();
+    EWSudakov_Log_Corrections_Map CorrectionsMap();
     /// Set High Energy limit scheme from string
     void SetHighEnergyScheme(const std::string&);
     /// calculate transformed amplitude value
@@ -76,7 +75,7 @@ namespace EWSud {
                                       const Comix_Interface* interface=nullptr);
 
     PHASIC::Process_Base* p_proc;
-    std::set<ATOOLS::EWSudakov_Log_Type> m_activelogtypes;
+    std::set<EWSudakov_Log_Type> m_activelogtypes;
     bool m_c_coeff_ignores_vector_bosons;
     Amplitudes m_ampls;
 

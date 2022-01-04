@@ -20,15 +20,15 @@ namespace EWSud {
 
     // check coefficients against a ref value when available
     bool CheckKFactor(double kfac,
-                      const ATOOLS::Mandelstam_Variables&,
+                      const Mandelstam_Variables&,
                       const EWGroupConstants&);
 
   private:
-    double ReferenceKFactor(const ATOOLS::Mandelstam_Variables&,
+    double ReferenceKFactor(const Mandelstam_Variables&,
                             const EWGroupConstants&);
 
     const std::string procname;
-    const std::set<ATOOLS::EWSudakov_Log_Type> activecoeffs;
+    const std::set<EWSudakov_Log_Type> activecoeffs;
 
     std::string logfilename;
 
