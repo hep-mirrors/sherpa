@@ -203,10 +203,8 @@ void Comix_Interface::AdaptToProcessColorScheme()
 
 void Comix_Interface::SetScales(ATOOLS::Cluster_Amplitude& ampl) const
 {
-  // TODO: can't we set these scales to the values used for the original
-  // calculation (pre-Kfactor)? Is there any reason we set them to Ecms? Does
-  // it matter?
-  const auto scale2 = sqr(rpa->gen.Ecms());
+  // Use (partonic) centre-of-mass energy as in arXiv:hep-ph/0010201.
+  const auto scale2 = (ampl.Mom(0) + ampl.Mom(1)).Abs2();
   ampl.SetMuR2(scale2);
   ampl.SetMuF2(scale2);
   ampl.SetMuQ2(scale2);
