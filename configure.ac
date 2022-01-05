@@ -259,6 +259,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  AddOns/Higgs/Makefile \
 	  AddOns/BlackHat/Makefile \
 	  AddOns/OpenLoops/Makefile \
+      AddOns/Recola/Makefile \
 	  AddOns/GoSam/Makefile \
 	  AddOns/MadLoop/Makefile \
           AddOns/MCFM/Makefile \

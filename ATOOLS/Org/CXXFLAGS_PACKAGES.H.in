@@ -67,6 +67,9 @@
 /* MadLoop installation prefix */
 #undef MADLOOP_PREFIX
 
+/* Recola installation prefix */
+#undef RECOLA_PREFIX
+
 /* using MCFM */
 #undef USING__MCFM
 
