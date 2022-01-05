@@ -77,12 +77,12 @@ namespace MODEL{
       s_kftable[kf_chi]       = new Particle_Info(kf_chi,91.1876,2.4952,0,0,0,-1,1,0,1,"chi","chi","\\chi","\\chi");
       ReadParticleData();
     }
-    bool ModelInit(const PDF::ISR_Handler_Map& isr)
+    bool ModelInit()
     {
       FixEWParameters();  
       FixCKM();
       Settings& s = Settings::GetMainSettings();
-      SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+      SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
       SetRunningFermionMasses();
       SetRunningBosonMasses();
       ATOOLS::OutputParticles(msg->Info());

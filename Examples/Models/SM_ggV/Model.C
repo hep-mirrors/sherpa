@@ -20,7 +20,7 @@ namespace MODEL {
   public :
 
     SM_GGV();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
+    bool ModelInit();
     void InitVertices();
 
   };
@@ -116,12 +116,12 @@ void SM_GGV::ParticleInit()
   ReadParticleData();
 }
 
-bool SM_GGV::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool SM_GGV::ModelInit()
 {
   FixEWParameters();
   FixCKM();
   Settings& s = Settings::GetMainSettings();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
   SetRunningFermionMasses();
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());

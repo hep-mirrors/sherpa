@@ -15,7 +15,7 @@ namespace UFO{
 
     UFO_Model(bool elementary);
     ~UFO_Model();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
+    bool ModelInit();
     void SetSMMass(const kf_code &kf,const double &m);
     void SetSMMasses();
     void SetMassiveFlags();

@@ -89,6 +89,8 @@ namespace MODEL {
 
     tscmap m_cplmap;   
 
+    const PDF::ISR_Handler_Map* p_isrhandlermap;
+
     virtual void InitVertices() = 0;
 
     void RotateVertices();
@@ -102,7 +104,8 @@ namespace MODEL {
     void AddStandardContainers();
     void InitMEInfo();
 
-    // to be called in ModelInit
+    // Model initialization
+    virtual bool ModelInit() = 0;
     void SetAlphaQED(const double& aqed_def);
     void SetAlphaQEDByScale(const double& scale2);
     void SetAlphaQEDByInput(const std::string& tag);
@@ -117,7 +120,10 @@ namespace MODEL {
     Model_Base(bool);
     virtual ~Model_Base();
 
-    virtual bool ModelInit(const PDF::ISR_Handler_Map& isr) = 0;
+    bool ModelInit(const PDF::ISR_Handler_Map& isr) {
+      p_isrhandlermap = &isr;
+      return ModelInit();
+    }
 
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();
@@ -166,6 +172,8 @@ namespace MODEL {
     virtual size_t IndexOfOrderKey(const std::string&) const;
 
     virtual void ResetVerticesWithEWParameters(const EWParameters&) {};
+
+    const PDF::ISR_Handler_Map& ISRHandlerMap() const { return *p_isrhandlermap; }
   };
 
   extern Model_Base *s_model;

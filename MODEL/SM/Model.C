@@ -22,7 +22,7 @@ namespace MODEL {
   public :
 
     Standard_Model();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
+    bool ModelInit();
     void InitVertices();
 
   };
@@ -118,12 +118,12 @@ void Standard_Model::ParticleInit()
   ReadParticleData();
 }
 
-bool Standard_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool Standard_Model::ModelInit()
 {
   FixEWParameters();  
   FixCKM();
   Settings& s = Settings::GetMainSettings();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
   SetRunningFermionMasses();
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());

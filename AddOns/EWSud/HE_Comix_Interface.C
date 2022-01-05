@@ -46,38 +46,26 @@ bool HE_Comix_Interface::InitializeHighEnergyModel()
     did_initialize = true;
   }
 
-  // TODO: probably we want to suppress this output at some point, since most
+  // Suppress model initialization output, since most
   // (all?) of it is just duplicating the "normal" model init output
-  msg_Out() << '\n';
-  PRINT_FUNC("");
+  auto level = msg->Level();
+  msg->SetLevel(0);
 
   // create model
   Settings& s = Settings::GetMainSettings();
   std::string name(s["MODEL"].Get<std::string>());
   p_model_he.reset(Model_Base::Model_Getter_Function::GetObject(
       name, Model_Arguments(true)));
-
-  // TODO: re-consider if this needs to be re-enabled; but probably not, since
-  // we only ever use SMGold in conjunction with the EW Sudakovs; but then this
-  // should be enforced and made more explicit here
-  //if (p_model_he==NULL) {
-  //  if (!s_loader->LoadLibrary("Sherpa"+name))
-  //    THROW(missing_module,"Cannot load model library Sherpa"+name+".");
-  //  p_model_he=Model_Base::Model_Getter_Function::
-  //    GetObject(name, Model_Arguments(true));
-  //}
-
-  if (p_model_he == nullptr)
-    THROW(not_implemented, "Model not implemented");
+  if (!p_model_he)
+    THROW(missing_module,"Cannot load model library Sherpa"+name+".");
 
   // init model
-  // TODO: devise another way to get the ISR handlers and undo making the
-  // Initialization_Handler a global object; the best way might be to store the
-  // necessary information to create a copy within model, including the ISR
-  // handlers used to initialize it
-  if (!p_model_he->ModelInit(*SHERPA::s_inithandler->GetISRHandlers()))
+  if (!p_model_he->ModelInit(s_model->ISRHandlerMap()))
     THROW(critical_error, "Model cannot be initialized");
   p_model_he->InitializeInteractionModel();
+
+  msg->SetLevel(level);
+
   return true;
 }
 
