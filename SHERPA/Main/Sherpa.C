@@ -301,8 +301,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
       }
       msg_Info()<<" left ) -> ETA: "<<rpa->gen.Timer().
         StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
-      double xs(GetEventHandler()->TotalXSMPI());
-      double err(GetEventHandler()->TotalErrMPI());
+      double xs(GetEventHandler()->TotalXSMPI().Nominal());
+      double err(GetEventHandler()->TotalErrMPI().Nominal());
       if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
       msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
 		<<((int(err/xs*10000))/100.0)<<" % )  ";
@@ -340,12 +340,12 @@ void Sherpa::FillHepMCEvent(HepMC3::GenEvent& event)
 
 double Sherpa::TotalXS()
 {
-  return p_eventhandler->TotalXS();
+  return p_eventhandler->TotalXS().Nominal();
 }
 
 double Sherpa::TotalErr()
 {
-  return p_eventhandler->TotalErr();
+  return p_eventhandler->TotalErr().Nominal();
 }
 
 std::string Sherpa::PDFInfo()
