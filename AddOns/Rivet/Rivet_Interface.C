@@ -281,10 +281,10 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   // leave this, although will be overwritten later
 #ifndef  RIVET_ENABLE_HEPMC_3
   HepMC::GenCrossSection xs;
-  xs.set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+  xs.set_cross_section(p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
 #else
   std::shared_ptr<HepMC3::GenCrossSection> xs=std::make_shared<HepMC3::GenCrossSection>();
-  xs->set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+  xs->set_cross_section(p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
 #endif
   event.set_cross_section(xs);
   for (size_t i(0);i<subevents.size();++i) {
@@ -944,7 +944,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 #ifdef HEPMC_HAS_CROSS_SECTION
   // leave this, although will be overwritten later
   HepMC::GenCrossSection xs;
-  xs.set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+  xs.set_cross_section(p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
   event.set_cross_section(xs);
   for (size_t i(0);i<subevents.size();++i) {
     subevents[i]->set_cross_section(xs);

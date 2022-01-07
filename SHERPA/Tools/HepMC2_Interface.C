@@ -239,41 +239,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
 
       // QCD variations
       for (const auto& source : m_variationsources) {
-        for (const auto type : s_variations->ManagedVariationTypes()) {
-          // calculate contributions
-          Weights weights = Weights {type};
-          double relfac {1.0};
-          if (source == ATOOLS::Variations_Source::all) {
-            weights *= wgtmap.Combine(type);
-            relfac = wgtmap.NominalIgnoringVariationType(type);
-          } else {
-            // calculate nominal, relfac and weights ignoring shower weights
-            std::unordered_set<std::string> shower_keys {
-                "PS", "PS_QCUT", "MC@NLO_PS", "MC@NLO_QCUT"};
-            for (const auto& v : wgtmap) {
-              if (shower_keys.find(v.first) != shower_keys.end())
-                continue;
-              if (v.second.Type() == type) {
-                weights *= v.second;
-              } else {
-                relfac *= v.second.Nominal();
-              }
-            }
-            relfac *= wgtmap.BaseWeight();
-          }
-          // do remaining combination and output resulting weights
-          size_t num_vars = weights.Size() - 1;
-          for (size_t i(0); i < num_vars; ++i) {
-            const std::string varname {weights.Name(i + 1)};
-            const std::string typevarname {
-                (source == ATOOLS::Variations_Source::main)
-                    ? "ME_ONLY_" + varname
-                    : varname};
-            wc[typevarname] = weights.Variation(i) * relfac;
-            msg_Debugging() << typevarname << " (" << typevarname
-                            << "): " << weights.Variation(i) * relfac << '\n';
-          }
-        }
+        wgtmap.FillManagedVariations(wc, source);
       }
 
       // associated contributions variations

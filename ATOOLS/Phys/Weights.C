@@ -372,6 +372,12 @@ Weights_Map& Weights_Map::operator*=(const Weights_Map& rhs)
   return *this;
 }
 
+Weights_Map ATOOLS::operator*(Weights_Map lhs, const Weights_Map& rhs)
+{
+  lhs *= rhs;
+  return lhs;
+}
+
 Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
 {
   assert(!is_absolute);
@@ -411,6 +417,18 @@ Weights_Map& Weights_Map::operator-=(const Weights_Map& rhs)
   Weights_Map negative_rhs = rhs;
   negative_rhs.base_weight = -negative_rhs.base_weight;
   return operator+=(negative_rhs);
+}
+
+Weights_Map ATOOLS::operator+(Weights_Map lhs, const Weights_Map& rhs)
+{
+  lhs += rhs;
+  return lhs;
+}
+
+Weights_Map ATOOLS::operator-(Weights_Map lhs, const Weights_Map& rhs)
+{
+  lhs -= rhs;
+  return lhs;
 }
 
 void Weights_Map::MakeRelative()
@@ -508,6 +526,29 @@ void Weights_Map::MakeAbsolute()
   is_absolute = true;
 }
 
+#ifdef USING__MPI
+void Weights_Map::MPI_Allreduce()
+{
+  int size=mpi->Size();
+  if (size>1) {
+    assert(!is_absolute);
+
+    if (empty()) {
+      mpi->Allreduce(&base_weight, 1, MPI_DOUBLE, MPI_SUM);
+      mpi->Allreduce(&nominals_prefactor, 1, MPI_DOUBLE, MPI_PROD);
+      return;
+    }
+
+    MakeAbsolute();
+    for (auto& kv : *this) {
+      const size_t n_wgts = kv.second.Size();
+      mpi->Allreduce(&kv.second[0], n_wgts, MPI_DOUBLE, MPI_SUM);
+    }
+    MakeRelative();
+  }
+}
+#endif
+
 double Weights_Map::NominalIgnoringPrefactor() const
 {
   if (is_absolute) {
@@ -538,6 +579,20 @@ std::ostream& ATOOLS::operator<<(std::ostream& out, const Weights_Map& w)
 }
 
 namespace ATOOLS {
+
+  Weights_Map sqrt(const Weights_Map& w)
+  {
+    auto root = w;
+    root.base_weight = std::sqrt(root.base_weight);
+    root.nominals_prefactor = std::sqrt(root.nominals_prefactor);
+    for (auto& kv : root) {
+      const size_t n_wgts = kv.second.Size();
+      for (size_t i {0}; i < n_wgts; ++i) {
+        kv.second[i] = std::sqrt(kv.second[i]);
+      }
+    }
+    return root;
+  }
 
   template <> Blob_Data<Weights_Map>::~Blob_Data() {}
   template class Blob_Data<Weights_Map>;
