@@ -234,7 +234,7 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
     }
     else {
       // if using minimal weights still dump event type if RS need correls
-      if (p_subevtlist) wc["Reweight_Type"]=64;
+      wc["Reweight_Type"] = p_subevtlist ? 64 : 0;
     }
     // fill weight variations into weight container
     if (m_wgtmap.HasVariations()) {
