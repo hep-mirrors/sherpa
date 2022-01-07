@@ -135,7 +135,7 @@ namespace ATOOLS {
     // convenience method to fill e.g. an ordinary map with QCD variations
     template <typename T>
     void FillManagedVariations(T&,
-            Variations_Source source=ATOOLS::Variations_Source::all);
+            Variations_Source source=ATOOLS::Variations_Source::all) const;
 
     // calculate nominal values, either including all entries, for a single
     // entry `k`, or excluding those that have a certain variation type
@@ -289,7 +289,7 @@ namespace ATOOLS {
       std::function<double(double, size_t varindex, Qcut_Variation_Params*)>);
 
   template <typename T>
-  void Weights_Map::FillManagedVariations(T& map, Variations_Source source)
+  void Weights_Map::FillManagedVariations(T& map, Variations_Source source) const
   {
     DEBUG_FUNC(source);
     for (const auto type : s_variations->ManagedVariationTypes()) {

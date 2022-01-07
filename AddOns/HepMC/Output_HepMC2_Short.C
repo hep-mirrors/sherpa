@@ -67,10 +67,11 @@ Output_HepMC2_Short::~Output_HepMC2_Short()
   delete p_event;
 }
 
-void Output_HepMC2_Short::SetXS(const double& xs, const double& xserr)
+void Output_HepMC2_Short::SetXS(const ATOOLS::Weights_Map& xs,
+			        const ATOOLS::Weights_Map& xserr)
 {
 #ifdef HEPMC_HAS_CROSS_SECTION
-  p_xs->set_cross_section(xs, xserr);
+  p_xs->set_cross_section(xs.Nominal(), xserr.Nominal());
 #endif
 }
 

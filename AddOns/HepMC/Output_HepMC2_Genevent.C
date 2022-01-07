@@ -65,10 +65,11 @@ Output_HepMC2_Genevent::~Output_HepMC2_Genevent()
   m_outstream.close();
 }
 
-void Output_HepMC2_Genevent::SetXS(const double& xs, const double& xserr)
+void Output_HepMC2_Genevent::SetXS(const ATOOLS::Weights_Map& xs,
+				   const ATOOLS::Weights_Map& xserr)
 {
 #ifdef HEPMC_HAS_CROSS_SECTION
-  p_xs->set_cross_section(xs, xserr);
+  p_xs->set_cross_section(xs.Nominal(), xserr.Nominal());
 #endif
 }
 

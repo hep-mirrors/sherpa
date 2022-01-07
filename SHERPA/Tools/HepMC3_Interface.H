@@ -121,7 +121,8 @@ namespace SHERPA {
     bool SubEvtList2ShortHepMC(EventInfo3 &evtinfo);
 
     void AddCrossSection(HepMC3::GenEvent& event,
-                         const double& xs, const double& err);
+                         const ATOOLS::Weights_Map& xs,
+                         const ATOOLS::Weights_Map& err);
 
     // inline functions
     inline HepMC3::GenEvent* GenEvent() { return p_event; }

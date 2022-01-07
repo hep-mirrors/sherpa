@@ -834,12 +834,39 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
 }
 
 void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
-                                       const double &xs, const double &err)
+                                       const Weights_Map& xs,
+                                       const Weights_Map& err)
 {
-    std::shared_ptr<HepMC::GenCrossSection> cross_section =std::make_shared<HepMC::GenCrossSection>();
-    cross_section->set_cross_section(xs,err);
-    event.set_cross_section(cross_section);
+  std::shared_ptr<HepMC::GenCrossSection> cross_section
+    = std::make_shared<HepMC::GenCrossSection>();
+  event.set_cross_section(cross_section);
 
+  // This is required to make HepMC3::GenCrossSection initialise its xs vector
+  // with the correct size. It is also important that the cross section is
+  // already added to the event (using set_cross_section()), otherwise the size
+  // will wrongly be set to 1.
+  // Finally, note that HepMC3 has no notion of auxiliary weights (as far as I
+  // know), such that this will also set up entries for those. This is useless,
+  // but should not be harmful.
+  cross_section->set_cross_section(0.0, 0.0);
+
+  // Translate weight maps into ordinary string->double maps.
+  std::map<std::string, double> xs_wgts;
+  xs.FillManagedVariations(xs_wgts);
+  std::map<std::string, double> err_wgts;
+  err.FillManagedVariations(err_wgts);
+
+  // Fill nominal values.
+  cross_section->set_xsec("Weight", xs.Nominal());
+  cross_section->set_xsec_err("Weight", err.Nominal());
+
+  // Fill variations.
+  for (const auto& kv : xs_wgts) {
+    const double var_xs = kv.second;
+    const double var_err = err_wgts[kv.first];
+    cross_section->set_xsec(kv.first, var_xs);
+    cross_section->set_xsec_err(kv.first, var_err);
+  }
 }
 
 bool HepMC3_Interface::StartsLikeVariationName(const std::string& s)

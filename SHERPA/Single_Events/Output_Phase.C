@@ -38,8 +38,7 @@ Return_Value::code Output_Phase::Treat(Blob_List* bloblist)
 {
   if (!bloblist->empty())
     for (Output_Vector::iterator it=p_outputs->begin(); it!=p_outputs->end(); ++it) {
-      (*it)->SetXS(p_eventhandler->TotalXS().Nominal(),
-		   p_eventhandler->TotalErr().Nominal());
+      (*it)->SetXS(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
       (*it)->Output(bloblist);
     }
   if (rpa->gen.NumberOfGeneratedEvents()>0 &&
