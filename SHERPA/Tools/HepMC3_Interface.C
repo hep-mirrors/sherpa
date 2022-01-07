@@ -77,14 +77,18 @@ EventInfo3::EventInfo3(ATOOLS::Blob * sp, const double &wgt,
     if (includemeonlyweights)
       m_variationsources.push_back(ATOOLS::Variations_Source::main);
 
-    ReadIn(db, "WeightsMap", false);
-    if (db) {
-      m_wgtmap = db->Get<Weights_Map>();
-      if (m_wgtmap.HasVariations() && !m_usenamedweights)
-        THROW(fatal_error,
-              "Scale, AlphaS and/or PDF variations cannot be written to " +
-                  std::string("HepMC without using named weights. ") +
-                  std::string("Try HEPMC_USE_NAMED_WEIGHTS: true"));
+    ReadIn(db, "WeightsMap", true);
+    if (db) m_wgtmap = db->Get<Weights_Map>();
+
+    if ((m_userhook || m_wgtmap.HasVariations()) && !m_usenamedweights) {
+      static bool did_warn {false};
+      if (!did_warn) {
+        msg_Out() << om::bold << om::brown <<  "WARNING:" << om::reset
+                  << " Userhook or on-the-fly variation weights cannot "
+                  << "be written to\nHepMC without using named weights. "
+                  << "Try `HEPMC_USE_NAMED_WEIGHTS: true`.\n";
+        did_warn = true;
+      }
     }
   }
 }
