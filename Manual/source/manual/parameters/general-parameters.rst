@@ -656,20 +656,27 @@ calculation, since the nominal calculation is anyway included in the Sherpa
 output. Trivial variations can be explicitly allowed using
 ``VARIATIONS_INCLUDE_CV: false``.
 
-The additional event weights can then be written into the event
-output.  However, this is currently only supported for
-``HepMC_GenEvent`` and ``HepMC_Short`` with versions >=2.06 and
-``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weights
-follow the Les Houches naming convention for such variations, i.e. they
-are named ``MUR<fac>_MUF<fac>_PDF<id>``.  When using Sherpa's
-interface to Rivet, :ref:`Rivet analyses`, separate instances of
+The total cross section for all variations along with the nominal cross section
+are written to the standard output after the event generation has finalized.
+Additionally, some event output (see :ref:`Event output formats`) and analysis methods
+(see :ref:`ANALYSIS`) are able to process alternate event weights.
+Currently, the supported event output methods are ``HepMC_GenEvent`` and
+``HepMC_Short`` (when configured with HepMC version 2.06 or later) and the
+supported analysis methods are ``Rivet`` and ``Internal``.
+
+The alternative event weight names follow the MC naming convention, i.e. they
+are named ``MUR=<fac>__MUF=<fac>__LHAPDF=<id>``.  When using Sherpa's
+interface to Rivet 2, :ref:`Rivet analyses`, separate instances of
 Rivet, one for each alternative event weight in addition to the
 nominal one, are instantiated leading to one set of histograms each.
-They are again named using the ``MUR<fac>_MUF<fac>_PDF<id>``
+They are again named using the ``MUR=<fac>__MUF=<fac>__LHAPDF=<id>``
 convention.
-Extending this convention, for pure strong coupling variations, an additional
-tag ``ASMZ<val>`` is appended. Another set of tags is appended if shower scale
-variations are enabled, then giving ``PSMUR<fac>_PSMUF<fac>``.
+For Rivet 3, the internal multi-weight handling capabilities are used instead,
+such that there are no alternate histogram files, just one containing
+histograms for all variations.
+Extending the naming convention, for pure strong coupling variations, an additional
+tag ``ASMZ=<val>`` is appended. Another set of tags is appended if shower scale
+variations are enabled, then giving ``PS:MUR=<fac>__PS:MUF=<fac>``.
 
 The user must also be aware that, of course, the cross section of the
 event sample, changes when using an alternative event weight as
@@ -677,6 +684,10 @@ compared to the nominal one. Any histogramming therefore has to account
 for this and recompute the total cross section as the sum of weights
 divided by the number of trials, cf. :ref:`Cross section
 determination`.
+For HepMC 3, Sherpa writes alternate cross sections directly to the
+GenCrossSection entry of the event record, such that no manual intervention is
+required (as long as the correct cross section variation is picked in
+downstream processing steps).
 
 The on-the-fly reweighting works for all event generation modes
 (weighted or (partially) unweighted) and all calculation types (LO,
@@ -693,10 +704,12 @@ weights is implemented as :option:`CSS_MAX_REWEIGHT_FACTOR` (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
 will be ignored and reset to 1.
 
-To include the ME-only variations along with the full variations in the
-HepMC/Rivet output, you can use ``HEPMC_INCLUDE_ME_ONLY_VARIATIONS:
-true`` and ``RIVET: { INCLUDE_HEPMC_ME_ONLY_VARIATIONS: true }``,
-respectively.
+To output the ME-only variations along with the full variations in the
+HepMC/Rivet output when using ``CSS_REWEIGHT: true`, you can use
+``OUTPUT_ME_ONLY_VARIATIONS: true``.
+The extra weight names then include a "ME" as part of the keys to indicate that
+only the ME part of the calculation has been varied, e.g.
+``ME:MUR=<fac>__ME:MUF=<fac>__ME:LHAPDF=<id>``.
 
 .. _MPI parallelization:
 

@@ -500,6 +500,12 @@ void Event_Handler::Finish() {
   xs_wgtmap.FillManagedVariations(xs_wgts);
   std::map<std::string, double> err_wgts;
   err_wgtmap.FillManagedVariations(err_wgts);
+  if (Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"]
+	  .SetDefault(false)
+	  .Get<bool>()) {
+    xs_wgtmap.FillManagedVariations(xs_wgts, Variations_Source::main);
+    err_wgtmap.FillManagedVariations(err_wgts, Variations_Source::main);
+  }
 
   // Find longest weights name
   size_t max_weight_name_size {0};
@@ -637,7 +643,7 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
       const auto num_variations = s_variations->Size(type);
       for (auto i = 0; i < num_variations; ++i) {
         const auto varweight = weights.Variation(i);
-        const std::string& name = s_variations->Parameters(i).m_name;
+        const std::string& name = s_variations->Parameters(i).Name();
         if (m_maxweights.find(name) == m_maxweights.end()) {
           m_maxweights[name] = 0.0;
         }

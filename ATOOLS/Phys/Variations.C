@@ -113,15 +113,16 @@ Variations::~Variations()
     delete params;
 }
 
-
-std::string
-Variations::GetVariationNameAt(Variations::Parameters_Vector::size_type i, Variations_Type t) const
+std::string Variations::GetVariationNameAt(
+    Variations::Parameters_Vector::size_type i,
+    Variations_Type t,
+    Variations_Source s) const
 {
   switch (t) {
   case Variations_Type::qcd:
-    return m_parameters_vector.at(i)->m_name;
+    return m_parameters_vector.at(i)->Name(s);
   case Variations_Type::qcut:
-    return m_qcut_parameters_vector.at(i).m_name;
+    return m_qcut_parameters_vector.at(i).Name(s);
   case Variations_Type::custom:
     THROW(fatal_error, "Variations does not manage custom variations.");
   }
@@ -168,7 +169,7 @@ void Variations::PrintStatistics(std::ostream &str)
       if (warningsit->second > 0) {
         warningnums[warningsit->first] += warningsit->second;
         if (warningreps[warningsit->first].second < warningsit->second) {
-          warningreps[warningsit->first].first  = (*paramsit)->m_name;
+          warningreps[warningsit->first].first  = (*paramsit)->Name();
           warningreps[warningsit->first].second = warningsit->second;
         }
       }
@@ -616,14 +617,17 @@ QCD_Variation_Params::~QCD_Variation_Params()
     if (p_alphas) { delete p_alphas; }
   }
 #if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
-  m_rewfachisto.Write(m_name);
+  m_rewfachisto.Write(Name());
 #endif
 }
 
 
-std::string QCD_Variation_Params::GenerateName() const
+std::string QCD_Variation_Params::Name(Variations_Source source) const
 {
   static const std::string divider("__");
+  std::string level_prefix;
+  if (source == Variations_Source::main)
+    level_prefix = "ME:";
   std::string name;
   if (p_pdf1 == NULL || p_pdf2 == NULL || p_pdf1->LHEFNumber() == p_pdf2->LHEFNumber()) {
     // there is only one relevant PDF ID
@@ -637,25 +641,25 @@ std::string QCD_Variation_Params::GenerateName() const
     } else {
       // THROW(fatal_error, "Cannot obtain PDF IDF");
     }
-    name = GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
-           + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
-           + GenerateVariationNamePart("LHAPDF=", pdfid);
+    name = level_prefix + GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
+           + level_prefix + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
+           + level_prefix + GenerateVariationNamePart("LHAPDF=", pdfid);
   } else {
     // there are two relevant PDF IDs, quote both
-    name = GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
-           + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
-           + GenerateVariationNamePart("BEAM1:LHAPDF=", p_pdf1->LHEFNumber()) + divider
-           + GenerateVariationNamePart("BEAM2:LHAPDF=", p_pdf2->LHEFNumber());
+    name = level_prefix + GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
+           + level_prefix + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
+           + level_prefix + GenerateVariationNamePart("BEAM1:LHAPDF=", p_pdf1->LHEFNumber()) + divider
+           + level_prefix + GenerateVariationNamePart("BEAM1:LHAPDF=", p_pdf2->LHEFNumber());
   }
   // append non-trival AlphaS(MZ) variation (which is not related to a change
   // in the PDF set)
   if (p_alphas != MODEL::as && p_alphas->GetAs()->PDF() != p_pdf1) {
-    name += divider + GenerateVariationNamePart("ASMZ=", p_alphas->AsMZ());
+    name += divider + level_prefix + GenerateVariationNamePart("ASMZ=", p_alphas->AsMZ());
   }
   // append non-trivial shower scale factors
   if (m_showermuR2fac != 1.0 || m_showermuF2fac != 1.0) {
-    name += divider + GenerateVariationNamePart("PS.MUR=", sqrt(m_showermuR2fac));
-    name += divider + GenerateVariationNamePart("PS.MUF=", sqrt(m_showermuF2fac));
+    name += divider + level_prefix + GenerateVariationNamePart("PS.MUR=", sqrt(m_showermuR2fac));
+    name += divider + level_prefix + GenerateVariationNamePart("PS.MUF=", sqrt(m_showermuF2fac));
   }
   return name;
 }
@@ -672,9 +676,12 @@ bool QCD_Variation_Params::IsTrivial() const
   return true;
 }
 
-std::string Qcut_Variation_Params::GenerateName() const
+std::string Qcut_Variation_Params::Name(Variations_Source source) const
 {
-  return GenerateVariationNamePart("QCUT", m_scale_factor);
+  std::string level_prefix;
+  if (source == Variations_Source::main)
+    level_prefix = "ME:";
+  return level_prefix + GenerateVariationNamePart("QCUT", m_scale_factor);
 }
 
 namespace ATOOLS {
@@ -698,7 +705,7 @@ namespace ATOOLS {
     s << '\n';
     for (Variations::Parameters_Vector::const_iterator it(paramsvec->begin());
          it != paramsvec->end(); ++it) {
-      s << (*it)->m_name << " (" << (*it)->m_deletepdfs << ","
+      s << (*it)->Name() << " (" << (*it)->m_deletepdfs << ","
         << (*it)->m_deletealphas << ")" << '\n';
     }
     return s;

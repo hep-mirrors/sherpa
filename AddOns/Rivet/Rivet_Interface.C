@@ -251,8 +251,6 @@ bool Rivet_Interface::Init()
         s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>());
     m_hepmc2.SetHepMCTreeLike(
         s["USE_HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>());
-    m_hepmc2.SetHepMCIncludeMEOnlyVariations(
-        s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>());
   }
   return true;
 }
@@ -919,8 +917,6 @@ bool Rivet_Interface::Init()
         s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>());
     m_hepmc2.SetHepMCTreeLike(
         s["USE_HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>());
-    m_hepmc2.SetHepMCIncludeMEOnlyVariations(
-        s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>());
   }
   return true;
 }

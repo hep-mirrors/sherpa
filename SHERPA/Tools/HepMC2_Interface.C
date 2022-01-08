@@ -335,7 +335,7 @@ HepMC2_Interface::HepMC2_Interface() :
   m_extendedweights =
     s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
   m_includemeonlyweights =
-    s["HEPMC_INCLUDE_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
+    s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
 

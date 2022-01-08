@@ -29,7 +29,7 @@ namespace ATOOLS {
     bool IsZero() const;
 
     // content getters/setters to access individual weights, by index or name
-    std::string Name(size_t) const;
+    std::string Name(size_t, Variations_Source source=Variations_Source::all) const;
     double& Nominal();
     double Nominal() const;
     double& Variation(size_t i);
@@ -317,13 +317,9 @@ namespace ATOOLS {
       // do remaining combination and store resulting weights
       size_t num_vars = weights.Size() - 1;
       for (size_t i(0); i < num_vars; ++i) {
-        const std::string varname {weights.Name(i + 1)};
-        const std::string typevarname {
-          (source == ATOOLS::Variations_Source::main)
-            ? "ME_ONLY_" + varname
-            : varname};
-        map[typevarname] = weights.Variation(i) * relfac;
-        msg_Debugging() << typevarname << " (" << typevarname
+        const std::string varname {weights.Name(i + 1, source)};
+        map[varname] = weights.Variation(i) * relfac;
+        msg_Debugging() << varname << " (" << varname
           << "): " << weights.Variation(i) * relfac << '\n';
       }
     }
