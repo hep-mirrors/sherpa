@@ -698,8 +698,8 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
       wgtmap[cur] = wc[cur];
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
-    else if (cur=="NTrials") ntrials=wc[cur];
-    else if (cur=="Reweight_Type" && wc[cur]&64) xstype=1;
+    else if (cur=="EXTRA__NTrials") ntrials=wc[cur];
+    else if (cur=="IRREG__Reweight_Type" && wc[cur]&64) xstype=1;
   }
 #else
   // lookup all evt-wgts with a variation weight name
@@ -725,8 +725,8 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
       wgtmap[cur]=wgt;
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wgt;
-    else if (cur=="NTrials") ntrials=wgt;
-    else if (cur=="Reweight_Type" && ((int)wgt)&64) xstype=1;
+    else if (cur=="EXTRA__NTrials") ntrials=wgt;
+    else if (cur=="IRREG__Reweight_Type" && ((int)wgt)&64) xstype=1;
   }
 #endif /* HEPMC_HAS_WORKING_NAMED_WEIGHTS */
 #else
