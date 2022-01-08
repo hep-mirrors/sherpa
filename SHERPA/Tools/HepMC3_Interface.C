@@ -841,6 +841,11 @@ void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
     = std::make_shared<HepMC::GenCrossSection>();
   event.set_cross_section(cross_section);
 
+  if (!m_usenamedweights) {
+    cross_section->set_cross_section(xs.Nominal(), err.Nominal());
+    return;
+  }
+
   // This is required to make HepMC3::GenCrossSection initialise its xs vector
   // with the correct size. It is also important that the cross section is
   // already added to the event (using set_cross_section()), otherwise the size
