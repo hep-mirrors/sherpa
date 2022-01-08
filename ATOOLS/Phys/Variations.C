@@ -623,7 +623,7 @@ QCD_Variation_Params::~QCD_Variation_Params()
 
 std::string QCD_Variation_Params::GenerateName() const
 {
-  static const std::string divider("_");
+  static const std::string divider("__");
   std::string name;
   if (p_pdf1 == NULL || p_pdf2 == NULL || p_pdf1->LHEFNumber() == p_pdf2->LHEFNumber()) {
     // there is only one relevant PDF ID
@@ -637,25 +637,25 @@ std::string QCD_Variation_Params::GenerateName() const
     } else {
       // THROW(fatal_error, "Cannot obtain PDF IDF");
     }
-    name = GenerateVariationNamePart("MUR", sqrt(m_muR2fac)) + divider
-           + GenerateVariationNamePart("MUF", sqrt(m_muF2fac)) + divider
-           + GenerateVariationNamePart("PDF", pdfid);
+    name = GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
+           + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
+           + GenerateVariationNamePart("LHAPDF=", pdfid);
   } else {
     // there are two relevant PDF IDs, quote both
-    name = GenerateVariationNamePart("MUR", sqrt(m_muR2fac)) + divider
-           + GenerateVariationNamePart("MUF", sqrt(m_muF2fac)) + divider
-           + GenerateVariationNamePart("PDF", p_pdf1->LHEFNumber()) + divider
-           + GenerateVariationNamePart("PDF", p_pdf2->LHEFNumber());
+    name = GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
+           + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
+           + GenerateVariationNamePart("BEAM1:LHAPDF=", p_pdf1->LHEFNumber()) + divider
+           + GenerateVariationNamePart("BEAM2:LHAPDF=", p_pdf2->LHEFNumber());
   }
   // append non-trival AlphaS(MZ) variation (which is not related to a change
   // in the PDF set)
   if (p_alphas != MODEL::as && p_alphas->GetAs()->PDF() != p_pdf1) {
-    name += divider + GenerateVariationNamePart("ASMZ", p_alphas->AsMZ());
+    name += divider + GenerateVariationNamePart("ASMZ=", p_alphas->AsMZ());
   }
   // append non-trivial shower scale factors
   if (m_showermuR2fac != 1.0 || m_showermuF2fac != 1.0) {
-    name += divider + GenerateVariationNamePart("PSMUR", sqrt(m_showermuR2fac));
-    name += divider + GenerateVariationNamePart("PSMUF", sqrt(m_showermuF2fac));
+    name += divider + GenerateVariationNamePart("PS.MUR=", sqrt(m_showermuR2fac));
+    name += divider + GenerateVariationNamePart("PS.MUF=", sqrt(m_showermuF2fac));
   }
   return name;
 }
