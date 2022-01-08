@@ -627,7 +627,7 @@ std::string QCD_Variation_Params::Name(Variations_Source source) const
   static const std::string divider("__");
   std::string level_prefix;
   if (source == Variations_Source::main)
-    level_prefix = "ME:";
+    level_prefix = "ME.";
   std::string name;
   if (p_pdf1 == NULL || p_pdf2 == NULL || p_pdf1->LHEFNumber() == p_pdf2->LHEFNumber()) {
     // there is only one relevant PDF ID
@@ -648,8 +648,8 @@ std::string QCD_Variation_Params::Name(Variations_Source source) const
     // there are two relevant PDF IDs, quote both
     name = level_prefix + GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
            + level_prefix + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
-           + level_prefix + GenerateVariationNamePart("BEAM1:LHAPDF=", p_pdf1->LHEFNumber()) + divider
-           + level_prefix + GenerateVariationNamePart("BEAM1:LHAPDF=", p_pdf2->LHEFNumber());
+           + level_prefix + GenerateVariationNamePart("BEAM1.LHAPDF=", p_pdf1->LHEFNumber()) + divider
+           + level_prefix + GenerateVariationNamePart("BEAM1.LHAPDF=", p_pdf2->LHEFNumber());
   }
   // append non-trival AlphaS(MZ) variation (which is not related to a change
   // in the PDF set)
@@ -680,7 +680,7 @@ std::string Qcut_Variation_Params::Name(Variations_Source source) const
 {
   std::string level_prefix;
   if (source == Variations_Source::main)
-    level_prefix = "ME:";
+    level_prefix = "ME.";
   return level_prefix + GenerateVariationNamePart("QCUT", m_scale_factor);
 }
 
