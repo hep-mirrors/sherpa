@@ -841,6 +841,9 @@ void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
   std::shared_ptr<HepMC::GenCrossSection> cross_section
     = std::make_shared<HepMC::GenCrossSection>();
   event.set_cross_section(cross_section);
+  for (size_t i(0);i<m_subeventlist.size();++i) {
+    m_subeventlist[i]->set_cross_section(cross_section);
+  }
 
   if (!m_usenamedweights) {
     cross_section->set_cross_section(xs.Nominal(), err.Nominal());

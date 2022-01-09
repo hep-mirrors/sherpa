@@ -786,6 +786,9 @@ void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event,
   HepMC::GenCrossSection gxs;
   gxs.set_cross_section(xs,err);
   event.set_cross_section(gxs);
+  for (size_t i(0);i<m_subeventlist.size();++i) {
+    m_subeventlist[i]->set_cross_section(gxs);
+  }
 #else
   msg_Info()<<METHOD<<"(): Cannot add XS info to GenEvent."<<std::endl;
 #endif
