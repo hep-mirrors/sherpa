@@ -18,34 +18,39 @@ using namespace std;
 /////////////////////////////////////////////////////////////////////////////////
 
 VA_0_PP::VA_0_PP(const ME_Parameters &parameters,const std::string& name) :
-  Current_Base(parameters.flavs, parameters.indices, name)
-{
+  Current_Base(parameters.flavs, parameters.indices, name),
+  p_ff(NULL), m_global(0.), m_DeltaM2(0.), m_name(name)
+{ }
+
+void VA_0_PP::SetModelParameters( struct GeneralModel model ) {
+  msg_Out()<<METHOD<<" with ff = "<<int(model("FORM_FACTOR",2))<<", "
+	   <<"name = "<<m_name<<"\n";
   double CG = 1.;
-  if (name==std::string("VA_0_PP_pipi")) {
+  if (m_name==std::string("VA_0_PP_pipi")) {
     // *** make this model("Form_Factor",1) a model("Form_Factor",2)
-    if (int(parameters.model("FORM_FACTOR",1))==1)
-      p_ff = new VA_0_PP::FF_KS_pipi(parameters.model);
+    if (int(model("FORM_FACTOR",1))==1)
+      p_ff = new VA_0_PP::FF_KS_pipi(model);
     else
-      p_ff = new VA_0_PP::FF_RChT_pipi(parameters.model);
+      p_ff = new VA_0_PP::FF_RChT_pipi(model);
     if  (m_flavs[p_i[1]].Kfcode()==kf_pi_plus) CG = 1./SQRT_05;
-    m_global  = parameters.model("Vud", Tools::Vud) * CG;
+    m_global  = model("Vud", Tools::Vud) * CG;
     m_DeltaM2 = 0.;
   }
-  else if (name==std::string("VA_0_PP_Kpi") ||
-	   name==std::string("VA_0_PP_piK") ) {
-    if (int(parameters.model("FORM_FACTOR",1))==1)
-      p_ff = new VA_0_PP::FF_KS_Kpi(parameters.model);
+  else if (m_name==std::string("VA_0_PP_Kpi") ||
+	   m_name==std::string("VA_0_PP_piK") ) {
+    if (int(model("FORM_FACTOR",1))==1)
+      p_ff = new VA_0_PP::FF_KS_Kpi(model);
     /*else
       p_ff = new VA_0_PP::FF_RChT_Kpi(parameters.model);*/ //fix 
     // the Clebsch-gordon factos between pi pi and pi K look a bit odd.
     // we need to cross check this with literature.
     if  (m_flavs[p_i[1]].Kfcode()==kf_pi ||
 	 m_flavs[p_i[0]].Kfcode()==kf_pi ) CG = SQRT_05;
-    m_global  = parameters.model("Vus", Tools::Vus) * CG;
+    m_global  = model("Vus", Tools::Vus) * CG;
     m_DeltaM2 = dabs(sqr(m_flavs[p_i[1]].HadMass())-sqr(m_flavs[p_i[0]].HadMass())); 
   }
 }
-  
+
 void VA_0_PP::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   double q2 = (moms[p_i[1]] + moms[p_i[0]] ).Abs2();
@@ -76,6 +81,7 @@ void VA_0_PP::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 
 VA_0_PP::FF_KS_pipi::FF_KS_pipi(const GeneralModel & model) :
   VA_0_PP::FormFactor(model) {
+  msg_Out()<<"Init "<<METHOD<<"\n";
   FillResonances(model);
 }
 
@@ -187,6 +193,7 @@ Complex VA_0_PP::FF_KS_Kpi::F_S(const double & q2) {
 VA_0_PP::FF_RChT_pipi::FF_RChT_pipi(const GeneralModel & model) :
   VA_0_PP::FormFactor(model)
 {
+  msg_Out()<<"Init "<<METHOD<<"\n";
   // Funny definition of f_pi here.
   // I assume it is 130.7 MeV/\sqrt{2} (this is a question of different conventions) --
   // but we need to check this!
@@ -347,6 +354,7 @@ Complex HADRONS::VA_0_PP::FF_RChT_Kpi::F_S(const double & q2, double s) {
 VA_0_PP::FF_RChT2_pipi::FF_RChT2_pipi(const GeneralModel& model) :
   VA_0_PP::FormFactor(model)
 {
+  msg_Out()<<"Init "<<METHOD<<"\n";
   m_fpi  = SQRT_05 * model("fpi", 0.1307 ); 
   m_m_pi = Flavour(kf_pi_plus).HadMass(); m_m2_pi = sqr(m_m_pi);
   m_m_K  = Flavour(kf_K_plus).HadMass();  m_m2_K  = sqr(m_m_K);

@@ -25,11 +25,12 @@ namespace HADRONS {
     FormFactor * p_ff; // ff model
     double       m_global;   // V_CKM * Clebsch Gordon
     double       m_DeltaM2;  // mass difference of the two mesons
+    std::string  m_name;
   public:
     VA_0_PP(const ME_Parameters &parameters,const std::string & name);
     ~VA_0_PP() { if (p_ff) { delete p_ff; p_ff = 0; } }
-    virtual void SetModelParameters( struct GeneralModel _md ) {}
-    virtual void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
+    void SetModelParameters( struct GeneralModel _md );
+    void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
 
     /////////////////////////////////////////////////////////////////
     // Kuehn-Santamaria form factors

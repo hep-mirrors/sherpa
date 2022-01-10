@@ -194,11 +194,12 @@ void Hadron_Decay_Channel::ProcessME(const string& content,
       nr_of_mes++;
     }
     if(me_svv[i].size()==4) {
-      if (m_physicalflavours[0]==Flavour(kf_tau)) {
-	msg_Out()<<METHOD<<": "<<m_physicalflavours[0]<<": "<<Name()<<"\n"
-		 <<"============================================================\n"
-		 <<"Selecting currents for "<<Name()<<endl;
-      }
+      //if (m_physicalflavours[0]==Flavour(kf_tau)) {
+      //msg_Out()<<METHOD<<": "<<m_physicalflavours[0]<<": "<<Name()<<"\n"
+      //	 <<"============================================================\n"
+      //	 <<"Selecting currents for "<<Name()<<endl
+      //	 <<content<<"\n\n";
+      //}
       Current_Base* current1 = SelectCurrent(me_svv[i][2]);
       current1->SetPath(m_path);
       GeneralModel current1_model = m_startmd;
@@ -219,14 +220,18 @@ void Hadron_Decay_Channel::ProcessME(const string& content,
       model_for_ps.AddParameters(SubString(content,
 					   "<"+me_svv[i][3]+">",
 					   "</"+me_svv[i][3]+">"));
+      //msg_Out()<<"Current2 parameters: ("<<me_svv[i][3]<<")\n"
+      //       <<SubString(content,"<"+me_svv[i][3]+">","</"+me_svv[i][3]+">")<<"\n";
       current2->SetModelParameters( current2_model );
 
       msg_Tracking()<<"  "<<current1->Name()<<endl;
       msg_Tracking()<<"  "<<current2->Name()<<endl;
 
+      //msg_Out()<<"Done with "<<current1->Name()<<" * "<<current2->Name()<<"  --> "<<Name()<<"\n";
+
       // Sanity checks for current selection
-      if(size_t(1+NOut()) != current1->DecayIndices().size()+
-         current2->DecayIndices().size()) {
+      if(size_t(1+NOut()) !=
+	 (current1->DecayIndices().size()+current2->DecayIndices().size())) {
         msg_Error()<<"Error in "<<METHOD<<": Current selection does not look sane "
                    <<"for "<<Name()<<". Check decaychannelfile."<<std::endl;
         Abort();
@@ -436,9 +441,9 @@ Current_Base* Hadron_Decay_Channel::SelectCurrent(string current_string)
   for(int i=0; i<n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
   ME_Parameters fi(m_physicalflavours, indices);
 
-  if (m_physicalflavours[0]==Flavour(kf_tau)) {
-    msg_Out()<<METHOD<<": "<<resultstrings[0]<<".\n";
-  }
+  //if (m_physicalflavours[0]==Flavour(kf_tau)) {
+  //  msg_Out()<<METHOD<<": "<<resultstrings[0]<<".\n";
+  //}
   Current_Base* current=Current_Getter_Function::GetObject(resultstrings[0],fi);
   if(current==NULL) {
     msg_Error()<<METHOD<<": Current '"<<resultstrings[0]<<"' specified in "

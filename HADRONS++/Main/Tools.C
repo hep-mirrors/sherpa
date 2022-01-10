@@ -204,11 +204,14 @@ void GeneralModel::AddParameters(const std::string& params)
   reader.MatrixFromString(helpsvv,"");
 
   Algebra_Interpreter ip;
+  //msg_Out()<<METHOD<<" for "<<helpsvv.size()<<" parameter lines.\n";
   for (size_t i=0;i<helpsvv.size();i++) {
     if ( helpsvv[i][1] == string("=")) {
+      //msg_Out()<<"  -- "<<helpsvv[i][0]<<" --> "<<(helpsvv[i].size()-2)<<" input fields.\n";
       if( helpsvv[i].size() == 3 ) {        // <name> = <real value>
         double real = ToType<double> (ip.Interprete(helpsvv[i][2]) );
         (*this)[helpsvv[i][0]] = real;
+	//msg_Out()<<"  -- "<<helpsvv[i][0]<<" = "<<real<<"\n";
       }
       if( helpsvv[i].size() == 4 ) {        // <name> = <complex value>
         double abs   = ToType<double>(ip.Interprete(helpsvv[i][2]) );
