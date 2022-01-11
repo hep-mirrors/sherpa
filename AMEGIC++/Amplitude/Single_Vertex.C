@@ -21,8 +21,8 @@ Single_Vertex::Single_Vertex(const Single_Vertex& v):
 
 Single_Vertex::~Single_Vertex()
 {
-  for (size_t i(0);i<Lorentz.size();++i){
-    if(Lorentz[i])
+  for (size_t i(0);i<Lorentz.size();++i) {
+    if (Lorentz[i])
       Lorentz[i]->Delete();
   }
 }
