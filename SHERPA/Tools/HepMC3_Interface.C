@@ -243,18 +243,9 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
       Weights_Map& wgtmap =
           (idx == -1) ? m_wgtmap : (*p_subevtlist)[idx]->m_results;
 
+      // QCD variations
       for (const auto& source : m_variationsources) {
         wgtmap.FillManagedVariations(wc, source);
-      }
-
-      // associated contributions variations
-      const auto it = wgtmap.find("ASSOCIATED_CONTRIBUTIONS");
-      if (it != wgtmap.end()) {
-        const auto asscontribs = it->second;
-        const auto num_asscontribvars = asscontribs.Size() - 1;
-        for (size_t i(0); i < num_asscontribvars; ++i) {
-          wc["ASS" + asscontribs.Name(i + 1)] = asscontribs[i + 1] * wgtmap.Nominal();
-        }
       }
 
       if (p_hard_process_variation_weight_names) {

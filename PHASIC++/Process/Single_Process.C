@@ -616,6 +616,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       // calculate weight for each subevent
       if (sub->m_me == 0.0) {
         sub->m_result = 0.0;
+        sub->m_results = 0.0;
       } else {
         // calculate ISR weight
 	ClusterAmplitude_Vector ampls;
