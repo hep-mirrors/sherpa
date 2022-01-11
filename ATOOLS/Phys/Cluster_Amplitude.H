@@ -4,8 +4,9 @@
 #include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Phys/Decay_Info.H"
 
-#include <vector>
 #include <map>
+#include <memory>
+#include <vector>
 
 namespace ATOOLS {
 
@@ -111,6 +112,29 @@ namespace ATOOLS {
 
     inline Cluster_Leg *Leg(const size_t &i) const { return m_legs[i]; }
 
+    Vec4D Mom(size_t i) const
+    {
+      return (i < NIn() ? -1.0 : 1.0) * Leg(i)->Mom();
+    }
+    void SetMom(const size_t& i, const Vec4D& p) const
+    {
+      Leg(i)->SetMom(i < NIn() ? -p : p);
+    }
+    Flavour_Vector Flavs() const
+    {
+      Flavour_Vector flavs;
+      const auto size = m_legs.size();
+      flavs.reserve(size);
+      for (size_t i {0}; i < size; ++i) {
+        flavs.push_back(Flav(i));
+      }
+      return flavs;
+    }
+    Flavour Flav(size_t i) const
+    {
+      return (i < NIn() ? Leg(i)->Flav().Bar() : Leg(i)->Flav());
+    }
+
     inline Cluster_Amplitude *Prev() const { return p_prev; }
     inline Cluster_Amplitude *Next() const { return p_next; }
 
@@ -181,7 +205,7 @@ namespace ATOOLS {
     { return static_cast<Type*>(p_jf); }
     template <class Type> inline Type *CA() const 
     { return static_cast<Type*>(p_ca); }
-    
+
     template <class Type> inline Type *Proc() const 
     { return static_cast<Type*>(p_proc); }
     template <class Type> inline Type *Procs() const 
@@ -197,6 +221,35 @@ namespace ATOOLS {
     (std::ostream &ostr,const Cluster_Amplitude &ampl);
 
   typedef std::vector<Cluster_Amplitude*> ClusterAmplitude_Vector;
+
+  struct ClusterAmplitude_Deleter {
+    void operator()(Cluster_Amplitude* ampl) {
+      ampl->Delete();
+    }
+  };
+
+  using Cluster_Amplitude_UP =
+    std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>;
+  inline Cluster_Amplitude_UP MakeClusterAmpl()
+  {
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>{
+      Cluster_Amplitude::New()};
+  }
+  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude_UP& ampl)
+  {
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>{
+      ampl->Copy()};
+  }
+  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude* ampl)
+  {
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>{
+      ampl->Copy()};
+  }
+  inline Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude& ampl)
+  {
+    return std::unique_ptr<Cluster_Amplitude, ClusterAmplitude_Deleter>{
+      ampl.Copy()};
+  }
 
 }// end of namespace ATOOLS
 

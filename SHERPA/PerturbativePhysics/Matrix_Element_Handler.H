@@ -160,6 +160,8 @@ namespace SHERPA {
     int InitializeProcesses(BEAM::Beam_Spectra_Handler*,
                             PDF::ISR_Handler*);
 
+    int InitializeTheReweighting(ATOOLS::Variations_Mode mode);
+
 #ifdef USING__Threading
     static void *TCalculateTotalXSecs(void *arg);
 #endif

@@ -4,8 +4,8 @@ SUBDIRS       = \
 		ATOOLS \
 		BEAM \
 		PDF \
-		MODEL \
 		METOOLS \
+		MODEL \
 		PHASIC++ \
 		MCATNLO \
 		EXTRA_XS \

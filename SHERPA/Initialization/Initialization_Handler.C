@@ -517,7 +517,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
   p_model->InitializeInteractionModel();
-  okay = okay && InitializeTheAnalyses();
   if (!CheckBeamISRConsistency()) return 0.;
   if (m_mode==eventtype::EventReader) {
     std::string infile;
@@ -536,6 +535,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
     msg_Events()<<"SHERPA will read in the events."<<std::endl
   		<<"   The full framework is not needed."<<std::endl;
+    InitializeTheAnalyses();
     InitializeTheHardDecays();
     InitializeTheBeamRemnants();
     InitializeTheIO();
@@ -543,14 +543,13 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
-  if (rpa->gen.NumberOfEvents()>0) {
-  }
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheBeamRemnants();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheAnalyses();
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheSoftCollisions();
@@ -879,6 +878,12 @@ bool Initialization_Handler::InitializeTheHardDecays()
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
+#ifdef USING__EWSud
+  // in case that KFACTOR=EWSud is used we need to be ready when the ME handler
+  // sets up the KFactor setters
+  if (!s_loader->LoadLibrary("SherpaEWSud"))
+    THROW(missing_module,"Cannot load EWsud library.");
+#endif
   if (p_mehandler) delete p_mehandler;
   p_mehandler = new Matrix_Element_Handler(p_model);
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
@@ -1067,6 +1072,8 @@ bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
     Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   p_variations = new Variations(mode);
   s_variations = p_variations;
+  if (p_mehandler)
+    p_mehandler->InitializeTheReweighting(mode);
   if (mode != Variations_Mode::nominal_only)
     msg_Info()<<"Initialized the Reweighting."<<endl;
   return true;

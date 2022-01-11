@@ -43,11 +43,13 @@ namespace COMIX {
     // member functions
     bool Initialize(MODEL::Model_Base *const model,
                     BEAM::Beam_Spectra_Handler *const beamhandler,
-                    PDF::ISR_Handler *const isrhandler);
+                    PDF::ISR_Handler *const isrhandler) override;
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
-                                            bool add);
-    int PerformTests();
-    bool NewLibraries();
+                                            bool add) override;
+    int PerformTests() override;
+    bool NewLibraries() override;
+
+    void SetModel(MODEL::Model_Base* model) override { p_model = model; };
 
   }; // end of class Comix
 

@@ -79,4 +79,7 @@
 /* using Delphes */
 #undef USING__DELPHES
 
+/* using EWSud */
+#undef USING__EWSud
+
 #endif

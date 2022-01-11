@@ -78,6 +78,14 @@ bool ME_Generators::InitializeGenerators(MODEL::Model_Base *model,
   return true;
 }
 
+void ME_Generators::SetModel(MODEL::Model_Base* model)
+{
+  p_model = model;
+  for (ME_Generators::iterator mit=begin(); mit!=end(); ++mit) {
+    (*mit)->SetModel(model);
+  }
+}
+
 int ME_Generators::PerformTests()
 { 
   int result(1);

@@ -4,6 +4,10 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Phys/Variations.H"
 
+namespace ATOOLS {
+  class Hard_Process_Variation_Generator_Base;
+}
+
 namespace PHASIC {
 
   class Single_Process: public Process_Base {
@@ -53,6 +57,7 @@ namespace PHASIC {
 
     void SetScale(const Scale_Setter_Arguments &args) override;
     void SetKFactor(const KFactor_Setter_Arguments &args) override;
+    void InitializeTheReweighting(ATOOLS::Variations_Mode) override;
 
     ATOOLS::Cluster_Amplitude *Cluster(const ATOOLS::Vec4D_Vector &p,
                                        const size_t &mode=0);
@@ -168,6 +173,9 @@ namespace PHASIC {
     void ReweightBVI(ATOOLS::ClusterAmplitude_Vector&);
     void ReweightRS(ATOOLS::ClusterAmplitude_Vector&);
     void CalculateAssociatedContributionVariations();
+
+    std::vector<ATOOLS::Hard_Process_Variation_Generator_Base*>
+      m_hard_process_variation_generators;
 
   };// end of class Single_Process
 
