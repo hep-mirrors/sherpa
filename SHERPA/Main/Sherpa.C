@@ -36,8 +36,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Sherpa::Sherpa(int argc, char* argv[]) :
-  p_inithandler(nullptr)
-  , p_eventhandler(nullptr)
+  p_inithandler(nullptr),
+  p_eventhandler(nullptr)
 #ifdef USING__HEPMC2
   , p_hepmc2(nullptr)
 #endif
