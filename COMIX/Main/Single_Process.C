@@ -403,6 +403,7 @@ Weights_Map COMIX::Single_Process::Differential(
     Variations_Mode varmode,
     int mode)
 {
+  DEBUG_FUNC(Name());
   m_zero=false;
   if ((mode&128)==0) p_int->ColorIntegrator()->SetPoint(&ampl);
   return PHASIC::Process_Base::Differential(ampl,varmode,mode);
