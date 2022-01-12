@@ -43,6 +43,7 @@ namespace PHASIC {
 
 using namespace PHASIC;
 using namespace ATOOLS;
+using namespace std;
 
 class edr {
 public:

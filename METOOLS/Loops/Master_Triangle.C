@@ -66,7 +66,8 @@ Complex METOOLS::Eta(const Complex& x, const int& ix, const Complex& y, const in
     double imxy = ix*std::real(y)+iy*std::real(x);
     return 2.*M_PI*Complex(0.,1.)*(Theta(-imy)*Theta(-imx)*Theta(imxy)
 				   -Theta(imy)*Theta(imx)*Theta(-imxy));
-  }    
+  }
+  return 0.;
 }
 
 double METOOLS::Theta(const double& x) {
@@ -345,6 +346,7 @@ Complex METOOLS::Dilog(const Complex& x, const int& ieps) {
   else {
     //msg_Out() << "No convergent region found for Dilog. x = " << x;
   }
+  return 0.;
 }
 
 
