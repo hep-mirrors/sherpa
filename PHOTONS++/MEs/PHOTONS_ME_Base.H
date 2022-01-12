@@ -58,7 +58,7 @@ namespace PHOTONS {
       ATOOLS::Vec4D      m_moms0[9];
       ATOOLS::Vec4D      m_moms1[9][9];
       ATOOLS::Vec4D      m_moms2[9][9][9];
-      ATOOLS::Vec4D      m_momsFull[9];
+      ATOOLS::Vec4D      m_momsFull[20];
       int                m_spins[9];
 
       const Particle_Vector_Vector& m_pvv_zero;

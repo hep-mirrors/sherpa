@@ -1057,7 +1057,7 @@ double Z_To_Fermion_Fermion::GetBeta_2_2(unsigned int a, unsigned int b) {
     // spin avarage over initial state
     sum = (1./3.)*sum;
 
-    msg_Debugging() << "a, b " << a << " , " << b << "\n"
+    msg_Debugging() <<METHOD<< "a, b " << a << " , " << b << "\n"
 		    <<"|M_2(k)|^2="<<sqr(1./(16.*M_PI*M_PI*M_PI))*sum
 		    <<"\n S(k)|M_1|^2 + S(k1)*S(k2)*|M_0|^2="<<Smod(a,b,0)*GetBeta_1_1(b) + Smod(a,b,1)*GetBeta_1_1(a) + Smod(a,b,0)*Smod(a,b,1)*GetBeta_0_0()
 		    <<"\n inverted: S(k)|M_1|^2 + S(k1)*S(k2)*|M_0|^2="<<Smod(a,b,1)*GetBeta_1_1(b) + Smod(a,b,0)*GetBeta_1_1(a) + Smod(a,b,0)*Smod(a,b,1)*GetBeta_0_0()

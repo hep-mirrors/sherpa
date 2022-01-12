@@ -20,6 +20,7 @@ Weight_Higher_Order_Corrections::Weight_Higher_Order_Corrections
     p_pme = PHOTONS_ME_Base::GetIRsubtractedME(pvv_old);
   if (p_pme) {
     msg_Debugging()<<"ME -> "<<p_pme->Name()<<std::endl;
+    m_dtype = dtype;
     p_pme->FillMomentumArrays(pvv_new);
     CalculateWeightAndMaxWithME();
   }
