@@ -16,12 +16,12 @@ Clustered_Calculator::Clustered_Calculator(Process_Base* _proc)
 {
   DEBUG_FUNC(proc->Name());
 
-  Scoped_Settings meqedsettings{
-    Settings::GetMainSettings()["ME_QED"] };
+  Scoped_Settings ewsudsettings{
+    Settings::GetMainSettings()["EWSUD"] };
   m_resdist =
-    meqedsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
+    ewsudsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
   m_disabled =
-    Settings::GetMainSettings()["EWSUD"]["CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
+    ewsudsettings["CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
   if(Settings::GetMainSettings()["EWSUDAKOV_CLUSTERING_DISABLED"].IsCustomised()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CLUSTERING_DISABLED");
   }
