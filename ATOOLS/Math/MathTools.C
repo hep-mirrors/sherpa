@@ -297,13 +297,14 @@ namespace ATOOLS {
         std::cout<<"number of iterations: "<<i<<std::endl;
         return sum;
       }
-      else
+      else {
         std::cout<<abs(x)<<std::endl;
         std::cout<<"region VI ..."<<std::endl;
         // DiLog(x) = -DiLog(1/x) - 1/2*ln2(-x) - pi2/6
         return -DiLog(1./x) - 0.5*sqr(log(-x)) - sqr(M_PI)/6.;
         // DiLog(x) = -DiLog(-x) + 1/2*DiLog(x2)
-//         return -DiLog(-x) + 0.5*DiLog(x*x);
+	// return -DiLog(-x) + 0.5*DiLog(x*x);
+      }
     }
     std::cout<<"no suitable region found ..."<<std::endl;
     return 0.;
