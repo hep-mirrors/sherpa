@@ -7,6 +7,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "PHOTONS++/Main/Photons.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHOTONS::PHOTONS_ME_Base
