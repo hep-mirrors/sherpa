@@ -34,8 +34,7 @@ libToolsPhys_la_SOURCES       =	\
 				Weight_Info.C \
 				Variations.C \
 				Weights.C \
-				Hard_Process_Variation_Generator.C \
-				Hard_Process_Variation_Weight_Names.C
+				Hard_Process_Variation_Generator.C
 
 localinc_HEADERS      =	\
 			fjcore.hh \
@@ -67,7 +66,6 @@ localinc_HEADERS      =	\
 			Weight_Info.H \
 			Variations.H \
 			Weights.H \
-			Hard_Process_Variation_Generator.H \
-			Hard_Process_Variation_Weight_Names.H
+			Hard_Process_Variation_Generator.H
 
 libToolsPhys_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_LHAPDFINCS@

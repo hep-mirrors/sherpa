@@ -497,14 +497,14 @@ void Event_Handler::Finish() {
   Weights_Map xs_wgtmap = TotalXSMPI();
   Weights_Map err_wgtmap = TotalErrMPI();
   std::map<std::string, double> xs_wgts;
-  xs_wgtmap.FillManagedVariations(xs_wgts);
+  xs_wgtmap.FillVariations(xs_wgts);
   std::map<std::string, double> err_wgts;
-  err_wgtmap.FillManagedVariations(err_wgts);
+  err_wgtmap.FillVariations(err_wgts);
   if (Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"]
 	  .SetDefault(false)
 	  .Get<bool>()) {
-    xs_wgtmap.FillManagedVariations(xs_wgts, Variations_Source::main);
-    err_wgtmap.FillManagedVariations(err_wgts, Variations_Source::main);
+    xs_wgtmap.FillVariations(xs_wgts, Variations_Source::main);
+    err_wgtmap.FillVariations(err_wgts, Variations_Source::main);
   }
 
   // Find longest weights name

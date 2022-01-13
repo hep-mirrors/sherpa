@@ -132,10 +132,13 @@ namespace ATOOLS {
     bool IsZero() const;
     double BaseWeight() const { return base_weight; }
 
-    // convenience method to fill e.g. an ordinary map with QCD variations
+    // Convenience method to fill e.g. an ordinary map with variations; passing
+    // Variations_Source::main only fills ME QCD-like variations (discarding
+    // ones that originate from the shower), while passing
+    // Variations_Source::all fill all variation (including custom one).
     template <typename T>
-    void FillManagedVariations(T&,
-            Variations_Source source=ATOOLS::Variations_Source::all) const;
+    void FillVariations(
+        T&, Variations_Source source = ATOOLS::Variations_Source::all) const;
 
     // calculate nominal values, either including all entries, for a single
     // entry `k`, or excluding those that have a certain variation type
@@ -289,9 +292,13 @@ namespace ATOOLS {
       std::function<double(double, size_t varindex, Qcut_Variation_Params*)>);
 
   template <typename T>
-  void Weights_Map::FillManagedVariations(T& map, Variations_Source source) const
+  void Weights_Map::FillVariations(T& map, Variations_Source source) const
   {
     DEBUG_FUNC(source);
+
+    // Fill "managed" QCD variations, which might need to be combined first,
+    // since we have QCD variations from "ME", "PS", etc., hence we need to
+    // build a product over those for each individual QCD variation.
     for (const auto type : s_variations->ManagedVariationTypes()) {
       // calculate contributions
       Weights weights = Weights {type};
@@ -321,6 +328,22 @@ namespace ATOOLS {
         map[varname] = weights.Variation(i) * relfac;
         msg_Debugging() << varname << " (" << varname
           << "): " << weights.Variation(i) * relfac << '\n';
+      }
+    }
+
+    // Fill other "custom" variations. These are simple, because they are all
+    // assumed to be independent from each other, hence no combination is
+    // necessary.
+    if (source == Variations_Source::all) {
+      for (const auto& kv : *this) {
+        if (kv.second.Type() != Variations_Type::custom)
+          continue;
+        const auto size = kv.second.Size();
+        // Iterate weights, skipping the nominal entry (at position 0).
+        for (int i {1}; i < size; ++i) {
+          map[kv.first + "." + kv.second.Name(i)] =
+              Nominal() / kv.second.Nominal() * kv.second[i];
+        }
       }
     }
   }
