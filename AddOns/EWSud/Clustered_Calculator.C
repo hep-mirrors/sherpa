@@ -72,6 +72,10 @@ void Clustered_Calculator::AddCalculators(const Cluster_Amplitude_UP& ampl, size
       }
     }
   }
+  // Add current calculator (except the base one, which has already been added
+  // to calculaturs in the ctor).
+  if (clusterings > 0)
+    AddCalculator(ampl, clusterings);
 }
 
 Clustered_Calculator::~Clustered_Calculator()

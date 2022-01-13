@@ -88,6 +88,11 @@ void Process_Group::SetKFactor(const KFactor_Setter_Arguments &args)
   for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetKFactor(args);
 }
 
+void Process_Group::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
+{
+  for (auto* p : m_procs) p->InitializeTheReweighting(mode);
+}
+
 bool Process_Group::IsGroup() const
 {
   return true;

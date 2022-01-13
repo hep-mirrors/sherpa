@@ -744,6 +744,15 @@ void MCatNLO_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_bproc->SetKFactor(args);
 }
 
+void MCatNLO_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
+{
+  p_bviproc->InitializeTheReweighting(mode);
+  p_ddproc->InitializeTheReweighting(mode);
+  p_rsproc->InitializeTheReweighting(mode);
+  p_rproc->InitializeTheReweighting(mode);
+  p_bproc->InitializeTheReweighting(mode);
+}
+
 void MCatNLO_Process::SetFixedScale(const std::vector<double> &s)
 {
   p_bviproc->SetFixedScale(s);

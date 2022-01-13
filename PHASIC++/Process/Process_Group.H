@@ -55,6 +55,7 @@ namespace PHASIC {
 
     void SetScale(const Scale_Setter_Arguments &args) override;
     void SetKFactor(const KFactor_Setter_Arguments &args) override;
+    void InitializeTheReweighting(ATOOLS::Variations_Mode) override;
 
     void SetFixedScale(const std::vector<double> &s) override;
     void SetSelectorOn(const bool on) override;
