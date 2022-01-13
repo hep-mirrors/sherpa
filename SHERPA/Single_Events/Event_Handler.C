@@ -508,7 +508,8 @@ void Event_Handler::Finish() {
   }
 
   // Find longest weights name
-  size_t max_weight_name_size {0};
+  static const std::string name_column_title {"Nominal or variation name"};
+  size_t max_weight_name_size {name_column_title.size()};
   for (const auto& kv : xs_wgts)
     max_weight_name_size = std::max(max_weight_name_size, kv.first.size());
 
