@@ -20,6 +20,26 @@ PROCESSES:
     CKKW: pow(10,-2.25/2.00)*E_CMS
     Order: {QCD: Any, EW: 2}
 
+- 11 -11 -> 5 -5 93{2}:
+    CKKW: pow(10,-2.25/2.00)*E_CMS
+    Order: {QCD: Any, EW: 2}
+
+- 11 -11 -> 4 -4 93{2}:
+    CKKW: pow(10,-2.25/2.00)*E_CMS
+    Order: {QCD: Any, EW: 2}
+
+- 11 -11 -> 5 -5 5 -5:
+    CKKW: pow(10,-2.25/2.00)*E_CMS
+    Order: {QCD: Any, EW: 2}
+
+- 11 -11 -> 5 -5 4 -4:
+    CKKW: pow(10,-2.25/2.00)*E_CMS
+    Order: {QCD: Any, EW: 2}
+
+- 11 -11 -> 4 -4 4 -4:
+    CKKW: pow(10,-2.25/2.00)*E_CMS
+    Order: {QCD: Any, EW: 2}
+
 ANALYSIS: Rivet
 ANALYSIS_OUTPUT: Analysis
 
