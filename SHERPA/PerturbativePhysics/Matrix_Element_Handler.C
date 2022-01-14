@@ -239,16 +239,16 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       }
       SetUnweightingMode(UnweightingMode::Accept);
       if (hasvars) {
-        // re-run with same rng state and include the calculatin of variations
-        // this time; note that afterwards we also re-consume the random number
-        // which was used above for the unweighting
+        // re-run with same rng state and include the calculation of variations
+        // this time
         ran->RestoreStatus();
         proc->SetVariationWeights(p_variationweights);
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
         proc->SetVariationWeights(NULL);
-      } else {
-        p_variationweights->InitialiseWeights();
       }
+    }
+    if (!hasvars) {
+      p_variationweights->InitialiseWeights();
     }
     m_evtinfo.m_weight*=wf;
     if (p_proc->GetSubevtList()) {
