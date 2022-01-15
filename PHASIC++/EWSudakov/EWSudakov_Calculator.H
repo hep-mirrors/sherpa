@@ -54,6 +54,7 @@ namespace PHASIC {
 
     /// calculate SSC l(s) coefficients
     Coeff_Value lsLogROverSCoeffs(const Two_Leg_Indizes&);
+    Complex CalculateComplexLog(const Two_Leg_Indizes&);
 
     /// calculate l_C(s) coefficients
     Coeff_Value lsCCoeff();
@@ -85,6 +86,7 @@ namespace PHASIC {
 
     const EWGroupConstants m_ewgroupconsts;
 
+    int m_include_i_pi {0};
     double m_threshold;
     bool m_checkinvariantratios;
     bool m_checkcoeff, m_checkkfac;

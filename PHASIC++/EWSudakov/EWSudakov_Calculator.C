@@ -49,6 +49,7 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
       s["EWSUDAKOV_C_COEFF_IGNORES_VECTOR_BOSONS"].SetDefault(false).Get<bool>();
   SetHighEnergyScheme(s["EWSUDAKOV_HIGH_ENERGY_SCHEME"].SetDefault("Default").Get<std::string>());
   m_includesubleading = s["EWSUDAKOV_INCLUDE_SUBLEADING"].SetDefault(false).Get<bool>();
+  m_include_i_pi = s["EWSUDAKOV_INCLUDE_I_PI"].SetDefault(false).Get<bool>();
 }
 
 EWSudakov_Calculator::~EWSudakov_Calculator()
@@ -173,21 +174,22 @@ EWSudakov_Log_Corrections_Map EWSudakov_Calculator::CorrectionsMap()
   const auto& base_ampl = m_ampls.BaseAmplitude();
   for (size_t k{0}; k < m_ampls.NumberOfLegs(); ++k) {
     for (size_t l{0}; l < k; ++l) {
-      /// If the scheme is not the default, I still need to perform checks
-      /// on the invariants
-      if (m_helimitscheme == HighEnergySchemes::_tolerant ) {
-        const double rkl       = std::abs((base_ampl.Mom(k) + base_ampl.Mom(l)).Abs2());
-        const double threshold = sqr(m_threshold) * m_ewgroupconsts.m_mw2;
-        logs[{EWSudakov_Log_Type::lSSC, {k, l}}] =
-          (rkl < threshold) ? 0.0 : ls * std::log(rkl / s);
-      } else { /// for the moment I don't have the other schemes
-        const double rkl =
-            std::abs((base_ampl.Mom(k) + base_ampl.Mom(l)).Abs2());
-        double log = ls * std::log(rkl / s);
-        if (m_includesubleading)
-          log += sqr(std::log(rkl / s)) / 2.0; // last term in eq. (3.3)
-        logs[{EWSudakov_Log_Type::lSSC, {k, l}}] = log;
-      }
+      logs[{EWSudakov_Log_Type::lSSC, {k, l}}] = 1.0;
+    //   /// If the scheme is not the default, I still need to perform checks
+    //   /// on the invariants
+    //   if (m_helimitscheme == HighEnergySchemes::_tolerant ) {
+    //     const double rkl       = std::abs((base_ampl.Mom(k) + base_ampl.Mom(l)).Abs2());
+    //     const double threshold = sqr(m_threshold) * m_ewgroupconsts.m_mw2;
+    //     logs[{EWSudakov_Log_Type::lSSC, {k, l}}] =
+    //       (rkl < threshold) ? 0.0 : ls * std::log(rkl / s);
+    //   } else { /// for the moment I don't have the other schemes
+    //     const double rkl =
+    //         std::abs((base_ampl.Mom(k) + base_ampl.Mom(l)).Abs2());
+    //     double log = ls * std::log(rkl / s);
+    //     if (m_includesubleading)
+    //       log += sqr(std::log(rkl / s)) / 2.0; // last term in eq. (3.3)
+    //     logs[{EWSudakov_Log_Type::lSSC, {k, l}}] = log;
+    //   }
     }
   }
 
@@ -416,7 +418,9 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
   for (const auto& flav : flavs) {
     coeff_A *= flav.Charge();
   }
-  coeff += 2.0 * coeff_A;
+  coeff += coeff_A;
+
+  const Complex log = CalculateComplexLog(indizes);
 
   // Z
   const auto kcouplings =
@@ -425,7 +429,7 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
       m_ewgroupconsts.IZ(flavs[1], m_current_spincombination[indizes[1]]);
   for (const auto kcoupling : kcouplings) {
     for (const auto lcoupling : lcouplings) {
-      auto contrib = 2.0 * kcoupling.second * lcoupling.second;
+      auto contrib = kcoupling.second * lcoupling.second;
       if (kcoupling.first != flavs[0] || lcoupling.first != flavs[1]) {
         Leg_Kfcode_Map key {{indizes[0], std::abs(kcoupling.first)},
                             {indizes[1], std::abs(lcoupling.first)}};
@@ -467,11 +471,11 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
             &m_comixinterface);
         // NOTE: deno can be zero, cf. comment above for Z loop terms
         const auto amplratio = (deno == 0.0) ? 0.0 : transformed / deno;
-        coeff += 2.0*kcoupling.second*lcoupling.second*amplratio;
+        coeff += kcoupling.second*lcoupling.second*amplratio;
       }
     }
   }
-  return coeff;
+  return coeff*log;
 }
 
 Coeff_Value EWSudakov_Calculator::lsCCoeff()
@@ -590,6 +594,28 @@ Complex EWSudakov_Calculator::TransformedAmplitudeValue(
       .GetSpinAmplitude(transformedampl, guildedspincombination);
 }
 
+Complex
+EWSudakov_Calculator::CalculateComplexLog(const Two_Leg_Indizes& indizes)
+{
+  /**
+   * For the off-diagonal SSC, we need to compute the logs here, are
+   * we need to include the I*pi terms correctly
+  */
+  const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
+  const auto s  = std::abs(m_ampls.MandelstamS());
+  const auto ls = std::log(s/m_ewgroupconsts.m_mw2);
+  const double rkl {(base_ampl.Mom(indizes[0]) + base_ampl.Mom(indizes[1])).Abs2()};
+  const double Thetarkl = (rkl>0?1.0:0.0);
+  const Coeff_Value lrkl = std::log(std::abs(rkl) / s);
+  constexpr Coeff_Value I = Coeff_Value(0.,1.);
+  const Coeff_Value ipiTheta = (m_include_i_pi?Coeff_Value(M_PI*Thetarkl):0.0);
+  Coeff_Value log = 2.*ls*(lrkl - ipiTheta);
+  if(m_includesubleading){
+    const double lz{std::log(m_ewgroupconsts.m_mw2/sqr(m_ewgroupconsts.m_mz))};
+    log += sqr(lrkl) + 2.*lz*lrkl - 2.0*ipiTheta;
+  }
+  return log;
+}
 
 namespace PHASIC {
 
