@@ -66,8 +66,7 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase)
   if (s_nozeropdf < 0) {
     s_nozeropdf = s["NO_ZERO_PDF"].SetDefault(0).Get<int>();
   }
-  m_mu2[0] = m_mu2[1] = 0.0;
-  m_xf1[0] = m_xf2[0] = m_xf1[1] = m_xf2[1] = 1.0;
+  m_xf1 = m_xf2 = 1.0;
   p_remnants[1] = p_remnants[0] = NULL;
   m_mode = 0;
   for (short int i = 0; i < 2; i++) {
@@ -75,7 +74,7 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase)
       m_mode += i + 1;
     m_mass2[i] = sqr(p_isrbase[i]->Flavour().Mass());
     m_x[i] = 1.;
-    m_mu2[i] = m_xf1[i] = m_xf2[i] = 0.;
+    m_mu2[i] = 0.;
   }
   FixType();
 }
@@ -439,8 +438,8 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
   if (has_nonexistent_or_correct_remnant_kinematics) {
     double f1 = (cmode & 1) ? p_isrbase[0]->Weight(fl1) : 1.0;
     double f2 = (cmode & 2) ? p_isrbase[1]->Weight(fl2) : 1.0;
-    m_xf1[0] = x1 * f1;
-    m_xf2[0] = x2 * f2;
+    m_xf1 = x1 * f1;
+    m_xf2 = x2 * f2;
     msg_IODebugging() << "  PDF1: " << rpa->gen.Beam1() << " -> " << fl1
                       << " at (" << x1 << "," << sqrt(Q12) << ") -> "
                       << om::bold << f1 << om::reset << "\n";

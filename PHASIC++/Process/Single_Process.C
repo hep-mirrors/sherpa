@@ -651,8 +651,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
         }
         sub->m_results = sub->m_result;
         sub->m_mewgt *= m_lastflux;
-        sub->m_xf1 = p_int->ISR()->XF1(0);
-        sub->m_xf2 = p_int->ISR()->XF2(0);
+        sub->m_xf1 = p_int->ISR()->XF1();
+        sub->m_xf2 = p_int->ISR()->XF2();
 
         // update result
         nominal += (sub->m_trig & 1) ? sub->m_result : 0.0;

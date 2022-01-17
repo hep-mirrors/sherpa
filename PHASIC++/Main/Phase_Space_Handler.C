@@ -198,8 +198,8 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,
   fl2=(long int)p_active->Process()->Flavours()[1-swap];
   x1=p_isrhandler->X1();
   x2=p_isrhandler->X2();
-  xf1=p_isrhandler->XF1(0);
-  xf2=p_isrhandler->XF2(0);
+  xf1=p_isrhandler->XF1();
+  xf2=p_isrhandler->XF2();
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
   auto res =

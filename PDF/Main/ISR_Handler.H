@@ -60,7 +60,7 @@ namespace PDF {
     BEAM::Beam_Base        * p_beam[2];
     REMNANTS::Remnant_Base * p_remnants[2];
 
-    double m_xf1[2], m_xf2[2];
+    double m_xf1, m_xf2;
 
     bool m_freezePDFforLowQ;
 
@@ -128,8 +128,8 @@ namespace PDF {
     inline double X2() const                    { return m_x[1]; }
     inline double MuF2(int beam) const          { return m_mu2[beam]; }
     inline void   SetMuF2(double mu2, int beam) { m_mu2[beam]=mu2; }
-    inline double XF1(int beam) const           { return m_xf1[beam]; }
-    inline double XF2(int beam) const           { return m_xf2[beam]; }
+    inline double XF1() const                   { return m_xf1; }
+    inline double XF2() const                   { return m_xf2; }
     inline int Swap() const                     { return m_swap; }
 
     inline void SetPDF(PDF_Base *pdf) {
