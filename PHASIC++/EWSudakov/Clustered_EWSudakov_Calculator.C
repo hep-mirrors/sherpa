@@ -27,8 +27,10 @@ Clustered_EWSudakov_Calculator::Clustered_EWSudakov_Calculator(Process_Base* _pr
   const Flavour_Vector& flavs = proc->Flavours();
 
   // Add calculator for the unclustered base process
+  auto base_calculator =
+    std::unique_ptr<EWSudakov_Calculator>(new EWSudakov_Calculator{proc});
   calculators.emplace(
-      std::make_pair(flavs, new EWSudakov_Calculator{proc}));
+      std::make_pair(flavs, std::move(base_calculator)));
 
   // Add calculators for clustered processes
   if (!m_disabled) {
@@ -124,8 +126,10 @@ void Clustered_EWSudakov_Calculator::AddCalculator(const Flavour_Vector& flavs, 
     << clustered_proc->Name() << '\n';
 
   // add calculator
+  auto calculator = std::unique_ptr<EWSudakov_Calculator>(
+      new EWSudakov_Calculator{clustered_proc});
   calculators.emplace(
-      std::make_pair(flavs, new EWSudakov_Calculator{clustered_proc}));
+      std::make_pair(flavs, std::move(calculator)));
 }
 
 double Clustered_EWSudakov_Calculator::CalcIClustered(
@@ -133,10 +137,10 @@ double Clustered_EWSudakov_Calculator::CalcIClustered(
     const Vec4D_Vector &mom, const Flavour_Vector &flavs)
 {
   double ClusteredIOperator{0.0};
-  const auto EWConsts {calculators[flavs]->GetEWGroupConstants()};
+  const auto EWConsts = calculators[flavs]->GetEWGroupConstants();
   for(const auto& clij: restab){
-    const auto i {clij.second[0]};
-    const auto j {clij.second[1]};
+    const auto i = clij.second[0];
+    const auto j = clij.second[1];
     const double Qi  {flavs[i].Charge()};
     const double Qj  {flavs[j].Charge()};
     const double sij {(mom[i] + mom[j]).Abs2()};
