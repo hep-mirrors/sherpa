@@ -62,6 +62,10 @@ void Clustered_EWSudakov_Calculator::AddCalculators(const Flavour_Vector& flavs,
       }
     }
   }
+  // Add current calculator (except the base one, which has already been added
+  // to calculaturs in the ctor).
+  if (clusterings > 0)
+    AddCalculator(flavs, clusterings);
 }
 
 Clustered_EWSudakov_Calculator::~Clustered_EWSudakov_Calculator()
