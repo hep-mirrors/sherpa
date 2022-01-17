@@ -36,7 +36,7 @@ void Phase_Space_Point::Init(Phase_Space_Handler *psh) {
   p_pshandler = psh;
   p_beamhandler = p_pshandler->GetBeamSpectra();
   p_isrhandler = p_pshandler->GetISRHandler();
-  p_moms = &p_pshandler->Momenta().front();
+  p_moms = p_pshandler->Momenta().data();
   m_nin = p_pshandler->Process()->Process()->NIn();
   m_nout = p_pshandler->Process()->Process()->NOut();
   m_nvec = m_nin + m_nout;
