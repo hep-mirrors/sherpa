@@ -63,6 +63,7 @@ namespace PHASIC {
     long int  m_killedpoints;
     std::vector<std::vector<double> > m_stats;
 
+    std::string m_enhanceObs, m_enhanceFunc;
 
     void RegisterDefaults() const;
     void InitParameters(const double & error);

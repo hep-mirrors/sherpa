@@ -35,41 +35,33 @@ Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
                                          const std::string eobs,
-                                         const std::string efunc):
-  m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
-  p_integrator(NULL), 
-  p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()),
-  p_flavours(proc->Process()->Flavours()),
-  m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin+m_nout),
-  m_initialized(false),
-  m_sintegrator(0), m_killedpoints(0),
-  m_printpspoint(false)
-{
+                                         const std::string efunc): m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
+      p_integrator(NULL), p_beamhandler(proc->Beam()),
+      p_isrhandler(proc->ISR()), p_flavours(proc->Process()->Flavours()),
+      m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout),
+      m_initialized(false), m_sintegrator(0), m_killedpoints(0),
+      m_printpspoint(false), m_enhanceObs(eobs), m_enhanceFunc(efunc) {
   RegisterDefaults();
   InitParameters(error);
   p_process->SetPSHandler(this);
 
   p_lab.resize(m_nvec);
-
-  if (CreateIntegrators()) {
-    m_pspoint.Init(this);
-    m_psenhance.Init(this);
-    m_psenhance.SetObservable(eobs,p_process->Process());
-    m_psenhance.SetFunction(efunc,p_process->Process());
-    m_enhanceweight = m_psenhance.Factor(p_process->Process(),
-                                         p_process->TotalXS());
-  }
-  else THROW(fatal_error,"Cretion of integrators failed.")
 }
 
-Phase_Space_Handler::~Phase_Space_Handler()
-{
-  delete p_integrator;
-}
+Phase_Space_Handler::~Phase_Space_Handler() { delete p_integrator; }
 
 bool Phase_Space_Handler::CreateIntegrators() {
   Channel_Creator channelcreator(this);
-  return channelcreator();
+  if (channelcreator()) {
+    m_pspoint.Init(this);
+    m_psenhance.Init(this);
+    m_psenhance.SetObservable(m_enhanceObs, p_process->Process());
+    m_psenhance.SetFunction(m_enhanceFunc, p_process->Process());
+    m_enhanceweight =
+        m_psenhance.Factor(p_process->Process(), p_process->TotalXS());
+    return true;
+  } else
+    THROW(fatal_error, "Creation of integrators failed.")
 }
 
 double Phase_Space_Handler::Integrate() 
