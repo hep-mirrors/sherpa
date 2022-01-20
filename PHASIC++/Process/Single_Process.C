@@ -14,6 +14,7 @@
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Phys/Hard_Process_Variation_Generator.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -23,6 +24,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 
 #include <algorithm>
+#include <memory>
 
 using namespace PHASIC;
 using namespace MODEL;
@@ -71,6 +73,8 @@ Single_Process::~Single_Process()
   for (Coupling_Map::const_iterator
 	 cit(m_cpls.begin());cit!=m_cpls.end();++cit)
     delete cit->second;
+  for (auto gen : m_hard_process_variation_generators)
+    delete gen;
 }
 
 size_t Single_Process::Size() const
@@ -668,7 +672,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   UpdateMEWeightInfo(scales);
 
-  // perform QCD reweighting of BVI or RS events
+  // perform on-the-fly QCD reweighting of BVI or RS events
   m_last *= nominal;
   if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
     if (GetSubevtList() == nullptr) {
@@ -686,6 +690,12 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   if (varmode != Variations_Mode::nominal_only
       && (GetSubevtList() != nullptr || !m_pinfo.Has(nlo_type::rsub))) {
     CalculateAssociatedContributionVariations();
+  }
+
+  if (varmode != Variations_Mode::nominal_only) {
+    for (auto& gen : m_hard_process_variation_generators) {
+      gen->GenerateAndFillWeightsMap(m_last);
+    }
   }
 
   // propagate (potentially) re-clustered momenta
@@ -1171,6 +1181,30 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::
     GetObject(m_pinfo.m_kfactor=cargs.m_kfac,cargs);
   if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
+}
+
+void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
+{
+  if (mode == Variations_Mode::nominal_only)
+    return;
+  // Parse settings for hard process variation generators; note that this can
+  // not be done in the ctor, because the matrix element handler has not yet
+  // fully configured the process at this point, and some variation generators
+  // might require that (an example would be EWSud)
+  Settings& s = Settings::GetMainSettings();
+  for (auto varitem : s["VARIATIONS"].GetItems()) {
+    if (varitem.IsScalar()) {
+      const auto name = varitem.Get<std::string>();
+      if (name == "None") {
+        return;
+      } else {
+        m_hard_process_variation_generators.push_back(
+            Hard_Process_Variation_Generator_Getter_Function::
+            GetObject(name, Hard_Process_Variation_Generator_Arguments{this})
+            );
+      }
+    }
+  }
 }
 
 void Single_Process::SetLookUp(const bool lookup)

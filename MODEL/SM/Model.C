@@ -22,7 +22,7 @@ namespace MODEL {
   public :
 
     Standard_Model();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
+    bool ModelInit();
     void InitVertices();
 
   };
@@ -118,12 +118,12 @@ void Standard_Model::ParticleInit()
   ReadParticleData();
 }
 
-bool Standard_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool Standard_Model::ModelInit()
 {
   FixEWParameters();  
   FixCKM();
   Settings& s = Settings::GetMainSettings();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
   SetRunningFermionMasses();
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());
@@ -151,7 +151,6 @@ void Standard_Model::FixEWParameters()
   double MZ=Flavour(kf_Z).Mass(), GZ=Flavour(kf_Z).Width();
   double MH=Flavour(kf_h0).Mass(), GH=Flavour(kf_h0).Width();
   std::string ewschemename(""),ewrenschemename("");
-  PRINT_VAR(ewscheme);
   switch (ewscheme) {
   case ew_scheme::UserDefined:
     // all SM parameters given explicitly

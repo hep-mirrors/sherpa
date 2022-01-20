@@ -102,7 +102,9 @@ EventInfo3::EventInfo3(const EventInfo3 &evtinfo) :
   m_userhook(false), m_userweight(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
-  m_wgtmap(evtinfo.m_wgtmap)
+  m_wgtmap(evtinfo.m_wgtmap),
+  p_hard_process_variation_weight_names(
+      evtinfo.p_hard_process_variation_weight_names)
 {
 }
 
@@ -116,7 +118,17 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
 {
   DEBUG_FUNC("use named weights: "<<m_usenamedweights
              <<", extended weights: "<<m_extendedweights);
-  std::map<std::string,double> wc;
+  class WeightContainer: public std::vector< std::pair<std::string, double> > {
+  public:
+  double& operator[](const std::string s) {
+    for (auto a = this->begin(); a != this->end(); ++a)
+    if (a->first == s) return a->second;
+    this->push_back(std::pair<std::string,double>(s, 0.0));
+    return this->back().second; 
+ }
+};
+  WeightContainer wc;
+
   if (m_usenamedweights) {
 
  // fill standard entries to ensure backwards compatability
@@ -231,54 +243,39 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
       Weights_Map& wgtmap =
           (idx == -1) ? m_wgtmap : (*p_subevtlist)[idx]->m_results;
 
+      // QCD variations
       for (const auto& source : m_variationsources) {
+        wgtmap.FillManagedVariations(wc, source);
+      }
 
-        for (const auto type : s_variations->ManagedVariationTypes()) {
-
-          // calculate contributions
-          Weights weights = Weights {type};
-          double nom {1.0};
-          double relfac {1.0};
-          if (source == ATOOLS::Variations_Source::all) {
-            nom = wgtmap.Nominal();
-            weights *= wgtmap.Combine(type);
-            relfac = wgtmap.NominalIgnoringVariationType(type);
-          } else {
-            // calculate nominal, relfac and weights ignoring shower weights
-            std::unordered_set<std::string> shower_keys {
-                "PS", "PS_QCUT", "MC@NLO_PS", "MC@NLO_QCUT"};
-            for (const auto& v : wgtmap) {
-              if (shower_keys.find(v.first) != shower_keys.end())
-                continue;
-              nom *= v.second.Nominal();
-              if (v.second.Type() == type) {
-                weights *= v.second;
-              } else {
-                relfac *= v.second.Nominal();
-              }
+      if (p_hard_process_variation_weight_names) {
+        for (const auto& weight_names : *p_hard_process_variation_weight_names) {
+          const auto it = wgtmap.find(weight_names->WeightMapKey());
+          if (it != wgtmap.end()) {
+            const auto size = it->second.Size();
+            // iterate weights, skipping the nominal entry
+            for (int i {1}; i < size; ++i) {
+              wc[weight_names->WeightNameForVariation(it->second.Name(i))]
+                = it->second[i] * wgtmap.Nominal();
             }
-            relfac *= wgtmap.BaseWeight();
           }
+        }
+      }
 
-          // do remaining combination and output resulting weights
-          size_t num_vars = weights.Size() - 1;
-          for (size_t i(0); i < num_vars; ++i) {
-            const std::string varname {weights.Name(i + 1)};
-            const std::string typevarname {
-                (source == ATOOLS::Variations_Source::main)
-                    ? "ME_ONLY_" + varname
-                    : varname};
-            wc[typevarname] = weights.Variation(i) * relfac;
-            msg_Debugging() << typevarname << " (" << typevarname
-                            << "): " << weights.Variation(i) * relfac << '\n';
-          }
+      // associated contributions variations
+      const auto it = wgtmap.find("ASSOCIATED_CONTRIBUTIONS");
+      if (it != wgtmap.end()) {
+        const auto asscontribs = it->second;
+        const auto num_asscontribvars = asscontribs.Size() - 1;
+        for (size_t i(0); i < num_asscontribvars; ++i) {
+          wc["ASS" + asscontribs.Name(i + 1)] = asscontribs[i + 1] * wgtmap.Nominal();
         }
       }
     }
 
   std::vector<std::string> w_names;
   std::vector<double> w_values;
-  for (std::map<std::string,double>::iterator it=wc.begin(); it!=wc.end();++it)
+  for (auto it = wc.begin(); it != wc.end(); ++it)
   { w_names.push_back(it->first); w_values.push_back(it->second);}
   evt.run_info()->set_weight_names(w_names);
   evt.weights()=w_values;
@@ -346,6 +343,20 @@ HepMC3_Interface::HepMC3_Interface() :
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
   
+  for (auto varitem : s["VARIATIONS"].GetItems()) {
+    if (varitem.IsScalar()) {
+      const auto name = varitem.Get<std::string>();
+      if (name == "None") {
+        return;
+      } else {
+        auto* names = Hard_Process_Variation_Weight_Names_Getter_Function::
+          GetObject(name, Hard_Process_Variation_Weight_Names_Arguments{});
+        if (names)
+          m_hard_process_variation_weight_names.push_back(names);
+      }
+    }
+  }
+
   m_runinfo = std::make_shared<HepMC::GenRunInfo>();
   HepMC::GenRunInfo::ToolInfo generator;
   generator.name = std::string("SHERPA");
@@ -376,6 +387,8 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   
   EventInfo3 evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
+  evtinfo.SetHardProcessVariationWeightNames(
+      &m_hard_process_variation_weight_names);
   // when subevtlist, fill hepmc-subevtlist
   if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
@@ -587,6 +600,8 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
   EventInfo3 evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
+  evtinfo.SetHardProcessVariationWeightNames(
+      &m_hard_process_variation_weight_names);
   evtinfo.WriteTo(event);
   
   m_blob2genvertex.clear();

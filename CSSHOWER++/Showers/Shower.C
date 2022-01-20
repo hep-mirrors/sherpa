@@ -88,8 +88,8 @@ double Shower::EFac(const std::string &sfk) const
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 {
   m_weightsmap.Clear();
-  m_weightsmap["PS"] = 1.0;
-  m_weightsmap["PS_QCUT"] = 1.0;
+  m_weightsmap["PS"] = Weights {Variations_Type::qcd};
+  m_weightsmap["PS_QCUT"] = Weights {Variations_Type::qcut};
   return EvolveSinglet(actual,maxem,nem);
 }
 

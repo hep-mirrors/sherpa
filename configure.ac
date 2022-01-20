@@ -75,6 +75,20 @@ if test x$dihiggs == xtrue; then
 fi
 AM_CONDITIONAL(ENABLE_DIHIGGS, [test x$dihiggs == xtrue])
 
+AC_ARG_ENABLE(ewsud,
+  AS_HELP_STRING([--enable-ewsud],[Enable EWSud AddOn]),
+  [ AC_MSG_CHECKING(for EWSud)
+    case "${enableval}" in
+      no)  AC_MSG_RESULT(no); ewsud=false ;;
+      yes) AC_MSG_RESULT(yes); ewsud=true ;;
+    esac ],
+  [ AC_MSG_CHECKING(for EWSud); AC_MSG_RESULT(no); ewsud=false ]
+)
+if test "$ewsud" = "true"; then
+  AC_DEFINE([USING__EWSud], "1", [using EWSud])
+fi
+AM_CONDITIONAL(USING__EWSud, test "$ewsud" = "true" )
+
 AX_CHECK_COMPILE_FLAG(
   [-Werror -Wl,--no-as-needed],
   [CXX="$CXX -Wl,--no-as-needed"])
@@ -127,6 +141,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  PDF/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/SM/Makefile \
+	  MODEL/SMGold/Makefile \
 	  MODEL/HEFT/Makefile \
 	  MODEL/SMDM/Makefile \
 	  MODEL/SMEHC/Makefile \
@@ -248,6 +263,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  AddOns/Higgs/Makefile \
 	  AddOns/BlackHat/Makefile \
 	  AddOns/OpenLoops/Makefile \
+      AddOns/Recola/Makefile \
 	  AddOns/GoSam/Makefile \
 	  AddOns/MadLoop/Makefile \
           AddOns/MCFM/Makefile \
@@ -260,6 +276,9 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  AddOns/Weights/Makefile \
 	  AddOns/Root/Makefile \
 	  AddOns/DiHiggsNLO/Makefile \
+	  AddOns/EWSud/Makefile \
+	  AddOns/EWSud/Tests/Makefile \
+	  AddOns/EWSud/Tests/run.sh \
 	  AddOns/Makefile \
 	  Makefile ])
 AC_OUTPUT

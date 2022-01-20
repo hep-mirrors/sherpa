@@ -26,7 +26,7 @@ namespace MODEL {
   public :
 
     HEFT();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr) override;
+    bool ModelInit() override;
     void InitVertices() override;
     size_t IndexOfOrderKey(const std::string&) const override;
 
@@ -135,12 +135,12 @@ void HEFT::ParticleInit()
   ReadParticleData();
 }
 
-bool HEFT::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool HEFT::ModelInit()
 {
   Settings& s = Settings::GetMainSettings();
   FixEWParameters();  
   FixCKM();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
   RegisterDefaults();
   FixEFT();
   SetRunningFermionMasses();

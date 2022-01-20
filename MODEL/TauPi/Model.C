@@ -22,7 +22,7 @@ namespace MODEL {
   public :
 
     Standard_Model_TauPi();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
+    bool ModelInit();
     void InitVertices();
 
   };
@@ -117,12 +117,12 @@ void Standard_Model_TauPi::ParticleInit()
   ReadParticleData();
 }
 
-bool Standard_Model_TauPi::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool Standard_Model_TauPi::ModelInit()
 {
   FixEWParameters();  
   FixCKM();
   Settings& s = Settings::GetMainSettings();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
   SetRunningFermionMasses();
   p_constants->insert(make_pair(string("F_PI"),
                       s["F_PI"].SetDefault(0.0924).Get<double>()));

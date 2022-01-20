@@ -237,6 +237,13 @@ namespace PHASIC {
      */
     void SetKFactor(const KFactor_Setter_Arguments &args) override;
     /*!
+     * @param mode Variations_Mode
+     *
+     * Inherited from Process_Base, calls InitializeTheReweighting for all
+     * subprocess
+     */
+    void InitializeTheReweighting(ATOOLS::Variations_Mode) override;
+    /*!
      * @param s vector<double> Fixed scales
      *
      * Inherited from Process_Base, calls SetFixedScale for all subprocesses

@@ -1,6 +1,7 @@
 #ifndef ATOOLS_Phys_Event_Weights_H
 #define ATOOLS_Phys_Event_Weights_H
 
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Variations.H"
 
@@ -131,6 +132,11 @@ namespace ATOOLS {
     bool IsZero() const;
     double BaseWeight() const { return base_weight; }
 
+    // convenience method to fill e.g. an ordinary map with QCD variations
+    template <typename T>
+    void FillManagedVariations(T&,
+            Variations_Source source=ATOOLS::Variations_Source::all);
+
     // calculate nominal values, either including all entries, for a single
     // entry `k`, or excluding those that have a certain variation type
     double Nominal() const;
@@ -163,11 +169,16 @@ namespace ATOOLS {
     /// implicit assumption that an entry that does not exist explicitly has a
     /// weight of unit.
     Weights_Map& operator*=(const Weights_Map&);
+    friend Weights_Map operator*(Weights_Map, const Weights_Map&);
 
     /// Add or subtract another weights map. This also makes the same implicit
     /// assumption that non-existing values are implicitly set to unity.
     Weights_Map& operator+=(const Weights_Map&);
     Weights_Map& operator-=(const Weights_Map&);
+    friend Weights_Map operator+(Weights_Map, const Weights_Map&);
+    friend Weights_Map operator-(Weights_Map, const Weights_Map&);
+
+    friend Weights_Map sqrt(const Weights_Map&);
 
     friend std::ostream& operator<<(std::ostream&, const Weights_Map&);
 
@@ -176,6 +187,11 @@ namespace ATOOLS {
     // one-by-one, in particular when doing additions/subtractions
     void MakeRelative();
     void MakeAbsolute();
+
+#ifdef USING__MPI
+    // Using MPI Allreduce to combine weight maps from different MPI ranks
+    void MPI_Allreduce();
+#endif
 
   private:
 
@@ -267,10 +283,46 @@ namespace ATOOLS {
       Weights&,
       std::function<double(double, size_t varindex, Qcut_Variation_Params*)>);
 
-  Weights_Map operator*(Weights_Map, double);
-  Weights_Map operator/(Weights_Map, double);
-
-  std::ostream& operator<<(std::ostream&, const Weights_Map&);
+  template <typename T>
+  void Weights_Map::FillManagedVariations(T& map, Variations_Source source)
+  {
+    DEBUG_FUNC(source);
+    for (const auto type : s_variations->ManagedVariationTypes()) {
+      // calculate contributions
+      Weights weights = Weights {type};
+      double relfac {1.0};
+      if (source == Variations_Source::all) {
+        weights *= Combine(type);
+        relfac = NominalIgnoringVariationType(type);
+      } else {
+        // calculate nominal, relfac and weights ignoring shower weights
+        static const std::unordered_set<std::string> shower_keys {
+          "PS", "PS_QCUT", "MC@NLO_PS", "MC@NLO_QCUT"};
+        for (const auto& v : *this) {
+          if (shower_keys.find(v.first) != shower_keys.end())
+            continue;
+          if (v.second.Type() == type) {
+            weights *= v.second;
+          } else {
+            relfac *= v.second.Nominal();
+          }
+        }
+        relfac *= base_weight;
+      }
+      // do remaining combination and store resulting weights
+      size_t num_vars = weights.Size() - 1;
+      for (size_t i(0); i < num_vars; ++i) {
+        const std::string varname {weights.Name(i + 1)};
+        const std::string typevarname {
+          (source == ATOOLS::Variations_Source::main)
+            ? "ME_ONLY_" + varname
+            : varname};
+        map[typevarname] = weights.Variation(i) * relfac;
+        msg_Debugging() << typevarname << " (" << typevarname
+          << "): " << weights.Variation(i) * relfac << '\n';
+      }
+    }
+  }
 
 } // namespace ATOOLS
 

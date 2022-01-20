@@ -115,8 +115,8 @@ namespace ANALYSIS {
       m_sumsqr+=sqr(weight);
       if (blobs.size())
 	for (Output_Vector::iterator it=m_outputs.begin(); it!=m_outputs.end(); ++it) {
-	  (*it)->SetXS(p_ana->AnalysisHandler()->EventHandler()->TotalXS(),
-		       p_ana->AnalysisHandler()->EventHandler()->TotalErr());
+	  (*it)->SetXS(p_ana->AnalysisHandler()->EventHandler()->TotalXS().Nominal(),
+		       p_ana->AnalysisHandler()->EventHandler()->TotalErr().Nominal());
 	  (*it)->Output((Blob_List*)&blobs);
 	}
       if (rpa->gen.NumberOfGeneratedEvents()>0 &&

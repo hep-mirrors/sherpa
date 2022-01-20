@@ -65,7 +65,8 @@ Vertex::Vertex(MODEL::Model_Base * _model)
       }
     }
     if (v->Lorentz.size()==2) {
-      if (v->Lorentz.front()=="FFVL" && v->Lorentz.back()=="FFVR") {
+      if ((v->Lorentz.front()=="FFVL" && v->Lorentz.back()=="FFVR")
+	  || (v->Lorentz.back()=="FFVL" && v->Lorentz.front()=="FFVR")) {
 	av->Lorentz.push_back(MODEL::LF_Getter::GetObject("FFV",MODEL::LF_Key()));
 	av->Color.pop_back();
       }

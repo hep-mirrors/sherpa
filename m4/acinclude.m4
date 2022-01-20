@@ -13,8 +13,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
         AM_LDFLAGS="-dynamic -flat_namespace"
       fi
       SEDCOMMAND="sed -i.bak -E"
+      LIB_SUFFIX=".dylib"
       AC_DEFINE([ARCH_DARWIN], "1", [Architecture identified as Darwin MacOS])
-      AC_DEFINE([LIB_SUFFIX], ".dylib", [library suffix set to .dylib]) 
       AC_DEFINE([LD_PATH_NAME], "DYLD_LIBRARY_PATH", [ld path name set to DYLD_LIBRARY_PATH]) ;;
     *linux*:*:*)
       echo "checking for architecture...  Linux"
@@ -22,8 +22,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
         AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
+      LIB_SUFFIX=".so"
       AC_DEFINE([ARCH_LINUX], "1", [Architecture identified as Linux])
-      AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
     *)
       echo "checking for architecture...  unknown"
@@ -36,8 +36,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
         AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
+      LIB_SUFFIX=".so"
       AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix])
-      AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
   esac
   if test "x$LDFLAGS" = "x"; then
@@ -45,6 +45,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
     AX_APPEND_LINK_FLAGS([-Wl,--no-as-needed], AM_LDFLAGS, [-Wl,$LDSTRICTFLAG])
   fi
 
+  AC_DEFINE_UNQUOTED([LIB_SUFFIX], ["$LIB_SUFFIX"], [shared library suffix])
+  AC_SUBST(LIB_SUFFIX)
   AC_SUBST(AM_LDFLAGS)
   if which md5sum > /dev/null; then MD5COMMAND="md5sum | cut -d' ' -f1";
   elif which openssl > /dev/null; then MD5COMMAND="openssl md5 | cut -d' ' -f2";
@@ -477,7 +479,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         yes)  if test -d "$HEPMC2DIR"; then
                 CONDITIONAL_HEPMC2DIR="$HEPMC2DIR"
                 CONDITIONAL_HEPMC2INCS="-I$HEPMC2DIR/include"
-                CONDITIONAL_HEPMC2LIBS="-L$HEPMC2DIR/lib -Wl,-R -Wl,$HEPMC2DIR/lib -L$HEPMC2DIR/lib64 -Wl,-R -Wl,$HEPMC2DIR/lib64 -lHepMC";
+                CONDITIONAL_HEPMC2LIBS="-L$HEPMC2DIR/lib -Wl,-rpath -Wl,$HEPMC2DIR/lib -L$HEPMC2DIR/lib64 -Wl,-rpath -Wl,$HEPMC2DIR/lib64 -lHepMC";
               else
                 AC_MSG_ERROR(\$HEPMC2DIR is not a valid path.);
               fi;
@@ -485,7 +487,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_HEPMC2DIR="${enableval}"
                 CONDITIONAL_HEPMC2INCS="-I${enableval}/include"
-                CONDITIONAL_HEPMC2LIBS="-L${enableval}/lib -Wl,-R -Wl,${enableval}/lib -L${enableval}/lib64 -Wl,-R -Wl,${enableval}/lib64 -lHepMC";
+                CONDITIONAL_HEPMC2LIBS="-L${enableval}/lib -Wl,-rpath -Wl,${enableval}/lib -L${enableval}/lib64 -Wl,-rpath -Wl,${enableval}/lib64 -lHepMC";
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
@@ -717,6 +719,32 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   fi
   AM_CONDITIONAL(OPENLOOPS_SUPPORT, test "$openloops" = "true")
 
+  
+  AC_ARG_ENABLE(
+    recola,
+    AC_HELP_STRING([--enable-recola=/path/to/recola], [Enable Recola.]),
+    [ AC_MSG_CHECKING(for Recola installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Recola not enabled); recola=false ;;
+        *)   RECOLA_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             recola=true;
+             if test -d "${RECOLA_PREFIX}"; then
+                AC_MSG_RESULT([${RECOLA_PREFIX}]);
+		CONDITIONAL_RECOLAINCS="-I$RECOLA_PREFIX/include";
+             else
+                AC_MSG_WARN(${RECOLA_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ recola=false ]
+  )
+  if test "$recola" = "true" ; then
+    AC_DEFINE_UNQUOTED([RECOLA_PREFIX], "$RECOLA_PREFIX", [Recola installation prefix])
+  fi
+  AC_SUBST(CONDITIONAL_RECOLAINCS)
+  AM_CONDITIONAL(RECOLA_SUPPORT, test "$recola" = "true")
+
+
   AC_ARG_ENABLE(
     gosam,
     AS_HELP_STRING([--enable-gosam=/path/to/gosam],[Enable GoSam.]),
@@ -760,6 +788,30 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_DEFINE_UNQUOTED([MADLOOP_PREFIX], "$MADLOOP_PREFIX", [Madloop installation prefix])
   fi
   AM_CONDITIONAL(MADLOOP_SUPPORT, test "$madloop" = "true")
+  
+  AC_ARG_ENABLE(
+    recola,
+    AC_HELP_STRING([--enable-recola=/path/to/recola], [Enable Recola.]),
+    [ AC_MSG_CHECKING(for Recola installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Recola not enabled); recola=false ;;
+        *)   RECOLA_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             recola=true;
+             if test -d "${RECOLA_PREFIX}"; then
+                AC_MSG_RESULT([${RECOLA_PREFIX}]);
+        CONDITIONAL_RECOLAINCS="-I$RECOLA_PREFIX/include";RECOLA_PREFIX
+             else
+                AC_MSG_WARN(${RECOLA_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ recola=false ]
+  )
+  if test "$recola" = "true" ; then
+    AC_DEFINE_UNQUOTED([RECOLA_PREFIX], "$RECOLA_PREFIX", [Recola installation prefix])
+  fi
+  AC_SUBST(CONDITIONAL_RECOLAINCS)    
+  AM_CONDITIONAL(RECOLA_SUPPORT, test "$recola" = "true")
 
   AC_ARG_ENABLE(
     mcfm,
@@ -769,7 +821,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         no)  AC_MSG_RESULT(MCFM not enabled); mcfm=false ;;
         yes)  if test -d "$MCFMDIR"; then
                 CONDITIONAL_MCFMDIR="$MCFMDIR"
-                CONDITIONAL_MCFMLIBS="-Wl,-R -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMLIBS="-Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
                 CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(\$MCFMDIR is not a valid path.);
@@ -777,7 +829,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
               AC_MSG_RESULT([${CONDITIONAL_MCFMDIR}]); mcfm=true;;
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_MCFMDIR="${enableval}"
-                CONDITIONAL_MCFMLIBS="-Wl,-R -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMLIBS="-Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
                 CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);

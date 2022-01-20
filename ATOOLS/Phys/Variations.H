@@ -157,20 +157,15 @@ namespace ATOOLS {
   };
 #endif
 
-  struct QCD_Variation_Params_Base {
-    virtual bool IsTrivial() const = 0;
-    std::string m_name;
-    //! Return part of a name based on a tag name and the associated value
-    template <typename U>
-    std::string GenerateNamePart(std::string tag, U value) const;
-  };
-
-  struct Qcut_Variation_Params : public QCD_Variation_Params_Base {
-    Qcut_Variation_Params(double scale_factor) : m_scale_factor{scale_factor} {
-      m_name = GenerateName();
-    }
-    bool IsTrivial() const override { return (m_scale_factor == 1.0); }
+  struct Qcut_Variation_Params {
+    Qcut_Variation_Params(double scale_factor):
+      m_scale_factor{scale_factor},
+      m_name {GenerateName()}
+    {}
+    bool IsTrivial() const { return (m_scale_factor == 1.0); }
     double m_scale_factor;
+    std::string m_name;
+    private:
     std::string GenerateName() const;
   };
 
@@ -179,7 +174,7 @@ namespace ATOOLS {
    *
    * Used as an argument to a reweighting function.
    */
-  struct QCD_Variation_Params : public QCD_Variation_Params_Base {
+  struct QCD_Variation_Params {
     QCD_Variation_Params(double muR2fac, double muF2fac,
                          double showermuR2fac, double showermuF2fac,
                          PDF::PDF_Base *pdf1,
@@ -191,10 +186,9 @@ namespace ATOOLS {
       m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
       m_deletepdfs(deletepdfs),
-      m_deletealphas(deletealphas)
-    {
-      m_name = GenerateName();
-    };
+      m_deletealphas(deletealphas),
+      m_name(GenerateName())
+    {}
     ~QCD_Variation_Params();
 
     void IncrementOrInitialiseWarningCounter(const std::string name) { m_warnings[name]++; }
@@ -203,7 +197,7 @@ namespace ATOOLS {
     void FillReweightingFactorsHisto(std::string name, double value) { m_rewfachisto.Fill(name, value); }
 #endif
 
-    bool IsTrivial() const override;
+    bool IsTrivial() const;
 
     const double m_muR2fac, m_muF2fac;
     const double m_showermuR2fac, m_showermuF2fac;
@@ -214,6 +208,7 @@ namespace ATOOLS {
     //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
     const bool m_deletepdfs;
     const bool m_deletealphas;
+    std::string m_name;
 
   private:
     //! Return a name based on the scale and PDF variations
@@ -225,6 +220,11 @@ namespace ATOOLS {
     ReweightingFactorHistogram m_rewfachisto;
 #endif
   };
+
+  template <typename U>
+  std::string GenerateVariationNamePart(std::string tag, U value) {
+    return tag + ToString(value);
+  }
 
 };
 

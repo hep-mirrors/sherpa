@@ -19,6 +19,7 @@ namespace ATOOLS {
 namespace PHASIC {
   struct Process_Info;
   struct Subprocess_Info;
+  class Process_Base;
 }
 
 namespace MODEL {
@@ -68,11 +69,16 @@ namespace SHERPA {
     ATOOLS::Vec4D   MomentumSum(const ATOOLS::Particle_Vector&);
 
     public:
-    Resonance_Finder(Matrix_Element_Handler * meh);
+    Resonance_Finder(Matrix_Element_Handler*);
+    Resonance_Finder(PHASIC::Process_Base*);
     ~Resonance_Finder();
 
     void BuildResonantBlobs(ATOOLS::Particle_Vector&,
                             ATOOLS::Blob_Vector& blobs);
+
+    void BuildResonantBlobs(ATOOLS::Particle_Vector&,
+                            ATOOLS::Blob_Vector& blobs,
+                            PHASIC::Process_Base*);
 
   };
 }// end of namespace SHERPA

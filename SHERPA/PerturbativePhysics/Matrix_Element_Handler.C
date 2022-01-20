@@ -553,7 +553,7 @@ int Matrix_Element_Handler::InitializeProcesses(
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
-  msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
+  msg_Info()<<METHOD<<"(): Performing tests"<<std::flush;
   rbtime=retime;
   btime=etime;
   int res(m_gens.PerformTests());
@@ -568,7 +568,7 @@ int Matrix_Element_Handler::InitializeProcesses(
   for (size_t i(0);i<m_procs.size();++i) 
     msg_Debugging()<<"    "<<m_procs[i]->Name()<<" -> "<<m_procs[i]<<"\n";
   msg_Debugging()<<"}\n";
-  msg_Info()<<METHOD<<"(): Initializing scales "<<std::flush;
+  msg_Info()<<METHOD<<"(): Initializing scales"<<std::flush;
   rbtime=retime;
   btime=etime;
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
@@ -597,6 +597,13 @@ int Matrix_Element_Handler::InitializeProcesses(
   return res;
 }
 
+int Matrix_Element_Handler::InitializeTheReweighting(Variations_Mode mode)
+{
+  for (auto* proc : m_procs)
+    proc->InitializeTheReweighting(mode);
+  return 1; // success
+}
+
 void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();
@@ -611,7 +618,6 @@ void Matrix_Element_Handler::BuildProcesses()
                                Strings::ProcessesSyntaxExamples);
   }
   
-  msg_Info()<<"\n";
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
     const auto keys = proc.GetKeys();

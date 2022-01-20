@@ -25,7 +25,7 @@ namespace MODEL {
   public :
 
     Standard_Model_Zprime();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
+    bool ModelInit();
     void InitVertices();
 
   };
@@ -133,13 +133,13 @@ void Standard_Model_Zprime::ParticleZprimeInit()
   s_kftable[kf_Zp] = new Particle_Info(kf_Zp,1000.,10.,0,0,2,-1,1,0,1,"Zprime","Zprime","Z^{\\prime}","Z^{\\prime}");
 }
 
-bool Standard_Model_Zprime::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool Standard_Model_Zprime::ModelInit()
 {
   FixZprimeParameters();
   FixEWParameters();
   FixCKM();
   Settings& s = Settings::GetMainSettings();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
   SetRunningFermionMasses();
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());
