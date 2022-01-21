@@ -108,7 +108,7 @@ namespace EXTRAXS {
     it’s above the threshold (so always 8 to 10 fermions in addition to n_g gluons 
     in the final state).
     
-    You can see that the largest cross-section is 14.5 milli barn at 10 GeV 
+    You can see that the largest cross-section is 14.5 millibarn at 10 GeV 
     (with alpha_s = 0.415 still kind of reasonable) and dropping to 4 pico barns 
     at 40 GeV
 
@@ -320,19 +320,15 @@ bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
       !m_data.Interpolate(m_Ehat)) return false;
   Poincare boost(mom[2]);
   m_internalscale = Max(FixScale(), 2.);  
-  //msg_Out()<<METHOD<<": scale = "<<m_internalscale<<" -> "<<sqr(m_internalscale)<<"\n";
-  size_t trials=1000;
+  m_mean_Ngluons  = m_data.Ngluons();
+  size_t trials   = 1000;
   while ((trials--)>0) {
-    m_mean_Ngluons = m_data.Ngluons();
     Vec4D sum      = -mom[2];
     if (DefineFlavours() && DistributeMomenta() && MakeColours()) {
       for (size_t i=0;i<m_flavours.size();i++) {
 	boost.BoostBack(m_momenta[i]);
 	sum += m_momenta[i];
       }
-      //msg_Out()<<METHOD<<" checks four-momentum conservation:\n"
-      //       <<(mom[0]+mom[1])<<" = "<<mom[2]<<": "<<(mom[0]+mom[1]-mom[2])[0]<<"\n"
-      //       <<mom[2]<<" = "<<sum<<": "<<(mom[2]-sum)[0]<<"\n";
       if (dabs((mom[2]-sum).Abs2())<1.e-6 && dabs(mom[2][0]-sum[0])<1.e-6) return true;
     }
   }
@@ -348,11 +344,8 @@ bool XS_instanton::DefineFlavours() {
   }
   m_masses.clear();
   m_nquarks = 0;
-  m_ngluons = NumberOfGluons();
-  Flavour flav   = Flavour(kf_gluon);
-  for (size_t i=0;i<m_ngluons;i++)  m_flavours.push_back(flav);
   for (size_t i=1;i<6;i++) {
-    flav = Flavour(i);
+    Flavour flav = Flavour(i);
     if (i>m_includeQ)                               continue;
     if (flav==Flavour(kf_b) && m_Ehat<m_bthreshold) continue;
     if (flav==Flavour(kf_c) && m_Ehat<m_cthreshold) continue;
@@ -369,6 +362,10 @@ bool XS_instanton::DefineFlavours() {
       totmass += flav.Mass(true);
     }
   }
+  do { m_ngluons = NumberOfGluons(); } while (m_ngluons>30-m_nquarks); 
+  Flavour flav   = Flavour(kf_gluon);
+  for (size_t i=0;i<m_ngluons;i++)  m_flavours.push_back(flav);
+
   return true;
 }
 

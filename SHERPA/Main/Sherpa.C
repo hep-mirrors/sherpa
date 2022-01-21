@@ -17,6 +17,7 @@
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/Tools/HepMC2_Interface.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
+#include "PHASIC++/Decays/Decay_Channel.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -72,8 +73,9 @@ Sherpa::~Sherpa()
     if (p_inithandler->GetVariations()) {
       p_inithandler->GetVariations()->PrintStatistics(msg->Out());
     }
-    Blob_List::PrintMomFailStatistics(msg->Out());
   }
+  Blob_List::PrintMomFailStatistics(msg->Out());
+  PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }

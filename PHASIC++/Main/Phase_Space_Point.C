@@ -109,7 +109,7 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
   // (m_sprime = m_fixedsprime and m_y = m_fixedy)
   Reset(mode);
   if (m_nin==2) {
-    if (!DefineBeamKinematics())        return false;
+    if (!DefineBeamKinematics())  return false;
     if (!DefineISRKinematics(process))  {
       if (p_beamchannels) p_beamchannels->NoGenerate();    
       if (p_isrchannels)  p_isrchannels->NoGenerate();    
@@ -119,7 +119,9 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
     else {
       if (p_isrchannels) {
 	Poincare * isrboost = p_isrhandler->GetCMSBoost();
-	for (size_t i=0;i<2;i++) isrboost->BoostBack(p_moms[i]);
+	for (size_t i=0;i<2;i++) {
+	  isrboost->BoostBack(p_moms[i]);
+	}
       }
     }
   }
@@ -173,7 +175,8 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
       p_isrhandler->GenerateSwap(p_pshandler->Active()->Process()->Flavours()[0],
 				 p_pshandler->Active()->Process()->Flavours()[1])?2.0:1.0;
   }
-  return p_isrhandler->MakeISR(m_sprime,m_y,p_moms,process->Process()->Selected()->Flavours());
+  bool success = p_isrhandler->MakeISR(m_sprime,m_y,p_moms,process->Process()->Selected()->Flavours());
+  return success;
 }
 
 bool Phase_Space_Point::DefineFSRKinematics() {
@@ -225,7 +228,9 @@ void Phase_Space_Point::BoostSystem() {
 }
 
 void Phase_Space_Point::CorrectMomenta() {
-  if (m_nin!=2) return;
+  if (m_nin!=2 ||
+      (m_nin==2 && m_nout==1 &&
+       p_pshandler->Active()->Process()->Flavours()[2].Kfcode()==999)) return;
   Vec4D  momsum(0.,0.,0.,0.);
   size_t imax(0);
   double Emax(0.0);
@@ -286,7 +291,7 @@ bool Phase_Space_Point::Check4Momentum() {
   if (!IsEqual(pin,pout,accu) || !IsEqual(sin,sout,accu)) {
     int prec(msg_Error().precision());
     msg_Error().precision(12);
-    msg_Error()<<"ERROR in "<<METHOD<<": {\n";
+    msg_Error()<<"ERROR in "<<METHOD<<": [accu = "<<accu<<"] {\n";
     for (int i=0;i<m_nin+m_nout;++i)
       msg_Error()<<"   p_"<<i<<" = "<<p_moms[i]<<" ("<<p_moms[i].Abs2()<<")\n";
     msg_Error()<<"   p_in  = "<<pin<<" ("<<sin<<")\n"
