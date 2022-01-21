@@ -10,7 +10,6 @@
 #include "BEAM/Main/DM_Annihilation_Weight.H"
 #include "BEAM/Main/RelicDensity_Kinematics.H"
 #include "BEAM/Main/RelicDensity_Weight.H"
-#include <cstdio>
 
 using namespace ATOOLS;
 using namespace BEAM;

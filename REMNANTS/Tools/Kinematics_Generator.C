@@ -224,7 +224,6 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
                   << " and the corresponding remnants are "
                   << p_remnants[0]->GetSpectators()[0] << " and "
                   << p_remnants[1]->GetSpectators()[0] << "\n";
-      // exit(1);
       scale = 0.;
     }
   } while (!CheckHH() && scale > 0.);

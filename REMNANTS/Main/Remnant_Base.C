@@ -45,6 +45,9 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
     }
     return true;
   }
+  msg_Error() << METHOD << ": Cannot extract particle:\n"
+              << (*parton) << "\n  from:\n"
+              << p_beam->Bunch() << "\n";
   return false;
 }
 
