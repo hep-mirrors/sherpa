@@ -39,7 +39,7 @@ namespace AMEGIC {
   public:
     int         InitAmplitude(Amegic_Model *,Topology *,
 			      std::vector<Process_Base *> &,
-			      std::vector<Process_Base *> &);
+			      std::vector<Process_Base *> &,int);
     int         InitAmplitude(Amegic_Model *,Topology *,
 			      std::vector<Process_Base *> &,
 			      std::vector<Process_Base *> &,
