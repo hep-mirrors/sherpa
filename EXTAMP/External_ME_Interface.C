@@ -9,6 +9,7 @@
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "PHASIC++/Process/Tree_ME2_Base.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Process_Group.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
@@ -88,13 +89,14 @@ namespace EXTAMP{
       for (size_t i(0);i<pi.m_maxcpl.size();++i)
         if (pi.m_maxcpl[i]!=pi.m_mincpl[i])
           THROW(fatal_error,"Inconsistent order input.");
-    }
-    std::vector<double> orders = pi.m_maxcpl;
+    } 
+ 
+    std::vector<double> orders = pi.m_maxcpl; 
     if ( pi.m_fi.m_nlotype&ATOOLS::nlo_type::vsub ) orders[0] -= 1;
-
+    
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(), 
-				  pi.m_fi.GetExternal(),
-				  orders);
+				                  pi.m_fi.GetExternal(),
+				                  orders);
 
     return PHASIC::Tree_ME2_Base::GetME2(args)!=NULL;
   }
@@ -121,8 +123,8 @@ namespace EXTAMP{
   {
     ATOOLS::nlo_type::code nlotype=pi.m_fi.m_nlotype;
 
-    if( nlotype==ATOOLS::nlo_type::lo || nlotype==ATOOLS::nlo_type::born )
-      return new Born_Process(pi);
+    if( nlotype==ATOOLS::nlo_type::lo )
+        return new Born_Process(pi);
     
     if ( nlotype&ATOOLS::nlo_type::vsub )
     {
@@ -183,7 +185,7 @@ namespace EXTAMP{
 	   because convention for PHASIC::Process_Info is different */
 	cpi.Combine(i,j, i<nin ? fl_ij.Bar() : fl_ij);
 
-	std::vector<double> orders = cpi.m_maxcpl;
+	std::vector<double> orders = cpi.m_maxcpl; orders[0] -= 1; 
 	if (!(cpi.m_fi.m_nlotype&ATOOLS::nlo_type::rsub)) orders[0] -= 1;
 	PHASIC::External_ME_Args args(cpi.m_ii.GetExternal(),
 				      cpi.m_fi.GetExternal(),
