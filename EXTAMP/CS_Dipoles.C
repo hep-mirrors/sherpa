@@ -210,11 +210,21 @@ double FI_Dipole::CalcA() const
   /* Coefficients of \delta_{ss^\prime} or -g^{\mu\nu} in eq. (5.39)
      - (5.41). */
   if(FlavType()==FlavourType::qtoqg)
+  {
+    // This if statement is to include the CSS improvements from commit
+    // 52969558
+    if(SubtractionType()==2) return 2.*zi/(1.-zi+(1.-x))+(1.-zi);
     return 2.0/(1.0-zi+(1.0-x)) - (1.+ zi);
+  }
   if(FlavType()==FlavourType::gtoqq)
     return 1.0;
   if(FlavType()==FlavourType::gtogg)
+  {
+    // This if statement is to include the CSS improvements from commit
+    // 52969558
+    if(SubtractionType()==2) return zi/(1.-zi+(1.-x))+zj/(1.-zj+(1.-x));
     return 1.0/(1.0-zi+(1.0-x)) + 1.0/(1-zj+(1.0-x)) - 2.0;
+  }
   
   THROW(fatal_error, "Internal error");
 }
@@ -230,13 +240,23 @@ double IF_Dipole::CalcA() const
   /* Coefficients of \delta_{ss^\prime} or -g^{\mu\nu} in eq. (5.65)
      - (5.68). */
   if((FlavType()==FlavourType::qtoqg) && flav_a.IsQuark())
+  {
+    // This if statement is to include the CSS improvements from commit
+    // 52969558
+    if(SubtractionType()==2) return 2.*x/(1.-x+ui) + (1.-x);
     return 2.0/(1.0-x+ui) - (1.+x);
+  }
   if((FlavType()==FlavourType::qtoqg) && flav_a.IsGluon())
     return 1.0-2.0*x*(1.0-x);
   if(FlavType()==FlavourType::gtoqq)
     return x;
   if(FlavType()==FlavourType::gtogg)
+  {
+    // This if statement is to include the CSS improvements from commit
+    // 52969558
+    if(SubtractionType()==2) return x/(1.-x+ui) + x*(1.-x);
     return 1/(1.0-x+ui)-1.0+x*(1.0-x);
+  }
     
   THROW(fatal_error, "Internal error");
 }
@@ -244,7 +264,7 @@ double IF_Dipole::CalcA() const
 double II_Dipole::CalcA() const
 {
   const double& x  = (m_kin.m_x);
-  const double& z  = (SubtractionType()==1) ? m_kin.m_x+m_kin.m_v : x;
+  const double& z  = (SubtractionType()&3) ? m_kin.m_x+m_kin.m_v : x;
   
   /* Need this to distinguish (5.145) from (5.147) */
   const ATOOLS::Flavour& flav_a = RealFlavours()[std::min(I(),J())];
@@ -252,7 +272,12 @@ double II_Dipole::CalcA() const
   /* Coefficients of \delta_{ss^\prime} or -g^{\mu\nu} in eq. (5.145)
      - (5.148). */
   if((FlavType()==FlavourType::qtoqg) && flav_a.IsQuark())
+  { 
+    // This if statement is to include the CSS improvements from commit
+    // 52969558
+    if(SubtractionType()==2) return 2.*z/(1.-x) + (1.-z);
     return 2.0/(1.0-x) - (1.+z);
+  }
   
   if((FlavType()==FlavourType::qtoqg) && flav_a.IsGluon())
     return 1.0-2.0*z*(1.0-z);
@@ -261,7 +286,12 @@ double II_Dipole::CalcA() const
     return z;
   
   if(FlavType()==FlavourType::gtogg)
+  {
+    // This if statement if to include the CSS improvements from commit
+    // 52969558
+    if(SubtractionType()==2) return x/(1.0-x) + z*(1.0-z) + z/(1.-x) - x/(1.-x);
     return x/(1.0-x)+z*(1.0-z);
+  }
   
   THROW(fatal_error, "Internal error");
 }
