@@ -611,7 +611,7 @@ EWSudakov_Calculator::CalculateComplexLog(const Two_Leg_Indizes& indizes)
   Coeff_Value log = 2.*ls*(lrkl - ipiTheta);
   if(m_includesubleading){
     const double lz{std::log(m_ewgroupconsts.m_mw2/sqr(m_ewgroupconsts.m_mz))};
-    log += sqr(lrkl) + 2.*lz*lrkl - 2.0*ipiTheta;
+    log += sqr(lrkl) + 2.*lz*lrkl - 2.0*ipiTheta*lrkl;
   }
   return log;
 }
