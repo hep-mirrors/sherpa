@@ -607,8 +607,7 @@ EWSudakov_Calculator::CalculateComplexLog(const Two_Leg_Indizes& indizes)
   const double rkl {(base_ampl.Mom(indizes[0]) + base_ampl.Mom(indizes[1])).Abs2()};
   const double Thetarkl = (rkl>0?1.0:0.0);
   const Coeff_Value lrkl = std::log(std::abs(rkl) / s);
-  constexpr Coeff_Value I = Coeff_Value(0.,1.);
-  const Coeff_Value ipiTheta = (m_include_i_pi?Coeff_Value(M_PI*Thetarkl):0.0);
+  const Coeff_Value ipiTheta = (m_include_i_pi?Coeff_Value(0.0,M_PI*Thetarkl):0.0);
   Coeff_Value log = 2.*ls*(lrkl - ipiTheta);
   if(m_includesubleading){
     const double lz{std::log(m_ewgroupconsts.m_mw2/sqr(m_ewgroupconsts.m_mz))};
