@@ -342,6 +342,16 @@ Weights Weights_Map::Combine(Variations_Type type) const
   return w;
 }
 
+void Weights_Map::SetZeroIfCloseToZero(double tolerance)
+{
+  MakeAbsolute();
+  for (auto& kv : *this)
+    for (auto& w : kv.second.weights)
+      if (IsEqual(w, tolerance))
+        w = 0.0;
+  MakeRelative();
+}
+
 Weights_Map ATOOLS::operator*(Weights_Map lhs, double rhs)
 {
   lhs *= rhs;

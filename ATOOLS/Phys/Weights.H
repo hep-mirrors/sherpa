@@ -153,6 +153,11 @@ namespace ATOOLS {
     /// and the entry-by-entry product of all variations.
     Weights Combine(Variations_Type type) const;
 
+    /// Set all values to exactly 0.0 that are close to zero. The tolerance
+    /// is the maximum absolute distance from 0.0 defining this "closeness".
+    /// This might be useful e.g. before calculating the square root.
+    void SetZeroIfCloseToZero(double tolerance);
+
     /// Assign a value to the base weight
     Weights_Map& operator=(double w) { base_weight = w; return *this; }
 

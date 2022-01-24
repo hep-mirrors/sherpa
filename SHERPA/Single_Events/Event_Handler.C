@@ -570,7 +570,9 @@ Weights_Map Event_Handler::TotalXS()
 Weights_Map Event_Handler::TotalErr()
 {
   if (m_n<=1) return TotalXS();
-  return sqrt((m_wgtmapsumsqr-m_wgtmapsum*m_wgtmapsum/m_n)/(m_n-1)/m_n);
+  auto numerator = m_wgtmapsumsqr*m_n - m_wgtmapsum*m_wgtmapsum;
+  numerator.SetZeroIfCloseToZero(1.0e-6);
+  return sqrt(numerator/(m_n-1)/(m_n*m_n));
 }
 
 Weights_Map Event_Handler::TotalXSMPI()
@@ -583,7 +585,9 @@ Weights_Map Event_Handler::TotalXSMPI()
 Weights_Map Event_Handler::TotalErrMPI()
 {
   if (m_mn<=1) return TotalXS();
-  return sqrt((m_mwgtmapsumsqr-m_mwgtmapsum*m_mwgtmapsum/m_mn)/(m_mn-1)/m_mn);
+  auto numerator = m_mwgtmapsumsqr*m_mn - m_mwgtmapsum*m_mwgtmapsum;
+  numerator.SetZeroIfCloseToZero(1.0e-6);
+  return sqrt(numerator/(m_mn-1)/(m_mn*m_mn));
 }
 
 void Event_Handler::WriteRNGStatus
