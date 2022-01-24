@@ -462,7 +462,14 @@ void Weights_Map::MakeRelative()
     nominals_prefactor = 1.0;
   }
   if (norm == 0.0) {
-    THROW(not_implemented, "Missing implementation for all-zero case.");
+    // Everything is zero, represent this with base_weight et to 0.0 and
+    // everything else set to 1.0 and return.
+    base_weight = 0.0;
+    nominals_prefactor = 1.0;
+    for (auto& kv : *this)
+      kv.second = 1.0;
+    is_absolute = false;
+    return;
   }
 
   // apply normalisation
