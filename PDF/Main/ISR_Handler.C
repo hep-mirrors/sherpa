@@ -226,18 +226,18 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D *p,
   }
   tau += sqrt(tau * tau - m_mass2[0] * m_mass2[1] / (s * s));
   if (m_mode == 1) {
-    m_x[1] = p1.PMinus() / pm.PMinus();
-    m_x[0] = tau / m_x[1];
+    m_x[1] = m_xkey[5] = p1.PMinus() / pm.PMinus();
+    m_x[0] = m_xkey[4] = tau / m_x[1];
   } else if (m_mode == 2) {
-    m_x[0] = p0.PPlus() / pp.PPlus();
-    m_x[1] = tau / m_x[0];
+    m_x[0] = m_xkey[4] = p0.PPlus() / pp.PPlus();
+    m_x[1] = m_xkey[5] = tau / m_x[0];
   } else if (m_mode == 3) {
     double yt =
         exp(y - 0.5 * log((tau + m_mass2[1] / s) / (tau + m_mass2[0] / s)) -
             (pp + pm).Y());
     tau = sqrt(tau);
-    m_x[0] = tau * yt;
-    m_x[1] = tau / yt;
+    m_x[0] = m_xkey[4] = tau * yt;
+    m_x[1] = m_xkey[5] = tau / yt;
   } else {
     THROW(fatal_error, "Invalid ISR mode");
   }
