@@ -106,7 +106,6 @@ namespace ATOOLS {
      */
     void AddTag(const std::string& key, const std::string& value);
     const String_Map& GetTags()       { return m_tags; }
-    const String_Map& GetGlobalTags() { return m_globaltags; }
     void ReplaceTags(std::string&);
 
     std::string GetPath();

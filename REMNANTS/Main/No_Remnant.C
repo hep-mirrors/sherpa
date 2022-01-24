@@ -15,9 +15,6 @@ bool No_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
     THROW(critical_error,"Too many particles extracted from intact beam.");
   }
   p_beamblob->AddToOutParticles(*m_extracted.begin());
-  //msg_Out()<<METHOD<<"("<<m_beam<<"): p = "<<InMomentum()<<", "
-  //	   <<"but x = "<<p_beam->X()<<"\n"
-  //	   <<(*p_beamblob)<<"\n";
   return true;
 }
 

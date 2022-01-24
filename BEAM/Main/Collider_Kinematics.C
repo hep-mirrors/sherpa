@@ -29,7 +29,6 @@ Collider_Kinematics::Collider_Kinematics(Beam_Base **beams)
 Collider_Kinematics::~Collider_Kinematics() {}
 
 void Collider_Kinematics::InitSystem() {
-  PRINT_FUNC("");
   // cms system from beam momenta - this is for potentially asymmetric
   // collisions.
   m_Ecms = sqrt(m_S);

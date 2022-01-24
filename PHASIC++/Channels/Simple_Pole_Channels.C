@@ -3,8 +3,6 @@
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Simple_Pole_Channels.H"
 
-#include <cstdio>
-
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
