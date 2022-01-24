@@ -108,7 +108,7 @@ namespace EXTRAXS {
     it’s above the threshold (so always 8 to 10 fermions in addition to n_g gluons 
     in the final state).
     
-    You can see that the largest cross-section is 14.5 millibarn at 10 GeV 
+    You can see that the largest cross-section is 14.5 milli barn at 10 GeV 
     (with alpha_s = 0.415 still kind of reasonable) and dropping to 4 pico barns 
     at 40 GeV
 
@@ -320,16 +320,20 @@ bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
       !m_data.Interpolate(m_Ehat)) return false;
   Poincare boost(mom[2]);
   m_internalscale = Max(FixScale(), 2.);  
-  m_mean_Ngluons  = m_data.Ngluons();
-  size_t trials   = 1000;
+  //msg_Out()<<METHOD<<": scale = "<<m_internalscale<<" -> "<<sqr(m_internalscale)<<"\n";
+  size_t trials=1000;
   while ((trials--)>0) {
+    m_mean_Ngluons = m_data.Ngluons();
     Vec4D sum      = -mom[2];
     if (DefineFlavours() && DistributeMomenta() && MakeColours()) {
       for (size_t i=0;i<m_flavours.size();i++) {
 	boost.BoostBack(m_momenta[i]);
 	sum += m_momenta[i];
       }
-      if (dabs((mom[2]-sum).Abs2())<1.e-6 && dabs(mom[2][0]-sum[0])<1.e-6) return true;
+      if (dabs((mom[2]-sum).Abs2())<1.e-6 && dabs(mom[2][0]-sum[0])<1.e-6) {
+	//msg_Out()<<METHOD<<" for "<<m_flavours.size()<<"\n";
+	return true;
+      }
     }
   }
   return false;
@@ -362,10 +366,9 @@ bool XS_instanton::DefineFlavours() {
       totmass += flav.Mass(true);
     }
   }
-  do { m_ngluons = NumberOfGluons(); } while (m_ngluons>30-m_nquarks); 
+  do { m_ngluons = NumberOfGluons(); } while (m_ngluons>=30-m_nquarks); 
   Flavour flav   = Flavour(kf_gluon);
   for (size_t i=0;i<m_ngluons;i++)  m_flavours.push_back(flav);
-
   return true;
 }
 
@@ -393,60 +396,45 @@ bool XS_instanton::DistributeMomenta() {
 }
 
 bool XS_instanton::MakeColours() {
-  size_t nquarkpairs = (m_flavours.size()-m_ngluons-2)/2., ncolours = nquarkpairs+m_ngluons+2;
-  std::vector<size_t> cols[2];
-  for (size_t j=0;j<2;j++) {
-    for (size_t i=0;i<ncolours;i++) 
-      cols[j].push_back(500+i);
-  }
   for (size_t i=0;i<m_colours.size();i++) m_colours[i].clear(); m_colours.clear();
   m_colours.resize(m_flavours.size());
-  size_t  pos, col, index;
-  Flavour flav;
-  for (size_t i=0;i<m_flavours.size()-1;++i) {
-    flav = m_flavours[i];
+  vector<size_t> cols[2];
+  for (size_t i=0;i<m_flavours.size();i++) {
+    Flavour flav = m_flavours[i];
+    if ((flav.IsQuark() && !flav.IsAnti()) || flav.IsGluon())
+      cols[i<2?1:0].push_back(i);
+    if ((flav.IsQuark() &&  flav.IsAnti()) || flav.IsGluon())
+      cols[i<2?0:1].push_back(i);
     m_colours[i].resize(2);
-    if ((flav.IsQuark() && !flav.IsAnti()) || flav.IsGluon()) {
-      index = i<2?1:0;
-      do {
-	pos = size_t(cols[index].size()*ran->Get());
-      } while (pos>=cols[index].size());
-      m_colours[i][0] = cols[index][pos];
-      if (cols[index].size()>1) {
-	for (size_t j=pos;j<cols[index].size()-1;j++) {
-	  cols[index][j] = cols[index][j+1];
-	}
-      }
-      cols[index].pop_back();
-    }
-    else m_colours[i][0] = 0;
-    if ((flav.IsQuark() && flav.IsAnti()) || flav.IsGluon()) {
-      index = i<2?0:1;
-      do {
-	pos = size_t(cols[index].size()*ran->Get());
-	if (pos>=cols[index].size()) continue;
-        col = cols[index][pos];
-      } while (col==m_colours[i][0]);
-      m_colours[i][1] = col;
-      if (cols[index].size()>1) {
-	for (size_t j=pos;j<cols[index].size()-1;j++) {
-	  cols[index][j] = cols[index][j+1];
-	}
-      }
-      cols[index].pop_back();
-    }
-    else m_colours[i][1] = 0;
   }
-  flav = m_flavours[m_flavours.size()-1];
-  m_colours[m_flavours.size()-1].resize(2);
-  m_colours[m_flavours.size()-1][0] = (((flav.IsQuark() && !flav.IsAnti()) || flav.IsGluon())?
-				       cols[0].back():0);
-  m_colours[m_flavours.size()-1][1] = (((flav.IsQuark() && flav.IsAnti()) || flav.IsGluon())?
-				       cols[1].back():0);  
-  if (m_colours[m_flavours.size()-1][0]==m_colours[m_flavours.size()-1][1]) {
-    size_t help = m_colours[m_flavours.size()-1][1];
-    m_colours[m_flavours.size()-1][1] = m_colours[2][1];
-    m_colours[2][1] = help;
+  size_t pos[2], parts[2], colindex = 500;
+  do {
+    do {
+      for (size_t i=0;i<2;i++) {
+	pos[i]   = size_t(0.999999999*cols[i].size()*ran->Get());
+	parts[i] = cols[i][pos[i]];
+      }
+    } while (parts[0]==parts[1]);
+    m_colours[parts[0]][0] = m_colours[parts[1]][1] = colindex++;
+    for (size_t i=0;i<2;i++) { cols[i].erase(find(cols[i].begin(),cols[i].end(),parts[i])); }
+  } while (cols[0].size()>1);
+  if (cols[0][0]!=cols[1][0]) {
+    m_colours[cols[0][0]][0] = m_colours[cols[1][0]][1] = colindex++; 
+  }
+  else {
+    if (m_colours[2][0]!=0) {
+      m_colours[cols[0][0]][0] = m_colours[2][0];
+      m_colours[2][0] = m_colours[cols[1][0]][1] = colindex++; 
+    }
+    else if (m_colours[2][1]!=0) {
+      m_colours[cols[1][0]][1] = m_colours[2][1];
+      m_colours[2][1] = m_colours[cols[0][0]][0] = colindex++; 
+    }
+  }
+  for (size_t i=0;i<2;i++) {
+    size_t help     = m_colours[i][0];
+    m_colours[i][0] = m_colours[i][1];
+    m_colours[i][1] = help;
   }
   return true;
 }
