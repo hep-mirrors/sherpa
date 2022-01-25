@@ -55,6 +55,7 @@ namespace PHASIC {
     /// calculate SSC l(s) coefficients
     Coeff_Value lsLogROverSCoeffs(const Two_Leg_Indizes&);
     Complex CalculateComplexLog(const Two_Leg_Indizes&);
+    Complex CalculateComplexSubleadingLog(const Two_Leg_Indizes&, const double M2);
 
     /// calculate l_C(s) coefficients
     Coeff_Value lsCCoeff();

@@ -401,6 +401,7 @@ Coeff_Value EWSudakov_Calculator::lsZCoeff()
 Coeff_Value
 EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
 {
+  const Complex log = CalculateComplexLog(indizes);
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
   std::vector<Flavour> flavs;
@@ -418,9 +419,7 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
   for (const auto& flav : flavs) {
     coeff_A *= flav.Charge();
   }
-  coeff += coeff_A;
-
-  const Complex log = CalculateComplexLog(indizes);
+  coeff += coeff_A * (log + CalculateComplexSubleadingLog(indizes, m_ewgroupconsts.m_mw2));
 
   // Z
   const auto kcouplings =
@@ -446,7 +445,7 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
         const auto amplratio = (deno == 0.0) ? 0.0 : transformed / deno;
         contrib *= amplratio;
       }
-      coeff += contrib;
+      coeff += contrib * (log + CalculateComplexSubleadingLog(indizes, sqr(m_ewgroupconsts.m_mz)));
     }
   }
 
@@ -471,11 +470,11 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
             &m_comixinterface);
         // NOTE: deno can be zero, cf. comment above for Z loop terms
         const auto amplratio = (deno == 0.0) ? 0.0 : transformed / deno;
-        coeff += kcoupling.second*lcoupling.second*amplratio;
+        coeff += kcoupling.second*lcoupling.second*amplratio * (log + CalculateComplexSubleadingLog(indizes, m_ewgroupconsts.m_mw2));
       }
     }
   }
-  return coeff*log;
+  return coeff;
 }
 
 Coeff_Value EWSudakov_Calculator::lsCCoeff()
@@ -609,11 +608,21 @@ EWSudakov_Calculator::CalculateComplexLog(const Two_Leg_Indizes& indizes)
   const Coeff_Value lrkl = std::log(std::abs(rkl) / s);
   const Coeff_Value ipiTheta = (m_include_i_pi?Coeff_Value(0.0,M_PI*Thetarkl):0.0);
   Coeff_Value log = 2.*ls*(lrkl - ipiTheta);
-  if(m_includesubleading){
-    const double lz{std::log(m_ewgroupconsts.m_mw2/sqr(m_ewgroupconsts.m_mz))};
-    log += sqr(lrkl) + 2.*lz*lrkl - 2.0*ipiTheta*lrkl;
-  }
   return log;
+}
+
+Complex
+EWSudakov_Calculator::CalculateComplexSubleadingLog(const Two_Leg_Indizes& indizes, const double M2)
+{
+  if(!m_includesubleading) return Complex(0.0,0.0);
+  const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
+  const auto s  = std::abs(m_ampls.MandelstamS());
+  const double rkl {(base_ampl.Mom(indizes[0]) + base_ampl.Mom(indizes[1])).Abs2()};
+  const double Thetarkl = (rkl>0?1.0:0.0);
+  const Coeff_Value lrkl = std::log(std::abs(rkl) / s);
+  const Coeff_Value ipiTheta = (m_include_i_pi?Coeff_Value(0.0,M_PI*Thetarkl):0.0);
+  const double lM{std::log(m_ewgroupconsts.m_mw2/M2)};
+  return sqr(lrkl) + 2.*lM*lrkl - 2.0*ipiTheta*lrkl;
 }
 
 namespace PHASIC {
