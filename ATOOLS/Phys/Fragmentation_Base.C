@@ -26,9 +26,14 @@ void Fragmentation_Base::Shrink(Blob_List * bloblist) {
        blit!=bloblist->rend();++blit) {
     Blob * blob = (*blit);
     if (blob->Type()==btp::Fragmentation) {
+      //msg_Out()<<METHOD<<":\n"<<(*blob)<<"\n"
+      //       <<" --> "<<blob->InParticle(0)<<" --> "
+      //       <<blob->InParticle(0)->ProductionBlob()<<" --> "
+      //       <<blob->InParticle(0)->ProductionBlob()->InParticle(0)<<" --> "	
+      //       <<blob->InParticle(0)->ProductionBlob()->InParticle(0)->ProductionBlob()<<"\n";	
       Blob * showerblob(blob->InParticle(0)->ProductionBlob());
       Blob * decblob(showerblob->InParticle(0)->ProductionBlob());
-      if (decblob->Type()!=btp::Hadron_Decay) continue;
+      if (!decblob || decblob->Type()!=btp::Hadron_Decay) continue;
       showerblob->DeleteInParticles(0);
       showerblob->DeleteOutParticles(0);
       deleteblobs.push_back(blob);
