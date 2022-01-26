@@ -21,10 +21,11 @@ namespace SHRIMPS {
     double          m_E[2], m_abs_t;
     double          m_rate[3], m_sigma;
     int             m_sign1, m_mode;
-    int contMassRange0 = 0;
-    int contMassRange1 = 0;
-    double Prob1440 = 0.4;
-    double Prob1710 = 0.;
+    int m_contMassRange0 = 0;
+    int m_contMassRange1 = 0;
+    double m_Prob1440 = 0.4;
+    double m_Prob1710 = 0.2;
+    int m_contMassIndex;
     
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
@@ -33,6 +34,9 @@ namespace SHRIMPS {
     ATOOLS::Flavour SelectFromMap(const size_t & hadron);
     void FixKinematics();
     std::vector<ATOOLS::Vec4D> SplitIntoQandQQ(ATOOLS::Vec4D pmu, double Mqq, double Mq);
+    std::vector<double> ComputePxPyPz(double p, int sign1, int mode);
+    ATOOLS::Vec4D Get4Vector(double M2[], double Etot);
+    double drawMass();
     void FillBlob(ATOOLS::Blob * blob);
   public:
     Soft_Diffractive_Event_Generator(Sigma_SD * sigma,const int & test=0);
