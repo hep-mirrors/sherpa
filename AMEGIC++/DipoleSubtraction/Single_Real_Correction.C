@@ -205,9 +205,13 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
         for (size_t s(0);s<stypes.size();++s) {
           ststr+=ToString(stypes[s])+" ";
         }
-        msg_Debugging()<<"[("<<i<<","<<j<<");"<<k<<"] : "
-                       <<(Combinable(1<<i,1<<j)?"":"not ")<<"combinable"
-                       <<", types: "<<ststr<<std::endl;
+        if (msg_LevelIsDebugging()) {
+          msg_Out()<<"[("<<i<<","<<j<<");"<<k<<"] : ";
+          if (!m_no_tree) {
+            msg_Out()<<(Combinable(1<<i,1<<j)?"":"not ") << "combinable, ";
+          }
+          msg_Out()<<"types: "<<ststr<<std::endl;
+        }
         for (size_t s(0);s<stypes.size();++s) {
 	  if ((m_pinfo.m_ckkw || m_pinfo.m_nlomode==nlo_mode::mcatnlo) &&
 	      stypes[s]==sbt::qed) continue;
