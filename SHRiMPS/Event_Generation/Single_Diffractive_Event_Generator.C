@@ -55,8 +55,6 @@ Single_Diffractive_Event_Generator(Sigma_SD * sigma,
 	       <<std::endl;
     exit(1);
   }
-
-//   m_pl12 = m_pl22 = m_pl12+sqr(m_beam1.Mass())-sqr(m_out1.Mass());
 }
 
 Single_Diffractive_Event_Generator::~Single_Diffractive_Event_Generator() {

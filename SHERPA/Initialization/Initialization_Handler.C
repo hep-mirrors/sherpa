@@ -978,6 +978,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     p_hdhandler=hd;
   }
   else if ((decmodel==string("Lund")) ) {
+    /*
 #ifdef USING__PYTHIA
     as->SetActiveAs(isr::hard_subprocess);
     Lund_Interface * lund(NULL);
@@ -989,9 +990,10 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
 #else
+    */
     THROW(fatal_error, string("Pythia not enabled during compilation. ")+
           "Use the configure option --enable-pythia to enable it.");
-#endif
+    //#endif
   }
   else {
     THROW(fatal_error,"Hadron decay model '"+decmodel+"' not implemented.");
