@@ -126,11 +126,8 @@ void Phase_Space_Point::InitCuts(Process_Integrator *const process) {
 bool Phase_Space_Point::operator()(Process_Integrator *const process,
                                    const psmode::code &mode) {
   p_pshandler->GetInfo()->ResetAll();
-  // start with beam kinematics: s' and y taken from the external beams
-  // (m_sprime = m_fixedsprime and m_y = m_fixedy)
   Reset(mode);
   if (m_nin == 2) {
-    m_y = (p_moms[0] + p_moms[1]).Y();
     if (!DefineBeamKinematics())
       return false;
     if (!DefineISRKinematics(process)) {
@@ -161,6 +158,9 @@ bool Phase_Space_Point::DefineBeamKinematics() {
       return false;
   }
   m_sprime = p_beamhandler->Sprime();
+  m_y = (p_beamhandler->GetBeam(0)->InMomentum() +
+         p_beamhandler->GetBeam(1)->InMomentum())
+            .Y();
   m_y += p_beamhandler->Y();
   return true;
 }
