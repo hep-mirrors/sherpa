@@ -22,7 +22,7 @@ void Hadron_Init::Init() {
   if(s_kftable.find(kf_N_1710)==s_kftable.end()) // if not initialised
     s_kftable[kf_N_1710]=
       new Particle_Info(kf_N_1710,1.71,0.12,0,1,1,0,"N(1710)","N(1710)");
-  if(s_kftable.find(kf_N_1440_plus)==s_kftable.end()) // if not initialised
+  if(s_kftable.find(kf_N_1710_plus)==s_kftable.end()) // if not initialised
     s_kftable[kf_N_1710_plus]=
       new Particle_Info(kf_N_1710_plus,1.71,0.12,3,1,1,0,"N(1710)+","N(1710)+");
 }
