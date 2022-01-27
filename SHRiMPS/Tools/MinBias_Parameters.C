@@ -82,6 +82,7 @@ void MinBias_Parameters::RegisterDefaults() const
   s["Q_0^2"].SetDefault(1.0);
   s["Q_as^2"].SetDefault(1.0);
   s["KT_shower"].SetDefault(5.);
+  s["Collinear_KT_min"].SetDefault(1.);
 }
 
 void MinBias_Parameters::FillRunParameters() {
@@ -173,6 +174,7 @@ void MinBias_Parameters::FillLadderParameters() {
 void MinBias_Parameters::FillShowerLinkParameters() {
   const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
   m_showerlink_params.KT2min = sqr(s["KT_shower"].Get<double>());
+  m_showerlink_params.CEKT2min = sqr(s["Collinear_KT_min"].Get<double>());
 }
 
 

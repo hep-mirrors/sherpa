@@ -15,7 +15,8 @@ Inelastic_Event_Generator::
 Inelastic_Event_Generator(Sigma_Inelastic * sigma,const int & test) :
   Event_Generator_Base(sigma), p_sigma(sigma), 
   m_primaries(Primary_Ladders()),
-  m_mustinit(true)
+  m_mustinit(true),
+  p_collemgen(new Collinear_Emission_Generator())
 {}
 
 Inelastic_Event_Generator::~Inelastic_Event_Generator() {
@@ -25,6 +26,7 @@ Inelastic_Event_Generator::~Inelastic_Event_Generator() {
     m_Bgrids.erase(m_Bgrids.begin());
   }
   m_Bgrids.clear();
+  delete p_collemgen;
 }
 
 void Inelastic_Event_Generator::
@@ -98,7 +100,9 @@ bool Inelastic_Event_Generator::MakePrimaryScatterBlobs(ATOOLS::Blob_List * blob
   }
   delete ladder;
   m_primaries.GetLadders()->pop_front();
-  return 1;
+  return p_collemgen->GenerateEmissions(blobs);
+  //PRINT_VAR(*blob);
+  //return 1;
 }
 
 bool Inelastic_Event_Generator::InitEvent(Blob_List * blobs) {

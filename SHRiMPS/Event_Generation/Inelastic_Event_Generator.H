@@ -5,6 +5,7 @@
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
 #include "SHRiMPS/Ladders/Primary_Ladders.H"
 #include "SHRiMPS/Beam_Remnants/Colour_Generator.H"
+#include "SHRiMPS/Event_Generation/Collinear_Emission_Generator.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
@@ -25,6 +26,8 @@ namespace SHRIMPS {
     int    m_Nladders, m_Nprim, m_Ngen;
 
     Cluster_Algorithm * p_cluster;
+
+    Collinear_Emission_Generator * p_collemgen;
         
     bool InitEvent(ATOOLS::Blob_List * blobs);
     bool SelectEikonal();
