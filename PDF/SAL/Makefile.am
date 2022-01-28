@@ -1,5 +1,7 @@
 pkglib_LTLIBRARIES    =	libSALSherpa.la
 
+AM_CXXFLAGS="-Wno-write-strings"
+
 GITTAG = PDF/SAL
 include ../../git.make
 
