@@ -228,7 +228,8 @@ void Simple_Pole_Forward::GenerateWeight(const int &mode) {
     }
   }
   p_rans[0] = m_sgridkey[0];
-  p_rans[1] = m_ygridkey[0];
+  if (m_mode == 3)
+    p_rans[1] = m_ygridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
   m_weight = pw * m_spkey.Weight() * m_ykey.Weight() / m_spkey[2];
 }
@@ -296,7 +297,8 @@ void Simple_Pole_Backward::GenerateWeight(const int &mode) {
     }
   }
   p_rans[0] = m_sgridkey[0];
-  p_rans[1] = m_ygridkey[0];
+  if (m_mode == 3)
+    p_rans[1] = m_ygridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
   m_weight = pw * m_spkey.Weight() * m_ykey.Weight() / m_spkey[2];
 }
