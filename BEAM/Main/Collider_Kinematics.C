@@ -29,8 +29,6 @@ Collider_Kinematics::Collider_Kinematics(Beam_Base **beams)
 Collider_Kinematics::~Collider_Kinematics() {}
 
 void Collider_Kinematics::InitSystem() {
-  // cms system from beam momenta - this is for potentially asymmetric
-  // collisions.
   m_Ecms = sqrt(m_S);
 
   rpa->gen.SetEcms(m_Ecms);
@@ -38,12 +36,11 @@ void Collider_Kinematics::InitSystem() {
   rpa->gen.SetPBeam(1, p_beams[1]->InMomentum());
 
   Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(m_Ecms));
-
-  double x = (m_S + m_m2[0] - m_m2[1]) / (2. * m_S);
-  double E1 = x * m_Ecms, pz = sqrt(sqr(E1) - m_m2[0]);
-  m_fixp_cms[0] = Vec4D(E1, 0., 0., pz);
-  m_fixp_cms[1] = Vec4D(m_Ecms - E1, 0., 0., -pz);
   m_on = (m_mode != collidermode::monochromatic);
+  m_x[0] = 1.;
+  m_x[1] = 1.;
+  m_LabBoost = Poincare(p_beams[0]->InMomentum() + p_beams[1]->InMomentum());
+  m_CMSBoost = Poincare(p_beams[0]->OutMomentum() + p_beams[1]->OutMomentum());
 }
 
 void Collider_Kinematics::InitIntegration() {
@@ -72,6 +69,7 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D *moms) {
                 << m_sprime << std::endl;
     return false;
   }
+  CalculateSudakovMomenta();
   switch (m_mode) {
   case collidermode::monochromatic:
     return MakeMonochromaticBeams(moms);
@@ -89,15 +87,12 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D *moms) {
 }
 
 bool Collider_Kinematics::MakeMonochromaticBeams(ATOOLS::Vec4D *moms) {
-  for (size_t beam = 0; beam < 2; beam++)
-    m_xkey[beam + 2] = 1.;
-  moms[0] = m_fixp_cms[0];
-  moms[1] = m_fixp_cms[1];
+  // Should actually not be called, because the beamhandler is considered to be
+  // off for monochromatic beams
   return true;
 }
 
 bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D *moms) {
-  CalculateSudakovMomenta();
   double tau = CalculateTau();
   double yt = exp(m_ykey[2] - 0.5 * log((tau + m_m2[1]) / (tau + m_m2[0])) -
                   m_Plab.Y());
@@ -113,7 +108,6 @@ bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D *moms) {
 }
 
 bool Collider_Kinematics::MakeSpectral1Beams(ATOOLS::Vec4D *moms) {
-  CalculateSudakovMomenta();
   m_x[1] = m_xkey[5] =
       1.; // Should actually be p_beams[1]->InMomentum().PMinus() /
           // m_p_minus.PMinus(), but leads to violation of momentum conservation
@@ -129,7 +123,6 @@ bool Collider_Kinematics::MakeSpectral1Beams(ATOOLS::Vec4D *moms) {
 }
 
 bool Collider_Kinematics::MakeSpectral2Beams(ATOOLS::Vec4D *moms) {
-  CalculateSudakovMomenta();
   m_x[0] = m_xkey[4] =
       1.; // Should actually be p_beams[0]->InMomentum().PPlus() /
           // m_p_plus.PPlus(), see above
@@ -199,6 +192,7 @@ void Collider_Kinematics::SetLimits() {
                                 : 2. * log(m_m[i] / p));
     m_xkey[i + 2] = log(
         Min(p_beams[i]->Xmax(), (e / p * (1.0 + sqrt(1.0 - sqr(m_m[i] / e))))));
+    m_xkey[i + 4] = m_x[i];
   }
   // sprime's with masses - still need to check for masses
   double sprimemin = Max(m_sprimekey[0], m_S * exp(m_xkey[0] + m_xkey[1]));

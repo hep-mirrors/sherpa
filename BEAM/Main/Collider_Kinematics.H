@@ -8,7 +8,7 @@ class Collider_Kinematics : public Kinematics_Base {
 private:
   collidermode::code m_mode;
 
-  ATOOLS::Vec4D m_fixp_cms[2], m_p_plus, m_p_minus;
+  ATOOLS::Vec4D m_p_plus, m_p_minus;
   double m_Ecms;
   double m_ymin, m_ymax, m_xmin, m_xmax;
   ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
