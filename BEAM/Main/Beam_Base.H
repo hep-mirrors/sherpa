@@ -20,10 +20,8 @@ namespace BEAM {
   public:
     Beam_Base(beamspectrum::code type,const ATOOLS::Flavour _beam,
 	      const double _energy,const double _polarisation,
-	      const int _dir);
+	      const int _dir, int mode = 0);
     virtual ~Beam_Base() {}
-
-    virtual bool Init(int mode=0);
 
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
