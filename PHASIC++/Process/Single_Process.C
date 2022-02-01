@@ -375,8 +375,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
           // earlier revisions for the rel-2-2-1 release
           double rn[2] = {0, 0};
           if (!nominalcsi) {
-            rn[0] = ran->Get();
-            rn[1] = ran->Get();
+            rn[0] = 0.5;
+            rn[1] = 0.5;
           }
 	  for (int i(0); i < 2; ++i) {
             // skip PDF ratio if high-x sanity condition not fullfilled
