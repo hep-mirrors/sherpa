@@ -143,6 +143,8 @@ namespace PDF {
 
     inline double XF1(int i) const { return m_xf1[i]; }
     inline double XF2(int i) const { return m_xf2[i]; }
+    inline double SetXF1(double xf, int i) { m_xf1[i] = xf; }
+    inline double SetXF2(double xf, int i) { m_xf2[i] = xf; }
 
     inline void SetBeam(BEAM::Beam_Base *const beam,const size_t i)
     { if (i<2) p_beam[i]=beam; }

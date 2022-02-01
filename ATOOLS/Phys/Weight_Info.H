@@ -16,6 +16,22 @@ namespace ATOOLS {
              const double &xf1=0.,const double &xf2=0.) :
       m_fl1(fl1), m_fl2(fl2), m_x1(x1), m_x2(x2),
       m_muf12(muf12), m_muf22(muf22), m_xf1(xf1), m_xf2(xf2) {}
+    bool operator==(const PDF_Info& rhs) const
+    {
+      if (m_fl1 != rhs.m_fl1) return false;
+      if (m_fl2 != rhs.m_fl2) return false;
+      if (!IsEqual(m_x1, rhs.m_x1)) return false;
+      if (!IsEqual(m_x2, rhs.m_x2)) return false;
+      if (!IsEqual(m_muf12, rhs.m_muf12)) return false;
+      if (!IsEqual(m_muf22, rhs.m_muf22)) return false;
+      if (!IsEqual(m_xf1, rhs.m_xf1)) return false;
+      if (!IsEqual(m_xf2, rhs.m_xf2)) return false;
+      return true;
+    }
+    bool operator!=(const PDF_Info& rhs) const
+    {
+      return !(*this == rhs);
+    }
   }; // end of struct PDF_Info
 
   inline std::ostream & operator<<(std::ostream & s,
@@ -41,13 +57,28 @@ namespace ATOOLS {
       m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
     Weight_Info &operator*=(const double &c)
     { m_weight*=c; m_dxs*=c; return *this; }
+    bool operator==(const Weight_Info& rhs) const
+    {
+      if (!IsEqual(m_weight, rhs.m_weight)) return false;
+      if (!IsEqual(m_dxs, rhs.m_dxs)) return false;
+      if (!IsEqual(m_enh, rhs.m_enh)) return false;
+      if (!IsEqual(m_ntrial, rhs.m_ntrial)) return false;
+      if (m_pdf != rhs.m_pdf) return false;
+      return true;
+    }
+    bool operator!=(const Weight_Info& rhs) const
+    {
+      return !(*this == rhs);
+    }
   }; // end of struct Weight_Info
 
   inline std::ostream & operator<<(std::ostream & s,
                                    const ATOOLS::Weight_Info & wi)
   {
     return s<<" w = "<<wi.m_weight<<", dxs = "<<wi.m_dxs
-            <<", enh = "<<wi.m_enh<<std::endl;
+            <<", enh = "<<wi.m_enh
+            <<", trials = "<<wi.m_ntrial
+            <<", pdfs = { "<<wi.m_pdf<<" }"<<std::endl;
   }
 
   struct mewgttype {

@@ -274,6 +274,9 @@ namespace SHERPA {
     inline void IncrementOrInitialiseWarningCounter(const std::string name)
     { p_variations->IncrementOrInitialiseWarningCounter(name); }
 
+    bool AreWeightsInitialised(
+        const Variations_Type::code t=Variations_Type::main) const;
+
 private:
     Variations * p_variations;
     //! a vector of (sub)event weights for each set of parameters
@@ -294,9 +297,6 @@ private:
 
     void InitialiseWeights(const Subevent_Weights_Vector & subweights,
                            const Variations_Type::code t=Variations_Type::main);
-
-    bool AreWeightsInitialised(
-        const Variations_Type::code t=Variations_Type::main) const;
   };
 
   std::ostream & operator<<(std::ostream &, const Variation_Weights &);

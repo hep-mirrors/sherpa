@@ -244,7 +244,34 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         ran->RestoreStatus();
         proc->SetVariationWeights(p_variationweights);
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+        bool should_throw = false;
+        if (!info) {
+          msg_Out() << "Weight Info is NULL for re-run.\n";
+          should_throw = true;
+        }
+        if (info && (*info != m_evtinfo)) {
+          PRINT_VAR(*info);
+          PRINT_VAR(m_evtinfo);
+          msg_Out() << "Re-run after pilot run does not give the same results.\n";
+          should_throw = true;
+        }
+        if (!p_variationweights) {
+          msg_Out() << "Variation weights are NULL for re-run.\n";
+          should_throw = true;
+        }
+        if (p_variationweights && (!p_variationweights->AreWeightsInitialised())) {
+          PRINT_VAR(info);
+          if (info) PRINT_VAR(*info);
+          PRINT_VAR(m_evtinfo);
+          PRINT_VAR(p_proc->GetMEwgtinfo());
+          if (p_proc->GetMEwgtinfo()) PRINT_VAR(*p_proc->GetMEwgtinfo());
+          msg_Out() << "Weights not initialised after OneEvent.\n";
+          should_throw = true;
+        }
+        if (should_throw) THROW(fatal_error, "Rerun error.");
+        delete info;
         proc->SetVariationWeights(NULL);
+        // - [ ] Fix scoped enumeration (UnweightingMode) to recover pre C++11 compatibility
       }
     }
     if (!hasvars) {

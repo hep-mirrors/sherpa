@@ -806,6 +806,10 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   // them through the ISR_Handler instead of the nominal PDF
   PDF::PDF_Base *nominalpdf1 = p_int->ISR()->PDF(0);
   PDF::PDF_Base *nominalpdf2 = p_int->ISR()->PDF(1);
+  const double muf21 = p_int->ISR()->MuF2(0);
+  const double muf22 = p_int->ISR()->MuF2(1);
+  const double xf1 = p_int->ISR()->XF1(0);
+  const double xf2 = p_int->ISR()->XF2(0);
   p_int->ISR()->SetPDF(varparams->p_pdf1, 0);
   p_int->ISR()->SetPDF(varparams->p_pdf2, 1);
 
@@ -819,8 +823,10 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   // reset
   p_int->ISR()->SetPDF(nominalpdf1, 0);
   p_int->ISR()->SetPDF(nominalpdf2, 1);
-  p_int->ISR()->SetMuF2(info.m_muF2, 0);
-  p_int->ISR()->SetMuF2(info.m_muF2, 1);
+  p_int->ISR()->SetMuF2(muf21, 0);
+  p_int->ISR()->SetMuF2(muf22, 1);
+  p_int->ISR()->SetXF1(xf1, 0);
+  p_int->ISR()->SetXF2(xf2, 0);
 
   return csi;
 }
