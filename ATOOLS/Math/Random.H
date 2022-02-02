@@ -24,8 +24,8 @@ namespace ATOOLS {
     // In that case, override all three of the below functions and
     // in particular return true in CanRestoreStatus().
     virtual bool CanRestoreStatus() const { return false; }
-    virtual void SaveStatus() { return; }
-    virtual void RestoreStatus() { return; }
+    virtual void SaveStatus() {}
+    virtual void RestoreStatus() {}
 
   };
 
