@@ -332,7 +332,15 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       ran->RestoreStatus();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
       assert(info);
-      assert(IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6);
+      if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {
+        msg_Error()
+          <<"ERROR: The results of the pilot run and the re-run are not"
+          <<" the same:\n"
+          <<"  Pilot run: "<<m_evtinfo<<"\n"
+          <<"  Re-run:    "<<*info<<"\n"
+          <<"Will continue, but deviations beyond numerics would indicate"
+          <<" a logic error resulting in wrong statistics!\n";
+      }
       m_evtinfo=*info;
       delete info;
       // also consume random number used to set the discriminator for
