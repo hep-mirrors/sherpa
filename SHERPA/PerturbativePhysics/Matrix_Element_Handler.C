@@ -27,6 +27,7 @@
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
 
+#include <cassert>
 #include <unistd.h>
 #include <cctype>
 
@@ -330,6 +331,8 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       // this time
       ran->RestoreStatus();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
+      assert(info);
+      assert(IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6);
       m_evtinfo=*info;
       delete info;
       // also consume random number used to set the discriminator for
