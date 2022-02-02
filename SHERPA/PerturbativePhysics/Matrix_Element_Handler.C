@@ -332,6 +332,9 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
       m_evtinfo=*info;
       delete info;
+      // also consume random number used to set the discriminator for
+      // unweighting above, such that it is not re-used in the future
+      ran->Get();
     }
   }
 
