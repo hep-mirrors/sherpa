@@ -123,6 +123,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
     ran->SetSeedStorageIncrement(incr);
   }
   m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
+  msg_Info()<<METHOD<<"(): Set pilot run mode to "<<m_pilotrunenabled<<".\n";
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
