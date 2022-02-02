@@ -232,6 +232,14 @@ void ATOOLS::Random::SetSeed(long int nid)
 }
 
 
+bool ATOOLS::Random::CanRestoreStatus() const
+{
+  if (p_external)
+    return p_external->CanRestoreStatus();
+  return true;
+}
+
+
 void ATOOLS::Random::SaveStatus()
 {
   if (p_external!=NULL) return;
