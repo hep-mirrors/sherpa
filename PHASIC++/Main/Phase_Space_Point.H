@@ -43,7 +43,6 @@ namespace PHASIC {
     
     psmode::code        m_mode;    
     size_t              m_nin, m_nout, m_nvec;
-    ATOOLS::Poincare  * p_fixedISboost;
     double              m_Ecms, m_Eprime, m_smin, m_sprime, m_y;
     double              m_fixedsprime, m_fixedy;
     std::vector<double> m_masses;
@@ -53,7 +52,7 @@ namespace PHASIC {
 
     void   InitFixedIncomings();
     bool   DefineBeamKinematics();
-    bool   DefineISRKinematics(Process_Integrator *const process);
+    bool   DefineISRKinematics(Process_Integrator * process);
     bool   DefineFSRKinematics();
     bool   Check4Momentum();
     void   CorrectMomenta();
@@ -68,8 +67,8 @@ namespace PHASIC {
     ~Phase_Space_Point();
 
     void   Init(Phase_Space_Handler * psh);
-    void   InitCuts(Process_Integrator *const process);
-    bool   operator()(Process_Integrator *const process,
+    void   InitCuts(Process_Integrator * process);
+    bool   operator()(Process_Integrator * process,
 		      const psmode::code & mode=psmode::normal_call);
 
     double CalculateWeight();

@@ -11,7 +11,7 @@ Phase_Space_Point::Phase_Space_Point()
     : p_pshandler(NULL), p_beamhandler(NULL), p_isrhandler(NULL), p_moms(NULL),
       p_cuts(NULL), p_beamchannels(NULL), p_isrchannels(NULL),
       p_fsrchannels(NULL), m_Ecms(ATOOLS::rpa->gen.Ecms()), m_smin(0.),
-      p_fixedISboost(NULL), m_weight(0.), m_ISsymmetryfactor(1.) {}
+      m_weight(0.), m_ISsymmetryfactor(1.) {}
 
 Phase_Space_Point::~Phase_Space_Point() {
   if (p_fsrchannels)
@@ -20,8 +20,6 @@ Phase_Space_Point::~Phase_Space_Point() {
     delete p_isrchannels;
   if (p_beamchannels)
     delete p_beamchannels;
-  if (p_fixedISboost)
-    delete p_fixedISboost;
   if (p_cuts)
     delete p_cuts;
 }
@@ -87,17 +85,9 @@ void Phase_Space_Point::InitFixedIncomings() {
   } else if (m_nin == 2) {
     if (p_beamhandler->On() || p_isrhandler->On() != 0)
       return;
-    double Ebeam[2];
-    for (size_t i = 0; i < 2; i++) {
-      Ebeam[i] = p_beamhandler->GetBeam(i)->Energy();
-      double mom = (i == 0 ? 1. : -1.) * sqrt(sqr(Ebeam[i] - m_masses2[i]));
-      m_ISmoms[i] = Vec4D(Ebeam[i], 0., 0., mom);
+    for (int i = 0; i < 2; ++i) {
+      m_ISmoms[i] = p_beamhandler->GetBeam(i)->InMomentum();
     }
-    if (!p_fixedISboost)
-      delete p_fixedISboost;
-    p_fixedISboost = new ATOOLS::Poincare(m_ISmoms[0] + m_ISmoms[1]);
-    for (int i = 0; i < m_nin; ++i)
-      p_fixedISboost->Boost(m_ISmoms[i]);
     m_sprime = m_fixedsprime = (m_ISmoms[0] + m_ISmoms[1]).Abs2();
     m_Eprime = sqrt(m_sprime);
     m_y = m_fixedy = (m_ISmoms[0] + m_ISmoms[1]).Y();
