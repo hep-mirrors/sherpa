@@ -63,14 +63,13 @@ const double Collider_Weight::operator()(ATOOLS::Flavour *flin) {
     m_weight = 1.;
     break;
   case collidermode::spectral_1:
-    m_weight = p_beams[0]->Weight(flavour1) * p_beams[0]->X();
+    m_weight = p_beams[0]->Weight(flavour1);
     break;
   case collidermode::spectral_2:
-    m_weight = p_beams[1]->Weight(flavour2) * p_beams[1]->X();
+    m_weight = p_beams[1]->Weight(flavour2);
     break;
   case collidermode::both_spectral:
-    m_weight = p_beams[0]->Weight(flavour1) * p_beams[0]->X() *
-               p_beams[1]->Weight(flavour2) * p_beams[1]->X();
+    m_weight = p_beams[0]->Weight(flavour1) * p_beams[1]->Weight(flavour2);
     break;
   case collidermode::unknown:
     msg_Error() << "Error in " << METHOD << ": unknown mode.\n"
