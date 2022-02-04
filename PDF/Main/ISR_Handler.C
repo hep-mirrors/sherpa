@@ -453,9 +453,9 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
       return pow(std::numeric_limits<double>::min(), 0.25);
     if (mode & 8) {
       if (mode & 2)
-        return x1 * f1;
+        return f1;
       if (mode & 4)
-        return x2 * f2;
+        return f2;
     }
     return f1 * f2;
   }
