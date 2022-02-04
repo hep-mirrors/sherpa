@@ -404,6 +404,14 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
     return *this;
   }
 
+  // insert ones on the lhs when a key that is present on the rhs is missing
+  for (auto& kv : rhs) {
+    auto it = find(kv.first);
+    if (it == end()) {
+      this->emplace(kv.first, kv.second.type);
+    }
+  }
+
   // transform both sides into absolute storage instead of the default relative
   // storage
   MakeAbsolute();
