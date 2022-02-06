@@ -89,7 +89,7 @@ namespace UFO{
     // warning is printed to user to check value if consistent with UFO model
     msg_Info()<<METHOD<<"(): Trying to read in \\alpha_QED as parameter "
               <<"1 in SMINPUTS block."<<std::endl;
-    SetAlphaQED(p_dataread->GetEntry<double>("SMINPUTS",1,1./137.03599976,false));
+    SetAlphaQED(1./p_dataread->GetEntry<double>("SMINPUTS",1,127.952,false));
 
     // set default value for sin(theta), cos(theta), vev if not available 
     // because the parameter is needed for the parton shower and beyond; 
