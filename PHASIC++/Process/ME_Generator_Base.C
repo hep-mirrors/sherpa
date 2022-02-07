@@ -271,7 +271,7 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
     ampl->Leg(i)->SetMom(boost*p);
   }
   for (int i = 0; i < 2; i++) {
-    if (!(p_remnant->GetRemnant(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)
+    if (p_remnant != NULL && !(p_remnant->GetRemnant(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)
               ->TestExtract(ampl->Leg(i)->Flav(), -ampl->Leg(i)->Mom())))
       return -1;
   }
