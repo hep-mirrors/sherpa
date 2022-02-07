@@ -11,7 +11,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders() :
-  p_laddergenerator(new Ladder_Generator_KT()),
+  p_laddergenerator(new Ladder_Generator_Eik()),
   m_Ecms(rpa->gen.Ecms()/2.),
   m_test(false)
 {
