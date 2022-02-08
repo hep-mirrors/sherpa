@@ -29,8 +29,9 @@ int Collinear_Emission_Generator::GenerateEmissions(Blob_List * blobs){
     Blob * blob(blobs->FindLast(btp::Hard_Collision));
     //PRINT_VAR(*blob);
     if (blob->GetInParticles().size() != 2) return 0;
-    m_sladder = (blob->InParticle(0)->Momentum()+blob->InParticle(1)->Momentum()).Abs2();
-    m_inparts = blob->GetOutParticles();
+    m_sladder   = (blob->InParticle(0)->Momentum()+blob->InParticle(1)->Momentum()).Abs2();
+    m_inparts   = blob->GetOutParticles();
+    m_beamparts = blob->GetInParticles();
     AddEmissions();
     Blob * ceblob(new Blob);
     ceblob->SetId();
@@ -203,23 +204,24 @@ bool Collinear_Emission_Generator::FixKinematics(double kt2, double z, Vec4D & s
 }
 
 void Collinear_Emission_Generator::FillBlob(Blob* blob){
-    blob->AddData("Weight",new Blob_Data<double>(1.));
-    blob->AddData("Factorisation_Scale",new Blob_Data<double>(1.));
-    blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
-    blob->SetType(btp::Shower);
-    blob->SetTypeSpec("ShrimpsCollinearEmissions");
-    blob->SetStatus(blob_status::needs_hadronization);
-    for (size_t i = 0; i < m_inparts.size(); ++i) {
-        Particle * part(new Particle(-1, m_inparts[i]->Flav(), m_inparts[i]->Momentum(), m_inparts[i]->Info()));
-        part->SetNumber(0);
-        part->SetFlow(1,m_inparts[i]->GetFlow(1));
-        part->SetFlow(2,m_inparts[i]->GetFlow(2));
-        blob->AddToInParticles(part);
-    }
-    for (size_t i = 0; i < m_outparts.size(); ++i) {
-        blob->AddToOutParticles(m_outparts[i]);
-    }
-    return;
+  blob->AddData("Weight",new Blob_Data<double>(1.));
+  blob->AddData("Factorisation_Scale",new Blob_Data<double>(1.));
+  blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
+  blob->SetType(btp::Shower);
+  blob->SetTypeSpec("ShrimpsCollinearEmissions");
+  blob->SetStatus(blob_status::needs_hadronization | blob_status::needs_beams);
+  for (size_t i = 0; i < m_beamparts.size(); ++i) {
+    Particle * part(new Particle(-1,m_beamparts[i]->Flav(),m_beamparts[i]->Momentum(),
+				 m_beamparts[i]->Info()));
+    part->SetNumber(0);
+    part->SetBeam(m_beamparts[i]->Beam());
+    part->SetFlow(1,m_beamparts[i]->GetFlow(1));
+    part->SetFlow(2,m_beamparts[i]->GetFlow(2));
+    blob->AddToInParticles(part);
+  }
+  for (size_t i = 0; i < m_inparts.size(); ++i)   blob->AddToInParticles(m_inparts[i]);
+  for (size_t i = 0; i < m_outparts.size(); ++i)  blob->AddToOutParticles(m_outparts[i]);
+  return;
 }
 
 void Collinear_Emission_Generator::CleanUp(){

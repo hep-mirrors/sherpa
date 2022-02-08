@@ -10,7 +10,7 @@
 namespace SHRIMPS {
   class Collinear_Emission_Generator {
   private:
-    ATOOLS::Particle_Vector  m_inparts, m_outparts, m_gluons;
+    ATOOLS::Particle_Vector  m_inparts, m_outparts, m_beamparts, m_gluons;
     MODEL::Strong_Coupling * p_alphaS;
     double                   m_kt2min, m_kt2max, m_sladder;
     std::map<int,double>     m_kt2starts;
