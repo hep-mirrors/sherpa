@@ -218,6 +218,7 @@ void Collinear_Emission_Generator::FillBlob(Blob* blob){
     part->SetFlow(1,m_beamparts[i]->GetFlow(1));
     part->SetFlow(2,m_beamparts[i]->GetFlow(2));
     blob->AddToInParticles(part);
+    blob->AddToOutParticles(m_beamparts[i]);
   }
   for (size_t i = 0; i < m_inparts.size(); ++i)   blob->AddToInParticles(m_inparts[i]);
   for (size_t i = 0; i < m_outparts.size(); ++i)  blob->AddToOutParticles(m_outparts[i]);
