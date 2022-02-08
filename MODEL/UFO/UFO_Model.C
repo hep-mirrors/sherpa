@@ -117,13 +117,13 @@ namespace UFO{
       Complex csin2thetaW=1.-ccos2thetaW;
       Complex cvev=2.*sqrt(muW2*csin2thetaW/(4.*M_PI*MODEL::aqed->Default()));
       if (p_complexconstants->find("ccos2_thetaW")==p_complexconstants->end()) {
-        msg_Info()<<METHOD<<"(): Trying to read in cos(\\theta_W) as parameter "
+        msg_Info()<<METHOD<<"(): Trying to read in cos(\\theta_W)^2 as parameter "
                   <<"10 in SMINPUTS block."<<std::endl;
         ccos2thetaW=p_dataread->GetEntry<Complex>("SMINPUTS",10,ccos2thetaW,false);
         p_complexconstants->insert(make_pair(std::string("ccos2_thetaW"),ccos2thetaW));
       }
       if (p_complexconstants->find("csin2_thetaW")==p_complexconstants->end()) {
-        msg_Info()<<METHOD<<"(): Trying to read in sin(\\theta_W) as parameter "
+        msg_Info()<<METHOD<<"(): Trying to read in sin(\\theta_W)^2 as parameter "
                   <<"11 in SMINPUTS block."<<std::endl;
         csin2thetaW=p_dataread->GetEntry<Complex>("SMINPUTS",11,csin2thetaW,false);
         p_complexconstants->insert(make_pair(std::string("csin2_thetaW"),csin2thetaW));
