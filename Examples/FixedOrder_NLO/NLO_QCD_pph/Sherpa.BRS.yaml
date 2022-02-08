@@ -24,8 +24,7 @@ PROCESSES:
     NLO_Part: RS,
     Enhance_Factor: $(RSENH),
     Order: {QCD: 2, EW: 1},
-RIVET: {
-  -a: MC_PHOTONPHOTON_JOEY_STABLE,
-  USE_HEPMC_SHORT: 1,
-  IGNOREBEAMS: 1
-}
+RIVET:
+  --analyses: MC_PHOTONPHOTON_JOEY_STABLE
+  USE_HEPMC_SHORT: 1
+  --ignore-beams: 1

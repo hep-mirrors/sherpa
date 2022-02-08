@@ -60,7 +60,7 @@ MEPS setup for jet production
 
 Things to notice:
 
-* ``Order`` is set to :option:`{QCD: Any, EW: 0`}. This
+* ``Order`` is set to :option:`{QCD: 2, EW: 0`}. This
   ensures that all final state jets are produced via
   the strong interaction.
 

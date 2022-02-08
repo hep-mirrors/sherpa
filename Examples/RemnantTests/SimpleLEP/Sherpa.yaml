@@ -17,4 +17,4 @@ CSS_FS_PT2MIN: 1.00
 
 PROCESSES:
 - 11 -11 -> 93 93:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}

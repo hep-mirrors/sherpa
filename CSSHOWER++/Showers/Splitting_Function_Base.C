@@ -17,7 +17,7 @@ using namespace ATOOLS;
 
 Splitting_Function_Base::Splitting_Function_Base():
   p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_mth(0.0),
-  m_on(1), m_qcd(-1)
+  m_on(1), m_qcd(-1), m_facscalefactor(1.0)
 {
 }
 
@@ -54,7 +54,7 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf(NULL), p_cf(NULL), m_type(key.m_type),
   m_symf(1.0), m_polfac(1.0), m_lpdf(1.0), m_efac(1.0), m_mth(0.0),
-  m_on(1), m_qcd(-1)
+  m_on(1), m_qcd(-1), m_facscalefactor(1.0)
 {
   SF_Key ckey(key);
   ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(0),ckey);
@@ -226,7 +226,7 @@ double Splitting_Function_Base::GetXPDF
   }
   if (mode==1) return m_lpdf==-1.0?0.0:p_pdf[beam]->GetXPDF(a);
   if (IsNan(scale) || IsNan(x)) return 0.0;
-  double Q2(scale);
+  double Q2(scale*m_facscalefactor);
   if (Q2<p_lf->MS()->Mass2(a) || x<p_pdf[beam]->XMin() ||
       x>p_pdf[beam]->XMax()*p_pdf[beam]->RescaleFactor() ||
       Q2<p_pdf[beam]->Q2Min() || Q2>p_pdf[beam]->Q2Max())

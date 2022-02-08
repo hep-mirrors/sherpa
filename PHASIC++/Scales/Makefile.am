@@ -25,11 +25,11 @@ libPhasicScales_la_SOURCES    =	\
 				TTBar_Core_Scale.C \
 				TZj_Core_Scale.C \
 				SingleTop_Core_Scale.C \
-				WBF_Core_Scale.C \
 				QQSinglet_Core_Scale.C \
 				HTPrime_Core_Scale.C \
 				MINLO_Scale_Setter.C \
 				MINLO_KFactor_Setter.C \
+				EWVirtKFactor_Setter.C \
 				Variable_KFactor_Setter.C \
 				No_KFactor_Setter.C
 

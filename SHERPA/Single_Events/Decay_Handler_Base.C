@@ -72,7 +72,7 @@ void Decay_Handler_Base::SetMasses(ATOOLS::Blob* blob, bool usefinalmass)
   if (usefinalmass) max_mass=blob->InParticle(0)->FinalMass();
   else max_mass=total.Mass();
   if (nr_daughters<2) return;
-  
+
   bool success=true; size_t cnt=0;
   do {
     success=true;
@@ -184,8 +184,8 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
       throw Return_Value::Retry_Event;
     }
   }
-  random_shuffle(shuffled.begin(), shuffled.end(), *ran);
-  
+
+  std::shuffle(shuffled.begin(), shuffled.end(), *ran);
   // initial blobs still contain on-shell particles, stretch them off-shell
   for (size_t i=0; i<daughters.size(); ++i) {
     if (!Decays(daughters[shuffled[i]]->Flav()) ||
@@ -259,7 +259,7 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   DEBUG_FUNC(inpart->RefFlav()<<" "<<inpart->Number());
   if (s0) DEBUG_VAR(*s0);
   Vec4D labmom = inpart->Momentum();
-  
+
   // fill decay blob all on-shell
   Blob_Data_Base* data = (*blob)["p_onshell"];
   if (data) inpart->SetMomentum(data->Get<Vec4D>());
@@ -275,7 +275,8 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   if (inpart->Info()!='M') inpart->SetInfo('D');
 
   Particle_Vector daughters = blob->GetOutParticles();
-  random_shuffle(daughters.begin(), daughters.end(), *ran);
+  std::shuffle(daughters.begin(), daughters.end(), *ran);
+
   if (!(blob->Type()==btp::Hadron_Decay &&
         blob->Has(blob_status::needs_showers))) {
     for (PVIt it=daughters.begin();it!=daughters.end();++it) {
@@ -378,7 +379,7 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
     particle->SetInfo('D');
     blob->AddToOutParticles( particle );
   }
-  
+
   size_t n=1+blob->NOutP();
   vector<Vec4D> moms(n);
   moms[0]=inpart->Momentum();

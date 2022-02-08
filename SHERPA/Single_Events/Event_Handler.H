@@ -7,6 +7,7 @@
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/Tools/Definitions.H"
 #include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/Weights.H"
 
 namespace SHERPA {
   class Filter;
@@ -18,8 +19,8 @@ namespace SHERPA {
   private:
 
     long int m_lastparticlecounter, m_lastblobcounter;
-    double m_n, m_addn, m_sum, m_sumsqr, m_maxweight;
-    double m_mn, m_msum, m_msumsqr;
+    double m_n, m_addn, m_maxweight;
+    double m_mn;
     std::map<std::string,double> m_maxweights;
     int m_checkweight;
     size_t m_lastrss;
@@ -31,7 +32,8 @@ namespace SHERPA {
     Filter            * p_filter;
 
     const ATOOLS::Variations  * p_variations;
-
+    ATOOLS::Weights_Map m_wgtmapsum, m_wgtmapsumsqr;
+    ATOOLS::Weights_Map m_mwgtmapsum, m_mwgtmapsumsqr;
     
     void WriteRNGStatus(const std::string &file,
 			const std::string &message) const;
@@ -65,13 +67,14 @@ namespace SHERPA {
 
     void SetFilter(Filter * filter) { p_filter = filter; }
     
+    ATOOLS::Weights_Map TotalXS();
+    ATOOLS::Weights_Map TotalErr();
+
     void MPISync();
-    double TotalXS();
-    double TotalVar();
-    double TotalErr();
-    double TotalXSMPI();
-    double TotalVarMPI();
-    double TotalErrMPI();
+    ATOOLS::Weights_Map TotalXSMPI();
+    ATOOLS::Weights_Map TotalErrMPI();
+
+    std::string CurrentProcess() const;
 
   };
 

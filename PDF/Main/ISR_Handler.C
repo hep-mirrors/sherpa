@@ -4,6 +4,7 @@
 #include "PDF/Main/ISR_Base.H"
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Phys/Blob.H" 
+#include "ATOOLS/Math/Random.H" 
 #include "ATOOLS/Org/Run_Parameter.H" 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
@@ -19,6 +20,42 @@ static int s_nozeropdf=-1;
 double Lambda2(double sp,double sp1,double sp2) 
 { 
   return (sp-sp1-sp2)*(sp-sp1-sp2)-4.0*sp1*sp2;
+}
+
+  struct isrmode {
+    enum code {
+      none           = 0,
+      hadron_hadron  = 1,
+      lepton_hadron  = 2,
+      hadron_lepton  = 3,
+      lepton_lepton  = 4,
+      unknown        = 99
+    };
+  };
+
+std::ostream& PDF::operator<<(std::ostream& s,const PDF::isrmode::code mode) {
+  switch (mode) {
+  case isrmode::none:
+    s<<"none";
+    break;
+  case isrmode::hadron_hadron:
+    s<<"hadron_hadron";
+    break;
+  case isrmode::hadron_lepton:
+    s<<"hadron_lepton";
+    break;
+  case isrmode::lepton_hadron:
+    s<<"lepton_hadron";
+    break;
+  case isrmode::lepton_lepton:
+    s<<"lepton_lepton";
+    break;
+  case isrmode::unknown:
+  default:
+    s<<"unknown";
+    break;
+  }
+  return s;
 }
 
 ISR_Handler::ISR_Handler(ISR_Base **isrbase):
@@ -43,6 +80,21 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
     m_x[i]   = 1.;
     m_mu2[i] = m_xf1[i] = m_xf2[i] = 0.;
   }
+  FixType();
+}
+
+void ISR_Handler::FixType() {
+  m_type = isrmode::unknown;
+  isrtype::code type[2];
+  for (size_t i=0;i<2;i++) type[i] = p_isrbase[i]->Type();
+  if (type[0]==isrtype::hadron && type[1]==isrtype::hadron)   m_type = isrmode::hadron_hadron; 
+  if ((type[0]==isrtype::lepton || type[0]==isrtype::intact) &&
+      type[1]==isrtype::hadron)                               m_type = isrmode::lepton_hadron;
+  if ((type[1]==isrtype::lepton || type[1]==isrtype::intact) &&
+      type[0]==isrtype::hadron)                               m_type = isrmode::hadron_lepton;
+  if ((type[0]==isrtype::lepton || type[0]==isrtype::intact) &&
+      (type[1]==isrtype::lepton || type[1]==isrtype::intact)) m_type = isrmode::lepton_lepton;
+  if (type[0]==isrtype::intact && type[1]==isrtype::intact)   m_type = isrmode::none;
 }
 
 ISR_Handler::~ISR_Handler() 
@@ -55,13 +107,20 @@ ISR_Handler::~ISR_Handler()
   }
 }
 
+void ISR_Handler::Output() {
+  if (msg_LevelIsTracking() || msg_LevelIsInfo()) 
+    msg_Out()<<"ISR_Handler: type = "<<m_type<<"\n"
+	     <<"    for "<<p_isrbase[0]->Flavour()
+	     <<" (internal structure = "<<p_isrbase[0]->On()<<")\n"
+	     <<"    and "<<p_isrbase[1]->Flavour()
+	     <<" (internal structure = "<<p_isrbase[1]->On()<<")\n";
+}
+
 void ISR_Handler::Init(double *splimits) 
 {
-  double s=(p_beam[0]->OutMomentum()+
-	    p_beam[1]->OutMomentum()).Abs2();
+  double s = (p_beam[0]->OutMomentum()+p_beam[1]->OutMomentum()).Abs2();
   ATOOLS::rpa->gen.SetEcms(sqrt(s));
 
-  m_type = p_isrbase[0]->Type()+std::string("*")+p_isrbase[1]->Type();
   m_splimits[0] = s*splimits[0];
   m_splimits[1] = ATOOLS::Min(s*splimits[1],s*Upper1()*Upper2());
   m_splimits[2] = s;
@@ -77,34 +136,6 @@ void ISR_Handler::Init(double *splimits)
   double E2=E-E1;
   m_fixvecs[0]=Vec4D(E1,0.,0.,sqrt(sqr(E1)-m_mass2[0]));
   m_fixvecs[1]=Vec4D(E2,0.,0.,-m_fixvecs[0][3]);
-}
-
-void ISR_Handler::SetSprimeMin(const double spmin)       
-{ 
-  m_splimits[0]=Max(m_fixed_smin,spmin); 
-}
-
-void ISR_Handler::SetSprimeMax(const double spmax)       
-{ 
-  m_splimits[1]=Min(m_fixed_smax,spmax); 
-}
-
-void ISR_Handler::SetFixedSprimeMin(const double spmin)  
-{ 
-  m_fixed_smin = spmin;
-  m_splimits[0] = spmin;
-}
-
-void ISR_Handler::SetFixedSprimeMax(const double spmax)  
-{
-  m_fixed_smax = spmax;
-  m_splimits[1] = spmax;
-}
-
-void ISR_Handler::SetPDFMember() const
-{
-  for (int i=0;i<2;++i)
-    if (p_isrbase[i]->On()) p_isrbase[i]->PDF()->SetPDFMember();
 }
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,
@@ -174,7 +205,7 @@ void ISR_Handler::SetPartonMasses(const Flavour_Vector &fl)
 }
 
 bool ISR_Handler::MakeISR(const double &sp,const double &y,
-			  Vec4D_Vector &p,const Flavour_Vector &flavs) 
+			  Vec4D * p,const Flavour_Vector &flavs) 
 {
   if (m_mode==0) {
     m_x[1]=m_x[0]=1.;
@@ -237,13 +268,11 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
 }
 
 bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
-			       const ATOOLS::Flavour &f2,
-			       const double &ran)
+			       const ATOOLS::Flavour &f2)
 {
-  if (m_swap) m_swap=0;
+  if (m_swap) m_swap = false;
   if (!AllowSwap(f1,f2)) return false;
-  if (ran>0.5) return true;
-  m_swap=1;
+  m_swap = ran->Get()>0.5;
   return true;
 }
 
@@ -267,26 +296,34 @@ void ISR_Handler::Reset()
   m_splimits[1]=m_fixed_smax*Upper1()*Upper2();
 }
 
-void ISR_Handler::SetLimits(Double_Vector &spkey,Double_Vector &ykey,
-			    Double_Vector &xkey) 
+void ISR_Handler::AssignKeys(Integration_Info *const info) {
+  m_sprimekey.Assign("ISR::s'",5,0,info);
+  m_ykey.Assign("ISR::y",3,0,info);
+  m_xkey.Assign("ISR::x",4,0,info);
+  SetLimits();
+}
+
+void ISR_Handler::SetLimits() 
 {
   for (short int i=0;i<3;++i) {
-    spkey[i]=m_splimits[i];
-    if (i<2) ykey[i]=m_ylimits[i];
+    m_sprimekey[i] = m_splimits[i];
+    if (i<2) m_ykey[i]=m_ylimits[i];
   }
-  xkey[0]=m_mass2[0]==0.0?-0.5*std::numeric_limits<double>::max():
-    log(m_mass2[0]/sqr(p_beam[0]->OutMomentum().PPlus()));
-  xkey[2]=m_mass2[1]==0.0?-0.5*std::numeric_limits<double>::max():
-    log(m_mass2[1]/sqr(p_beam[1]->OutMomentum().PMinus()));
-  double e1=p_beam[0]->OutMomentum()[0];
-  xkey[1]=ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
-		      (1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1());
-  double e2=p_beam[1]->OutMomentum()[0];
-  xkey[3]=ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
-		      (1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2());
-  spkey[1]=m_splimits[1]=Min(m_splimits[1],m_splimits[2]*xkey[1]*xkey[3]);
-  xkey[1]=log(xkey[1]);
-  xkey[3]=log(xkey[3]);
+  m_xkey[0] = ((m_mass2[0]==0.0)?
+	       -0.5*std::numeric_limits<double>::max():
+	       log(m_mass2[0]/sqr(p_beam[0]->OutMomentum().PPlus())));
+  m_xkey[2] = ((m_mass2[1]==0.0)?
+	       -0.5*std::numeric_limits<double>::max():
+	       log(m_mass2[1]/sqr(p_beam[1]->OutMomentum().PMinus())));
+  double e1 = p_beam[0]->OutMomentum()[0];
+  m_xkey[1] = ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
+			  (1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1());
+  double e2 = p_beam[1]->OutMomentum()[0];
+  m_xkey[3] = ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
+			  (1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2());
+  m_sprimekey[1] = m_splimits[1] = Min(m_splimits[1],m_splimits[2]*m_xkey[1]*m_xkey[3]);
+  m_xkey[1] = log(m_xkey[1]);
+  m_xkey[3] = log(m_xkey[3]);
 }
 
 double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,

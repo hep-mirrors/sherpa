@@ -158,6 +158,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   m_realevt.p_id=&m_sids.front();
   m_realevt.m_pname = GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
   m_realevt.m_pname = m_realevt.m_pname.substr(0,m_realevt.m_pname.rfind("__"));
+  m_realevt.m_stype = sbt::none;
   m_realevt.p_proc = this;
   m_realevt.p_real = &m_realevt;
 
@@ -204,11 +205,16 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
         for (size_t s(0);s<stypes.size();++s) {
           ststr+=ToString(stypes[s])+" ";
         }
-        msg_Debugging()<<"[("<<i<<","<<j<<");"<<k<<"] : "
-                       <<(Combinable(1<<i,1<<j)?"":"not ")<<"combinable"
-                       <<", types: "<<ststr<<std::endl;
+        if (msg_LevelIsDebugging()) {
+          msg_Out()<<"[("<<i<<","<<j<<");"<<k<<"] : ";
+          if (!m_no_tree) {
+            msg_Out()<<(Combinable(1<<i,1<<j)?"":"not ") << "combinable, ";
+          }
+          msg_Out()<<"types: "<<ststr<<std::endl;
+        }
         for (size_t s(0);s<stypes.size();++s) {
-	  if (m_pinfo.m_ckkw && stypes[s]==sbt::qed) continue;
+	  if ((m_pinfo.m_ckkw || m_pinfo.m_nlomode==nlo_mode::mcatnlo) &&
+	      stypes[s]==sbt::qed) continue;
           Single_DipoleTerm *pdummy
             = new Single_DipoleTerm(cinfo,i,j,k,stypes[s],p_int);
           msg_Debugging()<<stypes[s]<<"[("<<i<<","<<j<<");"<<k<<"]("
@@ -407,6 +413,7 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
 }
 
 double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
+                                        Variations_Mode varmode,
                                         int mode)
 {
   DEBUG_FUNC("mode="<<mode);

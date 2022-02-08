@@ -157,9 +157,15 @@ void Resonance_Finder::FindSubProcessInfosContainingLeptons
 void Resonance_Finder::BuildResonantBlobs
 (Particle_Vector& pv, Blob_Vector& blobs)
 {
+  BuildResonantBlobs(pv, blobs, p_mehandler->Process());
+}
+
+void Resonance_Finder::BuildResonantBlobs
+(Particle_Vector& pv, Blob_Vector& blobs, Process_Base* proc)
+{
   DEBUG_FUNC(pv.size()<<" particles to treat, clustering = "<<m_on);
   // get production subprocesses for the active process
-  std::string name(p_mehandler->Process()->Name());
+  std::string name(proc->Name());
   SubInfoVector siv(m_proc_lep_map[name]);
   // create blobs accordingly (only if lepton list is unambiguous)
   msg_Debugging()<<siv.size()<<" subprocess infos for process "

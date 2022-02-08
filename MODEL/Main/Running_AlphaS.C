@@ -90,11 +90,10 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
         m_as_MZ=info.m_asmz;
         m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
         if (pdfas&1) m_pdf=1;
-        PrintSummary();
       }
     }
   }
-  else PrintSummary();
+  PrintSummary();
 
   p_thresh = new AsDataSet[m_nthresholds+1];
   int j = 0;

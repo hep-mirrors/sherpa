@@ -1,4 +1,6 @@
 .. _Input structure:
+.. _PATH:
+.. _RUNDATA:
 
 ###############
 Input structure
@@ -14,13 +16,26 @@ different components of event generation.
 These have to be specified in a configuration file which by default is
 named :file:`Sherpa.yaml` in the current working directory.  If you
 want to use a different setup directory for your Sherpa run, you have
-to specify it on the command line as :option:`-p <dir>` or ``'PATH:
-<dir>'`` (including the quotes).  To read parameters from a
-configuration file with a different name, you may specify :option:`-f
-<file>` or ``'RUNDATA: <file>'``.
+to specify it on the command line as :option:`-p \<dir\>` or
+``'PATH: <dir>'`` (including the quotes).
 
-Sherpa's configuration files are writtin in the `YAML <yaml.org>`_ format.
-Most settings are just written as the settings' name followed by its value,
+To read parameters from a configuration file with a different name,
+you may give the file name as a positional argument on the command line
+like this: ``Sherpa <file>``. Note that you can also pass more than
+one file like this: ``Sherpa <file1> <file2> ...`` In this case, settings
+in files to the right take precedence. This can be useful to reduce
+duplication in the case that you have several setups that share a common
+set of settings.
+
+Note that you can also pass filenames using the legacy syntax
+:option:`-f \<file\>` or ``'RUNDATA: [<file1>, <file2>]'``.
+However, this is deprecated.
+Use positional arguments instead. Mixing this legacy syntax and positional
+arguments for specifying configuration files is undefined behaviour.
+
+Sherpa’s configuration files are written in the `YAML <https://yaml.org>`_
+format.
+Most settings are just written as the settings’ name followed by its value,
 like this:
 
 .. code-block:: yaml
@@ -193,5 +208,5 @@ and then be used in the configuration file like:
    RESULT_DIRECTORY: Result_$(QCUT)
    PROCESSES:
    - 93 93 -> 11 -11 93{$(NJET)}:
-       Order: {QCD: Any, EW: 2}
+       Order: {QCD: 0, EW: 2}
        CKKW: $(QCUT)

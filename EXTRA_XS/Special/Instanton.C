@@ -35,12 +35,14 @@ namespace EXTRAXS {
     double      m_Ehatmin, m_Ehatmax;
     double      m_rho, m_Ngluons, m_sigmahat;
     xsec_data * m_lower, * m_upper;
+    bool ReadTable();
+    void ConstructDefaultTable();
   public:
     Data_Table();
     ~Data_Table();
     void Output();
     bool Interpolate(const double & E);
-    void Test();
+    void Test(const double & E);
     const double & Ehatmin()  const { return m_Ehatmin; }
     const double & Ehatmax()  const { return m_Ehatmax; }
     const double & Rho()      const { return m_rho; }
@@ -53,13 +55,64 @@ namespace EXTRAXS {
     }
   };
 
+  Data_Table::Data_Table() {
+    if (!ReadTable()) ConstructDefaultTable();
+    m_Ehatmin = m_data.begin()->first;
+    m_Ehatmax = m_data.rbegin()->first;
+    for (std::map<double, xsec_data*>::iterator dit=m_data.begin();
+	 dit!=m_data.end();dit++)
+      dit->second->m_sigmahat = dit->second->m_sigmahat/rpa->Picobarn();
+  }
+
+  Data_Table::~Data_Table() {
+    while (!m_data.empty()) {
+      delete m_data.begin()->second;
+      m_data.erase(m_data.begin());
+    }
+    m_data.clear();
+  }
+
+  bool Data_Table::ReadTable() {
+    Settings& s = Settings::GetMainSettings();
+    s.DeclareMatrixSettingsWithEmptyDefault({ "INSTANTON_XSECS" });
+    const auto allxs = s["INSTANTON_XSECS"].GetMatrix<double>();
+    if (allxs.empty()) {
+      msg_Info()<<"Warning in "<<METHOD<<":\n"
+		<<"   did not find matrix of cross sections under tag INSTANTON_XSECS\n"
+		<<"   will read defaults from 1911.09726v1.\n";
+      return false;
+    }
+    for (const auto xs : allxs) {
+      /*
+	read data from file in ASCII format: in each line we have
+	\sqrt{s} (GeV) , 1/\rho (GeV) , \alpha_s(1/rho) ,  number of gluons , 
+	Cross-section (pb)
+      */
+      if (xs.size()!=5) {
+	msg_Error()<<"Error in "<<METHOD<<":\n"
+		   <<"   Badly formatted xs entry in tag INSTANTON_XSECS, \n"
+		   <<"   needs 5 doubles (E, 1/rho, alphaS, Ngluons, xsec).\n"
+		   <<"   will read defaults from 1911.09726v1.\n";
+	return false;
+      }
+      msg_Tracking()<<"   xs("<<xs[0]<<") = "<<xs[4]<<" pb.\n";
+      m_data[xs[0]] = new xsec_data{ xs[0], xs[1], xs[3], xs[4] };
+    }
+    return true;
+  }
+
+  void Data_Table::ConstructDefaultTable() {
   /*
     {\sqrt{s} (GeV) , 1 / \rho (GeV) , \alpha_s (at 1/rho) ,  number of gluons , 
-    Cross-section (pb)} where the cross-section allows for N_f=4 plus N_f=5 if it’s above 
-    the threshold (so always 8 to 10 fermions in addition to n_g gluons in the final state)
+    Cross-section (pb)} where the cross-section allows for N_f=4 plus N_f=5 if 
+    it’s above the threshold (so always 8 to 10 fermions in addition to n_g gluons 
+    in the final state).
     
     You can see that the largest cross-section is 14.5 milli barn at 10 GeV 
-    (with alpha_s = 0.415 still kind of reasonable) and dropping to 4 pico barns at 40 GeV
+    (with alpha_s = 0.415 still kind of reasonable) and dropping to 4 pico barns 
+    at 40 GeV
+
+    This is the original data from the first version of 1911.09726
     
     {{10.6853, 0.989378, 0.415544, 4.58901, 1.45813*10^10}, 
     {11.3923, 1.03566, 0.40533, 4.67934, 1.05266*10^10}, 
@@ -83,7 +136,6 @@ namespace EXTRAXS {
     {2895.48, 103.41, 0.116831, 12.1441, 4.83086*10^-11}, 
     {4132.81, 142.511, 0.111723, 12.5887, 1.68134*10^-12}}    
   */
-  Data_Table::Data_Table() {
     m_data[10.6853] = new xsec_data(10.6853, 0.989378, 4.58901, 1.45813e10);
     m_data[11.3932] = new xsec_data(11.3923, 1.035660, 4.67934, 1.05266e10); 
     m_data[13.3679] = new xsec_data(13.3679, 1.162430, 4.90476, 4.51405e9); 
@@ -105,19 +157,6 @@ namespace EXTRAXS {
     m_data[2030.63] = new xsec_data(2030.63, 75.20850, 11.7001, 1.36042e-9); 
     m_data[2895.48] = new xsec_data(2895.48, 103.4100, 12.1441, 4.83086e-11); 
     m_data[4132.81] = new xsec_data(4132.81, 142.5110, 12.5887, 1.68134e-12);
-    m_Ehatmin = m_data.begin()->first;
-    m_Ehatmax = m_data.rbegin()->first;
-    for (std::map<double, xsec_data*>::iterator dit=m_data.begin();
-	 dit!=m_data.end();dit++)
-      dit->second->m_sigmahat = dit->second->m_sigmahat/rpa->Picobarn();
-  }
-
-  Data_Table::~Data_Table() {
-    while (!m_data.empty()) {
-      delete m_data.begin()->second;
-      m_data.erase(m_data.begin());
-    }
-    m_data.clear();
   }
   
   bool Data_Table::Interpolate(const double & E) {
@@ -152,34 +191,46 @@ namespace EXTRAXS {
     msg_Out()<<"--------------------------------------------------\n";
   }
 
-  void Data_Table::Test() {
+  void Data_Table::Test(const double & E) {
     Output();
-    Interpolate(100.);
-    msg_Out()<<"For E = 100 GeV: sigma' = "<<Sigmahat()<<" 1/GeV^2 = "
+    Interpolate(E);
+    msg_Out()<<"For E = "<<E<<" GeV: sigma' = "<<Sigmahat()<<" 1/GeV^2 = "
 	     <<Sigmahat()*rpa->Picobarn()<<" pb, "
 	     <<"1/rho = "<<Rho()<<" GeV, "
 	   <<"<Ngluons> = "<<Ngluons()<<".\n";
     exit(1);
   }
+
+  struct instantonScale {
+    enum code {
+      rho           = 1,
+      Ehat          = 2,
+      Ehat_by_sqrtN = 3
+    };
+  };
   
-  class XS_instanton : public ME2_Base {  // == XS_ffbar_ee but not XS_ffbar_f'fbar' !
+  class XS_instanton : public ME2_Base {
   private:
-    Data_Table              m_data;
-    double                  m_Ehatmin, m_Ehatmax, m_norm, m_S, m_Ehat;
-    double                  m_Ngluons_factor, m_sigmahat_factor;
-    std::string             m_scalechoice, m_Qthreshold;
-    double                  m_Ecms, m_threshold, m_mean_Ngluons;
-    size_t                  m_nquarks, m_ngluons;
+    Data_Table  m_data;
+    double      m_Ehatmin, m_Ehatmax, m_norm, m_S, m_Ehat;
+    double      m_tthreshold, m_bthreshold, m_cthreshold;
+    double      m_Ngluons_factor, m_sigmahat_factor, m_alphaS_factor, m_scale_factor;
+    instantonScale::code m_scalechoice;
+    double      m_Ecms, m_threshold, m_mean_Ngluons;
+    size_t      m_nquarks, m_ngluons, m_includeQ;
     MODEL::Running_AlphaS * p_alphaS;
     std::vector<double>     m_masses;
+    void   Initialise();
     bool   DefineFlavours();
+    double FixScale();
+    double AlphaSModification();
     size_t NumberOfGluons();
     bool   DistributeMomenta();
     bool   MakeColours();
     void   Test();
   public:
     XS_instanton(const External_ME_Args& args);
-    ~XS_instanton() {}
+    ~XS_instanton() {} // if (p_data) { delete p_data; p_data = NULL; }}
     double operator()(const ATOOLS::Vec4D_Vector& mom);
     bool   SetColours(const Vec4D_Vector& mom);
     bool   FillFinalState(const std::vector<ATOOLS::Vec4D> & mom);
@@ -188,25 +239,51 @@ namespace EXTRAXS {
 
 XS_instanton::XS_instanton(const External_ME_Args& args)
   : ME2_Base(args),
-    m_Ehatmin(Max(1.,m_data.Ehatmin())),
-    m_Ehatmax(Min(rpa->gen.Ecms(),m_data.Ehatmax())),
     m_S(sqr(rpa->gen.Ecms())),
     m_norm(1./36.),
-    m_Ngluons_factor(1.), m_sigmahat_factor(1.)
+    m_bthreshold(100.), m_cthreshold(20.), 
+    m_Ngluons_factor(1.), m_sigmahat_factor(1.),
+    m_scalechoice(instantonScale::rho)
 {
-  p_alphaS    = dynamic_cast<Running_AlphaS *>(s_model->GetScalarFunction("alpha_S"));
-  Settings& s = Settings::GetMainSettings();
   DEBUG_INFO("now entered EXTRAXS::XS_instanton ...");
-  m_Ngluons_factor   = s["INSTANTON_NGLUONS_MODIFIER"].SetDefault(1.0).Get<double>();
-  m_sigmahat_factor  = s["INSTANTON_SIGMAHAT_MODIFIER"].SetDefault(1.0).Get<double>();
-  m_Ehatmin          = Max(s["INSTANTON_MIN_MASS"].SetDefault(m_Ehatmin).Get<double>(),
-			   m_Ehatmin);
-  m_Ehatmax          = Min(s["INSTANTON_MAX_MASS"].SetDefault(m_Ehatmax).Get<double>(),
-			   m_Ehatmax);
-  m_sprimemin        = sqr(m_Ehatmin);
-  m_sprimemax        = sqr(m_Ehatmax);
-  m_scalechoice      = s["INSTANTON_SCALE_CHOICE"].SetDefault("1/rho").Get<string>();
-  m_Qthreshold       = s["INSTANTON_QUARK_THRESHOLD"].SetDefault("shat").Get<string>();
+  Settings& s       = Settings::GetMainSettings();
+  double Ehatmin    = Max(1.,m_data.Ehatmin());
+  double Ehatmax    = Min(rpa->gen.Ecms(),m_data.Ehatmax());
+  m_Ehatmin         = s["INSTANTON_MIN_MASS"].SetDefault(20.).Get<double>();
+  m_Ehatmax         = s["INSTANTON_MAX_MASS"].SetDefault(rpa->gen.Ecms()).Get<double>();
+  m_sprimemin       = sqr(m_Ehatmin);
+  m_sprimemax       = sqr(m_Ehatmax);
+  if (m_Ehatmin<Ehatmin || m_Ehatmax>Ehatmax) {
+    msg_Error()<<"WARNING in "<<METHOD<<":\n"
+	       <<"   mass range of simulation not fully captured by data:\n";
+    if (m_Ehatmin<Ehatmin) {
+      msg_Error()<<"   demand minimal instanton mass below smallest energy in data:\n"
+		 <<"   "<<m_Ehatmin<<" < "<<Ehatmin
+		 <<" -- this could be a problem due to critical extrapolation.\n";
+    }
+    if (m_Ehatmax>Ehatmax) {
+      msg_Error()<<"   demand maximal instanton mass above largest energy in data:\n"
+		 <<"   "<<m_Ehatmax<<" > "<<Ehatmax
+		 <<" -- this should not become a problem.\n";
+    }
+  }
+  m_Ngluons_factor  = s["INSTANTON_NGLUONS_MODIFIER"].SetDefault(1.0).Get<double>();
+  m_tthreshold      = (s["INSTANTON_T_PRODUCTION_THRESHOLD"].SetDefault(1000.0).
+			Get<double>());
+  m_bthreshold      = (s["INSTANTON_B_PRODUCTION_THRESHOLD"].SetDefault(100.0).
+			Get<double>());
+  m_cthreshold      = (s["INSTANTON_C_PRODUCTION_THRESHOLD"].SetDefault(20.0).
+			Get<double>());
+  m_includeQ        = s["INSTANTON_INCLUDE_QUARKS"].SetDefault(5).Get<int>();
+  m_sigmahat_factor = s["INSTANTON_SIGMAHAT_MODIFIER"].SetDefault(1.0).Get<double>();
+  m_alphaS_factor   = s["INSTANTON_ALPHAS_FACTOR"].SetDefault(1.0).Get<double>();
+  string choice     = s["INSTANTON_SCALE_CHOICE"].SetDefault("1/rho").Get<string>();
+  if      (choice=="shat")   m_scalechoice = instantonScale::Ehat;
+  else if (choice=="shat/N") m_scalechoice = instantonScale::Ehat_by_sqrtN;
+  m_scale_factor    = s["INSTANTON_SCALE_FACTOR"].SetDefault(1.).Get<double>();
+
+
+  p_alphaS = dynamic_cast<Running_AlphaS *>(s_model->GetScalarFunction("alpha_S"));
   m_hasinternalscale = true;
   msg_Tracking()<<METHOD<<" for instanton production in the energy range "
 		<<"["<<m_Ehatmin<<", "<<m_Ehatmax<<"]\n"
@@ -219,26 +296,47 @@ double XS_instanton::operator()(const Vec4D_Vector& momenta) {
   m_Ehat = sqrt(shat);
   if (m_Ehat<m_Ehatmin || m_Ehat>m_Ehatmax ||
       !m_data.Interpolate(m_Ehat)) return 0.;
-  m_internalscale = (m_scalechoice==std::string("shat"))?m_Ehat:m_data.Rho();
-  //if (m_internalscale<2.) m_internalscale = 2.;
+  m_internalscale = Max(FixScale(), 2.);
   // have to multiply with the norm and the inverse external flux
   double xsec = m_sigmahat_factor * m_data.Sigmahat() * (2.*shat) * m_norm;
-  return xsec;
+  return AlphaSModification() * xsec;
+}
+
+double XS_instanton::FixScale() {
+  return m_scale_factor *
+    (m_scalechoice==instantonScale::Ehat?m_Ehat:
+     (m_scalechoice==instantonScale::Ehat_by_sqrtN)?m_Ehat/sqrt(m_data.Ngluons()):
+     m_data.Rho());
+}
+
+double XS_instanton::AlphaSModification() {
+  if (dabs(m_alphaS_factor-1.)<1.e-3) return 1.;
+  return pow(m_alphaS_factor,2.*p_alphaS->Beta0(sqr(m_data.Rho())));
 }
 
 bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
   m_Ehat = sqrt(mom[2].Abs2());
   if (m_Ehat<m_Ehatmin || m_Ehat>m_Ehatmax ||
       !m_data.Interpolate(m_Ehat)) return false;
-  m_internalscale = (m_scalechoice==std::string("shat"))?m_Ehat:m_data.Rho();
-  m_threshold     = (m_Qthreshold==std::string("shat"))?m_Ehat:m_data.Rho();
-  m_mean_Ngluons  = m_data.Ngluons();
   Poincare boost(mom[2]);
-  
-  if (DefineFlavours() && DistributeMomenta() && MakeColours()) {
-    for (size_t i=0;i<m_flavours.size();i++) boost.BoostBack(m_momenta[i]);
+  m_internalscale = Max(FixScale(), 2.);  
+  //msg_Out()<<METHOD<<": scale = "<<m_internalscale<<" -> "<<sqr(m_internalscale)<<"\n";
+  size_t trials=1000;
+  while ((trials--)>0) {
+    m_mean_Ngluons = m_data.Ngluons();
+    Vec4D sum      = -mom[2];
+    if (DefineFlavours() && DistributeMomenta() && MakeColours()) {
+      for (size_t i=0;i<m_flavours.size();i++) {
+	boost.BoostBack(m_momenta[i]);
+	sum += m_momenta[i];
+      }
+      if (dabs((mom[2]-sum).Abs2())<1.e-6 && dabs(mom[2][0]-sum[0])<1.e-6) {
+	//msg_Out()<<METHOD<<" for "<<m_flavours.size()<<"\n";
+	return true;
+      }
+    }
   }
-  return true;
+  return false;
 }
 
 bool XS_instanton::DefineFlavours() {
@@ -250,12 +348,11 @@ bool XS_instanton::DefineFlavours() {
   }
   m_masses.clear();
   m_nquarks = 0;
-  m_ngluons = NumberOfGluons();
-  Flavour flav   = Flavour(kf_gluon);
-  for (size_t i=0;i<m_ngluons;i++)  m_flavours.push_back(flav);
   for (size_t i=1;i<6;i++) {
-    flav = Flavour(i);
-    if (flav.Mass(true)>m_threshold) continue;
+    Flavour flav = Flavour(i);
+    if (i>m_includeQ)                               continue;
+    if (flav==Flavour(kf_b) && m_Ehat<m_bthreshold) continue;
+    if (flav==Flavour(kf_c) && m_Ehat<m_cthreshold) continue;
     if (totmass+2.*flav.Mass(true)>m_Ehat) break;
     if (flav.Bar()!=m_flavs[0] && flav.Bar()!=m_flavs[1]) {
       m_flavours.push_back(flav);
@@ -269,6 +366,9 @@ bool XS_instanton::DefineFlavours() {
       totmass += flav.Mass(true);
     }
   }
+  do { m_ngluons = NumberOfGluons(); } while (m_ngluons>=30-m_nquarks); 
+  Flavour flav   = Flavour(kf_gluon);
+  for (size_t i=0;i<m_ngluons;i++)  m_flavours.push_back(flav);
   return true;
 }
 
@@ -296,60 +396,45 @@ bool XS_instanton::DistributeMomenta() {
 }
 
 bool XS_instanton::MakeColours() {
-  size_t nquarkpairs = (m_flavours.size()-m_ngluons-2)/2., ncolours = nquarkpairs+m_ngluons+2;
-  std::vector<size_t> cols[2];
-  for (size_t j=0;j<2;j++) {
-    for (size_t i=0;i<ncolours;i++) 
-      cols[j].push_back(500+i);
-  }
   for (size_t i=0;i<m_colours.size();i++) m_colours[i].clear(); m_colours.clear();
   m_colours.resize(m_flavours.size());
-  size_t  pos, col, index;
-  Flavour flav;
-  for (size_t i=0;i<m_flavours.size()-1;++i) {
-    flav = m_flavours[i];
+  vector<size_t> cols[2];
+  for (size_t i=0;i<m_flavours.size();i++) {
+    Flavour flav = m_flavours[i];
+    if ((flav.IsQuark() && !flav.IsAnti()) || flav.IsGluon())
+      cols[i<2?1:0].push_back(i);
+    if ((flav.IsQuark() &&  flav.IsAnti()) || flav.IsGluon())
+      cols[i<2?0:1].push_back(i);
     m_colours[i].resize(2);
-    if ((flav.IsQuark() && !flav.IsAnti()) || flav.IsGluon()) {
-      index = i<2?1:0;
-      do {
-	pos = size_t(cols[index].size()*ran->Get());
-      } while (pos>=cols[index].size());
-      m_colours[i][0] = cols[index][pos];
-      if (cols[index].size()>1) {
-	for (size_t j=pos;j<cols[index].size()-1;j++) {
-	  cols[index][j] = cols[index][j+1];
-	}
-      }
-      cols[index].pop_back();
-    }
-    else m_colours[i][0] = 0;
-    if ((flav.IsQuark() && flav.IsAnti()) || flav.IsGluon()) {
-      index = i<2?0:1;
-      do {
-	pos = size_t(cols[index].size()*ran->Get());
-	if (pos>=cols[index].size()) continue;
-        col = cols[index][pos];
-      } while (col==m_colours[i][0]);
-      m_colours[i][1] = col;
-      if (cols[index].size()>1) {
-	for (size_t j=pos;j<cols[index].size()-1;j++) {
-	  cols[index][j] = cols[index][j+1];
-	}
-      }
-      cols[index].pop_back();
-    }
-    else m_colours[i][1] = 0;
   }
-  flav = m_flavours[m_flavours.size()-1];
-  m_colours[m_flavours.size()-1].resize(2);
-  m_colours[m_flavours.size()-1][0] = (((flav.IsQuark() && !flav.IsAnti()) || flav.IsGluon())?
-				       cols[0].back():0);
-  m_colours[m_flavours.size()-1][1] = (((flav.IsQuark() && flav.IsAnti()) || flav.IsGluon())?
-				       cols[1].back():0);  
-  if (m_colours[m_flavours.size()-1][0]==m_colours[m_flavours.size()-1][1]) {
-    size_t help = m_colours[m_flavours.size()-1][1];
-    m_colours[m_flavours.size()-1][1] = m_colours[2][1];
-    m_colours[2][1] = help;
+  size_t pos[2], parts[2], colindex = 500;
+  do {
+    do {
+      for (size_t i=0;i<2;i++) {
+	pos[i]   = size_t(0.999999999*cols[i].size()*ran->Get());
+	parts[i] = cols[i][pos[i]];
+      }
+    } while (parts[0]==parts[1]);
+    m_colours[parts[0]][0] = m_colours[parts[1]][1] = colindex++;
+    for (size_t i=0;i<2;i++) { cols[i].erase(find(cols[i].begin(),cols[i].end(),parts[i])); }
+  } while (cols[0].size()>1);
+  if (cols[0][0]!=cols[1][0]) {
+    m_colours[cols[0][0]][0] = m_colours[cols[1][0]][1] = colindex++; 
+  }
+  else {
+    if (m_colours[2][0]!=0) {
+      m_colours[cols[0][0]][0] = m_colours[2][0];
+      m_colours[2][0] = m_colours[cols[1][0]][1] = colindex++; 
+    }
+    else if (m_colours[2][1]!=0) {
+      m_colours[cols[1][0]][1] = m_colours[2][1];
+      m_colours[2][1] = m_colours[cols[0][0]][0] = colindex++; 
+    }
+  }
+  for (size_t i=0;i<2;i++) {
+    size_t help     = m_colours[i][0];
+    m_colours[i][0] = m_colours[i][1];
+    m_colours[i][1] = help;
   }
   return true;
 }

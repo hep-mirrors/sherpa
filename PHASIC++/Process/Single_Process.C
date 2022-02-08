@@ -14,6 +14,7 @@
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Phys/Hard_Process_Variation_Generator.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -23,6 +24,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 
 #include <algorithm>
+#include <memory>
 
 using namespace PHASIC;
 using namespace MODEL;
@@ -52,6 +54,18 @@ Single_Process::Single_Process():
       msg_Info()<<"NLO n_f scheme conversion terms computed only."<<std::endl;
     printed=true;
   }
+
+  // parse settings for associated contributions variations
+  std::vector<std::vector<asscontrib::type>> asscontribvars =
+      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"]
+          .SetDefault<asscontrib::type>({})
+          .GetMatrix<asscontrib::type>();
+  for (const auto& asscontribvarparams : asscontribvars) {
+    m_asscontrib.push_back(asscontrib::none);
+    for (const auto& asscontribvarparam : asscontribvarparams) {
+      m_asscontrib.back() |= asscontribvarparam;
+    }
+  }
 }
 
 Single_Process::~Single_Process()
@@ -59,6 +73,8 @@ Single_Process::~Single_Process()
   for (Coupling_Map::const_iterator
 	 cit(m_cpls.begin());cit!=m_cpls.end();++cit)
     delete cit->second;
+  for (auto gen : m_hard_process_variation_generators)
+    delete gen;
 }
 
 size_t Single_Process::Size() const
@@ -72,10 +88,12 @@ Process_Base *Single_Process::operator[](const size_t &i)
   return NULL;
 }
 
-Weight_Info *Single_Process::OneEvent(const int wmode,const int mode)
+Weight_Info *Single_Process::OneEvent(const int wmode,
+                                      ATOOLS::Variations_Mode varmode,
+                                      const int mode)
 {
   p_selected=this;
-  return p_int->PSHandler()->OneEvent(this,mode);
+  return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
 double Single_Process::KFactor(const int mode) const
@@ -505,7 +523,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   Scale_Setter_Base* scales {ScaleSetter(1)};
 
-  Partonic(p);
+  Partonic(p, varmode);
 
   double nominal {0.0};
 
@@ -645,7 +663,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   UpdateMEWeightInfo(scales);
 
-  // perform on-the-fly reweighting
+  // perform on-the-fly QCD reweighting of BVI or RS events
   m_last *= nominal;
   if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
     if (GetSubevtList() == nullptr) {
@@ -654,7 +672,22 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       ReweightRS(scales->Amplitudes());
     }
   }
-  m_last -= m_dadswgtmap;
+
+  if (m_dads) {
+    m_last -= m_dadswgtmap;
+  }
+
+  // calculate associated contributions variations (not for DADS events)
+  if (varmode != Variations_Mode::nominal_only
+      && (GetSubevtList() != nullptr || !m_pinfo.Has(nlo_type::rsub))) {
+    CalculateAssociatedContributionVariations();
+  }
+
+  if (varmode != Variations_Mode::nominal_only) {
+    for (auto& gen : m_hard_process_variation_generators) {
+      gen->GenerateAndFillWeightsMap(m_last);
+    }
+  }
 
   // propagate (potentially) re-clustered momenta
   if (GetSubevtList() == nullptr) {
@@ -674,15 +707,20 @@ void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
   m_mewgtinfo.Reset();
   m_last.Clear();
   m_lastb.Clear();
-  m_dadswgtmap.Clear();
   if (varmode != Variations_Mode::nominal_only) {
     m_last["ME"] = Weights {Variations_Type::qcd};
     m_lastb["ME"] = Weights {Variations_Type::qcd};
-    m_dadswgtmap["ME"] = Weights {Variations_Type::qcd};
   }
   m_last = 1.0;
-  m_dadswgtmap = 0.0;
   m_lastb = 0.0;
+
+  if (m_dads) {
+    m_dadswgtmap.Clear();
+    if (varmode != Variations_Mode::nominal_only) {
+      m_dadswgtmap["ME"] = Weights {Variations_Type::qcd};
+    }
+    m_dadswgtmap = 0.0;
+  }
 }
 
 void Single_Process::UpdateIntegratorMomenta(const Vec4D_Vector& p)
@@ -733,9 +771,9 @@ void Single_Process::CalculateFlux(const Vec4D_Vector& p)
 void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
 {
   BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last.Nominal()};
-  // NOTE: we iterate over m_last's variations (via its Apply function), but we
-  // also update m_lastb inside the loop, to avoid code duplication; also note
-  // that m_lastb should not be all-zero if m_lastbxs is zero
+  // NOTE: we iterate over m_last's variations, but we also update m_lastb
+  // inside the loop, to avoid code duplication; also note that m_lastb should
+  // not be all-zero if m_lastbxs is zero
   Reweight(m_last["ME"], [this, &ampls, &info](
                    double varweight,
                    size_t varindex,
@@ -849,6 +887,77 @@ void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
   }
 }
 
+void Single_Process::CalculateAssociatedContributionVariations()
+{
+  // we need to at least set them to 1.0, if there is no genuine contribution,
+  // since it's always expected by the output handlers, that all variation
+  // weights are filled consistently across events
+  for (const auto& asscontrib : m_asscontrib) {
+    const std::string key = ToString<asscontrib::type>(asscontrib);
+    m_last["ASSOCIATED_CONTRIBUTIONS"][key] = 1.0;
+    m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] = 1.0;
+    m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] = 1.0;
+  }
+
+  if (m_asscontrib.empty() || !(m_mewgtinfo.m_type & mewgttype::VI))
+    return;
+
+  if (GetSubevtList() == nullptr) {
+
+    // calculate BVIKP - DADS as the reference point for the additive correction
+    const double BVIKP {
+      m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI + m_mewgtinfo.m_KP};
+    const double DADS {
+      m_dads ? m_dadswgtmap.Nominal("ME") / m_csi.m_pdfwgt : 0.0};
+    const double BVIKPDADS {BVIKP - DADS};
+    if (IsBad(BVIKPDADS))
+      return;
+
+    // calculate order in QCD
+    auto orderqcd = m_mewgtinfo.m_oqcd;
+    if (m_mewgtinfo.m_type & mewgttype::VI ||
+        m_mewgtinfo.m_type & mewgttype::KP) {
+      orderqcd--;
+    }
+
+    for (const auto& asscontrib : m_asscontrib) {
+
+      // collect terms
+      double Bassnew {0.0}, Deltaassnew {1.0}, Deltaassnewexp {1.0};
+      for (size_t i(0); i < m_mewgtinfo.m_wass.size(); ++i) {
+        // m_wass[0] is EW Sudakov-type correction
+        // m_wass[1] is the subleading Born
+        // m_wass[2] is the subsubleading Born, etc
+        if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
+          const double relfac {m_mewgtinfo.m_wass[i] / m_mewgtinfo.m_B};
+          if (1.0 + relfac > 10.0) {
+            msg_Error() << "KFactor from EWVirt is large: " << relfac << " -> ignore\n";
+            Deltaassnew = 1.0;
+            Deltaassnewexp = 1.0;
+            Bassnew = 0.0;
+            break;
+          } else {
+            if (i == 0) {
+              Deltaassnew *= 1.0 + relfac;
+              Deltaassnewexp *= exp(relfac);
+            }
+            Bassnew += m_mewgtinfo.m_wass[i];
+          }
+        }
+        if ((orderqcd - i) == 0)
+          break;
+      }
+
+      // store variations
+      const std::string key = ToString<asscontrib::type>(asscontrib);
+      m_last["ASSOCIATED_CONTRIBUTIONS"][key] = (BVIKPDADS + Bassnew) / BVIKPDADS;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] = Deltaassnew;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] = Deltaassnewexp;
+    }
+
+  }
+}
+
 void Single_Process::InitMEWeightInfo()
 {
   m_mewgtinfo.m_oqcd = MaxOrder(0);
@@ -883,7 +992,7 @@ Single_Process::ReweightBornLike(ATOOLS::QCD_Variation_Params& varparams,
                           &m_mewgtinfo.m_clusseqinfo));
   if (csi.m_pdfwgt == 0.0) {
     return 0.0;
-  } 
+  }
   const double alphasratio(AlphaSRatio(info.m_muR2, muR2new, varparams.p_alphas));
   const double alphasfac(pow(alphasratio, info.m_orderqcd));
   const double newweight(info.m_wgt * alphasfac * csi.m_pdfwgt);
@@ -1002,8 +1111,8 @@ double Single_Process::AlphaSRatio(
 
 
 bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
-					const bool create) 
-{ 
+					const bool create)
+{
   p_int->Reset();
   auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
@@ -1065,6 +1174,30 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::
     GetObject(m_pinfo.m_kfactor=cargs.m_kfac,cargs);
   if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
+}
+
+void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
+{
+  if (mode == Variations_Mode::nominal_only)
+    return;
+  // Parse settings for hard process variation generators; note that this can
+  // not be done in the ctor, because the matrix element handler has not yet
+  // fully configured the process at this point, and some variation generators
+  // might require that (an example would be EWSud)
+  Settings& s = Settings::GetMainSettings();
+  for (auto varitem : s["VARIATIONS"].GetItems()) {
+    if (varitem.IsScalar()) {
+      const auto name = varitem.Get<std::string>();
+      if (name == "None") {
+        return;
+      } else {
+        m_hard_process_variation_generators.push_back(
+            Hard_Process_Variation_Generator_Getter_Function::
+            GetObject(name, Hard_Process_Variation_Generator_Arguments{this})
+            );
+      }
+    }
+  }
 }
 
 void Single_Process::SetLookUp(const bool lookup)
@@ -1142,7 +1275,7 @@ Cluster_Amplitude *Single_Process::Cluster
 	ampl->Leg(i)->SetCol(ColorID(0,0));
       }
     while (true) {
-      std::random_shuffle(atids.begin(),atids.end(),*ran);
+      std::shuffle(atids.begin(),atids.end(),*ran);
       size_t i(0);
       for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
       if (i==atids.size()) break;
@@ -1160,7 +1293,7 @@ Cluster_Amplitude *Single_Process::Cluster
       ampl->CreateLeg(i<m_nin?-p_int->Momenta()[i]:p_int->Momenta()[i],
 		      i<m_nin?m_flavs[i].Bar():m_flavs[i],
 		      ColorID(ci[i],cj[i]));
-  }  
+  }
   ampl->SetMuF2(ScaleSetter(1)->Scale(stp::fac));
   ampl->SetMuR2(ScaleSetter(1)->Scale(stp::ren));
   ampl->SetMuQ2(ScaleSetter(1)->Scale(stp::res));

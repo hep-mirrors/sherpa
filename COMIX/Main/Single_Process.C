@@ -26,12 +26,13 @@ using namespace ATOOLS;
 
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
-  p_bg(NULL), p_map(NULL),
+  p_bg(NULL), p_hc(NULL), p_map(NULL),
   p_loop(NULL), p_kpterms(NULL),
   m_checkpoles(false), m_allowmap(true)
 {
   Settings& s = Settings::GetMainSettings();
-  m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
+  m_itype     = s["NLO_IMODE"].Get<cs_itype::type>();
+  m_allowmap  = s["KFACTOR_ALLOW_MAPPING"].SetDefault(true).Get<bool>();
 }
 
 COMIX::Single_Process::~Single_Process()
@@ -133,13 +134,12 @@ bool COMIX::Single_Process::Initialize
     else THROW(fatal_error,"Cannot do NLO QCD+EW");
     msg_Debugging()<<"Subtraction type: "<<(sbt::subtype)(stype+1)<<"\n";
   }
+  m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
-  if (m_pinfo.m_fi.NLOType()&nlo_type::vsub) {
-    smode=2;
+  else {
+    if (m_pinfo.m_fi.NLOType()&nlo_type::vsub) smode|=2;
     if (m_pinfo.m_fi.NLOType()&nlo_type::born) smode|=4;
-  }
-  if (m_pinfo.m_fi.NLOType()&nlo_type::loop) {
-    smode|=16;
+    if (m_pinfo.m_fi.NLOType()&nlo_type::loop) smode|=16;
     if (m_checkpoles) smode|=8;
   }
   msg_Debugging()<<"Subtraction Mode: "<<smode<<std::endl;
@@ -211,9 +211,8 @@ bool COMIX::Single_Process::Initialize
       p_loop->SetCouplings(m_cpls);
       p_loop->SetNorm(1.0/(isf*fsf));
       p_loop->SetSubType((sbt::subtype)(stype+1));
+      p_loop->SetPoleCheck(m_checkpoles);
       m_mewgtinfo.m_type|=mewgttype::VI;
-      int helpi;
-      m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
     }
     p_bg->SetLoopME(p_loop);
     p_bg->FillCombinations(m_ccombs,m_cflavs);
@@ -223,6 +222,8 @@ bool COMIX::Single_Process::Initialize
 	m_maxcpl[i]=p_bg->MaxCpl()[i]/2.0+m_pinfo.m_fi.m_nlocpl[i];
       }
     (*pmap)[m_name]=m_name;
+    if (m_pinfo.m_cls==cls::sum) ConstructColorMatrix();
+    p_hc = new Hard_Matrix();
     return true;
   }
   mapfile=rpa->gen.Variable("SHERPA_CPP_PATH")
@@ -383,6 +384,10 @@ bool COMIX::Single_Process::MapProcess()
 bool COMIX::Single_Process::GeneratePoint()
 {
   SetZero();
+  if (m_pinfo.m_cls==cls::sum) {
+    m_zero=false;
+    return true;
+  }
   m_zero=true;
   if (p_map!=NULL && m_lookup && p_map->m_lookup) 
     return !(m_zero=p_map->m_zero);
@@ -414,7 +419,9 @@ double COMIX::Single_Process::SetZero()
   return m_w=m_dxs=m_lastxs=0.0;
 }
 
-double COMIX::Single_Process::Partonic(const Vec4D_Vector &p, int mode)
+double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
+                                       Variations_Mode varmode,
+                                       int mode)
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
   if (mode==1) {
@@ -443,8 +450,18 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p, int mode)
         !sp->p_bg->RSTrigger(Selector(),m_mcmode))
       return m_lastxs=m_dxs=0.0;
     sp->p_scale->CalculateScale(p);
-    m_dxs=sp->p_bg->Differential();
-    m_w=p_int->ColorIntegrator()->GlobalWeight();
+    if (m_pinfo.m_cls==cls::sample) {
+      m_dxs=sp->p_bg->Differential();
+      m_w=p_int->ColorIntegrator()->GlobalWeight();
+    }
+    else {
+      m_w=1.0;
+      m_dxs=0.0;
+      ComputeHardMatrix(2);
+      for (size_t i(0); i<m_cols.m_perms.size(); ++i)
+	for (size_t j(0); j<m_cols.m_perms.size(); ++j)
+	  m_dxs+=((*p_hc)[i][j]*m_cols.m_colfacs[i][j]).real();
+    }
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
     int isb(m_dxs==sp->p_bg->Born());
@@ -477,6 +494,88 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p, int mode)
   m_mewgtinfo*=m_w;
   m_mewgtinfo.m_KP=kpterms;
   return m_lastxs=m_dxs+kpterms;
+}
+
+const Hard_Matrix *COMIX::Single_Process::ComputeHardMatrix
+(Cluster_Amplitude *const ampl,const int mode)
+{
+  if (p_map!=NULL) return p_map->ComputeHardMatrix(ampl,mode);
+  DEBUG_FUNC(Name()<<", mode = "<<mode);
+  msg_Debugging()<<*ampl<<"\n";
+  Vec4D_Vector p(ampl->Legs().size());
+  for (size_t i(0);i<p.size();++i)
+    p[i]=i<ampl->NIn()?-ampl->Leg(i)->Mom():ampl->Leg(i)->Mom();
+  p_bg->SetMomenta(p);
+  std::vector<double> s(ScaleSetter(1)->Scales().size(),0.0);
+  s[stp::fac]=ampl->MuF2();
+  s[stp::ren]=ampl->MuR2();
+  s[stp::res]=ampl->MuQ2();
+  if (s.size()>stp::size+stp::res) s[stp::size+stp::res]=ampl->KT2();
+  SetFixedScale(s);
+  ScaleSetter(1)->CalculateScale(p);
+  if (!(mode&1)) ComputeHardMatrix(mode);
+  else {
+    std::vector<int> ci(ampl->Legs().size()), cj(ci);
+    for (size_t i(0);i<ampl->Legs().size();++i) {
+      ci[i]=ampl->Leg(i)->Col().m_i;
+      cj[i]=ampl->Leg(i)->Col().m_j;
+    }
+    p_hc->resize(1,std::vector<Complex>(1));
+    (*p_hc)[0][0]=p_bg->Differential(ci,cj,(mode&2)?-1:1);
+    return p_hc;
+  }
+  SetFixedScale(std::vector<double>());
+  return p_hc;
+}
+
+void COMIX::Single_Process::ComputeHardMatrix(const int mode)
+{
+  std::vector<Spin_Amplitudes> hc;
+  for (size_t k(0);k<m_cols.m_perms.size();++k) {
+    const std::vector<int> &perm(m_cols.m_perms[k]);
+#ifdef DEBUG__BG
+    msg_Debugging()<<"Permutation "<<perm<<std::endl;
+#endif
+    PHASIC::Int_Vector ci(m_nin+m_nout,0), cj(m_nin+m_nout,0);
+    int idx(0);
+    for (size_t j(0);j<perm.size();++j) {
+      Flavour fl(m_flavs[perm[j]]);
+      if (perm[j]<m_nin) fl=fl.Bar();
+      int cc(fl.StrongCharge());
+      if (cc<0 || cc==8) cj[perm[j]]=idx;
+      if (cc>0 || cc==8) ci[perm[j]]=++idx;
+    }
+    if (m_flavs[perm[0]].StrongCharge()==8) cj[perm[0]]=idx;
+    double me(p_bg->Differential(ci,cj,(mode&2)?-1:1));
+    std::vector<Spin_Amplitudes> amps;
+    std::vector<std::vector<Complex> > cols;
+    FillAmplitudes(amps,cols);
+    hc.push_back(amps.front());
+#ifdef DEBUG__BG
+    msg_Debugging()<<"Add permutation "<<k<<" "<<perm
+		   <<" ( me2 = "<<me<<" ) {\n";
+    {
+      msg_Indent();
+      msg_Debugging()<<"ci = "<<ci<<"\n";
+      msg_Debugging()<<"cj = "<<cj<<"\n";
+      msg_Debugging()<<hc.back();
+    }
+    msg_Debugging()<<"}\n";
+#endif
+  }
+  double w(p_bg->ISSymmetryFactor()*
+	   p_bg->FSSymmetryFactor());
+  p_hc->resize(m_cols.m_perms.size(),
+	       std::vector<Complex>
+	       (m_cols.m_perms.size()));
+  size_t np(p_hc->size()), nh(hc.front().size());
+  for (size_t i(0);i<np;++i)
+    for (size_t j(i);j<np;++j) {
+      (*p_hc)[i][j]=Complex(0.0,0.0);
+      for (size_t k(0);k<nh;++k)
+	(*p_hc)[i][j]+=hc[i][k]*std::conj(hc[j][k]);
+      (*p_hc)[j][i]=std::conj((*p_hc)[i][j]/=w);
+    }
 }
 
 void COMIX::Single_Process::UpdateKPTerms(const int mode)

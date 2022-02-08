@@ -67,7 +67,7 @@ Particle_Info::Particle_Info
  const int formfactor, const std::string &idname, const std::string &antiname):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(0),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
-  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), m_spin(0), 
+  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), m_spin(spin), 
   m_stable(1), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 
   m_idname(idname), m_antiname(antiname)
@@ -302,44 +302,48 @@ std::string Flavour::LegacyShellName() const
 {
   if(!m_anti){
     switch (Kfcode()){
-    case      kf_d:      return "d";
-    case      kf_u:      return "u";
-    case      kf_s:      return "s";
-    case      kf_c:      return "c";
-    case      kf_b:      return "b";
-    case      kf_t:      return "t";
-    case      kf_e:      return "e-";
-    case      kf_nue:    return "nu_e";
-    case      kf_mu:     return "mu-";
-    case      kf_numu:   return "nu_mu";
-    case      kf_tau:    return "tau-";
-    case      kf_nutau:  return "nu_tau";
-    case      kf_gluon:  return "G";
-    case      kf_photon: return "P";
-    case      kf_Z:      return "Z";
-    case      kf_Wplus:  return "W+";
-    case      kf_h0:     return "h0";
+    case      kf_d:           return "d";
+    case      kf_u:           return "u";
+    case      kf_s:           return "s";
+    case      kf_c:           return "c";
+    case      kf_b:           return "b";
+    case      kf_t:           return "t";
+    case      kf_e:           return "e-";
+    case      kf_nue:         return "nu_e";
+    case      kf_mu:          return "mu-";
+    case      kf_numu:        return "nu_mu";
+    case      kf_tau:         return "tau-";
+    case      kf_nutau:       return "nu_tau";
+    case      kf_gluon:       return "G";
+    case      kf_photon:      return "P";
+    case      kf_Z:           return "Z";
+    case      kf_Wplus:       return "W+";
+    case      kf_h0:          return "h0";
+    case      kf_phiplus:     return "phi+";
+    case      kf_chi:         return "chi";
     }
   }
   else{
     switch (Kfcode()){
-    case      kf_d:      return "db";
-    case      kf_u:      return "ub";
-    case      kf_s:      return "sb";
-    case      kf_c:      return "cb";
-    case      kf_b:      return "bb";
-    case      kf_t:      return "tb";
-    case      kf_e:      return "e+";
-    case      kf_nue:    return "nu_eb";
-    case      kf_mu:     return "mu+";
-    case      kf_numu:   return "nu_mub";
-    case      kf_tau:    return "tau+";
-    case      kf_nutau:  return "nu_taub";
-    case      kf_gluon:  return "G";
-    case      kf_photon: return "P";
-    case      kf_Z:      return "Z";
-    case      kf_Wplus:  return "W-";
-    case      kf_h0:     return "h0";
+    case      kf_d:           return "db";
+    case      kf_u:           return "ub";
+    case      kf_s:           return "sb";
+    case      kf_c:           return "cb";
+    case      kf_b:           return "bb";
+    case      kf_t:           return "tb";
+    case      kf_e:           return "e+";
+    case      kf_nue:         return "nu_eb";
+    case      kf_mu:          return "mu+";
+    case      kf_numu:        return "nu_mub";
+    case      kf_tau:         return "tau+";
+    case      kf_nutau:       return "nu_taub";
+    case      kf_gluon:       return "G";
+    case      kf_photon:      return "P";
+    case      kf_Z:           return "Z";
+    case      kf_Wplus:       return "W-";
+    case      kf_h0:          return "h0";
+    case      kf_phiplus:     return "phi-";
+    case      kf_chi:         return "chi";
     }
   }
   return ShellName();
@@ -420,6 +424,29 @@ bool Flavour::IsStable() const
   if (p_info->m_stable==2 && !IsAnti()) return true;
   if (p_info->m_stable==3 && IsAnti()) return true;
   return false;
+}
+
+Flavour Flavour::IsoWeakPartner() const
+{
+  if (IsoWeak() != 0) {
+    auto code = Kfcode();
+    if (code % 2 == 0)
+      --code;
+    else
+      ++code;
+    return Flavour(code, m_anti);
+  }
+  return *this;
+}
+
+Flavour Flavour::GoldstoneBosonPartner() const
+{
+  auto code = Kfcode();
+  if (code == kf_Z)
+    code = kf_chi;
+  else if (code == kf_Wplus)
+    code = kf_phiplus;
+  return Flavour(code, m_anti);
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)

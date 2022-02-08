@@ -34,10 +34,10 @@ extern "C" Single_Channel * Getter_C2_1(int nin,int nout,Flavour* fl,Integration
 void C2_1::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
 {
   double *ran = p_vegas->GeneratePoint(_ran);
-  for(int i=0;i<rannum;i++) rans[i]=ran[i];
+  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   Vec4D p23=p[0]+p[1];
-  double s2 = ms[2];
-  double s3 = ms[3];
+  double s2 = p_ms[2];
+  double s3 = p_ms[3];
   m_ctmax = Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],s3,s2,0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,ran[0],ran[1]);
 }
@@ -51,27 +51,27 @@ void C2_1::GenerateWeight(Vec4D* p,Cut_Data * cuts)
     m_kTC_0__1__3_2<<CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,m_kTC_0__1__3_2[0],m_kTC_0__1__3_2[1]);
   wt *= m_kTC_0__1__3_2.Weight();
 
-  rans[0]= m_kTC_0__1__3_2[0];
-  rans[1]= m_kTC_0__1__3_2[1];
-  double vw = p_vegas->GenerateWeight(rans);
+  p_rans[0]= m_kTC_0__1__3_2[0];
+  p_rans[1]= m_kTC_0__1__3_2[1];
+  double vw = p_vegas->GenerateWeight(p_rans);
   if (wt!=0.) wt = vw/wt/pow(2.*M_PI,2*3.-4.);
 
-  weight = wt;
+  m_weight = wt;
 }
 
 C2_1::C2_1(int nin,int nout,Flavour* fl,Integration_Info * const info)
        : Single_Channel(nin,nout,fl)
 {
-  name = std::string("C2_1");
-  rannum = 2;
-  rans  = new double[rannum];
-  m_amct  = 1.;
-  m_alpha = .9;
-  m_ctmax = 1.;
-  m_ctmin = -1.;
+  m_name   = std::string("C2_1");
+  m_rannum = 2;
+  p_rans   = new double[m_rannum];
+  m_amct   = 1.;
+  m_alpha  = .9;
+  m_ctmax  = 1.;
+  m_ctmin  = -1.;
   m_kTC_0__1__3_2.Assign(std::string("TC_0__1__3_2"),2,0,info);
   m_kZS_0.Assign(std::string("ZS_0"),2,0,info);
-  p_vegas = new Vegas(rannum,100,name);
+  p_vegas = new Vegas(m_rannum,100,m_name);
 }
 
 C2_1::~C2_1()
@@ -89,7 +89,7 @@ void C2_1::ISRInfo(int & type,double & mass,double & width)
 void C2_1::AddPoint(double Value)
 {
   Single_Channel::AddPoint(Value);
-  p_vegas->AddPoint(Value,rans);
+  p_vegas->AddPoint(Value,p_rans);
 }
 std::string C2_1::ChID()
 {

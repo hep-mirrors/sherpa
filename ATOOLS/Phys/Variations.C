@@ -109,11 +109,8 @@ Variations::Variations(Variations_Mode mode)
 
 Variations::~Variations()
 {
-  for (Parameters_Vector::const_iterator it = m_parameters_vector.begin();
-       it != m_parameters_vector.end();
-       ++it) {
-    delete *it;
-  }
+  for (auto params : m_parameters_vector)
+    delete params;
 }
 
 
@@ -238,6 +235,10 @@ void Variations::InitialiseParametersVector()
 
 void Variations::AddParameters(Scoped_Settings& s)
 {
+  if (s.IsScalar()) {
+    return;
+  }
+
   // parse scale factors and QCUT factors, and check whether they are requested
   // to be expanded to x -> [x, 1/x] via an appended asterisk
   std::vector<std::string> scalestringparams;
@@ -636,34 +637,27 @@ std::string QCD_Variation_Params::GenerateName() const
     } else {
       // THROW(fatal_error, "Cannot obtain PDF IDF");
     }
-    name = GenerateNamePart("MUR", sqrt(m_muR2fac)) + divider
-           + GenerateNamePart("MUF", sqrt(m_muF2fac)) + divider
-           + GenerateNamePart("PDF", pdfid);
+    name = GenerateVariationNamePart("MUR", sqrt(m_muR2fac)) + divider
+           + GenerateVariationNamePart("MUF", sqrt(m_muF2fac)) + divider
+           + GenerateVariationNamePart("PDF", pdfid);
   } else {
     // there are two relevant PDF IDs, quote both
-    name = GenerateNamePart("MUR", sqrt(m_muR2fac)) + divider
-           + GenerateNamePart("MUF", sqrt(m_muF2fac)) + divider
-           + GenerateNamePart("PDF", p_pdf1->LHEFNumber()) + divider
-           + GenerateNamePart("PDF", p_pdf2->LHEFNumber());
+    name = GenerateVariationNamePart("MUR", sqrt(m_muR2fac)) + divider
+           + GenerateVariationNamePart("MUF", sqrt(m_muF2fac)) + divider
+           + GenerateVariationNamePart("PDF", p_pdf1->LHEFNumber()) + divider
+           + GenerateVariationNamePart("PDF", p_pdf2->LHEFNumber());
   }
   // append non-trival AlphaS(MZ) variation (which is not related to a change
   // in the PDF set)
   if (p_alphas != MODEL::as && p_alphas->GetAs()->PDF() != p_pdf1) {
-    name += divider + GenerateNamePart("ASMZ", p_alphas->AsMZ());
+    name += divider + GenerateVariationNamePart("ASMZ", p_alphas->AsMZ());
   }
   // append non-trivial shower scale factors
   if (m_showermuR2fac != 1.0 || m_showermuF2fac != 1.0) {
-    name += divider + GenerateNamePart("PSMUR", sqrt(m_showermuR2fac));
-    name += divider + GenerateNamePart("PSMUF", sqrt(m_showermuF2fac));
+    name += divider + GenerateVariationNamePart("PSMUR", sqrt(m_showermuR2fac));
+    name += divider + GenerateVariationNamePart("PSMUF", sqrt(m_showermuF2fac));
   }
   return name;
-}
-
-
-template <typename U>
-std::string QCD_Variation_Params_Base::GenerateNamePart(std::string tag, U value) const
-{
-  return tag + ToString(value);
 }
 
 bool QCD_Variation_Params::IsTrivial() const
@@ -680,7 +674,7 @@ bool QCD_Variation_Params::IsTrivial() const
 
 std::string Qcut_Variation_Params::GenerateName() const
 {
-  return GenerateNamePart("QCUT", m_scale_factor);
+  return GenerateVariationNamePart("QCUT", m_scale_factor);
 }
 
 namespace ATOOLS {
@@ -698,10 +692,14 @@ namespace ATOOLS {
   {
     const Variations::Parameters_Vector * const paramsvec(v.GetParametersVector());
     s << "Named variations:" << std::endl;
+    if (paramsvec->empty()) {
+      return s << " None\n";
+    }
+    s << '\n';
     for (Variations::Parameters_Vector::const_iterator it(paramsvec->begin());
          it != paramsvec->end(); ++it) {
       s << (*it)->m_name << " (" << (*it)->m_deletepdfs << ","
-        << (*it)->m_deletealphas << ")" << std::endl;
+        << (*it)->m_deletealphas << ")" << '\n';
     }
     return s;
   }

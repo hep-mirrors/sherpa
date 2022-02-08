@@ -1,6 +1,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include <vector>
 #include <algorithm>
+#include <cerrno>
 
 #include "ATOOLS/Org/Exception.H"
 
@@ -27,6 +28,26 @@ namespace ATOOLS {
       return false;
     }
     return true;
+  }
+
+  template <> double ToType(const std::string &value,
+		            const size_t precision) {
+    const char* p = value.c_str();
+    char* end;
+    double ret {std::strtod(value.c_str(), &end)};
+    if (errno == ERANGE) {
+      static bool did_warn {false};
+      if (!did_warn) {
+        msg_Error() << "ToType<double>: Range error parsing \"" << value
+          << "\". Will return " << ret
+          << " and omit further warnings of this kind.\n";
+        did_warn = true;
+      }
+      errno = 0;
+    } else if (p == end && ret == 0.0) {
+      THROW(fatal_error, "ToType<double>: Failed to parse " + value);
+    }
+    return ret;
   }
 
   std::string StringTrim(const std::string& untrimmed)

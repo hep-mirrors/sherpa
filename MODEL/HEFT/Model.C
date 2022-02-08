@@ -26,7 +26,7 @@ namespace MODEL {
   public :
 
     HEFT();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr) override;
+    bool ModelInit() override;
     void InitVertices() override;
     size_t IndexOfOrderKey(const std::string&) const override;
 
@@ -135,12 +135,12 @@ void HEFT::ParticleInit()
   ReadParticleData();
 }
 
-bool HEFT::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool HEFT::ModelInit()
 {
   Settings& s = Settings::GetMainSettings();
   FixEWParameters();  
   FixCKM();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
   RegisterDefaults();
   FixEFT();
   SetRunningFermionMasses();
@@ -679,7 +679,10 @@ void HEFT::InitEWVertices()
     for (short int i=1;i<17;++i) {
       if (i==7) i=11;
       Flavour flav((kf_code)i);
-      if (!flav.IsOn() || flav.Yuk()==0.0) continue;
+      if (!flav.IsOn() || flav.Yuk()==0.0) {
+	p_complexconstants->insert(make_pair("yuk("+ToString(i)+")",0.));
+	continue;
+      }
       double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
 	ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));
       Kabbala M;
@@ -687,6 +690,8 @@ void HEFT::InitEWVertices()
         M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",
 		  sqrt(m*m-Complex(0.0,m*flav.Width())));
       else M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",m);
+      p_complexconstants->insert
+	(make_pair("yuk("+ToString(i)+")",M.Value()));
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle(flav.Bar());
       m_v.back().AddParticle(flav);

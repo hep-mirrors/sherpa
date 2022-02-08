@@ -23,7 +23,8 @@ using namespace std;
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinfo,
 				     Amegic_Model * model,Topology* top,
 				     std::vector<double> & _maxcpl,
-				     std::vector<double> & _mincpl,int & _ntchan,
+				     std::vector<double> & _mincpl,
+				     int _ntchanmin,int _ntchanmax,
 				     MODEL::Coupling_Map *const cpls,
 				     Basic_Sfuncs* BS,String_Handler* _shand, 
 				     std::string print_graph,bool create_4V,
@@ -69,7 +70,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
     sfl[0] = *(pi->p_fl);
     pi->GetFlavList(sfl+1);
     gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,
-                                  std::vector<int>(2,99),-99,BS,shand);
+                                  std::vector<int>(2,99),-99,+99,BS,shand);
     subgraphlist[i] = gen->Matching(m_valid);
     m_valid.clear();
     if (subgraphlist[i]==NULL) {
@@ -100,7 +101,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
       m_valid.insert(std::pair<int,int>(itop,iperm));
   }
   gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,
-                                m_maxcpl,_ntchan,BS,shand,create_4V);
+                                m_maxcpl,_ntchanmin,_ntchanmax,BS,shand,create_4V);
   subgraphlist[0] = gen->Matching(m_valid);
   delete gen;
 
@@ -907,6 +908,8 @@ Complex Amplitude_Handler::Zvalue(int ihel)
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
   msg_Debugging()<<"2: #graphs: "<<graphs.size()<<std::endl;
+  double gsfac(p_aqcd?sqrt(p_aqcd->Factor()):1.0);
+  double gwfac(p_aqed?sqrt(p_aqed->Factor()):1.0);
   for (size_t i=0;i<graphs.size();i++) {
     if (m_aon.size() && !m_aon[i]) continue;
     double cplfac(1.0);
@@ -914,16 +917,16 @@ Complex Amplitude_Handler::Zvalue(int ihel)
     if (p_aqcd && order.size()>0 && order[0]) {
 #ifdef DEBUG__BG
       msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<order[0]
-		     <<" = "<<pow(p_aqcd->Factor(),order[0]/2.0)<<"\n";
+		     <<" = "<<intpow(gsfac,order[0])<<"\n";
 #endif
-      cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
-    }  
+      cplfac *= intpow(gsfac,order[0]);
+    }
     if (p_aqed && order.size()>1 && order[1]) {
 #ifdef DEBUG__BG
       msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<order[1]
-		     <<" = "<<pow(p_aqed->Factor(),order[1]/2.0)<<"\n";
+		     <<" = "<<intpow(gwfac,order[1])<<"\n";
 #endif
-      cplfac *= pow(p_aqed->Factor(),order[1]/2.0); 
+      cplfac *= intpow(gwfac,order[1]);
     }
 #ifdef DEBUG__BG
     msg_Debugging()<<"  graph "<<i<<" -> "<<cplfac<<"\n";

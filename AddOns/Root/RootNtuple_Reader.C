@@ -65,7 +65,9 @@ namespace SHERPA {
     size_t Size() const override { return 0; }
     Process_Base* operator[](const size_t& i) override { return NULL; }
 
-    Weight_Info* OneEvent(const int wmode, const int mode = 0) override
+    Weight_Info* OneEvent(const int wmode,
+                          Variations_Mode varmode=Variations_Mode::all,
+                          const int mode=0)
     {
       return NULL;
     }
@@ -532,6 +534,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     m_nlos.back()->m_result=p_vars->m_wgt2;
     m_nlos.back()->m_mu2[stp::fac]=sqr(p_vars->m_muf);
     m_nlos.back()->m_mu2[stp::ren]=sqr(p_vars->m_mur);
+    m_nlos.back()->m_stype=sbt::qcd;
     // double sf(m_ecms/rpa->gen.Ecms());
     // x1=p_vars->m_x1*sf;
     // x2=p_vars->m_x2*sf;

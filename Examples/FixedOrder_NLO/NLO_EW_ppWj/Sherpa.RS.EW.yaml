@@ -37,4 +37,4 @@ SELECTORS:
         NMin: 1
 RIVET:
   USE_HEPMC_SHORT: 1
-  IGNOREBEAMS: 1
+  --ignore-beams: 1

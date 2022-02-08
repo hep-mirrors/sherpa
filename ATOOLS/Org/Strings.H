@@ -28,7 +28,7 @@ R"|(WARNING: No config file will be loaded. While it is possible to run Sherpa
 without config files, it is likely that this is not intended. Make sure that
 there is either a config file named "Sherpa.yaml" in the current working
 directory, or provide a config file on the command line like this:
-"Sherpa -f MySherpaFile.yaml".
+"Sherpa MySherpaFile.yaml".
 )|";
 
 } // namespace Strings

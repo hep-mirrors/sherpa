@@ -1,15 +1,25 @@
 examplesdir        = $(pkgdatadir)/Examples
 
+# install, but don't distribute
+nobase_nodist_examples_DATA       =	\
+		API/ME2-Python/test.py \
+		API/Events/test.py \
+		API/MPIEvents/test.py
+
+# distribute, but don't install
+EXTRA_DIST                        =>	\
+		API/ME2-Python/test.py.in \
+		API/Events/test.py.in \
+		API/MPIEvents/test.py.in
+
+# distribute and install
 nobase_dist_examples_DATA         =	\
 		API/ME2-Python/Sherpa.yaml \
-		API/ME2-Python/test.py.in \
 		API/ME2-CPP/Sherpa.yaml \
 		API/ME2-CPP/test.cpp \
 		API/ME2-CPP/Makefile \
 		API/Events/Sherpa.yaml \
-		API/Events/test.py.in \
 		API/MPIEvents/Sherpa.yaml \
-		API/MPIEvents/test.py.in \
                 BFactory/BDecay/Sherpa.yaml \
                 BFactory/Belle_QCDBackground/Sherpa.yaml \
                 BFactory/Belle_Signal/Sherpa.yaml \
@@ -47,27 +57,11 @@ nobase_dist_examples_DATA         =	\
 		H_in_GluonFusion/LHC_HInterference/Sherpa.yaml \
 		H_in_GluonFusion/LHC_HJets/Sherpa.yaml \
 		H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml \
-		H_in_TTBar/LHC_TTH_MCatNLO/lib.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/intlib.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/libqq.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/libglu.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/matri.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/boxlib.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/boxlib_qq.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/penta_qq.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p1new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p2new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p3new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p4new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p5new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/p6new.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Virtual.f \
-		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Interface.C \
-		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct-TTH \
 		H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml \
 		Soft_QCD/Run.Xsecs.dat \
 		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
 		Tops_plus_Jets/LHC_Tops/Sherpa.yaml \
+		Tops_plus_Jets/LHC_Tops/Sherpa.EWapprox.yaml \
 		Tops_plus_V/LHC_TTW/Sherpa.yaml \
 		UFO_MSSM/MSSM/__init__.py \
 		UFO_MSSM/MSSM/build_restrict.py \

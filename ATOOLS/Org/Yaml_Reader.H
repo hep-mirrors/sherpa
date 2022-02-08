@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Settings_Keys.H"
 #include "ATOOLS/YAML/yaml-cpp/yaml.h"
 #include <iostream>
 
@@ -15,16 +16,26 @@ namespace ATOOLS {
   public:
 
     // constructors
-    Yaml_Reader();
+    Yaml_Reader(const std::string& name="");
     Yaml_Reader(std::istream&);
     Yaml_Reader(const std::string& path, const std::string& filename);
 
+    std::string Name() const;
+
+    std::vector<Settings_Keys> AllSettingsKeys();
+
     std::vector<std::string> GetKeys(const Settings_Keys& scopekeys);
+    bool IsScalar(const Settings_Keys& scopekeys);
     bool IsList(const Settings_Keys& scopekeys);
     bool IsMap(const Settings_Keys& scopekeys);
     size_t GetItemsCount(const Settings_Keys& scopekeys);
 
     bool IsParameterCustomised(const Settings_Keys& scopekeys);
+
+    std::vector<std::string> GetFlattenedStringVectorWithDelimiters(
+        const Settings_Keys&,
+        const std::string& open_delimiter="{{",
+        const std::string& close_delimiter="}}");
 
     template <typename T>
     T GetScalar(const Settings_Keys& keys)
@@ -70,9 +81,17 @@ namespace ATOOLS {
         auto ismatrix = true;
         auto isvector = true;
         for (const auto& subnode : node) {
-          if (!subnode.IsSequence())
+          if (subnode.IsSequence()) {
+            for (const auto& subsubnode : subnode) {
+              if (!subsubnode.IsScalar())
+                THROW(invalid_input,
+                    "Attempting to read a more than 2-dimensional setting: "
+                    + keys.Name());
+            }
+          } else {
             ismatrix = false;
-          if (subnode.Type() != SHERPA_YAML::NodeType::Scalar)
+          }
+          if (!subnode.IsScalar())
             isvector = false;
           if (!isvector && !ismatrix)
             break;
@@ -93,11 +112,20 @@ namespace ATOOLS {
 
     void Parse(std::istream&);
 
+    std::string m_name;
+
   private:
 
-    SHERPA_YAML::Node m_node;
+    std::vector<SHERPA_YAML::Node> m_nodes;
 
     SHERPA_YAML::Node NodeForKeys(const Settings_Keys& scopekeys);
+    SHERPA_YAML::Node NodeForKeysInNode(const Settings_Keys& scopekeys,
+                                        const SHERPA_YAML::Node&);
+
+    void AddSettingsKeys(
+        std::vector<Settings_Keys>&,
+        Settings_Keys&,
+        const SHERPA_YAML::Node&);
 
   };
 

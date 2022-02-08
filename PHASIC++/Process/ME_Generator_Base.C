@@ -56,22 +56,13 @@ Process_Base *ME_Generator_Base::InitializeProcess
     pi.m_maxcpl[0]=pi.m_mincpl[0]=ampl->OrderQCD();
     pi.m_maxcpl[1]=pi.m_mincpl[1]=ampl->OrderEW();
   }
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
-  if (mode&2) My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")
-				 +"/Process/"+m_name+"/");
   PHASIC::Process_Base *proc=p_gens->InitializeProcess(pi,mode&1);
-  if (proc==NULL) {
-    if (mode&4) My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")
-				    +"/Process/"+m_name+"/");
-    return proc;
-  }
+  if (proc==NULL) return proc;
   proc->SetSelector(Selector_Key{});
   std::string stag("VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}");
   proc->SetScale(Scale_Setter_Arguments(MODEL::s_model,stag,"Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
   proc->PerformTests();
-  if (mode&4) My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")
-				  +"/Process/"+m_name+"/");
   return proc;
 }
 
@@ -173,7 +164,7 @@ void ME_Generator_Base::RegisterDipoleParameters()
   s["PFF_FS_RECOIL_SCHEME"].SetDefault(0);
   s["IS_CLUSTER_TO_LEPTONS"].SetDefault(0);
   s["LIST"].SetDefault(0);
-  s["BORN_FLAVOUR_RESTRICTIONS"].SetDefault("");
+  s.DeclareVectorSettingsWithEmptyDefault({ "BORN_FLAVOUR_RESTRICTIONS" });
   s["ONSHELL_SUBTRACTION_WINDOW"].SetDefault(5.0);
 }
 

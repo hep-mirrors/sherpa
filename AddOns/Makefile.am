@@ -5,18 +5,21 @@ SUBDIRS       =	\
 		Pythia \
 		Higgs \
 		BlackHat \
-		MCFM \
 		LH_OLE \
 		HZTool \
 		OpenLoops \
+		Recola\
 		GoSam \
+		MadLoop \
+		MCFM \
 		PGS \
 		Delphes \
 		Rivet \
 		HepMC \
 		Root \
 		Weights \
-		DiHiggsNLO
+		DiHiggsNLO \
+		EWSud
 
 nobase_dist_pkgdata_DATA = \
 			HEPEVT/HEPEVT_Interface.C \

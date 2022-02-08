@@ -49,6 +49,11 @@ namespace PHASIC {
   typedef std::map<ATOOLS::nlo_type::code,StringProcess_Map*>
   NLOTypeStringProcessMap_Map;
 
+  struct Color_Matrix {
+    std::vector<std::vector<int> > m_perms;
+    std::vector<std::vector<double> > m_colfacs;
+  };// end of struct Color_Matrix
+
   class Process_Base {
   protected:
 
@@ -87,6 +92,8 @@ namespace PHASIC {
 
     NLOTypeStringProcessMap_Map *p_apmap;
 
+    Color_Matrix m_cols;
+
     static int s_usefmm;
 
     static void SortFlavours(Subprocess_Info &info,FMMap *const fmm=0);
@@ -116,10 +123,14 @@ namespace PHASIC {
 
     std::string ShellName(std::string name="") const;
 
+    Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;
+
+    virtual void ConstructColorMatrix();
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
     virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;
+    virtual void InitializeTheReweighting(ATOOLS::Variations_Mode) = 0;
 
     virtual void SetFixedScale(const std::vector<double> &s);
     virtual void SetSelectorOn(const bool on);
@@ -131,7 +142,10 @@ namespace PHASIC {
     virtual size_t Size() const = 0;
     virtual Process_Base *operator[](const size_t &i) = 0;
 
-    virtual ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) = 0;
+    virtual ATOOLS::Weight_Info *OneEvent(
+        const int wmode,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        const int mode=0) = 0;
 
     /*!
      * Calculate the nominal differential
@@ -178,6 +192,7 @@ namespace PHASIC {
     virtual bool FillIntegrator(Phase_Space_Handler *const psh);
     virtual bool InitIntegrator(Phase_Space_Handler *const psh);
     virtual void UpdateIntegrator(Phase_Space_Handler *const psh);
+    virtual bool FillResonances(ATOOLS::Flavour_Vector & flavs) { return false; }
 
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);
@@ -200,6 +215,9 @@ namespace PHASIC {
 			       const std::string efunc);
 
     virtual void FillOnshellConditions();
+    virtual bool FillFinalState(const ATOOLS::Vec4D_Vector &p);
+
+    virtual std::vector<std::vector<int> > *Colours() const;
 
     static void SortFlavours(ATOOLS::Cluster_Amplitude *const ampl,
 			     const int mode=1);
@@ -219,12 +237,10 @@ namespace PHASIC {
     // inline functions
     inline void SetParent(Process_Base *const proc) { p_parent=proc; }
 
-    inline size_t NIn()                                       const  { return m_nin;  }
-    inline virtual size_t NOut()                              const { return m_nout; }
-    virtual const ATOOLS::Vec4D_Vector          &Momenta()    const;
-    inline virtual const ATOOLS::Flavour_Vector &Flavours()   const { return m_flavs; }
-    inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs)    { m_flavs = flavs; }
-    inline virtual std::vector<std::vector<int> > * Colours() const { return NULL; }
+    inline size_t NIn()                             const { return m_nin;  }
+    inline size_t NOut()                            const { return m_nout; }
+    inline const ATOOLS::Flavour_Vector &Flavours() const { return m_flavs; }
+    inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs) { m_flavs = flavs; }
 
     inline const std::string &Name() const        { return m_name;    }
     inline const std::string &ResultsName() const { return m_resname; }
@@ -299,7 +315,10 @@ namespace PHASIC {
     inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }
 
     inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
-    virtual bool FillFinalState(const ATOOLS::Vec4D_Vector &p) { return true; }
+
+    inline const Color_Matrix &ColorMatrix(const int map=0) const
+    { return map?(p_mapproc?p_mapproc->m_cols:m_cols):m_cols; }
+
   };// end of class Process_Base
 
   class Order_Flavour {

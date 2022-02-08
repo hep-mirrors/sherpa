@@ -103,7 +103,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   chf<<"{"<<endl;
   //chf<<"std::cout<<\""<<name<<"\"<<std::endl;"<<endl;
   chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
-  chf<<"  for(int i=0;i<rannum;i++) rans[i]=ran[i];"<<endl;
+  chf<<"  for(int i=0;i<rannum;i++) p_rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
   int       maxnumb = 0;
 
@@ -128,19 +128,18 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 
   Step0(1,plist,rannum,chf,flav,maxnumb);
   ClearDeclarations();
-  chf<<"  double vw = p_vegas->GenerateWeight(rans);"<<endl;
-  chf<<"  if (wt!=0.) wt = vw/wt/pow(2.*M_PI,"<<nout<<"*3.-4.);"<<endl;
-  chf<<endl<<"  weight = wt;"<<endl; 
-  chf<<"}"<<endl<<endl;
-  
-  
+  chf<<"  double vw = p_vegas->GenerateWeight(p_rans);"<<endl;
+  chf << "  if (wt!=0.) wt = vw/wt/pow(2.*M_PI," << nout << "*3.-4.);" << endl;
+  chf << endl << "  m_weight = wt;" << endl;
+  chf << "}" << endl << endl;
+
   //Constructor
   chf	<<name<<"::"<<name<<"(int nin,int nout,Flavour* fl,Integration_Info * const info)"<<endl
 	<<"       : Single_Channel(nin,nout,fl)"<<endl
 	<<"{"<<endl
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
-	<<"  rans  = new double[rannum];"<<endl;
+	<<"  p_rans  = new double[rannum];"<<endl;
   if (tcount>0) {
     chf	<<"  m_amct  = 1.;"<<endl
 	<<"  m_alpha = .5;"<<endl
@@ -169,7 +168,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   chf<<"void "<<name<<"::AddPoint(double Value)";
   chf<<endl<<"{"<<endl;  
   chf<<"  Single_Channel::AddPoint(Value);"<<endl;
-  chf<<"  p_vegas->AddPoint(Value,rans);"<<endl;  
+  chf<<"  p_vegas->AddPoint(Value,p_rans);"<<endl;  
   chf<<"}"<<endl;
 
   chf<<"std::string "<<name<<"::ChID()";
@@ -354,8 +353,8 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
   	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
   	  sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momr<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
   	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
-	  sf<<"  rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
-	  sf<<"  rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
+	  sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
+	  sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
 	  //	  	  sf<<"  wt *= CE.Isotropic2Weight("<<moml<<","<<momr<<");"<<endl;
 	}
       }
@@ -372,8 +371,8 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
   	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
   	  sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<moml<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
   	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
-	  sf<<"  rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
-	  sf<<"  rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
+	  sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
+	  sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
 	  //	  	  sf<<"  wt *= CE.Isotropic2Weight("<<momr<<","<<moml<<");"<<endl;
 	}
       }
@@ -500,7 +499,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
 	         Order(pin1sum)+string(").Abs2()))-");
     if (pout1.size()==1) {
-      if (pout1[0].length()==1) s += string("sqrt(ms[")+GetMassIndex(pout1[0])+string("])");
+      if (pout1[0].length()==1) s += string("sqrt(p_ms[")+GetMassIndex(pout1[0])+string("])");
       else                      s += string("sqrt(s")+Order(pout1[0])+string(")");    
     }
     else s += string("sqrt(s")+Order(pout1sum)+string("_min)");  
@@ -560,11 +559,11 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 
       if (pout1.size()==1 && pin1.size()==1 && pout1[0].length()==1 && extrachannelflag==1) {
 	sf<<"  wt *= CE.LLPropWeight(0.99,1.001*sqr(rpa->gen.Ecms()),s"<<Order(pout0sum)<<"_min,"
-	  <<"s"<<Order(pout0sum)<<"_max,s"<<Order(pout0sum)<<",rans["<<rannum<<"]);"<<endl;
+	  <<"s"<<Order(pout0sum)<<"_max,s"<<Order(pout0sum)<<",p_rans["<<rannum<<"]);"<<endl;
       }
       else {
 	sf<<"  wt *= CE.MasslessPropWeight(0.5,s"<<Order(pout0sum)<<"_min,"
-	  <<"s"<<Order(pout0sum)<<"_max,s"<<Order(pout0sum)<<",rans["<<rannum<<"]);"<<endl;
+	  <<"s"<<Order(pout0sum)<<"_max,s"<<Order(pout0sum)<<",p_rans["<<rannum<<"]);"<<endl;
       }
       rannum++;
     }
@@ -575,7 +574,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
 	Order(pin1sum)+string(").Abs2()))-");
       if (pout0.size()==1) {
-	if (pout0[0].size()==1) s += string("sqrt(ms[")+GetMassIndex(pout0[0])+string("])");
+	if (pout0[0].size()==1) s += string("sqrt(p_ms[")+GetMassIndex(pout0[0])+string("])");
 	else                    s += string("sqrt(s")+Order(pout0[0])+string(")");    
       }
       else s += string("sqrt(s")+Order(pout1sum)+string(")");  
@@ -605,7 +604,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       AddToVariables(flag,pout1sum,string("dabs(p")+Order(pout1sum)+string(".Abs2())"),0,sf);
 
       sf<<"  wt *= CE.MasslessPropWeight(0.5,s"<<Order(pout1sum)<<"_min,"
-	<<"s"<<Order(pout1sum)<<"_max,s"<<Order(pout1sum)<<",rans["<<rannum<<"]);"<<endl;
+	<<"s"<<Order(pout1sum)<<"_max,s"<<Order(pout1sum)<<",p_rans["<<rannum<<"]);"<<endl;
       rannum++;
     }
   }
@@ -665,8 +664,8 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
     
     sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
-    sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
-    sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
+    sf<<"  p_rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
+    sf<<"  p_rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
   }
 
   //generate new
@@ -756,8 +755,8 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     lm[i] = LinkedMasses(_plist[i]);
     mummy += lm[i];
     if (_plist[i]->left==0) {
-      if (flag==0 || flag==10) AddToVariables(flag,lm[i],string("ms[")+GetMassIndex(lm[i])+string("]"),0,sf);
-      //sf<<"  double s"<<lm[i]<<" = ms["<<lm[i]<<"];"<<endl;
+      if (flag==0 || flag==10) AddToVariables(flag,lm[i],string("p_ms[")+GetMassIndex(lm[i])+string("]"),0,sf);
+      //sf<<"  double s"<<lm[i]<<" = p_ms["<<lm[i]<<"];"<<endl;
       momp[i]  = string("p[") + GetMassIndex(lm[i]) + string("]");
       sflag[i] = 1;
       //sum_s_i  += string("-sqrt(s")+lm[i]+string(")");
@@ -846,11 +845,11 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
       AddToVariables(flag,lm[hit],string("dabs(")+momp[hit]+string(".Abs2())"),0,sf);
       if (maxpole>0.) {
 	sf<<"  wt *= CE.MassivePropWeight(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),1,"
-	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,"<<"s"<<Order(lm[hit])<<",rans["<<rannum<<"]);"<<endl;
+	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,"<<"s"<<Order(lm[hit])<<",p_rans["<<rannum<<"]);"<<endl;
       }
       else {
 	sf<<"  wt *= CE.MasslessPropWeight(1.,s"<<Order(lm[hit])<<"_min,"
-	  <<"s"<<Order(lm[hit])<<"_max,s"<<Order(lm[hit])<<",rans["<<rannum<<"]);"<<endl;
+	  <<"s"<<Order(lm[hit])<<"_max,s"<<Order(lm[hit])<<",p_rans["<<rannum<<"]);"<<endl;
       }
       rannum++;
     }
@@ -934,12 +933,12 @@ void Channel_Generator::CalcSmin(int flag,const char* min,string lm,ofstream& sf
       s += string("cuts->scut[")+lm[i]+string("][")+lm[j]+string("]+");
   }
   
-  if (lm.length()==1) s += string("ms[")+lm[0]+string("]");
+  if (lm.length()==1) s += string("p_ms[")+lm[0]+string("]");
   else {
     if (lm.length()==2) s +=string("0");
     else {      
-      s += string("(2-")+IString(lm.length())+string(")*(ms[")+lm[0]+string("]");
-      for (short int i=1;i<lm.length();i++) s += string("+ms[")+lm[i]+string("]");
+      s += string("(2-")+IString(lm.length())+string(")*(p_ms[")+lm[0]+string("]");
+      for (short int i=1;i<lm.length();i++) s += string("+p_ms[")+lm[i]+string("]");
       s += string(")");
     }
   }

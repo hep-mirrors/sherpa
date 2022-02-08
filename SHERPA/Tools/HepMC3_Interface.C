@@ -98,10 +98,13 @@ EventInfo3::EventInfo3(const EventInfo3 &evtinfo) :
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
   m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),m_muq2(0.),
-  m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
+  m_alphas(0.), m_alpha(0.),
+  m_userhook(false), m_userweight(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
-  m_wgtmap(evtinfo.m_wgtmap)
+  m_wgtmap(evtinfo.m_wgtmap),
+  p_hard_process_variation_weight_names(
+      evtinfo.p_hard_process_variation_weight_names)
 {
 }
 
@@ -115,7 +118,17 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
 {
   DEBUG_FUNC("use named weights: "<<m_usenamedweights
              <<", extended weights: "<<m_extendedweights);
-  std::map<std::string,double> wc;
+  class WeightContainer: public std::vector< std::pair<std::string, double> > {
+  public:
+  double& operator[](const std::string s) {
+    for (auto a = this->begin(); a != this->end(); ++a)
+    if (a->first == s) return a->second;
+    this->push_back(std::pair<std::string,double>(s, 0.0));
+    return this->back().second; 
+ }
+};
+  WeightContainer wc;
+
   if (m_usenamedweights) {
 
  // fill standard entries to ensure backwards compatability
@@ -205,6 +218,13 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
             }
           }
         }
+        if (p_wgtinfo->m_wass.size()) {
+          for (size_t i(0);i<p_wgtinfo->m_wass.size();++i) {
+            asscontrib::type ass=static_cast<asscontrib::type>(1<<i);
+            wc["Reweight_"+ToString(ass)]
+                =p_wgtinfo->m_wass[i];
+          }
+        }
         wc["Reweight_Type"]=p_wgtinfo->m_type;
       }
       if (p_subevtlist) {
@@ -223,54 +243,39 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
       Weights_Map& wgtmap =
           (idx == -1) ? m_wgtmap : (*p_subevtlist)[idx]->m_results;
 
+      // QCD variations
       for (const auto& source : m_variationsources) {
+        wgtmap.FillManagedVariations(wc, source);
+      }
 
-        for (const auto type : s_variations->ManagedVariationTypes()) {
-
-          // calculate contributions
-          Weights weights = Weights {type};
-          double nom {1.0};
-          double relfac {1.0};
-          if (source == ATOOLS::Variations_Source::all) {
-            nom = wgtmap.Nominal();
-            weights *= wgtmap.Combine(type);
-            relfac = wgtmap.NominalIgnoringVariationType(type);
-          } else {
-            // calculate nominal, relfac and weights ignoring shower weights
-            std::unordered_set<std::string> shower_keys {
-                "PS", "PS_QCUT", "MC@NLO_PS", "MC@NLO_QCUT"};
-            for (const auto& v : wgtmap) {
-              if (shower_keys.find(v.first) != shower_keys.end())
-                continue;
-              nom *= v.second.Nominal();
-              if (v.second.Type() == type) {
-                weights *= v.second;
-              } else {
-                relfac *= v.second.Nominal();
-              }
+      if (p_hard_process_variation_weight_names) {
+        for (const auto& weight_names : *p_hard_process_variation_weight_names) {
+          const auto it = wgtmap.find(weight_names->WeightMapKey());
+          if (it != wgtmap.end()) {
+            const auto size = it->second.Size();
+            // iterate weights, skipping the nominal entry
+            for (int i {1}; i < size; ++i) {
+              wc[weight_names->WeightNameForVariation(it->second.Name(i))]
+                = it->second[i] * wgtmap.Nominal();
             }
-            relfac *= wgtmap.BaseWeight();
           }
+        }
+      }
 
-          // do remaining combination and output resulting weights
-          size_t num_vars = weights.Size() - 1;
-          for (size_t i(0); i < num_vars; ++i) {
-            const std::string varname {weights.Name(i + 1)};
-            const std::string typevarname {
-                (source == ATOOLS::Variations_Source::main)
-                    ? "ME_ONLY_" + varname
-                    : varname};
-            wc[typevarname] = weights.Variation(i) * relfac;
-            msg_Debugging() << typevarname << " (" << typevarname
-                            << "): " << weights.Variation(i) * relfac << '\n';
-          }
+      // associated contributions variations
+      const auto it = wgtmap.find("ASSOCIATED_CONTRIBUTIONS");
+      if (it != wgtmap.end()) {
+        const auto asscontribs = it->second;
+        const auto num_asscontribvars = asscontribs.Size() - 1;
+        for (size_t i(0); i < num_asscontribvars; ++i) {
+          wc["ASS" + asscontribs.Name(i + 1)] = asscontribs[i + 1] * wgtmap.Nominal();
         }
       }
     }
 
   std::vector<std::string> w_names;
   std::vector<double> w_values;
-  for (std::map<std::string,double>::iterator it=wc.begin(); it!=wc.end();++it)
+  for (auto it = wc.begin(); it != wc.end(); ++it)
   { w_names.push_back(it->first); w_values.push_back(it->second);}
   evt.run_info()->set_weight_names(w_names);
   evt.weights()=w_values;
@@ -337,6 +342,27 @@ HepMC3_Interface::HepMC3_Interface() :
     s["HEPMC_INCLUDE_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
+  
+  for (auto varitem : s["VARIATIONS"].GetItems()) {
+    if (varitem.IsScalar()) {
+      const auto name = varitem.Get<std::string>();
+      if (name == "None") {
+        return;
+      } else {
+        auto* names = Hard_Process_Variation_Weight_Names_Getter_Function::
+          GetObject(name, Hard_Process_Variation_Weight_Names_Arguments{});
+        if (names)
+          m_hard_process_variation_weight_names.push_back(names);
+      }
+    }
+  }
+
+  m_runinfo = std::make_shared<HepMC::GenRunInfo>();
+  HepMC::GenRunInfo::ToolInfo generator;
+  generator.name = std::string("SHERPA");
+  generator.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
+  generator.description = "Used generator";
+  m_runinfo->tools().push_back(generator);
 }
 
 HepMC3_Interface::~HepMC3_Interface()
@@ -353,6 +379,7 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   const auto weight(blobs->Weight());
   event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
+  event.set_run_info(m_runinfo);
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
   Blob *mp(blobs->FindFirst(btp::Hard_Collision));  
@@ -360,6 +387,8 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   
   EventInfo3 evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
+  evtinfo.SetHardProcessVariationWeightNames(
+      &m_hard_process_variation_weight_names);
   // when subevtlist, fill hepmc-subevtlist
   if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
@@ -534,8 +563,7 @@ std::shared_ptr<HepMC::GenParticle> HepMC3_Interface::MakeGenParticle(
 
 // HS: Short-hand that takes a blob list, creates a new GenEvent and
 // calls the actual Sherpa2HepMC
-bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-				   std::shared_ptr<HepMC::GenRunInfo> run)
+bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -547,7 +575,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   for (size_t i=0; i<m_subeventlist.size();++i)
     { m_subeventlist[i]->clear(); delete m_subeventlist[i];}
   m_subeventlist.clear();
-  p_event = new HepMC::GenEvent(run);
+  p_event = new HepMC::GenEvent();
   return Sherpa2HepMC(blobs, *p_event);
 }
 
@@ -559,6 +587,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   DEBUG_FUNC("");
   event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
+  event.set_run_info(m_runinfo);
   if (!m_hepmctree) event.add_attribute("cycles",std::make_shared<HepMC::IntAttribute>(1));
   // Signal Process blob --- there is only one
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
@@ -571,6 +600,8 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
   EventInfo3 evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
+  evtinfo.SetHardProcessVariationWeightNames(
+      &m_hard_process_variation_weight_names);
   evtinfo.WriteTo(event);
   
   m_blob2genvertex.clear();
@@ -805,6 +836,12 @@ void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
     cross_section->set_cross_section(xs,err);
     event.set_cross_section(cross_section);
 
+}
+
+bool HepMC3_Interface::StartsLikeVariationName(const std::string& s)
+{
+  return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0 ||
+          s.find("ASS") == 0);
 }
 
 void HepMC3_Interface::DeleteGenSubEventList()

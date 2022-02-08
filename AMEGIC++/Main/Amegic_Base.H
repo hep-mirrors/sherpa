@@ -3,6 +3,7 @@
 
 #include "AMEGIC++/Main/Process_Tags.H"
 #include "PHASIC++/Process/Process_Info.H"
+#include "ATOOLS/Math/Vector.H"
 
 
 namespace AMEGIC {
@@ -10,17 +11,14 @@ namespace AMEGIC {
   class Amegic_Base {
   protected:
     Process_Tags *p_pinfo;
-    int m_ntchanmin;
   public:
     static int s_partcommit;
     Amegic_Base();
     virtual ~Amegic_Base();
     virtual bool NewLibs() = 0;
     virtual void Minimize() = 0;
-
-    inline void SetNTchanmin(const size_t &ntch) { m_ntchanmin=ntch; }
-
-    inline size_t NTchanMin() const  { return m_ntchanmin; }
+    void PrepareTestMoms(ATOOLS::Vec4D *const moms,
+			 const size_t &nin,const size_t &nout) const;
 
     Pol_Info ExtractPolInfo(const PHASIC::Subprocess_Info &spi);
 

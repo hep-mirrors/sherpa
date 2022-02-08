@@ -239,6 +239,23 @@ void Weights_Map::Clear()
   clear();
   base_weight = 1.0;
   nominals_prefactor = 1.0;
+  is_absolute = false;
+}
+
+double Weights_Map::Get(const std::string& k, size_t i) const
+{
+  if (i == 0) {
+    return Nominal();
+  }
+  auto it = find(k);
+  if (it == end()) {
+    return Nominal();
+  }
+  if (is_absolute) {
+    return it->second[i];
+  } else {
+    return NominalIgnoringPrefactor() * it->second[i] / it->second[0];
+  }
 }
 
 bool Weights_Map::HasVariations() const
@@ -267,15 +284,32 @@ bool Weights_Map::IsZero() const
 
 double Weights_Map::Nominal() const
 {
-  double w {base_weight};
-  for (const auto& kv : *this) {
-    w *= kv.second.Nominal();
+  if (is_absolute) {
+    if (empty()) {
+      return base_weight;
+    } else {
+      return begin()->second.Nominal();
+    }
+  } else {
+    double w {base_weight};
+    for (const auto& kv : *this) {
+      w *= kv.second.Nominal();
+    }
+    return nominals_prefactor * w;
   }
-  return nominals_prefactor * w;
+}
+
+double Weights_Map::Nominal(const std::string& k) const
+{
+  const auto res = find(k);
+  if (res == this->end())
+    THROW(fatal_error, "Weights map does not have an entry for `" + k + "`.");
+  return base_weight * res->second.Nominal();
 }
 
 double Weights_Map::NominalIgnoringVariationType(Variations_Type type) const
 {
+  assert(!is_absolute);
   double w {base_weight};
   for (const auto& kv : *this) {
     if (kv.second.type != type)
@@ -286,6 +320,7 @@ double Weights_Map::NominalIgnoringVariationType(Variations_Type type) const
 
 Weights Weights_Map::RelativeValues(const std::string& k) const
 {
+  assert(!is_absolute);
   const auto it = this->find(k);
   if (it != this->end()) {
     auto ret = it->second;
@@ -295,19 +330,9 @@ Weights Weights_Map::RelativeValues(const std::string& k) const
   return 1.0;
 }
 
-Weights Weights_Map::AbsoluteValues(const std::string& k) const
-{
-  const auto it = this->find(k);
-  if (it != this->end()) {
-    auto ret = it->second;
-    ret[0] *= nominals_prefactor;
-    return ret * base_weight;
-  }
-  return base_weight;
-}
-
 Weights Weights_Map::Combine(Variations_Type type) const
 {
+  assert(!is_absolute);
   auto w = Weights {type};
   for (const auto& kv : *this) {
     if (kv.second.type == type)
@@ -315,6 +340,16 @@ Weights Weights_Map::Combine(Variations_Type type) const
   }
   w[0] *= nominals_prefactor;
   return w;
+}
+
+void Weights_Map::SetZeroIfCloseToZero(double tolerance)
+{
+  MakeAbsolute();
+  for (auto& kv : *this)
+    for (auto& w : kv.second.weights)
+      if (IsEqual(w, tolerance))
+        w = 0.0;
+  MakeRelative();
 }
 
 Weights_Map ATOOLS::operator*(Weights_Map lhs, double rhs)
@@ -331,6 +366,7 @@ Weights_Map ATOOLS::operator/(Weights_Map lhs, double rhs)
 
 Weights_Map& Weights_Map::operator*=(const Weights_Map& rhs)
 {
+  assert(!is_absolute);
   base_weight *= rhs.base_weight;
   nominals_prefactor *= rhs.nominals_prefactor;
   for (const auto& kv : rhs) {
@@ -346,8 +382,15 @@ Weights_Map& Weights_Map::operator*=(const Weights_Map& rhs)
   return *this;
 }
 
+Weights_Map ATOOLS::operator*(Weights_Map lhs, const Weights_Map& rhs)
+{
+  lhs *= rhs;
+  return lhs;
+}
+
 Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
 {
+  assert(!is_absolute);
   if (empty() && rhs.empty()) {
     base_weight += rhs.base_weight;
     nominals_prefactor *= rhs.nominals_prefactor;
@@ -359,6 +402,14 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
   if (IsZero()) {
     *this = rhs;
     return *this;
+  }
+
+  // insert ones on the lhs when a key that is present on the rhs is missing
+  for (auto& kv : rhs) {
+    auto it = find(kv.first);
+    if (it == end()) {
+      this->emplace(kv.first, kv.second.type);
+    }
   }
 
   // transform both sides into absolute storage instead of the default relative
@@ -380,13 +431,28 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
 
 Weights_Map& Weights_Map::operator-=(const Weights_Map& rhs)
 {
+  assert(!is_absolute);
   Weights_Map negative_rhs = rhs;
   negative_rhs.base_weight = -negative_rhs.base_weight;
   return operator+=(negative_rhs);
 }
 
+Weights_Map ATOOLS::operator+(Weights_Map lhs, const Weights_Map& rhs)
+{
+  lhs += rhs;
+  return lhs;
+}
+
+Weights_Map ATOOLS::operator-(Weights_Map lhs, const Weights_Map& rhs)
+{
+  lhs -= rhs;
+  return lhs;
+}
+
 void Weights_Map::MakeRelative()
 {
+  assert(is_absolute);
+
   // find any non-zero entry for normalisation, first check nominal entries
   double norm = 0.0;
   for (const auto& kv : *this) {
@@ -414,7 +480,14 @@ void Weights_Map::MakeRelative()
     nominals_prefactor = 1.0;
   }
   if (norm == 0.0) {
-    THROW(not_implemented, "Missing implementation for all-zero case.");
+    // Everything is zero, represent this with base_weight et to 0.0 and
+    // everything else set to 1.0 and return.
+    base_weight = 0.0;
+    nominals_prefactor = 1.0;
+    for (auto& kv : *this)
+      kv.second = 1.0;
+    is_absolute = false;
+    return;
   }
 
   // apply normalisation
@@ -432,10 +505,22 @@ void Weights_Map::MakeRelative()
       kv.second.Nominal() = 1.0;
     }
   }
+
+  is_absolute = false;
 }
 
 void Weights_Map::MakeAbsolute()
 {
+  assert(!is_absolute);
+
+  // without variations, we only get rid of nominals_prefactor and return
+  if (this->empty()) {
+    base_weight *= nominals_prefactor;
+    nominals_prefactor = 1.0;
+    is_absolute = true;
+    return;
+  }
+
   // store all nominals
   std::map<std::string, double> nominals;
   for (const auto& kv : *this) {
@@ -462,12 +547,56 @@ void Weights_Map::MakeAbsolute()
     kv.second.Nominal() *= nominals_prefactor;
   }
   nominals_prefactor = 1.0;
+
+  is_absolute = true;
+}
+
+#ifdef USING__MPI
+void Weights_Map::MPI_Allreduce()
+{
+  int size=mpi->Size();
+  if (size>1) {
+    assert(!is_absolute);
+
+    if (empty()) {
+      mpi->Allreduce(&base_weight, 1, MPI_DOUBLE, MPI_SUM);
+      mpi->Allreduce(&nominals_prefactor, 1, MPI_DOUBLE, MPI_PROD);
+      return;
+    }
+
+    MakeAbsolute();
+    for (auto& kv : *this) {
+      const size_t n_wgts = kv.second.Size();
+      mpi->Allreduce(&kv.second[0], n_wgts, MPI_DOUBLE, MPI_SUM);
+    }
+    MakeRelative();
+  }
+}
+#endif
+
+double Weights_Map::NominalIgnoringPrefactor() const
+{
+  if (is_absolute) {
+    if (empty()) {
+      return base_weight;
+    } else {
+      return begin()->second.Nominal();
+    }
+  } else {
+    double w {base_weight};
+    for (const auto& kv : *this) {
+      w *= kv.second.Nominal();
+    }
+    return w;
+  }
 }
 
 std::ostream& ATOOLS::operator<<(std::ostream& out, const Weights_Map& w)
 {
-  out << w.base_weight << " (nominals prefactor = " << w.nominals_prefactor
-      << "):\n";
+  if (!w.is_absolute) {
+    out << w.base_weight << " (nominals prefactor = " << w.nominals_prefactor
+        << "):\n";
+  }
   for (const auto& e : w) {
     out << e.first << "\n" << e.second << '\n';
   }
@@ -475,6 +604,20 @@ std::ostream& ATOOLS::operator<<(std::ostream& out, const Weights_Map& w)
 }
 
 namespace ATOOLS {
+
+  Weights_Map sqrt(const Weights_Map& w)
+  {
+    auto root = w;
+    root.base_weight = std::sqrt(root.base_weight);
+    root.nominals_prefactor = std::sqrt(root.nominals_prefactor);
+    for (auto& kv : root) {
+      const size_t n_wgts = kv.second.Size();
+      for (size_t i {0}; i < n_wgts; ++i) {
+        kv.second[i] = std::sqrt(kv.second[i]);
+      }
+    }
+    return root;
+  }
 
   template <> Blob_Data<Weights_Map>::~Blob_Data() {}
   template class Blob_Data<Weights_Map>;

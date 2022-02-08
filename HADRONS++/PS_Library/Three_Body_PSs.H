@@ -25,7 +25,6 @@ namespace HADRONS {
       void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
       int  ChNumber()                 { return m_chnumber;       }
       void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
-      std::string ChID()              { return name;}
       void MPISync() {};
   }; // end of class
 

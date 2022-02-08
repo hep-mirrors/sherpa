@@ -26,7 +26,6 @@ executed again in order to obtain the matrix element.
 Computing matrix elements for individual phase space points using the C++ Interface
 ===================================================================================
 
-.. index:: NUMBER_OF_POINTS
 .. index:: MOMENTA_DATA_FILE
 
 Matrix elements values for user defined phase space points can also be

@@ -1,11 +1,11 @@
+#ifndef CXXFLAGS_PACKAGES_H
+#define CXXFLAGS_PACKAGES_H
+
 /* Using HEPMC3 */
 #undef USING__HEPMC3
 
-/* Using HEPMC3 WRITERROOTTREE */
-#undef  USING__HEPMC3__WRITERROOTTREE
-
-/* Using HEPMC3  WRITERROOT */
-#undef  USING__HEPMC3__WRITERROOT
+/* HepMC3 with ROOT support */
+#undef  USING__HEPMC3__ROOT
 
 /* Using HEPMC2 */
 #undef USING__HEPMC2
@@ -64,8 +64,22 @@
 /* GoSam installation prefix */
 #undef GOSAM_PREFIX
 
+/* MadLoop installation prefix */
+#undef MADLOOP_PREFIX
+
+/* Recola installation prefix */
+#undef RECOLA_PREFIX
+
 /* using MCFM */
 #undef USING__MCFM
 
+/* MCFM directory */
+#undef MCFM_PATH
+
 /* using Delphes */
 #undef USING__DELPHES
+
+/* using EWSud */
+#undef USING__EWSud
+
+#endif

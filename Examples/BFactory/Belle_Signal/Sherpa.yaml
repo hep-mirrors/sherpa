@@ -10,7 +10,7 @@ PARTICLE_DATA:
   5: {Massive: 1}
 MASSIVE_PS: 3
 ME_GENERATORS: Internal
-SCALES: VAR{sqr(91.2)}
+CORE_SCALE: VAR{sqr(91.2)}
 
 PROCESSES:
 #
@@ -18,10 +18,10 @@ PROCESSES:
 #
 - 11 -11 -> 300553[a]:
     Decay: "300553[a] -> 521 -521"
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 0}
 #
 # electron positron -> Y(4S) -> B0 B0bar
 #
 - 11 -11 -> 300553[a]:
     Decay: "300553[a] -> 511 -511"
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 0}

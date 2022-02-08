@@ -17,13 +17,10 @@ namespace PHASIC {
     bool Compare(const ATOOLS::Vec4D *p1,const ATOOLS::Vec4D *p2);
 
   public:
-
     inline FSR_Channels(Phase_Space_Handler *const psh,
 			const std::string &name):
       Multi_Channel(name), p_psh(psh) {}
-
     bool Initialize();
-
   };// end of class FSR_Channels
 
 }//end of namespace PHASIC

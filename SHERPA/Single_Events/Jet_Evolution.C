@@ -153,6 +153,8 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
       (interface->MEHandler() && 
        interface->MEHandler()->Process()->Info().m_nlomode==nlo_mode::fixedorder)) {
     AftermathOfNoShower(blob,bloblist);
+    Blob * noshowerblob = bloblist->FindLast(btp::Shower);
+    noshowerblob->AddStatus(blob_status::needs_extraQED);
     return Return_Value::Nothing;
   }
   int shower(0);

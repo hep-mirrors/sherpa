@@ -29,7 +29,7 @@ namespace PHASIC {
   private:
 
     PDF::Cluster_Definitions_Base *p_clu, *p_qdc;
-    Core_Scale_Setter *p_core;
+    Core_Scale_Setter *p_core, *p_uoscale;
     Color_Setter *p_cs;
     ATOOLS::Mass_Selector *p_ms;
     Single_Process *p_sproc;
@@ -69,6 +69,8 @@ namespace PHASIC {
 		 ATOOLS::ClusterAmplitude_Vector &ampls,
 		 const int ord) const;
     void SetCoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
+
+    double UnorderedScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
   public:
 
@@ -114,7 +116,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
-  static std::string s_core;
+  static std::string s_core, s_uoscale;
   static int s_cmode(-1), s_csmode, s_nmaxall, s_nmaxnloall, s_kfac;
   if (s_cmode<0) {
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
@@ -124,11 +126,12 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
     s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
+    s_uoscale=s["UNORDERED_SCALE"].GetScalarWithOtherDefault<std::string>("None");
     s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
     s_kfac = Settings::GetMainSettings()["CSS_KFACTOR_SCHEME"].Get<int>();
   }
   m_scale.resize(2*stp::size);
-  std::string tag(args.m_scale), core(s_core);
+  std::string tag(args.m_scale), core(s_core), uoscale(s_uoscale);
   m_nproc=!(p_proc->Info().m_fi.NLOType()==nlo_type::lo);
   m_nmin=p_proc->Info().m_fi.NMinExternal();
   size_t pos(tag.find('['));
@@ -141,6 +144,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     read.AddIgnore(":");
     read.SetString(tag.substr(0,pos));
     core=read.StringValue<std::string>("C",core);
+    uoscale=read.StringValue<std::string>("U",uoscale);
     m_nmin=read.StringValue<int>("M",m_nmin);
     tag=tag.substr(pos+1);
   }
@@ -191,6 +195,12 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
   */
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
+  if (s_uoscale=="None") p_uoscale=NULL;
+  else {
+    p_uoscale=Core_Scale_Getter::GetObject(uoscale,Core_Scale_Arguments(p_proc,uoscale));
+    if (p_uoscale==NULL) THROW(fatal_error,"Invalid unordered scale '"+uoscale+"'");
+    msg_Debugging()<<METHOD<<"(): Custom scale for unordered configurations '"+uoscale+"'\n";
+  }
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
@@ -205,6 +215,7 @@ MEPS_Scale_Setter::~MEPS_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
+  if (p_uoscale) delete p_uoscale;
   delete p_core;
   delete p_cs;
   delete p_qdc;
@@ -384,6 +395,8 @@ double MEPS_Scale_Setter::Calculate
   else {
     for (size_t i(0);i<m_p.size();++i) {
       ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i]);
+      int cr(ampl->Leg(i)->Flav().StrongCharge());
+      ampl->Leg(i)->SetCol(ColorID((cr==3||cr==8)?1:0,(cr==-3||cr==8)?1:0));
       ampl->Leg(i)->SetNMax(nmax);
     }
   }
@@ -530,7 +543,7 @@ void MEPS_Scale_Setter::Cluster
     int imax(Select(ccs,on,1));
     if (imax<0) return;
     ccs[imax].second.m_op=1.0;
-    ClusterStep(ampl,ampls,ccs[imax],0);
+    if (ClusterStep(ampl,ampls,ccs[imax],0)) return;
   }
   else if (m_cmode&2) {
     for (size_t i(0);i<ccs.size();++i)
@@ -576,7 +589,11 @@ double MEPS_Scale_Setter::Differential
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
   if (procs==NULL) return 1.0;
   nlo_type::code type=nlo_type::lo;
-  if (procs->find(type)==procs->end()) return 0.0;
+  if (procs->find(type)==procs->end()) {
+    if (m_rproc && ampl->Prev() &&
+	ampl->Prev()->Prev()==NULL) return 1.0;
+    return 0.0;
+  }
   Cluster_Amplitude *campl(ampl->Copy());
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
   campl->SetMuF2(sqr(rpa->gen.Ecms()));
@@ -611,16 +628,25 @@ void MEPS_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl) const
        campl;campl=campl->Prev()) campl->SetMuQ2(kt2.m_op);
 }
 
+double MEPS_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) const
+{
+  if (p_uoscale==NULL) return 0.;
+  ampl->SetProc(p_proc);
+  PDF::Cluster_Param kt2(p_uoscale->Calculate(ampl));
+  return kt2.m_kt2;
+}
+
 double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 {
   double muf2(ampl->Last()->KT2()), mur2(m_rsf*ampl->Last()->Mu2());
   m_scale[stp::size+stp::res]=m_scale[stp::res]=ampl->MuQ2();
   if (ampl) {
     m_scale[stp::size+stp::res]=ampl->KT2();
+    double muuo2(UnorderedScale(ampl));
     std::vector<double> scale(p_proc->NOut()+1);
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
-    double as(1.0), mmur2(1.0), mas(1.0), oqcd(0.0);
+    double as(1.0), mmur2(1.0), mas(1.0), oqcd(0.0), mup2(1.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       scale[idx]=Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
@@ -640,6 +666,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 	  }
       }
       if (skip) continue;
+      mup2=Max(mup2,scale[idx]);
       if (m_rproc && ampl->Prev()==NULL) {
 	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
 	ampl->SetNLO(1);
@@ -647,6 +674,14 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
       }
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
       if (coqcd>0.0) {
+	if (idx>0 && scale[idx]<mup2) {
+	  msg_Debugging()<<"  unordered history, redefine k_{T,"
+			 <<idx<<"} = "<<sqrt(scale[idx])
+			 <<" -> k_{T,"<<idx<<"} = "
+			 <<sqrt(p_uoscale?muuo2:mup2)<<"\n";
+	  if (p_uoscale) scale[idx]=muuo2;
+	  else scale[idx]=mup2;
+	}
 	double cas(MODEL::as->BoundedAlphaS(m_rsf*scale[idx]));
 	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
 		       <<sqrt(m_rsf)<<" * "<<sqrt(scale[idx])
@@ -670,6 +705,13 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     mmur2=Max(mmur2,m_rsf*mu2);
     mas=Min(mas,cas);
     if (ampl->OrderQCD()-(m_vproc?1:0)) {
+      if (mu2<mup2) {
+	msg_Debugging()<<"  unordered history, redefine k_{T,0} = "
+		       <<sqrt(mu2)<<" -> k_{T,0} = "
+		       <<sqrt(p_uoscale?muuo2:mup2)<<"\n";
+	if (p_uoscale) mu2=muuo2;
+	else mu2=mup2;
+      }
       int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
       msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
 		     <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";

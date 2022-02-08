@@ -57,52 +57,52 @@ VHAAG::VHAAG(int _nin,int _nout,std::vector<size_t> tp, VHAAG* ovl)
 
 void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl) 
 {
-  nin=_nin; nout=_nout;
-  Permutation pp(nin+nout-1);
-  p_perm = new int[nin+nout];
-  p_mrep = new int[nin+nout];
+  m_nin=_nin; m_nout=_nout;
+  Permutation pp(m_nin+m_nout-1);
+  p_perm = new int[m_nin+m_nout];
+  p_mrep = new int[m_nin+m_nout];
   p_perm[0] = p_mrep[0] = 0;
   msg_Tracking()<<"Init VHAAG: 0";
-  name = "VHAAG";
+  m_name = "VHAAG";
   char hlp[4];
-  for (int i=1;i<nin+nout;i++) {
+  for (int i=1;i<m_nin+m_nout;i++) {
     p_perm[i] = perm[i];
     p_mrep[p_perm[i]] = i;
     if (perm[i]==1) n_p1=i;
-    name+= "_";
+    m_name+= "_";
     sprintf(hlp,"%i",p_perm[i]);
-    name+= std::string(hlp);
+    m_name+= std::string(hlp);
     msg_Tracking()<<" "<<p_perm[i];
   }
 
-  rannum = 3*nout-4;;
-  rans  = new double[rannum];
-  m_q = new Vec4D[nin+nout];
+  m_rannum = 3*m_nout-4;;
+  p_rans  = new double[m_rannum];
+  m_q = new Vec4D[m_nin+m_nout];
   m_ownvegas = false;
   if (ovl) p_sharedvegaslist = ovl->GetSharedVegasList();
   else p_sharedvegaslist = NULL;
   if (p_sharedvegaslist==NULL) {
-    p_sharedvegaslist = new Vegas*[nout];
-    for (int i=0;i<nout;i++) p_sharedvegaslist[i]=NULL;
+    p_sharedvegaslist = new Vegas*[m_nout];
+    for (int i=0;i<m_nout;i++) p_sharedvegaslist[i]=NULL;
   }
 
-  m_type=Min(n_p1-1,nout-(n_p1-1));
+  m_type=Min(n_p1-1,int(m_nout-(n_p1-1)));
   msg_Tracking()<<" n_p1="<<n_p1<<" type="<<m_type<<std::endl;
   int vs=m_type;
 
   if (1) {
     if (p_sharedvegaslist[vs]==NULL) {
-      p_sharedvegaslist[vs] = new Vegas(rannum,100,Name());
+      p_sharedvegaslist[vs] = new Vegas(m_rannum,100,Name());
       if (1) {
 	if (m_type<2) {
-	  for (int i=0;i<=nout-3;i++) p_sharedvegaslist[vs]->ConstChannel(2+3*i);
+	  for (int i=0;i<=m_nout-3;i++) p_sharedvegaslist[vs]->ConstChannel(2+3*i);
 	} 
 	else {
 	  for (int i=0;i<=m_type-2;i++) p_sharedvegaslist[vs]->ConstChannel(3+3*i);
 	  p_sharedvegaslist[vs]->ConstChannel(3*(m_type-1)+2);
-	  for (int i=0;i<nout-m_type-2;i++) p_sharedvegaslist[vs]->ConstChannel(2+3*m_type+3*i);
+	  for (int i=0;i<m_nout-m_type-2;i++) p_sharedvegaslist[vs]->ConstChannel(2+3*m_type+3*i);
 	} 
-	p_sharedvegaslist[vs]->ConstChannel(rannum-1);
+	p_sharedvegaslist[vs]->ConstChannel(m_rannum-1);
       } 
       m_ownvegas = true;
     } 
@@ -110,7 +110,7 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
   } 
   else  {
     m_ownvegas = true;
-    p_vegas = new Vegas(rannum,100,Name());
+    p_vegas = new Vegas(m_rannum,100,Name());
   } 
 
   Scoped_Settings s{ Settings::GetMainSettings()["VHAAG"] };
@@ -128,7 +128,7 @@ VHAAG::~VHAAG()
   }
   if (p_sharedvegaslist) {
     int empty=1;
-    for (int i=0;i<nout;i++) if (p_sharedvegaslist[i]!=0) empty=0;
+    for (int i=0;i<m_nout;i++) if (p_sharedvegaslist[i]!=0) empty=0;
     if (empty) delete[] p_sharedvegaslist;
   }
 }
@@ -146,7 +146,7 @@ void VHAAG::Optimize()
 void VHAAG::AddPoint(double Value)
 {
   Single_Channel::AddPoint(Value);
-  p_vegas->AddPoint(Value,rans);
+  p_vegas->AddPoint(Value,p_rans);
 }
 
 double VHAAG::PiFunc(double a1,double a2,
@@ -191,7 +191,7 @@ void VHAAG::Split0(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,
   double s = (q1+q2).Abs2();
   double smin = double(n2*(n2-1)/2)*m_s0;
   double smax = Min(s-n2*m_s0,s-2.*sqrt(s*m_s0));
-  double exp = s_s0o+double(nout)*s_s0d;
+  double exp = s_s0o+double(m_nout)*s_s0d;
   double s2 = CE.MasslessPropMomenta(exp,smin,smax,ran[0]);
 
   double p = 0.5*(s-s2)/s;
@@ -234,7 +234,7 @@ void VHAAG::Split1(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,
   double s = (q1+q2).Abs2();
   double smin = double(n2*(n2-1)/2)*m_s0;
   double smax = Min(s-n2*m_s0,s-2.*sqrt(s*m_s0));
-  double exp = s_s1o+double(nout)*s_s1d;
+  double exp = s_s1o+double(m_nout)*s_s1d;
   double s2 = CE.MasslessPropMomenta(exp,smin,smax,ran[0]);
 
   double p = 0.5*(s-s2)/s;
@@ -460,7 +460,7 @@ double VHAAG::Split0Weight(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,
   double smin = double(n2*(n2-1)/2)*m_s0;
   double smax = Min(s-n2*m_s0,s-2.*sqrt(s*m_s0));
   double s2 = p2.Abs2(); 
-  double exp = s_s0o+double(nout)*s_s0d;
+  double exp = s_s0o+double(m_nout)*s_s0d;
   wt*= CE.MasslessPropWeight(exp,smin,smax,s2,ran[0]);
 
   double p = 0.5*(s-s2)/s;
@@ -483,7 +483,7 @@ double VHAAG::Split1Weight(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,
   double smin = double(n2*(n2-1)/2)*m_s0;
   double smax = Min(s-n2*m_s0,s-2.*sqrt(s*m_s0));
   double s2 = p2.Abs2(); 
-  double exp = s_s1o+double(nout)*s_s1d;
+  double exp = s_s1o+double(m_nout)*s_s1d;
   wt*= CE.MasslessPropWeight(exp,smin,smax,s2,ran[0]);
 
   double p = 0.5*(s-s2)/s;
@@ -649,57 +649,57 @@ void VHAAG::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts)
   CalculateS0(cuts);
   double wt=1.;
 
-  if (nout==2) {
-    wt=SingleSplitF0Weight(p[0],p[1],p[2],p[3],rans);  
-    weight = p_vegas->GenerateWeight(rans)/wt/pow(2.*M_PI,2);
+  if (m_nout==2) {
+    wt=SingleSplitF0Weight(p[0],p[1],p[2],p[3],p_rans);  
+    m_weight = p_vegas->GenerateWeight(p_rans)/wt/pow(2.*M_PI,2);
     return;
   }
 
-  for (int i=0;i<nin+nout;i++) m_q[i]=p[p_perm[i]];
+  for (int i=0;i<m_nin+m_nout;i++) m_q[i]=p[p_perm[i]];
   
   if (n_p1==1){
     Vec4D Q;
-    wt*=BranchWeight(m_q[2],m_q[0],Q,&(m_q[3]),nout-1,rans+3);
-    wt*=Split0Weight(m_q[1],m_q[0],m_q[2],Q,nout-1,rans);    
+    wt*=BranchWeight(m_q[2],m_q[0],Q,&(m_q[3]),m_nout-1,p_rans+3);
+    wt*=Split0Weight(m_q[1],m_q[0],m_q[2],Q,m_nout-1,p_rans);    
   }
-  else if (n_p1==nout+1){
+  else if (n_p1==m_nout+1){
     Vec4D Q;
-    wt*=BranchWeight(m_q[1],m_q[n_p1],Q,&(m_q[2]),nout-1,rans+3);
-    wt*=Split0Weight(m_q[0],m_q[n_p1],m_q[1],Q,nout-1,rans);    
+    wt*=BranchWeight(m_q[1],m_q[n_p1],Q,&(m_q[2]),m_nout-1,p_rans+3);
+    wt*=Split0Weight(m_q[0],m_q[n_p1],m_q[1],Q,m_nout-1,p_rans);    
   }
   else if (n_p1==2){
     Vec4D Q;
-    wt*=BranchWeight(m_q[2],m_q[0],Q,&(m_q[3]),nout-1,rans+3);
-    wt*=Split1Weight(m_q[0],m_q[2],m_q[1],Q,nout-1,rans);    
+    wt*=BranchWeight(m_q[2],m_q[0],Q,&(m_q[3]),m_nout-1,p_rans+3);
+    wt*=Split1Weight(m_q[0],m_q[2],m_q[1],Q,m_nout-1,p_rans);    
   }
-  else if (n_p1==nout){
+  else if (n_p1==m_nout){
     Vec4D Q;
-    wt*=BranchWeight(m_q[0],m_q[n_p1],Q,&(m_q[1]),nout-1,rans+3);
-    wt*=Split1Weight(m_q[n_p1],m_q[0],m_q[nout+1],Q,nout-1,rans);    
+    wt*=BranchWeight(m_q[0],m_q[n_p1],Q,&(m_q[1]),m_nout-1,p_rans+3);
+    wt*=Split1Weight(m_q[n_p1],m_q[0],m_q[m_nout+1],Q,m_nout-1,p_rans);    
   }
-  else if (n_p1<=(nout+1)/2) {
+  else if (n_p1<=(m_nout+1)/2) {
     Vec4D Q1,Q2;
-    wt*=BranchWeight(m_q[0],m_q[n_p1],Q1,&(m_q[1]),n_p1-1,rans+4);
-    wt*=BranchWeight(m_q[n_p1],m_q[0],Q2,&(m_q[n_p1+1]),nout-n_p1+1,rans+3*(n_p1-1));
-    wt*=SplitWeight(m_q[0],m_q[n_p1],Q1,Q2,n_p1-1,nout-n_p1+1,rans);
+    wt*=BranchWeight(m_q[0],m_q[n_p1],Q1,&(m_q[1]),n_p1-1,p_rans+4);
+    wt*=BranchWeight(m_q[n_p1],m_q[0],Q2,&(m_q[n_p1+1]),m_nout-n_p1+1,p_rans+3*(n_p1-1));
+    wt*=SplitWeight(m_q[0],m_q[n_p1],Q1,Q2,n_p1-1,m_nout-n_p1+1,p_rans);
   }
   else {
     Vec4D Q1,Q2;
-    wt*=BranchWeight(m_q[n_p1],m_q[0],Q1,&(m_q[n_p1+1]),nout-n_p1+1,rans+4);
-    wt*=BranchWeight(m_q[0],m_q[n_p1],Q2,&(m_q[1]),n_p1-1,rans+3*(nout-n_p1+1));
-    wt*=SplitWeight(m_q[n_p1],m_q[0],Q1,Q2,nout-n_p1+1,n_p1-1,rans);
+    wt*=BranchWeight(m_q[n_p1],m_q[0],Q1,&(m_q[n_p1+1]),m_nout-n_p1+1,p_rans+4);
+    wt*=BranchWeight(m_q[0],m_q[n_p1],Q2,&(m_q[1]),n_p1-1,p_rans+3*(m_nout-n_p1+1));
+    wt*=SplitWeight(m_q[n_p1],m_q[0],Q1,Q2,m_nout-n_p1+1,n_p1-1,p_rans);
   }
-  double vw = p_vegas->GenerateWeight(rans);
-  weight = vw/wt/pow(2.*M_PI,nout*3.-4.);
+  double vw = p_vegas->GenerateWeight(p_rans);
+  m_weight = vw/wt/pow(2.*M_PI,m_nout*3.-4.);
 }
 
 void VHAAG::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *ran)
 {
   CalculateS0(cuts);
   double *vran = p_vegas->GeneratePoint(ran);
-  for(int i=0;i<rannum;i++) rans[i]=vran[i];
+  for(int i=0;i<m_rannum;i++) p_rans[i]=vran[i];
 
-  if (nout==2) {
+  if (m_nout==2) {
     SingleSplitF0(p[0],p[1],p[2],p[3],ran);  
     return;
   }
@@ -709,38 +709,38 @@ void VHAAG::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *ran)
 
   if (n_p1==1){
     Vec4D Q;
-    Split0(m_q[1],m_q[0],m_q[2],Q,nout-1,vran);    
-    GenerateBranch(m_q[2],m_q[0],Q,&(m_q[3]),nout-1,vran+3);
+    Split0(m_q[1],m_q[0],m_q[2],Q,m_nout-1,vran);    
+    GenerateBranch(m_q[2],m_q[0],Q,&(m_q[3]),m_nout-1,vran+3);
   }
-  else if (n_p1==nout+1){
+  else if (n_p1==m_nout+1){
     Vec4D Q;
-    Split0(m_q[0],m_q[n_p1],m_q[1],Q,nout-1,vran);    
-    GenerateBranch(m_q[1],m_q[n_p1],Q,&(m_q[2]),nout-1,vran+3);
+    Split0(m_q[0],m_q[n_p1],m_q[1],Q,m_nout-1,vran);    
+    GenerateBranch(m_q[1],m_q[n_p1],Q,&(m_q[2]),m_nout-1,vran+3);
   }
   else if (n_p1==2){
     Vec4D Q;
-    Split1(m_q[0],m_q[2],m_q[1],Q,nout-1,vran);    
-    GenerateBranch(m_q[2],m_q[0],Q,&(m_q[3]),nout-1,vran+3);
+    Split1(m_q[0],m_q[2],m_q[1],Q,m_nout-1,vran);    
+    GenerateBranch(m_q[2],m_q[0],Q,&(m_q[3]),m_nout-1,vran+3);
   }
-  else if (n_p1==nout){
+  else if (n_p1==m_nout){
     Vec4D Q;
-    Split1(m_q[n_p1],m_q[0],m_q[nout+1],Q,nout-1,vran);    
-    GenerateBranch(m_q[0],m_q[n_p1],Q,&(m_q[1]),nout-1,vran+3);
+    Split1(m_q[n_p1],m_q[0],m_q[m_nout+1],Q,m_nout-1,vran);    
+    GenerateBranch(m_q[0],m_q[n_p1],Q,&(m_q[1]),m_nout-1,vran+3);
   }
-  else if (n_p1<=(nout+1)/2) {
+  else if (n_p1<=(m_nout+1)/2) {
     Vec4D Q1,Q2;
-    Split(m_q[0],m_q[n_p1],Q1,Q2,n_p1-1,nout-n_p1+1,vran);
+    Split(m_q[0],m_q[n_p1],Q1,Q2,n_p1-1,m_nout-n_p1+1,vran);
     GenerateBranch(m_q[0],m_q[n_p1],Q1,&(m_q[1]),n_p1-1,vran+4);
-    GenerateBranch(m_q[n_p1],m_q[0],Q2,&(m_q[n_p1+1]),nout-n_p1+1,vran+3*(n_p1-1));
+    GenerateBranch(m_q[n_p1],m_q[0],Q2,&(m_q[n_p1+1]),m_nout-n_p1+1,vran+3*(n_p1-1));
   }
   else {
     Vec4D Q1,Q2;
-    Split(m_q[n_p1],m_q[0],Q1,Q2,nout-n_p1+1,n_p1-1,vran);
-    GenerateBranch(m_q[n_p1],m_q[0],Q1,&(m_q[n_p1+1]),nout-n_p1+1,vran+4);
-    GenerateBranch(m_q[0],m_q[n_p1],Q2,&(m_q[1]),n_p1-1,vran+3*(nout-n_p1+1));
+    Split(m_q[n_p1],m_q[0],Q1,Q2,m_nout-n_p1+1,n_p1-1,vran);
+    GenerateBranch(m_q[n_p1],m_q[0],Q1,&(m_q[n_p1+1]),m_nout-n_p1+1,vran+4);
+    GenerateBranch(m_q[0],m_q[n_p1],Q2,&(m_q[1]),n_p1-1,vran+3*(m_nout-n_p1+1));
   }
 
-   for (int i=1;i<nin+nout;i++) p[p_perm[i]]=m_q[i];
+   for (int i=1;i<m_nin+m_nout;i++) p[p_perm[i]]=m_q[i];
 }
 
 void VHAAG::CalculateS0(Cut_Data * cuts) 

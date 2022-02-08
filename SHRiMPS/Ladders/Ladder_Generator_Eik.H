@@ -16,6 +16,7 @@ namespace SHRIMPS {
     bool   SelectPropagatorQTs();
     bool   SelectPropagatorQT(const size_t dir,T_Prop & prop);
     void   CalculateWeight();
+    void   AddRescatters();
   public:
     Ladder_Generator_Eik();
     ~Ladder_Generator_Eik();

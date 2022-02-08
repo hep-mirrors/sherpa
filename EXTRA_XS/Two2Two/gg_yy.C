@@ -62,7 +62,8 @@ namespace EXTRAXS {
 
     // sym factor for two photons
     m_fac /= 2.0;
-
+    m_cfls[3]  = Flavour_Vector{};
+    m_cfls[12] = Flavour_Vector{};
     m_cfls[3].push_back(kf_gluon);
     m_cfls[12].push_back(kf_gluon);
   }

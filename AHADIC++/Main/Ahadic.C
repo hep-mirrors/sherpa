@@ -52,9 +52,9 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       case Return_Value::New_Event:
 	blobs->ColorConservation();
 	msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
-              <<"   Hadronization for blob "
-              /*<<"("<<blobs<<"; "
-              <<blob->NInP()<<" -> "<<blob->NOutP()<<") "*/
+		      <<"   Hadronization for blob "
+	  //	      <<"("<<blobs<<"; "
+	  //	      <<blob->NInP()<<" -> "<<blob->NOutP()<<") "*/
 		      <<"did not work out,";
         if (result==Return_Value::New_Event)
           msg_Tracking()<<" due to momentum problems,";

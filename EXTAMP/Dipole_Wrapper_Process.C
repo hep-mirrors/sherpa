@@ -279,7 +279,9 @@ void Dipole_Wrapper_Process::CalculateScale(const ATOOLS::Vec4D_Vector& real_p,
 }
 
 
-double Dipole_Wrapper_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int mode)
+double Dipole_Wrapper_Process::Partonic(const ATOOLS::Vec4D_Vector &p,
+                                        ATOOLS::Variations_Mode varmode,
+                                        int mode)
 {
   CalcKinematics(p);
 

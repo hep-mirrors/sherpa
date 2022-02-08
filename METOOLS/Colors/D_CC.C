@@ -33,8 +33,9 @@ namespace METOOLS {
     bool Evaluate(const CObject_Vector &j)
     {
       m_c.clear();
-      const CObject *a(j[m_n[0]]), *b(j[m_n[1]]);
+      const CObject *a(j[m_n[0]]);
       if (m_type==0) {
+        const CObject *b(j[m_n[1]]);
 	int match((*a)(0)==(*b)(1) && (*a)(1)==(*b)(0));
 	int sing((*a)(0)==(*a)(1) && (*b)(0)==(*b)(1));
 	if (!match && !sing) return false;

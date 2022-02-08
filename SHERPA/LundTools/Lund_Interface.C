@@ -31,7 +31,7 @@ double * Lund_Interface::s_saved_rrpy=new double[100];
 
 ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL; 
 
-Lund_Interface::Lund_Interface():
+Lund_Interface::Lund_Interface(std::string):
   m_maxtrials(2),
   p_hepevt(NULL), 
   m_compress(true),m_writeout(false),
@@ -769,3 +769,6 @@ long int Lund_Interface::SherpaToIdhep(const Flavour& flav) {
 
   return (flav.IsAnti() ? -idhep : idhep);
 }
+
+DEFINE_FRAGMENTATION_GETTER(Lund_Interface, "Lund")
+

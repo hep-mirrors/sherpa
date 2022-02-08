@@ -310,6 +310,14 @@ are:
       event number. The interval length can be adjusted with
       ``EVENT_DISPLAY_INTERVAL``.
 
+:samp:`{8}`
+      Sherpa prints the name of the hard process for the 
+      last event at each print out.
+
+:samp:`{16}`
+      Sherpa prints the elapsed time and time left in 
+      seconds only.
+
 The settings are additive such that multiple settings can be employed
 at the same time.
 
@@ -317,7 +325,7 @@ at the same time.
 
    When running the code on a cluster or in a grid environment,
    BATCH_MODE should always contain setting 1
-   (i.e. ``BATCH_MODE=[1|3|5|7]``).
+   (i.e. ``BATCH_MODE: 1`` or ``3`` or ``5`` etc.).
 
    The command line option :option:`-b` should therefore not be used
    in this case, see :ref:`Command line`.
@@ -412,7 +420,7 @@ The following formats are currently available:
   (http://phystev.in2p3.fr/wiki/2013:groups:tools:hepmc) of indicating
   interaction types through the GenVertex type-flag.  Multiple event
   weights can also be enabled with HepMC versions >=2.06, cf.
-  :ref:`Scale and PDF variations`. The following additional
+  :ref:`On-the-fly event weight variations`. The following additional
   customisations can be used
 
   ``HEPMC_USE_NAMED_WEIGHTS: <false|true>`` Enable filling weights
@@ -527,14 +535,19 @@ directly to gzipped files instead of plain text. The option
 :option:`--enable-gzip` must be given during installation to enable
 this feature.
 
-.. _Scale and PDF variations:
+.. _On-the-fly event weight variations:
 
-Scale and PDF variations
-========================
+On-the-fly event weight variations
+==================================
 
-Sherpa can compute alternative event weights for different scale, PDF and
-AlphaS(MZ) choices on-the-fly, resulting in alternative weights for the
-generated event. This can be evoked with the following syntax:
+Sherpa can compute alternative event weights on-the-fly, resulting in
+alternative weights for the generated event.
+An important example is the variation of QCD scales and input PDF,
+which is evoked using the following syntax:
+
+.. _VARIATIONS:
+
+.. index:: VARIATIONS
 
 .. code-block:: yaml
 
@@ -554,6 +567,9 @@ generated event. This can be evoked with the following syntax:
 The key word ``VARIATIONS`` takes a list of variations.  Each variation is
 specified by a set of scale factors, and a PDF choice (or AlphaS(MZ) choice,
 see below).
+There are also on-the-fly variations for approximate electroweak corrections,
+this is discussed in its own section, :ref:`Approximate Electroweak
+Corrections`.
 
 Scale factors can be given for the renormalisation, factorisation and for the
 merging scale.  The corresponding keys are ``MuR2``, ``MuF2`` and ``QCUT``,
@@ -706,14 +722,14 @@ parallelization first. Therefore, first run
 
 .. code-block:: shell-session
 
-   $ Sherpa -f <run-card> INIT_ONLY=1
+   $ Sherpa INIT_ONLY=1 <Sherpa.yaml>
 
 and, in case of using Amegic, compile the libraries. Then start your
 parallized integration, e.g.
 
 .. code-block:: shell-session
 
-   $ mpirun -n <n> Sherpa -f <run-card> -e 0
+   $ mpirun -n <n> Sherpa -e 0 <Sherpa.yaml>
 
 After the integration has finished, you can submit individual jobs to generate
 event samples (with a different random seed for each job).  Upon completion,

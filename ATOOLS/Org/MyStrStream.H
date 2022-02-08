@@ -135,6 +135,9 @@ namespace ATOOLS {
   template<> bool ToType<bool>(const std::string& value,
                                const size_t precision);
 
+  template<> double ToType<double>(const std::string& value,
+                                   const size_t precision);
+
   std::string StringTrim(const std::string&);
 
   std::string StringReplace(const std::string &original,

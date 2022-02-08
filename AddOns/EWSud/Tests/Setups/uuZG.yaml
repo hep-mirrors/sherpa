@@ -1,0 +1,31 @@
+EWSUD:
+  #CHECK_LOG_FILE: kfacs.dat
+  C_COEFF_IGNORES_VECTOR_BOSONS: true
+  COEFF_REMOVED_LIST: [Z, PR]
+  CHECK_KFACTOR: true
+  CHECK: false
+
+BEAMS: [2, -2]
+PDF_SET: None
+PARTICLE_DATA:
+  23:
+    Mass: 91.1876
+    Width: 0.0
+  42:
+    Mass: 91.1876
+    Width: 0.0
+  24:
+    Mass: 80.35
+    Width: 0.0
+  41:
+    Mass: 80.35
+    Width: 0.0
+  6:
+    Mass: 175
+  11:
+    Yukawa: 0.000511
+
+PROCESSES:
+- 2 -2 -> 23 21:
+    Order: { SMGold: 0 }
+    Amplitude_Order: { SMGold: 0 }

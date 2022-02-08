@@ -14,7 +14,7 @@ PSI:
 
 PROCESSES:
 - 93 93 -> 11 -12 93{4}:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
     CKKW: 20
     Loop_Generator: Dummy
     2->2-4:

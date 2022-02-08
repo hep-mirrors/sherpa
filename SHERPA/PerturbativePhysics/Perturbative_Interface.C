@@ -73,6 +73,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   if (!p_shower->On() ||
       (p_me && p_me->Process()->Info().m_nlomode==nlo_mode::fixedorder)) {
     m_weightsmap.Clear();
+    m_lkfweightsmap.Clear();
     return Return_Value::Success;
   }
   if (p_ampl) {
@@ -144,6 +145,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     return Return_Value::New_Event;
   }
   m_weightsmap.Clear();
+  m_lkfweightsmap.Clear();
   if (p_me->Process()->Info().m_ckkw&1) {
     if ((m_bbarmode&1) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
@@ -166,16 +168,16 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
   if (p_me->Process()->Info().m_ckkw&1) {
     auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
-    wgtmap["Sudakov"] *= m_weightsmap["Sudakov"];
+    wgtmap *= m_lkfweightsmap;
     p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
     if (p_me->EventGenerationMode()!=0) {
       const auto disc = ran->Get();
-      const auto abswgt = std::abs(m_weightsmap["Sudakov"].Nominal());
+      const auto abswgt = std::abs(m_lkfweightsmap.Nominal());
       if (abswgt < disc) {
         return Return_Value::New_Event;
       }
-      m_weightsmap["Sudakov"] /= Min(1.0, abswgt);
-      wgtmap["Sudakov"] /= Min(1.0, abswgt);
+      m_lkfweightsmap /= Min(1.0, abswgt);
+      wgtmap /= Min(1.0, abswgt);
     }
     p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
   }
@@ -187,7 +189,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
 bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
 {
   if (m_globalkfac) {
-    m_weightsmap["Sudakov"] *= m_globalkfac;
+    m_lkfweightsmap *= m_globalkfac;
     return true;
   }
   DEBUG_FUNC(ampl->Legs().size());
@@ -205,10 +207,9 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
     for (int i=procs.size()-1; i>=0; --i) {
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
-        auto K = ATOOLS::Weights {Variations_Type::qcd};
-        K = mcnloproc->LocalKFactor(*ampl);
+        Weights_Map K = mcnloproc->LocalKFactor(*ampl);
 	if (K.Nominal()==0.0 || dabs(K.Nominal())>m_maxkfac) continue;
-        m_weightsmap["Sudakov"] *= K;
+        m_lkfweightsmap *= K;
         return true;
       }
     }

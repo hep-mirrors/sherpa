@@ -15,12 +15,13 @@ namespace SHRIMPS {
     double                   m_kt2min, m_kt2max, m_sladder;
     std::map<int,double>     m_kt2starts;
 
+    bool InitNewRound(ATOOLS::Blob * hard_blob);
     void AddEmissions();
     void GetKt2(bool isgluon, double & kt2, double & z);
     double GetZ(bool isgluon);
     ATOOLS::Particle * FindSpectator(ATOOLS::Particle * part);
     bool FixKinematics(double kt2, double z, ATOOLS::Vec4D & split, ATOOLS::Vec4D & gluon, ATOOLS::Vec4D & spec);
-    void FillBlob(ATOOLS::Blob * blob);
+    ATOOLS::Blob * MakeBlob();
     void CleanUp();
   public:
     Collinear_Emission_Generator();

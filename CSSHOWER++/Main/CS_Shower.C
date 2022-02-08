@@ -118,7 +118,7 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 	      continue;
 	    }
 	    (*it)->SetFlow(i,colmap[(*it)->GetFlow(i)]);
-	    (*it)->UpdateColours();
+	    (*it)->UpdateColours((*it)->GetFlow(1),(*it)->GetFlow(2));
 	  }
       }
     }
@@ -329,7 +329,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       kmap[cl->Id()]=k;
     }
     if (sing->GetSpec()) {
-      split->SetOldMomentum(split->Momentum());
       sing->SetSpec(sing->GetSpec()->GetNext());
       if (split==NULL) THROW(fatal_error,"Invalid tree structure. No Split.");
       sing->SetSplit(split);
@@ -348,7 +347,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       cp.m_lt.Invert();
       l->SetLT(cp.m_lt);
       l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
-      if (split->KScheme()) split->SetFixSpec(cp.m_pk);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
 		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
 		     <<", mode = "<<cp.m_mode<<", scheme = "<<split->Kin()
@@ -358,8 +356,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       if ((m_recocheck&1) && dynamic_cast<CS_Cluster_Definitions*>
 	  (campl->CA<Cluster_Definitions_Base>())!=NULL) {
       std::cout.precision(12);
-      Vec4D oldfl(l->FixSpec()), oldfr(r->FixSpec()), oldfs(s->FixSpec());
-      Vec4D oldsf(split->FixSpec()), oldso(split->OldMomentum());
       double jcv(0.0);
       p_shower->ReconstructDaughters(sing,jcv,NULL,NULL);
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
@@ -397,16 +393,8 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       l->SetMomentum(oldl);
       r->SetMomentum(oldr);
       s->SetMomentum(olds);
-      l->SetFixSpec(oldfl);
-      r->SetFixSpec(oldfr);
-      s->SetFixSpec(oldfs);
-      split->SetFixSpec(oldsf);
-      split->SetOldMomentum(oldso);
       l->SetLT(cp.m_lt);
       }
-      l->SetOldMomentum(oldl);
-      r->SetOldMomentum(oldr);
-      s->SetOldMomentum(olds);
     }
     double kt2next(0.0);
     if (campl->Prev()) {

@@ -12,19 +12,19 @@ int main(int argc,char* argv[])
 #ifdef USING__MPI
   MPI_Init(&argc, &argv);
 #endif
-  SHERPA::Sherpa *Generator(new SHERPA::Sherpa(argc, argv));
   // initialize the framework
   try {
+    SHERPA::Sherpa *Generator(new SHERPA::Sherpa(argc, argv));
     Generator->InitializeTheRun();
 
     // create a MEProcess instance
     MEProcess Process(Generator);
+    Process.Initialize();
 
     msg_Out()<<"n="<<Process.NumberOfPoints()<<std::endl;
     for (size_t n(1);n<=Process.NumberOfPoints();++n) {
       // set momenta from file
       Process.ReadProcess(n);
-      Process.Initialize();
 
       msg_Out()<<"Calculating matrix element values for phase space point "<<n<<":\n";
       msg_Out()<<*Process.GetAmp()<<std::endl;
@@ -48,14 +48,25 @@ int main(int argc,char* argv[])
       msg_Out()<<"Flux:                                            "<<flux <<std::endl;
       msg_Out().precision(precision);
     }
+    delete Generator;
   }
-  catch(ATOOLS::Exception exception) {
-    std::terminate();
+  catch (const ATOOLS::normal_exit& exception) {
+    msg_Error() << exception << std::endl;
+    ATOOLS::exh->Terminate(0);
   }
-  delete Generator;
+  catch (const ATOOLS::Exception& exception) {
+    msg_Error() << exception << std::endl;
+    ATOOLS::exh->Terminate(1);
+  }
+  catch (const std::exception& exception) {
+    msg_Error() << exception.what() << std::endl;
+    ATOOLS::exh->Terminate(1);
+  }
+
 #ifdef USING__MPI
   MPI_Finalize();
 #endif
+
   return 0;
 }
 

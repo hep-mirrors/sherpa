@@ -4,7 +4,7 @@ EVENT_GENERATION_MODE: Weighted
 
 # ME generator setup
 ME_GENERATORS: Comix
-SCALES: VAR{Abs2(p[0]+p[1])};
+CORE_SCALE: VAR{Abs2(p[0]+p[1])};
 
 # model setup
 MODEL: ${model_name}

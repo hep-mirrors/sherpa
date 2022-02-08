@@ -11,8 +11,8 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
-
 #include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/Hard_Process_Variation_Weight_Names.H"
 
 #include <map>
 #include <set>
@@ -24,16 +24,6 @@ namespace HepMC3 {
   class GenRunInfo;
   class GenParticle;
   class GenCrossSection;
-  class Writer;
-  class WriterAscii;
-  class WriterAsciiHepMC2;
-  class WriterHEPEVT;
-#ifdef USING__HEPMC3__WRITERROOTTREE
-  class WriterRootTree;
-#endif
-#ifdef USING__HEPMC3__WRITERROOT
-  class WriterRoot;
-#endif
 
 using GenVertexPtr = std::shared_ptr<GenVertex>;
 using GenParticlePtr = std::shared_ptr<GenParticle>;
@@ -66,6 +56,8 @@ namespace SHERPA {
     ATOOLS::PDF_Info * p_pdfinfo;
     ATOOLS::NLO_subevtlist * p_subevtlist;
     ATOOLS::Weights_Map m_wgtmap;
+    std::vector<ATOOLS::Hard_Process_Variation_Weight_Names_Base*>*
+      p_hard_process_variation_weight_names;
 
     void ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 
@@ -84,6 +76,9 @@ namespace SHERPA {
     inline void SetMuR2(const double &mur2)           { m_mur2=mur2; }
     inline void SetMuF12(const double &muf12)         { m_muf12=muf12; }
     inline void SetMuF22(const double &muf22)         { m_muf22=muf22; }
+    void SetHardProcessVariationWeightNames(
+        std::vector<ATOOLS::Hard_Process_Variation_Weight_Names_Base*>* names)
+    { p_hard_process_variation_weight_names = names; }
     void SetAlphaS();
     void SetAlpha();
   };
@@ -98,7 +93,11 @@ namespace SHERPA {
     std::set<ATOOLS::btp::code> m_ignoreblobs;
 
     HepMC3::GenEvent *p_event;
+    std::shared_ptr<HepMC3::GenRunInfo> m_runinfo;
     std::vector<HepMC3::GenEvent*> m_subeventlist;
+
+    std::vector<ATOOLS::Hard_Process_Variation_Weight_Names_Base*>
+      m_hard_process_variation_weight_names;
 
     std::shared_ptr<HepMC3::GenParticle> MakeGenParticle(const ATOOLS::Vec4D&,
                                                          const ATOOLS::Flavour&,
@@ -113,7 +112,7 @@ namespace SHERPA {
 
     // member functions
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC3::GenEvent& event);
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs,                       std::shared_ptr<HepMC3::GenRunInfo> run= std::shared_ptr<HepMC3::GenRunInfo>());
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs);
     bool Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob *,     HepMC3::GenVertexPtr &, HepMC3::GenEvent& event ); 
     bool Sherpa2HepMC(ATOOLS::Particle *, HepMC3::GenParticlePtr &);
 
@@ -142,6 +141,9 @@ namespace SHERPA {
     inline bool HepMCTreeLike()                { return m_hepmctree; }
     inline void SetHepMCIncludeMEOnlyVariations(bool x)
     { m_includemeonlyweights=x; }
+
+    // For RivetInterface to check if a weight container key could be a variation weight name
+    bool StartsLikeVariationName(const std::string&);
 
     void DeleteGenSubEventList();
 

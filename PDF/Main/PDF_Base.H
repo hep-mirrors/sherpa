@@ -8,6 +8,17 @@
 
 namespace PDF {
 
+  struct PDF_Defaults {
+    std::map<kf_code,std::string> m_deflib, m_defset;
+
+    PDF_Defaults();
+
+    inline std::string DefaultPDFLibrary(kf_code kf) { return m_deflib[kf]; }
+    inline std::string DefaultPDFSet(kf_code kf)     { return m_defset[kf]; }
+  };
+
+  extern PDF_Defaults * pdfdefs;
+
   struct PDF_Arguments {
     ATOOLS::Flavour       m_bunch;
     int m_ibeam;

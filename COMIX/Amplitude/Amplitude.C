@@ -842,6 +842,7 @@ void Amplitude::ConstructNLOEvents()
     for (size_t j(m_nin);j<m_nin+m_nout-1;++j)
       cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
     sub->m_pname=PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
+    sub->m_stype=(sbt::subtype)(p_dinfo->Type()+1);
     msg_Indent();
     msg_Debugging()<<*sub<<"\n";
   }
@@ -866,6 +867,7 @@ void Amplitude::ConstructNLOEvents()
     cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
   PHASIC::Process_Base::SortFlavours(cpi);
   sub->m_pname=PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
+  sub->m_stype=sbt::none;
   sub->m_i=sub->m_j=sub->m_k=0;
   sub->m_oqcd=m_maxcpl[0]/2;
   sub->m_oew=m_maxcpl[1]/2;
@@ -1158,25 +1160,27 @@ void Amplitude::SetCouplings() const
 #ifdef DEBUG__CF
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
+  MODEL::Coupling_Data *aqcd(m_cpls.front().p_aqcd);
+  MODEL::Coupling_Data *aqed(m_cpls.front().p_aqed);
+  double gsfac(aqcd?sqrt(aqcd->Factor()):1.0);
+  double gwfac(aqed?sqrt(aqed->Factor()):1.0);
   for (size_t i(0);i<m_cpls.size();++i) {
     double fac(1.0);
     Vertex *v(m_cpls[i].p_v);
     size_t oqcd(m_cpls[i].m_oqcd), oew(m_cpls[i].m_oew);
-    MODEL::Coupling_Data *aqcd(m_cpls[i].p_aqcd);
-    MODEL::Coupling_Data *aqed(m_cpls[i].p_aqed);
     if (aqcd && oqcd) {
 #ifdef DEBUG__CF
       msg_Debugging()<<"  qcd: "<<sqrt(aqcd->Factor())<<" ^ "<<oqcd
-		     <<" = "<<pow(aqcd->Factor(),oqcd/2.0)<<"\n";
+		     <<" = "<<intpow(gsfac,oqcd)<<"\n";
 #endif
-      fac*=pow(aqcd->Factor(),oqcd/2.0);
+      fac*=intpow(gsfac,oqcd);
     }
     if (aqed && oew) {
 #ifdef DEBUG__CF
       msg_Debugging()<<"  qed: "<<sqrt(aqed->Factor())<<" ^ "<<oew
-		     <<" = "<<pow(aqed->Factor(),oew/2.0)<<"\n";
+		     <<" = "<<intpow(gwfac,oew)<<"\n";
 #endif
-      fac*=pow(aqed->Factor(),oew/2.0);
+      fac*=intpow(gwfac,oew);
     }
     v->SetCplFac(fac);
   }
@@ -1508,8 +1512,17 @@ bool Amplitude::EvaluateAll(const bool& mode)
 	  Sub()->Sub()->In().front()->Kin();
 	m_p[0]=-m_p[0];
 	m_p[1]=-m_p[1];
-	double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
-		      dabs(kin->JIJT()->P()*kin->JK()->P())));
+	//double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
+	//	      dabs(kin->JIJT()->P()*kin->JK()->P())));
+  
+  double lf(0.);
+  if (!p_loop || !(p_loop->fixedIRscale())) 
+      lf = log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
+  else{
+      double irscale=p_loop->IRscale();
+      lf = log(2.0*M_PI*sqr(irscale)/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
+  }
+
 	m_p[0]=-m_p[0];
 	m_p[1]=-m_p[1];
 #ifdef DEBUG__BG

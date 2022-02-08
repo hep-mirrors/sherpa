@@ -180,6 +180,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   Process_Info cpi(p_LO_process->Info());
   m_subevt.m_pname=GenerateName(cpi.m_ii,cpi.m_fi);
   m_subevt.m_pname=m_subevt.m_pname.substr(0,m_subevt.m_pname.rfind("__"));
+  m_subevt.m_stype = m_stype;
 
   p_LO_process->SetSubEvt(&m_subevt);
 
@@ -535,9 +536,11 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
   SetLOMomenta(p_testmoms,cms);
   p_dipole->CalcDiPolarizations();
 
+  PrepareTestMoms(p_LO_mom,m_nin,m_nout-1);
   int status=p_LO_process->InitAmplitude(model,top,links,errs,
                                          p_dipole->GetDiPolarizations(),
                                          p_dipole->GetFactors());
+  SetLOMomenta(p_testmoms,cms);
   if (status<=0) { 
     m_valid=false;
     return status;
@@ -606,7 +609,9 @@ bool Single_DipoleTerm::Trigger(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms, int mode)
+double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms,
+                                   Variations_Mode varmode,
+                                   int mode)
 {
   p_int->SetMomenta(_moms);
   Poincare cms;

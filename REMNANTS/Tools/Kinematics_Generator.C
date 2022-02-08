@@ -302,6 +302,7 @@ bool Kinematics_Generator::CheckDIS(const size_t & beam) {
   // Then boost back into the lab system and store the momenta in the shuffled momenta.
   for (size_t i=0;i<moms.size();i++) {
     residualcms.BoostBack(moms[i]);
+    parts[i]->SetFinalMass(masses[i]);
     m_shuffledmap[parts[i]] = moms[i];
   }
   return true;
@@ -349,6 +350,7 @@ bool Kinematics_Generator::CheckScatter(Particle * part[2]) {
     double e  = (MT2+mt2[beam]-mt2[1-beam])/(2.*MT);
     double E  = e*coshy + (beam==0?1.:-1.)*pz*sinhy;
     double PZ = e*sinhy + (beam==0?1.:-1.)*pz*coshy; 
+    part[beam]->SetFinalMass(part[beam]->Flav().HadMass());
     m_shuffledmap[part[beam]] = labmom[beam] = Vec4D(E,0.,0.,PZ) + kperp[beam];
     m_checkmom[beam] -= Vec4D(E,0.,0.,PZ);
     if (m_checkmom[beam][0]<0.) {
@@ -427,6 +429,7 @@ bool Kinematics_Generator::CheckRemnants() {
   }
   for (size_t i=0;i<moms.size();i++) {
     residualcms.BoostBack(moms[i]);
+    parts[i]->SetFinalMass(masses[i]);
     m_shuffledmap[parts[i]] = moms[i];
   }
   return true;

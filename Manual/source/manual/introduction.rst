@@ -36,7 +36,7 @@ collisions. The produced events may be passed into detector
 simulations used by the various experiments.  The entire code has been
 written in C++, like its competitors `Herwig++
 <http://projects.hepforge.org/herwig/>`_ :cite:`Bahr2008pv` and
-`Pythia 8 <http://home.thep.lu.se/~torbjorn/Pythia.html>`_
+`Pythia 8 <https://pythia.org/>`_
 :cite:`Sjostrand2007gs`.
 
 Sherpa simulations can be achieved for the following types of

@@ -4,8 +4,8 @@ SUBDIRS       = \
 		ATOOLS \
 		BEAM \
 		PDF \
-		MODEL \
 		METOOLS \
+		MODEL \
 		PHASIC++ \
 		MCATNLO \
 		EXTRA_XS \
@@ -24,7 +24,6 @@ SUBDIRS       = \
 		SHRiMPS \
 		SHERPA \
 		AddOns \
-		Manual \
 		Examples
 
 EXTRA_DIST = GUIDELINES

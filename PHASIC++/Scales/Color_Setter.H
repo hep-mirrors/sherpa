@@ -32,6 +32,10 @@ namespace PHASIC {
 
     ~Color_Setter();
 
+    bool Initialize(ATOOLS::Cluster_Amplitude *const ampl);
+
+    Process_Base *GetProcess(ATOOLS::Cluster_Amplitude *const ampl);
+
     void SetColors(ATOOLS::Cluster_Amplitude *const ampl);
 
   };//end of class Color_Setter

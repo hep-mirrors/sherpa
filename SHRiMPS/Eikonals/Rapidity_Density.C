@@ -72,7 +72,7 @@ double Rapidity_Density::AbsorptionWeight(double y) {
 }
 
 double Rapidity_Density::operator()(double y) {
-  //double result = m_Delta;
+  //return m_Delta;
   double result = m_Delta * AbsorptionWeight(y);
   if (result>m_max) m_max=result;
   return result;
@@ -83,18 +83,22 @@ double Rapidity_Density::Integrate(const double & ymin,const double & ymax) {
   return integrator.Integrate(ymin,ymax,1.e-5,1);
 }
 
-size_t Rapidity_Density::NGluons(const double & ymin,const double & ymax) {
-  m_mean = Integrate(ymin,ymax);
+size_t Rapidity_Density::NGluons(const double & ymin,const double & ymax,const bool & rescatter) {
+  if (rescatter) return ran->Poissonian(m_Delta * dabs(ymax-ymin));
+  m_mean = dabs(Integrate(ymin,ymax));
   return ran->Poissonian(m_mean);
 }
 
-double Rapidity_Density::
-SelectRapidity(const double & ymin,const double & ymax) {
+double Rapidity_Density::SelectRapidity(const double & ymin,const double & ymax) {
   double y;
   do {
     y = ymin+ran->Get()*(ymax-ymin);
   } while ((*this)(y)<MaxWeight()*ran->Get());
   return y;
+}
+
+double Rapidity_Density::RescatterProbability(const double & y1,const double & y2) {
+  return 1.-exp(-DeltaOmega(y1,y2));
 }
 
 double Rapidity_Density::MaxWeight() {

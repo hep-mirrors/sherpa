@@ -32,10 +32,9 @@ namespace HADRONS {
     void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
     int  ChNumber()                 { return m_chnumber;       }
     void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
-    std::string ChID()              { return name;}
 	void   AddPoint(double value )	{ 
 	  Single_Channel::AddPoint( value );
-	  p_vegas->AddPoint(value, rans); 
+	  p_vegas->AddPoint(value, p_rans); 
 	}
     void   Optimize()                { p_vegas->Optimize(); } 
     void   EndOptimize()             { p_vegas->EndOptimize(); } 

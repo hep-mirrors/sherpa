@@ -55,4 +55,4 @@ SELECTORS:
     Variable: PT
     Flavs: 22
     Ranges: [[40, E_CMS], [30, E_CMS]]
-    Ordering: "[PT_UP]"
+    Ordering: [PT_UP]

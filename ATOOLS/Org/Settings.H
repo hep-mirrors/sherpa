@@ -128,6 +128,7 @@ namespace ATOOLS {
 
     std::map<Defaults_Key, String_Map> m_replacements;
     std::map<Defaults_Key, String_Vector> m_defaultsynonyms;
+    std::map<Defaults_Key, String_Vector> m_synonyms;
 
     String_Map m_tags;
     String_Map m_globaltags;
@@ -207,6 +208,10 @@ namespace ATOOLS {
     void SetDefaultSynonyms(const Settings_Keys&,
                             const String_Vector& synonyms);
 
+    void SetSynonyms(const Settings_Keys&,
+                     const String_Vector& synonyms);
+
+    bool IsScalar(const Settings_Keys&);
     bool IsList(const Settings_Keys&);
     bool IsMap(const Settings_Keys&);
     size_t GetItemsCount(const Settings_Keys&);
@@ -313,22 +318,36 @@ namespace ATOOLS {
   template <typename T>
   T Settings::GetScalar(const Settings_Keys& settings_keys)
   {
-    const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+    Defaults_Key keys{ settings_keys.IndizesRemoved() };
     std::string defaultvalue;
     defaultvalue = GetScalarDefault(keys, m_defaults);
     std::string value;
-    if (m_overrides.find(keys) != m_overrides.end())
-      defaultvalue = GetScalarDefault(keys, m_overrides);
-    for (auto& reader : m_yamlreaders) {
-      value = reader->GetScalar<std::string>(settings_keys);
-      if (value != "")
-        break;
+    if (m_overrides.find(keys) != m_overrides.end()) {
+      value = GetScalarDefault(keys, m_overrides);
+    } else {
+      const auto it = m_synonyms.find(keys);
+      for (auto& reader : m_yamlreaders) {
+        value = reader->GetScalar<std::string>(settings_keys);
+        if (value.empty() && it != m_synonyms.end()) {
+          auto synonym_settings_keys = settings_keys;
+          for (const auto& synonym : it->second) {
+            synonym_settings_keys.back() = synonym;
+            value = reader->GetScalar<std::string>(synonym_settings_keys);
+            if (!value.empty()) {
+              keys = synonym_settings_keys.IndizesRemoved();
+              break;
+            }
+          }
+        }
+        if (!value.empty())
+          break;
+      }
     }
-    if (value == "" || IsDefaultSynonym(settings_keys, value)) {
+    if (value.empty() || IsDefaultSynonym(settings_keys, value)) {
       value = defaultvalue;
     }
     const auto convertedvalue = Convert<T>(settings_keys, value);
-    if (value == "")
+    if (value.empty())
       m_usedvalues[keys].insert(String_Matrix{{""}});
     else
       m_usedvalues[keys].insert(String_Matrix{{ToString<T>(convertedvalue)}});
@@ -338,16 +357,30 @@ namespace ATOOLS {
   template <typename T>
   std::vector<T> Settings::GetVector(const Settings_Keys& settings_keys)
   {
-    const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+    Defaults_Key keys{ settings_keys.IndizesRemoved() };
     String_Vector defaultvalues;
     defaultvalues = GetVectorDefault(keys, m_defaults);
     std::vector<std::string> values;
-    if (m_overrides.find(keys) != m_overrides.end())
-      defaultvalues = GetVectorDefault(keys, m_overrides);
-    for (auto& reader : m_yamlreaders) {
-      values = reader->GetVector<std::string>(settings_keys);
-      if (!values.empty())
-        break;
+    if (m_overrides.find(keys) != m_overrides.end()) {
+      values = GetVectorDefault(keys, m_overrides);
+    } else {
+      const auto it = m_synonyms.find(keys);
+      for (auto& reader : m_yamlreaders) {
+        values = reader->GetVector<std::string>(settings_keys);
+        if (values.empty() && it != m_synonyms.end()) {
+          auto synonym_settings_keys = settings_keys;
+          for (const auto& synonym : it->second) {
+            synonym_settings_keys.back() = synonym;
+            values = reader->GetVector<std::string>(synonym_settings_keys);
+            if (!values.empty()) {
+              keys = synonym_settings_keys.IndizesRemoved();
+              break;
+            }
+          }
+        }
+        if (!values.empty())
+          break;
+      }
     }
     if (values.empty())
       values = defaultvalues;
@@ -370,16 +403,30 @@ namespace ATOOLS {
   std::vector<std::vector<T> > Settings::GetMatrix(
       const Settings_Keys& settings_keys)
   {
-    const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+    Defaults_Key keys{ settings_keys.IndizesRemoved() };
     String_Matrix defaultvalues;
     defaultvalues = GetMatrixDefault(keys, m_defaults);
     String_Matrix values;
-    if (m_overrides.find(keys) != m_overrides.end())
-      defaultvalues = GetMatrixDefault(keys, m_overrides);
-    for (auto& reader : m_yamlreaders) {
-      values = reader->GetMatrix<std::string>(settings_keys);
-      if (!values.empty())
-        break;
+    if (m_overrides.find(keys) != m_overrides.end()) {
+      values = GetMatrixDefault(keys, m_overrides);
+    } else {
+      const auto it = m_synonyms.find(keys);
+      for (auto& reader : m_yamlreaders) {
+        values = reader->GetMatrix<std::string>(settings_keys);
+        if (values.empty() && it != m_synonyms.end()) {
+          auto synonym_settings_keys = settings_keys;
+          for (const auto& synonym : it->second) {
+            synonym_settings_keys.back() = synonym;
+            values = reader->GetMatrix<std::string>(synonym_settings_keys);
+            if (!values.empty()) {
+              keys = synonym_settings_keys.IndizesRemoved();
+              break;
+            }
+          }
+        }
+        if (!values.empty())
+          break;
+      }
     }
     if (values.empty())
       values = defaultvalues;
