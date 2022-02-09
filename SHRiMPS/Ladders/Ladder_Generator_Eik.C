@@ -34,7 +34,6 @@ Ladder * Ladder_Generator_Eik::operator()(const Vec4D & pos) {
       else m_weight = 0.;
     } while (m_weight<ran->Get());
   }
-  //AddRescatters();
   return p_ladder;
 }
 
@@ -76,47 +75,6 @@ void Ladder_Generator_Eik::SelectPropagatorColours() {
     }
     pit1++; pit2++;
   }
-}
-
-void Ladder_Generator_Eik::AddRescatters() {
-  msg_Out()<<"--------------------------------------------------------------------\n"
-	   <<(*p_ladder)<<"\n";
-  LadderMap::iterator lit1=p_emissions->begin(),  litN=lit1; litN++;
-  TPropList::iterator pit1=p_props->begin();
-  double y1, yN;
-  while (litN!=p_emissions->end()) {
-    y1 = lit1->first; yN = litN->first;
-    double prob = (pit1->Col()!=colour_type::singlet ?
-		   m_density.RescatterProbability(y1,yN) : 0.);
-    if (ran->Get()<prob) {
-      double s1N = (lit1->second.Momentum()+litN->second.Momentum()).Abs2();
-      size_t N   = m_density.NGluons(y1,yN,true);
-      msg_Out()<<"Rescatter in ["<<y1<<" -> "<<yN<<", sij = "<<s1N<<"]: "
-	       <<"propagator("<<pit1->Col()<<", QT2 = "<<pit1->QT2()<<"): "
-	       <<"add "<<N<<" gluons\n"
-	       <<" * "<<lit1->second<<" * "<<litN->second<<"\n";
-      Vec4D k0 = lit1->second.Momentum(), kN = litN->second.Momentum();
-      Vec4D kT = lit1->second.Momentum()+litN->second.Momentum(); kT[0] = kT[3] = 0.;
-      Poincare cms    = Poincare(k0+kN);
-      cms.Boost(k0);cms.Boost(kN);
-      //Poincare z_axis = Poincare(k0,Vec4D(1.,0.,0.,1.));
-      //z_axis.Rotate(k0);z_axis.Rotate(kN);
-      double kTX_mean = kT[1]/(N+2), kTY_mean = kT[2]/(N+2); 					 
-      msg_Out()<<" * overall kt = "<<kT<<"\n"
-	       <<"--> "<<k0<<" ("<<k0.Y()<<")+ "<<kN<<" ("<<kN.Y()<<")\n";
-      for (size_t i=0;i<N;i++) {
-	double kTX = kTX_mean*(1.+ran->GetGaussian()), kTY = kTY_mean*(1.+ran->GetGaussian()); 
-	msg_Out()<<" * ("<<kTX<<", "<<kTY<<")\n";
-      //	p_ladder->AddRapidity(y1+(y2-y1)*ran->Get());
-      //	p_props->insert(pit1,T_Prop(colour_type::octet,Vec4D(0.,0.,0.,0.),m_qt2min));
-      }
-      //msg_Out()<<(*p_ladder)<<"\n";
-      lit1 = litN;
-    }
-    else lit1++;
-    litN++;pit1++;
-  }
-  msg_Out()<<"--------------------------------------------------------------------\n\n";
 }
 
 bool Ladder_Generator_Eik::SelectPropagatorQTs() {

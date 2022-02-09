@@ -94,20 +94,21 @@ double Ladder_Generator_Base::TotalReggeWeight() {
   return weight;
 }
 
-double Ladder_Generator_Base::RescaleLadder(const Vec4D & P_in) {
+double Ladder_Generator_Base::RescaleLadder(Ladder * ladder,const Vec4D & P_in) {
   Vec4D  P_out(0.,0.,0.,0.);
-  for (LadderMap::iterator lit=p_emissions->begin();
-       lit!=p_emissions->end();lit++)
+  for (LadderMap::iterator lit=ladder->GetEmissions()->begin();
+       lit!=ladder->GetEmissions()->end();lit++)
     P_out += lit->second.Momentum();
   double factor = sqrt(P_in.Abs2()/P_out.Abs2()), weight = 1.;
-  for (LadderMap::iterator lit=p_emissions->begin();
-       lit!=p_emissions->end();lit++) {
+  for (LadderMap::iterator lit=ladder->GetEmissions()->begin();
+       lit!=ladder->GetEmissions()->end();lit++) {
     Vec4D oldp = lit->second.Momentum(), newp = factor*oldp; 
     lit->second.SetMomentum(newp);
     if (dabs(newp.Y())<m_Ymax)
       weight  *= AlphaSWeight(newp.PPerp2())/AlphaSWeight(oldp.PPerp2());
   }
-  for (TPropList::iterator pit=p_props->begin();pit!=p_props->end();pit++) {
+  for (TPropList::iterator pit=ladder->GetProps()->begin();
+       pit!=ladder->GetProps()->end();pit++) {
     Vec4D oldq    = pit->Q(),   newq   = factor*oldq;
     double oldqt2 = pit->QT2(), newqt2 = sqr(factor)*oldqt2;
     pit->SetQ(newq);

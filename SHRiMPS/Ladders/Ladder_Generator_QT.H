@@ -18,42 +18,24 @@ namespace SHRIMPS {
     
     bool   FixInitialPartons();
     bool   MakeTrialLadder();
-    bool   TrialEmission(size_t dir);
-    bool   LastEmissions();
+    bool   TrialEmission(size_t dir,const double & yhat=0,const bool isrescatter=false);
+    bool   LastEmissions(Ladder * ladder);
     bool   FixLastEmissions();
-    void   AddEmission(size_t dir,TPropList::iterator & pit);
+    void   AddEmission(Ladder * ladder,size_t dir,TPropList::iterator & pit);
     double AbsorptionWeight(const ATOOLS::Vec4D & k,const double & y);
     double MEWeight();
     bool   FixSimpleKinematics();
     void   SelectPropagatorColours();
     void   CalculateWeight();
-    
-    inline double QT2Min(size_t dir=2) {
-      double qt2min = m_qt2min;
-      for (size_t beam=0;beam<2;beam++) {
-	if ((dir==2 || dir==beam) &&
-	    (ATOOLS::dabs(m_y[beam][1])>m_Ymax)) qt2min = m_qt2minFF;
-      }
-      return qt2min;
-    }
-    inline double QT2Max() {
-      return m_seff/ATOOLS::sqr(cosh(ATOOLS::Max(ATOOLS::dabs(m_y[0][1]),
-						 ATOOLS::dabs(m_y[1][1]))));
-    }
-    inline ATOOLS::Vec4D MakeFSMomentum(size_t dir) {
-      double kt = sqrt((m_q[dir]+(dir==0 ? -m_qt : m_qt)).PPerp2());
-      return ( kt * ATOOLS::Vec4D(cosh(m_y[dir][1]),0.,0.,sinh(m_y[dir][1])) +
-	       (m_q[dir] + (dir==0 ? -m_qt : m_qt)).Perp());
-    }
-    inline ATOOLS::Vec4D MakePropMomentum(const double & qt2min,
-					  const double & qt2max,
-					  Form_Factor * ff=NULL) {
-      if (qt2max<0.) exit(1);
-      m_qt2 = ATOOLS::Max(0.,(ff ?
-			      ff->SelectQT2(qt2max,qt2min) :
-			      qt2min * pow(qt2max/qt2min, ATOOLS::ran->Get())));
-      return sqrt(m_qt2) * m_eqt;
-    }
+
+    void   AddRescatters();
+    bool   MakeRescatterLadder(LadderMap::iterator & lit1,TPropList::iterator & pit1);
+    bool   TrialRescatterEmission(size_t dir,const double & yhat);
+    double QT2Min(size_t dir=2);
+    double QT2Max();
+    ATOOLS::Vec4D MakeFSMomentum(size_t dir);
+    ATOOLS::Vec4D MakePropMomentum(const double & qt2min,const double & qt2max,
+				   Form_Factor * ff=NULL);
   public:
     Ladder_Generator_QT();
     ~Ladder_Generator_QT() {}

@@ -28,6 +28,7 @@ namespace SHRIMPS {
 		const ATOOLS::Vec4D & mom=ATOOLS::Vec4D(0.,0.,0.,0.));
     void DeleteRapidity(LadderMap::iterator yiter);
     void AddPropagator(T_Prop prop);
+    void DeletePropagator(TPropList::iterator piter);
     void UpdatePropagatorKinematics();
     void Reset(const bool & all=true);
     void ResetFS();

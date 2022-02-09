@@ -25,10 +25,9 @@ double MEs::operator()(Ladder * ladder, const double & qt2min) {
   if (q[0].PPlus()>rpa->gen.Ecms() ||
       q[1].PMinus()>rpa->gen.Ecms() ||
       (q[0]+q[1]).Abs2()<m_shatmin)                           return 0.;
-  //msg_Out()<<METHOD<<" for qt^2 = "<<qt2max<<" vs. "<<win->Q().Abs2()<<"\n";
   double weight = (winner->Col()==colour_type::octet?
 		   qt2min/dabs(winner->Q2()) :
-		   sqr(qt2min/dabs(winner->Q2())));
+		   qt2min/dabs(winner->Q2()));
 
   for (size_t i=0;i<2;i++) {
     double x0 = (i==0?

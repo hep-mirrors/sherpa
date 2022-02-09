@@ -27,6 +27,10 @@ void Ladder::DeleteRapidity(LadderMap::iterator yiter) {
   if (yiter!=m_emissions.end()) m_emissions.erase(yiter);
 }
 
+void Ladder::DeletePropagator(TPropList::iterator piter) {
+  if (piter!=m_tprops.end()) m_tprops.erase(piter); 
+}
+
 void Ladder::AddPropagator(T_Prop prop)
 {
   m_tprops.push_back(prop);
