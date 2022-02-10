@@ -232,7 +232,7 @@ namespace PHASIC {
     inline Process_Info       &Info()       { return m_pinfo; }
     inline const Process_Info &Info() const { return m_pinfo; }
 
-    const UnweightingMode* GetUnweightingMode() const { return m_pinfo.m_unw_mode; }
+    const Unweighting_Mode::code* GetUnweightingMode() const { return m_pinfo.m_unw_mode; }
 
     inline ATOOLS::DecayInfo_Vector       &DecayInfos()       {return m_decins;}
     inline const ATOOLS::DecayInfo_Vector &DecayInfos() const {return m_decins;}

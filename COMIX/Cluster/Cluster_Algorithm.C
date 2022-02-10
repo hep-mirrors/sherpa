@@ -773,8 +773,11 @@ bool Cluster_Algorithm::CheckConfig(ATOOLS::Cluster_Amplitude *const ampl) const
   std::string name(PHASIC::Process_Base::GenerateName(ampl));
   StringProcess_Map *pm((*p_xs->AllProcs())[nlo_type::lo]);
   StringProcess_Map::const_iterator pit(pm->find(name));
-  if (pit==pm->end()) msg_Debugging()<<"invalid configuration\n";
-  else                msg_Debugging()<<"valid configuration\n";
+  if (pit==pm->end()) {
+    msg_Debugging()<<"invalid configuration\n";
+  } else { 
+    msg_Debugging()<<"valid configuration\n";
+  }
   return pit!=pm->end();
 }
 
@@ -785,8 +788,11 @@ bool Cluster_Algorithm::CheckCore(ATOOLS::Cluster_Amplitude *const ampl) const
   std::string name(PHASIC::Process_Base::GenerateName(ampl));
   StringProcess_Map *pm((*p_xs->AllProcs())[nlo_type::lo]);
   StringProcess_Map::const_iterator pit(pm->find(name));
-  if (pit==pm->end()) msg_Debugging()<<"invalid core configuration\n";
-  else                msg_Debugging()<<"valid core configuration\n";
+  if (pit==pm->end()) {
+    msg_Debugging()<<"invalid core configuration\n";
+  } else {
+    msg_Debugging()<<"valid core configuration\n";
+  }
   return pit!=pm->end();
 }
 

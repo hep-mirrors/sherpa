@@ -25,6 +25,7 @@
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
 
+#include <cassert>
 #include <unistd.h>
 
 using namespace SHERPA;
@@ -35,7 +36,7 @@ using namespace ATOOLS;
 Matrix_Element_Handler::Matrix_Element_Handler
 (const std::string &dir,const std::string &file,
  const std::string &processfile,const std::string &selectorfile):
-  m_gens(dir, file), m_unw_mode(UnweightingMode::HitOrMiss),
+  m_gens(dir, file), m_unw_mode(Unweighting_Mode::hitormiss),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
@@ -93,6 +94,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
     msg_Info()<<METHOD<<"(): Set seed increment to "
               <<read.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
   }
+  m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
+  msg_Info()<<METHOD<<"(): Set pilot run mode to "<<m_pilotrunenabled<<".\n";
   std::string nlomodestring("");
   if (!read.ReadFromFile(nlomodestring,"NLO_Mode")) m_globalnlomode=0;
   else {
@@ -190,20 +193,20 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
-    SetUnweightingMode(UnweightingMode::HitOrMiss);
+    SetUnweightingMode(Unweighting_Mode::hitormiss);
     p_variationweights->Reset();
     proc->SetVariationWeights(NULL);
     const bool hasvars(
         p_variationweights->GetVariations()->GetParametersVector()->empty()
         == false);
     if (hasvars) {
-      if (m_eventmode!=0) {
-        // for (partially) unweighted events, calculate nominal only, and
-        // prepare to restore the rng to re-run with variations after
-        // unweighting
+      if (m_pilotrunenabled) {
+        // in pilot run mode, calculate nominal only, and prepare to restore
+        // the rng to re-run with variations after unweighting
         ran->SaveStatus();
       } else {
-        // for weighted events, we also  calculate variations
+        // when pilot runs are disabled, we immediately calculate all
+        // variations
         proc->SetVariationWeights(p_variationweights);
       }
     }
@@ -237,14 +240,31 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         m_weightfactor = abswgt / max;
         wf /= Min(1.0, m_weightfactor);
       }
-      SetUnweightingMode(UnweightingMode::Accept);
-      if (hasvars) {
-        // re-run with same rng state and include the calculation of variations
-        // this time
+      SetUnweightingMode(Unweighting_Mode::accept);
+      if (hasvars && m_pilotrunenabled) {
+        // re-run with same rng state and include the calculation of
+        // variations this time
         ran->RestoreStatus();
         proc->SetVariationWeights(p_variationweights);
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+        // if we have indeed used the same statistics for the (accepted) pilot
+        // run, info must be non-null and it must contain the same results
+        // compared to the pilot run
+        assert(info);
+        if (m_evtinfo != *info) {
+          msg_Error()
+            <<"ERROR: The results of the pilot run and the re-run are not"
+            <<" the same:\n"
+            <<"  Pilot run: "<<m_evtinfo<<"\n"
+            <<"  Re-run:    "<<*info<<"\n"
+            <<"Will continue, but deviations beyond numerics would indicate"
+            <<" a logic error resulting in wrong statistics!\n";
+        }
+        delete info;
         proc->SetVariationWeights(NULL);
+        // also consume random number used to set the discriminator for
+        // unweighting above, such that it is not re-used in the future
+        ran->Get();
       }
     }
     if (!hasvars) {

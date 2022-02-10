@@ -63,7 +63,7 @@ namespace SHERPA {
 
     PHASIC::ME_Generators  m_gens;
     PHASIC::Process_Vector m_procs;
-    PHASIC::UnweightingMode m_unw_mode;
+    PHASIC::Unweighting_Mode::code m_unw_mode;
 
     PHASIC::Process_Base *p_proc;
 
@@ -73,6 +73,7 @@ namespace SHERPA {
 
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo, m_rsadd;
+    bool        m_pilotrunenabled;
 
     ATOOLS::Weight_Info m_evtinfo;
 
@@ -159,9 +160,9 @@ namespace SHERPA {
 
     inline ATOOLS::Weight_Info WeightInfo() const { return m_evtinfo; }
 
-    const PHASIC::UnweightingMode GetUnweightingMode() const { return m_unw_mode; }
+    const PHASIC::Unweighting_Mode::code GetUnweightingMode() const { return m_unw_mode; }
 
-    void SetUnweightingMode(const PHASIC::UnweightingMode mode) { m_unw_mode = mode; }
+    void SetUnweightingMode(const PHASIC::Unweighting_Mode::code mode) { m_unw_mode = mode; }
 
     inline BEAM::Beam_Spectra_Handler *GetBeam() const { return p_beam; }
     inline PDF::ISR_Handler           *GetISR() const  { return p_isr;  }

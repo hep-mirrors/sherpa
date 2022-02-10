@@ -1108,10 +1108,10 @@ void Single_Virtual_Correction::FillProcessMap(NLOTypeStringProcessMap_Map *apma
 }
 
 void Single_Virtual_Correction::SetLoopME() {
-  if (*(p_partner->GetUnweightingMode()) == PHASIC::UnweightingMode::HitOrMiss) {
+  if (*(p_partner->GetUnweightingMode()) == PHASIC::Unweighting_Mode::hitormiss) {
     p_partner->p_loopme = p_partner->p_loopme_unwt;
   }
-  else if (*(p_partner->GetUnweightingMode()) == PHASIC::UnweightingMode::Accept) {
+  else if (*(p_partner->GetUnweightingMode()) == PHASIC::Unweighting_Mode::accept) {
     p_partner->p_loopme = p_partner->p_loopme_main;
   }
 }

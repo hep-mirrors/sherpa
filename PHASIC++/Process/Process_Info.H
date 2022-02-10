@@ -7,7 +7,12 @@
 
 namespace PHASIC {
   
-  enum class UnweightingMode { HitOrMiss = 0, Accept = 1 };
+  struct Unweighting_Mode {
+    enum code {
+      hitormiss   = 0,
+      accept      = 1
+    };
+  };
 
   class ME_Generators;
 
@@ -35,7 +40,7 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector m_nodecs;
 
-    PHASIC::UnweightingMode *m_unw_mode;
+    PHASIC::Unweighting_Mode::code* m_unw_mode;
 
   public:
 
@@ -59,7 +64,7 @@ namespace PHASIC {
     std::vector<ATOOLS::Flavour_Vector> ExtractMPL() const;
 
     // pass pointer to unweighting-mode member of the MEH
-    void SetUnweightingMode(PHASIC::UnweightingMode& m) { m_unw_mode = &m; }
+    void SetUnweightingMode(PHASIC::Unweighting_Mode::code& m) { m_unw_mode = &m; }
 
     bool operator<(const Process_Info &pi) const;
 
