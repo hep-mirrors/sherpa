@@ -30,13 +30,15 @@ namespace SHRIMPS {
     inline const ATOOLS::Vec4D & Position()        const { return m_pos; }
     inline const int GetFlow(const size_t & pos)   const { return m_flow.Code(pos); }
     inline const bool & IsIS()                     const { return m_IS; }
+    inline const bool & IsMarked()                 const { return m_marked; }
     inline const int & Beam()                      const { return m_beam; }
     
-    inline void SetFlavour(const ATOOLS::Flavour & flav)    { m_flav = flav; }
-    inline void SetMomentum(const ATOOLS::Vec4D & mom)      { m_mom  = mom; }
-    inline void SetPosition(const ATOOLS::Vec4D & pos)      { m_pos  = pos; }
-    inline void SetIS(const bool & IS)                      { m_IS   = IS; }
-    inline void SetBeam(const int & beam)                   { m_beam = beam; }
+    inline void SetFlavour(const ATOOLS::Flavour & flav)    { m_flav   = flav; }
+    inline void SetMomentum(const ATOOLS::Vec4D & mom)      { m_mom    = mom; }
+    inline void SetPosition(const ATOOLS::Vec4D & pos)      { m_pos    = pos; }
+    inline void SetIS(const bool & IS)                      { m_IS     = IS; }
+    inline void SetMark(const bool & mark)                  { m_marked = mark; }
+    inline void SetBeam(const int & beam)                   { m_beam   = beam; }
     inline void BoostBack(const ATOOLS::Poincare & booster) { booster.BoostBack(m_mom); }
     inline void Boost(const ATOOLS::Poincare & booster)     { booster.Boost(m_mom); }
   };

@@ -38,7 +38,7 @@ namespace SHRIMPS {
     virtual void   ConstructISKinematics();
     virtual void   ConstructSimpleLadder();
     virtual double RescaleLadder(Ladder * ladder,const ATOOLS::Vec4D & P_in);
-    virtual double TotalReggeWeight();
+    virtual double TotalReggeWeight(Ladder * ladder);
     virtual double AlphaSWeight(const double & kt2);
     virtual double ReggeWeight(const double & qt2, const double & y1,
 			       const double y2);

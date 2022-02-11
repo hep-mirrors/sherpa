@@ -172,6 +172,6 @@ void Ladder_Generator_KT::CalculateWeight() {
   double sigma_ratio, me, regge;
   m_weight = ( (sigma_ratio = sigma_act/m_sigmahat) *
 	       (me          = m_me(p_ladder,m_qt2min)) *
-	       (regge       = TotalReggeWeight()) );
+	       (regge       = TotalReggeWeight(p_ladder)) );
 }
 

@@ -11,6 +11,34 @@ MEs::MEs(Sigma_Partonic * sigma,const double & smin, const double & tmin) :
   if (m_thatmin==0.) m_thatmin = p_sigma->Tmin(); 
 }
 
+double MEs::PDFratio(const Vec4D & qprev,const ATOOLS::Flavour & fprev,
+		     const Vec4D & qact,const ATOOLS::Flavour & fact,
+		     const size_t & dir) {
+  double xprev, xact;
+  if (dir==0) {
+    xprev = qprev.PPlus()/rpa->gen.PBeam(0).PPlus();
+    xact  = qact.PPlus()/rpa->gen.PBeam(0).PPlus();
+  }
+  else {
+    xprev = qprev.PMinus()/rpa->gen.PBeam(1).PMinus();
+    xact  = qact.PMinus()/rpa->gen.PBeam(1).PMinus();
+  }
+  return (xprev / xact *
+	  p_sigma->PDF(dir, xact,  dabs(qact.Abs2()),  fact)/
+	  p_sigma->PDF(dir, xprev, dabs(qprev.Abs2()), fprev));
+}
+
+double MEs::operator()(Ladder * ladder) {
+  TPropList::iterator winner;
+  if (!ladder->ExtractHardest(winner,0.) ||
+      dabs(winner->Q2())<dabs(m_thatmin)) {
+    return 1.;
+  }
+  return (winner->Col()==colour_type::octet ?
+	  m_thatmin/winner->Q2() :
+	  sqr(m_thatmin/winner->Q2()) );
+}
+
 double MEs::operator()(Ladder * ladder, const double & qt2min) {
   if (ladder->InPart(0)->Momentum().PPlus()>rpa->gen.Ecms() ||
       ladder->InPart(1)->Momentum().PMinus()>rpa->gen.Ecms()) return 0.;
@@ -25,9 +53,11 @@ double MEs::operator()(Ladder * ladder, const double & qt2min) {
   if (q[0].PPlus()>rpa->gen.Ecms() ||
       q[1].PMinus()>rpa->gen.Ecms() ||
       (q[0]+q[1]).Abs2()<m_shatmin)                           return 0.;
-  double weight = (winner->Col()==colour_type::octet?
-		   qt2min/dabs(winner->Q2()) :
-		   qt2min/dabs(winner->Q2()));
+  double weight = (winner->Q2()<=qt2min ?
+		   1. :
+		   (winner->Col()==colour_type::octet ?
+		    qt2min/dabs(winner->Q2()) :
+		    sqr(qt2min/dabs(winner->Q2()))) );
 
   for (size_t i=0;i<2;i++) {
     double x0 = (i==0?

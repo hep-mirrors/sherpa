@@ -83,17 +83,6 @@ void Ladder_Generator_Base::ConstructISKinematics() {
   p_ladder->UpdatePropagatorKinematics();
 }
 
-double Ladder_Generator_Base::TotalReggeWeight() {
-  LadderMap::iterator lit1=p_emissions->begin(), lit2=lit1; lit2++;
-  TPropList::iterator pit=p_props->begin();
-  double weight = 1.;
-  while (lit2!=p_emissions->end() && pit!=p_props->end()) {
-    weight *= ReggeWeight(dabs(pit->Q2()),lit1->first,lit2->first);
-    pit++; lit1++; lit2++;
-  }
-  return weight;
-}
-
 double Ladder_Generator_Base::RescaleLadder(Ladder * ladder,const Vec4D & P_in) {
   Vec4D  P_out(0.,0.,0.,0.);
   for (LadderMap::iterator lit=ladder->GetEmissions()->begin();
@@ -118,6 +107,19 @@ double Ladder_Generator_Base::RescaleLadder(Ladder * ladder,const Vec4D & P_in) 
   return weight;
 }
 
+double Ladder_Generator_Base::TotalReggeWeight(Ladder * ladder) {
+  LadderMap::iterator lit1=ladder->GetEmissions()->begin(), lit2=lit1; lit2++;
+  TPropList::iterator pit=ladder->GetProps()->begin();
+  double weight = 1.;
+  Vec4D qprev = ladder->InPart(0)->Momentum();
+  while (lit2!=ladder->GetEmissions()->end() && pit!=ladder->GetProps()->end()) {
+    weight *= ReggeWeight(dabs(pit->Q2()),lit1->first,lit2->first);
+    weight *= ( ((qprev.PPerp2()+m_qt2min)*(pit->Q().PPerp2()+m_qt2min))/
+		((pit->Q2()+m_qt2min)*((qprev-pit->Q()).PPerp2()+m_qt2min)) );
+    pit++; lit1++; lit2++;
+  }
+  return weight;
+}
 
 void Ladder_Generator_Base::MakeTransverseUnitVector() {
   double phi = 2.*M_PI*ran->Get();
@@ -166,17 +168,12 @@ double Ladder_Generator_Base::AlphaSWeight(const double & kt2) {
 
 double Ladder_Generator_Base::
 ReggeWeight(const double & qt2, const double & y1,const double y2) {
-  //return exp(-3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min));
-  return (qt2>m_qt2min ?
-      exp(-3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min)) :
-      1.);
-      //exp(3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min)));
-  // 3/pi oder 3/(2pi)? qt2min = qt2min(y)? log((qt2+m_qt2min)/m_qt2min) ?
+  return exp(-3.*AlphaS(qt2)/M_PI * dabs(y1-y2) * log(1.+qt2/m_qt2min));
 }
 
 double Ladder_Generator_Base::
 LDCWeight(const double & qt2, const double & qt2prev) {
-  return qt2/Max(qt2,qt2prev); //quadrieren?
+  return qt2/Max(qt2,qt2prev);
 }
 		 
 void Ladder_Generator_Base::Test() {

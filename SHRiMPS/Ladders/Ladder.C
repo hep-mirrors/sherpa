@@ -4,8 +4,8 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 
-Ladder::Ladder(const Vec4D & position) :
-  m_position(position)
+Ladder::Ladder(const Vec4D & position,const bool & rescatter) :
+  m_position(position), m_isrescatter(rescatter)
 {
   for (size_t i=0;i<2;i++) {
     m_inpart[i] = Ladder_Particle(Flavour(kf_gluon),Vec4D(0.,0.,0.,0.),m_position);

@@ -15,6 +15,10 @@ namespace SHRIMPS {
 	const double & smin=-1., const double & tmin=0.);
     ~MEs() {};
     double operator()(Ladder * ladder,const double & qt2min);
+    double operator()(Ladder * ladder);
+    double PDFratio(const ATOOLS::Vec4D & qprev,const ATOOLS::Flavour & fprev,
+		    const ATOOLS::Vec4D & qact,const ATOOLS::Flavour & fact,
+		    const size_t & dir);
   };
 }
 #endif

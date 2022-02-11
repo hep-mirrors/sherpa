@@ -46,7 +46,8 @@ namespace SHRIMPS {
     void Initialise(Remnant_Handler * remnants); 
     const double MakeEvent();
     const double dSigma(const double & s,const double & y);
-    const double PDF(const size_t beam,const double & x,const double & Q2);
+    const double PDF(const size_t beam,const double & x,const double & Q2,
+		     const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_gluon));
     void SetPDF(const size_t & beam,Continued_PDF * pdf) { p_pdf[beam] = pdf; }
     void SetEta(const double & eta=0.)   { m_eta  = eta; }
     void SetTmin(const double & tmin=1.) { m_tmin = tmin; }

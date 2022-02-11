@@ -100,9 +100,9 @@ bool Inelastic_Event_Generator::MakePrimaryScatterBlobs(ATOOLS::Blob_List * blob
   }
   delete ladder;
   m_primaries.GetLadders()->pop_front();
-  return p_collemgen->GenerateEmissions(blobs);
+  //return p_collemgen->GenerateEmissions(blobs);
   //PRINT_VAR(*blob);
-  //return 1;
+  return 1;
 }
 
 bool Inelastic_Event_Generator::InitEvent(Blob_List * blobs) {

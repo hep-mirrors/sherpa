@@ -18,8 +18,10 @@ namespace SHRIMPS {
     TPropList       m_tprops;
     ATOOLS::Vec4D   m_position;
     Ladder_Particle m_inpart[2];
+    bool            m_isrescatter;
   public:
-    Ladder(const ATOOLS::Vec4D & position=ATOOLS::Vec4D(0.,0.,0.,0.));
+    Ladder(const ATOOLS::Vec4D & position=ATOOLS::Vec4D(0.,0.,0.,0.),
+	   const bool & rescatter=false);
     ~Ladder();
 
     Ladder_Particle *
@@ -32,15 +34,17 @@ namespace SHRIMPS {
     void UpdatePropagatorKinematics();
     void Reset(const bool & all=true);
     void ResetFS();
+    
     void OutputRapidities();    
     bool ExtractHardest(TPropList::iterator & winner,const double & qt2min=0.);
     void HardestIncomingMomenta(const TPropList::iterator & winner,
 				ATOOLS::Vec4D & q0,ATOOLS::Vec4D & q1);
-    
-    inline LadderMap * GetEmissions() { return &m_emissions; }
-    inline TPropList * GetProps()     { return &m_tprops; }
+
+    inline LadderMap * GetEmissions()                   { return &m_emissions; }
+    inline TPropList * GetProps()                       { return &m_tprops; }
     inline const ATOOLS::Vec4D & Position()       const { return m_position; }
     inline Ladder_Particle * InPart(const size_t & pos) { return pos<2?&m_inpart[pos]:NULL; }
+    inline const bool IsRescatter()               const { return m_isrescatter; }
     inline Ladder_Particle * FSPart(const double y) {
       return (m_emissions.find(y)==m_emissions.end() ?
 	      NULL : &m_emissions.find(y)->second);

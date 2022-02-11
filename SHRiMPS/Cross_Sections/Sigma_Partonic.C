@@ -64,10 +64,10 @@ void Sigma_Partonic::SelectFlavours(const bool & fixflavour) {
 }
 
 const double Sigma_Partonic::
-PDF(const size_t beam,const double & x,const double & Q2) {
+PDF(const size_t beam,const double & x,const double & Q2,const Flavour & flav) {
   if (x<1.e-6) return 0.;
   p_pdf[beam]->Calculate(x,Q2);
-  return p_pdf[beam]->XPDF(Flavour(kf_gluon));  
+  return p_pdf[beam]->XPDF(flav);  
 }
 
 const bool Sigma_Partonic::Calculate() {
