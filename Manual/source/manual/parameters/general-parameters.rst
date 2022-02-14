@@ -440,6 +440,8 @@ The following formats are currently available:
   from the matrix-element-parton-shower interplay which would be
   otherwise stored.
 
+  Requires ``--enable-hepmc2=<path/to/hepmc2>``.
+
 :option:`HepMC_Short`
 
   Generates output in HepMC::IO_GenEvent format, however, only
@@ -448,6 +450,8 @@ The following formats are currently available:
   same as above, and ``HEPMC_USE_NAMED_WEIGHTS`` and
   ``HEPMC_EXTENDED_WEIGHTS`` can be used to customise.
 
+  Requires ``--enable-hepmc2=<path/to/hepmc2>``.
+
 :option:`HepMC3_GenEvent`
   Generates output using HepMC3 library. The format of the output is
   set with ``HEPMC3_IO_TYPE: <0|1|2|3|4>`` tag.  The default value is
@@ -455,6 +459,8 @@ The following formats are currently available:
   HepEvt 2: ROOT file with every event written as an object of class
   GenEvent. 3: ROOT file with GenEvent objects writen into TTree.
   Otherwise similar to ``HepMC_GenEvent``.
+
+  Requires ``--enable-hepmc3=<path/to/hepmc3>``.
 
 :option:`Delphes_GenEvent`
   Generates output in `Root <http://root.cern.ch>`_ format, which can
@@ -660,9 +666,10 @@ The total cross section for all variations along with the nominal cross section
 are written to the standard output after the event generation has finalized.
 Additionally, some event output (see :ref:`Event output formats`) and analysis methods
 (see :ref:`ANALYSIS`) are able to process alternate event weights.
-Currently, the supported event output methods are ``HepMC_GenEvent`` and
-``HepMC_Short`` (when configured with HepMC version 2.06 or later) and the
-supported analysis methods are ``Rivet`` and ``Internal``.
+Currently, the supported event output methods are ``HepMC_GenEvent``
+and ``HepMC_Short`` (when configured with HepMC version 2.06 or later),
+and ``HepMC3_GenEvent`` (when configured with HepMC version 3 or later).
+The supported analysis methods are ``Rivet`` and ``Internal``.
 
 The alternative event weight names follow the MC naming convention, i.e. they
 are named ``MUR=<fac>__MUF=<fac>__LHAPDF=<id>``.  When using Sherpa's
