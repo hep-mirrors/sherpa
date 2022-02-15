@@ -272,7 +272,7 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
   }
   for (int i = 0; i < 2; i++) {
     if (p_remnant != NULL && !(p_remnant->GetRemnant(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)
-              ->TestExtract(ampl->Leg(i)->Flav(), -ampl->Leg(i)->Mom())))
+              ->TestExtract(ampl->Leg(i)->Flav().Bar(), -ampl->Leg(i)->Mom())))
       return -1;
   }
   msg_Debugging() << "After shift: " << *ampl << "\n";
