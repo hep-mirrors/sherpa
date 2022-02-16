@@ -331,6 +331,11 @@ void ISR_Handler::SetLimits() {
   m_xkey[3] = log(m_xkey[3]);
 }
 
+bool ISR_Handler::CheckMasses() {
+  return (m_mass2[0] < sqr(p_beam[0]->OutMomentum().PPlus()) &&
+          m_mass2[1] < sqr(p_beam[1]->OutMomentum().PMinus()));
+}
+
 double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
                               double Q22, Flavour fl1, Flavour fl2, int warn) {
   // mode&2 -> override m_mode and only calc left beam

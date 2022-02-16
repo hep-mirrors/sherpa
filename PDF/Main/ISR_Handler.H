@@ -77,7 +77,8 @@ namespace PDF {
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
     bool CheckConsistency(ATOOLS::Flavour *partons);
     void SetPartonMasses(const ATOOLS::Flavour_Vector &fl); 
-    void SetMasses(const ATOOLS::Flavour_Vector &fl); 
+    void SetMasses(const ATOOLS::Flavour_Vector &fl);
+    bool CheckMasses();
 
     bool MakeISR(const double &sp,const double &y,
 		 ATOOLS::Vec4D * p,const ATOOLS::Flavour_Vector &flavs);

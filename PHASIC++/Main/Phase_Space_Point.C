@@ -176,6 +176,8 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     if (!(m_mode & psmode::no_gen_isr)) {
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
       p_isrhandler->SetLimits();
+      if (!p_isrhandler->CheckMasses())
+        return false;
       if (m_nin == 2 && m_nout == 1 &&
           process->Process()->Selected()->Flavours()[2].Kfcode() == 999) {
         if (p_pshandler->Active()->Process()->SPrimeMin() > 0.)
