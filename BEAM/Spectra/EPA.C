@@ -36,6 +36,8 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
 
   m_theta_max = s["EPA_Theta_max"].Get<double>();
 
+  m_lo_epa = s["EPA_LO"].Get<bool>();
+
   std::vector<double> xmin{s["EPA_Xmin"].GetVector<double>()};
   if (xmin.size() != 1 && xmin.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `EPA_Xmin'.");
@@ -75,6 +77,7 @@ void EPA::RegisterDefaults() {
   s["EPA_AlphaQED"].SetDefault(0.0072992701);
   s["EPA_Theta_max"].SetDefault(0.3);
   s["EPA_Xmin"].SetDefault(0);
+  s["EPA_LO"].SetDefault(false);
   s["EPA_Debug"].SetDefault(false);
   s["EPA_Debug_Files"].SetDefault("EPA_debugOutput");
 }
@@ -218,7 +221,7 @@ bool EPA::CalculateWeight(double x, double q2) {
     m_weight = 0.0;
     return true;
   }
-  if (m_beam.Kfcode() == kf_e) {
+  if (m_beam.Kfcode() == kf_e && !m_lo_epa) {
     // Maximal angle for the scattered electron
     // compare hep-ph/9610406 and hep-ph/9310350
     double q2min = sqr(m_mass * m_x) / (1 - m_x);
@@ -234,6 +237,17 @@ bool EPA::CalculateWeight(double x, double q2) {
                     << "energy = " << m_energy << ", "
                     << "mass = " << m_mass << ".\n";
     return true;
+  } else if (m_beam.Kfcode() == kf_e && m_lo_epa) {
+    double f =
+        alpha / M_PI * (1 + sqr(1 - m_x)) / m_x * log(2. * m_energy / m_mass);
+    if (f < 0)
+      f = 0.;
+    m_weight = f;
+    msg_Debugging() << METHOD << "(x = " << m_x << ", q^2 = " << q2
+                    << ") = " << f << ", "
+                    << "energy = " << m_energy << ", "
+                    << "mass = " << m_mass << ".\n";
+    return 1;
   } else if (m_beam.Kfcode() == kf_p_plus) {
     const double qz = 0.71;
     double f, qmi, qma;

@@ -18,6 +18,8 @@ namespace BEAM {
 
     double m_mass, m_charge, m_q2Max, m_pt_min, m_aqed, m_xmin, m_theta_max;
 
+    bool m_lo_epa;
+
     void RegisterDefaults();
 
     double phi(double x, double qq);
