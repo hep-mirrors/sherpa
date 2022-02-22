@@ -13,7 +13,7 @@ Soft_Diffractive_Event_Generator::
 Soft_Diffractive_Event_Generator(Sigma_SD * sigma,const int & test) :
   Event_Generator_Base(sigma),
   p_sigma(sigma), m_sigma(0.),
-  m_massexp(0.25), m_Prob1440(0.4),  m_Prob1710(0.4)
+  m_massexp(0.5), m_Prob1440(.4),  m_Prob1710(0.2)
 {
   for (size_t i=0;i<3;i++) m_sigma   += m_rate[i] = p_sigma->GetXSec(i);
   for (size_t i=0;i<3;i++) {
