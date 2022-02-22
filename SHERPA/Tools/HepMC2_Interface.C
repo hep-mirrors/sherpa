@@ -751,10 +751,9 @@ void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event,
 
 bool HepMC2_Interface::StartsLikeVariationName(const std::string& s)
 {
-  using std::string::npos;
-  return (s.find("Weight") == npos
-      && s.find("EXTRA__") == npos
-      && s.find("IRREG__") == npos);
+  return (s.find("Weight") == std::string::npos
+      && s.find("EXTRA__") == std::string::npos
+      && s.find("IRREG__") == std::string::npos);
 }
 
 void HepMC2_Interface::DeleteGenSubEventList()
