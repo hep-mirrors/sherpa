@@ -195,7 +195,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
                              ? 2.0
                              : 1.0;
   }
-  return p_isrhandler->MakeISR(m_sprime, m_y, p_moms,
+  return p_isrhandler->MakeISR(m_sprime, m_isrykey[2], p_moms,
                                process->Process()->Selected()->Flavours());
 }
 
