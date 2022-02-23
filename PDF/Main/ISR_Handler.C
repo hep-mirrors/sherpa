@@ -332,8 +332,9 @@ void ISR_Handler::SetLimits() {
 }
 
 bool ISR_Handler::CheckMasses() {
-  return (m_mass2[0] < sqr(p_beam[0]->OutMomentum().PPlus()) &&
-          m_mass2[1] < sqr(p_beam[1]->OutMomentum().PMinus()));
+  bool success = (m_mass2[0] < sqr(p_beam[0]->OutMomentum().PPlus()) &&
+                  m_mass2[1] < sqr(p_beam[1]->OutMomentum().PMinus()));
+  return success && (m_splimits[0] < m_splimits[1]);
 }
 
 double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
