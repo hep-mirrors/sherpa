@@ -74,7 +74,9 @@ namespace ATOOLS {
     QCD_Variation_Params& Parameters(size_t i) { return *m_parameters_vector[i]; }
     Qcut_Variation_Params& Qcut_Parameters(size_t i) { return m_qcut_parameters_vector[i]; }
     std::string
-        GetVariationNameAt(Variations::Parameters_Vector::size_type, Variations_Type type=Variations_Type::qcd) const;
+        GetVariationNameAt(Variations::Parameters_Vector::size_type,
+            Variations_Type type=Variations_Type::qcd,
+            Variations_Source source=Variations_Source::all) const;
     size_t Size(Variations_Type t=Variations_Type::qcd) const;
     bool HasVariations() const {
       for (const auto t : ManagedVariationTypes())
@@ -159,14 +161,11 @@ namespace ATOOLS {
 
   struct Qcut_Variation_Params {
     Qcut_Variation_Params(double scale_factor):
-      m_scale_factor{scale_factor},
-      m_name {GenerateName()}
+      m_scale_factor{scale_factor}
     {}
     bool IsTrivial() const { return (m_scale_factor == 1.0); }
+    std::string Name(Variations_Source source=ATOOLS::Variations_Source::all) const;
     double m_scale_factor;
-    std::string m_name;
-    private:
-    std::string GenerateName() const;
   };
 
   /*!
@@ -186,8 +185,7 @@ namespace ATOOLS {
       m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
       m_deletepdfs(deletepdfs),
-      m_deletealphas(deletealphas),
-      m_name(GenerateName())
+      m_deletealphas(deletealphas)
     {}
     ~QCD_Variation_Params();
 
@@ -198,6 +196,7 @@ namespace ATOOLS {
 #endif
 
     bool IsTrivial() const;
+    std::string Name(Variations_Source source=ATOOLS::Variations_Source::all) const;
 
     const double m_muR2fac, m_muF2fac;
     const double m_showermuR2fac, m_showermuF2fac;
@@ -208,11 +207,8 @@ namespace ATOOLS {
     //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
     const bool m_deletepdfs;
     const bool m_deletealphas;
-    std::string m_name;
 
   private:
-    //! Return a name based on the scale and PDF variations
-    std::string GenerateName() const;
     //! (name -> counter value) map used to track warnings
     std::map<std::string, unsigned long> m_warnings;
     friend class Variations;

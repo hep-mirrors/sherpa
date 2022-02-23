@@ -56,14 +56,15 @@ employed during event generation.
 
 .. code-block:: yaml
 
+   SHERPA_LDADD: SherpaPythia
    FRAGMENTATION: Pythia8
    PYTHIA8:
      PARAMETERS:
        - StringZ:aLund: 0.68
        - StringZ:bLund: 0.98
          ...
-     DECAYS: false
-     SHERPA_MASSES: true
+     DECAYS: true
+     SHERPA_MASSES: false
 
 * Alternatively, Sherpa  also provides an interface to
   Pythia 6.4 :cite:`Sjostrand2006za` by using the setting

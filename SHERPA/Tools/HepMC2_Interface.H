@@ -12,7 +12,6 @@
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 #include "ATOOLS/Phys/Variations.H"
-#include "ATOOLS/Phys/Hard_Process_Variation_Weight_Names.H"
 
 #include <map>
 #include <set>
@@ -49,8 +48,6 @@ namespace SHERPA {
     ATOOLS::PDF_Info * p_pdfinfo;
     ATOOLS::NLO_subevtlist * p_subevtlist;
     ATOOLS::Weights_Map m_wgtmap;
-    std::vector<ATOOLS::Hard_Process_Variation_Weight_Names_Base*>*
-      p_hard_process_variation_weight_names;
 
     void ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 
@@ -69,9 +66,6 @@ namespace SHERPA {
     inline void SetMuR2(const double &mur2)           { m_mur2=mur2; }
     inline void SetMuF12(const double &muf12)         { m_muf12=muf12; }
     inline void SetMuF22(const double &muf22)         { m_muf22=muf22; }
-    void SetHardProcessVariationWeightNames(
-        std::vector<ATOOLS::Hard_Process_Variation_Weight_Names_Base*>* names)
-    { p_hard_process_variation_weight_names = names; }
     void SetAlphaS();
     void SetAlpha();
   };
@@ -87,9 +81,6 @@ namespace SHERPA {
 
     HepMC::GenEvent *p_event;
     std::vector<HepMC::GenEvent*> m_subeventlist;
-
-    std::vector<ATOOLS::Hard_Process_Variation_Weight_Names_Base*>
-      m_hard_process_variation_weight_names;
 
     bool Sherpa2ShortHepMC(const ATOOLS::Vec4D&,
                            const ATOOLS::Flavour&,

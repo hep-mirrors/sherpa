@@ -9,7 +9,6 @@ include ../../git.make
 
 EWSUD_SOURCES = \
         Variation_Generator.C \
-        Variation_Weight_Names.C \
 	Coefficient_Checker.C \
 	KFactor_Checker.C \
 	Comix_Interface.C \
@@ -23,7 +22,6 @@ EWSUD_SOURCES = \
 	Clustered_Calculator.C
 EWSUD_ADDS = \
         Variation_Generator.H \
-        Variation_Weight_Names.H \
 	Coefficient_Checker.H \
 	KFactor_Checker.H \
 	Comix_Interface.H \

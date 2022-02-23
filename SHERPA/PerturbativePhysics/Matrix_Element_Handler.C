@@ -27,6 +27,7 @@
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
 
+#include <cassert>
 #include <unistd.h>
 #include <cctype>
 
@@ -122,6 +123,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
     const size_t incr{ s["EVENT_SEED_INCREMENT"].Get<size_t>() };
     ran->SetSeedStorageIncrement(incr);
   }
+  m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
+  msg_Info()<<METHOD<<"(): Set pilot run mode to "<<m_pilotrunenabled<<".\n";
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
@@ -282,9 +285,10 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   // would be to add ASSEW variations to the managed variations, such that we
   // can use HasVariations to set hasvars properly
   const bool hasvars {true};
-  if (hasvars && m_eventmode != 0) {
+  if (hasvars && m_pilotrunenabled) {
+    // in pilot run mode, calculate nominal only, and prepare to restore
+    // the rng to re-run with variations after unweighting
     varmode = Variations_Mode::nominal_only;
-    // prepare to restore the rng to re-run with variations after unweighting
     ran->SaveStatus();
   }
 
@@ -322,15 +326,26 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       m_weightfactor = abswgt / maxwt;
       wf /= Min(1.0, m_weightfactor);
     }
-    if (hasvars) {
+    if (hasvars && m_pilotrunenabled) {
       // re-run with same rng state and include the calculation of variations
       // this time
       ran->RestoreStatus();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
-      if (info==NULL)
-        return false;
+      assert(info);
+      if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {
+        msg_Error()
+          <<"ERROR: The results of the pilot run and the re-run are not"
+          <<" the same:\n"
+          <<"  Pilot run: "<<m_evtinfo<<"\n"
+          <<"  Re-run:    "<<*info<<"\n"
+          <<"Will continue, but deviations beyond numerics would indicate"
+          <<" a logic error resulting in wrong statistics!\n";
+      }
       m_evtinfo=*info;
       delete info;
+      // also consume random number used to set the discriminator for
+      // unweighting above, such that it is not re-used in the future
+      ran->Get();
     }
   }
 

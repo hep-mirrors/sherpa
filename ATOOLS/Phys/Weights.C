@@ -20,14 +20,14 @@ bool Weights::IsZero() const
   return true;
 }
 
-std::string Weights::Name(size_t i) const
+std::string Weights::Name(size_t i, Variations_Source source) const
 {
   if (i == 0) {
     return "Nominal";
   } else if (type == Variations_Type::custom) {
     return names[i];
   } else {
-    return s_variations->GetVariationNameAt(i - 1, type);
+    return s_variations->GetVariationNameAt(i - 1, type, source);
   }
 }
 
@@ -342,6 +342,16 @@ Weights Weights_Map::Combine(Variations_Type type) const
   return w;
 }
 
+void Weights_Map::SetZeroIfCloseToZero(double tolerance)
+{
+  MakeAbsolute();
+  for (auto& kv : *this)
+    for (auto& w : kv.second.weights)
+      if (IsEqual(w, tolerance))
+        w = 0.0;
+  MakeRelative();
+}
+
 Weights_Map ATOOLS::operator*(Weights_Map lhs, double rhs)
 {
   lhs *= rhs;
@@ -392,6 +402,14 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
   if (IsZero()) {
     *this = rhs;
     return *this;
+  }
+
+  // insert ones on the lhs when a key that is present on the rhs is missing
+  for (auto& kv : rhs) {
+    auto it = find(kv.first);
+    if (it == end()) {
+      this->emplace(kv.first, kv.second.type);
+    }
   }
 
   // transform both sides into absolute storage instead of the default relative
@@ -462,7 +480,14 @@ void Weights_Map::MakeRelative()
     nominals_prefactor = 1.0;
   }
   if (norm == 0.0) {
-    THROW(not_implemented, "Missing implementation for all-zero case.");
+    // Everything is zero, represent this with base_weight et to 0.0 and
+    // everything else set to 1.0 and return.
+    base_weight = 0.0;
+    nominals_prefactor = 1.0;
+    for (auto& kv : *this)
+      kv.second = 1.0;
+    is_absolute = false;
+    return;
   }
 
   // apply normalisation

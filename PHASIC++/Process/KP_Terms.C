@@ -94,6 +94,8 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
       && m_stype == sbt::qed) {
     collVFF = 0;  // overwrite default for QED splittings
   }
+  msg_Tracking()<<"Switch collinear VFF splittings "<<(collVFF?"on":"off")
+                <<"."<<std::endl;
   p_kernel->SetCollinearVFFSplitting(collVFF);
 
   SetMassive();

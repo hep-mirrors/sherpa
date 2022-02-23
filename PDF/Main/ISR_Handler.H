@@ -131,6 +131,8 @@ namespace PDF {
     inline void   SetMuF2(double mu2, int beam) { m_mu2[beam]=mu2; }
     inline double XF1() const                   { return m_xf1; }
     inline double XF2() const                   { return m_xf2; }
+    inline void   SetXF1(double xf)             { m_xf1 = xf; }
+    inline void   SetXF2(double xf)             { m_xf2 = xf; }
     inline int Swap() const                     { return m_swap; }
 
     inline void SetPDF(PDF_Base *pdf) {

@@ -52,9 +52,10 @@ namespace DELPHES {
 
     ~Output_Delphes();
 
-    void SetXS(const double& xs, const double& xserr);
-    void Output(ATOOLS::Blob_List* blobs);
-    void ChangeFile();
+    void SetXS(const ATOOLS::Weights_Map& xs,
+	       const ATOOLS::Weights_Map& xserr) override;
+    void Output(ATOOLS::Blob_List* blobs) override;
+    void ChangeFile() override;
 
   };// end of class Output_Delphes
 
@@ -106,10 +107,11 @@ Output_Delphes::~Output_Delphes()
   if (m_mode==0) delete p_event;
 }
 
-void Output_Delphes::SetXS(const double& xs, const double& xserr)
+void Output_Delphes::SetXS(const ATOOLS::Weights_Map &xs,
+			   const ATOOLS::Weights_Map &xserr)
 {
 #ifdef HEPMC_HAS_CROSS_SECTION
-  p_xs->set_cross_section(xs, xserr);
+  p_xs->set_cross_section(xs.Nominal(), xserr.Nominal());
 #endif
 }
 

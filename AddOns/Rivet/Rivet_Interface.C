@@ -131,9 +131,9 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
     m_rivet[key]->addAnalyses(s["ANALYSES"].SetSynonyms({"ANALYSIS", "-a", "--analyses"})
                        .SetDefault<std::vector<std::string>>({}).GetVector<std::string>());
     m_rivet[key]->setIgnoreBeams(s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>());
-    m_rivet[key]->skipMultiWeights(s["SKIP_WEIGHTS"].SetSynonyms({"SKIPWEIGHTS", "--skip-weights"}).SetDefault(1).Get<int>());
+    m_rivet[key]->skipMultiWeights(s["SKIP_WEIGHTS"].SetSynonyms({"SKIPWEIGHTS", "--skip-weights"}).SetDefault(0).Get<int>());
     m_rivet[key]->selectMultiWeights(s["MATCH_WEIGHTS"].SetSynonyms({"--match-weights"}).SetDefault("").Get<std::string>());
-    m_rivet[key]->deselectMultiWeights(s["UNMATCH_WEIGHTS"].SetSynonyms({"--unmatch-weights"}).SetDefault("").Get<std::string>());
+    m_rivet[key]->deselectMultiWeights(s["UNMATCH_WEIGHTS"].SetSynonyms({"--unmatch-weights"}).SetDefault("^EXTRA__.*,^IRREG__.*").Get<std::string>());
     m_rivet[key]->setNominalWeightName(s["NOMINAL_WEIGHT"].SetSynonyms({"--nominal-weight"}).SetDefault("").Get<std::string>());
     m_rivet[key]->setWeightCap(s["WEIGHT_CAP"].SetSynonyms({"--weight-cap"}).SetDefault(0.0).Get<double>());
     m_rivet[key]->setNLOSmearing(s["NLO_SMEARING"].SetSynonyms({"--nlo-smearing"}).SetDefault(0.0).Get<double>());
@@ -251,8 +251,6 @@ bool Rivet_Interface::Init()
         s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>());
     m_hepmc2.SetHepMCTreeLike(
         s["USE_HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>());
-    m_hepmc2.SetHepMCIncludeMEOnlyVariations(
-        s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>());
   }
   return true;
 }
@@ -278,18 +276,11 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   else                  m_hepmc2.Sherpa2HepMC(bl, event);
   std::vector<HEPMCNS::GenEvent*> subevents(m_hepmc2.GenSubEventList());
 #ifdef HEPMC_HAS_CROSS_SECTION
-  // leave this, although will be overwritten later
-#ifndef  RIVET_ENABLE_HEPMC_3
-  HepMC::GenCrossSection xs;
-  xs.set_cross_section(p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
+#ifdef  RIVET_ENABLE_HEPMC_3
+  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
 #else
-  std::shared_ptr<HepMC3::GenCrossSection> xs=std::make_shared<HepMC3::GenCrossSection>();
-  xs->set_cross_section(p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
+  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
 #endif
-  event.set_cross_section(xs);
-  for (size_t i(0);i<subevents.size();++i) {
-    subevents[i]->set_cross_section(xs);
-  }
 #endif
 
   if (subevents.size()) {
@@ -698,8 +689,8 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
       wgtmap[cur] = wc[cur];
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
-    else if (cur=="NTrials") ntrials=wc[cur];
-    else if (cur=="Reweight_Type" && wc[cur]&64) xstype=1;
+    else if (cur=="EXTRA__NTrials") ntrials=wc[cur];
+    else if (cur=="IRREG__Reweight_Type" && wc[cur]&64) xstype=1;
   }
 #else
   // lookup all evt-wgts with a variation weight name
@@ -725,8 +716,8 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
       wgtmap[cur]=wgt;
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wgt;
-    else if (cur=="NTrials") ntrials=wgt;
-    else if (cur=="Reweight_Type" && ((int)wgt)&64) xstype=1;
+    else if (cur=="EXTRA__NTrials") ntrials=wgt;
+    else if (cur=="IRREG__Reweight_Type" && ((int)wgt)&64) xstype=1;
   }
 #endif /* HEPMC_HAS_WORKING_NAMED_WEIGHTS */
 #else
@@ -919,8 +910,6 @@ bool Rivet_Interface::Init()
         s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>());
     m_hepmc2.SetHepMCTreeLike(
         s["USE_HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>());
-    m_hepmc2.SetHepMCIncludeMEOnlyVariations(
-        s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>());
   }
   return true;
 }
@@ -943,12 +932,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
 #ifdef HEPMC_HAS_CROSS_SECTION
   // leave this, although will be overwritten later
-  HepMC::GenCrossSection xs;
-  xs.set_cross_section(p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
-  event.set_cross_section(xs);
-  for (size_t i(0);i<subevents.size();++i) {
-    subevents[i]->set_cross_section(xs);
-  }
+  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
 #endif
 
   // 1st event build index map, thereafter only lookup

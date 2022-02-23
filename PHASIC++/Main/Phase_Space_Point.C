@@ -241,10 +241,10 @@ bool Phase_Space_Point::MakeIncoming() {
 }
 
 void Phase_Space_Point::CorrectMomenta() {
-  if (m_nin != 2 ||
-      (m_nin == 2 && m_nout == 1 && p_pshandler->Flavs()[2].Kfcode() == 999))
-    return;
-  Vec4D momsum(0., 0., 0., 0.);
+  if (m_nin!=2 ||
+      (m_nin==2 && m_nout==1 &&
+       p_pshandler->Active()->Process()->Flavours()[2].Kfcode()==999)) return;
+  Vec4D  momsum(0.,0.,0.,0.);
   size_t imax(0);
   double Emax(0.0);
   for (size_t i(0); i < m_nin; ++i)
@@ -313,7 +313,7 @@ bool Phase_Space_Point::Check4Momentum() {
   if (!IsEqual(pin, pout, accu) || !IsEqual(sin, sout, accu)) {
     int prec(msg_Error().precision());
     msg_Error().precision(12);
-    msg_Error() << "ERROR in " << METHOD << ": {\n";
+    msg_Error() << "ERROR in " << METHOD << ": [accu = " << accu << "] {\n";
     for (int i = 0; i < m_nin + m_nout; ++i)
       msg_Error() << "   p_" << i << " = " << p_moms[i] << " ("
                   << p_moms[i].Abs2() << ")\n";

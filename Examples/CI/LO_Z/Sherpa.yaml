@@ -2,6 +2,10 @@ EVENTS: 1k
 BEAMS: 2212
 BEAM_ENERGIES: 7000
 
+VARIATIONS:
+- ScaleFactors:
+    Mu2: 4.0*
+
 PROCESSES:
 - 93 93 -> 11 -11:
     Order: {QCD: 0, EW: 2}
