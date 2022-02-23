@@ -83,7 +83,7 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   }
   m_x = mom[0] / (m_rescale ? m_residualE : p_beam->OutMomentum()[0]);
   // Still enough energy?
-  if (mom[0] > m_residualE) {
+  if (m_x > 1.) {
     msg_Debugging() << METHOD << ": too much momentum " << mom[0] << " "
                     << "> E = " << m_residualE << " for beam " << m_beam
                     << "\n";
@@ -92,14 +92,6 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   // Still in range?
   if (m_x < p_pdf->XMin() || m_x > p_pdf->XMax()) {
     msg_Error() << METHOD << ": out of limits, x = " << m_x << ".\n";
-    return false;
-  }
-  // Needed for the parton shower: check that the parton in the parton shower
-  // does not take all energy, thus not leaving any parameter space for the
-  // remnants. This condition ensures that the KPerpGenerator can generate the
-  // quark masses
-  double e_ph = m_rescale ? m_residualE : p_beam->OutMomentum()[0];
-  if (e_ph - mom[0] < flav.HadMass()) {
     return false;
   }
   return true;
@@ -145,12 +137,12 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
 
 double Photon_Remnant::SelectZ(const Flavour &flav) {
   double random = ran->Get();
-  if (isnan(random) || random >= 1. || random <= 0.) {
+  while (isnan(random) || random >= 1. || random <= 0.) {
     msg_Error() << METHOD
                 << ": Something went wrong in the momentum distribution for "
                    "the photon remnants. \n"
                 << " Will retry. \n";
-    return SelectZ(flav);
+    random = ran->Get();
   }
   return random;
 }
