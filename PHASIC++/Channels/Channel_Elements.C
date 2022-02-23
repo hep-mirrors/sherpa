@@ -1,6 +1,5 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
@@ -1099,7 +1098,7 @@ double Channel_Elements::WeightYBackward(const double yexponent,
 
   double wt = Channel_Basics::PeakedWeight(ypeak, yexponent, -ymax, -ymin,
                                            -yinfo[2], -1, ran) *
-              pow(-ymin - xinfo[2] + yinfo[2], yexponent);
+              pow(ypeak + yinfo[2], yexponent);
   if (!(wt > 0) && !(wt < 0) && wt != 0) {
     msg_Error() << "WeightYBackward produces a nan!" << endl
                 << ymax << " " << ymin << " " << yexponent << " " << yinfo[2]
