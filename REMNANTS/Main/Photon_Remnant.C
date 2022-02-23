@@ -173,10 +173,6 @@ bool Photon_Remnant::MakeRemnants() {
   // TODO: the for-loop below is actually redundant at the moment, because
   // we're trying to implement for one interacting particle only
   for (auto pmit : m_extracted) {
-    /*    msg_Out() << METHOD
-                  << ": available beam momentum = " << p_beam->OutMomentum()
-                  << "\n extracted particle momentum = " << pmit->Momentum()
-                  << "\n";*/
     if (pmit->Flav().IsGluon()) {
       // TODO: implement the gluon treatment
       // For now, implement simple treatment by choosing between the light

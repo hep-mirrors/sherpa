@@ -1,4 +1,3 @@
-#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -15,7 +14,7 @@ using namespace std;
 
 Remnant_Handler::Remnant_Handler(PDF::ISR_Handler *isr,
                                  BEAM::Beam_Spectra_Handler *beam)
-    : p_softblob(0), m_check(true), m_output(true) {
+    : p_softblob(nullptr), m_check(true), m_output(true) {
   InitializeRemnants(isr, beam);
   DefineRemnantStrategy();
   InitializeKinematicsAndColours();
@@ -120,7 +119,7 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
 
   // Make sure only shower blobs with exactly two initiators are treated,
   // and only once.
-  if (!(showerblob->Type() == btp::Shower) ||
+  if (showerblob->Type() != btp::Shower ||
       m_treatedshowerblobs.find(showerblob) != m_treatedshowerblobs.end())
     return true;
   size_t countIn = 0;

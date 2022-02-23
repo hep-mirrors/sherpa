@@ -49,7 +49,6 @@ namespace REMNANTS {
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup(ATOOLS::Blob_List * bloblist);
     void InitBeamAndSoftBlobs(ATOOLS::Blob_List *const blobs);
-    ATOOLS::Blob * InitBeamBlob(const int beam);
  public:
     Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
     ~Remnant_Handler();
@@ -60,12 +59,12 @@ namespace REMNANTS {
     void Reset();
     
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List *const blobs,
-					     ATOOLS::Particle_List *const=NULL);
+					     ATOOLS::Particle_List *const=nullptr);
 
 
 
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
-      return (beam<2)?p_remnants[beam]:NULL;
+      return (beam<2)?p_remnants[beam]:nullptr;
     }
     inline Primordial_KPerp * GetKPerp() { return m_kinematics.GetKPerp(); }
     inline void SetScale2(const double & scale2) {

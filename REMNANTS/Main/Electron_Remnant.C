@@ -42,7 +42,7 @@ bool Electron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   }
   if (flav!=m_constituents.front() || (p_beam->OutMomentum()[0]-mom[0])<0.) {
     msg_Error()<<"Error in "<<METHOD<<": "<<mom<<" vs. "<<p_beam->OutMomentum()<<", "
-	       <<m_constituents.front()<<".\n";
+	       <<m_constituents.front()<<" vs. " << flav << ".\n";
     return false;
   }
   return true;

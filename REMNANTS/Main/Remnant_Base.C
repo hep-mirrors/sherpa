@@ -1,8 +1,5 @@
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Momentum_Shifter.H"
-#include "BEAM/Main/Beam_Base.H"
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include <algorithm>
@@ -27,10 +24,10 @@ std::ostream &REMNANTS::operator<<(std::ostream &ostr, const rtp::code code) {
 }
 
 Remnant_Base::Remnant_Base(const rtp::code type, const unsigned int beam)
-    : m_type(type), m_beam(beam), p_beam(NULL), p_partner(NULL),
-      p_beamblob(NULL), p_colours(NULL), m_rescale(true), m_scale2(-1.) {}
+    : m_type(type), m_beam(beam), p_beam(nullptr), p_partner(nullptr),
+      p_beamblob(nullptr), p_colours(nullptr), m_rescale(true), m_scale2(-1.) {}
 
-Remnant_Base::~Remnant_Base() {}
+Remnant_Base::~Remnant_Base() = default;
 
 bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
   if (TestExtract(parton->Flav(), parton->Momentum())) {
@@ -52,7 +49,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
 }
 
 bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
-  if (parton == NULL) {
+  if (parton == nullptr) {
     msg_Error() << "Error in " << METHOD << "():\n"
                 << "   Called with NULL pointer.\n";
     return false;
@@ -78,5 +75,5 @@ Blob *Remnant_Base::MakeBlob() {
 void Remnant_Base::Reset(const bool &DIS) {
   m_extracted.clear();
   m_pbeam = p_beam->InMomentum();
-  p_beamblob = NULL;
+  p_beamblob = nullptr;
 }

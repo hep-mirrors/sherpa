@@ -22,7 +22,7 @@ namespace REMNANTS {
   inline bool operator&(const rtp::code code1,const rtp::code code2) {
     return (rtp::code)((int)code1&(int)code2);
   }
-  std::ostream &operator<<(std::ostream &ostr,const rtp::code code);
+  std::ostream &operator<<(std::ostream &ostr,rtp::code code);
 }
   
 namespace REMNANTS {
@@ -43,11 +43,11 @@ namespace REMNANTS {
     Colour_Generator * p_colours;
 
     bool   m_rescale;
-    double m_residualE, m_scale2, m_x;     
+    double m_residualE, m_scale2, m_x;
 
     long unsigned int m_errors;
   public:
-    Remnant_Base(const rtp::code type,const unsigned int beam);
+    Remnant_Base(rtp::code type,unsigned int beam);
     virtual ~Remnant_Base();
 
     virtual bool Extract(ATOOLS::Particle *parton);
@@ -55,7 +55,7 @@ namespace REMNANTS {
     virtual bool TestExtract(const ATOOLS::Flavour &flav,
 			     const ATOOLS::Vec4D &mom)=0;
     virtual ATOOLS::Blob * MakeBlob();
-    virtual bool FillBlob(ATOOLS::ParticleMomMap *ktmap=NULL,
+    virtual bool FillBlob(ATOOLS::ParticleMomMap *ktmap=nullptr,
 			  const bool & copy=true)=0;
     virtual void MakeSpectator(ATOOLS::Particle * parton) {}
     
@@ -70,8 +70,8 @@ namespace REMNANTS {
     inline void SetScale2(const double & scale2)     { m_scale2 = scale2; }
     inline ATOOLS::Part_List * GetExtracted()        { return &m_extracted; }
     inline ATOOLS::Part_List * GetSpectators()       { return &m_spectators; }
-    inline virtual ATOOLS::Particle * GetRecoiler()  { return NULL; }
-    inline virtual ATOOLS::Particle * GetSpectator() { return NULL; }
+    inline virtual ATOOLS::Particle * GetRecoiler()  { return nullptr; }
+    inline virtual ATOOLS::Particle * GetSpectator() { return nullptr; }
     inline void SetColours(Colour_Generator * cgen)  { p_colours = cgen; } 
   };
 }

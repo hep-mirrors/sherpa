@@ -105,7 +105,6 @@ bool Kinematics_Generator::TransverseKinematics() {
                            "   no meaningful kinematics strategy " +
                            ToString(m_kintype) + "\n");
   }
-  exit(1);
 }
 
 bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
@@ -224,7 +223,7 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
                   << " and the corresponding remnants are "
                   << p_remnants[0]->GetSpectators()[0] << " and "
                   << p_remnants[1]->GetSpectators()[0] << "\n";
-      scale = 0.;
+      return false;
     }
   } while (!CheckHH() && scale > 0.);
   if (scale < 1. && scale > 0.) {
@@ -398,8 +397,7 @@ bool Kinematics_Generator::CheckScatter(Particle *part[2]) {
   // Reconstruct momenta, assuming the rapidity of the produced system is
   // conserved and check here that energies and beam kinematics still work out.
   double pz = sqrt(sqr(MT2 - mt2[0] - mt2[1]) - 4. * mt2[0] * mt2[1]) /
-              (2. * MT),
-         e[2];
+              (2. * MT);
   double coshy = cosh(Y), sinhy = sinh(Y);
   for (size_t beam = 0; beam < 2; beam++) {
     double e = (MT2 + mt2[beam] - mt2[1 - beam]) / (2. * MT);
@@ -425,8 +423,7 @@ bool Kinematics_Generator::CheckRemnants() {
   // beams
   // - boost them in their c.m. system
   // - stretch them to include the particle masses and restore on-shell
-  // condition of
-  //   momenta with the Momenta_Stretcher
+  // condition of momenta with the Momenta_Stretcher
   // - boost back into the lab system
   // - special role of "recoiler" - in hadrons usually the di-quark:
   //   its momentum is reconstructed from the remaining longitudinal momentum of
@@ -441,9 +438,8 @@ bool Kinematics_Generator::CheckRemnants() {
   double totmass(0.);
   for (size_t beam = 0; beam < 2; beam++) {
     Particle *recoiler = p_remnants[beam]->GetRecoiler();
-    for (Part_Iterator plit = p_spectators[beam]->begin();
-         plit != p_spectators[beam]->end(); plit++) {
-      Particle *part = (*plit);
+    for (auto &plit : *p_spectators[beam]) {
+      Particle *part = plit;
       if (part == recoiler)
         continue;
       tot += mom = part->Momentum() + m_ktmap[beam][part];
@@ -467,9 +463,9 @@ bool Kinematics_Generator::CheckRemnants() {
   }
   // If there is no solution, do not even try to fix it.
   if (tot.Abs2() < sqr(totmass)) {
-    msg_Debugging() << METHOD
-              << ": Total momentum not sufficient: totmass = " << totmass
-              << ", tot = " << tot << ", tot.Abs2 = " << tot.Abs2() << "\n";
+    msg_Debugging() << METHOD << ": Total momentum not sufficient: (total mass)^2 = "
+                    << sqr(totmass) << ", total momentum = " << tot
+                    << ", tot.Abs2 = " << tot.Abs2() << "\n";
     return false;
   }
   Poincare residualcms(tot);
