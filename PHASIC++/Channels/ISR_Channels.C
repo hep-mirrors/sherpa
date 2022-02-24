@@ -200,8 +200,10 @@ void ISR_Channels::AddResonance(const size_t & chno,const size_t & mode) {
       Add(new Resonance_Central(mass,width,m_keyid,p_psh->GetInfo(),mode));
     }
     else {
-      Add(new Resonance_Forward(mass,width,yexp,m_keyid,p_psh->GetInfo(),mode));
-      Add(new Resonance_Backward(mass,width,yexp,m_keyid,p_psh->GetInfo(),mode));
+      if (p_psh->GetBeamSpectra()->GetBeam(0)->OutMomentum().Abs2() != 0 && yexp != -0.999)
+        Add(new Resonance_Forward(mass,width,yexp,m_keyid,p_psh->GetInfo(),mode));
+      if (p_psh->GetBeamSpectra()->GetBeam(1)->OutMomentum().Abs2() != 0 && yexp != 0.999)
+        Add(new Resonance_Backward(mass,width,yexp,m_keyid,p_psh->GetInfo(),mode));
     }
   }
   else if (mode==3 && m_isrmode==PDF::isrmode::lepton_hadron) {
