@@ -467,7 +467,7 @@ bool Kinematics_Generator::CheckRemnants() {
   }
   // If there is no solution, do not even try to fix it.
   if (tot.Abs2() < sqr(totmass)) {
-    msg_Out() << METHOD
+    msg_Debugging() << METHOD
               << ": Total momentum not sufficient: totmass = " << totmass
               << ", tot = " << tot << ", tot.Abs2 = " << tot.Abs2() << "\n";
     return false;
