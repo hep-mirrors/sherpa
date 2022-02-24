@@ -53,8 +53,8 @@ void Collider_Kinematics::InitIntegration() {
   m_smin = m_S * Max(m_xmin, sminratio);
   m_smax = m_S * Min(m_xmax, smaxratio);
   // TODO: the rapidity interval can be done in a better way.
-  m_ymin = -10.;
-  m_ymax = 10.;
+  m_ymin = -20.;
+  m_ymax = 20.;
   m_exponent[0] = .5;
   m_exponent[1] = .98 * (p_beams[0]->Exponent() + p_beams[1]->Exponent());
 }

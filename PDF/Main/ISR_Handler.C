@@ -117,16 +117,10 @@ void ISR_Handler::Init(double *splimits) {
   m_splimits[2] = s;
   m_fixed_smin = m_splimits[0];
   m_fixed_smax = m_splimits[1];
-  m_ylimits[0] = -10.;
-  m_ylimits[1] = 10.;
+  m_ylimits[0] = -20.;
+  m_ylimits[1] = 20.;
   m_exponent[0] = .5;
   m_exponent[1] = .98 * p_isrbase[0]->Exponent() * p_isrbase[1]->Exponent();
-  double E = ATOOLS::rpa->gen.Ecms();
-  double x = 1. / 2. + (m_mass2[0] - m_mass2[1]) / (2. * E * E);
-  double E1 = x * E;
-  double E2 = E - E1;
-  m_fixvecs[0] = Vec4D(E1, 0., 0., sqrt(sqr(E1) - m_mass2[0]));
-  m_fixvecs[1] = Vec4D(E2, 0., 0., -m_fixvecs[0][3]);
 }
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,
@@ -188,15 +182,7 @@ void ISR_Handler::SetMasses(const Flavour_Vector &fl) {
   m_splimits[0] = ATOOLS::Max(m_splimits[0], sqr(emin));
 }
 
-void ISR_Handler::SetPartonMasses(const Flavour_Vector &fl) {
-  SetMasses(fl);
-  double E = ATOOLS::rpa->gen.Ecms();
-  double x = 1. / 2. + (m_mass2[0] - m_mass2[1]) / (2. * E * E);
-  double E1 = x * E;
-  double E2 = E - E1;
-  m_fixvecs[0] = Vec4D(E1, 0., 0., sqrt(sqr(E1) - m_mass2[0]));
-  m_fixvecs[1] = Vec4D(E2, 0., 0., -m_fixvecs[0][3]);
-}
+void ISR_Handler::SetPartonMasses(const Flavour_Vector &fl) { SetMasses(fl); }
 
 bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D *p,
                           const Flavour_Vector &flavs) {
