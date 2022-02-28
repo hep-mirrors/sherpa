@@ -5,9 +5,9 @@ using namespace ATOOLS;
 
 Weight_Base::Weight_Base(Kinematics_Base * kinematics) :
   p_kinematics(kinematics), p_beams(kinematics->GetBeams()),
-  m_weight(1.), m_keyid(p_kinematics->KeyId()) {};
+  m_weight(1.), m_keyid(p_kinematics->KeyId()) {}
 
-Weight_Base::~Weight_Base() {};
+Weight_Base::~Weight_Base() {}
 
 
 /*

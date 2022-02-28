@@ -6,7 +6,6 @@
 #include "BEAM/Spectra/EPA.H"
 #include "BEAM/Spectra/DM_beam.H"
 #include "ATOOLS/Phys/KF_Table.H"
-#include "ATOOLS/Org/Run_Parameter.H" 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"

@@ -52,7 +52,7 @@ bool Collider_Weight::Calculate(const double &scale) {
   return false;
 }
 
-const double Collider_Weight::operator()(ATOOLS::Flavour *flin) {
+double Collider_Weight::operator()(ATOOLS::Flavour *flin) {
   ATOOLS::Flavour flavour1 = kf_none, flavour2 = kf_none;
   if (flin != nullptr) {
     flavour1 = flin[0];

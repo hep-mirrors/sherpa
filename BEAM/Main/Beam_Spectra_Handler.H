@@ -70,8 +70,6 @@ namespace BEAM {
 
     // possible deprecated methods
     int             Polarisation()        { return m_polarisation; }
-    double Weight(int * pol_types, double * dofs);
-    double DM_Weight(double s);
     bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
     bool   CheckConsistency(ATOOLS::Flavour *);
   };

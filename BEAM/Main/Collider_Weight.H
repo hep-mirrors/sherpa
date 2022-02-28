@@ -15,7 +15,7 @@ public:
 
   void AssignKeys(ATOOLS::Integration_Info *const info) override;
   bool Calculate(const double &scale) override;
-  const double operator()(ATOOLS::Flavour *flin = NULL) override;
+  double operator()(ATOOLS::Flavour *flin = NULL) override;
 };
 } // namespace BEAM
 #endif

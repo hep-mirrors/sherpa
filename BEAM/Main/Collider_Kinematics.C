@@ -72,7 +72,7 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D *moms) {
   CalculateSudakovMomenta();
   switch (m_mode) {
   case collidermode::monochromatic:
-    return MakeMonochromaticBeams(moms);
+    return MakeMonochromaticBeams();
   case collidermode::spectral_1:
     return MakeSpectral1Beams(moms);
   case collidermode::spectral_2:
@@ -86,7 +86,7 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D *moms) {
   return false;
 }
 
-bool Collider_Kinematics::MakeMonochromaticBeams(ATOOLS::Vec4D *moms) {
+bool Collider_Kinematics::MakeMonochromaticBeams() {
   // Should actually not be called, because the beamhandler is considered to be
   // off for monochromatic beams
   return true;

@@ -17,9 +17,9 @@ public:
   Weight_Base(Kinematics_Base *kinematics);
   ~Weight_Base();
 
-  virtual void AssignKeys(ATOOLS::Integration_Info *const info) = 0;
+  virtual void AssignKeys(ATOOLS::Integration_Info *info) = 0;
   virtual bool Calculate(const double &scale) = 0;
-  virtual const double operator()(ATOOLS::Flavour *flin = NULL) {
+  virtual double operator()(ATOOLS::Flavour *flin = nullptr) {
     return m_weight;
   }
 };
