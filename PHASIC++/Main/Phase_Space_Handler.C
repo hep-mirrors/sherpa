@@ -2,13 +2,9 @@
 
 #include "PHASIC++/Main/Phase_Space_Integrator.H"
 #include "PHASIC++/Main/Channel_Creator.H"
-#include "BEAM/Main/Beam_Spectra_Handler.H"
-#include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Channels/FSR_Channels.H"
-#include "PHASIC++/Channels/ISR_Channels.H"
-#include "PHASIC++/Channels/Beam_Channels.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Single_Process.H"
