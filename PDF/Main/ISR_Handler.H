@@ -30,7 +30,7 @@ namespace PDF {
       unknown        = 99
     };
   };
-  std::ostream& operator<<(std::ostream&,const isrmode::code mode);
+  std::ostream& operator<<(std::ostream&,isrmode::code mode);
 
   
   class ISR_Handler;
@@ -53,7 +53,6 @@ namespace PDF {
     double m_fixed_smin, m_fixed_smax;
 
     ATOOLS::Poincare m_cmsboost;
-    ATOOLS::Vec4D m_fixvecs[2];
 
     std::vector<double> m_info_lab, m_info_cms;
 
@@ -70,9 +69,9 @@ namespace PDF {
 
   public:
     ISR_Handler(ISR_Base **isrbase);
-    ~ISR_Handler() {}
+    ~ISR_Handler() = default;
 
-    void Init(double *splimits);
+    void Init(const double *splimits);
 
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
     bool CheckConsistency(ATOOLS::Flavour *partons);
@@ -85,23 +84,23 @@ namespace PDF {
     bool GenerateSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2);
     bool AllowSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2) const;
 
-    double PDFWeight(const int mode,
+    double PDFWeight(int mode,
                      ATOOLS::Vec4D p1,ATOOLS::Vec4D p2,double Q12,double Q22,
                      ATOOLS::Flavour fl1,ATOOLS::Flavour fl2,int warn=1);
-    double Flux(const ATOOLS::Vec4D& p1);
-    double Flux(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2);
+    static double Flux(const ATOOLS::Vec4D& p1);
+    static double Flux(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2);
     double CalcX(const ATOOLS::Vec4D& p);
 
-    bool BoostInCMS(ATOOLS::Vec4D *p,const size_t n);
-    bool BoostInLab(ATOOLS::Vec4D *p,const size_t n);
+    bool BoostInCMS(ATOOLS::Vec4D *p,size_t n);
+    bool BoostInLab(ATOOLS::Vec4D *p,size_t n);
     ATOOLS::Poincare* GetCMSBoost() { return &m_cmsboost; }
 
-    void AssignKeys(ATOOLS::Integration_Info *const info);
+    void AssignKeys(ATOOLS::Integration_Info *info);
     void SetLimits();
     void Reset();
-    void Reset(const size_t i) const; 
+    void Reset(size_t i) const;
 
-    ATOOLS::Blob_Data_Base* Info(const int frame) const;
+    ATOOLS::Blob_Data_Base* Info(int frame) const;
 
     inline void SetSprimeMin(const double spmin) { m_splimits[0]=ATOOLS::Max(m_fixed_smin,spmin); }
     inline void SetSprimeMax(const double spmax) { m_splimits[1]=ATOOLS::Min(m_fixed_smax,spmax); }
@@ -110,10 +109,10 @@ namespace PDF {
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
     inline void SetYMin(const double ymin)      { m_ylimits[0]  = ymin; }
     inline void SetYMax(const double ymax)      { m_ylimits[1]  = ymax; }
-    inline void SetName(const std::string name) { m_name = name;        }
+    inline void SetName(const std::string& name) { m_name = name;        }
     inline std::string Name() const             { return m_name; }
-    inline const isrtype::code Type(const int & i=-1) const { return p_isrbase[i]->Type(); }
-    inline const isrmode::code & Mode() const   { return m_type; } 
+    inline isrtype::code Type(const int & i=-1) const { return p_isrbase[i]->Type(); }
+    inline const isrmode::code & Mode() const   { return m_type; }
     inline int    On() const                    { return m_mode;    }
     inline double * SprimeRange()               { return m_splimits;    }
     inline double * YRange()                    { return m_ylimits;     }
@@ -142,11 +141,11 @@ namespace PDF {
       if (beam<2) p_isrbase[beam]->SetPDF(pdf);
     }
     inline PDF_Base * PDF(const size_t beam) {
-      return (beam<2?p_isrbase[beam]->PDF():NULL);
+      return (beam<2?p_isrbase[beam]->PDF():nullptr);
     }
     inline void SetPDFMember() const {
-      for (int i=0;i<2;++i)
-	if (p_isrbase[i]->On()) p_isrbase[i]->PDF()->SetPDFMember();
+      for (auto isr : p_isrbase)
+	if (isr->On()) isr->PDF()->SetPDFMember();
     }
 
     inline ATOOLS::Flavour  Flav(const size_t beam) {
@@ -163,7 +162,7 @@ namespace PDF {
       if (beam<2) p_beam[beam]=beambase;
     }
     inline REMNANTS::Remnant_Base* GetRemnant(const size_t beam) const {
-      return beam<2?p_remnants[beam]:NULL;
+      return beam<2?p_remnants[beam]:nullptr;
     }
     inline void SetRunMode(const int &rmode) { m_rmode=rmode; }
 

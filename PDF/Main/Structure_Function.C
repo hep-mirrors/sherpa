@@ -5,7 +5,7 @@
 using namespace PDF;
 using namespace ATOOLS;
 
-Structure_Function::Structure_Function(PDF::PDF_Base * _p_pdf,ATOOLS::Flavour _m_bunch):
+Structure_Function::Structure_Function(PDF::PDF_Base * _p_pdf,const ATOOLS::Flavour& _m_bunch):
   ISR_Base(_p_pdf)
 {
   m_bunch = _m_bunch;

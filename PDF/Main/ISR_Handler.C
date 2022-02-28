@@ -20,17 +20,6 @@ double Lambda2(double sp, double sp1, double sp2) {
   return (sp - sp1 - sp2) * (sp - sp1 - sp2) - 4.0 * sp1 * sp2;
 }
 
-struct isrmode {
-  enum code {
-    none = 0,
-    hadron_hadron = 1,
-    lepton_hadron = 2,
-    hadron_lepton = 3,
-    lepton_lepton = 4,
-    unknown = 99
-  };
-};
-
 std::ostream &PDF::operator<<(std::ostream &s, const PDF::isrmode::code mode) {
   switch (mode) {
   case isrmode::none:
@@ -67,7 +56,7 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase)
     s_nozeropdf = s["NO_ZERO_PDF"].SetDefault(0).Get<int>();
   }
   m_xf1 = m_xf2 = 1.0;
-  p_remnants[1] = p_remnants[0] = NULL;
+  p_remnants[1] = p_remnants[0] = nullptr;
   m_mode = 0;
   for (short int i = 0; i < 2; i++) {
     if (p_isrbase[i]->On())
@@ -108,7 +97,7 @@ void ISR_Handler::Output() {
               << " (internal structure = " << p_isrbase[1]->On() << ")\n";
 }
 
-void ISR_Handler::Init(double *splimits) {
+void ISR_Handler::Init(const double *splimits) {
   double s = (p_beam[0]->OutMomentum() + p_beam[1]->OutMomentum()).Abs2();
   ATOOLS::rpa->gen.SetEcms(sqrt(s));
 
@@ -125,11 +114,11 @@ void ISR_Handler::Init(double *splimits) {
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,
                                    ATOOLS::Flavour *partons) {
-  bool fit = 1;
+  bool fit = true;
   for (int i = 0; i < 2; i++) {
     if (p_isrbase[i]->On()) {
       if (bunches[i] != PDF(i)->Bunch()) {
-        fit = 0;
+        fit = false;
         break;
       }
       fit = PDF(i)->Contains(partons[i]);
@@ -148,7 +137,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,
 }
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons) {
-  bool fit = 1;
+  bool fit = true;
   for (int i = 0; i < 2; i++) {
     if (partons[i].Kfcode() == 0)
       continue;
@@ -256,7 +245,7 @@ bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
 
 bool ISR_Handler::AllowSwap(const ATOOLS::Flavour &f1,
                             const ATOOLS::Flavour &f2) const {
-  if (p_isrbase[0]->PDF() == NULL || p_isrbase[1]->PDF() == NULL)
+  if (p_isrbase[0]->PDF() == nullptr || p_isrbase[1]->PDF() == nullptr)
     return false;
   int ok[2] = {0, 0};
   if (p_isrbase[0]->PDF()->Contains(f2))
@@ -373,7 +362,7 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
   m_mu2[1 - (mode & 1)] = Q22;
   int cmode(((mode & 6) >> 1) ? ((mode & 6) >> 1) : m_mode);
   // cmode & 1 -> include first PDF; cmode & 2 -> include second PDF
-  if ((cmode == 1 && PDF(0) == NULL) || (cmode == 2 && PDF(1) == NULL))
+  if ((cmode == 1 && PDF(0) == nullptr) || (cmode == 2 && PDF(1) == nullptr))
     return 1.0;
   const auto include_both_pdfs = (cmode == 3);
   // Checking remnant kinematics only makes sense when both PDFs are included;

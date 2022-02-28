@@ -13,7 +13,7 @@ namespace PDF {
       unknown = 99
     };
   };
-  std::ostream& operator<<(std::ostream&,const isrtype::code type);
+  std::ostream& operator<<(std::ostream&,isrtype::code type);
   
   class ISR_Base { 
   protected:
@@ -31,8 +31,8 @@ namespace PDF {
 
     bool On() const   { return m_on;   }
 
-    inline const isrtype::code   Type()    const { return m_type;  }
-    inline const ATOOLS::Flavour Flavour() const { return m_bunch; }
+    inline isrtype::code   Type()          const { return m_type;  }
+    inline ATOOLS::Flavour Flavour()       const { return m_bunch; }
     inline double Exponent() const               { return m_exponent; }
     inline double XMax() const                   { return m_xmax;     } 
     inline void SetPDF(PDF_Base *pdf)            { p_pdf = pdf;  }

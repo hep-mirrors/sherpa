@@ -9,7 +9,7 @@ namespace PDF {
   public:
 
     // constructor
-    Intact(ATOOLS::Flavour);     
+    Intact(const ATOOLS::Flavour&);
 
     // member functions
     bool   CalculateWeight(double x,double z,double kp2,double Q2,int warn);
