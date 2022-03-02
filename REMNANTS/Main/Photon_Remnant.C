@@ -137,7 +137,7 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
 
 double Photon_Remnant::SelectZ(const Flavour &flav) {
   double random = ran->Get();
-  while (isnan(random) || random >= 1. || random <= 0.) {
+  while (std::isnan(random) || random >= 1. || random <= 0.) {
     msg_Error() << METHOD
                 << ": Something went wrong in the momentum distribution for "
                    "the photon remnants. \n"
