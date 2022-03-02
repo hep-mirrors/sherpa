@@ -174,9 +174,6 @@ void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
 }
 
 void Collider_Kinematics::SetLimits() {
-  //msg_Out()<<METHOD<<":\n"
-  //	   <<"*  s = Min("<<m_smin<<", "<<m_sminPS<<")  -> "<<m_smax<<",\n"
-  //	   <<"*  y in ["<<m_ymin<<", "<<m_ymax<<"]\n";
   m_sprimekey[0] = Max(m_smin, m_sminPS);
   m_sprimekey[1] = m_sprimekey[2] = m_smax;
   m_sprimekey[3] = m_S;

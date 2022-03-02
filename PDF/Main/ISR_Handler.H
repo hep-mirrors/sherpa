@@ -328,6 +328,3 @@ namespace PDF {
 }
 
 #endif
-
-
-

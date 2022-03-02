@@ -241,9 +241,9 @@ bool Phase_Space_Point::MakeIncoming() {
 }
 
 void Phase_Space_Point::CorrectMomenta() {
-  if (m_nin!=2 ||
-      (m_nin==2 && m_nout==1 &&
-       p_pshandler->Active()->Process()->Flavours()[2].Kfcode()==999)) return;
+  if (m_nin!=2 || (m_nin==2 && m_nout==1 &&
+       p_pshandler->Active()->Process()->Flavours()[2].Kfcode()==999))
+    return;
   Vec4D  momsum(0.,0.,0.,0.);
   size_t imax(0);
   double Emax(0.0);
