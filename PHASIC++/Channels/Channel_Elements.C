@@ -977,7 +977,7 @@ double Channel_Elements::GenerateYForward(
     if (ypeak > 0)
       ypeak *= 1.00000001;
     if (ypeak < 0)
-      ypeak /= 1.0000001;
+      ypeak /= 1.00000001;
   }
   double y = Channel_Basics::PeakedDist(ypeak, yexponent, ymin, ymax, -1, ran);
   if (ATOOLS::IsZero(y))
@@ -1093,7 +1093,7 @@ double Channel_Elements::WeightYBackward(const double yexponent,
     if (ypeak > 0)
       ypeak *= 1.00000001;
     if (ypeak < 0)
-      ypeak /= 1.0000001;
+      ypeak /= 1.00000001;
   }
 
   double wt = Channel_Basics::PeakedWeight(ypeak, yexponent, -ymax, -ymin,
