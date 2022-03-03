@@ -32,6 +32,7 @@ namespace ATOOLS {
 
   template <> double ToType(const std::string &value,
 		            const size_t precision) {
+    errno = 0;
     const char* p = value.c_str();
     char* end;
     double ret {std::strtod(value.c_str(), &end)};
