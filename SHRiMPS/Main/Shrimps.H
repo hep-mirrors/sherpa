@@ -50,10 +50,14 @@ namespace SHRIMPS {
     void WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
                    const std::set<double> & energies_inel,
                    const std::set<double> & energies_el,
-			       const std::vector<double> & xsectot,
+                   const std::set<double> & energies_sd,
+                   const std::set<double> & energies_dd,
+                   const std::vector<double> & xsectot,
 			       const std::vector<double> & xsecinel,
 			       const std::vector<double> & xsecelas,
-			       std::string dirname);
+                   const std::vector<double> & xsecsd,
+                   const std::vector<double> & xsecdd,
+                   std::string dirname);
     
     void InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
 			  PDF::ISR_Handler *const isr);

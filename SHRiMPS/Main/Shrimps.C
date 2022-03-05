@@ -118,10 +118,12 @@ void Shrimps::GenerateXsecs() {
   ATOOLS::MakeDir(dirname);
 
   InitialiseFormFactors();
-  std::set<double> energies, energies_tot, energies_inel, energies_el, elastics;
+  std::set<double> energies, energies_tot, energies_inel, energies_el, energies_sd, energies_dd, elastics;
   ReadEnergiesFromFile(energies_tot,"energies_xsecs_tot.dat");
   ReadEnergiesFromFile(energies_inel,"energies_xsecs_inel.dat");
   ReadEnergiesFromFile(energies_el,"energies_xsecs_el.dat");
+  ReadEnergiesFromFile(energies_sd,"energies_xsecs_sd.dat");
+  ReadEnergiesFromFile(energies_dd,"energies_xsecs_dd.dat");
   ReadEnergiesFromFile(elastics,"energies_elastics.dat");
   energies = energies_tot;
   for (std::set<double>::iterator siter = energies_inel.begin(); siter != energies_inel.end(); ++siter) {
@@ -130,8 +132,14 @@ void Shrimps::GenerateXsecs() {
   for (std::set<double>::iterator siter = energies_el.begin(); siter != energies_el.end(); ++siter) {
       if (energies.find(*siter) == energies.end()) energies.insert(*siter);
   }
+  for (std::set<double>::iterator siter = energies_sd.begin(); siter != energies_sd.end(); ++siter) {
+      if (energies.find(*siter) == energies.end()) energies.insert(*siter);
+  }
+  for (std::set<double>::iterator siter = energies_dd.begin(); siter != energies_dd.end(); ++siter) {
+      if (energies.find(*siter) == energies.end()) energies.insert(*siter);
+  }
 
-  std::vector<double> xsectot, xsecinel, xsecelas;
+  std::vector<double> xsectot, xsecinel, xsecelas, xsecsd, xsecdd;
 
   p_xsecs = new Cross_Sections();
   for (std::set<double>::iterator energy_iter=energies.begin();
@@ -144,15 +152,19 @@ void Shrimps::GenerateXsecs() {
     if (energies_tot.find(energy) != energies_tot.end()) xsectot.push_back(p_xsecs->SigmaTot()/1.e9);
     if (energies_inel.find(energy) != energies_inel.end()) xsecinel.push_back(p_xsecs->SigmaInel()/1.e9);
     if (energies_el.find(energy) != energies_el.end()) xsecelas.push_back(p_xsecs->SigmaEl()/1.e9);
+    if (energies_sd.find(energy) != energies_sd.end()) xsecsd.push_back(p_xsecs->SigmaSD(0)/1.e9);
+    if (energies_dd.find(energy) != energies_dd.end()) xsecdd.push_back(p_xsecs->SigmaDD()/1.e9);
     msg_Out()<<"** "<<energy<<" -> "
              <<"xstot = "<<p_xsecs->SigmaTot()<<", "
              <<"xsinel = "<<p_xsecs->SigmaInel()<<", "
-             <<"xsel = "<<p_xsecs->SigmaEl()<<".\n";
+             <<"xsel = "<<p_xsecs->SigmaEl()<<", "
+             <<"xssd = "<<p_xsecs->SigmaSD(0)<<", "
+             <<"xsdd = "<<p_xsecs->SigmaDD()<<".\n";
     if (elastics.find(energy)!=elastics.end()) {
       WriteOutElasticsYodaFile(energy,dirname);
     }
   }
-  WriteOutXSecsYodaFile(energies_tot, energies_inel, energies_el, xsectot, xsecinel, xsecelas, dirname);
+  WriteOutXSecsYodaFile(energies_tot, energies_inel, energies_el, energies_sd, energies_dd, xsectot, xsecinel, xsecelas, xsecsd, xsecdd, dirname);
 }
 
 void Shrimps::WriteOutElasticsYodaFile(const double & energy,
@@ -202,10 +214,14 @@ void Shrimps::WriteOutElasticsYodaFile(const double & energy,
 void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
                     const std::set<double> & energies_inel,
                     const std::set<double> & energies_el,
-				    const std::vector<double> & xsectot,
+                    const std::set<double> & energies_sd,
+                    const std::set<double> & energies_dd,
+                    const std::vector<double> & xsectot,
 				    const std::vector<double> & xsecinel,
 				    const std::vector<double> & xsecelas,
-				    std::string dirname) {
+                    const std::vector<double> & xsecsd,
+                    const std::vector<double> & xsecdd,
+                    std::string dirname) {
   std::string filename(dirname+std::string("/xsecs.dat"));
   std::ofstream was;
   was.open(filename.c_str());
@@ -234,6 +250,24 @@ void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
        energy_iter!=energies_el.end();energy_iter++) {
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsecelas[i++]<<"   0.0   0.0\n";
+  }
+  was<<"# END HISTO1D"<<std::endl;
+  was<<"# BEGIN HISTO1D /XSECS/sd\n";
+  was<<"Path=/XSECS/sd"<<std::endl;
+  i = 0;
+  for (std::set<double>::iterator energy_iter=energies_sd.begin();
+       energy_iter!=energies_sd.end();energy_iter++) {
+    was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
+       <<xsecsd[i++]<<"   0.0   0.0\n";
+  }
+  was<<"# END HISTO1D"<<std::endl;
+  was<<"# BEGIN HISTO1D /XSECS/dd\n";
+  was<<"Path=/XSECS/dd"<<std::endl;
+  i = 0;
+  for (std::set<double>::iterator energy_iter=energies_dd.begin();
+       energy_iter!=energies_dd.end();energy_iter++) {
+    was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
+       <<xsecdd[i++]<<"   0.0   0.0\n";
   }
   was<<"# END HISTO1D"<<std::endl;
   was.close();

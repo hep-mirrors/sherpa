@@ -72,7 +72,8 @@ void MinBias_Parameters::RegisterDefaults() const
   s["bsteps_FF"].SetDefault(64);
   s["Absorption"].SetDefault("exponential");
   s["FF_Form"].SetDefault("dipole");
-  s["deltaY"].SetDefault(1.5);
+  //s["deltaY"].SetDefault(1.5);
+  s["deltaY"].SetDefault(0.05);
   s["beta02(mb)"].SetDefault(25.0);
   s["Lambda2"].SetDefault(1.2);
   s["kappa"].SetDefault(0.55);
@@ -148,8 +149,9 @@ void MinBias_Parameters::FillEikonalParameters() {
   else
     m_eik_params.absorp  = absorption::factorial;
   m_eik_params.originalY = m_originalY;
-  m_eik_params.cutoffY   = s["deltaY"].Get<double>();
-  m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY; 
+  //m_eik_params.cutoffY   = s["deltaY"].Get<double>();
+  m_eik_params.cutoffY   = s["deltaY"].Get<double>()*m_originalY;
+  m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY;
   m_eik_params.lambda    = (m_runmode!=run_mode::test)?
     s["lambda"].Get<double>():0.;
   m_eik_params.Delta     = s["Delta"].Get<double>();
@@ -159,9 +161,11 @@ void MinBias_Parameters::FillEikonalParameters() {
 }
 
 void MinBias_Parameters::UpdateForNewEnergy(const double & energy) {
+  const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
   m_originalY = log(energy/Flavour(kf_p_plus).HadMass());
   m_eik_params.originalY = m_originalY;
-  m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY; 
+  m_eik_params.cutoffY   = s["deltaY"].Get<double>()*m_originalY;
+  m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY;
 }
 
 
