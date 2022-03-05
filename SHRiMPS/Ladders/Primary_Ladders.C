@@ -13,17 +13,20 @@ using namespace ATOOLS;
 Primary_Ladders::Primary_Ladders() :
   p_laddergenerator(new Ladder_Generator_QT()),
   m_Ecms(rpa->gen.Ecms()/2.),
-  m_test(false)
+  m_test(true),
+  n_calls(0), n_start(0), n_gen(0)
 {
   if (m_test) {
-    m_histos[std::string("N_trial")]             = new Histogram(0, -0.5, 9.5, 10);
-    m_histos[std::string("N_accept")]            = new Histogram(0, -0.5, 9.5, 10);
-    m_histos[std::string("N_trial_highpt")]      = new Histogram(0, -0.5, 9.5, 10);
-    m_histos[std::string("N_accept_highpt")]     = new Histogram(0, -0.5, 9.5, 10);
-    m_histos[std::string("Yasym_trial")]         = new Histogram(0,  0.0, 8.0, 32);
-    m_histos[std::string("Yasym_accept")]        = new Histogram(0,  0.0, 8.0, 32);
-    m_histos[std::string("Yasym_trial_highpt")]  = new Histogram(0,  0.0, 8.0, 32);
-    m_histos[std::string("Yasym_accept_highpt")] = new Histogram(0,  0.0, 8.0, 32);
+    m_histos[std::string("N_start")]             = new Histogram(0, -0.5, 19.5, 20);
+    m_histos[std::string("N_gen")]               = new Histogram(0, -0.5, 19.5, 20);
+    m_histos[std::string("n_trial")]             = new Histogram(0, -0.5, 19.5, 20);
+    m_histos[std::string("n_accept")]            = new Histogram(0, -0.5, 19.5, 20);
+    m_histos[std::string("n_trial_highpt")]      = new Histogram(0, -0.5,  9.5, 10);
+    m_histos[std::string("n_accept_highpt")]     = new Histogram(0, -0.5,  9.5, 10);
+    m_histos[std::string("Yasym_trial")]         = new Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_accept")]        = new Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_trial_highpt")]  = new Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_accept_highpt")] = new Histogram(0,  0.0,  8.0, 32);
   }
 }
 
@@ -31,13 +34,15 @@ Primary_Ladders::~Primary_Ladders() {
   Reset();
   if (p_laddergenerator) delete p_laddergenerator;
   if (m_test) {
-    std::string name  = std::string("LadderAnalysis/");
+    std::string name  = std::string("Ladder_Analysis/");
     for (std::map<std::string, Histogram * >::iterator hit=m_histos.begin();
 	 hit!=m_histos.end();hit++) {
       hit->second->Finalize();
       hit->second->Output(name+hit->first);
       delete hit->second;
     }
+    msg_Out()<<METHOD<<" produced "<<n_gen<<" ladders (start = "<<n_start<<") in "
+	     <<n_calls<<" events.\n";
   }
 }
 
@@ -45,7 +50,7 @@ void Primary_Ladders::Initialise(Remnant_Handler * remnants) {
   p_laddergenerator->Initialise(remnants);
 }
 
-void Primary_Ladders::Test() { return; } //if (m_test) p_laddergenerator->Test(); }
+void Primary_Ladders::Test() { return; if (m_test) p_laddergenerator->Test(); }
 
 bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_t & N) {
   Reset();
@@ -54,6 +59,8 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
   p_laddergenerator->InitCollision(eikonal,B);
   size_t Ngen = 0, trials = 0;
   double b1, b2;
+  bool   contains_one_inelastic = false;
+  msg_Out()<<"--------------------------------------------------------------\n";
   while (Ngen<N) {
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
@@ -62,6 +69,8 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     if (m_test && ladder) FillAnalysis(ladder,"trial");
     if (IsAllowed(ladder) && m_colourgenerator(ladder)) {	
       p_laddergenerator->QuarkReplace();
+      p_laddergenerator->FixLadderType();
+      if (ladder->Type()==ladder_type::inelastic) contains_one_inelastic = true;
       Add(ladder);
       Ngen++;
       trials = 0;
@@ -72,7 +81,14 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
       if (Ngen>0 && (trials++)>100) break;
     }
   }
-  return true;
+  if (m_test) {
+    n_gen += Ngen; n_start += N; n_calls++;
+    m_histos[std::string("N_start")]->Insert(N);
+    m_histos[std::string("N_gen")]->Insert(Ngen);
+  }
+  msg_Out()<<"contains one inelastic ladder = "<<contains_one_inelastic<<"\n"
+	   <<"--------------------------------------------------------------\n";
+  return contains_one_inelastic;
 }
  
 void Primary_Ladders::Reset() {
@@ -99,10 +115,7 @@ void Primary_Ladders::Add(Ladder * ladder) {
 }
  
 void Primary_Ladders::FillAnalysis(Ladder * ladder,const std::string & tag) {
-  //ladder->OutputRapidities();
-  //msg_Out()<<"----------------------------------------------------\n"
-  //	   <<"analyse ladder with "<<ladder->GetEmissions()->size()<<" entries.\n";
-  m_histos[std::string("N_")+tag]->Insert(ladder->GetEmissions()->size());
+  m_histos[std::string("n_")+tag]->Insert(ladder->GetEmissions()->size());
   for (LadderMap::iterator pit=ladder->GetEmissions()->begin();
        pit!=ladder->GetEmissions()->end();pit++) {
     m_histos[std::string("Yasym_")+tag]->Insert(dabs(pit->first), pit->first>0.?1.:-1.);

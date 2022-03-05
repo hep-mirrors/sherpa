@@ -88,8 +88,8 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
-    msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
-	       <<(*blob);
+    //msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
+    //	       <<(*blob);
     Reset(blob);
     Reset();
     return Return_Value::New_Event;
@@ -114,7 +114,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
 bool Ahadic::ExtractSinglets(Blob * blob)
 {
   if (!m_sformer.Extract(blob)) {
-    msg_Error()<<METHOD<<" could not extract singlet.\n";
+    //msg_Error()<<METHOD<<" could not extract singlet.\n";
     return false;
   }
   return true;
@@ -123,7 +123,7 @@ bool Ahadic::ExtractSinglets(Blob * blob)
 bool Ahadic::ShiftBeamParticles()
 {
   if (!m_beamparticles()) {
-    msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
+    //msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
     return false;
   }
   return true;
@@ -132,7 +132,7 @@ bool Ahadic::ShiftBeamParticles()
 bool Ahadic::CheckSinglets()
 {
   if (!m_singletchecker()) {
-    msg_Error()<<METHOD<<" singlets did not check out.\n";
+    //msg_Error()<<METHOD<<" singlets did not check out.\n";
     return false;
   }
   return true;
@@ -145,7 +145,7 @@ bool Ahadic::DecayGluons() {
       m_singlet_list.pop_front();
     }
     else {
-      msg_Error()<<METHOD<<" could not decay all gluons.\n";
+      //msg_Error()<<METHOD<<" could not decay all gluons.\n";
       return false;
     }
   }
@@ -155,7 +155,7 @@ bool Ahadic::DecayGluons() {
 
 bool Ahadic::DecayClusters() {
   bool success = m_clusterdecayer();
-  if (!success) msg_Error()<<METHOD<<" could not decay all clusters.\n";
+  //if (!success) msg_Error()<<METHOD<<" could not decay all clusters.\n";
   return success;
 }
 
@@ -194,10 +194,10 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
   Vec4D checkmom(blob->CheckMomentumConservation());
   if (dabs(checkmom.Abs2())/norm2>1.e-12 ||
       (norm2<0. && norm2>0.)) {
-    msg_Error()<<"ERROR in "<<METHOD<<" :\n"
-	       <<"   Momentum violation in blob: "
-	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
-	       <<(*blob)<<"\n";
+    //msg_Error()<<"ERROR in "<<METHOD<<" :\n"
+    //	       <<"   Momentum violation in blob: "
+    //	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
+    //	       <<(*blob)<<"\n";
     return false;
   }
   return true;

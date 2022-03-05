@@ -34,13 +34,12 @@ namespace SHRIMPS {
       if (flav.IsGluon()) return 3.;
       return 0.;
     }
-    const double ME2(const double & s);
+    const double ME2(const double & s,const double & scale);
     const double MakePoint(double & s,double & y);
     const bool   Calculate();
     void  SelectFlavours(const bool & fixflavour);
   public:
-    Sigma_Partonic(MODEL::Strong_Coupling * alphaS,
-		   const xs_mode::code & mode=xs_mode::Regge);
+    Sigma_Partonic(const xs_mode::code & mode=xs_mode::Regge);
     ~Sigma_Partonic();
 
     void Initialise(Remnant_Handler * remnants); 
@@ -48,6 +47,7 @@ namespace SHRIMPS {
     const double dSigma(const double & s,const double & y);
     const double PDF(const size_t beam,const double & x,const double & Q2,
 		     const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_gluon));
+    void SetAlphaS(MODEL::Strong_Coupling * as)          { p_alphaS = as; }
     void SetPDF(const size_t & beam,Continued_PDF * pdf) { p_pdf[beam] = pdf; }
     void SetEta(const double & eta=0.)   { m_eta  = eta; }
     void SetTmin(const double & tmin=1.) { m_tmin = tmin; }

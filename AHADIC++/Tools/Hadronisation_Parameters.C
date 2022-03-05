@@ -15,7 +15,8 @@ using namespace std;
 
 Hadronisation_Parameters* AHADIC::hadpars = NULL;
 
-Hadronisation_Parameters::Hadronisation_Parameters() : m_shower(0) {}
+Hadronisation_Parameters::Hadronisation_Parameters() :
+  m_adjustfails(0), m_shower(0) {}
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_constituents!=NULL) {
@@ -30,6 +31,8 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
     delete p_dtransitions;
     p_dtransitions=NULL;
   }
+  if (m_adjustfails>0)
+    msg_Error()<<METHOD<<" with "<<m_adjustfails<<" errors in adjusting momenta.\n";
 }
 
 void Hadronisation_Parameters::Init(string shower)
@@ -127,11 +130,11 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["GAMMA_D"].SetDefault(0.39).Get<double>();
   // beam particle fragmentation
   m_parametermap[string("alphaB")] =
-    s["ALPHA_B"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
+    s["ALPHA_B"].SetDefault(m_shower ? 5.0 : 5.0).Get<double>();
   m_parametermap[string("betaB")]  =
     s["BETA_B"].SetDefault(0.25).Get<double>();
   m_parametermap[string("gammaB")] =
-    s["GAMMA_B"].SetDefault(0.50).Get<double>();
+    s["GAMMA_B"].SetDefault(1.0).Get<double>();
   // heavy quark fragmentation function
   m_parametermap[string("alphaH")] =
     s["ALPHA_H"].SetDefault(1.26).Get<double>();
@@ -275,26 +278,31 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,
       for (int i=0;i<n;i++) rest.Boost(moms[i]);
     }
     if (mass>sqrt(cms.Abs2())) {
-      msg_Error()<<"Error in "<<METHOD<<" : "<<"\n"
-		 <<"   Total mass = "<<mass<<", "
-		 <<"total E = "<<sqrt(cms.Abs2())<<":\n";
-      for (int i=0;i<n;i++) {
-	msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<"\n";
+      if ((m_adjustfails++)<5) {
+	msg_Error()<<"Error in "<<METHOD<<" : "<<"\n"
+		   <<"   Total mass = "<<mass<<", "
+		   <<"total E = "<<sqrt(cms.Abs2())<<":\n";
+	for (int i=0;i<n;i++) {
+	  msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<"\n";
+	}
+	msg_Error()<<"   Will possibly lead to retrying the event.\n";
       }
-      msg_Error()<<"   Will possibly lead to retrying the event.\n";
       return false;
     }
     if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);
-    if (!success) std::cout<<METHOD<<" failed for ZeroThem(0,"<<n<<").\n";
+    if (!success && (m_adjustfails++)<5)
+      msg_Error()<<METHOD<<" failed for ZeroThem(0,"<<n<<").\n";
     success = success && stretcher.MassThem(0,n,moms,masses);
-    if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<").\n";
+    if (!success && (m_adjustfails++)<5)
+      msg_Error()<<METHOD<<" failed for MassThem(0,"<<n<<").\n";
     if (boost) {
       for (int i=0;i<n;i++) rest.BoostBack(moms[i]);
     }
   }
   else {
     success = stretcher.MassThem(0,n,moms,masses,1.e-10);
-    if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<"), 2nd.\n";
+    if (!success && (m_adjustfails++)<5)
+      msg_Error()<<METHOD<<" failed for MassThem(0,"<<n<<"), 2nd.\n";
   }
   if (!success && msg->LevelIsDebugging()) {
     msg_Debugging()<<"Error in "<<METHOD<<" : "<<"\n"

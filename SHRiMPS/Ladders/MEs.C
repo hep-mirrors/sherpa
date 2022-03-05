@@ -4,13 +4,17 @@
 using namespace SHRIMPS;
 using namespace ATOOLS;
 
-MEs::MEs(Sigma_Partonic * sigma,const double & smin, const double & tmin) :
-  p_sigma(sigma), m_shatmin(smin), m_thatmin(tmin)
-{
+MEs::MEs(const double & smin, const double & tmin) :
+  p_sigma(NULL), m_shatmin(smin), m_thatmin(tmin)
+{ }
+
+
+void MEs::SetPartonic(Sigma_Partonic * sigma) {
+  p_sigma = sigma; 
   if (m_shatmin<0.)  m_shatmin = p_sigma->Smin(); 
   if (m_thatmin==0.) m_thatmin = p_sigma->Tmin(); 
 }
-
+  
 double MEs::PDFratio(const Vec4D & qprev,const ATOOLS::Flavour & fprev,
 		     const Vec4D & qact,const ATOOLS::Flavour & fact,
 		     const size_t & dir) {
@@ -23,8 +27,8 @@ double MEs::PDFratio(const Vec4D & qprev,const ATOOLS::Flavour & fprev,
     xprev = qprev.PMinus()/rpa->gen.PBeam(1).PMinus();
     xact  = qact.PMinus()/rpa->gen.PBeam(1).PMinus();
   }
-  return (xprev / xact *
-	  p_sigma->PDF(dir, xact,  dabs(qact.Abs2()),  fact)/
+  if (xprev<0. || xact<0.) return 0.;
+  return (p_sigma->PDF(dir, xact,  dabs(qact.Abs2()),  fact)/
 	  p_sigma->PDF(dir, xprev, dabs(qprev.Abs2()), fprev));
 }
 
@@ -35,8 +39,8 @@ double MEs::operator()(Ladder * ladder) {
     return 1.;
   }
   return (winner->Col()==colour_type::octet ?
-	  m_thatmin/winner->Q2() :
-	  sqr(m_thatmin/winner->Q2()) );
+	  m_thatmin/dabs(winner->Q2()) :
+	  sqr(m_thatmin/dabs(winner->Q2())) );
 }
 
 double MEs::operator()(Ladder * ladder, const double & qt2min) {
@@ -47,32 +51,17 @@ double MEs::operator()(Ladder * ladder, const double & qt2min) {
   TPropList::iterator winner;
   if (!ladder->ExtractHardest(winner,qt2min) ||
       dabs(winner->Q2())<dabs(m_thatmin))                     return 1.;
+  double weight = (winner->Col()==colour_type::octet ?
+		   m_thatmin/dabs(winner->Q2()) :
+		   sqr(m_thatmin/dabs(winner->Q2())) );
   
   Vec4D q[2];
   ladder->HardestIncomingMomenta(winner, q[0], q[1]);
-  if (q[0].PPlus()>rpa->gen.Ecms() ||
-      q[1].PMinus()>rpa->gen.Ecms() ||
-      (q[0]+q[1]).Abs2()<m_shatmin)                           return 0.;
-  double weight = (winner->Q2()<=qt2min ?
-		   1. :
-		   (winner->Col()==colour_type::octet ?
-		    qt2min/dabs(winner->Q2()) :
-		    sqr(qt2min/dabs(winner->Q2()))) );
-
   for (size_t i=0;i<2;i++) {
-    double x0 = (i==0?
-		 ladder->InPart(i)->Momentum().PPlus()/rpa->gen.PBeam(i).PPlus():
-		 ladder->InPart(i)->Momentum().PMinus()/rpa->gen.PBeam(i).PMinus());
-    double x1 = (i==0?
+    double x =  (i==0 ?
 		 q[i].PPlus()/rpa->gen.PBeam(i).PPlus():
-		 q[i].PMinus()/rpa->gen.PBeam(i).PMinus());
-    double pdf0 = p_sigma->PDF(i,x0,0.);
-    double pdf1 = p_sigma->PDF(i,x1,winner->QT2());
-    if (pdf1/pdf0<0.) {
-      msg_Out()<<METHOD<<" pushes unphysical result: "<<(pdf1/pdf0)<<" "
-	       <<"for x1 = "<<x1<<" & x0 = "<<x0<<"\n";
-    }
-    weight *= (pdf1>0.?pdf1/pdf0:0.);
+		 q[i].PMinus()/rpa->gen.PBeam(i).PMinus() );
+    weight *= p_sigma->PDF(0,x,winner->QT2());
   }
   return weight;
 }

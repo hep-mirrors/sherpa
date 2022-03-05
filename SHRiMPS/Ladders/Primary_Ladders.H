@@ -14,6 +14,7 @@ namespace SHRIMPS {
     std::list<Ladder *>     m_ladders;
 
     bool m_test;
+    long unsigned int n_calls, n_start, n_gen;
     std::map<std::string,ATOOLS::Histogram * > m_histos;
 
     bool   IsAllowed(Ladder * ladder);

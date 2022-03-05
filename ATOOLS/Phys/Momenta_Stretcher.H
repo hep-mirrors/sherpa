@@ -10,9 +10,9 @@ namespace ATOOLS {
   
   class Momenta_Stretcher {
     std::string m_module;
-    long int    m_fails;
+    static unsigned long int s_fails;
   public:
-    Momenta_Stretcher(const std::string module=std::string("")) : m_module(module), m_fails(0) {}
+    Momenta_Stretcher(const std::string module=std::string("")) : m_module(module) {}
     ~Momenta_Stretcher();
     bool MassThem(const int, const int, Vec4D *, const double *,const double=-1.e-14);
     bool MassThem(const int n0, std::vector<Vec4D>& moms, std::vector<double> masses,const double=-1.e-14);
@@ -22,7 +22,7 @@ namespace ATOOLS {
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<Vec4D>& moms);
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<double>& masses);
 
-    inline void Reset() { m_fails = 0; }
+    //inline void Reset() { s_fails = 0; }
   };
 }
   ////////////////////////////////////////////////////////////////////////////////////////////////////

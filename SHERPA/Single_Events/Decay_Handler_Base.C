@@ -29,12 +29,14 @@ Decay_Handler_Base::Decay_Handler_Base() :
   p_softphotons(NULL), p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
   m_stretcher(Momenta_Stretcher("Decay_Handler")),
   m_qedmode(0), m_spincorr(false), m_decaychainend(false), m_cluster(true),
-  m_mass_smearing(1)
+  m_mass_smearing(1), m_oserrors(0)
 {
 }
 
 Decay_Handler_Base::~Decay_Handler_Base()
 {
+  if (m_oserrors>0)
+    msg_Error()<<METHOD<<" with "<<m_oserrors<<" particles not on their mass shell.\n";
   if (p_decaymap) delete p_decaymap; p_decaymap=NULL;
 }
 
@@ -178,9 +180,11 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
     if (!daughters[i]->Flav().Stable() &&
 	abs(daughters[i]->Momentum().Abs2()-
 	    sqr(daughters[i]->FinalMass()))>1e-6) {
-      PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
-                 <<"p^2="<<daughters[i]->Momentum().Mass()
-                 <<" vs. m^2="<<daughters[i]->FinalMass());
+      if ((m_oserrors++)<5) {
+	PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
+		   <<"sqrt|p^2|="<<sqrt(daughters[i]->Momentum().Abs2())
+		   <<" vs. m="<<daughters[i]->FinalMass());
+      }
       throw Return_Value::Retry_Event;
     }
   }

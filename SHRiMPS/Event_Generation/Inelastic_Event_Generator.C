@@ -45,7 +45,6 @@ Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
 	    <<"sigma = "<<m_sigma/1.e9<<" mbarn.\n";
   p_cluster  = cluster;
   m_primaries.Initialise(remnants);
-  //m_primaries.Test();
   Reset();
 }
 
@@ -63,8 +62,8 @@ int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,const bool & flag
     Blob * blob(blobs->FindFirst(btp::Soft_Collision));
     if (!blob ||
 	!blob->Has(blob_status::needs_minBias)) return 0;
-    if (!InitEvent(blobs) ||
-	!m_primaries(p_eikonal,m_B,m_Nladders)) return -1;
+    if (!InitEvent(blobs))                      return -1;
+    do { } while (!m_primaries(p_eikonal,m_B,m_Nladders));
   }
   return MakePrimaryScatterBlobs(blobs);
 }
@@ -101,7 +100,6 @@ bool Inelastic_Event_Generator::MakePrimaryScatterBlobs(ATOOLS::Blob_List * blob
   delete ladder;
   m_primaries.GetLadders()->pop_front();
   //return p_collemgen->GenerateEmissions(blobs);
-  //PRINT_VAR(*blob);
   return 1;
 }
 

@@ -14,7 +14,6 @@ double Soft_Jet_Criterion::PTij2(ATOOLS::Vec4D pi,ATOOLS::Vec4D pj) {
 size_t Soft_Jet_Criterion::FindCombination(ATOOLS::Cluster_Amplitude *ampl) {
   ClusterLeg_Vector newlegs(ampl->Legs());
   if (newlegs.size()<m_reflegs.size()+1) return 0;
-  //msg_Out()<<METHOD<<".\n";
   size_t  winner(0),comp;
   Flavour lastflav(newlegs[newlegs.size()-1]->Flav().Bar());
   Vec4D   lastmom(newlegs[newlegs.size()-1]->Mom());

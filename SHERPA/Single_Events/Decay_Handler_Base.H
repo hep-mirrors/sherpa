@@ -38,6 +38,7 @@ namespace SHERPA {
     bool m_spincorr, m_decaychainend, m_cluster;
     int m_mass_smearing;
     size_t m_qedmode;
+    unsigned long int m_oserrors;
   public:
     Decay_Handler_Base();
     ~Decay_Handler_Base();

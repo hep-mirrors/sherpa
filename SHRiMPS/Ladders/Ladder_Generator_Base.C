@@ -11,11 +11,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Ladder_Generator_Base::Ladder_Generator_Base() :
-  p_alphaS(new Strong_Coupling(static_cast<Running_AlphaS *>
-			       (s_model->GetScalarFunction(string("alpha_S"))),
-			       asform::smooth,
-			       MBpars.GetLadderParameters().Qas2)),
-  m_partonic(Sigma_Partonic(p_alphaS, xs_mode::Regge)),
+  m_partonic(Sigma_Partonic(xs_mode::perturbative)),
   m_Ymax(MBpars.GetEikonalParameters().Ymax),
   m_deltaY(MBpars.GetEikonalParameters().cutoffY),
   m_qt2min(MBpars.GetLadderParameters().Q02),
@@ -25,9 +21,13 @@ Ladder_Generator_Base::Ladder_Generator_Base() :
   m_density(MBpars.GetEikonalParameters().Delta,
 	    MBpars.GetEikonalParameters().lambda,m_Ymax,
 	    MBpars.GetEikonalParameters().absorp),
-  m_me(MEs(&m_partonic)),
   p_ladder(0)
-{}
+{
+  Running_AlphaS * as = static_cast<Running_AlphaS *>(s_model->GetScalarFunction(string("alpha_S")));
+  p_alphaS   = new Strong_Coupling(as,asform::smooth,MBpars.GetLadderParameters().Qas2);
+  m_partonic.SetAlphaS(p_alphaS);
+  m_me.SetPartonic(&m_partonic);
+}
 
 Ladder_Generator_Base::~Ladder_Generator_Base() {
   delete p_alphaS;
@@ -84,14 +84,15 @@ void Ladder_Generator_Base::ConstructISKinematics() {
 }
 
 double Ladder_Generator_Base::RescaleLadder(Ladder * ladder,const Vec4D & P_in) {
-  Vec4D  P_out(0.,0.,0.,0.);
-  for (LadderMap::iterator lit=ladder->GetEmissions()->begin();
-       lit!=ladder->GetEmissions()->end();lit++)
-    P_out += lit->second.Momentum();
+  Vec4D  P_out  = ladder->FSMomentum();
   double factor = sqrt(P_in.Abs2()/P_out.Abs2()), weight = 1.;
+  Poincare out  = Poincare(P_out), in = Poincare(P_in);
   for (LadderMap::iterator lit=ladder->GetEmissions()->begin();
        lit!=ladder->GetEmissions()->end();lit++) {
-    Vec4D oldp = lit->second.Momentum(), newp = factor*oldp; 
+    Vec4D oldp = lit->second.Momentum();
+    out.Boost(oldp);
+    in.BoostBack(oldp);
+    Vec4D newp = factor * oldp;
     lit->second.SetMomentum(newp);
     if (dabs(newp.Y())<m_Ymax)
       weight  *= AlphaSWeight(newp.PPerp2())/AlphaSWeight(oldp.PPerp2());
@@ -111,11 +112,8 @@ double Ladder_Generator_Base::TotalReggeWeight(Ladder * ladder) {
   LadderMap::iterator lit1=ladder->GetEmissions()->begin(), lit2=lit1; lit2++;
   TPropList::iterator pit=ladder->GetProps()->begin();
   double weight = 1.;
-  Vec4D qprev = ladder->InPart(0)->Momentum();
   while (lit2!=ladder->GetEmissions()->end() && pit!=ladder->GetProps()->end()) {
     weight *= ReggeWeight(dabs(pit->Q2()),lit1->first,lit2->first);
-    weight *= ( ((qprev.PPerp2()+m_qt2min)*(pit->Q().PPerp2()+m_qt2min))/
-		((pit->Q2()+m_qt2min)*((qprev-pit->Q()).PPerp2()+m_qt2min)) );
     pit++; lit1++; lit2++;
   }
   return weight;
@@ -163,7 +161,7 @@ void Ladder_Generator_Base::QuarkReplace() {
 }
 
 double Ladder_Generator_Base::AlphaSWeight(const double & kt2) {
-  return AlphaS(kt2)/AlphaS(0.);
+  return AlphaS(kt2)/AlphaSMax();
 }
 
 double Ladder_Generator_Base::

@@ -5,7 +5,7 @@ using namespace ATOOLS;
 
 
 Ladder::Ladder(const Vec4D & position,const bool & rescatter) :
-  m_position(position), m_isrescatter(rescatter)
+  m_position(position), m_isrescatter(rescatter), m_type(ladder_type::unknown)
 {
   for (size_t i=0;i<2;i++) {
     m_inpart[i] = Ladder_Particle(Flavour(kf_gluon),Vec4D(0.,0.,0.,0.),m_position);
@@ -66,8 +66,7 @@ bool Ladder::ExtractHardest(TPropList::iterator & winner,
 			    const double & qt2min) {
   winner        = m_tprops.end();
   double qt2max = 0., qt2;
-  TPropList::iterator pit;
-  for (pit=m_tprops.begin();pit!=m_tprops.end();pit++) {
+  for (TPropList::iterator pit=m_tprops.begin();pit!=m_tprops.end();pit++) {
     qt2      = pit->QT2();	 
     if (qt2>qt2max) {
       winner = pit;
@@ -76,6 +75,42 @@ bool Ladder::ExtractHardest(TPropList::iterator & winner,
   }
   return (winner!=m_tprops.end());
 }
+
+void Ladder::FixType(const double & ymin, const double & ymax) {
+  msg_Out()<<METHOD<<"("<<ymin<<", "<<ymax<<") for "
+	   <<m_tprops.size()<<" propagators and "<<m_emissions.size()<<" emissions.\n";
+  if (m_tprops.size()==1 && m_tprops.begin()->Col()==colour_type::singlet) {
+    m_type = ladder_type::elastic;
+  }
+  else {
+    size_t forwards=0, backwards=0;
+    TPropList::iterator pit1 = m_tprops.begin();
+    LadderMap::iterator lmit = m_emissions.begin();
+    while (lmit->first>ymax) {
+      forwards++;
+      lmit++; pit1++;
+    }
+    TPropList::iterator pit2  = m_tprops.end(); pit2--;
+    lmit = m_emissions.end(); lmit--;
+    while (lmit->first<ymin) {
+      backwards++;
+      lmit--; pit2--;
+    }
+    if ((&*pit1)!=(&*pit2) ||
+	pit1->Col()==colour_type::octet || pit2->Col()==colour_type::octet) {
+      m_type = ladder_type::inelastic;
+    }
+    else if (forwards>1 && backwards>1) {
+      m_type = ladder_type::double_diffractive;
+    }
+    else {
+      m_type = ladder_type::single_diffractive;
+    }
+  }
+  msg_Out()<<METHOD<<"(type = "<<int(m_type)<<"): "
+	   <<m_inpart[0].Momentum()<<" + "<<m_inpart[1].Momentum()<<"\n";
+}
+
 
 void Ladder::HardestIncomingMomenta(const TPropList::iterator & winner,
 				    Vec4D & q0,Vec4D & q1) {
@@ -118,10 +153,9 @@ operator<<(std::ostream & s,Ladder & ladder) {
   TPropList::const_iterator citer=ladder.GetProps()->begin();
   for (LadderMap::const_iterator yiter=ladder.GetEmissions()->begin();
        yiter!=ladder.GetEmissions()->end();yiter++) {
-    s<<"  y_{"<<i<<"} = "<<yiter->first<<", k_{"<<i<<"} = "
-     <<yiter->second<<"\n";
+    s<<"  y_{"<<i<<"} = "<<yiter->first<<", k_{"<<i<<"} = "<<yiter->second;
     if (citer!=ladder.GetProps()->end()) {
-      s<<"   "<<(*citer)<<"\n";
+      s<<"   "<<(*citer);
       citer++;
     }
     i++;

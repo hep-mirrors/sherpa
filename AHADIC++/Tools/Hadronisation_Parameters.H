@@ -22,6 +22,7 @@ namespace AHADIC {
 
   class Hadronisation_Parameters {
   private:
+    long unsigned int    m_adjustfails;
     int                  m_shower;
     double               m_offset;
     Constituents       * p_constituents;

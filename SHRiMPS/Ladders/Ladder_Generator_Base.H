@@ -47,6 +47,9 @@ namespace SHRIMPS {
     inline virtual const double AlphaS(const double q2) const {
       return (*p_alphaS)(q2);
     }
+    inline virtual const double AlphaSMax() const {
+      return p_alphaS->MaxValue();
+    }
  public:
     Ladder_Generator_Base();
     virtual ~Ladder_Generator_Base();
@@ -55,7 +58,9 @@ namespace SHRIMPS {
     virtual void Test();
     virtual Ladder * operator()(const ATOOLS::Vec4D & pos) = 0;
     virtual void QuarkReplace();
-    
+    inline virtual void FixLadderType() {
+      p_ladder->FixType(-m_Ymax + m_deltaY, m_Ymax - m_deltaY);
+    }
     inline virtual void InitCollision(Omega_ik * eikonal,const double & B) {
       p_eikonal  = eikonal; m_B = B; m_density.SetEikonal(p_eikonal);
     }

@@ -20,7 +20,7 @@ operator<<(std::ostream & s, const colour_type::code & colour) {
 
 
 std::ostream & SHRIMPS::operator<<(std::ostream & s, const T_Prop & tprop) {
-  s<<" | ["<<tprop.Col()<<"] for "
+  s<<"    | ["<<tprop.Col()<<"]         "
    <<"q = "<<tprop.Q()<<" (qt = "<<sqrt(tprop.QT2())<<", q = "
    <<sqrt(dabs(tprop.Q().Abs2()))<<")"
    <<" and Q0 = "<<sqrt(tprop.Q02())<<" | \n";

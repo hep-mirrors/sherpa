@@ -11,9 +11,9 @@ namespace SHRIMPS {
     Sigma_Partonic * p_sigma;
     double m_shatmin, m_thatmin;
   public:
-    MEs(Sigma_Partonic * sigma,
-	const double & smin=-1., const double & tmin=0.);
+    MEs(const double & smin=-1., const double & tmin=0.);
     ~MEs() {};
+    void   SetPartonic(Sigma_Partonic * sigma);
     double operator()(Ladder * ladder,const double & qt2min);
     double operator()(Ladder * ladder);
     double PDFratio(const ATOOLS::Vec4D & qprev,const ATOOLS::Flavour & fprev,

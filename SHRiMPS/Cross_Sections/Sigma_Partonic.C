@@ -11,15 +11,14 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
   
-Sigma_Partonic::Sigma_Partonic(MODEL::Strong_Coupling * alphaS,
-			       const xs_mode::code & mode) :
-  p_alphaS(alphaS), m_mode(mode), m_fixflavour(true), 
+Sigma_Partonic::Sigma_Partonic(const xs_mode::code & mode) :
+  p_alphaS(NULL), m_mode(mode), m_fixflavour(true), 
   m_Ymax(MBpars.GetEikonalParameters().originalY),
   m_S(sqr(rpa->gen.Ecms())),
-  m_eta(0.08), m_smin(1.), m_tmin(0.),
+  m_eta(0.08), m_smin(1.), m_tmin(1.),
   m_accu(0.005), m_sigma(0.), m_maxdsigma(0.),
   m_Nmaxtrials(100)
-{}
+{ }
 
 Sigma_Partonic::~Sigma_Partonic() {}
 
@@ -128,15 +127,17 @@ const double Sigma_Partonic::dSigma(const double & s,const double & y) {
       m_xpdf[i] += p_pdf[i]->XPDF((*flit)) * ColourFactor((*flit));
     }
   }
-  return flux * m_xpdf[0]*m_xpdf[1] * ME2(s);
+  return flux * m_xpdf[0]*m_xpdf[1] * ME2(s,scale);
 }
 
-const double Sigma_Partonic::ME2(const double & s) {
+const double Sigma_Partonic::ME2(const double & s,const double & scale) {
   double me2 = 0.;
   switch (m_mode) {
   case xs_mode::perturbative:
+    me2 = 4.*M_PI*sqr((*p_alphaS)(s))*sqr(s)/(m_tmin*(s+m_tmin));
+    break;
   case xs_mode::Regge:
-    me2 = pow(s/m_smin,1.+m_eta);
+    me2 = pow( (s/m_smin), 1.+m_eta);
     break;
   default:
     break;

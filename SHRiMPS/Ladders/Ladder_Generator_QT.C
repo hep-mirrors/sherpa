@@ -23,7 +23,6 @@ Ladder * Ladder_Generator_QT::operator()(const Vec4D & pos) {
       ConstructISKinematics();
       SelectPropagatorColours(p_ladder);
       CalculateWeight();
-      //msg_Out()<<METHOD<<"(weight = "<<m_weight<<"):\n"<<(*p_ladder)<<"\n";
     }
     else m_weight = 0.;
   } while (m_weight<ran->Get());    
@@ -32,7 +31,7 @@ Ladder * Ladder_Generator_QT::operator()(const Vec4D & pos) {
 }
 
 void Ladder_Generator_QT::AddRescatters(Ladder * ladder) {
-  //msg_Out()<<"====================================================================\n"
+  //msg_Out()<<"====================================================================\n";
   //	   <<(*ladder)<<"\n";
   LadderMap::iterator lit[2]; 
   TPropList::iterator pit;
@@ -44,23 +43,27 @@ void Ladder_Generator_QT::AddRescatters(Ladder * ladder) {
       lit[1] = ladder->GetEmissions()->end(); lit[1]--;
       pit    = ladder->GetProps()->end(); pit--;
       while (lit[1]!=lit[0] && pit!=ladder->GetProps()->begin()) {
-	double Dkt2 = (lit[0]->second.Momentum()-lit[1]->second.Momentum()).PPerp2();
-	double prob = (Dkt2 *
-		       (!lit[0]->second.IsMarked() && !lit[1]->second.IsMarked() ?
-			m_density.RescatterProbability(lit[0]->first,lit[1]->first) : 0.) );
-	//msg_Out()<<"P_resc("<<lit[0]->first<<", "<<lit[1]->first<<") = "<<prob<<"\n";
+	double prob = 0.;
+	if (!(lit[0]->second.IsMarked() || lit[1]->second.IsMarked()) &&
+	    !(dabs(lit[0]->first)>m_Ymax && dabs(lit[1]->first)>m_Ymax) ) {
+	  prob = m_density.RescatterProbability(lit[0]->first,lit[1]->first);
+	}
+	//msg_Out()<<"==== P_resc("<<lit[0]->first<<", "<<lit[1]->first<<") = "<<prob<<" --> ";
 	if (ran->Get()<prob) {
+	  //msg_Out()<<"try rescatter.\n";
 	  Ladder * rescatter = MakeRescatterLadder(lit,pit);
 	  if (rescatter) {
-	    SelectPropagatorColours(rescatter);
-	    //msg_Out()<<"Insert another ladder with "<<rescatter->GetEmissions()->size()<<" partons.\n";
+	    //msg_Out()<<"     Insert another ladder with "<<rescatter->GetEmissions()->size()<<" partons.\n";
 	    MergeLadders(ladder,rescatter,lit,pit);
 	    delete rescatter;
-	    //msg_Out()<<(*ladder)<<"\n";
+	    //if (ladder->CheckFourMomentum()) msg_Out()<<"Merge successful: "<<(*ladder)<<"\n";
+	    //else exit(1);
 	    success = true;
 	    break;
 	  }
+	  //else msg_Out()<<"     Couldn't construct a rescatter ladder.\n";
 	}
+	//else msg_Out()<<"no rescatter.\n";
 	lit[1]--;
 	pit--;
       }
@@ -115,16 +118,38 @@ Ladder * Ladder_Generator_QT::InitializeRescatterLadder(Ladder_Particle * parts[
   Vec4D Pcms(0.,0.,0.,0.);
   for (size_t i=0;i<2;i++) Pcms += m_qini[i] = m_q[i] = parts[i]->Momentum();
   m_shat = Pcms.Abs2();
-  m_yhat = Pcms.Y();
-  m_cms  = Poincare(Pcms);
-  for (size_t i=0;i<2;i++) m_cms.Boost(m_q[i]);
-  m_zax  = Poincare(m_q[0],Vec4D(1.,0.,0.,1.)); 
+  m_yhat = 0.; 
   for (size_t i=0;i<2;i++) {
     m_y[i][0]  = m_y[i][1] = m_q[i].Y();
-    m_zax.Rotate(m_q[i]);
     rescatter->InPart(i)->SetFlavour(m_flavs[i] = parts[i]->Flavour());
     rescatter->InPart(i)->SetMomentum(m_q[i]);
   }
+  return rescatter;
+}
+
+Ladder * Ladder_Generator_QT::MakeRescatterLadder(LadderMap::iterator lit[2],
+						  TPropList::iterator & pit) {
+  Ladder_Particle * parts[2];
+  for (size_t i=0;i<2;i++) parts[i] = &lit[i]->second;
+  size_t trials = 100;
+  Ladder * rescatter = InitializeRescatterLadder(parts);
+  while (trials>=0) {
+    for (size_t i=0;i<2;i++) {
+      m_q[i]    = parts[i]->Momentum();
+      m_y[i][0] = m_y[i][1] = m_q[i].Y();
+    }
+    m_weight = 1.;
+    rescatter->GetEmissions()->clear();
+    rescatter->GetProps()->clear();
+    if (MakeTrialLadder(rescatter)) {
+      m_weight *= m_me(rescatter);
+      if (ran->Get()<m_weight) break;
+    }
+    if ((trials--)<=0) { delete rescatter; return NULL; }
+  }
+  for (size_t i=0;i<2;i++) rescatter->InPart(i)->SetMomentum(m_qini[i]);
+  if (!rescatter->CheckFourMomentum()) exit(1);
+  SelectPropagatorColours(rescatter);
   return rescatter;
 }
 
@@ -132,6 +157,7 @@ bool Ladder_Generator_QT::MakeTrialLadder(Ladder * ladder) {
   m_weight = 1.;
   size_t dir;
   TPropList::iterator pit = ladder->GetProps()->begin(); pit++;
+  //msg_Out()<<"     trial ladder for "<<m_q[0]<<"+ "<<m_q[1]<<".\n";
   do {
     m_seff = (m_q[0]+m_q[1]).Abs2();
     if (m_seff<4.*m_qt2min) break;
@@ -146,40 +172,13 @@ bool Ladder_Generator_QT::MakeTrialLadder(Ladder * ladder) {
   return true;
 }
 
-Ladder * Ladder_Generator_QT::MakeRescatterLadder(LadderMap::iterator lit[2],
-						  TPropList::iterator & pit) {
-  Ladder_Particle * parts[2];
-  for (size_t i=0;i<2;i++) parts[i] = &lit[i]->second;
-  size_t trials = 100;
-  Ladder * rescatter = InitializeRescatterLadder(parts);
-  while (trials>=0) {
-    rescatter->GetEmissions()->clear();
-    rescatter->GetProps()->clear();
-    if (MakeTrialLadder(rescatter)) {
-      m_weight *= m_me(rescatter) * TotalReggeWeight(rescatter);
-      //msg_Out()<<"  - rescatter with "<<rescatter->GetEmissions()->size()<<" partons, "
-      //       <<"weight = "<<m_weight<<" after "<<(101-trials)<<" attempts.\n";
-      if (ran->Get()<m_weight) break;
-    }
-    if ((trials--)<=0) { delete rescatter; return NULL; }
-  }
-  for (LadderMap::iterator rlit=rescatter->GetEmissions()->begin();
-       rlit!=rescatter->GetEmissions()->end();rlit++) {
-    Vec4D mom = rlit->second.Momentum();
-    m_zax.RotateBack(mom);
-    m_cms.BoostBack(mom);
-    rlit->second.SetMomentum(mom);
-  }
-  return rescatter;
-}
-
 bool Ladder_Generator_QT::TrialEmission(Ladder * ladder,size_t dir,const double & yhat) {
   bool   isrescatter = ladder->IsRescatter();
   double qt2min      = isrescatter ? QT2Min(dir) : QT2Min(dir);
-  double qt2max      = isrescatter ? m_seff : m_seff;
-  double arg         = M_PI/(3.*AlphaS(0.)*dabs(log(qt2max/m_qt2min)));
+  double qt2max      = (isrescatter ? m_seff : m_seff)/cosh(m_y[dir][1]);
+  double arg         = M_PI/(3.*AlphaSMax()*dabs(log(qt2max/m_qt2min)));
   Form_Factor * ff   = dabs(m_y[dir][1])>m_Ymax ? p_eikonal->FF(dir) : NULL;
-  double weight, dy, pdfratio;
+  double weight, dy, pdfratio, random;
   do {
     MakeTransverseUnitVector();
     dy           = arg * log(ran->Get());
@@ -187,16 +186,27 @@ bool Ladder_Generator_QT::TrialEmission(Ladder * ladder,size_t dir,const double 
     m_qt         = MakePropMomentum(qt2min, qt2max, ff, isrescatter);
     m_k[dir]     = MakeFSMomentum(dir);
     pdfratio     = (isrescatter ? 1. :
-		    m_me.PDFratio(m_q[dir],Flavour(kf_gluon),m_qt,Flavour(kf_gluon),dir));
+		    m_me.PDFratio(m_q[dir],Flavour(kf_gluon),m_q[dir]-m_k[dir],Flavour(kf_gluon),dir));
     weight       = ( LDCWeight(m_qt2, m_qt2prev[dir]) *
 		     AlphaSWeight(m_k[dir].PPerp2()) *
 		     pdfratio *
 		     AbsorptionWeight(m_k[dir], m_y[dir][0]+yhat) );
+    /*
+      if (ladder->GetEmissions()->size()>=3 && m_k[dir].PPerp2()>4.)
+      msg_Out()<<"      - try("<<ladder->GetEmissions()->size()<<") "<<m_y[dir][0]<<": check = "
+    	       <<((m_q[0]+m_q[1]-m_k[dir]).Abs2()<4.*m_qt2min ||
+    		  (dir==0 && m_y[0][0]<m_y[1][0]) ||
+    		  (dir==1 && m_y[1][0]>m_y[0][0]))<<", "
+    	       <<"weight = "<<weight<<" for "<<m_k[dir]<<"\n"
+    	       <<"                weight = "<<AlphaSWeight(m_k[dir].PPerp2())<<" * "
+    	       <<pdfratio<<" * "<<AbsorptionWeight(m_k[dir], m_y[dir][0]+yhat)<<"\n";
+    */
     if ((m_q[0]+m_q[1]-m_k[dir]).Abs2()<4.*m_qt2min ||
 	(dir==0 && m_y[0][0]<m_y[1][0]) ||
 	(dir==1 && m_y[1][0]>m_y[0][0])) return false;
-  } while (m_q[dir][0]-m_k[dir][0]<0. ||
-	   weight<ran->Get());    
+  } while (m_q[dir][0]-m_k[dir][0]<0. || weight<ran->Get());
+  //if (ladder->GetEmissions()->size()>=3 && m_k[dir].PPerp2()>4.)
+  //msg_Out()<<"       --> accept emission: "<<m_q[dir]<<" -> "<<m_k[dir]<<".\n";
   return true;
 }
 
@@ -285,15 +295,14 @@ void Ladder_Generator_QT::SelectPropagatorColours(Ladder * ladder) {
 }
 
 void Ladder_Generator_QT::CalculateWeight() {
-  m_weight = 1.; return;
-  Vec4D Pcms       = (p_ladder->InPart(0)->Momentum() +
-  		      p_ladder->InPart(1)->Momentum()); 
-  double Y         = Pcms.Y(), SHat = Pcms.Abs2();
-  double sigma_act = m_partonic.dSigma(SHat,Y);
-  double start     = m_weight, me, regge;
-  m_weight *= sigma_act/m_sigmahat;
-  m_weight *= me    = m_me(p_ladder,0.)/sigma_act;
-  m_weight *= regge = TotalReggeWeight(p_ladder);
+  //Vec4D Pcms       = (p_ladder->InPart(0)->Momentum() +
+  //		      p_ladder->InPart(1)->Momentum()); 
+  //double Y         = Pcms.Y(), SHat = Pcms.Abs2();
+  //double sigma_act = m_partonic.dSigma(SHat,Y);
+  //double start     = m_weight, me, regge;
+  //m_weight *= sigma_act/m_sigmahat;
+  m_weight *= m_me(p_ladder,0.)/m_sigmahat;
+  //m_weight *= TotalReggeWeight(p_ladder);
 }
 
 double Ladder_Generator_QT::QT2Min(size_t dir) {
@@ -319,12 +328,8 @@ ATOOLS::Vec4D Ladder_Generator_QT::MakeFSMomentum(size_t dir) {
 ATOOLS::Vec4D Ladder_Generator_QT::
 MakePropMomentum(const double & qt2min,const double & qt2max,Form_Factor * ff,const bool rescatter) {
   if (qt2max<0.) exit(1);
-  if (ff) m_qt2 = ff->SelectQT2(qt2max,qt2min); 
-  else {
-    do {
-      m_qt2 = qt2min * pow(qt2max/qt2min, ATOOLS::ran->Get());
-    } while (rescatter ? ran->Get() > exp(-m_qt2/qt2min) : false);
-  }
+  if (ff) m_qt2 = ff->SelectQT2(qt2max,qt2min);
+  else    m_qt2 = qt2min * (pow(1.+qt2max/qt2min, ATOOLS::ran->Get())-1.);
   return sqrt(m_qt2) * m_eqt;
 }
 

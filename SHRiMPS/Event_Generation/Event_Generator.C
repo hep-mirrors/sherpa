@@ -10,7 +10,8 @@ using namespace ATOOLS;
 Event_Generator::Event_Generator(Cross_Sections * xsecs,const bool & test) :
   m_runmode(MBpars.RunMode()), m_thisevent(m_runmode),
   p_inelastic(NULL), p_elastic(NULL), p_soft_diffractive(NULL),
-  p_active(NULL), m_xsec(0.), m_xsec_inel(0.), m_xsec_elas(0.), m_xsec_diff(0.), m_eventsuccessful(1), m_mustinit(1)
+  p_active(NULL), m_xsec(0.), m_xsec_inel(0.), m_xsec_elas(0.), m_xsec_diff(0.),
+  m_eventsuccessful(1), m_mustinit(1)
 {
   InitGenerator(xsecs,test);
 }
