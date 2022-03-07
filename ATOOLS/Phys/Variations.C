@@ -53,6 +53,11 @@ bool Variations::NeedsLHAPDF6Interface()
       return true;
     }
   }
+  for (auto single_variation_settings : s["PDF_VARIATIONS"].GetItems()) {
+    if (single_variation_settings.Get<std::string>() != "None") {
+      return true;
+    }
+  }
   return false;
 }
 
@@ -212,9 +217,58 @@ void Variations::PrintStatistics(std::ostream &str)
 
 void Variations::InitialiseParametersVector()
 {
+  // All variations can be specified either using VARIATIONS (which allows for
+  // correlated variations) ...
+
   Settings& s = Settings::GetMainSettings();
   for (auto single_variation_settings : s["VARIATIONS"].GetItems()) {
     AddParameters(single_variation_settings);
+  }
+
+  // ... or by using the specialised (and easier to remember) versions below.
+
+  for (auto single_variation_settings : s["PDF_VARIATIONS"].GetItems()) {
+    std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector =
+        PDFsAndAlphaSVector(single_variation_settings.Get<std::string>());
+    AddParameterExpandingScaleFactors({"1.0", "1.0", "1.0"},
+                                      ScaleFactorExpansions::None,
+                                      pdfsandalphasvector);
+  }
+
+  for (auto single_variation_settings : s["SCALE_VARIATIONS"].GetItems()) {
+    std::vector<std::string> scalestringparams;
+    ScaleFactorExpansions::code scalefactorexpansions(
+        ScaleFactorExpansions::None);
+    if (single_variation_settings.IsScalar()) {
+      ExpandableVariation var {single_variation_settings.Get<std::string>()};
+      if (var.expand)
+        scalefactorexpansions |= ScaleFactorExpansions::SevenPoint;
+      scalestringparams = {var.var, var.var, "1.0"};
+    } else {
+      ExpandableVariation mufvar {
+          single_variation_settings[0].Get<std::string>()};
+      if (mufvar.expand)
+        scalefactorexpansions |= ScaleFactorExpansions::MuF;
+      ExpandableVariation murvar {
+          single_variation_settings[1].Get<std::string>()};
+      if (murvar.expand)
+        scalefactorexpansions |= ScaleFactorExpansions::MuR;
+      scalestringparams = {mufvar.var, murvar.var, "1.0"};
+    }
+    AddParameterExpandingScaleFactors(scalestringparams, scalefactorexpansions,
+                                      {});
+  }
+
+  for (auto single_variation_settings : s["QCUT_VARIATIONS"].GetItems()) {
+    std::vector<std::string> scalestringparams;
+    ScaleFactorExpansions::code scalefactorexpansions(
+        ScaleFactorExpansions::None);
+    ExpandableVariation var {single_variation_settings.Get<std::string>()};
+    if (var.expand)
+      scalefactorexpansions |= ScaleFactorExpansions::QCUT;
+    scalestringparams = {"1.0", "1.0", var.var};
+    AddParameterExpandingScaleFactors(scalestringparams, scalefactorexpansions,
+                                      {});
   }
 
   // erase all trivial variations
@@ -281,18 +335,8 @@ void Variations::AddParameters(Scoped_Settings& s)
 
   // parse PDF set, and check whether it is requested to be expanded to all its
   // members via an appended asterisk
-  std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector;
-  auto pdf = s["PDF"].SetDefault("None").Get<std::string>();
-  if (pdf != "None") {
-    if (Settings::GetMainSettings()["OVERRIDE_PDF_INFO"].Get<bool>()) {
-      THROW(fatal_error,
-            "`OVERRIDE_PDF_INFO: true` is incompatible with doing PDF/AlphaS "
-            "variations.");
-    }
-    // translate PDF string parameter into actual AlphaS and PDF objects
-    ExpandableVariation var {pdf};
-    pdfsandalphasvector = PDFsAndAlphaSVector(var.var, var.expand);
-  }
+  std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector =
+      PDFsAndAlphaSVector(s["PDF"].SetDefault("None").Get<std::string>());
 
   // parse AlphaS(MZ) variations and append them
   auto alphasmz = s["AlphaS(MZ)"].SetDefault(-1.0).Get<double>();
@@ -406,9 +450,28 @@ void Variations::AddParameters(double muR2fac, double muF2fac,
   m_parameters_vector.push_back(params);
 }
 
+std::vector<Variations::PDFs_And_AlphaS>
+Variations::PDFsAndAlphaSVector(const std::string &pdf) const
+{
+  // parse PDF set, and check whether it is requested to be expanded to all its
+  // members via an appended asterisk
+  std::vector<PDFs_And_AlphaS> pdfsandalphasvector;
+  if (pdf != "None") {
+    if (Settings::GetMainSettings()["OVERRIDE_PDF_INFO"].Get<bool>()) {
+      THROW(fatal_error,
+            "`OVERRIDE_PDF_INFO: true` is incompatible with doing PDF/AlphaS "
+            "variations.");
+    }
+    // translate PDF string parameter into actual AlphaS and PDF objects
+    ExpandableVariation var{pdf};
+    pdfsandalphasvector = PDFsAndAlphaSVector(var.var, var.expand);
+  }
+  return pdfsandalphasvector;
+}
+
 std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
     std::string pdfstringparam,
-    bool expandpdf)
+    bool expandpdf) const
 {
   // parse PDF member(s)
   std::vector<PDFs_And_AlphaS> pdfsandalphasvector;

@@ -86,28 +86,7 @@ REWEIGHT_SPLITTING_ALPHAS_SCALES: true
 CSS_REWEIGHT_SCALE_CUTOFF: 5.0
 HEPMC_INCLUDE_ME_ONLY_VARIATIONS: true
 VARIATIONS_INCLUDE_CV: true
-VARIATIONS:
-  - ScaleFactors:
-      MuF2: 0.25
-      MuR2: 0.25
-  - ScaleFactors:
-      MuF2: 1.0
-      MuR2: 0.25
-  - ScaleFactors:
-      MuF2: 0.25
-      MuR2: 1.0
-  - ScaleFactors:
-      MuF2: 1.0
-      MuR2: 1.0
-  - ScaleFactors:
-      MuF2: 4.0
-      MuR2: 1.0
-  - ScaleFactors:
-      MuF2: 1.0
-      MuR2: 4.0
-  - ScaleFactors:
-      MuF2: 4.0
-      MuR2: 4.0
+SCALE_VARIATIONS: 4.0*  # 7-point scale variations
 
 
 # EXAMPLE SHERPA INSTANTON RUN CARD WITH TWEAKS

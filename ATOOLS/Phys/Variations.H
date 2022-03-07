@@ -111,7 +111,8 @@ namespace ATOOLS {
                                            ScaleFactorExpansions::code,
                                            std::vector<Variations::PDFs_And_AlphaS>);
     void AddParameters(double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfs, bool deletealphas);
-    std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf);
+    std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(const std::string& pdfstringparam) const;
+    std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf) const;
 
     bool m_enabled;
     Parameters_Vector m_parameters_vector;

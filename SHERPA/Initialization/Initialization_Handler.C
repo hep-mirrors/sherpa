@@ -142,6 +142,9 @@ void Initialization_Handler::RegisterDefaults()
       "PDF_SET",
       "MPI_PDF_SET",
       "VARIATIONS",
+      "SCALE_VARIATIONS",
+      "PDF_VARIATIONS",
+      "QCUT_VARIATIONS",
       "BUNCHES",
       "PDF_SET_VERSIONS",
       "MPI_PDF_SET_VERSIONS",
@@ -152,6 +155,9 @@ void Initialization_Handler::RegisterDefaults()
   s.DeclareMatrixSettingsWithEmptyDefault({ "CSS_ENHANCE" });
   s["EVENT_OUTPUT"].UseNoneReplacements();
   s["VARIATIONS"].UseNoneReplacements();
+  s["SCALE_VARIATIONS"].UseNoneReplacements();
+  s["PDF_VARIATIONS"].UseNoneReplacements();
+  s["QCUT_VARIATIONS"].UseNoneReplacements().SetSynonyms({"CKKW_VARIATIONS"});
   s["PDF_LIBRARY"].UseNoneReplacements();
   s["ANALYSIS"].UseNoneReplacements();
 
