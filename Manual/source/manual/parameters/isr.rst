@@ -35,12 +35,10 @@ initial state radiation (ISR).
   be set to 22, the PDG code of the photon.
 
 :OPTION:`ISR_SMIN/ISR_SMAX`
-
   This parameter specifies the minimum fraction of cms energy squared
   after ISR. The reference value is the total centre of mass energy
   squared of the collision, `not` the centre of mass energy after
   eventual Beamstrahlung.
-
   The parameter can be specified using the internal interpreter, see
   :ref:`Interpreter`, e.g. as ``ISR_SMIN: sqr(20/E_CMS)``.
 
@@ -135,16 +133,6 @@ They can be configured with the following parameters.
   specify two different PDF sets using :option:`PDF_SET_VERSIONS:
   [version1, version2]`
 
-..
-
-   ..
-      .. code-block::
-
-         PDF_LIBRARY: LHAPDFSherpa
-         PDF_SET: NNPDF12_100.LHgrid
-         PDF_SET_VERSION: -100
-
-   ..
-      results in Sherpa sampling all sets 1..100, which can be used to obtain
-      the averaging required when employing PDF's from the NNPDF
-      collaboration :cite:`Ball2008by`, :cite:`Ball2009mk`.
+See :ref:`On-the-fly event weight variations`
+to find out how to vary PDF sets and version on-the-fly,
+both in the matrix element and in the parton shower.
