@@ -415,12 +415,19 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
   // transform both sides into absolute storage instead of the default relative
   // storage
   MakeAbsolute();
-  auto rhs_abs = rhs;
-  rhs_abs.MakeAbsolute();
+  auto abs_rhs = rhs;
+  abs_rhs.MakeAbsolute();
 
-  // now addition is trivial
-  for (auto& kv : rhs_abs) {
-    (*this)[kv.first] += kv.second;
+  // now addition is trivial; if a key is missing on the rhs, we use its
+  // nominal value to construct a Weights object
+  const double rhs_nominal = rhs.Nominal();
+  for (auto& kv : *this) {
+    auto it = abs_rhs.find(kv.first);
+    if (it == abs_rhs.end()) {
+      kv.second += Weights {kv.second.type, rhs_nominal};
+    } else {
+      kv.second += it->second;
+    }
   }
 
   // transform back to relative storage
