@@ -6,13 +6,106 @@ BEAM_ENERGIES: 6500
 
 # matrix-element calculation
 ME_GENERATORS:
-- Comix
-- Amegic
-- OpenLoops
+  - Comix
+  - Amegic
+  - OpenLoops
+
+## OTF variations
+CSS_REWEIGHT: true
+REWEIGHT_SPLITTING_ALPHAS_SCALES: true
+REWEIGHT_SPLITTING_PDF_SCALES: true
+HEPMC_USE_NAMED_WEIGHTS: true
+OUTPUT_ME_ONLY_VARIATIONS: true
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
+## PDF
+ALPHAS:
+  USE_PDF: 1
+PDF_LIBRARY: LHAPDFSherpa
+PDF_SET: NNPDF30_nnlo_as_0118_hessian
+PDF_SET_VARIATIONS:
+  - NNPDF30_nnlo_as_0118_hessian*
+  - PDF4LHC15_nnlo_30_pdfas*
+  - NNPDF30_nnlo_as_0117
+  - NNPDF30_nnlo_as_0119
+  - MSHT20nnlo_as118
+  - CT18NNLO_as_0118
+  - NPDF31_nnlo_as_0118_hessian
+
+# EW corrections setup
+EW_SCHEME: alphamZsW
+SIN2THETAW: 0.23113
+OL_PARAMETERS:
+  ew_renorm_scheme: 22
+ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
+  - [EW]
+  - [EW, LO1]
+  - [EW, LO1, LO2]
+  - [EW, LO1, LO2, LO3]
+METS_BBAR_MODE: 5
+
+# speed and neg weight fraction improvements
+NLO_CSS_PSMODE: 1
+MC@NLO:
+  RS_SCALE: VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4};
+  HPSMODE: 0
+
+# other ATLAS defaults (to be discussed)
+MAX_PROPER_LIFETIME: 10.0
+CSS_SCALE_SCHEME: 20
+CSS_EVOLUTION_SCHEME: 30
+NLO_SUBTRACTION_SCHEME: 2 # Shower improvements
+
+## particles and BRs
+PARTICLE_DATA:
+  6: {Mass: 172.5, Width: 1.32}
+  15: {Mass: 1.777, Width: 2.26735e-12}
+  23: {Mass: 91.1876, Width: 2.4952}
+  24: {Mass: 80.399, Width: 2.085}
+
+HARD_DECAYS:
+  Channels:
+    6,24,5: {Width: 1.32}
+    -6,-24,-5: {Width: 1.32}
+    25,5,-5: {Width: 2.35e-3}
+    25,15,-15: {Width: 2.57e-4}
+    25,13,-13: {Width: 8.91e-7}
+    25,4,-4: {Width: 1.18e-4}
+    25,3,-3: {Width: 1.00e-6}
+    25,21,21: {Width: 3.49e-4}
+    25,22,22: {Width: 9.28e-6}
+    24,2,-1: {Width: 0.7041}
+    24,4,-3: {Width: 0.7041}
+    24,12,-11: {Width: 0.2256}
+    24,14,-13: {Width: 0.2256}
+    24,16,-15: {Width: 0.2256}
+    -24,-2,1: {Width: 0.7041}
+    -24,-4,3: {Width: 0.7041}
+    -24,-12,11: {Width: 0.2256}
+    -24,-14,13: {Width: 0.2256}
+    -24,-16,15: {Width: 0.2256}
+    23,1,-1: {Width: 0.3828}
+    23,2,-2: {Width: 0.2980}
+    23,3,-3: {Width: 0.3828}
+    23,4,-4: {Width: 0.2980}
+    23,5,-5: {Width: 0.3828}
+    23,11,-11: {Width: 0.0840}
+    23,12,-12: {Width: 0.1663}
+    23,13,-13: {Width: 0.0840}
+    23,14,-14: {Width: 0.1663}
+    23,15,-15: {Width: 0.0840}
+    23,16,-16: {Width: 0.1663}
 
 # pp -> Z[ee]+jets
 PROCESSES:
-- 93 93 -> 11 -11 93{4}:
+- 93 93 -> 11 -11 93{5}:
     Order: {QCD: 0, EW: 2}
     CKKW: 20
     # set up NLO+PS final-state multiplicities
@@ -22,9 +115,12 @@ PROCESSES:
       ME_Generator: Amegic
       RS_ME_Generator: Comix
       Loop_Generator: OpenLoops
+      Associated_Contributions: [EW, LO1, LO2, LO3]
     # make integration of higher final-state multiplicities faster
-    2->4-6:
+    2->4-7:
       Integration_Error: 0.05
+      Max_N_Quarks: 4
+      Max_Epsilon: 0.01
 
 SELECTORS:
 - [Mass, 11, -11, 66, E_CMS]
