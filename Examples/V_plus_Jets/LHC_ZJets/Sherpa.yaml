@@ -30,7 +30,7 @@ ALPHAS:
   USE_PDF: 1
 PDF_LIBRARY: LHAPDFSherpa
 PDF_SET: NNPDF30_nnlo_as_0118_hessian
-PDF_SET_VARIATIONS:
+PDF_VARIATIONS:
   - NNPDF30_nnlo_as_0118_hessian*
   - PDF4LHC15_nnlo_30_pdfas*
   - NNPDF30_nnlo_as_0117
