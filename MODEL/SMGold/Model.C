@@ -59,7 +59,7 @@ namespace MODEL{
       s_kftable[kf_s]         = new Particle_Info(kf_s,0.2,.0,-1,3,1,0,1,1,0,"s","sb", "s", "\\bar{s}");
       s_kftable[kf_c]         = new Particle_Info(kf_c,1.42,.0,2,3,1,0,1,1,0,"c","cb", "c", "\\bar{c}");
       s_kftable[kf_b]         = new Particle_Info(kf_b,4.8,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
-      s_kftable[kf_t]         = new Particle_Info(kf_t,173.21,2.0,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
+      s_kftable[kf_t]         = new Particle_Info(kf_t,172.5,1.32,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
       s_kftable[kf_e]         = new Particle_Info(kf_e,0.000511,.0,-3,0,1,0,1,1,0,"e-","e+", "e^{-}", "e^{+}");
       s_kftable[kf_nue]       = new Particle_Info(kf_nue,.0,.0,0,0,1,0,1,1,0,"ve","veb", "\\nu_{e}", "\\bar{\\nu}_{e}");
       s_kftable[kf_mu]        = new Particle_Info(kf_mu,.105,.0,-3,0,1,0,1,1,0,"mu-","mu+", "\\mu^{-}", "\\mu^{+}");
@@ -69,8 +69,7 @@ namespace MODEL{
       s_kftable[kf_gluon]     = new Particle_Info(kf_gluon,.0,.0,0,8,2,-1,1,1,0,"G","G", "G", "G");
       s_kftable[kf_photon]    = new Particle_Info(kf_photon,.0,.0,0,0,2,-1,1,1,0,"P","P","\\gamma","\\gamma");
       s_kftable[kf_Z]         = new Particle_Info(kf_Z,91.1876,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
-      s_kftable[kf_Wplus]     = new Particle_Info(kf_Wplus,80.385,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
-      s_kftable[kf_h0]        = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
+      s_kftable[kf_Wplus]     = new Particle_Info(kf_Wplus,80.379,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
       s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
   
       s_kftable[kf_phiplus]   = new Particle_Info(kf_phiplus,80.385,2.085,3,0,0,0,1,0,1,"phi+","phi-","\\phi^{+}","\\phi^{-}");

@@ -55,17 +55,12 @@ Decay_Table* Decay_Map::FindDecay(const ATOOLS::Flavour & decayer)
 pair<Decay_Table*, Decay_Channel*> Decay_Map::FindDecayChannel(string name,
                                                                bool create)
 {
-  // parse "x -> y z ..."
-  if (name.find("->") == string::npos) {
-    THROW(fatal_error, "Name channel \"" + name
-          + "\" malformed, should be e.g. \"x -> z y\"");
-  }
-
   Flavour_Vector flavs;
-  auto pdgcodes = ToVector<int>(name.replace(name.find("->"), 2, " "));
+  std::replace(name.begin(),name.end(),',',' ');
+  auto pdgcodes = ToVector<int>(name);
   transform(pdgcodes.begin(), pdgcodes.end(), back_inserter(flavs),
             [](int i) -> Flavour { return Flavour(i); });
-
+  
   Decay_Table* dt = FindDecay(flavs[0]);
   if (dt) {
     Decay_Channel::SortFlavours(flavs);
