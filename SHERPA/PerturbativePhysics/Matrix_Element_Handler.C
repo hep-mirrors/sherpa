@@ -633,7 +633,11 @@ void Matrix_Element_Handler::BuildProcesses()
       THROW(missing_input, std::string{"Missing PROCESSES definition.\n\n"} +
                                Strings::ProcessesSyntaxExamples);
   }
-  
+
+  // This will be used to check for a meaningful associated contributions
+  // set-up.
+  std::set<asscontrib::type> calculated_asscontribs;
+
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
     const auto keys = proc.GetKeys();
@@ -653,6 +657,15 @@ void Matrix_Element_Handler::BuildProcesses()
     ReadFinalStateMultiIndependentProcessSettings(name, procsettings, args);
     ReadFinalStateMultiSpecificProcessSettings(procsettings, args);
     BuildSingleProcessList(args);
+
+    // Collect data to check for meaningful associated contributions set-up.
+    for (const auto& kv : args.pbi.m_vasscontribs) {
+      auto contribs = ToVector<asscontrib::type>(kv.second.second);
+      for (const auto& c : contribs) {
+        calculated_asscontribs.insert(c);
+      }
+    }
+
     if (msg_LevelIsDebugging()) {
       msg_Indentation(4);
       msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
@@ -664,6 +677,8 @@ void Matrix_Element_Handler::BuildProcesses()
       }
     }
   }
+
+  CheckAssociatedContributionsSetup(calculated_asscontribs);
 }
 
 void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
@@ -1307,3 +1322,26 @@ double Matrix_Element_Handler::GetWeight
   return 0.0;
 }
 
+void Matrix_Element_Handler::CheckAssociatedContributionsSetup(
+    const std::set<asscontrib::type>& calculated_asscontribs) const
+{
+  Settings& s = Settings::GetMainSettings();
+  auto acv =
+      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"].GetMatrix<asscontrib::type>();
+  for (const auto& contrib_list : acv) {
+    for (const auto& c : contrib_list) {
+      if (calculated_asscontribs.find(c) == calculated_asscontribs.end()) {
+        THROW(inconsistent_option,
+              "You are using " + ToString(c) + " in your" +
+                  " ASSOCIATED_CONTRIBUTIONS_VARIATIONS, but " + ToString(c) +
+                  " is not"
+                  "\ncalculated for any of the PROCESSES. Please make sure "
+                  "that all contributions" +
+                  "\nlisted in ASSOCIATED_CONTRIBUTIONS_VARIATIONS appear in "
+                  "the" +
+                  "\nAssociated_Contributions list of at least one of the "
+                  "PROCESSES.");
+      }
+    }
+  }
+}

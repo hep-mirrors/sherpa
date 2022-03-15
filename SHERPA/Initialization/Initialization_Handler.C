@@ -152,7 +152,10 @@ void Initialization_Handler::RegisterDefaults()
       "MASSIVE_PS",
       "MASSLESS_PS"
       });
-  s.DeclareMatrixSettingsWithEmptyDefault({ "CSS_ENHANCE" });
+  s.DeclareMatrixSettingsWithEmptyDefault({
+      "CSS_ENHANCE",
+      "ASSOCIATED_CONTRIBUTIONS_VARIATIONS"
+      });
   s["EVENT_OUTPUT"].UseNoneReplacements();
   s["VARIATIONS"].UseNoneReplacements();
   s["SCALE_VARIATIONS"].UseNoneReplacements();

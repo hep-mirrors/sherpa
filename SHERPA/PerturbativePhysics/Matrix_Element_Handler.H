@@ -208,6 +208,8 @@ namespace SHERPA {
 
     static size_t ExtractFlavours(PHASIC::Subprocess_Info &infos,std::string buffer);
 
+    void CheckAssociatedContributionsSetup(
+        const std::set<ATOOLS::asscontrib::type>& calculated_asscontribs) const;
   };// end of class Matrix_Element_Handler
 
 }// end of namespace SHERPA

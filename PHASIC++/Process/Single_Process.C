@@ -57,9 +57,7 @@ Single_Process::Single_Process():
 
   // parse settings for associated contributions variations
   std::vector<std::vector<asscontrib::type>> asscontribvars =
-      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"]
-          .SetDefault<asscontrib::type>({})
-          .GetMatrix<asscontrib::type>();
+      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"].GetMatrix<asscontrib::type>();
   for (const auto& asscontribvarparams : asscontribvars) {
     m_asscontrib.push_back(asscontrib::none);
     for (const auto& asscontribvarparam : asscontribvarparams) {
