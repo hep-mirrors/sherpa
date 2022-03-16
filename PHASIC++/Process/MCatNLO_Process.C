@@ -110,10 +110,13 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->FillProcessMap(p_apmap);
   m_psmode   = s["PSMODE"].Get<int>();
   m_hpsmode  = s["HPSMODE"].Get<int>();
+  if (m_hpsmode == -1) {
+    if (m_pinfo.m_ckkw&1) m_hpsmode=0;
+    else m_hpsmode=4;
+  }
   m_kfacmode = s["KFACTOR_MODE"].Get<int>();
   m_fomode   = s["FOMODE"].Get<int>();
   m_rsscale  = s["RS_SCALE"].Get<std::string>();
-  if (m_pinfo.m_ckkw&1) m_hpsmode=0;
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
@@ -149,7 +152,7 @@ void MCatNLO_Process::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
   s["PSMODE"].SetDefault(0);  // shower mode
-  s["HPSMODE"].SetDefault(4);  // H event shower mode
+  s["HPSMODE"].SetDefault(-1);  // H event shower mode
   s["KFACTOR_MODE"].SetDefault(14);  // K-factor mode
   s["FOMODE"].SetDefault(0);  // fixed order mode
   s["RS_SCALE"].SetDefault("");  // RS scale

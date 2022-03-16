@@ -118,7 +118,7 @@ void Model_Base::RegisterDefaults() const
   s["CKM"]["Eta"].SetDefault(0.353);
   s["CKM"]["Rho"].SetDefault(0.117);
   s["DECOMPOSE_4G_VERTEX"].SetDefault(1);
-  s["EW_SCHEME"].SetDefault(ew_scheme::alphamZ);
+  s["EW_SCHEME"].SetDefault(ew_scheme::Gmu);
   const ew_scheme::code ewscheme( s["EW_SCHEME"].Get<ew_scheme::code>() );
   s["EW_REN_SCHEME"].SetDefault(ewscheme);
   if (ewscheme == ew_scheme::UserDefined)

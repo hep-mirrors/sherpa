@@ -303,12 +303,12 @@ HepMC2_Interface::HepMC2_Interface() :
   Settings& s = Settings::GetMainSettings();
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
   m_usenamedweights =
-    s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(false).Get<bool>();
+    s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(true).Get<bool>();
 #endif
   m_extendedweights =
     s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
   m_includemeonlyweights =
-    s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
+    s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(true).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
 }

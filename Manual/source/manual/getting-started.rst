@@ -398,31 +398,29 @@ Before event generation, the initialization procedure as described in
 :ref:`Process selection and initialization` has to be completed. The
 matrix-element processes included in the setup are the following: ::
 
-  proton proton -> parton parton -> electron positron + up to four partons
+  proton proton -> parton parton -> electron positron + up to five partons
 
 
 In the ``PROCESSES`` list of the steering file this translates into
 
 .. code-block:: yaml
 
-   - 93 93 -> 90 90 93{4}:
+   PROCESSES:
+   - 93 93 -> 11 -11 93{5}:
        Order: {QCD: 0, EW: 2}
-       CKKW: 30
+       CKKW: 20
+     [...]
 
-The physics model for these processes is the Standard Model
-(:option:`SM`) which is the default setting of the parameter ``MODEL``
-and is therefore not set explicitly. Fixing the order of electroweak
+Fixing the order of electroweak
 couplings to :option:`2`, matrix elements of all partonic subprocesses
 for Drell-Yan production without any and with up to two extra QCD
 parton emissions will be generated.  Proton--proton collisions are
-considered at beam energies of 3.5 TeV.  The default PDF used by
-Sherpa is CT14. Model parameters and couplings can all be defined in
-the :file:`Sherpa.yaml` file. Similarly, the way couplings are treated
-can be defined. As no options are set the default parameters and scale
-setting procedures are used.
+considered at beam energies of 6.5 TeV.
+Model parameters and couplings can all be defined in
+the :file:`Sherpa.yaml` file as you will see in the rest of this manual.
 
 The QCD radiation matrix elements have to be regularised to obtain
-meaningful cross sections. This is achieved by specifying ``CKKW: 30``
+meaningful cross sections. This is achieved by specifying ``CKKW: 20``
 when defining the process in :file:`Sherpa.yaml`. Simultaneously, this
 tag initiates the ME-PS merging procedure.  To eventually obtain fully
 hadronised events, the ``FRAGMENTATION`` setting has been left on it's
@@ -432,7 +430,19 @@ steering file), which will run Sherpa's cluster hadronisation, and the
 will run Sherpa's hadron decays. Additionally corrections owing to
 photon emissions are taken into account.
 
-To run this example set-up, use the
+For a first example run with this setup, we suggest to simplify the run card
+significantly and only later, for physics studies, going back to the
+full-featured run card. So replace the full process listing with
+a short and simple
+
+.. code-block:: yaml
+
+   PROCESSES:
+   - 93 93 -> 11 -11 93{1}:
+     Order: {QCD: 0, EW: 2}
+     CKKW: 20
+
+for now. Then you can go ahead and start Sherpa for the first time by running the
 
 .. code-block:: shell-session
 

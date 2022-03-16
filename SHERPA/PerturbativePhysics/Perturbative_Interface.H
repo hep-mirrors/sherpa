@@ -20,6 +20,37 @@ namespace SHERPA {
   class Soft_Collision_Handler;
   class Shower_Handler;
 
+  struct mets_bbar_mode {
+    enum code {
+      none         = 0,
+      enabled      = 1,
+      lowestmulti  = 2,
+      exclcluster  = 4
+    };
+  };
+
+  inline mets_bbar_mode::code operator|(const mets_bbar_mode::code mm1,
+                                        const mets_bbar_mode::code mm2)
+  { return (mets_bbar_mode::code)((int)mm1|(int)mm2); }
+  inline const mets_bbar_mode::code &operator|=(mets_bbar_mode::code &mm1,
+                                                const mets_bbar_mode::code mm2)
+  { return mm1=(mets_bbar_mode::code)((int)mm1|(int)mm2); }
+  inline mets_bbar_mode::code operator&(const mets_bbar_mode::code mm1,
+                                        const mets_bbar_mode::code mm2)
+  { return (mets_bbar_mode::code)((int)mm1&(int)mm2); }
+  inline const mets_bbar_mode::code &operator&=(mets_bbar_mode::code &mm1,
+                                                const mets_bbar_mode::code mm2)
+  { return mm1=(mets_bbar_mode::code)((int)mm1&(int)mm2); }
+  inline mets_bbar_mode::code operator^(const mets_bbar_mode::code mm1,
+                                        const mets_bbar_mode::code mm2)
+  { return (mets_bbar_mode::code)((int)mm1^(int)mm2); }
+  inline const mets_bbar_mode::code &operator^=(mets_bbar_mode::code &mm1,
+                                                const mets_bbar_mode::code mm2)
+  { return mm1=(mets_bbar_mode::code)((int)mm1^(int)mm2); }
+
+  std::ostream & operator<<(std::ostream & s,const mets_bbar_mode::code & mm);
+  std::istream & operator>>(std::istream & s,mets_bbar_mode::code &mm);
+
   class Perturbative_Interface {
   protected :
 
@@ -39,7 +70,7 @@ namespace SHERPA {
 
     ATOOLS::Weights_Map m_weightsmap, m_lkfweightsmap;
     double m_globalkfac, m_maxkfac;
-    int    m_bbarmode;
+    mets_bbar_mode::code m_bbarmode;
 
     bool LocalKFactor(ATOOLS::Cluster_Amplitude* ampl);
 

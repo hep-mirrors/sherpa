@@ -10,7 +10,7 @@ ME_GENERATORS:
   - Amegic
   - OpenLoops
 
-## OTF variations
+## OTF variations    ## TODO Marek
 CSS_REWEIGHT: true
 REWEIGHT_SPLITTING_ALPHAS_SCALES: true
 REWEIGHT_SPLITTING_PDF_SCALES: true
@@ -25,7 +25,7 @@ SCALE_VARIATIONS:
   - [1.0,  4.0]
   - [4.0,  4.0]
 
-## PDF
+## PDF   ## TODO Marek
 ALPHAS:
   USE_PDF: 1
 PDF_LIBRARY: LHAPDFSherpa
@@ -39,7 +39,7 @@ PDF_VARIATIONS:
   - CT18NNLO_as_0118
   - NPDF31_nnlo_as_0118_hessian
 
-# EW corrections setup
+# EW setup and corrections
 EW_SCHEME: alphamZsW
 SIN2THETAW: 0.23113
 OL_PARAMETERS:
@@ -49,19 +49,12 @@ ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
   - [EW, LO1]
   - [EW, LO1, LO2]
   - [EW, LO1, LO2, LO3]
-METS_BBAR_MODE: 5
+METS_BBAR_MODE: 5  ## TODO Marek
 
 # speed and neg weight fraction improvements
 NLO_CSS_PSMODE: 1
 MC@NLO:
-  RS_SCALE: VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4};
-  HPSMODE: 0
-
-# other ATLAS defaults (to be discussed)
-MAX_PROPER_LIFETIME: 10.0
-CSS_SCALE_SCHEME: 20
-CSS_EVOLUTION_SCHEME: 30
-NLO_SUBTRACTION_SCHEME: 2 # Shower improvements
+  RS_SCALE: METS{H_Tp2/4}
 
 # pp -> Z[ee]+jets
 PROCESSES:

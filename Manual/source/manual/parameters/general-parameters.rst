@@ -423,7 +423,7 @@ The following formats are currently available:
   :ref:`On-the-fly event weight variations`. The following additional
   customisations can be used
 
-  ``HEPMC_USE_NAMED_WEIGHTS: <false|true>`` Enable filling weights
+  ``HEPMC_USE_NAMED_WEIGHTS: <true|false>`` Enable filling weights
   with an associated name. The nominal event weight has the key
   ``Weight``. ``MEWeight``, ``WeightNormalisation`` and ``NTrials``
   provide additional information for each event as described
@@ -783,9 +783,10 @@ downstream processing steps).
 
 The on-the-fly reweighting works for all event generation modes
 (weighted or (partially) unweighted) and all calculation types (LO,
-LOPS, NLO, NLOPS, MEPS\@LO, MEPS\@NLO and MENLOPS).
-However, the reweighting of parton shower emissions has to be enabled explicitly,
-using :option:`CSS_REWEIGHT: true`.  This should work out of the box for all
+LOPS, NLO, NLOPS, NNLO, NNLOPS, MEPS\@LO, MEPS\@NLO and MENLOPS).
+By default, the reweighting of parton shower emissions is included in the variations.
+It can be disabled explicitly,
+using :option:`CSS_REWEIGHT: false`.  This should work out of the box for all
 types of variations. However, parton-shower reweighting (even though formally
 exact), tends to be numerically less stable than the reweighting of the hard
 process. If numerical issues are encountered, one can try to
@@ -796,9 +797,10 @@ weights is implemented as :option:`CSS_MAX_REWEIGHT_FACTOR` (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
 will be ignored and reset to 1.
 
-To output the ME-only variations along with the full variations in the
-HepMC/Rivet output when using ``CSS_REWEIGHT: true`, you can use
-``OUTPUT_ME_ONLY_VARIATIONS: true``.
+ME-only variations are included along with the full variations in the
+HepMC/Rivet output by default. They can be disabled, e.g. when not using
+``CSS_REWEIGHT: false`, using
+``OUTPUT_ME_ONLY_VARIATIONS: false``.
 The extra weight names then include a "ME" as part of the keys to indicate that
 only the ME part of the calculation has been varied, e.g.
 ``ME:MUR=<fac>__ME:MUF=<fac>__ME:LHAPDF=<id>``.

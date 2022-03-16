@@ -71,8 +71,8 @@ The additional event weights can then be written into the event
 output.  However, this is currently only supported for
 ``HepMC_GenEvent`` and ``HepMC_Short`` with versions >=2.06 and
 ``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weight
-names are either ``ASS<contrib>`` or ``MULTIASS<contrib>``,
-for additive and multiplicative combinations, correspondingly.
+names are either ``ASS<contrib>``, ``MULTIASS<contrib>``, or ``EXPASS<contrib>``
+for additive, multiplicative, and exponentiated combinations, correspondingly.
 See :ref:`On-the-fly event weight variations` for more information
 on variation weights and the variation weight naming scheme.
 

@@ -122,6 +122,7 @@ void Initialization_Handler::RegisterDefaults()
   s["DECAYMODEL"]
     .SetDefault((frag == "Lund") ? "Lund" : "Hadrons")
     .UseNoneReplacements();
+  s["MAX_PROPER_LIFETIME"].SetDefault(10.0);
 
   s["SOFT_SPIN_CORRELATIONS"].SetDefault(0);
   auto hdenabled = s["HARD_DECAYS"]["Enabled"].Get<bool>();
@@ -192,7 +193,7 @@ void Initialization_Handler::RegisterDefaults()
 
   s["OVERRIDE_PDF_INFO"].SetDefault(false);
 
-  s["NLO_SUBTRACTION_SCHEME"].SetDefault(0);
+  s["NLO_SUBTRACTION_SCHEME"].SetDefault(2);
 
   Scoped_Settings metssettings{ Settings::GetMainSettings()["METS"] };
   metssettings["CLUSTER_MODE"].SetDefault(0);
@@ -231,7 +232,7 @@ void Initialization_Handler::RegisterDefaults()
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   s["CSS_RECO_CHECK"].SetDefault(0);
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
-  s["CSS_REWEIGHT"].SetDefault(false);
+  s["CSS_REWEIGHT"].SetDefault(true);
   s["CSS_MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
   s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);

@@ -36,7 +36,7 @@ physics parameters are considered fixed and which are derived from the
 given quantities. The electro-weak coupling is by default fixed, unless its
 running has been enabled (cf. :ref:`COUPLINGS`).
 The input schemes are selected through the ``EW_SCHEME`` parameter, whose
-default is :option:`alphamZ`. The following options are provided:
+default is :option:`Gmu`. The following options are provided:
 
 :option:`UserDefined`
   All EW parameters are explicitly given:  Here the W, Z and Higgs

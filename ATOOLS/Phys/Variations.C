@@ -153,9 +153,9 @@ void Variations::ReadDefaults()
   m_includecentralvaluevariation =
     s["VARIATIONS_INCLUDE_CV"].SetDefault(false).Get<bool>();
   m_reweightsplittingalphasscales =
-    s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(false).Get<bool>();
+    s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(true).Get<bool>();
   m_reweightsplittingpdfsscales =
-    s["REWEIGHT_SPLITTING_PDF_SCALES"].SetDefault(false).Get<bool>();
+    s["REWEIGHT_SPLITTING_PDF_SCALES"].SetDefault(true).Get<bool>();
 }
 
 
