@@ -70,6 +70,7 @@ namespace MODEL{
       s_kftable[kf_photon]    = new Particle_Info(kf_photon,.0,.0,0,0,2,-1,1,1,0,"P","P","\\gamma","\\gamma");
       s_kftable[kf_Z]         = new Particle_Info(kf_Z,91.1876,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
       s_kftable[kf_Wplus]     = new Particle_Info(kf_Wplus,80.379,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
+      s_kftable[kf_h0]        = new Particle_Info(kf_h0,125.09,0.0041,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
       s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
   
       s_kftable[kf_phiplus]   = new Particle_Info(kf_phiplus,80.385,2.085,3,0,0,0,1,0,1,"phi+","phi-","\\phi^{+}","\\phi^{-}");
