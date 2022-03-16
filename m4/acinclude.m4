@@ -1101,7 +1101,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(for Pythia8 installation directory);
       pythia8=true;
       case "${enableval}" in
-        no)  AC_MSG_RESULT(Pythia8 not enabled); pythia82=false; pythia83=false ;;
+        no)  AC_MSG_RESULT(Pythia8 not enabled); pythia8=false; pythia82=false; pythia83=false ;;
         yes) if test -x "`which pythia8-config`"; then
                CONDITIONAL_PYTHIA8DIR=`pythia8-config --prefix`;
              fi;;
