@@ -42,8 +42,6 @@ PDF_VARIATIONS:
 # EW setup and corrections
 EW_SCHEME: alphamZsW
 SIN2THETAW: 0.23113
-OL_PARAMETERS:
-  ew_renorm_scheme: 22
 ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
   - [EW]
   - [EW, LO1]

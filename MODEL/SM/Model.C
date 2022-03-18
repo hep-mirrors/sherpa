@@ -390,23 +390,6 @@ void Standard_Model::FixEWParameters()
     THROW(not_implemented, "Unknown EW_SCHEME="+ToString(ewscheme));
     break;
   }
-  switch (ewrenscheme) {
-  case 1:
-    ewrenschemename="alpha(0)";
-    break;
-  case 2:
-    ewrenschemename="alpha(m_Z)";
-    break;
-  case 3:
-    ewrenschemename="alpha(Gmu)";
-    break;
-  default:
-    msg_Info()<<"Unknown EW_REN_SCHEME="<<ewrenscheme<<", resetting to Gmu."
-              <<std::endl;
-    ewrenscheme=ew_scheme::Gmu;
-    ewrenschemename="alpha(Gmu)";
-    break;
-  }
 
   msg_Info()<<METHOD<<"() {"<<std::endl;
   msg_Info()<<"  Input scheme: "<<ewscheme<<std::endl;
