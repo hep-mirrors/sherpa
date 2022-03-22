@@ -23,9 +23,7 @@ PARTICLE_DATA:
   6: {Width: 0}
 
 # on-the-fly variations (QCD)
-VARIATIONS:
-- ScaleFactors:
-   Mu2: 4.0*
+SCALE_VARIATIONS: 4.0*  # 7-point scale variations
 
 # on-the-fly variations (EWapprox)
 ASSOCIATED_CONTRIBUTIONS_VARIATIONS:

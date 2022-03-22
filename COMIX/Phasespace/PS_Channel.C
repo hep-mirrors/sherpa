@@ -32,14 +32,14 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   p_cid(new CId_Map())
 {
   RegisterDefaults();
-  nin=_nin;
-  nout=_nout;
+  m_nin=_nin;
+  m_nout=_nout;
   m_p.resize(1<<(m_n+1));
-  ms = new double[m_n];
+  p_ms = new double[m_n];
   for (size_t i(0);i<m_n;++i) {
-    ms[i]=sqr(_fl[i].Mass());
+    p_ms[i]=sqr(_fl[i].Mass());
   }
-  name="CDBG_Channel";
+  m_name="CDBG_Channel";
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
   m_zmode = s["ZMODE"].Get<int>();
   m_bmode = s["BMODE"].Get<int>();
@@ -57,9 +57,9 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   m_mfac = s["MFAC"].Get<double>();
   if (!(m_vmode&8)) m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
-  m_nr=3*nout-4;
-  rannum=m_nr+m_n-2+1;
-  rans=new double[rannum];
+  m_nr=3*m_nout-4;
+  m_rannum=m_nr+m_n-2+1;
+  p_rans=new double[m_rannum];
 }
 
 PS_Channel::~PS_Channel()
@@ -440,16 +440,16 @@ bool PS_Channel::GeneratePoint
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
     if (CIdCount(bid)>1) {
       double smin(se), smax(sqr(rtsmax-sqrt(sp)));
-      se=PropMomenta(jb,bid,smin,smax,&rans[nr++]);
+      se=PropMomenta(jb,bid,smin,smax,&p_rans[nr++]);
     }
     if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
       sp=PropMomenta((PS_Current*)jc->SCC(),pid,
-		     smin,smax,&rans[nr++]);
+		     smin,smax,&p_rans[nr++]);
     }
     TChannelMomenta(jc,jc->Dip()?jc->Dip():v->Dip(),
 		    bid,(1<<m_n)-1-aid,m_p[aid],m_p[m_rid],
-		    m_p[bid],m_p[pid],se,sp,&rans[nr]);
+		    m_p[bid],m_p[pid],se,sp,&p_rans[nr]);
     nr+=2;
     m_p[cid]=m_p[aid]-m_p[bid];
 #ifdef DEBUG__BG
@@ -466,14 +466,14 @@ bool PS_Channel::GeneratePoint
     double rts(m_p[cid].Mass()), sl(SCut(lid)), sr(SCut(rid));
     if (CIdCount(lid)>1) {
       double smin(sl), smax(sqr(rts-sqrt(sr)));
-      sl=PropMomenta(ja,lid,smin,smax,&rans[nr++]);
+      sl=PropMomenta(ja,lid,smin,smax,&p_rans[nr++]);
     }
     if (CIdCount(rid)>1) {
       double smin(sr), smax(sqr(rts-sqrt(sl)));
-      sr=PropMomenta(jb,rid,smin,smax,&rans[nr++]);
+      sr=PropMomenta(jb,rid,smin,smax,&p_rans[nr++]);
     }
     SChannelMomenta(jc,(PS_Vertex*)v,
-		    m_p[cid],m_p[aid],m_p[bid],sl,sr,&rans[nr]);
+		    m_p[cid],m_p[aid],m_p[bid],sl,sr,&p_rans[nr]);
     nr+=2;
     m_p[(1<<m_n)-1-aid]=m_p[aid];
     m_p[(1<<m_n)-1-bid]=m_p[bid];
@@ -585,7 +585,7 @@ bool PS_Channel::GenerateChannel
     }
   Vertex *vtx(NULL);
   for (size_t i(0);i<psum.size();++i)
-    if (psum[i]>=rans[m_nr+v.size()]*sum) {
+    if (psum[i]>=p_rans[m_nr+v.size()]*sum) {
       vtx=vtcs[i];
       break;
     }
@@ -635,7 +635,7 @@ bool PS_Channel::GenerateChannels()
   return true;
 }
 
-size_t PS_Channel::NChannels() const
+const size_t PS_Channel::NChannels() const
 {
   return 2*p_xs->Process()->Get<Process_Base>()
     ->PSGenerator()->NChannels();
@@ -654,7 +654,7 @@ void PS_Channel::GeneratePoint
   m_p[(1<<m_n)-1-3]=m_p[3]=
     (m_p[(1<<m_n)-1-1]=m_p[1]=p[0])+
     (m_p[(1<<m_n)-1-2]=m_p[2]=p[1]);
-  for (int i(0);i<rannum;++i) rans[i]=rn[i];
+  for (int i(0);i<m_rannum;++i) p_rans[i]=rn[i];
   Vertex_Vector v;
   if (!GenerateChannel(v)) return;
   m_vgs.clear();
@@ -831,11 +831,11 @@ bool PS_Channel::GenerateWeight()
     for (size_t i(0);i<(*p_cur)[n].size();++i) 
       if (!GenerateWeight((PS_Current*)(*p_cur)[n][i])) return 0.0;
   }
-  weight=(*(*p_cur)[m_n-1].back()->J().front().
+  m_weight=(*(*p_cur)[m_n-1].back()->J().front().
 	  Get<PS_Info>()->front())[0]/
-    pow(2.0*M_PI,3.0*nout-4.0);
+    pow(2.0*M_PI,3.0*m_nout-4.0);
 #ifdef DEBUG__BG
-  msg_Debugging()<<"} -> "<<weight<<"\n";
+  msg_Debugging()<<"} -> "<<m_weight<<"\n";
 #endif
   return true;
 }
@@ -1058,7 +1058,7 @@ void PS_Channel::SetChNumber(int n)
 
 std::string PS_Channel::ChID() 
 {
-  return name;
+  return m_name;
 }
 
 void PS_Channel::WriteOut(std::string pid)
@@ -1066,7 +1066,7 @@ void PS_Channel::WriteOut(std::string pid)
   {
     Data_Writer writer;
     writer.SetOutputPath(pid);
-    writer.SetOutputFile("_"+name+"_PS");
+    writer.SetOutputFile("_"+m_name+"_PS");
     writer.WriteToFile(m_zmode,"m_zmode");
     writer.WriteToFile(m_bmode,"m_bmode");
     writer.WriteToFile(m_omode,"m_omode");
@@ -1091,7 +1091,7 @@ void PS_Channel::WriteOut(std::string pid)
     }
     Data_Writer writer;
     writer.SetOutputPath(pid);
-    writer.SetOutputFile("_"+name+"_VI");
+    writer.SetOutputFile("_"+m_name+"_VI");
     writer.MatrixToFile(vids);
   }
   p_cur = (Current_Matrix*)
@@ -1114,7 +1114,7 @@ void PS_Channel::WriteOut(std::string pid)
     }
   Data_Writer writer;
   writer.SetOutputPath(pid);
-  writer.SetOutputFile("_"+name+"_PV");
+  writer.SetOutputFile("_"+m_name+"_PV");
   writer.MatrixToFile(pvds);
 }
 
@@ -1123,7 +1123,7 @@ void PS_Channel::ReadIn(std::string pid)
   {
     Data_Reader reader;
     reader.SetInputPath(pid);
-    reader.SetInputFile("_"+name+"_PS");
+    reader.SetInputFile("_"+m_name+"_PS");
     reader.ReadFromFile(m_zmode,"m_zmode");
     reader.ReadFromFile(m_bmode,"m_bmode");
     reader.ReadFromFile(m_omode,"m_omode");
@@ -1142,7 +1142,7 @@ void PS_Channel::ReadIn(std::string pid)
     (p_xs->Process()->Integrator()->PSHandler()->Cuts());
   Data_Reader reader;
   reader.SetInputPath(pid);
-  reader.SetInputFile("_"+name+"_PV");
+  reader.SetInputFile("_"+m_name+"_PV");
   std::vector<std::vector<std::string> > pvds;
   reader.MatrixFromFile(pvds);
   p_cur = (Current_Matrix*)
@@ -1164,7 +1164,7 @@ void PS_Channel::ReadIn(std::string pid)
   if (m_vmode>0) {
     Data_Reader reader;
     reader.SetInputPath(pid);
-    reader.SetInputFile("_"+name+"_VI");
+    reader.SetInputFile("_"+m_name+"_VI");
     std::vector<std::vector<std::string> > vids;
     if (reader.MatrixFromFile(vids)) {
       for (size_t i(0);i<vids.size();++i) {

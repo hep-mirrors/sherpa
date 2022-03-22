@@ -23,7 +23,8 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 
 
-Return_Value::code Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
+Return_Value::code
+Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
 {
   if (!m_fill) return TreatNoFill(bloblist);
   for (Blob_List::iterator bit=bloblist->begin();

@@ -1,10 +1,10 @@
 # If you have questions or requests contact Valentin Boettcher <hiro@protagon.space> (Gitlab: vale9811)
 
-image: "registry.gitlab.com/vale9811/sherpa-docker-build/slim"
+image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 
 variables:
   DOCKER_DRIVER: overlay2
-  CONFIGURE_FLAGS: --enable-analysis --enable-analysis  --with-libzip=install
+  CONFIGURE_FLAGS: --enable-analysis --enable-analysis --enable-ewsud --with-libzip=/usr
   MAKE_FLAGS: -j4
 
 .build_template: &build
@@ -40,6 +40,7 @@ build:
     - ../configure CC="ccache gcc" CXX="ccache g++" --prefix="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
+    - VERBOSE=1 make check
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -59,6 +60,7 @@ build-clang-strict:
     - ../configure CC="ccache clang" CXX="ccache clang++" CXXFLAGS="${cxxflags}" --prefix="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
+    - VERBOSE=1 make check
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -68,14 +70,14 @@ build-clang-strict:
 
 build-manual:
   stage: build
-  image: registry.gitlab.com/vale9811/sherpa-docker-build
+  image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
     - autoreconf -i
     - mkdir -p build
     - cd Manual
     - pip3 install -r requirements.txt
     - cd ../build
-    - ../configure --enable-manual --with-libzip=install
+    - ../configure --enable-manual --with-libzip=/usr
     - cd Manual
     - make
     - make sherpamanual_html
@@ -103,7 +105,7 @@ build-manual:
   variables:
     GIT_STRATEGY: none  # we only need the artifacts from the build
 
-test-LO_Z:
+test-LO_Z: &test_lo_z
   <<: *test
   needs:
     - build
@@ -111,6 +113,15 @@ test-LO_Z:
     - mkdir test-LO_Z
     - cd test-LO_Z
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
+
+test-LO_Z-Amegic:
+  <<: *test_lo_z
+  script:
+    - mkdir test-LO_Z-Amegic
+    - cd test-LO_Z-Amegic
+    - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
+    - ./makelibs
+    - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
 
 test-clang-strict-LO_Z:
   <<: *test
@@ -146,7 +157,7 @@ dist:
     - if: '$CI_COMMIT_TAG'
       when: always
     - when: never
-  image: registry.gitlab.com/vale9811/sherpa-docker-build
+  image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
     - autoreconf -i
     - cd Manual
@@ -167,7 +178,7 @@ dist:
 
 # Build Manual
 pages:
-  image: registry.gitlab.com/vale9811/sherpa-docker-build
+  image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   stage: deploy
   script:
     - cd Manual

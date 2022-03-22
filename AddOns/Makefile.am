@@ -8,6 +8,7 @@ SUBDIRS       =	\
 		LH_OLE \
 		HZTool \
 		OpenLoops \
+		Recola\
 		GoSam \
 		MadLoop \
 		MCFM \
@@ -17,7 +18,8 @@ SUBDIRS       =	\
 		HepMC \
 		Root \
 		Weights \
-		DiHiggsNLO
+		DiHiggsNLO \
+		EWSud
 
 nobase_dist_pkgdata_DATA = \
 			HEPEVT/HEPEVT_Interface.C \

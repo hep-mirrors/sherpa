@@ -9,7 +9,6 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/RUsage.H"
-#include "ATOOLS/Phys/Weights.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
@@ -27,8 +26,9 @@ static int s_retrymax(100);
 
 Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0),
-  m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0),
-  m_mn(0), m_msum(0.0), m_msumsqr(0.0),
+  m_n(0), m_mn(0), m_addn(0), m_maxweight(0.0),
+  m_wgtmapsum{0.0}, m_wgtmapsumsqr{0.0},
+  m_mwgtmapsum{0.0}, m_mwgtmapsumsqr{0.0},
   p_filter(NULL), p_variations(NULL)
 {
   p_phases  = new Phase_List;
@@ -167,7 +167,6 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
 }
 
 bool Event_Handler::AnalyseEvent() {
-  double trials(1.0), cxs(1.0);
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     if ((*pit)->Type()==eph::Analysis) {
       switch ((*pit)->Treat(&m_blobs)) {
@@ -181,16 +180,18 @@ bool Event_Handler::AnalyseEvent() {
         Return_Value::IncError((*pit)->Name());
         return false;
       case Return_Value::New_Event :
-        trials=(*p_signal)["Trials"]->Get<double>();
-        cxs=(*p_signal)["WeightsMap"]->Get<Weights_Map>().Nominal();
-        m_n      -= trials;
-        m_addn    = trials;
-        m_sum    -= cxs;
-        m_sumsqr -= sqr(cxs);
-        Return_Value::IncCall((*pit)->Name());
-        Return_Value::IncNewEvent((*pit)->Name());
-        Reset();
-        return false;
+	{
+	  double trials=(*p_signal)["Trials"]->Get<double>();
+	  const auto& lastwgtmap = (*p_signal)["WeightsMap"]->Get<Weights_Map>();
+	  m_n -= trials;
+	  m_addn = trials;
+	  m_wgtmapsum -= lastwgtmap;
+	  m_wgtmapsumsqr -= lastwgtmap*lastwgtmap;
+	  Return_Value::IncCall((*pit)->Name());
+	  Return_Value::IncNewEvent((*pit)->Name());
+	  Reset();
+	  return false;
+	}
       default:
 	msg_Error()<<"Error in "<<METHOD<<":\n"
 		   <<"  Unknown return value for 'Treat',\n"
@@ -371,9 +372,9 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     return false;
   }
   m_n      += trials+m_addn;
-  m_sum    += wgtmap.Nominal();
-  m_sumsqr += sqr(wgtmap.Nominal());
   m_addn    = 0.0;
+  m_wgtmapsum += wgtmap;
+  m_wgtmapsumsqr += wgtmap*wgtmap;
 
   return AnalyseEvent();
 }
@@ -410,11 +411,11 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
     }
   } while (run);
 
-  double xs((*p_signal)["WeightsMap"]->Get<Weights_Map>().Nominal());
+  Weights_Map wgtmap((*p_signal)["WeightsMap"]->Get<Weights_Map>());
   m_n++;
-  m_sum    += xs;
-  m_sumsqr += sqr(xs);
-  msg_Tracking()<<METHOD<<" for event with xs = "<<(xs/1.e9)<<" mbarn.\n";
+  m_wgtmapsum += wgtmap;
+  m_wgtmapsumsqr += wgtmap*wgtmap;
+
   return AnalyseEvent();
 }
 
@@ -491,40 +492,85 @@ void Event_Handler::Finish() {
     m_lastblobcounter=Blob::Counter();
   }
   Blob::Reset();
-  double xs(TotalXSMPI()), err(TotalErrMPI());
-  std::string res;
-  MyStrStream conv;
-  conv<<om::bold<<"Total XS"<<om::reset<<" is "
-      <<om::blue<<om::bold<<xs<<" pb"<<om::reset<<" +- ( "
-      <<om::red<<err<<" pb = "<<((int(err/xs*10000))/100.0)
-      <<" %"<<om::reset<<" )";
-  getline(conv,res);
-  int md(msg->Modifiable()?26:-4);
-  msg_Out()<<om::bold<<'+'<<std::string(res.length()-md,'-')<<"+\n";
-  msg_Out()<<'|'<<std::string(res.length()-md,' ')<<"|\n";
-  msg_Out()<<'|'<<om::reset<<"  "<<res<<"  "<<om::bold<<"|\n";
-  msg_Out()<<'|'<<std::string(res.length()-md,' ')<<"|\n";
-  msg_Out()<<'+'<<std::string(res.length()-md,'-')<<'+'<<om::reset<<std::endl;
+
+  // Obtain absolute (variation) weights.
+  Weights_Map xs_wgtmap = TotalXSMPI();
+  Weights_Map err_wgtmap = TotalErrMPI();
+  std::map<std::string, double> xs_wgts;
+  xs_wgtmap.FillVariations(xs_wgts);
+  std::map<std::string, double> err_wgts;
+  err_wgtmap.FillVariations(err_wgts);
+  if (Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"]
+	  .SetDefault(false)
+	  .Get<bool>()) {
+    xs_wgtmap.FillVariations(xs_wgts, Variations_Source::main);
+    err_wgtmap.FillVariations(err_wgts, Variations_Source::main);
+  }
+
+  // Find longest weights name
+  static const std::string name_column_title {"Nominal or variation name"};
+  size_t max_weight_name_size {name_column_title.size()};
+  for (const auto& kv : xs_wgts)
+    max_weight_name_size = std::max(max_weight_name_size, kv.first.size());
+
+  // Calculate columns widths
+  const size_t xs_size {12};
+  const size_t reldev_size {12};
+  const size_t abserr_size {13};
+  const size_t relerr_size {12};
+  const size_t table_size {max_weight_name_size + xs_size + reldev_size +
+			   abserr_size + relerr_size};
+
+  // Print cross section table header.
+  msg_Out() << std::string(table_size, '-') << '\n';
+  msg_Out() << std::left << std::setw(max_weight_name_size)
+	    << "Nominal or variation name";
+  msg_Out() << std::right << std::setw(12) << "XS [pb]";
+  msg_Out() << std::right << std::setw(12) << "RelDev";
+  msg_Out() << std::right << std::setw(13) << "AbsErr [pb]";
+  msg_Out() << std::right << std::setw(12) << "RelErr" << '\n';
+  msg_Out() << std::string(table_size, '-') << '\n';
+
+  // Define table row printer.
+  auto printxs = [max_weight_name_size, xs_size, reldev_size, abserr_size,
+		  relerr_size](const std::string& name, double xs, double nom,
+			       double err) {
+    msg_Out() << om::bold << std::left << std::setw(max_weight_name_size)
+	      << name << om::reset << std::right << om::blue << om::bold
+	      << std::setw(xs_size) << xs << om::reset << om::brown
+	      << std::setw(reldev_size - 2)
+	      << ((int((xs - nom) / nom * 10000)) / 100.0) << " %" << om::red
+	      << std::setw(abserr_size) << err << std::setw(relerr_size - 2)
+	      << ((int(err / xs * 10000)) / 100.0) << " %" << om::reset
+	      << std::endl;
+  };
+
+  // Print nominal cross section and variations.
+  double nom = xs_wgtmap.Nominal();
+  printxs("Nominal", nom, nom, err_wgtmap.Nominal());
+  for (const auto& kv : xs_wgts) {
+    const double xs = kv.second;
+    const double err = err_wgts[kv.first];
+    printxs(kv.first, xs, nom, err);
+  }
+
+  // Print cross section table footer.
+  msg_Out()<<std::string(table_size,'-')<<'\n';
 }
 
 void Event_Handler::MPISync()
 {
   m_mn=m_n;
-  m_msum=m_sum;
-  m_msumsqr=m_sumsqr;
+  m_mwgtmapsum=m_wgtmapsum;
+  m_mwgtmapsumsqr=m_wgtmapsumsqr;
 #ifdef USING__MPI
   int size=mpi->Size();
   if (size>1) {
-    double values[3];
-    values[0]=m_mn;
-    values[1]=m_msum;
-    values[2]=m_msumsqr;
-    mpi->Allreduce(values,3,MPI_DOUBLE,MPI_SUM);
+    mpi->Allreduce(&m_mn,1,MPI_DOUBLE,MPI_SUM);
     if (!(m_checkweight&2))
       mpi->Allreduce(&m_maxweight,1,MPI_DOUBLE,MPI_MAX);
-    m_mn=values[0];
-    m_msum=values[1];
-    m_msumsqr=values[2];
+    m_mwgtmapsum.MPI_Allreduce();
+    m_mwgtmapsumsqr.MPI_Allreduce();
   }
 #endif
   size_t currentrss=GetCurrentRSS();
@@ -540,49 +586,33 @@ void Event_Handler::MPISync()
   }
 }
 
-double Event_Handler::TotalXS()
+Weights_Map Event_Handler::TotalXS()
 {
   if (m_n==0.0) return 0.0;
-  return m_sum/m_n;
+  return m_wgtmapsum/m_n;
 }
 
-
-double Event_Handler::TotalVar()
-{
-  if (m_n<=1) return sqr(TotalXS());
-  return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1);
-}
-
-
-double Event_Handler::TotalErr()
+Weights_Map Event_Handler::TotalErr()
 {
   if (m_n<=1) return TotalXS();
-  if (ATOOLS::IsEqual
-      (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
-  return sqrt((m_sumsqr-m_sum*m_sum/m_n)/(m_n-1)/m_n);
+  auto numerator = m_wgtmapsumsqr*m_n - m_wgtmapsum*m_wgtmapsum;
+  numerator.SetZeroIfCloseToZero(1.0e-6);
+  return sqrt(numerator/(m_n-1)/(m_n*m_n));
 }
 
-double Event_Handler::TotalXSMPI()
+Weights_Map Event_Handler::TotalXSMPI()
 {
   MPISync();
   if (m_mn==0.0) return 0.0;
-  return m_msum/m_mn;
+  return m_mwgtmapsum/m_mn;
 }
 
-
-double Event_Handler::TotalVarMPI()
-{
-  if (m_mn<=1) return sqr(TotalXSMPI());
-  return (m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1);
-}
-
-
-double Event_Handler::TotalErrMPI()
+Weights_Map Event_Handler::TotalErrMPI()
 {
   if (m_mn<=1) return TotalXS();
-  if (ATOOLS::IsEqual
-      (m_msumsqr*m_mn,m_msum*m_msum,1.0e-6)) return 0.0;
-  return sqrt((m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1)/m_mn);
+  auto numerator = m_mwgtmapsumsqr*m_mn - m_mwgtmapsum*m_mwgtmapsum;
+  numerator.SetZeroIfCloseToZero(1.0e-6);
+  return sqrt(numerator/(m_mn-1)/(m_mn*m_mn));
 }
 
 void Event_Handler::WriteRNGStatus
@@ -614,7 +644,7 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
       const auto num_variations = s_variations->Size(type);
       for (auto i = 0; i < num_variations; ++i) {
         const auto varweight = weights.Variation(i);
-        const std::string& name = s_variations->Parameters(i).m_name;
+        const std::string& name = s_variations->Parameters(i).Name();
         if (m_maxweights.find(name) == m_maxweights.end()) {
           m_maxweights[name] = 0.0;
         }
@@ -632,3 +662,10 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
 
   return true;
 }
+
+std::string Event_Handler::CurrentProcess() const
+{
+  if (p_signal) return p_signal->TypeSpec();
+  return "<unknown>";
+}
+

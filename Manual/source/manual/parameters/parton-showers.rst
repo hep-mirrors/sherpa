@@ -99,6 +99,13 @@ Sudakov weights might be computed correctly. On the other hand, the
 use of CS Shower in the METS scale setter is not affected,
 cf. :ref:`SCALES`.
 
+The parton shower coupling scales, PDF scales and PDF themselves
+can be varied on-the-fly, along with the on-the-fly variations
+of the corresponding matrix element parameters.
+See :ref:`On-the-fly event weight variations`
+to find out how specify the variations
+and enable them in the shower.
+
 .. _CS Shower options:
 
 CS Shower options

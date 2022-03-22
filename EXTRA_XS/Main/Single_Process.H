@@ -11,10 +11,10 @@ namespace EXTRAXS {
 
   class Single_Process: public PHASIC::Single_Process {
   private:
-    ME2_Base* p_born_me2;
-    PHASIC::Virtual_ME2_Base* p_virtual_me2;
-    ATOOLS::nlo_type::code m_nlotype;
-    std::set<std::pair<size_t,size_t> > m_ccombs;
+    ME2_Base                              * p_born_me2;
+    PHASIC::Virtual_ME2_Base              * p_virtual_me2;
+    ATOOLS::nlo_type::code                  m_nlotype;
+    std::set<std::pair<size_t,size_t> >     m_ccombs;
     std::map<size_t,ATOOLS::Flavour_Vector> m_cfls;
 
     bool                   m_localFS, m_stashed;
@@ -39,7 +39,9 @@ namespace EXTRAXS {
     bool Initialize();
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
 
-    double Partonic(const ATOOLS::Vec4D_Vector& momenta,int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector&,
+                    ATOOLS::Variations_Mode varmode,
+                    int mode);
 
     bool Combinable(const size_t &idi, const size_t &idj);
 
@@ -49,7 +51,7 @@ namespace EXTRAXS {
     // functions overwritten here
     std::vector<std::vector<int> > * Colours() const;
 
-    
+
     const bool HasInternalScale() const;
     const double InternalScale() const;
     // inline functions

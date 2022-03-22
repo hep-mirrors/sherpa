@@ -609,7 +609,9 @@ bool Single_DipoleTerm::Trigger(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms, int mode)
+double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms,
+                                   Variations_Mode varmode,
+                                   int mode)
 {
   p_int->SetMomenta(_moms);
   Poincare cms;

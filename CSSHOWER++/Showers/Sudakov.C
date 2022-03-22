@@ -223,7 +223,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
   }
 }
 
-bool Sudakov::Generate(Parton * split) 
+bool Sudakov::Generate(Parton* split, double kt2win)
 {
   m_weight=1.0;
   int cc(split->GetFlavour().StrongCharge());
@@ -270,7 +270,7 @@ bool Sudakov::Generate(Parton * split)
   Parton *spect(NULL);
   Splitting_Function_Base *selected(NULL);
   for (size_t i(0);i<slist.size();++i) {
-    int success(Generate(split,slist[i],t0,t,y,z,phi));
+    int success(Generate(split,slist[i],t0,kt2win,t,y,z,phi));
     if (success) {
       msg_IODebugging()<<"shrink evolution window "<<t0<<" -> "<<t<<"\n";
       m_sy=y;
@@ -295,7 +295,7 @@ bool Sudakov::Generate(Parton * split)
   return p_spect!=NULL;
 }
 
-bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y,double &z,double &phi)
+bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,double &t,double &y,double &z,double &phi)
 {
   ClearSpecs();
   ResetLastInt();
@@ -364,7 +364,7 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y
   double x = 0.0;
   
   bool success(false);
-  while (t>=t0) {
+  while (t>=Max(t0,kt2win)) {
     t=ProduceT(t);
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());

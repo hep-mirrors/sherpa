@@ -75,6 +75,7 @@ namespace SHERPA {
 
     std::string m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo;
+    bool        m_pilotrunenabled;
     int         m_nloadd, m_ewaddmode, m_qcdaddmode;
 
     ATOOLS::Weight_Info m_evtinfo;
@@ -160,6 +161,8 @@ namespace SHERPA {
     int InitializeProcesses(BEAM::Beam_Spectra_Handler*,
                             PDF::ISR_Handler*);
 
+    int InitializeTheReweighting(ATOOLS::Variations_Mode mode);
+
 #ifdef USING__Threading
     static void *TCalculateTotalXSecs(void *arg);
 #endif
@@ -205,6 +208,8 @@ namespace SHERPA {
 
     static size_t ExtractFlavours(PHASIC::Subprocess_Info &infos,std::string buffer);
 
+    void CheckAssociatedContributionsSetup(
+        const std::set<ATOOLS::asscontrib::type>& calculated_asscontribs) const;
   };// end of class Matrix_Element_Handler
 
 }// end of namespace SHERPA

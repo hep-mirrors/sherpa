@@ -11,7 +11,6 @@ namespace HepMC3 {
   class GenEvent;
   class GenVertex;
   class GenParticle;
-  class GenCrossSection;
   class Writer;
   class WriterAscii;
   class WriterAsciiHepMC2;
@@ -28,17 +27,18 @@ namespace SHERPA {
   class Output_HepMC3_Genevent : public Output_Base {
     HepMC3_Interface m_hepmc3;
     HepMC::Writer *p_writer=0;
-    std::shared_ptr<HepMC::GenCrossSection> p_xs;
     std::shared_ptr<HepMC::GenRunInfo> m_run_info;
     std::string m_basename;
     int m_iotype;
+    ATOOLS::Weights_Map m_xs;
+    ATOOLS::Weights_Map m_err;
   public:
     Output_HepMC3_Genevent(const Output_Arguments &args);
     ~Output_HepMC3_Genevent();
-    void SetXS(const double& xs, const double& xserr);
-    void Output(ATOOLS::Blob_List* blobs);
-    //void Output(ATOOLS::Blob_List* blobs){ Output(blobs, 1.0);}
-    void ChangeFile();
+    void SetXS(const ATOOLS::Weights_Map& xs,
+               const ATOOLS::Weights_Map& err) override;
+    void Output(ATOOLS::Blob_List* blobs) override;
+    void ChangeFile() override;
   };
 }
 #endif

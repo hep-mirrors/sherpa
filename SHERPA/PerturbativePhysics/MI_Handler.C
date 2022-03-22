@@ -20,12 +20,12 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   p_isr(isr),p_amisic(NULL),p_ampl(NULL),p_proc(NULL),p_shower(NULL),
   m_stop(false),m_type(None),m_name("None")
 {
-  if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) return;
-  Settings& s = Settings::GetMainSettings();
-  std::string mihandler{ s["MI_HANDLER"]
-    .SetDefault("Amisic")
-    .UseNoneReplacements()
-    .Get<std::string>() };
+  auto s = Settings::GetMainSettings()["MI_HANDLER"];
+  if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) {
+    s.OverrideScalar<std::string>("None");
+  }
+  std::string mihandler{
+    s.SetDefault("Amisic").UseNoneReplacements().Get<std::string>() };
   if (mihandler==string("Amisic")) InitAmisic(model);
 }
 

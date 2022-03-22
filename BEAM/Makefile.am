@@ -1,1 +1,1 @@
-SUBDIRS = Main
+SUBDIRS = Main Spectra

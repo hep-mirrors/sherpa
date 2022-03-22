@@ -1160,14 +1160,14 @@ void Amplitude::SetCouplings() const
 #ifdef DEBUG__CF
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
+  MODEL::Coupling_Data *aqcd(m_cpls.front().p_aqcd);
+  MODEL::Coupling_Data *aqed(m_cpls.front().p_aqed);
+  double gsfac(aqcd?sqrt(aqcd->Factor()):1.0);
+  double gwfac(aqed?sqrt(aqed->Factor()):1.0);
   for (size_t i(0);i<m_cpls.size();++i) {
     double fac(1.0);
     Vertex *v(m_cpls[i].p_v);
     size_t oqcd(m_cpls[i].m_oqcd), oew(m_cpls[i].m_oew);
-    MODEL::Coupling_Data *aqcd(m_cpls[i].p_aqcd);
-    MODEL::Coupling_Data *aqed(m_cpls[i].p_aqed);
-    double gsfac(aqcd?sqrt(aqcd->Factor()):1.0);
-    double gwfac(aqed?sqrt(aqed->Factor()):1.0);
     if (aqcd && oqcd) {
 #ifdef DEBUG__CF
       msg_Debugging()<<"  qcd: "<<sqrt(aqcd->Factor())<<" ^ "<<oqcd
@@ -1512,8 +1512,17 @@ bool Amplitude::EvaluateAll(const bool& mode)
 	  Sub()->Sub()->In().front()->Kin();
 	m_p[0]=-m_p[0];
 	m_p[1]=-m_p[1];
-	double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
-		      dabs(kin->JIJT()->P()*kin->JK()->P())));
+	//double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
+	//	      dabs(kin->JIJT()->P()*kin->JK()->P())));
+  
+  double lf(0.);
+  if (!p_loop || !(p_loop->fixedIRscale())) 
+      lf = log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
+  else{
+      double irscale=p_loop->IRscale();
+      lf = log(2.0*M_PI*sqr(irscale)/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
+  }
+
 	m_p[0]=-m_p[0];
 	m_p[1]=-m_p[1];
 #ifdef DEBUG__BG

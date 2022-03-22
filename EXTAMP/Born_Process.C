@@ -17,7 +17,9 @@ namespace EXTAMP {
     p_born_me->SetCouplings(m_cpls);
   }
 
-  double Born_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int mode)
+  double Born_Process::Partonic(const ATOOLS::Vec4D_Vector &p,
+                                ATOOLS::Variations_Mode varmode,
+                                int mode)
   {
     if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
 

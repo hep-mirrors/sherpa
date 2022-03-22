@@ -199,8 +199,8 @@ void Output_PGS::Output(Blob_List *bl,const double weight)
 void Output_PGS::Footer()
 {
   msg_Info()<<METHOD<<"(): {\n  Total xs is "
-	    <<p_eventhandler->TotalXS()<<" pb +- "
-	    <<p_eventhandler->TotalErr()<<" pb.\n";
+	    <<p_eventhandler->TotalXS().Nominal()<<" pb +- "
+	    <<p_eventhandler->TotalErr().Nominal()<<" pb.\n";
   pgsxxx(3);
   msg_Info()<<"}"<<std::endl;
 }

@@ -1,404 +1,152 @@
-#include "BEAM/Main/Beam_Spectra_Handler.H"
-#include "BEAM/Main/Beam_Base.H"
-#include "BEAM/Main/Monochromatic.H"
-#include "BEAM/Main/Spectrum_Reader.H"
-#include "BEAM/Main/Laser_Backscattering.H"
-#include "BEAM/Main/EPA.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
-#include <stdio.h>
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Phys/KF_Table.H"
-
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "BEAM/Main/Collider_Kinematics.H"
+#include "BEAM/Main/Collider_Weight.H"
+#include "BEAM/Main/DM_Annihilation_Kinematics.H"
+#include "BEAM/Main/DM_Annihilation_Weight.H"
+#include "BEAM/Main/RelicDensity_Kinematics.H"
+#include "BEAM/Main/RelicDensity_Weight.H"
 
 using namespace ATOOLS;
 using namespace BEAM;
 using namespace std;
 
-
-Beam_Spectra_Handler::Beam_Spectra_Handler():
-  p_BeamBase(NULL)
-{
-  RegisterDefaults();
-
-  p_BeamBase = new Beam_Base*[2];
-  for (short int i=0;i<2;i++) p_BeamBase[i] = NULL;
-
-  if (!(SpecifySpectra() && InitKinematics())) {
-    msg_Error()<<"Error in Beam_Spectra_Handler::Beam_Spectra_Handler :"<<endl
-	       <<"    Could not init spectra or kinematics. Abort program."<<endl;
-    ATOOLS::Abort();
-  }
-
-  m_mode = 0;
-  m_polarisation = 0;
-  for (short int i=0;i<2;i++) {
-    if (p_BeamBase[i]->On()) m_mode += i+1;
-    if (p_BeamBase[i]->PolarisationOn()) m_polarisation += i+1;
-  }
-  ATOOLS::rpa->gen.SetBeam1(p_BeamBase[0]->Beam());
-  ATOOLS::rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
-  ATOOLS::rpa->gen.SetPBeam(0,p_BeamBase[0]->InMomentum());
-  ATOOLS::rpa->gen.SetPBeam(1,p_BeamBase[1]->InMomentum());
+Beam_Spectra_Handler::Beam_Spectra_Handler()
+    : p_kinematics(NULL), p_weight(NULL), m_beammode(beammode::collider),
+      m_collidermode(collidermode::monochromatic), m_mode(0),
+      m_polarisation(0) {
+  for (size_t i = 0; i < 2; i++)
+    p_BeamBase[i] = nullptr;
+  // simple check for remotely sensible beam parameters
+  if (!m_parameters.SpecifyMode() || !m_parameters.SpecifySpectra())
+    THROW(fatal_error, "Bad parameters in BEAM_SPECTRA_HANDLER.");
+  m_beammode = m_parameters.GetMode();
+  // initialise the beams, kinematics & weights
+  if (!InitTheBeams() || !InitTheKinematics() || !InitTheWeight())
+    THROW(fatal_error, "Bad spectra in BEAM_SPECTRA_HANDLER.");
+  m_on = p_kinematics->On();
 }
 
-void Beam_Spectra_Handler::RegisterDefaults()
-{
-  Settings& s = Settings::GetMainSettings();
-
-  // NOTE: for backwards-compatibility we allow the use of <setting_name>_i
-  // with i=1,2 as alternatives for BEAMS, BEAM_SPECTRA, and BEAM_ENERGIES. We
-  // do not advertise this in the manual, it's only to make conversion of run
-  // cards less error-prone.
-
-  const auto defbeam = 0;
-  const auto beam1 = s["BEAM_1"].SetDefault(defbeam).Get<int>();
-  const auto beam2 = s["BEAM_2"].SetDefault(defbeam).Get<int>();
-  s["BEAMS"].SetDefault({beam1, beam2});
-
-  std::string defspectrum {"Monochromatic"};
-  const auto spectrum1
-    = s["BEAM_SPECTRUM_1"].SetDefault(defspectrum).Get<std::string>();
-  const auto spectrum2
-    = s["BEAM_SPECTRUM_2"].SetDefault(defspectrum).Get<std::string>();
-  s["BEAM_SPECTRA"].SetDefault({spectrum1, spectrum2});
-
-  const auto defenergy = 0.0;
-  const auto energy1 = s["BEAM_ENERGY_1"].SetDefault(defenergy).Get<double>();
-  const auto energy2 = s["BEAM_ENERGY_2"].SetDefault(defenergy).Get<double>();
-  s["BEAM_ENERGIES"].SetDefault({energy1, energy2});
-
-  s["BEAM_POLARIZATIONS"].SetDefault(0.0);
-  s["BEAM_SMIN"].SetDefault(1e-10);
-  s["BEAM_SMAX"].SetDefault(1.0);
-}
-
-void Beam_Spectra_Handler::RegisterLaserDefaults(const int& lasermode)
-{
-  Settings& s = Settings::GetMainSettings();
-  RegisterLaserEnergyAndPolarizationDefaults();
-  s["LASER_MODE"].SetDefault(lasermode);
-  s["LASER_ANGLES"].SetDefault(false);
-  s["LASER_NONLINEARITY"].SetDefault(false);
-}
-
-void Beam_Spectra_Handler::RegisterSpectrumReaderDefaults()
-{
-  Settings& s = Settings::GetMainSettings();
-  RegisterLaserEnergyAndPolarizationDefaults();
-  s["SPECTRUM_FILES"].SetDefault("");
-}
-
-void Beam_Spectra_Handler::RegisterLaserEnergyAndPolarizationDefaults()
-{
-  Settings& s = Settings::GetMainSettings();
-  s["E_LASER"].SetDefault(0.0);
-  s["P_LASER"].SetDefault(0.0);
-}
-
-Beam_Spectra_Handler::~Beam_Spectra_Handler() { 
-  for (short int i=0;i<2;i++) {
-    if (p_BeamBase[i]) { delete p_BeamBase[i]; p_BeamBase[i] = NULL; }
-  }
-  if (p_BeamBase) { delete [] p_BeamBase; p_BeamBase = NULL; }
-}
-
-bool Beam_Spectra_Handler::Init()
-{
-  bool init(p_BeamBase[0]->Init());
-  if (!p_BeamBase[1]->Init()) init=false;
-  return init;
-}
-
-bool Beam_Spectra_Handler::SpecifySpectra()
-{
-  bool okay(true);
-  char help[20];
-  Beam_Type::code      beam_spec;
-  std::vector<std::string> beam_spectra{
-    Settings::GetMainSettings()["BEAM_SPECTRA"].GetVector<std::string>() };
-  if (beam_spectra.size() == 0 || beam_spectra.size() > 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAM_SPECTRA'.");
-  for (short int num=0;num<2;num++) {
-    sprintf(help,"%i",num+1);
-    std::string number   = string(help); 
-    std::string bs{ (num == 0) ? beam_spectra.front() : beam_spectra.back() };
-    if      (bs=="Monochromatic")        beam_spec=Beam_Type::Monochromatic;
-    else if (bs=="Gaussian")             beam_spec=Beam_Type::Gaussian;
-    else if (bs=="Laser_Backscattering") beam_spec=Beam_Type::Laser_Back;
-    else if (bs=="Simple_Compton")       beam_spec=Beam_Type::Simple_Compton;
-    else if (bs=="Spectrum_Reader")      beam_spec=Beam_Type::Spec_Read;
-    else if (bs=="EPA")                  beam_spec=Beam_Type::EPA;
-    else                                 beam_spec=Beam_Type::Unknown;
-    switch (beam_spec) {
-    case Beam_Type::Monochromatic :
-      okay = okay&&InitializeMonochromatic(num);
-      break;
-    case Beam_Type::Gaussian :
-      msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
-		 <<"   Gaussian beam spectra still have to be implemented."<<endl 
-		 <<"   Will read in parameters, check the procedure and abort later."<<endl;
-      okay = 0;
-      break;
-    case Beam_Type::Simple_Compton :
-      RegisterLaserDefaults(-1);
-      okay = okay&&InitializeLaserBackscattering(num);
-      break;
-    case Beam_Type::Laser_Back :
-      RegisterLaserDefaults(0);
-      okay = okay&&InitializeLaserBackscattering(num);
-      break;
-    case Beam_Type::EPA :
-      okay = okay&&InitializeEPA(num);
-      break;
-    case Beam_Type::Spec_Read :
-      RegisterSpectrumReaderDefaults();
-      okay = okay&&InitializeSpectrumReader(num);
-      break;
-    default :
-      msg_Error()<<"Warning in Beam_Initialization::SpecifySpectra :"<<endl
-		 <<"   No beam spectrum specified for beam "<<num+1<<endl
-		 <<"   Will initialize monochromatic beam."<<endl;
-      okay = okay&&InitializeMonochromatic(num);
-      break;
+Beam_Spectra_Handler::~Beam_Spectra_Handler() {
+  for (short int i = 0; i < 2; i++) {
+    if (p_BeamBase[i]) {
+      delete p_BeamBase[i];
+      p_BeamBase[i] = nullptr;
     }
   }
-  return okay;
 }
 
-bool Beam_Spectra_Handler::InitializeLaserBackscattering(int num)
-{
-  Settings& s = Settings::GetMainSettings();
-  std::vector<int> beam{ s["BEAMS"].GetVector<int>() };
-  if (beam.size() != 1 && beam.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAMS'.");
-  int flav{ (num == 0) ? beam.front() : beam.back() };
-  InitializeFlav((kf_code)abs(flav));
-  Flavour beam_particle     = Flavour((kf_code)abs(flav));
-  if (flav<0) beam_particle = beam_particle.Bar();
-
-  std::vector<double> beam_energies{ s["BEAM_ENERGIES"].GetVector<double>() };
-  if (beam_energies.size() != 1 && beam_energies.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAM_ENERGIES'.");
-  double beam_energy{ (num == 0) ? beam_energies.front() : beam_energies.back() };
-
-  std::vector<double> beam_polarizations{ s["BEAM_POLARIZATIONS"].GetVector<double>() };
-  if (beam_polarizations.size() != 1 && beam_polarizations.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAM_POLARIZATIONS'.");
-  double beam_polarization{ (num == 0) ? beam_polarizations.front() : beam_polarizations.back() };
-
-  if ((beam_particle!=Flavour(kf_e)) && (beam_particle!=Flavour(kf_e).Bar())) {
-    msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
-	       <<"   Tried to initialize Laser_Backscattering for "
-	       <<beam_particle<<"."<<endl
-	       <<"   This option is not available. "
-	       <<"Result will be to terminate program."<<endl;
-    return false;
+bool Beam_Spectra_Handler::InitTheBeams() {
+  for (short int i = 0; i < 2; i++) {
+    p_BeamBase[i] = m_parameters.InitSpectrum(i);
+    if (p_BeamBase[i] == nullptr)
+      return false;
+    if (p_BeamBase[i]->On())
+      m_mode += i + 1;
+    if (p_BeamBase[i]->PolarisationOn())
+      m_polarisation += i + 1;
   }
-
-  std::vector<double> laser_energies{ s["E_LASER"].GetVector<double>() };
-  if (laser_energies.size() != 1 && laser_energies.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `E_LASER'.");
-  double Laser_energy{ (num == 0) ? laser_energies.front() : laser_energies.back() };
-
-  std::vector<double> laser_polarizations{ s["P_LASER"].GetVector<double>() };
-  if (laser_polarizations.size() != 1 && laser_polarizations.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `P_LASER'.");
-  double Laser_polarization{ (num == 0) ? laser_polarizations.front() : laser_polarizations.back() };
-
-  int mode = s["LASER_MODE"].Get<int>();
-  bool angles = s["LASER_ANGLES"].Get<bool>();
-  bool nonlin = s["LASER_NONLINEARITY"].Get<bool>();
-
-  p_BeamBase[num]= new Laser_Backscattering(
-      beam_particle,beam_energy,beam_polarization,
-      Laser_energy,Laser_polarization,
-      mode,(int)angles,(int)nonlin,1-2*num);
-
-  return true;
-}
-
-bool Beam_Spectra_Handler::InitializeSpectrumReader(int num)
-{
-  Settings& s = Settings::GetMainSettings();
-  std::vector<int> beam{ s["BEAMS"].GetVector<int>() };
-  if (beam.size() != 1 && beam.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAMS'.");
-
-  int flav{ (num == 0) ? beam.front() : beam.back() };
-  InitializeFlav((kf_code)abs(flav));
-  Flavour beam_particle     = Flavour((kf_code)abs(flav));
-  if (flav<0) beam_particle = beam_particle.Bar();
-
-  std::vector<double> beam_energies{ s["BEAM_ENERGIES"].GetVector<double>() };
-  if (beam_energies.size() != 1 && beam_energies.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAM_ENERGIES'.");
-  double beam_energy{ (num == 0) ? beam_energies.front() : beam_energies.back() };
-
-  std::vector<double> beam_polarizations{ s["BEAM_POLARIZATIONS"].GetVector<double>() };
-  if (beam_polarizations.size() != 1 && beam_polarizations.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAM_POLARIZATIONS'.");
-  double beam_polarization{ (num == 0) ? beam_polarizations.front() : beam_polarizations.back() };
-
-  std::vector<double> laser_energies{ s["E_LASER"].GetVector<double>() };
-  if (laser_energies.size() != 1 && laser_energies.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `E_LASER'.");
-  double laser_energy{ (num == 0) ? laser_energies.front() : laser_energies.back() };
-
-  std::vector<double> laser_polarizations{ s["P_LASER"].GetVector<double>() };
-  if (laser_polarizations.size() != 1 && laser_polarizations.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `P_LASER'.");
-  double laser_polarization{ (num == 0) ? laser_polarizations.front() : laser_polarizations.back() };
-
-  std::vector<std::string> spectrum_files{ s["SPECTRUM_FILES"].GetVector<std::string>() };
-  if (spectrum_files.size() != 1 && spectrum_files.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `SPECTRUM_FILES'.");
-  std::string spectrumfile{ (num == 0) ? spectrum_files.front() : spectrum_files.back() };
-
-  p_BeamBase[num] = new Spectrum_Reader(beam_particle,beam_energy,beam_polarization,
-					laser_energy, laser_polarization,
-					spectrumfile,1-2*num);
-
-  return true;
-}
-
-bool Beam_Spectra_Handler::InitializeMonochromatic(int num)
-{
-  Settings& s = Settings::GetMainSettings();
-  std::vector<int> beam{ s["BEAMS"].GetVector<int>() };
-  if (beam.size() != 1 && beam.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAMS'.");
-
-  int flav{ (num == 0) ? beam.front() : beam.back() };
-  InitializeFlav((kf_code)abs(flav));
-  Flavour beam_particle     = Flavour((kf_code)abs(flav));
-  if (flav<0) beam_particle = beam_particle.Bar();
-
-  std::vector<double> beam_energies{ s["BEAM_ENERGIES"].GetVector<double>() };
-  if (beam_energies.size() != 1 && beam_energies.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAM_ENERGIES'.");
-  double beam_energy{ (num == 0) ? beam_energies.front() : beam_energies.back() };
-
-  std::vector<double> beam_polarizations{ s["BEAM_POLARIZATIONS"].GetVector<double>() };
-  if (beam_polarizations.size() != 1 && beam_polarizations.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAM_POLARIZATIONS'.");
-  double beam_polarization{ (num == 0) ? beam_polarizations.front() : beam_polarizations.back() };
-
-  p_BeamBase[num] = new Monochromatic(beam_particle,beam_energy,beam_polarization,1-2*num);
-
-  return true;
-}
-
-
-bool Beam_Spectra_Handler::InitializeEPA(int num)
-{
-  Settings& s = Settings::GetMainSettings();
-  std::vector<int> beam{ s["BEAMS"].GetVector<int>() };
-  if (beam.size() != 1 && beam.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAMS'.");
-
-  int flav{ (num == 0) ? beam.front() : beam.back() };
-  InitializeFlav((kf_code)abs(flav));
-  Flavour beam_particle     = Flavour((kf_code)abs(flav));
-  if (flav<0) beam_particle = beam_particle.Bar();
-
-  if (!(abs(flav)==kf_p_plus || abs(flav)==kf_e) &&
-      !beam_particle.IsIon()) {
-    msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
-               <<"   Tried to initialize EPA for "<<beam_particle<<"."<<endl
-	       <<"   This option is not available. "
-	       <<"Result will be to terminate program."<<endl;
-    return false;
+  switch (m_mode) {
+  case 1:
+    m_collidermode = collidermode::spectral_1;
+    break;
+  case 2:
+    m_collidermode = collidermode::spectral_2;
+    break;
+  case 3:
+    m_collidermode = collidermode::both_spectral;
+    break;
+  case 0:
+  default:
+    break;
   }
+  rpa->gen.SetBeam1(p_BeamBase[0]->Beam());
+  rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
+  rpa->gen.SetPBeam(0, p_BeamBase[0]->InMomentum());
+  rpa->gen.SetPBeam(1, p_BeamBase[1]->InMomentum());
+  return true;
+}
 
-  std::vector<double> beam_energies{ s["BEAM_ENERGIES"].GetVector<double>() };
-  if (beam_energies.size() != 1 && beam_energies.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAM_ENERGIES'.");
-  double beam_energy{ (num == 0) ? beam_energies.front() : beam_energies.back() };
-
-  if (beam_particle.IsIon()) { 
-    beam_energy *= beam_particle.GetAtomicNumber();
-    // for ions the energy is specified as nucleon energy and not as energy of the
-    // whole beam particle
+bool Beam_Spectra_Handler::InitTheKinematics() {
+  switch (m_beammode) {
+  case beammode::relic_density:
+    m_type = string("Relic Density");
+    p_kinematics = new RelicDensity_Kinematics(p_BeamBase);
+    break;
+  case beammode::collider:
+    m_type = string("Collider Setup");
+    p_kinematics = new Collider_Kinematics(p_BeamBase);
+    break;
+  case beammode::DM_annihilation:
+    m_type = string("DM Annihilation");
+    p_kinematics = new DM_Annihilation_Kinematics(p_BeamBase);
+    break;
+  case beammode::unknown:
+  default:
+    break;
   }
-  msg_Tracking() << "InitializeEPA: Beam energy " << beam_energy << std::endl;
-
-  std::vector<double> beam_polarizations{ s["BEAM_POLARIZATIONS"].GetVector<double>() };
-  if (beam_polarizations.size() != 1 && beam_polarizations.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `BEAM_POLARIZATIONS'.");
-  double beam_polarization{ (num == 0) ? beam_polarizations.front() : beam_polarizations.back() };
-
-  double  beam_mass         = beam_particle.Mass(true);
-  double  beam_charge       = beam_particle.Charge();
-  p_BeamBase[num]           = new EPA(beam_particle,beam_mass,beam_charge,
-				      beam_energy,beam_polarization,
-				      1-2*num);
-
-  return true;
+  return (p_kinematics != nullptr);
 }
 
-bool Beam_Spectra_Handler::InitKinematics()
-{
-  Settings& settings = Settings::GetMainSettings();
-  // cms system from beam momenta - this is for potential asymmetric collisions.
-  Vec4D  P      = p_BeamBase[0]->InMomentum()+p_BeamBase[1]->InMomentum();
-  double s      = P.Abs2();
-  double E      = sqrt(s);
-  rpa->gen.SetEcms(E);
-  settings.AddGlobalTag("E_CMS", ToString(rpa->gen.Ecms()));
-
-  m_splimits[0] = s*settings["BEAM_SMIN"].Get<double>();
-  m_splimits[1] = s*ATOOLS::Min(settings["BEAM_SMAX"].Get<double>(),Upper1()*Upper2());
-  m_splimits[2] = s;
-  m_ylimits[0]  = -10.;
-  m_ylimits[1]  = 10.;
-  m_exponent[0] = .5;
-  m_exponent[1] = .98 * ( p_BeamBase[0]->Exponent() + p_BeamBase[1]->Exponent());
-  m_mass12      = sqr(p_BeamBase[0]->Bunch().Mass());
-  m_mass22      = sqr(p_BeamBase[1]->Bunch().Mass());
-  double x      = 1./2.+(m_mass12-m_mass22)/(2.*E*E);
-  double E1     = x*E;
-  double E2     = E-E1;
-  m_fiXVECs[0]  = Vec4D(E1,0.,0., sqrt(sqr(E1)-m_mass12));
-  m_fiXVECs[1]  = Vec4D(E2,0.,0.,-sqrt(sqr(E1)-m_mass12));
-  m_asymmetric  = 0;
-  if ((dabs((m_fiXVECs[0]+(-1.)*p_BeamBase[0]->InMomentum()).Abs2())>0.0000001) ||
-      (dabs((m_fiXVECs[1]+(-1.)*p_BeamBase[1]->InMomentum()).Abs2())>0.0000001) ) m_asymmetric = 1;
-
-
-  m_type = p_BeamBase[0]->Type() + std::string("*") + p_BeamBase[1]->Type();
-  return true;
+bool Beam_Spectra_Handler::InitTheWeight() {
+  switch (m_beammode) {
+  case beammode::relic_density:
+    p_weight = new RelicDensity_Weight(p_kinematics);
+    break;
+  case beammode::collider:
+    p_weight = new Collider_Weight(p_kinematics);
+    break;
+  case beammode::DM_annihilation:
+    p_weight = new DM_Annihilation_Weight(p_kinematics);
+    break;
+  case beammode::unknown:
+  default:
+    break;
+  }
+  return (p_weight != nullptr);
 }
-
 
 void Beam_Spectra_Handler::Output() {
-  msg_Info()<<"Beam_Spectra_Handler : "<<endl
-	   <<"   type = "<<m_type<<endl
-	   <<"   for    "<<p_BeamBase[0]->Beam()<<"  ("<<p_BeamBase[0]->InMomentum()<<")"<<endl
-	   <<"   and    "<<p_BeamBase[1]->Beam()<<"  ("<<p_BeamBase[1]->InMomentum()<<")"<<endl;
+  msg_Info() << "Beam_Spectra_Handler: type = " << m_type << endl
+             << "    for " << p_BeamBase[0]->Beam()
+             << " (on = " << p_BeamBase[0]->On() << ", "
+             << "p = " << p_BeamBase[0]->InMomentum() << ")" << endl
+             << "    and " << p_BeamBase[1]->Beam()
+             << " (on = " << p_BeamBase[0]->On() << ", "
+             << "p = " << p_BeamBase[1]->InMomentum() << ")." << endl;
 }
 
+/* ----------------------------------------------------------------
 
-bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _beams,
-					    ATOOLS::Flavour * _bunches) {
-  bool fit = 1;
-  for (int i=0;i<2;i++) {
-    if ((_beams[i]!=GetBeam(i)->Beam()) || (_bunches[i]!=GetBeam(i)->Bunch())) {
-      fit = 0;
+   Boosts
+
+   ---------------------------------------------------------------- */
+
+bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *_beams,
+                                            ATOOLS::Flavour *_bunches) {
+  bool fit = true;
+  for (int i = 0; i < 2; i++) {
+    if ((_beams[i] != GetBeam(i)->Beam()) ||
+        (_bunches[i] != GetBeam(i)->Bunch())) {
+      fit = false;
       break;
     }
     /*
       if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
-      if (! ( ((_beams[i]==Flavour(kf_e)) || (_beams[i]==Flavour(kf_e).Bar())) &&
+      if (! ( ((_beams[i]==Flavour(kf_e)) || (_beams[i]==Flavour(kf_e).Bar()))
+      &&
       (_bunches[i]==Flavour(kf_photon))         ) ) {
       fit = 0;
       break;
       }
       }
       if (p_BeamBase[i]->Type() == string("Beam_Strahlung")) {
-      if (! ( ((_beams[i] == Flavour(kf_e)) || (_beams[i] == Flavour(kf_e).Bar())) &&
+      if (! ( ((_beams[i] == Flavour(kf_e)) || (_beams[i] ==
+      Flavour(kf_e).Bar())) &&
       (_beams[i] == _bunches[i])         ) ) {
       fit = 0;
       break;
@@ -416,11 +164,11 @@ bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _beams,
   return fit;
 }
 
-bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _bunches) {
-  bool fit = 1;
-  for (int i=0;i<2;i++) {
-    if (_bunches[i]!=GetBeam(i)->Bunch()) {
-      fit = 0;
+bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *_bunches) {
+  bool fit = true;
+  for (int i = 0; i < 2; i++) {
+    if (_bunches[i] != GetBeam(i)->Bunch()) {
+      fit = false;
       break;
     }
     /*
@@ -447,228 +195,4 @@ bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _bunches) {
     */
   }
   return fit;
-}
-
-
-bool Beam_Spectra_Handler::MakeBeams(Vec4D * p) 
-{
-  double sprime=m_spkey[3], y=m_ykey[2];
-  if (m_mode==0) {
-    m_x1 = m_x2 = 1.;
-    p[0] = m_fiXVECs[0];
-    p[1] = m_fiXVECs[1];
-    return true;
-  }
-  else {
-    if ( (sprime<m_splimits[0]) || (sprime>m_splimits[1]) || m_splimits[0]==m_splimits[1] ) {
-      return false;
-    }
-
-    double E      = sqrt(m_splimits[2]);
-    double Eprime = sqrt(sprime);
-    double x      = 1./2.+(m_mass12-m_mass22)/(2.*sprime);
-    double E1     = x*Eprime;
-    double E2     = Eprime-E1;
-    
-    p[0]          = Vec4D(E1,0.,0.,sqrt(sqr(E1)-m_mass12));
-    p[1]          = Vec4D(E2,(-1.)*Vec3D(p[0]));
-    E1            = exp(y);  
-    E2            = exp(-y);  
-
-
-    m_CMSBoost    = Poincare(Vec4D(E1+E2,0.,0.,E1-E2));
-    
-    Vec4D p1      = p[0];
-    Vec4D p2      = p[1];
-    m_CMSBoost.BoostBack(p1);
-    m_CMSBoost.BoostBack(p2);
-    m_x1          = 2.*p1[0]/E;
-    m_x2          = 2.*p2[0]/E;
-
-    if (m_mode==1) m_x2 = 1.;
-    if (m_mode==2) m_x1 = 1.;
-
-    p_BeamBase[0]->SetX(m_x1);
-    p_BeamBase[1]->SetX(m_x2);
-
-    return true;
-  }
-}
-
-void Beam_Spectra_Handler::InitializeFlav(kf_code flav)
-{
-  if (s_kftable.find(flav)==s_kftable.end()) {
-    bool initialize_diquarks(false);
-    if (flav==kf_p_plus) {
-      s_kftable[flav]=
-        new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
-      initialize_diquarks=true;
-    }
-    else if (flav==kf_n) {
-      s_kftable[flav]=
-        new Particle_Info(kf_n,0.939566,7.424e-28,0,1,1,1,"n","n");
-      initialize_diquarks=true;
-    }
-    else if (flav==kf_e) {
-      s_kftable[flav]=
-        new Particle_Info(kf_e,0.000511,.0,-3,0,1,0,1,1,0,"e-","e+","e^{-}","e^{+}");
-    }
-    else if (flav==kf_photon) {
-      s_kftable[flav]=
-        new Particle_Info(22,.0,.0,0,0,2,-1,1,1,0,"P","P","P","P");
-    }
-    else if (flav==1000822080) {
-      s_kftable[flav]=
-        new Particle_Info(1000822080, 193.75, 246, 0, 0, "Pb208", "Pb208");
-    }
-    else if (flav==1000822070) {
-      s_kftable[flav]=
-        new Particle_Info(1000822070, 192.82, 246, -1, 2, "Pb207", "Pb207");
-    }
-    else if (flav==1000822060) {
-      s_kftable[flav]=
-        new Particle_Info(1000822060, 192.82, 246, 0, 2, "Pb206", "Pb206");
-    }
-    else if (flav==1000791970) {
-      s_kftable[flav]=
-        new Particle_Info(1000791970, 183.5, 237, 3, 2, "Au197", "Au197");
-    }
-    else if (flav==1000200400) {
-      s_kftable[flav]=
-        new Particle_Info(1000200400, 37.26, 60, 0, 2, "Ca40", "Ca40");
-    }
-    else {
-      THROW(fatal_error,"You specified a beam particle "+ToString(flav)+
-            "which is not contained in your chosen model. Will abort.");
-    }
-      
-
-    if (initialize_diquarks) {
-      s_kftable[1103]=new Particle_Info(1103,0.77133,0,-2,-3,2,0,0,1,1,"dd_1","dd_1b","dd_1b","dd_1b");
-      s_kftable[2101]=new Particle_Info(2101,0.57933,0,1,-3,0,0,0,1,1,"ud_0","ud_0b","ud_0b","ud_0b");
-      s_kftable[2103]=new Particle_Info(2103,0.77133,0,1,-3,2,0,0,1,1,"ud_1","ud_1b","ud_1b","ud_1b");
-      s_kftable[2203]=new Particle_Info(2203,0.77133,0,4,-3,2,0,0,1,1,"uu_1","uu_1b","uu_1b","uu_1b");
-      s_kftable[3101]=new Particle_Info(3101,0.80473,0,-2,-3,0,0,0,1,1,"sd_0","sd_0b","sd_0b","sd_0b");
-      s_kftable[3103]=new Particle_Info(3103,0.92953,0,-2,-3,2,0,0,1,1,"sd_1","sd_1b","sd_1b","sd_1b");
-      s_kftable[3201]=new Particle_Info(3201,0.80473,0,1,-3,0,0,0,1,1,"su_0","su_0b","su_0b","su_0b");
-      s_kftable[3203]=new Particle_Info(3203,0.92953,0,1,-3,2,0,0,1,1,"su_1","su_1b","su_1b","su_1b");
-      s_kftable[3303]=new Particle_Info(3303,1.09361,0,-2,-3,2,0,0,1,1,"ss_1","ss_1b","ss_1b","ss_1b");
-      s_kftable[4101]=new Particle_Info(4101,1.96908,0,1,-3,0,0,0,1,1,"cd_0","cd_0b","cd_0b","cd_0b");
-      s_kftable[4103]=new Particle_Info(4103,2.00808,0,1,-3,2,0,0,1,1,"cd_1","cd_1b","cd_1b","cd_1b");
-      s_kftable[4201]=new Particle_Info(4201,1.96908,0,4,-3,0,0,0,1,1,"cu_0","cu_0b","cu_0b","cu_0b");
-      s_kftable[4203]=new Particle_Info(4203,2.00808,0,4,-3,2,0,0,1,1,"cu_1","cu_1b","cu_1b","cu_1b");
-      s_kftable[4301]=new Particle_Info(4301,2.15432,0,1,-3,0,0,0,1,1,"cs_0","cs_0b","cs_0b","cs_0b");
-      s_kftable[4303]=new Particle_Info(4303,2.17967,0,1,-3,2,0,0,1,1,"cs_1","cs_1b","cs_1b","cs_1b");
-      s_kftable[4403]=new Particle_Info(4403,3.27531,0,4,-3,2,0,0,1,1,"cc_1","cc_1b","cc_1b","cc_1b");
-      s_kftable[5101]=new Particle_Info(5101,5.38897,0,-2,-3,0,0,0,1,1,"bd_0","bd_0b","bd_0b","bd_0b");
-      s_kftable[5103]=new Particle_Info(5103,5.40145,0,-2,-3,2,0,0,1,1,"bd_1","bd_1b","bd_1b","bd_1b");
-      s_kftable[5201]=new Particle_Info(5201,5.38897,0,1,-3,0,0,0,1,1,"bu_0","bu_0b","bu_0b","bu_0b");
-      s_kftable[5203]=new Particle_Info(5203,5.40145,0,1,-3,2,0,0,1,1,"bu_1","bu_1b","bu_1b","bu_1b");
-      s_kftable[5301]=new Particle_Info(5301,5.56725,0,-2,-3,0,0,0,1,1,"bs_0","bs_0b","bs_0b","bs_0b");
-      s_kftable[5303]=new Particle_Info(5303,5.57536,0,-2,-3,2,0,0,1,1,"bs_1","bs_1b","bs_1b","bs_1b");
-      s_kftable[5401]=new Particle_Info(5401,6.67143,0,1,-3,0,0,0,1,1,"bc_0","bc_0b","bc_0b","bc_0b");
-      s_kftable[5403]=new Particle_Info(5403,6.67397,0,1,-3,2,0,0,1,1,"bc_1","bc_1b","bc_1b","bc_1b");
-      s_kftable[5503]=new Particle_Info(5503,10.07354,0,-2,-3,2,0,0,1,1,"bb_1","bb_1b","bb_1b","bb_1b");
-    }
-  }
-}
-
-/* ----------------------------------------------------------------
-
-   Weight calculation 
-
-   ---------------------------------------------------------------- */
-
-
-bool Beam_Spectra_Handler::CalculateWeight(double scale) 
-{
-  switch (m_mode) {
-  case 3 :
-    if ( (p_BeamBase[0]->CalculateWeight(m_x1,scale)) && 
-         (p_BeamBase[1]->CalculateWeight(m_x2,scale)) ) return true;
-    break;
-  case 2 :
-    if (p_BeamBase[1]->CalculateWeight(m_x2,scale))     return true;
-    break;
-  case 1 :
-    if (p_BeamBase[0]->CalculateWeight(m_x1,scale))     return true;
-    break;
-  }
-  return false;
-}
-
-
-double Beam_Spectra_Handler::Weight(Flavour * flin)
-{
-  if (flin==NULL) return (p_BeamBase[0]->Weight() * p_BeamBase[1]->Weight());
-  return (p_BeamBase[0]->Weight(flin[0]) * p_BeamBase[1]->Weight(flin[1]));
-}
-
-
-double Beam_Spectra_Handler::Weight(int * pol_types, double *dofs)
-{
-  double weight = 1.;
-  for (int i=0;i<2;++i) {
-    if (p_BeamBase[i]->PolarisationOn()) {
-      if (pol_types[i]!=99) {
-	double hel=(double)pol_types[i];
-	double pol=p_BeamBase[i]->Polarisation();
-	double dof=dofs[i];
-	if (hel*pol>0.) 
-	  weight*=(1.+dabs(pol)*(dof-1.))/dof;
-	else
-	  weight*=(1.-dabs(pol))/dof;
-
-	//assuming 2 degrees of freedom
-	//	weight*=dabs(hel+pol)/2.;
-      }
-      else {
-	msg_Out()<<"ERROR: unpolarised cross section for polarised beam!! "<<endl;
-      } 
-    }
-  }
-  return weight; 
-}
-
-/* ----------------------------------------------------------------
-
-   Boosts
-
-   ---------------------------------------------------------------- */
-
-
-void  Beam_Spectra_Handler::BoostInCMS(Vec4D* p,int n) {
-  for (int i=0; i<n; ++i) m_CMSBoost.Boost(p[i]);
-}
-
-void  Beam_Spectra_Handler::BoostInLab(Vec4D* p,int n) {
-  for (int i=0; i<n; ++i) m_CMSBoost.BoostBack(p[i]);
-}
-
-void   Beam_Spectra_Handler::SetSprimeMin(double _spl)      
-{ 
-  m_splimits[0]  = Max(m_splimits[0],_spl);
-  if (m_splimits[0]>m_splimits[1])  m_splimits[0]=m_splimits[1];
-}
-
-void   Beam_Spectra_Handler::SetSprimeMax(double _spl)      { m_splimits[1]  = Min(m_splimits[1],_spl); }
-
-void Beam_Spectra_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
-{
-  m_spkey.Assign("s' beam",4,0,info);
-  m_ykey.Assign("y beam",3,0,info);
-  m_xkey.Assign("x beam",5,0,info);
-}
-
-void Beam_Spectra_Handler::SetLimits() 
-{
-  for (short int i=0;i<2;++i) {
-    m_spkey[i]=m_splimits[i];
-    m_ykey[i]=m_ylimits[i];
-  }
-  m_spkey[2]=ATOOLS::sqr(ATOOLS::rpa->gen.Ecms());
-  m_xkey[0]=-std::numeric_limits<double>::max();
-  m_xkey[2]=-std::numeric_limits<double>::max();
-  m_xkey[1]=log(Upper1());
-  m_xkey[3]=log(Upper2());
 }

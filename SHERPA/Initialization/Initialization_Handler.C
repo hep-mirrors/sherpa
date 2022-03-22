@@ -142,6 +142,9 @@ void Initialization_Handler::RegisterDefaults()
       "PDF_SET",
       "MPI_PDF_SET",
       "VARIATIONS",
+      "SCALE_VARIATIONS",
+      "PDF_VARIATIONS",
+      "QCUT_VARIATIONS",
       "BUNCHES",
       "PDF_SET_VERSIONS",
       "MPI_PDF_SET_VERSIONS",
@@ -149,9 +152,15 @@ void Initialization_Handler::RegisterDefaults()
       "MASSIVE_PS",
       "MASSLESS_PS"
       });
-  s.DeclareMatrixSettingsWithEmptyDefault({ "CSS_ENHANCE" });
+  s.DeclareMatrixSettingsWithEmptyDefault({
+      "CSS_ENHANCE",
+      "ASSOCIATED_CONTRIBUTIONS_VARIATIONS"
+      });
   s["EVENT_OUTPUT"].UseNoneReplacements();
   s["VARIATIONS"].UseNoneReplacements();
+  s["SCALE_VARIATIONS"].UseNoneReplacements();
+  s["PDF_VARIATIONS"].UseNoneReplacements();
+  s["QCUT_VARIATIONS"].UseNoneReplacements().SetSynonyms({"CKKW_VARIATIONS"});
   s["PDF_LIBRARY"].UseNoneReplacements();
   s["ANALYSIS"].UseNoneReplacements();
 
@@ -516,9 +525,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheRemnants();
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
-  okay = okay && p_beamspectra->Init();
   p_model->InitializeInteractionModel();
-  okay = okay && InitializeTheAnalyses();
   if (!CheckBeamISRConsistency()) return 0.;
   if (m_mode==eventtype::EventReader) {
     std::string infile;
@@ -537,6 +544,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
     msg_Events()<<"SHERPA will read in the events."<<std::endl
   		<<"   The full framework is not needed."<<std::endl;
+    InitializeTheAnalyses();
     InitializeTheHardDecays();
     InitializeTheBeamRemnants();
     InitializeTheIO();
@@ -544,14 +552,13 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
-  if (rpa->gen.NumberOfEvents()>0) {
-  }
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheBeamRemnants();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheAnalyses();
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheSoftCollisions();
@@ -854,6 +861,7 @@ bool Initialization_Handler::InitializeThePDFs()
 		 <<"   Abort program."<<endl;
       Abort();
     }
+    m_isrhandlers[id]->Output();
   }
   msg_Info() << "Initialized the ISR." << endl;
   return 1;
@@ -879,6 +887,12 @@ bool Initialization_Handler::InitializeTheHardDecays()
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
+#ifdef USING__EWSud
+  // in case that KFACTOR=EWSud is used we need to be ready when the ME handler
+  // sets up the KFactor setters
+  if (!s_loader->LoadLibrary("SherpaEWSud"))
+    THROW(missing_module,"Cannot load EWsud library.");
+#endif
   if (p_mehandler) delete p_mehandler;
   p_mehandler = new Matrix_Element_Handler(p_model);
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
@@ -1030,8 +1044,17 @@ bool Initialization_Handler::InitializeTheAnalyses()
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
         THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
-      if (!s_loader->LoadLibrary("SherpaHepMCOutput")&& !s_loader->LoadLibrary("SherpaHepMC3Output")) 
-        THROW(missing_module,"Cannot load HepMC library (--enable-hepmc2 or --enable-hepmc3).");
+      bool hepmc_loaded {false};
+#ifdef USING__HEPMC2
+      hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMCOutput") != nullptr);
+#endif
+#ifdef USING__HEPMC3
+      hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMC3Output") != nullptr);
+#endif
+      if (!hepmc_loaded) {
+        THROW(missing_module,
+              "Cannot load HepMC library (--enable-hepmc2 and/or --enable-hepmc3).");
+      }
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
         THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
     }
@@ -1058,6 +1081,8 @@ bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
     Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   p_variations = new Variations(mode);
   s_variations = p_variations;
+  if (p_mehandler)
+    p_mehandler->InitializeTheReweighting(mode);
   if (mode != Variations_Mode::nominal_only)
     msg_Info()<<"Initialized the Reweighting."<<endl;
   return true;

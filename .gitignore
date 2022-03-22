@@ -50,6 +50,7 @@ Makefile.in
 /missing
 /py-compile
 /stamp-h1
+/test-driver
 
 
 # make targets and intermediate files
@@ -83,3 +84,4 @@ Git_Info.C.tmp.bak
 /include/
 /lib/
 /share/
+*.DS_Store

@@ -78,6 +78,14 @@ bool ME_Generators::InitializeGenerators(MODEL::Model_Base *model,
   return true;
 }
 
+void ME_Generators::SetModel(MODEL::Model_Base* model)
+{
+  p_model = model;
+  for (ME_Generators::iterator mit=begin(); mit!=end(); ++mit) {
+    (*mit)->SetModel(model);
+  }
+}
+
 int ME_Generators::PerformTests()
 { 
   int result(1);
@@ -103,7 +111,6 @@ Process_Base* ME_Generators::InitializeProcess(const Process_Info &pi, bool add)
   DEBUG_FUNC(&pi);
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
     if (pi.m_megenerator!="" && (*mit)->Name()!=pi.m_megenerator) continue;
-    msg_Debugging()<<"Trying "<<(*mit)->Name()<<std::endl;
     Process_Base *proc((*mit)->InitializeProcess(pi,add));
     if (proc) {
       msg_Debugging()<<"Found "<<proc->Name()<<std::endl;
@@ -114,3 +121,8 @@ Process_Base* ME_Generators::InitializeProcess(const Process_Info &pi, bool add)
   return NULL;
 }
 
+void ME_Generators::SetRemnant(REMNANTS::Remnant_Handler *remnant) {
+  for (ME_Generators::iterator mit = begin(); mit != end(); ++mit) {
+    (*mit)->SetRemnantHandler(remnant);
+  }
+}

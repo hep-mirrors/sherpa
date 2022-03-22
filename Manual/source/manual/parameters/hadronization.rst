@@ -38,10 +38,35 @@ employed during event generation.
   :cite:`Gottschalk1986bv`, and :cite:`Marchesini1987cf` and
   implementing some modifications discussed in :cite:`Winter2003tt`.
 
-* the hadronization can be disabled with the value :option:`None`.
+* The hadronization can be disabled with the value :option:`None`.
 
 * To evaluate uncertainties stemming from the hadronization, Sherpa
   also provides an interface to the Lund string fragmentation in
+  Pythia 8.3 :cite:`Sjostrand2015` by using the setting
+  :option:`Pythia8`.  In this case, the standard Pythia settings
+  can be used to steer the behaviour  of the Lund string,
+  see :cite:`Sjostrand2015`. They are specified in their usual
+  form in Pythia in a dedicated settings block. Additionally
+  a choice can be made to let Pythia directly handle hadron
+  decays via the :option:`DECAYS` setting (separate from the
+  DECAYMODEL switch mentioned below) and whether Pythias or
+  Sherpas default masses and widths should be used through the
+  :option:`SHERPA_MASSES` setting. By default the choice of generator
+  for the masses and widths setting aligns with the decay setting.
+
+.. code-block:: yaml
+
+   SHERPA_LDADD: SherpaPythia
+   FRAGMENTATION: Pythia8
+   PYTHIA8:
+     PARAMETERS:
+       - StringZ:aLund: 0.68
+       - StringZ:bLund: 0.98
+         ...
+     DECAYS: true
+     SHERPA_MASSES: false
+
+* Alternatively, Sherpa  also provides an interface to
   Pythia 6.4 :cite:`Sjostrand2006za` by using the setting
   :option:`Lund`.  In this case, the standard Pythia switches
   :option:`MSTJ`, :option:`MSTP`, :option:`MSTU`, :option:`PARP`,
@@ -91,6 +116,16 @@ with
 * ``M_BIND_0`` (0.12 GeV), and
 
 * ``M_BIND_1`` (0.5 GeV).
+
+Like all settings related to cluster fragmentation these
+are grouped under ``AHADIC``.
+
+.. code-block:: yaml
+
+   AHADIC:
+     - M_UP_DOWN: 0.3
+       ...
+     - M_DIQUARK_OFFSET: 0.3
 
 
 Hadron multiplets

@@ -74,7 +74,7 @@ namespace UFO{
 	it->second->m_stable=1;
   }
 
-  bool UFO_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
+  bool UFO_Model::ModelInit()
   { 
     ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
     const std::string widthscheme{
@@ -83,7 +83,7 @@ namespace UFO{
 
     // set default value to UFO input such that
     // we recover standard cross sections for fixed QCD coupling
-    SetAlphaQCD(isr,p_dataread->GetEntry<double>("SMINPUTS",3));
+    SetAlphaQCD(*p_isrhandlermap,p_dataread->GetEntry<double>("SMINPUTS",3));
 
     // set default value to UFO input such that
     // we recover standard cross sections for fixed QED coupling

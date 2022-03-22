@@ -319,17 +319,6 @@ The scale setter options which are currently available are
 
   leads to an identical scale definition.
 
-  The ``METS`` scale setter comes in two variants: ``STRICT_METS`` and
-  ``LOOSE_METS``. While the former employs the exact inverse of the
-  parton shower for the clustering procedure, and therefore is rather
-  time consuming for multiparton final state, the latter is a
-  simplified version and much faster. Giving ``METS`` as the scale
-  setter results in using ``LOOSE_METS`` for the integration and
-  ``STRICT_METS`` during event generation. Giving either
-  ``STRICT_METS`` or ``LOOSE_METS`` as the scale setter results in
-  using the respective one during both integration and event
-  generation.
-
   Clusterings onto 2->n (n>2) configurations is possible, see
   :ref:`METS scale setting with multiparton core processes`.
 
@@ -480,9 +469,9 @@ lead to an inconsistent result.
 Explicit scale variations
 -------------------------
 
-The factorisation and renormalisation scales in the fixed-order matrix
-elements can be varied separately simply by introducing a prefactor
-into the scale definition, e.g.
+The (nominal) factorisation and renormalisation scales
+in the fixed-order matrix elements can be scaled explicitly
+simply by introducing a prefactor into the scale definition, e.g.
 
 .. code-block:: yaml
 
@@ -491,9 +480,19 @@ into the scale definition, e.g.
 for setting both the renormalisation and factorisation scales to
 H_T/2.
 
-Similarly, the starting scale of the parton shower resummation in a
-ME+PS merged sample can be varied using the METS scale setter's third
-argument like:
+However, to calculate several variations in a single event generation run,
+you need to use :ref:`On-the-fly event weight variations`.
+See the instructions given there
+to find out how to vary factorisation and
+renormalisation scale factors on-the-fly,
+both in the matrix element and in the parton shower.
+
+The starting scale of the parton shower resummation
+in a ME+PS merged sample, ``MU_Q2``,
+can at the moment not be varied on-the-fly.
+To change the (nominal) starting scale explicitly,
+a scale factor can be introduced
+in the third argument of the METS scale setter:
 
 .. code-block:: yaml
 

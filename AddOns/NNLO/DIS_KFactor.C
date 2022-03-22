@@ -192,7 +192,7 @@ double DISNNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
     double muf2(sc->Scale(stp::fac)*(params?params->m_muF2fac:1.0));
     double weight(1.0);
     weight=NNLODiffWeight(p_proc,weight,mur2,muf2,m_k0sq,
-			  mode,m_fomode,1,params?params->m_name:"");
+			  mode,m_fomode,1,params?params->Name():"");
     if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
     return params?1.0:weight;
   }
@@ -254,7 +254,7 @@ double DISNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
   if (p_proc->NOut()>2) {
     double weight(1.0);
     weight=NLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,m_fomode,1,
-			 params?params->m_name:"");
+			 params?params->Name():"");
     if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
     return params?1.0:weight;
   }

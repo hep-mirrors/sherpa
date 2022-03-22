@@ -11,7 +11,6 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
-
 #include "ATOOLS/Phys/Variations.H"
 
 #include <map>
@@ -88,6 +87,7 @@ namespace SHERPA {
     std::set<ATOOLS::btp::code> m_ignoreblobs;
 
     HepMC3::GenEvent *p_event;
+    std::shared_ptr<HepMC3::GenRunInfo> m_runinfo;
     std::vector<HepMC3::GenEvent*> m_subeventlist;
 
     std::shared_ptr<HepMC3::GenParticle> MakeGenParticle(const ATOOLS::Vec4D&,
@@ -103,7 +103,7 @@ namespace SHERPA {
 
     // member functions
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC3::GenEvent& event);
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs,                       std::shared_ptr<HepMC3::GenRunInfo> run= std::shared_ptr<HepMC3::GenRunInfo>());
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs);
     bool Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob *,     HepMC3::GenVertexPtr &, HepMC3::GenEvent& event ); 
     bool Sherpa2HepMC(ATOOLS::Particle *, HepMC3::GenParticlePtr &);
 
@@ -112,7 +112,8 @@ namespace SHERPA {
     bool SubEvtList2ShortHepMC(EventInfo3 &evtinfo);
 
     void AddCrossSection(HepMC3::GenEvent& event,
-                         const double& xs, const double& err);
+                         const ATOOLS::Weights_Map& xs,
+                         const ATOOLS::Weights_Map& err);
 
     // inline functions
     inline HepMC3::GenEvent* GenEvent() { return p_event; }
@@ -132,9 +133,6 @@ namespace SHERPA {
     inline bool HepMCTreeLike()                { return m_hepmctree; }
     inline void SetHepMCIncludeMEOnlyVariations(bool x)
     { m_includemeonlyweights=x; }
-
-    // For RivetInterface to check if a weight container key could be a variation weight name
-    bool StartsLikeVariationName(const std::string&);
 
     void DeleteGenSubEventList();
 

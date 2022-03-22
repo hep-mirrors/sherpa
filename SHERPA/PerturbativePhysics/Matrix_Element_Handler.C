@@ -27,6 +27,7 @@
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
 
+#include <cassert>
 #include <unistd.h>
 #include <cctype>
 
@@ -122,6 +123,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
     const size_t incr{ s["EVENT_SEED_INCREMENT"].Get<size_t>() };
     ran->SetSeedStorageIncrement(incr);
   }
+  m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
+  msg_Info()<<METHOD<<"(): Set pilot run mode to "<<m_pilotrunenabled<<".\n";
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
@@ -273,10 +276,24 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       break;
     }
   }
+  if (proc==NULL) THROW(fatal_error,"No process selected");
+
+  // if variations are enabled and we do unweighting, we do a pilot run first
+  // where no on-the-fly variations are calculated
+  Variations_Mode varmode {Variations_Mode::all};
+  // TODO: if always true, then remove it from if statement; another option
+  // would be to add ASSEW variations to the managed variations, such that we
+  // can use HasVariations to set hasvars properly
+  const bool hasvars {true};
+  if (hasvars && m_pilotrunenabled) {
+    // in pilot run mode, calculate nominal only, and prepare to restore
+    // the rng to re-run with variations after unweighting
+    varmode = Variations_Mode::nominal_only;
+    ran->SaveStatus();
+  }
 
   // try to generate an event for the selected process
-  if (proc==NULL) THROW(fatal_error,"No process selected");
-  ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+  ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
   p_proc=proc->Selected();
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
@@ -308,6 +325,27 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     } else {
       m_weightfactor = abswgt / maxwt;
       wf /= Min(1.0, m_weightfactor);
+    }
+    if (hasvars && m_pilotrunenabled) {
+      // re-run with same rng state and include the calculation of variations
+      // this time
+      ran->RestoreStatus();
+      info=proc->OneEvent(m_eventmode, Variations_Mode::all);
+      assert(info);
+      if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {
+        msg_Error()
+          <<"ERROR: The results of the pilot run and the re-run are not"
+          <<" the same:\n"
+          <<"  Pilot run: "<<m_evtinfo<<"\n"
+          <<"  Re-run:    "<<*info<<"\n"
+          <<"Will continue, but deviations beyond numerics would indicate"
+          <<" a logic error resulting in wrong statistics!\n";
+      }
+      m_evtinfo=*info;
+      delete info;
+      // also consume random number used to set the discriminator for
+      // unweighting above, such that it is not re-used in the future
+      ran->Get();
     }
   }
 
@@ -508,6 +546,7 @@ int Matrix_Element_Handler::InitializeProcesses(
   p_beam=beam;
   p_isr=isr;
   if (!m_gens.InitializeGenerators(p_model,beam,isr)) return false;
+  m_gens.SetRemnant(p_remnants);
   Settings& s = Settings::GetMainSettings();
   int initonly=s["INIT_ONLY"].Get<int>();
   if (initonly&4) return 1;
@@ -530,7 +569,7 @@ int Matrix_Element_Handler::InitializeProcesses(
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
-  msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
+  msg_Info()<<METHOD<<"(): Performing tests"<<std::flush;
   rbtime=retime;
   btime=etime;
   int res(m_gens.PerformTests());
@@ -545,7 +584,7 @@ int Matrix_Element_Handler::InitializeProcesses(
   for (size_t i(0);i<m_procs.size();++i) 
     msg_Debugging()<<"    "<<m_procs[i]->Name()<<" -> "<<m_procs[i]<<"\n";
   msg_Debugging()<<"}\n";
-  msg_Info()<<METHOD<<"(): Initializing scales "<<std::flush;
+  msg_Info()<<METHOD<<"(): Initializing scales"<<std::flush;
   rbtime=retime;
   btime=etime;
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
@@ -574,17 +613,30 @@ int Matrix_Element_Handler::InitializeProcesses(
   return res;
 }
 
+int Matrix_Element_Handler::InitializeTheReweighting(Variations_Mode mode)
+{
+  for (auto* proc : m_procs)
+    proc->InitializeTheReweighting(mode);
+  return 1; // success
+}
+
 void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();
   // init processes
-  msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
+  msg_Info()<<METHOD<<"(): Looking for processes "
+	    <<"["<<m_gens.size()<<" generators, "
+	    <<s["PROCESSES"].GetItems().size()<<" processes]"<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
     if (!msg_LevelIsTracking()) msg_Info()<<"\n";
       THROW(missing_input, std::string{"Missing PROCESSES definition.\n\n"} +
                                Strings::ProcessesSyntaxExamples);
   }
+
+  // This will be used to check for a meaningful associated contributions
+  // set-up.
+  std::set<asscontrib::type> calculated_asscontribs;
 
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
@@ -605,6 +657,15 @@ void Matrix_Element_Handler::BuildProcesses()
     ReadFinalStateMultiIndependentProcessSettings(name, procsettings, args);
     ReadFinalStateMultiSpecificProcessSettings(procsettings, args);
     BuildSingleProcessList(args);
+
+    // Collect data to check for meaningful associated contributions set-up.
+    for (const auto& kv : args.pbi.m_vasscontribs) {
+      auto contribs = ToVector<asscontrib::type>(kv.second.second);
+      for (const auto& c : contribs) {
+        calculated_asscontribs.insert(c);
+      }
+    }
+
     if (msg_LevelIsDebugging()) {
       msg_Indentation(4);
       msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
@@ -616,6 +677,8 @@ void Matrix_Element_Handler::BuildProcesses()
       }
     }
   }
+
+  CheckAssociatedContributionsSetup(calculated_asscontribs);
 }
 
 void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
@@ -1259,3 +1322,26 @@ double Matrix_Element_Handler::GetWeight
   return 0.0;
 }
 
+void Matrix_Element_Handler::CheckAssociatedContributionsSetup(
+    const std::set<asscontrib::type>& calculated_asscontribs) const
+{
+  Settings& s = Settings::GetMainSettings();
+  auto acv =
+      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"].GetMatrix<asscontrib::type>();
+  for (const auto& contrib_list : acv) {
+    for (const auto& c : contrib_list) {
+      if (calculated_asscontribs.find(c) == calculated_asscontribs.end()) {
+        THROW(inconsistent_option,
+              "You are using " + ToString(c) + " in your" +
+                  " ASSOCIATED_CONTRIBUTIONS_VARIATIONS, but " + ToString(c) +
+                  " is not"
+                  "\ncalculated for any of the PROCESSES. Please make sure "
+                  "that all contributions" +
+                  "\nlisted in ASSOCIATED_CONTRIBUTIONS_VARIATIONS appear in "
+                  "the" +
+                  "\nAssociated_Contributions list of at least one of the "
+                  "PROCESSES.");
+      }
+    }
+  }
+}

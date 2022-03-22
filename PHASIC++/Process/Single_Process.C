@@ -14,6 +14,7 @@
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Phys/Hard_Process_Variation_Generator.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -23,6 +24,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 
 #include <algorithm>
+#include <memory>
 
 using namespace PHASIC;
 using namespace MODEL;
@@ -55,9 +57,7 @@ Single_Process::Single_Process():
 
   // parse settings for associated contributions variations
   std::vector<std::vector<asscontrib::type>> asscontribvars =
-      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"]
-          .SetDefault<asscontrib::type>({})
-          .GetMatrix<asscontrib::type>();
+      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"].GetMatrix<asscontrib::type>();
   for (const auto& asscontribvarparams : asscontribvars) {
     m_asscontrib.push_back(asscontrib::none);
     for (const auto& asscontribvarparam : asscontribvarparams) {
@@ -71,6 +71,8 @@ Single_Process::~Single_Process()
   for (Coupling_Map::const_iterator
 	 cit(m_cpls.begin());cit!=m_cpls.end();++cit)
     delete cit->second;
+  for (auto gen : m_hard_process_variation_generators)
+    delete gen;
 }
 
 size_t Single_Process::Size() const
@@ -84,10 +86,21 @@ Process_Base *Single_Process::operator[](const size_t &i)
   return NULL;
 }
 
-Weight_Info *Single_Process::OneEvent(const int wmode,const int mode)
-{
-  p_selected=this;
-  return p_int->PSHandler()->OneEvent(this,mode);
+Weight_Info *Single_Process::OneEvent(const int wmode,
+                                      ATOOLS::Variations_Mode varmode,
+                                      const int mode) {
+  p_selected = this;
+  auto psh = p_int->PSHandler();
+  if (p_int->ISR()) {
+    if (m_nin == 2) {
+      if (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
+          m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) {
+        p_int->ISR()->SetPartonMasses(m_flavs);
+      }
+    }
+  }
+  psh->InitCuts();
+  return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
 double Single_Process::KFactor(const int mode) const
@@ -517,7 +530,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   Scale_Setter_Base* scales {ScaleSetter(1)};
 
-  Partonic(p);
+  Partonic(p, varmode);
 
   double nominal {0.0};
 
@@ -640,8 +653,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
         }
         sub->m_results = sub->m_result;
         sub->m_mewgt *= m_lastflux;
-        sub->m_xf1 = p_int->ISR()->XF1(0);
-        sub->m_xf2 = p_int->ISR()->XF2(0);
+        sub->m_xf1 = p_int->ISR()->XF1();
+        sub->m_xf2 = p_int->ISR()->XF2();
 
         // update result
         nominal += (sub->m_trig & 1) ? sub->m_result : 0.0;
@@ -657,7 +670,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   UpdateMEWeightInfo(scales);
 
-  // perform QCD reweighting of BVI or RS events
+  // perform on-the-fly QCD reweighting of BVI or RS events
   m_last *= nominal;
   if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
     if (GetSubevtList() == nullptr) {
@@ -675,6 +688,12 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   if (varmode != Variations_Mode::nominal_only
       && (GetSubevtList() != nullptr || !m_pinfo.Has(nlo_type::rsub))) {
     CalculateAssociatedContributionVariations();
+  }
+
+  if (varmode != Variations_Mode::nominal_only) {
+    for (auto& gen : m_hard_process_variation_generators) {
+      gen->GenerateAndFillWeightsMap(m_last);
+    }
   }
 
   // propagate (potentially) re-clustered momenta
@@ -999,6 +1018,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   // them through the ISR_Handler instead of the nominal PDF
   PDF::PDF_Base *nominalpdf1 = p_int->ISR()->PDF(0);
   PDF::PDF_Base *nominalpdf2 = p_int->ISR()->PDF(1);
+  const double xf1 = p_int->ISR()->XF1();
+  const double xf2 = p_int->ISR()->XF2();
   p_int->ISR()->SetPDF(varparams.p_pdf1, 0);
   p_int->ISR()->SetPDF(varparams.p_pdf2, 1);
 
@@ -1020,6 +1041,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   p_int->ISR()->SetPDF(nominalpdf2, 1);
   p_int->ISR()->SetMuF2(info.m_muF2, 0);
   p_int->ISR()->SetMuF2(info.m_muF2, 1);
+  p_int->ISR()->SetXF1(xf1);
+  p_int->ISR()->SetXF2(xf2);
 
   return csi;
 }
@@ -1111,10 +1134,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
       }
     }
   }
-  psh->InitCuts();
-  if (p_int->ISR())
-    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   psh->CreateIntegrators();
+  psh->InitCuts();
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
@@ -1162,6 +1183,30 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::
     GetObject(m_pinfo.m_kfactor=cargs.m_kfac,cargs);
   if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
+}
+
+void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
+{
+  if (mode == Variations_Mode::nominal_only)
+    return;
+  // Parse settings for hard process variation generators; note that this can
+  // not be done in the ctor, because the matrix element handler has not yet
+  // fully configured the process at this point, and some variation generators
+  // might require that (an example would be EWSud)
+  Settings& s = Settings::GetMainSettings();
+  for (auto varitem : s["VARIATIONS"].GetItems()) {
+    if (varitem.IsScalar()) {
+      const auto name = varitem.Get<std::string>();
+      if (name == "None") {
+        return;
+      } else {
+        m_hard_process_variation_generators.push_back(
+            Hard_Process_Variation_Generator_Getter_Function::
+            GetObject(name, Hard_Process_Variation_Generator_Arguments{this})
+            );
+      }
+    }
+  }
 }
 
 void Single_Process::SetLookUp(const bool lookup)

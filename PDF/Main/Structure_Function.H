@@ -10,11 +10,11 @@ namespace PDF {
   public:
 
     // constructor
-    Structure_Function(PDF::PDF_Base *,ATOOLS::Flavour); 
+    Structure_Function(PDF::PDF_Base *,const ATOOLS::Flavour&);
 
     // meber functions
-    bool   CalculateWeight(double,double,double,double,int);
-    double Weight(ATOOLS::Flavour);
+    bool   CalculateWeight(double,double,double,double,int) override;
+    double Weight(ATOOLS::Flavour) override;
 
   };// end of class Structure_Function
 

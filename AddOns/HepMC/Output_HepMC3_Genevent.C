@@ -1,6 +1,5 @@
 #include "AddOns/HepMC/Output_HepMC3_Genevent.H"
 #include "HepMC3/GenEvent.h"
-#include "HepMC3/GenCrossSection.h"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -73,13 +72,6 @@ switch (m_iotype)
         break;
     }
 
- p_xs= std::make_shared<HepMC::GenCrossSection>();
- m_run_info= std::make_shared<HepMC::GenRunInfo>();
- HepMC::GenRunInfo::ToolInfo tool;
- tool.name = std::string("SHERPA-MC");
- tool.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
- tool.description = std::string(SHERPA_NAME);
- m_run_info->tools().push_back(tool);
 }
 
 Output_HepMC3_Genevent::~Output_HepMC3_Genevent()
@@ -88,19 +80,24 @@ Output_HepMC3_Genevent::~Output_HepMC3_Genevent()
 
 }
 
-void Output_HepMC3_Genevent::SetXS(const double& xs, const double& xserr)
+void Output_HepMC3_Genevent::SetXS(const Weights_Map& xs,
+                                   const Weights_Map& err)
 {
-  p_xs->set_cross_section(xs, xserr);
+  // Only copy for now, we have to wait until the event weights have been
+  // added (when Output()), otherwise HepMC3::GenCrossSection will not be
+  // initialised correctly.
+  m_xs = xs;
+  m_err = err;
 }
 
 void Output_HepMC3_Genevent::Output(Blob_List* blobs) 
 {
-  m_hepmc3.Sherpa2HepMC(blobs, m_run_info);
+  m_hepmc3.Sherpa2HepMC(blobs);
   HepMC::GenEvent* q=m_hepmc3.GenEvent();
-  if (q) 
-  {
-  q->set_cross_section(p_xs);
-  if (p_writer)    p_writer->write_event(*(q));
+  if (q) {
+    m_hepmc3.AddCrossSection(*q, m_xs, m_err);
+    if (p_writer)
+      p_writer->write_event(*(q));
   }
 }
 

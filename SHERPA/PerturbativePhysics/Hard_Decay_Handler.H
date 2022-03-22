@@ -33,7 +33,7 @@ namespace SHERPA {
     std::map<ATOOLS::Flavour,std::set<std::string> > m_forced_channels;
     std::map<std::string, double> m_external_widths;
     int                      m_store_results;
-    bool                     m_decay_tau, m_set_widths,
+    bool                     m_decay_tau, m_set_widths, m_use_ho_sm_widths,
                              m_br_weights, m_usemass;
     double                   m_min_prop_width;
     ATOOLS::Flavour_Set      m_decmass;
@@ -47,6 +47,7 @@ namespace SHERPA {
     void SetDecayMasses();
     void InitializeDirectDecays(PHASIC::Decay_Table* dt);
     void InitializeOffshellDecays(PHASIC::Decay_Table* dt);
+    void ApplySMWidths();
     void CustomizeDecayTables();
     bool TriggerOffshell(PHASIC::Decay_Channel* dc, std::vector<PHASIC::Decay_Channel*> new_dcs);
     std::vector<PHASIC::Decay_Channel*> ResolveDecay(PHASIC::Decay_Channel* dc);

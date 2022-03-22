@@ -25,4 +25,5 @@ replacements may be performed in all inputs, see :ref:`Tags`.
    parameters/multiple-interactions
    parameters/hadronization
    parameters/qed-corrections
+   parameters/approximate-ew-corrections
    parameters/minimum-bias-events

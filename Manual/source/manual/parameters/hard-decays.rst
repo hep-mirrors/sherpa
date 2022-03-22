@@ -22,13 +22,20 @@ The syntax to configure :option:`HARD_DECAYS` sub-settings is:
      <sub-setting>: <value>
      # more sub-settings ...
      Channels:
-       "<channel id>":
+       <channel id>:
          <channel sub-setting>: <value>
          # more sub-settings for <channel>
        # more channels ...
 
-The channel ID codes are of the form ``a -> b c ...``.  The particle
-IDs for the decay channels can be found in the decay table printed to
+The central setting to enable the hard decays is
+.. code-block:: yaml
+
+   HARD_DECAYS:
+     Enable: true
+
+The channel ID codes are of the form ``a,b,c,...``, where ``a`` is the
+PDG ID of the decaying particle and ``b,c,...`` are the decay products.
+The IDs for the decay channels can also be found in the decay table printed to
 screen during the run.
 
 This decay module can also be used on top of NLO matrix elements, but
@@ -78,16 +85,16 @@ For example, to disable the hadronic decay channels of the W boson one would use
 
    HARD_DECAYS:
      Channels:
-       "24 -> 2 -1":  { Status: 0 }
-       "24 -> 4 -3":  { Status: 0 }
-       "-24 -> -2 1": { Status: 0 }
-       "-24 -> -4 3": { Status: 0 }
+       24,2,-1:  { Status: 0 }
+       24,4,-3:  { Status: 0 }
+       -24,-2,1: { Status: 0 }
+       -24,-4,3: { Status: 0 }
 
 In the same way, the bottom decay mode of the Higgs could be forced using:
 
 .. code-block:: yaml
 
-   "25 -> 5 -5":  { Status: 2 }
+   25,5,-5:  { Status: 2 }
 
 Note that the ordering of the decay products in :option:`<channel id>` is
 important and has to be identical to the ordering in the decay table
@@ -112,26 +119,27 @@ resonance.
 
 An example to set (/add) the partial widths of the ``H->ff``,
 ``H->gg`` and ``H->yy`` channels can be seen in the following. The
-values have been taken from `LHCHXSWG
-<https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR3>`_):
+values have been taken from `LHC Higgs WG
+<https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWG/Higgs_XSBR_YR4_update.xlsx>`_):
 
 .. code-block:: yaml
 
    PARTICLE_DATA:
      25:
-       Mass: 125
-       Width: 0.00407
+       Mass: 125.09
+       Width: 0.0041
 
    HARD_DECAYS:
      Enabled: true
      Channels:
-       "25 -> 5 -5":   { Width: 2.35e-3 }
-       "25 -> 15 -15": { Width: 2.57e-4 }
-       "25 -> 13 -13": { Width: 8.91e-7 }
-       "25 -> 4 -4":   { Width: 1.18e-4 }
-       "25 -> 3 -3":   { Width: 1.00e-6 }
-       "25 -> 21 21":  { Width: 3.49e-4 }
-       "25 -> 22 22":  { Width: 9.28e-6 }
+       25,5,-5:    { Width: 2.382E-03 }
+       25,15,-15:  { Width: 2.565E-04 }
+       25,13,-13:  { Width: 8.901E-07 }
+       25,4,-4:    { Width: 1.182E-04 }
+       25,3,-3:    { Width: 1E-06 }
+       25,21,21:   { Width: 3.354E-04 }
+       25,22,22:   { Width: 9.307E-06 }
+       25,23,22:   { Width: 6.318E-06 }
 
 Another example, setting the leptonic and hadronic decay channels of W
 and Z bosons to the PDG values, would be specified as follows:
@@ -141,27 +149,45 @@ and Z bosons to the PDG values, would be specified as follows:
    HARD_DECAYS:
      Enabled: true
      Channels:
-       "24 -> 2 -1":    { Width: 0.7041 }
-       "24 -> 4 -3":    { Width: 0.7041 }
-       "24 -> 12 -11":  { Width: 0.2256 }
-       "24 -> 14 -13":  { Width: 0.2256 }
-       "24 -> 16 -15":  { Width: 0.2256 }
-       "-24 -> -2 1":   { Width: 0.7041 }
-       "-24 -> -4 3":   { Width: 0.7041 }
-       "-24 -> -12 11": { Width: 0.2256 }
-       "-24 -> -14 13": { Width: 0.2256 }
-       "-24 -> -16 15": { Width: 0.2256 }
-       "23 -> 1 -1":    { Width: 0.3828 }
-       "23 -> 2 -2":    { Width: 0.2980 }
-       "23 -> 3 -3":    { Width: 0.3828 }
-       "23 -> 4 -4":    { Width: 0.2980 }
-       "23 -> 5 -5":    { Width: 0.3828 }
-       "23 -> 11 -11":  { Width: 0.0840 }
-       "23 -> 12 -12":  { Width: 0.1663 }
-       "23 -> 13 -13":  { Width: 0.0840 }
-       "23 -> 14 -14":  { Width: 0.1663 }
-       "23 -> 15 -15":  { Width: 0.0840 }
-       "23 -> 16 -16":  { Width: 0.1663 }
+       24,2,-1:    { Width: 0.7041 }
+       24,4,-3:    { Width: 0.7041 }
+       24,12,-11:  { Width: 0.2256 }
+       24,14,-13:  { Width: 0.2256 }
+       24,16,-15:  { Width: 0.2256 }
+       -24,-2,1:   { Width: 0.7041 }
+       -24,-4,3:   { Width: 0.7041 }
+       -24,-12,11: { Width: 0.2256 }
+       -24,-14,13: { Width: 0.2256 }
+       -24,-16,15: { Width: 0.2256 }
+       23,1,-1:    { Width: 0.3828 }
+       23,2,-2:    { Width: 0.2980 }
+       23,3,-3:    { Width: 0.3828 }
+       23,4,-4:    { Width: 0.2980 }
+       23,5,-5:    { Width: 0.3828 }
+       23,11,-11:  { Width: 0.0840 }
+       23,12,-12:  { Width: 0.1663 }
+       23,13,-13:  { Width: 0.0840 }
+       23,14,-14:  { Width: 0.1663 }
+       23,15,-15:  { Width: 0.0840 }
+       23,16,-16:  { Width: 0.1663 }
+       6,24,5:     { Width: 1.32 }
+       -6,-24,-5:  { Width: 1.32 }
+
+See also :option:`Use_HO_SM_Widths` below for a global automatic switch to set these values.
+
+.. _Use_HO_SM_Widths:
+
+Use_HO_SM_Widths
+================
+
+.. index:: Use_HO_SM_Widths
+
+The partial decay widths (and thus BRs) calculated and used by the decay
+handler are only LO accurate. For SM setups, we provide pre-defined decay
+widths taking higher-order corrections into account. By default
+(:option:`HARD_DECAYS: { Use_HO_SM_Widths: true }`) these will overwrite
+the LO widths with the values given in the :option:`Width` example above.
+
 
 .. _HARD_SPIN_CORRELATIONS:
 

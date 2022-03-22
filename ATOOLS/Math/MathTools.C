@@ -19,7 +19,7 @@ namespace ATOOLS {
     for (j=0;j<=5;j++) ser += cof[j]/++y;
     return -tmp+log(2.5066282746310005*ser/x);
   }
-  // (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D. 
+  // (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D.
 
 
   double ReIncompleteGamma0(double x, double prec) {
@@ -36,7 +36,7 @@ namespace ATOOLS {
      Re[Gamma(0,x)] = - EulerGamma - Log[Abs[x]] - Sum_n=1^Infty(-x)^n/(n*n!)
      Im = - I Pi  fuer x<0
      Im = 0       fuer x>0
- 
+
        z.B.
      Gamma(0,-.1) = 1.6228128139692766750 - 3.1415926535897932385 I
      Gamma(0,.1)  = 1.8229239584193906661
@@ -47,7 +47,7 @@ namespace ATOOLS {
 
     double sum= -euler_gamma -log(dabs(x));
     double i  = 1;
-    double ai = -x;  
+    double ai = -x;
     for (;;) {
       sum-=ai;
       ai*=-x*i/sqr(i+1);
@@ -75,14 +75,14 @@ namespace ATOOLS {
     p = coef;
     ans = *p++;
     i = N;
-    
+
     do
       ans = ans * x  +  *p++;
     while( --i );
-    
+
     return ans;
   }
-  
+
   double DiLog(double x)
   {
     static double cof_A[8] = {
@@ -115,42 +115,42 @@ namespace ATOOLS {
       return( 0.0 );
     if( x == 0.0 )
       return( M_PI*M_PI/6.0 );
-    
+
     flag = 0;
-    
+
     if( x > 2.0 )
       {
 	x = 1.0/x;
 	flag |= 2;
       }
-    
+
     if( x > 1.5 )
       {
 	w = (1.0/x) - 1.0;
 	flag |= 2;
       }
-    
+
     else if( x < 0.5 )
       {
 	w = -x;
 	flag |= 1;
       }
-    
+
     else
       w = x - 1.0;
-    
-    
+
+
     y = -w * polevl( w, cof_A, 7) / polevl( w, cof_B, 7 );
-    
+
     if( flag & 1 )
 	y = (M_PI * M_PI)/6.0  - log(x) * log(1.0-x) - y;
-    
+
     if( flag & 2 )
       {
 	z = log(x);
 	y = -0.5 * z * z  -  y;
       }
-    
+
     return y;
 
   }
@@ -176,7 +176,7 @@ namespace ATOOLS {
       //!       and Dynamical Astronomy 62: 93-98, 1995
       //! maybe alternatively implement continued-fraction expansion of
       //! ref.: D.Cvijovic, J.Klinowski; "Continued-Fraction Expansions for
-      //!       the Riemann Zeta Function and Polylogarithms"; Proceedings 
+      //!       the Riemann Zeta Function and Polylogarithms"; Proceedings
       //!       of the American Mathematical Society, Volume 125, Number 9,
       //!       September 1997, Pages 2543-2550
       if (abs(x) < radius) {
@@ -297,13 +297,14 @@ namespace ATOOLS {
         std::cout<<"number of iterations: "<<i<<std::endl;
         return sum;
       }
-      else
+      else {
         std::cout<<abs(x)<<std::endl;
         std::cout<<"region VI ..."<<std::endl;
         // DiLog(x) = -DiLog(1/x) - 1/2*ln2(-x) - pi2/6
         return -DiLog(1./x) - 0.5*sqr(log(-x)) - sqr(M_PI)/6.;
         // DiLog(x) = -DiLog(-x) + 1/2*DiLog(x2)
-//         return -DiLog(-x) + 0.5*DiLog(x*x);
+	// return -DiLog(-x) + 0.5*DiLog(x*x);
+      }
     }
     std::cout<<"no suitable region found ..."<<std::endl;
     return 0.;
@@ -311,7 +312,7 @@ namespace ATOOLS {
 
   int Factorial(const int n)
   {
-    if (n < 0) return 0;  
+    if (n < 0) return 0;
     if (n < 2) return 1;
     int res = 2;
     for (int i=3;i<=n;i++) res *= i;
@@ -320,7 +321,7 @@ namespace ATOOLS {
 
   double ExpIntegral(int n, double x) {
     // Implementation close to chapter 6.3 in
-    // "NUMERICAL RECIPES IN C: THE ART OF SCIENTIFIC COMPUTING 
+    // "NUMERICAL RECIPES IN C: THE ART OF SCIENTIFIC COMPUTING
     // (ISBN 0-521-43108-5)
 
     // configuration
@@ -334,13 +335,13 @@ namespace ATOOLS {
       msg_Error() << "Bad arguments in E_n(x)" << std::endl;
     }
     else {
-      // Handle special cases 
+      // Handle special cases
       if (n == 0) return exp(-x)/x; // n=0
       else if (fabs(x) < 1.e-10) { // x=0
 	return 1.0/(n-1);
       }
       // Normal Calculation
-      else if (x > 1.) { // continued fraction 
+      else if (x > 1.) { // continued fraction
 	double b=x+n;
 	double c=1.e30; // 1./DBL_MIN (<cfloats>)
 	double d=1./b;
@@ -357,7 +358,7 @@ namespace ATOOLS {
 	    return h*exp(-x);
 	  }
 	}
-	msg_Error() << "Continued fraction failed in ExpIntegral()! x=" << x 
+	msg_Error() << "Continued fraction failed in ExpIntegral()! x=" << x
 		    << std::endl;
       }
       else { // series evaluation
@@ -381,13 +382,204 @@ namespace ATOOLS {
 	  }
 	}
 	msg_Error() << "Series failed in ExpIntegral()! x=" << x << std::endl;
-      } 
+      }
     }
-    msg_Error() << "Exponential Integral Calculation failed! x=" << x 
+    msg_Error() << "Exponential Integral Calculation failed! x=" << x
 		<< std::endl;
     return 0.0;
   }
 
+  double evaluate_polynomial (size_t size, double P[], double x)
+{
+	double value = 0;
+	int deg = size-1;
+	for (int i=deg; i>=0; i--) {
+		value += P[i]*pow(x,i);
+	}
+	return value;
 }
 
+long double cyl_bessel_0 (long double x) {
 
+  if (x>35) { //accurate to 1/1000
+    long double ret = expl(-x)*sqrt(M_PI/(2*x)) * (1 - 1/(8*x)); // limiting expression
+    //std::cout <<"Using limiting expression, bessel_0 = " << ret << std::endl; //debugging
+    return ret;
+  }
+
+	static double P1[] = {
+	2.4708152720399552679e+03,
+	5.9169059852270512312e+03,
+	4.6850901201934832188e+02,
+	1.1999463724910714109e+01,
+	1.3166052564989571850e-01,
+	5.8599221412826100000e-04
+	};
+
+	static double Q1[] = {
+	2.1312714303849120380e+04,
+	-2.4994418972832303646e+02,
+	1.0
+	};
+
+	static double P2[] = {
+	-1.6128136304458193998e+06,
+	-3.7333769444840079748e+05,
+	-1.7984434409411765813e+04,
+	-2.9501657892958843865e+02,
+	-1.6414452837299064100e+00
+	};
+
+	static double Q2[] = {
+	-1.6128136304458193998e+06,
+	2.9865713163054025489e+04,
+	-2.5064972445877992730e+02,
+	1.0
+	};
+
+	static double P3[] = {
+	1.1600249425076035558e+02,
+	2.3444738764199315021e+03,
+	1.8321525870183537725e+04,
+	7.1557062783764037541e+04,
+	1.5097646353289914539e+05,
+	1.7398867902565686251e+05,
+	1.0577068948034021957e+05,
+	3.1075408980684392399e+04,
+	3.6832589957340267940e+03,
+	1.1394980557384778174e+02
+	};
+
+	static double Q3[] = {
+	9.2556599177304839811e+01,
+	1.8821890840982713696e+03,
+	1.4847228371802360957e+04,
+	5.8824616785857027752e+04,
+	1.2689839587977598727e+05,
+	1.5144644673520157801e+05,
+	9.7418829762268075784e+04,
+	3.1474655750295278825e+04,
+	4.4329628889746408858e+03,
+	2.0013443064949242491e+02,
+	1.0
+	};
+
+	double factor, r, r1, r2;
+  long double value;
+
+	if (x < 0) return -1; //error
+	if (x == 0) return -1; //error
+
+	if (x <= 1) {
+		double y = x*x;
+		r1 = evaluate_polynomial(sizeof(P1)/sizeof(P1[0]),P1,y) / evaluate_polynomial(sizeof(Q1)/sizeof(Q1[0]),Q1,y);
+		r2 = evaluate_polynomial(sizeof(P2)/sizeof(P2[0]),P2,y) / evaluate_polynomial(sizeof(Q2)/sizeof(Q2[0]),Q2,y);
+		factor = log(x);
+		value = r1 - factor * r2;
+	}
+	else {
+		double y = 1/x;
+		r = evaluate_polynomial(sizeof(P3)/sizeof(P3[0]),P3,y) / evaluate_polynomial(sizeof(Q3)/sizeof(Q3[0]),Q3,y);
+		factor = exp(-x)/sqrt(x);
+		value = factor * r;
+	}
+  //std::cout << "Using rational approximation, bessel_0 = " << value << std::endl; //debugging
+	return value;
+}
+
+long double cyl_bessel_1 (long double x) {
+
+  if (x>35) { //accurate to 1/1000
+    long double ret = expl(-x)*sqrt(M_PI/(2*x)) * (1 + 3/(8*x)); // limiting expression
+    //std::cout << "Using limiting expression, bessel_1 = " << ret << std::endl; //debugging
+    return ret;
+  }
+
+	static double P1[] = {
+	-2.2149374878243304548e+06,
+	7.1938920065420586101e+05,
+	1.7733324035147015630e+05,
+	7.1885382604084798576e+03,
+	9.9991373567429309922e+01,
+	4.8127070456878442310e-01
+	};
+
+	static double Q1[] = {
+	-2.2149374878243304548e+06,
+	3.7264298672067697862e+04,
+	-2.8143915754538725829e+02,
+	1.0
+	};
+
+	static double P2[] = {
+	0.0,
+	-1.3531161492785421328e+06,
+	-1.4758069205414222471e+05,
+	-4.5051623763436087023e+03,
+	-5.3103913335180275253e+01,
+	-2.2795590826955002390e-01
+	};
+
+	static double Q2[] {
+	-2.7062322985570842656e+06,
+	4.3117653211351080007e+04,
+	-3.0507151578787595807e+02,
+	1.0
+	};
+
+	static double P3[] = {
+	2.2196792496874548962e+00,
+	4.4137176114230414036e+01,
+	3.4122953486801312910e+02,
+	1.3319486433183221990e+03,
+	2.8590657697910288226e+03,
+	3.4540675585544584407e+03,
+	2.3123742209168871550e+03,
+	8.1094256146537402173e+02,
+	1.3182609918569941308e+02,
+	7.5584584631176030810e+00,
+	6.4257745859173138767e-02
+	};
+
+	static double Q3[] = {
+	1.7710478032601086579e+00,
+	3.4552228452758912848e+01,
+	2.5951223655579051357e+02,
+	9.6929165726802648634e+02,
+	1.9448440788918006154e+03,
+	2.1181000487171943810e+03,
+	1.2082692316002348638e+03,
+	3.3031020088765390854e+02,
+	3.6001069306861518855e+01,
+	1.0
+	};
+
+	double factor, r, r1, r2, y;
+  long double value;
+
+	if (x < 0) return -1; //error
+	if (x == 0) return -1; //error
+
+	if (x <= 1) {
+		y = x*x;
+		r1 = evaluate_polynomial(sizeof(P1)/sizeof(P1[0]),P1,y) / evaluate_polynomial(sizeof(Q1)/sizeof(Q1[0]),Q1,y);
+		r2 = evaluate_polynomial(sizeof(P2)/sizeof(P2[0]),P2,y) / evaluate_polynomial(sizeof(Q2)/sizeof(Q2[0]),Q2,y);
+		factor = log(x);
+		value = (r1 + factor*r2)/x;
+	}
+	else {
+		y = 1/x;
+		r = evaluate_polynomial(sizeof(P3)/sizeof(P3[0]),P3,y) / evaluate_polynomial(sizeof(Q3)/sizeof(Q3[0]),Q3,y);
+		factor = exp(-x)/sqrt(x);
+		value = factor*r;
+	}
+
+  //std::cout << "Using rational approximation, bessel_1 = " << value << std::endl; //debugging
+	return value;
+}
+
+long double cyl_bessel_2 (long double x) {
+	return 2*1/x * cyl_bessel_1(x) + cyl_bessel_0(x);
+}
+
+}

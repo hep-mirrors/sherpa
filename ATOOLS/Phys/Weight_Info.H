@@ -17,17 +17,11 @@ namespace ATOOLS {
              const double &xf1=0.,const double &xf2=0.) :
       m_fl1(fl1), m_fl2(fl2), m_x1(x1), m_x2(x2),
       m_muf12(muf12), m_muf22(muf22), m_xf1(xf1), m_xf2(xf2) {}
+    bool operator==(const PDF_Info& rhs) const;
+    bool operator!=(const PDF_Info& rhs) const;
   }; // end of struct PDF_Info
 
-  inline std::ostream & operator<<(std::ostream & s,
-                                   const ATOOLS::PDF_Info & pi)
-  {
-    s<<" pdf1 = ("<<pi.m_fl1<<","<<pi.m_x1<<","<<sqrt(pi.m_muf12)
-                  <<":"<<pi.m_xf1<<") , "
-     <<" pdf2 = ("<<pi.m_fl2<<","<<pi.m_x2<<","<<sqrt(pi.m_muf22)
-                  <<":"<<pi.m_xf2<<")";
-    return s;
-  }
+  std::ostream& operator<<(std::ostream&, const ATOOLS::PDF_Info&);
 
   struct Weight_Info {
     Weights_Map m_weightsmap;
@@ -42,13 +36,11 @@ namespace ATOOLS {
       m_weightsmap(weightsmap),
         m_dxs(dxs), m_ntrial(ntrial),
       m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
+    bool operator==(const Weight_Info& rhs) const;
+    bool operator!=(const Weight_Info& rhs) const;
   }; // end of struct Weight_Info
 
-  inline std::ostream & operator<<(std::ostream & s,
-                                   const ATOOLS::Weight_Info & wi)
-  {
-    return s << " w = " << wi.m_weightsmap.Nominal() << ", dxs = " << wi.m_dxs<<std::endl;
-  }
+  std::ostream& operator<<(std::ostream&, const ATOOLS::Weight_Info&);
 
   struct mewgttype {
     enum code {

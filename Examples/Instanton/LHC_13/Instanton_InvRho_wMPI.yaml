@@ -1,0 +1,70 @@
+# pp -> instanton
+
+# general setting
+EVENTS: 10000
+SCALES: Democratic
+#MI_HANDLER: None # multiple interaction switch
+#EVENT_GENERATION_MODE: Weighted
+#BEAM_REMNANTS: false  #Turn off if SHOWER_GENERATOR is None
+#SHOWER_GENERATOR: None #Set None to turn off all the showers, instanton does not decay 
+#CSS_IS_PT2MIN: 1000000000000 #Set to very large value to disable all the showers except the instanton decay 
+#CSS_FS_PT2MIN: 1000000000000 #Set to very large value to disable all the showers except the instanton decay 
+#FRAGMENTATION: Off
+#FRAGMENTATION: Lund  #Hadronization switch
+#DECAYMODEL: Off
+BATCH_MODE: 2
+#OUTPUT: 8
+RANDOM_SEED: 999
+INSTANTON_XSECS: [
+   [  10.7,      0.99,  0.416,  4.59,  4.922E9],
+   [  11.4,      1.04,  0.405,  4.68,  3.652E9],
+   [  13.4,      1.16,  0.382,  4.90,  1.671E9],
+   [  15.7,      1.31,  0.360,  5.13,  728.9E6],
+   [  22.9,      1.76,  0.315,  5.44,  85.94E6],
+   [  29.7,      2.12,  0.293,  6.02,  17.25E6],
+   [  40.8,      2.72,  0.267,  6.47,  2.121E6],
+   [  56.1,      3.50,  0.245,  6.92,  229.0E3],
+   [  61.8,      3.64,  0.223,  7.28,  72.97E3],
+   [  89.6,      4.98,  0.206,  7.67,  2.733E3],
+   [ 118.0,      6.21,  0.195,  8.25,  235.4  ],
+   [ 174.4,      8.72,  0.180,  8.60,  6.720  ],
+   [ 246.9,     11.76,  0.169,  9.04,  0.284  ],
+   [ 349.9,     15.90,  0.159,  9.49,  0.012  ],
+   [ 496.3,     21.58,  0.150,  9.93,  5.112E-4],
+   [ 704.8,     29.37,  0.142, 10.37,  21.65E-6],
+   [1001.8,     40.07,  0.135, 10.81,  0.9017E-6],
+   [1425.6,     54.83,  0.128, 11.26,  36.45E-9],
+   [2030.6,     75.21,  0.122, 11.70,  1.419E-9],
+   [2895.5,    103.4,   0.117, 12.14,  52.07E-12]
+ ]
+INSTANTON_NGLUONS_MODIFIER:  1.
+INSTANTON_SIGMAHAT_MODIFIER: 1.
+INSTANTON_MIN_MASS:          150.
+#INSTANTON_MAX_MASS:          20.
+INSTANTON_ALPHAS_FACTOR:     1
+INSTANTON_SCALE_CHOICE:      1/rho
+#1/rho #shat/N  #1/rho is the Herwig default
+INSTANTON_SCALE_FACTOR:      1.
+INSTANTON_INCLUDE_QUARKS:    5
+INSTANTON_B_PRODUCTION_THRESHOLD: 20.
+INSTANTON_C_PRODUCTION_THRESHOLD: 100.
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+FREEZE_PDF_FOR_LOW_Q: 1
+
+
+# me generator settings
+ME_SIGNAL_GENERATOR: [Internal]
+
+PROCESSES:
+- 21 21 -> 999:
+     Order: {EW: 0, QCD: Any}
+
+
+#EVENT_OUTPUT: HepMC_GenEvent[../../../../scratch/jinw/Instanton/Sherpa_4f_mass100-noshower-InvRho]
+#EVENT_OUTPUT: HepMC_GenEvent[../../../../scratch/jinw/Instanton/Sherpa_5f_mass150_wMPI-InvRho]
+#HEPMC_USE_NAMED_WEIGHTS: 1
+#ANALYSIS: Rivet
+#RIVET: { -a: [MC_INSTANTON, MC_XS] } 
+#RIVET: { -a: [MC_XS] } 
