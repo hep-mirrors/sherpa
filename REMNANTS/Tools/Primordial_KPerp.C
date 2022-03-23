@@ -43,7 +43,6 @@ void Primordial_KPerp::Initialize() {
     m_form[beam]      = SelectForm(forms[beam]);
     m_mean[beam]      = means[beam];
     m_sigma[beam]     = sigmas[beam] * escale;
-    std::cout<<" intrinsic kT sigma: "<<m_sigma[beam]<<std::endl;
     m_Q2[beam]        = Q2s[beam] * escale;
     m_ktmax[beam]     = Max(1.0, ktmaxs[beam] * escale);
     m_eta[beam]       = ktexpos[beam];
