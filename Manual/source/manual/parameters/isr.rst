@@ -70,7 +70,7 @@ They can be configured with the following parameters.
     Built-in library for some PDF sets from the CTEQ collaboration,
     cf. :cite:`Nadolsky2008zw`.
 
-  :OPTION:`NNPDF30NLO`
+  :OPTION:`NNPDF30Sherpa`
     Built-in library for PDF sets from the NNPDF group, cf. :cite:`Ball2014uwa`.
 
   :option:`MSTW08Sherpa`
