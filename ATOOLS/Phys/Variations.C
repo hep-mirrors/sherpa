@@ -711,8 +711,8 @@ std::string QCD_Variation_Params::Name(Variations_Source source) const
     // there are two relevant PDF IDs, quote both
     name = level_prefix + GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
            + level_prefix + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
-           + level_prefix + GenerateVariationNamePart("BEAM0.LHAPDF=", p_pdf1->LHEFNumber()) + divider
-           + level_prefix + GenerateVariationNamePart("BEAM1.LHAPDF=", p_pdf2->LHEFNumber());
+           + level_prefix + GenerateVariationNamePart("LHAPDF.BEAM1=", p_pdf1->LHEFNumber()) + divider
+           + level_prefix + GenerateVariationNamePart("LHAPDF.BEAM2=", p_pdf2->LHEFNumber());
   }
   // append non-trival AlphaS(MZ) variation (which is not related to a change
   // in the PDF set)
