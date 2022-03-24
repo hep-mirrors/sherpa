@@ -50,6 +50,8 @@ SASGph_Fortran_Interface::SASGph_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_partons.insert(Flavour(kf_jet));
   m_partons.insert(Flavour(kf_quark));
   m_partons.insert(Flavour(kf_quark).Bar());
+
+  rpa->gen.AddCitation(1,"The SaSg photon PDF is published under \\cite{Schuler:1995fk} and \\cite{Schuler:1996fc}.");
 }
 
 PDF_Base *SASGph_Fortran_Interface::GetCopy() {

@@ -29,6 +29,8 @@ SALph_CPP_Interface::SALph_CPP_Interface(const ATOOLS::Flavour _bunch) {
   m_partons.insert(Flavour(kf_jet));
   m_partons.insert(Flavour(kf_quark));
   m_partons.insert(Flavour(kf_quark).Bar());
+
+  rpa->gen.AddCitation(1,"The SAL photon PDF is published under \\cite{Slominski:2005bw}.");
 }
 
 PDF_Base *SALph_CPP_Interface::GetCopy() {
