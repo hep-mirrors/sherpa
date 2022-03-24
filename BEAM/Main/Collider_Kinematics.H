@@ -16,12 +16,7 @@ private:
 
   void InitSystem();
   void InitIntegration();
-  bool MakeMonochromaticBeams();
-  bool MakeSpectral1Beams(ATOOLS::Vec4D *moms);
-  bool MakeSpectral2Beams(ATOOLS::Vec4D *moms);
-  bool MakeCollinearBeams(ATOOLS::Vec4D *moms);
   double CalculateTau();
-  void CalculateSudakovMomenta();
 
 public:
   Collider_Kinematics(Beam_Base **beams);
