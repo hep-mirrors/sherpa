@@ -103,7 +103,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   chf<<"{"<<endl;
   //chf<<"std::cout<<\""<<name<<"\"<<std::endl;"<<endl;
   chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
-  chf<<"  for(int i=0;i<rannum;i++) p_rans[i]=ran[i];"<<endl;
+  chf<<"  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
   int       maxnumb = 0;
 
@@ -137,9 +137,9 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   chf	<<name<<"::"<<name<<"(int nin,int nout,Flavour* fl,Integration_Info * const info)"<<endl
 	<<"       : Single_Channel(nin,nout,fl)"<<endl
 	<<"{"<<endl
-	<<"  name = std::string(\""<<name<<"\");"<<endl
-	<<"  rannum = "<<rannumber<<";"<<endl
-	<<"  p_rans  = new double[rannum];"<<endl;
+	<<"  m_name = std::string(\""<<name<<"\");"<<endl
+	<<"  m_rannum = "<<rannumber<<";"<<endl
+	<<"  p_rans  = new double[m_rannum];"<<endl;
   if (tcount>0) {
     chf	<<"  m_amct  = 1.;"<<endl
 	<<"  m_alpha = .5;"<<endl
@@ -151,7 +151,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
       chf <<"  m_k"<<m_idc[i]<<".Assign(std::string(\""<<m_idc[i]<<"\"),2,0,info);"<<endl;
     }
   }
-  chf	<<"  p_vegas = new Vegas(rannum,100,name);"<<endl;
+  chf	<<"  p_vegas = new Vegas(m_rannum,100,m_name);"<<endl;
   chf	<<"}"<<endl<<endl;
 
   //Destructor

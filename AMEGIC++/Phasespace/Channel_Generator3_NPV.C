@@ -267,7 +267,7 @@ int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"{"<<endl;
   //chf<<"std::cout<<\""<<name<<"\"<<std::endl;"<<endl;
   chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
-  chf<<"  for(int i=0;i<rannum;i++) p_rans[i]=ran[i];"<<endl;
+  chf<<"  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
   
   acount = 0;
@@ -297,9 +297,9 @@ int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& 
 	<<"       : Single_Channel(nin,nout,fl)"<<endl
 	<<"{"<<endl
 	<<"  Settings& s = Settings::GetMainSettings();"<<endl
-	<<"  name = std::string(\""<<name<<"\");"<<endl
-	<<"  rannum = "<<rannumber<<";"<<endl
-	<<"  p_rans  = new double[rannum];"<<endl
+	<<"  m_name = std::string(\""<<name<<"\");"<<endl
+	<<"  m_rannum = "<<rannumber<<";"<<endl
+	<<"  p_rans  = new double[m_rannum];"<<endl
 	<<"  m_thexp = s[\"THRESHOLD_EPSILON\"].Get<double>();"<<endl;
   if (tcount>0) {
     chf	<<"  m_amct  = 1.0 + s[\"CHANNEL_EPSILON\"].Get<double>();"<<endl
@@ -312,7 +312,7 @@ int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& 
       chf <<"  m_k"<<m_idc[i]<<".Assign(std::string(\""<<m_idc[i]<<"\"),2,0,info);"<<endl;
     }
   }
-  chf	<<"  p_vegas = new Vegas(rannum,100,name);"<<endl;
+  chf	<<"  p_vegas = new Vegas(m_rannum,100,m_name);"<<endl;
   chf	<<"}"<<endl<<endl;
 
   //Destructor
