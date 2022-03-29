@@ -338,7 +338,7 @@ void Channel_Generator_KK::Step0(int flag,Point* p,int& rannum,ofstream& sf)
   case 0: case 1:
     sf<<"  Vec4D p"<<m<<"=p[0]+p[1];"<<endl;
     AddToVariables(flag,m+string("_max"),string("p")+m+string(".Abs2()"),0,sf);
-    if (flag==0) sf<<"  CEKK.SetKKmass(ms,sqrt(s"<<m<<"_max),cuts,ran[0]);"<<endl;
+    if (flag==0) sf<<"  CEKK.SetKKmass(p_ms,sqrt(s"<<m<<"_max),cuts,ran[0]);"<<endl;
  
     GenerateMassChain(flag,ph,ph,rannum,sf);
     break;
