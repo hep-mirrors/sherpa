@@ -50,9 +50,7 @@ They can be configured with the following parameters.
   following options are distributed with Sherpa:
 
   :option:`LHAPDFSherpa`
-    Use PDF's from LHAPDF :cite:`Whalley2005nh`. The interface is only
-    available if Sherpa has been compiled with support for LHAPDF, see
-    :ref:`Installation`.
+    Use PDF's from LHAPDF :cite:`Buckley2011ms`.
 
   :option:`CT14Sherpa`
     Built-in library for some PDF sets from the CTEQ collaboration,

@@ -163,7 +163,7 @@ strong coupling constant at the Z-pole, given through
 ``ALPHAS(MZ)``. Its default value is :option:`0.118`. If the setup at
 hand involves hadron collisions and thus PDFs, the value of the strong
 coupling constant is automatically set consistent with the PDF fit and
-can not be changed by the user. If Sherpa is compiled with LHAPDF
+can not be changed by the user. Since Sherpa is compiled with LHAPDF
 support, it is also possible to use the alphaS evolution provided in
 LHAPDF by specifying ``ALPHAS: {USE_PDF: 1}``. The perturbative
 order of the running of the strong coupling can be set via

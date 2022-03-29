@@ -10,12 +10,7 @@ ME_GENERATORS:
   - Amegic
   - OpenLoops
 
-## OTF variations    ## TODO Marek
-CSS_REWEIGHT: true
-REWEIGHT_SPLITTING_ALPHAS_SCALES: true
-REWEIGHT_SPLITTING_PDF_SCALES: true
-HEPMC_USE_NAMED_WEIGHTS: true
-OUTPUT_ME_ONLY_VARIATIONS: true
+## OTF variations
 SCALE_VARIATIONS:
   - [0.25, 0.25]
   - [1.0,  0.25]
@@ -25,19 +20,11 @@ SCALE_VARIATIONS:
   - [1.0,  4.0]
   - [4.0,  4.0]
 
-## PDF   ## TODO Marek
-ALPHAS:
-  USE_PDF: 1
-PDF_LIBRARY: LHAPDFSherpa
-PDF_SET: NNPDF30_nnlo_as_0118_hessian
 PDF_VARIATIONS:
-  - NNPDF30_nnlo_as_0118_hessian*
-  - PDF4LHC15_nnlo_30_pdfas*
-  - NNPDF30_nnlo_as_0117
-  - NNPDF30_nnlo_as_0119
+  - PDF4LHC21_40_pdfas*
+  - NNPDF40_nnlo_as_01180
   - MSHT20nnlo_as118
   - CT18NNLO_as_0118
-  - NPDF31_nnlo_as_0118_hessian
 
 # EW setup and corrections
 EW_SCHEME: alphamZsW
@@ -47,10 +34,9 @@ ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
   - [EW, LO1]
   - [EW, LO1, LO2]
   - [EW, LO1, LO2, LO3]
-METS_BBAR_MODE: 5  ## TODO Marek
 
 # speed and neg weight fraction improvements
-NLO_CSS_PSMODE: 1
+NLO_CSS_PSMODE: 2
 MC@NLO:
   RS_SCALE: METS{H_Tp2/4}
 

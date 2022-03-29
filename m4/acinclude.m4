@@ -864,47 +864,46 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   AM_CONDITIONAL(USING__LHOLE, test "$lhole" = "true" )
 
-  lhapdfversion=5
-  AC_ARG_ENABLE(
+  AC_ARG_WITH(
     lhapdf,
-    AS_HELP_STRING([--enable-lhapdf=/path/to/lhapdf],[Enable LHAPDF support and specify where it is installed.]),
+    AS_HELP_STRING([--with-lhapdf=@<:@ARG@:>@],[use LHAPDF from @<:@ARG@:>@.]),
     [ AC_MSG_CHECKING(for LHAPDF installation directory);
-      case "${enableval}" in
-        no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
-        yes) if test -x "`which lhapdf-config`"; then
-               CONDITIONAL_LHAPDFDIR=`lhapdf-config --prefix`;
-             fi;;
-        *)  if test -d "${enableval}"; then
-              CONDITIONAL_LHAPDFDIR=${enableval};
-            fi;;
-      esac;
-
-      if test -n "$CONDITIONAL_LHAPDFDIR"; then
-        if test -x "$CONDITIONAL_LHAPDFDIR/bin/lhapdf-config"; then
-          CONDITIONAL_LHAPDFLIBS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --ldflags)";
-          CONDITIONAL_LHAPDFINCS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --cppflags)";
-          lhapdfversion="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --version)";
-          lhapdfversion=${lhapdfversion:0:1}
-          AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
-        else
-          AC_MSG_ERROR(Unable to use LHAPDF from specified path.);
-        fi;
-      fi;
+      if test "$withval" = "install"; then
+        CONDITIONAL_LHAPDFDIR=$ac_default_prefix;
+        lhapdf_version="6.4.0";
+        test "x$prefix" != xNONE && CONDITIONAL_LHAPDFDIR=$prefix;
+        if ! test -f ${CONDITIONAL_LHAPDFDIR}/bin/lhapdf-config; then
+          wget --no-check-certificate https://lhapdf.hepforge.org/downloads/LHAPDF-${lhapdf_version}.tar.gz
+          tar xzf LHAPDF-${lhapdf_version}.tar.gz;
+          cd LHAPDF-${lhapdf_version};
+          ./configure --prefix=${CONDITIONAL_LHAPDFDIR} --disable-python || exit;
+          make || exit; make install || exit;
+          cd ${CONDITIONAL_LHAPDFDIR}/share/LHAPDF;
+          wget --no-check-certificate https://www.hep.ucl.ac.uk/pdf4lhc/pdf4lhc21grids/PDF4LHC21_40_pdfas.tgz;
+          tar xzf PDF4LHC21_40_pdfas.tgz;
+          echo "93300 PDF4LHC21_40_pdfas 1" >> pdfsets.index
+          cd -;
+          cd ..;
+          rm -rf LHAPDF-${lhapdf_version}.tar.gz LHAPDF-${lhapdf_version} ${CONDITIONAL_LHAPDFDIR}/share/LHAPDF/PDF4LHC21_40_pdfas.tgz;
+          echo "Successfully installed lhapdf into ${CONDITIONAL_LHAPDFDIR}."
+        fi
+      else
+        CONDITIONAL_LHAPDFDIR="$withval"
+      fi
     ],
-    [ lhapdf=false ]
+    [ CONDITIONAL_LHAPDFDIR=/usr; ]
   )
-  if test "$lhapdf" = "true" ; then
-    AC_DEFINE_UNQUOTED([LHAPDF_PATH], "$CONDITIONAL_LHAPDFDIR", [LHAPDF directory])
-    AC_DEFINE([USING__LHAPDF], "1", [using LHAPDF])
-    if test [ "$lhapdfversion" -ge "6" ] ; then
-      AC_DEFINE(USING__LHAPDF6, "1", [using LHAPDF6])
-    fi
-  fi
+  if test -x "$CONDITIONAL_LHAPDFDIR/bin/lhapdf-config"; then
+    CONDITIONAL_LHAPDFLIBS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --ldflags)";
+    CONDITIONAL_LHAPDFINCS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --cppflags)";
+    AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
+  else
+    AC_MSG_ERROR(Did not find required dependency LHAPDF in ${CONDITIONAL_LHAPDFDIR}. Please specify its installation prefix using '--with-lhapdf=/path' or enable its automatic installation using '--with-lhapdf=install');
+  fi;
   AC_SUBST(CONDITIONAL_LHAPDFDIR)
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
   AC_SUBST(CONDITIONAL_LHAPDFINCS)
-  AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
-  AM_CONDITIONAL(LHAPDF6_SUPPORT, test [ "$lhapdfversion" -ge "6" ])
+  AC_DEFINE_UNQUOTED([LHAPDF_PATH], "$CONDITIONAL_LHAPDFDIR", [LHAPDF directory])
 
   AC_ARG_ENABLE(
     hztool,

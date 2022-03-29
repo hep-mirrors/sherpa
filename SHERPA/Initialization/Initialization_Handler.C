@@ -720,12 +720,8 @@ bool Initialization_Handler::InitializeThePDFs()
        ++pdflib) {
     if (*pdflib=="None") continue;
     if (*pdflib=="LHAPDFSherpa") {
-#ifdef USING__LHAPDF
       s_loader->AddPath(std::string(LHAPDF_PATH)+"/lib");
       s_loader->LoadLibrary("LHAPDF");
-#else
-      THROW(fatal_error, "Sherpa not compiled with LHAPDF support.");
-#endif
     }
     void *init(s_loader->GetLibraryFunction(*pdflib,"InitPDFLib"));
     if (init==NULL) THROW(fatal_error,"Cannot load PDF library "+*pdflib);

@@ -12,9 +12,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/PDF_Base.H"
-#if defined USING__LHAPDF && defined USING__LHAPDF6
 #include "LHAPDF/LHAPDF.h"
-#endif
 
 namespace ATOOLS {
 
@@ -86,7 +84,6 @@ Variations::Variations(Variations_Mode mode)
     return;
 
   ReadDefaults();
-#if defined USING__LHAPDF && defined USING__LHAPDF6
   int lhapdfverbosity(0);
   const bool needslhapdf(NeedsLHAPDF6Interface());
   if (needslhapdf) {
@@ -96,7 +93,6 @@ Variations::Variations(Variations_Mode mode)
     lhapdfverbosity = LHAPDF::verbosity();
     LHAPDF::setVerbosity(0);
   }
-#endif
 
   InitialiseParametersVector();
 
@@ -104,11 +100,9 @@ Variations::Variations(Variations_Mode mode)
     rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in \\cite{Bothmann:2016nao}.");
   }
 
-#if defined USING__LHAPDF && defined USING__LHAPDF6
   if (needslhapdf) {
     LHAPDF::setVerbosity(lhapdfverbosity);
   }
-#endif
 }
 
 
@@ -481,7 +475,6 @@ std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
     // determine the number of set members to load
     bool lhapdflookupsuccessful(false);
     if (s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
-#if defined USING__LHAPDF && defined USING__LHAPDF6
       const std::vector<std::string>& availablepdfsets(LHAPDF::availablePDFSets());
       if (std::find(availablepdfsets.begin(), availablepdfsets.end(), pdfstringparam)
           != availablepdfsets.end()) {
@@ -489,13 +482,12 @@ std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
         lastmember = set.size() - 1; // this assumes members are labelled 0...(set.size()-1)
         lhapdflookupsuccessful = true;
       }
-#endif
     }
     if (!lhapdflookupsuccessful) {
       // the LHAPDF interface is not available or does not know about this set
       // provide a fallback at least for the default PDF set
-      if (pdfstringparam == "NNPDF30NNLO") { 
-        lastmember = 100;
+      if (pdfstringparam == "PDF4LHC21_40_pdfas") {
+        lastmember = 42;
       } else {
         THROW(not_implemented,
               "Full PDF set reweightings only work with LHAPDF6 sets or the internal default set."

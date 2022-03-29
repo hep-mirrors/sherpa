@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Enum_Flags.H"
@@ -93,9 +92,7 @@ namespace ATOOLS {
 
   private:
     void ReadDefaults();
-#if defined USING__LHAPDF && defined USING__LHAPDF6
     void LoadLHAPDFInterfaceIfNecessary();
-#endif
     void InitialiseParametersVector();
     void AddParameters(Scoped_Settings&);
     struct PDFs_And_AlphaS {

@@ -19,8 +19,8 @@ namespace PDF {
 
 PDF_Defaults::PDF_Defaults()
 {
-  m_deflib[kf_p_plus] = "NNPDFSherpa";
-  m_defset[kf_p_plus] = "NNPDF31_nnlo_as_0118_mc";
+  m_deflib[kf_p_plus] = "LHAPDFSherpa";
+  m_defset[kf_p_plus] = "PDF4LHC21_40_pdfas";
 
   m_deflib[kf_e] = "PDFESherpa";
   m_defset[kf_e] = "PDFe";

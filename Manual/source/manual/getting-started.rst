@@ -98,13 +98,13 @@ each run:
 
 Sherpa can be interfaced with various external packages, e.g. `HepMC
 <http://lcgapp.cern.ch/project/simu/HepMC/>`_, for event output, or
-`LHAPDF <https://lhapdf.hepforge.org/>`_, for PDFs. For this to work,
+`Rivet <https://rivet.hepforge.org/>`_, for analysis. For this to work,
 the user has to pass the appropriate commands to the configure
 step. This is achieved as shown below:
 
 .. code-block:: shell-session
 
-   $ ./configure --enable-hepmc2=/path/to/hepmc2 --enable-lhapdf=/path/to/lhapdf
+   $ ./configure --enable-hepmc3=/path/to/hepmc --enable-rivet=/path/to/rivet
 
 Here, the paths have to point to the top level installation
 directories of the external packages, i.e. the ones containing the

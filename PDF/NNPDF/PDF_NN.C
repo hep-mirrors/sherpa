@@ -210,14 +210,14 @@ PDF_Base *NNPDF_Getter::operator()
   if (!args.m_bunch.IsHadron()) return NULL;
   std::string gfile;
   int pdfsetprefix=-1;
-  if (args.m_set == "NNPDF30NLO") {
+  if (args.m_set == "NNPDF30_nlo_as_0118") {
     gfile = std::string("NNPDF30_nlo_as_0118");
     pdfsetprefix=260000;
     if (args.m_member>100 || args.m_member <0) {
       THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
     }
   }
-  else if (args.m_set == "NNPDF30NNLO") {
+  else if (args.m_set == "NNPDF30_nnlo_as_0118") {
     gfile = std::string("NNPDF30_nnlo_as_0118");
     pdfsetprefix=261000;
     if (args.m_member>100 || args.m_member <0) {
@@ -246,8 +246,8 @@ NNPDF_Getter *p_get_nnpdf[3];
 
 extern "C" void InitPDFLib()
 {
-  p_get_nnpdf[0] = new NNPDF_Getter("NNPDF30NLO");
-  p_get_nnpdf[1] = new NNPDF_Getter("NNPDF30NNLO");
+  p_get_nnpdf[0] = new NNPDF_Getter("NNPDF30_nlo_as_0118");
+  p_get_nnpdf[1] = new NNPDF_Getter("NNPDF30_nnlo_as_0118");
   p_get_nnpdf[2] = new NNPDF_Getter("NNPDF31_nnlo_as_0118_mc");
 }
 
