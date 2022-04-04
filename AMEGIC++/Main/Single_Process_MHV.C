@@ -251,7 +251,9 @@ int AMEGIC::Single_Process_MHV::Tests()
 bool AMEGIC::Single_Process_MHV::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return Process_Base::FillIntegrator(psh);
 }
 
