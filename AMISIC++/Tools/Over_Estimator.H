@@ -14,6 +14,7 @@ namespace AMISIC {
     double m_muR_fac, m_muF_fac;
     double m_pref, m_bfac, m_xsnd, m_pt02, m_ptmin2, m_s, m_xt;
     PDF::PDF_Base         * p_pdf[2];
+    double                  m_xmin[2];
     MODEL::Running_AlphaS * p_alphaS;
 
     void   FixMaximum(MI_Processes * procs);

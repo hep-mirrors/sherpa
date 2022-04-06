@@ -27,8 +27,10 @@ void Over_Estimator::Initialize(MI_Processes * procs) {
   m_pt02   = sqr(procs->PT0());
   m_ptmin2 = sqr(procs->PTmin());
   p_alphaS = procs->AlphaS();
-  p_pdf[0] = procs->PDF(0);
-  p_pdf[1] = procs->PDF(1);
+  for (size_t i=0;i<2;i++) {
+    p_pdf[i]  = procs->PDF(i);
+    m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
+  }
   FixMaximum(procs);
 }
 
@@ -75,14 +77,16 @@ double Over_Estimator::ApproxME(const double & pt2) {
   double scale = pt2+m_pt02;
   double est   = M_PI/2.*sqr((*p_alphaS)(m_muR_fac * scale/4.)) / sqr(scale);
   for (size_t i=0;i<2;i++) {
-    double Q2     = m_muF_fac*Max(pt2,p_pdf[i]->Q2Min());
-    p_pdf[i]->Calculate(m_xt,Q2);
     double pdfsum = 0.;
-    for (Flavour_Set::const_iterator fl=p_pdf[i]->Partons().begin();
-	 fl!=p_pdf[i]->Partons().end();fl++) {
-      // only allow u, d, s, c, b quarks and gluons
-      if (fl->Kfcode()>=6 && fl->Kfcode()!=21) continue;
-      pdfsum += Max(0.,((*fl).IsGluon()?9./4.:1.)*p_pdf[i]->GetXPDF(*fl));
+    double Q2     = m_muF_fac*Max(pt2,p_pdf[i]->Q2Min());
+    if (m_xt>m_xmin[i]) {
+      p_pdf[i]->Calculate(m_xt,Q2);
+      for (Flavour_Set::const_iterator fl=p_pdf[i]->Partons().begin();
+	   fl!=p_pdf[i]->Partons().end();fl++) {
+	// only allow u, d, s, c, b quarks and gluons
+	if (fl->Kfcode()>=6 && fl->Kfcode()!=21) continue;
+	pdfsum += Max(0.,((*fl).IsGluon()?9./4.:1.)*p_pdf[i]->GetXPDF(*fl));
+      }
     }
     est *= pdfsum;
   }
@@ -95,6 +99,7 @@ double Over_Estimator::ExactME(MI_Processes * procs,const double & pt2) {
   double shat  = 4.*pt2, that=-2.*pt2, uhat=-2.*pt2;
   double x1    = m_xt, x2 = m_xt;
   double scale = pt2;
+  if (x1<m_xmin[0] || x2<m_xmin[1]) return 0.;
   procs->CalcPDFs(x1,x2,m_muF_fac * scale);
   return (*procs)(shat,that,uhat);
 }

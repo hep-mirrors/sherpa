@@ -108,6 +108,7 @@ bool Single_Collision_Handler::SelectRapidities() {
 bool Single_Collision_Handler::CalcXs() {
   m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.;
   m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.;
+  if (m_x1<p_processes->PDFXmin(0) || m_x2<p_processes->PDFXmin(1)) return 0.;
   return (m_x1<m_residualx1 && m_x2<m_residualx2);
 }
 
