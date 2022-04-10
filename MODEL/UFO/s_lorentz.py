@@ -1,13 +1,14 @@
+from __future__ import division 
 from itertools import chain
 from copy import deepcopy
-from tensor import tensor
-from templates import lorentz_calc_template
-from sym_var import sym_var
-from sympy import Symbol
-from code_snippets import *
-from lorentz_structures import C,Gamma,Gamma5,Metric,P,ProjM,ProjP,Epsilon,Identity,mink_metric,is_ffv,is_vvv
-from ufo_exception import ufo_exception
-from sympy import Eq
+from ufo_interface.tensor import tensor
+from ufo_interface.templates import lorentz_calc_template
+from ufo_interface.sym_var import sym_var
+from sympy import Symbol,Eq
+from ufo_interface.code_snippets import *
+from ufo_interface.lorentz_structures import C,Gamma,Gamma5,Metric,P,ProjM,ProjP,Epsilon,Identity,mink_metric,is_ffv,is_vvv
+from ufo_interface.ufo_exception import ufo_exception
+from operator import eq
 
 class s_lorentz(object):
 
@@ -30,7 +31,7 @@ class s_lorentz(object):
             self._key_tens_dict[key] = get_in_current_tens(key,spin)  if not self.has_ghosts() else None
 
             # for fermions, find the fermion flow partner, i.e. the next fermion in the list
-            if (spin == 2) and not (key in self._ferm_partner_dict.values()):
+            if (spin == 2) and not (key in list(self._ferm_partner_dict.values())):
                 for key2 in range(key+1, len(self.ufo_lorentz.spins)):
                     if self.ufo_lorentz.spins[key2] == 2:
                         self._ferm_partner_dict[key] = key2
@@ -39,11 +40,11 @@ class s_lorentz(object):
         # now assume that UFO vertices are arranged such that _ferm_partner_dict.keys() are 
         # all 'bar' type spinors and _ferm_partner_dict.values() are 'non-bar', i.e.
         # fermion flow always continuous through 'adjacent' fermions in the 'spins' list
-        for key in self._ferm_partner_dict.keys():
-            assert(key not in self._ferm_partner_dict.values())
+        for key in list(self._ferm_partner_dict.keys()):
+            assert(key not in list(self._ferm_partner_dict.values()))
 
         # store fermionic keys for convenience
-        self._ferm_keys  = [key for key,spin in self._key_spin_dict.iteritems() if spin==2]
+        self._ferm_keys  = [key for key,spin in self._key_spin_dict.items() if spin==2]
         self._n_ferms    = len(self._ferm_keys)
 
         # extract form factors
@@ -106,8 +107,8 @@ class s_lorentz(object):
 
     def form_factors_implementations(self, parameter_map):
         evaluated_form_factors = {}
-        wrapped_parameter_map = {k: tensor([sym_var(Symbol(v, complex=True))], None) for k, v in parameter_map.items()}
-        for k, v in self._form_factors.items():
+        wrapped_parameter_map = {k: tensor([sym_var(Symbol(v, complex=True))], None) for k, v in list(parameter_map.items())}
+        for k, v in list(self._form_factors.items()):
             evaluated_form_factors[k] = eval(v, globals(), wrapped_parameter_map)
         return evaluated_form_factors
 
@@ -179,7 +180,7 @@ class s_lorentz(object):
     # are external momenta required for writing out
     # lorentz coupling structure: determine from UFO string
     def needs_external_momenta(self):
-        structures = chain([self.ufo_lorentz.structure], self._form_factors.values())
+        structures = chain([self.ufo_lorentz.structure], list(self._form_factors.values()))
         for expr in structures:
             if "P(" in expr:
                 return True
@@ -194,13 +195,13 @@ class s_lorentz(object):
         key_index_dict = self.get_key_index_dict(out_key)
         out_spin       = self._key_spin_dict[out_key]
         out_tens       = self._key_tens_dict[out_key]
-        in_keys        = [ key for key in self._key_spin_dict.keys() if key!=out_key ]
+        in_keys        = [ key for key in list(self._key_spin_dict.keys()) if key!=out_key ]
 
         # declare incoming currents and momenta
         for key in in_keys:
             imp += get_in_current_declaration(self._key_spin_dict[key],
                                               key, key_index_dict[key],
-                                              1 if (key in self._ferm_partner_dict.keys()) else -1)
+                                              1 if (key in list(self._ferm_partner_dict.keys())) else -1)
             if self.needs_external_momenta():
                 imp += get_in_mom_declaration(key, key_index_dict[key])
 
@@ -213,7 +214,7 @@ class s_lorentz(object):
 
         # decalare form factors
         form_factor_symbols = {}
-        for ff_name, ff_implementation in form_factor_map.items():
+        for ff_name, ff_implementation in list(form_factor_map.items()):
             imp += get_form_factor_declaration(ff_name, ff_implementation)
             form_factor_symbols[ff_name] = tensor([sym_var(Symbol(ff_name, complex=True))], None)
 
@@ -263,14 +264,14 @@ class s_lorentz(object):
               
             # check if contraction of external tensors with
             # coupling tensor yields desired outgoing tensor type
-            assert(cmp(cpl.key_dim_dict(),out_tens.key_dim_dict())==0)
+            assert(eq(cpl.key_dim_dict(),out_tens.key_dim_dict()))
 
             # is the return tensor arithmetically zero?
             return_zero = self.is_zero(out_spin, cpl)
             
             # initialize the return value
             if not return_zero:
-                out_bar_type = 1 if out_key not in self._ferm_partner_dict.keys() else -1
+                out_bar_type = 1 if out_key not in list(self._ferm_partner_dict.keys()) else -1
                 imp += get_out_current_initialization(out_spin, out_key, cpl, out_bar_type)
 
             # set the 'S' property
@@ -297,7 +298,7 @@ class s_lorentz(object):
 
     def get_case_id(self,case_dict):
         ret = 0
-        for key, on in case_dict.iteritems():
+        for key, on in case_dict.items():
             ret += on << (key*2)
         return ret
 

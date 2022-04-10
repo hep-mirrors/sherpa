@@ -1,3 +1,4 @@
+# -*- python -*-
 #!@PYTHON@
 
 from imp import find_module,load_module
@@ -133,7 +134,7 @@ def check_model(model_name, model_path):
                   
       except ImportError as err:
             error("Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(args.ufo_path))
-            exit(1)
+            raise(err)
 
       for v in model.all_vertices:
             for i in range(len(v.color)):

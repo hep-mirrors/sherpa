@@ -1,4 +1,5 @@
-from ufo_exception import ufo_exception
+from __future__ import division 
+from ufo_interface.ufo_exception import ufo_exception
 from sympy import ccode, expand, Eq
 from sympy.parsing.sympy_parser import parse_expr
 from sympy.core.basic import Basic

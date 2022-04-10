@@ -1,11 +1,12 @@
 #!/bin/env python2 
+from __future__ import division 
 
 def require(test, message):
     if not test:
         raise RuntimeError("Test \"{0}\" failed".format(message))
-    print("Test \"{0}\" passed".format(message))
+    print(("Test \"{0}\" passed".format(message)))
 
-from tensor import tensor, multiply, lorentz_key
+from .tensor import tensor, multiply, lorentz_key
 
 metric = tensor(
     [tensor([tensor([-1], None), tensor([0], None), tensor([0], None), tensor([0], None)], 'mu_2'),
@@ -56,7 +57,7 @@ metric = tensor(
 vector = tensor([tensor([5], None), tensor([5], None), tensor([5], None), tensor([5], None)], 'mu_1')
 
 
-from lorentz_structures import *
+from .lorentz_structures import *
 
 # check gamma_5 = i gamma_0*gamma_1*gamma_2*gamma_3
 test  = gamma_0(1,'a')*gamma_1('a','b')*gamma_2('b','c')*gamma_3('c',2)*tensor([complex(0,1)], None)
