@@ -37,6 +37,7 @@ enum optionIndex {
 
   // options used to enable/disable features
   BATCH_MODE,
+  INIT_ONLY,
   GENERATE_RESULT_DIRECTORY,
   PRINT_VERSION_INFO
 };
@@ -231,6 +232,14 @@ const ATOOLS::Option_Parser::Descriptor usage[] = {
     "  --disable-batch-mode, -b  \tDisable batch mode."
   },
   {
+    INIT_ONLY,
+    ENABLE,
+    "I",
+    "enable-init-only",
+    ATOOLS::Option_Parser::Arg::None,
+    "  --enable-init-only, -I  \tExit after completing initialisation."
+  },
+  {
     GENERATE_RESULT_DIRECTORY,
     DISABLE,
     "g",
@@ -283,6 +292,7 @@ String_Option_Map create_parameter_index_map() {
     map["EVT_OUTPUT"]                = EVT_OUTPUT;
     map["LOG_FILE"]                  = LOG_FILE;
     map["BATCH_MODE"]                = BATCH_MODE;
+    map["INIT_ONLY"]                 = INIT_ONLY;
     map["PRINT_VERSION_INFO"]        = PRINT_VERSION_INFO;
     map["GENERATE_RESULT_DIRECTORY"] = GENERATE_RESULT_DIRECTORY;
   }
