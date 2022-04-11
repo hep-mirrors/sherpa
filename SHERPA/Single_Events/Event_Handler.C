@@ -501,7 +501,7 @@ void Event_Handler::Finish() {
   std::map<std::string, double> err_wgts;
   err_wgtmap.FillVariations(err_wgts);
   if (Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"]
-	  .SetDefault(false)
+	  .SetDefault(true)
 	  .Get<bool>()) {
     xs_wgtmap.FillVariations(xs_wgts, Variations_Source::main);
     err_wgtmap.FillVariations(err_wgts, Variations_Source::main);
