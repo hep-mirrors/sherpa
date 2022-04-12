@@ -1,5 +1,5 @@
-# -*- python -*-
 #!@PYTHON@
+# -*- python -*-
 
 from imp import find_module,load_module
 from sys import path as sys_path
@@ -149,7 +149,7 @@ def check_model(model_name, model_path):
       model.non_ct_couplings = model.all_couplings
       if hasattr(model, "all_CTvertices"):
             non_ct_vertices  = [vtx for vtx in model.all_vertices if vtx not in model.all_CTvertices]
-            model.non_ct_couplings = sum([vtx.couplings.values() for vtx in non_ct_vertices], [])
+            model.non_ct_couplings = sum([list(vtx.couplings.values()) for vtx in non_ct_vertices], [])
 
       # For NLO models: filter out lorentz structures 
       # that ONLY apper in CT vertices as they are somtimes ill-formatted
