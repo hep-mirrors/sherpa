@@ -83,7 +83,6 @@ CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,const double 
   }
   // making sure the transverse momenta add up to 0.
   BalanceKT(kt_tot,E_tot);
-
   return true;
 }
 
@@ -128,13 +127,12 @@ Vec4D Primordial_KPerp::KT(const double & ktmax) {
 
 double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
   double kt(0.);
-  if (ktmax>1.e-3) {
-    if ((m_mean[m_beam] - 0.1*m_sigma[m_beam] <ktmax) || (ktmax<m_mean[m_beam] + 0.1*m_sigma[m_beam])) kt = ktmax*ran->Get();
-    else {
-      do { kt = abs(m_mean[m_beam]+Sign(0.5-ran->Get())*m_sigma[m_beam]*sqrt(-log(std::max(1.e-5,ran->Get()))));}
-
-      while (kt>ktmax);
-    }
+  if (ktmax<1.e-3) return kt; // save to return no kt for small ktmax
+  // too small ktmax can lead to an infinite loop due to the low prob. of generating small values
+  if ((ktmax<m_mean[m_beam] - 2.*m_sigma[m_beam])) kt = ktmax*ran->Get();
+  else {
+    do { kt = abs(m_mean[m_beam]+Sign(0.5-ran->Get())*m_sigma[m_beam]*sqrt(-log(std::max(1.e-5,ran->Get()))));}
+    while (kt>ktmax);
   }
   return kt;
 }
