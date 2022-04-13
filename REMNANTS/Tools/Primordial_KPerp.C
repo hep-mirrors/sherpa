@@ -129,11 +129,11 @@ double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
   double kt(0.);
   if (ktmax<1.e-3) return kt; // save to return no kt for small ktmax
   // too small ktmax can lead to an infinite loop due to the low prob. of generating small values
-  if ((ktmax<m_mean[m_beam] - 2.*m_sigma[m_beam])) kt = ktmax*ran->Get();
-  else {
-    do { kt = abs(m_mean[m_beam]+Sign(0.5-ran->Get())*m_sigma[m_beam]*sqrt(-log(std::max(1.e-5,ran->Get()))));}
-    while (kt>ktmax);
-  }
+  if ((ktmax<m_mean[m_beam] - 2.*m_sigma[m_beam])) return ktmax*ran->Get();
+  // if ktmax is too small wrt. to sigma, the kt range is too narrow
+  if (ktmax<0.1 * m_sigma[m_beam]) return ktmax*ran->Get();
+  do { kt = abs(m_mean[m_beam]+Sign(0.5-ran->Get())*m_sigma[m_beam]*sqrt(-log(std::max(1.e-5,ran->Get()))));}
+  while (kt>ktmax);
   return kt;
 }
 
