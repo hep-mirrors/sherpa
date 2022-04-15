@@ -165,6 +165,10 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
          Q2, muf2fac, mur2fac, showermuf2fac, as,
          nominalcsi);
   AddBeam(csi, Q2);
+  // Reset, such that the hard process scales are filled in the PDF Info object
+  // created by the phase space handler.
+  p_int->ISR()->SetMuF2(Q2 * muf2fac, 0);
+  p_int->ISR()->SetMuF2(Q2 * muf2fac, 1);
   return csi;
 }
 
