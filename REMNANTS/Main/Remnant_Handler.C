@@ -172,7 +172,7 @@ Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
     Reset();
     msg_Error()
         << "Warning in " << METHOD
-        << ": FillBlobs or CheckBreamBreakup failed. Will return new event\n";
+        << ": FillBlobs or CheckBeamBreakup failed. Will return new event\n";
     return Return_Value::New_Event;
   }
   Reset();
