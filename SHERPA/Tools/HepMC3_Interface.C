@@ -348,7 +348,7 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   EventInfo3 evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   // when subevtlist, fill hepmc-subevtlist
-  if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
+  if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo, event.run_info());
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
   evtinfo.WriteTo(event);
   HepMC::GenVertexPtr vertex=std::make_shared<HepMC::GenVertex>();
@@ -422,7 +422,8 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   return true;
 }
 
-bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo)
+bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo,
+				   std::shared_ptr<HepMC::GenRunInfo> run)
 {
   DEBUG_FUNC("subevts: "<<evtinfo.SubEvtList()->size());
   // build GenEvent for all subevts (where only the signal is available)
@@ -433,7 +434,8 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo)
     if (sub->m_result==0. &&
 	!(sub->IsReal() && m_subeventlist.empty())) continue;
     HepMC::GenVertexPtr subvertex=std::make_shared<HepMC::GenVertex>();
-    HepMC::GenEvent * subevent(new HepMC::GenEvent());
+    HepMC::GenEvent * subevent(new HepMC::GenEvent(run));
+    subevent->set_units(HepMC::Units::GEV, HepMC::Units::MM);
     // set the event number (could be used to identify correlated events)
     subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
     // assume that only 2->(n-2) processes
@@ -480,7 +482,8 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo)
 }
 
 
-bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs)
+bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
+				   std::shared_ptr<HepMC::GenRunInfo> run)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -490,7 +493,7 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs)
   }
   if (p_event!=NULL) delete p_event;
   DeleteGenSubEventList();
-  p_event = new HepMC::GenEvent();
+  p_event = new HepMC::GenEvent(run);
   return Sherpa2ShortHepMC(blobs, *p_event);
 }
 

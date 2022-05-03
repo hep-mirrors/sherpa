@@ -1,8 +1,8 @@
 
 HEPMC2_SOURCES =	Output_HepMC2_Genevent.C Output_HepMC2_Short.C
-HEPMC3_SOURCES =	Output_HepMC3_Genevent.C
+HEPMC3_SOURCES =	Output_HepMC3_Genevent.C Output_HepMC3_Short.C
 HEPMC2_ADDS    =	Output_HepMC2_Genevent.H Output_HepMC2_Short.H
-HEPMC3_ADDS    =	Output_HepMC3_Genevent.H
+HEPMC3_ADDS    =	Output_HepMC3_Genevent.H Output_HepMC3_Short.H
 
 pkglib_LTLIBRARIES  = 
 if HEPMC2_SUPPORT
