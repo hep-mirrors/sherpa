@@ -410,6 +410,10 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
 	!(sub->IsReal() && m_subeventlist.empty())) continue;
     HepMC::GenVertex * subvertex(new HepMC::GenVertex());
     HepMC::GenEvent * subevent(new HepMC::GenEvent());
+    #ifdef USING__HEPMC2__UNITS
+    subevent->use_units(HepMC::Units::GEV,
+                        HepMC::Units::MM);
+    #endif
     // set the event number (could be used to identify correlated events)
     subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
     // assume that only 2->(n-2) processes, flip for Comix, flavs are correct
