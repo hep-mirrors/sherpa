@@ -248,9 +248,10 @@ namespace Recola {
     auto cmass = 0.0;
     auto bmass = 0.0;
     auto tmass = 0.0;
-    bool hadronic_beam = pdf->Bunch().IsHadron(); 
-    if(hadronic_beam!=isr->PDF(1)->Bunch().IsHadron()) THROW(not_implemented,"Recola interface cannot handle DIS yet.");
-
+    bool hadronic_beam1 = beam->GetBeam(0)->Beam().IsHadron(); 
+    bool hadronic_beam2 = beam->GetBeam(1)->Beam().IsHadron(); 
+    if(hadronic_beam1!=hadronic_beam2) THROW(not_implemented,"Recola interface cannot handle DIS yet.");
+    bool hadronic_beam = hadronic_beam1;
 
     if (hadronic_beam) {
       pdfnf=pdf->ASInfo().m_flavs.size();
