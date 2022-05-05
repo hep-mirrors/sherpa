@@ -512,9 +512,10 @@ double COMIX::Single_Process::KPTerms
 	      p0.PMinus()/rpa->gen.PBeam(1).PMinus());
   double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBeam(1).PMinus():
 	      p1.PPlus()/rpa->gen.PBeam(0).PPlus());
-  double muf2(ScaleSetter(1)->Scale(stp::fac,1));
+  double muf12(ScaleSetter(1)->Scale(stp::fac1,1));
+  double muf22(ScaleSetter(1)->Scale(stp::fac2,1));
   return m_w*p_kpterms->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
-			    muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]);
+			    muf12,muf22,sf,sf,m_flavs[0],m_flavs[1]);
 }
 
 void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const

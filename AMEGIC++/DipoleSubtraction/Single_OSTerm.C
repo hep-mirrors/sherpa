@@ -412,7 +412,8 @@ double Single_OSTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincar
   double factor= mij2*wij2/(sqr(invm2-mij2) + mij2*wij2);
   m_lastxs = factor*M2;
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
-  m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
+  m_subevt.m_mu2[stp::fac1] = p_scale->Scale(stp::fac1);
+  m_subevt.m_mu2[stp::fac2] = p_scale->Scale(stp::fac2);
   m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
 
   return m_lastxs;

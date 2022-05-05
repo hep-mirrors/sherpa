@@ -86,7 +86,7 @@ namespace PHASIC {
     //! Generate cluster sequence info (containing the ISR+beam weight)
     ATOOLS::Cluster_Sequence_Info ClusterSequenceInfo(
         const ATOOLS::ClusterAmplitude_Vector &,
-        const double &Q2,
+        const double &Q12,const double &Q22,
         const double &muf2fac=1.0,
         const double &mur2fac=1.0,
         const double &showermuf2fac=1.0,
@@ -94,7 +94,7 @@ namespace PHASIC {
         const ATOOLS::Cluster_Sequence_Info * const nominalcsi=NULL);
     void AddISR(ATOOLS::Cluster_Sequence_Info &,
                 const ATOOLS::ClusterAmplitude_Vector &,
-                const double &Q2,
+                const double &Q12,const double &Q22,
                 const double &muf2fac=1.0,
                 const double &mur2fac=1.0,
                 const double &showermuf2fac=1.0,
@@ -114,7 +114,7 @@ namespace PHASIC {
         m_fl2 {mewgtinfo.m_fl2},
         m_x1 {mewgtinfo.m_x1},
         m_x2 {mewgtinfo.m_x2},
-        m_muF2 {mewgtinfo.m_muf2},
+        m_muF2 {mewgtinfo.m_muf2[0],mewgtinfo.m_muf2[1]},
         m_muR2 {mewgtinfo.m_mur2},
         m_ampls {ampls},
         m_fallbackresult {fallbackresult}
@@ -123,7 +123,7 @@ namespace PHASIC {
       size_t m_orderqcd;
       int m_fl1, m_fl2;
       double m_x1, m_x2;
-      double m_muR2, m_muF2;
+      double m_muR2, m_muF2[2];
       ATOOLS::ClusterAmplitude_Vector m_ampls;
       double m_fallbackresult;
     };

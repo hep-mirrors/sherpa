@@ -115,12 +115,15 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
     term->Set(p_proc->ScaleSetter()->Scale(stp::ren));
     return term;
   case 2:
-    term->Set(p_proc->ScaleSetter()->Scale(stp::fac));
+    term->Set(p_proc->ScaleSetter()->Scale(stp::fac1));
     return term;
   case 3:
-    term->Set(rpa->gen.Ecms());
+    term->Set(p_proc->ScaleSetter()->Scale(stp::fac2));
     return term;
   case 4:
+    term->Set(rpa->gen.Ecms());
+    return term;
+  case 5:
     term->Set(sqr(rpa->gen.Ecms()));
     return term;
   case 11:
@@ -143,9 +146,10 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
 void Variable_KFactor_Setter::AssignId(Term *term)
 {
   if (term->Tag()=="MU_R2") term->SetId(1);
-  else if (term->Tag()=="MU_F2") term->SetId(2);
-  else if (term->Tag()=="E_CMS") term->SetId(3);
-  else if (term->Tag()=="S_TOT") term->SetId(4);
+  else if (term->Tag()=="MU_F12") term->SetId(2);
+  else if (term->Tag()=="MU_F22") term->SetId(3);
+  else if (term->Tag()=="E_CMS") term->SetId(4);
+  else if (term->Tag()=="S_TOT") term->SetId(5);
   else if (term->Tag()=="Order_QCD") term->SetId(11);
   else if (term->Tag()=="Order_EW") term->SetId(12);
   else if (term->Tag().find("p[")==0) {
@@ -166,7 +170,8 @@ void Variable_KFactor_Setter::SetKFactor(const std::string &kftag)
   msg_Debugging()<<METHOD<<"(): coupling '"<<kftag<<"' {\n";
   msg_Indent();
   p_calc->SetTagReplacer(this);
-  p_calc->AddTag("MU_F2","1.0");
+  p_calc->AddTag("MU_F12","1.0");
+  p_calc->AddTag("MU_F22","1.0");
   p_calc->AddTag("MU_R2","1.0");
   p_calc->AddTag("E_CMS","1.0");
   p_calc->AddTag("S_TOT","1.0");

@@ -220,7 +220,8 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
   Cluster_Amplitude *ampl = Cluster_Amplitude::New();
   ampl->SetNIn(m_nin);
   ampl->SetMS(p_rsproc->Generator());
-  ampl->SetMuF2(sub->m_mu2[stp::fac]);
+  ampl->SetMuF2(0,sub->m_mu2[stp::fac1]);
+  ampl->SetMuF2(1,sub->m_mu2[stp::fac2]);
   ampl->SetMuR2(sub->m_mu2[stp::ren]);
   Int_Vector ci(sub->m_n,0), cj(sub->m_n,0);
   for (size_t i=0;i<sub->m_n;++i) {
@@ -408,8 +409,10 @@ Event_Weights MCatNLO_Process::OneHEvent(const int wmode)
   rproc->SetFixedScale(std::vector<double>());
   rproc->GetMEwgtinfo()->m_mur2=
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
-  rproc->GetMEwgtinfo()->m_muf2=
-    p_rsproc->Selected()->GetMEwgtinfo()->m_muf2;
+  rproc->GetMEwgtinfo()->m_muf2[0]=
+    p_rsproc->Selected()->GetMEwgtinfo()->m_muf2[0];
+  rproc->GetMEwgtinfo()->m_muf2[1]=
+    p_rsproc->Selected()->GetMEwgtinfo()->m_muf2[1];
   rproc->Integrator()->SetMomenta(p);
   Color_Integrator *ci(&*rproc->Integrator()->ColorIntegrator()),
     *rci(&*p_rsproc->Selected()->Integrator()->ColorIntegrator());
@@ -428,7 +431,8 @@ Event_Weights MCatNLO_Process::OneHEvent(const int wmode)
   Scale_Setter_Base *scs(p_rsproc->Selected()->ScaleSetter(1));
   for (Cluster_Amplitude *ampl(p_ampl);ampl;ampl=ampl->Next()) {
     ampl->SetMuR2(scs->Scale(stp::ren));
-    ampl->SetMuF2(scs->Scale(stp::fac));
+    ampl->SetMuF2(0,scs->Scale(stp::fac1));
+    ampl->SetMuF2(1,scs->Scale(stp::fac2));
     ampl->SetMuQ2(scs->Scale(stp::res));
   }
   if (p_ampl->Next()) {
@@ -524,7 +528,8 @@ Event_Weights MCatNLO_Process::OneSEvent(const int wmode)
     ampl->SetKT2(kt2.m_kt2);
     ampl->SetMu2(kt2.m_kt2);
     p_ampl=ampl;
-    ampl->SetMuF2(next->MuF2());
+    ampl->SetMuF2(0,next->MuF2(0));
+    ampl->SetMuF2(1,next->MuF2(1));
     ampl->SetMuR2(next->MuR2());
     ampl->SetOrderQCD(next->OrderQCD()+1);
     ampl->Next()->SetNLO(4);

@@ -26,11 +26,12 @@ namespace MCATNLO {
   struct Weight_Value {
     PHASIC::Process_Base *p_proc;
     Splitting_Function_Base *p_sf;
-    double m_me, m_b, m_muf2, m_mur2;
+    double m_me, m_b, m_muf2[2], m_mur2;
     inline Weight_Value(PHASIC::Process_Base *const proc=NULL,
-			const double &muf2=0.0,const double &mur2=0.0):
+			const double &muf12=0.0,const double &muf22=0.0,
+			const double &mur2=0.0):
       p_proc(proc), p_sf(NULL), m_me(0.0), m_b(0.0),
-      m_muf2(muf2), m_mur2(mur2) {}
+      m_muf2{muf12,muf22}, m_mur2(mur2) {}
   };// end of struct Weight_Value
 
   std::ostream &operator<<(std::ostream &str,const Weight_Value &w);
@@ -61,7 +62,7 @@ namespace MCATNLO {
     CS_Cluster_Definitions *p_cluster;
     ATOOLS::Mass_Selector  *p_ms;
 
-    int    m_on;
+    int    m_on, m_strict_mapcheck;
     double m_weight, m_oef;
 
     int SingleWeight(ATOOLS::Cluster_Amplitude *const rampl,

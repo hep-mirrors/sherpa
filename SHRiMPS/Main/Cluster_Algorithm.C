@@ -90,7 +90,8 @@ void Cluster_Algorithm::SetAmplitudeProperties(const double & scale) {
   p_ampl->SetKT2(scale);
   p_ampl->SetMuQ2(scale);
   p_ampl->SetMuR2(scale);
-  p_ampl->SetMuF2(scale);
+  p_ampl->SetMuF2(0,scale);
+  p_ampl->SetMuF2(1,scale);
   p_ampl->SetMu2(scale);
 
   p_ampl->SetJF(p_jf);

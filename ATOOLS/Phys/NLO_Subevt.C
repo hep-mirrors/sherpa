@@ -143,7 +143,8 @@ namespace ATOOLS
                <<"\n  result = "<<sevt.m_result
                <<",  ME = "<<sevt.m_me<<" ("<<sevt.m_trig
 	       <<"), K = "<<sevt.m_K
-	       <<"\n  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
+	       <<"\n  \\mu_F = {"<<sqrt(sevt.m_mu2[stp::fac1])
+	       <<","<<sqrt(sevt.m_mu2[stp::fac2])<<"}"
 	       <<", \\mu_R = "<<sqrt(sevt.m_mu2[stp::ren])
 	       <<", \\mu_Q = "<<sqrt(sevt.m_mu2[stp::res])
 	       <<", k_T = "<<sqrt(sevt.m_kt2)<<"\n}";
@@ -151,8 +152,9 @@ namespace ATOOLS
   std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
   {
     switch (scl) {
+    case stp::fac1: return ostr<<"fac1";
+    case stp::fac2: return ostr<<"fac2";
     case stp::ren: return ostr<<"ren";
-    case stp::fac: return ostr<<"fac";
     case stp::res: return ostr<<"res";
     case stp::size: return ostr<<"<error>";
     }

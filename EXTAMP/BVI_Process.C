@@ -378,11 +378,12 @@ namespace EXTAMP {
 
     /* Do not divide by symfac at this stage, this is done for all
        components simultaneously in Partonic */
-    double muf2(ScaleSetter()->Scale(stp::fac,1));
+    double muf12(ScaleSetter()->Scale(stp::fac1,1));
+    double muf22(ScaleSetter()->Scale(stp::fac2,1));
     return p_kpterms->Get(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),
 			  m_x0, m_x1,
 			  m_eta0, m_eta1,
-			  muf2, muf2,
+			  muf12, muf22,
 			  1.0,1.0,
 			  m_flavs[0], m_flavs[1]);
   }
@@ -392,11 +393,12 @@ namespace EXTAMP {
   {
     /* Used by PHASIC::Single_Process for reweighting, so have to
        include the normalization factor here */
-    double muf2(ScaleSetter()->Scale(stp::fac,1));
+    double muf12(ScaleSetter()->Scale(stp::fac1,1));
+    double muf22(ScaleSetter()->Scale(stp::fac2,1));
     return p_kpterms->Get(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),
 			  m_x0, m_x1,
 			  m_eta0, m_eta1,
-			  muf2, muf2,
+			  muf12, muf22,
 			  1.0,1.0,
 			  m_flavs[0], m_flavs[1])/NormFac();
   }

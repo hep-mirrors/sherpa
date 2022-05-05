@@ -143,7 +143,8 @@ void Amisic::FillAmplitudeSettings(Cluster_Amplitude * ampl) {
   double mur2 = m_singlecollision.muR2();
   ampl->SetNIn(2);
   ampl->SetMuR2(mur2);
-  ampl->SetMuF2(muf2);
+  ampl->SetMuF2(0,muf2);
+  ampl->SetMuF2(1,muf2);
   ampl->SetMuQ2(muq2);
   ampl->SetKT2(muf2);
   ampl->SetMu2(mur2);

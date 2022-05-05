@@ -47,7 +47,8 @@ Weight_Value Gamma::Differential
       pit->second->Differential(*ampl, Weight_Type::nominal, 1 | 2 | 4));
   pit->second->KFactorSetter(true)->SetOn(kon);
   meps.m_me*=pit->second->SymFac();
-  meps.m_muf2=ampl->MuF2();
+  meps.m_muf2[0]=ampl->MuF2(0);
+  meps.m_muf2[1]=ampl->MuF2(1);
   meps.m_mur2=ampl->MuR2();
   meps.m_muq2=ampl->MuQ2();
 #ifndef DEBUG__Differential
@@ -142,7 +143,8 @@ MC_Weight Gamma::TrialWeight(Cluster_Amplitude *const ampl)
 #endif
   if (!wact.p_sf || wact.m_me==-1.0)
     THROW(fatal_error,"No active splitting weight");
-  ampl->SetMuF2(wact.m_muf2);
+  ampl->SetMuF2(0,wact.m_muf2[0]);
+  ampl->SetMuF2(1,wact.m_muf2[1]);
   ampl->SetMuR2(wact.m_mur2);
   ampl->SetKT2(ampl->MuQ2());
   int i(-1), j(-1), k(-1);
@@ -194,8 +196,9 @@ namespace DIM {
   {
     return str<<w.m_me<<"  "<<w.p_proc->Name()<<" [ "
 	      <<w.p_sf->LF()->Flav(0)<<" -> "<<w.p_sf->LF()->Flav(1)
-	      <<" "<<w.p_sf->LF()->Flav(2)<<" ] ( \\mu_F = "
-	      <<sqrt(w.m_muf2)<<", \\mu_R = "<<sqrt(w.m_mur2)<<" ) ";
+	      <<" "<<w.p_sf->LF()->Flav(2)<<" ] ( \\mu_F = {"
+	      <<sqrt(w.m_muf2[0])<<","<<sqrt(w.m_muf2[1])
+	      <<"}, \\mu_R = "<<sqrt(w.m_mur2)<<" ) ";
   }
 
 }

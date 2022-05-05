@@ -668,7 +668,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
   double df = p_dipole->KinCheck()?p_dipole->GetF():nan;
   if (!(df>0.)&& !(df<0.)) {
     m_subevt.m_me = m_subevt.m_mewgt = 0.;
-    m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
+    m_subevt.m_mu2[stp::fac1] = p_scale->Scale(stp::fac1);
+    m_subevt.m_mu2[stp::fac2] = p_scale->Scale(stp::fac2);
     m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
     m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
     m_subevt.m_kt2=p_dipole->KT2();
@@ -683,7 +684,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
   if (m_lastxs) m_lastxs*=m_lastk=KFactor(2|((m_mcmode&2)?4:0));
   m_subevt.m_K = m_lastk;
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
-  m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
+  m_subevt.m_mu2[stp::fac1] = p_scale->Scale(stp::fac1);
+  m_subevt.m_mu2[stp::fac2] = p_scale->Scale(stp::fac2);
   m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
   m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
   m_subevt.m_kt2=p_dipole->KT2();

@@ -34,11 +34,11 @@ double MPI_Scale_Setter::Calculate
   double s((momenta[0]+momenta[1]).Abs2());
   double t((momenta[0]-momenta[2]).Abs2());
   double u((momenta[0]-momenta[3]).Abs2());
-  m_scale[stp::fac]=m_scale[stp::ren]=-1.0/(1.0/s+1.0/t+1.0/u);
-  m_scale[stp::res]=m_scale[stp::fac];
-  msg_Debugging()<<METHOD<<"(): Set \\mu_r = "
-		 <<sqrt(m_scale[stp::ren])<<", \\mu_f = "
-		 <<sqrt(m_scale[stp::fac])<<".\n";
-  return m_scale[stp::fac];
+  m_scale[stp::fac2]=m_scale[stp::fac1]=
+    m_scale[stp::ren]=-1.0/(1.0/s+1.0/t+1.0/u);
+  m_scale[stp::res]=m_scale[stp::ren];
+  msg_Debugging()<<METHOD<<"(): Set \\mu = "
+		 <<sqrt(m_scale[stp::ren])<<".\n";
+  return m_scale[stp::ren];
 }
 

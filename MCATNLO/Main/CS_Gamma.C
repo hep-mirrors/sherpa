@@ -31,7 +31,7 @@ Weight_Key::Weight_Key(const size_t &ij,const size_t &k,
 CS_Gamma::CS_Gamma(CS_MCatNLO *const css,Shower *const shower,
 		   CS_Cluster_Definitions *const cluster):
   p_css(css), p_shower(shower), p_cluster(cluster),
-  m_on(0), m_oef(9.0)
+  m_on(0), m_strict_mapcheck(0), m_oef(9.0)
 {
 }
 
@@ -92,7 +92,8 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	  ampl->SetKin(cs.m_kin);
 	  Cluster_Amplitude *nampl(ampl->InitNext());
 	  nampl->SetNIn(ampl->NIn());
-	  nampl->SetMuF2(cs.m_kt2);
+	  nampl->SetMuF2(0,cs.m_kt2);
+	  nampl->SetMuF2(1,cs.m_kt2);
 	  nampl->SetMuR2(ampl->MuR2());
 	  nampl->ColorMap()=ampl->ColorMap();
 	  nampl->Decays()=ampl->Decays();
@@ -203,8 +204,13 @@ Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
   p_ms=ampl->MS();
   p_shower->SetMS(p_ms);
   Weight_Map ws(CalculateWeight(ampl,0));
-  if (ws.empty()) THROW(fatal_error,"Invalid amplitude for "
-                                    +PHASIC::Process_Base::GenerateName(ampl));
+  if (ws.empty()) {
+    if (m_strict_mapcheck)
+      THROW(fatal_error,"Invalid amplitude for "
+	    +PHASIC::Process_Base::GenerateName(ampl));
+    msg_Debugging()<<"Invalid splitting\n";
+    return Trial_Weight(0.,1.,1.);
+  }
   Parton *const *cur(p_shower->GetLast());
   size_t idij(0), idk(0);
   double wgt(0.0);
@@ -238,7 +244,8 @@ Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
 #endif
   if (!wact.p_sf || wact.m_me==-1.0)
     THROW(fatal_error,"No active splitting weight");
-  ampl->SetMuF2(wact.m_muf2);
+  ampl->SetMuF2(0,wact.m_muf2[0]);
+  ampl->SetMuF2(1,wact.m_muf2[1]);
   ampl->SetMuR2(wact.m_mur2);
   int i(-1), j(-1), k(-1);
   for (size_t l(0);l<ampl->Legs().size();++l)
@@ -280,7 +287,8 @@ Weight_Value CS_Gamma::Differential
       pit->second->Differential(*ampl, Weight_Type::nominal, 1 | 2 | 4));
   pit->second->KFactorSetter(true)->SetOn(kon);
   meps.m_me*=pit->second->SymFac();
-  meps.m_muf2=ampl->MuF2();
+  meps.m_muf2[0]=ampl->MuF2(0);
+  meps.m_muf2[1]=ampl->MuF2(1);
   meps.m_mur2=ampl->MuR2();
 #ifndef DEBUG__Differential
   msg->SetLevel(olv);
@@ -299,8 +307,9 @@ namespace MCATNLO {
   {
     return str<<w.m_me<<"  "<<w.p_proc->Name()<<" [ "
 	      <<w.p_sf->GetFlavourA()<<" -> "<<w.p_sf->GetFlavourB()
-	      <<" "<<w.p_sf->GetFlavourC()<<" ] ( \\mu_F = "
-	      <<sqrt(w.m_muf2)<<", \\mu_R = "<<sqrt(w.m_mur2)<<" ) ";
+	      <<" "<<w.p_sf->GetFlavourC()<<" ] ( \\mu_F = {"
+	      <<sqrt(w.m_muf2[0])<<","<<sqrt(w.m_muf2[0])
+	      <<"}, \\mu_R = "<<sqrt(w.m_mur2)<<" ) ";
   }
 
 }

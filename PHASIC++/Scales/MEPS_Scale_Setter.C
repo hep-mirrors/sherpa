@@ -596,7 +596,8 @@ double MEPS_Scale_Setter::Differential
   }
   Cluster_Amplitude *campl(ampl->Copy());
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
-  campl->SetMuF2(sqr(rpa->gen.Ecms()));
+  campl->SetMuF2(0,sqr(rpa->gen.Ecms()));
+  campl->SetMuF2(1,sqr(rpa->gen.Ecms()));
   campl->SetMuQ2(sqr(rpa->gen.Ecms()));
   Process_Base::SortFlavours(campl);
   std::string pname(Process_Base::GenerateName(campl));
@@ -743,9 +744,11 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     }
     msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
   }
-  m_scale[stp::size+stp::fac]=m_scale[stp::fac]=m_fsf*muf2;
+  m_scale[stp::size+stp::fac1]=m_scale[stp::fac1]=m_fsf*muf2;
+  m_scale[stp::size+stp::fac2]=m_scale[stp::fac2]=m_fsf*muf2;
   m_scale[stp::size+stp::ren]=m_scale[stp::ren]=mur2;
-  msg_Debugging()<<"Core / QCD scale = "<<sqrt(m_scale[stp::fac])
+  msg_Debugging()<<"Core / QCD scale = {"<<sqrt(m_scale[stp::fac1])
+		 <<","<<sqrt(m_scale[stp::fac1])<<"}"
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
@@ -753,24 +756,27 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
   if (ampl==NULL || ampl->Prev()==NULL)
     m_scale[stp::size+stp::res]=m_scale[stp::res];
   msg_Debugging()<<METHOD<<"(): Set {\n"
-		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
+		 <<"  \\mu_f = {"<<sqrt(m_scale[stp::fac1])
+		 <<","<<sqrt(m_scale[stp::fac2])<<"}\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
 		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n";
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<(p_proc->Caller()?p_proc->Caller()->Name():"")<<"\n";
   if (ampl) {
-    ampl->SetMuF2(m_scale[stp::fac]);
+    ampl->SetMuF2(0,m_scale[stp::fac1]);
+    ampl->SetMuF2(1,m_scale[stp::fac2]);
     ampl->SetMuR2(m_scale[stp::ren]);
     ampl->SetMuQ2(m_scale[stp::res]);
     while (ampl->Prev()) {
       ampl=ampl->Prev();
-      ampl->SetMuF2(m_scale[stp::fac]);
+      ampl->SetMuF2(0,m_scale[stp::fac1]);
+      ampl->SetMuF2(1,m_scale[stp::fac2]);
       ampl->SetMuR2(m_scale[stp::ren]);
       ampl->SetMuQ2(m_scale[stp::res]);
     }
   }
-  return m_scale[stp::fac];
+  return m_scale[stp::ren];
 }
 
 void MEPS_Scale_Setter::SetScale

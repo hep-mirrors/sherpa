@@ -213,7 +213,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   if (wgtinfo) {
     blob->AddData("MEWeightInfo",new Blob_Data<ME_Weight_Info*>(wgtinfo));
     blob->AddData("Renormalization_Scale",new Blob_Data<double>(wgtinfo->m_mur2));
-    blob->AddData("Factorization_Scale",new Blob_Data<double>(wgtinfo->m_muf2));
+    blob->AddData("Factorization_Scale_1",new Blob_Data<double>(wgtinfo->m_muf2[0]));
+    blob->AddData("Factorization_Scale_2",new Blob_Data<double>(wgtinfo->m_muf2[1]));
   }
   NLO_subevtlist* nlos=proc->GetSubevtList();
   if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(nlos));

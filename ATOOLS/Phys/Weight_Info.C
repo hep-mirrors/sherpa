@@ -73,7 +73,7 @@ void ME_Weight_Info::Reset()
   m_x1=m_x2=m_y1=m_y2=1.;
   m_oqcd=m_oew=0;
   m_fl1=m_fl2=0;
-  m_mur2=m_muf2=0.;
+  m_mur2=m_muf2[0]=m_muf2[1]=0.;
   if (m_type&mewgttype::VI) for (size_t i(0);i<m_wren.size();++i) m_wren[i]=0.;
   if (m_type&mewgttype::KP) for (size_t i(0);i<m_wfac.size();++i) m_wfac[i]=0.;
 }

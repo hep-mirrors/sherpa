@@ -487,7 +487,8 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     realtrg=p_tree_process->Trigger(_mom);
     if (res && realtrg) {
       p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
-      m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->Scale(stp::fac);
+      m_realevt.m_mu2[stp::fac1]=p_tree_process->ScaleSetter()->Scale(stp::fac1);
+      m_realevt.m_mu2[stp::fac2]=p_tree_process->ScaleSetter()->Scale(stp::fac2);
       m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
       m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
       if (p_tree_process->ScaleSetter(1)->Amplitudes().size() &&

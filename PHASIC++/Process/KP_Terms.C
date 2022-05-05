@@ -208,7 +208,8 @@ void KP_Terms::Calculate
   msg_Debugging()<<"cpl="<<Coupling()<<std::endl;
   size_t pls=1;
   if (m_sa&&m_sb) pls++;
-  double muf2(p_proc->ScaleSetter()->Scale(stp::fac,1));
+  double muf12(p_proc->ScaleSetter()->Scale(stp::fac1,1));
+  double muf22(p_proc->ScaleSetter()->Scale(stp::fac2,1));
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
 
@@ -336,7 +337,7 @@ void KP_Terms::Calculate
       double asum=0.,fsum=0.;
       for (size_t i=1;i<m_plist.size();i++) {
         fsum+=dsij[0][i];
-        asum+=dsij[0][i]*log(muf2/dabs(2.*mom[m_plist[0]]*mom[m_plist[i]]));
+        asum+=dsij[0][i]*log(muf12/dabs(2.*mom[m_plist[0]]*mom[m_plist[i]]));
       }
       double p4(-w*p_kernel->P1(m_typea,x0)
                 +p_kernel->P2(m_typea)
@@ -479,7 +480,7 @@ void KP_Terms::Calculate
       double asum=0.,fsum=0.;
       for (size_t i=0;i<m_plist.size();i++) if (i!=pls-1) {
         fsum+=dsij[pls-1][i];
-        asum+=dsij[pls-1][i]*log(muf2/dabs(2.*mom[m_plist[pls-1]]
+        asum+=dsij[pls-1][i]*log(muf22/dabs(2.*mom[m_plist[pls-1]]
                                              *mom[m_plist[i]]));
       }
       double p4(-w*p_kernel->P1(m_typeb,x1)

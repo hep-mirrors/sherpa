@@ -169,7 +169,7 @@ double Scale_Setter_Base::CalculateScale
       }
     }
     p_cpls->Calculate();
-    return m_scale[stp::fac];    
+    return m_scale[stp::ren];    
   }
   if (p_subs==NULL) {
     m_p.resize(p.size());
@@ -220,10 +220,11 @@ double Scale_Setter_Base::CalculateScale
     m_escale.clear();
   }
   if (p_proc && p_proc->Integrator()->Beam()) p_cpls->Calculate();
-  msg_Debugging()<<"\\mu_F = "<<sqrt(m_scale[stp::fac])<<std::endl;
+  msg_Debugging()<<"\\mu_F = {"<<sqrt(m_scale[stp::fac1])
+		 <<","<<sqrt(m_scale[stp::fac1])<<"}"<<std::endl;
   msg_Debugging()<<"\\mu_R = "<<sqrt(m_scale[stp::ren])<<std::endl;
   msg_Debugging()<<"\\mu_Q = "<<sqrt(m_scale[stp::res])<<std::endl;
-  return m_scale[stp::fac];
+  return m_scale[stp::ren];
 }
 
 bool Scale_Setter_Base::UpdateScale(const Variation_Parameters &var)

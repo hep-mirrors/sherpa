@@ -25,10 +25,10 @@ namespace DIM {
   struct Weight_Value {
     PHASIC::Process_Base *p_proc;
     const Kernel *p_sf;
-    double m_me, m_b, m_muf2, m_mur2, m_muq2;
+    double m_me, m_b, m_muf2[2], m_mur2, m_muq2;
     inline Weight_Value(PHASIC::Process_Base *const proc=NULL):
       p_proc(proc), p_sf(NULL), m_me(0.0), m_b(0.0),
-      m_muf2(0.0), m_mur2(0.0), m_muq2(0.0) {}
+      m_muf2{0.0,0.0}, m_mur2(0.0), m_muq2(0.0) {}
   };// end of struct Weight_Value
 
   std::ostream &operator<<(std::ostream &str,const Weight_Value &w);

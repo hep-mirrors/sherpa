@@ -700,7 +700,7 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
 
 double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D_Vector &mom)
 {
-  DEBUG_FUNC("mode="<<(p_loopme?p_loopme->Mode():0));
+  DEBUG_FUNC("mode="<<(p_loopme?p_loopme->Mode():0)<<",itype="<<m_itype);
   if (p_loopme && p_loopme->Mode()&2) return 0.;
   if (!(m_itype&cs_itype::I)) return 0.;
   m_finite=m_singlepole=m_doublepole=0.;
@@ -867,11 +867,12 @@ double Single_Virtual_Correction::Get_KPTerms(PDF_Base *pdfa, PDF_Base *pdfb,
   if (m_stype==sbt::none || !(m_pinfo.m_fi.m_nlotype&nlo_type::vsub))
     return 0.;
   double res(0.);
-  double muf2(ScaleSetter()->Scale(stp::fac,1));
+  double muf12(ScaleSetter()->Scale(stp::fac1,1));
+  double muf22(ScaleSetter()->Scale(stp::fac2,1));
   if (p_kpterms_qcd && p_LO_process->HasInitialStateQCDEmitter())
-    res+=p_kpterms_qcd->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf2,muf2,sf,sf,fl0,fl1);
+    res+=p_kpterms_qcd->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf12,muf22,sf,sf,fl0,fl1);
   if (p_kpterms_ew  && p_LO_process->HasInitialStateQEDEmitter())
-    res+=p_kpterms_ew->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf2,muf2,sf,sf,fl0,fl1);
+    res+=p_kpterms_ew->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf12,muf22,sf,sf,fl0,fl1);
   return res * p_partner->m_lastki;
 }
 

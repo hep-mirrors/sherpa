@@ -53,10 +53,11 @@ namespace ATOOLS {
 
   struct stp {
     enum id {
-      fac     =  0,
-      ren     =  1,
-      res     =  2,
-      size    =  3
+      ren     =  0,
+      fac1    =  1,
+      fac2    =  2,
+      res     =  3,
+      size    =  4
     };
   };// end of struct stp
 

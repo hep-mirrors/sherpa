@@ -585,7 +585,8 @@ double VBF_Scale_Setter::Differential
   if (procs->find(type)==procs->end()) return 0.0;
   Cluster_Amplitude *campl(ampl->Copy());
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
-  campl->SetMuF2(sqr(rpa->gen.Ecms()));
+  campl->SetMuF2(0,sqr(rpa->gen.Ecms()));
+  campl->SetMuF2(1,sqr(rpa->gen.Ecms()));
   campl->SetMuQ2(sqr(rpa->gen.Ecms()));
   Process_Base::SortFlavours(campl);
   std::string pname(Process_Base::GenerateName(campl));
@@ -617,7 +618,7 @@ void VBF_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl)
   m_ampls=ampls;
   if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()+1);
   msg_Debugging()<<"Setting PS scales by dipole {\n";
-  double sum(1.0), n(0.0);
+  double sum(1.0), n(0.0), muf2[2]{0.,0.};
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
     if (li->Flav().StrongCharge()==3 ||
@@ -648,6 +649,7 @@ void VBF_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl)
 	  li->SetKT2(1,Min(m_qsf*sij,li->KT2(1)));
 	  lj->SetKT2(0,Min(m_qsf*sij,lj->KT2(0)));
 	}
+	if (i<2) muf2[i]=Max(muf2[i],sij);
 	sum=Max(sum,sij);
 	n=1.0;
       }
@@ -657,13 +659,19 @@ void VBF_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl)
   msg_Debugging()<<"} -> \\mu_Q = "<<sqrt(avg)<<"\n"<<*ampl<<"\n";
   ampl->SetKT2(m_qsf*avg);
   ampl->SetMu2(m_qsf*avg);
+  ampl->SetMuF2(0,muf2[0]);
+  ampl->SetMuF2(1,muf2[1]);
   for (Cluster_Amplitude *campl(ampl);
-       campl;campl=campl->Prev()) campl->SetMuQ2(m_qsf*avg);
+       campl;campl=campl->Prev()) {
+    campl->SetMuQ2(m_qsf*avg);
+    campl->SetMuF2(0,muf2[0]);
+    campl->SetMuF2(1,muf2[1]);
+  }
 }
 
 double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 {
-  double muf2(ampl->Last()->KT2()), mur2(m_rsf*ampl->Last()->Mu2());
+  double mur2(m_rsf*ampl->Last()->Mu2());
   m_scale[stp::size+stp::res]=m_scale[stp::res]=ampl->MuQ2();
   if (ampl) {
     m_scale[stp::size+stp::res]=ampl->KT2();
@@ -751,9 +759,11 @@ double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     }
     msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
   }
-  m_scale[stp::size+stp::fac]=m_scale[stp::fac]=m_fsf*muf2;
+  m_scale[stp::size+stp::fac1]=m_scale[stp::fac1]=m_fsf*ampl->MuF2(0);
+  m_scale[stp::size+stp::fac2]=m_scale[stp::fac2]=m_fsf*ampl->MuF2(1);
   m_scale[stp::size+stp::ren]=m_scale[stp::ren]=mur2;
-  msg_Debugging()<<"Core / QCD scale = "<<sqrt(m_scale[stp::fac])
+  msg_Debugging()<<"Core / QCD scale = {"<<sqrt(m_scale[stp::fac1])
+		 <<","<<sqrt(m_scale[stp::fac2])<<"}"
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
@@ -761,24 +771,27 @@ double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
   if (ampl==NULL || ampl->Prev()==NULL)
     m_scale[stp::size+stp::res]=m_scale[stp::res];
   msg_Debugging()<<METHOD<<"(): Set {\n"
-		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
+		 <<"  \\mu_f = {"<<sqrt(m_scale[stp::fac1])
+		 <<","<<sqrt(m_scale[stp::fac2])<<"}\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
 		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n";
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<(p_proc->Caller()?p_proc->Caller()->Name():"")<<"\n";
   if (ampl) {
-    ampl->SetMuF2(m_scale[stp::fac]);
+    ampl->SetMuF2(0,m_scale[stp::fac1]);
+    ampl->SetMuF2(1,m_scale[stp::fac2]);
     ampl->SetMuR2(m_scale[stp::ren]);
     ampl->SetMuQ2(m_scale[stp::res]);
     while (ampl->Prev()) {
       ampl=ampl->Prev();
-      ampl->SetMuF2(m_scale[stp::fac]);
+      ampl->SetMuF2(0,m_scale[stp::fac1]);
+      ampl->SetMuF2(1,m_scale[stp::fac2]);
       ampl->SetMuR2(m_scale[stp::ren]);
       ampl->SetMuQ2(m_scale[stp::res]);
     }
   }
-  return m_scale[stp::fac];
+  return m_scale[stp::ren];
 }
 
 void VBF_Scale_Setter::SetScale

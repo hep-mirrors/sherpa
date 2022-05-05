@@ -30,7 +30,7 @@ namespace ATOOLS {
     DecayInfo_Vector  m_decs;
 
     size_t m_oew, m_oqcd, m_nin, m_new, m_ncl, m_kin, m_nlo, m_flag;
-    double m_mur2, m_muf2, m_muq2, m_mu2, m_kt2, m_z, m_phi, m_lkf;
+    double m_mur2, m_muf2[2], m_muq2, m_mu2, m_kt2, m_z, m_phi, m_lkf;
     CI_Map m_cmap;
 
     void *p_jf, *p_ca, *p_proc, *p_procs, *p_iinfo, *p_dinfo;
@@ -129,7 +129,8 @@ namespace ATOOLS {
     inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
     inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
 
-    inline void SetMuF2(const double &muf2) { m_muf2=muf2; }
+    inline void SetMuF2(const int i,const double &muf2) { m_muf2[i]=muf2; }
+
     inline void SetMuR2(const double &mur2) { m_mur2=mur2; }
     inline void SetMuQ2(const double &muq2) { m_muq2=muq2; }
     inline void SetMu2(const double &mu2)   { m_mu2=mu2;   }
@@ -159,7 +160,8 @@ namespace ATOOLS {
     inline size_t OrderEW() const  { return m_oew;  }
     inline size_t OrderQCD() const { return m_oqcd; }
 
-    inline double MuF2() const { return m_muf2; }
+    inline double MuF2(const int i) const { return m_muf2[i]; }
+
     inline double MuR2() const { return m_mur2; }
     inline double MuQ2() const { return m_muq2; }
     inline double Mu2() const  { return m_mu2;  }

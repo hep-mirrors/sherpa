@@ -207,18 +207,19 @@ double Fastjet_Scale_Setter::Calculate
     m_scale[idx++]=cs.exclusive_dmerge_max(i);
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[m_mode==1?i+stp::size:i]=m_calcs[i]->Calculate()->Get<double>();
-  if (m_mode==1) m_scale[stp::res]=m_scale[stp::fac]=
+  if (m_mode==1) m_scale[stp::res]=m_scale[stp::fac1]=m_scale[stp::fac2]=
 		   m_scale[stp::ren]=ASMeanScale(m_scale,stp::size);
   else for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  Q     = "<<sqrt(m_scale[stp::res])<<"\n"
-		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
+		 <<"  \\mu_f = {"<<sqrt(m_scale[stp::fac1])
+		 <<","<<sqrt(m_scale[stp::fac2])<<"}\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<p_proc->Name()<<"\n";
   m_scale.resize(stp::size);
-  return m_scale[stp::fac];
+  return m_scale[stp::ren];
 }
 
 double Fastjet_Scale_Setter::ASMeanScale

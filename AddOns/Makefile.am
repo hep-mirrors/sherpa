@@ -1,10 +1,8 @@
 SUBDIRS       =	\
-		NNLO \
 		Python \
 		Analysis \
 		Pythia \
 		Higgs \
-		BlackHat \
 		MCFM \
 		LH_OLE \
 		HZTool \

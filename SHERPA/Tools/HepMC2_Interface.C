@@ -154,7 +154,8 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       if (p_wgtinfo) {
         wc["Reweight_B"]=p_wgtinfo->m_B;
         wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
-        wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
+        wc["Reweight_MuF12"]=p_wgtinfo->m_muf2[0];
+        wc["Reweight_MuF22"]=p_wgtinfo->m_muf2[1];
         if (p_wgtinfo->m_type&mewgttype::VI) {
           wc["Reweight_VI"]=p_wgtinfo->m_VI;
           for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
@@ -191,8 +192,10 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             p_wgtinfo->m_clusseqinfo.m_txfl.size()) {
           wc["Reweight_ClusterStep_N"]=p_wgtinfo->m_clusseqinfo.m_txfl.size();
           for (size_t i(0);i<p_wgtinfo->m_clusseqinfo.m_txfl.size();++i) {
-            wc["Reweight_ClusterStep_"+ToString(i)+"_t"]
-                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_t;
+            wc["Reweight_ClusterStep_"+ToString(i)+"_t1"]
+                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_t[0];
+            wc["Reweight_ClusterStep_"+ToString(i)+"_t2"]
+                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_t[1];
             wc["Reweight_ClusterStep_"+ToString(i)+"_x1"]
                 =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_xa;
             wc["Reweight_ClusterStep_"+ToString(i)+"_x2"]
@@ -234,6 +237,10 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     else {
       // if using minimal weights still dump event type if RS need correls
       if (p_subevtlist) wc["Reweight_Type"]=64;
+      else if (p_wgtinfo)
+	wc["Reweight_Type"]=p_wgtinfo->m_type;
+      else// dummy for Rivet
+	wc["Reweight_Type"]=0;
     }
     // fill weight variations into weight container
     if (m_weights.ContainsVariations()) {
@@ -456,8 +463,8 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
     subevtinfo.SetWeight(sub->m_result);
     subevtinfo.SetPartonicWeight(sub->m_mewgt);
     subevtinfo.SetMuR2(sub->m_mu2[stp::ren]);
-    subevtinfo.SetMuF12(sub->m_mu2[stp::fac]);
-    subevtinfo.SetMuF22(sub->m_mu2[stp::fac]);
+    subevtinfo.SetMuF12(sub->m_mu2[stp::fac1]);
+    subevtinfo.SetMuF22(sub->m_mu2[stp::fac2]);
     subevtinfo.SetAlphaS();
     subevtinfo.SetAlpha();
     subevtinfo.WriteTo(*subevent,i);

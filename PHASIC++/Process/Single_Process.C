@@ -113,21 +113,21 @@ double Single_Process::NfSchemeConversionTerms() const
   double facqcd(as/3./M_PI*MODEL::as->TR()), facqed(aqed/3/M_PI);
   msg_Debugging()<<"p="<<p<<", facqcd="<<facqcd<<", facqed="<<facqed<<std::endl;
   double muR2(ScaleSetter(1)->Scale(stp::ren));
-  double muF2(ScaleSetter(1)->Scale(stp::fac));
   for (size_t i(nfl+1);i<=nf;++i) {
     Flavour fl((kf_code)(i));
     double m2(sqr(fl.Mass()));
-    msg_Debugging()<<fl<<": m="<<sqrt(m2)<<", \\mu_R="<<sqrt(muR2)
-                   <<", \\mu_F="<<sqrt(muF2)<<std::endl;
+    msg_Debugging()<<fl<<": m="<<sqrt(m2)<<", \\mu_R="<<sqrt(muR2)<<std::endl;
     // logs only if scale larger than mass
     double logm2muR2(m2<muR2?log(m2/muR2):0.);
-    double logm2muF2(m2<muF2?((muR2==muF2)?logm2muR2:log(m2/muF2)):0.);
-    msg_Debugging()<<"log(m2/muR2)="<<logm2muR2
-                   <<", log(m2/muF2)="<<logm2muF2<<std::endl;
+    msg_Debugging()<<"log(m2/muR2)="<<logm2muR2<<std::endl;
     // alphaS term
     if (p && logm2muR2 && m_flavs[0].Strong()) res+=facqcd*p*logm2muR2;
     // PDF terms
     for (size_t j(0);j<2;++j) {
+      double muF2(ScaleSetter(1)->Scale(j==0?stp::fac1:stp::fac2));
+      double logm2muF2(m2<muF2?((muR2==muF2)?logm2muR2:log(m2/muF2)):0.);
+      msg_Debugging()<<fl<<": m="<<sqrt(m2)<<", \\mu_{F"<<i<<"}="<<sqrt(muF2)<<std::endl;
+      msg_Debugging()<<"log(m2/muF2)="<<logm2muF2<<std::endl;
       if (logm2muF2 &&
           p_int->ISR()->PDF(j) && p_int->ISR()->PDF(j)->Contains(m_flavs[j])) {
         if      (m_flavs[j].IsGluon())  res-=facqcd*logm2muF2;
@@ -153,9 +153,9 @@ double Single_Process::CollinearCounterTerms
   if (IsEqual(t1,t2)) return 0.0;
 
   // determine scales
-  double lmuf2(p_scale->Scale(stp::fac)*muf2fac);
+  double lmuf2(p_scale->Scale(i==0?stp::fac1:stp::fac2)*muf2fac);
   double lmur2(p_scale->Scale(stp::ren)*mur2fac);
-  msg_Debugging()<<"\\mu_F = "<<sqrt(lmuf2)<<"\n";
+  msg_Debugging()<<"\\mu_{F"<<i<<"} = "<<sqrt(lmuf2)<<"\n";
   msg_Debugging()<<"\\mu_R = "<<sqrt(lmur2)<<"\n";
 
   // determine running AlphaS and evaluate at lmur2
@@ -217,7 +217,7 @@ double Single_Process::CollinearCounterTerms
 
 ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     const ATOOLS::ClusterAmplitude_Vector &ampls,
-    const double &Q2,
+    const double &Q12,const double &Q22,
     const double &muf2fac,
     const double &mur2fac,
     const double &showermuf2fac,
@@ -233,14 +233,14 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     THROW(not_implemented, "More than two incoming particles.");
   }
   Cluster_Sequence_Info csi;
-  AddISR(csi, ampls, Q2, muf2fac, mur2fac, showermuf2fac, as, nominalcsi);
-  AddBeam(csi, Q2);
+  AddISR(csi, ampls, Q12, Q22, muf2fac, mur2fac, showermuf2fac, as, nominalcsi);
+  AddBeam(csi, sqrt(Q12*Q22));
   return csi;
 }
 
 void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             const ATOOLS::ClusterAmplitude_Vector &ampls,
-            const double &Q2,
+            const double &Q12,const double &Q22,
             const double &muf2fac, const double &mur2fac,
             const double &showermuf2fac,
             MODEL::Running_AlphaS * as,
@@ -252,23 +252,23 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
     double pdfext(p_int->ISR()->PDFWeight(0,
                                           p_int->Momenta()[0],
                                           p_int->Momenta()[1],
-                                          Q2, Q2,
+                                          Q12, Q22,
                                           m_flavs[0], m_flavs[1]));
     msg_Debugging()<<"PDF(fla="<<m_flavs[0]
                    <<", xa="<<p_int->ISR()->CalcX(p_int->Momenta()[0])
-                   <<", Qa="<<sqrt(Q2)<<") * "
+                   <<", Qa="<<sqrt(Q12)<<") * "
                    <<"PDF(flb="<<m_flavs[1]
                    <<", xb="<<p_int->ISR()->CalcX(p_int->Momenta()[1])
-                   <<", Qb="<<sqrt(Q2)<<") -> "<<pdfext<<std::endl;
+                   <<", Qb="<<sqrt(Q22)<<") -> "<<pdfext<<std::endl;
     csi.AddWeight(pdfext);
 
     // add splittings and their PDF weight ratios from clustering
     if (ampls.size() && (m_pinfo.m_ckkw&1)) {
-      DEBUG_FUNC(m_name<<", \\mu_F = "<<sqrt(Q2));
+      DEBUG_FUNC(m_name<<", \\mu_F = {"<<sqrt(Q12)<<","<<sqrt(Q12)<<"}");
       m_mewgtinfo.m_type|=mewgttype::METS;
 
       // add external splitting
-      csi.AddSplitting(Q2,
+      csi.AddSplitting(Q12,Q22,
                        p_int->ISR()->CalcX(p_int->Momenta()[0]),
                        p_int->ISR()->CalcX(p_int->Momenta()[1]),
                        m_flavs[0], m_flavs[1]);
@@ -279,7 +279,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 
       // add subsequent splittings
       bool addedfirstsplitting(false);
-      double currentQ2(Q2);
+      double currentQ2[2]={Q12,Q22};
       double currentscalefactor(1.0);
       double pdfnum(pdfext), pdfden(pdfext);
       for (; ampl; ampl = ampl->Next()) {
@@ -308,15 +308,18 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 	}
 	// ampl->KT2() has actual splitting scale
 	// ampl->MuF() is fac-scale as given in scale setter
-	csi.AddSplitting(ampl->KT2(),
+	csi.AddSplitting(ampl->KT2(),ampl->KT2(),
 			 p_int->ISR()->CalcX(-ampl->Leg(0)->Mom()),
 			 p_int->ISR()->CalcX(-ampl->Leg(1)->Mom()),
 			 f1, f2);
 
         // skip equal scales
-        if (IsEqual(currentQ2 / currentscalefactor, ampl->Next() ? showermuf2fac * ampl->KT2() : Q2)) {
-            msg_Debugging()<<"Skip. Scales equal: t_i="<<currentQ2 / currentscalefactor
-                           <<", t_{i+1}="<<(ampl->Next()?ampl->KT2():Q2)
+        if (IsEqual(currentQ2[0] / currentscalefactor, ampl->Next() ? showermuf2fac * ampl->KT2() : Q12) &&
+	    IsEqual(currentQ2[1] / currentscalefactor, ampl->Next() ? showermuf2fac * ampl->KT2() : Q22)) {
+            msg_Debugging()<<"Skip. Scales equal: t_i="<<currentQ2[0] / currentscalefactor
+                           <<", t_{i+1}="<<(ampl->Next()?ampl->KT2():Q12)
+			   <<"/ t_i="<<currentQ2[1] / currentscalefactor
+                           <<", t_{i+1}="<<(ampl->Next()?ampl->KT2():Q22)
                            <<std::endl;
           if (ampl->Next() == NULL) {
             csi.AddPDFRatio(1., pdfden);
@@ -327,66 +330,51 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         }
 
         // skip unordered configuration
-	if (addedfirstsplitting && (currentQ2 / currentscalefactor > ampl->KT2())) {
+	if (addedfirstsplitting && (currentQ2[0] / currentscalefactor > ampl->KT2()) && (currentQ2[1] / currentscalefactor > ampl->KT2())) {
 	  msg_Debugging()<<"Skip. Unordered history "<<
-	    sqrt(currentQ2 / currentscalefactor)<<" > "<<sqrt(ampl->KT2())<<"\n";
-	  currentQ2 = sqrt(std::numeric_limits<double>::max());
+	    sqrt(currentQ2[0] / currentscalefactor)<<","<<
+	    sqrt(currentQ2[0] / currentscalefactor)<<" > "<<sqrt(ampl->KT2())<<"\n";
+	  currentQ2[0] = sqrt(std::numeric_limits<double>::max());
+	  currentQ2[1] = sqrt(std::numeric_limits<double>::max());
 	  csi.AddPDFRatio(1.,1.);
 	  continue;
 	}
-
-        // skip when a scale is below a (quark) mass threshold
-        if (currentQ2 / currentscalefactor < sqr(2.0 * f1.Mass(true))
-            || currentQ2 / currentscalefactor < sqr(2.0 * f2.Mass(true))) {
-          msg_Debugging()<<"Skip. Quarks below threshold: t="
-                         <<currentQ2 / currentscalefactor
-                         <<" vs. "<<sqr(2.0*f1.Mass(true))
-                         <<" / "<<sqr(2.0*f2.Mass(true))<<std::endl;
-          continue;
-        }
 
 	// denominators
 	double wd1(p_int->ISR()->PDFWeight(2,
                                            -ampl->Leg(0)->Mom(),
                                            -ampl->Leg(1)->Mom(),
-                                           currentQ2, currentQ2, f1, f2,
+                                           currentQ2[0], currentQ2[0], f1, f2,
                                            0));
 	double wd2(p_int->ISR()->PDFWeight(4,
                                            -ampl->Leg(0)->Mom(),
                                            -ampl->Leg(1)->Mom(),
-                                           currentQ2, currentQ2, f1, f2,
+                                           currentQ2[1], currentQ2[1], f1, f2,
                                            0));
 
         // new scale (note: for the core scale we use Q2 instead of ampl->MuF2
         // because we might be reweighting and Q2 could have been multiplied
         // by a scaling factor, whereas ampl->MuF2 would not reflect this)
-        double lastQ2 = currentQ2;
+        double lastQ2[2]={currentQ2[0],currentQ2[1]};
         if (ampl->Next() == NULL) {
-          currentQ2 = Q2;
+          currentQ2[0] = Q12;
+          currentQ2[1] = Q22;
           currentscalefactor = 1.0;
         } else {
-          currentQ2 = showermuf2fac * ampl->KT2();
+          currentQ2[0]=currentQ2[1] = showermuf2fac * ampl->KT2();
           currentscalefactor = showermuf2fac;
-        }
-
-        // skip when a scale is below a (quark) mass threshold, new scale
-        if (currentQ2 < sqr(2.0 * f1.Mass(true)) || currentQ2 < sqr(2.0 * f2.Mass(true))) {
-          msg_Debugging()<<"Skip. Quarks below threshold: t="<<currentQ2
-                         <<" vs. "<<sqr(2.0*f1.Mass(true))
-                         <<" / "<<sqr(2.0*f2.Mass(true))<<std::endl;
-          continue;
         }
 
 	// numerators
 	double wn1(p_int->ISR()->PDFWeight(2,
                                            -ampl->Leg(0)->Mom(),
                                            -ampl->Leg(1)->Mom(),
-                                           currentQ2, currentQ2, f1, f2,
+                                           currentQ2[0], currentQ2[0], f1, f2,
                                            0));
 	double wn2(p_int->ISR()->PDFWeight(4,
                                            -ampl->Leg(0)->Mom(),
                                            -ampl->Leg(1)->Mom(),
-                                           currentQ2, currentQ2, f1, f2,
+                                           currentQ2[1], currentQ2[1], f1, f2,
                                            0));
 
         double x1=p_int->ISR()->CalcX(-ampl->Leg(0)->Mom());
@@ -429,17 +417,17 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 	msg_Debugging()<<"* [  "
 		       <<"PDF(fla="<<f1
 		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom())
-		       <<", Qa="<<sqrt(currentQ2)<<") * "
+		       <<", Qa="<<sqrt(currentQ2[0])<<") * "
 		       <<"PDF(flb="<<f2
 		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom())
-		       <<", Qb="<<sqrt(currentQ2)<<") -> "<<wn1*wn2<<"\n"
+		       <<", Qb="<<sqrt(currentQ2[1])<<") -> "<<wn1*wn2<<"\n"
 		       <<"   / "
 		       <<"PDF(fla="<<f1
 		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom())
-		       <<", Qa="<<sqrt(lastQ2)<<") * "
+		       <<", Qa="<<sqrt(lastQ2[0])<<") * "
 		       <<"PDF(flb="<<f2
 		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom())
-		       <<", Qb="<<sqrt(lastQ2)<<") -> "<<wd1*wd2
+		       <<", Qb="<<sqrt(lastQ2[1])<<") -> "<<wd1*wd2
 		       <<" ] = "<<wn1*wn2/wd1/wd2<<std::endl;
 
         // add collinear counterterm
@@ -463,7 +451,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
               z = x + (1.0 - x) * ran->Get();
             }
             const double ct(CollinearCounterTerms(i, i ? f2 : f1, p, z,
-                                                  currentQ2, lastQ2,
+                                                  currentQ2[i], lastQ2[i],
                                                   muf2fac, mur2fac, as));
             csi.AddCounterTerm(ct, z, i);
           }
@@ -517,7 +505,9 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
     }
 
     // calculate ISR weight
-    m_csi = ClusterSequenceInfo(scales->Amplitudes(), scales->Scale(stp::fac));
+    m_csi = ClusterSequenceInfo(scales->Amplitudes(),
+				scales->Scale(stp::fac1),
+				scales->Scale(stp::fac2));
     m_csi.AddFlux(m_lastflux);
 
     // update results
@@ -584,8 +574,8 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
       if (m_mewgtinfo.m_type & mewgttype::H) {
         RDA_Info rda {sub->m_mewgt,
                       sub->m_mu2[stp::ren],
-                      sub->m_mu2[stp::fac],
-                      sub->m_mu2[stp::fac],
+                      sub->m_mu2[stp::fac1],
+                      sub->m_mu2[stp::fac2],
                       sub->m_i,
                       sub->m_j,
                       sub->m_k};
@@ -609,7 +599,8 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
           ampls.front()->SetProc(sub->p_proc);
         }
         Cluster_Sequence_Info csi {
-            ClusterSequenceInfo(ampls, sub->m_mu2[stp::fac])};
+            ClusterSequenceInfo(ampls, sub->m_mu2[stp::fac1],
+				sub->m_mu2[stp::fac2])};
         csi.AddFlux(m_lastflux);
         if (m_mewgtinfo.m_type & mewgttype::H) {
           m_mewgtinfo.m_rdainfos.back().m_csi = csi;
@@ -825,7 +816,8 @@ void Single_Process::ReweightRS(Weight_Type type,
       if (sub->m_results.Variation(varindex) != 0.0) {
         info.m_wgt = sub->m_mewgt;
         info.m_muR2 = sub->m_mu2[stp::ren];
-        info.m_muF2 = sub->m_mu2[stp::fac];
+        info.m_muF2[0] = sub->m_mu2[stp::fac1];
+        info.m_muF2[1] = sub->m_mu2[stp::fac2];
         info.m_ampls = ClusterAmplitude_Vector(sub->p_real->p_ampl ? 1 : 0,
                                                sub->p_real->p_ampl);
         info.m_fallbackresult = sub->m_result;
@@ -852,7 +844,8 @@ void Single_Process::UpdateMEWeightInfo(Scale_Setter_Base* scales)
 {
   m_mewgtinfo *= m_lastflux;
   if (scales != nullptr) {
-    m_mewgtinfo.m_muf2 = scales->Scale(stp::fac);
+    m_mewgtinfo.m_muf2[0] = scales->Scale(stp::fac1);
+    m_mewgtinfo.m_muf2[1] = scales->Scale(stp::fac2);
     m_mewgtinfo.m_mur2 = scales->Scale(stp::ren);
   }
   m_mewgtinfo.m_clusseqinfo = m_csi;
@@ -885,7 +878,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     const double &mur2fac,
     const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
-  const double Q2(info.m_muF2 * varparams.m_muF2fac);
+  const double Q12(info.m_muF2[0] * varparams.m_muF2fac);
+  const double Q22(info.m_muF2[1] * varparams.m_muF2fac);
 
   // insert target PDF into ISR_Handler, such that ClusterSequenceInfo uses
   // them through the ISR_Handler instead of the nominal PDF
@@ -896,7 +890,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
 
   ATOOLS::Cluster_Sequence_Info csi(
       ClusterSequenceInfo(info.m_ampls,
-                          Q2, varparams.m_muF2fac, mur2fac,
+                          Q12, Q22, varparams.m_muF2fac, mur2fac,
                           varparams.m_showermuF2fac,
                           varparams.p_alphas,
                           nominalcsi));
@@ -910,8 +904,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   // reset
   p_int->ISR()->SetPDF(nominalpdf1, 0);
   p_int->ISR()->SetPDF(nominalpdf2, 1);
-  p_int->ISR()->SetMuF2(info.m_muF2, 0);
-  p_int->ISR()->SetMuF2(info.m_muF2, 1);
+  p_int->ISR()->SetMuF2(info.m_muF2[0], 0);
+  p_int->ISR()->SetMuF2(info.m_muF2[1], 1);
 
   return csi;
 }
@@ -1150,7 +1144,8 @@ Cluster_Amplitude *Single_Process::Cluster
 		      i<m_nin?m_flavs[i].Bar():m_flavs[i],
 		      ColorID(ci[i],cj[i]));
   }  
-  ampl->SetMuF2(ScaleSetter(1)->Scale(stp::fac));
+  ampl->SetMuF2(0,ScaleSetter(1)->Scale(stp::fac1));
+  ampl->SetMuF2(1,ScaleSetter(1)->Scale(stp::fac2));
   ampl->SetMuR2(ScaleSetter(1)->Scale(stp::ren));
   ampl->SetMuQ2(ScaleSetter(1)->Scale(stp::res));
   return ampl;

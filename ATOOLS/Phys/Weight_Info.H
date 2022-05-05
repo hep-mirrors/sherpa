@@ -91,20 +91,23 @@ namespace ATOOLS {
 
   struct Cluster_Step {
   public:
-    double m_t,m_xa,m_xb,m_xap,m_xbp;
+    double m_t[2],m_xa,m_xb,m_xap,m_xbp;
     int m_fla,m_flb;
     double m_pdfrationumerator, m_pdfratiodenominator;
-    Cluster_Step(const double& t, const double& xa, const double& xb,
+    Cluster_Step(const double& ta,const double &tb,
+		 const double& xa, const double& xb,
                  const int& fla, const int& flb) :
-      m_t(t), m_xa(xa), m_xb(xb), m_xap(-1.0), m_xbp(-1.0), m_fla(fla), m_flb(flb),
+      m_t{ta,tb}, m_xa(xa), m_xb(xb),
+      m_xap(-1.0), m_xbp(-1.0), m_fla(fla), m_flb(flb),
       m_pdfrationumerator(1.), m_pdfratiodenominator(1.) {}
   };
 
   inline std::ostream & operator<<(std::ostream & s,
                                    const ATOOLS::Cluster_Step & cs)
   {
-    return s<<"("<<cs.m_t<<";"<<cs.m_fla<<","<<cs.m_xa<<"|"
-                              <<cs.m_flb<<","<<cs.m_xb<<")";
+    return s<<"("<<cs.m_t[0]<<","<<cs.m_t[1]<<";"
+	    <<cs.m_fla<<","<<cs.m_xa<<"|"
+	    <<cs.m_flb<<","<<cs.m_xb<<")";
   }
 
   struct Cluster_Sequence_Info {
@@ -115,10 +118,10 @@ namespace ATOOLS {
     Cluster_Sequence_Info(const double &w=1.0, const double &f=1.0,
                           const double &c=0.0) :
       m_pdfwgt(w), m_flux(f), m_ct(c) {}
-    inline void AddSplitting(const double& t,
+    inline void AddSplitting(const double& ta,const double& tb,
                              const double& xa, const double& xb,
                              const int& fla, const int& flb)
-    { m_txfl.push_back(Cluster_Step(t,xa,xb,fla,flb)); }
+    { m_txfl.push_back(Cluster_Step(ta,tb,xa,xb,fla,flb)); }
     inline void AddFlux(const double& f)        { m_flux*=f; }
     inline void AddWeight(const double& w)      { m_pdfwgt*=w; }
     inline void AddCounterTerm(const double& c,
@@ -180,7 +183,7 @@ namespace ATOOLS {
     int m_relqcdcpl;
     double m_B, m_VI, m_KP, m_K;
     std::vector<double> m_wren,m_wfac,m_bkw;
-    double m_x1, m_x2, m_y1, m_y2, m_mur2, m_muf2;
+    double m_x1, m_x2, m_y1, m_y2, m_mur2, m_muf2[2];
     int m_fl1, m_fl2, m_swap;
     size_t m_oqcd, m_oew;
     Cluster_Sequence_Info m_clusseqinfo;
@@ -191,7 +194,7 @@ namespace ATOOLS {
       m_B(0.0), m_VI(0.0), m_KP(0.0), m_K(0.0),
       m_wren(2,0.0), m_wfac(32,0.0),
       m_x1(1.0), m_x2(1.0), m_y1(1.0), m_y2(1.0),
-      m_mur2(0.0), m_muf2(0.0), m_fl1(0), m_fl2(0),
+      m_mur2(0.0), m_muf2{0.0,0.0}, m_fl1(0), m_fl2(0),
       m_swap(0), m_oqcd(0), m_oew(0), m_clusseqinfo() {}
     ME_Weight_Info& operator*=(const double &scal);
     void Reset();
