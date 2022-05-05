@@ -65,6 +65,10 @@ namespace BEAM {
     inline const double Weight(ATOOLS::Flavour * flin=NULL) const {
       return (*p_weight)(flin);
     }
+    inline bool AllowSwap() {
+      return p_BeamBase[0]->Type() == beamspectrum::EPA &&
+             p_BeamBase[1]->Type() == beamspectrum::EPA;
+    }
 
     void   Output();
 

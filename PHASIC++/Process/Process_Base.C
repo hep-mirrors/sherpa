@@ -299,9 +299,7 @@ void Process_Base::Init(const Process_Info &pi,
   m_symfac=m_pinfo.m_fi.FSSymmetryFactor();
   if ((m_nin==2 && m_flavs[0]==m_flavs[1] &&
        isrhandler->AllowSwap(m_flavs[0],m_flavs[1])) ||
-      (isrhandler->On() == 0
-       && beamhandler->GetBeam(0)->Type() == 4
-       && beamhandler->GetBeam(1)->Type() == 4))
+      (isrhandler->On() == 0 && beamhandler->AllowSwap()))
     m_symfac*=(m_issymfac=2.0);
   m_name+=pi.m_addname;
   m_resname=m_name;
