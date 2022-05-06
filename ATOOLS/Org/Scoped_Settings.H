@@ -53,7 +53,7 @@ namespace ATOOLS {
     /// set a common replacement list: [None] -> 0
     Scoped_Settings& UseZeroReplacements();
 
-    bool IsCustomised();
+    bool IsSetExplicitly();
 
     void SetInterpreterEnabled(bool b) { m_interpreterenabled = b; }
     template <typename T>

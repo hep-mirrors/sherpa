@@ -14,7 +14,7 @@ Variation_Generator::Variation_Generator(const Args& args):
 {
   auto s = Settings::GetMainSettings()["EWSUD"];
   m_ewsudakov_rs = s["RS"].SetDefault(true).Get<bool>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_RS"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_RS"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: RS");
   }
 }

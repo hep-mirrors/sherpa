@@ -47,7 +47,7 @@ bool Variations::NeedsLHAPDF6Interface()
   // requested
   Settings& s = Settings::GetMainSettings();
   for (auto single_variation_settings : s["VARIATIONS"].GetItems()) {
-    if (single_variation_settings["PDF"].IsCustomised()) {
+    if (single_variation_settings["PDF"].IsSetExplicitly()) {
       return true;
     }
   }

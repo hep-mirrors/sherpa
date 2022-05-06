@@ -177,7 +177,7 @@ namespace ATOOLS {
     void SetDefaultMatrix(const std::vector<std::string>& keys,
                           const std::vector<std::vector<T>>& values);
 
-    bool IsCustomised(const Settings_Keys&);
+    bool IsSetExplicitly(const Settings_Keys&);
 
     template <typename T>
     void OverrideScalar(const Settings_Keys&, const T& value);

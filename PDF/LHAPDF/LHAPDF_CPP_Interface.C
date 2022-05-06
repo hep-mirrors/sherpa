@@ -274,7 +274,7 @@ std::vector<LHAPDF_Getter*> p_get_lhapdf;
 extern "C" void InitPDFLib()
 {
   Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
-  if (s["GRID_PATH"].IsCustomised())
+  if (s["GRID_PATH"].IsSetExplicitly())
     LHAPDF::setPaths(s["GRID_PATH"].Get<std::string>());
   const std::vector<std::string>& sets(LHAPDF::availablePDFSets());
   msg_Debugging()<<METHOD<<"(): LHAPDF paths: "<<LHAPDF::paths()<<std::endl;

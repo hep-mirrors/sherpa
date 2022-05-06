@@ -101,7 +101,7 @@ void Settings::DeclareMatrixSettingsWithEmptyDefault(
   }
 }
 
-bool Settings::IsCustomised(const Settings_Keys& keys)
+bool Settings::IsSetExplicitly(const Settings_Keys& keys)
 {
   for (auto& reader : m_yamlreaders)
     if (reader->IsParameterCustomised(keys))

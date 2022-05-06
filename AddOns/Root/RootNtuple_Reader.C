@@ -278,7 +278,7 @@ void RootNtuple_Reader::RegisterDefaults() const
   s["ROOTNTUPLE_CALC"].SetDefault(1);
   const bool calc{ s["ROOTNTUPLE_CALC"].Get<bool>() };
   s["ROOTNTUPLE_CHECK"].SetDefault((calc & 2) ? 1 : 0);
-  if (!s["SCALES"].IsCustomised()) {
+  if (!s["SCALES"].IsSetExplicitly()) {
     s["SCALES"].OverrideScalar("VAR{sqr(" + ToString(rpa->gen.Ecms()) + ")}");
   }
   s["ROOTNTUPLE_LO_MODE"].SetDefault(0);

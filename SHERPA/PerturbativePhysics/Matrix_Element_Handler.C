@@ -511,7 +511,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
           kperp_settings["SIGMA"].OverrideScalar<double>(0.0);
 	}
         Scoped_Settings meqedsettings{ s["ME_QED"] };
-        if (!meqedsettings["ENABLED"].IsCustomised()) {
+        if (!meqedsettings["ENABLED"].IsSetExplicitly()) {
           meqedsettings["ENABLED"].OverrideScalar<bool>(false);
         }
       }
