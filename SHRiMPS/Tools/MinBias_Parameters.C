@@ -74,7 +74,7 @@ void MinBias_Parameters::RegisterDefaults() const
   s["FF_Form"].SetDefault("dipole");
   //s["deltaY"].SetDefault(1.5);
   s["deltaY"].SetDefault(0.05);
-  s["beta02(mb)"].SetDefault(25.0);
+  s["beta02(mb)"].SetDefault(20.0);
   s["Lambda2"].SetDefault(1.2);
   s["kappa"].SetDefault(0.55);
   s["xi"].SetDefault(0.2);
@@ -84,6 +84,7 @@ void MinBias_Parameters::RegisterDefaults() const
   s["Q_as^2"].SetDefault(1.0);
   s["KT_shower"].SetDefault(5.);
   s["Collinear_KT_min"].SetDefault(1.);
+  s["Incl_Tune"].SetDefault("None");
 }
 
 void MinBias_Parameters::FillRunParameters() {
@@ -139,6 +140,24 @@ void MinBias_Parameters::FillFormFactorParameters() {
   m_ff_params.bmax        = m_bmax;
   m_ff_params.accu        = m_accu;
   m_ff_params.bsteps      = s["bsteps_FF"].Get<int>();
+  std::string incltune = s["Incl_Tune"].Get<std::string>();
+  if (incltune==std::string("tune1")) {
+      m_ff_params.beta02  = sqrt(1.e9*29.13/rpa->Picobarn());
+      m_ff_params.Lambda2 = 1.683;
+      m_ff_params.kappa   = 0.5966;
+      m_ff_params.xi      = 0.1014;
+  }
+  if (incltune==std::string("tune2")) {
+      m_ff_params.beta02  = sqrt(1.e9*15.02/rpa->Picobarn());
+      m_ff_params.Lambda2 = 1.205;
+      m_ff_params.kappa   = 0.4583;
+      m_ff_params.xi      = 0.1992;
+  }
+  msg_Out()<<METHOD<<": Using inclusive tune: "<<incltune<<"\n";
+  msg_Out()<<"    beta02(mb) = "<<sqr(m_ff_params.beta02)*rpa->Picobarn()/1.e9<<"\n";
+  msg_Out()<<"    Lambda2    = "<<m_ff_params.Lambda2<<"\n";
+  msg_Out()<<"    kappa      = "<<m_ff_params.kappa<<"\n";
+  msg_Out()<<"    xi         = "<<m_ff_params.xi<<std::endl;
 }
 
 void MinBias_Parameters::FillEikonalParameters() {
@@ -158,6 +177,24 @@ void MinBias_Parameters::FillEikonalParameters() {
   m_eik_params.beta02    = m_ff_params.beta02;
   m_eik_params.bmax      = 2.*m_bmax;
   m_eik_params.accu      = m_accu;
+  std::string incltune = s["Incl_Tune"].Get<std::string>();
+  if (incltune==std::string("tune1")) {
+      m_eik_params.absorp  = absorption::exponential;
+      m_eik_params.cutoffY = 0.001358*m_originalY;
+      m_eik_params.lambda  = 0.1782;
+      m_eik_params.Delta   = 0.4988;
+  }
+  if (incltune==std::string("tune2")) {
+      m_eik_params.absorp  = absorption::exponential;
+      m_eik_params.cutoffY = 0.03272*m_originalY;
+      m_eik_params.lambda  = 0.2566;
+      m_eik_params.Delta   = 0.4403;
+  }
+  msg_Out()<<METHOD<<": Using inclusive tune: "<<incltune<<"\n";
+  msg_Out()<<"    Absorption = "<<(m_eik_params.absorp==absorption::exponential?"exponential":"factorial")<<"\n";
+  msg_Out()<<"    deltaY     = "<<m_eik_params.cutoffY/m_originalY<<"\n";
+  msg_Out()<<"    lambda     = "<<m_eik_params.lambda<<"\n";
+  msg_Out()<<"    Delta      = "<<m_eik_params.Delta<<std::endl;
 }
 
 void MinBias_Parameters::UpdateForNewEnergy(const double & energy) {
