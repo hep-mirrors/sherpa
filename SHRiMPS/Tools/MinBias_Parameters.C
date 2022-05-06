@@ -153,7 +153,12 @@ void MinBias_Parameters::FillFormFactorParameters() {
       m_ff_params.kappa   = 0.4583;
       m_ff_params.xi      = 0.1992;
   }
-  msg_Out()<<METHOD<<": Using inclusive tune: "<<incltune<<"\n";
+  if (incltune!=std::string("tune1") && incltune!=std::string("tune1")) {
+      msg_Out()<<METHOD<<": Unrecognised inclusive tune: "<<incltune<<", will fall back to default settings.\n";
+  }
+  else {
+      msg_Out()<<METHOD<<": Using inclusive tune: "<<incltune<<"\n";
+  }
   msg_Out()<<"    beta02(mb) = "<<sqr(m_ff_params.beta02)*rpa->Picobarn()/1.e9<<"\n";
   msg_Out()<<"    Lambda2    = "<<m_ff_params.Lambda2<<"\n";
   msg_Out()<<"    kappa      = "<<m_ff_params.kappa<<"\n";
@@ -190,7 +195,12 @@ void MinBias_Parameters::FillEikonalParameters() {
       m_eik_params.lambda  = 0.2566;
       m_eik_params.Delta   = 0.4403;
   }
-  msg_Out()<<METHOD<<": Using inclusive tune: "<<incltune<<"\n";
+  if (incltune!=std::string("tune1") && incltune!=std::string("tune1")) {
+      msg_Out()<<METHOD<<": Unrecognised inclusive tune: "<<incltune<<", will fall back to default settings.\n";
+  }
+  else {
+      msg_Out()<<METHOD<<": Using inclusive tune: "<<incltune<<"\n";
+  }
   msg_Out()<<"    Absorption = "<<(m_eik_params.absorp==absorption::exponential?"exponential":"factorial")<<"\n";
   msg_Out()<<"    deltaY     = "<<m_eik_params.cutoffY/m_originalY<<"\n";
   msg_Out()<<"    lambda     = "<<m_eik_params.lambda<<"\n";
