@@ -503,7 +503,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	  p_shower->GetShower()->SetOn(false);
         s["FRAGMENTATION"].OverrideScalar<std::string>("None");
         s["MI_HANDLER"].OverrideScalar<std::string>("None");
-        if (!s["MI_HANDLER"].IsCustomised()) {
+        if (s["BEAM_REMNANTS"].GetScalarWithOtherDefault<std::string>("None") == "None") {
           s["BEAM_REMNANTS"].OverrideScalar<bool>(false);
         } else {
           Scoped_Settings kperp_settings{ s["INTRINSIC_KPERP"] };
