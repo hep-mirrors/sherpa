@@ -14,6 +14,8 @@ namespace SHRIMPS {
   protected:
     Sigma_Partonic           m_partonic;
     double                   m_Ymax, m_deltaY;
+    double                   m_beamY = m_Ymax + m_deltaY;
+    double                   m_Yrange;
     double                   m_qt2min, m_qt2minFF, m_kt2min, m_kt2minShower;
     MODEL::Strong_Coupling * p_alphaS;
     Rapidity_Density         m_density;
@@ -59,7 +61,12 @@ namespace SHRIMPS {
     virtual Ladder * operator()(const ATOOLS::Vec4D & pos) = 0;
     virtual void QuarkReplace();
     inline virtual void FixLadderType() {
-      p_ladder->FixType(-m_Ymax + m_deltaY, m_Ymax - m_deltaY);
+      //p_ladder->FixType(-m_Ymax + m_deltaY, m_Ymax - m_deltaY);
+      m_Yrange = 1.;
+      //m_Yrange = 0.1*m_beamY;
+      //m_Yrange = 0.01*m_beamY;
+      msg_Out() << "----> in Ladders, m_beamY = " << m_beamY << " and m_Yrange = " << m_Yrange << std::endl;
+      p_ladder->FixType(-m_beamY+m_Yrange, m_beamY-m_Yrange);
     }
     inline virtual void InitCollision(Omega_ik * eikonal,const double & B) {
       p_eikonal  = eikonal; m_B = B; m_density.SetEikonal(p_eikonal);

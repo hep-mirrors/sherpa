@@ -11,9 +11,9 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders() :
-  p_laddergenerator(new Ladder_Generator_QT()),
+  p_laddergenerator(new Ladder_Generator_Eik()),
   m_Ecms(rpa->gen.Ecms()/2.),
-  m_test(true),
+  m_test(false),
   n_calls(0), n_start(0), n_gen(0)
 {
   if (m_test) {
@@ -24,7 +24,11 @@ Primary_Ladders::Primary_Ladders() :
     m_histos[std::string("n_trial_highpt")]      = new Histogram(0, -0.5,  9.5, 10);
     m_histos[std::string("n_accept_highpt")]     = new Histogram(0, -0.5,  9.5, 10);
     m_histos[std::string("Yasym_trial")]         = new Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_trial_pt")]      = new Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("KTasym_trial")]        = new Histogram(0,  0.0,  8.0, 32);
     m_histos[std::string("Yasym_accept")]        = new Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_accept_pt")]     = new Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("KTasym_accept")]       = new Histogram(0,  0.0,  8.0, 32);
     m_histos[std::string("Yasym_trial_highpt")]  = new Histogram(0,  0.0,  8.0, 32);
     m_histos[std::string("Yasym_accept_highpt")] = new Histogram(0,  0.0,  8.0, 32);
   }
@@ -62,6 +66,7 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
   bool   contains_one_inelastic = false;
   msg_Out()<<"--------------------------------------------------------------\n";
   while (Ngen<N) {
+    
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
     p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
@@ -116,9 +121,12 @@ void Primary_Ladders::Add(Ladder * ladder) {
  
 void Primary_Ladders::FillAnalysis(Ladder * ladder,const std::string & tag) {
   m_histos[std::string("n_")+tag]->Insert(ladder->GetEmissions()->size());
-  for (LadderMap::iterator pit=ladder->GetEmissions()->begin();
-       pit!=ladder->GetEmissions()->end();pit++) {
+  for (LadderMap::iterator pit=ladder->GetEmissions()->begin(); pit!=ladder->GetEmissions()->end();pit++) {
+    double kt = pit->second.Momentum().PPerp();
+    m_histos[std::string("KTasym_")+tag]->Insert(dabs(pit->first), pit->first>0.?kt:-kt);
     m_histos[std::string("Yasym_")+tag]->Insert(dabs(pit->first), pit->first>0.?1.:-1.);
+    m_histos[std::string("Yasym_")+tag]->Insert(dabs(pit->first), pit->first>0.?1.:-1.);
+    m_histos[std::string("Yasym_")+tag+std::string("_pt")]->Insert(dabs(pit->first),pit->first>0.?1.:-1.);
     if (pit->second.Momentum().PPerp()>2.5)
       m_histos[std::string("Yasym_")+tag+std::string("_highpt")]->
 	Insert(dabs(pit->first),pit->first>0.?1.:-1.);

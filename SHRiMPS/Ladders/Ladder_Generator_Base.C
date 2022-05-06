@@ -134,30 +134,64 @@ void Ladder_Generator_Base::ResetFSFlavours() {
   }
 }
 
+
 void Ladder_Generator_Base::QuarkReplace() {
-  LadderMap::iterator lit1=p_emissions->begin(), lit2=lit1; lit2++;
-  TPropList::iterator pit=p_props->begin();
-  double pp = p_ladder->InPart(0)->Momentum().PPlus(), ppold=pp;
-  bool last = false;
+  LadderMap::iterator lit1, lit2;
+  TPropList::iterator pit;
+  double pp, ppold;
+  int dir;
+  if (ran->Get() > .5) dir = 0;
+  else dir = 1;
+  if (dir == 0) {
+    lit1=p_emissions->begin();
+    lit2=lit1; lit2++;
+    pit=p_props->begin();
+    pp = p_ladder->InPart(0)->Momentum().PPlus();
+  }
+  else {
+    lit1=p_emissions->end(); lit1--;
+    lit2=lit1; lit2--;
+    pit=p_props->end(); pit--;
+    pp = p_ladder->InPart(1)->Momentum().PMinus();
+  }
+  ppold=pp;
+
+  bool last = false, stop = false;
   do {
-    double pp = pit->Q().PPlus();
+    if (dir == 0) pp = pit->Q().PPlus();
+    else pp = pit->Q().PMinus();
     if (last) last=false;
     else {
       if (pit->Col()!=colour_type::singlet) {
 	if (pp > ran->Get()*ppold) {
 	  pit->SetCol(colour_type::triplet);
-	  Flavour flav = Flavour(int(1+ran->Get()*3.)); 
-	  lit1->second.SetFlavour(flav);
-	  lit1->second.SetFlow(2,0);
-	  lit2->second.SetFlavour(flav.Bar());
-	  lit2->second.SetFlow(1,0);
+	  Flavour flav = Flavour(int(1+ran->Get()*3.));
+	  if (dir==0){//ran->Get()>.5) {
+      lit1->second.SetFlavour(flav);
+      lit2->second.SetFlavour(flav.Bar());
+      lit1->second.SetFlow(2,0);
+      lit2->second.SetFlow(1,0);
+    }
+    else {
+      lit2->second.SetFlavour(flav);
+      lit1->second.SetFlavour(flav.Bar());
+      lit2->second.SetFlow(2,0);
+      lit1->second.SetFlow(1,0);
+    }
 	  last = true;
 	}
       }
     }
     ppold = pp;
-    lit1++; lit2++; pit++; 
-  } while (pit!=p_props->end());
+    if(dir == 0) {
+      lit1++; lit2++; pit++;
+      stop = pit==p_props->end();
+    }
+    else {
+      stop = pit == p_props->begin();
+      if(!stop) {lit1--; lit2--; pit--;}
+    }
+  } while (!stop);
 }
 
 double Ladder_Generator_Base::AlphaSWeight(const double & kt2) {
