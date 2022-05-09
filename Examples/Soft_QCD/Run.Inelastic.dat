@@ -15,14 +15,7 @@ YFS_MODE:             0
   
 SHRIMPS:
    Mode:        Inelastic
-   Absorption:  factorial
-   deltaY:      0.505
-   beta02(mb):  25.0
-   Lambda2:     1.2
-   kappa:       0.43 
-   xi:          0.23
-   lambda:      0.25 
-   Delta:       0.43 
+   Incl_Tune:   tune1 # tune2 # None
    Q_0^2:       0.5
    Q_as^2:      0.5
    KT_shower:   0.5
@@ -37,31 +30,9 @@ COLOUR_RECONNECTIONS:
   Reshuffle:   0.33
   kappa:       2.
 
-AHADIC:
- PROMPT_DECAY_EXPONENT: -1.
- DIRECT_TRANSITIONS:     1
- KT_0:                   1.0    #1.42
- ALPHA_G:                0.66
- ALPHA_L:                2.53
- BETA_L:                 0.13
- GAMMA_L:                0.5
- PT_MAX:                 1.1
- ALPHA_H:                3.55
- BETA_H:                 1.12
- GAMMA_H:                0.15
- DECAY_THRESHOLD:        0.18
- TRANSITION_THRESHOLD:   0.75
- STRANGE_FRACTION:       0.46
- BARYON_FRACTION:        0.27
- P_QS_by_P_QQ_norm:      0.72
- P_SS_by_P_QQ_norm:      0.013
- P_QQ1_by_P_QQ0:         0.63
- ETA_MODIFIER:           2.33
- ETA_PRIME_MODIFIER:     2.43 
-
 
 ANALYSIS:         Rivet
-ANALYSIS_OUTPUT:  test
+ANALYSIS_OUTPUT:  test_direct
 
 RIVET:
   ANALYSES: [ ATLAS_2012_I1084540, ATLAS_2010_S8918562, ATLAS_2010_S8894728, ATLAS_2011_S8994773, TOTEM_2012_I1115294, CMS_2011_S8978280, CMS_2011_S9120041, CMS_2011_S9215166, CMS_2010_S8547297, CMS_2010_S8656010, CMS_2011_S8884919, CMS_QCD_10_024, ATLAS_2011_I919017 ]
