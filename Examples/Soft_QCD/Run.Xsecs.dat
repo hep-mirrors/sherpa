@@ -14,14 +14,5 @@ YFS_MODE:             0
   
 SHRIMPS:
    Mode:        Xsecs # Elastic #Inelastic Soft-Diffractive 
-   Absorption:  exponential
-   deltaY:      1.
-   beta02(mb):  20.0 # 25.0
-   Lambda2:     1.2
-   kappa:       0.55
-   xi:          0.2
-   lambda:      0.25
-   Delta:       0.4
-   Q_0^2:       1.0
-   Q_as^2:      1.0
+   Incl_Tune:   tune1 # tune2 # None
 
