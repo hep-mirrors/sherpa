@@ -2,13 +2,9 @@
 
 #include "PHASIC++/Main/Phase_Space_Integrator.H"
 #include "PHASIC++/Main/Channel_Creator.H"
-#include "BEAM/Main/Beam_Spectra_Handler.H"
-#include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Channels/FSR_Channels.H"
-#include "PHASIC++/Channels/ISR_Channels.H"
-#include "PHASIC++/Channels/Beam_Channels.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Single_Process.H"
@@ -36,7 +32,7 @@ Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
                                          const std::string eobs,
                                          const std::string efunc): m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
-      p_integrator(NULL), p_beamhandler(proc->Beam()),
+      p_integrator(NULL), p_beamhandler(proc->Beam()), m_pspoint(Phase_Space_Point()),
       p_isrhandler(proc->ISR()), p_flavours(proc->Process()->Flavours()),
       m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout),
       m_initialized(false), m_sintegrator(0), m_killedpoints(0),
@@ -93,8 +89,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
-    if (!p_active->Process()->Selector()->Pass())
-      return 0.0;
+    if (!p_active->Process()->Selector()->Pass()) return 0.0;
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
     m_wgtmap  *= m_psweight;
@@ -191,8 +186,8 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,
   fl2=(long int)p_active->Process()->Flavours()[1-swap];
   x1=p_isrhandler->X1();
   x2=p_isrhandler->X2();
-  xf1=p_isrhandler->XF1(0);
-  xf2=p_isrhandler->XF2(0);
+  xf1=p_isrhandler->XF1();
+  xf2=p_isrhandler->XF2();
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
   auto res =

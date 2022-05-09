@@ -90,9 +90,18 @@ Process_Base *Single_Process::operator[](const size_t &i)
 
 Weight_Info *Single_Process::OneEvent(const int wmode,
                                       ATOOLS::Variations_Mode varmode,
-                                      const int mode)
-{
-  p_selected=this;
+                                      const int mode) {
+  p_selected = this;
+  auto psh = p_int->PSHandler();
+  if (p_int->ISR()) {
+    if (m_nin == 2) {
+      if (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
+          m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) {
+        p_int->ISR()->SetPartonMasses(m_flavs);
+      }
+    }
+  }
+  psh->InitCuts();
   return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
@@ -646,8 +655,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
         }
         sub->m_results = sub->m_result;
         sub->m_mewgt *= m_lastflux;
-        sub->m_xf1 = p_int->ISR()->XF1(0);
-        sub->m_xf2 = p_int->ISR()->XF2(0);
+        sub->m_xf1 = p_int->ISR()->XF1();
+        sub->m_xf2 = p_int->ISR()->XF2();
 
         // update result
         nominal += (sub->m_trig & 1) ? sub->m_result : 0.0;
@@ -1011,6 +1020,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   // them through the ISR_Handler instead of the nominal PDF
   PDF::PDF_Base *nominalpdf1 = p_int->ISR()->PDF(0);
   PDF::PDF_Base *nominalpdf2 = p_int->ISR()->PDF(1);
+  const double xf1 = p_int->ISR()->XF1();
+  const double xf2 = p_int->ISR()->XF2();
   p_int->ISR()->SetPDF(varparams.p_pdf1, 0);
   p_int->ISR()->SetPDF(varparams.p_pdf2, 1);
 
@@ -1032,6 +1043,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   p_int->ISR()->SetPDF(nominalpdf2, 1);
   p_int->ISR()->SetMuF2(info.m_muF2, 0);
   p_int->ISR()->SetMuF2(info.m_muF2, 1);
+  p_int->ISR()->SetXF1(xf1);
+  p_int->ISR()->SetXF2(xf2);
 
   return csi;
 }
@@ -1123,10 +1136,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
       }
     }
   }
-  psh->InitCuts();
-  if (p_int->ISR())
-    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   psh->CreateIntegrators();
+  psh->InitCuts();
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);

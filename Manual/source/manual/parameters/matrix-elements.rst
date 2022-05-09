@@ -319,17 +319,6 @@ The scale setter options which are currently available are
 
   leads to an identical scale definition.
 
-  The ``METS`` scale setter comes in two variants: ``STRICT_METS`` and
-  ``LOOSE_METS``. While the former employs the exact inverse of the
-  parton shower for the clustering procedure, and therefore is rather
-  time consuming for multiparton final state, the latter is a
-  simplified version and much faster. Giving ``METS`` as the scale
-  setter results in using ``LOOSE_METS`` for the integration and
-  ``STRICT_METS`` during event generation. Giving either
-  ``STRICT_METS`` or ``LOOSE_METS`` as the scale setter results in
-  using the respective one during both integration and event
-  generation.
-
   Clusterings onto 2->n (n>2) configurations is possible, see
   :ref:`METS scale setting with multiparton core processes`.
 

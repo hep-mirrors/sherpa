@@ -3,6 +3,8 @@ pkglib_LTLIBRARIES    = \
 			libMRST01LOSherpa.la \
 			libMRST04QEDSherpa.la
 
+AM_FFLAGS=-std=legacy
+
 GITTAG = PDF/MRST99
 include ../../git.make
 

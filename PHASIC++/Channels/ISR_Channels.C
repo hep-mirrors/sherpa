@@ -170,8 +170,10 @@ void ISR_Channels::AddSimplePole(const size_t & chno,const size_t & mode) {
       Add(new Simple_Pole_Central(spexp,m_keyid,p_psh->GetInfo(),mode));
     }
     else {
-      Add(new Simple_Pole_Forward(spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
-      Add(new Simple_Pole_Backward(spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
+      if (p_psh->GetBeamSpectra()->GetBeam(1)->Bunch() != Flavour(kf_photon) && IsZero(yexp + 0.999))
+        Add(new Simple_Pole_Forward(spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
+      if (p_psh->GetBeamSpectra()->GetBeam(0)->Bunch() != Flavour(kf_photon) && IsZero(yexp - 0.999))
+        Add(new Simple_Pole_Backward(spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
     }
   }
   else if (mode==3 && m_isrmode==PDF::isrmode::lepton_hadron) {
@@ -198,8 +200,10 @@ void ISR_Channels::AddResonance(const size_t & chno,const size_t & mode) {
       Add(new Resonance_Central(mass,width,m_keyid,p_psh->GetInfo(),mode));
     }
     else {
-      Add(new Resonance_Forward(mass,width,yexp,m_keyid,p_psh->GetInfo(),mode));
-      Add(new Resonance_Backward(mass,width,yexp,m_keyid,p_psh->GetInfo(),mode));
+      if (p_psh->GetBeamSpectra()->GetBeam(1)->Bunch() != Flavour(kf_photon) && IsZero(yexp + 0.999))
+        Add(new Resonance_Forward(mass,width,yexp,m_keyid,p_psh->GetInfo(),mode));
+      if (p_psh->GetBeamSpectra()->GetBeam(0)->Bunch() != Flavour(kf_photon) && IsZero(yexp - 0.999))
+        Add(new Resonance_Backward(mass,width,yexp,m_keyid,p_psh->GetInfo(),mode));
     }
   }
   else if (mode==3 && m_isrmode==PDF::isrmode::lepton_hadron) {

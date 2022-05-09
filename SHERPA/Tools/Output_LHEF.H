@@ -22,11 +22,12 @@ namespace SHERPA {
   public:
     Output_LHEF(const Output_Arguments &args);
     ~Output_LHEF();
-    void ChangeFile();
-    void SetXS(const double& xs, const double& xserr);
-    void Header();
-    void Output(ATOOLS::Blob_List* blobs);
-    void Footer();
+    void Header() override;
+    void Footer() override;
+    void ChangeFile() override;
+    void SetXS(const ATOOLS::Weights_Map& xs,
+	       const ATOOLS::Weights_Map& err) override;
+    void Output(ATOOLS::Blob_List* blobs) override;
   private:
     void RegisterDefaults() const;
   };

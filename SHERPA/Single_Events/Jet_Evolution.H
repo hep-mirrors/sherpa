@@ -7,6 +7,7 @@
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/PerturbativePhysics/Perturbative_Interface.H"
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
+#include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 
 
@@ -37,11 +38,9 @@ namespace SHERPA {
 					 ATOOLS::Blob_List * const bloblist);
 
   public :
-
     Jet_Evolution(Matrix_Element_Handler *, Hard_Decay_Handler*,
                   Decay_Handler_Base *,MI_Handler *, Soft_Collision_Handler *,
                   const Shower_Handler_Map &,Beam_Remnant_Handler *);
-
     ~Jet_Evolution();
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);

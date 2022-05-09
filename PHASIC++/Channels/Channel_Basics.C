@@ -95,14 +95,18 @@ double Channel_Basics::SqLam(double s,double s1, double s2)
 
 double Channel_Basics::PeakedDist(double a,double cn,double cxm,double cxp,int k,double ran)
 {
+  /*
+   * a -> peak, cn -> exponent, cxm -> minimum, cxp -> maximum, k -> coeffizient, ran -> random number
+   * peak must lie outside of [cxp, cxm] by just a small number, e.g. a = cxp + epsilon.
+   */
   double ce  = 1.-cn;
   double res = 0.;
   if (!IsZero(ce)) {
     res = k * (pow(ran*pow(a+k*cxp,ce)+(1.-ran)*pow(a+k*cxm,ce),1/ce)-a);
   }
   else {
-//     if (cxp<-a) res = -k * (exp(ran*log(-k*a-cxp)+(1.-ran)*log(-k*a-cxm))-a);
-//            else res = k * (exp(ran*log(a+k*cxp)+(1.-ran)*log(a+k*cxm))-a);
+    //     if (cxp<-a) res = -k * (exp(ran*log(-k*a-cxp)+(1.-ran)*log(-k*a-cxm))-a);
+    //            else res = k * (exp(ran*log(a+k*cxp)+(1.-ran)*log(a+k*cxm))-a);
     res = k *( (a+k*cxm)*pow( (a+k*cxp)/(a+k*cxm) , ran) - a);
   }
   return res;

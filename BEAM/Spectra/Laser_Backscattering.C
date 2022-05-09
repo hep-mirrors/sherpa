@@ -17,11 +17,12 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   Beam_Base(beamspectrum::laser_backscattering,_beam,_energy,_polarisation,_dir),
   m_energyL(_energyL), m_polarisationL(_polarisationL), m_mode(_mode), m_angles(_angles)
 {
-  m_bunch        = Flavour(kf_photon);
-  double disc    = 1.-sqr(m_bunch.Mass()/m_energy);
-  m_vecout       = Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
-  m_Ebounds[0]   = 0.;  
-  m_Ebounds[1]   = 5.e10;
+  m_bunch      = Flavour(kf_photon);
+  double disc  = 1.-sqr(m_bunch.Mass()/m_energy);
+  m_vecout     = Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
+  m_Ebounds[0] = 0.;  
+  m_Ebounds[1] = 5.e10;
+  m_on         = true;
 
   if (m_energy>500. && m_mode!=-1 ) {
     msg_Out()<<" WARNING: The CompAZ spectrum is only valid for electron energies "<<endl

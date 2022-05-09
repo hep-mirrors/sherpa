@@ -15,14 +15,13 @@ namespace BEAM {
     int                m_dir;
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
-
+    bool               m_on;
+    
   public:
-    Beam_Base(beamspectrum::code type,const ATOOLS::Flavour _beam,
+    Beam_Base(beamspectrum::code type,const ATOOLS::Flavour& _beam,
 	      const double _energy,const double _polarisation,
-	      const int _dir);
-    virtual ~Beam_Base() {}
-
-    virtual bool Init(int mode=0);
+	      const int _dir, int mode = 0);
+    virtual ~Beam_Base() = default;
 
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
@@ -43,7 +42,7 @@ namespace BEAM {
     virtual inline double Xmax()          const { return 1.; }
     virtual inline double Peak()          const { return 1.; }
 
-    virtual inline bool On()             const { return 0; }
+    virtual inline bool On()              const { return m_on; }
     virtual inline bool PolarisationOn() const { return (m_polarisation!=0.); }
 
     virtual inline void SetInMomentum(const ATOOLS::Vec4D &in) { m_lab = in; }

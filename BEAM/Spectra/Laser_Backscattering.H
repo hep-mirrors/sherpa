@@ -40,7 +40,6 @@ namespace BEAM {
     double          Polarisation()       { return m_polar; }
     void            SetMode(int _mode)   { m_mode = _mode; }
     void            SetPol(bool on)      { m_pol  = on; }
-    bool            On()                 { return 1;  }
     int             Mode()               { return m_mode; }
     bool            Pol()                { return m_pol; }
     double          Exponent()           { return 0.5; }

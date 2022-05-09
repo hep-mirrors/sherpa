@@ -15,9 +15,8 @@ namespace BEAM {
     beammode::code     m_beammode;
     collidermode::code m_collidermode;
     bool               m_on;
-
-    int                   m_mode, m_polarisation;
-    std::string           m_name,m_type;
+    int                m_mode,m_polarisation;
+    std::string        m_name,m_type;
 
     bool InitTheBeams();
     bool InitTheKinematics();
@@ -41,6 +40,8 @@ namespace BEAM {
       p_weight->AssignKeys(info);
     }
     inline void SetLimits() { p_kinematics->SetLimits(); }
+    inline void BoostInCMS(ATOOLS::Vec4D & p) { p_kinematics->BoostInCMS(p); }
+    inline void BoostInLab(ATOOLS::Vec4D & p) { p_kinematics->BoostInLab(p); }
     inline void BoostInCMS(ATOOLS::Vec4D *p,const size_t & n) {
       p_kinematics->BoostInCMS(p,n);
     }
@@ -69,8 +70,6 @@ namespace BEAM {
 
     // possible deprecated methods
     int             Polarisation()        { return m_polarisation; }
-    double Weight(int * pol_types, double * dofs);
-    double DM_Weight(double s);
     bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
     bool   CheckConsistency(ATOOLS::Flavour *);
   };
