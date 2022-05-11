@@ -96,9 +96,9 @@ namespace PHASIC {
     void GeneratePoint(int mode=0);
     void GenerateWeight(int mode=0);
 
-    void ISRInfo(int,int &,double &,double &);
-    void ISRInfo(std::vector<int> &ts,
-		 std::vector<double> &ms,std::vector<double> &ws) const;
+    virtual void ISRInfo(int,int &,double &,double &);
+    virtual void ISRInfo(std::vector<int> &ts,
+                         std::vector<double> &ms,std::vector<double> &ws) const;
 
     inline  Single_Channel *operator[](size_t i) { return channels[i]; }
 

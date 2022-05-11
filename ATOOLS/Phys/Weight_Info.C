@@ -17,6 +17,59 @@ namespace ATOOLS {
 
   template <> Blob_Data<ME_Weight_Info*>::~Blob_Data() {}
   template class Blob_Data<ME_Weight_Info*>;
+
+  std::ostream& operator<<(std::ostream& s,
+                           const PDF_Info& pi)
+  {
+    s<<" pdf1 = ("<<pi.m_fl1<<","<<pi.m_x1<<","<<sqrt(pi.m_muf12)
+                  <<":"<<pi.m_xf1<<") , "
+     <<" pdf2 = ("<<pi.m_fl2<<","<<pi.m_x2<<","<<sqrt(pi.m_muf22)
+                  <<":"<<pi.m_xf2<<")";
+    return s;
+  }
+
+  std::ostream& operator<<(std::ostream& s,
+                           const Weight_Info& wi)
+  {
+    return s<<" w = "<<wi.m_weightsmap.Nominal()<<", dxs = "<<wi.m_dxs
+            <<", trials = "<<wi.m_ntrial
+            <<", pdfs = { "<<wi.m_pdf<<" }"<<std::endl;
+  }
+}
+
+bool PDF_Info::operator==(const PDF_Info& rhs) const
+{
+  if (m_fl1 != rhs.m_fl1) return false;
+  if (m_fl2 != rhs.m_fl2) return false;
+  if (!IsEqual(m_x1, rhs.m_x1, 1e-6)) return false;
+  if (!IsEqual(m_x2, rhs.m_x2, 1e-6)) return false;
+  if (!IsEqual(m_muf12, rhs.m_muf12, 1e-6)) return false;
+  if (!IsEqual(m_muf22, rhs.m_muf22, 1e-6)) return false;
+  if (!IsEqual(m_xf1, rhs.m_xf1, 1e-6)) return false;
+  if (!IsEqual(m_xf2, rhs.m_xf2, 1e-6)) return false;
+  return true;
+}
+
+bool PDF_Info::operator!=(const PDF_Info& rhs) const
+{
+  return !(*this == rhs);
+}
+
+bool Weight_Info::operator==(const Weight_Info& rhs) const
+{
+  // NOTE: Only compare nominals for now, since Weights_Map does not yet offer
+  // a "=="-operator.
+  if (!IsEqual(m_weightsmap.Nominal(), rhs.m_weightsmap.Nominal(), 1e-6))
+    return false;
+  if (!IsEqual(m_dxs, rhs.m_dxs, 1e-6)) return false;
+  if (!IsEqual(m_ntrial, rhs.m_ntrial, 1e-6)) return false;
+  if (m_pdf != rhs.m_pdf) return false;
+  return true;
+}
+
+bool Weight_Info::operator!=(const Weight_Info& rhs) const
+{
+  return !(*this == rhs);
 }
 
 std::ostream & ATOOLS::operator<<(std::ostream & s,

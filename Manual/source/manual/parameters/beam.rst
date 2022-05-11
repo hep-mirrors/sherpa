@@ -128,6 +128,9 @@ EPA
 ---
 
 .. index:: EPA_q2Max
+.. index:: EPA_Theta_max
+.. index:: EPA_Xmin
+.. index:: EPA_LO
 .. index:: EPA_ptMin
 .. index:: EPA_Form_Factor
 .. index:: EPA_AlphaQED
@@ -138,6 +141,20 @@ The equivalent photon approximation, cf. :cite:`Archibald2008aa`,
 :option:`EPA_q2Max`
   Parameter of the EPA spectra of the two beams, defaults to ``2.`` in
   units of GeV squared.
+
+:option:`EPA_Theta_max`
+  Parameter of the EPA spectrum of an electron beam, c.f. hep-ph/9310350.
+  Describes the maximum angle of the electron deflection, which
+  translates to the maximum virtuality in the photon spectrum. It defaults to ``0.3``.
+
+:option:`EPA_Xmin`
+  Restricts the phase space by imposing a minimum energy fraction that the photon must have with respect to the beam energy.
+  Its default value is ``0``.
+
+:option:`EPA_LO`
+  In Sherpa version 3, a more accurate EPA weight for electron beams was used, as described in hep-ph/9610406 and
+  hep-ph/9310350. By default, Sherpa uses the higher-order version of the formula, if you would like to use the previous
+  version, set this switch to ``true``.
 
 :option:`EPA_ptMin`
   Infrared regulator to the EPA beam spectra. Given in GeV, the value
@@ -155,7 +172,7 @@ The equivalent photon approximation, cf. :cite:`Archibald2008aa`,
 :option:`EPA_AlphaQED`
   Value of alphaQED to be used in the EPA. Defaults to ``0.0072992701``.
 
-``EPA_q2Max``, ``EPA_ptMin``, ``EPA_Form_Factor`` can either be set to
+``EPA_q2Max``, ``EPA_ptMin``, ``EPA_Form_Factor``, ``EPA_Xmin`` can either be set to
 single values that are then applied to both beams, or to a list of two
 values, for the respective beams.
 

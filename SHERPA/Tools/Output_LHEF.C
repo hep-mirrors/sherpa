@@ -207,10 +207,11 @@ void Output_LHEF::Footer()
   m_outstream<<footer<<std::endl;
 }
 
-void Output_LHEF::SetXS(const double& xs, const double& xserr) {
-  //std::cout<<" set xs to "<<xs<<"  +/- "<<xserr<<std::endl; 
-  m_xs = xs;
-  m_xserr = xserr;
+void Output_LHEF::SetXS(const ATOOLS::Weights_Map& xs,
+			const ATOOLS::Weights_Map& xserr)
+{
+  m_xs = xs.Nominal();
+  m_xserr = xserr.Nominal();
   m_max =1.;
 }
 

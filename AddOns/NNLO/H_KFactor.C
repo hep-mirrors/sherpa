@@ -198,7 +198,7 @@ double HNNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
   if (p_proc->NOut()>
       (p_proc->Info().Has(nlo_type::real)?2:1)) {
     double weight(NNLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,mode,m_fomode,0,
-				 params?params->m_name:""));
+				 params?params->Name():""));
     if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
     return params?1.0:weight;
   }
@@ -438,7 +438,7 @@ double HNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
   if (m_kfmode&1) norm*=1.0+as4pi*(H1+4.*sqr(M_PI));
   if (p_proc->NOut()>1) {
     double weight(NLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,m_fomode,0,
-				params?params->m_name:""));
+				params?params->Name():""));
     if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
     return params?1.0:weight;
   }

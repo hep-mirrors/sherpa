@@ -84,6 +84,7 @@ namespace SHERPA {
       return false;
     }
     void SetLookUp(const bool lookup) override {}
+    void InitializeTheReweighting(ATOOLS::Variations_Mode) override {}
   };
 
   struct RootNTupleReader_Variables {

@@ -28,9 +28,9 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 
-
-Return_Value::code Beam_Remnant_Handler::
-FillBeamAndBunchBlobs(Blob_List *const bloblist,const bool & onlyBunch)
+Return_Value::code
+Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
+					    const bool & onlyBunch)
 {
   if (!m_fill) return TreatNoFill(bloblist);
   Return_Value::code fbc(Return_Value::Nothing);

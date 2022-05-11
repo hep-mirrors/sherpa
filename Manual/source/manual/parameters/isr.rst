@@ -88,7 +88,16 @@ They can be configured with the following parameters.
     Built-in library for the 1999 PDF sets from the MRST group, cf. :cite:`Martin1999ww`.
 
   :option:`GRVSherpa`
-    Built-in library for the GRV photon PDF :cite:`Gluck1991jc`, :cite:`Gluck1991ee`
+    Built-in library for the GRV photon PDF :cite:`Gluck1991jc`, :cite:`Gluck1991ee`.
+
+  :option:`GRSSherpa`
+    Built-in library for the GRS photon PDF :cite:`Gluck1999ub`.
+
+  :option:`SALSherpa`
+    Built-in library for the SAL photon PDF :cite:`Slominski2005bw`.
+
+  :option:`SASGSherpa`
+    Built-in library for the SaSgam photon PDF :cite:`Schuler1995fk`, :cite:`Schuler1996fc`.
 
   :option:`PDFESherpa`
     Built-in library for the electron structure function.  The

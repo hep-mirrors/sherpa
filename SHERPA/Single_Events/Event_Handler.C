@@ -503,41 +503,60 @@ void Event_Handler::Finish() {
     m_lastblobcounter=Blob::Counter();
   }
   Blob::Reset();
-  double xs(TotalXSMPI()), err(TotalErrMPI());
-  std::string res;
-  MyStrStream conv;
-  conv<<om::bold<<"Total XS"<<om::reset<<" is "
-      <<om::blue<<om::bold<<xs<<" pb"<<om::reset<<" +- ( "
-      <<om::red<<err<<" pb = "<<((int(err/xs*10000))/100.0)
-      <<" %"<<om::reset<<" )";
-  getline(conv,res);
-  int md(msg->Modifiable()?26:-4);
-  msg_Out()<<om::bold<<'+'<<std::string(res.length()-md,'-')<<"+\n"
-	   <<'|'<<std::string(res.length()-md,' ')<<"|\n"
-	   <<'|'<<om::reset<<"  "<<res<<"  "<<om::bold<<"|\n"
-	   <<'|'<<std::string(res.length()-md,' ')<<"|\n"
-	   <<'+'<<std::string(res.length()-md,'-')<<'+'<<om::reset<<std::endl;
+  // Obtain absolute (variation) weights.
+  Weights_Map xs_wgtmap = TotalXSMPI();
+  Weights_Map err_wgtmap = TotalErrMPI();
+  std::map<std::string, double> xs_wgts;
+  xs_wgtmap.FillVariations(xs_wgts);
+  std::map<std::string, double> err_wgts;
+  err_wgtmap.FillVariations(err_wgts);
+  if (Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"]
+	  .SetDefault(false)
+	  .Get<bool>()) {
+    xs_wgtmap.FillVariations(xs_wgts, Variations_Source::main);
+    err_wgtmap.FillVariations(err_wgts, Variations_Source::main);
+  }
+
+  // Find longest weights name
+  static const std::string name_column_title {"Nominal or variation name"};
+  size_t max_weight_name_size {name_column_title.size()};
+  for (const auto& kv : xs_wgts)
+    max_weight_name_size = std::max(max_weight_name_size, kv.first.size());
+
+  // Calculate columns widths
+  const size_t xs_size {12};
+  const size_t reldev_size {12};
+  const size_t abserr_size {13};
+  const size_t relerr_size {12};
+  const size_t table_size {max_weight_name_size + xs_size + reldev_size +
+			   abserr_size + relerr_size};
+
+  // Print cross section table header.
+  msg_Out() << std::string(table_size, '-') << '\n';
+  msg_Out() << std::left << std::setw(max_weight_name_size)
+	    << "Nominal or variation name";
+  msg_Out() << std::right << std::setw(12) << "XS [pb]";
+  msg_Out() << std::right << std::setw(12) << "RelDev";
+  msg_Out() << std::right << std::setw(13) << "AbsErr [pb]";
+  msg_Out() << std::right << std::setw(12) << "RelErr" << '\n';
+  msg_Out() << std::string(table_size, '-') << '\n';
   // Define table row printer.
-  auto printxs = [](const std::string& name, double xs, double nom, double err) {
-    msg_Out()
-      <<om::bold<<std::left<<std::setw(25)<<name<<om::reset<<std::right
-      <<om::blue<<om::bold<<std::setw(12)<<xs<<om::reset
-      <<om::brown<<std::setw(10)<<((int((xs-nom)/nom*10000))/100.0)<<" %"
-      <<om::red<<std::setw(13)<<err
-      <<std::setw(10)<<((int(err/xs*10000))/100.0)<<" %"
-      <<om::reset
-      <<std::endl;
+  auto printxs = [max_weight_name_size, xs_size, reldev_size, abserr_size,
+		  relerr_size](const std::string& name, double xs, double nom,
+			       double err) {
+    msg_Out() << om::bold << std::left << std::setw(max_weight_name_size)
+	      << name << om::reset << std::right << om::blue << om::bold
+	      << std::setw(xs_size) << xs << om::reset << om::brown
+	      << std::setw(reldev_size - 2)
+	      << ((int((xs - nom) / nom * 10000)) / 100.0) << " %" << om::red
+	      << std::setw(abserr_size) << err << std::setw(relerr_size - 2)
+	      << ((int(err / xs * 10000)) / 100.0) << " %" << om::reset
+	      << std::endl;
   };
 
   // Print nominal cross section and variations.
-  Weights_Map xs_wgtmap = TotalXSMPI();
-  Weights_Map err_wgtmap = TotalErrMPI();
   double nom = xs_wgtmap.Nominal();
   printxs("Nominal", nom, nom, err_wgtmap.Nominal());
-  std::map<std::string, double> xs_wgts;
-  xs_wgtmap.FillManagedVariations(xs_wgts);
-  std::map<std::string, double> err_wgts;
-  err_wgtmap.FillManagedVariations(err_wgts);
   for (const auto& kv : xs_wgts) {
     const double xs = kv.second;
     const double err = err_wgts[kv.first];
@@ -545,7 +564,7 @@ void Event_Handler::Finish() {
   }
 
   // Print cross section table footer.
-  msg_Out()<<std::string(74,'-')<<'\n';
+  msg_Out()<<std::string(table_size,'-')<<'\n';
 }
 
 void Event_Handler::MPISync()
@@ -634,7 +653,7 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
       const auto num_variations = s_variations->Size(type);
       for (auto i = 0; i < num_variations; ++i) {
         const auto varweight = weights.Variation(i);
-        const std::string& name = s_variations->Parameters(i).m_name;
+        const std::string& name = s_variations->Parameters(i).Name();
         if (m_maxweights.find(name) == m_maxweights.end()) {
           m_maxweights[name] = 0.0;
         }

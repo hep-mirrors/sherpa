@@ -23,6 +23,12 @@ bool Channel_Creator::operator()()
   if (!CreateFSRIntegrator())  THROW(fatal_error,"Could not create FSR channels");
   if (!CreateBeamIntegrator()) THROW(fatal_error,"Could not create beam channels");
   if (!CreateISRIntegrator())  THROW(fatal_error,"Could not create ISR channels");
+  if(p_psh->FSRIntegrator())
+    if(!p_psh->FSRIntegrator()->Initialize()) THROW(fatal_error,"Could not initialize FSR channels");
+  if(p_psh->BeamIntegrator())
+    if(!p_psh->BeamIntegrator()->Initialize()) THROW(fatal_error,"Could not initialize beam channels");
+  if(p_psh->ISRIntegrator())
+    if(!p_psh->ISRIntegrator()->Initialize()) THROW(fatal_error,"Could not initialize ISR channels");
   msg_Tracking()<<")\n";
   return true;
 }
@@ -34,7 +40,7 @@ bool Channel_Creator::CreateBeamIntegrator() {
   Beam_Channels * beamchannels =
     new Beam_Channels(p_psh,"beam_"+p_psh->Process()->Process()->Name());
   p_psh->SetBeamIntegrator(beamchannels);
-  return beamchannels->Initialize();
+  return beamchannels != NULL;
 }
 
 bool Channel_Creator::CreateISRIntegrator() {
@@ -44,13 +50,13 @@ bool Channel_Creator::CreateISRIntegrator() {
   ISR_Channels * isrchannels =
     new ISR_Channels(p_psh,"isr_"+p_psh->Process()->Process()->Name());
   p_psh->SetISRIntegrator(isrchannels);
-  return isrchannels->Initialize();
+  return isrchannels != NULL;
 }
 
 bool Channel_Creator::CreateFSRIntegrator() {
   FSR_Channels * fsrchannels =
     new FSR_Channels(p_psh,"fsr_"+p_psh->Process()->Process()->Name());
   p_psh->SetFSRIntegrator(fsrchannels);
-  return fsrchannels->Initialize();
+  return fsrchannels != NULL;
 }
 

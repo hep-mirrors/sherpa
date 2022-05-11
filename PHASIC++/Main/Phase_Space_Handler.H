@@ -108,7 +108,6 @@ namespace PHASIC {
                                      ATOOLS::Variations_Mode,
                                      const psmode::code mode=psmode::normal_call);
 
-
     inline ATOOLS::Weights_Map CalculateME(ATOOLS::Variations_Mode varmode)  {
       return p_active->Process()->Differential(p_lab, varmode);
     }

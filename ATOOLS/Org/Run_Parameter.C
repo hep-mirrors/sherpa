@@ -1,4 +1,4 @@
-#include <iostream> 
+#include <iostream>
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
@@ -113,7 +113,7 @@ Git_Info::~Git_Info()
   if (s_objects->empty()) delete s_objects;
 }
 
-Run_Parameter::Run_Parameter() 
+Run_Parameter::Run_Parameter()
 {
   AnalyseEnvironment();
   gen.m_nevents   = 0;
@@ -129,14 +129,14 @@ Run_Parameter::Run_Parameter()
   gen.m_pbeam[0] = Vec4D(0.,0.,0.,0.);
   gen.m_pbeam[1] = Vec4D(0.,0.,0.,0.);
   gen.m_clevel=100;
-} 
-
-std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
-{ 
-  return str<<"("<<&rp<<"): {\n}"; 
 }
 
-void Run_Parameter::AnalyseEnvironment() 
+std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
+{
+  return str<<"("<<&rp<<"): {\n}";
+}
+
+void Run_Parameter::AnalyseEnvironment()
 {
 #ifdef __GNUC__
 #if __GNUC__ == 2 && __GNUC_MINOR__ == 96
@@ -167,7 +167,7 @@ void Run_Parameter::AnalyseEnvironment()
     includepath=BR_prefix+"/include/SHERPA-MC";
     librarypath=BR_prefix+"/lib/SHERPA-MC";
   }
-  
+
   gen.m_variables["SHERPA_SHARE_PATH"]=
     (var=getenv("SHERPA_SHARE_PATH"))==NULL?sharepath:var;
 
@@ -175,7 +175,7 @@ void Run_Parameter::AnalyseEnvironment()
   gen.m_variables["SHERPA_INC_PATH"]=
     (var=getenv("SHERPA_INCLUDE_PATH"))==NULL?includepath:var;
 
-  // set library path 
+  // set library path
   gen.m_variables["SHERPA_LIBRARY_PATH"]=
     (var=getenv("SHERPA_LIBRARY_PATH"))==NULL?librarypath:var;
 
@@ -255,7 +255,7 @@ void Run_Parameter::Init()
   std::string cpppath=s["SHERPA_CPP_PATH"].Get<std::string>();
   if (cpppath.length()==0 || cpppath[0]!='/') {
     if (path!=gen.m_variables["SHERPA_RUN_PATH"]) gen.m_variables["SHERPA_CPP_PATH"]=path;
-    else if (gen.m_variables["SHERPA_CPP_PATH"].length()==0) 
+    else if (gen.m_variables["SHERPA_CPP_PATH"].length()==0)
       gen.m_variables["SHERPA_CPP_PATH"]=gen.m_variables["SHERPA_RUN_PATH"];
   }
   if (cpppath.length()) gen.m_variables["SHERPA_CPP_PATH"]+=(cpppath[0]=='/'?"":"/")+cpppath;
@@ -263,7 +263,7 @@ void Run_Parameter::Init()
   // set lib path
   std::string libpath=s["SHERPA_LIB_PATH"].Get<std::string>();
   if (libpath.length()>0 && libpath[0]=='/') gen.m_variables["SHERPA_LIB_PATH"]=libpath;
-  else if (gen.m_variables["SHERPA_LIB_PATH"].length()==0) 
+  else if (gen.m_variables["SHERPA_LIB_PATH"].length()==0)
     gen.m_variables["SHERPA_LIB_PATH"]=gen.m_variables["SHERPA_CPP_PATH"]
       +std::string("/Process/Amegic/lib");
 
@@ -378,13 +378,13 @@ void Run_Parameter::Init()
   msg_Debugging()<<"}\n";
 }
 
-Run_Parameter::~Run_Parameter() 
-{ 
+Run_Parameter::~Run_Parameter()
+{
   if (msg->Level()>=1) gen.m_timer.PrintTime();
 }
 
 bool Run_Parameter::Gen::CheckTime(const double limit)
-{ 
+{
   if (limit==0.) {
     if (m_timeout==0.)
       return true;
@@ -438,18 +438,19 @@ void Run_Parameter::Gen::WriteCitationInfo()
 void  Run_Parameter::Gen::SetEcms(double _ecms) {
   m_ecms = _ecms;
 }
-void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) { 
+
+void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) {
   m_pbeam[i]=pbeam;
 }
-void  Run_Parameter::Gen::SetBeam1(const Flavour b) { 
-  m_beam1  = b;   
+void  Run_Parameter::Gen::SetBeam1(const Flavour b) {
+  m_beam1  = b;
 }
-void  Run_Parameter::Gen::SetBeam2(const Flavour b) { 
-  m_beam2  = b;   
+void  Run_Parameter::Gen::SetBeam2(const Flavour b) {
+  m_beam2  = b;
 }
 
 std::string Run_Parameter::Gen::Variable(const std::string &key)
-{ 
+{
   const auto it = m_variables.find(key);
   if (it == m_variables.end()) {
     THROW(fatal_error,
