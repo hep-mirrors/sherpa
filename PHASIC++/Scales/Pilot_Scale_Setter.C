@@ -38,9 +38,9 @@ Pilot_Scale_Setter::Pilot_Scale_Setter(const Scale_Setter_Arguments &args,
 double Pilot_Scale_Setter::CalculateScale(const ATOOLS::Vec4D_Vector &p,
                                           const size_t mode) {
   if (rpa->gen.IsPilotRun())
-    return var.Calculate(p, mode);
+    return var.CalculateScale(p, mode);
   else
-    return mets.Calculate(p, mode);
+    return mets.CalculateScale(p, mode);
 }
 
 PDF::CParam
