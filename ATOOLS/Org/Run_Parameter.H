@@ -41,6 +41,7 @@ namespace ATOOLS {
       std::map<std::string,std::string> m_variables;
       std::vector<std::string> m_cites;
       size_t m_clevel;
+      bool is_pilot_run;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
@@ -83,6 +84,9 @@ namespace ATOOLS {
 
       inline double Accu()                                { return m_accu; }
       inline double SqrtAccu()                            { return m_sqrtaccu; }
+
+      void SetPilotRun(bool flag) { is_pilot_run = flag; }
+      bool IsPilotRun() { return is_pilot_run; }
 
       friend class Run_Parameter;
     } gen;

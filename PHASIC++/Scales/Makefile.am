@@ -25,13 +25,17 @@ libPhasicScales_la_SOURCES    =	\
 				HTPrime_Core_Scale.C \
 				METS_Scale_Setter.C \
 				Variable_KFactor_Setter.C \
-				No_KFactor_Setter.C
+				No_KFactor_Setter.C \
+				Pilot_Scale_Setter.C
 
 localinc_HEADERS      =	\
 			Scale_Setter_Base.H \
 			Core_Scale_Setter.H \
 			KFactor_Setter_Base.H \
-			Tag_Setter.H
+			Tag_Setter.H \
+                        Variable_Scale_Setter.H \
+                        METS_Scale_Setter.H \
+			Pilot_Scale_Setter.H
 
 libPhasicScales_la_LIBADD     =	@CONDITIONAL_FASTJETLIBS@
 

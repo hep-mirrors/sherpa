@@ -52,17 +52,17 @@ namespace PHASIC {
 
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 
-    virtual void PreCalc(const ATOOLS::Vec4D_Vector &p,
-			 const size_t &mode);
-
-    virtual double Calculate(const ATOOLS::Vec4D_Vector &p,
-			     const size_t &mode) = 0;
-
   public:
 
     Scale_Setter_Base(const Scale_Setter_Arguments &args);
 
     virtual ~Scale_Setter_Base();
+
+    virtual void PreCalc(const ATOOLS::Vec4D_Vector &p,
+			 const size_t &mode);
+
+    virtual double Calculate(const ATOOLS::Vec4D_Vector &p,
+			     const size_t &mode) = 0;
 
     void SetCouplings();
 
@@ -75,30 +75,28 @@ namespace PHASIC {
 
     double BeamThrust() const;
 
-    double CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode=0);
+    virtual double CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode=0);
 
     virtual PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
     inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 
-    inline void SetCaller(Process_Base *const proc) { p_caller=proc; }
+    virtual void SetCaller(Process_Base *const proc) { p_caller=proc; }
 
-    inline double Scale(const ATOOLS::stp::id type,const int mode=0) const
+    virtual double Scale(const ATOOLS::stp::id type,const int mode=0) const
     { return mode==0?m_scale[type]:m_fac[type]*m_scale[type]; }
 
-    inline const std::vector<double> &Scales() const { return m_scale; }
+    virtual const std::vector<double> &Scales() const { return m_scale; }
 
-    inline const std::vector<double> &FixedScales() const { return m_escale; }
+    virtual const std::vector<double> &FixedScales() const { return m_escale; }
 
     inline Process_Base *Process() const { return p_proc; }
 
-    inline ATOOLS::ClusterAmplitude_Vector &Amplitudes() { return m_ampls; }
-
-    inline MODEL::Coupling_Map *Couplings() const { return p_cpls; }
+    virtual ATOOLS::ClusterAmplitude_Vector &Amplitudes() { return m_ampls; }
 
     static void ShowSyntax(const size_t i);
 
-    inline const ATOOLS::Vec4D_Vector &Momenta() const { return m_p; }
+    virtual const ATOOLS::Vec4D_Vector &Momenta() const { return m_p; }
 
     inline size_t NIn() const  { return m_nin;  }
     inline size_t NOut() const { return m_nout; }

@@ -1,6 +1,5 @@
-#include "PHASIC++/Scales/Scale_Setter_Base.H"
+#include "PHASIC++/Scales/Variable_Scale_Setter.H"
 
-#include "PHASIC++/Scales/Tag_Setter.H"
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -9,35 +8,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
-
-namespace PHASIC {
-
-  class Variable_Scale_Setter: public Scale_Setter_Base {
-  protected:
-
-    Core_Scale_Setter *p_core;
-
-    std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
-
-    Tag_Setter m_tagset;
-
-  public:
-
-    Variable_Scale_Setter(const Scale_Setter_Arguments &args);
-
-    ~Variable_Scale_Setter();
-
-    double Calculate(const std::vector<ATOOLS::Vec4D> &p,
-		     const size_t &mode);
-
-    void SetScale(const std::string &mu2tag,
-		  ATOOLS::Algebra_Interpreter &mu2calc);
-
-    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
-
-  };// end of class Scale_Setter_Base
-
-}// end of namespace PHASIC
 
 using namespace PHASIC;
 using namespace ATOOLS;
