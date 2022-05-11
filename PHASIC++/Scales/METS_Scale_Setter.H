@@ -8,6 +8,8 @@
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "PHASIC++/Scales/Tag_Setter.H"
 
+#include <limits>
+
 namespace PHASIC {
 
   struct CS_Params {
