@@ -79,7 +79,7 @@ namespace PHASIC {
 
     virtual PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
-    inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
+    virtual void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 
     virtual void SetCaller(Process_Base *const proc) { p_caller=proc; }
 

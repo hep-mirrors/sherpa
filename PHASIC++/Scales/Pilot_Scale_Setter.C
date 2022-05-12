@@ -45,10 +45,17 @@ double Pilot_Scale_Setter::CalculateScale(const ATOOLS::Vec4D_Vector &p,
 
 PDF::CParam
 Pilot_Scale_Setter::CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const {
+if (rpa->gen.IsPilotRun())
+  return var.CoreScale(ampl);
+else
+  return mets.CoreScale(ampl);
+}
+
+void Pilot_Scale_Setter::SetFixedScale(const std::vector<double> &s) {
   if (rpa->gen.IsPilotRun())
-    return var.CoreScale(ampl);
+    return var.SetFixedScale(s);
   else
-    return mets.CoreScale(ampl);
+    return mets.SetFixedScale(s);
 }
 
 void Pilot_Scale_Setter::SetCaller(Process_Base *const proc) {
