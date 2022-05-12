@@ -63,7 +63,6 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
 
 void Tag_Setter::AssignId(Term *term)
 {
-  PRINT_FUNC(term->Tag());
   if (term->Tag()=="MU_F2") term->SetId(1);
   else if (term->Tag()=="MU_R2") term->SetId(2);
   else if (term->Tag()=="MU_Q2") term->SetId(3);

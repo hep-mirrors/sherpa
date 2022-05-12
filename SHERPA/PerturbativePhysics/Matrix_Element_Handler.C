@@ -255,14 +255,17 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         // run, info must be non-null and it must contain the same results
         // compared to the pilot run
         assert(info);
-        if (m_evtinfo != *info) {
+        static bool did_print_error {false};
+        if (!did_print_error && (m_evtinfo != *info)) {
           msg_Error()
             <<"ERROR: The results of the pilot run and the re-run are not"
             <<" the same:\n"
-            <<"  Pilot run: "<<m_evtinfo<<"\n"
-            <<"  Re-run:    "<<*info<<"\n"
+            <<"  Pilot run: "<<m_evtinfo
+            <<"  Re-run:    "<<*info
             <<"Will continue, but deviations beyond numerics would indicate"
-            <<" a logic error resulting in wrong statistics!\n";
+            <<" a logic error resulting in wrong statistics!\n"
+            <<"Note that this error is only reported once. Further such output is omitted.\n";
+          did_print_error = true;
         }
         delete info;
         proc->SetVariationWeights(NULL);
