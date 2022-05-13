@@ -386,13 +386,10 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     ci->SetJ(rci->J());
   }
   p_ampl=p_rsproc->Selected()->GetSubevtList()->back()->p_ampl;
-  if (p_ampl) p_ampl = p_ampl->CopyAll();
-  else {
-    if (rpa->gen.IsPilotRun()) {
-      p_ampl = CreateAmplitude(p_rsproc->Selected()->GetSubevtList()->back());
-    } else {
-      p_ampl = dynamic_cast<Single_Process *>(rproc)->Cluster(p, 4096);
-    }
+  if (p_ampl) {
+    p_ampl = p_ampl->CopyAll();
+  } else {
+    p_ampl = CreateAmplitude(p_rsproc->Selected()->GetSubevtList()->back());
   }
   p_selected->Selected()->SetMEwgtinfo(*p_rsproc->Selected()->GetMEwgtinfo());
   if (p_ampl==NULL) {
