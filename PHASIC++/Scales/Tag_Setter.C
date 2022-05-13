@@ -52,10 +52,9 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 9:
     term->Set(sqr(p_setter->PTM()));
     return term;
-  case 0: {
+  case 0:
     term->Set((double)p_setter->Process()->NOut());
     return term;
-	   }
   }
 
   return term;
