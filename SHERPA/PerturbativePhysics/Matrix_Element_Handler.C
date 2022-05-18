@@ -264,6 +264,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
             <<"Will continue, but deviations beyond numerics would indicate"
             <<" a logic error resulting in wrong statistics!\n";
         }
+        const double normalabswgt = std::abs(info->m_weight);
+        wf *= normalabswgt/abswgt;
         delete info;
         proc->SetVariationWeights(NULL);
         // also consume random number used to set the discriminator for
