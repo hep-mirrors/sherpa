@@ -96,8 +96,6 @@ namespace PHASIC {
 
     virtual ATOOLS::ClusterAmplitude_Vector &Amplitudes() { return m_ampls; }
 
-    inline ATOOLS::ClusterAmplitude_Vector &Amplitudes() { return m_ampls; }
-
     static void ShowSyntax(const size_t i);
 
     inline const ATOOLS::Vec4D_Vector &Momenta() const { return m_p; }
