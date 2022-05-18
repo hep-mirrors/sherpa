@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "PHASIC++/Process/Process_Base.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -51,6 +52,15 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 9:
     term->Set(sqr(p_setter->PTM()));
     return term;
+  case 0:
+    // N_FS should not include the IR unsafe real emission, so subtract that
+    // for processes with a subevent list.
+    if (p_setter->Caller()->GetSubevtList()) {
+      term->Set((double)p_setter->Caller()->NOut()-1);
+    } else {
+      term->Set((double)p_setter->Caller()->NOut());
+    }
+    return term;
   }
   return term;
 }
@@ -66,6 +76,7 @@ void Tag_Setter::AssignId(Term *term)
   else if (term->Tag()=="P_SUM") term->SetId(7);
   else if (term->Tag()=="TAUB") term->SetId(8);
   else if (term->Tag()=="P_TM2") term->SetId(9);
+  else if (term->Tag()=="N_FS") term->SetId(0);
   else {
     term->SetId(100+ToType<int>
 		(term->Tag().substr
@@ -114,6 +125,7 @@ void Tag_Setter::SetTags(Algebra_Interpreter *const calc)
   calc->AddTag("H_T2","1.0");
   calc->AddTag("H_Tp2","1.0");
   calc->AddTag("P_TM2","1.0");
+  calc->AddTag("N_FS","1.0");
   calc->AddTag("P_SUM","(1.0,0.0,0.0,0.0)");
   calc->AddFunction(new H_TY2(p_setter));
   calc->AddTag("TAU_B2","1.0");

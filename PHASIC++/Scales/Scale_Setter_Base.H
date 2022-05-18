@@ -79,6 +79,8 @@ namespace PHASIC {
 
     double BeamThrust() const;
 
+    inline Process_Base *Caller() const { return p_caller; }
+
     virtual double CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode=0);
 
     virtual PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
