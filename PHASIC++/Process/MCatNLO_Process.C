@@ -210,7 +210,7 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
   ampl->SetMuR2(sub->m_mu2[stp::ren]);
   Int_Vector ci(sub->m_n,0), cj(sub->m_n,0);
   for (size_t i=0;i<sub->m_n;++i) {
-    ampl->CreateLeg(i<m_nin?-sub->p_mom[i]:sub->p_mom[i],
+    ampl->CreateLeg((i<m_nin && sub->p_mom[i][0]>0)?-sub->p_mom[i]:sub->p_mom[i],
 		    i<m_nin?sub->p_fl[i].Bar():sub->p_fl[i],
 		    ColorID(ci[i],cj[i]),sub->p_id[i]);
     if (!sub->IsReal() && sub->p_id[i]&(1<<sub->m_i)) {
@@ -388,7 +388,12 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   p_ampl=p_rsproc->Selected()->GetSubevtList()->back()->p_ampl;
   if (p_ampl) p_ampl = p_ampl->CopyAll();
   else {
-    p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(p,4096);
+    if (rpa->gen.PilotRun()) {
+      p_ampl = CreateAmplitude(p_rsproc->Selected()->GetSubevtList()->back());
+    } else {
+      // TODO: Can we not just use CreateAmplitude in both cases, for simplicity?
+      p_ampl = dynamic_cast<Single_Process *>(rproc)->Cluster(p, 4096);
+    }
   }
   p_selected->Selected()->SetMEwgtinfo(*p_rsproc->Selected()->GetMEwgtinfo());
   if (p_ampl==NULL) {
