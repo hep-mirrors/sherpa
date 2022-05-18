@@ -1,5 +1,6 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 namespace PHASIC {
 
@@ -30,6 +31,7 @@ namespace PHASIC {
     ATOOLS::ClusterAmplitude_Vector &Amplitudes() override;
 
   private:
+    Scale_Setter_Base* ActiveScaleSetter() const;
     Scale_Setter_Base* p_var_scale_setter;
     Scale_Setter_Base* p_mets_scale_setter;
 
@@ -84,51 +86,62 @@ Pilot_Scale_Setter::Pilot_Scale_Setter
 void Pilot_Scale_Setter::PreCalc
 (const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
 {
-  p_mets_scale_setter->PreCalc(momenta, mode);
+  ActiveScaleSetter()->PreCalc(momenta, mode);
 }
 
 double Pilot_Scale_Setter::Calculate
 (const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
 {
-  return p_mets_scale_setter->Calculate(momenta, mode);
+  return ActiveScaleSetter()->Calculate(momenta, mode);
 }
 
 double Pilot_Scale_Setter::CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode)
 {
-  return p_mets_scale_setter->CalculateScale(p, mode);
+  return ActiveScaleSetter()->CalculateScale(p, mode);
 }
 
 PDF::CParam Pilot_Scale_Setter::CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const
 {
-  return p_mets_scale_setter->CoreScale(ampl);
+  return ActiveScaleSetter()->CoreScale(ampl);
 }
 
 void Pilot_Scale_Setter::SetFixedScale(const std::vector<double> &s)
 {
-  p_mets_scale_setter->SetFixedScale(s);
+  ActiveScaleSetter()->SetFixedScale(s);
 }
 
 void Pilot_Scale_Setter::SetCaller(Process_Base *const proc)
 {
+  p_var_scale_setter->SetCaller(proc);
   p_mets_scale_setter->SetCaller(proc);
 }
 
 double Pilot_Scale_Setter::Scale(const ATOOLS::stp::id type,const int mode) const
 {
-  return p_mets_scale_setter->Scale(type, mode);
+  return ActiveScaleSetter()->Scale(type, mode);
 }
 
 const std::vector<double> &Pilot_Scale_Setter::Scales() const
 {
-  return p_mets_scale_setter->Scales();
+  return ActiveScaleSetter()->Scales();
 }
 
 const std::vector<double> &Pilot_Scale_Setter::FixedScales() const
 {
-  return p_mets_scale_setter->FixedScales();
+  return ActiveScaleSetter()->FixedScales();
 }
 
 ATOOLS::ClusterAmplitude_Vector &Pilot_Scale_Setter::Amplitudes()
 {
-  return p_mets_scale_setter->Amplitudes();
+  return ActiveScaleSetter()->Amplitudes();
+}
+
+Scale_Setter_Base* Pilot_Scale_Setter::ActiveScaleSetter() const
+{
+  // Use the cheaper scale setter within the pilot run, switch to the better and
+  // more costly one for normal runs.
+  if (rpa->gen.PilotRun())
+    return p_var_scale_setter;
+  else
+    return p_mets_scale_setter;
 }
