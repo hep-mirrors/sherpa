@@ -5,15 +5,31 @@ namespace PHASIC {
 
   class Pilot_Scale_Setter: public Scale_Setter_Base {
 
-    public:
-
+  public:
     Pilot_Scale_Setter(const Scale_Setter_Arguments &args);
 
+    void PreCalc(const ATOOLS::Vec4D_Vector &p, const size_t &mode) override;
+
     double Calculate(const std::vector<ATOOLS::Vec4D> &p,
-		     const size_t &mode);
+                     const size_t &mode) override;
 
-    private:
+    double CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode) override;
 
+    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const override;
+
+    void SetFixedScale(const std::vector<double> &s) override;
+
+    void SetCaller(Process_Base *const proc) override;
+
+    double Scale(const ATOOLS::stp::id type,const int mode) const override;
+
+    const std::vector<double> &Scales() const override;
+
+    const std::vector<double> &FixedScales() const override;
+
+    ATOOLS::ClusterAmplitude_Vector &Amplitudes() override;
+
+  private:
     Scale_Setter_Base* p_var_scale_setter;
     Scale_Setter_Base* p_mets_scale_setter;
 
@@ -65,8 +81,54 @@ Pilot_Scale_Setter::Pilot_Scale_Setter
           "Could not construct STRICT_METS scale setter within PILOT one.");
 }
 
+void Pilot_Scale_Setter::PreCalc
+(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
+{
+  p_mets_scale_setter->PreCalc(momenta, mode);
+}
+
 double Pilot_Scale_Setter::Calculate
 (const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
 {
-  return m_scale[stp::fac];
+  return p_mets_scale_setter->Calculate(momenta, mode);
+}
+
+double Pilot_Scale_Setter::CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode)
+{
+  return p_mets_scale_setter->CalculateScale(p, mode);
+}
+
+PDF::CParam Pilot_Scale_Setter::CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const
+{
+  return p_mets_scale_setter->CoreScale(ampl);
+}
+
+void Pilot_Scale_Setter::SetFixedScale(const std::vector<double> &s)
+{
+  p_mets_scale_setter->SetFixedScale(s);
+}
+
+void Pilot_Scale_Setter::SetCaller(Process_Base *const proc)
+{
+  p_mets_scale_setter->SetCaller(proc);
+}
+
+double Pilot_Scale_Setter::Scale(const ATOOLS::stp::id type,const int mode) const
+{
+  return p_mets_scale_setter->Scale(type, mode);
+}
+
+const std::vector<double> &Pilot_Scale_Setter::Scales() const
+{
+  return p_mets_scale_setter->Scales();
+}
+
+const std::vector<double> &Pilot_Scale_Setter::FixedScales() const
+{
+  return p_mets_scale_setter->FixedScales();
+}
+
+ATOOLS::ClusterAmplitude_Vector &Pilot_Scale_Setter::Amplitudes()
+{
+  return p_mets_scale_setter->Amplitudes();
 }
