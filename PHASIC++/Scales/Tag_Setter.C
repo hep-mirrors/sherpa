@@ -52,9 +52,19 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 9:
     term->Set(sqr(p_setter->PTM()));
     return term;
-  case 0:
-    term->Set((double)p_setter->Process()->NOut());
+  case 0: {
+    //PRINT_VAR(p_setter->Caller()->Name());
+    //PRINT_VAR(p_setter->Caller()->NOut());
+    //PRINT_VAR(typeid(*p_setter->Caller()).name());
+    if (p_setter->Caller()->GetSubevtList()) {
+      //PRINT_VAR(p_setter->Caller()->NOut()-1);
+      term->Set((double)p_setter->Caller()->NOut()-1);
+    } else {
+      //PRINT_VAR(p_setter->Caller()->NOut());
+      term->Set((double)p_setter->Caller()->NOut());
+    }
     return term;
+	  }
   }
 
   return term;

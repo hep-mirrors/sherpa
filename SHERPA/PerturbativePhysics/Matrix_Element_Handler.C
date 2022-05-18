@@ -1,3 +1,4 @@
+#include "ATOOLS/Math/Histogram.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 
 #include "ATOOLS/Org/Message.H"
@@ -32,6 +33,11 @@ using namespace SHERPA;
 using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
+
+        static ATOOLS::Histogram histo{10, 0.001, 1000.0, 600};
+        static double pilot_n {0.0};
+        static double pilot_sum {0.0};
+        static double pilot_sum2 {0.0};
 
 Matrix_Element_Handler::Matrix_Element_Handler
 (const std::string &dir,const std::string &file,
@@ -122,6 +128,10 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
   for (size_t i=0; i<m_procs.size(); ++i)
     if (dynamic_cast<MCatNLO_Process*>(m_procs[i])) delete m_procs[i];
   if (p_nlomc) delete p_nlomc;
+
+  histo.MPISync();
+  histo.Finalize();
+  histo.Output("histo.dat");
 }
 
 void Matrix_Element_Handler::InitNLOMC()
@@ -267,11 +277,20 @@ bool Matrix_Element_Handler::GenerateOneEvent()
             <<"Note that this error is only reported once. Further such output is omitted.\n";
           did_print_error = true;
         }
+        const double normalabswgt = std::abs(info->m_weight);
+        pilot_sum += normalabswgt/abswgt;
+        pilot_sum2 += normalabswgt/abswgt*normalabswgt/abswgt;
+        histo.Insert(normalabswgt/abswgt);
+        pilot_n++;
+        PRINT_VAR(normalabswgt/abswgt);
+        PRINT_VAR(pilot_sum/pilot_n);
+        PRINT_VAR(sqrt((pilot_sum2/pilot_n-pilot_sum*pilot_sum/pilot_n/pilot_n)/(pilot_n-1)));
         delete info;
         proc->SetVariationWeights(NULL);
         // also consume random number used to set the discriminator for
         // unweighting above, such that it is not re-used in the future
         ran->Get();
+        wf *= normalabswgt/abswgt;
       }
     }
     if (!hasvars) {

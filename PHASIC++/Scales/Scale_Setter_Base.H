@@ -91,6 +91,7 @@ namespace PHASIC {
     virtual const std::vector<double> &FixedScales() const { return m_escale; }
 
     inline Process_Base *Process() const { return p_proc; }
+    inline Process_Base *Caller() const { return p_caller; }
 
     virtual ATOOLS::ClusterAmplitude_Vector &Amplitudes() { return m_ampls; }
 
