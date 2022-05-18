@@ -8,6 +8,8 @@ namespace PHASIC {
   public:
     Pilot_Scale_Setter(const Scale_Setter_Arguments &args);
 
+    void PreCalc(const ATOOLS::Vec4D_Vector &p, const size_t &mode) override;
+
     double Calculate(const std::vector<ATOOLS::Vec4D> &p,
                      const size_t &mode) override;
 
@@ -77,6 +79,12 @@ Pilot_Scale_Setter::Pilot_Scale_Setter
   if (p_mets_scale_setter == NULL)
     THROW(fatal_error,
           "Could not construct STRICT_METS scale setter within PILOT one.");
+}
+
+void Pilot_Scale_Setter::PreCalc
+(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
+{
+  p_mets_scale_setter->PreCalc(momenta, mode);
 }
 
 double Pilot_Scale_Setter::Calculate
