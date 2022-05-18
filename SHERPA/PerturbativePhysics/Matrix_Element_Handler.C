@@ -277,7 +277,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
             <<" a logic error resulting in wrong statistics!\n";
         }
         const double normalabswgt = std::abs(info->m_weight);
-        wf *= normalabswgt/abswgt;
         pilot_sum += normalabswgt/abswgt;
         pilot_sum2 += normalabswgt/abswgt*normalabswgt/abswgt;
         pilot_histo.Insert(normalabswgt/abswgt);
@@ -290,6 +289,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         // also consume random number used to set the discriminator for
         // unweighting above, such that it is not re-used in the future
         ran->Get();
+        wf *= normalabswgt/abswgt;
       }
     }
     if (!hasvars) {

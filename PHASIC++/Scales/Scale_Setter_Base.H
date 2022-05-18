@@ -56,13 +56,13 @@ namespace PHASIC {
 
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 
+  public:
+
     virtual void PreCalc(const ATOOLS::Vec4D_Vector &p,
 			 const size_t &mode);
 
     virtual double Calculate(const ATOOLS::Vec4D_Vector &p,
 			     const size_t &mode) = 0;
-
-  public:
 
     Scale_Setter_Base(const Scale_Setter_Arguments &args);
 
@@ -100,7 +100,7 @@ namespace PHASIC {
 
     static void ShowSyntax(const size_t i);
 
-    inline const ATOOLS::Vec4D_Vector &Momenta() const { return m_p; }
+    virtual const ATOOLS::Vec4D_Vector &Momenta() const { return m_p; }
 
     inline size_t NIn() const  { return m_nin;  }
     inline size_t NOut() const { return m_nout; }

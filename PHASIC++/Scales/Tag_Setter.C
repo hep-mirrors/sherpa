@@ -52,15 +52,16 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 9:
     term->Set(sqr(p_setter->PTM()));
     return term;
-  case 0:
-    // N_FS should not include the IR unsafe real emission, so subtract that
-    // for processes with a subevent list.
-    if (p_setter->Caller()->GetSubevtList()) {
-      term->Set((double)p_setter->Caller()->NOut()-1);
-    } else {
-      term->Set((double)p_setter->Caller()->NOut());
+  case 0: {
+      // N_FS should not include the IR unsafe real emission, so subtract that
+      // for processes with a subevent list.
+      if (p_setter->Caller()->GetSubevtList()) {
+	term->Set((double)p_setter->Caller()->NOut()-1);
+      } else {
+	term->Set((double)p_setter->Caller()->NOut());
+      }
+      return term;
     }
-    return term;
   }
   return term;
 }
