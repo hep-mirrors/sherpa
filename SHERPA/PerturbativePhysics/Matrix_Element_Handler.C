@@ -1,6 +1,7 @@
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "METOOLS/Main/Spin_Structure.H"
@@ -27,6 +28,14 @@
 
 #include <cassert>
 #include <unistd.h>
+
+// Define a debugging histogram and helper variables to bin it to monitor the
+// relative weight distribution of the normal run with respect to the pilot
+// run.
+static ATOOLS::Histogram pilot_histo{10, 0.001, 1000.0, 600};
+static double pilot_n {0.0};
+static double pilot_sum {0.0};
+static double pilot_sum2 {0.0};
 
 using namespace SHERPA;
 using namespace PHASIC;
@@ -122,6 +131,9 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
   for (size_t i=0; i<m_procs.size(); ++i)
     if (dynamic_cast<MCatNLO_Process*>(m_procs[i])) delete m_procs[i];
   if (p_nlomc) delete p_nlomc;
+  pilot_histo.MPISync();
+  pilot_histo.Finalize();
+  pilot_histo.Output("pilot_histo.dat");
 }
 
 void Matrix_Element_Handler::InitNLOMC()
@@ -264,6 +276,15 @@ bool Matrix_Element_Handler::GenerateOneEvent()
             <<"Will continue, but deviations beyond numerics would indicate"
             <<" a logic error resulting in wrong statistics!\n";
         }
+        const double normalabswgt = std::abs(info->m_weight);
+        wf *= normalabswgt/abswgt;
+        pilot_sum += normalabswgt/abswgt;
+        pilot_sum2 += normalabswgt/abswgt*normalabswgt/abswgt;
+        pilot_histo.Insert(normalabswgt/abswgt);
+        pilot_n++;
+        PRINT_VAR(normalabswgt/abswgt);
+        PRINT_VAR(pilot_sum/pilot_n);
+        PRINT_VAR(sqrt((pilot_sum2/pilot_n-pilot_sum*pilot_sum/pilot_n/pilot_n)/(pilot_n-1)));
         delete info;
         proc->SetVariationWeights(NULL);
         // also consume random number used to set the discriminator for
