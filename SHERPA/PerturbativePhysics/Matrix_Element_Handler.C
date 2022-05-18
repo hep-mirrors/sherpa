@@ -143,6 +143,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     My_In_File::OpenDB(m_respath+"/");
     My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
   }
+  rpa->gen.SetPilotRun(true);
   bool okay(true);
   for (size_t i=0;i<m_procs.size();++i) {
     m_procs[i]->SetLookUp(true);
@@ -151,6 +152,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     m_procs[i]->Integrator()->SetUpEnhance();
   }
   if (storeresults) My_In_File::CloseDB(m_respath+"/");
+  rpa->gen.SetPilotRun(false);
   return okay;
 }
 
@@ -204,6 +206,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         // in pilot run mode, calculate nominal only, and prepare to restore
         // the rng to re-run with variations after unweighting
         ran->SaveStatus();
+        rpa->gen.SetPilotRun(true);
       } else {
         // when pilot runs are disabled, we immediately calculate all
         // variations
@@ -245,6 +248,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         // re-run with same rng state and include the calculation of
         // variations this time
         ran->RestoreStatus();
+        rpa->gen.SetPilotRun(false);
         proc->SetVariationWeights(p_variationweights);
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
         // if we have indeed used the same statistics for the (accepted) pilot

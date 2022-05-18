@@ -41,6 +41,7 @@ namespace ATOOLS {
       std::map<std::string,std::string> m_variables;
       std::vector<std::string> m_cites;
       size_t m_clevel;
+      bool m_pilotrun;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
@@ -63,6 +64,8 @@ namespace ATOOLS {
       inline PDF::PDF_Base* PDF(size_t i)                { return m_pdfset[i]; }
       inline const  Flavour Bunch(const size_t i)            { return p_bunch[i]; }
       inline void   SetBunch(const Flavour b,const size_t i) { p_bunch[i] = b;    }
+      inline bool      PilotRun()                         { return m_pilotrun;  }
+      inline void      SetPilotRun(bool flag)             { m_pilotrun = flag;  }
       inline void      SetTimeOut(const long int timeout) { m_timeout=timeout;  }
       inline double    TimeOut()                          { return m_timeout;   }
       inline MyTiming &Timer()                            { return m_timer;     }
