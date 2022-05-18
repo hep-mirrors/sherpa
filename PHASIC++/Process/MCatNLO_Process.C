@@ -373,12 +373,12 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   rproc->Integrator()->SetMax
     (p_rsproc->Selected()->Integrator()->Max());
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
+  rproc->Integrator()->SetMomenta(p);
   rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
   rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector());
   rproc->SetFixedScale(std::vector<double>());
   rproc->GetMEwgtinfo()->m_mur2=
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
-  rproc->Integrator()->SetMomenta(p);
   Color_Integrator *ci(&*rproc->Integrator()->ColorIntegrator()),
     *rci(&*p_rsproc->Selected()->Integrator()->ColorIntegrator());
   if (ci && rci) {
