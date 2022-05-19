@@ -11,7 +11,7 @@ namespace PHASIC {
     std::string m_name;
     int m_nd;
     unsigned long m_nevt,m_nopt,m_snevt,m_cevt;
-    unsigned long m_mnevt, m_mcevt;
+    unsigned long m_mnevt, m_mcevt, m_const;
     double m_alpha;
     double m_nc;
     double **p_xi;
@@ -39,7 +39,7 @@ namespace PHASIC {
     void Reset();
     void Optimize();
     void EndOptimize();
-    void ConstChannel(int i) { p_opt[i]=0; }
+    void ConstChannel(int i) { p_opt[i]=0; m_const|=(1<<i); }
 
     void InitBinInfo();
     void Refine();
