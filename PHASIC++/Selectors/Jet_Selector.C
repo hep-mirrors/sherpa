@@ -15,7 +15,7 @@ namespace PHASIC {
   class Jet_Selector : public Selector_Base {
     std::string m_algo;
     double m_ptmin,m_R,m_f,m_etamin,m_etamax,m_ymin,m_ymax;
-    size_t m_nmin, m_nmax;
+    size_t m_nmin, m_nmax, m_eekt;
     kf_code m_outjetkf;
 
     ATOOLS::Jet_Inputs          m_jetinput;
@@ -51,10 +51,11 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
   m_etamax(std::numeric_limits<double>::max()),
   m_ymin(-std::numeric_limits<double>::max()),
   m_ymax(std::numeric_limits<double>::max()),
-  m_nmin(0), m_nmax(std::numeric_limits<size_t>::max()),
+  m_nmin(0), m_nmax(std::numeric_limits<size_t>::max()), m_eekt(0),
   m_outjetkf(kf_none), p_jdef(NULL)
 {
   DEBUG_FUNC("");
+  bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
   auto s = key.m_settings["Jet_Selector"];
 
   // input ptcls and output ID
@@ -161,12 +162,20 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
 
   // init jet algo
   fjcore::JetAlgorithm ja;
-  if (m_algo=="kt")             ja=fjcore::kt_algorithm;
-  else if (m_algo=="cambridge") ja=fjcore::cambridge_algorithm;
-  else if (m_algo=="antikt")    ja=fjcore::antikt_algorithm;
-  else THROW(not_implemented,"Unknown algorithm.");
-
-  p_jdef=new fjcore::JetDefinition(ja,m_R);
+  if (ee) {
+    if (m_algo=="kt") {
+      p_jdef=new fjcore::JetDefinition(fjcore::ee_kt_algorithm);
+      m_eekt=1;
+    }
+    else THROW(not_implemented,"Unknown algorithm.");
+  }
+  else {
+    if (m_algo=="kt")             ja=fjcore::kt_algorithm;
+    else if (m_algo=="cambridge") ja=fjcore::cambridge_algorithm;
+    else if (m_algo=="antikt")    ja=fjcore::antikt_algorithm;
+    else THROW(not_implemented,"Unknown algorithm.");
+    p_jdef=new fjcore::JetDefinition(ja,m_R);
+  }
 }
 
 
@@ -209,6 +218,14 @@ bool Jet_Selector::Trigger(Selector_List &sl)
   fjcore::ClusterSequence cs(input,*p_jdef);
   jets=fjcore::sorted_by_pt(cs.inclusive_jets());
   msg_Debugging()<<"njets(ini)="<<jets.size()<<std::endl;
+
+  if (m_eekt) {
+    int n(0);
+    for (size_t i(0);i<input.size();++i)
+      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++n;
+    msg_Debugging()<<"Found "<<n<<" jets, asking for "<<m_nmin<<" .. "<<m_nmax<<"\n";
+    return (1-m_sel_log->Hit(1-(n>=m_nmin && n<=m_nmax)));
+  }
 
   size_t njets(0);
   std::vector<std::pair<Flavour, Vec4D> > clusidjetmoms;
