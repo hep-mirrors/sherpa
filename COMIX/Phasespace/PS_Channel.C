@@ -147,9 +147,14 @@ PHASIC::Vegas *PS_Channel::GetSVegas(const PS_Vertex *v)
     VVegas_Map::const_iterator it(vit->second.find(v));
     if (it!=vit->second.end()) vgs=it->second;
   }
-  if (vgs==NULL) vgs=m_sicmap[v->Type()][v]=
-    GetVegas("S_"+ToString(v->Type())+"_"+
-	     v->J(0)->PSInfo()+"_"+v->J(1)->PSInfo(),2);
+  if (vgs==NULL) {
+    vgs=m_sicmap[v->Type()][v]=
+      GetVegas("S_"+ToString(v->Type())+"_"+
+	       v->J(0)->PSInfo()+"_"+v->J(1)->PSInfo(),2);
+    if ((m_nin==2 && (v->JC()->CId()==((1<<m_n)-1-3))) ||
+	(m_nin==1 && (v->JC()->CId()==((1<<m_n)-1-1))))
+      vgs->ConstChannel(1);
+  }
   return vgs;
 }
 
@@ -674,7 +679,6 @@ double PS_Channel::GenerateWeight
  PS_Current *const jc,PS_Vertex *const v,size_t &nr)
 {
   double wgt(1.0);
-  m_p[0]=Vec4D(0.,1.,1.,0.);
   size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
     size_t pid(aid-(m_rid+bid));
@@ -843,6 +847,7 @@ bool PS_Channel::GenerateWeight()
 void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts) 
 {
   p_cuts=cuts;
+  m_p[0]=Vec4D(0.,1.,1.,0.);
   if (p_cur==NULL) GenerateChannels();
   for (size_t i(0);i<m_n;++i) {
     m_p[1<<i]=i<2?-p[i]:p[i];
