@@ -121,7 +121,7 @@ int Shower::ReconstructDaughters(Singlet *const split,double &jcv,
 				 Parton *const pi,Parton *const pj)
 {
   if (split->GetSplit()) {
-    if (split->GetSplit()->Stat()&2) {
+    if (split->GetSplit()->Stat()&part_status::code::decayed) {
       msg_Debugging()<<"Decay. Skip truncated shower veto\n";
     }
     else {
@@ -150,7 +150,8 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   if (split==split->GetSing()->GetSplit()) {
     split->GetSing()->SetSplit(newpB);
   }
-  if (split->GetSing()->GetSplit()==NULL) {
+  if (split->GetSing()->GetSplit()==NULL || 
+      (split->GetSing()->GetSplit()->Stat()&part_status::code::decayed)) {
     split->GetSing()->ArrangeColours(split,newpB,newpC);
   }
   if (newpB==split->GetSing()->GetSplit())
@@ -171,7 +172,8 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
     if (split==split->GetSing()->GetSplit()) {
       split->GetSing()->SetSplit(newpB);
     }
-    if (split->GetSing()->GetSplit()==NULL) {
+    if (split->GetSing()->GetSplit()==NULL ||
+        (split->GetSing()->GetSplit()->Stat()&part_status::code::decayed)) {
       split->GetSing()->RearrangeColours(split,newpB,newpC);
     }
     if (newpB==split->GetSing()->GetSplit())
@@ -274,7 +276,7 @@ int Shower::MakeKinematics
   if (stype) split->GetSing()->BoostAllFS(pi,pj,spect);
   int ustat(UpdateDaughters(split,pi,pj,jcv,mode));
   if (ustat<=0 || (split->GetSing()->GetLeft() &&
-		   !(split->GetSing()->GetSplit()->Stat()&2))) {
+		   !(split->GetSing()->GetSplit()->Stat()&part_status::code::decayed))) {
     if (stype) split->GetSing()->BoostBackAllFS(pi,pj,spect);
     delete pi;
     pj->DeleteAll();
@@ -317,8 +319,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     return true;
   }
   if (p_actual->GetSplit() &&
-      (p_actual->GetSplit()->Stat()&4) &&
-      !(p_actual->GetSplit()->Stat()&2)) {
+      (p_actual->GetSplit()->Stat()&part_status::code::fragmented) &&
+      !(p_actual->GetSplit()->Stat()&part_status::code::decayed)) {
     msg_Debugging()<<"Skip EW clustering\n";
     return true;
   }
@@ -393,7 +395,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       }
       if (p_actual->JF() && p_actual->NMax() &&
 	  (p_actual->GetSplit()==NULL ||
-	   (p_actual->GetSplit()->Stat()&2))) {
+	   (p_actual->GetSplit()->Stat()&part_status::code::decayed))) {
 	msg_Debugging()<<"Highest Multi -> Disable jet veto\n";
 	Singlet *sing(p_actual);
 	sing->SetJF(NULL);
