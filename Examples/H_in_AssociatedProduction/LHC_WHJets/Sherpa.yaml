@@ -22,22 +22,22 @@ PARTICLE_DATA:
 HARD_DECAYS:
   Enabled: true
   Channels:
-    25 -> 24 -12 11: {Status: 2}
-    25 -> 24 -14 13: {Status: 2}
-    25 -> 24 -16 15: {Status: 2}
-    25 -> -24 12 -11: {Status: 2}
-    25 -> -24 14 -13: {Status: 2}
-    25 -> -24 16 -15: {Status: 2}
-    24 -> 12 -11: {Status: 2}
-    24 -> 14 -13: {Status: 2}
-    24 -> 16 -15: {Status: 2}
-    -24 -> -12 11: {Status: 2}
-    -24 -> -14 13: {Status: 2}
-    -24 -> -16 15: {Status: 2}
-    15 -> 16 -12 11: {Status: 2}
-    15 -> 16 -14 13: {Status: 2}
-    -15 -> -16 12 -11: {Status: 2}
-    -15 -> -16 14 -13: {Status: 2}
+    25,24,-12,11: {Status: 2}
+    25,24,-14,13: {Status: 2}
+    25,24,-16,15: {Status: 2}
+    25,-24,12,-11: {Status: 2}
+    25,-24,14,-13: {Status: 2}
+    25,-24,16,-15: {Status: 2}
+    24,12,-11: {Status: 2}
+    24,14,-13: {Status: 2}
+    24,16,-15: {Status: 2}
+    -24,-12,11: {Status: 2}
+    -24,-14,13: {Status: 2}
+    -24,-16,15: {Status: 2}
+    15,16,-12,11: {Status: 2}
+    15,16,-14,13: {Status: 2}
+    -15,-16,12,-11: {Status: 2}
+    -15,-16,14,-13: {Status: 2}
   Decay_Tau: 1
   Apply_Branching_Ratios: 0
 

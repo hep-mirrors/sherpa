@@ -13,10 +13,10 @@ ME_GENERATORS: [Comix, Amegic, OpenLoops]
 HARD_DECAYS:
   Enabled: true
   Channels:
-    24 -> 2 -1: {Status: 0}
-    24 -> 4 -3: {Status: 0}
-    -24 -> -2 1: {Status: 0}
-    -24 -> -4 3: {Status: 0}
+    24,2,-1: {Status: 0}
+    24,4,-3: {Status: 0}
+    -24,-2,1: {Status: 0}
+    -24,-4,3: {Status: 0}
 
 # particle properties (width of external particles of the MEs must be zero)
 PARTICLE_DATA:

@@ -9,7 +9,7 @@ ME_GENERATORS: [Amegic, Internal, OpenLoops]
 HARD_DECAYS:
   Enabled: true
   Channels:
-    25 -> 22 22: {Status: 2}
+    25,22,22: {Status: 2}
   Apply_Branching_Ratios: false
 
 # model parameters

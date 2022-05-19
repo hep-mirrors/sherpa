@@ -17,10 +17,10 @@ CORE_SCALE: SingleTop
 HARD_DECAYS:
   Enabled: true
   Channels:
-    24 -> 2 -1: {Status: 0}
-    24 -> 4 -3: {Status: 0}
-    -24 -> -2 1: {Status: 0}
-    -24 -> -4 3: {Status: 0}
+    24,2,-1: {Status: 0}
+    24,4,-3: {Status: 0}
+    -24,-2,1: {Status: 0}
+    -24,-4,3: {Status: 0}
 
 # choose EW Gmu input scheme
 EW_SCHEME: 3
