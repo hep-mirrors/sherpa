@@ -253,17 +253,11 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
         // if we have indeed used the same statistics for the (accepted) pilot
         // run, info must be non-null and it must contain the same results
-        // compared to the pilot run
+        // compared to the pilot run (caveat: the latter is not necessarily
+        // true, cases where the results might differ are the use of a
+        // Unweighting_Loop_Generator which does not exactly use the same EW
+        // parameters, or the use of a Pilot Scale Setter)
         assert(info);
-        if (m_evtinfo != *info) {
-          msg_Error()
-            <<"ERROR: The results of the pilot run and the re-run are not"
-            <<" the same:\n"
-            <<"  Pilot run: "<<m_evtinfo<<"\n"
-            <<"  Re-run:    "<<*info<<"\n"
-            <<"Will continue, but deviations beyond numerics would indicate"
-            <<" a logic error resulting in wrong statistics!\n";
-        }
         const double normalabswgt = std::abs(info->m_weight);
         wf *= normalabswgt/abswgt;
         delete info;
