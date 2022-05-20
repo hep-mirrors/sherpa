@@ -7,6 +7,17 @@ namespace PHASIC {
   // -----------------------------
   // single particle selectors
   // -----------------------------
+  class HT_Selector : public Selector_Base {
+    double  m_ptmin, m_ptmax;
+    ATOOLS::Flavour m_flav;
+  public:
+    HT_Selector(Process_Base *const);
+    ~HT_Selector();
+    void     SetRange(ATOOLS::Flavour,double,double);
+    bool     Trigger(ATOOLS::Selector_List &);
+    void     BuildCuts(Cut_Data *);
+  };
+
   class PT_Selector : public Selector_Base {
     double  m_ptmin, m_ptmax;
     ATOOLS::Flavour m_flav;
@@ -262,6 +273,87 @@ public:
     return a.Y()>b.Y();
   }
 };
+
+/*--------------------------------------------------------------------
+
+  Visible transverse energy Selector
+
+  --------------------------------------------------------------------*/
+
+HT_Selector::HT_Selector(Process_Base *const proc):
+  Selector_Base("HT_Selector",proc), m_ptmin(0.), m_ptmax(0.),
+  m_flav(Flavour(kf_none))
+{
+}
+
+HT_Selector::~HT_Selector() {
+}
+
+bool HT_Selector::Trigger(Selector_List &sl)
+{
+  double ht(0.);
+  if (!m_on) return true;
+  for (size_t i=m_nin;i<sl.size();i++) {
+    if (m_flav.Includes(sl[i].Flavour())) {
+      ht += sl[i].Momentum().PPerp();
+    }
+  }
+  if (m_sel_log->Hit( ((ht<m_ptmin) || (ht>m_ptmax)) )) return false;
+  return true;
+}
+
+void HT_Selector::BuildCuts(Cut_Data * cuts)
+{
+}
+
+void HT_Selector::SetRange(Flavour flav,double min,double max)
+{
+  m_flav=flav;
+  m_ptmin=min;
+  m_ptmax=max;
+
+  for (size_t i=m_nin;i<m_n;i++) {
+    if (m_flav.Includes(p_fl[i])) {
+      m_on=true;
+      // if more than one flav is found maybe increase m_smin
+      m_smin = Max(m_smin,4.*sqr(m_ptmin));
+    }
+  }
+
+  msg_Debugging()<<"flav="<<m_flav
+                 <<", min="<<m_ptmin<<", max="<<m_ptmax
+                 <<" -> smin="<<m_smin<<", on="<<m_on
+                 <<std::endl;
+}
+
+DECLARE_GETTER(HT_Selector,"HT",Selector_Base,Selector_Key);
+
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,HT_Selector>::
+operator()(const Selector_Key &key) const
+{
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters[0] == "HTNLO")
+    msg_Out()
+      << "WARNING: Substituting HT selector for missing HTNLO selector\n";
+  else
+    assert(parameters[0] == "HT");
+  if (parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
+  Flavour flav = Flavour((kf_code)abs(kf),kf<0);
+  HT_Selector *sel = new HT_Selector(key.p_proc);
+  sel->SetRange(flav,min,max);
+  return sel;
+}
+
+void ATOOLS::Getter<Selector_Base,Selector_Key,HT_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"visible transverse energy selector";
+}
 
 /*--------------------------------------------------------------------
 
