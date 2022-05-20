@@ -21,7 +21,6 @@ double PHASIC::SqLam(double s,double s1,double s2)
 double PHASIC::PeakedDist(double a,double cn,double cxm,double cxp,int k,double ran)
 {
   double ce(1.-cn);
-  double res = 0.;
   if (ce!=0.) return k*(pow(ran*pow(a+k*cxp,ce)+(1.-ran)*pow(a+k*cxm,ce),1/ce)-a);
   return k*((a+k*cxm)*pow((a+k*cxp)/(a+k*cxm),ran)-a);
 }
@@ -116,7 +115,7 @@ void Channel_Elements::Isotropic2Momenta
 (Vec4D p,double s1,double s2,Vec4D &p1,Vec4D &p2,double ran1,
  double ran2,double ctmin,double ctmax,const Vec4D &_xref)
 {
-  double s(p.Abs2()), rs(sqrt(dabs(s))), ps(p.PSpat());
+  double s(p.Abs2()), rs(sqrt(dabs(s)));
   double e1((s+s1-s2)/rs/2.), m1(sqrt(e1*e1-s1));
   double ct(ctmin+(ctmax-ctmin)*ran1), st(sqrt(1.-ct*ct));
   double phi(2.*M_PI*ran2);
@@ -136,8 +135,6 @@ double Channel_Elements::Isotropic2Weight
  double ctmin, double ctmax,const Vec4D &_xref)
 {
   Vec4D p(p1+p2), p1h(p1);
-  double s(p.Abs2()), rs(sqrt(dabs(s))), ps(p.PSpat());
-  double s1(p1.Abs2()), s2(p2.Abs2());
   Vec4D xref(_xref[0]<0.?-_xref:_xref);
   Vec4D pl(p.PSpat2()?p:Vec4D::ZVEC);
   Poincare cms(p), zax(pl,xref);
