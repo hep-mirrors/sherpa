@@ -2,7 +2,7 @@
 
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Vegas.H"
-#include "PHASIC++/Channels/Channel_Basics.H"
+#include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/MathTools.H"
@@ -43,15 +43,15 @@ Vec4D_Vector FF_Dipole::GeneratePoint
   msg_Debugging()<<"y = "<<rn[0]<<", z = "<<rn[1]
                  <<", phi = "<<rn[2]<<"\n";
   if (!m_massive) {
-    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_yexp,m_amin,1.0,1,rn[0]);
-    m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,0.0,1.0,1,rn[1]);
+    m_rn[0]=PeakedDist(0.0,m_yexp,m_amin,1.0,1,rn[0]);
+    m_rn[1]=PeakedDist(0.0,m_zexp,0.0,1.0,1,rn[1]);
   }
   else {
     double Q2((p[m_ijt]+p[m_kt]).Abs2());
     double eps(Q2-m_mi2-m_mj2-m_mk2);
     double ymin(Max(0.0,2.0*m_mi*m_mj/eps));
     double ymax(1.0-2.0*m_mk*(sqrt(Q2)-m_mk)/eps);
-    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_yexp,ymin,ymax,1,rn[0]);
+    m_rn[0]=PeakedDist(0.0,m_yexp,ymin,ymax,1,rn[0]);
     double viji(sqrt(sqr(eps*m_rn[0])-sqr(2.0*m_mi*m_mj))/
 		(eps*m_rn[0]+2.0*m_mi2));
     double vijk(sqrt(sqr(2.0*m_mk2+eps*(1.0-m_rn[0]))-
@@ -59,7 +59,7 @@ Vec4D_Vector FF_Dipole::GeneratePoint
     double zc(0.5*(2.0*m_mi2+eps*m_rn[0])/
 	      (m_mi2+m_mj2+eps*m_rn[0]));
     double zmin(zc*(1.0-viji*vijk)), zmax(zc*(1.0+viji*vijk));
-    m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,zmin,zmax,1,rn[1]);
+    m_rn[1]=PeakedDist(0.0,m_zexp,zmin,zmax,1,rn[1]);
   }
   m_rn[2]=rn[2]*2.0*M_PI;
   msg_Debugging()<<"transformed : ";
@@ -108,9 +108,9 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
   m_weight=(pp[m_ijt]+pp[m_kt]).Abs2()/(16.0*sqr(M_PI))*(1.0-m_rn[0]);
   m_weight*=pow(m_rn[0],m_yexp)*pow(m_rn[1],m_zexp);
   if (!m_massive) {
-    m_weight*=Channel_Basics::PeakedWeight
+    m_weight*=PeakedWeight
       (0.0,m_yexp,m_amin,1.0,m_rn[0],1,m_rn[0]);
-    m_weight*=Channel_Basics::PeakedWeight
+    m_weight*=PeakedWeight
       (0.0,m_zexp,0.0,1.0,m_rn[1],1,m_rn[1]);
   }
   else {
@@ -126,9 +126,9 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
 	      (m_mi2+m_mj2+eps*m_rn[0]));
     double zmin(zc*(1.0-viji*vijk)), zmax(zc*(1.0+viji*vijk));
     m_weight*=eps*eps/Q2/sqrt(sqr(Q2-m_mij2-m_mk2)-4.0*m_mij2*m_mk2);
-    m_weight*=Channel_Basics::PeakedWeight
+    m_weight*=PeakedWeight
       (0.0,m_yexp,ymin,ymax,m_rn[0],1,m_rn[0]);
-    m_weight*=Channel_Basics::PeakedWeight
+    m_weight*=PeakedWeight
       (0.0,m_zexp,zmin,zmax,m_rn[1],1,m_rn[1]);
   }
   m_rn[2]/=2.0*M_PI;
@@ -176,18 +176,18 @@ ATOOLS::Vec4D_Vector FI_Dipole::GeneratePoint
   msg_Debugging()<<"x = "<<rn[0]<<", z = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
   if (!m_massive) {
-    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,1.0-m_amin,1,rn[0]);
-    m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,0.0,1.0,1,rn[1]);
+    m_rn[0]=PeakedDist(0.0,m_xexp,m_xmin,1.0-m_amin,1,rn[0]);
+    m_rn[1]=PeakedDist(0.0,m_zexp,0.0,1.0,1,rn[1]);
   }
   else {
     double Q2(2.0*p[m_ijt]*p[m_kt]);
-    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,1-m_amin,1,rn[0]);
+    m_rn[0]=PeakedDist(0.0,m_xexp,m_xmin,1-m_amin,1,rn[0]);
     double eps((1-m_rn[0])*Q2+m_rn[0]*(m_mij2+m_mi2-m_mj2));
     double kap(sqrt(sqr(eps-2.0*m_rn[0]*m_mi2)-4.0*m_mi2*m_mj2));
     double zmin(0.5*(eps-kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
     double zmax(0.5*(eps+kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
     if (zmax>1.0 && IsEqual(zmax,1.0)) zmax=1.0;
-    m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,zmin,zmax,1,rn[1]);
+    m_rn[1]=PeakedDist(0.0,m_zexp,zmin,zmax,1,rn[1]);
   }
   m_rn[2]=rn[2]*2.0*M_PI;
   msg_Debugging()<<"transformed : ";
@@ -238,9 +238,9 @@ double FI_Dipole::GenerateWeight
   m_weight=Q2/(16.0*sqr(M_PI))/sqr(m_rn[0]);
   m_weight*=pow(m_rn[0],m_xexp)*pow(m_rn[1],m_zexp);
   if (!m_massive) {
-    m_weight*=Channel_Basics::PeakedWeight
+    m_weight*=PeakedWeight
       (0.0,m_xexp,m_xmin,1.0-m_amin,m_rn[0],1,m_rn[0]);
-    m_weight*=Channel_Basics::PeakedWeight
+    m_weight*=PeakedWeight
       (0.0,m_zexp,0.0,1.0,m_rn[1],1,m_rn[1]);
   }
   else {
@@ -249,9 +249,9 @@ double FI_Dipole::GenerateWeight
     double zmin(0.5*(eps-kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
     double zmax(0.5*(eps+kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
     if (zmax>1.0 && IsEqual(zmax,1.0)) zmax=1.0;
-    m_weight*=Channel_Basics::PeakedWeight
+    m_weight*=PeakedWeight
       (0.0,m_xexp,m_xmin,1.0-m_amin,m_rn[0],1,m_rn[0]);
-    m_weight*=Channel_Basics::PeakedWeight
+    m_weight*=PeakedWeight
       (0.0,m_zexp,zmin,zmax,m_rn[1],1,m_rn[1]);
   }
   m_rn[2]/=2.0*M_PI;
@@ -295,9 +295,9 @@ ATOOLS::Vec4D_Vector IF_Dipole::GeneratePoint
   msg_Debugging()<<"vegased :     ";
   msg_Debugging()<<"x = "<<rn[0]<<", u = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
-  m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,1.0,1,rn[0]);
+  m_rn[0]=PeakedDist(0.0,m_xexp,m_xmin,1.0,1,rn[0]);
   double umax((1.0-m_rn[0])/(1.0-m_rn[0]+m_rn[0]*m_mk2/(2.0*p[m_ijt]*p[m_kt])));
-  m_rn[1]=Channel_Basics::PeakedDist(0.0,m_uexp,m_amin,umax,1,rn[1]);
+  m_rn[1]=PeakedDist(0.0,m_uexp,m_amin,umax,1,rn[1]);
   m_rn[2]=rn[2]*2.0*M_PI;
   msg_Debugging()<<"transformed : ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", u = "<<m_rn[1]
@@ -350,9 +350,9 @@ double IF_Dipole::GenerateWeight
   m_weight=Q2/(16.0*sqr(M_PI))/sqr(m_rn[0]);
   m_weight*=pow(m_rn[1],m_uexp)*pow(m_rn[0],m_xexp);
   double umax((1.0-m_rn[0])/(1.0-m_rn[0]+m_rn[0]*m_mk2/Q2));
-  m_weight*=Channel_Basics::PeakedWeight
+  m_weight*=PeakedWeight
     (0.0,m_uexp,m_amin,umax,m_rn[1],1,m_rn[1]);
-  m_weight*=Channel_Basics::PeakedWeight
+  m_weight*=PeakedWeight
     (0.0,m_xexp,m_xmin,1.0,m_rn[0],1,m_rn[0]);
   m_rn[2]/=2.0*M_PI;
   msg_Debugging()<<"recovered :   ";
@@ -394,8 +394,8 @@ ATOOLS::Vec4D_Vector II_Dipole::GeneratePoint
   msg_Debugging()<<"vegased :     ";
   msg_Debugging()<<"x = "<<rn[0]<<", v = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
-  m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,1.0-m_amin,1,rn[0]);
-  m_rn[1]=Channel_Basics::PeakedDist(0.0,m_vexp,m_amin,1.0-m_rn[0],1,rn[1]);
+  m_rn[0]=PeakedDist(0.0,m_xexp,m_xmin,1.0-m_amin,1,rn[0]);
+  m_rn[1]=PeakedDist(0.0,m_vexp,m_amin,1.0-m_rn[0],1,rn[1]);
   m_rn[2]=rn[2]*2.0*M_PI;
   msg_Debugging()<<"transformed : ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", v = "<<m_rn[1]
@@ -441,9 +441,9 @@ double II_Dipole::GenerateWeight
   m_weight=(p[m_sub.m_i]+p[m_sub.m_k]).Abs2()/
     (16.0*sqr(M_PI))/m_rn[0];
   m_weight*=pow(m_rn[1],m_vexp)*pow(m_rn[0],m_xexp);
-  m_weight*=Channel_Basics::PeakedWeight
+  m_weight*=PeakedWeight
     (0.0,m_vexp,m_amin,1.0-m_rn[0],m_rn[1],1,m_rn[1]);
-  m_weight*=Channel_Basics::PeakedWeight
+  m_weight*=PeakedWeight
     (0.0,m_xexp,m_xmin,1.0-m_amin,m_rn[0],1,m_rn[0]);
   m_rn[2]/=2.0*M_PI;
   msg_Debugging()<<"recovered :   ";

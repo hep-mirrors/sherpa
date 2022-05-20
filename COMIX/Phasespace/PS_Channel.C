@@ -207,7 +207,7 @@ double PS_Channel::PropMomenta(const PS_Current *cur,const size_t &id,
   double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
   if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
     if (cur->Width()>s_pwmin)
-      return CE.MassivePropMomenta(cur->Mass(),cur->Width(),1,smin,smax,*cr);
+      return CE.MassivePropMomenta(cur->Mass(),cur->Width(),smin,smax,*cr);
     if (cur->Mass()>s_pmmin) 
       return CE.ThresholdMomenta(m_thexp,m_mfac*cur->Mass(),smin,smax,*cr);
     return CE.MasslessPropMomenta(sexp,smin,smax,*cr);
@@ -226,7 +226,7 @@ double PS_Channel::PropWeight(const PS_Current *cur,const size_t &id,
   if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
     if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
     if (cur->Width()>s_pwmin) 
-      wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),1,smin,smax,s,rn);
+      wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),smin,smax,s,rn);
     else if (cur->Mass()>s_pmmin) 
       wgt=CE.ThresholdWeight(m_thexp,m_mfac*cur->Mass(),smin,smax,s,rn);
     else wgt=CE.MasslessPropWeight(sexp,smin,smax,s,rn);
@@ -317,8 +317,7 @@ void PS_Channel::TChannelMomenta
   double ctmin(-1.0), ctmax(1.0);
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,s1,s2);
   CE.TChannelMomenta(pa,pb,p1,p2,s1,s2,cur->Mass(),
-		     dip?m_stexp:m_texp,ctmax,ctmin,
-		     1.0,0,cr[0],cr[1]);
+		     dip?m_stexp:m_texp,ctmax,ctmin,cr[0],cr[1]);
 }
 
 double PS_Channel::TChannelWeight
@@ -328,8 +327,7 @@ double PS_Channel::TChannelWeight
   double ctmin(-1.0), ctmax(1.0), rns[2];
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,p1.Abs2(),p2.Abs2());
   double wgt(CE.TChannelWeight(pa,pb,p1,p2,cur->Mass(),
-			       dip?m_stexp:m_texp,ctmax,ctmin,
-			       1.0,0,rns[0],rns[1]));
+			       dip?m_stexp:m_texp,ctmax,ctmin,rns[0],rns[1]));
   if (m_vmode&3) {
     Vegas *cvgs(GetTVegas(id,cur,dip));
     size_t id(0);
@@ -688,10 +686,12 @@ double PS_Channel::GenerateWeight
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
     if (CIdCount(bid)>1) {
       double smin(se), smax(sqr(rtsmax-sqrt(sp)));
+      DEBUG_VAR(ID(bid)<<m_p[bid]);
       wgt*=PropWeight(jb,bid,smin,smax,se=m_p[bid].Abs2());
     }
     if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
+      DEBUG_VAR(ID(pid)<<m_p[pid]);
       wgt*=PropWeight((PS_Current*)jc->SCC(),pid,
 		      smin,smax,sp=m_p[pid].Abs2());
     }
@@ -714,10 +714,12 @@ double PS_Channel::GenerateWeight
     double rts(m_p[cid].Mass()), sl(SCut(lid)), sr(SCut(rid));
     if (CIdCount(lid)>1) {
       double smin(sl), smax(sqr(rts-sqrt(sr)));
+      DEBUG_VAR(ID(lid)<<m_p[lid]);
       wgt*=PropWeight(ja,lid,smin,smax,sl=m_p[lid].Abs2());
     }
     if (CIdCount(rid)>1) {
       double smin(sr), smax(sqr(rts-sqrt(sl)));
+      DEBUG_VAR(ID(rid)<<m_p[rid]);
       wgt*=PropWeight(jb,rid,smin,smax,sr=m_p[rid].Abs2());
     }
     wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[rid]);

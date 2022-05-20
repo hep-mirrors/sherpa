@@ -46,7 +46,7 @@ void C3_1::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double s23_min = cuts->Getscut((1<<2)|(1<<3));
   Flavour fl23 = Flavour((kf_code)(25));
   Vec4D  p23;
-  double s23 = CE.MassivePropMomenta(fl23.Mass(),fl23.Width(),1,s23_min,s23_max,ran[0]);
+  double s23 = CE.MassivePropMomenta(fl23.Mass(),fl23.Width(),s23_min,s23_max,ran[0]);
   if (m_onshell) s23=sqr(fl23.Mass());
   CE.Isotropic2Momenta(p234,s4,s23,p[4],p23,ran[1-(size_t)m_onshell],ran[2-(size_t)m_onshell]);
   CE.Isotropic2Momenta(p23,s2,s3,p[2],p[3],ran[3-(size_t)m_onshell],ran[4-(size_t)m_onshell]);
@@ -64,7 +64,7 @@ void C3_1::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   double s23 = dabs(p23.Abs2());
   if (m_onshell) wt /= (fl23.Mass()*fl23.Width())*M_PI;
   else
-  wt *= CE.MassivePropWeight(fl23.Mass(),fl23.Width(),1,s23_min,s23_max,s23,p_rans[0]);
+  wt *= CE.MassivePropWeight(fl23.Mass(),fl23.Width(),s23_min,s23_max,s23,p_rans[0]);
   if (m_kI_4_23.Weight()==ATOOLS::UNDEFINED_WEIGHT)
     m_kI_4_23<<CE.Isotropic2Weight(p[4],p23,m_kI_4_23[0],m_kI_4_23[1]);
   wt *= m_kI_4_23.Weight();

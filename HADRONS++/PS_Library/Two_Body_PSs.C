@@ -1,6 +1,5 @@
 #include "HADRONS++/PS_Library/Two_Body_PSs.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
-#include "PHASIC++/Channels/Channel_Basics.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace HADRONS; 

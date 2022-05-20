@@ -8,7 +8,7 @@ using namespace ATOOLS;
 
 namespace PHASIC {
   class C2_1 : public Single_Channel {
-    double m_amct,m_alpha,m_ctmax,m_ctmin;
+    double m_alpha,m_ctmax,m_ctmin;
     Info_Key m_kTC_0__1__3_2,m_kZS_0;
     Vegas* p_vegas;
   public:
@@ -39,7 +39,7 @@ void C2_1::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double s2 = p_ms[2];
   double s3 = p_ms[3];
   m_ctmax = Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
-  CE.TChannelMomenta(p[0],p[1],p[3],p[2],s3,s2,0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,ran[0],ran[1]);
+  CE.TChannelMomenta(p[0],p[1],p[3],p[2],s3,s2,0.,m_alpha,m_ctmax,m_ctmin,ran[0],ran[1]);
 }
 
 void C2_1::GenerateWeight(Vec4D* p,Cut_Data * cuts)
@@ -48,7 +48,7 @@ void C2_1::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   Vec4D p23=p[0]+p[1];
   m_ctmax = Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
   if (m_kTC_0__1__3_2.Weight()==ATOOLS::UNDEFINED_WEIGHT)
-    m_kTC_0__1__3_2<<CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,m_kTC_0__1__3_2[0],m_kTC_0__1__3_2[1]);
+    m_kTC_0__1__3_2<<CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,m_alpha,m_ctmax,m_ctmin,m_kTC_0__1__3_2[0],m_kTC_0__1__3_2[1]);
   wt *= m_kTC_0__1__3_2.Weight();
 
   p_rans[0]= m_kTC_0__1__3_2[0];
@@ -65,7 +65,6 @@ C2_1::C2_1(int nin,int nout,Flavour* fl,Integration_Info * const info)
   m_name   = std::string("C2_1");
   m_rannum = 2;
   p_rans   = new double[m_rannum];
-  m_amct   = 1.;
   m_alpha  = .9;
   m_ctmax  = 1.;
   m_ctmin  = -1.;

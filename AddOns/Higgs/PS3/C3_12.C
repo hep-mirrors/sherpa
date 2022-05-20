@@ -11,7 +11,7 @@ using namespace ATOOLS;
 
 namespace PHASIC {
   class C3_12 : public Single_Channel {
-    double m_amct,m_alpha,m_ctmax,m_ctmin;
+    double m_alpha,m_ctmax,m_ctmin;
     Info_Key m_kI_2_3,m_kTC_0__1__23_4,m_kZS_187;
     Vegas* p_vegas;
     bool m_onshell;
@@ -48,11 +48,11 @@ void C3_12::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double s23_min = cuts->Getscut((1<<2)|(1<<3));
   Flavour fl23 = Flavour((kf_code)(25));
   Vec4D  p23;
-  double s23 = CE.MassivePropMomenta(fl23.Mass(),fl23.Width(),1,s23_min,s23_max,ran[0]);
+  double s23 = CE.MassivePropMomenta(fl23.Mass(),fl23.Width(),s23_min,s23_max,ran[0]);
   if (m_onshell) s23=sqr(fl23.Mass());
   m_ctmax = cuts->cosmax[1][4];
   m_ctmin = cuts->cosmin[1][4];
-  CE.TChannelMomenta(p[0],p[1],p23,p[4],s23,s4,0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,ran[1-(size_t)m_onshell],ran[2-(size_t)m_onshell]);
+  CE.TChannelMomenta(p[0],p[1],p23,p[4],s23,s4,0.,m_alpha,m_ctmax,m_ctmin,ran[1-(size_t)m_onshell],ran[2-(size_t)m_onshell]);
   CE.Isotropic2Momenta(p23,s2,s3,p[2],p[3],ran[3-(size_t)m_onshell],ran[4-(size_t)m_onshell]);
 }
 
@@ -68,11 +68,11 @@ void C3_12::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   double s23 = dabs(p23.Abs2());
   if (m_onshell) wt /= (fl23.Mass()*fl23.Width())*M_PI;
   else
-  wt *= CE.MassivePropWeight(fl23.Mass(),fl23.Width(),1,s23_min,s23_max,s23,p_rans[0]);
+  wt *= CE.MassivePropWeight(fl23.Mass(),fl23.Width(),s23_min,s23_max,s23,p_rans[0]);
   m_ctmax = cuts->cosmax[1][4];
   m_ctmin = cuts->cosmin[1][4];
   if (m_kTC_0__1__23_4.Weight()==ATOOLS::UNDEFINED_WEIGHT)
-    m_kTC_0__1__23_4<<CE.TChannelWeight(p[0],p[1],p23,p[4],0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,m_kTC_0__1__23_4[0],m_kTC_0__1__23_4[1]);
+    m_kTC_0__1__23_4<<CE.TChannelWeight(p[0],p[1],p23,p[4],0.,m_alpha,m_ctmax,m_ctmin,m_kTC_0__1__23_4[0],m_kTC_0__1__23_4[1]);
   wt *= m_kTC_0__1__23_4.Weight();
 
   p_rans[1-(size_t)m_onshell]= m_kTC_0__1__23_4[0];
@@ -97,7 +97,6 @@ C3_12::C3_12(int nin,int nout,Flavour* fl,Integration_Info * const info)
   m_name = std::string("C3_12");
   m_rannum = 5-(size_t)m_onshell;
   p_rans  = new double[m_rannum];
-  m_amct  = 1.0 + s["CHANNEL_EPSILON"].Get<double>();
   m_alpha = s["SCHANNEL_ALPHA"].Get<double>();
   m_ctmax = 1.;
   m_ctmin = -1.;

@@ -37,6 +37,12 @@ namespace ATOOLS {
       return v;
     }
 
+    inline const Vec4D &PL() const { return m_l; }
+    inline const Vec4D &PT() const { return m_t; }
+
+    inline double CosTheta() const { return m_ct; }
+    inline double SinTheta() const { return m_st; }
+
   };// end of class Poincare
 
   class Poincare_Sequence: public std::vector<Poincare> {

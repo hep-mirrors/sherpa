@@ -1,6 +1,5 @@
 #include "HADRONS++/PS_Library/Three_Body_PSs.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
-#include "PHASIC++/Channels/Channel_Basics.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "HADRONS++/PS_Library/ResonanceFlavour.H"
@@ -43,7 +42,7 @@ Dalitz::Dalitz(
 void Dalitz::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data *,double * _ran)
 {
   double sprop;
-  if (m_mode==1) sprop = CE.MassivePropMomenta(m_pmass,m_pwidth,1,m_smin,m_smax,_ran[0]);
+  if (m_mode==1) sprop = CE.MassivePropMomenta(m_pmass,m_pwidth,m_smin,m_smax,_ran[0]);
   else sprop = CE.MasslessPropMomenta(m_sexp,m_smin,m_smax,_ran[0]);     
   CE.Isotropic2Momenta(p[0],p_ms[m_dir],sprop,p[m_dir],m_pvec,_ran[1],_ran[2]);
   CE.Isotropic2Momenta(m_pvec,p_ms[m_p1],p_ms[m_p2],p[m_p1],p[m_p2],_ran[3],_ran[4]);
@@ -54,11 +53,11 @@ void Dalitz::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data *)
 {
   m_weight = 1.;
   double sprop  = (p[m_p1]+p[m_p2]).Abs2();
-  if (m_mode==1)
-    m_weight *= CE.MassivePropWeight(m_pmass,m_pwidth,1,m_smin,m_smax,sprop);
-  else
-    m_weight *= CE.MasslessPropWeight(m_sexp,m_smin,m_smax,sprop);
   double d1, d2;
+  if (m_mode==1)
+    m_weight *= CE.MassivePropWeight(m_pmass,m_pwidth,m_smin,m_smax,sprop,d1);
+  else
+    m_weight *= CE.MasslessPropWeight(m_sexp,m_smin,m_smax,sprop,d1);
   m_weight   *= CE.Isotropic2Weight(p[m_dir],p[m_p1]+p[m_p2],d1,d2);
   m_weight   *= CE.Isotropic2Weight(p[m_p1],p[m_p2],d1,d2);
   m_weight    =  1./(m_weight * pow(2.*M_PI,3.*3.-4.));

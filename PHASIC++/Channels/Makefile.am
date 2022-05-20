@@ -7,7 +7,6 @@ include ../../git.make
 libPhasicChannels_la_SOURCES  =	\
 				Git_Info.C \
 				CSS_Kinematics.C \
-				Channel_Basics.C \
 				Channel_Elements.C \
 				Channel_Elements_KK.C \
 				Single_Channel.C \
@@ -39,7 +38,6 @@ libPhasicChannels_la_SOURCES  =	\
 
 localinc_HEADERS      =	\
 			CSS_Kinematics.H \
-			Channel_Basics.H \
 			Channel_Elements.H \
 			Channel_Elements_KK.H \
 			Single_Channel.H \

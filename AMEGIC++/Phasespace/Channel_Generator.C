@@ -61,7 +61,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
      <<"  class "<<name<<" : public Single_Channel {"<<endl;
 
   //actual Channel
-  if (tcount>0) chf <<"    double m_amct,m_alpha,m_ctmax,m_ctmin;"<<endl;
+  if (tcount>0) chf <<"    double m_alpha,m_ctmax,m_ctmin;"<<endl;
   if (m_idc.size()>0) {
     chf <<"    Info_Key ";
     bool first=true;
@@ -141,8 +141,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 	<<"  m_rannum = "<<rannumber<<";"<<endl
 	<<"  p_rans  = new double[m_rannum];"<<endl;
   if (tcount>0) {
-    chf	<<"  m_amct  = 1.;"<<endl
-	<<"  m_alpha = .5;"<<endl
+    chf	<<"  m_alpha = .5;"<<endl
 	<<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
@@ -646,7 +645,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<GetMassIndex(pout1[0])<<"]";
                                             else sf<<",p"<<Order(pout1sum);
     sf<<",s"<<Order(pout0sum)<<",s"<<Order(pout1sum);
-    sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,ran["<<rannum++<<"],ran[";
+    sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",ran["<<rannum++<<"],ran[";
     sf<<rannum++<<"]);"<<endl;
     break;
   default:
@@ -661,7 +660,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
                                               else sf<<",p"<<Order(pout0sum);
       if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<GetMassIndex(pout1[0])<<"]";
                                               else sf<<",p"<<Order(pout1sum);
-      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
     
     sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
     sf<<"  p_rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
@@ -827,7 +826,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
 	<<"  double s"<<Order(lm[hit])<<";"<<endl;
       if (maxpole>0.) {
 	sf<<"  s"<<Order(lm[hit])
-	  <<" = CE.MassivePropMomenta(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),1,"
+	  <<" = CE.MassivePropMomenta(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),"
 	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,ran["<<rannum<<"]);"<<endl;
       }
       else {
@@ -844,7 +843,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
       AddToVariables(flag,lm[hit],s,1,sf);
       AddToVariables(flag,lm[hit],string("dabs(")+momp[hit]+string(".Abs2())"),0,sf);
       if (maxpole>0.) {
-	sf<<"  wt *= CE.MassivePropWeight(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),1,"
+	sf<<"  wt *= CE.MassivePropWeight(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),"
 	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,"<<"s"<<Order(lm[hit])<<",p_rans["<<rannum<<"]);"<<endl;
       }
       else {

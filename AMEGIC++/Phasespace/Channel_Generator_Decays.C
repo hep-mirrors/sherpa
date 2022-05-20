@@ -404,7 +404,7 @@ void Channel_Generator_Decays::GenerateMasses(int flag,Point** _plist,int pcount
 	<<"  double s"<<Order(lm[hit])<<";"<<endl;
       if (maxpole>0.) {
 	sf<<"  s"<<Order(lm[hit])
-	  <<" = CE.MassivePropMomenta(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),1,"
+	  <<" = CE.MassivePropMomenta(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),"
 	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,ran["<<rannum<<"]);"<<endl;
       }
       else {
@@ -421,7 +421,7 @@ void Channel_Generator_Decays::GenerateMasses(int flag,Point** _plist,int pcount
       AddToVariables(flag,lm[hit],s,1,sf);
       AddToVariables(flag,lm[hit],string("dabs(")+momp[hit]+string(".Abs2())"),0,sf);
       if (maxpole>0.) {
-	sf<<"  wt *= CE.MassivePropWeight(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),1,"
+	sf<<"  wt *= CE.MassivePropWeight(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),"
 	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,"<<"s"<<Order(lm[hit])<<",p_rans["<<rannum<<"]);"<<endl;
       }
       else {

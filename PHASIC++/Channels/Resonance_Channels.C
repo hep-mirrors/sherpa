@@ -30,14 +30,14 @@ void Resonance_RelicDensity::GeneratePoint(const double *rns) {
   double *ran = p_vegas->GeneratePoint(rns);
   for (int i = 0; i < m_rannum; i++)
     p_rans[i] = ran[i];
-  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, 1, m_spkey[0], m_spkey[1],
+  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, m_spkey[0], m_spkey[1],
                                      p_rans[0]);
 }
 
 void Resonance_RelicDensity::GenerateWeight(const int &mode) {
   if (m_spkey.Weight() == ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3] >= m_spkey[0] && m_spkey[3] <= m_spkey[1]) {
-      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, 1, m_spkey[0],
+      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, m_spkey[0],
                                            m_spkey[1], m_spkey[3],
                                            m_sgridkey[0]);
     }
@@ -80,7 +80,7 @@ void Resonance_DM_Annihilation::GeneratePoint(const double *rns) {
   double *ran = p_vegas->GeneratePoint(rns);
   for (int i = 0; i < m_rannum; i++)
     p_rans[i] = ran[i];
-  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, 1, m_spkey[0], m_spkey[1],
+  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, m_spkey[0], m_spkey[1],
                                      p_rans[0]);
 
   m_cosxikey[2] = CE.GenerateDMAngleUniform(p_rans[1], 3);
@@ -92,7 +92,7 @@ void Resonance_DM_Annihilation::GeneratePoint(const double *rns) {
 void Resonance_DM_Annihilation::GenerateWeight(const int &mode) {
   if (m_spkey.Weight() == ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3] >= m_spkey[0] && m_spkey[3] <= m_spkey[1]) {
-      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, 1, m_spkey[0],
+      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, m_spkey[0],
                                            m_spkey[1], m_spkey[3],
                                            m_sgridkey[0]);
     }
@@ -135,7 +135,7 @@ void Resonance_Uniform::GeneratePoint(const double *rns) {
   double *ran = p_vegas->GeneratePoint(rns);
   for (int i = 0; i < 2; i++)
     p_rans[i] = ran[i];
-  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, 1, m_spkey[0], m_spkey[1],
+  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, m_spkey[0], m_spkey[1],
                                      p_rans[0]);
   double sred =
       SelectS(m_spkey[3], m_spkey[4]) - (m_kp1key(0) + m_kp2key(0)).Abs2();
@@ -146,7 +146,7 @@ void Resonance_Uniform::GeneratePoint(const double *rns) {
 void Resonance_Uniform::GenerateWeight(const int &mode) {
   if (m_spkey.Weight() == ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3] >= m_spkey[0] && m_spkey[3] <= m_spkey[1]) {
-      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, 1, m_spkey[0],
+      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, m_spkey[0],
                                            m_spkey[1], m_spkey[3],
                                            m_sgridkey[0]);
     }
@@ -203,7 +203,7 @@ void Resonance_Forward::GeneratePoint(const double *rns) {
   double *ran = p_vegas->GeneratePoint(rns);
   for (int i = 0; i < 2; i++)
     p_rans[i] = ran[i];
-  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, 1, m_spkey[0], m_spkey[1],
+  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, m_spkey[0], m_spkey[1],
                                      p_rans[0]);
   double sred =
       SelectS(m_spkey[3], m_spkey[4]) - (m_kp1key(0) + m_kp2key(0)).Abs2();
@@ -215,7 +215,7 @@ void Resonance_Forward::GeneratePoint(const double *rns) {
 void Resonance_Forward::GenerateWeight(const int &mode) {
   if (m_spkey.Weight() == ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3] >= m_spkey[0] && m_spkey[3] <= m_spkey[1]) {
-      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, 1, m_spkey[0],
+      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, m_spkey[0],
                                            m_spkey[1], m_spkey[3],
                                            m_sgridkey[0]);
     }
@@ -273,7 +273,7 @@ void Resonance_Backward::GeneratePoint(const double *rns) {
   double *ran = p_vegas->GeneratePoint(rns);
   for (int i = 0; i < 2; i++)
     p_rans[i] = ran[i];
-  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, 1, m_spkey[0], m_spkey[1],
+  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, m_spkey[0], m_spkey[1],
                                      p_rans[0]);
   double sred =
       SelectS(m_spkey[3], m_spkey[4]) - (m_kp1key(0) + m_kp2key(0)).Abs2();
@@ -285,7 +285,7 @@ void Resonance_Backward::GeneratePoint(const double *rns) {
 void Resonance_Backward::GenerateWeight(const int &mode) {
   if (m_spkey.Weight() == ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3] >= m_spkey[0] && m_spkey[3] <= m_spkey[1]) {
-      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, 1, m_spkey[0],
+      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, m_spkey[0],
                                            m_spkey[1], m_spkey[3],
                                            m_sgridkey[0]);
     }
@@ -340,7 +340,7 @@ void Resonance_Central::GeneratePoint(const double *rns) {
   double *ran = p_vegas->GeneratePoint(rns);
   for (int i = 0; i < 2; i++)
     p_rans[i] = ran[i];
-  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, 1, m_spkey[0], m_spkey[1],
+  m_spkey[3] = CE.MassivePropMomenta(m_mass, m_width, m_spkey[0], m_spkey[1],
                                      p_rans[0]);
   double sred =
       SelectS(m_spkey[3], m_spkey[4]) - (m_kp1key(0) + m_kp2key(0)).Abs2();
@@ -351,7 +351,7 @@ void Resonance_Central::GeneratePoint(const double *rns) {
 void Resonance_Central::GenerateWeight(const int &mode) {
   if (m_spkey.Weight() == ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3] >= m_spkey[0] && m_spkey[3] <= m_spkey[1]) {
-      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, 1, m_spkey[0],
+      m_spkey << 1. / CE.MassivePropWeight(m_mass, m_width, m_spkey[0],
                                            m_spkey[1], m_spkey[3],
                                            m_sgridkey[0]);
     }
