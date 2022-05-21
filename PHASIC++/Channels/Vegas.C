@@ -15,6 +15,11 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace std;
 
+double Vegas::Power::operator()(double &x) const
+{
+  return pow(x,1./(1.+m_exp));
+}
+
 int Vegas::s_onext = -1, Vegas::s_on = -1;
 
 Vegas::Vegas(int dim, int ndx, const std::string &name) {
@@ -200,6 +205,14 @@ void Vegas::Rebin(double rc, double *xi) {
     p_xin[i] = xn - (xn - xo) * dr / p_r[k];
   }
   for (i = 0; i < m_nd; i++) xi[i] = p_xin[i];
+}
+
+void Vegas::Preset(const Mapping *f,const int d) {
+  if (m_on == 0) return;
+  for (size_t i = 0; i < m_nd; ++i) {
+    double x((i+1)/double(m_nd));
+    p_xi[d][i]=(*f)(x);
+  }
 }
 
 double *Vegas::GeneratePoint(const double *ran) {

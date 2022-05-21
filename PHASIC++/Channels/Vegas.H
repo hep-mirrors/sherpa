@@ -8,6 +8,18 @@
 namespace PHASIC {
 
   class Vegas {
+  public:
+    class Mapping {
+    public:
+      virtual double operator()(double &x) const = 0;
+    };// end of class Mapping
+    class Power: public Mapping {
+    public:
+      double m_exp;
+      inline Power(const double &exp): m_exp(exp) {}
+      double operator()(double &x) const;
+    };// end of class Power
+  private:
     std::string m_name;
     int m_nd;
     unsigned long m_nevt,m_nopt,m_snevt,m_cevt;
@@ -43,6 +55,7 @@ namespace PHASIC {
 
     void InitBinInfo();
     void Refine();
+    void Preset(const Mapping *,const int);
 
     void SetOptimizeChannel(int i,const bool opt) { p_opt[i]=opt;    }
     bool OptimizeChannel(int i) const             { return p_opt[i]; }
