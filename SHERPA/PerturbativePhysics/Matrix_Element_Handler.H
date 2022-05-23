@@ -73,7 +73,7 @@ namespace SHERPA {
 
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo, m_rsadd;
-    bool        m_pilotrunenabled;
+    bool        m_pilotrunenabled, m_pilotrunrequired;
 
     ATOOLS::Weight_Info m_evtinfo;
 
