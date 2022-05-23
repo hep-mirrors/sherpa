@@ -36,7 +36,7 @@ using namespace ATOOLS;
 Matrix_Element_Handler::Matrix_Element_Handler
 (const std::string &dir,const std::string &file,
  const std::string &processfile,const std::string &selectorfile):
-  m_gens(dir, file), m_unw_mode(Unweighting_Mode::hitormiss),
+  m_gens(dir, file), m_unw_mode(Unweighting_Mode::accept),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
@@ -195,23 +195,20 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
-    SetUnweightingMode(Unweighting_Mode::hitormiss);
     p_variationweights->Reset();
     proc->SetVariationWeights(NULL);
     const bool hasvars(
         p_variationweights->GetVariations()->GetParametersVector()->empty()
         == false);
-    if (hasvars) {
-      if (m_pilotrunenabled) {
-        // in pilot run mode, calculate nominal only, and prepare to restore
-        // the rng to re-run with variations after unweighting
-        ran->SaveStatus();
-        rpa->gen.SetPilotRun(true);
-      } else {
-        // when pilot runs are disabled, we immediately calculate all
-        // variations
-        proc->SetVariationWeights(p_variationweights);
-      }
+    if (m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
+      // in pilot run mode, calculate nominal only, and prepare to restore the
+      // rng to re-run with variations after unweighting
+      ran->SaveStatus();
+      rpa->gen.SetPilotRun(true);
+      SetUnweightingMode(Unweighting_Mode::hitormiss);
+    } else if (hasvars) {
+      // in normal run mode, we immediately calculate all variations
+      proc->SetVariationWeights(p_variationweights);
     }
     ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
     proc->SetVariationWeights(NULL);
@@ -243,13 +240,14 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         m_weightfactor = abswgt / max;
         wf /= Min(1.0, m_weightfactor);
       }
-      SetUnweightingMode(Unweighting_Mode::accept);
-      if (hasvars && m_pilotrunenabled) {
+      if (m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
+        SetUnweightingMode(Unweighting_Mode::accept);
         // re-run with same rng state and include the calculation of
         // variations this time
         ran->RestoreStatus();
         rpa->gen.SetPilotRun(false);
-        proc->SetVariationWeights(p_variationweights);
+        if (hasvars)
+          proc->SetVariationWeights(p_variationweights);
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
         // if we have indeed used the same statistics for the (accepted) pilot
         // run, info must be non-null and it must contain the same results
@@ -493,6 +491,7 @@ void Matrix_Element_Handler::BuildProcesses()
   if (!read.VectorFromFile(helpsv,"COUPLINGS"))
     helpsv.push_back("Alpha_QCD 1");
   std::string coupling(MakeString(helpsv,0));
+  m_pilotrunrequired |= (scale.find("PILOT") == 0);
   // init processes
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
@@ -588,6 +587,7 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Scales") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vscale,nf);
+          m_pilotrunrequired |= (cb.find("PILOT") == 0);
 	}
 	if (cur[0]=="Couplings") {
 	  std::string cb(MakeString(cur,1));
@@ -692,7 +692,8 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Unweighting_Loop_Generator") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vloopgen_unwt,nf);
-	}
+          m_pilotrunrequired = true;
+        }
 	if (cur[0]=="Loop_Generator") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vloopgen,nf);
@@ -728,6 +729,13 @@ void Matrix_Element_Handler::BuildProcesses()
         }
       }
     }
+  }
+  if (m_pilotrunrequired && !m_pilotrunenabled) {
+    msg_Out()
+        << "WARNING: The use of a PILOT scale setting or an Unweighting Loop\n"
+        << "Generator requires the use of a pilot run, but it could not be\n"
+        << "enabled, either because the RNG does not support resetting its\n"
+        << "state, or because a weighted event generation mode is being used.\n";
   }
 }
 
