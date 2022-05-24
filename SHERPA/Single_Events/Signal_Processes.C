@@ -196,8 +196,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       weight *= weightfactor;
       m_variationweights *= weightfactor;
     }
-    blob->AddData("Pilot_Weight_Factor",
-                  new Blob_Data<double>(p_mehandler->PilotWeightFactor()));
   }
 
   // fill variation weights such that later event phases can update them
@@ -206,6 +204,11 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     // reset variation weights as they might be reused for the next "event"
     // which might compensate that we have divided out the overweight now
     m_variationweights *= 1.0 / weightfactor;
+  }
+
+  if (p_mehandler->EventGenerationMode()!=0) {
+    blob->AddData("Pilot_Weight_Factor",
+                  new Blob_Data<double>(p_mehandler->PilotWeightFactor()));
   }
 
   blob->AddData("Weight",new Blob_Data<double>(weight));
