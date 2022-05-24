@@ -54,6 +54,8 @@ namespace PHASIC {
     std::vector<long unsigned int> m_vsn;
 
     long unsigned int m_sn, m_son;
+    bool m_isCacheInit;
+    std::vector<std::vector<double> > m_weightsCache;
 
     bool m_writeout;
 
@@ -119,6 +121,7 @@ namespace PHASIC {
     void SetMaxEpsilon(const double &maxeps);
     void SetRSEnhanceFactor(const double &rsfac);
 
+    void SetupWeightsCache();
     double SelectionWeight(const int mode) const;
 
     void MPISync(const int mode=0);
