@@ -143,6 +143,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     My_In_File::OpenDB(m_respath+"/");
     My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
   }
+  SetUnweightingMode(Unweighting_Mode::hitormiss);
   rpa->gen.SetPilotRun(true);
   bool okay(true);
   for (size_t i=0;i<m_procs.size();++i) {
@@ -153,6 +154,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   }
   if (storeresults) My_In_File::CloseDB(m_respath+"/");
   rpa->gen.SetPilotRun(false);
+  SetUnweightingMode(Unweighting_Mode::accept);
   return okay;
 }
 
