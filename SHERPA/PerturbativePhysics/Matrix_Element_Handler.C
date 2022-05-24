@@ -176,6 +176,7 @@ void Matrix_Element_Handler::SetRandomSeed()
 
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
+  DEBUG_FUNC("");
   Return_Value::IncCall(METHOD);
   p_proc=NULL;
   if (m_seedmode!=3) SetRandomSeed();
@@ -205,6 +206,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       // rng to re-run with variations after unweighting
       ran->SaveStatus();
       rpa->gen.SetPilotRun(true);
+      msg_Debugging()<<"Will do pilot run.\n";
     } else if (hasvars) {
       // in normal run mode, we immediately calculate all variations
       proc->SetVariationWeights(p_variationweights);
@@ -244,6 +246,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         // variations this time
         ran->RestoreStatus();
         rpa->gen.SetPilotRun(false);
+        msg_Debugging()<<"Pilot run has been accepted. Re-calculate with normal settings.\n";
         if (hasvars)
           proc->SetVariationWeights(p_variationweights);
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
