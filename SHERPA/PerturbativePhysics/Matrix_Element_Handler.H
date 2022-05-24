@@ -80,7 +80,7 @@ namespace SHERPA {
     Variation_Weights *p_variationweights;
     PDF::NLOMC_Base   *p_nlomc;
 
-    double m_sum, m_ovwth, m_weightfactor;
+    double m_sum, m_ovwth, m_weightfactor, m_pilotweightfactor;
     size_t m_globalnlomode, m_ranidx, m_fosettings;
 
 #ifdef USING__GZIP
@@ -168,6 +168,8 @@ namespace SHERPA {
     inline Shower_Handler *Shower() const { return p_shower; }
 
     inline double WeightFactor() const { return m_weightfactor; }
+
+    inline double PilotWeightFactor() const { return m_pilotweightfactor; }
 
     inline double Sum() const { return m_sum; }
 

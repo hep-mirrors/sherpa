@@ -33,6 +33,14 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
+// Define a debugging histogram and helper variables to bin it to monitor the
+// relative weight distribution of the normal run with respect to the pilot
+// run.
+static ATOOLS::Histogram pilot_histo{10, 0.001, 1000.0, 600};
+static double pilot_n {0.0};
+static double pilot_sum {0.0};
+static double pilot_sum2 {0.0};
+
 Sherpa::Sherpa() :
   p_inithandler(NULL), p_eventhandler(NULL)
 #ifdef USING__HEPMC2
@@ -61,6 +69,9 @@ Sherpa::~Sherpa()
 {
   if (msg_LevelIsInfo()) Return_Value::PrintStatistics(msg->Out());
   rpa->gen.WriteCitationInfo();
+  pilot_histo.MPISync();
+  pilot_histo.Finalize();
+  pilot_histo.Output("pilot_histo.dat");
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
 #ifdef USING__HEPMC2
@@ -293,7 +304,20 @@ bool Sherpa::GenerateOneEvent(bool reset)
         if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
         else { msg_Info()<<bm::cr<<std::flush; }
       }
-      
+
+      // Fill pilot weight factor histogram
+      Blob *sp(blobs->FindFirst(btp::Signal_Process));
+      if (sp) {
+        Blob_Data_Base *db{(*sp)["Pilot_Weight_Factor"]};
+        if (db) {
+          const double wf{db->Get<double>()};
+          pilot_sum += wf;
+          pilot_sum2 += wf * wf;
+          pilot_histo.Insert(wf);
+          pilot_n++;
+        }
+      }
+
       return 1;
     }
     return 0;
