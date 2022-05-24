@@ -7,13 +7,6 @@
 
 namespace PHASIC {
   
-  struct Unweighting_Mode {
-    enum code {
-      hitormiss   = 0,
-      accept      = 1
-    };
-  };
-
   class ME_Generators;
 
   struct Process_Info {
@@ -40,8 +33,6 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector m_nodecs;
 
-    PHASIC::Unweighting_Mode::code* m_unw_mode;
-
   public:
 
     inline Process_Info(const Subprocess_Info &ii=Subprocess_Info(),
@@ -53,7 +44,7 @@ namespace PHASIC {
       m_nlomode(0), m_amegicmhv(1), m_ntchanmin(0), m_ntchanmax(99),
       m_scale("VAR"), m_kfactor("NO"), 
       m_loopgenerator("Internal"), m_loopgenerator_unwt("Internal"),
-      m_selectorfile(""), m_mpiprocess(false), p_gens(NULL), m_unw_mode(NULL) { }
+      m_selectorfile(""), m_mpiprocess(false), p_gens(NULL) { }
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
     bool Has(nlo_type::code nlotype) const;
@@ -62,9 +53,6 @@ namespace PHASIC {
 		const ATOOLS::Flavour &flij);
 
     std::vector<ATOOLS::Flavour_Vector> ExtractMPL() const;
-
-    // pass pointer to unweighting-mode member of the MEH
-    void SetUnweightingMode(PHASIC::Unweighting_Mode::code& m) { m_unw_mode = &m; }
 
     bool operator<(const Process_Info &pi) const;
 

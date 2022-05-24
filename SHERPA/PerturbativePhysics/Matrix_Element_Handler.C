@@ -36,7 +36,7 @@ using namespace ATOOLS;
 Matrix_Element_Handler::Matrix_Element_Handler
 (const std::string &dir,const std::string &file,
  const std::string &processfile,const std::string &selectorfile):
-  m_gens(dir, file), m_unw_mode(Unweighting_Mode::accept),
+  m_gens(dir, file),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
@@ -143,7 +143,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     My_In_File::OpenDB(m_respath+"/");
     My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
   }
-  SetUnweightingMode(Unweighting_Mode::hitormiss);
   rpa->gen.SetPilotRun(true);
   bool okay(true);
   for (size_t i=0;i<m_procs.size();++i) {
@@ -154,7 +153,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   }
   if (storeresults) My_In_File::CloseDB(m_respath+"/");
   rpa->gen.SetPilotRun(false);
-  SetUnweightingMode(Unweighting_Mode::accept);
   return okay;
 }
 
@@ -207,7 +205,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       // rng to re-run with variations after unweighting
       ran->SaveStatus();
       rpa->gen.SetPilotRun(true);
-      SetUnweightingMode(Unweighting_Mode::hitormiss);
     } else if (hasvars) {
       // in normal run mode, we immediately calculate all variations
       proc->SetVariationWeights(p_variationweights);
@@ -243,7 +240,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         wf /= Min(1.0, m_weightfactor);
       }
       if (m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
-        SetUnweightingMode(Unweighting_Mode::accept);
         // re-run with same rng state and include the calculation of
         // variations this time
         ran->RestoreStatus();
@@ -289,7 +285,6 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 (const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
 {
   Process_Info cpi(pi);
-  cpi.SetUnweightingMode(m_unw_mode);
   std::set<Process_Info> trials;
   std::vector<Process_Base*> procs;
   std::vector<Flavour_Vector> fls(pi.ExtractMPL());
