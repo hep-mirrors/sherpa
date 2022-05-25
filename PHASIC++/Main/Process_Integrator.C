@@ -92,7 +92,6 @@ void Process_Integrator::SetupWeightsCache()
   }
   else {
     for (size_t i = 0; i < p_proc->Size(); ++i) {
-      (*p_proc)[i]->Integrator()->SetupWeightsCache();
       m_weightsCache.insert(m_weightsCache.end(), 
                             (*p_proc)[i]->Integrator()->m_weightsCache.begin(), 
                             (*p_proc)[i]->Integrator()->m_weightsCache.end());

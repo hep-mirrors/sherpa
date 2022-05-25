@@ -104,6 +104,7 @@ namespace PHASIC {
     void SetLookUp(const bool lookup);
     void SetScale(const Scale_Setter_Arguments &scale);
     void SetKFactor(const KFactor_Setter_Arguments &args);
+    void SetupWeightsCache();
     void SetFixedScale(const std::vector<double> &s);
     void SetSelector(const Selector_Key &key);
     void SetShower(PDF::Shower_Base *const ps);

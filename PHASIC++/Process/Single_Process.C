@@ -969,6 +969,11 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
 }
 
+void Single_Process::SetupWeightsCache()
+{
+  p_int->SetupWeightsCache();
+}
+
 void Single_Process::SetLookUp(const bool lookup)
 {
   m_lookup=lookup;

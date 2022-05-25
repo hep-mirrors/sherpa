@@ -46,6 +46,7 @@ namespace PHASIC {
 
     void SetScale(const Scale_Setter_Arguments &args);
     void SetKFactor(const KFactor_Setter_Arguments &args);
+    void SetupWeightsCache();
 
     ATOOLS::Cluster_Amplitude *Cluster(const ATOOLS::Vec4D_Vector &p,
                                        const size_t &mode=0);
