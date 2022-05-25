@@ -437,8 +437,8 @@ Weights_Map MCatNLO_Process::OneHEvent(const int wmode)
   rproc->GetMEwgtinfo()->m_muf2=
     p_rsproc->Selected()->GetMEwgtinfo()->m_muf2;
   rproc->Integrator()->SetMomenta(p);
-  Color_Integrator *ci(&*rproc->Integrator()->ColorIntegrator()),
-    *rci(&*p_rsproc->Selected()->Integrator()->ColorIntegrator());
+  Color_Integrator *ci(rproc->Integrator()->ColorIntegrator().get()),
+    *rci(p_rsproc->Selected()->Integrator()->ColorIntegrator().get());
   if (ci && rci) {
     ci->SetI(rci->I());
     ci->SetJ(rci->J());
