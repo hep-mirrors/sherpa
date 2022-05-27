@@ -686,12 +686,10 @@ double PS_Channel::GenerateWeight
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
     if (CIdCount(bid)>1) {
       double smin(se), smax(sqr(rtsmax-sqrt(sp)));
-      DEBUG_VAR(ID(bid)<<m_p[bid]);
       wgt*=PropWeight(jb,bid,smin,smax,se=m_p[bid].Abs2());
     }
     if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
-      DEBUG_VAR(ID(pid)<<m_p[pid]);
       wgt*=PropWeight((PS_Current*)jc->SCC(),pid,
 		      smin,smax,sp=m_p[pid].Abs2());
     }
@@ -714,12 +712,10 @@ double PS_Channel::GenerateWeight
     double rts(m_p[cid].Mass()), sl(SCut(lid)), sr(SCut(rid));
     if (CIdCount(lid)>1) {
       double smin(sl), smax(sqr(rts-sqrt(sr)));
-      DEBUG_VAR(ID(lid)<<m_p[lid]);
       wgt*=PropWeight(ja,lid,smin,smax,sl=m_p[lid].Abs2());
     }
     if (CIdCount(rid)>1) {
       double smin(sr), smax(sqr(rts-sqrt(sl)));
-      DEBUG_VAR(ID(rid)<<m_p[rid]);
       wgt*=PropWeight(jb,rid,smin,smax,sr=m_p[rid].Abs2());
     }
     wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[rid]);
