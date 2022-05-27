@@ -101,7 +101,7 @@ void Phase_Space_Point::InitCuts(Process_Integrator *const process) {
   process->Process()->InitCuts(p_cuts);
   process->Process()->FillOnshellConditions();
   process->Process()->BuildCuts(p_cuts);
-  if (m_nin > 1) {
+  if (process->NIn() > 1) {
     m_smin = ATOOLS::Max(sqr(process->ISRThreshold()), p_cuts->Smin());
     process->ISR()->SetFixedSprimeMin(m_smin);
     process->Beam()->SetSprimeMin(m_smin);

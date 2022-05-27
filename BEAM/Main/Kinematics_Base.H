@@ -26,7 +26,7 @@ namespace BEAM {
     virtual bool operator()(ATOOLS::Vec4D * moms)                 = 0;
     virtual void AssignKeys(ATOOLS::Integration_Info *const info) = 0;
     virtual void SetLimits()                                      = 0;
-    virtual inline void SetSprimeMin(const double & smin) { m_sminPS = smin; }
+    virtual inline void SetSprimeMin(const double & smin) { m_sminPS = ATOOLS::Max(smin, m_sminPS); }
     virtual inline void SetSprimeMax(const double & smax) { m_smaxPS = smax; }
     virtual inline const double & SprimeMin() const { return ATOOLS::Max(m_smin, m_sminPS); }
     virtual inline const double & SprimeMax() const { return ATOOLS::Min(m_smax, m_smaxPS); }
