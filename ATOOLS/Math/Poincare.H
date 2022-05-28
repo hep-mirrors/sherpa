@@ -10,7 +10,7 @@ namespace ATOOLS {
 
     int m_type;
     Vec4D  m_l, m_t;
-    double m_rsq, m_ct, m_st;
+    double m_rsq, m_omct, m_st;
 
   public:
 
@@ -40,8 +40,8 @@ namespace ATOOLS {
     inline const Vec4D &PL() const { return m_l; }
     inline const Vec4D &PT() const { return m_t; }
 
-    inline double CosTheta() const { return m_ct; }
-    inline double SinTheta() const { return m_st; }
+    inline double OMCTheta() const { return m_omct; }
+    inline double SinTheta() const { return m_st;   }
 
   };// end of class Poincare
 
