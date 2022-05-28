@@ -26,8 +26,9 @@ Poincare::Poincare(const Vec4D &v1,const Vec4D &v2,int mode):
   if (ml[l[2]]>ml[l[1]]) std::swap<int>(l[1],l[2]);
   if (ml[l[1]]>ml[l[0]]) std::swap<int>(l[0],l[1]);
   if (ml[l[2]]>ml[l[1]]) std::swap<int>(l[1],l[2]);
-  m_t[l[0]]=-(m_t[l[1]]*m_l[l[1]]+m_t[l[2]]*m_l[l[2]])/m_l[l[0]];
-  if (dabs(m_t[l[0]])==0.) m_t[l[1]]=1.;
+  double tdp(m_t[l[1]]*m_l[l[1]]+m_t[l[2]]*m_l[l[2]]);
+  if (tdp!=0.) m_t[l[0]]=-tdp/m_l[l[0]];
+  if (m_t.PSpat2()==0.) m_t[l[1]]=1.;
   m_ct=-m_l*b;
   m_st=-m_t*b;
 }
