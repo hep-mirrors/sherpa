@@ -34,7 +34,7 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
   m_mssum(0.), m_mssumsqr(0.), m_msn(0.), m_sn(0), m_son(1),
-  m_isCacheInit(false), m_writeout(false),
+  m_writeout(false), //m_isCacheInit(false),
   p_whisto(NULL), p_colint(NULL), p_helint(NULL)
 {
   m_colorscheme=cls::sum;
@@ -45,7 +45,7 @@ bool Process_Integrator::Initialize
 (BEAM::Beam_Spectra_Handler *const beamhandler,
  PDF::ISR_Handler *const isrhandler)
 {
-  m_isCacheInit = false;
+  //m_isCacheInit = false;
   m_nin=p_proc->NIn();
   m_nout=p_proc->NOut();
   p_momenta.resize(m_nin+m_nout);
@@ -75,7 +75,7 @@ Process_Integrator::~Process_Integrator()
 }
 
 
-void Process_Integrator::SetupWeightsCache()
+/*void Process_Integrator::SetupWeightsCache()
 {
   if (m_isCacheInit) return;
   
@@ -99,17 +99,25 @@ void Process_Integrator::SetupWeightsCache()
   }
   m_isCacheInit = true;
 
-}
+}*/
 
 double Process_Integrator::SelectionWeight(const int mode) const
 {
-  bool isWeightedEvtGen(!mode);
+  //bool isWeightedEvtGen(!mode);
   if (!p_proc->IsGroup()) {
-    return m_weightsCache[0][isWeightedEvtGen];
+    //return m_weightsCache[0][isWeightedEvtGen];
+    if (mode!=0) return m_max*m_enhancefac;
+    if (m_n+m_sn==0.0) return -1.0;
+    if (m_totalxs==0.0) return 0.0;
+    double selweight = m_swmode==0 ?
+      sqrt((m_n+m_sn-1) * sqr(TotalVar()) + sqr(TotalResult())) :
+      dabs(m_totalxs);
+    return selweight*m_enhancefac;
   }
   double sw(0.0);
   for (size_t i = 0; i<p_proc->Size(); ++i) {
-    sw += dabs(m_weightsCache[i][isWeightedEvtGen]);
+    //sw += dabs(m_weightsCache[i][isWeightedEvtGen]);
+    sw+=dabs((*p_proc)[i]->Integrator()->SelectionWeight(mode));
   }
   return sw;
 }

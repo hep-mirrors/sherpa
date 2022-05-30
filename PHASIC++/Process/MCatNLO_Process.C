@@ -687,7 +687,7 @@ void MCatNLO_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_bproc->SetKFactor(args);
 }
 
-void MCatNLO_Process::SetupWeightsCache()
+/*void MCatNLO_Process::SetupWeightsCache()
 {
   p_bviproc->SetupWeightsCache();
   p_ddproc->SetupWeightsCache();
@@ -695,7 +695,7 @@ void MCatNLO_Process::SetupWeightsCache()
   p_rproc->SetupWeightsCache();
   p_bproc->SetupWeightsCache();
   p_int->SetupWeightsCache();
-}
+}*/
 
 void MCatNLO_Process::SetFixedScale(const std::vector<double> &s)
 {

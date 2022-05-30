@@ -151,7 +151,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     if (!m_procs[i]->CalculateTotalXSec(m_respath,false)) okay=false;
     m_procs[i]->SetLookUp(false);
     m_procs[i]->Integrator()->SetUpEnhance();
-    m_procs[i]->SetupWeightsCache();
+    //m_procs[i]->SetupWeightsCache();
   }
   if (storeresults) My_In_File::CloseDB(m_respath+"/");
   rpa->gen.SetPilotRun(false);
