@@ -106,6 +106,15 @@ void Event_Handler::Reset()
   Flow::ResetCounter();
 }
 
+void Event_Handler::ResetNonPerturbativePhases()
+{
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+    if ((*pit)->Type()==eph::Hadronization) {
+      (*pit)->CleanUp();
+    }
+  }
+}
+
 bool Event_Handler::GenerateEvent(eventtype::code mode) 
 {
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
@@ -230,6 +239,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
         retry++;
         Return_Value::IncCall((*pit)->Name());
         Return_Value::IncRetryEvent((*pit)->Name());
+        ResetNonPerturbativePhases();
 	if (mode==eventtype::StandardPerturbative) {
 	  m_blobs.Clear();
 	  m_blobs=m_sblobs.Copy();
