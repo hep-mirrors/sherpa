@@ -105,8 +105,7 @@ namespace SHERPA {
     bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs);
     bool SubEvtList2ShortHepMC(EventInfo &evtinfo);
 
-    void AddCrossSection(HepMC::GenEvent& event,
-                         const double& xs, const double& err);
+    void AddCrossSection(HepMC::GenEvent&, const Uncertain<double>& xs);
 
     // inline functions
     inline HepMC::GenEvent* GenEvent() { return p_event; }

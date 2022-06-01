@@ -279,7 +279,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 #ifdef  RIVET_ENABLE_HEPMC_3
   m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
 #else
-  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
+  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalNominalXS());
 #endif
 #endif
 
