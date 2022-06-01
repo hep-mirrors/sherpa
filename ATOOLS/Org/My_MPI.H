@@ -30,6 +30,7 @@ namespace ATOOLS {
     My_MPI();
 
     void PrintRankInfo();
+    void PrintRank();
 
 #ifdef USING__MPI
 
@@ -81,6 +82,15 @@ namespace ATOOLS {
       MPI_Gather(sendbuf, sendcount, sendtype,
 		 recvbuf, recvcount, recvtype, root, m_comm);
     }
+
+    // Convenience method to get the maximum of some value from all ranks.
+    int Allmax(int);
+
+    // Convenience method to gather strings from all ranks into an array.
+    // Allgather is used, such that the returned vector is filled for all
+    // ranks. Note that this involves a non-trivial amount of communication
+    // and should not be used too often.
+    std::vector<std::string> AllgatherStrings(const std::string&);
 
 #endif
 
