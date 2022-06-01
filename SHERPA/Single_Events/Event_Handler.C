@@ -599,11 +599,11 @@ void Event_Handler::PerformMemoryMonitoring()
   if (m_lastrss==0) m_lastrss=currentrss;
   else if (currentrss>m_lastrss+ToType<int>
       (rpa->gen.Variable("MEMLEAK_WARNING_THRESHOLD"))) {
-    msg_Error()<<METHOD<<"() {\n"<<om::bold<<"  Memory usage increased by "
+    msg_Error()<<"\n"<<om::bold<<"    Memory usage increased by "
 	       <<(currentrss-m_lastrss)/(1<<20)<<" MB,"
 	       <<" now "<<currentrss/(1<<20)<<" MB.\n"
-	       <<om::red<<"  This might indicate a memory leak!\n"
-	       <<"  Please monitor this process closely.\n"<<om::reset<<"}"<<std::endl;
+	       <<om::red<<"    This might indicate a memory leak!\n"
+	       <<"    Please monitor this process closely."<<om::reset<<std::endl;
     m_lastrss=currentrss;
   }
 }
