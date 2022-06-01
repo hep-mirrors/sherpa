@@ -61,6 +61,7 @@ namespace SHERPA {
 
     bool GenerateEvent(eventtype::code mode=eventtype::StandardPerturbative);
     void Reset();
+    void ResetNonPerturbativePhases();
     void Finish();
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
