@@ -118,6 +118,8 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   }
   for (auto pmit : m_spectators) {
     Particle *part = pmit;
+    if (availMom[0] < 0)
+      msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
     if (part == m_spectators.back())
       part->SetMomentum(availMom);
     else {
@@ -165,13 +167,6 @@ bool Photon_Remnant::MakeRemnants() {
               << ": No remnants have been extracted, please check. \n";
     return false;
   }
-  if (m_extracted.size() > 1.) {
-    msg_Error() << METHOD
-                << ": Mulitple Interactions are not yet implemented in the "
-                   "photon remnant!\n";
-  }
-  // TODO: the for-loop below is actually redundant at the moment, because
-  // we're trying to implement for one interacting particle only
   for (auto pmit : m_extracted) {
     if (pmit->Flav().IsGluon()) {
       // TODO: implement the gluon treatment
@@ -190,17 +185,14 @@ bool Photon_Remnant::MakeRemnants() {
         p_remnant = p_recoiler = MakeParticle(factor * flav);
         p_remnant->SetFlow(i, pmit->GetFlow(3 - i));
         m_spectators.push_front(p_recoiler);
-        factor = -1;
+        factor *= -1;
       }
-      return true;
     } else {
       p_remnant = p_recoiler = MakeParticle(pmit->Flav().Bar());
       int index = p_remnant->Flav().IsAnti() ? 1 : 0;
       p_remnant->SetFlow(index + 1, pmit->GetFlow(2 - index));
       m_spectators.push_front(p_recoiler);
-      return true;
     }
   }
-  msg_Error() << METHOD << ": Remnants could not be created. \n";
-  return false;
+  return true;
 }
