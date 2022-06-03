@@ -161,6 +161,9 @@ namespace PDF {
     inline void SetBeam(BEAM::Beam_Base *const beambase,const size_t beam) {
       if (beam<2) p_beam[beam]=beambase;
     }
+    inline BEAM::Beam_Base * GetBeam(const size_t beam) const {
+      return beam<2?p_beam[beam]:nullptr;
+    }
     inline REMNANTS::Remnant_Base* GetRemnant(const size_t beam) const {
       return beam<2?p_remnants[beam]:nullptr;
     }

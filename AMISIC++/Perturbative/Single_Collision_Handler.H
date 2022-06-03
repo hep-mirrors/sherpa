@@ -20,7 +20,7 @@ namespace AMISIC {
     Over_Estimator * p_overestimator;
     double           m_pt2, m_pt2min;
     ATOOLS::Vec4D    m_pbeam1, m_pbeam2;
-    double           m_S, m_lastpt2, m_residualx1, m_residualx2;
+    double           m_S, m_lastpt2, m_residualx1, m_residualx2, m_Ycms;
 
     MI_Process     * p_proc;
     double           m_xt, m_ymax, m_yvol, m_y3, m_y4, m_x1, m_x2;
@@ -44,6 +44,7 @@ namespace AMISIC {
     ~Single_Collision_Handler();
 
     void Init();
+    void UpdateSandY(double s, double y);
     ATOOLS::Blob * NextScatter(const double & bfac=1.);
 
     inline const double & muF2() const { return m_muf2; }

@@ -14,9 +14,10 @@ namespace AMISIC {
     double CalculateSingleDXSec();
     double CalculateDoubleDXSec();
   public:
-    Hadronic_XSec_Calculator();
+    Hadronic_XSec_Calculator(int type);
     ~Hadronic_XSec_Calculator() {}
 
+    void UpdateS(double s);
     void operator()();
 
     const double XStot() const { return m_xstot; }

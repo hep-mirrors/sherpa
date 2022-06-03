@@ -2,7 +2,6 @@
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace AMISIC;
@@ -15,6 +14,7 @@ Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_ana(true)
 Amisic::~Amisic() {
   if (p_processes) delete p_processes;
   if (m_ana) FinishAnalysis();
+  if (p_xsecs) delete p_xsecs;
 }
 
 bool Amisic::Initialize(MODEL::Model_Base *const model,
@@ -22,6 +22,17 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 {
   if (!InitParameters()) return false;
   bool shown = false;
+  // assumes that the photons comes from the EPA interface
+  // in case of photon beams, this leads to a superfluous reset of the model
+  // TODO: find a better way to check for variable s
+  m_variable_s = isr->Flav(0) == Flavour(kf_photon) || isr->Flav(1) == Flavour(kf_photon);
+  if (isr->Flav(0).IsHadron() && isr->Flav(1).IsHadron())
+    m_type = mitype::hadron_hadron;
+  else if ((isr->Flav(0).IsHadron() && isr->Flav(1).IsPhoton()) ||
+           (isr->Flav(1).IsHadron() && isr->Flav(0).IsPhoton()))
+    m_type = mitype::gamma_hadron;
+  else
+    m_type = mitype::gamma_gamma;
   for (size_t beam=0;beam<2;beam++) {
     if(!shown && sqr((*mipars)("pt_0"))<isr->PDF(beam)->Q2Min()) {
       msg_Error()<<"Potential error in "<<METHOD<<":\n"
@@ -32,15 +43,17 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
       shown = true;
     }
   }
+  m_pbeam0 = isr->GetBeam(0)->OutMomentum();
+  m_pbeam1 = isr->GetBeam(1)->OutMomentum();
 
   // Calculate hadronic non-diffractive cross sections, to act as normalization for the
   // multiple scattering probability. 
-  Hadronic_XSec_Calculator xsecs;
-  xsecs();
+  p_xsecs = new Hadronic_XSec_Calculator(m_type);
+  (*p_xsecs)();
 
   // Initialize the parton-level processes - currently only 2->2 scatters and use the
-  // information to construct a verry quick overestimator - this follows closely the
-  // algorithm in the original Sjostrand - van der Zijl publication.
+  // information to construct a very quick overestimator - this follows closely the
+  // algorithm in the original Sjostrand - van Zijl publication.
   // The logic for the overestimator is based on
   // - t-channel dominance allowing to approximate differential cross sections as
   //   dsigma ~ dp_T dy f(x_1) f_(x_2) C_1C_2 as(t)^2/(t+t_0)^2
@@ -50,18 +63,18 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   //   where x_1 and x_2 are identical
   m_sigmaND_norm = (*mipars)("SigmaND_Norm");
   p_processes = new MI_Processes();
-  p_processes->SetSigmaND(m_sigmaND_norm * xsecs.XSnd());
+  p_processes->SetSigmaND(m_sigmaND_norm * p_xsecs->XSnd());
   p_processes->Initialize(model,NULL,isr);
   
   m_overestimator.Initialize(p_processes);
-  m_overestimator.SetXSnd(m_sigmaND_norm * xsecs.XSnd());
+  m_overestimator.SetXSnd(m_sigmaND_norm * p_xsecs->XSnd());
   
   m_singlecollision.Init();
   m_singlecollision.SetMIProcesses(p_processes);
   m_singlecollision.SetOverEstimator(&m_overestimator);
 
   m_impact.SetProcesses(p_processes);
-  m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * xsecs.XSnd()));
+  m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * p_xsecs->XSnd()));
 
   if (m_ana) InitAnalysis();
   return true;
@@ -72,10 +85,27 @@ bool Amisic::InitParameters() {
   return mipars->Init();
 }
 
-void Amisic::SetMaxEnergies(const double & E1,const double & E2) {
-  m_residualE1 = E1;
-  m_residualE2 = E2;
-  m_singlecollision.SetResidualX(2.*E1/rpa->gen.Ecms(),2.*E2/rpa->gen.Ecms());
+void Amisic::UpdateS(const PDF::ISR_Handler *isr) {
+  if (!m_variable_s)
+    return;
+  m_pbeam0 = isr->GetBeam(0)->OutMomentum();
+  m_pbeam1 = isr->GetBeam(1)->OutMomentum();
+  double s = (m_pbeam0 + m_pbeam1).Abs2();
+  double y = (m_pbeam0 + m_pbeam1).Y();
+  p_xsecs->UpdateS(s);
+  (*p_xsecs)();
+  p_processes->SetSigmaND(m_sigmaND_norm * p_xsecs->XSnd());
+  p_processes->UpdateS(s);
+  m_singlecollision.UpdateSandY(s, y);
+  m_overestimator.SetXSnd(m_sigmaND_norm * p_xsecs->XSnd());
+  m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * p_xsecs->XSnd()));
+  // re-calculate in m_impact?
+}
+
+void Amisic::SetMaxEnergies(const double & E0,const double & E1) {
+  m_residualE1 = E0;
+  m_residualE2 = E1;
+  m_singlecollision.SetResidualX(E0/m_pbeam0[0],E1/m_pbeam1[0]);
 }
 
 void Amisic::SetMaxScale(const double & scale) {
@@ -91,7 +121,7 @@ void Amisic::SetB(const double & b) {
   
 bool Amisic::VetoEvent(const double & scale) {
   if (scale<0.) return false;
-  return false;
+  return true;
 }
 
 const double Amisic::ScaleMin() const {

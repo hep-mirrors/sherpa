@@ -8,13 +8,33 @@ using namespace ATOOLS;
 using namespace std;
 
 // will have to make sure that pions are initialised below.  Argh.
-Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
+Hadronic_XSec_Calculator::Hadronic_XSec_Calculator(int type) :
   m_Ecms(rpa->gen.Ecms()), m_s(m_Ecms*m_Ecms),
   m_massp(Flavour(kf_p_plus).Mass()), m_masspi(0.137),
-  m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3),
-  m_xsecpom(21.70),
-  m_xsecregge(rpa->gen.Beam1().IsAnti()^rpa->gen.Beam2().IsAnti()?98.39:56.08)
-{}
+  m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3)
+{
+  if (type == 1) {
+    m_xsecpom = 21.70;
+    m_xsecregge =
+        rpa->gen.Beam1().IsAnti() ^ rpa->gen.Beam2().IsAnti() ? 98.39 : 56.08;
+  }
+  // photonic MPI parametrisation taken from Schuler and Sjöstrand, Z Phys C 73 677-688 (1997)
+  else if (type == 2) {
+    m_xsecpom = 67.7e-3;
+    m_xsecregge = 0.129;
+  }
+  else if (type == 3) {
+    m_xsecpom = 211e-6;
+    m_xsecregge = 215e-6;
+  }
+  else
+    msg_Error() << METHOD << ": Unknown type for multiple interaction: " << type << "\n";
+}
+
+void Hadronic_XSec_Calculator::UpdateS(double s) {
+  m_s = s;
+  m_Ecms = sqrt(m_s);
+}
   
 void Hadronic_XSec_Calculator::operator()()
 {

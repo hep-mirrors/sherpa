@@ -5,6 +5,7 @@
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Over_Estimator.H"
 #include "AMISIC++/Tools/Impact_Parameter.H"
+#include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
 #include "MODEL/Main/Model_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
@@ -42,19 +43,32 @@ namespace AMISIC {
     In SHERPA we added/plan to add other 2->2 scatters, for example for photon 
     and quarkonia production.
   */
+  struct mitype {
+    enum code {
+      none           = 0,
+      hadron_hadron  = 1,
+      gamma_hadron   = 2,
+      gamma_gamma    = 3
+    };
+  };
+
   class Amisic: public ATOOLS::File_IO_Base, ATOOLS::Mass_Selector {
   private:
     double m_sigmaND_norm;
     double m_b, m_bfac, m_residualE1, m_residualE2, m_pt2;
 
-    MI_Processes           * p_processes;
-    Over_Estimator           m_overestimator;
-    Impact_Parameter         m_impact;
-    Single_Collision_Handler m_singlecollision;
+    MI_Processes             * p_processes;
+    Hadronic_XSec_Calculator * p_xsecs;
+    Over_Estimator             m_overestimator;
+    Impact_Parameter           m_impact;
+    Single_Collision_Handler   m_singlecollision;
 
+    bool m_variable_s;
+    mitype::code m_type;
     bool   m_ana;
     size_t m_nscatters;
-    std::map<std::string,ATOOLS::Histogram *> m_histos; 
+    std::map<std::string,ATOOLS::Histogram *> m_histos;
+    ATOOLS::Vec4D m_pbeam0, m_pbeam1;
     
     bool InitParameters();
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
@@ -76,6 +90,7 @@ namespace AMISIC {
     int            ShiftMasses(ATOOLS::Cluster_Amplitude * ampl);      
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
 
+    void UpdateS(const PDF::ISR_Handler *isr);
     void SetMaxEnergies(const double & E1,const double & E2);
     void SetMaxScale(const double & scale);
     void SetB(const double & b=-1.);

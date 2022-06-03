@@ -21,7 +21,7 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   m_stop(false),m_type(None),m_name("None")
 {
   auto s = Settings::GetMainSettings()["MI_HANDLER"];
-  if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) {
+  if (isr->Mode() != PDF::isrmode::hadron_hadron) {
     s.OverrideScalar<std::string>("None");
   }
   std::string mihandler{

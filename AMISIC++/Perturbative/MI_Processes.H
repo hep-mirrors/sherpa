@@ -58,7 +58,8 @@ namespace AMISIC {
       THROW(fatal_error,
 	    "MI_Processes::InitializeProcess should not be called.");
     }
-    MI_Process * SelectProcess(); 
+    MI_Process * SelectProcess();
+    void UpdateS(double s);
   
     inline const double &  Ecms()      const { return m_ecms; }
     inline const double &  PT0()       const { return m_pt0; }

@@ -3,7 +3,6 @@
 #include "EXTRA_XS/Main/Single_Process.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace AMISIC;
@@ -68,7 +67,7 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   m_massmode       = 1;
   SetPSMasses();
   // Now initialize the 2->2 scatters and prepare the integral for the
-  // "Sudakov form factor", Eq. (37) of Sjostrand-van der Zijl
+  // "Sudakov form factor", Eq. (37) of Sjostrand-van Zijl
   return (InitializeAllProcesses() && PrepareSudakovFactor());
 }
 
@@ -289,6 +288,15 @@ const double MI_Processes::SudakovDiffArgument(const double & pt2) const {
   double val1 = m_diffbins[bin],               val2 = m_diffbins[bin+1];
   double val  = (val1*(pt22-pt2)+val2*(pt2-pt21))/(pt22-pt21);
   return val;
+}
+
+void MI_Processes::UpdateS(double s) {
+  // taken from the initialization
+  m_S       = s;
+  m_ecms    = sqrt(s);
+  m_ptmax2  = sqr(m_ecms/2.);
+  m_pt2step = log(m_S/(4.*m_ptmin2))/double(m_nbins);
+  m_xTmin   = 2.*m_ptmin/m_ecms;
 }
 
 /*

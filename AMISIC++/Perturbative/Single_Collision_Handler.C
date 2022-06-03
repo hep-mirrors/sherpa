@@ -13,7 +13,7 @@ Single_Collision_Handler::Single_Collision_Handler() :
   m_pt2(0.), m_pt2min(0.),  
   m_pbeam1(rpa->gen.PBeam(0)), m_pbeam2(rpa->gen.PBeam(1)),
   m_S((m_pbeam1+m_pbeam2).Abs2()), m_lastpt2(m_S), 
-  m_residualx1(1.), m_residualx2(1.),
+  m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
   m_xt(1.), m_ymax(0.), m_y3(0.), m_y4(0.), m_x1(1.), m_x2(1.),
   m_ana(true)
 {}
@@ -39,7 +39,7 @@ Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
     if (!SelectPT2(m_lastpt2)) return NULL;
     p_proc = p_processes->SelectProcess();
   }
-  while (!p_proc || !p_proc->MakeKinematics(m_pt2,m_y3,m_y4,sqrt(m_shat)) ||
+  while (!p_proc || !p_proc->MakeKinematics(m_pt2,m_y3,m_y4,sqrt(m_shat), m_Ycms) ||
 	 !p_proc->SetColours());
   return MakeBlob();
 }
@@ -93,6 +93,13 @@ Blob * Single_Collision_Handler::MakeBlob() {
   return blob;
 }
 
+void Single_Collision_Handler::UpdateSandY(double s, double y) {
+  // does m_lastpt2 also have to be set?
+  m_lastpt2 = s;
+  m_S = s;
+  m_Ycms = y;
+  // Check whether to rerun SelectRapidities and CalcMandelstams
+}
 
 bool Single_Collision_Handler::SelectRapidities() {
   // Generate two trial rapidities

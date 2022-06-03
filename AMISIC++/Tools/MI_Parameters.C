@@ -60,8 +60,8 @@ void MI_Parameters::ReadParameters()
 }
 
 double MI_Parameters::CalculatePT(const double & pt) {
-  return pt * (pow(rpa->gen.Ecms()/m_parameters[string("Ecms(ref)")],
-		   m_parameters[string("eta")]));
+  return pt * pow(rpa->gen.Ecms()/m_parameters[string("Ecms(ref)")],
+		   m_parameters[string("eta")]);
 }
 
 
