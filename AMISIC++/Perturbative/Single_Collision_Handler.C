@@ -107,8 +107,8 @@ bool Single_Collision_Handler::SelectRapidities() {
   if (m_xt>1.) return false;
   m_ymax = log(1./m_xt*(1.+sqrt(1.-m_xt*m_xt)));
   m_yvol = sqr(2.*m_ymax);
-  m_y3   = m_ymax*(2.*ran->Get()-1.);
-  m_y4   = m_ymax*(2.*ran->Get()-1.);
+  m_y3   = m_ymax*(2.*ran->Get()-1.)-m_Ycms;
+  m_y4   = m_ymax*(2.*ran->Get()-1.)-m_Ycms;
   return true;
 }
 
@@ -116,6 +116,7 @@ bool Single_Collision_Handler::CalcXs() {
   m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.;
   m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.;
   if (m_x1<p_processes->PDFXmin(0) || m_x2<p_processes->PDFXmin(1)) return 0.;
+  if (m_x1>1. || m_x2>1.) return 0.;
   return (m_x1<m_residualx1 && m_x2<m_residualx2);
 }
 

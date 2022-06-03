@@ -51,6 +51,7 @@ void MI_Handler::InitAmisic(MODEL::Model_Base *model)
 bool MI_Handler::InitialiseMPIs(const double & scale) 
 {
   if (m_type==Amisic) {
+    p_amisic->UpdateS(p_isr);
     p_amisic->SetMassMode(1);
     p_amisic->SetMaxScale(scale);
     p_amisic->SetB();

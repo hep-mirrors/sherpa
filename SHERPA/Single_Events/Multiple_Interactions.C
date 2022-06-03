@@ -45,7 +45,15 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
   // CheckBlobList makes sure a new interaction can be added.
   // If its the first then a completely new chain of 2->2 scatters 
   // must be initialised.  This is steered by a flag m_newevent, which is 
-  // set to true in the CleanUp() method. 
+  // set to true in the CleanUp() method.
+  if (p_mihandler->Type()!=0) {
+    for (short unsigned int i=0;i<2;++i) {
+      m_emax[i] = p_remnants[i]->GetBeam()->Energy();
+      p_remnants[i]->Reset();
+      p_mihandler->ISRHandler()->ResetRescaleFactor(i);
+      p_mihandler->ISRHandler()->Reset(i);
+    }
+  }
   if (!CheckBlobList() || !InitNewEvent() || !MIKinematics()) return m_result;
   // Possibly switch to new PDF and alphaS.
   // TODO: will have to check that this happens.
