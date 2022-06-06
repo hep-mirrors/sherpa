@@ -55,7 +55,7 @@ template<> double Vec4D::SmallOMCT(const Vec4& v) const
   double ct(std::min(std::max(pq/mag,-1.),1.));
   if (ct<0.) return 1.-ct;
   double st(cross(Vec3D(*this),Vec3D(v)).Abs()/mag);
-  double st2(st/(2.*cos(acos(ct)/2.)));
+  double st2(st/(2.*sqrt((ct+1.)/2.)));
   return 2.*sqr(st2);
 }
 
