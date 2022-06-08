@@ -116,10 +116,6 @@ namespace PHASIC {
     double ReweightBornLike(SHERPA::Variation_Parameters *,
                             BornLikeReweightingInfo &,
                             bool decrementalphasorder);
-    //! Return (pdf1, pdf2)
-    std::pair<double, double> GetPairOfPDFValuesOrOne(
-        SHERPA::Variation_Parameters *,
-        Single_Process::BornLikeReweightingInfo &) const;
     //! Generate cluster sequence info for variation parameters
     ATOOLS::Cluster_Sequence_Info ClusterSequenceInfo(
         SHERPA::Variation_Parameters * varparams,

@@ -794,24 +794,6 @@ double Single_Process::ReweightBornLike(
   }
 }
 
-std::pair<double, double> Single_Process::GetPairOfPDFValuesOrOne(
-    SHERPA::Variation_Parameters * varparams,
-    Single_Process::BornLikeReweightingInfo & info) const
-{
-  const double muF2new(info.m_muF2 * varparams->m_muF2fac);
-  double fa(1.0);
-  if (varparams->p_pdf1) {
-    varparams->p_pdf1->Calculate(info.m_x1, muF2new);
-    fa = varparams->p_pdf1->GetXPDF(info.m_fl1) / info.m_x1;
-  }
-  double fb(1.0);
-  if (varparams->p_pdf2) {
-    varparams->p_pdf2->Calculate(info.m_x2, muF2new);
-    fb = varparams->p_pdf2->GetXPDF(info.m_fl2) / info.m_x2;
-  }
-  return std::make_pair(fa, fb);
-}
-
 ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     SHERPA::Variation_Parameters * varparams,
     Single_Process::BornLikeReweightingInfo & info,
