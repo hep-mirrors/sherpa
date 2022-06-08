@@ -5,6 +5,7 @@
 
 #ifdef USING__MPI
 #include "mpi.h"
+#include <string>
 #endif
 
 #ifdef USING__Threading

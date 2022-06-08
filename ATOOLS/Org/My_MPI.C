@@ -4,6 +4,7 @@
 
 #include <csignal>
 #include <unistd.h>
+#include <algorithm>
 
 using namespace ATOOLS;
 
