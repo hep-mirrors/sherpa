@@ -165,10 +165,6 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
          Q2, muf2fac, mur2fac, showermuf2fac, as,
          nominalcsi);
   AddBeam(csi, Q2);
-  // Reset, such that the hard process scales are filled in the PDF Info object
-  // created by the phase space handler.
-  p_int->ISR()->SetMuF2(Q2 * muf2fac, 0);
-  p_int->ISR()->SetMuF2(Q2 * muf2fac, 1);
   return csi;
 }
 
@@ -513,11 +509,14 @@ double Single_Process::Differential(const Vec4D_Vector &p)
           = (*p_variationweights) / (*p_lkfvariationweights);
       }
     }
+    p_int->ISR()->SetMuF2(facscale, 0);
+    p_int->ISR()->SetMuF2(facscale, 1);
     return m_last;
   }
   else {
     Partonic(p,0);
     NLO_subevtlist *subs(GetSubevtList());
+    double facscale {0.0};
     for (size_t i(0);i<subs->size();++i) {
       NLO_subevt *sub((*subs)[i]);
       if (sub->m_me==0.0) sub->m_result=0.0;
@@ -532,7 +531,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       if (sub->m_me!=0.0) {
         ClusterAmplitude_Vector ampls(sub->p_ampl?1:0,sub->p_ampl);
         if (ampls.size()) ampls.front()->SetProc(sub->p_proc);
-        const double facscale(sub->m_mu2[stp::fac]);
+        facscale = sub->m_mu2[stp::fac];
         ATOOLS::Cluster_Sequence_Info csi(
             ClusterSequenceInfo(ampls, true, facscale));
         msg_Debugging()<<"fa*fb="<<csi.m_pdfwgt<<std::endl;
@@ -560,6 +559,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       p_variationweights->InitialiseWeights(&Single_Process::ReweightSubevents,
                                             *this, emptyadditionaldata);
     }
+    p_int->ISR()->SetMuF2(facscale, 0);
+    p_int->ISR()->SetMuF2(facscale, 1);
     return m_last;
   }
   THROW(fatal_error,"Internal error.");
