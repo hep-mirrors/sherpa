@@ -46,6 +46,15 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
   // If its the first then a completely new chain of 2->2 scatters 
   // must be initialised.  This is steered by a flag m_newevent, which is 
   // set to true in the CleanUp() method.
+  if (m_newevent) {
+    // The flag m_newevent is then set to false after the bloblist and the
+    // energies have been checked, i.e. in the InitNewEvent function.
+    // The emax has to be set here (instead of e.g. the CleanUp()) to ensure
+    // that the correct energy is taken in case of EPA-approximated beams.
+    for (short unsigned int i = 0; i < 2; ++i) {
+      m_emax[i] = p_remnants[i]->GetBeam()->OutMomentum()[0];
+    }
+  }
   if (!CheckBlobList() || !InitNewEvent() || !MIKinematics()) return m_result;
   // Possibly switch to new PDF and alphaS.
   // TODO: will have to check that this happens.
@@ -101,7 +110,6 @@ bool Multiple_Interactions::CheckBlobList()
 void Multiple_Interactions::ResetIS() {
   if (p_mihandler->Type()!=0) {
     for (short unsigned int i=0;i<2;++i) {
-      m_emax[i] = p_remnants[i]->GetBeam()->Energy();
       p_remnants[i]->Reset();
       p_mihandler->ISRHandler()->ResetRescaleFactor(i);
       p_mihandler->ISRHandler()->Reset(i);
@@ -174,7 +182,7 @@ bool Multiple_Interactions::InitNewEvent() {
 void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
   MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
   for (size_t i=0;i<2;i++) {
-    double x_resc = m_emax[i]/p_remnants[i]->GetBeam()->Energy();
+    double x_resc = m_emax[i]/p_remnants[i]->GetBeam()->OutMomentum()[0];
     p_mihandler->ISRHandler()->SetRescaleFactor(x_resc,i);
   }
 }

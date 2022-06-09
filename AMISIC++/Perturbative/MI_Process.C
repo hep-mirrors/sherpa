@@ -81,11 +81,11 @@ MI_Process::~MI_Process() {}
 
 bool MI_Process::MakeKinematics(const double & pt2,
 				const double & y3,const double & y4,
-				const double & Ehat, const double & yCMS) {
+				const double & Ehat) {
   if (!AllowedKinematics(Ehat)) return false;
   double phi = 2.*M_PI*ran->Get();
   // Until now we only have massless initial state partons.
-  if (m_masslessIS) MasslessKinematics(pt2,phi,y3,y4, yCMS);
+  if (m_masslessIS) MasslessKinematics(pt2,phi,y3,y4);
   else return false;
   // If the final state is massive, we use the momenta stretcher to push
   // particles onto their mass shells.  The logic is to go to the c.m. system
@@ -114,7 +114,7 @@ bool MI_Process::AllowedKinematics(const double & Ehat) {
 }
 
 void MI_Process::MasslessKinematics(const double & pt2,const double & phi,
-				    const double & y3,const double & y4, const double & yCMS) {
+				    const double & y3,const double & y4) {
   // reconstruct kinematics from transverse momentum of outgoing particles and
   // their individual rapidities
   double mt2 = sqrt(pt2+m_masses2[2]);

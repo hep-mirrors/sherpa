@@ -11,8 +11,7 @@ using namespace std;
 Single_Collision_Handler::Single_Collision_Handler() :
   p_processes(NULL), p_overestimator(NULL),
   m_pt2(0.), m_pt2min(0.),  
-  m_pbeam1(rpa->gen.PBeam(0)), m_pbeam2(rpa->gen.PBeam(1)),
-  m_S((m_pbeam1+m_pbeam2).Abs2()), m_lastpt2(m_S), 
+  m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
   m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
   m_xt(1.), m_ymax(0.), m_y3(0.), m_y4(0.), m_x1(1.), m_x2(1.),
   m_ana(true)
@@ -39,7 +38,7 @@ Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
     if (!SelectPT2(m_lastpt2)) return NULL;
     p_proc = p_processes->SelectProcess();
   }
-  while (!p_proc || !p_proc->MakeKinematics(m_pt2,m_y3,m_y4,sqrt(m_shat), m_Ycms) ||
+  while (!p_proc || !p_proc->MakeKinematics(m_pt2,m_y3,m_y4,sqrt(m_shat)) ||
 	 !p_proc->SetColours());
   return MakeBlob();
 }
@@ -107,8 +106,8 @@ bool Single_Collision_Handler::SelectRapidities() {
   if (m_xt>1.) return false;
   m_ymax = log(1./m_xt*(1.+sqrt(1.-m_xt*m_xt)));
   m_yvol = sqr(2.*m_ymax);
-  m_y3   = m_ymax*(2.*ran->Get()-1.)-m_Ycms;
-  m_y4   = m_ymax*(2.*ran->Get()-1.)-m_Ycms;
+  m_y3   = m_ymax*(2.*ran->Get()-1.);
+  m_y4   = m_ymax*(2.*ran->Get()-1.);
   return true;
 }
 

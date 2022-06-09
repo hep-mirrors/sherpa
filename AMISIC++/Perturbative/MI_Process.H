@@ -53,13 +53,13 @@ namespace AMISIC {
 
     bool AllowedKinematics(const double & Ehat);
     void MasslessKinematics(const double & pt2,const double & phi,
-			    const double & y3,const double & y4, const double & yCMS);
+			    const double & y3,const double & y4);
   public:
     MI_Process(const std::vector<ATOOLS::Flavour> & flavs);
     ~MI_Process();
 
     bool MakeKinematics(const double & pt2,const double & y3,const double & y4,
-			const double & Ehat, const double & yCMS);
+			const double & Ehat);
     ATOOLS::Particle * GetParticle(const size_t & i);
 
     inline const ATOOLS::Flavour & Flav(const size_t & i) const {
