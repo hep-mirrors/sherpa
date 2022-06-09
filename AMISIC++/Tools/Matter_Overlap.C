@@ -1,5 +1,4 @@
 #include "AMISIC++/Tools/Matter_Overlap.H"
-#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"

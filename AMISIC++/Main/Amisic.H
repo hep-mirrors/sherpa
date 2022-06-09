@@ -43,16 +43,15 @@ namespace AMISIC {
     In SHERPA we added/plan to add other 2->2 scatters, for example for photon 
     and quarkonia production.
   */
-  struct mitype {
-    enum code {
+
+  class Amisic: public ATOOLS::File_IO_Base, ATOOLS::Mass_Selector {
+  public:
+    enum mitype {
       none           = 0,
       hadron_hadron  = 1,
       gamma_hadron   = 2,
       gamma_gamma    = 3
     };
-  };
-
-  class Amisic: public ATOOLS::File_IO_Base, ATOOLS::Mass_Selector {
   private:
     double m_sigmaND_norm;
     double m_b, m_bfac, m_residualE1, m_residualE2, m_pt2;
@@ -64,7 +63,7 @@ namespace AMISIC {
     Single_Collision_Handler   m_singlecollision;
 
     bool m_variable_s;
-    mitype::code m_type;
+    mitype m_type;
     bool   m_ana;
     size_t m_nscatters;
     std::map<std::string,ATOOLS::Histogram *> m_histos;

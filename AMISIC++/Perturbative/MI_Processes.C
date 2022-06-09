@@ -32,7 +32,8 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   m_muFfac    = sqr((*mipars)("FacScale_Factor"));
   for (size_t i=0;i<2;i++) {
     p_pdf[i]  = p_isr->PDF(i);
-    m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin()); }
+    m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
+  }
   p_alphaS    = dynamic_cast<MODEL::Running_AlphaS *>
     (model->GetScalarFunction("alpha_S"));
   p_alpha     = dynamic_cast<MODEL::Running_AlphaQED *>
@@ -41,9 +42,12 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   // - pt_0, the IR regulator in the propagator and in the strong coupling
   // - pt_min, the IR cut-off for the 2->2 scatters
   // - Ecms, the cms energy of the hadron collision
-  m_pt0      = (*mipars)("pt_0");   m_pt02   = m_pt0*m_pt0;
-  m_ptmin    = (*mipars)("pt_min"); m_ptmin2 = m_ptmin*m_ptmin;
-  m_ecms     = rpa->gen.Ecms();     m_S      = m_ecms*m_ecms;
+  m_pt0      = (*mipars)("pt_0");
+  m_pt02   = m_pt0*m_pt0;
+  m_ptmin    = (*mipars)("pt_min");
+  m_ptmin2 = m_ptmin*m_ptmin;
+  m_ecms     = rpa->gen.Ecms();
+  m_S      = m_ecms*m_ecms;
   m_ptmax2   = sqr(m_ecms/2.);
   // will have to make this part of an external input scheme
   m_scale_scheme   = "MPI"; 

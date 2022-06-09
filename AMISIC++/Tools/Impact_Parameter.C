@@ -1,6 +1,5 @@
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Impact_Parameter.H"
-#include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"

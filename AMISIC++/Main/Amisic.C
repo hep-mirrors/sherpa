@@ -22,17 +22,19 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 {
   if (!InitParameters()) return false;
   bool shown = false;
-  // assumes that the photons comes from the EPA interface
-  // in case of photon beams, this leads to a superfluous reset of the model
-  // TODO: find a better way to check for variable s
-  m_variable_s = isr->Flav(0) == Flavour(kf_photon) || isr->Flav(1) == Flavour(kf_photon);
+  // if EPA is used the energies entering the ISR will vary
+  m_variable_s = isr->GetBeam(0)->Type() == BEAM::beamspectrum::EPA ||
+                 isr->GetBeam(1)->Type() == BEAM::beamspectrum::EPA;
   if (isr->Flav(0).IsHadron() && isr->Flav(1).IsHadron())
     m_type = mitype::hadron_hadron;
   else if ((isr->Flav(0).IsHadron() && isr->Flav(1).IsPhoton()) ||
            (isr->Flav(1).IsHadron() && isr->Flav(0).IsPhoton()))
     m_type = mitype::gamma_hadron;
-  else
+  else if (isr->Flav(0).IsPhoton() && isr->Flav(1).IsPhoton())
     m_type = mitype::gamma_gamma;
+  else
+    msg_Error() << METHOD <<": unknown multiple interaction model for " <<
+            isr->Flav(0) << " and " << isr->Flav(1) << "\n";
   for (size_t beam=0;beam<2;beam++) {
     if(!shown && sqr((*mipars)("pt_0"))<isr->PDF(beam)->Q2Min()) {
       msg_Error()<<"Potential error in "<<METHOD<<":\n"
@@ -120,8 +122,8 @@ void Amisic::SetB(const double & b) {
 }
   
 bool Amisic::VetoEvent(const double & scale) {
-  if (scale<0.) return false;
-  return true;
+  if (scale<0.) return true;
+  return false;
 }
 
 const double Amisic::ScaleMin() const {
