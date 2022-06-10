@@ -127,6 +127,9 @@ void MI_Process::MasslessKinematics(const double & pt2,const double & phi,
   double p = m_momenta[2][3]+m_momenta[3][3];
   m_momenta[0] = (E+p)/2. * Vec4D(1, 0, 0, 1);
   m_momenta[1] = (E-p)/2. * Vec4D(1, 0, 0,-1);
+  // correspond to momenta
+  // p0 = (mt2*exp(y3)+mt3*exp(y4))/2 * (1, 0, 0, 1) and
+  // p1 = (mt2*exp(-y3)+mt3*exp(-y4))/2 * (1, 0, 0, -1)
 }
 
 Particle * MI_Process::GetParticle(const size_t & i) {

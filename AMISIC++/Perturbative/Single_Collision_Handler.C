@@ -112,8 +112,9 @@ bool Single_Collision_Handler::SelectRapidities() {
 }
 
 bool Single_Collision_Handler::CalcXs() {
-  m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.;
-  m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.;
+  // Misses term for the masses?
+  m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.*exp(-m_Ycms);
+  m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.*exp(m_Ycms);
   if (m_x1<p_processes->PDFXmin(0) || m_x2<p_processes->PDFXmin(1)) return 0.;
   if (m_x1>1. || m_x2>1.) return 0.;
   return (m_x1<m_residualx1 && m_x2<m_residualx2);
@@ -121,7 +122,7 @@ bool Single_Collision_Handler::CalcXs() {
 
 bool Single_Collision_Handler::CalcMandelstams() {
   if (m_xt*m_xt>m_x1*m_x2) return false;
-  double tanhy = sqrt(1.-(m_xt*m_xt)/(m_x1*m_x2));
+  double tanhy = sqrt(1.-(m_xt*m_xt)/(m_x1*m_x2)); // = tanh((y3+y4)/2)
   m_shat = m_x1*m_x2*m_S;
   m_that = -0.5*m_shat*(1.-tanhy);
   m_uhat = -0.5*m_shat*(1.+tanhy);
