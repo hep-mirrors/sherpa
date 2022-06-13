@@ -55,7 +55,7 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
   m_outjetkf(kf_none), p_jdef(NULL)
 {
   DEBUG_FUNC("");
-  bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
+  bool ee(rpa->gen.Bunch(0).IsLepton() && rpa->gen.Bunch(1).IsLepton());
   auto s = key.m_settings["Jet_Selector"];
 
   // input ptcls and output ID
