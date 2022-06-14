@@ -259,9 +259,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         if (!info) {
           return false;
         }
-        const double normalabswgt = std::abs(info->m_weight);
+        m_pilotweightfactor = info->m_weight/m_evtinfo.m_weight;
         delete info;
-        m_pilotweightfactor = normalabswgt/abswgt;
         wf *= m_pilotweightfactor;
         proc->SetVariationWeights(NULL);
         // also consume random number used to set the discriminator for
