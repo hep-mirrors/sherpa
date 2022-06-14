@@ -372,6 +372,8 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     }
   rproc->Integrator()->SetMax
     (p_rsproc->Selected()->Integrator()->Max());
+  rproc->Integrator()->SetEnhanceFactor
+        (p_rsproc->Selected()->Integrator()->EnhanceFactor());
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
   rproc->Integrator()->SetMomenta(p);
   rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
