@@ -99,7 +99,7 @@ void ISR_Handler::Output() {
 
 void ISR_Handler::Init(const double *splimits) {
   double s = (p_beam[0]->OutMomentum() + p_beam[1]->OutMomentum()).Abs2();
-  ATOOLS::rpa->gen.SetEcms(sqrt(s));
+  ATOOLS::rpa->gen.SetEcms((p_beam[0]->InMomentum() + p_beam[1]->InMomentum()).Abs());
 
   m_splimits[0] = s * splimits[0];
   m_splimits[1] = ATOOLS::Min(s * splimits[1], s * Upper1() * Upper2());
