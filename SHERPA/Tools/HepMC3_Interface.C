@@ -610,9 +610,31 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     for (size_t j {0}; j < 2; ++j) {
       auto flav = (j == 0) ? rpa->gen.Beam1() : rpa->gen.Beam2();
       inpart[j] = MakeGenParticle(rpa->gen.PBeam(j), flav, true);
-      psvertex->add_particle_in(inpart[j]);
     }
     event.set_beam_particles(inpart[0], inpart[1]);
+    // Note that at this point all other particles which have no production
+    // vertex are also implicitly beam particles by the HepMC logic.
+    // Therefore, we insert an additional vertex which has the actual beams
+    // incoming, and all other particles, which have no production vertex,
+    // outgoing.
+    HepMC::FourVector position(0.0, 0.0, 0.0, 0.0);
+    HepMC::GenVertexPtr beam_to_parton_vertex =
+        std::make_shared<HepMC::GenVertex>(position);
+    event.add_vertex(beam_to_parton_vertex);
+    beam_to_parton_vertex->add_attribute(
+        "weight0", std::make_shared<HepMC::DoubleAttribute>(1.0));
+    beam_to_parton_vertex->set_status(7); // beam vertex
+    beam_to_parton_vertex->add_particle_in(inpart[0]);
+    beam_to_parton_vertex->add_particle_in(inpart[1]);
+    for (auto vit : event.vertices()) {
+      if (vit->status() != 7) {
+        for (auto pin : vit->particles_in()) {
+          if (pin->production_vertex()->id() == 0) {
+            beam_to_parton_vertex->add_particle_out(pin);
+          }
+        }
+      }
+    }
   }
 
 
