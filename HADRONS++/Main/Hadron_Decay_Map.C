@@ -205,13 +205,15 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
       int decayerkf = atoi((line[0]).c_str());
       Flavour decayerflav = Flavour( (kf_code) abs(decayerkf), decayerkf<0);
       msg_Tracking()<<"New hadron decay table for "<<decayerflav<<", "
-		    <<"with mass = "<<decayerflav.HadMass()<<"\n";
+        <<"with mass = "<<decayerflav.HadMass();
       Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav, p_ms,
                                                        p_mixinghandler);
       dt->Read(path+line[1], line[2]);
       // add decayer to decaymap
       Decay_Map::iterator it = find(decayerflav);
       if (it==end()) {
+        msg_Tracking()<<", with "<<dt->size()<<" decay channels."<<std::endl;
+        msg_Debugging()<<*dt<<std::endl;
         insert(make_pair(decayerflav, vector<Decay_Table*>(1,dt)));
       }
       else {

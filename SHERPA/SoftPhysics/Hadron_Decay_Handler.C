@@ -47,7 +47,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   string decayconstfile=dr.GetValue<string>("DECAYCONSTFILE",
                                             string("HadronConstants.dat"));
   string bdecayfile=dr.GetValue<string>("B_DECAYFILE",
-					string("Partonic_b/Decays.dat"));
+          string("Partonic_b/Decays.dat"));
   string cdecayfile=dr.GetValue<string>("C_DECAYFILE",
 					string("Partonic_c/Decays.dat"));
   string aliasfile=dr.GetValue<string>("HADRONALIASESFILE",
@@ -63,8 +63,10 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   My_In_File::ExecDB(decaypath,"BEGIN");
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
   dmap->ReadInConstants(decaypath, decayconstfile);
-  dmap->ReadInPartonicDecays(Flavour(kf_b),decaypath,bdecayfile);
-  dmap->ReadInPartonicDecays(Flavour(kf_c),decaypath,cdecayfile);
+  if (bdecayfile!="" && bdecayfile!="None")
+    dmap->ReadInPartonicDecays(Flavour(kf_b),decaypath,bdecayfile);
+  if (cdecayfile!="" && bdecayfile!="None")
+    dmap->ReadInPartonicDecays(Flavour(kf_c),decaypath,cdecayfile);
   dmap->ReadHadronAliases(decaypath, aliasfile);
   dmap->Read(decaypath, decayfile, true);
   dmap->Read(decaypath, aliasdecayfile);
