@@ -1,12 +1,9 @@
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-<<<<<<< HEAD
 #include "ATOOLS/Phys/KF_Table.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
-=======
 #include "ATOOLS/Phys/Flavour.H"
->>>>>>> 4273e2575 (Implement csin2_thetaW for SMEFTsim)
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
