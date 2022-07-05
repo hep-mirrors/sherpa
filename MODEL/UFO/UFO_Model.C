@@ -81,7 +81,8 @@ namespace UFO{
     ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
     const std::string widthscheme{
       s["WIDTH_SCHEME"].GetScalarWithOtherDefault<std::string>("Fixed") };
-    p_numbers->insert(make_pair(std::string("WidthScheme"), widthscheme=="CMS"));
+    bool cms(widthscheme=="CMS");
+    p_numbers->insert(make_pair(std::string("WidthScheme"), cms));
 
     // set default value to UFO input such that
     // we recover standard cross sections for fixed QCD coupling
