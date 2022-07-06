@@ -698,7 +698,7 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
       (m_bvimode&4)) {
     Vec4D_Vector _mom(mom);
     Poincare cms;
-    if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
       cms=Poincare(_mom[0]+_mom[1]);
       for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
     }
@@ -997,7 +997,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
 
   Vec4D_Vector _mom(mom);
   Poincare cms;
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+  if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     cms=Poincare(_mom[0]+_mom[1]);
     for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
   }
