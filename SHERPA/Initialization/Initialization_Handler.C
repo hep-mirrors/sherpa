@@ -105,6 +105,7 @@ void Initialization_Handler::RegisterDefaults()
   Settings& s = Settings::GetMainSettings();
   s["EVENT_GENERATION_MODE"].SetDefault("PartiallyUnweighted");
   s["EVENT_TYPE"].SetDefault("StandardPerturbative");
+  s["SOFT_COLLISIONS"].SetDefault("None");
   s["EVT_FILE_PATH"].SetDefault(".");
   s["ANALYSIS_OUTPUT"].SetDefault("Analysis/");
   s["RESULT_DIRECTORY"].SetDefault("Results");
@@ -511,11 +512,16 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       m_mode=eventtype::StandardPerturbative;
     else if (eventtype=="MinimumBias") {
       m_mode=eventtype::MinimumBias;
-      s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      if (s["SOFT_COLLISIONS"].Get<string>()==string("Amisic")) 
+	s["MI_HANDLER"].OverrideScalar<std::string>("Amisic");
+      else if (s["SOFT_COLLISIONS"].Get<string>()==string("Shrimps")) 
+	s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else if (eventtype=="HadronDecay") {
       m_mode=eventtype::HadronDecay;
       s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
@@ -562,9 +568,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheAnalyses();
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
-    okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheUnderlyingEvents();
+    okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
     okay = okay && InitializeTheFilter();
@@ -936,8 +942,12 @@ bool Initialization_Handler::InitializeTheShowers()
 bool Initialization_Handler::InitializeTheSoftCollisions() 
 {
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
-  p_softcollisions = new Soft_Collision_Handler(p_beamspectra,
+  p_softcollisions = new Soft_Collision_Handler(p_model,
+						p_beamspectra,
                                                 m_isrhandlers[isr::hard_process]);
+  if (p_mihandler->Type()==MI_Handler::amisic) {
+    p_softcollisions->SetAmisic(p_mihandler->Amisic());
+  }
   msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
   return 1;
 }

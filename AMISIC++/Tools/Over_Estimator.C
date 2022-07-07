@@ -75,7 +75,7 @@ double Over_Estimator::ApproxME(const double & pt2) {
   // that the t-channel exchange of gluons in elastic scattering dominates, and that the
   // product of PDFs is largest for both x being minimal, i.e. for x = xT = 4pT^2/s.
   double scale = pt2+m_pt02;
-  double est   = M_PI/2.*sqr((*p_alphaS)(m_muR_fac * scale/4.)) / sqr(scale);
+  double est   = M_PI/2.*sqr((*p_alphaS)(Max(m_pt02,m_muR_fac * scale/4.))) / sqr(scale);
   for (size_t i=0;i<2;i++) {
     double pdfsum = 0.;
     double Q2     = m_muF_fac*Max(pt2,p_pdf[i]->Q2Min());

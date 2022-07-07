@@ -8,15 +8,14 @@ using namespace SHERPA;
 Minimum_Bias::Minimum_Bias(Soft_Collision_Handler * schandler) :
   p_schandler(schandler)
 {
-  m_name      = std::string("Minimum_Bias:")+p_schandler->Soft_CollisionModel();
-  m_type      = eph::Perturbative;
+  m_name = std::string("Minimum_Bias:")+p_schandler->Soft_CollisionModel();
+  m_type = eph::Perturbative;
 }
 
 Minimum_Bias::~Minimum_Bias() {}
 
 ATOOLS::Return_Value::code Minimum_Bias::Treat(ATOOLS::Blob_List* blobs)
 {
-  //msg_Out()<<METHOD<<":\n"<<blobs<<" with "<<p_schandler<<"\n";
   return p_schandler->GenerateMinimumBiasEvent(blobs);
 }
 

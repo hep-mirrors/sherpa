@@ -87,6 +87,9 @@ Blob * Single_Collision_Handler::MakeBlob() {
 		  blob_status::needs_hadronization);
   blob->SetId();
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  blob->AddData("Renormalization_Scale",new Blob_Data<double>(m_pt2));
+  blob->AddData("Factorization_Scale",new Blob_Data<double>(m_pt2));
+  blob->AddData("Resummation_Scale",new Blob_Data<double>(m_pt2));
   for (size_t i=0;i<2;i++) blob->AddToInParticles(p_proc->GetParticle(i));
   for (size_t i=2;i<4;i++) blob->AddToOutParticles(p_proc->GetParticle(i));
   if (m_ana) Analyse(m_pt2,blob);

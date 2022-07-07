@@ -172,6 +172,7 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
   p_signal->SetStatus(status);
   p_signal->AddData("Trials",new Blob_Data<double>(0));
   p_signal->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  p_signal->AddData("Weight_Norm",new Blob_Data<double>(1.));
   m_blobs.push_back(p_signal);
 }
 

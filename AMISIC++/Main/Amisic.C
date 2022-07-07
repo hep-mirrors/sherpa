@@ -9,7 +9,9 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_ana(true)
+Amisic::Amisic() :
+  m_sigmaND_norm(1.), p_processes(NULL),
+  m_isMinBias(false), m_ana(true)
 {}
 
 Amisic::~Amisic() {
@@ -64,6 +66,8 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * xsecs.XSnd()));
 
   if (m_ana) InitAnalysis();
+  CleanUp();
+  
   return true;
 }
 
@@ -102,8 +106,9 @@ const double Amisic::ScaleMax() const {
   return m_pt2;
 }
 
-Blob * Amisic::GenerateScatter()
-{
+Blob * Amisic::GenerateScatter() {
+  //msg_Out()<<METHOD<<": asking Amisic to start filling Min Bias event, "
+  //	   <<"pt = "<<sqrt(m_pt2)<<" for b = "<<m_b<<" and bfac = "<<m_bfac<<".\n";
   Blob * blob = m_singlecollision.NextScatter(m_bfac);
   if (blob) {
     m_pt2 = m_singlecollision.LastPT2();
@@ -114,6 +119,17 @@ Blob * Amisic::GenerateScatter()
     if (m_ana) Analyse(true);
   }
   return NULL;
+}
+
+int Amisic::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
+  if (m_isFirst==true) {
+    //msg_Out()<<METHOD<<": asking Amisic to provide Min Bias event.\n";
+    m_isFirst   = false;
+    m_isMinBias = true;
+    m_b    = m_impact.SelectB();
+    m_bfac = Max(0.,m_impact(m_b));
+  }
+  return 0;
 }
 
 Cluster_Amplitude * Amisic::ClusterConfiguration(Blob * blob) {
@@ -163,7 +179,13 @@ bool Amisic::VetoScatter(Blob * blob)
   exit(1);
 }
     
-void Amisic::CleanUp() {}
+void Amisic::CleanUp() {
+  SetMaxEnergies(rpa->gen.PBeam(0)[0],rpa->gen.PBeam(1)[0]);
+  SetMaxScale(rpa->gen.Ecms()/2.);
+  m_isFirst   = true;
+  m_isMinBias = false;
+}
+
 void Amisic::Reset() {}
 
 void Amisic::InitAnalysis() {
