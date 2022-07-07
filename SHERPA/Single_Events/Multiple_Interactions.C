@@ -70,17 +70,24 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
     // We have to fill it with the content of the actual blob created by
     // the MI_Handler
     if (m_isfirstMB) {
+      Blob * signal = (*p_bloblist)[0];
       Particle_Vector * ins = p_lastblob->InParticles();
       while (!ins->empty()) {
-	(*p_bloblist)[0]->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));
+	signal->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));
       }
       Particle_Vector * outs = p_lastblob->OutParticles();
       while (!outs->empty()) {
-	(*p_bloblist)[0]->AddToOutParticles(p_lastblob->RemoveOutParticle(outs->back()));
+	signal->AddToOutParticles(p_lastblob->RemoveOutParticle(outs->back()));
       }
-      (*p_bloblist)[0]->SetStatus(blob_status::code(p_lastblob->Status()));
-      (*p_bloblist)[0]->SetType(p_lastblob->Type());
-      (*p_bloblist)[0]->SetTypeSpec(p_lastblob->TypeSpec());
+      signal->SetStatus(blob_status::code(p_lastblob->Status()));
+      signal->SetType(p_lastblob->Type());
+      signal->SetTypeSpec(p_lastblob->TypeSpec());
+      signal->AddData("Renormalization_Scale",
+		      new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]->Get<double>()));
+      signal->AddData("Factorization_Scale",
+		      new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]->Get<double>()));
+      signal->AddData("Resummation_Scale",
+		      new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]->Get<double>()));
       //exit(1);
       delete p_lastblob;
       //msg_Out()<<*(*p_bloblist)[0]<<"\n";
