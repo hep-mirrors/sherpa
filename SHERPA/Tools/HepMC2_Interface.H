@@ -4,6 +4,7 @@
 
 #ifdef USING__HEPMC2
 
+#include "ATOOLS/Math/Uncertain.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -105,7 +106,7 @@ namespace SHERPA {
     bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs);
     bool SubEvtList2ShortHepMC(EventInfo &evtinfo);
 
-    void AddCrossSection(HepMC::GenEvent&, const Uncertain<double>& xs);
+    void AddCrossSection(HepMC::GenEvent&, const ATOOLS::Uncertain<double>& xs);
 
     // inline functions
     inline HepMC::GenEvent* GenEvent() { return p_event; }
