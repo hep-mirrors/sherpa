@@ -12,7 +12,8 @@ namespace SHRIMPS {
   
   struct xs_mode {
     enum code {
-      perturbative = 1,
+      perturbative = 2,
+      integrated   = 1,
       Regge        = 0
     };
   };
@@ -25,7 +26,8 @@ namespace SHRIMPS {
     double          m_Ymax, m_S, m_eta, m_smin, m_tmin;
     double          m_accu, m_sigma, m_maxdsigma;
     int             m_Nmaxtrials;
-    double          m_shat, m_yhat, m_dsigma, m_x[2], m_xpdf[2];
+    double          m_y[2], m_yhat, m_dy, m_coshdy, m_pt2, m_shat, m_that;
+    double          m_dsigma, m_x[2], m_xpdf[2];
     ATOOLS::Flavour m_flavs[2];
     
 
@@ -34,8 +36,8 @@ namespace SHRIMPS {
       if (flav.IsGluon()) return 3.;
       return 0.;
     }
-    const double ME2(const double & s,const double & scale);
-    const double MakePoint(double & s,double & y);
+    const double ME2(const double & shat,const double & that,const double & scale);
+    const double MakePoint();
     const bool   Calculate();
     void  SelectFlavours(const bool & fixflavour);
   public:
@@ -44,7 +46,8 @@ namespace SHRIMPS {
 
     void Initialise(Remnant_Handler * remnants); 
     const double MakeEvent();
-    const double dSigma(const double & s,const double & y);
+    const double dSigma();
+    const double dSigma(const double & shat,const double & yhat);
     const double PDF(const size_t beam,const double & x,const double & Q2,
 		     const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_gluon));
     void SetAlphaS(MODEL::Strong_Coupling * as)          { p_alphaS = as; }

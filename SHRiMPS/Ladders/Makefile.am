@@ -8,6 +8,7 @@ libShrimpsLadders_la_SOURCES = \
 			Ladder_Generator_Eik.C \
 			Ladder_Generator_QT.C \
 			Ladder_Generator_KT.C \
+			Ladder_Generator_Seeded.C \
 			MEs.C \
 			Primary_Ladders.C 
 
@@ -21,6 +22,7 @@ localinc_HEADERS   = \
 			Ladder_Generator_Eik.H \
 			Ladder_Generator_QT.H \
 			Ladder_Generator_KT.H \
+			Ladder_Generator_Seeded.H \
 			MEs.H \
 			Primary_Ladders.H
 

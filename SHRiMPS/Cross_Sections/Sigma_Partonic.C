@@ -34,9 +34,8 @@ void Sigma_Partonic::Initialise(Remnant_Handler * remnants) {
 const double Sigma_Partonic::MakeEvent() {
   double Jac, dsigma;
   for (size_t i=0;i<m_Nmaxtrials;i++) {
-    Jac      = MakePoint(m_shat,m_yhat); 
-    m_dsigma = dSigma(m_shat,m_yhat);
-    if (Jac * m_dsigma>m_maxdsigma*ran->Get()) {
+    m_dsigma = MakePoint() * dSigma();
+    if (m_dsigma>m_maxdsigma*ran->Get()) {
       SelectFlavours(m_fixflavour); 
       return m_shat;
     }
@@ -73,12 +72,10 @@ const bool Sigma_Partonic::Calculate() {
   size_t iter = 0, Npoints = 10000;
   long int N  = 0;
   double dsigma, sigma, res = 0., res2 = 0., accu = 1.e99;
-  double s, y, Jac;
   do {
     for (size_t i=0;i<Npoints;i++) {
       N++;
-      Jac    = MakePoint(s,y); 
-      dsigma = Jac * dSigma(s,y);
+      dsigma = MakePoint() * dSigma();
       res   += dsigma;
       res2  += sqr(dsigma);
       if (dsigma>m_maxdsigma) m_maxdsigma = dsigma;
@@ -106,18 +103,35 @@ const bool Sigma_Partonic::Calculate() {
   return false;
 }
 
-const double Sigma_Partonic::MakePoint(double & s,double & y) {
-  s           = m_smin * pow(m_S/m_smin,ran->Get());
-  double ymax = 1./2.*log(m_S/s);
-  y           = ymax * (-1. + 2.*ran->Get());
+const double Sigma_Partonic::MakePoint() {
+  double cosh2, pt2min, pt2max;
+  for (size_t i=0;i<2;i++) {
+    m_y[i] = m_Ymax*(-1.+2.*ran->Get());
+  }
+  m_yhat   = (m_y[0]+m_y[1])/2.;
+  m_dy     = (m_y[0]-m_y[1])/2.;
+  m_coshdy = cosh(m_dy);
+  cosh2    = sqr(m_coshdy);
+  pt2min   = m_smin/(4.*cosh2);
+  pt2max   = m_S/(4.*cosh2);
+  m_pt2    = 1./(1./pt2min*(1.-ran->Get())-1./pt2max);
+  m_shat   = 4.*cosh2*m_pt2;
+  m_that   = -m_pt2*(1.+exp(-m_dy));
+  msg_Out()<<METHOD<<"(y1 = "<<m_y[0]<<", y2 = "<<m_y[1]<<", pt2 = "<<m_pt2<<") "
+	   <<"--> shat = "<<m_shat<<", that = "<<m_that<<".\n";
+  return sqr(2.*m_Ymax) * sqr(m_pt2)*1./2.*(1./pt2min-1./pt2max);
+  /*
+  shat        = m_smin * pow(m_S/m_smin,ran->Get());
+  double ymax = 1./2.*log(m_S/shat);
+  yhat        = ymax * (-1. + 2.*ran->Get());
   double Jac  = log(m_S/m_smin) * (2.*ymax);
-  return Jac;
+  */
 }
 
-const double Sigma_Partonic::dSigma(const double & s,const double & y) {
-  double flux = 1/(2.*s), Enorm = sqrt(s/m_S)/2., scale = 0.;
+const double Sigma_Partonic::dSigma() {
+  double flux = 1/(2.*m_shat), Enorm = sqrt(m_shat/m_S)/2., scale = 0.;
   for (size_t i=0;i<2;i++) {
-    m_x[i]    = Enorm * (i==0 ? exp(y) : exp(-y));
+    m_x[i]    = Enorm * (i==0 ? exp(m_yhat) : exp(-m_yhat));
     if (m_x[i]<1.e-6 || m_x[i]>0.9999999) return 0.;
     m_xpdf[i] = 0.;
     p_pdf[i]->Calculate(m_x[i],scale);
@@ -127,20 +141,35 @@ const double Sigma_Partonic::dSigma(const double & s,const double & y) {
       m_xpdf[i] += p_pdf[i]->XPDF((*flit)) * ColourFactor((*flit));
     }
   }
-  return flux * m_xpdf[0]*m_xpdf[1] * ME2(s,scale);
+  return flux * m_xpdf[0]*m_xpdf[1] * ME2(m_shat,m_that,scale);
 }
 
-const double Sigma_Partonic::ME2(const double & s,const double & scale) {
-  double me2 = 0.;
+const double Sigma_Partonic::dSigma(const double & shat,const double & yhat) {
+  double flux = 1/(2.*m_shat), Enorm = sqrt(m_shat/m_S)/2., scale = 0.;
+  for (size_t i=0;i<2;i++) {
+    m_x[i]    = Enorm * (i==0 ? exp(m_yhat) : exp(-m_yhat));
+    if (m_x[i]<1.e-6 || m_x[i]>0.9999999) return 0.;
+    m_xpdf[i] = 0.;
+    p_pdf[i]->Calculate(m_x[i],scale);
+    for (list<Flavour>::const_iterator flit=p_pdf[i]->GetFlavours().begin();
+	 flit!=p_pdf[i]->GetFlavours().end();flit++) {
+      if (p_pdf[i]->XPDF((*flit))<1.e-4) continue;
+      m_xpdf[i] += p_pdf[i]->XPDF((*flit)) * ColourFactor((*flit));
+    }
+  }
+  return flux * m_xpdf[0]*m_xpdf[1] * ME2(m_shat,m_that,scale);
+}
+
+const double Sigma_Partonic::ME2(const double & shat,const double & that,const double & scale) {
   switch (m_mode) {
   case xs_mode::perturbative:
-    me2 = 4.*M_PI*sqr((*p_alphaS)(s))*sqr(s)/(m_tmin*(s+m_tmin));
-    break;
+    return sqr(4.*M_PI*(*p_alphaS)(scale))*(sqr(shat)+sqr(shat+that))/sqr(-that+m_tmin);
+  case xs_mode::integrated:
+    return 4.*M_PI*sqr((*p_alphaS)(scale))*sqr(shat)/(m_tmin*(shat+m_tmin));
   case xs_mode::Regge:
-    me2 = pow( (s/m_smin), 1.+m_eta);
-    break;
+    return pow( (shat/m_smin), 1.+m_eta);
   default:
     break;
   }
-  return me2;
+  return 0.;
 }

@@ -126,7 +126,7 @@ bool Ladder_Generator_Eik::SelectPropagatorQT(const size_t dir,T_Prop & prop) {
   do {
     if (trials++ > 1000) return false;
     if (dabs(m_y[dir][0])>m_Ymax) {
-      m_qt2  = p_eikonal->FF(y1>0?0:1)->SelectQT2(qt2max,0.);
+      m_qt2  = p_eikonal->FF(m_y[dir][0]>0.?0:1)->SelectQT2(qt2max,0.);
       weight = 1.;
     }
     else {
