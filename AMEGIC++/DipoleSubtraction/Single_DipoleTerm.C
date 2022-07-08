@@ -7,6 +7,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -616,7 +617,7 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms,
   p_int->SetMomenta(_moms);
   Poincare cms;
   Vec4D_Vector pp(_moms);
-  if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam())) {
+  if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     cms=Poincare(pp[0]+pp[1]);
     for (size_t i(0);i<pp.size();++i) cms.Boost(pp[i]);
   }
