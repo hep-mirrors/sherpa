@@ -15,6 +15,11 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace std;
 
+double Vegas::Power::operator()(double &x) const
+{
+  return pow(x,1./(1.+m_exp));
+}
+
 int Vegas::s_onext = -1, Vegas::s_on = -1;
 
 Vegas::Vegas(int dim, int ndx, const std::string &name) {
@@ -31,6 +36,7 @@ Vegas::Vegas(int dim, int ndx, const std::string &name) {
   m_snevt = 0;
   m_cevt = 0;
   m_mcevt = 0;
+  m_const = 0;
   m_name = name;
   m_mode = 0;
   m_nd = (s_on & 2) ? 10 : ndx;
@@ -201,6 +207,14 @@ void Vegas::Rebin(double rc, double *xi) {
   for (i = 0; i < m_nd; i++) xi[i] = p_xin[i];
 }
 
+void Vegas::Preset(const Mapping *f,const int d) {
+  if (m_on == 0) return;
+  for (size_t i = 0; i < m_nd; ++i) {
+    double x((i+1)/double(m_nd));
+    p_xi[d][i]=(*f)(x);
+  }
+}
+
 double *Vegas::GeneratePoint(const double *ran) {
   if (m_on == 0) {
     for (int i = 0; i < m_dim; i++) p_x[i] = ran[i];
@@ -286,7 +300,7 @@ void Vegas::AddPoint(double value, double *xy) {
   if (m_on == 0) return;
   if (m_mode == 1 && m_cmode & 1) {
     for (int i = 0; i < m_dim; i++) {
-      if (!IsEqual(p_x[i], xy[i], 1.e-4)) {
+      if (!(m_const&(1<<i)) && !IsEqual(p_x[i], xy[i], 1.e-4)) {
         msg_Info() << "Mapping error in Vegas for " << m_name << endl;
         for (int j = 0; j < m_dim; j++)
           msg_Info() << j << ": " << p_x[j] << "<->" << xy[j] << " ("

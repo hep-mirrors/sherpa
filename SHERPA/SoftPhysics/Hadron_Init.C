@@ -79,7 +79,7 @@ void Hadron_Init::Init() {
   InitHadron(kf_K_star_892,      false,0.8961,0.0505,0,2,true,1,0,    "K*(892)","K*(892)");
   InitHadron(kf_K_star_892_plus, false,0.89166,0.0508,3,2,true,1,0,   "K*(892)+","K*^{+}(892)");
   InitHadron(kf_phi_1020,        false,1.01941,0.00443,0,2,false,1,0, "phi(1020)","phi(1020)");
-  InitHadron(kf_D_star_2010_plus,false,2.01,0.001,3,2,true,1,0,       "D*(2010)+","D*^{+}(2010)");
+  InitHadron(kf_D_star_2010_plus,false,2.01022,0.000083,3,2,true,1,0,    "D*(2010)+","D*^{+}(2010)");
   InitHadron(kf_D_star_2007,     false,2.0067,0.001,0,2,true,1,0,     "D*(2007)","D*(2007)");
   InitHadron(kf_D_s_star_plus,   false,2.1124,0.001,3,2,true,1,0,     "D(s)*+","D_{s}*^{+}");
   InitHadron(kf_J_psi_1S,        false,3.09688,8.7e-05,0,2,false,1,0, "J/psi(1S)","J/psi(1S)");

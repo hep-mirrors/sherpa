@@ -14,6 +14,7 @@ namespace SHERPA {
     double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_emax[2];
     double m_defaultptmax;
     double m_weight, m_ntrials;
+    bool   m_isfirstMB;
 
     MI_Handler              * p_mihandler;
     REMNANTS::Remnant_Base  * p_remnants[2];

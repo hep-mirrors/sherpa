@@ -93,6 +93,25 @@ void OpenLoops_Interface::RegisterDefaults() const
   s_olprefix = s["OL_PREFIX"].Get<string>();
 }
 
+int OpenLoops_Interface::TranslatedEWRenormalisationScheme() const
+{
+  switch (ToType<MODEL::ew_scheme::code>(rpa->gen.Variable("EW_REN_SCHEME"))) {
+  case MODEL::ew_scheme::alpha0:
+    return 0; break;
+  case MODEL::ew_scheme::Gmu:
+    return 1; break;
+  case MODEL::ew_scheme::alphamZ:
+    return 2; break;
+  case MODEL::ew_scheme::GmumZsW:
+    return 21; break;
+  case MODEL::ew_scheme::alphamZsW:
+    return 22; break;
+  default:
+    THROW(fatal_error,"Chosen EW_SCHEME/EW_REN_SCHEME unknown to OpenLoops.");
+  }
+  return -1;
+}
+
 bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
 			             BEAM::Beam_Spectra_Handler* const beam,
                                      PDF::ISR_Handler *const isr)
@@ -210,7 +229,7 @@ void OpenLoops_Interface::SetParametersSM(const MODEL::Model_Base* model)
   // we give parameters to OL as as(MZ) and masses
   SetParameter("ew_scheme",2);
   // ew-renorm-scheme to Gmu by default
-  SetParameter("ew_renorm_scheme",1);
+  SetParameter("ew_renorm_scheme",TranslatedEWRenormalisationScheme());
 
   // set particle masses/widths
   int tmparr[] = {kf_e, kf_mu, kf_tau, kf_u, kf_d, kf_s, kf_c, kf_b, kf_t,

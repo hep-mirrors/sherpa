@@ -24,7 +24,7 @@ bool Filter::Init() {
 }
 
 void Filter::Add(Scoped_Settings& s) {
-  if (!s["Kf"].IsCustomised())
+  if (!s["Kf"].IsSetExplicitly())
     THROW(fatal_error, "Every filter needs to specify \"Kf: <kf_code>\".");
   FilterCriterion * crit = new FilterCriterion;
   crit->m_flav   = Flavour(s["Kf"].SetDefault(0).Get<int>());

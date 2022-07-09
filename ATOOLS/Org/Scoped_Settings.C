@@ -103,9 +103,9 @@ Scoped_Settings& Scoped_Settings::UseZeroReplacements()
   return SetReplacementList(nonelist);
 }
 
-bool Scoped_Settings::IsCustomised()
+bool Scoped_Settings::IsSetExplicitly()
 {
-  return m_rootsettings->IsCustomised(m_scopes);
+  return m_rootsettings->IsSetExplicitly(m_scopes);
 }
 
 bool Scoped_Settings::IsScalar() const

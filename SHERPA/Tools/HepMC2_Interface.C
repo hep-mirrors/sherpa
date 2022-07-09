@@ -322,12 +322,12 @@ HepMC2_Interface::HepMC2_Interface() :
   Settings& s = Settings::GetMainSettings();
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
   m_usenamedweights =
-    s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(false).Get<bool>();
+    s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(true).Get<bool>();
 #endif
   m_extendedweights =
     s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
   m_includemeonlyweights =
-    s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
+    s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(true).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
 }
@@ -429,6 +429,10 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
 	!(sub->IsReal() && m_subeventlist.empty())) continue;
     HepMC::GenVertex * subvertex(new HepMC::GenVertex());
     HepMC::GenEvent * subevent(new HepMC::GenEvent());
+    #ifdef USING__HEPMC2__UNITS
+    subevent->use_units(HepMC::Units::GEV,
+                        HepMC::Units::MM);
+    #endif
     // set the event number (could be used to identify correlated events)
     subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
     // assume that only 2->(n-2) processes, flip for Comix, flavs are correct
@@ -753,12 +757,11 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
   return true;
 }
 
-void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event,
-                                       const double &xs, const double &err)
+void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event, Uncertain<double> xs)
 {
 #ifdef HEPMC_HAS_CROSS_SECTION
   HepMC::GenCrossSection gxs;
-  gxs.set_cross_section(xs,err);
+  gxs.set_cross_section(xs.value, err.error);
   event.set_cross_section(gxs);
   for (size_t i(0);i<m_subeventlist.size();++i) {
     m_subeventlist[i]->set_cross_section(gxs);

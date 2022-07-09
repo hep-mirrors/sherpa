@@ -11,13 +11,13 @@ ME_GENERATORS: [Comix, Amegic, OpenLoops]
 HARD_DECAYS:
   Enabled: true
   Channels:
-    24 -> 2 -1: {Status: 2}
-    24 -> 4 -3: {Status: 2}
-    -24 -> -2 1: {Status: 2}
-    -24 -> -4 3: {Status: 2}
-    23 -> 12 -12: {Status: 2}
-    23 -> 14 -14: {Status: 2}
-    23 -> 16 -16: {Status: 2}
+    24,2,-1: {Status: 2}
+    24,4,-3: {Status: 2}
+    -24,-2,1: {Status: 2}
+    -24,-4,3: {Status: 2}
+    23,12,-12: {Status: 2}
+    23,14,-14: {Status: 2}
+    23,16,-16: {Status: 2}
 
 PARTICLE_DATA:
   23: {Width: 0}

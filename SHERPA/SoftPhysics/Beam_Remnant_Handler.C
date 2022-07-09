@@ -11,7 +11,8 @@ Beam_Remnant_Handler::
 Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 		     REMNANTS::Remnant_Handler *const remnants,
 		     Soft_Collision_Handler *const softcollisions):
-  p_remnants(remnants), p_shrimps(softcollisions->GetShrimps()),
+  p_remnants(remnants),
+  p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
   p_beam(beam), m_fill(true), m_vmode(false)
 {
   if (p_shrimps) {

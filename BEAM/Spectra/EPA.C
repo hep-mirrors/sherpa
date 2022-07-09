@@ -225,7 +225,7 @@ bool EPA::CalculateWeight(double x, double q2) {
     // Maximal angle for the scattered electron
     // compare hep-ph/9610406 and hep-ph/9310350
     double q2min = sqr(m_mass * m_x) / (1 - m_x);
-    double q2max = q2min + sqr(m_energy) * (1 - m_x) * sqr(m_theta_max);
+    double q2max = Min(q2min + sqr(m_energy) * (1 - m_x) * sqr(m_theta_max),m_q2Max);
     double f = alpha / M_PI / 2 / m_x *
                ((1 + sqr(1 - m_x)) * log(q2max / q2min) +
                 2 * sqr(m_mass * m_x) * (1 / q2min - 1 / q2max));

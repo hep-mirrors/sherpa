@@ -35,39 +35,39 @@ Calculator::Calculator(Process_Base* proc):
 
   Scoped_Settings s = Settings::GetMainSettings()["EWSUD"];
   m_checkcoeff = s["CHECK"].SetDefault(false).Get<bool>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_CHECK"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_CHECK"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CHECK");
   }
 
   m_checkkfac = s["CHECK_KFACTOR"].SetDefault(false).Get<bool>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_CHECK_KFACTOR"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_CHECK_KFACTOR"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CHECK_KFACTOR");
   }
 
   m_checklogfile =
       s["CHECK_LOG_FILE"].SetDefault("").Get<std::string>();
-  if(Settings::GetMainSettings()["CHECK_EWSUDAKOV_LOG_FILE"].IsCustomised()){
+  if(Settings::GetMainSettings()["CHECK_EWSUDAKOV_LOG_FILE"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CHECK_EWSUDAKOV_LOG_FILE");
   }
 
   m_threshold = s["THRESHOLD"].SetDefault(5.0).Get<double>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_THRESHOLD"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_THRESHOLD"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD:EWSUDAKOV_THRESHOLD");
   }
 
   m_checkinvariantratios = s["CHECKINVARIANTRATIOS"].SetDefault(false).Get<bool>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_CHECKINVARIANTRATIOS"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_CHECKINVARIANTRATIOS"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: EWSUDAKOV_CHECKINVARIANTRATIOS");
   }
 
   s.DeclareVectorSettingsWithEmptyDefault({"COEFF_REMOVED_LIST"});
-  if(Settings::GetMainSettings()["EWSUDAKOV_COEFF_REMOVED_LIST"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_COEFF_REMOVED_LIST"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: EWSUDAKOV_COEFF_REMOVED_LIST");
   }
 
   const auto disabled_log_list =
       s["COEFF_REMOVED_LIST"].GetVector<std::string>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_COEFF_REMOVED_LIST"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_COEFF_REMOVED_LIST"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD:EWSUDAKOV_COEFF_REMOVED_LIST");
   }
 
@@ -77,17 +77,17 @@ Calculator::Calculator(Process_Base* proc):
   msg_Out() << "\n ";
   m_c_coeff_ignores_vector_bosons =
       s["C_COEFF_IGNORES_VECTOR_BOSONS"].SetDefault(false).Get<bool>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_C_COEFF_IGNORES_VECTOR_BOSONS"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_C_COEFF_IGNORES_VECTOR_BOSONS"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: C_COEFF_IGNORES_VECTOR_BOSONS");
   }
 
   SetHighEnergyScheme(s["HIGH_ENERGY_SCHEME"].SetDefault("Default").Get<std::string>());
-  if(Settings::GetMainSettings()["EWSUDAKOV_HIGH_ENERGY_SCHEME"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_HIGH_ENERGY_SCHEME"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: HIGH_ENERGY_SCHEME");
   }
 
   m_includesubleading = s["INCLUDE_SUBLEADING"].SetDefault(false).Get<bool>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_INCLUDE_SUBLEADING"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_INCLUDE_SUBLEADING"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: INCLUDE_SUBLEADING");
   }
 

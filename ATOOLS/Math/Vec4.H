@@ -188,6 +188,8 @@ namespace ATOOLS {
     Scalar DR2(const Vec4<Scalar>& ref) const;
     Scalar DRy(const Vec4<Scalar>& ref) const;
     Scalar DR2y(const Vec4<Scalar>& ref) const;
+    Scalar SmallOMCT(const Vec4<Scalar>& ref) const;
+    Scalar SmallMLDP(const Vec4<Scalar>& ref) const;
 
     // standard vectors:
     const static Vec4<Scalar> XVEC;

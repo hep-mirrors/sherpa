@@ -480,14 +480,14 @@ void VHAAG_res::GenerateBosonMass(ATOOLS::Vec4D *p,double *ran)
 {
   double smax=(p[0]+p[1]).Abs2();
   Flavour fl((kf_code)(m_rkf));
-  p_s[n_b]=CE.MassivePropMomenta(fl.Mass(),fl.Width(),1,0.,smax,ran[m_rannum-3]);
+  p_s[n_b]=CE.MassivePropMomenta(fl.Mass(),fl.Width(),0.,smax,ran[m_rannum-3]);
 }
 
 double VHAAG_res::BosonWeight(ATOOLS::Vec4D *p,double *ran)
 {
   double smax=(p[0]+p[1]).Abs2();
   Flavour fl((kf_code)(m_rkf));
-  double w=CE.MassivePropWeight(fl.Mass(),fl.Width(),1,0.,smax,m_q[n_b].Abs2(),ran[m_rannum-3]);
+  double w=CE.MassivePropWeight(fl.Mass(),fl.Width(),0.,smax,m_q[n_b].Abs2(),ran[m_rannum-3]);
   w*=CE.Isotropic2Weight(p[n_d1],p[n_d2],ran[m_rannum-2],ran[m_rannum-1]);
   return w;
 }

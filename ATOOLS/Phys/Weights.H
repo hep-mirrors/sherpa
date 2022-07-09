@@ -197,7 +197,10 @@ namespace ATOOLS {
     void MakeAbsolute();
 
 #ifdef USING__MPI
-    // Using MPI Allreduce to combine weight maps from different MPI ranks
+    // Using MPI Allreduce to combine weight maps from different MPI ranks;
+    // this should not done too often, as it requires to synchronise the entire
+    // structure of the weights maps, which in turn requires a nontrivial
+    // amount of communication between the MPI ranks.
     void MPI_Allreduce();
 #endif
 

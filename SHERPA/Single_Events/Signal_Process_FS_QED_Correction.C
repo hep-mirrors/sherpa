@@ -45,7 +45,7 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction(
   const bool impliciteon{
     meqedsettings["ENABLED"].SetDefault(true).Get<bool>() };
   const bool expliciteon{
-    impliciteon && meqedsettings["ENABLED"].IsCustomised() };
+    impliciteon && meqedsettings["ENABLED"].IsSetExplicitly() };
   // look whether there is any hadronisation following
   // if not, do not even put them on-shell -> switch everthing off
   msg_Debugging()<<"impl="<<impliciteon<<", expl="<<expliciteon<<std::endl;

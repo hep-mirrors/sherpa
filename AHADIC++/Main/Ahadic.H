@@ -11,6 +11,7 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Fragmentation_Base.H"
+#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <list>

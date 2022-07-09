@@ -59,7 +59,8 @@ localinc_HEADERS          =	\
 			Tensor.H \
 			Tensor_Build.H \
 			Tensor_Contractions.H \
-			Tensor_Contractions_Epsilon.H
+			Tensor_Contractions_Epsilon.H \
+			Uncertain.H
 
 if GZIP_SUPPORT
 Sobol/%.gz: Sobol/%

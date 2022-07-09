@@ -509,7 +509,7 @@ void Running_AlphaS::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["ALPHAS"] };
   s["FREEZE_VALUE"].SetDefault(1.0);
-  s["USE_PDF"].SetDefault(0);
+  s["USE_PDF"].SetDefault(1);
   s["PDF_SET"].SetDefault("CT10nlo");
   s["PDF_SET_VERSION"].SetDefault(0);
   const int member{ s["PDF_SET_VERSION"].Get<int>() };

@@ -16,7 +16,7 @@ PARTICLE_DATA:
 HARD_DECAYS:
   Enabled: true
   Channels:
-    25 -> 5 -5: {Status: 2}
+    25,5,-5: {Status: 2}
   Apply_Branching_Ratios: false
 
 PROCESSES:

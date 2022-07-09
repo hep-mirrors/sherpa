@@ -367,10 +367,12 @@ Some general switches which relate to hadron decays are
 
 .. _MAX_PROPER_LIFETIME:
 
-* ``MAX_PROPER_LIFETIME = [mm]`` Parameter for maximum proper lifetime
-  (in mm) up to which particles are considered unstable. If specified,
-  this will make long-living particles stable, even if they are set
-  unstable by default or by the user.
+* ``MAX_PROPER_LIFETIME = [mm]`` (default: 10.0) Parameter for maximum proper lifetime
+  (in mm) up to which particles are considered unstable.
+  This will make long-living particles stable, even if they are set
+  unstable by default or by the user. If you do not want to set this globally,
+  set this to a value of -1 and steer the stability
+  through :option:`PARTICLE_DATA`, cf. :ref:`Models`.
 
 Many aspects of the above mentioned "Decaydata" can be adjusted.
 There exist three levels of data files, which are explained in the following
@@ -539,36 +541,34 @@ in decay channel files. Here, the ``Interference_X = 1`` switch would
 enable rate asymmetries due to CP violation in the interference
 between mixing and decay (cf. :ref:`Decay channel files`), and setting
 ``Mixing_X = 1`` enables explicit mixing in the event record according
-to the time evolution of the flavour states. By default, all mixing
-effects are turned off.
-
-Mixing parameters with some example values
+to the time evolution of the flavour states. By default, the mixing
+parameters are set to the following values:
 
 .. code-block:: python
 
-   x_K = 0.946
-   y_K = -0.9965
-   qoverp2_K = 1.0
-   Interference_K = 0
-   Mixing_K = 0
+   # x_K = 0.946
+   # y_K = -0.9965
+   # qoverp2_K = 1.0
+   # Interference_K = 0
+   # Mixing_K = 0
 
-   x_D = 0.0
-   y_D = 0.0
+   x_D = 0.0032
+   y_D = 0.0069
    qoverp2_D = 1.0
    Interference_D = 0
-   Mixing_D = 0
+   Mixing_D = 1
 
-   x_B = 0.776
-   y_B = 0.0
+   x_B = 0.770
+   y_B = 0.0069
    qoverp2_B = 1.0
-   Interference_B = 1
-   Mixing_B = 0
+   Interference_B = 0
+   Mixing_B = 1
 
-   x_B(s) = 30.0
-   y_B(s) = 0.155
+   x_B(s) = 26.72
+   y_B(s) = 0.130
    qoverp2_B(s) = 1.0
    Interference_B(s) = 0
-   Mixing_B(s) = 0
+   Mixing_B(s) = 1
 
 Further remarks
 ---------------

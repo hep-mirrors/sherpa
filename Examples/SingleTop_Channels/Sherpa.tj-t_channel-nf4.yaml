@@ -17,10 +17,10 @@ CORE_SCALE: VAR{MPerp2(p[2])}{MPerp2(p[3])}{MPerp2(p[2])}
 HARD_DECAYS:
   Enabled: true
   Channels:
-    24 -> 2 -1: {Status: 0}
-    24 -> 4 -3: {Status: 0}
-    -24 -> -2 1: {Status: 0}
-    -24 -> -4 3: {Status: 0}
+    24,2,-1: {Status: 0}
+    24,4,-3: {Status: 0}
+    -24,-2,1: {Status: 0}
+    -24,-4,3: {Status: 0}
 
 # choose EW Gmu input scheme
 EW_SCHEME: 3

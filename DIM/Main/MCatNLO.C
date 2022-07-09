@@ -35,8 +35,8 @@ int MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC(this);
   m_weightsmap.Clear();
-  m_weightsmap["MC@NLO_PS"] = 1.0;
-  m_weightsmap["MC@NLO_QCUT"] = 1.0;
+  m_weightsmap["MC@NLO_PS"] = Weights {Variations_Type::qcd};
+  m_weightsmap["MC@NLO_QCUT"] = Weights {Variations_Type::qcut};
   CleanUp();
   PrepareShower(ampl);
   if (p_rampl->NLO()&4) return 1;

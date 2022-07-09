@@ -19,9 +19,9 @@ namespace SHERPA {
   class MI_Handler {
   public:
     
-    enum TypeID { None    =  0,
-		  Amisic  =  1,
-		  Unknown = 99 };
+    enum typeID { none    =  0,
+		  amisic  =  1,
+		  unknown = 99 };
 
   private:
     PDF::ISR_Handler          * p_isr;
@@ -32,7 +32,7 @@ namespace SHERPA {
     Shower_Handler            * p_shower;
 
     bool        m_stop;
-    TypeID      m_type;
+    typeID      m_type;
     std::string m_name;
 
     double m_ycut; 
@@ -56,16 +56,17 @@ namespace SHERPA {
     const double ImpactParameter() const;
     const ATOOLS::Vec4D SelectPositionForScatter() const;
     
-    inline const TypeID      & Type() const { return m_type; }
+    inline const typeID      & Type() const { return m_type; }
     inline const std::string & Name() const { return m_name; }
     inline const bool        & Done() const { return m_stop; }
     inline const double      & YCut() const { return m_ycut; }
+    const bool   IsMinBias() const;
     
     inline PDF::ISR_Handler          * ISRHandler() const { return p_isr; }
     inline REMNANTS::Remnant_Handler * Remnants()   const { return p_remnants; }
     inline PHASIC::Process_Base      * Process()    const { return p_proc; }
     inline Shower_Handler            * Shower()     const { return p_shower; }
-    
+    inline AMISIC::Amisic            * Amisic()     const { return p_amisic; }
     
     inline void SetShowerHandler(Shower_Handler * const sh) { p_shower=sh; }
     inline void SetRemnantHandler(REMNANTS::Remnant_Handler *const rh) {

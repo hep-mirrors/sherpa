@@ -22,7 +22,7 @@ Primitive_Observable_Base* GetObservable(const Analysis_Key& key)
   flavs.reserve(2);
   for (size_t i{0}; i < 2; ++i) {
     const auto flavparamname = "Flav" + ATOOLS::ToString(i + 1);
-    if (!s[flavparamname].IsCustomised())
+    if (!s[flavparamname].IsSetExplicitly())
       THROW(missing_input, flavparamname + "must be set.");
     const auto rawflav = s[flavparamname].SetDefault(0).GetScalar<int>();
     flavs.push_back(ATOOLS::Flavour((kf_code)std::abs(rawflav)));

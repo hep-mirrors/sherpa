@@ -57,9 +57,7 @@ Single_Process::Single_Process():
 
   // parse settings for associated contributions variations
   std::vector<std::vector<asscontrib::type>> asscontribvars =
-      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"]
-          .SetDefault<asscontrib::type>({})
-          .GetMatrix<asscontrib::type>();
+      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"].GetMatrix<asscontrib::type>();
   for (const auto& asscontribvarparams : asscontribvars) {
     m_asscontrib.push_back(asscontrib::none);
     for (const auto& asscontribvarparam : asscontribvarparams) {
@@ -535,6 +533,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   Partonic(p, varmode);
 
   double nominal {0.0};
+  double facscale {0.0};
 
   if (GetSubevtList() == nullptr) {
 
@@ -544,7 +543,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
 
     // calculate ISR weight
-    m_csi = ClusterSequenceInfo(scales->Amplitudes(), scales->Scale(stp::fac));
+    facscale = scales->Scale(stp::fac);
+    m_csi = ClusterSequenceInfo(scales->Amplitudes(), facscale);
     m_csi.AddFlux(m_lastflux);
 
     // update results
@@ -636,8 +636,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
         if (!ampls.empty()) {
           ampls.front()->SetProc(sub->p_proc);
         }
-        Cluster_Sequence_Info csi {
-            ClusterSequenceInfo(ampls, sub->m_mu2[stp::fac])};
+        facscale = sub->m_mu2[stp::fac];
+        Cluster_Sequence_Info csi {ClusterSequenceInfo(ampls, facscale)};
         csi.AddFlux(m_lastflux);
         if (m_mewgtinfo.m_type & mewgttype::H) {
           m_mewgtinfo.m_rdainfos.back().m_csi = csi;
@@ -706,6 +706,11 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       UpdateSubeventMomenta(*sub);
     }
   }
+
+  // reset PDF scales to hard factorisation scale (since the PDFInfo object
+  // will be populated with it)
+  p_int->ISR()->SetMuF2(facscale, 0);
+  p_int->ISR()->SetMuF2(facscale, 1);
 
   return m_last;
 }

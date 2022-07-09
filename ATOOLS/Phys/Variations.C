@@ -12,9 +12,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/PDF_Base.H"
-#if defined USING__LHAPDF && defined USING__LHAPDF6
 #include "LHAPDF/LHAPDF.h"
-#endif
 
 namespace ATOOLS {
 
@@ -49,7 +47,12 @@ bool Variations::NeedsLHAPDF6Interface()
   // requested
   Settings& s = Settings::GetMainSettings();
   for (auto single_variation_settings : s["VARIATIONS"].GetItems()) {
-    if (single_variation_settings["PDF"].IsCustomised()) {
+    if (single_variation_settings["PDF"].IsSetExplicitly()) {
+      return true;
+    }
+  }
+  for (auto single_variation_settings : s["PDF_VARIATIONS"].GetItems()) {
+    if (single_variation_settings.Get<std::string>() != "None") {
       return true;
     }
   }
@@ -81,7 +84,6 @@ Variations::Variations(Variations_Mode mode)
     return;
 
   ReadDefaults();
-#if defined USING__LHAPDF && defined USING__LHAPDF6
   int lhapdfverbosity(0);
   const bool needslhapdf(NeedsLHAPDF6Interface());
   if (needslhapdf) {
@@ -91,7 +93,6 @@ Variations::Variations(Variations_Mode mode)
     lhapdfverbosity = LHAPDF::verbosity();
     LHAPDF::setVerbosity(0);
   }
-#endif
 
   InitialiseParametersVector();
 
@@ -99,11 +100,9 @@ Variations::Variations(Variations_Mode mode)
     rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in \\cite{Bothmann:2016nao}.");
   }
 
-#if defined USING__LHAPDF && defined USING__LHAPDF6
   if (needslhapdf) {
     LHAPDF::setVerbosity(lhapdfverbosity);
   }
-#endif
 }
 
 
@@ -148,9 +147,9 @@ void Variations::ReadDefaults()
   m_includecentralvaluevariation =
     s["VARIATIONS_INCLUDE_CV"].SetDefault(false).Get<bool>();
   m_reweightsplittingalphasscales =
-    s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(false).Get<bool>();
+    s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(true).Get<bool>();
   m_reweightsplittingpdfsscales =
-    s["REWEIGHT_SPLITTING_PDF_SCALES"].SetDefault(false).Get<bool>();
+    s["REWEIGHT_SPLITTING_PDF_SCALES"].SetDefault(true).Get<bool>();
 }
 
 
@@ -212,9 +211,58 @@ void Variations::PrintStatistics(std::ostream &str)
 
 void Variations::InitialiseParametersVector()
 {
+  // All variations can be specified either using VARIATIONS (which allows for
+  // correlated variations) ...
+
   Settings& s = Settings::GetMainSettings();
   for (auto single_variation_settings : s["VARIATIONS"].GetItems()) {
     AddParameters(single_variation_settings);
+  }
+
+  // ... or by using the specialised (and easier to remember) versions below.
+
+  for (auto single_variation_settings : s["PDF_VARIATIONS"].GetItems()) {
+    std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector =
+        PDFsAndAlphaSVector(single_variation_settings.Get<std::string>());
+    AddParameterExpandingScaleFactors({"1.0", "1.0", "1.0"},
+                                      ScaleFactorExpansions::None,
+                                      pdfsandalphasvector);
+  }
+
+  for (auto single_variation_settings : s["SCALE_VARIATIONS"].GetItems()) {
+    std::vector<std::string> scalestringparams;
+    ScaleFactorExpansions::code scalefactorexpansions(
+        ScaleFactorExpansions::None);
+    if (single_variation_settings.IsScalar()) {
+      ExpandableVariation var {single_variation_settings.Get<std::string>()};
+      if (var.expand)
+        scalefactorexpansions |= ScaleFactorExpansions::SevenPoint;
+      scalestringparams = {var.var, var.var, "1.0"};
+    } else {
+      ExpandableVariation mufvar {
+          single_variation_settings[0].Get<std::string>()};
+      if (mufvar.expand)
+        scalefactorexpansions |= ScaleFactorExpansions::MuF;
+      ExpandableVariation murvar {
+          single_variation_settings[1].Get<std::string>()};
+      if (murvar.expand)
+        scalefactorexpansions |= ScaleFactorExpansions::MuR;
+      scalestringparams = {mufvar.var, murvar.var, "1.0"};
+    }
+    AddParameterExpandingScaleFactors(scalestringparams, scalefactorexpansions,
+                                      {});
+  }
+
+  for (auto single_variation_settings : s["QCUT_VARIATIONS"].GetItems()) {
+    std::vector<std::string> scalestringparams;
+    ScaleFactorExpansions::code scalefactorexpansions(
+        ScaleFactorExpansions::None);
+    ExpandableVariation var {single_variation_settings.Get<std::string>()};
+    if (var.expand)
+      scalefactorexpansions |= ScaleFactorExpansions::QCUT;
+    scalestringparams = {"1.0", "1.0", var.var};
+    AddParameterExpandingScaleFactors(scalestringparams, scalefactorexpansions,
+                                      {});
   }
 
   // erase all trivial variations
@@ -281,18 +329,8 @@ void Variations::AddParameters(Scoped_Settings& s)
 
   // parse PDF set, and check whether it is requested to be expanded to all its
   // members via an appended asterisk
-  std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector;
-  auto pdf = s["PDF"].SetDefault("None").Get<std::string>();
-  if (pdf != "None") {
-    if (Settings::GetMainSettings()["OVERRIDE_PDF_INFO"].Get<bool>()) {
-      THROW(fatal_error,
-            "`OVERRIDE_PDF_INFO: true` is incompatible with doing PDF/AlphaS "
-            "variations.");
-    }
-    // translate PDF string parameter into actual AlphaS and PDF objects
-    ExpandableVariation var {pdf};
-    pdfsandalphasvector = PDFsAndAlphaSVector(var.var, var.expand);
-  }
+  std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector =
+      PDFsAndAlphaSVector(s["PDF"].SetDefault("None").Get<std::string>());
 
   // parse AlphaS(MZ) variations and append them
   auto alphasmz = s["AlphaS(MZ)"].SetDefault(-1.0).Get<double>();
@@ -406,9 +444,28 @@ void Variations::AddParameters(double muR2fac, double muF2fac,
   m_parameters_vector.push_back(params);
 }
 
+std::vector<Variations::PDFs_And_AlphaS>
+Variations::PDFsAndAlphaSVector(const std::string &pdf) const
+{
+  // parse PDF set, and check whether it is requested to be expanded to all its
+  // members via an appended asterisk
+  std::vector<PDFs_And_AlphaS> pdfsandalphasvector;
+  if (pdf != "None") {
+    if (Settings::GetMainSettings()["OVERRIDE_PDF_INFO"].Get<bool>()) {
+      THROW(fatal_error,
+            "`OVERRIDE_PDF_INFO: true` is incompatible with doing PDF/AlphaS "
+            "variations.");
+    }
+    // translate PDF string parameter into actual AlphaS and PDF objects
+    ExpandableVariation var{pdf};
+    pdfsandalphasvector = PDFsAndAlphaSVector(var.var, var.expand);
+  }
+  return pdfsandalphasvector;
+}
+
 std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
     std::string pdfstringparam,
-    bool expandpdf)
+    bool expandpdf) const
 {
   // parse PDF member(s)
   std::vector<PDFs_And_AlphaS> pdfsandalphasvector;
@@ -418,7 +475,6 @@ std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
     // determine the number of set members to load
     bool lhapdflookupsuccessful(false);
     if (s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
-#if defined USING__LHAPDF && defined USING__LHAPDF6
       const std::vector<std::string>& availablepdfsets(LHAPDF::availablePDFSets());
       if (std::find(availablepdfsets.begin(), availablepdfsets.end(), pdfstringparam)
           != availablepdfsets.end()) {
@@ -426,13 +482,12 @@ std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
         lastmember = set.size() - 1; // this assumes members are labelled 0...(set.size()-1)
         lhapdflookupsuccessful = true;
       }
-#endif
     }
     if (!lhapdflookupsuccessful) {
       // the LHAPDF interface is not available or does not know about this set
       // provide a fallback at least for the default PDF set
-      if (pdfstringparam == "NNPDF30NNLO") { 
-        lastmember = 100;
+      if (pdfstringparam == "PDF4LHC21_40_pdfas") {
+        lastmember = 42;
       } else {
         THROW(not_implemented,
               "Full PDF set reweightings only work with LHAPDF6 sets or the internal default set."
@@ -648,8 +703,8 @@ std::string QCD_Variation_Params::Name(Variations_Source source) const
     // there are two relevant PDF IDs, quote both
     name = level_prefix + GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
            + level_prefix + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
-           + level_prefix + GenerateVariationNamePart("BEAM1.LHAPDF=", p_pdf1->LHEFNumber()) + divider
-           + level_prefix + GenerateVariationNamePart("BEAM1.LHAPDF=", p_pdf2->LHEFNumber());
+           + level_prefix + GenerateVariationNamePart("LHAPDF.BEAM1=", p_pdf1->LHEFNumber()) + divider
+           + level_prefix + GenerateVariationNamePart("LHAPDF.BEAM2=", p_pdf2->LHEFNumber());
   }
   // append non-trival AlphaS(MZ) variation (which is not related to a change
   // in the PDF set)

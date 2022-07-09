@@ -87,6 +87,9 @@ Blob * Single_Collision_Handler::MakeBlob() {
 		  blob_status::needs_hadronization);
   blob->SetId();
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  blob->AddData("Renormalization_Scale",new Blob_Data<double>(m_pt2));
+  blob->AddData("Factorization_Scale",new Blob_Data<double>(m_pt2));
+  blob->AddData("Resummation_Scale",new Blob_Data<double>(m_pt2));
   for (size_t i=0;i<2;i++) blob->AddToInParticles(p_proc->GetParticle(i));
   for (size_t i=2;i<4;i++) blob->AddToOutParticles(p_proc->GetParticle(i));
   if (m_ana) Analyse(m_pt2,blob);
@@ -108,6 +111,7 @@ bool Single_Collision_Handler::SelectRapidities() {
 bool Single_Collision_Handler::CalcXs() {
   m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.;
   m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.;
+  if (m_x1<p_processes->PDFXmin(0) || m_x2<p_processes->PDFXmin(1)) return 0.;
   return (m_x1<m_residualx1 && m_x2<m_residualx2);
 }
 

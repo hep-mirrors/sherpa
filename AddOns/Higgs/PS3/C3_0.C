@@ -10,7 +10,7 @@ using namespace ATOOLS;
 
 namespace PHASIC {
   class C3_0 : public Single_Channel {
-    double m_amct,m_alpha,m_ctmax,m_ctmin;
+    double m_alpha,m_ctmax,m_ctmin;
     Info_Key m_kTC_0__1_4_2_3,m_kTC_0__1__23_4,m_kZS_0;
     Vegas* p_vegas;
   public:
@@ -48,9 +48,9 @@ void C3_0::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double s23 = CE.MasslessPropMomenta(.5,s23_min,s23_max,ran[0]);
   m_ctmax = cuts->cosmax[1][4];
   m_ctmin = cuts->cosmin[1][4];
-  CE.TChannelMomenta(p[0],p[1],p23,p[4],s23,s4,0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,ran[1],ran[2]);
+  CE.TChannelMomenta(p[0],p[1],p23,p[4],s23,s4,0.,m_alpha,m_ctmax,m_ctmin,ran[1],ran[2]);
   Vec4D  p1_4 = p[1]-p[4];
-  CE.TChannelMomenta(p[0],p1_4,p[2],p[3],s2,s3,0.,m_alpha,1.,-1.,m_amct,0,ran[3],ran[4]);
+  CE.TChannelMomenta(p[0],p1_4,p[2],p[3],s2,s3,0.,m_alpha,1.,-1.,ran[3],ran[4]);
 }
 
 void C3_0::GenerateWeight(Vec4D* p,Cut_Data * cuts)
@@ -66,14 +66,14 @@ void C3_0::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   m_ctmax = cuts->cosmax[1][4];
   m_ctmin = cuts->cosmin[1][4];
   if (m_kTC_0__1__23_4.Weight()==ATOOLS::UNDEFINED_WEIGHT)
-    m_kTC_0__1__23_4<<CE.TChannelWeight(p[0],p[1],p23,p[4],0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,m_kTC_0__1__23_4[0],m_kTC_0__1__23_4[1]);
+    m_kTC_0__1__23_4<<CE.TChannelWeight(p[0],p[1],p23,p[4],0.,m_alpha,m_ctmax,m_ctmin,m_kTC_0__1__23_4[0],m_kTC_0__1__23_4[1]);
   wt *= m_kTC_0__1__23_4.Weight();
 
   p_rans[1]= m_kTC_0__1__23_4[0];
   p_rans[2]= m_kTC_0__1__23_4[1];
   Vec4D  p1_4 = p[1]-p[4];
   if (m_kTC_0__1_4_2_3.Weight()==ATOOLS::UNDEFINED_WEIGHT)
-    m_kTC_0__1_4_2_3<<CE.TChannelWeight(p[0],p1_4,p[2],p[3],0.,m_alpha,1.,-1.,m_amct,0,m_kTC_0__1_4_2_3[0],m_kTC_0__1_4_2_3[1]);
+    m_kTC_0__1_4_2_3<<CE.TChannelWeight(p[0],p1_4,p[2],p[3],0.,m_alpha,1.,-1.,m_kTC_0__1_4_2_3[0],m_kTC_0__1_4_2_3[1]);
   wt *= m_kTC_0__1_4_2_3.Weight();
 
   p_rans[3]= m_kTC_0__1_4_2_3[0];
@@ -91,7 +91,6 @@ C3_0::C3_0(int nin,int nout,Flavour* fl,Integration_Info * const info)
   m_rannum = 5;
   p_rans  = new double[m_rannum];
   auto& s = Settings::GetMainSettings();
-  m_amct  = 1.0 + s["CHANNEL_EPSILON"].Get<double>();
   m_alpha = s["SCHANNEL_ALPHA"].Get<double>();
   m_ctmax = 1.;
   m_ctmin = -1.;

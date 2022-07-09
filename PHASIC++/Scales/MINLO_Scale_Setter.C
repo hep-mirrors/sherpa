@@ -91,7 +91,7 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
     core =
       s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("VAR{H_TM2/4}");
   }
-  if (metssettings["ALLOW_CORE"].IsCustomised()) {
+  if (metssettings["ALLOW_CORE"].IsSetExplicitly()) {
     const auto cores = metssettings["ALLOW_CORE"].GetVector<std::string>();
     msg_Debugging()<<METHOD<<"(): Allow cores ";
     Data_Reader cread(",",";","#","=");

@@ -22,7 +22,7 @@ Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
 {
   auto& s = Settings::GetMainSettings();
   m_maxweight = s["EWSUD"]["MAX_KFACTOR"].SetDefault(10.0).Get<double>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_MAX_KFACTOR"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_MAX_KFACTOR"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD:MAX_KFACTOR");
   }
 }

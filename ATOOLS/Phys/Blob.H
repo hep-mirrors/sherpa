@@ -119,6 +119,8 @@ namespace ATOOLS {
     void     AddToOutParticles(Particle *);
     Particle_Vector GetOutParticles() { return m_outparticles; }
     Particle_Vector GetInParticles()  { return m_inparticles;  }
+    Particle_Vector * OutParticles()  { return &m_outparticles; }
+    Particle_Vector * InParticles()   { return &m_inparticles;  }
     Particle * OutParticle(int);
     Particle * InParticle(int);
     Particle * GetParticle(int);

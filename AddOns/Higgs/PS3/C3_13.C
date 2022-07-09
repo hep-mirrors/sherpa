@@ -10,7 +10,7 @@ using namespace ATOOLS;
 
 namespace PHASIC {
   class C3_13 : public Single_Channel {
-    double m_amct,m_alpha,m_ctmax,m_ctmin;
+    double m_alpha,m_ctmax,m_ctmin;
     Info_Key m_kI_3_4,m_kTC_0__1__34_2,m_kZS_0;
     Vegas* p_vegas;
   public:
@@ -48,7 +48,7 @@ void C3_13::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double s34 = CE.MasslessPropMomenta(.5,s34_min,s34_max,ran[0]);
   m_ctmax = cuts->cosmax[1][2];
   m_ctmin = cuts->cosmin[1][2];
-  CE.TChannelMomenta(p[0],p[1],p34,p[2],s34,s2,0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,ran[1],ran[2]);
+  CE.TChannelMomenta(p[0],p[1],p34,p[2],s34,s2,0.,m_alpha,m_ctmax,m_ctmin,ran[1],ran[2]);
   CE.Isotropic2Momenta(p34,s3,s4,p[3],p[4],ran[3],ran[4]);
 }
 
@@ -65,7 +65,7 @@ void C3_13::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   m_ctmax = cuts->cosmax[1][2];
   m_ctmin = cuts->cosmin[1][2];
   if (m_kTC_0__1__34_2.Weight()==ATOOLS::UNDEFINED_WEIGHT)
-    m_kTC_0__1__34_2<<CE.TChannelWeight(p[0],p[1],p34,p[2],0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,m_kTC_0__1__34_2[0],m_kTC_0__1__34_2[1]);
+    m_kTC_0__1__34_2<<CE.TChannelWeight(p[0],p[1],p34,p[2],0.,m_alpha,m_ctmax,m_ctmin,m_kTC_0__1__34_2[0],m_kTC_0__1__34_2[1]);
   wt *= m_kTC_0__1__34_2.Weight();
 
   p_rans[1]= m_kTC_0__1__34_2[0];
@@ -89,7 +89,6 @@ C3_13::C3_13(int nin,int nout,Flavour* fl,Integration_Info * const info)
   m_rannum = 5;
   p_rans  = new double[m_rannum];
   Settings& s = Settings::GetMainSettings();
-  m_amct  = 1.0 + s["CHANNEL_EPSILON"].Get<double>();
   m_alpha = s["SCHANNEL_ALPHA"].Get<double>();
   m_ctmax = 1.;
   m_ctmin = -1.;

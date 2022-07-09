@@ -90,7 +90,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   p_kernel->SetVSubtractionMode(m_Vsubmode);
 
   int collVFF = s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].Get<int>();
-  if (!s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].IsCustomised()
+  if (!s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].IsSetExplicitly()
       && m_stype == sbt::qed) {
     collVFF = 0;  // overwrite default for QED splittings
   }

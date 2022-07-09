@@ -30,10 +30,11 @@ PS_Generator::PS_Generator(Process_Base *const xs):
   m_thmass(0.0), m_chmass(0.0)
 {
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
-  m_itmin = s["ITMIN"].SetDefault(1000).Get<size_t>();
-  m_itmax = s["ITMAX"].SetDefault(1000000).Get<size_t>();
-  m_ecmode = s["ECMODE"].SetDefault(2).Get<size_t>();
-  m_chmass = s["PS_CHTH"].SetDefault(0.01).Get<double>();
+  m_itmin=s["ITMIN"].SetDefault(1000).Get<size_t>();
+  m_itmax=s["ITMAX"].SetDefault(1000000).Get<size_t>();
+  m_ecmode=s["ECMODE"].SetDefault(2).Get<size_t>();
+  m_chmass=s["PS_CHTH"].SetDefault(0.01).Get<double>();
+  m_aniso=s["PS_ADD_ANISO"].SetDefault(0).Get<int>();
   m_chmass*=rpa->gen.Ecms();
   p_xs->ConstructPSVertices(this);
   AddSC();
@@ -165,6 +166,7 @@ bool PS_Generator::AddCurrent
 int PS_Generator::DecayType(const Current *jc,
 			    const Current *ja,const Current *jb) const
 {
+  if (m_aniso==0) return 0;
   if (jc->CId()==(1<<m_n)-1-3) return 0;
   if ((jc->CId()&3)==1 || (jc->CId()&3)==2 ||
       jc->Flav().Mass()!=0.0 ||

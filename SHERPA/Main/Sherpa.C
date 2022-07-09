@@ -176,6 +176,7 @@ bool Sherpa::InitializeTheEventHandler()
   else if (mode==eventtype::StandardPerturbative) {
     p_eventhandler->AddEventPhase(
         new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+    p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),
@@ -190,21 +191,6 @@ bool Sherpa::InitializeTheEventHandler()
           p_inithandler->GetSoftPhotonHandler()));
     p_eventhandler->AddEventPhase(
         new Multiple_Interactions(p_inithandler->GetMIHandler()));
-    p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
-    p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
-						    p_inithandler->GetFragmentation()));
-    p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
-
-  }
-  else if (mode==eventtype::MinimumBias) {
-    p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
-    p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
-                                                    p_inithandler->GetHardDecayHandler(),
-						    p_inithandler->GetHDHandler(),
-						    p_inithandler->GetMIHandler(),
-						    p_inithandler->GetSoftCollisionHandler(),
-						    p_inithandler->GetShowerHandlers(),
-						    p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
 						    p_inithandler->GetFragmentation()));
@@ -318,11 +304,11 @@ bool Sherpa::GenerateOneEvent(bool reset)
       }
       msg_Info()<<" left ) -> ETA: "<<rpa->gen.Timer().
         StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
-      double xs(GetEventHandler()->TotalXSMPI().Nominal());
-      double err(GetEventHandler()->TotalErrMPI().Nominal());
+      p_eventhandler->PerformMemoryMonitoring();
+      const Uncertain<double> xs = p_eventhandler->TotalNominalXSMPI();
       if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
-      msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
-		<<((int(err/xs*10000))/100.0)<<" % )  ";
+      msg_Info() << "XS = " << xs.value << " pb +- ( " << xs.error
+                 << " pb = " << xs.PercentError() << " % )  ";
       if (rpa->gen.BatchMode()&8)
         msg_Info()<<"  Process was "<<p_eventhandler->CurrentProcess()<<"  ";
       if (!(rpa->gen.BatchMode()&2))
@@ -341,7 +327,7 @@ void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)
   if (!p_hepmc2) p_hepmc2 = new SHERPA::HepMC2_Interface();
   ATOOLS::Blob_List* blobs = GetEventHandler()->GetBlobs();
   p_hepmc2->Sherpa2HepMC(blobs, event);
-  p_hepmc2->AddCrossSection(event, TotalXS(), TotalErr());
+  p_hepmc2->AddCrossSection(event, p_eventhandler->TotalNominalXS());
 }
 #endif
 
@@ -351,18 +337,14 @@ void Sherpa::FillHepMCEvent(HepMC3::GenEvent& event)
   if (p_hepmc3==NULL) p_hepmc3 = new SHERPA::HepMC3_Interface();
   ATOOLS::Blob_List* blobs=GetEventHandler()->GetBlobs();
   p_hepmc3->Sherpa2HepMC(blobs, event);
-  p_hepmc3->AddCrossSection(event, TotalXS(), TotalErr());
+  p_hepmc3->AddCrossSection(event, p_eventhandler->TotalXS(),
+                            p_eventhandler->TotalErr());
 }
 #endif
 
-double Sherpa::TotalXS()
+Uncertain<double> Sherpa::TotalNominalXS() const
 {
-  return p_eventhandler->TotalXS().Nominal();
-}
-
-double Sherpa::TotalErr()
-{
-  return p_eventhandler->TotalErr().Nominal();
+  return p_eventhandler->TotalNominalXS();
 }
 
 std::string Sherpa::PDFInfo()

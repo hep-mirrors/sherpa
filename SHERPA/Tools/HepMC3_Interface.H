@@ -103,13 +103,13 @@ namespace SHERPA {
 
     // member functions
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC3::GenEvent& event);
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs);
-    bool Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob *,     HepMC3::GenVertexPtr &, HepMC3::GenEvent& event ); 
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, std::shared_ptr<HepMC3::GenRunInfo> run= std::shared_ptr<HepMC3::GenRunInfo>());
+    bool Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob *, HepMC3::GenVertexPtr &, HepMC3::GenEvent& event ); 
     bool Sherpa2HepMC(ATOOLS::Particle *, HepMC3::GenParticlePtr &);
 
     bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs, HepMC3::GenEvent& event);
-    bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs);
-    bool SubEvtList2ShortHepMC(EventInfo3 &evtinfo);
+    bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs, std::shared_ptr<HepMC3::GenRunInfo> run= std::shared_ptr<HepMC3::GenRunInfo>());
+    bool SubEvtList2ShortHepMC(EventInfo3 &evtinfo, std::shared_ptr<HepMC3::GenRunInfo> run);
 
     void AddCrossSection(HepMC3::GenEvent& event,
                          const ATOOLS::Weights_Map& xs,

@@ -175,7 +175,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 
   //actual Channel
   chf <<"    double m_thexp;"<<endl;
-  if (tcount>0) chf <<"    double m_amct,m_alpha,m_ctmax,m_ctmin;"<<endl;
+  if (tcount>0) chf <<"    double m_alpha,m_ctmax,m_ctmin;"<<endl;
   if (m_idc.size()>0) {
     chf <<"    Info_Key ";
     bool first=true;
@@ -252,8 +252,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 	<<"  p_rans  = new double[m_rannum];"<<endl
 	<<"  m_thexp = s[\"THRESHOLD_EPSILON\"].Get<double>();"<<endl;
   if (tcount>0) {
-    chf	<<"  m_amct  = 1.0 + s[\"CHANNEL_EPSILON\"].Get<double>();"<<endl
-        <<"  m_alpha = s[\"TCHANNEL_ALPHA\"].Get<double>();"<<endl
+    chf	<<"  m_alpha = s[\"TCHANNEL_ALPHA\"].Get<double>();"<<endl
         <<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
@@ -440,7 +439,7 @@ void Channel_Generator3V::GenerateDecayChain(int flag,Point* p,int& rannum,ofstr
       if (pout0sum.length()==1) sf<<",p["<<GetMassIndex(pout0sum)<<"]"; else sf<<",p"<<pout0sum;
       if (pout1sum.length()==1) sf<<",p["<<GetMassIndex(pout1sum)<<"]"; else sf<<",p"<<pout1sum;
       sf<<",s"<<pout0sum<<",s"<<pout1sum;
-      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,ran["<<rannum++<<"],ran[";
+      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",ran["<<rannum++<<"],ran[";
       sf<<rannum++<<"]);"<<endl;
       break;
     default:
@@ -453,7 +452,7 @@ void Channel_Generator3V::GenerateDecayChain(int flag,Point* p,int& rannum,ofstr
       if (pin1.size()==0) sf<<",p[1]"; else sf<<",p"<<pin1sum;
       if (pout0sum.length()==1) sf<<",p["<<GetMassIndex(pout0sum)<<"]"; else sf<<",p"<<pout0sum;
       if (pout1sum.length()==1) sf<<",p["<<GetMassIndex(pout1sum)<<"]"; else sf<<",p"<<pout1sum;
-      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
       sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
       sf<<"  p_rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
       sf<<"  p_rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
@@ -725,7 +724,7 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
     if (maxpole>0.) {
       if (p->zwf==0) {
 	sf<<"  double s"<< mummy
-	  <<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
+	  <<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),"
 	  <<"s"<<mummy<<"_min,s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
       }
       else sf<<"  double s"<< mummy<<" = sqr(fl"<<mummy<<".Mass());"<<endl;
@@ -748,7 +747,7 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
     AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
     if (maxpole>0.) {
       if (p->zwf==0) {
-	sf<<"  wt *= CE.MassivePropWeight(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
+	sf<<"  wt *= CE.MassivePropWeight(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),"
 	  <<"s"<<mummy<<"_min,s"<<mummy<<"_max,"<<"s"<<mummy<<",p_rans["<<rannum<<"]);"<<endl;
       }
     }

@@ -22,7 +22,7 @@ Clustered_Calculator::Clustered_Calculator(Process_Base* _proc)
     ewsudsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
   m_disabled =
     ewsudsettings["CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_CLUSTERING_DISABLED"].IsCustomised()){
+  if(Settings::GetMainSettings()["EWSUDAKOV_CLUSTERING_DISABLED"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CLUSTERING_DISABLED");
   }
   auto ampl = Amplitudes::CreateAmplitude(proc);

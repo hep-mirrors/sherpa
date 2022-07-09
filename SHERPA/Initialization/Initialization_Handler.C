@@ -105,6 +105,7 @@ void Initialization_Handler::RegisterDefaults()
   Settings& s = Settings::GetMainSettings();
   s["EVENT_GENERATION_MODE"].SetDefault("PartiallyUnweighted");
   s["EVENT_TYPE"].SetDefault("StandardPerturbative");
+  s["SOFT_COLLISIONS"].SetDefault("None");
   s["EVT_FILE_PATH"].SetDefault(".");
   s["ANALYSIS_OUTPUT"].SetDefault("Analysis/");
   s["RESULT_DIRECTORY"].SetDefault("Results");
@@ -122,6 +123,7 @@ void Initialization_Handler::RegisterDefaults()
   s["DECAYMODEL"]
     .SetDefault((frag == "Lund") ? "Lund" : "Hadrons")
     .UseNoneReplacements();
+  s["MAX_PROPER_LIFETIME"].SetDefault(10.0);
 
   s["SOFT_SPIN_CORRELATIONS"].SetDefault(0);
   auto hdenabled = s["HARD_DECAYS"]["Enabled"].Get<bool>();
@@ -142,6 +144,9 @@ void Initialization_Handler::RegisterDefaults()
       "PDF_SET",
       "MPI_PDF_SET",
       "VARIATIONS",
+      "SCALE_VARIATIONS",
+      "PDF_VARIATIONS",
+      "QCUT_VARIATIONS",
       "BUNCHES",
       "PDF_SET_VERSIONS",
       "MPI_PDF_SET_VERSIONS",
@@ -149,9 +154,15 @@ void Initialization_Handler::RegisterDefaults()
       "MASSIVE_PS",
       "MASSLESS_PS"
       });
-  s.DeclareMatrixSettingsWithEmptyDefault({ "CSS_ENHANCE" });
+  s.DeclareMatrixSettingsWithEmptyDefault({
+      "CSS_ENHANCE",
+      "ASSOCIATED_CONTRIBUTIONS_VARIATIONS"
+      });
   s["EVENT_OUTPUT"].UseNoneReplacements();
   s["VARIATIONS"].UseNoneReplacements();
+  s["SCALE_VARIATIONS"].UseNoneReplacements();
+  s["PDF_VARIATIONS"].UseNoneReplacements();
+  s["QCUT_VARIATIONS"].UseNoneReplacements().SetSynonyms({"CKKW_VARIATIONS"});
   s["PDF_LIBRARY"].UseNoneReplacements();
   s["ANALYSIS"].UseNoneReplacements();
 
@@ -183,7 +194,7 @@ void Initialization_Handler::RegisterDefaults()
 
   s["OVERRIDE_PDF_INFO"].SetDefault(false);
 
-  s["NLO_SUBTRACTION_SCHEME"].SetDefault(0);
+  s["NLO_SUBTRACTION_SCHEME"].SetDefault(2);
 
   Scoped_Settings metssettings{ Settings::GetMainSettings()["METS"] };
   metssettings["CLUSTER_MODE"].SetDefault(0);
@@ -222,7 +233,7 @@ void Initialization_Handler::RegisterDefaults()
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   s["CSS_RECO_CHECK"].SetDefault(0);
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
-  s["CSS_REWEIGHT"].SetDefault(false);
+  s["CSS_REWEIGHT"].SetDefault(true);
   s["CSS_MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
   s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
@@ -502,11 +513,16 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       m_mode=eventtype::StandardPerturbative;
     else if (eventtype=="MinimumBias") {
       m_mode=eventtype::MinimumBias;
-      s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      if (s["SOFT_COLLISIONS"].Get<string>()==string("Amisic")) 
+	s["MI_HANDLER"].OverrideScalar<std::string>("Amisic");
+      else if (s["SOFT_COLLISIONS"].Get<string>()==string("Shrimps")) 
+	s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else if (eventtype=="HadronDecay") {
       m_mode=eventtype::HadronDecay;
       s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
@@ -548,20 +564,20 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   if (rpa->gen.NumberOfEvents()>0) {
-    okay = okay && InitializeTheAnalyses();
+    okay = okay && InitializeTheUnderlyingEvents();
+    okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
-    okay = okay && InitializeTheSoftCollisions();
   }
   okay = okay && InitializeTheBeamRemnants();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheHadronDecays();
-    okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
     okay = okay && InitializeTheFilter();
     okay = okay && InitializeTheReweighting(Variations_Mode::all);
+    okay = okay && InitializeTheAnalyses();
   } else {
     okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);
   }
@@ -713,12 +729,8 @@ bool Initialization_Handler::InitializeThePDFs()
        ++pdflib) {
     if (*pdflib=="None") continue;
     if (*pdflib=="LHAPDFSherpa") {
-#ifdef USING__LHAPDF
       s_loader->AddPath(std::string(LHAPDF_PATH)+"/lib");
       s_loader->LoadLibrary("LHAPDF");
-#else
-      THROW(fatal_error, "Sherpa not compiled with LHAPDF support.");
-#endif
     }
     void *init(s_loader->GetLibraryFunction(*pdflib,"InitPDFLib"));
     if (init==NULL) THROW(fatal_error,"Cannot load PDF library "+*pdflib);
@@ -934,8 +946,12 @@ bool Initialization_Handler::InitializeTheShowers()
 bool Initialization_Handler::InitializeTheSoftCollisions() 
 {
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
-  p_softcollisions =
-    new Soft_Collision_Handler(p_beamspectra,m_isrhandlers[isr::hard_process]);
+  p_softcollisions = new Soft_Collision_Handler(p_model,
+						p_beamspectra,
+                                                m_isrhandlers[isr::hard_process]);
+  if (p_mihandler->Type()==MI_Handler::amisic) {
+    p_softcollisions->SetAmisic(p_mihandler->Amisic());
+  }
   msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
   return 1;
 }

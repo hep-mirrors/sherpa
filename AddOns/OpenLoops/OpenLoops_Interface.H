@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Terminator_Objects.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "ATOOLS/Phys/KF_Table.H"
+#include "MODEL/Main/Model_Base.H"
 
 
 namespace ATOOLS {
@@ -38,6 +39,7 @@ namespace OpenLoops {
     static std::map<std::string, std::string> s_evgen_params;
 
     void RegisterDefaults() const;
+    int TranslatedEWRenormalisationScheme() const;
 
   public :
     OpenLoops_Interface();
@@ -92,10 +94,10 @@ namespace OpenLoops {
     static int GetIntParameter(const std::string & key);
 
     /* Propagate model parameters to OpenLoops in SM */
-    static void SetParametersSM(const MODEL::Model_Base* model);
+    void SetParametersSM(const MODEL::Model_Base* model);
     
     /* Propagate model parameters to OpenLoops in UFO models */
-    static void SetParametersUFO(const MODEL::Model_Base* model);
+    void SetParametersUFO(const MODEL::Model_Base* model);
 
     static bool ExitOnError() { return s_exit_on_error; }
 

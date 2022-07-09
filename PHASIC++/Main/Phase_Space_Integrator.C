@@ -49,7 +49,7 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   long unsigned int itminbynode=Max(1,(int)m_itmin/size);
   if (size) {
     int helpi;
-    if (s["ITMIN_BY_NODE"].IsCustomised())
+    if (s["ITMIN_BY_NODE"].IsSetExplicitly())
       itminbynode = s["ITMIN_BY_NODE"].Get<long unsigned int>();
     m_itmin = itminbynode * size;
   }

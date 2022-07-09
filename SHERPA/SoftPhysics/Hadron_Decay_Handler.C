@@ -81,7 +81,6 @@ void Hadron_Decay_Handler::RegisterSettings()
 {
   Settings& s = Settings::GetMainSettings();
   s["HADRON_DECAYS_QED_CORRECTIONS"].SetDefault(1);
-  s["MAX_PROPER_LIFETIME"].SetDefault(-1.0);
   const auto path = s["DECAYPATH"]
     .SetDefault(rpa->gen.Variable("SHERPA_SHARE_PATH") + "/")
     .Get<std::string>();

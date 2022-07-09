@@ -31,7 +31,7 @@ namespace COMIX {
 
     size_t m_n, m_itmin, m_itmax;
 
-    int m_zmode, m_ecmode, m_pmsinit;
+    int m_zmode, m_ecmode, m_pmsinit, m_aniso;
 
     double m_thmass, m_chmass;
 

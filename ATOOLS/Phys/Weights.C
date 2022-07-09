@@ -415,12 +415,19 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
   // transform both sides into absolute storage instead of the default relative
   // storage
   MakeAbsolute();
-  auto rhs_abs = rhs;
-  rhs_abs.MakeAbsolute();
+  auto abs_rhs = rhs;
+  abs_rhs.MakeAbsolute();
 
-  // now addition is trivial
-  for (auto& kv : rhs_abs) {
-    (*this)[kv.first] += kv.second;
+  // now addition is trivial; if a key is missing on the rhs, we use its
+  // nominal value to construct a Weights object
+  const double rhs_nominal = rhs.Nominal();
+  for (auto& kv : *this) {
+    auto it = abs_rhs.find(kv.first);
+    if (it == abs_rhs.end()) {
+      kv.second += Weights {kv.second.type, rhs_nominal};
+    } else {
+      kv.second += it->second;
+    }
   }
 
   // transform back to relative storage
@@ -554,16 +561,62 @@ void Weights_Map::MakeAbsolute()
 #ifdef USING__MPI
 void Weights_Map::MPI_Allreduce()
 {
-  int size=mpi->Size();
-  if (size>1) {
+  int n_ranks=mpi->Size();
+  if (n_ranks>1) {
     assert(!is_absolute);
 
-    if (empty()) {
-      mpi->Allreduce(&base_weight, 1, MPI_DOUBLE, MPI_SUM);
-      mpi->Allreduce(&nominals_prefactor, 1, MPI_DOUBLE, MPI_PROD);
-      return;
+    // Get the maximum size of the map across all ranks.
+    const int map_size {static_cast<int>(size())};
+    const int max_map_size = mpi->Allmax(map_size);
+
+    std::vector<std::string> keys;
+    keys.reserve(size());
+    for (const auto& kv : *this)
+      keys.push_back(kv.first);
+
+    for (int i {0}; i < max_map_size; ++i) {
+      // Get ith set of keys from all ranks.
+      std::vector<std::string> gathered_keys {
+          (i < keys.size()) ? mpi->AllgatherStrings(keys[i])
+                            : mpi->AllgatherStrings("")};
+
+      // Get ith variations type from all ranks.
+      std::vector<Variations_Type> gathered_types(n_ranks, Variations_Type::custom);
+      int type {static_cast<int>((i < keys.size()) ? (*this)[keys[i]].Type()
+                                                   : Variations_Type::custom)};
+      mpi->Allgather(&type, 1, MPI_INT, &(gathered_types[0]), 1, MPI_INT);
+
+      // Now add missing entries.
+      for (int i{0}; i < n_ranks; ++i) {
+        if (gathered_keys[i] != "")
+          emplace(gathered_keys[i], gathered_types[i]);
+      }
     }
 
+    // At this point, the weights maps across all ranks have the same keys.
+    // Now we need to make sure that all custom weights have the same keys,
+    // too.
+    for (auto& kv : *this) {
+      if (kv.second.Type() == Variations_Type::custom) {
+        const int weights_size {static_cast<int>(kv.second.Size())};
+        const int max_weights_size = mpi->Allmax(weights_size);
+        for (int i {0}; i < max_weights_size; ++i) {
+          // Get ith set of keys from all ranks.
+          std::vector<std::string> gathered_keys {
+              (i < kv.second.names.size())
+                  ? mpi->AllgatherStrings(kv.second.names[i])
+                  : mpi->AllgatherStrings("")};
+          // Now add missing entries.
+          for (int i{0}; i < n_ranks; ++i) {
+            if (gathered_keys[i] != "")
+              emplace(gathered_keys[i], Variations_Type::custom);
+          }
+        }
+      }
+    }
+
+    // Finally, the structure of all weights maps is the same, so we can
+    // trivially Allreduce all doubles.
     MakeAbsolute();
     for (auto& kv : *this) {
       const size_t n_wgts = kv.second.Size();

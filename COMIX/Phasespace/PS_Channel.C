@@ -147,9 +147,14 @@ PHASIC::Vegas *PS_Channel::GetSVegas(const PS_Vertex *v)
     VVegas_Map::const_iterator it(vit->second.find(v));
     if (it!=vit->second.end()) vgs=it->second;
   }
-  if (vgs==NULL) vgs=m_sicmap[v->Type()][v]=
-    GetVegas("S_"+ToString(v->Type())+"_"+
-	     v->J(0)->PSInfo()+"_"+v->J(1)->PSInfo(),2);
+  if (vgs==NULL) {
+    vgs=m_sicmap[v->Type()][v]=
+      GetVegas("S_"+ToString(v->Type())+"_"+
+	       v->J(0)->PSInfo()+"_"+v->J(1)->PSInfo(),2);
+    if ((m_nin==2 && (v->JC()->CId()==((1<<m_n)-1-3))) ||
+	(m_nin==1 && (v->JC()->CId()==((1<<m_n)-1-1))))
+      vgs->ConstChannel(1);
+  }
   return vgs;
 }
 
@@ -202,7 +207,7 @@ double PS_Channel::PropMomenta(const PS_Current *cur,const size_t &id,
   double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
   if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
     if (cur->Width()>s_pwmin)
-      return CE.MassivePropMomenta(cur->Mass(),cur->Width(),1,smin,smax,*cr);
+      return CE.MassivePropMomenta(cur->Mass(),cur->Width(),smin,smax,*cr);
     if (cur->Mass()>s_pmmin) 
       return CE.ThresholdMomenta(m_thexp,m_mfac*cur->Mass(),smin,smax,*cr);
     return CE.MasslessPropMomenta(sexp,smin,smax,*cr);
@@ -221,7 +226,7 @@ double PS_Channel::PropWeight(const PS_Current *cur,const size_t &id,
   if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
     if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
     if (cur->Width()>s_pwmin) 
-      wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),1,smin,smax,s,rn);
+      wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),smin,smax,s,rn);
     else if (cur->Mass()>s_pmmin) 
       wgt=CE.ThresholdWeight(m_thexp,m_mfac*cur->Mass(),smin,smax,s,rn);
     else wgt=CE.MasslessPropWeight(sexp,smin,smax,s,rn);
@@ -312,8 +317,7 @@ void PS_Channel::TChannelMomenta
   double ctmin(-1.0), ctmax(1.0);
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,s1,s2);
   CE.TChannelMomenta(pa,pb,p1,p2,s1,s2,cur->Mass(),
-		     dip?m_stexp:m_texp,ctmax,ctmin,
-		     1.0,0,cr[0],cr[1]);
+		     dip?m_stexp:m_texp,ctmax,ctmin,cr[0],cr[1]);
 }
 
 double PS_Channel::TChannelWeight
@@ -323,8 +327,7 @@ double PS_Channel::TChannelWeight
   double ctmin(-1.0), ctmax(1.0), rns[2];
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,p1.Abs2(),p2.Abs2());
   double wgt(CE.TChannelWeight(pa,pb,p1,p2,cur->Mass(),
-			       dip?m_stexp:m_texp,ctmax,ctmin,
-			       1.0,0,rns[0],rns[1]));
+			       dip?m_stexp:m_texp,ctmax,ctmin,rns[0],rns[1]));
   if (m_vmode&3) {
     Vegas *cvgs(GetTVegas(id,cur,dip));
     size_t id(0);
@@ -674,7 +677,6 @@ double PS_Channel::GenerateWeight
  PS_Current *const jc,PS_Vertex *const v,size_t &nr)
 {
   double wgt(1.0);
-  m_p[0]=Vec4D(0.,1.,1.,0.);
   size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
     size_t pid(aid-(m_rid+bid));
@@ -843,6 +845,7 @@ bool PS_Channel::GenerateWeight()
 void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts) 
 {
   p_cuts=cuts;
+  m_p[0]=Vec4D(0.,1.,1.,0.);
   if (p_cur==NULL) GenerateChannels();
   for (size_t i(0);i<m_n;++i) {
     m_p[1<<i]=i<2?-p[i]:p[i];

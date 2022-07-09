@@ -51,7 +51,7 @@ namespace BEAM {
 
     inline void SetType(const std::string & type) { m_type = type; }
     inline void SetSprimeMin(const double & smin) { p_kinematics->SetSprimeMin(smin); }
-    inline void SetSprimeMax(const double & smax) { p_kinematics->SetSprimeMin(smax); }
+    inline void SetSprimeMax(const double & smax) { p_kinematics->SetSprimeMax(smax); }
     inline const double SprimeMin() const { return p_kinematics->SprimeMin(); }
     inline const double SprimeMax() const { return p_kinematics->SprimeMax(); }
     inline const double Sprime()          { return p_kinematics->Sprime(); }
@@ -64,6 +64,10 @@ namespace BEAM {
     }
     inline const double Weight(ATOOLS::Flavour * flin=NULL) const {
       return (*p_weight)(flin);
+    }
+    inline bool AllowSwap() {
+      return p_BeamBase[0]->Type() == beamspectrum::EPA &&
+             p_BeamBase[1]->Type() == beamspectrum::EPA;
     }
 
     void   Output();

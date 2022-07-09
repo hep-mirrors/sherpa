@@ -16,7 +16,7 @@ namespace AMISIC {
     MODEL::Running_AlphaS      * p_alphaS;
     MODEL::Running_AlphaQED    * p_alpha;
 
-    double      m_muFfac;
+    double      m_muFfac, m_xmin[2];
     double      m_ecms, m_S, m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2;
     double      m_xTmin, m_xTmax, m_xTstep;
     double      m_sigmaND;
@@ -66,6 +66,7 @@ namespace AMISIC {
     inline const double &  XShard()    const { return m_integral; }
     inline const size_t    Size()      const { return m_groups.size(); }
     inline const int    &  MassMode()  const { return m_massmode; }
+    inline const double &  PDFXmin(const size_t beam) const { return m_xmin[beam]; }
     inline PDF::PDF_Base * PDF(const size_t beam)  { return p_pdf[beam]; }
     inline MODEL::Running_AlphaS * AlphaS() const  { return p_alphaS; }
     inline void SetSigmaND(const double & sigmaND) { m_sigmaND = sigmaND; }

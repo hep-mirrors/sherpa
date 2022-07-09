@@ -80,7 +80,7 @@ void Cluster_Splitter::FixCoefficients() {
     }
     else if (flav.IsDiQuark())
       flcnt = 2;
-    else if (part->IsBeam()) {
+    if (part->IsBeam()) {
       flcnt  = 3;
       m_mode = m_beammode;
     }
@@ -150,16 +150,22 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {
   // identical, just have to check the m_a, m_b, m_c
   double norm = 1., arg;
+  double value = 1.;
   if (m_a[cnt]>=0.) norm *= pow(zmax,m_a[cnt]);
                else norm *= pow(zmin,m_a[cnt]);
   if (m_b[cnt]>=0.) norm *= pow(1.-zmin,m_b[cnt]);
                else norm *= pow(1.-zmax,m_b[cnt]);
   double wt = pow(z,m_a[cnt]) * pow(1.-z,m_b[cnt]);
+
+  value = wt/norm;
+  
   if (m_mode==2) {
     arg   = dabs(m_c[cnt])>1.e-2 ? m_c[cnt]*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
+    value *= exp(-arg*((zmax-z)/(z*zmax)));
     norm *= exp(-arg/zmax);
     wt   *= exp(-arg/z);
   }
+
   if (wt>norm) {
     msg_Error()<<"Error in "<<METHOD<<": wt(z) = "<<wt<<"("<<z<<") "
 	       <<"for wtmax = "<<norm<<" "
@@ -169,7 +175,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       <<"c part = "<<exp(-arg/z)<<"/"<<exp(-arg/zmax)<<".\n";
     exit(1);
   }
-  return wt / norm;
+  return value;
 }
 
 bool Cluster_Splitter::RecalculateZs() {

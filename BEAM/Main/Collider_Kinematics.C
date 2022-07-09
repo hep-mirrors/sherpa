@@ -69,66 +69,39 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D *moms) {
                 << m_sprime << std::endl;
     return false;
   }
-  CalculateSudakovMomenta();
-  switch (m_mode) {
-  case collidermode::monochromatic:
-    return MakeMonochromaticBeams();
-  case collidermode::spectral_1:
-    return MakeSpectral1Beams(moms);
-  case collidermode::spectral_2:
-    return MakeSpectral2Beams(moms);
-  case collidermode::both_spectral:
-    return MakeCollinearBeams(moms);
-  case collidermode::unknown:
+  if (m_mode == collidermode::monochromatic)
+    return true;
+  if (m_mode == collidermode::unknown)
     THROW(fatal_error,
           "Unknown collider mode, impossible to build kinematics.");
-  }
-  return false;
-}
-
-bool Collider_Kinematics::MakeMonochromaticBeams() {
-  // Should actually not be called, because the beamhandler is considered to be
-  // off for monochromatic beams
-  return true;
-}
-
-bool Collider_Kinematics::MakeCollinearBeams(ATOOLS::Vec4D *moms) {
+  Vec4D pa = p_beams[0]->InMomentum();
+  Vec4D pb = p_beams[1]->InMomentum();
+  double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
+  double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
+  m_p_plus = bet * (pa - pa.Abs2() / gam * pb);
+  m_p_minus = bet * (pb - pb.Abs2() / gam * pa);
   double tau = CalculateTau();
-  double yt = exp(m_ykey[2] - 0.5 * log((tau + m_m2[1]) / (tau + m_m2[0])) -
-                  m_Plab.Y());
-  m_x[0] = m_xkey[4] = sqrt(tau) * yt;
-  m_x[1] = m_xkey[5] = sqrt(tau) / yt;
-  moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
-  moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
-  for (size_t i = 0; i < 2; ++i) {
-    p_beams[i]->SetOutMomentum(moms[i]);
-  }
-  m_CMSBoost = Poincare(moms[0] + moms[1]);
-  return true;
-}
-
-bool Collider_Kinematics::MakeSpectral1Beams(ATOOLS::Vec4D *moms) {
-  m_x[1] = m_xkey[5] =
-      1.; // Should actually be p_beams[1]->InMomentum().PMinus() /
-          // m_p_minus.PMinus(), but leads to violation of momentum conservation
-          // during event generation
-  m_x[0] = m_xkey[4] = CalculateTau() / m_x[1];
-  moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
-  moms[1] = p_beams[1]->InMomentum();
-  for (size_t i = 0; i < 2; ++i) {
-    p_beams[i]->SetOutMomentum(moms[i]);
-  }
-  m_CMSBoost = Poincare(moms[0] + moms[1]);
-  return true;
-}
-
-bool Collider_Kinematics::MakeSpectral2Beams(ATOOLS::Vec4D *moms) {
-  m_x[0] = m_xkey[4] =
-      1.; // Should actually be p_beams[0]->InMomentum().PPlus() /
-          // m_p_plus.PPlus(), see above
-  m_x[1] = m_xkey[5] = CalculateTau() / m_x[0];
-  moms[0] = p_beams[0]->InMomentum();
-  moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
+  if (m_mode == collidermode::spectral_1) {
+    m_x[1] = m_xkey[5] = p_beams[1]->InMomentum().PMinus() / m_p_minus.PMinus();
+    m_x[0] = m_xkey[4] = CalculateTau() / m_x[1];
+    moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
+    moms[1] = p_beams[1]->InMomentum();
+  } else if (m_mode == collidermode::spectral_2) {
+    m_x[0] = m_xkey[4] = p_beams[0]->InMomentum().PPlus() / m_p_plus.PPlus();
+    m_x[1] = m_xkey[5] = CalculateTau() / m_x[0];
+    moms[0] = p_beams[0]->InMomentum();
+    moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
+  } else if (m_mode == collidermode::both_spectral) {
+    double yt = exp(m_ykey[2] - 0.5 * log((tau + m_m2[1]) / (tau + m_m2[0])) -
+                    m_Plab.Y());
+    m_x[0] = m_xkey[4] = sqrt(tau) * yt;
+    m_x[1] = m_xkey[5] = sqrt(tau) / yt;
+    moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
+    moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
+  } else
+    return false;
+  if (m_x[0] > 1. || m_x[1] > 1.)
+    return false;
   for (size_t i = 0; i < 2; ++i) {
     p_beams[i]->SetOutMomentum(moms[i]);
   }
@@ -144,15 +117,6 @@ double Collider_Kinematics::CalculateTau() {
   }
   tau += sqrt(tau * tau - m_m2[0] * m_m2[1] / (m_S * m_S));
   return tau;
-}
-
-void Collider_Kinematics::CalculateSudakovMomenta() {
-  Vec4D pa = p_beams[0]->InMomentum();
-  Vec4D pb = p_beams[1]->InMomentum();
-  double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
-  double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
-  m_p_plus = bet * (pa - pa.Abs2() / gam * pb);
-  m_p_minus = bet * (pb - pb.Abs2() / gam * pa);
 }
 
 void Collider_Kinematics::AssignKeys(Integration_Info *const info) {

@@ -34,6 +34,8 @@ GRVph_Fortran_Interface::GRVph_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_partons.insert(Flavour(kf_jet));
   m_partons.insert(Flavour(kf_quark));
   m_partons.insert(Flavour(kf_quark).Bar());
+
+  rpa->gen.AddCitation(1,"The GRV photon PDF is published under \\cite{Gluck:1991jc} and \\cite{Gluck:1991ee}.");
 }
 
 PDF_Base *GRVph_Fortran_Interface::GetCopy() {

@@ -232,8 +232,8 @@ double LF_FFV_FF::operator()
 {
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mi2   = sqr(p_ms->Mass(m_flavs[1]));
-  double mui2  = mi2/Q2;
-  double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
+  double mk2   = sqr(p_ms->Mass(m_flspec));
+  double mui2  = mi2/Q2, muk2 = mk2/Q2;
   //the massless case
   double massless = ( 2./(1.-z+z*y) - (1.+z) );
   if (muij2==0. && mui2==0. && muk2==0.) {
@@ -244,11 +244,15 @@ double LF_FFV_FF::operator()
   else {
     //the massive case
     double vtijk = Lambda(1.,muij2,muk2), vijk = sqr(2.*muk2+(1.-mui2-muk2)*(1.-y))-4.*muk2;
-    if (vtijk<0.0 || vijk<0.0) return 0.0;
+    double vkji = 1.-4.*mui2*((1.-mui2-muk2)*(1.-y)*(1.-z)+muk2)/sqr((1.-mui2-muk2)*(y+(1.-y)*z));
+    if (vtijk<0.0 || vijk<0.0 || vkji<0.0) return 0.0;
     vtijk = sqrt(vtijk)/(1.-muij2-muk2);
     vijk  = sqrt(vijk)/((1.-mui2-muk2)*(1.-y));
+    vkji  = sqrt(vkji);
     double pipj  = Q2*(1.0-mui2-muk2)*y/2.0;
-    double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
+    double pkpj  = Q2*(1.0-mui2-muk2)*(1.-y)*(1.-z)/2.0;
+    double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj*pkpj/(pipj+pkpj))
+		       - vtijk/vkji * mk2/pkpj*pipj/(pipj+pkpj) );
     massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2));
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
@@ -373,8 +377,8 @@ double LF_FVF_FF::operator()
 {
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mj2   = sqr(p_ms->Mass(m_flavs[2]));
-  double muj2  = mj2/Q2;
-  double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
+  double mk2   = sqr(p_ms->Mass(m_flspec));
+  double muj2  = mj2/Q2, muk2 = mk2/Q2;
   //the massless case
   double massless = ( 2./(z+y-z*y) - 2. + z );
   if (muij2==0. && muj2==0. && muk2==0.) {
@@ -385,11 +389,15 @@ double LF_FVF_FF::operator()
   else {
     //the massive case
     double vtijk = Lambda(1.,muij2,muk2), vijk = sqr(2.*muk2+(1.-muj2-muk2)*(1.-y))-4.*muk2;
-    if (vtijk<0.0 || vijk<0.0) return 0.0;
+    double vkij = 1.-4.*muj2*((1.-muj2-muk2)*(1.-y)*z+muk2)/sqr((1.-muj2-muk2)*(y+(1.-y)*(1.-z)));
+    if (vtijk<0.0 || vijk<0.0 || vkij<0.0) return 0.0;
     vtijk = sqrt(vtijk)/(1.-muij2-muk2);
     vijk  = sqrt(vijk)/((1.-muj2-muk2)*(1.-y));
+    vkij  = sqrt(vkij);
     double pipj  = Q2*(1.0-muj2-muk2)*y/2.0;
-    double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2.-z + mj2/pipj) );
+    double pkpi  = Q2*(1.0-muj2-muk2)*(1.-y)*z/2.0;
+    double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2.-z + mj2/pipj*pkpi/(pipj+pkpi)) 
+		       - vtijk/vkij * mk2/pkpi*pipj/(pipj+pkpi) );
     massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2));
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;

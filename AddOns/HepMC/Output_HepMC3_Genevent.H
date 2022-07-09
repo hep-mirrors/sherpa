@@ -12,13 +12,6 @@ namespace HepMC3 {
   class GenVertex;
   class GenParticle;
   class Writer;
-  class WriterAscii;
-  class WriterAsciiHepMC2;
-  class WriterHEPEVT;
-#ifdef USING__HEPMC3__ROOT
-  class WriterRootTree;
-  class WriterRoot;
-#endif
 }
 namespace HepMC = HepMC3;
 

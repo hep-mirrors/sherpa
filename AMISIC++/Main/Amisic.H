@@ -8,6 +8,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/File_IO_Base.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
@@ -52,7 +53,7 @@ namespace AMISIC {
     Impact_Parameter         m_impact;
     Single_Collision_Handler m_singlecollision;
 
-    bool   m_ana;
+    bool   m_isMinBias, m_isFirst, m_ana;
     size_t m_nscatters;
     std::map<std::string,ATOOLS::Histogram *> m_histos; 
     
@@ -72,6 +73,7 @@ namespace AMISIC {
 
     bool           VetoEvent(const double & scale=-1.);
     ATOOLS::Blob * GenerateScatter();
+    int            InitMinBiasEvent(ATOOLS::Blob_List * blobs);
     bool           VetoScatter(ATOOLS::Blob * blob);
     int            ShiftMasses(ATOOLS::Cluster_Amplitude * ampl);      
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
@@ -82,6 +84,15 @@ namespace AMISIC {
     const double ScaleMin() const;
     const double ScaleMax() const;
 
+    inline const double & PT2()       const { return m_pt2; }
+    inline const bool   & IsMinBias() const { return m_isMinBias; }
+    inline const bool   & IsFirst()   const { return m_isFirst; }
+    inline void SetMinBias(const bool & isMinBias=true) {
+      m_isMinBias = isMinBias;
+    }
+    inline void  SetFirst(const bool & first=true) {
+      m_isFirst = first;
+    }
     inline void SetMassMode(const int & mode) {
       p_processes->SetMassMode(mode);
     }
@@ -98,7 +109,6 @@ namespace AMISIC {
     
     void Reset();
     void CleanUp();
-
     void Test();
   };
 

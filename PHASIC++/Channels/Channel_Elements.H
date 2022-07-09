@@ -2,15 +2,23 @@
 #define PHASIC_Channels_Channel_Elements_H
 
 #include "ATOOLS/Math/Vector.H"
-#include "PHASIC++/Channels/Channel_Basics.H"
 #include "ATOOLS/Org/Info_Key.H"
 
 namespace PHASIC {
 
+  double SqLam(double,double,double);
+  double PeakedDist(double,double,double,double,int,double);
+  double PeakedWeight(double,double,double,double,double,int,double&);
+  double ExponentialDist(double ca,double cxm,double cxp,double ran);
+  double ExponentialWeight(double ca,double cxm,double cxp);
+  double BoundaryPeakedDist(double cxm,double cxp,double ran);
+  double BoundaryPeakedWeight(double cxm,double cxp,double res,double &ran);
+  double Tj1(double,double,double,double);
+  double Hj1(double,double,double);
+
   class Channel_Elements {
   private:
 
-    Channel_Basics CB;
     void QcdAntenna(ATOOLS::Vec4D* &,int,double, double);
     void BasicAntenna(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D &, double*, double);
     void PermP(int,int* &);
@@ -35,9 +43,9 @@ namespace PHASIC {
 
     double TChannelWeight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
 			  const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
-			  double,double,double,double,double,int,double&,double&);
-    int TChannelMomenta(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D&,ATOOLS::Vec4D&,
-			double,double,double,double,double,double,double,int,double,double);
+			  double,double,double,double,double&,double&);
+    void TChannelMomenta(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D&,ATOOLS::Vec4D&,
+			double,double,double,double,double,double,double,double);
 
     double BremsstrahlungWeight(double,double,double,
 				const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
@@ -45,7 +53,6 @@ namespace PHASIC {
 			       const double,const double,const double,
 			       ATOOLS::Vec4D &, ATOOLS::Vec4D &,const double,const double);
 
-    double MasslessPropWeight(double,double,double,double);
     double MasslessPropWeight(double,double,double,double,double&);
     double MasslessPropMomenta(double,double,double,double);
 
@@ -55,21 +62,16 @@ namespace PHASIC {
     double AntennaWeight(double amin,double amax,const double a,double &ran);
     double AntennaMomenta(double amin,double amax,double ran);
 
-    double MassivePropWeight(double,double,int,double,double,double);
-    double MassivePropWeight(double,double,int,double,double,double,double&);
-    double MassivePropMomenta(double,double,int,double,double,double);
+    double MassivePropWeight(double,double,double,double,double,double&);
+    double MassivePropMomenta(double,double,double,double,double);
 
     double QCDAPWeight(ATOOLS::Vec4D*,int,double);
     void QCDAPMomenta(ATOOLS::Vec4D*,ATOOLS::Vec4D,int,double);
 
-    double LLPropWeight(double,double,double,double,double);
     double LLPropWeight(double,double,double,double,double,double&);
     double LLPropMomenta(double,double,double,double,double);
 
-    double ThresholdMomenta(double,double,double,double);
-    double ThresholdWeight(double,double,double,double);
     double ThresholdMomenta(double,double,double,double,double);
-    double ThresholdWeight(double,double,double,double,double);
     double ThresholdWeight(double,double,double,double,double,double&);
 
     double GenerateDMRapidityUniform(const double masses[], const ATOOLS::Double_Container &spinfo,

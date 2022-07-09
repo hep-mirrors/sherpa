@@ -264,6 +264,9 @@ understood by the internal interpreter, see
 
 * DIS: ``CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT)/$(SDIS))/Abs2(p[2]-p[0]))``
 
+See :ref:`On-the-fly event weight variations`
+to find out how to vary the merging cut on-the-fly.
+
 .. _param_Process_Selectors:
 
 Process_Selectors

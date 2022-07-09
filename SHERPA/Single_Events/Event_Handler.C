@@ -126,6 +126,15 @@ void Event_Handler::Reset()
   Flow::ResetCounter();
 }
 
+void Event_Handler::ResetNonPerturbativePhases()
+{
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+    if ((*pit)->Type()==eph::Hadronization) {
+      (*pit)->CleanUp();
+    }
+  }
+}
+
 bool Event_Handler::GenerateEvent(eventtype::code mode) 
 {
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
@@ -163,6 +172,7 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
   p_signal->SetStatus(status);
   p_signal->AddData("Trials",new Blob_Data<double>(0));
   p_signal->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  p_signal->AddData("Weight_Norm",new Blob_Data<double>(1.));
   m_blobs.push_back(p_signal);
 }
 
@@ -263,6 +273,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
         retry++;
         Return_Value::IncCall((*pit)->Name());
         Return_Value::IncRetryEvent((*pit)->Name());
+        ResetNonPerturbativePhases();
 	if (mode==eventtype::StandardPerturbative) {
 	  m_blobs.Clear();
 	  m_blobs=m_sblobs.Copy();
@@ -483,7 +494,6 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 }
 
 void Event_Handler::Finish() {
-  MPISync();
   msg_Info()<<"In Event_Handler::Finish : "
 	    <<"Summarizing the run may take some time.\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -504,6 +514,7 @@ void Event_Handler::Finish() {
   }
   Blob::Reset();
   // Obtain absolute (variation) weights.
+  MPISyncXSAndErrMaps();
   Weights_Map xs_wgtmap = TotalXSMPI();
   Weights_Map err_wgtmap = TotalErrMPI();
   std::map<std::string, double> xs_wgts;
@@ -511,7 +522,7 @@ void Event_Handler::Finish() {
   std::map<std::string, double> err_wgts;
   err_wgtmap.FillVariations(err_wgts);
   if (Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"]
-	  .SetDefault(false)
+	  .SetDefault(true)
 	  .Get<bool>()) {
     xs_wgtmap.FillVariations(xs_wgts, Variations_Source::main);
     err_wgtmap.FillVariations(err_wgts, Variations_Source::main);
@@ -569,30 +580,87 @@ void Event_Handler::Finish() {
 
 void Event_Handler::MPISync()
 {
-  m_mn=m_n;
-  m_mwgtmapsum=m_wgtmapsum;
-  m_mwgtmapsumsqr=m_wgtmapsumsqr;
+  m_mn = m_n;
 #ifdef USING__MPI
-  int size=mpi->Size();
-  if (size>1) {
-    mpi->Allreduce(&m_mn,1,MPI_DOUBLE,MPI_SUM);
-    if (!(m_checkweight&2))
-      mpi->Allreduce(&m_maxweight,1,MPI_DOUBLE,MPI_MAX);
+  if (mpi->Size() > 1) {
+    mpi->Allreduce(&m_mn, 1, MPI_DOUBLE, MPI_SUM);
+    if (!(m_checkweight & 2))
+      mpi->Allreduce(&m_maxweight, 1, MPI_DOUBLE, MPI_MAX);
+  }
+#endif
+}
+
+void Event_Handler::MPISyncXSAndErrMaps()
+{
+  MPISync();
+  m_mwgtmapsum = m_wgtmapsum;
+  m_mwgtmapsumsqr = m_wgtmapsumsqr;
+#ifdef USING__MPI
+  if (mpi->Size() > 1) {
     m_mwgtmapsum.MPI_Allreduce();
     m_mwgtmapsumsqr.MPI_Allreduce();
   }
 #endif
+}
+
+void Event_Handler::PerformMemoryMonitoring()
+{
   size_t currentrss=GetCurrentRSS();
   if (m_lastrss==0) m_lastrss=currentrss;
   else if (currentrss>m_lastrss+ToType<int>
       (rpa->gen.Variable("MEMLEAK_WARNING_THRESHOLD"))) {
-    msg_Error()<<METHOD<<"() {\n"<<om::bold<<"  Memory usage increased by "
+    msg_Error()<<"\n"<<om::bold<<"    Memory usage increased by "
 	       <<(currentrss-m_lastrss)/(1<<20)<<" MB,"
 	       <<" now "<<currentrss/(1<<20)<<" MB.\n"
-	       <<om::red<<"  This might indicate a memory leak!\n"
-	       <<"  Please monitor this process closely.\n"<<om::reset<<"}"<<std::endl;
+	       <<om::red<<"    This might indicate a memory leak!\n"
+	       <<"    Please monitor this process closely."<<om::reset<<std::endl;
     m_lastrss=currentrss;
   }
+}
+
+Uncertain<double> Event_Handler::TotalNominalXS()
+{
+  if (m_n == 0.0)
+    return {0.0, 0.0};
+
+  const double sum_nominal {m_wgtmapsum.Nominal()};
+  const double xs {sum_nominal / m_n};
+  if (m_n <= 1)
+    return {xs, xs};
+
+  const double sumsqr_nominal {m_wgtmapsumsqr.Nominal()};
+  if (ATOOLS::IsEqual(sumsqr_nominal * m_n, sum_nominal * sum_nominal, 1.0e-6))
+    return {xs, 0.0};
+
+  const double numerator {sumsqr_nominal * m_n - sum_nominal * sum_nominal};
+  return {xs, sqrt(numerator / (m_n - 1) / (m_n * m_n))};
+}
+
+Uncertain<double> Event_Handler::TotalNominalXSMPI()
+{
+  MPISync();
+  if (m_mn == 0.0)
+    return {0.0, 0.0};
+
+  double sum_nominal {m_wgtmapsum.Nominal()};
+#ifdef USING__MPI
+  if (mpi->Size() > 1)
+    mpi->Allreduce(&sum_nominal, 1, MPI_DOUBLE, MPI_SUM);
+#endif
+  const double xs {sum_nominal / m_mn};
+  if (m_mn <= 1)
+    return {xs, xs};
+
+  double sumsqr_nominal {m_wgtmapsumsqr.Nominal()};
+#ifdef USING__MPI
+  if (mpi->Size() > 1)
+    mpi->Allreduce(&sumsqr_nominal, 1, MPI_DOUBLE, MPI_SUM);
+#endif
+  if (ATOOLS::IsEqual(sumsqr_nominal * m_mn, sum_nominal * sum_nominal, 1.0e-6))
+    return {xs, 0.0};
+
+  const double numerator {sumsqr_nominal * m_mn - sum_nominal * sum_nominal};
+  return {xs, sqrt(numerator / (m_mn - 1) / (m_mn * m_mn))};
 }
 
 Weights_Map Event_Handler::TotalXS()
@@ -611,14 +679,13 @@ Weights_Map Event_Handler::TotalErr()
 
 Weights_Map Event_Handler::TotalXSMPI()
 {
-  MPISync();
   if (m_mn==0.0) return 0.0;
   return m_mwgtmapsum/m_mn;
 }
 
 Weights_Map Event_Handler::TotalErrMPI()
 {
-  if (m_mn<=1) return TotalXS();
+  if (m_mn<=1) return TotalXSMPI();
   auto numerator = m_mwgtmapsumsqr*m_mn - m_mwgtmapsum*m_mwgtmapsum;
   numerator.SetZeroIfCloseToZero(1.0e-6);
   return sqrt(numerator/(m_mn-1)/(m_mn*m_mn));

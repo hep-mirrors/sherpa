@@ -137,7 +137,7 @@ MI_GG_Processes::MI_GG_Processes() :
 }
 
 double MI_GG_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
+  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
 }
 
 MI_Process * MI_GG_Processes::SelectProcess() {
@@ -213,7 +213,7 @@ MI_QQB_Processes::MI_QQB_Processes():
 }
 
 double MI_QQB_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
+  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -239,7 +239,7 @@ MI_QQ_Processes::MI_QQ_Processes():
 }
 
 double MI_QQ_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
+  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
 }
 
 MI_Process * MI_QQ_Processes::SelectProcess() {
@@ -292,7 +292,7 @@ MI_QG_Processes::MI_QG_Processes():
 }
 
 double MI_QG_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
+  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
 }
 
 /*
@@ -368,7 +368,7 @@ MI_Q1Q2_Processes::MI_Q1Q2_Processes():
 }
 
 double MI_Q1Q2_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
+  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
 }
 
 /*double MI_Q1Q2_Processes::
@@ -449,8 +449,8 @@ MI_QG_QGamma_Processes::MI_QG_QGamma_Processes() :
 }
   
 double MI_QG_QGamma_Processes::Coupling(const double & scale) const {
-  return ( (*p_alphaS)(m_muR_fac*Scale(m_scale)) *
-	   (*p_alpha)(Scale(m_scale)) );
+  return ( (*p_alphaS)(m_muR_fac*Scale(Max(m_pt02,m_scale))) *
+	   (*p_alpha)(Max(m_pt02,Scale(m_scale)) ));
 }
 
 /*double MI_QG_QGamma_Processes::

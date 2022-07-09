@@ -102,7 +102,7 @@ bool Beam_Channels::DefineColliderChannels() {
       (m_beamtype[0] == beamspectrum::EPA &&
        m_beamtype[1] == beamspectrum::EPA)) {
     double exponent = (int(m_beamtype[0] == beamspectrum::EPA) +
-                       int(m_beamtype[1] == beamspectrum::EPA)) * 0.75;
+                       int(m_beamtype[1] == beamspectrum::EPA)) * 0.5;
     m_beamparams.push_back(Channel_Info(channel_type::simple, exponent));
     CheckForStructuresFromME();
     return true;

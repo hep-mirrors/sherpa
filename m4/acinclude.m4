@@ -542,7 +542,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AS_HELP_STRING([--enable-hepmc3=/path/to/hepmc],[Enable HepMC (version 3.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC3 installation directory);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(HepMC3 not enabled);   ;;
+        no)  AC_MSG_RESULT(HepMC3 not enabled); hepmc3=false  ;;
         yes) if test -x "`which HepMC3-config`"; then
                CONDITIONAL_HEPMC3DIR=`HepMC3-config --prefix`;
              fi;;
@@ -550,19 +550,21 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
               CONDITIONAL_HEPMC3DIR=${enableval};
             fi;;
       esac;
-      if test -x "$CONDITIONAL_HEPMC3DIR/bin/HepMC3-config"; then      
-        AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true
-        CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags)";
-        CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs)";
-        if test "$hepmc3root" = "true" ; then
-          CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags --rootIO) ${CONDITIONAL_ROOTINCS}";
-          CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs  --rootIO) ${CONDITIONAL_ROOTLIBS}";
-          if ! test -f "$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --includedir)/HepMC3/WriterRoot.h" -a -f "$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --includedir)/HepMC3/WriterRootTree.h"; then
-             AC_MSG_ERROR(HepMC3 installation does not contain ROOT support.);
+      if test -n "$CONDITIONAL_HEPMC3DIR"; then
+        if test -x "$CONDITIONAL_HEPMC3DIR/bin/HepMC3-config"; then      
+          AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true
+          CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags)";
+          CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs)";
+          if test "$hepmc3root" = "true" ; then
+            CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags --rootIO) ${CONDITIONAL_ROOTINCS}";
+            CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs  --rootIO) ${CONDITIONAL_ROOTLIBS}";
+            if ! test -f "$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --includedir)/HepMC3/WriterRoot.h" -a -f "$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --includedir)/HepMC3/WriterRootTree.h"; then
+               AC_MSG_ERROR(HepMC3 installation does not contain ROOT support.);
+            fi;
           fi;
+        else
+          AC_MSG_ERROR(Unable to use HepMC3 from specified path);
         fi;
-      else
-        AC_MSG_ERROR(Unable to use HepMC3 from specified path);
       fi;
     ],
     [ hepmc3=false ]
@@ -592,21 +594,23 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
               CONDITIONAL_RIVETDIR=${enableval};
             fi;;
       esac;
-      if test -x "$CONDITIONAL_RIVETDIR/bin/rivet-config"; then
-        CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
-        CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
-        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]);
-        rivetversion="$($CONDITIONAL_RIVETDIR/bin/rivet-config --version)"
-        AC_MSG_CHECKING(for Rivet version)
-        AX_COMPARE_VERSION([${rivetversion}],[ge],[3.1.1],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
-          AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ AC_MSG_ERROR(Rivet version 3.0.0-3.1.0 not supported -- please use 3.1.1 or above.) ], [
-            AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
-              AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+      if test -n "$CONDITIONAL_RIVETDIR"; then
+        if test -x "$CONDITIONAL_RIVETDIR/bin/rivet-config"; then
+          CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
+          CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
+          AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]);
+          rivetversion="$($CONDITIONAL_RIVETDIR/bin/rivet-config --version)"
+          AC_MSG_CHECKING(for Rivet version)
+          AX_COMPARE_VERSION([${rivetversion}],[ge],[3.1.1],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
+            AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ AC_MSG_ERROR(Rivet version 3.0.0-3.1.0 not supported -- please use 3.1.1 or above.) ], [
+              AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
+                AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+              ])
             ])
           ])
-        ])
-      else
-        AC_MSG_ERROR(Unable to use Rivet from specified path.);
+        else
+          AC_MSG_ERROR(Unable to use Rivet from specified path.);
+        fi;
       fi;
     ],
     [ rivet=false ]
@@ -861,45 +865,46 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   AM_CONDITIONAL(USING__LHOLE, test "$lhole" = "true" )
 
-  lhapdfversion=5
-  AC_ARG_ENABLE(
+  AC_ARG_WITH(
     lhapdf,
-    AS_HELP_STRING([--enable-lhapdf=/path/to/lhapdf],[Enable LHAPDF support and specify where it is installed.]),
+    AS_HELP_STRING([--with-lhapdf=@<:@ARG@:>@],[use LHAPDF from @<:@ARG@:>@.]),
     [ AC_MSG_CHECKING(for LHAPDF installation directory);
-      case "${enableval}" in
-        no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
-        yes) if test -x "`which lhapdf-config`"; then
-               CONDITIONAL_LHAPDFDIR=`lhapdf-config --prefix`;
-             fi;;
-        *)  if test -d "${enableval}"; then
-              CONDITIONAL_LHAPDFDIR=${enableval};
-            fi;;
-      esac;
-
-      if test -x "$CONDITIONAL_LHAPDFDIR/bin/lhapdf-config"; then
-        CONDITIONAL_LHAPDFLIBS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --ldflags)";
-        CONDITIONAL_LHAPDFINCS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --cppflags)";
-        lhapdfversion="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --version)";
-        lhapdfversion=${lhapdfversion:0:1}
-        AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
+      if test "$withval" = "install"; then
+        CONDITIONAL_LHAPDFDIR=$ac_default_prefix;
+        lhapdf_version="6.4.0";
+        test "x$prefix" != xNONE && CONDITIONAL_LHAPDFDIR=$prefix;
+        if ! test -f ${CONDITIONAL_LHAPDFDIR}/bin/lhapdf-config; then
+          wget --no-check-certificate https://lhapdf.hepforge.org/downloads/LHAPDF-${lhapdf_version}.tar.gz
+          tar xzf LHAPDF-${lhapdf_version}.tar.gz;
+          cd LHAPDF-${lhapdf_version};
+          ./configure --prefix=${CONDITIONAL_LHAPDFDIR} --disable-python || exit;
+          make || exit; make install || exit;
+          cd ${CONDITIONAL_LHAPDFDIR}/share/LHAPDF;
+          wget --no-check-certificate https://www.hep.ucl.ac.uk/pdf4lhc/pdf4lhc21grids/PDF4LHC21_40_pdfas.tgz;
+          tar xzf PDF4LHC21_40_pdfas.tgz;
+          echo "93300 PDF4LHC21_40_pdfas 1" >> pdfsets.index
+          cd -;
+          cd ..;
+          rm -rf LHAPDF-${lhapdf_version}.tar.gz LHAPDF-${lhapdf_version} ${CONDITIONAL_LHAPDFDIR}/share/LHAPDF/PDF4LHC21_40_pdfas.tgz;
+          echo "Successfully installed lhapdf into ${CONDITIONAL_LHAPDFDIR}."
+        fi
       else
-        AC_MSG_ERROR(Unable to use LHAPDF from specified path.);
-      fi;
+        CONDITIONAL_LHAPDFDIR="$withval"
+      fi
     ],
-    [ lhapdf=false ]
+    [ CONDITIONAL_LHAPDFDIR=/usr; ]
   )
-  if test "$lhapdf" = "true" ; then
-    AC_DEFINE_UNQUOTED([LHAPDF_PATH], "$CONDITIONAL_LHAPDFDIR", [LHAPDF directory])
-    AC_DEFINE([USING__LHAPDF], "1", [using LHAPDF])
-    if test [ "$lhapdfversion" -ge "6" ] ; then
-      AC_DEFINE(USING__LHAPDF6, "1", [using LHAPDF6])
-    fi
-  fi
+  if test -x "$CONDITIONAL_LHAPDFDIR/bin/lhapdf-config"; then
+    CONDITIONAL_LHAPDFLIBS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --ldflags)";
+    CONDITIONAL_LHAPDFINCS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --cppflags)";
+    AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
+  else
+    AC_MSG_ERROR(Did not find required dependency LHAPDF in ${CONDITIONAL_LHAPDFDIR}. Please specify its installation prefix using '--with-lhapdf=/path' or enable its automatic installation using '--with-lhapdf=install');
+  fi;
   AC_SUBST(CONDITIONAL_LHAPDFDIR)
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
   AC_SUBST(CONDITIONAL_LHAPDFINCS)
-  AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
-  AM_CONDITIONAL(LHAPDF6_SUPPORT, test [ "$lhapdfversion" -ge "6" ])
+  AC_DEFINE_UNQUOTED([LHAPDF_PATH], "$CONDITIONAL_LHAPDFDIR", [LHAPDF directory])
 
   AC_ARG_ENABLE(
     hztool,
@@ -1096,7 +1101,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(for Pythia8 installation directory);
       pythia8=true;
       case "${enableval}" in
-        no)  AC_MSG_RESULT(Pythia8 not enabled); pythia82=false; pythia83=false ;;
+        no)  AC_MSG_RESULT(Pythia8 not enabled); pythia8=false; pythia82=false; pythia83=false ;;
         yes) if test -x "`which pythia8-config`"; then
                CONDITIONAL_PYTHIA8DIR=`pythia8-config --prefix`;
              fi;;
@@ -1104,35 +1109,37 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
               CONDITIONAL_PYTHIA8DIR=${enableval};
             fi;;
       esac;
-      if test -x "$CONDITIONAL_PYTHIA8DIR/bin/pythia8-config"; then
-        CONDITIONAL_PYTHIA8LDADD="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --ldflags)";
-        CONDITIONAL_PYTHIA8CPPFLAGS="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --cxxflags)";
-        AC_MSG_RESULT([${CONDITIONAL_PYTHIA8DIR}]);
-      else
-        AC_MSG_RESULT([Unable to find pythia8-config in the specifed path ${CONDITIONAL_PYTHIA8DIR}]);
-        AC_MSG_CHECKING(Trying to proceed without pythia8-config);
-        pythia8noconfiglibs=false;
-        pythia8noconfigincludes=false;
-        if test -f "${enableval}/lib/libpythia8.so"; then
-           CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib -lpythia8";
-           pythia8noconfiglibs=true;
-        fi;
-        if test -f "${enableval}/lib/libpythia8.dyld"; then
-           CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib -lpythia8";
-           pythia8noconfiglibs=true;
-        fi;
-        if test -f "${enableval}/lib64/libpythia8.so"; then
-           CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib64 -lpythia8";
-           pythia8noconfiglibs=true;
-        fi;
-        if test -f "${enableval}/include/Pythia8/Pythia.h"; then
-           CONDITIONAL_PYTHIA8CPPFLAGS="-I${enableval}/Pythia8";
-           pythia8noconfigincludes=true;
-        fi;
-        if "$pythia8noconfiglibs" = "true" &&  "$pythia8noconfigincludes" = "true"; then
-           AC_MSG_RESULT([Found Pythia8 libraries and includes in ${CONDITIONAL_PYTHIA8DIR}]);
+      if test -n "$CONDITIONAL_PYTHIA8DIR"; then
+        if test -x "$CONDITIONAL_PYTHIA8DIR/bin/pythia8-config"; then
+          CONDITIONAL_PYTHIA8LDADD="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --ldflags)";
+          CONDITIONAL_PYTHIA8CPPFLAGS="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --cxxflags)";
+          AC_MSG_RESULT([${CONDITIONAL_PYTHIA8DIR}]);
         else
-           AC_MSG_ERROR(Unable to find Pythia8 headers and libraries from the specified path. );
+          AC_MSG_RESULT([Unable to find pythia8-config in the specifed path ${CONDITIONAL_PYTHIA8DIR}]);
+          AC_MSG_CHECKING(Trying to proceed without pythia8-config);
+          pythia8noconfiglibs=false;
+          pythia8noconfigincludes=false;
+          if test -f "${enableval}/lib/libpythia8.so"; then
+             CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib -lpythia8";
+             pythia8noconfiglibs=true;
+          fi;
+          if test -f "${enableval}/lib/libpythia8.dyld"; then
+             CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib -lpythia8";
+             pythia8noconfiglibs=true;
+          fi;
+          if test -f "${enableval}/lib64/libpythia8.so"; then
+             CONDITIONAL_PYTHIA8LDADD="-L${enableval}/lib64 -lpythia8";
+             pythia8noconfiglibs=true;
+          fi;
+          if test -f "${enableval}/include/Pythia8/Pythia.h"; then
+             CONDITIONAL_PYTHIA8CPPFLAGS="-I${enableval}/Pythia8";
+             pythia8noconfigincludes=true;
+          fi;
+          if "$pythia8noconfiglibs" = "true" &&  "$pythia8noconfigincludes" = "true"; then
+             AC_MSG_RESULT([Found Pythia8 libraries and includes in ${CONDITIONAL_PYTHIA8DIR}]);
+          else
+             AC_MSG_ERROR(Unable to find Pythia8 headers and libraries from the specified path. );
+          fi;
         fi;
       fi;
     ],
@@ -1206,7 +1213,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       ac_libzip_path=$ac_default_prefix;
       test "x$prefix" != xNONE && ac_libzip_path=$prefix;
       if ! test -f ${ac_libzip_path}/include/zip.h; then
-        wget https://libzip.org/download/libzip-1.2.0.tar.gz
+        wget --no-check-certificate https://libzip.org/download/libzip-1.2.0.tar.gz
         tar xzf libzip-1.2.0.tar.gz;
         cd libzip-1.2.0;
         ./configure --prefix=${ac_libzip_path} || exit;

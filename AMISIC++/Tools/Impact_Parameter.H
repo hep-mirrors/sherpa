@@ -29,7 +29,7 @@ namespace AMISIC {
     ~Impact_Parameter();
 
     void   Initialize(const double & xsecratio);
-    double SelectB(const double & pt2);
+    double SelectB(const double & pt2=-1.);
     double operator()(const double & b);
  
     inline void SetProcesses(MI_Processes * procs) { p_procs = procs; }

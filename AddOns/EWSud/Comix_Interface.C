@@ -113,7 +113,7 @@ void Comix_Interface::InitializeProcesses(const Cluster_Amplitude_PM& ampls)
   auto& s = Settings::GetMainSettings();
   const auto graph_path =
       s["EWSUD"]["PRINT_GRAPHS"].SetDefault("").Get<std::string>();
-  if(s["PRINT_EWSUDAKOV_GRAPHS"].IsCustomised()){
+  if(s["PRINT_EWSUDAKOV_GRAPHS"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: PRINT_GRAPHS");
   }
 
