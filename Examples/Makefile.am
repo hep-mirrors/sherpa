@@ -58,8 +58,7 @@ nobase_dist_examples_DATA         =	\
 		H_in_GluonFusion/LHC_HJets/Sherpa.yaml \
 		H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml \
 		H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml \
-		Soft_QCD/Run.Xsecs.dat \
-		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
+		Soft_QCD/LHC_7TeV_MinBias/Amisic.yaml \
 		Tops_plus_Jets/LHC_Tops/Sherpa.yaml \
 		Tops_plus_Jets/LHC_Tops/Sherpa.EWapprox.yaml \
 		Tops_plus_V/LHC_TTW/Sherpa.yaml \
