@@ -257,7 +257,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         // Unweighting_Loop_Generator which does not exactly use the same EW
         // parameters, or the use of a Pilot Scale Setter)
         if (!info) {
-          return false;
+          continue;
         }
         m_pilotweightfactor = info->m_weight/m_evtinfo.m_weight;
         delete info;
