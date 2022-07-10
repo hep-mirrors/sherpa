@@ -106,6 +106,13 @@ double Pilot_Scale_Setter::Calculate
 
 double Pilot_Scale_Setter::CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode)
 {
+  m_scale.resize(ActiveScaleSetter()->m_scale.size());
+  if (p_subs) {
+    for (size_t i(0);i<p_subs->size();++i) {
+      NLO_subevt *sub((*p_subs)[i]);
+      sub->m_mu2.resize(m_scale.size());
+    }
+  }
   double ret = ActiveScaleSetter()->CalculateScale(p, mode);
   m_scale = ActiveScaleSetter()->m_scale;
   p_cpls->Calculate();
