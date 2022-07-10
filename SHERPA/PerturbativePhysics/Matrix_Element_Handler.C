@@ -219,7 +219,30 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     if (p_proc->Generator()->MassMode()!=0)
       THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
     double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
-    if (info==NULL) continue;
+    bool skip_rerun {false};
+    if (info==NULL) {
+      if (m_haspilotscale) {
+        // A pilot run with a PILOT scale has been vetoed. We can however not
+        // conclude, that this also happens for the normal scale. Hence, we
+        // repeat the calculation in non-pilot mode.
+        ran->RestoreStatus();
+        rpa->gen.SetPilotRun(false);
+        msg_Debugging()<<"Pilot run has been vetoed. Re-calculate with normal settings.\n";
+        info=proc->OneEvent(m_eventmode);
+        if (!info) {
+          // If also the normal scale leads to a rejection, we can safely go to
+          // the next trial event.
+          continue;
+        }
+        // At this point, we only need another normal run below, after
+        // unweighting, if there are any variations to evaluate. Otherwise, we
+        // are done with the event generation, and need not other pass.
+        if (!hasvars)
+          skip_rerun = true;
+      } else {
+        continue;
+      }
+    }
     m_evtinfo=*info;
     delete info;
     double enhance = p_proc->Integrator()->PSHandler()->Enhance();
@@ -241,7 +264,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         m_weightfactor = abswgt / max;
         wf /= Min(1.0, m_weightfactor);
       }
-      if (m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
+      if (!skip_rerun && m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
         // re-run with same rng state and include the calculation of
         // variations this time
         ran->RestoreStatus();
@@ -491,7 +514,10 @@ void Matrix_Element_Handler::BuildProcesses()
   if (!read.VectorFromFile(helpsv,"COUPLINGS"))
     helpsv.push_back("Alpha_QCD 1");
   std::string coupling(MakeString(helpsv,0));
-  m_pilotrunrequired |= (scale.find("PILOT") == 0);
+  if (scale.find("PILOT") == 0) {
+    m_haspilotscale = true;
+    m_pilotrunrequired = true;
+  }
   // init processes
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
@@ -587,7 +613,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Scales") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vscale,nf);
-          m_pilotrunrequired |= (cb.find("PILOT") == 0);
+          if (cb.find("PILOT") == 0) {
+            m_haspilotscale = true;
+            m_pilotrunrequired = true;
+          }
 	}
 	if (cur[0]=="Couplings") {
 	  std::string cb(MakeString(cur,1));
