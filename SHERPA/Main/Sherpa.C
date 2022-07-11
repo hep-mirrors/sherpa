@@ -173,7 +173,7 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
-  else if (mode==eventtype::StandardPerturbative) {
+  else {
     p_eventhandler->AddEventPhase(
         new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
@@ -195,7 +195,6 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
 						    p_inithandler->GetFragmentation()));
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
-
   }
   p_eventhandler->AddEventPhase(new Userhook_Phase(this));
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
