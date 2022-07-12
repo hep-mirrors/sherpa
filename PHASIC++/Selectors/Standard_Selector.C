@@ -1823,8 +1823,8 @@ operator()(const Selector_Key &key) const
   assert(parameters[0] == "PTmis");
   if (parameters.size() != 3)
     THROW(critical_error, "Invalid syntax");
-  const auto min = s.Interprete<double>(parameters[2]);
-  const auto max = s.Interprete<double>(parameters[3]);
+  const auto min = s.Interprete<double>(parameters[1]);
+  const auto max = s.Interprete<double>(parameters[2]);
   PTMIS_Selector *sel = new PTMIS_Selector(key.p_proc);
   sel->SetRange(min,max);
   return sel;
@@ -1903,8 +1903,8 @@ operator()(const Selector_Key &key) const
   assert(parameters[0] == "ETmis");
   if (parameters.size() != 3)
     THROW(critical_error, "Invalid syntax");
-  const auto min = s.Interprete<double>(parameters[2]);
-  const auto max = s.Interprete<double>(parameters[3]);
+  const auto min = s.Interprete<double>(parameters[1]);
+  const auto max = s.Interprete<double>(parameters[2]);
   ETMIS_Selector *sel = new ETMIS_Selector(key.p_proc);
   sel->SetRange(min,max);
   return sel;
