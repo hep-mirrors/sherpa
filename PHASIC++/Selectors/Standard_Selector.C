@@ -164,6 +164,16 @@ namespace PHASIC {
     void     BuildCuts(Cut_Data *);
   };
 
+  class PTMIS_Selector : public Selector_Base {
+    double  m_ptmismin, m_ptmismax;
+  public:
+    PTMIS_Selector(int,int,ATOOLS::Flavour *);
+    ~PTMIS_Selector();
+    void     SetRange(double,double);
+    bool     Trigger(const ATOOLS::Vec4D_Vector & );
+    void     BuildCuts(Cut_Data *);
+  };
+
 }
 
 #include "PHASIC++/Process/Process_Base.H"
@@ -1762,4 +1772,66 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Delta_R_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"\\Delta R selector"; 
+}
+
+
+/*--------------------------------------------------------------------
+
+  PTMIS Selector
+
+  --------------------------------------------------------------------*/
+
+PTMIS_Selector::PTMIS_Selector(int _nin,int _nout, Flavour * _fl):
+  Selector_Base("PTMIS_Selector")
+{
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl=_fl;
+  m_sel_log = new Selector_Log(m_name);
+}
+
+PTMIS_Selector::~PTMIS_Selector() {
+}
+
+bool PTMIS_Selector::Trigger(const Vec4D_Vector & mom) 
+{
+  Vec4D mismom(0.,0.,0.,0.);
+  for (size_t i=m_nin;i<m_n;i++) {
+    if (Flavour(kf_neutrino).Includes(m_fl[i])) {
+      mismom+=mom[i];
+    }
+  }
+  double ptmis(mismom.PPerp());
+  if (m_sel_log->Hit( ((ptmis<m_ptmismin) || (ptmis>m_ptmismax)) ))
+    return false;
+  return true;
+}
+
+void PTMIS_Selector::BuildCuts(Cut_Data * cuts) {}
+
+void PTMIS_Selector::SetRange(double _min, double _max)
+{
+  m_ptmismin=_min;
+  m_ptmismax=_max;
+  m_smin = Max(m_smin,m_ptmismin*m_ptmismin);
+}
+
+DECLARE_ND_GETTER(PTMIS_Selector,"PTmis",Selector_Base,Selector_Key,true);
+
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PTMIS_Selector>::
+operator()(const Selector_Key &key) const
+{
+  if (key.empty() || key.front().size()<2) THROW(critical_error,"Invalid syntax");
+  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][0]));
+  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
+  PTMIS_Selector *sel = new PTMIS_Selector
+    (key.p_proc->NIn(),key.p_proc->NOut(),
+     (Flavour*)&key.p_proc->Process()->Flavours().front());
+  sel->SetRange(min,max);
+  return sel;
+}
+
+void ATOOLS::Getter<Selector_Base,Selector_Key,PTMIS_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"missing transverse momentum selector";
 }
