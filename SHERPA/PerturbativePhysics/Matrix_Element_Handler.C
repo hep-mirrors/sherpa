@@ -223,7 +223,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
     bool skip_rerun {false};
     if (info==NULL) {
-      if (m_haspilotscale) {
+      if (false) {
         // A pilot run with a PILOT scale has been vetoed. We can however not
         // conclude, that this also happens for the normal scale. Hence, we
         // repeat the calculation in non-pilot mode.
