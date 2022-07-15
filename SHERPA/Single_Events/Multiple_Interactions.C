@@ -98,6 +98,7 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
     if (m_ptmax > m_hardveto) return Return_Value::New_Event;
     return Return_Value::Success;
   }
+  if (!p_lastblob && m_isfirstMB) return Return_Value::New_Event;
   return Return_Value::Nothing;
 }
 

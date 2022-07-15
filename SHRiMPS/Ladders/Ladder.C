@@ -76,7 +76,8 @@ const double & qt2min) {
 }
 
 void Ladder::FixType(const double & ymin, const double & ymax) {
-  msg_Out()<<METHOD<<"("<<ymin<<", "<<ymax<<") for " <<m_tprops.size()<<" propagators and "<<m_emissions.size()<<" emissions.\n";
+  //msg_Out()<<METHOD<<"("<<ymin<<", "<<ymax<<") for " <<m_tprops.size()
+  //<<" propagators and "<<m_emissions.size()<<" emissions.\n";
   if (m_tprops.size()==1 && m_tprops.begin()->Col()==colour_type::singlet) {
     m_type = ladder_type::elastic;
   }
@@ -85,16 +86,19 @@ void Ladder::FixType(const double & ymin, const double & ymax) {
     //double maxSDmass2 = 282; // 7 TeV - 20% mass cut
     double maxSDmass2 = -1.; // no mass cut
     int i = 0;
-    for (LadderMap::iterator emissions = m_emissions.begin(); emissions != m_emissions.end(); emissions++) {
-      //msg_Out()<<"i = "<<i<<" emission's y: "<<emissions->first<<" emission's second: "<<emissions->second<<std::endl;
-      i++; 
-    }
+    //for (LadderMap::iterator emissions = m_emissions.begin();
+    //	 emissions != m_emissions.end(); emissions++) {
+      //msg_Out()<<"i = "<<i<<" emission's y: "<<emissions->first<<" emission's second: "
+    //<<emissions->second<<std::endl;
+    //  i++; 
+    //}
     size_t forwards=0, backwards=0;
     TPropList::iterator pit1 = m_tprops.begin();
     LadderMap::iterator lmit = m_emissions.begin();
     i = 0;
     while (lmit->first>ymax) {
-      //msg_Out()<<"i = "<<i<<" positive beam zone emission's momentum: "<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
+      //msg_Out()<<"i = "<<i<<" positive beam zone emission's momentum: "
+      //<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
       i++;
       forwards++;
       lmit++; pit1++;
@@ -102,7 +106,8 @@ void Ladder::FixType(const double & ymin, const double & ymax) {
     Vec4D PmiddleAndBackwards;
     while(lmit != m_emissions.end()) {
       PmiddleAndBackwards += lmit->second.Momentum();
-      //msg_Out()<<"i = "<<i<<" (BW) middle or negative beam zone emission's momentum: "<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
+      //msg_Out()<<"i = "<<i<<" (BW) middle or negative beam zone emission's momentum: "
+      //<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
       i++;
       lmit++;
     }
@@ -110,7 +115,8 @@ void Ladder::FixType(const double & ymin, const double & ymax) {
     TPropList::iterator pit2 = m_tprops.end(); pit2--;
     lmit = m_emissions.end(); lmit--;
     while (lmit->first<ymin) {
-      //msg_Out()<<"i = "<<i<<" negative beam zone emission's momentum: "<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
+      //msg_Out()<<"i = "<<i<<" negative beam zone emission's momentum: "
+      //<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
       i--;
       backwards++;
       lmit--; pit2--;
@@ -118,12 +124,14 @@ void Ladder::FixType(const double & ymin, const double & ymax) {
     Vec4D PmiddleAndForwards;
     while(lmit != m_emissions.begin()) {
       PmiddleAndForwards += lmit->second.Momentum();
-      //msg_Out()<<"i = "<<i<<" (FW) middle or positive beam zone emission's momentum: "<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
+      //msg_Out()<<"i = "<<i<<" (FW) middle or positive beam zone emission's momentum: "
+      //<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
       i--;
       lmit--;
     }
     PmiddleAndForwards += lmit->second.Momentum();
-    //msg_Out()<<"i = "<<i<<" (FW) middle or positive beam zone emission's momentum: "<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
+    //msg_Out()<<"i = "<<i<<" (FW) middle or positive beam zone emission's momentum: "
+    //<<lmit->second.Momentum()<<" emission's y: "<<lmit->first<<std::endl;
     double mass2FW = PmiddleAndForwards.Abs2();
     double mass2BW = PmiddleAndBackwards.Abs2();
     double largestMass2 = 0.;
@@ -134,7 +142,9 @@ void Ladder::FixType(const double & ymin, const double & ymax) {
     //massSDfw.open("./massSDfw62G.txt", std::ios::app);
     //massInelBW.open("./massInelBW62G.txt", std::ios::app);
     //massInelFW.open("./massInelFW762G.txt", std::ios::app);
-    if ((&*pit1)!=(&*pit2) || pit1->Col()==colour_type::octet || pit2->Col()==colour_type::octet || pit1->Col()==colour_type::triplet || pit2->Col()==colour_type::triplet) {
+    if ((&*pit1)!=(&*pit2) ||
+	pit1->Col()==colour_type::octet || pit2->Col()==colour_type::octet ||
+	pit1->Col()==colour_type::triplet || pit2->Col()==colour_type::triplet) {
       if (largestMass2 > maxSDmass2) {
         m_type = ladder_type::inelastic;//THIS SHOULD BE inelastic!!!!!!! IT WAS JUST A TEST!!!!!
         //massInelBW << mass2BW << std::endl;
@@ -159,8 +169,8 @@ void Ladder::FixType(const double & ymin, const double & ymax) {
     //massInelFW.close();
     //massSDbw.close();
     //massInelBW.close();
-    }
-  msg_Out()<<METHOD<<"(type = "<<int(m_type)<<"): " <<m_inpart[0].Momentum()<<" + "<<m_inpart[1].Momentum()<<"\n";
+  }
+  //msg_Out()<<METHOD<<"(type = "<<int(m_type)<<"): " <<m_inpart[0].Momentum()<<" + "<<m_inpart[1].Momentum()<<"\n";
 }
 
 void Ladder::HardestIncomingMomenta(const TPropList::iterator & winner,

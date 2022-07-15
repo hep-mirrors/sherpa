@@ -13,9 +13,7 @@ namespace SHRIMPS {
   class Ladder_Generator_Base {
   protected:
     Sigma_Partonic           m_partonic;
-    double                   m_Ymax, m_deltaY;
-    double                   m_beamY = m_Ymax + m_deltaY;
-    double                   m_Yrange;
+    double                   m_Ymax, m_deltaY, m_beamY, m_Yrange;
     double                   m_qt2min, m_qt2minFF, m_kt2min, m_kt2minShower;
     MODEL::Strong_Coupling * p_alphaS;
     Rapidity_Density         m_density;
@@ -65,7 +63,7 @@ namespace SHRIMPS {
       m_Yrange = 1.;
       //m_Yrange = 0.1*m_beamY;
       //m_Yrange = 0.01*m_beamY;
-      msg_Out() << "----> in Ladders, m_beamY = " << m_beamY << " and m_Yrange = " << m_Yrange << std::endl;
+      //msg_Out() << "----> in Ladders, m_beamY = " << m_beamY << " and m_Yrange = " << m_Yrange << std::endl;
       p_ladder->FixType(-m_beamY+m_Yrange, m_beamY-m_Yrange);
     }
     inline virtual void InitCollision(Omega_ik * eikonal,const double & B) {
@@ -73,7 +71,7 @@ namespace SHRIMPS {
     }
     inline virtual void SetImpactParameters(const double & b1,
 					    const double & b2) {
-      m_b1 = b1; m_b2 = b2;
+      m_b1 = b1; m_b2 = b2; m_density.SetImpactParameters(b1,b2);
     }
     inline virtual void SetMaximalScale(const double & E1,const double & E2) {
       m_E[0] = E1; m_E[1] = E2;

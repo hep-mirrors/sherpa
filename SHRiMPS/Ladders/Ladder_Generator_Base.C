@@ -14,6 +14,7 @@ Ladder_Generator_Base::Ladder_Generator_Base() :
   m_partonic(Sigma_Partonic(xs_mode::perturbative)),
   m_Ymax(MBpars.GetEikonalParameters().Ymax),
   m_deltaY(MBpars.GetEikonalParameters().cutoffY),
+  m_beamY(m_Ymax+m_deltaY),
   m_qt2min(MBpars.GetLadderParameters().Q02),
   m_qt2minFF(0.), 
   m_kt2min(MBpars.GetLadderParameters().Q02),

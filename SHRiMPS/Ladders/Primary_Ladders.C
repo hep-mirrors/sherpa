@@ -2,6 +2,7 @@
 #include "SHRiMPS/Ladders/Ladder_Generator_QT.H"
 #include "SHRiMPS/Ladders/Ladder_Generator_KT.H"
 #include "SHRiMPS/Ladders/Ladder_Generator_Eik.H"
+#include "SHRiMPS/Ladders/Ladder_Generator_Seeded.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
@@ -11,9 +12,9 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders() :
-  p_laddergenerator(new Ladder_Generator_Eik()),
+  p_laddergenerator(new Ladder_Generator_Seeded()),
   m_Ecms(rpa->gen.Ecms()/2.),
-  m_test(false),
+  m_test(true),
   n_calls(0), n_start(0), n_gen(0)
 {
   if (m_test) {
@@ -45,8 +46,8 @@ Primary_Ladders::~Primary_Ladders() {
       hit->second->Output(name+hit->first);
       delete hit->second;
     }
-    msg_Out()<<METHOD<<" produced "<<n_gen<<" ladders (start = "<<n_start<<") in "
-	     <<n_calls<<" events.\n";
+    //msg_Out()<<METHOD<<" produced "<<n_gen<<" ladders (start = "<<n_start<<") in "
+    //	     <<n_calls<<" events.\n";
   }
 }
 
@@ -64,9 +65,8 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
   size_t Ngen = 0, trials = 0;
   double b1, b2;
   bool   contains_one_inelastic = false;
-  msg_Out()<<"--------------------------------------------------------------\n";
+  //msg_Out()<<"--------------------------------------------------------------\n";
   while (Ngen<N) {
-    
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
     p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
@@ -91,8 +91,8 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     m_histos[std::string("N_start")]->Insert(N);
     m_histos[std::string("N_gen")]->Insert(Ngen);
   }
-  msg_Out()<<"contains one inelastic ladder = "<<contains_one_inelastic<<"\n"
-	   <<"--------------------------------------------------------------\n";
+  //msg_Out()<<"contains one inelastic ladder = "<<contains_one_inelastic<<"\n"
+  //	   <<"--------------------------------------------------------------\n";
   return contains_one_inelastic;
 }
  

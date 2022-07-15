@@ -26,10 +26,10 @@ namespace SHRIMPS {
     double          m_Ymax, m_S, m_eta, m_smin, m_tmin;
     double          m_accu, m_sigma, m_maxdsigma;
     int             m_Nmaxtrials;
-    double          m_y[2], m_yhat, m_dy, m_coshdy, m_pt2, m_shat, m_that;
+    long int        m_kinX_fails;
+    double          m_y[2], m_yhat, m_dy, m_coshdy, m_pt2, m_phi, m_shat, m_that;
     double          m_dsigma, m_x[2], m_xpdf[2];
     ATOOLS::Flavour m_flavs[2];
-    
 
     inline const double ColourFactor(const ATOOLS::Flavour & flav) const {
       if (flav.IsQuark()) return 4./3.;
@@ -61,10 +61,11 @@ namespace SHRIMPS {
     const double          & YHat()     const { return m_yhat; }
     const double          & Smin()     const { return m_smin; }
     const double          & Tmin()     const { return m_tmin; }
-    const double          & X(const size_t beam)    const { return m_x[beam]; }
-    const ATOOLS::Flavour & Flav(const size_t beam) const {
-      return m_flavs[beam];
-    }
+    const double          & PT2()      const { return m_pt2; }
+    const double          & Phi()      const { return m_phi; }
+    const double          & Y(const size_t & beam)    const { return m_y[beam]; }
+    const double          & X(const size_t & beam)    const { return m_x[beam]; }
+    const ATOOLS::Flavour & Flav(const size_t & beam) const { return m_flavs[beam]; }
   };
 }
 #endif
