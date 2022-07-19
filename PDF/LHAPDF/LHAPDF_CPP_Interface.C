@@ -259,7 +259,7 @@ DECLARE_PDF_GETTER(LHAPDF_Getter);
 PDF_Base *LHAPDF_Getter::operator()
   (const Parameter_Type &args) const
 {
-  if (!args.m_bunch.IsHadron()) return NULL;
+  if (!args.m_bunch.IsHadron() && !args.m_bunch.IsPhoton()) return NULL;
   return new LHAPDF_CPP_Interface(args.m_bunch,args.m_set,args.m_member);
 }
 
