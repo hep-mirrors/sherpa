@@ -12,6 +12,7 @@
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 #include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Math/Uncertain.H"
 
 #include <map>
 #include <set>
@@ -105,7 +106,7 @@ namespace SHERPA {
     bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs);
     bool SubEvtList2ShortHepMC(EventInfo &evtinfo);
 
-    void AddCrossSection(HepMC::GenEvent&, const Uncertain<double>& xs);
+    void AddCrossSection(HepMC::GenEvent&, const ATOOLS::Uncertain<double>& xs);
 
     // inline functions
     inline HepMC::GenEvent* GenEvent() { return p_event; }
