@@ -13,6 +13,7 @@
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 #include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Math/Uncertain.H"
 
 #include <map>
 #include <set>
