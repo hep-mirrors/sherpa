@@ -3,7 +3,7 @@ BEAMS: 2212
 BEAM_ENERGIES: 6500
 
 # settings for ME generators
-ME_GENERATORS: [Comix, Amegic, Internal, MCFM]
+ME_GENERATORS: [Comix, Amegic, Internal, OpenLoops]
 
 # settings for hard decays
 HARD_DECAYS:
@@ -20,10 +20,10 @@ PARTICLE_DATA:
 
 PROCESSES:
 - 93 93 -> 25 93{2}:
-    Order: {QCD: 4, EW: 0, HEFT: 1}
+    Order: {QCD: 2, EW: 0, HEFT: 1}
     CKKW: 30
     2->1-2: { Loop_Generator: Internal }
-    2->3: { Loop_Generator: MCFM }
+    2->3: { Loop_Generator: OpenLoops }
     2->1-3:
       NLO_Mode: MC@NLO
       NLO_Order: {QCD: 1, EW: 0}
