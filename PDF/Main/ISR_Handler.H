@@ -100,6 +100,7 @@ namespace PDF {
     void Reset();
     void Reset(size_t i) const;
 
+    REMNANTS::Remnant_Base* GetRemnant(const size_t beam) const;
     ATOOLS::Blob_Data_Base* Info(int frame) const;
 
     inline void SetSprimeMin(const double spmin) { m_splimits[0]=ATOOLS::Max(m_fixed_smin,spmin); }
@@ -160,9 +161,6 @@ namespace PDF {
     inline void ResetRescaleFactor(const size_t beam) { SetRescaleFactor(1.,beam); }
     inline void SetBeam(BEAM::Beam_Base *const beambase,const size_t beam) {
       if (beam<2) p_beam[beam]=beambase;
-    }
-    inline REMNANTS::Remnant_Base* GetRemnant(const size_t beam) const {
-      return beam<2?p_remnants[beam]:nullptr;
     }
     inline void SetRunMode(const int &rmode) { m_rmode=rmode; }
 

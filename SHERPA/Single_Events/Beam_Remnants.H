@@ -8,6 +8,7 @@
 namespace SHERPA {
   class Beam_Remnants : public Event_Phase_Handler {
   private :
+    bool m_ana;
     Beam_Remnant_Handler  * p_beamremnanthandler;
     std::map<std::string, ATOOLS::Histogram *> m_histos;
     void InitHistos();

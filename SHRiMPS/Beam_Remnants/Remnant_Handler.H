@@ -18,8 +18,7 @@ namespace SHRIMPS {
     
     void InitialiseCollision(ATOOLS::Blob_List * blobs);
   public:
-    Remnant_Handler(BEAM::Beam_Spectra_Handler * beamspectra,
-		    PDF::ISR_Handler *const isr);
+    Remnant_Handler(PDF::ISR_Handler *const isr);
     ~Remnant_Handler();
 
     void Reset();

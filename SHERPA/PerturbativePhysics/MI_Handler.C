@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "AMISIC++/Main/Amisic.H"
+#include "SHRiMPS/Main/Shrimps.H"
 #include "EXTRA_XS/Main/Single_Process.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -19,14 +20,15 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
 		       PDF::ISR_Handler *isr) :
   p_isr(isr), p_amisic(NULL),
   p_ampl(NULL), p_proc(NULL), p_shower(NULL),
-  m_stop(false),m_type(none),m_name("None")
+  m_stop(false), m_type(typeID::none), m_name("None")
 {
   auto s = Settings::GetMainSettings()["MI_HANDLER"];
   if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) {
-    s.OverrideScalar<std::string>("None");
+    s.OverrideScalar<string>("None");
   }
-  std::string mihandler{ s.SetDefault("Amisic").UseNoneReplacements().Get<std::string>() };
-  if (mihandler==string("Amisic")) InitAmisic(model);
+  m_name = s.SetDefault("Amisic").UseNoneReplacements().Get<string>();
+  if (m_name==string("Amisic"))  InitAmisic(model);
+  if (m_name==string("Shrimps")) InitShrimps(model);
 }
 
 MI_Handler::~MI_Handler() 
@@ -39,25 +41,22 @@ void MI_Handler::InitAmisic(MODEL::Model_Base *model)
   p_amisic    = new AMISIC::Amisic();
   p_amisic->SetOutputPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
   if (!p_amisic->Initialize(model,p_isr)) {
-    msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. "
-	       <<"Continue without.\n";
+    msg_Error()<<METHOD<<"(): Cannot initialize MPI generator.\n"
+	       <<"   Continue without MPIs and hope for the best.\n";
     delete p_amisic; p_amisic=NULL;
   }
-  m_type=amisic;
-  m_name="AMISIC";
+  else m_type = typeID::amisic;
+}
+
+void MI_Handler::InitShrimps(MODEL::Model_Base *model)
+{
+  p_shrimps = new SHRIMPS::Shrimps(p_isr);
+  m_type = typeID::shrimps;
 }
 
 bool MI_Handler::InitialiseMPIs(const double & scale) 
 {
-  if (m_type==typeID::amisic) {
-    p_amisic->SetMassMode(1);
-    p_amisic->SetMaxScale(scale);
-    p_amisic->SetB();
-    if (p_amisic->VetoEvent(scale)) {
-      m_stop = true;
-      return false;
-    }
-  }
+  if (m_type==typeID::amisic) return p_amisic->InitMPIs(scale);
   return true;
 }
 
@@ -104,7 +103,8 @@ void MI_Handler::CleanUp()
 
 Cluster_Amplitude * MI_Handler::ClusterConfiguration(Blob * blob)
 {
-  if (m_type==typeID::amisic) return p_amisic->ClusterConfiguration(blob);
+  if (m_type==typeID::amisic)  return p_amisic->ClusterConfiguration(blob);
+  if (m_type==typeID::shrimps) return p_shrimps->ClusterConfiguration(blob);
   return NULL;
 }
 

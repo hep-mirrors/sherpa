@@ -472,6 +472,10 @@ bool ISR_Handler::BoostInLab(Vec4D *p, const size_t n) {
   return true;
 }
 
+REMNANTS::Remnant_Base* ISR_Handler::GetRemnant(const size_t beam) const {
+  return beam<2?p_remnants[beam]:nullptr;
+}
+
 bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl, double &x,
                                          int beam, bool swapped) {
   if (x > p_isrbase[beam]->PDF()->RescaleFactor())

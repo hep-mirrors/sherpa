@@ -1,6 +1,7 @@
 #include "SHRiMPS/Main/Shrimps.H"
 #include "SHRiMPS/Main/Hadron_Init.H"
 #include "SHRiMPS/Eikonals/Eikonal_Creator.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -14,8 +15,7 @@ using namespace SHRIMPS;
 using namespace std;
 
 
-Shrimps::Shrimps(BEAM::Beam_Spectra_Handler *const beam,
-		 PDF::ISR_Handler *const isr) :
+Shrimps::Shrimps(PDF::ISR_Handler *const isr) :
   p_remnants(NULL), p_generator(NULL)
 {
   ATOOLS::rpa->gen.AddCitation(1,"SHRiMPS is not published yet.");
@@ -32,9 +32,9 @@ Shrimps::Shrimps(BEAM::Beam_Spectra_Handler *const beam,
   }
   else if (MBpars.RunMode()==run_mode::test) {
     msg_Events()<<METHOD<<": run tests.\n";
-    TestShrimps(beam,isr);
+    TestShrimps(isr);
   }
-  InitialiseTheRun(beam,isr);
+  InitialiseTheRun(isr);
 }
 
 Shrimps::~Shrimps() 
@@ -44,12 +44,11 @@ Shrimps::~Shrimps()
   if (p_generator) delete p_generator;
 }
 
-void Shrimps::InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
-			       PDF::ISR_Handler *const isr) {
+void Shrimps::InitialiseTheRun(PDF::ISR_Handler *const isr) {
   Hadron_Init().Init();
   InitialiseFormFactors();
   InitialiseSingleChannelEikonals();
-  InitialiseRemnants(beam,isr);
+  InitialiseRemnants(isr);
   InitialiseTheEventGenerator();  
 }
 
@@ -81,9 +80,8 @@ void Shrimps::InitialiseSingleChannelEikonals()
   }
 }
 
-void Shrimps::InitialiseRemnants(BEAM::Beam_Spectra_Handler * const beam,
-				 PDF::ISR_Handler *const isr) { 
-  p_remnants = new Remnant_Handler(beam,isr);
+void Shrimps::InitialiseRemnants(PDF::ISR_Handler *const isr) { 
+  p_remnants = new Remnant_Handler(isr);
 }
 
 void Shrimps::InitialiseTheEventGenerator() {
@@ -94,6 +92,8 @@ void Shrimps::InitialiseTheEventGenerator() {
   p_remnants->SetColourGenerator(p_generator->GetColourGenerator());
   m_cluster.SetYmax(p_generator->Ymax());
   m_cluster.SetMinKT2(p_generator->MinKT2());
+  m_cluster.SetShowerParams(ShowerMode(),ShowerMinKT2());
+  m_cluster.SetShowerFac(ShowerFac());
   p_generator->Reset();
   p_remnants->Reset();
 }
@@ -101,6 +101,19 @@ void Shrimps::InitialiseTheEventGenerator() {
 int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
   msg_Out()<<"   * "<<METHOD<<"("<<blobs->size()<<" blobs.\n";
   return p_generator->MinimumBiasEvent(blobs);
+}
+
+ATOOLS::Cluster_Amplitude * Shrimps::ClusterConfiguration(ATOOLS::Blob *const blob) {
+  //m_cluster.SetMinKT2(p_shrimps->ShowerMinKT2());
+  //m_cluster.SetRescatt(p_shrimps->IsLastRescatter());
+  //m_cluster.SetTMax(p_shrimps->LadderTMax());
+  //m_cluster.SetNLad(p_shrimps->NLadders());
+  if (!m_cluster.Cluster(blob)) {
+    msg_Error()<<"Error in "<<METHOD<<": could not cluster blob.\n"
+	       <<(*blob)<<"\n";
+    return NULL;
+  }
+  return m_cluster.Amplitude();
 }
 
 ATOOLS::Return_Value::code Shrimps::MakeBeamBlobs(ATOOLS::Blob_List * blobs) {
@@ -292,13 +305,12 @@ void Shrimps::ReadEnergiesFromFile(std::set<double> & energies,
 
 
 
-void Shrimps::TestShrimps(BEAM::Beam_Spectra_Handler *const beam,
-			  PDF::ISR_Handler *const isr) {
+void Shrimps::TestShrimps(PDF::ISR_Handler *const isr) {
   msg_Info()<<"Start testing SHRiMPS.\n";
   std::string dirname = std::string("Tests");
   ATOOLS::MakeDir(dirname);
   InitialiseFormFactors();
-  InitialiseRemnants(beam,isr);
+  InitialiseRemnants(isr);
   InitialiseSingleChannelEikonals();
 
   PrintAlphaS(dirname);

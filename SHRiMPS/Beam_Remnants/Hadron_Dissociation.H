@@ -9,8 +9,6 @@
 #include <set>
 #include <map>
 
-namespace BEAM   { class Beam_Base; }
-
 namespace SHRIMPS {
 
   class Hadron_Dissociation {
@@ -44,7 +42,9 @@ namespace SHRIMPS {
     void SelectTrialTransverseMomenta();
   public:
     Hadron_Dissociation() {};
-    Hadron_Dissociation(const int & beam,BEAM::Beam_Base * beambase,Continued_PDF * pdf);
+    Hadron_Dissociation(const int & beam,
+			const ATOOLS::Vec4D & inmom,const ATOOLS::Flavour & flav,
+			Continued_PDF * pdf);
     ~Hadron_Dissociation();
 
     void Reset();

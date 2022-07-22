@@ -13,7 +13,7 @@
 #include <list>
 
 namespace PDF    { class ISR_Handler; }
-namespace BEAM   { class Beam_Spectra_Handler; }
+namespace ATOOLS { class Cluster_Amplitude; }
 
 namespace SHRIMPS {
   /*!
@@ -59,27 +59,24 @@ namespace SHRIMPS {
 			       const std::vector<double> & xsecdd,
 			       std::string dirname);
     
-    void InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
-			  PDF::ISR_Handler *const isr);
+    void InitialiseTheRun(PDF::ISR_Handler *const isr);
     void InitialiseFormFactors();
     void InitialiseSingleChannelEikonals();
-    void InitialiseRemnants(BEAM::Beam_Spectra_Handler *const beam,
-			    PDF::ISR_Handler *const isr);
+    void InitialiseRemnants(PDF::ISR_Handler *const isr);
     void InitialiseTheEventGenerator();
     
-    void TestShrimps(BEAM::Beam_Spectra_Handler *const beam,
-		     PDF::ISR_Handler *const isr);
+    void TestShrimps(PDF::ISR_Handler *const isr);
     void PrintAlphaS(const std::string & dirname);
     void PrintPDFs(const std::string & dirname);
     void TestEikonalGrids(const std::string & dirname);
     void TestCrossSections(const std::string & dirname);
     void TestEventGeneration(const std::string & dirname);
   public:
-    Shrimps(BEAM::Beam_Spectra_Handler *const,
-            PDF::ISR_Handler *const);
+    Shrimps(PDF::ISR_Handler *const);
     ~Shrimps();
 
     int  GenerateEvent(ATOOLS::Blob_List * blobs);
+    ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob *const blob);
     void CleanUp(const size_t & mode=0);
 
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List * blobs);

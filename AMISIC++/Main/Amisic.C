@@ -10,7 +10,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Amisic::Amisic() :
-  m_sigmaND_norm(1.), p_processes(NULL),
+  m_sigmaND_norm(1.), p_processes(NULL), m_Enorm(rpa->gen.Ecms()/2.),
   m_isMinBias(false), m_ana(true)
 {}
 
@@ -51,7 +51,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
   //   where x_1 and x_2 are identical
   m_sigmaND_norm = (*mipars)("SigmaND_Norm");
-  p_processes = new MI_Processes();
+  p_processes    = new MI_Processes();
   p_processes->SetSigmaND(m_sigmaND_norm * xsecs.XSnd());
   p_processes->Initialize(model,NULL,isr);
   
@@ -76,35 +76,15 @@ bool Amisic::InitParameters() {
   return mipars->Init();
 }
 
-void Amisic::SetMaxEnergies(const double & E1,const double & E2) {
-  m_residualE1 = E1;
-  m_residualE2 = E2;
-  m_singlecollision.SetResidualX(2.*E1/rpa->gen.Ecms(),2.*E2/rpa->gen.Ecms());
-}
-
-void Amisic::SetMaxScale(const double & scale) {
-  m_pt2 = sqr(scale);
-  m_singlecollision.SetLastPT2(m_pt2);
-}
-
-void Amisic::SetB(const double & b) {
-  // Select b and set the enhancement factor
-  m_b    = (b<0.)?m_impact.SelectB(m_pt2):b;
-  m_bfac = Max(0.,m_impact(m_b));
-}
-  
-bool Amisic::VetoEvent(const double & scale) {
-  if (scale<0.) return false;
+bool Amisic::InitMPIs(const double & scale) {
+  SetMassMode(1);
+  SetMaxScale(scale);
+  SetB();
+  if (!VetoEvent(scale)) return true;
+  //m_stop = true;
   return false;
 }
 
-const double Amisic::ScaleMin() const {
-  return (*mipars)("pt_min");
-}
-
-const double Amisic::ScaleMax() const {
-  return m_pt2;
-}
 
 Blob * Amisic::GenerateScatter() {
   Blob * blob = m_singlecollision.NextScatter(m_bfac);
@@ -171,10 +151,7 @@ void Amisic::FillAmplitudeSettings(Cluster_Amplitude * ampl) {
   ampl->SetMS(p_processes);
 }
 
-int Amisic::ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) {
-  return p_processes->ShiftMasses(ampl);
-}
-
+bool Amisic::VetoEvent(const double & scale) { return false; }
 
 bool Amisic::VetoScatter(Blob * blob)
 {

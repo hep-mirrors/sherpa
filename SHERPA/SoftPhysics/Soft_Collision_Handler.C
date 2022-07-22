@@ -23,18 +23,15 @@ using namespace std;
 Soft_Collision_Handler::Soft_Collision_Handler(MODEL::Model_Base *model,
 					       BEAM::Beam_Spectra_Handler *beam,
                                                PDF::ISR_Handler *isr):
-  m_mode(scmode::none), p_shrimps(NULL), p_cluster(NULL)
+  m_mode(scmode::none),
+  p_shrimps(NULL), p_cluster(NULL),
+  p_amisic(NULL)
 {
   Settings& s = Settings::GetMainSettings();
   m_dir = s.GetPath();
-  m_softcollisionmodel = s["SOFT_COLLISIONS"].SetDefault("None")
-    .UseNoneReplacements().Get<string>();
+  m_softcollisionmodel =
+    s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
   if (m_softcollisionmodel==string("Shrimps")) {
-    p_shrimps = new Shrimps(beam, isr);
-    p_cluster = p_shrimps->GetClusterAlgorithm();
-    p_cluster->SetShowerParams(p_shrimps->ShowerMode(),
-			       p_shrimps->ShowerMinKT2());
-    p_cluster->SetShowerFac(p_shrimps->ShowerFac());
     m_mode = scmode::shrimps;
     exh->AddTerminatorObject(this);
     return;
@@ -93,19 +90,9 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   return Return_Value::New_Event;
 }
 
-Cluster_Amplitude *Soft_Collision_Handler::ClusterConfiguration(Blob *const bl)
+Cluster_Amplitude *Soft_Collision_Handler::ClusterConfiguration(Blob *const blob)
 {
-  //p_cluster->SetMinKT2(p_shrimps->ShowerMinKT2());
-  //p_cluster->SetRescatt(p_shrimps->IsLastRescatter());
-  //p_cluster->SetTMax(p_shrimps->LadderTMax());
-  //p_cluster->SetNLad(p_shrimps->NLadders());
-  if (!p_cluster->Cluster(bl)) {
-    msg_Error()<<"Error in "<<METHOD<<": could not cluster blob.\n"
-	       <<(*bl)<<"\n";
-    return NULL;
-  }
-  Cluster_Amplitude *ampl(p_cluster->Amplitude());
-  return ampl;
+  return p_shrimps->ClusterConfiguration(blob);
 }
 
 

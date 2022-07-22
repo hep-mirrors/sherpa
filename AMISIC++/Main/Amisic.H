@@ -46,7 +46,7 @@ namespace AMISIC {
   class Amisic: public ATOOLS::File_IO_Base, ATOOLS::Mass_Selector {
   private:
     double m_sigmaND_norm;
-    double m_b, m_bfac, m_residualE1, m_residualE2, m_pt2;
+    double m_b, m_bfac, m_residualE1, m_residualE2, m_pt2, m_Enorm;
 
     MI_Processes           * p_processes;
     Over_Estimator           m_overestimator;
@@ -70,46 +70,59 @@ namespace AMISIC {
     
     bool Initialize(MODEL::Model_Base *const model,
 		    PDF::ISR_Handler *const isr);
-
-    bool           VetoEvent(const double & scale=-1.);
+    
+    bool InitMPIs(const double & scale);
+    bool VetoEvent(const double & scale=-1.);
+    int  InitMinBiasEvent(ATOOLS::Blob_List * blobs);
+    void Reset();
+    void CleanUp();
+    void Test();
+    bool VetoScatter(ATOOLS::Blob * blob);
     ATOOLS::Blob * GenerateScatter();
-    int            InitMinBiasEvent(ATOOLS::Blob_List * blobs);
-    bool           VetoScatter(ATOOLS::Blob * blob);
-    int            ShiftMasses(ATOOLS::Cluster_Amplitude * ampl);      
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
-
-    void SetMaxEnergies(const double & E1,const double & E2);
-    void SetMaxScale(const double & scale);
-    void SetB(const double & b=-1.);
-    const double ScaleMin() const;
-    const double ScaleMax() const;
-
-    inline const double & PT2()       const { return m_pt2; }
-    inline const bool   & IsMinBias() const { return m_isMinBias; }
-    inline const bool   & IsFirst()   const { return m_isFirst; }
+    
+    
+    inline void SetMaxEnergies(const double & E1,const double & E2) {
+      m_residualE1 = E1;
+      m_residualE2 = E2;
+      m_singlecollision.SetResidualX(E1/m_Enorm,E2/m_Enorm);
+    }
+    inline void SetMaxScale(const double & scale) {
+      m_pt2 = ATOOLS::sqr(scale);
+      m_singlecollision.SetLastPT2(m_pt2);
+    }
+    inline void SetB(const double & b=-1.) {
+      // Select b and set the enhancement factor
+      m_b    = (b<0.)?m_impact.SelectB(m_pt2):b;
+      m_bfac = ATOOLS::Max(0.,m_impact(m_b));
+    }
     inline void SetMinBias(const bool & isMinBias=true) {
       m_isMinBias = isMinBias;
     }
-    inline void  SetFirst(const bool & first=true) {
+    inline void SetFirst(const bool & first=true) {
       m_isFirst = first;
     }
     inline void SetMassMode(const int & mode) {
       p_processes->SetMassMode(mode);
     }
-    inline double Mass(const ATOOLS::Flavour &fl) const {
-      return p_processes->Mass(fl);
+    inline int ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) {
+        return p_processes->ShiftMasses(ampl);
     }
-    inline const double & B() const { return m_b; }
     inline ATOOLS::Vec4D SelectPositionForScatter(const double & b) const {
       return m_impact.SelectPositionForScatter(b);
     }
     inline ATOOLS::Vec4D  SelectRelativePositionForParton() const {
       return m_impact.SelectRelativePositionForParton();
     }
-    
-    void Reset();
-    void CleanUp();
-    void Test();
+    inline const double ScaleMin()    const { return (*mipars)("pt_min"); }
+    inline const double & ScaleMax()  const { return m_pt2; }
+    inline const double & PT2()       const { return m_pt2; }
+    inline const bool   & IsMinBias() const { return m_isMinBias; }
+    inline const bool   & IsFirst()   const { return m_isFirst; }
+    inline const double & B()         const { return m_b; }
+    inline double Mass(const ATOOLS::Flavour &fl) const {
+      return p_processes->Mass(fl);
+    }
   };
 
 }

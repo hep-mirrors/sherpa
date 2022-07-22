@@ -1,6 +1,7 @@
 #include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
-#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -8,13 +9,14 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 using namespace std;
 
-Remnant_Handler::Remnant_Handler(BEAM::Beam_Spectra_Handler * beamspectra,
-				 PDF::ISR_Handler *const isr) :
+Remnant_Handler::Remnant_Handler(PDF::ISR_Handler *const isr) :
   p_colourgenerator(NULL)
 {
   for (int beam=0;beam<2;beam++) {
     m_hadrons.
-      push_back(new Hadron_Dissociation(beam,beamspectra->GetBeam(beam),
+      push_back(new Hadron_Dissociation(beam,
+					isr->GetRemnant(beam)->InMomentum(),
+					isr->Flav(beam),
 					new Continued_PDF(isr->PDF(beam),
 							  isr->Flav(beam))));
   }

@@ -11,6 +11,7 @@ namespace REMNANTS { class Remnant_Handler;      }
 namespace PHASIC   { class Process_Base;         }
 namespace MODEL    { class Model_Base;           }
 namespace AMISIC   { class Amisic;               }
+namespace SHRIMPS  { class Shrimps;              }
 
 namespace SHERPA {
   class Matrix_Element_Handler;
@@ -21,12 +22,14 @@ namespace SHERPA {
     
     enum typeID { none    =  0,
 		  amisic  =  1,
+		  shrimps =  2,
 		  unknown = 99 };
 
   private:
     PDF::ISR_Handler          * p_isr;
     REMNANTS::Remnant_Handler * p_remnants;
     AMISIC::Amisic            * p_amisic;
+    SHRIMPS::Shrimps          * p_shrimps;
     ATOOLS::Cluster_Amplitude * p_ampl;
     PHASIC::Process_Base      * p_proc;
     Shower_Handler            * p_shower;
@@ -38,6 +41,7 @@ namespace SHERPA {
     double m_ycut; 
     
     void InitAmisic(MODEL::Model_Base *model);
+    void InitShrimps(MODEL::Model_Base *model);
   public:
     MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr);
     ~MI_Handler();

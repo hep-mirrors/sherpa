@@ -1,5 +1,5 @@
 #include "SHRiMPS/Beam_Remnants/Hadron_Dissociation.H"
-#include "BEAM/Main/Beam_Base.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -9,10 +9,11 @@ using namespace BEAM;
 using namespace ATOOLS;
 
 Hadron_Dissociation::
-Hadron_Dissociation(const int & beam,Beam_Base * beambase,Continued_PDF * pdf) :
+Hadron_Dissociation(const int & beam,
+		    const ATOOLS::Vec4D & inmom,const ATOOLS::Flavour & inflav,
+		    Continued_PDF * pdf) :
   m_beam(beam),p_pdf(pdf),
-  m_beamvec(beambase->OutMomentum()), m_outmom(Vec4D(0.,0.,0.,0.)),
-  m_beamflav(beambase->Bunch()),
+  m_beamvec(inmom), m_outmom(Vec4D(0.,0.,0.,0.)),m_beamflav(inflav),
   m_dir(m_beamvec[3]>0.?1:-1), m_xmin(2./m_beamvec[0]), m_QT2max(4.), m_expo(2.),
   p_blob(NULL)
 { }
