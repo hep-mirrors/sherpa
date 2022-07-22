@@ -906,19 +906,6 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   return ret==1;
 }
 
-bool Initialization_Handler::InitializeTheUnderlyingEvents()
-{
-  as->SetActiveAs(isr::hard_subprocess);
-  p_mihandler = new MI_Handler(p_model,
-			       m_isrhandlers[isr::hard_subprocess]);
-  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
-  p_mihandler->SetRemnantHandler(p_remnants);
-  as->SetActiveAs(isr::hard_process);
-  if (p_mihandler->Type()!=0)
-    msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
-  return true;
-}
-
 bool Initialization_Handler::InitializeTheShowers()
 {
   std::vector<isr::id> isrtypes;
@@ -938,12 +925,27 @@ bool Initialization_Handler::InitializeTheShowers()
 }
 
 
+bool Initialization_Handler::InitializeTheUnderlyingEvents()
+{
+  as->SetActiveAs(isr::hard_subprocess);
+  p_mihandler = new MI_Handler(p_model,
+			       m_isrhandlers[isr::hard_subprocess]);
+  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
+  p_mihandler->SetRemnantHandler(p_remnants);
+  as->SetActiveAs(isr::hard_process);
+  if (p_mihandler->Type()!=0)
+    msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
+  return true;
+}
+
+
 bool Initialization_Handler::InitializeTheSoftCollisions() 
 {
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
   p_softcollisions = new Soft_Collision_Handler(p_model,
 						p_beamspectra,
                                                 m_isrhandlers[isr::hard_process]);
+  //p_beamremnants->SetShrimps(p_softcollisions->GetShrimps());
   if (p_mihandler->Type()==MI_Handler::amisic) {
     p_softcollisions->SetAmisic(p_mihandler->Amisic());
   }

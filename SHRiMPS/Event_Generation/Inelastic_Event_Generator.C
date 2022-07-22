@@ -54,10 +54,7 @@ void Inelastic_Event_Generator::Reset() {
 }
 
 int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,const bool & flag) {
-  //msg_Out()<<"######################################################################\n"
-  //	   <<"######################################################################\n"
-  //	   <<"######################################################################\n"
-  //	   <<METHOD<<"\n";
+  msg_Out()<<"   - "<<METHOD<<"\n";
   if (m_mustinit) {
     Blob * blob(blobs->FindFirst(btp::Soft_Collision));
     if (!blob ||
@@ -69,6 +66,8 @@ int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,const bool & flag
 }
 
 bool Inelastic_Event_Generator::MakePrimaryScatterBlobs(ATOOLS::Blob_List * blobs) {
+  msg_Out()<<"   - "<<METHOD<<"(init = "<<m_mustinit<<", "
+	   <<m_primaries.GetLadders()->size()<<" ladders, "<<blobs->size()<<" blobs.)\n";
   if (m_primaries.GetLadders()->empty()) return 0;
   Ladder * ladder = m_primaries.GetLadders()->front();
   Blob * blob     = NULL;
@@ -107,7 +106,7 @@ bool Inelastic_Event_Generator::InitEvent(Blob_List * blobs) {
   p_eikonal  = 0; m_B = -1;
   for (size_t trials=0;trials<1000;trials++) {
     if (SelectEikonal() && SelectB()) {
-      m_Nladders = int(ran->Poissonian((*p_eikonal)(m_B)));
+      m_Nladders = 1+int(ran->Poissonian((*p_eikonal)(m_B)));
       if (m_Nladders>0) return true;
     }
   }

@@ -39,7 +39,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
       // have the notion of a spectator
       MakeSpectator(parton);
       for (size_t index = 0; index < 2; index++)
-        p_colours->AddColour(m_beam, index, parton);
+	p_colours->AddColour(m_beam, index, parton);
     }
     return true;
   }
@@ -59,11 +59,13 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
 }
 
 Blob *Remnant_Base::MakeBlob() {
+  //msg_Out()<<"   - "<<METHOD<<"(beam = "<<m_beam<<", pos = "<<m_position<<")\n";
   p_beamblob = new Blob();
   p_beamblob->SetType(btp::Beam);
   p_beamblob->SetId();
   p_beamblob->SetBeam(m_beam);
   p_beamblob->SetStatus(blob_status::needs_beams | blob_status::needs_softUE);
+  p_beamblob->SetPosition(m_position);
   Particle *part = new Particle(-1, p_beam->Bunch(), p_beam->OutMomentum());
   part->SetNumber(0);
   part->SetBeam(m_beam);

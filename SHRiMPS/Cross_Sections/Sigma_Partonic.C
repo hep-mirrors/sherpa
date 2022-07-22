@@ -121,10 +121,12 @@ const double Sigma_Partonic::MakePoint() {
     cosh2    = sqr(m_coshdy);
     pt2min   = m_smin/(4.*cosh2);
     pt2max   = m_S/(4.*cosh2);
-    m_pt2    = 1./(rand/pt2max + (1.-rand)/pt2min);
+    //m_pt2    = 1./(rand/pt2max + (1.-rand)/pt2min);
+    m_pt2    = (pt2min+m_tmin)*pow((pt2max+m_tmin)/(pt2min+m_tmin),rand)-pt2min;
     m_shat   = 4.*cosh2*m_pt2;
     m_that   = -m_pt2*(1.+exp(-m_dy));
-    return sqr(2.*m_Ymax) * (1./pt2min-1./pt2max) / (8.*M_PI*m_shat);
+    //return sqr(2.*m_Ymax) * (1./pt2min-1./pt2max) / (8.*M_PI*m_shat);
+    return sqr(2.*m_Ymax) * log((pt2max+m_tmin)/(pt2min+m_tmin)) / (8.*M_PI*m_shat);
   case xs_mode::integrated:
   case xs_mode::Regge:
     m_shat   = m_smin * pow(m_S/m_smin,ran->Get());

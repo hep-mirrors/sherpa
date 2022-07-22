@@ -61,17 +61,16 @@ namespace REMNANTS {
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List *const blobs,
 					     ATOOLS::Particle_List *const=nullptr);
 
-
     void SetImpactParameter(const double & b);
+    inline void SetScale2(const double & scale2) {
+      for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
+    }
+    inline const strat::code Type() const { return m_type; }
     
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
       return (beam<2)?p_remnants[beam]:nullptr;
     }
     inline Primordial_KPerp * GetKPerp() { return m_kinematics.GetKPerp(); }
-    inline void SetScale2(const double & scale2) {
-      for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
-    }
-    inline const strat::code Type() const { return m_type; }
   };
 }
 

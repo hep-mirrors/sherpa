@@ -76,12 +76,12 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
     outcome = p_shrimps->GenerateEvent(blobs);
     break;
   case scmode::amisic: 
-    if (p_amisic->IsFirst()) p_amisic->InitMinBiasEvent(blobs);
-    outcome = 0;
+    outcome = p_amisic->InitMinBiasEvent(blobs);
     break;
   default:
     break;
   }
+  //msg_Out()<<"*** "<<METHOD<<"("<<blobs->size()<<" blobs: outcome = "<<outcome<<".)\n";
   switch (outcome) {
   case 1:  return Return_Value::Success;
   case 0:  return Return_Value::Nothing;

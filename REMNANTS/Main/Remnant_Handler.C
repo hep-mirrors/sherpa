@@ -121,26 +121,23 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
 
   // Make sure only shower blobs with exactly two initiators are treated,
   // and only once.
+  // (Shower blob with more initiators are typically from hadron decays.)
   if (showerblob->Type() != btp::Shower ||
       m_treatedshowerblobs.find(showerblob) != m_treatedshowerblobs.end())
     return true;
   size_t countIn = 0;
   for (size_t i = 0; i < showerblob->NInP(); ++i) {
-    if (!showerblob->InParticle(i)->ProductionBlob())
-      countIn++;
+    if (!showerblob->InParticle(i)->ProductionBlob()) countIn++;
   }
-  if (countIn != 2)
-    return true;
+  if (countIn!=2) return true;
   // Now extract the shower initiators from the remnants - they will get added
   // to the lists of extracted particles for each remnant and their colour will
   // be added to the Colour_Generator in each beam.
   for (size_t i = 0; i < showerblob->NInP(); ++i) {
     Particle *part = showerblob->InParticle(i);
-    if (part->ProductionBlob() != nullptr)
-      continue;
+    if (part->ProductionBlob() != nullptr) continue;
     // Make sure extraction works out - mainly subject to energy conservation
-    if (!Extract(part, part->Beam()))
-      return false;
+    if (!Extract(part, part->Beam()))      return false;
   }
   m_treatedshowerblobs.insert(showerblob);
   return true;
@@ -212,7 +209,7 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
     }
   }
   // Remnant bases will generate their beam blobs, reset the incoming
-  // four-momenta
+  // four-momenta and make the two beam blobs
   m_colours.ResetFlags();
   for (size_t beam = 0; beam < 2; beam++) {
     bloblist->push_front(p_remnants[beam]->MakeBlob());
@@ -247,10 +244,8 @@ bool Remnant_Handler::CheckBeamBreakup(Blob_List *bloblist) {
 }
 
 void Remnant_Handler::SetImpactParameter(const double & b) {
-  double phi = 2.*M_PI*ran->Get(), cosphi = cos(phi), sinphi = sin(phi); 
-  for (size_t i=0;i<2;i++) {
-    p_remnants[i]->SetPosition((i==0?1.:-1.) * b/2. * Vec4D(0.,cosphi,sinphi,0.));      
-  }
+  Vec4D  pos = b/2.*Vec4D(0.,1.,0.,0.);
+  for (size_t i=0;i<2;i++) p_remnants[i]->SetPosition((i==0?1.:-1.) * pos);      
 }
 
 bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {

@@ -4,7 +4,9 @@
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 
-namespace REMNANTS { class Remnant_Base; }
+namespace REMNANTS {
+  class Remnant_Base;
+}
 
 namespace SHERPA {
 
@@ -27,6 +29,7 @@ namespace SHERPA {
     ATOOLS::Return_Value::code m_result;
     bool CheckBlobList();    
     bool InitNewEvent();
+    void InitMinBiasEvent();
     void ResetIS();
     bool BeamsViable();
     bool ExtractISInfo(ATOOLS::Blob * blob);
@@ -38,8 +41,8 @@ namespace SHERPA {
     ~Multiple_Interactions();
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
-    void                       CleanUp(const size_t & mode=0);
-    void                       Finish(const std::string &);
+    void CleanUp(const size_t & mode=0);
+    void Finish(const std::string &);
   };
 }
 

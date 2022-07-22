@@ -99,6 +99,7 @@ void Shrimps::InitialiseTheEventGenerator() {
 }
 
 int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
+  msg_Out()<<"   * "<<METHOD<<"("<<blobs->size()<<" blobs.\n";
   return p_generator->MinimumBiasEvent(blobs);
 }
 

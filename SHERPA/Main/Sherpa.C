@@ -174,8 +174,7 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
   else {
-    p_eventhandler->AddEventPhase(
-        new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
@@ -185,12 +184,10 @@ bool Sherpa::InitializeTheEventHandler()
 						    p_inithandler->GetSoftCollisionHandler(),
 						    p_inithandler->GetShowerHandlers(),
 						    p_inithandler->GetBeamRemnantHandler()));
-    p_eventhandler->AddEventPhase(
-        new Signal_Process_FS_QED_Correction(
-          p_inithandler->GetMatrixElementHandler(),
-          p_inithandler->GetSoftPhotonHandler()));
-    p_eventhandler->AddEventPhase(
-        new Multiple_Interactions(p_inithandler->GetMIHandler()));
+    p_eventhandler->AddEventPhase(new Signal_Process_FS_QED_Correction(
+						    p_inithandler->GetMatrixElementHandler(),
+						    p_inithandler->GetSoftPhotonHandler()));
+    p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
 						    p_inithandler->GetFragmentation()));
@@ -211,6 +208,10 @@ bool Sherpa::InitializeTheEventHandler()
 
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
+  //msg_Out()<<"\n\n\n\n\n"
+  //	   <<"-------------------------------------------------------------------------\n"
+  //	   <<"-------------------------------------------------------------------------\n"
+  //	   <<"-------------------------------------------------------------------------\n";
   if (m_evt_output_start>0 &&
       m_evt_output_start==rpa->gen.NumberOfGeneratedEvents()+1) {
     msg->SetLevel(m_evt_output);

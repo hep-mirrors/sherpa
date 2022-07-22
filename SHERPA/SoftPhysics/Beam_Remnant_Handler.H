@@ -30,8 +30,10 @@ namespace SHERPA {
 						     const bool & onlyBunch=false);
     void CleanUp(const size_t & mode=0);
 
-    inline REMNANTS::Remnant_Handler * GetRemnants() { return p_remnants; }
-    
+    inline REMNANTS::Remnant_Handler * GetRemnants()   { return p_remnants; }
+    inline void SetShrimps(SHRIMPS::Shrimps * shrimps) {
+      if (shrimps!=NULL) { p_shrimps = shrimps; m_name = std::string("Shrimps"); }
+    }
     inline const int Fill()           const { return m_fill; }
     inline const std::string & Name() const { return m_name; }
    };

@@ -17,15 +17,15 @@ using namespace std;
 
 MI_Handler::MI_Handler(MODEL::Model_Base *model,
 		       PDF::ISR_Handler *isr) :
-  p_isr(isr),p_amisic(NULL),p_ampl(NULL),p_proc(NULL),p_shower(NULL),
+  p_isr(isr), p_amisic(NULL),
+  p_ampl(NULL), p_proc(NULL), p_shower(NULL),
   m_stop(false),m_type(none),m_name("None")
 {
   auto s = Settings::GetMainSettings()["MI_HANDLER"];
   if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) {
     s.OverrideScalar<std::string>("None");
   }
-  std::string mihandler{
-    s.SetDefault("Amisic").UseNoneReplacements().Get<std::string>() };
+  std::string mihandler{ s.SetDefault("Amisic").UseNoneReplacements().Get<std::string>() };
   if (mihandler==string("Amisic")) InitAmisic(model);
 }
 
@@ -33,7 +33,6 @@ MI_Handler::~MI_Handler()
 {
   if (p_amisic!=NULL) delete p_amisic;
 }
-
 
 void MI_Handler::InitAmisic(MODEL::Model_Base *model)
 {
@@ -58,7 +57,6 @@ bool MI_Handler::InitialiseMPIs(const double & scale)
       m_stop = true;
       return false;
     }
-    p_remnants->SetImpactParameter(p_amisic->B());
   }
   return true;
 }

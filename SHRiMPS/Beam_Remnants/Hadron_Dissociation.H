@@ -52,6 +52,7 @@ namespace SHRIMPS {
     inline void SetSoftBlob(ATOOLS::Blob * blob=NULL) { p_softblob = blob; }
     inline void SetFormFactor(Form_Factor * ff)       { p_ff = ff; }
     inline Continued_PDF * GetPDF() const { return p_pdf; }
-  };
+    inline ATOOLS::Blob  * GetSoftBlob()  { return p_softblob; }
+   };
 }
 #endif

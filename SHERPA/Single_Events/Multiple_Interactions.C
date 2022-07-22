@@ -69,31 +69,7 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
     // If it is a MinBias event, the first blob is a dummy soft collision blob.
     // We have to fill it with the content of the actual blob created by
     // the MI_Handler
-    if (m_isfirstMB) {
-      Blob * signal = (*p_bloblist)[0];
-      Particle_Vector * ins = p_lastblob->InParticles();
-      while (!ins->empty()) {
-	signal->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));
-      }
-      Particle_Vector * outs = p_lastblob->OutParticles();
-      while (!outs->empty()) {
-	signal->AddToOutParticles(p_lastblob->RemoveOutParticle(outs->back()));
-      }
-      signal->SetStatus(blob_status::code(p_lastblob->Status()));
-      signal->SetType(p_lastblob->Type());
-      signal->SetTypeSpec(p_lastblob->TypeSpec());
-      signal->AddData("Renormalization_Scale",
-		      new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]->Get<double>()));
-      signal->AddData("Factorization_Scale",
-		      new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]->Get<double>()));
-      signal->AddData("Resummation_Scale",
-		      new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]->Get<double>()));
-      //exit(1);
-      delete p_lastblob;
-      //msg_Out()<<*(*p_bloblist)[0]<<"\n";
-      m_newevent = m_isfirstMB = false;
-      //msg_Out()<<"-------------------------------------------------------\n";
-    }
+    if (m_isfirstMB) InitMinBiasEvent();
     else p_bloblist->push_back(p_lastblob);
     if (m_ptmax > m_hardveto) return Return_Value::New_Event;
     return Return_Value::Success;
@@ -191,25 +167,47 @@ bool Multiple_Interactions::InitNewEvent() {
   if (ptinfo==NULL) THROW(fatal_error,"No starting scale info in signal blob");
   m_ptmax=ptinfo->Get<double>();
   if (m_ptmax!=std::numeric_limits<double>::max()) {
-    //<<<<<<< HEAD
-    //p_mihandler->InitialiseMPIs(4.*m_ptmax);
-    //p_lastblob->SetPosition(p_mihandler->SelectPositionForScatter());
-    //Blob * showerblob = p_lastblob->OutParticle(0)->DecayBlob();
-    //if (showerblob) showerblob->SetPosition(p_lastblob->Position());
-    //msg_Out()<<METHOD<<" set x = "<<p_lastblob->Position()<<".\n";
-    //=======
     double ptfac=sqrt((*p_lastblob)["Factorisation_Scale"]->Get<double>());
     double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());
-    m_ptmax = ptfac/4.;
+    m_ptmax = ptfac;
     if (!IsZero(ptfac-ptren)) m_ptmax += ptren;
     p_mihandler->InitialiseMPIs(m_ptmax_fac*m_ptmax);
-    //>>>>>>> master
+    p_lastblob->SetPosition(p_mihandler->SelectPositionForScatter());
+    Blob * showerblob = p_lastblob->OutParticle(0)->DecayBlob();
+    if (showerblob) showerblob->SetPosition(p_lastblob->Position());
+    p_mihandler->Remnants()->SetImpactParameter(p_mihandler->ImpactParameter());
     m_newevent = false;
     return true;
   }
   return false;
 }
-  
+
+void Multiple_Interactions::InitMinBiasEvent() {
+  Blob * signal = (*p_bloblist)[0];
+  Particle_Vector * ins = p_lastblob->InParticles();
+  while (!ins->empty()) {
+    signal->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));
+  }
+  Particle_Vector * outs = p_lastblob->OutParticles();
+  while (!outs->empty()) {
+    signal->AddToOutParticles(p_lastblob->RemoveOutParticle(outs->back()));
+  }
+  signal->SetStatus(blob_status::code(p_lastblob->Status()));
+  signal->SetType(p_lastblob->Type());
+  signal->SetTypeSpec(p_lastblob->TypeSpec());
+  signal->SetPosition(p_lastblob->Position());
+  signal->AddData("Renormalization_Scale",
+		  new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]->Get<double>()));
+  signal->AddData("Factorization_Scale",
+		  new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]->Get<double>()));
+  signal->AddData("Resummation_Scale",
+		  new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]->Get<double>()));
+  delete p_lastblob;
+  p_mihandler->Remnants()->SetImpactParameter(p_mihandler->ImpactParameter());
+  m_newevent = m_isfirstMB = false;
+}
+
+
 void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
   MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
   for (size_t i=0;i<2;i++) {

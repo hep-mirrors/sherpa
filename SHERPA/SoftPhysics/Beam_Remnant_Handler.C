@@ -15,16 +15,18 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
   p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
   p_beam(beam), m_fill(true), m_vmode(false)
 {
-  if (p_shrimps) {
+  /*
+    if (p_shrimps) {
     m_name = std::string("Shrimps");
-  }
-  else {
-    Settings& s = Settings::GetMainSettings();
-    m_fill  = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
-    m_vmode = s["BRH_VMODE"].SetDefault(false).Get<bool>();
-    p_remnants->SetScale2(sqr(4.0));
-    m_name = std::string("On");
-  }
+    return;
+    }
+  */
+  p_shrimps = NULL;
+  Settings& s = Settings::GetMainSettings();
+  m_fill  = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
+  m_vmode = s["BRH_VMODE"].SetDefault(false).Get<bool>();
+  p_remnants->SetScale2(sqr(4.0));
+  m_name = std::string("Parametrised");
 }
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
@@ -119,6 +121,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
 		  blob_status::needs_softUE &
 		  blob_status::needs_hadronization);
   blob->AddToOutParticles(particle);
+  blob->SetPosition(p_remnants->GetRemnant(beam)->Position());
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
       IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0])) {
     Particle *p = new Particle(*particle);
