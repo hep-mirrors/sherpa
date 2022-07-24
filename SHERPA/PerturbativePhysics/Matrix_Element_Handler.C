@@ -212,6 +212,16 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       proc->SetVariationWeights(p_variationweights);
     }
     ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+    bool skip_rerun {false};
+    if (!rpa->gen.PilotRun() && !hasvars) {
+      // the process has opted out of the pilot run, so we can safely skip the
+      // re-run (if any), as long as there are no variations to calculate in a
+      // re-run
+      if (m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
+        msg_Debugging()<<"Pilot run has opted out of re-run.\n";
+      }
+      skip_rerun = true;
+    }
     proc->SetVariationWeights(NULL);
     p_proc=proc->Selected();
     if (p_proc->Generator()==NULL)
@@ -219,9 +229,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     if (p_proc->Generator()->MassMode()!=0)
       THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
     double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
-    bool skip_rerun {false};
     if (info==NULL) {
-      if (m_haspilotscale) {
+      if (!skip_rerun && m_haspilotscale) {
         // A pilot run with a PILOT scale has been vetoed. We can however not
         // conclude, that this also happens for the normal scale. Hence, we
         // repeat the calculation in non-pilot mode.
@@ -263,6 +272,9 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       } else {
         m_weightfactor = abswgt / max;
         wf /= Min(1.0, m_weightfactor);
+      }
+      if (skip_rerun) {
+        msg_Debugging()<<"Pilot run has been accepted. Skip re-run.\n";
       }
       if (!skip_rerun && m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
         // re-run with same rng state and include the calculation of
