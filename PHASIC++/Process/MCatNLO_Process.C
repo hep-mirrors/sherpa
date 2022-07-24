@@ -576,6 +576,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       }
     }
   } else {
+    rpa->gen.SetPilotRun(false);
     p_selected = p_rsproc;
     winfo = p_rsproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {

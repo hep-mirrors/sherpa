@@ -95,6 +95,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
     msg_Info()<<METHOD<<"(): Set seed increment to "
               <<read.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
   }
+  m_pilotrunrequired = false;
+  m_haspilotscale = false;
   m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
   msg_Info()<<METHOD<<"(): Set pilot run mode to "<<m_pilotrunenabled<<".\n";
   std::string nlomodestring("");
@@ -214,6 +216,15 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       proc->SetVariationWeights(p_variationweights);
     }
     ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+    msg_Debugging() << proc->Name() << "\n";
+    bool skip_rerun {false};
+    if (!rpa->gen.PilotRun() && !hasvars) {
+      // the process has opted out of the pilot run, so we can safely skip the
+      // re-run (if any), as long as there are no variations to calculate in a
+      // re-run
+      msg_Debugging()<<"Pilot run has opted out of re-run.\n";
+      skip_rerun = true;
+    }
     proc->SetVariationWeights(NULL);
     p_proc=proc->Selected();
     if (p_proc->Generator()==NULL)
@@ -221,9 +232,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     if (p_proc->Generator()->MassMode()!=0)
       THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
     double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
-    bool skip_rerun {false};
     if (info==NULL) {
-      if (m_haspilotscale) {
+      if (!skip_rerun && m_haspilotscale) {
         // A pilot run with a PILOT scale has been vetoed. We can however not
         // conclude, that this also happens for the normal scale. Hence, we
         // repeat the calculation in non-pilot mode.
@@ -231,11 +241,13 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         rpa->gen.SetPilotRun(false);
         msg_Debugging()<<"Pilot run has been vetoed. Re-calculate with normal settings.\n";
         info=proc->OneEvent(m_eventmode);
+        p_proc=proc->Selected();
         if (!info) {
           // If also the normal scale leads to a rejection, we can safely go to
           // the next trial event.
           continue;
         }
+        m_evtinfo=*info;
         // At this point, we only need another normal run below, after
         // unweighting, if there are any variations to evaluate. Otherwise, we
         // are done with the event generation, and need not other pass.
@@ -244,8 +256,9 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       } else {
         continue;
       }
+    } else {
+      m_evtinfo=*info;
     }
-    m_evtinfo=*info;
     delete info;
     double enhance = p_proc->Integrator()->PSHandler()->Enhance();
     double wf((p_proc->NIn()==1?1.:rpa->Picobarn())/sw/enhance);
@@ -253,6 +266,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       const double max = p_proc->Integrator()->Max();
       const double disc = max * ran->Get();
       const double abswgt = std::abs(m_evtinfo.m_weight);
+      //if (abswgt < disc)
+      //  continue;
       if (abswgt < disc)
         continue;
       if (abswgt > max * m_ovwth) {
@@ -263,8 +278,13 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         m_weightfactor = m_ovwth;
         wf *= max * m_ovwth / abswgt;
       } else {
+        //m_weightfactor = abswgt / max;
+        //wf /= Min(1.0, m_weightfactor);
         m_weightfactor = abswgt / max;
         wf /= Min(1.0, m_weightfactor);
+      }
+      if (skip_rerun) {
+        msg_Debugging()<<"Pilot run has been accepted. Skip re-run.\n";
       }
       if (!skip_rerun && m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
         // re-run with same rng state and include the calculation of
@@ -275,6 +295,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         if (hasvars)
           proc->SetVariationWeights(p_variationweights);
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+        p_proc=proc->Selected();
         // if we have indeed used the same statistics for the (accepted) pilot
         // run, info must be non-null and it must contain the same results
         // compared to the pilot run (caveat: this is not necessarily
@@ -285,7 +306,9 @@ bool Matrix_Element_Handler::GenerateOneEvent()
           continue;
         }
         m_pilotweightfactor = info->m_weight/m_evtinfo.m_weight;
+        m_evtinfo=*info;
         delete info;
+	m_evtinfo.m_weight /= m_pilotweightfactor;
         proc->SetVariationWeights(NULL);
         // also consume random number used to set the discriminator for
         // unweighting above, such that it is not re-used in the future
