@@ -127,12 +127,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  PDF/Electron/Makefile \
 	  PDF/LHAPDF/Makefile \
           PDF/CT14/Makefile \
-          PDF/CT12/Makefile \
-          PDF/CT10/Makefile \
-          PDF/MSTW/Makefile \
-	  PDF/MRST/Makefile \
 	  PDF/NNPDF/Makefile \
-	  PDF/CTEQ/Makefile \
 	  PDF/GRV/Makefile \
 	  PDF/SAL/Makefile \
 	  PDF/SASG/Makefile \
