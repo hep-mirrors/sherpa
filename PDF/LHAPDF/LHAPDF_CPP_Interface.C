@@ -15,7 +15,6 @@ namespace PDF {
   private:
     LHAPDF::PDF * p_pdf;
     int           m_smember;
-    int           m_anti;
     std::map<int, double> m_xfx;
     std::map<int, bool>   m_calculated;
     double        m_x,m_Q2;
@@ -43,14 +42,13 @@ using namespace ATOOLS;
 LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
                                            const std::string _set,
                                            const int _member) :
-  p_pdf(NULL), m_anti(1)
+  p_pdf(NULL)
 {
   m_set=_set;
   m_smember=_member;
   m_type="LHA["+m_set+"]";
 
   m_bunch = _bunch;
-  if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
     m_member=abs(m_smember);
@@ -244,7 +242,7 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
                        <<"returning zero."<<std::endl;
     return 0.;
   }
-  int kfc = m_anti*(anti?-kf:kf);
+  int kfc = m_bunch.IsAnti()*(anti?-kf:kf);
   if (kf==kf_gluon || kf==kf_photon)
     kfc = kf;
   for (size_t i(0);i<m_disallowedflavour.size();++i) {
