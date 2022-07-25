@@ -23,15 +23,13 @@ namespace PDF {
 
   class CT14_Fortran_Interface : public PDF_Base {
   private:
-    int         m_anti;
     double      m_f[11], m_x, m_Q;
     bool        m_calculated[11];
 
   public:
 
     CT14_Fortran_Interface(const ATOOLS::Flavour bunch,
-                           std::string set, int member) :
-      m_anti(1)
+                           std::string set, int member)
     {
       m_xmin=1.e-8;
       m_xmax=1.;
@@ -42,7 +40,6 @@ namespace PDF {
       m_type=m_set;
       m_bunch=bunch;
       m_member=member;
-      if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
       std::string cset("");
       std::string path = rpa->gen.Variable("SHERPA_SHARE_PATH")+"/CT14Grid";
 
@@ -152,9 +149,9 @@ namespace PDF {
       int cteqindex;
       switch (infl.Kfcode()) {
       case kf_gluon: cteqindex=0;                  break;
-      case kf_d:     cteqindex=m_anti*int(infl)*2; break;
-      case kf_u:     cteqindex=m_anti*int(infl)/2; break;
-      default:                cteqindex=m_anti*int(infl);   break;
+      case kf_d:     cteqindex=m_bunch.IsAnti()*int(infl)*2; break;
+      case kf_u:     cteqindex=m_bunch.IsAnti()*int(infl)/2; break;
+      default:                cteqindex=m_bunch.IsAnti()*int(infl);   break;
       }
       if (!m_calculated[5-cteqindex]) {
         m_f[5-cteqindex]=ct14pdf_(cteqindex,m_x,m_Q)*m_x;
@@ -172,9 +169,9 @@ namespace PDF {
       int cteqindex;
       switch (kf) {
       case kf_gluon: cteqindex=0;                    break;
-      case kf_d:     cteqindex=m_anti*(anti?-2:2);   break;
-      case kf_u:     cteqindex=m_anti*(anti?-1:1);   break;
-      default:       cteqindex=m_anti*(anti?-kf:kf); break;
+      case kf_d:     cteqindex=m_bunch.IsAnti()*(anti?-2:2);   break;
+      case kf_u:     cteqindex=m_bunch.IsAnti()*(anti?-1:1);   break;
+      default:       cteqindex=m_bunch.IsAnti()*(anti?-kf:kf); break;
       }
       if (!m_calculated[5-cteqindex]) {
         m_f[5-cteqindex]=ct14pdf_(cteqindex,m_x,m_Q)*m_x;
