@@ -20,11 +20,13 @@ namespace SHRIMPS {
     virtual void Reset()      {}
     virtual void Initialise(Remnant_Handler * remnants=NULL,
 			    Cluster_Algorithm * cluster=NULL) {}
-    virtual int  GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag=false) = 0;
+    virtual int          InitEvent(ATOOLS::Blob_List * blobs) = 0;
+    virtual ATOOLS::Blob * GenerateEvent() = 0;
     virtual Omega_ik   * GetEikonal()      const { return p_eikonal;}
     virtual const double XSec()            const { return m_xsec; }
     virtual const double Smin()            const { return m_smin;}
     virtual const bool   IsLastRescatter() const { return false; }
+    virtual const bool   IsMinBias()       const { return true; }
     virtual const double TMax()            const { return 0.; }
     virtual const int    NLadders()        const { return 1; }
     virtual const double Ymax()            const { return 0.; }

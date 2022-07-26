@@ -16,7 +16,7 @@ namespace SHRIMPS {
   
   class Event_Generator {
   private:
-    run_mode::code    m_runmode, m_thisevent;
+    run_mode::code    m_runmode;
     weight_mode::code m_weightmode;
 
     Inelastic_Event_Generator        * p_inelastic;
@@ -35,7 +35,8 @@ namespace SHRIMPS {
     void Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster);
     void Reset();
     bool DressShowerBlob(ATOOLS::Blob * blob);
-    int  MinimumBiasEvent(ATOOLS::Blob_List * blobs);
+    int  InitMinimumBiasEvent(ATOOLS::Blob_List * blobs);
+    ATOOLS::Blob * GenerateEvent();
 
     void Test(const std::string & dirname);
 
@@ -45,30 +46,21 @@ namespace SHRIMPS {
     }
     inline Omega_ik * GetEikonal() const { return p_active->GetEikonal(); }
     inline const double & XSec()   const { return m_xsec; } 
-    inline double         Smin()   const { return p_active->Smin(); }
-    inline double         B()      const { return p_active->B(); }
+
     
+    inline void SetMaxEnergies(const double & E1,const double & E2) {
+      if (p_active==p_inelastic && p_inelastic!=NULL)
+	p_inelastic->SetMaxEnergies(E1,E2);
+    }
 			   
-    inline double MinKT2() {
-      if (p_active) return p_active->KT2min();
-      return 0.;
-    }
-    inline double Ymax() {
-      if (p_active) return p_active->Ymax();
-      return 0.;
-    }
-    inline bool IsLastRescatter() const {
-      if (p_active) return p_active->IsLastRescatter();
-      return false;
-    }
-    inline double TMax() const {
-      if (p_active) return p_active->TMax();
-      return 0.;
-    }
-    inline int NLadders() const {
-      if (p_active) return p_active->NLadders();
-      return 1;
-    }
+    inline double B()               const { return p_active?p_active->B():-1.; }
+    inline int    NLadders()        const { return p_active?p_active->NLadders():1; }
+    inline bool   IsMinBias()       const { return p_active?p_active->IsMinBias():false; }
+    inline bool   IsLastRescatter() const { return p_active?p_active->IsLastRescatter():false; }
+    inline double Smin()            const { return p_active?p_active->Smin():-1.; }
+    inline double MinKT2()          const { return p_active?p_active->KT2min():-1.; }
+    inline double Ymax()            const { return p_active?p_active->Ymax():0.; }
+    inline double TMax()            const { return p_active?p_active->TMax():0.; }
   };
 }
 #endif

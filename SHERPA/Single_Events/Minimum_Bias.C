@@ -17,6 +17,7 @@ Minimum_Bias::~Minimum_Bias() {}
 
 ATOOLS::Return_Value::code Minimum_Bias::Treat(ATOOLS::Blob_List* blobs)
 {
+  msg_Out()<<METHOD<<"("<<blobs->size()<<" blobs)\n";
   return p_schandler->GenerateMinimumBiasEvent(blobs);
 }
 

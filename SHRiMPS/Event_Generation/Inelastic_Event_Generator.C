@@ -53,37 +53,52 @@ void Inelastic_Event_Generator::Reset() {
   m_primaries.Reset();
 }
 
-int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,const bool & flag) {
+int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   msg_Out()<<"   - "<<METHOD<<"\n";
-  if (m_mustinit) {
-    Blob * blob(blobs->FindFirst(btp::Soft_Collision));
-    if (!blob ||
-	!blob->Has(blob_status::needs_minBias)) return 0;
-    if (!InitEvent(blobs))                      return -1;
-    do { } while (!m_primaries(p_eikonal,m_B,m_Nladders));
+  Blob * blob = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
+  if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return -1;
+  if (blob->NInP()>0)  {
+    msg_Error()<<"Error in "<<METHOD<<": blob has particles.\n"<<(*blob)<<"\n";
+    blob->DeleteInParticles();
   }
-  return MakePrimaryScatterBlobs(blobs);
+  if (blob->NOutP()>0) {
+    msg_Error()<<"Error in "<<METHOD<<": blob has particles.\n"<<(*blob)<<"\n";
+    blob->DeleteOutParticles();
+  }
+  blob->AddData("Weight",new Blob_Data<double>(m_sigma));
+  blob->AddData("Factorisation_Scale",new Blob_Data<double>(1.));
+  blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
+  p_eikonal  = 0; m_B = -1;
+  for (size_t trials=0;trials<1000;trials++) {
+    if (SelectEikonal() && SelectB()) {
+      m_Nladders = 1+int(ran->Poissonian((*p_eikonal)(m_B)));
+      if (m_Nladders>0) return 0;
+      do { } while (!m_primaries(p_eikonal,m_B,m_Nladders));
+    }
+  }
+  return -1;
 }
 
-bool Inelastic_Event_Generator::MakePrimaryScatterBlobs(ATOOLS::Blob_List * blobs) {
+Blob * Inelastic_Event_Generator::GenerateEvent() {
+  msg_Out()<<"   - "<<METHOD<<"\n";
+  /*
+    if (m_mustinit) {
+    Blob * blob(blobs->FindFirst(btp::Soft_Collision));
+    if (!blob ||
+    !blob->Has(blob_status::needs_minBias)) return 0;
+    if (!InitEvent(blobs))                      return -1;
+  */
+  return MakePrimaryScatterBlob();
+}
+
+Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
   msg_Out()<<"   - "<<METHOD<<"(init = "<<m_mustinit<<", "
-	   <<m_primaries.GetLadders()->size()<<" ladders, "<<blobs->size()<<" blobs.)\n";
+	   <<m_primaries.GetLadders()->size()<<" ladders.)\n";
   if (m_primaries.GetLadders()->empty()) return 0;
   Ladder * ladder = m_primaries.GetLadders()->front();
-  Blob * blob     = NULL;
-  if (m_mustinit) {
-    blob = blobs->FindFirst(btp::Soft_Collision);
-    blob->AddData("Weight",new Blob_Data<double>(m_sigma));
-    blob->AddData("Factorisation_Scale",new Blob_Data<double>(1.));
-    blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
-    m_mustinit = false;
-  }
-  else {
-    blob = new Blob();
-    blob->SetId();
-    blobs->push_back(blob);
-    blob->AddData("Weight",new Blob_Data<double>(1.));
-  }
+  Blob * blob     = new Blob();
+  blob->SetId();
+  blob->AddData("Weight",new Blob_Data<double>(1.));
   blob->SetPosition(ladder->Position());
   blob->SetType(btp::Hard_Collision);
   blob->SetTypeSpec("MinBias");
@@ -99,18 +114,7 @@ bool Inelastic_Event_Generator::MakePrimaryScatterBlobs(ATOOLS::Blob_List * blob
   delete ladder;
   m_primaries.GetLadders()->pop_front();
   //return p_collemgen->GenerateEmissions(blobs);
-  return 1;
-}
-
-bool Inelastic_Event_Generator::InitEvent(Blob_List * blobs) {
-  p_eikonal  = 0; m_B = -1;
-  for (size_t trials=0;trials<1000;trials++) {
-    if (SelectEikonal() && SelectB()) {
-      m_Nladders = 1+int(ran->Poissonian((*p_eikonal)(m_B)));
-      if (m_Nladders>0) return true;
-    }
-  }
-  return false;
+  return blob;
 }
 
 bool Inelastic_Event_Generator::SelectEikonal() {

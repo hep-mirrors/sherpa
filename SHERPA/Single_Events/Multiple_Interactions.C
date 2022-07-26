@@ -37,6 +37,7 @@ Multiple_Interactions::~Multiple_Interactions() { }
 
 Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
 {
+  msg_Out()<<METHOD<<"("<<bloblist->size()<<" blobs)\n";
   m_result    = Return_Value::Nothing; 
   if (p_mihandler->Type()==MI_Handler::none || p_mihandler->Done()) return m_result;
   p_bloblist  = bloblist;
@@ -53,6 +54,7 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
   SwitchPerturbativeInputsToMIs();
   p_lastblob = p_mihandler->GenerateHardProcess();
   if (p_lastblob) {
+    msg_Out()<<METHOD<<" generated hard scatter:\n"<<(*p_lastblob)<<"\n";
     // This assumes that the scatters are ordered in transverse momentum.
     // Then maximal scale of subsequent scatters is given by the pT of the
     // previous ones.
@@ -74,8 +76,8 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
     if (m_ptmax > m_hardveto) return Return_Value::New_Event;
     return Return_Value::Success;
   }
-  if (!p_lastblob && m_isfirstMB) return Return_Value::New_Event;
-  return Return_Value::Nothing;
+  if (!p_lastblob && p_mihandler->Done()) return Return_Value::Nothing;
+  return Return_Value::New_Event;
 }
 
 bool Multiple_Interactions::CheckBlobList() 
@@ -183,7 +185,8 @@ bool Multiple_Interactions::InitNewEvent() {
 }
 
 void Multiple_Interactions::InitMinBiasEvent() {
-  Blob * signal = (*p_bloblist)[0];
+  Blob * signal         = (*p_bloblist)[0];
+  msg_Out()<<METHOD<<"("<<p_bloblist->size()<<" blobs):\n"<<signal<<"\n";
   Particle_Vector * ins = p_lastblob->InParticles();
   while (!ins->empty()) {
     signal->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));

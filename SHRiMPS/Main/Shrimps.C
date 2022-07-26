@@ -98,9 +98,14 @@ void Shrimps::InitialiseTheEventGenerator() {
   p_remnants->Reset();
 }
 
-int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
-  msg_Out()<<"   * "<<METHOD<<"("<<blobs->size()<<" blobs.\n";
-  return p_generator->MinimumBiasEvent(blobs);
+int Shrimps::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
+  msg_Out()<<"  * "<<METHOD<<"("<<blobs->size()<<" blobs).\n";
+  return p_generator->InitMinimumBiasEvent(blobs);
+}
+
+ATOOLS::Blob * Shrimps::GenerateEvent() {
+  msg_Out()<<"  * "<<METHOD<<".\n";
+  return p_generator->GenerateEvent();
 }
 
 ATOOLS::Cluster_Amplitude * Shrimps::ClusterConfiguration(ATOOLS::Blob *const blob) {

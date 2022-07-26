@@ -18,22 +18,25 @@ using namespace std;
 
 MI_Handler::MI_Handler(MODEL::Model_Base *model,
 		       PDF::ISR_Handler *isr) :
-  p_isr(isr), p_amisic(NULL),
+  p_isr(isr), p_amisic(NULL), p_shrimps(NULL), 
   p_ampl(NULL), p_proc(NULL), p_shower(NULL),
   m_stop(false), m_type(typeID::none), m_name("None")
 {
-  auto s = Settings::GetMainSettings()["MI_HANDLER"];
+  Settings& s = Settings::GetMainSettings();
+  m_name      = s["MI_HANDLER"].SetDefault("Amisic").UseNoneReplacements().Get<string>();
+  string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
   if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) {
-    s.OverrideScalar<string>("None");
+    m_name = "None";
   }
-  m_name = s.SetDefault("Amisic").UseNoneReplacements().Get<string>();
   if (m_name==string("Amisic"))  InitAmisic(model);
-  if (m_name==string("Shrimps")) InitShrimps(model);
+  if ((scm==string("Shrimps") && p_amisic==NULL) ||
+      m_name==string("Shrimps")) InitShrimps(model);
 }
 
 MI_Handler::~MI_Handler() 
 {
-  if (p_amisic!=NULL) delete p_amisic;
+  if (p_amisic!=NULL)  { delete p_amisic;  p_amisic  = NULL; }
+  if (p_shrimps!=NULL) { delete p_shrimps; p_shrimps = NULL; }
 }
 
 void MI_Handler::InitAmisic(MODEL::Model_Base *model)
@@ -66,7 +69,8 @@ const Vec4D MI_Handler::SelectPositionForScatter() const {
 }
 
 void MI_Handler::SetMaxEnergies(const double & E1,const double & E2) {
-  if (m_type==typeID::amisic) p_amisic->SetMaxEnergies(E1,E2); 
+  if (m_type==typeID::amisic)  p_amisic->SetMaxEnergies(E1,E2); 
+  if (m_type==typeID::shrimps) p_shrimps->SetMaxEnergies(E1,E2); 
 }
 
 void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
@@ -75,18 +79,18 @@ void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
 
 Blob * MI_Handler::GenerateHardProcess()
 {
-  if (m_type==typeID::amisic) {
-    Blob * blob = p_amisic->GenerateScatter();
-    if (blob==NULL) m_stop = true;
-    return blob;
-  }
-  return NULL;
+  Blob * blob = NULL;
+  if (m_type==typeID::amisic)  blob = p_amisic->GenerateScatter();
+  if (m_type==typeID::shrimps) blob = p_shrimps->GenerateEvent();
+  if (blob==NULL) m_stop = true;
+  msg_Out()<<"*** "<<METHOD<<": "<<blob<<", stop = "<<m_stop<<".\n";
+  return blob;
 }
 
 bool MI_Handler::VetoScatter(Blob *blob)
 {
-  if (m_type==typeID::amisic) return p_amisic->VetoScatter(blob);
-  return true;
+  // Method not yet implemented in either Shrimps or Amisic
+  return false;
 }
 
 void MI_Handler::Reset()
@@ -98,7 +102,8 @@ void MI_Handler::Reset()
 void MI_Handler::CleanUp()
 {
   m_stop = false;
-  if (m_type==typeID::amisic) p_amisic->CleanUp();
+  if (m_type==typeID::amisic)  p_amisic->CleanUp();
+  if (m_type==typeID::shrimps) p_shrimps->CleanUp();
 }
 
 Cluster_Amplitude * MI_Handler::ClusterConfiguration(Blob * blob)
@@ -110,25 +115,29 @@ Cluster_Amplitude * MI_Handler::ClusterConfiguration(Blob * blob)
 
 const double MI_Handler::ScaleMin() const
 {
-  if (m_type==typeID::amisic) return p_amisic->ScaleMin();
+  if (m_type==typeID::amisic)  return p_amisic->ScaleMin();
+  if (m_type==typeID::shrimps) return p_shrimps->ScaleMin();
   return -1.;
 }
 
 const double MI_Handler::ScaleMax() const
 {
   if (m_type==typeID::amisic) return p_amisic->ScaleMax();
+  if (m_type==typeID::shrimps) return p_shrimps->ScaleMax();
   return -1.;
 }
 
 
 const double MI_Handler::ImpactParameter() const {
-  if (p_amisic) return p_amisic->B();
+  if (m_type==typeID::amisic)  return p_amisic->B();
+  if (m_type==typeID::shrimps) return p_shrimps->B();
   return 0.;
 }
 
 const bool MI_Handler::IsMinBias() const
 {
-  if (m_type==typeID::amisic) return p_amisic->IsMinBias();
+  if (m_type==typeID::amisic)  return p_amisic->IsMinBias();
+  if (m_type==typeID::shrimps) return p_shrimps->IsMinBias();
   return false;
 }
 

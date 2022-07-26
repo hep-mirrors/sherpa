@@ -97,7 +97,7 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
 }
  
 void Primary_Ladders::Reset() {
-  m_E[0] = m_E[1] = m_Ecms;
+  m_E[0] = m_E[1] = m_Ecms/2.;
   while (!m_ladders.empty()) {
     delete (m_ladders.back());
     m_ladders.pop_back();

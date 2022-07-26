@@ -65,7 +65,7 @@ void MinBias_Parameters::Init() {
 void MinBias_Parameters::RegisterDefaults() const
 {
   const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
-  s["Mode"].SetDefault("Inelastic");
+  s["MODE"].SetDefault("Inelastic");
   s["MB_Weight_Mode"].SetDefault("Unweighted");
   s["bmax"].SetDefault(10.0);
   s["accu"].SetDefault(5e-4);
@@ -89,7 +89,7 @@ void MinBias_Parameters::RegisterDefaults() const
 
 void MinBias_Parameters::FillRunParameters() {
   const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
-  std::string runmode = s["Mode"].Get<std::string>();
+  std::string runmode = s["MODE"].Get<std::string>();
   if (runmode==std::string("TestShrimps") || runmode==std::string("Test")) 
     m_runmode = m_run_params.runmode = run_mode::test;
   else if (runmode==std::string("Xsecs") || runmode==std::string("XSecs")) 

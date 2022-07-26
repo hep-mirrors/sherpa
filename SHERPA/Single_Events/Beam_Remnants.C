@@ -38,12 +38,14 @@ Return_Value::code Beam_Remnants::Treat(ATOOLS::Blob_List* bloblist)
   Blob *signal(bloblist->FindFirst(btp::Signal_Process));
   if (signal && signal->NInP()<2) return Return_Value::Nothing;
   bool onlyBunch = false;
+  msg_Out()<<METHOD<<"("<<bloblist->size()<<" blobs).\n";
   if (!signal || signal->Has(blob_status::needs_signal)) {
     Blob * hard  = bloblist->FindFirst(btp::Hard_Collision);
     Blob * qelas = bloblist->FindFirst(btp::Elastic_Collision);
     if (!qelas) qelas = bloblist->FindFirst(btp::Soft_Diffractive_Collision);        
     if (!qelas) qelas = bloblist->FindFirst(btp::Quasi_Elastic_Collision);        
     if (!hard && !qelas) return Return_Value::Nothing;
+    msg_Out()<<METHOD<<": looking for non-signal blobs:"<<hard<<"/"<<qelas<<".\n";
     if (qelas) onlyBunch = true;
   }
   else {

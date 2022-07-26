@@ -101,34 +101,26 @@ Soft_Diffractive_Event_Generator::~Soft_Diffractive_Event_Generator() {
   }
 }
 
-int Soft_Diffractive_Event_Generator::
-GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag) {
-  if (!InitEvent(blobs)) return 0;
-  SelectMode();
-  SelectFS();
-  FixKinematics();
-  FillBlobs(blobs);
-  return 1;
-}
-
-bool Soft_Diffractive_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
+int Soft_Diffractive_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   p_blob = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
-  if (!p_blob || p_blob->Status()!=ATOOLS::blob_status::needs_minBias) return false;
+  if (!p_blob || p_blob->Status()!=ATOOLS::blob_status::needs_minBias) return -1;
   if (p_blob->NInP()>0)  {
-    msg_Error()<<"Error in "<<METHOD<<": blob has particles."<<std::endl
-	       <<(*p_blob)<<std::endl;
+    msg_Error()<<"Error in "<<METHOD<<": blob has particles.\n"<<(*p_blob)<<"\n";
     p_blob->DeleteInParticles();
   }
   if (p_blob->NOutP()>0) {
-    msg_Error()<<"Error in "<<METHOD<<": blob has particles."<<std::endl
-	       <<(*p_blob)<<std::endl;
+    msg_Error()<<"Error in "<<METHOD<<": blob has particles.\n"<<(*p_blob)<<"\n";
     p_blob->DeleteOutParticles();
   }
   for (size_t i=0;i<4;i++) {
     m_out[i] = Flavour(kf_none); m_pout[i] = Vec4D(0.,0.,0.,0.);
   }
   for (size_t i=0;i<2;i++) m_contMassRange[i] = false;
-  return true;
+  SelectMode();
+  SelectFS();
+  FixKinematics();
+  FillBlob();
+  return 1;
 }
 
 void Soft_Diffractive_Event_Generator::SelectMode() {
@@ -222,7 +214,7 @@ double Soft_Diffractive_Event_Generator::SelectMass2(size_t beam) {
   return -1./m_massexp* log(m_expargLow[beam] + ran->Get()*(m_expargUp[beam]-m_expargLow[beam]));
 }
 
-void Soft_Diffractive_Event_Generator::FillBlobs(ATOOLS::Blob_List * blobs) {
+void Soft_Diffractive_Event_Generator::FillBlob() {
   Particle * part;
   for (size_t beam=0;beam<2;beam++) {
     part = new Particle(-1,m_beam[beam],m_p[beam]);
@@ -233,12 +225,8 @@ void Soft_Diffractive_Event_Generator::FillBlobs(ATOOLS::Blob_List * blobs) {
   }
   for (size_t beam=0;beam<2;beam++) {
     if (m_contMassRange[beam]) {
-      Blob * blob = new Blob();
-      blob->SetStatus(blob_status::needs_hadronization);
-      blob->SetType(btp::Soft_Collision);
-      blob->SetTypeSpec("Shrimps");
-      blob->SetId();
-      blobs->push_back(blob);
+      msg_Out()<<"  - "<<METHOD<<"(beam = "<<beam<<") selected continuous mass range.\n";
+      p_blob->AddStatus(blob_status::needs_hadronization);
       for (size_t j=0;j<2;j++) {
 	part = new Particle(-1,m_out[2*beam+j],m_pout[2*beam+j]);
 	part->SetNumber();
@@ -250,13 +238,7 @@ void Soft_Diffractive_Event_Generator::FillBlobs(ATOOLS::Blob_List * blobs) {
 	else if ((m_out[2*beam+j].IsQuark() && m_out[2*beam+j].IsAnti()) ||
 		 (m_out[2*beam+j].IsDiQuark() && !m_out[2*beam+j].IsAnti()))
 	  part->SetFlow(2,500+beam);
-	Particle * copy = new Particle(part->Number(),part->Flav(),part->Momentum());
-	copy->SetBeam(beam);
-	copy->SetInfo('F');
-	for (size_t f=1;f<3;f++) copy->SetFlow(f,part->GetFlow(f));
 	p_blob->AddToOutParticles(part);
-	blob->AddToInParticles(part);
-	blob->AddToOutParticles(copy);
       }
     }
     else {
@@ -265,23 +247,13 @@ void Soft_Diffractive_Event_Generator::FillBlobs(ATOOLS::Blob_List * blobs) {
       part->SetBeam(beam);
       part->SetInfo('F');
       p_blob->AddToOutParticles(part);
-      if (m_out[2*beam]!=m_beam[beam]) {
-	Blob * blob = new Blob();
-	blob->SetStatus(blob_status::needs_hadrondecays);
-	blob->SetType(btp::Hadron_Decay);
-	blob->SetTypeSpec("Shrimps");
-	blob->SetId();
-	blobs->push_back(blob);
-	blob->AddToInParticles(part);
-	Particle * copy = new Particle(part->Number(),part->Flav(),part->Momentum());
-	copy->SetBeam(beam);
-	copy->SetInfo('F');
-	blob->AddToOutParticles(copy);
-      }
     }
   }
   p_blob->UnsetStatus(blob_status::needs_minBias);
-  //msg_Out()<<*blobs<<"\n";
+  if (!p_blob->Has(blob_status::needs_hadronization))
+    p_blob->AddStatus(blob_status::needs_hadrondecays);
+  p_blob->AddStatus(blob_status::needs_beams);
+  p_blob->SetType(btp::Soft_Diffractive_Collision);
 }
 
 /*

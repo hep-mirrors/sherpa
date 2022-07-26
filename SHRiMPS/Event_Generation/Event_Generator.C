@@ -8,10 +8,10 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Event_Generator::Event_Generator(Cross_Sections * xsecs,const bool & test) :
-  m_runmode(MBpars.RunMode()), m_thisevent(m_runmode),
+  m_runmode(MBpars.RunMode()), 
   p_inelastic(NULL), p_elastic(NULL), p_soft_diffractive(NULL),
   p_active(NULL), m_xsec(0.), m_xsec_inel(0.), m_xsec_elas(0.), m_xsec_diff(0.),
-  m_eventsuccessful(1), m_mustinit(1)
+  m_mustinit(true)
 {
   InitGenerator(xsecs,test);
 }
@@ -24,6 +24,7 @@ Event_Generator::~Event_Generator()
 }
 
 void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
+  msg_Out()<<METHOD<<"(runmode = "<<int(m_runmode)<<")\n";
   switch (m_runmode) {
   case run_mode::inelastic_events:
     p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
@@ -44,7 +45,6 @@ void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
 
 void Event_Generator::
 Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
-  //m_xsec = 0.;
   if (p_inelastic) {
     p_inelastic->Initialise(remnants,cluster);
     m_xsec += p_inelastic->XSec();
@@ -65,7 +65,6 @@ Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
 
 void Event_Generator::Reset() {
   if (p_active) p_active->Reset();
-  m_thisevent = m_runmode;
   m_mustinit = 1;
 }
 
@@ -79,49 +78,36 @@ bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
   return false; 
 }
 
-int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
+int Event_Generator::InitMinimumBiasEvent(ATOOLS::Blob_List * blobs) {
+  if (!m_mustinit) return 0;
   if (blobs->size()==1) {
     (*blobs)[0]->AddData("WeightsMap",new ATOOLS::Blob_Data<ATOOLS::Weights_Map>(m_xsec));
     (*blobs)[0]->AddData("Weight_Norm",new ATOOLS::Blob_Data<double>(1.));
     (*blobs)[0]->AddData("Trials",new ATOOLS::Blob_Data<double>(1));
   }
-
-  switch (MBpars.RunMode()) {
+  switch (m_runmode) {
   case run_mode::inelastic_events:
     p_active = p_inelastic;
-    break; 
+    break;
   case run_mode::elastic_events:
     p_active = p_elastic;
     break;
   case run_mode::soft_diffractive_events:
     p_active = p_soft_diffractive;
+    break;
   case run_mode::all_min_bias:
-    if (m_mustinit && m_eventsuccessful) {
-        double R(ran->Get());
-        if (R < m_xsec_inel/m_xsec) {
-            p_active = p_inelastic;
-            //msg_Out()<<METHOD<<" This event will be inelastic.\n";
-        }
-        else if (R < (m_xsec_inel+m_xsec_elas)/m_xsec) {
-          p_active = p_elastic;
-          //msg_Out()<<METHOD<<" This event will be elastic.\n";
-        }
-        else {
-          p_active = p_soft_diffractive;
-          //msg_Out()<<METHOD<<" This event will be diffractive.\n";
-        }
-    }
-    m_mustinit = 0;
+    double R(ran->Get());
+    if (R < m_xsec_inel/m_xsec)                    p_active = p_inelastic;
+    else if (R < (m_xsec_inel+m_xsec_elas)/m_xsec) p_active = p_elastic;
+    else                                           p_active = p_soft_diffractive;
+    break;
   }
-  int outcome = p_active->GenerateEvent(blobs,false);
-  if (outcome == -1) {
-      m_eventsuccessful = false;
-      return 0;
-  }
-  else {
-      m_eventsuccessful = true;
-      return outcome;
-  }
+  m_mustinit = 0;
+  return p_active->InitEvent(blobs);
+}
+
+Blob * Event_Generator::GenerateEvent() {
+  return p_active->GenerateEvent();
 }
 
 void Event_Generator::Test(const std::string & dirname) {

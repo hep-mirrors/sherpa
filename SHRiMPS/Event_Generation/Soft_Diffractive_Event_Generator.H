@@ -29,7 +29,6 @@ namespace SHRIMPS {
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
     void   InitialiseHadronMaps();
-    bool   InitEvent(ATOOLS::Blob_List * blobs);
     void   SelectMode();
     void   SelectFS();
     void   SelectFlavours(size_t beam);
@@ -37,7 +36,7 @@ namespace SHRIMPS {
     double SelectMass2(size_t beam);
     void   FixBinarySystem(ATOOLS::Vec4D (& moms)[2]);
     void   SplitQandQQ(size_t beam,ATOOLS::Vec4D & mom);
-    void   FillBlobs(ATOOLS::Blob_List * blobs);
+    void   FillBlob();
     //std::vector<ATOOLS::Vec4D> SplitIntoQandQQ(ATOOLS::Vec4D pmu, double Mqq, double Mq);
     //std::vector<double> ComputePxPyPz(double p, int sign1, int mode);
     //ATOOLS::Vec4D Get4Vector(double M2[], double Etot);
@@ -45,7 +44,8 @@ namespace SHRIMPS {
     Soft_Diffractive_Event_Generator(Sigma_SD * sigma,const int & test=0);
     ~Soft_Diffractive_Event_Generator();
 				       
-    int GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag=false);
+    int InitEvent(ATOOLS::Blob_List * blobs);
+    ATOOLS::Blob * GenerateEvent() { return NULL; }
   };
 }
 #endif

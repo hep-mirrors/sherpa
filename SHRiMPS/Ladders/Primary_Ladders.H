@@ -29,6 +29,9 @@ namespace SHRIMPS {
     void Test();
     void Reset();
 
+    inline void SetMaxEnergies(const double & E1,const double & E2) {
+      m_E[0] = E1; m_E[1] = E2;
+    }
     inline Colour_Generator    * GetColourGenerator()  { return &m_colourgenerator; }
     inline std::list<Ladder *> * GetLadders()          { return &m_ladders; }
     inline const double Ymax()   const { return p_laddergenerator->Ymax(); }

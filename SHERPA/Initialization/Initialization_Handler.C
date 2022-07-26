@@ -918,6 +918,8 @@ bool Initialization_Handler::InitializeTheShowers()
     m_showerhandlers[isrtypes[i]] =
       new Shower_Handler(p_model, m_isrhandlers[isrtypes[i]], i);
     m_showerhandlers[isrtypes[i]]->SetRemnants(p_remnants);
+    for (size_t beam=0;beam<2;beam++)
+      m_isrhandlers[isrtypes[i]]->SetRemnant(p_remnants->GetRemnant(beam),beam);
   }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
@@ -942,13 +944,9 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
 bool Initialization_Handler::InitializeTheSoftCollisions() 
 {
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
-  p_softcollisions = new Soft_Collision_Handler(p_model,
-						p_beamspectra,
-                                                m_isrhandlers[isr::hard_process]);
+  p_softcollisions = new Soft_Collision_Handler(p_mihandler->Amisic(),
+						p_mihandler->Shrimps());
   //p_beamremnants->SetShrimps(p_softcollisions->GetShrimps());
-  if (p_mihandler->Type()==MI_Handler::amisic) {
-    p_softcollisions->SetAmisic(p_mihandler->Amisic());
-  }
   msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
   return 1;
 }

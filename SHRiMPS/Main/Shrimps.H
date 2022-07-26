@@ -75,22 +75,28 @@ namespace SHRIMPS {
     Shrimps(PDF::ISR_Handler *const);
     ~Shrimps();
 
-    int  GenerateEvent(ATOOLS::Blob_List * blobs);
+    int  InitMinBiasEvent(ATOOLS::Blob_List * blobs);
+    ATOOLS::Blob * GenerateEvent();
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob *const blob);
     void CleanUp(const size_t & mode=0);
 
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List * blobs);
     
-    inline int    ShowerMode()   const { return 1; }// MBpars("shower_mode"); }
-    inline double ShowerFac()    const { return 1; }//MBpars("kt2_factor"); }
-    inline double ShowerMinKT2() const { return p_generator->MinKT2(); }
-    inline const double & XSec() const { return p_generator->XSec(); } 
-    inline double Smin()         const { return p_generator->Smin(); }
-    inline bool   IsLastRescatter() const { 
-      return p_generator->IsLastRescatter(); 
+    inline void SetMaxEnergies(const double & E1,const double & E2) {
+      p_generator->SetMaxEnergies(E1,E2);
     }
-    inline double LadderTMax() const {return p_generator->TMax(); }  
-    inline int    NLadders()   const {return p_generator->NLadders(); }  
+    inline int    ShowerMode()       const { return 1; }// MBpars("shower_mode"); }
+    inline double ShowerFac()        const { return 1; }//MBpars("kt2_factor"); }
+    inline double ShowerMinKT2()     const { return p_generator->MinKT2(); }
+    inline const double XSec()       const { return p_generator->XSec(); }
+    inline const double ScaleMin()   const { return p_generator->MinKT2(); }
+    inline const double ScaleMax()   const { return p_generator->Smin(); }
+    inline const double Smin()       const { return p_generator->Smin(); }
+    inline const double B()          const { return p_generator->B(); }
+    inline bool   IsLastRescatter()  const { return p_generator->IsLastRescatter(); }
+    inline bool   IsMinBias()        const { return p_generator->IsMinBias(); }
+    inline double LadderTMax()       const { return p_generator->TMax(); }  
+    inline int    NLadders()         const { return p_generator->NLadders(); }  
     inline Cluster_Algorithm * GetClusterAlgorithm() { return &m_cluster; }
   };
 }

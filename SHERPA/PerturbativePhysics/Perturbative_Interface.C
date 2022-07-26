@@ -152,7 +152,6 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   }
   if (p_sc) {
     //msg_Out()<<METHOD<<" in sc-mode.\n";
-    p_sc->SetClusterDefinitions(p_shower->GetShower()->GetClusterDefinitions());
     p_ampl=p_sc->ClusterConfiguration(blob);
     if (p_ampl==NULL) {
       msg_Error()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";

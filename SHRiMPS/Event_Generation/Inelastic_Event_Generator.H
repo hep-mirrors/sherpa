@@ -29,23 +29,26 @@ namespace SHRIMPS {
 
     Collinear_Emission_Generator * p_collemgen;
         
-    bool InitEvent(ATOOLS::Blob_List * blobs);
     bool SelectEikonal();
     bool SelectB();
-    bool MakePrimaryScatterBlobs(ATOOLS::Blob_List * blobs);
+    ATOOLS::Blob * MakePrimaryScatterBlob();
   public:
     Inelastic_Event_Generator(Sigma_Inelastic * sigma,const int & test);
     ~Inelastic_Event_Generator();
 
     void Reset();
     void Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster);
-    int  GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag=false);
+    int InitEvent(ATOOLS::Blob_List * blobs);
+    ATOOLS::Blob * GenerateEvent();
 
 
     inline Colour_Generator * GetColourGenerator()  {
       return m_primaries.GetColourGenerator();
     }
     inline void   SetCluster(Cluster_Algorithm * cluster) {
+    }
+    inline void SetMaxEnergies(const double & E1,const double & E2) {
+      m_primaries.SetMaxEnergies(E1,E2);
     }
     inline double XSec(Omega_ik * eikonal=NULL) {
       if (eikonal!=NULL) return m_xsecs[eikonal];

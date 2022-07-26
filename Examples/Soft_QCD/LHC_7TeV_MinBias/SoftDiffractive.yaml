@@ -1,0 +1,17 @@
+BEAMS: 2212
+BEAM_ENERGIES: 3500
+
+EVENT_TYPE:          MinimumBias
+ME_GENERATORS:       None
+SOFT_COLLISIONS:     Shrimps
+SHRIMPS:
+  MODE:              Soft-Diffractive
+FRAGMENTATION:       Ahadic
+YFS:
+  MODE:              None
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: SoftDiffractive_Shrimps
+
+RIVET:
+  --analyses: [ALICE_2012_I1181770, CMS_2015_I1356998]

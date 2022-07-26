@@ -71,6 +71,7 @@ namespace SHERPA {
     inline PHASIC::Process_Base      * Process()    const { return p_proc; }
     inline Shower_Handler            * Shower()     const { return p_shower; }
     inline AMISIC::Amisic            * Amisic()     const { return p_amisic; }
+    inline SHRIMPS::Shrimps          * Shrimps()    const { return p_shrimps; }
     
     inline void SetShowerHandler(Shower_Handler * const sh) { p_shower=sh; }
     inline void SetRemnantHandler(REMNANTS::Remnant_Handler *const rh) {

@@ -16,40 +16,41 @@
 #endif
 
 using namespace SHERPA;
-using namespace SHRIMPS;
 using namespace ATOOLS;
 using namespace std;
 
-Soft_Collision_Handler::Soft_Collision_Handler(MODEL::Model_Base *model,
-					       BEAM::Beam_Spectra_Handler *beam,
-                                               PDF::ISR_Handler *isr):
+Soft_Collision_Handler::Soft_Collision_Handler(AMISIC::Amisic * amisic,
+					       SHRIMPS::Shrimps * shrimps) :
   m_mode(scmode::none),
-  p_shrimps(NULL), p_cluster(NULL),
-  p_amisic(NULL)
+  p_shrimps(NULL), p_amisic(NULL)
 {
   Settings& s = Settings::GetMainSettings();
-  m_dir = s.GetPath();
-  m_softcollisionmodel =
-    s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
-  if (m_softcollisionmodel==string("Shrimps")) {
-    m_mode = scmode::shrimps;
+  m_dir     = s.GetPath();
+  m_scmodel = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
+  if (m_scmodel==string("Shrimps")) {
+    m_mode    = scmode::shrimps;
+    p_shrimps = shrimps;
     exh->AddTerminatorObject(this);
     return;
   }
-  else if (m_softcollisionmodel==string("Amisic") ||
-	   m_softcollisionmodel==string("None")) return;
+  else if (m_scmodel==string("Amisic")) {
+    m_mode    = scmode::amisic;
+    p_amisic  = amisic;
+    exh->AddTerminatorObject(this);
+    return;
+  }
+  else if (m_scmodel==string("None")) return;
   THROW(critical_error,"Soft_Collision model not implemented.");
 }
    
 Soft_Collision_Handler::~Soft_Collision_Handler() 
 {
-  if (p_shrimps) delete p_shrimps;
   exh->RemoveTerminatorObject(this);
 }
 
 void Soft_Collision_Handler::CleanUp() {
   switch (m_mode) {
-  case scmode::shrimps:
+  case scmode::shrimps: 
     p_shrimps->CleanUp();
     break;
   case scmode::amisic:
@@ -70,7 +71,7 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   int outcome(-1);
   switch (m_mode) {
   case scmode::shrimps: 
-    outcome = p_shrimps->GenerateEvent(blobs);
+    outcome = p_shrimps->InitMinBiasEvent(blobs);
     break;
   case scmode::amisic: 
     outcome = p_amisic->InitMinBiasEvent(blobs);
@@ -78,15 +79,14 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   default:
     break;
   }
-  //msg_Out()<<"*** "<<METHOD<<"("<<blobs->size()<<" blobs: outcome = "<<outcome<<".)\n";
+  msg_Out()<<"*** "<<METHOD<<"("<<blobs->size()<<" blobs): "<<outcome<<"\n";
   switch (outcome) {
   case 1:  return Return_Value::Success;
   case 0:  return Return_Value::Nothing;
   default: break;
   }
   msg_Tracking()<<"Error in "<<METHOD<<":\n"
-		<<"   Did not manage to produce a Minimum Bias event with "
-		<<m_softcollisionmodel<<".\n";
+		<<"   Did not manage to produce a Minimum Bias event with "<<m_scmodel<<".\n";
   return Return_Value::New_Event;
 }
 
