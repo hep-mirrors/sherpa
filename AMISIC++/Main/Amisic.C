@@ -98,9 +98,7 @@ Blob * Amisic::GenerateScatter() {
     if (m_ana) Analyse(false);
     return blob;
   }
-  else {
-    if (m_ana) Analyse(true);
-  }
+  if (m_ana) Analyse(true);
   return NULL;
 }
 
@@ -155,7 +153,7 @@ bool Amisic::VetoEvent(const double & scale) { return false; }
 
 bool Amisic::VetoScatter(Blob * blob)
 {
-  msg_Out()<<METHOD<<" ont implemented yet.  Will exit.\n";
+  msg_Error()<<METHOD<<" ont implemented yet.  Will exit.\n";
   exit(1);
 }
     

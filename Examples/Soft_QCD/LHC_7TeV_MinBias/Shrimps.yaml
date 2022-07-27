@@ -5,7 +5,7 @@ EVENT_TYPE:          MinimumBias
 ME_GENERATORS:       None
 SOFT_COLLISIONS:     Shrimps
 Shrimps_Mode:        Inelastic
-FRAGMENTATION:       Off
+FRAGMENTATION:       Ahadic
 YFS:
   MODE:              None
 

@@ -66,14 +66,14 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
     blob->DeleteOutParticles();
   }
   blob->AddData("Weight",new Blob_Data<double>(m_sigma));
-  blob->AddData("Factorisation_Scale",new Blob_Data<double>(1.));
-  blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
   p_eikonal  = 0; m_B = -1;
   for (size_t trials=0;trials<1000;trials++) {
     if (SelectEikonal() && SelectB()) {
       m_Nladders = 1+int(ran->Poissonian((*p_eikonal)(m_B)));
-      if (m_Nladders>0) return 0;
-      do { } while (!m_primaries(p_eikonal,m_B,m_Nladders));
+      if (m_Nladders>0) {
+	do { } while (!m_primaries(p_eikonal,m_B,m_Nladders));
+	return 0;
+      }
     }
   }
   return -1;
@@ -98,7 +98,10 @@ Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
   Ladder * ladder = m_primaries.GetLadders()->front();
   Blob * blob     = new Blob();
   blob->SetId();
-  blob->AddData("Weight",new Blob_Data<double>(1.));
+  //blob->AddData("Weight",new Blob_Data<double>(1.));
+  blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
+  blob->AddData("Factorization_Scale",new Blob_Data<double>(1.));
+  blob->AddData("Resummation_Scale",new Blob_Data<double>(1.));
   blob->SetPosition(ladder->Position());
   blob->SetType(btp::Hard_Collision);
   blob->SetTypeSpec("MinBias");

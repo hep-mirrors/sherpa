@@ -79,7 +79,6 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   default:
     break;
   }
-  msg_Out()<<"*** "<<METHOD<<"("<<blobs->size()<<" blobs): "<<outcome<<"\n";
   switch (outcome) {
   case 1:  return Return_Value::Success;
   case 0:  return Return_Value::Nothing;

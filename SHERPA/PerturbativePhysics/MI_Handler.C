@@ -83,7 +83,6 @@ Blob * MI_Handler::GenerateHardProcess()
   if (m_type==typeID::amisic)  blob = p_amisic->GenerateScatter();
   if (m_type==typeID::shrimps) blob = p_shrimps->GenerateEvent();
   if (blob==NULL) m_stop = true;
-  msg_Out()<<"*** "<<METHOD<<": "<<blob<<", stop = "<<m_stop<<".\n";
   return blob;
 }
 

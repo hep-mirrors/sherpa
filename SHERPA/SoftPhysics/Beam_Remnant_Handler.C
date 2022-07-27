@@ -35,8 +35,6 @@ Return_Value::code
 Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
 					    const bool & onlyBunch)
 {
-  msg_Out()<<"*** "<<METHOD<<"("<<bloblist->size()<<" blobs, "
-	   <<"fill only bunch blobs = "<<onlyBunch<<")\n";
   if (!m_fill) return TreatNoFill(bloblist);
   Return_Value::code fbc(Return_Value::Nothing);
   for (Blob_List::iterator bit=bloblist->begin();
@@ -57,7 +55,6 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
 Return_Value::code 
 Beam_Remnant_Handler::TreatNoFill(Blob_List *const bloblist)
 {
-  msg_Out()<<"*** "<<METHOD<<"\n";
   bool set(false);
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
@@ -78,7 +75,6 @@ Return_Value::code Beam_Remnant_Handler::
 FillBunchBlobs(Blob_List *const  bloblist,
 	       Particle_List *const particlelist)
 {
-  msg_Out()<<"*** "<<METHOD<<"\n";
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Bunch) return Return_Value::Nothing;
@@ -88,7 +84,6 @@ FillBunchBlobs(Blob_List *const  bloblist,
   Blob * bunch;
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
-    msg_Out()<<"*** blob with ["<<(*bit)->Status()<<"]: "<<(*bit)->Id()<<"\n";
     if ((*bit)->Has(blob_status::needs_beams) && 
 	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);

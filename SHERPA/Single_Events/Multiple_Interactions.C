@@ -37,7 +37,6 @@ Multiple_Interactions::~Multiple_Interactions() { }
 
 Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
 {
-  msg_Out()<<METHOD<<"("<<bloblist->size()<<" blobs)\n";
   m_result    = Return_Value::Nothing; 
   if (p_mihandler->Type()==MI_Handler::none || p_mihandler->Done()) return m_result;
   p_bloblist  = bloblist;
@@ -54,7 +53,6 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
   SwitchPerturbativeInputsToMIs();
   p_lastblob = p_mihandler->GenerateHardProcess();
   if (p_lastblob) {
-    msg_Out()<<METHOD<<" generated hard scatter:\n"<<(*p_lastblob)<<"\n";
     // This assumes that the scatters are ordered in transverse momentum.
     // Then maximal scale of subsequent scatters is given by the pT of the
     // previous ones.
@@ -76,7 +74,18 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
     if (m_ptmax > m_hardveto) return Return_Value::New_Event;
     return Return_Value::Success;
   }
-  if (!p_lastblob && p_mihandler->Done()) return Return_Value::Nothing;
+  // If we have reached the end of MPI production with a meaningful event,
+  // we can stop here.
+  if (p_mihandler->Done()) {
+    if (!(p_mihandler->IsMinBias() &&
+	  bloblist->size()==1 &&
+	  ((*p_bloblist)[0]->Has(blob_status::needs_signal) ||
+	   (*p_bloblist)[0]->Has(blob_status::needs_minBias))))
+	return Return_Value::Nothing;
+  }
+  // If it is a MinBias event where the event handler didn't manage to produce a
+  // first scatter (i.e. the first blob still needs a signal) then we have to
+  // produce a new event.
   return Return_Value::New_Event;
 }
 
@@ -186,7 +195,6 @@ bool Multiple_Interactions::InitNewEvent() {
 
 void Multiple_Interactions::InitMinBiasEvent() {
   Blob * signal         = (*p_bloblist)[0];
-  msg_Out()<<METHOD<<"("<<p_bloblist->size()<<" blobs):\n"<<signal<<"\n";
   Particle_Vector * ins = p_lastblob->InParticles();
   while (!ins->empty()) {
     signal->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));

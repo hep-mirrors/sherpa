@@ -25,11 +25,9 @@ Return_Value::code Hadron_Decays::Treat(Blob_List* bloblist)
   DEBUG_FUNC("bloblist->size()="<<bloblist->size());
   if(bloblist->empty()) return Return_Value::Nothing;
 
-  msg_Out()<<METHOD<<"("<<bloblist->size()<<" blobs)\n";
   bool didit(false);
   for (size_t blit(0);blit<bloblist->size();++blit) {
     Blob* blob=(*bloblist)[blit];
-    msg_Out()<<METHOD<<" looks into "<<blob->Id()<<": status = "<<blob->Status()<<"\n";
     if (p_dechandler && blob->Has(blob_status::needs_hadrondecays)) {
       didit = true;
       p_dechandler->SetBlobList(bloblist);
@@ -62,7 +60,6 @@ Return_Value::code Hadron_Decays::Treat(Blob_List* bloblist)
             p_dechandler->TreatInitialBlob(blob, amps, origparts);
           }
           else {
-	    msg_Out()<<METHOD<<" will attempt to deal with blob "<<blob->Id()<<".\n";
             p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
           }
         }
