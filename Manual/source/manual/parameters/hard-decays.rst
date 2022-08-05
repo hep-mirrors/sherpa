@@ -28,6 +28,7 @@ The syntax to configure :option:`HARD_DECAYS` sub-settings is:
        # more channels ...
 
 The central setting to enable the hard decays is
+
 .. code-block:: yaml
 
    HARD_DECAYS:
