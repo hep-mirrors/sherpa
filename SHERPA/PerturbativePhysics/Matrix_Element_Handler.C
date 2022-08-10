@@ -203,6 +203,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     const bool hasvars(
         p_variationweights->GetVariations()->GetParametersVector()->empty()
         == false);
+    const double unweighting_r = ran->Get();
     if (m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
       // in pilot run mode, calculate nominal only, and prepare to restore the
       // rng to re-run with variations after unweighting
@@ -263,7 +264,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     double wf((p_proc->NIn()==1?1.:rpa->Picobarn())/sw/enhance);
     if (m_eventmode!=0) {
       const double max = p_proc->Integrator()->Max();
-      const double disc = max * ran->Get();
+      const double disc = max * unweighting_r;
       const double abswgt = std::abs(m_evtinfo.m_weight);
       if (abswgt < disc)
         continue;
@@ -306,9 +307,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         wf *= m_pilotweightfactor;
 	m_evtinfo.m_weight /= m_pilotweightfactor;
         proc->SetVariationWeights(NULL);
-        // also consume random number used to set the discriminator for
-        // unweighting above, such that it is not re-used in the future
-        ran->Get();
       }
     }
     if (!hasvars) {
