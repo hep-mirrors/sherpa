@@ -189,9 +189,10 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   for (size_t i(0);i<m_procs.size();++i)
     m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
   for (size_t n(1);true;++n) {
-    if (m_seedmode==3 && rpa->gen.NumberOfGeneratedEvents())
+    if (m_seedmode==3)
       ran->ResetToLastIncrementedSeed();
-    double disc(m_sum*ran->Get()), csum(0.0);
+    const double r0 = ran->Get();
+    double disc(m_sum*r0), csum(0.0);
     Process_Base *proc(NULL);
     for (size_t i(0);i<m_procs.size();++i) {
       if ((csum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode))>=disc) {
@@ -205,6 +206,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     const bool hasvars(
         p_variationweights->GetVariations()->GetParametersVector()->empty()
         == false);
+    const double r1 = ran->Get();
     if (m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
       // in pilot run mode, calculate nominal only, and prepare to restore the
       // rng to re-run with variations after unweighting
@@ -264,10 +266,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     double wf((p_proc->NIn()==1?1.:rpa->Picobarn())/sw/enhance);
     if (m_eventmode!=0) {
       const double max = p_proc->Integrator()->Max();
-      const double disc = max * ran->Get();
-      const double abswgt = std::abs(m_evtinfo.m_weight);
-      //if (abswgt < disc)
-      //  continue;
+      const double disc = max * r1;
+      double abswgt = std::abs(m_evtinfo.m_weight);
       if (abswgt < disc)
         continue;
       if (abswgt > max * m_ovwth) {
@@ -278,8 +278,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         m_weightfactor = m_ovwth;
         wf *= max * m_ovwth / abswgt;
       } else {
-        //m_weightfactor = abswgt / max;
-        //wf /= Min(1.0, m_weightfactor);
         m_weightfactor = abswgt / max;
         wf /= Min(1.0, m_weightfactor);
       }
@@ -310,9 +308,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         delete info;
 	m_evtinfo.m_weight /= m_pilotweightfactor;
         proc->SetVariationWeights(NULL);
-        // also consume random number used to set the discriminator for
-        // unweighting above, such that it is not re-used in the future
-        ran->Get();
         wf *= m_pilotweightfactor;
       }
     }

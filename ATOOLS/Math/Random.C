@@ -58,10 +58,13 @@ ATOOLS::Random::~Random()
 
 static long idum2=123456789;
 static long sidum2=123456789;
+static long sidum3=123456789;
 static long iy=0;
 static long siy=0;
+static long siy2=0;
 static long iv[NTAB];
 static long siv[NTAB];
+static long siv2[NTAB];
 
 double ATOOLS::Random::Ran2(long *idum)
 {
@@ -263,6 +266,23 @@ void ATOOLS::Random::RestoreStatus()
   iy=siy;
   idum2=sidum2;
   for (int i=0;i<NTAB;++i) iv[i]=siv[i];
+}
+
+void ATOOLS::Random::MySaveStatus()
+{
+  m_sid2=m_id; 
+  siy2=iy;
+  sidum3=idum2;
+  for (int i=0;i<NTAB;++i) siv2[i]=iv[i];
+}
+
+
+void ATOOLS::Random::MyRestoreStatus()
+{
+  m_id=m_sid2; 
+  iy=siy2;
+  idum2=sidum3;
+  for (int i=0;i<NTAB;++i) iv[i]=siv2[i];
 }
 
 void ATOOLS::Random:: ResetToLastIncrementedSeed()

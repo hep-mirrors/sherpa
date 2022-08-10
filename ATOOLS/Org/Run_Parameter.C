@@ -365,6 +365,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     ran->SetSeed(gen.m_seeds[0],gen.m_seeds[1],gen.m_seeds[2],gen.m_seeds[3]);
   }
   else { ran->SetSeed(gen.m_seeds[0]); }
+  ran->SaveStatus();
   msg_Debugging()<<METHOD<<"(): Set global tags {\n";
   const String_Map &gtags(Read_Write_Base::GlobalTags());
   for (String_Map::const_iterator tit(gtags.begin());tit!=gtags.end();++tit)

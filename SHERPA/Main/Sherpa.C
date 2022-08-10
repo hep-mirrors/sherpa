@@ -134,6 +134,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   }
 
   p_inithandler  = new Initialization_Handler(argc, argv);
+  ran->MySaveStatus();
 
   mpi->PrintRankInfo();
 
@@ -170,6 +171,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     m_evt_output_start=read.GetValue<int>("EVT_OUTPUT_START",
                                           m_evt_output!=msg->Level()?1:0);
 
+    ran->MyRestoreStatus();
     return res;
   }
   msg_Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl

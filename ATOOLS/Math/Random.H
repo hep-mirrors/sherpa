@@ -41,7 +41,7 @@ namespace ATOOLS {
 
     int      activeGenerator;
 
-    long int m_id, m_sid;
+    long int m_id, m_sid, m_sid2;
 
     std::stringstream m_lastincrementedseed;
     size_t m_nsinceinit, m_increment;
@@ -90,9 +90,11 @@ namespace ATOOLS {
     bool CanRestoreStatus() const;
     void SaveStatus();
     void RestoreStatus();
+    void MySaveStatus();
+    void MyRestoreStatus();
     void ResetToLastIncrementedSeed();
     inline void EraseLastIncrementedSeed() 
-    { m_lastincrementedseed.str(std::string()); }
+    { m_lastincrementedseed.str(std::string()); m_lastincrementedseed.clear(); }
     inline void SetSeedStorageIncrement(size_t inc) { m_increment=inc; }
 
     // return uniformly distributed random number in [0,1] using active Generator
