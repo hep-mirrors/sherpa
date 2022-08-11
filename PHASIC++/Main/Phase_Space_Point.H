@@ -61,6 +61,8 @@ namespace PHASIC {
       m_mode   = mode;
       m_sprime = m_fixedsprime; m_y = m_fixedy;
       m_ISsymmetryfactor = 1.;
+      p_moms[0] = m_ISmoms[0];
+      p_moms[1] = m_ISmoms[1];
     }
   public:
     Phase_Space_Point();
