@@ -89,7 +89,7 @@ namespace PDF {
                      ATOOLS::Flavour fl1,ATOOLS::Flavour fl2,int warn=1);
     static double Flux(const ATOOLS::Vec4D& p1);
     static double Flux(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2);
-    double CalcX(const ATOOLS::Vec4D& p);
+    double CalcX(ATOOLS::Vec4D p);
 
     bool BoostInCMS(ATOOLS::Vec4D *p,size_t n);
     bool BoostInLab(ATOOLS::Vec4D *p,size_t n);

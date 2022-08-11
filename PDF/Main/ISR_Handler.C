@@ -448,13 +448,22 @@ double ISR_Handler::Flux(const Vec4D &p1, const Vec4D &p2) {
 
 double ISR_Handler::Flux(const Vec4D &p1) { return 0.5 / p1.Mass(); }
 
-double ISR_Handler::CalcX(const ATOOLS::Vec4D &p) {
-  if (p[3] > 0.)
+double ISR_Handler::CalcX(ATOOLS::Vec4D p) {
+  if (p[3] > 0.) {
+    if (msg_LevelIsDebugging() && p[0] > p_beam[0]->OutMomentum()[0]+1.e-10)
+      msg_Out() << METHOD
+          << ": Warning, parton energy is larger than beam energy, p_parton = "
+          << p << ", p_beam = " << p_beam[0]->OutMomentum() << "\n";
     return Min(PDF(0) ? PDF(0)->XMax() : 1.,
-               p.PPlus() / p_beam[0]->OutMomentum().PPlus());
-  else
+                 p.PPlus() / p_beam[0]->OutMomentum().PPlus());
+  } else {
+    if (msg_LevelIsDebugging() && p[0] > p_beam[1]->OutMomentum()[0]+1.e-10)
+      msg_Out() << METHOD
+          << ": Warning, parton energy is larger than beam energy, p_parton = "
+          << p << ", p_beam = " << p_beam[1]->OutMomentum() << "\n";
     return Min(PDF(1) ? PDF(1)->XMax() : 1.,
                p.PMinus() / p_beam[1]->OutMomentum().PMinus());
+  }
 }
 
 bool ISR_Handler::BoostInCMS(Vec4D *p, const size_t n) {
