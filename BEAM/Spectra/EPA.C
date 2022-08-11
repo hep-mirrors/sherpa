@@ -4,7 +4,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/Settings.H"
 
 #include <fstream>
 #include <string>
@@ -216,8 +216,7 @@ bool EPA::CalculateWeight(double x, double q2) {
   const double alpha = m_aqed;
   m_x = x;
   m_Q2 = q2;
-  double p = m_dir > 0 ? m_vecout.PPlus() : m_vecout.PMinus();
-  if (x >= 1. - sqr(m_mass / p) || x < m_xmin) {
+  if (x > sqrt(1. - sqr(m_mass / m_energy)) || x < m_xmin) {
     m_weight = 0.0;
     return true;
   }
