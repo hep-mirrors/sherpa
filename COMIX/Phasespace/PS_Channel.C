@@ -388,7 +388,7 @@ void PS_Channel::SChannelMomenta
 }
 
 double PS_Channel::SChannelWeight
-(PS_Current *cur,PS_Vertex *v,Vec4D &p1,Vec4D &p2)
+(PS_Current *cur,PS_Vertex *v,const Vec4D &p1,const Vec4D &p2)
 {
   double ctmin(-1.0), ctmax(1.0), rns[2];
   SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);
@@ -706,7 +706,7 @@ double PS_Channel::GenerateWeight
       double smin(sr), smax(sqr(rts-sqrt(sl)));
       wgt*=PropWeight(jb,rid,smin,smax,sr=m_p[rid].Abs2());
     }
-    wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[rid]);
+    wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[lid|rid]-m_p[lid]);
     nr+=2;
 #ifdef DEBUG__BG
     msg_Debugging()<<"    s "<<nr<<": {"<<ID(cid)
@@ -856,6 +856,10 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
 #endif
     }
   for (size_t i(0);i<m_n;++i) m_p[1<<i]=i<2?-p[i]:p[i];
+  if(m_nin == 2) {
+    m_p[3] = m_p[1]+m_p[2];
+    m_p[(1<<m_n)-1-3] = -m_p[3];
+  }
   if (!GenerateWeight())
     THROW(fatal_error,"Internal error");
 }
