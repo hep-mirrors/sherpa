@@ -185,6 +185,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
         if (p_pshandler->Active()->Process()->SPrimeMax() > 0.)
           m_isrspkey[1] = p_pshandler->Active()->Process()->SPrimeMax();
       }
+      m_isrspkey[4] = sqr(m_osmass);
       p_isrchannels->GeneratePoint();
     }
     m_sprime = m_osmass ? m_isrspkey[4] : m_isrspkey[3];

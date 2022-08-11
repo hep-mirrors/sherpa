@@ -83,7 +83,10 @@ namespace PHASIC {
       m_isrspkey[3] = pin.Abs2();
       m_isrykey[2]  = pin.Y();
     }
-    inline void SetOSMass(const double &osmass)             { m_osmass       = osmass; }
+    inline void SetOSMass(const double &osmass) {
+      m_osmass = osmass;
+      m_isrspkey[4] = osmass*osmass;
+    }
 
     inline Multi_Channel * BeamIntegrator()   const { return p_beamchannels; }
     inline Multi_Channel * ISRIntegrator()    const { return p_isrchannels; }
