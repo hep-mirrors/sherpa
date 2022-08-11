@@ -435,6 +435,9 @@ void  Run_Parameter::Gen::SetEcms(double _ecms) {
 void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) {
   m_pbeam[i]=pbeam;
 }
+void  Run_Parameter::Gen::SetPBunch(short unsigned int i,Vec4D pbunch) {
+  m_pbunch[i]=pbunch;
+}
 void  Run_Parameter::Gen::SetBeam1(const Flavour b) {
   m_beam1  = b;
 }

@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <string>
 #include <map>
+#include <array>
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Matrix.H"
 #include "ATOOLS/Math/Function_Base.H"
@@ -31,7 +32,8 @@ namespace ATOOLS {
       double              m_ecms;
       double              m_accu, m_sqrtaccu;
       Flavour  m_beam1, m_beam2, p_bunch[2];
-      Vec4D m_pbeam[2];
+      std::array<Vec4D, 2> m_pbeam;
+      std::array<Vec4D, 2> m_pbunch;
       PDF::PDF_Base* m_pdfset[2];
       MyTiming m_timer;
       double m_timeout;
@@ -50,6 +52,8 @@ namespace ATOOLS {
       void   SetEcms(double _ecms);
       inline Vec4D PBeam(short unsigned int i)            { return m_pbeam[i]; }
       void   SetPBeam(short unsigned int i,Vec4D pbeam);
+      inline Vec4D PBunch(short unsigned int i)            { return m_pbunch[i]; }
+      void   SetPBunch(short unsigned int i,Vec4D pbunch);
       inline bool   SoftSC() { return m_softsc; }
       inline void   SetSoftSC(bool sc) { m_softsc = sc;}
       inline bool   HardSC() { return m_hardsc; }

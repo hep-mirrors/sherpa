@@ -31,11 +31,6 @@ Collider_Kinematics::~Collider_Kinematics() {}
 void Collider_Kinematics::InitSystem() {
   m_Ecms = sqrt(m_S);
 
-  rpa->gen.SetEcms(m_Ecms);
-  rpa->gen.SetPBeam(0, p_beams[0]->InMomentum());
-  rpa->gen.SetPBeam(1, p_beams[1]->InMomentum());
-
-  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(m_Ecms));
   m_on = (m_mode != collidermode::monochromatic);
   m_x[0] = 1.;
   m_x[1] = 1.;
@@ -104,6 +99,7 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D *moms) {
     return false;
   for (size_t i = 0; i < 2; ++i) {
     p_beams[i]->SetOutMomentum(moms[i]);
+    rpa->gen.SetPBunch(i, moms[i]);
   }
   m_CMSBoost = Poincare(moms[0] + moms[1]);
   return true;
