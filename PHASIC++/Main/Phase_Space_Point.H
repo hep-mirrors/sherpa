@@ -72,7 +72,6 @@ namespace PHASIC {
 		      const psmode::code & mode=psmode::normal_call);
 
     double CalculateWeight();
-    bool   MakeIncoming();
     
     inline void SetBeamIntegrator(Multi_Channel * channels) { p_beamchannels = channels; }
     inline void SetISRIntegrator(Multi_Channel * channels)  { p_isrchannels  = channels; }

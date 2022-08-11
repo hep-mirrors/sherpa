@@ -66,7 +66,6 @@ double Phase_Space_Handler::Integrate()
   if (p_process->Points()>0)
     return p_process->TotalXS()*rpa->Picobarn();
   p_integrator = new Phase_Space_Integrator(this);
-  if (!InitIncoming()) return 0.;
   if (m_nin==1) return p_integrator->CalculateDecay(m_error);
   if (m_nin==2) return p_integrator->Calculate(m_error,m_abserror,m_fin_opt);
   return 0.;
@@ -170,7 +169,6 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,
                                            Variations_Mode varmode,
                                            int mode)
 {
-  if (!m_initialized) InitIncoming();
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
   p_isrhandler->SetRunMode(1);

@@ -206,40 +206,6 @@ bool Phase_Space_Point::DefineFSRKinematics() {
   return true;
 }
 
-bool Phase_Space_Point::MakeIncoming() {
-  if (m_nin == 1 || (!p_beamhandler->On() && p_isrhandler->On() == 0)) {
-    for (size_t i = 0; i < 2; i++)
-      p_moms[i] = m_ISmoms[i];
-    return true;
-  } else if (m_nin == 2) {
-    double Eprime(m_Ecms);
-    if (p_isrhandler->On() > 0) {
-      if (m_isrspkey[3] == 0.)
-        m_isrspkey[3] = sqr(m_Ecms);
-      m_sprime = m_isrspkey[3];
-      m_Eprime = sqrt(m_sprime);
-    } else if (p_beamhandler->On()) {
-      if (m_beamspkey[3] == 0.)
-        m_beamspkey[3] = sqr(m_Ecms);
-      m_sprime = m_beamspkey[3];
-      m_Eprime = sqrt(m_sprime);
-    }
-    if (m_Eprime < m_masses[0] + m_masses[1])
-      return false;
-    double x = 1. / 2. + (m_masses2[0] - m_masses2[1]) / (2. * Eprime);
-    double E1 = x * Eprime, E2 = (1. - x) * Eprime,
-           pz = sqrt(sqr(E1) - m_masses2[0]);
-    p_moms[0] = Vec4D(E1, 0., 0., pz);
-    p_moms[1] = Vec4D(E2, 0., 0., -pz);
-    return true;
-  }
-  msg_Error() << "Error in" << METHOD << ":\n"
-              << "   Too little energy for initial state (" << m_Ecms << " vs "
-              << (m_nin == 1 ? m_masses[0] : m_masses[0] + m_masses[1])
-              << ") or\n"
-              << "   bad number of incoming particles (" << m_nin << ").\n";
-  return false;
-}
 
 void Phase_Space_Point::CorrectMomenta() {
   if (m_nin!=2 || (m_nin==2 && m_nout==1 &&

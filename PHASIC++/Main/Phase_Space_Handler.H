@@ -91,10 +91,6 @@ namespace PHASIC {
 
     bool CreateIntegrators();
     inline void InitCuts() { m_pspoint.InitCuts(p_process); }
-    inline bool InitIncoming() {
-      m_initialized = true;
-      return m_pspoint.MakeIncoming();
-    }
 
     double Integrate();
     ATOOLS::Weight_Info *OneEvent(

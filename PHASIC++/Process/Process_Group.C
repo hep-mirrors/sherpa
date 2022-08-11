@@ -191,7 +191,6 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   p_int->ReadResults();
   p_int->SetTotal(0);
   exh->AddTerminatorObject(p_int);
-  psh->InitIncoming();
   double var(p_int->TotalVar());
   std::string namestring("");
   if (p_gen) {

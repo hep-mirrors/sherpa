@@ -1146,7 +1146,6 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
-  psh->InitIncoming();
   double var(p_int->TotalVar());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
             <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;
