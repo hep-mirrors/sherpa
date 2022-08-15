@@ -576,7 +576,12 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       }
     }
   } else {
-    rpa->gen.SetPilotRun(false);
+    if (m_rsscale!="") {
+      // Opt out of using a PILOT scale when we have our own fixed scale for H
+      // events. Note that the Matrix_Element_Handler will still use a pilot
+      // run if e.g. variations are enabled.
+      rpa->gen.SetPilotRun(false);
+    }
     p_selected = p_rsproc;
     winfo = p_rsproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {
