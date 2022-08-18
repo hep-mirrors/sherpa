@@ -519,11 +519,10 @@ void MINLO_Scale_Setter::KT2
 	Kin_Args fip(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,3));
 	double kt2=cs.m_kt2=2.0*(pi*pj)*fip.m_z*(1.0-fip.m_z)
 	  -sqr(1.0-fip.m_z)*mi2-sqr(fip.m_z)*mj2;
-	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if ((cs.m_k==0 && fip.m_pk[3]<0.0) ||
 	    (cs.m_k==1 && fip.m_pk[3]>0.0) ||
 	    fip.m_pk[0]<0.0 || fip.m_stat<0 ||
-	    fip.m_pk[0]>rpa->gen.PBeam(cs.m_k)[0]) kt2=-1.0;
+	    fip.m_pk[0]>rpa->gen.PBunch(cs.m_k)[0]) kt2=-1.0;
 	cs.SetParams(kt2,1.0,fip.m_pi,-fip.m_pk,fip.m_lam);
       }
     }
@@ -531,21 +530,19 @@ void MINLO_Scale_Setter::KT2
       if ((lk->Id()&3)==0) {
 	Kin_Args ifp(ClusterIFDipole(mi2,mj2,mij2,mk2,0.0,-pi,pj,pk,pk,3|4));
 	double kt2=cs.m_kt2=-2.0*(pi*pj)*(1.0-ifp.m_y)*(1.0-ifp.m_z);
-	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if ((cs.m_i==0 && ifp.m_pi[3]<0.0) ||
 	    (cs.m_i==1 && ifp.m_pi[3]>0.0) ||
 	    ifp.m_pi[0]<0.0 || ifp.m_stat<0 ||
-	    ifp.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
+	    ifp.m_pi[0]>rpa->gen.PBunch(cs.m_i)[0]) kt2=-1.0;
 	cs.SetParams(kt2,1.0,-ifp.m_pi,ifp.m_pk,ifp.m_lam);
       }
       else {
 	Kin_Args iip(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3));
 	double kt2=cs.m_kt2=-2.0*(pi*pj)*(1.0-iip.m_z-iip.m_y);
-	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if ((cs.m_i==0 && iip.m_pi[3]<0.0) ||
 	    (cs.m_i==1 && iip.m_pi[3]>0.0) ||
 	    iip.m_pi[0]<0.0 || iip.m_stat<0 ||
-	    iip.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
+	    iip.m_pi[0]>rpa->gen.PBunch(cs.m_i)[0]) kt2=-1.0;
 	cs.SetParams(kt2,1.0,-iip.m_pi,-iip.m_pk,iip.m_lam);
       }
     }
