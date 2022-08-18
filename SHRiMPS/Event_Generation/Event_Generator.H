@@ -59,6 +59,7 @@ namespace SHRIMPS {
     inline bool   IsLastRescatter() const { return p_active?p_active->IsLastRescatter():false; }
     inline double Smin()            const { return p_active?p_active->Smin():-1.; }
     inline double MinKT2()          const { return p_active?p_active->KT2min():-1.; }
+    inline double Yhat()            const { return p_active?p_active->Yhat():0.; }
     inline double Ymax()            const { return p_active?p_active->Ymax():0.; }
     inline double TMax()            const { return p_active?p_active->TMax():0.; }
   };

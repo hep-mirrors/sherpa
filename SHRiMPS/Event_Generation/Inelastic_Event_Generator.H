@@ -55,6 +55,7 @@ namespace SHRIMPS {
       return m_sigma;
     }
     inline const double B()      const { return m_B; }
+    inline const double Yhat()   const { return m_primaries.Yhat(); }
     inline const double Ymax()   const { return m_primaries.Ymax(); }
     inline const double KT2min() const { return m_primaries.KT2min(); }
     void Test(const std::string & dirname);

@@ -4,6 +4,7 @@
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <list>
 
@@ -30,6 +31,10 @@ namespace SHRIMPS {
     double          m_y[2], m_yhat, m_dy, m_coshdy, m_pt2, m_phi, m_shat, m_that;
     double          m_dsigma, m_x[2], m_xpdf[2];
     ATOOLS::Flavour m_flavs[2];
+
+    bool                                       m_ana;
+    std::map<std::string,ATOOLS::Histogram * > m_histos;
+
 
     inline const double ColourFactor(const ATOOLS::Flavour & flav) const {
       if (flav.IsQuark()) return 4./3.;

@@ -16,7 +16,8 @@ using namespace std;
 
 
 Shrimps::Shrimps(PDF::ISR_Handler *const isr) :
-  p_remnants(NULL), p_generator(NULL)
+  p_remnants(NULL), p_generator(NULL),
+  m_ana(true)
 {
   ATOOLS::rpa->gen.AddCitation(1,"SHRiMPS is not published yet.");
   MBpars.Init();
@@ -35,6 +36,14 @@ Shrimps::Shrimps(PDF::ISR_Handler *const isr) :
     TestShrimps(isr);
   }
   InitialiseTheRun(isr);
+  if (m_ana) {
+    m_histos[std::string("Yasym_core")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_hard")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_shower")]  = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_soft")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_frag")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_frag_in")] = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+  }
 }
 
 Shrimps::~Shrimps() 
@@ -42,6 +51,15 @@ Shrimps::~Shrimps()
   if (p_xsecs)     delete p_xsecs;
   if (p_remnants)  delete p_remnants;
   if (p_generator) delete p_generator;
+  if (m_ana) {
+    std::string name  = std::string("Ladder_Analysis/");
+    for (std::map<std::string, ATOOLS::Histogram * >::iterator hit=m_histos.begin();
+	 hit!=m_histos.end();hit++) {
+      hit->second->Finalize();
+      hit->second->Output(name+hit->first);
+      delete hit->second;
+    }
+  }
 }
 
 void Shrimps::InitialiseTheRun(PDF::ISR_Handler *const isr) {
@@ -99,9 +117,42 @@ void Shrimps::InitialiseTheEventGenerator() {
 }
 
 int Shrimps::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
-  msg_Out()<<"  * "<<METHOD<<"("<<blobs->size()<<" blobs).\n";
+  if (blobs->FindFirst(ATOOLS::btp::Fragmentation)!=NULL &&
+      blobs->FindFirst(ATOOLS::btp::Hadron_Decay)==NULL) Analyse(blobs);
   return p_generator->InitMinimumBiasEvent(blobs);
 }
+
+void Shrimps::Analyse(ATOOLS::Blob_List * blobs) {
+  msg_Out()<<"  * "<<METHOD<<"("<<blobs->size()<<" blobs).\n";
+  msg_Out()<<"   - "<<METHOD<<"(yhat = "<<p_generator->Yhat()<<")\n";
+  m_histos[std::string("Yasym_core")]->Insert(p_generator->Yhat());
+  ATOOLS::Blob * hard = blobs->FindFirst(ATOOLS::btp::Hard_Collision);
+  Analyse(hard,std::string("Yasym_hard"));  
+  ATOOLS::Blob * shower = blobs->FindFirst(ATOOLS::btp::Shower);
+  Analyse(shower,std::string("Yasym_shower"));  
+  ATOOLS::Blob * soft = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
+  Analyse(soft,std::string("Yasym_soft"));  
+  ATOOLS::Blob * frag = blobs->FindFirst(ATOOLS::btp::Fragmentation);
+  Analyse(frag,std::string("Yasym_frag"));  
+  Analyse(frag,std::string("Yasym_frag_in"));  
+}
+
+void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
+  msg_Out()<<"   - "<<METHOD<<"("<<blob->Type()<<", "<<blob->NOutP()<<" outgoing particles.)\n";
+  if (tag==std::string("Yasym_frag_in")) {
+    for (size_t i=0;i<blob->NInP();i++) {
+      double y = blob->InParticle(i)->Momentum().Y();
+      m_histos[tag]->Insert(ATOOLS::dabs(y),(y>0?1.:-1.));
+    }
+  }
+  else {
+    for (size_t i=0;i<blob->NOutP();i++) {
+      double y = blob->OutParticle(i)->Momentum().Y();
+      m_histos[tag]->Insert(ATOOLS::dabs(y),(y>0?1.:-1.));
+    }
+  }
+}
+
 
 ATOOLS::Blob * Shrimps::GenerateEvent() {
   msg_Out()<<"  * "<<METHOD<<".\n";

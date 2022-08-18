@@ -81,19 +81,10 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
 
 Blob * Inelastic_Event_Generator::GenerateEvent() {
   msg_Out()<<"   - "<<METHOD<<"\n";
-  /*
-    if (m_mustinit) {
-    Blob * blob(blobs->FindFirst(btp::Soft_Collision));
-    if (!blob ||
-    !blob->Has(blob_status::needs_minBias)) return 0;
-    if (!InitEvent(blobs))                      return -1;
-  */
   return MakePrimaryScatterBlob();
 }
 
 Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
-  msg_Out()<<"   - "<<METHOD<<"(init = "<<m_mustinit<<", "
-	   <<m_primaries.GetLadders()->size()<<" ladders.)\n";
   if (m_primaries.GetLadders()->empty()) return 0;
   Ladder * ladder = m_primaries.GetLadders()->front();
   Blob * blob     = new Blob();

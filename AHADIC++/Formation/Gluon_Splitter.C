@@ -18,6 +18,10 @@ void Gluon_Splitter::Init(const bool & isgluon) {
   // 1: z ~ z^alpha + (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
   m_alpha = hadpars->Get("alphaG");
+  m_analyse = true;
+  if (m_analyse) {
+    m_histograms[std::string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
+  }
 }
   
 bool Gluon_Splitter::MakeLongitudinalMomenta() {
@@ -185,16 +189,20 @@ Cluster * Gluon_Splitter::MakeCluster() {
 		    new Cluster(newp12,p_part[0]):
 		    new Cluster(p_part[0],newp12));
   // this is for a simple analysis only
-  m_lastmass = sqrt(dabs(cluster->Momentum().Abs2()));
-  m_lastB    = (newp12->Flavour()==Flavour(kf_b) ||
-		newp12->Flavour()==Flavour(kf_b).Bar() ||
-		p_part[0]->Flavour()==Flavour(kf_b) ||
-		p_part[0]->Flavour()==Flavour(kf_b).Bar());
-  m_lastC    = (!m_lastB &&
-		(newp12->Flavour()==Flavour(kf_b) ||
-		 newp12->Flavour()==Flavour(kf_b).Bar() ||
-		 p_part[0]->Flavour()==Flavour(kf_b) ||
-		 p_part[0]->Flavour()==Flavour(kf_b).Bar()));
+  if (m_analyse) {
+    m_lastmass = sqrt(dabs(cluster->Momentum().Abs2()));
+    m_lastB    = (newp12->Flavour()==Flavour(kf_b) ||
+		  newp12->Flavour()==Flavour(kf_b).Bar() ||
+		  p_part[0]->Flavour()==Flavour(kf_b) ||
+		  p_part[0]->Flavour()==Flavour(kf_b).Bar());
+    m_lastC    = (!m_lastB &&
+		  (newp12->Flavour()==Flavour(kf_b) ||
+		   newp12->Flavour()==Flavour(kf_b).Bar() ||
+		   p_part[0]->Flavour()==Flavour(kf_b) ||
+		   p_part[0]->Flavour()==Flavour(kf_b).Bar()));
+    double y = cluster->Momentum().Y();
+    m_histograms[std::string("Yasym_frag_2")]->Insert(dabs(y),(y>0.?1.:-1.));
+  }
   return cluster;
 }
 

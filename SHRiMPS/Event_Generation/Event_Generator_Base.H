@@ -29,6 +29,7 @@ namespace SHRIMPS {
     virtual const bool   IsMinBias()       const { return true; }
     virtual const double TMax()            const { return 0.; }
     virtual const int    NLadders()        const { return 1; }
+    virtual const double Yhat()            const { return 0.; }
     virtual const double Ymax()            const { return 0.; }
     virtual const double KT2min()          const { return 0.; }
     virtual const double B()               const { return 0.; }

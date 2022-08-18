@@ -17,10 +17,28 @@ Sigma_Partonic::Sigma_Partonic(const xs_mode::code & mode) :
   m_S(sqr(rpa->gen.Ecms())),
   m_eta(0.08), m_smin(1.), m_tmin(1.),
   m_accu(0.01), m_sigma(0.), m_maxdsigma(0.),
-  m_Nmaxtrials(100), m_kinX_fails(0)
-{ }
+  m_Nmaxtrials(100), m_kinX_fails(0),
+  m_ana(true)
+{
+  if (m_ana) {
+    m_histos[string("Yhat_sigma")]      = new Histogram(0, -12.5,  12.5, 50);
+    m_histos[string("Yhat_asym_sigma")] = new Histogram(0,   0.0,  12.5, 50);
+    m_histos[string("Y1_sigma")]        = new Histogram(0, -12.5,  12.5, 50);
+    m_histos[string("Y2_sigma")]        = new Histogram(0, -12.5,  12.5, 50);
+  }
+}
 
-Sigma_Partonic::~Sigma_Partonic() {}
+Sigma_Partonic::~Sigma_Partonic() {
+  if (m_ana) {
+    std::string name  = std::string("Ladder_Analysis/");
+    for (std::map<std::string, ATOOLS::Histogram * >::iterator hit=m_histos.begin();
+	 hit!=m_histos.end();hit++) {
+      hit->second->Finalize();
+      hit->second->Output(name+hit->first);
+      delete hit->second;
+    }
+  }
+}
 
 void Sigma_Partonic::Initialise(Remnant_Handler * remnants) {
   for (size_t beam=0;beam<2;beam++) p_pdf[beam]=remnants->GetPDF(beam);
@@ -39,6 +57,13 @@ const double Sigma_Partonic::MakeEvent() {
     if (m_dsigma>m_maxdsigma*ran->Get()) {
       m_phi = 2.*M_PI*ran->Get();
       SelectFlavours(m_fixflavour); 
+      if (m_ana) {
+	msg_Out()<<"   - "<<METHOD<<"(yhat = "<<m_yhat<<")\n";
+	m_histos[string("Yhat_sigma")]->Insert(m_yhat);
+	m_histos[string("Yhat_asym_sigma")]->Insert(dabs(m_yhat),(m_yhat>0.?1.:-1.));
+	m_histos[string("Y1_sigma")]->Insert(m_y[0]);
+	m_histos[string("Y2_sigma")]->Insert(m_y[1]);
+      }
       return m_shat;
     }
   }

@@ -34,6 +34,7 @@ namespace SHRIMPS {
     }
     inline Colour_Generator    * GetColourGenerator()  { return &m_colourgenerator; }
     inline std::list<Ladder *> * GetLadders()          { return &m_ladders; }
+    inline const double Yhat()   const { return p_laddergenerator->Yhat(); }
     inline const double Ymax()   const { return p_laddergenerator->Ymax(); }
     inline const double KT2min() const { return p_laddergenerator->KT2min(); }
   };

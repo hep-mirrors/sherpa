@@ -12,6 +12,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Ladder_Generator_Seeded::Ladder_Generator_Seeded() : Ladder_Generator_Base() {
+  m_E[0] = m_E[1] = rpa->gen.Ecms()/2.;
   for (size_t i=0;i<2;i++) m_pbeam[i] = rpa->gen.Ecms()/2. * Vec4D(1.,0.,0.,i==0?1:-1);
 }
 
@@ -25,8 +26,9 @@ Ladder * Ladder_Generator_Seeded::operator()(const Vec4D & pos) {
   ConstructFSMomenta();
   FillPropagators();
   ConstructISKinematics();
-  //msg_Out()<<METHOD<<"["<<m_emissions[0]<<", "<<m_emissions[1]<<", "<<m_emissions[2]<<"], "
-  //	   <<"ktsum = "<<m_ktsum<<"\n"<<(*p_ladder)<<"\n";
+  msg_Out()<<METHOD<<"["<<m_emissions[0]<<", "<<m_emissions[1]<<", "<<m_emissions[2]<<"], "
+  	   <<"ktsum = "<<m_ktsum<<" for incoming E's "<<p_ladder->InPart(0)->Momentum()[0]<<" and "
+	   <<p_ladder->InPart(1)->Momentum()[0]<<" \n";//<<(*p_ladder)<<"\n";
   return p_ladder;
 }
 
@@ -166,13 +168,16 @@ void Ladder_Generator_Seeded::FillPropagators() {
 }
 
 ATOOLS::Vec4D Ladder_Generator_Seeded::SelectKT(const double & y) {
-  double kt2 = 0.;
+  double kt2 = 0., kt2max = Min(m_kt2max, m_E[0]*m_E[1]/sqr(2.*cosh(y)));
+  //msg_Out()<<METHOD<<"(y = "<<y<<", cosh(y) = "<<cosh(y)<<", "
+  //	   <<"kt2 < "<<kt2max<<" from "<<m_kt2max<<" and "
+  //	   <<m_E[0]*m_E[1]/(4.*cosh(y))<<")\n";
   MakeTransverseUnitVector();
-  if (y>=m_Ymax)       kt2 = p_eikonal->FF(0)->SelectQT2(m_kt2max,m_qt2minFF);
-  else if (y<=-m_Ymax) kt2 = p_eikonal->FF(1)->SelectQT2(m_kt2max,m_qt2minFF);
+  if (y>=m_Ymax)       kt2 = p_eikonal->FF(0)->SelectQT2(kt2max,m_qt2minFF);
+  else if (y<=-m_Ymax) kt2 = p_eikonal->FF(1)->SelectQT2(kt2max,m_qt2minFF);
   else  {
     do {
-      kt2 = m_kt2min * ( pow(m_kt2max/m_kt2min+1., ATOOLS::ran->Get()) - 1.);
+      kt2 = m_kt2min * ( pow(kt2max/m_kt2min+1., ATOOLS::ran->Get()) - 1.);
     } while (AlphaSWeight(kt2+m_kt2min)<ran->Get());
   }
   return sqrt(kt2) * m_eqt;

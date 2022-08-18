@@ -8,6 +8,7 @@
 #include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include <list>
@@ -42,6 +43,10 @@ namespace SHRIMPS {
     Remnant_Handler * p_remnants;
     Event_Generator * p_generator;
     Cluster_Algorithm m_cluster;
+
+    bool m_ana;
+    std::map<std::string,ATOOLS::Histogram * > m_histos;
+
     
     void GenerateXsecs();
     void ReadEnergiesFromFile(std::set<double> & energies,
@@ -71,6 +76,8 @@ namespace SHRIMPS {
     void TestEikonalGrids(const std::string & dirname);
     void TestCrossSections(const std::string & dirname);
     void TestEventGeneration(const std::string & dirname);
+    void Analyse(ATOOLS::Blob_List * blobs);
+    void Analyse(ATOOLS::Blob * blob,std::string tag);
   public:
     Shrimps(PDF::ISR_Handler *const);
     ~Shrimps();

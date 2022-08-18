@@ -22,6 +22,7 @@ Gluon_Decayer::Gluon_Decayer(list<Cluster *> * cluster_list,
     m_histos[string("M_light")]     = new Histogram(0,0.,100.,1000);
     m_histos[string("M_c")]         = new Histogram(0,0.,100.,1000);
     m_histos[string("M_b")]         = new Histogram(0,0.,100.,1000);
+    m_histos[string("Y_asym_1")]    = new Histogram(0,0.,8.,32);
   }
 }
 
@@ -213,6 +214,8 @@ bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,
     if (isB)      m_histos[string("M_b")]->Insert(mass);
     else if (isC) m_histos[string("M_c")]->Insert(mass);
     else          m_histos[string("M_light")]->Insert(mass);
+    double y = cluster->Momentum().Y();
+    m_histos[string("Y_asym_1")]->Insert(dabs(y),(y>0.?1.:-1.));
   }
   p_singlet->pop_front();
   p_singlet->pop_back();

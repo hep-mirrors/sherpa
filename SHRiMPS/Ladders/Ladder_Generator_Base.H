@@ -76,6 +76,7 @@ namespace SHRIMPS {
     inline virtual void SetMaximalScale(const double & E1,const double & E2) {
       m_E[0] = E1; m_E[1] = E2;
     }
+    inline virtual const double Yhat()         const { return m_partonic.YHat(); }
     inline virtual const double Ymax()         const { return m_Ymax; }
     inline virtual const double KT2min()       const { return m_kt2minShower; }
     inline virtual const double Weight()       const { return m_weight; } 
