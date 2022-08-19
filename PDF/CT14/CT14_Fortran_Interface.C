@@ -149,9 +149,9 @@ namespace PDF {
       int cteqindex;
       switch (infl.Kfcode()) {
       case kf_gluon: cteqindex=0;                  break;
-      case kf_d:     cteqindex=m_bunch.IsAnti()*int(infl)*2; break;
-      case kf_u:     cteqindex=m_bunch.IsAnti()*int(infl)/2; break;
-      default:                cteqindex=m_bunch.IsAnti()*int(infl);   break;
+      case kf_d:     cteqindex=(m_bunch.IsAnti()?-1:1)*int(infl)*2; break;
+      case kf_u:     cteqindex=(m_bunch.IsAnti()?-1:1)*int(infl)/2; break;
+      default:                cteqindex=(m_bunch.IsAnti()?-1:1)*int(infl);   break;
       }
       if (!m_calculated[5-cteqindex]) {
         m_f[5-cteqindex]=ct14pdf_(cteqindex,m_x,m_Q)*m_x;
@@ -169,9 +169,9 @@ namespace PDF {
       int cteqindex;
       switch (kf) {
       case kf_gluon: cteqindex=0;                    break;
-      case kf_d:     cteqindex=m_bunch.IsAnti()*(anti?-2:2);   break;
-      case kf_u:     cteqindex=m_bunch.IsAnti()*(anti?-1:1);   break;
-      default:       cteqindex=m_bunch.IsAnti()*(anti?-kf:kf); break;
+      case kf_d:     cteqindex=(m_bunch.IsAnti()?-1:1)*(anti?-2:2);   break;
+      case kf_u:     cteqindex=(m_bunch.IsAnti()?-1:1)*(anti?-1:1);   break;
+      default:       cteqindex=(m_bunch.IsAnti()?-1:1)*(anti?-kf:kf); break;
       }
       if (!m_calculated[5-cteqindex]) {
         m_f[5-cteqindex]=ct14pdf_(cteqindex,m_x,m_Q)*m_x;

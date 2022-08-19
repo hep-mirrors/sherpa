@@ -177,7 +177,7 @@ void PDF_NNPDF::CalculateSpec(const double& x, const double& Q2)
 double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour& infl)
 {
   // Parton flavour IDs
-  int kfc = (infl == 21 || infl == 22) ? int(infl) : m_bunch.IsAnti()*int(infl);
+  int kfc = (infl == 21 || infl == 22) ? int(infl) : (m_bunch.IsAnti()?-1:1)*int(infl);
   // Hopefully efficient lookup --- relate 21 to 0
   int kfc_nn(m_lookup[kfc+6]); // kfc runs from -6 to 6 and also 21
                                // While the driver wants 
@@ -190,7 +190,7 @@ double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour& infl)
 double PDF_NNPDF::GetXPDF(const kf_code& kf, bool anti)
 {
   // Parton flavour IDs
-  int kfc = (kf == 21 || kf == 22) ? kf : m_bunch.IsAnti()*(anti?-kf:kf);
+  int kfc = (kf == 21 || kf == 22) ? kf : (m_bunch.IsAnti()?-1:1)*(anti?-kf:kf);
   // Hopefully efficient lookup --- relate 21 to 0
   int kfc_nn(m_lookup[kfc+6]); // kfc runs from -6 to 6 and also 21
                                // While the driver wants
