@@ -139,6 +139,10 @@ void Collider_Kinematics::SetLimits() {
   m_ykey[0] = m_ymin;
   m_ykey[1] = m_ymax;
   m_ykey[2] = 0.;
+  if (m_mode == 1)
+    m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(2.*m_ykey[0]));
+  if (m_mode == 2)
+    m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(-2.*m_ykey[1]));
   for (size_t i = 0; i < 2; i++) {
     double p = i == 0 ? p_beams[0]->OutMomentum().PPlus()
                       : p_beams[1]->OutMomentum().PMinus();

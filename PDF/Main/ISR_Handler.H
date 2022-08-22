@@ -96,7 +96,7 @@ namespace PDF {
     ATOOLS::Poincare* GetCMSBoost() { return &m_cmsboost; }
 
     void AssignKeys(ATOOLS::Integration_Info *info);
-    void SetLimits();
+    void SetLimits(double beamy = 0.);
     void Reset();
     void Reset(size_t i) const;
 

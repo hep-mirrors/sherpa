@@ -279,12 +279,22 @@ void ISR_Handler::AssignKeys(Integration_Info *const info) {
   SetLimits();
 }
 
-void ISR_Handler::SetLimits() {
+void ISR_Handler::SetLimits(double beamy) {
   for (short int i = 0; i < 3; ++i) {
     m_sprimekey[i] = m_splimits[i];
     if (i < 2)
       m_ykey[i] = m_ylimits[i];
   }
+  // keep the sampled rapidities in the range abs(y_beam + y_ISR) < 10,
+  // as above y \approx 12 it hits numerical limits.
+  if (beamy < 0.)
+    m_ykey[0] = m_ykey[0] - beamy;
+  else if (beamy > 0.)
+    m_ykey[1] = m_ykey[1] - beamy;
+  if (m_mode == 1)
+    m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(2.*m_ykey[0]));
+  if (m_mode == 2)
+    m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(-2.*m_ykey[1]));
   m_xkey[0] = ((m_mass2[0] == 0.0)
                    ? -0.5 * std::numeric_limits<double>::max()
                    : log(m_mass2[0] / sqr(p_beam[0]->OutMomentum().PPlus())));
