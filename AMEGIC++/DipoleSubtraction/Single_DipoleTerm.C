@@ -453,14 +453,7 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,
   size_t ndip=(p_dipole->GetDiPolarizations())->size();
   for (size_t i=0;i<ndip;i++) bst.Boost((*(p_dipole->GetDiPolarizations()))[i]);
 
-  if (m_subevt.m_i<m_nin &&
-      m_subevt.m_ijt!=m_subevt.m_i) {
-    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.Boost(p_LO_labmom[i]);
-  }
-  else {
-    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.BoostBack(p_LO_labmom[i]);
-  }
-
+  for (size_t i = 0; i < m_nin + m_nout - 1; ++i) cms.BoostBack(p_LO_labmom[i]);
 }
 
 bool Single_DipoleTerm::CompareLOmom(const ATOOLS::Vec4D* p)
