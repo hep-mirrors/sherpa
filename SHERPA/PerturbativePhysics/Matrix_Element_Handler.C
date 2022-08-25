@@ -110,6 +110,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
   msg_Debugging()<<METHOD<<"(): NLO_Mode = "<<m_globalnlomode<<std::endl;
   if (m_globalnlomode!=0 && m_globalnlomode!=1 && m_globalnlomode !=3)
     THROW(fatal_error,"Unknown NLO_Mode="+nlomodestring);
+  if (!read.ReadFromFile(m_recalculate_zeros, "PILOT_RUN_RECALCULATE_ZEROS"))
+    m_recalculate_zeros = 1;
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
@@ -235,7 +237,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
     double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
     if (info==NULL) {
-      if (!skip_rerun && m_haspilotscale) {
+      if (m_recalculate_zeros && !skip_rerun && m_haspilotscale) {
         // A pilot run with a PILOT scale has been vetoed. We can however not
         // conclude, that this also happens for the normal scale. Hence, we
         // repeat the calculation in non-pilot mode.
