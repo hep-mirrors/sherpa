@@ -240,9 +240,9 @@ void Phase_Space_Handler::RegisterDefaults() const
   settings["PRINT_PS_POINTS"].SetDefault(false);
   settings["PS_PT_FILE"].SetDefault("");
   settings["TCHANNEL_ALPHA"].SetDefault(0.9);
-  settings["SCHANNEL_ALPHA"].SetDefault(0.75);
+  settings["SCHANNEL_ALPHA"].SetDefault(0.5);
   settings["CHANNEL_EPSILON"].SetDefault(0.0);
-  settings["THRESHOLD_EPSILON"].SetDefault(1.5);
+  settings["THRESHOLD_EXPONENT"].SetDefault(0.5);
   settings["ENHANCE_XS"].SetDefault(0);
 }
 

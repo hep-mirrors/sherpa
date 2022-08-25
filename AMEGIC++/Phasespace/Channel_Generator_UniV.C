@@ -252,7 +252,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 	<<"  m_rannum = "<<rannumber<<";"<<endl
 	<<"  p_rans  = new double[m_rannum];"<<endl
         <<"  m_salpha = s[\"SCHANNEL_ALPHA\"].Get<double>();"<<endl
-	<<"  m_thexp = s[\"THRESHOLD_EPSILON\"].Get<double>();"<<endl;
+	<<"  m_thexp = s[\"THRESHOLD_EXPONENT\"].Get<double>();"<<endl;
   if (tcount>0) {
     chf	<<"  m_alpha = s[\"TCHANNEL_ALPHA\"].Get<double>();"<<endl
 	<<"  m_ctmax = 1.;"<<endl
