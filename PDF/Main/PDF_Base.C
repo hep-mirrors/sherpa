@@ -52,6 +52,7 @@ void PDF_Base::RegisterDefaults()
 {
   Settings& s = Settings::GetMainSettings();
   s["LHEF_PDF_NUMBER"].SetDefault(-1);
+  s["INCLUDE_PHOTON_IN_PHOTON_PDF"].SetDefault(false);
 
   Scoped_Settings lhapdfsettings{ s["LHAPDF"] };
   lhapdfsettings["NUMBER_OF_FLAVOURS"].SetDefault(5);
