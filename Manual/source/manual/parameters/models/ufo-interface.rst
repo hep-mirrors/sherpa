@@ -18,7 +18,7 @@ event generation. Python, SCons, and the UFO model directory are not
 required for event generation once the above command has
 finished. Note that the installation directory for the created library
 and the paths to Sherpa libraries and headers are predetermined
-automatically durin the installation of Sherpa. If the Sherpa
+automatically during the installation of Sherpa. If the Sherpa
 installation is moved afterwards or if the user does not have the
 necessary permissions to install the new library in the predetermined
 location, these paths can be set manually.
@@ -29,7 +29,7 @@ Please run
 
    $ <prefix>/bin/Sherpa-generate-model --help
 
-for information on the relevan command line arguments.
+for information on the relevant command line arguments.
 
 An example configuration file will be written to the working directory
 while the model is generated with ``Sherpa-generate-model``. This
@@ -56,7 +56,15 @@ massless in the UFO model. This is necessary for a meaningful
 simulation. In the hard process however, the UFO model masses are always
 respected.
 
-For an example UFO setup, see :ref:`MSSM/UFO`. For more details on the
+For an example UFO setup, see :ref:`MSSM/UFO`. If you want to use an
+extremely complex model with many high-multiplicity vertices, the
+``Sherpa-generate-model`` step might require a lot of CPU time and memory
+even though not all vertices might be necessary for the scattering processes
+you plan to study. In such a case it is advised to restrict the number of
+external particles in Lorentz functions to the default of ``--lorentznmax 4``
+and only increase that number if higher-point functions are needed.
+
+For more details on the
 Sherpa interface to FeynRules please consult
 :cite:`Christensen2009jx`,:cite:`Hoeche2014kca`.
 
