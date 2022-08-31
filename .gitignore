@@ -16,6 +16,9 @@ Makefile.in
 /Examples/API/ME2-Python/test.py
 /Examples/API/MPIEvents/test.py
 /Examples/Userhook/Userhook_Example.os
+/Examples/UFO_MSSM/MSSM/.sherpa/
+/Examples/UFO_MSSM/MSSM/Sherpa.MSSM_Example.yaml
+/Examples/UFO_MSSM/MSSM/__pycache__/
 /INSTALL
 /MODEL/UFO/Sherpa-generate-model
 /MODEL/UFO/sconstruct_template

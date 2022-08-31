@@ -1,12 +1,12 @@
 
-import particles
-import couplings
-import lorentz
-import parameters
-import vertices
-import coupling_orders
-import write_param_card
-import function_library
+from . import particles
+from . import couplings
+from . import lorentz
+from . import parameters
+from . import vertices
+from . import coupling_orders
+from . import write_param_card
+from . import function_library
 
 all_particles = particles.all_particles
 all_vertices = vertices.all_vertices
@@ -24,7 +24,7 @@ else:
    all_decays = decays.all_decays
 
 try:
-   import build_restrict
+   from . import build_restrict
 except ImportError:
    pass
 
