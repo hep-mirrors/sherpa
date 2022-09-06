@@ -31,6 +31,14 @@ void Impact_Parameter::Initialize(const double & xsecratio) {
   if (m_ana)  InitAnalysis();
 }
 
+void Impact_Parameter::Update(double xsecratio) {
+  p_pint->Update(xsecratio);
+  m_oexp  = p_pint->OverlapExpectation();
+  m_fc    = m_oexp/p_mo->Integral()*p_pint->Integral();
+  m_bmax  = p_mo->Bmax();
+  m_bnorm = p_pint->Bnorm();
+}
+
 double Impact_Parameter::operator()(const double & b) {
   // This is f(b), the enhancement factor
   return m_enhancement = (b<m_bmax? (*p_mo)(b)/m_oexp : 0.);

@@ -22,6 +22,11 @@ void Interaction_Probability::Initialize(const double & xsecratio) {
   CalculateOExpValue();
 }
 
+void Interaction_Probability::Update(double xsecratio) {
+  FixPrefactor(xsecratio);
+  CalculateOExpValue();
+}
+
 double Interaction_Probability::operator()(const double & b) {
   return 1.-exp(-m_prefK * (*p_mo)(b));
 }

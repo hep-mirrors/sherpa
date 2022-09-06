@@ -29,6 +29,7 @@ namespace AMISIC {
     ~Impact_Parameter();
 
     void   Initialize(const double & xsecratio);
+    void   Update(double xsecratio);
     double SelectB(const double & pt2);
     double operator()(const double & b);
 

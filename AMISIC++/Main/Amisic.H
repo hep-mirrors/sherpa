@@ -89,7 +89,7 @@ namespace AMISIC {
     int            ShiftMasses(ATOOLS::Cluster_Amplitude * ampl);      
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
 
-    void UpdateS(const PDF::ISR_Handler *isr);
+    void Update(const PDF::ISR_Handler *isr);
     void SetMaxEnergies(const double & E1,const double & E2);
     void SetMaxScale(const double & scale);
     void SetB(const double & b=-1.);

@@ -16,15 +16,17 @@ namespace AMISIC {
     PDF::PDF_Base         * p_pdf[2];
     double                  m_xmin[2];
     MODEL::Running_AlphaS * p_alphaS;
+    MI_Processes *          p_procs;
 
-    void   FixMaximum(MI_Processes * procs);
+    void   FixMaximum();
     double ApproxME(const double & pt2);
-    double ExactME(MI_Processes * procs,const double & pt2);
+    double ExactME(const double & pt2);
   public:
     Over_Estimator();
     ~Over_Estimator();
 
     void   Initialize(MI_Processes * procs);
+    void   Update();
 
     double operator()(const double & pt2);
     double TrialPT2(const double & Q2);

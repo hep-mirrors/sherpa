@@ -5,7 +5,7 @@ namespace AMISIC {
   class Hadronic_XSec_Calculator {
   private:
     // all cross sections in mb.
-    double m_Ecms, m_s, m_massp, m_masspi;
+    double m_s, m_massp, m_masspi;
     double m_pomeron, m_reggeon, m_slope, m_xsecpom, m_xsecregge;
     double m_xstot, m_xsel, m_xssd, m_xsdd, m_xsnd;
     
@@ -17,8 +17,7 @@ namespace AMISIC {
     Hadronic_XSec_Calculator(int type);
     ~Hadronic_XSec_Calculator() {}
 
-    void UpdateS(double s);
-    void operator()();
+    void operator()(double s);
 
     const double XStot() const { return m_xstot; }
     const double XSel()  const { return m_xsel; }

@@ -17,6 +17,7 @@ namespace AMISIC {
     ~Interaction_Probability() { delete p_mo; }
 
     void   Initialize(const double & xsecratio);
+    void   Update(double xsecratio);
     double operator()(const double & b);
 
     inline void SetPrefactor(const double & prefK)   { m_prefK = prefK; }

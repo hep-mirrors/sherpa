@@ -2,6 +2,7 @@
 #define AMISIC_Perturbative_MI_Processes_H
 
 #include "AMISIC++/Perturbative/MI_Process_Group.H"
+#include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 
 namespace PDF    { class Remnant_Base; }
@@ -15,18 +16,23 @@ namespace AMISIC {
     MODEL::Model_Base          * p_model;
     MODEL::Running_AlphaS      * p_alphaS;
     MODEL::Running_AlphaQED    * p_alpha;
+    Hadronic_XSec_Calculator   * p_xsecs;
 
     double      m_muFfac, m_xmin[2];
-    double      m_ecms, m_S, m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2;
+    double      m_ecms, m_S, m_S_lab, m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2;
     double      m_xTmin, m_xTmax, m_xTstep;
     double      m_sigmaND;
-    double      m_lastxs, m_integral, m_pt2step;
+    double      m_lastxs, m_integral, m_pt2step, m_sstep;
     std::string m_scale_scheme, m_kfactor_scheme;
-    int         m_photons, m_quarkonia;
-    int         m_nbins, m_MCpoints;
-    std::vector<double>             m_diffbins;
-    std::vector<double>             m_intbins;
-    std::list<MI_Process_Group * >  m_groups;
+    int         m_nbins, m_MCpoints, m_sbins;
+    std::vector<double>              m_diffbins;
+    std::vector<double>              m_intbins;
+    std::list<MI_Process_Group * >   m_groups;
+
+    bool                             m_variable_s;
+    std::vector<double>              m_cache_integral;
+    std::vector<std::vector<double>> m_cache_diffbins;
+    std::vector<std::vector<double>> m_cache_intbins;
 
     bool m_test;
 
@@ -37,18 +43,18 @@ namespace AMISIC {
     double dSigma(const double & pt2);
     void   Test();
     const double SudakovDiffArgument(const double & pt2) const;
+    bool FillCaches();
+    double SudakovArgumentForConstantS(const double &pt2) const;
+    double SudakovArgumentForVariableS(const double &pt2) const;
   public:
-    MI_Processes();
+    MI_Processes(bool variable_s);
     ~MI_Processes();
-    
+
     bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
 
     void CalcPDFs(const double & x1,const double & x2,const double & scale);
-    const double XSec(const ATOOLS::Vec4D_Vector & momenta);
-    const double XSec(const double & shat,const double & that,
-		      const double & uhat);
     const double operator()(const double & shat,const double & that,
 			    const double & uhat);
     const double SudakovArgument(const double & pt2) const;
@@ -59,7 +65,8 @@ namespace AMISIC {
 	    "MI_Processes::InitializeProcess should not be called.");
     }
     MI_Process * SelectProcess();
-    void UpdateS(double s);
+    void Update(double s);
+    void CalculateIntegralFromCache();
   
     inline const double &  Ecms()      const { return m_ecms; }
     inline const double &  PT0()       const { return m_pt0; }
@@ -74,6 +81,9 @@ namespace AMISIC {
     inline void SetMassMode(const int & mode) {
       if (mode==0) abort();
       m_massmode = 1;
+    }
+    inline void SetXSecCalculator(AMISIC::Hadronic_XSec_Calculator *const xsecs) {
+      p_xsecs = xsecs;
     }
     inline int  PerformTests() { return 0; }
     inline bool NewLibraries() { return false; }

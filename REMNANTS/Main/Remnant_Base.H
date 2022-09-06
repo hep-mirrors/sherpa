@@ -38,7 +38,6 @@ namespace REMNANTS {
     BEAM::Beam_Base  * p_beam;
     Remnant_Base     * p_partner;    
     ATOOLS::Blob     * p_beamblob;
-    ATOOLS::Vec4D      m_pbeam;
     ATOOLS::Part_List  m_extracted, m_spectators;
     Colour_Generator * p_colours;
 

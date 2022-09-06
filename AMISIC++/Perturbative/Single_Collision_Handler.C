@@ -97,7 +97,6 @@ void Single_Collision_Handler::UpdateSandY(double s, double y) {
   m_lastpt2 = s;
   m_S = s;
   m_Ycms = y;
-  // Check whether to rerun SelectRapidities and CalcMandelstams
 }
 
 bool Single_Collision_Handler::SelectRapidities() {

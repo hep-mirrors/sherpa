@@ -51,7 +51,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   // Calculate hadronic non-diffractive cross sections, to act as normalization for the
   // multiple scattering probability. 
   p_xsecs = new Hadronic_XSec_Calculator(m_type);
-  (*p_xsecs)();
+  (*p_xsecs)((m_pbeam0 + m_pbeam1).Abs2());
 
   // Initialize the parton-level processes - currently only 2->2 scatters and use the
   // information to construct a very quick overestimator - this follows closely the
@@ -64,8 +64,9 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
   //   where x_1 and x_2 are identical
   m_sigmaND_norm = (*mipars)("SigmaND_Norm");
-  p_processes = new MI_Processes();
+  p_processes = new MI_Processes(m_variable_s);
   p_processes->SetSigmaND(m_sigmaND_norm * p_xsecs->XSnd());
+  p_processes->SetXSecCalculator(p_xsecs);
   p_processes->Initialize(model,NULL,isr);
   
   m_overestimator.Initialize(p_processes);
@@ -87,21 +88,25 @@ bool Amisic::InitParameters() {
   return mipars->Init();
 }
 
-void Amisic::UpdateS(const PDF::ISR_Handler *isr) {
+void Amisic::Update(const PDF::ISR_Handler *isr) {
   if (!m_variable_s)
     return;
+  // Get new energy from Beams
   m_pbeam0 = isr->GetBeam(0)->OutMomentum();
   m_pbeam1 = isr->GetBeam(1)->OutMomentum();
   double s = (m_pbeam0 + m_pbeam1).Abs2();
   double y = (m_pbeam0 + m_pbeam1).Y();
-  p_xsecs->UpdateS(s);
-  (*p_xsecs)();
+  // Calculate new cross-sections
+  (*p_xsecs)(s);
+  // Update the processes
   p_processes->SetSigmaND(m_sigmaND_norm * p_xsecs->XSnd());
-  p_processes->UpdateS(s);
-  m_singlecollision.UpdateSandY(s, y);
+  p_processes->Update(s);
+  // Update the over-estimator (implicitly uses the processes)
+  m_overestimator.Update();
   m_overestimator.SetXSnd(m_sigmaND_norm * p_xsecs->XSnd());
-  m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * p_xsecs->XSnd()));
-  // re-calculate in m_impact?
+  // Update the single-collision handler and impact parameter
+  m_singlecollision.UpdateSandY(s, y);
+  m_impact.Update(p_processes->XShard()/(m_sigmaND_norm * p_xsecs->XSnd()));
 }
 
 void Amisic::SetMaxEnergies(const double & E0,const double & E1) {

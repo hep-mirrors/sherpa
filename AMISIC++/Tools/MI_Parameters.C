@@ -57,6 +57,8 @@ void MI_Parameters::ReadParameters()
     = s["nPT_bins"].SetDefault(200).Get<int>();
   m_parameters[string("nMC_points")]
     = s["nMC_points"].SetDefault(1000).Get<int>();
+  m_parameters[string("nS_bins")]
+    = s["nS_bins"].SetDefault(100).Get<int>();
 }
 
 double MI_Parameters::CalculatePT(const double & pt) {

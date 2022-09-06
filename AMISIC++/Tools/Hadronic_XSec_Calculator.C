@@ -2,6 +2,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "AMISIC++/Main/Amisic.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -9,8 +10,7 @@ using namespace std;
 
 // will have to make sure that pions are initialised below.  Argh.
 Hadronic_XSec_Calculator::Hadronic_XSec_Calculator(int type) :
-  m_Ecms(rpa->gen.Ecms()), m_s(m_Ecms*m_Ecms),
-  m_massp(Flavour(kf_p_plus).Mass()), m_masspi(0.137),
+  m_s(sqr(rpa->gen.Ecms())), m_massp(Flavour(kf_p_plus).Mass()), m_masspi(0.137),
   m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3)
 {
   if (type == 1) {
@@ -30,14 +30,10 @@ Hadronic_XSec_Calculator::Hadronic_XSec_Calculator(int type) :
   else
     msg_Error() << METHOD << ": Unknown type for multiple interaction: " << type << "\n";
 }
-
-void Hadronic_XSec_Calculator::UpdateS(double s) {
-  m_s = s;
-  m_Ecms = sqrt(m_s);
-}
   
-void Hadronic_XSec_Calculator::operator()()
+void Hadronic_XSec_Calculator::operator()(double s)
 {
+  m_s = s;
   m_xstot = CalculateTotalXSec();
   m_xsel  = CalculateElasticXSec(m_xstot);
   m_xssd  = CalculateSingleDXSec();

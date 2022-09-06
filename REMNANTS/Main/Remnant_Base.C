@@ -74,6 +74,5 @@ Blob *Remnant_Base::MakeBlob() {
 
 void Remnant_Base::Reset(const bool &DIS) {
   m_extracted.clear();
-  m_pbeam = p_beam->InMomentum();
   p_beamblob = nullptr;
 }
