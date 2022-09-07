@@ -206,6 +206,11 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     m_variationweights *= 1.0 / weightfactor;
   }
 
+  if (p_mehandler->EventGenerationMode()!=0) {
+    blob->AddData("Pilot_Weight_Factor",
+                  new Blob_Data<double>(p_mehandler->PilotWeightFactor()));
+  }
+
   blob->AddData("Weight",new Blob_Data<double>(weight));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
   blob->AddData("Weight_Norm",new Blob_Data<double>
