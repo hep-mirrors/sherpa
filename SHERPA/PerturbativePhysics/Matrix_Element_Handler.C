@@ -240,11 +240,13 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         rpa->gen.SetPilotRun(false);
         msg_Debugging()<<"Pilot run has been vetoed. Re-calculate with normal settings.\n";
         info=proc->OneEvent(m_eventmode);
+        p_proc=proc->Selected();
         if (!info) {
           // If also the normal scale leads to a rejection, we can safely go to
           // the next trial event.
           continue;
         }
+        m_evtinfo=*info;
         // At this point, we only need another normal run below, after
         // unweighting, if there are any variations to evaluate. Otherwise, we
         // are done with the event generation, and need not other pass.
@@ -253,8 +255,9 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       } else {
         continue;
       }
+    } else {
+      m_evtinfo=*info;
     }
-    m_evtinfo=*info;
     delete info;
     double enhance = p_proc->Integrator()->PSHandler()->Enhance();
     double wf((p_proc->NIn()==1?1.:rpa->Picobarn())/sw/enhance);
@@ -287,6 +290,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         if (hasvars)
           proc->SetVariationWeights(p_variationweights);
         ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+        p_proc=proc->Selected();
         // if we have indeed used the same statistics for the (accepted) pilot
         // run, info must be non-null and it must contain the same results
         // compared to the pilot run (caveat: this is not necessarily
@@ -297,8 +301,10 @@ bool Matrix_Element_Handler::GenerateOneEvent()
           continue;
         }
         m_pilotweightfactor = info->m_weight/m_evtinfo.m_weight;
+        m_evtinfo=*info;
         delete info;
         wf *= m_pilotweightfactor;
+	m_evtinfo.m_weight /= m_pilotweightfactor;
         proc->SetVariationWeights(NULL);
         // also consume random number used to set the discriminator for
         // unweighting above, such that it is not re-used in the future
