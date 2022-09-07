@@ -84,6 +84,10 @@ Pilot_Scale_Setter::Pilot_Scale_Setter
   if (p_mets_scale_setter == NULL)
     THROW(fatal_error,
           "Could not construct STRICT_METS scale setter within PILOT one.");
+
+  m_scale.reserve(std::max(p_var_scale_setter->m_scale.size(),
+                           p_mets_scale_setter->m_scale.size()));
+  SetCouplings();
 }
 
 void Pilot_Scale_Setter::PreCalc
@@ -95,12 +99,18 @@ void Pilot_Scale_Setter::PreCalc
 double Pilot_Scale_Setter::Calculate
 (const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
 {
-  return ActiveScaleSetter()->Calculate(momenta, mode);
+  double ret = ActiveScaleSetter()->Calculate(momenta, mode);
+  m_scale = ActiveScaleSetter()->m_scale;
+  p_cpls->Calculate();
+  return ret;
 }
 
 double Pilot_Scale_Setter::CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode)
 {
-  return ActiveScaleSetter()->CalculateScale(p, mode);
+  double ret = ActiveScaleSetter()->CalculateScale(p, mode);
+  m_scale = ActiveScaleSetter()->m_scale;
+  p_cpls->Calculate();
+  return ret;
 }
 
 PDF::CParam Pilot_Scale_Setter::CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const
