@@ -94,6 +94,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
     msg_Info()<<METHOD<<"(): Set seed increment to "
               <<read.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
   }
+  m_pilotrunrequired = false;
+  m_haspilotscale = false;
   m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
   msg_Info()<<METHOD<<"(): Set pilot run mode to "<<m_pilotrunenabled<<".\n";
   std::string nlomodestring("");
