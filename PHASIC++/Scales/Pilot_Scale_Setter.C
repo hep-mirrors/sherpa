@@ -30,6 +30,8 @@ namespace PHASIC {
 
     ATOOLS::ClusterAmplitude_Vector &Amplitudes() override;
 
+    const ATOOLS::Vec4D_Vector &Momenta() const override;
+
   private:
     Scale_Setter_Base* ActiveScaleSetter() const;
     Scale_Setter_Base* p_var_scale_setter;
@@ -136,6 +138,11 @@ ATOOLS::ClusterAmplitude_Vector &Pilot_Scale_Setter::Amplitudes()
   return ActiveScaleSetter()->Amplitudes();
 }
 
+const ATOOLS::Vec4D_Vector &Pilot_Scale_Setter::Momenta() const
+{
+  return ActiveScaleSetter()->Momenta();
+}
+
 Scale_Setter_Base* Pilot_Scale_Setter::ActiveScaleSetter() const
 {
   // Use the cheaper scale setter within the pilot run, switch to the better and
@@ -145,3 +152,5 @@ Scale_Setter_Base* Pilot_Scale_Setter::ActiveScaleSetter() const
   else
     return p_mets_scale_setter;
 }
+
+// TODO: Delete sub scale setters

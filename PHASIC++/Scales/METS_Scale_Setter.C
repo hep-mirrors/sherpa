@@ -79,7 +79,6 @@ namespace PHASIC {
 
     static double s_eps, s_kt2max;
 
-    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
     PDF::CParam UnorderedScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
@@ -104,8 +103,6 @@ namespace PHASIC {
     double SetScales(const double &muf2,ATOOLS::Cluster_Amplitude *ampl,
 		     const size_t &mode);
 
-    void PreCalc(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
-
     double CalculateStrict(const ATOOLS::Vec4D_Vector &momenta,
 			   const size_t &mode);
 
@@ -116,7 +113,11 @@ namespace PHASIC {
 
     ~METS_Scale_Setter();
 
-    double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
+    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const override;
+
+    void PreCalc(const ATOOLS::Vec4D_Vector &p,const size_t &mode) override;
+
+    double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode) override;
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);

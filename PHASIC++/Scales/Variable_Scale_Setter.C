@@ -28,12 +28,14 @@ namespace PHASIC {
     ~Variable_Scale_Setter();
 
     double Calculate(const std::vector<ATOOLS::Vec4D> &p,
-		     const size_t &mode);
+		     const size_t &mode) override;
+
+    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const override;
+
+  private:
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
-
-    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
   };// end of class Scale_Setter_Base
 
