@@ -8,6 +8,7 @@ namespace PHASIC {
 
   public:
     Pilot_Scale_Setter(const Scale_Setter_Arguments &args);
+    ~Pilot_Scale_Setter();
 
     void PreCalc(const ATOOLS::Vec4D_Vector &p, const size_t &mode) override;
 
@@ -153,4 +154,8 @@ Scale_Setter_Base* Pilot_Scale_Setter::ActiveScaleSetter() const
     return p_mets_scale_setter;
 }
 
-// TODO: Delete sub scale setters
+Pilot_Scale_Setter::~Pilot_Scale_Setter()
+{
+  delete p_var_scale_setter;
+  delete p_mets_scale_setter;
+}
