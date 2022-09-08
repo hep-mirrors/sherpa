@@ -298,7 +298,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         // run, info must be non-null and it must contain the same results
         // compared to the pilot run (caveat: this is not necessarily
         // true, cases where the results might differ are the use of a
-        // Unweighting_Loop_Generator which does not exactly use the same EW
+        // Pilot_Loop_Generator which does not exactly use the same EW
         // parameters, or the use of a Pilot Scale Setter)
         if (!info) {
           continue;
@@ -738,7 +738,7 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vrsmegen,nf);
 	}
-	if (cur[0]=="Unweighting_Loop_Generator") {
+	if (cur[0]=="Pilot_Loop_Generator") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vloopgen_unwt,nf);
           m_pilotrunrequired = true;
