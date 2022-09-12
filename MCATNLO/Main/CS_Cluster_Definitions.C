@@ -70,7 +70,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
       }
       else {
 	Kin_Args fi(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|8|(kin?4:0)));
-	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
+	Vec4D sum(rpa->gen.PBunch(0)+rpa->gen.PBunch(1));
 	if (fi.m_pk.PPlus()>sum.PPlus() || fi.m_y>1.0 ||
 	    fi.m_pk.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
 	double kt2=p_shower->KinFI()->GetKT2(Q2,1.0-fi.m_y,fi.m_z,mi2,mj2,mk2,mo,j->Flav());
@@ -80,7 +80,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   }
   else {
     if ((j->Id()&3)==0) {
-      Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
+      Vec4D sum(rpa->gen.PBunch(0)+rpa->gen.PBunch(1));
       if ((k->Id()&3)==0) {
 	Kin_Args fi(ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),1|(kin?4:0)));
 	if (fi.m_pi.PPlus()>sum.PPlus() || fi.m_z<0.0 ||
@@ -224,7 +224,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
     if (k>1) lt=ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,2|(kin?4:0));
     else lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,2|(kin?4:0));
     if (k<=1) {
-      Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
+      Vec4D sum(rpa->gen.PBunch(0)+rpa->gen.PBunch(1));
       if (lt.m_pk.PPlus()>sum.PPlus() ||
 	  lt.m_pk.PMinus()>sum.PMinus()) return Vec4D_Vector();
     }
@@ -232,7 +232,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
   else {
     if (k>1) lt=ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-pb,2|(kin?4:0));
     else lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,2|(kin?4:0));
-    Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
+    Vec4D sum(rpa->gen.PBunch(0)+rpa->gen.PBunch(1));
     if (lt.m_pi.PPlus()>sum.PPlus() ||
 	lt.m_pi.PMinus()>sum.PMinus()) return Vec4D_Vector();
   }

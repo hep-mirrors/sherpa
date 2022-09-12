@@ -10,7 +10,7 @@
 #include <iostream>
 #include <cstddef>
 
-#include "yaml-cpp/ostream_wrapper.h"
+#include "ATOOLS/YAML/yaml-cpp/ostream_wrapper.h"
 
 namespace SHERPA_YAML {
 struct Indentation {

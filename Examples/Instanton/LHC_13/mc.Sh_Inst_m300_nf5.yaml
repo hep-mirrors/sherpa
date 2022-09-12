@@ -43,36 +43,36 @@ SIN2THETAW: 0.23113
 HARD_DECAYS:
   Enabled: true
   Channels:
-    "6 -> 24 5":  { Width: 1.32 }
-    "-6 -> -24 -5":  { Width: 1.32 }
-    "25 -> 5 -5":  { Width: 2.35e-3 }
-    "25 -> 15 -15":  { Width: 2.57e-4 }
-    "25 -> 13 -13":  { Width: 8.91e-7 }
-    "25 -> 4 -4":  { Width: 1.18e-4 }
-    "25 -> 3 -3":  { Width: 1.00e-6 }
-    "25 -> 21 21":  { Width: 3.49e-4 }
-    "25 -> 22 22":  { Width: 9.28e-6 }
-    "24 -> 2 -1":  { Width: 0.7041 }
-    "24 -> 4 -3":  { Width: 0.7041 }
-    "24 -> 12 -11":  { Width: 0.2256 }
-    "24 -> 14 -13":  { Width: 0.2256 }
-    "24 -> 16 -15":  { Width: 0.2256 }
-    "-24 -> -2 1":  { Width: 0.7041 }
-    "-24 -> -4 3":  { Width: 0.7041 }
-    "-24 -> -12 11":  { Width: 0.2256 }
-    "-24 -> -14 13":  { Width: 0.2256 }
-    "-24 -> -16 15":  { Width: 0.2256 }
-    "23 -> 1 -1":  { Width: 0.3828 }
-    "23 -> 2 -2":  { Width: 0.2980 }
-    "23 -> 3 -3":  { Width: 0.3828 }
-    "23 -> 4 -4":  { Width: 0.2980 }
-    "23 -> 5 -5":  { Width: 0.3828 }
-    "23 -> 11 -11":  { Width: 0.0840 }
-    "23 -> 12 -12":  { Width: 0.1663 }
-    "23 -> 13 -13":  { Width: 0.0840 }
-    "23 -> 14 -14":  { Width: 0.1663 }
-    "23 -> 15 -15":  { Width: 0.0840 }
-    "23 -> 16 -16":  { Width: 0.1663 }
+    6,24,5:  { Width: 1.32 }
+    -6,-24,-5:  { Width: 1.32 }
+    25,5,-5:  { Width: 2.35e-3 }
+    25,15,-15:  { Width: 2.57e-4 }
+    25,13,-13:  { Width: 8.91e-7 }
+    25,4,-4:  { Width: 1.18e-4 }
+    25,3,-3:  { Width: 1.00e-6 }
+    25,21,21:  { Width: 3.49e-4 }
+    25,22,22:  { Width: 9.28e-6 }
+    24,2,-1:  { Width: 0.7041 }
+    24,4,-3:  { Width: 0.7041 }
+    24,12,-11:  { Width: 0.2256 }
+    24,14,-13:  { Width: 0.2256 }
+    24,16,-15:  { Width: 0.2256 }
+    -24,-2,1:  { Width: 0.7041 }
+    -24,-4,3:  { Width: 0.7041 }
+    -24,-12,11:  { Width: 0.2256 }
+    -24,-14,13:  { Width: 0.2256 }
+    -24,-16,15:  { Width: 0.2256 }
+    23,1,-1:  { Width: 0.3828 }
+    23,2,-2:  { Width: 0.2980 }
+    23,3,-3:  { Width: 0.3828 }
+    23,4,-4:  { Width: 0.2980 }
+    23,5,-5:  { Width: 0.3828 }
+    23,11,-11:  { Width: 0.0840 }
+    23,12,-12:  { Width: 0.1663 }
+    23,13,-13:  { Width: 0.0840 }
+    23,14,-14:  { Width: 0.1663 }
+    23,15,-15:  { Width: 0.0840 }
+    23,16,-16:  { Width: 0.1663 }
 
 OL_PARAMETERS:
   preset: 2
@@ -84,7 +84,7 @@ CSS_REWEIGHT: true
 REWEIGHT_SPLITTING_PDF_SCALES: true
 REWEIGHT_SPLITTING_ALPHAS_SCALES: true
 CSS_REWEIGHT_SCALE_CUTOFF: 5.0
-HEPMC_INCLUDE_ME_ONLY_VARIATIONS: true
+OUTPUT_ME_ONLY_VARIATIONS: true
 VARIATIONS_INCLUDE_CV: true
 SCALE_VARIATIONS: 4.0*  # 7-point scale variations
 

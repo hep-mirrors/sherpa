@@ -3,6 +3,7 @@ SUBDIRS = node
 localinc_HEADERS = \
 		   anchor.h \
 		   binary.h \
+		   depthguard.h \
 		   dll.h \
 		   emitfromevents.h \
 		   emitter.h \
@@ -12,7 +13,7 @@ localinc_HEADERS = \
 		   eventhandler.h \
 		   exceptions.h \
 		   mark.h \
-		   noncopyable.h \
+		   noexcept.h \
 		   null.h \
 		   ostream_wrapper.h \
 		   parser.h \

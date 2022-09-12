@@ -253,7 +253,7 @@ int Channel_Generator_KK::MakeChannel(int& echflag,int n,string& path,string& pI
 	<<"  m_name = std::string(\""<<name<<"\");"<<endl
 	<<"  m_rannum = "<<rannumber<<";"<<endl
 	<<"  p_rans  = new double[m_rannum];"<<endl
-	<<"  m_thexp = s[\"THRESHOLD_EPSILON\"].Get<double>();"<<endl;
+	<<"  m_thexp = s[\"THRESHOLD_EXPONENT\"].Get<double>();"<<endl;
   if (tcount>0) {
     chf	<<"  m_alpha = s[\"TCHANNEL_ALPHA\"].Get<double>();"<<endl
         <<"  m_ctmax = 1.;"<<endl
@@ -469,12 +469,14 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
     string lm    = LinkedMasses(l);
     string rm    = LinkedMasses(r);
     string mummy = Order(lm+rm);
-    string moml,momr;
+    string moml,momr,momlalt,momralt;
     //Minima
     if (l->left==0) moml = string("p[") + lm + string("]");
     else moml = string("p") + Order(lm);
     if (r->left==0) momr = string("p[") + rm + string("]");
     else momr = string("p") + Order(rm);
+    momlalt = string("p")+Order(mummy)+string("-")+momr;
+    momralt = string("p")+Order(mummy)+string("-")+moml;
 
     bool first = p->prev->number==0;
     // Check for decay type.
@@ -491,7 +493,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
 	string idh = string("AI_")+Order(lm)+string("_")+Order(rm);
 	//sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
         sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-        sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight(1,-1.,1.,"<<moml<<","<<momr<<");"<<endl;
+        sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight("<<moml<<","<<momralt<<",1,-1.,1.);"<<endl;
         sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
       }
     }
@@ -510,7 +512,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
 	  string idh = string("AI_")+Order(rm)+string("_")+Order(lm);
 	  //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
 	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-	  sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight(1,-1.,1.,"<<momr<<","<<moml<<");"<<endl;
+	  sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight("<<momr<<","<<momlalt<<",1,-1.,1.);"<<endl;
 	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
 	  //	sf<<"  wt *= CE.Anisotropic2Weight(1.,-1.,1.,"<<momr<<","<<moml<<");"<<endl;
 	}
@@ -527,7 +529,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
 	    string idh = string("I_")+Order(lm)+string("_")+Order(rm);
 	    //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
 	    sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-	    sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momr<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+	    sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momralt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
 	    sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
 	    sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
 	    sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
@@ -544,7 +546,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
  	  string idh = string("I_")+Order(rm)+string("_")+Order(lm);
 	  //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
   	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-  	  sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<moml<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+          sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<momlalt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
   	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
 	  sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
 	  sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;

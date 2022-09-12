@@ -635,7 +635,7 @@ like this:
 
 The following parameters can be customised:
 
-:option:`LPHA`
+:option:`ALPHA`
   Specifies a dipole cutoff in the nonsingular region :cite:`Nagy2003tz`.
   Changing this parameter shifts contributions from the subtracted real
   correction piece (RS) to the piece including integrated dipole terms (I),

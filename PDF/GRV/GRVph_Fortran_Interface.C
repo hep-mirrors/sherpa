@@ -15,27 +15,15 @@ void grvgho_(float &, float &, float &, float &, float &, float &, float &,
 }
 
 GRVph_Fortran_Interface::GRVph_Fortran_Interface(const ATOOLS::Flavour _bunch,
-                                                 const std::string _set) {
+                                                 const std::string _set)
+    : Photon_PDF_Base(_bunch, _set, 5) {
   m_xmin = 1.e-5;
   m_xmax = 1.;
   m_q2min = .25;
   m_q2max = 1.e6;
-  m_nf = 5;
 
-  m_set = _set;
-  m_bunch = _bunch;
-  m_d = m_u = m_s = m_c = m_b = m_g = 0.;
-
-  for (int i = 1; i < m_nf + 1; i++) {
-    m_partons.insert(Flavour((kf_code)(i)));
-    m_partons.insert(Flavour((kf_code)(i)).Bar());
-  }
-  m_partons.insert(Flavour(kf_gluon));
-  m_partons.insert(Flavour(kf_jet));
-  m_partons.insert(Flavour(kf_quark));
-  m_partons.insert(Flavour(kf_quark).Bar());
-
-  rpa->gen.AddCitation(1,"The GRV photon PDF is published under \\cite{Gluck:1991jc} and \\cite{Gluck:1991ee}.");
+  rpa->gen.AddCitation(1, "The GRV photon PDF is published under "
+                          "\\cite{Gluck:1991jc} and \\cite{Gluck:1991ee}.");
 }
 
 PDF_Base *GRVph_Fortran_Interface::GetCopy() {
@@ -44,57 +32,32 @@ PDF_Base *GRVph_Fortran_Interface::GetCopy() {
 
 void GRVph_Fortran_Interface::CalculateSpec(const double &_x,
                                             const double &_Q2) {
+  if (m_include_photon_in_photon)
+    m_ph = GetPhotonCoefficient(_x, _Q2);
+
   float x = _x / m_rescale, Q2 = _Q2;
+  float pdf[m_nf + 1];
 
   if (m_set == std::string("GRVLO"))
-    grvglo_(x, Q2, m_u, m_d, m_s, m_c, m_b, m_g);
+    grvglo_(x, Q2, pdf[0], pdf[1], pdf[2], pdf[3], pdf[4], pdf[5]);
   else if (m_set == std::string("GRVHO"))
-    grvgho_(x, Q2, m_u, m_d, m_s, m_c, m_b, m_g);
+    grvgho_(x, Q2, pdf[0], pdf[1], pdf[2], pdf[3], pdf[4], pdf[5]);
   else
     msg_Error() << "Error in GRVph_Fortran_Interface.C " << std::endl
                 << "   path " << m_set << " not found." << std::endl;
-}
 
-double GRVph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
-  double value = 0.;
+  // Adapt from GRV to Sherpa convention
+  double alphaem = MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
+  for (int i = 0; i < m_nf + 1; ++i) {
+    pdf[i] *= alphaem;
+  }
 
-  if (infl.Kfcode() == kf_gluon)
-    value = m_g;
-  else if (infl.Kfcode() == kf_d)
-    value = m_d;
-  else if (infl.Kfcode() == kf_u)
-    value = m_u;
-  else if (infl.Kfcode() == kf_s)
-    value = m_s;
-  else if (infl.Kfcode() == kf_c)
-    value = m_c;
-  else if (infl.Kfcode() == kf_b)
-    value = m_b;
-
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
-
-  return m_rescale * value;
-}
-
-double GRVph_Fortran_Interface::GetXPDF(const kf_code &kf, bool anti) {
-  double value = 0.;
-
-  if (kf == kf_gluon)
-    value = m_g;
-  else if (kf == kf_d)
-    value = m_d;
-  else if (kf == kf_u)
-    value = m_u;
-  else if (kf == kf_s)
-    value = m_s;
-  else if (kf == kf_c)
-    value = m_c;
-  else if (kf == kf_b)
-    value = m_b;
-
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
-
-  return m_rescale * value;
+  m_u = pdf[0];
+  m_d = pdf[1];
+  m_s = pdf[2];
+  m_c = pdf[3];
+  m_b = pdf[4];
+  m_g = pdf[5];
 }
 
 DECLARE_PDF_GETTER(GRVph_Getter);

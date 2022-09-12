@@ -6,6 +6,7 @@
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/Tools/Definitions.H"
+#include "ATOOLS/Math/Uncertain.H"
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Phys/Weights.H"
 
@@ -47,6 +48,16 @@ namespace SHERPA {
     bool WeightsAreGood(const ATOOLS::Weights_Map&);
     int  IterateEventPhases(eventtype::code & mode);
 
+    void MPISync();
+
+    // This entails costly operations and should not be done too often (e.g.
+    // only after a successful run).
+    void MPISyncXSAndErrMaps();
+
+    // These are only valid after calling MPISyncXSAndErrMaps().
+    ATOOLS::Weights_Map TotalXSMPI();
+    ATOOLS::Weights_Map TotalErrMPI();
+
   public:
 
     Event_Handler();
@@ -68,12 +79,12 @@ namespace SHERPA {
 
     void SetFilter(Filter * filter) { p_filter = filter; }
     
+    void PerformMemoryMonitoring();
+
     ATOOLS::Weights_Map TotalXS();
     ATOOLS::Weights_Map TotalErr();
-
-    void MPISync();
-    ATOOLS::Weights_Map TotalXSMPI();
-    ATOOLS::Weights_Map TotalErrMPI();
+    ATOOLS::Uncertain<double> TotalNominalXS();
+    ATOOLS::Uncertain<double> TotalNominalXSMPI();
 
     std::string CurrentProcess() const;
 

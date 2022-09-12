@@ -3,9 +3,9 @@
 # Date: Tue 31 Jul 2012 19:55:14
 
 
-from object_library import all_couplings, Coupling
+from .object_library import all_couplings, Coupling
 
-from function_library import complexconjugate, re, im, csc, sec, acsc, asec
+from .function_library import complexconjugate, re, im, csc, sec, acsc, asec
 
 
 

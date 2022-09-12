@@ -1,6 +1,7 @@
-from templates import color_calc_template
-from color_structures import T, replacer_T, f, Identity, IdentityG
-from tensor import color_key
+from __future__ import division 
+from ufo_interface.templates import color_calc_template
+from ufo_interface.color_structures import T, replacer_T, f, Identity, IdentityG
+from ufo_interface.tensor import color_key
 
 class s_color(object):
 
@@ -34,12 +35,12 @@ class s_color(object):
 
         if self._tens is None:
             self._tens = eval(self.ufo_color)
-            self._original_keys = self._tens.keys()
+            self._original_keys = list(self._tens.keys())
             # In order to translate to color-flow representation: For
             # each gluon-key, multiply with T of matching key. Thereby
             # swap gluon key for two fundamental keys 
             gluon_keys = [key for key,dim in
-                          self._tens.key_dim_dict().iteritems() if dim==8]
+                          self._tens.key_dim_dict().items() if dim==8]
 
             for gk in gluon_keys:
                 # 'gk' will be replaced by str(gk)+'0' and str(gk)+'1',
@@ -101,7 +102,7 @@ class s_color(object):
             # Find all keys in the actual coupling tensor that belong
             # to this original key (can be two if the original key
             # belongs to gluon)
-            mapped_keys = [k0 for k0 in self.get_cpl_tensor().keys() if k0.mapped_key==k]
+            mapped_keys = [k0 for k0 in list(self.get_cpl_tensor().keys()) if k0.mapped_key==k]
             assert(len(mapped_keys) in [1,2])
 
             # If outgoing quark or antiquark

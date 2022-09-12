@@ -14,7 +14,7 @@ namespace ATOOLS {
 
   public:
 
-    Poincare(const Vec4D &v=Vec4D(),const double &rsq=-1.);
+    Poincare(const Vec4D &v=Vec4D(1.,0.,0.,0.),const double &rsq=-1.);
     Poincare(const Vec4D &v1,const Vec4D &v2,int mode=0);
  
     void Boost(Vec4D &v) const;

@@ -279,7 +279,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 #ifdef  RIVET_ENABLE_HEPMC_3
   m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
 #else
-  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
+  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalNominalXS());
 #endif
 #endif
 
@@ -932,7 +932,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
 #ifdef HEPMC_HAS_CROSS_SECTION
   // leave this, although will be overwritten later
-  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS().Nominal(), p_eventhandler->TotalErr().Nominal());
+  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalNominalXS());
 #endif
 
   // 1st event build index map, thereafter only lookup

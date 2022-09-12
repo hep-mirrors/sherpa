@@ -33,6 +33,7 @@ Output_HepMC3_Genevent::Output_HepMC3_Genevent(const Output_Arguments &args) :
     m_basename+="_"+rpa->gen.Variable("RNG_SEED");
   }
 #endif
+  m_basename+=".hepmc";
 
 switch (m_iotype)
     {

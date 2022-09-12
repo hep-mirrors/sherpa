@@ -1,4 +1,5 @@
-from py_to_cpp import py_to_cpp
+from __future__ import division 
+from ufo_interface.py_to_cpp import py_to_cpp
 
 class s_coupling():
 
@@ -12,7 +13,7 @@ class s_coupling():
         return self.ufo_coupling.name
 
     def order(self, string):
-        if string in self.ufo_coupling.order.keys():
+        if string in list(self.ufo_coupling.order.keys()):
             return self.ufo_coupling.order[string]
         else:
             return 0

@@ -698,7 +698,7 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
       (m_bvimode&4)) {
     Vec4D_Vector _mom(mom);
     Poincare cms;
-    if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
       cms=Poincare(_mom[0]+_mom[1]);
       for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
     }
@@ -820,16 +820,16 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
   double weight(1.);
   // dice eta0 and eta1, incorporate phase space weight in weight
   if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
-    m_eta0=mom[0][3]>0.0?mom[0].PPlus()/rpa->gen.PBeam(0).PPlus():
-      mom[0].PMinus()/rpa->gen.PBeam(1).PMinus();
+    m_eta0=mom[0][3]>0.0?mom[0].PPlus()/rpa->gen.PBunch(0).PPlus():
+      mom[0].PMinus()/rpa->gen.PBunch(1).PMinus();
     if (m_z0>0.) m_x0 = m_z0;
     else         m_x0 = m_eta0+p_fsmc->ERan("z_1")*(1.-m_eta0);
     weight*=(1.-m_eta0);
     msg_Debugging()<<"x0="<<m_x0<<std::endl;
   }
   if (p_int->ISR()->PDF(1) && p_int->ISR()->PDF(1)->Contains(m_flavs[1])) {
-    m_eta1=mom[1][3]<0.0?mom[1].PMinus()/rpa->gen.PBeam(1).PMinus():
-      mom[1].PPlus()/rpa->gen.PBeam(0).PPlus();
+    m_eta1=mom[1][3]<0.0?mom[1].PMinus()/rpa->gen.PBunch(1).PMinus():
+      mom[1].PPlus()/rpa->gen.PBunch(0).PPlus();
     if (m_z1>0.) m_x1 = m_z1;
     else         m_x1 = m_eta1+p_fsmc->ERan("z_2")*(1.-m_eta1);
     weight*=(1.-m_eta1);
@@ -850,11 +850,11 @@ double Single_Virtual_Correction::KPTerms
   double eta0(0.), eta1(0.);
   if (mode == 0) {
     if (p_int->Momenta()[0][3]>0.0)
-      eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(0).PPlus();
-    else eta0=p_int->Momenta()[0].PMinus()/rpa->gen.PBeam(1).PMinus();
+      eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBunch(0).PPlus();
+    else eta0=p_int->Momenta()[0].PMinus()/rpa->gen.PBunch(1).PMinus();
     if (p_int->Momenta()[1][3]<0.0)
-      eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(1).PMinus();
-    else eta1=p_int->Momenta()[1].PPlus()/rpa->gen.PBeam(0).PPlus();
+      eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBunch(1).PMinus();
+    else eta1=p_int->Momenta()[1].PPlus()/rpa->gen.PBunch(0).PPlus();
   }
   else THROW(fatal_error,"Invalid call");
   // determine KP terms
@@ -997,7 +997,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
 
   Vec4D_Vector _mom(mom);
   Poincare cms;
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+  if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     cms=Poincare(_mom[0]+_mom[1]);
     for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
   }

@@ -31,11 +31,6 @@ Collider_Kinematics::~Collider_Kinematics() {}
 void Collider_Kinematics::InitSystem() {
   m_Ecms = sqrt(m_S);
 
-  rpa->gen.SetEcms(m_Ecms);
-  rpa->gen.SetPBeam(0, p_beams[0]->InMomentum());
-  rpa->gen.SetPBeam(1, p_beams[1]->InMomentum());
-
-  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(m_Ecms));
   m_on = (m_mode != collidermode::monochromatic);
   m_x[0] = 1.;
   m_x[1] = 1.;
@@ -52,9 +47,8 @@ void Collider_Kinematics::InitIntegration() {
   m_xmax = p_beams[0]->Xmax() * p_beams[1]->Xmax();
   m_smin = m_S * Max(m_xmin, sminratio);
   m_smax = m_S * Min(m_xmax, smaxratio);
-  // TODO: the rapidity interval can be done in a better way.
-  m_ymin = -20.;
-  m_ymax = 20.;
+  m_ymin = -10.;
+  m_ymax = 10.;
   m_exponent[0] = .5;
   m_exponent[1] = .98 * (p_beams[0]->Exponent() + p_beams[1]->Exponent());
 }
@@ -104,6 +98,7 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D *moms) {
     return false;
   for (size_t i = 0; i < 2; ++i) {
     p_beams[i]->SetOutMomentum(moms[i]);
+    rpa->gen.SetPBunch(i, moms[i]);
   }
   m_CMSBoost = Poincare(moms[0] + moms[1]);
   return true;
@@ -144,6 +139,10 @@ void Collider_Kinematics::SetLimits() {
   m_ykey[0] = m_ymin;
   m_ykey[1] = m_ymax;
   m_ykey[2] = 0.;
+  if (m_mode == 1)
+    m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(2.*m_ykey[0]));
+  if (m_mode == 2)
+    m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(-2.*m_ykey[1]));
   for (size_t i = 0; i < 2; i++) {
     double p = i == 0 ? p_beams[0]->OutMomentum().PPlus()
                       : p_beams[1]->OutMomentum().PMinus();

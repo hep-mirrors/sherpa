@@ -68,6 +68,11 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
   rpa->gen.SetPBeam(0, p_BeamBase[0]->InMomentum());
   rpa->gen.SetPBeam(1, p_BeamBase[1]->InMomentum());
+  rpa->gen.SetPBunch(0, p_BeamBase[0]->OutMomentum());
+  rpa->gen.SetPBunch(1, p_BeamBase[1]->OutMomentum());
+  double ecms = (p_BeamBase[0]->InMomentum()+p_BeamBase[1]->InMomentum()).Abs();
+  rpa->gen.SetEcms(ecms);
+  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(ecms));
   return true;
 }
 

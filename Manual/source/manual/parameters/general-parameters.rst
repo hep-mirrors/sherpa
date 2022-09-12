@@ -799,7 +799,7 @@ will be ignored and reset to 1.
 
 ME-only variations are included along with the full variations in the
 HepMC/Rivet output by default. They can be disabled, e.g. when not using
-``CSS_REWEIGHT: false`, using
+``CSS_REWEIGHT: false``, using
 ``OUTPUT_ME_ONLY_VARIATIONS: false``.
 The extra weight names then include a "ME" as part of the keys to indicate that
 only the ME part of the calculation has been varied, e.g.

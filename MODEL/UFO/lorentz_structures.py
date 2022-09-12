@@ -1,4 +1,5 @@
-from tensor import tensor, new, lorentz_key
+from __future__ import division 
+from ufo_interface.tensor import tensor, new, lorentz_key
 from sympy.parsing.sympy_parser import parse_expr
 from itertools import permutations
 
@@ -154,7 +155,7 @@ class Epsilon(tensor):
         for i in range(0,len(lst)-1):
             if lst[i] != i:
                 parity *= -1
-                mn = min(range(i,len(lst)), key=lst.__getitem__)
+                mn = min(list(range(i,len(lst))), key=lst.__getitem__)
                 lst[i],lst[mn] = lst[mn],lst[i]
         return parity    
 
@@ -185,9 +186,9 @@ class Epsilon(tensor):
 # mutations of key assignments
 def is_ffv(tns):
     if not isinstance(tns, tensor): return False
-    keys = tns.key_dim_dict().keys()
+    keys = list(tns.key_dim_dict().keys())
     if len(keys)!=3: return False
-    dims = tns.key_dim_dict().values()
+    dims = list(tns.key_dim_dict().values())
     if not all([dim==4 for dim in dims]): return False
     if (tns==Gamma(keys[0],keys[1],keys[2])
         or tns==Gamma(keys[0],keys[2],keys[1])
@@ -203,9 +204,9 @@ def is_ffv(tns):
 # triple-gluon-like structure
 def is_vvv(tns):
     if not isinstance(tns, tensor): return False
-    keys = tns.key_dim_dict().keys()
+    keys = list(tns.key_dim_dict().keys())
     if len(keys)!=3: return False
-    dims = tns.key_dim_dict().values()
+    dims = list(tns.key_dim_dict().values())
     if not all([dim==4 for dim in dims]): return False
     vvv = (P(3,1)*Metric(1,2) - P(3,2)*Metric(1,2) - P(2,1)*Metric(1,3) + P(2,3)*Metric(1,3) + P(1,2)*Metric(2,3) - P(1,3)*Metric(2,3))
     if tns==vvv:

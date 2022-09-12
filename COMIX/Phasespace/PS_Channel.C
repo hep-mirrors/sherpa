@@ -376,44 +376,32 @@ void PS_Channel::SChannelMomenta
   double ctmin(-1.0), ctmax(1.0);
   SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);  
   const Vertex_Vector &vs(cur->Out());
-  size_t id(vs[0]->J()[(vs[0]->J()[0]==cur)?1:0]->CId());
-  for (size_t i(1);i<vs.size();++i)
-    if (id!=vs[i]->J()[(vs[i]->J()[0]==cur)?1:0]->CId()) {
-      id=0;
-      break;
-    }
   if (v->Type()==2) {
-    CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],cr[1],m_aexp,ctmin,ctmax,m_p[id]);
+    CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],cr[1],m_aexp,ctmin,ctmax);
   }
   else if (v->Type()==4) {
-    CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],m_aexp,ctmin,ctmax,m_p[id]);
+    CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],m_aexp,ctmin,ctmax);
   }
   else {
-    CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],ctmin,ctmax,m_p[id]);
+    CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],ctmin,ctmax);
   }
 }
 
 double PS_Channel::SChannelWeight
-(PS_Current *cur,PS_Vertex *v,Vec4D &p1,Vec4D &p2)
+(PS_Current *cur,PS_Vertex *v,const Vec4D &p1,const Vec4D &p2)
 {
   double ctmin(-1.0), ctmax(1.0), rns[2];
   SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);
   const Vertex_Vector &vs(cur->Out());
-  size_t id(vs[0]->J()[(vs[0]->J()[0]==cur)?1:0]->CId());
-  for (size_t i(1);i<vs.size();++i)
-    if (id!=vs[i]->J()[(vs[i]->J()[0]==cur)?1:0]->CId()) {
-      id=0;
-      break;
-    }
   double wgt(0.0);
   if (v->Type()==2) {
-    wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
+    wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax);
   }
   else if (v->Type()==4) {
-    wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
+    wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax);
   }
   else {
-    wgt=CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax,m_p[id]);
+    wgt=CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax);
   }
   if (m_vmode&3) {
     Vegas *cvgs(GetSVegas(v));
@@ -718,7 +706,7 @@ double PS_Channel::GenerateWeight
       double smin(sr), smax(sqr(rts-sqrt(sl)));
       wgt*=PropWeight(jb,rid,smin,smax,sr=m_p[rid].Abs2());
     }
-    wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[rid]);
+    wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[lid|rid]-m_p[lid]);
     nr+=2;
 #ifdef DEBUG__BG
     msg_Debugging()<<"    s "<<nr<<": {"<<ID(cid)
@@ -868,6 +856,10 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
 #endif
     }
   for (size_t i(0);i<m_n;++i) m_p[1<<i]=i<2?-p[i]:p[i];
+  if(m_nin == 2) {
+    m_p[3] = m_p[1]+m_p[2];
+    m_p[(1<<m_n)-1-3] = -m_p[3];
+  }
   if (!GenerateWeight())
     THROW(fatal_error,"Internal error");
 }

@@ -1,6 +1,7 @@
 #ifndef SHERPA_Main_Sherpa_H
 #define SHERPA_Main_Sherpa_H
 
+#include "ATOOLS/Math/Uncertain.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
 #include "SHERPA/Main/Filter.H"
@@ -64,8 +65,11 @@ namespace SHERPA {
     void FillHepMCEvent(HepMC3::GenEvent&);
 #endif
 
-    double TotalXS();
-    double TotalErr();
+    ATOOLS::Uncertain<double> TotalNominalXS() const;
+
+    // Legacy methods
+    double TotalXS() const { return TotalNominalXS().value; }
+    double TotalErr() const { return TotalNominalXS().error; }
 
     std::string PDFInfo();
 

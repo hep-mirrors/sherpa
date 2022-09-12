@@ -8,11 +8,11 @@
 #endif
 
 #include <stdexcept>
+#include <string>
 
 #include "ATOOLS/YAML/yaml-cpp/dll.h"
 #include "ATOOLS/YAML/yaml-cpp/emitterstyle.h"
 #include "ATOOLS/YAML/yaml-cpp/mark.h"
-#include "ATOOLS/YAML/yaml-cpp/node/detail/bool_type.h"
 #include "ATOOLS/YAML/yaml-cpp/node/detail/iterator_fwd.h"
 #include "ATOOLS/YAML/yaml-cpp/node/ptr.h"
 #include "ATOOLS/YAML/yaml-cpp/node/type.h"
@@ -38,8 +38,8 @@ class YAML_CPP_API Node {
   template <typename T, typename S>
   friend struct as_if;
 
-  typedef SHERPA_YAML::iterator iterator;
-  typedef SHERPA_YAML::const_iterator const_iterator;
+  using iterator = SHERPA_YAML::iterator;
+  using const_iterator = SHERPA_YAML::const_iterator;
 
   Node();
   explicit Node(NodeType::value type);
@@ -58,7 +58,7 @@ class YAML_CPP_API Node {
   bool IsMap() const { return Type() == NodeType::Map; }
 
   // bool conversions
-  YAML_CPP_OPERATOR_BOOL()
+  explicit operator bool() const { return IsDefined(); }
   bool operator!() const { return !IsDefined(); }
 
   // access
@@ -116,6 +116,7 @@ class YAML_CPP_API Node {
  private:
   enum Zombie { ZombieNode };
   explicit Node(Zombie);
+  explicit Node(Zombie, const std::string&);
   explicit Node(detail::node& node, detail::shared_memory_holder pMemory);
 
   void EnsureNodeExists() const;
@@ -130,6 +131,8 @@ class YAML_CPP_API Node {
 
  private:
   bool m_isValid;
+  // String representation of invalid key, if the node is invalid.
+  std::string m_invalidKey;
   mutable detail::shared_memory_holder m_pMemory;
   mutable detail::node* m_pNode;
 };

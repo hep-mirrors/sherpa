@@ -260,10 +260,6 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   Cluster_Sequence_Info csi;
   AddISR(csi, ampls, Q2, muf2fac, mur2fac, showermuf2fac, as, nominalcsi);
   AddBeam(csi, Q2);
-  // Reset, such that the hard process scales are filled in the PDF Info object
-  // created by the phase space handler.
-  p_int->ISR()->SetMuF2(Q2 * muf2fac, 0);
-  p_int->ISR()->SetMuF2(Q2 * muf2fac, 1);
   return csi;
 }
 
@@ -537,6 +533,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   Partonic(p, varmode);
 
   double nominal {0.0};
+  double facscale {0.0};
 
   if (GetSubevtList() == nullptr) {
 
@@ -546,7 +543,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
 
     // calculate ISR weight
-    m_csi = ClusterSequenceInfo(scales->Amplitudes(), scales->Scale(stp::fac));
+    facscale = scales->Scale(stp::fac);
+    m_csi = ClusterSequenceInfo(scales->Amplitudes(), facscale);
     m_csi.AddFlux(m_lastflux);
 
     // update results
@@ -638,8 +636,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
         if (!ampls.empty()) {
           ampls.front()->SetProc(sub->p_proc);
         }
-        Cluster_Sequence_Info csi {
-            ClusterSequenceInfo(ampls, sub->m_mu2[stp::fac])};
+        facscale = sub->m_mu2[stp::fac];
+        Cluster_Sequence_Info csi {ClusterSequenceInfo(ampls, facscale)};
         csi.AddFlux(m_lastflux);
         if (m_mewgtinfo.m_type & mewgttype::H) {
           m_mewgtinfo.m_rdainfos.back().m_csi = csi;
@@ -708,6 +706,11 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       UpdateSubeventMomenta(*sub);
     }
   }
+
+  // reset PDF scales to hard factorisation scale (since the PDFInfo object
+  // will be populated with it)
+  p_int->ISR()->SetMuF2(facscale, 0);
+  p_int->ISR()->SetMuF2(facscale, 1);
 
   return m_last;
 }
@@ -1143,7 +1146,6 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
-  psh->InitIncoming();
   double var(p_int->TotalVar());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
             <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;

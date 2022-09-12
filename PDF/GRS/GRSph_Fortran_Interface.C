@@ -13,7 +13,8 @@ void grsg99_(int &, double &, double &, double &, double &, double &, double &);
 }
 
 GRSph_Fortran_Interface::GRSph_Fortran_Interface(const ATOOLS::Flavour _bunch,
-                                                 const std::string _set) {
+                                                 const std::string _set)
+    : Photon_PDF_Base(_bunch, _set, 3) {
   /*
    * ISET = 1  LEADING ORDER SET (DATA FILE 'grsg99lo.grid')        *
    *           ISET = 2  NEXT-TO-LEADING ORDER MSbar SET            *
@@ -27,9 +28,7 @@ GRSph_Fortran_Interface::GRSph_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_xmax = 1.;
   m_q2min = .4;
   m_q2max = 1.e6;
-  m_nf = 3;
 
-  m_set = _set;
   if (m_set == std::string("GRSLO"))
     m_iset = 1;
   else if (m_set == std::string("GRSMSbar"))
@@ -43,19 +42,8 @@ GRSph_Fortran_Interface::GRSph_Fortran_Interface(const ATOOLS::Flavour _bunch,
     m_iset = 1;
   }
 
-  m_bunch = _bunch;
-  m_d = m_u = m_s = m_g = 0.;
-
-  for (int i = 1; i < m_nf + 1; i++) {
-    m_partons.insert(Flavour((kf_code)(i)));
-    m_partons.insert(Flavour((kf_code)(i)).Bar());
-  }
-  m_partons.insert(Flavour(kf_gluon));
-  m_partons.insert(Flavour(kf_jet));
-  m_partons.insert(Flavour(kf_quark));
-  m_partons.insert(Flavour(kf_quark).Bar());
-
-  rpa->gen.AddCitation(1,"The GRS photon PDF is published under \\cite{Gluck:1999ub}.");
+  rpa->gen.AddCitation(
+      1, "The GRS photon PDF is published under \\cite{Gluck:1999ub}.");
 }
 
 PDF_Base *GRSph_Fortran_Interface::GetCopy() {
@@ -64,6 +52,9 @@ PDF_Base *GRSph_Fortran_Interface::GetCopy() {
 
 void GRSph_Fortran_Interface::CalculateSpec(const double &_x,
                                             const double &_Q2) {
+  if (m_include_photon_in_photon)
+    m_ph = GetPhotonCoefficient(_x, _Q2);
+
   double x = _x / m_rescale, Q2 = _Q2;
 
   char buffer[1024];
@@ -77,40 +68,12 @@ void GRSph_Fortran_Interface::CalculateSpec(const double &_x,
   if (chdir(buffer) != 0)
     msg_Error() << "Error in GRSph_Fortran_Interface.C " << std::endl
                 << "   path " << m_path << " not found." << std::endl;
-}
 
-double GRSph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
-  double value = 0.;
-
-  if (infl.Kfcode() == kf_gluon)
-    value = m_g;
-  else if (infl.Kfcode() == kf_d)
-    value = m_d;
-  else if (infl.Kfcode() == kf_u)
-    value = m_u;
-  else if (infl.Kfcode() == kf_s)
-    value = m_s;
-
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
-
-  return m_rescale * value;
-}
-
-double GRSph_Fortran_Interface::GetXPDF(const kf_code &kf, bool anti) {
-  double value = 0.;
-
-  if (kf == kf_gluon)
-    value = m_g;
-  else if (kf == kf_d)
-    value = m_d;
-  else if (kf == kf_u)
-    value = m_u;
-  else if (kf == kf_s)
-    value = m_s;
-
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
-
-  return m_rescale * value;
+  double alphaem = MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
+  m_u *= alphaem;
+  m_d *= alphaem;
+  m_s *= alphaem;
+  m_g *= alphaem;
 }
 
 DECLARE_PDF_GETTER(GRSph_Getter);
