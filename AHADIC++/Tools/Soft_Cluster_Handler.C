@@ -41,8 +41,6 @@ void Soft_Cluster_Handler::Reset() {
 }
 
 bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
-  //if ((*cluster)[0]->IsBeam() && (*cluster)[1]->IsBeam() &&
-  //  (*cluster)[0]->Momentum()[3]*(*cluster)[1]->Momentum()[3]<0.) return true;
   FillFlavours(cluster);
   // will assume clusters have to decay, if they are lighter than heaviest
   // single (one-hadron) transition or lighter than heaviest decay into

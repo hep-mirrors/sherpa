@@ -92,9 +92,6 @@ Blob * Amisic::GenerateScatter() {
     m_pt2 = m_singlecollision.LastPT2();
     blob->SetPosition(m_impact.SelectPositionForScatter(m_b));
     blob->SetTypeSpec("AMISIC++ 1.1");
-    //msg_Out()<<"   - "<<METHOD<<": asking Amisic to start filling Min Bias event, "
-    //	     <<"pt = "<<sqrt(m_pt2)<<" for b = "<<m_b<<" and bfac = "<<m_bfac<<":\n"
-    //	     <<(*blob)<<"\n";
     if (m_ana) Analyse(false);
     return blob;
   }
@@ -104,7 +101,6 @@ Blob * Amisic::GenerateScatter() {
 
 int Amisic::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
   if (m_isFirst==true) {
-    //msg_Out()<<"   - "<<METHOD<<": asking Amisic to provide Min Bias event.\n";
     m_isFirst   = false;
     m_isMinBias = true;
     m_b    = m_impact.SelectB();

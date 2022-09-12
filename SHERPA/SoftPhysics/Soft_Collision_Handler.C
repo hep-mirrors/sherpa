@@ -76,6 +76,9 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   case scmode::amisic: 
     outcome = p_amisic->InitMinBiasEvent(blobs);
     break;
+  case scmode::none:
+    outcome = 0;
+    break;
   default:
     break;
   }

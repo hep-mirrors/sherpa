@@ -82,8 +82,6 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 }  
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
-  //msg_Out()<<"######################################################################\n"
-  //	   <<(*blob)<<"\n";
   Reset();
   m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
@@ -106,8 +104,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     Reset(blob);
     return Return_Value::Retry_Event;
   }
-  //msg_Out()<<(*blob)<<"\n"
-  //	   <<"######################################################################\n";
   return Return_Value::Success;
 }
 

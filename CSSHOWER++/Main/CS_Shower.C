@@ -421,7 +421,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	if ((*pit)->GetPrev()) {
 	  if ((*pit)->GetPrev()->GetNext()==*pit) {
 	    (*pit)->SetStart((*pit)->GetPrev()->KtStart());
-	    //msg_Out()<<METHOD<<"("<<(*pit)->Id()<<"): "<<(*pit)->KtStart()<<"\n";
 	  }
 	}
       }
@@ -490,9 +489,6 @@ Singlet *CS_Shower::TranslateAmplitude
     if (cl->KT2(1)>=0.0) parton->SetSoft(1,cl->KT2(1)); 
     if (xit->second.first) singlet->SetNMax(1);
     parton->SetVeto(ktveto2);
-    //msg_Out()<<METHOD<<"("<<parton->Id()<<"): "
-    //<<sqrt(parton->KtStart())<<", veto = "<<parton->KtVeto()<<" from\n"
-    //	     <<"   "<<(*cl)<<"\n";
     singlet->push_back(parton);
     parton->SetSing(singlet);
   }
@@ -532,7 +528,6 @@ Singlet *CS_Shower::TranslateAmplitude
       sing->SetSpec(pmap[ampl->IdLeg(ampl->Leg(i)->K())]);
       break;
     }
-  //msg_Out()<<METHOD<<":\n"<<(*singlet)<<"\n";
   return singlet;
 }
 

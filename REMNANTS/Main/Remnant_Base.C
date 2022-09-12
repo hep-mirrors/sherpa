@@ -59,7 +59,6 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
 }
 
 Blob *Remnant_Base::MakeBlob() {
-  //msg_Out()<<"   - "<<METHOD<<"(beam = "<<m_beam<<", pos = "<<m_position<<")\n";
   p_beamblob = new Blob();
   p_beamblob->SetType(btp::Beam);
   p_beamblob->SetId();

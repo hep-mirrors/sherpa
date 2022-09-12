@@ -111,10 +111,6 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     p_ampl=NULL;
   }
   p_shower->CleanUp();
-  //msg_Out()<<METHOD<<"(MI = "<<p_mi<<", SC = "<<p_sc<<", "
-  //	   <<bloblist->size()<<" blobs:\n"<<(*bloblist)<<"\n"
-  //	   <<"Relevant blob = \n"<<(*blob)<<"\n";
-  //msg_Out()<<"*** "<<METHOD<<"("<<bloblist->size()<<" blobs, id = "<<blob->Id()<<").\n";
   msg_Indent();
   if (p_mi) {
     p_ampl=p_mi->ClusterConfiguration(blob);
@@ -151,13 +147,11 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     return Return_Value::Success;
   }
   if (p_sc) {
-    //msg_Out()<<METHOD<<" in sc-mode.\n";
     p_ampl=p_sc->ClusterConfiguration(blob);
     if (p_ampl==NULL) {
       msg_Error()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
       return Return_Value::New_Event;
     }
-    //msg_Out()<<"  Amplitude has been constructed:\n"<<(*p_ampl)<<"\n";
     if (!p_shower->GetShower()->PrepareShower(p_ampl,true)) {
       msg_Error()<<METHOD<<": could not prepare shower.\n"; 
       return Return_Value::New_Event;
@@ -279,13 +273,11 @@ bool Perturbative_Interface::FillBlobs()
   }
   p_bloblist->push_back(sblob);
   p_shower->FillBlobs(p_bloblist);
-  //msg_Out()<<METHOD<<" has filled blob:\n"<<(*sblob)<<"\n";
   return true;
 }
 
 int Perturbative_Interface::PerformShowers()
 {
-  //msg_Out()<<"*** "<<METHOD<<".\n";
   PDF::Shower_Base *csh(p_shower->GetShower());
   int stat=csh->PerformShowers();
   if ((*p_hard)["WeightsMap"]!=NULL) {

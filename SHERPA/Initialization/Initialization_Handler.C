@@ -946,7 +946,6 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
   p_softcollisions = new Soft_Collision_Handler(p_mihandler->Amisic(),
 						p_mihandler->Shrimps());
-  //p_beamremnants->SetShrimps(p_softcollisions->GetShrimps());
   msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
   return 1;
 }
@@ -1004,7 +1003,6 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     p_hdhandler=hd;
   }
   else if ((decmodel==string("Lund")) ) {
-    /*
 #ifdef USING__PYTHIA
     as->SetActiveAs(isr::hard_subprocess);
     Lund_Interface * lund(NULL);
@@ -1016,10 +1014,9 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
 #else
-    */
     THROW(fatal_error, string("Pythia not enabled during compilation. ")+
           "Use the configure option --enable-pythia to enable it.");
-    //#endif
+#endif
   }
   else {
     THROW(fatal_error,"Hadron decay model '"+decmodel+"' not implemented.");

@@ -208,10 +208,6 @@ bool Sherpa::InitializeTheEventHandler()
 
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
-  //msg_Out()<<"\n\n\n\n\n"
-  //	   <<"-------------------------------------------------------------------------\n"
-  //	   <<"-------------------------------------------------------------------------\n"
-  //	   <<"-------------------------------------------------------------------------\n";
   if (m_evt_output_start>0 &&
       m_evt_output_start==rpa->gen.NumberOfGeneratedEvents()+1) {
     msg->SetLevel(m_evt_output);

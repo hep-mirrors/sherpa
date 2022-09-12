@@ -15,13 +15,6 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
   p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
   p_beam(beam), m_fill(true), m_vmode(false)
 {
-  /*
-    if (p_shrimps) {
-    m_name = std::string("Shrimps");
-    return;
-    }
-  */
-  p_shrimps = NULL;
   Settings& s = Settings::GetMainSettings();
   m_fill  = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
   m_vmode = s["BRH_VMODE"].SetDefault(false).Get<bool>();

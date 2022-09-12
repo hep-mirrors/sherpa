@@ -165,7 +165,6 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
   Return_Value::code stat(interface->DefineInitialConditions(blob, bloblist));
   if (stat == Return_Value::New_Event || stat == Return_Value::Retry_Event) {
     interface->CleanUp();
-    //msg_Out()<<METHOD<<" couldn't define initial conditions.\n";
     return stat;
   }
   if (blob->Type() != ::btp::Hadron_Decay) {
@@ -179,8 +178,6 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
     blob->AddData("MI_Scale", new Blob_Data<double>(scale));
     msg_Debugging() << "} -> p_T = " << scale << "\n";
   }
-  //msg_Out()<<METHOD<<" arrives with stat = "<<stat<<", type = "<<blob->Type()<<"\n"
-  //	   <<(*blob)<<"\n"<<(*interface->Amplitude())<<"\n";
   switch (stat) {
   case Return_Value::Success:
     if (blob->Type() != ::btp::Hadron_Decay)
@@ -199,11 +196,9 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
       }
       blob->SetStatus(blob_status::inactive);
       CleanUp();
-      //msg_Out()<<METHOD<<" perform showers delivers 1.\n";
       return Return_Value::New_Event;
     case 0:
       // Sudakov rejection
-      //msg_Out()<<METHOD<<" perform showers delivers 0.\n";
       Reset();
       CleanUp();
       return Return_Value::New_Event;
@@ -217,7 +212,6 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
     }
     blob->SetStatus(blob_status::inactive);
     CleanUp();
-    //msg_Out()<<METHOD<<" no shower went wrong.\n";
     return Return_Value::New_Event;
   case Return_Value::Error:
     msg_Error() << "ERROR in " << METHOD << ":" << std::endl

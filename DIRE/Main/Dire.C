@@ -142,6 +142,7 @@ bool Dire::ExtractPartons(Blob_List *const bl)
     b->InParticle(i)->SetStatus(part_status::decayed);
   for (int i=0;i<b->NOutP();++i) 
     b->OutParticle(i)->SetStatus(part_status::decayed);
+  b->SetStatus(blob_status::needs_beams);
   bool nois(b->NOutP()==0);
   for (Amplitude_Vector::const_iterator
 	 it(m_ampls.begin());it!=m_ampls.end();++it)

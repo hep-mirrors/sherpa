@@ -138,6 +138,7 @@ void Shrimps::Analyse(ATOOLS::Blob_List * blobs) {
 }
 
 void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
+  if (blob == NULL) return;
   msg_Out()<<"   - "<<METHOD<<"("<<blob->Type()<<", "<<blob->NOutP()<<" outgoing particles.)\n";
   if (tag==std::string("Yasym_frag_in")) {
     for (size_t i=0;i<blob->NInP();i++) {
@@ -188,13 +189,13 @@ void Shrimps::GenerateXsecs() {
   ATOOLS::MakeDir(dirname);
 
   InitialiseFormFactors();
-  std::set<double> energies, energies_tot, energies_inel, energies_el, energies_sd, energies_dd, elastics;
-  ReadEnergiesFromFile(energies_tot,"energies_xsecs_tot.dat");
-  ReadEnergiesFromFile(energies_inel,"energies_xsecs_inel.dat");
-  ReadEnergiesFromFile(energies_el,"energies_xsecs_el.dat");
+  std::set<double> energies, energies_sd, energies_dd;
+  std::set<double> energies_tot {52.817,62.5,546.0,900.35,1800.0,6166.500,7000.000,8128.9,10716.0,14126.0,18622.0};
+  std::set<double> energies_inel {6.900000e+03, 6.950000e+03, 7.000000e+03, 7.050000e+03};
+  std::set<double> energies_el {5.2817e+01, 6.2500e+01, 5.4600e+02, 1.8000e+03, 7.0000e+03};
+  std::set<double> elastics {62.5, 546, 1800, 7000};
   ReadEnergiesFromFile(energies_sd,"energies_xsecs_sd.dat");
   ReadEnergiesFromFile(energies_dd,"energies_xsecs_dd.dat");
-  ReadEnergiesFromFile(elastics,"energies_elastics.dat");
   energies = energies_tot;
   for (std::set<double>::iterator siter = energies_inel.begin(); siter != energies_inel.end(); ++siter) {
       if (energies.find(*siter) == energies.end()) energies.insert(*siter);

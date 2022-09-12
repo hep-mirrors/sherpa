@@ -214,11 +214,6 @@ bool Event_Handler::AnalyseEvent() {
 }
 
 int Event_Handler::IterateEventPhases(eventtype::code & mode) {
-  //msg_Out()<<"===========================================================================\n"
-  //	   <<"===========================================================================\n"
-  //	   <<"===========================================================================\n"
-  //	   <<"===========================================================================\n"
-  //	   <<"===========================================================================\n\n\n";
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;
@@ -242,9 +237,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       }
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
-    //msg_Out()<<"** try "<<(*pit)->Name()<<"\n";
     Return_Value::code rv((*pit)->Treat(&m_blobs));
-    //msg_Out()<<"====== "<<(*pit)->Name()<<" yields "<<rv<<": "<<p_signal->Status()<<"\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
@@ -396,14 +389,6 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
 
 bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
   bool run(true);
-
-  //msg_Out()<<"====================================================================\n"
-  //	   <<"====================================================================\n"
-  //	   <<"====================================================================\n"
-  //	   <<METHOD<<"\n"
-  //	   <<"====================================================================\n"
-  //	   <<"====================================================================\n"
-  //	   <<"====================================================================\n";
   InitialiseSeedBlob(ATOOLS::btp::Soft_Collision,
 		     ATOOLS::blob_status::needs_minBias);
   do {

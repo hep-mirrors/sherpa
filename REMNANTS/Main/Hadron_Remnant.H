@@ -2,31 +2,11 @@
 #define REMNANTS_Main_Proton_Remnant_H
 
 #include "REMNANTS/Main/Remnant_Base.H"
+#include "REMNANTS/Tools/Form_Factor.H"
 #include "PDF/Main/PDF_Base.H"
 #include <map>
 
 namespace REMNANTS {
-  struct overlap_form {
-    enum code {
-      Single_Gaussian = 1,
-      Double_Gaussian = 2,
-      unknown         = -1
-    };
-  };
-  
-
-  class Form_Factor {
-  private:
-    overlap_form::code m_overlapform;
-    double m_radius1, m_radius2, m_radius3, m_fraction1;
-  public:
-    Form_Factor();
-    ~Form_Factor() {};
-
-    ATOOLS::Vec4D operator()();
-  };
-
-  
   class Hadron_Remnant: public Remnant_Base {
   public:
   private:

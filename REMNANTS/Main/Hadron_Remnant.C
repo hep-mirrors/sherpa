@@ -10,28 +10,6 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-// todo here: make sure we can also have double Gaussian and parameters
-// from scoped settings.
-
-Form_Factor::Form_Factor() : 
-  m_overlapform(overlap_form::Single_Gaussian),
-  m_fraction1(1.), m_radius1(1.)
-{}
-
-
-Vec4D Form_Factor::operator()() {
-  double radius = m_radius1;
-  if (m_overlapform==overlap_form::Double_Gaussian) {
-    double rand = ran->Get()-sqr(m_fraction1);
-    if (rand>=0.) {
-      if ((rand-=sqr(1-m_fraction1))<=0.) radius = m_radius2;
-      else                                radius = m_radius3;
-    }
-  }
-  double x1 = ran->GetGaussian(), x2 = ran->GetGaussian();
-  return Vec4D(0.,radius*x1,radius*x2,0.);
-}
-
 Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam):
   Remnant_Base(rtp::hadron,beam),
   p_pdf(pdf), p_partons(&(p_pdf->Partons())), m_beamflav(pdf->Bunch()),
@@ -101,8 +79,6 @@ Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
   part->SetNumber();
   part->SetBeam(m_beam);
   part->SetPosition(m_position+m_ff());
-  //msg_Out()<<METHOD<<" for "<<part->Number()
-  //<<" --> xpos = "<<m_position<<" + ff = "<<part->XProd()<<"\n";
   return part;
 }
 

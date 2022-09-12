@@ -14,7 +14,7 @@ unsigned long int Momenta_Stretcher::s_fails = 0;
 
 Momenta_Stretcher::~Momenta_Stretcher() {
   if (m_module!=string(""))
-    msg_Info()<<"Out of Momenta_Stretcher for "
+    msg_Tracking()<<"Out of Momenta_Stretcher for "
 	      <<m_module<<" with: "<<s_fails<<" fails.\n";
 }
 
