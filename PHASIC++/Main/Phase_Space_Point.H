@@ -61,6 +61,8 @@ namespace PHASIC {
       m_mode   = mode;
       m_sprime = m_fixedsprime; m_y = m_fixedy;
       m_ISsymmetryfactor = 1.;
+      p_moms[0] = m_ISmoms[0];
+      p_moms[1] = m_ISmoms[1];
     }
   public:
     Phase_Space_Point();
@@ -72,7 +74,6 @@ namespace PHASIC {
 		      const psmode::code & mode=psmode::normal_call);
 
     double CalculateWeight();
-    bool   MakeIncoming();
     
     inline void SetBeamIntegrator(Multi_Channel * channels) { p_beamchannels = channels; }
     inline void SetISRIntegrator(Multi_Channel * channels)  { p_isrchannels  = channels; }
@@ -83,7 +84,10 @@ namespace PHASIC {
       m_isrspkey[3] = pin.Abs2();
       m_isrykey[2]  = pin.Y();
     }
-    inline void SetOSMass(const double &osmass)             { m_osmass       = osmass; }
+    inline void SetOSMass(const double &osmass) {
+      m_osmass = osmass;
+      m_isrspkey[4] = osmass*osmass;
+    }
 
     inline Multi_Channel * BeamIntegrator()   const { return p_beamchannels; }
     inline Multi_Channel * ISRIntegrator()    const { return p_isrchannels; }

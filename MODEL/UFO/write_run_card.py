@@ -1,3 +1,4 @@
+from __future__ import division 
 from ufo_interface import s_parameter, s_particle
 from ufo_interface.templates import run_card_template
 
@@ -29,7 +30,7 @@ def write_run_card(model, model_name, run_card_path):
 
     ufo_params = ""
 
-    for block,param_list in blocks.iteritems():
+    for block,param_list in blocks.items():
         if (block.lower() == "decay"): continue # in order to comply with weird default ufo param_card format
         ufo_params += yaml_indent + "block {0}\n".format(block)
         ufo_params += "".join([yaml_indent + table_format(nci,param.lha_indices(),

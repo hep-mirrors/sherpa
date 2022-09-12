@@ -7,6 +7,7 @@ EXTRA_DIST = yaml-cpp
 libToolsYaml_la_SOURCES = \
 			  binary.cpp \
 			  convert.cpp \
+			  depthguard.cpp \
 			  directives.cpp \
 			  emit.cpp \
 			  emitfromevents.cpp \

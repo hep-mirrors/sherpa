@@ -46,9 +46,10 @@ double PHASIC::PeakedWeight(double a,double cn,double cxm,double cxp,double res,
 double Channel_Elements::MasslessPropWeight
 (double sexp,double smin,double smax,const double s,double &ran)
 {
-  if (s<smin || s>smax)
+  if (s<smin || s>smax) {
     msg_Error()<<METHOD<<"(): Value out of bounds: "
 	       <<smin<<" .. " <<smax<<" vs. "<<s<< std::endl;
+  }
   double w(PeakedWeight(0.,sexp,smin,smax,s,1,ran)/pow(s,-sexp));
   if (IsBad(w)) msg_Error()<<METHOD<<"(): Weight is "<<w<<std::endl;
   return 1./w;
@@ -115,7 +116,7 @@ void Channel_Elements::Isotropic2Momenta
 (Vec4D p,double s1,double s2,Vec4D &p1,Vec4D &p2,double ran1,
  double ran2,double ctmin,double ctmax,const Vec4D &_xref)
 {
-  double s(p.Abs2()), rs(sqrt(dabs(s)));
+  double s(dabs(p.Abs2())), rs(sqrt(dabs(s)));
   double e1((s+s1-s2)/rs/2.), m1(sqrt(e1*e1-s1));
   double ct(ctmin+(ctmax-ctmin)*ran1), st(sqrt(1.-ct*ct));
   double phi(2.*M_PI*ran2);
@@ -247,7 +248,7 @@ void Channel_Elements::CheckMasses(const double &s1, Vec4D &p1,
   }
 }
 
-double Channel_Elements::Anisotropic2Weight(Vec4D& p1,Vec4D& p2,
+double Channel_Elements::Anisotropic2Weight(const Vec4D& p1,const Vec4D& p2,
 					    double& ran1,double& ran2,
 					    double ctexp,
 					    double ctmin,double ctmax,

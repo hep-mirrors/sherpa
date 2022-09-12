@@ -30,8 +30,8 @@ Parton::~Parton()
 
 double Parton::GetXB() const
 {
-  if (m_b==1) return -m_p.PPlus()/rpa->gen.PBeam(0).PPlus();
-  if (m_b==2) return -m_p.PMinus()/rpa->gen.PBeam(1).PMinus();
+  if (m_b==1) return -m_p.PPlus()/rpa->gen.PBunch(0).PPlus();
+  if (m_b==2) return -m_p.PMinus()/rpa->gen.PBunch(1).PMinus();
   return 0.0;
 }
 

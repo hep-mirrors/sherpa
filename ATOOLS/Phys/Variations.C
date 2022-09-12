@@ -8,6 +8,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/Strings.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -146,10 +147,21 @@ void Variations::ReadDefaults()
   Settings& s = Settings::GetMainSettings();
   m_includecentralvaluevariation =
     s["VARIATIONS_INCLUDE_CV"].SetDefault(false).Get<bool>();
+  const bool cssreweight = s["CSS_REWEIGHT"].SetDefault(true).Get<bool>();
   m_reweightsplittingalphasscales =
-    s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(true).Get<bool>();
+    s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(cssreweight).Get<bool>();
   m_reweightsplittingpdfsscales =
-    s["REWEIGHT_SPLITTING_PDF_SCALES"].SetDefault(true).Get<bool>();
+    s["REWEIGHT_SPLITTING_PDF_SCALES"].SetDefault(cssreweight).Get<bool>();
+  if (!cssreweight && m_reweightsplittingalphasscales) {
+    msg_Out() << Strings::OverrideAlphaSSplittingScalesWarning;
+    s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].OverrideScalar(false);
+    m_reweightsplittingalphasscales = false;
+  }
+  if (!cssreweight && m_reweightsplittingpdfsscales) {
+    msg_Out() << Strings::OverridePDFSplittingScalesWarning;
+    s["REWEIGHT_SPLITTING_PDF_SCALES"].OverrideScalar(false);
+    m_reweightsplittingpdfsscales = false;
+  }
 }
 
 

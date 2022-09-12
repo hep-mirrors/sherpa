@@ -1,4 +1,5 @@
-from py_to_cpp import py_to_cpp
+from __future__ import division 
+from ufo_interface.py_to_cpp import py_to_cpp
 
 class s_parameter():
 

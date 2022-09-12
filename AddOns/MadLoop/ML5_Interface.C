@@ -12,7 +12,7 @@
 #include "ATOOLS/Org/Terminator_Objects.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 #define ML5_BOOST_TO_CMS
 

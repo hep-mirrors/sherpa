@@ -464,6 +464,7 @@ DECLARE_TREEME2_GETTER(XS_instanton,"XS_instanton")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_instanton>::
 operator()(const External_ME_Args& args) const
 {
+  if (MODEL::s_model->Name()!="SM") return NULL;
   const Flavour_Vector fl=args.Flavours();
   if (fl.size()!=3) return NULL;
   if (!(fl[0].Strong() && fl[1].Strong() &&

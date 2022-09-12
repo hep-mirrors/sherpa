@@ -1,8 +1,9 @@
 #!/usr/bin/env python2
 
-from tensor import tensor
-from sym_var import sym_var
-from lorentz_structures import mink_metric, gamma_0, Gamma, ProjP, ProjM, gamma_5, four_identity
+from __future__ import division 
+from .tensor import tensor
+from .sym_var import sym_var
+from .lorentz_structures import mink_metric, gamma_0, Gamma, ProjP, ProjM, gamma_5, four_identity
 
 from sympy import init_printing, simplify, pprint, mathematica_code, Symbol, sqrt, I
 from sympy.functions import conjugate as cgt

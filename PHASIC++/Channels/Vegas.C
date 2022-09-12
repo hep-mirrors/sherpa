@@ -297,10 +297,9 @@ double *Vegas::GetBinsMean(int *xy) const {
 }
 
 void Vegas::AddPoint(double value, double *xy) {
-  if (m_on == 0) return;
-  if (m_mode == 1 && m_cmode & 1) {
+  if (m_mode == 1) {
     for (int i = 0; i < m_dim; i++) {
-      if (!(m_const&(1<<i)) && !IsEqual(p_x[i], xy[i], 1.e-4)) {
+      if ( !IsEqual(p_x[i], xy[i], 1.e-4)) {
         msg_Info() << "Mapping error in Vegas for " << m_name << endl;
         for (int j = 0; j < m_dim; j++)
           msg_Info() << j << ": " << p_x[j] << "<->" << xy[j] << " ("
@@ -309,6 +308,7 @@ void Vegas::AddPoint(double value, double *xy) {
       }
     }
   }
+  if (m_on == 0) return;
   for (int i = 0; i < m_dim; i++) {
     size_t l(0), r(m_nd - 1), c((l + r) / 2);
     double a(p_xi[i][c]);

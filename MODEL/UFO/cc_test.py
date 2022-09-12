@@ -3,10 +3,10 @@
 def require(test, message):
     if not test:
         raise RuntimeError("Test \"{0}\" failed".format(message))
-    print "Test \"{0}\" passed".format(message)
+    print("Test \"{0}\" passed".format(message))
 
 from math import sqrt
-from color_structures import *
+from .color_structures import *
 
 def fuzz_eq(a,b):
     if isinstance(a,complex):

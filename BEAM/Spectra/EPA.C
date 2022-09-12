@@ -4,7 +4,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/Settings.H"
 
 #include <fstream>
 #include <string>
@@ -22,31 +22,31 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
   m_vecout = Vec4D(m_energy, 0., 0., _dir * m_energy);
   m_on = true;
 
-  std::vector<double> q2Max{s["EPA_q2Max"].GetVector<double>()};
+  std::vector<double> q2Max{s["EPA"]["Q2Max"].GetVector<double>()};
   if (q2Max.size() != 1 && q2Max.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `EPA_q2Max'.");
+    THROW(fatal_error, "Specify either one or two values for `EPA:Q2Max'.");
   m_q2Max = (_dir > 0) ? q2Max.front() : q2Max.back();
 
-  std::vector<double> pt_min{s["EPA_ptMin"].GetVector<double>()};
+  std::vector<double> pt_min{s["EPA"]["PTMin"].GetVector<double>()};
   if (pt_min.size() != 1 && pt_min.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `EPA_ptMin'.");
+    THROW(fatal_error, "Specify either one or two values for `EPA:PTMin'.");
   m_pt_min = (_dir > 0) ? pt_min.front() : pt_min.back();
 
-  m_aqed = s["EPA_AlphaQED"].Get<double>();
+  m_aqed = s["EPA"]["AlphaQED"].Get<double>();
 
-  m_theta_max = s["EPA_Theta_max"].Get<double>();
+  m_theta_max = s["EPA"]["ThetaMax"].Get<double>();
 
-  m_lo_epa = s["EPA_LO"].Get<bool>();
+  m_lo_epa = s["EPA"]["Use_old_WW"].Get<bool>();
 
-  std::vector<double> xmin{s["EPA_Xmin"].GetVector<double>()};
+  std::vector<double> xmin{s["EPA"]["XMin"].GetVector<double>()};
   if (xmin.size() != 1 && xmin.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `EPA_Xmin'.");
+    THROW(fatal_error, "Specify either one or two values for `EPA:XMin'.");
   m_xmin = (_dir > 0) ? xmin.front() : xmin.back();
 
-  std::vector<int> formfactors{s["EPA_Form_Factor"].GetVector<int>()};
+  std::vector<int> formfactors{s["EPA"]["Form_Factor"].GetVector<int>()};
   if (formfactors.size() != 1 && formfactors.size() != 2)
     THROW(fatal_error,
-          "Specify either one or two values for `EPA_Form_Factor'.");
+          "Specify either one or two values for `EPA:Form_Factor'.");
   m_formfactor = (_dir > 0) ? formfactors.front() : formfactors.back();
 
   if (m_pt_min > 1.0) {
@@ -54,12 +54,12 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
        'qmi' calculation in CalculateWeight */
     THROW(critical_error, "Too big p_T cut ( " + ToString(m_pt_min) + ")");
   }
-  if (s["EPA_Debug"].Get<bool>()) {
+  if (s["EPA"]["Debug"].Get<bool>()) {
     std::vector<std::string> files{
-        s["EPA_Debug_Files"].GetVector<std::string>()};
+        s["EPA"]["Debug_Files"].GetVector<std::string>()};
     if (files.size() != 1 && files.size() != 2)
       THROW(fatal_error,
-            "Specify either one or two values for `EPA_Debug_Files'.");
+            "Specify either one or two values for `EPA:Debug_Files'.");
     std::string filename{(_dir > 0) ? files.front() : files.back()};
     std::string num(_dir > 0 ? "1" : "2");
     filename += num + ".log";
@@ -71,15 +71,15 @@ EPA::~EPA() {}
 
 void EPA::RegisterDefaults() {
   Settings &s = Settings::GetMainSettings();
-  s["EPA_q2Max"].SetDefault(2.0);
-  s["EPA_ptMin"].SetDefault(0.0);
-  s["EPA_Form_Factor"].SetDefault(m_beam.FormFactor());
-  s["EPA_AlphaQED"].SetDefault(0.0072992701);
-  s["EPA_Theta_max"].SetDefault(0.3);
-  s["EPA_Xmin"].SetDefault(0);
-  s["EPA_LO"].SetDefault(false);
-  s["EPA_Debug"].SetDefault(false);
-  s["EPA_Debug_Files"].SetDefault("EPA_debugOutput");
+  s["EPA"]["Q2Max"].SetDefault(3.0);
+  s["EPA"]["PTMin"].SetDefault(0.0);
+  s["EPA"]["Form_Factor"].SetDefault(m_beam.FormFactor());
+  s["EPA"]["AlphaQED"].SetDefault(0.0072992701);
+  s["EPA"]["ThetaMax"].SetDefault(0.3);
+  s["EPA"]["XMin"].SetDefault(0);
+  s["EPA"]["Use_old_WW"].SetDefault(false);
+  s["EPA"]["Debug"].SetDefault(false);
+  s["EPA"]["Debug_Files"].SetDefault("EPA_debugOutput");
 }
 
 double EPA::CosInt::GetCosInt(double X) {
@@ -216,8 +216,7 @@ bool EPA::CalculateWeight(double x, double q2) {
   const double alpha = m_aqed;
   m_x = x;
   m_Q2 = q2;
-  double p = m_dir > 0 ? m_vecout.PPlus() : m_vecout.PMinus();
-  if (x >= 1. - sqr(m_mass / p) || x < m_xmin) {
+  if (x > sqrt(1. - sqr(m_mass / m_energy)) || x < m_xmin) {
     m_weight = 0.0;
     return true;
   }

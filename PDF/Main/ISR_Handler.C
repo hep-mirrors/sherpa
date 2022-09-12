@@ -99,15 +99,14 @@ void ISR_Handler::Output() {
 
 void ISR_Handler::Init(const double *splimits) {
   double s = (p_beam[0]->OutMomentum() + p_beam[1]->OutMomentum()).Abs2();
-  ATOOLS::rpa->gen.SetEcms((p_beam[0]->InMomentum() + p_beam[1]->InMomentum()).Abs());
 
   m_splimits[0] = s * splimits[0];
   m_splimits[1] = ATOOLS::Min(s * splimits[1], s * Upper1() * Upper2());
   m_splimits[2] = s;
   m_fixed_smin = m_splimits[0];
   m_fixed_smax = m_splimits[1];
-  m_ylimits[0] = -20.;
-  m_ylimits[1] = 20.;
+  m_ylimits[0] = -10.;
+  m_ylimits[1] = 10.;
   m_exponent[0] = .5;
   m_exponent[1] = .98 * p_isrbase[0]->Exponent() * p_isrbase[1]->Exponent();
 }
@@ -280,12 +279,22 @@ void ISR_Handler::AssignKeys(Integration_Info *const info) {
   SetLimits();
 }
 
-void ISR_Handler::SetLimits() {
+void ISR_Handler::SetLimits(double beamy) {
   for (short int i = 0; i < 3; ++i) {
     m_sprimekey[i] = m_splimits[i];
     if (i < 2)
       m_ykey[i] = m_ylimits[i];
   }
+  // keep the sampled rapidities in the range abs(y_beam + y_ISR) < 10,
+  // as above y \approx 12 it hits numerical limits.
+  if (beamy < 0.)
+    m_ykey[0] = m_ykey[0] - beamy;
+  else if (beamy > 0.)
+    m_ykey[1] = m_ykey[1] - beamy;
+  if (m_mode == 1)
+    m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(2.*m_ykey[0]));
+  if (m_mode == 2)
+    m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(-2.*m_ykey[1]));
   m_xkey[0] = ((m_mass2[0] == 0.0)
                    ? -0.5 * std::numeric_limits<double>::max()
                    : log(m_mass2[0] / sqr(p_beam[0]->OutMomentum().PPlus())));
@@ -449,13 +458,22 @@ double ISR_Handler::Flux(const Vec4D &p1, const Vec4D &p2) {
 
 double ISR_Handler::Flux(const Vec4D &p1) { return 0.5 / p1.Mass(); }
 
-double ISR_Handler::CalcX(const ATOOLS::Vec4D &p) {
-  if (p[3] > 0.)
+double ISR_Handler::CalcX(ATOOLS::Vec4D p) {
+  if (p[3] > 0.) {
+    if (msg_LevelIsDebugging() && p[0] > p_beam[0]->OutMomentum()[0]+1.e-10)
+      msg_Out() << METHOD
+          << ": Warning, parton energy is larger than beam energy, p_parton = "
+          << p << ", p_beam = " << p_beam[0]->OutMomentum() << "\n";
     return Min(PDF(0) ? PDF(0)->XMax() : 1.,
-               p.PPlus() / p_beam[0]->OutMomentum().PPlus());
-  else
+                 p.PPlus() / p_beam[0]->OutMomentum().PPlus());
+  } else {
+    if (msg_LevelIsDebugging() && p[0] > p_beam[1]->OutMomentum()[0]+1.e-10)
+      msg_Out() << METHOD
+          << ": Warning, parton energy is larger than beam energy, p_parton = "
+          << p << ", p_beam = " << p_beam[1]->OutMomentum() << "\n";
     return Min(PDF(1) ? PDF(1)->XMax() : 1.,
                p.PMinus() / p_beam[1]->OutMomentum().PMinus());
+  }
 }
 
 bool ISR_Handler::BoostInCMS(Vec4D *p, const size_t n) {

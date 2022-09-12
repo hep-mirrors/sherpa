@@ -757,11 +757,11 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
   return true;
 }
 
-void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event, Uncertain<double> xs)
+void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event, const Uncertain<double>& xs)
 {
 #ifdef HEPMC_HAS_CROSS_SECTION
   HepMC::GenCrossSection gxs;
-  gxs.set_cross_section(xs.value, err.error);
+  gxs.set_cross_section(xs.value, xs.error);
   event.set_cross_section(gxs);
   for (size_t i(0);i<m_subeventlist.size();++i) {
     m_subeventlist[i]->set_cross_section(gxs);

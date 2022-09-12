@@ -526,7 +526,7 @@ Kernel *Shower::GetKernel(const Splitting &s,const int mode) const
 
 int Shower::RemnantTest(Parton *const c,const Vec4D &p)
 {
-  Vec4D pb(rpa->gen.PBeam(c->Beam()-1));
+  Vec4D pb(rpa->gen.PBunch(c->Beam()-1));
   if (p[0]<0.0 || p.Nan()) return -1;
   if (p[0]>pb[0] && !IsEqual(p[0],pb[0],1.0e-6)) return -1;
   return 1;

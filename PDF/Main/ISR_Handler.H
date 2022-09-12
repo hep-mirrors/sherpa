@@ -89,14 +89,14 @@ namespace PDF {
                      ATOOLS::Flavour fl1,ATOOLS::Flavour fl2,int warn=1);
     static double Flux(const ATOOLS::Vec4D& p1);
     static double Flux(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2);
-    double CalcX(const ATOOLS::Vec4D& p);
+    double CalcX(ATOOLS::Vec4D p);
 
     bool BoostInCMS(ATOOLS::Vec4D *p,size_t n);
     bool BoostInLab(ATOOLS::Vec4D *p,size_t n);
     ATOOLS::Poincare* GetCMSBoost() { return &m_cmsboost; }
 
     void AssignKeys(ATOOLS::Integration_Info *info);
-    void SetLimits();
+    void SetLimits(double beamy = 0.);
     void Reset();
     void Reset(size_t i) const;
 

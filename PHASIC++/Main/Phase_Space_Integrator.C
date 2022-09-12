@@ -33,14 +33,14 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   // number of optimisation steps
   m_npower = s["NPOWER"].Get<double>();
   m_nopt = s["NOPT"].GetScalarWithOtherDefault
-    <long unsigned int>(m_npower?7:25);
+    <long unsigned int>(m_npower?10:25);
   m_maxopt = s["MAXOPT"].GetScalarWithOtherDefault
     <long unsigned int>(m_npower?3:5);
   m_stopopt = s["STOPOPT"].Get<long unsigned int>();
   // number of points per iteration
   const auto procitmin = p_psh->Process()->Process()->Info().m_itmin;
   m_itmin = s["ITMIN"].GetScalarWithOtherDefault
-    <long unsigned int>((m_npower?1:5)*procitmin);
+    <long unsigned int>((m_npower?5:5)*procitmin);
   // time steps
   m_timestep = s["TIMESTEP_OFFSET"].Get<double>();
   m_timeslope = s["TIMESTEP_SLOPE"].Get<double>();
@@ -71,7 +71,7 @@ void Phase_Space_Integrator::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["PSI"] };
   s["NRAWMAX"].SetDefault(std::numeric_limits<long unsigned int>::max());  // n_{max,raw}
-  s["NPOWER"].SetDefault(1.);
+  s["NPOWER"].SetDefault(.5);
   s["STOPOPT"].SetDefault(0);  // n_{stopopt}
   s["TIMESTEP_OFFSET"].SetDefault(0.0);  // \Delta t offset
   s["TIMESTEP_SLOPE"].SetDefault(0.0);  // \Delta t slope

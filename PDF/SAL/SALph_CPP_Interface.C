@@ -10,27 +10,16 @@
 using namespace PDF;
 using namespace ATOOLS;
 
-SALph_CPP_Interface::SALph_CPP_Interface(const ATOOLS::Flavour _bunch) {
+SALph_CPP_Interface::SALph_CPP_Interface(const ATOOLS::Flavour _bunch)
+    : Photon_PDF_Base(_bunch, "SAL", 6) {
+  // This is acutally an upper limit, as the x_min is dependent on the flavour
   m_xmin = 1.e-5;
   m_xmax = 0.9999;
   m_q2min = 2.;
   m_q2max = 8.e4;
-  m_nf = 6;
 
-  m_set = "SAL";
-  m_bunch = _bunch;
-  m_d = m_u = m_s = m_c = m_b = m_t = m_g = 0.;
-
-  for (int i = 1; i < m_nf + 1; i++) {
-    m_partons.insert(Flavour((kf_code)(i)));
-    m_partons.insert(Flavour((kf_code)(i)).Bar());
-  }
-  m_partons.insert(Flavour(kf_gluon));
-  m_partons.insert(Flavour(kf_jet));
-  m_partons.insert(Flavour(kf_quark));
-  m_partons.insert(Flavour(kf_quark).Bar());
-
-  rpa->gen.AddCitation(1,"The SAL photon PDF is published under \\cite{Slominski:2005bw}.");
+  rpa->gen.AddCitation(
+      1, "The SAL photon PDF is published under \\cite{Slominski:2005bw}.");
 }
 
 PDF_Base *SALph_CPP_Interface::GetCopy() {
@@ -38,6 +27,9 @@ PDF_Base *SALph_CPP_Interface::GetCopy() {
 }
 
 void SALph_CPP_Interface::CalculateSpec(const double &_x, const double &_Q2) {
+  if (m_include_photon_in_photon)
+    m_ph = GetPhotonCoefficient(_x, _Q2);
+
   double x = _x / m_rescale, Q2 = _Q2;
 
   if (x < m_xmin || x > m_xmax)
@@ -56,6 +48,12 @@ void SALph_CPP_Interface::CalculateSpec(const double &_x, const double &_Q2) {
     msg_Error() << "Error in SALph_Fortran_Interface.C " << std::endl
                 << "   path " << path << " not found." << std::endl;
 
+  // Adapt from SAL to Sherpa convention
+  double alphaem = MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
+  for (int i = 0; i < 7; ++i) {
+    f[i] *= x * alphaem;
+  }
+
   m_g = x * f[0];
   m_d = x * f[1];
   m_u = x * f[2];
@@ -63,52 +61,6 @@ void SALph_CPP_Interface::CalculateSpec(const double &_x, const double &_Q2) {
   m_c = x * f[4];
   m_b = x * f[5];
   m_t = x * f[6];
-}
-
-double SALph_CPP_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
-  double value = 0.;
-
-  if (infl.Kfcode() == kf_gluon)
-    value = m_g;
-  else if (infl.Kfcode() == kf_d)
-    value = m_d;
-  else if (infl.Kfcode() == kf_u)
-    value = m_u;
-  else if (infl.Kfcode() == kf_s)
-    value = m_s;
-  else if (infl.Kfcode() == kf_c)
-    value = m_c;
-  else if (infl.Kfcode() == kf_b)
-    value = m_b;
-  else if (infl.Kfcode() == kf_t)
-    value = m_t;
-
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
-
-  return m_rescale * value;
-}
-
-double SALph_CPP_Interface::GetXPDF(const kf_code &kf, bool anti) {
-  double value = 0.;
-
-  if (kf == kf_gluon)
-    value = m_g;
-  else if (kf == kf_d)
-    value = m_d;
-  else if (kf == kf_u)
-    value = m_u;
-  else if (kf == kf_s)
-    value = m_s;
-  else if (kf == kf_c)
-    value = m_c;
-  else if (kf == kf_b)
-    value = m_b;
-  else if (kf == kf_t)
-    value = m_t;
-
-  value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
-
-  return m_rescale * value;
 }
 
 DECLARE_PDF_GETTER(SALph_Getter);
