@@ -46,7 +46,7 @@ void Cross_Sections::CalculateCrossSections()
   MBpars.SetXSecs(this);
   m_sigma_inelastic.SetSigma(m_xsinel);
   m_sigma_elastic.SetSigma(m_xsel);
-  m_sigma_SD.SetSigma(m_xsSD[0]+m_xsSD[1]+m_xsSD[2]);
+  m_sigma_SD.SetSigma(m_xsSD[0]+m_xsSD[1]);
 }
 
 void Cross_Sections::Test(const std::string & dirname)

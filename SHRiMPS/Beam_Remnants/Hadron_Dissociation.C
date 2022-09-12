@@ -126,6 +126,7 @@ bool Hadron_Dissociation::CompensateColours() {
     p_softblob->AddToOutParticles(out);
     m_qtmap[out] = Vec4D(0.,0.,0.,0.);
   }
+  return true;
 }
 
 void Hadron_Dissociation::CleanColours() {
@@ -244,6 +245,7 @@ CalculateParallelMomenta(Vec4D & qmom,Vec4D & dimom) {
     x = m_xmin+ran->Get()*(xmax-m_xmin);
     p_pdf->Calculate(x,0.);
     if (p_pdf->XPDF(m_quark)/p_pdf->XPDFMax(m_quark)>ran->Get()) break;
+    trials++;
   }
   qmom  = x*m_beamvec;
   dimom = m_outmom-qmom;

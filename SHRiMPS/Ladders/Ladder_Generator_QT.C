@@ -133,7 +133,7 @@ Ladder * Ladder_Generator_QT::MakeRescatterLadder(LadderMap::iterator lit[2],
   for (size_t i=0;i<2;i++) parts[i] = &lit[i]->second;
   size_t trials = 100;
   Ladder * rescatter = InitializeRescatterLadder(parts);
-  while (trials>=0) {
+  while (true) {
     for (size_t i=0;i<2;i++) {
       m_q[i]    = parts[i]->Momentum();
       m_y[i][0] = m_y[i][1] = m_q[i].Y();
@@ -218,7 +218,7 @@ void Ladder_Generator_QT::AddEmission(Ladder * ladder,size_t dir, TPropList::ite
   m_q[dir]      -= m_k[dir];	
   m_y[dir][1]    = m_y[dir][0];
   m_qt2prev[dir] = m_qt2;
-  if (dabs(m_y[dir][0])<m_Ymax) { m_y[dir][0] == (dir==0 ? m_Ymax : -m_Ymax); }
+  if (dabs(m_y[dir][0])<m_Ymax) { m_y[dir][0] = (dir==0 ? m_Ymax : -m_Ymax); }
 }
 
 bool Ladder_Generator_QT::LastEmissions(Ladder * ladder) {
