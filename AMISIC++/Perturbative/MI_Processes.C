@@ -310,12 +310,15 @@ void MI_Processes::Update(double s) {
 }
 
 bool MI_Processes::FillCaches() {
+  msg_Out() << METHOD << ": Filling cache for multi-parton interactions, for " << m_sbins << " bins: \n";
   m_test = false;
   m_sstep = std::pow(4*m_ptmin2/m_S_lab, 1./m_sbins);
   m_cache_diffbins.resize(m_sbins,std::vector<double>(m_nbins));
   m_cache_intbins.resize(m_sbins,std::vector<double>(m_nbins));
   m_cache_integral.resize(m_sbins);
   for (int sbin = 0; sbin < m_sbins; ++sbin) {
+    msg_Info() << "  Integrating bin " << sbin+1 << " of " << m_sbins << ". \n";
+    if (sbin != m_sbins-1) msg_Info() << mm(1,mm::up);
     m_S = m_S_lab * std::pow(m_sstep, sbin);
     (*p_xsecs)(m_S);
     m_sigmaND = p_xsecs->XSnd();
@@ -328,13 +331,10 @@ bool MI_Processes::FillCaches() {
       m_cache_diffbins[sbin][ptbin] = sigma;
       m_cache_intbins[sbin][ptbin] = sigma * dpt2/m_sigmaND;
       m_cache_integral[sbin] += sigma * dpt2;
-      //msg_Out()<<"   Sudakov(pt = "<<sqrt(pt2)<<") = "
-      //	     <<m_intbins[bin]<<" from "<<((sigmalast + sigma)/2./m_sigmaND)
-      //	     <<" * "<<dpt2<<".\n";
       pt2last        = pt2;
     }
-    if (m_test) Test();
   }
+  msg_Info() << "  Caching successfully completed. \n";
   m_integral = m_cache_integral[m_sbins-1];
   return true;
 }
