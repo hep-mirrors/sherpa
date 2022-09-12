@@ -49,7 +49,6 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler *isr,
   // the ISR_Handler.
   // TODO: this latter part may become obsolete - I will have to check this.
   for (size_t i = 0; i < 2; ++i) {
-    p_remnants[i]->SetPartner(p_remnants[1 - i]);
     p_remnants[i]->SetBeam(beam->GetBeam(i));
     p_remnants[i]->SetColours(&m_colours);
     p_remnants[i]->Reset();

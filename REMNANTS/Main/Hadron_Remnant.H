@@ -20,14 +20,12 @@ namespace REMNANTS {
     double m_alpha, m_gamma, m_beta, m_invb, m_LambdaQCD;
 
     void ConstructConstituentFlavours();
-    void ConstructAllowedPartons();
 
     bool IsValence(ATOOLS::Particle * part);
     void MakeSpectator(ATOOLS::Particle * parton);
     void CompensateColours();
     bool MakeRemnants();
     void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true);
-    bool ConstructPartner(ATOOLS::Particle * part);
     double SelectZ(const ATOOLS::Flavour & flav,const bool & isvalence);
     ATOOLS::Particle * MakeParticle(const ATOOLS::Flavour & flav);
     ATOOLS::Flavour    RemnantFlavour(const ATOOLS::Flavour & flav);
@@ -37,8 +35,6 @@ namespace REMNANTS {
     ~Hadron_Remnant() {}
 
     bool FillBlob(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true);
-    bool AdjustKinematics();
-    bool AdjustColours();
     bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom);
     void Reset(const bool & DIS=false);
     

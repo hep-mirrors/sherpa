@@ -36,13 +36,11 @@ namespace REMNANTS {
     unsigned int m_beam;
 
     BEAM::Beam_Base  * p_beam;
-    Remnant_Base     * p_partner;    
     ATOOLS::Blob     * p_beamblob;
     ATOOLS::Part_List  m_extracted, m_spectators;
     Colour_Generator * p_colours;
 
-    bool   m_rescale;
-    double m_residualE, m_scale2, m_x;
+    double m_energy, m_scale2;
 
     long unsigned int m_errors;
   public:
@@ -61,7 +59,6 @@ namespace REMNANTS {
     virtual void Reset(const bool & DIS=false);
     inline rtp::code    Type() const                 { return m_type; }
     inline unsigned int Beam() const                 { return m_beam; }
-    inline void SetPartner(Remnant_Base * partner)   { p_partner = partner; }
     inline void SetBeam(BEAM::Beam_Base * beam)      { p_beam = beam; }
     inline BEAM::Beam_Base * GetBeam() const         { return p_beam; }
     inline ATOOLS::Blob * GetBlob()                  { return p_beamblob; }
