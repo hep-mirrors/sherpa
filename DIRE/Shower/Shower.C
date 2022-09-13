@@ -503,12 +503,13 @@ double Shower::GetXPDF
     if (fl.Strong() || fl.Mass()<10.0) return 0.0;
     return 1.0;
   }
-  if (Q2<sqr(2.0*fl.Mass(true))) return 0.0;
+  double scaled_Q2 {m_fsf * Q2};
+  if (scaled_Q2<sqr(2.0*fl.Mass(true))) return 0.0;
   if (x<p_pdf[b]->XMin() ||
       x>p_pdf[b]->XMax()*p_pdf[b]->RescaleFactor() ||
-      Q2<p_pdf[b]->Q2Min() || Q2>p_pdf[b]->Q2Max())
+      scaled_Q2<p_pdf[b]->Q2Min() || scaled_Q2>p_pdf[b]->Q2Max())
     return 0.0;
-  p_pdf[b]->Calculate(x,m_fsf*Q2);
+  p_pdf[b]->Calculate(x,scaled_Q2);
   return p_pdf[b]->GetXPDF(fl.Bar());
 }
 
