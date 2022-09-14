@@ -1,5 +1,6 @@
 #include "PHASIC++/Process/Process_Base.H"
 
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
@@ -12,6 +13,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Decay_Info.H"
+#include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -40,7 +42,7 @@ Process_Base::Process_Base():
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL)
+  p_apmap(NULL), p_read(NULL)
 {
   if (s_usefmm<0)
     s_usefmm =
@@ -313,6 +315,24 @@ void Process_Base::Init(const Process_Info &pi,
     m_symfac*=(m_issymfac=2.0);
   m_name+=pi.m_addname;
   m_resname=m_name;
+}
+
+bool Process_Base::SetupEventReader(const std::string &fnames)
+{
+  size_t pos(fnames.find('['));
+  std::string type(fnames.substr(0,pos));
+  std::string args(fnames.substr(pos+1,fnames.length()-pos-2));
+  Event_Reader_Key key;
+  while (args.length()) {
+    pos=args.find(',');
+    key.m_files.push_back(args.substr(0,pos));
+    args.erase(0,pos!=std::string::npos?pos+1:args.length());
+  }
+  if (key.m_files.empty()) return false;
+  p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
+  if (p_read==NULL && s_loader->LoadLibrary("Sherpa"+type+"Reader"))
+    p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
+  return p_read!=NULL;
 }
 
 std::string Process_Base::BaseName

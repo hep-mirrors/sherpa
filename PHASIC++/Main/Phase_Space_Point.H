@@ -40,6 +40,7 @@ namespace PHASIC {
     YFS::YFS_Handler                * p_yfshandler;
     ATOOLS::Vec4D_Vector            & p_moms;
     Cut_Data                        * p_cuts;
+    ATOOLS::Cluster_Amplitude       * p_point;
     Multi_Channel  * p_beamchannels, * p_isrchannels, * p_fsrchannels;
     ATOOLS::Info_Key m_beamspkey, m_beamykey, m_isrspkey, m_isrykey;
     
@@ -86,6 +87,7 @@ namespace PHASIC {
       m_isrspkey[3] = pin.Abs2();
       m_isrykey[2]  = pin.Y();
     }
+    inline void SetPoint(ATOOLS::Cluster_Amplitude *const ca) { p_point=ca; }
     inline void SetOSMass(const double &osmass) {
       m_osmass = osmass;
       m_isrspkey[4] = osmass*osmass;

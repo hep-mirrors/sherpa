@@ -17,6 +17,7 @@ namespace ATOOLS {
   class Blob_Data_Base; 
   class Poincare;
   class Mass_Selector;
+  class Cluster_Amplitude;
   struct Weight_Info;
 }
 
@@ -51,6 +52,7 @@ namespace PHASIC {
     int                          m_nin, m_nout, m_nvec;
     ATOOLS::Flavour_Vector       p_flavours;
     ATOOLS::Vec4D_Vector         p_lab;
+    ATOOLS::Cluster_Amplitude  * p_point;
 
     Process_Integrator          * p_process, *p_active;
     Phase_Space_Integrator      * p_integrator;
@@ -162,6 +164,11 @@ namespace PHASIC {
     inline void SetBeamIntegrator(Multi_Channel * channels) { m_pspoint.SetBeamIntegrator(channels); }
     inline void SetISRIntegrator(Multi_Channel * channels)  { m_pspoint.SetISRIntegrator(channels); }
     inline void SetFSRIntegrator(Multi_Channel * channels)  { m_pspoint.SetFSRIntegrator(channels); }
+
+    inline void SetPoint(ATOOLS::Cluster_Amplitude *const ampl) {
+      p_point = ampl;
+      m_pspoint.SetPoint(ampl);
+    }
 
     inline BEAM::Beam_Spectra_Handler   * GetBeamSpectra() const { return p_beamhandler; }
     inline PDF::ISR_Handler              * GetISRHandler() const { return p_isrhandler; }
