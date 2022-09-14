@@ -184,6 +184,7 @@ void Run_Parameter::RegisterDefaults()
   s["SHERPA_CPP_PATH"].SetDefault("");
   s["SHERPA_LIB_PATH"].SetDefault("");
   s["EVENTS"].SetDefault(100);
+  s["EMULATE_MPI"].SetDefault(0);
 
   std::vector<long int> seeds = {-1, -1, -1, -1};
   s["RANDOM_SEED"].SetDefault(seeds);
@@ -277,6 +278,15 @@ void Run_Parameter::Init()
 
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
+  std::vector<int> mpiinfo;
+  if (s["EMULATE_MPI"].Get<int>()) {
+    if (mpiinfo.size()==2) {
+      msg_Info()<<METHOD<<"(): Emulating a run on rank "
+		<<mpiinfo[0]<<" of "<<mpiinfo[1]<<"."<<std::endl;
+      mpi->SetMyRank(mpiinfo[0]);
+      mpi->SetMySize(mpiinfo[1]);
+    }
+  }
   // read only if defined (no error message if not defined)
   long int seed;
   std::vector<long int> seeds = s["RANDOM_SEED"].GetVector<long int>();
@@ -301,8 +311,8 @@ void Run_Parameter::Init()
   }
 
 #ifdef USING__MPI
-  int rank=mpi->Rank();
-  int size=mpi->Size();
+  int rank=mpi->MyRank();
+  int size=mpi->MySize();
   if (s["MPI_EVENT_MODE"].Get<int>()==1) {
     gen.m_nevents = (gen.m_nevents%size == 0) ? (gen.m_nevents/size) : (gen.m_nevents/size+1);
   }

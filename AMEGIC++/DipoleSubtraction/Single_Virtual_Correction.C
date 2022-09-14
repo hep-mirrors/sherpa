@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
@@ -824,7 +825,14 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
     m_eta0=mom[0][3]>0.0?mom[0].PPlus()/rpa->gen.PBunch(0).PPlus():
       mom[0].PMinus()/rpa->gen.PBunch(1).PMinus();
     if (m_z0>0.) m_x0 = m_z0;
-    else         m_x0 = m_eta0+p_fsmc->ERan("z_1")*(1.-m_eta0);
+    else {
+         m_x0 = m_eta0+p_fsmc->ERan("z_1")*(1.-m_eta0);
+	 if (p_read) {
+		 m_x0=m_eta0+p_read->SubEvt()->m_x1*(1.-m_eta0);
+		 msg_Debugging()<<"read in x0 = "<<m_x0
+			 <<" ("<<p_read->SubEvt()->m_x1<<") "<<m_eta0<<"\n";
+	 }
+    }
     weight*=(1.-m_eta0);
     msg_Debugging()<<"x0="<<m_x0<<std::endl;
   }
@@ -832,7 +840,14 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
     m_eta1=mom[1][3]<0.0?mom[1].PMinus()/rpa->gen.PBunch(1).PMinus():
       mom[1].PPlus()/rpa->gen.PBunch(0).PPlus();
     if (m_z1>0.) m_x1 = m_z1;
-    else         m_x1 = m_eta1+p_fsmc->ERan("z_2")*(1.-m_eta1);
+    else {
+        m_x1 = m_eta1+p_fsmc->ERan("z_2")*(1.-m_eta1);
+	 if (p_read) {
+		 m_x1=m_eta1+p_read->SubEvt()->m_x2*(1.-m_eta1);
+		 msg_Debugging()<<"read in x1 = "<<m_x1
+			 <<" ("<<p_read->SubEvt()->m_x2<<") "<<m_eta1<<"\n";
+	 }
+    }
     weight*=(1.-m_eta1);
     msg_Debugging()<<"x1="<<m_x1<<std::endl;
   }

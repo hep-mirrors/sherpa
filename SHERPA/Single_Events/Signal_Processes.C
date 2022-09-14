@@ -63,7 +63,12 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
           FillBlob(bloblist,blob)) {
         return Return_Value::Success; 
       }
-      else return Return_Value::New_Event;
+      else {
+	if (rpa->gen.NumberOfEvents()==
+	    rpa->gen.NumberOfGeneratedEvents())
+	  return Return_Value::Error;
+	return Return_Value::New_Event;
+      }
     }
   }
   return Return_Value::Nothing;

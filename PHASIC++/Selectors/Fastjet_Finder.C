@@ -15,6 +15,7 @@ namespace PHASIC {
 }
 
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PHASIC;
@@ -36,7 +37,8 @@ Fastjet_Finder::Fastjet_Finder(Process_Base* const proc, Scoped_Settings s,
 
 bool Fastjet_Finder::Trigger(Selector_List &sl)
 {
-  if (m_nj<1) return true;
+  if (mpi->Rank()) fjcore::ClusterSequence::set_fastjet_banner_stream(NULL);
+  bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
 
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
 

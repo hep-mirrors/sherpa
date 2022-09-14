@@ -19,6 +19,7 @@
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
 #include "YODA/Config/BuildConfig.h"
+#include "YODA/AnalysisObject.h"
 #ifdef RIVET_ENABLE_HEPMC_3
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "HepMC3/GenEvent.h"
@@ -36,6 +37,7 @@
 #define HEPMCNS HepMC
 #endif
 
+#define USING__Rivet_MPI_Merge
 
 namespace SHERPARIVET {
   typedef std::pair<std::string, int> RivetMapKey;
@@ -54,6 +56,13 @@ namespace SHERPARIVET {
     SHERPA__HepMC_Interface       m_hepmc2;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
+#if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+#ifndef  RIVET_ENABLE_HEPMC_3
+    HepMC::GenEvent m_lastevent;
+#else
+    HepMC3::GenEvent m_lastevent;
+#endif
+#endif
 
     Rivet::AnalysisHandler* GetRivet(std::string proc,
                                      int jetcont);
@@ -99,9 +108,10 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   if (m_outpath.rfind('/')!=std::string::npos)
     MakeDir(m_outpath.substr(0,m_outpath.rfind('/')), true);
 #ifdef USING__MPI
-  if (mpi->Size()>1) {
+#if ! ( defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge) )
+  if (mpi->Size()>1)
     m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
-  }
+#endif
 #endif
 }
 
@@ -277,6 +287,17 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 #else
   m_hepmc2.AddCrossSection(event, p_eventhandler->TotalNominalXS());
 #endif
+#if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+#ifndef  RIVET_ENABLE_HEPMC_3
+  if (m_lastevent.vertices_begin()==m_lastevent.vertices_end()) {
+#else
+  if (m_lastevent.vertices().empty()) {
+#endif
+    m_lastevent=event;
+    for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
+  }
+  m_lastevent.set_cross_section(xs);
+#endif
 
   if (subevents.size()) {
     for (size_t i(0);i<subevents.size();++i) {
@@ -285,7 +306,34 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     m_hepmc2.DeleteGenSubEventList();
   }
   else {
+#ifdef RIVET__Use_Explicit_Variations
+    const HepMC::WeightContainer& wc(event.weights());
+    std::map<std::string,double> wgtmap;
+    MyStrStream str;
+    str.precision(m_hepmcoutputprecision);
+    wc.print(str);
+    while (str) {
+      double wgt(0.);
+      std::string cur("");
+      str>>cur;
+      if (cur.length()==0) continue;
+      wgt=ToType<double>(cur.substr(cur.find(",")+1,cur.find(")")-1));
+      cur=cur.substr(1,cur.find(",")-1);
+      if (cur.find("MUR")!=std::string::npos &&
+	  cur.find("MUF")!=std::string::npos &&
+	  cur.find("PDF")!=std::string::npos) {
+	wgtmap[cur]=wgt;
+      }
+      else if (cur=="Weight")  wgtmap[""]=wgt;
+    }
+    for (std::map<std::string,double>::const_iterator
+	   wit(wgtmap.begin());wit!=wgtmap.end();++wit) {
+      event.weights().front()=wit->second;
+      GetRivet(wit->first,0)->analyze(event);
+    }
+#else
     GetRivet("",0)->analyze(event);
+#endif
     Blob *sp(bl->FindFirst(btp::Signal_Process));
     size_t parts=0;
     if (sp) {
@@ -295,7 +343,15 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
       parts=ToType<size_t>(multi);
     }
     if (m_splitjetconts && sp) {
+#ifdef RIVET__Use_Explicit_Variations
+      for (std::map<std::string,double>::const_iterator
+	     wit(wgtmap.begin());wit!=wgtmap.end();++wit) {
+	event.weights().front()=wit->second;
+	GetRivet(wit->first,parts)->analyze(event);
+      }
+#else
       GetRivet("",parts)->analyze(event);
+#endif
     }
     if (m_splitcoreprocs && sp) {
       GetRivet(GetCoreProc(sp->TypeSpec()),0)->analyze(event);
@@ -348,6 +404,7 @@ bool Rivet_Interface::Finish()
     it.second->setCrossSection(thisxs, 0.0, true);
     it.second->finalize();
     it.second->writeData(OutputPath(it.first));
+
   }
   m_finished=true;
   return true;

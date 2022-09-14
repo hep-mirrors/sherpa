@@ -168,7 +168,6 @@ bool Comix::Initialize(MODEL::Model_Base *const model,
   p_int->SetBeam(beamhandler); 
   p_int->SetISR(isrhandler);
   SetPSMasses();
-
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
   s_partcommit = s["PARTIAL_COMMIT"].Get<int>();
   PrintLogo(msg->Info());

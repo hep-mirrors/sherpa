@@ -83,7 +83,6 @@ Initialization_Handler::Initialization_Handler() :
     msg_Out()<<"Sherpa will read in events as "<<m_evtform<<endl;
   }
 
-  ATOOLS::s_loader->SetCheck(s["CHECK_LIBLOCK"].Get<int>());
 
   rpa->Init();
   CheckVersion();
@@ -653,12 +652,12 @@ bool Initialization_Handler::InitializeTheIO()
     std::string libname(outputs[i]);
     if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
     Output_Base* out=Output_Base::Getter_Function::GetObject
-      (outputs[i], Output_Arguments(outpath, outfile));
+      (outputs[i],Output_Arguments(outpath,outfile,this));
     if (out==NULL) {
       if (!s_loader->LoadLibrary("Sherpa"+libname+"Output"))
 	THROW(missing_module,"Cannot load output library Sherpa"+libname+"Output.");
       out=Output_Base::Getter_Function::GetObject
-	(outputs[i], Output_Arguments(outpath, outfile));
+	(outputs[i], Output_Arguments(outpath, outfile, this));
     }
     if (out==NULL) THROW(fatal_error,"Cannot initialize "+outputs[i]+" output");
     m_outputs.push_back(out);

@@ -135,11 +135,22 @@ namespace SHERPA {
       m_p.resize(flavs.size());
       m_mode=1;
       m_drmode=p_proc->GetScheme();
+      static int polecheck(-1);
+      if (polecheck<0) {
+	Data_Reader reader(" ",";","!","=");
+	reader.AddComment("#");
+	reader.SetInputPath(rpa->GetPath());
+	reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+	reader.ReadFromFile(polecheck,"CHECK_POLES");
+      }
+      p_proc->SetPoleCheck(polecheck);
+      m_providespoles=polecheck;
     }
 
     void SetPoleCheck(const int check)
     {
       p_proc->SetPoleCheck(check);
+      m_providespoles=check;
     }
 
     void Calc(const ATOOLS::Vec4D_Vector &p)
@@ -258,6 +269,9 @@ operator()(const External_ME_Args &args) const
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
   MCFM::Process_Info mpi(ids,args.m_inflavs.size(),
 			 args.m_orders[0],args.m_orders[1]);
+  std::string modelname(str_tolower(MODEL::s_model->Name()));
+  if (modelname=="smehc") modelname="heft";
+  mpi.m_model=str_tolower(modelname);
   int pid(MCFM_Interface::GetMCFM().InitializeProcess(mpi));
   if (pid>=0) return new MCFM_Born(args,pid);
   return NULL;

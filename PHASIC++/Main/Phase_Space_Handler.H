@@ -17,6 +17,7 @@ namespace ATOOLS {
   class Blob_Data_Base; 
   class Poincare;
   class Mass_Selector;
+  class Cluster_Amplitude;
   struct Weight_Info;
 }
 

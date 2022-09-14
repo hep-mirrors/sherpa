@@ -6,6 +6,7 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PHASIC++/Channels/CS_Dipole.H"
 #include "PDF/Main/ISR_Handler.H"
@@ -89,6 +90,21 @@ Process_Base *Single_Process::operator[](const size_t &i)
 Weight_Info *Single_Process::OneEvent(const int wmode,
                                       ATOOLS::Variations_Mode varmode,
                                       const int mode) {
+  if (p_read) {
+    msg_Debugging()<<"Reader type is "<<Demangle(typeid(*p_read).name())<<"\n";
+    Cluster_Amplitude *ampl(p_read->ReadEvent());
+    if (ampl==NULL) return NULL;
+    msg_Debugging()<<*ampl<<"\n";
+    //p_int->PSHandler()->SetPoint(ampl);
+    //Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,mode));
+    //p_int->PSHandler()->SetPoint(NULL);
+    ampl->Delete();
+    //if (winfo) msg_Debugging()<<"Weight info: "<<*winfo<<"\n";
+    //else msg_Debugging()<<"No weight info\n";
+    //return winfo;
+    return NULL;
+  }
+
   p_selected = this;
   auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
@@ -604,6 +620,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
             // NOTE: here we reset the adjustments we have done above
             proc->SetLookUp(lookup);
             proc->SetMCMode(mcmode);
+
           }
         }
       }
@@ -1168,6 +1185,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
+  if (p_read) return true;
   double var(p_int->TotalVar());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
             <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;

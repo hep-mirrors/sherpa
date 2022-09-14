@@ -5,6 +5,7 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Phase_Space_Integrator.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
@@ -12,6 +13,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Decay_Info.H"
+#include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -40,7 +42,7 @@ Process_Base::Process_Base():
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL)
+  p_apmap(NULL), p_read(NULL)
 {
   if (s_usefmm<0)
     s_usefmm =
@@ -241,15 +243,6 @@ void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
 void Process_Base::SortFlavours(Process_Info &pi,const int mode)
 {
   FMMap fmm;
-  for (size_t i(0);i<pi.m_ii.m_ps.size();++i) {
-    const Flavour *hfl=&pi.m_ii.m_ps[i].m_fl;
-    if (fmm.find(int(hfl->Kfcode()))==fmm.end())
-      fmm[int(hfl->Kfcode())]=0;
-    if (hfl->IsFermion()) {
-      fmm[int(hfl->Kfcode())]+=10;
-      if (!hfl->IsAnti()) fmm[int(hfl->Kfcode())]+=10;
-    }
-  }
   for (size_t i(0);i<pi.m_fi.m_ps.size();++i) {
     const Flavour *hfl=&pi.m_fi.m_ps[i].m_fl;
     if (fmm.find(int(hfl->Kfcode()))==fmm.end())
@@ -330,7 +323,39 @@ std::string Process_Base::BaseName
   return fname;
 }
 
-std::string Process_Base::GenerateName(const Subprocess_Info &info)
+bool Process_Base::SetupEventReader(const std::string &fnames)
+{
+  size_t pos(fnames.find('['));
+  std::string type(fnames.substr(0,pos));
+  std::string args(fnames.substr(pos+1,fnames.length()-pos-2));
+  Event_Reader_Key key;
+  while (args.length()) {
+    pos=args.find(',');
+    std::string tag(args.substr(0,pos));
+    size_t bpos(tag.find('[')), epos(tag.find(']'));
+    size_t mpos (tag.find('-',bpos));
+    if (bpos!=std::string::npos && epos!=std::string::npos &&
+	mpos>bpos+1 && mpos<epos-1) {
+      size_t start(ToType<int>(tag.substr(bpos+1,mpos-bpos-1)));
+      size_t stop(ToType<int>(tag.substr(mpos+1,epos-mpos-1)));
+      std::string left(tag.substr(0,bpos));
+      std::string right(tag.substr(epos+1,tag.length()-epos-1));
+      for (size_t i(start);i<=stop;++i)
+	key.m_files.push_back(left+ToString(i)+right);
+    }
+    else {
+      key.m_files.push_back(tag);
+    }
+    args.erase(0,pos!=std::string::npos?pos+1:args.length());
+  }
+  if (key.m_files.empty()) return false;
+  p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
+  if (p_read==NULL && s_loader->LoadLibrary("Sherpa"+type+"Reader"))
+    p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
+  return p_read!=NULL;
+}
+
+std::string Process_Base::GenerateName(const Subprocess_Info &info) 
 {
   std::string name(info.m_fl.IDName());
   if (info.m_fl.Kfcode()==kf_quark && info.m_fl.IsAnti()) name+="b";
@@ -412,12 +437,6 @@ void Process_Base::SortFlavours
     if (i<ampl->NIn()) {
       ampl->Leg(i)->SetFlav(ampl->Leg(i)->Flav().Bar());
       il.push_back(ampl->Leg(i));
-      int kfc(ampl->Leg(i)->Flav().Kfcode());
-      if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
-      if (ampl->Leg(i)->Flav().IsFermion()) {
-	fmm[kfc]+=10;
-	if (!ampl->Leg(i)->Flav().IsAnti()) fmm[kfc]+=10;
-      }
     }
     else {
       if (dec[i]) continue;
@@ -426,7 +445,7 @@ void Process_Base::SortFlavours
       if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
       if (ampl->Leg(i)->Flav().IsFermion()) ++fmm[kfc];
     }
-  if (mode&1) SortFlavours(il,s_usefmm?&fmm:NULL);
+  if (mode&1) SortFlavours(il,NULL);
   for (size_t i(0);i<cs.size();++i) {
     ampl->CreateLeg(Vec4D(),cs[i]->m_fl,ColorID(),cs[i]->m_id);
     fl.push_back(ampl->Legs().back());
@@ -505,6 +524,15 @@ void Process_Base::SetGenerator(ME_Generator_Base *const gen)
 void Process_Base::SetShower(PDF::Shower_Base *const ps)
 {
   p_shower=ps;
+}
+
+bool Process_Base::IsZeroEvent()
+{
+  if (p_read==NULL) return false;
+  Cluster_Amplitude *ampl(p_read->ReadEvent());
+  if (ampl==NULL) return true;
+  p_read->SetAmpl(ampl);
+  return false;
 }
 
 void Process_Base::SetNLOMC(PDF::NLOMC_Base *const mc)

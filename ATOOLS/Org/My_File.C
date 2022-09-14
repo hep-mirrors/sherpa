@@ -255,7 +255,6 @@ bool My_File<FileType>::Open()
 #endif
 	return false;
       }
-      msg_IODebugging()<<infile.rdbuf()<<"\n";
       (*p_stream)<<infile.rdbuf();
 #ifdef USING__MPI
       std::string content(p_stream->str());
@@ -284,9 +283,11 @@ bool My_File<FileType>::Open()
 template <class FileType>
 bool My_File<FileType>::Close()
 {
-  if (p_file == nullptr)
-    return false;
-  auto os = dynamic_cast<std::ofstream*>(p_file.get());
+  if (p_file==NULL) return false;
+  std::ofstream *os=dynamic_cast<std::ofstream*>(&*p_file);
+#ifdef USING__MPI
+  if (mpi->Rank()==0)
+#endif
   if (os) {
     bool indb(false);
     for (ZipArchive_Map::iterator zit(s_ziparchives.begin());
@@ -301,9 +302,6 @@ bool My_File<FileType>::Close()
 	indb=true;
 	break;
       }
-#ifdef USING__MPI
-    if (mpi->Rank()==0)
-#endif
     if (!indb) {
       std::ofstream file(m_path+m_file);
       file<<p_stream->str();

@@ -67,6 +67,9 @@ Fastjet_Enhance_Observable::Fastjet_Enhance_Observable
 (const Enhance_Arguments &args): Enhance_Observable_Base(args),
   p_jdef(NULL)
 {
+  if (mpi->Rank())
+    fjcore::ClusterSequence::
+      set_fastjet_banner_stream(NULL);
   std::string jtag(args.m_enhance);
   size_t pos(jtag.find("FASTJET["));
   if (pos==std::string::npos)

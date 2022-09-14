@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -22,6 +23,9 @@ namespace PHASIC {
 
     FastJet_Jet_Criterion(const std::string &args)
     {
+      if (mpi->Rank())
+	fjcore::ClusterSequence::
+	  set_fastjet_banner_stream(NULL);
       std::string jtag(args);
       size_t pos(jtag.find("FASTJET["));
       if (pos==std::string::npos)

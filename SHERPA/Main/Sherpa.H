@@ -28,7 +28,7 @@ namespace SHERPA {
   class Sherpa: public ATOOLS::Terminator_Object {
   private:
     long int      m_trials, m_debugstep, m_debuginterval, m_displayinterval;
-    long int      m_evt_output, m_evt_output_start;
+    long int      m_evt_output, m_evt_output_start, m_printmpixs;
     double        m_evt_starttime;
     bool          m_showtrials;
     bool          m_filter;

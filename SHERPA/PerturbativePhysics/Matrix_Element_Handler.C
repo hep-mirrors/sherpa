@@ -199,16 +199,16 @@ bool Matrix_Element_Handler::GenerateOneEvent()
 
   // calculate total selection weight sum
   m_sum=0.0;
+  std::vector<double> psum(m_procs.size(),0);
   for (size_t i(0);i<m_procs.size();++i)
-    m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
-
-  // generate trial events until we accept one
+    psum[i]=m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
   for (size_t n(1);true;++n) {
     rpa->gen.SetNumberOfTrials(rpa->gen.NumberOfTrials()+1);
     if (m_seedmode==3)
       ran->ResetToLastIncrementedSeed();
     if (!GenerateOneTrialEvent())
       continue;
+
     m_evtinfo.m_ntrial=n;
     return true;
   }
@@ -1050,6 +1050,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	  if (GetMPvalue(args.pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
 	  proc[i]->SetShower(p_shower->GetShower());
+	  if (GetMPvalue(args.pbi.m_vfiles,nfs,pnid,ds))
+	    proc[i]->SetupEventReader(ds);
 	}
 	if (loprocs==0) loprocs=procs.size();
       }

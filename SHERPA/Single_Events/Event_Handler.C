@@ -37,6 +37,7 @@ Event_Handler::Event_Handler():
   m_checkweight = s["CHECK_WEIGHT"].SetDefault(0).Get<int>();
   m_decayer = s["DECAYER"].SetDefault(kf_none).Get<int>();
   m_lastrss=0;
+  s_objects.push_back(this);
 }
 
 Event_Handler::~Event_Handler()
@@ -289,6 +290,8 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       Reset();
       return 2;
     case Return_Value::Error :
+      if (rpa->gen.NumberOfEvents()==
+	  rpa->gen.NumberOfGeneratedEvents()) return 0;
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncError((*pit)->Name());
       return 3;
@@ -359,7 +362,8 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     }
   } while (run);
 
-  if (mode==eventtype::EventReader) {
+  if (mode==eventtype::EventReader ||
+      rpa->gen.NumberOfEvents()==rpa->gen.NumberOfGeneratedEvents()) {
     if (p_signal->NOutP()==0) return false;
   }
   else {
@@ -480,6 +484,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 }
 
 void Event_Handler::Finish() {
+  while (Communicate(1)<0);
   msg_Info()<<"In Event_Handler::Finish : "
 	    <<"Summarizing the run may take some time.\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {

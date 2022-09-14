@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Main/Phase_Space_Integrator.H"
 #include "PHASIC++/Main/Channel_Creator.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Channels/FSR_Channels.H"
