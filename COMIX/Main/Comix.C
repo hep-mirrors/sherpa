@@ -183,27 +183,6 @@ bool Comix::Initialize(MODEL::Model_Base *const model,
   helpi = s["VL_MODE"].Get<int>();
   Vertex::SetVLMode(helpi);
 
-  double helpd;
-
-#ifdef USING__Threading
-  helpi = s["THREADS"].Get<int>();
-  if (helpi>0) {
-    m_cts.resize(helpi);
-    for (size_t i(0);i<m_cts.size();++i) {
-      CDBG_ME_TID *tid(new CDBG_ME_TID());
-      m_cts[i] = tid;
-      pthread_cond_init(&tid->m_s_cnd,NULL);
-      pthread_cond_init(&tid->m_t_cnd,NULL);
-      pthread_mutex_init(&tid->m_s_mtx,NULL);
-      pthread_mutex_init(&tid->m_t_mtx,NULL);
-      pthread_mutex_lock(&tid->m_t_mtx);
-      tid->m_s=1;
-      int tec(0);
-      if ((tec=pthread_create(&tid->m_id,NULL,&Amplitude::TCalcJL,(void*)tid)))
-	THROW(fatal_error,"Cannot create thread "+ToString(i));
-    }
-  }
-#endif
   return true;
 }
 

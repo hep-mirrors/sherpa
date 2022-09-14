@@ -6,6 +6,7 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PHASIC++/Channels/CS_Dipole.H"
 #include "PDF/Main/ISR_Handler.H"
@@ -89,6 +90,20 @@ Process_Base *Single_Process::operator[](const size_t &i)
 Weight_Info *Single_Process::OneEvent(const int wmode,
                                       ATOOLS::Variations_Mode varmode,
                                       const int mode) {
+  DEBUG_FUNC(m_name<<" "<<p_read);
+  if (p_read) {
+    msg_Debugging()<<"Reader type is "<<Demangle(typeid(*p_read).name())<<"\n";
+    Cluster_Amplitude *ampl(p_read->ReadEvent());
+    if (ampl==NULL) return NULL;
+    msg_Debugging()<<*ampl<<"\n";
+    p_int->PSHandler()->SetPoint(ampl);
+    Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,varmode,mode));
+    p_int->PSHandler()->SetPoint(NULL);
+    ampl->Delete();
+    if (winfo) msg_Debugging()<<"Weight info: "<<*winfo<<"\n";
+    else msg_Debugging()<<"No weight info\n";
+    return winfo;
+  }
   p_selected = this;
   auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
@@ -576,6 +591,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     if (p_mc != nullptr && m_dsweight && m_pinfo.Has(nlo_type::vsub)) {
       // calculate DADS term for MC@NLO: one PS point, many dipoles
       m_mewgtinfo.m_type |= mewgttype::DADS;
+      if (p_read) p_mc->SetPoint(p_read->SubEvt());
 
       if (m_dads) {
 
@@ -597,7 +613,11 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
             const bool lookup {proc->LookUp()};
             proc->SetLookUp(false);
 
+	    if (p_read) proc->ScaleSetter(true)->SetFixedScale
+			  (ScaleSetter(true)->FixedScales());
             auto wgtmap = proc->Differential(dps.m_p, varmode);
+	    if (p_read) proc->ScaleSetter(true)->SetFixedScale
+			  (std::vector<double>());
             wgtmap *= dps.m_weight * m_dsweight;
             m_dadswgtmap += wgtmap;
 
@@ -613,6 +633,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
             // NOTE: here we reset the adjustments we have done above
             proc->SetLookUp(lookup);
             proc->SetMCMode(mcmode);
+
           }
         }
       }
@@ -1192,6 +1213,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
+  if (p_read) return true;
   double var(p_int->TotalVar());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
             <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;

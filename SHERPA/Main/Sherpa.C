@@ -127,6 +127,7 @@ bool Sherpa::InitializeTheRun()
     m_debugstep     = s["DEBUG_STEP"].Get<long int>();
 
     m_displayinterval=s["EVENT_DISPLAY_INTERVAL"].Get<int>();
+    m_printmpixs=s["PRINT_MPI_XS"].Get<int>();
     m_evt_output = s["EVT_OUTPUT"].Get<int>();
     m_evt_output_start = s["EVT_OUTPUT_START"].Get<int>();
 
@@ -290,7 +291,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
       msg_Info()<<" left ) -> ETA: "<<rpa->gen.Timer().
         StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
       p_eventhandler->PerformMemoryMonitoring();
-      const Uncertain<double> xs = p_eventhandler->TotalNominalXSMPI();
+      const Uncertain<double> xs = p_eventhandler->TotalNominalXS();
       if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
       msg_Info() << "XS = " << xs.value << " pb +- ( " << xs.error
                  << " pb = " << xs.PercentError() << " % )  ";

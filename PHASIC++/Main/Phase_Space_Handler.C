@@ -2,6 +2,9 @@
 
 #include "PHASIC++/Main/Phase_Space_Integrator.H"
 #include "PHASIC++/Main/Channel_Creator.H"
+#include "PHASIC++/Main/Event_Reader.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Channels/FSR_Channels.H"
@@ -34,7 +37,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
                                          const std::string eobs,
                                          const std::string efunc): m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
       p_integrator(NULL), p_beamhandler(proc->Beam()), m_pspoint(Phase_Space_Point(this)),
-      p_isrhandler(proc->ISR()), p_yfshandler(proc->YFS()), p_flavours(proc->Process()->Flavours()),
+      p_isrhandler(proc->ISR()), p_yfshandler(proc->YFS()), p_point(NULL), p_flavours(proc->Process()->Flavours()),
       m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout),
       m_initialized(false), m_sintegrator(0), m_killedpoints(0),
       m_printpspoint(false), m_enhanceObs(eobs), m_enhanceFunc(efunc) {
@@ -83,20 +86,52 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   p_active = process;
   m_wgtmap = 0.0;
   // check for failure to generate a meaningful phase space point
-  if (!process->Process()->GeneratePoint() ||
-      !m_pspoint(process,m_cmode))
-    return 0.0;
+  if (p_point==NULL) {
+    if (!process->Process()->GeneratePoint() ||
+	!m_pspoint(process,m_cmode))
+      return 0.0;
+  }
   for (auto p : p_lab) {
     if (p.Nan()) return 0.0;
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass()) return 0.0;
-    m_psweight = CalculatePS();
-    m_wgtmap   = CalculateME(varmode);
-    m_wgtmap  *= m_psweight;
-    m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->TotalXS()));
-    m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+    if (p_point) {
+      if (process->Process()->EventReader()->Compute()==1) {
+	// SHERPA::Variation_Weights *variationweights(process->Process()->VariationWeights());
+	// process->Process()->SetVariationWeights(NULL);
+	std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
+	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+	double result(process->Process()->Differential(p_lab,varmode));
+	if (process->ColorIntegrator()!=NULL) {
+	  while (result==0.0) {
+	    while (!process->Process()->GeneratePoint());
+	    m_wgtmap=process->Process()->Differential(p_lab,varmode);
+	  }
+	}
+	scales.clear();
+	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+	// process->Process()->SetVariationWeights(variationweights);
+	m_psweight=(p_point->LKF()/rpa->Picobarn())/m_wgtmap.Nominal();
+	m_wgtmap=CalculateME(varmode);
+      }
+      else if (process->Process()->EventReader()->Compute()==2) {
+	m_psweight=p_point->LKF()/rpa->Picobarn();
+	m_wgtmap=CalculateME(varmode);
+      }
+      else {
+	m_psweight=1.;
+	m_wgtmap=1.;
+      }
+    }
+    else {
+      m_psweight = CalculatePS();
+      m_wgtmap   = CalculateME(varmode);
+      m_wgtmap  *= m_psweight;
+      m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->TotalXS()));
+      m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+    }
     p_lab      = process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
     ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);

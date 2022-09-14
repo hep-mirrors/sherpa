@@ -2,6 +2,7 @@ set(Main_SOURCES Color_Integrator.C
                  Helicity_Integrator.C
                  Process_Integrator.C
                  Channel_Creator.C
+		 Event_Reader.C
                  Phase_Space_Point.C
                  Phase_Space_Enhance.C
                  Phase_Space_Handler.C
@@ -11,6 +12,7 @@ set(Main_HEADERS Color_Integrator.H
                  Helicity_Integrator.H
                  Process_Integrator.H
                  Channel_Creator.H
+		 Event_Reader.H
                  Phase_Space_Point.H
                  Phase_Space_Enhance.H
                  Phase_Space_Variation_Weights.H
