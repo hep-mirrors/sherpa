@@ -41,6 +41,7 @@ namespace PHASIC {
 
   class Process_Base;
   class BBar_Multi_Channel;
+  class Event_Reader;
 
   typedef std::vector<PHASIC::Process_Base*> Process_Vector;
 
@@ -92,6 +93,7 @@ namespace PHASIC {
     NLOTypeStringProcessMap_Map *p_apmap;
 
     Color_Matrix m_cols;
+    Event_Reader *p_read;
 
     static int s_usefmm;
 
@@ -121,6 +123,9 @@ namespace PHASIC {
     std::string ShellName(std::string name="") const;
 
     Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;
+
+    bool SetupEventReader(const std::string &fnames);
+    bool IsZeroEvent();
 
     virtual void ConstructColorMatrix();
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
@@ -284,6 +289,10 @@ namespace PHASIC {
 
     inline const Color_Matrix &ColorMatrix(const int map=0) const
     { return map?(p_mapproc?p_mapproc->m_cols:m_cols):m_cols; }
+
+    inline void SetEventReader(Event_Reader *const read) { p_read=read; }
+
+    inline Event_Reader *EventReader() const { return p_read; }
 
   };// end of class Process_Base
 

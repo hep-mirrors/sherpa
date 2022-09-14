@@ -371,9 +371,6 @@ double Histogram::HighEdge(int i) const
 
 void Histogram::Output(const std::string name) 
 {
-#ifdef USING__MPI
-  if (mpi->Rank()) return;
-#endif
   if (!m_active) return;
   My_Out_File ofile(name);
   ofile.Open();

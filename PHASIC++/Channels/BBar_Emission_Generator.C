@@ -83,6 +83,7 @@ bool BBar_Emission_Generator::InitDipoles
 (Process_Base *const bviproc,Process_Base *const sproc,
  Phase_Space_Handler *const psh)
 {
+  DEBUG_FUNC("");
   m_nin=sproc->NIn();
   for (size_t i(0);i<sproc->Size();++i) {
     NLO_subevtlist *subs((*sproc)[i]->GetSubevtList());
@@ -129,9 +130,33 @@ bool BBar_Emission_Generator::InitDipoles
 Dipole_Params BBar_Emission_Generator::Active
 (Process_Base *const bviproc) const
 {
+  if (p_active==NULL) return Dipole_Params();
   return Dipole_Params(p_active,m_pmap.find(p_active)
 		       ->second.find(bviproc)->second,
 		       m_p,m_weight);
+}
+
+void BBar_Emission_Generator::SetPoint(ATOOLS::NLO_subevt *sub)
+{
+  DEBUG_FUNC(sub);
+  p_active=NULL;
+  m_p.resize(sub->m_n);
+  for (size_t i(0);i<sub->m_n;++i) m_p[i]=sub->p_mom[i];
+  msg_Debugging()<<"Set point ("<<sub->m_ijt<<","<<sub->m_kt<<")->("
+		 <<sub->m_i<<","<<sub->m_j<<","<<sub->m_k<<") {\n";
+  for (size_t j(0);j<m_p.size();++j)
+    msg_Debugging()<<"  "<<m_p[j]<<"\n";
+  msg_Debugging()<<"}\n";
+  for (size_t i(0);i<m_dipoles.size();++i)
+    if (IDip_ID(*m_dipoles[i]->GetSubEvt())==IDip_ID(*sub) &&
+	DDip_ID(*m_dipoles[i]->GetSubEvt())==DDip_ID(*sub)) {
+      p_active=m_dipoles[i];
+      break;
+    }
+  if (p_active==NULL) THROW(fatal_error,"Internal error");
+  m_weight=sub->m_result;
+  msg_Debugging()<<"selected "<<p_active->Id()<<"\n";
+  msg_Debugging()<<"w = "<<m_weight<<"\n";
 }
 
 bool BBar_Emission_Generator::GeneratePoint

@@ -59,7 +59,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   else m_eventmode=0;
   //need for LHE-output
   rpa->gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
-  if (!read.ReadFromFile(m_ovwth,"OVERWEIGHT_THRESHOLD")) m_ovwth=1e12;
+  if (!read.ReadFromFile(m_ovwth,"OVERWEIGHT_THRESHOLD")) m_ovwth=1e3;
   if (!read.ReadFromFile(m_seedmode,"EVENT_SEED_MODE")) m_seedmode=0;
   else msg_Info()<<METHOD<<"(): Set seed mode "<<m_seedmode<<"."<<std::endl;
   if (!read.ReadFromFile(m_rsadd,"MEH_RSADD")) m_rsadd=1;
@@ -145,7 +145,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   if (storeresults<0) return true;
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
-    My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
   }
   rpa->gen.SetPilotRun(true);
   bool okay(true);
@@ -187,25 +186,32 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   if (m_seedmode!=3) SetRandomSeed();
   p_isr->SetPDFMember();
   m_sum=0.0;
+  std::vector<double> psum(m_procs.size(),0);
   for (size_t i(0);i<m_procs.size();++i)
-    m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+    psum[i]=m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
   for (size_t n(1);true;++n) {
     if (m_seedmode==3 && rpa->gen.NumberOfGeneratedEvents())
       ran->ResetToLastIncrementedSeed();
-    double disc(m_sum*ran->Get()), csum(0.0);
+    double disc(m_sum*ran->Get());
     Process_Base *proc(NULL);
     for (size_t i(0);i<m_procs.size();++i) {
-      if ((csum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode))>=disc) {
+      if (psum[i]>=disc) {
         proc=m_procs[i];
         break;
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
+    if (proc->IsZeroEvent()) {
+      if (rpa->gen.NumberOfEvents()==
+          rpa->gen.NumberOfGeneratedEvents())
+        return false;
+      continue;
+    }
     p_variationweights->Reset();
-    proc->SetVariationWeights(NULL);
     const bool hasvars(
         p_variationweights->GetVariations()->GetParametersVector()->empty()
         == false);
+    if (hasvars) proc->SetVariationWeights(NULL);
     const double unweighting_r = ran->Get();
     if (m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
       // in pilot run mode, calculate nominal only, and prepare to restore the
@@ -228,12 +234,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       }
       skip_rerun = true;
     }
-    proc->SetVariationWeights(NULL);
+    if (hasvars) proc->SetVariationWeights(NULL);
     p_proc=proc->Selected();
-    if (p_proc->Generator()==NULL)
-      THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
-    if (p_proc->Generator()->MassMode()!=0)
-      THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
     double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
     if (info==NULL) {
       if (m_recalculate_zeros && !skip_rerun && m_haspilotscale) {
@@ -309,7 +311,17 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         delete info;
         wf *= m_pilotweightfactor;
 	m_evtinfo.m_weight /= m_pilotweightfactor;
-        proc->SetVariationWeights(NULL);
+        if (hasvars) proc->SetVariationWeights(NULL);
+      }
+    }
+    else {
+      double cur=m_evtinfo.m_weight*wf/m_sum;
+      if (std::abs(cur) > m_ovwth) {
+        Return_Value::IncWarning(METHOD);
+        msg_Info() <<METHOD<<"(): Point for '"<<p_proc->Name()
+                   <<"' exceeds average by "<<cur-1.0
+		   <<". Reject event."<< std::endl;
+        continue;
       }
     }
     if (!hasvars) {
@@ -475,10 +487,6 @@ int Matrix_Element_Handler::InitializeProcesses
   if (initonly&4) return 1;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
-#ifdef USING__MPI
-  if (mpi->Rank()==0)
-#endif
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
   BuildProcesses();
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
@@ -670,6 +678,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Name_Suffix") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vaddname,nf);
+	}
+	if (cur[0]=="Event_Files") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vfiles,nf);
 	}
 	if (cur[0]=="Enable_MHV") {
 	  std::string cb(MakeString(cur,1));
@@ -977,7 +989,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  m_gens.LoadGenerator(ds);
 	  cpi.m_loopgenerator_unwt=ds;
 	}
-  else cpi.m_loopgenerator_unwt = cpi.m_loopgenerator;
+	else cpi.m_loopgenerator_unwt = cpi.m_loopgenerator;
 	if (GetMPvalue(pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
 	if (GetMPvalue(pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
 	else cpi.m_rsintegrator=cpi.m_integrator;
@@ -1006,6 +1018,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  if (GetMPvalue(pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
 	  proc[i]->SetShower(p_shower->GetShower());
+	  if (GetMPvalue(pbi.m_vfiles,nfs,pnid,ds))
+	    proc[i]->SetupEventReader(ds);
 	}
       }
     }

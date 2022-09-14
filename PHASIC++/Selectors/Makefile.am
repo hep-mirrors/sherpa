@@ -11,6 +11,7 @@ libPhasicSelectors_la_SOURCES =	\
 				Variable_Selector.C \
 				Combined_Selector.C \
 				FastJet_Criterion.C \
+				PTYDR_Criterion.C \
 				Jet_Finder.C \
 				KT_Finder.C \
 				NJet_Finder.C \

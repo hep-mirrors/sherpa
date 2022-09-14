@@ -24,6 +24,9 @@
 /* using sqlite */
 #undef USING__SQLITE
 
+/* using HDF5 */
+#undef USING__HDF5
+
 /* using LHAPDF */
 #undef USING__LHAPDF
 

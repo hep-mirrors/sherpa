@@ -255,14 +255,12 @@ bool Grid_Creator::CreateGrid()
     success=false;
   }
   if (m_writegrid) {
-    My_Out_File::ExecDB(OutputPath(),"begin");
     if (!WriteOutGrid()) {
       msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
                <<"Sorry, grid cannot be written to '"
                <<OutputFile()<<"'"<<std::endl;
       success=false;
     }
-    My_Out_File::ExecDB(OutputPath(),"commit");
     My_Out_File::CloseDB(OutputPath());
   }
   msg->SetLevel(formerlevel);

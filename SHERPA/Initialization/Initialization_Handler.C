@@ -73,8 +73,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     msg_Out()<<" Sherpa will read in events as "<<m_evtform<<endl;
   }
 
-  ATOOLS::s_loader->SetCheck(p_dataread->GetValue<int>("CHECK_LIBLOCK",0));
-
   rpa->Init(m_path,m_file,argc,argv);
   CheckVersion();
   LoadLibraries();
@@ -503,12 +501,12 @@ bool Initialization_Handler::InitializeTheIO()
     std::string libname(outputs[i]);
     if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
     Output_Base* out=Output_Base::Getter_Function::GetObject
-      (outputs[i],Output_Arguments(outpath,outfile,p_dataread));
+      (outputs[i],Output_Arguments(outpath,outfile,p_dataread,this));
     if (out==NULL) {
       if (!s_loader->LoadLibrary("Sherpa"+libname+"Output")) 
 	THROW(missing_module,"Cannot load output library Sherpa"+libname+"Output.");
       out=Output_Base::Getter_Function::GetObject
-	(outputs[i],Output_Arguments(outpath,outfile,p_dataread));
+	(outputs[i],Output_Arguments(outpath,outfile,p_dataread,this));
     }
     if (out==NULL) THROW(fatal_error,"Cannot initialize "+outputs[i]+" output");
     m_outputs.push_back(out);
@@ -909,7 +907,7 @@ void Initialization_Handler::SetGlobalVariables()
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
 		 <<"  fac scale: "<<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
 		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
-  int subtype=dr.GetValue<int>("NLO_SUBTRACTION_SCHEME",0);
+  int subtype=dr.GetValue<int>("NLO_SUBTRACTION_SCHEME",2);
   rpa->gen.SetVariable("NLO_SUBTRACTION_SCHEME",ToString(subtype));
   if (subtype!=0) msg_Info()<<METHOD<<"(): Set subtraction scheme "<<subtype<<".\n";
   int cmode=dr.GetValue<int>("METS_CLUSTER_MODE",0);

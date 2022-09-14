@@ -628,7 +628,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
              if test -d "${OPENLOOPS_PREFIX}"; then
                 AC_MSG_RESULT([${OPENLOOPS_PREFIX}]);
                 CONDITIONAL_OPENLOOPSLDADD="-lopenloops"
-                CONDITIONAL_OPENLOOPSLDFLAGS="-L${OPENLOOPS_PREFIX}/lib"
+                CONDITIONAL_OPENLOOPSLDFLAGS="-L${OPENLOOPS_PREFIX}/lib -Wl,-rpath -Wl,${OPENLOOPS_PREFIX}/lib"
                 AC_SUBST(CONDITIONAL_OPENLOOPSLDADD)
                 AC_SUBST(CONDITIONAL_OPENLOOPSLDFLAGS)
              else
@@ -988,6 +988,76 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(HEPEVT_CB_SIZE)
 
   AC_ARG_ENABLE(
+    libhdf5,
+    AC_HELP_STRING([--enable-libhdf5], [Enable libhdf5 support]),
+    [ case "${enableval}" in
+        no)   AC_MSG_RESULT(hdf5 not enabled); libhdf5=false ;;
+        yes)  AC_CHECK_LIB(hdf5, H5close, [libhdf5_found=yes], [libhdf5_found=no])
+              if test "$libhdf5_found" = "yes"; then
+                libhdf5=true;
+                CONDITIONAL_HDF5LIBS="-lhdf5";
+              else
+                AC_MSG_ERROR(Library libhdf5 or header H5File.hpp not found.);
+              fi;;
+	*) if test -d "${enableval}"; then
+             HDF5_OLD_LDFLAGS=$LDFLAGS;
+             LDFLAGS="$LDFLAGS -L${enableval}"
+             AC_CHECK_LIB(hdf5, H5close,hdf5_cv_libhdf5=yes,hdf5_cv_libhdf5=no)
+             if test "$hdf5_cv_libhdf5" = "yes"; then
+	       libhdf5=true;
+               CONDITIONAL_HDF5LIBS="-Wl,-rpath -Wl,${enableval} -L${enableval} -lhdf5"
+	       AC_MSG_RESULT(Using libhdf5 from ${enableval})
+             else
+               AC_MSG_ERROR(Library libhdf5 not found.);
+             fi
+             LDFLAGS="$HDF5_OLD_LDFLAGS";
+	   else
+             AC_MSG_ERROR(no such directory '${enableval}');
+           fi;;
+      esac ],
+    [ hdf5=false ]
+  )
+  if test "$libhdf5" = "true" ; then
+    AC_DEFINE([USING__HDF5], "1", [using libhdf5])
+  fi
+  AM_CONDITIONAL(HDF5_SUPPORT, test "$libhdf5" = "true")
+  AC_SUBST(CONDITIONAL_HDF5LIBS)
+
+  AC_ARG_ENABLE(
+    hdf5include,
+    AC_HELP_STRING([--enable-hdf5include], [Enable hdf5 header support]),
+    [ case "${enableval}" in
+        no)   AC_MSG_RESULT(hdf5 not enabled); hdf5include=false ;;
+        yes)  OLD_CXX=$CXX; CXX="$MPICXX";
+	      AC_CHECK_HEADER(H5Ipublic.h, [hdf5h_found=yes], [hdf5h_found=no])
+	      CXX=$OLD_CXX;
+              if test test "$hdf5h_found" = "yes"; then
+                hdf5include=true;
+              else
+                AC_MSG_ERROR(Header H5Ipublic.h not found.);
+              fi;;
+	*) if test -d "${enableval}"; then
+             HDF5_OLD_CPPFLAGS=$CPPFLAGS; OLD_CC=$CC;
+             CPPFLAGS="$CPPFLAGS -I${enableval}"; CC="$CXX";
+             AC_CHECK_HEADER(H5Ipublic.h,hdf5_cv_hdf5_h=yes,hdf5_cv_hdf5_h=no)
+             if test "$hdf5_cv_hdf5_h" = "yes"
+             then
+               hdf5include=true;
+               CONDITIONAL_HDF5INCS="-I${enableval}"
+	       AC_MSG_RESULT(Using hdf5 headers from ${enableval})
+             else
+               AC_MSG_ERROR(Header H5Ipublic.h not found.);
+             fi
+             CPPFLAGS="$HDF5_OLD_CPPFLAGS"; CC=$OLD_CC;
+	   else
+             AC_MSG_ERROR(no such directory '${enableval}');
+           fi;;
+      esac ],
+    [ hdf5include=false ]
+  )
+  AC_SUBST(CONDITIONAL_HDF5INCS)
+
+  AC_ARG_ENABLE(
     binreloc,
     AS_HELP_STRING([--enable-binreloc],[Enable binrelocing]),
     [ AC_MSG_CHECKING(whether to install relocatable Sherpa)
@@ -1000,5 +1070,39 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$binreloc" = "true" ; then
     AC_DEFINE([ENABLE_BINRELOC], "1", [binreloc activation])
   fi
+
+  AC_ARG_WITH([libzip],
+    AS_HELP_STRING(
+      [--with-libzip=@<:@ARG@:>@],
+      [use libzip library from @<:@ARG@:>@]
+    ),
+    [
+      if test "$withval" = "install"; then
+      ac_libzip_path=$ac_default_prefix;
+      test "x$prefix" != xNONE && ac_libzip_path=$prefix;
+      if ! test -f ${ac_libzip_path}/include/zip.h; then
+        wget https://libzip.org/download/libzip-1.2.0.tar.gz
+        tar xzf libzip-1.2.0.tar.gz;
+        cd libzip-1.2.0;
+        ./configure --prefix=${ac_libzip_path} || exit;
+        make || exit; make install || exit;
+        mv ${ac_libzip_path}/lib/libzip/include/zipconf.h ${ac_libzip_path}/include/;
+        cd ..;
+        rm -rf libzip-1.2.0.tar.gz libzip-1.2.0;
+        echo "Successfully installed libzip into ${ac_libzip_path}."
+      fi
+      else
+        ac_libzip_path="$withval"
+      fi
+    ],
+    [ ac_libzip_path=/usr; ]
+  )
+  if ! test -f ${ac_libzip_path}/include/zip.h; then
+    AC_MSG_ERROR(Did not find required dependency libzip in ${ac_libzip_path}. Please specify its installation prefix using '--with-libzip=/path' or enable its automatic installation using '--with-libzip=install'.)
+  fi
+  LIBZIP_CPPFLAGS="-I$ac_libzip_path/include -I$ac_libzip_path/lib/libzip/include"
+  LIBZIP_LDFLAGS="-L$ac_libzip_path/lib -L$ac_libzip_path/lib64 -lzip"
+  AC_SUBST(LIBZIP_CPPFLAGS)
+  AC_SUBST(LIBZIP_LDFLAGS)
 
 ])

@@ -12,6 +12,7 @@ namespace ATOOLS {
   class Blob_Data_Base; 
   class Poincare;
   class Mass_Selector;
+  class Cluster_Amplitude;
   struct Weight_Info;
 }
 
@@ -83,6 +84,7 @@ namespace PHASIC {
     ATOOLS::Vec4D_Vector   p_lab;
 
     ATOOLS::Poincare *p_massboost;
+    ATOOLS::Cluster_Amplitude *p_point;
 
     int  m_nin, m_nout, m_nvec, m_fin_opt, m_dmode, m_enhancexs;
     bool m_initialized, m_sintegrator;
@@ -204,6 +206,8 @@ namespace PHASIC {
     { return m_stats; }
 
     inline void SetOSMass(const double &osmass) { m_osmass=osmass; }
+
+    inline void SetPoint(ATOOLS::Cluster_Amplitude *const ca) { p_point=ca; }
 
   };// end of class Phase_Space_Handler
 

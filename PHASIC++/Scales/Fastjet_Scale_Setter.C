@@ -9,6 +9,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -82,6 +83,9 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   Scale_Setter_Base(args), m_tagset(this),
   p_jdef(NULL), p_siscplug(NULL)
 {
+  if (mpi->Rank())
+    fastjet::ClusterSequence::
+      set_fastjet_banner_stream(NULL);
   std::string jtag(args.m_scale);
   size_t pos(jtag.find("FASTJET["));
   if (pos==std::string::npos)

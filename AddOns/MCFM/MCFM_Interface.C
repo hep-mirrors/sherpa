@@ -145,11 +145,13 @@ namespace SHERPA {
 	reader.ReadFromFile(polecheck,"CHECK_POLES");
       }
       p_proc->SetPoleCheck(polecheck);
+      m_providespoles=polecheck;
     }
 
     void SetPoleCheck(const int check)
     {
       p_proc->SetPoleCheck(check);
+      m_providespoles=check;
     }
 
     void Calc(const ATOOLS::Vec4D_Vector &p)
@@ -274,7 +276,7 @@ operator()(const Process_Info &pi) const
   std::vector<int> ids(fl.size());
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
   MCFM::Process_Info mpi(ids,pi.m_ii.m_ps.size(),
-			 pi.m_maxcpl[0],pi.m_maxcpl[1]);
+			 pi.m_maxcpl[0]+1,pi.m_maxcpl[1]);
   std::string modelname(str_tolower(MODEL::s_model->Name()));
   if (modelname=="smehc") modelname="heft";
   mpi.m_model=str_tolower(modelname);

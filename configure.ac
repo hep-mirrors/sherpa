@@ -94,11 +94,6 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
-AX_LIB_SQLITE3(3.3.9)
-AS_IF([test "x$SQLITE3_VERSION" = x],
-  [ AC_MSG_ERROR([Sqlite3 required but not found.
-To install a local copy, use the configure option --with-sqlite3=install.]) ])
-
 SHERPA_SETUP_CONFIGURE_OPTIONS
 SHERPA_SETUP_VARIABLES
 
@@ -249,6 +244,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  AddOns/Rivet/Makefile \
 	  AddOns/HepMC/Makefile \
 	  AddOns/Root/Makefile \
+	  AddOns/HDF5/Makefile \
 	  AddOns/Makefile \
 	  Makefile ])
 AC_OUTPUT

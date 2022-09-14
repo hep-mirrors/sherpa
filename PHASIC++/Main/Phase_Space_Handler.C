@@ -1,6 +1,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 
 #include "PHASIC++/Main/Phase_Space_Integrator.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -23,7 +24,6 @@
 #include "ATOOLS/Org/Data_Writer.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
-#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
 #include <cfloat>
@@ -45,7 +45,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_enhancefunc_min(-DBL_MAX), m_enhancefunc_max(+DBL_MAX),
   p_variationweights(NULL),
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_fsrchannels(NULL),
-  p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
+  p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL), p_point(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_dmode(1), m_initialized(0), m_sintegrator(0),
   m_maxtrials(1000000), m_E(ATOOLS::rpa->gen.Ecms()), m_s(m_E*m_E),
   m_printpspoint(false)
@@ -292,7 +292,9 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 { 
   m_cmode=mode;
   p_active=process;
-  if (!process->Process()->GeneratePoint()) return 0.0;
+  if (p_point==NULL) {
+    if (!process->Process()->GeneratePoint()) return 0.0;
+  }
   p_info->ResetAll();
   if (m_nin>1) {
     if (!(mode&psm::no_lim_isr)) p_isrhandler->Reset();
@@ -314,8 +316,16 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       p_isrhandler->SetLimits(m_isrspkey.Doubles(),m_isrykey.Doubles(),
 			      m_isrxkey.Doubles());
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
-      if (p_isrhandler->On()>0) { 
-	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
+      if (p_isrhandler->On()>0) {
+	if (p_point) {
+	  m_osmass?m_isrspkey[4]:m_isrspkey[3]=
+	    (p_point->Leg(0)->Mom()+p_point->Leg(1)->Mom()).Abs2();
+	  m_isrykey[2]=(-p_point->Leg(0)->Mom()
+			-p_point->Leg(1)->Mom()).Y();
+	}
+	else {
+	  p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
+	}
       }
     }
     if (!p_isrhandler->MakeISR(m_osmass?m_isrspkey[4]:m_isrspkey[3],
@@ -341,13 +351,56 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     if (p_massboost) for (int i=0;i<m_nvec;++i) 
       p_massboost->BoostBack(p_lab[i]);
   }
-  p_fsrchannels->GeneratePoint(&p_lab.front(),p_cuts);
+  if (p_point) {
+    if (process->ColorIntegrator()!=NULL)
+      while (!process->Process()->GeneratePoint());
+    for (size_t i(0);i<m_nin;++i)
+      p_lab[i]=-p_point->Leg(i)->Mom();
+    for (size_t i(m_nin);i<m_nin+m_nout;++i)
+      p_lab[i]=p_point->Leg(i)->Mom();
+  }
+  else {
+    p_fsrchannels->GeneratePoint(&p_lab.front(),p_cuts);
+  }
   m_result=0.0;
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
-    CalculatePS();
-    CalculateME();
-    CalculateEnhance();
+    if (p_point) {
+      if (process->Process()->EventReader()->Compute()==1) {
+	SHERPA::Variation_Weights *variationweights(process->Process()->VariationWeights());
+	process->Process()->SetVariationWeights(NULL);
+	std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
+	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+	double result(process->Process()->Differential(p_lab));
+	if (process->ColorIntegrator()!=NULL) {
+	  while (result==0.0) {
+	    while (!process->Process()->GeneratePoint());
+	    result=process->Process()->Differential(p_lab);
+	  }
+	}
+	scales.clear();
+	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+	process->Process()->SetVariationWeights(variationweights);
+	m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
+	CalculateME();
+	m_enhance=1.;
+      }
+      else if (process->Process()->EventReader()->Compute()==2) {
+	m_psweight=p_point->LKF()/rpa->Picobarn();
+	CalculateME();
+	m_enhance=1.;
+      }
+      else {
+	m_psweight=1.;
+	m_result=1.;
+	m_enhance=1.;
+      }
+    }
+    else {
+      CalculatePS();
+      CalculateME();
+      CalculateEnhance();
+    }
     if (m_result==0.) { return 0.; }
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());
@@ -686,9 +739,6 @@ void Phase_Space_Handler::EndOptimize()
 
 void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
-#ifdef USING__MPI
-  if (mpi->Rank()) return;
-#endif
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");

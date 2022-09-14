@@ -35,6 +35,7 @@ Event_Handler::Event_Handler():
   Data_Reader reader(" ",";","!","=");
   m_checkweight = reader.GetValue<int>("CHECK_WEIGHT", 0);
   m_lastrss=0;
+  s_objects.push_back(this);
 }
 
 Event_Handler::~Event_Handler() 
@@ -261,6 +262,8 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
       Reset();
       return 2;
     case Return_Value::Error :
+      if (rpa->gen.NumberOfEvents()==
+	  rpa->gen.NumberOfGeneratedEvents()) return 0;
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncError((*pit)->Name());
       return 3;
@@ -332,7 +335,8 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     }
   } while (run);
 
-  if (mode==eventtype::EventReader) {
+  if (mode==eventtype::EventReader ||
+      rpa->gen.NumberOfEvents()==rpa->gen.NumberOfGeneratedEvents()) {
     if (p_signal->NOutP()==0) return false;
   }
   else {
@@ -459,7 +463,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 }
 
 void Event_Handler::Finish() {
-  MPISync();
+  while (Communicate(1)<0);
   msg_Info()<<"In Event_Handler::Finish : "
 	    <<"Summarizing the run may take some time.\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -561,22 +565,21 @@ double Event_Handler::TotalErr()
 
 double Event_Handler::TotalXSMPI()
 {
-  MPISync();
-  if (m_mn==0.0) return 0.0;
+  if (m_mn==0.0) return TotalXS();
   return m_msum/m_mn;
 }
 
 
 double Event_Handler::TotalVarMPI()
 {
-  if (m_mn<=1) return sqr(TotalXSMPI());
+  if (m_mn<=1) return TotalVar();
   return (m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1);
 }
 
 
 double Event_Handler::TotalErrMPI()
 {
-  if (m_mn<=1) return TotalXS();
+  if (m_mn<=1) return TotalErr();
   if (ATOOLS::IsEqual
       (m_msumsqr*m_mn,m_msum*m_msum,1.0e-6)) return 0.0;
   return sqrt((m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1)/m_mn);

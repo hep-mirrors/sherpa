@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -75,7 +76,6 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   if (pi.Has(nlo_type::real)!=pi.Has(nlo_type::rsub))
     THROW(fatal_error, "R/S can't be initialised separately.");
   Process_Info spi(pi);
-  ++spi.m_fi.m_nmax;
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
   p_bproc=InitProcess(spi,nlo_type::lo,false);
   spi.m_megenerator=spi.m_rsmegenerator;
@@ -102,7 +102,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->FillProcessMap(p_apmap);
   if (!read.ReadFromFile(m_psmode,"NLO_CSS_PSMODE")) m_psmode=0;
   else msg_Info()<<METHOD<<"(): Set MC@NLO shower mode "<<m_psmode<<".\n";
-  if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=8;
+  if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=0;
   else msg_Info()<<METHOD<<"(): Set H event shower mode "<<m_hpsmode<<".\n";
   if (!read.ReadFromFile(m_kfacmode,"PP_KFACTOR_MODE")) m_kfacmode=0;
   else msg_Info()<<METHOD<<"(): Set K-factor mode "<<m_kfacmode<<".\n";
@@ -110,6 +110,10 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
   if (!read.ReadFromFile(m_rsscale,"PP_RS_SCALE")) m_rsscale="";
   else msg_Info()<<METHOD<<"(): Set RS scale '"<<m_rsscale<<"'.\n";
+  if (pi.m_fi.m_nmax==pi.m_fi.m_ps.size()) {
+    if (!read.ReadFromFile(m_hpsmode,"PP_NMAX_HPSMODE")) m_hpsmode=4;
+    else msg_Info()<<METHOD<<"(): Set n_{max} H shower mode "<<m_hpsmode<<".\n";
+  }
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
@@ -256,6 +260,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   if (rampl->ColorMap().empty()) rm|=128;
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
   if (rsproc==NULL) return 0.0;
+  rsproc->SetEventReader(NULL);
   if (rsproc->VariationWeights() && rsproc->VariationWeights() != p_variationweights) {
     THROW(fatal_error, "Variation weights already set.");
   }
@@ -275,6 +280,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   if (rampl->ColorMap().empty()) rm|=128;
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
   if (bviproc==NULL) return 0.0;
+  bviproc->SetEventReader(NULL);
   if (bviproc->VariationWeights() && bviproc->VariationWeights() != p_variationweights) {
     THROW(fatal_error, "Variation weights already set.");
   }
@@ -528,13 +534,43 @@ double MCatNLO_Process::OneSEvent(const int wmode)
 
 Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 {
-  DEBUG_FUNC("");
-  const double S(p_bviproc->Integrator()->SelectionWeight(wmode));
-  const double H(p_rsproc->Integrator()->SelectionWeight(wmode));
+  DEBUG_FUNC(m_name<<" "<<p_read);
+  double S(0), H(0);
   Weight_Info *winfo(NULL);
+  if (p_read==NULL) {
+    S=p_bviproc->Integrator()->SelectionWeight(wmode);
+    H=p_rsproc->Integrator()->SelectionWeight(wmode);
+  }
+  else {
+    msg_Debugging()<<"Reader type is "<<Demangle(typeid(*p_read).name())<<"\n";
+    Cluster_Amplitude *ampl(p_read->ReadEvent());
+    if (ampl==NULL) return NULL;
+    msg_Debugging()<<*ampl<<"\n";
+    if (p_read->SubEvt()->m_n) {
+      msg_Debugging()<<"S event\n";
+      p_read->SetAmpl(ampl);
+      p_bviproc->SetEventReader(p_read);
+      winfo = p_bviproc->OneEvent(wmode);
+      p_bviproc->SetEventReader(NULL);
+      S=1; H=0;
+    }
+    else {
+      msg_Debugging()<<"H event\n";
+      p_read->SetAmpl(ampl);
+      p_rsproc->SetEventReader(p_read);
+      winfo = p_rsproc->OneEvent(wmode);
+      p_rsproc->SetEventReader(NULL);
+      S=0; H=1;
+    }
+    if (winfo==NULL) {
+      msg_Debugging()<<"No weight info\n";
+      return winfo;
+    }
+    msg_Debugging()<<"Weight info: "<<*winfo<<"\n";
+  }
   if (S > ran->Get() * (S + H)) {
     p_selected = p_bviproc;
-    winfo = p_bviproc->OneEvent(wmode, mode);
+    if (p_read==NULL) winfo = p_bviproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
       const double Swgt(OneSEvent(wmode));
@@ -582,7 +618,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       rpa->gen.SetPilotRun(false);
     }
     p_selected = p_rsproc;
-    winfo = p_rsproc->OneEvent(wmode, mode);
+    if (p_read==NULL) winfo = p_rsproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
       const double Hwgt(OneHEvent(wmode));
@@ -649,11 +685,16 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
     p_ddproc->Differential(*ampl,4);
   } while (!InitSubtermInfo());
   ampl->Delete();
+  p_bviproc->SetEventReader(p_read);
   bool res(p_bviproc->CalculateTotalXSec(resultpath,create));
+  p_bviproc->SetEventReader(NULL);
   psh=p_rsproc->Integrator()->PSHandler();
-  psh->SetAbsError(psh->Error()*rpa->Picobarn()*
-		   dabs(p_bviproc->Integrator()->TotalResult()));
+  if (!p_read)
+    psh->SetAbsError(psh->Error()*rpa->Picobarn()*
+		     dabs(p_bviproc->Integrator()->TotalResult()));
+  p_rsproc->SetEventReader(p_read);
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
+  p_rsproc->SetEventReader(NULL);
   for (size_t i(0);i<p_bviproc->Size();++i)
     (*p_bproc)[i]->Integrator()->SetMax
       ((*p_bviproc)[i]->Integrator()->Max());

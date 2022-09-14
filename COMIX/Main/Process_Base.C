@@ -25,6 +25,8 @@ std::string COMIX::ComixLogo()
   return "\033[31mC\033[32mo\033[34mm\033[0mi\033[33mx\033[0m";
 }
 
+int COMIX::Process_Base::s_partcommit=0;
+
 COMIX::Process_Base::Process_Base
 (PHASIC::Process_Base *const proc,MODEL::Model_Base *const model):
   p_proc(proc), p_model(model), p_psgen(NULL),

@@ -22,6 +22,7 @@ The following parameters are used to steer the process setup.
 * Max_N_Quarks::            Tag to set the maximum number of quarks.
 * Min_N_TChannels::         Tag to request a minimum number of t-channels.
 * Max_N_TChannels::         Tag to request a maximum number of t-channels.
+* Event_Files::             Tag to enable read-in of events.
 * Print_Graphs::            Tag to enable writeout of feynman graphs.
 * Name_Suffix::             Tag to set a unique name suffix.
 * Integration_Error::       Tag to set a specific integration error.
@@ -299,6 +300,23 @@ to the given value.
 @subsection Max_N_TChannels
 Limits the maximum number of t-channel propagators in the process 
 to the given value.
+
+@node Event_Files
+@subsection Event_Files
+Enables read-in of events from an event file. At present, only HDF5
+event files are supported, as described in @url{https://arxiv.org/abs/1905.05120,arXiv:1905.05120}.
+The basic syntax is
+@verbatim
+Event_Files HDF5[events.hdf5]
+@end verbatim
+Multiple, enumerated event files can be specified using the shorthand
+notation @verb{ [<first>-<last>] }.
+The multiplicity-dependent definition of the tag allows to specify
+files for individual parton-level processes in multi-jet merged setups.
+@verbatim
+Event_Files HDF5[j0_[0-100].hdf5] {2}
+Event_Files HDF5[j1_[0-100].hdf5] {3}
+@end verbatim
 
 @node Print_Graphs
 @subsection Print_Graphs

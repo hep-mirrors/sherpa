@@ -50,7 +50,7 @@ namespace SHERPA {
       m_vsfile, m_vnloqcdmode, m_vnloqcdpart, m_vnloewmode, m_vnloewpart,
       m_vnlosubv, m_vasscontribs, m_vmegen, m_vrsmegen, m_vloopgen, m_vloopgen_unwt, m_vint,
       m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl,
-      m_vacpl, m_vmaxacpl, m_vminacpl, m_vaddname;
+      m_vacpl, m_vmaxacpl, m_vminacpl, m_vaddname, m_vfiles;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
       m_vntchanmin, m_vntchanmax, m_vitmin, m_vrsitmin;
 

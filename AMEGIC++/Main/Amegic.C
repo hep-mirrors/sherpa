@@ -93,7 +93,6 @@ Amegic::Amegic():
 
 Amegic::~Amegic() 
 {
-  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (p_cluster) delete p_cluster;
   delete p_amodel;
 }
@@ -169,7 +168,7 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   AMEGIC::Process_Base::SetGauge(gauge);
   if (gauge!=10) msg_Info()<<METHOD<<"(): Set gauge "<<gauge<<"."<<std::endl;
   s_partcommit=read.GetValue<int>("AMEGIC_PARTIAL_COMMIT",0);
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
+  ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return true;
 }
@@ -194,18 +193,16 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
       delete newxs;
       return NULL;
     }
-    if (!s_partcommit)
-      My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
     if (!newxs->Get<AMEGIC::Process_Group>()->ConstructProcesses()) {
       if (!s_partcommit)
-	My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+	My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
       msg_Debugging()<<METHOD<<"(): Construct failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
       return NULL;
     }
     if (!s_partcommit)
-      My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+      My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
     newxs->Get<AMEGIC::Process_Group>()->WriteMappingFile();
     msg_Tracking()<<"Initialized '"<<newxs->Name()<<"'\n";
     if (msg_LevelIsTracking()) newxs->Get<AMEGIC::Process_Group>()->PrintProcessSummary();
@@ -243,16 +240,15 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
     msg_Debugging()<<"} -> sum = "<<sum<<"\n";
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);
     newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath);
-    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
     if (!newxs->Get<AMEGIC::Process_Base>()->
 	InitAmplitude(p_amodel,&top,m_umprocs,m_errprocs)) {
-      My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+      My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
       return NULL;
     }
-    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+    My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
   }
   if (add) Add(newxs);
   else m_rsprocs.push_back(newxs);
@@ -268,6 +264,7 @@ int Amegic::PerformTests()
     if (m_rsprocs[i]->Get<AMEGIC::Amegic_Base>()->NewLibs())
       THROW(normal_exit,"New libraries created. Please compile.");
   Minimize();
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return tests;
 }
 

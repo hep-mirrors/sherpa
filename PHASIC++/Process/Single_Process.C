@@ -5,6 +5,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PHASIC++/Channels/CS_Dipole.H"
 #include "PDF/Main/ISR_Handler.H"
@@ -54,6 +55,20 @@ Process_Base *Single_Process::operator[](const size_t &i)
 
 Weight_Info *Single_Process::OneEvent(const int wmode,const int mode)
 {
+  DEBUG_FUNC(m_name<<" "<<p_read);
+  if (p_read) {
+    msg_Debugging()<<"Reader type is "<<Demangle(typeid(*p_read).name())<<"\n";
+    Cluster_Amplitude *ampl(p_read->ReadEvent());
+    if (ampl==NULL) return NULL;
+    msg_Debugging()<<*ampl<<"\n";
+    p_int->PSHandler()->SetPoint(ampl);
+    Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,mode));
+    p_int->PSHandler()->SetPoint(NULL);
+    ampl->Delete();
+    if (winfo) msg_Debugging()<<"Weight info: "<<*winfo<<"\n";
+    else msg_Debugging()<<"No weight info\n";
+    return winfo;
+  }
   p_selected=this;
   return p_int->PSHandler()->OneEvent(this,mode);
 }
@@ -457,6 +472,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     if (p_mc!=NULL && m_dadsmode && m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) {
       // calculate DADS for MC@NLO, one PS point, many dipoles
       msg_Debugging()<<"Calculating DADS terms"<<std::endl;
+      if (p_read) p_mc->SetPoint(p_read->SubEvt());
       m_mewgtinfo.m_type|=mewgttype::DADS;
       Dipole_Params dps(p_mc->Active(this));
       if (dps.p_dip!=NULL) {
@@ -475,7 +491,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
             SHERPA::Variation_Weights * vw = new SHERPA::Variation_Weights(v);
             cp->SetOwnedVariationWeights(vw);
           }
+	  if (p_read) cp->ScaleSetter(true)->SetFixedScale
+			(ScaleSetter(true)->FixedScales());
           double dadswgt(cp->Differential(dps.m_p)*dps.m_weight);
+	  if (p_read) cp->ScaleSetter(true)->SetFixedScale(std::vector<double>());
           msg_Debugging()<<"DADS_"<<i<<" = "<<-dadswgt<<std::endl;
           double dadsmewgt(cp->GetMEwgtinfo()->m_B*dps.m_weight);
           DADS_Info dads(-dadsmewgt,x[0],x[1],
@@ -907,6 +926,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
   psh->InitIncoming();
+  if (p_read) return true;
   double var(p_int->TotalVar());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
             <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;

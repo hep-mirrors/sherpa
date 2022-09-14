@@ -87,6 +87,10 @@ void KP_Terms::Calculate
 (const Vec4D_Vector &mom,const double &x0,const double &x1,
  const double &eta0,const double &eta1,const double &weight)
 {
+  DEBUG_FUNC("");
+  msg_Debugging()<<"x0="<<x0<<", x1="<<x1
+                 <<", eta0="<<eta0<<", eta1="<<eta1<<std::endl;
+  msg_Debugging()<<"cpl="<<Coupling()<<" "<<m_cpldef<<" "<<p_cpl->Factor()<<std::endl;
   bool sa=m_flavs[0].Strong();
   bool sb=m_flavs[1].Strong();
   if (!sa && !sb) return;
@@ -97,16 +101,23 @@ void KP_Terms::Calculate
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
 
+  msg_Debugging()<<"parton list: "<<m_plist<<std::endl;
+
   if (sa) {
     double w=1.-eta0;
     int type=m_flavs[0].IntSpin();
     if (m_imode&2) {
+        msg_Debugging()<<"sa: Kbar"<<std::endl;
     m_kpca[0]=-w*p_flkern->Kb1(type,x0)+p_flkern->Kb2(type)-p_flkern->Kb4(type,eta0);
     m_kpca[1]=w*(p_flkern->Kb1(type,x0)+p_flkern->Kb3(type,x0));
     m_kpca[2]=-w*p_flkern->Kb1(type+2,x0)+p_flkern->Kb2(type+2)-p_flkern->Kb4(type+2,eta0);
     m_kpca[3]=w*(p_flkern->Kb1(type+2,x0)+p_flkern->Kb3(type+2,x0));
     for (int i=0;i<4;i++) m_kpca[i]*=m_dsij[0][0];
+    msg_Debugging()
+          <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
+          <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
 
+    msg_Debugging()<<"sa: t"<<std::endl;
     double t=0.;
     if (!m_massive) {
       for (size_t i=pls;i<m_plist.size();i++) {
@@ -153,8 +164,12 @@ void KP_Terms::Calculate
 	}
       }
     }
+    msg_Debugging()
+            <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
+            <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
 
     if (sb) {
+      msg_Debugging()<<"sa: Ktilde"<<std::endl;
       if(!m_massive){
         m_kpca[0]-=m_dsij[0][1]*(-w*p_flkern->Kt1(type,x0)+p_flkern->Kt2(type)-p_flkern->Kt4(type,eta0));
         m_kpca[1]-=m_dsij[0][1]*w*(p_flkern->Kt1(type,x0)+p_flkern->Kt3(type,x0));
@@ -167,10 +182,14 @@ void KP_Terms::Calculate
         m_kpca[2]-=m_dsij[0][1]*(-w*p_masskern->Kt1(type+2,x0)+p_masskern->Kt2(type+2)-p_masskern->Kt4(type+2,eta0));
         m_kpca[3]-=m_dsij[0][1]*w*(p_masskern->Kt1(type+2,x0)+p_masskern->Kt3(type+2,x0));
       }
+      msg_Debugging()
+            <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
+            <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
     }
     }
     
     if (m_imode&4) {
+      msg_Debugging()<<"sa: P"<<std::endl;
     double asum=0.,fsum=0.;
     for (size_t i=1;i<m_plist.size();i++) {
       fsum+=m_dsij[0][i];
@@ -185,6 +204,9 @@ void KP_Terms::Calculate
     m_kpca[1]+=asum*m_kpca[5];
     m_kpca[2]+=asum*m_kpca[6];
     m_kpca[3]+=asum*m_kpca[7];
+      msg_Debugging()
+          <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
+          <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
     }
   }
   
@@ -192,12 +214,17 @@ void KP_Terms::Calculate
     double w=1.-eta1;
     int type=m_flavs[1].IntSpin();
     if (m_imode&2) {
+    msg_Debugging()<<"sb: Kbar"<<std::endl;
     m_kpcb[0]=-w*p_flkern->Kb1(type,x1)+p_flkern->Kb2(type)-p_flkern->Kb4(type,eta1);
     m_kpcb[1]=w*(p_flkern->Kb1(type,x1)+p_flkern->Kb3(type,x1));
     m_kpcb[2]=-w*p_flkern->Kb1(type+2,x1)+p_flkern->Kb2(type+2)-p_flkern->Kb4(type+2,eta1);
     m_kpcb[3]=w*(p_flkern->Kb1(type+2,x1)+p_flkern->Kb3(type+2,x1));
     for (int i=0;i<4;i++) m_kpcb[i]*=m_dsij[0][0];
+    msg_Debugging()
+          <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
+          <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
 
+    msg_Debugging()<<"sb: t"<<std::endl;
     double t=0.;
     if (!m_massive) {
       for (size_t i=pls;i<m_plist.size();i++) {
@@ -244,8 +271,12 @@ void KP_Terms::Calculate
 	}
       }
     }
+    msg_Debugging()
+            <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
+            <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
 
     if (sa) {
+      msg_Debugging()<<"sb: Ktilde"<<std::endl;
       if (!m_massive){
         m_kpcb[0]-=m_dsij[0][1]*(-w*p_flkern->Kt1(type,x1)+p_flkern->Kt2(type)-p_flkern->Kt4(type,eta1));
         m_kpcb[1]-=m_dsij[0][1]*w*(p_flkern->Kt1(type,x1)+p_flkern->Kt3(type,x1));
@@ -258,10 +289,14 @@ void KP_Terms::Calculate
         m_kpcb[2]-=m_dsij[0][1]*(-w*p_masskern->Kt1(type+2,x1)+p_masskern->Kt2(type+2)-p_masskern->Kt4(type+2,eta1));
         m_kpcb[3]-=m_dsij[0][1]*w*(p_masskern->Kt1(type+2,x1)+p_masskern->Kt3(type+2,x1));
       }
+      msg_Debugging()
+            <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
+            <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
     }
     }
 
     if (m_imode&4) {
+      msg_Debugging()<<"sb: P"<<std::endl;
     double asum=0.,fsum=0.;
     for (size_t i=0;i<m_plist.size();i++) if (i!=pls-1) {
       fsum+=m_dsij[pls-1][i];
@@ -276,6 +311,9 @@ void KP_Terms::Calculate
     m_kpcb[1]+=asum*m_kpcb[5];
     m_kpcb[2]+=asum*m_kpcb[6];
     m_kpcb[3]+=asum*m_kpcb[7];
+    msg_Debugging()
+          <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
+          <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
     }
   }
 
@@ -299,7 +337,6 @@ double KP_Terms::Get(const double &x0,const double &x1,
                      const int mode,
                      const double &scalefac2)
 {
-  DEBUG_FUNC("");
   bool sa=flav[0].Strong();
   bool sb=flav[1].Strong();
   PDF::PDF_Base *pdfa(p_proc->Integrator()->ISR()->PDF(mode));
@@ -316,8 +353,15 @@ double KP_Terms::Get(const double &x0,const double &x1,
   double fb=0.,fbq=0.,fbg=0.,fbqx=0.,fbgx=0.;
   double g2massq(0.);
   double muf = p_proc->ScaleSetter()->Scale(stp::fac) * scalefac2;
+  DEBUG_FUNC("QCD: "<<
+             "fl0="<<flav[0]<<", x0="<<x0<<", eta0="<<eta0<<
+                          ", muf02="<<muf<<", muf02fac="<<scalefac2<<
+             "\n                   "<<
+             "fl1="<<flav[1]<<", x1="<<x1<<", eta1="<<eta1<<
+                          ", muf12="<<muf<<", muf12fac="<<scalefac2);
 
   if (sa) {
+    msg_Debugging()<<"sa"<<std::endl;
     if (m_cemode && eta0*rpa->gen.PBeam(0)[0]<flav[0].Mass(true)) {
       msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBeam(0)[0]
 		    <<" vs. "<<flav[0].Mass(true)<<" )"<<std::endl;
@@ -355,6 +399,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
     }    
   }
   if (sb) {
+    msg_Debugging()<<"sb"<<std::endl;
     if (m_cemode && eta1*rpa->gen.PBeam(1)[0]<flav[1].Mass(true)) {
       msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBeam(1)[0]
 		    <<" vs. "<<flav[1].Mass(true)<<" )"<<std::endl;
@@ -392,6 +437,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
     }    
   }
 
+  msg_Debugging()<<"composing results"<<std::endl;
   double res=g2massq;
   // As this is intended to be a contribution to the *partonic* cross section,
   // multiplying with the two incoming parton PDFs should give the hadronic
@@ -418,6 +464,31 @@ double KP_Terms::Get(const double &x0,const double &x1,
     b /= fb;
     res += b;
   }
+  if (msg_LevelIsDebugging()) {
+    double precision(msg_Out().precision());
+    msg->SetPrecision(16);
+    msg_Out()<<"  IKP-Terms Beam A:\n"
+                   <<"    xa="<<x0<<" ,   etaa="<<eta0
+                   <<"    fa="<<fa<<" ,  faq="<<faq<<" ,  faqx="<<faqx
+                   <<" ,  fag="<<fag<<" ,  fagx="<<fagx<<"\n"
+                   <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
+                   <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]
+                   <<std::endl;
+    msg_Out()<<"  => "<<(m_kpca[0]*faq+m_kpca[1]*faqx
+                               +m_kpca[2]*fag+m_kpca[3]*fagx)*fb<<std::endl;
+    msg_Out()<<"  IKP-Terms Beam B:\n"
+                   <<"    xb="<<x1<<" ,   etab="<<eta1
+                   <<"    fb="<<fb<<" ,  fbq="<<fbq<<" ,  fbqx="<<fbqx
+                   <<" ,  fbg="<<fbg<<" ,  fbgx="<<fbgx<<"\n"
+                   <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
+                   <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]
+                   <<std::endl;
+    msg_Out()<<"  => "<<(m_kpcb[0]*fbq+m_kpcb[1]*fbqx
+                               +m_kpcb[2]*fbg+m_kpcb[3]*fbgx)*fa<<std::endl;
+    msg_Out()<<"res="<<res<<std::endl<<"  => "<<res*fa*fb<<std::endl;
+    msg->SetPrecision(precision);
+  }
+
   return res;
 }
 

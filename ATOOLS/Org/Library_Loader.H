@@ -13,12 +13,6 @@ namespace ATOOLS {
     std::vector<std::string>    m_paths;
     std::map<std::string,void*> m_libs;
 
-    size_t m_wait;
-    bool   m_check;
-
-    bool CreateLockFile(const std::string &lockname);
-    bool RemoveLockFile(const std::string &lockname);
-
   public:
 
     // constructor
@@ -26,6 +20,8 @@ namespace ATOOLS {
 
     // member functions
     void *LoadLibrary(const std::string &name);
+    void *LoadLibrary(const std::string &path,
+		      const std::string &name);
     void  UnloadLibrary(const std::string &name,void *module);
     bool  LibraryIsLoaded(const std::string &name);
 
@@ -34,13 +30,11 @@ namespace ATOOLS {
     void *GetLibraryFunction(const std::string &libname,
 			     const std::string &funcname,
 			     void *&module);
+    void *GetLibraryFunction(const std::string &funcname,
+			     void* const & module) const;
 
     // inline functions
     void AddPath(const std::string &path,const int mode=0);
-
-    inline void SetWaitTime(const size_t &wait) { m_wait=wait; }
-
-    inline void SetCheck(const bool check) { m_check=check; }
 
   };//end of class Library_Loader
 

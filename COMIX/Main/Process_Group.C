@@ -64,6 +64,8 @@ bool COMIX::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   proc->Integrator()->SetHelicityScheme(p_int->HelicityScheme());
   proc->SetParent((PHASIC::Process_Base*)this);
   if (!cdxs->Initialize(p_pmap,p_umprocs)) return false;
+  if (s_partcommit) My_In_File::CloseDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
   if (!cdxs->MapProcess())
     if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
   return true;

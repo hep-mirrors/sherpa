@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <sys/types.h>
 #include <signal.h>
@@ -314,7 +315,8 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
 					   const std::string &comment)
 {
 #ifdef USING_Stack_Trace
-  ostr<<comment<<om::bold<<"Exception_Handler::GenerateStackTrace(..): "
+  ostr<<comment<<om::bold<<"Exception_Handler::GenerateStackTrace"
+      <<"(rank "<<mpi->Rank()<<"): "
       <<om::reset<<om::blue<<"Generating stack trace "
       <<om::reset<<om::bold<<"\n{"<<om::reset<<std::endl;
   // adapted from root version 3.10 TUnixSystem.cxx

@@ -18,6 +18,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Org/My_File.H"
 
 // #define DEBUG__Simple_Chain
 
@@ -474,13 +475,13 @@ bool Simple_Chain::Initialize()
     }
   }
   if (m_reswriteout) {
-    std::ofstream ofile;
-    ofile.open(m_xsec_output.c_str());
-    ofile<<"MPIs in Sherpa, Model = Amisic: \n"
-         <<"   semihard xsec = "<<(m_sigmahard*rpa->Picobarn()/1.e9)<<" mb,\n"
-         <<"   non-diffractive xsec = "<<(m_norm*rpa->Picobarn()/1.e9)<<" mb "
-         <<"with nd factor = "<<m_sigma_nd_fac<<".\n";
-    ofile.close();
+    My_Out_File ofile(m_xsec_output);
+    ofile.Open();
+    (*ofile)<<"MPIs in Sherpa, Model = Amisic: \n"
+	    <<"   semihard xsec = "<<(m_sigmahard*rpa->Picobarn()/1.e9)<<" mb,\n"
+	    <<"   non-diffractive xsec = "<<(m_norm*rpa->Picobarn()/1.e9)<<" mb "
+	    <<"with nd factor = "<<m_sigma_nd_fac<<".\n";
+    ofile.Close();
   }
 
   return true;

@@ -6,6 +6,7 @@
 #include "PHASIC++/Main/Helicity_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -101,6 +102,9 @@ void Process_Integrator::SetupWeightsCache() {
 
 double Process_Integrator::SelectionWeight(const int mode) const
 {
+  if (p_proc->EventReader()) {
+    return p_proc->EventReader()->TotalXS()*m_enhancefac;
+  }
   bool isWeightedEvtGen(!mode);
   if (!p_proc->IsGroup()) {
     return m_weightsCache[0][isWeightedEvtGen];
@@ -610,11 +614,8 @@ void Process_Integrator::SetISRThreshold(const double threshold)
 
 void Process_Integrator::StoreBackupResults()
 {
-#ifdef USING__MPI
-  if (mpi->Rank()) return;
-#endif
-  if (!FileExists(m_resultpath+".db")) return;
-  if (!Copy(m_resultpath+".db",m_resultpath+".db.bak",true))
+  if (!FileExists(m_resultpath+".zip")) return;
+  if (!Copy(m_resultpath+".zip",m_resultpath+".zip~",true))
     msg_Error()<<METHOD<<"(): Copy error. "
 	       <<strerror(errno)<<"."<<std::endl;
 }
@@ -625,15 +626,11 @@ void Process_Integrator::StoreResults(const int mode)
   if (m_resultpath.length()==0) return;
   if (m_totalxs!=0.0 && mode==0) return;
   SetTotal(0);
-#ifdef USING__MPI
-  if (mpi->Rank()) return;
-#endif
-  My_In_File::ExecDB(m_resultpath+"/","begin");
   std::string fname(p_proc->Name());
   WriteOutXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname);
   WriteOutHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
   p_pshandler->WriteOut(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
-  My_In_File::ExecDB(m_resultpath+"/","commit");
+  My_In_File::CloseDB(m_resultpath+"/",0);
   StoreBackupResults();
 }
 
