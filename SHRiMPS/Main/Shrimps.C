@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "SHRiMPS/Cross_Sections/Sigma_Total.H"
+
 using namespace SHRIMPS;
 using namespace std;
 
@@ -232,6 +234,7 @@ void Shrimps::GenerateXsecs() {
              <<"xsdd = "<<p_xsecs->SigmaDD()<<".\n";
     if (elastics.find(energy)!=elastics.end()) {
       WriteOutElasticsYodaFile(energy,dirname);
+      WriteOutDiffXSecs(energy,dirname);
     }
   }
   WriteOutXSecsYodaFile(energies_tot, energies_inel, energies_el, energies_sd, energies_dd, xsectot, xsecinel, xsecelas, xsecsd, xsecdd, dirname);
@@ -280,6 +283,72 @@ void Shrimps::WriteOutElasticsYodaFile(const double & energy,
     was.close();
 
 }
+
+void Shrimps::WriteOutDiffXSecs(double energy, std::string dirname){
+    std::string Estring(ATOOLS::ToString(energy));
+    std::string filename(dirname+std::string("/Differential_XSecs_"+Estring+".dat"));
+    std::ofstream was;
+    was.open(filename.c_str());
+    was<<"# total cross section "+Estring+"\n";
+    was<<"# B     dsigma/(2 pi B dB) \n";
+    double Bmax(MBpars.GetEikonalParameters().bmax);
+    int Nstep(25);
+
+    Sigma_Tot sigmatot;
+    sigmatot.Calculate();
+    was<<"# 0 - sigma_tot\n";
+    for (int i = 0; i < Nstep; ++i) {
+        double B(i*Bmax/Nstep);
+        double val(sigmatot.GetCombinedValue(B));
+        was<<B<<"     "<<val<<endl;
+    }
+    was<<"\n\n";
+
+    was<<"# 1 - sigma_inel\n";
+    for (int i = 0; i < Nstep; ++i) {
+        double B(i*Bmax/Nstep);
+        double val(p_xsecs->GetSigmaInelastic()->GetCombinedValue(B));
+        was<<B<<"     "<<val<<endl;
+    }
+    was<<"\n\n";
+
+    was<<"# 2 - sigma_el\n";
+    for (int i = 0; i < Nstep; ++i) {
+        double B(i*Bmax/Nstep);
+        double val(p_xsecs->GetSigmaElastic()->GetCombinedValue(B));
+        was<<B<<"     "<<val<<endl;
+    }
+    was<<"\n\n";
+    was<<"# 3 - sigma_qe\n";
+    for (int i = 0; i < Nstep; ++i) {
+        double B(i*Bmax/Nstep);
+        double val(p_xsecs->GetSigmaSD()->GetCombinedValue(B));
+        was<<B<<"     "<<val<<endl;
+    }
+    was<<"\n\n";
+    was<<"# 4 - sigma_sd0\n";
+    for (int i = 0; i < Nstep; ++i) {
+        double B(i*Bmax/Nstep);
+        double val(p_xsecs->GetSigmaSD()->GetCombinedValueSD0(B));
+        was<<B<<"     "<<val<<endl;
+    }
+    was<<"\n\n";
+    was<<"# 5 - sigma_sd1\n";
+    for (int i = 0; i < Nstep; ++i) {
+        double B(i*Bmax/Nstep);
+        double val(p_xsecs->GetSigmaSD()->GetCombinedValueSD1(B));
+        was<<B<<"     "<<val<<endl;
+    }
+    was<<"\n\n";
+    was<<"# 6 - sigma_dd\n";
+    for (int i = 0; i < Nstep; ++i) {
+        double B(i*Bmax/Nstep);
+        double val(p_xsecs->GetSigmaSD()->GetCombinedValueDD(B));
+        was<<B<<"     "<<val<<endl;
+    }
+    was.close();
+}
+
 
 void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
                     const std::set<double> & energies_inel,

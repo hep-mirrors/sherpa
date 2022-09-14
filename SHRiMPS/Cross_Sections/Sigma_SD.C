@@ -17,8 +17,61 @@ Sigma_SD::Sigma_SD() :
   for (size_t i=0;i<2;i++) m_summed[i] = 0.;
 }
 
-double Sigma_SD::GetValue(const double & B)         { return 0.; }
-double Sigma_SD::GetCombinedValue(const double & B) { return 0.; }
+double Sigma_SD::GetValue(const double & B) {
+    return p_eikonal->Prefactor()*sqr(1.-exp(-(*p_eikonal)(B)/2.));
+}
+
+double Sigma_SD::GetCombinedValue(const double & B) {
+  double value(0.);
+  for (size_t i=0;i<p_eikonals->size();i++) {
+    for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+      Omega_ik * eikonal = (*p_eikonals)[i][j];
+      value += eikonal->Prefactor()*sqr(1.-exp(-(*eikonal)(B)/2.));
+    }
+  }
+  return value;
+}
+
+double Sigma_SD::GetCombinedValueEL(const double & B) {
+    double value(0.);
+    for (size_t i=0;i<p_eikonals->size();i++) {
+      for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+        Omega_ik * eikonal = (*p_eikonals)[i][j];
+        value += eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)/2.));
+      }
+    }
+    return sqr(value);
+}
+
+double Sigma_SD::GetCombinedValueSD0(const double & B) {
+  double value(0.),kaverage(0.);
+  for (size_t i=0;i<p_eikonals->size();i++) {
+      kaverage = 0.;
+      for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+          Omega_ik * eikonal = (*p_eikonals)[i][j];
+          kaverage += sqr(eikonal->FF2()->Prefactor())*(1.-exp(-(*eikonal)(B)/2.));
+      }
+      value += sqr((*p_eikonals)[0][0]->FF1()->Prefactor())*sqr(kaverage);
+  }
+  return value - GetCombinedValueEL(B);
+}
+
+double Sigma_SD::GetCombinedValueSD1(const double & B) {
+    double value(0.),kaverage(0.);
+    for (size_t i=0;i<p_eikonals->size();i++) {
+        kaverage = 0.;
+        for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+            Omega_ik * eikonal = (*p_eikonals)[i][j];
+            kaverage += sqr(eikonal->FF1()->Prefactor())*(1.-exp(-(*eikonal)(B)/2.));
+        }
+        value += sqr((*p_eikonals)[0][0]->FF2()->Prefactor())*sqr(kaverage);
+    }
+    return value - GetCombinedValueEL(B);
+}
+
+double Sigma_SD::GetCombinedValueDD(const double & B) {
+  return GetCombinedValue(B) - GetCombinedValueSD0(B) - GetCombinedValueSD1(B) - GetCombinedValueEL(B);
+}
 
 void Sigma_SD::FillGrids(Sigma_Elastic * sigma_el) {
   m_tgrids.clear();
