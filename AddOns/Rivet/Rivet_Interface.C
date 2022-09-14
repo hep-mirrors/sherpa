@@ -25,6 +25,7 @@
 #include "HepMC3/GenEvent.h"
 #include "HepMC3/GenCrossSection.h"
 
+#define USING__Rivet_MPI_Merge
 
 namespace SHERPARIVET {
   typedef std::pair<std::string, int> RivetMapKey;
@@ -318,6 +319,17 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     m_hepmc.AddCrossSection(m_lastevent, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
   }
 #endif
+#if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+#ifndef  RIVET_ENABLE_HEPMC_3
+  if (m_lastevent.vertices_begin()==m_lastevent.vertices_end()) {
+#else
+  if (m_lastevent.vertices().empty()) {
+#endif
+    m_lastevent=event;
+    for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
+  }
+  m_lastevent.set_cross_section(xs);
+#endif
 
   // dispatch the events to the main & partial (= split) analysis handlers
   if (subevents.size()) {
@@ -344,7 +356,15 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 
     // now bin the events into the right partial analysis handlers
     if (m_splitjetconts && sp) {
+#ifdef RIVET__Use_Explicit_Variations
+      for (std::map<std::string,double>::const_iterator
+	     wit(wgtmap.begin());wit!=wgtmap.end();++wit) {
+	event.weights().front()=wit->second;
+	GetRivet(wit->first,parts)->analyze(event);
+      }
+#else
       GetRivet("",parts)->analyze(event);
+#endif
     }
     if (m_splitcoreprocs && sp) {
       GetRivet(GetCoreProc(sp->TypeSpec()),0)->analyze(event);

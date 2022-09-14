@@ -15,7 +15,6 @@ extern "C" int FC_DUMMY_MAIN() { return 1; }
 
 int main(int argc,char* argv[])
 {
-
 #ifdef USING__MPI
 #ifdef USING__Threading
   int provided;

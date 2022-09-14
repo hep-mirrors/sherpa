@@ -276,6 +276,13 @@ void Run_Parameter::Init()
 
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
+  std::vector<int> mpiinfo=s["EMULATE_MPI"].GetVector<int>();
+  if (mpiinfo.size()==2) {
+    msg_Info()<<METHOD<<"(): Emulating a run on rank "
+	      <<mpiinfo[0]<<" of "<<mpiinfo[1]<<"."<<std::endl;
+    mpi->SetMyRank(mpiinfo[0]);
+    mpi->SetMySize(mpiinfo[1]);
+  }
   // read only if defined (no error message if not defined)
   long int seed;
   std::vector<long int> seeds = s["RANDOM_SEED"].GetVector<long int>();

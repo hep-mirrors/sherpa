@@ -162,6 +162,15 @@ bool Phase_Space_Point::DefineBeamKinematics() {
 bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
   // active ISR handling necessary - generate a point:
   // -- s' and rapidity y for collider mode,
+  const Cluster_Amplitude *point(p_pshandler->Point());
+  if (point) {
+    m_osmass?m_isrspkey[4]:m_isrspkey[3]=
+      (point->Leg(0)->Mom()+point->Leg(1)->Mom()).Abs2();
+    m_isrykey[2]=(-point->Leg(0)->Mom()
+		  -point->Leg(1)->Mom()).Y();
+    return p_isrhandler->MakeISR(m_sprime, m_isrykey[2], p_moms,
+				 process->Process()->Selected()->Flavours());
+  }
   if (p_isrhandler->On() && p_isrchannels != NULL &&
       m_mode != psmode::no_gen_isr) {
     if (m_smin > m_sprime * p_isrhandler->Upper1() * p_isrhandler->Upper2()) {
@@ -225,7 +234,19 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
 }
 
 bool Phase_Space_Point::DefineFSRKinematics() {
-  p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
+  Cluster_Amplitude *point(p_pshandler->Point());
+  if (point) {
+    Process_Integrator *process(p_pshandler->Process());
+    if (process->ColorIntegrator()!=NULL)
+      while (!process->Process()->GeneratePoint());
+    for (size_t i(0);i<m_nin;++i)
+      p_moms[i]=-point->Leg(i)->Mom();
+    for (size_t i(m_nin);i<m_nin+m_nout;++i)
+      p_moms[i]=point->Leg(i)->Mom();
+  }
+  else {
+    p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
+  }
   return true;
 }
 

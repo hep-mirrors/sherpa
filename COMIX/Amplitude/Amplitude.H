@@ -10,6 +10,7 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 #ifdef USING__Threading 

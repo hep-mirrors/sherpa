@@ -15,6 +15,7 @@ namespace PHASIC {
 }
 
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PHASIC;

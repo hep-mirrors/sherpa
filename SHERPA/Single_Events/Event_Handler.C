@@ -34,6 +34,7 @@ Event_Handler::Event_Handler():
   m_checkweight = s["CHECK_WEIGHT"].SetDefault(0).Get<int>();
   m_decayer = s["DECAYER"].SetDefault(kf_none).Get<int>();
   m_lastrss=0;
+  s_objects.push_back(this);
 }
 
 Event_Handler::~Event_Handler()
@@ -298,6 +299,8 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       Reset();
       return 2;
     case Return_Value::Error :
+      if (rpa->gen.NumberOfEvents()==
+	  rpa->gen.NumberOfGeneratedEvents()) return 0;
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncError((*pit)->Name());
       return 3;
@@ -368,7 +371,8 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     }
   } while (run);
 
-  if (mode==eventtype::EventReader) {
+  if (mode==eventtype::EventReader ||
+      rpa->gen.NumberOfEvents()==rpa->gen.NumberOfGeneratedEvents()) {
     if (p_signal->NOutP()==0) return false;
   }
   else {
@@ -516,8 +520,8 @@ void Event_Handler::Finish() {
   }
   Blob::Reset();
   // Obtain absolute (variation) weights.
-  Weights_Map xs_wgtmap = TotalXSMPI();
-  Weights_Map err_wgtmap = TotalErrMPI();
+  Weights_Map xs_wgtmap = TotalXS();
+  Weights_Map err_wgtmap = TotalErr();
   std::map<std::string, double> xs_wgts;
   xs_wgtmap.FillVariations(xs_wgts, Variations_Source::all,
                            Variations_Name_Type::human_readable);
@@ -593,11 +597,6 @@ void Event_Handler::MPISync()
       mpi->Allreduce(&m_maxweight, 1, MPI_DOUBLE, MPI_MAX);
   }
 #endif
-}
-
-void Event_Handler::MPISyncXSAndErrMaps()
-{
-  MPISync();
   m_mwgtmapsum = m_wgtmapsum;
   m_mwgtmapsumsqr = m_wgtmapsumsqr;
 #ifdef USING__MPI
@@ -641,33 +640,6 @@ Uncertain<double> Event_Handler::TotalNominalXS()
   return {xs, sqrt(numerator / (m_n - 1) / (m_n * m_n))};
 }
 
-Uncertain<double> Event_Handler::TotalNominalXSMPI()
-{
-  MPISync();
-  if (m_mn == 0.0)
-    return {0.0, 0.0};
-
-  double sum_nominal {m_wgtmapsum.Nominal()};
-#ifdef USING__MPI
-  if (mpi->Size() > 1)
-    mpi->Allreduce(&sum_nominal, 1, MPI_DOUBLE, MPI_SUM);
-#endif
-  const double xs {sum_nominal / m_mn};
-  if (m_mn <= 1)
-    return {xs, xs};
-
-  double sumsqr_nominal {m_wgtmapsumsqr.Nominal()};
-#ifdef USING__MPI
-  if (mpi->Size() > 1)
-    mpi->Allreduce(&sumsqr_nominal, 1, MPI_DOUBLE, MPI_SUM);
-#endif
-  if (ATOOLS::IsEqual(sumsqr_nominal * m_mn, sum_nominal * sum_nominal, 1.0e-6))
-    return {xs, 0.0};
-
-  const double numerator {sumsqr_nominal * m_mn - sum_nominal * sum_nominal};
-  return {xs, sqrt(numerator / (m_mn - 1) / (m_mn * m_mn))};
-}
-
 Weights_Map Event_Handler::TotalXS()
 {
   if (m_n==0.0) return 0.0;
@@ -680,20 +652,6 @@ Weights_Map Event_Handler::TotalErr()
   auto numerator = m_wgtmapsumsqr*m_n - m_wgtmapsum*m_wgtmapsum;
   numerator.SetZeroIfCloseToZero(1.0e-6);
   return sqrt(numerator/(m_n-1)/(m_n*m_n));
-}
-
-Weights_Map Event_Handler::TotalXSMPI()
-{
-  if (m_mn==0.0) return 0.0;
-  return m_mwgtmapsum/m_mn;
-}
-
-Weights_Map Event_Handler::TotalErrMPI()
-{
-  if (m_mn<=1) return TotalXSMPI();
-  auto numerator = m_mwgtmapsumsqr*m_mn - m_mwgtmapsum*m_mwgtmapsum;
-  numerator.SetZeroIfCloseToZero(1.0e-6);
-  return sqrt(numerator/(m_mn-1)/(m_mn*m_mn));
 }
 
 void Event_Handler::WriteRNGStatus
