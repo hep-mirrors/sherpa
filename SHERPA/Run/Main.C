@@ -33,8 +33,7 @@ int main(int argc,char* argv[])
   try {
     Sherpa* Generator = new Sherpa(argc, argv);
     Generator->InitializeTheRun();
-    int nevt=rpa->gen.NumberOfEvents();
-    if (nevt>0) {
+    if (rpa->gen.NumberOfEvents()>0) {
       Generator->InitializeTheEventHandler();
       for (size_t i=1;i<=rpa->gen.NumberOfEvents();) {
         if (Generator->GenerateOneEvent()) ++i;

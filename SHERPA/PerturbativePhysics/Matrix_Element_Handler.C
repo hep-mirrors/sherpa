@@ -246,6 +246,8 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // try to generate an event for the selected process
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
+  if (rpa->gen.NumberOfEvents()==
+    rpa->gen.NumberOfGeneratedEvents()) return false;
   p_proc=proc->Selected();
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
@@ -828,6 +830,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "Helicity_Scheme")    ExtractMPvalues(value, range, nf, args.pbi.m_vhls);
     else if (subkey == "Print_Graphs")       ExtractMPvalues(value, range, nf, args.pbi.m_vgpath);
     else if (subkey == "Name_Suffix")        ExtractMPvalues(value, range, nf, args.pbi.m_vaddname);
+    else if (subkey == "Event_Files")        ExtractMPvalues(value, range, nf, args.pbi.m_vfiles);
     else if (subkey == "Special")            ExtractMPvalues(value, range, nf, args.pbi.m_vspecial);
     else if (subkey == "Enable_MHV")         ExtractMPvalues(value, range, nf, args.pbi.m_vamegicmhv);
     else if (subkey == "Min_N_TChannels")    ExtractMPvalues(value, range, nf, args.pbi.m_vntchan);
@@ -1091,6 +1094,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	  if (GetMPvalue(args.pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
 	  proc[i]->SetShower(p_shower->GetShower());
+	  if (GetMPvalue(args.pbi.m_vfiles,nfs,pnid,ds))
+	    proc[i]->SetupEventReader(ds);
 	}
 	if (loprocs==0) loprocs=procs.size();
       }

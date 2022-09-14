@@ -89,6 +89,7 @@ Process_Base *Single_Process::operator[](const size_t &i)
 Weight_Info *Single_Process::OneEvent(const int wmode,
                                       ATOOLS::Variations_Mode varmode,
                                       const int mode) {
+  DEBUG_FUNC(m_name);
   p_selected = this;
   auto psh = p_int->PSHandler();
   if (p_int->ISR())

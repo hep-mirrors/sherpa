@@ -182,7 +182,14 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
       if (!p_isrhandler->CheckMasses())
         return false;
       m_isrspkey[4] = sqr(m_osmass);
-      p_isrchannels->GeneratePoint();
+      if (p_point) {
+        m_osmass ? m_isrspkey[4]
+                 : m_isrspkey[3] =
+                       (p_point->Leg(0)->Mom() + p_point->Leg(1)->Mom()).Abs2();
+        m_isrykey[2] = (-p_point->Leg(0)->Mom() - p_point->Leg(1)->Mom()).Y();
+      } else {
+        p_isrchannels->GeneratePoint();
+      }
     }
     m_sprime = m_osmass ? m_isrspkey[4] : m_isrspkey[3];
     m_y += m_isrykey[2];
@@ -217,7 +224,14 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
 }
 
 bool Phase_Space_Point::DefineFSRKinematics() {
-  p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
+  if (p_point) {
+    for (size_t i(0); i < m_nin; ++i)
+      p_moms[i] = -p_point->Leg(i)->Mom();
+    for (size_t i(m_nin); i < m_nin + m_nout; ++i)
+      p_moms[i] = p_point->Leg(i)->Mom();
+  } else {
+    p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
+  }
   return true;
 }
 

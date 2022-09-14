@@ -35,7 +35,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
                                          const std::string efunc): m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
       p_integrator(NULL), p_beamhandler(proc->Beam()), m_pspoint(Phase_Space_Point(this)),
       p_isrhandler(proc->ISR()), p_yfshandler(proc->YFS()), p_flavours(proc->Process()->Flavours()),
-      m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout),
+      m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout), p_point(NULL),
       m_initialized(false), m_sintegrator(0), m_killedpoints(0),
       m_printpspoint(false), m_enhanceObs(eobs), m_enhanceFunc(efunc) {
   RegisterDefaults();
@@ -83,23 +83,45 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   p_active = process;
   m_wgtmap = 0.0;
   // check for failure to generate a meaningful phase space point
-  if (!process->Process()->GeneratePoint() ||
-      !m_pspoint(process,m_cmode))
+  if (p_point == nullptr && !process->Process()->GeneratePoint())
+    return 0.0;
+  if (!m_pspoint(process, m_cmode))
     return 0.0;
   for (auto p : p_lab) {
     if (p.Nan()) return 0.0;
   }
+  if (p_point != NULL && process->ColorIntegrator() != NULL)
+    process->ColorIntegrator()->SetPoint(p_point);
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass()) return 0.0;
-    m_psweight = CalculatePS();
-    m_wgtmap   = CalculateME(varmode);
-    m_wgtmap  *= m_psweight;
-    m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->TotalXS()));
-    m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
-    p_lab      = process->Momenta();
-    if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
-    ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
+    if (p_point) {
+      std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
+      process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+      double result{process->Process()
+                        ->Differential(p_lab, Variations_Mode::nominal_only)
+                        .Nominal()};
+      scales.clear();
+      process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+      m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
+      m_wgtmap=CalculateME(varmode);
+      m_wgtmap*=m_psweight;
+      m_enhanceweight=1.;
+      m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+      p_lab      = process->Momenta();
+      if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
+      ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
+    }
+    else {
+      m_psweight = CalculatePS();
+      m_wgtmap   = CalculateME(varmode);
+      m_wgtmap  *= m_psweight;
+      m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->TotalXS()));
+      m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+      p_lab      = process->Momenta();
+      if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
+      ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
+    }
   }
   // trigger failed, return 0.
   else ManageWeights(0.0);
