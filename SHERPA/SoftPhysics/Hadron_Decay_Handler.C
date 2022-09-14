@@ -42,6 +42,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler() :
   m_mass_smearing = s["Mass_Smearing"].SetDefault(1).Get<int>();
   m_spincorr = rpa->gen.SoftSC();
   m_cluster = false;
+
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
   dmap->Read(s);
   dmap->ReadFixedTables();

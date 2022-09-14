@@ -78,6 +78,7 @@ namespace ATOOLS {
     double m_result, m_me, m_mewgt, m_K;
     ATOOLS::Weights_Map m_results;
     double m_x1, m_x2, m_xf1, m_xf2, m_alpha, m_kt2;
+
     std::vector<double> m_mu2;
 
     std::string m_pname;

@@ -204,6 +204,7 @@ int Amegic::PerformTests()
   for (size_t i(0);i<m_rsprocs.size();++i) 
     if (m_rsprocs[i]->Get<AMEGIC::Amegic_Base>()->NewLibs()) return -1;
   Minimize();
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return tests;
 }
 

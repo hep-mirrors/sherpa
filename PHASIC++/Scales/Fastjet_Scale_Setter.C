@@ -8,6 +8,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"

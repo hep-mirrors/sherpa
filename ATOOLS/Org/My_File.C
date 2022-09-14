@@ -142,7 +142,7 @@ bool My_File<FileType>::CloseDB(std::string file,int mode)
   const std::vector<std::string> &files(ait->second.second);
   for (size_t i(0);i<files.size();++i) {
     ZipEntry_Map::iterator zit(s_zipfiles.find(files[i]));
-    if (zf) {
+    if (zf && zit->second.second!=0) {
       std::string fn(files[i]);
       fn.erase(0,path.length());
       if (zit->second.second<0) zf->deleteEntry(fn);
@@ -151,8 +151,8 @@ bool My_File<FileType>::CloseDB(std::string file,int mode)
 	strcpy(tmp,zit->second.first.c_str());
 	zf->addData(fn,tmp,strlen(tmp));
       }
-      zit->second.second=0;
     }
+    zit->second.second=0;
     if (mode) s_zipfiles.erase(zit);
   }
   if (mode) s_ziparchives.erase(ait);
@@ -255,7 +255,6 @@ bool My_File<FileType>::Open()
 #endif
 	return false;
       }
-      msg_IODebugging()<<infile.rdbuf()<<"\n";
       (*p_stream)<<infile.rdbuf();
 #ifdef USING__MPI
       std::string content(p_stream->str());
@@ -287,6 +286,9 @@ bool My_File<FileType>::Close()
   if (p_file == nullptr)
     return false;
   auto os = dynamic_cast<std::ofstream*>(p_file.get());
+#ifdef USING__MPI
+  if (mpi->Rank()==0)
+#endif
   if (os) {
     bool indb(false);
     for (ZipArchive_Map::iterator zit(s_ziparchives.begin());

@@ -7,6 +7,7 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Math/Random.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -69,6 +70,10 @@ Process_Integrator::~Process_Integrator()
 
 double Process_Integrator::SelectionWeight(const int mode) const
 {
+  if (p_proc->EventReader()) {
+    return p_proc->EventReader()->TotalXS()*m_enhancefac;
+  }
+  bool isWeightedEvtGen(!mode);
   if (!p_proc->IsGroup()) {
     if (mode!=0) return m_max*m_enhancefac;
     if (m_n+m_sn==0.0) return -1.0;

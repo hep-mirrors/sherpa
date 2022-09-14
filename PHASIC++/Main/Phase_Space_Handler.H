@@ -17,6 +17,7 @@ namespace ATOOLS {
   class Blob_Data_Base; 
   class Poincare;
   class Mass_Selector;
+  class Cluster_Amplitude;
   struct Weight_Info;
 }
 
@@ -61,6 +62,7 @@ namespace PHASIC {
     static ATOOLS::Integration_Info * p_info;
 
     double m_enhanceweight, m_ISsymmetryfactor, m_psweight;
+    ATOOLS::Cluster_Amplitude *p_point;
 
     psmode::code m_cmode;
     double    m_thkill, m_error, m_abserror;
@@ -185,6 +187,9 @@ namespace PHASIC {
       nstats.insert(nstats.end(),stats.begin(),stats.end());
       m_stats.push_back(nstats); 
     }
+    inline void SetPoint(ATOOLS::Cluster_Amplitude *const ca) { p_point=ca; }
+    inline ATOOLS::Cluster_Amplitude *Point() const { return p_point; }
+
   };// end of class Phase_Space_Handler
 
   /*!
