@@ -24,12 +24,17 @@ namespace SHRIMPS {
     void FillTGrids();
     void CombineTGrids(const size_t diff);
     void CreateIntGrids(const size_t diff,Sigma_Elastic * sigma_el);
+
+    double GetCombinedValueEL(const double & B);
   public:
     Sigma_SD();
 
     double SelectT(const size_t & mode) const;
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
+    double GetCombinedValueSD0(const double & B);
+    double GetCombinedValueSD1(const double & B);
+    double GetCombinedValueDD(const double & B);
     double GetXSec(const size_t diff) { return m_summed[diff]; }
     void   FillGrids(Sigma_Elastic * sigma_el);
   };  
