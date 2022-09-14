@@ -4,6 +4,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
@@ -11,6 +12,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Decay_Info.H"
+#include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -38,7 +40,7 @@ Process_Base::Process_Base():
   m_tinfo(1), m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true), p_apmap(NULL),
   p_variationweights(NULL), m_variationweightsowned(false),
-  p_lkfvariationweights(NULL)
+  p_lkfvariationweights(NULL), p_read(NULL)
 {
   m_last=m_lastb=0.0;
   if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
@@ -323,6 +325,24 @@ void Process_Base::Init(const Process_Info &pi,
   p_int->Initialize(beamhandler,isrhandler);
   m_symfac=m_pinfo.m_fi.FSSymmetryFactor();
   m_name+=pi.m_addname;
+}
+
+bool Process_Base::SetupEventReader(const std::string &fnames)
+{
+  size_t pos(fnames.find('['));
+  std::string type(fnames.substr(0,pos));
+  std::string args(fnames.substr(pos+1,fnames.length()-pos-2));
+  Event_Reader_Key key;
+  while (args.length()) {
+    pos=args.find(',');
+    key.m_files.push_back(args.substr(0,pos));
+    args.erase(0,pos!=std::string::npos?pos+1:args.length());
+  }
+  if (key.m_files.empty()) return false;
+  p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
+  if (p_read==NULL && s_loader->LoadLibrary("Sherpa"+type+"Reader"))
+    p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
+  return p_read!=NULL;
 }
 
 std::string Process_Base::GenerateName(const Subprocess_Info &info) 

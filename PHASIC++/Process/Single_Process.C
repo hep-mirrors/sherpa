@@ -54,6 +54,7 @@ Process_Base *Single_Process::operator[](const size_t &i)
 
 Weight_Info *Single_Process::OneEvent(const int wmode,const int mode)
 {
+  DEBUG_FUNC(m_name);
   p_selected=this;
   return p_int->PSHandler()->OneEvent(this,mode);
 }

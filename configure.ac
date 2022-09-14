@@ -246,6 +246,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  AddOns/Rivet/Makefile \
 	  AddOns/HepMC/Makefile \
 	  AddOns/Root/Makefile \
+	  AddOns/HDF5/Makefile \
 	  AddOns/Makefile \
 	  Makefile ])
 AC_OUTPUT

@@ -980,6 +980,76 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(HEPEVT_CB_SIZE)
 
   AC_ARG_ENABLE(
+    libhdf5,
+    AC_HELP_STRING([--enable-libhdf5], [Enable libhdf5 support]),
+    [ case "${enableval}" in
+        no)   AC_MSG_RESULT(hdf5 not enabled); libhdf5=false ;;
+        yes)  AC_CHECK_LIB(hdf5, H5close, [libhdf5_found=yes], [libhdf5_found=no])
+              if test "$libhdf5_found" = "yes"; then
+                libhdf5=true;
+                CONDITIONAL_HDF5LIBS="-lhdf5";
+              else
+                AC_MSG_ERROR(Library libhdf5 or header H5File.hpp not found.);
+              fi;;
+	*) if test -d "${enableval}"; then
+             HDF5_OLD_LDFLAGS=$LDFLAGS;
+             LDFLAGS="$LDFLAGS -L${enableval}"
+             AC_CHECK_LIB(hdf5, H5close,hdf5_cv_libhdf5=yes,hdf5_cv_libhdf5=no)
+             if test "$hdf5_cv_libhdf5" = "yes"; then
+	       libhdf5=true;
+               CONDITIONAL_HDF5LIBS="-Wl,-rpath -Wl,${enableval} -L${enableval} -lhdf5"
+	       AC_MSG_RESULT(Using libhdf5 from ${enableval})
+             else
+               AC_MSG_ERROR(Library libhdf5 not found.);
+             fi
+             LDFLAGS="$HDF5_OLD_LDFLAGS";
+	   else
+             AC_MSG_ERROR(no such directory '${enableval}');
+           fi;;
+      esac ],
+    [ hdf5=false ]
+  )
+  if test "$libhdf5" = "true" ; then
+    AC_DEFINE([USING__HDF5], "1", [using libhdf5])
+  fi
+  AM_CONDITIONAL(HDF5_SUPPORT, test "$libhdf5" = "true")
+  AC_SUBST(CONDITIONAL_HDF5LIBS)
+
+  AC_ARG_ENABLE(
+    hdf5include,
+    AC_HELP_STRING([--enable-hdf5include], [Enable hdf5 header support]),
+    [ case "${enableval}" in
+        no)   AC_MSG_RESULT(hdf5 not enabled); hdf5include=false ;;
+        yes)  OLD_CXX=$CXX; CXX="$MPICXX";
+	      AC_CHECK_HEADER(H5Ipublic.h, [hdf5h_found=yes], [hdf5h_found=no])
+	      CXX=$OLD_CXX;
+              if test test "$hdf5h_found" = "yes"; then
+                hdf5include=true;
+              else
+                AC_MSG_ERROR(Header H5Ipublic.h not found.);
+              fi;;
+	*) if test -d "${enableval}"; then
+             HDF5_OLD_CPPFLAGS=$CPPFLAGS; OLD_CC=$CC;
+             CPPFLAGS="$CPPFLAGS -I${enableval}"; CC="$CXX";
+             AC_CHECK_HEADER(H5Ipublic.h,hdf5_cv_hdf5_h=yes,hdf5_cv_hdf5_h=no)
+             if test "$hdf5_cv_hdf5_h" = "yes"
+             then
+               hdf5include=true;
+               CONDITIONAL_HDF5INCS="-I${enableval}"
+	       AC_MSG_RESULT(Using hdf5 headers from ${enableval})
+             else
+               AC_MSG_ERROR(Header H5Ipublic.h not found.);
+             fi
+             CPPFLAGS="$HDF5_OLD_CPPFLAGS"; CC=$OLD_CC;
+	   else
+             AC_MSG_ERROR(no such directory '${enableval}');
+           fi;;
+      esac ],
+    [ hdf5include=false ]
+  )
+  AC_SUBST(CONDITIONAL_HDF5INCS)
+
+  AC_ARG_ENABLE(
     binreloc,
     AS_HELP_STRING([--enable-binreloc],[Enable binrelocing]),
     [ AC_MSG_CHECKING(whether to install relocatable Sherpa)

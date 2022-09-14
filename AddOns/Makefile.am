@@ -15,7 +15,8 @@ SUBDIRS       =	\
 		Delphes \
 		Rivet \
 		HepMC \
-		Root
+		Root \
+		HDF5
 
 nobase_dist_pkgdata_DATA = \
 			HEPEVT/HEPEVT_Interface.C \

@@ -217,6 +217,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       proc->SetVariationWeights(p_variationweights);
     }
     ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+    if (rpa->gen.NumberOfEvents()==
+	rpa->gen.NumberOfGeneratedEvents()) return false;
     bool skip_rerun {false};
     if (!rpa->gen.PilotRun() && !hasvars) {
       // the process has opted out of the pilot run, so we can safely skip the
@@ -670,6 +672,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vaddname,nf);
 	}
+	if (cur[0]=="Event_Files") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vfiles,nf);
+	}
 	if (cur[0]=="Enable_MHV") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vamegicmhv,nf);
@@ -976,7 +982,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  m_gens.LoadGenerator(ds);
 	  cpi.m_loopgenerator_unwt=ds;
 	}
-  else cpi.m_loopgenerator_unwt = cpi.m_loopgenerator;
+	else cpi.m_loopgenerator_unwt = cpi.m_loopgenerator;
 	if (GetMPvalue(pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
 	if (GetMPvalue(pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
 	else cpi.m_rsintegrator=cpi.m_integrator;
@@ -1005,6 +1011,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  if (GetMPvalue(pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
 	  proc[i]->SetShower(p_shower->GetShower());
+	  if (GetMPvalue(pbi.m_vfiles,nfs,pnid,ds))
+	    proc[i]->SetupEventReader(ds);
 	}
       }
     }

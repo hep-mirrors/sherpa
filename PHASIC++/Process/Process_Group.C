@@ -5,6 +5,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "PDF/Main/ISR_Handler.H"
@@ -35,6 +36,30 @@ Process_Base *Process_Group::operator[](const size_t &i)
 
 Weight_Info *Process_Group::OneEvent(const int wmode,const int mode) 
 {
+  DEBUG_FUNC(m_name);
+  if (p_read) {
+    Cluster_Amplitude *ampl(p_read->ReadEvent());
+    if (ampl==NULL) return NULL;
+    SortFlavours(ampl);
+    std::string pname(GenerateName(ampl));
+    msg_Debugging()<<*ampl<<"\n";
+    msg_Debugging()<<"Found process name "<<pname<<"\n";
+    Process_Base *proc((*(*p_apmap)[nlo_type::lo])[pname]);
+    if (proc==NULL) THROW(fatal_error,"Process not found: "+pname);
+    for (size_t i(0);i<m_procs.size();++i)
+      if (m_procs[i]->Name()==pname) {
+	p_selected=m_procs[i];
+	proc=NULL;
+	break;
+      }
+    if (proc!=NULL) THROW(fatal_error,"Process not in group: "+pname);
+    p_int->PSHandler()->SetPoint(ampl);
+    Weight_Info *winfo(p_selected->OneEvent(mode));
+    p_int->PSHandler()->SetPoint(NULL);
+    if (winfo) p_selected->SetEventReader(p_read);
+    ampl->Delete();
+    return winfo;
+  }
   p_selected=NULL;
   if (p_int->TotalXS()==0.0) {
     p_selected=m_procs[int(ATOOLS::ran->Get()*m_procs.size())];
@@ -132,6 +157,7 @@ bool Process_Group::Delete(Process_Base *const proc)
 void Process_Group::Clear() 
 {
   while (m_procs.size()>0) {
+    p_selected->SetEventReader(NULL);
     delete m_procs.back();
     m_procs.pop_back();
   }
@@ -174,6 +200,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   p_int->SetTotal(0);
   exh->AddTerminatorObject(p_int);
   psh->InitIncoming();
+  if (p_read) return true;
   double var(p_int->TotalVar());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
 	    <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;

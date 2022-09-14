@@ -261,6 +261,8 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
       Reset();
       return 2;
     case Return_Value::Error :
+      if (rpa->gen.NumberOfEvents()==
+	  rpa->gen.NumberOfGeneratedEvents()) return 0;
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncError((*pit)->Name());
       return 3;
@@ -332,7 +334,8 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     }
   } while (run);
 
-  if (mode==eventtype::EventReader) {
+  if (mode==eventtype::EventReader ||
+      rpa->gen.NumberOfEvents()==rpa->gen.NumberOfGeneratedEvents()) {
     if (p_signal->NOutP()==0) return false;
   }
   else {
