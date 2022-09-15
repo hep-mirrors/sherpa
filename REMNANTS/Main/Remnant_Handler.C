@@ -227,7 +227,7 @@ bool Remnant_Handler::CheckBeamBreakup(Blob_List *bloblist) {
       ok = false;
       if (m_output)
         msg_Error() << "Error in " << METHOD << ": "
-                    << "colour or four-momentum not conserved in:\n"
+                    << "colour or four-momentum not conserved in beamblob:\n"
                     << (*p_remnants[beam]->GetBlob()) << "\n";
     }
   }
@@ -237,7 +237,7 @@ bool Remnant_Handler::CheckBeamBreakup(Blob_List *bloblist) {
     ok = false;
     if (m_output)
       msg_Error() << "Error in " << METHOD << ": "
-                  << "colour or four-momentum not conserved in:\n"
+                  << "colour or four-momentum not conserved in softblob:\n"
                   << (*p_softblob) << "\n";
   }
   return ok;
