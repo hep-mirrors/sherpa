@@ -8,7 +8,7 @@ namespace PDF {
 class GRVph_Fortran_Interface : public Photon_PDF_Base {
 public:
   GRVph_Fortran_Interface(const ATOOLS::Flavour, const std::string);
-  PDF_Base *GetCopy();
+  PDF_Base *GetCopy() override;
 
   void CalculateSpec(const double &, const double &) override;
 };
