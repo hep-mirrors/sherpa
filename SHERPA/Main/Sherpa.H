@@ -46,7 +46,7 @@ namespace SHERPA {
 
   public:
 
-    Sherpa();
+    Sherpa(const int mode=0);
     ~Sherpa();
 
     bool InitializeTheRun(int argc,char * argv[]);

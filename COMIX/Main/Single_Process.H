@@ -87,6 +87,7 @@ namespace COMIX {
 
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes> &amps,
 			std::vector<std::vector<Complex> > &cols);
+    const Amplitude::LeptonCurrents &LeptonicCurrent() const;
 
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,
 			  const size_t &id) const;

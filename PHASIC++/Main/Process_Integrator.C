@@ -80,7 +80,7 @@ double Process_Integrator::SelectionWeight(const int mode) const
     return p_proc->EventReader()->TotalXS()*m_enhancefac;
   }
   if (!p_proc->IsGroup()) {
-    if (mode!=0) return m_max*m_enhancefac;
+    if (mode!=0 || m_swmode==2) return m_max*m_enhancefac;
     if (m_n+m_sn==0.0) return -1.0;
     if (m_totalxs==0.0) return 0.0;
     double selweight = m_swmode==0 ?

@@ -66,9 +66,10 @@ void Channel_Basics::Rotat(int lflag,Vec4D& p1 ,Vec4D p2,double** rot)
   }
 }
 
-void Channel_Basics::Boost(int lflag,Vec4D q,Vec4D& ph,Vec4D& p)
+void Channel_Basics::Boost(int lflag,const Vec4D& q,const Vec4D& ph,Vec4D& p)
 {
   if (q.Abs2() < 0.) {
+    msg_Error()<< lflag << " " << q << " " << ph << " " << p << "\n";
     msg_Error()<<"Channel_Basics::Boost : Spacelike four vector ..."<<endl;
     return;
   }
@@ -79,9 +80,9 @@ void Channel_Basics::Boost(int lflag,Vec4D q,Vec4D& ph,Vec4D& p)
     p = Vec4D(p[0],Vec3D(ph)+c1*Vec3D(q));  
   }
   else {
-    ph[0] = q*p/rsq;
+    p[0] = q*ph/rsq;
     double c1 = (p[0]+ph[0])/(rsq+q[0]);
-    ph = Vec4D(ph[0],Vec3D(p)-c1*Vec3D(q));  
+    p = Vec4D(p[0],Vec3D(ph)-c1*Vec3D(q));
   }
 }
 

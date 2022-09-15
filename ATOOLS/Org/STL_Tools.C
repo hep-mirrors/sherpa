@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/MyComplex.H"
 #include <fstream>
 #include <string>
 
@@ -61,6 +62,8 @@ namespace std {
     (std::ostream &str,const std::vector<float> &v);
   template std::ostream &operator<<
     (std::ostream &str,const std::vector<double> &v);
+  template std::ostream &operator<<
+    (std::ostream &str,const std::vector<Complex> &v);
   template std::ostream &operator<<
     (std::ostream &str,const std::vector<std::string> &v);
   template std::ostream &operator<<

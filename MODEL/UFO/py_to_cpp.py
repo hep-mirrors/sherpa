@@ -8,7 +8,7 @@ Does not support complex atan function (C++11 feature)
 """
 
 import ast
-from ufo_exception import ufo_exception
+from .ufo_exception import ufo_exception
 
 # how to translate cmath python names 
 # into names appropriate for C++

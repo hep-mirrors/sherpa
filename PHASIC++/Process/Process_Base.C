@@ -290,8 +290,8 @@ void Process_Base::SortFlavours(Process_Info &pi,const int mode)
       fmm[int(hfl->Kfcode())]=0;
     if (hfl->IsFermion()) fmm[int(hfl->Kfcode())]++;
   }
-  if (mode&1) SortFlavours(pi.m_ii,s_usefmm?&fmm:NULL);
-  SortFlavours(pi.m_fi,s_usefmm?&fmm:NULL);
+  if ((mode&1) && (pi.m_sort&1)) SortFlavours(pi.m_ii,NULL);
+  if (pi.m_sort&2) SortFlavours(pi.m_fi,s_usefmm?&fmm:NULL);
 }
 
 void Process_Base::Init(const Process_Info &pi,

@@ -48,7 +48,7 @@ GeneratePoint(ATOOLS::Vec4D *p,double *ran)
   
 void Fixed_Variable_Channel::GenerateWeight(ATOOLS::Vec4D *_p)
 {
-  weight/=PHASIC::CE.Isotropic2Weight(_p[2],_p[3])*
+  weight/=PHASIC::CE.Isotropic2Weight(_p[2],_p[3],-1.0,1.0)*
     pow(2.0*M_PI,2.0*3.0-4.0);
 }
 

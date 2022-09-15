@@ -20,7 +20,7 @@ namespace PHASIC {
     std::vector<double> m_maxcpl, m_mincpl, m_maxacpl, m_minacpl;
 
     size_t m_nminq, m_nmaxq, m_ckkw, m_nmax, m_itmin, m_rsitmin;
-    size_t m_nlomode, m_amegicmhv, m_ntchanmin, m_ntchanmax;
+    size_t m_nlomode, m_amegicmhv, m_ntchanmin, m_ntchanmax, m_sort;
 
     std::string m_scale, m_coupling, m_kfactor, m_gpath, m_addname, m_hdf5;
     std::string m_megenerator, m_rsmegenerator, m_loopgenerator, m_loopgenerator_unwt;
@@ -41,7 +41,8 @@ namespace PHASIC {
       m_maxcpl(2,99), m_mincpl(2,0), m_maxacpl(2,99), m_minacpl(2,0),
       m_nminq(0), m_nmaxq(99), m_ckkw(0),
       m_nmax(0), m_itmin(5000), m_rsitmin(5000),
-      m_nlomode(0), m_amegicmhv(1), m_ntchanmin(0), m_ntchanmax(99),
+      m_nlomode(0), m_amegicmhv(1),
+      m_ntchanmin(0), m_ntchanmax(99), m_sort(3),
       m_scale("VAR"), m_kfactor("NO"), 
       m_loopgenerator("Internal"), m_loopgenerator_unwt("Internal"),
       m_selectorfile(""), m_mpiprocess(false), p_gens(NULL) { }

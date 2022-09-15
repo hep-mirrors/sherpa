@@ -26,12 +26,22 @@ def split_by_orders(ufo_vertex, hierarchy):
     cpl_list = []
     col_list = []
     lor_list = []
+    ff_list = []
     for col_ind in range(len(ufo_vertex.color)):
         for lor_ind in range(len(ufo_vertex.lorentz)):
-            if (col_ind, lor_ind) in ufo_vertex.couplings:
-                cpl_list.append(s_coupling(ufo_vertex.couplings[(col_ind, lor_ind)]))
-                lor_list.append(s_lorentz (ufo_vertex.lorentz  [lor_ind]) )
-                col_list.append(           ufo_vertex.color    [col_ind]  )
+            if hasattr(ufo_vertex, "form_factors"):
+                for ff_ind in range(len(ufo_vertex.form_factors)):
+                    if (col_ind, lor_ind, ff_ind) in ufo_vertex.couplings:
+                        cpl_list.append(s_coupling(ufo_vertex.couplings[(col_ind, lor_ind, ff_ind)]))
+                        lor_list.append(s_lorentz (ufo_vertex.lorentz  [lor_ind]) )
+                        col_list.append(           ufo_vertex.color    [col_ind]  )
+                        ff_list.append(ufo_vertex.form_factors[ff_ind])
+            else:
+                if (col_ind, lor_ind) in ufo_vertex.couplings:
+                    cpl_list.append(s_coupling(ufo_vertex.couplings[(col_ind, lor_ind)]))
+                    lor_list.append(s_lorentz (ufo_vertex.lorentz  [lor_ind]) )
+                    col_list.append(           ufo_vertex.color    [col_ind]  )
+                    ff_list.append("1")
 
     ret = []
     assert(len(cpl_list)>0)
@@ -40,15 +50,18 @@ def split_by_orders(ufo_vertex, hierarchy):
         cur_cpl      =  cpl_list.pop(-1)
         cur_cpl_list = [cur_cpl         ]
         cur_lor_list = [lor_list.pop(-1)]
+        cur_ff_list = [ff_list.pop(-1)]
         cur_col_list = [col_list.pop(-1)]
-        for i in xrange(len(cpl_list)-1,-1,-1):
+        for i in range(len(cpl_list)-1,-1,-1):
             if cur_cpl.ufo_coupling.order == cpl_list[i].ufo_coupling.order:
                 cur_cpl_list.append(cpl_list.pop(i))
                 cur_lor_list.append(lor_list.pop(i))
+                cur_ff_list.append(ff_list.pop(i))
                 cur_col_list.append(col_list.pop(i))
         cur_vertex.set_coupling_list(cur_cpl_list)
         cur_vertex.set_colour_list(cur_col_list)
         cur_vertex.set_lorentz_list(cur_lor_list)
+        cur_vertex.set_ff_list(cur_ff_list)
         ret.append(cur_vertex)
 
     return ret
@@ -59,6 +72,7 @@ class s_vertex():
         self._ufo_vertex = _ufo_vertex
         self._coupling_list = []
         self._lorentz_list = []
+        self._ff_list = []
         self._colour_list = []
         # Hierarchy is a list of strings, identifying
         # an ordering of coupling orders, e.g.
@@ -72,6 +86,9 @@ class s_vertex():
 
     def set_lorentz_list(self, lor_list):
         self._lorentz_list = lor_list
+
+    def set_ff_list(self, ff_list):
+        self._ff_list = ff_list
 
     def set_colour_list(self, col_list):
         self._colour_list = col_list
@@ -113,6 +130,9 @@ class s_vertex():
     def lorentz_list(self):
         return self._lorentz_list
     
+    def ff_list(self):
+        return self._ff_list
+    
 
 class vertex_collection(object):
 
@@ -149,6 +169,10 @@ class vertex_collection(object):
                 string += (indent +
                            "m_v.back().Lorentz.push_back(\"{0}\");"
                            .format(lor.name()))
+            for ff in  vert.ff_list():
+                string += (indent +
+                           "m_v.back().FormFactor.push_back(\"{0}\");"
+                           .format(ff))
             orders = vert.orders()
             string += indent + "m_v.back().order.resize({0});".format(len(orders))
             for i in range(len(orders)):

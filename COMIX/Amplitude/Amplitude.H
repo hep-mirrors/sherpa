@@ -52,6 +52,8 @@ namespace COMIX {
 
     typedef std::vector<DComplex> DComplex_Vector;
 
+    typedef std::map<int, std::vector<DComplex_Vector>> LeptonCurrents;
+
   private:
 
     MODEL::Model_Base *p_model;
@@ -104,6 +106,9 @@ namespace COMIX {
     std::vector<std::map<size_t,std::vector<long int> > > m_affm;
 
     ATOOLS::NLO_subevt *p_sub;
+
+    LeptonCurrents m_lmu;
+    bool m_calc_lmu{false};
 
     static size_t     MakeId(const Int_Vector &ids,const int t);
     static Int_Vector MakeId(const size_t &id,const size_t &n);
@@ -253,6 +258,9 @@ namespace COMIX {
 
     inline const std::vector<std::vector<double> > &DSij() const
     { return m_dsij; }
+
+    inline const LeptonCurrents &
+    LeptonicCurrent() const { return m_lmu; }
 
   };// end of class Amplitude
 

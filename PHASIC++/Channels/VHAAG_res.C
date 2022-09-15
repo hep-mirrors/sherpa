@@ -490,7 +490,7 @@ double VHAAG_res::BosonWeight(ATOOLS::Vec4D *p,double *ran)
   double smax=(p[0]+p[1]).Abs2();
   Flavour fl((kf_code)(m_rkf));
   double w=CE.MassivePropWeight(fl.Mass(),fl.Width(),1,0.,smax,m_q[n_b].Abs2(),ran[rannum-3]);
-  w*=CE.Isotropic2Weight(p[n_d1],p[n_d2],ran[rannum-2],ran[rannum-1]);
+  w*=CE.Isotropic2Weight(p[n_d1],p[n_d2],ran[rannum-2],ran[rannum-1],-1.0,1.0);
   return w;
 }
 

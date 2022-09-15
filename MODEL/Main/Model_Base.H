@@ -71,6 +71,7 @@ namespace MODEL {
     tscmap m_cplmap;   
 
     virtual void InitVertices() = 0;
+    void InitHadronicTensor();
 
     void RotateVertices();
 

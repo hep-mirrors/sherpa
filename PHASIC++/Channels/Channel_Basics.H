@@ -9,7 +9,7 @@ namespace PHASIC {
   public:
 
     static void   Rotat(int lflag,ATOOLS::Vec4D& p1,ATOOLS::Vec4D p2,double** rot);
-    static void   Boost(int lflag,ATOOLS::Vec4D q,ATOOLS::Vec4D& ph,ATOOLS::Vec4D& p);
+    static void   Boost(int lflag,const ATOOLS::Vec4D& q,const ATOOLS::Vec4D& ph,ATOOLS::Vec4D& p);
     static double SqLam(double,double,double);
     static double PeakedDist(double,double,double,double,int,double);
     static double PeakedWeight(double,double,double,double,int);

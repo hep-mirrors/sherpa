@@ -30,27 +30,29 @@ using namespace ATOOLS;
 
 ATOOLS::Exception_Handler *ATOOLS::exh(NULL);
 
-Exception_Handler::Exception_Handler():
+Exception_Handler::Exception_Handler(const int mode):
   m_active(true), m_prepared(false), m_stacktrace(true), 
   m_print(true), m_noremove(false),
   m_signal(0), m_exitcode(0), m_exception(0),
   m_nbus(0), m_nsegv(0),
   m_progname("Sherpa")
 {
-  std::set_terminate(ATOOLS::Terminate);
+  if (!mode) {
+    std::set_terminate(ATOOLS::Terminate);
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201402L) || __cplusplus >= 201402L)
 #else
-  std::set_unexpected(ATOOLS::Terminate);
+    std::set_unexpected(ATOOLS::Terminate);
 #endif
-  signal(SIGSEGV,ATOOLS::SignalHandler);
-  signal(SIGINT,ATOOLS::SignalHandler);
-  signal(SIGPIPE,ATOOLS::SignalHandler);
-  signal(SIGBUS,ATOOLS::SignalHandler);
-  signal(SIGFPE,ATOOLS::SignalHandler);
-  signal(SIGABRT,ATOOLS::SignalHandler);
-  signal(SIGTERM,ATOOLS::SignalHandler);
-  signal(SIGXCPU,ATOOLS::SignalHandler);
-  signal(SIGUSR1,ATOOLS::SignalHandler);
+    signal(SIGSEGV,ATOOLS::SignalHandler);
+    signal(SIGINT,ATOOLS::SignalHandler);
+    signal(SIGPIPE,ATOOLS::SignalHandler);
+    signal(SIGBUS,ATOOLS::SignalHandler);
+    signal(SIGFPE,ATOOLS::SignalHandler);
+    signal(SIGABRT,ATOOLS::SignalHandler);
+    signal(SIGTERM,ATOOLS::SignalHandler);
+    signal(SIGXCPU,ATOOLS::SignalHandler);
+    signal(SIGUSR1,ATOOLS::SignalHandler);
+  }
 }
 
 Exception_Handler::~Exception_Handler()

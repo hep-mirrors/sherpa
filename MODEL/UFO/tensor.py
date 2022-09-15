@@ -1,6 +1,6 @@
 from copy import deepcopy
-from ufo_exception import ufo_exception
-from py_to_cpp import c_string_from_num
+from .ufo_exception import ufo_exception
+from .py_to_cpp import c_string_from_num
 
 class tensor(object):
     
@@ -227,7 +227,7 @@ class tensor(object):
                     raise RuntimeError("Inconsistent tensor")
                 if tens._toplevel_key != key:
                     raise RuntimeError("Inconsistent tensor")
-                if (cmp(tens.key_dim_dict(), kdd)!=0):
+                if tens.key_dim_dict() != kdd:
                     raise RuntimeError("Inconsistent tensor")
 
 ###################

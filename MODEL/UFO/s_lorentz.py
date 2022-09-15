@@ -40,7 +40,7 @@ class s_lorentz():
             assert(key not in self._ferm_partner_dict.values())
 
         # store fermionic keys for convenience
-        self._ferm_keys  = [key for key,spin in self._key_spin_dict.iteritems() if spin==2]
+        self._ferm_keys  = [key for key,spin in self._key_spin_dict.items() if spin==2]
         self._n_ferms    = len(self._ferm_keys)
 
         # extract form factors
@@ -240,7 +240,7 @@ class s_lorentz():
               
             # check if contraction of external tensors with
             # coupling tensor yields desired outgoing tensor type
-            assert(cmp(cpl.key_dim_dict(),out_tens.key_dim_dict())==0)
+            assert(cpl.key_dim_dict() == out_tens.key_dim_dict())
 
             # is the return tensor arithmetically zero?
             return_zero = self.is_zero(out_spin, cpl)
@@ -273,7 +273,7 @@ class s_lorentz():
 
     def get_case_id(self,case_dict):
         ret = 0
-        for key, on in case_dict.iteritems():
+        for key, on in case_dict.items():
             ret += on << (key*2)
         return ret
 

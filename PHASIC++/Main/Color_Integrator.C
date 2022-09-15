@@ -97,6 +97,10 @@ bool Color_Integrator::ConstructRepresentations
     fermions+=types[i];
   }
   if (fermions!=0) THROW(fatal_error,"Invalid number of fermions.");
+  m_iids.clear();
+  for (size_t i(0);i<m_ids.size();++i)
+    if (m_ids[i]->Act() && m_ids[i]->Type()>=0) m_iids.push_back(i);
+  m_wfac=pow(3.0,m_iids.size())*Factorial(m_iids.size());
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): Weight = "<<m_weight<<"\n";
 #endif
@@ -114,34 +118,29 @@ size_t Color_Integrator::GenerateIndex()
 
 bool Color_Integrator::GenerateColours()
 {
-  Idx_Vector iids, jids;
+  m_jids.clear();
   for (size_t i(0);i<m_ids.size();++i)
-    // collect indices
-    if (m_ids[i]->Act()) { 
-      if (m_ids[i]->Type()>=0) iids.push_back(i);
-      if (m_ids[i]->Type()<=0) jids.push_back(i);
-    }
+    if (m_ids[i]->Act() && m_ids[i]->Type()<=0) m_jids.push_back(i);
   size_t nr(0), ng(0), nb(0);
-  for (size_t i(0);i<iids.size();++i) {
+  for (size_t i(0);i<m_iids.size();++i) {
     // select partner
-    size_t j(Min(jids.size()-1,(size_t)(ran->Get()*jids.size())));
+    size_t j(Min(m_jids.size()-1,(size_t)(ran->Get()*m_jids.size())));
     // set colours
     size_t idx(GenerateIndex());
-    m_ids[iids[i]]->SetI(idx);
-    m_ids[jids[j]]->SetJ(idx);
+    m_ids[m_iids[i]]->SetI(idx);
+    m_ids[m_jids[j]]->SetJ(idx);
     if (idx==1) ++nr;
     else if (idx==2) ++ng;
     else if (idx==3) ++nb;
     else THROW(fatal_error,"Internal error");
     // remove partner from list
-    for (Idx_Vector::iterator jit(jids.begin());
-	 jit!=jids.end();++jit) if (*jit==jids[j]) {
-	jids.erase(jit);
+    for (Idx_Vector::iterator jit(m_jids.begin());
+	 jit!=m_jids.end();++jit) if (*jit==m_jids[j]) {
+	m_jids.erase(jit);
 	break;
       }
   }
-  m_weight=pow(3.0,iids.size())*Factorial(iids.size())/
-    (Factorial(nr)*Factorial(ng)*Factorial(nb));
+  m_weight=m_wfac/(Factorial(nr)*Factorial(ng)*Factorial(nb));
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): w = "<<m_weight<<"\n";
 #endif

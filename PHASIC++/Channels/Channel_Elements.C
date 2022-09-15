@@ -26,12 +26,12 @@ void Channel_Elements::CheckMasses(const double & s1,Vec4D & p1,const double & s
   }
 }
 
-double Channel_Elements::Isotropic2Weight(Vec4D& p1,Vec4D& p2,
+double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2,
 					  double& ran1,double& ran2,double ctmin,double ctmax)
 {
   Vec4D p1h,p=p1+p2;
 
-  Channel_Basics::Boost(1,p,p1h,p1);
+  Channel_Basics::Boost(1,p,p1,p1h);
   ran1        = (p1h[3]/p1h.PSpat()-ctmin)/(ctmax-ctmin);  
   ran2        = ::asin(p1h[1]/p1h.PPerp())/(2.*M_PI);
   if(p1h[2]<0.) ran2=.5-ran2;
@@ -102,7 +102,7 @@ double Channel_Elements::Anisotropic2Weight(Vec4D& p1,Vec4D& p2,
   Poincare Rot(pref,p);
   Rot.RotateBack(p1h);
   Vec4D p1ref=p1h;
-  Channel_Basics::Boost(1,pref,p1h,p1ref);
+  Channel_Basics::Boost(1,pref,p1ref,p1h);
 
   ran2        = ::asin(p1h[1]/p1h.PPerp())/(2.*M_PI);
   if(p1h[2]<0.) ran2=.5-ran2;
@@ -495,9 +495,9 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   if (a<aminct) a=aminct;
 
   Vec4D help=p1out;
-  Channel_Basics::Boost(1,pin,p1outh,help);
+  Channel_Basics::Boost(1,pin,help,p1outh);
   help=p1in;
-  Channel_Basics::Boost(1,pin,p1inh,help);  
+  Channel_Basics::Boost(1,pin,help,p1inh);
 //     if(!IsEqual(sqrt(s),pin[0])){
 //       cout<<"2 bp1out="<<p1out<<"->"<<p1outh<<endl;
 //       cout<<"2 bp1in= "<<p1in<<"->"<<p1inh<<endl;
@@ -576,7 +576,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
 //      cout<<"1 rans "<<ran1<<" "<<ran2<<endl;    
 //     }
   Vec4D help;
-  Channel_Basics::Boost(1,pin,help,p1in);  
+  Channel_Basics::Boost(1,pin,p1in,help);
 //     if(!IsEqual(sqrt(s),pin[0])){
 //       cout<<"1 bp1in= "<<p1in<<"<-"<<help<<endl;
 //       cout<<"1 p1inh= "<<p1inh<<endl;

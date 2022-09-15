@@ -120,6 +120,13 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     InitializeOffshellDecays(dmit->second.at(0));
   }
+  // Remove decays with no vertices
+  for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
+    if(dmit->second.at(0)->empty()) {
+        delete dmit->second.at(0);
+        dmit = p_decaymap->erase(dmit)--;
+    }
+  }
   msg_Debugging()<<"Initialising hard decay tables: customizing decay tables.\n";
   CustomizeDecayTables();
 
@@ -489,8 +496,10 @@ bool Hard_Decay_Handler::ProperVertex(MODEL::Single_Vertex* sv)
 {
   if (sv->dec) return false;
 
-  for (int i(0); i<sv->NLegs(); ++i)
+  for (int i(0); i<sv->NLegs(); ++i) {
     if (sv->in[i].IsDummy()) return false;
+    if (sv->in[i].IsHadron()) return false;
+  }
 
   if (sv->NLegs()!=3) return false; // TODO
 

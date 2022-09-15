@@ -33,7 +33,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Sherpa::Sherpa() :
+Sherpa::Sherpa(const int mode) :
   p_inithandler(NULL), p_eventhandler(NULL)
 #ifdef USING__HEPMC2
   , p_hepmc2(NULL)
@@ -43,7 +43,7 @@ Sherpa::Sherpa() :
 #endif
 {
   ATOOLS::mpi = new My_MPI();
-  ATOOLS::exh = new Exception_Handler();
+  ATOOLS::exh = new Exception_Handler(mode);
   ATOOLS::msg = new Message();
   ATOOLS::ran = new Random(1234);
   ATOOLS::rpa = new Run_Parameter();

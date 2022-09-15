@@ -86,15 +86,12 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 
   string fsrpath0= string("fsrchannels");
   string fsrpath = fsrpath0;
-  char hlp[4];
-  sprintf(hlp,"%i",nout);
-  fsrpath += string(hlp);
+  fsrpath += ToString(nout);
   fsrpath0 = fsrpath;
   if (cnt>=maxchannels) {
-    sprintf(hlp,"_%i",cnt/maxchannels);
-    fsrpath = fsrpath+string(hlp);
+    fsrpath = fsrpath+"_"+ToString(cnt/maxchannels);
   }
-  string fsrp = path+string("/")+fsrpath;
+  string fsrp = path+"/"+fsrpath;
 
   bool kk_fs=false;
   for (int i=0;i<nout;i++){
@@ -145,9 +142,8 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	  // making directory
 	    if (cnt%maxchannels==0) {
 	      if (cnt>0) {
-		sprintf(hlp,"_%i",cnt/maxchannels);
-		fsrpath = fsrpath0 + string(hlp);
-		fsrp = path+string("/")+fsrpath;
+		fsrpath = fsrpath0+"_"+ToString(cnt/maxchannels);
+		fsrp = path+"/"+fsrpath;
 	      }
 	      ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+fsrp);
 	      String_Library slib(1);

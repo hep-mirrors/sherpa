@@ -19,8 +19,8 @@ namespace PHASIC {
 		     const double & s2,ATOOLS::Vec4D & p2) const;
   public:
 
-    double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,double=-1.0,double=1.0);
-    double Isotropic2Weight(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&,double=-1.0,double=1.0);
+    double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,double,double);
+    double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,double&,double&,double,double);
     void Isotropic2Momenta(ATOOLS::Vec4D,double,double,
 			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double,double=-1.0,double=1.0);
 

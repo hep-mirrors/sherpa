@@ -39,7 +39,7 @@ namespace ATOOLS {
     
   public:
 
-    Exception_Handler();
+    Exception_Handler(const int mode=0);
 
     ~Exception_Handler();
 

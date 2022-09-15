@@ -1,4 +1,4 @@
-from py_to_cpp import py_to_cpp
+from .py_to_cpp import py_to_cpp
 
 class s_coupling():
 

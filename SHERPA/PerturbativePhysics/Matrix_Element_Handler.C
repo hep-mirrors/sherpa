@@ -626,6 +626,7 @@ void Matrix_Element_Handler::BuildProcesses()
                 +"'Order (<qcd>, <ew>[, ...])' syntax.");
         }
 	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
+	if (cur[0]=="Sort_Flavors") pbi.m_sort=ToType<int>(cur[1]);
 	if (cur[0]=="CKKW") {
 	  if (p_shower==NULL || p_shower->GetShower()==NULL)
 	    THROW(fatal_error,"Invalid shower generator");
@@ -884,7 +885,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 		     <<fss<<"): {\n"<<IS<<FS<<"}\n";
       std::vector<Flavour> flavs;
       IS.GetExternal(flavs);
-      if (flavs.size()>1) {
+      if (flavs.size()>1 &&
+	  (flavs[0]!=p_isr->Flav(0) || flavs[1]!=p_isr->Flav(1))) {
         if (!p_isr->CheckConsistency(&flavs.front())) {
           msg_Error()<<METHOD<<"(): Error in initialising ISR ("
                      <<p_isr->Flav(0)<<" -> "<<flavs[0]<<") x ("
@@ -989,6 +991,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vitmin,nfs,pnid,di)) cpi.m_itmin=di;
 	if (GetMPvalue(pbi.m_vrsitmin,nfs,pnid,di)) cpi.m_rsitmin=di;
 	else cpi.m_rsitmin=cpi.m_itmin;
+	cpi.m_sort=pbi.m_sort;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)

@@ -99,7 +99,9 @@ UFO_Param_Reader::GetWidth(const unsigned int& n,
 
 vector< vector<string> >::const_iterator UFO_Param_Reader::FindBlock(const string& block){
   vector< vector<string> >::const_iterator ret=m_lines.begin();
+  msg_Debugging() << m_lines.size() << "\n";
   for(; ret!=m_lines.end(); ++ret){
+    msg_Debugging() << *ret << "\n";
     if(ret->size()<2) continue;
     if(IgnoreCaseCompare((*ret)[1],block)) return ret;
   }
@@ -109,6 +111,7 @@ vector< vector<string> >::const_iterator UFO_Param_Reader::FindBlock(const strin
 }
 
 bool UFO_Param_Reader::IgnoreCaseCompare(const std::string& a, const std::string& b){
+  msg_Debugging() << a << " " << b << "\n";
   if (a.size() != b.size())return false;
   for (string::const_iterator ia = a.begin(), ib = b.begin(); ia!=a.end(); ++ia, ++ib)
     if (tolower(*ia) != tolower(*ib)) 

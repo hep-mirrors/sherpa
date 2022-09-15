@@ -55,8 +55,8 @@ namespace SHERPA {
       m_vntchanmin, m_vntchanmax, m_vitmin, m_vrsitmin;
 
       std::string m_gycut;
-      int m_cutcore;
-      inline Processblock_Info(): m_cutcore(0) {}
+      int m_cutcore, m_sort;
+      inline Processblock_Info(): m_cutcore(0), m_sort(3) {}
     };// end of struct Processblock_Info
 
   private :

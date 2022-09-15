@@ -47,7 +47,7 @@ void Decay_Dalitz::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data *)
     weight *= CE.MassivePropWeight(m_pmass,m_pwidth,1,m_smin,m_smax,sprop);
   else 
     weight *= CE.MasslessPropWeight(m_sexp,m_smin,m_smax,sprop);     
-  weight   *= CE.Isotropic2Weight(p[m_dir],p[m_p1]+p[m_p2]);
-  weight   *= CE.Isotropic2Weight(p[m_p1],p[m_p2]);
+  weight   *= CE.Isotropic2Weight(p[m_dir],p[m_p1]+p[m_p2],-1.0,1.0);
+  weight   *= CE.Isotropic2Weight(p[m_p1],p[m_p2],-1.0,1.0);
   weight    =  1./(weight * pow(2.*M_PI,3.*3.-4.));  
 }

@@ -5,6 +5,7 @@ include ../../git.make
 
 libMEToolsVertices_la_SOURCES =	\
 	Git_Info.C \
+	WMuNu_LC.C \
 	FFV_DLC.C \
 	VVV_DLC.C \
 	SSS_LC.C \

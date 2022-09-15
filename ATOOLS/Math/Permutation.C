@@ -3,7 +3,8 @@
 
 using namespace ATOOLS;
 
-Permutation::Permutation(int n) : m_n(n)     
+Permutation::Permutation(int n,int algo):
+  m_algo(algo), m_n(n)
 {
   p_per = new int[m_n];
   p_st = new int[m_n];
@@ -17,9 +18,41 @@ Permutation::~Permutation()
   delete[] p_per;
 }
 
+void Permutation::Swap(int i,int j)
+{
+  std::swap<int>(p_per[i],p_per[j]);
+  std::swap<int>(p_st[i],p_st[j]);
+  if ((i==0 && p_st[i]<0) || (i==m_n-1 && p_st[i]>0)) p_st[i]=0;
+  if ((j==0 && p_st[j]<0) || (j==m_n-1 && p_st[j]>0)) p_st[j]=0;
+}
+
+int Permutation::LargestMobile()
+{
+  int l(0), lv(-1);
+  for (size_t i(0);i<m_n;++i)
+    if (p_st[i] && p_per[i]>lv) lv=p_per[l=i];
+  return l;
+}
+
 int* Permutation::Get(int n) 
 {
   if (n>m_maxnum) THROW(fatal_error,"Invalid index");
+  if (m_algo==1) {
+    for(size_t i=0;i<m_n;++i) {
+      p_per[i]=i;
+      p_st[i]=-1;
+    }
+    p_st[0]=0;
+    int count(0), m, l;
+    if (count==n) return p_per;
+    while (p_st[m=LargestMobile()]!=0) {
+      Swap(m,l=m+p_st[m]);
+      for(size_t i(0);i<m_n;++i)
+	if(p_per[i]>p_per[l]) p_st[i]=i<l?+1:-1;
+      if (++count==n) return p_per;
+    }
+    return NULL;
+  }
   for(int i=0;i<m_n;++i) {
     p_st[i]=0;
     p_per[i]=i;

@@ -8,6 +8,7 @@
 #include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Phys/Spinor.H"
 #include "ATOOLS/Math/Permutation.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -61,6 +62,8 @@ Amplitude::Amplitude():
   m_murcoeffvirt=GetParameter<int>("NLO_MUR_COEFFICIENT_FROM_VIRTUAL");
   m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");
   m_smpow=GetParameter<double>("NLO_SMEAR_POWER");
+  if (ToType<int>(rpa->gen.Variable("LEPTONIC_CURRENT_MODE")))
+    m_calc_lmu = true;
 }
 
 Amplitude::~Amplitude()
@@ -359,6 +362,8 @@ Vertex *Amplitude::AddCurrent
 {
   if (vkey.p_mv==NULL || 
       vkey.p_mv->dec<0) return NULL;
+  if (m_calc_lmu && n<m_n-1 &&
+      ckey.m_fl.IsHadron()) return NULL;
   vkey.m_p=std::string(1,m_pmode);
   Vertex *v(new Vertex(vkey));
   size_t ntc(0), ist(0);
@@ -1262,19 +1267,22 @@ double Amplitude::EpsSchemeFactor(const Vec4D_Vector &mom) const
 
 bool Amplitude::Evaluate(const Int_Vector &chirs)
 {
-  THROW(not_implemented,"Helicity sampling currently disabled");
-  return true;
+  std::vector<int> ch(m_ch);
+  m_ch=chirs;
+  bool res(EvaluateAll());
+  m_ch=ch;
+  return res;
 }
 
 bool Amplitude::EvaluateAll()
 {
   if (p_loop) p_dinfo->SetDRMode(p_loop->DRMode());
   for (size_t i(0);i<m_subs.size();++i) m_subs[i]->Reset(0);
-  for (size_t j(0);j<m_n;++j) m_ch[j]=0;
   MODEL::Coupling_Data *cpl(m_cpls.front().p_aqcd);
   double mu2(cpl?cpl->Scale():-1.0);
   p_dinfo->SetMu2(mu2);
   CalcJL();
+  m_lmu.clear();
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): "<<m_ress.size()<<" amplitudes {\n";
 #endif
@@ -1283,12 +1291,35 @@ bool Amplitude::EvaluateAll()
       if (m_cur.back()[i]->Sub()) continue;
       for (size_t j(0);j<m_ress[i].size();++j) m_ress[i][j]=0.0;
       m_cur.back()[i]->Contract(*m_cur[1].front(),m_cchirs,m_ress[i]);
+      if (m_calc_lmu) {
+        msg_Debugging() << "Currents: " << m_cur.back().size();
+        if(m_cur.back().size()==0)
+          THROW(fatal_error, "Invalid leptonic current");
+        auto lep_cur = m_cur.back()[i];
+        auto vertices = lep_cur->In();
+        for(auto vertex : vertices) {
+          if(m_lmu.find(vertex->J(1)->Flav()) == m_lmu.end()) {
+            m_lmu[vertex->J(1)->Flav()] = vertex->J(1)->GetCurrent<double>();
+          } else {
+            for(size_t i = 0; i < m_lmu[vertex->J(1)->Flav()].size(); ++i) {
+                for(size_t j = 0; j < m_lmu[vertex->J(1)->Flav()][0].size(); ++j) {
+                    m_lmu[vertex->J(1)->Flav()][i][j] += vertex->J(1)->GetCurrent<double>()[i][j];
+                }
+            }
+          }
+        }
+      }
 #ifdef DEBUG__BG
       for (size_t j(0);j<m_ress[i].size();++j)
 	msg_Debugging()<<"A["<<i<<"]["<<j<<"]"<<m_ress[i](j)<<" = "
 		       <<m_ress[i][j]<<" -> "<<std::abs(m_ress[i][j])<<"\n";
 #endif
     }
+#ifdef DEBUG__BG
+    if (m_lmu.size())
+      for (size_t j(0);j<m_lmu.size();++j)
+	msg_Debugging()<<"L^\\mu["<<j<<"] = "<<m_lmu[j]<<"\n";
+#endif
     for (size_t i(0);i<m_ress.size();++i) {
       if (m_cur.back()[i]->Sub()==NULL) continue;
       for (size_t j(0);j<m_ress[i].size();++j) m_cress[i][j]=m_ress[i][j]=0.0;
@@ -1750,12 +1781,16 @@ void Amplitude::SetGauge(const size_t &n)
 bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
 {
   if (mode==0) {
+    ran->SaveStatus();
     size_t nt(0);
     bool cnt(true);
     while (cnt) {
       while (!p_colint->GeneratePoint());
       SetColors(p_colint->I(),p_colint->J());
-      if (!GaugeTest(moms,1)) return false;
+      if (!GaugeTest(moms,1)) {
+	ran->RestoreStatus();
+	return false;
+      }
       double res(m_born?m_born:m_res);
       if (res!=0.0) cnt=false;
       if (cnt) {
@@ -1764,6 +1799,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
 	while (!p_colint->GeneratePoint());
       }
     }
+    ran->RestoreStatus();
     return true;
   }
   msg_Tracking()<<METHOD<<"(): Performing gauge test ..."<<std::flush;

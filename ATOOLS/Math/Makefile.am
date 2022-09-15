@@ -16,7 +16,6 @@ libToolsMath_la_SOURCES       =	\
 				ZAlign.C \
 				Vector.C \
 				Matrix.C \
-				Fast_Function.C \
 				Gauss_Integrator.C \
 				Scaling.C \
 				Axis.C \
@@ -42,7 +41,6 @@ localinc_HEADERS          =	\
 			Vector.H \
 			MyComplex.H \
 			Matrix.H \
-			Fast_Function.H \
 			Gauss_Integrator.H \
 			Variable.H \
 			Scaling.H \

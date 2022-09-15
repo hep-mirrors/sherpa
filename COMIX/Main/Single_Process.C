@@ -747,6 +747,12 @@ void COMIX::Single_Process::FillAmplitudes
   (p_map?p_map->p_bg:p_bg)->FillAmplitudes(amps,cols);
 }
 
+const COMIX::Amplitude::LeptonCurrents &
+COMIX::Single_Process::LeptonicCurrent() const
+{
+  return (p_map?p_map->p_bg:p_bg)->LeptonicCurrent();
+}
+
 NLO_subevtlist *COMIX::Single_Process::GetSubevtList()
 {
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub)

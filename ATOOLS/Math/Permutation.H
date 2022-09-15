@@ -5,10 +5,12 @@ namespace ATOOLS {
 
   class Permutation {
   private:
-    int m_n, *p_per, *p_st;
+    int m_algo, m_n, *p_per, *p_st;
     long int m_maxnum;
+    void Swap(int i,int j);
+    int LargestMobile();
   public:
-    Permutation(int);                   
+    Permutation(int,int=0);
     ~Permutation();                   
     int* Get(int);
     inline int MaxNumber() const { return m_maxnum; }

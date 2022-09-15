@@ -33,13 +33,12 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   extrachannelflag = echflag;
 
   //add Channel
-  char name[22];
-  sprintf(name,"C%i_%i",nout,n);
+  std::string name("C"+ToString(nout)+"_"+ToString(n));
 
-  if (echflag!=0) sprintf(name,"%s%c",name,'a'+extrachannelflag-1);
+  if (echflag!=0) name+='a'+ToString(extrachannelflag-1);
   
-  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+path+string("/")+
-                    string(name)+string(".C");
+  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/"+
+                    name+".C";
   
   int    rannum = 0;
 

@@ -125,6 +125,8 @@ void Initialization_Handler::SetFileNames()
   rpa->gen.SetVariable("INTEGRATION_DATA_FILE",integrationdat);
   rpa->gen.SetVariable("FRAGMENTATION_DATA_FILE",m_fragmentationdat);
   rpa->gen.SetVariable("MOMENTA_DATA_FILE",momentadat);
+  int lmu = p_dataread->GetValue<int>("LEPTONIC_CURRENT_MODE",0);
+  rpa->gen.SetVariable("LEPTONIC_CURRENT_MODE",ToString(lmu));
 }
 
 
