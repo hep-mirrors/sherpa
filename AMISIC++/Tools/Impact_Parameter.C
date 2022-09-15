@@ -14,7 +14,7 @@ using namespace ATOOLS;
 
 Impact_Parameter::Impact_Parameter() : p_pint(new Interaction_Probability()),
 				       p_mo(p_pint->GetOverlap()),
-				       m_test(false), m_ana(true) {}
+				       m_test(false), m_ana(false) {}
 
 Impact_Parameter::~Impact_Parameter() {
   delete p_pint;

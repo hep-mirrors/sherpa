@@ -8,7 +8,7 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_ana(true)
+Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_ana(false)
 {}
 
 Amisic::~Amisic() {

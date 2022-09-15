@@ -13,7 +13,7 @@ using namespace std;
 
 MI_Processes::MI_Processes(bool variable_s) : ME_Generator_Base("Amisic::Processes"),
 			       m_ptmax2(1.e12), m_sigmaND(1.), m_integral(0.),
-			       m_test(true), m_variable_s(variable_s) {}
+			       m_test(false), m_variable_s(variable_s) {}
 
 MI_Processes::~MI_Processes() {
   while (!m_groups.empty()) {
