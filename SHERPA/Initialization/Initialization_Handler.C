@@ -281,6 +281,8 @@ void Initialization_Handler::RegisterDefaults()
   s["EXTRAXS_CSS_APPROX_ME"].SetDefault(false);
 
   s["RESPECT_MASSIVE_FLAG"].SetDefault(false);
+  int lmu = s["LEPTONIC_CURRENT_MODE"].SetDefault(0);
+  rpa->gen.SetVariable("LEPTONIC_CURRENT_MODE",ToString(lmu));
 }
 
 Initialization_Handler::~Initialization_Handler()

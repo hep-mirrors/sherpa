@@ -153,6 +153,15 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
     }
     dmit->second->UpdateWidth();
   }
+  // Remove decays with no vertices
+  for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
+    if(dmit->second.at(0)->empty()) {
+        delete dmit->second.at(0);
+        dmit = p_decaymap->erase(dmit)--;
+    }
+  }
+  msg_Debugging()<<"Initialising hard decay tables: customizing decay tables.\n";
+  CustomizeDecayTables();
 
   if (m_set_widths)
     for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
@@ -524,8 +533,10 @@ bool Hard_Decay_Handler::ProperVertex(MODEL::Single_Vertex* sv)
 {
   if (sv->dec) return false;
 
-  for (int i(0); i<sv->NLegs(); ++i)
+  for (int i(0); i<sv->NLegs(); ++i) {
     if (sv->in[i].IsDummy()) return false;
+    if (sv->in[i].IsHadron()) return false;
+  }
 
   if (sv->NLegs()!=3) return false; // TODO
 
