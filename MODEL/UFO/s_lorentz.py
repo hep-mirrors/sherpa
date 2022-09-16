@@ -1,12 +1,12 @@
-from itertools import chain
 from copy import deepcopy
-from tensor import tensor
-from templates import lorentz_calc_template
-from lorentz_structures import C,Gamma,Gamma5,Metric,P,ProjM,ProjP,Epsilon,Identity,mink_metric,type_dict,vect_gauge_dict
-from c_variable import c_variable
-from ufo_exception import ufo_exception
+from .tensor import tensor
+from .templates import lorentz_calc_template
+from .code_snippets import *
+from .lorentz_structures import C,Gamma,Gamma5,Metric,P,ProjM,ProjP,Epsilon,Identity,mink_metric,is_ffv,is_vvv
+from .ufo_exception import ufo_exception
+from sympy import Eq
 
-class s_lorentz():
+class s_lorentz(object):
 
     # Here we store tensor representations
     # of the coupling structures. Keys are
@@ -21,10 +21,9 @@ class s_lorentz():
         self._key_spin_dict     = dict()
         self._key_tens_dict     = dict()
         self._ferm_partner_dict = dict()
-        self._form_factors      = dict()
         for key,spin in enumerate(self.ufo_lorentz.spins):
             self._key_spin_dict[key] = spin
-            self._key_tens_dict[key] = self.get_in_current_tens(key,spin)  if not self.has_ghosts() else None
+            self._key_tens_dict[key] = get_in_current_tens(key,spin)  if not self.has_ghosts() else None
 
             # for fermions, find the fermion flow partner, i.e. the next fermion in the list
             if (spin == 2) and not (key in self._ferm_partner_dict.values()):
@@ -43,20 +42,30 @@ class s_lorentz():
         self._ferm_keys  = [key for key,spin in self._key_spin_dict.items() if spin==2]
         self._n_ferms    = len(self._ferm_keys)
 
-        # extract form factors
-        self._form_factors = {ff.name: ff.value for ff in getattr(ufo_lorentz, "formfactors", {})}
-
     def n_ext(self):
         return len(self.ufo_lorentz.spins)
 
-    def write(self, path, ferm_optimize=False, parameter_map=None):
-        if parameter_map is None:
-            parameter_map = {}
+    def write(self, path, ferm_optimize=False):
         with open(path+"/"+self.c_name(), "w") as outfile:
             outfile.write(lorentz_calc_template.substitute(vertex_name = self.calc_class_name(),
-                                                           implementation = self.get_all_implementations(ferm_optimize,
-                                                                                                         parameter_map)))
+                                                           implementation = self.get_all_implementations(ferm_optimize)))
 
+    # map to old hard-wired calculators if possible
+    def mapped_name(self):
+        if hasattr(self, '_mapped_name'):
+            return self._mapped_name
+        # is_ffv cannot differentiate between ffv and
+        # similar structures with arbitrary scalars
+        # attached, so check here for correct spin structure
+        if (sorted(self.ufo_lorentz.spins) == sorted([2,2,3])) and is_ffv(self.get_cpl_tensor()):
+            self._mapped_name = "FFV"
+        # similarly, is_vvv can't tell if we have scalars attached
+        elif (self.ufo_lorentz.spins == [3,3,3]) and is_vvv(self.get_cpl_tensor()):
+            self._mapped_name = "VVV"
+        else:
+            self._mapped_name =None
+        return self.mapped_name()
+        
     # name of the C++ file for a corresponding
     # calculator
     def c_name(self):
@@ -75,31 +84,21 @@ class s_lorentz():
     def spins(self):
         return self.ufo_lorentz.spins
 
-    # get a tensor representation of the lorentz
-    # coupling structure
-    def get_cpl_tensor(self, form_factor_map):
+    # Get a tensor representation of the lorentz coupling structure.
+    # If possible, pull from cache since creating it is expensive
+    def get_cpl_tensor(self):
         if not self.ufo_lorentz.structure in s_lorentz.tensor_cache:
-            s_lorentz.tensor_cache[self.ufo_lorentz.structure] = eval(self.ufo_lorentz.structure, globals(),
-                                                                      form_factor_map)
+            s_lorentz.tensor_cache[self.ufo_lorentz.structure] = eval(self.ufo_lorentz.structure)
         return s_lorentz.tensor_cache[self.ufo_lorentz.structure]
 
-    def form_factors_implementations(self, parameter_map):
-        evaluated_form_factors = {}
-        wrapped_parameter_map = {k: tensor([c_variable(v)], None) for k, v in parameter_map.items()}
-        for k, v in self._form_factors.items():
-            evaluated_form_factors[k] = eval(v, globals(), wrapped_parameter_map)
-        return evaluated_form_factors
-
-    def get_all_implementations(self, ferm_optimize, parameter_map):
-        form_factor_map = self.form_factors_implementations(parameter_map)
-
+    def get_all_implementations(self,ferm_optimize):
         imp = ""
         # for each key i, create one calculator
         # corresponding to key i outgoing
         for i in range(self.n_ext()):
-            imp += "\n// if outgoind UFO-index is {0}\n".format(i)
+            imp += "\n// if outgoing index is {0}\n".format(i)
             imp += "if (p_v->V()->id.back()=={0}){{\n".format(i)
-            imp += self.get_implementation(i,ferm_optimize,form_factor_map)
+            imp += self.get_implementation(i,ferm_optimize)
             imp += "\n}\n"
         return imp
 
@@ -158,13 +157,9 @@ class s_lorentz():
     # are external momenta required for writing out
     # lorentz coupling structure: determine from UFO string
     def needs_external_momenta(self):
-        structures = chain([self.ufo_lorentz.structure], self._form_factors.values())
-        for expr in structures:
-            if "P(" in expr:
-                return True
-        return False
+        return "P(" in self.ufo_lorentz.structure
 
-    def get_implementation(self, out_key, ferm_optimize, form_factor_map):
+    def get_implementation(self, out_key, ferm_optimize):
         ferm_opt = (len(self._ferm_keys) > 0) if ferm_optimize else False
         assert((not self.has_ghosts()))
 
@@ -177,22 +172,18 @@ class s_lorentz():
 
         # declare incoming currents and momenta
         for key in in_keys:
-            imp += self.get_in_current_declaration(self._key_spin_dict[key], key, key_index_dict[key])
+            imp += get_in_current_declaration(self._key_spin_dict[key],
+                                              key, key_index_dict[key],
+                                              1 if (key in self._ferm_partner_dict.keys()) else -1)
             if self.needs_external_momenta():
-                imp += self.get_in_mom_declaration(key, key_index_dict[key])
+                imp += get_in_mom_declaration(key, key_index_dict[key])
 
         # declare and initialize outgoing momentum
         if self.needs_external_momenta():
-            imp += self.get_out_mom_declaration(out_key, key_index_dict)
+            imp += get_out_mom_declaration(out_key, key_index_dict)
 
         # declare the return value, i.e. outgoing current
-        imp += self.get_out_current_declaration(out_spin, out_key)
-
-        # decalare form factors
-        form_factor_symbols = {}
-        for ff_name, ff_implementation in form_factor_map.items():
-            imp += self.get_form_factor_declaration(ff_name, ff_implementation)
-            form_factor_symbols[ff_name] = tensor([c_variable(ff_name)], None)
+        imp += get_out_current_declaration(out_spin, out_key)
 
         # optimized version for massless spinors:
         # can ask Comix via the 'C_Spinor::On()' 
@@ -219,7 +210,7 @@ class s_lorentz():
 
             # tensor representing coupling struct
             # to be contracted with ext. wavefct.
-            cpl  =  deepcopy(self.get_cpl_tensor(form_factor_symbols))
+            cpl  =  deepcopy(self.get_cpl_tensor())
 
             # contract incoming wavefct's with the cpl tensor
             for key in in_keys:
@@ -247,7 +238,8 @@ class s_lorentz():
             
             # initialize the return value
             if not return_zero:
-                imp += self.get_out_current_initialization(out_spin, out_key, cpl)
+                out_bar_type = 1 if out_key not in self._ferm_partner_dict.keys() else -1
+                imp += get_out_current_initialization(out_spin, out_key, cpl, out_bar_type)
 
             # set the 'S' property
             if not return_zero:
@@ -277,108 +269,8 @@ class s_lorentz():
             ret += on << (key*2)
         return ret
 
-    def get_in_current_declaration(self, spin, key, index):
-        if spin != 2:
-            return "const {0} <SType> & j{1} = *(jj[{2}]->Get< {0} <SType> >());\n".format(type_dict[spin], key, index)
-        else:
-            return ("const {0} <SType> & j{1} = ((jj[{2}]->Get< {0} <SType> >())->B() == {3}) ? " +
-                    "(*(jj[{2}]->Get< {0} <SType> >())) : " +
-                    "(*(jj[{2}]->Get< {0} <SType> >())).CConj() ;\n"
-                    ).format(type_dict[spin], key, index, 1 if (key in self._ferm_partner_dict.keys()) else -1)
-        
-
-    def get_in_mom_declaration(self, key, index):
-        return "const ATOOLS::Vec4D & p{0} = p_v->J({1})->P();\n".format(key, index)
-
-    def get_out_mom_declaration(self, out_key, key_index_dict):
-        keys = key_index_dict.keys()
-        keys.remove(out_key)
-        assert(len(keys)>0)
-        ret =  "ATOOLS::Vec4D p{0} = -p{1}".format(out_key, keys[0])
-        for key in keys[1:]:
-            ret += "-p{0}".format(key)
-        return ret+";\n"
-
-    def get_form_factor_declaration(self, ff_name, ff_implementation):
-        return "complex {0} = {1};\n".format(ff_name, ff_implementation)
-
-    def get_out_current_declaration(self, out_spin, out_key):
-        if (out_spin == 1):
-            return "CScalar<SType>* j{0} = NULL;\n".format(out_key)
-        elif (out_spin == 2):
-            return "CSpinor<SType>* j{0} = NULL;\n".format(out_key)
-        elif (out_spin == 3):
-            return "CVec4<SType>* j{0} = NULL;\n".format(out_key)
-        else:
-            raise ufo_exception("Cannot handle spin {0}".format(out_spin))
-            
-    def get_out_current_initialization(self, out_spin, out_key, out_tensor):
-        # scalar
-        if (out_spin == 1):
-            assert(out_tensor._toplevel_dim == 1)
-            return "j{0} = CScalar<SType>::New({1});\n".format(out_key, out_tensor._array[0])
-        # fermion
-        elif (out_spin == 2):
-            assert(out_tensor._toplevel_dim == 4)
-            in_ferm_keys = [k for k,s in self._key_spin_dict.iteritems() if ( (s == 2) and (k!=out_key) ) ]
-            bar_type = 1 if out_key not in self._ferm_partner_dict.keys() else -1
-            # there are c_variables stored in elementary tensors, so need to use is_zero method of c_variable
-            if (out_tensor._array[2]._array[0].is_zero()) and (out_tensor._array[3]._array[0].is_zero()):
-                on_type = 1 
-            elif (out_tensor._array[0]._array[0].is_zero()) and (out_tensor._array[1]._array[0].is_zero()):
-                on_type = 2
-            else:
-                on_type = 3
-            string = ""
-            string += "j{0} = CSpinor<SType>::New(m_r[{0}],{1},0,0,0,0,{2});\n".format(out_key,
-                                                                                       bar_type,
-                                                                                       on_type)
-            string += "(*j{0})[0] = {1};\n".format(out_key,out_tensor._array[0])
-            string += "(*j{0})[1] = {1};\n".format(out_key,out_tensor._array[1])
-            string += "(*j{0})[2] = {1};\n".format(out_key,out_tensor._array[2])
-            string += "(*j{0})[3] = {1};\n".format(out_key,out_tensor._array[3])
-            return string
-        elif (out_spin == 3):
-            assert(out_tensor._toplevel_dim == 4)
-            string = ""
-            string += "j{0} = CVec4<SType>::New();\n".format(out_key)
-            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[0], out_tensor._array[0])
-            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[1], out_tensor._array[1])
-            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[2], out_tensor._array[2])
-            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[3], out_tensor._array[3])
-            return string
-        
-    # get a tensor representation of current
-    # with an index-key 'key'
-    def get_in_current_tens(self, key, spin):
-        # scalar
-        if spin == 1:
-            return tensor([c_variable("j{0}[0]".format(key))], None)
-        # fermion
-        if (spin == 2):
-            # put key+1 as key to account for UFO key conv.
-            return tensor([tensor([c_variable("j{0}[{1}]".format(key,0))] , None), 
-                           tensor([c_variable("j{0}[{1}]".format(key,1))] , None), 
-                           tensor([c_variable("j{0}[{1}]".format(key,2))] , None),
-                           tensor([c_variable("j{0}[{1}]".format(key,3))] , None)], key+1)
-
-        if (spin == 3):
-            dummy =  tensor([tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[0]))] , None), 
-                             tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[1]))] , None), 
-                             tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[2]))] , None),
-                             tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[3]))] , None)], 'dummy_key')
-            # Incoming currents are alway contravariant in sherpa, 
-            # so we need to multiply by metric.
-            # Put key+1 as key to account for UFO key conv.
-            return dummy * mink_metric(key+1, 'dummy_key')
-
-        raise ufo_exception("External wavefunction for spin {0} not implemented".format(spin))
-
     # check if a return value tensor is zero for perfomance optimizations
     def is_zero(self, out_spin, out_tensor):
         if out_spin == 1:
-            return out_tensor._array[0].is_zero()
-        assert( (out_spin == 2) or (out_spin == 3))
-        return all([out_tensor._array[i]._array[0].is_zero() for i in range(4)])
-
-        
+            return out_tensor._array[0]==0.0
+        return all([(out_tensor._array[i]._array[0]==0.0) for i in range(len(out_tensor._array))])

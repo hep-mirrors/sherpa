@@ -9,9 +9,9 @@ from subprocess import check_output
 
 sys_path.insert(0, '@PYLIBDIR@')
 
-from ufo_interface import s_lorentz, write_model, write_run_card
+from ufo_interface import s_lorentz, s_color, write_model, write_run_card
 from ufo_interface.templates import sconstruct_template
-from ufo_interface.message import error, progress
+from ufo_interface.message import error, warning, progress
 from ufo_interface import ufo_exception
 
 def parse_args():
@@ -39,11 +39,45 @@ def parse_args():
       arg_parser.add_argument("--noopt",
                               action="store_true",
                               help = "Disable optimization of Lorentz calculators")
-      arg_parser.add_argument("--nocompile",
-                              action="store_true",
-                              help = "Do not compile generated UFO model")
 
       return arg_parser.parse_args()
+
+def check_color_struct(color, particles):
+      """If the color structure contains "Identity", the assignment of
+      fundamental/antifundamental/adjoint representation indices is
+      often wrong. This function fixes this and returns a corrected
+      color structure.
+      """
+      new_color = color
+
+      # Collect all antifundamental indices in UFO numbering
+      # scheme starting at 1
+      af_inds = [i+1 for i,p in enumerate(particles) if p.color==-3]
+      for a_ind in af_inds:
+            search = "Identity({0},".format(a_ind)
+            if search in new_color:
+                  # Now we have an antifundamental index
+                  # as the first argument, i.e.
+                  # 'Identity(a_ind, f_ind)', which is
+                  # wrong. Need to swap a_ind and f_ind
+                  f_ind = new_color[new_color.find(search)+len(search)]
+                  assert("Identity({0},{1})".format(a_ind,f_ind) in new_color)
+                  new_color = new_color.replace("Identity({0},{1})".format(a_ind,f_ind),
+                                                "Identity({0},{1})".format(f_ind,a_ind))
+
+      # Collect all octet indices in UFO numbering scheme starting at
+      # 1. Replace Identities with dedicated Identities for octets
+      oc_inds = [i+1 for i,p in enumerate(particles) if p.color==8]
+      while(len(oc_inds)>0):
+            ind0 = oc_inds.pop()
+            search = "Identity({0},".format(ind0)
+            if search in new_color:
+                  ind1 = new_color[new_color.find(search)+len(search)]
+                  assert("Identity({0},{1})".format(ind0,ind1) in new_color)
+                  new_color = new_color.replace("Identity({0},{1})".format(ind0,ind1),
+                                                "IdentityG({0},{1})".format(ind0,ind1))
+            
+      return new_color
 
 def sort_orders(orders):
       """Sort the coupling orders such that the first item is the QCD order
@@ -79,9 +113,15 @@ def sort_orders(orders):
       return orders
 
 def check_model(model_name, model_path):
+
+      # Model name cannot begin with a number since class names in C++ cannot
+      if model_name[0].isdigit():
+            error("Model name \"{0}\" starts with a digit. Please raname your UFO model directory".format(model_name))
+            exit(1)
+      
       # Check for conflicts with built-in models
       if model_name in ["SM", "HEFT", "TauPi"]:
-            error("Model name {0} conflicts with built-in model. Please rename your UFO model directory.".format(model_name))
+            error("Model name \"{0}\" conflicts with built-in model. Please rename your UFO model directory.".format(model_name))
             exit(1)
             
       # Try to import the model to check if UFO path is ok
@@ -93,18 +133,20 @@ def check_model(model_name, model_path):
             error("Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(args.ufo_path))
             exit(1)
 
+      for v in model.all_vertices:
+            for i in range(len(v.color)):
+                  old_color = v.color[i] 
+                  new_color = check_color_struct(old_color, v.particles)
+                  # Safety check: applying check_color_struct twice
+                  # should not alter the result
+                  assert(check_color_struct(new_color, v.particles)==new_color)
+                  v.color[i] = new_color
+            
       # For NLO models: need to filter out CT_Couplings
       model.non_ct_couplings = model.all_couplings
       if hasattr(model, "all_CTvertices"):
             non_ct_vertices  = [vtx for vtx in model.all_vertices if vtx not in model.all_CTvertices]
             model.non_ct_couplings = sum([vtx.couplings.values() for vtx in non_ct_vertices], [])
-
-      # For NLO models: filter out lorentz structures 
-      # that ONLY apper in CT vertices as they are somtimes ill-formatted
-      needed_names = []
-      for v in model.all_vertices:
-            needed_names += [l.name for l in v.lorentz]
-      model.all_lorentz = [l for l in model.all_lorentz if l.name in needed_names]
 
       # Sort coupling orders to ensure first order is QCD, second
       # order is QED
@@ -138,17 +180,31 @@ if __name__ == "__main__":
       
       # Need this list in order to write model source code
       lorentzes = [s_lorentz(l) for l in model.all_lorentz]
+      
+      # Set of all color structures, no duplicates
+      colors = set(sum([v.color for v in model.all_vertices],[]))
+      colors = [col for col in colors if col!='1']
 
       # Write model source code
       progress("Generating model source code")
-      parameter_map = write_model(model, model_name, model_out_path)
+      write_model(model, lorentzes, model_name, model_out_path)
       
+      # Write color calculator source code
+      for col in colors:
+            scol = s_color(col)
+            progress("Generating source code for color calculator '{0}'".format(scol.name()))
+            # Create an s_color istance temporaryly only in this
+            # scope, so that its memory intensive color tensor
+            # instance gets deleted as soon as it has been written to
+            # file
+            scol.write(out_dir)
+
       # Write lorentz calculator source code
       optimize = not args.noopt
       for lor in lorentzes:
             if not lor.has_ghosts():
                   progress("Generating source code for lorentz calculator '{0}'".format(lor.name()))
-                  lor.write(out_dir,optimize,parameter_map)
+                  lor.write(out_dir,optimize)
 
       # Generate and write SConstruct file
       lib_name = 'Sherpa{0}'.format(model_name)
@@ -161,12 +217,11 @@ if __name__ == "__main__":
                                                                  lorentzflags = args.lorentzflags))
 
       # compile and install
-      if not args.nocompile:
-          progress("Compiling sources using scons")
-          sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install'] 
-          if (int(args.ncore)>1):
-              sconsargs.append('-j{0}'.format(args.ncore))
-          progress(check_output(sconsargs).decode())
+      progress("Compiling sources using scons")
+      sconsargs = ['scons','-C',out_dir,'install'] 
+      if (int(args.ncore)>1):
+            sconsargs.append('-j{0}'.format(args.ncore))
+      progress(check_output(sconsargs).decode())
 
       # write example run card to working dir
       run_card_path="{0}_Example_Run.dat".format(model_name)

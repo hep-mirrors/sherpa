@@ -1,8 +1,8 @@
-from s_particle import s_particle
-from s_coupling import s_coupling
-from s_lorentz import s_lorentz
-from ufo_exception import ufo_exception
-from colour_converter import colour_translate
+from .s_particle import s_particle
+from .s_coupling import s_coupling
+from .s_lorentz import s_lorentz
+from .s_color import s_color
+from .ufo_exception import ufo_exception
 
 spin_dict = {0 : "S",
              1 : "F",
@@ -36,6 +36,7 @@ def split_by_orders(ufo_vertex, hierarchy):
                         lor_list.append(s_lorentz (ufo_vertex.lorentz  [lor_ind]) )
                         col_list.append(           ufo_vertex.color    [col_ind]  )
                         ff_list.append(ufo_vertex.form_factors[ff_ind])
+                    #col_list.append(s_color   (ufo_vertex.color    [col_ind]) )
             else:
                 if (col_ind, lor_ind) in ufo_vertex.couplings:
                     cpl_list.append(s_coupling(ufo_vertex.couplings[(col_ind, lor_ind)]))
@@ -157,14 +158,15 @@ class vertex_collection(object):
             for cpl in vert.coupling_list():
                 string += (
                     indent + 
-                    "m_v.back().cpl.push_back( ATOOLS::Kabbala(\"{0}\",ComplexConstant(std::string(\"{0}\"))) );" 
+                    "m_v.back().cpl.push_back( ATOOLS::Kabbala(\"{0}\",ComplexConstant(string(\"{0}\"))) );" 
                     .format(cpl.name()))
             for col in  vert.colour_list():
                 # stupid '1' needs to be replaced by some string placeholder
                 col = 'None()' if col == '1' else col
                 string += (indent +
-                           "m_v.back().Color.push_back({0});"
-                           .format(colour_translate(col)))
+                           'm_v.back().Color.push_back(UFO::UFO_CF("{0}"));'
+                           .format(col.replace('(','_').replace(')','_').replace('-','m').replace(',','_').replace('*','').rstrip('_')))
+                
             for lor in  vert.lorentz_list():
                 string += (indent +
                            "m_v.back().Lorentz.push_back(\"{0}\");"

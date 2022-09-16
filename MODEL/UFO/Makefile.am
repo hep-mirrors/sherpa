@@ -18,21 +18,24 @@ libModelUFO_la_LIBADD = @MODELMAINLIB@ @ATOOLSLIBS@
 
 if ENABLE_UFO
 
-nodist_bin_SCRIPTS = Sherpa-generate-model
+dist_bin_SCRIPTS = Sherpa-generate-model
 
 ufodir = $(pythondir)/ufo_interface
 
 dist_ufo_PYTHON = \
         __init__.py \
-        c_variable.py \
-        colour_converter.py \
+        sym_var.py \
         lorentz_calc_template.C \
+        color_calc_template.C \
         lorentz_structures.py \
+        color_structures.py \
+	code_snippets.py \
         model_template.C \
 	run_card_template \
         py_to_cpp.py \
         s_coupling.py \
         s_lorentz.py \
+        s_color.py \
         s_parameter.py \
         s_particle.py \
         s_vertex.py \

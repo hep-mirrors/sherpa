@@ -2,10 +2,11 @@
 #include "MODEL/UFO/UFO_Model.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+
+#include <cmath>
 
 namespace UFO{
 
@@ -16,11 +17,10 @@ namespace UFO{
     p_complexconstants = new MODEL::ComplexConstantsMap();
     p_functions        = new MODEL::ScalarFunctionsMap();
 
-    ATOOLS::Data_Reader* run_read = new ATOOLS::Data_Reader(" ",";","#","=");
-    run_read->SetInputPath(path);
-    run_read->SetInputFile(file);
-    p_dataread = new UFO::UFO_Param_Reader(run_read->GetValue<std::string>("UFO_PARAM_CARD",""));
-    delete run_read;
+    ATOOLS::Data_Reader reader(" ",";","#","=");
+    reader.SetInputPath(path);
+    reader.SetInputFile(file);
+    p_dataread = new UFO::UFO_Param_Reader(reader.GetValue<std::string>("UFO_PARAM_CARD", ""));
     ATOOLS::rpa->gen.AddCitation(1,"Sherpa's BSM features are published under \\cite{Hoche:2014kca}.");
     ATOOLS::rpa->gen.AddCitation(1,"The UFO model format is published under \\cite{Degrande:2011ua}.");
   }
@@ -43,7 +43,6 @@ namespace UFO{
   }
 
   void UFO_Model::SetSMMasses(){
-    // this part hopes the UFO model has the SM with the same kfcodes included
     SetSMMass(kf_d,0.01);
     SetSMMass(kf_u,0.005);
     SetSMMass(kf_s,0.2);
@@ -74,59 +73,26 @@ namespace UFO{
   bool UFO_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
   { 
     std::string widthscheme = MODEL::Model_Base::p_dataread->GetValue<std::string>("WIDTH_SCHEME","Fixed");
-    bool cms(widthscheme=="CMS");
-    p_numbers->insert(make_pair(std::string("WidthScheme"), cms));
+    p_numbers->insert(make_pair(std::string("WidthScheme"), widthscheme=="CMS"));
 
     // set default value to UFO input such that
     // we recover standard cross sections for fixed QCD coupling
-    // warning is printed to user to check value if consistent with UFO model
-    msg_Info()<<METHOD<<"(): Trying to read in \\alpha_s(m_Z) as parameter "
-              <<"3 in SMINPUTS block."<<std::endl;
-    SetAlphaQCD(isr,p_dataread->GetEntry<double>("SMINPUTS",3,0.118,false));
+    SetAlphaQCD(isr,p_dataread->GetEntry<double>("SMINPUTS",3));
 
     // set default value to UFO input such that
     // we recover standard cross sections for fixed QED coupling
-    // warning is printed to user to check value if consistent with UFO model
-    msg_Info()<<METHOD<<"(): Trying to read in \\alpha_QED as parameter "
-              <<"1 in SMINPUTS block."<<std::endl;
-    SetAlphaQED(1./p_dataread->GetEntry<double>("SMINPUTS",1,127.952,false));
-
-    // set default value for sin(theta), cos(theta), vev if not available 
-    // because the parameter is needed for the parton shower and beyond; 
-    // it will be incorrect for most EFT parameter points, but 
-    // as UFO does not have a canonical name for it, this is the 
-    // best we can do
-    // warning is printed to user to check value if consistent with UFO model
-    // only fill if the W and Z are defined by the model with the usual kfcodes
-    if (ATOOLS::s_kftable.find(kf_Wplus)!=ATOOLS::s_kftable.end() &&
-        ATOOLS::s_kftable.find(kf_Z)!=ATOOLS::s_kftable.end()) {
-      Complex I(0.,1.);
-      double MW(ATOOLS::Flavour(kf_Wplus).Mass()),  MZ(ATOOLS::Flavour(kf_Z).Mass());
-      double GW(ATOOLS::Flavour(kf_Wplus).Width()), GZ(ATOOLS::Flavour(kf_Z).Width());
-      Complex muW2(MW*(MW-(cms?I*GW:0.))), muZ2(MZ*(MZ-(cms?I*GZ:0.)));
-      Complex ccos2thetaW=muW2/muZ2;
-      Complex csin2thetaW=1.-ccos2thetaW;
-      Complex cvev=2.*sqrt(muW2*csin2thetaW/(4.*M_PI*MODEL::aqed->Default()));
-      if (p_complexconstants->find("ccos2_thetaW")==p_complexconstants->end()) {
-        msg_Info()<<METHOD<<"(): Trying to read in cos(\\theta_W)^2 as parameter "
-                  <<"10 in SMINPUTS block."<<std::endl;
-        ccos2thetaW=p_dataread->GetEntry<Complex>("SMINPUTS",10,ccos2thetaW,false);
-        p_complexconstants->insert(make_pair(std::string("ccos2_thetaW"),ccos2thetaW));
-      }
-      if (p_complexconstants->find("csin2_thetaW")==p_complexconstants->end()) {
-        msg_Info()<<METHOD<<"(): Trying to read in sin(\\theta_W)^2 as parameter "
-                  <<"11 in SMINPUTS block."<<std::endl;
-        csin2thetaW=p_dataread->GetEntry<Complex>("SMINPUTS",11,csin2thetaW,false);
-        p_complexconstants->insert(make_pair(std::string("csin2_thetaW"),csin2thetaW));
-      }
-      if (p_complexconstants->find("cvev")==p_complexconstants->end()) {
-        msg_Info()<<METHOD<<"(): Trying to read in vev as parameter "
-                  <<"12 in SMINPUTS block."<<std::endl;
-        cvev=p_dataread->GetEntry<Complex>("SMINPUTS",12,cvev,false);
-        p_complexconstants->insert(make_pair(std::string("cvev"), cvev));
-      }
-    }
+    SetAlphaQED(1./p_dataread->GetEntry<double>("SMINPUTS",1));
+    
     return true;
+  }
+
+  std::string UFO_Model::MappedLorentzName(const std::string& label) const {
+    if(m_lorentz_map.empty())
+      return label;
+    StringMap::const_iterator it=m_lorentz_map.find(label);
+    if(it!=m_lorentz_map.end())
+      return it->second;
+    return label;
   }
 
   Complex UFO_Model::complexconjugate(const Complex& arg) { return conj(arg); }

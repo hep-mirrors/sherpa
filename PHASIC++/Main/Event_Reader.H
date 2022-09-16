@@ -19,6 +19,7 @@ namespace PHASIC {
     std::vector<std::string> m_files;
 
     double m_totalxs;
+    bool   m_compute;
     
   public:
     
@@ -28,11 +29,14 @@ namespace PHASIC {
   public:
 
     inline Event_Reader(const Event_Reader_Key &key):
-      m_files(key.m_files) {}
+      m_files(key.m_files), m_compute(true) {}
+    virtual ~Event_Reader() = default;
 
     virtual ATOOLS::Cluster_Amplitude *ReadEvent() = 0;
 
     inline double TotalXS() const { return m_totalxs; }
+
+    inline bool Compute() const { return m_compute; }
 
   };// end of class Event_Reader
   

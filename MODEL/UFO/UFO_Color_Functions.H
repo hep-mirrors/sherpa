@@ -25,6 +25,12 @@ namespace UFO{
 
   };
 
+  class UFO_CF : public UFO_Color_Function {
+  public:
+    UFO_CF(const std::string &s):
+      UFO_Color_Function(cf::UFO) { m_string=s; }
+  };
+
   class UFO_CF_1 : public UFO_Color_Function {
   public:
     UFO_CF_1() : UFO_Color_Function(cf::None) {

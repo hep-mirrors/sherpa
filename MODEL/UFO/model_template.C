@@ -1,7 +1,6 @@
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/UFO/UFO_Color_Functions.H"
@@ -32,6 +31,7 @@ namespace MODEL{
       CustomContainerInit();
       ATOOLS::OutputParticles(ATOOLS::msg->Info());
       ATOOLS::OutputContainers(ATOOLS::msg->Info());
+      FillLorentzMap();
     }
   protected:
     void ParticleInit()
@@ -50,6 +50,9 @@ namespace MODEL{
     void InitVertices()
     {
       ${calls}
+    }
+    virtual void FillLorentzMap() {
+      ${fill_lorentz_map}
     }
   };
   

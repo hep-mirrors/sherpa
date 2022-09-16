@@ -36,7 +36,6 @@ namespace METOOLS {
       if (j.size()==2) {
       m_ci.clear();
       m_cjk.clear();
-      m_stat=true;
       switch (m_ti) {
       case 8:
 	switch (m_tk) {
@@ -103,12 +102,11 @@ namespace METOOLS {
 	break;
       default: THROW(fatal_error,"Invalid call");
       }
-      return m_stat;
+      return true;
       }
       m_ci.clear();
       m_cjk.clear();
-      m_stat=p_cc->Evaluate(j);
-      if (!m_stat) return false;
+      if (!p_cc->Evaluate(j)) return false;
       switch (m_ti) {
       case 8:
 	m_ci.push_back(CInfo((*j[0])(0),(*j[0])(1),1,0));
@@ -204,8 +202,7 @@ namespace METOOLS {
       }
       default: THROW(fatal_error,"Invalid call");
       }
-      m_stat=m_cjk.size();
-      return m_stat;
+      return m_cjk.size();
     }
 
   };// end of class SF_Calculator

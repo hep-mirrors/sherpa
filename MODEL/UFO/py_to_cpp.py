@@ -25,8 +25,8 @@ cmath_dictionary = {
     "exp":"exp"
 }
 
-def py_to_cpp(expr, parameter_map=None):
-    return cpp_visitor(parameter_map).cpp_string(expr)
+def py_to_cpp(expr):
+    return cpp_visitor().cpp_string(expr)
 
 def c_string_from_num(num):
     # where this is used, we have 'complex' typedef'd
@@ -44,8 +44,8 @@ def c_string_from_num(num):
 
 class cpp_visitor(ast.NodeVisitor):
 
-    def __init__(self, parameter_map=None):
-        self.parameter_map = parameter_map if parameter_map is not None else {}
+    def __init__(self):
+        pass
 
     def cpp_string(self, expr):
         self.string = ""
@@ -119,8 +119,7 @@ class cpp_visitor(ast.NodeVisitor):
     def visit_Name(self,node):
         text = str(node.id)
         self.vars.add(text)
-        replaced = self.parameter_map.get(text, text)
-        self.string += replaced
+        self.string += text
 
     def visit_Num(self, node):
         # some zeros are encoded as 0j

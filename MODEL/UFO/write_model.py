@@ -1,47 +1,40 @@
 from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, split_by_orders, vertex_collection
-from ufo_interface.c_variable import c_variable
-from ufo_interface.tensor import tensor
 from ufo_interface.templates import model_template
 from operator import attrgetter
-from py_to_cpp import py_to_cpp
 
-def write_model(model, model_name, model_file_name):
+def write_model(model, lorentzes, model_name, model_file_name):
 
     para_init = ""
     part_init = ""
-
-    parameter_map = {}
 
     external_parameters = [s_parameter(param) for param in  model.all_parameters if (s_parameter(param).is_external())]
     internal_parameters = [s_parameter(param) for param in  model.all_parameters if (s_parameter(param).is_internal())]
 
     # external parameter initialization
     for param in external_parameters:
-        statement = "      double "+param.name()+" = p_dataread->GetEntry<double>(\""+str(param.lha_block())+"\", "
+        statement = "    double "+param.name()+" = p_dataread->GetEntry<double>(\""+str(param.lha_block())+"\", "
         if len(param.lha_indices()) == 1:
             statement += str(param.lha_indices()[0])
         if len(param.lha_indices()) == 2:
             statement += str(param.lha_indices()[0])+", "+str(param.lha_indices()[1])
-        statement+=", 0.);\n"
-        statement+='      p_constants->insert(make_pair(string("{0}"),{0}));'.format(param.name())
+        statement+=");\n"
+        statement+='    p_constants->insert(make_pair(string("{0}"),{0}));'.format(param.name())
         para_init += "\n"+statement
-        parameter_map[param.name()] = "(MODEL::s_model->ScalarConstant(std::string(\"{0}\")))".format(param.name())
 
     # internal parameter initialization and calculation
     for param in internal_parameters:
         if param.is_complex():
-            statement = "      Complex "+param.name()+" = "+param.cpp_value()+";"
+            statement = "    Complex "+param.name()+" = "+param.cpp_value()+";"
         else:
-            statement = "      double "+param.name()+" = ToDouble("+param.cpp_value()+");"
+            statement = "    double "+param.name()+" = ToDouble("+param.cpp_value()+");"
         para_init += "\n"+statement
-        para_init += "\n      DEBUG_VAR({0});".format(param.name())
-        parameter_map[param.name()] = param.cpp_value(parameter_map)
+        para_init += "\n    DEBUG_VAR({0});".format(param.name())
 
     # fill particle list
-    for s_part in [ s_particle(p) for p in sorted(model.all_particles, key=lambda x: x.pdg_code) ]:
+    for s_part in [ s_particle(p) for p in model.all_particles ]:
         kfcode = s_part.kf_code()
         # don't explicitly need to add antiparticles
-        if kfcode < 0: 
+        if kfcode < 0:
             continue
         massive = 0 if (s_part.ufo_particle.mass is model.parameters.ZERO) else 1
         if s_part.hadron():
@@ -74,15 +67,15 @@ def write_model(model, model_name, model_file_name):
 
         wstring = s_part.width().name() if s_part.width().is_external() else s_part.width().cpp_value()
         mstring = s_part.mass().name()  if s_part.mass().is_external()  else s_part.mass().cpp_value()
-        para_init += "\n      ATOOLS::Flavour({0}).SetWidth(ToDouble({1}));".format(kfcode,wstring)
-        para_init += "\n      ATOOLS::Flavour({0}).SetMass(ToDouble({1}));".format(kfcode,mstring)
-        para_init += "\n      ATOOLS::Flavour({0}).SetHadMass(ToDouble({1}));".format(kfcode,mstring)
+        para_init += "\n    ATOOLS::Flavour({0}).SetWidth(ToDouble({1}));".format(kfcode,wstring)
+        para_init += "\n    ATOOLS::Flavour({0}).SetMass(ToDouble({1}));".format(kfcode,mstring)
+        para_init += "\n    ATOOLS::Flavour({0}).SetHadMass(ToDouble({1}));".format(kfcode,mstring)
 
     # coupling initialization and calculation
     for coup in model.non_ct_couplings:
         s_coup = s_coupling(coup)
-        para_init += "\n      p_complexconstants->insert(make_pair(string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
-        para_init += "\n      DEBUG_VAR((*p_complexconstants)[\"{0}\"]);".format(s_coup.name())
+        para_init += "\n    p_complexconstants->insert(make_pair(string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
+        para_init += "\n    DEBUG_VAR((*p_complexconstants)[\"{0}\"]);".format(s_coup.name())
 
     hierarchy     = [order.name for order in model.all_orders]
     declarations  = ""
@@ -91,6 +84,7 @@ def write_model(model, model_name, model_file_name):
     vertices      = [vert for vert in vertices if not (vert.has_ghosts() or vert.has_goldstones()) ]
     i             = 0
 
+    # initialization of vertices
     while (len(vertices) > 0):
         sub_vert_list = []
         id_string = "vertices_{0}".format(i)
@@ -101,10 +95,15 @@ def write_model(model, model_name, model_file_name):
         declarations += v_collection.implementation_string()
         calls        += v_collection.call_string()
         i            += 1
-    
+
+    # fill the lorentz name map
+    lorentz_map = ""
+    for lor in lorentzes:
+        name, mapped_name = lor.name(), lor.mapped_name()
+        if  mapped_name is not None:
+            lorentz_map +='\n      m_lorentz_map.insert(make_pair("{0}","{1}"));'.format(name,mapped_name)
+
     # write out model
     with open(model_file_name, "w") as outfile:
         outfile.write(model_template.substitute(model_name=model_name, particle_init=part_init, param_init=para_init,
-                                                declarations = declarations, calls = calls))
-
-    return parameter_map
+                                                declarations=declarations, calls=calls, fill_lorentz_map=lorentz_map))

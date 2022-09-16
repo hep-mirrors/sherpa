@@ -18,6 +18,7 @@ vars.Add('installdir',
          '${installdir}')
 
 env = Environment(variables=vars,
+                  LINKFLAGS=['-Wl,-no-as-needed'],
                   CPPPATH=['$${includedir}'],
                   LIBPATH=['$${libdir}'],
                   RPATH  =['$${libdir}'])
@@ -28,8 +29,6 @@ Help(vars.GenerateHelpText(env))
 env['ENV']=environ
 if env['PLATFORM']=='darwin':
    env.Append( LINKFLAGS='-Wl,-undefined -Wl,dynamic_lookup' )
-else:
-   env.Append( LINKFLAGS='-Wl,-no-as-needed' )
 
 lorentz_sources = [ s for s in  env.Glob('*.C') if s.name!='Model.C']
 

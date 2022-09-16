@@ -1,6 +1,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 
 #include "PHASIC++/Main/Phase_Space_Integrator.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -364,14 +365,21 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
     if (p_point) {
-      std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
-      process->Process()->ScaleSetter(true)->SetFixedScale(scales);
-      double result(process->Process()->Differential(p_lab));
-      scales.clear();
-      process->Process()->ScaleSetter(true)->SetFixedScale(scales);
-      m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
-      CalculateME();
-      m_enhance=1.;
+      if (process->Process()->EventReader()->Compute()) {
+	std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
+	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+	double result(process->Process()->Differential(p_lab));
+	scales.clear();
+	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+	m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
+	CalculateME();
+	m_enhance=1.;
+      }
+      else {
+	m_psweight=1.;
+	m_result=1.;
+	m_enhance=1.;
+      }
     }
     else {
       CalculatePS();

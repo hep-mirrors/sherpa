@@ -1,10 +1,10 @@
-from copy import deepcopy
+from copy import deepcopy, copy
 from .ufo_exception import ufo_exception
 from .py_to_cpp import c_string_from_num
 
 class tensor(object):
     
-    def __init__(self, array, toplevel_key):
+    def __init__(self, array, toplevel_key = None):
         self._toplevel_key = toplevel_key
         self._array = array
         self._toplevel_dim = len(self._array)
@@ -28,10 +28,10 @@ class tensor(object):
                 sub_indent = " "*len(title)
                 ret += title+"\n"+tens.__str__(sub_indent)
         else:
-            title = indent+"{0} ".format(self._toplevel_key)
+            title = indent+"{0}: ".format(self._toplevel_key)
             ret += title
             for tens in self._array:
-                ret += tens.__str__()+" "
+                ret += tens.__str__()+" || "
         ret += "\n"
         return ret
 
@@ -62,16 +62,19 @@ class tensor(object):
     # indices is a dict of 'type index_key:index_value'
     def __getitem__(self, indices):
 
-        # end of recursion: elementary tensor
-        if self._elementary:
-            return self
+        ret = self
 
-        # if indices contains value for toplevel index
-        if self._toplevel_key in indices:
-            # return corresponding element and pass indices
-            return self._array[indices[self._toplevel_key]].__getitem__(indices)
-        else:
-            return tensor([tens[indices] for tens in self._array], self._toplevel_key)
+        # Avoid recursion as far as possible by dereferencing toplevel
+        # until toplevel key is not in indices anymore
+        while(ret._toplevel_key in indices):
+            ret = ret._array[indices[ret._toplevel_key]]
+
+        # Trivial case
+        if ret._elementary:
+            return ret
+
+        # Now have to rely on recursion
+        return tensor([tens[indices] for tens in ret._array], ret._toplevel_key)
 
     def __setitem__(self, indices, value):
         
@@ -91,128 +94,159 @@ class tensor(object):
             for i in range(dim):
                 tens.__getitem__({key:i}).__setitem__({},value.__getitem__({key:i}))
 
-        assert(self[indices]==value)
-        #self.check()
+    def copy(self):
+        """Return a deep copy"""
+        if self._elementary:
+            return tensor([deepcopy(self._array[0])], None)
+        return tensor([el.copy() for el in self._array], self._toplevel_key)
 
-    # return list of all keys
     def keys(self):
+        """Return list of all keys in the tensor"""
         if self._elementary:
             return []
-        else:
-            ret = [self._toplevel_key]
-            ret.extend(self._array[0].keys())
-            return ret
+        ret = [self._toplevel_key]
+        ret.extend(self._array[0].keys())
+        return ret
 
     def key_dim_dict(self):
+        """Return dictionary mapping the keys
+        to the corresponding dimensionality"""
         if self._elementary:
             return {}
-        else:
-            ret = {self._toplevel_key:self._toplevel_dim}
-            ret.update(self._array[0].key_dim_dict())
-            return ret
+        ret = {self._toplevel_key:self._toplevel_dim}
+        ret.update(self._array[0].key_dim_dict())
+        return ret
+
+    def key_index_dict(self,n=0):
+        """Return dictionary mapping the keys
+        to the depth in the array where it occurs"""
+        if self._elementary:
+            return {}
+        ret = {self._toplevel_key:n}
+        ret.update(self._array[0].key_index_dict(n+1))
+        return ret
+
+    def index_key_dict(self,n=0):
+        """Return dictionary mapping the depth
+        in the array to the corresponding key"""
+        if self._elementary:
+            return {}
+        ret = {n:self._toplevel_key}
+        ret.update(self._array[0].index_key_dict(n+1))
+        return ret
 
     def __add__(self, rhs):
-        if isinstance(rhs, (int, complex, float)):
-            return self + tensor([rhs], None)
-
         # so far, support/define
         # only sum of identical type
         # i.e. demand equality of key_dim_dict()
-        if (cmp(self.key_dim_dict(), rhs.key_dim_dict())!=0):
+        kdd = self.key_dim_dict()
+        if kdd != rhs.key_dim_dict():
             raise ufo_exception("Inconsistent tensor addition")
-
-        # get a deepcopy so we don't need
-        # to build a return value from scratch
-        ret = deepcopy(self)
-
-        # end of recursion: elementary tensor
-        if ret._elementary:
-            if isinstance(ret._array[0], str) or isinstance(rhs._array[0], str):
-                ret._array[0] = str(ret._array[0]) + " + " + str(rhs._array[0])
+        
+        if self._elementary:
+            ret = tensor([0.0], None)
+            if isinstance(self._array[0], str) or isinstance(rhs._array[0], str):
+                ret._array[0] = str(self._array[0]) + " + " + str(rhs._array[0])
             else:
-                ret._array[0] = ret._array[0] + rhs._array[0]
+                ret._array[0] = self._array[0] + rhs._array[0]
             return ret
 
-        # apply addition recursively to elements in array
-        for i in range(self._toplevel_dim):
-            ret[{self._toplevel_key:i}] = ret[{self._toplevel_key:i}].__add__(rhs[{self._toplevel_key:i}])
+        # Build a return value
+        ret = new(kdd)
 
+        # Avoid recursion and loop over all elements of the return
+        # tensor explicitly
+        for el, ind in self.elements_indices():
+            #assert(ret.__getitem__(ind)._elementary)
+            ret.__getitem__(ind)._array[0] = el._array[0] + rhs.__getitem__(ind)._array[0]
         return ret
 
     def __iadd__(self, rhs):
         self = self+rhs
         return self
 
-    def __radd__(self, lhs):
-        return self + lhs
-
     def __sub__(self, rhs):
         return (self + tensor([-1], None)*rhs)
 
-    def __rsub__(self, lhs):
-        return lhs + tensor([-1], None)*self
-
     def __mul__(self, rhs):
         
-        if isinstance(rhs, int) or isinstance(rhs, float) or isinstance(rhs, complex) or isinstance(rhs,str):
+        if not isinstance(rhs, tensor):
             return self.__mul__(tensor([rhs], None))
 
-        if not isinstance(rhs, tensor):
-            raise ufo_exception("Tensor multiplication for type {0} not supported".format(type(rhs)))
-
-        # if no indices to be summed over:
-        # return simple product
+        # If no indices to be summed over: return simple product
         if len(common_keys(self,rhs)) == 0:
             return multiply(self, rhs)
 
-        return contract(common_key_dict(self, rhs), self, rhs)
+        # Else: perform contraction of repeated indices
+        return contract(self, rhs)
 
     def __rmul__(self, lhs):
         return self.__mul__(lhs)
 
     def __div__(self, rhs):
-        if isinstance(rhs, int):
-            return self.__mul__(1/rhs)
-        if isinstance(rhs, float) or isinstance(rhs, complex):
-            return self.__mul__(1.0/rhs)
-        if isinstance(rhs, tensor) and rhs._elementary:
-            return self.__mul__(1.0/rhs)
-        raise ufo_exception("Tensor division for this type not supported")
+        if isinstance(rhs, tensor):
+            if rhs._elementary:
+                return self.__mul__(tensor([1.0/rhs._array[0]], None))
+        return self.__mul__(1.0/rhs)
 
-    def __rdiv__(self, lhs):
-        inverted_self = deepcopy(self)
-        inverted_self.in_place_elementary_invert()
-        return lhs*inverted_self
-
+    def __truediv__(self, rhs):
+        if isinstance(rhs, tensor):
+            if rhs._elementary:
+                return self.__mul__(tensor([1.0/rhs._array[0]], None))
+        return self.__mul__(1.0/rhs)
+    
     def __neg__(self):
         return tensor([-1], None)*self
 
     def __pow__(self, exp):
         assert(isinstance(exp, int))
-
-        if exp == 0:
-            if not self._elementary:
-                raise ufo_exception("Tensor division for this type not supported")
-            return tensor([1.], None)
-
-        base = deepcopy(self)
-        if exp < 0:
-            base.in_place_elementary_invert()
-            exp = -exp
-        ret = base
-
+        assert(exp>0)
+        ret = self.copy()
         for i in range(exp-1):
-            ret *= base
-
+            ret *= self
         return ret
 
-    def in_place_elementary_invert(self):
+    def multipliers(self):
+        if self._elementary:
+            yield self.in_place_elementary_multiply
+            return
+        for i in range(self._toplevel_dim):
+            for mul in self._array[i].multipliers():
+                yield mul
+
+    def elements(self):
+        """Generator providing all elementary elements of the tensor"""
+        if self._elementary:
+            yield self
+            return
+        for i in range(self._toplevel_dim):
+            for j in self._array[i].elements():
+                yield j
+
+    def elements_indices(self):
+        """Generator providing all elementary elements of the tensor along
+        with the corresponding index assignment for each element
+        """
+        if self._elementary:
+            yield self, dict()
+            return
+        for ind in all_indices(self.key_dim_dict()):
+            yield self.__getitem__(ind), ind
+
+    def in_place_elementary_multiply(self, other):
+        """In-place multiplication of an elementary tensor by a number or by
+        another tensor. This is used indirectly by the __mul__ method.
+        """
         if not self._elementary:
             raise ValueError("Can only call this method on elementary tensors")
-        if isinstance(self._array[0], str):
-            self._array[0] = "1./(" + self._array[0] + ")"
+
+        # If other is just a number, scale up
+        if not isinstance(other, tensor):
+            self._array[0] = other*self._array[0]
+
         else:
-            self._array[0] = 1./self._array[0]
+            rt  = self*other
+            self.__init__(rt._array, rt._toplevel_key)
 
     def check(self):
         # elementary tensors don't have tensors as members of _array
@@ -233,79 +267,82 @@ class tensor(object):
 ###################
 # unbound functions
 ###################
-        
-def multiply(tens_a,tens_b):
-    # this method is just a helper function
-    # for the __mul__ method, no common keys
-    # should appear, when this is called
-    assert(len(common_keys(tens_a,tens_b))==0)
 
-    if (tens_a._elementary and  tens_b._elementary):
-        return tensor([tens_a._array[0]*tens_b._array[0]], None)
-        
-    new_dict = tens_a.key_dim_dict()
-    new_dict.update(tens_b.key_dim_dict())
-
-    dict_a = tens_a.key_dim_dict()
-    dict_b = tens_b.key_dim_dict()
-
-    key, dim = new_dict.popitem()
-    ret = new(key, dim, new_dict)
-
-    for i in range(dim):
-        ret.__setitem__({key:i}, multiply(tens_a[{key:i}],tens_b) if (key in dict_a) else multiply(tens_a,tens_b[{key:i}]))
-
-    return ret
-
-# create a new tensor with 'tensor([0], None)' as
-# elementary entries. Since this works revursively, 
-# need to provide first toplevel_key and toplevel_dim
-# as well as lower level key:dim pairs in dict
-def new(top_key, top_dim, key_dim_dict):
-        
-    # termination of recursion: elementary tensor
-    if top_key == None:
-        return tensor([0], None)
-
-    # if lower level tensors are elementary, dict will
-    # be empty
-    if len(key_dim_dict) != 0:
-        new_key, new_dim = key_dim_dict.popitem()
-    else:
-        new_key = None
-        new_dim = None
-
-    # now fill array of appropriate dimension
-    # recursively
-    array = []
-    for i in range(top_dim):
-        array.append(new(new_key, new_dim, deepcopy(key_dim_dict)))
-
-    return tensor(array, top_key)
-
-# this method performs no checks ans assumes
-# all keys in the dict are valid keys of the tensors
-def contract(key_dim_dict, tens_a, tens_b):
+def all_indices(key_dim_dict):
+    """Argument of this function is a dictionary assigning positive
+    integers to keys. Function returns all possible dictionaries
+    mapping the keys in the argument dictionary to all possible
+    combination of integers smaller than the integer in the argument
+    dictionary.
+    """
 
     if len(key_dim_dict)==0:
-        assert(len(common_keys(tens_a,tens_b))==0)
-        return multiply(tens_a,tens_b)
+        yield dict()
+        return
 
     key, dim = key_dim_dict.popitem()
+    for rec in all_indices(key_dim_dict):
+        for i in range(dim):
+            ret = rec.copy()
+            ret[key] = i
+            yield ret
 
-    if dim==0:
-        raise ufo_exception("Cannot contract empty tensors")
 
-    # need to make a deepcopy here since
-    # 'contract' keeps popping items from dict
-    ret = [contract(deepcopy(key_dim_dict), tens_a[{key:i}],tens_b[{key:i}]) for i in range(dim)]
+def multiply(tens_a,tens_b):
+    """This method is just a helper function
+    for the __mul__ method, no common keys
+    should appear, when this is called.
+    This implementation is faster by a factor of 10
+    compared to the one commented out above."""
 
-    # built-in support for implicit metric
-    # multiplication when contracting lorentz indices
-    if hasattr(key, '_lorentz'):
-        if key._lorentz:
-            return -sum(ret[1:], -ret[0])
-    return sum(ret[1:], ret[0])
+    assert(len(common_keys(tens_a,tens_b))==0)
+    if (tens_a._elementary and  tens_b._elementary):
+        return tensor([tens_a._array[0]*tens_b._array[0]], None)
+    ret=(tens_b).copy()
+    for mul in ret.multipliers():
+        mul(tens_a)
+    return ret
+
+def new(key_dim_dict):
+    """Create a new tensor with 'tensor([0], None)' as elementary entries.
+    Implemented non-recursively for performance reasons
+
+    """
+
+    ret = tensor([0.0], None)
+    while key_dim_dict:
+        key, dim = key_dim_dict.popitem()
+        arr = [ret.copy() for i in range(dim)]
+        ret.__init__(arr, key)
+    return ret
+
+def contract(tens_a, tens_b):
+    """Perform contraction of repeated keys in the two tensors. Avoid
+    recursion for the sake of performance.
+    """
+
+    ckd   = common_key_dict(tens_a, tens_b)
+    kdd   = tens_a.key_dim_dict()
+    kdd.update(tens_b.key_dim_dict())
+    kdd   = {key:dim for key,dim in kdd.items() if key not in ckd}
+    
+    ret = new(kdd)
+
+    for el,indices in ret.elements_indices():
+        for sum_index in all_indices(ckd.copy()):
+            inds = indices.copy()
+            inds.update(sum_index)
+
+            # Fuckin ugly hack to fix implicit Minkowski metric
+            # insertions in UFO
+            pf = 1.0
+            for k,i in sum_index.items():
+                if isinstance(k, lorentz_key) and i!=0:
+                    pf *= -1.0
+                    
+            el._array[0] += pf * tens_b.__getitem__(inds)._array[0] * tens_a.__getitem__(inds)._array[0]
+            
+    return ret
 
 def common_keys(tens_a, tens_b):
     return [key for key in tens_a.keys() if key in tens_b.keys()]
@@ -322,23 +359,17 @@ def common_key_dict(tens_a, tens_b):
         new_dict.update( {key:dim_a} )
     return new_dict
 
-
-# a class to acommodate implicit raising/lowering
-# of lorentz indices when contracting, as required
-# by UFO
 class lorentz_key(object):
+    """A class to acommodate implicit raising/lowering
+    of lorentz indices when contracting, as required
+    by UFO"""
     
     def __init__(self, key):
         self._key = key
-        self._lorentz = True
 
     def __eq__(self, rhs):
-
         if isinstance(rhs, lorentz_key):
-            if not (self._lorentz == rhs._lorentz):
-                raise ufo_exception("Internal error, ambiguous lorentz key comparison")
             return (self._key == rhs._key)
-            
         return False
 
     def __hash__(self):
@@ -352,3 +383,38 @@ class lorentz_key(object):
 
     def __str__(self):
         return self._key.__str__()
+
+class color_key(object):
+    """A class to acommodate distinction between adjoing, fundamental, and
+    anti-fundamental indices, as required by Comix
+    """
+    
+    def __init__(self, key, rep, mapped=None):
+        # fu: fundamental
+        # af: anti-fundamental
+        # ad: adjoint
+        if not rep in ['fu','af','ad']:
+            raise ValueError("Unknown representation of color_key {0}".format(rep))
+        self.rep        = rep
+        self.key        = key
+        self.mapped_key = mapped if (mapped is not None) else self
+
+    def __eq__(self, rhs):
+        if isinstance(rhs, color_key):
+            return (self.key == rhs.key)
+        return False
+
+    def __hash__(self):
+        return self.key.__hash__()
+
+    def __ne__(self, rhs):
+        return (not self.__eq__(rhs))
+
+    def __repr__(self):
+        return self.key.__repr__()
+
+    def __str__(self):
+        return self.key.__str__()
+
+    def mapped_key(self):
+        return self.mapped_key
