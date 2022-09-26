@@ -438,8 +438,7 @@ bool Kinematics_Generator::CheckRemnants() {
   double totmass(0.);
   for (size_t beam = 0; beam < 2; beam++) {
     Particle *recoiler = p_remnants[beam]->GetRecoiler();
-    for (auto &plit : *p_spectators[beam]) {
-      Particle *part = plit;
+    for (auto part : *p_spectators[beam]) {
       if (part == recoiler)
         continue;
       tot += mom = part->Momentum() + m_ktmap[beam][part];

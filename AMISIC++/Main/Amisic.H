@@ -81,7 +81,8 @@ namespace AMISIC {
     ~Amisic();
     
     bool Initialize(MODEL::Model_Base *const model,
-		    PDF::ISR_Handler *const isr);
+		    PDF::ISR_Handler *const isr,
+                    REMNANTS::Remnant_Handler * remnant_handler);
 
     bool           VetoEvent(const double & scale=-1.);
     ATOOLS::Blob * GenerateScatter();

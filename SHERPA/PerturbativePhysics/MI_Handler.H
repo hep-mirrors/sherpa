@@ -39,7 +39,8 @@ namespace SHERPA {
     
     void InitAmisic(MODEL::Model_Base *model);
   public:
-    MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr);
+    MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr,
+               REMNANTS::Remnant_Handler * remnant_handler);
     ~MI_Handler();
     
     bool InitialiseMPIs(const double & scale);
@@ -63,13 +64,8 @@ namespace SHERPA {
     inline REMNANTS::Remnant_Handler * Remnants()   const { return p_remnants; }
     inline PHASIC::Process_Base      * Process()    const { return p_proc; }
     inline Shower_Handler            * Shower()     const { return p_shower; }
-    
-    
-    inline void SetShowerHandler(Shower_Handler * const sh) { p_shower=sh; }
-    inline void SetRemnantHandler(REMNANTS::Remnant_Handler *const rh) {
-      p_remnants = rh;
-    }
 
+    inline void SetShowerHandler(Shower_Handler * const sh) { p_shower=sh; }
 
     bool   VetoScatter(ATOOLS::Blob *blob);
     void   SetMassMode(const int & massmode);

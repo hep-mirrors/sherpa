@@ -18,7 +18,8 @@ Amisic::~Amisic() {
 }
 
 bool Amisic::Initialize(MODEL::Model_Base *const model,
-			PDF::ISR_Handler *const isr)
+			PDF::ISR_Handler *const isr,
+                        REMNANTS::Remnant_Handler * remnant_handler)
 {
   if (!InitParameters()) return false;
   bool shown = false;
@@ -72,7 +73,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_overestimator.Initialize(p_processes);
   m_overestimator.SetXSnd(m_sigmaND_norm * p_xsecs->XSnd());
   
-  m_singlecollision.Init();
+  m_singlecollision.Init(remnant_handler);
   m_singlecollision.SetMIProcesses(p_processes);
   m_singlecollision.SetOverEstimator(&m_overestimator);
 

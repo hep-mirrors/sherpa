@@ -14,14 +14,15 @@ Single_Collision_Handler::Single_Collision_Handler() :
   m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
   m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
   m_xt(1.), m_ymax(0.), m_y3(0.), m_y4(0.), m_x1(1.), m_x2(1.),
-  m_ana(true)
+  m_ana(false)
 {}
 
 Single_Collision_Handler::~Single_Collision_Handler() {
   if (m_ana) FinishAnalysis();
 }
 
-void Single_Collision_Handler::Init() {
+void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler) {
+  p_remnants = remnant_handler;
   m_pt2min = sqr((*mipars)("pt_min"));
   if (m_ana) InitAnalysis();
 }
@@ -39,8 +40,13 @@ Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
     p_proc = p_processes->SelectProcess();
   }
   while (!p_proc || !p_proc->MakeKinematics(m_pt2,m_y3,m_y4,sqrt(m_shat)) ||
-	 !p_proc->SetColours());
+	 !p_proc->SetColours() || !TestRemnants());
   return MakeBlob();
+}
+
+bool Single_Collision_Handler::TestRemnants() {
+  return p_remnants->GetRemnant(0)->TestExtract(p_proc->Flav(0), p_proc->Momentum(0))
+         && p_remnants->GetRemnant(1)->TestExtract(p_proc->Flav(1), p_proc->Momentum(1));
 }
 
 bool Single_Collision_Handler::SelectPT2(const double & pt2) {

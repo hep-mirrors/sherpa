@@ -905,9 +905,8 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
   as->SetActiveAs(isr::hard_subprocess);
   p_mihandler = new MI_Handler(p_model,
-			       m_isrhandlers[isr::hard_subprocess]);
+			       m_isrhandlers[isr::hard_subprocess], p_remnants);
   p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
-  p_mihandler->SetRemnantHandler(p_remnants);
   as->SetActiveAs(isr::hard_process);
   if (p_mihandler->Type()!=0)
     msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;

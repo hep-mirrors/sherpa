@@ -95,7 +95,7 @@ bool MI_Process::MakeKinematics(const double & pt2,
     Poincare scattercms(cms);
     for (size_t i=2;i<m_momenta.size();i++) scattercms.Boost(m_momenta[i]);
     if (!m_stretcher.ZeroThem(2,m_momenta) ||
-	!m_stretcher.MassThem(2,m_momenta,m_masses)) {
+        !m_stretcher.MassThem(2,m_momenta,m_masses)) {
       return false;
     }
     for (size_t i=2;i<m_momenta.size();i++) {

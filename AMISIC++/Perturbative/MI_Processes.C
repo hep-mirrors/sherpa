@@ -226,7 +226,7 @@ double MI_Processes::dSigma(const double & pt2) {
   double xt       = sqrt(4.*pt2/m_S);
   double ymax     = log(1./xt*(1.+sqrt(1.-xt*xt)));
   double PSfac    = sqr(2.*ymax);
-  double res      = 0., res2 = 0.;
+  double res      = 0.;
   for (size_t i=0;i<m_MCpoints;i++) {
     double y1     = ymax*(-1.+2.*ran->Get());
     double y2     = ymax*(-1.+2.*ran->Get());
@@ -243,13 +243,8 @@ double MI_Processes::dSigma(const double & pt2) {
       dsigma = (*this)(shat,that,uhat) * PSfac;
     }
     res  += dsigma;
-    res2 += dsigma*dsigma;
   }
   double result = res/double(m_MCpoints);
-  double uncert = sqrt((res2/double(m_MCpoints)-sqr(result))/double(m_MCpoints));
-  //msg_Out()<<"dSigma(pt = "<<sqrt(pt2)<<")/dpt^2 = "
-  //	   <<(result*rpa->Picobarn())<<" pb GeV^-2 "
-  //	   <<"+/- "<<(uncert/result*100.)<<"%.\n";
   return result;
 }
 
@@ -318,7 +313,7 @@ bool MI_Processes::FillCaches() {
   m_cache_integral.resize(m_sbins);
   for (int sbin = 0; sbin < m_sbins; ++sbin) {
     msg_Info() << "  Integrating bin " << sbin+1 << " of " << m_sbins << ". \n";
-    if (sbin != m_sbins-1) msg_Info() << mm(1,mm::up);
+    if (!(rpa->gen.BatchMode()&2) && sbin != m_sbins-1) msg_Info() << mm(1,mm::up);
     m_S = m_S_lab * std::pow(m_sstep, sbin);
     (*p_xsecs)(m_S);
     m_sigmaND = p_xsecs->XSnd();

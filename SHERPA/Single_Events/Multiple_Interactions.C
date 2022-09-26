@@ -21,7 +21,6 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
   m_name = std::string("Multiple_Interactions:")+p_mihandler->Name();
   m_type = eph::Perturbative;
   if (p_mihandler->Type()!=0) {
-    m_ecms = sqrt(p_mihandler->ISRHandler()->Pole());
     for (size_t i=0;i<2;i++) p_remnants[i] = mihandler->Remnants()->GetRemnant(i);
     if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
       THROW(fatal_error,"No beam remnant handler found.");
@@ -70,8 +69,8 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
     // the extra parton.
     for (size_t i=0;i<(size_t)p_lastblob->NInP();++i) {
       if (!p_remnants[i]->TestExtract(p_lastblob->InParticle(i))) {
-	delete p_lastblob;
-	return Return_Value::Retry_Event;
+        delete p_lastblob;
+        return Return_Value::Retry_Event;
       }
     }
     bloblist->push_back(p_lastblob);
@@ -146,11 +145,11 @@ bool Multiple_Interactions::ExtractISInfo(Blob * blob) {
     size_t beam = particle->Beam();
     if (!p_remnants[beam]->TestExtract(particle)) {
       if (!blob->IsConnectedTo(btp::Signal_Process)) {
-	p_bloblist->DeleteConnected(blob);
-	m_result = Return_Value::Retry_Phase;
+        p_bloblist->DeleteConnected(blob);
+        m_result = Return_Value::Retry_Phase;
       }
       else {
-	m_result = Return_Value::Retry_Event;
+        m_result = Return_Value::Retry_Event;
       }
       return false;
     }

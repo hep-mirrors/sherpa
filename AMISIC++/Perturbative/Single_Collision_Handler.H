@@ -5,6 +5,7 @@
 #include "AMISIC++/Tools/Over_Estimator.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Math/Histogram.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
 #include <map>
 #include <string>
 
@@ -18,6 +19,7 @@ namespace AMISIC {
   private:
     MI_Processes   * p_processes;
     Over_Estimator * p_overestimator;
+    REMNANTS::Remnant_Handler * p_remnants;
     double           m_pt2, m_pt2min;
     double           m_S, m_lastpt2, m_residualx1, m_residualx2, m_Ycms;
 
@@ -42,9 +44,10 @@ namespace AMISIC {
     Single_Collision_Handler();
     ~Single_Collision_Handler();
 
-    void Init();
+    void Init(REMNANTS::Remnant_Handler * remnant_handler);
     void UpdateSandY(double s, double y);
     ATOOLS::Blob * NextScatter(const double & bfac=1.);
+    bool TestRemnants();
 
     inline const double & muF2() const { return m_muf2; }
     inline const double & muR2() const { return m_mur2; }
