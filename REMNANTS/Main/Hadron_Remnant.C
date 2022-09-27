@@ -191,9 +191,14 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
 }
 
 double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
-  double zmin = Max(m_LambdaQCD,flav.HadMass())/m_residualE, z, zmax(1.-1./m_residualE);
+  double masses = 0.;
+  for (auto part : m_spectators) {
+    masses += part->Flav().HadMass();
+  }
+  double zmin = Max(flav.HadMass(), m_LambdaQCD) / m_residualE;
+  double zmax = (Max(flav.HadMass(), m_LambdaQCD) + m_residualE - masses) / m_residualE;
+  double z;
   if (!isvalence) {
-    zmax -= double(m_spectators.size()-1)*0.3/m_residualE;
     // Assume functional from of z^beta with beta = -1.5 (default)
     // Maybe beta_gluon != beta_quark, but leave it for the time being
     if (m_beta!=-1) { 
