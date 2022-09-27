@@ -86,6 +86,9 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   // Possibly adjust final pending colours with extra gluons - in prinicple one may have
   // to check that they are not singlets ....
   CompensateColours();
+  msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
+                  << m_extracted << ", \n and spectators = " << m_spectators
+                  << "\n";
   // Assume all remnant bases already produced a beam blob = p_beamblob
   MakeLongitudinalMomenta(ktmap,copy);
   bool colourconserved = p_beamblob->CheckColour(true);
@@ -170,6 +173,8 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     else p_beamblob->AddToOutParticles(*pmit);
     (*ktmap)[(*pmit)] = Vec4D();
   }
+  msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
+            << "\n";
   for (Part_Iterator pmit=m_spectators.begin();
        pmit!=m_spectators.end();pmit++) {
     Particle * part = (*pmit);
@@ -179,6 +184,8 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
       part->SetMomentum(z*availMom);
       availMom -= part->Momentum();
     }
+    msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
+              << part->Momentum() << "\n";
     if (copy) {
       Particle * pcopy = new Particle(*part);
       pcopy->SetNumber();
@@ -198,6 +205,7 @@ double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
   double zmin = Max(flav.HadMass(), m_LambdaQCD) / m_residualE;
   double zmax = (Max(flav.HadMass(), m_LambdaQCD) + m_residualE - masses) / m_residualE;
   double z;
+  if (zmax < zmin) return 0;
   if (!isvalence) {
     // Assume functional from of z^beta with beta = -1.5 (default)
     // Maybe beta_gluon != beta_quark, but leave it for the time being

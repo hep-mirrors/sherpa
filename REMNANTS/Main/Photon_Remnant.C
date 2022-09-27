@@ -32,6 +32,9 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
   // be used as the recoiler later-on.
   if (!m_valence)
     MakeRemnants();
+  msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
+                  << m_extracted << ", \n and spectators = " << m_spectators
+                  << "\n";
   FindRecoiler();
   CompensateColours();
   // Assume all remnant bases already produced a beam blob = p_beamblob
@@ -116,6 +119,8 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       p_beamblob->AddToOutParticles(pmit);
     (*ktmap)[pmit] = Vec4D();
   }
+  msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
+                  << "\n";
   // actually we only need m_remnant_masses
   EstimateRequiredEnergy();
   for (auto part : m_spectators) {
@@ -127,6 +132,8 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       part->SetMomentum(SelectZ(part->Flav()) * availMom);
       availMom -= part->Momentum();
     }
+    msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
+                    << part->Momentum() << "\n";
     if (copy) {
       Particle *pcopy = new Particle(*part);
       pcopy->SetNumber();
