@@ -1,8 +1,4 @@
 #include "AMISIC++/Main/Amisic.H"
-#include "AMISIC++/Tools/MI_Parameters.H"
-#include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
-#include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -111,8 +107,6 @@ void Amisic::Update(const PDF::ISR_Handler *isr) {
 }
 
 void Amisic::SetMaxEnergies(const double & E0,const double & E1) {
-  m_residualE1 = E0;
-  m_residualE2 = E1;
   m_singlecollision.SetResidualX(E0/m_pbeam0[0],E1/m_pbeam1[0]);
 }
 
@@ -200,7 +194,7 @@ bool Amisic::VetoScatter(Blob * blob)
   msg_Out()<<METHOD<<" ont implemented yet.  Will exit.\n";
   exit(1);
 }
-    
+
 void Amisic::CleanUp() {}
 void Amisic::Reset() {}
 

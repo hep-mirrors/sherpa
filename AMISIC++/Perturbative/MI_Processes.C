@@ -27,7 +27,6 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
 			      BEAM::Beam_Spectra_Handler *const beam,
 			      PDF::ISR_Handler *const isr) {
   // Get PDFs and couplings
-  p_model     = model;
   p_isr       = isr;
   m_muFfac    = sqr((*mipars)("FacScale_Factor"));
   for (size_t i=0;i<2;i++) {
@@ -173,7 +172,7 @@ bool MI_Processes::PrepareSudakovFactor() {
   // could be improved by going trapezoid or similar.
   //double xTlast = m_xTmin*exp(m_xTstep*m_nbins), sigmalast = 0.;
   //double dxT, xT, sigma;
-  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins), sigmalast = 0.;
+  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins);
   double sigma, pt2, dpt2;
   for (int bin=m_nbins-1;bin>=0;bin--) {
     pt2             = m_ptmin2*exp(m_pt2step*bin);
@@ -181,11 +180,7 @@ bool MI_Processes::PrepareSudakovFactor() {
     sigma           = dSigma(pt2);
     m_diffbins[bin] = sigma;
     m_intbins[bin]  = m_integral += sigma * dpt2/m_sigmaND;
-    //msg_Out()<<"   Sudakov(pt = "<<sqrt(pt2)<<") = "
-    //	     <<m_intbins[bin]<<" from "<<((sigmalast + sigma)/2./m_sigmaND)
-    //	     <<" * "<<dpt2<<".\n";
     pt2last        = pt2;
-    sigmalast      = sigma;
   }
   m_integral *= m_sigmaND;
   if (m_test) Test();

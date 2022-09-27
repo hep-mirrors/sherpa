@@ -30,9 +30,9 @@ namespace AMISIC {
     inline const double & Radius() const {
       switch (m_overlapform) {
       case overlap_form::Single_Gaussian:
-	return m_radius1;
+        return m_radius1;
       case overlap_form::Double_Gaussian:
-	return m_radius3;
+        return m_radius3;
       }
     }
   };

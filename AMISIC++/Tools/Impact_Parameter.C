@@ -1,9 +1,6 @@
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Impact_Parameter.H"
-#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/Histogram.H"
-#include "ATOOLS/Org/Message.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -140,7 +137,7 @@ void Impact_Parameter::Analyse(const double & pt2,const double & sudakov,
 void Impact_Parameter::Test() {
   msg_Out()<<METHOD<<" starts testing enhancement factor.\n";
   Histogram histoOverlap(0,0.,m_bmax,100);
-  double b(0.), btot(0.), bstep(m_bmax/100.);
+  double b(0.), bstep(m_bmax/100.);
   while (b<m_bmax) {
     histoOverlap.Insert(b+bstep/2.,(*p_mo)(b+bstep/2.));
     b+= bstep;

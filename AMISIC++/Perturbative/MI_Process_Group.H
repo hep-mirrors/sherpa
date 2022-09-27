@@ -15,7 +15,7 @@ namespace AMISIC {
     std::string        m_name;
     scale_scheme::code m_muR_scheme;
     double             m_muR_fac, m_muF_fac;
-    double             m_lastxs, m_pt02, m_muRfac, m_scale, m_pref;
+    double             m_lastxs, m_pt02, m_scale, m_pref;
 
     MODEL::Running_AlphaS   * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;

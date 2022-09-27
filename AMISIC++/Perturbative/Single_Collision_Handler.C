@@ -1,8 +1,6 @@
 #include "AMISIC++/Perturbative/Single_Collision_Handler.H"
-#include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/Histogram.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -13,7 +11,7 @@ Single_Collision_Handler::Single_Collision_Handler() :
   m_pt2(0.), m_pt2min(0.),  
   m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
   m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
-  m_xt(1.), m_ymax(0.), m_y3(0.), m_y4(0.), m_x1(1.), m_x2(1.),
+  m_xt(1.), m_y3(0.), m_y4(0.), m_x1(1.), m_x2(1.),
   m_ana(false)
 {}
 

@@ -1,6 +1,5 @@
 #include "AMISIC++/Perturbative/MI_Process.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/Poincare.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -52,8 +51,6 @@ MI_Process::MI_Process(const vector<Flavour> & flavs) :
   m_name(flavs[0].IDName()+" "+flavs[1].IDName()+" --> "+
 	 flavs[2].IDName()+" "+flavs[3].IDName()),
   p_me2(NULL), m_emin(0.),
-  m_massless(flavs[0].HadMass()<1.0 && flavs[1].HadMass()<1.0 &&
-	     flavs[2].HadMass()<1.0 && flavs[3].HadMass()<1.0),
   m_masslessIS((flavs[0].Kfcode()<4 || flavs[0].Kfcode()==21) &&
 	       (flavs[1].Kfcode()<4 || flavs[1].Kfcode()==21))
 {
@@ -108,7 +105,6 @@ bool MI_Process::MakeKinematics(const double & pt2,
 bool MI_Process::AllowedKinematics(const double & Ehat) {
   // making sure that the c.m. energy of the scatter is larger than the
   // IS or FS sum of masses.
-  if (m_massless) return true;
   return (m_PSmasses[0]+m_PSmasses[1]<Ehat &&
 	  m_PSmasses[2]+m_PSmasses[3]<Ehat); 
 }

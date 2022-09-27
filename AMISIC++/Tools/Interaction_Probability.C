@@ -17,7 +17,6 @@ Interaction_Probability::Interaction_Probability() :
 
 void Interaction_Probability::Initialize(const double & xsecratio) {
   p_mo->Initialize();
-  m_bmax = p_mo->Bmax();
   FixPrefactor(xsecratio);
   CalculateOExpValue();
 }

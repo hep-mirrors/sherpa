@@ -10,7 +10,7 @@ using namespace std;
 
 // will have to make sure that pions are initialised below.  Argh.
 Hadronic_XSec_Calculator::Hadronic_XSec_Calculator(int type) :
-  m_s(sqr(rpa->gen.Ecms())), m_massp(Flavour(kf_p_plus).Mass()), m_masspi(0.137),
+  m_massp(Flavour(kf_p_plus).Mass()), m_masspi(0.137),
   m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3)
 {
   if (type == 1) {
@@ -48,11 +48,7 @@ void Hadronic_XSec_Calculator::operator()(double s)
 	   <<"   \\sigma_{nd}  = "<<m_xsnd<<" mb = "
 	   <<(m_xsnd*1.e9/rpa->Picobarn())<<" GeV^-2\n}"<<std::endl;
   // convert all cross sections to 1/GeV^2
-  m_xstot *= 1.e9/rpa->Picobarn();
-  m_xsel  *= 1.e9/rpa->Picobarn();
   m_xsnd  *= 1.e9/rpa->Picobarn();
-  m_xssd  *= 1.e9/rpa->Picobarn();
-  m_xsdd  *= 1.e9/rpa->Picobarn();
 }
 
 double Hadronic_XSec_Calculator::CalculateTotalXSec() {
@@ -82,7 +78,7 @@ double Hadronic_XSec_Calculator::CalculateDoubleDXSec() {
 
   double mmin1 = m_massp+2.*m_masspi, mmin12 = sqr(mmin1);
   double mmin2 = mmin1, mmin22 = sqr(mmin2);
-  double mmax2 = 0.213*m_s, mres1 = 2., mres2 = 2.;
+  double mres1 = 2., mres2 = 2.;
   double cres  = 2.;
   double mmxxx = m_s*(0.07-0.44/log(m_s)+1.36/sqr(log(m_s)));
   double bxx   = -1.05+40./sqrt(m_s)+8000./sqr(m_s);

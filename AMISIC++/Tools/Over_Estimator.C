@@ -1,9 +1,7 @@
 #include "AMISIC++/Tools/Over_Estimator.H"
 #include "AMISIC++/Perturbative/MI_Processes.H"
-#include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
-#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMISIC;

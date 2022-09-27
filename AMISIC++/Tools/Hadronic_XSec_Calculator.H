@@ -19,8 +19,6 @@ namespace AMISIC {
 
     void operator()(double s);
 
-    const double XStot() const { return m_xstot; }
-    const double XSel()  const { return m_xsel; }
     const double XSnd()  const { return m_xsnd; }
   };
 }

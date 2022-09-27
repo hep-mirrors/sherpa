@@ -54,7 +54,7 @@ namespace AMISIC {
     };
   private:
     double m_sigmaND_norm;
-    double m_b, m_bfac, m_residualE1, m_residualE2, m_pt2;
+    double m_b, m_bfac, m_pt2;
 
     MI_Processes             * p_processes;
     Hadronic_XSec_Calculator * p_xsecs;

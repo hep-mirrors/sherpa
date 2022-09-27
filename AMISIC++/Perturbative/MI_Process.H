@@ -49,7 +49,7 @@ namespace AMISIC {
     std::string m_name;
     XS_Base   * p_me2;
     double      m_emin;
-    bool        m_massless, m_masslessIS;
+    bool        m_masslessIS;
 
     bool AllowedKinematics(const double & Ehat);
     void MasslessKinematics(const double & pt2,const double & phi,

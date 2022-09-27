@@ -13,7 +13,6 @@ namespace AMISIC {
   private:
     PDF::ISR_Handler           * p_isr;
     PDF::PDF_Base              * p_pdf[2];
-    MODEL::Model_Base          * p_model;
     MODEL::Running_AlphaS      * p_alphaS;
     MODEL::Running_AlphaQED    * p_alpha;
     Hadronic_XSec_Calculator   * p_xsecs;
@@ -73,7 +72,6 @@ namespace AMISIC {
     inline const double &  PTmin()     const { return m_ptmin; }
     inline const double &  XShard()    const { return m_integral; }
     inline const size_t    Size()      const { return m_groups.size(); }
-    inline const int    &  MassMode()  const { return m_massmode; }
     inline const double &  PDFXmin(const size_t beam) const { return m_xmin[beam]; }
     inline PDF::PDF_Base * PDF(const size_t beam)  { return p_pdf[beam]; }
     inline MODEL::Running_AlphaS * AlphaS() const  { return p_alphaS; }

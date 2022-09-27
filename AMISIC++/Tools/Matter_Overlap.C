@@ -1,6 +1,5 @@
 #include "AMISIC++/Tools/Matter_Overlap.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -36,7 +35,6 @@ double Matter_Overlap::operator()(double b) {
 		     m_norm2 * exp(-b2/m_radius22) +
 		     m_norm3 * exp(-b2/m_radius32));
   }
-  return 0.;
 }
 
 double Matter_Overlap::SelectB() const {
@@ -45,7 +43,7 @@ double Matter_Overlap::SelectB() const {
   //    - for single Gaussian, there is no selection to be made
   //    - for double Gaussian, one of the three radii is picked.
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
-  double b(0), radius;
+  double b, radius;
   switch (m_overlapform) {
     case overlap_form::Single_Gaussian:
       radius = m_radius1;
@@ -96,7 +94,7 @@ void Matter_Overlap::CalculateIntegral() {
   // Integral int d^2b O(b), numerator Eq.(32)
   MO_Integrand moint(this);
   Gauss_Integrator integrator(&moint);
-  double bmin = 0., bstep = m_bstep, previous = 0., previous2 = 0., result = 0.;
+  double bmin = 0., bstep = m_bstep, previous, result = 0.;
   do {
     result  += previous = integrator.Integrate(bmin,bmin+bstep,1.e-8,1);
     bmin    += bstep;
