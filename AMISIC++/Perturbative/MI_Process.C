@@ -84,6 +84,8 @@ bool MI_Process::MakeKinematics(const double & pt2,
   // Until now we only have massless initial state partons.
   if (m_masslessIS) MasslessKinematics(pt2,phi,y3,y4);
   else return false;
+  if (m_momenta[0][0] < m_PSmasses[0] || m_momenta[1][0] < m_PSmasses[1])
+    return false;
   // If the final state is massive, we use the momenta stretcher to push
   // particles onto their mass shells.  The logic is to go to the c.m. system
   // of the scatter, rescale momenta there, and boost back.
