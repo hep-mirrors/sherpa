@@ -40,14 +40,7 @@ void Hadronic_XSec_Calculator::operator()(double s)
   m_xsdd  = CalculateDoubleDXSec();
 
   m_xsnd  = m_xstot-m_xsel-2.0*m_xssd-m_xsdd;
-  msg_Out()<<METHOD<<": Results are {\n"
-	   <<"   \\sigma_{tot} = "<<m_xstot<<" mb\n"
-	   <<"   \\sigma_{el}  = "<<m_xsel<<" mb\n"
-	   <<"   \\sigma_{sd}  = "<<2.0*m_xssd<<" mb\n"
-	   <<"   \\sigma_{dd}  = "<<m_xsdd<<" mb\n"
-	   <<"   \\sigma_{nd}  = "<<m_xsnd<<" mb = "
-	   <<(m_xsnd*1.e9/rpa->Picobarn())<<" GeV^-2\n}"<<std::endl;
-  // convert all cross sections to 1/GeV^2
+  // convert cross section to 1/GeV^2
   m_xsnd  *= 1.e9/rpa->Picobarn();
 }
 
@@ -84,13 +77,23 @@ double Hadronic_XSec_Calculator::CalculateDoubleDXSec() {
   double bxx   = -1.05+40./sqrt(m_s)+8000./sqr(m_s);
   double JXX  =
     0.5/ap*((y0-ymin)*(log((y0-ymin)/Del0)-1.0)+Del0) +
-    0.5*cres/ap*log(1.0+sqr(mres2/mmin2))*log(log(m_s*s0/(mmin12*mmin2*mres2))/
-					      log(m_s*s0/(mmxxx*mres2*mmin2))) +
-    0.5*cres/ap*log(1.0+sqr(mres1/mmin1))*log(log(m_s*s0/(mmin22*mmin1*mres1))/
-					      log(m_s*s0/(mmxxx*mres1*mmin1))) +
+    0.5*cres/ap*log(1.0+sqr(mres2/mmin2))*
+          log(log(m_s*s0/(mmin12*mmin2*mres2)) /
+              log(m_s*s0/(mmxxx*mres2*mmin2))) +
+    0.5*cres/ap*log(1.0+sqr(mres1/mmin1))*
+          log(log(m_s*s0/(mmin22*mmin1*mres1)) /
+              log(m_s*s0/(mmxxx*mres1*mmin1))) +
     sqr(cres)/(2.0*ap*log(m_s*s0/(mres1*mres2*mmin1*mmin2))+bxx)*
-    log(1.0+sqr(mres1/mmin1))*log(1.0+sqr(mres2/mmin2));
+          log(1.0+sqr(mres1/mmin1))*log(1.0+sqr(mres2/mmin2));
   return 0.0084*m_xsecpom*JXX;
 }
 
-
+void Hadronic_XSec_Calculator::Output() {
+  msg_Out()<<METHOD<<": Results are {\n"
+                 <<"   \\sigma_{tot} = "<<m_xstot<<" mb\n"
+                 <<"   \\sigma_{el}  = "<<m_xsel<<" mb\n"
+                 <<"   \\sigma_{sd}  = "<<2.0*m_xssd<<" mb\n"
+                 <<"   \\sigma_{dd}  = "<<m_xsdd<<" mb\n"
+                 <<"   \\sigma_{nd}  = "<<m_xsnd/1.e9*rpa->Picobarn()<<" mb = "
+                 <<m_xsnd<<" GeV^-2\n}"<<std::endl;
+}

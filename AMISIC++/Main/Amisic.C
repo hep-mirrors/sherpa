@@ -49,6 +49,9 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   // multiple scattering probability. 
   p_xsecs = new Hadronic_XSec_Calculator(m_type);
   (*p_xsecs)((m_pbeam0 + m_pbeam1).Abs2());
+  // show output if the calculation is not repeated for different energies
+  if (!m_variable_s)
+    p_xsecs->Output();
 
   // Initialize the parton-level processes - currently only 2->2 scatters and use the
   // information to construct a very quick overestimator - this follows closely the

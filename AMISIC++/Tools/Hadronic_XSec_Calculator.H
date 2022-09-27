@@ -18,6 +18,7 @@ namespace AMISIC {
     ~Hadronic_XSec_Calculator() {}
 
     void operator()(double s);
+    void Output();
 
     const double XSnd()  const { return m_xsnd; }
   };

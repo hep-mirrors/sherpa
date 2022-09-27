@@ -101,7 +101,7 @@ void Matter_Overlap::CalculateIntegral() {
   } while (dabs(previous/result)>1.e-10);
   m_bmax     = bmin;
   m_integral = result;
-  msg_Out()<<METHOD<<" for form = "<<m_overlapform<<": "
+  msg_Tracking()<<METHOD<<" for form = "<<m_overlapform<<": "
 	   <<"Integral(num) = "<<m_integral<<", ana = "<<(M_PI*m_norm)<<"\n";
 }
 
