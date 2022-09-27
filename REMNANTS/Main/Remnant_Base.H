@@ -40,9 +40,7 @@ namespace REMNANTS {
     ATOOLS::Part_List  m_extracted, m_spectators;
     Colour_Generator * p_colours;
 
-    double m_energy, m_scale2;
-
-    long unsigned int m_errors;
+    double m_residualE, m_scale2;
   public:
     Remnant_Base(rtp::code type,unsigned int beam);
     virtual ~Remnant_Base();
@@ -68,7 +66,7 @@ namespace REMNANTS {
     inline ATOOLS::Part_List * GetSpectators()       { return &m_spectators; }
     inline virtual ATOOLS::Particle * GetRecoiler()  { return nullptr; }
     inline virtual ATOOLS::Particle * GetSpectator() { return nullptr; }
-    inline void SetColours(Colour_Generator * cgen)  { p_colours = cgen; } 
+    inline void SetColours(Colour_Generator * cgen)  { p_colours = cgen; }
   };
 }
 

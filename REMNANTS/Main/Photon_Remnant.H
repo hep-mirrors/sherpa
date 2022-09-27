@@ -12,7 +12,7 @@ private:
   const ATOOLS::Flavour_Set *p_partons;
   ATOOLS::Flavour m_beamflav;
 
-  double m_LambdaQCD, m_beta,  m_invb;
+  double m_LambdaQCD, m_beta_quark, m_beta_gluon, m_remnant_masses;
   bool m_valence;
 
   ATOOLS::Particle * p_spectator, * p_recoiler;
@@ -22,6 +22,8 @@ private:
   void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap, const bool &copy);
   double SelectZ(const ATOOLS::Flavour &flav);
   ATOOLS::Particle *MakeParticle(const ATOOLS::Flavour &flav);
+  double EstimateRequiredEnergy();
+  void FindRecoiler();
   void Output();
 
 public:

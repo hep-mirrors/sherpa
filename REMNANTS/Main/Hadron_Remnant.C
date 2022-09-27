@@ -47,7 +47,7 @@ bool Hadron_Remnant::IsValence(Particle * part) {
        flit!=m_constituents.end();flit++) {
     if (flav==(*flit)) {
       Vec4D   mom  = part->Momentum();
-      double x = mom[0]/m_energy;
+      double x = mom[0]/m_residualE;
       p_pdf->Calculate(x,sqr(flav.Mass())+m_scale2);
       double val = p_pdf->GetXPDF(flav)-p_pdf->GetXPDF(flav.Bar());
       double tot = p_pdf->GetXPDF(flav);
@@ -81,7 +81,6 @@ Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
 }
 
 bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
-  m_energy = p_beam->OutMomentum()[0];
   // Add remnants, diquark and quark, if necessary.
   if (!p_valence || !p_remnant) MakeRemnants();
   // Possibly adjust final pending colours with extra gluons - in prinicple one may have
@@ -103,7 +102,6 @@ void Hadron_Remnant::CompensateColours() {
          p_colours->Colours(m_beam,1).size()>0 &&
 	 p_colours->Colours(m_beam,0)!=p_colours->Colours(m_beam,1)) {
     Particle * gluon = MakeParticle(Flavour(kf_gluon));
-    int col[2];
     for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
     m_spectators.push_back(gluon);
   }
@@ -193,10 +191,9 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
 }
 
 double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
-  double zmin = Max(m_LambdaQCD,flav.HadMass())/m_energy, z(zmin), zmax(1.-1./m_energy);
-  double wt = 1.;
+  double zmin = Max(m_LambdaQCD,flav.HadMass())/m_residualE, z, zmax(1.-1./m_residualE);
   if (!isvalence) {
-    zmax -= double(m_spectators.size()-1)*0.3/m_energy;
+    zmax -= double(m_spectators.size()-1)*0.3/m_residualE;
     // Assume functional from of z^beta with beta = -1.5 (default)
     // Maybe beta_gluon != beta_quark, but leave it for the time being
     if (m_beta!=-1) { 
@@ -210,6 +207,7 @@ double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
     // If di-quark assume form peaking at 1, something like
     // exp(-gamma/z)*(1-z)^alpha -> realised by hit-or-miss
     double wtmax = pow((1.-zmin),m_alpha)*exp(-m_gamma/zmax);
+    double wt;
     do {
       z  = zmin + (zmax-zmin)*ran->Get();
       wt = pow((1.-z),m_alpha)*exp(-m_gamma/z);
@@ -231,25 +229,25 @@ void Hadron_Remnant::Reset(const bool & DIS) {
     m_spectators.pop_front();
   }
   m_spectators.clear();
-  m_energy = p_beam->OutMomentum()[0];
+  m_residualE = p_beam->OutMomentum()[0];
   m_valence   = false;
   p_valence   = p_remnant = p_recoiler = NULL; 
 }
 
 bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   // Is flavour element of flavours allowed by PDF? 
-  if (p_partons->find(flav)==p_partons->end()) { 
+  if (p_partons->find(flav)==p_partons->end()) {
     msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
     return false;
   }
-  // Still enough energy?
-  if (mom[0]>m_energy) {
-    msg_Error()<<METHOD<<": too much momentum "<<mom[0]<<" "
-	       <<"> E = "<<m_energy<<".\n";
+  // Still enough energy for parton and its remnant quark?
+  if (mom[0]+flav.HadMass()>m_residualE) {
+      msg_Error()<<METHOD<<": too much momentum "<<mom[0]<<" > E = "<<
+        m_residualE<<".\n";
     return false;
   }    
   // Still enough energy?  And in range?
-  double x = mom[0]/m_energy;
+  double x = mom[0]/m_residualE;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
     msg_Error()<<METHOD<<": out of limits, x = "<<x<<".\n";
     return false;

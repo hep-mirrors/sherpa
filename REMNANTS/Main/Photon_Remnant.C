@@ -10,8 +10,8 @@ using namespace ATOOLS;
 
 Photon_Remnant::Photon_Remnant(PDF::PDF_Base *pdf, const unsigned int beam)
     : Remnant_Base(rtp::photon, beam), p_pdf(pdf),
-      p_partons(&(pdf->Partons())), m_LambdaQCD(0.25), m_beta(-1.5),
-      m_invb(1./(m_beta+1)), m_valence(false), p_spectator(nullptr),
+      p_partons(&(pdf->Partons())), m_LambdaQCD(0.25), m_beta_quark(-1.),
+      m_beta_gluon(-1.2), m_valence(false), p_spectator(nullptr),
       p_recoiler(nullptr) {}
 
 Particle *Photon_Remnant::MakeParticle(const Flavour &flav) {
@@ -27,12 +27,12 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
               << ": No remnants have been extracted, please check. \n";
     return false;
   }
-  m_energy = p_beam->OutMomentum()[0];
   // In the photon, there needs to be at least one quark-antiquark pair,
   // this is tracked with the m_valence flag. Of these two, the antiquark will
   // be used as the recoiler later-on.
   if (!m_valence)
     MakeRemnants();
+  FindRecoiler();
   CompensateColours();
   // Assume all remnant bases already produced a beam blob = p_beamblob
   MakeLongitudinalMomenta(ktmap, copy);
@@ -56,7 +56,7 @@ void Photon_Remnant::Reset(const bool &DIS) {
     m_spectators.pop_front();
   }
   m_spectators.clear();
-  m_energy = p_beam->OutMomentum()[0];
+  m_residualE = p_beam->OutMomentum()[0];
   m_valence = false;
   p_recoiler = nullptr;
 }
@@ -76,11 +76,16 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  double x = mom[0] / m_energy;
+  double required_energy = EstimateRequiredEnergy() + mom[0] + flav.HadMass();
+  if (required_energy > m_residualE) {
+    msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
+    return false;
+  }
+  double x = mom[0] / m_residualE;
   // Still enough energy?
   if (x > 1.) {
     msg_Debugging() << METHOD << ": too much momentum " << mom[0] << " "
-                    << "> E = " << m_energy << " for beam " << m_beam
+                    << "> E = " << m_residualE << " for beam " << m_beam
                     << "\n";
     return false;
   }
@@ -111,11 +116,12 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       p_beamblob->AddToOutParticles(pmit);
     (*ktmap)[pmit] = Vec4D();
   }
-  for (auto pmit : m_spectators) {
-    Particle *part = pmit;
+  // actually we only need m_remnant_masses
+  EstimateRequiredEnergy();
+  for (auto part : m_spectators) {
     if (availMom[0] < 0)
       msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
-    if (pmit == m_spectators.back()) {
+    if (part == m_spectators.back()) {
       part->SetMomentum(availMom);
     } else {
       part->SetMomentum(SelectZ(part->Flav()) * availMom);
@@ -134,14 +140,16 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
 
 double Photon_Remnant::SelectZ(const Flavour &flav) {
   // Give a random number to distribute longitudinal momenta, but this number must respect the mass constraints
-  double zmin = Max(m_LambdaQCD,flav.HadMass())/m_energy, zmax(1.);
-  zmax -= double(m_spectators.size()-1)*m_LambdaQCD/m_energy;
-  // Taken from Hadron_Remnant, as there, the exponent m_beta could in principle
-  // be changed, but it seems to work for -1.5.
+  double zmin = Max(flav.HadMass(), m_LambdaQCD) / m_residualE;
+  double zmax = (Max(flav.HadMass(), m_LambdaQCD) + m_residualE - m_remnant_masses) / m_residualE;
+  // Taken from Hadron_Remnant, adapted the exponents for photon PDFs
+  if (zmax < zmin) return 0;
   double z;
-  if (m_beta!=-1) {
+  double beta = flav.IsGluon() ? m_beta_gluon : m_beta_quark;
+  double invb = 1. / (beta + 1);
+  if (beta!=-1) {
     double rand = ran->Get();
-    z = pow(rand*pow(zmax,m_beta+1.)+(1.-rand)*pow(zmin,m_beta+1.),m_invb);
+    z = pow(rand*pow(zmax,beta+1.)+(1.-rand)*pow(zmin,beta+1.),invb);
   }
   else
     z = zmin * pow(zmax/zmin,ran->Get());
@@ -156,17 +164,14 @@ void Photon_Remnant::MakeSpectator(Particle *parton) {
    * */
   p_spectator = nullptr;
   Flavour flavour = parton->Flav();
-  if (flavour.IsQuark()) {
-    p_spectator = MakeParticle(flavour.Bar());
-    int i = (p_spectator->Flav().IsAnti()?2:1);
-    p_spectator->SetFlow(i, -1);
-    p_colours->AddColour(m_beam,(flavour.Bar().IsAnti()?1:0),p_spectator);
-    m_spectators.push_front(p_spectator);
-    if (!m_valence) {
-      m_valence = true;
-      p_recoiler = p_spectator;
-    }
-  }
+  if (!flavour.IsQuark()) return;
+  p_spectator = MakeParticle(flavour.Bar());
+  int i = (p_spectator->Flav().IsAnti()?2:1);
+  p_spectator->SetFlow(i, -1);
+  p_colours->AddColour(m_beam,(flavour.Bar().IsAnti()?1:0),p_spectator);
+  m_spectators.push_front(p_spectator);
+  if (!m_valence)
+    m_valence = true;
 }
 
 void Photon_Remnant::MakeRemnants() {
@@ -186,7 +191,6 @@ void Photon_Remnant::MakeRemnants() {
     m_spectators.push_front(part);
     factor *= -1;
   }
-  p_recoiler = part;
   m_valence = true;
 }
 
@@ -197,5 +201,26 @@ void Photon_Remnant::CompensateColours() {
     Particle * gluon = MakeParticle(Flavour(kf_gluon));
     for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
     m_spectators.push_back(gluon);
+  }
+}
+
+double Photon_Remnant::EstimateRequiredEnergy()
+{
+  double req_energy = 0.;
+  for (auto pit : m_spectators) {
+    req_energy += pit->Flav().HadMass();
+  }
+  if (!m_valence) {
+    req_energy += 2 * Flavour(kf_s).HadMass();
+  }
+  m_remnant_masses = req_energy; // This amount is physically needed for masses
+  req_energy += m_LambdaQCD; // Here we just add some wiggle room for the kinematics
+  return req_energy;
+}
+
+void Photon_Remnant::FindRecoiler() {
+  for (auto part : m_spectators) {
+    if (part->Flav().IsQuark())
+      p_recoiler = part;
   }
 }

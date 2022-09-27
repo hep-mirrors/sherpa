@@ -39,6 +39,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
       MakeSpectator(parton);
       for (size_t index = 0; index < 2; index++)
         p_colours->AddColour(m_beam, index, parton);
+      m_residualE -= parton->E();
     }
     return true;
   }
@@ -54,6 +55,10 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
                 << "   Called with NULL pointer.\n";
     return false;
   }
+  // TODO: In Multiple_Interactions.C, TestExtract is called for the hard-interacting parton,
+  // after it has been extracted here. As it has been already been extracted, it will fail now iff E_parton > 0.5 * beam energy
+  if (std::find(m_extracted.begin(), m_extracted.end(), parton) != m_extracted.end())
+    return true;
   return TestExtract(parton->Flav(), parton->Momentum());
 }
 
