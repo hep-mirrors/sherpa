@@ -31,8 +31,7 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
   // In the photon, there needs to be at least one quark-antiquark pair,
   // this is tracked with the m_valence flag. Of these two, the antiquark will
   // be used as the recoiler later-on.
-  if (!m_valence)
-    MakeRemnants();
+  MakeRemnants();
   msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
                   << m_extracted << ", \n and spectators = " << m_spectators
                   << "\n";
@@ -149,7 +148,7 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
 double Photon_Remnant::SelectZ(const Flavour &flav) {
   // Give a random number to distribute longitudinal momenta, but this number must respect the mass constraints
   double zmin = Max(flav.HadMass(), m_LambdaQCD) / m_residualE;
-  double zmax = (Max(flav.HadMass(), m_LambdaQCD) + m_residualE - m_remnant_masses) / m_residualE;
+  double zmax = (flav.HadMass() + m_residualE - m_remnant_masses) / m_residualE;
   // Taken from Hadron_Remnant, adapted the exponents for photon PDFs
   if (zmax < zmin) return 0;
   double z;
@@ -183,6 +182,8 @@ void Photon_Remnant::MakeSpectator(Particle *parton) {
 }
 
 void Photon_Remnant::MakeRemnants() {
+  if (m_valence)
+    return;
   Particle * part;
   Flavour quark;
   double rand = ran->Get();

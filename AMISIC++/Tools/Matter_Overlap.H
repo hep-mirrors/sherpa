@@ -28,7 +28,6 @@ namespace AMISIC {
     ATOOLS::Vec4D SelectPositionForScatter(const double & b) const;
     ATOOLS::Vec4D SelectRelativePositionForParton() const;
 
-    const double & Bstep()    const { return m_bstep; }
     const double & Bmax()     const { return m_bmax; }
     const double & Integral() const { return m_integral; }
     

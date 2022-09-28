@@ -39,14 +39,20 @@ MI_Process_Group::~MI_Process_Group() {
 double MI_Process_Group::
 operator()(const double & shat,const double & that,const double & uhat) {
   PreCalculate(shat,that,uhat);
-  double tot  = 0.;
+  double tot  = 0.,xs;
   for (list<MI_Process * >::iterator mit=m_processes.begin();
        mit!=m_processes.end();mit++) {
-    tot += ( p_pdf[0]->GetXPDF((*mit)->Flav(0)) *
+    tot += xs = ( p_pdf[0]->GetXPDF((*mit)->Flav(0)) *
             p_pdf[1]->GetXPDF((*mit)->Flav(1)) ) * (**mit)();
   }
-  return m_lastxs =
-    m_pref/sqr(shat) * Coupling(Scale(m_scale)) * SoftCorrection(m_scale) * tot;
+  msg_Debugging()<<"Add dSigma("<<Name()<<", scale = "<<sqrt(m_scale)<<") = "
+            <<m_pref/sqr(shat)<<" * "<<Coupling(Scale(m_scale))
+            <<" * "<<SoftCorrection(m_scale)<<" * "<<xs<<" --> tot = "
+            <<(m_pref/sqr(shat) * Coupling(Scale(m_scale)) * SoftCorrection(m_scale)) * tot
+            <<"\n";
+  return m_lastxs = m_pref/sqr(shat) *
+                    Coupling(Scale(m_scale)) *
+                    SoftCorrection(m_scale) * tot;
 }
 
 double MI_Process_Group::PreCalculate(const double & shat,const double & that,

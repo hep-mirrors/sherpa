@@ -10,7 +10,7 @@ using namespace std;
 
 // will have to make sure that pions are initialised below.  Argh.
 Hadronic_XSec_Calculator::Hadronic_XSec_Calculator(int type) :
-  m_massp(Flavour(kf_p_plus).Mass()), m_masspi(0.137),
+  m_massp(0.938272), m_masspi(0.134976),
   m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3)
 {
   if (type == 1) {

@@ -1,10 +1,6 @@
 #include "REMNANTS/Main/Hadron_Remnant.H"
 #include "REMNANTS/Tools/Colour_Generator.H"
-#include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
-#include "ATOOLS/Math/Random.H"
 #include <algorithm>
 
 using namespace REMNANTS;
@@ -123,7 +119,7 @@ bool Hadron_Remnant::MakeRemnants() {
     int random = int(ran->Get()*m_constituents.size());
     FlavourList::iterator flit=m_constituents.begin();
     for (size_t i=0;i<random;i++) flit++;
-    valflav    = (*flit);
+    valflav    = *&(*flit);
     p_valence  = MakeParticle(valflav);
     index      = ((valflav.IsQuark() && !valflav.IsAnti()) ||
 		 (valflav.IsDiQuark() && valflav.IsAnti()))?0:1;
@@ -256,7 +252,7 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
     return false;
   }
   // Still enough energy for parton and its remnant quark?
-  if (mom[0]+flav.HadMass()>m_residualE) {
+  if (mom[0]>m_residualE) {
       msg_Error()<<METHOD<<": too much momentum "<<mom[0]<<" > E = "<<
         m_residualE<<".\n";
     return false;

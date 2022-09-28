@@ -173,14 +173,17 @@ bool MI_Processes::PrepareSudakovFactor() {
   //double xTlast = m_xTmin*exp(m_xTstep*m_nbins), sigmalast = 0.;
   //double dxT, xT, sigma;
   double pt2last = m_ptmin2*exp(m_pt2step*m_nbins);
-  double sigma, pt2, dpt2;
+  double sigma, pt2, dpt2, sigmalast;
   for (int bin=m_nbins-1;bin>=0;bin--) {
     pt2             = m_ptmin2*exp(m_pt2step*bin);
     dpt2            = pt2last-pt2;
     sigma           = dSigma(pt2);
     m_diffbins[bin] = sigma;
     m_intbins[bin]  = m_integral += sigma * dpt2/m_sigmaND;
+    msg_Debugging()<<"   Sudakov(pt = "<<sqrt(pt2)<<") = "<<m_intbins[bin]<<" from "
+              <<((sigmalast + sigma)/2./m_sigmaND)<<" * "<<dpt2<<".\n";
     pt2last        = pt2;
+    sigmalast = sigma;
   }
   m_integral *= m_sigmaND;
   if (m_test) Test();
@@ -188,7 +191,7 @@ bool MI_Processes::PrepareSudakovFactor() {
 }
 
 void MI_Processes::Test() {
-  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins), pt2, dpt2;
+  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins);
   msg_Out()<<METHOD<<" calculated integral for Sudakov form factor starting at pt = "
 	   <<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n"
 	   <<"   sigma = "<<m_integral<<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb, "
@@ -240,6 +243,8 @@ double MI_Processes::dSigma(const double & pt2) {
     res  += dsigma;
   }
   double result = res/double(m_MCpoints);
+  msg_Debugging()<<"dSigma(pt = "<<sqrt(pt2)<<")/dpt^2 = "
+            <<(result*rpa->Picobarn())<<" pb GeV^-2\n";
   return result;
 }
 

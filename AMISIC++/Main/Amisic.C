@@ -5,7 +5,7 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_Enorm(rpa->gen.Ecms()/2.),
+Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL),
                    m_isMinBias(false), m_ana(false)
 {}
 
@@ -82,7 +82,8 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * p_xsecs->XSnd()));
 
   if (m_ana) InitAnalysis();
-  CleanUp();
+  m_isFirst   = true;
+  m_isMinBias = false;
 
   return true;
 }
@@ -102,8 +103,9 @@ bool Amisic::InitMPIs(const double & scale) {
 }
 
 void Amisic::Update(const PDF::ISR_Handler *isr) {
-  if (!m_variable_s)
+  if (!m_variable_s || !m_isFirst)
     return;
+  m_isFirst = false;
   // Get new energy from Beams
   m_pbeam0 = isr->GetBeam(0)->OutMomentum();
   m_pbeam1 = isr->GetBeam(1)->OutMomentum();
@@ -121,33 +123,10 @@ void Amisic::Update(const PDF::ISR_Handler *isr) {
   m_singlecollision.UpdateSandY(s, y);
   m_impact.Update(p_processes->XShard()/(m_sigmaND_norm * p_xsecs->XSnd()));
 }
-
-void Amisic::SetMaxEnergies(const double & E0,const double & E1) {
-  m_singlecollision.SetResidualX(E0/m_pbeam0[0],E1/m_pbeam1[0]);
-}
-
-void Amisic::SetMaxScale(const double & scale) {
-  m_pt2 = sqr(scale);
-  m_singlecollision.SetLastPT2(m_pt2);
-}
-
-void Amisic::SetB(const double & b) {
-  // Select b and set the enhancement factor
-  m_b    = (b<0.)?m_impact.SelectB(m_pt2):b;
-  m_bfac = Max(0.,m_impact.Enhancement());
-}
   
 bool Amisic::VetoEvent(const double & scale) {
   if (scale<0.) return false;
   return false;
-}
-
-const double Amisic::ScaleMin() const {
-  return (*mipars)("pt_min");
-}
-
-const double Amisic::ScaleMax() const {
-  return m_pt2;
 }
 
 Blob * Amisic::GenerateScatter() {
@@ -163,8 +142,8 @@ Blob * Amisic::GenerateScatter() {
   return NULL;
 }
 
-int Amisic::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
-  if (m_isFirst==true) {
+int Amisic::InitMinBiasEvent() {
+  if (m_isFirst) {
     m_isFirst   = false;
     m_isMinBias = true;
     m_b    = m_impact.SelectB();
@@ -209,18 +188,7 @@ void Amisic::FillAmplitudeSettings(Cluster_Amplitude * ampl) {
   ampl->SetMS(p_processes);
 }
 
-int Amisic::ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) {
-  return p_processes->ShiftMasses(ampl);
-}
-
-
-bool Amisic::VetoScatter(Blob * blob)
-{
-  msg_Error()<<METHOD<<" ont implemented yet.  Will exit.\n";
-  exit(1);
-}
-
-void Amisic::CleanUp() {
+void Amisic::CleanUpMinBias() {
   SetMaxEnergies(rpa->gen.PBeam(0)[0],rpa->gen.PBeam(1)[0]);
   SetMaxScale(rpa->gen.Ecms()/2.);
   m_isFirst   = true;

@@ -31,10 +31,8 @@ namespace AMISIC {
     double operator()(const double & pt2);
     double TrialPT2(const double & Q2);
     
-    inline void SetPref(const double & pref) { m_pref = pref; }
     inline void SetBFac(const double & bfac) { m_bfac = bfac; }
     inline void SetXSnd(const double & xsnd) { m_xsnd = xsnd; }
-    inline void SetPT02(const double & pt02) { m_pt02 = pt02; }
 
     void Test(const double & Q2,const long int & n);
   };

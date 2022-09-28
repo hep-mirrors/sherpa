@@ -46,7 +46,6 @@ namespace AMISIC {
     }
     inline void SetAlphaS(MODEL::Running_AlphaS * alpS)  { p_alphaS = alpS; }
     inline void SetAlpha(MODEL::Running_AlphaQED  * alp) { p_alpha  = alp; }
-    inline void SetPT02(const double & pt02)             { m_pt02 = pt02; }
     inline void SetScale(const double & scale)           { m_scale = scale; }
   };
 

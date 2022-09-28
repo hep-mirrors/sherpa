@@ -33,7 +33,6 @@ namespace REMNANTS {
     double SelectZ(const ATOOLS::Flavour & flav,const bool & isvalence);
     ATOOLS::Particle * MakeParticle(const ATOOLS::Flavour & flav);
     ATOOLS::Flavour    RemnantFlavour(const ATOOLS::Flavour & flav);
-    ATOOLS::Vec4D      RelativePosition() const;
     void Output();
   public:
     Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam);    

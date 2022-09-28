@@ -513,10 +513,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       m_mode=eventtype::StandardPerturbative;
     else if (eventtype=="MinimumBias") {
       m_mode=eventtype::MinimumBias;
-      if (s["SOFT_COLLISIONS"].Get<string>()==string("Amisic")) 
-	s["MI_HANDLER"].OverrideScalar<std::string>("Amisic");
-      else if (s["SOFT_COLLISIONS"].Get<string>()==string("Shrimps")) 
-	s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      if (s["SOFT_COLLISIONS"].Get<string>()==string("Amisic"))
+        s["MI_HANDLER"].OverrideScalar<std::string>("Amisic");
+      else if (s["SOFT_COLLISIONS"].Get<string>()==string("Shrimps"))
+        s["MI_HANDLER"].OverrideScalar<std::string>("None");
       s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else if (eventtype=="HadronDecay") {

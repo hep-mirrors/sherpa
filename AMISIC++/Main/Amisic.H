@@ -55,7 +55,7 @@ namespace AMISIC {
     };
   private:
     double m_sigmaND_norm;
-    double m_b, m_bfac, m_pt2, m_Enorm;
+    double m_b, m_bfac, m_pt2;
 
     MI_Processes             * p_processes;
     Hadronic_XSec_Calculator * p_xsecs;
@@ -87,17 +87,16 @@ namespace AMISIC {
     
     bool InitMPIs(const double & scale);
     bool VetoEvent(const double & scale=-1.);
-    int  InitMinBiasEvent(ATOOLS::Blob_List * blobs);
+    int  InitMinBiasEvent();
     void Reset();
-    void CleanUp();
+    void CleanUpMinBias();
     void Test();
-    bool VetoScatter(ATOOLS::Blob * blob);
     ATOOLS::Blob * GenerateScatter();
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
 
     void Update(const PDF::ISR_Handler *isr);
-    inline void SetMaxEnergies(const double & E1,const double & E2) {
-      m_singlecollision.SetResidualX(E1/m_Enorm,E2/m_Enorm);
+    inline void SetMaxEnergies(const double & E0,const double & E1) {
+      m_singlecollision.SetResidualX(E0/m_pbeam0[0],E1/m_pbeam1[0]);
     }
     inline void SetMaxScale(const double & scale) {
       m_pt2 = ATOOLS::sqr(scale);
@@ -107,12 +106,6 @@ namespace AMISIC {
       // Select b and set the enhancement factor
       m_b    = (b<0.)?m_impact.SelectB(m_pt2):b;
       m_bfac = ATOOLS::Max(0.,m_impact(m_b));
-    }
-    inline void SetMinBias(const bool & isMinBias=true) {
-      m_isMinBias = isMinBias;
-    }
-    inline void SetFirst(const bool & first=true) {
-      m_isFirst = first;
     }
     inline void SetMassMode(const int & mode) {
       p_processes->SetMassMode(mode);
@@ -128,13 +121,12 @@ namespace AMISIC {
     }
     inline const double ScaleMin()    const { return (*mipars)("pt_min"); }
     inline const double & ScaleMax()  const { return m_pt2; }
-    inline const double & PT2()       const { return m_pt2; }
     inline const bool   & IsMinBias() const { return m_isMinBias; }
-    inline const bool   & IsFirst()   const { return m_isFirst; }
     inline const double & B()         const { return m_b; }
     inline double Mass(const ATOOLS::Flavour &fl) const {
       return p_processes->Mass(fl);
     }
+    inline void CleanUp()                   { m_isFirst = true; }
   };
 
 }

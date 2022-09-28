@@ -53,8 +53,9 @@ double Impact_Parameter::SelectB(const double & pt2) {
     softpart = m_fc * (*this)(m_b);
     sudakov  = exp(-softpart * hardpart);
     if (m_ana) Analyse(pt2,sudakov,softpart,hardpart);
-    //msg_Out()<<METHOD<<" sudakov = "<<sudakov<<" = exp(-"<<softpart<<" * "<<hardpart<<") "
-    //	     <<"for b = "<<m_b<<"(max = "<<p_mo->Bmax()<<"), pt = "<<sqrt(pt2)<<"\n";
+    msg_Debugging()<<METHOD<<" sudakov = "<<sudakov<<" = exp(-"<<softpart<<" * "
+              <<hardpart<<") for b = "<<m_b<<"(max = "<<p_mo->Bmax()<<"), pt = "
+              <<sqrt(pt2)<<"\n";
   } while (sudakov<ran->Get() && (trials--)>0);
   if (trials<=0)
     msg_Error()<<METHOD<<" throws warning:\n"

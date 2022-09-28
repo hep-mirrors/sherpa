@@ -54,7 +54,7 @@ void Soft_Collision_Handler::CleanUp() {
     p_shrimps->CleanUp();
     break;
   case scmode::amisic:
-    p_amisic->CleanUp();
+    p_amisic->CleanUpMinBias();
     break;
   case scmode::none:
   default:
@@ -74,7 +74,7 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
     outcome = p_shrimps->InitMinBiasEvent(blobs);
     break;
   case scmode::amisic: 
-    outcome = p_amisic->InitMinBiasEvent(blobs);
+    outcome = p_amisic->InitMinBiasEvent();
     break;
   case scmode::none:
     outcome = 0;
