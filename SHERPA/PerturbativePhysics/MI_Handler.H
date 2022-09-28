@@ -11,6 +11,7 @@ namespace REMNANTS { class Remnant_Handler;      }
 namespace PHASIC   { class Process_Base;         }
 namespace MODEL    { class Model_Base;           }
 namespace AMISIC   { class Amisic;               }
+namespace SHRIMPS  { class Shrimps;              }
 
 namespace SHERPA {
   class Matrix_Element_Handler;
@@ -19,25 +20,28 @@ namespace SHERPA {
   class MI_Handler {
   public:
     
-    enum TypeID { None    =  0,
-		  Amisic  =  1,
-		  Unknown = 99 };
+    enum typeID { none    =  0,
+		  amisic  =  1,
+		  shrimps =  2,
+		  unknown = 99 };
 
   private:
     PDF::ISR_Handler          * p_isr;
     REMNANTS::Remnant_Handler * p_remnants;
     AMISIC::Amisic            * p_amisic;
+    SHRIMPS::Shrimps          * p_shrimps;
     ATOOLS::Cluster_Amplitude * p_ampl;
     PHASIC::Process_Base      * p_proc;
     Shower_Handler            * p_shower;
 
     bool        m_stop;
-    TypeID      m_type;
+    typeID      m_type;
     std::string m_name;
 
     double m_ycut; 
     
     void InitAmisic(MODEL::Model_Base *model);
+    void InitShrimps(MODEL::Model_Base *model);
   public:
     MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr,
                REMNANTS::Remnant_Handler * remnant_handler);
@@ -54,18 +58,27 @@ namespace SHERPA {
     
     const double ScaleMin() const;
     const double ScaleMax() const;
-    
-    inline TypeID      Type() const { return m_type; }
-    inline std::string Name() const { return m_name; }
-    inline bool        Done() const { return m_stop; }
-    inline double      YCut() const { return m_ycut; }
+    const double ImpactParameter() const;
+    const ATOOLS::Vec4D SelectPositionForScatter() const;
+
+    inline const typeID      & Type() const { return m_type; }
+    inline const std::string & Name() const { return m_name; }
+    inline const bool        & Done() const { return m_stop; }
+    inline const double      & YCut() const { return m_ycut; }
+    const bool   IsMinBias() const;
     
     inline PDF::ISR_Handler          * ISRHandler() const { return p_isr; }
     inline REMNANTS::Remnant_Handler * Remnants()   const { return p_remnants; }
     inline PHASIC::Process_Base      * Process()    const { return p_proc; }
     inline Shower_Handler            * Shower()     const { return p_shower; }
-
+    inline AMISIC::Amisic            * Amisic()     const { return p_amisic; }
+    inline SHRIMPS::Shrimps          * Shrimps()    const { return p_shrimps; }
+    
     inline void SetShowerHandler(Shower_Handler * const sh) { p_shower=sh; }
+    inline void SetRemnantHandler(REMNANTS::Remnant_Handler *const rh) {
+      p_remnants = rh;
+    }
+
 
     bool   VetoScatter(ATOOLS::Blob *blob);
     void   SetMassMode(const int & massmode);

@@ -1,0 +1,17 @@
+BEAMS: 2212
+BEAM_ENERGIES: 3500
+
+EVENT_TYPE:          MinimumBias
+ME_GENERATORS:       None
+SOFT_COLLISIONS:     Shrimps
+SHRIMPS:
+  MODE:              Elastic
+FRAGMENTATION:       Off
+YFS:
+  MODE:              None
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Elastic_Shrimps
+
+RIVET:
+  --analyses: [TOTEM_2012_I1220862]

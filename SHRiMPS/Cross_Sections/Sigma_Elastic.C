@@ -10,8 +10,18 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 double Sigma_Elastic::dSigma_dt::operator()(double B) {
-  return 2.*M_PI*B*SF.Jn(0,B*m_Q)*p_sigma_el->GetDiffArgument(B);
+  // factors:
+  // * B         from B integration in polar coordinates
+  // * 2 pi J0   from integral of angle between Q and B
+  // * (arg)     usual argument of elastic scattering
+  return B * 2.*M_PI*SF.Jn(0,B*m_Q) * p_sigma_el->GetDiffArgument(B);
 }
+
+Sigma_Elastic::Sigma_Elastic() :
+  m_tmin(0), m_tmax(1.), m_summed(0.), m_steps(1000),
+  m_delta((m_tmax-m_tmin)/m_steps)
+{ }
+
 
 double Sigma_Elastic::GetValue(const double & B) { 
   return ATOOLS::sqr(p_eikonal->Prefactor()*(1.-exp(-(*p_eikonal)(B)/2.))); 
@@ -23,80 +33,59 @@ double Sigma_Elastic::GetCombinedValue(const double & B) {
 
 double Sigma_Elastic::GetDiffArgument(const double & B) { 
   double value(0.);
-  for (std::list<Omega_ik *>::iterator eikonal=p_eikonals->begin();
-       eikonal!=p_eikonals->end(); eikonal++) {
-    value += (*eikonal)->Prefactor()*(1.-exp(-(**eikonal)(B)/2.)); 
+  for (size_t i=0;i<p_eikonals->size();i++) {
+    for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+      Omega_ik * eikonal = (*p_eikonals)[i][j];
+      value += eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)/2.)); 
+    }
   }
   return value;
 }
 
-void Sigma_Elastic::FillDifferentialGrids() {
+void Sigma_Elastic::FillGrids() {
   m_diffgrid.clear();
-  double Qmax(5.);
-  FillDiffQGrid(Qmax);
   m_intgrid.clear();
+  FillDiffQGrid();
   FillIntQGridAndNormalize();
 }
 
-void Sigma_Elastic::FillDiffQGrid(const double & Qmax) {
+void Sigma_Elastic::FillDiffQGrid() {
+  msg_Out()<<METHOD<<" for ["<<m_tmin<<", "<<m_tmax<<"] in "<<m_steps<<" steps of "
+	   <<"size = "<<m_delta<<"\n";
   dSigma_dt differential(this);
   Gauss_Integrator integrator(&differential);
 
-  double value(1.), pref(0.), Q(Qmax);
-  while (dabs((value-pref)/(value+pref))>1.e-12 ||
-	 m_diffgrid.size()<10) {
-    differential.SetQ(Q);
-    pref  = value;
-    value =
-      sqr(integrator.Integrate(0.,MBpars.GetEikonalParameters().bmax,
-			       MBpars.GetEikonalParameters().accu,1.)) *
-      rpa->Picobarn()/(4.*M_PI);
-    if (dabs(value<1.e-10)) value = 0.;
-    m_diffgrid[Q] = value;
-    Q *= exp(-1./m_logdelta);
+  double value, t;
+  for (size_t i=0;i<m_steps;i++) {
+    t = m_tmin + m_delta*i;
+    differential.SetQ(sqrt(t));
+    value = rpa->Picobarn()/(4.*M_PI) *
+      ATOOLS::sqr(integrator.Integrate(0.,MBpars.GetEikonalParameters().bmax,
+				       MBpars.GetEikonalParameters().accu,1.));
+    if (dabs(value<0.)) value = 0.;
+    m_diffgrid.push_back(value);
   }
-  differential.SetQ(0.);
-  m_diffgrid[0.] =
-    sqr(integrator.Integrate(0.,MBpars.GetEikonalParameters().bmax,
-			     MBpars.GetEikonalParameters().accu,1.)) *
-    rpa->Picobarn()/(4.*M_PI);
 }
 
-double Sigma_Elastic::FillIntQGridAndNormalize() {
-  m_intgrid[0] = 0.;
-  double prefQ(0.),Q(0.),prefval(0.),val(0.),cumul(0.);
-  for (std::map<double,double>::iterator diffiter=m_diffgrid.begin();
-       diffiter!=m_diffgrid.end();diffiter++) {
-    if (diffiter->first==0.) {
-      prefval = diffiter->second;
-      prefQ   = 0.;
-      continue;
-    }
-    Q   = diffiter->first;
-    val = diffiter->second;
-    cumul += (val+prefval)/2. * (Q-prefQ)*(Q+prefQ);
-    m_intgrid[Q] = cumul;
-    prefval = val;
-    prefQ   = Q;
+void Sigma_Elastic::FillIntQGridAndNormalize() {
+  m_intgrid.push_back(0.);
+  m_summed = 0.;
+  double average, binvalue;
+  for (size_t i=1;i<m_steps;i++) {
+    average   = (m_diffgrid[i-1]+m_diffgrid[i])/2.;
+    binvalue  = average * m_delta;
+    if (binvalue<0.) binvalue = 0.;
+    m_summed += binvalue;
+    m_intgrid.push_back(m_summed);
   }
-  for (std::map<double,double>::iterator intiter=m_intgrid.begin();
-       intiter!=m_intgrid.end();intiter++) {
-    intiter->second /= cumul;
-  }
-  return cumul;
+  for (size_t i=0;i<m_steps;i++) m_intgrid[i] /= m_summed;
 }
 
-
-double Sigma_Elastic::SelectPT2() const {
-  THROW(not_implemented, "Missing implementation for Sigma_Elastic::SelectPT2().");
+double Sigma_Elastic::SelectT() const {
   double random(ran->Get());
-  // unsigned int i(0);
-  // while (random-m_intgrid[i]>=0) i++;
-
-  // double Q1(sqr(m_Qmax*exp(-double(i-1)/m_logdelta)));
-  // double Q2(sqr(i==m_intgrid.size()-1?0.:m_Qmax*exp(-double(i)/m_logdelta)));
-  // return ((Q2*(m_intgrid[i-1]-random)+Q1*(random-m_intgrid[i]))/
-  // 	  (m_intgrid[i-1]-m_intgrid[i]));
+  unsigned int i(0);
+  while (random-m_intgrid[i]>=0) i++;
+  return m_tmin+(i-1)*m_delta + m_delta *(random-m_intgrid[i-1])/(m_intgrid[i]-m_intgrid[i-1]);
 }
 
 double Sigma_Elastic::Test() {

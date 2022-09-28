@@ -4,45 +4,34 @@
 
 namespace SHRIMPS {
   class Sigma_SD : public Sigma_Base {
-    class dSigma_dt_Kernel : public Function_Base {
+    class SD_Term : public Function_Base {
     protected:
-      Omega_ik * p_eikonal; 
+      Omega_ik * p_eikonal;
       double     m_Q;
     public:
-      dSigma_dt_Kernel() {}
-      void   SetQ(const double & Q)         { m_Q = Q; }
+      SD_Term() {}
       void   SetEikonal(Omega_ik * eikonal) { p_eikonal = eikonal; }
+      void   SetQ(const double & Q)         { m_Q = Q; }
       double operator()(double B);
     };
-    Sigma_Elastic     * p_sigma_el;
 
-
-    double              m_Bmin, m_Bmax;
-    double              m_Qmax;
-    size_t              m_logQsteps;
-    double              m_logdelta;
-    std::vector<double> m_intgrid_SD1, m_intgrid_SD2, m_diffgrid_SD1, m_diffgrid_SD2;
-    const std::vector<double> *p_grid;
-    double              m_sigma_SD1,   m_sigma_SD2;
-
-    void FillGrids();
+    double m_tmin, m_tmax, m_summed[3];
+    size_t m_steps;
+    double m_delta;
+    std::vector<std::vector<std::vector<double> > > m_tgrids;
+    std::vector<double> m_diffgrids[3], m_intgrids[3];
+    
+    void FillTGrids();
+    void CombineTGrids(const size_t diff);
+    void CreateIntGrids(const size_t diff,Sigma_Elastic * sigma_el);
   public:
-    Sigma_SD() {};
-    Sigma_SD(Sigma_Elastic * sigma_el);
-    //double Calculate(const double & Bmin, const double & Bmax,
-    //		     Omega_ik * eikonal=NULL) {
-    // FillGrids();
-    //  return m_sigma_SD1+m_sigma_SD2;
-    // }
+    Sigma_SD();
+
+    double SelectT(const size_t & mode) const;
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
-    double GetDiffArgument(const double & B);
-    double PT2(bool & mode);
-    void   PrintDifferentialElasticAndSDXsec(const bool & onscreen=false,
-					     std::string dirname=std::string("."));
-    void   TestElasticCrossSection();
-    const std::vector<double> * Grid1() const { return &m_intgrid_SD1; }
-    const std::vector<double> * Grid2() const { return &m_intgrid_SD2; }
+    double GetXSec(const size_t diff) { return m_summed[diff]; }
+    void   FillGrids(Sigma_Elastic * sigma_el);
   };  
 }
 #endif

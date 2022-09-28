@@ -37,7 +37,7 @@ double Matter_Overlap::operator()(double b) {
   }
 }
 
-double Matter_Overlap::SelectB() const {
+double Matter_Overlap::SelectB(const bool & mode) const {
   // Algorithm:
   // 1. select a radius R according to matter content:
   //    - for single Gaussian, there is no selection to be made
@@ -55,6 +55,8 @@ double Matter_Overlap::SelectB() const {
       else                                     radius = m_radius3;
       break;
   }
+  // b from Matter_Overlap, hence r^2_overlap = 2*r^2_formfactor
+  if (mode) radius *= sqrt(2.);
   do {
     b = sqrt(-log(Max(1.e-12,ran->Get())))*radius;
   } while (b>m_bmax);
@@ -105,10 +107,28 @@ void Matter_Overlap::CalculateIntegral() {
 	   <<"Integral(num) = "<<m_integral<<", ana = "<<(M_PI*m_norm)<<"\n";
 }
 
+Vec4D Matter_Overlap::SelectPositionForScatter(const double & b) const {
+  double b1, b2, cosphi2;
+  do {
+    b1 = SelectB();
+    b2 = SelectB();
+    cosphi2 = (b1*b1-b2*b2-b*b)/(2.*b2*b);
+  } while (cosphi2>1. || cosphi2<-1.);
+  double sinphi2 = (ran->Get()>0.5?-1.:1.)*sqrt(1.-sqr(cosphi2));
+  return Vec4D(0.,b/2.+b2*cosphi2,b2*sinphi2,0.);
+}
+
+ATOOLS::Vec4D Matter_Overlap::SelectRelativePositionForParton() const {
+  double b   = SelectB();
+  double phi = 2.*M_PI*ran->Get();
+  return Vec4D(0.,b*cos(phi),b*sin(phi),0.);
+}
+
 double MO_Integrand::operator()(double b) {
   // Integrand for d^2b O(b) = 2 pi b db O(b), where O(b) is the time-integrated
   // matter overlap, being the tricky part of the numerator in Eq.(32).
   // This does not include the prefactor k.
   return 2.*M_PI*b*(*p_mo)(b);
 }
+
 

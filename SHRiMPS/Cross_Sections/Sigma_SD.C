@@ -8,225 +8,110 @@
 using namespace SHRIMPS;
 using namespace ATOOLS;
 
-double Sigma_SD::dSigma_dt_Kernel::operator()(double B) {
-//   msg_Out()<<METHOD<<"("<<B<<"), eikonal = "<<(*p_eikonal)(B)<<".\n";
-  return 2.*M_PI*B*SF.Jn(0,B*m_Q)*(1.-exp(-(*p_eikonal)(B)/2.));
+double Sigma_SD::SD_Term::operator()(double B) {
+  return B * 2.*M_PI*SF.Jn(0,B*m_Q) * (1.-exp(-(*p_eikonal)(B)/2.));
 }
 
-Sigma_SD::Sigma_SD(Sigma_Elastic * sigma_el) :
-  Sigma_Base(sigma_el->Eikonals()),
-  p_sigma_el(sigma_el),
-  m_Bmin(p_sigma_el->Bmin()), m_Bmax(p_sigma_el->Bmax()),
-  m_Qmax(p_sigma_el->Qmax()), 
-  m_logQsteps(p_sigma_el->Steps()), m_logdelta(p_sigma_el->Delta())
-{ 
-  FillGrids();
+Sigma_SD::Sigma_SD() :
+  m_tmin(0.), m_tmax(1.), m_steps(1), m_delta(1.) {
+  for (size_t i=0;i<2;i++) m_summed[i] = 0.;
 }
 
-void Sigma_SD::FillGrids() {
-  msg_Tracking()<<"In "<<METHOD<<": Integrate from "
-		<<m_Bmin<<" to "<<m_Bmax<<"."<<std::endl
-		<<"   Maximal sqrt{|t|} = "<<m_Qmax<<"."<<std::endl;
-  m_intgrid_SD1.clear();
-  m_intgrid_SD1.push_back(0.);
-  m_intgrid_SD2.clear();
-  m_intgrid_SD2.push_back(0.);
-  m_diffgrid_SD1.clear();
-  m_diffgrid_SD2.clear();
+double Sigma_SD::GetValue(const double & B)         { return 0.; }
+double Sigma_SD::GetCombinedValue(const double & B) { return 0.; }
 
-  int noFF(0);
-  for (std::list<Omega_ik *>::iterator eikiter=p_eikonals->begin();
-       eikiter!=p_eikonals->end();eikiter++) {
-    if ((*eikiter)->FF1()->Number()>noFF) noFF = (*eikiter)->FF1()->Number();
+void Sigma_SD::FillGrids(Sigma_Elastic * sigma_el) {
+  m_tgrids.clear();
+  for (size_t i = 0; i < 3; ++i) {
+    m_intgrids[i].clear();
+    m_diffgrids[i].clear();
   }
-  noFF++;
-  std::vector<std::vector<Omega_ik *> > eikonals;
-  std::vector<double> prefs;
-  eikonals.resize(noFF);
-  prefs.resize(noFF);
-  for (int i=0;i<noFF;i++) {
-    eikonals[i].resize(noFF);
-    for (int j=0;j<noFF;j++) {
-      for (std::list<Omega_ik *>::iterator eikiter=p_eikonals->begin();
-	   eikiter!=p_eikonals->end();eikiter++) {
-	if ((*eikiter)->FF1()->Number()==i && (*eikiter)->FF2()->Number()==j)
-	  eikonals[i][j] = (*eikiter);
-	if ((*eikiter)->FF1()->Number()==i) 
-	  prefs[i] = (*eikiter)->FF1()->Prefactor();
+  m_tmin  = sigma_el->Tmin();
+  m_tmax  = sigma_el->Tmax();
+  m_steps = sigma_el->Steps();
+  m_delta = (m_tmax-m_tmin)/double(m_steps);
+  msg_Out()<<METHOD<<" for ["<<m_tmin<<", "<<m_tmax<<"] in "<<m_steps<<" steps of "
+       <<"size = "<<m_delta<<"\n";
+  m_tgrids.resize(p_eikonals->size());
+  for (size_t i=0;i<p_eikonals->size();i++) m_tgrids[i].resize(p_eikonals->size());
+
+  FillTGrids();
+  for (size_t diff=0;diff<3;diff++) {
+    CombineTGrids(diff);
+    CreateIntGrids(diff,sigma_el);
+  }
+}
+
+void Sigma_SD::FillTGrids() {
+  SD_Term term;
+  Gauss_Integrator integrator(&term);
+  double t,value;
+  for (size_t k=0;k<m_steps;k++) {
+    t = m_tmin + m_delta*k;
+    term.SetQ(sqrt(t));
+    for (size_t i=0;i<p_eikonals->size();i++) {
+      for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+	term.SetEikonal((*p_eikonals)[i][j]);
+	value = integrator.Integrate(0.,MBpars.GetEikonalParameters().bmax,
+				     MBpars.GetEikonalParameters().accu,1.);
+    if (dabs(value<0.)) value = 0.;
+	m_tgrids[i][j].push_back(value);
       }
     }
   }
+}
 
-  dSigma_dt_Kernel differential;
-  ATOOLS::Gauss_Integrator integrator(&differential);
-  double pref1(0.), cumul1(0.), value1(0.);
-  double pref2(0.), cumul2(0.), value2(0.);
-  double prefQ(0.), Q(0.), sigmael(p_sigma_el->Sigma());
-  std::vector<std::vector<double> > values;
-  values.resize(noFF);
-  for (int i=0;i<noFF;i++) values[i].resize(noFF);
-
-  size_t step(0);
-  while (step<m_logQsteps || 
-	 (step>1 && (value1-pref1)/(value1+pref1)>1.e-12 && 
-	  (value2-pref2)/(value2+pref2)>1.e-12)) {
-    Q     = m_Qmax*exp(-double(step)/m_logdelta);
-    differential.SetQ(Q);
-    for (int i=0;i<noFF;i++) {
-      for (int j=0;j<noFF;j++) {
-	//msg_Out()<<METHOD<<"("<<i<<", "<<j<<") : "<<eikonals[i][j]<<".\n";
-	differential.SetEikonal(eikonals[i][j]);
-	values[i][j] = integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.);
-      }
-    }
-    value1 = value2 = 0.;
-    for (int i=0;i<noFF;i++) {
-      for (int j=0;j<noFF;j++) {
-	for (int k=0;k<noFF;k++) {
-	  value1 += 
-	    values[i][j]*values[i][k]*sqr(prefs[i]*prefs[j]*prefs[k]);
-	  value2 += 
-	    values[j][i]*values[k][i]*sqr(prefs[i]*prefs[j]*prefs[k]);
+void Sigma_SD::CombineTGrids(const size_t diff) {
+  double pref, value, t;
+  for (size_t q=0;q<m_steps;q++) {
+    t     = m_tmin + m_delta*q;
+    value = 0.;
+    for (size_t i=0;i<p_eikonals->size();i++) {
+      for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+	for (size_t k=0;k<(*p_eikonals)[i].size();k++) {
+	  if (diff==0) {
+	    pref  = ((*p_eikonals)[i][j]->Prefactor()*(*p_eikonals)[i][k]->Prefactor()/
+		     sqrt((*p_eikonals)[i][i]->Prefactor())/
+		     (4.*M_PI));
+	    value += pref * m_tgrids[i][j][q] * m_tgrids[i][k][q] * rpa->Picobarn();
+	  }
+	  else if (diff==1) {
+	    pref  = ((*p_eikonals)[j][i]->Prefactor()*(*p_eikonals)[k][i]->Prefactor()/
+		     sqrt((*p_eikonals)[i][i]->Prefactor())/
+		     (4.*M_PI));
+	    value += pref * m_tgrids[j][i][q] * m_tgrids[k][i][q] * rpa->Picobarn();
+	  }
+	  else if (diff==2) {
+	    for (size_t l=0;l<p_eikonals->size();l++) {
+	      pref  = ((*p_eikonals)[i][j]->Prefactor()*(*p_eikonals)[l][k]->Prefactor()/
+		       (4.*M_PI));
+	      value += pref * m_tgrids[i][j][q] * m_tgrids[l][k][q] * rpa->Picobarn();
+	    }
+	  }
 	}
       }
     }
-    value1 *= ATOOLS::rpa->Picobarn()/(4.*M_PI);
-    value2 *= ATOOLS::rpa->Picobarn()/(4.*M_PI);
-    m_diffgrid_SD1.push_back(value1);
-    m_diffgrid_SD2.push_back(value2);
-
-    msg_Tracking()<<"   Q = "<<Q<<" --> dsigma/dt = "
-		  <<(value1/1.e9)<<"/"<<(value2/1.e9)<<" mbarn."<<std::endl;
-
-    if (step>0) {
-      cumul1 += (value1+pref1)/2. * (prefQ-Q)*(prefQ+Q);
-      cumul2 += (value2+pref2)/2. * (prefQ-Q)*(prefQ+Q);
-      m_intgrid_SD1.push_back(cumul1);
-      m_intgrid_SD2.push_back(cumul2);
-    }
-    prefQ = Q;
-    pref1 = value1;
-    pref2 = value2;
-    step++;
-  }
-  Q = 0.;
-
-  differential.SetQ(Q);
-  for (int i=0;i<noFF;i++) {
-    for (int j=0;j<noFF;j++) {
-      differential.SetEikonal(eikonals[i][j]);
-      values[i][j] = integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.);
-    }
-  }
-  value1 = value2 = 0.;
-  for (int i=0;i<noFF;i++) {
-    for (int j=0;j<noFF;j++) {
-      for (int k=0;k<noFF;k++) {
-	value1 += 
-	  values[i][j]*values[i][k]*
-	  sqr(prefs[i])*sqr(prefs[j])*sqr(prefs[k])/(4*M_PI);
-	value2 += 
-	  values[j][i]*values[k][i]*
-	  sqr(prefs[i])*sqr(prefs[j])*sqr(prefs[k])/(4*M_PI);
-      }
-    }
-  }
-  value1 *= ATOOLS::rpa->Picobarn()/(4.*M_PI);
-  value2 *= ATOOLS::rpa->Picobarn()/(4.*M_PI);
-  m_diffgrid_SD1.push_back(value1);
-  m_diffgrid_SD2.push_back(value2);
-
-  cumul1 += (value1+pref1)/2. * (prefQ-Q)*(prefQ+Q);
-  cumul2 += (value2+pref2)/2. * (prefQ-Q)*(prefQ+Q);
-  m_intgrid_SD1.push_back(cumul1);
-  m_intgrid_SD2.push_back(cumul2);
-
-  m_sigma_SD1 = cumul1-sigmael;
-  m_sigma_SD2 = cumul2-sigmael;
-  m_sigma     = m_sigma_SD1+m_sigma_SD2;
-
-  msg_Tracking()<<"Sigma_{el} = "<<(sigmael/1.e9)<<", "
-		<<"Sigma_{SD} = "<<(m_sigma_SD1/1.e9)<<" + "
-		<<(m_sigma_SD2/1.e9)<<", total = "<<(cumul1+cumul2)/1.e9<<" mbarn."<<std::endl;
-
-  const std::vector<double> & grid = *p_sigma_el->Grid();
-  for (size_t i=0;i<m_intgrid_SD1.size();i++) {
-    m_intgrid_SD1[i] -= grid[i]*sigmael;
-    m_intgrid_SD2[i] -= grid[i]*sigmael;
-    m_intgrid_SD1[i] /= (cumul1-sigmael);
-    m_intgrid_SD2[i] /= (cumul2-sigmael);
-    msg_Debugging()<<i<<"  Q = "<<m_Qmax*exp(-double(i)/m_logdelta)<<" --> "
-		  <<m_intgrid_SD1[i]<<", "<<m_intgrid_SD2[i]<<"."<<std::endl;
+    m_diffgrids[diff].push_back(value);
   }
 }
 
-
-double Sigma_SD::GetValue(const double & B) { 
-  return 0.;
+void Sigma_SD::CreateIntGrids(const size_t diff,Sigma_Elastic * sigma_el) {
+  m_summed[diff] = 0.;
+  m_intgrids[diff].push_back(0.);
+  std::vector<double> el_grid = sigma_el->GetDiffGrid();
+  for (size_t i=0;i<m_diffgrids[diff].size();i++) m_diffgrids[diff][i] -= el_grid[i];
+  for (size_t i=1;i<m_diffgrids[diff].size();i++) {
+    m_summed[diff] += (m_diffgrids[diff][i]+m_diffgrids[diff][i-1])/2. * m_delta;
+    m_intgrids[diff].push_back(m_summed[diff]);
+  }
+  for (size_t i=0;i<m_intgrids[diff].size();i++) m_intgrids[diff][i] /= m_summed[diff];
 }
 
-double Sigma_SD::GetCombinedValue(const double & B) { 
-  double sdvalue(0.),elvalue(0.);
-  for (std::list<Omega_ik *>::iterator eikonal1=p_eikonals->begin();
-       eikonal1!=p_eikonals->end(); eikonal1++) {
-    for (std::list<Omega_ik *>::iterator eikonal2=p_eikonals->begin();
-	 eikonal2!=p_eikonals->end(); eikonal2++) {
-      if ((*eikonal1)->GetSingleTerm(0)->FF1()->Number()==
-	  (*eikonal2)->GetSingleTerm(0)->FF1()->Number()) {
-	sdvalue += 
-	  (*eikonal1)->Prefactor()*(1.-exp(-(**eikonal1)(B)/2.)) *
-	  (*eikonal2)->Prefactor()*(1.-exp(-(**eikonal2)(B)/2.)) /
-	  ATOOLS::sqr((*eikonal1)->GetSingleTerm(0)->FF1()->Prefactor());
-      }
-      if ((*eikonal1)->GetSingleTerm(0)->FF2()->Number()==
-	  (*eikonal2)->GetSingleTerm(0)->FF2()->Number()) {
-	sdvalue += 
-	  (*eikonal1)->Prefactor()*(1.-exp(-(**eikonal1)(B)/2.)) *
-	  (*eikonal2)->Prefactor()*(1.-exp(-(**eikonal2)(B)/2.)) /
-	  ATOOLS::sqr((*eikonal1)->GetSingleTerm(0)->FF2()->Prefactor());
-      }
-    }
-  }
-  double value(0.);
-  for (std::list<Omega_ik *>::iterator eikonal=p_eikonals->begin();
-       eikonal!=p_eikonals->end(); eikonal++) {
-    value += (*eikonal)->Prefactor()*(1.-exp(-(**eikonal)(B)/2.)); 
-  }
-  elvalue = 2.*ATOOLS::sqr(value);
-  return sdvalue-elvalue;
-}
-
-
-void Sigma_SD::PrintDifferentialElasticAndSDXsec(const bool & onscreen,std::string dirname) {
-  std::ofstream was;
-  std::string Estring(ATOOLS::ToString(2.*m_Qmax));
-  std::string filename(dirname+std::string("/Dsigma_SD_by_dt_"+Estring+".dat"));
- was.open(filename.c_str());
-
-  double Q(m_Qmax);
-  if (onscreen) msg_Out()<<"---------------------------------------------\n";
-
-  for (size_t i=0;i<m_diffgrid_SD1.size();i++) {
-    Q     = m_Qmax*exp(-double(i)/m_logdelta);
-    was<<" "<<(Q*Q)<<"   "<<(m_diffgrid_SD1[i]+m_diffgrid_SD2[i])/1.e9<<std::endl;
-    if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<(m_diffgrid_SD1[i]+m_diffgrid_SD2[i])/1.e9<<" mbarn/GeV^2\n";
-  }
-  was.close();
-  if (onscreen) msg_Out()<<"---------------------------------------------\n";
-    
-}
-
-
-double Sigma_SD::PT2(bool & mode) {  
-  const std::vector<double> & grid = m_intgrid_SD1;
-  if (m_sigma_SD1/m_sigma>ATOOLS::ran->Get()) mode = false;
-  else mode = true;
-
+double Sigma_SD::SelectT(const size_t & mode) const {
   double random(ran->Get());
-  size_t i(0);
-  while (random-grid[i]>=0) i++;
-  
-  double Q1(sqr(m_Qmax*exp(-double(i-1)/m_logdelta)));
-  double Q2(sqr(i==grid.size()-1?0.:m_Qmax*exp(-double(i)/m_logdelta)));
-  return ((Q2*(grid[i-1]-random)+Q1*(random-grid[i]))/(grid[i-1]-grid[i]));
+  unsigned int i(0);
+  while (random-m_intgrids[mode][i]>=0) i++;
+  return m_tmin+(i-1)*m_delta +
+    m_delta *(random-m_intgrids[mode][i-1])/(m_intgrids[mode][i]-m_intgrids[mode][i-1]);
 }
+

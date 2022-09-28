@@ -1,5 +1,4 @@
 #include "SHERPA/Single_Events/Jet_Evolution.H"
-
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -19,7 +18,8 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
                              Decay_Handler_Base *_hdhandler,
                              MI_Handler *_mihandler,
                              Soft_Collision_Handler *_schandler,
-                             const Shower_Handler_Map &showers) {
+                             const Shower_Handler_Map &showers,
+			     Beam_Remnant_Handler * _brhandler) {
   Shower_Handler_Map::const_iterator shIter = showers.find(isr::hard_process);
   m_name = string("Jet_Evolution:") + shIter->second->ShowerGenerator();
   m_type = eph::Perturbative;
@@ -46,7 +46,7 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
     if (interface != NULL)
       m_interfaces.insert(make_pair("SoftCollisions", interface));
   }
-  p_remnants = _mehandler->Remnants();
+  p_remnants = _brhandler->GetRemnants();
 }
 
 Jet_Evolution::~Jet_Evolution() {
@@ -72,7 +72,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
     found = false;
     for (size_t i = 0; i < bloblist->size(); ++i) {
       Blob *meblob = (*bloblist)[i];
-      if (meblob->Has(blob_status::needs_showers) &&
+      if (meblob->Has(blob_status::needs_showers) &&	  
           meblob->Type() != btp::Hard_Decay) {
         switch (int(meblob->Type())) {
         case (int(btp::Signal_Process)):
@@ -81,7 +81,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
           break;
         case (int(btp::Hard_Collision)):
           tag = string("MPIs");
-          if (meblob->TypeSpec() == "MinBias")
+          if (meblob->TypeSpec() == "MinBias" || meblob->TypeSpec()=="Shrimps")
             tag = string("SoftCollisions");
           MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
           break;

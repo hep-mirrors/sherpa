@@ -30,11 +30,12 @@ namespace ATOOLS {
     part_status::code m_status;         
     char              m_info;   
     Flavour           m_fl;         
-    Vec4D             m_momentum; 
+    Vec4D             m_momentum, m_position; 
     Flow              m_flow;
     Blob            * p_startblob, * p_endblob;
     Particle        * p_originalpart;
     double            m_dec_time, m_finalmass;
+    bool              m_ownpos;
     static int        s_totalnumber;
   public:
     Particle();
@@ -66,6 +67,7 @@ namespace ATOOLS {
     int               Beam() const;
     Particle        * OriginalPart() const;
     void   SetMomentum(const Vec4D &);
+    void   SetPosition(const Vec4D &);
     void   SetFinalMass(const double=-1,const double=-1);
     void   SetStatus(part_status::code=part_status::undefined);
     void   SetInfo(char);
@@ -99,7 +101,7 @@ namespace ATOOLS {
   std::ostream & operator<<(std::ostream &,const Particle &);
   std::ostream & operator<<(std::ostream & s, const Part_List & pl);
 
-  typedef std::map<int,std::pair<ATOOLS::Particle *,bool> > Translation_Map;
+  typedef std::map<int,std::pair<Particle *,bool> > Translation_Map;
 
   class PMMSort {
   public:

@@ -42,6 +42,7 @@ double Impact_Parameter::operator()(const double & b) {
 }
 
 double Impact_Parameter::SelectB(const double & pt2) {
+  if (pt2<0.) return (m_b = p_mo->SelectB());
   // Select b according to f(b) and accept or reject b with probability given by
   // "factorized Sudakov form factor", Eq. (37)
   double hardpart = p_procs->SudakovArgument(pt2);

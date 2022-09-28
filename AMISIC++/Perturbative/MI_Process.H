@@ -42,11 +42,11 @@ namespace AMISIC {
 
   class MI_Process {
   private:
+    std::string                  m_name;
+    ATOOLS::Momenta_Stretcher    m_stretcher;
     std::vector<ATOOLS::Flavour> m_flavs;
     std::vector<double>          m_masses, m_PSmasses, m_masses2;
     std::vector<ATOOLS::Vec4D>   m_momenta;
-    ATOOLS::Momenta_Stretcher    m_stretcher;
-    std::string m_name;
     XS_Base   * p_me2;
     double      m_emin;
     bool        m_masslessIS;

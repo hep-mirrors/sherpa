@@ -255,7 +255,6 @@ double MI_Processes::SudakovArgumentForVariableS(const double &pt2) const {
   if (pt2>m_ptmax2 || pt2<m_ptmin2 || m_S < 4*m_ptmin2) return 0.;
   int sbin      = log(m_S/m_S_lab) / log(m_sstep);
   int ptbin     = int(1./m_pt2step*log(pt2/m_ptmin2));
-  //msg_Out() << METHOD << ": sbin = " << sbin << ", ptbin = " << ptbin << ", s = " << m_S << "\n";
 
   double s1   = m_S_lab * std::pow(m_sstep, sbin), s2 = m_S_lab * std::pow(m_sstep, sbin+1);
   double pt21 = m_ptmin2*exp(m_pt2step*(ptbin)), pt22 = m_ptmin2*exp(m_pt2step*(ptbin+1));

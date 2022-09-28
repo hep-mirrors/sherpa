@@ -594,25 +594,25 @@ namespace Recola {
 
    if (s_asscontribs[id]) {
       if (s_asscontribs[id]&asscontrib::EW) {
-        if (!asscontribs.size()>0) THROW(fatal_error,"Inconsistent state.");
+        if (!(asscontribs.size()>0)) THROW(fatal_error,"Inconsistent state.");
         msg_Debugging()<<"Getting V_EW ..."<<std::endl;
         get_squared_amplitude_rcl(id,boqcd,"NLO",asscontribs[0]);
         msg_Debugging()<<"... V_EW="<<asscontribs[0]<<std::endl;
       }
       if (s_asscontribs[id]&asscontrib::LO1) {
-        if (!asscontribs.size()>1) THROW(fatal_error,"Inconsistent state.");
+        if (!(asscontribs.size()>1)) THROW(fatal_error,"Inconsistent state.");
         msg_Debugging()<<"Getting BsubLO1 ..."<<std::endl;
         if (boqcd>=1) get_squared_amplitude_rcl(id,boqcd-1,"LO",asscontribs[1]);
         msg_Debugging()<<"... BsubLO1="<<asscontribs[1]<<std::endl;
       }
       if (s_asscontribs[id]&asscontrib::LO2) {
-        if (!asscontribs.size()>2) THROW(fatal_error,"Inconsistent state.");
+        if (!(asscontribs.size()>2)) THROW(fatal_error,"Inconsistent state.");
         msg_Debugging()<<"Getting BsubLO2 ..."<<std::endl;
         if (boqcd>=2) get_squared_amplitude_rcl(id,boqcd-2,"LO",asscontribs[2]);
         msg_Debugging()<<"... BsubLO2="<<asscontribs[2]<<std::endl;
       }
       if (s_asscontribs[id]&asscontrib::LO3) {
-        if (!asscontribs.size()>3) THROW(fatal_error,"Inconsistent state.");
+        if (!(asscontribs.size()>3)) THROW(fatal_error,"Inconsistent state.");
         msg_Debugging()<<"Getting BsubLO3 ..."<<std::endl;
         if (boqcd>=3) get_squared_amplitude_rcl(id,boqcd-3,"LO",asscontribs[3]);
         msg_Debugging()<<"... BsubLO3="<<asscontribs[3]<<std::endl;

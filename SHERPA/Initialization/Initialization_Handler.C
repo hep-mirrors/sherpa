@@ -105,6 +105,7 @@ void Initialization_Handler::RegisterDefaults()
   Settings& s = Settings::GetMainSettings();
   s["EVENT_GENERATION_MODE"].SetDefault("PartiallyUnweighted");
   s["EVENT_TYPE"].SetDefault("StandardPerturbative");
+  s["SOFT_COLLISIONS"].SetDefault("None");
   s["EVT_FILE_PATH"].SetDefault(".");
   s["ANALYSIS_OUTPUT"].SetDefault("Analysis/");
   s["RESULT_DIRECTORY"].SetDefault("Results");
@@ -301,6 +302,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_remnants)      { delete p_remnants;      p_remnants      = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
+  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_variations)    { delete p_variations;    p_variations    = NULL; }
   if (p_filter)        { delete p_filter;        p_filter        = NULL; }
   while (m_analyses.size()>0) {
@@ -511,11 +513,16 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       m_mode=eventtype::StandardPerturbative;
     else if (eventtype=="MinimumBias") {
       m_mode=eventtype::MinimumBias;
-      s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      if (s["SOFT_COLLISIONS"].Get<string>()==string("Amisic")) 
+	s["MI_HANDLER"].OverrideScalar<std::string>("Amisic");
+      else if (s["SOFT_COLLISIONS"].Get<string>()==string("Shrimps")) 
+	s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else if (eventtype=="HadronDecay") {
       m_mode=eventtype::HadronDecay;
       s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
@@ -555,20 +562,19 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   PHASIC::Phase_Space_Handler::GetInfo();
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheHardDecays();
-  okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheBeamRemnants();
-  //  only if events:
+  okay = okay && InitializeTheMatrixElements();
   if (rpa->gen.NumberOfEvents()>0) {
-    okay = okay && InitializeTheAnalyses();
+    okay = okay && InitializeTheUnderlyingEvents();
+    okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
-    okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheHadronDecays();
-    okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
     okay = okay && InitializeTheFilter();
     okay = okay && InitializeTheReweighting(Variations_Mode::all);
+    okay = okay && InitializeTheAnalyses();
   } else {
     okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);
   }
@@ -865,8 +871,7 @@ bool Initialization_Handler::InitializeThePDFs()
 }
 
 bool Initialization_Handler::InitializeTheRemnants() {
-  isr::id id=isr::hard_process;
-  p_remnants = new Remnant_Handler(m_isrhandlers[id],p_beamspectra);
+  p_remnants = new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra);
   return true;
 }
 
@@ -901,18 +906,6 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   return ret==1;
 }
 
-bool Initialization_Handler::InitializeTheUnderlyingEvents()
-{
-  as->SetActiveAs(isr::hard_subprocess);
-  p_mihandler = new MI_Handler(p_model,
-			       m_isrhandlers[isr::hard_subprocess], p_remnants);
-  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
-  as->SetActiveAs(isr::hard_process);
-  if (p_mihandler->Type()!=0)
-    msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
-  return true;
-}
-
 bool Initialization_Handler::InitializeTheShowers()
 {
   std::vector<isr::id> isrtypes;
@@ -925,6 +918,8 @@ bool Initialization_Handler::InitializeTheShowers()
     m_showerhandlers[isrtypes[i]] =
       new Shower_Handler(p_model, m_isrhandlers[isrtypes[i]], i);
     m_showerhandlers[isrtypes[i]]->SetRemnants(p_remnants);
+    for (size_t beam=0;beam<2;beam++)
+      m_isrhandlers[isrtypes[i]]->SetRemnant(p_remnants->GetRemnant(beam),beam);
   }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
@@ -932,11 +927,24 @@ bool Initialization_Handler::InitializeTheShowers()
 }
 
 
+bool Initialization_Handler::InitializeTheUnderlyingEvents()
+{
+  as->SetActiveAs(isr::hard_subprocess);
+  p_mihandler = new MI_Handler(p_model,
+			       m_isrhandlers[isr::hard_subprocess], p_remnants);
+  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
+  as->SetActiveAs(isr::hard_process);
+  if (p_mihandler->Type()!=0)
+    msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
+  return true;
+}
+
+
 bool Initialization_Handler::InitializeTheSoftCollisions() 
 {
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
-  p_softcollisions = new Soft_Collision_Handler(p_beamspectra,
-                                                m_isrhandlers[isr::hard_process]);
+  p_softcollisions = new Soft_Collision_Handler(p_mihandler->Amisic(),
+						p_mihandler->Shrimps());
   msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
   return 1;
 }

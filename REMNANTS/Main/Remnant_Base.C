@@ -25,7 +25,8 @@ std::ostream &REMNANTS::operator<<(std::ostream &ostr, const rtp::code code) {
 
 Remnant_Base::Remnant_Base(const rtp::code type, const unsigned int beam)
     : m_type(type), m_beam(beam), p_beam(nullptr),
-      p_beamblob(nullptr), p_colours(nullptr), m_scale2(-1.) {}
+      p_beamblob(nullptr), m_position(Vec4D(0.,0.,0.,0.)),
+      p_colours(nullptr), m_scale2(-1.) {}
 
 Remnant_Base::~Remnant_Base() = default;
 
@@ -68,6 +69,7 @@ Blob *Remnant_Base::MakeBlob() {
   p_beamblob->SetId();
   p_beamblob->SetBeam(m_beam);
   p_beamblob->SetStatus(blob_status::needs_beams | blob_status::needs_softUE);
+  p_beamblob->SetPosition(m_position);
   Particle *part = new Particle(-1, p_beam->Bunch(), p_beam->OutMomentum());
   part->SetNumber(0);
   part->SetBeam(m_beam);

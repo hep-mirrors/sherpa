@@ -9,15 +9,12 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Omega_ik::Omega_ik(const Eikonal_Parameters & params) :
-  //m_weights(params),
   m_bmax(params.bmax),
   p_Omegaik(0), p_Omegaki(0) 
 { 
   m_gridB.clear();
   m_gridBmax.clear();
   m_gridD.clear();
-
-  msg_Out()<<METHOD<<" : "<<m_bmax<<".\n";
 }
 
 Omega_ik::~Omega_ik() {
@@ -25,35 +22,6 @@ Omega_ik::~Omega_ik() {
   if (p_Omegaki) delete p_Omegaki;
 }
 
-void Omega_ik::SetContributors(Eikonal_Contributor * Omegaik,
-			       Eikonal_Contributor * Omegaki) { 
-  p_Omegaik = Omegaik; p_Omegaki = Omegaki; 
-  //m_weights.SetSingleOmegaTerms(p_Omegaik,p_Omegaki);
-}
-
-void Omega_ik::SetDeltaB(const double & deltaB) {
-  m_deltaB = deltaB;
-}
-
-void Omega_ik::SetPrefactor(const double & prefactor) { 
-  m_prefactor = prefactor; 
-}
-
-Eikonal_Contributor * Omega_ik::GetSingleTerm(const int & i) {
-  if (i==0) return p_Omegaik;
-  if (i==1) return p_Omegaki;
-  msg_Error()<<"Error in "<<METHOD<<"("<<i<<"):"<<std::endl
-	     <<"   Out of range.  Will exit the run."<<std::endl;
-  exit(1);  
-}
-
-std::vector<double> * Omega_ik::GetImpactParameterGrid() { 
-  return &m_gridB; 
-}
-
-std::vector<double> * Omega_ik::GetImpactParameterMaximumGrid() { 
-  return &m_gridBmax; 
-}
 
 double Omega_ik::operator()(const double & B) const {
   if (B<0. || B>=m_bmax) return 0.;
@@ -106,12 +74,13 @@ void Omega_ik::PrepareQT(const double & b1,const double & b2) {
   }
 }
 
-double Omega_ik::
-EffectiveIntercept(double b1,double b2,const double & y) {
-  THROW(not_implemented, "Missing implementation for Omega_ik::EffectiveIntercept().");
-  //return m_weights.EffectiveIntercept(b1,b2,y);
+Eikonal_Contributor * Omega_ik::GetSingleTerm(const int & i)  {
+  if (i==0)      return p_Omegaik;
+  else if (i==1) return p_Omegaki;
+  msg_Error()<<"Error in "<<METHOD<<"("<<i<<"):"<<std::endl
+	     <<"   Out of range.  Will exit the run."<<std::endl;
+  exit(1);  
 }
-
 
 void Omega_ik::TestEikonal(Analytic_Eikonal * anaeik,
 			   const std::string & dirname) const

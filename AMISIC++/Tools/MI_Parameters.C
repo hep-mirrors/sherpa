@@ -23,9 +23,9 @@ void MI_Parameters::ReadParameters()
 {
   auto s = Settings::GetMainSettings()["AMISIC"];
   m_parameters[string("pt_0(ref)")]
-    = s["PT_0(ref)"].SetDefault(1.).Get<double>();
+    = s["PT_0(ref)"].SetDefault(2.5).Get<double>();
   m_parameters[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault(1.5).Get<double>();
+    = s["PT_Min(ref)"].SetDefault(3.).Get<double>();
   m_parameters[string("eta")]
     = s["Eta"].SetDefault(0.16).Get<double>();
   m_parameters[string("Ecms(ref)")]

@@ -10,7 +10,8 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 using namespace std;
 
-Kinematics_Generator::Kinematics_Generator() {}
+Kinematics_Generator::Kinematics_Generator() :
+  m_stretcher(Momenta_Stretcher("REMNANTS")) {}
 
 Kinematics_Generator::~Kinematics_Generator() {}
 
@@ -54,7 +55,6 @@ void Kinematics_Generator::Reset() {
   }
   m_shuffledmap.clear();
   m_boostedblobs.clear();
-  m_stretcher.Reset();
 }
 
 Blob *Kinematics_Generator::MakeSoftBlob() {
@@ -169,6 +169,7 @@ bool Kinematics_Generator::AdjustFinalStateDIS(const size_t &beam) {
     Particle *part = new Particle(*pit->first);
     part->SetNumber();
     part->SetMomentum(pit->second);
+    part->SetFinalMass(part->RefFlav().HadMass());
     p_softblob->AddToOutParticles(part);
     p_softblob->AddToInParticles(pit->first);
     p_spectators[beam]->remove(pit->first);
@@ -525,6 +526,7 @@ bool Kinematics_Generator::AdjustShowerInitiators() {
     for (size_t beam = 0; beam < 2; beam++) {
       plit[beam]++;
       part[beam]->SetMomentum(ShuffledMomentum(part[beam]));
+      part[beam]->SetFinalMass(part[beam]->RefFlav().HadMass());
       p_softblob->AddToOutParticles(part[beam]);
       if (plit[beam] == p_remnants[beam]->GetExtracted()->end())
         runit = false;
@@ -558,6 +560,7 @@ bool Kinematics_Generator::BoostConnectedBlob(ATOOLS::Blob *blob,
       m_oldcmsboost.Boost(mom);
       m_newcmsboost.BoostBack(mom);
       part->SetMomentum(mom);
+      part->SetFinalMass(part->RefFlav().HadMass());
     }
     // boost blobs downstream
     if (!BoostConnectedBlob(part->DecayBlob(), catchit))
@@ -574,6 +577,7 @@ bool Kinematics_Generator::AdjustRemnants() {
     while (!p_spectators[beam]->empty()) {
       Particle *part = p_spectators[beam]->front();
       part->SetMomentum(ShuffledMomentum(part));
+      part->SetFinalMass(part->RefFlav().HadMass());
       p_softblob->AddToOutParticles(part);
       p_spectators[beam]->pop_front();
     }

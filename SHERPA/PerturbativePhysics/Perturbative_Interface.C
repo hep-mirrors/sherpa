@@ -147,7 +147,6 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     return Return_Value::Success;
   }
   if (p_sc) {
-    p_sc->SetClusterDefinitions(p_shower->GetShower()->GetClusterDefinitions());
     p_ampl=p_sc->ClusterConfiguration(blob);
     if (p_ampl==NULL) {
       msg_Error()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
@@ -273,7 +272,7 @@ bool Perturbative_Interface::FillBlobs()
     }
   }
   p_bloblist->push_back(sblob);
-  p_shower->FillBlobs(p_bloblist); 
+  p_shower->FillBlobs(p_bloblist);
   return true;
 }
 
@@ -281,15 +280,14 @@ int Perturbative_Interface::PerformShowers()
 {
   PDF::Shower_Base *csh(p_shower->GetShower());
   int stat=csh->PerformShowers();
-
-  m_weightsmap["PS"] = csh->WeightsMap()["PS"];
-  m_weightsmap["PS_QCUT"] = csh->WeightsMap()["PS_QCUT"];
-
-  auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
-  wgtmap["PS"] *= m_weightsmap["PS"];
-  wgtmap["PS_QCUT"] *= m_weightsmap["PS_QCUT"];
-  p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
-
+  if ((*p_hard)["WeightsMap"]!=NULL) {
+    m_weightsmap["PS"]      = csh->WeightsMap()["PS"];
+    m_weightsmap["PS_QCUT"] = csh->WeightsMap()["PS_QCUT"];
+    auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
+    wgtmap["PS"]      *= m_weightsmap["PS"];
+    wgtmap["PS_QCUT"] *= m_weightsmap["PS_QCUT"];
+    p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
+  }
   return stat;
 }
 

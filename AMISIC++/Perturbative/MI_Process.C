@@ -50,6 +50,7 @@ XS_Base::~XS_Base() {}
 MI_Process::MI_Process(const vector<Flavour> & flavs) :
   m_name(flavs[0].IDName()+" "+flavs[1].IDName()+" --> "+
 	 flavs[2].IDName()+" "+flavs[3].IDName()),
+  m_stretcher(Momenta_Stretcher(string("AMISIC: ")+m_name)),
   p_me2(NULL), m_emin(0.),
   m_masslessIS((flavs[0].Kfcode()<4 || flavs[0].Kfcode()==21) &&
 	       (flavs[1].Kfcode()<4 || flavs[1].Kfcode()==21))

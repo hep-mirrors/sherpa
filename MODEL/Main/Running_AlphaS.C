@@ -259,7 +259,7 @@ double One_Running_AlphaS::AlphaSLam(const double Q2,const int nr)
 }
 
 double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
-			       const double mu2,const int nl) {
+				   const double mu2,const int nl) {
   double zeta2g = 1.;
 
   // 0th order
@@ -289,7 +289,7 @@ double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
 }
 
 double One_Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
-				  const double mu2,const int nl) {
+				      const double mu2,const int nl) {
   // might be simplified considerably when using mu2==mass2
   double zeta2g  = 1.;
   // 0th order   

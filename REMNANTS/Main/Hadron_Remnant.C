@@ -3,6 +3,7 @@
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 #include <algorithm>
 
@@ -12,7 +13,7 @@ using namespace ATOOLS;
 Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam):
   Remnant_Base(rtp::hadron,beam),
   p_pdf(pdf), p_partons(&(p_pdf->Partons())), m_beamflav(pdf->Bunch()),
-  p_valence(NULL), p_remnant(NULL), p_recoiler(NULL),
+  p_valence(NULL), p_remnant(NULL), p_recoiler(NULL), m_ff(Form_Factor()), 
   m_alpha(0.), m_gamma(1.), m_beta(-1.5),  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
 {
   m_scale2 = Max(4.0,p_pdf->Q2Min());
@@ -77,6 +78,7 @@ Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
   Particle * part = new Particle(-1,flav,Vec4D(0.,0.,0.,0.),'B');
   part->SetNumber();
   part->SetBeam(m_beam);
+  part->SetPosition(m_position+m_ff());
   return part;
 }
 

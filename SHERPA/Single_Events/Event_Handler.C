@@ -53,9 +53,9 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
   std::string name = phase->Name();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
-      msg_Out()<<"WARNING in Event_Handler::AddEventPhase"
-	       <<"("<<type<<":"<<name<<") "
-	       <<"already included."<<std::endl;
+      msg_Info()<<"WARNING in Event_Handler::AddEventPhase"
+		<<"("<<type<<":"<<name<<") "
+		<<"already included."<<std::endl;
       return;
     }
   }
@@ -77,34 +77,34 @@ void Event_Handler::EmptyEventPhases()
 void Event_Handler::PrintGenericEventStructure()
 {
   if (!msg_LevelIsInfo()) return;
-  msg_Out()<<"----------------------------------------------------------\n"
+  msg_Info()<<"----------------------------------------------------------\n"
 	    <<"-- SHERPA generates events with the following structure --\n"
 	    <<"----------------------------------------------------------\n";
-  msg_Out()<<"Event generation   : ";
+  msg_Info()<<"Event generation   : ";
   switch (ToType<size_t>(rpa->gen.Variable("EVENT_GENERATION_MODE"))) {
   case 0:
-    msg_Out()<<"Weighted"<<std::endl;
+    msg_Info()<<"Weighted"<<std::endl;
     break;
   case 1:
-    msg_Out()<<"Unweighted"<<std::endl;
+    msg_Info()<<"Unweighted"<<std::endl;
     break;
   case 2:
-    msg_Out()<<"Partially unweighted"<<std::endl;
+    msg_Info()<<"Partially unweighted"<<std::endl;
     break;
   default:
-    msg_Out()<<"Unknown"<<std::endl;
+    msg_Info()<<"Unknown"<<std::endl;
     break;
   }
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      msg_Out()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
+      msg_Info()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
     }
   }
   if (p_variations && !p_variations->GetParametersVector()->empty()) {
-    msg_Out()<<"Reweighting        : "
+    msg_Info()<<"Reweighting        : "
 	     <<p_variations->GetParametersVector()->size()<<" variations.\n";
   }
-  msg_Out()<<"---------------------------------------------------------\n";
+  msg_Info()<<"---------------------------------------------------------\n";
 }
 
 void Event_Handler::Reset()
@@ -172,6 +172,7 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
   p_signal->SetStatus(status);
   p_signal->AddData("Trials",new Blob_Data<double>(0));
   p_signal->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  p_signal->AddData("Weight_Norm",new Blob_Data<double>(1.));
   m_blobs.push_back(p_signal);
 }
 
@@ -212,9 +213,7 @@ bool Event_Handler::AnalyseEvent() {
   return true;
 }
 
-int Event_Handler::IterateEventPhases(eventtype::code& mode)
-{
-  DEBUG_FUNC("mode="<<mode);
+int Event_Handler::IterateEventPhases(eventtype::code & mode) {
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;
@@ -239,7 +238,6 @@ int Event_Handler::IterateEventPhases(eventtype::code& mode)
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
     Return_Value::code rv((*pit)->Treat(&m_blobs));
-    //msg_Out()<<"       "<<(*pit)->Name()<<" yields "<<rv<<"\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
@@ -391,7 +389,6 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
 
 bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
   bool run(true);
-
   InitialiseSeedBlob(ATOOLS::btp::Soft_Collision,
 		     ATOOLS::blob_status::needs_minBias);
   do {
@@ -501,7 +498,6 @@ void Event_Handler::Finish() {
     m_lastblobcounter=Blob::Counter();
   }
   Blob::Reset();
-
   // Obtain absolute (variation) weights.
   MPISyncXSAndErrMaps();
   Weights_Map xs_wgtmap = TotalXSMPI();
@@ -540,7 +536,6 @@ void Event_Handler::Finish() {
   msg_Out() << std::right << std::setw(13) << "AbsErr [pb]";
   msg_Out() << std::right << std::setw(12) << "RelErr" << '\n';
   msg_Out() << std::string(table_size, '-') << '\n';
-
   // Define table row printer.
   auto printxs = [max_weight_name_size, xs_size, reldev_size, abserr_size,
 		  relerr_size](const std::string& name, double xs, double nom,

@@ -62,15 +62,34 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       m_muf12=p_pdfinfo->m_muf12;
       m_muf22=p_pdfinfo->m_muf22;
     }
-    ReadIn(db,"UserHook",false);
-    if (db) {
-      m_userhook=true;
-      m_userweight=db->Get<double>();
+    if (sp->Type()!=btp::Elastic_Collision &&
+	sp->Type()!=btp::Soft_Diffractive_Collision &&
+	sp->Type()!=btp::Quasi_Elastic_Collision) {
+      ReadIn(db,"Renormalization_Scale",false);
+      if (db) m_mur2=db->Get<double>();
+      SetAlphaS();
+      SetAlpha();
     }
-    ReadIn(db,"Renormalization_Scale",false);
-    if (db) m_mur2=db->Get<double>();
-    SetAlphaS();
-    SetAlpha();
+    else if (sp->Type()==btp::Elastic_Collision) {
+        ReadIn(db,"Renormalization_Scale",false);
+        if (db) m_mur2=db->Get<double>();
+        else m_mur2=1.;
+        PRINT_VAR(m_mur2);
+        SetAlphaS();
+        SetAlpha();
+    }
+    else {
+      ReadIn(db,"UserHook",false);
+      if (db) {
+	m_userhook=true;
+	m_userweight=db->Get<double>();
+      }
+      ReadIn(db,"Renormalization_Scale",false);
+      if (db) m_mur2=db->Get<double>();
+      PRINT_VAR(m_mur2);
+      SetAlphaS();
+      SetAlpha();
+    }
     if (m_extendedweights) {
       ReadIn(db,"Orders",true);
       m_orders=db->Get<std::vector<double> >();
@@ -523,7 +542,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   EventInfo evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   evtinfo.WriteTo(event);
-  
+
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
   HepMC::GenVertex * vertex, * psvertex(NULL);

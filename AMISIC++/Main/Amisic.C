@@ -1,10 +1,12 @@
 #include "AMISIC++/Main/Amisic.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_ana(false)
+Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_Enorm(rpa->gen.Ecms()/2.),
+                   m_isMinBias(false), m_ana(false)
 {}
 
 Amisic::~Amisic() {
@@ -80,12 +82,23 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * p_xsecs->XSnd()));
 
   if (m_ana) InitAnalysis();
+  CleanUp();
+
   return true;
 }
 
 bool Amisic::InitParameters() {
   mipars = new MI_Parameters();
   return mipars->Init();
+}
+
+bool Amisic::InitMPIs(const double & scale) {
+  SetMassMode(1);
+  SetMaxScale(scale);
+  SetB();
+  if (!VetoEvent(scale)) return true;
+  //m_stop = true;
+  return false;
 }
 
 void Amisic::Update(const PDF::ISR_Handler *isr) {
@@ -125,7 +138,7 @@ void Amisic::SetB(const double & b) {
 }
   
 bool Amisic::VetoEvent(const double & scale) {
-  if (scale<0.) return true;
+  if (scale<0.) return false;
   return false;
 }
 
@@ -137,18 +150,27 @@ const double Amisic::ScaleMax() const {
   return m_pt2;
 }
 
-Blob * Amisic::GenerateScatter()
-{
+Blob * Amisic::GenerateScatter() {
   Blob * blob = m_singlecollision.NextScatter(m_bfac);
   if (blob) {
     m_pt2 = m_singlecollision.LastPT2();
+    blob->SetPosition(m_impact.SelectPositionForScatter(m_b));
+    blob->SetTypeSpec("AMISIC++ 1.1");
     if (m_ana) Analyse(false);
     return blob;
   }
-  else {
-    if (m_ana) Analyse(true);
-  }
+  if (m_ana) Analyse(true);
   return NULL;
+}
+
+int Amisic::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
+  if (m_isFirst==true) {
+    m_isFirst   = false;
+    m_isMinBias = true;
+    m_b    = m_impact.SelectB();
+    m_bfac = Max(0.,m_impact(m_b));
+  }
+  return 0;
 }
 
 Cluster_Amplitude * Amisic::ClusterConfiguration(Blob * blob) {
@@ -194,11 +216,17 @@ int Amisic::ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) {
 
 bool Amisic::VetoScatter(Blob * blob)
 {
-  msg_Out()<<METHOD<<" ont implemented yet.  Will exit.\n";
+  msg_Error()<<METHOD<<" ont implemented yet.  Will exit.\n";
   exit(1);
 }
 
-void Amisic::CleanUp() {}
+void Amisic::CleanUp() {
+  SetMaxEnergies(rpa->gen.PBeam(0)[0],rpa->gen.PBeam(1)[0]);
+  SetMaxScale(rpa->gen.Ecms()/2.);
+  m_isFirst   = true;
+  m_isMinBias = false;
+}
+
 void Amisic::Reset() {}
 
 void Amisic::InitAnalysis() {

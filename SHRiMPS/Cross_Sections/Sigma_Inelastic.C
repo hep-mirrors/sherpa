@@ -13,9 +13,11 @@ double Sigma_Inelastic::GetValue(const double & B) {
 
 double Sigma_Inelastic::GetCombinedValue(const double & B) { 
   double value(0.);
-  for (std::list<Omega_ik *>::iterator eikonal=p_eikonals->begin();
-       eikonal!=p_eikonals->end(); eikonal++) {
-    value += (*eikonal)->Prefactor()*(1.-exp(-(**eikonal)(B))); 
+  for (size_t i=0;i<p_eikonals->size();i++) {
+    for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+      Omega_ik * eikonal = (*p_eikonals)[i][j];
+      value += eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)));
+    }
   }
   return value;
 }

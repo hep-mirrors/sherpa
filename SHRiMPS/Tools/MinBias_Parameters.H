@@ -12,9 +12,9 @@ namespace SHRIMPS {
   class Cross_Sections;
 
   struct XSecs_Container {
-    double xs_tot, xs_in, xs_el, xs_SD, xs_DD;
-    XSecs_Container():
-      xs_tot(0.), xs_in(0.), xs_el(0.), xs_SD(0.), xs_DD(0.) {}
+    double xs_tot, xs_in, xs_el, xs_SD[2], xs_DD;
+    XSecs_Container(): xs_tot(0.), xs_in(0.), xs_el(0.), xs_DD(0.)
+    { xs_SD[0] = xs_SD[1] = 0.; }
   };
 
   typedef std::map<std::string,double> StringDoubleMap;
@@ -31,9 +31,9 @@ namespace SHRIMPS {
     Ladder_Parameters     m_ladder_params; 
     ShowerLink_Parameters m_showerlink_params; 
 
-    std::list<Form_Factor *> * p_ffs;
-    std::list<Omega_ik *>    * p_eikonals;
-    XSecs_Container          * p_xsecs;
+    std::vector<Form_Factor *>            m_ffs;
+    std::vector<std::vector<Omega_ik *> > m_eikonals;
+    XSecs_Container                       m_xsecs;
 
     void RegisterDefaults() const;
     void FillRunParameters();
@@ -47,38 +47,36 @@ namespace SHRIMPS {
 
     void Init();
     void Reset();
-    void AddFormFactor(Form_Factor * ff) { p_ffs->push_back(ff); }
-    void AddEikonal(Omega_ik * eikonal)  { p_eikonals->push_back(eikonal); }
+    void ResetEikonals(const size_t size);
+    void AddFormFactor(Form_Factor * ff) { m_ffs.push_back(ff); }  
+    void AddEikonal(const size_t & i,const size_t & j,
+		    Omega_ik * eikonal)  { m_eikonals[i][j] = eikonal; }  
     void SetXSecs(Cross_Sections * xsecs);
     void UpdateForNewEnergy(const double & energy);
 
     const run_mode::code & RunMode()   const { return m_runmode; }
     const size_t         & NGWStates() const { return m_NGWstates; }
-
+    
     const Run_Parameters & GetRunParameters() const {
-      return m_run_params; 
+      return m_run_params;
     }
     const FormFactor_Parameters & GetFFParameters() const {
-      return m_ff_params; 
+      return m_ff_params;
     }
     const Eikonal_Parameters & GetEikonalParameters() const {
-      return m_eik_params; 
+      return m_eik_params;
     }
     const Ladder_Parameters & GetLadderParameters() const {
-      return m_ladder_params; 
+      return m_ladder_params;
     }
     const ShowerLink_Parameters & GetShowerLinkParameters() const {
-      return m_showerlink_params; 
+      return m_showerlink_params;
     }
-    std::list<Form_Factor *> * GetFormFactors() const {
-      return p_ffs;
+    std::vector<Form_Factor *> * GetFormFactors() { return &m_ffs; }
+    std::vector<std::vector<Omega_ik *> > * GetEikonals() {
+      return &m_eikonals;
     }
-    std::list<Omega_ik *> * GetEikonals() const {
-      return p_eikonals;
-    }
-    XSecs_Container * GetXSecs() const {
-      return p_xsecs;
-    }
+    XSecs_Container * GetXSecs() { return &m_xsecs; } 
   };
   
   extern MinBias_Parameters MBpars;

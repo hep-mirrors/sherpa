@@ -9,13 +9,13 @@
 namespace SHRIMPS {
   class Sigma_Base : public ATOOLS::Function_Base {
   protected:
-    std::list<Omega_ik *> * p_eikonals;
+    std::vector<std::vector<Omega_ik *> > * p_eikonals;
     Omega_ik              * p_eikonal;
     double                  m_originalY, m_cutoffY, m_Y, m_E;
     double                  m_accu;
     double                  m_sigma;
   public:
-    Sigma_Base() : p_eikonals(MBpars.GetEikonals()), m_sigma(0.) {}
+    Sigma_Base() : p_eikonals(MBpars.GetEikonals()), m_sigma(0.) { }
 
     virtual void   SetEikonal(Omega_ik * eikonal)    { p_eikonal = eikonal; }
     virtual void   SetSigma(const double & sigma=-1) { m_sigma = sigma; }
