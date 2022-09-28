@@ -158,6 +158,7 @@ void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
 
 ATOOLS::Blob * Shrimps::GenerateEvent() {
   msg_Out()<<"  * "<<METHOD<<".\n";
+  msg_Out()<<"test\n\n\n\n\n";
   return p_generator->GenerateEvent();
 }
 
