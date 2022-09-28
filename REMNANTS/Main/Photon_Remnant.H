@@ -3,6 +3,7 @@
 
 #include "PDF/Main/PDF_Base.H"
 #include "REMNANTS/Main/Remnant_Base.H"
+#include "REMNANTS/Tools/Form_Factor.H"
 #include <map>
 
 namespace REMNANTS {
@@ -16,6 +17,7 @@ private:
   bool m_valence;
 
   ATOOLS::Particle * p_spectator, * p_recoiler;
+  Form_Factor        m_ff;
 
   void MakeSpectator(ATOOLS::Particle *parton) override;
   void MakeRemnants();
@@ -25,7 +27,6 @@ private:
   double EstimateRequiredEnergy();
   void FindRecoiler();
   void Output();
-
 public:
   // constructor
   Photon_Remnant(PDF::PDF_Base *pdf, const unsigned int beam);

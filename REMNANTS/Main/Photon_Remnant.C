@@ -12,12 +12,13 @@ Photon_Remnant::Photon_Remnant(PDF::PDF_Base *pdf, const unsigned int beam)
     : Remnant_Base(rtp::photon, beam), p_pdf(pdf),
       p_partons(&(pdf->Partons())), m_LambdaQCD(0.25), m_beta_quark(-1.),
       m_beta_gluon(-1.2), m_valence(false), p_spectator(nullptr),
-      p_recoiler(nullptr) {}
+      p_recoiler(nullptr), m_ff(Form_Factor()) {}
 
 Particle *Photon_Remnant::MakeParticle(const Flavour &flav) {
   Particle *part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
   part->SetNumber();
   part->SetBeam(m_beam);
+  part->SetPosition(m_position+m_ff());
   return part;
 }
 
@@ -213,16 +214,14 @@ void Photon_Remnant::CompensateColours() {
 
 double Photon_Remnant::EstimateRequiredEnergy()
 {
-  double req_energy = 0.;
+  m_remnant_masses = 0.;
   for (auto pit : m_spectators) {
-    req_energy += pit->Flav().HadMass();
+    m_remnant_masses += pit->Flav().HadMass();
   }
   if (!m_valence) {
-    req_energy += 2 * Flavour(kf_s).HadMass();
+    m_remnant_masses += 2 * Flavour(kf_s).HadMass();
   }
-  m_remnant_masses = req_energy; // This amount is physically needed for masses
-  req_energy += m_LambdaQCD; // Here we just add some wiggle room for the kinematics
-  return req_energy;
+  return m_remnant_masses;
 }
 
 void Photon_Remnant::FindRecoiler() {
