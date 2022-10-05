@@ -219,7 +219,7 @@ double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
                        <<"returning zero."<<std::endl;
     return 0.;
   }
-  int kfc = m_bunch.IsAnti()*int(infl);
+  int kfc = (m_bunch.IsAnti()?-1:1)*int(infl);
   if (int(infl)==kf_gluon || int(infl)==kf_photon)
     kfc = int(infl);
   for (size_t i(0);i<m_disallowedflavour.size();++i) {
