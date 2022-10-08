@@ -75,19 +75,8 @@ namespace OpenLoops {
     s_olprefix = reader.GetValue<string>("OL_PREFIX", s_olprefix);
     msg_Info()<<"Initialising OpenLoops generator from "<<s_olprefix<<endl;
 
-    // load library dynamically
-    s_loader->AddPath(s_olprefix+"/lib");
-    s_loader->AddPath(s_olprefix+"/proclib");
-    if (!s_loader->LoadLibrary("olcommon")) PRINT_INFO("Ignoring explicit libolcommon.so loading.");
-    if (!s_loader->LoadLibrary("collier")) PRINT_INFO("Ignoring explicit libcollier.so loading.");
-    if (!s_loader->LoadLibrary("oneloop")) PRINT_INFO("Ignoring explicit liboneloop.so loading.");
-    if (!s_loader->LoadLibrary("cuttools")) PRINT_INFO("Ignoring explicit libcuttools.so loading.");
-    if (!s_loader->LoadLibrary("rambo")) PRINT_INFO("Ignoring explicit librambo.so loading.");
-    if (!s_loader->LoadLibrary("trred")) PRINT_INFO("Ignoring explicit libtrred.so loading.");
-    if (!s_loader->LoadLibrary("openloops")) THROW(fatal_error, "Failed to load libopenloops.");
-
     // check for existance of separate access to associated contribs
-    void *assfunc(s_loader->GetLibraryFunction("openloops",
+    void *assfunc(s_loader->GetLibraryFunction("SherpaOpenLoops",
                                                "ol_evaluate_associated"));
     if (assfunc) s_ass_func=true;
 

@@ -176,11 +176,6 @@ bool Recola_Interface::Initialize(const string &path,const string &file,
     THROW(fatal_error, "ONLY Standard Model so far supported in RECOLA");
   }
 
-  // load library dynamically
-  s_loader->AddPath(s_recolaprefix);
-  if (!s_loader->LoadLibrary("recola"))
-    THROW(fatal_error, "Failed to load librecola.");
-
   int recolaVerbosity=0;
   recolaVerbosity = reader.GetValue<int>("RECOLA_VERBOSITY",recolaVerbosity);
   if(recolaVerbosity<0 || recolaVerbosity >2){
