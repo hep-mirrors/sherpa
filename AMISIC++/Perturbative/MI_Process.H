@@ -45,7 +45,7 @@ namespace AMISIC {
     std::string                  m_name;
     ATOOLS::Momenta_Stretcher    m_stretcher;
     std::vector<ATOOLS::Flavour> m_flavs;
-    std::vector<double>          m_masses, m_PSmasses, m_masses2;
+    std::vector<double>          m_masses, m_masses2;
     std::vector<ATOOLS::Vec4D>   m_momenta;
     XS_Base   * p_me2;
     double      m_emin;

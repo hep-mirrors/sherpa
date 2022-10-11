@@ -65,12 +65,10 @@ MI_Process::MI_Process(const vector<Flavour> & flavs) :
   m_flavs.resize(flavs.size());
   m_momenta.resize(m_flavs.size());
   m_masses.resize(m_flavs.size());
-  m_PSmasses.resize(m_flavs.size());
   m_masses2.resize(m_flavs.size());
   for (size_t i=0;i<m_flavs.size();i++) {
     m_flavs[i]    = flavs[i];
     m_masses[i]   = flavs[i].Mass();
-    m_PSmasses[i] = flavs[i].HadMass();
     m_masses2[i]  = sqr(m_masses[i]);
   }
 }
@@ -85,7 +83,7 @@ bool MI_Process::MakeKinematics(const double & pt2,
   // Until now we only have massless initial state partons.
   if (m_masslessIS) MasslessKinematics(pt2,phi,y3,y4);
   else return false;
-  if (m_momenta[0][0] < m_PSmasses[0] || m_momenta[1][0] < m_PSmasses[1])
+  if (m_momenta[0][0] < m_flavs[0].HadMass() || m_momenta[1][0] < m_flavs[1].HadMass())
     return false;
   // If the final state is massive, we use the momenta stretcher to push
   // particles onto their mass shells.  The logic is to go to the c.m. system
@@ -108,8 +106,8 @@ bool MI_Process::MakeKinematics(const double & pt2,
 bool MI_Process::AllowedKinematics(const double & Ehat) {
   // making sure that the c.m. energy of the scatter is larger than the
   // IS or FS sum of masses.
-  return (m_PSmasses[0]+m_PSmasses[1]<Ehat &&
-	  m_PSmasses[2]+m_PSmasses[3]<Ehat); 
+  return (m_flavs[0].HadMass()+m_flavs[1].HadMass()<Ehat &&
+	  m_flavs[2].HadMass()+m_flavs[3].HadMass()<Ehat);
 }
 
 void MI_Process::MasslessKinematics(const double & pt2,const double & phi,
