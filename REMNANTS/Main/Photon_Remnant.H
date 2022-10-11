@@ -24,7 +24,7 @@ private:
   void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap, const bool &copy);
   double SelectZ(const ATOOLS::Flavour &flav);
   ATOOLS::Particle *MakeParticle(const ATOOLS::Flavour &flav);
-  double EstimateRequiredEnergy();
+  double EstimateRequiredEnergy(bool needs_valence_quarks);
   void FindRecoiler();
   void Output();
 public:

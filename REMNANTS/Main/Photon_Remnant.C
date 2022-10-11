@@ -79,7 +79,7 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  double required_energy = EstimateRequiredEnergy() + mom[0] + flav.HadMass();
+  double required_energy = EstimateRequiredEnergy(!flav.IsQuark()) + mom[0] + flav.HadMass();
   if (required_energy > m_residualE) {
     msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
     return false;
@@ -122,7 +122,7 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
                   << "\n";
   // actually we only need m_remnant_masses
-  EstimateRequiredEnergy();
+  EstimateRequiredEnergy(false);
   for (auto part : m_spectators) {
     if (availMom[0] < 0)
       msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
@@ -213,13 +213,13 @@ void Photon_Remnant::CompensateColours() {
   }
 }
 
-double Photon_Remnant::EstimateRequiredEnergy()
+double Photon_Remnant::EstimateRequiredEnergy(bool needs_valence_quarks)
 {
   m_remnant_masses = 0.;
   for (auto pit : m_spectators) {
     m_remnant_masses += pit->Flav().HadMass();
   }
-  if (!m_valence) {
+  if (needs_valence_quarks) {
     m_remnant_masses += 2 * Flavour(kf_s).HadMass();
   }
   return m_remnant_masses;
