@@ -235,9 +235,16 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
               if (isPFFsplitting) nPFFsplittings++;
               m_subevtlist.push_back(pdummy->GetSubevt());
             }
-            else delete pdummy;
+            else {
+              if (links.size() && links.back()==pdummy->GetLOProcess()) links.pop_back();
+              delete pdummy;
+            }
+
           }
-          else delete pdummy;
+          else {
+            if (links.size() && links.back()==pdummy->GetLOProcess()) links.pop_back();
+            delete pdummy;
+          }
           msg_Debugging()<<"\n";
         }
         msg_Debugging()<<"---------------------------------------------\n";
@@ -283,9 +290,15 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
               m_subostermlist.back()->SetNorm(p_tree_process->Norm());
 	      m_subevtlist.push_back(pdummy->GetSubevt());
             }
-            else delete pdummy;
+            else {
+              if (links.size() && links.back()==pdummy->GetOSProcess() ) links.pop_back();
+              delete pdummy;
+            }
 	  }
-	  else delete pdummy;
+	  else {
+            if (links.size() && links.back()==pdummy->GetOSProcess()) links.pop_back();
+            delete pdummy;
+          }
         }
       }
     }

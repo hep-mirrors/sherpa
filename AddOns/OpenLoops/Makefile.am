@@ -22,6 +22,9 @@ OPENLOOPS_ADDS         =	\
 			GGH_Process_Manager.H \
 			GGH_KFactor_Setter.H
 
+libSherpaOpenLoops_la_LDFLAGS = $(AM_LDFLAGS) $(CONDITIONAL_OPENLOOPSLDFLAGS)
+libSherpaOpenLoops_la_LIBADD  = $(CONDITIONAL_OPENLOOPSLDADD)
+
 if OPENLOOPS_SUPPORT
 pkglib_LTLIBRARIES    =	libSherpaOpenLoops.la
 

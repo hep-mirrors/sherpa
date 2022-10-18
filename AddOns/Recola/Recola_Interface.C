@@ -189,13 +189,6 @@ namespace Recola {
                         <<std::endl;
     }
 
-
-    // load library dynamically
-    s_loader->AddPath(s_recolaprefix+"/lib");
-    if (!s_loader->LoadLibrary("recola")) 
-      THROW(fatal_error, "Failed to load librecola.");
-
-
     // VERBOSITY
     int recolaVerbosity=s["RECOLA_VERBOSITY"].Get<int>();
     if(recolaVerbosity<0 || recolaVerbosity >2)
