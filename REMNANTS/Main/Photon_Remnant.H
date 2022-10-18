@@ -13,7 +13,7 @@ private:
   const ATOOLS::Flavour_Set *p_partons;
   ATOOLS::Flavour m_beamflav;
 
-  double m_LambdaQCD, m_beta_quark, m_beta_gluon, m_remnant_masses;
+  double m_LambdaQCD, m_beta_quark, m_beta_gluon;
   bool m_valence;
 
   ATOOLS::Particle * p_spectator, * p_recoiler;
@@ -22,11 +22,11 @@ private:
   void MakeSpectator(ATOOLS::Particle *parton) override;
   void MakeRemnants();
   void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap, const bool &copy);
-  double SelectZ(const ATOOLS::Flavour &flav);
+  double SelectZ(const ATOOLS::Flavour &flav, double restmom, double remnant_masses) const;
   ATOOLS::Particle *MakeParticle(const ATOOLS::Flavour &flav);
-  double EstimateRequiredEnergy(bool needs_valence_quarks);
+  double EstimateRequiredEnergy(bool needs_valence_quarks) const;
   void FindRecoiler();
-  void Output();
+  void Output() const;
 public:
   // constructor
   Photon_Remnant(PDF::PDF_Base *pdf, const unsigned int beam);
