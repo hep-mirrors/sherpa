@@ -1,52 +1,41 @@
-#ifndef SHRIMPS_Main_Soft_Diffractive_Event_Generator_H
-#define SHRIMPS_Main_Soft_Diffractive_Event_Generator_H
+#ifndef SHRIMPS_Glauber_Glauber_H
+#define SHRIMPS_Glauber_Glauber_H
 
-#include "/home/lovecraft/chiara/sherpa/SHRiMPS/Event_Generation/Event_Generator_Base.H"
-#include "/home/lovecraft/chiara/sherpa/SHRiMPS/Cross_Sections/Sigma_SD.H"
-#include "/home/lovecraft/chiara/sherpa/ATOOLS/Phys/Blob_List.H"
-#include "/home/lovecraft/chiara/sherpa/ATOOLS/Math/Function_Base.H"
-#include "/home/lovecraft/chiara/sherpa/ATOOLS/Org/CXXFLAGS.H"
-#include "/home/lovecraft/chiara/sherpa/ATOOLS/Math/Histogram.H"
+#include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
+#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
+#include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Math/Histogram.H"
+#include "ATOOLS/Phys/Particle.H"
 #include <vector>
 #include <map>
 #include <cmath>
 
-/*
 namespace SHRIMPS {
-  class Soft_Diffractive_Event_Generator : public Event_Generator_Base{
-  private:
-    Sigma_SD      * p_sigma;
-    ATOOLS::Flavour m_beam[2], m_out[4];
-    std::map<std::pair<ATOOLS::Flavour,ATOOLS::Flavour>,double> m_hadronmaps[2];
-    ATOOLS::Blob  * p_blob;
-    ATOOLS::Vec4D   m_p[2], m_pout[4];
-    double          m_E[2], m_abs_t;
-    double          m_rate[3], m_sigma, m_massexp;
-    int             m_sign1, m_mode;
-    double          m_Prob1440,  m_Prob1710;
-    double          m_minmass2[2], m_maxmass2[2], m_expargUp[2], m_expargLow[2];
-    bool            m_contMassRange[2];
-    
-    std::map<std::string, ATOOLS::Histogram * > m_histomap;
+  class Glauber{
+    public:
+      int m_type_elas, m_type_abs, m_type_SD1, m_type_SD2, m_type_DD;
+      int m_numNucleons1, m_numNucleons2;
+      double m_radius1, m_radius2;
+      double m_rho0, m_w, m_a;
+      std::vector<ATOOLS::Vec4D> m_nucleus1;
+      std::vector<ATOOLS::Vec4D> m_nucleus2;
+      ATOOLS::Vec4D m_nucleus_1_position;
+      ATOOLS::Vec4D m_nucleus_2_position;
+      std::vector<std::pair<std::pair<int,int>,int>> m_list_of_interactions;
 
-    void   InitialiseHadronMaps();
-    void   SelectMode();
-    void   SelectFS();
-    void   SelectFlavours(size_t beam);
-    void   FixKinematics();
-    double SelectMass2(size_t beam);
-    void   FixBinarySystem(ATOOLS::Vec4D (& moms)[2]);
-    void   SplitQandQQ(size_t beam,ATOOLS::Vec4D & mom);
-    void   FillBlob();
-    //std::vector<ATOOLS::Vec4D> SplitIntoQandQQ(ATOOLS::Vec4D pmu, double Mqq, double Mq);
-    //std::vector<double> ComputePxPyPz(double p, int sign1, int mode);
-    //ATOOLS::Vec4D Get4Vector(double M2[], double Etot);
-  public:
-    Soft_Diffractive_Event_Generator(Sigma_SD * sigma,const int & test=0);
-    ~Soft_Diffractive_Event_Generator();
-				       
-    int InitEvent(ATOOLS::Blob_List * blobs);
-    ATOOLS::Blob * GenerateEvent() { return NULL; }
+      double m_prob_abs, m_prob_quasi_elastic, m_prob_SD1, m_prob_SD2, m_prob_DD, m_prob_elastic;
+      
+      Sigma_Inelastic XS_inelastic;
+      //double Cross_Sections::Sigma_Inelastic::GetValue(0.1);
+
+      Glauber(int N1 = 1, int N2 = 208);
+      ~Glauber();
+      ATOOLS::Vec4D distributeNucleon(double radius, ATOOLS::Vec4D nuc_pos = ATOOLS::Vec4D(0.,0.,0.,0.));
+      double WoodsSaxon(double r, double Radius);
+      void DoCollision(std::vector<ATOOLS::Vec4D> nucleus1,std::vector<ATOOLS::Vec4D> nucleus2);
   };
-}*/
+}
 #endif
