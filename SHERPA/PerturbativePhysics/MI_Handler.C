@@ -22,7 +22,7 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   p_isr(isr),p_remnants(remnant_handler),p_amisic(NULL),p_shrimps(NULL), p_ampl(NULL),
   p_proc(NULL),p_shower(NULL),m_stop(false),m_type(typeID::none),m_name("None")
 {
-  auto s = Settings::GetMainSettings()["MI_HANDLER"];
+  Settings& s = Settings::GetMainSettings();
   m_name      = s["MI_HANDLER"].SetDefault("Amisic").UseNoneReplacements().Get<string>();
   string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
   if (isr->Mode() != PDF::isrmode::hadron_hadron) {
