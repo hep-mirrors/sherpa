@@ -16,7 +16,7 @@ Hadronic_XSec_Calculator::Hadronic_XSec_Calculator(int type) :
   if (type == 1) {
     m_xsecpom = 21.70;
     m_xsecregge =
-        rpa->gen.Beam1().IsAnti() ^ rpa->gen.Beam2().IsAnti() ? 98.39 : 56.08;
+        rpa->gen.Beam1().IsAnti() != rpa->gen.Beam2().IsAnti() ? 98.39 : 56.08;
   }
   // photonic MPI parametrisation taken from Schuler and Sjöstrand, Z Phys C 73 677-688 (1997)
   else if (type == 2) {
@@ -44,18 +44,18 @@ void Hadronic_XSec_Calculator::operator()(double s)
   m_xsnd  *= 1.e9/rpa->Picobarn();
 }
 
-double Hadronic_XSec_Calculator::CalculateTotalXSec() {
+double Hadronic_XSec_Calculator::CalculateTotalXSec() const {
   // standard two-component fit: pomeron + reggeon
   return m_xsecpom*pow(m_s,m_pomeron)+m_xsecregge*pow(m_s,m_reggeon);
 }
 
-double Hadronic_XSec_Calculator::CalculateElasticXSec(const double & xstot) {
+double Hadronic_XSec_Calculator::CalculateElasticXSec(const double & xstot) const {
   // standard two-component fit: pomeron + reggeon
   return 0.0511*xstot*xstot/(4.*(m_slope+pow(m_s,m_pomeron))-4.2);
 }
 
 
-double Hadronic_XSec_Calculator::CalculateSingleDXSec() {
+double Hadronic_XSec_Calculator::CalculateSingleDXSec() const {
   double ap   = 0.25;
   double mmin = m_massp+2.*m_masspi, mmin2 = sqr(mmin), mmax2 = 0.213*m_s;
   double cres = 2., bax = -0.47+150./m_s, mres2 = 2.;
@@ -65,7 +65,7 @@ double Hadronic_XSec_Calculator::CalculateSingleDXSec() {
   return 0.0336*pow(m_xsecpom,1.5)*JAX;
 }
 
-double Hadronic_XSec_Calculator::CalculateDoubleDXSec() {
+double Hadronic_XSec_Calculator::CalculateDoubleDXSec() const {
   double ap = 0.25, Del0 = 3.2-9.0/log(m_s)+17.4/sqr(log(m_s)), s0 = 8.;
   double y0 = log(m_s/sqr(m_massp)), ymin = 4.0*log(1.0+2.0*m_masspi/m_massp);
 
@@ -88,7 +88,7 @@ double Hadronic_XSec_Calculator::CalculateDoubleDXSec() {
   return 0.0084*m_xsecpom*JXX;
 }
 
-void Hadronic_XSec_Calculator::Output() {
+void Hadronic_XSec_Calculator::Output() const {
   msg_Out()<<METHOD<<": Results are {\n"
                  <<"   \\sigma_{tot} = "<<m_xstot<<" mb\n"
                  <<"   \\sigma_{el}  = "<<m_xsel<<" mb\n"

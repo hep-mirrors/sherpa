@@ -12,7 +12,7 @@ using namespace std;
 // somewhat improved colour handling.
 
 XS_Base::XS_Base() :
-  m_name(""), m_lastxs(0.), m_Ms(0.), m_Mt(0.), m_Mu(0.) {
+  m_name(""), m_Ms(0.), m_Mt(0.), m_Mu(0.), m_lastxs(0.) {
   m_masses.resize(4);
   m_masses2.resize(m_masses.size());
   m_colours.resize(m_masses.size());
@@ -25,7 +25,7 @@ XS_Base::XS_Base() :
   
 
 XS_Base::XS_Base(const vector<double> & masses) :
-  m_name(""), m_lastxs(0.), m_Ms(0.), m_Mt(0.), m_Mu(0.), m_masses(masses) {
+  m_name(""), m_Ms(0.), m_Mt(0.), m_Mu(0.), m_lastxs(0.), m_masses(masses) {
   m_masses2.resize(m_masses.size());
   m_colours.resize(m_masses.size());
   for (size_t i=0;i<m_masses.size();i++) {
@@ -35,7 +35,7 @@ XS_Base::XS_Base(const vector<double> & masses) :
   }
 }
 
-XS_Base::~XS_Base() {}
+XS_Base::~XS_Base() = default;
 
 ///////////////////////////////////////////////////////////////////////////////
 // MI_Process
@@ -73,7 +73,7 @@ MI_Process::MI_Process(const vector<Flavour> & flavs) :
   }
 }
 
-MI_Process::~MI_Process() {}
+MI_Process::~MI_Process() = default;
 
 bool MI_Process::MakeKinematics(const double & pt2,
 				const double & y3,const double & y4,

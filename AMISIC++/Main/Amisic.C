@@ -19,7 +19,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 			PDF::ISR_Handler *const isr,
                         REMNANTS::Remnant_Handler * remnant_handler)
 {
-  if (!InitParameters()) return false;
+  InitParameters();
   bool shown = false;
   // if EPA is used the energies entering the ISR will vary
   m_variable_s = isr->GetBeam(0)->Type() == BEAM::beamspectrum::EPA ||
@@ -49,7 +49,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 
   // Calculate hadronic non-diffractive cross sections, to act as normalization for the
   // multiple scattering probability. 
-  p_xsecs = new Hadronic_XSec_Calculator(m_type);
+  p_xsecs = new Hadronic_XSec_Calculator((int)m_type);
   (*p_xsecs)((m_pbeam0 + m_pbeam1).Abs2());
   // show output if the calculation is not repeated for different energies
   if (!m_variable_s)
@@ -88,9 +88,8 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   return true;
 }
 
-bool Amisic::InitParameters() {
+void Amisic::InitParameters() {
   mipars = new MI_Parameters();
-  return mipars->Init();
 }
 
 bool Amisic::InitMPIs(const double & scale) {
@@ -98,7 +97,6 @@ bool Amisic::InitMPIs(const double & scale) {
   SetMaxScale(scale);
   SetB();
   if (!VetoEvent(scale)) return true;
-  //m_stop = true;
   return false;
 }
 

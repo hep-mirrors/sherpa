@@ -47,7 +47,7 @@ namespace AMISIC {
 
   class Amisic: public ATOOLS::File_IO_Base, ATOOLS::Mass_Selector {
   public:
-    enum mitype {
+    enum class mitype {
       none           = 0,
       hadron_hadron  = 1,
       gamma_hadron   = 2,
@@ -70,7 +70,7 @@ namespace AMISIC {
     std::map<std::string,ATOOLS::Histogram *> m_histos;
     ATOOLS::Vec4D m_pbeam0, m_pbeam1;
     
-    bool InitParameters();
+    void InitParameters();
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
 			     ATOOLS::Blob * blob);
     void FillAmplitudeSettings(ATOOLS::Cluster_Amplitude * ampl);

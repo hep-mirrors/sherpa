@@ -75,9 +75,9 @@ double MI_Process_Group::SoftCorrection(const double & pt2) const {
 double MI_Process_Group::Scale(const double & pt2) const {
   // Default scale, including an IR regularisation - maybe we should get more choices.
   switch (m_muR_scheme) {
-  case scale_scheme::PT_with_Raps:
+  case scale_scheme::code::PT_with_Raps:
     exit(1);
-  case scale_scheme::PT:
+  case scale_scheme::code::PT:
   default:
     return (pt2+m_pt02);
   }

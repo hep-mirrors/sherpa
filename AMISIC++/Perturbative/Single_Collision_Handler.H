@@ -47,7 +47,7 @@ namespace AMISIC {
     void Init(REMNANTS::Remnant_Handler * remnant_handler);
     void UpdateSandY(double s, double y);
     ATOOLS::Blob * NextScatter(const double & bfac=1.);
-    bool TestRemnants();
+    bool TestRemnants() const;
 
     inline const double & muF2() const { return m_muf2; }
     inline const double & muR2() const { return m_mur2; }

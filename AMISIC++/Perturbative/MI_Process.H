@@ -19,7 +19,7 @@ namespace AMISIC {
     std::vector<double>            m_masses, m_masses2;
   public:
     XS_Base();
-    XS_Base(const std::vector<double> & masses);
+    explicit XS_Base(const std::vector<double> & masses);
     virtual ~XS_Base();
     
     virtual void Calc(const double & s,const double & t,const double & u)=0;
@@ -55,7 +55,7 @@ namespace AMISIC {
     void MasslessKinematics(const double & pt2,const double & phi,
 			    const double & y3,const double & y4);
   public:
-    MI_Process(const std::vector<ATOOLS::Flavour> & flavs);
+    explicit MI_Process(const std::vector<ATOOLS::Flavour> & flavs);
     ~MI_Process();
 
     bool MakeKinematics(const double & pt2,const double & y3,const double & y4,
@@ -69,7 +69,7 @@ namespace AMISIC {
       return m_momenta[i];
     }
     inline void SetME2(XS_Base * me2) { p_me2 = me2; }
-    inline const double operator()() const { return (*p_me2)(); }
+    inline double operator()() const { return (*p_me2)(); }
     inline bool SetColours() const { return p_me2->SetColours(m_flavs); }    
     inline const std::string & Name() const { return m_name; }
   };

@@ -17,7 +17,8 @@ namespace AMISIC {
     MODEL::Running_AlphaQED    * p_alpha;
     Hadronic_XSec_Calculator   * p_xsecs;
 
-    double      m_muFfac, m_xmin[2];
+    double      m_muFfac;
+    std::array<double, 2> m_xmin;
     double      m_ecms, m_S, m_S_lab, m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2;
     double      m_xTmin, m_xTmax, m_xTstep;
     double      m_sigmaND;

@@ -26,9 +26,9 @@ double Matter_Overlap::operator()(double b) {
   // Matter overlap in two forms available, but only Single_Gaussian fully
   // functional at the moment.
   switch (m_overlapform) {
-  case overlap_form::Single_Gaussian:
+  case overlap_form::code::Single_Gaussian:
     return m_norm * m_norm1 * exp(-b*b/m_radius12);
-  case overlap_form::Double_Gaussian:
+  case overlap_form::code::Double_Gaussian:
   default:
     double b2(b*b);
     return m_norm * (m_norm1 * exp(-b2/m_radius12) +
@@ -45,10 +45,10 @@ double Matter_Overlap::SelectB(const bool & mode) const {
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
   double b, radius;
   switch (m_overlapform) {
-    case overlap_form::Single_Gaussian:
+    case overlap_form::code::Single_Gaussian:
       radius = m_radius1;
       break;
-    case overlap_form::Double_Gaussian:
+    case overlap_form::code::Double_Gaussian:
       double rand = ran->Get();
       if ((rand-=sqr(m_fraction1))<=0.)        radius = m_radius1;
       else if ((rand-=sqr(1-m_fraction1))<=0.) radius = m_radius2;
@@ -69,14 +69,14 @@ void Matter_Overlap::InitializeFormFactors() {
   // functional at the moment.
   m_overlapform = mipars->GetOverlapForm();
   switch (m_overlapform) {
-    case overlap_form::Single_Gaussian:
+    case overlap_form::code::Single_Gaussian:
       m_fraction1 = 1.;
       m_radius1   = (*mipars)("Matter_Radius1");
       m_radius12  = sqr(m_radius1);
       m_norm1     = 1./m_radius12;
       m_bstep     = m_radius1/100.;
       break;
-    case overlap_form::Double_Gaussian:
+    case overlap_form::code::Double_Gaussian:
       m_fraction1 = (*mipars)("Matter_Fraction1");
       m_radius1   = (*mipars)("Matter_Radius1");
       m_radius12  = sqr(m_radius1);

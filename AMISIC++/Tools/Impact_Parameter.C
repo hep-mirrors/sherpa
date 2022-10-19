@@ -171,24 +171,6 @@ void Impact_Parameter::Test() {
   }
   histoB.Finalize();
   histoB.Output("B_Distribution.dat");
-
-  /*
-  Histogram histoB10(0,0.,1.1*m_bmax,100);
-  for (long int i=0;double(i)<ntrials;i++) {
-    b = SelectB(100.);
-    histoB10.Insert(b,1.);
-  }
-  histoB10.Finalize();
-  histoB10.Output("B_Distribution_10.dat");
-
-  Histogram histoB100(0,0.,1.1*m_bmax,100);
-  for (long int i=0;double(i)<ntrials;i++) {
-    b = SelectB(10000.);
-    histoB100.Insert(b,1.);
-  }
-  histoB100.Finalize();
-  histoB100.Output("B_Distribution_100.dat");
-  */
   exit(1);
 }
 

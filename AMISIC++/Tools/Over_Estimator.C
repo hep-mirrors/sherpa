@@ -7,9 +7,8 @@
 using namespace AMISIC;
 using namespace ATOOLS;
 
-Over_Estimator::Over_Estimator() :
-  m_muR_fac(1.), m_muF_fac(1.),
-  m_nbins(100), m_pref(1.), m_bfac(1.)
+Over_Estimator::Over_Estimator() : m_nbins(100), m_muR_fac(1.), m_muF_fac(1.),
+                                   m_pref(1.), m_bfac(1.)
 {}
 
 Over_Estimator::~Over_Estimator() {}

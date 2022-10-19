@@ -42,7 +42,7 @@ Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
   return MakeBlob();
 }
 
-bool Single_Collision_Handler::TestRemnants() {
+bool Single_Collision_Handler::TestRemnants() const {
   return p_remnants->GetRemnant(0)->TestExtract(p_proc->Flav(0), p_proc->Momentum(0))
          && p_remnants->GetRemnant(1)->TestExtract(p_proc->Flav(1), p_proc->Momentum(1));
 }

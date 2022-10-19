@@ -9,18 +9,18 @@ namespace AMISIC {
     double m_pomeron, m_reggeon, m_slope, m_xsecpom, m_xsecregge;
     double m_xstot, m_xsel, m_xssd, m_xsdd, m_xsnd;
     
-    double CalculateTotalXSec();
-    double CalculateElasticXSec(const double & xstot);
-    double CalculateSingleDXSec();
-    double CalculateDoubleDXSec();
+    double CalculateTotalXSec() const;
+    double CalculateElasticXSec(const double & xstot) const;
+    double CalculateSingleDXSec() const;
+    double CalculateDoubleDXSec() const;
   public:
-    Hadronic_XSec_Calculator(int type);
-    ~Hadronic_XSec_Calculator() {}
+    explicit Hadronic_XSec_Calculator(int type);
+    ~Hadronic_XSec_Calculator() = default;
 
     void operator()(double s);
-    void Output();
+    void Output() const;
 
-    const double XSnd()  const { return m_xsnd; }
+    double XSnd()  const { return m_xsnd; }
   };
 }
 

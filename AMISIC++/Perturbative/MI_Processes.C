@@ -11,9 +11,10 @@ using namespace PHASIC;
 using namespace std;
 
 
-MI_Processes::MI_Processes(bool variable_s) : ME_Generator_Base("Amisic::Processes"),
-			       m_ptmax2(1.e12), m_sigmaND(1.), m_integral(0.),
-			       m_test(false), m_variable_s(variable_s) {}
+MI_Processes::MI_Processes(bool variable_s)
+    : ME_Generator_Base("Amisic::Processes"),
+      m_ptmax2(1.e12), m_sigmaND(1.), m_integral(0.), m_variable_s(variable_s),
+      m_test(false) {}
 
 MI_Processes::~MI_Processes() {
   while (!m_groups.empty()) {
@@ -170,8 +171,6 @@ bool MI_Processes::PrepareSudakovFactor() {
   // where pt_nmax^2 = s/4, the maximal pt^2.
   // N.B.: I use left steps, thereby somewhat overestimating the integral, this
   // could be improved by going trapezoid or similar.
-  //double xTlast = m_xTmin*exp(m_xTstep*m_nbins), sigmalast = 0.;
-  //double dxT, xT, sigma;
   double pt2last = m_ptmin2*exp(m_pt2step*m_nbins);
   double sigma, pt2, dpt2, sigmalast;
   for (int bin=m_nbins-1;bin>=0;bin--) {
@@ -208,7 +207,6 @@ void MI_Processes::Test() {
 		(dSigma(sqr(pt))+SudakovDiffArgument(sqr(pt))) * 100)<<"%.\n";
     pt*=10.;
   }
-  //exit(1);
 }
 
 double MI_Processes::dSigma(const double & pt2) {
@@ -258,11 +256,11 @@ const double MI_Processes::SudakovArgument(const double & pt2) const {
 double MI_Processes::SudakovArgumentForVariableS(const double &pt2) const {
   // Linear interpolation between the pre-calculated points for the Sudakov form factor
   if (pt2>m_ptmax2 || pt2<m_ptmin2 || m_S < 4*m_ptmin2) return 0.;
-  int sbin      = log(m_S/m_S_lab) / log(m_sstep);
+  int sbin      = int(log(m_S/m_S_lab) / log(m_sstep));
   int ptbin     = int(1./m_pt2step*log(pt2/m_ptmin2));
 
   double s1   = m_S_lab * std::pow(m_sstep, sbin), s2 = m_S_lab * std::pow(m_sstep, sbin+1);
-  double pt21 = m_ptmin2*exp(m_pt2step*(ptbin)), pt22 = m_ptmin2*exp(m_pt2step*(ptbin+1));
+  double pt21 = m_ptmin2*exp(m_pt2step*ptbin), pt22 = m_ptmin2*exp(m_pt2step*(ptbin+1));
   double val11 = m_cache_intbins[sbin][ptbin],   val12 = m_cache_intbins[sbin][ptbin+1];
   double val21 = m_cache_intbins[sbin+1][ptbin], val22 = m_cache_intbins[sbin+1][ptbin+1];
   double val = val11 * (s2 - m_S) * (pt22 - pt2) +
@@ -277,7 +275,7 @@ double MI_Processes::SudakovArgumentForConstantS(const double &pt2) const {
   // Linear interpolation between the pre-calculated points for the Sudakov form factor
   if (pt2>m_ptmax2 || pt2<m_ptmin2) return 0.;
   int bin     = int(1./m_pt2step*log(pt2/m_ptmin2));
-  double pt21 = m_ptmin2*exp(m_pt2step*(bin)), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
+  double pt21 = m_ptmin2*exp(m_pt2step*bin), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
   double val1 = m_intbins[bin],                val2 = m_intbins[bin+1];
   double val  = (val1*(pt22-pt2)+val2*(pt2-pt21))/(pt22-pt21);
   return val;
@@ -287,7 +285,7 @@ const double MI_Processes::SudakovDiffArgument(const double & pt2) const {
   // Linear interpolation between the pre-calculated points for the Sudakov form factor
   if (pt2>m_ptmax2 || pt2<m_ptmin2) return 0.;
   int bin     = int(1./m_pt2step*log(pt2/m_ptmin2));
-  double pt21 = m_ptmin2*exp(m_pt2step*(bin)), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
+  double pt21 = m_ptmin2*exp(m_pt2step*bin), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
   double val1 = m_diffbins[bin],               val2 = m_diffbins[bin+1];
   double val  = (val1*(pt22-pt2)+val2*(pt2-pt21))/(pt22-pt21);
   return val;
@@ -334,30 +332,9 @@ bool MI_Processes::FillCaches() {
 }
 
 void MI_Processes::CalculateIntegralFromCache() {
-  int sbin = log(m_S/m_S_lab) / log(m_sstep);
+  int sbin = int(log(m_S/m_S_lab) / log(m_sstep));
   double s1 = m_S_lab * std::pow(m_sstep, sbin);
   double s2 = m_S_lab * std::pow(m_sstep, sbin+1);
   double val1 = m_cache_integral[sbin], val2 = m_cache_integral[sbin+1];
   m_integral = (val1 * (s2 - m_S) + val2 * (m_S - s1)) / (s2 - s1);
 }
-
-/*
-#include "ATOOLS/Math/Gauss_Integrator.H"
-#include "ATOOLS/Math/Function_Base.H"
-
-class SudakovTestArgument: public ATOOLS::Function_Base {
-  MI_Processes * p_procs;
-public:
-  SudakovTestArgument(MI_Processes * procs) : p_procs(procs) {}
-  double operator()(double pt2) { return p_procs->dSigma(pt2); }
-};
-
-void MI_Processes::TestSudakovFactor() {
-  SudakovTestArgument sudarg(this);
-  Gauss_Integrator sudint(&sudarg);
-  double pt2(10000.);
-  double integral = sudint.Integrate(pt2,m_S/4.,0.003,1);
-  msg_Out()<<METHOD<<"("<<pt2<<", "<<(m_S/4.)<<") = "<<SudakovArgument(pt2)<<".\n";
-}
-*/
-

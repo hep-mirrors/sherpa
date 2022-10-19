@@ -33,9 +33,9 @@ namespace AMISIC {
     
     inline const double & Radius() const {
       switch (m_overlapform) {
-      case overlap_form::Single_Gaussian:
+      case overlap_form::code::Single_Gaussian:
         return m_radius1;
-      case overlap_form::Double_Gaussian:
+      case overlap_form::code::Double_Gaussian:
         return m_radius3;
       }
     }
@@ -45,7 +45,7 @@ namespace AMISIC {
     Matter_Overlap * p_mo;
   public:
     MO_Integrand(Matter_Overlap * mo) : p_mo(mo) {}
-    ~MO_Integrand() {}
+    ~MO_Integrand() = default;
     double operator()(double b);
   };
 }
