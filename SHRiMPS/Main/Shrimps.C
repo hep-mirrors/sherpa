@@ -8,6 +8,8 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Strong_Coupling.H"
 #include "MODEL/Main/Model_Base.H"
+#include "SHRiMPS/Glauber/Glauber.H"
+#include "SHRiMPS/Glauber/Nucleus.H"
 #include <string>
 #include <vector>
 
@@ -158,7 +160,14 @@ void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
 
 ATOOLS::Blob * Shrimps::GenerateEvent() {
   msg_Out()<<"  * "<<METHOD<<".\n";
-  msg_Out()<<"test\n\n\n\n\n";
+  msg_Out()<<"test test bla\n\n\n";
+  //Glauber::Glauber glauberthingy();
+  Glauber glauberTest(16,208);
+  //Nucleus aNucleus(25);
+  //glauberthingy -> testFunc();
+  //aNucleus.testF();
+  //glauberTest.testFunc();
+  //Glauber::testFunc();
   return p_generator->GenerateEvent();
 }
 

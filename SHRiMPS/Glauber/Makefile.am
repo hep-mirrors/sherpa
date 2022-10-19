@@ -3,10 +3,12 @@ pkglib_LTLIBRARIES = libShrimpsGlauber.la
 GITTAG = SHRiMPS/Glauber
 include ../../git.make
 
-libSGlauber_la_SOURCES = \
-			Glauber.C
+libShrimpsGlauber_la_SOURCES = \
+			Glauber.C \
+			Nucleus.C
 
 localincdir = $(pkgincludedir)/SHRiMPS/Glauber
 
 localinc_HEADERS   = \
-			Glauber.H
+			Glauber.H \
+			Nucleus.H

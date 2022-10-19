@@ -315,7 +315,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 	\${SHRIMPSBUILDDIR}/Beam_Remnants/libShrimpsBeamRemnants.la \
 	\${SHRIMPSBUILDDIR}/Cross_Sections/libShrimpsXsecs.la \
 	\${SHRIMPSBUILDDIR}/Eikonals/libShrimpsEikonals.la \
-	\${SHRIMPSBUILDDIR}/Tools/libShrimpsTools.la"
+	\${SHRIMPSBUILDDIR}/Tools/libShrimpsTools.la \
+  \${SHRIMPSBUILDDIR}/Glauber/libShrimpsGlauber.la"
   AC_SUBST(SHRIMPSDIR)
   AC_SUBST(SHRIMPSBUILDDIR)
   AC_SUBST(SHRIMPSLIBS)
