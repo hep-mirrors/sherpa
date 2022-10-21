@@ -3,6 +3,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Channels/FSR_Channels.H"
 #include "PHASIC++/Channels/ISR_Channel_Base.H"
+#include "PHASIC++/Channels/ISR_Channel_Interface.H"
 #include "PHASIC++/Channels/Simple_Pole_Channels.H"
 #include "PHASIC++/Channels/Resonance_Channels.H"
 #include "PHASIC++/Channels/Threshold_Channels.H"
@@ -61,6 +62,11 @@ bool ISR_Channels::MakeChannels()
   default:
     msg_Error()<<"Error in "<<METHOD<<": unknown isr mode.\n"
          <<"   Continue without channels and hope for the best.\n";
+    return true;
+  }
+  Multi_Channel *fsr(p_psh->FSRIntegrator());
+  if (fsr->IncludesISR()) {
+    Add(new ISR_Channel_Interface(fsr,m_keyid,p_psh->GetInfo()));
     return true;
   }
   CheckForStructuresFromME();

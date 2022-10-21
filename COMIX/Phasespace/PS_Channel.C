@@ -845,7 +845,7 @@ bool PS_Channel::GenerateWeight()
   return true;
 }
 
-void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts) 
+void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts,bool)
 {
   p_cuts=cuts;
   m_p[0]=Vec4D(0.,1.,1.,0.);

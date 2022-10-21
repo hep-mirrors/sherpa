@@ -8,11 +8,7 @@ namespace PHASIC {
 
   class Cut_Data {
     const ATOOLS::Flavour * fl;
-    double ** scut_save;
-    double *  energymin_save;
     std::map<size_t,double> m_smin_map;
-    char GetIndexID(int id);
-    double Getscut(std::vector<int>,std::vector<int>,int,int,int);
   public:
     double ** scut;
     double *  energymin;
@@ -22,6 +18,10 @@ namespace PHASIC {
 
     Cut_Data();
     ~Cut_Data();
+
+    char GetIndexID(int id);
+    double Getscut(std::vector<int>,std::vector<int>,int,int,int);
+
     void Init(int,const ATOOLS::Flavour_Vector &fl);
 
     void Complete();
@@ -29,11 +29,12 @@ namespace PHASIC {
     double GetscutAmegic(std::string);
     double Getscut(size_t);
     void Setscut(size_t,double);
-  };    
 
+  };// end of class Cut_Data
 
   std::ostream & operator<<(std::ostream &, Cut_Data &);
-}
+
+}// end of namespace PHASIC
 
 #endif
 

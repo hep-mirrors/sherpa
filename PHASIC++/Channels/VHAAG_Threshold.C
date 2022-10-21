@@ -65,7 +65,7 @@ namespace PHASIC {
     ~VHAAG_Threshold();
 
     void AddPoint(double Value);
-    void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
+    void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *,bool=true);
     void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *,double *);
     void   MPISync()                 { p_vegas->MPISync(); }
     void   Optimize()                { p_vegas->Optimize(); }
@@ -608,7 +608,7 @@ double VHAAG_Threshold::BranchWeight(ATOOLS::Vec4D q1,ATOOLS::Vec4D &Q,
   return wt;
 }
 
-void VHAAG_Threshold::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts)
+void VHAAG_Threshold::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts,bool)
 {
   CalculateS0(cuts);
   double wt=1.;

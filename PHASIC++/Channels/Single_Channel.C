@@ -12,7 +12,7 @@ Single_Channel::Single_Channel() :
   m_rannum(0),p_rans(NULL),
   m_res1(0.),m_res2(0.),m_mres1(0.),m_mres2(0.),
   m_alpha(0.),m_alpha_save(0.),m_weight(1.),
-  m_name("no_name")
+  m_name("no_name"),m_incisr(0),m_status(1)
 { }
 
 Single_Channel::Single_Channel(size_t _nin,size_t _nout,const Flavour * _fl) :
@@ -20,7 +20,7 @@ Single_Channel::Single_Channel(size_t _nin,size_t _nout,const Flavour * _fl) :
   m_rannum(0),p_rans(NULL),
   m_res1(0.),m_res2(0.),m_mres1(0.),m_mres2(0.),
   m_alpha(0.),m_alpha_save(0.),m_weight(1.),
-  m_name("no_name")
+  m_name("no_name"),m_incisr(0),m_status(1)
 { 
   for (int i(0);i<m_nin+m_nout;i++) p_ms[i] = ATOOLS::sqr(_fl[i].Mass());
 }
@@ -30,9 +30,10 @@ Single_Channel::Single_Channel(Single_Channel * old) :
   m_rannum(old->m_rannum),p_rans(new double[m_rannum]),
   m_res1(0.),m_res2(0.),m_mres1(0.),m_mres2(0.),
   m_alpha(0.),m_alpha_save(0.),m_weight(1.),
-  m_name(old->m_name)
+  m_name(old->m_name),m_incisr(0),m_status(1)
 {
   for (int i(0);i<m_nin+m_nout;i++) p_ms[i] = old->p_ms[i];
+  m_incisr=old->IncludesISR();
 }
 
 Single_Channel::~Single_Channel()
@@ -67,7 +68,7 @@ void Single_Channel::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *rans)
 	     <<"Virtual Method called !"<<std::endl;
 }
 
-void Single_Channel::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts) 
+void Single_Channel::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts,bool recompute)
 {
   msg_Error()<<"Single_Channel::GenerateWeight(Vec4D *p,Cut_Data *cuts): "
 	     <<"Virtual Method called !"<<std::endl; 
