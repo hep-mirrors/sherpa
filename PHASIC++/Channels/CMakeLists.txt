@@ -10,7 +10,9 @@ set(Channels_SOURCES CSS_Kinematics.C
                      VHAAG_res.C
                      VHAAG_Threshold.C
                      Decay_Dalitz.C
+                     MCFM_Channel.C
                      Vegas.C
+                     ISR_Channel_Interface.C
                      Simple_Pole_Channels.C
                      Resonance_Channels.C
                      Leading_Log_Channels.C

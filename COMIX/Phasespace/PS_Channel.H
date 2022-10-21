@@ -147,7 +147,7 @@ namespace COMIX {
 
     // member functions
     void GeneratePoint(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts,double *rn);
-    void GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts);
+    void GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts,bool);
 
     void ISRInfo(int &type,double &m,double &w);
     void ISRInfo(std::vector<int> &ts,

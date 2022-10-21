@@ -63,7 +63,7 @@ namespace PHASIC {
     ~VHAAG_res();
 
     void AddPoint(double Value);
-    void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
+    void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *,bool=true);
     void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *,double *);
     void   MPISync()                 { p_vegas->MPISync(); }
     void   Optimize()                { p_vegas->Optimize(); }

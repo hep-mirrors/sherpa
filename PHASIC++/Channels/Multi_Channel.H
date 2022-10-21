@@ -7,6 +7,7 @@ namespace PHASIC {
 
   class Cut_Data;
   class Single_Channel;
+  class Vegas;
 
   struct channel_type {
     enum code {
@@ -61,7 +62,7 @@ namespace PHASIC {
     std::map<std::string,double>  m_erans;
     bool m_readin;
     int m_lastdice;
-    int m_otype;
+    int m_otype, m_incisr, m_status;
   public:
     Multi_Channel(std::string name);
     virtual ~Multi_Channel();
@@ -126,6 +127,8 @@ namespace PHASIC {
     int                         OType() const  { return m_otype; }
 
     virtual int                 HandicapFactor() { return 1; }
+    inline int IncludesISR() { return m_incisr; }
+    inline int Status() { return m_status; }
     inline void AddERan(const std::string &id) { m_erans[id]=0.0; }
     inline double ERan(const std::string &id) const { return m_erans.find(id)->second; }
   };

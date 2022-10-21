@@ -18,7 +18,8 @@ Multi_Channel::Multi_Channel(string _name) :
   n_points(0), n_contrib(0),
   mn_points(0), mn_contrib(0),
   m_lastdice(-1),
-  m_otype(0)
+  m_otype(0),
+  m_incisr(0)
 { }
 
 Multi_Channel::~Multi_Channel()
@@ -30,6 +31,7 @@ Multi_Channel::~Multi_Channel()
 void Multi_Channel::Add(Single_Channel * Ch) {
   channels.push_back(Ch);
   m_otype = m_otype|Ch->OType();
+  m_incisr |= Ch->IncludesISR();
 }
 
 size_t Multi_Channel::NChannels() const
@@ -261,7 +263,7 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
   Vec4D_Vector pp(p,&p[nin+nout]);
   m_weight = 0.;
   if (channels.size()==1) {
-    channels[0]->GenerateWeight(&pp.front(),cuts);
+    channels[0]->GenerateWeight(&pp.front(),cuts,false);
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
     return;
   }
@@ -292,12 +294,13 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
   if (channels.empty()) {
     if (nin>1) p[2]=p[0]+p[1];
     else p[1]=p[0];
+    m_status=1;
     return;
   }
-  Poincare cms(p[0]+p[1]);
   for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   if(channels.size()==1) {
     channels[0]->GeneratePoint(p,cuts);
+    m_status=channels[0]->Status();
     m_lastdice = 0;
     return;
   }
@@ -312,6 +315,7 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
     sum += channels[i]->Alpha();
     if (sum>rn) {
       channels[i]->GeneratePoint(p,cuts);
+      m_status=channels[i]->Status();
       m_lastdice = i;
       break;
     }

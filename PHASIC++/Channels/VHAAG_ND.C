@@ -651,7 +651,7 @@ double VHAAG_ND::BranchWeight(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,ATOOLS::Vec4D &Q
   return wt;
 }
 
-void VHAAG_ND::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts)
+void VHAAG_ND::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts,bool)
 {
   CalculateS0(cuts);
   double wt=1.;

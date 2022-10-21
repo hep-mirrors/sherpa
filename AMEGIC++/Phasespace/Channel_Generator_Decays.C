@@ -77,7 +77,7 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
 	<<"  public:"<<endl
 	<<"    "<<name<<"(int,int,Flavour*,Integration_Info * const);"<<endl
 	<<"    ~"<<name<<"();"<<endl
-	<<"    void   GenerateWeight(Vec4D *,Cut_Data *);"<<endl
+	<<"    void   GenerateWeight(Vec4D *,Cut_Data *,bool=true);"<<endl
 	<<"    void   GeneratePoint(Vec4D *,Cut_Data *,double *);"<<endl
 	<<"    void   AddPoint(double);"<<endl
 	<<"    void   MPISync()                 { p_vegas->MPISync(); }"<<endl
@@ -118,7 +118,7 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
 
   //Weight
   chf<<"void "<<name<<"::";
-  chf<<"GenerateWeight(Vec4D* p,Cut_Data * cuts)"<<endl<<"{"<<endl;
+  chf<<"GenerateWeight(Vec4D* p,Cut_Data * cuts,bool)"<<endl<<"{"<<endl;
   chf<<"  double wt = 1.;"<<endl;
 
   maxnumb = 0;

@@ -16,7 +16,7 @@ namespace PHASIC {
     ~Rambo();
     void Init(const size_t& nin, const size_t& nout, const std::vector<double>& masses);
     ATOOLS::Vec4D_Vector GeneratePoint(const double& E);
-    void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);  
+    void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *,bool=true);
     void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
     void GenerateWeight(ATOOLS::Vec4D * p) { GenerateWeight(p,NULL); }  
     void GeneratePoint(ATOOLS::Vec4D * p)  { GeneratePoint(p,NULL); }

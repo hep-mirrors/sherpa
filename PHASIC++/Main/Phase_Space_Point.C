@@ -176,6 +176,10 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
       p_isrhandler->SetSprimeMin(m_smin);
     }
     p_isrhandler->SetPole(m_sprime);
+    if (p_fsrchannels->IncludesISR()) {
+      p_fsrchannels->GeneratePoint(&p_moms.front(),p_cuts);
+      if (p_fsrchannels->Status()==0) return 0.;
+    }
     if (!(m_mode & psmode::no_gen_isr)) {
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
       p_isrhandler->SetLimits(m_beamykey[2]);
@@ -217,6 +221,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
 }
 
 bool Phase_Space_Point::DefineFSRKinematics() {
+  if (!p_fsrchannels->IncludesISR())
   p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
   return true;
 }

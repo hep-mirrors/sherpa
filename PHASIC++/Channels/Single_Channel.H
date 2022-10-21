@@ -19,6 +19,8 @@ namespace PHASIC {
     double   m_res1, m_res2, m_mres1, m_mres2;
     double   m_alpha, m_alpha_save, m_weight;
     std::string m_name;
+    int      m_incisr, m_status;
+    double   m_y, m_sprime;
   public:
 
     // constructor
@@ -38,7 +40,7 @@ namespace PHASIC {
 
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *,double *);
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
-    virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
+    virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *,bool=true);
 
     virtual void GeneratePoint(const double * rns);
     virtual void GenerateWeight(const int & mode=0);
@@ -59,6 +61,10 @@ namespace PHASIC {
     virtual inline const double &      Alpha() const     { return m_alpha; }
     virtual inline const double &      AlphaSave() const { return m_alpha_save; }
     virtual inline const int           OType() const     { return 0; }
+    inline int Status() const { return m_status; }
+    inline int IncludesISR() const { return m_incisr; }
+    inline double SPrime() const { return m_sprime; }
+    inline double Y() const { return m_y; }
     const std::string ChID() const;
     
     
@@ -93,6 +99,7 @@ namespace PHASIC {
       m_res1 += m_mres1;
       m_res2 += m_mres2;
       m_mres1 = m_mres2 = 0.0;
+      m_status = 1;
     }
   };
 
