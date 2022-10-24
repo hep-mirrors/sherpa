@@ -1,3 +1,4 @@
+#ifdef XXXXXXXXXXXXXX
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/My_MPI.H"
 #ifdef USING__HDF5
@@ -596,5 +597,6 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"HDF5 output";
 }
 
+#endif
 #endif
 #endif
