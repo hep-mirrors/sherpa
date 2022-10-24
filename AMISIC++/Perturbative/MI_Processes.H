@@ -24,7 +24,7 @@ namespace AMISIC {
     double      m_sigmaND;
     double      m_lastxs, m_integral, m_pt2step, m_sstep;
     std::string m_scale_scheme, m_kfactor_scheme;
-    int         m_nbins, m_MCpoints, m_sbins;
+    size_t      m_nbins, m_MCpoints, m_sbins;
     std::vector<double>              m_diffbins;
     std::vector<double>              m_intbins;
     std::list<MI_Process_Group * >   m_groups;

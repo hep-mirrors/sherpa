@@ -59,9 +59,9 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   // two outgoing particles with MC_points points.  This trick is borrowed
   // from Sjostrand's implementation, as explicit integration will be too slow.
   // 10000 points will yield errors of about 1%.
-  m_nbins    = int((*mipars)("nPT_bins"));
-  m_MCpoints = int((*mipars)("nMC_points"));
-  m_sbins    = int((*mipars)("nS_bins"));
+  m_nbins    = size_t((*mipars)("nPT_bins"));
+  m_MCpoints = size_t((*mipars)("nMC_points"));
+  m_sbins    = size_t((*mipars)("nS_bins"));
   m_intbins.resize(m_nbins);
   m_diffbins.resize(m_nbins);
   m_pt2step  = log(m_S/(4.*m_ptmin2))/double(m_nbins);

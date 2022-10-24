@@ -13,6 +13,9 @@ Hadronic_XSec_Calculator::Hadronic_XSec_Calculator(int type) :
   m_massp(0.938272), m_masspi(0.134976),
   m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3)
 {
+  if (type != 1)
+    rpa->gen.AddCitation(1, "The parameters for photonic multiple interactions "
+                            "are taken from \\cite{Schuler:1996en}");
   if (type == 1) {
     m_xsecpom = 21.70;
     m_xsecregge =

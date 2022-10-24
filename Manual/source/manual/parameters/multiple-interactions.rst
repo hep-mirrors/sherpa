@@ -49,8 +49,10 @@ AMISIC
 .. index:: Amisic:nS_bins
 
 Amisic can simulate the interaction of three different combinations of incoming particles:
-proton--proton, photon--proton and photon--photon collision. It has several parameters to control the simulation of the multiple-parton interactions,
-they are listed below. Each of these parameters has to be set in the subsetting ``AMISIC``, like so
+proton--proton, photon--proton and photon--photon collision. The parameters for the simulation of photonic multiple
+interactions can be found in :cite:`Schuler:1996en`. It has several parameters to control the simulation of the
+multiple-parton interactions, they are listed below. Each of these parameters has to be set in the
+subsetting ``AMISIC``, like so
 
 .. code-block:: yaml
 

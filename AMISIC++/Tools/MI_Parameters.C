@@ -44,11 +44,11 @@ MI_Parameters::MI_Parameters()
 	  .SetDefault(overlap_form::code::Single_Gaussian)
 	  .Get<overlap_form::code>();
   m_parameters[string("nPT_bins")]
-    = s["nPT_bins"].SetDefault(200).Get<int>();
+    = s["nPT_bins"].SetDefault(200).Get<size_t>();
   m_parameters[string("nMC_points")]
-    = s["nMC_points"].SetDefault(1000).Get<int>();
+    = s["nMC_points"].SetDefault(1000).Get<size_t>();
   m_parameters[string("nS_bins")]
-    = s["nS_bins"].SetDefault(100).Get<int>();
+    = s["nS_bins"].SetDefault(100).Get<size_t>();
 }
 
 double MI_Parameters::CalculatePT(const double & pt) {
