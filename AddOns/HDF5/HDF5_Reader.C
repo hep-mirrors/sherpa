@@ -1,4 +1,5 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/My_MPI.H"
 #ifdef USING__HDF5
 #ifdef USING__MPI
