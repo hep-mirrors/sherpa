@@ -2,7 +2,7 @@
 
 #include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
-#include "METOOLS/Explicit/Dipole_Kinematics.H"
+#include "METOOLS/Explicit/CS_Dipole_Kinematics.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/STL_Tools.H"
@@ -48,8 +48,7 @@ Vertex::Vertex(const Vertex_Key &key):
 {
   if (key.p_mv==NULL) return;
   if (p_info)
-    p_kin = new Dipole_Kinematics
-      (p_info,key.m_j[0],key.m_j[1],key.p_k,key.p_c,key.p_kt);
+    p_kin = Dipole_Kinematics_Getter::GetObject("Dipole_Kinematics",key);
   key.p_v=this;
   Vertex_Key ckey(key);
   for (ckey.m_n=0;ckey.m_n<key.p_mv->Lorentz.size();++ckey.m_n) {

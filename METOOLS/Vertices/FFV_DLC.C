@@ -123,79 +123,8 @@ void FFV_DCalculator<SType>::ConstructFFSDipole()
   cj[2]=p_v->Kin()->JK()->J().front().front();
   if (!p_cc->Evaluate(cj)) return;
   Vec4D p(p_v->JC()->P()), q;
-  double A(0.0), B(0.0), t(0.0);
-  if (p_v->Kin()->Type()==0) {
-    double zi(p_v->Kin()->Z()), zj(1.0-zi), rv(1.0);
-    Vec4D pi(p_v->Kin()->PI()), pj(p_v->Kin()->PJ());
-    double pij2((pi+pj).Abs2()), mt2(0.0);
-    double zim(zi), zjm(zj), zti(zi), ztj(zj);
-    if (p_v->Info()->SubType()==1) {
-      zti=1.0-(1.0-zti)*(1.0-p_v->Kin()->Y());
-      ztj=1.0-(1.0-ztj)*(1.0-p_v->Kin()->Y());
-    }
-    p_v->Kin()->SetA(0.5*(zti*(1.0-zti)+ztj*(1.0-ztj)));
-    if (p_v->Kin()->Massive()) {
-      double y(p_v->Kin()->Y()), Q2(p_v->Kin()->Q2());
-      double s(Q2-m_mi2-m_mj2-m_mk2);
-      double viji(sqrt(sqr(s*y)-sqr(2.0*m_mi*m_mj))/(s*y+2.0*m_mi2));
-      rv=sqrt(sqr(2.0*m_mk2+s*(1.0-y))-4.0*m_mk2*Q2)/(s*(1.0-y));
-      double zc(0.5*(2.0*m_mi2+s*y)/(m_mi2+m_mj2+s*y));
-      double zm(zc*(1.0-viji*rv)), zp(zc*(1.0+viji*rv));
-      mt2=2.0*p_v->Info()->Kappa()*(zp*zm-m_mi2/pij2);
-      zim-=0.5*(1.0-rv);
-      zjm-=0.5*(1.0-rv);
-      p_v->Kin()->SetA(p_v->Kin()->A()-zp*zm);
-    }
-    q=zim*pi-zjm*pj;
-    A=1.0-mt2;
-    B=4.0*p_v->Kin()->A();
-    t=rv*pij2;
-    p_v->Kin()->SetA(A-2.0*p_v->Kin()->A());
-  }
-  else if (p_v->Kin()->Type()==2) {
-    double zi(p_v->Kin()->Z()), zj(1.0-zi);
-    Vec4D pi(p_v->Kin()->PI()), pj(p_v->Kin()->PJ());
-    double pij2((pi+pj).Abs2());
-    q=zi*pi-zj*pj;
-    A=1.0;
-    B=-4.0*q.Abs2()/pij2;
-    t=pij2*(1.0-p_v->Kin()->Y());
-    p_v->Kin()->SetA((1.0-zi)*zi);
-    if (p_v->Kin()->Massive()) {
-      double Q2((pi+pj+p_v->Kin()->PK()).Abs2());
-      double mui2(m_mi2/Q2), y(p_v->Kin()->Y());
-      double eps(sqrt(sqr(y-2.0*mui2)-4.0*mui2*mui2)/y);
-      p_v->Kin()->SetA((0.5*(1.0+eps)-zi)*(zi-0.5*(1.0-eps)));
-    }
-    p_v->Kin()->SetA(A-2.0*p_v->Kin()->A());
-  }
-  else if (p_v->Kin()->Type()==1) {
-    double x(p_v->Kin()->Z()), ui(p_v->Kin()->Y());
-    Vec4D pi(p_v->Kin()->PJ()), pk(p_v->Kin()->PK());
-    q=pi/ui-pk/(1.0-ui);
-    A=x;
-    double tc((1.0-x)/x);
-    B=2.0*tc*ui*(1.0-ui)*q.Abs2()/(pi*pk);
-    t=-2.0*(pi*p_v->Kin()->PI())*x;
-    p_v->Kin()->SetA(tc);
-    if (p_v->Kin()->Massive()) {
-      double Q2(2.0*(p_v->Kin()->JKT()->P()*p_v->JC()->P()));
-      p_v->Kin()->SetA(tc-pk.Abs2()/Q2*ui/(1.0-ui));
-    }
-    p_v->Kin()->SetA(A+2.0*p_v->Kin()->A());
-  }
-  else {
-    double x(p_v->Kin()->Z()), vi(p_v->Kin()->Y());
-    Vec4D pi(p_v->Kin()->PJ()), pk(-p_v->Kin()->PK());
-    double z(x), tc((1.0-x)/x);
-    if (p_v->Info()->SubType()&3) z=x+vi;
-    if (p_v->Info()->SubType()&3) tc+=1.0/(x+vi)-1.0/x;
-    A=z;
-    B=-4.0*tc;
-    q=pi-vi*pk;
-    t=-2.0*(pi*p_v->Kin()->PI())*x;
-    p_v->Kin()->SetA(A+2.0*tc);
-  }
+  double A, B, t;
+  p_v->Kin()->EvaluateFFS(p,q,A,B,t);
   p_v->Kin()->CheckKT2Min(); 
   double At(A-B/2.0);
   p_v->Kin()->SetPhase(1.0/(2.0*A/B-1.0),0);
@@ -291,66 +220,8 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
   cj[1]=m_dir==1?(CObject*)cb->front():(CObject*)ca->front();
   cj[2]=p_v->Kin()->JK()->J().front().front();
   if (!p_cc->Evaluate(cj)) return;
-  bool iisf(p_v->Kin()->JI()->Flav().IsFermion());
-  double A(0.0), t(0.0);
-  if (p_v->Kin()->Type()==0) {
-    double zi(p_v->Kin()->Z()), y(p_v->Kin()->Y());
-    double zti(zi), ztj(1.0-zi);
-    if (p_v->Info()->SubType()==1) {
-      zti=1.0-(1.0-zti)*(1.0-y);
-      ztj=1.0-(1.0-ztj)*(1.0-y);
-    }
-    double pipj(p_v->Kin()->PI()*p_v->Kin()->PJ());
-    double rv(1.0), mt2(0.0);
-    if (p_v->Kin()->Massive()) {
-      double pij2(2.0*pipj+m_mij2), Q2(p_v->Kin()->Q2());
-      rv=(Q2-pij2-m_mk2)/(Q2-m_mij2-m_mk2)*
-	sqrt((sqr(Q2-m_mij2-m_mk2)-4.0*m_mij2*m_mk2)/
-	     (sqr(Q2-pij2-m_mk2)-4.0*pij2*m_mk2));
-      mt2=m_mij2/pipj;
-    }
-    if (iisf) A=2.0/(1.0-zi*(1.0-y))-rv*(1.0+zti+mt2);
-    else A=2.0/(1.0-(1.0-zi)*(1.0-y))-rv*(1.0+ztj+mt2);
-    t=2.0*pipj;
-    p_v->Kin()->SetA(A);
-  }
-  else if (p_v->Kin()->Type()==2) {
-    double zi(p_v->Kin()->Z()), y(p_v->Kin()->Y());
-    double pipj(p_v->Kin()->PI()*p_v->Kin()->PJ());
-    double mt2(m_mij?m_mij2/pipj:0.0);
-    if (iisf) A=2.0/(1.0-zi+y)-(1.0+zi+mt2);
-    else A=2.0/(1.0-(1.0-zi)+y)-(2.0-zi+mt2);
-    if (p_v->Info()->SubType()==2 &&
-	!p_v->Kin()->Massive()) {
-      if (iisf) A=2.0*zi/(1.0-zi+y)+(1.0-zi);
-      else A=2.0*(1.0-zi)/(1.0-(1.0-zi)+y)+zi;
-    }
-    t=2.0*pipj*(1.0-y);
-    p_v->Kin()->SetA(A);
-  }
-  else if (p_v->Kin()->Type()==1) {
-    double x(p_v->Kin()->Z()), ui(p_v->Kin()->Y());
-    if (iisf) A=2.0/(1.0-x+ui)-(1.0+x);
-    else A=1.0-2.0*x*(1.0-x);
-    if (p_v->Info()->SubType()==2 &&
-	!p_v->Kin()->Massive()) {
-      if (iisf) A=2.0*x/(1.0-x+ui)+(1.0-x);
-    }
-    t=-2.0*(p_v->Kin()->PI()*p_v->Kin()->PJ())*x;
-    p_v->Kin()->SetA(A);
-  }
-  else {
-    double x(p_v->Kin()->Z()), z(x);
-    if (p_v->Info()->SubType()&3) z=x+p_v->Kin()->Y();
-    if (iisf) A=2.0/(1.0-x)-(1.0+z);
-    else A=1.0-2.0*z*(1.0-z);
-    if (p_v->Info()->SubType()==2) {
-      if (iisf) A=2.0*z/(1.0-x)+(1.0-z);
-      else A=1.0-2.0*z*(1.0-z);
-    }
-    t=-2.0*(p_v->Kin()->PI()*p_v->Kin()->PJ())*x;
-    p_v->Kin()->SetA(A);
-  }
+  double A, t;
+  p_v->Kin()->EvaluateFVS(A,t);
   p_v->Kin()->CheckKT2Min(); 
   for (size_t cp(0);cp<2;++cp) {
     CSpinorType *j(GetPol(p_v->JC()->P(),sqr(p_v->JC()->Mass()),cp));

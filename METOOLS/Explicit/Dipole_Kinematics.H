@@ -3,10 +3,12 @@
 
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Dipole_Info.H"
+#include "METOOLS/Explicit/Vertex.H"
 
 namespace ATOOLS { class NLO_subevt; }
 
 namespace PDF { class NLOMC_Base; }
+
 
 namespace METOOLS {
 
@@ -19,8 +21,9 @@ namespace METOOLS {
 
     int m_type, m_swap, m_trig;
 
-    double m_z, m_y, m_kt2, m_Q2, m_phase[2], m_res[3];
+    double m_z, m_y,  m_kt2, m_Q2, m_phase[2], m_res[3];
     double m_mi2, m_mj2, m_mij2, m_mk2, m_ym, m_yp, m_f, m_a;
+    double m_mi,  m_mj,  m_mij,  m_mk;
 
     Dipole_Info *p_info;
     SizeT_Vector m_pm;
@@ -32,8 +35,10 @@ namespace METOOLS {
     ATOOLS::NLO_subevt *p_subevt;
     PDF::NLOMC_Base    *p_nlomc;
 
-    double Lam(const double &s,
-	       const double &sb,const double &sc) const;
+    static double Lam(const double &s,
+                      const double &sb,const double &sc) {
+      return ATOOLS::sqr(s-sb-sc)-4.0*sb*sc;
+    }
 
   public:
 
@@ -43,12 +48,19 @@ namespace METOOLS {
 		      Current *const ijt,Current *const kt);
 
     // destructor
-    ~Dipole_Kinematics();
+    virtual ~Dipole_Kinematics();
 
     // member functions
-    void Evaluate();
+    virtual void Evaluate() = 0;
 
-    void CheckKT2Min();
+    virtual void CheckKT2Min() = 0;
+
+    virtual void EvaluateFFS(const ATOOLS::Vec4D &p,ATOOLS::Vec4D &q,
+                     double &Ai,double &B,double &t) = 0;
+    virtual void EvaluateVVS(const ATOOLS::Vec4D& p, ATOOLS::Vec4D& q,
+                     double &Ai,double &Aj,double &B,double &t) = 0;
+    virtual void EvaluateFVS(double &Ai,double &t) = 0;
+
 
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 
@@ -70,6 +82,8 @@ namespace METOOLS {
     inline int Swap() const { return m_swap; }
     inline int Trig() const { return m_trig; }
 
+    /* TODO: These are used by Amplitude (and more?),
+       but meaning should depend on subtraction */
     inline double Z() const { return m_z; }
     inline double Y() const { return m_y; }
 
@@ -78,6 +92,7 @@ namespace METOOLS {
 
     inline double KT2() const { return m_kt2; }
     inline double Q2() const  { return m_Q2;  }
+    /**/
 
     inline double Phase(const int i) const { return m_phase[i]; }
     inline double Res(const int i) const   { return m_res[i];   }
@@ -114,6 +129,8 @@ namespace METOOLS {
   
   std::ostream &operator<<
     (std::ostream &str,const Dipole_Kinematics &k);
+
+  typedef ATOOLS::Getter_Function<Dipole_Kinematics,Vertex_Key,std::less<std::string> > Dipole_Kinematics_Getter;
 
 }// end of namespace METOOLS
 
