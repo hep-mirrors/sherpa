@@ -54,10 +54,11 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
       }
     if (proc!=NULL) THROW(fatal_error,"Process not in group: "+pname);
     p_int->PSHandler()->SetPoint(ampl);
+    p_selected->SetEventReader(p_read);
     Weight_Info *winfo(p_selected->Integrator()->PSHandler()
 		       ->OneEvent(p_selected,mode));
     p_int->PSHandler()->SetPoint(NULL);
-    if (winfo) p_selected->SetEventReader(p_read);
+    p_selected->SetEventReader(winfo?p_read:NULL);
     ampl->Delete();
     return winfo;
   }
