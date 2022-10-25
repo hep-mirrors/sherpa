@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "MODEL/Main/Model_Base.H"
 #include "PHOTONS++/Main/Define_Dipole.H"
 
 #ifdef PHOTONS_DEBUG
@@ -112,8 +113,8 @@ Photons::Photons() :
   s_xi = s["RV_SCALING"].Get<double>();
   // EW scheme: 1 = alpha(MZ) (default), 2 = alpha(0), 3 = Gmu
   s_ew_scheme = s["EW_SCHEME"].Get<int>();
-  if (s_ew_scheme == 2) s_alpha_input = MODEL::aqed->AqedThomson(); // For consistency
-  else if (s_ew_scheme == 3) {
+  if (s_ew_scheme == MODEL::ew_scheme::alpha0) s_alpha_input = MODEL::aqed->AqedThomson(); // For consistency
+  else if (s_ew_scheme == MODEL::ew_scheme::Gmu) {
     double GF = 1.16639e-5;
     double  MW2  = sqr(Flavour(kf_Wplus).Mass());
     double  MZ2  = sqr(Flavour(kf_Z).Mass());
