@@ -4,16 +4,17 @@ GITTAG = PDF/Main
 include ../../git.make
 
 libPDF_la_SOURCES     =	\
-		    	Git_Info.C \
+		    Git_Info.C \
 			PDF_Base.C \
 			ISR_Base.C \
-		    	Intact.C \
+		    Intact.C \
 			Structure_Function.C \
 			ISR_Handler.C \
 			Jet_Criterion.C \
 			Cluster_Definitions_Base.C \
 			NLOMC_Base.C \
-			Shower_Base.C
+			Shower_Base.C \
+			Photon_PDF_Base.C
 
 localinc_HEADERS         =	\
 			PDF_Base.H \
@@ -24,4 +25,5 @@ localinc_HEADERS         =	\
 			Jet_Criterion.H \
 			Cluster_Definitions_Base.H \
 			NLOMC_Base.H \
-			Shower_Base.H
+			Shower_Base.H \
+			Photon_PDF_Base.H

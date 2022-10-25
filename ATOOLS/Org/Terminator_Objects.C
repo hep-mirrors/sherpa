@@ -15,7 +15,7 @@ using namespace ATOOLS;
 
 ATOOLS::Terminator_Object_Handler *ATOOLS::exh(NULL);
 
-void ATOOLS::Terminate() 
+void ATOOLS::Terminate()
 {
   exh->Terminate(1);
 }
@@ -25,7 +25,6 @@ Terminator_Object_Handler::Terminator_Object_Handler():
   m_nbus(0), m_nsegv(0)
 {
   std::set_terminate(ATOOLS::Terminate);
-  std::set_unexpected(ATOOLS::Terminate);
   signal(SIGSEGV,ATOOLS::HandleSignal);
   signal(SIGINT,ATOOLS::HandleSignal);
   signal(SIGPIPE,ATOOLS::HandleSignal);
@@ -41,7 +40,7 @@ bool Terminator_Object_Handler::ReadInStatus(const std::string &path)
 {
   bool success(true);
   msg_Info()<<METHOD<<"(): Reading status from '"<<path<<"' {"<<std::endl;
-  for (size_t i=0;i<m_terminatorobjects.size();++i) 
+  for (size_t i=0;i<m_terminatorobjects.size();++i)
     if (!m_terminatorobjects[i]->ReadInStatus(path)) success=false;
   msg_Info()<<"}"<<std::endl;
   return success;
@@ -70,7 +69,7 @@ void Terminator_Object_Handler::PrepareTerminate()
   msg_Tracking()<<"... prepared."<<std::endl;
 }
 
-void Terminator_Object_Handler::Terminate(unsigned int excode) 
+void Terminator_Object_Handler::Terminate(unsigned int excode)
 {
   PrepareTerminate();
   rpa->gen.WriteCitationInfo();
@@ -83,23 +82,23 @@ void Terminator_Object_Handler::Terminate(unsigned int excode)
 }
 
 void Terminator_Object_Handler::AddTerminatorFunction(void (*function)(void))
-{ 
-  m_terminatorfunctions.push_back(function); 
+{
+  m_terminatorfunctions.push_back(function);
 }
 
 void Terminator_Object_Handler::AddTerminatorObject(Terminator_Object *const object)
-{ 
-  m_terminatorobjects.push_back(object); 
+{
+  m_terminatorobjects.push_back(object);
 }
 
 void Terminator_Object_Handler::
 RemoveTerminatorObject(Terminator_Object *const terminatorobject)
 {
   if (m_noremove) return;
-  for (std::vector<Terminator_Object*>::iterator 
+  for (std::vector<Terminator_Object*>::iterator
 	 toit=m_terminatorobjects.begin();
        toit!=m_terminatorobjects.end();) {
-    if (*toit==terminatorobject) toit=m_terminatorobjects.erase(toit); 
+    if (*toit==terminatorobject) toit=m_terminatorobjects.erase(toit);
     else ++toit;
   }
 }
@@ -107,10 +106,10 @@ RemoveTerminatorObject(Terminator_Object *const terminatorobject)
 void Terminator_Object_Handler::RemoveTerminatorFunction(void (*function)(void))
 {
   if (m_noremove) return;
-  for (std::vector<Terminator_Function>::iterator 
+  for (std::vector<Terminator_Function>::iterator
 	 tfit=m_terminatorfunctions.begin();
        tfit!=m_terminatorfunctions.end();) {
-    if (*tfit==function) tfit=m_terminatorfunctions.erase(tfit); 
+    if (*tfit==function) tfit=m_terminatorfunctions.erase(tfit);
     else ++tfit;
   }
 }
@@ -119,12 +118,12 @@ Terminator_Object_Handler::~Terminator_Object_Handler()
 {
 }
 
-void ATOOLS::HandleSignal(int signal) 
+void ATOOLS::HandleSignal(int signal)
 {
   exh->HandleSignal(signal);
 }
 
-void Terminator_Object_Handler::HandleSignal(int signal) 
+void Terminator_Object_Handler::HandleSignal(int signal)
 {
   msg_Error()<<std::endl<<om::bold<<"Terminator_Object_Handler::HandleSignal: "
 	     <<om::reset<<om::blue<<"Signal "<<om::reset<<om::bold
@@ -154,7 +153,7 @@ void Terminator_Object_Handler::HandleSignal(int signal)
       Abort(1);
     }
     break;
-    
+
   case SIGABRT:
     Abort();
     break;
@@ -199,5 +198,5 @@ void Terminator_Object_Handler::HandleSignal(int signal)
     msg_Error()<<"   Cannot handle signal."<<om::reset<<std::endl;
     Terminate(1);
   }
-  
+
 }

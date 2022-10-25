@@ -1,19 +1,18 @@
 #include "PDF/Main/Intact.H"
-#include "ATOOLS/Org/Message.H"
 
 using namespace PDF;
 
-Intact::Intact(ATOOLS::Flavour _bunch):
-  ISR_Base(NULL)
+Intact::Intact(const ATOOLS::Flavour& _bunch):
+  ISR_Base(nullptr)
 {
   m_bunch  = _bunch;
-  m_type   = std::string("(None)");
+  m_type   = isrtype::intact;
   m_weight = 1.;
 }
 
 bool Intact::CalculateWeight(double x,double z,double kp2,double q2,int warn) 
 { 
-  return 1; 
+  return true;
 }
 
 double Intact::Weight(ATOOLS::Flavour fl)                

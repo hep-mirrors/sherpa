@@ -24,14 +24,42 @@ using namespace SHERPA;
 using namespace PHASIC;
 using namespace ATOOLS;
 
+std::ostream & SHERPA::operator<<(std::ostream & s,
+                                  const SHERPA::mets_bbar_mode::code & mm)
+{
+  if (mm==mets_bbar_mode::none)         s<<"none";
+  if (mm&mets_bbar_mode::enabled)       s<<"Enabled";
+  if (mm&mets_bbar_mode::lowestmulti)   s<<"LowestMulti";
+  if (mm&mets_bbar_mode::exclcluster)   s<<"ExclCluster";
+  return s;
+}
+
+std::istream &SHERPA::operator>>(std::istream &s,
+                                 SHERPA::mets_bbar_mode::code &mm)
+{
+  std::string tag;
+  getline(s,tag);
+  mm=mets_bbar_mode::none;
+  if (tag.find("Enabled")!=std::string::npos)
+    mm|=mets_bbar_mode::enabled;
+  if (tag.find("LowestMulti")!=std::string::npos)
+    mm|=mets_bbar_mode::lowestmulti;
+  if (tag.find("ExclCluster")!=std::string::npos)
+    mm|=mets_bbar_mode::exclcluster;
+  return s;
+}
+
 Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh,
                                                Hard_Decay_Handler*const dec,
                                                Shower_Handler *const psh):
   p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL)
+  p_ampl(NULL), m_globalkfac(0.), m_maxkfac(0.),
+  m_bbarmode(mets_bbar_mode::none)
 {
   Settings& s = Settings::GetMainSettings();
-  m_bbarmode = s["METS_BBAR_MODE"].SetDefault(1).Get<int>();
+  m_bbarmode = s["METS_BBAR_MODE"].SetDefault(mets_bbar_mode::enabled|
+                                              mets_bbar_mode::exclcluster)
+                                  .Get<mets_bbar_mode::code>();
   m_globalkfac = s["GLOBAL_KFAC"].SetDefault(0.0).Get<double>();
   m_maxkfac = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
 }
@@ -73,6 +101,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   if (!p_shower->On() ||
       (p_me && p_me->Process()->Info().m_nlomode==nlo_mode::fixedorder)) {
     m_weightsmap.Clear();
+    m_lkfweightsmap.Clear();
     return Return_Value::Success;
   }
   if (p_ampl) {
@@ -93,16 +122,16 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     p_mi->SetMassMode(1);
     int stat(p_mi->ShiftMasses(p_ampl));
     if (stat<0) {
-      msg_Out()<<METHOD<<"(): MI Mass shift failed. Reject event.\n"
-	       <<(*blob)<<"\n";
+      msg_Error()<<METHOD<<"(): MI Mass shift failed. Reject event.\n"
+		 <<(*blob)<<"\n";
       exit(1);
       return Return_Value::Retry_Event;
     }
     if (stat==1) {
       stat=p_mi->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(p_ampl);
       if (stat!=1) {
-	msg_Out()<<METHOD<<"(): MI Reclustering failed. Reject event.\n"
-		 <<(*blob)<<"\n";
+	msg_Error()<<METHOD<<"(): MI Reclustering failed. Reject event.\n"
+		   <<(*blob)<<"\n";
 	exit(1);
 	return Return_Value::Retry_Event;
       }
@@ -118,14 +147,13 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     return Return_Value::Success;
   }
   if (p_sc) {
-    p_sc->SetClusterDefinitions(p_shower->GetShower()->GetClusterDefinitions());
     p_ampl=p_sc->ClusterConfiguration(blob);
     if (p_ampl==NULL) {
-      msg_Out()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
+      msg_Error()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
       return Return_Value::New_Event;
     }
     if (!p_shower->GetShower()->PrepareShower(p_ampl,true)) {
-      msg_Out()<<METHOD<<": could not prepare shower.\n"; 
+      msg_Error()<<METHOD<<": could not prepare shower.\n"; 
       return Return_Value::New_Event;
     }
     return Return_Value::Success;
@@ -142,8 +170,9 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     return Return_Value::New_Event;
   }
   m_weightsmap.Clear();
+  m_lkfweightsmap.Clear();
   if (p_me->Process()->Info().m_ckkw&1) {
-    if ((m_bbarmode&1) && p_me->HasNLO() &&
+    if ((m_bbarmode&mets_bbar_mode::enabled) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
       if (!LocalKFactor(p_ampl)) DEBUG_INFO("Process not found");
     }
@@ -164,16 +193,16 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
   if (p_me->Process()->Info().m_ckkw&1) {
     auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
-    wgtmap["Sudakov"] *= m_weightsmap["Sudakov"];
+    wgtmap *= m_lkfweightsmap;
     p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
     if (p_me->EventGenerationMode()!=0) {
       const auto disc = ran->Get();
-      const auto abswgt = std::abs(m_weightsmap["Sudakov"].Nominal());
+      const auto abswgt = std::abs(m_lkfweightsmap.Nominal());
       if (abswgt < disc) {
         return Return_Value::New_Event;
       }
-      m_weightsmap["Sudakov"] /= Min(1.0, abswgt);
-      wgtmap["Sudakov"] /= Min(1.0, abswgt);
+      m_lkfweightsmap /= Min(1.0, abswgt);
+      wgtmap /= Min(1.0, abswgt);
     }
     p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
   }
@@ -185,7 +214,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
 bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
 {
   if (m_globalkfac) {
-    m_weightsmap["Sudakov"] *= m_globalkfac;
+    m_lkfweightsmap *= m_globalkfac;
     return true;
   }
   DEBUG_FUNC(ampl->Legs().size());
@@ -194,7 +223,7 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
   while (ampl->Next()!=NULL) {
     ampl=ampl->Next();
     Process_Base::SortFlavours(ampl);
-    if (m_bbarmode&2) {
+    if (m_bbarmode&mets_bbar_mode::lowestmulti) {
       if (ampl->Next()) continue;
       Single_Process *proc(ampl->Proc<Single_Process>());
       if (ampl->Legs().size()-ampl->NIn()>
@@ -203,10 +232,9 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
     for (int i=procs.size()-1; i>=0; --i) {
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
-        auto K = ATOOLS::Weights {Variations_Type::qcd};
-        K = mcnloproc->LocalKFactor(*ampl);
+        Weights_Map K = mcnloproc->LocalKFactor(*ampl);
 	if (K.Nominal()==0.0 || dabs(K.Nominal())>m_maxkfac) continue;
-        m_weightsmap["Sudakov"] *= K;
+        m_lkfweightsmap *= K;
         return true;
       }
     }
@@ -244,7 +272,7 @@ bool Perturbative_Interface::FillBlobs()
     }
   }
   p_bloblist->push_back(sblob);
-  p_shower->FillBlobs(p_bloblist); 
+  p_shower->FillBlobs(p_bloblist);
   return true;
 }
 
@@ -252,15 +280,14 @@ int Perturbative_Interface::PerformShowers()
 {
   PDF::Shower_Base *csh(p_shower->GetShower());
   int stat=csh->PerformShowers();
-
-  m_weightsmap["PS"] = csh->WeightsMap()["PS"];
-  m_weightsmap["PS_QCUT"] = csh->WeightsMap()["PS_QCUT"];
-
-  auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
-  wgtmap["PS"] *= m_weightsmap["PS"];
-  wgtmap["PS_QCUT"] *= m_weightsmap["PS_QCUT"];
-  p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
-
+  if ((*p_hard)["WeightsMap"]!=NULL) {
+    m_weightsmap["PS"]      = csh->WeightsMap()["PS"];
+    m_weightsmap["PS_QCUT"] = csh->WeightsMap()["PS_QCUT"];
+    auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
+    wgtmap["PS"]      *= m_weightsmap["PS"];
+    wgtmap["PS_QCUT"] *= m_weightsmap["PS_QCUT"];
+    p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
+  }
   return stat;
 }
 

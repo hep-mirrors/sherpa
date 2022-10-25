@@ -1,6 +1,9 @@
+from __future__ import division 
 from copy import deepcopy, copy
-from ufo_exception import ufo_exception
-from py_to_cpp import c_string_from_num
+from ufo_interface.ufo_exception import ufo_exception
+from ufo_interface.py_to_cpp import c_string_from_num
+from operator import ne
+
 
 class tensor(object):
     
@@ -23,7 +26,7 @@ class tensor(object):
 
         ret = ""
         if not self._array[0]._elementary:
-            for tens,i in zip(self._array, range(self._toplevel_dim)):
+            for tens,i in zip(self._array, list(range(self._toplevel_dim))):
                 title = indent+"{0}:{1}".format(self._toplevel_key, i)
                 sub_indent = " "*len(title)
                 ret += title+"\n"+tens.__str__(sub_indent)
@@ -105,7 +108,7 @@ class tensor(object):
         if self._elementary:
             return []
         ret = [self._toplevel_key]
-        ret.extend(self._array[0].keys())
+        ret.extend(list(self._array[0].keys()))
         return ret
 
     def key_dim_dict(self):
@@ -143,7 +146,7 @@ class tensor(object):
         # only sum of identical type
         # i.e. demand equality of key_dim_dict()
         kdd = self.key_dim_dict()
-        if (cmp(kdd, rhs.key_dim_dict())!=0):
+        if (ne(kdd, rhs.key_dim_dict())):
             raise ufo_exception("Inconsistent tensor addition")
         
         if self._elementary:
@@ -192,13 +195,13 @@ class tensor(object):
     def __rmul__(self, lhs):
         return self.__mul__(lhs)
 
-    def __div__(self, rhs):
+    def __truediv__(self, rhs):
         if isinstance(rhs, tensor):
             if rhs._elementary:
                 return self.__mul__(tensor([1.0/rhs._array[0]], None))
         return self.__mul__(1.0/rhs)
 
-    def __rdiv__(self, lhs):
+    def __rtruediv__(self, lhs):
         assert(self._elementary)
         return lhs*tensor([1.0/self._array[0]], None)
 
@@ -268,7 +271,7 @@ class tensor(object):
                     raise RuntimeError("Inconsistent tensor")
                 if tens._toplevel_key != key:
                     raise RuntimeError("Inconsistent tensor")
-                if (cmp(tens.key_dim_dict(), kdd)!=0):
+                if (ne(tens.key_dim_dict(), kdd)):
                     raise RuntimeError("Inconsistent tensor")
 
 ###################
@@ -331,7 +334,7 @@ def contract(tens_a, tens_b):
     ckd   = common_key_dict(tens_a, tens_b)
     kdd   = tens_a.key_dim_dict()
     kdd.update(tens_b.key_dim_dict())
-    kdd   = {key:dim for key,dim in kdd.iteritems() if key not in ckd}
+    kdd   = {key:dim for key,dim in kdd.items() if key not in ckd}
     
     ret = new(kdd)
 
@@ -343,7 +346,7 @@ def contract(tens_a, tens_b):
             # Fuckin ugly hack to fix implicit Minkowski metric
             # insertions in UFO
             pf = 1.0
-            for k,i in sum_index.iteritems():
+            for k,i in sum_index.items():
                 if isinstance(k, lorentz_key) and i!=0:
                     pf *= -1.0
                     
@@ -352,7 +355,7 @@ def contract(tens_a, tens_b):
     return ret
 
 def common_keys(tens_a, tens_b):
-    return [key for key in tens_a.keys() if key in tens_b.keys()]
+    return [key for key in list(tens_a.keys()) if key in list(tens_b.keys())]
 
 def common_key_dict(tens_a, tens_b):
     comm_keys = common_keys(tens_a,tens_b)

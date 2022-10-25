@@ -32,7 +32,7 @@ using namespace std;
 Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction(
     Matrix_Element_Handler *_mehandler,
     Soft_Photon_Handler *_sphotons) :
-  m_on(true), m_qed(true), m_forceqedonnloqcd(false),
+  m_on(true), m_qed(true), m_onme(false),
   p_mehandler(_mehandler), p_sphotons(_sphotons), p_newsublist(NULL)
 {
   Settings& s = Settings::GetMainSettings();
@@ -45,7 +45,7 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction(
   const bool impliciteon{
     meqedsettings["ENABLED"].SetDefault(true).Get<bool>() };
   const bool expliciteon{
-    impliciteon && meqedsettings["ENABLED"].IsCustomised() };
+    impliciteon && meqedsettings["ENABLED"].IsSetExplicitly() };
   // look whether there is any hadronisation following
   // if not, do not even put them on-shell -> switch everthing off
   msg_Debugging()<<"impl="<<impliciteon<<", expl="<<expliciteon<<std::endl;
@@ -62,12 +62,12 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction(
       (p_mehandler->HasNLO() == 1 || hdenabled)) {
     m_on = false; m_qed = false;
   }
-  if (expliciteon && p_mehandler->HasNLO()==1) {
-    m_forceqedonnloqcd =
-      meqedsettings["ON_NLO_QCD"].SetDefault(false).Get<bool>();
+  if (expliciteon) {
+    m_onme =
+      meqedsettings["DIRECTLY_ON_ME"].SetDefault(false).Get<bool>();
   }
   msg_Debugging()<<"on="<<m_on<<" ,  qed="<<m_qed<<std::endl;
-  msg_Debugging()<<"force on nlo qcd: "<<m_forceqedonnloqcd<<std::endl;
+  msg_Debugging()<<"force on me directly: "<<m_onme<<std::endl;
 
   if (m_on && m_qed) m_name += p_sphotons->SoftQEDGenerator();
   else               m_name += "None";
@@ -92,7 +92,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
   // look for QCD corrected hard process in need for QED
   Blob * sigblob(bloblist->FindLast(btp::Shower));
   // if NLO QCD, no shower blob, take ME blob instead, status not set yet
-  if (m_forceqedonnloqcd) {
+  if (m_onme) {
     sigblob = bloblist->FindFirst(btp::Signal_Process);
     if (!sigblob) return Return_Value::Nothing;
     msg_Debugging()<<sigblob->TypeSpec()<<std::endl;
@@ -106,7 +106,6 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
     return Return_Value::Nothing;
   // extract FS leptons
   // two vectors -> the ones from the blob and the ones to be massive
-  DEBUG_FUNC(m_qed);
   Particle_Vector fslep(sigblob->GetOutParticles());
   Particle_Vector mfslep;
   for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();) {
@@ -122,6 +121,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
       ++it;
     }
   }
+  DEBUG_VAR(fslep.size());
   // if no leptons, nothing to do
   // if only one lepton, cannot do anything
   if (fslep.size()<2) {
@@ -193,7 +193,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
     QEDblob->AddToInParticles(*it);
   }
   // if fixed-order NLO RS and on, copy QED radiation also to subevtlist
-  if (m_forceqedonnloqcd) ModifySubEvtList(sigblob,fslep,blobs);
+  if (m_onme) ModifySubEvtList(sigblob,fslep,blobs);
   // first fill in all LO particles
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
     while ((*it)->NOutP() && (*it)->OutParticle(0)->Info()!='S') {

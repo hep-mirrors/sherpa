@@ -10,7 +10,7 @@ Colour_Reconnection_Handler::Colour_Reconnection_Handler() :
   p_reconnections(NULL)
 {
   auto s = Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
-  m_on = s["ENABLED"].SetDefault(true).Get<bool>();
+  m_on = s["Mode"].SetDefault(false).Get<bool>();
   p_reconnections = new Reconnection_Handler(m_on);
   p_reconnections->Initialize();
 }

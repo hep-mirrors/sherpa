@@ -1,6 +1,7 @@
 #ifndef SHERPA_SoftPhysics_Soft_Photon_Handler_H
 #define SHERPA_SoftPhysics_Soft_Photon_Handler_H
 
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include <string>
 #include <vector>
 
@@ -22,8 +23,9 @@ namespace SHERPA {
 
   class Soft_Photon_Handler {
   private:
-    bool                    m_photonsadded;
-    std::string             m_name;
+    bool                      m_photonsadded;
+    std::string               m_name;
+    ATOOLS::Momenta_Stretcher m_stretcher;
     PHOTONS::Photons        * p_yfs;
     Resonance_Finder        * p_clusterer;
     Matrix_Element_Handler  * p_mehandler;

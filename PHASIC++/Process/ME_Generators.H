@@ -7,9 +7,10 @@
 namespace MODEL    { class Model_Base; }
 namespace BEAM     { class Beam_Spectra_Handler; }
 namespace PDF      { class ISR_Handler; }
+namespace REMNANTS { class Remnant_Handler; }
 
 namespace PHASIC   {
-  
+
   class Process_Base;
   class Process_Info;
   class ME_Generator_Base;
@@ -38,7 +39,8 @@ namespace PHASIC   {
     Process_Base* InitializeProcess(const Process_Info &pi, bool add);
 
     inline MODEL::Model_Base *Model() const { return p_model; }
-
+    void SetModel(MODEL::Model_Base*);
+    void SetRemnant(REMNANTS::Remnant_Handler *remnant);
   };
 
 }

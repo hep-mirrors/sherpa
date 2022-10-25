@@ -38,24 +38,24 @@ using namespace ATOOLS;
 ATOOLS::Random *ATOOLS::ran(NULL);
 
 
-ATOOLS::Random::Random(long nid): 
+ATOOLS::Random::Random(long nid):
   m_nsinceinit(0), m_increment(0),
   p_external(NULL)
 {
   ATOOLS::exh->AddTerminatorObject(this);
-  SetSeed(nid); 
+  SetSeed(nid);
   SaveStatus();
   p_ran4[0] = new Marsaglia();
   p_ran4[1] = new Marsaglia();
 }
 
 
-ATOOLS::Random::~Random() 
-{ 
+ATOOLS::Random::~Random()
+{
   delete p_ran4[0];
   delete p_ran4[1];
   if (p_external) delete p_external;
-} 
+}
 
 static long idum2=123456789;
 static long sidum2=123456789;
@@ -69,7 +69,7 @@ double ATOOLS::Random::Ran2(long *idum)
   int   j;
   long  k;
   double temp;
-  
+
   if (*idum <= 0) {
     if (-(*idum) < 1) *idum=1;
     else *idum = -(*idum);
@@ -156,7 +156,7 @@ int ATOOLS::Random::WriteOutStatus
   return idx+1;
 }
 
-bool ATOOLS::Random::ReadInStatus(const std::string &path) 
+bool ATOOLS::Random::ReadInStatus(const std::string &path)
 {
   ReadInStatus((path+"random.dat").c_str());
   return true;
@@ -175,10 +175,10 @@ void ATOOLS::Random::ReadInStatus(const char * filename)
   if (FileExists(std::string(filename)+".msg")) activeGenerator = 4;
   else activeGenerator = 2;
   file.close();
-  
+
   // use readin method for the Generator identified Generator
-  if (activeGenerator==4) { ReadInStatus4(filename);} 
-  else {  
+  if (activeGenerator==4) { ReadInStatus4(filename);}
+  else {
     // read in every Statusregister of Random Number generator
     msg_Info()<<METHOD<<"(): Reading status from '"
 	      <<filename<<"'."<<endl;
@@ -192,7 +192,7 @@ void ATOOLS::Random::ReadInStatus(const char * filename)
 	for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
       myinstream.close();
       EraseLastIncrementedSeed();
-    } 
+    }
     else msg_Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
   }
 }
@@ -200,7 +200,7 @@ void ATOOLS::Random::ReadInStatus(const char * filename)
 size_t ATOOLS::Random::ReadInStatus
 (std::istream &myinstream,const size_t &idx)
 {
-  if (activeGenerator==4) { ReadInStatus4(myinstream,idx); } 
+  if (activeGenerator==4) { ReadInStatus4(myinstream,idx); }
 #ifdef USING__MPI
   if (mpi->Size()>1) return std::string::npos;
 #endif
@@ -216,15 +216,15 @@ size_t ATOOLS::Random::ReadInStatus
   return std::string::npos;
 }
 
-double ATOOLS::Random::GetNZ() 
+double ATOOLS::Random::GetNZ()
 {
   double ran1;
-  do ran1=Get(); while (ran1==0.); 
+  do ran1=Get(); while (ran1==0.);
   return ran1;
 }
 
 
-void ATOOLS::Random::SetSeed(long int nid) 
+void ATOOLS::Random::SetSeed(long int nid)
 {
   msg_Info()<<METHOD<<"(): Seed set to "<<nid<<std::endl;
   m_id = nid<0 ? nid : -nid;
@@ -232,11 +232,22 @@ void ATOOLS::Random::SetSeed(long int nid)
 }
 
 
+bool ATOOLS::Random::CanRestoreStatus() const
+{
+  if (p_external)
+    return p_external->CanRestoreStatus();
+  return true;
+}
+
+
 void ATOOLS::Random::SaveStatus()
 {
-  if (p_external!=NULL) return;
+  if (p_external!=NULL) {
+    p_external->SaveStatus();
+    return;
+  }
   if (activeGenerator==4) { return SaveStatus4(); };
-  m_sid=m_id; 
+  m_sid=m_id;
   siy=iy;
   sidum2=idum2;
   for (int i=0;i<NTAB;++i) siv[i]=iv[i];
@@ -245,9 +256,12 @@ void ATOOLS::Random::SaveStatus()
 
 void ATOOLS::Random::RestoreStatus()
 {
-  if (p_external!=NULL) return;
+  if (p_external!=NULL) {
+    p_external->RestoreStatus();
+    return;
+  }
   if (activeGenerator==4) { return RestoreStatus4(); };
-  m_id=m_sid; 
+  m_id=m_sid;
   iy=siy;
   idum2=sidum2;
   for (int i=0;i<NTAB;++i) iv[i]=siv[i];
@@ -373,8 +387,8 @@ void ATOOLS::Random::ReadInStatus4(const char * filename)
   msg_Info()<<"Random::ReadInStatus from "<<filename<<".msg"<<endl;
 
   std::ifstream file((std::string(filename)+".msg").c_str());
-  if (file.good()) p_ran4[0]->ReadStatus(file);  
-  else 
+  if (file.good()) p_ran4[0]->ReadStatus(file);
+  else
     msg_Error()<<"ERROR in Random::ReadInStatus4 : "<<filename<<" not found!!"<<endl;
   *p_ran4[1]=*p_ran4[0];
 }
@@ -398,7 +412,7 @@ void ATOOLS::Random::FastForward(const size_t &n)
   }
 }
 
-double ATOOLS::Random::Get()   
+double ATOOLS::Random::Get()
 {
   if (p_external) return p_external->Get();
   // Sherpa internal
@@ -416,8 +430,9 @@ double ATOOLS::Random::Get()
   return rng;
 }
 
-ptrdiff_t ATOOLS::Random::operator() (ptrdiff_t max) {
-  return Min(static_cast<ptrdiff_t>(Get() * max),max-1);
+ATOOLS::Random::result_type ATOOLS::Random::operator()()
+{
+  return std::min(static_cast<ATOOLS::Random::result_type>((Get() * ((double) max() +1.0))), max());
 }
 
 External_RNG::~External_RNG()

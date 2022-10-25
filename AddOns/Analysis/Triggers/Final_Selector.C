@@ -102,7 +102,7 @@ operator()(const Analysis_Key& key) const
                           ATOOLS::ToType<int>(countparams[2]));
   }
 
-  if (s["Keep"].IsCustomised()) {
+  if (s["Keep"].IsSetExplicitly()) {
     const auto kf = s["Keep"].SetDefault(0).Get<int>();
     ATOOLS::Flavour flav{ ATOOLS::Flavour((kf_code)(std::abs(kf))) };
     if (kf<0) flav=flav.Bar();

@@ -40,7 +40,7 @@ namespace AMEGIC {
     PHASIC::Virtual_ME2_Base         * p_loopme;
 
     double *                p_reqborn;
-    double                  m_cmur[2];
+    std::vector<double>     m_cmur,m_wass;
     double                  m_x0,m_x1,m_eta0,m_eta1,m_z0,m_z1;
 
     bool   m_force_init, m_sccmur, m_murcoeffvirt, m_loopmapped;
@@ -48,7 +48,7 @@ namespace AMEGIC {
     size_t m_pspisrecscheme, m_pspfsrecscheme;
     size_t m_pspissplscheme, m_pspfssplscheme;
     double m_checkthreshold;
-    int    m_bvimode, m_user_bvimode, m_epsmode, m_drmode, m_checkloopmap;
+    int    m_bvimode, m_user_bvimode, m_epsmode, m_drmode, m_checkloopmap, m_calcv;
 
     double m_bsum, m_vsum, m_isum, m_n;
     double m_mbsum, m_mvsum, m_misum, m_mn;
@@ -132,9 +132,15 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &,int mode);
-    double         DSigma(const ATOOLS::Vec4D_Vector &,bool,const int);
-    double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector&,
+                    ATOOLS::Variations_Mode varmode,
+                    int mode);
+    double DSigma(const ATOOLS::Vec4D_Vector &,bool,
+                  ATOOLS::Variations_Mode varmode,
+                  const int);
+    double operator()(const ATOOLS::Vec4D_Vector &,
+                      ATOOLS::Variations_Mode varmode,
+                      const int mode);
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                         std::vector<std::vector<Complex> >& cols);
 
@@ -161,8 +167,10 @@ namespace AMEGIC {
 
   protected:
     double         Calc_B();
-    double         Calc_V(const ATOOLS::Vec4D_Vector&);
-    double         Calc_V_WhenMapped(const ATOOLS::Vec4D_Vector&);
+    double         Calc_V(const ATOOLS::Vec4D_Vector&,
+                          ATOOLS::Variations_Mode varmode);
+    double         Calc_V_WhenMapped(const ATOOLS::Vec4D_Vector&,
+                                     ATOOLS::Variations_Mode varmode);
     double         Calc_I(const ATOOLS::Vec4D_Vector&);
     double         Calc_I(const ATOOLS::sbt::subtype,
                           const std::vector<size_t>&,
@@ -189,6 +197,8 @@ namespace AMEGIC {
     bool           AllowAsSpecInPFF(const size_t& i,const size_t& k);
 
     void           PrintDSij();
+
+    inline void SetCalcV(const int calcv) { m_calcv=calcv; }
   };
 }
 

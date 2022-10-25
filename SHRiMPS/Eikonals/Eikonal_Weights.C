@@ -16,7 +16,8 @@ Eikonal_Weights::Eikonal_Weights() :
   m_originalY(MBpars.GetEikonalParameters().originalY),
   m_Ymax(MBpars.GetEikonalParameters().Ymax),
   m_bmax(MBpars.GetEikonalParameters().bmax),
-  m_density(Rapidity_Density(m_Delta,m_lambda))
+  m_density(Rapidity_Density(m_Delta,m_lambda,m_Ymax,
+			     MBpars.GetEikonalParameters().absorp))
 { }
 
 void Eikonal_Weights::SetEikonal(Omega_ik * eikonal) {

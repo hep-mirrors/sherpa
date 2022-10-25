@@ -51,6 +51,7 @@ XS_Base::~XS_Base() {}
 MI_Process::MI_Process(const vector<Flavour> & flavs) :
   m_name(flavs[0].IDName()+" "+flavs[1].IDName()+" --> "+
 	 flavs[2].IDName()+" "+flavs[3].IDName()),
+  m_stretcher(Momenta_Stretcher(string("AMISIC: ")+m_name)),
   p_me2(NULL), m_emin(0.),
   m_massless(flavs[0].HadMass()<1.0 && flavs[1].HadMass()<1.0 &&
 	     flavs[2].HadMass()<1.0 && flavs[3].HadMass()<1.0),

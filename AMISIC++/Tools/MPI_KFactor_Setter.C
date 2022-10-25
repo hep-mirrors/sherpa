@@ -41,5 +41,5 @@ MPI_KFactor_Setter::MPI_KFactor_Setter(const KFactor_Setter_Arguments &args):
 double MPI_KFactor_Setter::KFactor() 
 {
   double pt2=p_proc->ScaleSetter()->Momenta()[2].PPerp2(), mt2=pt2+s_pt02;
-  return  m_weight = sqr(pt2/mt2*(*MODEL::as)(mt2)/(*MODEL::as)(pt2));
+  return  m_weight = sqr(pt2/mt2*(*MODEL::as)(Max(mt2,s_pt02))/(*MODEL::as)(Max(pt2,s_pt02)));
 }

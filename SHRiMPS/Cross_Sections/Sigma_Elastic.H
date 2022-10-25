@@ -15,20 +15,26 @@ namespace SHRIMPS {
     };
 
   private:    
-    double m_logdelta;
-    std::map<double,double> m_intgrid, m_diffgrid;
+    double m_tmin, m_tmax, m_summed;
+    size_t m_steps;
+    double m_delta;
+    std::vector<double> m_intgrid, m_diffgrid;
 
-    void   FillDiffQGrid(const double & Qmax);
-    double FillIntQGridAndNormalize();
+    void FillDiffQGrid();
+    void FillIntQGridAndNormalize();
   public:
-    Sigma_Elastic() : m_logdelta(20.) {};
-
-    void   FillDifferentialGrids();
-    double SelectPT2() const;
+    Sigma_Elastic(); 
+    void   FillGrids();
+    double SelectT() const;
 
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
     double GetDiffArgument(const double & B);
+    const double & Summed() const { return m_summed; }
+    const double & Tmin()   const { return m_tmin; }   
+    const double & Tmax()   const { return m_tmax; }   
+    const size_t & Steps()  const { return m_steps; }
+    const std::vector<double> & GetDiffGrid() const { return m_diffgrid; }
     double Test();
   };  
 }

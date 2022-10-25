@@ -16,6 +16,9 @@ Makefile.in
 /Examples/API/ME2-Python/test.py
 /Examples/API/MPIEvents/test.py
 /Examples/Userhook/Userhook_Example.os
+/Examples/UFO_MSSM/MSSM/.sherpa/
+/Examples/UFO_MSSM/MSSM/Sherpa.MSSM_Example.yaml
+/Examples/UFO_MSSM/MSSM/__pycache__/
 /INSTALL
 /MODEL/UFO/Sherpa-generate-model
 /MODEL/UFO/sconstruct_template
@@ -50,6 +53,7 @@ Makefile.in
 /missing
 /py-compile
 /stamp-h1
+/test-driver
 
 
 # make targets and intermediate files
@@ -83,3 +87,4 @@ Git_Info.C.tmp.bak
 /include/
 /lib/
 /share/
+*.DS_Store

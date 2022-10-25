@@ -47,6 +47,23 @@ template<> double Vec4D::Eta() const {
   }
   return sn*0.5*log(sqr(pp+pz)/pt2);
 }
+
+template<> double Vec4D::SmallOMCT(const Vec4& v) const
+{
+  double mag(sqrt(PSpat2()*v.PSpat2()));
+  double pq(m_x[1]*v[1]+m_x[2]*v[2]+m_x[3]*v[3]);
+  double ct(std::min(std::max(pq/mag,-1.),1.));
+  if (ct<0.) return 1.-ct;
+  double st(cross(Vec3D(*this),Vec3D(v)).Abs()/mag);
+  double st2(st/(2.*sqrt((ct+1.)/2.)));
+  return 2.*sqr(st2);
+}
+
+template<> double Vec4D::SmallMLDP(const Vec4& v) const
+{
+  return m_x[0]*v[0]*SmallOMCT(v);
+}
+
 template<> double Vec4D::CosTheta(const Vec4D& ref) const {
   Vec3D pref=Vec3D(ref), p=Vec3D(*this);
   return Max(Min(pref*p/(pref.Abs()*p.Abs()),1.0),-1.0);

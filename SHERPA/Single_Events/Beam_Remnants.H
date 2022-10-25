@@ -3,11 +3,16 @@
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
+#include "ATOOLS/Math/Histogram.H"
 
 namespace SHERPA {
   class Beam_Remnants : public Event_Phase_Handler {
   private :
+    bool m_ana;
     Beam_Remnant_Handler  * p_beamremnanthandler;
+    std::map<std::string, ATOOLS::Histogram *> m_histos;
+    void InitHistos();
+    void Analyse(ATOOLS::Blob_List*);
   public :
     Beam_Remnants(Beam_Remnant_Handler *);
     ~Beam_Remnants();

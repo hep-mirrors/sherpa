@@ -9,6 +9,7 @@ noinst_HEADERS = \
 	MEProcess.i \
 	Model_Base.i \
 	Random.i \
+	Rambo.i \
 	Terminator_Objects.i
 
 if ENABLE_PYEXT

@@ -12,10 +12,34 @@ Gluon_Decayer::Gluon_Decayer(list<Cluster *> * cluster_list,
 			     Soft_Cluster_Handler * softclusters) :
   Singlet_Tools(),
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_splitter(Gluon_Splitter(cluster_list,softclusters))
-{}
+  m_splitter(Gluon_Splitter(cluster_list,softclusters)),
+  m_analyse(true)
+{
+  if (m_analyse) {
+    m_histos[string("N_primaries")] = new Histogram(0,0.,100.,100);
+    m_histos[string("N_clusters")]  = new Histogram(0,0.,100.,100);
+    m_histos[string("M_all")]       = new Histogram(0,0.,100.,1000);
+    m_histos[string("M_light")]     = new Histogram(0,0.,100.,1000);
+    m_histos[string("M_c")]         = new Histogram(0,0.,100.,1000);
+    m_histos[string("M_b")]         = new Histogram(0,0.,100.,1000);
+    m_histos[string("Y_asym_1")]    = new Histogram(0,0.,8.,32);
+  }
+}
 
-Gluon_Decayer::~Gluon_Decayer() {}
+Gluon_Decayer::~Gluon_Decayer() {
+  if (m_analyse) {
+    Histogram * histo;
+    string name;
+    for (map<string,Histogram *>::iterator hit=m_histos.begin();
+	 hit!=m_histos.end();hit++) {
+      histo = hit->second;
+      name  = string("Fragmentation_Analysis/")+hit->first+string(".dat");
+      histo->Output(name);
+      delete histo;
+    }
+    m_histos.clear();
+  }
+}
 
 void Gluon_Decayer::Init() {
   Singlet_Tools::Init();
@@ -44,7 +68,6 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
     delete p_singlet;
     return flag;
   }
-  m_origsize=p_singlet->size();
   Proto_Particle * part1,* part2;
   size_t count(0);
   while (p_singlet->size()>3) {
@@ -59,21 +82,6 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
 	(*p_singlet->rbegin())->Flavour()==Flavour(kf_c) ||
 	(*p_singlet->rbegin())->Flavour()==Flavour(kf_c).Bar())
       direction = false;
-    /*
-    else {
-      list<Proto_Particle *>::iterator pliter=p_singlet->begin();
-      part1 = (*pliter);
-      pliter++;
-      part2 = (*pliter);
-      double mass1 = (part1->Momentum()+part2->Momentum()).Abs2();
-      list<Proto_Particle *>::reverse_iterator prliter=p_singlet->rbegin();
-      part1 = (*prliter);
-      prliter++;
-      part2 = (*prliter);
-      double mass2 = (part1->Momentum()+part2->Momentum()).Abs2();
-      direction = (mass1>mass2?true:false);
-    }
-    */
     if (direction) {
       list<Proto_Particle *>::iterator pliter=p_singlet->begin();
       part1 = (*pliter);
@@ -96,6 +104,9 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
       break;
     case -1:
     default:
+      msg_Out()<<METHOD<<" failed at intermediate step:\n"
+	       <<(*part1)<<"\n"
+	       <<(*part2)<<"\n";
       return false;
     }
   }
@@ -137,6 +148,16 @@ int Gluon_Decayer::Step(Proto_Particle * part1,Proto_Particle * part2,
   assert(part2 != nullptr);
   Vec4D momsave1(part1->Momentum()), momsave2(part2->Momentum());
   if (CheckMass(part1,part2) && m_splitter(part1,part2,part3)) {
+    if (m_analyse) {
+      m_Nclusters++;
+      double mass = 0;
+      bool isB = false, isC = false;
+      m_splitter.GetLast(mass,isB,isC);
+      m_histos[string("M_all")]->Insert(mass);
+      if (isB)      m_histos[string("M_b")]->Insert(mass);
+      else if (isC) m_histos[string("M_c")]->Insert(mass);
+      else          m_histos[string("M_light")]->Insert(mass);
+    }
     return 1;
   }
   part1->SetMomentum(momsave1);
@@ -177,6 +198,25 @@ bool Gluon_Decayer::LastStep() {
 bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,
 			    const bool & force) {
   Cluster * cluster = new Cluster(part1,part2);
+  if (m_analyse) {
+    m_Nclusters++;
+    double mass = sqrt(dabs(cluster->Momentum().Abs2()));
+    bool isB    = (part1->Flavour()==Flavour(kf_b) ||
+		   part1->Flavour()==Flavour(kf_b).Bar() ||
+		   part2->Flavour()==Flavour(kf_b) ||
+		   part2->Flavour()==Flavour(kf_b).Bar());
+    bool isC    = (!isB &&
+		   (part1->Flavour()==Flavour(kf_c) ||
+		    part1->Flavour()==Flavour(kf_c).Bar() ||
+		    part2->Flavour()==Flavour(kf_c) ||
+		    part2->Flavour()==Flavour(kf_c).Bar()));
+    m_histos[string("M_all")]->Insert(mass);
+    if (isB)      m_histos[string("M_b")]->Insert(mass);
+    else if (isC) m_histos[string("M_c")]->Insert(mass);
+    else          m_histos[string("M_light")]->Insert(mass);
+    double y = cluster->Momentum().Y();
+    m_histos[string("Y_asym_1")]->Insert(dabs(y),(y>0.?1.:-1.));
+  }
   p_singlet->pop_front();
   p_singlet->pop_back();
   switch (p_softclusters->Treat(cluster,force)) {
@@ -184,6 +224,10 @@ bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,
     delete cluster;
     break;
   case -1:
+    if (p_softclusters->Rescue(cluster)) {
+      delete cluster;
+      break;
+    }
     delete cluster;
     return false;
   default:
@@ -192,3 +236,13 @@ bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,
   }
   return true;
 }
+
+void Gluon_Decayer::FillNs(const int & Nhad) {
+  if (m_analyse) {
+    m_histos[string("N_clusters")]->Insert(m_Nclusters+0.5);
+    m_histos[string("N_primaries")]->Insert(Nhad+0.5);
+  }
+}
+
+void Gluon_Decayer::AnalyseClusters() {}
+

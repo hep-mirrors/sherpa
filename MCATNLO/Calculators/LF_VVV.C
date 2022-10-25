@@ -177,6 +177,7 @@ double LF_VVV1_FF::operator()
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(1.-z+z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    massive *= 1./(1.-muk2);
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
@@ -233,6 +234,7 @@ double LF_VVV2_FF::operator()
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(z+y-z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    massive *= 1./(1.-muk2);
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
@@ -274,14 +276,14 @@ double LF_VVV1_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 4.0*p_cf->Coupling(scale,0,sub) * ( 1./(1.-z+y) -1. + z*(1.-z)/2.0 );
+  double value = 4.0*p_cf->Coupling(scale,0,sub) * ( z/(1.-z+y) + z*(1.-z)/2.0 );
   return value * JFI(y,eta,scale,sub);
 }
 
 double LF_VVV1_FI::AsymmetryFactor(const double z,const double y,const double Q2)
 {
-  return ( 1./(1.-z+y) -1. + z*(1.-z)/2.0 ) /
-    ( 1./(1.-z+y) + 1./(z+y) -2. + z*(1.-z) );
+  return ( z/(1.-z+y) + z*(1.-z)/2.0 ) /
+    ( z/(1.-z+y) + (1.-z)/(z+y) + z*(1.-z) );
 }
 
 double LF_VVV1_FI::OverIntegrated
@@ -306,14 +308,14 @@ double LF_VVV2_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 4.0*p_cf->Coupling(scale,0,sub) * ( 1./(z+y) -1. + z*(1.-z)/2.0 );
+  double value = 4.0*p_cf->Coupling(scale,0,sub) * ( (1.-z)/(z+y) + z*(1.-z)/2.0 );
   return value * JFI(y,eta,scale,sub);
 }
 
 double LF_VVV2_FI::AsymmetryFactor(const double z,const double y,const double Q2)
 {
-  return ( 1./(z+y) -1. + z*(1.-z)/2.0 ) /
-    ( 1./(1.-z+y) + 1./(z+y) -2. + z*(1.-z) );
+  return ( (1.-z)/(z+y) + z*(1.-z)/2.0 ) /
+    ( z/(1.-z+y) + (1.-z)/(z+y) + z*(1.-z) );
 }
 
 double LF_VVV2_FI::OverIntegrated
@@ -339,7 +341,7 @@ double LF_VVV1_IF::operator()
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
   double mk2 = p_ms->Mass2(m_flspec), muk2 = mk2/(Q2+mk2);
-  double massless = 2. * ( (z-y)/(1.-z+y) + (1.-z)/z/2.0);
+  double massless = 2. * ( z/(1.-z+y) + (1.-z)/z/2.0);
   if (muk2==0.) {
     //the massless case
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless;
@@ -356,8 +358,8 @@ double LF_VVV1_IF::operator()
 double LF_VVV1_IF::AsymmetryFactor(const double z,const double y,const double Q2)
 {
   double mk2 = p_ms->Mass2(m_flspec), mt = mk2/(Q2+mk2)*y/(1.-y);
-  return ( (z-y)/(1.-z+y) + (1.-z)/z/2.0 - mt/2.0 ) /
-    ( (z-y)/(1.-z+y) + (1.-z)/z + z*(1.-z) - mt );
+  return ( z/(1.-z+y) + (1.-z)/z/2.0 - mt/2.0 ) /
+    ( z/(1.-z+y) + (1.-z)/z + z*(1.-z) - mt );
 }
 
 double LF_VVV1_IF::OverIntegrated
@@ -411,7 +413,7 @@ double LF_VVV2_IF::AsymmetryFactor(const double z,const double y,const double Q2
 {
   double mk2 = p_ms->Mass2(m_flspec), mt = mk2/(Q2+mk2)*y/(1.-y);
   return ( z*(1.-z) + (1.-z)/z/2.0 - mt/2.0 ) /
-    ( (z-y)/(1.-z+y) + (1.-z)/z + z*(1.-z) - mt );
+    ( z/(1.-z+y) + (1.-z)/z + z*(1.-z) - mt );
 }
 
 double LF_VVV2_IF::OverIntegrated
@@ -436,14 +438,14 @@ double LF_VVV1_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 4.0 * p_cf->Coupling(scale,0,sub) * ( z/(1.-z) + (1./(z+y)-1.)/2.0);
+  double value = 4.0 * p_cf->Coupling(scale,0,sub) * ( (z+y)/(1.-z) + (1.-z-y)/(z+y)/2.0);
   return value * JII(z,y,eta,scale,sub);
 }
 
 double LF_VVV1_II::AsymmetryFactor(const double z,const double y,const double Q2)
 {
-  return ( z/(1.-z) + (1./(z+y)-1.)/2.0 ) /
-    ( z/(1.-z) + (1./(z+y)-1.) + z*(1.-z) );
+  return ( (z+y)/(1.-z) + (1.-z-y)/(z+y)/2.0 ) /
+    ( (z+y)/(1.-z) + (1.-z-y)/(z+y) + (z+y)*(1.-z-y) );
 }
 
 double LF_VVV1_II::OverIntegrated
@@ -478,14 +480,14 @@ double LF_VVV2_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 4.0 * p_cf->Coupling(scale,0,sub) * ( z*(1.-z) + (1./(z+y)-1.)/2.0);
+  double value = 4.0 * p_cf->Coupling(scale,0,sub) * ( (z+y)*(1.-z-y) + (1.-z-y)/(z+y)/2.0);
   return value * JII(z,y,eta,scale,sub);
 }
 
 double LF_VVV2_II::AsymmetryFactor(const double z,const double y,const double Q2)
 {
-  return ( z*(1.-z) + (1./(z+y)-1.)/2.0 ) /
-    ( z/(1.-z) + (1./(z+y)-1.) + z*(1.-z) );
+  return ( (z+y)*(1.-z-y) + (1.-z-y)/(z+y)/2.0 ) /
+    ( (z+y)/(1.-z) + (1.-z-y)/(z+y) + (z+y)*(1.-z-y) );
 }
 
 double LF_VVV2_II::OverIntegrated

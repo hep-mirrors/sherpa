@@ -37,9 +37,10 @@ Multiple_Interactions::~Multiple_Interactions() { }
 
 Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
 {
-  m_result   = Return_Value::Nothing; 
-  if (p_mihandler->Type()==MI_Handler::None || p_mihandler->Done()) return m_result;
-  p_bloblist = bloblist;
+  m_result    = Return_Value::Nothing; 
+  if (p_mihandler->Type()==MI_Handler::none || p_mihandler->Done()) return m_result;
+  p_bloblist  = bloblist;
+  m_isfirstMB = (p_bloblist->size()==1 && p_mihandler->IsMinBias());
   // Try to colour-connect the last interaction with the remnants
   p_mihandler->ConnectColours(p_bloblist->FindLast(btp::Shower));
   // CheckBlobList makes sure a new interaction can be added.
@@ -65,15 +66,33 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
 	return Return_Value::Retry_Event;
       }
     }
-    bloblist->push_back(p_lastblob);
+    // If it is a MinBias event, the first blob is a dummy soft collision blob.
+    // We have to fill it with the content of the actual blob created by
+    // the MI_Handler
+    if (m_isfirstMB) InitMinBiasEvent();
+    else p_bloblist->push_back(p_lastblob);
     if (m_ptmax > m_hardveto) return Return_Value::New_Event;
     return Return_Value::Success;
   }
-  return Return_Value::Nothing;
+  // If we have reached the end of MPI production with a meaningful event,
+  // we can stop here.
+  if (p_mihandler->Done()) {
+    if (!(p_mihandler->IsMinBias() &&
+	  bloblist->size()==1 &&
+	  ((*p_bloblist)[0]->Has(blob_status::needs_signal) ||
+	   (*p_bloblist)[0]->Has(blob_status::needs_minBias))))
+	return Return_Value::Nothing;
+  }
+  // If it is a MinBias event where the event handler didn't manage to produce a
+  // first scatter (i.e. the first blob still needs a signal) then we have to
+  // produce a new event.
+  return Return_Value::New_Event;
 }
 
 bool Multiple_Interactions::CheckBlobList() 
 {
+  // don't need to check trivial first MB blob
+  if (m_isfirstMB) return true;
   // naive checks on blob list - does it exist and conserve momentum.
   if (p_bloblist->empty()) {
     msg_Error()<<METHOD<<": incoming blob list is empty.\n";
@@ -152,7 +171,7 @@ bool Multiple_Interactions::ExtractISInfo(Blob * blob) {
 }
 
 bool Multiple_Interactions::InitNewEvent() {
-  if (!m_newevent) return true;
+  if (!m_newevent || m_isfirstMB) return true;
   p_lastblob = p_bloblist->FindFirst(btp::Signal_Process);
   if (p_lastblob->Has(blob_status::needs_signal)) return false;
   Blob_Data_Base * ptinfo=(*p_lastblob)["MI_Scale"];
@@ -161,16 +180,45 @@ bool Multiple_Interactions::InitNewEvent() {
   if (m_ptmax!=std::numeric_limits<double>::max()) {
     double ptfac=sqrt((*p_lastblob)["Factorisation_Scale"]->Get<double>());
     double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());
-    //msg_Out()<<METHOD<<": muF, R = "<<ptfac<<", "<<ptren<<" from \n"<<(*p_lastblob)<<"\n";
-    m_ptmax = ptfac/4.;
+    m_ptmax = ptfac;
     if (!IsZero(ptfac-ptren)) m_ptmax += ptren;
     p_mihandler->InitialiseMPIs(m_ptmax_fac*m_ptmax);
+    p_lastblob->SetPosition(p_mihandler->SelectPositionForScatter());
+    Blob * showerblob = p_lastblob->OutParticle(0)->DecayBlob();
+    if (showerblob) showerblob->SetPosition(p_lastblob->Position());
+    p_mihandler->Remnants()->SetImpactParameter(p_mihandler->ImpactParameter());
     m_newevent = false;
     return true;
   }
   return false;
 }
-  
+
+void Multiple_Interactions::InitMinBiasEvent() {
+  Blob * signal         = (*p_bloblist)[0];
+  Particle_Vector * ins = p_lastblob->InParticles();
+  while (!ins->empty()) {
+    signal->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));
+  }
+  Particle_Vector * outs = p_lastblob->OutParticles();
+  while (!outs->empty()) {
+    signal->AddToOutParticles(p_lastblob->RemoveOutParticle(outs->back()));
+  }
+  signal->SetStatus(blob_status::code(p_lastblob->Status()));
+  signal->SetType(p_lastblob->Type());
+  signal->SetTypeSpec(p_lastblob->TypeSpec());
+  signal->SetPosition(p_lastblob->Position());
+  signal->AddData("Renormalization_Scale",
+		  new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]->Get<double>()));
+  signal->AddData("Factorization_Scale",
+		  new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]->Get<double>()));
+  signal->AddData("Resummation_Scale",
+		  new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]->Get<double>()));
+  delete p_lastblob;
+  p_mihandler->Remnants()->SetImpactParameter(p_mihandler->ImpactParameter());
+  m_newevent = m_isfirstMB = false;
+}
+
+
 void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
   MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
   for (size_t i=0;i<2;i++) {

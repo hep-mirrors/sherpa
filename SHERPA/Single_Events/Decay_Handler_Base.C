@@ -3,7 +3,6 @@
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
-#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Tensor.H"
@@ -28,13 +27,16 @@ using namespace std;
 
 Decay_Handler_Base::Decay_Handler_Base() :
   p_softphotons(NULL), p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
+  m_stretcher(Momenta_Stretcher("Decay_Handler")),
   m_qedmode(0), m_spincorr(false), m_decaychainend(false), m_cluster(true),
-  m_mass_smearing(1)
+  m_mass_smearing(1), m_oserrors(0)
 {
 }
 
 Decay_Handler_Base::~Decay_Handler_Base()
 {
+  if (m_oserrors>0)
+    msg_Error()<<METHOD<<" with "<<m_oserrors<<" particles not on their mass shell.\n";
   if (p_decaymap) delete p_decaymap; p_decaymap=NULL;
 }
 
@@ -72,7 +74,7 @@ void Decay_Handler_Base::SetMasses(ATOOLS::Blob* blob, bool usefinalmass)
   if (usefinalmass) max_mass=blob->InParticle(0)->FinalMass();
   else max_mass=total.Mass();
   if (nr_daughters<2) return;
-  
+
   bool success=true; size_t cnt=0;
   do {
     success=true;
@@ -149,10 +151,10 @@ void Decay_Handler_Base::BoostAndStretch(Blob* blob, const Vec4D& labmom)
   DEBUG_VAR(blob->MomentumConserved());
 
   // 3.
-  Momenta_Stretcher stretch;
-  if (!stretch.StretchBlob(blob)) {
-    msg_Error()<<METHOD<<" failed to stretch blob, retrying event."<<endl
-               <<*blob<<endl;
+  if (!m_stretcher.StretchBlob(blob)) {
+    msg_Error()<<METHOD<<" failed to stretch blob ("<<blob->Type()<<", "
+	       <<blob->NInP()<<" -> "<<blob->NOutP()<<"), retrying event.\n";
+    msg_Tracking()<<*blob<<endl;
     throw Return_Value::Retry_Event;
   }
   for (size_t i(0); i<blob->NOutP(); ++i)
@@ -178,14 +180,16 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
     if (!daughters[i]->Flav().Stable() &&
 	abs(daughters[i]->Momentum().Abs2()-
 	    sqr(daughters[i]->FinalMass()))>1e-6) {
-      PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
-                 <<"p^2="<<daughters[i]->Momentum().Mass()
-                 <<" vs. m^2="<<daughters[i]->FinalMass());
+      if ((m_oserrors++)<5) {
+	PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
+		   <<"sqrt|p^2|="<<sqrt(daughters[i]->Momentum().Abs2())
+		   <<" vs. m="<<daughters[i]->FinalMass());
+      }
       throw Return_Value::Retry_Event;
     }
   }
-  random_shuffle(shuffled.begin(), shuffled.end(), *ran);
-  
+
+  std::shuffle(shuffled.begin(), shuffled.end(), *ran);
   // initial blobs still contain on-shell particles, stretch them off-shell
   for (size_t i=0; i<daughters.size(); ++i) {
     if (!Decays(daughters[shuffled[i]]->Flav()) ||
@@ -195,10 +199,10 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
     CreateDecayBlob(daughters[shuffled[i]]);
   }
   SetMasses(blob, false);
-  Momenta_Stretcher stretch;
-  if (!stretch.StretchBlob(blob)) {
-    msg_Error()<<METHOD<<" failed to stretch blob, retrying event."<<endl
-               <<*blob<<endl;
+  if (!m_stretcher.StretchBlob(blob)) {
+    msg_Error()<<METHOD<<" failed to stretch blob ("<<blob->Type()<<", "
+	       <<blob->NInP()<<" -> "<<blob->NOutP()<<"), retrying event.\n";
+    msg_Tracking()<<*blob<<endl;
     throw Return_Value::Retry_Event;
   }
   for (size_t i(0); i<blob->NOutP(); ++i)
@@ -259,13 +263,14 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   DEBUG_FUNC(inpart->RefFlav()<<" "<<inpart->Number());
   if (s0) DEBUG_VAR(*s0);
   Vec4D labmom = inpart->Momentum();
-  
+
   // fill decay blob all on-shell
   Blob_Data_Base* data = (*blob)["p_onshell"];
   if (data) inpart->SetMomentum(data->Get<Vec4D>());
   else {
-    msg_Error()<<METHOD<<" could not find p_onshell, retrying event."<<endl
-               <<*blob<<endl;
+    msg_Error()<<METHOD<<" could not find p_onshell tag in ("<<blob->Type()<<", "
+	       <<blob->NInP()<<" -> "<<blob->NOutP()<<"), retrying event.\n";
+    msg_Tracking()<<*blob<<endl;
     throw Return_Value::Retry_Event;
   }
   msg_Debugging()<<*blob<<std::endl;
@@ -274,7 +279,8 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   if (inpart->Info()!='M') inpart->SetInfo('D');
 
   Particle_Vector daughters = blob->GetOutParticles();
-  random_shuffle(daughters.begin(), daughters.end(), *ran);
+  std::shuffle(daughters.begin(), daughters.end(), *ran);
+
   if (!(blob->Type()==btp::Hadron_Decay &&
         blob->Has(blob_status::needs_showers))) {
     for (PVIt it=daughters.begin();it!=daughters.end();++it) {
@@ -320,9 +326,10 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
     }
     else {
       if (!CanDecay(inpart->Flav())) {
-        msg_Error()<<METHOD<<" Particle '"<<inpart->Flav()<<"' set unstable, "
-                   <<"but decay handler doesn't know how to deal with it."
-                   <<endl<<*blob<<endl;
+	msg_Error()<<METHOD<<" could not decay particle flavour "<<inpart->Flav()
+		   <<" in ("<<blob->Type()<<", "
+		   <<blob->NInP()<<" -> "<<blob->NOutP()<<"), retrying event.\n";
+	msg_Tracking()<<*blob<<endl;
       }
       Spin_Density* si=m_spincorr?new Spin_Density(daughters[i],s0,amps):NULL;
       DEBUG_INFO("decaying with spin density "<<si);
@@ -376,7 +383,7 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
     particle->SetInfo('D');
     blob->AddToOutParticles( particle );
   }
-  
+
   size_t n=1+blob->NOutP();
   vector<Vec4D> moms(n);
   moms[0]=inpart->Momentum();
@@ -606,7 +613,6 @@ bool Decay_Handler_Base::CheckOnshellness(Blob* blob)
   msg_Debugging()<<"masses="<<masses<<std::endl;
   if (allonshell) return true;
   msg_Debugging()<<"need to put on-shell"<<std::endl;
-  Momenta_Stretcher momstretch;
-  momstretch.StretchMomenta(blob->GetOutParticles(),masses);
+  m_stretcher.StretchMomenta(blob->GetOutParticles(),masses);
   return false;
 }

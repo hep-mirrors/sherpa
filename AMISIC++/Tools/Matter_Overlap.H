@@ -3,6 +3,7 @@
 
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Math/Vector.H"
 
 
 namespace AMISIC {
@@ -22,7 +23,11 @@ namespace AMISIC {
 
     void   Initialize();    
     double operator()(double b);
-    double SelectB() const;
+    double SelectB(const bool & mode=false) const;
+
+    ATOOLS::Vec4D SelectPositionForScatter(const double & b) const;
+    ATOOLS::Vec4D SelectRelativePositionForParton() const;
+
     const double & Bstep()    const { return m_bstep; }
     const double & Bmax()     const { return m_bmax; }
     const double & Integral() const { return m_integral; }

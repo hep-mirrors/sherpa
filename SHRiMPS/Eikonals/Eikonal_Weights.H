@@ -2,7 +2,7 @@
 #define SHRIMPS_Eikonals_Eikonal_Weights_H
 
 #include "SHRiMPS/Eikonals/Rapidity_Density.H"
-#include "SHRiMPS/Event_Generation/Ladder.H"
+#include "SHRiMPS/Ladders/Ladder.H"
 
 namespace SHRIMPS {
   class Eikonal_Weights {

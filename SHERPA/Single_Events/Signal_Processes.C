@@ -117,8 +117,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 		       Cluster(proc->Integrator()->Momenta(),m_cmode);
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
-  for (size_t i=0;i<proc->NIn();i++) 
-    cms += proc->Integrator()->Momenta()[i];
+  for (size_t i=0;i<proc->NIn();i++) cms += proc->Integrator()->Momenta()[i];
   blob->SetCMS(cms);
   blob->DeleteOwnedParticles();
   blob->ClearAllData();
@@ -140,13 +139,20 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       particle->SetFlow(1,ampl->Leg(i)->Col().m_j);
       particle->SetFlow(2,ampl->Leg(i)->Col().m_i);
     }
-    if (p_remnants[i]!=NULL) {
-      if (proc->NIn()>1) {
-	p_remnants[i]->Reset();
-      if (!p_remnants[i]->TestExtract(particle)) success=false;
+    /* Due to the swapping of the partons in symmetric setups in the
+     * ISR_Handler, the index `i` might not be the correct index for the
+     * remnant. An easy way to check whether the IS states were swapped is to
+     * check if they fulfill the coordinate convention of sherpa and change the
+     * index, if they don't. */
+    size_t remnant_index = proc->Integrator()->Momenta()[0][3] > 0. ? i : 1 - i;
+    if (p_remnants[remnant_index] != NULL) {
+      if (proc->NIn() > 1) {
+        p_remnants[remnant_index]->Reset();
+        if (!p_remnants[remnant_index]->TestExtract(particle))
+          success = false;
       }
-    }
-    else THROW(fatal_error,"No remnant found.");
+    } else
+      THROW(fatal_error, "No remnant found.");
   }
   for (unsigned int i=proc->NIn();
        i<proc->NIn()+proc->NOut();i++) {

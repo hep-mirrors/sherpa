@@ -1,0 +1,41 @@
+MI_HANDLER: None
+FRAGMENTATION: None
+BEAM_REMNANTS: false
+ME_QED:
+  ENABLED: false
+SHOWER_GENERATOR: None
+YFS:
+  MODE: None
+EVENT_GENERATION_MODE: Weighted
+
+PARTICLE_DATA:
+  23:
+    Width: 0.
+    Mass: 91.1876
+  24:
+    Width: 0.
+    Mass: 80.399
+
+AMEGIC:
+  ALLOW_MAPPING: 0
+
+ME_GENERATORS:
+- Amegic
+- Recola
+
+EW_SCHEME: Gmu
+GF: 1.1663787e-5
+
+SCALES: VAR{sqr(100.)}
+
+BEAMS: 2212
+BEAM_ENERGIES: 6500.
+
+PROCESSES:
+- 93 93 -> 23 23:
+    Order: {QCD: 0, EW: 2}
+    NLO_Mode: Fixed_Order
+    NLO_Order: {QCD: 0, EW: 1}
+    NLO_Part: BVI
+    ME_Generator: Amegic
+    Loop_Generator: Recola

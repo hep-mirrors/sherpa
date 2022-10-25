@@ -5,10 +5,10 @@
 namespace SHERPA {
   struct eventtype {
     enum code {
-      StandardPerturbative,
-      MinimumBias,
-      HadronDecay,
-      EventReader
+      StandardPerturbative = 1,
+      MinimumBias          = 2,
+      HadronDecay          = 3,
+      EventReader          = 10
     };
   };
 }

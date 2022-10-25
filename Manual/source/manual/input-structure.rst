@@ -45,17 +45,56 @@ like this:
    BEAM_ENERGIES: 7000
    ...
 
-Others use a more nested structure:
+In other words, they are key-value pairs of the top-level mapping.
+For some settings, the value is itself a mapping.
+Hence, we get a nested structure, for example:
 
 .. code-block:: yaml
 
    HARD_DECAYS:
-       Enabled: true
-       Apply_Branching_Ratios: false
+     Enabled: true
+     Apply_Branching_Ratios: false
 
 where ``Enabled`` and ``Apply_Branching_Ratios`` are sub-settings of
-the top-level ``HARD_DECAYS`` setting, which is denoted by indentation
-(here two additional spaces).
+the top-level ``HARD_DECAYS`` setting.
+The hierarchy is denoted by indentation here.
+In YAML, this is called block style and relies on proper formatting
+(i.e. each element must be on a separate line, and indentation must be consistent).
+Alternatively, one can use flow style, using indicators such as braces
+instead of whitespace to indicate structure.
+For the previous example, the inner mapping can be written with curly braces and commas:
+
+.. code-block:: yaml
+
+   HARD_DECAYS: { Enabled: true, Apply_Branching_Ratios: false }
+
+Other settings are sequences of elements.
+An example would be a sequence of two scale variations:
+
+.. code-block:: yaml
+
+   SCALE_VARIATIONS:
+   - 0.25
+   - 4.00
+
+In block style, each sequential items is prepended with a single dash.
+Equivalently, the snippet can be rewritten in flow style using square brackets
+(line breaks are completely optional then, and are omitted here):
+
+.. code-block:: yaml
+
+   SCALE_VARIATIONS: [0.25, 4.00]
+
+Each ``SCALE_VARIATIONS`` item can itself be a sequence (to specify different
+variations for the factorisation and renormalisation scale).
+Block and flow style can be freely mixed in the different levels:
+
+.. code-block:: yaml
+
+   SCALE_VARIATIONS:
+   - 0.25
+   - [0.25, 1.00]
+   - [1.00, 0.25]
 
 The different settings and their structure are described in detail in
 another chapter of this manual, see :ref:`Parameters`.
@@ -82,6 +121,10 @@ Or you can specify the list of matrix-element generators writing:
 .. code-block:: shell-session
 
    $ <prefix>/bin/Sherpa 'ME_GENERATORS: [Comix, Amegic]'
+
+Note that we have used flow style here,
+because block style would require line breaks,
+which are difficult to deal with on the command line.
 
 All over Sherpa, particles are defined by the particle code proposed
 by the PDG. These codes and the particle properties will be listed
@@ -194,7 +237,7 @@ Tag replacement in Sherpa is performed through the data reading
 routines, which means that it can be performed for virtually all
 inputs.  Specifying a tag on the command line or in the configuration
 file using the syntax ``TAGS: {<Tag>: <Value>}`` will replace every
-occurrence of ``<Tag>`` in all files during read-in. An example
+occurrence of ``$(<Tag>)`` in all files during read-in. An example
 tag definition could read
 
 .. code-block:: shell-session
@@ -208,5 +251,5 @@ and then be used in the configuration file like:
    RESULT_DIRECTORY: Result_$(QCUT)
    PROCESSES:
    - 93 93 -> 11 -11 93{$(NJET)}:
-       Order: {QCD: Any, EW: 2}
+       Order: {QCD: 0, EW: 2}
        CKKW: $(QCUT)

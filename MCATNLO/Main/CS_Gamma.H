@@ -61,7 +61,7 @@ namespace MCATNLO {
     CS_Cluster_Definitions *p_cluster;
     ATOOLS::Mass_Selector  *p_ms;
 
-    int    m_on;
+    int    m_on, m_strict_mapcheck;
     double m_weight, m_oef;
 
     int SingleWeight(ATOOLS::Cluster_Amplitude *const rampl,

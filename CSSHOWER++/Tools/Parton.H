@@ -35,7 +35,7 @@ namespace CSSHOWER {
   class Parton {
   private:
     ATOOLS::Flavour m_flav;
-    ATOOLS::Vec4D   m_mom, m_oldmom, m_fixspec;
+    ATOOLS::Vec4D   m_mom;
     ATOOLS::Flow    m_flow;
     pst::code       m_pst;
     int             m_beam,m_stat,m_kin,m_kscheme,m_col;
@@ -59,7 +59,8 @@ namespace CSSHOWER {
     void DeleteAll();
 
     Parton *FollowUp();
-    void    UpdateColours();
+    void    UpdateDaughters();
+    void    UpdateColours(int newr,int newa);
 
     inline void SetKScheme(const int kscheme) { m_kscheme=kscheme; }
     inline int KScheme() const { return m_kscheme; }
@@ -74,8 +75,6 @@ namespace CSSHOWER {
 
     inline ATOOLS::Flavour   const GetFlavour()  const;
     inline ATOOLS::Vec4D     const Momentum()    const;
-    inline ATOOLS::Vec4D     const OldMomentum() const { return m_oldmom; }
-    inline ATOOLS::Vec4D     const FixSpec()     const { return m_fixspec; }
     inline ATOOLS::Vec4D           Momentum();
     inline pst::code               GetType()     const;
     inline int                     GetFlow(const int) const;
@@ -103,8 +102,6 @@ namespace CSSHOWER {
 
     inline void SetFlavour(const ATOOLS::Flavour &);
     inline void SetMomentum(const ATOOLS::Vec4D &);
-    inline void SetOldMomentum(const ATOOLS::Vec4D &p) { m_oldmom=p; }
-    inline void SetFixSpec(const ATOOLS::Vec4D &p) { m_fixspec=p; }
     inline void SetStart(const double);
     inline void SetSoft(int i,const double);
     inline void SetVeto(const double);

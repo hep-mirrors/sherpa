@@ -17,24 +17,28 @@ namespace AHADIC {
     Trivial_Splitter m_breaker;
     
     Proto_Particle * p_part1, * p_part2;
+    bool m_analyse;
+    int  m_Nclusters;
+    std::map<std::string, ATOOLS::Histogram *> m_histos;
+    
     
     bool             SplitGluonRing();
     Proto_Particle * FirstGluon();
-
-    size_t m_origsize;
-    
     bool Trivial(Proto_Particle * part1,Proto_Particle * part2,
 		 const bool & force=true);
     int  Step(Proto_Particle * part1,Proto_Particle * part2,
 	      Proto_Particle * part3=NULL);
     bool LastStep();
+    void AnalyseClusters();
   public:
     Gluon_Decayer(std::list<Cluster *> * cluster_list,
 		  Soft_Cluster_Handler * softclusters);
     ~Gluon_Decayer();
     void Init();
     void Reset();    
-
+    void ResetN() { m_Nclusters = 0; }
+    void FillNs(const int & Nhad);
+    
     bool operator()(Singlet * singlet);
   };
 }

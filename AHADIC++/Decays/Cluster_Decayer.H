@@ -14,6 +14,8 @@ namespace AHADIC {
     Cluster_Splitter m_splitter;
 
     bool Treat(Cluster * cluster);
+    void Test(const double & Q, const ATOOLS::Flavour & flav,
+	      bool clustermasses);
   public:
     Cluster_Decayer(std::list<Cluster *> * cluster_list,
 		    Soft_Cluster_Handler * softclusters);
@@ -21,7 +23,7 @@ namespace AHADIC {
     void Init();
     void Reset();
     
-    bool operator()();
+    bool operator()(bool breakit=false);
   };
 }
 

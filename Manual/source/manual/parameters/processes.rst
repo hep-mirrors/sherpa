@@ -264,6 +264,9 @@ understood by the internal interpreter, see
 
 * DIS: ``CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT)/$(SDIS))/Abs2(p[2]-p[0]))``
 
+See :ref:`On-the-fly event weight variations`
+to find out how to vary the merging cut on-the-fly.
+
 .. _param_Process_Selectors:
 
 Process_Selectors
@@ -489,6 +492,23 @@ Set a process specific nametag for the desired loop-ME generator. The
 only Sherpa-native option is ``Internal`` with a few hard coded loop
 matrix elements. Other loop matrix elements are provided by external
 libraries.
+
+.. _Associated_Contributions:
+
+Associated_Contributions
+========================
+
+Set a process specific list of associated contributions to be computed.
+Valid values are ``EW`` (approximate EW corrections),
+``LO1`` (first subleading leading-order correction),
+``LO2`` (second subleading leading-order correction),
+``LO3`` (third subleading leading-order correction).
+They can be combined, eg. @code{[EW, LO1, LO2, LO3]}.
+Please note, the associated contributions will not be
+added to the nominal event weight but instead are available to
+be included in the on-the-fly calculation of alternative event
+weights, cf. :ref:`EWVirt`.
+
 
 .. _Integrator:
 

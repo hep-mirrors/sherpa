@@ -9,6 +9,7 @@ namespace OpenLoops {
 
     int m_ol_id;
     bool m_ismapped;
+    size_t m_ol_asscontribs;
 
     int m_modebackup;
 

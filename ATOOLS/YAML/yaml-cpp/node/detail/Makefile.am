@@ -1,5 +1,4 @@
 localinc_HEADERS = \
-		   bool_type.h \
 		   impl.h \
 		   iterator.h \
 		   iterator_fwd.h \

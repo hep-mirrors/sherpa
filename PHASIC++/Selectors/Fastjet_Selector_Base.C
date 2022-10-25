@@ -34,7 +34,7 @@ Fastjet_Selector_Base::Fastjet_Selector_Base(const std::string& name,
   else if (reco=="BIpt2") recom=fjcore::BIpt2_scheme;
   else THROW(fatal_error, "Unknown recombination scheme \"" + reco + "\".");
 
-  bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
+  bool ee(rpa->gen.Bunch(0).IsLepton() && rpa->gen.Bunch(1).IsLepton());
 
   fjcore::JetAlgorithm ja(fjcore::kt_algorithm);
   if (algo=="cambridge") ja = fjcore::cambridge_algorithm;

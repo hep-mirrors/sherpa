@@ -18,7 +18,9 @@ namespace EXTAMP {
     
     ~Born_Process() {};
 
-    double Partonic(const ATOOLS::Vec4D_Vector &p, int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector&,
+                    ATOOLS::Variations_Mode varmode,
+                    int mode);
 
   private:
 

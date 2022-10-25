@@ -35,12 +35,10 @@ initial state radiation (ISR).
   be set to 22, the PDG code of the photon.
 
 :OPTION:`ISR_SMIN/ISR_SMAX`
-
   This parameter specifies the minimum fraction of cms energy squared
   after ISR. The reference value is the total centre of mass energy
   squared of the collision, `not` the centre of mass energy after
   eventual Beamstrahlung.
-
   The parameter can be specified using the internal interpreter, see
   :ref:`Interpreter`, e.g. as ``ISR_SMIN: sqr(20/E_CMS)``.
 
@@ -52,9 +50,7 @@ They can be configured with the following parameters.
   following options are distributed with Sherpa:
 
   :option:`LHAPDFSherpa`
-    Use PDF's from LHAPDF :cite:`Whalley2005nh`. The interface is only
-    available if Sherpa has been compiled with support for LHAPDF, see
-    :ref:`Installation`.
+    Use PDF's from LHAPDF :cite:`Buckley2011ms`.
 
   :option:`CT14Sherpa`
     Built-in library for some PDF sets from the CTEQ collaboration,
@@ -72,7 +68,7 @@ They can be configured with the following parameters.
     Built-in library for some PDF sets from the CTEQ collaboration,
     cf. :cite:`Nadolsky2008zw`.
 
-  :OPTION:`NNPDF30NLO`
+  :OPTION:`NNPDF30Sherpa`
     Built-in library for PDF sets from the NNPDF group, cf. :cite:`Ball2014uwa`.
 
   :option:`MSTW08Sherpa`
@@ -88,7 +84,16 @@ They can be configured with the following parameters.
     Built-in library for the 1999 PDF sets from the MRST group, cf. :cite:`Martin1999ww`.
 
   :option:`GRVSherpa`
-    Built-in library for the GRV photon PDF :cite:`Gluck1991jc`, :cite:`Gluck1991ee`
+    Built-in library for the GRV photon PDF :cite:`Gluck1991jc`, :cite:`Gluck1991ee`.
+
+  :option:`GRSSherpa`
+    Built-in library for the GRS photon PDF :cite:`Gluck1999ub`.
+
+  :option:`SALSherpa`
+    Built-in library for the SAL photon PDF :cite:`Slominski2005bw`.
+
+  :option:`SASGSherpa`
+    Built-in library for the SaSgam photon PDF :cite:`Schuler1995fk`, :cite:`Schuler1996fc`.
 
   :option:`PDFESherpa`
     Built-in library for the electron structure function.  The
@@ -126,16 +131,6 @@ They can be configured with the following parameters.
   specify two different PDF sets using :option:`PDF_SET_VERSIONS:
   [version1, version2]`
 
-..
-
-   ..
-      .. code-block::
-
-         PDF_LIBRARY: LHAPDFSherpa
-         PDF_SET: NNPDF12_100.LHgrid
-         PDF_SET_VERSION: -100
-
-   ..
-      results in Sherpa sampling all sets 1..100, which can be used to obtain
-      the averaging required when employing PDF's from the NNPDF
-      collaboration :cite:`Ball2008by`, :cite:`Ball2009mk`.
+See :ref:`On-the-fly event weight variations`
+to find out how to vary PDF sets and version on-the-fly,
+both in the matrix element and in the parton shower.

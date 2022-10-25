@@ -119,6 +119,7 @@ int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2)
   if (part2->GetNext()) part2->GetNext()->GetSing()->AddParton(part2->GetNext());
 
   plit++;
+  if (mother==p_split) p_split=part1;
   delete mother; 
   plit = erase(plit);
   if (flav.StrongCharge()==8 && 
@@ -212,10 +213,8 @@ bool Singlet::RearrangeColours(Parton * mother, Parton * daughter1, Parton * dau
       *pit=daughter1;
       break;
     }
-  daughter1->SetFlow(1,mother->GetFlow(1));
-  daughter1->SetFlow(2,mother->GetFlow(2));
   daughter1->SetPrev(mother);
-  daughter1->UpdateColours();
+  daughter1->UpdateColours(mother->GetFlow(1),mother->GetFlow(2));
   daughter1->SetLeftOf(mother);
   daughter1->SetRightOf(mother);
   for (iterator pit(begin());pit!=end();++pit)
@@ -346,8 +345,11 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
       daughter1->SetFlow(2,0);
     }
   }
-  daughter1->UpdateColours();
-  daughter2->UpdateColours();
+  int newr(daughter1->GetFlow(1)), newa(daughter1->GetFlow(2));
+  daughter1->SetFlow(1,mother->GetFlow(1));
+  daughter1->SetFlow(2,mother->GetFlow(2));
+  daughter1->UpdateColours(newr,newa);
+  daughter2->UpdateColours(daughter2->GetFlow(1),daughter2->GetFlow(2));
   for (iterator pit(begin());pit!=end();++pit)
     if (*pit==daughter1) *pit=mother;
   return true;
@@ -357,10 +359,6 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s)
 {
   if (l->LT().empty()) return;
     for (PLiter plit(begin());plit!=end();++plit) {
-      if ((*plit)->FixSpec()!=Vec4D()) {
-	(*plit)->SetFixSpec(l->LT()*(*plit)->FixSpec());
-	(*plit)->SetOldMomentum(l->LT()*(*plit)->OldMomentum());
-      }
       Vec4D p(l->LT()*(*plit)->Momentum());
       if ((*plit)->GetType()==pst::IS &&
 	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
@@ -381,10 +379,6 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s)
 	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
       if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
       (*plit)->SetMomentum(p);
-      if ((*plit)->FixSpec()!=Vec4D()) {
-	(*plit)->SetFixSpec(lt*(*plit)->FixSpec());
-	(*plit)->SetOldMomentum(lt*(*plit)->OldMomentum());
-      }
     }
 }
 

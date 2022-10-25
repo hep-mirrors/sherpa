@@ -1,15 +1,25 @@
 examplesdir        = $(pkgdatadir)/Examples
 
+# install, but don't distribute
+nobase_nodist_examples_DATA       =	\
+		API/ME2-Python/test.py \
+		API/Events/test.py \
+		API/MPIEvents/test.py
+
+# distribute, but don't install
+EXTRA_DIST                        =>	\
+		API/ME2-Python/test.py.in \
+		API/Events/test.py.in \
+		API/MPIEvents/test.py.in
+
+# distribute and install
 nobase_dist_examples_DATA         =	\
 		API/ME2-Python/Sherpa.yaml \
-		API/ME2-Python/test.py.in \
 		API/ME2-CPP/Sherpa.yaml \
 		API/ME2-CPP/test.cpp \
 		API/ME2-CPP/Makefile \
 		API/Events/Sherpa.yaml \
-		API/Events/test.py.in \
 		API/MPIEvents/Sherpa.yaml \
-		API/MPIEvents/test.py.in \
                 BFactory/BDecay/Sherpa.yaml \
                 BFactory/Belle_QCDBackground/Sherpa.yaml \
                 BFactory/Belle_Signal/Sherpa.yaml \
@@ -48,9 +58,9 @@ nobase_dist_examples_DATA         =	\
 		H_in_GluonFusion/LHC_HJets/Sherpa.yaml \
 		H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml \
 		H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml \
-		Soft_QCD/Run.Xsecs.dat \
-		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
+		Soft_QCD/LHC_7TeV_MinBias/Amisic.yaml \
 		Tops_plus_Jets/LHC_Tops/Sherpa.yaml \
+		Tops_plus_Jets/LHC_Tops/Sherpa.EWapprox.yaml \
 		Tops_plus_V/LHC_TTW/Sherpa.yaml \
 		UFO_MSSM/MSSM/__init__.py \
 		UFO_MSSM/MSSM/build_restrict.py \

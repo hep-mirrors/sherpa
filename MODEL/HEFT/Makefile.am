@@ -14,3 +14,5 @@ libSherpaHEFT_la_SOURCES = \
 
 localinc_HEADERS = \
 	Effective_Higgs_Coupling.H
+
+libSherpaHEFT_la_LIBADD = @MODELMAINLIB@ @ATOOLSLIBS@

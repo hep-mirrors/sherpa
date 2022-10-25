@@ -1,6 +1,5 @@
 #include "HADRONS++/PS_Library/Two_Body_PSs.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
-#include "PHASIC++/Channels/Channel_Basics.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace HADRONS; 
@@ -12,26 +11,26 @@ Iso2Channel::Iso2Channel(const ATOOLS::Flavour * fl) :
   Single_Channel(1,2,fl),
   m_decvec(Vec4D(fl[0].HadMass(),0.,0.,0.))
 {
-  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].HadMass());
+  for (short int i=0;i<m_nin+m_nout;i++) p_ms[i] = ATOOLS::sqr(fl[i].HadMass());
 														// get masses^2
   msg_Tracking()<<"Init Iso2Channel("
 	   <<fl[0]<<"->"<<fl[1]<<" "<<fl[2]<<", "
-	   <<ms[0]<<"->"<<ms[1]<<" "<<ms[2]<<")"<<endl;
-  rannum = 2;
-  rans   = new double[rannum];
+	   <<p_ms[0]<<"->"<<p_ms[1]<<" "<<p_ms[2]<<")"<<endl;
+  m_rannum = 2;
+  p_rans   = new double[m_rannum];
 }
 
 
 void Iso2Channel::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data *,double * _ran)
 {
-  CE.Isotropic2Momenta(p[0],ms[1],ms[2],p[1],p[2],_ran[0],_ran[1]);
+  CE.Isotropic2Momenta(p[0],p_ms[1],p_ms[2],p[1],p[2],_ran[0],_ran[1]);
 }
 
 
 void Iso2Channel::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data *)
 {
   double d1, d2;
-  weight = 1. / ( CE.Isotropic2Weight(p[1],p[2],d1,d2) * pow(2.*M_PI,2.*3.-4.) );
+  m_weight = 1. / ( CE.Isotropic2Weight(p[1],p[2],d1,d2) * pow(2.*M_PI,2.*3.-4.) );
 }
 
 
@@ -51,6 +50,6 @@ void Iso1Channel::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data *,double * _r
 
 void Iso1Channel::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data *)
 {
-  weight = 1.0;
+  m_weight = 1.0;
 }
 

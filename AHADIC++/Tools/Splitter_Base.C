@@ -11,10 +11,9 @@ Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
 			     Soft_Cluster_Handler * softclusters) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   m_ktorder(false), m_ktfac(1.),
-  m_attempts(100)
-{
-  m_analyse = false; //hadpars->Switch("Analysis");
-}
+  m_attempts(100),
+  m_analyse(false)
+{ }
 
 Splitter_Base::~Splitter_Base() {
   Histogram * histo;
@@ -35,6 +34,7 @@ void Splitter_Base::Init(const bool & isgluon) {
   p_constituents      = hadpars->GetConstituents();
   m_flavourselector.InitWeights();
   m_ktorder  = (hadpars->Switch("KT_Ordering")>0);
+  m_ktmax    = hadpars->Get("kT_max");
   m_ktselector.Init(isgluon);
   m_zselector.Init(this);
   m_minmass  = m_flavourselector.MinimalMass();
@@ -70,7 +70,8 @@ void Splitter_Base::FillMasses() {
   if (p_part[2]!=0) {
     m_flavs2.second = m_barrd?p_part[2]->Flavour().Bar():p_part[2]->Flavour();
   }
-  m_Q2    = (p_part[0]->Momentum()+p_part[1]->Momentum()).Abs2();
+  m_Qvec  = p_part[0]->Momentum()+p_part[1]->Momentum();
+  m_Q2    = m_Qvec.Abs2();
   m_Q     = sqrt(m_Q2);
   m_E     = m_Q/2.;
   m_Emax  = m_Q;
@@ -99,8 +100,8 @@ void Splitter_Base::ConstructLightCone(const double & kt2) {
 }
 
 void Splitter_Base::ConstructPoincare() {
-  Vec4D mom1(p_part[0]->Momentum()), mom2(p_part[1]->Momentum());
-  m_boost = Poincare(mom1+mom2);
+  Vec4D mom1(p_part[0]->Momentum());
+  m_boost = Poincare(m_Qvec);
   m_boost.Boost(mom1);
   m_rotat = Poincare(mom1,m_E*s_AxisP); 
 }
@@ -167,21 +168,21 @@ bool Splitter_Base::MakeKinematics() {
 void Splitter_Base::MakeTransverseMomentum() {
   m_ktfac  = Max(1.,m_Q2/(4.*m_minQ[0]*m_minQ[1]));
   m_kt2max = Min(p_part[0]->KT2_Max(),p_part[1]->KT2_Max());
-  m_ktmax  = (m_ktorder?
-	      Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
-	      (m_Emax-2.*m_popped_mass)/2.);
+  double ktmax  = Min(m_ktmax,
+		      (m_ktorder?
+		       Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
+		       (m_Emax-2.*m_popped_mass)/2.));
   // have to make this a parameter for the beam breakup?
-  //if (p_part[0]->IsBeam() || p_part[1]->IsBeam()) m_ktmax = Min(5.0,m_ktmax);
-  if (m_ktmax<0.) {
-    msg_Error()<<METHOD<<" yields error ktmax = "<<m_ktmax
+  //if (p_part[0]->IsBeam() || p_part[1]->IsBeam()) ktmax = Min(5.0,m_ktmax);
+  if (ktmax<0.) {
+    msg_Error()<<METHOD<<" yields error ktmax = "<<ktmax
 	       <<" from "<<m_Emax<<", "<<m_popped_mass<<" vs. "
 	       <<" min = "<<m_minmass<<".\n";
     abort();
   }
-  m_ktmax = (m_Emax-2.*m_popped_mass)/2.;
   m_ktfac = 1.;
   bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
-  m_kt    = m_ktselector(m_ktmax,m_ktfac);
+  m_kt    = m_ktselector(ktmax,m_ktfac);
   m_kt2   = m_kt*m_kt;
   m_phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);

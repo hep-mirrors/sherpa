@@ -117,13 +117,13 @@ double Process_Integrator::TotalVar() const
   if (m_nin==1 && m_nout==2) return 0.;
   if (m_smode==0) {
     if (m_n+m_sn<2) return TotalResult();
-    return sqrt(((m_totalsumsqr+m_ssumsqr)/(m_n+m_sn)
+    return sqrt(dabs((m_totalsumsqr+m_ssumsqr)/(m_n+m_sn)
 		 -sqr((m_totalsum+m_ssum)/(m_n+m_sn)))/(m_n+m_sn-1.0));
   }
   double s2(m_totalsumsqr);
   if (m_sn>1) {
     double vij2((m_sn-1)/
-		(m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
+		dabs(m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
     s2+=sqr(Sigma2())/vij2;
   }
   if (s2<0.0) return 0.0;
@@ -139,7 +139,7 @@ void Process_Integrator::OptimizeSubResult(const double &s2)
   }
   else {
     double vij2((m_sn-1)/
-		(m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
+		dabs(m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
     m_ssigma2+=s2; 
     m_totalsum+=s2*m_ssum/m_sn;
     m_totalsumsqr+=sqr(s2)/vij2;
@@ -519,9 +519,8 @@ void Process_Integrator::ResetMax(int flag)
   }
 } 
 
-void Process_Integrator::SetPSHandler(
-  const std::shared_ptr<Phase_Space_Handler> &pshandler)
-{
+void Process_Integrator::SetPSHandler(Phase_Space_Handler * pshandler) {
+  //  const std::shared_ptr<Phase_Space_Handler> &pshandler) {
   p_pshandler=pshandler;
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)

@@ -8,23 +8,25 @@ using namespace ATOOLS;
 
 std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   switch (btpc) {
-  case btp::Unspecified:        return ostr<<"Unspecified             ";
-  case btp::Signal_Process:     return ostr<<"Signal Process          ";
-  case btp::Hard_Decay:         return ostr<<"Hard Decay              ";
-  case btp::Hard_Collision:     return ostr<<"Hard Collision          ";
-  case btp::Soft_Collision:     return ostr<<"Soft Collision          "; 
-  case btp::QElastic_Collision: return ostr<<"Quasi-elastic Collision "; 
-  case btp::Shower:             return ostr<<"Shower                  ";
-  case btp::QED_Radiation:      return ostr<<"QED Radiation           ";
-  case btp::Beam:               return ostr<<"Beam                    ";
-  case btp::Bunch:              return ostr<<"Bunch                   ";
-  case btp::Fragmentation:      return ostr<<"Fragmentation           ";
-  case btp::Cluster_Formation:  return ostr<<"Cluster Formation       ";
-  case btp::Cluster_Decay:      return ostr<<"Cluster Decay           ";
-  case btp::Hadron_Decay:       return ostr<<"Hadron Decay            ";
-  case btp::Hadron_Mixing:      return ostr<<"Hadron Mixing           ";
-  case btp::Hadron_To_Parton:   return ostr<<"Hadron-To-Partons       ";
-  default:                      return ostr<<"Unknown                 ";
+  case btp::Unspecified:                return ostr<<"Unspecified                ";
+  case btp::Signal_Process:             return ostr<<"Signal Process             ";
+  case btp::Hard_Decay:                 return ostr<<"Hard Decay                 ";
+  case btp::Hard_Collision:             return ostr<<"Hard Collision             ";
+  case btp::Soft_Collision:             return ostr<<"Soft Collision             "; 
+  case btp::Elastic_Collision:          return ostr<<"Elastic Collision          "; 
+  case btp::Soft_Diffractive_Collision: return ostr<<"Soft Diffractive Collision "; 
+  case btp::Quasi_Elastic_Collision:    return ostr<<"Quasi-Elastic Collision    "; 
+  case btp::Shower:                     return ostr<<"Shower                     ";
+  case btp::QED_Radiation:              return ostr<<"QED Radiation              ";
+  case btp::Beam:                       return ostr<<"Beam                       ";
+  case btp::Bunch:                      return ostr<<"Bunch                      ";
+  case btp::Fragmentation:              return ostr<<"Fragmentation              ";
+  case btp::Cluster_Formation:          return ostr<<"Cluster Formation          ";
+  case btp::Cluster_Decay:              return ostr<<"Cluster Decay              ";
+  case btp::Hadron_Decay:               return ostr<<"Hadron Decay               ";
+  case btp::Hadron_Mixing:              return ostr<<"Hadron Mixing              ";
+  case btp::Hadron_To_Parton:           return ostr<<"Hadron-To-Partons          ";
+  default:                              return ostr<<"Unknown                    ";
   }
 }
 
@@ -376,10 +378,12 @@ double Blob::CheckChargeConservation() const {
   double Qout=0.0;
   for (Particle_Vector::const_iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
+    if ((*part)->Flav().Kfcode()==kf_instanton) return 0.;
     Qin += (*part)->Flav().Charge();
   }
   for (Particle_Vector::const_iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
+    if ((*part)->Flav().Kfcode()==kf_instanton) return 0.;
     Qout += (*part)->Flav().Charge();
   }
   return Qout - Qin;

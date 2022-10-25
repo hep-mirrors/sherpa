@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Phys/Weights.H"
 
 #include <string>
 
@@ -41,7 +42,8 @@ namespace SHERPA {
 
     virtual void ChangeFile();
 
-    virtual void SetXS(const double&, const double&);
+    virtual void SetXS(const ATOOLS::Weights_Map& xs,
+		       const ATOOLS::Weights_Map& err);
     virtual void Output(ATOOLS::Blob_List* blobs) = 0;
 
     inline const std::string Name() { return m_name; }

@@ -184,6 +184,11 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nlotype&nlo_type::loop) {
     if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
+    if (pi.m_fi.m_asscontribs!=asscontrib::none) {
+      msg_Error()<<"Higgs_Jet_QCD_Virtual(): Error: cannot provide requested "
+                 <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
+      return NULL;
+    }
     Settings& s = Settings::GetMainSettings();
     int con = s["HNNLO_KF_MODE"].Get<int>();
     Flavour_Vector fl=pi.ExtractFlavours();

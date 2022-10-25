@@ -65,7 +65,7 @@ Single_LOProcess_MHV::~Single_LOProcess_MHV()
 
 int Single_LOProcess_MHV::InitAmplitude(Amegic_Model * model,Topology* top,
 					vector<Process_Base *> & links,
-					vector<Process_Base *> & errs)
+					vector<Process_Base *> & errs,int checkloopmap)
 {
   m_type = 21;
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
@@ -103,10 +103,9 @@ int Single_LOProcess_MHV::InitAmplitude(Amegic_Model * model,Topology* top,
 
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
 
-  int ntchanmin(m_ntchanmin);
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,fl,p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,fl,p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,
+				   m_pinfo.m_ntchan,m_pinfo.m_mtchan,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,0,true,m_ptypename+"/"+m_libname);
-  m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_LOProcess_MHV::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
@@ -223,10 +222,9 @@ int Single_LOProcess_MHV::InitAmplitude(Amegic_Model * model,Topology* top,
 
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
 
-  int ntchanmin(m_ntchanmin);
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,
+				   m_pinfo.m_ntchan,m_pinfo.m_mtchan,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,0,true,m_ptypename+"/"+m_libname);
-  m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_LOProcess_MHV::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;

@@ -22,7 +22,7 @@ SHOWER_GENERATOR: CSS
 
 PROCESSES:
 - 93 93 -> 13 -13:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
     Integration_Error: 0.05
 
 SELECTORS:

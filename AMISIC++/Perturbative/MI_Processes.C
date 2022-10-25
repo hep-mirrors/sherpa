@@ -28,14 +28,15 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
 			      BEAM::Beam_Spectra_Handler *const beam,
 			      PDF::ISR_Handler *const isr) {
   // Get PDFs and couplings
-  p_model    = model;
-  p_isr      = isr;
-  m_muFfac   = sqr((*mipars)("FacScale_Factor"));
-  p_pdf[0]   = p_isr->PDF(0);
-  p_pdf[1]   = p_isr->PDF(1);
-  p_alphaS   = dynamic_cast<MODEL::Running_AlphaS *>
+  p_model     = model;
+  p_isr       = isr;
+  m_muFfac    = sqr((*mipars)("FacScale_Factor"));
+  for (size_t i=0;i<2;i++) {
+    p_pdf[i]  = p_isr->PDF(i);
+    m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin()); }
+  p_alphaS    = dynamic_cast<MODEL::Running_AlphaS *>
     (model->GetScalarFunction("alpha_S"));
-  p_alpha    = dynamic_cast<MODEL::Running_AlphaQED *>
+  p_alpha     = dynamic_cast<MODEL::Running_AlphaQED *>
     (model->GetScalarFunction("alpha_QED"));
   // Initialize model parameters:
   // - pt_0, the IR regulator in the propagator and in the strong coupling
@@ -139,6 +140,7 @@ const double MI_Processes::XSec(const Vec4D_Vector & momenta) {
   double uhat = (momenta[0]-momenta[3]).Abs2();
   double x1   = 2.*momenta[0][0]/m_ecms, x2 = 2.*momenta[1][0]/m_ecms;  
   double pt2  = that*uhat/shat, scale = pt2;
+  if (x1<m_xmin[0] || x2<m_xmin[1]) return 0.;
   CalcPDFs(x1,x2,scale);
   return (*this)(shat,that,uhat);
 }
@@ -253,8 +255,11 @@ double MI_Processes::dSigma(const double & pt2) {
     double shat   = x1 * x2 * m_S;
     double that   = -0.5 * shat * (1.-cost);
     double uhat   = -0.5 * shat * (1.+cost);
-    CalcPDFs(x1,x2,pt2);
-    double dsigma = (*this)(shat,that,uhat) * PSfac;
+    double dsigma = 0.;
+    if (x1>m_xmin[0] && x2>m_xmin[1]) {
+      CalcPDFs(x1,x2,pt2);
+      dsigma = (*this)(shat,that,uhat) * PSfac;
+    }
     res  += dsigma;
     res2 += dsigma*dsigma;
   }

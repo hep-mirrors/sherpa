@@ -22,7 +22,7 @@ namespace MODEL {
   public :
 
     Standard_Model_TauPi();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
+    bool ModelInit();
     void InitVertices();
 
   };
@@ -117,12 +117,12 @@ void Standard_Model_TauPi::ParticleInit()
   ReadParticleData();
 }
 
-bool Standard_Model_TauPi::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool Standard_Model_TauPi::ModelInit()
 {
   FixEWParameters();  
   FixCKM();
   Settings& s = Settings::GetMainSettings();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
   SetRunningFermionMasses();
   p_constants->insert(make_pair(string("F_PI"),
                       s["F_PI"].SetDefault(0.0924).Get<double>()));
@@ -663,7 +663,10 @@ void Standard_Model_TauPi::InitEWVertices()
     for (short int i=1;i<17;++i) {
       if (i==7) i=11;
       Flavour flav((kf_code)i);
-      if (!flav.IsOn() || flav.Yuk()==0.0) continue;
+      if (!flav.IsOn() || flav.Yuk()==0.0) {
+	p_complexconstants->insert(make_pair("yuk("+ToString(i)+")",0.));
+	continue;
+      }
       double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
 	ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));
       Kabbala M;
@@ -671,6 +674,8 @@ void Standard_Model_TauPi::InitEWVertices()
         M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",
 		  sqrt(m*m-Complex(0.0,m*flav.Width())));
       else M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",m);
+      p_complexconstants->insert
+	(make_pair("yuk("+ToString(i)+")",M.Value()));
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle(flav.Bar());
       m_v.back().AddParticle(flav);

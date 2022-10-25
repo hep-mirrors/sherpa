@@ -27,6 +27,7 @@
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
 
+#include <cassert>
 #include <unistd.h>
 #include <cctype>
 
@@ -49,7 +50,7 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
 
   s["COLOUR_SCHEME"]
-    .SetDefault(1)
+    .SetDefault(0)
     .SetReplacementList(cls::ColorSchemeTags());
 
   s["HELICITY_SCHEME"]
@@ -66,8 +67,8 @@ void Matrix_Element_Handler::RegisterMainProcessDefaults(
 {
   procsettings["Cut_Core"].SetDefault(0);
   procsettings["CKKW"].SetDefault("");
-  procsettings.DeclareVectorSettingsWithEmptyDefault({
-      "Decay", "DecayOS", "No_Decay" });
+  procsettings.DeclareVectorSettingsWithEmptyDefault(
+      {"Decay", "DecayOS", "No_Decay"});
 }
 
 Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
@@ -122,6 +123,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
     const size_t incr{ s["EVENT_SEED_INCREMENT"].Get<size_t>() };
     ran->SetSeedStorageIncrement(incr);
   }
+  m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
+  msg_Info()<<METHOD<<"(): Set pilot run mode to "<<m_pilotrunenabled<<".\n";
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
@@ -273,10 +276,24 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       break;
     }
   }
+  if (proc==NULL) THROW(fatal_error,"No process selected");
+
+  // if variations are enabled and we do unweighting, we do a pilot run first
+  // where no on-the-fly variations are calculated
+  Variations_Mode varmode {Variations_Mode::all};
+  // TODO: if always true, then remove it from if statement; another option
+  // would be to add ASSEW variations to the managed variations, such that we
+  // can use HasVariations to set hasvars properly
+  const bool hasvars {true};
+  if (hasvars && m_pilotrunenabled) {
+    // in pilot run mode, calculate nominal only, and prepare to restore
+    // the rng to re-run with variations after unweighting
+    varmode = Variations_Mode::nominal_only;
+    ran->SaveStatus();
+  }
 
   // try to generate an event for the selected process
-  if (proc==NULL) THROW(fatal_error,"No process selected");
-  ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+  ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
   p_proc=proc->Selected();
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
@@ -292,21 +309,43 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
   if (m_eventmode!=0) {
-    const auto max = p_proc->Integrator()->Max();
-    const auto disc = max * ran->Get();
+    const auto maxwt  = p_proc->Integrator()->Max();
+    const auto disc   = maxwt * ran->Get();
     const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
-    if (abswgt < disc)
+    if (abswgt < disc) {
       return false;
-    if (abswgt > max * m_ovwth) {
+    }
+    if (abswgt > maxwt * m_ovwth) {
       Return_Value::IncWarning(METHOD);
       msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()
                  << "' exceeds maximum by "
-                 << abswgt / max - 1.0 << "." << std::endl;
+                 << (abswgt / maxwt - 1.0) << "." << std::endl;
       m_weightfactor = m_ovwth;
-      wf *= max * m_ovwth / abswgt;
+      wf *= maxwt * m_ovwth / abswgt;
     } else {
-      m_weightfactor = abswgt / max;
+      m_weightfactor = abswgt / maxwt;
       wf /= Min(1.0, m_weightfactor);
+    }
+    if (hasvars && m_pilotrunenabled) {
+      // re-run with same rng state and include the calculation of variations
+      // this time
+      ran->RestoreStatus();
+      info=proc->OneEvent(m_eventmode, Variations_Mode::all);
+      assert(info);
+      if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {
+        msg_Error()
+          <<"ERROR: The results of the pilot run and the re-run are not"
+          <<" the same:\n"
+          <<"  Pilot run: "<<m_evtinfo<<"\n"
+          <<"  Re-run:    "<<*info<<"\n"
+          <<"Will continue, but deviations beyond numerics would indicate"
+          <<" a logic error resulting in wrong statistics!\n";
+      }
+      m_evtinfo=*info;
+      delete info;
+      // also consume random number used to set the discriminator for
+      // unweighting above, such that it is not re-used in the future
+      ran->Get();
     }
   }
 
@@ -464,7 +503,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	  p_shower->GetShower()->SetOn(false);
         s["FRAGMENTATION"].OverrideScalar<std::string>("None");
         s["MI_HANDLER"].OverrideScalar<std::string>("None");
-        if (!s["MI_HANDLER"].IsCustomised()) {
+        if (s["BEAM_REMNANTS"].GetScalarWithOtherDefault<std::string>("None") == "None") {
           s["BEAM_REMNANTS"].OverrideScalar<bool>(false);
         } else {
           Scoped_Settings kperp_settings{ s["INTRINSIC_KPERP"] };
@@ -472,7 +511,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
           kperp_settings["SIGMA"].OverrideScalar<double>(0.0);
 	}
         Scoped_Settings meqedsettings{ s["ME_QED"] };
-        if (!meqedsettings["ENABLED"].IsCustomised()) {
+        if (!meqedsettings["ENABLED"].IsSetExplicitly()) {
           meqedsettings["ENABLED"].OverrideScalar<bool>(false);
         }
       }
@@ -507,11 +546,20 @@ int Matrix_Element_Handler::InitializeProcesses(
   p_beam=beam;
   p_isr=isr;
   if (!m_gens.InitializeGenerators(p_model,beam,isr)) return false;
+  m_gens.SetRemnant(p_remnants);
+  Settings& s = Settings::GetMainSettings();
+  int initonly=s["INIT_ONLY"].Get<int>();
+  if (initonly&4) return 1;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
+  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  for (size_t i(0);i<m_gens.size();++i)
+    My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_gens[i]->Name()+"/");
   BuildProcesses();
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  for (size_t i(0);i<m_gens.size();++i)
+    My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_gens[i]->Name()+"/");
   if (msg_LevelIsTracking()) msg_Info()<<"Process initialization";
   double retime(ATOOLS::rpa->gen.Timer().RealTime());
   double etime(ATOOLS::rpa->gen.Timer().UserTime());
@@ -521,7 +569,7 @@ int Matrix_Element_Handler::InitializeProcesses(
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
-  msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
+  msg_Info()<<METHOD<<"(): Performing tests"<<std::flush;
   rbtime=retime;
   btime=etime;
   int res(m_gens.PerformTests());
@@ -536,35 +584,59 @@ int Matrix_Element_Handler::InitializeProcesses(
   for (size_t i(0);i<m_procs.size();++i) 
     msg_Debugging()<<"    "<<m_procs[i]->Name()<<" -> "<<m_procs[i]<<"\n";
   msg_Debugging()<<"}\n";
-  msg_Info()<<METHOD<<"(): Initializing scales "<<std::flush;
+  msg_Info()<<METHOD<<"(): Initializing scales"<<std::flush;
   rbtime=retime;
   btime=etime;
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  for (size_t i(0);i<m_gens.size();++i)
+    My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_gens[i]->Name()+"/");
   for (size_t i=0; i<m_procs.size(); ++i) m_procs[i]->InitScale();
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  for (size_t i(0);i<m_gens.size();++i)
+    My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_gens[i]->Name()+"/");
   retime=ATOOLS::rpa->gen.Timer().RealTime();
   etime=ATOOLS::rpa->gen.Timer().UserTime();
   rss=GetCurrentRSS();
   msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<" / "
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
-  if (m_gens.NewLibraries())
-    THROW(normal_exit,"Source code created. Run './makelibs' to compile.");
+  if (m_gens.NewLibraries()) {
+    if (rpa->gen.Variable("SHERPA_CPP_PATH")=="") {
+      THROW(normal_exit,"Source code created. Run './makelibs' to compile.");
+    }
+    else {
+      THROW(normal_exit,"Source code created in "
+                        +rpa->gen.Variable("SHERPA_CPP_PATH")
+                        +std::string(". Run './makelibs' there to compile."));
+    }
+  }
   return res;
+}
+
+int Matrix_Element_Handler::InitializeTheReweighting(Variations_Mode mode)
+{
+  for (auto* proc : m_procs)
+    proc->InitializeTheReweighting(mode);
+  return 1; // success
 }
 
 void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();
-
   // init processes
-  msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
+  msg_Info()<<METHOD<<"(): Looking for processes "
+	    <<"["<<m_gens.size()<<" generators, "
+	    <<s["PROCESSES"].GetItems().size()<<" processes]"<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
     if (!msg_LevelIsTracking()) msg_Info()<<"\n";
       THROW(missing_input, std::string{"Missing PROCESSES definition.\n\n"} +
                                Strings::ProcessesSyntaxExamples);
   }
+
+  // This will be used to check for a meaningful associated contributions
+  // set-up.
+  std::set<asscontrib::type> calculated_asscontribs;
 
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
@@ -585,6 +657,15 @@ void Matrix_Element_Handler::BuildProcesses()
     ReadFinalStateMultiIndependentProcessSettings(name, procsettings, args);
     ReadFinalStateMultiSpecificProcessSettings(procsettings, args);
     BuildSingleProcessList(args);
+
+    // Collect data to check for meaningful associated contributions set-up.
+    for (const auto& kv : args.pbi.m_vasscontribs) {
+      auto contribs = ToVector<asscontrib::type>(kv.second.second);
+      for (const auto& c : contribs) {
+        calculated_asscontribs.insert(c);
+      }
+    }
+
     if (msg_LevelIsDebugging()) {
       msg_Indentation(4);
       msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
@@ -596,6 +677,8 @@ void Matrix_Element_Handler::BuildProcesses()
       }
     }
   }
+
+  CheckAssociatedContributionsSetup(calculated_asscontribs);
 }
 
 void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
@@ -605,7 +688,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
   Settings& s = Settings::GetMainSettings();
   args.pi.m_scale = s["SCALES"].Get<std::string>();
   const auto couplings = s["COUPLINGS"].GetVector<std::string>();
-  args.pi.m_coupling = MakeString(couplings, 0);
+  args.pi.m_coupling = MakeString(couplings);
   args.pi.m_kfactor = s["KFACTOR"].Get<std::string>();
   args.pi.m_cls = (cls::scheme)s["COLOUR_SCHEME"].Get<int>();
   args.pi.m_hls = (hls::scheme)s["HELICITY_SCHEME"].Get<int>();
@@ -711,8 +794,10 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
         || subkey == "Max_Amplitude_Order"
         || subkey == "Min_Amplitude_Order"
         || subkey == "NLO_Order") {
-      // translate back into a single string to use ExtractMPvalues below
       value = MakeOrderString(proc[rawsubkey]);
+    } else if (subkey == "Associated_Contributions") {
+      value = MakeString(
+          proc[rawsubkey].SetDefault<std::string>({}).GetVector<std::string>());
     } else {
       value = proc[rawsubkey].SetDefault("").Get<std::string>();
     }
@@ -745,6 +830,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "NLO_Part")           ExtractMPvalues(value, range, nf, args.pbi.m_vnlopart);
     else if (subkey == "NLO_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vnlocpl);
     else if (subkey == "Subdivide_Virtual")  ExtractMPvalues(value, range, nf, args.pbi.m_vnlosubv);
+    else if (subkey == "Associated_Contributions") ExtractMPvalues(value, range, nf, args.pbi.m_vasscontribs);
     else if (subkey == "ME_Generator")       ExtractMPvalues(value, range, nf, args.pbi.m_vmegen);
     else if (subkey == "RS_ME_Generator")    ExtractMPvalues(value, range, nf, args.pbi.m_vrsmegen);
     else if (subkey == "Loop_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_vloopgen);
@@ -948,6 +1034,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
           }
         }
 	if (GetMPvalue(args.pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
+	if (GetMPvalue(args.pbi.m_vasscontribs,nfs,pnid,ds))
+          cpi.m_fi.m_asscontribs=ToType<asscontrib::type>(ds);
 	if (GetMPvalue(args.pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(args.pbi.m_vrsmegen,nfs,pnid,ds)) cpi.m_rsmegenerator=ds;
 	else cpi.m_rsmegenerator=cpi.m_megenerator;
@@ -1187,10 +1275,10 @@ namespace SHERPA {
 }
 
 std::string Matrix_Element_Handler::MakeString
-(const std::vector<std::string> &in,const size_t &first) const
+(const std::vector<std::string> &in) const
 {
-  std::string out(in.size()>first?in[first]:"");
-  for (size_t i(first+1);i<in.size();++i) out+=" "+in[i];
+  std::string out(in.size()>0?in[0]:"");
+  for (size_t i(1);i<in.size();++i) out+=" "+in[i];
   return out;
 }
 
@@ -1208,8 +1296,7 @@ std::string Matrix_Element_Handler::MakeOrderString(Scoped_Settings&& s) const
       ordervalues.resize(orderidx + 1, "-1");
     ordervalues[orderidx] = order;
   }
-  // translate back into a single string to use ExtractMPvalues below
-  return MakeString(ordervalues, 0);
+  return MakeString(ordervalues);
 }
 
 double Matrix_Element_Handler::GetWeight
@@ -1235,3 +1322,26 @@ double Matrix_Element_Handler::GetWeight
   return 0.0;
 }
 
+void Matrix_Element_Handler::CheckAssociatedContributionsSetup(
+    const std::set<asscontrib::type>& calculated_asscontribs) const
+{
+  Settings& s = Settings::GetMainSettings();
+  auto acv =
+      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"].GetMatrix<asscontrib::type>();
+  for (const auto& contrib_list : acv) {
+    for (const auto& c : contrib_list) {
+      if (calculated_asscontribs.find(c) == calculated_asscontribs.end()) {
+        THROW(inconsistent_option,
+              "You are using " + ToString(c) + " in your" +
+                  " ASSOCIATED_CONTRIBUTIONS_VARIATIONS, but " + ToString(c) +
+                  " is not"
+                  "\ncalculated for any of the PROCESSES. Please make sure "
+                  "that all contributions" +
+                  "\nlisted in ASSOCIATED_CONTRIBUTIONS_VARIATIONS appear in "
+                  "the" +
+                  "\nAssociated_Contributions list of at least one of the "
+                  "PROCESSES.");
+      }
+    }
+  }
+}

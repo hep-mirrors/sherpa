@@ -18,6 +18,8 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Phys/Color.H"
+#include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include <algorithm>
@@ -36,7 +38,9 @@ Process_Base::Process_Base():
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
   m_mcmode(0), m_cmode(0),
-  m_lookup(false), m_use_biweight(true), p_apmap(NULL)
+  m_lookup(false), m_use_biweight(true),
+  m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
+  p_apmap(NULL)
 {
   if (s_usefmm<0)
     s_usefmm =
@@ -99,27 +103,15 @@ Process_Base *Process_Base::Parent()
   return this; 
 }
 
-bool Process_Base::GeneratePoint()
-{
-  return true;
-}
+bool Process_Base::GeneratePoint() { return true; }
 
-void Process_Base::AddPoint(const double &value)
-{
-}
+void Process_Base::AddPoint(const double &value) {}
 
-bool Process_Base::ReadIn(const std::string &pid)
-{
-  return true;
-}
+bool Process_Base::ReadIn(const std::string &pid) { return true; }
 
-void Process_Base::WriteOut(const std::string &pid)
-{
-}
+void Process_Base::WriteOut(const std::string &pid) { }
 
-void Process_Base::EndOptimize()
-{
-}
+void Process_Base::EndOptimize() {}
 
 void Process_Base::MPICollect(std::vector<double> &sv,size_t &i)
 {
@@ -154,15 +146,9 @@ void Process_Base::SetFixedScale(const std::vector<double> &s)
   if (p_scale!=NULL) p_scale->SetFixedScale(s);
 }
 
-void Process_Base::SetSelectorOn(const bool on)
-{
-  Selector()->SetOn(on);
-}
+void Process_Base::SetSelectorOn(const bool on) { Selector()->SetOn(on); }
 
-void Process_Base::SetUseBIWeight(bool on)
-{
-  m_use_biweight=on;
-}
+void Process_Base::SetUseBIWeight(bool on) { m_use_biweight=on; }
 
 Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
                                        Variations_Mode varmode,
@@ -195,6 +181,11 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
   }
   if (mode&4) SetUseBIWeight(false);
   if (mode&128) while (!this->GeneratePoint()); 
+  else {
+    std::shared_ptr<Color_Integrator> ci=
+      Integrator()->ColorIntegrator();
+    if (ci!=nullptr) ci->SetPoint(&ampl);
+  }
   auto wgtmap = this->Differential(p, varmode);
   wgtmap/=m_issymfac;
   NLO_subevtlist *subs(this->GetSubevtList());
@@ -212,21 +203,10 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
   return wgtmap;
 }
 
-bool Process_Base::IsGroup() const
-{
-  return false;
-}
-
-int Process_Base::PerformTests()
-{
-  return 1;
-}
-
-bool Process_Base::FillIntegrator
-(Phase_Space_Handler *const psh)
-{
-  return false;
-}
+bool Process_Base::IsGroup() const { return false; }
+int  Process_Base::PerformTests()  { return 1; }
+bool Process_Base::FillIntegrator(Phase_Space_Handler *const psh) { return false; }
+void Process_Base::UpdateIntegrator(Phase_Space_Handler *const psh) {}
 
 bool Process_Base::InitIntegrator
 (Phase_Space_Handler *const psh)
@@ -238,10 +218,6 @@ bool Process_Base::InitIntegrator
   return true;
 }
 
-void Process_Base::UpdateIntegrator
-(Phase_Space_Handler *const psh)
-{
-}
 
 class Order_NDecay {
 public:
@@ -321,8 +297,9 @@ void Process_Base::Init(const Process_Info &pi,
   p_int->Initialize(beamhandler,isrhandler);
   m_issymfac=1.0;
   m_symfac=m_pinfo.m_fi.FSSymmetryFactor();
-  if (m_nin==2 && m_flavs[0]==m_flavs[1] &&
-      isrhandler->AllowSwap(m_flavs[0],m_flavs[1]))
+  if ((m_nin==2 && m_flavs[0]==m_flavs[1] &&
+       isrhandler->AllowSwap(m_flavs[0],m_flavs[1])) ||
+      (isrhandler->On() == 0 && beamhandler->AllowSwap()))
     m_symfac*=(m_issymfac=2.0);
   m_name+=pi.m_addname;
   m_resname=m_name;
@@ -548,6 +525,16 @@ void Process_Base::FillOnshellConditions()
       (m_decins[i]->m_id,sqr(m_decins[i]->m_fl.Mass()));
 }
 
+bool Process_Base::FillFinalState(const ATOOLS::Vec4D_Vector &p)
+{
+  return true;
+}
+
+std::vector<std::vector<int> > *Process_Base::Colours() const
+{
+  return NULL;
+}
+
 void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
                                   std::vector<std::vector<Complex> >& cols)
 {
@@ -600,8 +587,8 @@ void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
-  p_int->SetPSHandler(std::make_shared<Phase_Space_Handler>(p_int, maxerr, eobs, efunc));
-} 
+  p_int->SetPSHandler(new Phase_Space_Handler(p_int, maxerr, eobs, efunc));
+}
 
 double Process_Base::LastPlus()
 {
@@ -772,4 +759,202 @@ std::string Process_Base::ShellName(std::string name) const
   for (size_t i(0);(i=name.find('[',i))!=std::string::npos;name.replace(i,1,"I"));
   for (size_t i(0);(i=name.find(']',i))!=std::string::npos;name.replace(i,1,"I"));
   return name;
+}
+
+void Process_Base::ConstructColorMatrix()
+{
+  DEBUG_FUNC(m_name);
+  if (IsMapped()) return;
+  std::string file(rpa->gen.Variable("SHERPA_CPP_PATH")
+		   +"/Process/Sherpa/"+m_name+".col");
+  My_In_File in(file);
+  if (in.Open()) {
+    int n;
+    *in>>n;
+    m_cols.m_perms.resize(n);
+    m_cols.m_colfacs.resize(n,std::vector<double>(n));
+    for (size_t i(0);i<m_cols.m_perms.size();++i) {
+      *in>>n;
+      m_cols.m_perms[i].resize(n);
+      for (size_t j(0);j<n;++j)	*in>>m_cols.m_perms[i][j];
+    }
+    for (size_t i(0);i<m_cols.m_colfacs.size();++i)
+      for (size_t j(i);j<m_cols.m_colfacs[i].size();++j) {
+	*in>>m_cols.m_colfacs[i][j];
+	m_cols.m_colfacs[j][i]=m_cols.m_colfacs[i][j];
+      }
+    std::string check;
+    *in>>check;
+    if (check!="eof") THROW(fatal_error,"Corrupted color file "+file);
+    in.Close();
+    return;
+  }
+  Flavour_Vector fls(m_pinfo.ExtractFlavours());
+  int n(0);
+  for (size_t i(0);i<fls.size();++i) if (fls[i].Strong()) ++n;
+  if (n==0) return;
+  for (size_t i(0);i<m_nin;++i) fls[i]=fls[i].Bar();
+  m_cols=ColorMatrix(fls);
+  My_Out_File out(file);
+  if (!out.Open()) THROW(fatal_error,"Cannot open '"+file+"'");
+  out->precision(12);
+  *out<<m_cols.m_perms.size()<<"\n";
+  for (size_t i(0);i<m_cols.m_perms.size();++i) {
+    *out<<m_cols.m_perms[i].size();
+    for (size_t j(0);j<m_cols.m_perms[i].size();++j)
+      *out<<" "<<m_cols.m_perms[i][j];
+    *out<<"\n";
+  }
+  for (size_t i(0);i<m_cols.m_colfacs.size();++i) {
+    for (size_t j(i);j<m_cols.m_colfacs[i].size();++j)
+      *out<<m_cols.m_colfacs[i][j]<<" ";
+    *out<<"\n";
+  }
+  *out<<"eof\n";
+}
+
+Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
+{
+  DEBUG_FUNC(fls);
+  int iq(-1), np(0), nf(0);
+  std::vector<int> sids, iqbs;
+  for (size_t i(0);i<fls.size();++i) {
+    if (fls[i].StrongCharge()>0) {
+      if (fls[i].StrongCharge()==8) sids.push_back(i);
+      else {
+	if (iq>=0) sids.push_back(i);
+	else iq=i;
+	++nf;
+      }
+    }
+    else if (fls[i].StrongCharge()<0) {
+      sids.push_back(i);
+      iqbs.push_back(i);
+    }
+  }
+  bool adjoint(iq<0);
+  if (iq<0) {
+    iq=sids.front();
+    sids.erase(sids.begin());
+    iqbs.push_back(sids.back());
+  }
+  int unique(iqbs.size()==1?1:0);
+  if (unique) {
+    for (std::vector<int>::iterator
+	   sidit(sids.begin());sidit!=sids.end();++sidit)
+      if (*sidit==iqbs.front()) sidit=--sids.erase(sidit);
+    sids.push_back(iqbs.front());
+  }
+  std::vector<int> idr(sids.size()+1), idc(sids.size()+1);
+  idc.front()=idr.front()=iq;
+  if (unique) idc.back()=idr.back()=iqbs.front();
+  Permutation perms(sids.size()-unique);
+  std::vector<int> act(perms.MaxNumber(),0);
+  std::map<int,std::map<int,double> > cij2;
+  for (size_t i(0);i<perms.MaxNumber();++i) {
+    int *cur(perms.Get(i));
+    for (size_t k(0);k<sids.size()-unique;++k)
+      idr[k+1]=sids[cur[k]];
+    int valid(false);
+    for (size_t l(0);l<iqbs.size();++l)
+      if (idr.back()==iqbs[l]) valid=true;
+    if (!valid) continue;
+    for (size_t j(i);j<perms.MaxNumber();++j) {
+      int *cur(perms.Get(j));
+      for (size_t k(0);k<sids.size()-unique;++k)
+	idc[k+1]=sids[cur[k]];
+      int valid(false), lqr(0), lqc(0);
+      for (size_t l(0);l<iqbs.size();++l)
+	if (idc.back()==iqbs[l]) valid=true;
+      if (!valid) continue;
+      Expression cij(200,100);
+      cij.SetTR(1.);
+      cij.pop_back();
+      size_t lr(adjoint?iq:cij.FIndex()), fr(idc.back());
+      for (size_t k(0);k<idr.size();++k) {
+	if (fls[idr[k]].StrongCharge()==3) {
+	  if (lqr>0) valid=false;
+	  cij.push_back(Delta::New(idr[k],lr));
+	  lqr=1;
+	}
+	else if (fls[idr[k]].StrongCharge()==-3) {
+	  if (lqr<0) valid=false;
+	  cij.push_back(Delta::New(lr,idr[k]));
+	  lr=cij.FIndex();
+	  lqr=-1;
+	}
+	else if (!adjoint) {
+	  if (lqr<0) valid=false;
+	  size_t nr(cij.FIndex());
+	  cij.push_back(Fundamental::New(idr[k],lr,nr));
+	  lr=nr;
+	}
+	else {
+	  if (k==0 || k==idr.size()-1) continue;
+	  size_t nr(k==idr.size()-2?fr:cij.AIndex());
+	  cij.push_back(Adjoint::New(idr[k],lr,nr));
+	  lr=nr;
+	}
+      }
+      size_t lc(adjoint?iq:cij.FIndex()), fc(idc.back());
+      for (size_t k(0);k<idc.size();++k) {
+	if (fls[idc[k]].StrongCharge()==3) {
+	  if (lqc>0) valid=false;
+	  cij.push_back(Delta::New(lc,idc[k]));
+	  lqc=1;
+	}
+	else if (fls[idc[k]].StrongCharge()==-3) {
+	  if (lqc<0) valid=false;
+	  cij.push_back(Delta::New(idc[k],lc));
+	  lc=cij.FIndex();
+	  lqc=-1;
+	}
+	else if (!adjoint) {
+	  if (lqc<0) valid=false;
+	  size_t nc(cij.FIndex());
+	  cij.push_back(Fundamental::New(idc[k],nc,lc));
+	  lc=nc;
+	}
+	else {
+	  if (k==0 || k==idc.size()-1) continue;
+	  size_t nc(k==idc.size()-2?fc:cij.AIndex());
+	  cij.push_back(Adjoint::New(idc[k],lc,nc));
+	  lc=nc;
+	}
+      }
+      if (!valid) continue;
+      if (act[i]==0) act[i]=++np;
+      if (act[j]==0) act[j]=++np;
+      if (msg->LevelIsDebugging()) cij.Print();
+      cij.Evaluate();
+      if (cij.Result().imag())
+	msg_Error()<<METHOD<<"(): Non-real color coefficient "
+		   <<cij.Result()<<std::endl;
+      cij2[i][j]=cij.Result().real();
+    }
+  }
+  double N(nf>1?sqr(Factorial(nf-1)):1.0);
+  Color_Matrix cij;
+  cij.m_perms.resize(np);
+  cij.m_colfacs.resize(np,std::vector<double>(np));
+  for (size_t i(0);i<act.size();++i)
+    if (act[i]) {
+      int *cur(perms.Get(i));
+      for (size_t k(0);k<sids.size()-unique;++k)
+	idc[k+1]=sids[cur[k]];
+      cij.m_perms[act[i]-1]=idc;
+      for (size_t j(i);j<act.size();++j)
+	if (act[j]) {
+	  cij.m_colfacs[act[i]-1][act[j]-1]=
+	    cij.m_colfacs[act[j]-1][act[i]-1]=cij2[i][j]/N;
+	}
+    }
+  for (size_t i(0);i<cij.m_perms.size();++i)
+    msg_Debugging()<<i<<" "<<cij.m_perms[i]<<"\n";
+  for (size_t i(0);i<cij.m_colfacs.size();++i) {
+    for (size_t j(i);j<cij.m_colfacs[i].size();++j)
+      msg_Debugging()<<cij.m_colfacs[i][j]<<" ";
+    msg_Debugging()<<"\n";
+  }
+  return cij;
 }

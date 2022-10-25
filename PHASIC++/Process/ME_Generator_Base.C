@@ -7,6 +7,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Model_Base.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
 #include <algorithm>
 
 #define COMPILE__Getter_Function
@@ -19,7 +20,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 ME_Generator_Base::ME_Generator_Base(const std::string &name):
-  m_name(name), m_massmode(0), p_gens(NULL)
+  m_name(name), m_massmode(0), p_gens(NULL), p_remnant(NULL)
 {
   RegisterDefaults();
 }
@@ -56,22 +57,13 @@ Process_Base *ME_Generator_Base::InitializeProcess
     pi.m_maxcpl[0]=pi.m_mincpl[0]=ampl->OrderQCD();
     pi.m_maxcpl[1]=pi.m_mincpl[1]=ampl->OrderEW();
   }
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
-  if (mode&2) My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")
-				 +"/Process/"+m_name+"/");
   PHASIC::Process_Base *proc=p_gens->InitializeProcess(pi,mode&1);
-  if (proc==NULL) {
-    if (mode&4) My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")
-				    +"/Process/"+m_name+"/");
-    return proc;
-  }
+  if (proc==NULL) return proc;
   proc->SetSelector(Selector_Key{});
   std::string stag("VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}");
   proc->SetScale(Scale_Setter_Arguments(MODEL::s_model,stag,"Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
   proc->PerformTests();
-  if (mode&4) My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")
-				  +"/Process/"+m_name+"/");
   return proc;
 }
 
@@ -278,7 +270,12 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
     p[0]=sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
     ampl->Leg(i)->SetMom(boost*p);
   }
-  msg_Debugging()<<"After shift: "<<*ampl<<"\n";
+  for (int i = 0; i < 2; i++) {
+    if (p_remnant != NULL && !(p_remnant->GetRemnant(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)
+              ->TestExtract(ampl->Leg(i)->Flav().Bar(), -ampl->Leg(i)->Mom())))
+      return -1;
+  }
+  msg_Debugging() << "After shift: " << *ampl << "\n";
   return 1;
 }
 

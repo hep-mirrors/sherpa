@@ -5,14 +5,13 @@ namespace ATOOLS {
 
   class Permutation {
   private:
-    int   m_n;
-    int** p_an;
-    int   *p_per,*p_snum;
+    int m_n, *p_per, *p_st;
+    long int m_maxnum;
   public:
     Permutation(int);                   
     ~Permutation();                   
-    int MaxNumber();
     int* Get(int);
+    inline int MaxNumber() const { return m_maxnum; }
   };
 
 

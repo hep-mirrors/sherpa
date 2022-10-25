@@ -16,7 +16,7 @@ Primitive_Observable_Base *GetObservable(const Analysis_Key& key)
   const auto bins = s["Bins"].SetDefault(100).Get<size_t>();
   const auto scale = s["Scale"].SetDefault("Lin").Get<std::string>();
   const auto list = s["List"].SetDefault(std::string(finalstate_list)).Get<std::string>();
-  if (!s["Flav"].IsCustomised())
+  if (!s["Flav"].IsSetExplicitly())
     THROW(missing_input, "Flav must be set.");
   const auto rawflav = s["Flav"].SetDefault(0).Get<int>();
   ATOOLS::Flavour flav{ ATOOLS::Flavour((kf_code)std::abs(rawflav)) };

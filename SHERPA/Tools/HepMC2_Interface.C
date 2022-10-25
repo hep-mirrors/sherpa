@@ -62,15 +62,34 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       m_muf12=p_pdfinfo->m_muf12;
       m_muf22=p_pdfinfo->m_muf22;
     }
-    ReadIn(db,"UserHook",false);
-    if (db) {
-      m_userhook=true;
-      m_userweight=db->Get<double>();
+    if (sp->Type()!=btp::Elastic_Collision &&
+	sp->Type()!=btp::Soft_Diffractive_Collision &&
+	sp->Type()!=btp::Quasi_Elastic_Collision) {
+      ReadIn(db,"Renormalization_Scale",false);
+      if (db) m_mur2=db->Get<double>();
+      SetAlphaS();
+      SetAlpha();
     }
-    ReadIn(db,"Renormalization_Scale",false);
-    if (db) m_mur2=db->Get<double>();
-    SetAlphaS();
-    SetAlpha();
+    else if (sp->Type()==btp::Elastic_Collision) {
+        ReadIn(db,"Renormalization_Scale",false);
+        if (db) m_mur2=db->Get<double>();
+        else m_mur2=1.;
+        PRINT_VAR(m_mur2);
+        SetAlphaS();
+        SetAlpha();
+    }
+    else {
+      ReadIn(db,"UserHook",false);
+      if (db) {
+	m_userhook=true;
+	m_userweight=db->Get<double>();
+      }
+      ReadIn(db,"Renormalization_Scale",false);
+      if (db) m_mur2=db->Get<double>();
+      PRINT_VAR(m_mur2);
+      SetAlphaS();
+      SetAlpha();
+    }
     if (m_extendedweights) {
       ReadIn(db,"Orders",true);
       m_orders=db->Get<std::vector<double> >();
@@ -84,14 +103,18 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     if (includemeonlyweights)
       m_variationsources.push_back(ATOOLS::Variations_Source::main);
 
-    ReadIn(db, "WeightsMap", false);
-    if (db) {
-      m_wgtmap = db->Get<Weights_Map>();
-      if (m_wgtmap.HasVariations() && !m_usenamedweights)
-        THROW(fatal_error,
-              "Scale, AlphaS and/or PDF variations cannot be written to " +
-                  std::string("HepMC without using named weights. ") +
-                  std::string("Try HEPMC_USE_NAMED_WEIGHTS: true"));
+    ReadIn(db, "WeightsMap", true);
+    if (db) m_wgtmap = db->Get<Weights_Map>();
+
+    if ((m_userhook || m_wgtmap.HasVariations()) && !m_usenamedweights) {
+      static bool did_warn {false};
+      if (!did_warn) {
+        msg_Out() << om::bold << om::brown <<  "WARNING:" << om::reset
+                  << " Userhook or on-the-fly variation weights cannot "
+                  << "be written to\nHepMC without using named weights. "
+                  << "Try `HEPMC_USE_NAMED_WEIGHTS: true`.\n";
+        did_warn = true;
+      }
     }
   }
 }
@@ -104,9 +127,9 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_orders(evtinfo.m_orders),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
   m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
-  m_userhook(false), m_userweight(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
-  m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
+  m_alphas(0.), m_alpha(0.),
+  m_userhook(false), m_userweight(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
   m_wgtmap(evtinfo.m_wgtmap)
@@ -126,103 +149,9 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
   HepMC::WeightContainer wc;
   if (m_usenamedweights) {
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
-    // fill standard entries to ensure backwards compatability
+
     wc["Weight"]=m_wgt;
-    wc["MEWeight"]=m_mewgt;
-    wc["WeightNormalisation"]=m_wgtnorm;
-    wc["NTrials"]=m_ntrials;
-    if (m_userhook) wc["UserHook"]=m_userweight;
-    if (m_extendedweights) {
-      wc["PSWeight"]=m_pswgt;
-      // additional entries for LO/LOPS reweighting
-      // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
-      wc["MuR2"]=m_mur2;
-      wc["OQCD"]=m_orders[0];
-      wc["OEW"]=m_orders[1];
-      if (p_wgtinfo) {
-        wc["Reweight_B"]=p_wgtinfo->m_B;
-        wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
-        wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
-        if (p_wgtinfo->m_type&mewgttype::VI) {
-          wc["Reweight_VI"]=p_wgtinfo->m_VI;
-          for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
-            wc["Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
-          }
-        }
-        if (p_wgtinfo->m_type&mewgttype::KP) {
-          wc["Reweight_KP"]=p_wgtinfo->m_KP;
-          wc["Reweight_KP_x1p"]=p_wgtinfo->m_y1;
-          wc["Reweight_KP_x2p"]=p_wgtinfo->m_y2;
-          for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
-            wc["Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
-          }
-        }
-        if (p_wgtinfo->m_type&mewgttype::DADS &&
-            p_wgtinfo->m_dadsinfos.size()) {
-          wc["Reweight_DADS_N"]=p_wgtinfo->m_dadsinfos.size();
-          for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
-            wc["Reweight_DADS_"+ToString(i)+"_Weight"]
-                =p_wgtinfo->m_dadsinfos[i].m_wgt;
-            if (p_wgtinfo->m_dadsinfos[i].m_wgt) {
-              wc["Reweight_DADS_"+ToString(i)+"_x1"]
-                  =p_wgtinfo->m_dadsinfos[i].m_x1;
-              wc["Reweight_DADS_"+ToString(i)+"_x2"]
-                  =p_wgtinfo->m_dadsinfos[i].m_x2;
-              wc["Reweight_DADS_"+ToString(i)+"_fl1"]
-                  =p_wgtinfo->m_dadsinfos[i].m_fl1;
-              wc["Reweight_DADS_"+ToString(i)+"_fl2"]
-                  =p_wgtinfo->m_dadsinfos[i].m_fl2;
-            }
-          }
-        }
-        if (p_wgtinfo->m_type&mewgttype::METS &&
-            p_wgtinfo->m_clusseqinfo.m_txfl.size()) {
-          wc["Reweight_ClusterStep_N"]=p_wgtinfo->m_clusseqinfo.m_txfl.size();
-          for (size_t i(0);i<p_wgtinfo->m_clusseqinfo.m_txfl.size();++i) {
-            wc["Reweight_ClusterStep_"+ToString(i)+"_t"]
-                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_t;
-            wc["Reweight_ClusterStep_"+ToString(i)+"_x1"]
-                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_xa;
-            wc["Reweight_ClusterStep_"+ToString(i)+"_x2"]
-                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_xb;
-            wc["Reweight_ClusterStep_"+ToString(i)+"_fl1"]
-                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_fla;
-            wc["Reweight_ClusterStep_"+ToString(i)+"_fl2"]
-                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_flb;
-          }
-        }
-        if (p_wgtinfo->m_type&mewgttype::H) {
-          wc["Reweight_RDA_N"]=p_wgtinfo->m_rdainfos.size();
-          for (size_t i(0);i<p_wgtinfo->m_rdainfos.size();++i) {
-            wc["Reweight_RDA_"+ToString(i)+"_Weight"]
-                =p_wgtinfo->m_rdainfos[i].m_wgt;
-            if (p_wgtinfo->m_rdainfos[i].m_wgt) {
-              const double mur2(p_wgtinfo->m_rdainfos[i].m_mur2);
-              wc["Reweight_RDA_"+ToString(i)+"_MuR2"] = mur2;
-              wc["Reweight_RDA_"+ToString(i)+"_MuF12"]
-                  =p_wgtinfo->m_rdainfos[i].m_muf12;
-              wc["Reweight_RDA_"+ToString(i)+"_MuF22"]
-                  =p_wgtinfo->m_rdainfos[i].m_muf22;
-              wc["Reweight_RDA_"+ToString(i)+"_Dipole"]
-                  =10000*p_wgtinfo->m_rdainfos[i].m_i
-                    +100*p_wgtinfo->m_rdainfos[i].m_j
-                        +p_wgtinfo->m_rdainfos[i].m_k;
-              wc["Reweight_RDA_"+ToString(i)+"_AlphaS"]
-                  =MODEL::s_model->ScalarFunction("alpha_S", mur2);
-            }
-          }
-        }
-        wc["Reweight_Type"]=p_wgtinfo->m_type;
-      }
-      if (p_subevtlist) {
-        wc["Reweight_RS"]=m_pwgt;
-        wc["Reweight_Type"]=64|(p_wgtinfo?p_wgtinfo->m_type:0);
-      }
-    }
-    else {
-      // if using minimal weights still dump event type if RS need correls
-      if (p_subevtlist) wc["Reweight_Type"]=64;
-    }
+
     // fill weight variations into weight container
     if (m_wgtmap.HasVariations()) {
 
@@ -231,45 +160,113 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
           (idx == -1) ? m_wgtmap : (*p_subevtlist)[idx]->m_results;
 
       for (const auto& source : m_variationsources) {
+        wgtmap.FillVariations(wc, source);
+      }
+    }
 
-        for (const auto type : s_variations->ManagedVariationTypes()) {
+    if (m_userhook) wc["UserHook"]=m_userweight;
 
-          // calculate contributions
-          Weights weights = Weights {type};
-          double relfac {1.0};
-          if (source == ATOOLS::Variations_Source::all) {
-            weights *= wgtmap.Combine(type);
-            relfac = wgtmap.NominalIgnoringVariationType(type);
-          } else {
-            // calculate nominal, relfac and weights ignoring shower weights
-            std::unordered_set<std::string> shower_keys {
-                "PS", "PS_QCUT", "MC@NLO_PS", "MC@NLO_QCUT"};
-            for (const auto& v : wgtmap) {
-              if (shower_keys.find(v.first) != shower_keys.end())
-                continue;
-              if (v.second.Type() == type) {
-                weights *= v.second;
-              } else {
-                relfac *= v.second.Nominal();
-              }
-            }
-            relfac *= wgtmap.BaseWeight();
-          }
+    wc["EXTRA__MEWeight"]=m_mewgt;
+    wc["EXTRA__WeightNormalisation"]=m_wgtnorm;
+    wc["EXTRA__NTrials"]=m_ntrials;
 
-          // do remaining combination and output resulting weights
-          size_t num_vars = weights.Size() - 1;
-          for (size_t i(0); i < num_vars; ++i) {
-            const std::string varname {weights.Name(i + 1)};
-            const std::string typevarname {
-                (source == ATOOLS::Variations_Source::main)
-                    ? "ME_ONLY_" + varname
-                    : varname};
-            wc[typevarname] = weights.Variation(i) * relfac;
-            msg_Debugging() << typevarname << " (" << typevarname
-                            << "): " << weights.Variation(i) * relfac << '\n';
+    if (m_extendedweights) {
+      wc["EXTRA__PSWeight"]=m_pswgt;
+      // additional entries for LO/LOPS reweighting
+      // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
+      wc["EXTRA__MuR2"]=m_mur2;
+      wc["EXTRA__OQCD"]=m_orders[0];
+      wc["EXTRA__OEW"]=m_orders[1];
+      if (p_wgtinfo) {
+        wc["IRREG__Reweight_B"]=p_wgtinfo->m_B;
+        wc["IRREG__Reweight_MuR2"]=p_wgtinfo->m_mur2;
+        wc["IRREG__Reweight_MuF2"]=p_wgtinfo->m_muf2;
+        if (p_wgtinfo->m_type&mewgttype::VI) {
+          wc["IRREG__Reweight_VI"]=p_wgtinfo->m_VI;
+          for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
+            wc["IRREG__Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
           }
         }
+        if (p_wgtinfo->m_type&mewgttype::KP) {
+          wc["IRREG__Reweight_KP"]=p_wgtinfo->m_KP;
+          wc["IRREG__Reweight_KP_x1p"]=p_wgtinfo->m_y1;
+          wc["IRREG__Reweight_KP_x2p"]=p_wgtinfo->m_y2;
+          for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
+            wc["IRREG__Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
+          }
+        }
+        if (p_wgtinfo->m_type&mewgttype::DADS &&
+            p_wgtinfo->m_dadsinfos.size()) {
+          wc["IRREG__Reweight_DADS_N"]=p_wgtinfo->m_dadsinfos.size();
+          for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
+            wc["IRREG__Reweight_DADS_"+ToString(i)+"_Weight"]
+                =p_wgtinfo->m_dadsinfos[i].m_wgt;
+            if (p_wgtinfo->m_dadsinfos[i].m_wgt) {
+              wc["IRREG__Reweight_DADS_"+ToString(i)+"_x1"]
+                  =p_wgtinfo->m_dadsinfos[i].m_x1;
+              wc["IRREG__Reweight_DADS_"+ToString(i)+"_x2"]
+                  =p_wgtinfo->m_dadsinfos[i].m_x2;
+              wc["IRREG__Reweight_DADS_"+ToString(i)+"_fl1"]
+                  =p_wgtinfo->m_dadsinfos[i].m_fl1;
+              wc["IRREG__Reweight_DADS_"+ToString(i)+"_fl2"]
+                  =p_wgtinfo->m_dadsinfos[i].m_fl2;
+            }
+          }
+        }
+        if (p_wgtinfo->m_type&mewgttype::METS &&
+            p_wgtinfo->m_clusseqinfo.m_txfl.size()) {
+          wc["IRREG__Reweight_ClusterStep_N"]=p_wgtinfo->m_clusseqinfo.m_txfl.size();
+          for (size_t i(0);i<p_wgtinfo->m_clusseqinfo.m_txfl.size();++i) {
+            wc["IRREG__Reweight_ClusterStep_"+ToString(i)+"_t"]
+                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_t;
+            wc["IRREG__Reweight_ClusterStep_"+ToString(i)+"_x1"]
+                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_xa;
+            wc["IRREG__Reweight_ClusterStep_"+ToString(i)+"_x2"]
+                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_xb;
+            wc["IRREG__Reweight_ClusterStep_"+ToString(i)+"_fl1"]
+                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_fla;
+            wc["IRREG__Reweight_ClusterStep_"+ToString(i)+"_fl2"]
+                =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_flb;
+          }
+        }
+        if (p_wgtinfo->m_type&mewgttype::H) {
+          wc["IRREG__Reweight_RDA_N"]=p_wgtinfo->m_rdainfos.size();
+          for (size_t i(0);i<p_wgtinfo->m_rdainfos.size();++i) {
+            wc["IRREG__Reweight_RDA_"+ToString(i)+"_Weight"]
+                =p_wgtinfo->m_rdainfos[i].m_wgt;
+            if (p_wgtinfo->m_rdainfos[i].m_wgt) {
+              const double mur2(p_wgtinfo->m_rdainfos[i].m_mur2);
+              wc["IRREG__Reweight_RDA_"+ToString(i)+"_MuR2"] = mur2;
+              wc["IRREG__Reweight_RDA_"+ToString(i)+"_MuF12"]
+                  =p_wgtinfo->m_rdainfos[i].m_muf12;
+              wc["IRREG__Reweight_RDA_"+ToString(i)+"_MuF22"]
+                  =p_wgtinfo->m_rdainfos[i].m_muf22;
+              wc["IRREG__Reweight_RDA_"+ToString(i)+"_Dipole"]
+                  =10000*p_wgtinfo->m_rdainfos[i].m_i
+                    +100*p_wgtinfo->m_rdainfos[i].m_j
+                        +p_wgtinfo->m_rdainfos[i].m_k;
+              wc["IRREG__Reweight_RDA_"+ToString(i)+"_AlphaS"]
+                  =MODEL::s_model->ScalarFunction("alpha_S", mur2);
+            }
+          }
+        }
+        if (p_wgtinfo->m_wass.size()) {
+          for (size_t i(0);i<p_wgtinfo->m_wass.size();++i) {
+            asscontrib::type ass=static_cast<asscontrib::type>(1<<i);
+            wc["IRREG__Reweight_"+ToString(ass)]
+                =p_wgtinfo->m_wass[i];
+          }
+        }
+        wc["IRREG__Reweight_Type"]=p_wgtinfo->m_type;
       }
+      if (p_subevtlist) {
+        wc["IRREG__Reweight_RS"]=m_pwgt;
+        wc["IRREG__Reweight_Type"]=64|(p_wgtinfo?p_wgtinfo->m_type:0);
+      }
+    }
+    else {
+      // if using minimal weights still dump event type if RS need correls
+      wc["IRREG__Reweight_Type"] = p_subevtlist ? 64 : 0;
     }
 #else
     THROW(fatal_error,"Asked for named weights, but HepMC version too old.");
@@ -325,12 +322,12 @@ HepMC2_Interface::HepMC2_Interface() :
   Settings& s = Settings::GetMainSettings();
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
   m_usenamedweights =
-    s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(false).Get<bool>();
+    s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(true).Get<bool>();
 #endif
   m_extendedweights =
     s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
   m_includemeonlyweights =
-    s["HEPMC_INCLUDE_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
+    s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(true).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
 }
@@ -432,6 +429,10 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
 	!(sub->IsReal() && m_subeventlist.empty())) continue;
     HepMC::GenVertex * subvertex(new HepMC::GenVertex());
     HepMC::GenEvent * subevent(new HepMC::GenEvent());
+    #ifdef USING__HEPMC2__UNITS
+    subevent->use_units(HepMC::Units::GEV,
+                        HepMC::Units::MM);
+    #endif
     // set the event number (could be used to identify correlated events)
     subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
     // assume that only 2->(n-2) processes, flip for Comix, flavs are correct
@@ -541,7 +542,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   EventInfo evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   evtinfo.WriteTo(event);
-  
+
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
   HepMC::GenVertex * vertex, * psvertex(NULL);
@@ -756,13 +757,15 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
   return true;
 }
 
-void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event,
-                                       const double &xs, const double &err)
+void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event, const Uncertain<double>& xs)
 {
 #ifdef HEPMC_HAS_CROSS_SECTION
   HepMC::GenCrossSection gxs;
-  gxs.set_cross_section(xs,err);
+  gxs.set_cross_section(xs.value, xs.error);
   event.set_cross_section(gxs);
+  for (size_t i(0);i<m_subeventlist.size();++i) {
+    m_subeventlist[i]->set_cross_section(gxs);
+  }
 #else
   msg_Info()<<METHOD<<"(): Cannot add XS info to GenEvent."<<std::endl;
 #endif
@@ -770,7 +773,9 @@ void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event,
 
 bool HepMC2_Interface::StartsLikeVariationName(const std::string& s)
 {
-  return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0);
+  return (s.find("Weight") == std::string::npos
+      && s.find("EXTRA__") == std::string::npos
+      && s.find("IRREG__") == std::string::npos);
 }
 
 void HepMC2_Interface::DeleteGenSubEventList()

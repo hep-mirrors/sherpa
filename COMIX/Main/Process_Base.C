@@ -43,7 +43,8 @@ bool COMIX::Process_Base::Initialize(std::map<std::string,std::string> *const pm
 {
   p_pmap=pmap;
   p_umprocs=procs;
-  p_proc->Integrator()->SetColorScheme(cls::sample);
+  if (p_proc->Info().m_cls==cls::unknown) p_proc->Info().m_cls=cls::sample;
+  p_proc->Integrator()->SetColorScheme(p_proc->Info().m_cls);
   return true;
 }
 
@@ -57,5 +58,5 @@ bool COMIX::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)
 				(Flavour*)&p_proc->Flavours().front(),this));
   InitPSGenerator(0);
   p_fsmc->Add(ch);
-  return false;
+  return true;
 }      

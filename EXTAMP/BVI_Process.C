@@ -77,7 +77,9 @@ namespace EXTAMP {
   }
   
 
-  double BVI_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int mode)
+  double BVI_Process::Partonic(const ATOOLS::Vec4D_Vector &p,
+                               Variations_Mode varmode,
+                               int mode)
   {
     DEBUG_FUNC(this);
     
@@ -330,10 +332,10 @@ namespace EXTAMP {
   double BVI_Process::Calc_KP(const ATOOLS::Vec4D_Vector& p)
   {
     /* Calculate partonic momentum fractions of incoming partons*/
-    m_eta0 = (p[0][3]>0.0?p[0].PPlus()/rpa->gen.PBeam(0).PPlus():
-	      p[0].PMinus()/rpa->gen.PBeam(1).PMinus());
-    m_eta1 = (p[1][3]<0.0?p[1].PMinus()/rpa->gen.PBeam(1).PMinus():
-	      p[1].PPlus()/rpa->gen.PBeam(0).PPlus());
+    m_eta0 = (p[0][3]>0.0?p[0].PPlus()/rpa->gen.PBunch(0).PPlus():
+	      p[0].PMinus()/rpa->gen.PBunch(1).PMinus());
+    m_eta1 = (p[1][3]<0.0?p[1].PMinus()/rpa->gen.PBunch(1).PMinus():
+	      p[1].PPlus()/rpa->gen.PBunch(0).PPlus());
 
     /* Randomly select x0 \in [eta0,1] 
                        x1 \in [eta1,1] 

@@ -11,8 +11,8 @@ HARD_DECAYS:
   Enabled: true
   Mass_Smearing: 0
   Channels:
-    23 -> 11 -11: {Status: 2}
-    23 -> 13 -13: {Status: 2}
+    23,11,-11: {Status: 2}
+    23,13,-13: {Status: 2}
 
 PARTICLE_DATA:
   5:
@@ -35,7 +35,7 @@ PROCESSES:
     ME_Generator: Amegic
     RS_ME_Generator: Comix
     Loop_Generator: LHOLE
-    Order: {QCD: Any, EW: 1}
+    Order: {QCD: 2, EW: 1}
 
 SELECTORS:
 - FastjetFinder:

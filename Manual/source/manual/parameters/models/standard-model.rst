@@ -36,7 +36,7 @@ physics parameters are considered fixed and which are derived from the
 given quantities. The electro-weak coupling is by default fixed, unless its
 running has been enabled (cf. :ref:`COUPLINGS`).
 The input schemes are selected through the ``EW_SCHEME`` parameter, whose
-default is :option:`alphamZ`. The following options are provided:
+default is :option:`Gmu`. The following options are provided:
 
 :option:`UserDefined`
   All EW parameters are explicitly given:  Here the W, Z and Higgs
@@ -163,7 +163,7 @@ strong coupling constant at the Z-pole, given through
 ``ALPHAS(MZ)``. Its default value is :option:`0.118`. If the setup at
 hand involves hadron collisions and thus PDFs, the value of the strong
 coupling constant is automatically set consistent with the PDF fit and
-can not be changed by the user. If Sherpa is compiled with LHAPDF
+can not be changed by the user. Since Sherpa is compiled with LHAPDF
 support, it is also possible to use the alphaS evolution provided in
 LHAPDF by specifying ``ALPHAS: {USE_PDF: 1}``. The perturbative
 order of the running of the strong coupling can be set via

@@ -84,7 +84,7 @@ namespace ANALYSIS {
 	m_outputs.push_back(out);
 	out->Header();
       }
-      if (s["FILE_SIZE"].IsCustomised()) {
+      if (s["FILE_SIZE"].IsSetExplicitly()) {
         const double filesize{
           s["FILE_SIZE"].SetDefault(0.0).Get<double>() };
 	if (filesize<1.0) {

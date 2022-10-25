@@ -65,7 +65,9 @@ namespace SHERPA {
     size_t Size() const override { return 0; }
     Process_Base* operator[](const size_t& i) override { return NULL; }
 
-    Weight_Info* OneEvent(const int wmode, const int mode = 0) override
+    Weight_Info* OneEvent(const int wmode,
+                          Variations_Mode varmode=Variations_Mode::all,
+                          const int mode=0)
     {
       return NULL;
     }
@@ -82,6 +84,7 @@ namespace SHERPA {
       return false;
     }
     void SetLookUp(const bool lookup) override {}
+    void InitializeTheReweighting(ATOOLS::Variations_Mode) override {}
   };
 
   struct RootNTupleReader_Variables {
@@ -275,7 +278,7 @@ void RootNtuple_Reader::RegisterDefaults() const
   s["ROOTNTUPLE_CALC"].SetDefault(1);
   const bool calc{ s["ROOTNTUPLE_CALC"].Get<bool>() };
   s["ROOTNTUPLE_CHECK"].SetDefault((calc & 2) ? 1 : 0);
-  if (!s["SCALES"].IsCustomised()) {
+  if (!s["SCALES"].IsSetExplicitly()) {
     s["SCALES"].OverrideScalar("VAR{sqr(" + ToString(rpa->gen.Ecms()) + ")}");
   }
   s["ROOTNTUPLE_LO_MODE"].SetDefault(0);

@@ -1,4 +1,5 @@
 #include "AHADIC++/Formation/Singlet_Former.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include <cassert>
 
@@ -11,6 +12,10 @@ Singlet_Former::Singlet_Former(list<Singlet *> * singlets) :
 {}
 
 Singlet_Former::~Singlet_Former() {}
+
+void Singlet_Former::Init() {
+  m_kt2max = sqr(hadpars->Get("kT_max")); 
+}
 
 void Singlet_Former::ExtractOutgoingCols(Blob * blob) {
   // Filter relevant - i.e. coloured - particles and put a copy of them
@@ -45,8 +50,9 @@ void Singlet_Former::FormSinglets() {
 
 Singlet * Singlet_Former::MakeAnother() {
   Singlet * partlist = new Singlet();
-  Particle * part = FindStart();
+  Particle * part    = FindStart();
   partlist->push_back(new Proto_Particle(*part));
+  partlist->back()->SetKT2_Max(m_kt2max);
   if (part->Flav().IsQuark()) partlist->back()->SetLeading(true);
   if (part->Beam()>-1)        partlist->back()->SetBeam(true);
   unsigned int col1 = part->GetFlow(1);

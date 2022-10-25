@@ -11,7 +11,7 @@ proclib = lenv.SharedLibrary('${libname}',[])
 Depends(proclib,procobj)
 with open('${libname}.rsp',\"w\") as f:
     for o in procobj:
-        f.write ('%s\n' %os.path.abspath(str(o)).replace('\\\\','/'))
+        f.write ('\"%s\"\n' %os.path.abspath(str(o)).replace('\\\\','/'))
 lenv.Append(LINKFLAGS=['@%s' % os.path.abspath('${libname}.rsp')])
 lenv.Install('\${libdir}',proclib)
 lenv.Alias('install',['\${libdir}'])" > SConscript

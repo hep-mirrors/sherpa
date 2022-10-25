@@ -79,7 +79,7 @@ void Hadron_Init::Init() {
   InitHadron(kf_K_star_892,      false,0.8961,0.0505,0,2,true,1,0,    "K*(892)","K*(892)");
   InitHadron(kf_K_star_892_plus, false,0.89166,0.0508,3,2,true,1,0,   "K*(892)+","K*^{+}(892)");
   InitHadron(kf_phi_1020,        false,1.01941,0.00443,0,2,false,1,0, "phi(1020)","phi(1020)");
-  InitHadron(kf_D_star_2010_plus,false,2.01,0.001,3,2,true,1,0,       "D*(2010)+","D*^{+}(2010)");
+  InitHadron(kf_D_star_2010_plus,false,2.01022,0.000083,3,2,true,1,0,    "D*(2010)+","D*^{+}(2010)");
   InitHadron(kf_D_star_2007,     false,2.0067,0.001,0,2,true,1,0,     "D*(2007)","D*(2007)");
   InitHadron(kf_D_s_star_plus,   false,2.1124,0.001,3,2,true,1,0,     "D(s)*+","D_{s}*^{+}");
   InitHadron(kf_J_psi_1S,        false,3.09688,8.7e-05,0,2,false,1,0, "J/psi(1S)","J/psi(1S)");
@@ -237,10 +237,12 @@ void Hadron_Init::Init() {
   InitHadron(kf_Xi_1820_minus,   false,1.823,0.024,-3,3,true,1,0, "Xi(1820)-","\\Xi-(1820)");
   InitHadron(kf_Xi_1820,         false,1.823,0.024,0,3,true,1,0,  "Xi(1820)","\\Xi(1820)");
   InitHadron(kf_Lambda_1520,     false,1.5195,0.0156,0,3,true,1,0,"Lambda(1520)","\\Lambda(1520)");
-  InitHadron(102144,false,2.625,0.002,3,3,true,1,0,"Lambda(c)(2625)+","\\Lambda_{c}^{+}(2625)");
-  InitHadron(104314,false,2.815,0.002,0,3,true,1,0,"Xi(c)(2815)","\\Xi_{c}(2815)");
-  InitHadron(104324,false,2.815,0.002,3,3,true,1,0,"Xi(c)(2815)+","\\Xi_{c}^{+}(2815)");
-  InitHadron(102154,false,5.91,0.002,0,3,true,1,0,"Lambda(b)(5910)","\\Lambda_{b}(5910)");
+  InitHadron(102144,             false,2.625,0.002,3,3,true,1,0,  "Lambda(c)(2625)+","\\Lambda_{c}^{+}(2625)");
+  InitHadron(104314,             false,2.815,0.002,0,3,true,1,0,  "Xi(c)(2815)","\\Xi_{c}(2815)");
+  InitHadron(104324,             false,2.815,0.002,3,3,true,1,0,  "Xi(c)(2815)+","\\Xi_{c}^{+}(2815)");
+  InitHadron(102154,             false,5.91,0.002,0,3,true,1,0,   "Lambda(b)(5910)","\\Lambda_{b}(5910)");
+  InitHadron(kf_N_1710,          true,1.71,0.12,0,1,true,1,0,     "N(1710)","N(1710)");
+  InitHadron(kf_N_1710_plus,     true,1.71,0.12,3,1,true,1,0,     "N(1710)+","N(1710)+");
   // #########################################################################
   // Obsolete multiple heavy baryons #########################################
   // they will not be produced in our code (we have no heavy di-quarks

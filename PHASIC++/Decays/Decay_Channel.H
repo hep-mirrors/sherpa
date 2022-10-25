@@ -21,6 +21,8 @@ namespace PHASIC {
   class Single_Channel;
 
   class Decay_Channel {
+  private:
+    static std::map<std::string, double> s_kinmaxfails;
     
     /** 
      * This method makes the phase space generator choose a phase space point
@@ -128,9 +130,9 @@ namespace PHASIC {
 
     void CalculateWidth(double acc=0.01, double ref=0.0, int iter=2500);
     void GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
-                        METOOLS::Spin_Density* sigma=NULL,
-                        const std::vector<ATOOLS::Particle*>& p=
-                          std::vector<ATOOLS::Particle*>());
+			    METOOLS::Spin_Density* sigma=NULL,
+			    const std::vector<ATOOLS::Particle*>& p=
+			    std::vector<ATOOLS::Particle*>());
     inline METOOLS::Amplitude2_Tensor* Amps() { return p_amps; }
 
     friend std::ostream &operator<<(std::ostream &os, const Decay_Channel &dt);
@@ -138,6 +140,7 @@ namespace PHASIC {
     static void SortFlavours(ATOOLS::Flavour_Vector& flavs);
     static bool FlavourSort(const ATOOLS::Flavour &fl1,
                             const ATOOLS::Flavour &fl2);
+    static void PrintMaxKinFailStatistics(std::ostream &str);
   };
 }
 #endif

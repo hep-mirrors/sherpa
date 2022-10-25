@@ -8,11 +8,26 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace PDF;
 using namespace ATOOLS;
+
+namespace PDF {
+  PDF_Defaults *pdfdefs(nullptr);
+}
+
+PDF_Defaults::PDF_Defaults()
+{
+  m_deflib[kf_p_plus] = "LHAPDFSherpa";
+  m_defset[kf_p_plus] = "PDF4LHC21_40_pdfas";
+
+  m_deflib[kf_e] = "PDFESherpa";
+  m_defset[kf_e] = "PDFe";
+
+  m_deflib[kf_photon] = "GRVSherpa";
+  m_defset[kf_photon] = "GRV";
+}
 
 std::ostream &PDF::operator<<(std::ostream &ostr,const PDF::PDF_AS_Info &asi)
 {
@@ -21,7 +36,7 @@ std::ostream &PDF::operator<<(std::ostream &ostr,const PDF::PDF_AS_Info &asi)
 }
 
 PDF_Base::PDF_Base():
-  m_type("none"), m_set(""), m_member(0), m_lhef_number(-1), m_exponent(1.),
+  m_type("none"), m_member(0), m_lhef_number(-1), m_exponent(1.),
   m_rescale(1.), m_rescX(false),
   m_xmin(1.), m_xmax(0.), m_q2min(1.e12), m_q2max(0.),
   m_nf(-1)
@@ -31,14 +46,13 @@ PDF_Base::PDF_Base():
   m_lhef_number = s["LHEF_PDF_NUMBER"].Get<int>();
 }
 
-PDF_Base::~PDF_Base()
-{
-}
+PDF_Base::~PDF_Base() = default;
 
-void PDF_Base::RegisterDefaults() const
+void PDF_Base::RegisterDefaults()
 {
   Settings& s = Settings::GetMainSettings();
   s["LHEF_PDF_NUMBER"].SetDefault(-1);
+  s["INCLUDE_PHOTON_IN_PHOTON_PDF"].SetDefault(false);
 
   Scoped_Settings lhapdfsettings{ s["LHAPDF"] };
   lhapdfsettings["NUMBER_OF_FLAVOURS"].SetDefault(5);

@@ -35,6 +35,38 @@ namespace ATOOLS {
   std::ostream &operator<<(std::ostream &str,const nlo_type::code &c);
   std::istream &operator>>(std::istream &str,nlo_type::code &c);
 
+  struct asscontrib {
+    enum type {
+      none = 0,
+      EW   = 1,
+      LO1  = 2,
+      LO2  = 4,
+      LO3  = 8
+    };
+  };
+
+  inline asscontrib::type operator|(const asscontrib::type at1,
+                                 const asscontrib::type at2)
+  { return (asscontrib::type)((int)at1|(int)at2); }
+  inline const asscontrib::type &operator|=(asscontrib::type &at1,
+                                         const asscontrib::type at2)
+  { return at1=(asscontrib::type)((int)at1|(int)at2); }
+  inline asscontrib::type operator&(const asscontrib::type at1,
+                                 const asscontrib::type at2)
+  { return (asscontrib::type)((int)at1&(int)at2); }
+  inline const asscontrib::type &operator&=(asscontrib::type &at1,
+                                         const asscontrib::type at2)
+  { return at1=(asscontrib::type)((int)at1&(int)at2); }
+  inline asscontrib::type operator^(const asscontrib::type at1,
+                                 const asscontrib::type at2)
+  { return (asscontrib::type)((int)at1^(int)at2); }
+  inline const asscontrib::type &operator^=(asscontrib::type &at1,
+                                         const asscontrib::type at2)
+  { return at1=(asscontrib::type)((int)at1^(int)at2); }
+
+  std::ostream & operator<<(std::ostream & s,const asscontrib::type & at);
+  std::istream & operator>>(std::istream & s,asscontrib::type &at);
+
   struct nlo_mode {
     enum code {
       none       = 0,

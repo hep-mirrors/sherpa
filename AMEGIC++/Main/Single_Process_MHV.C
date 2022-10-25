@@ -96,8 +96,8 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
   //////////////////////////////////////////////
 
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
-  int ntchanmin(m_ntchanmin);
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,
+				   m_pinfo.m_ntchan,m_pinfo.m_mtchan,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,0,true,m_ptypename+"/"+m_libname);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process_MHV::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
@@ -251,7 +251,9 @@ int AMEGIC::Single_Process_MHV::Tests()
 bool AMEGIC::Single_Process_MHV::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return Process_Base::FillIntegrator(psh);
 }
 
@@ -294,7 +296,9 @@ void AMEGIC::Single_Process_MHV::Minimize()
   m_mincpl = p_partner->MinOrders();
 }
 
-double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms, int mode)
+double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms,
+                                            Variations_Mode varmode,
+                                            int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs = 0.0;

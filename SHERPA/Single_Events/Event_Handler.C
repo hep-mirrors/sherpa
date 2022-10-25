@@ -9,7 +9,6 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/RUsage.H"
-#include "ATOOLS/Phys/Weights.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
@@ -27,8 +26,9 @@ static int s_retrymax(100);
 
 Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0),
-  m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0),
-  m_mn(0), m_msum(0.0), m_msumsqr(0.0),
+  m_n(0), m_mn(0), m_addn(0), m_maxweight(0.0),
+  m_wgtmapsum{0.0}, m_wgtmapsumsqr{0.0},
+  m_mwgtmapsum{0.0}, m_mwgtmapsumsqr{0.0},
   p_filter(NULL), p_variations(NULL)
 {
   p_phases  = new Phase_List;
@@ -53,9 +53,9 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
   std::string name = phase->Name();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
-      msg_Out()<<"WARNING in Event_Handler::AddEventPhase"
-	       <<"("<<type<<":"<<name<<") "
-	       <<"already included."<<std::endl;
+      msg_Info()<<"WARNING in Event_Handler::AddEventPhase"
+		<<"("<<type<<":"<<name<<") "
+		<<"already included."<<std::endl;
       return;
     }
   }
@@ -77,34 +77,34 @@ void Event_Handler::EmptyEventPhases()
 void Event_Handler::PrintGenericEventStructure()
 {
   if (!msg_LevelIsInfo()) return;
-  msg_Out()<<"----------------------------------------------------------\n"
+  msg_Info()<<"----------------------------------------------------------\n"
 	    <<"-- SHERPA generates events with the following structure --\n"
 	    <<"----------------------------------------------------------\n";
-  msg_Out()<<"Event generation   : ";
+  msg_Info()<<"Event generation   : ";
   switch (ToType<size_t>(rpa->gen.Variable("EVENT_GENERATION_MODE"))) {
   case 0:
-    msg_Out()<<"Weighted"<<std::endl;
+    msg_Info()<<"Weighted"<<std::endl;
     break;
   case 1:
-    msg_Out()<<"Unweighted"<<std::endl;
+    msg_Info()<<"Unweighted"<<std::endl;
     break;
   case 2:
-    msg_Out()<<"Partially unweighted"<<std::endl;
+    msg_Info()<<"Partially unweighted"<<std::endl;
     break;
   default:
-    msg_Out()<<"Unknown"<<std::endl;
+    msg_Info()<<"Unknown"<<std::endl;
     break;
   }
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      msg_Out()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
+      msg_Info()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
     }
   }
   if (p_variations && !p_variations->GetParametersVector()->empty()) {
-    msg_Out()<<"Reweighting        : "
+    msg_Info()<<"Reweighting        : "
 	     <<p_variations->GetParametersVector()->size()<<" variations.\n";
   }
-  msg_Out()<<"---------------------------------------------------------\n";
+  msg_Info()<<"---------------------------------------------------------\n";
 }
 
 void Event_Handler::Reset()
@@ -124,6 +124,15 @@ void Event_Handler::Reset()
   Blob::Reset();
   Particle::Reset();
   Flow::ResetCounter();
+}
+
+void Event_Handler::ResetNonPerturbativePhases()
+{
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+    if ((*pit)->Type()==eph::Hadronization) {
+      (*pit)->CleanUp();
+    }
+  }
 }
 
 bool Event_Handler::GenerateEvent(eventtype::code mode) 
@@ -163,11 +172,11 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
   p_signal->SetStatus(status);
   p_signal->AddData("Trials",new Blob_Data<double>(0));
   p_signal->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  p_signal->AddData("Weight_Norm",new Blob_Data<double>(1.));
   m_blobs.push_back(p_signal);
 }
 
 bool Event_Handler::AnalyseEvent() {
-  double trials(1.0), cxs(1.0);
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     if ((*pit)->Type()==eph::Analysis) {
       switch ((*pit)->Treat(&m_blobs)) {
@@ -181,16 +190,18 @@ bool Event_Handler::AnalyseEvent() {
         Return_Value::IncError((*pit)->Name());
         return false;
       case Return_Value::New_Event :
-        trials=(*p_signal)["Trials"]->Get<double>();
-        cxs=(*p_signal)["WeightsMap"]->Get<Weights_Map>().Nominal();
-        m_n      -= trials;
-        m_addn    = trials;
-        m_sum    -= cxs;
-        m_sumsqr -= sqr(cxs);
-        Return_Value::IncCall((*pit)->Name());
-        Return_Value::IncNewEvent((*pit)->Name());
-        Reset();
-        return false;
+	{
+	  double trials=(*p_signal)["Trials"]->Get<double>();
+	  const auto& lastwgtmap = (*p_signal)["WeightsMap"]->Get<Weights_Map>();
+	  m_n -= trials;
+	  m_addn = trials;
+	  m_wgtmapsum -= lastwgtmap;
+	  m_wgtmapsumsqr -= lastwgtmap*lastwgtmap;
+	  Return_Value::IncCall((*pit)->Name());
+	  Return_Value::IncNewEvent((*pit)->Name());
+	  Reset();
+	  return false;
+	}
       default:
 	msg_Error()<<"Error in "<<METHOD<<":\n"
 		   <<"  Unknown return value for 'Treat',\n"
@@ -202,9 +213,7 @@ bool Event_Handler::AnalyseEvent() {
   return true;
 }
 
-int Event_Handler::IterateEventPhases(eventtype::code& mode)
-{
-  DEBUG_FUNC("mode="<<mode);
+int Event_Handler::IterateEventPhases(eventtype::code & mode) {
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;
@@ -229,7 +238,6 @@ int Event_Handler::IterateEventPhases(eventtype::code& mode)
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
     Return_Value::code rv((*pit)->Treat(&m_blobs));
-    //msg_Out()<<"       "<<(*pit)->Name()<<" yields "<<rv<<"\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
@@ -258,6 +266,7 @@ int Event_Handler::IterateEventPhases(eventtype::code& mode)
         retry++;
         Return_Value::IncCall((*pit)->Name());
         Return_Value::IncRetryEvent((*pit)->Name());
+        ResetNonPerturbativePhases();
 	if (mode==eventtype::StandardPerturbative) {
 	  m_blobs.Clear();
 	  m_blobs=m_sblobs.Copy();
@@ -371,16 +380,15 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     return false;
   }
   m_n      += trials+m_addn;
-  m_sum    += wgtmap.Nominal();
-  m_sumsqr += sqr(wgtmap.Nominal());
   m_addn    = 0.0;
+  m_wgtmapsum += wgtmap;
+  m_wgtmapsumsqr += wgtmap*wgtmap;
 
   return AnalyseEvent();
 }
 
 bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
   bool run(true);
-
   InitialiseSeedBlob(ATOOLS::btp::Soft_Collision,
 		     ATOOLS::blob_status::needs_minBias);
   do {
@@ -410,11 +418,11 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
     }
   } while (run);
 
-  double xs((*p_signal)["WeightsMap"]->Get<Weights_Map>().Nominal());
+  Weights_Map wgtmap((*p_signal)["WeightsMap"]->Get<Weights_Map>());
   m_n++;
-  m_sum    += xs;
-  m_sumsqr += sqr(xs);
-  msg_Tracking()<<METHOD<<" for event with xs = "<<(xs/1.e9)<<" mbarn.\n";
+  m_wgtmapsum += wgtmap;
+  m_wgtmapsumsqr += wgtmap*wgtmap;
+
   return AnalyseEvent();
 }
 
@@ -471,7 +479,6 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 }
 
 void Event_Handler::Finish() {
-  MPISync();
   msg_Info()<<"In Event_Handler::Finish : "
 	    <<"Summarizing the run may take some time.\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -491,98 +498,182 @@ void Event_Handler::Finish() {
     m_lastblobcounter=Blob::Counter();
   }
   Blob::Reset();
-  double xs(TotalXSMPI()), err(TotalErrMPI());
-  std::string res;
-  MyStrStream conv;
-  conv<<om::bold<<"Total XS"<<om::reset<<" is "
-      <<om::blue<<om::bold<<xs<<" pb"<<om::reset<<" +- ( "
-      <<om::red<<err<<" pb = "<<((int(err/xs*10000))/100.0)
-      <<" %"<<om::reset<<" )";
-  getline(conv,res);
-  int md(msg->Modifiable()?26:-4);
-  msg_Out()<<om::bold<<'+'<<std::string(res.length()-md,'-')<<"+\n";
-  msg_Out()<<'|'<<std::string(res.length()-md,' ')<<"|\n";
-  msg_Out()<<'|'<<om::reset<<"  "<<res<<"  "<<om::bold<<"|\n";
-  msg_Out()<<'|'<<std::string(res.length()-md,' ')<<"|\n";
-  msg_Out()<<'+'<<std::string(res.length()-md,'-')<<'+'<<om::reset<<std::endl;
+  // Obtain absolute (variation) weights.
+  MPISyncXSAndErrMaps();
+  Weights_Map xs_wgtmap = TotalXSMPI();
+  Weights_Map err_wgtmap = TotalErrMPI();
+  std::map<std::string, double> xs_wgts;
+  xs_wgtmap.FillVariations(xs_wgts);
+  std::map<std::string, double> err_wgts;
+  err_wgtmap.FillVariations(err_wgts);
+  if (Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"]
+	  .SetDefault(true)
+	  .Get<bool>()) {
+    xs_wgtmap.FillVariations(xs_wgts, Variations_Source::main);
+    err_wgtmap.FillVariations(err_wgts, Variations_Source::main);
+  }
+
+  // Find longest weights name
+  static const std::string name_column_title {"Nominal or variation name"};
+  size_t max_weight_name_size {name_column_title.size()};
+  for (const auto& kv : xs_wgts)
+    max_weight_name_size = std::max(max_weight_name_size, kv.first.size());
+
+  // Calculate columns widths
+  const size_t xs_size {12};
+  const size_t reldev_size {12};
+  const size_t abserr_size {13};
+  const size_t relerr_size {12};
+  const size_t table_size {max_weight_name_size + xs_size + reldev_size +
+			   abserr_size + relerr_size};
+
+  // Print cross section table header.
+  msg_Out() << std::string(table_size, '-') << '\n';
+  msg_Out() << std::left << std::setw(max_weight_name_size)
+	    << "Nominal or variation name";
+  msg_Out() << std::right << std::setw(12) << "XS [pb]";
+  msg_Out() << std::right << std::setw(12) << "RelDev";
+  msg_Out() << std::right << std::setw(13) << "AbsErr [pb]";
+  msg_Out() << std::right << std::setw(12) << "RelErr" << '\n';
+  msg_Out() << std::string(table_size, '-') << '\n';
+  // Define table row printer.
+  auto printxs = [max_weight_name_size, xs_size, reldev_size, abserr_size,
+		  relerr_size](const std::string& name, double xs, double nom,
+			       double err) {
+    msg_Out() << om::bold << std::left << std::setw(max_weight_name_size)
+	      << name << om::reset << std::right << om::blue << om::bold
+	      << std::setw(xs_size) << xs << om::reset << om::brown
+	      << std::setw(reldev_size - 2)
+	      << ((int((xs - nom) / nom * 10000)) / 100.0) << " %" << om::red
+	      << std::setw(abserr_size) << err << std::setw(relerr_size - 2)
+	      << ((int(err / xs * 10000)) / 100.0) << " %" << om::reset
+	      << std::endl;
+  };
+
+  // Print nominal cross section and variations.
+  double nom = xs_wgtmap.Nominal();
+  printxs("Nominal", nom, nom, err_wgtmap.Nominal());
+  for (const auto& kv : xs_wgts) {
+    const double xs = kv.second;
+    const double err = err_wgts[kv.first];
+    printxs(kv.first, xs, nom, err);
+  }
+
+  // Print cross section table footer.
+  msg_Out()<<std::string(table_size,'-')<<'\n';
 }
 
 void Event_Handler::MPISync()
 {
-  m_mn=m_n;
-  m_msum=m_sum;
-  m_msumsqr=m_sumsqr;
+  m_mn = m_n;
 #ifdef USING__MPI
-  int size=mpi->Size();
-  if (size>1) {
-    double values[3];
-    values[0]=m_mn;
-    values[1]=m_msum;
-    values[2]=m_msumsqr;
-    mpi->Allreduce(values,3,MPI_DOUBLE,MPI_SUM);
-    if (!(m_checkweight&2))
-      mpi->Allreduce(&m_maxweight,1,MPI_DOUBLE,MPI_MAX);
-    m_mn=values[0];
-    m_msum=values[1];
-    m_msumsqr=values[2];
+  if (mpi->Size() > 1) {
+    mpi->Allreduce(&m_mn, 1, MPI_DOUBLE, MPI_SUM);
+    if (!(m_checkweight & 2))
+      mpi->Allreduce(&m_maxweight, 1, MPI_DOUBLE, MPI_MAX);
   }
 #endif
+}
+
+void Event_Handler::MPISyncXSAndErrMaps()
+{
+  MPISync();
+  m_mwgtmapsum = m_wgtmapsum;
+  m_mwgtmapsumsqr = m_wgtmapsumsqr;
+#ifdef USING__MPI
+  if (mpi->Size() > 1) {
+    m_mwgtmapsum.MPI_Allreduce();
+    m_mwgtmapsumsqr.MPI_Allreduce();
+  }
+#endif
+}
+
+void Event_Handler::PerformMemoryMonitoring()
+{
   size_t currentrss=GetCurrentRSS();
   if (m_lastrss==0) m_lastrss=currentrss;
   else if (currentrss>m_lastrss+ToType<int>
       (rpa->gen.Variable("MEMLEAK_WARNING_THRESHOLD"))) {
-    msg_Error()<<METHOD<<"() {\n"<<om::bold<<"  Memory usage increased by "
+    msg_Error()<<"\n"<<om::bold<<"    Memory usage increased by "
 	       <<(currentrss-m_lastrss)/(1<<20)<<" MB,"
 	       <<" now "<<currentrss/(1<<20)<<" MB.\n"
-	       <<om::red<<"  This might indicate a memory leak!\n"
-	       <<"  Please monitor this process closely.\n"<<om::reset<<"}"<<std::endl;
+	       <<om::red<<"    This might indicate a memory leak!\n"
+	       <<"    Please monitor this process closely."<<om::reset<<std::endl;
     m_lastrss=currentrss;
   }
 }
 
-double Event_Handler::TotalXS()
+Uncertain<double> Event_Handler::TotalNominalXS()
 {
-  if (m_n==0.0) return 0.0;
-  return m_sum/m_n;
+  if (m_n == 0.0)
+    return {0.0, 0.0};
+
+  const double sum_nominal {m_wgtmapsum.Nominal()};
+  const double xs {sum_nominal / m_n};
+  if (m_n <= 1)
+    return {xs, xs};
+
+  const double sumsqr_nominal {m_wgtmapsumsqr.Nominal()};
+  if (ATOOLS::IsEqual(sumsqr_nominal * m_n, sum_nominal * sum_nominal, 1.0e-6))
+    return {xs, 0.0};
+
+  const double numerator {sumsqr_nominal * m_n - sum_nominal * sum_nominal};
+  return {xs, sqrt(numerator / (m_n - 1) / (m_n * m_n))};
 }
 
-
-double Event_Handler::TotalVar()
-{
-  if (m_n<=1) return sqr(TotalXS());
-  return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1);
-}
-
-
-double Event_Handler::TotalErr()
-{
-  if (m_n<=1) return TotalXS();
-  if (ATOOLS::IsEqual
-      (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
-  return sqrt((m_sumsqr-m_sum*m_sum/m_n)/(m_n-1)/m_n);
-}
-
-double Event_Handler::TotalXSMPI()
+Uncertain<double> Event_Handler::TotalNominalXSMPI()
 {
   MPISync();
+  if (m_mn == 0.0)
+    return {0.0, 0.0};
+
+  double sum_nominal {m_wgtmapsum.Nominal()};
+#ifdef USING__MPI
+  if (mpi->Size() > 1)
+    mpi->Allreduce(&sum_nominal, 1, MPI_DOUBLE, MPI_SUM);
+#endif
+  const double xs {sum_nominal / m_mn};
+  if (m_mn <= 1)
+    return {xs, xs};
+
+  double sumsqr_nominal {m_wgtmapsumsqr.Nominal()};
+#ifdef USING__MPI
+  if (mpi->Size() > 1)
+    mpi->Allreduce(&sumsqr_nominal, 1, MPI_DOUBLE, MPI_SUM);
+#endif
+  if (ATOOLS::IsEqual(sumsqr_nominal * m_mn, sum_nominal * sum_nominal, 1.0e-6))
+    return {xs, 0.0};
+
+  const double numerator {sumsqr_nominal * m_mn - sum_nominal * sum_nominal};
+  return {xs, sqrt(numerator / (m_mn - 1) / (m_mn * m_mn))};
+}
+
+Weights_Map Event_Handler::TotalXS()
+{
+  if (m_n==0.0) return 0.0;
+  return m_wgtmapsum/m_n;
+}
+
+Weights_Map Event_Handler::TotalErr()
+{
+  if (m_n<=1) return TotalXS();
+  auto numerator = m_wgtmapsumsqr*m_n - m_wgtmapsum*m_wgtmapsum;
+  numerator.SetZeroIfCloseToZero(1.0e-6);
+  return sqrt(numerator/(m_n-1)/(m_n*m_n));
+}
+
+Weights_Map Event_Handler::TotalXSMPI()
+{
   if (m_mn==0.0) return 0.0;
-  return m_msum/m_mn;
+  return m_mwgtmapsum/m_mn;
 }
 
-
-double Event_Handler::TotalVarMPI()
+Weights_Map Event_Handler::TotalErrMPI()
 {
-  if (m_mn<=1) return sqr(TotalXSMPI());
-  return (m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1);
-}
-
-
-double Event_Handler::TotalErrMPI()
-{
-  if (m_mn<=1) return TotalXS();
-  if (ATOOLS::IsEqual
-      (m_msumsqr*m_mn,m_msum*m_msum,1.0e-6)) return 0.0;
-  return sqrt((m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1)/m_mn);
+  if (m_mn<=1) return TotalXSMPI();
+  auto numerator = m_mwgtmapsumsqr*m_mn - m_mwgtmapsum*m_mwgtmapsum;
+  numerator.SetZeroIfCloseToZero(1.0e-6);
+  return sqrt(numerator/(m_mn-1)/(m_mn*m_mn));
 }
 
 void Event_Handler::WriteRNGStatus
@@ -614,7 +705,7 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
       const auto num_variations = s_variations->Size(type);
       for (auto i = 0; i < num_variations; ++i) {
         const auto varweight = weights.Variation(i);
-        const std::string& name = s_variations->Parameters(i).m_name;
+        const std::string& name = s_variations->Parameters(i).Name();
         if (m_maxweights.find(name) == m_maxweights.end()) {
           m_maxweights[name] = 0.0;
         }
@@ -632,3 +723,10 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
 
   return true;
 }
+
+std::string Event_Handler::CurrentProcess() const
+{
+  if (p_signal) return p_signal->TypeSpec();
+  return "<unknown>";
+}
+

@@ -43,12 +43,12 @@ namespace REMNANTS {
 
     bool m_check, m_output;
     
-    void InitializeRemnants(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
+    void InitializeRemnants(PDF::ISR_Handler * isr,
+			    BEAM::Beam_Spectra_Handler * beam);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup(ATOOLS::Blob_List * bloblist);
     void InitBeamAndSoftBlobs(ATOOLS::Blob_List *const blobs);
-    ATOOLS::Blob * InitBeamBlob(const int beam);
  public:
     Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
     ~Remnant_Handler();
@@ -59,18 +59,18 @@ namespace REMNANTS {
     void Reset();
     
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List *const blobs,
-					     ATOOLS::Particle_List *const=NULL);
+					     ATOOLS::Particle_List *const=nullptr);
 
-
-
-    inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
-      return (beam<2)?p_remnants[beam]:NULL;
-    }
-    inline Primordial_KPerp * GetKPerp() { return m_kinematics.GetKPerp(); }
+    void SetImpactParameter(const double & b);
     inline void SetScale2(const double & scale2) {
       for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
     }
     inline const strat::code Type() const { return m_type; }
+    
+    inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
+      return (beam<2)?p_remnants[beam]:nullptr;
+    }
+    inline Primordial_KPerp * GetKPerp() { return m_kinematics.GetKPerp(); }
   };
 }
 

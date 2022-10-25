@@ -49,8 +49,8 @@ namespace SHERPA {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrsefac;
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
         m_vnlomode, m_vnlopart, m_vnlocpl,
-	m_vnlosubv, m_vmegen, m_vrsmegen, m_vloopgen, m_vint, m_vrsint,
-	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vacpl,
+	m_vnlosubv, m_vasscontribs, m_vmegen, m_vrsmegen, m_vloopgen, m_vint,
+        m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vacpl,
 	m_vmaxacpl, m_vminacpl, m_vaddname, m_vspecial;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
 	m_vntchan, m_vmtchan, m_vitmin, m_vrsitmin;
@@ -75,6 +75,7 @@ namespace SHERPA {
 
     std::string m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo;
+    bool        m_pilotrunenabled;
     int         m_nloadd, m_ewaddmode, m_qcdaddmode;
 
     ATOOLS::Weight_Info m_evtinfo;
@@ -115,8 +116,7 @@ namespace SHERPA {
     void BuildSingleProcessList(Single_Process_List_Args&);
 
     std::string MakeOrderString(ATOOLS::Scoped_Settings&&) const;
-    std::string MakeString(const std::vector<std::string> &in,
-			   const size_t &first) const;
+    std::string MakeString(const std::vector<std::string>&) const;
 
     template <typename Type> Type ExtractMPvalue(const std::string& str);
     template <typename Type>
@@ -161,6 +161,8 @@ namespace SHERPA {
     int InitializeProcesses(BEAM::Beam_Spectra_Handler*,
                             PDF::ISR_Handler*);
 
+    int InitializeTheReweighting(ATOOLS::Variations_Mode mode);
+
 #ifdef USING__Threading
     static void *TCalculateTotalXSecs(void *arg);
 #endif
@@ -172,7 +174,9 @@ namespace SHERPA {
     inline PHASIC::Process_Base *Process() const { return p_proc; }
 
     inline PHASIC::Process_Vector AllProcesses() const { return m_procs; }
-    
+
+    inline PHASIC::ME_Generators *Generators() { return &m_gens; }
+
     inline ProcMap_Vector ProcMaps() const { return m_pmaps;}
 
     inline int EventGenerationMode() const { return m_eventmode; }
@@ -204,6 +208,8 @@ namespace SHERPA {
 
     static size_t ExtractFlavours(PHASIC::Subprocess_Info &infos,std::string buffer);
 
+    void CheckAssociatedContributionsSetup(
+        const std::set<ATOOLS::asscontrib::type>& calculated_asscontribs) const;
   };// end of class Matrix_Element_Handler
 
 }// end of namespace SHERPA

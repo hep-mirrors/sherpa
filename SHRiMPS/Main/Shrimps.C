@@ -1,6 +1,7 @@
 #include "SHRiMPS/Main/Shrimps.H"
 #include "SHRiMPS/Main/Hadron_Init.H"
 #include "SHRiMPS/Eikonals/Eikonal_Creator.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -14,9 +15,9 @@ using namespace SHRIMPS;
 using namespace std;
 
 
-Shrimps::Shrimps(BEAM::Beam_Spectra_Handler *const beam,
-		 PDF::ISR_Handler *const isr) :
-  p_beamremnants(NULL), p_generator(NULL)
+Shrimps::Shrimps(PDF::ISR_Handler *const isr) :
+  p_remnants(NULL), p_generator(NULL),
+  m_ana(true)
 {
   ATOOLS::rpa->gen.AddCitation(1,"SHRiMPS is not published yet.");
   MBpars.Init();
@@ -31,30 +32,42 @@ Shrimps::Shrimps(BEAM::Beam_Spectra_Handler *const beam,
     exit(0);
   }
   else if (MBpars.RunMode()==run_mode::test) {
-    TestShrimps(beam,isr);
-    exit(1);
+    msg_Events()<<METHOD<<": run tests.\n";
+    TestShrimps(isr);
   }
-  InitialiseTheRun(beam,isr);
+  InitialiseTheRun(isr);
+  if (m_ana) {
+    m_histos[std::string("Yasym_core")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_hard")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_shower")]  = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_soft")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_frag")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+    m_histos[std::string("Yasym_frag_in")] = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
+  }
 }
 
 Shrimps::~Shrimps() 
 {
-  if (p_beamremnants) delete p_beamremnants;
-  if (p_generator)    delete p_generator;
+  if (p_xsecs)     delete p_xsecs;
+  if (p_remnants)  delete p_remnants;
+  if (p_generator) delete p_generator;
+  if (m_ana) {
+    std::string name  = std::string("Ladder_Analysis/");
+    for (std::map<std::string, ATOOLS::Histogram * >::iterator hit=m_histos.begin();
+	 hit!=m_histos.end();hit++) {
+      hit->second->Finalize();
+      hit->second->Output(name+hit->first);
+      delete hit->second;
+    }
+  }
 }
 
-void Shrimps::InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
-			       PDF::ISR_Handler *const isr) {
-  ResetTheFramework();
+void Shrimps::InitialiseTheRun(PDF::ISR_Handler *const isr) {
+  Hadron_Init().Init();
   InitialiseFormFactors();
   InitialiseSingleChannelEikonals();
-  InitialiseBeamRemnants(beam,isr);
+  InitialiseRemnants(isr);
   InitialiseTheEventGenerator();  
-  Hadron_Init().Init();
-}
-
-void Shrimps::ResetTheFramework() {
-  m_pdfs.clear();
 }
 
 void Shrimps::InitialiseFormFactors() {
@@ -66,104 +79,228 @@ void Shrimps::InitialiseFormFactors() {
     ff->Initialise();
     MBpars.AddFormFactor(ff);
   }
-  msg_Info()<<METHOD<<" done.\n";
 }
 
 void Shrimps::InitialiseSingleChannelEikonals() 
 {
   msg_Info()<<METHOD<<" for "<<MBpars.GetFormFactors()->size()
-	    <<" form factors.\n";
+  	    <<" form factors.\n";
   Eikonal_Creator creator;
-  list<Form_Factor *> * ffs(MBpars.GetFormFactors());
-  for (list<Form_Factor *>::iterator ff1=ffs->begin();ff1!=ffs->end();ff1++) {
-    for (list<Form_Factor *>::iterator ff2=ffs->begin();ff2!=ffs->end();ff2++) {
-      creator.SetFormFactors((*ff1),(*ff2));
+  vector<Form_Factor *> * ffs(MBpars.GetFormFactors());
+  MBpars.ResetEikonals(ffs->size());
+  for (size_t i=0;i<ffs->size();i++) {
+    for (size_t j=0;j<ffs->size();j++) {
+      creator.SetFormFactors((*ffs)[i],(*ffs)[j]);
       Omega_ik * eikonal(creator.InitialiseEikonal());
-      MBpars.AddEikonal(eikonal);
+      MBpars.AddEikonal(i,j,eikonal);
+      //msg_Out()<<"   * ["<<i<<j<<"]: "<<eikonal<<"\n";
     }
   }
-  msg_Info()<<METHOD<<" done.\n";
 }
 
-void Shrimps::InitialiseBeamRemnants(BEAM::Beam_Spectra_Handler * const beam,
-				     PDF::ISR_Handler *const isr) { 
-  for (size_t i=0;i<2;i++) 
-    m_pdfs.push_back(Continued_PDF(isr->PDF(i),isr->Flav(i)));
-
-  p_beamremnants = new Beam_Remnant_Handler(beam,m_pdfs);
+void Shrimps::InitialiseRemnants(PDF::ISR_Handler *const isr) { 
+  p_remnants = new Remnant_Handler(isr);
 }
 
 void Shrimps::InitialiseTheEventGenerator() {
-  Cross_Sections xsecs;
-  xsecs.CalculateCrossSections();
-  p_generator = new Event_Generator();
-  p_generator->Initialise();
-  p_generator->SetCluster(&m_cluster);
+  p_xsecs = new Cross_Sections();
+  p_xsecs->CalculateCrossSections();
+  p_generator = new Event_Generator(p_xsecs,false);
+  p_generator->Initialise(p_remnants,&m_cluster);
+  p_remnants->SetColourGenerator(p_generator->GetColourGenerator());
+  m_cluster.SetYmax(p_generator->Ymax());
+  m_cluster.SetMinKT2(p_generator->MinKT2());
+  m_cluster.SetShowerParams(ShowerMode(),ShowerMinKT2());
+  m_cluster.SetShowerFac(ShowerFac());
+  p_generator->Reset();
+  p_remnants->Reset();
 }
 
-int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
-  return p_generator->MinimumBiasEvent(blobs);
+int Shrimps::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
+  if (blobs->FindFirst(ATOOLS::btp::Fragmentation)!=NULL &&
+      blobs->FindFirst(ATOOLS::btp::Hadron_Decay)==NULL) Analyse(blobs);
+  return p_generator->InitMinimumBiasEvent(blobs);
 }
 
-ATOOLS::Return_Value::code Shrimps::FillBeamBlobs(ATOOLS::Blob_List * blobs) {
-  p_beamremnants->SetEikonal(p_generator->GetEikonal());
-  return p_beamremnants->FillBeamBlobs(blobs);
+void Shrimps::Analyse(ATOOLS::Blob_List * blobs) {
+  msg_Out()<<"  * "<<METHOD<<"("<<blobs->size()<<" blobs).\n";
+  msg_Out()<<"   - "<<METHOD<<"(yhat = "<<p_generator->Yhat()<<")\n";
+  m_histos[std::string("Yasym_core")]->Insert(p_generator->Yhat());
+  ATOOLS::Blob * hard = blobs->FindFirst(ATOOLS::btp::Hard_Collision);
+  Analyse(hard,std::string("Yasym_hard"));  
+  ATOOLS::Blob * shower = blobs->FindFirst(ATOOLS::btp::Shower);
+  Analyse(shower,std::string("Yasym_shower"));  
+  ATOOLS::Blob * soft = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
+  Analyse(soft,std::string("Yasym_soft"));  
+  ATOOLS::Blob * frag = blobs->FindFirst(ATOOLS::btp::Fragmentation);
+  Analyse(frag,std::string("Yasym_frag"));  
+  Analyse(frag,std::string("Yasym_frag_in"));  
+}
+
+void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
+  if (blob == NULL) return;
+  msg_Out()<<"   - "<<METHOD<<"("<<blob->Type()<<", "<<blob->NOutP()<<" outgoing particles.)\n";
+  if (tag==std::string("Yasym_frag_in")) {
+    for (size_t i=0;i<blob->NInP();i++) {
+      double y = blob->InParticle(i)->Momentum().Y();
+      m_histos[tag]->Insert(ATOOLS::dabs(y),(y>0?1.:-1.));
+    }
+  }
+  else {
+    for (size_t i=0;i<blob->NOutP();i++) {
+      double y = blob->OutParticle(i)->Momentum().Y();
+      m_histos[tag]->Insert(ATOOLS::dabs(y),(y>0?1.:-1.));
+    }
+  }
+}
+
+
+ATOOLS::Blob * Shrimps::GenerateEvent() {
+  msg_Out()<<"  * "<<METHOD<<".\n";
+  return p_generator->GenerateEvent();
+}
+
+ATOOLS::Cluster_Amplitude * Shrimps::ClusterConfiguration(ATOOLS::Blob *const blob) {
+  //m_cluster.SetMinKT2(p_shrimps->ShowerMinKT2());
+  //m_cluster.SetRescatt(p_shrimps->IsLastRescatter());
+  //m_cluster.SetTMax(p_shrimps->LadderTMax());
+  //m_cluster.SetNLad(p_shrimps->NLadders());
+  if (!m_cluster.Cluster(blob)) {
+    msg_Error()<<"Error in "<<METHOD<<": could not cluster blob.\n"
+	       <<(*blob)<<"\n";
+    return NULL;
+  }
+  return m_cluster.Amplitude();
+}
+
+ATOOLS::Return_Value::code Shrimps::MakeBeamBlobs(ATOOLS::Blob_List * blobs) {
+  p_remnants->SetFormFactors(p_generator->GetEikonal()->FF1(),
+			     p_generator->GetEikonal()->FF2());
+  return p_remnants->FillBeamBlobs(blobs, p_generator->B());
 }
 
 void Shrimps::CleanUp(const size_t & mode) {
   p_generator->Reset();
-  p_beamremnants->Reset();
+  p_remnants->Reset();
 }
 
 void Shrimps::GenerateXsecs() {
-  msg_Out()<<METHOD<<".\n";  
   std::string dirname = std::string("InclusiveQuantities");
   ATOOLS::MakeDir(dirname);
 
   InitialiseFormFactors();
-  std::set<double> energies, elastics;
-  ReadEnergiesFromFile(energies,"energies_xsecs.dat");
-  ReadEnergiesFromFile(elastics,"energies_elastics.dat");
+  std::set<double> energies, energies_sd, energies_dd;
+  std::set<double> energies_tot {52.817,62.5,546.0,900.35,1800.0,6166.500,7000.000,8128.9,10716.0,14126.0,18622.0};
+  std::set<double> energies_inel {6.900000e+03, 6.950000e+03, 7.000000e+03, 7.050000e+03};
+  std::set<double> energies_el {5.2817e+01, 6.2500e+01, 5.4600e+02, 1.8000e+03, 7.0000e+03};
+  std::set<double> elastics {62.5, 546, 1800, 7000};
+  ReadEnergiesFromFile(energies_sd,"energies_xsecs_sd.dat");
+  ReadEnergiesFromFile(energies_dd,"energies_xsecs_dd.dat");
+  energies = energies_tot;
+  for (std::set<double>::iterator siter = energies_inel.begin(); siter != energies_inel.end(); ++siter) {
+      if (energies.find(*siter) == energies.end()) energies.insert(*siter);
+  }
+  for (std::set<double>::iterator siter = energies_el.begin(); siter != energies_el.end(); ++siter) {
+      if (energies.find(*siter) == energies.end()) energies.insert(*siter);
+  }
+  for (std::set<double>::iterator siter = energies_sd.begin(); siter != energies_sd.end(); ++siter) {
+      if (energies.find(*siter) == energies.end()) energies.insert(*siter);
+  }
+  for (std::set<double>::iterator siter = energies_dd.begin(); siter != energies_dd.end(); ++siter) {
+      if (energies.find(*siter) == energies.end()) energies.insert(*siter);
+  }
 
-  std::vector<double> xsectot, xsecinel, xsecelas;
-  Cross_Sections xsecs;
+  std::vector<double> xsectot, xsecinel, xsecelas, xsecsd, xsecdd;
+
+  p_xsecs = new Cross_Sections();
   for (std::set<double>::iterator energy_iter=energies.begin();
        energy_iter!=energies.end();energy_iter++) {
     double energy = (*energy_iter);
     MBpars.UpdateForNewEnergy(energy);
     InitialiseSingleChannelEikonals();
-    xsecs.CalculateCrossSections();
-    xsectot.push_back(xsecs.SigmaTot()/1.e9);
-    xsecinel.push_back(xsecs.SigmaInel()/1.e9);
-    xsecelas.push_back(xsecs.SigmaEl()/1.e9);
+    msg_Info()<<"Calculate cross sections for c.m. energy E = "<<energy<<"\n";
+    p_xsecs->CalculateCrossSections();
+    if (energies_tot.find(energy) != energies_tot.end()) xsectot.push_back(p_xsecs->SigmaTot()/1.e9);
+    if (energies_inel.find(energy) != energies_inel.end()) xsecinel.push_back(p_xsecs->SigmaInel()/1.e9);
+    if (energies_el.find(energy) != energies_el.end()) xsecelas.push_back(p_xsecs->SigmaEl()/1.e9);
+    if (energies_sd.find(energy) != energies_sd.end()) xsecsd.push_back(p_xsecs->SigmaSD(0)/1.e9);
+    if (energies_dd.find(energy) != energies_dd.end()) xsecdd.push_back(p_xsecs->SigmaDD()/1.e9);
     msg_Out()<<"** "<<energy<<" -> "
-	     <<"xstot = "<<xsecs.SigmaTot()<<", "
-	     <<"xsinel = "<<xsecs.SigmaInel()<<", "
-	     <<"xsel = "<<xsecs.SigmaEl()<<".\n";
+             <<"xstot = "<<p_xsecs->SigmaTot()<<", "
+             <<"xsinel = "<<p_xsecs->SigmaInel()<<", "
+             <<"xsel = "<<p_xsecs->SigmaEl()<<", "
+             <<"xssd = "<<p_xsecs->SigmaSD(0)<<", "
+             <<"xsdd = "<<p_xsecs->SigmaDD()<<".\n";
     if (elastics.find(energy)!=elastics.end()) {
       WriteOutElasticsYodaFile(energy,dirname);
     }
   }
-  WriteOutXSecsYodaFile(energies, xsectot, xsecinel, xsecelas, dirname);
+  WriteOutXSecsYodaFile(energies_tot, energies_inel, energies_el, energies_sd, energies_dd, xsectot, xsecinel, xsecelas, xsecsd, xsecdd, dirname);
 }
 
 void Shrimps::WriteOutElasticsYodaFile(const double & energy,
 				       std::string dirname) {
+    std::string Estring(ATOOLS::ToString(energy));
+    std::set<double> tvals;
+    std::string infile(std::string("tvals_dsigma_el_dt_"+Estring+".dat"));
+    ReadEnergiesFromFile(tvals,infile);
+
+    std::string filename(dirname+std::string("/Dsigma_el_by_dt_"+Estring+".dat"));
+    std::ofstream was;
+    was.open(filename.c_str());
+    was<<"# BEGIN HISTO1D /DSIGMA_EL_BY_DT_"+Estring+"/d01-x01-y01\n";
+    was<<"Path=/DSIGMA_EL_BY_DT_"+Estring+"/d01-x01-y01"<<std::endl;
+
+    double value(0.),vallow,valhigh,a,b;
+    double t,tlow, thigh;
+    const double & tmin = p_xsecs->GetSigmaElastic()->Tmin();
+    const double & tmax = p_xsecs->GetSigmaElastic()->Tmax();
+    const size_t & steps = p_xsecs->GetSigmaElastic()->Steps();
+    const std::vector<double> & eldiffgrid = p_xsecs->GetSigmaElastic()->GetDiffGrid();
+    unsigned int ilow, ihigh;
+
+    //     msg_Out()<<"Calculating differential elastic cross sections for tuning."<<std::endl;
+    for (std::set<double>::iterator iter=tvals.begin(); iter != tvals.end(); iter++) {
+//       msg_Out()<<"calculating for t = "<<tvals[i]<<" GeV^2"<<std::endl;
+        t = *iter;
+      ilow=int((t-tmin)/(tmax-tmin)*steps);
+      if(ilow>steps) ilow=steps-1;
+      ihigh=int((t-tmin)/(tmax-tmin)*steps)+1;
+      if(ihigh>steps) ilow=steps;
+      tlow=tmin+(tmax-tmin)*ilow/steps;
+      thigh=tmin+(tmax-tmin)*ihigh/steps;
+      vallow=eldiffgrid[ilow];
+      valhigh=eldiffgrid[ihigh];
+      a=(valhigh-vallow)/(thigh-tlow);
+      b=vallow-a*tlow;
+      value=a*t+b;
+
+      was<<t<<"   "<<t<<"   "<<value<<"   0.0   0.0\n";
+    }
+    was<<"# END HISTO1D\n"<<std::endl;
+    was.close();
+
 }
 
-void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies,
-				    const std::vector<double> & xsectot,
+void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
+                    const std::set<double> & energies_inel,
+                    const std::set<double> & energies_el,
+                    const std::set<double> & energies_sd,
+                    const std::set<double> & energies_dd,
+                    const std::vector<double> & xsectot,
 				    const std::vector<double> & xsecinel,
 				    const std::vector<double> & xsecelas,
-				    std::string dirname) {
+                    const std::vector<double> & xsecsd,
+                    const std::vector<double> & xsecdd,
+                    std::string dirname) {
   std::string filename(dirname+std::string("/xsecs.dat"));
   std::ofstream was;
   was.open(filename.c_str());
   was<<"# BEGIN HISTO1D /XSECS/total\n";
   was<<"Path=/XSECS/total"<<std::endl;
   size_t i(0);
-  for (std::set<double>::iterator energy_iter=energies.begin();
-       energy_iter!=energies.end();energy_iter++) {
+  for (std::set<double>::iterator energy_iter=energies_tot.begin();
+       energy_iter!=energies_tot.end();energy_iter++) {
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsectot[i++]<<"   0.0   0.0\n";
   }
@@ -171,8 +308,8 @@ void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies,
   was<<"# BEGIN HISTO1D /XSECS/inel\n";
   was<<"Path=/XSECS/inel"<<std::endl;
   i = 0;
-  for (std::set<double>::iterator energy_iter=energies.begin();
-       energy_iter!=energies.end();energy_iter++) {
+  for (std::set<double>::iterator energy_iter=energies_inel.begin();
+       energy_iter!=energies_inel.end();energy_iter++) {
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsecinel[i++]<<"   0.0   0.0\n";
   }
@@ -180,10 +317,28 @@ void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies,
   was<<"# BEGIN HISTO1D /XSECS/el\n";
   was<<"Path=/XSECS/el"<<std::endl;
   i = 0;
-  for (std::set<double>::iterator energy_iter=energies.begin();
-       energy_iter!=energies.end();energy_iter++) {
+  for (std::set<double>::iterator energy_iter=energies_el.begin();
+       energy_iter!=energies_el.end();energy_iter++) {
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsecelas[i++]<<"   0.0   0.0\n";
+  }
+  was<<"# END HISTO1D"<<std::endl;
+  was<<"# BEGIN HISTO1D /XSECS/sd\n";
+  was<<"Path=/XSECS/sd"<<std::endl;
+  i = 0;
+  for (std::set<double>::iterator energy_iter=energies_sd.begin();
+       energy_iter!=energies_sd.end();energy_iter++) {
+    was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
+       <<xsecsd[i++]<<"   0.0   0.0\n";
+  }
+  was<<"# END HISTO1D"<<std::endl;
+  was<<"# BEGIN HISTO1D /XSECS/dd\n";
+  was<<"Path=/XSECS/dd"<<std::endl;
+  i = 0;
+  for (std::set<double>::iterator energy_iter=energies_dd.begin();
+       energy_iter!=energies_dd.end();energy_iter++) {
+    was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
+       <<xsecdd[i++]<<"   0.0   0.0\n";
   }
   was<<"# END HISTO1D"<<std::endl;
   was.close();
@@ -207,14 +362,12 @@ void Shrimps::ReadEnergiesFromFile(std::set<double> & energies,
 
 
 
-void Shrimps::TestShrimps(BEAM::Beam_Spectra_Handler *const beam,
-			  PDF::ISR_Handler *const isr) {
+void Shrimps::TestShrimps(PDF::ISR_Handler *const isr) {
   msg_Info()<<"Start testing SHRiMPS.\n";
   std::string dirname = std::string("Tests");
   ATOOLS::MakeDir(dirname);
-  ResetTheFramework();
   InitialiseFormFactors();
-  InitialiseBeamRemnants(beam,isr);
+  InitialiseRemnants(isr);
   InitialiseSingleChannelEikonals();
 
   PrintAlphaS(dirname);
@@ -237,16 +390,17 @@ void Shrimps::PrintPDFs(const std::string & dirname) {
     was.open(filename.c_str());
     was<<"# x   u   ubar   d   dbar  s   g"<<std::endl;
     was<<"# Q^2 = "<<Q2<<" GeV^2"<<std::endl;
+    Continued_PDF * pdf = p_remnants->GetHadronDissociation(0)->GetPDF();
     for (int j=0;j<=nxval; j++){
       x = pow(10.,double(j)/double(nxval)*log10(xmin));
-      m_pdfs[0].Calculate(x,Q2);
+      pdf->Calculate(x,Q2);
       was<<x<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u))<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u).Bar())<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_d))<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_d).Bar())<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_s))<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_gluon))<<"\n";
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_u))<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_u).Bar())<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_d))<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_d).Bar())<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_s))<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_gluon))<<"\n";
     }
     was.close();
   }
@@ -276,7 +430,7 @@ void Shrimps::TestEikonalGrids(const std::string & dirname) {
   double Ymax(MBpars.GetEikonalParameters().Ymax);
   Analytic_Contributor ana12(ff,Delta,Ymax,+1);
   Analytic_Contributor ana21(ff,Delta,Ymax,-1);  
-  Omega_ik * eikonal(MBpars.GetEikonals()->front());
+  Omega_ik * eikonal((*MBpars.GetEikonals())[0][0]);
   eikonal->TestIndividualGrids(&ana12,&ana21,Ymax,dirname);
 
   Analytic_Eikonal anaeik;
@@ -290,8 +444,7 @@ void Shrimps::TestCrossSections(const std::string & dirname) {
 }
 
 void Shrimps::TestEventGeneration(const std::string & dirname) {
-  Event_Generator generator;
-  generator.Initialise();
+  Event_Generator generator(p_xsecs,true);
   generator.Test(dirname);
 }
 

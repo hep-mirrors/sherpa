@@ -50,40 +50,31 @@ namespace SHRIMPS {
     PDF::PDF_Base                  * p_pdf;
     std::list<ATOOLS::Flavour>       m_pdfpartons;
     ATOOLS::Flavour                  m_bunch;
-    double                           m_xmin,m_xmax,m_Q02,m_geta,m_glambda;
+    double                           m_x0,m_xmin,m_xmax,m_Q02,m_geta,m_glambda;
     double                           m_Vnorm,m_Snorm,m_gnorm;
     double                           m_x,m_Q2;
     std::map<ATOOLS::Flavour,double> m_xpdfmax;
     std::map<ATOOLS::Flavour,double> m_xmaxpdf;
 
     void   CalculateNorms();
+    void   Scan();
+    void   Test();
+    double GluonAtZero(const double & x);
   public:
     Continued_PDF(PDF::PDF_Base * pdf,const ATOOLS::Flavour & bunch);
     ~Continued_PDF();
 
+    void   Calculate(const double & x,const double & Q2);
+    double AllPartons(const double & x,const double & Q2);
     double XPDF(const ATOOLS::Flavour & flav,const bool & defmax=false);
 
-    inline void Calculate(const double & x,const double & Q2) {
-      m_x  = x; 
-      m_Q2 = Q2;
-      if (Q2<m_Q02) p_pdf->Calculate(m_x,m_Q02);
-      else p_pdf->Calculate(m_x,m_Q2);
-    }
-    inline double AllPartons(const double & x,const double & Q2) {
-      Calculate(x,Q2);
-      double val(0.), test(0.);
-      for (std::list<ATOOLS::Flavour>::iterator flit=m_pdfpartons.begin();
-	   flit!=m_pdfpartons.end();flit++) {
-	val += test = XPDF((*flit));
-	if (test>m_xpdfmax[(*flit)]) m_xpdfmax[(*flit)] = test;
-      }
-      return val;
-    }
+    inline const std::list<ATOOLS::Flavour> & GetFlavours() const { return m_pdfpartons; } 
     inline const double &          XMin()  const { return m_xmin; }
     inline const double &          XMax()  const { return m_xmax; }
     inline double                  Q2Min() const { return 0.; }
     inline const ATOOLS::Flavour & Bunch() const { return m_bunch; }
 
+    
     inline double   XPDFMax(const ATOOLS::Flavour & flav) {
       ATOOLS::Flavour flav1(flav);
       if (flav.IsDiQuark()) {
@@ -106,6 +97,17 @@ namespace SHRIMPS {
       if (found==m_xmaxpdf.end()) return -1.;
       return found->second;
     }
+  };
+
+  class Continued_PDF_Test : public ATOOLS::Function_Base {
+    Continued_PDF * p_pdf;
+    double m_Q2;
+  public:
+    Continued_PDF_Test(Continued_PDF * pdf) :
+      p_pdf(pdf), m_Q2(0.) { }
+    ~Continued_PDF_Test() {}
+    double operator()(double x);
+    inline void SetQ2(const double & Q2) { m_Q2 = Q2; }
   };
 }
 

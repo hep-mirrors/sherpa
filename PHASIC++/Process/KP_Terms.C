@@ -90,10 +90,12 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   p_kernel->SetVSubtractionMode(m_Vsubmode);
 
   int collVFF = s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].Get<int>();
-  if (!s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].IsCustomised()
+  if (!s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].IsSetExplicitly()
       && m_stype == sbt::qed) {
     collVFF = 0;  // overwrite default for QED splittings
   }
+  msg_Tracking()<<"Switch collinear VFF splittings "<<(collVFF?"on":"off")
+                <<"."<<std::endl;
   p_kernel->SetCollinearVFFSplitting(collVFF);
 
   SetMassive();
@@ -284,6 +286,8 @@ void KP_Terms::Calculate
                                  -p_kernel->t4(m_typea+2,spin,muq2,eta0));
           m_kpca[3]+=dsij[0][i]*(w*(p_kernel->t1(m_typea+2,spin,muq2x,x0)
                                     +p_kernel->t3(m_typea+2,spin,muq2x,x0)));
+	  m_kpca[m_typea*2-2]+=dsij[0][i]*p_kernel->t2c
+	    (m_typea,spin,sqr(m_flavs[m_plist[i]].Mass())/saj,saj);
           if (spin==2) {
             for (size_t j=0;j<p_kernel->Nmf();j++) {
               m_xpa[xpcnt].xp=1.-4.*sqr(p_kernel->FMass(j))/saj;
@@ -320,6 +324,7 @@ void KP_Terms::Calculate
                                  -p_kernel->Kt4(m_typea+2,eta0));
           m_kpca[3]-=dsij[0][1]*w*(p_kernel->Kt1(m_typea+2,x0)
                                    +p_kernel->Kt3(m_typea+2,x0));
+	  m_kpca[m_typeb*2-2]+=dsij[0][1]*p_kernel->t2c(m_typea,m_typeb,0.,0.);
         }
         msg_Debugging()
             <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
@@ -425,6 +430,8 @@ void KP_Terms::Calculate
                                      -p_kernel->t4(m_typeb+2,spin,muq2,eta1));
           m_kpcb[3]+=dsij[pls-1][i]*(w*(p_kernel->t1(m_typeb+2,spin,muq2x,x1)
                                         +p_kernel->t3(m_typeb+2,spin,muq2x,x1)));
+	  m_kpcb[m_typeb*2-2]+=dsij[pls-1][i]*p_kernel->t2c
+	    (m_typeb,spin,sqr(m_flavs[m_plist[i]].Mass())/saj,saj);
           if (spin==2) {
             for (size_t j=0;j<p_kernel->Nmf();j++) {
               m_xpb[xpcnt].xp=1.-4.*sqr(p_kernel->FMass(j))/saj;
@@ -552,8 +559,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
   // assumption: a/a' = gluon/photon, quark only
   if (m_sa) {
     msg_Debugging()<<"sa"<<std::endl;
-    if (m_cemode && eta0*rpa->gen.PBeam(0)[0]<fl0.Mass(true)) {
-      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBeam(0)[0]
+    if (m_cemode && eta0*rpa->gen.PBunch(0)[0]<fl0.Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBunch(0)[0]
                     <<" vs. "<<fl0.Mass(true)<<" )"<<std::endl;
       return 0.0;
     }
@@ -610,8 +617,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
 
   if (m_sb) {
     msg_Debugging()<<"sb"<<std::endl;
-    if (m_cemode && eta1*rpa->gen.PBeam(1)[0]<fl1.Mass(true)) {
-      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBeam(1)[0]
+    if (m_cemode && eta1*rpa->gen.PBunch(1)[0]<fl1.Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBunch(1)[0]
                     <<" vs. "<<fl1.Mass(true)<<" )"<<std::endl;
       return 0.0;
     }

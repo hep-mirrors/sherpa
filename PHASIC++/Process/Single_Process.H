@@ -4,6 +4,10 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Phys/Variations.H"
 
+namespace ATOOLS {
+  class Hard_Process_Variation_Generator_Base;
+}
+
 namespace PHASIC {
 
   class Single_Process: public Process_Base {
@@ -15,6 +19,7 @@ namespace PHASIC {
     bool   m_zero, m_pdfcts, m_dads;
     size_t m_nfconvscheme;
     ATOOLS::Cluster_Sequence_Info m_csi;
+    std::vector<ATOOLS::asscontrib::type> m_asscontrib;
 
     //! Override in a subclass that calculates KP terms to enable their reweighting
     virtual double KPTerms(int mode, double scalefac2=1.0) { return 0.; };
@@ -27,7 +32,10 @@ namespace PHASIC {
     size_t Size() const override;
     Process_Base *operator[](const size_t &i) override;
 
-    ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) override;
+    ATOOLS::Weight_Info *OneEvent(
+        const int wmode,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        const int mode=0) override;
 
     double KFactor(const int mode=0) const;
 
@@ -49,6 +57,7 @@ namespace PHASIC {
 
     void SetScale(const Scale_Setter_Arguments &args) override;
     void SetKFactor(const KFactor_Setter_Arguments &args) override;
+    void InitializeTheReweighting(ATOOLS::Variations_Mode) override;
 
     ATOOLS::Cluster_Amplitude *Cluster(const ATOOLS::Vec4D_Vector &p,
                                        const size_t &mode=0);
@@ -60,7 +69,15 @@ namespace PHASIC {
      * m_mewgtinfo. These information can be retrieved using Last, LastB,
      * LastXS and GetMEwgtinfo.
     */
-    virtual double Partonic(const ATOOLS::Vec4D_Vector &p, int mode=0) = 0;
+    virtual double Partonic(
+        const ATOOLS::Vec4D_Vector &p,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        int mode=0) = 0;
+
+    inline virtual const double SPrimeMin() const override { return -1.; }
+    inline virtual const double SPrimeMax() const override { return -1.; }
+    inline virtual const bool   HasInternalScale() const override { return false; }
+    inline virtual const double InternalScale()    const override { return -1.; }
 
     virtual bool Combinable(const size_t &idi,
                             const size_t &idj);
@@ -155,6 +172,10 @@ namespace PHASIC {
     void UpdateMEWeightInfo(Scale_Setter_Base*);
     void ReweightBVI(ATOOLS::ClusterAmplitude_Vector&);
     void ReweightRS(ATOOLS::ClusterAmplitude_Vector&);
+    void CalculateAssociatedContributionVariations();
+
+    std::vector<ATOOLS::Hard_Process_Variation_Generator_Base*>
+      m_hard_process_variation_generators;
 
   };// end of class Single_Process
 

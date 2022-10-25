@@ -9,7 +9,7 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 OUTDIR=$SCRIPT_DIR/$1
-MV_CONFDIR=Manual/.multi-version-config/
+MV_CONFDIR=$SCRIPT_DIR/.multi-version-config/
 
 cd $SCRIPT_DIR/..
 

@@ -10,7 +10,7 @@ PROCESSES:
     KFactor: MINLO
     ME_Generator: Amegic
     Loop_Generator: BlackHat
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 1, EW: 2}
 
 SELECTORS:
 - [Mass, 11, -12, 2, E_CMS]

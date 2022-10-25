@@ -3,6 +3,7 @@
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 #include <algorithm>
 
@@ -12,7 +13,7 @@ using namespace ATOOLS;
 Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam):
   Remnant_Base(rtp::hadron,beam),
   p_pdf(pdf), p_partons(&(p_pdf->Partons())), m_beamflav(pdf->Bunch()),
-  p_valence(NULL), p_remnant(NULL), p_recoiler(NULL),
+  p_valence(NULL), p_remnant(NULL), p_recoiler(NULL), m_ff(Form_Factor()), 
   m_alpha(0.), m_gamma(1.), m_beta(-1.5),  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
 {
   m_scale2 = Max(4.0,p_pdf->Q2Min());
@@ -77,6 +78,7 @@ Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
   Particle * part = new Particle(-1,flav,Vec4D(0.,0.,0.,0.),'B');
   part->SetNumber();
   part->SetBeam(m_beam);
+  part->SetPosition(m_position+m_ff());
   return part;
 }
 
@@ -99,11 +101,11 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
 }
 
 void Hadron_Remnant::CompensateColours() {
-  while (p_colours->Colours(m_beam,0).size()>0 && p_colours->Colours(m_beam,1).size()>0) {
+  while (p_colours->Colours(m_beam,0).size()>0 && p_colours->Colours(m_beam,1).size()>0 &&
+	 p_colours->Colours(m_beam,0)!=p_colours->Colours(m_beam,1)) {
     Particle * gluon = MakeParticle(Flavour(kf_gluon));
     int col[2];
     for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
-    //msg_Out()<<"Add new particle to beam blob ["<<m_beam<<"]:\n"<<(*gluon)<<"\n";
     m_spectators.push_back(gluon);
   }
 }
@@ -145,12 +147,12 @@ Flavour Hadron_Remnant::RemnantFlavour(const Flavour & flav) {
   for (FlavourList::iterator flit=m_constituents.begin();
        flit!=m_constituents.end();flit++) {
     if (taken && flav==(*flit)) continue;
-    kfs.push_back((flit->IsAnti()?-1:1)*flit->Kfcode());
+    kfs.push_back(((flit->IsAnti() && !m_beamflav.IsAnti())?-1:1)*flit->Kfcode());
     taken = true;
   }
   int kfcode = 1 + (kfs.size()==2 && kfs[0]==kfs[1]?2:0);
   for (size_t i=0;i<kfs.size();i++) kfcode += kfs[i]*pow(10,kfs.size()+1-i);
-  return Flavour(kfcode);
+  return m_beamflav.IsAnti()?Flavour(kfcode).Bar():Flavour(kfcode);
 }
 
 void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & copy) {

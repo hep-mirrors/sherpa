@@ -42,6 +42,7 @@ extern "C" {
   void ol_evaluate_loop(int id, double* pp, double* m2l0, double* m2l1, double* acc);
   void ol_evaluate_tree(int id, double* pp, double* m2l0);
   void ol_evaluate_loop2(int id, double* pp, double* m2l0, double* acc);
+  void ol_evaluate_associated(int id, double* pp, int ass, double* m2l0);
   void ol_evaluate_sc (int id, double* pp, int emitter, double* polvect, double* m2sc);
   void ol_evaluate_sc2(int id, double* pp, int emitter, double* polvect, double* m2sc);
   void ol_evaluate_cc (int id, double* pp, double* tree, double* m2cc, double *m2ewcc);
@@ -54,6 +55,8 @@ extern "C" {
 std::string OpenLoops_Interface::s_olprefix = std::string("");
 bool OpenLoops_Interface::s_ignore_model = false;
 bool OpenLoops_Interface::s_exit_on_error = true;
+bool OpenLoops_Interface::s_ass_func = false;
+int  OpenLoops_Interface::s_ass_ew = 0;
 std::map<std::string, std::string> OpenLoops_Interface::s_evgen_params;
 
 // private static member definitions
@@ -90,6 +93,25 @@ void OpenLoops_Interface::RegisterDefaults() const
   s_olprefix = s["OL_PREFIX"].Get<string>();
 }
 
+int OpenLoops_Interface::TranslatedEWRenormalisationScheme() const
+{
+  switch (ToType<MODEL::ew_scheme::code>(rpa->gen.Variable("EW_REN_SCHEME"))) {
+  case MODEL::ew_scheme::alpha0:
+    return 0; break;
+  case MODEL::ew_scheme::Gmu:
+    return 1; break;
+  case MODEL::ew_scheme::alphamZ:
+    return 2; break;
+  case MODEL::ew_scheme::GmumZsW:
+    return 21; break;
+  case MODEL::ew_scheme::alphamZsW:
+    return 22; break;
+  default:
+    THROW(fatal_error,"Chosen EW_SCHEME/EW_REN_SCHEME unknown to OpenLoops.");
+  }
+  return -1;
+}
+
 bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
 			             BEAM::Beam_Spectra_Handler* const beam,
                                      PDF::ISR_Handler *const isr)
@@ -107,17 +129,10 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   s_vmode = s["OL_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
 
-  // load library dynamically
-  s_loader->AddPath(s_olprefix+"/lib");
-  s_loader->AddPath(s_olprefix+"/proclib");
-  if (!s_loader->LoadLibrary("olcommon")) PRINT_INFO("Ignoring explicit libolcommon.so loading.");
-  if (!s_loader->LoadLibrary("collier")) PRINT_INFO("Ignoring explicit libcollier.so loading.");
-  if (!s_loader->LoadLibrary("oneloop")) PRINT_INFO("Ignoring explicit liboneloop.so loading.");
-  if (!s_loader->LoadLibrary("cuttools")) PRINT_INFO("Ignoring explicit libcuttools.so loading.");
-  if (!s_loader->LoadLibrary("rambo")) PRINT_INFO("Ignoring explicit librambo.so loading.");
-  if (!s_loader->LoadLibrary("trred")) PRINT_INFO("Ignoring explicit libtrred.so loading.");
-  if (!s_loader->LoadLibrary("openloops"))
-    THROW(fatal_error, "Failed to load libopenloops.");
+  // check for existance of separate access to associated contribs
+  void *assfunc(s_loader->GetLibraryFunction("SherpaOpenLoops",
+                                             "ol_evaluate_associated"));
+  if (assfunc) s_ass_func=true;
 
   ol_set_init_error_fatal(0);
 
@@ -126,7 +141,9 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   SetParameter("verbose",ol_verbosity);
 
   // tell OL about the current model and check whether accepted
-  if (!s_ignore_model) SetParameter("model", model->Name());
+  std::string modelname(model->Name());
+  if (modelname=="SMEHC") modelname="HEFT";
+  if (!s_ignore_model) SetParameter("model", modelname);
 
   // Propagate model parameters to OpenLoops
   if(dynamic_cast<UFO::UFO_Model*>(model))
@@ -151,6 +168,8 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   // set remaining OL parameters specified by user
   for (const auto& key : s["OL_PARAMETERS"].GetKeys()) {
     const auto val = s["OL_PARAMETERS"][key].SetDefault("").Get<std::string>();
+    if (key == "add_associated_ew")
+      s_ass_ew = ToType<int>(val);
     s_evgen_params[key] = val;
     SetParameter(key, val);
   }
@@ -198,7 +217,7 @@ void OpenLoops_Interface::SetParametersSM(const MODEL::Model_Base* model)
   // we give parameters to OL as as(MZ) and masses
   SetParameter("ew_scheme",2);
   // ew-renorm-scheme to Gmu by default
-  SetParameter("ew_renorm_scheme",1);
+  SetParameter("ew_renorm_scheme",TranslatedEWRenormalisationScheme());
 
   // set particle masses/widths
   int tmparr[] = {kf_e, kf_mu, kf_tau, kf_u, kf_d, kf_s, kf_c, kf_b, kf_t,
@@ -279,14 +298,23 @@ int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
     olprocname += ToString((long int)fsflavs[i]) + " ";
   msg_Debugging()<<"looking for "<<shprocname<<" ("<<olprocname<<")\n";
 
-  int id(ol_register_process(olprocname.c_str(), amptype));
-  if (s_procmap.find(id)==s_procmap.end())
-    s_procmap[id]=shprocname;
+  // exit if ass contribs requested but not present
+  if (!s_ass_func && ConvertAssociatedContributions(fs.m_asscontribs))
+    THROW(fatal_error,"Separate evaluation of associated EW contribution not "
+                      +std::string("supported in used OpenLoops version."));
+
+  // set negative of requested associated amps such that they are only
+  // initialised, but not computed by default
+  if (s_ass_ew==0) SetParameter("add_associated_ew",-ConvertAssociatedContributions(fs.m_asscontribs));
+  int procid(ol_register_process(olprocname.c_str(), amptype));
+  if (s_ass_ew==0) SetParameter("add_associated_ew",0);
+  if (s_procmap.find(procid)==s_procmap.end())
+    s_procmap[procid]=shprocname;
   msg_Tracking()<<"OpenLoops_Interface process list:"<<std::endl;
   for (std::map<int,std::string>::const_iterator it=s_procmap.begin();
        it!=s_procmap.end();++it)
     msg_Tracking()<<it->first<<": "<<it->second<<std::endl;
-  return id;
+  return procid;
 }
 
 void OpenLoops_Interface::EvaluateTree(int id, const Vec4D_Vector& momenta, double& res)
@@ -417,6 +445,41 @@ void OpenLoops_Interface::PopulateColorCorrelatorMatrix(int id, const Vec4D_Vect
     ol_evaluate_ccmatrix2(id, &pp[0], &born2, ccmatrix, &dummy_cc_ew);
   else
     THROW(fatal_error, "Unknown amplitude type");
+}
+
+void OpenLoops_Interface::EvaluateAssociated(int id, const Vec4D_Vector& momenta, int ass, double& res)
+{
+  vector<double> pp(5*momenta.size());
+  for (size_t i=0; i<momenta.size(); ++i) {
+    pp[0+i*5]=momenta[i][0];
+    pp[1+i*5]=momenta[i][1];
+    pp[2+i*5]=momenta[i][2];
+    pp[3+i*5]=momenta[i][3];
+  }
+
+  ol_evaluate_associated(id, &pp[0], ass, &res);
+}
+
+int OpenLoops_Interface::ConvertAssociatedContributions
+(const asscontrib::type at)
+{
+  int iat(0);
+  // only allow successive associated contribs
+  if (at&asscontrib::EW) {
+    ++iat;
+    if (at&asscontrib::LO1) {
+      ++iat;
+      if (at&asscontrib::LO2) {
+        ++iat;
+        if (at&asscontrib::LO3) {
+          ++iat;
+        }
+      }
+    }
+  }
+  msg_Debugging()<<"Convert associated contributions identifier "
+                 <<at<<" -> "<<iat<<std::endl;
+  return iat;
 }
 
 double OpenLoops_Interface::GetDoubleParameter(const std::string & key)

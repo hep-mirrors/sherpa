@@ -344,8 +344,8 @@ bool HEPEVT_Interface::Run(ATOOLS::Blob_List *const bl)
 bool HEPEVT_Interface::Finish()
 {
   msg_Info()<<METHOD<<"(): Total xs is "
-	    <<p_eventhandler->TotalXS()<<" pb +- "
-	    <<p_eventhandler->TotalErr()<<" pb."<<std::endl;
+	    <<p_eventhandler->TotalXS().Nominal()<<" pb +- "
+	    <<p_eventhandler->TotalErr().Nominal()<<" pb."<<std::endl;
 #ifdef USING__HERACMN
   heracmn.xsec=p_eventhandler->TotalXS();
 #endif

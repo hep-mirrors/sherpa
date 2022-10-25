@@ -87,7 +87,6 @@ bool AMEGIC::Single_Process_Combined::CheckAlternatives(vector<Process_Base *>& 
 	m_iresult = p_partner->Result()*m_sfactor;
 	m_maxcpl=p_partner->MaxOrders();
 	m_mincpl=p_partner->MinOrders();
-	m_ntchanmin=p_partner->NTchanMin();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 
 	while (*from) {
@@ -151,10 +150,10 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
   p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
-  int ntchanmin(m_ntchanmin);
   const bool cvp{
     amegicsettings["CUT_MASSIVE_VECTOR_PROPAGATORS"].Get<bool>() };
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,
+				   m_pinfo.m_ntchan,m_pinfo.m_mtchan,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
@@ -735,10 +734,10 @@ void AMEGIC::Single_Process_Combined::Minimize()
 
   m_maxcpl    = p_partner->MaxOrders();
   m_mincpl    = p_partner->MinOrders();
-  m_ntchanmin = p_partner->NTchanMin();
 }
 
 double AMEGIC::Single_Process_Combined::Partonic(const Vec4D_Vector &moms,
+                                                 Variations_Mode varmode,
                                                  int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
@@ -754,7 +753,7 @@ double AMEGIC::Single_Process_Combined::DSigma(const ATOOLS::Vec4D_Vector &_moms
 {
   m_lastbxs = m_lastxs = 0.;
   Vec4D_Vector mom(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+  if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     Poincare cms=Poincare(mom[0]+mom[1]);
     for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
   }

@@ -1,4 +1,4 @@
-# Sherpa configuration for Z+Jets production
+# Sherpa configuration for Z[ee]+Jets production
 
 # set up beams for LHC run 2
 BEAMS: 2212
@@ -6,25 +6,58 @@ BEAM_ENERGIES: 6500
 
 # matrix-element calculation
 ME_GENERATORS:
-- Comix
-- Amegic
-- OpenLoops
+  - Comix
+  - Amegic
+  - OpenLoops
+
+## OTF variations
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
+PDF_VARIATIONS:
+  - PDF4LHC21_40_pdfas*
+  - NNPDF40_nnlo_as_01180
+  - MSHT20nnlo_as118
+  - CT18NNLO_as_0118
+
+# EW setup and corrections
+EW_SCHEME: alphamZsW
+SIN2THETAW: 0.23113
+ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
+  - [EW]
+  - [EW, LO1]
+  - [EW, LO1, LO2]
+  - [EW, LO1, LO2, LO3]
+
+# speed and neg weight fraction improvements
+NLO_CSS_PSMODE: 2
+MC@NLO:
+  RS_SCALE: METS{H_Tp2/4}
 
 # pp -> Z[ee]+jets
 PROCESSES:
-- 93 93 -> 11 -11 93{1}:
+- 93 93 -> 11 -11 93{5}:
     Order: {QCD: 0, EW: 2}
     CKKW: 20
     # set up NLO+PS final-state multiplicities
-    2->2:
+    2->2-4:
       NLO_Mode: MC@NLO
       NLO_Order: {QCD: 1, EW: 0}
       ME_Generator: Amegic
       RS_ME_Generator: Comix
       Loop_Generator: OpenLoops
+      Associated_Contributions: [EW, LO1, LO2, LO3]
     # make integration of higher final-state multiplicities faster
-    2->3:
+    2->4-7:
       Integration_Error: 0.05
+      Max_N_Quarks: 4
+      Max_Epsilon: 0.01
 
 SELECTORS:
 - [Mass, 11, -11, 66, E_CMS]

@@ -1,5 +1,6 @@
+from __future__ import division 
 from math import sqrt
-from tensor import tensor, multiply, new, color_key
+from ufo_interface.tensor import tensor, multiply, new, color_key
 
 # Generators of SU(3), in following normalisation
 # pfac = 1./sqrt(2.0) : (T^a*T^b) = 1.0 * \delta_{ab}

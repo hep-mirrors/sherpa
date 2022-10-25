@@ -8,6 +8,17 @@
 
 namespace PDF {
 
+  struct PDF_Defaults {
+    std::map<kf_code,std::string> m_deflib, m_defset;
+
+    PDF_Defaults();
+
+    inline std::string DefaultPDFLibrary(kf_code kf) { return m_deflib[kf]; }
+    inline std::string DefaultPDFSet(kf_code kf)     { return m_defset[kf]; }
+  };
+
+  extern PDF_Defaults * pdfdefs;
+
   struct PDF_Arguments {
     ATOOLS::Flavour       m_bunch;
     int m_ibeam;
@@ -70,7 +81,7 @@ namespace PDF {
   private:
     double m_rq2min, m_rq2max;
 
-    void RegisterDefaults() const;
+    static void RegisterDefaults() ;
 
   public:
     PDF_Base();
@@ -93,11 +104,11 @@ namespace PDF {
     virtual double GetDefaultScale();
     virtual int GetFlavourScheme();
     
-    static void ShowSyntax(const size_t i);
+    static void ShowSyntax(size_t i);
 
     inline const std::string &Type() const            { return m_type;     }  
     inline std::string Set() const                    { return m_set; }
-    inline const ATOOLS::Flavour      Bunch() const   { return m_bunch;   }
+    inline ATOOLS::Flavour      Bunch() const   { return m_bunch;   }
     inline const ATOOLS::Flavour_Set &Partons() const { return m_partons; }
     inline bool Contains(const ATOOLS::Flavour & flav) const {
       return m_partons.find(flav)!=m_partons.end();

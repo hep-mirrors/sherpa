@@ -19,7 +19,7 @@ ME_GENERATORS: Comix
 
 PROCESSES:
 - 11 -11 -> 93 93:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
 
 SELECTORS:
 - [Mass, 93, 93, 40.0, E_CMS]

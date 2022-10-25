@@ -27,6 +27,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
   const double k0sqi{ s["CSS_IS_PT2MIN"].Get<double>() };
   const double fs_as_fac{ s["CSS_FS_AS_FAC"].Get<double>() };
   const double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
+  const double is_pdf_fac{ s["CSS_PDF_FAC"].Get<double>() };
   const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
   m_reweight = s["CSS_REWEIGHT"].Get<bool>();
   m_maxreweightfactor = s["CSS_MAX_REWEIGHT_FACTOR"].Get<double>();
@@ -36,6 +37,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
   m_sudakov.SetShower(this);
   m_sudakov.SetMassThreshold(mth);
   m_sudakov.SetScaleScheme(scs);
+  m_sudakov.SetFacScaleFactor(is_pdf_fac);
   std::pair<double, double> pdfmin;
   pdfmin.first = s["CSS_PDF_MIN"].Get<double>();
   pdfmin.second = s["CSS_PDF_MIN_X"].Get<double>();
@@ -227,8 +229,8 @@ int Shower::MakeKinematics
 bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
 {
   m_weightsmap.Clear();
-  m_weightsmap["MC@NLO_PS"] = 1.0;
-  m_weightsmap["MC@NLO_QCUT"] = 1.0;
+  m_weightsmap["MC@NLO_PS"] = Weights {Variations_Type::qcd};
+  m_weightsmap["MC@NLO_QCUT"] = Weights {Variations_Type::qcut};
   p_actual=act;
   Parton * split;
   Vec4D mom;

@@ -22,13 +22,13 @@ using namespace ATOOLS;
 using PHASIC::Process_Info;
 
 Single_Process::Single_Process() :
-  p_born_me2(NULL), p_virtual_me2(NULL), m_nlotype(nlo_type::lo)
-{
-}
+  p_born_me2(NULL), p_virtual_me2(NULL), m_nlotype(nlo_type::lo), m_localFS(false),
+  m_stashed(false)
+{ }
 
 Single_Process::~Single_Process()
 {
-  if (p_born_me2) delete p_born_me2;
+  if (p_born_me2)    delete p_born_me2;
   if (p_virtual_me2) delete p_virtual_me2;
 }
 
@@ -38,7 +38,7 @@ bool Single_Process::Initialize()
   DEBUG_VAR(m_pinfo);
   MODEL::s_model->GetCouplings(m_cpls);
   if (m_nin!=2) return false;
-  
+
   // can't do resonant processes, with one exception: ee -> Y(4S) -> B Bbar
   if (m_pinfo.m_fi.m_ps.size()!=m_pinfo.m_fi.NExternal()) {
     if (m_pinfo.m_fi.m_ps[0].m_fl.Kfcode()!=kf_Upsilon_4S) {
@@ -48,7 +48,8 @@ bool Single_Process::Initialize()
   }
 
   // can't do any BSM
-  if (/*m_pinfo.m_special!="MPI_Process" && */ MODEL::s_model->Name()!="SM") {
+  if (/*m_pinfo.m_special!="MPI_Process" && */
+      MODEL::s_model->Name()!="SM" && MODEL::s_model->Name()!="SMDM") {
     DEBUG_INFO("Requested BSM, Internal can't cope, it's too dumb...");
     return false;
   }
@@ -78,6 +79,9 @@ bool Single_Process::Initialize()
       m_maxcpl[0]=m_mincpl[0]=p_born_me2->OrderQCD();
       m_maxcpl[1]=m_mincpl[1]=p_born_me2->OrderEW();
       p_born_me2->FillCombinations(m_ccombs,m_cfls);
+      m_sprimemin = p_born_me2->SPrimeMin()>0.?p_born_me2->SPrimeMin():-1.;
+      m_sprimemax = p_born_me2->SPrimeMax()>0.?p_born_me2->SPrimeMax():-1.;
+      if (m_flavs[2]==Flavour(kf_instanton)) StashOriginalFlavours(); 
       return true;
     }
     else {
@@ -91,16 +95,44 @@ bool Single_Process::Initialize()
   }
 }
 
-double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta, int mode)
+void Single_Process::StashOriginalFlavours() {
+  m_flavs.reserve(100);
+  m_stashed = true;
+  for (size_t i=0;i<m_flavs.size();++i) m_original_flavs.push_back(m_flavs[i]);
+  m_original_nout = m_nout;
+}
+
+void Single_Process::RestoreOriginalFlavours() {
+  m_flavs.clear();
+  for (size_t i=0;i<m_original_flavs.size();++i) m_flavs.push_back(m_original_flavs[i]);
+  p_int->SetMomenta(m_original_momenta);
+  m_nout = m_original_nout;
+}
+
+void Single_Process::OverwriteOriginalWithLocalFlavoursAndMomenta() {
+  m_flavs.clear();
+  for (size_t i=0;i<p_born_me2->Flavours().size();i++) {
+    m_flavs.push_back(p_born_me2->Flavours()[i]);
+  }
+  m_original_momenta = p_int->Momenta();
+  p_int->SetMomenta(p_born_me2->Momenta());
+  m_nout = m_flavs.size()-m_nin;
+}
+
+double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
+                                Variations_Mode varmode,
+                                int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (m_nlotype==nlo_type::lo && !Selector()->Result())
     return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
-  
+  if (!p_born_me2->FillFinalState(momenta)) return 0.;
+  m_localFS = true;
+  if (m_stashed) OverwriteOriginalWithLocalFlavoursAndMomenta();
   p_scale->CalculateScale(momenta);
-  if (p_born_me2) {
-    m_mewgtinfo.m_B=m_lastbxs=m_lastxs=(*p_born_me2)(momenta)*KFactor();
-  }
+  if (m_stashed) RestoreOriginalFlavours();
+  m_localFS = false;
+  if (p_born_me2) m_mewgtinfo.m_B=m_lastbxs=m_lastxs=(*p_born_me2)(momenta)*KFactor();
   else if (p_virtual_me2) {
     p_virtual_me2->SetRenScale(p_scale->Scale(stp::ren));
     p_virtual_me2->Calc(momenta);
@@ -110,11 +142,15 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta, int mode)
   return m_lastxs;
 }
 
-bool EXTRAXS::Single_Process::FillIntegrator
-(PHASIC::Phase_Space_Handler *const psh)
+bool EXTRAXS::Single_Process::FillIntegrator(PHASIC::Phase_Space_Handler *const psh)
 {
+  msg_Out()<<METHOD<<".\n";
   PHASIC::Multi_Channel *mc(psh->FSRIntegrator());
   mc->DropAllChannels();
+  if (m_nin==2 && m_nout==1 && m_flavs[2]==Flavour(kf_instanton)) {
+    mc->Add(new PHASIC::NoChannel(m_nin,m_nout,(Flavour*)&Flavours().front()));
+    return false;
+  }
   size_t sintt(7);
   if (GetME()) sintt=GetME()->SIntType();
   if (sintt&1)
@@ -149,8 +185,7 @@ bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
   }
 }
 
-const Flavour_Vector &Single_Process::
-CombinedFlavour(const size_t &idij)
+const Flavour_Vector &Single_Process::CombinedFlavour(const size_t &idij)
 {
   if (m_cfls.size()) {
     std::map<size_t,ATOOLS::Flavour_Vector>::const_iterator fit(m_cfls.find(idij));
@@ -160,4 +195,20 @@ CombinedFlavour(const size_t &idij)
   if (GetME()) return GetME()->CombinedFlavour(idij);
   static Flavour_Vector fls(1,kf_none);
   return fls;
+}
+
+bool Single_Process::FillFinalState(const ATOOLS::Vec4D_Vector &p) {
+  return true;
+}
+
+std::vector<std::vector<int> > * Single_Process::Colours() const {
+  return m_localFS?(&p_born_me2->Colours()):NULL;
+}
+
+const bool Single_Process::HasInternalScale() const {
+  return p_born_me2?p_born_me2->HasInternalScale():false;
+}
+
+const double Single_Process::InternalScale() const {
+  return p_born_me2?p_born_me2->InternalScale():-1.;
 }

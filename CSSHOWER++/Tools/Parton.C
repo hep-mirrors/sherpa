@@ -34,10 +34,6 @@ namespace CSSHOWER {
       if (part.p_next) str<<"  N="<<part.p_next;
       str<<std::endl;
     }
-    if (part.m_fixspec!=Vec4D())
-      str<<"  fix spec : "<<part.m_fixspec<<", oldp : "<<part.OldMomentum()
-	 <<" "<<(IsEqual(part.OldMomentum(),part.Momentum(),1.0e-6)?
-		 "ok":"*** ERROR ***")<<"\n";
     return str;
   }
 }
@@ -54,13 +50,63 @@ Parton *Parton::FollowUp()
   return this;
 }
 
-void Parton::UpdateColours()
+void Parton::UpdateDaughters()
+{
+  msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
+  if (this==p_sing->GetSplit()) {
+    msg_Indent();
+    Parton *left(p_sing->GetLeft()), *right(p_sing->GetRight());
+    Vec4D pl(left->Momentum()), pr(right->Momentum());
+    Poincare oldcms(pl+pr), newcms(m_mom);
+    oldcms.Boost(pl);
+    oldcms.Boost(pr);
+    newcms.BoostBack(pl);
+    newcms.BoostBack(pr);
+    if (dabs(pl[0])>dabs(pr[0])) {
+      left->SetMomentum(m_mom-pr);
+      right->SetMomentum(pr);
+    }
+    else {
+      left->SetMomentum(pl);
+      right->SetMomentum(m_mom-pl);
+    }
+    left->UpdateDaughters();
+    right->UpdateDaughters();
+  }
+  if (p_next) {
+    msg_Indent();
+    if (p_next==p_next->GetSing()->GetSplit() &&
+	m_flav!=p_next->GetFlavour())
+      THROW(fatal_error,"invalid flavor change");
+    p_next->SetMomentum(m_mom);
+    p_next->SetFlavour(m_flav);
+    p_next->SetMass2(m_t);
+    msg_IODebugging()<<*p_next;
+    p_next->UpdateDaughters();
+  }
+  msg_IODebugging()<<"}\n";
+}
+
+void Parton::UpdateColours(int newr,int newa)
 {
   msg_IODebugging()<<METHOD<<"("<<this<<"): ("
-		   <<GetFlow(1)<<","<<GetFlow(2)<<") {\n";
+		   <<newr<<","<<newa<<") {\n";
   {
     msg_Indent();
-    if (p_sing==NULL) THROW(fatal_error,"Cannot update flow");
+    if (this==p_sing->GetSplit()) {
+      int oldr(GetFlow(1)), olda(GetFlow(2));
+      Parton *left(p_sing->GetLeft()), *right(p_sing->GetRight());
+      if (oldr) {
+	if (left->GetFlow(1)==oldr) left->UpdateColours(newr,left->GetFlow(2));
+	if (right->GetFlow(1)==oldr) right->UpdateColours(newr,right->GetFlow(2));
+      }
+      if (olda) {
+	if (left->GetFlow(2)==olda) left->UpdateColours(left->GetFlow(1),newa);
+	if (right->GetFlow(2)==olda) right->UpdateColours(right->GetFlow(1),newa);
+      }
+    }
+    SetFlow(1,newr);
+    SetFlow(2,newa);
     p_left=p_right=NULL;
     int f1(GetFlow(1)), f2(GetFlow(2));
     for (PLiter pit(p_sing->begin());pit!=p_sing->end();++pit) {
@@ -68,6 +114,7 @@ void Parton::UpdateColours()
       if (f2 && f2==(*pit)->GetFlow(1)) (p_right=*pit)->SetLeft(this);
     }
     msg_IODebugging()<<*this;
+    if (p_next) p_next->UpdateColours(newr,newa);
   }
   msg_IODebugging()<<"}\n";
 }

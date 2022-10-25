@@ -1,6 +1,7 @@
 #ifndef ATOOLS_Phys_Event_Weights_H
 #define ATOOLS_Phys_Event_Weights_H
 
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Variations.H"
 
@@ -28,7 +29,7 @@ namespace ATOOLS {
     bool IsZero() const;
 
     // content getters/setters to access individual weights, by index or name
-    std::string Name(size_t) const;
+    std::string Name(size_t, Variations_Source source=Variations_Source::all) const;
     double& Nominal();
     double Nominal() const;
     double& Variation(size_t i);
@@ -126,26 +127,39 @@ namespace ATOOLS {
     void Clear();
 
     // general information getters
+    double Get(const std::string&, size_t) const;
     bool HasVariations() const;
     bool IsZero() const;
     double BaseWeight() const { return base_weight; }
 
-    // calculate nominal values, either including all entries or excluding
-    // those that have a certain variation type
+    // Convenience method to fill e.g. an ordinary map with variations; passing
+    // Variations_Source::main only fills ME QCD-like variations (discarding
+    // ones that originate from the shower), while passing
+    // Variations_Source::all fill all variation (including custom one).
+    template <typename T>
+    void FillVariations(
+        T&, Variations_Source source = ATOOLS::Variations_Source::all) const;
+
+    // calculate nominal values, either including all entries, for a single
+    // entry `k`, or excluding those that have a certain variation type
     double Nominal() const;
+    double Nominal(const std::string& k) const;
     double NominalIgnoringVariationType(Variations_Type) const;
 
-    // return Weights entries for a given name, either as-is ("Relative"), or
-    // multiplied by the base weight ("Absolute")
+    // return relative Weights entries for a given name
     Weights& RelativeValues(const std::string& k) { return (*this)[k]; }
     Weights RelativeValues(const std::string& k) const;
-    Weights AbsoluteValues(const std::string& k) const;
 
     /// Calculate the product of all entries that share the same type, e.g. to
     /// get the combined QCD or Qcut variations from different sources. Note
     /// that this returns a Weights object, that contains the nominal product
     /// and the entry-by-entry product of all variations.
     Weights Combine(Variations_Type type) const;
+
+    /// Set all values to exactly 0.0 that are close to zero. The tolerance
+    /// is the maximum absolute distance from 0.0 defining this "closeness".
+    /// This might be useful e.g. before calculating the square root.
+    void SetZeroIfCloseToZero(double tolerance);
 
     /// Assign a value to the base weight
     Weights_Map& operator=(double w) { base_weight = w; return *this; }
@@ -163,24 +177,40 @@ namespace ATOOLS {
     /// implicit assumption that an entry that does not exist explicitly has a
     /// weight of unit.
     Weights_Map& operator*=(const Weights_Map&);
+    friend Weights_Map operator*(Weights_Map, const Weights_Map&);
 
     /// Add or subtract another weights map. This also makes the same implicit
     /// assumption that non-existing values are implicitly set to unity.
     Weights_Map& operator+=(const Weights_Map&);
     Weights_Map& operator-=(const Weights_Map&);
+    friend Weights_Map operator+(Weights_Map, const Weights_Map&);
+    friend Weights_Map operator-(Weights_Map, const Weights_Map&);
+
+    friend Weights_Map sqrt(const Weights_Map&);
 
     friend std::ostream& operator<<(std::ostream&, const Weights_Map&);
 
-  private:
-
     // generate variants where entries are absolute, or relative (the default);
-    // this is used internally to simplify the addition/subtraction of weights
-    // maps
+    // this can be used to simplify operations dealing with individual entries
+    // one-by-one, in particular when doing additions/subtractions
     void MakeRelative();
     void MakeAbsolute();
 
+#ifdef USING__MPI
+    // Using MPI Allreduce to combine weight maps from different MPI ranks;
+    // this should not done too often, as it requires to synchronise the entire
+    // structure of the weights maps, which in turn requires a nontrivial
+    // amount of communication between the MPI ranks.
+    void MPI_Allreduce();
+#endif
+
+  private:
+
     // make sure class users use our Clear() instead map's clear()
     using std::map<std::string, Weights>::clear;
+
+    // same as Nominal(), but excluding the nominals_prefactor
+    double NominalIgnoringPrefactor() const;
 
     /// While the Weights object in the map store relative factors due to
     /// specific variations or additional factors (like branching ratios), the
@@ -201,6 +231,8 @@ namespace ATOOLS {
     /// this trick, we can have non-zero variations while all nominals are
     /// zero.
     double nominals_prefactor {1.0};
+
+    bool is_absolute {false};
   };
 
   template <class T> Weights& Weights::operator*=(const std::vector<T>& rhs)
@@ -262,10 +294,62 @@ namespace ATOOLS {
       Weights&,
       std::function<double(double, size_t varindex, Qcut_Variation_Params*)>);
 
-  Weights_Map operator*(Weights_Map, double);
-  Weights_Map operator/(Weights_Map, double);
+  template <typename T>
+  void Weights_Map::FillVariations(T& map, Variations_Source source) const
+  {
+    DEBUG_FUNC(source);
 
-  std::ostream& operator<<(std::ostream&, const Weights_Map&);
+    // Fill "managed" QCD variations, which might need to be combined first,
+    // since we have QCD variations from "ME", "PS", etc., hence we need to
+    // build a product over those for each individual QCD variation.
+    for (const auto type : s_variations->ManagedVariationTypes()) {
+      // calculate contributions
+      Weights weights = Weights {type};
+      double relfac {1.0};
+      if (source == Variations_Source::all) {
+        weights *= Combine(type);
+        relfac = NominalIgnoringVariationType(type);
+      } else {
+        // calculate nominal, relfac and weights ignoring shower weights
+        static const std::unordered_set<std::string> shower_keys {
+          "PS", "PS_QCUT", "MC@NLO_PS", "MC@NLO_QCUT"};
+        for (const auto& v : *this) {
+          if (shower_keys.find(v.first) != shower_keys.end())
+            continue;
+          if (v.second.Type() == type) {
+            weights *= v.second;
+          } else {
+            relfac *= v.second.Nominal();
+          }
+        }
+        relfac *= base_weight;
+      }
+      // do remaining combination and store resulting weights
+      size_t num_vars = weights.Size() - 1;
+      for (size_t i(0); i < num_vars; ++i) {
+        const std::string varname {weights.Name(i + 1, source)};
+        map[varname] = weights.Variation(i) * relfac;
+        msg_Debugging() << varname << " (" << varname
+          << "): " << weights.Variation(i) * relfac << '\n';
+      }
+    }
+
+    // Fill other "custom" variations. These are simple, because they are all
+    // assumed to be independent from each other, hence no combination is
+    // necessary.
+    if (source == Variations_Source::all) {
+      for (const auto& kv : *this) {
+        if (kv.second.Type() != Variations_Type::custom)
+          continue;
+        const auto size = kv.second.Size();
+        // Iterate weights, skipping the nominal entry (at position 0).
+        for (int i {1}; i < size; ++i) {
+          map[kv.first + "." + kv.second.Name(i)] =
+              Nominal() / kv.second.Nominal() * kv.second[i];
+        }
+      }
+    }
+  }
 
 } // namespace ATOOLS
 

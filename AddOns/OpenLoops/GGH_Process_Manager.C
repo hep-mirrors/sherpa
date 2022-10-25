@@ -22,8 +22,6 @@ GGH_Process_Manager::GGH_Process_Manager() : p_generators(NULL)  {}
 Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Amplitude& ampl, 
 						     bool external, const std::vector<double>& orders){
   DEBUG_FUNC(this);
-  //ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
-  //My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
 
   // build a process info instance
   Process_Info pi;
@@ -56,7 +54,6 @@ Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Ampli
   // initialize the process
   PHASIC::Process_Base *proc= Generators()->InitializeProcess(pi,false);
   if (!proc) {
-    //My_In_File::CloseDB(ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
     PRINT_VAR(pi);
     THROW(fatal_error, "Could not initialize auxiliary process");
   }
@@ -66,8 +63,6 @@ Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Ampli
   proc->SetScale(Scale_Setter_Arguments(MODEL::s_model,"VAR{sqr("+ATOOLS::ToString(rpa->gen.Ecms())+")}","Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
   
-  //proc->Get<COMIX::Process_Base>()->Tests();
-  //My_In_File::Close(ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
   m_maps.push_back(new NLOTypeStringProcessMap_Map);
   m_procs.push_back(proc);
   proc->FillProcessMap(m_maps.back());
