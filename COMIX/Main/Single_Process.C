@@ -392,11 +392,6 @@ double COMIX::Single_Process::Partonic
     return m_lastxs=m_dxs+KPTerms(mode);
   }
   if (m_zero || !Selector()->Result()) return m_lastxs;
-  for (size_t i(0);i<m_nin+m_nout;++i) {
-    m_p[i]=p[i];
-    double psm(m_flavs[i].Mass());
-    if (m_p[i][0]<psm) return m_lastxs;
-  }
   if (p_map!=NULL && m_lookup && p_map->m_lookup) {
     m_dxs=p_map->m_dxs;
     m_w=p_map->m_w;
