@@ -196,6 +196,7 @@ def transform_imake_source(argv, dbg):
     filtered= filter(lambda st: not re.match(".*install\.lib.*",st), filtered)
     filtered= filter(lambda st: not re.match(".*clean::.*",st), filtered)
     filtered= filter(lambda st: not re.match(".*Makefile::.*",st), filtered)
+    filtered= filter(lambda st: not re.match(".*_LIBADD.*",st), filtered)
     ###filtered= filter(lambda st: not re.match(".*LibraryTargetName.*",st), filtered)
     filtered= filter(lambda st: not re.match(".*RemoveFile.*",st), filtered)
     filtered= filter(lambda st: not re.match(".*CopyFile.*",st), filtered)
@@ -260,9 +261,12 @@ def transform_imake_source(argv, dbg):
      
     incfiles = [ x  for x in newlist if re.match(r'#include.*',x)]
     incfiles =  [ x.replace("#include","") for x in incfiles]
+
     incfiles =  [ x.replace("\"","") for x in incfiles]
     incfiles =  [ x.replace(" ","") for x in incfiles]
     newlist.append(temp)
+    newlist = [ ("#"+x) if re.match(r'^.*_LIBADD.*',x) else x for x in newlist]
+
     newlist = filter(lambda st: st != '' , newlist)
     newlist = [x.replace(" \\ "," ") for x in newlist]
     newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*pkglib_LTLIBRARIES.*',x) else x for x in newlist]
@@ -469,7 +473,7 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
      f.write("endif()\n")
    for inc in installincludes:
      if len(inc)!=0:
-       f.write("install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/"+inc+" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC  COMPONENT devel  PATTERN '*.h' PATTERN '*.H'  PATTERN .deps EXCLUDE   PATTERN .libs/* EXCLUDE")
+       f.write("install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/"+inc+" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/"+lname+"  COMPONENT devel  FILES_MATCHING PATTERN \"*.h\" PATTERN \"*.H\"  PATTERN \"*.deps*\" EXCLUDE   PATTERN \"*.lib*\" EXCLUDE")
        for pt in pat:
         f.write(" PATTERN "+ pt +" EXCLUDE ")
        f.write(")\n")
@@ -509,14 +513,14 @@ if __name__ == '__main__':
    ldirs =  "Amplitude/Makefile.am Amplitude/Zfunctions/Makefile.am DipoleSubtraction/Makefile.am Main/Makefile.am Makefile.am Phasespace/Makefile.am String/Makefile.am".split(" ")
    lname="AMEGIC++"
    includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
+   installincludes="Amplitude DipoleSubtraction Main Phasespace String".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
 
 
    ldirs =  "Main/Makefile.am Makefile.am Perturbative/Makefile.am Tools/Makefile.am".split(" ")
    lname="AMISIC++"
    includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
+   installincludes="Main Perturbative Tools".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
 
    ldirs =  "Calculators/Makefile.am Main/Makefile.am Makefile.am Showers/Makefile.am Tools/Makefile.am".split(" ")
@@ -557,7 +561,7 @@ if __name__ == '__main__':
    ldirs =  "Main/Makefile.am Tools/Makefile.am".split(" ")
    lname="REMNANTS"
    includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
+   installincludes="Main Tools".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
 
 
@@ -594,25 +598,25 @@ if __name__ == '__main__':
    ldirs =  "Amplitude/Makefile.am Main/Makefile.am Makefile.am Phasespace/Makefile.am".split(" ")
    lname="COMIX"
    includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
+   installincludes="Amplitude Main Phasespace".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
 ########################################################################
 
    ldirs =  "Makefile.am Math/Makefile.am Org/Makefile.am Phys/Makefile.am YAML/Makefile.am YAML/yaml-cpp/Makefile.am YAML/yaml-cpp/node/Makefile.am YAML/yaml-cpp/node/detail/Makefile.am".split()
    lname="ATOOLS"
    includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
+   installincludes="Math Org Phys YAML".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
 
    ldirs =  "MEs/Makefile.am Main/Makefile.am Makefile.am PhaseSpace/Makefile.am Tools/Makefile.am".split(" ") 
    lname="PHOTONS++"
    includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
+   installincludes="MEs Main Makefile.am PhaseSpace Tools".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
 
 
    ldirs =  "CT10/Makefile.am CT12/Makefile.am CT14/Makefile.am CTEQ/Makefile.am Electron/Makefile.am GRV/Makefile.am LHAPDF/Makefile.am MRST/Makefile.am MSTW/Makefile.am Main/Makefile.am Makefile.am NNPDF/Makefile.am".split()
-   ldirs =  "CT10/Makefile.am CT12/Makefile.am CT14/Makefile.am CTEQ/Makefile.am Electron/Makefile.am GRV/Makefile.am  MRST/Makefile.am MSTW/Makefile.am Main/Makefile.am Makefile.am NNPDF/Makefile.am".split()
+   ldirs =  "CT14/Makefile.am  Electron/Makefile.am GRV/Makefile.am GRS/Makefile.am SASG/Makefile.am SAL/Makefile.am Main/Makefile.am Makefile.am NNPDF/Makefile.am".split()
    lname="PDF"
    includes=" ".split(" ") 
    installincludes=" ".split(" ") 
