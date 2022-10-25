@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.3.0 FATAL_ERROR)
 ###########################Package@#####################################
-project(SHERPA LANGUAGES C  CXX Fortran )
+project(SHERPA-MC LANGUAGES C  CXX Fortran )
 #The complicated way to set the version is used to assure the simple 
 #replacement of version variable with sed will not break the CMakeLists.txt
 if (NOT __CL_VERSION__)
@@ -41,7 +41,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 option(SHERPA_ENABLE_TEST                "Enables building of tests." ON)
 option(SHERPA_ENABLE_MEMORYTEST          "Adds memory check tests." OFF)
 option(SHERPA_POSITION_INDEPENDENT_CODE  "Position independent code for static libraries." OFF)
-option(SHERPA_BUILD_SHARED               "Build shared libraries." OFF)
+option(SHERPA_BUILD_SHARED               "Build shared libraries." ON)
+option(SHERPA_BUILD_STATIC               "Build static libraries." OFF)
 set(SHERPA_BUILD_STATIC ON)  #This is always ON, but it is convenient to have it like this from the point of view of logic.
 ###########################Options handeling#####################################
 if(SHERPA_ENABLE_TEST)
@@ -267,9 +268,7 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
   if (Fortran_COMPILER_NAME STREQUAL g77)
     SET(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS 0)
     SET(CMAKE_Fortran_USE_RESPONSE_FILE_FOR_OBJECTS 0)
-    set( COMPSUFFIX -g77)
   else()
-    set( COMPSUFFIX -gfortran)
     list(APPEND F_Fortran_FLAGS_TO_CHECK    
                                "-Wno-conversion" 
                                "-Wno-implicit-function-declaration"
@@ -296,7 +295,6 @@ elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
                               "-nbs"
                               "-mp1"
    )
-  set( COMPSUFFIX -ifort)
 elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
   set(F_Fortran_FLAGS_TO_CHECK 
                                "-fcommon" 
@@ -311,17 +309,12 @@ elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
                                "-O0" 
                                "-g"
    )
-  set( COMPSUFFIX -nvfortran)
 elseif()
   message(FATAL "SHERPA: Don't know how to set Fortran FLAGS for  ${Fortran_COMPILER_NAME} with ID ${Fortran_COMPILER_ID}")
 endif ()
 if(CMAKE_SYSTEM_NAME MATCHES Darwin)
   set(CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS} -flat_namespace -single_module -undefined dynamic_lookup")
 endif()
-if (SHERPA_NO_SUFFIX)
-  set ( COMPSUFFIX "" )
-endif()
-message(STATUS "SHERPA: COMPSUFFIX=${COMPSUFFIX}")
 
 #Linux has here -Wl,-z,relro -Wl,--as-needed  -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1
 set(CMAKE_EXE_LINKER_FLAGS "")
@@ -386,16 +379,78 @@ endif()
 message(STATUS "SHERPA : CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
 ########################################################################
 include_directories(${PROJECT_SOURCE_DIR})
-add_subdirectory(PHASIC++)
-add_subdirectory(BEAM)
-add_subdirectory(COMIX)
-add_subdirectory(HADRONS++)
+
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
 add_subdirectory(AMISIC++)
-find_package(ZIP)
 add_subdirectory(ATOOLS)
 
+add_subdirectory(BEAM)
+add_subdirectory(COMIX)
+add_subdirectory(CSSHOWER++)
+add_subdirectory(DIM)
+add_subdirectory(DIRE)
+add_subdirectory(EXTAMP)
+add_subdirectory(EXTRA_XS)
+add_subdirectory(HADRONS++)
+add_subdirectory(METOOLS)
+add_subdirectory(MCATNLO)
+add_subdirectory(MODEL)
+
+add_subdirectory(PHASIC++)
+add_subdirectory(PHOTONS++)
+#add_subdirectory(PDF)
+add_subdirectory(RECONNECTIONS)
+add_subdirectory(REMNANTS)
+add_subdirectory(SHRiMPS)
+add_subdirectory(SHERPA)
+
+#find_package(ZIP)
+
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Examples DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC 
+  COMPONENT doc 
+  FILES_MATCHING
+                         PATTERN test.py EXCLUDE 
+                         PATTERN CI EXCLUDE 
+                         PATTERN Userhook EXCLUDE 
+                         PATTERN HPC EXCLUDE 
+                         PATTERN NLO_EW_* EXCLUDE 
+                         PATTERN NLO_QCD_* EXCLUDE 
+                         PATTERN RemnantTests EXCLUDE 
+                         PATTERN VBF_Interference EXCLUDE 
+                         PATTERN FixedOrder_NNLO EXCLUDE 
+#                         PATTERN Sherpa.tree.yaml EXCLUDE 
+                         PATTERN Makefile EXCLUDE 
+                         PATTERN Makefile.am EXCLUDE 
+                         PATTERN Makefile.in EXCLUDE 
+                          )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/MRST/MRST01Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/MRST/MRST04Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/MRST/MRST99Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+ # install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/NNPDF/NNPDF31_nnlo_as_0118mc DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT10/CT10Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT12/CT12Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT14/CT14Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CTEQ/CTEQ6Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CTEQ/CTEQ66Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/MSTW/MSTW08Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/HEPEVT DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Sobol/21201.gz DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC/Sobol COMPONENT doc  )
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/COMIX/Main/init_nlo.sh DESTINATION  ${CMAKE_INSTALL_BINDIR} )
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/get_bibtex DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/plot_graphs DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PDF/NNPDF/NNPDF31_nnlo_as_0118_mc.tar.bz2 DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/AHADRONS++/Decaydata.zip DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh
+ DESTINATION  ${CMAKE_INSTALL_BINDIR} )
+  install(FILES 
+               ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS 
+               ${CMAKE_CURRENT_SOURCE_DIR}/COPYING 
+               ${CMAKE_CURRENT_SOURCE_DIR}/README 
+               ${CMAKE_CURRENT_SOURCE_DIR}/Manual/source/_static/images/SherpaLogo.jpg
+  
+               DESTINATION  ${CMAKE_INSTALL_DOCDIR}/ COMPONENT doc  )
 
 
 include(CMakePackageConfigHelpers)
