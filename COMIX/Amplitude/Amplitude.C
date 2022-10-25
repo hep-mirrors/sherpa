@@ -1742,6 +1742,11 @@ void Amplitude::FillAmplitudes
 (std::vector<Spin_Amplitudes> &amps,
  std::vector<std::vector<Complex> > &cols)
 {
+  if(amps.size()) {
+    for (size_t i(0); i<m_ress.front().size();++i)
+      m_ress.front()[i] = amps.back()[i];
+    return;
+  }
   cols.push_back(std::vector<Complex>(1,1.0));
   amps.push_back(Spin_Amplitudes(m_fl,Complex(0.0,0.0)));
   for (size_t i(0);i<m_ress.front().size();++i) {
