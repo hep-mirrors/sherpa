@@ -32,6 +32,15 @@ if (APPLE)
 endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
+option(SHERPA_ENABLE_OPENLOOPS                "Enables building of tests." ON)
+option(SHERPA_ENABLE_LHOLE                "Enables building of tests." ON)
+option(SHERPA_ENABLE_MADLOOP                "Enables building of tests." ON)
+option(SHERPA_ENABLE_BLACKHAT                "Enables building of tests." ON)
+option(SHERPA_ENABLE_ROOT                "Enables building of tests." ON)
+option(SHERPA_ENABLE_HEPMC3                "Enables building of tests." ON)
+option(SHERPA_ENABLE_HEPMC2                "Enables building of tests." ON)
+option(SHERPA_ENABLE_PYTHIA                "Enables building of tests." ON)
+option(SHERPA_ENABLE_RIVET                "Enables building of tests." ON)
 option(SHERPA_ENABLE_PYTHON                "Enables building of tests." ON)
 option(SHERPA_ENABLE_TEST                "Enables building of tests." ON)
 option(SHERPA_ENABLE_MEMORYTEST          "Adds memory check tests." OFF)
@@ -343,8 +352,23 @@ endforeach (  IDIR ${IDIRS}  )
 set(Sherpa_SRCS_C Sherpa.C Filter.C)
 list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
 add_executable(Sherpa  ${Sherpa_SRCS_C} ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA//Run/Main.C)
-target_link_libraries(Sherpa PRIVATE ATOOLS METOOLS ${LHAPDF_LIBRARIES} LHAPDF ${HEPMC3_LIBRARIES} ${HEPMC2_LIBRARIES} SHERPA PHASIC++ REMNANTS HADRONS++ PHOTONS++
-AMISIC++ PHASIC++ BEAM SHRiMPS Main EXTRA_XS RECONNECTIONS  zip MODEL COMIX
+target_link_libraries(Sherpa PRIVATE ATOOLS  ${LHAPDF_LIBRARIES} LHAPDF ${HEPMC3_LIBRARIES} ${HEPMC2_LIBRARIES} 
+METoolsColors  METoolsCurrents  METoolsExplicit  METoolsLoops METoolsMain  METoolsSpinCorrelations  METoolsVertices
+SHERPA  
+RemnantsMain RemnantsTools  
+PhotonsMain PhotonsMEs PhotonsPhaseSpace PhotonsTools
+ PhasicChannels PhasicDecays PhasicMain PhasicEnhance PhasicProcess PhasicScales PhasicSelectors
+ ShrimpsLadders   ShrimpsBeam_Remnants  ShrimpsCross_Sections  ShrimpsEikonals  ShrimpsEvent_Generation  ShrimpsMain  ShrimpsTools 
+ EXTRA_XS 
+ RECONNECTIONS  
+ zip   
+ Main
+ SherpaSM SherpaMain SherpaUFO SherpaTauPi
+ AmisicMain AmisicTools AmisicPerturbative 
+ BeamMain BeamSpectra 
+ ComixMain ComixAmplitude ComixPhasespace
+ HadronsMain HadronsCurrent_Library HadronsME_Library HadronsPS_Library
+ 
 )
 target_include_directories(Sherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 install(TARGETS Sherpa DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
@@ -355,24 +379,41 @@ install(TARGETS Sherpa DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 
 
 if (SHERPA_ENABLE_PYTHON)
-add_subdirectory(AddOns/Python)
+  add_subdirectory(AddOns/Python)
+endif()
+if (SHERPA_ENABLE_RIVET)
+  add_subdirectory(AddOns/Rivet)
+endif()
 
+if (SHERPA_ENABLE_PYTHIA)
+  add_subdirectory(AddOns/Pythia)
+endif()
+
+if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_HEPMC2)
+  add_subdirectory(AddOns/HepMC)
 endif()
 
 
+if (SHERPA_ENABLE_ROOT)
+  add_subdirectory(AddOns/Root)
+endif()
+
+if (SHERPA_ENABLE_BLACKHAT)
+  add_subdirectory(AddOns/BlackHat)
+endif()
+
+if (SHERPA_ENABLE_MADLOOP)
+  add_subdirectory(AddOns/MadLoop)
+endif()
 
 
+if (SHERPA_ENABLE_LHOLE)
+  add_subdirectory(AddOns/LH_OLE)
+endif()
 
-
-
-
-
-
-
-
-
-
-
+if (SHERPA_ENABLE_OPENLOOPS)
+  add_subdirectory(AddOns/OpenLoops)
+endif()
 
 
 
