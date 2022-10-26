@@ -1,4 +1,5 @@
 import sys
+import sys
 import os
 import re
 ########################################################################
@@ -72,7 +73,8 @@ def get_simple_so_version(text):
     return "0.0.0"
 ########################################################################
 def get_full_so_version(text):
-     return get_simple_so_version(text)+".${SHERPA_VERSION_MAJOR}"
+     return get_simple_so_version(text)
+     #+".${SHERPA_VERSION_MAJOR}"
 ########################################################################
 def comment_remover(text):
     def replacer(match):
@@ -121,7 +123,24 @@ def transform_pilots(argv):
     with open(path_to_file) as f:
       file_contents = f.readlines()
     newlist =file_contents
-    newlist = [x.replace("\t"," ") for x in newlist]
+    newlist = [x.replace("if ENABLE_UFO","if (ENABLE_UFO)") for x in newlist]
+    newlist = [x.replace("if PYTHIA_SUPPORT","if (PYTHIA_SUPPORT)") for x in newlist]
+    newlist = [x.replace("if GZIP_SUPPORT","if (GZIP_SUPPORT)") for x in newlist]
+    newlist = [x.replace("PYTHIAHEADERS =","set(PYTHIAHEADERS ") for x in newlist]
+    newlist = [x.replace("GZIPSTREAMHEADERS =","set(GZIPSTREAMHEADERS ") for x in newlist]
+    newlist = [x.replace("GZIPSTREAMSOURCES =","set(GZIPSTREAMSOURCES ") for x in newlist]
+    newlist = [x.replace("PYTHIASOURCES =","set(PYTHIASOURCES ") for x in newlist]
+    newlist = [x.replace("GZIPEXTRADIST =","set(GZIPEXTRADIST ") for x in newlist]
+    newlist = [x.replace("$(GZIPSTREAMSOURCES)","${GZIPSTREAMSOURCES}") for x in newlist]
+    newlist = [x.replace("$(PYTHIASOURCES)","${PYTHIASOURCES}") for x in newlist]
+    newlist = [x.replace("else","else()") if re.match(r'^[:blank:]*else.*',x)  else x for x in newlist]
+    newlist = [x.replace("endif","endif()") if re.match(r'^[:blank:]*endif.*',x)  else x for x in newlist]
+
+
+
+
+
+    newlist = [x.replace("\\n"," ") for x in newlist]
     newlist = [x.replace("    "," ") for x in newlist]
     newlist = [x.replace("   "," ") for x in newlist]
     newlist = [x.replace("  "," ") for x in newlist]
@@ -129,18 +148,16 @@ def transform_pilots(argv):
     newlist = [x.replace("# ","#") for x in newlist]
     newlist = [x.strip() for x in newlist]
     newlist = filter(lambda st: st != '' , newlist)
-    #newlist = [  "\n"+x.replace("#define ","set(")+"1)\n  add_definitions(-D"+x.replace("#define ","")+")\n"  if re.match(r'^#define .*',x)  else x for x in newlist]
-    newlist = [  "\n"+x.replace("#define ","set(")+" 1)\n"  if re.match(r'^#define .*',x)  else x for x in newlist]
-    newlist = [  x.replace("#ifndef ","if ( NOT (")+") )\n" if re.match(r'^#ifndef .*',x)  else x for x in newlist]
-    newlist = [  x.replace("#ifdef ","if ( (")+") )\n" if re.match(r'^#ifdef .*',x)  else x for x in newlist]
-    newlist = [  x.replace("#endif","endif()") if re.match(r'^#endif.*',x)  else x for x in newlist]
+    
+    
+    
+    
     newlist = [  x.replace("&&"," AND ")  for x in newlist]
     newlist = [  x.replace("||"," OR ")  for x in newlist]
 
     newlist = [x.strip() for x in newlist]
     #newlist = filter(lambda st: st != '' , newlist)
     newlist = [x.replace("set(","  set(") if not re.match(r'^  .*',x)  else x for x in newlist]
-    newlist = [  x.replace("#if","if (")+" )" if re.match(r'^#if.*',x)  else x for x in newlist]
     newlist = [  x.replace("!defined","NOT defined") for x in newlist]
     newlist = [  x.replace("*-","#") for x in newlist]
     newlist = [  x.replace("NOT defined(","(NOT") for x in newlist]
@@ -158,68 +175,27 @@ def transform_imake_source(argv, dbg):
     path_to_file=argv
     with open(path_to_file) as f:
       file_contents = f.readlines()
-    my_lst_str = ''.join(file_contents)
-    x=comment_remover(my_lst_str)
 
-    filtered = x.split('\n')
+
+    #filtered = ''.join(file_contents).split('\n')
+    filtered = [""]
+    for a in file_contents:
+      if len(a)>2:
+       print(a,"->",a[-2],"<-")
+      if  len(a)>2 and a[-2]=='\\':
+       if  len(a)>2 :
+         filtered[-1]+=a[0:-2]
+      else:
+        filtered+=[a]  
+    
     filtered= filter(lambda st: st != '\n' , filtered)
     filtered= filter(lambda st: st != '' , filtered)
     filtered= filter(lambda st: st != ' ' , filtered)
-#    filtered= filter(lambda st: not re.match(".*MotifDependantMakeVar.*",st), filtered)
-#    filtered= filter(lambda st: not re.match(".*SubdirLibraryTarget.*",st), filtered)
-#    filtered= filter(lambda st: not re.match(".*SHERPACcProgramTarget.*",st), filtered)
-#    filtered= filter(lambda st: not re.match(".*TopOfPackage.*",st), filtered)
-#    filtered= filter(lambda st: not re.match(".*NormalFortranProgramTarget.*",st), filtered)
-#    filtered= filter(lambda st: not re.match("^NormalProgramTarget.*",st), filtered)
-#    filtered= filter(lambda st: not re.match("^InstallNonExecFileTarget.*",st), filtered)    
-#    filtered= filter(lambda st: not re.match("^InstallSharedLibrary.*",st), filtered)
-#    filtered= filter(lambda st: not re.match("^InstallLibrary.*",st), filtered)
-#    filtered= filter(lambda st: not re.match("^AllTarget.*",st), filtered)
-#    filtered= filter(lambda st: not re.match("^TestTarget.*",st), filtered)
-#    filtered= filter(lambda st: not re.match("^DoIncludePackage.*",st), filtered)
-#    filtered= filter(lambda st: not re.match("^SubdirLibraryTarget.*",st), filtered)    
-#    filtered= filter(lambda st: not re.match(".*LinkFileFromDir.*",st), filtered)
-#    filtered= filter(lambda st: not re.match(".*FortranCmd.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*VMS_OPT_FILES.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*IMAKE_INCLUDES.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*CERNDEFINES.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*CLIBS.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*nstallProgram.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*eedTcpipLib.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*NeedSysexe.*",st), filtered)
-    #filtered= filter(lambda st: not re.match(".*CCOPTIONS.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*\+Z \+DA1.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^gxint321.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*cd \$\(.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*gxint\.f.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^FC=mpxlf.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*install\.lib.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*clean::.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*Makefile::.*",st), filtered)
+    filtered= filter(lambda st: not re.match(".*_la_LIBADD.*",st), filtered)
+    filtered= filter(lambda st: not re.match(".*_la_LIBADD.*",st), filtered)
+    filtered= filter(lambda st: not re.match(".*_CPPFLAGS.*",st), filtered)
+    filtered= filter(lambda st: not re.match(".*_CXXFLAGS.*",st), filtered)
     filtered= filter(lambda st: not re.match(".*_LIBADD.*",st), filtered)
-    ###filtered= filter(lambda st: not re.match(".*LibraryTargetName.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*RemoveFile.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*CopyFile.*",st), filtered)
-    filtered= filter(lambda st: not re.match(".*geant321_parallel.*",st), filtered)
-    ###filtered= filter(lambda st: not re.match(".*CppFileTarget.*",st), filtered)
-    #filtered= filter(lambda st: not re.match("^Install.*",st), filtered)
-    #filtered= filter(lambda st: not re.match("^EXTRA_.*",st), filtered)
-    #filtered= filter(lambda st: not re.match("^#include.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^IMAKE_DEFINES.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*FORTRANSAVEOPTION.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*FORTRAN.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]FORTRAN.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^FORTRANOPTIONS.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^SpecialFortranLibObjectRule.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^SpecialFortranObjectRule.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*SpecialFortranObjectRule.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*DefinePackage.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*INCLUDES.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*SHERPAFortran.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*PACKAGE.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*FDEBUGFLAGS.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*EXTRA_DEFINES.*",st), filtered)
-    filtered= filter(lambda st: not re.match("^[:blank:]*CDEBUGFLAGS.*",st), filtered)
     filtered= filter(lambda st: not re.match("^#define.*",st), filtered)
 
     filtered = [x.replace(" : ",": ") for x in filtered]
@@ -255,41 +231,95 @@ def transform_imake_source(argv, dbg):
         temp+=' '
         temp+=a
      
-     LISTNAME=path_to_file.replace("//","/").replace("/","_")
-     LISTNAME=LISTNAME.replace("_Makefile.am","")
-     LISTNAME=LISTNAME.replace(".","0")#OH!
-     
+    LISTNAME=path_to_file.replace("//","/").replace("/","_")
+    LISTNAME=LISTNAME.replace("_Makefile.am","")
+    LISTNAME=LISTNAME.replace(".","0")#OH!
+    
+    print("===========", LISTNAME)
+    print(newlist) 
     incfiles = [ x  for x in newlist if re.match(r'#include.*',x)]
     incfiles =  [ x.replace("#include","") for x in incfiles]
 
     incfiles =  [ x.replace("\"","") for x in incfiles]
     incfiles =  [ x.replace(" ","") for x in incfiles]
     newlist.append(temp)
-    newlist = [ ("#"+x) if re.match(r'^.*_LIBADD.*',x) else x for x in newlist]
-
+   # newlist = [ ("#"+x) if re.match(r'^.*_LIBADD.*',x) else x for x in newlist]
+   # newlist = [ ("#"+x) if re.match(r'^.*_CPPFLAGS.*',x) else x for x in newlist]
+    print("===========")
+    print(newlist)
     newlist = filter(lambda st: st != '' , newlist)
-    newlist = [x.replace(" \\ "," ") for x in newlist]
-    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*pkglib_LTLIBRARIES.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*CppTarget.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*FDEBUGFLAGS.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*CDEBUGFLAGS.*',x) else x for x in newlist]
-    newlist = [ ("\n#"+x) if re.match(r'^[:blank:]*[^#]*dist_bin_SCRIPTS.*',x) else x for x in newlist]
-    newlist = [ ("\n#"+x) if re.match(r'^[:blank:]*[^#]*SUBDIRS.*',x) else x for x in newlist]
-#    newlist = [ ("\n#"+x) if re.match(r'^[:blank:]*[^#]*localinc.*',x) else x for x in newlist]
+  #  newlist = [x.replace(" \\ "," ") for x in newlist]
 
-#    newlist = [x.replace("(PACKAGE_LIB)","{PACKAGE_LIB}") for x in newlist]
-#    newlist = [x.replace("MOTIF_","") for x in newlist]
+    newlist = [x.replace("if ENABLE_UFO","if (ENABLE_UFO)") for x in newlist]	
+    newlist = [x.replace("if PYTHIA_SUPPORT","if (PYTHIA_SUPPORT)") for x in newlist]
+    newlist = [x.replace("if GZIP_SUPPORT","if (GZIP_SUPPORT)") for x in newlist]
+    newlist = [x.replace("NNPDF3archive =","set(NNPDF3archive  ") for x in newlist]
+    newlist = [x.replace("SOBOL_EXT =","set(SOBOL_EXT  ") for x in newlist]
+    newlist = [x.replace("PYTHIAHEADERS =","set(PYTHIAHEADERS ") for x in newlist]
+    newlist = [x.replace("GZIPSTREAMHEADERS =","set(GZIPSTREAMHEADERS ") for x in newlist]
+    newlist = [x.replace("GZIPSTREAMSOURCES =","set(GZIPSTREAMSOURCES ") for x in newlist]
+    newlist = [x.replace("PYTHIASOURCES =","set(PYTHIASOURCES ") for x in newlist]
+    newlist = [x.replace("GZIPEXTRADIST =","set(GZIPEXTRADIST ") for x in newlist]
     newlist = [x.replace("$(GZIPSTREAMSOURCES)","${GZIPSTREAMSOURCES}") for x in newlist]
-    newlist = [x.replace("GITTAG","\n#GITTAG") for x in newlist]
-    newlist = [x.replace("bin_PROGRAMS","\n#bin_PROGRAMS") for x in newlist]
-    newlist = [x.replace("nobase_dist_pkgdata","\n#nobase_dist_pkgdata") for x in newlist]
-    newlist = [x.replace("localinc","\n#localinc") for x in newlist]
-    newlist = [x.replace("Git_Info.C","") for x in newlist]
-#    newlist = [x.replace(" : =",": =") for x in newlist]
-#    newlist = [x.replace("_F+","_F +") for x in newlist]
-#    newlist = [x.replace("_C+","_C +") for x in newlist]
+    newlist = [x.replace("$(PYTHIASOURCES)","${PYTHIASOURCES}") for x in newlist]
+    newlist = [x.replace("else","ELSE()") if re.match(r'^[:blank:]*else.*',x)  else x for x in newlist]
+    newlist = [x.replace("endif","ENDIF()") if re.match(r'^[:blank:]*endif.*',x)  else x for x in newlist]
+    newlist = [x.replace("include","#include") if re.match(r'^[:blank:]*include',x)  else x for x in newlist]
+    newlist = [x.replace("SYSLIBS","#SYSLIBS") if re.match(r'^[:blank:]*SYSLIBS',x)  else x for x in newlist]
+    newlist = [x.replace("dist-hook","#dist-hook") for x in newlist]
+    
+    
+    
+    newlist = [x.replace("AM_FFLAGS","#AM_FFLAGS")  for x in newlist]
+    newlist = [x.replace("dist_ufo_PYTHON","#dist_ufo_PYTHON")  for x in newlist]
+    newlist = [x.replace("ufodir =","#ufodir =")  for x in newlist]
+    newlist = [x.replace("localinc","#localinc")  for x in newlist]
+    newlist = [x.replace("pkglib_LTLIBRARIES","#pkglib_LTLIBRARIES")  for x in newlist]
+    newlist = [x.replace("GITTAG","#GITTAG")  for x in newlist]
+    newlist = [x.replace("EXTRA_DIST","#EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("rm -f","#rm -f")  for x in newlist]
+    newlist = [x.replace("MAKE =","#MAKE =")  for x in newlist]
+    newlist = [x.replace("nobase_","#nobase_")  for x in newlist]
+    newlist = [x.replace("dist_bin_SCRIPTS","#dist_bin_SCRIPTS")  for x in newlist]
+    newlist = [x.replace("dist_pkgdata","#dist_pkgdata")  for x in newlist]
+    newlist = [x.replace("DIST_SUBDIRS","#DIST_SUBDIRS")  for x in newlist]
+    newlist = [x.replace("SUBDIRS","#SUBDIRS")  for x in newlist]
+    newlist = [x.replace("SYSLIBS","#SYSLIBS")  for x in newlist]
+    newlist = [x.replace("include","#include")  for x in newlist]
+    newlist = [x.replace("MD5_EXCLUDE","#MD5_EXCLUDE")  for x in newlist]
+    newlist = [x.replace("MD5_EXCLUDE","#MD5_EXCLUDE")  for x in newlist]
+    newlist = [x.replace("uninstall-hook","#uninstall-hook")  for x in newlist]
+    newlist = [x.replace("install-data-hook","#install-data-hook")  for x in newlist]
+    newlist = [x.replace("tar xjf","#tar xjf")  for x in newlist]
+    newlist = [x.replace("-rm -rf","#-rm -rf")  for x in newlist]
+    newlist = [x.replace("Sobol/%.gz","#Sobol/%.gz")  for x in newlist]
+    newlist = [x.replace("mkdir -p Sobol","#mkdir -p Sobol")  for x in newlist]
+    newlist = [x.replace("gzip < $< > $@","#gzip < $< > $@")  for x in newlist]
 
-    #newlist = [ ("#ORIGINAL "+x+"\n"+"\n"+x) if re.match(r'.*defined.*',x) else x for x in newlist]
+
+    newlist=[ x.replace(" \n","\n") for x in newlist]
+    newlist=[ x.replace(" \n","\n") for x in newlist]
+
+
+    print("===========2")
+    print(newlist)
+    newlistx = ''.join(newlist)
+    newlistx=[ x.replace("\\\\\n","\n") for x in newlistx]
+    newlistx=[ x.replace("\\\n","\n") for x in newlistx]
+    print(newlistx) 
+    newlist =''.join(newlistx).split('\n')
+
+    print("===========3")
+    print(newlist)    
+    
+    #newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*pkglib_LTLIBRARIES.*',x) else x for x in newlist]
+    #newlist = [ ("\n#"+x) if re.match(r'^[:blank:]*[^#]*dist_bin_SCRIPTS.*',x) else x for x in newlist]
+    #newlist = [ ("\n#"+x) if re.match(r'^[:blank:]*[^#]*SUBDIRS.*',x) else x for x in newlist]
+    #newlist = [x.replace("GITTAG","\n#GITTAG") for x in newlist]
+    #newlist = [x.replace("bin_PROGRAMS","\n#bin_PROGRAMS") for x in newlist]
+    #newlist = [x.replace("nobase_dist_pkgdata","\n#nobase_dist_pkgdata") for x in newlist]
+    #newlist = [x.replace("localinc","\n#localinc") for x in newlist]
+    newlist = [x.replace("Git_Info.C","") for x in newlist]
     l=[]
     for x in newlist:
       if re.match(r'.*defined.*',x):
@@ -297,62 +327,14 @@ def transform_imake_source(argv, dbg):
       l.append(x)
 
     newlist=l    
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("! defined(","!defined(") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#if (defined(SHERPA_LINUX) && (!defined(SHERPA_GFORTRAN)))","if (SHERPA_LINUX AND NOT SHERPA_GFORTRAN)") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#if defined(SHERPA_DECS) || (defined(SHERPA_LINUX) && !defined(SHERPA_PPC)) || defined(SHERPA_WINNT)","if (SHERPA_DECS OR (SHERPA_LINUX AND NOT SHERPA_PPC) OR SHERPA_WINNT)") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#if (!defined(SHERPA_ASSEMB) && defined(SHERPA_OLD))","if ( NOT SHERPA_ASSEMB AND SHERPA_OLD)") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#if (!defined(SHERPA_NTC)) && (!defined(SHERPA_X11))","if (NOT SHERPA_NTC AND NOT SHERPA_X11)") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#if !defined(","if (NOT ") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("F_ARCHITECTURE = ","set(F_ARCHITECTURE ") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("(F_ARCHITECTURE)","{F_ARCHITECTURE}  ") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#else","else()") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#if defined","if ") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#ifdef ","if (") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#ifndef ","if (NOT ") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#endif","endif()") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("#endif","endif()") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace(") || defined("," OR ") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace(") && !defined("," AND NOT ") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace(") && defined("," AND ") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace(") && defined("," AND ") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace(") && (!defined(SHERPA_PHIGS)) && (!defined(SHERPA_MSDOS)"," AND NOT SHERPA_PHIGS AND NOT SHERPA_MSDOS") for x in newlist] 
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("(SHERPA_UNIX) && (!defined(SHERPA_WINNT))","(SHERPA_UNIX AND NOT SHERPA_WINNT)") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("if (SHERPA_SHL) && ( defined(SHERPA_SUN OR SHERPA_SGI OR SHERPA_IBMRT OR SHERPA_QMVAOS OR SHERPA_LINUX) )","if (SHERPA_SHL AND ( SHERPA_SUN OR SHERPA_SGI OR SHERPA_IBMRT OR SHERPA_QMVAOS OR SHERPA_LINUX) )") for x in newlist]
-#    newlist = [x if re.match(r'^#ORIGINAL .*$',x) else x.replace("SHERPA_LNX AND NOT SHERPA_QMLXIA64) && (!defined(SHERPA_GFORTRAN)"," SHERPA_LNX AND NOT SHERPA_QMLXIA64 AND NOT SHERPA_GFORTRAN") for x in newlist]
-    newlist = [x.replace("_SOURCES =","\n  set("+LISTNAME+"_SOURCES") for x in newlist]
-#    newlist = [x.replace("SRCS_CDF: = $(SRCS_CDF)","  list(APPEND "+LISTNAME+"_CDFSRC ") for x in newlist]
-#    newlist = [x.replace("SRCS_C =","  set("+LISTNAME+"_CSRC") for x in newlist]
-#    newlist = [x.replace("SRCS_C: = $(SRCS_C)","  list(APPEND "+LISTNAME+"_CSRC ") for x in newlist]
-#    newlist = [x.replace("SRCS_C + = ","  list(APPEND "+LISTNAME+"_CSRC ") for x in newlist]
-#    newlist = [x.replace("SRCS_F =","  set("+LISTNAME+"_FSRC") for x in newlist]
-#    newlist = [x.replace("SRCS_F: = $(SRCS_F)","  list(APPEND "+LISTNAME+"_FSRC ") for x in newlist]
-#    newlist = [x.replace("SRCS_F + = ","  list(APPEND "+LISTNAME+"_FSRC ") for x in newlist]
-#    newlist = [x.replace("SRCS_S =","  set("+LISTNAME+"_SSRC") for x in newlist]
-#    newlist = [x.replace("SRCS_S: = $(SRCS_S)","  list(APPEND "+LISTNAME+"_SSRC ") for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*EXTRA_DEFINES.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*EXTRA_INCLUDES.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*EXTRA_LDOPTIONS.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*test:.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*CCOPTIONS.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*CERNDEFINES: =.*',x) else x for x in newlist]    
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*DEFINES: =.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*SpecialCObjectRule.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*CCOPTIONS + =.*',x) else x for x in newlist]    
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*FCLDOPTIONS.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*InstallProgram.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*InstallScr.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*MotifD.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*NeedTcpipLib.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*SpecialO.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*SpecialFortran.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*SQUEEZE.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*FORTRANSAVEOPTION.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*FDEBUGFLAGS.*',x) else x for x in newlist]
-#    newlist = [ ("#"+x) if re.match(r'^[:blank:]*[^#]*FDEBUGFLAGS.*',x) else x for x in newlist]
-#    newlist = [x.replace(") || (defined(SHERPA_LINUX) && (!defined(SHERPA_PPC))"," OR (SHERPA_LINUX AND (NOT SHERPA_PPC))") for x in newlist] 
-#    newlist = [x.replace("#if ( defined(SHERPA_UNIX OR SHERPA_VAXVMS) ) && (!defined(SHERPA_NOCIO))","if ( SHERPA_UNIX OR SHERPA_VAXVMS  AND (NOT SHERPA_NOCIO))") for x in newlist] 
-#    newlist = [x.replace("(SRCS_F)","{SRCS_F}") for x in newlist]
+  #  newlist = [x.replace("_SOURCES =","set("+LISTNAME+"_SOURCES") for x in newlist]
+    newlist = ["set("+LISTNAME+"_SOURCES" + x.split("=")[1] if re.match(r'.*_SOURCES =.*',x) else x  for x in newlist]
     newlist=[ x.replace(" \n","\n") for x in newlist]
+    
+    newlist = [x.replace("endif)","endif()")  for x in newlist]
+    newlist = [x.replace("else)","else()")  for x in newlist]
+
+    
     gnlist=[]
     for a in newlist:
       gnlist+=a.split('\n')
@@ -367,7 +349,7 @@ def transform_imake_source(argv, dbg):
     dirf=path_to_file.replace("Makefile.am","")
     sr=[]
     FSRC=0
-
+    fin = [ "#"+x  if re.match(r'.*la_LIBADD.*',x)  else x for x in fin]
     for a in fin:
      if re.match(".*_SOURCES.*",a):
        FSRC=1
@@ -415,6 +397,9 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
         #  f.write(tf+"\n")
      
      for a in x[1]: 
+          
+          a=a.replace("else)","else()")
+          a=a.replace("endif)","endif()")
           if a[0] =='#':
             f.write(a+"\n")
           else:
@@ -488,39 +473,34 @@ if __name__ == '__main__':
    installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
 ########################################################################
-   ldirs =  "Makefile.am Main/Makefile.am".split(" ")
+   ldirs =  "Makefile.am Main/Makefile.am Spectra/Makefile.am".split(" ")
    lname="BEAM"
    includes=" ".split(" ") 
    installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
 ########################################################################
-   ldirs =  "Current_Library/Makefile.am ME_Library/Makefile.am Main/Makefile.am Makefile.am PS_Library/Makefile.am Run/Makefile.am".split(" ")
    ldirs =  "Current_Library/Makefile.am ME_Library/Makefile.am Main/Makefile.am Makefile.am PS_Library/Makefile.am".split(" ")
    lname="HADRONS++"
    includes=" ".split(" ") 
    installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
-   
 ########################################################################
-#   ldirs =  "Current_Library/Makefile.am ME_Library/Makefile.am Main/Makefile.am Makefile.am PS_Library/Makefile.am Run/Makefile.am".split(" ")
    ldirs =  "Decays/Makefile.am Formation/Makefile.am Main/Makefile.am Makefile.am Tools/Makefile.am".split(" ")
    lname="AHADIC++"
    includes=" ".split(" ") 
-   installincludes="Decays Formation Main Tools".split(" ") 
+   installincludes=" ".split(" ")
    create_library(ldirs,lname,includes,installincludes)
-
-
+########################################################################
    ldirs =  "Amplitude/Makefile.am Amplitude/Zfunctions/Makefile.am DipoleSubtraction/Makefile.am Main/Makefile.am Makefile.am Phasespace/Makefile.am String/Makefile.am".split(" ")
    lname="AMEGIC++"
    includes=" ".split(" ") 
-   installincludes="Amplitude DipoleSubtraction Main Phasespace String".split(" ") 
+   installincludes=" ".split(" ")
    create_library(ldirs,lname,includes,installincludes)
-
-
+########################################################################
    ldirs =  "Main/Makefile.am Makefile.am Perturbative/Makefile.am Tools/Makefile.am".split(" ")
    lname="AMISIC++"
    includes=" ".split(" ") 
-   installincludes="Main Perturbative Tools".split(" ") 
+   installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
 
    ldirs =  "Calculators/Makefile.am Main/Makefile.am Makefile.am Showers/Makefile.am Tools/Makefile.am".split(" ")
@@ -534,11 +514,6 @@ if __name__ == '__main__':
    includes=" ".split(" ") 
    installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
-#  ./AHADIC++/Decays/Makefile.am
-#./AHADIC++/Formation/Makefile.am
-#./AHADIC++/Main/Makefile.am
-#./AHADIC++/Makefile.am
-#./AHADIC++/Tools/Makefile.am
  
    ldirs =  "Gauge/Makefile.am Lorentz/Makefile.am Main/Makefile.am Makefile.am Shower/Makefile.am Tools/Makefile.am".split(" ") 
    lname="DIRE"
@@ -562,6 +537,7 @@ if __name__ == '__main__':
    lname="REMNANTS"
    includes=" ".split(" ") 
    installincludes="Main Tools".split(" ") 
+   installincludes=" ".split(" ")
    create_library(ldirs,lname,includes,installincludes)
 
 
@@ -577,15 +553,12 @@ if __name__ == '__main__':
    includes=" ".split(" ") 
    installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
-   
-   
+
    ldirs =  "Colors/Makefile.am Currents/Makefile.am Explicit/Makefile.am Loops/Makefile.am Main/Makefile.am Makefile.am SpinCorrelations/Makefile.am Vertices/Makefile.am".split(" ") 
    lname="METOOLS"
    includes=" ".split(" ") 
    installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
-      
-      
       
    ldirs =  "HEFT/Makefile.am Main/Makefile.am Makefile.am SM/Makefile.am SMEHC/Makefile.am TauPi/Makefile.am UFO/Makefile.am".split(" ") 
    ldirs =  "Main/Makefile.am Makefile.am SM/Makefile.am TauPi/Makefile.am UFO/Makefile.am".split(" ") 
@@ -593,45 +566,54 @@ if __name__ == '__main__':
    includes=" ".split(" ") 
    installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
-         
-########################################################################
+         ########################################################################
    ldirs =  "Amplitude/Makefile.am Main/Makefile.am Makefile.am Phasespace/Makefile.am".split(" ")
    lname="COMIX"
    includes=" ".split(" ") 
-   installincludes="Amplitude Main Phasespace".split(" ") 
+   installincludes="Amplitude Main Phasespace".split(" ")
+   installincludes=" ".split(" ")  
    create_library(ldirs,lname,includes,installincludes)
 ########################################################################
-
    ldirs =  "Makefile.am Math/Makefile.am Org/Makefile.am Phys/Makefile.am YAML/Makefile.am YAML/yaml-cpp/Makefile.am YAML/yaml-cpp/node/Makefile.am YAML/yaml-cpp/node/detail/Makefile.am".split()
    lname="ATOOLS"
    includes=" ".split(" ") 
-   installincludes="Math Org Phys YAML".split(" ") 
+   installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
-
+########################################################################
    ldirs =  "MEs/Makefile.am Main/Makefile.am Makefile.am PhaseSpace/Makefile.am Tools/Makefile.am".split(" ") 
    lname="PHOTONS++"
    includes=" ".split(" ") 
-   installincludes="MEs Main Makefile.am PhaseSpace Tools".split(" ") 
+   installincludes=" ".split(" ")
    create_library(ldirs,lname,includes,installincludes)
 
-
-   ldirs =  "CT10/Makefile.am CT12/Makefile.am CT14/Makefile.am CTEQ/Makefile.am Electron/Makefile.am GRV/Makefile.am LHAPDF/Makefile.am MRST/Makefile.am MSTW/Makefile.am Main/Makefile.am Makefile.am NNPDF/Makefile.am".split()
-   ldirs =  "CT14/Makefile.am  Electron/Makefile.am GRV/Makefile.am GRS/Makefile.am SASG/Makefile.am SAL/Makefile.am Main/Makefile.am Makefile.am NNPDF/Makefile.am".split()
-   lname="PDF"
-   includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
-   create_library(ldirs,lname,includes,installincludes)
-
+   os.chdir("PDF")
+   MCldirs =["Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "), 
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" ")
+            ] 
+   MClname= ["CT14", "Electron", "GRV", "GRS", "SASG", "SAL", "Main", "NNPDF", "LHAPDF"]
+   for x in range(0,len(MClname) ):
+     lname=MClname[x]
+     ldirs=MCldirs[x]
+     includes="/".split(" ")+[lname]
+     installincludes=[]
+     create_library(ldirs,lname,includes,installincludes,[],[],[])
+   os.chdir("../")
 
    ldirs =  "Beam_Remnants.old/Makefile.am Beam_Remnants/Makefile.am Cross_Sections/Makefile.am Eikonals/Makefile.am Event_Generation/Makefile.am Main/Makefile.am Makefile.am Tools/Makefile.am".split()
-   ldirs =  "Beam_Remnants/Makefile.am Cross_Sections/Makefile.am Eikonals/Makefile.am Event_Generation/Makefile.am Main/Makefile.am Makefile.am Tools/Makefile.am".split()
+   ldirs =  "Ladders/Makefile.am  Beam_Remnants/Makefile.am Cross_Sections/Makefile.am Eikonals/Makefile.am Event_Generation/Makefile.am Main/Makefile.am Makefile.am Tools/Makefile.am".split()
    lname="SHRiMPS"
    includes=" ".split(" ") 
    installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)   
 
 
-   ldirs =  "Initialization/Makefile.am LundTools/Makefile.am Main/Makefile.am Makefile.am PerturbativePhysics/Makefile.am Run/Makefile.am Single_Events/Makefile.am SoftPhysics/Makefile.am Tools/Makefile.am".split()
    ldirs =  "Initialization/Makefile.am LundTools/Makefile.am Main/Makefile.am Makefile.am PerturbativePhysics/Makefile.am Single_Events/Makefile.am SoftPhysics/Makefile.am Tools/Makefile.am".split()
    lname="SHERPA"
    includes=" ".split(" ") 

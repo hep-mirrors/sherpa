@@ -19,12 +19,6 @@ message(STATUS "SHERPA: SHERPA_VERSION_MAJOR=${SHERPA_VERSION_MAJOR}")
 message(STATUS "SHERPA: SHERPA_VERSION_MINOR=${SHERPA_VERSION_MINOR}")
 message(STATUS "SHERPA: SHERPA_VERSION_PATCH=${SHERPA_VERSION_PATCH}")
 message(STATUS "SHERPA: Building on CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}")
-if (CMAKE_SYSTEM_NAME MATCHES "Linux")
- set(LINUX 1)
-endif()
-if (CMAKE_SYSTEM_NAME MATCHES "SunOS")
- set(SunOS 1)
-endif()
 if(CMAKE_BUILD_TYPE)
   message(STATUS "SHERPA: Build type: ${CMAKE_BUILD_TYPE}")
 else(CMAKE_BUILD_TYPE)
@@ -38,12 +32,14 @@ if (APPLE)
 endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
+option(SHERPA_ENABLE_PYTHON                "Enables building of tests." ON)
 option(SHERPA_ENABLE_TEST                "Enables building of tests." ON)
 option(SHERPA_ENABLE_MEMORYTEST          "Adds memory check tests." OFF)
 option(SHERPA_POSITION_INDEPENDENT_CODE  "Position independent code for static libraries." OFF)
 option(SHERPA_BUILD_SHARED               "Build shared libraries." ON)
 option(SHERPA_BUILD_STATIC               "Build static libraries." OFF)
-set(SHERPA_BUILD_STATIC ON)  #This is always ON, but it is convenient to have it like this from the point of view of logic.
+option(PYTHIA_SUPPORT               "Pythia support" ON)
+option(GZIP_SUPPORT                "GZIP support" ON)
 ###########################Options handeling#####################################
 if(SHERPA_ENABLE_TEST)
   ENABLE_TESTING()
@@ -85,250 +81,10 @@ get_filename_component (Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
 message(STATUS "SHERPA: Fortran_COMPILER_NAME=${Fortran_COMPILER_NAME}  CMAKE_Fortran_COMPILER_ID=${CMAKE_Fortran_COMPILER_ID}  CMAKE_Fortran_COMPILER_VERSION=${CMAKE_Fortran_COMPILER_VERSION}")
 get_filename_component (C_COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
 message(STATUS "SHERPA: C_COMPILER_NAME=${C_COMPILER_NAME}  CMAKE_C_COMPILER_ID=${CMAKE_C_COMPILER_ID}   CMAKE_C_COMPILER_VERSION=${CMAKE_C_COMPILER_VERSION}")
-########################################################################
-if (APPLE)
-  find_program ( SED NAMES gsed REQUIRED)
-  find_program ( CPP NAMES clang REQUIRED)
-endif()
-if (LINUX)
-  find_program ( SED NAMES sed REQUIRED)
-  find_program ( CPP NAMES cpp REQUIRED)
-endif()
-if (SunOS)
-  find_program ( SED NAMES gsed sed REQUIRED)
-  find_program ( CPP NAMES cpp gcpp clang REQUIRED)
-endif()
-message(STATUS "SHERPA: SED=${SED}")
-if (CMAKE_C_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-  set(C_C_FLAGS_TO_CHECK       
-                               "-fcommon"
-                               "-fexceptions"
-                               "-trigraphs"
-                               "-mfpmath=387"    
-                               "-Wno-cpp"  
-                               "-Wno-conversion"  
-                               "-Wno-uninitialized"  
-                               "-Wno-implicit-int"  
-                               "-Wno-int-to-pointer-cast"  
-                               "-Wno-implicit-function-declaration" 
-                               "-Wno-incompatible-pointer-types" 
-                               "-Wno-return-type" 
-                               "-Wno-trigraphs" 
-                               "-Wno-unused-label" 
-                               "-Wno-unused-function" 
-                               "-Wno-unused-dummy-argument"
-                               "-Wno-missing-braces"
-                               "-Wno-switch"
-                               "-Wno-format-overflow"
-                               "-Wno-unused-result"
-                               "-Wno-array-bounds"
-                               "-Wno-restrict"
-                               "-Wno-tautological-constant-compare"
-                               "-Wno-constant-logical-operand"
-                               "-O0"
-                               "-g"
-                               )
-endif()
-########################################################################
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  set(C_C_FLAGS_TO_CHECK       "-fcommon"
-                               "--param=ssp-buffer-size=4"
-                               "-fexceptions"
-                               "-fasynchronous-unwind-tables"
-                               "-fcf-protection"
-                               "-trigraphs" 
-                               "-mfpmath=387"                               
-                               "-grecord-gcc-switches"
-                               "-pipe"
-                               "-Wall"
-                               "-Wno-trigraphs" 
-                               "-Wno-pointer-to-int-cast"
-                               "-Wno-unused-but-set-variable" 
-                               "-Wno-unused-function" 
-                               "-Wno-missing-braces"
-                               "-Wno-switch"
-                               "-Wno-array-bounds"
-                               "-Wno-conversion"  
-                               "-Wno-uninitialized"  
-                               "-Wno-int-to-pointer-cast"  
-                               "-Wno-implicit-function-declaration" 
-                               "-Wformat -Werror=format-security"
-                               "-O0"
-                               "-g"
-                               )
-if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.0)
-     list(APPEND C_C_FLAGS_TO_CHECK  
-                                     "-fstack-protector-strong" 
-                                     "-fstack-clash-protection"
-                                     )
-endif()
-if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.5)
-    list(APPEND C_C_FLAGS_TO_CHECK 
-                         "-Wno-restrict"
-                         "-Wno-unused-result"
-                         "-Wno-format-overflow"
-                         "-Wno-unused-dummy-argument"
-                         "-Wno-maybe-uninitialized"
-                         "-Wno-stringop-truncation"
-                         "-Wno-incompatible-pointer-types"
-                         "-Wno-cpp"
-                         "-fstack-protector"
-                         )
-endif()
-endif()
-if (CMAKE_C_COMPILER_ID STREQUAL "Intel")
-  set(C_C_FLAGS_TO_CHECK "-Wno-cpp"
-                         "-Wall"
-                         "-fcommon"
-                         "-diag-disable=117" # non-void function should return a value
-                         "-diag-disable=140" # Too many arguments in function call
-                         "-diag-disable=165" # Too few arguments in function call
-                         "-diag-disable=167" # incompatible parameter
-                         "-diag-disable=177"  # labels
-                         "-diag-disable=180" # incompatible format
-                         "-diag-disable=181"  # format
-                         "-diag-disable=266" # implicit declaration
-                         "-diag-disable=303" # explicit type is missing
-                         "-diag-disable=556"  # value of type "long *" cannot be assigned to an entity of type "int *"
-                         "-diag-disable=810" # conversion from char to int
-                         "-diag-disable=1224" # _FORTIFY_SOURCE requires compiling with optimization (-O)
-                         "-diag-disable=2193" # null argument 
-                         "-O0"
-                         "-mp1"
-                         "-g"
-                             )
-endif()
-if (CMAKE_C_COMPILER_ID STREQUAL "NVHPC")
-  set(C_C_FLAGS_TO_CHECK       "-Wno-cpp"
-                               "-fcommon"  
-                               "-Wno-conversion"  
-                               "-Wno-uninitialized"  
-                               "-Wno-implicit-int"  
-                               "-Wno-int-to-pointer-cast"  
-                               "-Wno-implicit-function-declaration" 
-                               "-Wno-incompatible-pointer-types" 
-                               "-Wno-return-type" 
-                               "-trigraphs" 
-                               "-Wno-trigraphs" 
-                               "-Wno-unused-label" 
-                               "-Wno-unused-function" 
-                               "-Wno-unused-dummy-argument"
-                               "-Wno-missing-braces"
-                               "-Wno-switch"
-                               "-Wno-format-overflow"
-                               "-Wno-unused-result"
-                               "-Wno-array-bounds"
-                               "-Wno-restrict"
-                               "-flto=no"
-                               "-O0" 
-                               "-g"  
-                               "-fstack-protector"
-                               )
-endif()
-########################################################################
-if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-  set(F_Fortran_FLAGS_TO_CHECK 
-                               "--param=ssp-buffer-size=4"
-                               "-fno-backslash" 
-                               "-ffixed-line-length-72" 
-                               "-std=legacy"
-                               "-fcommon"
-                               "-fno-automatic" 
-                               "-fno-second-underscore" 
-                               "-mfpmath=387" 
-                               "-fno-align-commons" 
-                               "-fno-aggressive-loop-optimizations" 
-                               "-finit-local-zero"
-                               "-fallow-argument-mismatch"
-                               "-fno-range-check"
-                               "-fno-bounds-check"
-                               "-fbacktrace"
-                               "-Wno-cpp" 
-                               "-Wno-uninitialized" 
-                               "-Wno-character-truncation" 
-                               "-Wno-line-truncation" 
-                               "-Wno-lto-type-mismatch"
-                               "-Wno-integer-division"
-                               "-Wno-intrinsic-shadow"
-                               "-Wno-argument-mismatch"
-                               "-Wno-aggressive-loop-optimizations"
-                               "-Wno-unused-label" 
-                               "-Wno-unused-function" 
-                               "-Wno-unused-variable" 
-                               "-Wno-maybe-uninitialized" 
-                               "-Wno-unused-dummy-argument"
-                               "-O0"
-                               "-g"
-                               "-fallow-invalid-boz" #needed for patchy4/p4lib/jartpx.F
-                               )
-#Not clear starting from which version we can rely on the stack protector
-  if (CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER 4.5)
-    list(APPEND F_Fortran_FLAGS_TO_CHECK  "-fstack-protector" )
-  endif()
-  if (Fortran_COMPILER_NAME STREQUAL g77)
-    SET(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS 0)
-    SET(CMAKE_Fortran_USE_RESPONSE_FILE_FOR_OBJECTS 0)
-  else()
-    list(APPEND F_Fortran_FLAGS_TO_CHECK    
-                               "-Wno-conversion" 
-                               "-Wno-implicit-function-declaration"
-                               "-Wno-return-type"
-   )
-  endif()
-########################################################################
-elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
-  set(F_Fortran_FLAGS_TO_CHECK 
-                              "-Wall"
-                              "-fcommon"
-                              "-g"
-                              "-diag-disable6178" # return value is not defined
-#                              "-diag-disable7615" 
-                              "-diag-disable7713" # Statement function has not been used
-                              "-diag-disable7784" # Symbol in BLOCK DATA program unit is not in a COMMON block.
-                              "-diag-disable8291" # Recommended relationship between field width
-                              "-diag-disable8577" # The scale factor (k) ..
-                              "-O0"
-                              "-traceback"
-                              "-noalign" 
-                              "-noauto" 
-                              "-zero" 
-                              "-nbs"
-                              "-mp1"
-   )
-elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
-  set(F_Fortran_FLAGS_TO_CHECK 
-                               "-fcommon" 
-                               "-traceback"
-                               "-Mnobounds"
-                               "-Mnostandard"
-                               "-Mnobackslash" 
-                               "-Mpreprocess" 
-                               "-Mnosave" 
-                               "-Mnofree"
-                               "-Wno-cpp" 
-                               "-O0" 
-                               "-g"
-   )
-elseif()
-  message(FATAL "SHERPA: Don't know how to set Fortran FLAGS for  ${Fortran_COMPILER_NAME} with ID ${Fortran_COMPILER_ID}")
-endif ()
+
 if(CMAKE_SYSTEM_NAME MATCHES Darwin)
   set(CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS} -flat_namespace -single_module -undefined dynamic_lookup")
 endif()
-
-#Linux has here -Wl,-z,relro -Wl,--as-needed  -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1
-set(CMAKE_EXE_LINKER_FLAGS "")
-set(CMAKE_MODULE_LINKER_FLAGS  "")
-set(CMAKE_SHARED_LINKER_FLAGS  "")
-set(CMAKE_STATIC_LINKER_FLAGS  "")
-
-set(CMAKE_EXE_LINKER_FLAGS_${CMAKE_BUILD_TYPE}  "")
-set(CMAKE_MODULE_LINKER_FLAGS_${CMAKE_BUILD_TYPE}  "")
-set(CMAKE_SHARED_LINKER_FLAGS_${CMAKE_BUILD_TYPE}  "")
-set(CMAKE_STATIC_LINKER_FLAGS_${CMAKE_BUILD_TYPE}  "")
-
-set(CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE}  "")
-set(CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE}  "")
 
 message(STATUS "SHERPA: CMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}")
 message(STATUS "SHERPA: CMAKE_MODULE_LINKER_FLAGS=${CMAKE_MODULE_LINKER_FLAGS}")
@@ -374,11 +130,23 @@ foreach(fl IN LISTS LIST_CMAKE_Fortran_FLAGS)
 endforeach()
 list(JOIN NEW_CMAKE_Fortran_FLAGS " " CMAKE_Fortran_FLAGS_X )
 if (NOT CMAKE_FORCE_FLAGS)
-  set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_X})
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_X} -std=legacy")
 endif()
 message(STATUS "SHERPA : CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
 ########################################################################
 include_directories(${PROJECT_SOURCE_DIR})
+
+
+find_package(HepMC3)
+message(STATUS "SHERPA-MC: HEPMC3_VERSION=${HEPMC3_VERSION} HEPMC3_LIBRARIES=${HEPMC3_LIBRARIES}  HEPMC3_INCLUDE_DIR=${HEPMC3_INCLUDE_DIR}") 
+find_package(HepMC2)
+message(STATUS "SHERPA-MC: HEPMC2_VERSION=${HEPMC2_VERSION} HEPMC2_LIBRARIES=${HEPMC2_LIBRARIES}  HEPMC2_INCLUDE_DIR=${HEPMC2_INCLUDE_DIR}") 
+find_package(LHAPDF REQUIRED)
+message(STATUS "SHERPA-MC: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
+
+
+
+
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
@@ -399,18 +167,112 @@ add_subdirectory(MODEL)
 
 add_subdirectory(PHASIC++)
 add_subdirectory(PHOTONS++)
-#add_subdirectory(PDF)
+
+add_subdirectory(PDF/CT14  )
+add_subdirectory(PDF/Electron)  
+add_subdirectory(PDF/GRS  )
+add_subdirectory(PDF/GRV  )
+add_subdirectory(PDF/LHAPDF)  
+add_subdirectory(PDF/Main )
+add_subdirectory(PDF/NNPDF)  
+add_subdirectory(PDF/SAL ) 
+add_subdirectory(PDF/SASG)
 add_subdirectory(RECONNECTIONS)
 add_subdirectory(REMNANTS)
 add_subdirectory(SHRiMPS)
+
+
 add_subdirectory(SHERPA)
 
-#find_package(ZIP)
+
+set( IDIRS  AHADIC++
+AMEGIC++
+AMISIC++
+ATOOLS
+BEAM
+COMIX
+CSSHOWER++
+DIM
+DIRE
+EXTAMP
+EXTRA_XS
+HADRONS++
+METOOLS
+MCATNLO
+MODEL
+PHASIC++
+PHOTONS++
+PDF
+RECONNECTIONS
+REMNANTS
+SHRiMPS
+SHERPA
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/Python 
+              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/AddOns/ COMPONENT devel  
+              FILES_MATCHING PATTERN "*.h" PATTERN "*.H" 
+                                           PATTERN "*.deps*" EXCLUDE   
+                             PATTERN "*.lib*" EXCLUDE 
+              EXCLUDE  PATTERN "*\.c" EXCLUDE )
+
+    foreach ( IDIR ${IDIRS} )
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${IDIR} 
+              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC  COMPONENT devel  
+              FILES_MATCHING PATTERN "*.h" PATTERN "*.H" PATTERN "*.icc"  
+                             PATTERN "*/fjcore.hh" 
+                             PATTERN "*/Node.C" 
+                             PATTERN "*/Getter_Function.C" 
+                             PATTERN "*/Dummy.C" 
+                             PATTERN "*/Math/Cluster_Algorithm.C"
+                             PATTERN "*.deps*" EXCLUDE   
+                             PATTERN "*.lib*" EXCLUDE 
+                             PATTERN "*/SoftPhysics/Cluster_Algorithm.H" EXCLUDE
+                             PATTERN "*Cluster_Decay_Analysis.H" EXCLUDE 
+                             PATTERN "*Splitting_Tools.H" EXCLUDE 
+                            # PATTERN "*Cluster_Algorithm.H" EXCLUDE 
+                             PATTERN "*Running_Alpha_HV.H" EXCLUDE 
+                             PATTERN "*Sigma_DD.H" EXCLUDE 
+                             PATTERN "*Full_Amplitude_Base.H" EXCLUDE 
+                             PATTERN "*Event_Generation/Ladder.H" EXCLUDE 
+                             PATTERN "*Ladder_Generator_LDC.H" EXCLUDE 
+                             PATTERN "*Quasi_Elastic_Event_Generator.H" EXCLUDE 
+                             PATTERN "*Double_Diffractive_Event_Generator.H" EXCLUDE 
+                             PATTERN "*EXTRA_XS/Special" EXCLUDE 
+                             PATTERN "*EXTRA_XS/Two2Two" EXCLUDE 
+                             PATTERN "*Math/Sobol/*" EXCLUDE 
+                             PATTERN "*Math/Sobol" EXCLUDE 
+                             PATTERN "*EXTAMP/Example*" EXCLUDE 
+                             PATTERN "*HADRONS++/Run/Main*" EXCLUDE 
+                             PATTERN "*MODEL/AQGC*" EXCLUDE 
+                             PATTERN "*MODEL/MUED*" EXCLUDE 
+                             PATTERN "*MODEL/SM/*" EXCLUDE 
+                             PATTERN "*MODEL/SM" EXCLUDE 
+                             PATTERN "*MODEL/SMDM*" EXCLUDE 
+                             PATTERN "*MODEL/SMGold*" EXCLUDE 
+                             PATTERN "*MODEL/TauPi*" EXCLUDE 
+                             PATTERN "*DIM/Gauge*" EXCLUDE 
+                             PATTERN "*DIM/Lorentz*" EXCLUDE 
+                             PATTERN "*DIRE/Gauge*" EXCLUDE 
+                             PATTERN "*DIRE/Lorentz*" EXCLUDE 
+                             PATTERN "*DIRE/Main*" EXCLUDE 
+                             PATTERN "*PDF/CT14*" EXCLUDE 
+                             PATTERN "*PDF/GRS/GRSGrid*" EXCLUDE 
+                             PATTERN "*PDF/SAL/SALGrid*" EXCLUDE 
+                             PATTERN "*PDF/LHAPDF" EXCLUDE 
+                             PATTERN "*METOOLS/Vertices" EXCLUDE 
+                             PATTERN "*MCATNLO/Calculators" EXCLUDE 
+                             PATTERN "*CSSHOWER++/Calculators" EXCLUDE 
+                             PATTERN "*METOOLS/Colors" EXCLUDE 
+                             PATTERN "*SHERPA/Run" EXCLUDE 
+                             PATTERN "*HADRONS++/Run" EXCLUDE 
+                             PATTERN "*makefile*" 
+                             EXCLUDE  PATTERN "*\.c" EXCLUDE )    
+endforeach (  IDIR ${IDIRS}  )
 
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Examples DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC 
   COMPONENT doc 
-  FILES_MATCHING
-                         PATTERN test.py EXCLUDE 
+                         PATTERN test.py.in EXCLUDE 
                          PATTERN CI EXCLUDE 
                          PATTERN Userhook EXCLUDE 
                          PATTERN HPC EXCLUDE 
@@ -418,44 +280,87 @@ add_subdirectory(SHERPA)
                          PATTERN NLO_QCD_* EXCLUDE 
                          PATTERN RemnantTests EXCLUDE 
                          PATTERN VBF_Interference EXCLUDE 
-                         PATTERN FixedOrder_NNLO EXCLUDE 
+                         PATTERN */FixedOrder_NNLO EXCLUDE 
+                         PATTERN */Instanton/LHC_13 EXCLUDE 
+                         PATTERN */LHC_HInt_MCatNLO EXCLUDE 
+                         PATTERN */Instanton EXCLUDE 
+                         PATTERN */PETRA_Jets EXCLUDE 
+                         PATTERN */RelicDensity EXCLUDE 
+                         PATTERN */SM_ggV EXCLUDE 
+                         PATTERN */*UN2LOPS EXCLUDE 
 #                         PATTERN Sherpa.tree.yaml EXCLUDE 
-                         PATTERN Makefile EXCLUDE 
+                         PATTERN Examples/Makefile EXCLUDE 
                          PATTERN Makefile.am EXCLUDE 
                          PATTERN Makefile.in EXCLUDE 
                          PATTERN Makefile.in EXCLUDE 
                           )
-  #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/MRST/MRST01Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
-  #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/MRST/MRST04Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
-  #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/MRST/MRST99Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
- # install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/NNPDF/NNPDF31_nnlo_as_0118mc DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
-  #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT10/CT10Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
-  #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT12/CT12Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT14/CT14Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc PATTERN "*ct14ll*" EXCLUDE  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/GRS/GRSGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/SAL/SALGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
-  #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CTEQ/CTEQ6Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
-  #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CTEQ/CTEQ66Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
-  #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/MSTW/MSTW08Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/HEPEVT DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Sobol/21201.gz DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC/Sobol COMPONENT doc  )
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/COMIX/Main/init_nlo.sh DESTINATION  ${CMAKE_INSTALL_BINDIR} )
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/get_bibtex DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/plot_graphs DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PDF/NNPDF/NNPDF31_nnlo_as_0118_mc.tar.bz2 DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+  
+   add_custom_target( unZip ALL)
+   add_custom_command(TARGET unZip PRE_BUILD
+   COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/NNPDF31_nnlo_as_0118_mc
+   COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/PDF/NNPDF/NNPDF31_nnlo_as_0118_mc.tar.bz2
+   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/PDF/NNPDF/NNPDF31_nnlo_as_0118_mc.tar.bz2
+   COMMENT "UnpackingNNPDF31_nnlo_as_0118_mc.tar.bz2"
+   VERBATIM)
+   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/NNPDF31_nnlo_as_0118_mc DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc )
+  
+  
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/HADRONS++/Decaydata.zip DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs   ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/MadLoop/sconsloops DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh  ${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/make2scons   
- 
+ ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config
  DESTINATION  ${CMAKE_INSTALL_BINDIR} )
-  install(FILES 
-               ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS 
-               ${CMAKE_CURRENT_SOURCE_DIR}/COPYING 
-               ${CMAKE_CURRENT_SOURCE_DIR}/README 
-               ${CMAKE_CURRENT_SOURCE_DIR}/Manual/source/_static/images/SherpaLogo.jpg
-  
-  
-               DESTINATION  ${CMAKE_INSTALL_DOCDIR}/ COMPONENT doc  )
+
+
+set(Sherpa_SRCS_C Sherpa.C Filter.C)
+list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
+add_executable(Sherpa  ${Sherpa_SRCS_C} ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA//Run/Main.C)
+target_link_libraries(Sherpa PRIVATE ATOOLS METOOLS ${LHAPDF_LIBRARIES} LHAPDF ${HEPMC3_LIBRARIES} ${HEPMC2_LIBRARIES} SHERPA PHASIC++ REMNANTS HADRONS++ PHOTONS++
+AMISIC++ PHASIC++ BEAM SHRiMPS Main EXTRA_XS RECONNECTIONS  zip MODEL COMIX
+)
+target_include_directories(Sherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
+install(TARGETS Sherpa DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
+#target_include_directories(Sherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/packlib/kuip)
+#set_target_properties(Sherpa PROPERTIES POSITION_INDEPENDENT_CODE ${CERNLIB_POSITION_INDEPENDENT_CODE} OUTPUT_NAME Sherpa${COMPSUFFIX})
+
+
+
+
+if (SHERPA_ENABLE_PYTHON)
+add_subdirectory(AddOns/Python)
+
+endif()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 include(CMakePackageConfigHelpers)
