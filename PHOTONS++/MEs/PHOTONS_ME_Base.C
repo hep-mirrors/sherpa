@@ -48,7 +48,7 @@ PHOTONS_ME_Base::PHOTONS_ME_Base(const Particle_Vector_Vector& pvv) :
   #ifndef USING__YFS_NNLO
   if (m_nnlo_qed == 1) {
     msg_Error() << METHOD << " YFS NNLO corrections not compiled properly. Please reconfigure "
-    << "with option '--enable-yfs-nnlo'. Will calculate using NLO corrections for the "
+    << "with option '--enable-yfsnnlo'. Will calculate using NLO corrections for the "
     << "being.\n";
   }
 #endif
