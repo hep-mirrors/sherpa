@@ -293,6 +293,24 @@ endforeach (  IDIR ${IDIRS}  )
                          PATTERN Makefile.am EXCLUDE 
                          PATTERN Makefile.in EXCLUDE 
                          PATTERN Makefile.in EXCLUDE 
+                         
+                         	PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.197.yaml  EXCLUDE 
+	PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.206.yaml  EXCLUDE 
+	PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.EPA_PDF.yaml  EXCLUDE 
+	PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.EPA.yaml EXCLUDE 
+	PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.GammaPDF.yaml EXCLUDE 
+	PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.PDF.yaml EXCLUDE 
+	PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.Reconnect.yaml EXCLUDE 
+	PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.test.yaml EXCLUDE 
+	PATTERN */SingleTop_Channels/Sherpa.tj-s_channel-nf4.yaml EXCLUDE 
+	PATTERN */Soft_QCD/LHC_7TeV_MinBias/Elastic.yaml EXCLUDE 
+	PATTERN */Soft_QCD/LHC_7TeV_MinBias/Shrimps.yaml EXCLUDE
+	PATTERN */Soft_QCD/LHC_7TeV_MinBias/SoftDiffractive.yaml EXCLUDE 
+	PATTERN */Tops_plus_Jets/LHC_Tops/Sherpa.Reconnect.yaml EXCLUDE 
+	PATTERN */VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Sherpa.tree.yaml EXCLUDE 
+	PATTERN */VV_plus_Jets/LHC_4lJets_GluonInitiated/Sherpa.tree.yaml EXCLUDE 
+                         
+                         
                           )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT14/CT14Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc PATTERN "*ct14ll*" EXCLUDE  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/GRS/GRSGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
