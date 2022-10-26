@@ -373,10 +373,21 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 bool Rivet_Interface::Finish()
 {
   PRINT_FUNC(m_outpath);
+  GetRivet("",0)->finalize();
+  const double nomsumw = GetRivet("",0)->sumW();
+  const double nomxsec = p_eventhandler->TotalXS();
+  const double nomxerr = p_eventhandler->TotalErr();
+  // first call finalize to collapse the event group,
+  // then scale the cross-section before re-finalizing
   for (Rivet_Map::iterator it=m_rivet.begin(); it!=m_rivet.end(); it++) {
     std::string out = m_outpath;
     if (it->first.first!="") out+="."+it->first.first;
     if (it->first.second!=0) out+=".j"+ToString(it->first.second);
+    it->second->finalize();
+    const double wgtfrac = it->second->sumW()/nomsumw;
+    const double thisxs  = nomxsec*wgtfrac;
+    const double thiserr = nomxerr*wgtfrac;
+    it->second->setCrossSection(thisxs, thiserr, true);
     it->second->finalize();
 #ifdef HAVE_LIBZ
     it->second->writeData(out+".yoda.gz");

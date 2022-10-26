@@ -40,6 +40,7 @@ The following parameters are used to steer the process setup.
 * RS_ME_Generator::         Tag to specifiy the real-subtracted ME generator
                             of an MC@@NLO process.
 * Loop_Generator::          Tag to specifiy the loop ME generator.
+* Pilot_Loop_Generator::    Tag to specifiy the loop ME generator used for pilot events.
 * Associated_Contributions:: Tag to specify the associated contributions.
 * Integrator::              Tag to specifiy the integrator.
 * PSI_ItMin::               Tag to set the number of points per optimization step.
@@ -539,6 +540,15 @@ of NLO calculations. See also @ref{ME_SIGNAL_GENERATOR}.
 Set a process specific nametag for the desired
 loop-ME generator. The only Sherpa-native option is @code{Internal} with a few 
 hard coded loop matrix elements.
+
+@node Pilot_Loop_Generator
+@subsection Pilot_Loop_Generator
+Set a process specific nametag for the desired loop-ME generator
+used for calculating the weight of pilot events, see @ref{EVENT_GENERATION_MODE}.
+If this is much faster than the @option{Loop_Generator},
+significant speed-ups can be achieved in (partially) unweighted event generation.
+For example, a pilot loop generator with analytic expressions instead of a purely numerical evaluation can be used, such as MCFM.
+Then, OpenLoops can be used as the actual loop generator, such that for example EWvirt variations can be calculated, which are not available with MCFM.
 
 @node Associated_Contributions
 @subsection Associated_Contributions

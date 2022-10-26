@@ -210,7 +210,7 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
   ampl->SetMuR2(sub->m_mu2[stp::ren]);
   Int_Vector ci(sub->m_n,0), cj(sub->m_n,0);
   for (size_t i=0;i<sub->m_n;++i) {
-    ampl->CreateLeg(i<m_nin?-sub->p_mom[i]:sub->p_mom[i],
+    ampl->CreateLeg((i<m_nin && sub->p_mom[i][0]>0)?-sub->p_mom[i]:sub->p_mom[i],
 		    i<m_nin?sub->p_fl[i].Bar():sub->p_fl[i],
 		    ColorID(ci[i],cj[i]),sub->p_id[i]);
     if (!sub->IsReal() && sub->p_id[i]&(1<<sub->m_i)) {
@@ -372,13 +372,15 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     }
   rproc->Integrator()->SetMax
     (p_rsproc->Selected()->Integrator()->Max());
+  rproc->Integrator()->SetEnhanceFactor
+        (p_rsproc->Selected()->Integrator()->EnhanceFactor());
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
+  rproc->Integrator()->SetMomenta(p);
   rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
   rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector());
   rproc->SetFixedScale(std::vector<double>());
   rproc->GetMEwgtinfo()->m_mur2=
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
-  rproc->Integrator()->SetMomenta(p);
   Color_Integrator *ci(&*rproc->Integrator()->ColorIntegrator()),
     *rci(&*p_rsproc->Selected()->Integrator()->ColorIntegrator());
   if (ci && rci) {
@@ -386,9 +388,10 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     ci->SetJ(rci->J());
   }
   p_ampl=p_rsproc->Selected()->GetSubevtList()->back()->p_ampl;
-  if (p_ampl) p_ampl = p_ampl->CopyAll();
-  else {
-    p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(p,4096);
+  if (p_ampl) {
+    p_ampl = p_ampl->CopyAll();
+  } else {
+    p_ampl = CreateAmplitude(p_rsproc->Selected()->GetSubevtList()->back());
   }
   p_selected->Selected()->SetMEwgtinfo(*p_rsproc->Selected()->GetMEwgtinfo());
   if (p_ampl==NULL) {
@@ -573,6 +576,12 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       }
     }
   } else {
+    if (m_rsscale!="") {
+      // Opt out of using a PILOT scale when we have our own fixed scale for H
+      // events. Note that the Matrix_Element_Handler will still use a pilot
+      // run if e.g. variations are enabled.
+      rpa->gen.SetPilotRun(false);
+    }
     p_selected = p_rsproc;
     winfo = p_rsproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {

@@ -93,6 +93,29 @@ For @option{Unweighted} and @option{PartiallyUnweighted} events the user may
 set @option{OVERWEIGHT_THRESHOLD=<maxweight>} to cap the maximal over-weight
 @code{w/max} taken into account.
 
+@cindex Pilot run strategy
+To improve code performance for (partially) unweighted event
+generation, we use a pilot run strategy @mycite{Bothmann2022thx}.
+This reduces the amount of works to the absolute minimum
+until an event has been accepted
+by disabling everything that is not required
+to perform the unweighting.
+Once an event is accepted, we recompute this
+exact phase space point with everything enabled
+to get the full result.
+As an example, on-the-fly variations will only be calculated
+for the accepted event,
+while no such variations are
+performed for the vast number of ultimately rejected
+events.
+
+The pilot-run strategy
+is used automatically for (partially) unweighted
+event generation that include on-the-fly
+@ref{Scale and PDF variations},
+a @option{PILOT} scale setter (see @ref{Scale setters}),
+or a @ref{Pilot_Loop_Generator}.
+
 @node SCALES
 @subsection SCALES
 @cindex SCALES
@@ -326,6 +349,34 @@ a serious problem. The warning occurs when - based on the current colour
 configuration and matrix element information - no suitable clustering is
 found by the algorithm. In such cases the scale is set to the invariant mass
 of the partonic process.
+
+@item PILOT
+@cindex PILOT
+
+A variant of the @option{METS} scale setter
+relevant for (partially) unweighted event generation
+is the @code{PILOT} scale setter.
+It makes sure that when the pilot-run strategy is used
+(see @ref{EVENT_GENERATION_MODE}),
+any clustering required for @option{METS} scale setting
+and multi-jet merging is deferred until an event is accepted,
+which significantly reduces the run time.
+
+The syntax is identical to the @option{VAR} scale setter,
+only that the keyword @code{PILOT} is used instead.
+For example in Drell-Yan + jet production one could set
+@verbatim
+SCALES PILOT{Abs2(p[2]+p[3])}
+@end verbatim
+which would use the invariant mass of the lepton pair
+as the computationally cheap scale of events that are not yet accepted.
+Only after accepting such an event, the full METS scale
+is calculated instead, and the accepted event
+will be reweighted to take into account this actual scale choice.
+Note that this leads to a broadening of the weight distribution,
+which has however found to be mild
+in the examples studied so far @mycite{Bothmann2022thx}.
+
 
 @end table
 

@@ -63,7 +63,6 @@ namespace SHERPA {
 
     PHASIC::ME_Generators  m_gens;
     PHASIC::Process_Vector m_procs;
-    PHASIC::Unweighting_Mode::code m_unw_mode;
 
     PHASIC::Process_Base *p_proc;
 
@@ -73,7 +72,7 @@ namespace SHERPA {
 
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo, m_rsadd;
-    bool        m_pilotrunenabled;
+    bool        m_pilotrunenabled, m_pilotrunrequired, m_haspilotscale;
 
     ATOOLS::Weight_Info m_evtinfo;
 
@@ -81,8 +80,8 @@ namespace SHERPA {
     Variation_Weights *p_variationweights;
     PDF::NLOMC_Base   *p_nlomc;
 
-    double m_sum, m_ovwth, m_weightfactor;
-    size_t m_globalnlomode, m_ranidx, m_fosettings;
+    double m_sum, m_ovwth, m_weightfactor, m_pilotweightfactor;
+    size_t m_globalnlomode, m_ranidx, m_fosettings, m_recalculate_zeros;
 
 #ifdef USING__GZIP
     ATOOLS::igzstream *p_ranin;
@@ -160,10 +159,6 @@ namespace SHERPA {
 
     inline ATOOLS::Weight_Info WeightInfo() const { return m_evtinfo; }
 
-    const PHASIC::Unweighting_Mode::code GetUnweightingMode() const { return m_unw_mode; }
-
-    void SetUnweightingMode(const PHASIC::Unweighting_Mode::code mode) { m_unw_mode = mode; }
-
     inline BEAM::Beam_Spectra_Handler *GetBeam() const { return p_beam; }
     inline PDF::ISR_Handler           *GetISR() const  { return p_isr;  }
 
@@ -173,6 +168,8 @@ namespace SHERPA {
     inline Shower_Handler *Shower() const { return p_shower; }
 
     inline double WeightFactor() const { return m_weightfactor; }
+
+    inline double PilotWeightFactor() const { return m_pilotweightfactor; }
 
     inline double Sum() const { return m_sum; }
 

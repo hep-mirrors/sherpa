@@ -1183,3 +1183,4 @@
 @mybibitem{Zarnecki2002qr,Zar02, A. F. Zarnecki,CompAZ: Parametrization of the luminosity spectra for the photon collider,Acta Phys. Polon.,B34,(2003),2741-2758,[hep-ex/0207021],hep-ex/0207021}
 @mybibitem{ktclus,a, M. H. Seymour,,,,,,,}
 @mybibitem{Kallweit2015dum,Kal15, S. Kallweit and J. M. Lindert and P. Maierhofer and S. Pozzorini and M. Schonherr, NLO QCD+EW predictions for V + jets including off-shell vector-boson decays and multijet merging, JHEP, 1604, (2016), 021, [arXiv:1511.08692]}
+@mybibitem{Bothmann2022thx,Bot22, E. Bothmann and A. Buckley and I. A. Christidi and C. Gutschow and S. Hoche and M. Knobbe and T. Martin and M. Schonherr, Accelerating LHC event generation with simplified pilot runs and fast PDFs,,,,, [arXiv:2209.00843]}
