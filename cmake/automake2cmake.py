@@ -820,14 +820,6 @@ if __name__ == '__main__':
      create_library(ldirs,lname,includes,installincludes,[],[],[],"Tools")
      f.write("add_subdirectory("+lname+")\n")
    f.close()   
-   ff=open("Phys/CMakeLists.txt","a")
-   ff.write("""
-if (SHERPA_ENABLE_LHAPDF)
-target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
-target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
-endif()
-""")
-   ff.close()   
    ff=open("Org/CMakeLists.txt","a")
    ff.write("""
 if (SHERPA_ENABLE_GZIP)

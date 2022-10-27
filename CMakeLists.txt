@@ -262,7 +262,7 @@ REMNANTS
 SHRiMPS
 SHERPA
 )
-
+if (SHERPA_ENABLE_PYTHON)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/Python 
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/AddOns/ COMPONENT devel  
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H" 
@@ -270,7 +270,17 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/Python
                              PATTERN "*.lib*" EXCLUDE 
                              EXCLUDE  PATTERN "*\.c" EXCLUDE 
                              )
-
+endif()
+if (SHERPA_ENABLE_EWSUD)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/EWSud
+              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/AddOns/ COMPONENT devel  
+              FILES_MATCHING PATTERN "*.h" PATTERN "*.H" 
+                             PATTERN "*.deps*" EXCLUDE   
+                             PATTERN "*.lib*" EXCLUDE 
+                             EXCLUDE  PATTERN "*\.c" EXCLUDE 
+                             EXCLUDE  PATTERN "*/Tests" EXCLUDE 
+                             )
+endif()
   foreach ( IDIR ${IDIRS} )
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${IDIR} 
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC  COMPONENT devel  
@@ -463,6 +473,8 @@ if (SHERPA_ENABLE_OPENLOOPS)
   add_subdirectory(AddOns/OpenLoops)
 endif()
 if (SHERPA_ENABLE_RECOLA)
+  find_package(Recola REQUIRED)
+  message(STATUS "SHERPA: RECOLA_PREFIX=${RECOLA_PREFIX} ")
   add_subdirectory(AddOns/Recola)
 endif()
 if (SHERPA_ENABLE_HZTOOL)
@@ -485,7 +497,7 @@ set (LIBDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC)
 set (DATADIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR})
 set (prefix ${CMAKE_INSTALL_PREFIX})
 set (PACKAGE_VERSION ${SHERPA_VERSION})
-set (host "somehost")
+set (host "${CMAKE_HOST_SYSTEM_PROCESSOR}-pc-somehost")
 
 if (NOT HEPEVT_CB_SIZE)
   set(HEPEVT_CB_SIZE  4000)
@@ -654,9 +666,9 @@ endif()
 
 
 if (SHERPA_ENABLE_EWSUD)
-string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using EWSud */\n#define USING__EWSUD \"1\"\n\n")
+string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using EWSud */\n#define USING__EWSud \"1\"\n\n")
 else()
-string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using EWSud */\n/* #undef USING__EWSUD */\n\n")
+string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using EWSud */\n/* #undef USING__EWSud */\n\n")
 endif()
 
 string(APPEND CXXFLAGS_PACKAGES_H_CONTENT  "#endif")
@@ -675,16 +687,16 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_C
 
 set(CXXFLAGS_H_CONTENT "/* ATOOLS/Org/CXXFLAGS.H.  Generated from CXXFLAGS.H.in by configure.  */\n")
 if (Darwin)
-string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Darwin MacOS */\n#define ARCH_DARWIN 1\n\n")
+string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Darwin MacOS */\n#define ARCH_DARWIN \"1\"\n\n")
 else()
 string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Darwin MacOS */\n/* #undef ARCH_DARWIN */\n\n")
 endif()
-if (LINUX)
-string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Linux */\n#define ARCH_LINUX 1\n\n")
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Linux */\n#define ARCH_LINUX \"1\"\n\n")
 else()
 string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Linux */\n/* #undef ARCH_LINUX */\n\n")
 endif()
-if (UNIX)
+if (UNIX AND ( NOT  CMAKE_SYSTEM_NAME MATCHES "Linux")  AND (NOT Darwin) )
 string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Unix */\n#define ARCH_UNIX 1\n\n")
 else()
 string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Unix */\n/* #undef ARCH_UNIX */\n\n")
@@ -718,9 +730,9 @@ string(APPEND CXXFLAGS_H_CONTENT  "
 \n")
 
 if (SHERPA_ENABLE_BINRELOC)
-string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* binreloc activation */\n#define ENABLE_BINRELOC \"1\"\n\n")
+string(APPEND CXXFLAGS_H_CONTENT "/* binreloc activation */\n#define ENABLE_BINRELOC \"1\"\n\n")
 else()
-string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* binreloc activation */\n/* #undef ENABLE_BINRELOC */\n\n")
+string(APPEND CXXFLAGS_H_CONTENT "/* binreloc activation */\n/* #undef ENABLE_BINRELOC */\n\n")
 endif()
 
 string(APPEND CXXFLAGS_H_CONTENT  "\

@@ -11,3 +11,5 @@ add_library(SherpaOpenLoops SHARED OpenLoops_Virtual.C
 
 install(TARGETS SherpaOpenLoops DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaOpenLoops       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaOpenLoops SOVERSION 0.0.0)
+
+target_link_libraries(SherpaOpenLoops  PRIVATE ${OPENLOOPS_LIBRARY})
