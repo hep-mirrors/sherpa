@@ -1,7 +1,6 @@
 find_package(Pythia8 REQUIRED)
-  message(STATUS "SHERPA-MC: PYTHIA8_VERSION=${PYTHIA8_VERSION} PYTHIA8_LIBRARIES=${PYTHIA8_LIBRARIES} PYTHIA8_INCLUDE_DIRS=${PYTHIA8_INCLUDE_DIRS}")
-add_library(SherpaPythia SHARED Pythia_Jet_Criterion.C 
-	Pythia8_Hadronisation.C)
+message(STATUS "SHERPA-MC: PYTHIA8_VERSION=${PYTHIA8_VERSION} PYTHIA8_LIBRARIES=${PYTHIA8_LIBRARIES} PYTHIA8_INCLUDE_DIRS=${PYTHIA8_INCLUDE_DIRS}")
+add_library(SherpaPythia SHARED Pythia_Jet_Criterion.C Pythia8_Hadronisation.C)
 target_link_libraries(SherpaPythia PRIVATE ${PYTHIA8_LIBRARIES})
 target_include_directories(SherpaPythia PRIVATE ${PYTHIA8_INCLUDE_DIR})
 install(TARGETS SherpaPythia DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

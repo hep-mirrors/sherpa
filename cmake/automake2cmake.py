@@ -4,25 +4,9 @@ import os
 import re
 ########################################################################
 def get_suffixes(text):
-    if (text=="xbae"):
-      return ["_static"]
     return ["_static", ""]
 def if_install_library(text):
-    if (text=="xbae"):
-      return False
     return True
-def link_static(text):
-    if (text=="pythia"):
-        return "pythia"
-    if (text=="geant321"):
-        return "geant"
-    if (text=="herwig"):
-        return "herwig"
-    if (text=="kernlib"):
-        return "kernlib-${SHIFTSUFFIX}"
-    if (text=="packlib"):
-        return "packlib-${SHIFTSUFFIX}"
-    return "no"
 def output_name_static(text):
     return output_name(text)
 ########################################################################    
@@ -62,7 +46,6 @@ def output_name(text):
     if (text=="AmegicAmplitude"):
         return "Amplitude"
 
-
     if (text=="AmegicPhaseSpace"):
         return "AmegicPSGen"
 
@@ -83,20 +66,11 @@ def output_name(text):
 
     if (text=="ExtraXSTwo2Two"):
        return "ExtraXS2_2"
-
-
 #"NLO", "One2Three", "One2Two", "Two2Two"
-       
     if (text=="SherpaSingle_Events"):
       return "SherpaSingleEvents"
-
     if (text=="SherpaLundTools"):
       return "LundTools"
-
-		
-		
-#    if (text=="SherpaUFO"):
-#        return "ModelUFO"
 #SM", "Main", "TauPi", "UFO", "HEFT", "SMGold", "SMEHC", "SMDM"
     if (text=="ModelTauPi"):
         return "SherpaTauPi"
@@ -108,30 +82,20 @@ def output_name(text):
         return "SherpaSMGold"
     if (text=="ModelSMEHC"):
         return "SherpaSMEHC"
-
     if (text=="ModelSMDM"):
         return "SherpaSMDM"
-
-
-
-
     if (text=="HadronsCurrent_Library"):
         return "HadronsCurrents"
     if (text=="HadronsME_Library"):
         return "HadronsMEs"
     if (text=="HadronsPS_Library"):
         return "HadronsPSs"
-
     if (text=="ShrimpsBeam_Remnants"):
         return "ShrimpsBeamRemnants"
-
-
     if (text=="ShrimpsCross_Sections"):
         return "ShrimpsXsecs"
-
     if (text=="ShrimpsEvent_Generation"):
         return "ShrimpsEvents"
-
     if (text=="EXTAMP"):
         return "ExtAmp"
 #"Ladders",   "Beam_Remnants",  "Cross_Sections",  "Eikonals",  "Event_Generation",  "Main",  "Tools"
@@ -168,7 +132,7 @@ def write_header(f,ldirs):
    f.write("""
 ########################################################################
 #
-#  Automatically or semiautomaticall generated, do not edit.
+#  Automatically or semiautomaticaly generated, do not edit.
 #
 ########################################################################
 # The following input was used
@@ -180,19 +144,6 @@ def write_header(f,ldirs):
 """)
 ########################################################################
 def get_if_condition(a):
-  if len(a)>0:
-    if re.match(r'.*packlib_cspack_sysreq_.*',a):
-      return [
-"""
-#Inserted by get_if_condition()->
-if ( (SHERPA_VAXVMS OR SHERPA_UNIX)  AND  ( (NOT SHERPA_SHIFT) AND ( NOT SHERPA_WINNT) ) )
-""",
-"""
-else()
-  set(packlib_cspack_sysreq_CSRC )
-endif()
-#Inserted by get_if_condition()<-
-"""]
   return ["",""]
 ########################################################################
 def transform_pilots(argv):
@@ -213,9 +164,6 @@ def transform_pilots(argv):
     newlist = [x.replace("$(PYTHIASOURCES)","${PYTHIASOURCES}") for x in newlist]
     newlist = [x.replace("else","else()") if re.match(r'^[:blank:]*else.*',x)  else x for x in newlist]
     newlist = [x.replace("endif","endif()") if re.match(r'^[:blank:]*endif.*',x)  else x for x in newlist]
-
-
-
 
 
     newlist = [x.replace("\\n"," ") for x in newlist]
@@ -241,25 +189,18 @@ def transform_pilots(argv):
     newlist = [  x.replace("NOT defined(","(NOT") for x in newlist]
     newlist = [  x.replace("defined(","(") for x in newlist]
     
-    
-    #for ai in file_contents:
-    #   print(ai)
-    #for ai in newlist:
-    #   print(ai)
     return newlist
-
 
 def transform_imake_source(argv, dbg):
     path_to_file=argv
     with open(path_to_file) as f:
       file_contents = f.readlines()
 
-
     #filtered = ''.join(file_contents).split('\n')
     filtered = [""]
     for a in file_contents:
-      if len(a)>2:
-       print(a,"->",a[-2],"<-")
+#      if len(a)>2:
+#       print(a,"->",a[-2],"<-")
       if  len(a)>2 and a[-2]=='\\':
        if  len(a)>2 :
          filtered[-1]+=a[0:-2]
@@ -312,21 +253,13 @@ def transform_imake_source(argv, dbg):
     LISTNAME=path_to_file.replace("//","/").replace("/","_")
     LISTNAME=LISTNAME.replace("_Makefile.am","")
     LISTNAME=LISTNAME.replace(".","0")#OH!
-    
-  #  print("===========", LISTNAME)
-  #  print(newlist) 
     incfiles = [ x  for x in newlist if re.match(r'#include.*',x)]
     incfiles =  [ x.replace("#include","") for x in incfiles]
 
     incfiles =  [ x.replace("\"","") for x in incfiles]
     incfiles =  [ x.replace(" ","") for x in incfiles]
     newlist.append(temp)
-   # newlist = [ ("#"+x) if re.match(r'^.*_LIBADD.*',x) else x for x in newlist]
-   # newlist = [ ("#"+x) if re.match(r'^.*_CPPFLAGS.*',x) else x for x in newlist]
-  #  print("===========")
-  #  print(newlist)
     newlist = filter(lambda st: st != '' , newlist)
-  #  newlist = [x.replace(" \\ "," ") for x in newlist]
 
     newlist = [x.replace("if ENABLE_UFO","if (ENABLE_UFO)") for x in newlist]	
     newlist = [x.replace("if PYTHIA_SUPPORT","if (PYTHIA_SUPPORT)") for x in newlist]
@@ -378,9 +311,6 @@ def transform_imake_source(argv, dbg):
     newlist=[ x.replace(" \n","\n") for x in newlist]
     newlist=[ x.replace(" \n","\n") for x in newlist]
 
-
- #   print("===========2")
- #   print(newlist)
     newlistx = ''.join(newlist)
     newlistx=[ x.replace("\\\\\n","\n") for x in newlistx]
     newlistx=[ x.replace("\\\n","\n") for x in newlistx]
@@ -420,7 +350,7 @@ def transform_imake_source(argv, dbg):
     for a in fin:
      if re.match(".*_SOURCES.*",a):
        FSRC=1
-    print(fin,FSRC)
+   # print(fin,FSRC)
     
     diractual="../"+dirf
     diractual=diractual.replace("//","/")
@@ -446,6 +376,17 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
    installincludes.sort()
    cdff.sort()
    t=[]
+   headerx=""
+   try:
+    ff = open(lname+"/CMakeLists.txt", "r")
+    headerx=ff.readline()
+    ff.close()
+    #print(lname,"->",headerx,"<-")
+   except:
+    pass
+   if (headerx=="#Manually edited\n"):
+     return
+   
    f = open(lname+"/CMakeLists.txt", "w")
    write_header(f,ldirs)
 #   f.write("set_package_flags("+lname+")\n")
@@ -456,12 +397,6 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
         plt=x[3][0]
         f.write("#The original Imake file below included files:"+plt+"\n#Those were NOT processed.\n")
         U=[]
-        #print(lname+"/"+lname+"/"+plt)
-        #if os.path.exists(lname+"/"+lname+"/"+plt):
-        #  U=transform_pilots(lname+"/"+lname+"/"+plt)
-        #print(U)
-        #for  tf in U:
-        #  f.write(tf+"\n")
      
      for a in x[1]: 
           
@@ -508,13 +443,8 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
        f.write("install(TARGETS "+lname+suff+" DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)\n")   
      if suff=="_static": 
        f.write("set_target_properties("+lname+"_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME "+output_name_static(lname)+")\n")
-#       if (link_static(lname)!="no"): 
-#         if if_install_library(lname):
-#           f.write("install_symlink(lib"+output_name_static(lname)+".a "+" ${CMAKE_INSTALL_LIBDIR}/lib"+link_static(lname)+".a)\n")
      if suff=="":
        f.write("set_target_properties("+lname+"        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME "+output_name(lname)+" SOVERSION "+get_full_so_version(lname)+")\n")
-#       if if_install_library(lname):
-#         f.write("install_symlink(lib"+output_name(lname)+".so."+get_full_so_version(lname)+" "+"${CMAKE_INSTALL_LIBDIR}/lib"+output_name(lname)+".so."+get_simple_so_version(lname)+")\n")
      f.write("endif()\n")
    for inc in installincludes:
      if len(inc)!=0:
@@ -526,12 +456,6 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
 ########################################################################
 if __name__ == '__main__':
 ########################################################################
-#   ldirs =  "Decays/Makefile.am Formation/Makefile.am Main/Makefile.am Makefile.am Tools/Makefile.am".split(" ")
-#   lname="AHADIC++"
-#   includes=" ".split(" ") 
-#   installincludes=" ".split(" ")
-#   create_library(ldirs,lname,includes,installincludes)
-
    os.chdir("AHADIC++")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -549,14 +473,6 @@ if __name__ == '__main__':
      f.write("add_subdirectory("+lname+")\n")
    f.close()   
    os.chdir("../")
-
-#   ldirs =  "Main/Makefile.am Makefile.am Perturbative/Makefile.am Tools/Makefile.am".split(" ")
-#   lname="AMISIC++"
-#   includes=" ".split(" ") 
-#   installincludes=" ".split(" ") 
-#   create_library(ldirs,lname,includes,installincludes)
-
-
    os.chdir("AMISIC++")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -574,16 +490,10 @@ if __name__ == '__main__':
    f.close()   
    os.chdir("../")
 ########################################################################
-   ldirs =  "Amplitude/Makefile.am Amplitude/Zfunctions/Makefile.am DipoleSubtraction/Makefile.am Main/Makefile.am Makefile.am Phasespace/Makefile.am String/Makefile.am".split(" ")
-   lname="AMEGIC++"
-   includes=" ".split(" ") 
-   installincludes=" ".split(" ")
-#   create_library(ldirs,lname,includes,installincludes)
 
    os.chdir("AMEGIC++")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
-             
              "Makefile.am".split(" "),
              "Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -611,12 +521,6 @@ if __name__ == '__main__':
    os.chdir("../")
    
 ########################################################################
-   ldirs =  "Channels/Makefile.am Decays/Makefile.am Enhance/Makefile.am Main/Makefile.am Makefile.am Process/Makefile.am Scales/Makefile.am Selectors/Makefile.am".split(" ")
-   lname="PHASIC++"
-   includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
-  # create_library(ldirs,lname,includes,installincludes)
-
    os.chdir("PHASIC++")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -690,13 +594,6 @@ if __name__ == '__main__':
 
 
 ########################################################################
-
-   ldirs =  "Calculators/Makefile.am Main/Makefile.am Makefile.am Showers/Makefile.am Tools/Makefile.am".split(" ")
-   lname="CSSHOWER++"
-   includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
-   create_library(ldirs,lname,includes,installincludes)
-
    os.chdir("CSSHOWER++")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -715,12 +612,6 @@ if __name__ == '__main__':
    f.close()   
    os.chdir("../")   
 
-   #ldirs =  "Gauge/Makefile.am Lorentz/Makefile.am Main/Makefile.am Makefile.am Shower/Makefile.am Tools/Makefile.am".split(" ")
-   #lname="DIM"
-   #includes=" ".split(" ") 
-   #installincludes=" ".split(" ") 
-   #create_library(ldirs,lname,includes,installincludes)
- 
    os.chdir("DIM")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -739,15 +630,6 @@ if __name__ == '__main__':
      f.write("add_subdirectory("+lname+")\n")
    f.close()   
    os.chdir("../")
-
- 
- 
- 
-#   ldirs =  "Gauge/Makefile.am Lorentz/Makefile.am Main/Makefile.am Makefile.am Shower/Makefile.am Tools/Makefile.am".split(" ") 
-   lname="DIRE"
-   includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
-#   create_library(ldirs,lname,includes,installincludes)
 
    os.chdir("DIRE")
    MCldirs =["Makefile.am".split(" "),
@@ -780,15 +662,8 @@ if __name__ == '__main__':
    includes=" ".split(" ") 
    installincludes=" ".split(" ") 
    create_library(ldirs,lname,includes,installincludes)
-
-#   ldirs =  "Main/Makefile.am Tools/Makefile.am".split(" ")
-#   lname="REMNANTS"
-#   includes=" ".split(" ") 
-#   installincludes="Main Tools".split(" ") 
-#   installincludes=" ".split(" ")
-#   create_library(ldirs,lname,includes,installincludes)
-
-
+   
+   
    os.chdir("REMNANTS")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -806,13 +681,6 @@ if __name__ == '__main__':
      f.write("add_subdirectory("+lname+")\n")
    f.close()   
    os.chdir("../")  
-
-
-   ldirs =  "Main/Makefile.am Makefile.am NLO/Makefile.am One2Three/Makefile.am One2Two/Makefile.am Two2Two/Makefile.am".split(" ")
-   lname="EXTRA_XS"
-   includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
-   create_library(ldirs,lname,includes,installincludes)
 
    os.chdir("EXTRA_XS")
    MCldirs =["Makefile.am".split(" "),
@@ -889,14 +757,6 @@ if __name__ == '__main__':
    os.chdir("../")  
  
  
-      
-  # ldirs =  "HEFT/Makefile.am Main/Makefile.am Makefile.am SM/Makefile.am SMEHC/Makefile.am TauPi/Makefile.am UFO/Makefile.am".split(" ") 
-  # ldirs =  "Main/Makefile.am Makefile.am SM/Makefile.am TauPi/Makefile.am UFO/Makefile.am".split(" ") 
-  # lname="MODEL"
-  # includes=" ".split(" ") 
-  # installincludes=" ".split(" ") 
-  # create_library(ldirs,lname,includes,installincludes)
-
 
    os.chdir("MODEL")
    MCldirs =["Makefile.am".split(" "),
@@ -921,12 +781,7 @@ if __name__ == '__main__':
    os.chdir("../")  
 
          ########################################################################
- #  ldirs =  "Amplitude/Makefile.am Main/Makefile.am Makefile.am Phasespace/Makefile.am".split(" ")
- #  lname="COMIX"
- #  includes=" ".split(" ") 
- #  installincludes=" ".split(" ")  
- #  create_library(ldirs,lname,includes,installincludes)
-   
+
    os.chdir("COMIX")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -945,13 +800,6 @@ if __name__ == '__main__':
    os.chdir("../")   
    
 ########################################################################
-#   ldirs =  "Makefile.am Math/Makefile.am Org/Makefile.am Phys/Makefile.am YAML/Makefile.am YAML/yaml-cpp/Makefile.am YAML/yaml-cpp/node/Makefile.am YAML/yaml-cpp/node/detail/Makefile.am".split()
-#   lname="ATOOLS"
-#   includes=" ".split(" ") 
-#   installincludes=" ".split(" ") 
-#   create_library(ldirs,lname,includes,installincludes)
-   
-   
    os.chdir("ATOOLS")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -968,16 +816,18 @@ if __name__ == '__main__':
      create_library(ldirs,lname,includes,installincludes,[],[],[],"Tools")
      f.write("add_subdirectory("+lname+")\n")
    f.close()   
+   ff=open("Phys/CMakeLists.txt","a")
+   ff.write("""
+if (SHERPA_ENABLE_LHAPDF)
+target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
+target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
+endif()
+""")
+   ff.close()
+   
    os.chdir("../")    
    
 ########################################################################
-#   ldirs =  "MEs/Makefile.am Main/Makefile.am Makefile.am PhaseSpace/Makefile.am Tools/Makefile.am".split(" ") 
-#   lname="PHOTONS++"
-#   includes=" ".split(" ") 
-#   installincludes=" ".split(" ")
-#   create_library(ldirs,lname,includes,installincludes)
-
-
    os.chdir("PHOTONS++")
    MCldirs =["Makefile.am".split(" "),
              "Makefile.am".split(" "),
@@ -1015,6 +865,12 @@ if __name__ == '__main__':
      includes="/".split(" ")+[lname]
      installincludes=[]
      create_library(ldirs,lname,includes,installincludes,[],[],[])
+   f=open("LHAPDF/CMakeFiles.txt","a")
+   f.write("""
+target_link_libraries(LHAPDFSherpa PRIVATE ${LHAPDF_LIBRARIES})
+target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
+""")
+   f.close()
    os.chdir("../")
 
    ldirs =  "Beam_Remnants.old/Makefile.am Beam_Remnants/Makefile.am Cross_Sections/Makefile.am Eikonals/Makefile.am Event_Generation/Makefile.am Main/Makefile.am Makefile.am Tools/Makefile.am".split()
@@ -1045,12 +901,6 @@ if __name__ == '__main__':
      f.write("add_subdirectory("+lname+")\n")
    f.close()   
    os.chdir("../") 
-
-   ldirs =  "Initialization/Makefile.am LundTools/Makefile.am Main/Makefile.am Makefile.am PerturbativePhysics/Makefile.am Single_Events/Makefile.am SoftPhysics/Makefile.am Tools/Makefile.am".split()
-   lname="SHERPA"
-   includes=" ".split(" ") 
-   installincludes=" ".split(" ") 
-   create_library(ldirs,lname,includes,installincludes)   
 
 
    os.chdir("SHERPA")

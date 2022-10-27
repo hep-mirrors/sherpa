@@ -70,40 +70,5 @@ set(RIVET_INCLUDE_DIRS ${RIVET_INCLUDE_DIR})
 
 mark_as_advanced(RIVET_FOUND)
 
-macro(RivetBuildPlugin a b)
-  find_package(FastJet REQUIRED)
-  string(REPLACE " " ";" sources_split ${b})
-  add_library(RivetAnalysis${a} SHARED  ${sources_split} )
-  set_target_properties(RivetAnalysis${a} PROPERTIES PREFIX "")
-  target_include_directories(RivetAnalysis${a} PRIVATE ${RIVET_INCLUDE_DIRS} ${FASTJET_INCLUDE_DIR})
-  target_link_libraries(RivetAnalysis${a} PRIVATE ${RIVET_LIBRARY} ${FASTJET_LIBRARIES})
-  set_target_properties(RivetAnalysis${a} PROPERTIES 
-                                               ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${a}/$<0:>
-                                               LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${a}/$<0:>
-                                               RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${a}/$<0:>)
-  
-  if (Rivet_HEPMC3_FOUND)
-    target_compile_definitions(RivetAnalysis${a} PRIVATE -DENABLE_HEPMC_3=true)
-  endif()
-endmacro(RivetBuildPlugin a b)
-
-macro(RivetRunPlugin a b c other)
-  string(REPLACE " " "," analist ${b})
-  string(REPLACE " " ";" optlist ${other})
-  add_custom_target(RivetRunPlugin${a} 
-                                        COMMAND  ${RIVET_EXE}   --analysis-path-append ${RIVET_ANALYSIS_PATH} -a ${analist} ${c} ${optlist}
-                                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                    )
-endmacro(RivetRunPlugin a b c other)
-
-macro(RivetMakeHTML a b c)
-  string(REPLACE " " "," flist ${c})
-  #string(REPLACE " " ";" optlist ${other})
-  add_custom_target(RivetMakeHTML${a} 
-                                        COMMAND  ${RIVET_EXE}-mkhtml ${b} ${flist}
-                                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                    )
-endmacro(RivetMakeHTML a b c)
-
 
 

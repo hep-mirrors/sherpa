@@ -32,8 +32,6 @@ else()
   find_library(BLACKHAT_LIBRARY NAMES BH PATHS_SUFFIXES lib/blackhat lib64/blackhat)
 endif()
 
-
-
 mark_as_advanced(BLACKHAT_INCLUDE_DIR BLACKHAT_LIBRARY)
 
 # handle the QUIETLY and REQUIRED arguments and set BLACKHAT_FOUND to TRUE if

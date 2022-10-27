@@ -1,11 +1,4 @@
 if (SHERPA_ENABLE_HEPMC3)
-find_package(HepMC2 REQUIRED)
-
-  message(STATUS "CASCADE: HEPMC2_VERSION=${HEPMC2_VERSION} HEPMC2_LIBRARIES=${HEPMC2_LIBRARIES} HEPMC2_FIO_LIBRARIES=${HEPMC2_FIO_LIBRARIES} HEPMC2_INCLUDE_DIRS=${HEPMC2_INCLUDE_DIRS}")
-
-
-
-
 add_library(SherpaHepMCOutput SHARED Output_HepMC2_Genevent.C Output_HepMC2_Short.C)
 target_link_libraries(SherpaHepMCOutput PRIVATE ${HEPMC2_LIBRARIES})
 target_include_directories(SherpaHepMCOutput PRIVATE ${HEPMC2_INCLUDE_DIR})
@@ -14,10 +7,6 @@ set_target_properties(SherpaHepMCOutput       PROPERTIES POSITION_INDEPENDENT_CO
 endif()
 
 if (SHERPA_ENABLE_HEPMC3)
-find_package(HepMC3 REQUIRED)
-
-  message(STATUS "CASCADE: HEPMC3_VERSION=${HEPMC3_VERSION} HEPMC3_LIBRARIES=${HEPMC3_LIBRARIES}  HEPMC3_INCLUDE_DIR=${HEPMC3_INCLUDE_DIR}") 
-
 add_library(SherpaHepMC3Output SHARED Output_HepMC3_Genevent.C Output_HepMC3_Short.C)
 target_link_libraries(SherpaHepMC3Output PRIVATE ${HEPMC3_LIBRARIES})
 target_include_directories(SherpaHepMC3Output PRIVATE ${HEPMC3_INCLUDE_DIR})
