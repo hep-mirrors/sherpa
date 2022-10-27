@@ -161,6 +161,7 @@ def transform_pilots(argv):
     newlist = [x.replace("PYTHIASOURCES =","set(PYTHIASOURCES ") for x in newlist]
     newlist = [x.replace("GZIPEXTRADIST =","set(GZIPEXTRADIST ") for x in newlist]
     newlist = [x.replace("$(GZIPSTREAMSOURCES)","${GZIPSTREAMSOURCES}") for x in newlist]
+    newlist = [x.replace("$(GZIPSTREAMHEADERS)","${GZIPSTREAMHEADERS}") for x in newlist]
     newlist = [x.replace("$(PYTHIASOURCES)","${PYTHIASOURCES}") for x in newlist]
     newlist = [x.replace("else","else()") if re.match(r'^[:blank:]*else.*',x)  else x for x in newlist]
     newlist = [x.replace("endif","endif()") if re.match(r'^[:blank:]*endif.*',x)  else x for x in newlist]
@@ -272,6 +273,7 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("PYTHIASOURCES =","set(PYTHIASOURCES ") for x in newlist]
     newlist = [x.replace("GZIPEXTRADIST =","set(GZIPEXTRADIST ") for x in newlist]
     newlist = [x.replace("$(GZIPSTREAMSOURCES)","${GZIPSTREAMSOURCES}") for x in newlist]
+    newlist = [x.replace("$(GZIPSTREAMHEADERS)","${GZIPSTREAMHEADERS}") for x in newlist]    
     newlist = [x.replace("$(PYTHIASOURCES)","${PYTHIASOURCES}") for x in newlist]
     newlist = [x.replace("else","ELSE()") if re.match(r'^[:blank:]*else.*',x)  else x for x in newlist]
     newlist = [x.replace("endif","ENDIF()") if re.match(r'^[:blank:]*endif.*',x)  else x for x in newlist]
@@ -356,6 +358,7 @@ def transform_imake_source(argv, dbg):
     diractual="../"+dirf
     diractual=diractual.replace("//","/")
     if FSRC==1:
+      fin.append("creategitinfo("+LISTNAME+" "+diractual+")")
       fin.append("  list(TRANSFORM "+LISTNAME+"_SOURCES PREPEND \"${CMAKE_CURRENT_SOURCE_DIR}/"+diractual+"\")")
       sr.append("${"+LISTNAME+"_SOURCES}")
     lev=0
