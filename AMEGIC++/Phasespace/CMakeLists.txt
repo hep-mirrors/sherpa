@@ -1,0 +1,41 @@
+
+########################################################################
+#
+#  Automatically or semiautomaticaly generated, do not edit.
+#
+########################################################################
+# The following input was used
+# Makefile.am
+
+########################################################################
+#Phasespace/Makefile.am
+ 
+ #pkglib_LTLIBRARIES = libAmegicPSGen.la)
+ set(GITTAG  AMEGIC++/Phasespace)
+ #include ../../git.make)
+set(Phasespace_SOURCES  Phase_Space_Generator.C Channel_Generator_Base.C Channel_Generator.C Channel_Generator_NPV.C Channel_Generator3V.C Channel_Generator3_NPV.C Channel_Generator_Decays.C Channel_Generator_KK.C
+ Channel_Generator_UniV.C)
+set(Phasespace_HEADERS Phase_Space_Generator.H Channel_Generator_Base.H Channel_Generator.H Channel_Generator_NPV.H Channel_Generator3V.H Channel_Generator3_NPV.H Channel_Generator_Decays.H Channel_Generator_KK.H
+ Channel_Generator_UniV.H)
+creategitinfo(Phasespace ../Phasespace/)
+  list(TRANSFORM Phasespace_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Phasespace/")
+ 
+set(Phasespace_esources )
+if (SHERPA_BUILD_STATIC)
+add_library(AmegicPSGen_static STATIC ${AmegicPSGen_esources}
+                             ${Phasespace_SOURCES} 
+)
+target_include_directories(AmegicPSGen_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(AmegicPSGen_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS AmegicPSGen_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(AmegicPSGen_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME AmegicPSGen)
+endif()
+if (SHERPA_BUILD_SHARED)
+add_library(AmegicPSGen SHARED ${AmegicPSGen_esources}
+                             ${Phasespace_SOURCES} 
+)
+target_include_directories(AmegicPSGen PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(AmegicPSGen PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS AmegicPSGen DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(AmegicPSGen        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AmegicPSGen SOVERSION 0.0.0)
+endif()

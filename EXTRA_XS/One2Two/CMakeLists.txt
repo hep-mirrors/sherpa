@@ -1,0 +1,39 @@
+
+########################################################################
+#
+#  Automatically or semiautomaticaly generated, do not edit.
+#
+########################################################################
+# The following input was used
+# Makefile.am
+
+########################################################################
+#One2Two/Makefile.am
+ 
+ #pkglib_LTLIBRARIES = libExtraXS1_2.la)
+ set(GITTAG  EXTRA_XS/One2Two)
+ #include ../../git.make)
+set(One2Two_SOURCES  Comix1to2.C)
+set(One2Two_HEADERS Comix1to2.H)
+creategitinfo(One2Two ../One2Two/)
+  list(TRANSFORM One2Two_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../One2Two/")
+ 
+set(One2Two_esources )
+if (SHERPA_BUILD_STATIC)
+add_library(ExtraXS1_2_static STATIC ${ExtraXS1_2_esources}
+                             ${One2Two_SOURCES} 
+)
+target_include_directories(ExtraXS1_2_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(ExtraXS1_2_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS ExtraXS1_2_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(ExtraXS1_2_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ExtraXS1_2)
+endif()
+if (SHERPA_BUILD_SHARED)
+add_library(ExtraXS1_2 SHARED ${ExtraXS1_2_esources}
+                             ${One2Two_SOURCES} 
+)
+target_include_directories(ExtraXS1_2 PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(ExtraXS1_2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS ExtraXS1_2 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(ExtraXS1_2        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ExtraXS1_2 SOVERSION 0.0.0)
+endif()

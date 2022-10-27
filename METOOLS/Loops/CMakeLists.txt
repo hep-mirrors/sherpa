@@ -1,0 +1,40 @@
+
+########################################################################
+#
+#  Automatically or semiautomaticaly generated, do not edit.
+#
+########################################################################
+# The following input was used
+# Makefile.am
+
+########################################################################
+#Loops/Makefile.am
+ 
+ #pkglib_LTLIBRARIES = libMEToolsLoops.la)
+ set(GITTAG  METOOLS/Loops)
+ #include ../../git.make)
+set(Loops_SOURCES  Master_Tadpole.C Master_Bubble.C Master_Triangle.C Master_Box.C PV_Tadpoles.C PV_Bubbles.C PV_Triangles.C)
+ #localincdir = $(pkg#includedir)/METOOLS/Loops)
+set(Loops_HEADERS Divergence_Array.H Master_Integrals.H PV_Integrals.H)
+creategitinfo(Loops ../Loops/)
+  list(TRANSFORM Loops_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Loops/")
+ 
+set(Loops_esources )
+if (SHERPA_BUILD_STATIC)
+add_library(METoolsLoops_static STATIC ${METoolsLoops_esources}
+                             ${Loops_SOURCES} 
+)
+target_include_directories(METoolsLoops_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(METoolsLoops_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS METoolsLoops_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(METoolsLoops_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME METoolsLoops)
+endif()
+if (SHERPA_BUILD_SHARED)
+add_library(METoolsLoops SHARED ${METoolsLoops_esources}
+                             ${Loops_SOURCES} 
+)
+target_include_directories(METoolsLoops PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(METoolsLoops PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS METoolsLoops DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(METoolsLoops        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsLoops SOVERSION 0.0.0)
+endif()

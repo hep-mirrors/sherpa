@@ -1,0 +1,45 @@
+
+########################################################################
+#
+#  Automatically or semiautomaticaly generated, do not edit.
+#
+########################################################################
+# The following input was used
+# Makefile.am
+
+########################################################################
+#NNPDF/Makefile.am
+ 
+ #pkglib_LTLIBRARIES = libNNPDFSherpa.la)
+ set(GITTAG  PDF/NNPDF)
+ #include ../../git.make)
+set(NNPDF_SOURCES  NNPDFDriver.cc PDF_NN.C)
+set(NNPDF_HEADERS NNPDFDriver.h)
+ set(NNPDF3archive   NNPDF31_nnlo_as_0118_mc.tar.bz2)
+ #nobase_#dist_pkgdata_DATA = $(NNPDF3archive)
+ #install-data-hook:)
+ #tar xjf $(srcdir)/$(NNPDF3archive) -C $(DESTDIR)$(pkgdatadir)
+ #uninstall-hook:)
+ #-rm -rf $(DESTDIR)/$(pkgdatadir)/NNPDF31_nnlo_as_0118_mc)
+creategitinfo(NNPDF ../NNPDF/)
+  list(TRANSFORM NNPDF_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../NNPDF/")
+ 
+set(NNPDF_esources )
+if (SHERPA_BUILD_STATIC)
+add_library(NNPDFSherpa_static STATIC ${NNPDFSherpa_esources}
+                             ${NNPDF_SOURCES} 
+)
+target_include_directories(NNPDFSherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(NNPDFSherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS NNPDFSherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(NNPDFSherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME NNPDFSherpa)
+endif()
+if (SHERPA_BUILD_SHARED)
+add_library(NNPDFSherpa SHARED ${NNPDFSherpa_esources}
+                             ${NNPDF_SOURCES} 
+)
+target_include_directories(NNPDFSherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(NNPDFSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS NNPDFSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(NNPDFSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME NNPDFSherpa SOVERSION 0.0.0)
+endif()

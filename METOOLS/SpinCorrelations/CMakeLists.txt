@@ -1,0 +1,39 @@
+
+########################################################################
+#
+#  Automatically or semiautomaticaly generated, do not edit.
+#
+########################################################################
+# The following input was used
+# Makefile.am
+
+########################################################################
+#SpinCorrelations/Makefile.am
+ 
+ #pkglib_LTLIBRARIES = libMEToolsSpinCorrelations.la)
+ set(GITTAG  METOOLS/SpinCorrelations)
+ #include ../../git.make)
+set(SpinCorrelations_SOURCES  Amplitude2_Tensor.C Amplitude2_Matrix.C Decay_Matrix.C Spin_Density.C)
+set(SpinCorrelations_HEADERS Amplitude2_Tensor.H Amplitude2_Matrix.H Decay_Matrix.H Spin_Density.H)
+creategitinfo(SpinCorrelations ../SpinCorrelations/)
+  list(TRANSFORM SpinCorrelations_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SpinCorrelations/")
+ 
+set(SpinCorrelations_esources )
+if (SHERPA_BUILD_STATIC)
+add_library(METoolsSpinCorrelations_static STATIC ${METoolsSpinCorrelations_esources}
+                             ${SpinCorrelations_SOURCES} 
+)
+target_include_directories(METoolsSpinCorrelations_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(METoolsSpinCorrelations_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS METoolsSpinCorrelations_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(METoolsSpinCorrelations_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME METoolsSpinCorrelations)
+endif()
+if (SHERPA_BUILD_SHARED)
+add_library(METoolsSpinCorrelations SHARED ${METoolsSpinCorrelations_esources}
+                             ${SpinCorrelations_SOURCES} 
+)
+target_include_directories(METoolsSpinCorrelations PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(METoolsSpinCorrelations PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS METoolsSpinCorrelations DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(METoolsSpinCorrelations        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsSpinCorrelations SOVERSION 0.0.0)
+endif()

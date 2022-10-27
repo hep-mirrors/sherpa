@@ -1,0 +1,39 @@
+
+########################################################################
+#
+#  Automatically or semiautomaticaly generated, do not edit.
+#
+########################################################################
+# The following input was used
+# Makefile.am
+
+########################################################################
+#PS_Library/Makefile.am
+ 
+ #pkglib_LTLIBRARIES = libHadronsPSs.la)
+ set(GITTAG  HADRONS++/PS_Library)
+ #include ../../git.make)
+set(PS_Library_SOURCES  HD_PS_Base.C Three_Body_PSs.C Two_Body_PSs.C Four_Body_PSs.C ResonanceFlavour.C)
+set(PS_Library_HEADERS HD_PS_Base.H Three_Body_PSs.H Two_Body_PSs.H Four_Body_PSs.H ResonanceFlavour.H)
+creategitinfo(PS_Library ../PS_Library/)
+  list(TRANSFORM PS_Library_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../PS_Library/")
+ 
+set(PS_Library_esources )
+if (SHERPA_BUILD_STATIC)
+add_library(HadronsPSs_static STATIC ${HadronsPSs_esources}
+                             ${PS_Library_SOURCES} 
+)
+target_include_directories(HadronsPSs_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(HadronsPSs_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS HadronsPSs_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(HadronsPSs_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME HadronsPSs)
+endif()
+if (SHERPA_BUILD_SHARED)
+add_library(HadronsPSs SHARED ${HadronsPSs_esources}
+                             ${PS_Library_SOURCES} 
+)
+target_include_directories(HadronsPSs PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(HadronsPSs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS HadronsPSs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(HadronsPSs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME HadronsPSs SOVERSION 0.0.0)
+endif()

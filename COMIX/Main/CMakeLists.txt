@@ -1,0 +1,40 @@
+
+########################################################################
+#
+#  Automatically or semiautomaticaly generated, do not edit.
+#
+########################################################################
+# The following input was used
+# Makefile.am
+
+########################################################################
+#Main/Makefile.am
+ 
+ #pkglib_LTLIBRARIES = libComix.la)
+ set(GITTAG  COMIX/Main)
+ #include ../../git.make)
+set(Main_SOURCES  Process_Base.C Process_Group.C Single_Process.C Single_Dipole_Term.C Comix.C)
+set(Main_HEADERS Process_Base.H Process_Group.H Single_Process.H Single_Dipole_Term.H)
+ #dist_bin_SCRIPTS = init_nlo.sh)
+creategitinfo(Main ../Main/)
+  list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+ 
+set(Main_esources )
+if (SHERPA_BUILD_STATIC)
+add_library(Comix_static STATIC ${Comix_esources}
+                             ${Main_SOURCES} 
+)
+target_include_directories(Comix_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(Comix_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS Comix_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(Comix_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME Comix)
+endif()
+if (SHERPA_BUILD_SHARED)
+add_library(Comix SHARED ${Comix_esources}
+                             ${Main_SOURCES} 
+)
+target_include_directories(Comix PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(Comix PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS Comix DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(Comix        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME Comix SOVERSION 0.0.0)
+endif()

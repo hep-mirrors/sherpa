@@ -1,0 +1,39 @@
+
+########################################################################
+#
+#  Automatically or semiautomaticaly generated, do not edit.
+#
+########################################################################
+# The following input was used
+# Makefile.am
+
+########################################################################
+#Main/Makefile.am
+ 
+ #pkglib_LTLIBRARIES = libRemnants.la)
+ set(GITTAG  REMNANTS/Main)
+ #include ../../git.make)
+set(Main_SOURCES  Remnant_Handler.C Remnant_Base.C Hadron_Remnant.C Electron_Remnant.C Photon_Remnant.C No_Remnant.C)
+set(Main_HEADERS Remnant_Handler.H Remnant_Base.H Hadron_Remnant.H Electron_Remnant.H Photon_Remnant.H No_Remnant.H)
+creategitinfo(Main ../Main/)
+  list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+ 
+set(Main_esources )
+if (SHERPA_BUILD_STATIC)
+add_library(Remnants_static STATIC ${Remnants_esources}
+                             ${Main_SOURCES} 
+)
+target_include_directories(Remnants_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(Remnants_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS Remnants_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(Remnants_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME Remnants)
+endif()
+if (SHERPA_BUILD_SHARED)
+add_library(Remnants SHARED ${Remnants_esources}
+                             ${Main_SOURCES} 
+)
+target_include_directories(Remnants PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(Remnants PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS Remnants DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(Remnants        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME Remnants SOVERSION 0.0.0)
+endif()
