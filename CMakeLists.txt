@@ -32,9 +32,11 @@ if (APPLE)
 endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
+option(SHERPA_ENABLE_HZTOOL                "Enables building of tests." ON)
+option(SHERPA_ENABLE_RECOLA                "Enables building of tests." ON)
 option(SHERPA_ENABLE_OPENLOOPS                "Enables building of tests." ON)
 option(SHERPA_ENABLE_LHOLE                "Enables building of tests." ON)
-option(SHERPA_ENABLE_MADLOOP                "Enables building of tests." ON)
+option(SHERPA_ENABLE_MADLOOP                "Enables building of tests." OFF)
 option(SHERPA_ENABLE_BLACKHAT                "Enables building of tests." ON)
 option(SHERPA_ENABLE_ROOT                "Enables building of tests." ON)
 option(SHERPA_ENABLE_HEPMC3                "Enables building of tests." ON)
@@ -352,28 +354,32 @@ endforeach (  IDIR ${IDIRS}  )
 set(Sherpa_SRCS_C Sherpa.C Filter.C)
 list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
 add_executable(Sherpa  ${Sherpa_SRCS_C} ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA//Run/Main.C)
-target_link_libraries(Sherpa PRIVATE ATOOLS  ${LHAPDF_LIBRARIES} LHAPDF ${HEPMC3_LIBRARIES} ${HEPMC2_LIBRARIES} 
+target_link_libraries(Sherpa PRIVATE   ${LHAPDF_LIBRARIES}  ${HEPMC3_LIBRARIES} ${HEPMC2_LIBRARIES} 
 METoolsColors  METoolsCurrents  METoolsExplicit  METoolsLoops METoolsMain  METoolsSpinCorrelations  METoolsVertices
-SHERPA  
-RemnantsMain RemnantsTools  
+
+Amegic Amplitude AmegicPSGen Zfunctions DipoleSubtraction
+  
+Remnants RemnantsTools  
 PhotonsMain PhotonsMEs PhotonsPhaseSpace PhotonsTools
  PhasicChannels PhasicDecays PhasicMain PhasicEnhance PhasicProcess PhasicScales PhasicSelectors
- ShrimpsLadders   ShrimpsBeam_Remnants  ShrimpsCross_Sections  ShrimpsEikonals  ShrimpsEvent_Generation  ShrimpsMain  ShrimpsTools 
- EXTRA_XS 
- RECONNECTIONS  
+ ShrimpsLadders   ShrimpsBeamRemnants  ShrimpsXsecs  ShrimpsEikonals  ShrimpsEvents  ShrimpsMain  ShrimpsTools 
+ ExtraXS ExtraXS2_2  ExtraXS1_3  ExtraXS1_2
+ Reconnections  
  zip   
- Main
- SherpaSM SherpaMain SherpaUFO SherpaTauPi
- AmisicMain AmisicTools AmisicPerturbative 
+ SherpaMain SherpaTools SherpaSingleEvents SherpaPerturbativePhysics SherpaInitialization LundTools SherpaSoftPhysics
+ SherpaSM  ModelUFO SherpaTauPi ModelMain
+ Amisic AmisicTools AmisicPerturbative 
  BeamMain BeamSpectra 
- ComixMain ComixAmplitude ComixPhasespace
- HadronsMain HadronsCurrent_Library HadronsME_Library HadronsPS_Library
- 
+ Comix ComixAmplitude ComixPhasespace
+ HadronsMain HadronsCurrents HadronsMEs HadronsPSs
+ PDF
+ SherpaHepMCOutput
+ SherpaHepMC3Output
+ ToolsMath ToolsOrg ToolsYaml String ToolsPhys
 )
 target_include_directories(Sherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 install(TARGETS Sherpa DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
-#target_include_directories(Sherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/packlib/kuip)
-#set_target_properties(Sherpa PROPERTIES POSITION_INDEPENDENT_CODE ${CERNLIB_POSITION_INDEPENDENT_CODE} OUTPUT_NAME Sherpa${COMPSUFFIX})
+
 
 
 
@@ -415,8 +421,17 @@ if (SHERPA_ENABLE_OPENLOOPS)
   add_subdirectory(AddOns/OpenLoops)
 endif()
 
+if (SHERPA_ENABLE_RECOLA)
+  add_subdirectory(AddOns/Recola)
+endif()
 
+if (SHERPA_ENABLE_HZTOOL)
+  add_subdirectory(AddOns/HZTool)
+endif()
 
+  add_subdirectory(AddOns/Weights)
+  add_subdirectory(AddOns/NNLO)
+  add_subdirectory(AddOns/Higgs)
 
 
 
