@@ -5,7 +5,7 @@
 
 
 
-add_library(SherpaHiggs SHARED Git_Info.C 
+add_library(SherpaHiggs SHARED 
 	dilog.C 
 	Wrappers.C 
 	Higgs_Tree.C 

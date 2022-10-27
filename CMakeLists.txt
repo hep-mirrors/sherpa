@@ -157,7 +157,7 @@ message(STATUS "SHERPA-MC: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${L
 
 
 
-
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
@@ -453,3 +453,163 @@ set(CONFIG_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/SHERPA/cmake)
 #              ${CMAKE_CURRENT_BINARY_DIR}/cmake/SHERPAConfig-version.cmake
 #              DESTINATION ${CONFIG_INSTALL_DIR} COMPONENT devel)
               
+
+
+
+file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H
+     CONTENT 
+"\n\
+/* ATOOLS/Org/CXXFLAGS_PACKAGES.H.  Generated from CXXFLAGS_PACKAGES.H.in by configure.  */\n\
+#ifndef CXXFLAGS_PACKAGES_H\n\
+#define CXXFLAGS_PACKAGES_H\n\
+\n\
+/* Using HEPMC3 */\n\
+#define USING__HEPMC3 \"1\"\n\
+\n\
+/* HepMC3 with ROOT support */\n\
+/* #undef USING__HEPMC3__ROOT */\n\
+\n\
+/* Using HEPMC2 */\n\
+#define USING__HEPMC2 \"1\"\n\
+\n\
+/* HepMC::IO_GenEvent available */\n\
+#define USING__HEPMC2__IOGENEVENT \"1\"\n\
+\n\
+/* HepMC::Units available */\n\
+#define USING__HEPMC2__UNITS \"1\"\n\
+\n\
+/* HepMCDefs.h available */\n\
+#define USING__HEPMC2__DEFS \"1\"\n\
+\n\
+/* using gzip */\n\
+#define USING__GZIP \"1\"\n\
+\n\
+/* using sqlite */\n\
+/* #undef USING__SQLITE */\n\
+\n\
+/* hztool found */\n\
+#define USING__HZTOOL \"1\"\n\
+\n\
+/* cernlib found */\n\
+#define USING__CERNLIB \"1\"\n\
+\n\
+/* using LHAPDF */\n\
+#define LHAPDF_PATH \"/usr\"\n\
+\n\
+/* using ROOT */\n\
+#define USING__ROOT \"1\"\n\
+\n\
+/* using Rivet2 */\n\
+/* #undef USING__RIVET2 */\n\
+\n\
+/* using Rivet3 */\n\
+#define USING__RIVET3 \"1\"\n\
+\n\
+/* using BLACKHAT */\n\
+#define USING__BLACKHAT \"1\"\n\
+\n\
+/* BLACKHAT directory */\n\
+#define BLACKHAT_PATH \"/usr\"\n\
+\n\
+/* OpenLoops installation prefix */\n\
+#define OPENLOOPS_PREFIX \"/usr/lib64/openloops\"\n\
+\n\
+/* GoSam installation prefix */\n\
+/* #undef GOSAM_PREFIX */\n\
+\n\
+/* MadLoop installation prefix */\n\
+/* #undef MADLOOP_PREFIX */\n\
+\n\
+/* Recola installation prefix */\n\
+#define RECOLA_PREFIX \"/usr\"\n\
+\n\
+/* using MCFM */\n\
+/* #undef USING__MCFM */\n\
+\n\
+/* MCFM directory */\n\
+/* #undef MCFM_PATH */\n\
+\n\
+/* using Delphes */\n\
+/* #undef USING__DELPHES */\n\
+\n\
+/* using EWSud */\n\
+/* #undef USING__EWSud */\n\
+\n\
+#endif\n
+"
+     @ONLY)
+set(HEPEVT_CB_SIZE  4000)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/pythia-6.4.18.f.in ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/pythia-6.4.18.f @ONLY)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/make2scons.in ${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/make2scons @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config @ONLY)
+
+
+file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H
+     CONTENT 
+"\n\
+/* ATOOLS/Org/CXXFLAGS.H.  Generated from CXXFLAGS.H.in by configure.  */\n\
+/* Architecture identified as Darwin MacOS */\n\
+/* #undef ARCH_DARWIN */\n\
+\n\
+/* Architecture identified as Linux */\n\
+#define ARCH_LINUX \"1\"\n\
+\n\
+/* Architecture identified as Unix */\n\
+/* #undef ARCH_UNIX */\n\
+\n\
+/* Define to dummy `main' function (if any) required to link to the Fortran\n\
+   libraries. */\n\
+/* #undef FC_DUMMY_MAIN */\n\
+\n\
+/* Define if F77 and FC dummy `main' functions are identical. */\n\
+/* #undef FC_DUMMY_MAIN_EQ_F77 */\n\
+\n\
+/* MPI support */\n\
+/* #undef USING__MPI */\n\
+\n\
+/* Thread support */\n\
+/* #undef USING__Threading */\n\
+\n\
+/* ld path name */\n\
+#define LD_PATH_NAME \"LD_LIBRARY_PATH\"\n\
+\n\
+/* library suffix */\n\
+#define LIB_SUFFIX \".so\"\n\
+\n\
+/* binreloc activation */\n\
+#define ENABLE_BINRELOC \"1\"\n\
+\n\
+/* Sherpa installation prefix */\n\
+#define SHERPA_PREFIX \"/home/andriish/Projects/sherpa/X\"\n\
+\n\
+/* Sherpa include directory */\n\
+#define SHERPA_INCLUDE_PATH \"/home/andriish/Projects/sherpa/X/include/SHERPA-MC\"\n\
+\n\
+/* Sherpa library directory */\n\
+#define SHERPA_LIBRARY_PATH \"/home/andriish/Projects/sherpa/X/lib64/SHERPA-MC\"\n\
+\n\
+/* Sherpa data directory */\n\
+#define SHERPA_SHARE_PATH \"/home/andriish/Projects/sherpa/X/share/SHERPA-MC\"\n\
+\n\
+/* Sherpa subversion */\n\
+#define SHERPA_SUBVERSION \"0.0alpha1\"\n\
+\n\
+/* Sherpa version */\n\
+#define SHERPA_VERSION \"3\"\n\
+\n\
+/* Sherpa version name */\n\
+#define SHERPA_NAME \"Dhaulagiri\"\n\
+\n\
+/* using Pythia */\n\
+#define USING__PYTHIA \"1\"\n\
+\n\
+/* HEPEVT common block size */\n\
+#define HEPEVT_CB_SIZE 4000 \n\
+\n\
+/* Using colour */\n\
+#define USING__COLOUR \"1\"\n\
+\n\
+#define PYTHON_LIBS \"/home/andriish/Projects/sherpa/X/lib/python3.10/site-packages\"\n"
+     @ONLY)
