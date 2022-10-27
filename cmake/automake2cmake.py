@@ -827,8 +827,15 @@ target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
 target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
 endif()
 """)
-   ff.close()
-   
+   ff.close()   
+   ff=open("Org/CMakeLists.txt","a")
+   ff.write("""
+if (SHERPA_ENABLE_GZIP)
+target_link_libraries(ToolsOrg PRIVATE libzip::zip)
+endif()
+""")
+   ff.close()   
+
    os.chdir("../")    
    
 ########################################################################
@@ -927,6 +934,7 @@ target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
      create_library(ldirs,lname,includes,installincludes,[],[],[],"Sherpa")
      f.write("add_subdirectory("+lname+")\n")
    f.close()   
+
    os.chdir("../")
 
 

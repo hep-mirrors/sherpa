@@ -11,7 +11,7 @@
 #Org/Makefile.am
  
  #pkglib_LTLIBRARIES = libToolsOrg.la)
- if (GZIP_SUPPORT)
+ if (SHERPA_ENABLE_GZIP)
  set(GZIPSTREAMSOURCES  Gzip_Stream.C)
  set(GZIPSTREAMHEADERS  Gzip_Stream.H)
  else()
@@ -52,4 +52,8 @@ target_include_directories(ToolsOrg PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ToolsOrg PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsOrg DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsOrg        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsOrg SOVERSION 0.0.0)
+endif()
+
+if (SHERPA_ENABLE_GZIP)
+target_link_libraries(ToolsOrg PRIVATE libzip::zip)
 endif()

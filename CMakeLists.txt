@@ -32,6 +32,7 @@ if (APPLE)
 endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
+option(SHERPA_ENABLE_BINRELOC                "Enables building of tests." ON)
 option(SHERPA_ENABLE_CERNLIB                "Enables building of tests." ON)
 option(SHERPA_ENABLE_GZIP                "Enables building of tests." ON)
 option(SHERPA_ENABLE_EWSUD                "Enables building of tests." ON)
@@ -169,11 +170,13 @@ set(allsources )
   foreach (f IN LISTS ${name}_SOURCES  ${name}_HEADERS )
     list(APPEND allsources ${f})
   endforeach()
-  file(REMOVE 1.C)
-  foreach (f IN LISTS allsources )
-    file(MD5 "${CMAKE_CURRENT_SOURCE_DIR}/${b}/${f}" MDF)
-#    file(APPEND 1.C "${f} ${MDF}\n")
- endforeach()
+#  set(content "")
+#  foreach (f IN LISTS allsources )
+#   file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${b}/${f}"  temp)
+#   string(APPEND content "${temp}")
+#  endforeach()
+#  string(MD5 "${content}" MDF)
+#  file( WRITE 1.C "#include \"ATOOLS/Org/Git_Info.H\"\nstatic ATOOLS::Git_Info initializer\n(\"${GITTAG}\",\"cmake\",\"64353f80d10d0004bccf24f6c0f6b2fcc2fb8949\",\"${MDF}\");\n") 
 endmacro(creategitinfo )
 
 if(SHERPA_ENABLE_MPI)
@@ -204,10 +207,10 @@ add_subdirectory(MCATNLO)
 add_subdirectory(MODEL)
 add_subdirectory(PHASIC++)
 add_subdirectory(PHOTONS++)
-add_subdirectory(PDF/CT14  )
+add_subdirectory(PDF/CT14)
 add_subdirectory(PDF/Electron)  
-add_subdirectory(PDF/GRS  )
-add_subdirectory(PDF/GRV  )
+add_subdirectory(PDF/GRS)
+add_subdirectory(PDF/GRV)
 IF (SHERPA_ENABLE_LHAPDF)
   find_package(LHAPDF REQUIRED)
   message(STATUS "SHERPA-MC: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
@@ -397,7 +400,7 @@ PhasicChannels PhasicDecays PhasicMain PhasicEnhance PhasicProcess PhasicScales 
 ShrimpsLadders   ShrimpsBeamRemnants  ShrimpsXsecs  ShrimpsEikonals  ShrimpsEvents  ShrimpsMain  ShrimpsTools 
 ExtraXS ExtraXS2_2  ExtraXS1_3  ExtraXS1_2
 Reconnections  
-${LIBZIP_LIBRARY}   
+libzip::zip  
 SherpaMain SherpaTools SherpaSingleEvents SherpaPerturbativePhysics SherpaInitialization LundTools SherpaSoftPhysics
 SherpaSM  ModelUFO SherpaTauPi ModelMain
 Amisic AmisicTools AmisicPerturbative 
@@ -712,10 +715,15 @@ string(APPEND CXXFLAGS_H_CONTENT  "
 \n\
 /* library suffix */\n\
 #define LIB_SUFFIX \"${CMAKE_SHARED_LIBRARY_SUFFIX}\"\n\
-\n\
-/* binreloc activation */\n\
-#define ENABLE_BINRELOC \"1\"\n\
-\n\
+\n")
+
+if (SHERPA_ENABLE_BINRELOC)
+string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* binreloc activation */\n#define ENABLE_BINRELOC \"1\"\n\n")
+else()
+string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* binreloc activation */\n/* #undef ENABLE_BINRELOC */\n\n")
+endif()
+
+string(APPEND CXXFLAGS_H_CONTENT  "\
 /* Sherpa installation prefix */\n\
 #define SHERPA_PREFIX \"${CMAKE_INSTALL_PREFIX}\"\n\
 \n\
