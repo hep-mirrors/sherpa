@@ -458,8 +458,7 @@ set(CONFIG_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/SHERPA/cmake)
 
 file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H
      CONTENT 
-"\n\
-/* ATOOLS/Org/CXXFLAGS_PACKAGES.H.  Generated from CXXFLAGS_PACKAGES.H.in by configure.  */\n\
+"/* ATOOLS/Org/CXXFLAGS_PACKAGES.H.  Generated from CXXFLAGS_PACKAGES.H.in by configure.  */\n\
 #ifndef CXXFLAGS_PACKAGES_H\n\
 #define CXXFLAGS_PACKAGES_H\n\
 \n\
@@ -535,7 +534,7 @@ file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H
 /* using EWSud */\n\
 /* #undef USING__EWSud */\n\
 \n\
-#endif\n
+#endif
 "
      @ONLY)
 set(HEPEVT_CB_SIZE  4000)
@@ -548,8 +547,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_C
 
 file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H
      CONTENT 
-"\n\
-/* ATOOLS/Org/CXXFLAGS.H.  Generated from CXXFLAGS.H.in by configure.  */\n\
+"/* ATOOLS/Org/CXXFLAGS.H.  Generated from CXXFLAGS.H.in by configure.  */\n\
 /* Architecture identified as Darwin MacOS */\n\
 /* #undef ARCH_DARWIN */\n\
 \n\
@@ -616,3 +614,24 @@ file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H DESTINATION 
 
 ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/ATOOLS/Org/  COMPONENT devel )
+
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}//Examples/API/Events/test.py.in
+${CMAKE_CURRENT_SOURCE_DIR}//Examples/API/Events/test.py  @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}//Examples/API/ME2-Python/test.py.in
+${CMAKE_CURRENT_SOURCE_DIR}//Examples/API/ME2-Python/test.py @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}//Examples/API/MPIEvents/test.py.in
+${CMAKE_CURRENT_SOURCE_DIR}//Examples/API/MPIEvents/test.py @ONLY)
+
+
+
+
+
+
+
+
+
+
+
+
+
