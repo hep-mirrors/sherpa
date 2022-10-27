@@ -1,4 +1,4 @@
-add_library(SherpaWSud SHARED 
+add_library(SherpaEWSud SHARED 
         Variation_Generator.C 
     Coefficient_Checker.C 
     KFactor_Checker.C 
@@ -11,5 +11,5 @@ add_library(SherpaWSud SHARED
     Calculator.C 
     Clustered_Calculator.C)
 
-install(TARGETS SherpaWSud DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SherpaWSud      PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaWSud SOVERSION 0.0.0)
+install(TARGETS SherpaEWSud DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(SherpaEWSud      PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaEWSud SOVERSION 0.0.0)

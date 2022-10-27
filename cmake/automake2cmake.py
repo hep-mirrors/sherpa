@@ -153,8 +153,8 @@ def transform_pilots(argv):
       file_contents = f.readlines()
     newlist =file_contents
     newlist = [x.replace("if ENABLE_UFO","if (ENABLE_UFO)") for x in newlist]
-    newlist = [x.replace("if PYTHIA_SUPPORT","if (PYTHIA_SUPPORT)") for x in newlist]
-    newlist = [x.replace("if GZIP_SUPPORT","if (GZIP_SUPPORT)") for x in newlist]
+    newlist = [x.replace("if PYTHIA_SUPPORT","if (SHERPA_ENABLE_PYTHIA)") for x in newlist]
+    newlist = [x.replace("if GZIP_SUPPORT","if (SHERPA_ENABLE_GZIP)") for x in newlist]
     newlist = [x.replace("PYTHIAHEADERS =","set(PYTHIAHEADERS ") for x in newlist]
     newlist = [x.replace("GZIPSTREAMHEADERS =","set(GZIPSTREAMHEADERS ") for x in newlist]
     newlist = [x.replace("GZIPSTREAMSOURCES =","set(GZIPSTREAMSOURCES ") for x in newlist]
@@ -263,8 +263,8 @@ def transform_imake_source(argv, dbg):
     newlist = filter(lambda st: st != '' , newlist)
 
     newlist = [x.replace("if ENABLE_UFO","if (ENABLE_UFO)") for x in newlist]	
-    newlist = [x.replace("if PYTHIA_SUPPORT","if (PYTHIA_SUPPORT)") for x in newlist]
-    newlist = [x.replace("if GZIP_SUPPORT","if (GZIP_SUPPORT)") for x in newlist]
+    newlist = [x.replace("if PYTHIA_SUPPORT","if (SHERPA_ENABLE_PYTHIA)") for x in newlist]
+    newlist = [x.replace("if GZIP_SUPPORT","if (SHERPA_ENABLE_GZIP)") for x in newlist]
     newlist = [x.replace("NNPDF3archive =","set(NNPDF3archive  ") for x in newlist]
     newlist = [x.replace("SOBOL_EXT =","set(SOBOL_EXT  ") for x in newlist]
     newlist = [x.replace("PYTHIAHEADERS =","set(PYTHIAHEADERS ") for x in newlist]
