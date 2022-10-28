@@ -822,9 +822,9 @@ if __name__ == '__main__':
    f.close()   
    ff=open("Org/CMakeLists.txt","a")
    ff.write("""
-if (SHERPA_ENABLE_GZIP)
+#if (SHERPA_ENABLE_GZIP)
 target_link_libraries(ToolsOrg PRIVATE ${LIBZIP_LIBRARY})
-endif()
+#endif()
 """)
    ff.close()   
    ff=open("Phys/CMakeLists.txt","a")

@@ -54,6 +54,6 @@ install(TARGETS ToolsOrg DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT
 set_target_properties(ToolsOrg        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsOrg SOVERSION 0.0.0)
 endif()
 
-if (SHERPA_ENABLE_GZIP)
+#if (SHERPA_ENABLE_GZIP)
 target_link_libraries(ToolsOrg PRIVATE ${LIBZIP_LIBRARY})
-endif()
+#endif()

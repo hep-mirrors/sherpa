@@ -187,12 +187,14 @@ else()
  set (LOADMPIFORPY "")
 endif()
 
-find_package(LIBZIP)
-message(STATUS "SHERPA-MC:  LIBZIP_FOUND=${LIBZIP_FOUND} LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
-if (NOT LIBZIP_FOUND)
-find_package(LibZip)
-endif()
-message(STATUS "SHERPA-MC:  LIBZIP_FOUND=${LIBZIP_FOUND} LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
+#find_package(LIBZIP)
+FIND_LIBRARY(LIBZIP_LIBRARY NAMES zip PATHS "$ENV{LIB_DIR}/lib" "$ENV{LIB}" /usr/local/lib /usr/lib /usr/lib64 )
+message(STATUS "SHERPA-MC: LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
+#message(STATUS "SHERPA-MC:  LIBZIP_FOUND=${LIBZIP_FOUND} LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
+#if (NOT LIBZIP_FOUND)
+#find_package(LibZip)
+#endif()
+#message(STATUS "SHERPA-MC:  LIBZIP_FOUND=${LIBZIP_FOUND} LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
@@ -416,6 +418,10 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh
 set(Sherpa_SRCS_C Sherpa.C Filter.C)
 list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
 add_executable(Sherpa  ${Sherpa_SRCS_C} ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA//Run/Main.C)
+if (LIBZIP_LIBRARY )
+target_link_libraries(Sherpa PRIVATE ${LIBZIP_LIBRARY})
+endif()
+
 target_link_libraries(Sherpa PRIVATE    
 METoolsColors  METoolsCurrents  METoolsExplicit  METoolsLoops METoolsMain  METoolsSpinCorrelations  METoolsVertices
 Amegic Amplitude AmegicPSGen Zfunctions DipoleSubtraction
@@ -436,9 +442,7 @@ PDF
 ToolsMath ToolsOrg ToolsYaml String ToolsPhys
 )
 
-if (LIBZIP_LIBRARY )
-target_link_libraries(Sherpa PRIVATE ${LIBZIP_LIBRARY})
-endif()
+
 
 if (SHERPA_ENABLE_HEPMC3)
   target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_LIBRARIES} )

@@ -1,8 +1,8 @@
-if (SHERPA_ENABLE_CYTHON) 
-    find_program(CYTHON NAMES cython cython3 cython2 cython-2 cython-3 )
-    message(STATUS "SHERPA-MC python: CYTHON=${CYTHON}")
-    if (NOT CYTHON) 
-      set(SHERPA_ENABLE_CYTHON OFF)
+if (SHERPA_ENABLE_SWIG) 
+    find_program(SWIG NAMES swig )
+    message(STATUS "SHERPA-MC python: SWIG=${SWIG}")
+    if (NOT SWIG) 
+      set(SHERPA_ENABLE_SWIG OFF)
     endif()
 endif()
 set( PYEXTFILES_GEN
@@ -20,11 +20,22 @@ set( PYEXTFILES_GEN
     Terminator_Objects.i
   )
 
-if (SHERPA_ENABLE_CYTHON)
+if (SHERPA_ENABLE_SWIG)
+  set(PYTHONSRC)
+  foreach( file_i ${PYEXTFILES_GEN})
+    add_custom_command(
+    PRE_BUILD
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file_i}
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${file_i} ${CMAKE_CURRENT_BINARY_DIR}/${file_i}
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${file_i}
+    )
+    list( APPEND PYTHONSRC ${CMAKE_CURRENT_BINARY_DIR}/${file_i})
+  endforeach( file_i )
      add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx
-       DEPENDS ${PYEXTFILES_GEN}
-       COMMAND ${CYTHON} ${PYEXTFILES_GEN} --cplus -2   -I ${CMAKE_CURRENT_SOURCE_DIR} -o ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx 
+       DEPENDS ${PYTHONSRC}
+       COMMAND ${SWIG} -c++ -python ${PYEXTFILES_GEN} -I ${CMAKE_CURRENT_SOURCE_DIR} -I ${PROJECT_BINARY_DIR} -I ${PROJECT_SOURCE_DIR} -o ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx 
        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
        VERBATIM)
 else()
