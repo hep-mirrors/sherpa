@@ -41,8 +41,3 @@ target_include_directories(ToolsPhys PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsPhys DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsPhys        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsPhys SOVERSION 0.0.0)
 endif()
-
-if (SHERPA_ENABLE_LHAPDF)
-target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
-target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
-endif()

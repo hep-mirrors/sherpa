@@ -55,5 +55,5 @@ set_target_properties(ToolsOrg        PROPERTIES POSITION_INDEPENDENT_CODE ON OU
 endif()
 
 if (SHERPA_ENABLE_GZIP)
-target_link_libraries(ToolsOrg PRIVATE libzip::zip)
+target_link_libraries(ToolsOrg PRIVATE ${LIBZIP_LIBRARY})
 endif()
