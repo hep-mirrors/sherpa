@@ -25,7 +25,7 @@ else(CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "DEBUG")
   message(STATUS "SHERPA: Build type not specified, use: ${CMAKE_BUILD_TYPE}")
 endif(CMAKE_BUILD_TYPE)
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/ModulesOld)
 
 if (APPLE)
   set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -186,8 +186,8 @@ else()
  set (LOADMPIFORPY "")
 endif()
 
-find_package(LIBZIP REQUIRED)
-  message(STATUS "SHERPA-MC: LIBZIP_FOUND=${LIBZIP_FOUND} LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
+find_package(LIBZIP)
+  message(STATUS "SHERPA-MC:  LIBZIP_FOUND=${LIBZIP_FOUND} LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
 
 
 add_subdirectory(AHADIC++)
@@ -410,7 +410,7 @@ PhasicChannels PhasicDecays PhasicMain PhasicEnhance PhasicProcess PhasicScales 
 ShrimpsLadders   ShrimpsBeamRemnants  ShrimpsXsecs  ShrimpsEikonals  ShrimpsEvents  ShrimpsMain  ShrimpsTools 
 ExtraXS ExtraXS2_2  ExtraXS1_3  ExtraXS1_2
 Reconnections  
-libzip::zip  
+  
 SherpaMain SherpaTools SherpaSingleEvents SherpaPerturbativePhysics SherpaInitialization LundTools SherpaSoftPhysics
 SherpaSM  ModelUFO SherpaTauPi ModelMain
 Amisic AmisicTools AmisicPerturbative 
@@ -420,6 +420,14 @@ HadronsMain HadronsCurrents HadronsMEs HadronsPSs
 PDF
 ToolsMath ToolsOrg ToolsYaml String ToolsPhys
 )
+if (libzip::zip )
+target_link_libraries(Sherpa PRIVATE libzip::zip)
+else()
+if (libzip::zip )
+target_link_libraries(Sherpa PRIVATE $(LIBZIP_LIBRARY))
+endif()
+endif()
+
 if (SHERPA_ENABLE_HEPMC3)
   target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_LIBRARIES} )
 endif()
