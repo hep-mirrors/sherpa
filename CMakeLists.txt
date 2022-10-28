@@ -380,7 +380,7 @@ if (SHERPA_ENABLE_GZIP)
 set(SOBOL_EXT .gz)
 add_custom_target( ZipSobol ALL)
 add_custom_command(TARGET ZipSobol PRE_BUILD
-       COMMAND gzip 21201
+       COMMAND gzip -f 21201
        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol
        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201
        VERBATIM)
@@ -437,8 +437,8 @@ ToolsMath ToolsOrg ToolsYaml String ToolsPhys
 if (libzip::zip )
 target_link_libraries(Sherpa PRIVATE libzip::zip)
 else()
-if (libzip::zip )
-target_link_libraries(Sherpa PRIVATE $(LIBZIP_LIBRARY))
+if (LIBZIP_LIBRARY )
+target_link_libraries(Sherpa PRIVATE ${LIBZIP_LIBRARY})
 endif()
 endif()
 
