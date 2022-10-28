@@ -32,6 +32,7 @@ if (APPLE)
 endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
+option(SHERPA_ENABLE_CYTHON                "Enables building of tests." ON)
 option(SHERPA_ENABLE_BINRELOC                "Enables building of tests." ON)
 option(SHERPA_ENABLE_CERNLIB                "Enables building of tests." ON)
 option(SHERPA_ENABLE_GZIP                "Enables building of tests." ON)

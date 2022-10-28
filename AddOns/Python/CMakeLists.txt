@@ -1,8 +1,8 @@
-if (SHERPA-MC_USE_CYTHON) 
-    find_program(CYTHON NAMES cython cython3 cython2)
+if (SHERPA_ENABLE_CYTHON) 
+    find_program(CYTHON NAMES cython cython3 cython2 cython-2 cython-3 )
     message(STATUS "SHERPA-MC python: CYTHON=${CYTHON}")
     if (NOT CYTHON) 
-      set(SHERPA-MC_USE_CYTHON OFF)
+      set(SHERPA_ENABLE_CYTHON OFF)
     endif()
 endif()
 set( PYEXTFILES_GEN
@@ -20,7 +20,7 @@ set( PYEXTFILES_GEN
     Terminator_Objects.i
   )
 
-if (SHERPA-MC_USE_CYTHON)
+if (SHERPA_ENABLE_CYTHON)
      add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx
        DEPENDS ${PYEXTFILES_GEN}
