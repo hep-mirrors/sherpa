@@ -434,12 +434,9 @@ HadronsMain HadronsCurrents HadronsMEs HadronsPSs
 PDF
 ToolsMath ToolsOrg ToolsYaml String ToolsPhys
 )
-if (libzip::zip )
-target_link_libraries(Sherpa PRIVATE libzip::zip)
-else()
+
 if (LIBZIP_LIBRARY )
 target_link_libraries(Sherpa PRIVATE ${LIBZIP_LIBRARY})
-endif()
 endif()
 
 if (SHERPA_ENABLE_HEPMC3)
