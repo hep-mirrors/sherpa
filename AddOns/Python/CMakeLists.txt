@@ -1,10 +1,6 @@
-if (SHERPA_ENABLE_SWIG) 
-    find_program(SWIG NAMES swig )
+
+    find_program(SWIG NAMES swig  REQUIRED)
     message(STATUS "SHERPA-MC python: SWIG=${SWIG}")
-    if (NOT SWIG) 
-      set(SHERPA_ENABLE_SWIG OFF)
-    endif()
-endif()
 set( PYEXTFILES_GEN
     Sherpa.i 
     Exception.i 
@@ -20,7 +16,7 @@ set( PYEXTFILES_GEN
     Terminator_Objects.i
   )
 
-if (SHERPA_ENABLE_SWIG)
+#if (SHERPA_ENABLE_SWIG)
   set(PYTHONSRC)
   foreach( file_i ${PYEXTFILES_GEN})
     add_custom_command(
@@ -38,14 +34,14 @@ if (SHERPA_ENABLE_SWIG)
        COMMAND ${SWIG} -c++ -python ${PYEXTFILES_GEN} -I ${CMAKE_CURRENT_SOURCE_DIR} -I ${PROJECT_BINARY_DIR} -I ${PROJECT_SOURCE_DIR} -o ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx 
        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
        VERBATIM)
-else()
-     add_custom_command(
-       OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx
-       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Sherpa_wrap.cxx
-       COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/Sherpa_wrap.cxx ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx
-       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-       VERBATIM)
-endif()
+#else()
+#     add_custom_command(
+#       OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx
+#       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Sherpa_wrap.cxx
+#       COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/Sherpa_wrap.cxx ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx
+#       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+#       VERBATIM)
+#endif()
 Python_add_library(_Sherpa MODULE  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx    )
 set_target_properties(_Sherpa   PROPERTIES      ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/$<0:>
                                                LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/$<0:>
