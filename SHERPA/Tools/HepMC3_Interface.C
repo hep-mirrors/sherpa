@@ -592,7 +592,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
       }
     }
   } // End Blob_List loop
-  if (beamparticles.empty()) {
+  if (event.beams().empty() && beamparticles.empty()) {
     Vec4D pbeam[2]={rpa->gen.PBeam(0),rpa->gen.PBeam(1)};
     HepMC::FourVector pa(pbeam[0][1],pbeam[0][2],pbeam[0][3],pbeam[0][0]);
     HepMC::FourVector pb(pbeam[1][1],pbeam[1][2],pbeam[1][3],pbeam[1][0]);
@@ -648,7 +648,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     } // Close loop over vertices
   }
 
-    if (beamparticles.size()==2) {
+  if (beamparticles.size()==2) {
     event.add_tree( beamparticles );
   }
   
