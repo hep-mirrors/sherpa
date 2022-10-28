@@ -380,7 +380,7 @@ if (SHERPA_ENABLE_GZIP)
 set(SOBOL_EXT .gz)
 add_custom_target( ZipSobol ALL)
 add_custom_command(TARGET ZipSobol PRE_BUILD
-       COMMAND ${CMAKE_COMMAND} -E gzip 21201
+       COMMAND gzip 21201
        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol
        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201
        VERBATIM)
