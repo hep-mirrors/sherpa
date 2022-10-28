@@ -48,15 +48,15 @@ set_target_properties(_Sherpa   PROPERTIES      ARCHIVE_OUTPUT_DIRECTORY ${PROJE
                                                RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/$<0:>
                                                )
 target_include_directories(_Sherpa PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/ )
-install(TARGETS _Sherpa DESTINATION ${SHERPA-MC_Python_SITEARCH}/  COMPONENT python)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.py DESTINATION ${SHERPA-MC_Python_SITEARCH}/  COMPONENT python)
-install(FILES ${PROJECT_SOURCE_DIR}/AddOns/DiHiggsNLO/creategrid.py DESTINATION ${SHERPA-MC_Python_SITEARCH}/  COMPONENT python)
+install(TARGETS _Sherpa DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.py DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python)
+install(FILES ${PROJECT_SOURCE_DIR}/AddOns/DiHiggsNLO/creategrid.py DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python)
 
 add_library(MEProcess SHARED MEProcess.C)
 install(TARGETS MEProcess DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(MEProcess       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME MEProcess SOVERSION 0.0.0)
 
-set(PYLIBDIR ${SHERPA-MC_Python_SITEARCH})
+set(PYLIBDIR ${SHERPA_Python_SITEARCH})
 configure_file(${PROJECT_SOURCE_DIR}//Examples/API/Events/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/Events/test.py  @ONLY)
 configure_file(${PROJECT_SOURCE_DIR}//Examples/API/ME2-Python/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/ME2-Python/test.py @ONLY)
 configure_file(${PROJECT_SOURCE_DIR}//Examples/API/MPIEvents/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/MPIEvents/test.py @ONLY)

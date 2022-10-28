@@ -1,0 +1,17 @@
+AMD Ryzen 7 PRO 4750G with Radeon Graphics, 16 cores
+16GB Memory
+
+CentOS8 Stream x86_64
+
+cmake with -j 16
+
+real	2m6,084s
+user	27m12,173s
+sys	2m17,237s
+
+
+autotools with -j 16
+
+real	8m58,803s
+user	32m14,603s
+sys	2m11,207s

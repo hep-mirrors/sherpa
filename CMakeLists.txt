@@ -32,6 +32,7 @@ if (APPLE)
 endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
+option(SHERPA_ENABLE_MANUAL                "Enables building of tests." ON)
 option(SHERPA_ENABLE_BINRELOC                "Enables building of tests." ON)
 option(SHERPA_ENABLE_CERNLIB                "Enables building of tests." ON)
 option(SHERPA_ENABLE_GZIP                "Enables building of tests." ON)
@@ -90,6 +91,9 @@ get_filename_component (Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
 message(STATUS "SHERPA: Fortran_COMPILER_NAME=${Fortran_COMPILER_NAME}  CMAKE_Fortran_COMPILER_ID=${CMAKE_Fortran_COMPILER_ID}  CMAKE_Fortran_COMPILER_VERSION=${CMAKE_Fortran_COMPILER_VERSION}")
 get_filename_component (C_COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
 message(STATUS "SHERPA: C_COMPILER_NAME=${C_COMPILER_NAME}  CMAKE_C_COMPILER_ID=${CMAKE_C_COMPILER_ID}   CMAKE_C_COMPILER_VERSION=${CMAKE_C_COMPILER_VERSION}")
+get_filename_component (CXX_COMPILER_NAME ${CMAKE_CXX_COMPILER} NAME)
+message(STATUS "SHERPA: CXX_COMPILER_NAME=${CXX_COMPILER_NAME}  CMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID}   CMAKE_CXX_COMPILER_VERSION=${CMAKE_CXX_COMPILER_VERSION}")
+
 
 if(CMAKE_SYSTEM_NAME MATCHES Darwin)
   set(CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS} -flat_namespace -single_module -undefined dynamic_lookup")
@@ -267,6 +271,9 @@ REMNANTS
 SHRiMPS
 SHERPA
 )
+if (SHERPA_ENABLE_MANUAL)
+  add_subdirectory(Manual)
+endif()
 if (SHERPA_ENABLE_PYTHON)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/Python 
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/AddOns/ COMPONENT devel  
@@ -463,11 +470,11 @@ if (SHERPA_ENABLE_PYTHON)
   else()
     find_package (Python ${SHERPA-MC_PYTHON_VERSION} EXACT COMPONENTS  Development Interpreter)
   endif()
-  if (NOT SHERPA-MC_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR})
-    set (SHERPA-MC_Python_SITEARCH ${CMAKE_INSTALL_PREFIX}/lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages/)
-    message(STATUS "SHERPA-MC python: SHERPA-MC_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} defaults to ${SHERPA-MC_Python_SITEARCH}")
+  if (NOT SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR})
+    set (SHERPA_Python_SITEARCH ${CMAKE_INSTALL_PREFIX}/lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages/)
+    message(STATUS "SHERPA-MC python: SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} defaults to ${SHERPA_Python_SITEARCH}")
   else()
-    message(STATUS "SHERPA-MC python: SHERPA-MC_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} is set to to ${SHERPA-MC_Python_SITEARCH}")
+    message(STATUS "SHERPA-MC python: SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} is set to to ${SHERPA_Python_SITEARCH}")
   endif()
   add_subdirectory(AddOns/Python)
 endif()
@@ -529,7 +536,7 @@ set( LD_LIBRARY_PATH "LD_LIBRARY_PATH")
 if (Darwin)
   set( LD_LIBRARY_PATH "DYLD_LIBRARY_PATH")
 endif()
-set (PYLIBDIR ${SHERPA-MC_Python_SITEARCH})
+set (PYLIBDIR ${SHERPA_Python_SITEARCH})
 string(REPLACE ";"  " " CONDITIONAL_HEPMC2LIBS " ${HEPMC2_LIBRARIES} ")
 string(REPLACE ";"  " " CONDITIONAL_HEPMC3LIBS " ${HEPMC3_LIBRARIES} ")
 string(REPLACE ";"  " " CONDITIONAL_LHAPDFLIBS  " ${LHAPDF_LIBRARIES} ")
@@ -793,7 +800,7 @@ string(APPEND CXXFLAGS_H_CONTENT  "\
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\
 \n\
-#define PYTHON_LIBS \"${SHERPA-MC_Python_SITEARCH}\"\n")
+#define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n")
 
 file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H
      CONTENT 
