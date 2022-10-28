@@ -827,7 +827,13 @@ target_link_libraries(ToolsOrg PRIVATE ${LIBZIP_LIBRARY})
 endif()
 """)
    ff.close()   
-
+   ff=open("Phys/CMakeLists.txt","a")
+   ff.write("""
+if (SHERPA_ENABLE_LHAPDF)
+target_link_libraries(PhysOrg PRIVATE ${LHAPDF_LIBRARIES})
+endif()
+""")
+   ff.close() 
    os.chdir("../")    
    
 ########################################################################
