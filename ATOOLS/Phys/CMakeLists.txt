@@ -43,5 +43,5 @@ set_target_properties(ToolsPhys        PROPERTIES POSITION_INDEPENDENT_CODE ON O
 endif()
 
 if (SHERPA_ENABLE_LHAPDF)
-target_link_libraries(PhysOrg PRIVATE ${LHAPDF_LIBRARIES})
+target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
 endif()

@@ -830,7 +830,7 @@ endif()
    ff=open("Phys/CMakeLists.txt","a")
    ff.write("""
 if (SHERPA_ENABLE_LHAPDF)
-target_link_libraries(PhysOrg PRIVATE ${LHAPDF_LIBRARIES})
+target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
 endif()
 """)
    ff.close() 
