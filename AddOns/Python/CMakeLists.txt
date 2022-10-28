@@ -49,7 +49,7 @@ set_target_properties(_Sherpa   PROPERTIES      ARCHIVE_OUTPUT_DIRECTORY ${PROJE
                                                )
 target_include_directories(_Sherpa PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/ )
 install(TARGETS _Sherpa DESTINATION ${SHERPA-MC_Python_SITEARCH}/  COMPONENT python)
-install(FILES Sherpa.py DESTINATION ${SHERPA-MC_Python_SITEARCH}/  COMPONENT python)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.py DESTINATION ${SHERPA-MC_Python_SITEARCH}/  COMPONENT python)
 install(FILES ${PROJECT_SOURCE_DIR}/AddOns/DiHiggsNLO/creategrid.py DESTINATION ${SHERPA-MC_Python_SITEARCH}/  COMPONENT python)
 
 add_library(MEProcess SHARED MEProcess.C)
