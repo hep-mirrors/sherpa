@@ -27,6 +27,7 @@ target_include_directories(DireShower_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(DireShower_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DireShower_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireShower_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME DireShower)
+set_target_properties(DireShower_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(DireShower SHARED ${DireShower_esources}
@@ -36,4 +37,5 @@ target_include_directories(DireShower PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(DireShower PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DireShower DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireShower        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DireShower SOVERSION 0.0.0)
+set_target_properties(DireShower        PROPERTIES DEFINE_SYMBOL "")
 endif()

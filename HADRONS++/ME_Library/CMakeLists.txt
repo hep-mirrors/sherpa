@@ -28,6 +28,7 @@ target_include_directories(HadronsMEs_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(HadronsMEs_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS HadronsMEs_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsMEs_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME HadronsMEs)
+set_target_properties(HadronsMEs_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(HadronsMEs SHARED ${HadronsMEs_esources}
@@ -37,4 +38,5 @@ target_include_directories(HadronsMEs PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(HadronsMEs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS HadronsMEs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsMEs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME HadronsMEs SOVERSION 0.0.0)
+set_target_properties(HadronsMEs        PROPERTIES DEFINE_SYMBOL "")
 endif()

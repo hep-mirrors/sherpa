@@ -26,6 +26,7 @@ target_include_directories(CSCalculators_static PRIVATE ${PROJECT_SOURCE_DIR}/in
 target_include_directories(CSCalculators_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS CSCalculators_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CSCalculators_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME CSCalculators)
+set_target_properties(CSCalculators_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(CSCalculators SHARED ${CSCalculators_esources}
@@ -35,4 +36,5 @@ target_include_directories(CSCalculators PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(CSCalculators PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS CSCalculators DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CSCalculators        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME CSCalculators SOVERSION 0.0.0)
+set_target_properties(CSCalculators        PROPERTIES DEFINE_SYMBOL "")
 endif()

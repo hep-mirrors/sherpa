@@ -32,6 +32,7 @@ target_include_directories(ModelUFO_static PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(ModelUFO_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ModelUFO_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ModelUFO_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ModelUFO)
+set_target_properties(ModelUFO_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ModelUFO SHARED ${ModelUFO_esources}
@@ -41,4 +42,5 @@ target_include_directories(ModelUFO PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ModelUFO PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ModelUFO DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ModelUFO        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ModelUFO SOVERSION 0.0.0)
+set_target_properties(ModelUFO        PROPERTIES DEFINE_SYMBOL "")
 endif()

@@ -28,6 +28,7 @@ target_include_directories(AhadicFormation_static PRIVATE ${PROJECT_SOURCE_DIR}/
 target_include_directories(AhadicFormation_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AhadicFormation_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AhadicFormation_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME AhadicFormation)
+set_target_properties(AhadicFormation_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(AhadicFormation SHARED ${AhadicFormation_esources}
@@ -37,4 +38,5 @@ target_include_directories(AhadicFormation PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(AhadicFormation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AhadicFormation DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AhadicFormation        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AhadicFormation SOVERSION 0.0.0)
+set_target_properties(AhadicFormation        PROPERTIES DEFINE_SYMBOL "")
 endif()

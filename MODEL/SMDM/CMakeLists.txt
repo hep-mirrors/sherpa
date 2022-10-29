@@ -26,6 +26,7 @@ target_include_directories(SherpaSMDM_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(SherpaSMDM_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaSMDM_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSMDM_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaSMDM)
+set_target_properties(SherpaSMDM_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaSMDM SHARED ${SherpaSMDM_esources}
@@ -35,4 +36,5 @@ target_include_directories(SherpaSMDM PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaSMDM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaSMDM DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSMDM        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaSMDM SOVERSION 0.0.0)
+set_target_properties(SherpaSMDM        PROPERTIES DEFINE_SYMBOL "")
 endif()

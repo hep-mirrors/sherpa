@@ -27,6 +27,7 @@ target_include_directories(DireTools_static PRIVATE ${PROJECT_SOURCE_DIR}/includ
 target_include_directories(DireTools_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DireTools_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireTools_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME DireTools)
+set_target_properties(DireTools_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(DireTools SHARED ${DireTools_esources}
@@ -36,4 +37,5 @@ target_include_directories(DireTools PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(DireTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DireTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DireTools SOVERSION 0.0.0)
+set_target_properties(DireTools        PROPERTIES DEFINE_SYMBOL "")
 endif()

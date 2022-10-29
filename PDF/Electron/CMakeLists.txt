@@ -27,6 +27,7 @@ target_include_directories(PDFESherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(PDFESherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PDFESherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PDFESherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PDFESherpa)
+set_target_properties(PDFESherpa_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PDFESherpa SHARED ${PDFESherpa_esources}
@@ -36,4 +37,5 @@ target_include_directories(PDFESherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PDFESherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PDFESherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PDFESherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PDFESherpa SOVERSION 0.0.0)
+set_target_properties(PDFESherpa        PROPERTIES DEFINE_SYMBOL "")
 endif()

@@ -29,6 +29,7 @@ target_include_directories(SherpaSingleEvents_static PRIVATE ${PROJECT_SOURCE_DI
 target_include_directories(SherpaSingleEvents_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaSingleEvents_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSingleEvents_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaSingleEvents)
+set_target_properties(SherpaSingleEvents_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaSingleEvents SHARED ${SherpaSingleEvents_esources}
@@ -38,4 +39,5 @@ target_include_directories(SherpaSingleEvents PRIVATE ${PROJECT_SOURCE_DIR}/incl
 target_include_directories(SherpaSingleEvents PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaSingleEvents DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSingleEvents        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaSingleEvents SOVERSION 0.0.0)
+set_target_properties(SherpaSingleEvents        PROPERTIES DEFINE_SYMBOL "")
 endif()

@@ -26,6 +26,7 @@ target_include_directories(SherpaTauPi_static PRIVATE ${PROJECT_SOURCE_DIR}/incl
 target_include_directories(SherpaTauPi_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaTauPi_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaTauPi_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaTauPi)
+set_target_properties(SherpaTauPi_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaTauPi SHARED ${SherpaTauPi_esources}
@@ -35,4 +36,5 @@ target_include_directories(SherpaTauPi PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaTauPi PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaTauPi DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaTauPi        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaTauPi SOVERSION 0.0.0)
+set_target_properties(SherpaTauPi        PROPERTIES DEFINE_SYMBOL "")
 endif()

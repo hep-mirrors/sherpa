@@ -30,6 +30,7 @@ target_include_directories(HadronsCurrents_static PRIVATE ${PROJECT_SOURCE_DIR}/
 target_include_directories(HadronsCurrents_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS HadronsCurrents_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsCurrents_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME HadronsCurrents)
+set_target_properties(HadronsCurrents_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(HadronsCurrents SHARED ${HadronsCurrents_esources}
@@ -39,4 +40,5 @@ target_include_directories(HadronsCurrents PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(HadronsCurrents PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS HadronsCurrents DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsCurrents        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME HadronsCurrents SOVERSION 0.0.0)
+set_target_properties(HadronsCurrents        PROPERTIES DEFINE_SYMBOL "")
 endif()

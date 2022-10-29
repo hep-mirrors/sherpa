@@ -27,6 +27,7 @@ target_include_directories(MCatNLOMain_static PRIVATE ${PROJECT_SOURCE_DIR}/incl
 target_include_directories(MCatNLOMain_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS MCatNLOMain_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(MCatNLOMain_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME MCatNLOMain)
+set_target_properties(MCatNLOMain_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(MCatNLOMain SHARED ${MCatNLOMain_esources}
@@ -36,4 +37,5 @@ target_include_directories(MCatNLOMain PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(MCatNLOMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS MCatNLOMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(MCatNLOMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME MCatNLOMain SOVERSION 0.0.0)
+set_target_properties(MCatNLOMain        PROPERTIES DEFINE_SYMBOL "")
 endif()

@@ -26,6 +26,7 @@ target_include_directories(MCatNLOCalculators_static PRIVATE ${PROJECT_SOURCE_DI
 target_include_directories(MCatNLOCalculators_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS MCatNLOCalculators_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(MCatNLOCalculators_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME MCatNLOCalculators)
+set_target_properties(MCatNLOCalculators_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(MCatNLOCalculators SHARED ${MCatNLOCalculators_esources}
@@ -35,4 +36,5 @@ target_include_directories(MCatNLOCalculators PRIVATE ${PROJECT_SOURCE_DIR}/incl
 target_include_directories(MCatNLOCalculators PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS MCatNLOCalculators DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(MCatNLOCalculators        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME MCatNLOCalculators SOVERSION 0.0.0)
+set_target_properties(MCatNLOCalculators        PROPERTIES DEFINE_SYMBOL "")
 endif()

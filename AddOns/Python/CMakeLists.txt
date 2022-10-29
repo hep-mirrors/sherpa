@@ -53,6 +53,7 @@ install(FILES ${PROJECT_SOURCE_DIR}/AddOns/DiHiggsNLO/creategrid.py DESTINATION 
 add_library(MEProcess SHARED MEProcess.C)
 install(TARGETS MEProcess DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(MEProcess       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME MEProcess SOVERSION 0.0.0)
+set_target_properties(MEProcess       PROPERTIES DEFINE_SYMBOL "")
 
 set(PYLIBDIR ${SHERPA_Python_SITEARCH})
 configure_file(${PROJECT_SOURCE_DIR}//Examples/API/Events/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/Events/test.py  @ONLY)

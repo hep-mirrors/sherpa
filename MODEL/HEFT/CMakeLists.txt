@@ -27,6 +27,7 @@ target_include_directories(SherpaHEFT_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(SherpaHEFT_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaHEFT_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaHEFT_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaHEFT)
+set_target_properties(SherpaHEFT_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaHEFT SHARED ${SherpaHEFT_esources}
@@ -36,4 +37,5 @@ target_include_directories(SherpaHEFT PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaHEFT PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaHEFT DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaHEFT        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaHEFT SOVERSION 0.0.0)
+set_target_properties(SherpaHEFT        PROPERTIES DEFINE_SYMBOL "")
 endif()

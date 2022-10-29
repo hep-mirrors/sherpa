@@ -43,6 +43,7 @@ target_include_directories(ToolsOrg_static PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(ToolsOrg_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsOrg_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsOrg_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ToolsOrg)
+set_target_properties(ToolsOrg_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ToolsOrg SHARED ${ToolsOrg_esources}
@@ -52,6 +53,7 @@ target_include_directories(ToolsOrg PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ToolsOrg PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsOrg DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsOrg        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsOrg SOVERSION 0.0.0)
+set_target_properties(ToolsOrg        PROPERTIES DEFINE_SYMBOL "")
 endif()
 
 #if (SHERPA_ENABLE_GZIP)

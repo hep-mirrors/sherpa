@@ -26,6 +26,7 @@ target_include_directories(LHAPDFSherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/inc
 target_include_directories(LHAPDFSherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS LHAPDFSherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(LHAPDFSherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME LHAPDFSherpa)
+set_target_properties(LHAPDFSherpa_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(LHAPDFSherpa SHARED ${LHAPDFSherpa_esources}
@@ -35,4 +36,5 @@ target_include_directories(LHAPDFSherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(LHAPDFSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS LHAPDFSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(LHAPDFSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME LHAPDFSherpa SOVERSION 0.0.0)
+set_target_properties(LHAPDFSherpa        PROPERTIES DEFINE_SYMBOL "")
 endif()

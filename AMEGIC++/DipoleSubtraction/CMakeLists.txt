@@ -30,6 +30,7 @@ target_include_directories(DipoleSubtraction_static PRIVATE ${CMAKE_CURRENT_SOUR
 target_include_directories(DipoleSubtraction_static PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 install(TARGETS DipoleSubtraction_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DipoleSubtraction_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME DipoleSubtraction)
+set_target_properties(DipoleSubtraction_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(DipoleSubtraction SHARED ${DipoleSubtraction_esources}
@@ -40,4 +41,5 @@ target_include_directories(DipoleSubtraction PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 target_include_directories(DipoleSubtraction PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 install(TARGETS DipoleSubtraction DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DipoleSubtraction        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DipoleSubtraction SOVERSION 0.0.0)
+set_target_properties(DipoleSubtraction        PROPERTIES DEFINE_SYMBOL "")
 endif()

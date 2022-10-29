@@ -27,6 +27,7 @@ target_include_directories(PhotonsMain_static PRIVATE ${PROJECT_SOURCE_DIR}/incl
 target_include_directories(PhotonsMain_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhotonsMain_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhotonsMain_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhotonsMain)
+set_target_properties(PhotonsMain_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhotonsMain SHARED ${PhotonsMain_esources}
@@ -36,4 +37,5 @@ target_include_directories(PhotonsMain PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhotonsMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhotonsMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhotonsMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhotonsMain SOVERSION 0.0.0)
+set_target_properties(PhotonsMain        PROPERTIES DEFINE_SYMBOL "")
 endif()

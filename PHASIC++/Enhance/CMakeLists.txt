@@ -27,6 +27,7 @@ target_include_directories(PhasicEnhance_static PRIVATE ${PROJECT_SOURCE_DIR}/in
 target_include_directories(PhasicEnhance_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicEnhance_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicEnhance_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhasicEnhance)
+set_target_properties(PhasicEnhance_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhasicEnhance SHARED ${PhasicEnhance_esources}
@@ -36,4 +37,5 @@ target_include_directories(PhasicEnhance PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhasicEnhance PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicEnhance DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicEnhance        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicEnhance SOVERSION 0.0.0)
+set_target_properties(PhasicEnhance        PROPERTIES DEFINE_SYMBOL "")
 endif()

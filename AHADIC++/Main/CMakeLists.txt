@@ -28,6 +28,7 @@ target_include_directories(AhadicMain_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(AhadicMain_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AhadicMain_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AhadicMain_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME AhadicMain)
+set_target_properties(AhadicMain_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(AhadicMain SHARED ${AhadicMain_esources}
@@ -37,4 +38,5 @@ target_include_directories(AhadicMain PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(AhadicMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AhadicMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AhadicMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AhadicMain SOVERSION 0.0.0)
+set_target_properties(AhadicMain        PROPERTIES DEFINE_SYMBOL "")
 endif()

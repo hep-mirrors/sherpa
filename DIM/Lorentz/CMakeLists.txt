@@ -26,6 +26,7 @@ target_include_directories(DIMLorentz_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(DIMLorentz_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DIMLorentz_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DIMLorentz_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME DIMLorentz)
+set_target_properties(DIMLorentz_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(DIMLorentz SHARED ${DIMLorentz_esources}
@@ -35,4 +36,5 @@ target_include_directories(DIMLorentz PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(DIMLorentz PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DIMLorentz DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DIMLorentz        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DIMLorentz SOVERSION 0.0.0)
+set_target_properties(DIMLorentz        PROPERTIES DEFINE_SYMBOL "")
 endif()

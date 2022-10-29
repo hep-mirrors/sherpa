@@ -29,6 +29,7 @@ target_include_directories(GRSSherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/includ
 target_include_directories(GRSSherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS GRSSherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(GRSSherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME GRSSherpa)
+set_target_properties(GRSSherpa_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(GRSSherpa SHARED ${GRSSherpa_esources}
@@ -38,4 +39,5 @@ target_include_directories(GRSSherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(GRSSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS GRSSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(GRSSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME GRSSherpa SOVERSION 0.0.0)
+set_target_properties(GRSSherpa        PROPERTIES DEFINE_SYMBOL "")
 endif()

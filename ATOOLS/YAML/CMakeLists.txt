@@ -47,6 +47,7 @@ target_include_directories(ToolsYaml_static PRIVATE ${PROJECT_SOURCE_DIR}/includ
 target_include_directories(ToolsYaml_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsYaml_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsYaml_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ToolsYaml)
+set_target_properties(ToolsYaml_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ToolsYaml SHARED ${ToolsYaml_esources}
@@ -56,4 +57,5 @@ target_include_directories(ToolsYaml PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ToolsYaml PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsYaml DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsYaml        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsYaml SOVERSION 0.0.0)
+set_target_properties(ToolsYaml        PROPERTIES DEFINE_SYMBOL "")
 endif()

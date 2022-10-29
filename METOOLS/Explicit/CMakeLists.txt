@@ -27,6 +27,7 @@ target_include_directories(METoolsExplicit_static PRIVATE ${PROJECT_SOURCE_DIR}/
 target_include_directories(METoolsExplicit_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsExplicit_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsExplicit_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME METoolsExplicit)
+set_target_properties(METoolsExplicit_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(METoolsExplicit SHARED ${METoolsExplicit_esources}
@@ -36,4 +37,5 @@ target_include_directories(METoolsExplicit PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(METoolsExplicit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsExplicit DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsExplicit        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsExplicit SOVERSION 0.0.0)
+set_target_properties(METoolsExplicit        PROPERTIES DEFINE_SYMBOL "")
 endif()

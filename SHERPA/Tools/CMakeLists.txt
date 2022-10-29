@@ -27,6 +27,7 @@ target_include_directories(SherpaTools_static PRIVATE ${PROJECT_SOURCE_DIR}/incl
 target_include_directories(SherpaTools_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaTools_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaTools_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaTools)
+set_target_properties(SherpaTools_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaTools SHARED ${SherpaTools_esources}
@@ -36,4 +37,5 @@ target_include_directories(SherpaTools PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaTools SOVERSION 0.0.0)
+set_target_properties(SherpaTools        PROPERTIES DEFINE_SYMBOL "")
 endif()

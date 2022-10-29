@@ -29,6 +29,7 @@ target_include_directories(SherpaMain_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(SherpaMain_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaMain_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaMain_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaMain)
+set_target_properties(SherpaMain_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaMain SHARED ${SherpaMain_esources}
@@ -38,4 +39,5 @@ target_include_directories(SherpaMain PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaMain SOVERSION 0.0.0)
+set_target_properties(SherpaMain        PROPERTIES DEFINE_SYMBOL "")
 endif()

@@ -30,6 +30,7 @@ target_include_directories(Zfunctions_static PRIVATE "${CMAKE_CURRENT_SOURCE_DIR
 target_include_directories(Zfunctions_static PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 install(TARGETS Zfunctions_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(Zfunctions_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME Zfunctions)
+set_target_properties(Zfunctions_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(Zfunctions SHARED ${Zfunctions_esources}
@@ -41,4 +42,5 @@ target_include_directories(Zfunctions PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 target_include_directories(Zfunctions PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 install(TARGETS Zfunctions DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(Zfunctions        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME Zfunctions SOVERSION 0.0.0)
+set_target_properties(Zfunctions        PROPERTIES DEFINE_SYMBOL "")
 endif()

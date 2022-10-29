@@ -28,6 +28,7 @@ target_include_directories(METoolsLoops_static PRIVATE ${PROJECT_SOURCE_DIR}/inc
 target_include_directories(METoolsLoops_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsLoops_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsLoops_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME METoolsLoops)
+set_target_properties(METoolsLoops_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(METoolsLoops SHARED ${METoolsLoops_esources}
@@ -37,4 +38,5 @@ target_include_directories(METoolsLoops PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(METoolsLoops PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsLoops DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsLoops        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsLoops SOVERSION 0.0.0)
+set_target_properties(METoolsLoops        PROPERTIES DEFINE_SYMBOL "")
 endif()

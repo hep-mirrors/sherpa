@@ -443,12 +443,15 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
 #     f.write("target_include_directories("+lname+suff+" PRIVATE ${FREETYPE_INCLUDE_DIRS})\n")
      for ll in linklibs:
        f.write("target_link_libraries("+lname+suff+" PRIVATE "+ll+")\n")
+     
      if if_install_library(lname):
        f.write("install(TARGETS "+lname+suff+" DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)\n")   
      if suff=="_static": 
        f.write("set_target_properties("+lname+"_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME "+output_name_static(lname)+")\n")
+       f.write("set_target_properties("+lname+"_static PROPERTIES DEFINE_SYMBOL \"\")\n")
      if suff=="":
        f.write("set_target_properties("+lname+"        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME "+output_name(lname)+" SOVERSION "+get_full_so_version(lname)+")\n")
+       f.write("set_target_properties("+lname+"        PROPERTIES DEFINE_SYMBOL \"\")\n")
      f.write("endif()\n")
    for inc in installincludes:
      if len(inc)!=0:

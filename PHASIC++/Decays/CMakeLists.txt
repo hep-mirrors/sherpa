@@ -27,6 +27,7 @@ target_include_directories(PhasicDecays_static PRIVATE ${PROJECT_SOURCE_DIR}/inc
 target_include_directories(PhasicDecays_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicDecays_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicDecays_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhasicDecays)
+set_target_properties(PhasicDecays_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhasicDecays SHARED ${PhasicDecays_esources}
@@ -36,4 +37,5 @@ target_include_directories(PhasicDecays PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhasicDecays PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicDecays DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicDecays        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicDecays SOVERSION 0.0.0)
+set_target_properties(PhasicDecays        PROPERTIES DEFINE_SYMBOL "")
 endif()

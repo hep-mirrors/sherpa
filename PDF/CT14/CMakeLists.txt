@@ -27,6 +27,7 @@ target_include_directories(CT14Sherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(CT14Sherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS CT14Sherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CT14Sherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME CT14Sherpa)
+set_target_properties(CT14Sherpa_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(CT14Sherpa SHARED ${CT14Sherpa_esources}
@@ -36,4 +37,5 @@ target_include_directories(CT14Sherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(CT14Sherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS CT14Sherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CT14Sherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME CT14Sherpa SOVERSION 0.0.0)
+set_target_properties(CT14Sherpa        PROPERTIES DEFINE_SYMBOL "")
 endif()

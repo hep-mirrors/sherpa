@@ -29,6 +29,7 @@ target_include_directories(PhasicProcess_static PRIVATE ${PROJECT_SOURCE_DIR}/in
 target_include_directories(PhasicProcess_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicProcess_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicProcess_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhasicProcess)
+set_target_properties(PhasicProcess_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhasicProcess SHARED ${PhasicProcess_esources}
@@ -38,4 +39,5 @@ target_include_directories(PhasicProcess PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhasicProcess PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicProcess DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicProcess        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicProcess SOVERSION 0.0.0)
+set_target_properties(PhasicProcess        PROPERTIES DEFINE_SYMBOL "")
 endif()

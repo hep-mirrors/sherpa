@@ -27,6 +27,7 @@ target_include_directories(CSShowers_static PRIVATE ${PROJECT_SOURCE_DIR}/includ
 target_include_directories(CSShowers_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS CSShowers_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CSShowers_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME CSShowers)
+set_target_properties(CSShowers_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(CSShowers SHARED ${CSShowers_esources}
@@ -36,4 +37,5 @@ target_include_directories(CSShowers PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(CSShowers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS CSShowers DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CSShowers        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME CSShowers SOVERSION 0.0.0)
+set_target_properties(CSShowers        PROPERTIES DEFINE_SYMBOL "")
 endif()

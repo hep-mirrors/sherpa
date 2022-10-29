@@ -28,6 +28,7 @@ target_include_directories(ShrimpsXsecs_static PRIVATE ${PROJECT_SOURCE_DIR}/inc
 target_include_directories(ShrimpsXsecs_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsXsecs_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsXsecs_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ShrimpsXsecs)
+set_target_properties(ShrimpsXsecs_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ShrimpsXsecs SHARED ${ShrimpsXsecs_esources}
@@ -37,4 +38,5 @@ target_include_directories(ShrimpsXsecs PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ShrimpsXsecs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsXsecs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsXsecs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsXsecs SOVERSION 0.0.0)
+set_target_properties(ShrimpsXsecs        PROPERTIES DEFINE_SYMBOL "")
 endif()

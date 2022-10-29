@@ -31,6 +31,7 @@ target_include_directories(ToolsPhys_static PRIVATE ${PROJECT_SOURCE_DIR}/includ
 target_include_directories(ToolsPhys_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsPhys_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsPhys_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ToolsPhys)
+set_target_properties(ToolsPhys_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ToolsPhys SHARED ${ToolsPhys_esources}
@@ -40,6 +41,7 @@ target_include_directories(ToolsPhys PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ToolsPhys PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsPhys DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsPhys        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsPhys SOVERSION 0.0.0)
+set_target_properties(ToolsPhys        PROPERTIES DEFINE_SYMBOL "")
 endif()
 
 if (SHERPA_ENABLE_LHAPDF)

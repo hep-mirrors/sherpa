@@ -27,6 +27,7 @@ target_include_directories(AmisicTools_static PRIVATE ${PROJECT_SOURCE_DIR}/incl
 target_include_directories(AmisicTools_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AmisicTools_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AmisicTools_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME AmisicTools)
+set_target_properties(AmisicTools_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(AmisicTools SHARED ${AmisicTools_esources}
@@ -36,4 +37,5 @@ target_include_directories(AmisicTools PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(AmisicTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AmisicTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AmisicTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AmisicTools SOVERSION 0.0.0)
+set_target_properties(AmisicTools        PROPERTIES DEFINE_SYMBOL "")
 endif()

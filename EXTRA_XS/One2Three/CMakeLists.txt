@@ -27,6 +27,7 @@ target_include_directories(ExtraXS1_3_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(ExtraXS1_3_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ExtraXS1_3_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ExtraXS1_3_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ExtraXS1_3)
+set_target_properties(ExtraXS1_3_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ExtraXS1_3 SHARED ${ExtraXS1_3_esources}
@@ -36,4 +37,5 @@ target_include_directories(ExtraXS1_3 PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ExtraXS1_3 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ExtraXS1_3 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ExtraXS1_3        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ExtraXS1_3 SOVERSION 0.0.0)
+set_target_properties(ExtraXS1_3        PROPERTIES DEFINE_SYMBOL "")
 endif()

@@ -27,6 +27,7 @@ target_include_directories(ComixPhasespace_static PRIVATE ${PROJECT_SOURCE_DIR}/
 target_include_directories(ComixPhasespace_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ComixPhasespace_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ComixPhasespace_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ComixPhasespace)
+set_target_properties(ComixPhasespace_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ComixPhasespace SHARED ${ComixPhasespace_esources}
@@ -36,4 +37,5 @@ target_include_directories(ComixPhasespace PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(ComixPhasespace PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ComixPhasespace DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ComixPhasespace        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ComixPhasespace SOVERSION 0.0.0)
+set_target_properties(ComixPhasespace        PROPERTIES DEFINE_SYMBOL "")
 endif()

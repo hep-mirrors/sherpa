@@ -29,6 +29,7 @@ target_include_directories(PhasicScales_static PRIVATE ${PROJECT_SOURCE_DIR}/inc
 target_include_directories(PhasicScales_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicScales_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicScales_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhasicScales)
+set_target_properties(PhasicScales_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhasicScales SHARED ${PhasicScales_esources}
@@ -38,4 +39,5 @@ target_include_directories(PhasicScales PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhasicScales PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicScales DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicScales        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicScales SOVERSION 0.0.0)
+set_target_properties(PhasicScales        PROPERTIES DEFINE_SYMBOL "")
 endif()

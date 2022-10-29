@@ -12,8 +12,7 @@ autoreconf -fi
  --enable-pythia --enable-lhole --enable-lhapdf=/usr --enable-manual --enable-ewsud --enable-gosam=/usr #--enable-dihiggs 
  #--enable-analysis
  #--enable-analysis
-#bear --output AT.json -- 
-make -j 10
+bear --output AT.json -- make -j 10
 make install
 rm -f  AT/lib64/SHERPA-MC/*la
 rm -f  AT/lib64/SHERPA-MC/*so.0.0

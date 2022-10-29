@@ -49,7 +49,8 @@ option(SHERPA_ENABLE_ROOT                "Enables building of tests." ON)
 option(SHERPA_ENABLE_HEPMC3_ROOT                "Enables building of tests." ON)
 option(SHERPA_ENABLE_HEPMC3                "Enables building of tests." ON)
 option(SHERPA_ENABLE_HEPMC2                "Enables building of tests." ON)
-option(SHERPA_ENABLE_PYTHIA                "Enables building of tests." ON)
+option(SHERPA_ENABLE_PYTHIA8                "Enables building of tests." ON)
+option(SHERPA_ENABLE_PYTHIA6                "Enables building of tests." ON)
 option(SHERPA_ENABLE_RIVET                "Enables building of tests." ON)
 option(SHERPA_ENABLE_LHAPDF                "Enables building of tests." ON)
 option(SHERPA_ENABLE_PYTHON                "Enables building of tests." ON)
@@ -58,7 +59,7 @@ option(SHERPA_POSITION_INDEPENDENT_CODE  "Position independent code for static l
 option(SHERPA_BUILD_SHARED               "Build shared libraries." ON)
 option(SHERPA_BUILD_STATIC               "Build static libraries." OFF)
 ###########################Options handeling############################
-set( allenables MANUAL BINRELOC CERNLIB GZIP EWSUD GOSAM MPI HZTOOL RECOLA OPENLOOPS LHOLE MADLOOP BLACKHAT ROOT HEPMC3_ROOT HEPMC3 HEPMC2 PYTHIA RIVET LHAPDF PYTHON )
+set( allenables MANUAL BINRELOC CERNLIB GZIP EWSUD GOSAM MPI HZTOOL RECOLA OPENLOOPS LHOLE MADLOOP BLACKHAT ROOT HEPMC3_ROOT HEPMC3 HEPMC2 PYTHIA6 PYTHIA8 RIVET LHAPDF PYTHON )
 foreach (en IN LISTS allenables)
      message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -172,7 +173,8 @@ message(STATUS "SHERPA: CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
 ########################################################################
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
+add_definitions(-DHAVE_CONFIG_H)
+add_definitions(-DPIC)
 macro(creategitinfo name b)
 #This can be edited to create git_Info files
   set(allsources )
@@ -490,7 +492,7 @@ if (SHERPA_ENABLE_RIVET)
   add_subdirectory(AddOns/Rivet)
 endif()
 
-if (SHERPA_ENABLE_PYTHIA)
+if (SHERPA_ENABLE_PYTHIA8)
   add_subdirectory(AddOns/Pythia)
 endif()
 
@@ -796,7 +798,7 @@ string(APPEND CXXFLAGS_H_CONTENT  "\
 #define SHERPA_NAME \"Dhaulagiri\"\n\
 \n")
 
-if (SHERPA_ENABLE_PYTHIA)
+if (SHERPA_ENABLE_PYTHIA6)
   string(APPEND CXXFLAGS_H_CONTENT  "/* using Pythia */\n#define USING__PYTHIA \"1\"\n\n")
 else()
   string(APPEND CXXFLAGS_H_CONTENT  "/* using Pythia */\n/* #undef USING__PYTHIA */\n\n")

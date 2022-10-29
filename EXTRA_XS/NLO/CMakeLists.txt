@@ -27,6 +27,7 @@ target_include_directories(ExtraXSNLO_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(ExtraXSNLO_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ExtraXSNLO_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ExtraXSNLO_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ExtraXSNLO)
+set_target_properties(ExtraXSNLO_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ExtraXSNLO SHARED ${ExtraXSNLO_esources}
@@ -36,4 +37,5 @@ target_include_directories(ExtraXSNLO PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ExtraXSNLO PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ExtraXSNLO DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ExtraXSNLO        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ExtraXSNLO SOVERSION 0.0.0)
+set_target_properties(ExtraXSNLO        PROPERTIES DEFINE_SYMBOL "")
 endif()

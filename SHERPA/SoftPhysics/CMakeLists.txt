@@ -27,6 +27,7 @@ target_include_directories(SherpaSoftPhysics_static PRIVATE ${PROJECT_SOURCE_DIR
 target_include_directories(SherpaSoftPhysics_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaSoftPhysics_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSoftPhysics_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaSoftPhysics)
+set_target_properties(SherpaSoftPhysics_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaSoftPhysics SHARED ${SherpaSoftPhysics_esources}
@@ -36,4 +37,5 @@ target_include_directories(SherpaSoftPhysics PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(SherpaSoftPhysics PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaSoftPhysics DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSoftPhysics        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaSoftPhysics SOVERSION 0.0.0)
+set_target_properties(SherpaSoftPhysics        PROPERTIES DEFINE_SYMBOL "")
 endif()

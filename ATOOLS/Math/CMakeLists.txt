@@ -39,6 +39,7 @@ target_include_directories(ToolsMath_static PRIVATE ${PROJECT_SOURCE_DIR}/includ
 target_include_directories(ToolsMath_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsMath_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsMath_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ToolsMath)
+set_target_properties(ToolsMath_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ToolsMath SHARED ${ToolsMath_esources}
@@ -48,4 +49,5 @@ target_include_directories(ToolsMath PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ToolsMath PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsMath DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsMath        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsMath SOVERSION 0.0.0)
+set_target_properties(ToolsMath        PROPERTIES DEFINE_SYMBOL "")
 endif()

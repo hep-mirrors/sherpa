@@ -27,6 +27,7 @@ target_include_directories(RemnantsTools_static PRIVATE ${PROJECT_SOURCE_DIR}/in
 target_include_directories(RemnantsTools_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS RemnantsTools_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(RemnantsTools_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME RemnantsTools)
+set_target_properties(RemnantsTools_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(RemnantsTools SHARED ${RemnantsTools_esources}
@@ -36,4 +37,5 @@ target_include_directories(RemnantsTools PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(RemnantsTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS RemnantsTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(RemnantsTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME RemnantsTools SOVERSION 0.0.0)
+set_target_properties(RemnantsTools        PROPERTIES DEFINE_SYMBOL "")
 endif()

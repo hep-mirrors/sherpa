@@ -26,6 +26,7 @@ target_include_directories(DireGauge_static PRIVATE ${PROJECT_SOURCE_DIR}/includ
 target_include_directories(DireGauge_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DireGauge_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireGauge_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME DireGauge)
+set_target_properties(DireGauge_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(DireGauge SHARED ${DireGauge_esources}
@@ -35,4 +36,5 @@ target_include_directories(DireGauge PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(DireGauge PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DireGauge DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireGauge        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DireGauge SOVERSION 0.0.0)
+set_target_properties(DireGauge        PROPERTIES DEFINE_SYMBOL "")
 endif()

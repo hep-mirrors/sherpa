@@ -27,6 +27,7 @@ target_include_directories(METoolsCurrents_static PRIVATE ${PROJECT_SOURCE_DIR}/
 target_include_directories(METoolsCurrents_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsCurrents_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsCurrents_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME METoolsCurrents)
+set_target_properties(METoolsCurrents_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(METoolsCurrents SHARED ${METoolsCurrents_esources}
@@ -36,4 +37,5 @@ target_include_directories(METoolsCurrents PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(METoolsCurrents PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsCurrents DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsCurrents        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsCurrents SOVERSION 0.0.0)
+set_target_properties(METoolsCurrents        PROPERTIES DEFINE_SYMBOL "")
 endif()

@@ -33,6 +33,7 @@ target_include_directories(NNPDFSherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/incl
 target_include_directories(NNPDFSherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS NNPDFSherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(NNPDFSherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME NNPDFSherpa)
+set_target_properties(NNPDFSherpa_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(NNPDFSherpa SHARED ${NNPDFSherpa_esources}
@@ -42,4 +43,5 @@ target_include_directories(NNPDFSherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(NNPDFSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS NNPDFSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(NNPDFSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME NNPDFSherpa SOVERSION 0.0.0)
+set_target_properties(NNPDFSherpa        PROPERTIES DEFINE_SYMBOL "")
 endif()

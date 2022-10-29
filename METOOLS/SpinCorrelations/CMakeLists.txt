@@ -27,6 +27,7 @@ target_include_directories(METoolsSpinCorrelations_static PRIVATE ${PROJECT_SOUR
 target_include_directories(METoolsSpinCorrelations_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsSpinCorrelations_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsSpinCorrelations_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME METoolsSpinCorrelations)
+set_target_properties(METoolsSpinCorrelations_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(METoolsSpinCorrelations SHARED ${METoolsSpinCorrelations_esources}
@@ -36,4 +37,5 @@ target_include_directories(METoolsSpinCorrelations PRIVATE ${PROJECT_SOURCE_DIR}
 target_include_directories(METoolsSpinCorrelations PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsSpinCorrelations DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsSpinCorrelations        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsSpinCorrelations SOVERSION 0.0.0)
+set_target_properties(METoolsSpinCorrelations        PROPERTIES DEFINE_SYMBOL "")
 endif()

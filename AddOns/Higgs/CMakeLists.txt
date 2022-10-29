@@ -28,3 +28,4 @@ add_library(SherpaHiggs SHARED
 
 install(TARGETS SherpaHiggs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaHiggs       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaHiggs SOVERSION 0.0.0)
+set_target_properties(SherpaHiggs       PROPERTIES DEFINE_SYMBOL "")

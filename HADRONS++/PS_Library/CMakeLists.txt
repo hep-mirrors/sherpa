@@ -27,6 +27,7 @@ target_include_directories(HadronsPSs_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(HadronsPSs_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS HadronsPSs_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsPSs_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME HadronsPSs)
+set_target_properties(HadronsPSs_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(HadronsPSs SHARED ${HadronsPSs_esources}
@@ -36,4 +37,5 @@ target_include_directories(HadronsPSs PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(HadronsPSs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS HadronsPSs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsPSs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME HadronsPSs SOVERSION 0.0.0)
+set_target_properties(HadronsPSs        PROPERTIES DEFINE_SYMBOL "")
 endif()

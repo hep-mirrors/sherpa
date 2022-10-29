@@ -28,6 +28,7 @@ target_include_directories(ShrimpsEikonals_static PRIVATE ${PROJECT_SOURCE_DIR}/
 target_include_directories(ShrimpsEikonals_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsEikonals_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsEikonals_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ShrimpsEikonals)
+set_target_properties(ShrimpsEikonals_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ShrimpsEikonals SHARED ${ShrimpsEikonals_esources}
@@ -37,4 +38,5 @@ target_include_directories(ShrimpsEikonals PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(ShrimpsEikonals PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsEikonals DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsEikonals        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsEikonals SOVERSION 0.0.0)
+set_target_properties(ShrimpsEikonals        PROPERTIES DEFINE_SYMBOL "")
 endif()

@@ -29,6 +29,7 @@ target_include_directories(BeamMain_static PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(BeamMain_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS BeamMain_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(BeamMain_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME BeamMain)
+set_target_properties(BeamMain_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(BeamMain SHARED ${BeamMain_esources}
@@ -38,4 +39,5 @@ target_include_directories(BeamMain PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(BeamMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS BeamMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(BeamMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME BeamMain SOVERSION 0.0.0)
+set_target_properties(BeamMain        PROPERTIES DEFINE_SYMBOL "")
 endif()

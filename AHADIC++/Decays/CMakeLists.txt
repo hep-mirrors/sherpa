@@ -28,6 +28,7 @@ target_include_directories(AhadicDecays_static PRIVATE ${PROJECT_SOURCE_DIR}/inc
 target_include_directories(AhadicDecays_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AhadicDecays_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AhadicDecays_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME AhadicDecays)
+set_target_properties(AhadicDecays_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(AhadicDecays SHARED ${AhadicDecays_esources}
@@ -37,4 +38,5 @@ target_include_directories(AhadicDecays PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(AhadicDecays PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AhadicDecays DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AhadicDecays        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AhadicDecays SOVERSION 0.0.0)
+set_target_properties(AhadicDecays        PROPERTIES DEFINE_SYMBOL "")
 endif()

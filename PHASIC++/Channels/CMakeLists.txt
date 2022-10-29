@@ -31,6 +31,7 @@ target_include_directories(PhasicChannels_static PRIVATE ${PROJECT_SOURCE_DIR}/i
 target_include_directories(PhasicChannels_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicChannels_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicChannels_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhasicChannels)
+set_target_properties(PhasicChannels_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhasicChannels SHARED ${PhasicChannels_esources}
@@ -40,4 +41,5 @@ target_include_directories(PhasicChannels PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhasicChannels PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicChannels DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicChannels        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicChannels SOVERSION 0.0.0)
+set_target_properties(PhasicChannels        PROPERTIES DEFINE_SYMBOL "")
 endif()

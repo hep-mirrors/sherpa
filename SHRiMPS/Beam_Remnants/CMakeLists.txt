@@ -28,6 +28,7 @@ target_include_directories(ShrimpsBeamRemnants_static PRIVATE ${PROJECT_SOURCE_D
 target_include_directories(ShrimpsBeamRemnants_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsBeamRemnants_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsBeamRemnants_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ShrimpsBeamRemnants)
+set_target_properties(ShrimpsBeamRemnants_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ShrimpsBeamRemnants SHARED ${ShrimpsBeamRemnants_esources}
@@ -37,4 +38,5 @@ target_include_directories(ShrimpsBeamRemnants PRIVATE ${PROJECT_SOURCE_DIR}/inc
 target_include_directories(ShrimpsBeamRemnants PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsBeamRemnants DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsBeamRemnants        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsBeamRemnants SOVERSION 0.0.0)
+set_target_properties(ShrimpsBeamRemnants        PROPERTIES DEFINE_SYMBOL "")
 endif()

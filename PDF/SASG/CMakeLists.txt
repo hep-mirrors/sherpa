@@ -27,6 +27,7 @@ target_include_directories(SASGSherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(SASGSherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SASGSherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SASGSherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SASGSherpa)
+set_target_properties(SASGSherpa_static PROPERTIES DEFINE_SYMBOL "")
 endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SASGSherpa SHARED ${SASGSherpa_esources}
@@ -36,4 +37,5 @@ target_include_directories(SASGSherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SASGSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SASGSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SASGSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SASGSherpa SOVERSION 0.0.0)
+set_target_properties(SASGSherpa        PROPERTIES DEFINE_SYMBOL "")
 endif()
