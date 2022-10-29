@@ -8,6 +8,9 @@ variables:
   MAKE_FLAGS: -j4
 
 .build_template: &build
+  only:
+    variables:
+     - $CI_SERVER_HOST=="gitlab.com"
   stage: build
   before_script:
     # set up ccache
@@ -199,3 +202,44 @@ pages:
         - Manual/**/*
       when: always
     - when: never
+    
+
+.Fedora: &Fedora
+  only:
+    variables:
+     - $CI_SERVER_HOST=="gitlab.cern.ch"
+  before_script:
+    - set -x
+    - uname -a 
+    - cat /etc/issue
+    - dnf -y install  --allowerasing dnf-plugins-core make cmake binutils wget diffutils file sed gawk grep which autoconf automake libtool python3-lhapdf lhapdf lhapdf-devel 'tex(latex)' ghostscript 'tex(sectsty.sty)'
+    - dnf -y copr enable averbyts/HEPrpms 
+    - dnf -y install   gcc-gfortran gcc-c++ root pythia8-devel pythia8   Rivet Rivet-devel hztool
+    - dnf -y install   root-core root HepMC3-rootIO-devel HepMC3-devel HepMC3-search HepMC3-search-devel  HepMC3-rootIO HepMC3  HepMC HepMC-devel 
+    - dnf -y install   autoconf automake libtool sqlite-devel sqlite subversion root-physics libzip-devel openmpi-devel
+    - dnf -y install   openmpi environment-modules lhapdf-devel fastjet fastjet-devel  YODA-devel Rivet-devel zlib zlib-devel
+    - dnf -y install   swig  recola qd qd-devel openssl-devel openssl
+    - dnf -y install   blackhat-devel blackhat
+    - dnf -y install   texinfo git
+    - dnf -y install   python3 python3-devel 
+    - dnf -y install   cernlib cernlib-devel cernlib-static
+    - dnf -y install   cmake sphinx
+    - dnf -y clean packages
+    
+Fedora35-autotools:
+  image: fedora:35
+  extends: .Fedora
+  script:
+    - autoreconf -fi
+    -  ./configure  --prefix=$(pwd)/AT  --disable-rpath  --enable-rivet=/usr  --enable-cernlib=/usr/lib64/cernlib/2006  --enable-blackhat=$(blackhat-config --prefix)     --enable-gzip --enable-recola=/usr  --enable-hztool=/usr   --enable-hepevtsize=4000    --enable-hepmc3=/usr --disable-hepmc3root   --libdir=$(pwd)/AT/lib64   --enable-openloops=/usr/lib64/openloops --enable-hepmc2=/usr  --enable-root=/usr  --enable-binreloc   --enable-pythia --enable-lhole --enable-lhapdf=/usr --enable-manual --enable-ewsud --enable-gosam=/usr
+    - make - j 10
+    - make install
+ 
+
+Fedora35-cmake:
+  image: fedora:35
+  extends: .Fedora
+  script:
+    - cmake -S . -B BUILD -DCMAKE_INSTALL_PREFIX=$(pwd)/CM
+    - cmake --build BUILD -j 10
+    - cmake --install BUILD

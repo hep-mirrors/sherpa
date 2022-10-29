@@ -1,6 +1,5 @@
-
-    find_program(SWIG NAMES swig  REQUIRED)
-    message(STATUS "SHERPA-MC python: SWIG=${SWIG}")
+find_program(SWIG NAMES swig  REQUIRED)
+message(STATUS "SHERPA Python: SWIG=${SWIG}")
 set( PYEXTFILES_GEN
     Sherpa.i 
     Exception.i 
@@ -16,9 +15,8 @@ set( PYEXTFILES_GEN
     Terminator_Objects.i
   )
 
-#if (SHERPA_ENABLE_SWIG)
-  set(PYTHONSRC)
-  foreach( file_i ${PYEXTFILES_GEN})
+set(PYTHONSRC)
+foreach( file_i ${PYEXTFILES_GEN})
     add_custom_command(
     PRE_BUILD
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file_i}
@@ -27,8 +25,8 @@ set( PYEXTFILES_GEN
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${file_i}
     )
     list( APPEND PYTHONSRC ${CMAKE_CURRENT_BINARY_DIR}/${file_i})
-  endforeach( file_i )
-     add_custom_command(
+endforeach( file_i )
+add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx
        DEPENDS ${PYTHONSRC}
        COMMAND ${SWIG} -python -c++  -I${CMAKE_CURRENT_SOURCE_DIR} -I${PROJECT_BINARY_DIR} -I${PROJECT_SOURCE_DIR}   Sherpa.i 
@@ -60,4 +58,3 @@ set(PYLIBDIR ${SHERPA_Python_SITEARCH})
 configure_file(${PROJECT_SOURCE_DIR}//Examples/API/Events/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/Events/test.py  @ONLY)
 configure_file(${PROJECT_SOURCE_DIR}//Examples/API/ME2-Python/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/ME2-Python/test.py @ONLY)
 configure_file(${PROJECT_SOURCE_DIR}//Examples/API/MPIEvents/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/MPIEvents/test.py @ONLY)
-

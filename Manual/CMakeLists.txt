@@ -1,75 +1,72 @@
-#TO BE IMPLEMENTED
-
-#MAKEFLAGS = -j1
-
-#sphinx_SOURCE = $(srcdir)/source
-#sphinx_options = -D release=@VERSION@
-#sphinx_build_command = sphinx-build
-
-#if Manual_ENABLED
-#pkgdata_DATA = \
-#	sherpa-completion \
-#	completion.index \
-#	options.index
-#man_MANS = Sherpa.1
-#doc_DATA = sherpamanual.pdf
-
-#ALLDOCFILES = $(shell find $(srcdir)/source/ $(srcdir)/../Examples)
-
-#.NOTPARALLEL:
-#completion.index options.index: $(ALLDOCFILES)
-#	@echo "Creating index for tab completion."
-#	$(sphinx_build_command) -M completion $(sphinx_SOURCE) . $(sphinx_options)
-#	@mv completion/* .
-#	@rm -r completion
-
-#.NOTPARALLEL:
-#Sherpa.1: $(ALLDOCFILES)
-#	$(sphinx_build_command) -M man $(sphinx_SOURCE) . $(sphinx_options)
-#	@mv man/Sherpa.1 .
-#	@rm -r man
-
-#.NOTPARALLEL:
-#sherpamanual_html: $(ALLDOCFILES)
-#	$(sphinx_build_command) -M html $(sphinx_SOURCE) . $(sphinx_options)
-#	@rm -rf sherpamanual_html
-#	@mv html sherpamanual_html
-
-#.NOTPARALLEL:
-#sherpamanual.pdf: $(ALLDOCFILES)
-#	$(sphinx_build_command) -M latexpdf $(sphinx_SOURCE) . $(sphinx_options)
-#	@mv latex/sherpamanual.pdf .
-#	@rm -r latex
-
-#.NOTPARALLEL:
-#sherpamanual.info: $(ALLDOCFILES)
-#	$(sphinx_build_command) -M info $(sphinx_SOURCE) . $(sphinx_options)
-#	@mv texinfo/sherpamanual.info .
-#	@rm -r texinfo
-
-#.NOTPARALLEL:
-#install-data-local: sherpamanual.info
-#	@mkdir -p $(DESTDIR)${infodir}/
-#	${INSTALL_DATA} sherpamanual.info $(DESTDIR)${infodir}/sherpamanual.info
-#endif
+find_program(SPHINXBUILD NAMES sphinx-build  REQUIRED)
+message(STATUS "SHERPA Manual: SPHINXBUILD=${SPHINXBUILD}")
+find_package(LATEX COMPONENTS PDFLATEX MAKEINDEX REQUIRED)
+message(STATUS "SHERPA Manual: LATEX_FOUND=${LATEX_FOUND} PDFLATEX_COMPILER=${PDFLATEX_COMPILER} MAKEINDEX_COMPILER=${MAKEINDEX_COMPILER}")
 
 
-#EXTRA_DIST    = source
+set (sphinx_options  "-D release=${SHERPA_VERSION}")
 
-#if Manual_ENABLED
-## Distribute Manual so that building it isn't required
-#EXTRA_DIST    += sherpamanual.info \
-#	sherpamanual.pdf \
-#	sherpamanual_html \
-#	Sherpa.1
-#endif
+add_custom_command(
+       OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/completion.index  ${CMAKE_CURRENT_BINARY_DIR}/options.index
+       COMMAND ${SPHINXBUILD} -M completion  ${CMAKE_CURRENT_SOURCE_DIR}/source . ${sphinx_options}
+       COMMAND mv completion/completion.index  .
+       COMMAND mv completion/options.index .
+       COMMAND rm -r completion
+       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+       VERBATIM)
+add_custom_command(
+       OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.1 
+       COMMAND ${SPHINXBUILD} -M man  ${CMAKE_CURRENT_SOURCE_DIR}/source . ${sphinx_options}
+       COMMAND mv man/Sherpa.1 .
+       COMMAND rm -r man
+       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+       VERBATIM)
+       
+add_custom_command(
+       OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_html
+       COMMAND ${SPHINXBUILD} -M html  ${CMAKE_CURRENT_SOURCE_DIR}/source . ${sphinx_options}
+       COMMAND rm -rf sherpamanual_html
+       COMMAND mv html sherpamanual_html
+       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+       VERBATIM)
 
-## cleanup
-#CLEANFILES = options.index \
-#	completion.index \
-#	sherpamanual.info \
-#	sherpamanual.pdf \
-#	Sherpa.1
+add_custom_command(
+       OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
+       COMMAND ${SPHINXBUILD} -M latexpdf  ${CMAKE_CURRENT_SOURCE_DIR}/source  . ${sphinx_options}
+       COMMAND mv latex/sherpamanual.pdf .
+       COMMAND rm -r latex
+       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+       VERBATIM)
 
-#clean-local:
-#	-rm -rf sherpamanual_html doctrees
+add_custom_command(
+       OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.info
+       COMMAND ${SPHINXBUILD} -M info  ${CMAKE_CURRENT_SOURCE_DIR}/source  . ${sphinx_options}
+       COMMAND mv texinfo/sherpamanual.info .
+       COMMAND rm -r texinfo
+       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+       VERBATIM)
+install( FILES
+${CMAKE_CURRENT_BINARY_DIR}/completion.index  
+${CMAKE_CURRENT_BINARY_DIR}/options.index
+${CMAKE_CURRENT_BINARY_DIR}/Sherpa.1 
+${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
+${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.info
+DESTINATION
+${CMAKE_INSTALL_DOCDIR}
+)
+install( DIRECTORY
+${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_html
+DESTINATION
+${CMAKE_INSTALL_DOCDIR}
+)
+
+ADD_CUSTOM_TARGET(all-files 
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/completion.index  
+${CMAKE_CURRENT_BINARY_DIR}/options.index
+${CMAKE_CURRENT_BINARY_DIR}/Sherpa.1 
+${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_html
+${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
+${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.info 
+)
+ADD_CUSTOM_TARGET(all-formats ALL)
+ADD_DEPENDENCIES(all-formats all-files)
