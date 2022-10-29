@@ -223,7 +223,7 @@ pages:
     - dnf -y install   texinfo git
     - dnf -y install   python3 python3-devel 
     - dnf -y install   cernlib cernlib-devel cernlib-static
-    - dnf -y install   cmake sphinx
+    - dnf -y install   cmake sphinx python3-sphinxcontrib-bibtex
     - dnf -y clean packages
     
 Fedora35-autotools:
