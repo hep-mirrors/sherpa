@@ -216,7 +216,7 @@
     - dnf -y install   openmpi environment-modules lhapdf-devel fastjet fastjet-devel  YODA-devel Rivet-devel zlib zlib-devel
     - dnf -y install   swig  recola qd qd-devel openssl-devel openssl
     - dnf -y install   blackhat-devel blackhat
-    - dnf -y install   texinfo git
+    - dnf -y install   texinfo git latexmk
     - dnf -y install   python3 python3-devel 
     - dnf -y install   cernlib cernlib-devel cernlib-static
     - dnf -y install   cmake sphinx python3-sphinxcontrib-bibtex

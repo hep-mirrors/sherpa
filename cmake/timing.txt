@@ -1,3 +1,12 @@
+The CMakeLists.txt files
+
+Most created with the script automake2cmake.py
+The manually edited files contain "#Manually edited" in the first line and will not be overwritten by the script.
+The Structure is close to autotools because of the need to deal with Git_Info.C files.
+
+
+Timing
+
 AMD Ryzen 7 PRO 4750G with Radeon Graphics, 16 cores
 16GB Memory
 
@@ -15,3 +24,13 @@ autotools with -j 16
 real	8m58,803s
 user	32m14,603s
 sys	2m11,207s
+
+
+Cross-check
+
+The scripts compileAT and compileCM perform compilation with autotools and cmake and write results to 
+compilation databases
+
+The databases can be compared with compare_compil_databases.py
+
+The differences in the set of compiled files, definitions and compile flags are highlighted.
