@@ -34,3 +34,12 @@ compilation databases
 The databases can be compared with compare_compil_databases.py
 
 The differences in the set of compiled files, definitions and compile flags are highlighted.
+
+
+
+To list the tex packages
+cat BUILD/Manual/latex/sherpamanual.fls
+for a in $(cat BUILD/Manual/latex/sherpamanual.fls | grep INPUT | grep /usr | grep sty | sort  | uniq  | cut -f 2 -d' '  ); do echo "'tex("$(basename $a)")'"; done  | tr '\n' ' '
+
+
+

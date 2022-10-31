@@ -216,11 +216,20 @@
     - dnf -y install   openmpi environment-modules lhapdf-devel fastjet fastjet-devel  YODA-devel Rivet-devel zlib zlib-devel
     - dnf -y install   swig  recola qd qd-devel openssl-devel openssl
     - dnf -y install   blackhat-devel blackhat
-    - dnf -y install   texinfo git latexmk texlive-fncychap  texlive-wrapfig
-    - dnf -y install   texlive-wrapfig texlive-capt-of
+    - dnf -y install   texinfo git latexmk 
     - dnf -y install   python3 python3-devel bzip2
     - dnf -y install   cernlib cernlib-devel cernlib-static
     - dnf -y install   cmake sphinx python3-sphinx python3-sphinxcontrib-bibtex
+    - dnf -y install   'tex(atbegshi.sty)' 'tex(babel.sty)' 'tex(bigintcalc.sty)' 'tex(bitset.sty)' 'tex(etexcmds.sty)' 'tex(gettitlestring.sty)' 
+    - dnf -y install       'tex(iftex.sty)' 'tex(ifvtex.sty)' 'tex(infwarerr.sty)' 'tex(intcalc.sty)' 'tex(kvdefinekeys.sty)' 'tex(kvsetkeys.sty)'
+    - dnf -y install      'tex(ltxcmds.sty)' 'tex(pdfescape.sty)' 'tex(pdftexcmds.sty)' 'tex(uniquecounter.sty)' 'tex(amsfonts.sty)' 'tex(amssymb.sty)' 
+    - dnf -y install     'tex(amsbsy.sty)' 'tex(amsgen.sty)' 'tex(amsmath.sty)' 'tex(amsopn.sty)' 'tex(amstext.sty)' 'tex(atveryend.sty)' 'tex(auxhook.sty)' 'tex(alltt.sty)' 
+    - dnf -y install     'tex(atbegshi-ltx.sty)' 'tex(atveryend-ltx.sty)' 'tex(fontenc.sty)' 'tex(inputenc.sty)' 'tex(makeidx.sty)' 'tex(textcomp.sty)' 'tex(capt-of.sty)' 
+    - dnf -y install     'tex(cmap.sty)' 'tex(epstopdf-base.sty)' 'tex(fancyhdr.sty)' 'tex(fancyvrb.sty)' 'tex(float.sty)' 'tex(fncychap.sty)' 'tex(framed.sty)' 
+    - dnf -y install     'tex(geometry.sty)' 'tex(color.sty)' 'tex(graphics.sty)' 'tex(graphicx.sty)' 'tex(keyval.sty)' 'tex(trig.sty)' 'tex(hycolor.sty)' 'tex(hyperref.sty)' 
+    - dnf -y install     'tex(nameref.sty)' 'tex(kvoptions.sty)' 'tex(letltxmacro.sty)' 'tex(needspace.sty)' 'tex(hypcap.sty)' 'tex(parskip-2001-04-09.sty)' 'tex(parskip.sty)'
+    - dnf -y install      'tex(refcount.sty)' 'tex(rerunfilecheck.sty)' 'tex(tabulary.sty)' 'tex(tgheros.sty)' 'tex(tgtermes.sty)' 'tex(titlesec.sty)' 'tex(array.sty)' 
+    - dnf -y install      'tex(longtable.sty)' 'tex(multicol.sty)' 'tex(upquote.sty)' 'tex(url.sty)' 'tex(varwidth.sty)' 'tex(wrapfig.sty)' 'tex(xcolor.sty)'
     - dnf -y clean packages
     
 Fedora35-autotools:

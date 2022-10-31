@@ -36,6 +36,7 @@ add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
        COMMAND ${SPHINXBUILD} -M latexpdf  ${CMAKE_CURRENT_SOURCE_DIR}/source  . ${sphinx_options}
        COMMAND mv latex/sherpamanual.pdf .
+       COMMAND mv latex/sherpamanual.fls .
        COMMAND rm -r latex
        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
        VERBATIM)
