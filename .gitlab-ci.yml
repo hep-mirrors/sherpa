@@ -217,7 +217,7 @@
     - dnf -y install   swig  recola qd qd-devel openssl-devel openssl
     - dnf -y install   blackhat-devel blackhat
     - dnf -y install   texinfo git latexmk texlive-fncychap
-    - dnf -y install   python3 python3-devel 
+    - dnf -y install   python3 python3-devel bzip2
     - dnf -y install   cernlib cernlib-devel cernlib-static
     - dnf -y install   cmake sphinx python3-sphinxcontrib-bibtex
     - dnf -y clean packages
