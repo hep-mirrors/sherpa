@@ -201,9 +201,9 @@
     #- when: never
 
 .Fedora: &Fedora
-  only:
-    variables:
-     - $CI_SERVER_HOST=="gitlab.cern.ch"
+#  only:
+#    variables:
+#     - $CI_SERVER_HOST=="gitlab.cern.ch"
   before_script:
     - set -x
     - uname -a 
