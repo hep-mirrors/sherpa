@@ -17,19 +17,10 @@ set(Decays_SOURCES  Cluster_Decayer.C Cluster_Splitter.C)
  #localincdir = $(pkg#includedir)/AHADIC++/Decays)
 set(Decays_HEADERS Cluster_Decayer.H Cluster_Splitter.H)
 creategitinfo(Decays ../Decays/)
-  list(TRANSFORM Decays_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Decays/")
+list(TRANSFORM Decays_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Decays/")
+list(APPEND Decays_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Decays_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(AhadicDecays_static STATIC ${AhadicDecays_esources}
-                             ${Decays_SOURCES} 
-)
-target_include_directories(AhadicDecays_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(AhadicDecays_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS AhadicDecays_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(AhadicDecays_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME AhadicDecays)
-set_target_properties(AhadicDecays_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(AhadicDecays SHARED ${AhadicDecays_esources}
                              ${Decays_SOURCES} 

@@ -16,19 +16,10 @@
 set(PhaseSpace_SOURCES  Avarage_Photon_Number.C Generate_Dipole_Photon_Angle.C Generate_Multipole_Photon_Angle.C)
 set(PhaseSpace_HEADERS Avarage_Photon_Number.H Generate_Dipole_Photon_Angle.H Generate_Multipole_Photon_Angle.H)
 creategitinfo(PhaseSpace ../PhaseSpace/)
-  list(TRANSFORM PhaseSpace_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../PhaseSpace/")
+list(TRANSFORM PhaseSpace_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../PhaseSpace/")
+list(APPEND PhaseSpace_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(PhaseSpace_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(PhotonsPhaseSpace_static STATIC ${PhotonsPhaseSpace_esources}
-                             ${PhaseSpace_SOURCES} 
-)
-target_include_directories(PhotonsPhaseSpace_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(PhotonsPhaseSpace_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS PhotonsPhaseSpace_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(PhotonsPhaseSpace_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhotonsPhaseSpace)
-set_target_properties(PhotonsPhaseSpace_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhotonsPhaseSpace SHARED ${PhotonsPhaseSpace_esources}
                              ${PhaseSpace_SOURCES} 

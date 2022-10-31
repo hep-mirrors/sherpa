@@ -17,19 +17,10 @@ set(Beam_Remnants_SOURCES  Continued_PDF.C Hadron_Dissociation.C Remnant_Handler
  #localincdir = $(pkg#includedir)/SHRiMPS/Beam_Remnants)
 set(Beam_Remnants_HEADERS Continued_PDF.H Hadron_Dissociation.H Remnant_Handler.H Colour_Generator.H)
 creategitinfo(Beam_Remnants ../Beam_Remnants/)
-  list(TRANSFORM Beam_Remnants_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Beam_Remnants/")
+list(TRANSFORM Beam_Remnants_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Beam_Remnants/")
+list(APPEND Beam_Remnants_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Beam_Remnants_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ShrimpsBeamRemnants_static STATIC ${ShrimpsBeamRemnants_esources}
-                             ${Beam_Remnants_SOURCES} 
-)
-target_include_directories(ShrimpsBeamRemnants_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ShrimpsBeamRemnants_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ShrimpsBeamRemnants_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ShrimpsBeamRemnants_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ShrimpsBeamRemnants)
-set_target_properties(ShrimpsBeamRemnants_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ShrimpsBeamRemnants SHARED ${ShrimpsBeamRemnants_esources}
                              ${Beam_Remnants_SOURCES} 

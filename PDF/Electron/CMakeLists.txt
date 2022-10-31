@@ -16,19 +16,10 @@
 set(Electron_SOURCES  PDF_Electron.C)
 set(Electron_HEADERS PDF_Electron.H)
 creategitinfo(Electron ../Electron/)
-  list(TRANSFORM Electron_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Electron/")
+list(TRANSFORM Electron_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Electron/")
+list(APPEND Electron_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Electron_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(PDFESherpa_static STATIC ${PDFESherpa_esources}
-                             ${Electron_SOURCES} 
-)
-target_include_directories(PDFESherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(PDFESherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS PDFESherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(PDFESherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PDFESherpa)
-set_target_properties(PDFESherpa_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PDFESherpa SHARED ${PDFESherpa_esources}
                              ${Electron_SOURCES} 

@@ -16,19 +16,10 @@
 set(Currents_SOURCES  C_Scalar.C C_Spinor.C C_Vector.C C_Pseudo.C S_C.C F_C.C V_C.C P_C.C)
 set(Currents_HEADERS C_Scalar.H C_Spinor.H C_Vector.H C_Pseudo.H)
 creategitinfo(Currents ../Currents/)
-  list(TRANSFORM Currents_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Currents/")
+list(TRANSFORM Currents_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Currents/")
+list(APPEND Currents_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Currents_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(METoolsCurrents_static STATIC ${METoolsCurrents_esources}
-                             ${Currents_SOURCES} 
-)
-target_include_directories(METoolsCurrents_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(METoolsCurrents_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS METoolsCurrents_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(METoolsCurrents_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME METoolsCurrents)
-set_target_properties(METoolsCurrents_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(METoolsCurrents SHARED ${METoolsCurrents_esources}
                              ${Currents_SOURCES} 

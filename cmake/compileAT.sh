@@ -7,9 +7,11 @@ autoreconf -fi
 #export PYTHON_VERSION=3.10
 ./configure  --prefix=$(pwd)/AT  --disable-rpath  --enable-rivet=/usr  --enable-cernlib=/usr/lib64/cernlib/2006  \
 --enable-blackhat=$(blackhat-config --prefix)     --enable-gzip --enable-recola=/usr  --enable-hztool=/usr   \
---enable-hepevtsize=4000    --enable-hepmc3=/usr --disable-hepmc3root   --libdir=$(pwd)/AT/lib64  \
+--enable-hepevtsize=4000    --enable-hepmc3=/usr --enable-hepmc3root   --libdir=$(pwd)/AT/lib64  \
   --enable-openloops=/usr/lib64/openloops --enable-hepmc2=/usr  --enable-root=/usr  --enable-binreloc  \
- --enable-pythia --enable-lhole --enable-lhapdf=/usr --enable-manual --enable-ewsud --enable-gosam=/usr #--enable-dihiggs 
+ --enable-pythia --enable-lhole --enable-lhapdf=/usr --enable-manual --enable-ewsud --enable-gosam=/usr --enable-multithread --enable-mcfm --enable-pythia8=/usr \
+ --enable-weights --enable-pyext
+ #--enable-dihiggs 
  #--enable-analysis
  #--enable-analysis
 bear --output AT.json -- make -j 10

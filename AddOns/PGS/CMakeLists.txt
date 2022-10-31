@@ -1,0 +1,8 @@
+set(GITTAG AddOns/PGS)
+add_library(SherpaPGSOutput SHARED pgs_finterface.f Output_PGS.C)
+#target_link_libraries(SherpaPGSOutput PRIVATE ${??})
+#target_include_directories(SherpaPGSOutput PRIVATE ${??})
+install(TARGETS SherpaPGSOutput DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+set_target_properties(SherpaPGSOutput       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaPGSOutput SOVERSION 0.0.0)
+set_target_properties(SherpaPGSOutput       PROPERTIES DEFINE_SYMBOL "")
+target_compile_options(SherpaPGSOutput INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:-fno-automatic>")

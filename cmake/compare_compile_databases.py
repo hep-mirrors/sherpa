@@ -11,19 +11,26 @@ def get_compilation_DB(fname):
   fil = fil.replace("../../../../","")
   fil = fil.replace("../../../","")
   fil = fil.replace("../../","")
+  fil = fil.replace("BUILD/","")
   fil = fil.replace("../","")
   current_directory = os.getcwd()
+  fil = fil.replace(current_directory+"/","")
   comp = ar[0]
   comparg = ar[1:]
-  comparg = [ x.replace(current_directory+"build","") for x in comparg]
+  comparg = [ x.replace(current_directory+"BUILD","") for x in comparg]
   comparg = [ x.replace(current_directory+"","") for x in comparg]
   comparg = [ x for x in comparg if not re.match(r'^-I/usr/include$',x)]
   comparg = [ x for x in comparg if x.startswith('-')]
   comparg = list( dict.fromkeys(comparg) )
   comparg.sort()
+#SHRiMPS/Ladders/Git_Info.C', 'ATOOLS/YAML/Git_Info.C', 'RECONNECTIONS/Git_Info.C
   if  not   re.match(r'.*Sherpa_wrap.cxx$',fil):
    if  not   re.match(r'.*pythia-6.4.18.f$',fil):
-     L[fil] = comparg
+    if  not   re.match(r'.*SHRiMPS/Ladders/Git_Info.C$',fil):
+     if  not   re.match(r'.*ATOOLS/YAML/Git_Info.C$',fil):
+      if  not   re.match(r'.*RECONNECTIONS/Git_Info.C$',fil):
+        if  not   re.match(r'.*AddOns/Pythia/Pythia8_Hadronisation.C$',fil):
+                               L[fil] = comparg
  f.close()
  return L
 
@@ -75,8 +82,16 @@ for pack in packages:
     compileOptions = get_list_difference(cmakeDB[a],imakeDB[a])
     Includes = [ x for x in compileOptions if re.match(r'^-I.*',x)]  
     compileOptions = [ x for x in compileOptions if not re.match(r'^-I.*',x)]  
+    compileOptionscmake = cmakeDB[a]
+    compileOptionscmake = [ x for x in compileOptionscmake if not re.match(r'^-I.*',x)]
+    compileOptionscmake = [ x for x in compileOptionscmake if not re.match(r'^-W.*',x)]
+    compileOptionsimake = imakeDB[a]
+    compileOptionsimake = [ x for x in compileOptionsimake if not re.match(r'^-I.*',x)]
+    compileOptionsimake = [ x for x in compileOptionsimake if not re.match(r'^-W.*',x)]
+
     Definescmake = [ x for x in cmakeDB[a] if re.match(r'^-D.*',x)]  
     Definesimake = [ x for x in imakeDB[a] if re.match(r'^-D.*',x)]  
+    
     comdefines[pack] = Definesimake
     Definescmake.sort()
     Definesimake.sort()
@@ -103,8 +118,11 @@ for pack in packages:
      print(DiffDefines)
      print(Definescmake)
      print(Definesimake)
-     print("Compile options: diff")
+     print("Compile options: diff, cmake , imake ")
      print(compileOptions)
+     print(compileOptionscmake)
+     print(compileOptionsimake)
+     
  allDiffDefines=get_list_difference(list(allDefinescmake),list(allDefinesimake))
  allDiffDefines=[ x for x in allDiffDefines if not re.match(r'^-Wl,--no-as-needed.*',x)]
 

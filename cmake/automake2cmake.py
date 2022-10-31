@@ -4,7 +4,8 @@ import os
 import re
 ########################################################################
 def get_suffixes(text):
-    return ["_static", ""]
+#    return ["_static", ""]
+    return [""]
 def if_install_library(text):
     return True
 def output_name_static(text):
@@ -106,6 +107,17 @@ def output_name(text):
         
     if (text=="CT14"):
         return "CT14Sherpa"
+    if (text=="SherpaLH_OLE"):
+        return "SherpaLHOLE"
+    if (text=="SherpaHZTool"):
+        return "SherpaHZToolAnalysis"
+
+    if (text=="SherpaNNLO"):
+        return "NNLOqT"
+
+    if (text=="SherpaRivet"):
+        return "SherpaRivetAnalysis"
+
     if (text=="LHAPDF"):
         return "LHAPDFSherpa"
 #Current_Library", "ME_Library", "Main", "PS_Library             
@@ -262,16 +274,34 @@ def transform_imake_source(argv, dbg):
     newlist.append(temp)
     newlist = filter(lambda st: st != '' , newlist)
 
+    newlist = [x.replace("if USING__EWSud","if (SHERPA_ENABLE_EWSUD)") for x in newlist]	
+    newlist = [x.replace("if USING__LHOLE","if (SHERPA_ENABLE_LHOLE)") for x in newlist]	
     newlist = [x.replace("if ENABLE_UFO","if (ENABLE_UFO)") for x in newlist]	
+    newlist = [x.replace("if PYTHIA8_SUPPORT","if (SHERPA_ENABLE_PYTHIA8)") for x in newlist]
+    newlist = [x.replace("if HZTOOL_SUPPORT","if (SHERPA_ENABLE_HZTOOL)") for x in newlist]
+    newlist = [x.replace("if CERNLIB_SUPPORT","if (SHERPA_ENABLE_CERNLIB)") for x in newlist]
+    newlist = [x.replace("if GOSAM_SUPPORT","if (SHERPA_ENABLE_GOSAM)") for x in newlist]
     newlist = [x.replace("if PYTHIA_SUPPORT","if (SHERPA_ENABLE_PYTHIA)") for x in newlist]
     newlist = [x.replace("if GZIP_SUPPORT","if (SHERPA_ENABLE_GZIP)") for x in newlist]
+    newlist = [x.replace("if BLACKHAT_SUPPORT","if (SHERPA_ENABLE_BLACKHAT)") for x in newlist]
     newlist = [x.replace("NNPDF3archive =","set(NNPDF3archive  ") for x in newlist]
+    newlist = [x.replace("EWSUD_ADDS =","set(EWSUD_ADDS  ") for x in newlist]
+    newlist = [x.replace("LHOLE_ADDS =","set(LHOLE_ADDS  ") for x in newlist]
+    newlist = [x.replace("BLACKHAT_ADDS =","set(BLACKHAT_ADDS  ") for x in newlist]
+    newlist = [x.replace("GOSAM_ADDS =","set(GOSAM_ADDS  ") for x in newlist]
+    newlist = [x.replace("HZTOOL_ADDS =","set(HZTOOL_ADDS  ") for x in newlist]
     newlist = [x.replace("SOBOL_EXT =","set(SOBOL_EXT  ") for x in newlist]
     newlist = [x.replace("PYTHIAHEADERS =","set(PYTHIAHEADERS ") for x in newlist]
     newlist = [x.replace("GZIPSTREAMHEADERS =","set(GZIPSTREAMHEADERS ") for x in newlist]
     newlist = [x.replace("GZIPSTREAMSOURCES =","set(GZIPSTREAMSOURCES ") for x in newlist]
     newlist = [x.replace("PYTHIASOURCES =","set(PYTHIASOURCES ") for x in newlist]
     newlist = [x.replace("GZIPEXTRADIST =","set(GZIPEXTRADIST ") for x in newlist]
+    newlist = [x.replace("$(GOSAM_SOURCES)","${GoSam_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(BLACKHAT_SOURCES)","${BLACKHAT_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(EWSUD_SOURCES)","${EWSud_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(LHOLE_SOURCES)","${LH_OLE_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(HZTOOL_SOURCES)","${HZTOOL_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(EWSUD_ADDS)","${EWSUD_ADDS}") for x in newlist]
     newlist = [x.replace("$(GZIPSTREAMSOURCES)","${GZIPSTREAMSOURCES}") for x in newlist]
     newlist = [x.replace("$(GZIPSTREAMHEADERS)","${GZIPSTREAMHEADERS}") for x in newlist]    
     newlist = [x.replace("$(PYTHIASOURCES)","${PYTHIASOURCES}") for x in newlist]
@@ -289,9 +319,18 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("localinc","#localinc")  for x in newlist]
     newlist = [x.replace("pkglib_LTLIBRARIES","#pkglib_LTLIBRARIES")  for x in newlist]
     newlist = [x.replace("GITTAG =","set(GITTAG ")  for x in newlist]
+    newlist = [x.replace("EWSUD_EXTRA_DIST","#EWSUD_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("HIGGS_EXTRA_DIST","#HIGGS_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("LHOLE_EXTRA_DIST","#LHOLE_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("BLACKHAT_EXTRA_DIST","#BLACKHAT_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("GOSAM_EXTRA_DIST","#GOSAM_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("HZTOOL_EXTRA_DIST","#HZTOOL_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("NNLOqT_EXTRA_DIST","#NNLOqT_EXTRA_DIST")  for x in newlist]
+
     newlist = [x.replace("EXTRA_DIST","#EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("rm -f","#rm -f")  for x in newlist]
     newlist = [x.replace("MAKE =","#MAKE =")  for x in newlist]
+    newlist = [x.replace("AUTOMAKE_OPTIONS","#AUTOMAKE_OPTIONS")  for x in newlist]
    #newlist = [x.replace("nobase_","#nobase_")  for x in newlist]
     newlist = [x.replace("nobase_dist_pkgdata","#nobase_dist_pkgdata")  for x in newlist]
     newlist = [x.replace("dist_bin_SCRIPTS","#dist_bin_SCRIPTS")  for x in newlist]
@@ -359,7 +398,9 @@ def transform_imake_source(argv, dbg):
     diractual=diractual.replace("//","/")
     if FSRC==1:
       fin.append("creategitinfo("+LISTNAME+" "+diractual+")")
-      fin.append("  list(TRANSFORM "+LISTNAME+"_SOURCES PREPEND \"${CMAKE_CURRENT_SOURCE_DIR}/"+diractual+"\")")
+      fin.append("list(TRANSFORM "+LISTNAME+"_SOURCES PREPEND \"${CMAKE_CURRENT_SOURCE_DIR}/"+diractual+"\")")
+      if ( LISTNAME != "Reconnections" and LISTNAME != "ToolsYaml" and LISTNAME != "ShrimpsLadders"): 
+        fin.append("list(APPEND "+LISTNAME+"_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)")
       sr.append("${"+LISTNAME+"_SOURCES}")
     lev=0
     fin.append(" ")
@@ -937,6 +978,68 @@ target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
    f.close()   
 
    os.chdir("../")
+
+############################
+
+   os.chdir("AddOns")
+   MCldirs =["Makefile.am".split(" "),
+#             "Makefile.am".split(" "),
+#             "Makefile.am".split(" "),
+#             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" ")
+            ] 
+   MClname= ["EWSud","Higgs","LH_OLE","Weights"]
+
+#   f = open("CMakeLists.txt", "w")  
+   for x in range(0,len(MClname) ):
+     lname=MClname[x]
+     ldirs=MCldirs[x]
+     includes="/".split(" ")+[lname]
+     installincludes=[]
+     create_library(ldirs,lname,includes,installincludes,[],[],[],"Sherpa")
+#     f.write("add_subdirectory("+lname+")\n")
+#   f.close()   
+
+   os.chdir("../")
+
+
+
+   os.chdir("AddOns")
+   MCldirs =["Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" ")
+            ] 
+   MClname= ["Rivet","HZTool","Pythia","NNLO", "OpenLoops", "HepMC", "BlackHat", "GoSam", "Root"]
+
+#   f = open("CMakeLists.txt", "w")  
+   for x in range(0,len(MClname) ):
+     lname=MClname[x]
+     ldirs=MCldirs[x]
+     includes="/".split(" ")+[lname]
+     installincludes=[]
+     create_library(ldirs,lname,includes,installincludes,[],[],[],"Sherpa")
+#     f.write("add_subdirectory("+lname+")\n")
+#   f.close()   
+
+   os.chdir("../")
+
+# 'AddOns/Rivet/Git_Info.C', 
+# 'AddOns/HZTool/Git_Info.C', 
+# 'AddOns/Pythia/Git_Info.C', 
+# 'AddOns/NNLO/Git_Info.C', 
+# 'AddOns/OpenLoops/Git_Info.C', 
+# 'AddOns/HepMC/Git_Info.C', 
+# 'AddOns/BlackHat/Git_Info.C', 
+# 'AddOns/GoSam/Git_Info.C', 
+
 
 
 

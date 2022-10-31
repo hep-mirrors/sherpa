@@ -15,19 +15,10 @@
  #include ../../git.make)
 set(Special_SOURCES  Instanton.C)
 creategitinfo(Special ../Special/)
-  list(TRANSFORM Special_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Special/")
+list(TRANSFORM Special_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Special/")
+list(APPEND Special_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Special_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ExtraXSSpecial_static STATIC ${ExtraXSSpecial_esources}
-                             ${Special_SOURCES} 
-)
-target_include_directories(ExtraXSSpecial_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ExtraXSSpecial_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ExtraXSSpecial_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ExtraXSSpecial_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ExtraXSSpecial)
-set_target_properties(ExtraXSSpecial_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ExtraXSSpecial SHARED ${ExtraXSSpecial_esources}
                              ${Special_SOURCES} 

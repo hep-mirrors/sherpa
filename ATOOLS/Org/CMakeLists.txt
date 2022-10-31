@@ -32,19 +32,10 @@ set(Org_HEADERS CXXFLAGS_PACKAGES.H CXXFLAGS.H Git_Info.H Return_Value.H Shell_T
  #rm -f $(distdir)/CXXFLAGS.H)
  #rm -f $(distdir)/CXXFLAGS_PACKAGES.H)
 creategitinfo(Org ../Org/)
-  list(TRANSFORM Org_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Org/")
+list(TRANSFORM Org_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Org/")
+list(APPEND Org_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Org_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ToolsOrg_static STATIC ${ToolsOrg_esources}
-                             ${Org_SOURCES} 
-)
-target_include_directories(ToolsOrg_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ToolsOrg_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ToolsOrg_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ToolsOrg_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ToolsOrg)
-set_target_properties(ToolsOrg_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ToolsOrg SHARED ${ToolsOrg_esources}
                              ${Org_SOURCES} 

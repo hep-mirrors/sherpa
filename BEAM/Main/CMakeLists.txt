@@ -18,19 +18,10 @@ set(Main_SOURCES  Beam_Base.C Beam_Parameters.C Kinematics_Base.C Collider_Kinem
 set(Main_HEADERS Beam_Base.H Kinematics_Base.H Collider_Kinematics.H RelicDensity_Kinematics.H DM_Annihilation_Kinematics.H Weight_Base.H Collider_Weight.H RelicDensity_Weight.H DM_Annihilation_Weight.H
  Beam_Parameters.H Beam_Spectra_Handler.H)
 creategitinfo(Main ../Main/)
-  list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Main_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(BeamMain_static STATIC ${BeamMain_esources}
-                             ${Main_SOURCES} 
-)
-target_include_directories(BeamMain_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(BeamMain_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS BeamMain_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(BeamMain_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME BeamMain)
-set_target_properties(BeamMain_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(BeamMain SHARED ${BeamMain_esources}
                              ${Main_SOURCES} 

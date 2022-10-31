@@ -16,19 +16,10 @@
 set(Main_SOURCES  PDF_Base.C ISR_Base.C Intact.C Structure_Function.C ISR_Handler.C Jet_Criterion.C Cluster_Definitions_Base.C NLOMC_Base.C Shower_Base.C Photon_PDF_Base.C)
 set(Main_HEADERS PDF_Base.H ISR_Base.H Intact.H Structure_Function.H ISR_Handler.H Jet_Criterion.H Cluster_Definitions_Base.H NLOMC_Base.H Shower_Base.H Photon_PDF_Base.H)
 creategitinfo(Main ../Main/)
-  list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Main_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(PDF_static STATIC ${PDF_esources}
-                             ${Main_SOURCES} 
-)
-target_include_directories(PDF_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(PDF_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS PDF_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(PDF_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PDF)
-set_target_properties(PDF_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PDF SHARED ${PDF_esources}
                              ${Main_SOURCES} 

@@ -21,7 +21,8 @@ set(YAML_SOURCES binary.cpp convert.cpp depthguard.cpp directives.cpp emit.cpp e
 set(YAML_HEADERS collectionstack.h directives.h emitterstate.h emitterutils.h exp.h indentation.h nodebuilder.h nodeevents.h ptr_vector.h regex_yaml.h regeximpl.h scanner.h scanscalar.h scantag.h setting.h
  singledocparser.h stream.h streamcharsource.h stringsource.h tag.h token.h)
 creategitinfo(YAML ../YAML/)
-  list(TRANSFORM YAML_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../YAML/")
+list(TRANSFORM YAML_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../YAML/")
+list(APPEND YAML_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 #YAML/yaml-cpp/Makefile.am
  
@@ -39,16 +40,6 @@ set(YAML_yaml-cpp_node_HEADERS convert.h emit.h impl.h iterator.h node.h parse.h
 set(YAML_yaml-cpp_node_detail_HEADERS impl.h iterator.h iterator_fwd.h memory.h node.h node_data.h node_iterator.h node_ref.h)
  
 set(YAML_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ToolsYaml_static STATIC ${ToolsYaml_esources}
-                             ${YAML_SOURCES} 
-)
-target_include_directories(ToolsYaml_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ToolsYaml_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ToolsYaml_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ToolsYaml_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ToolsYaml)
-set_target_properties(ToolsYaml_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ToolsYaml SHARED ${ToolsYaml_esources}
                              ${YAML_SOURCES} 

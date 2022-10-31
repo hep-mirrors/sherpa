@@ -17,19 +17,10 @@ set(Main_SOURCES  Shrimps.C Cluster_Algorithm.C Soft_Jet_Criterion.C Hadron_Init
  #localincdir = $(pkg#includedir)/SHRiMPS/Main)
 set(Main_HEADERS Shrimps.H Cluster_Algorithm.H Soft_Jet_Criterion.H Hadron_Init.H)
 creategitinfo(Main ../Main/)
-  list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Main_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ShrimpsMain_static STATIC ${ShrimpsMain_esources}
-                             ${Main_SOURCES} 
-)
-target_include_directories(ShrimpsMain_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ShrimpsMain_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ShrimpsMain_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ShrimpsMain_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ShrimpsMain)
-set_target_properties(ShrimpsMain_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ShrimpsMain SHARED ${ShrimpsMain_esources}
                              ${Main_SOURCES} 

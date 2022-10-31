@@ -15,19 +15,10 @@
  #include ../../git.make)
 set(SM_SOURCES  Model.C)
 creategitinfo(SM ../SM/)
-  list(TRANSFORM SM_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SM/")
+list(TRANSFORM SM_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SM/")
+list(APPEND SM_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(SM_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(SherpaSM_static STATIC ${SherpaSM_esources}
-                             ${SM_SOURCES} 
-)
-target_include_directories(SherpaSM_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(SherpaSM_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS SherpaSM_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SherpaSM_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaSM)
-set_target_properties(SherpaSM_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaSM SHARED ${SherpaSM_esources}
                              ${SM_SOURCES} 

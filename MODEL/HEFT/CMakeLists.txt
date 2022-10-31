@@ -16,19 +16,10 @@
 set(HEFT_SOURCES  Effective_Higgs_Coupling.C Model.C SVV_LC.C SVVV_LC.C SVVP_LC.C SVVVV_LC.C)
 set(HEFT_HEADERS Effective_Higgs_Coupling.H)
 creategitinfo(HEFT ../HEFT/)
-  list(TRANSFORM HEFT_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../HEFT/")
+list(TRANSFORM HEFT_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../HEFT/")
+list(APPEND HEFT_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(HEFT_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(SherpaHEFT_static STATIC ${SherpaHEFT_esources}
-                             ${HEFT_SOURCES} 
-)
-target_include_directories(SherpaHEFT_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(SherpaHEFT_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS SherpaHEFT_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SherpaHEFT_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaHEFT)
-set_target_properties(SherpaHEFT_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaHEFT SHARED ${SherpaHEFT_esources}
                              ${HEFT_SOURCES} 

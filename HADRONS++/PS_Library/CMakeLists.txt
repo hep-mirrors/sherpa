@@ -16,19 +16,10 @@
 set(PS_Library_SOURCES  HD_PS_Base.C Three_Body_PSs.C Two_Body_PSs.C Four_Body_PSs.C ResonanceFlavour.C)
 set(PS_Library_HEADERS HD_PS_Base.H Three_Body_PSs.H Two_Body_PSs.H Four_Body_PSs.H ResonanceFlavour.H)
 creategitinfo(PS_Library ../PS_Library/)
-  list(TRANSFORM PS_Library_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../PS_Library/")
+list(TRANSFORM PS_Library_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../PS_Library/")
+list(APPEND PS_Library_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(PS_Library_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(HadronsPSs_static STATIC ${HadronsPSs_esources}
-                             ${PS_Library_SOURCES} 
-)
-target_include_directories(HadronsPSs_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(HadronsPSs_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS HadronsPSs_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(HadronsPSs_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME HadronsPSs)
-set_target_properties(HadronsPSs_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(HadronsPSs SHARED ${HadronsPSs_esources}
                              ${PS_Library_SOURCES} 

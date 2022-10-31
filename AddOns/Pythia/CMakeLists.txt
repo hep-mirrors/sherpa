@@ -1,8 +1,36 @@
-find_package(Pythia8 REQUIRED)
-message(STATUS "SHERPA Pythia8: PYTHIA8_VERSION=${PYTHIA8_VERSION} PYTHIA8_LIBRARIES=${PYTHIA8_LIBRARIES} PYTHIA8_INCLUDE_DIRS=${PYTHIA8_INCLUDE_DIRS}")
-add_library(SherpaPythia SHARED Pythia_Jet_Criterion.C Pythia8_Hadronisation.C)
-target_link_libraries(SherpaPythia PRIVATE ${PYTHIA8_LIBRARIES})
-target_include_directories(SherpaPythia PRIVATE ${PYTHIA8_INCLUDE_DIR})
+
+########################################################################
+#
+#  Automatically or semiautomaticaly generated, do not edit.
+#
+########################################################################
+# The following input was used
+# Makefile.am
+
+########################################################################
+#Pythia/Makefile.am
+ 
+ #pkglib_LTLIBRARIES = libSherpaPythia.la)
+ if (SHERPA_ENABLE_PYTHIA8)
+set(Pythia_SOURCES  Pythia_Jet_Criterion.C Pythia8_Hadronisation.C)
+ else()
+set(Pythia_SOURCES  Pythia_Jet_Criterion.C)
+ #EXTRA_DIST = Pythia8_Hadronisation.C)
+ endif()
+ set(GITTAG  AddOns/Pythia)
+ #include ../../git.make)
+creategitinfo(Pythia ../Pythia/)
+list(TRANSFORM Pythia_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Pythia/")
+list(APPEND Pythia_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+ 
+set(Pythia_esources )
+if (SHERPA_BUILD_SHARED)
+add_library(SherpaPythia SHARED ${SherpaPythia_esources}
+                             ${Pythia_SOURCES} 
+)
+target_include_directories(SherpaPythia PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(SherpaPythia PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaPythia DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SherpaPythia       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaPythia SOVERSION 0.0.0)
-set_target_properties(SherpaPythia       PROPERTIES DEFINE_SYMBOL "")
+set_target_properties(SherpaPythia        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaPythia SOVERSION 0.0.0)
+set_target_properties(SherpaPythia        PROPERTIES DEFINE_SYMBOL "")
+endif()

@@ -28,19 +28,10 @@ set(Math_HEADERS MathTools.H Term.H Algebra_Interpreter.H Marsaglia.H Sobol.H Ra
  endif()
 #nobase_#dist_pkgdata_DATA = Sobol/21201$(SOBOL_EXT)
 creategitinfo(Math ../Math/)
-  list(TRANSFORM Math_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Math/")
+list(TRANSFORM Math_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Math/")
+list(APPEND Math_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Math_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ToolsMath_static STATIC ${ToolsMath_esources}
-                             ${Math_SOURCES} 
-)
-target_include_directories(ToolsMath_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ToolsMath_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ToolsMath_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ToolsMath_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ToolsMath)
-set_target_properties(ToolsMath_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ToolsMath SHARED ${ToolsMath_esources}
                              ${Math_SOURCES} 

@@ -17,19 +17,10 @@ set(SAL_SOURCES  sal.cpp SALph_CPP_Interface.C)
 set(SAL_HEADERS SALph_CPP_Interface.H sal.h math_ut.h)
 #nobase_#dist_pkgdata_DATA = SALGrid/SAL.dat
 creategitinfo(SAL ../SAL/)
-  list(TRANSFORM SAL_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SAL/")
+list(TRANSFORM SAL_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SAL/")
+list(APPEND SAL_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(SAL_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(SALSherpa_static STATIC ${SALSherpa_esources}
-                             ${SAL_SOURCES} 
-)
-target_include_directories(SALSherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(SALSherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS SALSherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SALSherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SALSherpa)
-set_target_properties(SALSherpa_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SALSherpa SHARED ${SALSherpa_esources}
                              ${SAL_SOURCES} 

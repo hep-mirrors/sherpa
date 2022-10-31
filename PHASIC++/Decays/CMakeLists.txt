@@ -16,19 +16,10 @@
 set(Decays_SOURCES  Decay_Channel.C Decay_Table.C Decay_Map.C)
 set(Decays_HEADERS Decay_Channel.H Decay_Table.H Decay_Map.H)
 creategitinfo(Decays ../Decays/)
-  list(TRANSFORM Decays_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Decays/")
+list(TRANSFORM Decays_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Decays/")
+list(APPEND Decays_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Decays_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(PhasicDecays_static STATIC ${PhasicDecays_esources}
-                             ${Decays_SOURCES} 
-)
-target_include_directories(PhasicDecays_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(PhasicDecays_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS PhasicDecays_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(PhasicDecays_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhasicDecays)
-set_target_properties(PhasicDecays_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhasicDecays SHARED ${PhasicDecays_esources}
                              ${Decays_SOURCES} 

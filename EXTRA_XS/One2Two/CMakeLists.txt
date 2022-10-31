@@ -16,19 +16,10 @@
 set(One2Two_SOURCES  Comix1to2.C)
 set(One2Two_HEADERS Comix1to2.H)
 creategitinfo(One2Two ../One2Two/)
-  list(TRANSFORM One2Two_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../One2Two/")
+list(TRANSFORM One2Two_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../One2Two/")
+list(APPEND One2Two_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(One2Two_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ExtraXS1_2_static STATIC ${ExtraXS1_2_esources}
-                             ${One2Two_SOURCES} 
-)
-target_include_directories(ExtraXS1_2_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ExtraXS1_2_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ExtraXS1_2_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ExtraXS1_2_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ExtraXS1_2)
-set_target_properties(ExtraXS1_2_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ExtraXS1_2 SHARED ${ExtraXS1_2_esources}
                              ${One2Two_SOURCES} 

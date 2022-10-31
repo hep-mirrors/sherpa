@@ -18,19 +18,10 @@ set(Single_Events_SOURCES  Event_Handler.C Event_Phase_Handler.C Signal_Processe
 set(Single_Events_HEADERS Event_Handler.H Event_Phase_Handler.H Signal_Processes.H Multiple_Interactions.H Minimum_Bias.H Jet_Evolution.H Signal_Process_FS_QED_Correction.H Hard_Decays.H Beam_Remnants.H
  Hadronization.H Hadron_Decays.H Userhook_Phase.H Analysis_Phase.H Output_Phase.H EvtReadin_Phase.H Decay_Handler_Base.H)
 creategitinfo(Single_Events ../Single_Events/)
-  list(TRANSFORM Single_Events_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Single_Events/")
+list(TRANSFORM Single_Events_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Single_Events/")
+list(APPEND Single_Events_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Single_Events_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(SherpaSingleEvents_static STATIC ${SherpaSingleEvents_esources}
-                             ${Single_Events_SOURCES} 
-)
-target_include_directories(SherpaSingleEvents_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(SherpaSingleEvents_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS SherpaSingleEvents_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SherpaSingleEvents_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaSingleEvents)
-set_target_properties(SherpaSingleEvents_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaSingleEvents SHARED ${SherpaSingleEvents_esources}
                              ${Single_Events_SOURCES} 

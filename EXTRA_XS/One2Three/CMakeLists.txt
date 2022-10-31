@@ -16,19 +16,10 @@
 set(One2Three_SOURCES  Comix1to3.C)
 set(One2Three_HEADERS Comix1to3.H)
 creategitinfo(One2Three ../One2Three/)
-  list(TRANSFORM One2Three_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../One2Three/")
+list(TRANSFORM One2Three_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../One2Three/")
+list(APPEND One2Three_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(One2Three_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ExtraXS1_3_static STATIC ${ExtraXS1_3_esources}
-                             ${One2Three_SOURCES} 
-)
-target_include_directories(ExtraXS1_3_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ExtraXS1_3_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ExtraXS1_3_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ExtraXS1_3_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ExtraXS1_3)
-set_target_properties(ExtraXS1_3_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ExtraXS1_3 SHARED ${ExtraXS1_3_esources}
                              ${One2Three_SOURCES} 

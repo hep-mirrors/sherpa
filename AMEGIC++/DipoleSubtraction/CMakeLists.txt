@@ -18,20 +18,10 @@ set(DipoleSubtraction_SOURCES  DipoleSplitting_Base.C FF_DipoleSplitting.C FI_Di
 set(DipoleSubtraction_HEADERS DipoleSplitting_Base.H FF_DipoleSplitting.H FI_DipoleSplitting.H IF_DipoleSplitting.H II_DipoleSplitting.H Single_LOProcess.H Single_LOProcess_MHV.H Single_LOProcess_External.H
  Single_DipoleTerm.H Single_OSTerm.H Single_Virtual_Correction.H Single_Real_Correction.H)
 creategitinfo(DipoleSubtraction ../DipoleSubtraction/)
-  list(TRANSFORM DipoleSubtraction_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../DipoleSubtraction/")
+list(TRANSFORM DipoleSubtraction_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../DipoleSubtraction/")
+list(APPEND DipoleSubtraction_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(DipoleSubtraction_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(DipoleSubtraction_static STATIC ${DipoleSubtraction_esources}
-                             ${DipoleSubtraction_SOURCES} 
-)
-target_include_directories(DipoleSubtraction_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(DipoleSubtraction_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(DipoleSubtraction_static PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
-install(TARGETS DipoleSubtraction_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(DipoleSubtraction_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME DipoleSubtraction)
-set_target_properties(DipoleSubtraction_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(DipoleSubtraction SHARED ${DipoleSubtraction_esources}
                              ${DipoleSubtraction_SOURCES} 

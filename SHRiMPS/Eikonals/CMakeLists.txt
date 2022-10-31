@@ -17,19 +17,10 @@ set(Eikonals_SOURCES  Eikonal_Weights.C Rapidity_Density.C Omega_ik.C Single_Cha
  #localincdir = $(pkg#includedir)/SHRiMPS/Eikonals)
 set(Eikonals_HEADERS Eikonal_Weights.H Rapidity_Density.H Omega_ik.H Single_Channel_Eikonal.H Eikonal_Contributor.H Grid.H Analytic_Eikonal.H Analytic_Contributor.H Eikonal_Creator.H Form_Factors.H)
 creategitinfo(Eikonals ../Eikonals/)
-  list(TRANSFORM Eikonals_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Eikonals/")
+list(TRANSFORM Eikonals_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Eikonals/")
+list(APPEND Eikonals_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Eikonals_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ShrimpsEikonals_static STATIC ${ShrimpsEikonals_esources}
-                             ${Eikonals_SOURCES} 
-)
-target_include_directories(ShrimpsEikonals_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ShrimpsEikonals_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ShrimpsEikonals_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ShrimpsEikonals_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ShrimpsEikonals)
-set_target_properties(ShrimpsEikonals_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ShrimpsEikonals SHARED ${ShrimpsEikonals_esources}
                              ${Eikonals_SOURCES} 

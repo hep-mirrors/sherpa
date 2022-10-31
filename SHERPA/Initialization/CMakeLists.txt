@@ -16,19 +16,10 @@
 set(Initialization_SOURCES  Initialization_Handler.C)
 set(Initialization_HEADERS Initialization_Handler.H)
 creategitinfo(Initialization ../Initialization/)
-  list(TRANSFORM Initialization_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Initialization/")
+list(TRANSFORM Initialization_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Initialization/")
+list(APPEND Initialization_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Initialization_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(SherpaInitialization_static STATIC ${SherpaInitialization_esources}
-                             ${Initialization_SOURCES} 
-)
-target_include_directories(SherpaInitialization_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(SherpaInitialization_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS SherpaInitialization_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SherpaInitialization_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SherpaInitialization)
-set_target_properties(SherpaInitialization_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SherpaInitialization SHARED ${SherpaInitialization_esources}
                              ${Initialization_SOURCES} 

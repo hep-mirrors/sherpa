@@ -16,19 +16,10 @@
 set(SASG_SOURCES  sasgam2.f SASGph_Fortran_Interface.C)
 set(SASG_HEADERS SASGph_Fortran_Interface.H)
 creategitinfo(SASG ../SASG/)
-  list(TRANSFORM SASG_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SASG/")
+list(TRANSFORM SASG_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SASG/")
+list(APPEND SASG_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(SASG_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(SASGSherpa_static STATIC ${SASGSherpa_esources}
-                             ${SASG_SOURCES} 
-)
-target_include_directories(SASGSherpa_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(SASGSherpa_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS SASGSherpa_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SASGSherpa_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME SASGSherpa)
-set_target_properties(SASGSherpa_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(SASGSherpa SHARED ${SASGSherpa_esources}
                              ${SASG_SOURCES} 

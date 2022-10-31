@@ -16,19 +16,10 @@
 set(Amplitude_SOURCES  Amplitude.C)
 set(Amplitude_HEADERS Amplitude.H)
 creategitinfo(Amplitude ../Amplitude/)
-  list(TRANSFORM Amplitude_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Amplitude/")
+list(TRANSFORM Amplitude_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Amplitude/")
+list(APPEND Amplitude_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Amplitude_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ComixAmplitude_static STATIC ${ComixAmplitude_esources}
-                             ${Amplitude_SOURCES} 
-)
-target_include_directories(ComixAmplitude_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ComixAmplitude_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ComixAmplitude_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ComixAmplitude_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ComixAmplitude)
-set_target_properties(ComixAmplitude_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ComixAmplitude SHARED ${ComixAmplitude_esources}
                              ${Amplitude_SOURCES} 

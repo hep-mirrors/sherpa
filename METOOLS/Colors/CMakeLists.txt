@@ -16,19 +16,10 @@
 set(Colors_SOURCES  None_CC.C D_CC.C T_CC.C F_CC.C FF_CC.C TT_CC.C ST_CC.C SF_CC.C)
 set(Colors_HEADERS)
 creategitinfo(Colors ../Colors/)
-  list(TRANSFORM Colors_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Colors/")
+list(TRANSFORM Colors_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Colors/")
+list(APPEND Colors_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Colors_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(METoolsColors_static STATIC ${METoolsColors_esources}
-                             ${Colors_SOURCES} 
-)
-target_include_directories(METoolsColors_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(METoolsColors_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS METoolsColors_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(METoolsColors_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME METoolsColors)
-set_target_properties(METoolsColors_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(METoolsColors SHARED ${METoolsColors_esources}
                              ${Colors_SOURCES} 

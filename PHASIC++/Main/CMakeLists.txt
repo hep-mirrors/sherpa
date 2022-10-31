@@ -17,19 +17,10 @@ set(Main_SOURCES  Color_Integrator.C Helicity_Integrator.C Process_Integrator.C 
 set(Main_HEADERS Color_Integrator.H Helicity_Integrator.H Process_Integrator.H Channel_Creator.H Phase_Space_Point.H Phase_Space_Enhance.H Phase_Space_Variation_Weights.H Phase_Space_Handler.H Phase_Space_Integrator.H)
  #dist_bin_SCRIPTS = plot_stats.sh)
 creategitinfo(Main ../Main/)
-  list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Main_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(PhasicMain_static STATIC ${PhasicMain_esources}
-                             ${Main_SOURCES} 
-)
-target_include_directories(PhasicMain_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(PhasicMain_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS PhasicMain_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(PhasicMain_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhasicMain)
-set_target_properties(PhasicMain_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhasicMain SHARED ${PhasicMain_esources}
                              ${Main_SOURCES} 

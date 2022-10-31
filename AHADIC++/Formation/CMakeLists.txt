@@ -17,19 +17,10 @@ set(Formation_SOURCES  Beam_Particles_Shifter.C Singlet_Former.C Singlet_Checker
  #localincdir = $(pkg#includedir)/AHADIC++/Formation)
 set(Formation_HEADERS Beam_Particles_Shifter.H Singlet_Former.H Singlet_Checker.H Gluon_Decayer.H Gluon_Splitter.H Trivial_Splitter.H)
 creategitinfo(Formation ../Formation/)
-  list(TRANSFORM Formation_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Formation/")
+list(TRANSFORM Formation_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Formation/")
+list(APPEND Formation_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Formation_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(AhadicFormation_static STATIC ${AhadicFormation_esources}
-                             ${Formation_SOURCES} 
-)
-target_include_directories(AhadicFormation_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(AhadicFormation_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS AhadicFormation_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(AhadicFormation_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME AhadicFormation)
-set_target_properties(AhadicFormation_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(AhadicFormation SHARED ${AhadicFormation_esources}
                              ${Formation_SOURCES} 

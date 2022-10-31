@@ -16,19 +16,10 @@
 set(Tools_SOURCES  Parton.C Singlet.C)
 set(Tools_HEADERS Parton.H Singlet.H)
 creategitinfo(Tools ../Tools/)
-  list(TRANSFORM Tools_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Tools/")
+list(TRANSFORM Tools_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Tools/")
+list(APPEND Tools_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Tools_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(MCatNLOTools_static STATIC ${MCatNLOTools_esources}
-                             ${Tools_SOURCES} 
-)
-target_include_directories(MCatNLOTools_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(MCatNLOTools_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS MCatNLOTools_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(MCatNLOTools_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME MCatNLOTools)
-set_target_properties(MCatNLOTools_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(MCatNLOTools SHARED ${MCatNLOTools_esources}
                              ${Tools_SOURCES} 

@@ -16,19 +16,10 @@
 set(Tools_SOURCES  Color.C Parton.C Splitting.C Amplitude.C)
 set(Tools_HEADERS Color.H Parton.H Weight.H Splitting.H Kernel_Key.H Amplitude.H)
 creategitinfo(Tools ../Tools/)
-  list(TRANSFORM Tools_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Tools/")
+list(TRANSFORM Tools_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Tools/")
+list(APPEND Tools_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Tools_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(DireTools_static STATIC ${DireTools_esources}
-                             ${Tools_SOURCES} 
-)
-target_include_directories(DireTools_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(DireTools_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS DireTools_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(DireTools_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME DireTools)
-set_target_properties(DireTools_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(DireTools SHARED ${DireTools_esources}
                              ${Tools_SOURCES} 

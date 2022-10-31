@@ -15,19 +15,10 @@
  #include ../../git.make)
 set(Calculators_SOURCES  CF_QCD.C LF_FFV.C LF_VVV.C)
 creategitinfo(Calculators ../Calculators/)
-  list(TRANSFORM Calculators_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Calculators/")
+list(TRANSFORM Calculators_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Calculators/")
+list(APPEND Calculators_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Calculators_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(MCatNLOCalculators_static STATIC ${MCatNLOCalculators_esources}
-                             ${Calculators_SOURCES} 
-)
-target_include_directories(MCatNLOCalculators_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(MCatNLOCalculators_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS MCatNLOCalculators_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(MCatNLOCalculators_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME MCatNLOCalculators)
-set_target_properties(MCatNLOCalculators_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(MCatNLOCalculators SHARED ${MCatNLOCalculators_esources}
                              ${Calculators_SOURCES} 

@@ -17,19 +17,10 @@ set(Event_Generation_SOURCES  Event_Generator.C Inelastic_Event_Generator.C Elas
  #localincdir = $(pkg#includedir)/SHRiMPS/Event_Generation)
 set(Event_Generation_HEADERS Event_Generator_Base.H Event_Generator.H Inelastic_Event_Generator.H Elastic_Event_Generator.H Soft_Diffractive_Event_Generator.H Collinear_Emission_Generator.H)
 creategitinfo(Event_Generation ../Event_Generation/)
-  list(TRANSFORM Event_Generation_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Event_Generation/")
+list(TRANSFORM Event_Generation_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Event_Generation/")
+list(APPEND Event_Generation_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Event_Generation_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ShrimpsEvents_static STATIC ${ShrimpsEvents_esources}
-                             ${Event_Generation_SOURCES} 
-)
-target_include_directories(ShrimpsEvents_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ShrimpsEvents_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ShrimpsEvents_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ShrimpsEvents_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ShrimpsEvents)
-set_target_properties(ShrimpsEvents_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ShrimpsEvents SHARED ${ShrimpsEvents_esources}
                              ${Event_Generation_SOURCES} 

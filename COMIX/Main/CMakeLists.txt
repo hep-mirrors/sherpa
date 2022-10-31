@@ -17,19 +17,10 @@ set(Main_SOURCES  Process_Base.C Process_Group.C Single_Process.C Single_Dipole_
 set(Main_HEADERS Process_Base.H Process_Group.H Single_Process.H Single_Dipole_Term.H)
  #dist_bin_SCRIPTS = init_nlo.sh)
 creategitinfo(Main ../Main/)
-  list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
+list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Main_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(Comix_static STATIC ${Comix_esources}
-                             ${Main_SOURCES} 
-)
-target_include_directories(Comix_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(Comix_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS Comix_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(Comix_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME Comix)
-set_target_properties(Comix_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(Comix SHARED ${Comix_esources}
                              ${Main_SOURCES} 

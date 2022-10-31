@@ -17,19 +17,10 @@ set(Selectors_SOURCES  Cut_Data.C Selector.C Variable_Selector.C Combined_Select
  Decay_Selector.C MinSelector.C DressedParticleSelector.C Fastjet_Selector_Base.C Fastjet_Finder.C Fastjet_Selector.C Fastjet_Veto.C)
 set(Selectors_HEADERS Cut_Data.H Selector.H Combined_Selector.H Jet_Finder.H Fastjet_Selector_Base.H)
 creategitinfo(Selectors ../Selectors/)
-  list(TRANSFORM Selectors_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Selectors/")
+list(TRANSFORM Selectors_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Selectors/")
+list(APPEND Selectors_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Selectors_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(PhasicSelectors_static STATIC ${PhasicSelectors_esources}
-                             ${Selectors_SOURCES} 
-)
-target_include_directories(PhasicSelectors_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(PhasicSelectors_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS PhasicSelectors_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(PhasicSelectors_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME PhasicSelectors)
-set_target_properties(PhasicSelectors_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(PhasicSelectors SHARED ${PhasicSelectors_esources}
                              ${Selectors_SOURCES} 

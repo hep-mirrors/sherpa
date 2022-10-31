@@ -54,12 +54,12 @@ option(SHERPA_ENABLE_PYTHIA6                "Enables building of tests." ON)
 option(SHERPA_ENABLE_RIVET                "Enables building of tests." ON)
 option(SHERPA_ENABLE_LHAPDF                "Enables building of tests." ON)
 option(SHERPA_ENABLE_PYTHON                "Enables building of tests." ON)
+option(SHERPA_ENABLE_PGS                "Enables building of tests." OFF)
 ########################################################################
-option(SHERPA_POSITION_INDEPENDENT_CODE  "Position independent code for static libraries." OFF)
 option(SHERPA_BUILD_SHARED               "Build shared libraries." ON)
-option(SHERPA_BUILD_STATIC               "Build static libraries." OFF)
 ###########################Options handeling############################
-set( allenables MANUAL BINRELOC CERNLIB GZIP EWSUD GOSAM MPI HZTOOL RECOLA OPENLOOPS LHOLE MADLOOP BLACKHAT ROOT HEPMC3_ROOT HEPMC3 HEPMC2 PYTHIA6 PYTHIA8 RIVET LHAPDF PYTHON )
+set( allenables MANUAL BINRELOC CERNLIB GZIP EWSUD GOSAM MPI HZTOOL RECOLA OPENLOOPS LHOLE 
+MADLOOP BLACKHAT ROOT HEPMC3_ROOT HEPMC3 HEPMC2 PYTHIA6 PYTHIA8 RIVET LHAPDF PYTHON PGS)
 foreach (en IN LISTS allenables)
      message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -119,6 +119,8 @@ message(STATUS "SHERPA: CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}=${CMAKE_CXX_FLAGS_${
 
 include(CheckFortranCompilerFlag)
 include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
+
 set ( NEW_CMAKE_CXX_FLAGS " ")
 string(REPLACE " " ";" LIST_CMAKE_CXX_FLAGS "${CXX_CXX_FLAGS_TO_CHECK} ${CMAKE_CXX_FLAGS}")
 foreach(fx IN LISTS LIST_CMAKE_CXX_FLAGS)
@@ -167,7 +169,7 @@ foreach(fl IN LISTS LIST_CMAKE_Fortran_FLAGS)
 endforeach()
 list(JOIN NEW_CMAKE_Fortran_FLAGS " " CMAKE_Fortran_FLAGS_X )
 if (NOT CMAKE_FORCE_FLAGS)
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_X} -std=legacy")
+  set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_X})
 endif()
 message(STATUS "SHERPA: CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
 ########################################################################
@@ -175,19 +177,43 @@ include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_definitions(-DHAVE_CONFIG_H)
 add_definitions(-DPIC)
+
+find_program(GIT NAMES git  REQUIRED)
+execute_process(COMMAND ${GIT} rev-parse --abbrev-ref HEAD
+                  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                  OUTPUT_VARIABLE GITURL 
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${GIT} rev-parse  HEAD
+                  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                  OUTPUT_VARIABLE GITREV 
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+message(STATUS "SHERPA: GIT=${GIT} GITREV=${GITREV} GITURL=${GITURL}")
 macro(creategitinfo name b)
 #This can be edited to create git_Info files
+  execute_process(COMMAND ${GIT} status -s --untracked-files=no .
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                  OUTPUT_VARIABLE GITCLEAN 
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if ("${GITCLEAN}" STREQUAL "")
+    set(GITREVSUFFIX "")
+  else()
+    set(GITREVSUFFIX "-dirty")
+  endif()
+  message(STATUS "SHERPA ${CMAKE_CURRENT_SOURCE_DIR}: GITCLEAN=${GITCLEAN} GITREVSUFFIX=${GITREVSUFFIX}")
   set(allsources )
   foreach (f IN LISTS ${name}_SOURCES  ${name}_HEADERS )
     list(APPEND allsources ${f})
   endforeach()
-#  set(content "")
-#  foreach (f IN LISTS allsources )
-#   file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${b}/${f}"  temp)
-#   string(APPEND content "${temp}")
-#  endforeach()
-#  string(MD5 "${content}" MDF)
-#  file( WRITE 1.C "#include \"ATOOLS/Org/Git_Info.H\"\nstatic ATOOLS::Git_Info initializer\n(\"${GITTAG}\",\"cmake\",\"64353f80d10d0004bccf24f6c0f6b2fcc2fb8949\",\"${MDF}\");\n") 
+  list (FILTER allsources EXCLUDE REGEX ".*CXXFLAGS.*")
+  set(content "")
+  foreach (f IN LISTS allsources )
+   file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${b}/${f}"  temp)
+   string(APPEND content "${temp}")
+  endforeach()
+  string(MD5 MDF "${content}")
+  file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C "#include \"ATOOLS/Org/Git_Info.H\"\nstatic ATOOLS::Git_Info initializer\n(\"${GITTAG}\",\"${GITURL}\",\"${GITREV}${GITREVSUFFIX}\",\"${MDF}\");\n") 
+
 endmacro(creategitinfo )
 
 if(SHERPA_ENABLE_MPI)
@@ -458,7 +484,10 @@ ToolsMath ToolsOrg ToolsYaml String ToolsPhys
 )
 
 if (SHERPA_ENABLE_HEPMC3)
-  target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_LIBRARIES} )
+  target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_LIB} ${HEPMC3_SEARCH_LIB} )
+  if (SHERPA_ENABLE_HEPMC3)
+    target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_ROOTIO_LIB} )
+  endif()
 endif()
 if (SHERPA_ENABLE_HEPMC2)
   target_link_libraries(Sherpa PRIVATE SherpaHepMCOutput  ${HEPMC2_LIBRARIES} )

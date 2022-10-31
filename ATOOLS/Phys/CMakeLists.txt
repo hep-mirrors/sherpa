@@ -20,19 +20,10 @@ set(Phys_HEADERS fjcore.hh Fragmentation_Base.H Ordering.H Flavour_Tags.H Flavou
  Cluster_Leg.H Cluster_Amplitude.H Flow.H Blob.H Blob_List.H Parton_Finder.H Color_Tester.H Momentum_Shifter.H Color.H Spinor.H Selector_List.H Fastjet_Helpers.H Momenta_Stretcher.H Weight_Info.H Variations.H
  Weights.H Hard_Process_Variation_Generator.H)
 creategitinfo(Phys ../Phys/)
-  list(TRANSFORM Phys_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Phys/")
+list(TRANSFORM Phys_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Phys/")
+list(APPEND Phys_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 set(Phys_esources )
-if (SHERPA_BUILD_STATIC)
-add_library(ToolsPhys_static STATIC ${ToolsPhys_esources}
-                             ${Phys_SOURCES} 
-)
-target_include_directories(ToolsPhys_static PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(ToolsPhys_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ToolsPhys_static DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ToolsPhys_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME ToolsPhys)
-set_target_properties(ToolsPhys_static PROPERTIES DEFINE_SYMBOL "")
-endif()
 if (SHERPA_BUILD_SHARED)
 add_library(ToolsPhys SHARED ${ToolsPhys_esources}
                              ${Phys_SOURCES} 
