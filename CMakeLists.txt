@@ -453,7 +453,6 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/NNPDF31_nnlo_as_0118_mc DESTINATIO
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/HADRONS++/Decaydata.zip DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs   ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/MadLoop/sconsloops DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh  
-                ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/make2scons   
                 ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa-config
                 DESTINATION  ${CMAKE_INSTALL_BINDIR} )
 
@@ -563,6 +562,7 @@ endif()
 # Config files
 set (CXX ${CMAKE_CXX_COMPILER})
 set (CXXFLAGS ${CMAKE_CXX_FLAGS})
+set (AM_CXXFLAGS ${CMAKE_CXX_FLAGS})
 set (CC ${CMAKE_C_COMPILER})
 set (CFLAGS ${CMAKE_C_FLAGS})
 set (FC ${CMAKE_Fortran_COMPILER})
@@ -747,6 +747,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/pythia-6.4.18.f.in $
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/make2scons.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/make2scons @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa-config @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/make2scons   DESTINATION  ${CMAKE_INSTALL_BINDIR} )
 
 ########################################################################
 set(CXXFLAGS_H_CONTENT "/* ATOOLS/Org/CXXFLAGS.H.  Generated from CXXFLAGS.H.in by configure.  */\n")
