@@ -8,9 +8,6 @@
   #MAKE_FLAGS: -j4
 
 #.build_template: &build
-  #only:
-    #variables:
-     #- $CI_SERVER_HOST=="gitlab.com"
   #stage: build
   #before_script:
     ## set up ccache
@@ -104,17 +101,11 @@
 ## inherit parameters set in .test_template
 
 #.test_template: &test
-  #only:
-    #variables:
-     #- $CI_SERVER_HOST=="gitlab.com"
   #stage: test
   #variables:
     #GIT_STRATEGY: none  # we only need the artifacts from the build
 
 #test-LO_Z: &test_lo_z
-  #only:
-    #variables:
-     #- $CI_SERVER_HOST=="gitlab.com"
   #<<: *test
   #needs:
     #- build
@@ -148,9 +139,6 @@
 
 ## Rebuild the Website to include this tag in the changelogs.
 #trigger_pages:
-  #only:
-    #variables:
-     #- $CI_SERVER_HOST=="gitlab.com"
   #stage: deploy
   #variables:
     #GIT_STRATEGY: none  # we only need the artifacts from the build
@@ -164,9 +152,6 @@
 
 ## build the dist-tarball
 #dist:
-  #only:
-    #variables:
-     #- $CI_SERVER_HOST=="gitlab.com"
   #stage: deploy
   #rules:
     #- if: '$CI_COMMIT_TAG'
@@ -194,9 +179,6 @@
 ## Build Manual
 #pages:
   #image: registry.gitlab.com/sherpa-team/sherpa-docker-build
-  #only:
-    #variables:
-     #- $CI_SERVER_HOST=="gitlab.com"
   #stage: deploy
   #script:
     #- cd Manual
@@ -217,7 +199,6 @@
         #- Manual/**/*
       #when: always
     #- when: never
-    
 
 .Fedora: &Fedora
   only:
@@ -231,7 +212,7 @@
     - dnf -y copr enable averbyts/HEPrpms 
     - dnf -y install   gcc-gfortran gcc-c++ root pythia8-devel pythia8   Rivet Rivet-devel hztool
     - dnf -y install   root-core root HepMC3-rootIO-devel HepMC3-devel HepMC3-search HepMC3-search-devel  HepMC3-rootIO HepMC3  HepMC HepMC-devel 
-    - dnf -y install   autoconf automake libtool sqlite-devel sqlite subversion root-physics libzip-devel openmpi-devel
+    - dnf -y install   autoconf automake libtool sqlite-devel sqlite subversion root-physics libzip-devel openmpi-devel gosam
     - dnf -y install   openmpi environment-modules lhapdf-devel fastjet fastjet-devel  YODA-devel Rivet-devel zlib zlib-devel
     - dnf -y install   swig  recola qd qd-devel openssl-devel openssl
     - dnf -y install   blackhat-devel blackhat
