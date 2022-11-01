@@ -1,0 +1,34 @@
+# - Try to find HZTOOL
+# Defines:
+#
+#  HZTOOL_FOUND
+#  HZTOOL_PREFIX
+if (HZTOOL_ROOT_DIR OR HZTOOL_DIR OR (DEFINED ENV{HZTOOL_ROOT_DIR}) OR (DEFINED ENV{HZTOOL_DIR}) )
+  set(HZTOOL_SEARCH_DIRS "" CACHE STRING "" FORCE)
+  if (HZTOOL_ROOT_DIR)
+    list (APPEND HZTOOL_SEARCH_DIRS "${HZTOOL_ROOT_DIR}" )
+  endif()
+  if (HZTOOL_DIR)
+    list (APPEND HZTOOL_SEARCH_DIRS "${HZTOOL_DIR}" )
+  endif()
+  if (DEFINED EVN{HZTOOL_ROOT_DIR})
+    list (APPEND HZTOOL_SEARCH_DIRS "$ENV{HZTOOL_ROOT_DIR}" )
+  endif()
+  if (DEFINED ENV{HZTOOL_DIR})
+    list (APPEND HZTOOL_SEARCH_DIRS "ENV{HZTOOL_DIR}" )
+  endif()
+endif()
+if (HZTOOL_SEARCH_DIRS)
+  find_path(HZTOOL_INCLUDE_DIR  heracmn.inc PATHS ${HZTOOL_SEARCH_DIRS} PATH_SUFFIXES include/hztool  NO_DEFAULT_PATH)
+  find_library(HZTOOL_LIBRARY NAMES hztool PATHS ${HZTOOL_SEARCH_DIRS}  PATH_SUFFIXES lib lib64 NO_DEFAULT_PATH)
+else()
+find_path(HZTOOL_INCLUDE_DIR  heracmn.inc PATHS ${HZTOOL_SEARCH_DIRS} /usr /usr/local PATH_SUFFIXES include/hztool  )
+  find_library(HZTOOL_LIBRARY NAMES hztool PATHS_SUFFIXES lib lib64)
+endif()
+
+# handle the QUIETLY and REQUIRED arguments and set HZTOOL_FOUND to TRUE if
+# all listed variables are TRUE
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(HZTool DEFAULT_MSG HZTOOL_INCLUDE_DIR HZTOOL_LIBRARY)
+
+mark_as_advanced(HZTool_FOUND)
