@@ -219,7 +219,7 @@
     - dnf -y install   texinfo git latexmk 
     - dnf -y install   python3 python3-devel bzip2
     - dnf -y install   cernlib cernlib-devel cernlib-static
-    - dnf -y install   MCFM MG5_aMC
+    - dnf -y install   MCFM MG5_aMC openloops
     - dnf -y install   cmake sphinx python3-sphinx python3-sphinxcontrib-bibtex
     - dnf -y install   'tex(atbegshi.sty)' 'tex(babel.sty)' 'tex(bigintcalc.sty)' 'tex(bitset.sty)' 'tex(etexcmds.sty)' 'tex(gettitlestring.sty)' 
     - dnf -y install       'tex(iftex.sty)' 'tex(ifvtex.sty)' 'tex(infwarerr.sty)' 'tex(intcalc.sty)' 'tex(kvdefinekeys.sty)' 'tex(kvsetkeys.sty)'
