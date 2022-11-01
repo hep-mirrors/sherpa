@@ -24,7 +24,8 @@ else()
   find_library(RECOLA_LIBRARY NAMES recola PATHS_SUFFIXES lib lib64)
 endif()
 
-find_path(RECOLA_PREFIX librecola.so PATH_SUFFIXES lib lib64 )
+get_filename_component(T_PATH ${RECOLA_LIBRARY} DIRECTORY)
+get_filename_component(RECOLA_PREFIX ${T_PATH} DIRECTORY)
 
 # handle the QUIETLY and REQUIRED arguments and set RECOLA_FOUND to TRUE if
 # all listed variables are TRUE

@@ -48,20 +48,31 @@ add_custom_command(
        COMMAND rm -r texinfo
        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
        VERBATIM)
+
 install( FILES
-${CMAKE_CURRENT_BINARY_DIR}/completion.index  
-${CMAKE_CURRENT_BINARY_DIR}/options.index
 ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.1 
-${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
+DESTINATION
+${CMAKE_INSTALL_MANDIR}/man1
+)
+
+
+
+install( FILES
 ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.info
 DESTINATION
-${CMAKE_INSTALL_DOCDIR}
+${CMAKE_INSTALL_INFODIR}
 )
-install( DIRECTORY
-${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_html
+
+install( FILES
+${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
 DESTINATION
 ${CMAKE_INSTALL_DOCDIR}
 )
+#install( DIRECTORY
+#${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_html
+#DESTINATION
+#${CMAKE_INSTALL_DOCDIR}
+#)
 
 ADD_CUSTOM_TARGET(all-files 
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/completion.index  
@@ -73,3 +84,14 @@ ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.info
 )
 ADD_CUSTOM_TARGET(all-formats ALL)
 ADD_DEPENDENCIES(all-formats all-files)
+set (DATADIR ${CMAKE_INSTALL_DATADIR})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/sherpa-completion.in ${CMAKE_CURRENT_BINARY_DIR}/sherpa-completion @ONLY)
+
+
+install( FILES
+${CMAKE_CURRENT_BINARY_DIR}/completion.index  
+${CMAKE_CURRENT_BINARY_DIR}/options.index
+${CMAKE_CURRENT_BINARY_DIR}/sherpa-completion
+DESTINATION
+${CMAKE_INSTALL_DATADIR}/SHERPA-MC
+)

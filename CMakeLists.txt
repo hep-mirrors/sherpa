@@ -32,34 +32,39 @@ if (APPLE)
 endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
-option(SHERPA_ENABLE_MANUAL                "Enables building of tests." ON)
-option(SHERPA_ENABLE_BINRELOC                "Enables building of tests." ON)
-option(SHERPA_ENABLE_CERNLIB                "Enables building of tests." ON)
-option(SHERPA_ENABLE_GZIP                "Enables building of tests." ON)
-option(SHERPA_ENABLE_EWSUD                "Enables building of tests." ON)
-option(SHERPA_ENABLE_GOSAM                "Enables building of tests." ON)
-option(SHERPA_ENABLE_MPI                "Enables building of tests." OFF)
-option(SHERPA_ENABLE_HZTOOL                "Enables building of tests." ON)
-option(SHERPA_ENABLE_RECOLA                "Enables building of tests." ON)
-option(SHERPA_ENABLE_OPENLOOPS                "Enables building of tests." ON)
-option(SHERPA_ENABLE_LHOLE                "Enables building of tests." ON)
-option(SHERPA_ENABLE_MADLOOP                "Enables building of tests." OFF)
-option(SHERPA_ENABLE_BLACKHAT                "Enables building of tests." ON)
-option(SHERPA_ENABLE_ROOT                "Enables building of tests." ON)
-option(SHERPA_ENABLE_HEPMC3_ROOT                "Enables building of tests." ON)
-option(SHERPA_ENABLE_HEPMC3                "Enables building of tests." ON)
-option(SHERPA_ENABLE_HEPMC2                "Enables building of tests." ON)
-option(SHERPA_ENABLE_PYTHIA8                "Enables building of tests." ON)
-option(SHERPA_ENABLE_PYTHIA6                "Enables building of tests." ON)
-option(SHERPA_ENABLE_RIVET                "Enables building of tests." ON)
-option(SHERPA_ENABLE_LHAPDF                "Enables building of tests." ON)
-option(SHERPA_ENABLE_PYTHON                "Enables building of tests." ON)
-option(SHERPA_ENABLE_PGS                "Enables building of tests." OFF)
+option(SHERPA_ENABLE_ANALYSIS                "Enables building of Analyses." ON)
+option(SHERPA_ENABLE_BINRELOC                "Enables binreloc." ON)
+option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." ON)
+option(SHERPA_ENABLE_CERNLIB                 "Enables building with CERNLIB." ON)
+option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." ON)
+option(SHERPA_ENABLE_EXAMPLES                   "Enables installation of EXAMPLES." ON)
+option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." ON)
+option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." ON)
+option(SHERPA_ENABLE_HEPMC2                  "Enables building with HepMC2." ON)
+option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3." ON)
+option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT Interface ." ON)
+option(SHERPA_ENABLE_HZTOOL                  "Enables building with HZTool." ON)
+option(SHERPA_ENABLE_LHAPDF                  "Enables building With LHAPDF." ON)
+option(SHERPA_ENABLE_LHOLE                   "Enables building of LH OLE." ON)
+option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
+option(SHERPA_ENABLE_MANUAL                  "Enables building of manul." ON)
+option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." ON)
+option(SHERPA_ENABLE_MPI                     "Enables building with MPI." OFF)
+option(SHERPA_ENABLE_OPENLOOPS               "Enables building with OpenLoops." ON)
+option(SHERPA_ENABLE_PGS                     "Enables building with PGS." OFF)
+option(SHERPA_ENABLE_PYTHIA6                 "Enables building with Pythia6 (embedded)." ON)
+option(SHERPA_ENABLE_PYTHIA8                 "Enables building with Pythia8." ON)
+option(SHERPA_ENABLE_PYTHON                  "Enables building of Python interface." ON)
+option(SHERPA_ENABLE_RECOLA                  "Enables building with Recola." ON)
+option(SHERPA_ENABLE_RIVET                   "Enables building with Rivet." ON)
+option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." ON)
+option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)
+
 ########################################################################
 option(SHERPA_BUILD_SHARED               "Build shared libraries." ON)
 ###########################Options handeling############################
-set( allenables MANUAL BINRELOC CERNLIB GZIP EWSUD GOSAM MPI HZTOOL RECOLA OPENLOOPS LHOLE 
-MADLOOP BLACKHAT ROOT HEPMC3_ROOT HEPMC3 HEPMC2 PYTHIA6 PYTHIA8 RIVET LHAPDF PYTHON PGS)
+set( allenables ANALYSIS BINRELOC BLACKHAT CERNLIB EWSUD GOSAM GZIP HEPEVT HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL 
+LHAPDF LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PGS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING)
 foreach (en IN LISTS allenables)
      message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -267,6 +272,12 @@ add_subdirectory(RECONNECTIONS)
 add_subdirectory(REMNANTS)
 add_subdirectory(SHRiMPS)
 add_subdirectory(SHERPA)
+IF (SHERPA_ENABLE_MCFM)
+  find_package(MCFM REQUIRED)
+  message(STATUS "SHERPA: MCFM_LIBRARY=${MCFM_LIBRARY} MCFM_INCLUDE_DIR=${MCFM_INCLUDE_DIR}")
+  add_subdirectory(AddOns/MCFM)
+endif()
+
 
 if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_HEPMC2)
   if (SHERPA_ENABLE_HEPMC3)
@@ -302,6 +313,7 @@ RECONNECTIONS
 REMNANTS
 SHRiMPS
 SHERPA
+
 )
 
 if (SHERPA_ENABLE_MANUAL)
@@ -314,6 +326,17 @@ if (SHERPA_ENABLE_PYTHON)
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H" 
                              PATTERN "*.deps*" EXCLUDE   
                              PATTERN "*.lib*" EXCLUDE 
+                             EXCLUDE  PATTERN "*\.c" EXCLUDE 
+                             )
+endif()
+
+if (SHERPA_ENABLE_ANALYSIS)
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/Analysis 
+              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/AddOns/ COMPONENT devel  
+              FILES_MATCHING PATTERN "*.h" PATTERN "*.H" 
+                             PATTERN "*.deps*" EXCLUDE   
+                             PATTERN "*.lib*" EXCLUDE 
+                             PATTERN "*/Scripts" EXCLUDE 
                              EXCLUDE  PATTERN "*\.c" EXCLUDE 
                              )
 endif()
@@ -381,8 +404,8 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*makefile*" 
                              EXCLUDE  PATTERN "*\.c" EXCLUDE )    
 endforeach (  IDIR ${IDIRS}  )
-
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Examples DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC 
+if (SHERPA_ENABLE_EXAMPLES)
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Examples DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC 
                          COMPONENT doc 
                          PATTERN test.py.in EXCLUDE 
                          PATTERN CI EXCLUDE 
@@ -420,6 +443,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Examples DESTINATION  ${CMAKE_INST
                          PATTERN */VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Sherpa.tree.yaml EXCLUDE 
                          PATTERN */VV_plus_Jets/LHC_4lJets_GluonInitiated/Sherpa.tree.yaml EXCLUDE 
                           )
+endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Sobol/21201 ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201)
 
 if (SHERPA_ENABLE_GZIP)
@@ -452,7 +476,7 @@ add_custom_command(TARGET unZip PRE_BUILD
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/NNPDF31_nnlo_as_0118_mc DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc )
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/HADRONS++/Decaydata.zip DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs   ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/MadLoop/sconsloops DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+install(FILES    ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/MadLoop/sconsloops DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh  
                 ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa-config
                 DESTINATION  ${CMAKE_INSTALL_BINDIR} )
@@ -530,6 +554,8 @@ if (SHERPA_ENABLE_ROOT)
 endif()
 
 if (SHERPA_ENABLE_BLACKHAT)
+  find_package(BlackHat REQUIRED)
+  message(STATUS "SHERPA: BLACKHAT_PATH=${BLACKHAT_PATH} BLACKHAT_LIBRARY=${BLACKHAT_LIBRARY}")
   add_subdirectory(AddOns/BlackHat)
 endif()
 
@@ -537,11 +563,14 @@ if (SHERPA_ENABLE_MADLOOP)
   add_subdirectory(AddOns/MadLoop)
 endif()
 
+
 if (SHERPA_ENABLE_LHOLE)
   add_subdirectory(AddOns/LH_OLE)
 endif()
 
 if (SHERPA_ENABLE_OPENLOOPS)
+  find_package(OpenLoops REQUIRED)
+  message(STATUS "SHERPA: OPENLOOPS_PREFIX=${OPENLOOPS_PREFIX} OPENLOOPS_LIBRARY=${OPENLOOPS_LIBRARY}")
   add_subdirectory(AddOns/OpenLoops)
 endif()
 
@@ -559,16 +588,24 @@ if (SHERPA_ENABLE_GOSAM)
   find_package(GoSam REQUIRED)
   add_subdirectory(AddOns/GoSam)
 endif()
+
+IF (SHERPA_ENABLE_ANALYSIS)
+  add_subdirectory(AddOns/Analysis)
+endif()
+
 ########################################################################
 # Config files
 set (CXX ${CMAKE_CXX_COMPILER})
 set (CXXFLAGS ${CMAKE_CXX_FLAGS})
+set (CXXCPP "${CMAKE_CXX_COMPILER} -E")
+set (FCFLAGS ${CMAKE_Fortran_FLAGS})
 set (AM_CXXFLAGS ${CMAKE_CXX_FLAGS})
 set (CC ${CMAKE_C_COMPILER})
 set (CFLAGS ${CMAKE_C_FLAGS})
 set (FC ${CMAKE_Fortran_COMPILER})
 set (INCLUDEDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC)
 set (LIBDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC)
+set (BINDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 set (DATADIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR})
 set (prefix ${CMAKE_INSTALL_PREFIX})
 set (PACKAGE_VERSION ${SHERPA_VERSION})
@@ -746,6 +783,8 @@ file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/pythia-6.4.18.f.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/LundTools/pythia-6.4.18.f @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/make2scons.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/make2scons @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa-config @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/make2scons   DESTINATION  ${CMAKE_INSTALL_BINDIR} )

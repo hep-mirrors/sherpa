@@ -115,6 +115,18 @@ def output_name(text):
     if (text=="SherpaNNLO"):
         return "NNLOqT"
 
+    if (text=="SherpaAnalysisAnalyses"):
+        return "SherpaAnalyses"
+
+    if (text=="SherpaAnalysisMain"):
+        return "SherpaAnalysis"
+
+    if (text=="SherpaAnalysisTriggers"):
+        return "SherpaAnalysisTrigger"
+
+    if (text=="SherpaAnalysisObservables"):
+        return "SherpaObservables"
+
     if (text=="SherpaRivet"):
         return "SherpaRivetAnalysis"
 
@@ -274,6 +286,7 @@ def transform_imake_source(argv, dbg):
     newlist.append(temp)
     newlist = filter(lambda st: st != '' , newlist)
 
+    newlist = [x.replace("if USING__Analysis","if (SHERPA_ENABLE_ANALYSIS)") for x in newlist]	
     newlist = [x.replace("if USING__EWSud","if (SHERPA_ENABLE_EWSUD)") for x in newlist]	
     newlist = [x.replace("if USING__LHOLE","if (SHERPA_ENABLE_LHOLE)") for x in newlist]	
     newlist = [x.replace("if ENABLE_UFO","if (ENABLE_UFO)") for x in newlist]	
@@ -296,6 +309,12 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("GZIPSTREAMSOURCES =","set(GZIPSTREAMSOURCES ") for x in newlist]
     newlist = [x.replace("PYTHIASOURCES =","set(PYTHIASOURCES ") for x in newlist]
     newlist = [x.replace("GZIPEXTRADIST =","set(GZIPEXTRADIST ") for x in newlist]
+    newlist = [x.replace("ANAANA_ADDS =","set(ANAANA_ADDS ") for x in newlist]
+    newlist = [x.replace("ANATRIGGER_ADDS =","set(ANATRIGGER_ADDS ") for x in newlist]
+    newlist = [x.replace("ANAMAIN_ADDS =","set(ANAMAIN_ADDS ") for x in newlist]
+    newlist = [x.replace("ANAOBS_ADDS =","set(ANAOBS_ADDS ") for x in newlist]
+    newlist = [x.replace("ANATRIGGER_ADDS =","set(ANATRIGGER_ADDS ") for x in newlist]
+    newlist = [x.replace("ANATOOLS_ADDS =","set(ANATOOL_ADDS ") for x in newlist]
     newlist = [x.replace("$(GOSAM_SOURCES)","${GoSam_SOURCES}") for x in newlist]
     newlist = [x.replace("$(BLACKHAT_SOURCES)","${BLACKHAT_SOURCES}") for x in newlist]
     newlist = [x.replace("$(EWSUD_SOURCES)","${EWSud_SOURCES}") for x in newlist]
@@ -305,6 +324,20 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("$(GZIPSTREAMSOURCES)","${GZIPSTREAMSOURCES}") for x in newlist]
     newlist = [x.replace("$(GZIPSTREAMHEADERS)","${GZIPSTREAMHEADERS}") for x in newlist]    
     newlist = [x.replace("$(PYTHIASOURCES)","${PYTHIASOURCES}") for x in newlist]
+    newlist = [x.replace("$(ANAMAIN_SOURCES)","${ANAMAIN_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(ANAMAIN_ADDS)","${ANAMAIN_ADDS}") for x in newlist]
+
+    newlist = [x.replace("$(ANAOBS_SOURCES)","${ANAOBS_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(ANAOBS_ADDS)","${ANAOBS_ADDS}") for x in newlist]
+
+    newlist = [x.replace("$(ANAANA_SOURCES)","${ANAANA_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(ANAANA_ADDS)","${ANAANA_ADDS}") for x in newlist]
+
+
+    newlist = [x.replace("$(ANATOOLS_SOURCES)","${ANATOOLS_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(ANATRIGGER_SOURCES)","${ANATRIGGER_SOURCES}") for x in newlist]
+    newlist = [x.replace("$(ANATOOLS_ADDS)","${ANATOOLS_ADDS}") for x in newlist]
+    newlist = [x.replace("$(ANATRIGGER_ADDS)","${ANATRIGGER_ADDS}") for x in newlist]
     newlist = [x.replace("else","ELSE()") if re.match(r'^[:blank:]*else.*',x)  else x for x in newlist]
     newlist = [x.replace("endif","ENDIF()") if re.match(r'^[:blank:]*endif.*',x)  else x for x in newlist]
     newlist = [x.replace("include","#include") if re.match(r'^[:blank:]*include',x)  else x for x in newlist]
@@ -319,6 +352,7 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("localinc","#localinc")  for x in newlist]
     newlist = [x.replace("pkglib_LTLIBRARIES","#pkglib_LTLIBRARIES")  for x in newlist]
     newlist = [x.replace("GITTAG =","set(GITTAG ")  for x in newlist]
+    newlist = [x.replace("ANAMAIN_EXTRA_DIST","#ANAMAIN_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("EWSUD_EXTRA_DIST","#EWSUD_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("HIGGS_EXTRA_DIST","#HIGGS_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("LHOLE_EXTRA_DIST","#LHOLE_EXTRA_DIST")  for x in newlist]
@@ -326,6 +360,10 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("GOSAM_EXTRA_DIST","#GOSAM_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("HZTOOL_EXTRA_DIST","#HZTOOL_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("NNLOqT_EXTRA_DIST","#NNLOqT_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("ANATOOLS_EXTRA_DIST","#ANATOOLS_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("ANAOBS_EXTRA_DIST","#ANAOBS_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("ANAANA_EXTRA_DIST","#ANAANA_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("ANATRIGGER_EXTRA_DIST","#ANATRIGGER_EXTRA_DIST")  for x in newlist]
 
     newlist = [x.replace("EXTRA_DIST","#EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("rm -f","#rm -f")  for x in newlist]
@@ -1030,6 +1068,31 @@ target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
 #   f.close()   
 
    os.chdir("../")
+
+
+   os.chdir("AddOns/Analysis")
+   MCldirs =["Makefile.am".split(" "),
+#             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" ")
+            ] 
+   MClname= ["Tools", "Triggers", "Observables", "Analyses", "Main", "Scripts"]
+
+   f = open("CMakeLists.txt", "w")  
+   for x in range(0,len(MClname) ):
+     lname=MClname[x]
+     ldirs=MCldirs[x]
+     includes="/".split(" ")+[lname]
+     installincludes=[]
+     create_library(ldirs,lname,includes,installincludes,[],[],[],"SherpaAnalysis")
+     f.write("add_subdirectory("+lname+")\n")
+   f.close()   
+
+   os.chdir("../../")
+
 
 # 'AddOns/Rivet/Git_Info.C', 
 # 'AddOns/HZTool/Git_Info.C', 

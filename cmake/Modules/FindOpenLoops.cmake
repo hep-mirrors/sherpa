@@ -32,7 +32,7 @@ else()
   find_library(OPENLOOPS_LIBRARY NAMES openloops PATHS_SUFFIXES lib/openloops/lib lib64//openloops/lib)
 endif()
 
-mark_as_advanced(OPENLOOPS_INCLUDE_DIR OPENLOOPS_LIBRARY)
+mark_as_advanced(OPENLOOPS_INCLUDE_DIR OPENLOOPS_LIBRARY OPENLOOPS_PREFIX)
 
 # handle the QUIETLY and REQUIRED arguments and set OPENLOOPS_FOUND to TRUE if
 # all listed variables are TRUE

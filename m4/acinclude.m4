@@ -741,7 +741,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 AC_MSG_RESULT([${RECOLA_PREFIX}]);
 		CONDITIONAL_RECOLAINCS="-I$RECOLA_PREFIX/include";
                 CONDITIONAL_RECOLALDADD="-lrecola"
-                CONDITIONAL_RECOLALDFLAGS="-L${RECOLA_PREFIX}/lib"
+                CONDITIONAL_RECOLALDFLAGS="-L${RECOLA_PREFIX}/lib -L${RECOLA_PREFIX}/lib64"
                 AC_SUBST(CONDITIONAL_RECOLALDADD)
                 AC_SUBST(CONDITIONAL_RECOLALDFLAGS)
 
@@ -811,7 +811,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         no)  AC_MSG_RESULT(MCFM not enabled); mcfm=false ;;
         yes)  if test -d "$MCFMDIR"; then
                 CONDITIONAL_MCFMDIR="$MCFMDIR"
-                CONDITIONAL_MCFMLIBS="-Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMLIBS="-Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib64 -L$CONDITIONAL_MCFMDIR/lib64 -lmcfm"
                 CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(\$MCFMDIR is not a valid path.);
@@ -819,7 +819,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
               AC_MSG_RESULT([${CONDITIONAL_MCFMDIR}]); mcfm=true;;
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_MCFMDIR="${enableval}"
-                CONDITIONAL_MCFMLIBS="-Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -lMCFM"
+                CONDITIONAL_MCFMLIBS="-Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib -L$CONDITIONAL_MCFMDIR/lib -Wl,-rpath -Wl,$CONDITIONAL_MCFMDIR/lib64 -L$CONDITIONAL_MCFMDIR/lib64  -lmcfm"
                 CONDITIONAL_MCFMINCS="-I$CONDITIONAL_MCFMDIR/include"
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);

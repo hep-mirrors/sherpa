@@ -20,7 +20,8 @@ if (GOSAM_ROOT_DIR OR GOSAM_DIR OR (DEFINED ENV{GOSAM_ROOT_DIR}) OR (DEFINED ENV
 endif()
 
 
-find_path(GOSAM_PREFIX gosam-contrib/libgolem.so PATH_SUFFIXES lib lib64 )
+find_path(T_PATH gosam-contrib/libgolem.so PATH_SUFFIXES lib lib64 )
+get_filename_component(GOSAM_PREFIX ${T_PATH} DIRECTORY)
 
 # handle the QUIETLY and REQUIRED arguments and set GOSAM_FOUND to TRUE if
 # all listed variables are TRUE
