@@ -22,7 +22,7 @@ if (HZTOOL_SEARCH_DIRS)
   find_path(HZTOOL_INCLUDE_DIR  heracmn.inc PATHS ${HZTOOL_SEARCH_DIRS} PATH_SUFFIXES include/hztool  NO_DEFAULT_PATH)
   find_library(HZTOOL_LIBRARY NAMES hztool PATHS ${HZTOOL_SEARCH_DIRS}  PATH_SUFFIXES lib lib64 NO_DEFAULT_PATH)
 else()
-find_path(HZTOOL_INCLUDE_DIR  heracmn.inc PATHS ${HZTOOL_SEARCH_DIRS} /usr /usr/local PATH_SUFFIXES include/hztool  )
+find_path(HZTOOL_INCLUDE_DIR  heracmn.inc PATHS ${HZTOOL_SEARCH_DIRS} PATH_SUFFIXES include/hztool  )
   find_library(HZTOOL_LIBRARY NAMES hztool PATHS_SUFFIXES lib lib64)
 endif()
 
