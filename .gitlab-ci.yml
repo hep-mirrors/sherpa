@@ -208,7 +208,7 @@
     - set -x
     - uname -a 
     - cat /etc/issue
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL dnf-plugins-core make cmake binutils wget diffutils file sed gawk grep which autoconf automake libtool python3-lhapdf lhapdf lhapdf-devel 'tex(latex)' ghostscript 'tex(sectsty.sty)' > rpm.log || (cat rpm.log && exit 1)
+    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL dnf-plugins-core bc make cmake binutils wget diffutils file sed gawk grep which autoconf automake libtool python3-lhapdf lhapdf lhapdf-devel 'tex(latex)' ghostscript 'tex(sectsty.sty)' > rpm.log || (cat rpm.log && exit 1)
     - dnf -y copr enable averbyts/HEPrpms 
     - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   gcc-gfortran gcc-c++ root pythia8-devel pythia8   Rivet Rivet-devel hztool > rpm.log || (cat rpm.log && exit 1)
     - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   root-core root HepMC3-rootIO-devel HepMC3-devel HepMC3-search HepMC3-search-devel  HepMC3-rootIO HepMC3  HepMC HepMC-devel  > rpm.log || (cat rpm.log && exit 1)
