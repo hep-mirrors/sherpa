@@ -259,7 +259,7 @@ Fedora35-cmake:
   extends: .Fedora
   script:
     - export COMPILATIONSTART=$(date +%s)
-    - cmake -S . -B BUILD -DCMAKE_INSTALL_PREFIX=$(pwd)/CM
+    - cmake -S . -B BUILD -DCMAKE_INSTALL_PREFIX=$(pwd)/CM -DCMAKE_CXX_FLAGS="-O2 -g -fcx-fortran-rules" -DCMAKE_C_FLAGS="-O2 -g" -DCMAKE_Fortran_FLAGS="-O2 -g"
     - cmake --build BUILD -j 10
     - export COMPILATIONEND=$(date +%s)
     - cmake --install BUILD
