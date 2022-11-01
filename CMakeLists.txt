@@ -35,9 +35,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 option(SHERPA_ENABLE_ANALYSIS                "Enables building of Analyses." ON)
 option(SHERPA_ENABLE_BINRELOC                "Enables binreloc." ON)
 option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." ON)
-option(SHERPA_ENABLE_CERNLIB                 "Enables building with CERNLIB." ON)
+option(SHERPA_ENABLE_DIHIGGS                 "Enables building of DIHIGGS." ON)
 option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." ON)
-option(SHERPA_ENABLE_EXAMPLES                   "Enables installation of EXAMPLES." ON)
+option(SHERPA_ENABLE_EXAMPLES                "Enables installation of EXAMPLES." ON)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." ON)
 option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." ON)
 option(SHERPA_ENABLE_HEPMC2                  "Enables building with HepMC2." ON)
@@ -46,25 +46,23 @@ option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT In
 option(SHERPA_ENABLE_HZTOOL                  "Enables building with HZTool." ON)
 option(SHERPA_ENABLE_LHAPDF                  "Enables building With LHAPDF." ON)
 option(SHERPA_ENABLE_LHOLE                   "Enables building of LH OLE." ON)
-option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
+option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." ON)
 option(SHERPA_ENABLE_MANUAL                  "Enables building of manul." ON)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." ON)
 option(SHERPA_ENABLE_MPI                     "Enables building with MPI." OFF)
 option(SHERPA_ENABLE_OPENLOOPS               "Enables building with OpenLoops." ON)
-option(SHERPA_ENABLE_PGS                     "Enables building with PGS." OFF)
 option(SHERPA_ENABLE_PYTHIA6                 "Enables building with Pythia6 (embedded)." ON)
 option(SHERPA_ENABLE_PYTHIA8                 "Enables building with Pythia8." ON)
 option(SHERPA_ENABLE_PYTHON                  "Enables building of Python interface." ON)
 option(SHERPA_ENABLE_RECOLA                  "Enables building with Recola." ON)
 option(SHERPA_ENABLE_RIVET                   "Enables building with Rivet." ON)
 option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." ON)
-option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)
-
+option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)#BUGGED!
 ########################################################################
 option(SHERPA_BUILD_SHARED               "Build shared libraries." ON)
 ###########################Options handeling############################
-set( allenables ANALYSIS BINRELOC BLACKHAT CERNLIB EWSUD GOSAM GZIP HEPEVT HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL 
-LHAPDF LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PGS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING)
+set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD GOSAM GZIP HEPEVT HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL 
+LHAPDF LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING)
 foreach (en IN LISTS allenables)
      message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -195,7 +193,6 @@ execute_process(COMMAND ${GIT} rev-parse  HEAD
 
 message(STATUS "SHERPA: GIT=${GIT} GITREV=${GITREV} GITURL=${GITURL}")
 macro(creategitinfo name b)
-#This can be edited to create git_Info files
   execute_process(COMMAND ${GIT} status -s --untracked-files=no .
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITCLEAN 
@@ -218,8 +215,14 @@ macro(creategitinfo name b)
    string(APPEND content "${temp}")
   endforeach()
   string(MD5 MDF "${content}")
-  file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C "#include \"ATOOLS/Org/Git_Info.H\"\nstatic ATOOLS::Git_Info initializer\n(\"${GITTAG}\",\"${GITURL}\",\"${GITREV}${GITREVSUFFIX}\",\"${MDF}\");\n") 
-
+  set(newgitinfo "#include \"ATOOLS/Org/Git_Info.H\"\nstatic ATOOLS::Git_Info initializer\n(\"${GITTAG}\",\"${GITURL}\",\"${GITREV}${GITREVSUFFIX}\",\"${MDF}\");\n") 
+  set(oldgitinfo "")
+  if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C oldgitinfo)
+  endif()
+  if ( NOT "${newgitinfo}" STREQUAL "${oldgitinfo}") 
+    file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C "${newgitinfo}") 
+  endif()
 endmacro(creategitinfo )
 
 if(SHERPA_ENABLE_MPI)
@@ -229,14 +232,9 @@ else()
  set (LOADMPIFORPY "")
 endif()
 
-#find_package(LIBZIP)
+#One should have also zlib?
 FIND_LIBRARY(LIBZIP_LIBRARY NAMES zip PATHS "$ENV{LIB_DIR}/lib" "$ENV{LIB}" /usr/local/lib /usr/lib /usr/lib64 )
 message(STATUS "SHERPA: LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
-#message(STATUS "SHERPA:  LIBZIP_FOUND=${LIBZIP_FOUND} LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
-#if (NOT LIBZIP_FOUND)
-#find_package(LibZip)
-#endif()
-#message(STATUS "SHERPA:  LIBZIP_FOUND=${LIBZIP_FOUND} LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
@@ -312,9 +310,7 @@ PDF
 RECONNECTIONS
 REMNANTS
 SHRiMPS
-SHERPA
-
-)
+SHERPA)
 
 if (SHERPA_ENABLE_MANUAL)
   add_subdirectory(Manual)
@@ -524,7 +520,7 @@ add_subdirectory(AddOns/Weights)
 add_subdirectory(AddOns/NNLO)
 add_subdirectory(AddOns/Higgs)
 add_subdirectory(AddOns/EWSud)
-if (SHERPA_ENABLE_PYTHON)
+if (SHERPA_ENABLE_PYTHON OR SHERPA_ENABLE_DIHIGGS)
   if (NOT  SHERPA-MC_PYTHON_VERSION)
     find_package (Python 3 COMPONENTS  Development Interpreter)
   else()
@@ -536,7 +532,12 @@ if (SHERPA_ENABLE_PYTHON)
   else()
     message(STATUS "SHERPA: SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} is set to to ${SHERPA_Python_SITEARCH}")
   endif()
-  add_subdirectory(AddOns/Python)
+  if (SHERPA_ENABLE_PYTHON)
+    add_subdirectory(AddOns/Python)
+  endif()
+  if (SHERPA_ENABLE_DIHIGGS)
+    add_subdirectory(AddOns/DiHiggsNLO)
+  endif()
 endif()
 
 if (SHERPA_ENABLE_RIVET)
@@ -560,6 +561,12 @@ if (SHERPA_ENABLE_BLACKHAT)
 endif()
 
 if (SHERPA_ENABLE_MADLOOP)
+  if (NOT MADLOOP_PREFIX)
+   find_path(MADLOOP_PREFIX  mg5_aMC PATHS PATH_SUFFIXES bin  REQUIRED)
+  else()
+   find_program( MG5AMC NAMES  mg5_aMC PATHS ${MADLOOP_PREFIX} PATH_SUFFIXES bin  NO_DEFAULT_PATH REQUIRED)
+  endif()
+  message(STATUS "SHERPA: MADLOOP_PREFIX=${MADLOOP_PREFIX}")
   add_subdirectory(AddOns/MadLoop)
 endif()
 
@@ -581,11 +588,18 @@ if (SHERPA_ENABLE_RECOLA)
 endif()
 
 if (SHERPA_ENABLE_HZTOOL)
+  find_package(HZTool REQUIRED)
+  message(STATUS "SHERPA: HZTOOL_LIBRARY=${HZTOOL_LIBRARY} HZTOOL_INCLUDE_DIR=${HZTOOL_INCLUDE_DIR}")
+  find_package(CERNLIB REQUIRED)
+  message(STATUS "SHERPA: CERN_kernlib_DYNAMIC_LIBRARY=${CERN_kernlib_DYNAMIC_LIBRARY} CERN_mathlib_DYNAMIC_LIBRARY=${CERN_mathlib_DYNAMIC_LIBRARY} CERN_packlib_DYNAMIC_LIBRARY=${CERN_packlib_DYNAMIC_LIBRARY}")
+  find_package(Motif REQUIRED)
+  message(STATUS "SHERPA: MOTIF_INCLUDE_DIR=${MOTIF_INCLUDE_DIR} MOTIF_LIBRARIES=${MOTIF_LIBRARIES}")
   add_subdirectory(AddOns/HZTool)
 endif()
 
 if (SHERPA_ENABLE_GOSAM)
   find_package(GoSam REQUIRED)
+  message(STATUS "SHERPA: GOSAM_PATH=${GOSAM_PREFIX}")
   add_subdirectory(AddOns/GoSam)
 endif()
 

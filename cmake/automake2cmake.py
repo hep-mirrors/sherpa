@@ -176,7 +176,8 @@ def transform_pilots(argv):
     with open(path_to_file) as f:
       file_contents = f.readlines()
     newlist =file_contents
-    newlist = [x.replace("if ENABLE_UFO","if (ENABLE_UFO)") for x in newlist]
+    newlist = [x.replace("if ENABLE_DIHIGGS","if (SHERPA_ENABLE_DIHIGGS)") for x in newlist]
+    newlist = [x.replace("if ENABLE_UFO","if (SHERPA_ENABLE_UFO)") for x in newlist]
     newlist = [x.replace("if PYTHIA_SUPPORT","if (SHERPA_ENABLE_PYTHIA)") for x in newlist]
     newlist = [x.replace("if GZIP_SUPPORT","if (SHERPA_ENABLE_GZIP)") for x in newlist]
     newlist = [x.replace("PYTHIAHEADERS =","set(PYTHIAHEADERS ") for x in newlist]
@@ -289,7 +290,7 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("if USING__Analysis","if (SHERPA_ENABLE_ANALYSIS)") for x in newlist]	
     newlist = [x.replace("if USING__EWSud","if (SHERPA_ENABLE_EWSUD)") for x in newlist]	
     newlist = [x.replace("if USING__LHOLE","if (SHERPA_ENABLE_LHOLE)") for x in newlist]	
-    newlist = [x.replace("if ENABLE_UFO","if (ENABLE_UFO)") for x in newlist]	
+    newlist = [x.replace("if ENABLE_UFO","if (SHERAP_ENABLE_UFO)") for x in newlist]	
     newlist = [x.replace("if PYTHIA8_SUPPORT","if (SHERPA_ENABLE_PYTHIA8)") for x in newlist]
     newlist = [x.replace("if HZTOOL_SUPPORT","if (SHERPA_ENABLE_HZTOOL)") for x in newlist]
     newlist = [x.replace("if CERNLIB_SUPPORT","if (SHERPA_ENABLE_CERNLIB)") for x in newlist]
@@ -315,6 +316,7 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("ANAOBS_ADDS =","set(ANAOBS_ADDS ") for x in newlist]
     newlist = [x.replace("ANATRIGGER_ADDS =","set(ANATRIGGER_ADDS ") for x in newlist]
     newlist = [x.replace("ANATOOLS_ADDS =","set(ANATOOL_ADDS ") for x in newlist]
+    newlist = [x.replace("DIHIGGS_ADDS =","set(DIHIGGS_ADDS ") for x in newlist]
     newlist = [x.replace("$(GOSAM_SOURCES)","${GoSam_SOURCES}") for x in newlist]
     newlist = [x.replace("$(BLACKHAT_SOURCES)","${BLACKHAT_SOURCES}") for x in newlist]
     newlist = [x.replace("$(EWSUD_SOURCES)","${EWSud_SOURCES}") for x in newlist]
@@ -324,6 +326,7 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("$(GZIPSTREAMSOURCES)","${GZIPSTREAMSOURCES}") for x in newlist]
     newlist = [x.replace("$(GZIPSTREAMHEADERS)","${GZIPSTREAMHEADERS}") for x in newlist]    
     newlist = [x.replace("$(PYTHIASOURCES)","${PYTHIASOURCES}") for x in newlist]
+    newlist = [x.replace("$(DIHIGGS_SOURCES)","${DIHIGGS_SOURCES}") for x in newlist]
     newlist = [x.replace("$(ANAMAIN_SOURCES)","${ANAMAIN_SOURCES}") for x in newlist]
     newlist = [x.replace("$(ANAMAIN_ADDS)","${ANAMAIN_ADDS}") for x in newlist]
 
@@ -332,6 +335,7 @@ def transform_imake_source(argv, dbg):
 
     newlist = [x.replace("$(ANAANA_SOURCES)","${ANAANA_SOURCES}") for x in newlist]
     newlist = [x.replace("$(ANAANA_ADDS)","${ANAANA_ADDS}") for x in newlist]
+    newlist = [x.replace("$(DIHIGGS_ADDS)","${DIHIGGS_ADDS}") for x in newlist]
 
 
     newlist = [x.replace("$(ANATOOLS_SOURCES)","${ANATOOLS_SOURCES}") for x in newlist]
@@ -354,6 +358,7 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("GITTAG =","set(GITTAG ")  for x in newlist]
     newlist = [x.replace("ANAMAIN_EXTRA_DIST","#ANAMAIN_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("EWSUD_EXTRA_DIST","#EWSUD_EXTRA_DIST")  for x in newlist]
+    newlist = [x.replace("DIHIGGS_EXTRA_DIST","#DIHIGGS_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("HIGGS_EXTRA_DIST","#HIGGS_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("LHOLE_EXTRA_DIST","#LHOLE_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("BLACKHAT_EXTRA_DIST","#BLACKHAT_EXTRA_DIST")  for x in newlist]
@@ -385,6 +390,8 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("Sobol/%.gz","#Sobol/%.gz")  for x in newlist]
     newlist = [x.replace("mkdir -p Sobol","#mkdir -p Sobol")  for x in newlist]
     newlist = [x.replace("gzip < $< > $@","#gzip < $< > $@")  for x in newlist]
+    newlist = [x.replace("dist_dihiggs","#dist_dihiggs")  for x in newlist]
+    newlist = [x.replace("dihiggs","#dihiggs")  for x in newlist]
 
 
     newlist=[ x.replace(" \n","\n") for x in newlist]
@@ -1053,9 +1060,11 @@ target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
              "Makefile.am".split(" "),
              "Makefile.am".split(" "),
              "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
+             "Makefile.am".split(" "),
              "Makefile.am".split(" ")
             ] 
-   MClname= ["Rivet","HZTool","Pythia","NNLO", "OpenLoops", "HepMC", "BlackHat", "GoSam", "Root"]
+   MClname= ["Rivet","HZTool","Pythia","NNLO", "OpenLoops", "HepMC", "BlackHat", "GoSam", "Root", "DiHiggsNLO", "PGS"]
 
 #   f = open("CMakeLists.txt", "w")  
    for x in range(0,len(MClname) ):

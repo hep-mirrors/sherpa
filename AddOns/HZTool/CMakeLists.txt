@@ -41,5 +41,12 @@ target_include_directories(SherpaHZToolAnalysis PRIVATE ${CMAKE_CURRENT_SOURCE_D
 install(TARGETS SherpaHZToolAnalysis DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaHZToolAnalysis        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaHZToolAnalysis SOVERSION 0.0.0)
 set_target_properties(SherpaHZToolAnalysis        PROPERTIES DEFINE_SYMBOL "")
-target_include_directories( SherpaHZToolAnalysis PRIVATE /usr/include/hztool ) #!FIXME
+target_include_directories( SherpaHZToolAnalysis PRIVATE ${HZTOOL_INCLUDE_DIR} )
+target_link_libraries( SherpaHZToolAnalysis PRIVATE ${HZTOOL_LIBRARY} 
+${CERN_kernlib_DYNAMIC_LIBRARY}
+${CERN_mathlib_DYNAMIC_LIBRARY}
+${CERN_packlib_DYNAMIC_LIBRARY}
+${MOTIF_LIBRARIES}
+)
+#Add dep on cernlib?
 endif()
