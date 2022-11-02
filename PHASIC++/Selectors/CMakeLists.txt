@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -20,14 +18,10 @@ creategitinfo(Selectors ../Selectors/)
 list(TRANSFORM Selectors_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Selectors/")
 list(APPEND Selectors_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Selectors_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(PhasicSelectors SHARED ${PhasicSelectors_esources}
+add_library(PhasicSelectors SHARED 
                              ${Selectors_SOURCES} 
 )
-target_include_directories(PhasicSelectors PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhasicSelectors PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicSelectors DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicSelectors        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicSelectors SOVERSION 0.0.0)
 set_target_properties(PhasicSelectors        PROPERTIES DEFINE_SYMBOL "")
-endif()

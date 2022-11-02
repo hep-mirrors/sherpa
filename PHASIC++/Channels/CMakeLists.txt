@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -23,14 +21,10 @@ creategitinfo(Channels ../Channels/)
 list(TRANSFORM Channels_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Channels/")
 list(APPEND Channels_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Channels_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(PhasicChannels SHARED ${PhasicChannels_esources}
+add_library(PhasicChannels SHARED 
                              ${Channels_SOURCES} 
 )
-target_include_directories(PhasicChannels PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhasicChannels PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicChannels DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicChannels        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicChannels SOVERSION 0.0.0)
 set_target_properties(PhasicChannels        PROPERTIES DEFINE_SYMBOL "")
-endif()

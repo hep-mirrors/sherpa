@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(Spectra ../Spectra/)
 list(TRANSFORM Spectra_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Spectra/")
 list(APPEND Spectra_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Spectra_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(BeamSpectra SHARED ${BeamSpectra_esources}
+add_library(BeamSpectra SHARED 
                              ${Spectra_SOURCES} 
 )
-target_include_directories(BeamSpectra PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(BeamSpectra PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS BeamSpectra DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(BeamSpectra        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME BeamSpectra SOVERSION 0.0.0)
 set_target_properties(BeamSpectra        PROPERTIES DEFINE_SYMBOL "")
-endif()

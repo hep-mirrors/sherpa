@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -20,14 +18,10 @@ creategitinfo(Formation ../Formation/)
 list(TRANSFORM Formation_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Formation/")
 list(APPEND Formation_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Formation_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(AhadicFormation SHARED ${AhadicFormation_esources}
+add_library(AhadicFormation SHARED 
                              ${Formation_SOURCES} 
 )
-target_include_directories(AhadicFormation PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(AhadicFormation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AhadicFormation DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AhadicFormation        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AhadicFormation SOVERSION 0.0.0)
 set_target_properties(AhadicFormation        PROPERTIES DEFINE_SYMBOL "")
-endif()

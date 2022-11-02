@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -21,15 +19,11 @@ creategitinfo(DipoleSubtraction ../DipoleSubtraction/)
 list(TRANSFORM DipoleSubtraction_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../DipoleSubtraction/")
 list(APPEND DipoleSubtraction_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(DipoleSubtraction_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(DipoleSubtraction SHARED ${DipoleSubtraction_esources}
+add_library(DipoleSubtraction SHARED 
                              ${DipoleSubtraction_SOURCES} 
 )
-target_include_directories(DipoleSubtraction PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(DipoleSubtraction PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(DipoleSubtraction PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 install(TARGETS DipoleSubtraction DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DipoleSubtraction        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DipoleSubtraction SOVERSION 0.0.0)
 set_target_properties(DipoleSubtraction        PROPERTIES DEFINE_SYMBOL "")
-endif()

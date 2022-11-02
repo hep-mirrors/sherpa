@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -21,14 +19,10 @@ creategitinfo(Process ../Process/)
 list(TRANSFORM Process_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Process/")
 list(APPEND Process_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Process_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(PhasicProcess SHARED ${PhasicProcess_esources}
+add_library(PhasicProcess SHARED 
                              ${Process_SOURCES} 
 )
-target_include_directories(PhasicProcess PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhasicProcess PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicProcess DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicProcess        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicProcess SOVERSION 0.0.0)
 set_target_properties(PhasicProcess        PROPERTIES DEFINE_SYMBOL "")
-endif()

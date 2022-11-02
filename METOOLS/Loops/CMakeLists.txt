@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -20,14 +18,10 @@ creategitinfo(Loops ../Loops/)
 list(TRANSFORM Loops_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Loops/")
 list(APPEND Loops_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Loops_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(METoolsLoops SHARED ${METoolsLoops_esources}
+add_library(METoolsLoops SHARED 
                              ${Loops_SOURCES} 
 )
-target_include_directories(METoolsLoops PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(METoolsLoops PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsLoops DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsLoops        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsLoops SOVERSION 0.0.0)
 set_target_properties(METoolsLoops        PROPERTIES DEFINE_SYMBOL "")
-endif()

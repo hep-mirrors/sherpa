@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -23,17 +21,13 @@ creategitinfo(Phys ../Phys/)
 list(TRANSFORM Phys_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Phys/")
 list(APPEND Phys_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Phys_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(ToolsPhys SHARED ${ToolsPhys_esources}
+add_library(ToolsPhys SHARED 
                              ${Phys_SOURCES} 
 )
-target_include_directories(ToolsPhys PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ToolsPhys PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsPhys DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsPhys        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsPhys SOVERSION 0.0.0)
 set_target_properties(ToolsPhys        PROPERTIES DEFINE_SYMBOL "")
-endif()
 
 if (SHERPA_ENABLE_LHAPDF)
 target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})

@@ -58,8 +58,6 @@ option(SHERPA_ENABLE_RECOLA                  "Enables building with Recola." ON)
 option(SHERPA_ENABLE_RIVET                   "Enables building with Rivet." ON)
 option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." ON)
 option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)#BUGGED!
-########################################################################
-option(SHERPA_BUILD_SHARED               "Build shared libraries." ON)
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD GOSAM GZIP HEPEVT HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL 
 LHAPDF LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING)

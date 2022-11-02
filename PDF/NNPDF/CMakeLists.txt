@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -25,14 +23,10 @@ creategitinfo(NNPDF ../NNPDF/)
 list(TRANSFORM NNPDF_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../NNPDF/")
 list(APPEND NNPDF_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(NNPDF_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(NNPDFSherpa SHARED ${NNPDFSherpa_esources}
+add_library(NNPDFSherpa SHARED 
                              ${NNPDF_SOURCES} 
 )
-target_include_directories(NNPDFSherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(NNPDFSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS NNPDFSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(NNPDFSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME NNPDFSherpa SOVERSION 0.0.0)
 set_target_properties(NNPDFSherpa        PROPERTIES DEFINE_SYMBOL "")
-endif()

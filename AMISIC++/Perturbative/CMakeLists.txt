@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(Perturbative ../Perturbative/)
 list(TRANSFORM Perturbative_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Perturbative/")
 list(APPEND Perturbative_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Perturbative_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(AmisicPerturbative SHARED ${AmisicPerturbative_esources}
+add_library(AmisicPerturbative SHARED 
                              ${Perturbative_SOURCES} 
 )
-target_include_directories(AmisicPerturbative PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(AmisicPerturbative PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS AmisicPerturbative DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AmisicPerturbative        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AmisicPerturbative SOVERSION 0.0.0)
 set_target_properties(AmisicPerturbative        PROPERTIES DEFINE_SYMBOL "")
-endif()

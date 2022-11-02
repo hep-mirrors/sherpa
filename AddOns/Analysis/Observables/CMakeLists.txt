@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -32,14 +30,10 @@ creategitinfo(Observables ../Observables/)
 list(TRANSFORM Observables_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Observables/")
 list(APPEND Observables_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Observables_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaObservables SHARED ${SherpaObservables_esources}
+add_library(SherpaObservables SHARED 
                              ${Observables_SOURCES} 
 )
-target_include_directories(SherpaObservables PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaObservables PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaObservables DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaObservables        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaObservables SOVERSION 0.0.0)
 set_target_properties(SherpaObservables        PROPERTIES DEFINE_SYMBOL "")
-endif()

@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -18,14 +16,10 @@ creategitinfo(Gauge ../Gauge/)
 list(TRANSFORM Gauge_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Gauge/")
 list(APPEND Gauge_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Gauge_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(DIMGauge SHARED ${DIMGauge_esources}
+add_library(DIMGauge SHARED 
                              ${Gauge_SOURCES} 
 )
-target_include_directories(DIMGauge PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(DIMGauge PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DIMGauge DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DIMGauge        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DIMGauge SOVERSION 0.0.0)
 set_target_properties(DIMGauge        PROPERTIES DEFINE_SYMBOL "")
-endif()

@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(CT14 ../CT14/)
 list(TRANSFORM CT14_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../CT14/")
 list(APPEND CT14_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(CT14_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(CT14Sherpa SHARED ${CT14Sherpa_esources}
+add_library(CT14Sherpa SHARED 
                              ${CT14_SOURCES} 
 )
-target_include_directories(CT14Sherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(CT14Sherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS CT14Sherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CT14Sherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME CT14Sherpa SOVERSION 0.0.0)
 set_target_properties(CT14Sherpa        PROPERTIES DEFINE_SYMBOL "")
-endif()

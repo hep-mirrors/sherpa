@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -18,14 +16,10 @@ creategitinfo(Lorentz ../Lorentz/)
 list(TRANSFORM Lorentz_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Lorentz/")
 list(APPEND Lorentz_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Lorentz_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(DireLorentz SHARED ${DireLorentz_esources}
+add_library(DireLorentz SHARED 
                              ${Lorentz_SOURCES} 
 )
-target_include_directories(DireLorentz PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(DireLorentz PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DireLorentz DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireLorentz        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DireLorentz SOVERSION 0.0.0)
 set_target_properties(DireLorentz        PROPERTIES DEFINE_SYMBOL "")
-endif()

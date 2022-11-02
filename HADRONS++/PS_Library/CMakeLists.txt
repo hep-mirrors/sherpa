@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(PS_Library ../PS_Library/)
 list(TRANSFORM PS_Library_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../PS_Library/")
 list(APPEND PS_Library_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(PS_Library_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(HadronsPSs SHARED ${HadronsPSs_esources}
+add_library(HadronsPSs SHARED 
                              ${PS_Library_SOURCES} 
 )
-target_include_directories(HadronsPSs PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(HadronsPSs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS HadronsPSs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsPSs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME HadronsPSs SOVERSION 0.0.0)
 set_target_properties(HadronsPSs        PROPERTIES DEFINE_SYMBOL "")
-endif()

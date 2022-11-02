@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Main/Makefile.am
@@ -24,14 +22,10 @@ list(APPEND RECONNECTIONS_Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
  #SUBDIRS = Main)
  
-set(RECONNECTIONS_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(Reconnections SHARED ${Reconnections_esources}
+add_library(Reconnections SHARED 
                              ${RECONNECTIONS_Main_SOURCES} 
 )
-target_include_directories(Reconnections PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(Reconnections PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS Reconnections DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(Reconnections        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME Reconnections SOVERSION 0.0.0)
 set_target_properties(Reconnections        PROPERTIES DEFINE_SYMBOL "")
-endif()

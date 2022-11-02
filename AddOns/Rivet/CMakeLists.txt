@@ -1,8 +1,6 @@
 #Manually edited
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -24,16 +22,12 @@ creategitinfo(Rivet ../Rivet/)
 list(TRANSFORM Rivet_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Rivet/")
 list(APPEND Rivet_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Rivet_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaRivetAnalysis SHARED ${SherpaRivetAnalysis_esources}
+add_library(SherpaRivetAnalysis SHARED 
                              ${Rivet_SOURCES} 
 )
-target_include_directories(SherpaRivetAnalysis PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaRivetAnalysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaRivetAnalysis DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaRivetAnalysis        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaRivetAnalysis SOVERSION 0.0.0)
 set_target_properties(SherpaRivetAnalysis        PROPERTIES DEFINE_SYMBOL "")
 target_link_libraries(SherpaRivetAnalysis PRIVATE ${RIVET_LIBRARIES})
 target_include_directories(SherpaRivetAnalysis PRIVATE ${RIVET_INCLUDE_DIR})
-endif()

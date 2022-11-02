@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(One2Three ../One2Three/)
 list(TRANSFORM One2Three_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../One2Three/")
 list(APPEND One2Three_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(One2Three_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(ExtraXS1_3 SHARED ${ExtraXS1_3_esources}
+add_library(ExtraXS1_3 SHARED 
                              ${One2Three_SOURCES} 
 )
-target_include_directories(ExtraXS1_3 PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ExtraXS1_3 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ExtraXS1_3 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ExtraXS1_3        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ExtraXS1_3 SOVERSION 0.0.0)
 set_target_properties(ExtraXS1_3        PROPERTIES DEFINE_SYMBOL "")
-endif()

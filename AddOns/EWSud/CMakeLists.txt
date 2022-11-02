@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -28,14 +26,10 @@ creategitinfo(EWSud ../EWSud/)
 list(TRANSFORM EWSud_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../EWSud/")
 list(APPEND EWSud_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(EWSud_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaEWSud SHARED ${SherpaEWSud_esources}
+add_library(SherpaEWSud SHARED 
                              ${EWSud_SOURCES} 
 )
-target_include_directories(SherpaEWSud PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaEWSud PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaEWSud DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaEWSud        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaEWSud SOVERSION 0.0.0)
 set_target_properties(SherpaEWSud        PROPERTIES DEFINE_SYMBOL "")
-endif()

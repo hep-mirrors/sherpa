@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(Shower ../Shower/)
 list(TRANSFORM Shower_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Shower/")
 list(APPEND Shower_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Shower_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(DireShower SHARED ${DireShower_esources}
+add_library(DireShower SHARED 
                              ${Shower_SOURCES} 
 )
-target_include_directories(DireShower PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(DireShower PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS DireShower DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireShower        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DireShower SOVERSION 0.0.0)
 set_target_properties(DireShower        PROPERTIES DEFINE_SYMBOL "")
-endif()

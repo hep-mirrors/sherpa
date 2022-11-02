@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -20,16 +18,12 @@ creategitinfo(Zfunctions ../Zfunctions/)
 list(TRANSFORM Zfunctions_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Zfunctions/")
 list(APPEND Zfunctions_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Zfunctions_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(Zfunctions SHARED ${Zfunctions_esources}
+add_library(Zfunctions SHARED 
                              ${Zfunctions_SOURCES} 
 )
-target_include_directories(Zfunctions PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(Zfunctions PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Zfunctions PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 target_include_directories(Zfunctions PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 install(TARGETS Zfunctions DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(Zfunctions        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME Zfunctions SOVERSION 0.0.0)
 set_target_properties(Zfunctions        PROPERTIES DEFINE_SYMBOL "")
-endif()

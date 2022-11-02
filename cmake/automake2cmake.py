@@ -155,9 +155,7 @@ def comment_remover(text):
 def write_header(f,ldirs):
    f.write("""
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 """)
@@ -504,14 +502,15 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
                 f.write(ifcondition[1]+"\n")
            else:
              f.write(a+"\n")
-   f.write("set("+lname+"_esources )\n")
    suffixes=get_suffixes(lname)
    lname=subdir+lname
    lname=output_name_static(lname)
+   #f.write("set("+lname+"_esources )\n")
    for suff in suffixes:
      if suff=="": 
-       f.write("if (SHERPA_BUILD_SHARED)\n")
-       f.write("add_library("+lname+" SHARED ${"+lname+"_esources}\n")
+       #f.write("if (SHERPA_BUILD_SHARED)\n")
+       f.write("add_library("+lname+" SHARED \n")
+       #f.write("add_library("+lname+" SHARED ${"+lname+"_esources}\n")
        for z in t: f.write("                             "+z + " \n")
        f.write(")\n")
      if suff=="_static": 
@@ -519,7 +518,7 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
        f.write("add_library("+lname+"_static STATIC ${"+lname+"_esources}\n")
        for z in t: f.write("                             "+z + " \n")
        f.write(")\n")
-     f.write("target_include_directories("+lname+suff+" PRIVATE ${PROJECT_SOURCE_DIR}/include)\n")
+     #f.write("target_include_directories("+lname+suff+" PRIVATE ${PROJECT_SOURCE_DIR}/include)\n")
      f.write("target_include_directories("+lname+suff+" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})\n")
      for inc in includes:
        if os.path.exists(lname+"/"+inc):
@@ -538,7 +537,7 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
      if suff=="":
        f.write("set_target_properties("+lname+"        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME "+output_name(lname)+" SOVERSION "+get_full_so_version(lname)+")\n")
        f.write("set_target_properties("+lname+"        PROPERTIES DEFINE_SYMBOL \"\")\n")
-     f.write("endif()\n")
+     #f.write("endif()\n")
    for inc in installincludes:
      if len(inc)!=0:
        f.write("install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/"+inc+" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/"+lname+"  COMPONENT devel  FILES_MATCHING PATTERN \"*.h\" PATTERN \"*.H\"  PATTERN \"*.deps*\" EXCLUDE   PATTERN \"*.lib*\" EXCLUDE")

@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -26,14 +24,10 @@ creategitinfo(GoSam ../GoSam/)
 list(TRANSFORM GoSam_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../GoSam/")
 list(APPEND GoSam_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(GoSam_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaGoSam SHARED ${SherpaGoSam_esources}
+add_library(SherpaGoSam SHARED 
                              ${GoSam_SOURCES} 
 )
-target_include_directories(SherpaGoSam PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaGoSam PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaGoSam DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaGoSam        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaGoSam SOVERSION 0.0.0)
 set_target_properties(SherpaGoSam        PROPERTIES DEFINE_SYMBOL "")
-endif()

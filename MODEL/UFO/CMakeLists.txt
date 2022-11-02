@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -24,14 +22,10 @@ creategitinfo(UFO ../UFO/)
 list(TRANSFORM UFO_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../UFO/")
 list(APPEND UFO_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(UFO_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(ModelUFO SHARED ${ModelUFO_esources}
+add_library(ModelUFO SHARED 
                              ${UFO_SOURCES} 
 )
-target_include_directories(ModelUFO PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ModelUFO PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ModelUFO DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ModelUFO        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ModelUFO SOVERSION 0.0.0)
 set_target_properties(ModelUFO        PROPERTIES DEFINE_SYMBOL "")
-endif()

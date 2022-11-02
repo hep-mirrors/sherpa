@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
 list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Main_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(HadronsMain SHARED ${HadronsMain_esources}
+add_library(HadronsMain SHARED 
                              ${Main_SOURCES} 
 )
-target_include_directories(HadronsMain PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(HadronsMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS HadronsMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME HadronsMain SOVERSION 0.0.0)
 set_target_properties(HadronsMain        PROPERTIES DEFINE_SYMBOL "")
-endif()

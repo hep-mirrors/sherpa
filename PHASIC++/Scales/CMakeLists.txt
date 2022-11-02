@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -21,14 +19,10 @@ creategitinfo(Scales ../Scales/)
 list(TRANSFORM Scales_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Scales/")
 list(APPEND Scales_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Scales_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(PhasicScales SHARED ${PhasicScales_esources}
+add_library(PhasicScales SHARED 
                              ${Scales_SOURCES} 
 )
-target_include_directories(PhasicScales PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(PhasicScales PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS PhasicScales DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicScales        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicScales SOVERSION 0.0.0)
 set_target_properties(PhasicScales        PROPERTIES DEFINE_SYMBOL "")
-endif()

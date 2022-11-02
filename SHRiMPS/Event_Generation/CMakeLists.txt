@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -20,14 +18,10 @@ creategitinfo(Event_Generation ../Event_Generation/)
 list(TRANSFORM Event_Generation_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Event_Generation/")
 list(APPEND Event_Generation_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Event_Generation_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(ShrimpsEvents SHARED ${ShrimpsEvents_esources}
+add_library(ShrimpsEvents SHARED 
                              ${Event_Generation_SOURCES} 
 )
-target_include_directories(ShrimpsEvents PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ShrimpsEvents PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsEvents DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsEvents        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsEvents SOVERSION 0.0.0)
 set_target_properties(ShrimpsEvents        PROPERTIES DEFINE_SYMBOL "")
-endif()

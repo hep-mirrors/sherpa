@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(GRV ../GRV/)
 list(TRANSFORM GRV_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../GRV/")
 list(APPEND GRV_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(GRV_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(GRVSherpa SHARED ${GRVSherpa_esources}
+add_library(GRVSherpa SHARED 
                              ${GRV_SOURCES} 
 )
-target_include_directories(GRVSherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(GRVSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS GRVSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(GRVSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME GRVSherpa SOVERSION 0.0.0)
 set_target_properties(GRVSherpa        PROPERTIES DEFINE_SYMBOL "")
-endif()

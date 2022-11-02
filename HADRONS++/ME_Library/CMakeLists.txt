@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -20,14 +18,10 @@ creategitinfo(ME_Library ../ME_Library/)
 list(TRANSFORM ME_Library_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../ME_Library/")
 list(APPEND ME_Library_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(ME_Library_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(HadronsMEs SHARED ${HadronsMEs_esources}
+add_library(HadronsMEs SHARED 
                              ${ME_Library_SOURCES} 
 )
-target_include_directories(HadronsMEs PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(HadronsMEs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS HadronsMEs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsMEs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME HadronsMEs SOVERSION 0.0.0)
 set_target_properties(HadronsMEs        PROPERTIES DEFINE_SYMBOL "")
-endif()

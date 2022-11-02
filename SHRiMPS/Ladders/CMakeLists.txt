@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -18,14 +16,10 @@ creategitinfo(Ladders ../Ladders/)
 list(TRANSFORM Ladders_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Ladders/")
 list(APPEND Ladders_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Ladders_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(ShrimpsLadders SHARED ${ShrimpsLadders_esources}
+add_library(ShrimpsLadders SHARED 
                              ${Ladders_SOURCES} 
 )
-target_include_directories(ShrimpsLadders PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ShrimpsLadders PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsLadders DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsLadders        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsLadders SOVERSION 0.0.0)
 set_target_properties(ShrimpsLadders        PROPERTIES DEFINE_SYMBOL "")
-endif()

@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(SoftPhysics ../SoftPhysics/)
 list(TRANSFORM SoftPhysics_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SoftPhysics/")
 list(APPEND SoftPhysics_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(SoftPhysics_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaSoftPhysics SHARED ${SherpaSoftPhysics_esources}
+add_library(SherpaSoftPhysics SHARED 
                              ${SoftPhysics_SOURCES} 
 )
-target_include_directories(SherpaSoftPhysics PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaSoftPhysics PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaSoftPhysics DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSoftPhysics        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaSoftPhysics SOVERSION 0.0.0)
 set_target_properties(SherpaSoftPhysics        PROPERTIES DEFINE_SYMBOL "")
-endif()

@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(PerturbativePhysics ../PerturbativePhysics/)
 list(TRANSFORM PerturbativePhysics_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../PerturbativePhysics/")
 list(APPEND PerturbativePhysics_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(PerturbativePhysics_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaPerturbativePhysics SHARED ${SherpaPerturbativePhysics_esources}
+add_library(SherpaPerturbativePhysics SHARED 
                              ${PerturbativePhysics_SOURCES} 
 )
-target_include_directories(SherpaPerturbativePhysics PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaPerturbativePhysics PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaPerturbativePhysics DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaPerturbativePhysics        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaPerturbativePhysics SOVERSION 0.0.0)
 set_target_properties(SherpaPerturbativePhysics        PROPERTIES DEFINE_SYMBOL "")
-endif()

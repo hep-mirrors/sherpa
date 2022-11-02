@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -26,14 +24,10 @@ creategitinfo(LH_OLE ../LH_OLE/)
 list(TRANSFORM LH_OLE_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../LH_OLE/")
 list(APPEND LH_OLE_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(LH_OLE_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaLHOLE SHARED ${SherpaLHOLE_esources}
+add_library(SherpaLHOLE SHARED 
                              ${LH_OLE_SOURCES} 
 )
-target_include_directories(SherpaLHOLE PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaLHOLE PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaLHOLE DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaLHOLE        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaLHOLE SOVERSION 0.0.0)
 set_target_properties(SherpaLHOLE        PROPERTIES DEFINE_SYMBOL "")
-endif()

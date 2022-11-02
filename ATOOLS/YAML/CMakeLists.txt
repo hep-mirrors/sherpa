@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -39,14 +37,10 @@ set(YAML_yaml-cpp_node_HEADERS convert.h emit.h impl.h iterator.h node.h parse.h
  
 set(YAML_yaml-cpp_node_detail_HEADERS impl.h iterator.h iterator_fwd.h memory.h node.h node_data.h node_iterator.h node_ref.h)
  
-set(YAML_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(ToolsYaml SHARED ${ToolsYaml_esources}
+add_library(ToolsYaml SHARED 
                              ${YAML_SOURCES} 
 )
-target_include_directories(ToolsYaml PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ToolsYaml PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsYaml DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsYaml        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsYaml SOVERSION 0.0.0)
 set_target_properties(ToolsYaml        PROPERTIES DEFINE_SYMBOL "")
-endif()

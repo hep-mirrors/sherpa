@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -20,14 +18,10 @@ creategitinfo(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
 list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Main_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(ShrimpsMain SHARED ${ShrimpsMain_esources}
+add_library(ShrimpsMain SHARED 
                              ${Main_SOURCES} 
 )
-target_include_directories(ShrimpsMain PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ShrimpsMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsMain SOVERSION 0.0.0)
 set_target_properties(ShrimpsMain        PROPERTIES DEFINE_SYMBOL "")
-endif()

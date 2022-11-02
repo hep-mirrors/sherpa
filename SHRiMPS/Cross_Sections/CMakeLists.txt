@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -20,14 +18,10 @@ creategitinfo(Cross_Sections ../Cross_Sections/)
 list(TRANSFORM Cross_Sections_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Cross_Sections/")
 list(APPEND Cross_Sections_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Cross_Sections_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(ShrimpsXsecs SHARED ${ShrimpsXsecs_esources}
+add_library(ShrimpsXsecs SHARED 
                              ${Cross_Sections_SOURCES} 
 )
-target_include_directories(ShrimpsXsecs PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ShrimpsXsecs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ShrimpsXsecs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsXsecs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsXsecs SOVERSION 0.0.0)
 set_target_properties(ShrimpsXsecs        PROPERTIES DEFINE_SYMBOL "")
-endif()

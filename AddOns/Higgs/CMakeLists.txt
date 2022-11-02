@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -22,14 +20,10 @@ creategitinfo(Higgs ../Higgs/)
 list(TRANSFORM Higgs_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Higgs/")
 list(APPEND Higgs_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Higgs_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaHiggs SHARED ${SherpaHiggs_esources}
+add_library(SherpaHiggs SHARED 
                              ${Higgs_SOURCES} 
 )
-target_include_directories(SherpaHiggs PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaHiggs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaHiggs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaHiggs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaHiggs SOVERSION 0.0.0)
 set_target_properties(SherpaHiggs        PROPERTIES DEFINE_SYMBOL "")
-endif()

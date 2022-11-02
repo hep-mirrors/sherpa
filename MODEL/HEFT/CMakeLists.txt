@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(HEFT ../HEFT/)
 list(TRANSFORM HEFT_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../HEFT/")
 list(APPEND HEFT_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(HEFT_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaHEFT SHARED ${SherpaHEFT_esources}
+add_library(SherpaHEFT SHARED 
                              ${HEFT_SOURCES} 
 )
-target_include_directories(SherpaHEFT PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaHEFT PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaHEFT DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaHEFT        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaHEFT SOVERSION 0.0.0)
 set_target_properties(SherpaHEFT        PROPERTIES DEFINE_SYMBOL "")
-endif()

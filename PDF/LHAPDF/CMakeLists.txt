@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -18,14 +16,10 @@ creategitinfo(LHAPDF ../LHAPDF/)
 list(TRANSFORM LHAPDF_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../LHAPDF/")
 list(APPEND LHAPDF_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(LHAPDF_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(LHAPDFSherpa SHARED ${LHAPDFSherpa_esources}
+add_library(LHAPDFSherpa SHARED 
                              ${LHAPDF_SOURCES} 
 )
-target_include_directories(LHAPDFSherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(LHAPDFSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS LHAPDFSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(LHAPDFSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME LHAPDFSherpa SOVERSION 0.0.0)
 set_target_properties(LHAPDFSherpa        PROPERTIES DEFINE_SYMBOL "")
-endif()

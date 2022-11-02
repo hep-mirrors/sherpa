@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -19,14 +17,10 @@ creategitinfo(Explicit ../Explicit/)
 list(TRANSFORM Explicit_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Explicit/")
 list(APPEND Explicit_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Explicit_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(METoolsExplicit SHARED ${METoolsExplicit_esources}
+add_library(METoolsExplicit SHARED 
                              ${Explicit_SOURCES} 
 )
-target_include_directories(METoolsExplicit PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(METoolsExplicit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS METoolsExplicit DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsExplicit        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsExplicit SOVERSION 0.0.0)
 set_target_properties(METoolsExplicit        PROPERTIES DEFINE_SYMBOL "")
-endif()

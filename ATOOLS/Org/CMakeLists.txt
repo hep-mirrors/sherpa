@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -35,17 +33,13 @@ creategitinfo(Org ../Org/)
 list(TRANSFORM Org_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Org/")
 list(APPEND Org_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Org_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(ToolsOrg SHARED ${ToolsOrg_esources}
+add_library(ToolsOrg SHARED 
                              ${Org_SOURCES} 
 )
-target_include_directories(ToolsOrg PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ToolsOrg PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ToolsOrg DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsOrg        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsOrg SOVERSION 0.0.0)
 set_target_properties(ToolsOrg        PROPERTIES DEFINE_SYMBOL "")
-endif()
 
 #if (SHERPA_ENABLE_GZIP)
 target_link_libraries(ToolsOrg PRIVATE ${LIBZIP_LIBRARY})

@@ -1,8 +1,6 @@
 #Manually edited
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -13,7 +11,6 @@
  #pkglib_LTLIBRARIES = libLundTools.la)
 set(PYTHIASOURCES   pyplst.f Lund_Interface.C)
  set(PYTHIAHEADERS  Lund_Wrapper.H Lund_Interface.H)
- set(MD5_EXCLUDE  pythia-6.4.18.f)
  set(GITTAG  SHERPA/LundTools)
  #include ../../git.make)
  if (SHERPA_ENABLE_PYTHIA6)
@@ -30,9 +27,7 @@ set(PYTHIASOURCES   pyplst.f Lund_Interface.C)
  endif()
 list(APPEND LundTools_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(LundTools_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(LundTools SHARED ${LundTools_esources}
+add_library(LundTools SHARED 
                              ${LundTools_SOURCES} 
 )
 target_include_directories(LundTools PRIVATE ${PROJECT_SOURCE_DIR}/include)
@@ -42,4 +37,3 @@ install(TARGETS LundTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONEN
 set_target_properties(LundTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME LundTools SOVERSION 0.0.0)
 set_target_properties(LundTools       PROPERTIES DEFINE_SYMBOL "")
 
-endif()

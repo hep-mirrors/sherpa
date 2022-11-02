@@ -1,8 +1,6 @@
 #Manually edited
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -21,15 +19,11 @@ creategitinfo(GRS ../GRS/)
 list(TRANSFORM GRS_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../GRS/")
 list(APPEND GRS_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(GRS_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(GRSSherpa SHARED ${GRSSherpa_esources}
+add_library(GRSSherpa SHARED 
                              ${GRS_SOURCES} 
 )
-target_include_directories(GRSSherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(GRSSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS GRSSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(GRSSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME GRSSherpa SOVERSION 0.0.0)
 set_target_properties(GRSSherpa        PROPERTIES DEFINE_SYMBOL "")
 target_compile_options(GRSSherpa PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-std=legacy>)
-endif()

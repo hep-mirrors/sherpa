@@ -1,8 +1,6 @@
 
 ########################################################################
-#
 #  Automatically or semiautomaticaly generated, do not edit.
-#
 ########################################################################
 # The following input was used
 # Makefile.am
@@ -21,14 +19,10 @@ creategitinfo(Single_Events ../Single_Events/)
 list(TRANSFORM Single_Events_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Single_Events/")
 list(APPEND Single_Events_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Single_Events_esources )
-if (SHERPA_BUILD_SHARED)
-add_library(SherpaSingleEvents SHARED ${SherpaSingleEvents_esources}
+add_library(SherpaSingleEvents SHARED 
                              ${Single_Events_SOURCES} 
 )
-target_include_directories(SherpaSingleEvents PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(SherpaSingleEvents PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS SherpaSingleEvents DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSingleEvents        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaSingleEvents SOVERSION 0.0.0)
 set_target_properties(SherpaSingleEvents        PROPERTIES DEFINE_SYMBOL "")
-endif()
