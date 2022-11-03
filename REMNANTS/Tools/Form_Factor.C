@@ -4,13 +4,13 @@
 // from scoped settings.
 
 REMNANTS::Form_Factor::Form_Factor() :
-                             m_overlapform(overlap_form::Single_Gaussian),
+                             m_overlapform(overlap_form::code::Single_Gaussian),
                              m_fraction1(1.), m_radius1(1.)
 {}
 
 ATOOLS::Vec4D REMNANTS::Form_Factor::operator()() {
   double radius = m_radius1;
-  if (m_overlapform==overlap_form::Double_Gaussian) {
+  if (m_overlapform==overlap_form::code::Double_Gaussian) {
     double rand = ATOOLS::ran->Get()-ATOOLS::sqr(m_fraction1);
     if (rand>=0.) {
       if ((rand-=ATOOLS::sqr(1-m_fraction1))<=0.) radius = m_radius2;

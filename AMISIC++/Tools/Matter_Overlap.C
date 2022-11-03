@@ -1,7 +1,5 @@
 #include "AMISIC++/Tools/Matter_Overlap.H"
-#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -28,16 +26,15 @@ double Matter_Overlap::operator()(double b) {
   // Matter overlap in two forms available, but only Single_Gaussian fully
   // functional at the moment.
   switch (m_overlapform) {
-  case overlap_form::Single_Gaussian:
+  case overlap_form::code::Single_Gaussian:
     return m_norm * m_norm1 * exp(-b*b/m_radius12);
-  case overlap_form::Double_Gaussian:
+  case overlap_form::code::Double_Gaussian:
   default:
     double b2(b*b);
     return m_norm * (m_norm1 * exp(-b2/m_radius12) +
 		     m_norm2 * exp(-b2/m_radius22) +
 		     m_norm3 * exp(-b2/m_radius32));
   }
-  return 0.;
 }
 
 double Matter_Overlap::SelectB(const bool & mode) const {
@@ -46,12 +43,12 @@ double Matter_Overlap::SelectB(const bool & mode) const {
   //    - for single Gaussian, there is no selection to be made
   //    - for double Gaussian, one of the three radii is picked.
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
-  double b(0), radius;
+  double b, radius;
   switch (m_overlapform) {
-    case overlap_form::Single_Gaussian:
+    case overlap_form::code::Single_Gaussian:
       radius = m_radius1;
       break;
-    case overlap_form::Double_Gaussian:
+    case overlap_form::code::Double_Gaussian:
       double rand = ran->Get();
       if ((rand-=sqr(m_fraction1))<=0.)        radius = m_radius1;
       else if ((rand-=sqr(1-m_fraction1))<=0.) radius = m_radius2;
@@ -72,14 +69,14 @@ void Matter_Overlap::InitializeFormFactors() {
   // functional at the moment.
   m_overlapform = mipars->GetOverlapForm();
   switch (m_overlapform) {
-    case overlap_form::Single_Gaussian:
+    case overlap_form::code::Single_Gaussian:
       m_fraction1 = 1.;
       m_radius1   = (*mipars)("Matter_Radius1");
       m_radius12  = sqr(m_radius1);
       m_norm1     = 1./m_radius12;
       m_bstep     = m_radius1/100.;
       break;
-    case overlap_form::Double_Gaussian:
+    case overlap_form::code::Double_Gaussian:
       m_fraction1 = (*mipars)("Matter_Fraction1");
       m_radius1   = (*mipars)("Matter_Radius1");
       m_radius12  = sqr(m_radius1);
@@ -99,14 +96,14 @@ void Matter_Overlap::CalculateIntegral() {
   // Integral int d^2b O(b), numerator Eq.(32)
   MO_Integrand moint(this);
   Gauss_Integrator integrator(&moint);
-  double bmin = 0., bstep = m_bstep, previous = 0., previous2 = 0., result = 0.;
+  double bmin = 0., bstep = m_bstep, previous, result = 0.;
   do {
     result  += previous = integrator.Integrate(bmin,bmin+bstep,1.e-8,1);
     bmin    += bstep;
   } while (dabs(previous/result)>1.e-10);
   m_bmax     = bmin;
   m_integral = result;
-  msg_Out()<<METHOD<<" for form = "<<m_overlapform<<": "
+  msg_Tracking()<<METHOD<<" for form = "<<m_overlapform<<": "
 	   <<"Integral(num) = "<<m_integral<<", ana = "<<(M_PI*m_norm)<<"\n";
 }
 

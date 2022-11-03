@@ -36,17 +36,12 @@ namespace REMNANTS {
     unsigned int m_beam;
 
     BEAM::Beam_Base  * p_beam;
-    Remnant_Base     * p_partner;    
     ATOOLS::Blob     * p_beamblob;
-    ATOOLS::Vec4D      m_pbeam;
     ATOOLS::Vec4D      m_position;
     ATOOLS::Part_List  m_extracted, m_spectators;
     Colour_Generator * p_colours;
 
-    bool   m_rescale;
-    double m_residualE, m_scale2, m_x;
-
-    long unsigned int m_errors;
+    double m_residualE, m_scale2;
   public:
     Remnant_Base(rtp::code type,unsigned int beam);
     virtual ~Remnant_Base();
@@ -71,10 +66,9 @@ namespace REMNANTS {
     inline ATOOLS::Part_List        * GetSpectators()    { return &m_spectators; }
     inline virtual ATOOLS::Particle * GetRecoiler()      { return nullptr; }
     inline virtual ATOOLS::Particle * GetSpectator()     { return nullptr; }
-    inline void SetPartner(Remnant_Base * partner)       { p_partner = partner; }
     inline void SetBeam(BEAM::Beam_Base * beam)          { p_beam = beam; }
     inline void SetScale2(const double & scale2)         { m_scale2 = scale2; }
-    inline void SetColours(Colour_Generator * cgen)      { p_colours = cgen; } 
+    inline void SetColours(Colour_Generator * cgen)      { p_colours = cgen; }
     inline void SetPosition(const ATOOLS::Vec4D & pos)   { m_position = pos; }
   };
 }

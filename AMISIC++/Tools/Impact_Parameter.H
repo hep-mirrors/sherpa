@@ -29,11 +29,11 @@ namespace AMISIC {
     ~Impact_Parameter();
 
     void   Initialize(const double & xsecratio);
+    void   Update(double xsecratio);
     double SelectB(const double & pt2=-1.);
     double operator()(const double & b);
- 
+
     inline void SetProcesses(MI_Processes * procs) { p_procs = procs; }
-    inline const double & Enhancement() const { return m_enhancement; }
     inline ATOOLS::Vec4D  SelectPositionForScatter(const double & b) const {
       return p_mo->SelectPositionForScatter(b);
     }

@@ -43,7 +43,8 @@ namespace SHERPA {
     void InitAmisic(MODEL::Model_Base *model);
     void InitShrimps(MODEL::Model_Base *model);
   public:
-    MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr);
+    MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr,
+               REMNANTS::Remnant_Handler * remnant_handler);
     ~MI_Handler();
     
     bool InitialiseMPIs(const double & scale);
@@ -59,7 +60,7 @@ namespace SHERPA {
     const double ScaleMax() const;
     const double ImpactParameter() const;
     const ATOOLS::Vec4D SelectPositionForScatter() const;
-    
+
     inline const typeID      & Type() const { return m_type; }
     inline const std::string & Name() const { return m_name; }
     inline const bool        & Done() const { return m_stop; }

@@ -114,7 +114,8 @@ bool Beam_Decorrelator::DefineKinematics() {
   
 bool Beam_Decorrelator::MakeKinematics() {
   // Constructing a kinematics in the c.m. frame
-  double m_kt2 = dabs(m_ktvec.Abs2()), x = m_x;
+  m_kt2 = dabs(m_ktvec.Abs2());
+  double x = m_x;
   double y     = m_kt2/(m_Q2*x);
   double alpha, beta;
   if (m_mspect2<1.e-12) { 

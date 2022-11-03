@@ -13,7 +13,7 @@ private:
 
 public:
   SASGph_Fortran_Interface(const ATOOLS::Flavour, const std::string _set);
-  PDF_Base *GetCopy();
+  PDF_Base *GetCopy() override;
 
   void CalculateSpec(const double &, const double &) override;
 };

@@ -246,9 +246,13 @@ int Shower::MakeKinematics
       stat=m_kinII.MakeKinematics(split,mi2,mc2,flc,pj);
     }
   }
+  Parton *pi(new Parton((stype&1)?fla:flb,
+                        split->LT()*split->Momentum(),
+                        split->GetType()));
+  if (stype&1) pi->SetBeam(split->Beam());
   if (stat==1) {
     if (split->GetType()==pst::IS &&
-	RemnantTest(split,&split->LT())==-1) stat=-1;
+	RemnantTest(pi,&split->LT())==-1) stat=-1;
     if (split->GetSpect()->GetType()==pst::IS &&
 	RemnantTest(split->GetSpect(),
 		    split->GetType()==pst::IS?
@@ -258,11 +262,9 @@ int Shower::MakeKinematics
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
     delete pj;
+    delete pi;
     return stat;
   }
-  Parton *pi(new Parton((stype&1)?fla:flb,
-			split->LT()*split->Momentum(),
-			split->GetType()));
   pi->SetMass2(mi2);
   pi->SetSing(split->GetSing());
   pi->SetId(split->Id());
@@ -270,7 +272,6 @@ int Shower::MakeKinematics
   pi->SetKin(split->Kin());
   pj->SetKin(m_kscheme);
   pi->SetLT(split->LT());
-  if (stype&1) pi->SetBeam(split->Beam());
   SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->AddParton(pj);
   if (stype) split->GetSing()->BoostAllFS(pi,pj,spect);

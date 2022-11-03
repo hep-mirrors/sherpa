@@ -17,15 +17,15 @@ using namespace ATOOLS;
 using namespace std;
 
 MI_Handler::MI_Handler(MODEL::Model_Base *model,
-		       PDF::ISR_Handler *isr) :
-  p_isr(isr), p_amisic(NULL), p_shrimps(NULL), 
-  p_ampl(NULL), p_proc(NULL), p_shower(NULL),
-  m_stop(false), m_type(typeID::none), m_name("None")
+		       PDF::ISR_Handler *isr,
+                       REMNANTS::Remnant_Handler * remnant_handler) :
+  p_isr(isr),p_remnants(remnant_handler),p_amisic(NULL),p_shrimps(NULL), p_ampl(NULL),
+  p_proc(NULL),p_shower(NULL),m_stop(false),m_type(typeID::none),m_name("None")
 {
   Settings& s = Settings::GetMainSettings();
   m_name      = s["MI_HANDLER"].SetDefault("Amisic").UseNoneReplacements().Get<string>();
   string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
-  if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) {
+  if (isr->Mode() != PDF::isrmode::hadron_hadron) {
     m_name = "None";
   }
   if (m_name==string("Amisic"))  InitAmisic(model);
@@ -43,9 +43,9 @@ void MI_Handler::InitAmisic(MODEL::Model_Base *model)
 {
   p_amisic    = new AMISIC::Amisic();
   p_amisic->SetOutputPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
-  if (!p_amisic->Initialize(model,p_isr)) {
-    msg_Error()<<METHOD<<"(): Cannot initialize MPI generator.\n"
-	       <<"   Continue without MPIs and hope for the best.\n";
+  if (!p_amisic->Initialize(model,p_isr,p_remnants)) {
+    msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. \n"
+	       <<"Continue without MPIs and hope for the best.\n";
     delete p_amisic; p_amisic=NULL;
   }
   else m_type = typeID::amisic;
@@ -59,7 +59,10 @@ void MI_Handler::InitShrimps(MODEL::Model_Base *model)
 
 bool MI_Handler::InitialiseMPIs(const double & scale) 
 {
-  if (m_type==typeID::amisic) return p_amisic->InitMPIs(scale);
+  if (m_type==typeID::amisic) {
+    p_amisic->Update(p_isr);
+    return p_amisic->InitMPIs(scale);
+  }
   return true;
 }
 
@@ -69,8 +72,8 @@ const Vec4D MI_Handler::SelectPositionForScatter() const {
 }
 
 void MI_Handler::SetMaxEnergies(const double & E1,const double & E2) {
-  if (m_type==typeID::amisic)  p_amisic->SetMaxEnergies(E1,E2); 
-  if (m_type==typeID::shrimps) p_shrimps->SetMaxEnergies(E1,E2); 
+  if (m_type==typeID::amisic)  p_amisic->SetMaxEnergies(E1,E2);
+  if (m_type==typeID::shrimps) p_shrimps->SetMaxEnergies(E1,E2);
 }
 
 void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {

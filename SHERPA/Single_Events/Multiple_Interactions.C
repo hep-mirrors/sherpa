@@ -21,7 +21,6 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
   m_name = std::string("Multiple_Interactions:")+p_mihandler->Name();
   m_type = eph::Perturbative;
   if (p_mihandler->Type()!=0) {
-    m_ecms = sqrt(p_mihandler->ISRHandler()->Pole());
     for (size_t i=0;i<2;i++) p_remnants[i] = mihandler->Remnants()->GetRemnant(i);
     if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
       THROW(fatal_error,"No beam remnant handler found.");
@@ -46,7 +45,16 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
   // CheckBlobList makes sure a new interaction can be added.
   // If its the first then a completely new chain of 2->2 scatters 
   // must be initialised.  This is steered by a flag m_newevent, which is 
-  // set to true in the CleanUp() method. 
+  // set to true in the CleanUp() method.
+  if (m_newevent) {
+    // The flag m_newevent is then set to false after the bloblist and the
+    // energies have been checked, i.e. in the InitNewEvent function.
+    // The emax has to be set here (instead of e.g. the CleanUp()) to ensure
+    // that the correct energy is taken in case of EPA-approximated beams.
+    for (short unsigned int i = 0; i < 2; ++i) {
+      m_emax[i] = p_remnants[i]->GetBeam()->OutMomentum()[0];
+    }
+  }
   if (!CheckBlobList() || !InitNewEvent() || !MIKinematics()) return m_result;
   // Possibly switch to new PDF and alphaS.
   // TODO: will have to check that this happens.
@@ -62,8 +70,8 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
     // the extra parton.
     for (size_t i=0;i<(size_t)p_lastblob->NInP();++i) {
       if (!p_remnants[i]->TestExtract(p_lastblob->InParticle(i))) {
-	delete p_lastblob;
-	return Return_Value::Retry_Event;
+        delete p_lastblob;
+        return Return_Value::Retry_Event;
       }
     }
     // If it is a MinBias event, the first blob is a dummy soft collision blob.
@@ -120,7 +128,6 @@ bool Multiple_Interactions::CheckBlobList()
 void Multiple_Interactions::ResetIS() {
   if (p_mihandler->Type()!=0) {
     for (short unsigned int i=0;i<2;++i) {
-      m_emax[i] = p_remnants[i]->GetBeam()->Energy();
       p_remnants[i]->Reset();
       p_mihandler->ISRHandler()->ResetRescaleFactor(i);
       p_mihandler->ISRHandler()->Reset(i);
@@ -157,11 +164,11 @@ bool Multiple_Interactions::ExtractISInfo(Blob * blob) {
     size_t beam = particle->Beam();
     if (!p_remnants[beam]->TestExtract(particle)) {
       if (!blob->IsConnectedTo(btp::Signal_Process)) {
-	p_bloblist->DeleteConnected(blob);
-	m_result = Return_Value::Retry_Phase;
+        p_bloblist->DeleteConnected(blob);
+        m_result = Return_Value::Retry_Phase;
       }
       else {
-	m_result = Return_Value::Retry_Event;
+        m_result = Return_Value::Retry_Event;
       }
       return false;
     }
@@ -222,7 +229,7 @@ void Multiple_Interactions::InitMinBiasEvent() {
 void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
   MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
   for (size_t i=0;i<2;i++) {
-    double x_resc = m_emax[i]/p_remnants[i]->GetBeam()->Energy();
+    double x_resc = m_emax[i]/p_remnants[i]->GetBeam()->OutMomentum()[0];
     p_mihandler->ISRHandler()->SetRescaleFactor(x_resc,i);
   }
 }
