@@ -293,7 +293,13 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
           D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
           D->SetParticle(origparts[i]);
         }
-        if (amps->Contains(origparts[i]) && (origparts[i]->Flav().Kfcode()!=kf_tau || Flavour(kf_tau).IsStable())) {
+        if (amps->Contains(origparts[i]) &&
+            // Contract tau spins here only if they are globally stable or decayed here,
+            // i.e. not in hard decays if taus will be decayed in hadron decays
+            // (this is relevant e.g. for tttautau)
+            (origparts[i]->Flav().Kfcode()!=kf_tau ||
+             Flavour(kf_tau).IsStable() ||
+             Decays(Flavour(kf_tau)))) {
           DEBUG_INFO("contracting with D["<<D->Particle()<<"]");
           amps->Contract(D);
         }
