@@ -292,7 +292,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     if (!m_fin_opt && wannabreak && m_nopt>p_psh->Stats().size())
       m_nopt=p_psh->Stats().size();
     if (wannabreak && p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
-    if (p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt) return true;
+    if (p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt && m_stopopt!=0) return true;
   }
   return false;
 }
