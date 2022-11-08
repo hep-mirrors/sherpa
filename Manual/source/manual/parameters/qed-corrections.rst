@@ -164,3 +164,20 @@ QED Corrections to Hadron Decays
 
 If the Photons module is switched on, all hadron decays are corrected for higher
 order QED effects.
+
+.. _NNLO QED and NLO EW Corrections to Decays:
+
+NNLO QED and NLO EW Corrections
+===============================
+
+The inclusion of NNLO QED and NLO EW ME corrections
+can be applied to leptonically decaying bosons
+with the YFS framework :cite:`Krauss:2018djz`.
+By default, these corrections are disabled and 
+they can be enable during configuration with
+:option:`--enable-yfsnnlo`. The NNLO QED 
+corrections can be included with the switch
+:option:`YFS:NNLO_QED: 1`. The NLO EW can
+be included by setting :option:`EW_CORRECTIONS: 1`.
+
+
