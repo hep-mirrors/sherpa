@@ -2,9 +2,13 @@ SUBDIRS = yaml-cpp
 
 pkglib_LTLIBRARIES = libToolsYaml.la
 
+GITTAG = ATOOLS/YAML
+include ../../git.make
+
 EXTRA_DIST = yaml-cpp
 
 libToolsYaml_la_SOURCES = \
+			  Git_Info.C \
 			  binary.cpp \
 			  convert.cpp \
 			  depthguard.cpp \

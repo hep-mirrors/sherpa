@@ -4,6 +4,7 @@ GITTAG = RECONNECTIONS/Main
 include ../../git.make
 
 libReconnections_la_SOURCES =	\
+			Git_Info.C \
 			Reconnection_Handler.C \
 			Reconnection_Base.C \
 			Reconnect_By_Singlet.C \
