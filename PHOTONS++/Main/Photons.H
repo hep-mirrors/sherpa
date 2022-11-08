@@ -67,6 +67,7 @@ namespace PHOTONS {
     static bool                 s_checkfirst;
     static int                  s_ffrecscheme;
     static int                  s_firecscheme;
+    static int                  s_limit;
 #ifdef PHOTONS_DEBUG
     static std::string          s_histo_base_name;
     static ATOOLS::Histogram_2D s_histo_dipole;

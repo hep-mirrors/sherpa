@@ -27,7 +27,8 @@ PHOTONS_ME_Base::PHOTONS_ME_Base(const Particle_Vector_Vector& pvv) :
   m_ew(Photons::s_ew_corr),
   m_ew_scheme(Photons::s_ew_scheme),
   m_nnlo_qed(Photons::s_nnlo_qed),
-  m_dev(Photons::s_dev), m_xi(Photons::s_xi)
+  m_dev(Photons::s_dev), m_xi(Photons::s_xi),
+  m_limit(Photons::s_limit)
 {
   double  MW  = Flavour(kf_Wplus).Mass();
   double  MZ  = Flavour(kf_Z).Mass();

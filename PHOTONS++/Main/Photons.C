@@ -61,6 +61,7 @@ double PHOTONS::Photons::s_dev                  = 0.1;
 int    PHOTONS::Photons::s_ew_scheme            = 2;
 int    PHOTONS::Photons::s_ew_corr              = 1;
 int    PHOTONS::Photons::s_nnlo_qed             = 0;
+int    PHOTONS::Photons::s_limit                = 0;
 bool   PHOTONS::Photons::s_userunningparameters = false;
 
 #ifdef PHOTONS_DEBUG
@@ -141,6 +142,8 @@ Photons::Photons() :
   s_ffrecscheme   = s["FF_RECOIL_SCHEME"].Get<int>();
   s_firecscheme   = s["FI_RECOIL_SCHEME"].Get<int>();
   s_accu          = sqrt(rpa->gen.Accu());
+   // Calculate MEs in limit ml^2 << s (only available for some MEs)
+  s_limit         = s["SMALL_MASS_LIMIT"].Get<int>();
 #ifdef PHOTONS_DEBUG
   s_histo_base_name = s["HISTO_BASE_NAME"].Get<std::string>();
 #endif
@@ -224,6 +227,7 @@ void Photons::RegisterDefaults()
   s["FF_RECOIL_SCHEME"].SetDefault(2);
   s["FI_RECOIL_SCHEME"].SetDefault(2);
   s["HISTO_BASE_NAME"].SetDefault("weights");
+  s["SMALL_MASS_LIMIT"].SetDefault(0);
 }
 
 bool Photons::AddRadiation(Blob * blob)

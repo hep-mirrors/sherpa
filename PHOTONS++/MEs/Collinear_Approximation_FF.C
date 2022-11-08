@@ -228,7 +228,7 @@ double Collinear_Approximation_FF::Dmod(unsigned int i, unsigned int j, unsigned
   else if (m_newdipole[i]->Flav().IntSpin() == 3) {
     return 0.;
   }
-  return 0.; // Not sure if this is correct! A.Price
+  return 0.;
 }
  
  double Collinear_Approximation_FF::GetBeta_1_2(unsigned int a) {
