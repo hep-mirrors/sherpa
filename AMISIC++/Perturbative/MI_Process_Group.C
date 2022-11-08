@@ -1,9 +1,7 @@
 #include "AMISIC++/Perturbative/MI_Process_Group.H"
 #include "AMISIC++/Perturbative/QCD_Processes.H"
 #include "AMISIC++/Perturbative/QED_Processes.H"
-#include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Message.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -41,18 +39,20 @@ MI_Process_Group::~MI_Process_Group() {
 double MI_Process_Group::
 operator()(const double & shat,const double & that,const double & uhat) {
   PreCalculate(shat,that,uhat);
-  double tot  = 0., xs;
+  double tot  = 0.,xs;
   for (list<MI_Process * >::iterator mit=m_processes.begin();
        mit!=m_processes.end();mit++) {
     tot += xs = ( p_pdf[0]->GetXPDF((*mit)->Flav(0)) *
-		  p_pdf[1]->GetXPDF((*mit)->Flav(1)) ) * (**mit)();
+            p_pdf[1]->GetXPDF((*mit)->Flav(1)) ) * (**mit)();
   }
-  //msg_Out()<<"Add dSigma("<<Name()<<", scale = "<<sqrt(m_scale)<<") = "
-  //	   <<m_pref/sqr(shat)<<" * "<<Coupling(Scale(m_scale))<<" * "<<SoftCorrection(m_scale)<<" * "<<xs
-  //	   <<" --> tot = "
-  //	   <<(m_pref/sqr(shat) * Coupling(Scale(m_scale)) * SoftCorrection(m_scale)) * tot<<"\n";
-  return m_lastxs =
-    m_pref/sqr(shat) * Coupling(Scale(m_scale)) * SoftCorrection(m_scale) * tot;
+  msg_Debugging()<<"Add dSigma("<<Name()<<", scale = "<<sqrt(m_scale)<<") = "
+            <<m_pref/sqr(shat)<<" * "<<Coupling(Scale(m_scale))
+            <<" * "<<SoftCorrection(m_scale)<<" * "<<xs<<" --> tot = "
+            <<(m_pref/sqr(shat) * Coupling(Scale(m_scale)) * SoftCorrection(m_scale)) * tot
+            <<"\n";
+  return m_lastxs = m_pref/sqr(shat) *
+                    Coupling(Scale(m_scale)) *
+                    SoftCorrection(m_scale) * tot;
 }
 
 double MI_Process_Group::PreCalculate(const double & shat,const double & that,
@@ -75,9 +75,9 @@ double MI_Process_Group::SoftCorrection(const double & pt2) const {
 double MI_Process_Group::Scale(const double & pt2) const {
   // Default scale, including an IR regularisation - maybe we should get more choices.
   switch (m_muR_scheme) {
-  case scale_scheme::PT_with_Raps:
+  case scale_scheme::code::PT_with_Raps:
     exit(1);
-  case scale_scheme::PT:
+  case scale_scheme::code::PT:
   default:
     return (pt2+m_pt02);
   }
@@ -93,20 +93,19 @@ void MI_Process_Group::Output() const {
 MI_Process * MI_Process_Group::SelectProcess() {
   // Selects a process according to the relative differential cross sections
   // at the given kinematic configuration.
-  double tot = 0., xs;
+  double tot = 0.;
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
        mipit!=m_processes.end();mipit++) {
     MI_Process * mip = (*mipit);
-    tot += xs = (p_pdf[0]->GetXPDF(mip->Flav(0)) *
+    tot += (p_pdf[0]->GetXPDF(mip->Flav(0)) *
 		 p_pdf[1]->GetXPDF(mip->Flav(1)) * (*mip)());
   }
   tot *= ran->Get();
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
        mipit!=m_processes.end();mipit++) {
-    MI_Process * mip = (*mipit);
-    tot -= (p_pdf[0]->GetXPDF(mip->Flav(0)) *
-	    p_pdf[1]->GetXPDF(mip->Flav(1)) * (*mip)());
-    if (tot<=0.) return mip;
+    tot -= (p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
+	    p_pdf[1]->GetXPDF((*mipit)->Flav(1)) * (**mipit)());
+    if (tot<=0.) return &(**mipit);
   }
   return m_processes.back();
 }
@@ -252,9 +251,9 @@ MI_Process * MI_QQ_Processes::SelectProcess() {
   pdf *= ran->Get();
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
        mipit!=m_processes.end();mipit++) {
-    MI_Process * mip = (*mipit);
-    pdf -= p_pdf[0]->GetXPDF(mip->Flav(0)) * p_pdf[1]->GetXPDF(mip->Flav(1));
-    if (pdf<=0.) return mip;
+    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
+           p_pdf[1]->GetXPDF((*mipit)->Flav(1));
+    if (pdf<=0.) return &(**mipit);
   }
   return m_processes.back();
 }
@@ -325,9 +324,9 @@ MI_Process * MI_QG_Processes::SelectProcess() {
   pdf *= ran->Get();
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
        mipit!=m_processes.end();mipit++) {
-    MI_Process * mip = (*mipit);
-    pdf -= p_pdf[0]->GetXPDF(mip->Flav(0))*p_pdf[1]->GetXPDF(mip->Flav(1));
-    if (pdf<=0.) return mip;
+    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
+           p_pdf[1]->GetXPDF((*mipit)->Flav(1));
+    if (pdf<=0.) return &(**mipit);
   }
   return m_processes.back();
 }
@@ -408,9 +407,9 @@ MI_Process * MI_Q1Q2_Processes::SelectProcess() {
   pdf *= ran->Get();
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
        mipit!=m_processes.end();mipit++) {
-    MI_Process * mip = (*mipit);
-    pdf -= p_pdf[0]->GetXPDF(mip->Flav(0))*p_pdf[1]->GetXPDF(mip->Flav(1));
-    if (pdf<=0.) return mip;
+    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
+           p_pdf[1]->GetXPDF((*mipit)->Flav(1));
+    if (pdf<=0.) return &(**mipit);
   }
   return m_processes.back();
 }
@@ -484,10 +483,11 @@ MI_Process * MI_QG_QGamma_Processes::SelectProcess() {
   pdf *= ran->Get();
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
        mipit!=m_processes.end();mipit++) {
-    MI_Process * mip = (*mipit);
-    pdf -= p_pdf[0]->GetXPDF(mip->Flav(0))*p_pdf[1]->GetXPDF(mip->Flav(1)) *
-      sqr(mip->Flav(0).IsQuark()?mip->Flav(0).Charge():mip->Flav(1).Charge());
-    if (pdf<=0.) return mip;
+    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
+           p_pdf[1]->GetXPDF((*mipit)->Flav(1)) *
+           sqr((*mipit)->Flav(0).IsQuark()?(*mipit)->Flav(0).Charge()
+                                           :(*mipit)->Flav(1).Charge());
+    if (pdf<=0.) return &(**mipit);
   }
   return m_processes.back();
 }
@@ -533,10 +533,10 @@ MI_Process * MI_QQ_GGamma_Processes::SelectProcess() {
   pdf *= ran->Get();
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
        mipit!=m_processes.end();mipit++) {
-    MI_Process * mip = (*mipit);
-    pdf -= p_pdf[0]->GetXPDF(mip->Flav(0))*p_pdf[1]->GetXPDF(mip->Flav(1)) *
-      sqr(mip->Flav(0).Charge());
-    if (pdf<=0.) return mip;
+    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
+           p_pdf[1]->GetXPDF((*mipit)->Flav(1)) *
+           sqr((*mipit)->Flav(0).Charge());
+    if (pdf<=0.) return &(**mipit);
   }
   return m_processes.back();
 }

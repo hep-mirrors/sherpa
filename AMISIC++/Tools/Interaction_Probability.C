@@ -12,12 +12,19 @@ using namespace ATOOLS;
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019.
 
 Interaction_Probability::Interaction_Probability() :
-  p_mo(new Matter_Overlap()), m_prefK(1.), m_integral(0.)
+  p_mo(new Matter_Overlap()), m_prefK(1.), m_integral(0.),m_suppress_output(false)
 {}
 
 void Interaction_Probability::Initialize(const double & xsecratio) {
   p_mo->Initialize();
-  m_bmax = p_mo->Bmax();
+  FixPrefactor(xsecratio);
+  CalculateOExpValue();
+}
+
+void Interaction_Probability::Update(double xsecratio) {
+  // this function here is called only iff the CMS energy is varied, ie. for
+  // EPA photons. In that case, we don't want to flood the output with messages
+  m_suppress_output = true;
   FixPrefactor(xsecratio);
   CalculateOExpValue();
 }
@@ -45,7 +52,8 @@ void Interaction_Probability::CalculateOExpValue() {
   O_ExpV_Integrand oexpvint(this);
   Gauss_Integrator integrator(&oexpvint);
   m_oexpvalue = integrator.Integrate(0.,p_mo->Bmax(),1.e-8,1)/m_integral;
-  msg_Out()<<METHOD<<" yields "<<m_oexpvalue<<" for k = "<<m_prefK<<".\n";
+  if (!m_suppress_output)
+    msg_Out()<<METHOD<<" yields "<<m_oexpvalue<<" for k = "<<m_prefK<<".\n";
 }
 
 bool Interaction_Probability::FixPrefactor(const double & xsecratio) {
@@ -61,15 +69,17 @@ bool Interaction_Probability::FixPrefactor(const double & xsecratio) {
   CalculateIntegral();
   double reslow  = faclow * p_mo->Integral()/m_integral;
   double fachigh = 50., reshigh, deltafac, deltares;
-  msg_Out()<<"Start iteration for int(overlap) = "
+  if (!m_suppress_output)
+    msg_Tracking()<<"Start iteration for int(overlap) = "
 	   <<p_mo->Integral()<<" aiming for ratio "<<xsecratio<<"\n";
   do {
     SetPrefactor(fachigh);
     CalculateIntegral();
     reshigh  = fachigh * p_mo->Integral()/m_integral;
-    msg_Out()<<"k = ["<<faclow<<", "<<fachigh<<"] --> "
-	     <<"res = ["<<reslow<<", "<<reshigh
-	     <<"] from integral = "<<m_integral<<".\n";
+    if (!m_suppress_output)
+      msg_Out()<<"k = ["<<faclow<<", "<<fachigh<<"] --> "
+                <<"res = ["<<reslow<<", "<<reshigh
+                <<"] from integral = "<<m_integral<<".\n";
     deltafac = fachigh-faclow;
     deltares = reshigh-reslow;
     faclow   = fachigh;
@@ -78,8 +88,9 @@ bool Interaction_Probability::FixPrefactor(const double & xsecratio) {
   } while (dabs(1.-reshigh/xsecratio)>1.e-8);
   SetPrefactor(fachigh);
   CalculateIntegral();
-  msg_Out()<<"==> geometric rescaling factor = "<<m_prefK<<" yields "
-	   <<"sigma/sigmaND = "<<(m_prefK*p_mo->Integral()/m_integral)<<".\n";
+  if (!m_suppress_output)
+    msg_Tracking()<<"==> geometric rescaling factor = "<<m_prefK<<" yields "
+                   <<"sigma/sigmaND = "<<(m_prefK*p_mo->Integral()/m_integral)<<".\n";
   CalculateBNorm();
   return true; 
 }

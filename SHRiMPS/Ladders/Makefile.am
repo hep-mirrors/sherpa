@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libShrimpsLadders.la
 
+GITTAG = SHRiMPS/Ladders
+include ../../git.make
+
 libShrimpsLadders_la_SOURCES = \
+			Git_Info.C \
 			Ladder_Particle.C \
 			T_Prop.C \
 			Ladder.C \

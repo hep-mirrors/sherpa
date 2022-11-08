@@ -23,10 +23,9 @@ namespace REMNANTS {
 		     MassCrit> Singlets;
   private:
     std::list<int>     m_cols[2][2];
-    std::set<int>      m_vetoed[2][2], m_vetoes;
+    std::set<int>      m_vetoed[2][2];
     Remnant_Base     * p_remnants[2];
-    ATOOLS::Blob     * p_softblob;
-    ATOOLS::Particle * p_inparts[2], * p_trip, * p_anti;
+    ATOOLS::Particle * p_inparts[2];
 
     
     bool   TChannelColourFlows();
@@ -51,7 +50,6 @@ namespace REMNANTS {
 
     void Initialize(Remnant_Handler * remnants);
     void ConnectColours(ATOOLS::Blob *const showerblob);
-    bool Compensate();
     void AddColour(const size_t & beam,const size_t & pos,
 		   ATOOLS::Particle * part);
     int  NextColour(const size_t & beam,const size_t & pos);

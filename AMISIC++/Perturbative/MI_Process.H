@@ -19,7 +19,7 @@ namespace AMISIC {
     std::vector<double>            m_masses, m_masses2;
   public:
     XS_Base();
-    XS_Base(const std::vector<double> & masses);
+    explicit XS_Base(const std::vector<double> & masses);
     virtual ~XS_Base();
     
     virtual void Calc(const double & s,const double & t,const double & u)=0;
@@ -45,17 +45,17 @@ namespace AMISIC {
     std::string                  m_name;
     ATOOLS::Momenta_Stretcher    m_stretcher;
     std::vector<ATOOLS::Flavour> m_flavs;
-    std::vector<double>          m_masses, m_PSmasses, m_masses2;
+    std::vector<double>          m_masses, m_masses2;
     std::vector<ATOOLS::Vec4D>   m_momenta;
     XS_Base   * p_me2;
     double      m_emin;
-    bool        m_massless, m_masslessIS;
+    bool        m_masslessIS;
 
     bool AllowedKinematics(const double & Ehat);
     void MasslessKinematics(const double & pt2,const double & phi,
 			    const double & y3,const double & y4);
   public:
-    MI_Process(const std::vector<ATOOLS::Flavour> & flavs);
+    explicit MI_Process(const std::vector<ATOOLS::Flavour> & flavs);
     ~MI_Process();
 
     bool MakeKinematics(const double & pt2,const double & y3,const double & y4,
@@ -65,8 +65,11 @@ namespace AMISIC {
     inline const ATOOLS::Flavour & Flav(const size_t & i) const {
       return m_flavs[i];
     }
+    inline const ATOOLS::Vec4D & Momentum(size_t i) const {
+      return m_momenta[i];
+    }
     inline void SetME2(XS_Base * me2) { p_me2 = me2; }
-    inline const double operator()() const { return (*p_me2)(); }
+    inline double operator()() const { return (*p_me2)(); }
     inline bool SetColours() const { return p_me2->SetColours(m_flavs); }    
     inline const std::string & Name() const { return m_name; }
   };

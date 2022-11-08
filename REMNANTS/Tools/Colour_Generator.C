@@ -1,8 +1,6 @@
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
-#include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Message.H"
 #include <list>
 #include <set>
 

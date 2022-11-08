@@ -15,7 +15,7 @@ namespace AMISIC {
     std::string        m_name;
     scale_scheme::code m_muR_scheme;
     double             m_muR_fac, m_muF_fac;
-    double             m_lastxs, m_pt02, m_muRfac, m_scale, m_pref;
+    double             m_lastxs, m_pt02, m_scale, m_pref;
 
     MODEL::Running_AlphaS   * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
@@ -46,7 +46,6 @@ namespace AMISIC {
     }
     inline void SetAlphaS(MODEL::Running_AlphaS * alpS)  { p_alphaS = alpS; }
     inline void SetAlpha(MODEL::Running_AlphaQED  * alp) { p_alpha  = alp; }
-    inline void SetPT02(const double & pt02)             { m_pt02 = pt02; }
     inline void SetScale(const double & scale)           { m_scale = scale; }
   };
 

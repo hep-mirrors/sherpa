@@ -3,7 +3,6 @@
 #include "EXTRA_XS/Main/Single_Process.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace AMISIC;
@@ -12,9 +11,10 @@ using namespace PHASIC;
 using namespace std;
 
 
-MI_Processes::MI_Processes() : ME_Generator_Base("Amisic::Processes"),
-			       m_ptmax2(1.e12), m_sigmaND(1.), m_integral(0.),
-			       m_test(true) {}
+MI_Processes::MI_Processes(bool variable_s)
+    : ME_Generator_Base("Amisic::Processes"),
+      m_ptmax2(1.e12), m_sigmaND(1.), m_integral(0.), m_variable_s(variable_s),
+      m_test(false) {}
 
 MI_Processes::~MI_Processes() {
   while (!m_groups.empty()) {
@@ -28,12 +28,12 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
 			      BEAM::Beam_Spectra_Handler *const beam,
 			      PDF::ISR_Handler *const isr) {
   // Get PDFs and couplings
-  p_model     = model;
   p_isr       = isr;
   m_muFfac    = sqr((*mipars)("FacScale_Factor"));
   for (size_t i=0;i<2;i++) {
     p_pdf[i]  = p_isr->PDF(i);
-    m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin()); }
+    m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
+  }
   p_alphaS    = dynamic_cast<MODEL::Running_AlphaS *>
     (model->GetScalarFunction("alpha_S"));
   p_alpha     = dynamic_cast<MODEL::Running_AlphaQED *>
@@ -42,10 +42,13 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   // - pt_0, the IR regulator in the propagator and in the strong coupling
   // - pt_min, the IR cut-off for the 2->2 scatters
   // - Ecms, the cms energy of the hadron collision
-  m_pt0      = (*mipars)("pt_0");   m_pt02   = m_pt0*m_pt0;
-  m_ptmin    = (*mipars)("pt_min"); m_ptmin2 = m_ptmin*m_ptmin;
-  m_ecms     = rpa->gen.Ecms();     m_S      = m_ecms*m_ecms;
-  m_ptmax2   = sqr(m_ecms/2.);
+  m_pt0         = (*mipars)("pt_0");
+  m_pt02        = m_pt0*m_pt0;
+  m_ptmin       = (*mipars)("pt_min");
+  m_ptmin2      = m_ptmin*m_ptmin;
+  m_ecms        = rpa->gen.Ecms();
+  m_S = m_S_lab = m_ecms*m_ecms;
+  m_ptmax2      = sqr(m_ecms/2.);
   // will have to make this part of an external input scheme
   m_scale_scheme   = "MPI"; 
   m_kfactor_scheme = "MPI";
@@ -56,8 +59,9 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   // two outgoing particles with MC_points points.  This trick is borrowed
   // from Sjostrand's implementation, as explicit integration will be too slow.
   // 10000 points will yield errors of about 1%.
-  m_nbins    = int((*mipars)("nPT_bins"));
-  m_MCpoints = int((*mipars)("nMC_points"));
+  m_nbins    = size_t((*mipars)("nPT_bins"));
+  m_MCpoints = size_t((*mipars)("nMC_points"));
+  m_sbins    = size_t((*mipars)("nS_bins"));
   m_intbins.resize(m_nbins);
   m_diffbins.resize(m_nbins);
   m_pt2step  = log(m_S/(4.*m_ptmin2))/double(m_nbins);
@@ -68,8 +72,9 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   m_massmode       = 1;
   SetPSMasses();
   // Now initialize the 2->2 scatters and prepare the integral for the
-  // "Sudakov form factor", Eq. (37) of Sjostrand-van der Zijl
-  return (InitializeAllProcesses() && PrepareSudakovFactor());
+  // "Sudakov form factor", Eq. (37) of Sjostrand-van Zijl
+  InitializeAllProcesses();
+  return m_variable_s ? FillCaches() : PrepareSudakovFactor();
 }
 
 bool MI_Processes::InitializeAllProcesses() {
@@ -130,29 +135,6 @@ void MI_Processes::CalcPDFs(const double & x1,const double & x2,
   p_pdf[1]->Calculate(x2,Max(m_muFfac*scale,p_pdf[1]->Q2Min()));
 }
 
-const double MI_Processes::XSec(const Vec4D_Vector & momenta) {
-  // Return the total parton-level scattering cross section, summed over all
-  // contributing processes.  In contrast to the other XSec method the input
-  // here are the momenta and not the Mandelstam variables, and the PDFs are
-  // calculated here.
-  double shat = (momenta[0]+momenta[1]).Abs2();
-  double that = (momenta[0]-momenta[2]).Abs2();
-  double uhat = (momenta[0]-momenta[3]).Abs2();
-  double x1   = 2.*momenta[0][0]/m_ecms, x2 = 2.*momenta[1][0]/m_ecms;  
-  double pt2  = that*uhat/shat, scale = pt2;
-  if (x1<m_xmin[0] || x2<m_xmin[1]) return 0.;
-  CalcPDFs(x1,x2,scale);
-  return (*this)(shat,that,uhat);
-}
-
-const double MI_Processes::XSec(const double & shat,const double & that,
-				const double & uhat) {
-  // Return the total parton-level scattering cross section, summed over all
-  // contributing processes.  This implicitly assumes that the PDFs have already
-  // been set.  It seems this could be a doubling of methods - will have to check.
-  return (*this)(shat,that,uhat);
-}
-
 const double MI_Processes::operator()(const double & shat,const double & that,
 				      const double & uhat) {
   // Return the total parton-level scattering cross section, summed over all
@@ -189,21 +171,18 @@ bool MI_Processes::PrepareSudakovFactor() {
   // where pt_nmax^2 = s/4, the maximal pt^2.
   // N.B.: I use left steps, thereby somewhat overestimating the integral, this
   // could be improved by going trapezoid or similar.
-  //double xTlast = m_xTmin*exp(m_xTstep*m_nbins), sigmalast = 0.;
-  //double dxT, xT, sigma;
-  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins), sigmalast = 0.;
-  double sigma, pt2, dpt2;
+  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins);
+  double sigma, pt2, dpt2, sigmalast;
   for (int bin=m_nbins-1;bin>=0;bin--) {
     pt2             = m_ptmin2*exp(m_pt2step*bin);
     dpt2            = pt2last-pt2;
     sigma           = dSigma(pt2);
     m_diffbins[bin] = sigma;
     m_intbins[bin]  = m_integral += sigma * dpt2/m_sigmaND;
-    //msg_Out()<<"   Sudakov(pt = "<<sqrt(pt2)<<") = "
-    //	     <<m_intbins[bin]<<" from "<<((sigmalast + sigma)/2./m_sigmaND)
-    //	     <<" * "<<dpt2<<".\n";
+    msg_Debugging()<<"   Sudakov(pt = "<<sqrt(pt2)<<") = "<<m_intbins[bin]<<" from "
+              <<((sigmalast + sigma)/2./m_sigmaND)<<" * "<<dpt2<<".\n";
     pt2last        = pt2;
-    sigmalast      = sigma;
+    sigmalast = sigma;
   }
   m_integral *= m_sigmaND;
   if (m_test) Test();
@@ -211,7 +190,7 @@ bool MI_Processes::PrepareSudakovFactor() {
 }
 
 void MI_Processes::Test() {
-  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins), pt2, dpt2;
+  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins);
   msg_Out()<<METHOD<<" calculated integral for Sudakov form factor starting at pt = "
 	   <<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n"
 	   <<"   sigma = "<<m_integral<<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb, "
@@ -228,7 +207,6 @@ void MI_Processes::Test() {
 		(dSigma(sqr(pt))+SudakovDiffArgument(sqr(pt))) * 100)<<"%.\n";
     pt*=10.;
   }
-  //exit(1);
 }
 
 double MI_Processes::dSigma(const double & pt2) {
@@ -244,7 +222,7 @@ double MI_Processes::dSigma(const double & pt2) {
   double xt       = sqrt(4.*pt2/m_S);
   double ymax     = log(1./xt*(1.+sqrt(1.-xt*xt)));
   double PSfac    = sqr(2.*ymax);
-  double res      = 0., res2 = 0.;
+  double res      = 0.;
   for (size_t i=0;i<m_MCpoints;i++) {
     double y1     = ymax*(-1.+2.*ran->Get());
     double y2     = ymax*(-1.+2.*ran->Get());
@@ -261,21 +239,43 @@ double MI_Processes::dSigma(const double & pt2) {
       dsigma = (*this)(shat,that,uhat) * PSfac;
     }
     res  += dsigma;
-    res2 += dsigma*dsigma;
   }
   double result = res/double(m_MCpoints);
-  double uncert = sqrt((res2/double(m_MCpoints)-sqr(result))/double(m_MCpoints));
-  //msg_Out()<<"dSigma(pt = "<<sqrt(pt2)<<")/dpt^2 = "
-  //	   <<(result*rpa->Picobarn())<<" pb GeV^-2 "
-  //	   <<"+/- "<<(uncert/result*100.)<<"%.\n";
+  msg_Debugging()<<"dSigma(pt = "<<sqrt(pt2)<<")/dpt^2 = "
+            <<(result*rpa->Picobarn())<<" pb GeV^-2\n";
   return result;
 }
 
 const double MI_Processes::SudakovArgument(const double & pt2) const {
+  if (m_variable_s)
+    return SudakovArgumentForVariableS(pt2);
+  else
+    return SudakovArgumentForConstantS(pt2);
+}
+
+double MI_Processes::SudakovArgumentForVariableS(const double &pt2) const {
+  // Linear interpolation between the pre-calculated points for the Sudakov form factor
+  if (pt2>m_ptmax2 || pt2<m_ptmin2 || m_S < 4*m_ptmin2) return 0.;
+  int sbin      = int(log(m_S/m_S_lab) / log(m_sstep));
+  int ptbin     = int(1./m_pt2step*log(pt2/m_ptmin2));
+
+  double s1   = m_S_lab * std::pow(m_sstep, sbin), s2 = m_S_lab * std::pow(m_sstep, sbin+1);
+  double pt21 = m_ptmin2*exp(m_pt2step*ptbin), pt22 = m_ptmin2*exp(m_pt2step*(ptbin+1));
+  double val11 = m_cache_intbins[sbin][ptbin],   val12 = m_cache_intbins[sbin][ptbin+1];
+  double val21 = m_cache_intbins[sbin+1][ptbin], val22 = m_cache_intbins[sbin+1][ptbin+1];
+  double val = val11 * (s2 - m_S) * (pt22 - pt2) +
+               val12 * (s2 - m_S) * (pt2 - pt21) +
+               val21 * (m_S - s1) * (pt22 - pt2) +
+               val22 * (m_S - s1) * (pt2 - pt21);
+  val *= 1. / (s2 - s1) / (pt22 - pt21);
+  return val;
+}
+
+double MI_Processes::SudakovArgumentForConstantS(const double &pt2) const {
   // Linear interpolation between the pre-calculated points for the Sudakov form factor
   if (pt2>m_ptmax2 || pt2<m_ptmin2) return 0.;
   int bin     = int(1./m_pt2step*log(pt2/m_ptmin2));
-  double pt21 = m_ptmin2*exp(m_pt2step*(bin)), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
+  double pt21 = m_ptmin2*exp(m_pt2step*bin), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
   double val1 = m_intbins[bin],                val2 = m_intbins[bin+1];
   double val  = (val1*(pt22-pt2)+val2*(pt2-pt21))/(pt22-pt21);
   return val;
@@ -285,29 +285,56 @@ const double MI_Processes::SudakovDiffArgument(const double & pt2) const {
   // Linear interpolation between the pre-calculated points for the Sudakov form factor
   if (pt2>m_ptmax2 || pt2<m_ptmin2) return 0.;
   int bin     = int(1./m_pt2step*log(pt2/m_ptmin2));
-  double pt21 = m_ptmin2*exp(m_pt2step*(bin)), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
+  double pt21 = m_ptmin2*exp(m_pt2step*bin), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
   double val1 = m_diffbins[bin],               val2 = m_diffbins[bin+1];
   double val  = (val1*(pt22-pt2)+val2*(pt2-pt21))/(pt22-pt21);
   return val;
 }
 
-/*
-#include "ATOOLS/Math/Gauss_Integrator.H"
-#include "ATOOLS/Math/Function_Base.H"
-
-class SudakovTestArgument: public ATOOLS::Function_Base {
-  MI_Processes * p_procs;
-public:
-  SudakovTestArgument(MI_Processes * procs) : p_procs(procs) {}
-  double operator()(double pt2) { return p_procs->dSigma(pt2); }
-};
-
-void MI_Processes::TestSudakovFactor() {
-  SudakovTestArgument sudarg(this);
-  Gauss_Integrator sudint(&sudarg);
-  double pt2(10000.);
-  double integral = sudint.Integrate(pt2,m_S/4.,0.003,1);
-  msg_Out()<<METHOD<<"("<<pt2<<", "<<(m_S/4.)<<") = "<<SudakovArgument(pt2)<<".\n";
+void MI_Processes::Update(double s) {
+  // taken from the initialization
+  m_S       = s;
+  m_ecms    = sqrt(s);
+  m_ptmax2  = sqr(m_ecms/2.);
+  m_pt2step = log(m_S/(4.*m_ptmin2))/double(m_nbins);
+  m_xTmin   = 2.*m_ptmin/m_ecms;
+  CalculateIntegralFromCache();
 }
-*/
 
+bool MI_Processes::FillCaches() {
+  msg_Out() << METHOD << ": Filling cache for multi-parton interactions, for " << m_sbins << " bins: \n";
+  m_test = false;
+  m_sstep = std::pow(4*m_ptmin2/m_S_lab, 1./m_sbins);
+  m_cache_diffbins.resize(m_sbins,std::vector<double>(m_nbins));
+  m_cache_intbins.resize(m_sbins,std::vector<double>(m_nbins));
+  m_cache_integral.resize(m_sbins);
+  for (int sbin = 0; sbin < m_sbins; ++sbin) {
+    msg_Info() << "  Integrating bin " << sbin+1 << " of " << m_sbins << ". \n";
+    if (!(rpa->gen.BatchMode()&2) && sbin != m_sbins-1) msg_Info() << mm(1,mm::up);
+    m_S = m_S_lab * std::pow(m_sstep, sbin);
+    (*p_xsecs)(m_S);
+    m_sigmaND = p_xsecs->XSnd();
+    double pt2last = m_ptmin2*exp(m_pt2step*m_nbins);
+    double sigma, pt2, dpt2;
+    for (int ptbin=m_nbins-1;ptbin>=0;ptbin--) {
+      pt2             = m_ptmin2*exp(m_pt2step*ptbin);
+      dpt2            = pt2last-pt2;
+      sigma           = dSigma(pt2);
+      m_cache_diffbins[sbin][ptbin] = sigma;
+      m_cache_intbins[sbin][ptbin] = sigma * dpt2/m_sigmaND;
+      m_cache_integral[sbin] += sigma * dpt2;
+      pt2last        = pt2;
+    }
+  }
+  msg_Info() << "  Caching successfully completed. \n";
+  m_integral = m_cache_integral[m_sbins-1];
+  return true;
+}
+
+void MI_Processes::CalculateIntegralFromCache() {
+  int sbin = int(log(m_S/m_S_lab) / log(m_sstep));
+  double s1 = m_S_lab * std::pow(m_sstep, sbin);
+  double s2 = m_S_lab * std::pow(m_sstep, sbin+1);
+  double val1 = m_cache_integral[sbin], val2 = m_cache_integral[sbin+1];
+  m_integral = (val1 * (s2 - m_S) + val2 * (m_S - s1)) / (s2 - s1);
+}

@@ -2,55 +2,63 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "AMISIC++/Main/Amisic.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
 // will have to make sure that pions are initialised below.  Argh.
-Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
-  m_Ecms(rpa->gen.Ecms()), m_s(m_Ecms*m_Ecms),
-  m_massp(Flavour(kf_p_plus).Mass()), m_masspi(0.137),
-  m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3),
-  m_xsecpom(21.70),
-  m_xsecregge(rpa->gen.Beam1().IsAnti()^rpa->gen.Beam2().IsAnti()?98.39:56.08)
-{}
-  
-void Hadronic_XSec_Calculator::operator()()
+Hadronic_XSec_Calculator::Hadronic_XSec_Calculator(int type) :
+  m_massp(0.938272), m_masspi(0.134976),
+  m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3)
 {
+  if (type != 1)
+    rpa->gen.AddCitation(1, "The parameters for photonic multiple interactions "
+                            "are taken from \\cite{Schuler:1996en}");
+  if (type == 1) {
+    m_xsecpom = 21.70;
+    m_xsecregge =
+        rpa->gen.Beam1().IsAnti() != rpa->gen.Beam2().IsAnti() ? 98.39 : 56.08;
+  }
+  // photonic MPI parametrisation taken from Schuler and Sjöstrand, Z Phys C 73 677-688 (1997)
+  else if (type == 2) {
+    m_xsecpom = 67.7e-3;
+    m_xsecregge = 0.129;
+  }
+  else if (type == 3) {
+    m_xsecpom = 211e-6;
+    m_xsecregge = 215e-6;
+  }
+  else
+    msg_Error() << METHOD << ": Unknown type for multiple interaction: " << type << "\n";
+}
+  
+void Hadronic_XSec_Calculator::operator()(double s)
+{
+  m_s = s;
   m_xstot = CalculateTotalXSec();
   m_xsel  = CalculateElasticXSec(m_xstot);
   m_xssd  = CalculateSingleDXSec();
   m_xsdd  = CalculateDoubleDXSec();
 
   m_xsnd  = m_xstot-m_xsel-2.0*m_xssd-m_xsdd;
-  msg_Out()<<METHOD<<": Results are {\n"
-	   <<"   \\sigma_{tot} = "<<m_xstot<<" mb\n"
-	   <<"   \\sigma_{el}  = "<<m_xsel<<" mb\n"
-	   <<"   \\sigma_{sd}  = "<<2.0*m_xssd<<" mb\n"
-	   <<"   \\sigma_{dd}  = "<<m_xsdd<<" mb\n"
-	   <<"   \\sigma_{nd}  = "<<m_xsnd<<" mb = "
-	   <<(m_xsnd*1.e9/rpa->Picobarn())<<" GeV^-2\n}"<<std::endl;
-  // convert all cross sections to 1/GeV^2
-  m_xstot *= 1.e9/rpa->Picobarn();
-  m_xsel  *= 1.e9/rpa->Picobarn();
+  // convert cross section to 1/GeV^2
   m_xsnd  *= 1.e9/rpa->Picobarn();
-  m_xssd  *= 1.e9/rpa->Picobarn();
-  m_xsdd  *= 1.e9/rpa->Picobarn();
 }
 
-double Hadronic_XSec_Calculator::CalculateTotalXSec() {
+double Hadronic_XSec_Calculator::CalculateTotalXSec() const {
   // standard two-component fit: pomeron + reggeon
   return m_xsecpom*pow(m_s,m_pomeron)+m_xsecregge*pow(m_s,m_reggeon);
 }
 
-double Hadronic_XSec_Calculator::CalculateElasticXSec(const double & xstot) {
+double Hadronic_XSec_Calculator::CalculateElasticXSec(const double & xstot) const {
   // standard two-component fit: pomeron + reggeon
   return 0.0511*xstot*xstot/(4.*(m_slope+pow(m_s,m_pomeron))-4.2);
 }
 
 
-double Hadronic_XSec_Calculator::CalculateSingleDXSec() {
+double Hadronic_XSec_Calculator::CalculateSingleDXSec() const {
   double ap   = 0.25;
   double mmin = m_massp+2.*m_masspi, mmin2 = sqr(mmin), mmax2 = 0.213*m_s;
   double cres = 2., bax = -0.47+150./m_s, mres2 = 2.;
@@ -60,25 +68,35 @@ double Hadronic_XSec_Calculator::CalculateSingleDXSec() {
   return 0.0336*pow(m_xsecpom,1.5)*JAX;
 }
 
-double Hadronic_XSec_Calculator::CalculateDoubleDXSec() {
+double Hadronic_XSec_Calculator::CalculateDoubleDXSec() const {
   double ap = 0.25, Del0 = 3.2-9.0/log(m_s)+17.4/sqr(log(m_s)), s0 = 8.;
   double y0 = log(m_s/sqr(m_massp)), ymin = 4.0*log(1.0+2.0*m_masspi/m_massp);
 
   double mmin1 = m_massp+2.*m_masspi, mmin12 = sqr(mmin1);
   double mmin2 = mmin1, mmin22 = sqr(mmin2);
-  double mmax2 = 0.213*m_s, mres1 = 2., mres2 = 2.;
+  double mres1 = 2., mres2 = 2.;
   double cres  = 2.;
   double mmxxx = m_s*(0.07-0.44/log(m_s)+1.36/sqr(log(m_s)));
   double bxx   = -1.05+40./sqrt(m_s)+8000./sqr(m_s);
   double JXX  =
     0.5/ap*((y0-ymin)*(log((y0-ymin)/Del0)-1.0)+Del0) +
-    0.5*cres/ap*log(1.0+sqr(mres2/mmin2))*log(log(m_s*s0/(mmin12*mmin2*mres2))/
-					      log(m_s*s0/(mmxxx*mres2*mmin2))) +
-    0.5*cres/ap*log(1.0+sqr(mres1/mmin1))*log(log(m_s*s0/(mmin22*mmin1*mres1))/
-					      log(m_s*s0/(mmxxx*mres1*mmin1))) +
+    0.5*cres/ap*log(1.0+sqr(mres2/mmin2))*
+          log(log(m_s*s0/(mmin12*mmin2*mres2)) /
+              log(m_s*s0/(mmxxx*mres2*mmin2))) +
+    0.5*cres/ap*log(1.0+sqr(mres1/mmin1))*
+          log(log(m_s*s0/(mmin22*mmin1*mres1)) /
+              log(m_s*s0/(mmxxx*mres1*mmin1))) +
     sqr(cres)/(2.0*ap*log(m_s*s0/(mres1*mres2*mmin1*mmin2))+bxx)*
-    log(1.0+sqr(mres1/mmin1))*log(1.0+sqr(mres2/mmin2));
+          log(1.0+sqr(mres1/mmin1))*log(1.0+sqr(mres2/mmin2));
   return 0.0084*m_xsecpom*JXX;
 }
 
-
+void Hadronic_XSec_Calculator::Output() const {
+  msg_Out()<<METHOD<<": Results are {\n"
+                 <<"   \\sigma_{tot} = "<<m_xstot<<" mb\n"
+                 <<"   \\sigma_{el}  = "<<m_xsel<<" mb\n"
+                 <<"   \\sigma_{sd}  = "<<2.0*m_xssd<<" mb\n"
+                 <<"   \\sigma_{dd}  = "<<m_xsdd<<" mb\n"
+                 <<"   \\sigma_{nd}  = "<<m_xsnd/1.e9*rpa->Picobarn()<<" mb = "
+                 <<m_xsnd<<" GeV^-2\n}"<<std::endl;
+}

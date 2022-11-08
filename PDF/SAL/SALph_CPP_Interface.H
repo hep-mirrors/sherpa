@@ -8,7 +8,7 @@ namespace PDF {
 class SALph_CPP_Interface : public Photon_PDF_Base {
 public:
   SALph_CPP_Interface(const ATOOLS::Flavour);
-  PDF_Base *GetCopy();
+  PDF_Base *GetCopy() override;
 
   void CalculateSpec(const double &, const double &) override;
 };

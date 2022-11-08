@@ -24,9 +24,9 @@ std::ostream &REMNANTS::operator<<(std::ostream &ostr, const rtp::code code) {
 }
 
 Remnant_Base::Remnant_Base(const rtp::code type, const unsigned int beam)
-    : m_type(type), m_beam(beam), p_beam(nullptr), p_partner(nullptr),
+    : m_type(type), m_beam(beam), p_beam(nullptr),
       p_beamblob(nullptr), m_position(Vec4D(0.,0.,0.,0.)),
-  p_colours(nullptr), m_rescale(true), m_scale2(-1.) {}
+      p_colours(nullptr), m_scale2(-1.) {}
 
 Remnant_Base::~Remnant_Base() = default;
 
@@ -39,7 +39,8 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
       // have the notion of a spectator
       MakeSpectator(parton);
       for (size_t index = 0; index < 2; index++)
-	p_colours->AddColour(m_beam, index, parton);
+        p_colours->AddColour(m_beam, index, parton);
+      m_residualE -= parton->E();
     }
     return true;
   }
@@ -55,6 +56,10 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
                 << "   Called with NULL pointer.\n";
     return false;
   }
+  // TODO: In Multiple_Interactions.C, TestExtract is called for the hard-interacting parton,
+  // after it has been extracted here. As it has been already been extracted, it will fail now iff E_parton > 0.5 * beam energy
+  if (std::find(m_extracted.begin(), m_extracted.end(), parton) != m_extracted.end())
+    return true;
   return TestExtract(parton->Flav(), parton->Momentum());
 }
 
@@ -76,6 +81,5 @@ Blob *Remnant_Base::MakeBlob() {
 
 void Remnant_Base::Reset(const bool &DIS) {
   m_extracted.clear();
-  m_pbeam = p_beam->InMomentum();
   p_beamblob = nullptr;
 }

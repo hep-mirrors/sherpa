@@ -6,7 +6,7 @@
 
 namespace REMNANTS {
 struct overlap_form {
-  enum code {
+  enum class code {
     Single_Gaussian = 1,
     Double_Gaussian = 2,
     unknown         = -1

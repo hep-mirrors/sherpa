@@ -6,7 +6,8 @@
 namespace AMISIC {
   class Interaction_Probability {
     Matter_Overlap * p_mo;
-    double m_prefK, m_bmax, m_integral, m_integralB, m_bnorm, m_oexpvalue, m_fc;
+    double m_prefK, m_integral, m_integralB, m_bnorm, m_oexpvalue, m_fc;
+    bool m_suppress_output;
     
     bool FixPrefactor(const double & xsecratio);
     void CalculateIntegral();
@@ -17,6 +18,7 @@ namespace AMISIC {
     ~Interaction_Probability() { delete p_mo; }
 
     void   Initialize(const double & xsecratio);
+    void   Update(double xsecratio);
     double operator()(const double & b);
 
     inline void SetPrefactor(const double & prefK)   { m_prefK = prefK; }
