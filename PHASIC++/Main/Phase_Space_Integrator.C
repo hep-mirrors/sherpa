@@ -35,7 +35,7 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   m_nopt = s["NOPT"].GetScalarWithOtherDefault
     <long unsigned int>(m_npower?10:25);
   m_maxopt = s["MAXOPT"].GetScalarWithOtherDefault
-    <long unsigned int>(m_npower?3:5);
+    <long unsigned int>(m_npower?1:5);
   m_stopopt = s["STOPOPT"].Get<long unsigned int>();
   // number of points per iteration
   const auto procitmin = p_psh->Process()->Process()->Info().m_itmin;
