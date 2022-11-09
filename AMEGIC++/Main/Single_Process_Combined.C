@@ -596,7 +596,7 @@ void AMEGIC::Single_Process_Combined::WriteLibrary()
   m_libname = testname;
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
-  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true); 
+  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true);
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile(this);
   p_BS->Output(newpath+m_ptypename+string("/")+m_libname);

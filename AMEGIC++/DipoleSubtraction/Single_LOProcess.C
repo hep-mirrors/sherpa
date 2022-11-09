@@ -110,8 +110,7 @@ Single_LOProcess::~Single_LOProcess()
 
 void AMEGIC::Single_LOProcess::WriteAlternativeName(string aname) 
 {
-  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
-                        +m_ptypename+"/"+m_name+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".alt";
   if (FileExists(altname)) return;
   My_Out_File to(altname);
   to.Open();
@@ -123,8 +122,7 @@ void AMEGIC::Single_LOProcess::WriteAlternativeName(string aname)
 
 bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,string procname)
 {
-  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
-                        +m_ptypename+"/"+procname+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+procname+".alt";
   if (FileExists(altname)) {
     double factor;
     string name,dummy; 
@@ -236,7 +234,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
-	  if (FileExists(mlname+string(".map"))) { 
+	  if (FileExists(mlname+string(".map"))) {
 	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
@@ -950,7 +948,7 @@ void Single_LOProcess::WriteLibrary()
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
   if (!FileExists(newpath+m_ptypename+string("/")+m_libname+string("/V.H"),1)) {
-    ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true); 
+    ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true);
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   }
   CreateMappingFile(this);

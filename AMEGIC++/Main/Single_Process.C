@@ -601,7 +601,7 @@ void AMEGIC::Single_Process::WriteLibrary()
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
   if (!FileExists(newpath+m_ptypename+string("/")+m_libname+string("/V.H"),1)) {
-    ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true); 
+    ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true);
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   }
   CreateMappingFile(this);
