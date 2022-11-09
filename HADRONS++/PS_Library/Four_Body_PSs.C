@@ -89,14 +89,14 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts,
   double s123;
   s123 = CE.MassivePropMomenta(m_prop1.Mass(),m_prop1.Width(),1,
 			       s123_min,s123_max,ran[0]);
-  CE.Isotropic2Momenta(p1234,s123,s4,p123,p[m_dir],ran[1],ran[2]);
+  CE.Isotropic2Momenta(p1234,s123,s4,p123,p[m_dir],ran[1],ran[2],-1,1);
   double s12_max = sqr(sqrt(s123)-sqrt(s3));
   Vec4D  p12;
   double s12;
   s12 = CE.MassivePropMomenta(m_prop2.Mass(),m_prop2.Width(),1,
 			      s12_min,s12_max,ran[3]);
-  CE.Isotropic2Momenta(p123,s12,s3,p12,p[m_k],ran[4],ran[5]);
-  CE.Isotropic2Momenta(p12,s1,s2,p[m_i],p[m_j],ran[6],ran[7]);
+  CE.Isotropic2Momenta(p123,s12,s3,p12,p[m_k],ran[4],ran[5],-1,1);
+  CE.Isotropic2Momenta(p12,s1,s2,p[m_i],p[m_j],ran[6],ran[7],-1,1);
 }
 
 void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
@@ -117,7 +117,7 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
   double s123 = dabs(p123.Abs2());
   wt *= CE.MassivePropWeight(m_prop1.Mass(),m_prop1.Width(),1,
 			     s123_min,s123_max,s123,rans[0]);
-  m_kI_123_4<<CE.Isotropic2Weight(p123,p[m_dir],m_kI_123_4[0],m_kI_123_4[1]);
+  m_kI_123_4<<CE.Isotropic2Weight(p123,p[m_dir],m_kI_123_4[0],m_kI_123_4[1],-1,1);
   wt *= m_kI_123_4.Weight();
 
   rans[1]= m_kI_123_4[0];
@@ -127,12 +127,12 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
   double s12 = dabs(p12.Abs2());
   wt *= CE.MassivePropWeight(m_prop2.Mass(),m_prop2.Width(),1,
 			     s12_min,s12_max,s12,rans[3]);
-  m_kI_12_3<<CE.Isotropic2Weight(p12,p[m_k],m_kI_12_3[0],m_kI_12_3[1]);
+  m_kI_12_3<<CE.Isotropic2Weight(p12,p[m_k],m_kI_12_3[0],m_kI_12_3[1],-1,1);
   wt *= m_kI_12_3.Weight();
  
   rans[4]= m_kI_12_3[0];
   rans[5]= m_kI_12_3[1];
-  m_kI_1_2<<CE.Isotropic2Weight(p[m_i],p[m_j],m_kI_1_2[0],m_kI_1_2[1]);
+  m_kI_1_2<<CE.Isotropic2Weight(p[m_i],p[m_j],m_kI_1_2[0],m_kI_1_2[1],-1,1);
   wt *= m_kI_1_2.Weight();
  
   rans[6]= m_kI_1_2[0];
