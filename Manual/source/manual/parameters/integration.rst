@@ -111,10 +111,6 @@ The sub-settings for the phase space integrator can be customised as follows:
 
 The following sub-settings exist:
 
-``NMAX``
-  The maximum number of points before cuts to be generated during integration.
-  This parameter acts on a process-by-process basis.
-
 ``ITMIN``
   The minimum number of points used for every optimisation cycle. Please note
   that it might be increased automatically for complicated processes.
