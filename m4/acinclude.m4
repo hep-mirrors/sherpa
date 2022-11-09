@@ -627,6 +627,10 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
              openloops=true;
              if test -d "${OPENLOOPS_PREFIX}"; then
                 AC_MSG_RESULT([${OPENLOOPS_PREFIX}]);
+                CONDITIONAL_OPENLOOPSLDADD="-lopenloops"
+                CONDITIONAL_OPENLOOPSLDFLAGS="-L${OPENLOOPS_PREFIX}/lib"
+                AC_SUBST(CONDITIONAL_OPENLOOPSLDADD)
+                AC_SUBST(CONDITIONAL_OPENLOOPSLDFLAGS)
              else
                 AC_MSG_WARN(${OPENLOOPS_PREFIX} is not a valid path.);
              fi;;
@@ -650,6 +654,10 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
              if test -d "${RECOLA_PREFIX}"; then
                 AC_MSG_RESULT([${RECOLA_PREFIX}]);
 		CONDITIONAL_RECOLAINCS="-I$RECOLA_PREFIX/include";		
+                CONDITIONAL_RECOLALDADD="-lrecola"
+                CONDITIONAL_RECOLALDFLAGS="-L${RECOLA_PREFIX}/lib"
+                AC_SUBST(CONDITIONAL_RECOLALDADD)
+                AC_SUBST(CONDITIONAL_RECOLALDFLAGS)
              else
                 AC_MSG_WARN(${RECOLA_PREFIX} is not a valid path.);
              fi;;
