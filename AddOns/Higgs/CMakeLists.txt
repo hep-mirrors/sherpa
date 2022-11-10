@@ -24,6 +24,7 @@ add_library(SherpaHiggs SHARED
                              ${Higgs_SOURCES} 
 )
 target_include_directories(SherpaHiggs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaHiggs)
 install(TARGETS SherpaHiggs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaHiggs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaHiggs SOVERSION 0.0.0)
 set_target_properties(SherpaHiggs        PROPERTIES DEFINE_SYMBOL "")

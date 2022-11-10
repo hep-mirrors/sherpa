@@ -23,6 +23,7 @@ add_library(PhasicScales SHARED
                              ${Scales_SOURCES} 
 )
 target_include_directories(PhasicScales PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(PhasicScales)
 install(TARGETS PhasicScales DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicScales        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicScales SOVERSION 0.0.0)
 set_target_properties(PhasicScales        PROPERTIES DEFINE_SYMBOL "")

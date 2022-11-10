@@ -23,6 +23,7 @@ add_library(AmegicPSGen SHARED
                              ${Phasespace_SOURCES} 
 )
 target_include_directories(AmegicPSGen PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(AmegicPSGen)
 install(TARGETS AmegicPSGen DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AmegicPSGen        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AmegicPSGen SOVERSION 0.0.0)
 set_target_properties(AmegicPSGen        PROPERTIES DEFINE_SYMBOL "")

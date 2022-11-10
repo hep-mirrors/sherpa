@@ -33,6 +33,7 @@ add_library(SherpaAnalysisTrigger SHARED
                              ${Triggers_SOURCES} 
 )
 target_include_directories(SherpaAnalysisTrigger PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaAnalysisTrigger)
 install(TARGETS SherpaAnalysisTrigger DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaAnalysisTrigger        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaAnalysisTrigger SOVERSION 0.0.0)
 set_target_properties(SherpaAnalysisTrigger        PROPERTIES DEFINE_SYMBOL "")

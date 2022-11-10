@@ -20,6 +20,7 @@ add_library(METoolsVertices SHARED
                              ${Vertices_SOURCES} 
 )
 target_include_directories(METoolsVertices PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(METoolsVertices)
 install(TARGETS METoolsVertices DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsVertices        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsVertices SOVERSION 0.0.0)
 set_target_properties(METoolsVertices        PROPERTIES DEFINE_SYMBOL "")

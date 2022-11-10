@@ -24,6 +24,7 @@ add_library(AhadicTools SHARED
                              ${Tools_SOURCES} 
 )
 target_include_directories(AhadicTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(AhadicTools)
 install(TARGETS AhadicTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AhadicTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AhadicTools SOVERSION 0.0.0)
 set_target_properties(AhadicTools        PROPERTIES DEFINE_SYMBOL "")

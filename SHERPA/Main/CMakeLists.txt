@@ -23,6 +23,7 @@ add_library(SherpaMain SHARED
                              ${Main_SOURCES} 
 )
 target_include_directories(SherpaMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaMain)
 install(TARGETS SherpaMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaMain SOVERSION 0.0.0)
 set_target_properties(SherpaMain        PROPERTIES DEFINE_SYMBOL "")

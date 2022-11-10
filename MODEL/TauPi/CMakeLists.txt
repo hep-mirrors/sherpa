@@ -20,6 +20,7 @@ add_library(SherpaTauPi SHARED
                              ${TauPi_SOURCES} 
 )
 target_include_directories(SherpaTauPi PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaTauPi)
 install(TARGETS SherpaTauPi DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaTauPi        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaTauPi SOVERSION 0.0.0)
 set_target_properties(SherpaTauPi        PROPERTIES DEFINE_SYMBOL "")

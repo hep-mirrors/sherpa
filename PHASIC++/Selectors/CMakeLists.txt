@@ -22,6 +22,7 @@ add_library(PhasicSelectors SHARED
                              ${Selectors_SOURCES} 
 )
 target_include_directories(PhasicSelectors PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(PhasicSelectors)
 install(TARGETS PhasicSelectors DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicSelectors        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicSelectors SOVERSION 0.0.0)
 set_target_properties(PhasicSelectors        PROPERTIES DEFINE_SYMBOL "")

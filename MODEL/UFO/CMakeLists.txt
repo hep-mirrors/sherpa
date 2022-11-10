@@ -26,6 +26,7 @@ add_library(ModelUFO SHARED
                              ${UFO_SOURCES} 
 )
 target_include_directories(ModelUFO PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ModelUFO)
 install(TARGETS ModelUFO DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ModelUFO        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ModelUFO SOVERSION 0.0.0)
 set_target_properties(ModelUFO        PROPERTIES DEFINE_SYMBOL "")

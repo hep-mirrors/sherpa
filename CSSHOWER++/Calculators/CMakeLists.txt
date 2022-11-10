@@ -20,6 +20,7 @@ add_library(CSCalculators SHARED
                              ${Calculators_SOURCES} 
 )
 target_include_directories(CSCalculators PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(CSCalculators)
 install(TARGETS CSCalculators DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CSCalculators        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME CSCalculators SOVERSION 0.0.0)
 set_target_properties(CSCalculators        PROPERTIES DEFINE_SYMBOL "")

@@ -21,6 +21,7 @@ add_library(CSShowers SHARED
                              ${Showers_SOURCES} 
 )
 target_include_directories(CSShowers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(CSShowers)
 install(TARGETS CSShowers DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CSShowers        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME CSShowers SOVERSION 0.0.0)
 set_target_properties(CSShowers        PROPERTIES DEFINE_SYMBOL "")

@@ -20,6 +20,7 @@ add_library(SherpaWeights SHARED
                              ${Weights_SOURCES} 
 )
 target_include_directories(SherpaWeights PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaWeights)
 install(TARGETS SherpaWeights DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaWeights        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaWeights SOVERSION 0.0.0)
 set_target_properties(SherpaWeights        PROPERTIES DEFINE_SYMBOL "")

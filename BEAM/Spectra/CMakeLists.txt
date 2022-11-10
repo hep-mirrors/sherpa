@@ -21,6 +21,7 @@ add_library(BeamSpectra SHARED
                              ${Spectra_SOURCES} 
 )
 target_include_directories(BeamSpectra PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(BeamSpectra)
 install(TARGETS BeamSpectra DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(BeamSpectra        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME BeamSpectra SOVERSION 0.0.0)
 set_target_properties(BeamSpectra        PROPERTIES DEFINE_SYMBOL "")

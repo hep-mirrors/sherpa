@@ -20,6 +20,7 @@ add_library(LHAPDFSherpa SHARED
                              ${LHAPDF_SOURCES} 
 )
 target_include_directories(LHAPDFSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(LHAPDFSherpa)
 install(TARGETS LHAPDFSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(LHAPDFSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME LHAPDFSherpa SOVERSION 0.0.0)
 set_target_properties(LHAPDFSherpa        PROPERTIES DEFINE_SYMBOL "")

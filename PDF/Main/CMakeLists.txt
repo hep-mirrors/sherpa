@@ -21,6 +21,7 @@ add_library(PDF SHARED
                              ${Main_SOURCES} 
 )
 target_include_directories(PDF PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(PDF)
 install(TARGETS PDF DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PDF        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PDF SOVERSION 0.0.0)
 set_target_properties(PDF        PROPERTIES DEFINE_SYMBOL "")

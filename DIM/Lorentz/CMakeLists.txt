@@ -20,6 +20,7 @@ add_library(DIMLorentz SHARED
                              ${Lorentz_SOURCES} 
 )
 target_include_directories(DIMLorentz PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(DIMLorentz)
 install(TARGETS DIMLorentz DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DIMLorentz        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DIMLorentz SOVERSION 0.0.0)
 set_target_properties(DIMLorentz        PROPERTIES DEFINE_SYMBOL "")

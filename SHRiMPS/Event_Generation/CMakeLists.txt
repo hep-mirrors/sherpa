@@ -22,6 +22,7 @@ add_library(ShrimpsEvents SHARED
                              ${Event_Generation_SOURCES} 
 )
 target_include_directories(ShrimpsEvents PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ShrimpsEvents)
 install(TARGETS ShrimpsEvents DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsEvents        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsEvents SOVERSION 0.0.0)
 set_target_properties(ShrimpsEvents        PROPERTIES DEFINE_SYMBOL "")

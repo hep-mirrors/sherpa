@@ -28,6 +28,7 @@ add_library(SherpaLHOLE SHARED
                              ${LH_OLE_SOURCES} 
 )
 target_include_directories(SherpaLHOLE PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaLHOLE)
 install(TARGETS SherpaLHOLE DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaLHOLE        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaLHOLE SOVERSION 0.0.0)
 set_target_properties(SherpaLHOLE        PROPERTIES DEFINE_SYMBOL "")

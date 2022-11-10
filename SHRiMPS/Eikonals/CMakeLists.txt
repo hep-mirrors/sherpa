@@ -22,6 +22,7 @@ add_library(ShrimpsEikonals SHARED
                              ${Eikonals_SOURCES} 
 )
 target_include_directories(ShrimpsEikonals PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ShrimpsEikonals)
 install(TARGETS ShrimpsEikonals DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsEikonals        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsEikonals SOVERSION 0.0.0)
 set_target_properties(ShrimpsEikonals        PROPERTIES DEFINE_SYMBOL "")

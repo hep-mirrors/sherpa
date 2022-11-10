@@ -24,6 +24,7 @@ add_library(HadronsCurrents SHARED
                              ${Current_Library_SOURCES} 
 )
 target_include_directories(HadronsCurrents PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(HadronsCurrents)
 install(TARGETS HadronsCurrents DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsCurrents        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME HadronsCurrents SOVERSION 0.0.0)
 set_target_properties(HadronsCurrents        PROPERTIES DEFINE_SYMBOL "")

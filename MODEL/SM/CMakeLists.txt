@@ -20,6 +20,7 @@ add_library(SherpaSM SHARED
                              ${SM_SOURCES} 
 )
 target_include_directories(SherpaSM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaSM)
 install(TARGETS SherpaSM DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSM        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaSM SOVERSION 0.0.0)
 set_target_properties(SherpaSM        PROPERTIES DEFINE_SYMBOL "")

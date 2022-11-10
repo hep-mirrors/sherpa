@@ -29,6 +29,7 @@ add_library(SherpaAnalysisTools SHARED
                              ${Tools_SOURCES} 
 )
 target_include_directories(SherpaAnalysisTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaAnalysisTools)
 install(TARGETS SherpaAnalysisTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaAnalysisTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaAnalysisTools SOVERSION 0.0.0)
 set_target_properties(SherpaAnalysisTools        PROPERTIES DEFINE_SYMBOL "")

@@ -23,6 +23,7 @@ add_library(PhasicProcess SHARED
                              ${Process_SOURCES} 
 )
 target_include_directories(PhasicProcess PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(PhasicProcess)
 install(TARGETS PhasicProcess DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicProcess        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicProcess SOVERSION 0.0.0)
 set_target_properties(PhasicProcess        PROPERTIES DEFINE_SYMBOL "")

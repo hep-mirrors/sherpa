@@ -21,6 +21,7 @@ add_library(MCatNLOShowers SHARED
                              ${Showers_SOURCES} 
 )
 target_include_directories(MCatNLOShowers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(MCatNLOShowers)
 install(TARGETS MCatNLOShowers DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(MCatNLOShowers        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME MCatNLOShowers SOVERSION 0.0.0)
 set_target_properties(MCatNLOShowers        PROPERTIES DEFINE_SYMBOL "")

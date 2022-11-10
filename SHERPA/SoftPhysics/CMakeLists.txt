@@ -21,6 +21,7 @@ add_library(SherpaSoftPhysics SHARED
                              ${SoftPhysics_SOURCES} 
 )
 target_include_directories(SherpaSoftPhysics PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaSoftPhysics)
 install(TARGETS SherpaSoftPhysics DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSoftPhysics        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaSoftPhysics SOVERSION 0.0.0)
 set_target_properties(SherpaSoftPhysics        PROPERTIES DEFINE_SYMBOL "")

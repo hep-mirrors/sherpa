@@ -30,6 +30,7 @@ add_library(SherpaEWSud SHARED
                              ${EWSud_SOURCES} 
 )
 target_include_directories(SherpaEWSud PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaEWSud)
 install(TARGETS SherpaEWSud DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaEWSud        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaEWSud SOVERSION 0.0.0)
 set_target_properties(SherpaEWSud        PROPERTIES DEFINE_SYMBOL "")

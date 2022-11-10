@@ -25,6 +25,7 @@ add_library(PhasicChannels SHARED
                              ${Channels_SOURCES} 
 )
 target_include_directories(PhasicChannels PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(PhasicChannels)
 install(TARGETS PhasicChannels DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicChannels        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicChannels SOVERSION 0.0.0)
 set_target_properties(PhasicChannels        PROPERTIES DEFINE_SYMBOL "")

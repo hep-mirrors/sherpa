@@ -21,6 +21,7 @@ add_library(AmisicTools SHARED
                              ${Tools_SOURCES} 
 )
 target_include_directories(AmisicTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(AmisicTools)
 install(TARGETS AmisicTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AmisicTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AmisicTools SOVERSION 0.0.0)
 set_target_properties(AmisicTools        PROPERTIES DEFINE_SYMBOL "")

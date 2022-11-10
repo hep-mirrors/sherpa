@@ -528,7 +528,7 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
 #     f.write("target_include_directories("+lname+suff+" PRIVATE ${FREETYPE_INCLUDE_DIRS})\n")
      for ll in linklibs:
        f.write("target_link_libraries("+lname+suff+" PRIVATE "+ll+")\n")
-     
+     f.write("sherpa_mpi_link_libraries("+lname+suff+")\n")
      if if_install_library(lname):
        f.write("install(TARGETS "+lname+suff+" DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)\n")   
      if suff=="_static": 

@@ -22,6 +22,7 @@ add_library(ShrimpsTools SHARED
                              ${Tools_SOURCES} 
 )
 target_include_directories(ShrimpsTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ShrimpsTools)
 install(TARGETS ShrimpsTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsTools SOVERSION 0.0.0)
 set_target_properties(ShrimpsTools        PROPERTIES DEFINE_SYMBOL "")

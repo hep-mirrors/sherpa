@@ -24,6 +24,7 @@ add_library(Zfunctions SHARED
 target_include_directories(Zfunctions PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Zfunctions PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 target_include_directories(Zfunctions PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
+sherpa_mpi_link_libraries(Zfunctions)
 install(TARGETS Zfunctions DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(Zfunctions        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME Zfunctions SOVERSION 0.0.0)
 set_target_properties(Zfunctions        PROPERTIES DEFINE_SYMBOL "")

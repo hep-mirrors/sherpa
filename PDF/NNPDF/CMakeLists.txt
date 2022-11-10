@@ -27,6 +27,7 @@ add_library(NNPDFSherpa SHARED
                              ${NNPDF_SOURCES} 
 )
 target_include_directories(NNPDFSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(NNPDFSherpa)
 install(TARGETS NNPDFSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(NNPDFSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME NNPDFSherpa SOVERSION 0.0.0)
 set_target_properties(NNPDFSherpa        PROPERTIES DEFINE_SYMBOL "")

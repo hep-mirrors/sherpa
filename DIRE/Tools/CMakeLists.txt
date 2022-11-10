@@ -21,6 +21,7 @@ add_library(DireTools SHARED
                              ${Tools_SOURCES} 
 )
 target_include_directories(DireTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(DireTools)
 install(TARGETS DireTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DireTools SOVERSION 0.0.0)
 set_target_properties(DireTools        PROPERTIES DEFINE_SYMBOL "")

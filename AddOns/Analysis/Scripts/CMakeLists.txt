@@ -25,6 +25,7 @@ add_executable(Combine_Analysis  ${Combine_Analysis_esources}
 )
 target_include_directories(Combine_Analysis PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(Combine_Analysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(Combine_Analysis)
 install(TARGETS Combine_Analysis DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 set_target_properties(Combine_Analysis        PROPERTIES DEFINE_SYMBOL "")
 target_link_libraries(Combine_Analysis PRIVATE 
@@ -55,3 +56,4 @@ endif()
 if (SHERPA_ENABLE_HEPMC2)
   target_link_libraries(Combine_Analysis PRIVATE SherpaHepMCOutput  ${HEPMC2_LIBRARIES} )
 endif()
+

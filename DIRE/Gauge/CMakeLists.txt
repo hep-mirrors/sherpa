@@ -20,6 +20,7 @@ add_library(DireGauge SHARED
                              ${Gauge_SOURCES} 
 )
 target_include_directories(DireGauge PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(DireGauge)
 install(TARGETS DireGauge DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DireGauge        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DireGauge SOVERSION 0.0.0)
 set_target_properties(DireGauge        PROPERTIES DEFINE_SYMBOL "")

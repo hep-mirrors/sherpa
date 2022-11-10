@@ -21,6 +21,7 @@ add_library(ExtraXS1_3 SHARED
                              ${One2Three_SOURCES} 
 )
 target_include_directories(ExtraXS1_3 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ExtraXS1_3)
 install(TARGETS ExtraXS1_3 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ExtraXS1_3        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ExtraXS1_3 SOVERSION 0.0.0)
 set_target_properties(ExtraXS1_3        PROPERTIES DEFINE_SYMBOL "")

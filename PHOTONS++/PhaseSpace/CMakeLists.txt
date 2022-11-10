@@ -21,6 +21,7 @@ add_library(PhotonsPhaseSpace SHARED
                              ${PhaseSpace_SOURCES} 
 )
 target_include_directories(PhotonsPhaseSpace PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(PhotonsPhaseSpace)
 install(TARGETS PhotonsPhaseSpace DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhotonsPhaseSpace        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhotonsPhaseSpace SOVERSION 0.0.0)
 set_target_properties(PhotonsPhaseSpace        PROPERTIES DEFINE_SYMBOL "")

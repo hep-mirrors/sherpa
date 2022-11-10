@@ -238,10 +238,34 @@ endmacro(creategitinfo )
 
 if(SHERPA_ENABLE_MPI)
  find_package(MPI REQUIRED)
+ message(STATUS "SHERPA: MPI_HOME=${MPI_HOME}")
+ if (SHERPA_ENABLE_FORTRAN)
+   message(STATUS "SHERPA: MPI_CXX_COMPILE_OPTIONS=${MPI_CXX_COMPILE_OPTIONS} MPI_C_COMPILE_OPTIONS=${MPI_C_COMPILE_OPTIONS} MPI_Fortran_COMPILE_OPTIONS=${MPI_Fortran_COMPILE_OPTIONS}")
+   message(STATUS "SHERPA: MPI_CXX_COMPILE_DEFINITIONS=${MPI_CXX_COMPILE_DEFINITIONS} MPI_C_COMPILE_DEFINITIONS=${MPI_C_COMPILE_DEFINITIONS} MPI_Fortran_COMPILE_DEFINITIONS=${MPI_Fortran_COMPILE_DEFINITIONS}")
+   message(STATUS "SHERPA: MPI_CXX_INCLUDE_DIRS=${MPI_CXX_INCLUDE_DIRS} MPI_C_INCLUDE_DIRS=${MPI_C_INCLUDE_DIRS} MPI_Fortran_INCLUDE_DIRS=${MPI_Fortran_INCLUDE_DIRS}")
+   message(STATUS "SHERPA: MPI_CXX_LINK_FLAGS=${MPI_CXX_LINK_FLAGS} MPI_C_LINK_FLAGS=${MPI_C_LINK_FLAGS} MPI_Fortran_LINK_FLAGS=${MPI_Fortran_LINK_FLAGS}")
+   include_directories(${MPI_Fortran_INCLUDE_DIRS})
+ else()
+   message(STATUS "SHERPA: MPI_CXX_COMPILE_OPTIONS=${MPI_CXX_COMPILE_OPTIONS} MPI_C_COMPILE_OPTIONS=${MPI_C_COMPILE_OPTIONS}")
+   message(STATUS "SHERPA: MPI_CXX_COMPILE_DEFINITIONS=${MPI_CXX_COMPILE_DEFINITIONS} MPI_C_COMPILE_DEFINITIONS=${MPI_C_COMPILE_DEFINITIONS}")
+   message(STATUS "SHERPA: MPI_CXX_INCLUDE_DIRS=${MPI_CXX_INCLUDE_DIRS} MPI_C_INCLUDE_DIRS=${MPI_C_INCLUDE_DIRS}")
+   message(STATUS "SHERPA: MPI_CXX_LINK_FLAGS=${MPI_CXX_LINK_FLAGS} MPI_C_LINK_FLAGS=${MPI_C_LINK_FLAGS}")
+ endif()
+ include_directories(${MPI_CXX_INCLUDE_DIRS})
  set (LOADMPIFORPY "from mpi4py import MPI")
 else()
  set (LOADMPIFORPY "")
 endif()
+
+macro(sherpa_mpi_link_libraries  mylib)
+  if(SHERPA_ENABLE_MPI)
+     target_link_libraries(${mylib} PRIVATE MPI::MPI_CXX)
+     if (SHERPA_ENABLE_FORTRAN)
+       target_link_libraries(${mylib} PRIVATE MPI::MPI_Fortran)
+     endif()
+  endif()
+endmacro(sherpa_mpi_link_libraries  mylib)
+
 
 #One should have also zlib?
 FIND_LIBRARY(LIBZIP_LIBRARY NAMES zip PATHS "$ENV{LIB_DIR}/lib" "$ENV{LIB}" /usr/local/lib /usr/lib /usr/lib64 )
@@ -516,6 +540,7 @@ HadronsMain HadronsCurrents HadronsMEs HadronsPSs
 PDF
 ToolsMath ToolsOrg ToolsYaml String ToolsPhys
 )
+sherpa_mpi_link_libraries(Sherpa)
 
 if (SHERPA_ENABLE_HEPMC3)
   target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_LIB} ${HEPMC3_SEARCH_LIB} )

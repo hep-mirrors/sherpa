@@ -21,6 +21,7 @@ add_library(PhotonsTools SHARED
                              ${Tools_SOURCES} 
 )
 target_include_directories(PhotonsTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(PhotonsTools)
 install(TARGETS PhotonsTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhotonsTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhotonsTools SOVERSION 0.0.0)
 set_target_properties(PhotonsTools        PROPERTIES DEFINE_SYMBOL "")

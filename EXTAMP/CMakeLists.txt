@@ -21,6 +21,7 @@ add_library(ExtAmp SHARED
                              ${EXTAMP_SOURCES} 
 )
 target_include_directories(ExtAmp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ExtAmp)
 install(TARGETS ExtAmp DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ExtAmp        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ExtAmp SOVERSION 0.0.0)
 set_target_properties(ExtAmp        PROPERTIES DEFINE_SYMBOL "")

@@ -21,6 +21,7 @@ add_library(ModelMain SHARED
                              ${Main_SOURCES} 
 )
 target_include_directories(ModelMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ModelMain)
 install(TARGETS ModelMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ModelMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ModelMain SOVERSION 0.0.0)
 set_target_properties(ModelMain        PROPERTIES DEFINE_SYMBOL "")

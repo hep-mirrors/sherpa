@@ -21,6 +21,7 @@ add_library(SASGSherpa SHARED
                              ${SASG_SOURCES} 
 )
 target_include_directories(SASGSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SASGSherpa)
 install(TARGETS SASGSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SASGSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SASGSherpa SOVERSION 0.0.0)
 set_target_properties(SASGSherpa        PROPERTIES DEFINE_SYMBOL "")

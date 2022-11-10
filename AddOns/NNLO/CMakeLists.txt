@@ -22,6 +22,7 @@ add_library(NNLOqT SHARED
                              ${NNLO_SOURCES} 
 )
 target_include_directories(NNLOqT PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(NNLOqT)
 install(TARGETS NNLOqT DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(NNLOqT        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME NNLOqT SOVERSION 0.0.0)
 set_target_properties(NNLOqT        PROPERTIES DEFINE_SYMBOL "")

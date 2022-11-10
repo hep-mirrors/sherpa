@@ -23,6 +23,7 @@ add_library(BeamMain SHARED
                              ${Main_SOURCES} 
 )
 target_include_directories(BeamMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(BeamMain)
 install(TARGETS BeamMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(BeamMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME BeamMain SOVERSION 0.0.0)
 set_target_properties(BeamMain        PROPERTIES DEFINE_SYMBOL "")

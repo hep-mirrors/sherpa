@@ -21,6 +21,7 @@ add_library(CSMain SHARED
                              ${Main_SOURCES} 
 )
 target_include_directories(CSMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(CSMain)
 install(TARGETS CSMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(CSMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME CSMain SOVERSION 0.0.0)
 set_target_properties(CSMain        PROPERTIES DEFINE_SYMBOL "")

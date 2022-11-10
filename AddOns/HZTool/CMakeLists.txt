@@ -33,6 +33,7 @@ add_library(SherpaHZToolAnalysis SHARED
                              ${HZTool_SOURCES} 
 )
 target_include_directories(SherpaHZToolAnalysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaHZToolAnalysis)
 install(TARGETS SherpaHZToolAnalysis DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaHZToolAnalysis        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaHZToolAnalysis SOVERSION 0.0.0)
 set_target_properties(SherpaHZToolAnalysis        PROPERTIES DEFINE_SYMBOL "")

@@ -21,6 +21,7 @@ add_library(METoolsColors SHARED
                              ${Colors_SOURCES} 
 )
 target_include_directories(METoolsColors PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(METoolsColors)
 install(TARGETS METoolsColors DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsColors        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsColors SOVERSION 0.0.0)
 set_target_properties(METoolsColors        PROPERTIES DEFINE_SYMBOL "")

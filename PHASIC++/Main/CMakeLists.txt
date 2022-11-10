@@ -22,6 +22,7 @@ add_library(PhasicMain SHARED
                              ${Main_SOURCES} 
 )
 target_include_directories(PhasicMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(PhasicMain)
 install(TARGETS PhasicMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhasicMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhasicMain SOVERSION 0.0.0)
 set_target_properties(PhasicMain        PROPERTIES DEFINE_SYMBOL "")

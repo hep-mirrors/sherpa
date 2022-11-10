@@ -20,6 +20,7 @@ add_library(SherpaSMGold SHARED
                              ${SMGold_SOURCES} 
 )
 target_include_directories(SherpaSMGold PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaSMGold)
 install(TARGETS SherpaSMGold DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaSMGold        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaSMGold SOVERSION 0.0.0)
 set_target_properties(SherpaSMGold        PROPERTIES DEFINE_SYMBOL "")

@@ -22,6 +22,7 @@ add_library(AhadicFormation SHARED
                              ${Formation_SOURCES} 
 )
 target_include_directories(AhadicFormation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(AhadicFormation)
 install(TARGETS AhadicFormation DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AhadicFormation        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AhadicFormation SOVERSION 0.0.0)
 set_target_properties(AhadicFormation        PROPERTIES DEFINE_SYMBOL "")

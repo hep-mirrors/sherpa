@@ -22,6 +22,7 @@ add_library(ShrimpsBeamRemnants SHARED
                              ${Beam_Remnants_SOURCES} 
 )
 target_include_directories(ShrimpsBeamRemnants PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ShrimpsBeamRemnants)
 install(TARGETS ShrimpsBeamRemnants DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsBeamRemnants        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsBeamRemnants SOVERSION 0.0.0)
 set_target_properties(ShrimpsBeamRemnants        PROPERTIES DEFINE_SYMBOL "")

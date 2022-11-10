@@ -28,6 +28,7 @@ add_library(SherpaGoSam SHARED
                              ${GoSam_SOURCES} 
 )
 target_include_directories(SherpaGoSam PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaGoSam)
 install(TARGETS SherpaGoSam DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaGoSam        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaGoSam SOVERSION 0.0.0)
 set_target_properties(SherpaGoSam        PROPERTIES DEFINE_SYMBOL "")

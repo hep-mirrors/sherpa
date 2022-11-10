@@ -21,6 +21,7 @@ add_library(METoolsCurrents SHARED
                              ${Currents_SOURCES} 
 )
 target_include_directories(METoolsCurrents PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(METoolsCurrents)
 install(TARGETS METoolsCurrents DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsCurrents        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsCurrents SOVERSION 0.0.0)
 set_target_properties(METoolsCurrents        PROPERTIES DEFINE_SYMBOL "")

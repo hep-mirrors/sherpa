@@ -22,6 +22,7 @@ add_library(ShrimpsMain SHARED
                              ${Main_SOURCES} 
 )
 target_include_directories(ShrimpsMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ShrimpsMain)
 install(TARGETS ShrimpsMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ShrimpsMain        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ShrimpsMain SOVERSION 0.0.0)
 set_target_properties(ShrimpsMain        PROPERTIES DEFINE_SYMBOL "")

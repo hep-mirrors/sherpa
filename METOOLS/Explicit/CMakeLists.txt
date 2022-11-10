@@ -21,6 +21,7 @@ add_library(METoolsExplicit SHARED
                              ${Explicit_SOURCES} 
 )
 target_include_directories(METoolsExplicit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(METoolsExplicit)
 install(TARGETS METoolsExplicit DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(METoolsExplicit        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME METoolsExplicit SOVERSION 0.0.0)
 set_target_properties(METoolsExplicit        PROPERTIES DEFINE_SYMBOL "")

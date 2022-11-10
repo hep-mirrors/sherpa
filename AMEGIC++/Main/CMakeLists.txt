@@ -25,6 +25,7 @@ add_library(Amegic SHARED
                              ${Main_SOURCES} 
 )
 target_include_directories(Amegic PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(Amegic)
 install(TARGETS Amegic DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(Amegic        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME Amegic SOVERSION 0.0.0)
 set_target_properties(Amegic        PROPERTIES DEFINE_SYMBOL "")

@@ -25,6 +25,7 @@ add_library(SherpaPythia SHARED
                              ${Pythia_SOURCES} 
 )
 target_include_directories(SherpaPythia PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(SherpaPythia)
 install(TARGETS SherpaPythia DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaPythia        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaPythia SOVERSION 0.0.0)
 set_target_properties(SherpaPythia        PROPERTIES DEFINE_SYMBOL "")

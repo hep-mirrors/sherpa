@@ -37,6 +37,7 @@ add_library(ToolsOrg SHARED
                              ${Org_SOURCES} 
 )
 target_include_directories(ToolsOrg PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(ToolsOrg)
 install(TARGETS ToolsOrg DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(ToolsOrg        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsOrg SOVERSION 0.0.0)
 set_target_properties(ToolsOrg        PROPERTIES DEFINE_SYMBOL "")

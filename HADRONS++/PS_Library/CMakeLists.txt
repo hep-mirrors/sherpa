@@ -21,6 +21,7 @@ add_library(HadronsPSs SHARED
                              ${PS_Library_SOURCES} 
 )
 target_include_directories(HadronsPSs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(HadronsPSs)
 install(TARGETS HadronsPSs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(HadronsPSs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME HadronsPSs SOVERSION 0.0.0)
 set_target_properties(HadronsPSs        PROPERTIES DEFINE_SYMBOL "")

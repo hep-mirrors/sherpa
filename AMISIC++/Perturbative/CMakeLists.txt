@@ -21,6 +21,7 @@ add_library(AmisicPerturbative SHARED
                              ${Perturbative_SOURCES} 
 )
 target_include_directories(AmisicPerturbative PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(AmisicPerturbative)
 install(TARGETS AmisicPerturbative DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(AmisicPerturbative        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AmisicPerturbative SOVERSION 0.0.0)
 set_target_properties(AmisicPerturbative        PROPERTIES DEFINE_SYMBOL "")

@@ -23,6 +23,7 @@ add_library(GRSSherpa SHARED
                              ${GRS_SOURCES} 
 )
 target_include_directories(GRSSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(GRSSherpa)
 install(TARGETS GRSSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(GRSSherpa        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME GRSSherpa SOVERSION 0.0.0)
 set_target_properties(GRSSherpa        PROPERTIES DEFINE_SYMBOL "")

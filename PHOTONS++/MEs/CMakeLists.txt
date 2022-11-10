@@ -23,6 +23,7 @@ add_library(PhotonsMEs SHARED
                              ${MEs_SOURCES} 
 )
 target_include_directories(PhotonsMEs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(PhotonsMEs)
 install(TARGETS PhotonsMEs DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(PhotonsMEs        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME PhotonsMEs SOVERSION 0.0.0)
 set_target_properties(PhotonsMEs        PROPERTIES DEFINE_SYMBOL "")

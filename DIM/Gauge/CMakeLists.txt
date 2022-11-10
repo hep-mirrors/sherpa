@@ -20,6 +20,7 @@ add_library(DIMGauge SHARED
                              ${Gauge_SOURCES} 
 )
 target_include_directories(DIMGauge PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_mpi_link_libraries(DIMGauge)
 install(TARGETS DIMGauge DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(DIMGauge        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME DIMGauge SOVERSION 0.0.0)
 set_target_properties(DIMGauge        PROPERTIES DEFINE_SYMBOL "")
