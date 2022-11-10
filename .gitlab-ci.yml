@@ -219,7 +219,7 @@
     - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   texinfo git latexmk  > rpm.log || (cat rpm.log && exit 1)
     - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   python3 python3-devel bzip2 > rpm.log || (cat rpm.log && exit 1)
     - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   cernlib cernlib-devel cernlib-static > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   MCFM MG5_aMC openloops > rpm.log || (cat rpm.log && exit 1)
+    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   MCFM MG5_aMC openloops tar > rpm.log || (cat rpm.log && exit 1)
     - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   cmake sphinx python3-sphinx python3-sphinxcontrib-bibtex > rpm.log || (cat rpm.log && exit 1)
     - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   'tex(atbegshi.sty)' 'tex(babel.sty)' 'tex(bigintcalc.sty)' 'tex(bitset.sty)' 'tex(etexcmds.sty)' 'tex(gettitlestring.sty)'  > rpm.log || (cat rpm.log && exit 1)
     - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL       'tex(iftex.sty)' 'tex(ifvtex.sty)' 'tex(infwarerr.sty)' 'tex(intcalc.sty)' 'tex(kvdefinekeys.sty)' 'tex(kvsetkeys.sty)' > rpm.log || (cat rpm.log && exit 1)
