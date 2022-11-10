@@ -12,8 +12,6 @@ SUBDIRS       =	\
 		GoSam \
 		MadLoop \
 		MCFM \
-		PGS \
-		Delphes \
 		Rivet \
 		HepMC \
 		Root \
