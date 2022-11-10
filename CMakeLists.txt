@@ -179,7 +179,6 @@ if (SHERPA_ENABLE_FORTRAN)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${fl}" ) #neede for dependent flags      
       endif()
     endif()
-  endif()
   endforeach()
   list(JOIN NEW_CMAKE_Fortran_FLAGS " " CMAKE_Fortran_FLAGS_X )
   if (NOT CMAKE_FORCE_FLAGS)
