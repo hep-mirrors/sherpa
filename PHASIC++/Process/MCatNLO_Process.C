@@ -809,12 +809,3 @@ void MCatNLO_Process::SetNLOMC(PDF::NLOMC_Base *const mc)
   p_rproc->SetNLOMC(mc);
   p_bproc->SetNLOMC(mc);
 }
-
-#ifdef USING__Threading
-void MCatNLO_Process::AddMEHThread(MEH_TID_Vector &cts,void *(*CalcFunc)(void*))
-{
-  Process_Base::AddMEHThread(cts,CalcFunc);
-  p_bviproc->SetTID(p_tid);
-  p_rsproc->AddMEHThread(cts,CalcFunc);
-}
-#endif
