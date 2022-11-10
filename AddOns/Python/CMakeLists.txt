@@ -1,5 +1,5 @@
 find_program(SWIG NAMES swig  REQUIRED)
-message(STATUS "SHERPA Python: SWIG=${SWIG}")
+message(STATUS "SHERPA: SWIG=${SWIG}")
 set( PYEXTFILES_GEN
     Sherpa.i 
     Exception.i 

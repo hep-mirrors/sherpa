@@ -262,8 +262,9 @@ macro(sherpa_mpi_link_libraries  mylib)
 endmacro(sherpa_mpi_link_libraries  mylib)
 
 #One should have also zlib?
-FIND_LIBRARY(LIBZIP_LIBRARY NAMES zip PATHS "$ENV{LIB_DIR}/lib" "$ENV{LIB}" /usr/local/lib /usr/lib /usr/lib64 )
-message(STATUS "SHERPA: LIBZIP_LIBRARY=${LIBZIP_LIBRARY} LIBZIP_INCLUDE_DIRS=${LIBZIP_INCLUDE_DIRS}")
+find_package(LibZip REQUIRED)
+#FIND_LIBRARY(LIBZIP_LIBRARY NAMES zip PATHS "$ENV{LIB_DIR}/lib" "$ENV{LIB}" /usr/local/lib /usr/lib /usr/lib64 )
+message(STATUS "SHERPA: LibZip_VERSION=${LibZip_VERSION} LibZip_LIBRARIES=${LibZip_LIBRARIES} LibZip_INCLUDE_DIR=${LibZip_INCLUDE_DIR}")
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
@@ -303,7 +304,7 @@ add_subdirectory(SHRiMPS)
 add_subdirectory(SHERPA)
 IF (SHERPA_ENABLE_MCFM)
   find_package(MCFM REQUIRED)
-  message(STATUS "SHERPA: MCFM_LIBRARY=${MCFM_LIBRARY} MCFM_INCLUDE_DIR=${MCFM_INCLUDE_DIR}")
+  message(STATUS "SHERPA: MCFM_VERSION=${MCFM_VERSION} MCFM_LIBRARY=${MCFM_LIBRARY} MCFM_INCLUDE_DIR=${MCFM_INCLUDE_DIR}")
   add_subdirectory(AddOns/MCFM)
 endif()
 
@@ -521,9 +522,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh
 set(Sherpa_SRCS_C Sherpa.C Filter.C)
 list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
 add_executable(Sherpa  ${Sherpa_SRCS_C} ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA//Run/Main.C)
-if (LIBZIP_LIBRARY )
-  target_link_libraries(Sherpa PRIVATE ${LIBZIP_LIBRARY})
-endif()
+target_link_libraries(Sherpa PRIVATE LibZip::LibZip)
 
 target_link_libraries(Sherpa PRIVATE    
 METoolsColors  METoolsCurrents  METoolsExplicit  METoolsLoops METoolsMain  METoolsSpinCorrelations  METoolsVertices
@@ -570,9 +569,9 @@ if (SHERPA_ENABLE_PYTHON OR SHERPA_ENABLE_DIHIGGS)
   endif()
   if (NOT SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR})
     set (SHERPA_Python_SITEARCH ${CMAKE_INSTALL_PREFIX}/lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages/)
-    message(STATUS "SHERPA: SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} defaults to ${SHERPA_Python_SITEARCH}")
+    message(STATUS "SHERPA: Python_VERSION_MAJOR.Python_VERSION_MINOR=${Python_VERSION_MAJOR}${Python_VERSION_MINOR} SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} defaults to ${SHERPA_Python_SITEARCH}")
   else()
-    message(STATUS "SHERPA: SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} is set to to ${SHERPA_Python_SITEARCH}")
+    message(STATUS "SHERPA: Python_VERSION_MAJOR.Python_VERSION_MINOR=${Python_VERSION_MAJOR}${Python_VERSION_MINOR}Python_VERSION_MAJOR.Python_VERSION_MINOR=${Python_VERSION_MAJOR}${Python_VERSION_MINOR} SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} is set to to ${SHERPA_Python_SITEARCH}")
   endif()
   if (SHERPA_ENABLE_PYTHON)
     add_subdirectory(AddOns/Python)
@@ -584,11 +583,13 @@ endif()
 
 if (SHERPA_ENABLE_RIVET)
   find_package(Rivet REQUIRED)
-  message(STATUS "SHERPA: RIVET_FOUND=${RIVET_FOUND} RIVET_VERSION=${RIVET_VERSION} RIVET_LIBRARIES=${RIVET_LIBRARIES} RIVET_INCLUDE_DIRS=${RIVET_INCLUDE_DIRS} RIVET_DATA_PATH=${RIVET_DATA_PATH} RIVET_ANALYSIS_PATH=${RIVET_ANALYSIS_PATH} Rivet_HEPMC2_FOUND=${Rivet_HEPMC2_FOUND}  Rivet_HEPMC3_FOUND=${Rivet_HEPMC3_FOUND}")
+  message(STATUS "SHERPA: RIVET_VERSION=${RIVET_VERSION} RIVET_FOUND=${RIVET_FOUND}  RIVET_LIBRARIES=${RIVET_LIBRARIES} RIVET_INCLUDE_DIRS=${RIVET_INCLUDE_DIRS} RIVET_DATA_PATH=${RIVET_DATA_PATH} RIVET_ANALYSIS_PATH=${RIVET_ANALYSIS_PATH} Rivet_HEPMC2_FOUND=${Rivet_HEPMC2_FOUND}  Rivet_HEPMC3_FOUND=${Rivet_HEPMC3_FOUND}")
   add_subdirectory(AddOns/Rivet)
 endif()
 
 if (SHERPA_ENABLE_PYTHIA8)
+  find_package(Pythia8 8.220 REQUIRED)
+  message(STATUS "SHERPA: PYTHIA8_VERSION=${PYTHIA8_VERSION} PYTHIA8_LIBRARIES=${PYTHIA8_LIBRARIES} PYTHIA8_INCLUDE_DIRS=${PYTHIA8_INCLUDE_DIRS}")
   add_subdirectory(AddOns/Pythia)
 endif()
 
@@ -598,7 +599,7 @@ endif()
 
 if (SHERPA_ENABLE_BLACKHAT)
   find_package(BlackHat REQUIRED)
-  message(STATUS "SHERPA: BLACKHAT_PATH=${BLACKHAT_PATH} BLACKHAT_LIBRARY=${BLACKHAT_LIBRARY}")
+  message(STATUS "SHERPA: BLACKHAT_VERSION=${BLACKHAT_VERSION} BLACKHAT_PATH=${BLACKHAT_PATH}  BLACKHAT_LIBRARIES=${BLACKHAT_LIBRARIES} BLACKHAT_INCLUDE_DIRS=${BLACKHAT_INCLUDE_DIRS}")
   add_subdirectory(AddOns/BlackHat)
 endif()
 

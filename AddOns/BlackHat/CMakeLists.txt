@@ -1,6 +1,4 @@
 #Manually edited
-find_package(BlackHat REQUIRED)
-message(STATUS "SHERPA: BLACKHAT_LIBRARIES=${BLACKHAT_LIBRARIES} BLACKHAT_INCLUDE_DIRS=${BLACKHAT_INCLUDE_DIRS}")
 
 ########################################################################
 #  Automatically or semiautomaticaly generated, do not edit.
