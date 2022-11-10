@@ -59,10 +59,11 @@ option(SHERPA_ENABLE_RECOLA                  "Enables building with Recola." ON)
 option(SHERPA_ENABLE_RIVET                   "Enables building with Rivet." ON)
 option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." ON)
 option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)#BUGGED!
+option(SHERPA_ENABLE_TESTING                 "Enables testing." ON)
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD GOSAM GZIP HEPEVT HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL 
 INTERNAL_PDFS
-LHAPDF LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING)
+LHAPDF LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING)
 foreach (en IN LISTS allenables)
      message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -942,3 +943,10 @@ install(FILES
       ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H 
       ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H DESTINATION 
       ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/ATOOLS/Org/  COMPONENT devel )
+
+if (SHERPA_ENABLE_TESTING)
+  ENABLE_TESTING()
+  if (SHERPA_ENABLE_EWSUD)
+    add_subdirectory(AddOns/EWSud/Tests)
+  endif()
+endif()
