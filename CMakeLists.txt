@@ -131,7 +131,7 @@ message(STATUS "SHERPA: CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}=${CMAKE_CXX_FLAGS_${
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
-
+set(CXX_CXX_FLAGS_TO_CHECK -Wno-tautological-constant-compare)
 set ( NEW_CMAKE_CXX_FLAGS " ")
 string(REPLACE " " ";" LIST_CMAKE_CXX_FLAGS "${CXX_CXX_FLAGS_TO_CHECK} ${CMAKE_CXX_FLAGS}")
 foreach(fx IN LISTS LIST_CMAKE_CXX_FLAGS)
@@ -187,8 +187,8 @@ if (SHERPA_ENABLE_FORTRAN)
   message(STATUS "SHERPA: CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
 endif()
 ########################################################################
-include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${PROJECT_SOURCE_DIR})
 add_definitions(-DHAVE_CONFIG_H)
 add_definitions(-DPIC)
 
