@@ -54,7 +54,7 @@ option(SHERPA_ENABLE_PYTHON                  "Enables building of Python interfa
 option(SHERPA_ENABLE_RECOLA                  "Enables building with Recola." ON)
 option(SHERPA_ENABLE_RIVET                   "Enables building with Rivet." ON)
 option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." ON)
-option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)#BUGGED!
+option(SHERPA_ENABLE_THREADING               "Enables building SHERPA_ENABLE_MANUALwith threading." ON)#BUGGED?
 option(SHERPA_ENABLE_TESTING                 "Enables testing." ON)
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD GOSAM GZIP HEPEVT HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL 
@@ -908,7 +908,7 @@ string(APPEND CXXFLAGS_H_CONTENT  "\
 #define SHERPA_SHARE_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC/\"\n\
 \n\
 /* Sherpa subversion */\n\
-#define SHERPA_SUBVERSION \"${SHERPA_VERSION_MINOR}"."${SHERPA_VERSION_PATCH}\"\n\
+#define SHERPA_SUBVERSION \"${SHERPA_VERSION_MINOR}.${SHERPA_VERSION_PATCH}\"\n\
 \n\
 /* Sherpa version */\n\
 #define SHERPA_VERSION \"${SHERPA_VERSION_MAJOR}\"\n\

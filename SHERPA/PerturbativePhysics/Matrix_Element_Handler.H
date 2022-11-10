@@ -163,9 +163,6 @@ namespace SHERPA {
 
     int InitializeTheReweighting(ATOOLS::Variations_Mode mode);
 
-#ifdef USING__Threading
-    static void *TCalculateTotalXSecs(void *arg);
-#endif
 
     bool CalculateTotalXSecs();
     bool GenerateOneEvent();
