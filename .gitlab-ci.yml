@@ -247,6 +247,7 @@ Fedora35-autotools:
     - make install
     - make -C Manual install
     - echo $COMPILATIONSTART $COMPILATIONEND $(echo $COMPILATIONEND-$COMPILATIONSTART | bc -l)
+    - ctest --test-dir BUILD    
   cache:
     key: yum-cache-$FREL
     paths:
@@ -264,6 +265,7 @@ Fedora35-cmake:
     - export COMPILATIONEND=$(date +%s)
     - cmake --install BUILD
     - echo $COMPILATIONSTART $COMPILATIONEND $(echo $COMPILATIONEND-$COMPILATIONSTART | bc -l)
+    - ctest --test-dir BUILD
   cache:
     key: yum-cache-$FREL
     paths:
