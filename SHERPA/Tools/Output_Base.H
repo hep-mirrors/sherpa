@@ -9,13 +9,18 @@ namespace ATOOLS { class Data_Reader; }
 
 namespace SHERPA {
 
+  class Initialization_Handler;
+
   struct Output_Arguments {
     std::string m_outpath, m_outfile;
     ATOOLS::Data_Reader *p_reader;
+    Initialization_Handler *p_init;
     Output_Arguments(const std::string outpath,
 		     const std::string outfile,
-		     ATOOLS::Data_Reader *const read):
-      m_outpath(outpath), m_outfile(outfile), p_reader(read) {}
+		     ATOOLS::Data_Reader *const read,
+		     Initialization_Handler *init):
+      m_outpath(outpath), m_outfile(outfile),
+      p_reader(read), p_init(init) {}
   };// end of struct Output_Arguments
 
   class Event_Handler;

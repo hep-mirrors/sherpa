@@ -1,4 +1,3 @@
-#ifdef XXXXXXXXXXXXXX
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/My_MPI.H"
 #ifdef USING__HDF5
@@ -13,12 +12,12 @@
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PDF/Main/PDF_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "ATOOLS/Phys/Variations.H"
+#include "SHERPA/Tools/Variations.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
@@ -38,15 +37,11 @@ namespace SHERPA {
 
     File *p_file;
     std::map<std::string,DataSet> m_dss;
-    std::map<std::string,std::vector<int> > m_icache;
-    std::map<std::string,std::vector<double> > m_dcache;
-    std::map<std::string,std::vector<size_t> > m_scache;
-    std::map<std::string,int> m_nup;
-    std::vector<std::vector<double> > m_wcache;
+    std::vector<std::vector<double> > m_ecache, m_pcache;
     double m_xs, m_xserr, m_max, m_trials;
     std::string m_basename;
     int m_setcol, m_ncache, m_events, m_unweight, m_offset, m_nmax;
-    size_t m_nweights, m_clabel;
+    size_t m_nweights, m_neprops, m_npprops, m_clabel;
     Matrix_Element_Handler *p_me;
     Variations *p_vars;
 
@@ -219,76 +214,74 @@ namespace SHERPA {
     
     void Header()
     {
-      Group init = p_file->createGroup("init");
-      std::vector<int> beamid = { int((long int)rpa->gen.Beam1()) } ;
-      m_dss["beamA"]=init.createDataSet<int>("beamA",DataSpace::From(beamid));
-      m_dss["beamA"].write(beamid);
-      beamid[0]=(long int)rpa->gen.Beam2();
-      m_dss["beamB"]=init.createDataSet<int>("beamB",DataSpace::From(beamid));
-      m_dss["beamB"].write(beamid);
-      std::vector<double> ebeam = { rpa->gen.PBeam(0)[0] };
-      m_dss["energyA"]=init.createDataSet<double>("energyA",DataSpace::From(ebeam));
-      m_dss["energyA"].write(ebeam);
-      ebeam[0]=rpa->gen.PBeam(1)[0];
-      m_dss["energyB"]=init.createDataSet<double>("energyB",DataSpace::From(ebeam));
-      m_dss["energyB"].write(ebeam);
-      std::vector<int> pdfgroup = { 0 };
-      m_dss["PDFgroupA"]=init.createDataSet<int>("PDFgroupA",DataSpace::From(pdfgroup));
-      m_dss["PDFgroupA"].write(pdfgroup);
-      m_dss["PDFgroupB"]=init.createDataSet<int>("PDFgroupB",DataSpace::From(pdfgroup));
-      m_dss["PDFgroupB"].write(pdfgroup);
-      std::vector<int> pdfset = { rpa->gen.PDF(0)?rpa->gen.PDF(0)->LHEFNumber():-1 };
-      m_dss["PDFsetA"]=init.createDataSet<int>("PDFsetA",DataSpace::From(pdfset));
-      m_dss["PDFsetA"].write(pdfset);
-      pdfset[0]=rpa->gen.PDF(1)?rpa->gen.PDF(1)->LHEFNumber():-1;
-      m_dss["PDFsetB"]=init.createDataSet<int>("PDFsetB",DataSpace::From(pdfset));
-      m_dss["PDFsetB"].write(pdfset);
-      std::vector<int> weighting = { ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3 };
-      m_dss["weightingStrategy"]=init.createDataSet<int>("weightingStrategy",DataSpace::From(weighting));
-      m_dss["weightingStrategy"].write(weighting);
-      const PHASIC::Process_Vector procs(p_me->AllProcesses());
-      std::vector<int> nprocs(1,procs.size());
-      m_dss["numProcesses"]=init.createDataSet<int>("numProcesses",DataSpace::From(nprocs));
-      m_dss["numProcesses"].write(nprocs);
-      std::vector<int> versionno = {1, 0, 0};
-      m_dss["version"]=init.createDataSet<int>("version",DataSpace::From(versionno));
+      std::vector<int> versionno = {2, 0, 0};
+      m_dss["version"]=p_file->createDataSet<int>
+	("version",DataSpace::From(versionno));
       m_dss["version"].write(versionno);
-      Group process = p_file->createGroup("procInfo");
-      std::vector<int> procid(procs.size()), nplo(procs.size()), npnlo(procs.size());
-      std::vector<double> xsec(procs.size()), err(procs.size()), max(procs.size());
-      for (size_t i(0);i<procid.size();++i) {
-	procid[i]=i+1;
-	npnlo[i]=nplo[i]=-1;
+      std::vector<double> idata;
+      std::vector<std::string> inames;
+      inames.push_back("beamA");
+      idata.push_back((long int)rpa->gen.Beam1());
+      inames.push_back("beamB");
+      idata.push_back((long int)rpa->gen.Beam2());
+      inames.push_back("energyA");
+      idata.push_back(rpa->gen.PBeam(0)[0]);
+      inames.push_back("energyB");
+      idata.push_back(rpa->gen.PBeam(1)[0]);
+      inames.push_back("PDFgroupA");
+      idata.push_back(0);
+      inames.push_back("PDFgroupB");
+      idata.push_back(0);
+      inames.push_back("PDFsetA");
+      idata.push_back(rpa->gen.PDF(0)?rpa->gen.PDF(0)->LHEFNumber():-1);
+      inames.push_back("PDFsetB");
+      idata.push_back(rpa->gen.PDF(1)?rpa->gen.PDF(1)->LHEFNumber():-1);
+      inames.push_back("weightingStrategy");
+      idata.push_back(ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3);
+      const PHASIC::Process_Vector procs(p_me->AllProcesses());
+      inames.push_back("numProcesses");
+      idata.push_back(procs.size());
+      DataSetCreateProps props;
+      m_dss["init"]=p_file->createDataSet<double>
+	("init",DataSpace::From(idata));
+      m_dss["init"].write(idata);
+      m_dss["init"].createAttribute<std::string>
+	("properties",DataSpace::From(inames)).write(inames);
+      std::vector<std::vector<double> > pdata
+	(procs.size(),std::vector<double>(6,0));
+      std::vector<std::string> pnames(6);
+      pnames[0]="procId";
+      pnames[1]="npLO";
+      pnames[2]="npNLO";
+      pnames[3]="xSection";
+      pnames[4]="error";
+      pnames[5]="unitWeight";
+      for (size_t i(0);i<pdata.size();++i) {
+	pdata[i][0]=i+1;
+	pdata[i][1]=pdata[i][2]=-1;
 	if (procs[i]->Info().Has(nlo_type::real))
-	  npnlo[i]=procs[i]->NIn()+procs[i]->NOut()-1;
-	else nplo[i]=procs[i]->NIn()+procs[i]->NOut();
+	  pdata[i][2]=procs[i]->NIn()+procs[i]->NOut()-1;
+	else pdata[i][1]=procs[i]->NIn()+procs[i]->NOut();
 	if (procs[i]->Get<MCatNLO_Process>()) {
-	  xsec[i]=(*procs[i])[0]->Integrator()->TotalXS()+
+	  pdata[i][3]=(*procs[i])[0]->Integrator()->TotalXS()+
 	    (*procs[i])[1]->Integrator()->TotalXS();
-	  err[i]=sqrt(sqr((*procs[i])[0]->Integrator()->TotalError())+
+	  pdata[i][4]=sqrt(sqr((*procs[i])[0]->Integrator()->TotalError())+
 		      sqr((*procs[i])[1]->Integrator()->TotalError()));
 	}
 	else {
-	  xsec[i]=procs[i]->Integrator()->TotalXS();
-	  err[i]=procs[i]->Integrator()->TotalError();
+	  pdata[i][3]=procs[i]->Integrator()->TotalXS();
+	  pdata[i][4]=procs[i]->Integrator()->TotalError();
 	}
-	xsec[i]*=rpa->Picobarn();
-	err[i]*=rpa->Picobarn();
-	max[i]=procs[i]->Integrator()->Max();
+	pdata[i][3]*=rpa->Picobarn();
+	pdata[i][4]*=rpa->Picobarn();
+	pdata[i][5]=procs[i]->Integrator()->Max();
 	m_nmax=std::max(m_nmax,int(procs[i]->NIn()+procs[i]->NOut()));
       }
-      m_dss["procId"]=process.createDataSet<int>("procId",DataSpace::From(procid));
-      m_dss["procId"].write(procid);
-      m_dss["npLO"]=process.createDataSet<int>("npLO",DataSpace::From(nplo));
-      m_dss["npLO"].write(nplo);
-      m_dss["npNLO"]=process.createDataSet<int>("npNLO",DataSpace::From(npnlo));
-      m_dss["npNLO"].write(npnlo);
-      m_dss["xSection"]=process.createDataSet<double>("xSection",DataSpace::From(xsec));
-      m_dss["xSection"].write(xsec);
-      m_dss["error"]=process.createDataSet<double>("error",DataSpace::From(err));
-      m_dss["error"].write(err);
-      m_dss["unitWeight"]=process.createDataSet<double>("unitWeight",DataSpace::From(max));
-      m_dss["unitWeight"].write(max);
+      m_dss["procInfo"]=p_file->createDataSet<double>
+	("procInfo",DataSpace::From(pdata));
+      m_dss["procInfo"].write(pdata);
+      m_dss["procInfo"].createAttribute<std::string>
+	("properties",DataSpace::From(pnames)).write(pnames);
       Initialize(m_nmax);
     }
 
@@ -301,41 +294,6 @@ namespace SHERPA {
       Write(1);
     }
 
-    void AddSizeTDataSet(Group &group,const std::string &name,
-			 const std::vector<size_t> &min,
-			 const std::vector<size_t> &max,
-			 const DataSetCreateProps &props)
-    {
-      m_dss[name]=group.createDataSet<size_t>(name,DataSpace(min,max),props);
-      m_scache[name].reserve(m_ncache);
-    }
-
-    void AddIntDataSet(Group &group,const std::string &name,
-		       std::vector<size_t> &min,std::vector<size_t> &max,
-		       const DataSetCreateProps &props,const int nup=1)
-    {
-      min.front()*=nup;
-      if (max.front()!=DataSpace::UNLIMITED) max.front()*=nup;
-      m_dss[name]=group.createDataSet<int>(name,DataSpace(min,max),props);
-      min.front()/=nup;
-      if (max.front()!=DataSpace::UNLIMITED) max.front()/=nup;
-      m_icache[name].reserve(m_ncache);
-      m_nup[name]=nup;
-    }
-
-    void AddDoubleDataSet(Group &group,const std::string &name,
-			  std::vector<size_t> &min,std::vector<size_t> &max,
-			  const DataSetCreateProps &props,const int nup=1)
-    {
-      min.front()*=nup;
-      if (max.front()!=DataSpace::UNLIMITED) max.front()*=nup;
-      m_dss[name]=group.createDataSet<double>(name,DataSpace(min,max),props);
-      min.front()/=nup;
-      if (max.front()!=DataSpace::UNLIMITED) max.front()/=nup;
-      m_dcache[name].reserve(m_ncache);
-      m_nup[name]=nup;
-    }
-
     void Initialize(const size_t &nup)
     {
       size_t size(MPI::COMM_WORLD.Get_size());
@@ -343,36 +301,7 @@ namespace SHERPA {
       min.front()*=m_unweight?1:rpa->gen.NumberOfEvents();
       std::vector<size_t> max(min);
       DataSetCreateProps props;
-      if (m_unweight) {
-	max.front()=DataSpace::UNLIMITED;
-	props.add(Chunking(std::vector<hsize_t>(1,m_unweight*size)));
-      }
-      // LHEF event information
-      Group event = p_file->createGroup("event");
-      AddIntDataSet(event,"pid",min,max,props);
-      AddIntDataSet(event,"nparticles",min,max,props);
-      AddSizeTDataSet(event,"start",min,max,props);
-      AddDoubleDataSet(event,"trials",min,max,props);
-      AddDoubleDataSet(event,"scale",min,max,props);
-      AddDoubleDataSet(event,"fscale",min,max,props);
-      AddDoubleDataSet(event,"rscale",min,max,props);
-      AddDoubleDataSet(event,"aqed",min,max,props);
-      AddDoubleDataSet(event,"aqcd",min,max,props);
-      // LHEF particle information
-      Group particle = p_file->createGroup("particle");
-      AddIntDataSet(particle,"id",min,max,props,nup);
-      AddIntDataSet(particle,"status",min,max,props,nup);
-      AddIntDataSet(particle,"mother1",min,max,props,nup);
-      AddIntDataSet(particle,"mother2",min,max,props,nup);
-      AddIntDataSet(particle,"color1",min,max,props,nup);
-      AddIntDataSet(particle,"color2",min,max,props,nup);
-      AddDoubleDataSet(particle,"px",min,max,props,nup);
-      AddDoubleDataSet(particle,"py",min,max,props,nup);
-      AddDoubleDataSet(particle,"pz",min,max,props,nup);
-      AddDoubleDataSet(particle,"e",min,max,props,nup);
-      AddDoubleDataSet(particle,"m",min,max,props,nup);
-      AddDoubleDataSet(particle,"lifetime",min,max,props,nup);
-      AddDoubleDataSet(particle,"spin",min,max,props,nup);
+      if (m_unweight) max.front()=DataSpace::UNLIMITED;
       std::vector<std::string> wnames(1,"NOMINAL");
       if (p_vars) {
 	const Variations::Parameters_Vector *params
@@ -381,107 +310,104 @@ namespace SHERPA {
 	  wnames.push_back((*params)[i]->m_name);
       }
       m_nweights=wnames.size();
-      min.push_back(m_nweights);
-      max.push_back(m_nweights);
+      // LHEF event information
+      std::vector<std::string> enames((m_neprops=9)+m_nweights);
+      enames[0]="pid";
+      enames[1]="nparticles";
+      enames[2]="start";
+      enames[3]="trials";
+      enames[4]="scale";
+      enames[5]="fscale";
+      enames[6]="rscale";
+      enames[7]="aqed";
+      enames[8]="aqcd";
+      for (size_t i(0);i<wnames.size();++i)
+	enames[m_neprops+i]=wnames[i];
+      min.push_back(enames.size());
+      max.push_back(enames.size());
       if (m_unweight) {
 	props=DataSetCreateProps();
-	props.add(Chunking({m_unweight*size,m_nweights}));
+	props.add(Chunking({m_unweight*size,m_neprops+m_nweights}));
       }
-      m_dss["weight"]=event.createDataSet<double>
-	("weight",DataSpace(min,max),props);
-      m_wcache.reserve(m_ncache);
-      for (size_t i(0);i<m_wcache.size();++i)
-	m_wcache[i].reserve(m_nweights);
-      m_dss["weight"].createAttribute<std::string>
-	("weight_names",DataSpace::From(wnames)).write(wnames);
+      m_dss["events"]=p_file->createDataSet<double>
+	("events",DataSpace(min,max),props);
+      m_ecache.reserve(m_ncache);
+      for (size_t i(0);i<m_ecache.size();++i)
+	m_ecache[i].reserve(m_neprops+m_nweights);
+      m_dss["events"].createAttribute<std::string>
+	("events",DataSpace::From(enames)).write(enames);
+      // LHEF particle information
+      std::vector<std::string> pnames(m_npprops=13);
+      pnames[0]="id";
+      pnames[1]="status";
+      pnames[2]="mother1";
+      pnames[3]="mother2";
+      pnames[4]="color1";
+      pnames[5]="color2";
+      pnames[6]="px";
+      pnames[7]="py";
+      pnames[8]="pz";
+      pnames[9]="e";
+      pnames[10]="m";
+      pnames[11]="lifetime";
+      pnames[12]="spin";
+      min.front()*=nup;
+      if (!m_unweight) max.front()*=nup;
+      min.back()=pnames.size();
+      max.back()=pnames.size();
+      if (m_unweight) {
+	props=DataSetCreateProps();
+	props.add(Chunking({m_unweight*size*nup,m_npprops}));
+      }
+      m_dss["particles"]=p_file->createDataSet<double>
+	("particles",DataSpace(min,max),props);
+      m_pcache.reserve(m_ncache);
+      for (size_t i(0);i<m_pcache.size();++i)
+	m_pcache[i].reserve(m_npprops);
+      m_dss["particles"].createAttribute<std::string>
+	("properties",DataSpace::From(pnames)).write(pnames);
     }
 
     void Write(const int &mode=0)
     {
       if (mode!=1 && m_events<m_ncache) return;
-      if (m_events==0) {
-	if (m_trials)
-	  std::cout<<METHOD<<"(rank="
-		   <<MPI::COMM_WORLD.Get_rank()
-		   <<": Error! # trials = "<<m_trials<<".\n";
-	return;
-      }
-      if (m_scache["start"].empty()) {
-	m_icache["pid"].push_back(1);
-	m_icache["nparticles"].push_back(m_nmax);
-	m_dcache["scale"].push_back(-1.);
-	m_dcache["fscale"].push_back(-1.);
-	m_dcache["rscale"].push_back(-1.);
-	m_dcache["aqed"].push_back(-1.);
-	m_dcache["aqcd"].push_back(-1.);
-	m_scache["start"].push_back(m_offset*m_nmax);
-	for (size_t i(0);i<m_nmax;++i) {
-	  m_dcache["e"].push_back(0.);
-	  m_dcache["px"].push_back(0.);
-	  m_dcache["py"].push_back(0.);
-	  m_dcache["pz"].push_back(0.);
-	  m_dcache["m"].push_back(0.);
-	  m_icache["id"].push_back(0);
-	  m_dcache["spin"].push_back(0);
-	  m_icache["color1"].push_back(0);
-	  m_icache["color2"].push_back(0);
-	  m_icache["status"].push_back(0);
-	  m_icache["mother1"].push_back(0);
-	  m_icache["mother2"].push_back(0);
-	  m_dcache["lifetime"].push_back(0.);
-	}
-	m_wcache.push_back(std::vector<double>(m_nweights,0.));
-	m_dcache["trials"].push_back(m_trials);
+      if (m_events==0 && m_trials==0) return;
+      if (m_ecache.empty()) {
+	std::vector<double> eprops(m_neprops+m_nweights,-1.);
+	eprops[0]=0;
+	eprops[1]=m_nmax;
+	eprops[2]=m_offset*m_nmax;
+	for (size_t i(0);i<m_nweights;++i) eprops[m_neprops+i]=0.;
+	eprops[3]=m_trials;
+	m_ecache.push_back(eprops);
 	m_trials=0.0;
+	for (size_t i(0);i<m_nmax;++i)
+	  m_pcache.push_back(std::vector<double>(m_npprops,0.));
       }
       m_events=0;
-      size_t ncache(m_scache["start"].size());
+      size_t ncache(m_ecache.size());
       std::size_t size(MPI::COMM_WORLD.Get_size());
       std::size_t crank(MPI::COMM_WORLD.Get_rank());
       std::vector<int> ncaches(size,ncache);
-      mpi->MPIComm()->Allgather(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,&ncaches[0],1,MPI::INT);
+      MPI::COMM_WORLD.Allgather(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,&ncaches[0],1,MPI::INT);
       size_t sumcache(0), rank(0);
       for (size_t i(0);i<size;++i) sumcache+=ncaches[i];
       for (size_t i(0);i<crank;++i) rank+=ncaches[i];
       if (sumcache==0) return;
-      std::vector<size_t> &start(m_scache["start"]);
-      for (size_t i(0);i<start.size();++i) start[i]+=rank*m_nup["id"];
+      for (size_t i(0);i<m_ecache.size();++i) m_ecache[i][2]+=rank*m_nmax;
       if (m_unweight) {
-	for (std::map<std::string,std::vector<size_t> >::iterator
-	       it=m_scache.begin();it!=m_scache.end();++it)
-	  m_dss[it->first].resize(std::vector<size_t>(1,m_offset+sumcache));
-	for (std::map<std::string,std::vector<int> >::iterator
-	       it=m_icache.begin();it!=m_icache.end();++it)
-	  m_dss[it->first].resize(std::vector<size_t>(1,(m_offset+sumcache)*m_nup[it->first]));
-	for (std::map<std::string,std::vector<double> >::iterator
-	       it=m_dcache.begin();it!=m_dcache.end();++it)
-	  m_dss[it->first].resize(std::vector<size_t>(1,(m_offset+sumcache)*m_nup[it->first]));
-	m_dss["weight"].resize({m_offset+sumcache,m_nweights});
+	m_dss["events"].resize({m_offset+sumcache,m_neprops+m_nweights});
+	m_dss["particles"].resize({(m_offset+sumcache)*m_nmax,m_npprops});
       }
       rank+=m_offset;
       m_offset+=sumcache;
-      for (std::map<std::string,std::vector<size_t> >::iterator
-	     it=m_scache.begin();it!=m_scache.end();++it) {
-	m_dss[it->first].select({rank},{ncache}).write(it->second);
-	it->second.clear();
-      }
-      for (std::map<std::string,std::vector<int> >::iterator
-	     it=m_icache.begin();it!=m_icache.end();++it) {
-	int nup(it->second.size()/ncache);
-	m_dss[it->first].select({rank*nup},{ncache*nup}).write(it->second);
-	it->second.clear();
-      }
-      for (std::map<std::string,std::vector<double> >::iterator
-	     it=m_dcache.begin();it!=m_dcache.end();++it) {
-	int nup(it->second.size()/ncache);
-	m_dss[it->first].select({rank*nup},{ncache*nup}).write(it->second);
-	it->second.clear();
-      }
-      m_dss["weight"].select({rank,0},{ncache,m_wcache.front().size()}).write(m_wcache);
-      m_wcache.clear();
+      m_dss["events"].select({rank,0},{ncache,m_ecache.front().size()}).write(m_ecache);
+      m_ecache.clear();
+      m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_pcache.front().size()}).write(m_pcache);
+      m_pcache.clear();
     }
 
-    void Output(Blob_List* blobs)
+    void Output(Blob_List* blobs,double _weight)
     {
       DEBUG_FUNC(m_basename);
       ++m_events;
@@ -489,6 +415,7 @@ namespace SHERPA {
       const auto weight(blobs->Weight());
       Blob *sp(blobs->FindFirst(btp::Signal_Process));
       const auto trials((*sp)["Trials"]->Get<double>());
+      Process_Base *proc((*sp)["Process"]->Get<Process_Base*>());
       if (m_unweight) {
 	double weight((*sp)["Weight"]->Get<double>());
 	double max((*sp)["Max"]->Get<double>());
@@ -502,79 +429,72 @@ namespace SHERPA {
       }
       if (weight!=0.0 && m_setcol) SetColors(blobs);
       size_t nup(sp->NInP()+sp->NOutP());
-      m_icache["pid"].push_back(1);
-      m_icache["nparticles"].push_back(nup);
-      m_dcache["trials"].push_back(m_trials+trials);
+      m_ecache.push_back(std::vector<double>(m_neprops,-1));
+      m_ecache.back().push_back(weight*wratio);
+      if (p_vars) {
+	Variation_Weights wgts
+	  ((*sp)["Variation_Weights"]->Get<Variation_Weights>());
+	for (size_t i(0);i<wgts.GetNumberOfVariations();++i)
+	  m_ecache.back().push_back(wgts.GetVariationWeightAt(i)*wratio);
+      }
+      m_ecache.back()[0]=0;
+      if (proc) {
+	while (proc->Parent()!=proc) proc=proc->Parent();
+	const PHASIC::Process_Vector procs(p_me->AllProcesses());
+	for (size_t i(0);i<procs.size();++i)
+	  if (procs[i]==proc) m_ecache.back()[0]=i+1;
+      }
+      m_ecache.back()[1]=nup;
+      m_ecache.back()[3]=m_trials+trials;
       m_trials=0.0;
       double mur2=(*sp)["Renormalization_Scale"]->Get<double>();
       double muf2=(*sp)["Factorisation_Scale"]->Get<double>();
       double muq2=muf2?muf2:mur2;
       if ((*sp)["Resummation_Scale"])
 	muq2=(*sp)["Resummation_Scale"]->Get<double>();
-      m_dcache["scale"].push_back(sqrt(muq2));
-      m_dcache["fscale"].push_back(sqrt(muf2));
-      m_dcache["rscale"].push_back(sqrt(mur2));
-      Poincare cms(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-      std::vector<double> weights(1,weight*wratio);
-      if (p_vars) {
-	Variation_Weights wgts
-	  ((*sp)["Variation_Weights"]->Get<Variation_Weights>());
-	for (size_t i(0);i<wgts.NumberOfParameters();++i)
-	  weights.push_back(wgts.GetVariationWeightAt(i)*wratio);
-      }
-      m_wcache.push_back(weights);
-      m_dcache["aqed"].push_back(-1.);
-      m_dcache["aqcd"].push_back(mur2?(*MODEL::as)(mur2):-1.0);
+      m_ecache.back()[4]=sqrt(muq2);
+      m_ecache.back()[5]=sqrt(muf2);
+      m_ecache.back()[6]=sqrt(mur2);
+      m_ecache.back()[8]=mur2?(*MODEL::as)(mur2):-1.0;
       for (int i=0;i<sp->NInP();++i) {
 	Vec4D p(sp->InParticle(i)->Momentum());
-	m_dcache["e"].push_back(p[0]);
-	m_dcache["px"].push_back(p[1]);
-	m_dcache["py"].push_back(p[2]);
-	m_dcache["pz"].push_back(p[3]);
-	m_dcache["m"].push_back(sp->InParticle(i)->FinalMass());
-	m_icache["id"].push_back((long int)sp->InParticle(i)->Flav());
-	m_dcache["spin"].push_back(sp->InParticle(i)->Flav().IntSpin());
-	m_icache["color1"].push_back(sp->InParticle(i)->GetFlow(1));
-	m_icache["color2"].push_back(sp->InParticle(i)->GetFlow(2));
-	m_icache["status"].push_back(-1);
-	m_icache["mother1"].push_back(0);
-	m_icache["mother2"].push_back(0);
-	m_dcache["lifetime"].push_back(0.);
+	m_pcache.push_back(std::vector<double>(13,0));
+	m_pcache.back()[9]=p[0];
+	m_pcache.back()[6]=p[1];
+	m_pcache.back()[7]=p[2];
+	m_pcache.back()[8]=p[3];
+	m_pcache.back()[10]=sp->InParticle(i)->FinalMass();
+	m_pcache.back()[0]=(long int)sp->InParticle(i)->Flav();
+	m_pcache.back()[12]=sp->InParticle(i)->Flav().IntSpin();
+	m_pcache.back()[4]=sp->InParticle(i)->GetFlow(1);
+	m_pcache.back()[5]=sp->InParticle(i)->GetFlow(2);
+	m_pcache.back()[1]=-1;
+	m_pcache.back()[2]=0;
+	m_pcache.back()[3]=0;
+	m_pcache.back()[11]=0.;
       }
       for (int k=0;k<sp->NOutP();++k) {
 	int i(k+sp->NInP());
 	Vec4D p(sp->OutParticle(k)->Momentum());
-	m_dcache["e"].push_back(p[0]);
-	m_dcache["px"].push_back(p[1]);
-	m_dcache["py"].push_back(p[2]);
-	m_dcache["pz"].push_back(p[3]);
-	m_dcache["m"].push_back(sp->OutParticle(k)->FinalMass());
-	m_icache["id"].push_back((long int)sp->OutParticle(k)->Flav());
-	m_dcache["spin"].push_back(sp->OutParticle(k)->Flav().IntSpin());
-	m_icache["color1"].push_back(sp->OutParticle(k)->GetFlow(1));
-	m_icache["color2"].push_back(sp->OutParticle(k)->GetFlow(2));
-	m_icache["status"].push_back(1);
-	m_icache["mother1"].push_back(1);
-	m_icache["mother2"].push_back(2);
-	m_dcache["lifetime"].push_back(0.);
+	m_pcache.push_back(std::vector<double>(13,0));
+	m_pcache.back()[9]=p[0];
+	m_pcache.back()[6]=p[1];
+	m_pcache.back()[7]=p[2];
+	m_pcache.back()[8]=p[3];
+	m_pcache.back()[10]=sp->OutParticle(k)->FinalMass();
+	m_pcache.back()[0]=(long int)sp->OutParticle(k)->Flav();
+	m_pcache.back()[12]=sp->OutParticle(k)->Flav().IntSpin();
+	m_pcache.back()[4]=sp->OutParticle(k)->GetFlow(1);
+	m_pcache.back()[5]=sp->OutParticle(k)->GetFlow(2);
+	m_pcache.back()[1]=1;
+	m_pcache.back()[2]=1;
+	m_pcache.back()[3]=2;
+	m_pcache.back()[11]=0.;
       }
-      size_t rank(m_scache["start"].size());
-      m_scache["start"].push_back((m_offset+rank)*m_nmax);
-      for (size_t i(nup);i<m_nmax;++i) {
-	m_dcache["e"].push_back(0.);
-	m_dcache["px"].push_back(0.);
-	m_dcache["py"].push_back(0.);
-	m_dcache["pz"].push_back(0.);
-	m_dcache["m"].push_back(0.);
-	m_icache["id"].push_back(0);
-	m_dcache["spin"].push_back(0);
-	m_icache["color1"].push_back(0);
-	m_icache["color2"].push_back(0);
-	m_icache["status"].push_back(0);
-	m_icache["mother1"].push_back(0);
-	m_icache["mother2"].push_back(0);
-	m_dcache["lifetime"].push_back(0.);
-      }
+      size_t rank(m_ecache.size()-1);
+      m_ecache.back()[2]=(m_offset+rank)*m_nmax;
+      for (size_t i(nup);i<m_nmax;++i)
+	m_pcache.push_back(std::vector<double>(13,0));
       Write();
     }
 
@@ -594,9 +514,8 @@ operator()(const Output_Arguments &args) const
 void ATOOLS::Getter<Output_Base,Output_Arguments,Output_HDF5>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"HDF5 output";
+  str<<"HDF5 output v2";
 }
 
-#endif
 #endif
 #endif

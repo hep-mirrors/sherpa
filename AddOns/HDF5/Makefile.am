@@ -1,15 +1,26 @@
-pkglib_LTLIBRARIES    =	libSherpaHDF5Reader.la libSherpaHDF5Output.la
+pkglib_LTLIBRARIES    =	\
+	libSherpaHDF5v1Reader.la \
+	libSherpaHDF5Reader.la \
+	libSherpaHDF5v1Output.la \
+	libSherpaHDF5Output.la
 
 GITTAG = AddOns/HDF5
 include ../../git.make
+
+libSherpaHDF5v1Output_la_SOURCES = \
+	Git_Info.C \
+	Output_HDF5_v1.C
 
 libSherpaHDF5Output_la_SOURCES = \
 	Git_Info.C \
 	Output_HDF5.C
 
+libSherpaHDF5v1Reader_la_SOURCES = \
+	Git_Info.C \
+	HDF5_Reader_v1.C
+
 libSherpaHDF5Reader_la_SOURCES = \
 	Git_Info.C \
-	Output_HDF5.C \
 	HDF5_Reader.C
 
 localinc_HEADERS = \
@@ -46,11 +57,23 @@ localinc_HEADERS = \
 	highfive/bits/H5PropertyList_misc.hpp \
 	highfive/bits/H5Utils.hpp
 
+libSherpaHDF5v1Output_la_LIBADD = @CONDITIONAL_HDF5LIBS@
+
+libSherpaHDF5v1Output_la_CXXFLAGS = $(AM_CXXFLAGS)
+
+libSherpaHDF5v1Output_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_HDF5INCS@
+
 libSherpaHDF5Output_la_LIBADD = @CONDITIONAL_HDF5LIBS@
 
 libSherpaHDF5Output_la_CXXFLAGS = $(AM_CXXFLAGS)
 
 libSherpaHDF5Output_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_HDF5INCS@
+
+libSherpaHDF5v1Reader_la_LIBADD = @CONDITIONAL_HDF5LIBS@
+
+libSherpaHDF5v1Reader_la_CXXFLAGS = $(AM_CXXFLAGS)
+
+libSherpaHDF5v1Reader_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_HDF5INCS@
 
 libSherpaHDF5Reader_la_LIBADD = @CONDITIONAL_HDF5LIBS@
 

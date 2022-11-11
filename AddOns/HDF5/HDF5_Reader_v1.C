@@ -216,7 +216,7 @@ using namespace ATOOLS;
 
 namespace LHEH5 {
 
-  class HDF5_Reader: public Event_Reader {
+  class HDF5_Reader_v1: public Event_Reader {
   private:
 
     LHEFile *p_file;
@@ -226,13 +226,13 @@ namespace LHEH5 {
     
   public:
 
-    HDF5_Reader(const Event_Reader_Key &key):
+    HDF5_Reader_v1(const Event_Reader_Key &key):
       Event_Reader(key), m_ievt(0), m_ifile(0), p_ampl(NULL)
     {
       p_file = OpenFile(m_files[m_ifile]);
     }
 
-    ~HDF5_Reader()
+    ~HDF5_Reader_v1()
     {
       if (p_ampl) p_ampl->Delete();
     }
@@ -305,24 +305,24 @@ namespace LHEH5 {
       return NULL;
     }
     
-  };// end of class HDF5_Reader
+  };// end of class HDF5_Reader_v1
   
 }// end of namespace LHEH5
 
 using namespace LHEH5;
 
-DECLARE_GETTER(HDF5_Reader,"HDF5",Event_Reader,Event_Reader_Key);
+DECLARE_GETTER(HDF5_Reader_v1,"HDF5v1",Event_Reader,Event_Reader_Key);
 
-Event_Reader *ATOOLS::Getter<Event_Reader,Event_Reader_Key,HDF5_Reader>::
+Event_Reader *ATOOLS::Getter<Event_Reader,Event_Reader_Key,HDF5_Reader_v1>::
 operator()(const Event_Reader_Key &args) const
 {
-  return new HDF5_Reader(args);
+  return new HDF5_Reader_v1(args);
 }
 
-void ATOOLS::Getter<Event_Reader,Event_Reader_Key,HDF5_Reader>::
+void ATOOLS::Getter<Event_Reader,Event_Reader_Key,HDF5_Reader_v1>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"HDF5 reader";
+  str<<"HDF5 reader (version 1)";
 }
 
 #endif
