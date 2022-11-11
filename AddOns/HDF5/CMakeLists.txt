@@ -43,14 +43,26 @@ if (NOT BUILD_SHARED_LIBS)
   install(TARGETS HighFive libheaders libdeps EXPORT PepperTargets)
 endif()
 
+set(HDF5V1_OUTPUT_SOURCES Output_HDF5_v1.C)
 set(HDF5_OUTPUT_SOURCES Output_HDF5.C)
-set(HDF5_READER_SOURCES Output_HDF5.C HDF5_Reader.C)
+set(HDF5V1_READER_SOURCES HDF5_Reader_v1.C)
+set(HDF5_READER_SOURCES HDF5_Reader.C)
 sherpa_create_git_info(HDF5 ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+ 
+add_library(SherpaHDF5v1Output SHARED ${HDF5V1_OUTPUT_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+sherpa_handle_shared_library(SherpaHDF5v1Output SherpaHDF5v1Output)
+add_dependencies(SherpaHDF5v1Output HDF5_Git_Info)
+target_link_libraries(SherpaHDF5v1Output PUBLIC HighFive)
  
 add_library(SherpaHDF5Output SHARED ${HDF5_OUTPUT_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaHDF5Output SherpaHDF5Output)
 add_dependencies(SherpaHDF5Output HDF5_Git_Info)
 target_link_libraries(SherpaHDF5Output PUBLIC HighFive)
+ 
+add_library(SherpaHDF5v1Reader SHARED ${HDF5V1_READER_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+sherpa_handle_shared_library(SherpaHDF5v1Reader SherpaHDF5v1Reader)
+add_dependencies(SherpaHDF5v1Reader HDF5_Git_Info)
+target_link_libraries(SherpaHDF5v1Reader PUBLIC HighFive)
  
 add_library(SherpaHDF5Reader SHARED ${HDF5_READER_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaHDF5Reader SherpaHDF5Reader)
