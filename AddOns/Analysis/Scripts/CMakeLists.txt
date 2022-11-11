@@ -50,7 +50,7 @@ ToolsMath ToolsOrg ToolsYaml String ToolsPhys
 target_link_libraries(Combine_Analysis PRIVATE LibZip::LibZip)
 if (SHERPA_ENABLE_HEPMC3)
   target_link_libraries(Combine_Analysis PRIVATE SherpaHepMC3Output  ${HEPMC3_LIB} ${HEPMC3_SEARCH_LIB} )
-  if (SHERPA_ENABLE_HEPMC3)
+  if (SHERPA_ENABLE_HEPMC3_ROOT)
     target_link_libraries(Combine_Analysis PRIVATE SherpaHepMC3Output  ${HEPMC3_ROOTIO_LIB} )
   endif()
 endif()
