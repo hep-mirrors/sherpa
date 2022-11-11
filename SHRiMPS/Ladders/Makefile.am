@@ -10,7 +10,8 @@ libShrimpsLadders_la_SOURCES = \
 			Ladder_Generator_KT.C \
 			Ladder_Generator_Seeded.C \
 			MEs.C \
-			Primary_Ladders.C 
+			Primary_Ladders.C \
+			Ladder_Generator_QE.C
 
 localincdir = $(pkgincludedir)/SHRiMPS/Ladders
 
@@ -24,6 +25,7 @@ localinc_HEADERS   = \
 			Ladder_Generator_KT.H \
 			Ladder_Generator_Seeded.H \
 			MEs.H \
-			Primary_Ladders.H
+			Primary_Ladders.H \
+			Ladder_Generator_QE.H
 
 

@@ -3,7 +3,11 @@
 
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
 #include "SHRiMPS/Cross_Sections/Sigma_SD.H"
+#include "SHRiMPS/Cross_Sections/Sigma_DD.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
+#include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
+#include "SHRiMPS/Cross_Sections/Sigma_Total.H"
+#include "SHRiMPS/Cross_Sections/Cross_Sections.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -26,16 +30,13 @@ namespace SHRIMPS {
       ATOOLS::Vec4D m_nucleus_2_position;
       std::vector<std::pair<std::pair<int,int>,int>> m_list_of_interactions;
 
-      double m_prob_abs, m_prob_quasi_elastic, m_prob_SD1, m_prob_SD2, m_prob_DD, m_prob_elastic;
-      
-      Sigma_Inelastic XS_inelastic;
-      //double Cross_Sections::Sigma_Inelastic::GetValue(0.1);
-
-      Glauber(int N1 = 1, int N2 = 208);
+      Glauber(Cross_Sections * xsecs, int N1 = 1, int N2 = 208);
       ~Glauber();
       ATOOLS::Vec4D distributeNucleon(double radius, ATOOLS::Vec4D nuc_pos = ATOOLS::Vec4D(0.,0.,0.,0.));
       double WoodsSaxon(double r, double Radius);
-      void DoCollision(std::vector<ATOOLS::Vec4D> nucleus1,std::vector<ATOOLS::Vec4D> nucleus2);
+      void DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos_N1,std::vector<ATOOLS::Vec4D> pos_N2);
+      void SaveXSs(Cross_Sections * xsecs,double bmin=0., double bmax=20., int num=100);
+      void SaveNucleonPositions();
   };
 }
 #endif
