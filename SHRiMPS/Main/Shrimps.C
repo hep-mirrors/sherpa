@@ -160,14 +160,7 @@ void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
 
 ATOOLS::Blob * Shrimps::GenerateEvent() {
   msg_Out()<<"  * "<<METHOD<<".\n";
-  msg_Out()<<"test test bla\n\n\n";
-  //Glauber::Glauber glauberthingy();
-  Glauber glauberTest(16,208);
-  //Nucleus aNucleus(25);
-  //glauberthingy -> testFunc();
-  //aNucleus.testF();
-  //glauberTest.testFunc();
-  //Glauber::testFunc();
+  //Glauber glauberTest(p_xsecs,1,208);
   return p_generator->GenerateEvent();
 }
 
