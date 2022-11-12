@@ -18,10 +18,12 @@ IF(TEST_PYTHIA8_ROOT_DIR STREQUAL "")
     set(PYTHIA8_ROOT_DIR  "/usr")
   endif()
 endif()
-
-find_path(PYTHIA8_INCLUDE_DIR Pythia.h Pythia8/Pythia.h HINTS  ${PYTHIA8_ROOT_DIR}/include)
+message(STATUS "${PYTHIA8_ROOT_DIR}<--${ONLY_CMAKE_FIND_ROOT_PATH}")
+find_path(PYTHIA8_INCLUDE_DIR   Pythia.h HINTS  "${PYTHIA8_ROOT_DIR}"/include "${PYTHIA8_ROOT_DIR}"/include/Pythia8 PATH_SUFFIXES Pythia8 "" )
+message(STATUS "XX ${PYTHIA8_INCLUDE_DIR}<--")
 
 find_path(PYTHIA8_XMLDOC_DIR Version.xml HINTS  ${PYTHIA8_ROOT_DIR}/xmldoc  ${PYTHIA8_ROOT_DIR}/share/Pythia8/xmldoc ${PYTHIA8_ROOT_DIR}/share/pythia8-data/xmldoc  ${PYTHIA8_ROOT_DIR}/share/doc/packages/pythia/xmldoc )
+message(STATUS "XX ${PYTHIA8_XMLDOC_DIR}<--")
 
 if(PYTHIA8_INCLUDE_DIR AND PYTHIA8_XMLDOC_DIR)
   file(READ ${PYTHIA8_XMLDOC_DIR}/Version.xml versionstr)
