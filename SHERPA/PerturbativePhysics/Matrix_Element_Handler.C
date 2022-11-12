@@ -640,14 +640,22 @@ void Matrix_Element_Handler::BuildProcesses()
 
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
-    const auto keys = proc.GetKeys();
-    if (keys.size() != 1) {
-      if (!msg_LevelIsTracking()) msg_Info()<<"\n";
+    std::string name;
+    if (proc.IsMap()) {
+      std::vector<std::string> keys {proc.GetKeys()};
+      if (keys.size() != 1) {
+        if (!msg_LevelIsTracking()) msg_Info()<<"\n";
+        THROW(invalid_input, std::string{"Invalid PROCESSES definition.\n\n"} +
+                                 Strings::ProcessesSyntaxExamples);
+      }
+      name = keys[0];
+    } else if (proc.IsScalar()) {
+      name = proc.GetScalarWithOtherDefault<std::string>("");
+    } else {
       THROW(invalid_input, std::string{"Invalid PROCESSES definition.\n\n"} +
                                Strings::ProcessesSyntaxExamples);
     }
-    auto procsettings = proc[keys[0]];
-    std::string name = keys[0];
+    Scoped_Settings procsettings {proc[name]};
     // tags are not automatically resolved in setting keys, hence let's do this
     // manually, to allow for tags within process specifications as e.g.
     // "93 93 -> 11 -11 93{$(NJET)}"
