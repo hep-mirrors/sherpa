@@ -43,5 +43,5 @@ set_target_properties(ToolsOrg        PROPERTIES POSITION_INDEPENDENT_CODE ON OU
 set_target_properties(ToolsOrg        PROPERTIES DEFINE_SYMBOL "")
 
 #if (SHERPA_ENABLE_GZIP)
-target_link_libraries(ToolsOrg PRIVATE ${LIBZIP_LIBRARY})
+target_link_libraries(ToolsOrg PRIVATE LibZip::LibZip)
 #endif()

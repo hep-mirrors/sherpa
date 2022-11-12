@@ -1,7 +1,14 @@
 #Manually edited
 find_package(ROOT REQUIRED) 
-include(${ROOT_USE_FILE})
+set(CMAKE_CXX_FLAGS_BEFORE_ROOT "${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS_BEFORE_ROOT "${CMAKE_C_FLAGS}")
+set(CMAKE_Fortran_FLAGS_BEFORE_ROOT "${CMAKE_Fortran_FLAGS}")
+#include(${ROOT_USE_FILE})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_BEFORE_ROOT}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_BEFORE_ROOT}")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_BEFORE_ROOT}")
 message(STATUS "SHERPA: ROOT_VERSION=${ROOT_VERSION} ROOT_LIBRARIES=${ROOT_LIBRARIES} ROOT_INCLUDE_DIRS=${ROOT_INCLUDE_DIRS} ROOT_CXX_FLAGS=${ROOT_CXX_FLAGS}")
+
  
 set(foo_SOURCES Output_RootNtuple.C RootNtuple_Reader.C)
 set(foo_HEADERS Output_RootNtuple.H RootNtuple_Reader.H) 
@@ -91,6 +98,7 @@ set_target_properties(SherpaEDRootInput       PROPERTIES POSITION_INDEPENDENT_CO
 set_target_properties(SherpaEDRootInput       PROPERTIES DEFINE_SYMBOL "")
 
 #Warning: The ROOT_CXX_FLAGS might be incompatible with the current compiller
+include(CheckCXXCompilerFlag)
 string(REPLACE " " ";" ROOT_CXX_FLAGS_LIST ${ROOT_CXX_FLAGS})
 foreach(fl ${ROOT_CXX_FLAGS_LIST})
   CHECK_CXX_COMPILER_FLAG(${fl} COMPILER_SUPPORTS_${fl})

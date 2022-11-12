@@ -911,7 +911,7 @@ if __name__ == '__main__':
    ff=open("Org/CMakeLists.txt","a")
    ff.write("""
 #if (SHERPA_ENABLE_GZIP)
-target_link_libraries(ToolsOrg PRIVATE ${LIBZIP_LIBRARY})
+target_link_libraries(ToolsOrg PRIVATE LibZip::LibZip)
 #endif()
 """)
    ff.close()   
@@ -919,6 +919,7 @@ target_link_libraries(ToolsOrg PRIVATE ${LIBZIP_LIBRARY})
    ff.write("""
 if (SHERPA_ENABLE_LHAPDF)
 target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
+target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
 endif()
 """)
    ff.close() 
@@ -1020,7 +1021,14 @@ target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
      create_library(ldirs,lname,includes,installincludes,[],[],[],"Sherpa")
      f.write("add_subdirectory("+lname+")\n")
    f.close()   
-
+   ff=open("Tools/CMakeLists.txt","a")
+   ff.write("""
+if (SHERPA_ENABLE_HEPMC2)
+target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
+target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
+endif()
+""")
+   ff.close() 
    os.chdir("../")
 
 ############################

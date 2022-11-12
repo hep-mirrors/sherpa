@@ -110,6 +110,8 @@ message(STATUS "SHERPA: CXX_COMPILER_NAME=${CXX_COMPILER_NAME}  CMAKE_CXX_COMPIL
 
 if(CMAKE_SYSTEM_NAME MATCHES Darwin)
   set(CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS} -flat_namespace -single_module -undefined dynamic_lookup")
+  set(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS} -flat_namespace -single_module -undefined dynamic_lookup")
+  set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -flat_namespace -single_module -undefined dynamic_lookup")
 endif()
 
 message(STATUS "SHERPA: CMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}")
@@ -301,7 +303,6 @@ add_subdirectory(PDF/SAL)
 add_subdirectory(RECONNECTIONS)
 add_subdirectory(REMNANTS)
 add_subdirectory(SHRiMPS)
-add_subdirectory(SHERPA)
 IF (SHERPA_ENABLE_MCFM)
   find_package(MCFM REQUIRED)
   message(STATUS "SHERPA: MCFM_VERSION=${MCFM_VERSION} MCFM_LIBRARY=${MCFM_LIBRARY} MCFM_INCLUDE_DIR=${MCFM_INCLUDE_DIR}")
@@ -326,6 +327,8 @@ if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_HEPMC2)
   endif()
   add_subdirectory(AddOns/HepMC)
 endif()
+add_subdirectory(SHERPA)
+
 
 set( IDIRS  AHADIC++
 AMEGIC++

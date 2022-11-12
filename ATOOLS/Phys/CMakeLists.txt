@@ -32,4 +32,5 @@ set_target_properties(ToolsPhys        PROPERTIES DEFINE_SYMBOL "")
 
 if (SHERPA_ENABLE_LHAPDF)
 target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
+target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
 endif()
