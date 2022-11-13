@@ -55,19 +55,55 @@ if (RIVET_INCLUDE_DIR)
   endif()
 endif()
 
-set(RIVET_CONFIG_LIBS)
+set(RIVET_CONFIG_LIBS_STRING)
+set(RIVET_CONFIG_CPPFLAGS_STRING)
+set(RIVET_CONFIG_CPPFLAGS_DIRS "")
+set(RIVET_CONFIG_LIBS "")
+set( RIVET_CONFIG_LIB_DIRS "")
 if (RIVET_CONFIG_EXE)
   execute_process(COMMAND ${RIVET_CONFIG_EXE} --libs
-                  OUTPUT_VARIABLE RIVET_CONFIG_LIBS
+                  OUTPUT_VARIABLE RIVET_CONFIG_LIBS_STRING
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
+  string(REPLACE " " ";" TEMP_RIVET_LIBS  ${RIVET_CONFIG_LIBS_STRING})
+  foreach (fl ${TEMP_RIVET_LIBS})
+  if ("${fl}" MATCHES "-l.*")
+    string(REPLACE "-l" ""  flx "${fl}")
+    list(APPEND RIVET_CONFIG_LIBS "${flx}")
+  endif()
+  if ("${fl}" MATCHES "-L.*")
+    string(REPLACE "-L" ""  fly "${fl}")
+    list(APPEND RIVET_CONFIG_LIB_DIRS "${fly}")
+  endif()
+  
+  endforeach()
+
+
+  execute_process(COMMAND ${RIVET_CONFIG_EXE} --cppflags
+                  OUTPUT_VARIABLE RIVET_CONFIG_CPPFLAGS_STRING
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  string(REPLACE "-I" "" TEMP_RIVET_CONFIG_CPPFLAGS_DIRS  ${RIVET_CONFIG_CPPFLAGS_STRING})
+  string(REPLACE " " ";" RIVET_CONFIG_CPPFLAGS_DIRS  ${TEMP_RIVET_CONFIG_CPPFLAGS_DIRS})
+  
+
 endif()
 
-mark_as_advanced(RIVET_INCLUDE_DIR RIVET_LIBRARY RIVET_EXE)
+mark_as_advanced(RIVET_INCLUDE_DIR RIVET_LIBRARY RIVET_EXE RIVET_CONFIG_LIBS_STRING 
+                               RIVET_CONFIG_CPPFLAGS_STRING 
+                               RIVET_CONFIG_CPPFLAGS_DIRS
+                               RIVET_CONFIG_LIBS
+                               RIVET_CONFIG_LIB_DIRS)
 
 # handle the QUIETLY and REQUIRED arguments and set RIVET_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Rivet HANDLE_COMPONENTS REQUIRED_VARS RIVET_INCLUDE_DIR RIVET_LIBRARY RIVET_CONFIG_LIBS)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Rivet HANDLE_COMPONENTS REQUIRED_VARS RIVET_INCLUDE_DIR RIVET_LIBRARY 
+                               RIVET_CONFIG_LIBS_STRING 
+                               RIVET_CONFIG_CPPFLAGS_STRING 
+                               RIVET_CONFIG_CPPFLAGS_DIRS
+                              RIVET_CONFIG_LIBS
+                               RIVET_CONFIG_LIB_DIRS
+                               )
 
 set(RIVET_LIBRARIES ${RIVET_LIBRARY})
 get_filename_component(RIVET_LIBRARY_DIRS ${RIVET_LIBRARY} PATH)
