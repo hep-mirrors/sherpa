@@ -629,7 +629,7 @@ endif()
 
 if (SHERPA_ENABLE_RECOLA)
   find_package(Recola REQUIRED)
-  message(STATUS "SHERPA: RECOLA_PREFIX=${RECOLA_PREFIX}")
+  message(STATUS "SHERPA: RECOLA_VERSION=${RECOLA_VERSION} RECOLA_PREFIX=${RECOLA_PREFIX}")
   add_subdirectory(AddOns/Recola)
 endif()
 
@@ -645,7 +645,7 @@ endif()
 
 if (SHERPA_ENABLE_GOSAM)
   find_package(GoSam REQUIRED)
-  message(STATUS "SHERPA: GOSAM_PATH=${GOSAM_PREFIX}")
+  message(STATUS "SHERPA: GOSAM_VERSION=${GOSAM_VERSION} GOSAM_PATH=${GOSAM_PREFIX}")
   add_subdirectory(AddOns/GoSam)
 endif()
 

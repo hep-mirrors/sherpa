@@ -23,13 +23,13 @@ if (RECOLA_SEARCH_DIRS)
 else()
   find_library(RECOLA_LIBRARY NAMES recola PATHS_SUFFIXES lib lib64)
 endif()
-
+set(RECOLA_VERSION Unknown)
 get_filename_component(T_PATH ${RECOLA_LIBRARY} DIRECTORY)
 get_filename_component(RECOLA_PREFIX ${T_PATH} DIRECTORY)
 
 # handle the QUIETLY and REQUIRED arguments and set RECOLA_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Recola DEFAULT_MSG RECOLA_PREFIX RECOLA_LIBRARY)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Recola DEFAULT_MSG RECOLA_VERSION RECOLA_PREFIX RECOLA_LIBRARY)
 
 mark_as_advanced(Recola_FOUND)
