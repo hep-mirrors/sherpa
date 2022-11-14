@@ -41,6 +41,7 @@ option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3." ON)
 option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT Interface ." ON)
 option(SHERPA_ENABLE_HZTOOL                  "Enables building with HZTool." ON)
 option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
+option(SHERPA_ENABLE_INSTALL_LIBZIP         "Enables internal LibZip." OFF)
 option(SHERPA_ENABLE_LHAPDF                  "Enables building With LHAPDF." ON)
 option(SHERPA_ENABLE_LHOLE                   "Enables building of LH OLE." ON)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." ON)
@@ -58,7 +59,7 @@ option(SHERPA_ENABLE_THREADING               "Enables building SHERPA_ENABLE_MAN
 option(SHERPA_ENABLE_TESTING                 "Enables testing." ON)
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL 
-INTERNAL_PDFS
+INTERNAL_PDFS INSTALL_LIBZIP
 LHAPDF LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING)
 foreach (en IN LISTS allenables)
      message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
@@ -264,9 +265,40 @@ macro(sherpa_mpi_link_libraries  mylib)
 endmacro(sherpa_mpi_link_libraries  mylib)
 
 #One should have also zlib?
-find_package(LibZip REQUIRED)
-#FIND_LIBRARY(LIBZIP_LIBRARY NAMES zip PATHS "$ENV{LIB_DIR}/lib" "$ENV{LIB}" /usr/local/lib /usr/lib /usr/lib64 )
-message(STATUS "SHERPA: LibZip_VERSION=${LibZip_VERSION} LibZip_LIBRARIES=${LibZip_LIBRARIES} LibZip_INCLUDE_DIR=${LibZip_INCLUDE_DIR}")
+
+if (NOT SHERPA_ENABLE_INSTALL_LIBZIP)
+  find_package(LibZip REQUIRED)
+
+else()
+  message(STATUS "SHERPA: LibZip will be downloaded and compiled")
+  include(ExternalProject)
+  include(FetchContent)
+  ExternalProject_Add(downloadedlibzip
+    GIT_REPOSITORY https://github.com/nih-at/libzip
+    GIT_TAG v1.9.2
+    STEP_TARGETS build
+    GIT_SHALLOW 1
+    UPDATE_COMMAND ""
+    PATCH_COMMAND ""
+    PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libzip -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} 
+  )
+  unset(LibZip_ROOT)
+  set(LibZip_DIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libzip)
+  set(LibZip_VERSION 1.9.2)
+  set(LibZip_LIBRARIES ${LibZip_DIR}/lib64/libzip.so)
+  set(LibZip_INCLUDE_DIRS ${LibZip_DIR}/include)
+  file(MAKE_DIRECTORY ${LibZip_DIR}/include)
+  add_library(LibZip::LibZip UNKNOWN IMPORTED)
+  set_target_properties(LibZip::LibZip PROPERTIES
+        IMPORTED_LOCATION "${LibZip_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${LibZip_INCLUDE_DIRS}"
+    )
+  add_dependencies(LibZip::LibZip PRIVATE downloadedlibzip)
+endif()
+  message(STATUS "SHERPA: LibZip_VERSION=${LibZip_VERSION} LibZip_LIBRARIES=${LibZip_LIBRARIES} LibZip_INCLUDE_DIR=${LibZip_INCLUDE_DIR}")
+
+
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
@@ -310,7 +342,7 @@ IF (SHERPA_ENABLE_MCFM)
 endif()
 
 if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_HEPMC2)
-  if (SHERPA_ENABLE_HEPMC3)
+  if (SHERPA_ENABLE_HEPMC2)
      find_package(HepMC2 REQUIRED)
      message(STATUS "SHERPA: HEPMC2_VERSION=${HEPMC2_VERSION} HEPMC2_LIBRARIES=${HEPMC2_LIBRARIES} HEPMC2_FIO_LIBRARIES=${HEPMC2_FIO_LIBRARIES} HEPMC2_INCLUDE_DIRS=${HEPMC2_INCLUDE_DIRS}")
   endif()
@@ -603,6 +635,8 @@ if (SHERPA_ENABLE_PYTHIA8)
 endif()
 
 if (SHERPA_ENABLE_ROOT)
+  #This is a hack to prevent looking for the nlohmannjson
+  set(ROOT_builtin_nlohmannjson_FOUND OK)
   find_package(ROOT REQUIRED) 
   set(CMAKE_CXX_FLAGS_BEFORE_ROOT "${CMAKE_CXX_FLAGS}")
   set(CMAKE_C_FLAGS_BEFORE_ROOT "${CMAKE_C_FLAGS}")
@@ -630,10 +664,10 @@ if (SHERPA_ENABLE_BLACKHAT)
 endif()
 
 if (SHERPA_ENABLE_MADLOOP)
-  if (NOT MADLOOP_PREFIX)
-    find_path(MADLOOP_PREFIX  mg5_aMC PATHS PATH_SUFFIXES bin  REQUIRED)
+  if (NOT MADLOOP_DIR)
+    find_path(MADLOOP_PREFIX  mg5_aMC PATHS ${MADLOOP_DIR} PATH_SUFFIXES bin  REQUIRED NO_DEFAULT_PATH)
   else()
-    find_program( MG5AMC NAMES  mg5_aMC PATHS ${MADLOOP_PREFIX} PATH_SUFFIXES bin  NO_DEFAULT_PATH REQUIRED)
+    find_path(MADLOOP_PREFIX  mg5_aMC PATHS ${MADLOOP_DIR} PATH_SUFFIXES bin  REQUIRED)
   endif()
   message(STATUS "SHERPA: MADLOOP_PREFIX=${MADLOOP_PREFIX}")
   add_subdirectory(AddOns/MadLoop)
@@ -652,7 +686,7 @@ endif()
 
 if (SHERPA_ENABLE_RECOLA)
   find_package(Recola REQUIRED)
-  message(STATUS "SHERPA: RECOLA_VERSION=${RECOLA_VERSION} RECOLA_PREFIX=${RECOLA_PREFIX}")
+  message(STATUS "SHERPA: RECOLA_VERSION=${RECOLA_VERSION} RECOLA_PREFIX=${RECOLA_PREFIX} RECOLA_INCLUDE_DIR=${RECOLA_INCLUDE_DIR}")
   add_subdirectory(AddOns/Recola)
 endif()
 

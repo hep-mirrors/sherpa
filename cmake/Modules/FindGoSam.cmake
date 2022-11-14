@@ -19,17 +19,17 @@ if (GOSAM_ROOT_DIR OR GOSAM_DIR OR (DEFINED ENV{GOSAM_ROOT_DIR}) OR (DEFINED ENV
   endif()
 endif()
 set(GOSAM_VERSION Unknown)
-find_program(GOSAM NAMES gosam gosam.py )
+find_program(GOSAM NAMES gosam gosam.py PATHS ${GOSAM_SEARCH_DIRS} PATH_SUFFIXES bin )
 if (GOSAM)
-execute_process(COMMAND ${GOSAM} --version
-                  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-                  OUTPUT_VARIABLE GOSAM_VERSION_ALL 
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-string(SUBSTRING "${GOSAM_VERSION_ALL}" 6 5 GOSAM_VERSION)
+#Can be bugged!
+#  execute_process(COMMAND ${GOSAM} --version
+#                  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+#                  OUTPUT_VARIABLE GOSAM_VERSION_ALL 
+#                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+#  string(SUBSTRING "${GOSAM_VERSION_ALL}" 6 5 GOSAM_VERSION)
+  get_filename_component(GOSAM_PREFIX_BIN ${GOSAM} DIRECTORY)
+  get_filename_component(GOSAM_PREFIX ${GOSAM_PREFIX_BIN} DIRECTORY)
 endif()
-
-find_path(T_PATH gosam-contrib/libgolem.so PATH_SUFFIXES lib lib64 )
-get_filename_component(GOSAM_PREFIX ${T_PATH} DIRECTORY)
 
 # handle the QUIETLY and REQUIRED arguments and set GOSAM_FOUND to TRUE if
 # all listed variables are TRUE

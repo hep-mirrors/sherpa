@@ -269,3 +269,62 @@ Fedora35-cmake:
     key: yum-cache-$FREL
     paths:
       - yum-cache-$FREL/
+
+
+
+
+LCG_102_x86_64-centos7-gcc11-opt:
+  only:
+    variables:
+     - $CI_SERVER_HOST=="gitlab.cern.ch"
+  image: gitlab-registry.cern.ch/sft/docker:lcg-cc7
+  stage: test
+  script:
+      - export RELPATH=/cvmfs/sft.cern.ch/lcg/releases/LCG_102
+      - export LCGPLATFORM=x86_64-centos7-gcc11-opt
+      - export PATH=$RELPATH/swig/4.0.2/bin:/cvmfs/sft.cern.ch/lcg/contrib/CMake/3.23.2/Linux-x86_64/bin/:$PATH
+      - set -x
+      - export S_ROOT=6.26.04
+      - export S_HEPMC2=2.06.11
+      - export S_HEPMC3=3.2.4
+      - export S_PYTHIA8=307p1
+      - export S_RIVET=3.1.6
+      - export S_MG5=3.3.1.atlas3
+      - export S_OPENLOOPS=2.1.2
+      - export S_RECOLA=2.2.0
+      - export S_GOSAM=2.0.4
+      - export S_LHAPDF=6.5.1
+      - export S_PYTHON=3.9.12
+      - set +x
+      - source $RELPATH/../gcc/11.2.0/x86_64-centos7/setup.sh
+      - source $RELPATH/ROOT/$S_ROOT/${LCGPLATFORM}/bin/thisroot.sh
+      - source $RELPATH/Python/$S_PYTHON/${LCGPLATFORM}/Python-env.sh
+      - set -x
+      - which -a g++
+      - which -a swig
+      - which -a cmake
+      - which -a gzip
+      - which -a root
+      - which -a python
+      - cmake -S sherpa -B BUILD   \
+         -DCMAKE_INSTALL_PREFIX=$(pwd)/install \
+         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+         -DHepMC3_DIR=$RELPATH/hepmc3/$S_HEPMC3/${LCGPLATFORM}/share/HepMC3/cmake/  \
+         -DSHERPA_ENABLE_INSTALL_LIBZIP=ON \
+         -DPYTHIA8_DIR=$RELPATH/MCGenerators/pythia8/$S_PYTHIA8/${LCGPLATFORM} \
+         -DRIVET_DIR=$RELPATH/MCGenerators/rivet/$S_RIVET/${LCGPLATFORM} \
+         -DOPENLOOPS_DIR=$RELPATH/MCGenerators/openloops/$S_OPENLOOPS/${LCGPLATFORM}/  \
+         -DSHERPA_ENABLE_RECOLA=OFF \
+         -DLHAPDF_DIR=$RELPATH/MCGenerators/lhapdf/$S_LHAPDF/${LCGPLATFORM}/  \
+         -DHEPMC2_DIR=$RELPATH/HepMC/$S_HEPMC2/${LCGPLATFORM}/ \
+         -DMADLOOP_DIR=$RELPATH/MCGenerators/madgraph5amc/$S_MG5/${LCGPLATFORM}/  \
+         -DGOSAM_DIR=$RELPATH/MCGenerators/gosam/$S_GOSAM/${LCGPLATFORM}/  \
+         -DSHERPA_ENABLE_ROOT=OFF   \
+         -DSHERPA_ENABLE_HEPMC3_ROOT=OFF   \
+         -DSHERPA_ENABLE_PYTHON=OFF   \
+         -DSHERPA_ENABLE_MCFM=OFF   \
+         -DSHERPA_ENABLE_MANUAL=OFF  \
+         -DSHERPA_ENABLE_HZTOOL=OFF  \
+         -DSHERPA_ENABLE_THREADING=OFF  \
+         -DSHERPA_ENABLE_BLACKHAT=OFF  
+      - cmake --build BUILD -j 10

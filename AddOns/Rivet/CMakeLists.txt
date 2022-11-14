@@ -31,7 +31,7 @@ install(TARGETS SherpaRivetAnalysis DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-M
 set_target_properties(SherpaRivetAnalysis        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaRivetAnalysis SOVERSION 0.0.0)
 set_target_properties(SherpaRivetAnalysis        PROPERTIES DEFINE_SYMBOL "")
 target_link_libraries(SherpaRivetAnalysis PRIVATE ${RIVET_LIBRARIES})
-target_include_directories(SherpaRivetAnalysis PRIVATE ${RIVET_INCLUDE_DIR})
+target_include_directories(SherpaRivetAnalysis PRIVATE ${RIVET_INCLUDE_DIR} ${RIVET_CONFIG_CPPFLAGS_DIRS})
 if (Rivet_HEPMC2_FOUND)
   target_include_directories(SherpaRivetAnalysis PRIVATE ${HEPMC2_INCLUDE_DIRS})
 endif()
