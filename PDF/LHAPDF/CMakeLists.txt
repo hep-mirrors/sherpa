@@ -1,10 +1,10 @@
+#Manually edited
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #LHAPDF/Makefile.am
  
  set(GITTAG  PDF/LHAPDF)
  #pkglib_LTLIBRARIES = libLHAPDFSherpa.la)
-set(LHAPDF_SOURCES )
-libLHAPDFSherpa_la_SOURCES + = LHAPDF_CPP_Interface.C)
+set(LHAPDF_SOURCES  LHAPDF_CPP_Interface.C)
 creategitinfo(LHAPDF ../LHAPDF/)
 list(TRANSFORM LHAPDF_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../LHAPDF/")
 list(APPEND LHAPDF_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)

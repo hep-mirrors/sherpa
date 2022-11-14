@@ -959,12 +959,12 @@ endif()
      includes="/".split(" ")+[lname]
      installincludes=[]
      create_library(ldirs,lname,includes,installincludes,[],[],[])
-   f=open("LHAPDF/CMakeLists.txt","a")
-   f.write("""
-target_link_libraries(LHAPDFSherpa PRIVATE ${LHAPDF_LIBRARIES})
-target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
-""")
-   f.close()
+#   f=open("LHAPDF/CMakeLists.txt","a")
+#   f.write("""
+#target_link_libraries(LHAPDFSherpa PRIVATE ${LHAPDF_LIBRARIES})
+#target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
+#"")
+#   f.close()
 
    f=open("GRS/CMakeLists.txt","a")
    f.write("""
@@ -1024,14 +1024,6 @@ target_compile_options(GRSSherpa PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-std=lega
      create_library(ldirs,lname,includes,installincludes,[],[],[],"Sherpa")
      f.write("add_subdirectory("+lname+")\n")
    f.close()   
-   ff=open("Tools/CMakeLists.txt","a")
-   ff.write("""
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-""")
-   ff.close() 
    os.chdir("../")
 
 ############################

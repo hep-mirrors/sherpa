@@ -1,5 +1,6 @@
 #Manually edited
-##### Automatically or semiautomaticaly generated, do not edit.##########Tools/Makefile.am
+##### Automatically or semiautomaticaly generated, do not edit.##########
+#Tools/Makefile.am
  
  #pkglib_LTLIBRARIES = libSherpaTools.la)
  set(GITTAG  SHERPA/Tools)
@@ -39,57 +40,3 @@ if (SHERPA_ENABLE_HEPMC3)
   endif()
 endif()
 
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
-
-if (SHERPA_ENABLE_HEPMC2)
-target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
-target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
-endif()
