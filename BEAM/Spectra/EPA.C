@@ -16,7 +16,7 @@ using namespace ATOOLS;
 EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
          const int _dir) :
   Beam_Base(beamspectrum::EPA, _beam, _energy, _pol, _dir),
-  m_mass(_beam.Mass(true)), m_gamma(_energy/m_mass), m_charge(_beam.Charge()),
+  m_mass(_beam.Mass(true)), m_charge(_beam.Charge()), m_gamma(_energy / m_mass),
   m_minR(Max(1.e-6,_beam.Radius())), m_maxR(10.*m_minR)
 {
   Settings &s = Settings::GetMainSettings();
@@ -70,9 +70,7 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
   }
 }
 
-EPA::~EPA() {}
-
-void EPA::RegisterDefaults() {
+void EPA::RegisterDefaults() const {
   Settings &s = Settings::GetMainSettings();
   s["EPA"]["Q2Max"].SetDefault(3.0);
   s["EPA"]["PTMin"].SetDefault(0.0);
@@ -112,7 +110,7 @@ double EPA::CosInt::GetCosInt(double X) {
   return integrator.Integrate(X, 100000., 1.e-4, 1);
 }
 
-double EPA::phi(double x, double qq) {
+double EPA::phi(double x, double qq) const {
   if (m_beam.Kfcode() == kf_p_plus) {
     const double a = 7.16;
     const double b = -3.96;
@@ -140,7 +138,6 @@ double EPA::phi(double x, double qq) {
     CosInt Ci;
     // do form factor dependent calculation
     switch (m_formfactor) {
-    // switch (2) {
     case 0: // point-like form factor
       f = log(1. + (1. / (x * x))) / 2. + 1. / (1. + (1. / (x * x))) / 2. -
           1. / 2.;
@@ -185,12 +182,12 @@ double EPA::phi(double x, double qq) {
     default:
       THROW(fatal_error, "Unknown ion form factor chosen");
     }
-    return (double)f;
+    return f;
   }
   return 0.;
 }
 
-void EPA::selfTest(std::string filename) {
+void EPA::selfTest(const std::string& filename) {
   std::ofstream debugOutput;
   debugOutput.open(filename.c_str());
 
@@ -271,7 +268,7 @@ bool EPA::CalculateWeight(double x, double q2) {
                     << ") = " << f << ", "
                     << "energy = " << m_energy << ", "
                     << "mass = " << m_mass << ".\n";
-    return 1;
+    return true;
   } else if (m_beam.Kfcode() == kf_p_plus) {
     const double qz = 0.71;
     double f, qmi, qma;

@@ -11,7 +11,7 @@
 namespace BEAM {
   class Kinematics_Base {
   protected:
-    std::array<Beam_Base *, 2> p_beams;
+    std::array<Beam_Base*, 2> p_beams;
     bool        m_on;
     std::string m_keyid;
     std::array<double, 2> m_m, m_m2, m_exponent;
@@ -34,7 +34,7 @@ namespace BEAM {
     ATOOLS::Poincare m_LabBoost;
     virtual void InitIntegration()=0;
   public:
-    Kinematics_Base(std::array<Beam_Base *, 2> p_beams);
+    Kinematics_Base(std::array<Beam_Base *, 2> beams);
     virtual ~Kinematics_Base();
 
     virtual bool operator()(ATOOLS::Vec4D_Vector& moms)           = 0;
@@ -44,12 +44,12 @@ namespace BEAM {
     virtual inline void SetSprimeMax(const double & smax) { m_smaxPS = smax; }
     virtual inline const double & SprimeMin() const { return ATOOLS::Max(m_smin, m_sminPS); }
     virtual inline const double & SprimeMax() const { return ATOOLS::Min(m_smax, m_smaxPS); }
-    virtual inline const double   Sprime()          { return m_S; }
-    virtual inline const double   Y()               { return 0.; }
+    virtual inline double         Sprime()          { return m_S; }
+    virtual inline double         Y()               { return 0.; }
 
-    virtual inline std::array<Beam_Base *, 2> GetBeams() { return p_beams; }
+    virtual inline std::array<Beam_Base*, 2> GetBeams() const { return p_beams; }
 
-    virtual inline const bool     On()                 const { return m_on; }
+    virtual inline bool On()                           const { return m_on; }
     virtual inline const std::string & KeyId()         const { return m_keyid; }
     /**
      * @brief Gets the mass of one of the incoming particles.

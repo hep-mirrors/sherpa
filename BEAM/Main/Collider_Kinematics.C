@@ -6,7 +6,7 @@ using namespace BEAM;
 using namespace ATOOLS;
 using namespace std;
 
-Collider_Kinematics::Collider_Kinematics(std::array<Beam_Base *, 2>beams)
+Collider_Kinematics::Collider_Kinematics(std::array<Beam_Base*, 2> beams)
     : Kinematics_Base(beams), m_mode(collidermode::unknown) {
   if (p_beams[0]->Type() == beamspectrum::monochromatic &&
       p_beams[1]->Type() == beamspectrum::monochromatic)
@@ -61,9 +61,6 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   }
   if (m_mode == collidermode::monochromatic)
     return true;
-  if (m_mode == collidermode::unknown)
-    THROW(fatal_error,
-          "Unknown collider mode, impossible to build kinematics.");
   Vec4D pa = p_beams[0]->InMomentum();
   Vec4D pb = p_beams[1]->InMomentum();
   double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
@@ -96,7 +93,7 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   return true;
 }
 
-double Collider_Kinematics::CalculateTau() {
+double Collider_Kinematics::CalculateTau() const {
   double tau = (m_sprime - m_m2[0] - m_m2[1]) / m_S / 2.;
   if (tau * tau < m_m2[0] * m_m2[1] / (m_S * m_S)) {
     msg_Error() << METHOD << "(): s' out of range." << std::endl;
@@ -131,9 +128,9 @@ void Collider_Kinematics::SetLimits() {
   m_ykey[0] = m_ymin;
   m_ykey[1] = m_ymax;
   m_ykey[2] = 0.;
-  if (m_mode == 1)
+  if (m_mode == collidermode::spectral_1)
     m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(2.*m_ykey[0]));
-  if (m_mode == 2)
+  if (m_mode == collidermode::spectral_2)
     m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(-2.*m_ykey[1]));
   for (size_t i = 0; i < 2; i++) {
     double p = i == 0 ? p_beams[0]->OutMomentum().PPlus()

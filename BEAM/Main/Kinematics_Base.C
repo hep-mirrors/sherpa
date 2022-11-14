@@ -17,6 +17,4 @@ Kinematics_Base::Kinematics_Base(std::array<Beam_Base *, 2> beams) :
   m_S = m_Plab.Abs2();
 }
 
-Kinematics_Base::~Kinematics_Base() {}
-
-
+Kinematics_Base::~Kinematics_Base() = default;

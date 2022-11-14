@@ -14,7 +14,7 @@ using namespace ATOOLS;
 using namespace BEAM;
 using namespace std;
 
-std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode::code bmode) {
+std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode) {
   switch (bmode) {
   case beammode::relic_density:
     return ostr<<"Relic Density calculation";
@@ -30,7 +30,7 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode::code bmode) {
   return ostr<<"Undefined";
 }
 
-std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode::code cmode) {
+std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode cmode) {
   switch (cmode) {
   case collidermode::monochromatic:
     return ostr<<"no spectra";
@@ -46,7 +46,7 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode::code cmod
   return ostr<<"Undefined";
 }
 
-std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum::code spect) {
+std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect) {
   switch (spect) {
   case beamspectrum::monochromatic:
     return ostr<<"Monochromatic";
@@ -70,7 +70,7 @@ Beam_Parameters::Beam_Parameters() :
   RegisterDefaults();
 }
 
-Beam_Parameters::~Beam_Parameters() {}
+Beam_Parameters::~Beam_Parameters() = default;
 
 void Beam_Parameters::RegisterDefaults()
 {
@@ -120,9 +120,9 @@ Beam_Base * Beam_Parameters::InitializeLaserBackscattering(int num)
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :\n"
 	       <<"   Tried to initialize Laser_Backscattering for "
 	       <<beam_particle<<".\n";
-    return NULL;
+    return nullptr;
   }
-  double beam_energy        = (*this)("BEAM_ENERGIES",num); 
+  double beam_energy        = (*this)("BEAM_ENERGIES",num);
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
   double laser_energy       = (*this)("E_LASER",num);
   double laser_polarization = (*this)("P_LASER",num);
@@ -142,9 +142,9 @@ Beam_Base * Beam_Parameters::InitializeSimpleCompton(int num)
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :\n"
 	       <<"   Tried to initialize Simple_Compton for "
 	       <<beam_particle<<".\n";
-    return NULL;
+    return nullptr;
   }
-  double beam_energy        = (*this)("BEAM_ENERGIES",num); 
+  double beam_energy        = (*this)("BEAM_ENERGIES",num);
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
   double laser_energy       = (*this)("E_LASER",num);
   double laser_polarization = (*this)("P_LASER",num);
@@ -163,9 +163,9 @@ Beam_Base * Beam_Parameters::InitializeEPA(int num)
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra:\n"<<endl
                <<"   Tried to initialize EPA for "<<beam_particle<<".\n"
 	       <<"   This option is not available (yet).\n";
-    return NULL;
+    return nullptr;
   }
-  double beam_energy = (*this)("BEAM_ENERGIES",num); 
+  double beam_energy = (*this)("BEAM_ENERGIES",num);
   if (beam_particle.IsIon()) beam_energy *= beam_particle.GetAtomicNumber();
   double beam_polarization = (*this)("BEAM_POLARIZATIONS",num);
   return new EPA(beam_particle,beam_energy,beam_polarization,1-2*num);
@@ -207,7 +207,7 @@ const std::string Beam_Parameters::String(const string & tag,const int & pos) co
     string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
     THROW(fatal_error, message);
   }
-  return (pos==0)?params.front():params.back();      
+  return (pos==0)?params.front():params.back();
 }
 
 const double Beam_Parameters::operator()(const string & tag,const int & pos) const {
@@ -218,7 +218,7 @@ const double Beam_Parameters::operator()(const string & tag,const int & pos) con
     string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
     THROW(fatal_error, message);
   }
-  return (pos==0)?params.front():params.back();      
+  return (pos==0)?params.front():params.back();
 }
 
 const int Beam_Parameters::Switch(const string & tag,const int & pos) const {
@@ -228,7 +228,7 @@ const int Beam_Parameters::Switch(const string & tag,const int & pos) const {
     string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
     THROW(fatal_error, message);
   }
-  return (pos==0)?params.front():params.back();      
+  return (pos==0)?params.front():params.back();
 }
 
 const bool Beam_Parameters::On(const string & tag) const {
@@ -241,7 +241,7 @@ void Beam_Parameters::RegisterDefaultBeams() {
   // with i=1,2 as alternatives for BEAMS, BEAM_SPECTRA, and BEAM_ENERGIES. We
   // do not advertise this in the manual, it's only to make conversion of run
   // cards less error-prone.
-  const auto defmode  = string("Collider"); 
+  const auto defmode  = string("Collider");
   const auto beammode = m_settings["BEAM_MODE"].SetDefault(defmode).Get<string>();
   const auto defbeam = 0;
   const auto beam1 = m_settings["BEAM_1"].SetDefault(defbeam).Get<int>();
@@ -271,7 +271,10 @@ void Beam_Parameters::RegisterDarkMatterDefaults() {
   m_settings["RELIC_DENSITY_EMAX"].SetDefault(1.e6).Get<double>();
 }
 
-void Beam_Parameters::RegisterEPADefaults() {}
+void Beam_Parameters::RegisterEPADefaults() {
+  // EPA defaults are declared in the class itself as the form factor is
+  // beam-flavour dependent.
+}
 
 void Beam_Parameters::RegisterLaserDefaults() {
   m_settings["E_LASER"].SetDefault(0.0);
@@ -282,10 +285,9 @@ void Beam_Parameters::RegisterLaserDefaults() {
 }
 
 bool Beam_Parameters::SpecifyMode() {
-  bool okay(true);
   string mode = m_settings["BEAM_MODE"].Get<string>();
   if      (mode==string("Relic_Density"))
-    m_beammode = beammode::relic_density; 
+    m_beammode = beammode::relic_density;
   else if (mode==string("Collider"))
     m_beammode = beammode::collider;
   else if (mode==string("DM_Annihilation"))
@@ -299,7 +301,7 @@ bool Beam_Parameters::SpecifyMode() {
 
 bool Beam_Parameters::SpecifySpectra() {
   vector<string> beam_spectra{ m_settings["BEAM_SPECTRA"].GetVector<string>() };
-  if (beam_spectra.size() == 0 || beam_spectra.size() > 2)
+  if (beam_spectra.empty() || beam_spectra.size() > 2)
     THROW(fatal_error, "Specify either one or two values for `BEAM_SPECTRA'.");
   for (short int num=0;num<2;num++) {
     string bs{ (num == 0) ? beam_spectra.front() : beam_spectra.back() };

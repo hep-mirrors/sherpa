@@ -6,7 +6,7 @@
 namespace BEAM {
 class Collider_Kinematics : public Kinematics_Base {
 private:
-  collidermode::code m_mode;
+  collidermode m_mode;
 
   ATOOLS::Vec4D m_p_plus, m_p_minus;
   double m_Ecms;
@@ -16,14 +16,14 @@ private:
 
   void InitSystem();
   void InitIntegration() override;
-  double CalculateTau();
+  double CalculateTau() const;
 
 public:
-  Collider_Kinematics(std::array<Beam_Base *, 2>  beams);
+  Collider_Kinematics(std::array<Beam_Base*, 2> beams);
   ~Collider_Kinematics() = default;
 
-  inline const double Sprime() override { return m_sprimekey[3]; }
-  inline const double Y() override { return m_ykey[2]; }
+  inline double Sprime() override { return m_sprimekey[3]; }
+  inline double Y() override { return m_ykey[2]; }
   void AssignKeys(ATOOLS::Integration_Info *const info) override;
   void SetLimits() override;
   bool operator()(ATOOLS::Vec4D_Vector& moms) override;

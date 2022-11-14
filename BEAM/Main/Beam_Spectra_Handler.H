@@ -9,12 +9,12 @@
 namespace BEAM {
   class Beam_Spectra_Handler {
   private:
-    std::array<Beam_Base *, 2> p_BeamBase;
+    std::array<Beam_Base*, 2> p_BeamBase;
     Kinematics_Base  * p_kinematics;
     Weight_Base      * p_weight;
     Beam_Parameters    m_parameters;
-    beammode::code     m_beammode;
-    collidermode::code m_collidermode;
+    beammode           m_beammode;
+    collidermode       m_collidermode;
     bool               m_on;
     int                m_mode,m_polarisation;
     std::string        m_name,m_type;
@@ -27,42 +27,42 @@ namespace BEAM {
     ~Beam_Spectra_Handler();
 
     void FixPositions();
-    inline const bool                 On()           const { return m_on; }
-    inline const beammode::code     & BeamMode()     const { return m_beammode; }
-    inline const collidermode::code & ColliderMode() const { return m_collidermode; }
+    inline bool                       On()           const { return m_on; }
+    inline const beammode           & BeamMode()     const { return m_beammode; }
+    inline const collidermode       & ColliderMode() const { return m_collidermode; }
     inline Beam_Base                * GetBeam(size_t i)    { return p_BeamBase[i]; }
 
-    inline const double Upper1() { return p_BeamBase[0]->Xmax(); }
-    inline const double Upper2() { return p_BeamBase[1]->Xmax(); }
-    inline const double Peak()   { return p_BeamBase[0]->Peak()*p_BeamBase[1]->Peak(); }
+    inline double Upper1() const { return p_BeamBase[0]->Xmax(); }
+    inline double Upper2() const { return p_BeamBase[1]->Xmax(); }
+    inline double Peak()   const { return p_BeamBase[0]->Peak()*p_BeamBase[1]->Peak(); }
 
     inline bool MakeBeams(ATOOLS::Vec4D_Vector& moms) { return (*p_kinematics)(moms); }
-    inline void AssignKeys(ATOOLS::Integration_Info *const info) {
+    inline void AssignKeys(ATOOLS::Integration_Info *const info) const {
       p_kinematics->AssignKeys(info);
       p_weight->AssignKeys(info);
     }
-    inline void SetLimits() { p_kinematics->SetLimits(); }
-    inline void BoostInCMS(ATOOLS::Vec4D & p) { p_kinematics->BoostInCMS(p); }
-    inline void BoostInLab(ATOOLS::Vec4D & p) { p_kinematics->BoostInLab(p); }
+    inline void SetLimits() const { p_kinematics->SetLimits(); }
+    inline void BoostInCMS(ATOOLS::Vec4D & p) const { p_kinematics->BoostInCMS(p); }
+    inline void BoostInLab(ATOOLS::Vec4D & p) const { p_kinematics->BoostInLab(p); }
     inline void BoostBackLab(ATOOLS::Vec4D & p) { p_kinematics->BoostBackLab(p); }
-    inline void BoostInCMS(ATOOLS::Vec4D_Vector& p) {
+    inline void BoostInCMS(ATOOLS::Vec4D_Vector& p) const {
       p_kinematics->BoostInCMS(p);
     }
-    inline void BoostInLab(ATOOLS::Vec4D_Vector& p) {
+    inline void BoostInLab(ATOOLS::Vec4D_Vector& p) const {
       p_kinematics->BoostInLab(p);
     }
 
     inline void SetType(const std::string & type) { m_type = type; }
-    inline void SetSprimeMin(const double & smin) { p_kinematics->SetSprimeMin(smin); }
-    inline void SetSprimeMax(const double & smax) { p_kinematics->SetSprimeMax(smax); }
-    inline const double SprimeMin() const { return p_kinematics->SprimeMin(); }
-    inline const double SprimeMax() const { return p_kinematics->SprimeMax(); }
-    inline const double Sprime()          { return p_kinematics->Sprime(); }
-    inline const double Y()               { return p_kinematics->Y(); }
-    inline const double Exponent(const size_t & i) const {
+    inline void SetSprimeMin(const double & smin) const { p_kinematics->SetSprimeMin(smin); }
+    inline void SetSprimeMax(const double & smax) const { p_kinematics->SetSprimeMax(smax); }
+    inline double SprimeMin() const { return p_kinematics->SprimeMin(); }
+    inline double SprimeMax() const { return p_kinematics->SprimeMax(); }
+    inline double Sprime()    const { return p_kinematics->Sprime(); }
+    inline double Y()         const { return p_kinematics->Y(); }
+    inline double Exponent(const size_t & i) const {
       return p_kinematics->Exponent(i);
     }
-    inline bool CalculateWeight(const double & scale) {
+    inline bool CalculateWeight(const double & scale) const {
       return p_weight->Calculate(scale);
     }
     inline const double Weight() const {
@@ -70,9 +70,9 @@ namespace BEAM {
     }
 
     // possible deprecated methods
-    int             Polarisation()        { return m_polarisation; }
-    bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
-    bool   CheckConsistency(ATOOLS::Flavour *);
+    int    Polarisation() const { return m_polarisation; }
+    bool   CheckConsistency(const ATOOLS::Flavour *,const ATOOLS::Flavour *);
+    bool   CheckConsistency(const ATOOLS::Flavour *);
     void   BoostFixedTarget();
     double SqLam(double s,double s1,double s2);
   };

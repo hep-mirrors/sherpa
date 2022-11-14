@@ -6,13 +6,13 @@
 
 namespace BEAM {
 
-  class EPA : public Beam_Base {
+  class EPA final : public Beam_Base {
   private:
 
-    class CosInt : public ATOOLS::Function_Base {
+    class CosInt final : public ATOOLS::Function_Base {
     public:
-      double GetValue(double T) { return -cos(T)/T; }
-      double operator()(double T) { return GetValue(T); }
+      double GetValue(double T) override { return -cos(T)/T; }
+      double operator()(double T) override { return GetValue(T); }
       double GetCosInt(double X);
     };
 
@@ -21,11 +21,11 @@ namespace BEAM {
 
     bool m_lo_epa;
 
-    void RegisterDefaults();
+    void RegisterDefaults() const;
 
-    double phi(double x, double qq);
+    double phi(double x, double qq) const;
 
-    void selfTest(std::string filename);
+    void selfTest(const std::string& filename);
 
     int m_formfactor;
 
@@ -34,12 +34,12 @@ namespace BEAM {
     EPA(const ATOOLS::Flavour beam,const double energy,const double pol,
 	const int dir);
 
-    ~EPA();
+    ~EPA() override = default;
 
-    Beam_Base *Copy();     
-    bool CalculateWeight(double, double);
-    void FixPosition();
-    void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0);
+    Beam_Base *Copy() override;
+    bool CalculateWeight(double, double) override;
+    void FixPosition() override;
+    void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0) override;
   };// end of class EPA
 
 }// end of namespace BEAM
