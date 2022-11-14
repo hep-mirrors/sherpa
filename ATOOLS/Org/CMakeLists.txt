@@ -1,11 +1,4 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Org/Makefile.am
  
  #pkglib_LTLIBRARIES = libToolsOrg.la)
@@ -17,7 +10,6 @@
  endif()
  set(MD5_EXCLUDE  CXXFLAGS_PACKAGES.H CXXFLAGS.H)
  set(GITTAG  ATOOLS/Org)
- #include ../../git.make)
 set(Org_SOURCES  MyStrStream.C Return_Value.C Shell_Tools.C STL_Tools.C RUsage.C Getter_Function.C My_MPI.C Exception.C Terminator_Objects.C libzippp.cpp My_File.C File_IO_Base.C Read_Write_Base.C Data_Reader.C
  Yaml_Reader.C Data_Writer.C Run_Parameter.C MyTiming.C Message.C Stacktrace.C IO_Handler.C Info_Key.C Integration_Info.C Library_Loader.C Command_Line_Interface.C Settings.C Scoped_Settings.C Settings_Keys.C
  Settings_Writer.C ${GZIPSTREAMSOURCES} binreloc.c)
@@ -33,9 +25,7 @@ creategitinfo(Org ../Org/)
 list(TRANSFORM Org_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Org/")
 list(APPEND Org_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(ToolsOrg SHARED 
-                             ${Org_SOURCES} 
-)
+add_library(ToolsOrg SHARED ${Org_SOURCES} )
 target_include_directories(ToolsOrg PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(ToolsOrg)
 install(TARGETS ToolsOrg DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

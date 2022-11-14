@@ -1,16 +1,8 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #NNPDF/Makefile.am
  
  #pkglib_LTLIBRARIES = libNNPDFSherpa.la)
  set(GITTAG  PDF/NNPDF)
- #include ../../git.make)
 set(NNPDF_SOURCES  NNPDFDriver.cc PDF_NN.C)
 set(NNPDF_HEADERS NNPDFDriver.h)
  set(NNPDF3archive   NNPDF31_nnlo_as_0118_mc.tar.bz2)
@@ -23,9 +15,7 @@ creategitinfo(NNPDF ../NNPDF/)
 list(TRANSFORM NNPDF_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../NNPDF/")
 list(APPEND NNPDF_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(NNPDFSherpa SHARED 
-                             ${NNPDF_SOURCES} 
-)
+add_library(NNPDFSherpa SHARED ${NNPDF_SOURCES} )
 target_include_directories(NNPDFSherpa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(NNPDFSherpa)
 install(TARGETS NNPDFSherpa DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

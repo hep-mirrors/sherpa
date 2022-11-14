@@ -1,16 +1,8 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
  #pkglib_LTLIBRARIES = libAmegic.la)
  set(GITTAG  AMEGIC++/Main)
- #include ../../git.make)
 set(Main_SOURCES  ColorSC.C Helicity.C Topology.C Polarisation.C Pol_Info.C Point.C Process_Tags.C Amegic_Base.C Process_Base.C Single_Process.C Single_Process_MHV.C Single_Process_External.C Single_Process_Combined.C
  Process_Group.C Amegic.C)
 set(Main_HEADERS Tools.H ColorSC.H Helicity.H Topology.H Polarisation.H Pol_Info.H Point.H Process_Tags.H Amegic_Base.H Process_Base.H Single_Process.H Single_Process_MHV.H Single_Process_External.H Single_Process_Combined.H
@@ -21,9 +13,7 @@ creategitinfo(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
 list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(Amegic SHARED 
-                             ${Main_SOURCES} 
-)
+add_library(Amegic SHARED ${Main_SOURCES} )
 target_include_directories(Amegic PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(Amegic)
 install(TARGETS Amegic DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

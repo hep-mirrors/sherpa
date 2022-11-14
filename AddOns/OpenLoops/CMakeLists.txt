@@ -25,9 +25,7 @@ creategitinfo(OpenLoops ../OpenLoops/)
 list(TRANSFORM OpenLoops_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../OpenLoops/")
 list(APPEND OpenLoops_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaOpenLoops SHARED 
-                             ${OpenLoops_SOURCES} 
-)
+add_library(SherpaOpenLoops SHARED ${OpenLoops_SOURCES} )
 target_include_directories(SherpaOpenLoops PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(SherpaOpenLoops)
 install(TARGETS SherpaOpenLoops DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

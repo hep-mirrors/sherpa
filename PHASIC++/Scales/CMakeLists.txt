@@ -1,16 +1,8 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Scales/Makefile.am
  
  #pkglib_LTLIBRARIES = libPhasicScales.la)
  set(GITTAG  PHASIC++/Scales)
- #include ../../git.make)
 set(Scales_SOURCES  Cluster_Definitions.C Scale_Setter_Base.C Core_Scale_Setter.C Default_Core_Scale.C Higgs_Core_Scale.C KFactor_Setter_Base.C Color_Setter.C Tag_Setter.C MEPS_Scale_Setter.C VBF_Scale_Setter.C
  Variable_Scale_Setter.C Variable_Core_Scale.C Fastjet_Scale_Setter.C Democratic_Scale_Setter.C QCD_Scale_Setter.C QCD_Core_Scale.C TTBar_Core_Scale.C TZj_Core_Scale.C SingleTop_Core_Scale.C QQSinglet_Core_Scale.C
  HTPrime_Core_Scale.C MINLO_Scale_Setter.C MINLO_KFactor_Setter.C EWVirtKFactor_Setter.C Variable_KFactor_Setter.C No_KFactor_Setter.C)
@@ -19,9 +11,7 @@ creategitinfo(Scales ../Scales/)
 list(TRANSFORM Scales_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Scales/")
 list(APPEND Scales_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(PhasicScales SHARED 
-                             ${Scales_SOURCES} 
-)
+add_library(PhasicScales SHARED ${Scales_SOURCES} )
 target_include_directories(PhasicScales PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(PhasicScales)
 install(TARGETS PhasicScales DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

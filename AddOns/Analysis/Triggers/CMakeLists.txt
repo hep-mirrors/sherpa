@@ -1,11 +1,4 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Triggers/Makefile.am
  
  set(GITTAG  AddOns/Analysis/Triggers)
@@ -29,9 +22,7 @@ creategitinfo(Triggers ../Triggers/)
 list(TRANSFORM Triggers_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Triggers/")
 list(APPEND Triggers_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaAnalysisTrigger SHARED 
-                             ${Triggers_SOURCES} 
-)
+add_library(SherpaAnalysisTrigger SHARED ${Triggers_SOURCES} )
 target_include_directories(SherpaAnalysisTrigger PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(SherpaAnalysisTrigger)
 install(TARGETS SherpaAnalysisTrigger DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

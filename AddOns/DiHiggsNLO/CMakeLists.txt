@@ -1,15 +1,7 @@
-#Manually edited
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #DiHiggsNLO/Makefile.am
  
  set(GITTAG  AddOns/DiHiggsNLO)
- #include ../../git.make)
 set(DiHiggsNLO_SOURCES  DiHiggs_Virtual.C hhgrid.c)
  set(DIHIGGS_ADDS  DiHiggs_Virtual.H hhgrid.h)
  if (SHERPA_ENABLE_DIHIGGS)
@@ -26,16 +18,13 @@ creategitinfo(DiHiggsNLO ../DiHiggsNLO/)
 list(TRANSFORM DiHiggsNLO_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../DiHiggsNLO/")
 list(APPEND DiHiggsNLO_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaDiHiggsNLO SHARED 
-                             ${DiHiggsNLO_SOURCES} 
-)
+add_library(SherpaDiHiggsNLO SHARED ${DiHiggsNLO_SOURCES} )
 target_include_directories(SherpaDiHiggsNLO PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(SherpaDiHiggsNLO)
 install(TARGETS SherpaDiHiggsNLO DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(SherpaDiHiggsNLO        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaDiHiggsNLO SOVERSION 0.0.0)
 set_target_properties(SherpaDiHiggsNLO        PROPERTIES DEFINE_SYMBOL "")
+
 target_include_directories(SherpaDiHiggsNLO PRIVATE ${Python_INCLUDE_DIRS})
 target_link_libraries(SherpaDiHiggsNLO PRIVATE ${Python_LIBRARIES})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/creategrid.py DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python)
-
-

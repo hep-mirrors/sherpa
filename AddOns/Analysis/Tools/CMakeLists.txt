@@ -1,11 +1,4 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Tools/Makefile.am
  
  set(GITTAG  AddOns/Analysis/Tools)
@@ -25,9 +18,7 @@ creategitinfo(Tools ../Tools/)
 list(TRANSFORM Tools_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Tools/")
 list(APPEND Tools_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaAnalysisTools SHARED 
-                             ${Tools_SOURCES} 
-)
+add_library(SherpaAnalysisTools SHARED ${Tools_SOURCES} )
 target_include_directories(SherpaAnalysisTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(SherpaAnalysisTools)
 install(TARGETS SherpaAnalysisTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

@@ -36,7 +36,6 @@ mark_as_advanced(BLACKHAT_INCLUDE_DIR BLACKHAT_LIBRARY)
 
 get_filename_component(BLACKHAT_PATH ${BLACKHAT_INCLUDE_DIR} DIRECTORY)
 
-
 find_program(BHCONFIG NAMES blackhat-config PATH ${BLACKHAT_PATH}/bin)
 execute_process(COMMAND ${BHCONFIG} --version
                 OUTPUT_VARIABLE BLACKHAT_VERSION

@@ -153,17 +153,10 @@ def comment_remover(text):
     return re.sub(pattern, replacer, text)
 ########################################################################
 def write_header(f,ldirs):
-   f.write("""
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-""")
-   for a in ldirs:
-     f.write("# "+a +"\n")
-   f.write("""
-########################################################################
-""")
+   f.write("##### Automatically or semiautomaticaly generated, do not edit.#########\n")
+#   for a in ldirs:
+#     f.write("# "+a +"\n")
+#   f.write("########################################################################\n")
 ########################################################################
 def get_if_condition(a):
   return ["",""]
@@ -285,10 +278,12 @@ def transform_imake_source(argv, dbg):
     newlist.append(temp)
     newlist = filter(lambda st: st != '' , newlist)
 
+    newlist = [x.replace("include ../../git.make","") for x in newlist]	
     newlist = [x.replace("if USING__Analysis","if (SHERPA_ENABLE_ANALYSIS)") for x in newlist]	
     newlist = [x.replace("if USING__EWSud","if (SHERPA_ENABLE_EWSUD)") for x in newlist]	
     newlist = [x.replace("if USING__LHOLE","if (SHERPA_ENABLE_LHOLE)") for x in newlist]	
-    newlist = [x.replace("if ENABLE_UFO","if (SHERAP_ENABLE_UFO)") for x in newlist]	
+    newlist = [x.replace("if ENABLE_DIHIGGS","if (SHERPA_ENABLE_DIHIGGS)") for x in newlist]	
+    newlist = [x.replace("if ENABLE_UFO","if (SHERPA_ENABLE_UFO)") for x in newlist]	
     newlist = [x.replace("if PYTHIA8_SUPPORT","if (SHERPA_ENABLE_PYTHIA8)") for x in newlist]
     newlist = [x.replace("if HZTOOL_SUPPORT","if (SHERPA_ENABLE_HZTOOL)") for x in newlist]
     newlist = [x.replace("if CERNLIB_SUPPORT","if (SHERPA_ENABLE_CERNLIB)") for x in newlist]
@@ -509,22 +504,23 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
    for suff in suffixes:
      if suff=="": 
        #f.write("if (SHERPA_BUILD_SHARED)\n")
-       f.write("add_library("+lname+" SHARED \n")
+       f.write("add_library("+lname+" SHARED ")
        #f.write("add_library("+lname+" SHARED ${"+lname+"_esources}\n")
-       for z in t: f.write("                             "+z + " \n")
+       for z in t: f.write(z + " ")
        f.write(")\n")
      if suff=="_static": 
        f.write("if (SHERPA_BUILD_STATIC)\n")
-       f.write("add_library("+lname+"_static STATIC ${"+lname+"_esources}\n")
-       for z in t: f.write("                             "+z + " \n")
+       f.write("add_library("+lname+"_static STATIC ")
+       for z in t: f.write(z + " ")
        f.write(")\n")
      #f.write("target_include_directories("+lname+suff+" PRIVATE ${PROJECT_SOURCE_DIR}/include)\n")
      f.write("target_include_directories("+lname+suff+" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})\n")
      for inc in includes:
        if os.path.exists(lname+"/"+inc):
-         u="/"+inc
-         u=u.replace("//","/")
-         f.write("target_include_directories("+lname+suff+" PRIVATE \"${CMAKE_CURRENT_SOURCE_DIR}"+u+"\")\n")
+         if len(inc)>0:
+           u="/"+inc
+           u=u.replace("//","/")
+           f.write("target_include_directories("+lname+suff+" PRIVATE \"${CMAKE_CURRENT_SOURCE_DIR}"+u+"\")\n")
 #     f.write("target_include_directories("+lname+suff+" PRIVATE ${FREETYPE_INCLUDE_DIRS})\n")
      for ll in linklibs:
        f.write("target_link_libraries("+lname+suff+" PRIVATE "+ll+")\n")
@@ -969,6 +965,13 @@ target_link_libraries(LHAPDFSherpa PRIVATE ${LHAPDF_LIBRARIES})
 target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
 """)
    f.close()
+
+   f=open("GRS/CMakeLists.txt","a")
+   f.write("""
+target_compile_options(GRSSherpa PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-std=legacy>)
+""")
+   f.close()
+
    os.chdir("../")
 
    ldirs =  "Beam_Remnants.old/Makefile.am Beam_Remnants/Makefile.am Cross_Sections/Makefile.am Eikonals/Makefile.am Event_Generation/Makefile.am Main/Makefile.am Makefile.am Tools/Makefile.am".split()
@@ -1090,7 +1093,13 @@ if (SHERPA_ENABLE_PYTHIA8)
 endif()
 """)
    ff.close() 
-
+   ff=open("DiHiggsNLO/CMakeLists.txt","a")
+   ff.write("""
+target_include_directories(SherpaDiHiggsNLO PRIVATE ${Python_INCLUDE_DIRS})
+target_link_libraries(SherpaDiHiggsNLO PRIVATE ${Python_LIBRARIES})
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/creategrid.py DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python)
+""")
+   ff.close() 
    os.chdir("../")
 
 

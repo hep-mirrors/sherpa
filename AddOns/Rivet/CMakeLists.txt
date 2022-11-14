@@ -22,9 +22,7 @@ creategitinfo(Rivet ../Rivet/)
 list(TRANSFORM Rivet_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Rivet/")
 list(APPEND Rivet_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaRivetAnalysis SHARED 
-                             ${Rivet_SOURCES} 
-)
+add_library(SherpaRivetAnalysis SHARED  ${Rivet_SOURCES} )
 target_include_directories(SherpaRivetAnalysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(SherpaRivetAnalysis)
 install(TARGETS SherpaRivetAnalysis DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

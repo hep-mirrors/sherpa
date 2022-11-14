@@ -1,16 +1,8 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Tools/Makefile.am
  
  #pkglib_LTLIBRARIES = libAhadicTools.la)
  set(GITTAG  AHADIC++/Tools)
- #include ../../git.make)
 set(Tools_SOURCES  Proto_Particle.C Cluster.C Constituents.C Wave_Function.C Multiplet_Constructor.C Single_Transitions.C Double_Transitions.C Hadronisation_Parameters.C Soft_Cluster_Handler.C Singlet_Tools.C
  Splitter_Base.C Flavour_Selector.C KT_Selector.C Z_Selector.C)
  #localincdir = $(pkg#includedir)/AHADIC++/Tools)
@@ -20,9 +12,7 @@ creategitinfo(Tools ../Tools/)
 list(TRANSFORM Tools_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Tools/")
 list(APPEND Tools_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(AhadicTools SHARED 
-                             ${Tools_SOURCES} 
-)
+add_library(AhadicTools SHARED ${Tools_SOURCES} )
 target_include_directories(AhadicTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(AhadicTools)
 install(TARGETS AhadicTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

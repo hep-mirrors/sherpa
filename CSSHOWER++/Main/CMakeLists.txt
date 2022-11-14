@@ -1,25 +1,15 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
  #pkglib_LTLIBRARIES = libCSMain.la)
  set(GITTAG  CSSHOWER++/Main)
- #include ../../git.make)
 set(Main_SOURCES  CS_Cluster_Definitions.C CS_Shower.C)
 set(Main_HEADERS CS_Cluster_Definitions.H CS_Shower.H)
 creategitinfo(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
 list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(CSMain SHARED 
-                             ${Main_SOURCES} 
-)
+add_library(CSMain SHARED ${Main_SOURCES} )
 target_include_directories(CSMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(CSMain)
 install(TARGETS CSMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

@@ -1,15 +1,7 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #GoSam/Makefile.am
  
  set(GITTAG  AddOns/GoSam)
- #include ../../git.make)
 set(GoSam_SOURCES  GoSam_Virtual.C GoSam_Interface.C)
 set(GOSAM_ADDS   GoSam_Virtual.H GoSam_Interface.H)
  if (SHERPA_ENABLE_GOSAM)
@@ -24,9 +16,7 @@ creategitinfo(GoSam ../GoSam/)
 list(TRANSFORM GoSam_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../GoSam/")
 list(APPEND GoSam_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaGoSam SHARED 
-                             ${GoSam_SOURCES} 
-)
+add_library(SherpaGoSam SHARED ${GoSam_SOURCES} )
 target_include_directories(SherpaGoSam PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(SherpaGoSam)
 install(TARGETS SherpaGoSam DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

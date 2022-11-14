@@ -1,24 +1,14 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Special/Makefile.am
  
  #pkglib_LTLIBRARIES = libExtraXSSpecial.la)
  set(GITTAG  EXTRA_XS/Special)
- #include ../../git.make)
 set(Special_SOURCES  Instanton.C)
 creategitinfo(Special ../Special/)
 list(TRANSFORM Special_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Special/")
 list(APPEND Special_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(ExtraXSSpecial SHARED 
-                             ${Special_SOURCES} 
-)
+add_library(ExtraXSSpecial SHARED ${Special_SOURCES} )
 target_include_directories(ExtraXSSpecial PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(ExtraXSSpecial)
 install(TARGETS ExtraXSSpecial DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

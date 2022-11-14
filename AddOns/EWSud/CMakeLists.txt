@@ -1,18 +1,10 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #EWSud/Makefile.am
  
  if (SHERPA_ENABLE_EWSUD)
  #SUBDIRS = Tests)
  endif()
  set(GITTAG  AddOns/EWSud)
- #include ../../git.make)
 set(EWSud_SOURCES Variation_Generator.C Coefficient_Checker.C KFactor_Checker.C Comix_Interface.C HE_Comix_Interface.C EWGroupConstants.C EWSud.C Amplitudes.C  KFactor.C Calculator.C Clustered_Calculator.C)
 set(EWSUD_ADDS   Variation_Generator.H Coefficient_Checker.H KFactor_Checker.H Comix_Interface.H HE_Comix_Interface.H EWGroupConstants.H EWSud.H Amplitudes.H KFactor.H Calculator.H Clustered_Calculator.H)
  if (SHERPA_ENABLE_EWSUD)
@@ -26,9 +18,7 @@ creategitinfo(EWSud ../EWSud/)
 list(TRANSFORM EWSud_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../EWSud/")
 list(APPEND EWSud_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaEWSud SHARED 
-                             ${EWSud_SOURCES} 
-)
+add_library(SherpaEWSud SHARED ${EWSud_SOURCES} )
 target_include_directories(SherpaEWSud PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(SherpaEWSud)
 install(TARGETS SherpaEWSud DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

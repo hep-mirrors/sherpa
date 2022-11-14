@@ -1,15 +1,7 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Phys/Makefile.am
  
  set(GITTAG  ATOOLS/Phys)
- #include ../../git.make)
  #pkglib_LTLIBRARIES = libToolsPhys.la)
 set(Phys_SOURCES  Fragmentation_Base.C fjcore.cc Flavour.C Ordering.C Particle.C Simple_Polarisation_Info.C Particle_List.C Particle_Dresser.C KF_Table.C NLO_Subevt.C NLO_Types.C Decay_Info.C Cluster_Leg.C
  Cluster_Amplitude.C Blob.C Blob_List.C Parton_Finder.C Color_Tester.C Momentum_Shifter.C Flow.C Color.C Spinor.C Selector_List.C Fastjet_Helpers.C Momenta_Stretcher.C Weight_Info.C Variations.C Weights.C
@@ -21,9 +13,7 @@ creategitinfo(Phys ../Phys/)
 list(TRANSFORM Phys_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Phys/")
 list(APPEND Phys_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(ToolsPhys SHARED 
-                             ${Phys_SOURCES} 
-)
+add_library(ToolsPhys SHARED ${Phys_SOURCES} )
 target_include_directories(ToolsPhys PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(ToolsPhys)
 install(TARGETS ToolsPhys DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

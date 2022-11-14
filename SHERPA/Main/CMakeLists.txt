@@ -1,16 +1,8 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
  #pkglib_LTLIBRARIES = libSherpaMain.la)
  set(GITTAG  SHERPA/Main)
- #include ../../git.make)
 set(Main_SOURCES  Sherpa.C Filter.C)
 set(Main_HEADERS Sherpa.H Filter.H)
  #SYSLIBS = $(FCLIBS) -lm -ldl $(CONDITIONAL_THREADLIBS)
@@ -19,9 +11,7 @@ creategitinfo(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
 list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaMain SHARED 
-                             ${Main_SOURCES} 
-)
+add_library(SherpaMain SHARED ${Main_SOURCES} )
 target_include_directories(SherpaMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(SherpaMain)
 install(TARGETS SherpaMain DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

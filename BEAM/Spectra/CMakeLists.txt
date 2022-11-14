@@ -1,25 +1,15 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Spectra/Makefile.am
  
  #pkglib_LTLIBRARIES = libBeamSpectra.la)
  set(GITTAG  BEAM/Spectra)
- #include ../../git.make)
 set(Spectra_SOURCES  Monochromatic.C Laser_Backscattering.C EPA.C DM_beam.C Spectrum_Reader.C)
 set(Spectra_HEADERS Monochromatic.H Laser_Backscattering.H EPA.H DM_beam.H Spectrum_Reader.H)
 creategitinfo(Spectra ../Spectra/)
 list(TRANSFORM Spectra_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Spectra/")
 list(APPEND Spectra_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(BeamSpectra SHARED 
-                             ${Spectra_SOURCES} 
-)
+add_library(BeamSpectra SHARED ${Spectra_SOURCES} )
 target_include_directories(BeamSpectra PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(BeamSpectra)
 install(TARGETS BeamSpectra DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)

@@ -42,7 +42,6 @@ if (LHAPDF_INCLUDE_DIR)
   endif()
 endif()
 
-
 set(LHAPDF_CONFIG_CPPFLAGS_STRING)
 if (LHAPDF_CONFIG_EXE)
   execute_process(COMMAND ${LHAPDF_CONFIG_EXE} --cflags

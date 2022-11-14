@@ -1,11 +1,4 @@
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Analyses/Makefile.am
  
  set(GITTAG  AddOns/Analysis/Analyses)
@@ -25,9 +18,7 @@ creategitinfo(Analyses ../Analyses/)
 list(TRANSFORM Analyses_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Analyses/")
 list(APPEND Analyses_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaAnalyses SHARED 
-                             ${Analyses_SOURCES} 
-)
+add_library(SherpaAnalyses SHARED ${Analyses_SOURCES} )
 target_include_directories(SherpaAnalyses PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_mpi_link_libraries(SherpaAnalyses)
 install(TARGETS SherpaAnalyses DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
