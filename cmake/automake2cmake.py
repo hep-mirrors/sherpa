@@ -1082,6 +1082,12 @@ endif()
      create_library(ldirs,lname,includes,installincludes,[],[],[],"Sherpa")
 #     f.write("add_subdirectory("+lname+")\n")
 #   f.close()   
+   ff=open("Pythia/CMakeLists.txt","a")
+   ff.write("""
+target_link_libraries(SherpaPythia PRIVATE ${PYTHIA8_LIBRARIES})
+target_include_directories(SherpaPythia PRIVATE ${PYTHIA8_INCLUDE_DIRS})
+""")
+   ff.close() 
 
    os.chdir("../")
 
