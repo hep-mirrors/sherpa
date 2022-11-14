@@ -30,5 +30,7 @@ install(TARGETS SherpaPythia DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPO
 set_target_properties(SherpaPythia        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaPythia SOVERSION 0.0.0)
 set_target_properties(SherpaPythia        PROPERTIES DEFINE_SYMBOL "")
 
-target_link_libraries(SherpaPythia PRIVATE ${PYTHIA8_LIBRARIES})
-target_include_directories(SherpaPythia PRIVATE ${PYTHIA8_INCLUDE_DIRS})
+if (SHERPA_ENABLE_PYTHIA8)   
+  target_link_libraries(SherpaPythia PRIVATE ${PYTHIA8_LIBRARIES})
+  target_include_directories(SherpaPythia PRIVATE ${PYTHIA8_INCLUDE_DIRS})
+endif()
