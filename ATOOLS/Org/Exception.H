@@ -106,7 +106,7 @@ namespace ATOOLS {
 
 }
 
-#if defined(__sgi) || defined(__GNUC__)
+#if defined(__GNUC__)
 #define THROW(exception,message)			 \
   throw(ATOOLS::exception(message,__PRETTY_FUNCTION__)); 
 #else
