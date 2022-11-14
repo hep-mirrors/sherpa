@@ -138,11 +138,6 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
 
 void Run_Parameter::AnalyseEnvironment()
 {
-#ifdef __GNUC__
-#if __GNUC__ == 2 && __GNUC_MINOR__ == 96
-#error Sherpa was not designed for gcc 2.96
-#endif
-#endif
   char *var=NULL;
   gen.m_variables["SHERPASYS"]=std::string(((var=getenv("SHERPASYS"))==NULL?"":var));
   gen.m_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));
