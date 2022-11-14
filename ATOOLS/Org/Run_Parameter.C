@@ -270,10 +270,6 @@ void Run_Parameter::Init()
     <<"   SHERPA_LIB_PATH = "  <<gen.m_variables["SHERPA_LIB_PATH"]  <<"\n"
     <<"}"<<std::endl;
 
-#ifndef __sgi
-  setenv(LD_PATH_NAME,(gen.m_variables[LD_PATH_NAME]+std::string(":")+
-			    gen.m_variables["SHERPA_LIB_PATH"]).c_str(),1);
-#endif
 
   // configure event generation
   gen.m_variables["EVENT_GENERATION_MODE"]="-1";
