@@ -58,3 +58,8 @@ if (SHERPA_ENABLE_HEPMC2)
 target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
 target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
 endif()
+
+if (SHERPA_ENABLE_HEPMC2)
+target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
+target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
+endif()

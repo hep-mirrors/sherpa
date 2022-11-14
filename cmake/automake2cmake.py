@@ -963,7 +963,7 @@ endif()
      includes="/".split(" ")+[lname]
      installincludes=[]
      create_library(ldirs,lname,includes,installincludes,[],[],[])
-   f=open("LHAPDF/CMakeFiles.txt","a")
+   f=open("LHAPDF/CMakeLists.txt","a")
    f.write("""
 target_link_libraries(LHAPDFSherpa PRIVATE ${LHAPDF_LIBRARIES})
 target_include_directories(LHAPDFSherpa PRIVATE ${LHAPDF_INCLUDE_DIRS})
