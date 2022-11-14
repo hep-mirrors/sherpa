@@ -61,8 +61,9 @@ extremely complex model with many high-multiplicity vertices, the
 ``Sherpa-generate-model`` step might require a lot of CPU time and memory
 even though not all vertices might be necessary for the scattering processes
 you plan to study. In such a case it is advised to restrict the number of
-external particles in Lorentz functions to the default of ``--lorentznmax 4``
-and only increase that number if higher-point functions are needed.
+external particles in Lorentz and color functions to the default of
+``--nmax 4``. Of course you can increase that number if higher-point vertices
+are needed.
 
 For more details on the
 Sherpa interface to FeynRules please consult
