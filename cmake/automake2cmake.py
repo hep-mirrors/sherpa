@@ -1084,8 +1084,10 @@ endif()
 #   f.close()   
    ff=open("Pythia/CMakeLists.txt","a")
    ff.write("""
-target_link_libraries(SherpaPythia PRIVATE ${PYTHIA8_LIBRARIES})
-target_include_directories(SherpaPythia PRIVATE ${PYTHIA8_INCLUDE_DIRS})
+if (SHERPA_ENABLE_PYTHIA8)   
+  target_link_libraries(SherpaPythia PRIVATE ${PYTHIA8_LIBRARIES})
+  target_include_directories(SherpaPythia PRIVATE ${PYTHIA8_INCLUDE_DIRS})
+endif()
 """)
    ff.close() 
 
