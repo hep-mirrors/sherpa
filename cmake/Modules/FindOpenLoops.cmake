@@ -29,7 +29,7 @@ if (OPENLOOPS_SEARCH_DIRS)
   find_library(OPENLOOPS_LIBRARY NAMES openloops PATHS ${OPENLOOPS_SEARCH_DIRS}  PATH_SUFFIXES . lib lib64 lib/openloops/lib lib64/openloops/lib NO_DEFAULT_PATH)
 else()
   find_path(OPENLOOPS_PREFIX proclib/channels_public.rinfo PATH_SUFFIXES . lib/openloops lib64/openloops )
-  find_library(OPENLOOPS_LIBRARY NAMES openloops PATHS_SUFFIXES .  lib lib64  lib/openloops/lib lib64/openloops/lib)
+  find_library(OPENLOOPS_LIBRARY NAMES openloops PATH_SUFFIXES .  lib lib64  lib/openloops/lib lib64/openloops/lib)
 endif()
 
 mark_as_advanced(OPENLOOPS_INCLUDE_DIR OPENLOOPS_LIBRARY OPENLOOPS_PREFIX)
