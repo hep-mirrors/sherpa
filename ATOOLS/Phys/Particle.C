@@ -12,7 +12,7 @@ namespace ATOOLS {
 
 using namespace ATOOLS;
 
-bool ATOOLS::Particle::operator==(Particle part)
+bool ATOOLS::Particle::operator==(Particle part) const
 {
   if ((part.m_status==m_status)&&         
       (part.m_info==m_info)&&
