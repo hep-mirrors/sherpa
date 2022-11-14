@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Spectra/Makefile.am
  
- #pkglib_LTLIBRARIES = libBeamSpectra.la)
  set(GITTAG  BEAM/Spectra)
 set(Spectra_SOURCES  Monochromatic.C Laser_Backscattering.C EPA.C DM_beam.C Spectrum_Reader.C)
 set(Spectra_HEADERS Monochromatic.H Laser_Backscattering.H EPA.H DM_beam.H Spectrum_Reader.H)

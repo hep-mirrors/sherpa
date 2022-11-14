@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Pythia/Makefile.am
  
- #pkglib_LTLIBRARIES = libSherpaPythia.la)
  if (SHERPA_ENABLE_PYTHIA8)
 set(Pythia_SOURCES  Pythia_Jet_Criterion.C Pythia8_Hadronisation.C)
  else()

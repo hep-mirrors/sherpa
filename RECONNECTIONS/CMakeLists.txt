@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #RECONNECTIONS/Main/Makefile.am
  
- #pkglib_LTLIBRARIES = libReconnections.la)
  set(GITTAG  RECONNECTIONS/Main)
 set(RECONNECTIONS_Main_SOURCES  Reconnection_Handler.C Reconnection_Base.C Reconnect_By_Singlet.C Reconnect_Statistical.C Reconnection_Weights.C)
 set(RECONNECTIONS_Main_HEADERS Reconnection_Handler.H Reconnection_Base.H Reconnect_By_Singlet.H Reconnect_Statistical.H Reconnection_Weights.H)

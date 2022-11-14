@@ -233,6 +233,7 @@ def transform_imake_source(argv, dbg):
     filtered= filter(lambda st: not re.match(".*_CXXFLAGS.*",st), filtered)
     filtered= filter(lambda st: not re.match(".*_LIBADD.*",st), filtered)
     filtered= filter(lambda st: not re.match("^#define.*",st), filtered)
+    filtered= filter(lambda st: not re.match("^pkglib_LTLIBRARIES.*",st), filtered)
 
     filtered = [x.replace(" : ",": ") for x in filtered]
     filtered = [x.replace("\t"," ") for x in filtered]

@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Weights/Makefile.am
  
- #pkglib_LTLIBRARIES = libSherpaWeightsOutput.la)
  set(GITTAG  AddOns/Weights)
 set(Weights_SOURCES  Output_Weights.C)
 sherpa_create_git_info(Weights ../Weights/)

@@ -8,7 +8,6 @@
 set(EWSud_SOURCES Variation_Generator.C Coefficient_Checker.C KFactor_Checker.C Comix_Interface.C HE_Comix_Interface.C EWGroupConstants.C EWSud.C Amplitudes.C  KFactor.C Calculator.C Clustered_Calculator.C)
 set(EWSUD_ADDS   Variation_Generator.H Coefficient_Checker.H KFactor_Checker.H Comix_Interface.H HE_Comix_Interface.H EWGroupConstants.H EWSud.H Amplitudes.H KFactor.H Calculator.H Clustered_Calculator.H)
  if (SHERPA_ENABLE_EWSUD)
- #pkglib_LTLIBRARIES = libSherpaEWSud.la)
 set(EWSud_SOURCES ${EWSud_SOURCES})
 set(EWSud_HEADERS ${EWSUD_ADDS})
  #EWSUD_#EXTRA_DIST = ${EWSUD_ADDS})

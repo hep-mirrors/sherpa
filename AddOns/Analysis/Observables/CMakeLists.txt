@@ -10,7 +10,6 @@ set(ANAOBS_ADDS  Primitive_Observable_Base.H Normalized_Observable.H HT.H PSM_Ob
  Four_Particle_Observables.H Six_Particle_Observables.H Soft_Photon_Observables.H Jet_Cone_Distribution.H Jet_Observables.H Momentum_Tensor.H CD_Parameters.H Sphericity_Observables.H Event_Shapes_EE.H
  Shape_Observables_EE.H Jet_Mass_and_Broadening.H Scaled_Observables.H Four_Jet_Angles.H ChargedDEta.H)
  if (SHERPA_ENABLE_ANALYSIS)
- #pkglib_LTLIBRARIES = libSherpaObservables.la)
 set(Observables_SOURCES ${ANAOBS_SOURCES})
 set(Observables_HEADERS ${ANAOBS_ADDS})
  #ANAOBS_#EXTRA_DIST = ${ANAOBS_ADDS})

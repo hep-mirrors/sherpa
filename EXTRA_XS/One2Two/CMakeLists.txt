@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #One2Two/Makefile.am
  
- #pkglib_LTLIBRARIES = libExtraXS1_2.la)
  set(GITTAG  EXTRA_XS/One2Two)
 set(One2Two_SOURCES  Comix1to2.C)
 set(One2Two_HEADERS Comix1to2.H)

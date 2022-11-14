@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #SMDM/Makefile.am
  
- #pkglib_LTLIBRARIES = libSherpaSMDM.la)
  set(GITTAG  MODEL/SMDM)
 set(SMDM_SOURCES  Model.C)
 sherpa_create_git_info(SMDM ../SMDM/)

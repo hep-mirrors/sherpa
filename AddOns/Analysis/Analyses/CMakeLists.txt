@@ -5,7 +5,6 @@
 set(Analyses_SOURCES  Analysis_Base.C WPolarization_Analysis.C ATLAS_CONF_2011_038.C xQ2_Analysis.C)
 set(ANAANA_ADDS  Analysis_Base.H)
  if (SHERPA_ENABLE_ANALYSIS)
- #pkglib_LTLIBRARIES = libSherpaAnalyses.la)
 set(Analyses_SOURCES ${ANAANA_SOURCES})
 set(Analyses_HEADERS ${ANAANA_ADDS})
  #ANAANA_#EXTRA_DIST = ${ANAANA_ADDS})

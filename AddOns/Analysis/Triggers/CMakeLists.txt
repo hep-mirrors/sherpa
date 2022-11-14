@@ -9,7 +9,6 @@ set(Triggers_SOURCES  Trigger_Base.C One_Variable_Selector.C One_Particle_Select
 set(ANATRIGGER_ADDS  Trigger_Base.H Durham_Algorithm.H Cambridge_Algorithm.H area.h circulator.h defines.h geom_2d.h hash.h momentum.h protocones.h quadtree.h ranlux.h reference.h siscone_error.h siscone.h
  split_merge.h vicinity.h MySISCone.H ConeMCFM.H MCFMCone.H Kt_Algorithm.H DIS_Algorithm.H Final_Selector.H Midpoint_Cone.H Calorimeter_Cone.H Primitive_Detector.H Primitive_Calorimeter.H)
  if (SHERPA_ENABLE_ANALYSIS)
- #pkglib_LTLIBRARIES = libSherpaAnalysisTrigger.la)
 set(Triggers_SOURCES ${ANATRIGGER_SOURCES})
 set(Triggers_HEADERS ${ANATRIGGER_ADDS})
  #ANATRIGGER_#EXTRA_DIST = ${ANATRIGGER_ADDS})

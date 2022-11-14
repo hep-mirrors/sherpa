@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
- #pkglib_LTLIBRARIES = libShrimpsMain.la)
  set(GITTAG  SHRiMPS/Main)
 set(Main_SOURCES  Shrimps.C Cluster_Algorithm.C Soft_Jet_Criterion.C Hadron_Init.C)
  #localincdir = $(pkg#includedir)/SHRiMPS/Main)

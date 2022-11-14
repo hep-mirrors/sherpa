@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Lorentz/Makefile.am
  
- #pkglib_LTLIBRARIES = libDIMLorentz.la)
  set(GITTAG  DIM/Lorentz)
 set(Lorentz_SOURCES  FFV_FF.C FFV_FI.C FFV_IF.C FFV_II.C VVV_FF.C VVV_FI.C VVV_IF.C VVV_II.C)
 sherpa_create_git_info(Lorentz ../Lorentz/)

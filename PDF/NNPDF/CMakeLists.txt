@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #NNPDF/Makefile.am
  
- #pkglib_LTLIBRARIES = libNNPDFSherpa.la)
+ libNNPDFSherpa.la)
  set(GITTAG  PDF/NNPDF)
 set(NNPDF_SOURCES  NNPDFDriver.cc PDF_NN.C)
 set(NNPDF_HEADERS NNPDFDriver.h)

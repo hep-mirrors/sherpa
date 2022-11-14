@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
- #pkglib_LTLIBRARIES = libDIMMain.la)
  set(GITTAG  DIM/Main)
 set(Main_SOURCES  Gamma.C MCatNLO.C)
 set(Main_HEADERS Gamma.H MCatNLO.H)

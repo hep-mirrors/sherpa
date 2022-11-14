@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Decays/Makefile.am
  
- #pkglib_LTLIBRARIES = libAhadicDecays.la)
  set(GITTAG  AHADIC++/Decays)
 set(Decays_SOURCES  Cluster_Decayer.C Cluster_Splitter.C)
  #localincdir = $(pkg#includedir)/AHADIC++/Decays)

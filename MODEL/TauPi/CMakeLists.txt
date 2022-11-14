@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #TauPi/Makefile.am
  
- #pkglib_LTLIBRARIES = libSherpaTauPi.la)
  set(GITTAG  MODEL/TauPi)
 set(TauPi_SOURCES  TauPi_LC.C Model.C)
 sherpa_create_git_info(TauPi ../TauPi/)

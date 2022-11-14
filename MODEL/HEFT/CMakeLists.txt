@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #HEFT/Makefile.am
  
- #pkglib_LTLIBRARIES = libSherpaHEFT.la)
  set(GITTAG  MODEL/HEFT)
 set(HEFT_SOURCES  Effective_Higgs_Coupling.C Model.C SVV_LC.C SVVV_LC.C SVVP_LC.C SVVVV_LC.C)
 set(HEFT_HEADERS Effective_Higgs_Coupling.H)

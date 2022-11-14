@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Calculators/Makefile.am
  
- #pkglib_LTLIBRARIES = libMCatNLOCalculators.la)
  set(GITTAG  MCATNLO/Calculators)
 set(Calculators_SOURCES  CF_QCD.C LF_FFV.C LF_VVV.C)
 sherpa_create_git_info(Calculators ../Calculators/)

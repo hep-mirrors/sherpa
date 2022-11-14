@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
- #pkglib_LTLIBRARIES = libBeamMain.la)
  set(GITTAG  BEAM/Main)
 set(Main_SOURCES  Beam_Base.C Beam_Parameters.C Kinematics_Base.C Collider_Kinematics.C RelicDensity_Kinematics.C DM_Annihilation_Kinematics.C Weight_Base.C Collider_Weight.C RelicDensity_Weight.C DM_Annihilation_Weight.C
  Beam_Spectra_Handler.C)

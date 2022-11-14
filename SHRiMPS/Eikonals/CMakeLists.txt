@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Eikonals/Makefile.am
  
- #pkglib_LTLIBRARIES = libShrimpsEikonals.la)
  set(GITTAG  SHRiMPS/Eikonals)
 set(Eikonals_SOURCES  Eikonal_Weights.C Rapidity_Density.C Omega_ik.C Single_Channel_Eikonal.C Eikonal_Contributor.C Grid.C Analytic_Eikonal.C Analytic_Contributor.C Eikonal_Creator.C Form_Factors.C)
  #localincdir = $(pkg#includedir)/SHRiMPS/Eikonals)

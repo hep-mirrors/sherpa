@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Two2Two/Makefile.am
  
- #pkglib_LTLIBRARIES = libExtraXS2_2.la)
  set(GITTAG  EXTRA_XS/Two2Two)
 set(Two2Two_SOURCES  XS_Drell_Yan.C XS_DiPhoton.C XS_QCD.C ee_Y4S_BB.C gg_yy.C yy_bobo.C DMDM_mumu.C)
 sherpa_create_git_info(Two2Two ../Two2Two/)

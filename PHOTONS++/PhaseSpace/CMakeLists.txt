@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #PhaseSpace/Makefile.am
  
- #pkglib_LTLIBRARIES = libPhotonsPhaseSpace.la)
  set(GITTAG  PHOTONS++/PhaseSpace)
 set(PhaseSpace_SOURCES  Avarage_Photon_Number.C Generate_Dipole_Photon_Angle.C Generate_Multipole_Photon_Angle.C)
 set(PhaseSpace_HEADERS Avarage_Photon_Number.H Generate_Dipole_Photon_Angle.H Generate_Multipole_Photon_Angle.H)

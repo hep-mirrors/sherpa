@@ -2,7 +2,6 @@
 #YAML/Makefile.am
  
  #SUBDIRS = yaml-cpp)
- #pkglib_LTLIBRARIES = libToolsYaml.la)
  set(GITTAG  ATOOLS/YAML)
  #EXTRA_DIST = yaml-cpp)
 set(YAML_SOURCES  binary.cpp convert.cpp depthguard.cpp directives.cpp emit.cpp emitfromevents.cpp emitter.cpp emitterstate.cpp emitterutils.cpp exceptions.cpp exp.cpp memory.cpp node.cpp node_data.cpp

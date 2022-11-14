@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Event_Generation/Makefile.am
  
- #pkglib_LTLIBRARIES = libShrimpsEvents.la)
  set(GITTAG  SHRiMPS/Events)
 set(Event_Generation_SOURCES  Event_Generator.C Inelastic_Event_Generator.C Elastic_Event_Generator.C Soft_Diffractive_Event_Generator.C Collinear_Emission_Generator.C)
  #localincdir = $(pkg#includedir)/SHRiMPS/Event_Generation)

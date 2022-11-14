@@ -5,7 +5,6 @@
 set(Main_SOURCES  Analysis_Object.C Primitive_Analysis.C Analysis_Handler.C)
 set(ANAMAIN_ADDS  Analysis_Object.H Primitive_Analysis.H Analysis_Handler.H)
  if (SHERPA_ENABLE_ANALYSIS)
- #pkglib_LTLIBRARIES = libSherpaAnalysis.la)
 set(Main_SOURCES ${ANAMAIN_SOURCES})
 set(Main_HEADERS ${ANAMAIN_ADDS})
 #libSherpaAnalysis_la_LIBADD = -L../Tools -L../Triggers -L../Observables -L../Analyses -lSherpaAnalysisTools -lSherpaAnalysisTrigger -lSherpaObservables -lSherpaAnalyses)

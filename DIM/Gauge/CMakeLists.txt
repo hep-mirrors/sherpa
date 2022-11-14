@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Gauge/Makefile.am
  
- #pkglib_LTLIBRARIES = libDIMGauge.la)
  set(GITTAG  DIM/Gauge)
 set(Gauge_SOURCES  GGG.C GQQ.C QQG.C)
 sherpa_create_git_info(Gauge ../Gauge/)

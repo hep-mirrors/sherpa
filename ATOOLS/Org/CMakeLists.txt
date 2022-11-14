@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Org/Makefile.am
  
- #pkglib_LTLIBRARIES = libToolsOrg.la)
  if (SHERPA_ENABLE_GZIP)
  set(GZIPSTREAMSOURCES  Gzip_Stream.C)
  set(GZIPSTREAMHEADERS  Gzip_Stream.H)

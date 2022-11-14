@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #DipoleSubtraction/Makefile.am
  
- #pkglib_LTLIBRARIES = libDipoleSubtraction.la)
  set(GITTAG  AMEGIC++/DipoleSubtraction)
 set(DipoleSubtraction_SOURCES  DipoleSplitting_Base.C FF_DipoleSplitting.C FI_DipoleSplitting.C IF_DipoleSplitting.C II_DipoleSplitting.C Single_LOProcess.C Single_LOProcess_MHV.C Single_LOProcess_External.C
  Single_DipoleTerm.C Single_OSTerm.C Single_Virtual_Correction.C Single_Real_Correction.C)

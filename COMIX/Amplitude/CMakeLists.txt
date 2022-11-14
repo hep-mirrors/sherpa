@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Amplitude/Makefile.am
  
- #pkglib_LTLIBRARIES = libComixAmplitude.la)
  set(GITTAG  COMIX/Amplitude)
 set(Amplitude_SOURCES  Amplitude.C)
 set(Amplitude_HEADERS Amplitude.H)

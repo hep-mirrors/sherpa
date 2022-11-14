@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Process/Makefile.am
  
- #pkglib_LTLIBRARIES = libPhasicProcess.la)
  set(GITTAG  PHASIC++/Process)
 set(Process_SOURCES  Subprocess_Info.C Process_Info.C Process_Base.C Process_Group.C Single_Process.C MCatNLO_Process.C Virtual_ME2_Base.C Tree_ME2_Base.C Color_Correlated_ME2.C Spin_Color_Correlated_ME2.C
  Massive_Kernels.C KP_Terms.C ME_Generators.C ME_Generator_Base.C)

@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Initialization/Makefile.am
  
- #pkglib_LTLIBRARIES = libSherpaInitialization.la)
  set(GITTAG  SHERPA/Initialization)
 set(Initialization_SOURCES  Initialization_Handler.C)
 set(Initialization_HEADERS Initialization_Handler.H)

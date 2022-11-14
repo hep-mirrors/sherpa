@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Beam_Remnants/Makefile.am
  
- #pkglib_LTLIBRARIES = libShrimpsBeamRemnants.la)
  set(GITTAG  SHRiMPS/Beam_Remnants)
 set(Beam_Remnants_SOURCES  Continued_PDF.C Hadron_Dissociation.C Remnant_Handler.C Colour_Generator.C)
  #localincdir = $(pkg#includedir)/SHRiMPS/Beam_Remnants)

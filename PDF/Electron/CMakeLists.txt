@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Electron/Makefile.am
  
- #pkglib_LTLIBRARIES = libPDFESherpa.la)
  set(GITTAG  PDF/Electron)
 set(Electron_SOURCES  PDF_Electron.C)
 set(Electron_HEADERS PDF_Electron.H)

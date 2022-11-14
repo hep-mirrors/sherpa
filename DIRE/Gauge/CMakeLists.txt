@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Gauge/Makefile.am
  
- #pkglib_LTLIBRARIES = libDireGauge.la)
  set(GITTAG  DIRE/Gauge)
 set(Gauge_SOURCES  GGG.C GQQ.C QQG.C QQQQ.C)
 sherpa_create_git_info(Gauge ../Gauge/)

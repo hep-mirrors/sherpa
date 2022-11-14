@@ -5,7 +5,6 @@
 set(DiHiggsNLO_SOURCES  DiHiggs_Virtual.C hhgrid.c)
  set(DIHIGGS_ADDS  DiHiggs_Virtual.H hhgrid.h)
  if (SHERPA_ENABLE_DIHIGGS)
- #pkglib_LTLIBRARIES = libSherpaDiHiggsNLO.la)
 set(DiHiggsNLO_SOURCES ${DIHIGGS_SOURCES})
  #DI#HIGGS_#EXTRA_DIST = ${DIHIGGS_ADDS})
  else()

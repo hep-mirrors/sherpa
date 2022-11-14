@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Ladders/Makefile.am
  
- #pkglib_LTLIBRARIES = libShrimpsLadders.la)
  set(GITTAG  SHRiMPS/Ladders)
 set(Ladders_SOURCES  Ladder_Particle.C T_Prop.C Ladder.C Ladder_Generator_Base.C Ladder_Generator_Eik.C Ladder_Generator_QT.C Ladder_Generator_KT.C Ladder_Generator_Seeded.C MEs.C Primary_Ladders.C)
  #localincdir = $(pkg#includedir)/SHRiMPS/Ladders)

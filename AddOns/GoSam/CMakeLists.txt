@@ -5,7 +5,6 @@
 set(GoSam_SOURCES  GoSam_Virtual.C GoSam_Interface.C)
 set(GOSAM_ADDS   GoSam_Virtual.H GoSam_Interface.H)
  if (SHERPA_ENABLE_GOSAM)
- #pkglib_LTLIBRARIES = libSherpaGoSam.la)
 set(GoSam_SOURCES ${GoSam_SOURCES})
  #GOSAM_#EXTRA_DIST = $(GOSAM_ADDS)
  else()

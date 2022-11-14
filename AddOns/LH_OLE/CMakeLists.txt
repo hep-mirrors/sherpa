@@ -5,7 +5,6 @@
 set(LH_OLE_SOURCES  LH_OLE_Interface.C LH_OLE_Communicator.C)
  set(LHOLE_ADDS   LH_OLE_Communicator.H)
  if (SHERPA_ENABLE_LHOLE)
- #pkglib_LTLIBRARIES = libSherpaLHOLE.la)
 set(LH_OLE_SOURCES ${LH_OLE_SOURCES})
  #LHOLE_#EXTRA_DIST = $(LHOLE_ADDS)
  else()

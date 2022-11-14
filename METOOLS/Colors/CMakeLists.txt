@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Colors/Makefile.am
  
- #pkglib_LTLIBRARIES = libMEToolsColors.la)
  set(GITTAG  METOOLS/Colors)
 set(Colors_SOURCES  None_CC.C D_CC.C T_CC.C F_CC.C FF_CC.C TT_CC.C ST_CC.C SF_CC.C)
 set(Colors_HEADERS)

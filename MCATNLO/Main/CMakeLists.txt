@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
- #pkglib_LTLIBRARIES = libMCatNLOMain.la)
  set(GITTAG  MCATNLO/Main)
 set(Main_SOURCES  CS_Cluster_Definitions.C CS_Gamma.C CS_MCatNLO.C)
 set(Main_HEADERS CS_Cluster_Definitions.H CS_Gamma.H CS_MCatNLO.H)

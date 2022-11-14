@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Current_Library/Makefile.am
  
- #pkglib_LTLIBRARIES = libHadronsCurrents.la)
  set(GITTAG  HADRONS++/Current_Library)
 set(Current_Library_SOURCES  Current_Base.C VA_P_P.C VA_P_S.C VA_P_V.C VA_P_T.C VA_P_A.C VA_0_P.C VA_0_V.C VA_0_PP.C VA_0_PP_strange.C VA_0_PPP.C VA_0_PiPiPiPi3Charged.C VA_0_PiPiPiPi1Charged.C VA_B_DPi.C
  VA_B_DstarPi.C VA_B_B.C VA_B_B3.C VA_B_B_hepph9409272.C VA_F_F.C)

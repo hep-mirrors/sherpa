@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Special/Makefile.am
  
- #pkglib_LTLIBRARIES = libExtraXSSpecial.la)
  set(GITTAG  EXTRA_XS/Special)
 set(Special_SOURCES  Instanton.C)
 sherpa_create_git_info(Special ../Special/)

@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #GRS/Makefile.am
  
- #pkglib_LTLIBRARIES = libGRSSherpa.la)
  set(GITTAG  PDF/GRS)
  #AM_FFLAGS = -std = legacy)
 set(GRS_SOURCES  grsg99.f GRSph_Fortran_Interface.C)

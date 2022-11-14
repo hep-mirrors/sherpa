@@ -1,7 +1,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
- #pkglib_LTLIBRARIES = libAhadicMain.la)
  set(GITTAG  AHADIC++/Main)
 set(Main_SOURCES  Ahadic.C)
  #localincdir = $(pkg#includedir)/AHADIC++/Main)
