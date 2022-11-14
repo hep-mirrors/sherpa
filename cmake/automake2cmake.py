@@ -351,6 +351,7 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("dist_ufo_PYTHON","#dist_ufo_PYTHON")  for x in newlist]
     newlist = [x.replace("ufodir =","#ufodir =")  for x in newlist]
     newlist = [x.replace("localinc","#localinc")  for x in newlist]
+    newlist = [x.replace(" libNNPDFSherpa.la","")  for x in newlist]
     newlist = [x.replace("pkglib_LTLIBRARIES","#pkglib_LTLIBRARIES")  for x in newlist]
     newlist = [x.replace(" GITTAG =","set(GITTAG ")  for x in newlist]
     newlist = [x.replace("GITTAG =","set(GITTAG ")  for x in newlist]
