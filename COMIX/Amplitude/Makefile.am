@@ -7,4 +7,5 @@ libComixAmplitude_la_SOURCES  =	\
 				Git_Info.C \
 				Amplitude.C
 
-localinc_HEADERS      = Amplitude.H
+localinc_HEADERS      =	\
+			Amplitude.H
