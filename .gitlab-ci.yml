@@ -279,7 +279,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
      - $CI_SERVER_HOST=="gitlab.cern.ch"
   image: gitlab-registry.cern.ch/sft/docker:lcg-cc7
   stage: test
-  script:
+  script: 
       - export RELPATH=/cvmfs/sft.cern.ch/lcg/releases/LCG_102
       - export LCGPLATFORM=x86_64-centos7-gcc11-opt
       - export PATH=$RELPATH/swig/4.0.2/bin:/cvmfs/sft.cern.ch/lcg/contrib/CMake/3.23.2/Linux-x86_64/bin/:$PATH
@@ -306,25 +306,27 @@ LCG_102_x86_64-centos7-gcc11-opt:
       - which -a gzip
 #      - which -a root
 #      - which -a python
-      - > cmake -S sherpa -B BUILD   
-         -DCMAKE_INSTALL_PREFIX=$(pwd)/install 
-         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
-         -DHepMC3_DIR=$RELPATH/hepmc3/$S_HEPMC3/${LCGPLATFORM}/share/HepMC3/cmake/  
-         -DSHERPA_ENABLE_INSTALL_LIBZIP=ON 
-         -DPYTHIA8_DIR=$RELPATH/MCGenerators/pythia8/$S_PYTHIA8/${LCGPLATFORM} 
-         -DRIVET_DIR=$RELPATH/MCGenerators/rivet/$S_RIVET/${LCGPLATFORM} 
-         -DOPENLOOPS_DIR=$RELPATH/MCGenerators/openloops/$S_OPENLOOPS/${LCGPLATFORM}/  
-         -DSHERPA_ENABLE_RECOLA=OFF 
-         -DLHAPDF_DIR=$RELPATH/MCGenerators/lhapdf/$S_LHAPDF/${LCGPLATFORM}/  
-         -DHEPMC2_DIR=$RELPATH/HepMC/$S_HEPMC2/${LCGPLATFORM}/ 
-         -DMADLOOP_DIR=$RELPATH/MCGenerators/madgraph5amc/$S_MG5/${LCGPLATFORM}/  
-         -DGOSAM_DIR=$RELPATH/MCGenerators/gosam/$S_GOSAM/${LCGPLATFORM}/  
-         -DSHERPA_ENABLE_ROOT=OFF   
-         -DSHERPA_ENABLE_HEPMC3_ROOT=OFF   
-         -DSHERPA_ENABLE_PYTHON=OFF   
-         -DSHERPA_ENABLE_MCFM=OFF   
-         -DSHERPA_ENABLE_MANUAL=OFF  
-         -DSHERPA_ENABLE_HZTOOL=OFF  
-         -DSHERPA_ENABLE_THREADING=OFF  
-         -DSHERPA_ENABLE_BLACKHAT=OFF  
+
+      - LARG=" "
+      - LARG="$LARG "-DCMAKE_INSTALL_PREFIX=$(pwd)/install  
+      - LARG="$LARG "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
+      - LARG="$LARG "-DHepMC3_DIR=$RELPATH/hepmc3/$S_HEPMC3/${LCGPLATFORM}/share/HepMC3/cmake/  
+      - LARG="$LARG "-DSHERPA_ENABLE_INSTALL_LIBZIP=ON 
+      - LARG="$LARG "-DPYTHIA8_DIR=$RELPATH/MCGenerators/pythia8/$S_PYTHIA8/${LCGPLATFORM} 
+      - LARG="$LARG "-DRIVET_DIR=$RELPATH/MCGenerators/rivet/$S_RIVET/${LCGPLATFORM} 
+      - LARG="$LARG "-DOPENLOOPS_DIR=$RELPATH/MCGenerators/openloops/$S_OPENLOOPS/${LCGPLATFORM}/  
+      - LARG="$LARG "-DSHERPA_ENABLE_RECOLA=OFF 
+      - LARG="$LARG "-DLHAPDF_DIR=$RELPATH/MCGenerators/lhapdf/$S_LHAPDF/${LCGPLATFORM}/  
+      - LARG="$LARG "-DHEPMC2_DIR=$RELPATH/HepMC/$S_HEPMC2/${LCGPLATFORM}/ 
+      - LARG="$LARG "-DMADLOOP_DIR=$RELPATH/MCGenerators/madgraph5amc/$S_MG5/${LCGPLATFORM}/  
+      - LARG="$LARG "-DGOSAM_DIR=$RELPATH/MCGenerators/gosam/$S_GOSAM/${LCGPLATFORM}/  
+      - LARG="$LARG "-DSHERPA_ENABLE_ROOT=OFF   
+      - LARG="$LARG "-DSHERPA_ENABLE_HEPMC3_ROOT=OFF   
+      - LARG="$LARG "-DSHERPA_ENABLE_PYTHON=OFF   
+      - LARG="$LARG "-DSHERPA_ENABLE_MCFM=OFF   
+      - LARG="$LARG "-DSHERPA_ENABLE_MANUAL=OFF  
+      - LARG="$LARG "-DSHERPA_ENABLE_HZTOOL=OFF  
+      - LARG="$LARG "-DSHERPA_ENABLE_THREADING=OFF  
+      - LARG="$LARG "-DSHERPA_ENABLE_BLACKHAT=OFF 
+      - cmake -S sherpa -B BUILD  $LARG
       - cmake --build BUILD -j 10
