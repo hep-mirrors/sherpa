@@ -10,7 +10,7 @@
 
 namespace ATOOLS {
   class Blob;
-   
+
   struct part_status {
     enum code {
       undefined     = 0,
@@ -23,14 +23,14 @@ namespace ATOOLS {
   };
 
   class Particle {
-  private : 
+  private :
     static long unsigned int s_currentnumber;
-    int               m_number, m_beam; 
-    size_t            m_meid; 
-    part_status::code m_status;         
-    char              m_info;   
-    Flavour           m_fl;         
-    Vec4D             m_momentum, m_position; 
+    int               m_number, m_beam;
+    size_t            m_meid;
+    part_status::code m_status;
+    char              m_info;
+    Flavour           m_fl;
+    Vec4D             m_momentum, m_position;
     Flow              m_flow;
     Blob            * p_startblob, * p_endblob;
     Particle        * p_originalpart;
@@ -81,7 +81,7 @@ namespace ATOOLS {
     void   SetNumber(const int number=0);
     void   SetBeam(const int);
     void   SetOriginalPart(Particle*);
-    bool operator==(Particle part);
+    bool operator==(Particle part) const;
     inline void   SetFromDec(const bool &val){m_fromdec=val;}
     inline bool   FromDec() const {return m_fromdec;}
     static void   ResetCounter(const int number=0)  { s_totalnumber = number; }
@@ -111,7 +111,7 @@ namespace ATOOLS {
     bool operator()(const Particle * a,const Particle * b) const {
       return (a->Number()>b->Number());
     }
-    
+
   };// end of class String_Sort
 
   typedef std::map<ATOOLS::Particle *,ATOOLS::Vec4D,PMMSort> ParticleMomMap;
@@ -119,18 +119,18 @@ namespace ATOOLS {
 
 
 
-  /*! 
+  /*!
     \class Particle
     \brief Characterising individual particles occuring in event generation.
-    
-    This class contains all information needed for an Event Record based 
-    on particles and methods to manipulate this information. 
+
+    This class contains all information needed for an Event Record based
+    on particles and methods to manipulate this information.
     The particles defined here are close to the particles of the HepMC format
     by Matt Dobbs. ( http://cern.ch/HepMC/ )
   */
 
-  /*! 
-    \var   int Particle::m_number     
+  /*!
+    \var   int Particle::m_number
     \brief The particle's number (integer >0)
   */
 
@@ -139,26 +139,26 @@ namespace ATOOLS {
     \brief True, if this particle is emerged from a hard decay. This property is set in the Hard Decay Handler and propagated through the CSS Shower.
   */
 
-  /*! 
+  /*!
     \var   char Particle::m_info
     \brief What the particle really does and where it stems from.
-    
-    info flag, marks production step: 
+
+    info flag, marks production step:
     \verbatim
-    G - IS for hard interaction, H - FS from hard interaction, 
-    M - internal in ME, 
-    I - initial particle, F - final particle, 
+    G - IS for hard interaction, H - FS from hard interaction,
+    M - internal in ME,
+    I - initial particle, F - final particle,
     i - particle from ISR, f - particle from FSR, decayed
     D - particle from hadron decays,
     P - primary hadrons
     S - soft photons, s - soft photons splitting products
     \endverbatim
-  */ 
+  */
 
   /*!
     \var   int Particle::m_status;
     \brief The particle status (HepMC 1.01).
-    
+
     The status flag can take the following values:
     \verbatim
     0       null entry
@@ -169,15 +169,15 @@ namespace ATOOLS {
     11-200  at disposal of each model builder
     201-... user status
     \endverbatim
-  */  
-  
+  */
+
   /*!
     \var     Flavour Particle::m_fl
-    \brief The particle's flavour. 
-    
-    The particle's flavour. 
-    
-    Additional information can be obtained using methods 
+    \brief The particle's flavour.
+
+    The particle's flavour.
+
+    Additional information can be obtained using methods
     related to the class Flavour.
   */
 
@@ -185,7 +185,7 @@ namespace ATOOLS {
     \var   Vec4D   Particle::m_momentum
     \brief The particle's momentum.
   */
-  
+
   /*!
     \var  Blob * Particle::p_startblob
     \brief Pointers to the particle's production vertex.
@@ -203,10 +203,10 @@ namespace ATOOLS {
     \brief The proper decay time of the particle.
   */
 
-  /*!  
+  /*!
     \fn    double Particle::ProperTime()
     \brief Calculate m_dec_time.
-    
+
     Calculate proper decay time \f$\tau^*\f$ of particle in its rest frame via
     \f[
     \tau^* = hbar \sqrt{q^2/((q^2-M^2)^2 + (\Gamma/M q^2)^2)}
@@ -217,19 +217,19 @@ namespace ATOOLS {
   /*!
     \fn    double Particle::LifeTime()
     \brief Calculate lifetime.
-    
+
     Calculate lifetime of the particle according to an exponential
     decay law (like radioactive decays). Lifetime is given in cm-system of
     the hard process (where the particle list is filled), boost taken care of
     by factor gamma.
   */
-  
+
   /*!
     \fn    Vec3D Particle::Distance()
     \brief Calculate decay length.
-    
+
     Calculate the distance travelled by the particle during its lifetime.
     Result is given as a 3-vector in mm
-  */ 
+  */
 }
 #endif
