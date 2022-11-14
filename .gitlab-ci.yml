@@ -328,5 +328,5 @@ LCG_102_x86_64-centos7-gcc11-opt:
       - LARG="$LARG "-DSHERPA_ENABLE_HZTOOL=OFF  
       - LARG="$LARG "-DSHERPA_ENABLE_THREADING=OFF  
       - LARG="$LARG "-DSHERPA_ENABLE_BLACKHAT=OFF 
-      - cmake -S sherpa -B BUILD  $LARG
+      - cmake -S . -B BUILD  $LARG
       - cmake --build BUILD -j 10
