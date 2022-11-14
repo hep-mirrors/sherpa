@@ -278,7 +278,10 @@ def transform_imake_source(argv, dbg):
     newlist.append(temp)
     newlist = filter(lambda st: st != '' , newlist)
 
+    newlist = [x.replace("include ../../../../git.make","") for x in newlist]	
+    newlist = [x.replace("include ../../../git.make","") for x in newlist]	
     newlist = [x.replace("include ../../git.make","") for x in newlist]	
+    newlist = [x.replace("include ../git.make","") for x in newlist]	
     newlist = [x.replace("if USING__Analysis","if (SHERPA_ENABLE_ANALYSIS)") for x in newlist]	
     newlist = [x.replace("if USING__EWSud","if (SHERPA_ENABLE_EWSUD)") for x in newlist]	
     newlist = [x.replace("if USING__LHOLE","if (SHERPA_ENABLE_LHOLE)") for x in newlist]	

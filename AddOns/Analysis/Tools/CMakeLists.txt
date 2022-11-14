@@ -2,7 +2,6 @@
 #Tools/Makefile.am
  
  set(GITTAG  AddOns/Analysis/Tools)
- #include ../../../git.make)
 set(Tools_SOURCES  Lorentz.C Breit_Frame.C MET.C Blob_Selector.C List_Creator.C List_Merger.C Particle_Ordering.C Particle_Qualifier.C Particle_Selector.C)
 set(ANATOOL_ADDS  Particle_Qualifier.H)
  if (SHERPA_ENABLE_ANALYSIS)

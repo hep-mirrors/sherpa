@@ -17,6 +17,6 @@ add_library(ToolsPhys SHARED ${Phys_SOURCES} )
 sherpa_handle_shared_library(ToolsPhys ToolsPhys)
 
 if (SHERPA_ENABLE_LHAPDF)
-target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
-target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
+  target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
+  target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
 endif()

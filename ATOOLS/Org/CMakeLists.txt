@@ -28,6 +28,4 @@ list(APPEND Org_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 add_library(ToolsOrg SHARED ${Org_SOURCES} )
 sherpa_handle_shared_library(ToolsOrg ToolsOrg)
 
-#if (SHERPA_ENABLE_GZIP)
 target_link_libraries(ToolsOrg PRIVATE LibZip::LibZip)
-#endif()

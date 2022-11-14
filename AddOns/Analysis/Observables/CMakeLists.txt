@@ -2,7 +2,6 @@
 #Observables/Makefile.am
  
  set(GITTAG  AddOns/Analysis/Observables)
- #include ../../../git.make)
 set(Observables_SOURCES  Event_Output.C Blobdata.C Global_Calculator.C Primitive_Observable_Base.C Normalized_Observable.C One_Variable_Observable.C HT.C XS.C TotalMass.C LMass.C EV_C_Observables.C EV_C2_Observables.C
  EV_C4_Observables.C EV_SC_Observables.C PSM_Observables.C Multiplicity.C One_Particle_Observables.C One_Particle_Observables_2.C Conditional_One_Particle_Observables.C Two_Particle_Observables.C Two_Particle_Observables_2.C
  Three_Particle_Observables.C Four_Particle_Observables.C Four_Particle_Observables_2.C Six_Particle_Observables.C Soft_Photon_Observables.C Jet_Cone_Distribution.C Jet_Observables.C Jet_NJet_Observables.C
