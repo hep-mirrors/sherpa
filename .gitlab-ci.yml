@@ -301,11 +301,11 @@ LCG_102_x86_64-centos7-gcc11-opt:
       - source $RELPATH/Python/$S_PYTHON/${LCGPLATFORM}/Python-env.sh
       - set -x
       - which -a g++
-      - which -a swig
+#      - which -a swig
       - which -a cmake
       - which -a gzip
-      - which -a root
-      - which -a python
+#      - which -a root
+#      - which -a python
       - cmake -S sherpa -B BUILD   \
          -DCMAKE_INSTALL_PREFIX=$(pwd)/install \
          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
