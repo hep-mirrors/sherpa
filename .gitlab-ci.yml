@@ -199,6 +199,7 @@
         #- Manual/**/*
       #when: always
     #- when: never
+##########################################################################
 
 .Fedora: &Fedora
 #  only:
@@ -278,8 +279,8 @@ LCG_102_x86_64-centos7-gcc11-opt:
     variables:
      - $CI_SERVER_HOST=="gitlab.cern.ch"
   image: gitlab-registry.cern.ch/sft/docker:lcg-cc7
-  stage: test
-  script: 
+  stage: build
+  script:
       - export RELPATH=/cvmfs/sft.cern.ch/lcg/releases/LCG_102
       - export LCGPLATFORM=x86_64-centos7-gcc11-opt
       - export PATH=$RELPATH/swig/4.0.2/bin:/cvmfs/sft.cern.ch/lcg/contrib/CMake/3.23.2/Linux-x86_64/bin/:$PATH
@@ -306,7 +307,6 @@ LCG_102_x86_64-centos7-gcc11-opt:
       - which -a gzip
 #      - which -a root
 #      - which -a python
-
       - LARG=" "
       - LARG="$LARG "-DCMAKE_INSTALL_PREFIX=$(pwd)/install  
       - LARG="$LARG "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
