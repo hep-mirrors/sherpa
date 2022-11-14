@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Tools/Makefile.am
  
- set(GITTAG  AHADIC++/Tools)
+set(GITTAG  AHADIC++/Tools)
 set(Tools_SOURCES  Proto_Particle.C Cluster.C Constituents.C Wave_Function.C Multiplet_Constructor.C Single_Transitions.C Double_Transitions.C Hadronisation_Parameters.C Soft_Cluster_Handler.C Singlet_Tools.C
  Splitter_Base.C Flavour_Selector.C KT_Selector.C Z_Selector.C)
  #localincdir = $(pkg#includedir)/AHADIC++/Tools)

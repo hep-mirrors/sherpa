@@ -5,7 +5,6 @@
  set(GITTAG  AddOns/Rivet)
 set(Rivet_SOURCES  Rivet_Interface.C)
  if (SHERPA_ENABLE_RIVET)
- #pkglib_LTLIBRARIES = libSherpaRivetAnalysis.la)
 set(Rivet_SOURCES ${Rivet_SOURCES})
  else()
  #RIVET_#EXTRA_DIST = $(RIVET_SOURCES)

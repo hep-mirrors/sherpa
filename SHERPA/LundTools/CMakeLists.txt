@@ -1,11 +1,9 @@
 #Manually edited
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 
- #pkglib_LTLIBRARIES = libLundTools.la)
 set(PYTHIASOURCES   pyplst.f Lund_Interface.C)
  set(PYTHIAHEADERS  Lund_Wrapper.H Lund_Interface.H)
  set(GITTAG  SHERPA/LundTools)
- #include ../../git.make)
  if (SHERPA_ENABLE_PYTHIA6)
   set(LundTools_SOURCES ${PYTHIASOURCES} )
   set(LundTools_HEADERS ${PYTHIAHEADERS} Dummy.C)

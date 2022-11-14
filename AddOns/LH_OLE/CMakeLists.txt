@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #LH_OLE/Makefile.am
  
- set(GITTAG  AddOns/LH_OLE)
+set(GITTAG  AddOns/LH_OLE)
 set(LH_OLE_SOURCES  LH_OLE_Interface.C LH_OLE_Communicator.C)
  set(LHOLE_ADDS   LH_OLE_Communicator.H)
  if (SHERPA_ENABLE_LHOLE)

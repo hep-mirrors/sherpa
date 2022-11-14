@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Loops/Makefile.am
  
- set(GITTAG  METOOLS/Loops)
+set(GITTAG  METOOLS/Loops)
 set(Loops_SOURCES  Master_Tadpole.C Master_Bubble.C Master_Triangle.C Master_Box.C PV_Tadpoles.C PV_Bubbles.C PV_Triangles.C)
  #localincdir = $(pkg#includedir)/METOOLS/Loops)
 set(Loops_HEADERS Divergence_Array.H Master_Integrals.H PV_Integrals.H)

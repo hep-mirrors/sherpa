@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Channels/Makefile.am
  
- set(GITTAG  PHASIC++/Channels)
+set(GITTAG  PHASIC++/Channels)
 set(Channels_SOURCES  CSS_Kinematics.C Channel_Elements.C Channel_Elements_KK.C Single_Channel.C FSR_Channel.C Rambo.C RamboKK.C VHAAG.C VHAAG_ND.C VHAAG_res.C VHAAG_Threshold.C Decay_Dalitz.C Vegas.C
  Simple_Pole_Channels.C Resonance_Channels.C Leading_Log_Channels.C LBS_Compton_Peak_Channels.C Threshold_Channels.C Channel_Interface.C Multi_Channel.C ISR_Channels.C Beam_Channels.C Channel_Generator.C
  FSR_Channels.C BBar_Multi_Channel.C CS_Dipole.C CS_Dipoles.C BBar_Emission_Generator.C Exponential_Channels.C)

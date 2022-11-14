@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Triggers/Makefile.am
  
- set(GITTAG  AddOns/Analysis/Triggers)
+set(GITTAG  AddOns/Analysis/Triggers)
 set(Triggers_SOURCES  Trigger_Base.C One_Variable_Selector.C One_Particle_Selector.C Two_Particle_Selector.C All_Particle_Selector.C Jet_Particle_Selector.C Two_Particle_X_Selector.C Custom_Selector.C
  ranlux.cpp reference.cpp geom_2d.cpp momentum.cpp hash.cpp quadtree.cpp vicinity.cpp protocones.cpp split_merge.cpp siscone.cpp siscone_error.cpp area.cpp MySISCone.C ConeMCFM.C MCFMCone.C HT_Selector.C
  Q2_Selector.C Durham_Algorithm.C Cambridge_Algorithm.C Kt_Algorithm.C DIS_Algorithm.C Final_Selector.C Midpoint_Cone.C Calorimeter_Cone.C FrixioneIsolation_Selector.C Isolation_Selector.C Fastjet_Interface.C

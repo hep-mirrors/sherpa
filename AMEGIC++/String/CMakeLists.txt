@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #String/Makefile.am
  
- set(GITTAG  AMEGIC++/String)
+set(GITTAG  AMEGIC++/String)
 set(String_SOURCES  String_Handler.C String_Generator.C String_Tree.C String_Output.C MyString.C String_Library.C)
 set(String_HEADERS String_Handler.H String_Generator.H String_Tree.H String_Output.H MyString.H Values.H String_Library.H)
 sherpa_create_git_info(String ../String/)

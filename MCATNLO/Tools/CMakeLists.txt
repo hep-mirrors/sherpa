@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Tools/Makefile.am
  
- set(GITTAG  MCATNLO/Tools)
+set(GITTAG  MCATNLO/Tools)
 set(Tools_SOURCES  Parton.C Singlet.C)
 set(Tools_HEADERS Parton.H Singlet.H)
 sherpa_create_git_info(Tools ../Tools/)

@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
- set(GITTAG  PHOTONS++/Main)
+set(GITTAG  PHOTONS++/Main)
 set(Main_SOURCES  Photons.C Define_Dipole.C Dipole_Type.C)
 set(Main_HEADERS Photons.H Dipole_Type.H Define_Dipole.H)
 sherpa_create_git_info(Main ../Main/)

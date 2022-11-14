@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Phys/Makefile.am
  
- set(GITTAG  ATOOLS/Phys)
+set(GITTAG  ATOOLS/Phys)
 set(Phys_SOURCES  Fragmentation_Base.C fjcore.cc Flavour.C Ordering.C Particle.C Simple_Polarisation_Info.C Particle_List.C Particle_Dresser.C KF_Table.C NLO_Subevt.C NLO_Types.C Decay_Info.C Cluster_Leg.C
  Cluster_Amplitude.C Blob.C Blob_List.C Parton_Finder.C Color_Tester.C Momentum_Shifter.C Flow.C Color.C Spinor.C Selector_List.C Fastjet_Helpers.C Momenta_Stretcher.C Weight_Info.C Variations.C Weights.C
  Hard_Process_Variation_Generator.C)

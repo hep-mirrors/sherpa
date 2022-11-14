@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #TauPi/Makefile.am
  
- set(GITTAG  MODEL/TauPi)
+set(GITTAG  MODEL/TauPi)
 set(TauPi_SOURCES  TauPi_LC.C Model.C)
 sherpa_create_git_info(TauPi ../TauPi/)
 list(TRANSFORM TauPi_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../TauPi/")

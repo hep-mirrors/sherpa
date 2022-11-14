@@ -9,13 +9,11 @@
 #HZTool/Makefile.am
  
  set(GITTAG  AddOns/HZTool)
- #include ../../git.make)
 set(HZTool_SOURCES  hznorm.F hztool_sherpa.F HZTool_Interface.C)
 set(HZTOOL_ADDS   HZTool_Wrapper.H)
  #AM_FFLAGS = -fno-automatic @CONDITIONAL_HZTOOLINCS@)
  if (SHERPA_ENABLE_HZTOOL)
  if (SHERPA_ENABLE_CERNLIB)
- #pkglib_LTLIBRARIES = libSherpaHZToolAnalysis.la)
 set(HZTool_SOURCES ${HZTool_SOURCES})
  #HZTOOL_#EXTRA_DIST = $(HZTOOL_ADDS)
  else()

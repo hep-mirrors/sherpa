@@ -2,7 +2,7 @@
 #NNPDF/Makefile.am
  
  libNNPDFSherpa.la)
- set(GITTAG  PDF/NNPDF)
+set(GITTAG  PDF/NNPDF)
 set(NNPDF_SOURCES  NNPDFDriver.cc PDF_NN.C)
 set(NNPDF_HEADERS NNPDFDriver.h)
  set(NNPDF3archive   NNPDF31_nnlo_as_0118_mc.tar.bz2)

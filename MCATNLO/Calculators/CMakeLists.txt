@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Calculators/Makefile.am
  
- set(GITTAG  MCATNLO/Calculators)
+set(GITTAG  MCATNLO/Calculators)
 set(Calculators_SOURCES  CF_QCD.C LF_FFV.C LF_VVV.C)
 sherpa_create_git_info(Calculators ../Calculators/)
 list(TRANSFORM Calculators_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Calculators/")

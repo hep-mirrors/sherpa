@@ -352,6 +352,7 @@ def transform_imake_source(argv, dbg):
     newlist = [x.replace("ufodir =","#ufodir =")  for x in newlist]
     newlist = [x.replace("localinc","#localinc")  for x in newlist]
     newlist = [x.replace("pkglib_LTLIBRARIES","#pkglib_LTLIBRARIES")  for x in newlist]
+    newlist = [x.replace(" GITTAG =","set(GITTAG ")  for x in newlist]
     newlist = [x.replace("GITTAG =","set(GITTAG ")  for x in newlist]
     newlist = [x.replace("ANAMAIN_EXTRA_DIST","#ANAMAIN_EXTRA_DIST")  for x in newlist]
     newlist = [x.replace("EWSUD_EXTRA_DIST","#EWSUD_EXTRA_DIST")  for x in newlist]

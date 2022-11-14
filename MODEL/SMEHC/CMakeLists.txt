@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #SMEHC/Makefile.am
  
- set(GITTAG  MODEL/SMEHC)
+set(GITTAG  MODEL/SMEHC)
 set(SMEHC_SOURCES  Effective_Higgs_Coupling.C Model.C SVV_LC.C SVVV_LC.C SVVP_LC.C SVVVV_LC.C)
 set(SMEHC_HEADERS Effective_Higgs_Coupling.H)
 sherpa_create_git_info(SMEHC ../SMEHC/)

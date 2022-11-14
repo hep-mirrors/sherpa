@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Special/Makefile.am
  
- set(GITTAG  EXTRA_XS/Special)
+set(GITTAG  EXTRA_XS/Special)
 set(Special_SOURCES  Instanton.C)
 sherpa_create_git_info(Special ../Special/)
 list(TRANSFORM Special_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Special/")

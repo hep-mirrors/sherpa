@@ -2,7 +2,6 @@
 ##### Automatically or semiautomaticaly generated, do not edit.##########
 #Tools/Makefile.am
  
- #pkglib_LTLIBRARIES = libSherpaTools.la)
  set(GITTAG  SHERPA/Tools)
 set(Tools_SOURCES  Output_Base.C Event_Reader_Base.C HepEvt_Interface.C   Pythia_HepEvt_Translator.C Output_HepEvt.C Output_LHEF.C Userhook_Base.C Analysis_Interface.C)
 if (SHERPA_ENABLE_HEPMC2)

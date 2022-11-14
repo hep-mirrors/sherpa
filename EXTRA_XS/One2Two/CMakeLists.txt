@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #One2Two/Makefile.am
  
- set(GITTAG  EXTRA_XS/One2Two)
+set(GITTAG  EXTRA_XS/One2Two)
 set(One2Two_SOURCES  Comix1to2.C)
 set(One2Two_HEADERS Comix1to2.H)
 sherpa_create_git_info(One2Two ../One2Two/)

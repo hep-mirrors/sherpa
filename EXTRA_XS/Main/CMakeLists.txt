@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
- set(GITTAG  EXTRA_XS/Main)
+set(GITTAG  EXTRA_XS/Main)
 set(Main_SOURCES  Single_Process.C Process_Group.C Simple_XS.C ME_Tools.C ME2_Base.C)
 set(Main_HEADERS Single_Process.H Process_Group.H ME_Tools.H ME2_Base.H)
 sherpa_create_git_info(Main ../Main/)

@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Perturbative/Makefile.am
  
- set(GITTAG  AMISIC++/Perturbative)
+set(GITTAG  AMISIC++/Perturbative)
 set(Perturbative_SOURCES  Single_Collision_Handler.C MI_Processes.C MI_Process_Group.C MI_Process.C QCD_Processes.C QED_Processes.C)
 set(Perturbative_HEADERS Single_Collision_Handler.H MI_Processes.H MI_Process_Group.H MI_Process.H QCD_Processes.H QED_Processes.H)
 sherpa_create_git_info(Perturbative ../Perturbative/)

@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Tools/Makefile.am
  
- set(GITTAG  SHRiMPS/Tools)
+set(GITTAG  SHRiMPS/Tools)
 set(Tools_SOURCES  DEQ_Solver.C Kernels.C MinBias_Parameters.C)
  #localincdir = $(pkg#includedir)/SHRiMPS/Tools)
 set(Tools_HEADERS Parameter_Structures.H Special_Functions.H DEQ_Solver.H Kernels.H MinBias_Parameters.H)

@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
- set(GITTAG  DIRE/Main)
+set(GITTAG  DIRE/Main)
 set(Main_SOURCES  Jet_Criterion.C Dire.C)
 sherpa_create_git_info(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")

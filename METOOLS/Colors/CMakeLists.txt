@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Colors/Makefile.am
  
- set(GITTAG  METOOLS/Colors)
+set(GITTAG  METOOLS/Colors)
 set(Colors_SOURCES  None_CC.C D_CC.C T_CC.C F_CC.C FF_CC.C TT_CC.C ST_CC.C SF_CC.C)
 set(Colors_HEADERS)
 sherpa_create_git_info(Colors ../Colors/)

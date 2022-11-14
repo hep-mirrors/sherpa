@@ -14,7 +14,6 @@ set(OpenLoops_SOURCES  OpenLoops_Virtual.C OpenLoops_Born.C OpenLoops_Interface.
 set(OpenLoops_HEADERS OpenLoops_Virtual.H OpenLoops_Born.H OpenLoops_Interface.H Color_Correlated_ME2.H Spin_Color_Correlated_ME2.H GGH_Process_Manager.H GGH_KFactor_Setter.H)
 # libSherpaOpenLoops_la_LDFLAGS = $(AM_LDFLAGS) $(CONDITIONAL_OPENLOOPSLDFLAGS)
  if (SHERPA_SUPPORT_OPENLOOPS)
- #pkglib_LTLIBRARIES = libSherpaOpenLoops.la)
 set(OpenLoops_SOURCES ${OpenLoops_SOURCES})
 # OPENLOOPS_#EXTRA_DIST = $(OPENLOOPS_ADDS)
  else()

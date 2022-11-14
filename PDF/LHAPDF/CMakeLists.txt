@@ -3,7 +3,6 @@
 #LHAPDF/Makefile.am
  
  set(GITTAG  PDF/LHAPDF)
- #pkglib_LTLIBRARIES = libLHAPDFSherpa.la)
 set(LHAPDF_SOURCES  LHAPDF_CPP_Interface.C)
 sherpa_create_git_info(LHAPDF ../LHAPDF/)
 list(TRANSFORM LHAPDF_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../LHAPDF/")

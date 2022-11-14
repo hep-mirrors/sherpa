@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Math/Makefile.am
  
- set(GITTAG  ATOOLS/Math)
+set(GITTAG  ATOOLS/Math)
 set(Math_SOURCES  MathTools.C Term.C Algebra_Interpreter.C Marsaglia.C Sobol.C Random.C Function_Base.C Poincare.C ZAlign.C Vector.C Matrix.C Gauss_Integrator.C Scaling.C Axis.C Histogram.C Histogram_2D.C
  Variable.C Permutation.C PermStore.C Kabbala.C Tensor.C)
 set(Math_HEADERS MathTools.H Term.H Algebra_Interpreter.H Marsaglia.H Sobol.H Random.H Function_Base.H Poincare.H ZAlign.H Vec3.H Vec4.H Vector.H MyComplex.H Matrix.H Gauss_Integrator.H Variable.H Scaling.H

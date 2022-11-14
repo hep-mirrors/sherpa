@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #SASG/Makefile.am
  
- set(GITTAG  PDF/SASG)
+set(GITTAG  PDF/SASG)
 set(SASG_SOURCES  sasgam2.f SASGph_Fortran_Interface.C)
 set(SASG_HEADERS SASGph_Fortran_Interface.H)
 sherpa_create_git_info(SASG ../SASG/)

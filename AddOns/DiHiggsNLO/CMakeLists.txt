@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #DiHiggsNLO/Makefile.am
  
- set(GITTAG  AddOns/DiHiggsNLO)
+set(GITTAG  AddOns/DiHiggsNLO)
 set(DiHiggsNLO_SOURCES  DiHiggs_Virtual.C hhgrid.c)
  set(DIHIGGS_ADDS  DiHiggs_Virtual.H hhgrid.h)
  if (SHERPA_ENABLE_DIHIGGS)

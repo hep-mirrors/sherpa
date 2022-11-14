@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #CT14/Makefile.am
  
- set(GITTAG  PDF/CT14)
+set(GITTAG  PDF/CT14)
 set(CT14_SOURCES  CT14Pdf.f CT14_Fortran_Interface.C)
 #nobase_#dist_pkgdata_DATA = CT14Grid/ct14n.00.pds CT14Grid/ct14nn.00.pds
 sherpa_create_git_info(CT14 ../CT14/)

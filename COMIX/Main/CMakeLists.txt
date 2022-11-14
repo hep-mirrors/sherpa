@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Main/Makefile.am
  
- set(GITTAG  COMIX/Main)
+set(GITTAG  COMIX/Main)
 set(Main_SOURCES  Process_Base.C Process_Group.C Single_Process.C Single_Dipole_Term.C Comix.C)
 set(Main_HEADERS Process_Base.H Process_Group.H Single_Process.H Single_Dipole_Term.H)
  #dist_bin_SCRIPTS = init_nlo.sh)

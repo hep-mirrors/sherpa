@@ -10,11 +10,9 @@
 #BlackHat/Makefile.am
  
  set(GITTAG  AddOns/BlackHat)
- #include ../../git.make)
 set(BlackHat_SOURCES  BlackHat_Tree.C BlackHat_Virtual.C BlackHat_Interface.C)
 set(BLACKHAT_ADDS   BlackHat_Tree.H BlackHat_Virtual.H)
  if (SHERPA_ENABLE_BLACKHAT)
- #pkglib_LTLIBRARIES = libSherpaBlackHat.la)
 set(BlackHat_SOURCES ${BLACKHAT_SOURCES})
  #BLACKHAT_#EXTRA_DIST = $(BLACKHAT_ADDS)
  else()

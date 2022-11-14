@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #Electron/Makefile.am
  
- set(GITTAG  PDF/Electron)
+set(GITTAG  PDF/Electron)
 set(Electron_SOURCES  PDF_Electron.C)
 set(Electron_HEADERS PDF_Electron.H)
 sherpa_create_git_info(Electron ../Electron/)

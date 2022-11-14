@@ -1,7 +1,7 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 #UFO/Makefile.am
  
- set(GITTAG  MODEL/UFO)
+set(GITTAG  MODEL/UFO)
 set(UFO_SOURCES  UFO_Param_Reader.C UFO_Model.C UFO_Color_Functions.C)
 set(UFO_HEADERS UFO_Param_Reader.H UFO_Model.H UFO_Color_Functions.H)
  if (SHERPA_ENABLE_UFO)
