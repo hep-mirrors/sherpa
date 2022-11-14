@@ -435,7 +435,7 @@ def transform_imake_source(argv, dbg):
     diractual="../"+dirf
     diractual=diractual.replace("//","/")
     if FSRC==1:
-      fin.append("creategitinfo("+LISTNAME+" "+diractual+")")
+      fin.append("sherpa_create_git_info("+LISTNAME+" "+diractual+")")
       fin.append("list(TRANSFORM "+LISTNAME+"_SOURCES PREPEND \"${CMAKE_CURRENT_SOURCE_DIR}/"+diractual+"\")")
       if ( LISTNAME != "Reconnections" and LISTNAME != "ToolsYaml" and LISTNAME != "ShrimpsLadders"): 
         fin.append("list(APPEND "+LISTNAME+"_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)")
@@ -508,13 +508,15 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
        #f.write("add_library("+lname+" SHARED ${"+lname+"_esources}\n")
        for z in t: f.write(z + " ")
        f.write(")\n")
+       f.write("sherpa_handle_shared_library("+lname+suff+" "+output_name(lname)+")\n")
      if suff=="_static": 
        f.write("if (SHERPA_BUILD_STATIC)\n")
        f.write("add_library("+lname+"_static STATIC ")
        for z in t: f.write(z + " ")
        f.write(")\n")
+       f.write("sherpa_handle_shared_library("+lname+suff+" "+output_name_static(lname)+")\n")
      #f.write("target_include_directories("+lname+suff+" PRIVATE ${PROJECT_SOURCE_DIR}/include)\n")
-     f.write("target_include_directories("+lname+suff+" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})\n")
+     #f.write("target_include_directories("+lname+suff+" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})\n")
      for inc in includes:
        if os.path.exists(lname+"/"+inc):
          if len(inc)>0:
@@ -524,15 +526,15 @@ def create_library(ldirsI,lname,includes,installincludes,linklibs=[], cdff=[],pa
 #     f.write("target_include_directories("+lname+suff+" PRIVATE ${FREETYPE_INCLUDE_DIRS})\n")
      for ll in linklibs:
        f.write("target_link_libraries("+lname+suff+" PRIVATE "+ll+")\n")
-     f.write("sherpa_mpi_link_libraries("+lname+suff+")\n")
-     if if_install_library(lname):
-       f.write("install(TARGETS "+lname+suff+" DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)\n")   
+#     if if_install_library(lname):
+#       f.write("install(TARGETS "+lname+suff+" DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)\n")   
      if suff=="_static": 
        f.write("set_target_properties("+lname+"_static PROPERTIES POSITION_INDEPENDENT_CODE ${SHERPA_POSITION_INDEPENDENT_CODE} OUTPUT_NAME "+output_name_static(lname)+")\n")
-       f.write("set_target_properties("+lname+"_static PROPERTIES DEFINE_SYMBOL \"\")\n")
-     if suff=="":
-       f.write("set_target_properties("+lname+"        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME "+output_name(lname)+" SOVERSION "+get_full_so_version(lname)+")\n")
-       f.write("set_target_properties("+lname+"        PROPERTIES DEFINE_SYMBOL \"\")\n")
+#       f.write("set_target_properties("+lname+"_static PROPERTIES DEFINE_SYMBOL \"\")\n")
+#     if suff=="":
+#       f.write("set_target_properties("+lname+"        PROPERTIES OUTPUT_NAME "+output_name(lname)+")\n")
+#       f.write("set_target_properties("+lname+"        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME "+output_name(lname)+" SOVERSION "+get_full_so_version(lname)+")\n")
+#       f.write("set_target_properties("+lname+"        PROPERTIES DEFINE_SYMBOL \"\")\n")
      #f.write("endif()\n")
    for inc in installincludes:
      if len(inc)!=0:
@@ -906,16 +908,14 @@ if __name__ == '__main__':
    f.close()   
    ff=open("Org/CMakeLists.txt","a")
    ff.write("""
-#if (SHERPA_ENABLE_GZIP)
 target_link_libraries(ToolsOrg PRIVATE LibZip::LibZip)
-#endif()
 """)
    ff.close()   
    ff=open("Phys/CMakeLists.txt","a")
    ff.write("""
 if (SHERPA_ENABLE_LHAPDF)
-target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
-target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
+  target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
+  target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
 endif()
 """)
    ff.close() 

@@ -25,18 +25,12 @@ set(HZTool_SOURCES ${HZTool_SOURCES})
  #HZTOOL_#EXTRA_DIST = $(HZTOOL_ADDS) ${HZTOOL_SOURCES})
  endif()
  #EXTRA_DIST = $(#HZTOOL_#EXTRA_DIST)
-creategitinfo(HZTool ../HZTool/)
+sherpa_create_git_info(HZTool ../HZTool/)
 list(TRANSFORM HZTool_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../HZTool/")
 list(APPEND HZTool_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaHZToolAnalysis SHARED 
-                             ${HZTool_SOURCES} 
-)
-target_include_directories(SherpaHZToolAnalysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-sherpa_mpi_link_libraries(SherpaHZToolAnalysis)
-install(TARGETS SherpaHZToolAnalysis DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SherpaHZToolAnalysis        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaHZToolAnalysis SOVERSION 0.0.0)
-set_target_properties(SherpaHZToolAnalysis        PROPERTIES DEFINE_SYMBOL "")
+add_library(SherpaHZToolAnalysis SHARED   ${HZTool_SOURCES} )
+sherpa_handle_shared_library(SherpaHZToolAnalysis SherpaHZToolAnalysis)
 target_include_directories( SherpaHZToolAnalysis PRIVATE ${HZTOOL_INCLUDE_DIR} )
 target_link_libraries( SherpaHZToolAnalysis PRIVATE ${HZTOOL_LIBRARY} 
 ${CERN_kernlib_DYNAMIC_LIBRARY}

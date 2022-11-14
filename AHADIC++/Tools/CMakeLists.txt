@@ -8,13 +8,9 @@ set(Tools_SOURCES  Proto_Particle.C Cluster.C Constituents.C Wave_Function.C Mul
  #localincdir = $(pkg#includedir)/AHADIC++/Tools)
 set(Tools_HEADERS Proto_Particle.H Cluster.H Constituents.H Wave_Function.H Hadron_Multiplet.H Multiplet_Constructor.H Single_Transitions.H Double_Transitions.H Hadronisation_Parameters.H Soft_Cluster_Handler.H
  Singlet_Tools.H Splitter_Base.H Flavour_Selector.H KT_Selector.H Z_Selector.H)
-creategitinfo(Tools ../Tools/)
+sherpa_create_git_info(Tools ../Tools/)
 list(TRANSFORM Tools_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Tools/")
 list(APPEND Tools_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 add_library(AhadicTools SHARED ${Tools_SOURCES} )
-target_include_directories(AhadicTools PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-sherpa_mpi_link_libraries(AhadicTools)
-install(TARGETS AhadicTools DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(AhadicTools        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME AhadicTools SOVERSION 0.0.0)
-set_target_properties(AhadicTools        PROPERTIES DEFINE_SYMBOL "")
+sherpa_handle_shared_library(AhadicTools AhadicTools)

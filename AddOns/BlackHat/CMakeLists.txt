@@ -21,15 +21,10 @@ set(BlackHat_SOURCES ${BLACKHAT_SOURCES})
  #BLACKHAT_#EXTRA_DIST = ${BLACKHAT_SOURCES} $(BLACKHAT_ADDS)
  endif()
  #EXTRA_DIST = $(#BLACKHAT_#EXTRA_DIST)
-creategitinfo(BlackHat ../BlackHat/)
+sherpa_create_git_info(BlackHat ../BlackHat/)
 list(TRANSFORM BlackHat_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../BlackHat/")
 list(APPEND BlackHat_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-add_library(SherpaBlackHat SHARED 
-                             ${BlackHat_SOURCES} 
-)
+add_library(SherpaBlackHat SHARED  ${BlackHat_SOURCES} )
 target_include_directories(SherpaBlackHat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-sherpa_mpi_link_libraries(SherpaBlackHat)
-install(TARGETS SherpaBlackHat DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SherpaBlackHat        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaBlackHat SOVERSION 0.0.0)
-set_target_properties(SherpaBlackHat        PROPERTIES DEFINE_SYMBOL "")
+sherpa_handle_shared_library(SherpaBlackHat SherpaBlackHat)

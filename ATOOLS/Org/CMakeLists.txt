@@ -21,16 +21,12 @@ set(Org_HEADERS CXXFLAGS_PACKAGES.H CXXFLAGS.H Git_Info.H Return_Value.H Shell_T
  #dist-hook:)
  #rm -f $(distdir)/CXXFLAGS.H)
  #rm -f $(distdir)/CXXFLAGS_PACKAGES.H)
-creategitinfo(Org ../Org/)
+sherpa_create_git_info(Org ../Org/)
 list(TRANSFORM Org_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Org/")
 list(APPEND Org_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 add_library(ToolsOrg SHARED ${Org_SOURCES} )
-target_include_directories(ToolsOrg PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-sherpa_mpi_link_libraries(ToolsOrg)
-install(TARGETS ToolsOrg DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(ToolsOrg        PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME ToolsOrg SOVERSION 0.0.0)
-set_target_properties(ToolsOrg        PROPERTIES DEFINE_SYMBOL "")
+sherpa_handle_shared_library(ToolsOrg ToolsOrg)
 
 #if (SHERPA_ENABLE_GZIP)
 target_link_libraries(ToolsOrg PRIVATE LibZip::LibZip)

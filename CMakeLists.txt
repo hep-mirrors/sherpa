@@ -201,7 +201,7 @@ execute_process(COMMAND ${GIT} rev-parse  HEAD
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 message(STATUS "SHERPA: GIT=${GIT} GITREV=${GITREV} GITURL=${GITURL}")
-macro(creategitinfo name b)
+macro(sherpa_create_git_info name b)
   execute_process(COMMAND ${GIT} status -s --untracked-files=no .
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITCLEAN 
@@ -232,7 +232,7 @@ macro(creategitinfo name b)
   if ( NOT "${newgitinfo}" STREQUAL "${oldgitinfo}") 
     file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C "${newgitinfo}") 
   endif()
-endmacro(creategitinfo )
+endmacro(sherpa_create_git_info )
 
 if(SHERPA_ENABLE_MPI)
   find_package(MPI REQUIRED)
@@ -255,14 +255,29 @@ else()
   set (LOADMPIFORPY "")
 endif()
 
-macro(sherpa_mpi_link_libraries  mylib)
+macro(sherpa_handle_shared_library  mylib mylibname)
   if(SHERPA_ENABLE_MPI)
      target_link_libraries(${mylib} PRIVATE MPI::MPI_CXX)
      if (SHERPA_ENABLE_FORTRAN)
        target_link_libraries(${mylib} PRIVATE MPI::MPI_Fortran)
      endif()
   endif()
-endmacro(sherpa_mpi_link_libraries  mylib)
+  target_include_directories(${mylib}  PRIVATE ${FREETYPE_INCLUDE_DIRS})
+  install(TARGETS ${mylib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs) 
+  set_target_properties(${mylib}        PROPERTIES POSITION_INDEPENDENT_CODE ON  SOVERSION 0.0.0)
+  set_target_properties(${mylib}        PROPERTIES DEFINE_SYMBOL "")
+  set_target_properties(${mylib}        PROPERTIES OUTPUT_NAME ${mylibname})
+endmacro(sherpa_handle_shared_library  mylib mylibname)
+
+macro(sherpa_handle_executable  mylib )
+  if(SHERPA_ENABLE_MPI)
+     target_link_libraries(${mylib} PRIVATE MPI::MPI_CXX)
+     if (SHERPA_ENABLE_FORTRAN)
+       target_link_libraries(${mylib} PRIVATE MPI::MPI_Fortran)
+     endif()
+  endif()
+endmacro(sherpa_handle_executable  mylib )
+
 
 #One should have also zlib?
 
@@ -577,7 +592,7 @@ HadronsMain HadronsCurrents HadronsMEs HadronsPSs
 PDF
 ToolsMath ToolsOrg ToolsYaml String ToolsPhys
 )
-sherpa_mpi_link_libraries(Sherpa)
+sherpa_handle_executable(Sherpa)
 
 if (SHERPA_ENABLE_HEPMC3)
   target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_LIB} ${HEPMC3_SEARCH_LIB} )

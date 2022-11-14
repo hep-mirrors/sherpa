@@ -15,7 +15,7 @@
 set(Scripts_SOURCES Combine_Analysis.C)
  #Combine_Analysis_LDADD = @ATOOLSLIBS@ @METOOLSLIBS@ @MODELLIBS@ @PDFLIBS@ @CONDITIONAL_LHAPDFLIBS@ @LIBZIP_LDFLAGS@ -lm -ldl)
  endif()
-creategitinfo(Scripts ../Scripts/)
+sherpa_create_git_info(Scripts ../Scripts/)
 list(TRANSFORM Scripts_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/")
 list(APPEND Scripts_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
@@ -25,7 +25,7 @@ add_executable(Combine_Analysis  ${Combine_Analysis_esources}
 )
 target_include_directories(Combine_Analysis PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(Combine_Analysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-sherpa_mpi_link_libraries(Combine_Analysis)
+sherpa_handle_executable(Combine_Analysis)
 install(TARGETS Combine_Analysis DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 set_target_properties(Combine_Analysis        PROPERTIES DEFINE_SYMBOL "")
 target_link_libraries(Combine_Analysis PRIVATE 
