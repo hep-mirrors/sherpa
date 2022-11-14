@@ -61,15 +61,7 @@ bool Data_Writer::WriteToFile(const Write_Type &value,std::string tag,
 {
   if (tempfname!=nullstring) SetOutputFile(tempfname);
   if (!OpenOutFile()) return false;
-#ifdef __GNUC__
-#if __GNUC__ > 2
   const std::ios_base::fmtflags defaultflags=OutFile()->flags();
-#else
-  const std::ios::fmtflags defaultflags=OutFile()->flags();
-#endif
-#else
-  const std::ios::fmtflags defaultflags=OutFile()->flags();
-#endif
   OutFile()->precision(precision);
   if (tag!=nullstring) *OutFile()<<tag;
   if (WordSeparator().size()>0) *OutFile()<<WordSeparator()[0];

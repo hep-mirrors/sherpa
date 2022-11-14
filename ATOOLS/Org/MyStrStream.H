@@ -7,37 +7,11 @@
 //       instead of "strstream" in <strstream>  !
 
 
-#if defined __GNUC__
-#if __GNUC__ > 2 
-// GNU gcc 3.x.x C++ Compiler
 #include <sstream>
 #include <iomanip>
 typedef std::stringstream MyStrStream;
 typedef std::ios_base::fmtflags MyFmtFlags;
 #define IOS_BASE std::ios_base
-#else
-// GNU gcc 2.95.x C++ Compiler
-#include <strstream>
-#include <string>
-#include <iomanip>
-// namespace std {
-//   typedef strstream stringstream;
-// }
-typedef std::strstream MyStrStream;
-typedef std::ios::fmtflags MyFmtFlags;
-#define IOS_BASE std::ios
-#endif
-#endif
-
-
-#if defined(__sgi) && !defined(__GNUC__)
-#include <sstream>
-#include <iomanip>
-// SGI IRIX C++ Compiler
-typedef std::stringstream MyStrStream;
-typedef std::ios_base::fmtflags MyFmtFlags;
-#define IOS_BASE std::ios_base
-#endif
 
 #include <map>
 #include <vector>
