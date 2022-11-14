@@ -4,7 +4,7 @@ using namespace BEAM;
 using namespace ATOOLS;
 using namespace std;
 
-RelicDensity_Kinematics::RelicDensity_Kinematics(std::array<Beam_Base *, 2> beams) :
+RelicDensity_Kinematics::RelicDensity_Kinematics(std::array<Beam_Base*, 2> beams) :
   Kinematics_Base(beams) {
   InitIntegration();
 }

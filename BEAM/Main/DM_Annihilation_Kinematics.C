@@ -5,7 +5,7 @@ using namespace BEAM;
 using namespace ATOOLS;
 using namespace std;
 
-DM_Annihilation_Kinematics::DM_Annihilation_Kinematics(std::array<Beam_Base *, 2> beams) :
+DM_Annihilation_Kinematics::DM_Annihilation_Kinematics(std::array<Beam_Base*, 2> beams) :
   Kinematics_Base(beams) {
   InitIntegration();
 }

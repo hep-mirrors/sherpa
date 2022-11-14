@@ -12,8 +12,8 @@ namespace PHASIC {
     Phase_Space_Handler        * p_psh;
     std::string                  m_keyid;
     BEAM::Beam_Spectra_Handler * p_beamspectra;
-    BEAM::beammode::code         m_beammode;
-    BEAM::beamspectrum::code     m_beamtype[2];
+    BEAM::beammode               m_beammode;
+    BEAM::beamspectrum           m_beamtype[2];
     channelinfos                 m_beamparams;
     std::set<double>             m_yexponents;
 
@@ -26,7 +26,7 @@ namespace PHASIC {
     void AddResonance(const size_t & chno,const size_t & mode);
     void AddThreshold(const size_t & chno,const size_t & mode);
     void AddLaserBackscattering(const size_t & chno,const size_t & mode);
-    void AddExponential(const size_t & chno,const size_t & mode); 
+    void AddExponential(const size_t & chno,const size_t & mode);
   public:
     Beam_Channels(Phase_Space_Handler *const psh,const std::string &name);
     ~Beam_Channels() {}

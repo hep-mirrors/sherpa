@@ -16,7 +16,7 @@ using namespace BEAM;
 using namespace std;
 
 Beam_Spectra_Handler::Beam_Spectra_Handler()
-    : p_kinematics(NULL), p_weight(NULL), m_beammode(beammode::collider),
+    : p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
       m_collidermode(collidermode::monochromatic), m_mode(0),
       m_polarisation(0) {
   for (size_t i = 0; i < 2; i++)
@@ -40,7 +40,7 @@ Beam_Spectra_Handler::~Beam_Spectra_Handler() {
   }
   if (p_weight!=NULL)     { delete p_weight;     p_weight     = NULL; }
   if (p_kinematics!=NULL) { delete p_kinematics; p_kinematics = NULL; }
-}
+  }
 
 bool Beam_Spectra_Handler::InitTheBeams() {
   for (short int i = 0; i < 2; i++) {
@@ -62,7 +62,6 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   case 3:
     m_collidermode = collidermode::both_spectral;
     break;
-  case 0:
   default:
     break;
   }
@@ -93,6 +92,7 @@ bool Beam_Spectra_Handler::InitTheKinematics() {
     p_kinematics = new DM_Annihilation_Kinematics(p_BeamBase);
     break;
   case beammode::unknown:
+    break;
   default:
     break;
   }
@@ -111,6 +111,7 @@ bool Beam_Spectra_Handler::InitTheWeight() {
     p_weight = new DM_Annihilation_Weight(p_kinematics);
     break;
   case beammode::unknown:
+    break;
   default:
     break;
   }
@@ -133,8 +134,8 @@ void Beam_Spectra_Handler::Output() {
 
 
 // TODO: Improve this handling for rescattering etc.
-bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *_beams,
-                                            ATOOLS::Flavour *_bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_beams,
+                                            const ATOOLS::Flavour *_bunches) {
   for (int i = 0; i < 2; i++) {
     if (_beams[i]   != GetBeam(i)->Beam() ||
 	_bunches[i] != GetBeam(i)->Bunch() ) return false;
@@ -142,7 +143,7 @@ bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *_beams,
   return true;
 }
 
-bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *_bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_bunches) {
   for (int i = 0; i < 2; i++) {
     if (_bunches[i] != GetBeam(i)->Bunch()) return false;
   }
