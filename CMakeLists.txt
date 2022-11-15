@@ -821,7 +821,7 @@ $<IF:$<BOOL:${SHERPA_ENABLE_GOSAM}>,#define GOSAM_PREFIX \"${GOSAM_PREFIX}\",/* 
 /* MadLoop installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MADLOOP}>,#define MADLOOP_PREFIX \"${MADLOOP_PREFIX}\",/* #undef MADLOOP_PREFIX */>\n\n\
 /* Recola installation prefix */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOL_PREFIX \"${RECOL_PREFIX}\",/* #undef RECOL_PREFIX */>\n\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOLA_PREFIX \"${RECOL_PREFIX}\",/* #undef RECOLA_PREFIX */>\n\n\
 /* using MCFM */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MCFM */>\n\n\
 /* MCFM directory */\n\
