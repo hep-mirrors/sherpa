@@ -1,13 +1,5 @@
 #Manually edited
-########################################################################
-#
-#  Automatically or semiautomaticaly generated, do not edit.
-#
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+#####  Automatically or semiautomaticaly generated, do not edit.#
 #Scripts/Makefile.am
  
  if (SHERPA_ENABLE_ANALYSIS)
@@ -19,10 +11,7 @@ sherpa_create_git_info(Scripts ../Scripts/)
 list(TRANSFORM Scripts_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/")
 list(APPEND Scripts_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
-set(Scripts_esources )
-add_executable(Combine_Analysis  ${Combine_Analysis_esources}
-                             ${Scripts_SOURCES} 
-)
+add_executable(Combine_Analysis  ${Scripts_SOURCES} )
 target_include_directories(Combine_Analysis PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(Combine_Analysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_handle_executable(Combine_Analysis)

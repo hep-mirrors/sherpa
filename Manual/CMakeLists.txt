@@ -5,9 +5,7 @@ message(STATUS "SHERPA Manual: LATEX_FOUND=${LATEX_FOUND} PDFLATEX_COMPILER=${PD
 find_program(LATEXMK NAMES latexmk  REQUIRED)
 message(STATUS "SHERPA Manual: LATEXMK=${LATEXMK}")
 
-
 set (sphinx_options  "-D release=${SHERPA_VERSION}")
-
 add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/completion.index  ${CMAKE_CURRENT_BINARY_DIR}/options.index
        COMMAND ${SPHINXBUILD} -M completion  ${CMAKE_CURRENT_SOURCE_DIR}/source . ${sphinx_options}
@@ -49,25 +47,9 @@ add_custom_command(
        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
        VERBATIM)
 
-install( FILES
-${CMAKE_CURRENT_BINARY_DIR}/Sherpa.1 
-DESTINATION
-${CMAKE_INSTALL_MANDIR}/man1
-)
-
-
-
-install( FILES
-${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.info
-DESTINATION
-${CMAKE_INSTALL_INFODIR}
-)
-
-install( FILES
-${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
-DESTINATION
-${CMAKE_INSTALL_DOCDIR}
-)
+install( FILES ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.1  DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 )
+install( FILES ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.info DESTINATION ${CMAKE_INSTALL_INFODIR})
+install( FILES ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR} )
 #install( DIRECTORY
 #${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_html
 #DESTINATION
@@ -86,7 +68,6 @@ ADD_CUSTOM_TARGET(all-formats ALL)
 ADD_DEPENDENCIES(all-formats all-files)
 set (DATADIR ${CMAKE_INSTALL_DATADIR})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/sherpa-completion.in ${CMAKE_CURRENT_BINARY_DIR}/sherpa-completion @ONLY)
-
 
 install( FILES
 ${CMAKE_CURRENT_BINARY_DIR}/completion.index  

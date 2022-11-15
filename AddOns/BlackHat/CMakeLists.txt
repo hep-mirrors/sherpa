@@ -1,15 +1,8 @@
 #Manually edited
-
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+### Automatically or semiautomaticaly generated, do not edit.
 #BlackHat/Makefile.am
  
- set(GITTAG  AddOns/BlackHat)
+set(GITTAG  AddOns/BlackHat)
 set(BlackHat_SOURCES  BlackHat_Tree.C BlackHat_Virtual.C BlackHat_Interface.C)
 set(BLACKHAT_ADDS   BlackHat_Tree.H BlackHat_Virtual.H)
  if (SHERPA_ENABLE_BLACKHAT)
@@ -24,5 +17,4 @@ list(TRANSFORM BlackHat_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../BlackHat
 list(APPEND BlackHat_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 add_library(SherpaBlackHat SHARED  ${BlackHat_SOURCES} )
-target_include_directories(SherpaBlackHat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 sherpa_handle_shared_library(SherpaBlackHat SherpaBlackHat)

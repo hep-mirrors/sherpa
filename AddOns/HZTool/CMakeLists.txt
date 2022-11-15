@@ -1,11 +1,5 @@
 #Manually edited
-########################################################################
-#  Automatically or semiautomaticaly generated, do not edit.
-########################################################################
-# The following input was used
-# Makefile.am
-
-########################################################################
+#######  Automatically or semiautomaticaly generated, do not edit.
 #HZTool/Makefile.am
  
  set(GITTAG  AddOns/HZTool)

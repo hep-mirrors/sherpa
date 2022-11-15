@@ -1,6 +1,5 @@
 #Manually edited
 
- 
 set(foo_SOURCES Output_RootNtuple.C RootNtuple_Reader.C)
 set(foo_HEADERS Output_RootNtuple.H RootNtuple_Reader.H) 
 

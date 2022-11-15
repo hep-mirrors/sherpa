@@ -376,29 +376,8 @@ if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_HEPMC2)
 endif()
 add_subdirectory(SHERPA)
 
-
-set( IDIRS  AHADIC++
-AMEGIC++
-AMISIC++
-ATOOLS
-BEAM
-COMIX
-CSSHOWER++
-DIM
-DIRE
-EXTAMP
-EXTRA_XS
-HADRONS++
-METOOLS
-MCATNLO
-MODEL
-PHASIC++
-PHOTONS++
-PDF
-RECONNECTIONS
-REMNANTS
-SHRiMPS
-SHERPA)
+set( IDIRS  AHADIC++ AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXTAMP EXTRA_XS HADRONS++
+METOOLS MCATNLO MODEL PHASIC++ PHOTONS++ PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA)
 
 if (SHERPA_ENABLE_MANUAL)
   add_subdirectory(Manual)
@@ -637,9 +616,7 @@ if (SHERPA_ENABLE_RIVET)
   RIVET_INCLUDE_DIRS=${RIVET_INCLUDE_DIRS} RIVET_DATA_PATH=${RIVET_DATA_PATH} RIVET_ANALYSIS_PATH=${RIVET_ANALYSIS_PATH} \
   Rivet_HEPMC2_FOUND=${Rivet_HEPMC2_FOUND}  Rivet_HEPMC3_FOUND=${Rivet_HEPMC3_FOUND} \
   RIVET_CONFIG_LIBS_STRING=${RIVET_CONFIG_LIBS_STRING}  RIVET_CONFIG_LIBS=${RIVET_CONFIG_LIBS}  RIVET_CONFIG_LIB_DIRS=${RIVET_CONFIG_LIB_DIRS} \
-  RIVET_CONFIG_CPPFLAGS_STRING=${RIVET_CONFIG_CPPFLAGS_STRING}  RIVET_CONFIG_CPPFLAGS_DIRS=${RIVET_CONFIG_CPPFLAGS_DIRS} \
-  "
-  )
+  RIVET_CONFIG_CPPFLAGS_STRING=${RIVET_CONFIG_CPPFLAGS_STRING}  RIVET_CONFIG_CPPFLAGS_DIRS=${RIVET_CONFIG_CPPFLAGS_DIRS} ")
   add_subdirectory(AddOns/Rivet)
 endif()
 
@@ -731,7 +708,6 @@ endif()
 
 ########################################################################
 # Config files
-
 get_filename_component (CXX ${CMAKE_CXX_COMPILER} NAME)
 set (CXXFLAGS ${CMAKE_CXX_FLAGS})
 set (CXXCPP "${CXX} -E")
@@ -795,136 +771,68 @@ else()
   set(CONDITIONAL_RIVETLDADD )
   set(CONDITIONAL_RIVETCPPFLAGS )
 endif()
+########################################################################
+if (SHERPA_ENABLE_RIVET AND RIVET_VERSION VERSION_LESS 3.0.0)
+  set(RIVET2 1)
+endif()
+if (SHERPA_ENABLE_RIVET AND RIVET_VERSION VERSION_GREATER 2.99.99)
+  set(RIVET3 1)
+endif()
 set(CXXFLAGS_PACKAGES_H_CONTENT
 "/* ATOOLS/Org/CXXFLAGS_PACKAGES.H.  Generated from CXXFLAGS_PACKAGES.H.in by configure.  */\n\
 #ifndef CXXFLAGS_PACKAGES_H\n\
-#define CXXFLAGS_PACKAGES_H\n\
-\n")
-if (SHERPA_ENABLE_HEPMC3)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* Using HEPMC3 */\n#define USING__HEPMC3 \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* Using HEPMC3 */\n/* #undef USING__HEPMC3 */\n\n")
-endif()
-if (SHERPA_ENABLE_HEPMC3_ROOT)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* HepMC3 with ROOT support */\n#define USING__HEPMC3__ROOT \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* HepMC3 with ROOT support */\n/* #undef USING__HEPMC3__ROOT */\n\n")
-endif()
-if (SHERPA_ENABLE_HEPMC2)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* Using HEPMC2 */\n#define USING__HEPMC2 \"1\"\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* HepMC::IO_GenEvent available */\n#define USING__HEPMC2__IOGENEVENT \"1\"\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* HepMC::Units available */\n#define USING__HEPMC2__UNITS \"1\"\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* HepMCDefs.h available */\n#define USING__HEPMC2__DEFS \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* Using HEPMC2 */\n/* #undef USING__HEPMC2 */\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* HepMC::IO_GenEvent available */\n/* #undef USING__HEPMC2__IOGENEVENT */\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* HepMC::Units available */\n/* #undef USING__HEPMC2__UNITS */\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* HepMCDefs.h available */\n/* #undef USING__HEPMC2__DEFS */\n\n")
-endif()
-
-if (SHERPA_ENABLE_GZIP)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using gzip */\n#define USING__GZIP \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using gzip */\n/* #undef USING__GZIP */\n\n")
-endif()
-
-if (SHERPA_ENABLE_SQLITE)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using sqlite */\n#define USING__SQLITE \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using sqlite */\n/* #undef USING__SQLITE */\n\n")
-endif()
-
-if (SHERPA_ENABLE_HZTOOL)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* hztool found */\n#define USING__HZTOOL \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* hztool found */\n/* #undef USING__HZTOOL */\n\n")
-endif()
-
-if (SHERPA_ENABLE_CERNLIB)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* cernlib found */\n#define USING__CERNLIB \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* cernlib found */\n/* #undef USING__CERNLIB */\n\n")
-endif()
-
-if (SHERPA_ENABLE_LHAPDF)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using LHAPDF */\n#define LHAPDF_PATH \"${LHAPDF_PATH}\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using LHAPDF */\n/* #undef LHAPDF_PATH */\n\n")
-endif()
-
-if (SHERPA_ENABLE_ROOT)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using ROOT */\n#define USING__ROOT \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using ROOT */\n/* #undef USING__ROOT */\n\n")
-endif()
-
-if (SHERPA_ENABLE_RIVET AND RIVET_VERSION VERSION_LESS 3.0.0)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using Rivet2 */\n#define USING__RIVET2 \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using Rivet2 */\n/* #undef USING__RIVET2 */\n\n")
-endif()
-
-if (SHERPA_ENABLE_RIVET AND RIVET_VERSION VERSION_GREATER 2.99.99)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using Rivet3 */\n#define USING__RIVET3 \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using Rivet3 */\n/* #undef USING__RIVET3 */\n\n")
-endif()
-
-if (SHERPA_ENABLE_BLACKHAT)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using BLACKHAT */\n#define USING__BLACKHAT \"1\"\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* BLACKHAT directory */\n#define BLACKHAT_PATH \"${BLACKHAT_PATH}\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using BLACKHAT */\n/* #undef USING__BLACKHAT */\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* BLACKHAT directory */\n/* #undef BLACKHAT_PATH */\n\n")
-endif()
-
-if (SHERPA_ENABLE_OPENLOOPS)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* OpenLoops installation prefix */\n#define OPENLOOPS_PREFIX \"${OPENLOOPS_PREFIX}\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* OpenLoops installation prefix */\n/* #undef OPENLOOPS_PREFIX */\n\n")
-endif()
-
-if (SHERPA_ENABLE_GOSAM)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* GoSam installation prefix */\n#define GOSAM_PREFIX \"${GOSAM_PREFIX}\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* GoSam installation prefix */\n/* #undef GOSAM_PREFIX */\n\n")
-endif()
-
-if (SHERPA_ENABLE_MADLOOP)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* MadLoop installation prefix */\n#define MADLOOP_PREFIX \"${MADLOOP_PREFIX}\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* MadLoop installation prefix */\n/* #undef MADLOOP_PREFIX */\n\n")
-endif()
-
-if (SHERPA_ENABLE_RECOLA)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* Recola installation prefix */\n#define RECOLA_PREFIX \"${RECOLA_PREFIX}\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* Recola installation prefix */\n/* #undef RECOLA_PREFIX */\n\n")
-endif()
-
-if (SHERPA_ENABLE_MCFM)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using MCFM */\n#define USING__MCFM \"1\"\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* MCFM directory */\n#define MCFM_PATH \"${MCFM_PATH}\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using MCFM */\n/* #undef USING__MCFM */\n\n")
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* MCFM directory */\n/* #undef MCFM_PATH */\n\n")
-endif()
-
-if (SHERPA_ENABLE_DELPHES)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using Delphes */\n#define USING__DELPHES \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using Delphes */\n/* #undef USING__DELPHES */\n\n")
-endif()
-
-if (SHERPA_ENABLE_EWSUD)
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using EWSud */\n#define USING__EWSud \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_PACKAGES_H_CONTENT "/* using EWSud */\n/* #undef USING__EWSud */\n\n")
-endif()
-string(APPEND CXXFLAGS_PACKAGES_H_CONTENT  "#endif")
-file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H CONTENT "${CXXFLAGS_PACKAGES_H_CONTENT}" @ONLY)
+#define CXXFLAGS_PACKAGES_H\n\n\
+/* Using HEPMC3 */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_HEPMC3}>,#define USING__HEPMC3 \"1\",/* #undef USING__HEPMC3 */>\n\n\
+/* HepMC3 with ROOT support */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_HEPMC3_ROOT}>,#define USING__HEPMC3__ROOT \"1\",/* #undef USING__HEPMC3__ROOT */>\n\n\
+/* Using HEPMC2 */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_HEPMC2}>,#define USING__HEPMC2 \"1\",/* #undef USING__HEPMC2 */>\n\n\
+/* HepMC::IO_GenEvent available */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_HEPMC2}>,#define USING__HEPMC2__IOGENEVENT \"1\",/* #undef USING__HEPMC2__IOGENEVENT */>\n\n\
+/* HepMC::Units available */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_HEPMC2}>,#define USING__HEPMC2__UNITS \"1\",/* #undef USING__HEPMC2__UNITS */>\n\n\
+/* HepMCDefs.h available */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_HEPMC2}>,#define USING__HEPMC2__DEFS \"1\",/* #undef USING__HEPMC2__DEFS */>\n\n\
+/* using gzip */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_GZIP}>,#define USING__GZIP \"1\",/* #undef USING__GZIP */>\n\n\
+/* using sqlite */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_SQLITE}>,#define USING__SQLITE \"1\",/* #undef USING__SQLITE */>\n\n\
+/* hztool found */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_HZTOOL}>,#define USING__HZTOOL \"1\",/* #undef USING__HZTOOL */>\n\n\
+/* cernlib found */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_CERNLIB}>,#define USING__CERNLIB \"1\",/* #undef USING__CERNLIB */>\n\n\
+/* using LHAPDF */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_LHAPDF}>,#define LHAPDF_PATH \"${LHAPDF_PATH}\",/* #undef LHAPDF_PATH */>\n\n\
+/* using ROOT */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_ROOT}>,#define USING__ROOT \"1\",/* #undef USING__ROOT */>\n\n\
+/* using Rivet2 */\n\
+$<IF:$<BOOL:${RIVET2}>,#define USING__RIVET2 \"1\",/* #undef USING__RIVET2 */>\n\n\
+/* using Rivet3 */\n\
+$<IF:$<BOOL:${RIVET3}>,#define USING__RIVET3 \"1\",/* #undef USING__RIVET3 */>\n\n\
+/* using BLACKHAT */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_BLACKHAT}>,#define USING__BLACKHAT \"1\",/* #undef USING__BLACKHAT */>\n\n\
+/* BLACKHAT directory */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_BLACKHAT}>,#define BLACKHAT_PATH \"${BLACKHAT_PATH}\",/* #undef BLACKHAT_PATH */>\n\n\
+/* OpenLoops installation prefix */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_OPENLOOPS}>,#define OPENLOOPS_PREFIX \"${OPENLOOPS_PREFIX}\",/* #undef OPENLOOPS_PREFIX */>\n\n\
+/* GoSam installation prefix */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_GOSAM}>,#define GOSAM_PREFIX \"${GOSAM_PREFIX}\",/* #undef GOSAM_PREFIX */>\n\n\
+/* MadLoop installation prefix */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_MADLOOP}>,#define MADLOOP_PREFIX \"${MADLOOP_PREFIX}\",/* #undef MADLOOP_PREFIX */>\n\n\
+/* Recola installation prefix */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOL_PREFIX \"${RECOL_PREFIX}\",/* #undef RECOL_PREFIX */>\n\n\
+/* using MCFM */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MCFM */>\n\n\
+/* MCFM directory */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define #define MCFM_PATH \"${MCFM_PATH}\",/* #undef MCFM_PATH */>\n\n\
+/* using Delphes */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_DELPHES}>,#define USING__DELPHES \"1\",/* #undef USING__DELPHES */>\n\n\
+/* using EWSud */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_EWSUD}>,#define USING__EWSud \"1\",/* #undef USING__EWSud */>\n\n\
+#endif")
+file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H CONTENT "${CXXFLAGS_PACKAGES_H_CONTENT}")
 ########################################################################
-
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/pythia-6.4.18.f.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/LundTools/pythia-6.4.18.f @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc  )
@@ -932,102 +840,59 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/make2scons.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/make2scons @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa-config @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/make2scons   DESTINATION  ${CMAKE_INSTALL_BINDIR} )
-
 ########################################################################
-set(CXXFLAGS_H_CONTENT "/* ATOOLS/Org/CXXFLAGS.H.  Generated from CXXFLAGS.H.in by configure.  */\n")
-
 if (Darwin)
-  string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Darwin MacOS */\n#define ARCH_DARWIN \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Darwin MacOS */\n/* #undef ARCH_DARWIN */\n\n")
+  set(DARWIN_SYS 1)
 endif()
-
 if (CMAKE_SYSTEM_NAME MATCHES "Linux")
-  string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Linux */\n#define ARCH_LINUX \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Linux */\n/* #undef ARCH_LINUX */\n\n")
+  set(LINUX_SYS 1)
 endif()
-
-if (UNIX AND ( NOT  CMAKE_SYSTEM_NAME MATCHES "Linux")  AND (NOT Darwin) )
-  string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Unix */\n#define ARCH_UNIX 1\n\n")
-else()
-  string(APPEND CXXFLAGS_H_CONTENT  "/* Architecture identified as Unix */\n/* #undef ARCH_UNIX */\n\n")
+if (UNIX AND ( NOT  CMAKE_SYSTEM_NAME MATCHES "Linux")  AND (NOT Darwin))
+  set(UNIX_SYS 1)
 endif()
-
-#This is just obsolete
-string(APPEND CXXFLAGS_H_CONTENT  "\
-/* Define to dummy `main' function (if any) required to link to the Fortran\n\
-   libraries. */\n\
-/* #undef FC_DUMMY_MAIN */\n\
-\n\
+set(CXXFLAGS_H_CONTENT "/* ATOOLS/Org/CXXFLAGS.H.  Generated from CXXFLAGS.H.in by configure.  */\n\
+/* Architecture identified as Darwin MacOS */\n\
+$<IF:$<BOOL:${DARWIN_SYS}>,#define ARCH_DARWIN \"1\",/* #undef ARCH_DARWIN */>\n\n\
+/* Architecture identified as Linux */\n\
+$<IF:$<BOOL:${LINUX_SYS}>,#define ARCH_LINUX 1,/* #undef ARCH_LINUX */>\n\n\
+/* Architecture identified as Unix */\n\
+$<IF:$<BOOL:${UNIX_SYS}>,#define ARCH_UNIX 1,/* #undef ARCH_UNIX */>\n\n\
+/* Define to dummy `main' function (if any) required to link to the Fortran\n   libraries. */\n\
+/* #undef FC_DUMMY_MAIN */\n\n\
 /* Define if F77 and FC dummy `main' functions are identical. */\n\
-/* #undef FC_DUMMY_MAIN_EQ_F77 */\n\n")
-
-if (SHERPA_ENABLE_MPI)
-  string(APPEND CXXFLAGS_H_CONTENT  "/* MPI support */\n#define USING__MPI \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_H_CONTENT  "/* MPI support */\n/* #undef USING__MPI */\n\n")
-endif()
-
-if (SHERPA_ENABLE_THREADING)
-  string(APPEND CXXFLAGS_H_CONTENT  "/* Thread support */\n#define USING__Threading \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_H_CONTENT  "/* Thread support */\n/* #undef USING__Threading */\n")
-endif()
-
-string(APPEND CXXFLAGS_H_CONTENT  "
+/* #undef FC_DUMMY_MAIN_EQ_F77 */\n\n\
+/* MPI support */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_MPI}>,#define USING__MPI \"1\",/* #undef USING__MPI */>\n\n\
+/* Thread support */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_THREADING}>,#define USING__Threading \"1\",/* #undef USING__Threading */>\n\n\
 /* ld path name */\n\
-#define LD_PATH_NAME \"${LD_LIBRARY_PATH}\"\n\
-\n\
+#define LD_PATH_NAME \"${LD_LIBRARY_PATH}\"\n\n\
 /* library suffix */\n\
-#define LIB_SUFFIX \"${CMAKE_SHARED_LIBRARY_SUFFIX}\"\n\
-\n")
-
-if (SHERPA_ENABLE_BINRELOC)
-  string(APPEND CXXFLAGS_H_CONTENT "/* binreloc activation */\n#define ENABLE_BINRELOC \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_H_CONTENT "/* binreloc activation */\n/* #undef ENABLE_BINRELOC */\n\n")
-endif()
-
-string(APPEND CXXFLAGS_H_CONTENT  "\
+#define LIB_SUFFIX \"${CMAKE_SHARED_LIBRARY_SUFFIX}\"\n\n\
+/* binreloc activation */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef ENABLE_BINRELOC */>\n\n\
 /* Sherpa installation prefix */\n\
-#define SHERPA_PREFIX \"${CMAKE_INSTALL_PREFIX}\"\n\
-\n\
+#define SHERPA_PREFIX \"${CMAKE_INSTALL_PREFIX}\"\n\n\
 /* Sherpa include directory */\n\
-#define SHERPA_INCLUDE_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC\"\n\
-\n\
+#define SHERPA_INCLUDE_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC\"\n\n\
 /* Sherpa library directory */\n\
-#define SHERPA_LIBRARY_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/\"\n\
-\n\
+#define SHERPA_LIBRARY_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/\"\n\n\
 /* Sherpa data directory */\n\
-#define SHERPA_SHARE_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC/\"\n\
-\n\
+#define SHERPA_SHARE_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC/\"\n\n\
 /* Sherpa subversion */\n\
-#define SHERPA_SUBVERSION \"${SHERPA_VERSION_MINOR}.${SHERPA_VERSION_PATCH}\"\n\
-\n\
+#define SHERPA_SUBVERSION \"${SHERPA_VERSION_MINOR}.${SHERPA_VERSION_PATCH}\"\n\n\
 /* Sherpa version */\n\
-#define SHERPA_VERSION \"${SHERPA_VERSION_MAJOR}\"\n\
-\n\
+#define SHERPA_VERSION \"${SHERPA_VERSION_MAJOR}\"\n\n\
 /* Sherpa version name */\n\
-#define SHERPA_NAME \"Dhaulagiri\"\n\
-\n")
-
-if (SHERPA_ENABLE_PYTHIA6)
-  string(APPEND CXXFLAGS_H_CONTENT  "/* using Pythia */\n#define USING__PYTHIA \"1\"\n\n")
-else()
-  string(APPEND CXXFLAGS_H_CONTENT  "/* using Pythia */\n/* #undef USING__PYTHIA */\n\n")
-endif()
-
-string(APPEND CXXFLAGS_H_CONTENT  "\
+#define SHERPA_NAME \"Dhaulagiri\"\n\n\
+/* using Pythia */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_PYTHIA6}>,#define USING__PYTHIA \"1\",/* #undef USING__PYTHIA */>\n\n\
 /* HEPEVT common block size */\n\
-#define HEPEVT_CB_SIZE ${HEPEVT_CB_SIZE} \n\
-\n\
+#define HEPEVT_CB_SIZE ${HEPEVT_CB_SIZE} \n\n\
 /* Using colour */\n\
-#define USING__COLOUR \"1\"\n\
-\n\
+#define USING__COLOUR \"1\"\n\n\
 #define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n")
-
-file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H CONTENT "${CXXFLAGS_H_CONTENT}" @ONLY)
+file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H CONTENT "${CXXFLAGS_H_CONTENT}")
 ########################################################################
 install(FILES 
       ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H 
