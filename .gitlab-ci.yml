@@ -17,7 +17,6 @@ variables:
     - export CCACHE_COMPILERCHECK=content
     # enable gold linker
     - ln -sf ld.gold /usr/bin/ld
-
   # accelerate git-clone by making it shallow
   variables:
     GIT_DEPTH: "3"
@@ -25,6 +24,24 @@ variables:
   cache:
     paths:
       - ccache/
+
+.build_ubuntu_template: &build_ubuntu
+  stage: build
+  before_script:
+    # set up ccache
+    - mkdir -p ccache_ubuntu
+    - export CCACHE_BASEDIR=${PWD}
+    - export CCACHE_DIR=${PWD}/ccache_ubuntu
+    - export CCACHE_COMPILERCHECK=content
+    # enable gold linker
+    - ln -sf ld.gold /usr/bin/ld.gold
+  # accelerate git-clone by making it shallow
+  variables:
+    GIT_DEPTH: "3"
+  # cache ccache
+  cache:
+    paths:
+      - ccache_ubuntu/
 
 #
 # Build
@@ -46,6 +63,26 @@ build:
     expire_in: 2 days
     paths:
       - build/install
+      - Examples/CI/
+
+# default build with gcc on top of the Rivet image
+build-rivet:
+  <<: *build_ubuntu
+  image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/analysis"
+  stage: build
+  script:
+    - autoreconf -i
+    - mkdir -p build-rivet
+    - cd build-rivet
+    - ../configure CC="ccache gcc" CXX="ccache g++" --prefix="$PWD/install" $CONFIGURE_FLAGS --enable-hepmc3=$(HepMC3-config --prefix) --enable-rivet=$(rivet-config --prefix) --with-libzip=install "CXXFLAGS=-Wl,-rpath,$(HepMC3-config --libdir),-rpath,$(rivet-config --libdir)"
+    - make $MAKE_FLAGS
+    - make install
+    - VERBOSE=1 make check
+  # store what's required to run the tests
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - build-rivet/install
       - Examples/CI/
 
 # build with clang and -Werror
@@ -131,6 +168,28 @@ test-clang-strict-LO_Z:
     - mkdir test-clang-strict-LO_Z
     - cd test-clang-strict-LO_Z
     - ../build-clang-strict/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
+
+test-rivet-LO_Z:
+  <<: *test
+  image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/analysis"
+  needs:
+    - build-rivet
+  script:
+    - mkdir test-rivet-LO_Z
+    - cd test-rivet-LO_Z
+    - . /etc/profile
+    - . /etc/bash.bashrc
+    - for i in /etc/profile.d/*.sh; do source $i; done
+    - LHAPDF_DATA_PATH=../build-rivet/install/share/LHAPDF ../build-rivet/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ANALYSIS=Rivet
+    - rivet-mkhtml --mc-errs ../Examples/CI/LO_Z/Reference.yoda.gz Analysis.yoda.gz PLOT:RatioPlotMode=deviation
+    - ../Examples/CI/plot_deviations ../Examples/CI/LO_Z/Reference.yoda.gz Analysis.yoda.gz
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - test-rivet-LO_Z/Analysis.yoda.gz
+      - test-rivet-LO_Z/deviations.pdf
+      - test-rivet-LO_Z/rivet-plots
 
 #
 # Deploy
