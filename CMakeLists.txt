@@ -796,8 +796,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_HEPMC2}>,#define USING__HEPMC2__UNITS \"1\",/* #unde
 $<IF:$<BOOL:${SHERPA_ENABLE_HEPMC2}>,#define USING__HEPMC2__DEFS \"1\",/* #undef USING__HEPMC2__DEFS */>\n\n\
 /* using gzip */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_GZIP}>,#define USING__GZIP \"1\",/* #undef USING__GZIP */>\n\n\
-/* using sqlite */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_SQLITE}>,#define USING__SQLITE \"1\",/* #undef USING__SQLITE */>\n\n\
 /* hztool found */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_HZTOOL}>,#define USING__HZTOOL \"1\",/* #undef USING__HZTOOL */>\n\n\
 /* cernlib found */\n\
