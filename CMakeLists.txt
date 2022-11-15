@@ -825,7 +825,7 @@ $<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOL_PREFIX \"${RECOL_PREFIX}\",/*
 /* using MCFM */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MCFM */>\n\n\
 /* MCFM directory */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define #define MCFM_PATH \"${MCFM_PATH}\",/* #undef MCFM_PATH */>\n\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define MCFM_PATH \"${MCFM_PATH}\",/* #undef MCFM_PATH */>\n\n\
 /* using Delphes */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_DELPHES}>,#define USING__DELPHES \"1\",/* #undef USING__DELPHES */>\n\n\
 /* using EWSud */\n\
