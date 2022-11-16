@@ -792,8 +792,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOLA_PREFIX \"${RECOL_PREFIX}\",/
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MCFM */>\n\n\
 /* MCFM directory */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define MCFM_PATH \"${MCFM_PATH}\",/* #undef MCFM_PATH */>\n\n\
-/* using Delphes */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_DELPHES}>,#define USING__DELPHES \"1\",/* #undef USING__DELPHES */>\n\n\
 /* using EWSud */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_EWSUD}>,#define USING__EWSud \"1\",/* #undef USING__EWSud */>\n\n\
 #endif")
