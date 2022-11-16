@@ -1,14 +1,13 @@
 # If you have questions or requests contact Valentin Boettcher <hiro@protagon.space> (Gitlab: vale9811)
-.slim: &slim
-  image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 
-  variables:
-    DOCKER_DRIVER: overlay2
-    CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=install
-    MAKE_FLAGS: -j4
+image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
+
+variables:
+  DOCKER_DRIVER: overlay2
+  CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=install
+  MAKE_FLAGS: -j4
 
 .build_template: &build
-  extends: .slim
   only:
     variables:
      - $CI_SERVER_HOST=="gitlab.com"
@@ -106,7 +105,6 @@ build-manual:
 # inherit parameters set in .test_template
 
 .test_template: &test
-  extends: .slim
   only:
     variables:
      - $CI_SERVER_HOST=="gitlab.com"
@@ -148,7 +146,6 @@ test-clang-strict-LO_Z:
 
 # Rebuild the Website to include this tag in the changelogs.
 trigger_pages:
-  extends: .slim
   stage: deploy
   variables:
     GIT_STRATEGY: none  # we only need the artifacts from the build
