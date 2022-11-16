@@ -2,32 +2,8 @@
 #define ATOOLS_Math_MathTools_H
 /*  Declarations for discrete functions  */
 
-#ifdef __GNUC__
-// GNU C++ Compiler
 #include <cmath>
 #include <cstdlib>
-
-/*
-  if __GNUC__ == 3 && __GNUC_MINOR__ == 0.
-  if defined __GNUC__ && defined __cplusplus && __GNUC_MINOR__ >= 8
-  if !defined __GNUC__ || __GNUC__ < 2 || __GNUC_MINOR__ < 7
-  #define GCC_VERSION (__GNUC__ * 10000 \
-  + __GNUC_MINOR__ * 100 \
-  + __GNUC_PATCHLEVEL__)
-  ...
-  Test for GCC > 3.2.0
-  #if GCC_VERSION > 30200
-*/
-
-#endif
-
-
-#if defined(__sgi) && !defined(__GNUC__)
-// SGI IRIX C++ Compiler, complex but not double methods need "std::", e.g. Abs() exp()
-#include <iostream>
-#include <math.h>
-#endif
-
 
 #include "ATOOLS/Math/MyComplex.H"
 
