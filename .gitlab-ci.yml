@@ -340,9 +340,6 @@ stages:
 
 .any: &any
   image: fedora:${FREL}
-#  only:
-#    variables:
-#     - $CI_SERVER_HOST=="gitlab.cern.ch"
   stage: build
   before_script:
     - set -x
@@ -444,6 +441,7 @@ stages:
      paths:
       - autotools-gcc-cache-$FREL/
 
+###########################################################################
 Fedora35-autotools:
   variables:
     OS: Fedora

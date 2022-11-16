@@ -311,9 +311,7 @@ else()
     )
   add_dependencies(LibZip::LibZip PRIVATE downloadedlibzip)
 endif()
-  message(STATUS "SHERPA: LibZip_VERSION=${LibZip_VERSION} LibZip_LIBRARIES=${LibZip_LIBRARIES} LibZip_INCLUDE_DIR=${LibZip_INCLUDE_DIR}")
-
-
+message(STATUS "SHERPA: LibZip_VERSION=${LibZip_VERSION} LibZip_LIBRARIES=${LibZip_LIBRARIES} LibZip_INCLUDE_DIR=${LibZip_INCLUDE_DIR}")
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
@@ -472,39 +470,9 @@ if (SHERPA_ENABLE_EXAMPLES)
                          COMPONENT doc 
                          PATTERN test.py.in EXCLUDE 
                          PATTERN CI EXCLUDE 
-                         PATTERN Userhook EXCLUDE 
-                         PATTERN HPC EXCLUDE 
-                         PATTERN NLO_EW_* EXCLUDE 
-                         PATTERN NLO_QCD_* EXCLUDE 
-                         PATTERN RemnantTests EXCLUDE 
-                         PATTERN VBF_Interference EXCLUDE 
-                         PATTERN */FixedOrder_NNLO EXCLUDE 
-                         PATTERN */Instanton/LHC_13 EXCLUDE 
-                         PATTERN */LHC_HInt_MCatNLO EXCLUDE 
-                         PATTERN */Instanton EXCLUDE 
-                         PATTERN */PETRA_Jets EXCLUDE 
-                         PATTERN */RelicDensity EXCLUDE 
-                         PATTERN */SM_ggV EXCLUDE 
-                         PATTERN */*UN2LOPS EXCLUDE 
                          PATTERN Examples/Makefile EXCLUDE 
                          PATTERN Makefile.am EXCLUDE 
                          PATTERN Makefile.in EXCLUDE 
-                         PATTERN Makefile.in EXCLUDE 
-                         PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.197.yaml  EXCLUDE 
-                         PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.206.yaml  EXCLUDE 
-                         PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.EPA_PDF.yaml  EXCLUDE 
-                         PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.EPA.yaml EXCLUDE 
-                         PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.GammaPDF.yaml EXCLUDE 
-                         PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.PDF.yaml EXCLUDE 
-                         PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.Reconnect.yaml EXCLUDE 
-                         PATTERN */Jets_at_LeptonColliders/LEP_Jets/Sherpa.test.yaml EXCLUDE 
-                         PATTERN */SingleTop_Channels/Sherpa.tj-s_channel-nf4.yaml EXCLUDE 
-                         PATTERN */Soft_QCD/LHC_7TeV_MinBias/Elastic.yaml EXCLUDE 
-                         PATTERN */Soft_QCD/LHC_7TeV_MinBias/Shrimps.yaml EXCLUDE
-                         PATTERN */Soft_QCD/LHC_7TeV_MinBias/SoftDiffractive.yaml EXCLUDE 
-                         PATTERN */Tops_plus_Jets/LHC_Tops/Sherpa.Reconnect.yaml EXCLUDE 
-                         PATTERN */VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Sherpa.tree.yaml EXCLUDE 
-                         PATTERN */VV_plus_Jets/LHC_4lJets_GluonInitiated/Sherpa.tree.yaml EXCLUDE 
                           )
 endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Sobol/21201 ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201)
