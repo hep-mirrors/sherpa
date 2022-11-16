@@ -264,8 +264,6 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
           AddOns/MCFM/Makefile \
           AddOns/LH_OLE/Makefile \
 	  AddOns/HZTool/Makefile \
-	  AddOns/PGS/Makefile \
-	  AddOns/Delphes/Makefile \
 	  AddOns/Rivet/Makefile \
 	  AddOns/HepMC/Makefile \
 	  AddOns/Weights/Makefile \

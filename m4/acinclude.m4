@@ -974,55 +974,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(CERNLIB_SUPPORT, test "$cernlib" = "true")
 
   AC_ARG_ENABLE(
-    pgs,
-    AS_HELP_STRING([--enable-pgs=/path/to/pgs],[Enable pgs.]),
-    [ AC_MSG_CHECKING(for PGS installation directory);
-      case "${enableval}" in
-        no) AC_MSG_RESULT(PGS not enabled); pgs=false;;
-        *)  if test -d "${enableval}"; then
-              if test -f "${enableval}/lib/libstdhep.a"; then
-                CONDITIONAL_PGSLIBS="${enableval}/lib/libstdhep.a ${enableval}/lib/libFmcfio.a"
-                pgs=true;
-                AC_MSG_RESULT(${enableval});
-              else
-                AC_MSG_ERROR(Did not find '${enableval}/lib/libstdhep.a'.); 
-              fi;
-            else
-              AC_MSG_ERROR(Did not find PGS directory '${enableval}'.);
-            fi;
-      esac;
-    ],
-    [ pgs=false ]
-  )
-  AC_SUBST(CONDITIONAL_PGSLIBS)
-  AM_CONDITIONAL(PGS_SUPPORT, test "$pgs" = "true")
-
-  AC_ARG_ENABLE(
-    delphes,
-    AS_HELP_STRING([--enable-delphes=/path/to/delphes],[Enable delphes.]),
-    [ AC_MSG_CHECKING(for DELPHES installation directory);
-      case "${enableval}" in
-        no) AC_MSG_RESULT(DELPHES not enabled); delphes=false;;
-        *)  if test -d "${enableval}"; then
-              CONDITIONAL_DELPHESLIBS="-Wl,-rpath -Wl,${enableval}/lib -L${enableval}/lib -lUtilities"
-              CONDITIONAL_DELPHESINCS="-I${enableval}"
-              delphes=true;
-              AC_MSG_RESULT(${enableval});
-            else
-              AC_MSG_ERROR(Did not find DELPHES directory '${enableval}'.);
-            fi;
-      esac;
-    ],
-    [ delphes=false ]
-  )
-  if test "$delphes" = "true" ; then
-    AC_DEFINE([USING__DELPHES], "1", [using delphes])
-  fi
-  AM_CONDITIONAL(DELPHES_SUPPORT, test "$delphes" = "true")
-  AC_SUBST(CONDITIONAL_DELPHESLIBS)
-  AC_SUBST(CONDITIONAL_DELPHESINCS)
-
-  AC_ARG_ENABLE(
     gzip,
     AS_HELP_STRING([--enable-gzip],[Enable gzip support (for compressed event output)]),
     [ case "${enableval}" in

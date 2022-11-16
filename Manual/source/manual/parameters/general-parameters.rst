@@ -376,7 +376,6 @@ Event output formats
 .. index:: HEPEVT
 .. index:: LHEF
 .. index:: Root
-.. index:: Delphes
 .. index:: FILE_SIZE
 .. index:: EVENT_FILE_PATH
 .. index:: EVENT_OUTPUT_PRECISION
@@ -462,41 +461,6 @@ The following formats are currently available:
 
   Requires ``--enable-hepmc3=<path/to/hepmc3>``.
 
-:option:`Delphes_GenEvent`
-  Generates output in `Root <http://root.cern.ch>`_ format, which can
-  be passed to `Delphes <http://cp3.irmp.ucl.ac.be/projects/delphes>`_
-  for analyses.  Input events are taken from the HepMC
-  interface. Storage space can be reduced by up to 50% compared to
-  gzip compressed HepMC. This output format is available only if
-  Sherpa was configured and installed with options
-  :option:`--enable-root` and
-  :option:`--enable-delphes=/path/to/delphes`.
-
-:option:`Delphes_Short`
-  Generates output in `Root <http://root.cern.ch>`_ format, which can
-  be passed to `Delphes <http://cp3.irmp.ucl.ac.be/projects/delphes>`_
-  for analyses.  Only incoming beams and outgoing particles are
-  stored.
-
-:option:`PGS`
-  Generates output in `StdHEP <http://cepa.fnal.gov/psm/stdhep>`_
-  format, which can be passed to `PGS
-  <http://www.physics.ucdavis.edu/~conway/research/software/pgs/pgs4-general.htm>`_
-  for analyses. This output format is available only if Sherpa was
-  configured and installed with options
-  :option:`--enable-hepevtsize=4000` and
-  :option:`--enable-pgs=/path/to/pgs`.  Please refer to the PGS
-  documentation for how to pass StdHEP event files on to PGS.  If you
-  are using the LHC olympics executeable, you may run
-  ``./olympics --stdhep events.lhe <other options>``.
-
-:option:`PGS_Weighted`
-  Generates output in `StdHEP <http://cepa.fnal.gov/psm/stdhep>`_
-  format, which can be passed to `PGS
-  <http://www.physics.ucdavis.edu/~conway/research/software/pgs/pgs4-general.htm>`_
-  for analyses. Event weights in the HEPEV4 common block are stored in
-  the event file.
-
 :option:`HEPEVT`
   Generates output in HepEvt format.
 
@@ -536,7 +500,7 @@ The output can be further customized using the following options:
 :option:`EVENT_OUTPUT_PRECISION`
   Steers the precision of all numbers written to file (default: 12).
 
-For all output formats except ROOT and Delphes, events can be written
+For all output formats except ROOT, events can be written
 directly to gzipped files instead of plain text. The option
 :option:`--enable-gzip` must be given during installation to enable
 this feature.
