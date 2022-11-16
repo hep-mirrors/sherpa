@@ -409,6 +409,41 @@ stages:
   script:
       - *cmake
 
+.any-cmake-ccache: &any-cmake-ccache
+  extends: .any
+  script:
+    - export CCACHE_BASEDIR=`pwd`/cmake-gcc-cache-$FREL    
+    - export CCACHE_BASEDIR=${PWD}
+    - export CCACHE_DIR=`pwd`/cmake-gcc-cache-$FREL/ccache
+    - export CCACHE_COMPILERCHECK=content
+    - export F90CACHE_DIR=`pwd`/cmake-gcc-cache-$FREL/f90cache
+    - export F90CACHE_TMPDIR=`pwd`/tmpf90cache
+    - mkdir -p ${F90CACHE_TMPDIR}
+    - *cmake
+  cache:
+   - key: cmake-gcc-cache-$FREL
+     paths:
+       - cmake-gcc-cache-$FREL/
+
+.any-autotools-ccache: &any-autotools-ccache
+  extends: .any
+  script:
+    - export CCACHE_BASEDIR=`pwd`/autotools-gcc-cache-$FREL    
+    - export CCACHE_BASEDIR=${PWD}
+    - export CCACHE_DIR=`pwd`/autotools-gcc-cache-$FREL/ccache
+    - export CCACHE_COMPILERCHECK=content
+    - export F90CACHE_DIR=`pwd`/cmake-autotools-cache-$FREL/f90cache
+    - export F90CACHE_TMPDIR=`pwd`/tmpf90cache
+    - mkdir -p ${F90CACHE_TMPDIR}    
+    - export CC="ccache gcc"
+    - export CXX="ccache g++"
+#    - export FC="f90cache gfortran"
+    - *autotools
+  cache:
+   - key: autotools-gcc-cache-$FREL
+     paths:
+      - autotools-gcc-cache-$FREL/
+
 Fedora35-autotools:
   variables:
     OS: Fedora

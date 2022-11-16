@@ -3,7 +3,6 @@
  
 set(GITTAG  AHADIC++/Main)
 set(Main_SOURCES  Ahadic.C)
- #localincdir = $(pkg#includedir)/AHADIC++/Main)
 set(Main_HEADERS Ahadic.H)
 sherpa_create_git_info(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
