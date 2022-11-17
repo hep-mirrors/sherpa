@@ -20,4 +20,6 @@ list(APPEND LundTools_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 add_library(LundTools SHARED ${LundTools_SOURCES} )
 sherpa_handle_shared_library(LundTools LundTools)
-
+if (SHERPA_ENABLE_PYTHIA6)
+ set_target_properties(LundTools PROPERTIES LINKER_LANGUAGE Fortran)
+endif()

@@ -18,4 +18,5 @@ list(TRANSFORM OpenLoops_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../OpenLoo
 list(APPEND OpenLoops_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 add_library(SherpaOpenLoops SHARED ${OpenLoops_SOURCES} )
+target_link_libraries(SherpaOpenLoops PRIVATE ${OPENLOOPS_LIBRARY} )
 sherpa_handle_shared_library(SherpaOpenLoops SherpaOpenLoops)

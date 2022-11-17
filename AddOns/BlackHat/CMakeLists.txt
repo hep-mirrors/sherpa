@@ -17,4 +17,5 @@ list(TRANSFORM BlackHat_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../BlackHat
 list(APPEND BlackHat_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
  
 add_library(SherpaBlackHat SHARED  ${BlackHat_SOURCES} )
+target_link_libraries(SherpaBlackHat PRIVATE ${BLACKHAT_LIBRARY} )
 sherpa_handle_shared_library(SherpaBlackHat SherpaBlackHat)
