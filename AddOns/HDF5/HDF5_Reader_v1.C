@@ -92,8 +92,10 @@ namespace LHEH5 {
     (Group &group,Type &values,const std::string &name,
      const std::vector<size_t> &offset,const std::vector<size_t> &size)
     {
+      auto xfer_props = DataTransferProps{};
+      xfer_props.add(UseCollectiveIO{});
       DataSet ds(group.getDataSet(name));
-      ds.select(offset,size).read(values);
+      ds.select(offset,size).read(values, xfer_props);
     }
 
     inline Particle GetParticle(size_t i) const
