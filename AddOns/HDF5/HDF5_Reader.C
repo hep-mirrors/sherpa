@@ -152,8 +152,11 @@ namespace LHEH5 {
  
     void ReadHeader(File &file)
     {
-      file.getDataSet("version").read(version);
-      file.getDataSet("procInfo").read(pinfo);
+      auto xfer_props = DataTransferProps{};
+      xfer_props.add(UseCollectiveIO{});
+
+      file.getDataSet("version").read(version, xfer_props);
+      file.getDataSet("procInfo").read(pinfo, xfer_props);
       DataSet init(file.getDataSet("init"));
       DataSet events(file.getDataSet("events"));
       auto attr_keys(events.listAttributeNames());
@@ -163,11 +166,14 @@ namespace LHEH5 {
     }
     void ReadEvents(File &file,size_t first_event,size_t n_events)
     {
+      auto xfer_props = DataTransferProps{};
+      xfer_props.add(UseCollectiveIO{});
+
       DataSet events(file.getDataSet("events"));
       std::vector<size_t> eoffsets{first_event,0};
       std::vector<size_t> ecounts{n_events,9+wgtnames.size()};
       evts.resize(n_events,std::vector<double>(9+wgtnames.size()));
-      events.select(eoffsets,ecounts).read(evts);
+      events.select(eoffsets,ecounts).read(evts, xfer_props);
       DataSet particles(file.getDataSet("particles"));
       std::vector<size_t> poffsets{(size_t)evts.front()[2],0};
       size_t nmax(0);
@@ -175,18 +181,18 @@ namespace LHEH5 {
 	nmax=std::max((size_t)std::max(pinfo[i][1],pinfo[i][2]+1),nmax);
       std::vector<size_t> pcounts{n_events*nmax,13};
       parts.resize(n_events*nmax,std::vector<double>(13));
-      particles.select(poffsets,pcounts).read(parts);
+      particles.select(poffsets,pcounts).read(parts, xfer_props);
       if (file.exist("ctevents")) {
 	DataSet events(file.getDataSet("ctevents"));
 	std::vector<size_t> eoffsets{first_event,0};
 	std::vector<size_t> ecounts{n_events,9};
 	ctevts.resize(n_events,std::vector<double>(9));
-	events.select(eoffsets,ecounts).read(ctevts);
+	events.select(eoffsets,ecounts).read(ctevts,xfer_props);
 	DataSet particles(file.getDataSet("ctparticles"));
 	std::vector<size_t> poffsets{(size_t)evts.front()[2],0};
 	std::vector<size_t> pcounts{n_events*nmax,4};
 	ctparts.resize(n_events*nmax,std::vector<double>(4));
-	particles.select(poffsets,pcounts).read(ctparts);
+	particles.select(poffsets,pcounts).read(ctparts,xfer_props);
       }
     }
     

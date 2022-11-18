@@ -370,6 +370,8 @@ namespace SHERPA {
 
     void Write(const int &mode=0)
     {
+      auto xfer_props = DataTransferProps{};
+      xfer_props.add(UseCollectiveIO{});
       if (mode!=1 && m_events<m_ncache) return;
       if (m_events==0 && m_trials==0) return;
       if (m_ecache.empty()) {
@@ -401,9 +403,9 @@ namespace SHERPA {
       }
       rank+=m_offset;
       m_offset+=sumcache;
-      m_dss["events"].select({rank,0},{ncache,m_ecache.front().size()}).write(m_ecache);
+      m_dss["events"].select({rank,0},{ncache,m_ecache.front().size()}).write(m_ecache, xfer_props);
       m_ecache.clear();
-      m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_pcache.front().size()}).write(m_pcache);
+      m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_pcache.front().size()}).write(m_pcache, xfer_props);
       m_pcache.clear();
     }
 

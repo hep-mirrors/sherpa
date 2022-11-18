@@ -397,6 +397,8 @@ namespace SHERPA {
 
     void Write(const int &mode=0)
     {
+      auto xfer_props = DataTransferProps{};
+      xfer_props.add(UseCollectiveIO{});
       if (mode!=1 && m_events<m_ncache) return;
       if (m_events==0 && m_trials==0) return;
       if (m_scache["start"].empty()) {
@@ -455,22 +457,22 @@ namespace SHERPA {
       m_offset+=sumcache;
       for (std::map<std::string,std::vector<size_t> >::iterator
 	     it=m_scache.begin();it!=m_scache.end();++it) {
-	m_dss[it->first].select({rank},{ncache}).write(it->second);
+	m_dss[it->first].select({rank},{ncache}).write(it->second, xfer_props);
 	it->second.clear();
       }
       for (std::map<std::string,std::vector<int> >::iterator
 	     it=m_icache.begin();it!=m_icache.end();++it) {
 	int nup(it->second.size()/ncache);
-	m_dss[it->first].select({rank*nup},{ncache*nup}).write(it->second);
+	m_dss[it->first].select({rank*nup},{ncache*nup}).write(it->second, xfer_props);
 	it->second.clear();
       }
       for (std::map<std::string,std::vector<double> >::iterator
 	     it=m_dcache.begin();it!=m_dcache.end();++it) {
 	int nup(it->second.size()/ncache);
-	m_dss[it->first].select({rank*nup},{ncache*nup}).write(it->second);
+	m_dss[it->first].select({rank*nup},{ncache*nup}).write(it->second, xfer_props);
 	it->second.clear();
       }
-      m_dss["weight"].select({rank,0},{ncache,m_wcache.front().size()}).write(m_wcache);
+      m_dss["weight"].select({rank,0},{ncache,m_wcache.front().size()}).write(m_wcache, xfer_props);
       m_wcache.clear();
     }
 
