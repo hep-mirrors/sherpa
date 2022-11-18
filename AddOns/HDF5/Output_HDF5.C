@@ -238,10 +238,14 @@ namespace SHERPA {
     
     void Header() override
     {
+      auto xfer_props = DataTransferProps{};
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
+      xfer_props.add(UseCollectiveIO{});
+#endif
       std::vector<int> versionno = {2, 0, 0};
       m_dss["version"]=p_file->createDataSet<int>
 	("version",DataSpace::From(versionno));
-      m_dss["version"].write(versionno);
+      m_dss["version"].write(versionno, xfer_props);
       std::vector<double> idata;
       std::vector<std::string> inames;
       inames.push_back("beamA");
@@ -268,7 +272,7 @@ namespace SHERPA {
       DataSetCreateProps props;
       m_dss["init"]=p_file->createDataSet<double>
 	("init",DataSpace::From(idata));
-      m_dss["init"].write(idata);
+      m_dss["init"].write(idata, xfer_props);
       m_dss["init"].createAttribute<std::string>
 	("properties",DataSpace::From(inames)).write(inames);
       std::vector<std::vector<double> > pdata
@@ -305,7 +309,7 @@ namespace SHERPA {
       }
       m_dss["procInfo"]=p_file->createDataSet<double>
 	("procInfo",DataSpace::From(pdata));
-      m_dss["procInfo"].write(pdata);
+      m_dss["procInfo"].write(pdata, xfer_props);
       m_dss["procInfo"].createAttribute<std::string>
 	("properties",DataSpace::From(pnames)).write(pnames);
       Initialize(m_nmax);
