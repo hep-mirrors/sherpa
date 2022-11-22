@@ -28,6 +28,7 @@ if (APPLE)
 endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
+option(SHERPA_ENABLE_MINIMAL                 "Enables minimal build." ON)
 option(SHERPA_ENABLE_ANALYSIS                "Enables building of Analyses." ON)
 option(SHERPA_ENABLE_BINRELOC                "Enables binreloc." ON)
 option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." ON)
@@ -41,8 +42,7 @@ option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3." ON)
 option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT Interface ." ON)
 option(SHERPA_ENABLE_HZTOOL                  "Enables building with HZTool." ON)
 option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
-option(SHERPA_ENABLE_INSTALL_LIBZIP         "Enables internal LibZip." OFF)
-option(SHERPA_ENABLE_LHAPDF                  "Enables building With LHAPDF." ON)
+option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." OFF)
 option(SHERPA_ENABLE_LHOLE                   "Enables building of LH OLE." ON)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." ON)
 option(SHERPA_ENABLE_MANUAL                  "Enables building of manul." ON)
@@ -55,14 +55,20 @@ option(SHERPA_ENABLE_PYTHON                  "Enables building of Python interfa
 option(SHERPA_ENABLE_RECOLA                  "Enables building with Recola." ON)
 option(SHERPA_ENABLE_RIVET                   "Enables building with Rivet." ON)
 option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." ON)
-option(SHERPA_ENABLE_THREADING               "Enables building SHERPA_ENABLE_MANUALwith threading." ON)#BUGGED?
+option(SHERPA_ENABLE_THREADING               "Enables building with threading." ON)
 option(SHERPA_ENABLE_TESTING                 "Enables testing." ON)
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL 
 INTERNAL_PDFS INSTALL_LIBZIP
-LHAPDF LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING)
+ LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING)
+if (SHERPA_ENABLE_MINIMAL)
+  message(STATUS "SHERPA: SHERPA_ENABLE_MINIMAL=${SHERPA_ENABLE_MINIMAL}. All extra packages will be disabled. Add -DSHERPA_ENABLE_MINIMAL:BOOL=OFF to be able to select individual packages.")
+  foreach (en IN LISTS allenables)
+    set(SHERPA_ENABLE_${en} OFF)
+  endforeach()
+endif()
 foreach (en IN LISTS allenables)
-     message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
+  message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
 if (SHERPA_ENABLE_PYTHIA6 OR SHERPA_ENABLE_INTERNAL_PDFS)
  set(SHERPA_ENABLE_FORTRAN ON)
@@ -336,11 +342,9 @@ if (SHERPA_ENABLE_INTERNAL_PDFS)
   add_subdirectory(PDF/CT14)
   add_subdirectory(PDF/SASG)
 endif()
-IF (SHERPA_ENABLE_LHAPDF)
-  find_package(LHAPDF REQUIRED)
-  message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
-  add_subdirectory(PDF/LHAPDF)
-endif()
+find_package(LHAPDF REQUIRED)
+message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
+add_subdirectory(PDF/LHAPDF)
 add_subdirectory(ATOOLS)
 add_subdirectory(PDF/Main)
 add_subdirectory(PDF/NNPDF)  
@@ -724,13 +728,8 @@ else()
   set(CONDITIONAL_HEPMC3LIBS )
 endif()
 
-if (SHERPA_ENABLE_LHAPDF)
-  set(CONDITIONAL_LHAPDFLIBS  "-L${LHAPDF_LIBRARY_DIR} -lLHAPDF")
-  set(CONDITIONAL_LHAPDFINCS  "${LHAPDF_CONFIG_CPPFLAGS_STRING}")
-else()
-  set(CONDITIONAL_LHAPDFLIBS )
-  set(CONDITIONAL_LHAPDFINCS  )
-endif()
+set(CONDITIONAL_LHAPDFLIBS  "-L${LHAPDF_LIBRARY_DIR} -lLHAPDF")
+set(CONDITIONAL_LHAPDFINCS  "${LHAPDF_CONFIG_CPPFLAGS_STRING}")
 
 if (SHERPA_ENABLE_RIVET)
   set(CONDITIONAL_RIVETLDADD " ${RIVET_CONFIG_LIBS_STRING}")
@@ -769,7 +768,7 @@ $<IF:$<BOOL:${SHERPA_ENABLE_HZTOOL}>,#define USING__HZTOOL \"1\",/* #undef USING
 /* cernlib found */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_CERNLIB}>,#define USING__CERNLIB \"1\",/* #undef USING__CERNLIB */>\n\n\
 /* using LHAPDF */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_LHAPDF}>,#define LHAPDF_PATH \"${LHAPDF_PATH}\",/* #undef LHAPDF_PATH */>\n\n\
+#define LHAPDF_PATH \"${LHAPDF_PATH}\"\n\n\
 /* using ROOT */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_ROOT}>,#define USING__ROOT \"1\",/* #undef USING__ROOT */>\n\n\
 /* using Rivet2 */\n\
