@@ -215,14 +215,9 @@ dist:
     - when: never
   image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
-    - autoreconf -i
-    - cd Manual
-    - pip3 install -r requirements.txt
-    - cd ..
-    - mkdir -p build
-    - cd build
-    - ../configure $CONFIGURE_FLAGS --enable-manual # build the manual into the dist tarball
-    - make dist
+    - pip3 install -r Manual/requirements.txt
+    - cmake3 -S . -B build -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON   # build the manual into the dist tarball
+    - make -C build/ dist
 
     # upload to gitlab releases
     - "REL=$(git describe --abbrev=0 --tags)"
