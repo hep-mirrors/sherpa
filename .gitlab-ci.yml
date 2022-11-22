@@ -5,7 +5,7 @@ image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 variables:
   DOCKER_DRIVER: overlay2
 #  CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=install
-  CONFIGURE_FLAGS: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
+  CONFIGURE_FLAGS: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_TESTING:BOOL=ON  -DSHERPA_ENABLE_EWSUD:BOOL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
   MAKE_FLAGS: -j4
 
 .build_template: &build
@@ -111,8 +111,8 @@ build-manual:
   script:
     - yum -y install cmake3
     - pip3 install -r Manual/requirements.txt
-    - cmake3 -S . -B . -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
-    - cd Manual
+    - cmake3 -S . -B build -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON  
+    - cd build/Manual
     - make
     - make sherpamanual_html
   artifacts:
