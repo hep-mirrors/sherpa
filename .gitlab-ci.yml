@@ -9,9 +9,6 @@ variables:
   MAKE_FLAGS: -j4
 
 .build_template: &build
-  only:
-    variables:
-     - $CI_SERVER_HOST=="gitlab.com"
   stage: build
   before_script:
     # set up ccache
@@ -60,7 +57,7 @@ build:
     - cmake -S ../ -B . -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
-    - VERBOSE=1 make check
+    - ctest .
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -213,7 +210,6 @@ dist:
     - if: '$CI_COMMIT_TAG'
       when: always
     - when: never
-    - if: '$CI_SERVER_HOST=="gitlab.com"'
   image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
     - autoreconf -i
