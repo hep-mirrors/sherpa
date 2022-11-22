@@ -15,6 +15,5 @@ list(APPEND Phys_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 add_library(ToolsPhys SHARED ${Phys_SOURCES} )
 sherpa_handle_shared_library(ToolsPhys ToolsPhys)
 
-target_link_libraries(ToolsPhys PRIVATE ${LHAPDF_LIBRARIES})
-target_include_directories(ToolsPhys PRIVATE ${LHAPDF_INCLUDE_DIRS})
+target_link_libraries(ToolsPhys PRIVATE LHAPDF::LHAPDF)
 

@@ -1,1 +1,0 @@
-SUBDIRS    = Main SM SMGold SMDM HEFT SMEHC TauPi UFO

@@ -4,7 +4,8 @@ image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 
 variables:
   DOCKER_DRIVER: overlay2
-  CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=install
+#  CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=install
+  CONFIGURE_FLAGS: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
   MAKE_FLAGS: -j4
 
 .build_template: &build
@@ -29,9 +30,6 @@ variables:
       - ccache/
 
 .build_ubuntu_template: &build_ubuntu
-  only:
-    variables:
-     - $CI_SERVER_HOST=="gitlab.com"
   stage: build
   before_script:
     # set up ccache
@@ -57,10 +55,9 @@ variables:
 build:
   <<: *build
   script:
-    - autoreconf -i
     - mkdir -p build
     - cd build
-    - ../configure CC="ccache gcc" CXX="ccache g++" --prefix="$PWD/install" $CONFIGURE_FLAGS
+    - cmake -S ../ -B . -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
     - VERBOSE=1 make check
@@ -77,13 +74,13 @@ build-rivet:
   image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/analysis"
   stage: build
   script:
-    - autoreconf -i
     - mkdir -p build-rivet
     - cd build-rivet
-    - ../configure CC="ccache gcc" CXX="ccache g++" --prefix="$PWD/install" $CONFIGURE_FLAGS --enable-hepmc3=$(HepMC3-config --prefix) --enable-rivet=$(rivet-config --prefix) --with-libzip=install "CXXFLAGS=-Wl,-rpath,$(HepMC3-config --libdir),-rpath,$(rivet-config --libdir)"
+    - cmake -S ../ -B . -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON  -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_DIR=$(rivet-config --prefix)
+#    - ../configure CC="ccache gcc" CXX="ccache g++" --prefix="$PWD/install" $CONFIGURE_FLAGS --enable-hepmc3=$(HepMC3-config --prefix) --enable-rivet=$(rivet-config --prefix) --with-libzip=install "CXXFLAGS=-Wl,-rpath,$(HepMC3-config --libdir),-rpath,$(rivet-config --libdir)"
     - make $MAKE_FLAGS
     - make install
-    - VERBOSE=1 make check
+    - ctest .
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -95,15 +92,12 @@ build-rivet:
 build-clang-strict:
   <<: *build
   script:
-    - autoreconf -i
     - mkdir -p build-clang-strict
     - cd build-clang-strict
-    # enable strict compilation
-    - cxxflags="-Werror -Wno-error=unused-function"
-    - ../configure CC="ccache clang" CXX="ccache clang++" CXXFLAGS="${cxxflags}" --prefix="$PWD/install" $CONFIGURE_FLAGS
+    - cmake -S ../ -B .  -DCMAKE_CXX_FLAGS="-Werror -Wno-error=unused-function "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
-    - VERBOSE=1 make check
+    - ctest .
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -115,12 +109,9 @@ build-manual:
   stage: build
   image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
-    - autoreconf -i
-    - mkdir -p build
+    - cmake -S . -B . -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
     - cd Manual
     - pip3 install -r requirements.txt
-    - cd ../build
-    - ../configure --enable-manual --with-libzip=/usr --with-lhapdf=install
     - cd Manual
     - make
     - make sherpamanual_html
@@ -133,7 +124,6 @@ build-manual:
         - Manual/**/*
       when: always
     - when: never
-    - if: '$CI_SERVER_HOST=="gitlab.com"'
 
 #
 # Test
@@ -145,9 +135,6 @@ build-manual:
 # inherit parameters set in .test_template
 
 .test_template: &test
-  only:
-    variables:
-     - $CI_SERVER_HOST=="gitlab.com"
   stage: test
   variables:
     GIT_STRATEGY: none  # we only need the artifacts from the build
@@ -215,7 +202,6 @@ trigger_pages:
     - if: '$CI_COMMIT_TAG'
       when: always
     - when: never
-    - if: '$CI_SERVER_HOST=="gitlab.com"'
   script:
     - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
   needs: []
@@ -270,188 +256,4 @@ pages:
         - Manual/**/*
       when: always
     - when: never
-    - if: '$CI_SERVER_HOST=="gitlab.com"'
-
-##########################################################################
-##########################################################################
-
-
-LCG_102_x86_64-centos7-gcc11-opt:
-  only:
-    variables:
-     - $CI_SERVER_HOST=="gitlab.cern.ch"
-  image: gitlab-registry.cern.ch/sft/docker:lcg-cc7
-  stage: build
-  script:
-      - export RELPATH=/cvmfs/sft.cern.ch/lcg/releases/LCG_102
-      - export LCGPLATFORM=x86_64-centos7-gcc11-opt
-      - export PATH=$RELPATH/swig/4.0.2/bin:/cvmfs/sft.cern.ch/lcg/contrib/CMake/3.23.2/Linux-x86_64/bin/:$PATH
-      - set -x
-      - export S_ROOT=6.26.04
-      - export S_HEPMC2=2.06.11
-      - export S_HEPMC3=3.2.4
-      - export S_PYTHIA8=307p1
-      - export S_RIVET=3.1.6
-      - export S_MG5=3.3.1.atlas3
-      - export S_OPENLOOPS=2.1.2
-      - export S_RECOLA=2.2.0
-      - export S_GOSAM=2.0.4
-      - export S_LHAPDF=6.5.1
-      - export S_PYTHON=3.9.12
-      - set +x
-      - source $RELPATH/../gcc/11.2.0/x86_64-centos7/setup.sh
-      - source $RELPATH/ROOT/$S_ROOT/${LCGPLATFORM}/bin/thisroot.sh
-      - source $RELPATH/Python/$S_PYTHON/${LCGPLATFORM}/Python-env.sh
-      - set -x
-      - which -a g++
-      - which -a cmake
-      - which -a gzip
-      - LARG=" "
-      - LARG="$LARG "-DCMAKE_INSTALL_PREFIX=$(pwd)/install  
-      - LARG="$LARG "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
-      - LARG="$LARG "-DHepMC3_DIR=$RELPATH/hepmc3/$S_HEPMC3/${LCGPLATFORM}/share/HepMC3/cmake/  
-      - LARG="$LARG "-DSHERPA_ENABLE_INSTALL_LIBZIP=ON 
-      - LARG="$LARG "-DPYTHIA8_DIR=$RELPATH/MCGenerators/pythia8/$S_PYTHIA8/${LCGPLATFORM} 
-      - LARG="$LARG "-DRIVET_DIR=$RELPATH/MCGenerators/rivet/$S_RIVET/${LCGPLATFORM} 
-      - LARG="$LARG "-DOPENLOOPS_DIR=$RELPATH/MCGenerators/openloops/$S_OPENLOOPS/${LCGPLATFORM}/  
-      - LARG="$LARG "-DSHERPA_ENABLE_RECOLA=OFF 
-      - LARG="$LARG "-DLHAPDF_DIR=$RELPATH/MCGenerators/lhapdf/$S_LHAPDF/${LCGPLATFORM}/  
-      - LARG="$LARG "-DHEPMC2_DIR=$RELPATH/HepMC/$S_HEPMC2/${LCGPLATFORM}/ 
-      - LARG="$LARG "-DMADLOOP_DIR=$RELPATH/MCGenerators/madgraph5amc/$S_MG5/${LCGPLATFORM}/  
-      - LARG="$LARG "-DGOSAM_DIR=$RELPATH/MCGenerators/gosam/$S_GOSAM/${LCGPLATFORM}/  
-      - LARG="$LARG "-DSHERPA_ENABLE_ROOT=OFF   
-      - LARG="$LARG "-DSHERPA_ENABLE_HEPMC3_ROOT=OFF   
-      - LARG="$LARG "-DSHERPA_ENABLE_PYTHON=OFF   
-      - LARG="$LARG "-DSHERPA_ENABLE_MCFM=OFF   
-      - LARG="$LARG "-DSHERPA_ENABLE_MANUAL=OFF  
-      - LARG="$LARG "-DSHERPA_ENABLE_HZTOOL=OFF  
-      - LARG="$LARG "-DSHERPA_ENABLE_THREADING=OFF  
-      - LARG="$LARG "-DSHERPA_ENABLE_BLACKHAT=OFF 
-      - cmake -S . -B BUILD  $LARG
-      - cmake --build BUILD -j 10
-      - ctest --test-dir BUILD
-##########################################################################
-##########################################################################
-
-stages:
-  - build
-  - test
-  - deploy
-
-.any: &any
-  image: fedora:${FREL}
-  stage: build
-  before_script:
-    - set -x
-    - uname -a 
-    - cat /etc/issue
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL dnf-plugins-core bc make cmake binutils wget diffutils file sed gawk grep which autoconf automake libtool python3-lhapdf lhapdf lhapdf-devel 'tex(latex)' ghostscript 'tex(sectsty.sty)' > rpm.log || (cat rpm.log && exit 1)
-    - dnf -y copr enable averbyts/HEPrpms 
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   gcc-gfortran gcc-c++ root pythia8-devel pythia8   Rivet Rivet-devel hztool > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   root-core root HepMC3-rootIO-devel HepMC3-devel HepMC3-search HepMC3-search-devel  HepMC3-rootIO HepMC3  HepMC HepMC-devel  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   autoconf automake libtool sqlite-devel sqlite subversion root-physics libzip-devel openmpi-devel gosam > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   openmpi environment-modules lhapdf-devel fastjet fastjet-devel  YODA-devel Rivet-devel zlib zlib-devel > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   swig  recola qd qd-devel openssl-devel openssl > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   blackhat-devel blackhat > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   texinfo git latexmk  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   python3 python3-devel bzip2 > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   cernlib cernlib-devel cernlib-static > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   MCFM MG5_aMC openloops  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   cmake sphinx python3-sphinx python3-sphinxcontrib-bibtex > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL   'tex(atbegshi.sty)' 'tex(babel.sty)' 'tex(bigintcalc.sty)' 'tex(bitset.sty)' 'tex(etexcmds.sty)' 'tex(gettitlestring.sty)'  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL       'tex(iftex.sty)' 'tex(ifvtex.sty)' 'tex(infwarerr.sty)' 'tex(intcalc.sty)' 'tex(kvdefinekeys.sty)' 'tex(kvsetkeys.sty)' > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL      'tex(ltxcmds.sty)' 'tex(pdfescape.sty)' 'tex(pdftexcmds.sty)' 'tex(uniquecounter.sty)' 'tex(amsfonts.sty)' 'tex(amssymb.sty)'  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL     'tex(amsbsy.sty)' 'tex(amsgen.sty)' 'tex(amsmath.sty)' 'tex(amsopn.sty)' 'tex(amstext.sty)' 'tex(atveryend.sty)' 'tex(auxhook.sty)' 'tex(alltt.sty)'  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL     'tex(atbegshi-ltx.sty)' 'tex(atveryend-ltx.sty)' 'tex(fontenc.sty)' 'tex(inputenc.sty)' 'tex(makeidx.sty)' 'tex(textcomp.sty)' 'tex(capt-of.sty)'  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL     'tex(cmap.sty)' 'tex(epstopdf-base.sty)' 'tex(fancyhdr.sty)' 'tex(fancyvrb.sty)' 'tex(float.sty)' 'tex(fncychap.sty)' 'tex(framed.sty)'  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL     'tex(geometry.sty)' 'tex(color.sty)' 'tex(graphics.sty)' 'tex(graphicx.sty)' 'tex(keyval.sty)' 'tex(trig.sty)' 'tex(hycolor.sty)' 'tex(hyperref.sty)'  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL     'tex(nameref.sty)' 'tex(kvoptions.sty)' 'tex(letltxmacro.sty)' 'tex(needspace.sty)' 'tex(hypcap.sty)' 'tex(parskip-2001-04-09.sty)' 'tex(parskip.sty)' > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL      'tex(refcount.sty)' 'tex(rerunfilecheck.sty)' 'tex(tabulary.sty)' 'tex(tgheros.sty)' 'tex(tgtermes.sty)' 'tex(titlesec.sty)' 'tex(array.sty)'  > rpm.log || (cat rpm.log && exit 1)
-    - yum -y  install --setopt=keepcache=1 --setopt=cachedir=`pwd`/yum-cache-$FREL      'tex(longtable.sty)' 'tex(multicol.sty)' 'tex(upquote.sty)' 'tex(url.sty)' 'tex(varwidth.sty)' 'tex(wrapfig.sty)' 'tex(xcolor.sty)' > rpm.log || (cat rpm.log && exit 1)
-  cache:
-    key: yum-cache-$FREL
-    paths:
-      - yum-cache-$FREL/
-
-.autotools: &autotools
-    - export COMPILATIONSTART=$(date +%s)
-    - autoreconf  -fi
-    -  ./configure  CC="$CC" CXX="$CXX" FC="$FC" --prefix=$(pwd)/AT  --disable-rpath  --enable-multithread --enable-rivet=/usr  --enable-cernlib=/usr/lib64/cernlib/2022  --enable-blackhat=$(blackhat-config --prefix)     --enable-gzip --enable-recola=/usr  --enable-hztool=/usr   --enable-hepevtsize=4000    --enable-hepmc3=/usr --enable-hepmc3root   --libdir=$(pwd)/AT/lib64   --enable-openloops=/usr/lib64/openloops --enable-hepmc2=/usr  --enable-root=/usr  --enable-binreloc   --enable-pythia --enable-lhole --enable-lhapdf=/usr --enable-manual --enable-ewsud --enable-gosam=/usr
-    - make -j 10
-    - make -C Manual
-    - export COMPILATIONEND=$(date +%s)
-    - make install
-    - make -C Manual install
-    - echo $COMPILATIONSTART $COMPILATIONEND $(echo $COMPILATIONEND-$COMPILATIONSTART | bc -l)
-
-.cmake: &cmake
-    - export COMPILATIONSTART=$(date +%s)
-    - cmake -S . -B BUILD -DCMAKE_INSTALL_PREFIX=$(pwd)/CM -DCMAKE_CXX_FLAGS="-O2 -g -fcx-fortran-rules" -DCMAKE_C_FLAGS="-O2 -g" -DCMAKE_Fortran_FLAGS="-O2 -g" $EXTRACMAKEFLAGS
-    - cmake --build BUILD -j 10
-    - export COMPILATIONEND=$(date +%s)
-    - cmake --install BUILD
-    - echo $COMPILATIONSTART $COMPILATIONEND $(echo $COMPILATIONEND-$COMPILATIONSTART | bc -l)
-    - ctest --test-dir BUILD
-
-.any-autotools: &any-autotools
-  extends: .any
-  script:
-    - export CC=gcc
-    - export CXX=g++
-    - export FC=gfortran
-    - *autotools
-
-.any-cmake: &any-cmake
-  extends: .any
-  script:
-      - *cmake
-
-.any-cmake-ccache: &any-cmake-ccache
-  extends: .any
-  script:
-    - export CCACHE_BASEDIR=`pwd`/cmake-gcc-cache-$FREL    
-    - export CCACHE_BASEDIR=${PWD}
-    - export CCACHE_DIR=`pwd`/cmake-gcc-cache-$FREL/ccache
-    - export CCACHE_COMPILERCHECK=content
-    - export F90CACHE_DIR=`pwd`/cmake-gcc-cache-$FREL/f90cache
-    - export F90CACHE_TMPDIR=`pwd`/tmpf90cache
-    - mkdir -p ${F90CACHE_TMPDIR}
-    - *cmake
-  cache:
-   - key: cmake-gcc-cache-$FREL
-     paths:
-       - cmake-gcc-cache-$FREL/
-
-.any-autotools-ccache: &any-autotools-ccache
-  extends: .any
-  script:
-    - export CCACHE_BASEDIR=`pwd`/autotools-gcc-cache-$FREL    
-    - export CCACHE_BASEDIR=${PWD}
-    - export CCACHE_DIR=`pwd`/autotools-gcc-cache-$FREL/ccache
-    - export CCACHE_COMPILERCHECK=content
-    - export F90CACHE_DIR=`pwd`/cmake-autotools-cache-$FREL/f90cache
-    - export F90CACHE_TMPDIR=`pwd`/tmpf90cache
-    - mkdir -p ${F90CACHE_TMPDIR}    
-    - export CC="ccache gcc"
-    - export CXX="ccache g++"
-#    - export FC="f90cache gfortran"
-    - *autotools
-  cache:
-   - key: autotools-gcc-cache-$FREL
-     paths:
-      - autotools-gcc-cache-$FREL/
-
-###########################################################################
-Fedora35-autotools:
-  variables:
-    OS: Fedora
-    FREL: 35
-  extends: .any-autotools
-
-
-Fedora35-cmake:
-  variables:
-    OS: Fedora
-    FREL: 35
-  extends: .any-cmake
 
