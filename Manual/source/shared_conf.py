@@ -1,8 +1,8 @@
-copyright = '2019, Sherpa Team'
+copyright = '2022, Sherpa Team'
 author = 'Sherpa Team'
 
 # The full version, including alpha/beta/rc tags
-release = '2.2.7'
+release = '3.0.0'
 
 
 # -- Options for HTML output -------------------------------------------------
