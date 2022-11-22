@@ -12,6 +12,7 @@ variables:
   stage: build
   before_script:
     # set up ccache
+    - yum -y install cmake3
     - mkdir -p ccache
     - export CCACHE_BASEDIR=${PWD}
     - export CCACHE_DIR=${PWD}/ccache
@@ -54,7 +55,7 @@ build:
   script:
     - mkdir -p build
     - cd build
-    - cmake -S ../ -B . -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
+    - cmake3 -S ../ -B . -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
     - ctest .
