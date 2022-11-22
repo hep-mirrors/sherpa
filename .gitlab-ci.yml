@@ -73,6 +73,7 @@ build-rivet:
   image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/analysis"
   stage: build
   script:
+    - apt-get -y install cmake
     - mkdir -p build-rivet
     - cd build-rivet
     - cmake -S ../ -B . -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON  -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_DIR=$(rivet-config --prefix)
