@@ -411,7 +411,7 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   }
   event.add_vertex(vertex);
   vertex->add_attribute("weight0",std::make_shared<HepMC::DoubleAttribute>(1.0));
-  if (beamparticles.empty() && inparticles.size()==2) {
+  if (event.beams().empty() && beamparticles.empty() && inparticles.size()==2) {
     for (size_t j(0);j<2;++j) {
       HepMC::GenVertexPtr  beamvertex = std::make_shared<HepMC::GenVertex>();
       event.add_vertex(beamvertex);
@@ -426,7 +426,7 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       beamvertex->add_particle_out(inparticles[j]);
     }
   }
-  if (beamparticles.size()==2) {
+  if (event.beams().empty() && beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
 
@@ -471,7 +471,9 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo, std::shared_pt
 //FIXME!     }
 //<-We add attributes here
     }
-    subevent->set_beam_particles(beamparticles[0],beamparticles[1]);
+    if (subevent->beams().empty()) {
+      subevent->set_beam_particles(beamparticles[0],beamparticles[1]);
+    }
     for (size_t j(2);j<sub->m_n;++j) {
       HepMC::GenParticlePtr outpart =
           MakeGenParticle(sub->p_mom[j], sub->p_fl[j], false);
@@ -545,12 +547,10 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs, std::shared_
 
 // The actual code --- calls the Blob to GenVertex code
 bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-                                    HepMC::GenEvent& event)
-{
+                                    HepMC::GenEvent& event) {
   const auto weight(blobs->Weight());
   DEBUG_FUNC("");
-  event.set_units(HepMC::Units::GEV,
-                  HepMC::Units::MM);
+  event.set_units(HepMC::Units::GEV, HepMC::Units::MM);
   event.set_run_info(m_runinfo);
   if (!m_hepmctree) event.add_attribute("cycles",std::make_shared<HepMC::IntAttribute>(1));
   // Signal Process blob --- there is only one
@@ -562,8 +562,10 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   
   // Meta info
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
-  EventInfo3 evtinfo(sp,weight,
-                    m_usenamedweights,m_extendedweights,m_includemeonlyweights);
+  EventInfo3 evtinfo(sp, weight, 
+                     m_usenamedweights,
+                     m_extendedweights, 
+                     m_includemeonlyweights);
   evtinfo.WriteTo(event);
   
   m_blob2genvertex.clear();
@@ -575,11 +577,12 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     // Call the Blob to vertex code, changes vertex pointer above
     if (Sherpa2HepMCBlobtoGenVertex(*(blit),vertex,event)) {
       event.add_vertex(vertex);
-      for (size_t i(0);i<(*blit)->NInP();++i)
-	if ((*blit)->InParticle(i)->ProductionBlob()==NULL) {
-	  psvertex=vertex;
-	  break;
-	}
+      for (size_t i(0);i<(*blit)->NInP();++i) {
+        if ((*blit)->InParticle(i)->ProductionBlob()==NULL) {
+          psvertex=vertex;
+          break;
+        }
+      }
 
       if (mp==(*blit)) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(vertex->id()));
       if (sp==(*blit)) event.add_attribute("signal_process_vertex", std::make_shared<HepMC::IntAttribute>(vertex->id()));
@@ -605,9 +608,9 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
       }
     }
   } // End Blob_List loop
-  if (beamparticles.empty()) {
+  if (event.beams().empty() && beamparticles.empty()) {
     HepMC::GenParticlePtr inpart[2];
-    for (size_t j {0}; j < 2; ++j) {
+    for (size_t j = 0; j < 2; ++j) {
       auto flav = (j == 0) ? rpa->gen.Beam1() : rpa->gen.Beam2();
       inpart[j] = MakeGenParticle(rpa->gen.PBeam(j), flav, true);
       psvertex->add_particle_in(inpart[j]);
@@ -633,8 +636,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
       if (vit->status()==4) {
         std::vector<HepMC::GenParticlePtr > remove;
         //// Loop over outgoing particles
-        for (auto  pout: vit->particles_out()) 
-{
+        for (auto  pout: vit->particles_out()) {
             if ( pout->end_vertex() ) {
               vtx_id = pout->end_vertex()->status(); //
               // Disconnect outgoing particle from end/decay vertex of type (1,2,3)
@@ -643,8 +645,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
             }
         }
         // Loop over incoming particles
-        for (auto  pin: vit->particles_in())
- {
+        for (auto  pin: vit->particles_in()) {
           vtx_id = pin->production_vertex()->status();
           // Disconnect incoming particle from production vertex of type (1,2,3)  
           if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
@@ -659,7 +660,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     } // Close loop over vertices
   }
 
-    if (beamparticles.size()==2) {
+  if (event.beams().empty() && beamparticles.size()==2) {
     event.add_tree( beamparticles );
   }
   
