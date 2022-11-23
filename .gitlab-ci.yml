@@ -193,7 +193,7 @@ test-rivet-LO_Z:
     - for i in /etc/profile.d/*.sh; do source $i; done
     - export LHAPDF_DATA_PATH=$(pwd)/../build-rivet/install/share/LHAPDF 
     - export PATH=$(pwd)../build-rivet/install/bin:$PATH 
-    - export LD_LIBRARY_PATH=$(pwd)/../build-rivet/install/lib/SHERPA-MC:$(pwd)/../build-rivet/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH:
+    - export LD_LIBRARY_PATH=$(pwd)/../build-rivet/install/lib/SHERPA-MC:$(pwd)/../build-rivet/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH
     - ldd ../build-rivet/install/bin/Sherpa
     - ls $(pwd)/../build-rivet/install/lib*/SHERPA-MC
     - ../build-rivet/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ANALYSIS=Rivet
