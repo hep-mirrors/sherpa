@@ -146,8 +146,9 @@ test-LO_Z: &test_lo_z
   script:
     - mkdir test-LO_Z
     - cd test-LO_Z
-    - export LHAPDF_DATA_PATH=$(pwd)/../build/install/share/LHAPDF
-    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O- | tar xz -C ${LHAPDF_DATA_PATH}
+    - export LHAPDF_DATA_PATH=$(pwd)/../build/install/share/SHERPA-MC/LHAPDF
+    - mkdir -p $LHAPDF_DATA_PATH
+    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O - | tar xz -C $LHAPDF_DATA_PATH
     - export PATH=$(pwd)../build/install/bin:$PATH 
     - export LD_LIBRARY_PATH=$(pwd)/../build/install/lib/SHERPA-MC:$(pwd)/../build/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
@@ -157,8 +158,9 @@ test-LO_Z-Amegic:
   script:
     - mkdir test-LO_Z-Amegic
     - cd test-LO_Z-Amegic
-    - export LHAPDF_DATA_PATH=$(pwd)/../build/install/share/LHAPDF
-    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O- | tar xz -C ${LHAPDF_DATA_PATH}
+    - export LHAPDF_DATA_PATH=$(pwd)/../build/install/share/SHERPA-MC/LHAPDF
+    - mkdir -p $LHAPDF_DATA_PATH
+    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O - | tar xz -C $LHAPDF_DATA_PATH
     - export PATH=$(pwd)../build/install/bin:$PATH 
     - export LD_LIBRARY_PATH=$(pwd)/../build/install/lib/SHERPA-MC:$(pwd)/../build/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
@@ -172,8 +174,9 @@ test-clang-strict-LO_Z:
   script:
     - mkdir test-clang-strict-LO_Z
     - cd test-clang-strict-LO_Z
-    - export LHAPDF_DATA_PATH=$(pwd)/../build-clang-strict/install/share/LHAPDF
-    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O- | tar xz -C ${LHAPDF_DATA_PATH}
+    - export LHAPDF_DATA_PATH=$(pwd)/../build-clang-strict/install/share/SHERPA-MC/LHAPDF
+    - mkdir -p $LHAPDF_DATA_PATH
+    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O - | tar xz -C $LHAPDF_DATA_PATH
     - export PATH=$(pwd)../build-clang-strict/install/bin:$PATH 
     - export LD_LIBRARY_PATH=$(pwd)/../build-clang-strict/install/lib/SHERPA-MC:$(pwd)/../build-clang-strict/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
     - ../build-clang-strict/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
