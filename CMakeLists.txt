@@ -286,8 +286,8 @@ macro(sherpa_handle_executable  mylib )
                                              LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
                                              RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
                                              )
-  set_target_properties(${mylib} PROPERTIES  LINK_WHAT_YOU_USE OFF)
-                                             
+  #set_target_properties(${mylib} PROPERTIES  LINK_WHAT_YOU_USE OFF)
+   target_link_options(${mylib} PRIVATE "LINKER:-no-as-needed")                                          
 endmacro(sherpa_handle_executable  mylib )
 
 
@@ -572,7 +572,7 @@ set(Sherpa_SRCS_C Sherpa.C Filter.C)
 list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
 add_executable(Sherpa  ${Sherpa_SRCS_C} ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA//Run/Main.C)
 target_link_libraries(Sherpa PRIVATE LibZip::LibZip)
-
+sherpa_handle_executable(Sherpa)
 target_link_libraries(Sherpa PRIVATE    
 SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics LundTools SherpaTools 
 ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools 
@@ -596,7 +596,7 @@ PDF
 BeamMain BeamSpectra 
 ToolsPhys ToolsMath ToolsYaml ToolsOrg
 )
-sherpa_handle_executable(Sherpa)
+
 
 if (SHERPA_ENABLE_HEPMC3)
   target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_LIB} ${HEPMC3_SEARCH_LIB} )
