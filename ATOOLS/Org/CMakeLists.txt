@@ -29,3 +29,4 @@ sherpa_handle_shared_library(ToolsOrg ToolsOrg)
 
 target_link_libraries(ToolsOrg PRIVATE LibZip::LibZip)
 target_link_libraries(ToolsOrg PRIVATE ${CMAKE_DL_LIBS})
+target_link_libraries(ToolsOrg PRIVATE ToolsPhys)
