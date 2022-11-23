@@ -153,6 +153,8 @@ test-LO_Z-Amegic:
   script:
     - mkdir test-LO_Z-Amegic
     - cd test-LO_Z-Amegic
+    - export PATH=$(pwd)../build/install/bin:$PATH 
+    - export LD_LIBRARY_PATH=$(pwd)/../build/install/lib/SHERPA-MC:$(pwd)/../build/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
     - ./makelibs
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
@@ -164,6 +166,8 @@ test-clang-strict-LO_Z:
   script:
     - mkdir test-clang-strict-LO_Z
     - cd test-clang-strict-LO_Z
+    - export PATH=$(pwd)../build-clang-strict/install/bin:$PATH 
+    - export LD_LIBRARY_PATH=$(pwd)/../build-clang-strict/install/lib/SHERPA-MC:$(pwd)/../build-clang-strict/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
     - ../build-clang-strict/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
 
 test-rivet-LO_Z:
@@ -177,7 +181,10 @@ test-rivet-LO_Z:
     - . /etc/profile
     - . /etc/bash.bashrc
     - for i in /etc/profile.d/*.sh; do source $i; done
-    - LHAPDF_DATA_PATH=../build-rivet/install/share/LHAPDF ../build-rivet/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ANALYSIS=Rivet
+    - export LHAPDF_DATA_PATH=$(pwd)/../build-rivet/install/share/LHAPDF 
+    - export PATH=$(pwd)../build-rivet/install/bin:$PATH 
+    - export LD_LIBRARY_PATH=$(pwd)/../build-rivet/install/lib/SHERPA-MC:$(pwd)/../build-rivet/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
+    - ../build-rivet/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ANALYSIS=Rivet
     - rivet-mkhtml --mc-errs ../Examples/CI/LO_Z/Reference.yoda.gz Analysis.yoda.gz PLOT:RatioPlotMode=deviation
     - ../Examples/CI/plot_deviations ../Examples/CI/LO_Z/Reference.yoda.gz Analysis.yoda.gz
   artifacts:
