@@ -22,6 +22,8 @@ nobase_dist_examples_DATA         =	\
 		V_plus_Jets/LHC_WJets/My_JetCriterion.C \
 		V_plus_Jets/LHC_WJets/SConstruct \
 		V_plus_Jets/LHC_ZJets/Run.dat \
+		V_plus_Bs/LHC_Fusing/Run.direct \
+		V_plus_Bs/LHC_Fusing/Run.frag \
 		V_plus_Bs/LHC_Wbb/Wbb_Virtual.f \
 		V_plus_Bs/LHC_Wbb/Wbb_Interface.C \
 		V_plus_Bs/LHC_Wbb/SConstruct \
