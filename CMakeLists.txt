@@ -282,10 +282,12 @@ macro(sherpa_handle_executable  mylib )
        target_link_libraries(${mylib} PRIVATE MPI::MPI_Fortran)
      endif()
   endif()
+  set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
+                                             LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
+                                             RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
+                                             )
 endmacro(sherpa_handle_executable  mylib )
 
-
-#One should have also zlib?
 
 if (NOT SHERPA_ENABLE_INSTALL_LIBZIP)
   find_package(LibZip REQUIRED)
@@ -315,7 +317,6 @@ else()
         INTERFACE_INCLUDE_DIRECTORIES "${LibZip_INCLUDE_DIRS}"
     )
   install(FILES ${LibZip_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-  install(FILES ${LibZip_LIBRARIES}.5 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
   install(FILES ${LibZip_INCLUDE_DIRS}/zip.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC COMPONENT libs)
   add_dependencies(LibZip::LibZip PRIVATE downloadedlibzip)
 endif()
