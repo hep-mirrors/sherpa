@@ -565,22 +565,28 @@ add_executable(Sherpa  ${Sherpa_SRCS_C} ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA//Run/
 target_link_libraries(Sherpa PRIVATE LibZip::LibZip)
 
 target_link_libraries(Sherpa PRIVATE    
-METoolsColors  METoolsCurrents  METoolsExplicit  METoolsLoops METoolsMain  METoolsSpinCorrelations  METoolsVertices
-Amegic Amplitude AmegicPSGen Zfunctions DipoleSubtraction
-Remnants RemnantsTools  
-PhotonsMain PhotonsMEs PhotonsPhaseSpace PhotonsTools
-PhasicChannels PhasicDecays PhasicMain PhasicEnhance PhasicProcess PhasicScales PhasicSelectors
-ShrimpsLadders   ShrimpsBeamRemnants  ShrimpsXsecs  ShrimpsEikonals  ShrimpsEvents  ShrimpsMain  ShrimpsTools 
-ExtraXS ExtraXS2_2  ExtraXS1_3  ExtraXS1_2
-Reconnections  
-SherpaMain SherpaTools SherpaSingleEvents SherpaPerturbativePhysics SherpaInitialization LundTools SherpaSoftPhysics
-SherpaSM  ModelUFO SherpaTauPi ModelMain
+SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics LundTools SherpaTools 
+ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools 
+HadronsMain HadronsMEs HadronsCurrents HadronsPSs 
+Reconnections 
+AhadicMain AhadicTools AhadicFormation AhadicDecays 
 Amisic AmisicTools AmisicPerturbative 
+PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs 
+RemnantsTools Remnants 
+MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools 
+DIMTools DIMShower DIMGauge DIMLorentz DIMMain 
+CSMain CSCalculators CSShowers CSTools 
+DireTools DireShower DireGauge DireLorentz DireMain 
+ComixAmplitude ComixPhasespace Comix 
+Amegic DipoleSubtraction Amplitude AmegicPSGen 
+String Zfunctions 
+ExtraXS ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXSNLO ExtraXSSpecial 
+ExtAmp 
+PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicScales PhasicEnhance PhasicDecays 
+METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain 
+PDF 
 BeamMain BeamSpectra 
-Comix ComixAmplitude ComixPhasespace
-HadronsMain HadronsCurrents HadronsMEs HadronsPSs
-PDF
-ToolsMath ToolsOrg ToolsYaml String ToolsPhys
+ToolsPhys ToolsMath ToolsYaml ToolsOrg
 )
 sherpa_handle_executable(Sherpa)
 

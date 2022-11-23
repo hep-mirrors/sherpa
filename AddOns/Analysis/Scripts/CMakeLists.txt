@@ -18,23 +18,22 @@ sherpa_handle_executable(Combine_Analysis)
 install(TARGETS Combine_Analysis DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 set_target_properties(Combine_Analysis        PROPERTIES DEFINE_SYMBOL "")
 target_link_libraries(Combine_Analysis PRIVATE 
+ ToolsPhys
+ ToolsMath
+ ToolsYaml
+ ToolsOrg
+ METoolsExplicit
+ METoolsCurrents
+ METoolsVertices
+ METoolsColors
+ METoolsSpinCorrelations
+ METoolsLoops
+ METoolsMain
+ ModelMain
+ ModelUFO
+ PDF
 
-METoolsColors  METoolsCurrents  METoolsExplicit  METoolsLoops METoolsMain  METoolsSpinCorrelations  METoolsVertices
-Amegic Amplitude AmegicPSGen Zfunctions DipoleSubtraction
-Remnants RemnantsTools  
-PhotonsMain PhotonsMEs PhotonsPhaseSpace PhotonsTools
-PhasicChannels PhasicDecays PhasicMain PhasicEnhance PhasicProcess PhasicScales PhasicSelectors
-ShrimpsLadders   ShrimpsBeamRemnants  ShrimpsXsecs  ShrimpsEikonals  ShrimpsEvents  ShrimpsMain  ShrimpsTools 
-ExtraXS ExtraXS2_2  ExtraXS1_3  ExtraXS1_2
-Reconnections  
-SherpaMain SherpaTools SherpaSingleEvents SherpaPerturbativePhysics SherpaInitialization LundTools SherpaSoftPhysics
-SherpaSM  ModelUFO SherpaTauPi ModelMain
-Amisic AmisicTools AmisicPerturbative 
-BeamMain BeamSpectra 
-Comix ComixAmplitude ComixPhasespace
-HadronsMain HadronsCurrents HadronsMEs HadronsPSs
-PDF
-ToolsMath ToolsOrg ToolsYaml String ToolsPhys
+
 )
 target_link_libraries(Combine_Analysis PRIVATE LibZip::LibZip)
 if (SHERPA_ENABLE_HEPMC3)
