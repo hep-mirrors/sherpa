@@ -286,6 +286,8 @@ macro(sherpa_handle_executable  mylib )
                                              LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
                                              RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
                                              )
+  set_target_properties(${mylib} PROPERTIES  LINK_WHAT_YOU_USE OFF)
+                                             
 endmacro(sherpa_handle_executable  mylib )
 
 
@@ -316,8 +318,13 @@ else()
         IMPORTED_LOCATION "${LibZip_LIBRARIES}"
         INTERFACE_INCLUDE_DIRECTORIES "${LibZip_INCLUDE_DIRS}"
     )
-  install(FILES ${LibZip_LIBRARIES}.5.5 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-  install(FILES ${LibZip_LIBRARIES}.5 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+  if (Darwin)
+    install(FILES ${LibZip_DIR}/lib/libzip.5.5.${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+    install(FILES ${LibZip_DIR}/lib/libzip.5.${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+  else()
+    install(FILES ${LibZip_LIBRARIES}.5.5 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
+    install(FILES ${LibZip_LIBRARIES}.5 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)  
+  endif()
   install(FILES ${LibZip_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
   install(FILES ${LibZip_INCLUDE_DIRS}/zip.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC COMPONENT libs)
   add_dependencies(LibZip::LibZip PRIVATE downloadedlibzip)
