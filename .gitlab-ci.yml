@@ -59,7 +59,7 @@ build:
     - cmake3 -S ../ -B . -DSHERPA_CXX_STANDARD=11 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
-    - ctest3 .
+    - ctest3 . --output-on-failure
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -76,10 +76,10 @@ build-rivet:
     - apt-get -y install cmake  wget
     - mkdir -p build-rivet
     - cd build-rivet
-    - cmake -S ../ -B . -DSHERPA_ENABLE_TESTING:BOOL=ON -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON  -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_ROOT_DIR=$(rivet-config --prefix)
+    - cmake -S ../ -B . -DSHERPA_ENABLE_TESTING:BOOL=OFF -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON  -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_ROOT_DIR=$(rivet-config --prefix)
     - make $MAKE_FLAGS
     - cmake --install .
-    - ctest .
+#    - ctest . 
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -96,7 +96,7 @@ build-clang-strict:
     - cmake3 -S ../ -B . -DSHERPA_CXX_STANDARD=11 -DCMAKE_CXX_FLAGS="-Werror -Wno-error=unused-function "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
-    - ctest3 .
+    - ctest3 . --output-on-failure
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
