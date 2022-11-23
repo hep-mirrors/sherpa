@@ -192,6 +192,8 @@ test-rivet-LO_Z:
     - . /etc/bash.bashrc
     - for i in /etc/profile.d/*.sh; do source $i; done
     - export LHAPDF_DATA_PATH=$(pwd)/../build-rivet/install/share/LHAPDF 
+    - mkdir -p $LHAPDF_DATA_PATH
+    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O - | tar xz -C $LHAPDF_DATA_PATH
     - export PATH=$(pwd)../build-rivet/install/bin:$PATH 
     - export LD_LIBRARY_PATH=$(pwd)/../build-rivet/install/lib/SHERPA-MC:$(pwd)/../build-rivet/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH
     - ls $(pwd)/../build-rivet/install/lib*/SHERPA-MC -lah
