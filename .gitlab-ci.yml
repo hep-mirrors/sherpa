@@ -12,7 +12,7 @@ variables:
   stage: build
   before_script:
     # set up ccache
-    - yum -y install cmake3
+    - yum -y install cmake3  wget
     - mkdir -p ccache
     - export CCACHE_BASEDIR=${PWD}
     - export CCACHE_DIR=${PWD}/ccache
@@ -31,7 +31,7 @@ variables:
   stage: build
   before_script:
     # set up ccache
-    - apt-get -y install cmake
+    - apt-get -y install cmake  wget
     - mkdir -p ccache_ubuntu
     - export CCACHE_BASEDIR=${PWD}
     - export CCACHE_DIR=${PWD}/ccache_ubuntu
@@ -73,7 +73,7 @@ build-rivet:
   image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/analysis"
   stage: build
   script:
-    - apt-get -y install cmake
+    - apt-get -y install cmake  wget
     - mkdir -p build-rivet
     - cd build-rivet
     - cmake -S ../ -B . -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON  -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_DIR=$(rivet-config --prefix)
@@ -109,7 +109,7 @@ build-manual:
   stage: build
   image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
-    - yum -y install cmake3
+    - yum -y install cmake3 wget
     - pip3 install -r Manual/requirements.txt
     - cmake3 -S . -B build -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON  
     - cd build/Manual
@@ -146,6 +146,8 @@ test-LO_Z: &test_lo_z
   script:
     - mkdir test-LO_Z
     - cd test-LO_Z
+    - export LHAPDF_DATA_PATH=$(pwd)/../build/install/share/LHAPDF
+    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O- | tar xz -C ${LHAPDF_DATA_PATH}
     - export PATH=$(pwd)../build/install/bin:$PATH 
     - export LD_LIBRARY_PATH=$(pwd)/../build/install/lib/SHERPA-MC:$(pwd)/../build/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
@@ -155,6 +157,8 @@ test-LO_Z-Amegic:
   script:
     - mkdir test-LO_Z-Amegic
     - cd test-LO_Z-Amegic
+    - export LHAPDF_DATA_PATH=$(pwd)/../build/install/share/LHAPDF
+    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O- | tar xz -C ${LHAPDF_DATA_PATH}
     - export PATH=$(pwd)../build/install/bin:$PATH 
     - export LD_LIBRARY_PATH=$(pwd)/../build/install/lib/SHERPA-MC:$(pwd)/../build/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
@@ -168,6 +172,8 @@ test-clang-strict-LO_Z:
   script:
     - mkdir test-clang-strict-LO_Z
     - cd test-clang-strict-LO_Z
+    - export LHAPDF_DATA_PATH=$(pwd)/../build-clang-strict/install/share/LHAPDF
+    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O- | tar xz -C ${LHAPDF_DATA_PATH}
     - export PATH=$(pwd)../build-clang-strict/install/bin:$PATH 
     - export LD_LIBRARY_PATH=$(pwd)/../build-clang-strict/install/lib/SHERPA-MC:$(pwd)/../build-clang-strict/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
     - ../build-clang-strict/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
