@@ -120,6 +120,20 @@ The following sub-settings exist:
   that for complicated processes the number given might be insufficient for
   a meaningful optimisation.
 
+``NPOWER``
+  The power of two, by which the number of points increases with every step of the
+  optmization.
+
+``NOPT``
+  The number of optimization cycles.
+
+``MAXOPT``
+  The minimal number of integration cycles after the optimization is done.
+
+``STOPOPT``
+  The maximal number of additional cycles in the integration performed to reach the
+  integration error goal.
+
 ``ITMIN_BY_NODE``
   Same as ``ITMIN``, but specified per node to allow tuning of
   integration performance in large-scale MPI runs.
