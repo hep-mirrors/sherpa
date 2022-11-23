@@ -726,7 +726,7 @@ endif()
 ########################################################################
 # Config files
 get_filename_component (CXX ${CMAKE_CXX_COMPILER} NAME)
-set (CXXFLAGS ${CMAKE_CXX_FLAGS})
+set (CXXFLAGS "${CMAKE_CXX_FLAGS} -std=c++${CMAKE_CXX_STANDARD} ")
 set (CXXCPP "${CXX} -E")
 set (FCFLAGS ${CMAKE_Fortran_FLAGS})
 set (AM_CXXFLAGS ${CMAKE_CXX_FLAGS})
