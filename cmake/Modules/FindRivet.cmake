@@ -88,9 +88,6 @@ mark_as_advanced(RIVET_INCLUDE_DIR RIVET_LIBRARY RIVET_EXE RIVET_CONFIG_LIBS_STR
                                RIVET_CONFIG_CPPFLAGS_DIRS
                                RIVET_CONFIG_LIBS
                                RIVET_CONFIG_LIB_DIRS)
-
-# handle the QUIETLY and REQUIRED arguments and set RIVET_FOUND to TRUE if
-# all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Rivet HANDLE_COMPONENTS REQUIRED_VARS RIVET_INCLUDE_DIR RIVET_LIBRARY 
                                RIVET_CONFIG_LIBS_STRING 

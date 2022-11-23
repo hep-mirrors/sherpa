@@ -31,9 +31,6 @@ if (RECOLA_LIBRARY)
   get_filename_component(RECOLA_PREFIX ${T_PATH} DIRECTORY)
 endif()
 
-# handle the QUIETLY and REQUIRED arguments and set RECOLA_FOUND to TRUE if
-# all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Recola DEFAULT_MSG RECOLA_VERSION RECOLA_PREFIX RECOLA_LIBRARY RECOLA_INCLUDE_DIR)
-
 mark_as_advanced(Recola_FOUND)

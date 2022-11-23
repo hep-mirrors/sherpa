@@ -2,10 +2,8 @@
 #GRS/Makefile.am
  
 set(GITTAG  PDF/GRS)
- #AM_FFLAGS = -std = legacy)
 set(GRS_SOURCES  grsg99.f GRSph_Fortran_Interface.C)
 set(GRS_HEADERS GRSph_Fortran_Interface.H)
-#nobase_#dist_pkgdata_DATA = GRSGrid/grsg99d.grid GRSGrid/grsg99lo.grid GRSGrid/grsg99m.grid GRSGrid/grsg99nlo.grid
 sherpa_create_git_info(GRS ../GRS/)
 list(TRANSFORM GRS_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../GRS/")
 list(APPEND GRS_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)

@@ -3,9 +3,7 @@
 #Scripts/Makefile.am
  
  if (SHERPA_ENABLE_ANALYSIS)
- #bin_PROGRAMS = Combine_Analysis)
 set(Scripts_SOURCES Combine_Analysis.C)
- #Combine_Analysis_LDADD = @ATOOLSLIBS@ @METOOLSLIBS@ @MODELLIBS@ @PDFLIBS@ @CONDITIONAL_LHAPDFLIBS@ @LIBZIP_LDFLAGS@ -lm -ldl)
  endif()
 sherpa_create_git_info(Scripts ../Scripts/)
 list(TRANSFORM Scripts_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/")
@@ -33,8 +31,6 @@ target_link_libraries(Combine_Analysis PRIVATE
  ModelUFO
  PDF
  SherpaTools
-
-
 )
 target_link_libraries(Combine_Analysis PRIVATE LibZip::LibZip)
 if (SHERPA_ENABLE_HEPMC3)

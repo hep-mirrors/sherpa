@@ -286,7 +286,6 @@ macro(sherpa_handle_executable  mylib )
                                              LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
                                              RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
                                              )
-  #set_target_properties(${mylib} PROPERTIES  LINK_WHAT_YOU_USE OFF)
    target_link_options(${mylib} PRIVATE "LINKER:-no-as-needed")                                          
 endmacro(sherpa_handle_executable  mylib )
 
@@ -437,8 +436,6 @@ if (SHERPA_ENABLE_PYTHON)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/Python 
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/AddOns/ COMPONENT devel  
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H" 
-                             PATTERN "*.deps*" EXCLUDE   
-                             PATTERN "*.lib*" EXCLUDE 
                              EXCLUDE  PATTERN "*\.c" EXCLUDE 
                              )
 endif()
@@ -447,8 +444,6 @@ if (SHERPA_ENABLE_ANALYSIS)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/Analysis 
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/AddOns/ COMPONENT devel  
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H" 
-                             PATTERN "*.deps*" EXCLUDE   
-                             PATTERN "*.lib*" EXCLUDE 
                              PATTERN "*/Scripts" EXCLUDE 
                              EXCLUDE  PATTERN "*\.c" EXCLUDE 
                              )
@@ -458,8 +453,6 @@ if (SHERPA_ENABLE_EWSUD)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/EWSud
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/AddOns/ COMPONENT devel  
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H" 
-                             PATTERN "*.deps*" EXCLUDE   
-                             PATTERN "*.lib*" EXCLUDE 
                              EXCLUDE  PATTERN "*\.c" EXCLUDE 
                              EXCLUDE  PATTERN "*/Tests" EXCLUDE 
                              )
@@ -474,8 +467,6 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*/Getter_Function.C" 
                              PATTERN "*/Dummy.C" 
                              PATTERN "*/Math/Cluster_Algorithm.C"
-                             PATTERN "*.deps*" EXCLUDE   
-                             PATTERN "*.lib*" EXCLUDE 
                              PATTERN "*/SoftPhysics/Cluster_Algorithm.H" EXCLUDE
                              PATTERN "*Cluster_Decay_Analysis.H" EXCLUDE 
                              PATTERN "*Splitting_Tools.H" EXCLUDE 

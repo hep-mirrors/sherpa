@@ -28,8 +28,6 @@ endif()
 set(MCFM_VERSION Unknown)
 
 get_filename_component(MCFM_PATH ${MCFM_INCLUDE_DIR} DIRECTORY)
-# handle the QUIETLY and REQUIRED arguments and set MCFM_FOUND to TRUE if
-# all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(MCFM DEFAULT_MSG MCFM_VERSION  MCFM_LIBRARY MCFM_INCLUDE_DIR MCFM_PATH)
 

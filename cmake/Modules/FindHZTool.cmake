@@ -26,8 +26,6 @@ find_path(HZTOOL_INCLUDE_DIR  heracmn.inc PATHS ${HZTOOL_SEARCH_DIRS} PATH_SUFFI
   find_library(HZTOOL_LIBRARY NAMES hztool PATHS_SUFFIXES lib lib64)
 endif()
 
-# handle the QUIETLY and REQUIRED arguments and set HZTOOL_FOUND to TRUE if
-# all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(HZTool DEFAULT_MSG HZTOOL_INCLUDE_DIR HZTOOL_LIBRARY)
 

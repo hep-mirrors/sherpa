@@ -5,7 +5,6 @@
 set(Pythia_SOURCES  Pythia_Jet_Criterion.C Pythia8_Hadronisation.C)
  else()
 set(Pythia_SOURCES  Pythia_Jet_Criterion.C)
- #EXTRA_DIST = Pythia8_Hadronisation.C)
  endif()
 set(GITTAG  AddOns/Pythia)
 sherpa_create_git_info(Pythia ../Pythia/)

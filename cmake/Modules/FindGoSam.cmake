@@ -21,18 +21,10 @@ endif()
 set(GOSAM_VERSION Unknown)
 find_program(GOSAM NAMES gosam gosam.py PATHS ${GOSAM_SEARCH_DIRS} PATH_SUFFIXES bin )
 if (GOSAM)
-#Can be bugged!
-#  execute_process(COMMAND ${GOSAM} --version
-#                  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-#                  OUTPUT_VARIABLE GOSAM_VERSION_ALL 
-#                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-#  string(SUBSTRING "${GOSAM_VERSION_ALL}" 6 5 GOSAM_VERSION)
   get_filename_component(GOSAM_PREFIX_BIN ${GOSAM} DIRECTORY)
   get_filename_component(GOSAM_PREFIX ${GOSAM_PREFIX_BIN} DIRECTORY)
 endif()
 
-# handle the QUIETLY and REQUIRED arguments and set GOSAM_FOUND to TRUE if
-# all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(GoSam DEFAULT_MSG GOSAM_VERSION GOSAM_PREFIX)
 
