@@ -146,6 +146,8 @@ test-LO_Z: &test_lo_z
   script:
     - mkdir test-LO_Z
     - cd test-LO_Z
+    - export PATH=$(pwd)../build/install/bin:$PATH 
+    - export LD_LIBRARY_PATH=$(pwd)/../build/install/lib/SHERPA-MC:$(pwd)/../build/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
 
 test-LO_Z-Amegic:
