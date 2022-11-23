@@ -18,10 +18,10 @@ sherpa_handle_executable(Combine_Analysis)
 install(TARGETS Combine_Analysis DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 set_target_properties(Combine_Analysis        PROPERTIES DEFINE_SYMBOL "")
 target_link_libraries(Combine_Analysis PRIVATE 
+ ToolsOrg
  ToolsPhys
  ToolsMath
  ToolsYaml
- ToolsOrg
  METoolsExplicit
  METoolsCurrents
  METoolsVertices

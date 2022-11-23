@@ -573,17 +573,16 @@ Reconnections
 AhadicMain AhadicTools AhadicFormation AhadicDecays 
 Amisic AmisicTools AmisicPerturbative 
 PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs 
-RemnantsTools Remnants 
+Remnants  RemnantsTools 
 MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools 
 DIMTools DIMShower DIMGauge DIMLorentz DIMMain 
 CSMain CSCalculators CSShowers CSTools 
 DireTools DireShower DireGauge DireLorentz DireMain 
-ComixAmplitude ComixPhasespace Comix 
+PhasicScales Comix  ComixPhasespace ComixAmplitude 
+PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
 Amegic DipoleSubtraction Amplitude AmegicPSGen 
 String Zfunctions 
-ExtraXS ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXSNLO ExtraXSSpecial 
-ExtAmp 
-PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicScales PhasicEnhance PhasicDecays 
+ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS 
 METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain 
 PDF 
 BeamMain BeamSpectra 
