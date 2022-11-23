@@ -59,7 +59,7 @@ build:
     - cmake3 -S ../ -B . -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
-    - ctest .
+    - ctest3 .
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -97,7 +97,7 @@ build-clang-strict:
     - cmake3 -S ../ -B .  -DCMAKE_CXX_FLAGS="-Werror -Wno-error=unused-function "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
-    - ctest .
+    - ctest3 .
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
