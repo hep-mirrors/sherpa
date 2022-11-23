@@ -32,6 +32,7 @@ target_link_libraries(Combine_Analysis PRIVATE
  ModelMain
  ModelUFO
  PDF
+ SherpaTools
 
 
 )
