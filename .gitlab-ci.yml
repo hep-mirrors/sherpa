@@ -4,7 +4,8 @@ image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 
 variables:
   DOCKER_DRIVER: overlay2
-  CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=install
+  CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=/usr
+  CONFIGURE_FLAGS_RIVET_IMAGE: --with-libzip=install --with-lhapdf=/usr/local
   MAKE_FLAGS: -j4
 
 .build_template: &build
@@ -74,7 +75,7 @@ build-rivet:
     - autoreconf -i
     - mkdir -p build-rivet
     - cd build-rivet
-    - ../configure CC="ccache gcc" CXX="ccache g++" --prefix="$PWD/install" $CONFIGURE_FLAGS --enable-hepmc3=$(HepMC3-config --prefix) --enable-rivet=$(rivet-config --prefix) --with-libzip=install "CXXFLAGS=-Wl,-rpath,$(HepMC3-config --libdir),-rpath,$(rivet-config --libdir)"
+    - ../configure CC="ccache gcc" CXX="ccache g++" --prefix="$PWD/install" $CONFIGURE_FLAGS_RIVET_IMAGE --enable-hepmc3=$(HepMC3-config --prefix) --enable-rivet=$(rivet-config --prefix) "CXXFLAGS=-Wl,-rpath,$(HepMC3-config --libdir),-rpath,$(rivet-config --libdir)"
     - make $MAKE_FLAGS
     - make install
     - VERBOSE=1 make check
