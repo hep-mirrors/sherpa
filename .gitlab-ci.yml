@@ -94,7 +94,7 @@ build-clang-strict:
     - mkdir -p build-clang-strict
     - cd build-clang-strict
     # enable strict compilation
-    - cxxflags="-Werror -Wno-error=unused-function"
+    - cxxflags="-Werror -Wno-error=unused-function -Wno-error=unused-command-line-argument"
     - ../configure CC="ccache clang" CXX="ccache clang++" CXXFLAGS="${cxxflags}" --prefix="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install

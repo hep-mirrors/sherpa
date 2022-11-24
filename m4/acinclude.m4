@@ -881,7 +881,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   if test -x "$CONDITIONAL_LHAPDFDIR/bin/lhapdf-config"; then
     CONDITIONAL_LHAPDFLIBS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --ldflags)";
-    CONDITIONAL_LHAPDFINCS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --cppflags)";
+    CONDITIONAL_LHAPDFINCS="-I$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --incdir)";
     AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
   else
     AC_MSG_ERROR(Did not find required dependency LHAPDF in ${CONDITIONAL_LHAPDFDIR}. Please specify its installation prefix using '--with-lhapdf=/path' or enable its automatic installation using '--with-lhapdf=install');
