@@ -285,8 +285,9 @@ macro(sherpa_handle_executable  mylib )
   set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
                                              LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
                                              RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_BINDIR}/$<0:>
-                                             )
-   target_link_options(${mylib} PRIVATE "LINKER:-no-as-needed")                                          
+   if(NOT Darwin)                                          )
+     target_link_options(${mylib} PRIVATE "LINKER:-no-as-needed")                                          
+   endif()
 endmacro(sherpa_handle_executable  mylib )
 
 
