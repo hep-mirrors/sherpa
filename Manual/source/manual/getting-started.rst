@@ -140,7 +140,7 @@ following configure command should be used
 
 .. code-block:: shell-session
 
-   $ ./configure <your options> --enable-mpi --host=i686-pc-linux CC=CC CXX=CC FC='ftn -fPIC' LDFLAGS=-dynamic
+   $ cmake -DSHERPA_ENABLE_MPI=ON <your options> 
 
 Sherpa can then be run with
 
@@ -159,7 +159,7 @@ The following configure command should be used
 
 .. code-block:: shell-session
 
-   $ ./configure <your options> --enable-mpi --host=powerpc64-bgq-linux CC=mpic++ CXX=mpic++ FC='mpif90 -fPIC -funderscoring' LDFLAGS=-dynamic
+   $ ./configure <your options> -DSHERPA_ENABLE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_Fortran_COMPILER=mpif90 
 
 Sherpa can then be run with
 
