@@ -475,6 +475,7 @@ foreach ( IDIR ${IDIRS} )
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${IDIR} 
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC  COMPONENT devel  
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H" PATTERN "*.icc"  
+                             PATTERN "*\.c" EXCLUDE 
                              PATTERN "*/fjcore.hh" 
                              PATTERN "*/Node.C" 
                              PATTERN "*/Getter_Function.C" 
@@ -523,8 +524,8 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*METOOLS/Colors" EXCLUDE 
                              PATTERN "*SHERPA/Run" EXCLUDE 
                              PATTERN "*HADRONS++/Run" EXCLUDE 
-                             PATTERN "*makefile*" 
-                             EXCLUDE  PATTERN "*\.c" EXCLUDE )    
+                             PATTERN "*makefile*" EXCLUDE  
+                             )    
 endforeach (  IDIR ${IDIRS}  )
 if (SHERPA_ENABLE_EXAMPLES)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Examples DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC 
