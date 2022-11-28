@@ -296,9 +296,10 @@ int Shower::MakeKinematics
                        return varweight * Reweight(&varparams, *split);
                      });
   }
+  Singlet * singlet = split->GetSing();
   split->GetSing()->SplitParton(split,pi,pj);
-  for (PLiter plit(split->GetSing()->begin());
-       plit!=split->GetSing()->end();++plit)
+  for (PLiter plit(singlet->begin());
+       plit!=singlet->end();++plit)
     (*plit)->UpdateDaughters();
   return 1;
 }
