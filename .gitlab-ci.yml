@@ -56,7 +56,7 @@ build:
   script:
     - mkdir -p build
     - cd build
-    - cmake3 -S ../ -B . -DSHERPA_CXX_STANDARD=11 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
+    - cmake3 -S ../ -B .  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
     - ctest3 . --output-on-failure
@@ -94,7 +94,7 @@ build-clang-strict:
   script:
     - mkdir -p build-clang-strict
     - cd build-clang-strict
-    - cmake3 -S ../ -B . -DSHERPA_CXX_STANDARD=11 -DCMAKE_CXX_FLAGS="-Werror -Wno-error=unused-function "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
+    - cmake3 -S ../ -B .  -DCMAKE_CXX_FLAGS="-Werror -Wno-error=unused-function "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
     - make install
     - ctest3 . --output-on-failure
@@ -111,7 +111,7 @@ build-manual:
   script:
     - yum -y install cmake3 wget
     - pip3 install -r Manual/requirements.txt
-    - cmake3 -S . -B build -DSHERPA_CXX_STANDARD=11 -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON  
+    - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON  
     - cd build/Manual
     - make
     - make sherpamanual_html
@@ -238,7 +238,7 @@ dist:
   image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
     - pip3 install -r Manual/requirements.txt
-    - cmake3 -S . -B build -DSHERPA_CXX_STANDARD=11 -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON   # build the manual into the dist tarball
+    - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON   # build the manual into the dist tarball
     - make -C build/ dist
 
     # upload to gitlab releases
