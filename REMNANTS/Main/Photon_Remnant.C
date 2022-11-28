@@ -88,15 +88,8 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
     return false;
   }
-  double x = mom[0] / m_residualE;
-  // Still enough energy?
-  if (x > 1.) {
-    msg_Debugging() << METHOD << ": too much momentum " << mom[0] << " "
-                    << "> E = " << m_residualE << " for beam " << m_beam
-                    << "\n";
-    return false;
-  }
   // Still in range?
+  double x = mom[0] / m_residualE;
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
     msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
     return false;
@@ -110,8 +103,7 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
   // rest is taken by the quark.
-  Vec4D availMom;
-  availMom = p_beam->OutMomentum();
+  Vec4D availMom = p_beam->OutMomentum();
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();
     if (copy) {
@@ -199,7 +191,7 @@ void Photon_Remnant::MakeSpectator(Particle *parton) {
   int i = (p_spectator->Flav().IsAnti()?2:1);
   p_spectator->SetFlow(i, -1);
   p_spectator->SetPosition(parton->XProd());
-  p_colours->AddColour(m_beam,(flavour.Bar().IsAnti()?1:0),p_spectator);
+  p_colours->AddColour(m_beam,i-1,p_spectator);
   m_spectators.push_front(p_spectator);
   if (!m_valence)
     m_valence = true;

@@ -8,7 +8,6 @@
 
 namespace REMNANTS {
   class Hadron_Remnant: public Remnant_Base {
-  public:
   private:
     PDF::PDF_Base             * p_pdf;
     const ATOOLS::Flavour_Set * p_partons;
@@ -30,17 +29,18 @@ namespace REMNANTS {
     bool MakeRemnants();
     void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap,
 				 const bool & copy=true);
-    double SelectZ(const ATOOLS::Flavour & flav,const bool & isvalence);
+    double SelectZ(const ATOOLS::Flavour &flav, double restmom, double remnant_masses) const;
     ATOOLS::Particle * MakeParticle(const ATOOLS::Flavour & flav);
     ATOOLS::Flavour    RemnantFlavour(const ATOOLS::Flavour & flav);
+    double EstimateRequiredEnergy() const;
     void Output();
   public:
     Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam);    
-    ~Hadron_Remnant() {}
+    ~Hadron_Remnant() = default;
 
-    bool FillBlob(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true);
-    bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom);
-    void Reset(const bool & DIS=false);
+    bool FillBlob(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true) final;
+    bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom) final;
+    void Reset(const bool & DIS=false) final;
     
     inline ATOOLS::Particle * GetRecoiler()            { return p_recoiler; }
     inline ATOOLS::Particle * GetSpectator()           { return p_spectator; }

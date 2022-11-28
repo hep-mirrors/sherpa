@@ -9,8 +9,8 @@ using namespace ATOOLS;
 Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam):
   Remnant_Base(rtp::hadron,beam),
   p_pdf(pdf), p_partons(&(p_pdf->Partons())), m_beamflav(pdf->Bunch()),
-  p_valence(NULL), p_remnant(NULL), p_recoiler(NULL), m_ff(Form_Factor()), 
-  m_alpha(0.), m_gamma(1.), m_beta(-1.5),  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
+  p_valence(nullptr), p_remnant(nullptr), p_recoiler(nullptr), p_spectator(nullptr), m_ff(Form_Factor()),
+  m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
 {
   m_scale2 = Max(4.0,p_pdf->Q2Min());
   ConstructConstituentFlavours();
@@ -30,8 +30,7 @@ void Hadron_Remnant::ConstructConstituentFlavours() {
   }
   else THROW(critical_error,"Cannot determine constituents.");
   if (m_beamflav.IsAnti()) {
-    for(FlavourList::iterator flit=m_constituents.begin();
-	flit!=m_constituents.end();flit++) (*flit) = (*flit).Bar();
+    for(auto& flit : m_constituents) flit = flit.Bar();
   }
 }
 
@@ -40,9 +39,8 @@ bool Hadron_Remnant::IsValence(Particle * part) {
   if (m_valence) return false;
   // assume valence(q) = pdf(q) - pdf(qbar)
   Flavour flav = part->Flav();
-  for (FlavourList::iterator flit=m_constituents.begin();
-       flit!=m_constituents.end();flit++) {
-    if (flav==(*flit)) {
+  for (const auto& flit : m_constituents) {
+    if (flav==flit) {
       Vec4D   mom  = part->Momentum();
       double x = mom[0]/m_residualE;
       p_pdf->Calculate(x,sqr(flav.Mass())+m_scale2);
@@ -59,15 +57,15 @@ bool Hadron_Remnant::IsValence(Particle * part) {
 void Hadron_Remnant::MakeSpectator(Particle * parton) {
   // If a shower initiator is a sea-quark or antiquark, a corresponding
   // antiflavour has to be added to the spectators.
-  p_spectator = NULL;
+  p_spectator = nullptr;
   if (IsValence(parton)) return;
   Flavour flav = parton->Flav();
-  if (flav.IsQuark()) {
-    p_spectator = MakeParticle(flav.Bar());
-    p_spectator->SetFlow((flav.Bar().IsAnti()?2:1),-1);
-    p_colours->AddColour(m_beam,(flav.Bar().IsAnti()?1:0),p_spectator);
-    m_spectators.push_front(p_spectator);
-  }
+  if (!flav.IsQuark()) return;
+  p_spectator = MakeParticle(flav.Bar());
+  p_spectator->SetFlow((flav.Bar().IsAnti()?2:1),-1);
+  p_spectator->SetPosition(parton->XProd());
+  p_colours->AddColour(m_beam,(flav.Bar().IsAnti()?1:0),p_spectator);
+  m_spectators.push_front(p_spectator);
 }
 
 Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
@@ -99,8 +97,8 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
 }
 
 void Hadron_Remnant::CompensateColours() {
-  while (p_colours->Colours(m_beam,0).size()>0 &&
-         p_colours->Colours(m_beam,1).size()>0 &&
+  while (!p_colours->Colours(m_beam,0).empty() &&
+         !p_colours->Colours(m_beam,1).empty() &&
 	 p_colours->Colours(m_beam,0)!=p_colours->Colours(m_beam,1)) {
     Particle * gluon = MakeParticle(Flavour(kf_gluon));
     for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
@@ -119,7 +117,7 @@ bool Hadron_Remnant::MakeRemnants() {
     int random = int(ran->Get()*m_constituents.size());
     FlavourList::iterator flit=m_constituents.begin();
     for (size_t i=0;i<random;i++) flit++;
-    valflav    = *&(*flit);
+    valflav    = *flit;
     p_valence  = MakeParticle(valflav);
     index      = ((valflav.IsQuark() && !valflav.IsAnti()) ||
 		 (valflav.IsDiQuark() && valflav.IsAnti()))?0:1;
@@ -142,10 +140,9 @@ Flavour Hadron_Remnant::RemnantFlavour(const Flavour & flav) {
   // to construct diquark - either qq'_0 or qq_1.
   bool taken = false;
   std::vector<int> kfs;
-  for (FlavourList::iterator flit=m_constituents.begin();
-       flit!=m_constituents.end();flit++) {
-    if (taken && flav==(*flit)) continue;
-    kfs.push_back(((flit->IsAnti() && !m_beamflav.IsAnti())?-1:1)*flit->Kfcode());
+  for (const auto& flit : m_constituents) {
+    if (taken && flav==flit) continue;
+    kfs.push_back(((flit.IsAnti() && !m_beamflav.IsAnti())?-1:1)*flit.Kfcode());
     taken = true;
   }
   int kfcode = 1 + (kfs.size()==2 && kfs[0]==kfs[1]?2:0);
@@ -159,33 +156,38 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
   // momentum; the latter will be successively reduced until the
   // rest is taken by the diquark.
   Vec4D availMom = p_beam->OutMomentum();
-  for (Part_Iterator pmit=m_extracted.begin();
-       pmit!=m_extracted.end();pmit++) {
-    availMom -= (*pmit)->Momentum();
+  for (auto pmit : m_extracted) {
+    availMom -= pmit->Momentum();
     if (copy) {
-      Particle * pcopy = new Particle(**pmit);
+      auto pcopy = new Particle(*pmit);
       pcopy->SetNumber();
       pcopy->SetBeam(m_beam);
       p_beamblob->AddToOutParticles(pcopy);
     }
-    else p_beamblob->AddToOutParticles(*pmit);
-    (*ktmap)[(*pmit)] = Vec4D();
+    else p_beamblob->AddToOutParticles(pmit);
+    (*ktmap)[pmit] = Vec4D();
   }
   msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
             << "\n";
-  for (Part_Iterator pmit=m_spectators.begin();
-       pmit!=m_spectators.end();pmit++) {
-    Particle * part = (*pmit);
+  double remnant_masses = 0.;
+  for (Particle  const * pit : m_spectators) {
+    remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
+  }
+  if (remnant_masses > m_residualE)
+    msg_Debugging() << METHOD << ": Warning, HadMasses of remnants = "
+                << remnant_masses << " vs. residual energy = " << m_residualE << "\n";
+  for (auto part : m_spectators) {
+    if (availMom[0] < 0) msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
     if (part==m_spectators.back()) part->SetMomentum(availMom);
     else {
-      double z = SelectZ(part->Flav(),true);
-      part->SetMomentum(z*availMom);
+      part->SetMomentum(SelectZ(part->Flav(),availMom[0], remnant_masses)*availMom);
       availMom -= part->Momentum();
+      remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
     }
     msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
               << part->Momentum() << "\n";
     if (copy) {
-      Particle * pcopy = new Particle(*part);
+      auto pcopy = new Particle(*part);
       pcopy->SetNumber();
       pcopy->SetBeam(m_beam);
       p_beamblob->AddToOutParticles(pcopy);
@@ -195,16 +197,18 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
   }
 }
 
-double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
-  double masses = 0.;
-  for (auto part : m_spectators) {
-    masses += part->Flav().HadMass();
-  }
-  double zmin = Max(flav.HadMass(), m_LambdaQCD) / m_residualE;
-  double zmax = (Max(flav.HadMass(), m_LambdaQCD) + m_residualE - masses) / m_residualE;
+double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,
+                               double remnant_masses) const {
+  double zmin = Max(flav.HadMass(), m_LambdaQCD) / restmom;
+  double zmax = zmin + (restmom - remnant_masses) / restmom;
   double z;
-  if (zmax < zmin) return 0;
-  if (!isvalence) {
+  if (zmax < zmin) {
+    msg_Debugging() << METHOD << ": Error, zmin, zmax = " << zmin <<", "<<zmax << "\n";
+    return 0;
+  }
+  // This assumes that there is exactly one diquark in the spectators, which
+  // will be the valence quark, taking most of the remaining momentum
+  if (!flav.IsDiQuark()) {
     // Assume functional from of z^beta with beta = -1.5 (default)
     // Maybe beta_gluon != beta_quark, but leave it for the time being
     if (m_beta!=-1) { 
@@ -223,7 +227,6 @@ double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
       z  = zmin + (zmax-zmin)*ran->Get();
       wt = pow((1.-z),m_alpha)*exp(-m_gamma/z);
     } while (wt < wtmax*ran->Get());
-    if (!flav.IsDiQuark()) z = 1.-z;
   }
   return z;
 }
@@ -242,7 +245,7 @@ void Hadron_Remnant::Reset(const bool & DIS) {
   m_spectators.clear();
   m_residualE = p_beam->OutMomentum()[0];
   m_valence   = false;
-  p_valence   = p_remnant = p_recoiler = NULL; 
+  p_valence   = p_remnant = p_recoiler = nullptr; 
 }
 
 bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
@@ -252,11 +255,15 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
     return false;
   }
   // Still enough energy for parton and its remnant quark?
-  if (mom[0]>m_residualE) {
-      msg_Error()<<METHOD<<": too much momentum "<<mom[0]<<" > E = "<<
-        m_residualE<<".\n";
+  // We're checking for the remnant masses as well, so the stretching onto the
+  // mass-shell works out later.
+  double required_energy = EstimateRequiredEnergy()
+      + mom[0] + flav.HadMass();
+  if (required_energy>m_residualE) {
+      msg_Debugging()<<METHOD<<": not enough energy for remnants, E_{required} "
+                <<mom[0]<<" > E_{in beam} = "<<m_residualE<<".\n";
     return false;
-  }    
+  }
   // Still enough energy?  And in range?
   double x = mom[0]/m_residualE;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
@@ -269,14 +276,24 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
 void Hadron_Remnant::Output() {
   msg_Out()<<METHOD<<"("<<m_beam<<", "<<m_beamflav<<").\n"
 	   <<"   Constituents are [ ";
-  for (FlavourList::iterator flit=m_constituents.begin();
-       flit!=m_constituents.end();flit++)  msg_Out()<<(*flit)<<" ";
+  for (const auto& flit : m_constituents)  msg_Out()<<flit<<" ";
   msg_Out()<<"]\n"
 	   <<"   Partons are { ";
-  for (Flavour_Set::const_iterator flit=p_partons->begin();
-       flit!=p_partons->end();flit++) {
-    msg_Out()<<" "<<(*flit);
+  for (const auto& flit : *p_partons) {
+    msg_Out()<<" "<<flit;
   }
   msg_Out()<<"}.\n";
 }
 
+double Hadron_Remnant::EstimateRequiredEnergy() const
+{
+  double masses = 0.;
+  for (Particle const * pit : m_spectators) {
+    masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
+  }
+  if (!m_valence) {
+    masses += 2 * Flavour(kf_d).HadMass();
+  }
+  // Adding lambda_QCD for the gluon that might be added later in CompensateColours()
+  return masses + m_LambdaQCD;
+}
