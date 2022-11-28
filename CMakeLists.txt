@@ -479,7 +479,12 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*/Node.C" 
                              PATTERN "*/Getter_Function.C" 
                              PATTERN "*/Dummy.C" 
-                             PATTERN "*/Math/Cluster_Algorithm.C"
+                             PATTERN "*LundTools/Dummy.C"
+                             PATTERN "*LundTools/Lund_Interface.C"
+                             PATTERN "*Org/Getter_Function.C"
+                             PATTERN "*Org/Node.C"
+                             PATTERN "*Cluster_Algorithm.C"
+                             PATTERN "*Math/Cluster_Algorithm.C"
                              PATTERN "*/SoftPhysics/Cluster_Algorithm.H" EXCLUDE
                              PATTERN "*Cluster_Decay_Analysis.H" EXCLUDE 
                              PATTERN "*Splitting_Tools.H" EXCLUDE 
