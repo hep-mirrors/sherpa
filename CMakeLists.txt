@@ -477,15 +477,6 @@ foreach ( IDIR ${IDIRS} )
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H" PATTERN "*.icc"  
                              PATTERN "*\.c" EXCLUDE 
                              PATTERN "*/fjcore.hh" 
-                             PATTERN "*/Node.C" 
-                             PATTERN "*/Getter_Function.C" 
-                             PATTERN "*/Dummy.C" 
-                             PATTERN "*LundTools/Dummy.C"
-                             PATTERN "*LundTools/Lund_Interface.C"
-                             PATTERN "*Org/Getter_Function.C"
-                             PATTERN "*Org/Node.C"
-                             PATTERN "*Cluster_Algorithm.C"
-                             PATTERN "*Math/Cluster_Algorithm.C"
                              PATTERN "*/SoftPhysics/Cluster_Algorithm.H" EXCLUDE
                              PATTERN "*Cluster_Decay_Analysis.H" EXCLUDE 
                              PATTERN "*Splitting_Tools.H" EXCLUDE 
@@ -527,6 +518,12 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*makefile*" EXCLUDE  
                              )    
 endforeach (  IDIR ${IDIRS}  )
+#Workaround for the Mac OS
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Org/Node.C  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/ATOOLS/Org/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Org/Getter_Function.C  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC/ATOOLS/Org/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/Dummy.C      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA/LundTools/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/Lund_Interface.C      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA/LundTools/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Cluster_Algorithm.C      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ATOOLS/Math/)
 if (SHERPA_ENABLE_EXAMPLES)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Examples DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC 
                          COMPONENT doc 
