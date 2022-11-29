@@ -1,4 +1,10 @@
-add_library(SherpaML5 SHARED ML5_Interface.C)
-install(TARGETS SherpaML5 DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(SherpaML5       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME SherpaML5 SOVERSION 0.0.0)
-set_target_properties(SherpaML5       PROPERTIES DEFINE_SYMBOL "")
+#Manually edited
+
+set(GITTAG  AddOns/MadLoop)
+set(MadLoop_SOURCES ML5_Interface.C)
+sherpa_create_git_info(MadLoop ../MadLoop/)
+list(TRANSFORM EWSud_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../MadLoop/")
+list(APPEND MadLoop_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+
+add_library(SherpaML5 SHARED ${MadLoop_SOURCES})
+sherpa_handle_shared_library(SherpaML5 SherpaML5)
