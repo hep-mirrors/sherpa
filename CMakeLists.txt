@@ -38,7 +38,7 @@ option(SHERPA_ENABLE_BINRELOC                "Enables binreloc." OFF)
 option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." OFF)
 option(SHERPA_ENABLE_DIHIGGS                 "Enables building of DIHIGGS." OFF)
 option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
-option(SHERPA_ENABLE_EXAMPLES                "Enables installatiOFF of EXAMPLES." OFF)
+option(SHERPA_ENABLE_EXAMPLES                "Enables installation of EXAMPLES." ON)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." OFF)
 option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." OFF)
 option(SHERPA_ENABLE_HEPMC2                  "Enables building with HepMC2." OFF)
@@ -63,7 +63,7 @@ option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." OFF)
 option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 ###########################Options handeling############################
-set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL 
+set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
 INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF 
  LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING)
 foreach (en IN LISTS allenables)
