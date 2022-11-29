@@ -27,7 +27,6 @@ if (SHERPA_ENABLE_UFO)
         s_parameter.py 
         s_particle.py 
         s_vertex.py 
-        sconstruct_template 
         templates.py 
         tensor.py 
         test.py 
