@@ -2,7 +2,12 @@
 #Gauge/Makefile.am
  
 set(GITTAG  DIRE/Gauge)
-set(Gauge_SOURCES  GGG.C GQQ.C QQG.C QQQQ.C)
+
+set(Gauge_SOURCES GGG.C
+                  GQQ.C
+                  QQG.C
+                  QQQQ.C)
+
 sherpa_create_git_info(Gauge ../Gauge/)
 list(TRANSFORM Gauge_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Gauge/")
 list(APPEND Gauge_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)

@@ -2,8 +2,13 @@
 #Main/Makefile.am
  
 set(GITTAG  DIM/Main)
-set(Main_SOURCES  Gamma.C MCatNLO.C)
-set(Main_HEADERS Gamma.H MCatNLO.H)
+
+set(Main_SOURCES Gamma.C
+                 MCatNLO.C)
+
+set(Main_HEADERS Gamma.H
+                 MCatNLO.H)
+
 sherpa_create_git_info(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
 list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)

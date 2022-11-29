@@ -2,7 +2,10 @@
 #GRS/Makefile.am
  
 set(GITTAG  PDF/GRS)
-set(GRS_SOURCES  grsg99.f GRSph_Fortran_Interface.C)
+
+set(GRS_SOURCES grsg99.f
+                GRSph_Fortran_Interface.C)
+
 set(GRS_HEADERS GRSph_Fortran_Interface.H)
 sherpa_create_git_info(GRS ../GRS/)
 list(TRANSFORM GRS_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../GRS/")

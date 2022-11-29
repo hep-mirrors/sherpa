@@ -2,8 +2,11 @@
 #Main/Makefile.am
  
 set(GITTAG  AHADIC++/Main)
+
 set(Main_SOURCES  Ahadic.C)
+
 set(Main_HEADERS Ahadic.H)
+
 sherpa_create_git_info(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
 list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)

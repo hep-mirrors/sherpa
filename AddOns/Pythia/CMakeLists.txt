@@ -2,9 +2,12 @@
 #Pythia/Makefile.am
  
  if (SHERPA_ENABLE_PYTHIA8)
-set(Pythia_SOURCES  Pythia_Jet_Criterion.C Pythia8_Hadronisation.C)
+set(Pythia_SOURCES Pythia_Jet_Criterion.C
+                   Pythia8_Hadronisation.C)
+
  else()
-set(Pythia_SOURCES  Pythia_Jet_Criterion.C)
+set(Pythia_SOURCES Pythia_Jet_Criterion.C)
+
  endif()
 set(GITTAG  AddOns/Pythia)
 sherpa_create_git_info(Pythia ../Pythia/)

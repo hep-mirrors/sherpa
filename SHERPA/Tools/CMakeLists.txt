@@ -1,9 +1,8 @@
-#Manually edited
-##### Automatically or semiautomaticaly generated, do not edit.##########
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #Tools/Makefile.am
  
- set(GITTAG  SHERPA/Tools)
-set(Tools_SOURCES  Output_Base.C Event_Reader_Base.C HepEvt_Interface.C   Pythia_HepEvt_Translator.C Output_HepEvt.C Output_LHEF.C Userhook_Base.C Analysis_Interface.C)
+set(GITTAG  SHERPA/Tools)
+set(Tools_SOURCES  Output_Base.C Event_Reader_Base.C HepEvt_Interface.C  Pythia_HepEvt_Translator.C Output_HepEvt.C Output_LHEF.C Userhook_Base.C Analysis_Interface.C)
 if (SHERPA_ENABLE_HEPMC2)
   list(APPEND Tools_SOURCES HepMC2_Interface.C)
 endif()

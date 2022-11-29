@@ -1,4 +1,3 @@
-#Manually edited
 ##### Automatically or semiautomaticaly generated, do not edit.#########
 
 set(PYTHIASOURCES   pyplst.f Lund_Interface.C)

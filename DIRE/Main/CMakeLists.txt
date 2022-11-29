@@ -2,7 +2,10 @@
 #Main/Makefile.am
  
 set(GITTAG  DIRE/Main)
-set(Main_SOURCES  Jet_Criterion.C Dire.C)
+
+set(Main_SOURCES Jet_Criterion.C
+                 Dire.C)
+
 sherpa_create_git_info(Main ../Main/)
 list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
 list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)

@@ -1,4 +1,3 @@
-#Manually edited
 
 set(GITTAG  AddOns/MCFM)
 set(MCFM_SOURCES MCFM_Interface.C)

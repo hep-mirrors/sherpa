@@ -1,4 +1,3 @@
-#Manually edited
 
 set(GITTAG  AddOns/MadLoop)
 set(MadLoop_SOURCES ML5_Interface.C)
