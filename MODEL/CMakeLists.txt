@@ -1,7 +1,6 @@
 add_subdirectory(SM)
 add_subdirectory(Main)
 add_subdirectory(TauPi)
-add_subdirectory(UFO)
 add_subdirectory(HEFT)
 add_subdirectory(SMGold)
 add_subdirectory(SMEHC)
