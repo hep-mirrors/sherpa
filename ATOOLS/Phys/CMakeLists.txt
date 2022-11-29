@@ -64,11 +64,9 @@ set(Phys_HEADERS fjcore.hh
                  Weights.H
                  Hard_Process_Variation_Generator.H)
 
-sherpa_create_git_info(Phys ../Phys/)
-list(TRANSFORM Phys_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Phys/")
-list(APPEND Phys_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Phys)
  
-add_library(ToolsPhys SHARED ${Phys_SOURCES} )
+add_library(ToolsPhys SHARED ${Phys_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsPhys ToolsPhys)
 
 target_link_libraries(ToolsPhys PRIVATE LHAPDF::LHAPDF)

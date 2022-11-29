@@ -25,9 +25,7 @@ set(Eikonals_HEADERS Eikonal_Weights.H
                      Eikonal_Creator.H
                      Form_Factors.H)
 
-sherpa_create_git_info(Eikonals ../Eikonals/)
-list(TRANSFORM Eikonals_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Eikonals/")
-list(APPEND Eikonals_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Eikonals)
  
-add_library(ShrimpsEikonals SHARED ${Eikonals_SOURCES} )
+add_library(ShrimpsEikonals SHARED ${Eikonals_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsEikonals ShrimpsEikonals)

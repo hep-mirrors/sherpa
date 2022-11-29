@@ -14,9 +14,8 @@ set(NLO_SOURCES Logarithms.C
                 epe2jet_CSS_approx.C)
 
 set(NLO_HEADERS Logarithms.H)
-sherpa_create_git_info(NLO ../NLO/)
-list(TRANSFORM NLO_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../NLO/")
-list(APPEND NLO_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+
+sherpa_create_git_info(NLO)
  
-add_library(ExtraXSNLO SHARED ${NLO_SOURCES} )
+add_library(ExtraXSNLO SHARED ${NLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ExtraXSNLO ExtraXSNLO)

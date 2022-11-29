@@ -23,9 +23,7 @@ set(Phasespace_HEADERS Phase_Space_Generator.H
                        Channel_Generator_KK.H
                        Channel_Generator_UniV.H)
 
-sherpa_create_git_info(Phasespace ../Phasespace/)
-list(TRANSFORM Phasespace_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Phasespace/")
-list(APPEND Phasespace_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Phasespace)
  
-add_library(AmegicPSGen SHARED ${Phasespace_SOURCES} )
+add_library(AmegicPSGen SHARED ${Phasespace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AmegicPSGen AmegicPSGen)

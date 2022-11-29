@@ -17,9 +17,7 @@ set(Perturbative_HEADERS Single_Collision_Handler.H
                          QCD_Processes.H
                          QED_Processes.H)
 
-sherpa_create_git_info(Perturbative ../Perturbative/)
-list(TRANSFORM Perturbative_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Perturbative/")
-list(APPEND Perturbative_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Perturbative)
  
-add_library(AmisicPerturbative SHARED ${Perturbative_SOURCES} )
+add_library(AmisicPerturbative SHARED ${Perturbative_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AmisicPerturbative AmisicPerturbative)

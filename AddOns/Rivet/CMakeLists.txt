@@ -2,12 +2,11 @@
 #Rivet/Makefile.am
  
 set(GITTAG  AddOns/Rivet)
-set(Rivet_SOURCES  Rivet_Interface.C)
-sherpa_create_git_info(Rivet ../Rivet/)
-list(TRANSFORM Rivet_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Rivet/")
-list(APPEND Rivet_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
- 
-add_library(SherpaRivetAnalysis SHARED ${Rivet_SOURCES} )
+
+set(Rivet_SOURCES Rivet_Interface.C)
+sherpa_create_git_info(Rivet)
+
+add_library(SherpaRivetAnalysis SHARED ${Rivet_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 sherpa_handle_shared_library(SherpaRivetAnalysis SherpaRivetAnalysis)
 target_link_libraries(SherpaRivetAnalysis PRIVATE ${RIVET_LIBRARIES})
 target_include_directories(SherpaRivetAnalysis PRIVATE ${RIVET_INCLUDE_DIR} ${RIVET_CONFIG_CPPFLAGS_DIRS})

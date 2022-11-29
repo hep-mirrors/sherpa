@@ -34,9 +34,7 @@ set(Tools_HEADERS Proto_Particle.H
                   KT_Selector.H
                   Z_Selector.H)
 
-sherpa_create_git_info(Tools ../Tools/)
-list(TRANSFORM Tools_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Tools/")
-list(APPEND Tools_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Tools)
  
-add_library(AhadicTools SHARED ${Tools_SOURCES} )
+add_library(AhadicTools SHARED ${Tools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AhadicTools AhadicTools)

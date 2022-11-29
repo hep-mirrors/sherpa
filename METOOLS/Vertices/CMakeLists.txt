@@ -16,9 +16,7 @@ set(Vertices_SOURCES FFV_DLC.C
                      SSVV_LC.C
                      VVVV_LC.C)
 
-sherpa_create_git_info(Vertices ../Vertices/)
-list(TRANSFORM Vertices_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Vertices/")
-list(APPEND Vertices_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Vertices)
  
-add_library(METoolsVertices SHARED ${Vertices_SOURCES} )
+add_library(METoolsVertices SHARED ${Vertices_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsVertices METoolsVertices)

@@ -31,9 +31,7 @@ set(Zfunctions_HEADERS Basic_Func.H
                        Mom.H
                        MHVCalculator.H)
 
-sherpa_create_git_info(Zfunctions ../Zfunctions/)
-list(TRANSFORM Zfunctions_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Zfunctions/")
-list(APPEND Zfunctions_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Zfunctions)
  
-add_library(Zfunctions SHARED ${Zfunctions_SOURCES} )
+add_library(Zfunctions SHARED ${Zfunctions_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Zfunctions Zfunctions)

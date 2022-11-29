@@ -15,9 +15,7 @@ set(Loops_HEADERS Divergence_Array.H
                   Master_Integrals.H
                   PV_Integrals.H)
 
-sherpa_create_git_info(Loops ../Loops/)
-list(TRANSFORM Loops_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Loops/")
-list(APPEND Loops_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Loops)
  
-add_library(METoolsLoops SHARED ${Loops_SOURCES} )
+add_library(METoolsLoops SHARED ${Loops_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsLoops METoolsLoops)

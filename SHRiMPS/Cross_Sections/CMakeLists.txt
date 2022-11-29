@@ -19,9 +19,7 @@ set(Cross_Sections_HEADERS Cross_Sections.H
                            Sigma_SD.H
                            Sigma_Partonic.H)
 
-sherpa_create_git_info(Cross_Sections ../Cross_Sections/)
-list(TRANSFORM Cross_Sections_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Cross_Sections/")
-list(APPEND Cross_Sections_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Cross_Sections)
  
-add_library(ShrimpsXsecs SHARED ${Cross_Sections_SOURCES} )
+add_library(ShrimpsXsecs SHARED ${Cross_Sections_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsXsecs ShrimpsXsecs)

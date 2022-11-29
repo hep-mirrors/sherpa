@@ -15,9 +15,7 @@ set(PS_Library_HEADERS HD_PS_Base.H
                        Four_Body_PSs.H
                        ResonanceFlavour.H)
 
-sherpa_create_git_info(PS_Library ../PS_Library/)
-list(TRANSFORM PS_Library_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../PS_Library/")
-list(APPEND PS_Library_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(PS_Library)
  
-add_library(HadronsPSs SHARED ${PS_Library_SOURCES} )
+add_library(HadronsPSs SHARED ${PS_Library_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(HadronsPSs HadronsPSs)

@@ -38,9 +38,7 @@ set(Scales_HEADERS Cluster_Definitions.H
                    Color_Setter.H
                    Tag_Setter.H)
 
-sherpa_create_git_info(Scales ../Scales/)
-list(TRANSFORM Scales_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Scales/")
-list(APPEND Scales_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Scales)
  
-add_library(PhasicScales SHARED ${Scales_SOURCES} )
+add_library(PhasicScales SHARED ${Scales_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicScales PhasicScales)

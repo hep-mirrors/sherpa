@@ -9,11 +9,9 @@ set(HZTool_SOURCES hznorm.F
 
 set(HZTool_HEADERS HZTool_Wrapper.H)
 
-sherpa_create_git_info(HZTool ../HZTool/)
-list(TRANSFORM HZTool_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../HZTool/")
-list(APPEND HZTool_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(HZTool)
  
-add_library(SherpaHZToolAnalysis SHARED ${HZTool_SOURCES} )
+add_library(SherpaHZToolAnalysis SHARED ${HZTool_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaHZToolAnalysis SherpaHZToolAnalysis)
 
 target_include_directories( SherpaHZToolAnalysis PRIVATE ${HZTOOL_INCLUDE_DIR} )

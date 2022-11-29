@@ -59,14 +59,7 @@ set(Math_HEADERS MathTools.H
                  Tensor_Contractions_Epsilon.H
                  Uncertain.H)
 
- if (SHERPA_ENABLE_GZIP)
- set(SOBOL_EXT   .gz)
- else()
- set(SOBOL_EXT )
- endif()
-sherpa_create_git_info(Math ../Math/)
-list(TRANSFORM Math_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Math/")
-list(APPEND Math_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Math)
  
-add_library(ToolsMath SHARED ${Math_SOURCES} )
+add_library(ToolsMath SHARED ${Math_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsMath ToolsMath)

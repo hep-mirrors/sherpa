@@ -55,9 +55,7 @@ set(YAML_HEADERS collectionstack.h
                  tag.h
                  token.h)
 
-sherpa_create_git_info(YAML ../YAML/)
-list(TRANSFORM YAML_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../YAML/")
-list(APPEND YAML_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(YAML)
  
 #YAML/yaml-cpp/Makefile.am
  
@@ -106,5 +104,5 @@ set(YAML_yaml-cpp_node_detail_HEADERS impl.h
                                       node_ref.h)
 
  
-add_library(ToolsYaml SHARED ${YAML_SOURCES} )
+add_library(ToolsYaml SHARED ${YAML_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsYaml ToolsYaml)

@@ -26,9 +26,7 @@ set(Explicit_HEADERS C_Object.H
                      Dipole_Terms.H
                      Vertex.H)
 
-sherpa_create_git_info(Explicit ../Explicit/)
-list(TRANSFORM Explicit_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Explicit/")
-list(APPEND Explicit_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Explicit)
  
-add_library(METoolsExplicit SHARED ${Explicit_SOURCES} )
+add_library(METoolsExplicit SHARED ${Explicit_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsExplicit METoolsExplicit)

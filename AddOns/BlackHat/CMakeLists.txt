@@ -10,10 +10,8 @@ set(BlackHat_SOURCES BlackHat_Tree.C
 set(BlackHat_HEADERS BlackHat_Tree.H
                      BlackHat_Virtual.H)
 
-sherpa_create_git_info(BlackHat ../BlackHat/)
-list(TRANSFORM BlackHat_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../BlackHat/")
-list(APPEND BlackHat_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(BlackHat)
  
-add_library(SherpaBlackHat SHARED ${BlackHat_SOURCES} )
-target_link_libraries(SherpaBlackHat PRIVATE ${BLACKHAT_LIBRARY} )
+add_library(SherpaBlackHat SHARED ${BlackHat_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaBlackHat SherpaBlackHat)
+target_link_libraries(SherpaBlackHat PRIVATE ${BLACKHAT_LIBRARY} )

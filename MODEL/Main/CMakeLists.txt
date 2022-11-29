@@ -21,9 +21,7 @@ set(Main_HEADERS Color_Function.H
                  Running_AlphaQED.H
                  Running_Fermion_Mass.H)
 
-sherpa_create_git_info(Main ../Main/)
-list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
-list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Main)
  
-add_library(ModelMain SHARED ${Main_SOURCES} )
+add_library(ModelMain SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ModelMain ModelMain)

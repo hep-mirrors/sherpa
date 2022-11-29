@@ -23,9 +23,7 @@ set(Shower_HEADERS Gauge.H
                    Lorentz_II.H
                    Shower.H)
 
-sherpa_create_git_info(Shower ../Shower/)
-list(TRANSFORM Shower_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Shower/")
-list(APPEND Shower_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Shower)
  
-add_library(DIMShower SHARED ${Shower_SOURCES} )
+add_library(DIMShower SHARED ${Shower_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMShower DIMShower)

@@ -91,11 +91,9 @@ set(Org_HEADERS CXXFLAGS_PACKAGES.H
                 ${GZIPSTREAMHEADERS}
                 binreloc.h)
 
-sherpa_create_git_info(Org ../Org/)
-list(TRANSFORM Org_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Org/")
-list(APPEND Org_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Org)
  
-add_library(ToolsOrg SHARED ${Org_SOURCES} )
+add_library(ToolsOrg SHARED ${Org_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsOrg ToolsOrg)
 
 target_link_libraries(ToolsOrg PRIVATE LibZip::LibZip)

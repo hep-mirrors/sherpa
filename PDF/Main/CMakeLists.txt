@@ -25,9 +25,7 @@ set(Main_HEADERS PDF_Base.H
                  Shower_Base.H
                  Photon_PDF_Base.H)
 
-sherpa_create_git_info(Main ../Main/)
-list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
-list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Main)
  
-add_library(PDF SHARED ${Main_SOURCES} )
+add_library(PDF SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PDF PDF)

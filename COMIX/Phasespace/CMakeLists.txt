@@ -15,9 +15,7 @@ set(Phasespace_HEADERS PS_Info.H
                        PS_Generator.H
                        PS_Channel.H)
 
-sherpa_create_git_info(Phasespace ../Phasespace/)
-list(TRANSFORM Phasespace_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Phasespace/")
-list(APPEND Phasespace_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Phasespace)
  
-add_library(ComixPhasespace SHARED ${Phasespace_SOURCES} )
+add_library(ComixPhasespace SHARED ${Phasespace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ComixPhasespace ComixPhasespace)

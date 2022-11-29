@@ -25,9 +25,7 @@ set(MEs_HEADERS PHOTONS_ME_Base.H
                 Vector_To_Fermion_Fermion.H
                 Vector_To_Scalar_Scalar.H)
 
-sherpa_create_git_info(MEs ../MEs/)
-list(TRANSFORM MEs_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../MEs/")
-list(APPEND MEs_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(MEs)
  
-add_library(PhotonsMEs SHARED ${MEs_SOURCES} )
+add_library(PhotonsMEs SHARED ${MEs_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhotonsMEs PhotonsMEs)

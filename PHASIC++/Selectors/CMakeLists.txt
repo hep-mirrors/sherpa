@@ -28,9 +28,7 @@ set(Selectors_HEADERS Cut_Data.H
                       Jet_Finder.H
                       Fastjet_Selector_Base.H)
 
-sherpa_create_git_info(Selectors ../Selectors/)
-list(TRANSFORM Selectors_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Selectors/")
-list(APPEND Selectors_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Selectors)
  
-add_library(PhasicSelectors SHARED ${Selectors_SOURCES} )
+add_library(PhasicSelectors SHARED ${Selectors_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicSelectors PhasicSelectors)

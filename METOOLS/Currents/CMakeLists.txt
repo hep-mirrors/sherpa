@@ -17,9 +17,7 @@ set(Currents_HEADERS C_Scalar.H
                      C_Vector.H
                      C_Pseudo.H)
 
-sherpa_create_git_info(Currents ../Currents/)
-list(TRANSFORM Currents_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Currents/")
-list(APPEND Currents_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Currents)
  
-add_library(METoolsCurrents SHARED ${Currents_SOURCES} )
+add_library(METoolsCurrents SHARED ${Currents_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsCurrents METoolsCurrents)

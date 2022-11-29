@@ -11,11 +11,9 @@ set(UFO_HEADERS UFO_Param_Reader.H
                 UFO_Model.H
                 UFO_Color_Functions.H)
 
-sherpa_create_git_info(UFO ../UFO/)
-list(TRANSFORM UFO_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../UFO/")
-list(APPEND UFO_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(UFO)
  
-add_library(ModelUFO SHARED ${UFO_SOURCES} )
+add_library(ModelUFO SHARED ${UFO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ModelUFO ModelUFO)
 if (SHERPA_ENABLE_UFO)
   install(FILES  __init__.py 

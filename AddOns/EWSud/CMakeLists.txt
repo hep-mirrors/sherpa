@@ -27,9 +27,7 @@ set(EWSud_HEADERS Variation_Generator.H
                   Calculator.H
                   Clustered_Calculator.H)
 
-sherpa_create_git_info(EWSud ../EWSud/)
-list(TRANSFORM EWSud_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../EWSud/")
-list(APPEND EWSud_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(EWSud)
  
-add_library(SherpaEWSud SHARED ${EWSud_SOURCES} )
+add_library(SherpaEWSud SHARED ${EWSud_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaEWSud SherpaEWSud)

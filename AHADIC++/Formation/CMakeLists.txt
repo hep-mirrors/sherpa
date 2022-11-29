@@ -17,9 +17,7 @@ set(Formation_HEADERS Beam_Particles_Shifter.H
                       Gluon_Splitter.H
                       Trivial_Splitter.H)
 
-sherpa_create_git_info(Formation ../Formation/)
-list(TRANSFORM Formation_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Formation/")
-list(APPEND Formation_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Formation)
  
-add_library(AhadicFormation SHARED ${Formation_SOURCES} )
+add_library(AhadicFormation SHARED ${Formation_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AhadicFormation AhadicFormation)

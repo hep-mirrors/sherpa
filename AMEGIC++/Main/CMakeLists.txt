@@ -35,9 +35,7 @@ set(Main_HEADERS Tools.H
                  Single_Process_Combined.H
                  Process_Group.H)
 
-sherpa_create_git_info(Main ../Main/)
-list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
-list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Main)
  
-add_library(Amegic SHARED ${Main_SOURCES} )
+add_library(Amegic SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Amegic Amegic)

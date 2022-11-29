@@ -11,9 +11,8 @@ set(SMEHC_SOURCES Effective_Higgs_Coupling.C
                   SVVVV_LC.C)
 
 set(SMEHC_HEADERS Effective_Higgs_Coupling.H)
-sherpa_create_git_info(SMEHC ../SMEHC/)
-list(TRANSFORM SMEHC_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SMEHC/")
-list(APPEND SMEHC_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+
+sherpa_create_git_info(SMEHC)
  
-add_library(SherpaSMEHC SHARED ${SMEHC_SOURCES} )
+add_library(SherpaSMEHC SHARED ${SMEHC_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaSMEHC SherpaSMEHC)

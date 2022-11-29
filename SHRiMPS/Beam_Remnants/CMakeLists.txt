@@ -13,9 +13,7 @@ set(Beam_Remnants_HEADERS Continued_PDF.H
                           Remnant_Handler.H
                           Colour_Generator.H)
 
-sherpa_create_git_info(Beam_Remnants ../Beam_Remnants/)
-list(TRANSFORM Beam_Remnants_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Beam_Remnants/")
-list(APPEND Beam_Remnants_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Beam_Remnants)
  
-add_library(ShrimpsBeamRemnants SHARED ${Beam_Remnants_SOURCES} )
+add_library(ShrimpsBeamRemnants SHARED ${Beam_Remnants_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsBeamRemnants ShrimpsBeamRemnants)

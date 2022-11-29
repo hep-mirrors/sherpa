@@ -29,9 +29,7 @@ set(ME_Library_HEADERS HD_ME_Base.H
                        B_K_Semileptonic.H
                        B_KStar_Semileptonic.H)
 
-sherpa_create_git_info(ME_Library ../ME_Library/)
-list(TRANSFORM ME_Library_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../ME_Library/")
-list(APPEND ME_Library_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(ME_Library)
  
-add_library(HadronsMEs SHARED ${ME_Library_SOURCES} )
+add_library(HadronsMEs SHARED ${ME_Library_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(HadronsMEs HadronsMEs)

@@ -30,9 +30,7 @@ set(Higgs_SOURCES dilog.C
                   PS3/C3_13.C
                   PS3/C3_14.C)
 
-sherpa_create_git_info(Higgs ../Higgs/)
-list(TRANSFORM Higgs_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Higgs/")
-list(APPEND Higgs_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Higgs)
  
-add_library(SherpaHiggs SHARED ${Higgs_SOURCES} )
+add_library(SherpaHiggs SHARED ${Higgs_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaHiggs SherpaHiggs)

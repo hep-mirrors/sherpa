@@ -20,9 +20,7 @@ set(Showers_HEADERS Splitting_Function_Base.H
                     Shower.H
                     Kinematics_Base.H)
 
-sherpa_create_git_info(Showers ../Showers/)
-list(TRANSFORM Showers_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Showers/")
-list(APPEND Showers_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Showers)
  
-add_library(MCatNLOShowers SHARED ${Showers_SOURCES} )
+add_library(MCatNLOShowers SHARED ${Showers_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(MCatNLOShowers MCatNLOShowers)

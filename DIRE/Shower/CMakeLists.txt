@@ -25,9 +25,7 @@ set(Shower_HEADERS Gauge.H
                    Cluster_Definitions.H
                    Shower.H)
 
-sherpa_create_git_info(Shower ../Shower/)
-list(TRANSFORM Shower_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Shower/")
-list(APPEND Shower_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Shower)
  
-add_library(DireShower SHARED ${Shower_SOURCES} )
+add_library(DireShower SHARED ${Shower_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DireShower DireShower)

@@ -2,11 +2,12 @@
 #Electron/Makefile.am
  
 set(GITTAG  PDF/Electron)
-set(Electron_SOURCES  PDF_Electron.C)
+
+set(Electron_SOURCES PDF_Electron.C)
+
 set(Electron_HEADERS PDF_Electron.H)
-sherpa_create_git_info(Electron ../Electron/)
-list(TRANSFORM Electron_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Electron/")
-list(APPEND Electron_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+
+sherpa_create_git_info(Electron)
  
-add_library(PDFESherpa SHARED ${Electron_SOURCES} )
+add_library(PDFESherpa SHARED ${Electron_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PDFESherpa PDFESherpa)

@@ -15,9 +15,7 @@ set(Tools_HEADERS Color.H
                   Kernel_Key.H
                   Amplitude.H)
 
-sherpa_create_git_info(Tools ../Tools/)
-list(TRANSFORM Tools_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Tools/")
-list(APPEND Tools_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Tools)
  
-add_library(DIMTools SHARED ${Tools_SOURCES} )
+add_library(DIMTools SHARED ${Tools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMTools DIMTools)

@@ -63,9 +63,7 @@ set(Channels_HEADERS CSS_Kinematics.H
                      BBar_Emission_Generator.H
                      Exponential_Channels.H)
 
-sherpa_create_git_info(Channels ../Channels/)
-list(TRANSFORM Channels_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Channels/")
-list(APPEND Channels_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Channels)
  
-add_library(PhasicChannels SHARED ${Channels_SOURCES} )
+add_library(PhasicChannels SHARED ${Channels_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicChannels PhasicChannels)

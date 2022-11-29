@@ -69,9 +69,7 @@ set(Trigger_HEADERS Trigger_Base.H
                     Primitive_Detector.H
                     Primitive_Calorimeter.H)
 
-sherpa_create_git_info(Triggers ../Triggers/)
-list(TRANSFORM Triggers_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Triggers/")
-list(APPEND Triggers_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Triggers)
  
-add_library(SherpaAnalysisTrigger SHARED ${Triggers_SOURCES} )
+add_library(SherpaAnalysisTrigger SHARED ${Triggers_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaAnalysisTrigger SherpaAnalysisTrigger)

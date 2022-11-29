@@ -34,9 +34,7 @@ set(Process_HEADERS Subprocess_Info.H
                     ME_Generators.H
                     ME_Generator_Base.H)
 
-sherpa_create_git_info(Process ../Process/)
-list(TRANSFORM Process_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Process/")
-list(APPEND Process_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Process)
  
-add_library(PhasicProcess SHARED ${Process_SOURCES} )
+add_library(PhasicProcess SHARED ${Process_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicProcess PhasicProcess)

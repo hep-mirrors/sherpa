@@ -23,9 +23,7 @@ set(SoftPhysics_HEADERS Hadron_Init.H
                         Singlet_Sorter.H
                         Resonance_Finder.H)
 
-sherpa_create_git_info(SoftPhysics ../SoftPhysics/)
-list(TRANSFORM SoftPhysics_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SoftPhysics/")
-list(APPEND SoftPhysics_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(SoftPhysics)
  
-add_library(SherpaSoftPhysics SHARED ${SoftPhysics_SOURCES} )
+add_library(SherpaSoftPhysics SHARED ${SoftPhysics_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaSoftPhysics SherpaSoftPhysics)

@@ -13,9 +13,7 @@ set(SpinCorrelations_HEADERS Amplitude2_Tensor.H
                              Decay_Matrix.H
                              Spin_Density.H)
 
-sherpa_create_git_info(SpinCorrelations ../SpinCorrelations/)
-list(TRANSFORM SpinCorrelations_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../SpinCorrelations/")
-list(APPEND SpinCorrelations_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(SpinCorrelations)
  
-add_library(METoolsSpinCorrelations SHARED ${SpinCorrelations_SOURCES} )
+add_library(METoolsSpinCorrelations SHARED ${SpinCorrelations_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsSpinCorrelations METoolsSpinCorrelations)

@@ -15,9 +15,7 @@ set(Main_HEADERS Hadron_Decay_Map.H
                  Mixing_Handler.H
                  Tools.H)
 
-sherpa_create_git_info(Main ../Main/)
-list(TRANSFORM Main_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Main/")
-list(APPEND Main_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Main)
  
-add_library(HadronsMain SHARED ${Main_SOURCES} )
+add_library(HadronsMain SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(HadronsMain HadronsMain)

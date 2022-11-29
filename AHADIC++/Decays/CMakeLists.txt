@@ -9,9 +9,7 @@ set(Decays_SOURCES Cluster_Decayer.C
 set(Decays_HEADERS Cluster_Decayer.H
                    Cluster_Splitter.H)
 
-sherpa_create_git_info(Decays ../Decays/)
-list(TRANSFORM Decays_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Decays/")
-list(APPEND Decays_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Decays)
  
-add_library(AhadicDecays SHARED ${Decays_SOURCES} )
+add_library(AhadicDecays SHARED ${Decays_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AhadicDecays AhadicDecays)

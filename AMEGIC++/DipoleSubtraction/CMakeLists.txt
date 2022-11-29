@@ -29,10 +29,8 @@ set(DipoleSubtraction_HEADERS DipoleSplitting_Base.H
                               Single_Virtual_Correction.H
                               Single_Real_Correction.H)
 
-sherpa_create_git_info(DipoleSubtraction ../DipoleSubtraction/)
-list(TRANSFORM DipoleSubtraction_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../DipoleSubtraction/")
-list(APPEND DipoleSubtraction_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(DipoleSubtraction)
  
-add_library(DipoleSubtraction SHARED ${DipoleSubtraction_SOURCES} )
+add_library(DipoleSubtraction SHARED ${DipoleSubtraction_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DipoleSubtraction DipoleSubtraction)
 target_include_directories(DipoleSubtraction PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
