@@ -46,10 +46,8 @@ set(Amplitude_HEADERS Single_Vertex.H
                       Amplitude_Output.H
                       Lorentz_Function.H)
 
-sherpa_create_git_info(Amplitude ../Amplitude/)
-list(TRANSFORM Amplitude_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Amplitude/")
-list(APPEND Amplitude_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_create_git_info(Amplitude)
  
-add_library(Amplitude SHARED ${Amplitude_SOURCES} )
+add_library(Amplitude SHARED ${Amplitude_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Amplitude Amplitude)
 target_include_directories(Amplitude PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
