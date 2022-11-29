@@ -341,7 +341,7 @@ message(STATUS "SHERPA: LibZip_VERSION=${LibZip_VERSION} LibZip_LIBRARIES=${LibZ
 if (NOT SHERPA_ENABLE_INSTALL_LHAPDF)
   find_package(LHAPDF)
   if (NOT LHAPDF_FOUND)
-    message(FATAL_ERROR "SHERPA: LHAPDF not found! Terminating!\n To use installed LHAPDF add to the cmake configuration -DLHAPDF_ROOT_DIR=/installation/path/to/libzip or use -DSHERPA_ENABLE_INSTALL_LHAPDF=ON to download and compile LHAPDF")
+    message(FATAL_ERROR "SHERPA: LHAPDF not found! Terminating!\n To use installed LHAPDF add to the cmake configuration -DLHAPDF_ROOT_DIR=/installation/path/to/lhapdf or use -DSHERPA_ENABLE_INSTALL_LHAPDF=ON to download and compile LHAPDF")
   endif()
 else()
   message(STATUS "SHERPA: LHAPDF will be downloaded and compiled")
