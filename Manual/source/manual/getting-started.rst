@@ -36,20 +36,21 @@ available on the system:
 
 Recommended:   
   * Fortran compiler
-  * LHAPDF  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LHAPDF=ON`. Internet connection required.
-  * libzip  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LIBZIP=ON`. Internet connection required.
-
+  * LHAPDF  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LHAPDF=ON` cmake option to install LHAPDF on-the-fly during the Sherpa insatllation (internet connection required).
+  * libzip  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LIBZIP=ON` cmake option to install libzip on-the-fly during the Sherpa insatllation (internet connection required).
 
 Compilation and installation proceed through the following commands if
 you use the distribution tarball:
 
 .. code-block:: shell-session
 
-   $ cmake -S . -B MYDESIREDBUILDDIR [other configuration options descibed below]
-   $ cmake --build MYDESIREDBUILDDIR [other build options, e.g. -j 8]
-   $ cmake --install MYDESIREDBUILDDIR
+   $ cd SHERPA-MC-<VERSION>/
+   $ cmake -S . -B <builddir> [+ optional configuration options described below]
+   $ cmake --build <builddir> [other build options, e.g. -j 8]
+   $ cmake --install <builddir>
 
-
+where `<builddir>` has to be replaced with the (temporary) directory in which intermediate files are stored during the build process.
+Normally you can simply use the current working directory, i.e. `.` for both.
 
 If not specified differently, the directory structure after
 installation is organized as follows
@@ -70,7 +71,7 @@ installation is organized as follows
 
 The installation directory ``$(prefix)`` can be specified by using the
 ``-DCMAKE_INSTALL_PREFIX=/path/to/installation/target`` directive and
-defaults to the ``/usr/`` or ``/usr/local/`` on most systems.
+defaults to the current working directory (`.`).
 
 If Sherpa has to be moved to a different directory after the
 installation, one has to set the following environment variables for
@@ -110,7 +111,7 @@ For a complete list of possible configuration options run
 .. ``-DSHERPA_ENABLE_PYTHIA6=ON`` without adding 
 
 The Sherpa package has successfully been compiled, installed and
-tested on SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux/ Mac OS X
+tested on Arch, SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux/ Mac OS X
 systems using the GNU compilers collection 4.8.5+, clang  3.4+ and Intel OneAPI 2022.
 
 If you have multiple compilers installed on your system, you can use
