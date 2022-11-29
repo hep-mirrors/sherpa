@@ -26,6 +26,8 @@
 /*
 #include "config.h"
 */
+#define VERSION "219"
+
 #include "ranlux.h"
 #include "momentum.h"
 #include "defines.h"
