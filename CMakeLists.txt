@@ -216,7 +216,7 @@ else()
 endif()
 
 
-macro(sherpa_create_git_info name b)
+macro(sherpa_create_git_info name)
   if (GIT)
     execute_process(COMMAND ${GIT} status -s --untracked-files=no .
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -239,7 +239,7 @@ macro(sherpa_create_git_info name b)
   list (FILTER allsources EXCLUDE REGEX ".*CXXFLAGS.*")
   set(content "")
   foreach (f IN LISTS allsources )
-    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${b}/${f}"  temp)
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${f}"  temp)
     string(APPEND content "${temp}")
   endforeach()
   string(MD5 MDF "${content}")

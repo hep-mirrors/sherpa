@@ -23,8 +23,10 @@
 // $Revision:: 219                                                          $//
 // $Date:: 2008-04-03 15:21:00 +0200 (Thu, 03 Apr 2008)                     $//
 ///////////////////////////////////////////////////////////////////////////////
-
+/*
 #include "config.h"
+*/
+#define VERSION "219"
 
 #include "ranlux.h"
 #include "momentum.h"

@@ -1,21 +1,19 @@
-#Manually edited
-#######  Automatically or semiautomaticaly generated, do not edit.
+##### Automatically or semiautomaticaly generated, do not edit.#########
 #HZTool/Makefile.am
  
- set(GITTAG  AddOns/HZTool)
-set(HZTool_SOURCES  hznorm.F hztool_sherpa.F HZTool_Interface.C)
-set(HZTOOL_ADDS   HZTool_Wrapper.H)
- if (SHERPA_ENABLE_HZTOOL)
- if (SHERPA_ENABLE_CERNLIB)
-set(HZTool_SOURCES ${HZTool_SOURCES})
- endif()
- endif()
-sherpa_create_git_info(HZTool ../HZTool/)
-list(TRANSFORM HZTool_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../HZTool/")
-list(APPEND HZTool_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+set(GITTAG  AddOns/HZTool)
+
+set(HZTool_SOURCES hznorm.F
+                   hztool_sherpa.F
+                   HZTool_Interface.C)
+
+set(HZTool_HEADERS HZTool_Wrapper.H)
+
+sherpa_create_git_info(HZTool)
  
-add_library(SherpaHZToolAnalysis SHARED   ${HZTool_SOURCES} )
+add_library(SherpaHZToolAnalysis SHARED ${HZTool_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaHZToolAnalysis SherpaHZToolAnalysis)
+
 target_include_directories( SherpaHZToolAnalysis PRIVATE ${HZTOOL_INCLUDE_DIR} )
 target_link_libraries( SherpaHZToolAnalysis PRIVATE ${HZTOOL_LIBRARY} 
 ${CERN_kernlib_DYNAMIC_LIBRARY}

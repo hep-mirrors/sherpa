@@ -2,14 +2,13 @@
 #LH_OLE/Makefile.am
  
 set(GITTAG  AddOns/LH_OLE)
-set(LH_OLE_SOURCES  LH_OLE_Interface.C LH_OLE_Communicator.C)
- set(LHOLE_ADDS   LH_OLE_Communicator.H)
- if (SHERPA_ENABLE_LHOLE)
-set(LH_OLE_SOURCES ${LH_OLE_SOURCES})
- endif()
-sherpa_create_git_info(LH_OLE ../LH_OLE/)
-list(TRANSFORM LH_OLE_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../LH_OLE/")
-list(APPEND LH_OLE_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+
+set(LH_OLE_SOURCES LH_OLE_Interface.C
+                   LH_OLE_Communicator.C)
+
+set(LH_OLE_HEADERS LH_OLE_Communicator.H)
+
+sherpa_create_git_info(LH_OLE)
  
-add_library(SherpaLHOLE SHARED ${LH_OLE_SOURCES} )
+add_library(SherpaLHOLE SHARED ${LH_OLE_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaLHOLE SherpaLHOLE)

@@ -2,16 +2,16 @@
 #DiHiggsNLO/Makefile.am
  
 set(GITTAG  AddOns/DiHiggsNLO)
-set(DiHiggsNLO_SOURCES  DiHiggs_Virtual.C hhgrid.c)
- set(DIHIGGS_ADDS  DiHiggs_Virtual.H hhgrid.h)
- if (SHERPA_ENABLE_DIHIGGS)
-set(DiHiggsNLO_SOURCES ${DIHIGGS_SOURCES})
- endif()
-sherpa_create_git_info(DiHiggsNLO ../DiHiggsNLO/)
-list(TRANSFORM DiHiggsNLO_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../DiHiggsNLO/")
-list(APPEND DiHiggsNLO_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+
+set(DiHiggsNLO_SOURCES DiHiggs_Virtual.C
+                       hhgrid.c)
+
+set(DiHiggsNLO_HEADERS DiHiggs_Virtual.H
+                       hhgrid.h)
+
+sherpa_create_git_info(DiHiggsNLO)
  
-add_library(SherpaDiHiggsNLO SHARED ${DiHiggsNLO_SOURCES} )
+add_library(SherpaDiHiggsNLO SHARED ${DiHiggsNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaDiHiggsNLO SherpaDiHiggsNLO)
 
 target_include_directories(SherpaDiHiggsNLO PRIVATE ${Python_INCLUDE_DIRS})

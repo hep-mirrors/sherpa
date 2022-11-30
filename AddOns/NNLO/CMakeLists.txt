@@ -1,11 +1,23 @@
 ##### Automatically or semiautomaticaly generated, do not edit.#########
-#NNLO/Makefile.am
  
 set(GITTAG  AddOns/NNLO)
-set(NNLO_SOURCES  polylog.c Tools.C QT_Selector.C DIS_Selector.C Scale_Setter.C coeffqt.C param.C hard.C DY_KFactor.C higgsfullsm.C H_KFactor.C DISinclu.C DIS_KFactor.C DIS_Scale.C)
-sherpa_create_git_info(NNLO ../NNLO/)
-list(TRANSFORM NNLO_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../NNLO/")
-list(APPEND NNLO_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+
+set(NNLO_SOURCES polylog.c
+                 Tools.C
+                 QT_Selector.C
+                 DIS_Selector.C
+                 Scale_Setter.C
+                 coeffqt.C
+                 param.C
+                 hard.C
+                 DY_KFactor.C
+                 higgsfullsm.C
+                 H_KFactor.C
+                 DISinclu.C
+                 DIS_KFactor.C
+                 DIS_Scale.C)
+
+sherpa_create_git_info(NNLO)
  
-add_library(NNLOqT SHARED ${NNLO_SOURCES} )
+add_library(NNLOqT SHARED ${NNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(NNLOqT NNLOqT)

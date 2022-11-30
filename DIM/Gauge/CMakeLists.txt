@@ -2,10 +2,12 @@
 #Gauge/Makefile.am
  
 set(GITTAG  DIM/Gauge)
-set(Gauge_SOURCES  GGG.C GQQ.C QQG.C)
-sherpa_create_git_info(Gauge ../Gauge/)
-list(TRANSFORM Gauge_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Gauge/")
-list(APPEND Gauge_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+
+set(Gauge_SOURCES GGG.C
+                  GQQ.C
+                  QQG.C)
+
+sherpa_create_git_info(Gauge)
  
-add_library(DIMGauge SHARED ${Gauge_SOURCES} )
+add_library(DIMGauge SHARED ${Gauge_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMGauge DIMGauge)

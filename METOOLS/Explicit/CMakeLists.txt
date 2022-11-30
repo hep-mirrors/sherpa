@@ -2,11 +2,31 @@
 #Explicit/Makefile.am
  
 set(GITTAG  METOOLS/Explicit)
-set(Explicit_SOURCES  C_Object.C Current.C Vertex_Key.C Color_Calculator.C Lorentz_Calculator.C NLO_Counter_Terms.C Dipole_Kinematics.C Dipole_Color.C Dipole_Terms.C Vertex.C)
-set(Explicit_HEADERS C_Object.H Current.H Vertex_Key.H Color_Calculator.H Lorentz_Calculator.H NLO_Counter_Terms.H Dipole_Info.H Dipole_Kinematics.H Dipole_Color.H Dipole_Terms.H Vertex.H)
-sherpa_create_git_info(Explicit ../Explicit/)
-list(TRANSFORM Explicit_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Explicit/")
-list(APPEND Explicit_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+
+set(Explicit_SOURCES C_Object.C
+                     Current.C
+                     Vertex_Key.C
+                     Color_Calculator.C
+                     Lorentz_Calculator.C
+                     NLO_Counter_Terms.C
+                     Dipole_Kinematics.C
+                     Dipole_Color.C
+                     Dipole_Terms.C
+                     Vertex.C)
+
+set(Explicit_HEADERS C_Object.H
+                     Current.H
+                     Vertex_Key.H
+                     Color_Calculator.H
+                     Lorentz_Calculator.H
+                     NLO_Counter_Terms.H
+                     Dipole_Info.H
+                     Dipole_Kinematics.H
+                     Dipole_Color.H
+                     Dipole_Terms.H
+                     Vertex.H)
+
+sherpa_create_git_info(Explicit)
  
-add_library(METoolsExplicit SHARED ${Explicit_SOURCES} )
+add_library(METoolsExplicit SHARED ${Explicit_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsExplicit METoolsExplicit)
