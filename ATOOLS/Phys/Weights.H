@@ -343,7 +343,7 @@ namespace ATOOLS {
           continue;
         const auto size = kv.second.Size();
         // Iterate weights, skipping the nominal entry (at position 0).
-        for (int i {1}; i < size; ++i) {
+        for (size_t i {1}; i < size; ++i) {
           map[kv.first + "." + kv.second.Name(i)] =
               Nominal() / kv.second.Nominal() * kv.second[i];
         }

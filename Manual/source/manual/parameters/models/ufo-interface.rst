@@ -8,7 +8,7 @@ made available to Sherpa by running
 
 where ``<path-to-ufo-model>`` specifies the location of the directory
 where the UFO model can be found. UFO support must be enabled using
-the :option:`--enable-ufo` option of the configure script, as
+the :option:`-DSHERPA_ENABLE_UFO=ON` option of the configure script, as
 described in :ref:`Installation`. This requires Python version 2.6 or
 later and an installation of SCons.
 
@@ -81,7 +81,7 @@ and HEFT). The use of UFO models is only supported by Comix.
 .. The MSSM is implemented via UFO, cf.
 .. @uref{https://feynrules.irmp.ucl.ac.be/wiki/MSSM}.
 .. In order to use this model, Sherpa must be installed with python support,
-.. using :option:`--enable-pyext`, as described in @xref{Installation}.
+.. using :option:`-DSHERPA_ENABLE_PYTHON=ON`, as described in @xref{Installation}.
 .. Once installed, the model is made available to Sherpa by running
 ..
 .. .. code-block::

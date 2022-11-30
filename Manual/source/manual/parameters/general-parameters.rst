@@ -182,7 +182,7 @@ seeds in different runs of the generator. When set to 1, existing
 random seed files are read and the seed is set to the next available
 value in the file before each event. When set to 2, seed files are
 written to disk.  These files are gzip compressed, if Sherpa was
-compiled with option :option:`--enable-gzip`.  When set to 3, Sherpa
+compiled with option :option:`-DSHERPA_ENABLE_GZIP=ON`.  When set to 3, Sherpa
 uses an internal bookkeeping mechanism to advance to the next
 predefined seed.  No seed files are written out or read in.
 
@@ -202,8 +202,9 @@ The following analysis handlers are currently available
 
 :option:`Internal`
   | Sherpa's internal analysis handler.
-  | To use this option, the package must be configured with option :option:`--enable-analysis`.
-  | An output directory can be specified using :ref:`ANALYSIS_OUTPUT`.
+  | To use this option, the package must be configured with option
+  | :option:`-DSHERPA_ENABLE_ANALYSIS=ON`. An output directory can
+  | be specified using :ref:`ANALYSIS_OUTPUT`.
 
 :option:`Rivet`
   | The Rivet package, see `Rivet Website <http://projects.hepforge.org/rivet/>`_.
@@ -439,7 +440,7 @@ The following formats are currently available:
   from the matrix-element-parton-shower interplay which would be
   otherwise stored.
 
-  Requires ``--enable-hepmc2=<path/to/hepmc2>``.
+  Requires ``-DSHERPA_ENABLE_HEPMC2=ON -DHEPMC2_ROOT_DIR=/path/to/hepmc2``.
 
 :option:`HepMC_Short`
 
@@ -449,7 +450,7 @@ The following formats are currently available:
   same as above, and ``HEPMC_USE_NAMED_WEIGHTS`` and
   ``HEPMC_EXTENDED_WEIGHTS`` can be used to customise.
 
-  Requires ``--enable-hepmc2=<path/to/hepmc2>``.
+  Requires ``-DSHERPA_ENABLE_HEPMC2=ON -DHEPMC2_ROOT_DIR=/path/to/hepmc2``.
 
 :option:`HepMC3_GenEvent`
   Generates output using HepMC3 library. The format of the output is
@@ -459,7 +460,7 @@ The following formats are currently available:
   GenEvent. 3: ROOT file with GenEvent objects writen into TTree.
   Otherwise similar to ``HepMC_GenEvent``.
 
-  Requires ``--enable-hepmc3=<path/to/hepmc3>``.
+  Requires ``-DSHERPA_ENABLE_HEPMC3=ON -DHEPMC3_ROOT_DIR=/path/to/hepmc3``.
 
 :option:`HEPEVT`
   Generates output in HepEvt format.
@@ -482,13 +483,12 @@ The following formats are currently available:
   Generates output in ROOT ntuple format **for NLO event generation
   only**.  For details on the ntuple format, see :ref:`A posteriori
   scale and PDF variations using the ROOT NTuple Output <A posteriori
-  scale and PDF variations using the ROOT NTuple Output>`.  This
-  output option is available only if Sherpa was linked to ROOT during
-  installation by using the configure option
-  ``--enable-root=/path/to/root``.  ROOT ntuples can be read back into
-  Sherpa and analyzed using the option :option:`EVENT_INPUT`. This
-  feature is described in :ref:`NTuple production`.
+  scale and PDF variations using the ROOT NTuple Output>`. ROOT ntuples can be
+  read back into Sherpa and analyzed using the option
+  :option:`EVENT_INPUT`. This feature is described in :ref:`NTuple production`.
 
+  Requires ``-DSHERPA_ENABLE_ROOT=ON -DROOT_ROOT_DIR=/path/to/root``.
+  
 The output can be further customized using the following options:
 
 :option:`FILE_SIZE`
@@ -502,7 +502,7 @@ The output can be further customized using the following options:
 
 For all output formats except ROOT, events can be written
 directly to gzipped files instead of plain text. The option
-:option:`--enable-gzip` must be given during installation to enable
+:option:`-DSHERPA_ENABLE_GZIP=ON` must be given during installation to enable
 this feature.
 
 .. _On-the-fly event weight variations:
@@ -775,7 +775,7 @@ MPI parallelization
 ===================
 
 MPI parallelization in Sherpa can be enabled using the configuration
-option :option:`--enable-mpi`. Sherpa supports `OpenMPI
+option :option:`-DSHERPA_ENABLE_MPI=ON`. Sherpa supports `OpenMPI
 <http://www.open-mpi.org/>`_ and `MPICH2
 <http://www.mcs.anl.gov/research/projects/mpich2/>`_ . For detailed
 instructions on how to run a parallel program, please refer to the

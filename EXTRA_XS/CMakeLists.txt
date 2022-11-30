@@ -1,0 +1,6 @@
+add_subdirectory(Main)
+add_subdirectory(NLO)
+add_subdirectory(One2Three)
+add_subdirectory(One2Two)
+add_subdirectory(Two2Two)
+add_subdirectory(Special)

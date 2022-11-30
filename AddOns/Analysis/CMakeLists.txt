@@ -1,0 +1,6 @@
+add_subdirectory(Tools)
+add_subdirectory(Triggers)
+add_subdirectory(Observables)
+add_subdirectory(Analyses)
+add_subdirectory(Main)
+add_subdirectory(Scripts)

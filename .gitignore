@@ -1,67 +1,21 @@
-# autotools
-
+# cmake
+CMakeFiles
+cmake_install.cmake
 Makefile
-Makefile.in
-.deps
+CMakeCache.txt
+build/
+outputs/
 
+# make targets and intermediate files
 /AMEGIC++/Main/make2scons
 /AMEGIC++/Main/makelibs
 /ATOOLS/Org/CXXFLAGS.H
 /ATOOLS/Org/CXXFLAGS_PACKAGES.H
-/ATOOLS/Org/stamp-h2
-/ATOOLS/Org/stamp-h3
-/ATOOLS/Math/Sobol/21201.gz
-/COPYING
-/Examples/API/Events/test.py
-/Examples/API/ME2-Python/test.py
-/Examples/API/MPIEvents/test.py
-/Examples/Userhook/Userhook_Example.os
-/Examples/UFO_MSSM/MSSM/.sherpa/
-/Examples/UFO_MSSM/MSSM/Sherpa.MSSM_Example.yaml
-/Examples/UFO_MSSM/MSSM/__pycache__/
-/INSTALL
-/MODEL/UFO/Sherpa-generate-model
-/MODEL/UFO/sconstruct_template
-/Manual/mdate-sh
-/Manual/sherpa-completion
-/Manual/texinfo.tex
-/SHERPA/LundTools/pythia-6.4.18.f
-/SHERPA/Run/Sherpa-config
-/AddOns/Analysis/Scripts/Combine_Analysis
-/AddOns/Analysis/Scripts/Combine_Analysis.o
-/AddOns/Python/Sherpa.py
-/AddOns/Python/Sherpa_wrap.cxx
-/aclocal.m4
-/autom4te.cache/
-/compile
-/config.guess
-/config.h
-/config.h.in
-/config.log
-/config.status
-/config.sub
-/configure
-/depcomp
-/install-sh
-/libtool
-/ltmain.sh
-/m4/libtool.m4
-/m4/ltoptions.m4
-/m4/ltsugar.m4
-/m4/ltversion.m4
-/m4/lt~obsolete.m4
-/missing
-/py-compile
-/stamp-h1
-/test-driver
-
-
-# make targets and intermediate files
-
 /Manual/Sherpa.html
 *.l[ao]
 *.o
 *.so
+*.so.0.0.0
 *.dylib
 .libs
 .SConstruct
@@ -79,6 +33,10 @@ Git_Info.C.tmp.bak
 /Manual/stamp-vti
 /Manual/version.texi
 /SHERPA/Run/Sherpa
+NNPDF31_nnlo_as_0118_mc/
+SHERPA/LundTools/pythia-6.4.18.f
+SHERPA/Run/Sherpa-config
+install_manifest.txt
 
 
 # (local) make install targets

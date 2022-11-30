@@ -1,1 +1,0 @@
-SUBDIRS       =	Main LHAPDF CT14 GRV SAL SASG GRS Electron NNPDF

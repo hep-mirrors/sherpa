@@ -1,0 +1,7 @@
+add_subdirectory(Channels)
+add_subdirectory(Decays)
+add_subdirectory(Main)
+add_subdirectory(Enhance)
+add_subdirectory(Process)
+add_subdirectory(Scales)
+add_subdirectory(Selectors)

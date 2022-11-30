@@ -1014,7 +1014,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     p_hdhandler=hd;
 #else
     THROW(fatal_error, string("Pythia not enabled during compilation. ")+
-          "Use the configure option --enable-pythia to enable it.");
+          "Use the cmake option -DSHERPA_ENABLE_PYTHIA6=ON to enable it.");
 #endif
   }
   else {
@@ -1046,7 +1046,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
     if (analyses[i]=="None") continue;
     if (analyses[i]=="Internal")
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
-        THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
+        THROW(missing_module,"Cannot load Analysis library (-DSHERPA_ENABLE_ANALYSIS=ON).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
       bool hepmc_loaded {false};
 #ifdef USING__HEPMC2
@@ -1057,10 +1057,10 @@ bool Initialization_Handler::InitializeTheAnalyses()
 #endif
       if (!hepmc_loaded) {
         THROW(missing_module,
-              "Cannot load HepMC library (--enable-hepmc2 and/or --enable-hepmc3).");
+              "Cannot load HepMC library (-DSHERPA_ENABLE_HEPMC2=ON and/or -DSHERPA_ENABLE_HEPMC3=ON).");
       }
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
-        THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
+        THROW(missing_module,"Cannot load RivetAnalysis library (-DSHERPA_ENABLE_RIVET=ON).");
     }
     Analysis_Interface* ana =
       Analysis_Interface::Analysis_Getter_Function::GetObject(analyses[i], args);

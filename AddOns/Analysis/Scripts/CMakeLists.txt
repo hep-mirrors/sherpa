@@ -1,0 +1,38 @@
+ 
+set(Scripts_SOURCES Combine_Analysis.C)
+sherpa_create_git_info(Scripts)
+ 
+add_executable(Combine_Analysis  ${Scripts_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+target_include_directories(Combine_Analysis PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(Combine_Analysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+sherpa_handle_executable(Combine_Analysis)
+install(TARGETS Combine_Analysis DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
+set_target_properties(Combine_Analysis        PROPERTIES DEFINE_SYMBOL "")
+target_link_libraries(Combine_Analysis PRIVATE 
+ ToolsOrg
+ ToolsPhys
+ ToolsMath
+ ToolsYaml
+ METoolsExplicit
+ METoolsCurrents
+ METoolsVertices
+ METoolsColors
+ METoolsSpinCorrelations
+ METoolsLoops
+ METoolsMain
+ ModelMain
+ ModelUFO
+ PDF
+ SherpaTools
+)
+target_link_libraries(Combine_Analysis PRIVATE LibZip::LibZip)
+if (SHERPA_ENABLE_HEPMC3)
+  target_link_libraries(Combine_Analysis PRIVATE SherpaHepMC3Output  ${HEPMC3_LIB} ${HEPMC3_SEARCH_LIB} )
+  if (SHERPA_ENABLE_HEPMC3_ROOT)
+    target_link_libraries(Combine_Analysis PRIVATE SherpaHepMC3Output  ${HEPMC3_ROOTIO_LIB} )
+  endif()
+endif()
+if (SHERPA_ENABLE_HEPMC2)
+  target_link_libraries(Combine_Analysis PRIVATE SherpaHepMCOutput  ${HEPMC2_LIBRARIES} )
+endif()
+

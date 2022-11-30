@@ -82,7 +82,7 @@ EWsud
 =====
 
 The EWsud module must be enabled during configuration of Sherpa using the
-``--enable-ewsud`` switch.
+``-DSHERPA_ENABLE_EWSUD=ON`` switch.
 
 Similar to EWvirt, also with the EWsud corrections there is the option to use
 it via ``KFACTOR: EWsud``, which will apply the corrections directly to the
