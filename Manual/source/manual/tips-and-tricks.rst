@@ -46,8 +46,8 @@ compilation has to be configured with the following options:
 
 .. code-block:: shell-session
 
-   $ cmake -DSHERPA_ENABLE_HEPMC3=ON -DHEPMC3_ROOT_DIR=/path/to/hepmc3
-   -DSHERPA_ENABLE_RIVET=ON -DRIVET_ROOT_DIR=/path/to/rivet
+   $ cmake -DSHERPA_ENABLE_HEPMC3=ON -DHEPMC3_ROOT_DIR=/path/to/hepmc3 \
+           -DSHERPA_ENABLE_RIVET=ON -DRIVET_ROOT_DIR=/path/to/rivet
 
 (Note: Both paths are equal if you used the Rivet bootstrap script.)
 
@@ -114,7 +114,8 @@ Sherpa compilation has to be configured with the following options:
 
 .. code-block:: shell-session
 
-   $ cmake -DSHERPA_ENABLE_HZTOOL=ON
+   $ cmake -DSHERPA_ENABLE_HZTOOL=ON -DHZTOOL_ROOT_PATH=/path/to/hztool \
+           -DCERNLIB_ROOT_PATH=/path/to/cernlib -DHEPEVT_CB_SIZE=4000
 
 Note that an example CERNLIB installation bootstrap script is provided
 in ``AddOns/HZTool/start_cern_64bit``. Note that this script is only
@@ -162,7 +163,7 @@ following options:
 
 .. code-block:: yaml
 
-   $ cmake -DSHERPA_ENABLE_MCFM=ON
+   $ cmake -DSHERPA_ENABLE_MCFM=ON -DMCFM_ROOT_PATH=/path/to/MCFM
 
 To use the interface, specify
 
@@ -249,7 +250,7 @@ Versioned installation
 
 If you want to install different Sherpa versions into the same prefix
 (e.g. `/usr/local`), you have to enable versioning of the installed
-directories by using the configure option ``--enable-versioning``.
+directories by using the configure option ``-DSHERPA_ENABLE_VERSIONING=ON``.
 Optionally you can even pass an argument to this parameter of what you
 want the version tag to look like.
 

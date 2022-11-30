@@ -483,13 +483,12 @@ The following formats are currently available:
   Generates output in ROOT ntuple format **for NLO event generation
   only**.  For details on the ntuple format, see :ref:`A posteriori
   scale and PDF variations using the ROOT NTuple Output <A posteriori
-  scale and PDF variations using the ROOT NTuple Output>`.  This
-  output option is available only if Sherpa was linked to ROOT during
-  installation by using the cmake option
-  ``-DSHERPA_ENABLE_ROOT=ON``.  ROOT ntuples can be read back into
-  Sherpa and analyzed using the option :option:`EVENT_INPUT`. This
-  feature is described in :ref:`NTuple production`.
+  scale and PDF variations using the ROOT NTuple Output>`. ROOT ntuples can be
+  read back into Sherpa and analyzed using the option
+  :option:`EVENT_INPUT`. This feature is described in :ref:`NTuple production`.
 
+  Requires ``-DSHERPA_ENABLE_ROOT=ON -DROOT_ROOT_DIR=/path/to/root``.
+  
 The output can be further customized using the following options:
 
 :option:`FILE_SIZE`
