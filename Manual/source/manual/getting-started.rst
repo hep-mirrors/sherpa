@@ -156,11 +156,11 @@ Installation on IBM BlueGene/Q
 ==============================
 
 Sherpa has been installed successfully on an IBM BlueGene/Q system.
-The following configure command should be used
+The following cmake command should be used
 
 .. code-block:: shell-session
 
-   $ ./configure <your options> -DSHERPA_ENABLE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_Fortran_COMPILER=mpif90 
+   $ cmake <your options> -DSHERPA_ENABLE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_Fortran_COMPILER=mpif90 
 
 Sherpa can then be run with
 

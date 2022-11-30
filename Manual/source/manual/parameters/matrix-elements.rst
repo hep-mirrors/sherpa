@@ -181,10 +181,8 @@ The scale setter options which are currently available are
      SCALES: VAR{Abs2(p[2]+p[3])}{MPerp2(p[2]+p[3])}
 
 :option:`FASTJET`
-  If `FastJet <http://www.fastjet.fr>`_ is enabled by including
-  ``--enable-fastjet=/path/to/fastjet`` in the ``configure`` options,
-  this scale setter can be used to set a scale based on jet-, rather
-  than parton-momenta.
+  This scale setter can be used to set a scale based on jet-, rather
+  than parton-momenta, using `FastJet <http://www.fastjet.fr>`_.
 
   The final state parton configuration is first clustered using
   FastJet and resulting jet momenta are then added back to the list of

@@ -3,10 +3,10 @@ EVENT_GENERATION_MODE: Weighted
 TAGS:
   LGEN: BlackHat
 ME_GENERATORS: [Amegic, $(LGEN)]
-# Analysis (please configure with --enable-rivet & --enable-hepmc2)
+# Analysis (please configure with -DSHERPA_ENABLE_RIVET=ON & -DSHERPA_ENABLE_HEPMC2=ON)
 ANALYSIS: Rivet
 ANALYSIS_OUTPUT: Analysis/HTp/BVI/
-# NTuple output (please configure with '--enable-root')
+# NTuple output (please configure with '-DSHERPA_ENABLE_ROOT=ON')
 EVENT_OUTPUT: EDRoot[NTuple_B-like]
 BEAMS: 2212
 BEAM_ENERGIES: 3500

@@ -8,7 +8,7 @@ fixed-order calculations in order to perform multiple analyses.  This
 example shows how to generate such NTuples and reweighted them in
 order to change factorisation and renormalisation scales.  Note that
 in order to use this setup, Sherpa must be configured with option
-:option:`--enable-root=/path/to/root`, see :ref:`Event output
+:option:`-DSHERPA_ENABLE_ROOT`, see :ref:`Event output
 formats`.  If Sherpa has not been configured with Rivet analysis
 support, please disable the analysis using :option:`-a0` on the
 command line, see :ref:`Command line`.

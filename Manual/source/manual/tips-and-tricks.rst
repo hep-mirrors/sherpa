@@ -46,7 +46,8 @@ compilation has to be configured with the following options:
 
 .. code-block:: shell-session
 
-   $ ./configure --enable-hepmc3=/path/to/hepmc3 --enable-rivet=/path/to/rivet
+   $ cmake -DSHERPA_ENABLE_HEPMC3=ON -DHEPMC3_ROOT_DIR=/path/to/hepmc3
+   -DSHERPA_ENABLE_RIVET=ON -DRIVET_ROOT_DIR=/path/to/rivet
 
 (Note: Both paths are equal if you used the Rivet bootstrap script.)
 
@@ -113,7 +114,7 @@ Sherpa compilation has to be configured with the following options:
 
 .. code-block:: shell-session
 
-   $ ./configure --enable-hztool=/path/to/hztool --enable-cernlib=/path/to/cernlib --enable-hepevtsize=4000
+   $ cmake -DSHERPA_ENABLE_HZTOOL=ON
 
 Note that an example CERNLIB installation bootstrap script is provided
 in ``AddOns/HZTool/start_cern_64bit``. Note that this script is only
@@ -161,7 +162,7 @@ following options:
 
 .. code-block:: yaml
 
-   $ ./configure --enable-mcfm=/path/to/mcfm
+   $ cmake -DSHERPA_ENABLE_MCFM=ON
 
 To use the interface, specify
 
