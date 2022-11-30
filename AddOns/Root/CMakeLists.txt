@@ -1,15 +1,14 @@
 
 set(foo_SOURCES Output_RootNtuple.C RootNtuple_Reader.C)
-set(foo_HEADERS Output_RootNtuple.H RootNtuple_Reader.H)set(SherpaRootOutput_SOURCES Output_RootNtuple.C)
+set(foo_HEADERS Output_RootNtuple.H RootNtuple_Reader.H)
+set(SherpaRootOutput_SOURCES Output_RootNtuple.C)
 set(SherpaRootOutput_HEADERS Output_RootNtuple.H)
 set(SherpaRootInput_SOURCES RootNtuple_Reader.C)
 set(SherpaRootInput_HEADERS RootNtuple_Reader.H)
-
 set(SherpaRootEOutput_SOURCES Output_RootNtuple.C)
 set(SherpaRootEOutput_HEADERS Output_RootNtuple.H)
 set(SherpaRootEInput_SOURCES RootNtuple_Reader.C)
 set(SherpaRootEInput_HEADERS RootNtuple_Reader.H)
-
 set(SherpaRootEDOutput_SOURCES Output_RootNtuple.C)
 set(SherpaRootEDOutput_HEADERS Output_RootNtuple.H)
 set(SherpaRootEDInput_SOURCES RootNtuple_Reader.C)
