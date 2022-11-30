@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#EXTAMP/Makefile.am
- 
-set(GITTAG  EXTAMP)
-
 set(EXTAMP_SOURCES External_ME_Interface.C
                    Process.C
                    Born_Process.C

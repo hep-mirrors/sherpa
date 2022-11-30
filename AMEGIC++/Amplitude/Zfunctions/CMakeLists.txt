@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Zfunctions/Makefile.am
- 
-set(GITTAG  AMEGIC++/Amplitude/Zfunctions)
-
 set(Zfunctions_SOURCES Basic_Func.C
                        Basic_Sfuncs.C
                        Basic_Pfunc.C

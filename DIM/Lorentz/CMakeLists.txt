@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Lorentz/Makefile.am
- 
-set(GITTAG  DIM/Lorentz)
-
 set(Lorentz_SOURCES FFV_FF.C
                     FFV_FI.C
                     FFV_IF.C

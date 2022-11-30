@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Explicit/Makefile.am
- 
-set(GITTAG  METOOLS/Explicit)
-
 set(Explicit_SOURCES C_Object.C
                      Current.C
                      Vertex_Key.C

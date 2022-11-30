@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Perturbative/Makefile.am
- 
-set(GITTAG  AMISIC++/Perturbative)
-
 set(Perturbative_SOURCES Single_Collision_Handler.C
                          MI_Processes.C
                          MI_Process_Group.C

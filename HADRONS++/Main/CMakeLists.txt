@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  HADRONS++/Main)
-
 set(Main_SOURCES Hadron_Decay_Map.C
                  Hadron_Decay_Table.C
                  Hadron_Decay_Channel.C

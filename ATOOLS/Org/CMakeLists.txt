@@ -1,18 +1,8 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Org/Makefile.am
  
- if (SHERPA_ENABLE_GZIP)
- set(GZIPSTREAMSOURCES
- Gzip_Stream.C)
-
- set(GZIPSTREAMHEADERS
- Gzip_Stream.H)
-
- else()
- set(GZIPEXTRADIST  Gzip_Stream.C Gzip_Stream.H)
-
- endif()
-set(GITTAG  ATOOLS/Org)
+if (SHERPA_ENABLE_GZIP)
+ set(GZIPSTREAMSOURCES Gzip_Stream.C)
+ set(GZIPSTREAMHEADERS Gzip_Stream.H)
+endif()
 
 set(Org_SOURCES MyStrStream.C
                 Return_Value.C

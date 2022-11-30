@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Special/Makefile.am
- 
-set(GITTAG  EXTRA_XS/Special)
-
 set(Special_SOURCES Instanton.C)
 
 sherpa_create_git_info(Special)

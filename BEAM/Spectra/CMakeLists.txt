@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Spectra/Makefile.am
- 
-set(GITTAG  BEAM/Spectra)
-
 set(Spectra_SOURCES Monochromatic.C
                     Laser_Backscattering.C
                     EPA.C

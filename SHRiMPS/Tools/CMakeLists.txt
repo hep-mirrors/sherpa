@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Tools/Makefile.am
- 
-set(GITTAG  SHRiMPS/Tools)
-
 set(Tools_SOURCES DEQ_Solver.C
                   Kernels.C
                   MinBias_Parameters.C)

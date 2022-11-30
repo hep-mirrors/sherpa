@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Shower/Makefile.am
- 
-set(GITTAG  DIM/Shower)
-
 set(Shower_SOURCES Gauge.C
                    Lorentz.C
                    Kernel.C

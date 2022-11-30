@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  PHOTONS++/Main)
-
 set(Main_SOURCES Photons.C
                  Define_Dipole.C
                  Dipole_Type.C)

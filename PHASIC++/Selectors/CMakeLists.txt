@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Selectors/Makefile.am
- 
-set(GITTAG  PHASIC++/Selectors)
-
 set(Selectors_SOURCES Cut_Data.C
                       Selector.C
                       Variable_Selector.C

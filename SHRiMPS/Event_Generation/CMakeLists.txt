@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Event_Generation/Makefile.am
- 
-set(GITTAG  SHRiMPS/Events)
-
 set(Event_Generation_SOURCES Event_Generator.C
                              Inelastic_Event_Generator.C
                              Elastic_Event_Generator.C

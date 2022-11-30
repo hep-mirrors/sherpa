@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#PhaseSpace/Makefile.am
- 
-set(GITTAG  PHOTONS++/PhaseSpace)
-
 set(PhaseSpace_SOURCES Avarage_Photon_Number.C
                        Generate_Dipole_Photon_Angle.C
                        Generate_Multipole_Photon_Angle.C)

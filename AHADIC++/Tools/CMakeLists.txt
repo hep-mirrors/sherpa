@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Tools/Makefile.am
- 
-set(GITTAG  AHADIC++/Tools)
-
 set(Tools_SOURCES Proto_Particle.C
                   Cluster.C
                   Constituents.C

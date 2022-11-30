@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Math/Makefile.am
- 
-set(GITTAG  ATOOLS/Math)
-
 set(Math_SOURCES MathTools.C
                  Term.C
                  Algebra_Interpreter.C

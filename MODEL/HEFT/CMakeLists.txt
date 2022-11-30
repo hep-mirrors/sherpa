@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#HEFT/Makefile.am
- 
-set(GITTAG  MODEL/HEFT)
-
 set(HEFT_SOURCES Effective_Higgs_Coupling.C
                  Model.C
                  SVV_LC.C

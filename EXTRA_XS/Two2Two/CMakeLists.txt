@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Two2Two/Makefile.am
- 
-set(GITTAG  EXTRA_XS/Two2Two)
-
 set(Two2Two_SOURCES XS_Drell_Yan.C
                     XS_DiPhoton.C
                     XS_QCD.C

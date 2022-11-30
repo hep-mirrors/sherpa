@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#OpenLoops/Makefile.am
- 
-set(GITTAG  AddOns/OpenLoops)
-
 set(OpenLoops_SOURCES OpenLoops_Virtual.C
                       OpenLoops_Born.C
                       OpenLoops_Interface.C

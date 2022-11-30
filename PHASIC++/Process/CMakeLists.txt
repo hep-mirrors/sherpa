@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Process/Makefile.am
- 
-set(GITTAG  PHASIC++/Process)
-
 set(Process_SOURCES Subprocess_Info.C
                     Process_Info.C
                     Process_Base.C

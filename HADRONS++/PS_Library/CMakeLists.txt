@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#PS_Library/Makefile.am
- 
-set(GITTAG  HADRONS++/PS_Library)
-
 set(PS_Library_SOURCES HD_PS_Base.C
                        Three_Body_PSs.C
                        Two_Body_PSs.C

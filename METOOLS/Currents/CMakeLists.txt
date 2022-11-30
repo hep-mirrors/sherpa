@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Currents/Makefile.am
- 
-set(GITTAG  METOOLS/Currents)
-
 set(Currents_SOURCES C_Scalar.C
                      C_Spinor.C
                      C_Vector.C

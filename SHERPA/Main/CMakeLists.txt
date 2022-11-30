@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  SHERPA/Main)
-
 set(Main_SOURCES Sherpa.C
                  Filter.C)
 set(Main_HEADERS Sherpa.H

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#DipoleSubtraction/Makefile.am
- 
-set(GITTAG  AMEGIC++/DipoleSubtraction)
-
 set(DipoleSubtraction_SOURCES DipoleSplitting_Base.C
                               FF_DipoleSplitting.C
                               FI_DipoleSplitting.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Calculators/Makefile.am
- 
-set(GITTAG  CSSHOWER++/Calculators)
-
 set(Calculators_SOURCES CF_QCD.C
                         CF_QED.C
                         CF_EW_FFV.C

@@ -1,5 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Scripts/Makefile.am
  
 set(Scripts_SOURCES Combine_Analysis.C)
 sherpa_create_git_info(Scripts)

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Ladders/Makefile.am
- 
-set(GITTAG  SHRiMPS/Ladders)
-
 set(Ladders_SOURCES Ladder_Particle.C
                     T_Prop.C
                     Ladder.C

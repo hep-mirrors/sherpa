@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Tools/Makefile.am
- 
-set(GITTAG  MCATNLO/Tools)
-
 set(Tools_SOURCES Parton.C
                   Singlet.C)
 

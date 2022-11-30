@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  MODEL/Main)
-
 set(Main_SOURCES Color_Function.C
                  Single_Vertex.C
                  Coupling_Data.C

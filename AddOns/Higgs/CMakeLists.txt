@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Higgs/Makefile.am
- 
-set(GITTAG  AddOns/Higgs)
-
 set(Higgs_SOURCES dilog.C
                   Wrappers.C
                   Higgs_Tree.C

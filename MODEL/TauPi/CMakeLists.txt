@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#TauPi/Makefile.am
- 
-set(GITTAG  MODEL/TauPi)
-
 set(TauPi_SOURCES TauPi_LC.C
                   Model.C)
 

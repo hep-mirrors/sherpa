@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  PDF/Main)
-
 set(Main_SOURCES PDF_Base.C
                  ISR_Base.C
                  Intact.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#UFO/Makefile.am
- 
-set(GITTAG  MODEL/UFO)
-
 set(UFO_SOURCES UFO_Param_Reader.C
                 UFO_Model.C
                 UFO_Color_Functions.C)

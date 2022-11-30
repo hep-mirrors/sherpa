@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#CT14/Makefile.am
- 
-set(GITTAG  PDF/CT14)
-
 set(CT14_SOURCES CT14Pdf.f
                  CT14_Fortran_Interface.C)
 

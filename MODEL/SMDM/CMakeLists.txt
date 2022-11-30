@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#SMDM/Makefile.am
- 
-set(GITTAG  MODEL/SMDM)
-
 set(SMDM_SOURCES  Model.C)
 
 sherpa_create_git_info(SMDM)

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  CSSHOWER++/Main)
-
 set(Main_SOURCES CS_Cluster_Definitions.C
                  CS_Shower.C)
 

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Channels/Makefile.am
- 
-set(GITTAG  PHASIC++/Channels)
-
 set(Channels_SOURCES CSS_Kinematics.C
                      Channel_Elements.C
                      Channel_Elements_KK.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#BlackHat/Makefile.am
- 
-set(GITTAG  AddOns/BlackHat)
-
 set(BlackHat_SOURCES BlackHat_Tree.C
                      BlackHat_Virtual.C
                      BlackHat_Interface.C)

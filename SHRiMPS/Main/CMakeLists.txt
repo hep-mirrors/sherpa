@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  SHRiMPS/Main)
-
 set(Main_SOURCES Shrimps.C
                  Cluster_Algorithm.C
                  Soft_Jet_Criterion.C

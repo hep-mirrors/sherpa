@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  DIM/Main)
-
 set(Main_SOURCES Gamma.C
                  MCatNLO.C)
 

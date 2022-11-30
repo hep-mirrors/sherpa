@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#SoftPhysics/Makefile.am
- 
-set(GITTAG  SHERPA/SoftPhysics)
-
 set(SoftPhysics_SOURCES Hadron_Init.C
                         Beam_Remnant_Handler.C
                         Colour_Reconnection_Handler.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Decays/Makefile.am
- 
-set(GITTAG  PHASIC++/Decays)
-
 set(Decays_SOURCES Decay_Channel.C
                    Decay_Table.C
                    Decay_Map.C)

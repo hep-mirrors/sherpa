@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Enhance/Makefile.am
- 
-set(GITTAG  PHASIC++/Enhance)
-
 set(Enhance_SOURCES Enhance_Observable_Base.C
                     Variable_Enhance_Observable.C
                     Fastjet_Enhance_Observable.C)

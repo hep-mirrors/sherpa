@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Tools/Makefile.am
- 
-set(GITTAG  REMNANTS/Tools)
-
 set(Tools_SOURCES Kinematics_Generator.C
                   Colour_Generator.C
                   Beam_Decorrelator.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#ME_Library/Makefile.am
- 
-set(GITTAG  HADRONS++/ME_Library)
-
 set(ME_Library_SOURCES HD_ME_Base.C
                        Generic.C
                        Current_ME.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#GRS/Makefile.am
- 
-set(GITTAG  PDF/GRS)
-
 set(GRS_SOURCES grsg99.f
                 GRSph_Fortran_Interface.C)
 

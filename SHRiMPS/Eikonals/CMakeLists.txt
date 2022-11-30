@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Eikonals/Makefile.am
- 
-set(GITTAG  SHRiMPS/Eikonals)
-
 set(Eikonals_SOURCES Eikonal_Weights.C
                      Rapidity_Density.C
                      Omega_ik.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#MEs/Makefile.am
- 
-set(GITTAG  PHOTONS++/MEs)
-
 set(MEs_SOURCES PHOTONS_ME_Base.C
                 Scalar_To_Scalar_Scalar.C
                 Scalar_To_Fermion_Fermion.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  RECONNECTIONS/Main)
-
 set(Main_SOURCES Reconnection_Handler.C
                  Reconnection_Base.C
                  Reconnect_By_Singlet.C

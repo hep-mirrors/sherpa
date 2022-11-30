@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#SAL/Makefile.am
- 
-set(GITTAG  PDF/SAL)
-
 set(SAL_SOURCES sal.cpp
                 SALph_CPP_Interface.C)
 

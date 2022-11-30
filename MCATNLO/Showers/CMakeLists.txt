@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Showers/Makefile.am
- 
-set(GITTAG  MCATNLO/Showers)
-
 set(Showers_SOURCES Splitting_Function_Base.C
                     Splitting_Function_Group.C
                     SF_Coupling.C

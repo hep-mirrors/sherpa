@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  METOOLS/Main)
-
 set(Main_SOURCES Polarization_Tools.C
                  XYZFuncs.C
                  Polarization_Index.C

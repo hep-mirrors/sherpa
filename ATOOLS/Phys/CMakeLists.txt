@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Phys/Makefile.am
- 
-set(GITTAG  ATOOLS/Phys)
-
 set(Phys_SOURCES Fragmentation_Base.C
                  fjcore.cc
                  Flavour.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  AddOns/Analysis/Main)
-
 set(Main_SOURCES Analysis_Object.C
                  Primitive_Analysis.C
                  Analysis_Handler.C)

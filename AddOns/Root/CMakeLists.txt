@@ -1,8 +1,6 @@
 
 set(foo_SOURCES Output_RootNtuple.C RootNtuple_Reader.C)
-set(foo_HEADERS Output_RootNtuple.H RootNtuple_Reader.H) 
-
-set(SherpaRootOutput_SOURCES Output_RootNtuple.C)
+set(foo_HEADERS Output_RootNtuple.H RootNtuple_Reader.H)set(SherpaRootOutput_SOURCES Output_RootNtuple.C)
 set(SherpaRootOutput_HEADERS Output_RootNtuple.H)
 set(SherpaRootInput_SOURCES RootNtuple_Reader.C)
 set(SherpaRootInput_HEADERS RootNtuple_Reader.H)
@@ -66,7 +64,6 @@ target_link_libraries(SherpaEDRootInput PRIVATE ${ROOT_LIBRARIES})
 target_include_directories(SherpaEDRootInput PRIVATE ${ROOT_INCLUDE_DIRS})
 sherpa_handle_shared_library(SherpaEDRootInput SherpaEDRootInput)
 
-#Warning: The ROOT_CXX_FLAGS might be incompatible with the current compiller
 include(CheckCXXCompilerFlag)
 string(REPLACE " " ";" ROOT_CXX_FLAGS_LIST ${ROOT_CXX_FLAGS})
 list(REMOVE_ITEM ROOT_CXX_FLAGS_LIST "-stdlib=libc++")

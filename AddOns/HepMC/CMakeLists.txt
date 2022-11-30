@@ -1,4 +1,3 @@
- set(GITTAG  AddOns/HepMC)
  set(foo_SOURCES  Output_HepMC2_Genevent.C Output_HepMC2_Short.C Output_HepMC3_Genevent.C Output_HepMC3_Short.C)
  set(foo_HEADERS  Output_HepMC2_Genevent.H Output_HepMC2_Short.H Output_HepMC3_Genevent.H Output_HepMC3_Short.H)
  sherpa_create_git_info(foo)

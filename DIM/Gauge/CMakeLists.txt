@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Gauge/Makefile.am
- 
-set(GITTAG  DIM/Gauge)
-
 set(Gauge_SOURCES GGG.C
                   GQQ.C
                   QQG.C)

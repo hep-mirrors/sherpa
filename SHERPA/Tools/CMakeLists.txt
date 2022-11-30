@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Tools/Makefile.am
- 
-set(GITTAG  SHERPA/Tools)
-
 set(Tools_SOURCES Output_Base.C
                   Event_Reader_Base.C
                   HepEvt_Interface.C

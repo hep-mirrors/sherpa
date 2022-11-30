@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#SpinCorrelations/Makefile.am
- 
-set(GITTAG  METOOLS/SpinCorrelations)
-
 set(SpinCorrelations_SOURCES Amplitude2_Tensor.C
                              Amplitude2_Matrix.C
                              Decay_Matrix.C

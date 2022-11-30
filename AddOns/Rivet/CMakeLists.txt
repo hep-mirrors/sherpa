@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Rivet/Makefile.am
- 
-set(GITTAG  AddOns/Rivet)
-
 set(Rivet_SOURCES Rivet_Interface.C)
 sherpa_create_git_info(Rivet)
 

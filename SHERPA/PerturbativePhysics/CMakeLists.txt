@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#PerturbativePhysics/Makefile.am
- 
-set(GITTAG  SHERPA/PerturbativePhysics)
-
 set(PerturbativePhysics_SOURCES Matrix_Element_Handler.C
                                 MI_Handler.C
                                 Shower_Handler.C

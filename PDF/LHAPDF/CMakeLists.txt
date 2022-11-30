@@ -1,7 +1,4 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#LHAPDF/Makefile.am
  
-set(GITTAG  PDF/LHAPDF)
 set(LHAPDF_SOURCES  LHAPDF_CPP_Interface.C)
 sherpa_create_git_info(LHAPDF)
  

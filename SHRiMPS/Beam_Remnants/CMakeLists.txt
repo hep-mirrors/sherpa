@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Beam_Remnants/Makefile.am
- 
-set(GITTAG  SHRiMPS/Beam_Remnants)
-
 set(Beam_Remnants_SOURCES Continued_PDF.C
                           Hadron_Dissociation.C
                           Remnant_Handler.C

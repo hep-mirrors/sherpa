@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#SMEHC/Makefile.am
- 
-set(GITTAG  MODEL/SMEHC)
-
 set(SMEHC_SOURCES Effective_Higgs_Coupling.C
                   Model.C
                   SVV_LC.C

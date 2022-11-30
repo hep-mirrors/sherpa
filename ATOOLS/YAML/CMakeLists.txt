@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#YAML/Makefile.am
- 
-set(GITTAG  ATOOLS/YAML)
-
 set(YAML_SOURCES binary.cpp
                  convert.cpp
                  depthguard.cpp
@@ -57,7 +52,6 @@ set(YAML_HEADERS collectionstack.h
 
 sherpa_create_git_info(YAML)
  
-#YAML/yaml-cpp/Makefile.am
  
 set(YAML_yaml-cpp_HEADERS anchor.h
                           binary.h
@@ -80,7 +74,6 @@ set(YAML_yaml-cpp_HEADERS anchor.h
                           yaml.h)
 
  
-#YAML/yaml-cpp/node/Makefile.am
  
 set(YAML_yaml-cpp_node_HEADERS convert.h
                                emit.h
@@ -92,7 +85,6 @@ set(YAML_yaml-cpp_node_HEADERS convert.h
                                type.h)
 
  
-#YAML/yaml-cpp/node/detail/Makefile.am
  
 set(YAML_yaml-cpp_node_detail_HEADERS impl.h
                                       iterator.h

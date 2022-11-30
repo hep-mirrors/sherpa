@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Phasespace/Makefile.am
- 
-set(GITTAG  AMEGIC++/Phasespace)
-
 set(Phasespace_SOURCES Phase_Space_Generator.C
                        Channel_Generator_Base.C
                        Channel_Generator.C

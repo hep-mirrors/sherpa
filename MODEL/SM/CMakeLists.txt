@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#SM/Makefile.am
- 
-set(GITTAG  MODEL/SM)
-
 set(SM_SOURCES  Model.C)
 
 sherpa_create_git_info(SM)

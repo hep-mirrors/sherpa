@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Formation/Makefile.am
- 
-set(GITTAG  AHADIC++/Formation)
-
 set(Formation_SOURCES Beam_Particles_Shifter.C
                       Singlet_Former.C
                       Singlet_Checker.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#SASG/Makefile.am
- 
-set(GITTAG  PDF/SASG)
-
 set(SASG_SOURCES sasgam2.f
                  SASGph_Fortran_Interface.C)
 

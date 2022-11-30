@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  PHASIC++/Main)
-
 set(Main_SOURCES Color_Integrator.C
                  Helicity_Integrator.C
                  Process_Integrator.C

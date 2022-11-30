@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  AHADIC++/Main)
-
 set(Main_SOURCES  Ahadic.C)
 
 set(Main_HEADERS Ahadic.H)

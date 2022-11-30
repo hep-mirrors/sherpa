@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Colors/Makefile.am
- 
-set(GITTAG  METOOLS/Colors)
-
 set(Colors_SOURCES None_CC.C
                    D_CC.C
                    T_CC.C

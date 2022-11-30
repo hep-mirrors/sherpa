@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Vertices/Makefile.am
- 
-set(GITTAG  METOOLS/Vertices)
-
 set(Vertices_SOURCES FFV_DLC.C
                      VVV_DLC.C
                      SSS_LC.C

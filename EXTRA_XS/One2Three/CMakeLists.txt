@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#One2Three/Makefile.am
- 
-set(GITTAG  EXTRA_XS/One2Three)
-
 set(One2Three_SOURCES Comix1to3.C)
 
 set(One2Three_HEADERS Comix1to3.H)

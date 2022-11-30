@@ -1,7 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
- 
-set(GITTAG  AddOns/NNLO)
-
 set(NNLO_SOURCES polylog.c
                  Tools.C
                  QT_Selector.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Decays/Makefile.am
- 
-set(GITTAG  AHADIC++/Decays)
-
 set(Decays_SOURCES Cluster_Decayer.C
                    Cluster_Splitter.C)
 

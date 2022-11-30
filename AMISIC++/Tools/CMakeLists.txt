@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Tools/Makefile.am
- 
-set(GITTAG  AMISIC++/Tools)
-
 set(Tools_SOURCES MI_Parameters.C
                   MPI_Scale_Setter.C
                   MPI_KFactor_Setter.C

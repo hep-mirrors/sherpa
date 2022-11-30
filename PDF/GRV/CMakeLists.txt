@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#GRV/Makefile.am
- 
-set(GITTAG  PDF/GRV)
-
 set(GRV_SOURCES grvphoton.f
                 GRVph_Fortran_Interface.C)
 

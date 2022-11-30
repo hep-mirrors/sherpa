@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#EWSud/Makefile.am
- 
-set(GITTAG  AddOns/EWSud)
-
 set(EWSud_SOURCES Variation_Generator.C
                   Coefficient_Checker.C
                   KFactor_Checker.C

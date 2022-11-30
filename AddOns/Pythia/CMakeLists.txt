@@ -1,5 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Pythia/Makefile.am
  
  if (SHERPA_ENABLE_PYTHIA8)
 set(Pythia_SOURCES Pythia_Jet_Criterion.C
@@ -9,7 +7,6 @@ set(Pythia_SOURCES Pythia_Jet_Criterion.C
 set(Pythia_SOURCES Pythia_Jet_Criterion.C)
 
  endif()
-set(GITTAG  AddOns/Pythia)
 
 sherpa_create_git_info(Pythia)
  

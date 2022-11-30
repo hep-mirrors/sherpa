@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#NNPDF/Makefile.am
- 
-set(GITTAG  PDF/NNPDF)
-
 set(NNPDF_SOURCES NNPDFDriver.cc
                   PDF_NN.C)
 

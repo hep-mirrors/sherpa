@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Scales/Makefile.am
- 
-set(GITTAG  PHASIC++/Scales)
-
 set(Scales_SOURCES Cluster_Definitions.C
                    Scale_Setter_Base.C
                    Core_Scale_Setter.C

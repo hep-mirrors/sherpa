@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Tools/Makefile.am
- 
-set(GITTAG  AddOns/Analysis/Tools)
-
 set(Tools_SOURCES Lorentz.C
                   Breit_Frame.C
                   MET.C

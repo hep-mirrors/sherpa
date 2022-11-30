@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Tools/Makefile.am
- 
-set(GITTAG  PHOTONS++/Tools)
-
 set(Tools_SOURCES Dipole_FF.C
                   Dipole_FI.C
                   Dress_Blob_Base.C

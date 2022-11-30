@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  AMEGIC++/Main)
-
 set(Main_SOURCES ColorSC.C
                  Helicity.C
                  Topology.C

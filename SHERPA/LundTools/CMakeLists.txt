@@ -1,8 +1,6 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
 
 set(PYTHIASOURCES   pyplst.f Lund_Interface.C)
  set(PYTHIAHEADERS  Lund_Wrapper.H Lund_Interface.H)
- set(GITTAG  SHERPA/LundTools)
  if (SHERPA_ENABLE_PYTHIA6)
   set(LundTools_SOURCES ${PYTHIASOURCES} )
   set(LundTools_HEADERS ${PYTHIAHEADERS} Dummy.C)

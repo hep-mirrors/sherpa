@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#NLO/Makefile.am
- 
-set(GITTAG  EXTRA_XS/NLO)
-
 set(NLO_SOURCES Logarithms.C
                 Dummy_QCD_Virtual.C
                 DY_QCD_Virtual.C

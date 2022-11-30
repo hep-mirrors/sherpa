@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Tools/Makefile.am
- 
-set(GITTAG  DIRE/Tools)
-
 set(Tools_SOURCES Color.C
                   Parton.C
                   Splitting.C

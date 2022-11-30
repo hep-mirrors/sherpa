@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Single_Events/Makefile.am
- 
-set(GITTAG  SHERPA/Single_Events)
-
 set(Single_Events_SOURCES Event_Handler.C
                           Event_Phase_Handler.C
                           Signal_Processes.C

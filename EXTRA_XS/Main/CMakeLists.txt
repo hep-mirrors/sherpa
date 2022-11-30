@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  EXTRA_XS/Main)
-
 set(Main_SOURCES Single_Process.C
                  Process_Group.C
                  Simple_XS.C

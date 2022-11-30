@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Triggers/Makefile.am
- 
-set(GITTAG  AddOns/Analysis/Triggers)
-
 set(Triggers_SOURCES Trigger_Base.C
                      One_Variable_Selector.C
                      One_Particle_Selector.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Loops/Makefile.am
- 
-set(GITTAG  METOOLS/Loops)
-
 set(Loops_SOURCES Master_Tadpole.C
                   Master_Bubble.C
                   Master_Triangle.C

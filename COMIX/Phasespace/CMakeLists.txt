@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Phasespace/Makefile.am
- 
-set(GITTAG  COMIX/Phasespace)
-
 set(Phasespace_SOURCES PS_Info.C
                        PS_Vertex.C
                        PS_Current.C

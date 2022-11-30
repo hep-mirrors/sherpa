@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Analyses/Makefile.am
- 
-set(GITTAG  AddOns/Analysis/Analyses)
-
 set(Analyses_SOURCES Analysis_Base.C
                      WPolarization_Analysis.C
                      ATLAS_CONF_2011_038.C

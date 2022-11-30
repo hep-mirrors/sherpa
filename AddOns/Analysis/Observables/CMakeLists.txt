@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Observables/Makefile.am
- 
-set(GITTAG  AddOns/Analysis/Observables)
-
 set(Observables_SOURCES Event_Output.C
                         Blobdata.C
                         Global_Calculator.C

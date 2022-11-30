@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  REMNANTS/Main)
-
 set(Main_SOURCES Remnant_Handler.C
                  Remnant_Base.C
                  Hadron_Remnant.C

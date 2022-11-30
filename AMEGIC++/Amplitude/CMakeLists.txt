@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Amplitude/Makefile.am
- 
-set(GITTAG  AMEGIC++/Amplitude)
-
 set(Amplitude_SOURCES Single_Vertex.C
                       Vertex.C
                       CFColor.C

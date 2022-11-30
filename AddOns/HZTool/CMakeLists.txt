@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#HZTool/Makefile.am
- 
-set(GITTAG  AddOns/HZTool)
-
 set(HZTool_SOURCES hznorm.F
                    hztool_sherpa.F
                    HZTool_Interface.C)

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Cross_Sections/Makefile.am
- 
-set(GITTAG  SHRiMPS/Cross_Sections)
-
 set(Cross_Sections_SOURCES Cross_Sections.C
                            Sigma_Base.C
                            Sigma_Total.C

@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#String/Makefile.am
- 
-set(GITTAG  AMEGIC++/String)
-
 set(String_SOURCES String_Handler.C
                    String_Generator.C
                    String_Tree.C

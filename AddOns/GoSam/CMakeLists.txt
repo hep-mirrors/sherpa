@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#GoSam/Makefile.am
- 
-set(GITTAG  AddOns/GoSam)
-
 set(GoSam_SOURCES GoSam_Virtual.C
                   GoSam_Interface.C)
 

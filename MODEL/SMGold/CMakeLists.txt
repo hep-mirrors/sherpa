@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#SMGold/Makefile.am
- 
-set(GITTAG  MODEL/SMGold)
-
 set(SMGold_SOURCES Model.C
                    Identity_2_1.C
                    T_3_2_1.C

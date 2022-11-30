@@ -1,8 +1,3 @@
-##### Automatically or semiautomaticaly generated, do not edit.#########
-#Main/Makefile.am
- 
-set(GITTAG  COMIX/Main)
-
 set(Main_SOURCES Process_Base.C
                  Process_Group.C
                  Single_Process.C
