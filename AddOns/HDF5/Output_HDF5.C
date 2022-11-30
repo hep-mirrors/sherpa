@@ -396,8 +396,7 @@ namespace SHERPA {
       xfer_props.add(UseCollectiveIO{});
 #endif
       if (mode!=1 && m_events<m_ncache) return;
-      if (m_events==0 && m_trials==0) return;
-      if (m_ecache.empty()) {
+      if (m_trials>0) {
 	std::vector<double> eprops(m_neprops+m_nweights,-1.);
 	eprops[0]=0;
 	eprops[1]=m_nmax;
