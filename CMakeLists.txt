@@ -198,22 +198,33 @@ include_directories(${PROJECT_SOURCE_DIR})
 add_definitions(-DHAVE_CONFIG_H)
 add_definitions(-DPIC)
 
-find_program(GIT NAMES git  REQUIRED)
-execute_process(COMMAND ${GIT} rev-parse --abbrev-ref HEAD
+find_program(GIT NAMES git)
+if (GIT)
+  execute_process(COMMAND ${GIT} rev-parse --abbrev-ref HEAD
                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITURL 
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${GIT} rev-parse  HEAD
+  execute_process(COMMAND ${GIT} rev-parse  HEAD
                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITREV 
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
+  message(STATUS "SHERPA: GIT=${GIT} GITREV=${GITREV} GITURL=${GITURL}")
+else()
+  message(STATUS "SHERPA: GIT IS NOT AVAILABLE!")
+  set(GITURL "unknownurl")
+  set(GITREV "unknownrevision")
+endif()
 
-message(STATUS "SHERPA: GIT=${GIT} GITREV=${GITREV} GITURL=${GITURL}")
+
 macro(sherpa_create_git_info name b)
-  execute_process(COMMAND ${GIT} status -s --untracked-files=no .
+  if (GIT)
+    execute_process(COMMAND ${GIT} status -s --untracked-files=no .
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITCLEAN 
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
+  else()
+   set(GITCLEAN "")
+  endif()
   if ("${GITCLEAN}" STREQUAL "")
     set(GITREVSUFFIX "")
   else()
