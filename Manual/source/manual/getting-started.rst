@@ -36,8 +36,8 @@ available on the system:
 
 Recommended:   
   * Fortran compiler
-  * LHAPDF  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LHAPDF=ON` cmake option to install LHAPDF on-the-fly during the Sherpa insatllation (internet connection required).
-  * libzip  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LIBZIP=ON` cmake option to install libzip on-the-fly during the Sherpa insatllation (internet connection required).
+  * LHAPDF  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LHAPDF=ON` cmake option to install LHAPDF on-the-fly during the Sherpa installation (internet connection required).
+  * libzip  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LIBZIP=ON` cmake option to install libzip on-the-fly during the Sherpa installation (internet connection required).
 
 Compilation and installation proceed through the following commands if
 you use the distribution tarball:
@@ -93,7 +93,7 @@ step. This is achieved adding corresponding options to the configuration
 
    $  ... -DSHERPA_ENABLE_RIVET=ON  ...
 
-To point the camke to the path where the Rivet is installed use 
+To point the cmake to the path where the Rivet is installed use 
 
 .. code-block:: shell-session
 
@@ -182,15 +182,6 @@ issues which have come up on Mac installations before:
 
 * On 10.4 and 10.5 only gfortran is supported, and you will have
   to install it e.g. from HPC
-
-* If you want to reconfigure, i.e. run the command ``autoreconf`` or
-  ``(g)libtoolize``, you have to make sure that you have a recent
-  version of GNU libtool (>=1.5.22 has been tested). Don’t confuse
-  this with the native non-GNU libtool which is installed in
-  ``/usr/bin/libtool`` and of no use! Also make sure that your autools
-  (autoconf >= 2.61, automake >= 1.10 have been tested) are of recent
-  versions. All this should not be necessary though, if you only run
-  ``configure``.
 
 * Make sure that you don’t have two versions of g++ and libstdc++
   installed and being used inconsistently. This appeared e.g. when the

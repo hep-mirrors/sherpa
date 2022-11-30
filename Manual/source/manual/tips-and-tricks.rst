@@ -284,11 +284,11 @@ Hints to find a good value:
   calculated, thus the less time the evaluation/phase space point
   takes.
 
-* Too small choices lead to large cancelations between the ``RS``
-  and the ``I`` parts and thus to large statisical errors.
+* Too small choices lead to large cancellations between the ``RS``
+  and the ``I`` parts and thus to large statistical errors.
 
 * For very simple processes (with only a total of two partons in the
-  iniatial and the final state of the born process) the best choice is
+  initial and the final state of the born process) the best choice is
   typically ``DIPOLES: {ALPHA: 1``}.  The more complicated a process
   is the smaller ``DIPOLES:ALPHA`` should be (e.g. with 5 partons the
   best choice is typically around 0.01).
@@ -308,7 +308,7 @@ integration grid can become prohibitively long. Rather than using a
 poorly optimized grid in this case it is more advisable to use a grid
 optimized with either the born matrix elements or the born matrix
 elements and the finite part of the integrated subtraction terms only,
-working under the assumption that the distibutions in phase space are
+working under the assumption that the distributions in phase space are
 rather similar.
 
 This can be done by one of the following methods:
