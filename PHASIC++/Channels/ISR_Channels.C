@@ -49,7 +49,7 @@ bool ISR_Channels::MakeChannels()
     }
     break;
   case PDF::isrmode::lepton_hadron:
-  case PDF::isrmode::hadron_lepton: 
+  case PDF::isrmode::hadron_lepton:
     m_isrparams.push_back(Channel_Info(channel_type::simple,1.,1.));
     break;
   case PDF::isrmode::lepton_lepton:
@@ -85,7 +85,7 @@ void ISR_Channels::CheckForStructuresFromME() {
     p_psh->FSRIntegrator()->ISRInfo(i,types[i],masses[i],widths[i]);
   }
   p_psh->FSRIntegrator()->ISRInfo(types,masses,widths);
-  bool onshellresonance(false), fromFSR(false);  
+  bool onshellresonance(false), fromFSR(false);
   for (size_t i=0;i<types.size();i++) {
     channel_type::code type = channel_type::code(abs(types[i]));
     switch (type) {
@@ -124,7 +124,7 @@ void ISR_Channels::CheckForStructuresFromME() {
     case channel_type::leadinglog:
     case channel_type::laserback:
     default:
-      break;   
+      break;
     }
   }
   if (fromFSR) return;

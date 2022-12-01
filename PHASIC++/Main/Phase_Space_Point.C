@@ -108,6 +108,11 @@ void Phase_Space_Point::InitCuts(Process_Integrator *const process) {
   process->Process()->BuildCuts(p_cuts);
   if (process->NIn() > 1) {
     m_smin = ATOOLS::Max(sqr(process->ISRThreshold()), p_cuts->Smin());
+    if (process->Process()->Flavours()[2].Kfcode() == kf_instanton) {
+      Settings& s = Settings::GetMainSettings();
+      m_smin = sqr(s["INSTANTON_MIN_MASS"].Get<double>());
+      process->ISR()->SetFixedSprimeMax(sqr(s["INSTANTON_MAX_MASS"].Get<double>()));
+    }
     process->ISR()->SetFixedSprimeMin(m_smin);
     process->Beam()->SetSprimeMin(m_smin);
   }
@@ -182,13 +187,6 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
       p_isrhandler->SetLimits(m_beamykey[2]);
       if (!p_isrhandler->CheckMasses())
         return false;
-      if (m_nin == 2 && m_nout == 1 &&
-          process->Process()->Selected()->Flavours()[2].Kfcode() == kf_instanton) {
-        if (p_pshandler->Active()->Process()->SPrimeMin() > 0.)
-          m_isrspkey[0] = p_pshandler->Active()->Process()->SPrimeMin();
-        if (p_pshandler->Active()->Process()->SPrimeMax() > 0.)
-          m_isrspkey[1] = p_pshandler->Active()->Process()->SPrimeMax();
-      }
       m_isrspkey[4] = sqr(m_osmass);
       p_isrchannels->GeneratePoint();
     }
