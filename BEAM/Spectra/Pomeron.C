@@ -43,7 +43,11 @@ bool Pomeron::CalculateWeight(double x, double q2)
 {
   m_x = x;
   m_Q2 = q2;
-  double t = sqr(1-x) * sqr(m_proton_mass);
+  if (x > sqrt(1.-sqr(m_proton_mass/m_energy)) || x < 0.01) {
+    m_weight = 0.;
+    return true;
+  }
+  double t = 2. * sqr(m_proton_mass) * (1.-x);
   m_weight = m_A*exp(m_B*t) / pow(x, 2.*Alpha(t)-1);
   if (m_weight < 0.) m_weight = 0.;
   return true;

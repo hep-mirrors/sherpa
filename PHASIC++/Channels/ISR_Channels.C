@@ -134,6 +134,7 @@ bool ISR_Channels::CreateChannels()
 	     m_isrtype[0]!=PDF::isrtype::unknown) +
     2*size_t(m_isrtype[1]!=PDF::isrtype::intact &&
 	     m_isrtype[1]!=PDF::isrtype::unknown);
+  msg_Out() << METHOD << ": collmode = " << collmode << "\n";
   if (m_isrparams.size() < 1 || collmode==0) return 0;
   for (size_t i=0;i<m_isrparams.size();i++) {
     switch (m_isrparams[i].type) {
