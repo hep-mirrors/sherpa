@@ -37,7 +37,10 @@ NNPDF31_nnlo_as_0118_mc/
 SHERPA/LundTools/pythia-6.4.18.f
 SHERPA/Run/Sherpa-config
 install_manifest.txt
-
+Manual/sherpa-completion
+MODEL/UFO/Sherpa-generate-model
+MODEL/UFO/sconstruct_template
+test.py
 
 # (local) make install targets
 
