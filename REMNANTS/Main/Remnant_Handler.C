@@ -7,6 +7,7 @@
 #include "REMNANTS/Main/Hadron_Remnant.H"
 #include "REMNANTS/Main/No_Remnant.H"
 #include "REMNANTS/Main/Photon_Remnant.H"
+#include "REMNANTS/Main/Pomeron_Remnant.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "REMNANTS/Tools/Remnants_Parameters.H"
 
@@ -41,13 +42,14 @@ InitializeRemnants(PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spec
     p_remnants[i] = nullptr;
     Flavour flav = isr->Flav(i);
     if (isr->PDF(i) != nullptr && Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
-      if (flav.IsHadron())
+      if (flav.IsHadron() && flav.Kfcode() != kf_pomeron)
         p_remnants[i] = new Hadron_Remnant(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsLepton())
         p_remnants[i] = new Electron_Remnant(isr->PDF(i), i, m_tags[i]);
-      else if (flav.IsPhoton()) {
+      else if (flav.IsPhoton())
         p_remnants[i] = new Photon_Remnant(isr->PDF(i), i, m_tags[i]);
-      }
+      else if (flav.Kfcode() == kf_pomeron)
+        p_remnants[i] = new Pomeron_Remnant(isr->PDF(i), i);
     }
     if(yfs->Mode()!=YFS::yfsmode::off){
       // Should always be a lepton
@@ -91,19 +93,23 @@ void Remnant_Handler::DefineRemnantStrategy() {
            p_remnants[1]->Type() == rtp::lepton)
     m_type = strat::ll;
   else if ((p_remnants[0]->Type() == rtp::hadron ||
-            p_remnants[0]->Type() == rtp::photon) &&
+            p_remnants[0]->Type() == rtp::photon ||
+            p_remnants[0]->Type() == rtp::pomeron) &&
            (p_remnants[1]->Type() == rtp::lepton ||
             p_remnants[1]->Type() == rtp::intact))
     m_type = strat::DIS1;
   else if ((p_remnants[0]->Type() == rtp::lepton ||
             p_remnants[0]->Type() == rtp::intact) &&
            (p_remnants[1]->Type() == rtp::hadron ||
-            p_remnants[1]->Type() == rtp::photon))
+            p_remnants[1]->Type() == rtp::photon ||
+            p_remnants[1]->Type() == rtp::pomeron))
     m_type = strat::DIS2;
   else if ((p_remnants[0]->Type() == rtp::hadron ||
-            p_remnants[0]->Type() == rtp::photon) &&
+            p_remnants[0]->Type() == rtp::photon ||
+            p_remnants[0]->Type() == rtp::pomeron) &&
            (p_remnants[1]->Type() == rtp::hadron ||
-            p_remnants[1]->Type() == rtp::photon))
+            p_remnants[1]->Type() == rtp::photon ||
+            p_remnants[1]->Type() == rtp::pomeron))
     m_type = strat::hh;
   else if ((p_remnants[0]->Type() == rtp::lepton &&
             p_remnants[1]->Type() == rtp::intact) ||

@@ -3,6 +3,7 @@ set(Main_SOURCES Remnant_Handler.C
                  Hadron_Remnant.C
                  Electron_Remnant.C
                  Photon_Remnant.C
+                 Pomeron_Remnant.C
                  No_Remnant.C)
 
 set(Main_HEADERS Remnant_Handler.H
@@ -10,6 +11,7 @@ set(Main_HEADERS Remnant_Handler.H
                  Hadron_Remnant.H
                  Electron_Remnant.H
                  Photon_Remnant.H
+                 Pomeron_Remnant.H
                  No_Remnant.H)
 
 sherpa_create_git_info(Main)

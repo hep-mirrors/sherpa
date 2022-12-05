@@ -81,6 +81,9 @@ If desired, you can also specify spectra for beamstrahlung through
   thank T. Pierzchala for his help in implementing and testing the
   corresponding code. See details below.
 
+:option:`Pomeron`
+  This enables the Proton--Pomeron flux, see details below.
+
 :option:`Spectrum_Reader`
   A user defined spectrum is used to describe the energy spectrum
   of the assumed new beam particles. The name of the corresponding
@@ -188,6 +191,30 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 single values that are then applied to both beams, or to a list of two
 values, for the respective beams.
 
+Pomeron
+-------
+
+The Pomeron flux is implemented as used in :cite`H1:2006zyl` :cite:`Goharipour:2018yov` :cite:`H1:2006uea`, given by
+
+.. math::
+
+    f_{\mathbb{P}} = A_\mathbb{P} \frac{e^{B_\mathbb{P} t}}{{x}_\mathbb{P}^{2 \alpha_\mathbb{P}\left(t\right) -1}}
+
+where :math:`t` is the squared transferred four-momentum and :math:`\alpha` is assumed to be
+linear, :math:`\alpha_\mathbb{P}\left(t\right) = \alpha\left(0\right) + \alpha^\prime t`. The default values are set
+to the ones obtained in Fit A in :cite:`Goharipour:2018yov` and can each be changed like so:
+
+.. code-block:: yaml
+
+    Pomeron:
+      A: 1.0
+      B: 7.0
+      Alpha_intercept: 1.0938
+      Alpha_slope: 0.0
+
+where ``Alpha_intercept`` and ``Alpha_slope`` are :math:`\alpha\left(0\right)` and :math:`\alpha^\prime`, respectively.
+
+Other fluxes can be implemented upon request.
 
 .. _Beam Polarization:
 
@@ -204,3 +231,4 @@ The flavour of :option:`BEAM_1/BEAM_2` follows the definition given to  :option:
    POLARIZATION:
      BEAM_1: 0.8
      BEAM_2: -0.3
+

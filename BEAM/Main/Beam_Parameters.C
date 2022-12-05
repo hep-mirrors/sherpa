@@ -296,6 +296,7 @@ void Beam_Parameters::RegisterEPADefaults() {
 }
 
 void Beam_Parameters::RegisterPomeronDefaults() {
+  // taken from Goharipour:2018yov
   m_settings["Pomeron"]["A"].SetDefault(1.0);
   m_settings["Pomeron"]["B"].SetDefault(7.0);
   m_settings["Pomeron"]["Alpha_intercept"].SetDefault(1.0938);

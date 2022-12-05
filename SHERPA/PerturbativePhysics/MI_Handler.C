@@ -36,6 +36,9 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
     m_name = "None";
     m_on   = false;
   }
+  // Pomerons are hadrons, but don't have Multiple Interactions
+  else if (isr->Flav(0).Kfcode() == kf_instanton || isr->Flav(1).Kfcode() == kf_instanton)
+    m_name = "None";
   else {
     if (m_name==string("Amisic"))  InitAmisic(model);
     if ((scm==string("Shrimps") && p_amisic==NULL) ||
@@ -45,7 +48,7 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
            <<"  id = "<<m_id<<", name = "<<m_name<<", type = "<<m_type<<"\n";
 }
 
-MI_Handler::~MI_Handler() 
+MI_Handler::~MI_Handler()
 {
   if (p_amisic!=NULL)  { delete p_amisic;  p_amisic  = NULL; }
   if (p_shrimps!=NULL) { delete p_shrimps; p_shrimps = NULL; }
@@ -69,7 +72,7 @@ void MI_Handler::InitShrimps(MODEL::Model_Base *model)
   m_type = typeID::shrimps;
 }
 
-bool MI_Handler::InitialiseMPIs(const double & scale) 
+bool MI_Handler::InitialiseMPIs(const double & scale)
 {
   if (m_type==typeID::amisic) return p_amisic->InitMPIs(p_isr, scale);
   return true;

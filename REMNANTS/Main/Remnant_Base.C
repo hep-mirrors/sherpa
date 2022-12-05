@@ -19,6 +19,8 @@ std::ostream &REMNANTS::operator<<(std::ostream &ostr, const rtp::code code) {
     return ostr << "Photon";
   case rtp::lepton:
     return ostr << "Lepton";
+  case rtp::pomeron:
+    return ostr << "Pomeron";
   }
   return ostr;
 }
@@ -28,19 +30,14 @@ Remnant_Base(const ATOOLS::Flavour & flav, const size_t & beam, const size_t & t
   m_beamflav(flav), m_type(FixType(m_beamflav)),
   m_beam(beam), m_tag(tag), p_beam(nullptr), p_ff(nullptr),
   p_beamblob(nullptr), m_position(Vec4D(0.,0.,0.,0.)),
-  p_colours(nullptr), m_scale2(-1.), m_extractionErrors (0), m_resenergyWarnings(0) {}
+  p_colours(nullptr), m_scale2(-1.) {}
 
 Remnant_Base::~Remnant_Base() {
-  if (m_extractionErrors>0 ||  m_resenergyWarnings>0)
-    msg_Info()<<"--------------------------------------------------------"
-	      <<"Remnant(beam = "<<m_beam<<", "<<m_beamflav<<") with "
-	      <<m_extractionErrors<<" "<<"errors in parton extraction and with "
-	      <<m_resenergyWarnings<<" warnings for insufficient energy.\n"
-	      <<"--------------------------------------------------------";
   if (p_ff!=nullptr) { delete p_ff; p_ff = NULL; }
 }
 
 rtp::code Remnant_Base::FixType(ATOOLS::Flavour & flav) {
+  if (flav==Flavour(kf_pomeron)) return rtp::pomeron;
   if (flav.IsLepton()) return rtp::lepton;
   if (flav.IsHadron()) return rtp::hadron;
   if (flav.IsPhoton()) return rtp::photon;
@@ -59,21 +56,17 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
     }
     return true;
   }
-  if (m_extractionErrors++<5) {
-    msg_Error() << METHOD << ": Cannot extract particle:\n"
-		<< (*parton) << "\n  from: " << p_beam->Bunch()
-		<< " with momentum " << p_beam->OutMomentum() << "\n";
-  }
+  msg_Error() << METHOD << ": Cannot extract particle:\n"
+              << (*parton) << "\n  from: " << p_beam->Bunch()
+              << " with momentum " << p_beam->OutMomentum() << "\n";
   return false;
 }
 
 bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
   if (parton == nullptr) {
-    if (m_extractionErrors++<5) {
-      msg_Error() << "Error in " << METHOD << "():\n"
-		  << "   Called with NULL pointer.\n";
-    }
-      return false;
+    msg_Error() << "Error in " << METHOD << "():\n"
+                << "   Called with NULL pointer.\n";
+    return false;
   }
   // TODO: In Multiple_Interactions.C, TestExtract is called for the hard-interacting
   // parton, after it has been extracted here. As it has been already been extracted,

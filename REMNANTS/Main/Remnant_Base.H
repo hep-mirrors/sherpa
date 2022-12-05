@@ -9,14 +9,15 @@
 
 namespace BEAM { class Beam_Base; }
 
-namespace REMNANTS {  
+namespace REMNANTS {
   struct rtp {
     enum code {
       none   = 0,
       intact = 1,
       lepton = 2,
       hadron = 3,
-      photon = 4 
+      photon = 4,
+      pomeron = 5
     };
   };
 
@@ -25,12 +26,12 @@ namespace REMNANTS {
   }
   std::ostream &operator<<(std::ostream &ostr,rtp::code code);
 }
-  
+
 namespace REMNANTS {
   typedef std::list<ATOOLS::Flavour> FlavourList;
 
   class Colour_Generator;
-  
+
   class Remnant_Base {
   protected:
     ATOOLS::Flavour    m_beamflav;
@@ -45,7 +46,6 @@ namespace REMNANTS {
 
     double m_residualE, m_scale2;
 
-    long int m_extractionErrors, m_resenergyWarnings;
     rtp::code FixType(ATOOLS::Flavour & flav);
   public:
     Remnant_Base(const ATOOLS::Flavour & flav,const size_t & beam,
@@ -61,13 +61,12 @@ namespace REMNANTS {
 			  const bool & copy=true)=0;
     virtual void MakeSpectator(ATOOLS::Particle * parton) {}
     virtual ATOOLS::Vec4D IncomingMomentum();
-    
+
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
     virtual void SetResidualEnergy(const double & E=-1.) {
       m_residualE = (E>=0.) ? E : p_beam->OutMomentum(m_tag)[0];
     }
-    virtual inline double MinRequiredEnergy(const double energy, const ATOOLS::Flavour &flav) { return 0.; }
-    
+
     inline rtp::code                  Type() const       { return m_type; }
     inline size_t                     Beam() const       { return m_beam; }
     inline const ATOOLS::Flavour    & Flav() const       { return m_beamflav; }

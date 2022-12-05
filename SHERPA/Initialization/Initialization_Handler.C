@@ -888,7 +888,9 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
     if (pid!=PDF::isr::bunch_rescatter) {
       PDF_Base * pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set,args);
-      if (m_bunch_particles[beam].IsHadron() && pdfbase==NULL)
+      // Pomerons do not have MPIs, hence must be excluded from the check below
+      if (m_bunch_particles[beam].IsHadron() && pdfbase==NULL &&
+          !(pid==PDF::isr::hard_subprocess && flav==Flavour(kf_pomeron)))
 	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
 	      +" libraries for "+ToString(m_bunch_particles[beam])+" bunch.");
       if (pid==PDF::isr::hard_process) rpa->gen.SetPDF(beam,pdfbase);
