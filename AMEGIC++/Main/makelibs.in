@@ -107,6 +107,8 @@ for J in $DIRS ; do
     libname="Proc_"$(basename $(pwd))
     sources=$(for i in $(find . -name \*.C | grep -v fsrchannels); do printf $i | sed 's/$/ /1' | tr '\n' ' '; done)
     echo "AUTOMAKE_OPTIONS = subdir-objects
+AM_CXXFLAGS = @AM_CXXFLAGS@
+AM_LDFLAGS = @AM_LDFLAGS@
 lib_LTLIBRARIES = lib${libname}.la
 lib${libname}_la_SOURCES = ${sources}
 CURRENT_SHERPASYS ?= @INCLUDEDIR@
