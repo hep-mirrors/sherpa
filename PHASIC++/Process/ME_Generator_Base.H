@@ -26,7 +26,6 @@ namespace PHASIC {
     void RegisterDefaults();
     void RegisterDipoleParameters();
     void RegisterNLOParameters();
-    void RegisterOtherParameters();
     template <typename T>
     void SetParameter(const std::string& param, const T& def);
 

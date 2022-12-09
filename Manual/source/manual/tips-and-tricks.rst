@@ -411,20 +411,19 @@ Checking the pole cancellation
 .. index:: CHECK_POLES
 .. index:: CHECK_THRESHOLD
 
-The following options are all sub-settings for :option:`AMEGIC` and
-can be specified as follows:
-
-.. code-block:: yaml
-
-   AMEGIC:
-     <option>: <value>
-     ...
-
 To check whether the poles of the dipole subtraction and the
-interfaced one-loop matrix element cancel phase space point by phase
-space point ``CHECK_POLES: 1`` can be specified.  In the same way, the
+interfaced one-loop matrix element cancel for each phase space point,
+specify
+``AMEGIC: { CHECK_POLES: 1 }`` and/or ``COMIX: { CHECK_POLES: 1 }``.
+
+In the same way, the
 finite contributions of the infrared subtraction and the one-loop
-matrix element can be checked by setting ``CHECK_FINITE: 1``, and the
-Born matrix element via ``CHECK_BORN: 1``.  The accuracy to which the
+matrix element can be checked using ``CHECK_FINITE``, and the
+Born matrix element via ``CHECK_BORN``.  The accuracy to which the
 poles, finite parts and Born matrix elements are checked is set via
-``CHECK_THRESHOLD: <accu>``.
+``CHECK_THRESHOLD``.
+These three settings are only supported by Amegic
+and are thus set using
+``AMEGIC: { <PARAMETER>: <VALUE> }``,
+where ``<VALUE>`` is ``0`` or ``1`` for ``CHECK_FINITE``/``CHECK_BORN``,
+or a number specifying the desired accuracy for ``CHECK_THRESHOLD``.

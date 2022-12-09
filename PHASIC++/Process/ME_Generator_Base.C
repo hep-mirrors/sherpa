@@ -33,7 +33,6 @@ void ME_Generator_Base::RegisterDefaults()
 {
   RegisterDipoleParameters();
   RegisterNLOParameters();
-  RegisterOtherParameters();
 }
 
 Process_Base *ME_Generator_Base::InitializeProcess
@@ -173,11 +172,6 @@ void ME_Generator_Base::RegisterNLOParameters()
 {
   SetParameter("NLO_SMEAR_THRESHOLD", 0.0);
   SetParameter("NLO_SMEAR_POWER", 0.5);
-}
-
-void ME_Generator_Base::RegisterOtherParameters()
-{
-  SetParameter("CHECK_POLES", false);
 }
 
 template <typename T>

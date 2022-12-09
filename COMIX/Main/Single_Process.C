@@ -27,12 +27,12 @@ using namespace ATOOLS;
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
   p_bg(NULL), p_hc(NULL), p_map(NULL),
-  p_loop(NULL), p_kpterms(NULL),
-  m_checkpoles(false), m_allowmap(true)
+  p_loop(NULL), p_kpterms(NULL)
 {
   Settings& s = Settings::GetMainSettings();
-  m_itype     = s["NLO_IMODE"].Get<cs_itype::type>();
-  m_allowmap  = s["KFACTOR_ALLOW_MAPPING"].SetDefault(true).Get<bool>();
+  m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
+  m_allowmap = s["KFACTOR_ALLOW_MAPPING"].SetDefault(true).Get<bool>();
+  m_checkpoles = s["COMIX"]["CHECK_POLES"].SetDefault(false).Get<bool>();
 }
 
 COMIX::Single_Process::~Single_Process()
@@ -134,7 +134,6 @@ bool COMIX::Single_Process::Initialize
     else THROW(fatal_error,"Cannot do NLO QCD+EW");
     msg_Debugging()<<"Subtraction type: "<<(sbt::subtype)(stype+1)<<"\n";
   }
-  m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
   else {
     if (m_pinfo.m_fi.NLOType()&nlo_type::vsub) smode|=2;

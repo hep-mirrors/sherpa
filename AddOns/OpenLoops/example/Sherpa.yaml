@@ -25,8 +25,8 @@ PARTICLE_DATA:
   24:
     Mass: 80.419
 
-CHECK_POLES: false
 AMEGIC:
+  CHECK_POLES: false
   CHECK_BORN: 0
 
 PROCESSES:
