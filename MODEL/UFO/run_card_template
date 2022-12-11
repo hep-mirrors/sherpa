@@ -40,7 +40,7 @@ PROCESSES:
     ${order_statement}
 
     # Generate feynman diagrans in directory 'diagrams'.
-    # Run '<SHERPA_PREFIX>/bin/plot_graphs.sh diagrams'
+    # Run './plot_graphs diagrams'
     # to plot graphs. Use web browser to view diagrams/index.html
     Print_Graphs: diagrams
 
