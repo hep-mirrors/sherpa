@@ -61,10 +61,10 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_sudakov.SetReweightScaleCutoff(
       s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>());
-  m_kinFF.SetEvolScheme(evol);
-  m_kinFI.SetEvolScheme(evol);
-  m_kinIF.SetEvolScheme(evol);
-  m_kinII.SetEvolScheme(evol);
+  m_kinFF.SetEvolScheme(evol-100*(evol/100));
+  m_kinFI.SetEvolScheme(evol-100*(evol/100));
+  m_kinIF.SetEvolScheme(evol/100);
+  m_kinII.SetEvolScheme(evol/100);
   m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
   p_old[0]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
   p_old[1]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());

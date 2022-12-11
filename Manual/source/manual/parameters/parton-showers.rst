@@ -145,22 +145,29 @@ The evolution variable of the CS shower can be changed using
 :option:`30`
   like `1` but parton masses taken into account only for g->QQ
 
-  
+The scale can be set differently for final- and initial-state shower.
+The two values are combined as `FS+100*IS`, where `FS` is the choice
+for the final state, and `IS` is the choice for the initial state.
 The scale at which the strong coupling for shower splittings
 is evaluated can be chosen with
 :option:`CSS_SCALE_SCHEME`:
-        
+
+The default is to evaluate the strong coupling at the transverse momentum
+in the parton splitting. Gluon splittings into quarks in the final state
+are evaluated at the virtuality of the gluon, as are branchings into
+a soft t-channel gluon in the initial state. Options are additive.
+
 :option:`0`
-  ordering parameter
+  default
 
 :option:`1`
-  invariant mass
+  evaluate final-state gluon splitting into quarks at the transverse momentum
 
 :option:`2`
-  parton masses taken into account for massive splittings
+  evaluate initial-state quark to gluon splittings at the transverse momentum
 
 :option:`20`
-  parton masses taken into account for g->QQ splittings
+  evaluate initial-state gluon splitting into soft t-channel gluons at the transverse momentum
 
 Additionally,
 the CS shower allows to disable splittings at scales below the

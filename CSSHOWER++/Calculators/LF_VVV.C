@@ -334,7 +334,7 @@ double LF_VVV2_IF::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
 {
-  if (p_sf->ScaleScheme()==1) return _scale;
+  if (p_sf->ScaleScheme()&8) return _scale;
   double scale = (Q2+p_ms->Mass2(m_flspec))*y/z;
   return scale;
 }
@@ -407,7 +407,7 @@ double LF_VVV2_II::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
 {
-  if (p_sf->ScaleScheme()==1) return _scale;
+  if (p_sf->ScaleScheme()&8) return _scale;
   double scale = (Q2-p_ms->Mass2(m_flspec))*y/z;
   return scale;
 }

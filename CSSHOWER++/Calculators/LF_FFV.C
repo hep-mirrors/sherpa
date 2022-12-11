@@ -463,7 +463,7 @@ double LF_FVF_IF::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
 {
-  if (p_sf->ScaleScheme()==1) return _scale;
+  if (p_sf->ScaleScheme()&4) return _scale;
   double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
   double scale = (Q2+ma2+mj2+p_ms->Mass2(m_flspec))*y/z+ma2+mj2;
   return scale;
@@ -517,7 +517,7 @@ double LF_FVF_II::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
 {
-  if (p_sf->ScaleScheme()==1) return _scale;
+  if (p_sf->ScaleScheme()&4) return _scale;
   double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
   double scale = (Q2-ma2-mj2-p_ms->Mass2(m_flspec))*y/z+ma2+mj2;
   return scale;
@@ -558,18 +558,9 @@ double LF_VFF_FF::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
 {
-  if (p_sf->ScaleScheme()==1) return _scale;
-  double scale = _scale;
-  if (p_sf->ScaleScheme()==1) scale=_scale;
-  if (p_sf->ScaleScheme()==2) {
-    double m2(p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2]));
-    scale= (Q2-m2-p_ms->Mass2(m_flspec))*y+m2;
-  }
-  if (p_sf->ScaleScheme()==20) {
-    double m2(p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2]));
-    double tscale= (Q2-m2-p_ms->Mass2(m_flspec))*y+m2;
-    scale = (m_flavs[1].IsGluon())?(tscale):_scale;
-  }
+  if (p_sf->ScaleScheme()&1) return _scale;
+  double m2(p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2-m2-p_ms->Mass2(m_flspec))*y+m2;
   return scale;
 }
 
@@ -583,7 +574,6 @@ double LF_VFF_FF::operator()
   //the massless case 
   double massless = (1.-2.*z*(1.-z));
   double longpol = 0.5;
-
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
@@ -625,14 +615,8 @@ double LF_VFF_FI::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
 {
-  double scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)-2.0*p_ms->Mass2(m_flavs[1]);
-  if (p_sf->ScaleScheme()==1) return _scale;
-  if (p_sf->ScaleScheme()==2)
-    scale= (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
-  if (p_sf->ScaleScheme()==20) {
-    double tscale= (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
-    scale = (m_flavs[1].IsGluon())?(tscale):_scale;
-  }
+  if (p_sf->ScaleScheme()&1) return _scale;
+  double scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
   return scale;
 }
 
@@ -644,7 +628,6 @@ double LF_VFF_FI::operator()
   //the massless case 
   double massless = 1.-2.*z*(1.-z);
   double longpol = 0.5;
-
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
@@ -685,17 +668,9 @@ double LF_VFF_IF::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
 {
-  if (p_sf->ScaleScheme()==1) return _scale;
-  double scale=_scale;
-  if (p_sf->ScaleScheme()==2) {
-    double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
-    scale=(Q2+mj2+p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
-  }
-  if (p_sf->ScaleScheme()==20) {
-    double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
-    double tscale=(Q2+mj2+p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
-    scale = (m_flavs[1].IsGluon())?(tscale):_scale;
-  }
+  if (p_sf->ScaleScheme()&2) return _scale;
+  double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2+mj2+p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
   return scale;
 }
 
@@ -734,17 +709,10 @@ double LF_VFF_II::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
 {
-  if (p_sf->ScaleScheme()==1) return _scale;
-  double scale = _scale;
-  if (p_sf->ScaleScheme()==2) {
-    double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
-    scale = (Q2-mj2-p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
-  }
-  if (p_sf->ScaleScheme()==20) {
-    double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
-    double tscale = (Q2-mj2-p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
-    scale = (m_flavs[1].IsGluon())?(tscale):_scale;
-  }  return scale;
+  if (p_sf->ScaleScheme()&2) return _scale;
+  double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2-mj2-p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
+  return scale;
 }
 
 double LF_VFF_II::operator()
@@ -781,7 +749,7 @@ double LF_VFF_II::Z()
 DECLARE_GETTER(LF_FFV_FF,"FFV",SF_Lorentz,SF_Key);
 
 SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_FF>::
-  operator()(const Parameter_Type &args) const
+operator()(const Parameter_Type &args) const
 {
   if (args.m_col<0) return NULL;
   if ((args.m_mode==0 &&
@@ -831,7 +799,7 @@ SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_FF>::
 }
 
 void ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_FF>::
-  PrintInfo(std::ostream &str,const size_t width) const
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"ffv lorentz functions";
 }
@@ -839,7 +807,7 @@ void ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_FF>::
 DECLARE_GETTER(LF_FFV_II,"FFV1",SF_Lorentz,SF_Key);
 
 SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_II>::
-  operator()(const Parameter_Type &args) const
+operator()(const Parameter_Type &args) const
 {
   if (args.m_col<0) return NULL;
   if ((args.m_mode==0 &&
@@ -889,7 +857,7 @@ SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_II>::
 }
 
 void ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_II>::
-  PrintInfo(std::ostream &str,const size_t width) const
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"ffv lorentz functions";
 }

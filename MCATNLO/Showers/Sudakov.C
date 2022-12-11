@@ -23,7 +23,7 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
   Settings& s = Settings::GetMainSettings();
-  m_scalescheme = s["MCATNLO_SCALE_SCHEME"].SetDefault(2).Get<int>();
+  m_scalescheme = s["CSS_SCALE_SCHEME"].Get<int>();
 }
 
 Sudakov::~Sudakov() 
@@ -525,26 +525,10 @@ bool Sudakov::Veto(double Q2,double x) {
 bool Sudakov::Splitting(double Q2,double x) {
   int kfmode(p_selected->Coupling()->KFMode());
   double cplscale(m_kperp2);
-  switch (m_scalescheme) {
-  case 0:
-    if (m_kperp2*p_selected->Coupling()->CplFac(m_kperp2)>
-	p_split->GetSing()->MuR2()) {
-      p_selected->Coupling()->SetKFMode(-1);    
-      cplscale=p_split->GetSing()->MuR2();
-    }
-    break;
-  case 1:
-    if (m_kperp2*p_selected->Coupling()->CplFac(m_kperp2)>
-	p_split->GetSing()->MuR2()) {
-      p_selected->Coupling()->SetKFMode(-1);    
-      cplscale=p_split->GetSing()->MuR2();
-    }
-    break;
-  case 2:
-    cplscale=m_kperp2;
-    break;
-  default:
-    THROW(fatal_error, "Unknown MCATNLO_SCALE_SCHEME");
+  if (m_kperp2*p_selected->Coupling()->CplFac(m_kperp2)>
+      p_split->GetSing()->MuR2()) {
+    p_selected->Coupling()->SetKFMode(-1);
+    cplscale=p_split->GetSing()->MuR2();
   }
   double wt(RejectionWeight(m_z,m_y,x,cplscale,Q2));
   p_selected->Coupling()->SetKFMode(kfmode);
