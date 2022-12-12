@@ -169,7 +169,7 @@ namespace EXTRAXS {
       Virtual_ME2_Base(pi, flavs), m_nf(Flavour(kf_jet).Size()/2.0)
     {
       m_drmode=1;
-      msg_Info()<<"QQWG"<<flavs<<"\n";
+      msg_Tracking()<<"QQWG"<<flavs<<"\n";
       m_mw=Flavour(kf_Wplus).Mass();
       m_ww=Flavour(kf_Wplus).Width();
       double g1(sqrt(4.*M_PI*s_model->ScalarConstant("alpha_QED")));
@@ -210,7 +210,7 @@ namespace EXTRAXS {
     {
       m_flipq=!flavs[3].IsAnti();
       m_flipl=flavs[0].IsAnti();
-      msg_Info()<<"GWQQ"<<flavs<<"\n";
+      msg_Tracking()<<"GWQQ"<<flavs<<"\n";
     }
     void Calc(const Vec4D_Vector &momenta)
     {
@@ -234,7 +234,7 @@ namespace EXTRAXS {
     {
       m_flipq=flavs[1].IsAnti();
       m_flipl=!flavs[0].IsAnti();
-      msg_Info()<<"QWGQ"<<flavs<<"\n";
+      msg_Tracking()<<"QWGQ"<<flavs<<"\n";
     }
     void Calc(const Vec4D_Vector &momenta)
     {
@@ -256,7 +256,7 @@ namespace EXTRAXS {
 		     const Flavour_Vector &flavs):
       QQGW_QCD_Virtual(pi,flavs)
     {
-      msg_Info()<<"QQWG"<<flavs<<"\n";
+      msg_Tracking()<<"QQWG"<<flavs<<"\n";
       m_flipq=flavs[0].IsAnti();
       m_flipl=flavs[2].IsAnti();
     }
@@ -280,7 +280,7 @@ namespace EXTRAXS {
 		     const Flavour_Vector &flavs):
       QQGW_QCD_Virtual(pi,flavs)
     {
-      msg_Info()<<"GQWQ"<<flavs<<"\n";
+      msg_Tracking()<<"GQWQ"<<flavs<<"\n";
       m_flipq=flavs[1].IsAnti();
       m_flipl=flavs[2].IsAnti();
     }
@@ -382,7 +382,7 @@ namespace EXTRAXS {
       m_flipq=!flavs[3].IsAnti();
       m_flipl=!flavs[0].IsAnti();
       Init(flavs[m_flipq?3:4],flavs[m_flipl?0:1]);
-      msg_Info()<<"ZGQQ"<<m_useax<<flavs<<"\n";
+      msg_Tracking()<<"ZGQQ"<<m_useax<<flavs<<"\n";
     }
     void Calc(const Vec4D_Vector &momenta)
     {
@@ -408,7 +408,7 @@ namespace EXTRAXS {
       m_flipl=flavs[0].IsAnti();
       Init(m_flipq?flavs[3]:flavs[3].Bar(),
 	   m_flipl?flavs[0].Bar():flavs[0]);
-      msg_Info()<<"GZQQ"<<m_useax<<flavs<<"\n";
+      msg_Tracking()<<"GZQQ"<<m_useax<<flavs<<"\n";
     }
     void Calc(const Vec4D_Vector &momenta)
     {
@@ -434,7 +434,7 @@ namespace EXTRAXS {
       m_flipl=!flavs[0].IsAnti();
       Init(m_flipq?flavs[1].Bar():flavs[1],
 	   m_flipl?flavs[0]:flavs[0].Bar());
-      msg_Info()<<"QZGQ"<<m_useax<<flavs<<"\n";
+      msg_Tracking()<<"QZGQ"<<m_useax<<flavs<<"\n";
     }
     void Calc(const Vec4D_Vector &momenta)
     {
@@ -459,7 +459,7 @@ namespace EXTRAXS {
       m_flipq=flavs[0].IsAnti();
       m_flipl=flavs[2].IsAnti();
       Init(flavs[m_flipq?1:0],flavs[m_flipl?3:2]);
-      msg_Info()<<"QQZG"<<m_useax<<flavs<<"\n";
+      msg_Tracking()<<"QQZG"<<m_useax<<flavs<<"\n";
     }
     void Calc(const Vec4D_Vector &momenta)
     {
@@ -486,7 +486,7 @@ namespace EXTRAXS {
       m_flipq=flavs[1].IsAnti();
       m_flipl=flavs[2].IsAnti();
       Init(m_flipq?flavs[1].Bar():m_flavs[1],flavs[m_flipl?3:2]);
-      msg_Info()<<"GQZQ"<<m_useax<<flavs<<"\n";
+      msg_Tracking()<<"GQZQ"<<m_useax<<flavs<<"\n";
     }
     void Calc(const Vec4D_Vector& momenta)
     {
