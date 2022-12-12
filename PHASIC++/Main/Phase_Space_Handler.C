@@ -54,7 +54,7 @@ bool Phase_Space_Handler::CreateIntegrators() {
     m_psenhance.SetObservable(m_enhanceObs, p_process->Process());
     m_psenhance.SetFunction(m_enhanceFunc, p_process->Process());
     m_enhanceweight =
-        m_psenhance.Factor(p_process->Process(), p_process->TotalXS());
+        m_psenhance.Factor(p_process->TotalXS());
     return true;
   } else
     THROW(fatal_error, "Creation of integrators failed.")
@@ -92,8 +92,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
     m_wgtmap  *= m_psweight;
-    m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->Process(),
-                                                       p_process->TotalXS()));
+    m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->TotalXS()));
     m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
     p_lab      = process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
@@ -200,7 +199,7 @@ void Phase_Space_Handler::AddPoint(const double _value)
   if (p_process->TotalXS()==0.0) value=(_value?1.0:0.0);
   if (value!=0.0) {
     m_pspoint.AddPoint(value);
-    m_psenhance.AddPoint(value,p_process->Process());
+    m_psenhance.AddPoint(value);
   }
 }
 

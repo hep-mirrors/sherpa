@@ -6,9 +6,11 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-Phase_Space_Enhance::Phase_Space_Enhance() :
-  p_obs(NULL), p_func(NULL), p_histo(NULL), p_histo_current(NULL),
-  m_xs(1.), m_factor(1.)
+Phase_Space_Enhance::Phase_Space_Enhance()
+    : p_obs(nullptr), p_func(nullptr), p_histo(nullptr), p_histo_current(nullptr),
+      m_func_min(std::numeric_limits<double>::lowest()),
+      m_func_max(std::numeric_limits<double>::max()), m_xs(1.), m_factor(1.),
+      p_moms(nullptr), p_flavs(nullptr), m_nflavs(0)
 {
   RegisterDefaults();
   Settings& s = Settings::GetMainSettings();
@@ -29,11 +31,11 @@ Phase_Space_Enhance::~Phase_Space_Enhance() {
 }
 
 double Phase_Space_Enhance::operator()() {
-  if (p_func==NULL) return 1.0;
+  if (p_func==nullptr) return 1.0;
   else return (*p_func)(p_moms,p_flavs,m_nflavs);
 }
 
-double Phase_Space_Enhance::Factor(Process_Base *const process,const double & totalxs)
+double Phase_Space_Enhance::Factor(double totalxs)
 {
   m_factor=1.0;
   if (p_obs) {
@@ -61,7 +63,7 @@ void Phase_Space_Enhance::RegisterDefaults() {
 void Phase_Space_Enhance::SetObservable(const std::string &enhanceobs,
 					Process_Base * const process)
 {
-  if (enhanceobs=="" || enhanceobs=="1")
+  if (enhanceobs.empty() || enhanceobs=="1")
     return;
   if (p_obs)
     THROW(fatal_error, "Overwriting ME enhance observable.");
@@ -74,13 +76,13 @@ void Phase_Space_Enhance::SetObservable(const std::string &enhanceobs,
     THROW(fatal_error,"Wrong syntax in enhance observable.");
   p_obs = Enhance_Observable_Base::Getter_Function::GetObject
     (parts[0],Enhance_Arguments(process,parts[0]));
-  if (p_obs==NULL) {
+  if (p_obs==nullptr) {
     msg_Error()<<METHOD<<"(): Enhance observable not found. Try 'VAR{..}'.\n";
     THROW(fatal_error,"Invalid enhance observable");
   }
   double enhancemin=ToType<double>(parts[1]);
   double enhancemax=ToType<double>(parts[2]);
-  double nbins=parts.size()>3?ToType<size_t>(parts[3]):100;
+  int nbins=parts.size()>3?ToType<int>(parts[3]):100;
 
   p_histo = new Histogram(1,enhancemin,enhancemax,nbins,"enhancehisto");
   p_histo->InsertRange(enhancemin, enhancemax, 1.0);
@@ -96,16 +98,16 @@ void Phase_Space_Enhance::SetObservable(const std::string &enhanceobs,
 void Phase_Space_Enhance::SetFunction(const std::string &enhancefunc,
 				      Process_Base * const process)
 {
-  if (enhancefunc=="" || enhancefunc=="1") return;
+  if (enhancefunc.empty() || enhancefunc=="1") return;
   if (p_func) THROW(fatal_error, "Overwriting ME enhance function.");
   std::vector<std::string> parts;
   std::stringstream ss(enhancefunc);
   std::string item;
   while(std::getline(ss, item, '|')) parts.push_back(item);
-  if (parts.size()<1) THROW(fatal_error,"Wrong syntax in enhance function.");
+  if (parts.empty()) THROW(fatal_error,"Wrong syntax in enhance function.");
   p_func = Enhance_Observable_Base::Getter_Function::GetObject
     (parts[0],Enhance_Arguments(process,parts[0]));
-  if (p_func==NULL) {
+  if (p_func==nullptr) {
     msg_Error()<<METHOD<<"(): Enhance function not found. Try 'VAR{...}'.\n";
     THROW(fatal_error,"Invalid enhance function");
   }
@@ -115,7 +117,7 @@ void Phase_Space_Enhance::SetFunction(const std::string &enhancefunc,
   }
 }
 
-void Phase_Space_Enhance::AddPoint(const double xs,Process_Base * process) {
+void Phase_Space_Enhance::AddPoint(double xs) {
   if (p_histo) {
     double obs((*p_obs)(p_moms,p_flavs,m_nflavs));
     p_histo_current->Insert(obs,xs/m_factor);

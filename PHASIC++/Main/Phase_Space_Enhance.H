@@ -29,7 +29,7 @@ namespace PHASIC {
 
     void   Init(Phase_Space_Handler * psh);
     double operator()();
-    double Factor(Process_Base *const proc,const double & totalxs);
+    double Factor(double totalxs);
 
     void SetObservable(const std::string &enhanceobs,Process_Base * const process);
     void SetFunction(const std::string &enhancefunc,Process_Base * const process);
@@ -37,7 +37,7 @@ namespace PHASIC {
       m_factor = f;
     }
 
-    void AddPoint(const double xs,Process_Base * const process);
+    void AddPoint(double xs);
     void Optimize();
     void ReadIn(const std::string &path);
 
