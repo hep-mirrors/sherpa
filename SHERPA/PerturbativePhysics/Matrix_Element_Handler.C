@@ -536,7 +536,7 @@ int Matrix_Element_Handler::InitializeProcesses(
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
-  msg_Info()<<METHOD<<"(): Performing tests"<<std::flush;
+  msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
   rbtime=retime;
   btime=etime;
   int res(m_gens.PerformTests());
@@ -591,9 +591,9 @@ void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();
   // init processes
-  msg_Info()<<METHOD<<"(): Looking for processes "
-	    <<"["<<m_gens.size()<<" generators, "
-	    <<s["PROCESSES"].GetItems().size()<<" processes]"<<std::flush;
+  msg_Info()<<METHOD<<"(): "<<m_gens.size()<<" ME generators, "
+	    <<s["PROCESSES"].GetItems().size()<<" process blocks."<<std::endl;
+  msg_Info()<<METHOD<<"(): Setting up processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
     if (!msg_LevelIsTracking()) msg_Info()<<"\n";
