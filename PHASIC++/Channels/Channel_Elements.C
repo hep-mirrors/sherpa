@@ -173,7 +173,7 @@ void Channel_Elements::TChannelMomenta
   p1out=Vec4D(e1out,m1out*Vec3D(st*cos(phi),st*sin(phi),ct)); 
   Poincare cms(pin);
   cms.Boost(p1in);
-  Poincare zax(p1in,(p1in[3]<0?-1:1) * Vec4D::ZVEC);
+  Poincare zax(p1in,p1in[3]<0?-Vec4D::ZVEC:Vec4D::ZVEC);
   zax.RotateBack(p1out);
   cms.BoostBack(p1out);
   p2out=pin-p1out;
@@ -193,7 +193,7 @@ double Channel_Elements::TChannelWeight
   if (a<=1.0+1.0e-6) a=1.0+1.0e-6;
   Poincare cms(pin);
   cms.Boost(p1inh);
-  Poincare zax(p1inh,(p1inh[3]<0?-1:1) * Vec4D::ZVEC);
+  Poincare zax(p1inh,p1inh[3]<0?-Vec4D::ZVEC:Vec4D::ZVEC);
   cms.Boost(p1outh);
   zax.Rotate(p1outh);
   double pa1(pow(a-ctmax,1.-ctexp));
