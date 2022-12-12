@@ -173,13 +173,10 @@ Sherpa can then be run with
 MacOS Installation
 ==================
 
-Since it is more complicated to set up the necessary compiler
-environment on a Mac we recommend using a package manager to install
-Sherpa and its dependencies. David Hall is hosting a repository for
-Homebrew packages at: `http://davidchall.github.io/homebrew-hep/
-<http://davidchall.github.io/homebrew-hep/>`_
+Installation on macOS has been tested with the native clang compiler and the native ``make``, installed through the Xcode Command Line Tools,
+and the package ``cmake``, installed through `Homebrew <https://brew.sh/>`_. With this setup it runs analogously to the usual installation procedure. 
 
-In case you are compiling yourself, please be aware of the following
+Please be aware of the following
 issues which have come up on Mac installations before:
 
 * On 10.4 and 10.5 only gfortran is supported, and you will have
@@ -191,6 +188,8 @@ issues which have come up on Mac installations before:
   Sherpa to use the native MacOS compilers but link the libstdc++ from
   Fink (which is located in /sw/lib). You can find out which libraries
   are used by Sherpa by running ``otool -L bin/Sherpa``
+
+* Depending on your setup, it might be necessary to set the ``DYLD_LIBRARY_PATH`` to include ``$INSTALL_PREFIX/lib/SHERPA-MC``.
 
 .. _Running Sherpa:
 
