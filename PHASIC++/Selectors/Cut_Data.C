@@ -83,7 +83,7 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   smin = sqr(smin);
 
   Settings& s = Settings::GetMainSettings();
-  double sijminfac{ s["INT_MINSIJ_FACTOR"].SetDefault(1e-24).Get<double>() };
+  double sijminfac{ s["INT_MINSIJ_FACTOR"].SetDefault(1e-16).Get<double>() };
   for (int i=0;i<ncut;i++) {
     for (int j=i;j<ncut;j++) {
       cosmin[i][j] = cosmin[j][i] = cosmin_save[i][j] = -1.;
