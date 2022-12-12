@@ -562,8 +562,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   PHASIC::Phase_Space_Handler::GetInfo();
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheHardDecays();
-  okay = okay && InitializeTheBeamRemnants();
   okay = okay && InitializeTheMatrixElements();
+  okay = okay && InitializeTheBeamRemnants();
   if (rpa->gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftCollisions();
