@@ -270,8 +270,7 @@ void PS_Channel::SingleTChannelBounds
  const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
  const double &s1,const double &s2,const int mode)
 {
-  double ctmin=p_cuts->cosmin[a][j];
-  double ctmax=p_cuts->cosmax[a][j];
+  double ctmin=-1., ctmax=1.;
 #ifdef DEBUG__BG
   msg_Debugging()<<"    set t_{"<<a<<","<<j<<"} ctmin = "
 		 <<ctmin<<", ctmax = "<<ctmax<<" ("<<mode<<")\n";
