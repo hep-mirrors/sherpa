@@ -650,8 +650,17 @@ void PS_Channel::GeneratePoint
   m_vgs.clear();
   m_rns.clear();
   if (!GeneratePoint(v)) return;
+#ifdef DEBUG__BG
+  msg_Debugging()<<"  p[0]="<<p[0]<<"\n";
+  msg_Debugging()<<"  p[1]="<<p[1]<<"\n";
+#endif
   Vec4D sum(-p[0]-p[1]);
-  for (size_t i(2);i<m_n;++i) sum+=p[i]=m_p[1<<i];
+  for (size_t i(2);i<m_n;++i) {
+    sum+=p[i]=m_p[1<<i];
+#ifdef DEBUG__BG
+    msg_Debugging()<<"  p["<<i<<"]="<<p[i]<<"\n";
+#endif
+  }
   if (!IsEqual(sum,Vec4D(),sqrt(Accu()))) msg_Error()
     <<METHOD<<"(): Four momentum not conserved. Diff "<<sum<<std::endl;
 #ifdef DEBUG__BG
