@@ -78,6 +78,11 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
+  if (mom[0] < flav.HadMass()) {
+    msg_Debugging() << METHOD << ": parton too soft, mass = " << flav.HadMass()
+                    << " and energy = " << mom[0] << "\n";
+    return false;
+  }
   // This respects the masses of all current remnants in m_spectator,
   // the energy of the extracted parton and potentially the mass of its antiflavour.
   // For the case of gluons, this is not necessary, but its HadMass() is zero anyway.

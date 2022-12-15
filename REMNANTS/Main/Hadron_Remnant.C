@@ -254,6 +254,11 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
     msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
     return false;
   }
+  if (mom[0] < flav.HadMass()) {
+    msg_Debugging() << METHOD << ": parton too soft, mass = " << flav.HadMass()
+                    << " and energy = " << mom[0] << "\n";
+    return false;
+  }
   // Still enough energy for parton and its remnant quark?
   // We're checking for the remnant masses as well, so the stretching onto the
   // mass-shell works out later.
