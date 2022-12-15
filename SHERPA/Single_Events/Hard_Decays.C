@@ -29,6 +29,10 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist)
       DEBUG_FUNC("Treating blob "<<blob->Id());
       didit = true;
       p_dechandler->SetBlobList(bloblist);
+      if (blob->OutParticle(0)->Flav().Kfcode() == kf_instanton) {
+        blob->UnsetStatus(blob_status::needs_harddecays);
+        continue;
+      }
       try {
         if (p_dechandler->SpinCorr()) {
           Blob* signal=bloblist->FindFirst(btp::Signal_Process);
