@@ -240,8 +240,10 @@ void Phase_Space_Point::CorrectMomenta() {
   double eps = eps1 * (1 - eps1 * E2tot / E1tot);
   p_moms[1] = -p_moms[1] + p_moms[0] * eps;
   p_moms[0] = -p_moms[0] - p_moms[0] * eps;
+  // Indices in m_masses need to be shifted if swap happened in ISR_Handler
+  int swap = p_isrhandler->Swap();
   for (int i(0); i < 2; ++i) {
-    if (m_masses[i] == 0.0 && p_moms[i][1] == 0.0 && p_moms[i][2] == 0.0)
+    if (m_masses[i^swap] == 0.0 && p_moms[i][1] == 0.0 && p_moms[i][2] == 0.0)
       p_moms[i][0] = -std::abs(p_moms[i][3]);
     else
       p_moms[i][0] = E0[i] + E1[i] * eps + E2[i] * sqr(eps);
