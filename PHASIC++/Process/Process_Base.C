@@ -341,12 +341,8 @@ std::string Process_Base::GenerateName(const Subprocess_Info &info)
 std::string Process_Base::GenerateName
 (const Subprocess_Info &ii,const Subprocess_Info &fi) 
 {
-  char nii[3], nfi[3];
-  if (sprintf(nii,"%i",(int)ii.NExternal())<=0)
-    THROW(fatal_error,"Conversion error");
-  if (sprintf(nfi,"%i",(int)fi.NExternal())<=0)
-    THROW(fatal_error,"Conversion error");
-  std::string name(nii+std::string("_")+nfi);
+  std::string name(std::to_string(ii.NExternal())+std::string("_")+
+                   std::to_string(fi.NExternal()));
   for (size_t i(0);i<ii.m_ps.size();++i) name+="__"+GenerateName(ii.m_ps[i]);
   for (size_t i(0);i<fi.m_ps.size();++i) name+="__"+GenerateName(fi.m_ps[i]);
   if (fi.m_nlotype!=nlo_type::lo) {
@@ -465,12 +461,8 @@ void Process_Base::SortFlavours
 
 std::string Process_Base::GenerateName(const Cluster_Amplitude *ampl)
 {
-  char nii[3], nfi[3];
-  if (sprintf(nii,"%i",(int)ampl->NIn())<=0)
-    THROW(fatal_error,"Conversion error");
-  if (sprintf(nfi,"%i",(int)(ampl->Legs().size()-ampl->NIn()))<=0)
-    THROW(fatal_error,"Conversion error");
-  std::string name(nii+std::string("_")+nfi);
+  std::string name(std::to_string(ampl->NIn())+std::string("_")+
+                   std::to_string(ampl->Legs().size()-ampl->NIn()));
   for (size_t i(0);i<ampl->NIn();++i) 
     name+="__"+ampl->Leg(i)->Flav().Bar().IDName();
   DecayInfo_Vector decs(ampl->Decays());
@@ -490,12 +482,8 @@ std::string Process_Base::GenerateName(const Cluster_Amplitude *ampl)
 
 std::string Process_Base::GenerateName(const NLO_subevt *sub,const size_t &nin)
 {
-  char nii[3], nfi[3];
-  if (sprintf(nii,"%i",(int)nin)<=0)
-    THROW(fatal_error,"Conversion error");
-  if (sprintf(nfi,"%i",(int)(sub->m_n-nin))<=0)
-    THROW(fatal_error,"Conversion error");
-  std::string name(nii+std::string("_")+nfi);
+  std::string name(std::to_string(nin)+std::string("_")+
+                   std::to_string(sub->m_n-nin));
   for (size_t i(0);i<sub->m_n;++i) name+="__"+sub->p_fl[i].IDName();
   return name;
 }

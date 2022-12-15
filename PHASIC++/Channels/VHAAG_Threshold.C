@@ -163,13 +163,11 @@ void VHAAG_Threshold::Initialize(std::vector<int> perm, VHAAG_Threshold* ovl)
   for (int i=0;i<n_ap;i++) p_s[i]=0.;
   msg_Tracking()<<"Init VHAAG_Threshold: 0";
   m_name = "VHAAG_Threshold";
-  char hlp[4];
   for (int i=1;i<n_ap;i++) {
     p_perm[i] = perm[i];
     if (perm[i]==1) n_p1=i;
     m_name+= "_";
-    sprintf(hlp,"%i",p_perm[i]);
-    m_name+= std::string(hlp);
+    m_name+= std::to_string(p_perm[i]);
     msg_Tracking()<<" "<<p_perm[i];
   }
 

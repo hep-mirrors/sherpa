@@ -64,14 +64,12 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
   p_perm[0] = p_mrep[0] = 0;
   msg_Tracking()<<"Init VHAAG: 0";
   m_name = "VHAAG";
-  char hlp[4];
   for (int i=1;i<m_nin+m_nout;i++) {
     p_perm[i] = perm[i];
     p_mrep[p_perm[i]] = i;
     if (perm[i]==1) n_p1=i;
     m_name+= "_";
-    sprintf(hlp,"%i",p_perm[i]);
-    m_name+= std::string(hlp);
+    m_name+= std::to_string(p_perm[i]);
     msg_Tracking()<<" "<<p_perm[i];
   }
 
