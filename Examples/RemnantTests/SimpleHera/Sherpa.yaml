@@ -9,10 +9,6 @@ ERROR: 0.99
 FRAGMENTATION: Ahadic
 MI_HANDLER: None
 
-# Has to stay until soft photons are fixed
-YFS:
-  MODE: 0
-
 # me generator settings
 ME_GENERATORS: Comix
 EVENT_GENERATION_MODE: Weighted

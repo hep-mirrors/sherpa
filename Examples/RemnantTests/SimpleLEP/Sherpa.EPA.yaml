@@ -9,10 +9,6 @@ PDF_LIBRARY: None
 EVENTS: 50k
 EVENT_OUTPUT: HepMC_Short[a.short]
 
-# Has to stay until soft photons are fixed
-YFS:
-  MODE: 0
-
 # model parameters
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 2

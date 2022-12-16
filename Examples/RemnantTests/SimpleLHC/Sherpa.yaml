@@ -8,10 +8,6 @@ ERROR: 0.99
 FRAGMENTATION: Ahadic
 MI_HANDLER: None
 
-# Has to stay until soft photons are fixed
-YFS:
-  MODE: 0
-
 # scales, tags for scale variations
 CORE_SCALE: VAR{Abs2(p[2]+p[3])}
 

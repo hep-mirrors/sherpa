@@ -8,10 +8,6 @@ ERROR: 0.99
 FRAGMENTATION: Ahadic
 MI_HANDLER: Amisic
 
-# Has to stay until soft photons are fixed
-YFS:
-  MODE: 0
-
 # scales, tags for scale variations
 TAGS:
   FSF: 1.0

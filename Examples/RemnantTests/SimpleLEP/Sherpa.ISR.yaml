@@ -7,10 +7,6 @@ ISR_SMIN: sqr(20/E_CMS)
 # general setting
 EVENTS: 50k
 
-# Has to stay until soft photons are fixed
-YFS:
-  MODE: 0
-
 # model parameters
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 2
