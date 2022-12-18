@@ -52,9 +52,9 @@ if ( NOT LibZip_INCLUDE_DIR OR NOT LibZip_INCLUDE_CONF_DIR OR NOT LibZip_LIBRARI
     find_path(LibZip_INCLUDE_CONF_DIR zipconf.h PATHS ${LibZip_SEARCH_DIRS} PATH_SUFFIXES include NO_DEFAULT_PATH)
     find_library(LibZip_LIBRARIES NAMES zip libzip PATHS ${LibZip_SEARCH_DIRS}  PATH_SUFFIXES lib lib64 NO_DEFAULT_PATH)
   else()
-    find_path(LibZip_INCLUDE_DIR zip.h PATHS ${LibZip_SEARCH_DIRS} PATH_SUFFIXES include)
-    find_path(LibZip_INCLUDE_CONF_DIR zipconf.h PATHS ${LibZip_SEARCH_DIRS} PATH_SUFFIXES include)
-    find_library(LibZip_LIBRARIES NAMES zip libzip PATHS_SUFFIXES lib lib64)
+    find_path(LibZip_INCLUDE_DIR zip.h PATH_SUFFIXES include ../include)
+    find_path(LibZip_INCLUDE_CONF_DIR zipconf.h PATH_SUFFIXES include ../include)
+    find_library(LibZip_LIBRARIES NAMES zip libzip PATH_SUFFIXES lib lib64)
   endif()
 endif()
 

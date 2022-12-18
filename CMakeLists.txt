@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.11.0 FATAL_ERROR)
 ###########################Package@#####################################
 project(SHERPA-MC LANGUAGES C  CXX)
 #The complicated way to set the version is used to assure the simple 
@@ -22,6 +22,7 @@ else(CMAKE_BUILD_TYPE)
   message(STATUS "SHERPA: Build type not specified, use: ${CMAKE_BUILD_TYPE}")
 endif(CMAKE_BUILD_TYPE)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules ${CMAKE_MODULE_PATH} )
+cmake_policy(SET CMP0069 NEW)
 
 if (APPLE)
   set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -45,12 +46,12 @@ option(SHERPA_ENABLE_HEPMC2                  "Enables building with HepMC2." OFF
 option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3." OFF)
 option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT Interface ." OFF)
 option(SHERPA_ENABLE_HZTOOL                  "Enables building with HZTool." OFF)
-option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." OFF)
+option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
 option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." OFF)
 option(SHERPA_ENABLE_INSTALL_LHAPDF          "Enables internal LHAPDF." OFF)
 option(SHERPA_ENABLE_LHOLE                   "Enables building of LH OLE." OFF)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
-option(SHERPA_ENABLE_MANUAL                  "Enables building of manul." OFF)
+option(SHERPA_ENABLE_MANUAL                  "Enables building of manual." OFF)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." OFF)
 option(SHERPA_ENABLE_MPI                     "Enables building with MPI." OFF)
 option(SHERPA_ENABLE_OPENLOOPS               "Enables building with OpenLoops." OFF)
@@ -294,6 +295,10 @@ macro(sherpa_handle_shared_library  mylib mylibname)
   set_target_properties(${mylib}        PROPERTIES DEFINE_SYMBOL "")
   set_target_properties(${mylib}        PROPERTIES OUTPUT_NAME ${mylibname})
   target_compile_features(${mylib} PRIVATE cxx_std_11)
+ set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                             LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                             RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                               )
 endmacro(sherpa_handle_shared_library  mylib mylibname)
 
 macro(sherpa_handle_executable  mylib )
@@ -317,7 +322,7 @@ endmacro(sherpa_handle_executable  mylib )
 if (NOT SHERPA_ENABLE_INSTALL_LIBZIP)
   find_package(LibZip)
   if (NOT LibZip_FOUND)
-    message(FATAL_ERROR "SHERPA: LibZip not found! Terminating!\n To use installed LibZip add to the cmake configuration -DLibZip_ROOT_DIR=/installation/path/to/libzip or use -DSHERPA_ENABLE_INSTALL_LIBZIP=ON to download and compile LibZip")
+    message(FATAL_ERROR "SHERPA: LibZip not found! Terminating!\n To use installed LibZip add to the cmake configuration -DLibZip_DIR=/installation/path/to/libzip or use -DSHERPA_ENABLE_INSTALL_LIBZIP=ON to download and compile LibZip")
   endif()
 else()
   message(STATUS "SHERPA: LibZip will be downloaded and compiled")
@@ -361,7 +366,7 @@ message(STATUS "SHERPA: LibZip_VERSION=${LibZip_VERSION} LibZip_LIBRARIES=${LibZ
 if (NOT SHERPA_ENABLE_INSTALL_LHAPDF)
   find_package(LHAPDF)
   if (NOT LHAPDF_FOUND)
-    message(FATAL_ERROR "SHERPA: LHAPDF not found! Terminating!\n To use installed LHAPDF add to the cmake configuration -DLHAPDF_ROOT_DIR=/installation/path/to/lhapdf or use -DSHERPA_ENABLE_INSTALL_LHAPDF=ON to download and compile LHAPDF")
+    message(FATAL_ERROR "SHERPA: LHAPDF not found! Terminating!\n To use installed LHAPDF add to the cmake configuration -DLHAPDF_DIR=/installation/path/to/lhapdf or use -DSHERPA_ENABLE_INSTALL_LHAPDF=ON to download and compile LHAPDF")
   endif()
 else()
   message(STATUS "SHERPA: LHAPDF will be downloaded and compiled")
@@ -461,7 +466,7 @@ if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_HEPMC2)
      message(STATUS "SHERPA: HEPMC2_VERSION=${HEPMC2_VERSION} HEPMC2_LIBRARIES=${HEPMC2_LIBRARIES} HEPMC2_FIO_LIBRARIES=${HEPMC2_FIO_LIBRARIES} HEPMC2_INCLUDE_DIRS=${HEPMC2_INCLUDE_DIRS}")
   endif()
   if (SHERPA_ENABLE_HEPMC3)
-    find_package(HepMC3 REQUIRED)
+    find_package(HepMC3 REQUIRED CONFIG HINTS ${HepMC3_DIR})
     message(STATUS "SHERPA: HEPMC3_VERSION=${HEPMC3_VERSION} HEPMC3_LIBRARIES=${HEPMC3_LIBRARIES}  HEPMC3_INCLUDE_DIR=${HEPMC3_INCLUDE_DIR}") 
     if (SHERPA_ENABLE_HEPMC3_ROOT)
       if (NOT HEPMC3_ROOTIO_LIB)
@@ -603,7 +608,7 @@ if (SHERPA_ENABLE_GZIP)
   set(SOBOL_EXT .gz)
   add_custom_target( ZipSobol ALL)
   add_custom_command(TARGET ZipSobol PRE_BUILD
-       COMMAND ${GZIP} -f 21201
+       COMMAND ${GZIP} -k -f 21201
        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol
        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201
        VERBATIM)

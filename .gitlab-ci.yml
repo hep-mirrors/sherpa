@@ -5,7 +5,7 @@ image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 variables:
   DOCKER_DRIVER: overlay2
 #  CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=install
-  CONFIGURE_FLAGS: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_TESTING:BOOL=ON  -DSHERPA_ENABLE_EWSUD:BOOL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
+  CONFIGURE_FLAGS: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_TESTING:BOOL=ON  -DSHERPA_ENABLE_EWSUD:BOOL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
   MAKE_FLAGS: -j4
 
 .build_template: &build
@@ -76,7 +76,7 @@ build-rivet:
     - apt-get -y install cmake  wget
     - mkdir -p build-rivet
     - cd build-rivet
-    - cmake -S ../ -B . -DSHERPA_ENABLE_TESTING:BOOL=OFF -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON  -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_ROOT_DIR=$(rivet-config --prefix)
+    - cmake -S ../ -B . -DSHERPA_ENABLE_TESTING:BOOL=OFF -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON  -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_DIR=$(rivet-config --prefix)
     - make $MAKE_FLAGS
     - cmake --install .
     - ldd $(pwd)/install/bin/Sherpa
@@ -111,7 +111,7 @@ build-manual:
   script:
     - yum -y install cmake3 wget
     - pip3 install -r Manual/requirements.txt
-    - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON  
+    - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON  
     - cd build/Manual
     - make
     - make sherpamanual_html
@@ -238,7 +238,7 @@ dist:
   image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
     - pip3 install -r Manual/requirements.txt
-    - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON   # build the manual into the dist tarball
+    - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON   # build the manual into the dist tarball
     - make -C build/ dist
 
     # upload to gitlab releases

@@ -97,7 +97,7 @@ To point the cmake to the path where the Rivet is installed use
 
 .. code-block:: shell-session
 
-   $  ... -DRIVET_ROOT_DIR=/my/rivet/install/dir
+   $  ... -DRIVET_DIR=/my/rivet/install/dir
 
 Here, the paths have to point to the top level installation
 directories of the external packages, i.e. the ones containing the
