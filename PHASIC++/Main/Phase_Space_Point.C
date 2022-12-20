@@ -7,9 +7,9 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-Phase_Space_Point::Phase_Space_Point()
-    : p_pshandler(NULL), p_beamhandler(NULL), p_isrhandler(NULL), p_moms(NULL),
-      p_cuts(NULL), p_beamchannels(NULL), p_isrchannels(NULL),
+Phase_Space_Point::Phase_Space_Point(Phase_Space_Handler * psh)
+    : p_pshandler(psh), p_beamhandler(NULL), p_isrhandler(NULL),
+      p_moms(p_pshandler->Momenta()), p_cuts(NULL), p_beamchannels(NULL), p_isrchannels(NULL),
       p_fsrchannels(NULL), m_Ecms(ATOOLS::rpa->gen.Ecms()), m_smin(0.),
       m_weight(0.), m_ISsymmetryfactor(1.) {}
 
@@ -30,11 +30,9 @@ Phase_Space_Point::~Phase_Space_Point() {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-void Phase_Space_Point::Init(Phase_Space_Handler *psh) {
-  p_pshandler = psh;
+void Phase_Space_Point::Init() {
   p_beamhandler = p_pshandler->GetBeamSpectra();
   p_isrhandler = p_pshandler->GetISRHandler();
-  p_moms = p_pshandler->Momenta().data();
   m_nin = p_pshandler->Process()->Process()->NIn();
   m_nout = p_pshandler->Process()->Process()->NOut();
   m_nvec = m_nin + m_nout;
@@ -201,7 +199,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
 
 bool Phase_Space_Point::DefineFSRKinematics() {
   p_pshandler->Cuts()->Update(m_sprime, m_y);
-  p_fsrchannels->GeneratePoint(p_moms, p_pshandler->Cuts());
+  p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
   return true;
 }
 
@@ -264,7 +262,7 @@ double Phase_Space_Point::CalculateWeight() {
       p_beamchannels->GenerateWeight(int(p_beamhandler->ColliderMode()));
       m_weight *= p_beamchannels->Weight();
     }
-    p_fsrchannels->GenerateWeight(p_moms, p_cuts);
+    p_fsrchannels->GenerateWeight(p_moms.data(), p_cuts);
     m_weight *= p_fsrchannels->Weight();
   }
   return m_weight;

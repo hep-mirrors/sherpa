@@ -50,7 +50,7 @@ void DM_Annihilation_Kinematics::SetLimits() {
   m_xkey[2] = m_x[0]; // define to be beam 1
 }
 
-bool DM_Annihilation_Kinematics::operator()(Vec4D * p) {
+bool DM_Annihilation_Kinematics::operator()(Vec4D_Vector& p) {
 
   m_S = m_sprimekey[2] = m_sprimekey[3];
   double Eprime = sqrt(m_S);
@@ -72,7 +72,8 @@ bool DM_Annihilation_Kinematics::operator()(Vec4D * p) {
   m_CMSBoost = Poincare(p[0]+p[1]);
 
   // initial state momenta
-  BoostInCMS(p,2);
+  BoostInCMS(p[0]);
+  BoostInCMS(p[1]);
 
   // cms frame. No bunches so in/out momenta the same
   p_beams[0]->SetInMomentum(p[0]);

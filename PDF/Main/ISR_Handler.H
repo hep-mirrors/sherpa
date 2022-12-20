@@ -47,7 +47,7 @@ namespace PDF {
 
     int m_mode, m_rmode, m_swap; 
 
-    double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
+    std::array<double, 2> m_mass2, m_exponent, m_x, m_mu2;
     ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
     double m_splimits[3],m_ylimits[2];
     double m_fixed_smin, m_fixed_smax;
@@ -80,7 +80,7 @@ namespace PDF {
     bool CheckMasses();
 
     bool MakeISR(const double &sp,const double &y,
-		 ATOOLS::Vec4D * p,const ATOOLS::Flavour_Vector &flavs);
+		 ATOOLS::Vec4D_Vector& p,const ATOOLS::Flavour_Vector &flavs);
     bool GenerateSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2);
     bool AllowSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2) const;
 

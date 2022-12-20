@@ -34,7 +34,7 @@ void RelicDensity_Kinematics::SetLimits() {
   m_sprimekey[3] = m_S;
 }
 
-bool RelicDensity_Kinematics::operator()(ATOOLS::Vec4D * moms) {
+bool RelicDensity_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   m_S = m_sprimekey[3];
   double Eprime = sqrt(m_S);
   if ( m_S<m_sprimekey[0] || m_S>m_sprimekey[1] ||

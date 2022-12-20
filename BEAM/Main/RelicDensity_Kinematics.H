@@ -16,7 +16,7 @@ namespace BEAM {
     void AssignKeys(ATOOLS::Integration_Info *const info);
     void SetLimits();
     inline const double Sprime() { return m_sprimekey[3]; }
-    bool operator()(ATOOLS::Vec4D * moms);
+    bool operator()(ATOOLS::Vec4D_Vector& moms);
   };
 }
 #endif

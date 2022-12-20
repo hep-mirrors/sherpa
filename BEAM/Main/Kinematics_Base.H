@@ -23,7 +23,7 @@ namespace BEAM {
     Kinematics_Base(Beam_Base * p_beams[2]);
     ~Kinematics_Base();
     
-    virtual bool operator()(ATOOLS::Vec4D * moms)                 = 0;
+    virtual bool operator()(ATOOLS::Vec4D_Vector& moms)           = 0;
     virtual void AssignKeys(ATOOLS::Integration_Info *const info) = 0;
     virtual void SetLimits()                                      = 0;
     virtual inline void SetSprimeMin(const double & smin) { m_sminPS = ATOOLS::Max(smin, m_sminPS); }
@@ -43,20 +43,20 @@ namespace BEAM {
       return m_exponent[i];
     }
     virtual inline void BoostInCMS(ATOOLS::Vec4D & p) { m_CMSBoost.Boost(p); }
-    virtual inline void BoostInCMS(ATOOLS::Vec4D* p,const size_t & n) {
-      for (size_t i=0; i<n; ++i) m_CMSBoost.Boost(p[i]);
-    }    
+    virtual inline void BoostInCMS(ATOOLS::Vec4D_Vector& p) {
+      for (auto& mom : p) m_CMSBoost.Boost(mom);
+    }
     virtual inline void BoostInLab(ATOOLS::Vec4D & p) { m_LabBoost.Boost(p); }
-    virtual inline void BoostInLab(ATOOLS::Vec4D* p,const size_t & n) {
-      for (size_t i=0; i<n; ++i) m_LabBoost.Boost(p[i]);
+    virtual inline void BoostInLab(ATOOLS::Vec4D_Vector& p) {
+      for (auto& mom : p) m_LabBoost.Boost(mom);
     }
     virtual inline void BoostBackCMS(ATOOLS::Vec4D & p) { m_CMSBoost.BoostBack(p); }
-    virtual inline void BoostBackCMS(ATOOLS::Vec4D* p,const size_t & n) {
-      for (size_t i=0; i<n; ++i) m_CMSBoost.BoostBack(p[i]);
+    virtual inline void BoostBackCMS(ATOOLS::Vec4D_Vector& p) {
+      for (auto& mom : p) m_CMSBoost.BoostBack(mom);
     }
     virtual inline void BoostBackLab(ATOOLS::Vec4D & p) { m_LabBoost.BoostBack(p); }
-    virtual inline void BoostBackLab(ATOOLS::Vec4D* p,const size_t & n) {
-      for (size_t i=0; i<n; ++i) m_LabBoost.BoostBack(p[i]);
+    virtual inline void BoostBackLab(ATOOLS::Vec4D_Vector& p) {
+      for (auto& mom : p) m_LabBoost.BoostBack(mom);
     }
   };
 }

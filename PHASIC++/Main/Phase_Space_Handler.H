@@ -68,8 +68,6 @@ namespace PHASIC {
     void RegisterDefaults() const;
     void InitParameters(const double & error);
 
-    bool MakeIncoming(ATOOLS::Vec4D *const p);
-    void CorrectMomenta(ATOOLS::Vec4D_Vector &p);
     void ManageWeights(const double & factor);
     bool CheckStability();
 
@@ -108,8 +106,8 @@ namespace PHASIC {
       return p_active->Process()->Differential(p_lab, varmode);
     }
     inline double CalculatePS()  { return m_pspoint.CalculateWeight(); }
-    inline double Weight(ATOOLS::Vec4D_Vector &moms) {
-      m_pspoint.SetMomenta(&moms.front());
+    inline double Weight(ATOOLS::Vec4D_Vector& moms) {
+      m_pspoint.SetMomenta(moms);
       return m_pspoint.CalculateWeight();
     }
 

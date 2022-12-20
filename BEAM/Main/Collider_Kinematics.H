@@ -26,7 +26,7 @@ public:
   inline const double Y() { return m_ykey[2]; }
   void AssignKeys(ATOOLS::Integration_Info *const info);
   void SetLimits();
-  bool operator()(ATOOLS::Vec4D *moms);
+  bool operator()(ATOOLS::Vec4D_Vector& moms);
 };
 }
 #endif

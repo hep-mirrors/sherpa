@@ -36,7 +36,7 @@ namespace PHASIC {
     Phase_Space_Handler             * p_pshandler;
     BEAM::Beam_Spectra_Handler      * p_beamhandler;
     PDF::ISR_Handler                * p_isrhandler;
-    ATOOLS::Vec4D                   * p_moms;
+    ATOOLS::Vec4D_Vector            & p_moms;
     Cut_Data                        * p_cuts;
     Multi_Channel  * p_beamchannels, * p_isrchannels, * p_fsrchannels;
     ATOOLS::Info_Key m_beamspkey, m_beamykey, m_isrspkey, m_isrykey;
@@ -65,10 +65,10 @@ namespace PHASIC {
       p_moms[1] = m_ISmoms[1];
     }
   public:
-    Phase_Space_Point();
+    Phase_Space_Point(Phase_Space_Handler * psh);
     ~Phase_Space_Point();
 
-    void   Init(Phase_Space_Handler * psh);
+    void   Init();
     void   InitCuts(Process_Integrator * process);
     bool   operator()(Process_Integrator * process,
 		      const psmode::code & mode=psmode::normal_call);
@@ -78,7 +78,7 @@ namespace PHASIC {
     inline void SetBeamIntegrator(Multi_Channel * channels) { p_beamchannels = channels; }
     inline void SetISRIntegrator(Multi_Channel * channels)  { p_isrchannels  = channels; }
     inline void SetFSRIntegrator(Multi_Channel * channels)  { p_fsrchannels  = channels; }
-    inline void SetMomenta(ATOOLS::Vec4D * moms) {
+    inline void SetMomenta(ATOOLS::Vec4D_Vector& moms) {
       p_moms = moms;
       ATOOLS::Vec4D pin = p_moms[0]+p_moms[1];
       m_isrspkey[3] = pin.Abs2();

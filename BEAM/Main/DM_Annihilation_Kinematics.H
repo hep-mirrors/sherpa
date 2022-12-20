@@ -16,7 +16,7 @@ namespace BEAM {
 
     void AssignKeys(ATOOLS::Integration_Info *const info);
     void SetLimits();
-    bool operator()(ATOOLS::Vec4D * p);
+    bool operator()(ATOOLS::Vec4D_Vector& p);
   };
 }
 #endif

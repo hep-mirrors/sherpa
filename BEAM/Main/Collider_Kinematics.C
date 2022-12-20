@@ -53,7 +53,7 @@ void Collider_Kinematics::InitIntegration() {
   m_exponent[1] = .98 * (p_beams[0]->Exponent() + p_beams[1]->Exponent());
 }
 
-bool Collider_Kinematics::operator()(ATOOLS::Vec4D *moms) {
+bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   m_sprime = m_sprimekey[3];
   if (m_sprime < m_sprimekey[0] || m_sprime > m_sprimekey[1]) {
     msg_Error() << METHOD << "(..): " << om::red << "s' out of bounds.\n"

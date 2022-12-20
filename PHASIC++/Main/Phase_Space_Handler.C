@@ -32,7 +32,7 @@ Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
                                          const std::string eobs,
                                          const std::string efunc): m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
-      p_integrator(NULL), p_beamhandler(proc->Beam()), m_pspoint(Phase_Space_Point()),
+      p_integrator(NULL), p_beamhandler(proc->Beam()), m_pspoint(Phase_Space_Point(this)),
       p_isrhandler(proc->ISR()), p_flavours(proc->Process()->Flavours()),
       m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout),
       m_initialized(false), m_sintegrator(0), m_killedpoints(0),
@@ -49,7 +49,7 @@ Phase_Space_Handler::~Phase_Space_Handler() { delete p_integrator; }
 bool Phase_Space_Handler::CreateIntegrators() {
   Channel_Creator channelcreator(this);
   if (channelcreator()) {
-    m_pspoint.Init(this);
+    m_pspoint.Init();
     m_psenhance.Init(this);
     m_psenhance.SetObservable(m_enhanceObs, p_process->Process());
     m_psenhance.SetFunction(m_enhanceFunc, p_process->Process());
@@ -83,8 +83,8 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   if (!process->Process()->GeneratePoint() ||
       !m_pspoint(process,m_cmode))
     return 0.0;
-  for (size_t i(0);i<p_lab.size();++i) {
-    if (p_lab[i].Nan()) return 0.0;
+  for (auto p : p_lab) {
+    if (p.Nan()) return 0.0;
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {

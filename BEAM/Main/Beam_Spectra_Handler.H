@@ -34,7 +34,7 @@ namespace BEAM {
     inline const double Upper2() { return p_BeamBase[1]->Xmax(); }
     inline const double Peak()   { return p_BeamBase[0]->Peak()*p_BeamBase[1]->Peak(); }
 
-    inline bool MakeBeams(ATOOLS::Vec4D * moms) { return (*p_kinematics)(moms); }
+    inline bool MakeBeams(ATOOLS::Vec4D_Vector& moms) { return (*p_kinematics)(moms); }
     inline void AssignKeys(ATOOLS::Integration_Info *const info) {
       p_kinematics->AssignKeys(info);
       p_weight->AssignKeys(info);
@@ -42,11 +42,11 @@ namespace BEAM {
     inline void SetLimits() { p_kinematics->SetLimits(); }
     inline void BoostInCMS(ATOOLS::Vec4D & p) { p_kinematics->BoostInCMS(p); }
     inline void BoostInLab(ATOOLS::Vec4D & p) { p_kinematics->BoostInLab(p); }
-    inline void BoostInCMS(ATOOLS::Vec4D *p,const size_t & n) {
-      p_kinematics->BoostInCMS(p,n);
+    inline void BoostInCMS(ATOOLS::Vec4D_Vector& p) {
+      p_kinematics->BoostInCMS(p);
     }
-    inline void BoostInLab(ATOOLS::Vec4D *p,const size_t & n) {
-      p_kinematics->BoostInLab(p,n);
+    inline void BoostInLab(ATOOLS::Vec4D_Vector& p) {
+      p_kinematics->BoostInLab(p);
     }
 
     inline void SetType(const std::string & type) { m_type = type; }

@@ -172,7 +172,7 @@ void ISR_Handler::SetMasses(const Flavour_Vector &fl) {
 
 void ISR_Handler::SetPartonMasses(const Flavour_Vector &fl) { SetMasses(fl); }
 
-bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D *p,
+bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector& p,
                           const Flavour_Vector &flavs) {
   if (m_mode == 0) {
     m_x[1] = m_x[0] = 1.;
@@ -510,9 +510,7 @@ bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl, double &x,
   return p_remnants[beam]->TestExtract(fl, mom);
 }
 
-void ISR_Handler::Reset(const size_t i) const {
-  // if (p_isrbase[i]->PDF()!=NULL) p_isrbase[i]->Reset();
-}
+void ISR_Handler::Reset(const size_t i) const {}
 
 ATOOLS::Blob_Data_Base *ISR_Handler::Info(const int frame) const {
   if (frame == 0)
