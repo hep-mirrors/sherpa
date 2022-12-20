@@ -234,6 +234,7 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
   Vec4D cms;
   for (size_t i(0);i<ampl->Legs().size();++i) {
     if (i<ampl->NIn()) cms-=ampl->Leg(i)->Mom();
+    if (i<ampl->NIn() && ampl->Leg(i)->Mom()[0] < Mass(ampl->Leg(i)->Flav())) return 0;
     if (m_psmass.find(ampl->Leg(i)->Flav())!=
 	m_psmass.end()) run=true;
   }
