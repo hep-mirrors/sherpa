@@ -34,21 +34,21 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
   //    into a separate blob, in DealWithHadrons.
   //    TODO: I have to check for partonic hadron decays if I get the connections right.
   // 3. The plists will be decomposed into singlets and filled into one blob
-
   ResetPartLists();
   if (!HarvestParticles(bloblist)) return Return_Value::New_Event;
   if (m_partlists.size()==0 || (*m_partlists.begin())->empty()) return Return_Value::Nothing;
   while (!m_partlists.empty()) {
-    p_partlist = m_partlists.front();  
-    if (DecomposeIntoSinglets()) {
-      Blob * blob = MakeBlob();
+    p_partlist = m_partlists.front();
+    if (!p_partlist->empty()) {
+      Blob * blob = NULL;
+      if (DecomposeIntoSinglets()) blob = MakeBlob();
       if (blob) bloblist->push_back(blob);
-    }
-    else {
-      msg_Error()<<"Error in "<<METHOD<<" failed to decompose particle list into singlet.\n"
-		 <<"   Reset list, return Error and hope for the best.\n";
-      ResetPartLists();
-      return Return_Value::Error;
+      else {
+	msg_Error()<<"Error in "<<METHOD<<" failed to decompose particle list into singlet.\n"
+		   <<"   Reset list, return Error and hope for the best.\n";
+	ResetPartLists();
+	return Return_Value::Error;
+      }
     }
     m_partlists.front()->clear();
     delete m_partlists.front();
@@ -180,9 +180,26 @@ Blob * Singlet_Sorter::MakeBlob() {
   if (!up || (up && up->Type()!=btp::Hadron_Decay)) {
     blob->AddStatus(blob_status::needs_reconnections);
   }
+  bool massthem = false;
   while (!p_partlist->empty()) {
-    blob->AddToInParticles(p_partlist->front());
+    Particle * part = p_partlist->front();
+    if (!massthem &&
+	((part->Flav().IsGluon() && dabs(part->Momentum().Abs2()>1.e-5)) ||
+	 (!part->Flav().IsGluon() &&
+	  !IsEqual(part->Momentum().Abs2(),sqr(part->Flav().HadMass()),1.e-5)))) {
+      massthem = true;
+    }
+    blob->AddToInParticles(part);
     p_partlist->pop_front();
+  }
+  if (massthem) {
+    Particle_Vector parts;
+    vector<double>  masses;
+    for (size_t i=0;i<blob->NInP();i++) {
+      parts.push_back(blob->InParticle(i));
+      masses.push_back(parts.back()->Flav().HadMass());
+    }
+    if (!m_stretcher.StretchMomenta(parts,masses)) { delete blob; blob = NULL; }
   }
   return blob;
 }

@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
@@ -14,6 +15,7 @@ namespace SHERPA {
     std::list<ATOOLS::Particle *>   m_hadrons;
     ATOOLS::Part_List             * p_partlist;
     std::list<ATOOLS::Part_List * > m_partlists;
+    ATOOLS:: Momenta_Stretcher      m_stretcher;
 
     bool HarvestParticles(ATOOLS::Blob_List *);
     bool FillParticleLists(ATOOLS::Blob * blob);
