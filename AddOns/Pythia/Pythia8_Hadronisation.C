@@ -30,6 +30,7 @@ public:
     m_pythia.readString("PartonLevel:FSRinResonances = off");
 
     // Switch off automatic event listing in favour of manual.
+    m_pythia.readString("Next:numberCount = 0");
     m_pythia.readString("Next:numberShowLHA = 0");
     m_pythia.readString("Next:numberShowInfo = 0");
     m_pythia.readString("Next:numberShowProcess = 0");
@@ -102,9 +103,10 @@ private:
     For normal hadronization/decays in pythia.next() the history encoded in the mother and daughter indices is not used.
     Therefore the first two append methods, which set all these indices vanishing, should suffice.
     The subsequent hadronization/decays will still be properly documented.
-    The exception is when you want to include junctions in your string topology, i.e. have three string pieces meet.
-    Then you must insert in your event record the (decayed) particle that is the reason for the presence of a junction,
-    e.g. a baryon beam remnant from which several valence quarks have been kicked out, or a neutralino that underwent a baryon-number-violating decay.
+    The exception is when you want to include junctions in your string topology, i.e. have three
+    string pieces meet.  Then you must insert in your event record the (decayed) particle that is
+    the reason for the presence of a junction, e.g. a baryon beam remnant from which several valence
+    quarks have been kicked out, or a neutralino that underwent a baryon-number-violating decay.
     This particle must have as daughters the three partons that together carry the baryon number.
     */
     // Reset event record to allow for new event.
@@ -137,8 +139,9 @@ private:
   void FillFragmentationBlob(Blob_List * bloblist, Blob * blob, Pythia8::Event& pevt)
   {
     /*
-      Go through now hadronized Pythia event and fill sherpa fragmentation blob with particles resulting from hadronization.
-      If Pythia already did hadron decays the proper sherpa decay blobs should also be created.
+      Go through now hadronized Pythia event and fill sherpa fragmentation blob with particles
+      resulting from hadronization.  If Pythia already did hadron decays the proper sherpa decay
+      blobs should also be created.
     */
     m_processed.clear();
 
