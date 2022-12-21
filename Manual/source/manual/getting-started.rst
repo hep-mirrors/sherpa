@@ -50,7 +50,9 @@ you use the distribution tarball:
    $ cmake --install <builddir>
 
 where `<builddir>` has to be replaced with the (temporary) directory in which intermediate files are stored during the build process.
-Normally you can simply use the current working directory, i.e. `.` for both.
+Normally you can simply use the current working directory, i.e. `.`.
+
+Note that re-running ``cmake`` with different configuration options is `not the same <https://gitlab.kitware.com/cmake/cmake/-/issues/19622>`_ as running it in a fresh working directory. Use ``ccmake .`` instead to check/change the current configuration. To start afresh, e.g. to pick up a different version of a dependency, you can use the ``cmake --fresh [...]`` option in recent versions of cmake, or just delete the cache (``rm -rf CMakeCache.txt CMakeFiles``).
 
 If not specified differently, the directory structure after
 installation is organized as follows
@@ -104,7 +106,7 @@ directories of the external packages, i.e. the ones containing the
 ``lib/``, ``share/``, ... subdirectories.
 
 For a complete list of possible configuration options run
-:option:`cmake -LA`. 
+:option:`cmake -LA`.
 
 .. If you want to use the built-in interface to Lund fragmentation and hadron
 .. decays, you have to compile with Pythia support by specifying the

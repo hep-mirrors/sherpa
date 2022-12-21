@@ -5,9 +5,12 @@ message(STATUS "SHERPA Manual: LATEX_FOUND=${LATEX_FOUND} PDFLATEX_COMPILER=${PD
 find_program(LATEXMK NAMES latexmk  REQUIRED)
 message(STATUS "SHERPA Manual: LATEXMK=${LATEXMK}")
 
+file (GLOB_RECURSE MANUALDEPS ${CMAKE_CURRENT_SOURCE_DIR}/source/manual/*.rst)
+
 set (sphinx_options  "-D release=${SHERPA_VERSION}")
 add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/completion.index  ${CMAKE_CURRENT_BINARY_DIR}/options.index
+       DEPENDS ${MANUALDEPS}
        COMMAND ${SPHINXBUILD} -M completion  ${CMAKE_CURRENT_SOURCE_DIR}/source . ${sphinx_options}
        COMMAND mv completion/completion.index  .
        COMMAND mv completion/options.index .
@@ -16,6 +19,7 @@ add_custom_command(
        VERBATIM)
 add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.1 
+       DEPENDS ${MANUALDEPS}
        COMMAND ${SPHINXBUILD} -M man  ${CMAKE_CURRENT_SOURCE_DIR}/source . ${sphinx_options}
        COMMAND mv man/Sherpa.1 .
        COMMAND rm -r man
@@ -24,6 +28,7 @@ add_custom_command(
        
 add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_html
+       DEPENDS ${MANUALDEPS}
        COMMAND ${SPHINXBUILD} -M html  ${CMAKE_CURRENT_SOURCE_DIR}/source . ${sphinx_options}
        COMMAND rm -rf sherpamanual_html
        COMMAND mv html sherpamanual_html
@@ -32,6 +37,7 @@ add_custom_command(
 
 add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
+       DEPENDS ${MANUALDEPS}
        COMMAND ${SPHINXBUILD} -M latexpdf  ${CMAKE_CURRENT_SOURCE_DIR}/source  . ${sphinx_options}
        COMMAND mv latex/sherpamanual.pdf .
        COMMAND mv latex/sherpamanual.fls .
@@ -41,6 +47,7 @@ add_custom_command(
 
 add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.info
+       DEPENDS ${MANUALDEPS}
        COMMAND ${SPHINXBUILD} -M info  ${CMAKE_CURRENT_SOURCE_DIR}/source  . ${sphinx_options}
        COMMAND mv texinfo/sherpamanual.info .
        COMMAND rm -r texinfo
