@@ -36,6 +36,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
 option(SHERPA_ENABLE_ANALYSIS                "Enables building of Analyses." OFF)
 option(SHERPA_ENABLE_BINRELOC                "Enables binreloc." OFF)
+option(SHERPA_ENABLE_CLANG_TIDY              "Enables checks with clang-tidy." OFF)
 option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." OFF)
 option(SHERPA_ENABLE_DIHIGGS                 "Enables building of DIHIGGS." OFF)
 option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
@@ -66,7 +67,7 @@ option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 ###########################Options handeling############################
-set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
+set( allenables ANALYSIS BINRELOC BLACKHAT CLANG_TIDY DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
 INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF 
  LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
@@ -198,6 +199,10 @@ if (SHERPA_ENABLE_FORTRAN)
     set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_X})
   endif()
   message(STATUS "SHERPA: CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
+endif()
+########################################################################
+if (SHERPA_ENABLE_CLANG_TIDY)
+  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--checks=*,-readability-identifier-length,-modernize-use-trailing-return-type,-cppcoreguidelines-avoid-non-const-global-variables,-llvmlibc-callee-namespace,-bugprone-easily-swappable-parameters,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-readability-implicit-bool-conversion,-hicpp-braces-around-statements,-readability-braces-around-statements,-cert-err34-c,-modernize-return-braced-init-list")
 endif()
 ########################################################################
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
