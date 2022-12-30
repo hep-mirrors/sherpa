@@ -1,5 +1,9 @@
 find_program(SWIG NAMES swig  REQUIRED)
-message(STATUS "SHERPA: SWIG=${SWIG}")
+if (SWIG)
+ message(STATUS "SHERPA: SWIG=${SWIG}")
+else()
+ message(FATAL_ERROR "SHERPA: SWIG NOT FOUND!")
+endif()
 set( PYEXTFILES_GEN
     Sherpa.i 
     Exception.i 
