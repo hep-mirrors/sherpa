@@ -74,16 +74,16 @@ if [ "$SCONS" = "TRUE" ] ; then
   exit 0;
 fi
 
-if ! test -z "@CXX@"; then export CXX="@CXX@"; fi
-export CXXFLAGS="@CXXFLAGS@ -O2";
-if ! test -z "@LDFLAGS@"; then export LDFLAGS="@LDFLAGS@"; fi
-if ! test -z "@LIBS@"; then export LIBS="@LIBS@"; fi
-if ! test -z "@CPPFLAGS@"; then export CPPFLAGS="@CPPFLAGS@"; fi
-if ! test -z "@CC@"; then export CC="@CC@"; fi
-if ! test -z "@CFLAGS@"; then export CFLAGS="@CFLAGS@"; fi
-if ! test -z "@FC@"; then export FC="@FC@"; fi
-if ! test -z "@FCFLAGS@"; then export FCFLAGS="@FCFLAGS@"; fi
-if ! test -z "@CXXCPP@"; then export CXXCPP="@CXXCPP@"; fi
+if test -z "$CXX"; then export CXX="@CXX@"; fi
+if test -z "$CXXFLAGS"; then export CXXFLAGS="@CXXFLAGS@"; fi
+if test -z "$LDFLAGS"; then export LDFLAGS="@LDFLAGS@"; fi
+if test -z "$LIBS"; then export LIBS="@LIBS@"; fi
+if test -z "$CPPFLAGS"; then export CPPFLAGS="@CPPFLAGS@"; fi
+if test -z "$CC"; then export CC="@CC@"; fi
+if test -z "$CFLAGS"; then export CFLAGS="@CFLAGS@"; fi
+if test -z "$FC"; then export FC="@FC@"; fi
+if test -z "$FCFLAGS"; then export FCFLAGS="@FCFLAGS@"; fi
+if test -z "$CXXCPP"; then export CXXCPP="@CXXCPP@"; fi
 
 if echo "@host@" | grep -q "i686"; then
     export CXX="$CXX -m32"

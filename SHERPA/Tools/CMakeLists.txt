@@ -6,10 +6,10 @@ set(Tools_SOURCES Output_Base.C
                   Output_LHEF.C
                   Userhook_Base.C
                   Analysis_Interface.C)
-if (SHERPA_ENABLE_HEPMC2)
+if (HEPMC2_REQUIRED)
   list(APPEND Tools_SOURCES HepMC2_Interface.C)
 endif()
-if (SHERPA_ENABLE_HEPMC3)
+if (HEPMC3_REQUIRED)
   list(APPEND Tools_SOURCES HepMC3_Interface.C)
 endif()
 
@@ -33,11 +33,11 @@ sherpa_create_git_info(foo)
 add_library(SherpaTools SHARED ${Tools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaTools SherpaTools)
 
-if (SHERPA_ENABLE_HEPMC2)
+if (HEPMC2_REQUIRED)
   target_link_libraries(SherpaTools PRIVATE ${HEPMC2_LIBRARIES})
   target_include_directories(SherpaTools PRIVATE ${HEPMC2_INCLUDE_DIRS})
 endif()
-if (SHERPA_ENABLE_HEPMC3)
+if (HEPMC3_REQUIRED)
   target_link_libraries(SherpaTools PRIVATE ${HEPMC3_LIB})
   target_include_directories(SherpaTools PRIVATE ${HEPMC3_INCLUDE_DIR})
   if (SHERPA_ENABLE_HEPMC3_ROOT)

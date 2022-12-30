@@ -82,7 +82,9 @@ if (RIVET_CONFIG_EXE)
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
   string(REPLACE "-I" "" TEMP_RIVET_CONFIG_CPPFLAGS_DIRS  ${RIVET_CONFIG_CPPFLAGS_STRING})
   string(REPLACE " " ";" RIVET_CONFIG_CPPFLAGS_DIRS  ${TEMP_RIVET_CONFIG_CPPFLAGS_DIRS})
- 
+  execute_process(COMMAND ${RIVET_CONFIG_EXE} --pythonpath
+                  OUTPUT_VARIABLE RIVET_CONFIG_PYTHONPATH_STRING
+                  OUTPUT_STRIP_TRAILING_WHITESPACE) 
 endif()
 
 mark_as_advanced(RIVET_INCLUDE_DIR RIVET_LIBRARY RIVET_EXE RIVET_CONFIG_LIBS_STRING 
@@ -95,8 +97,9 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(Rivet HANDLE_COMPONENTS REQUIRED_VARS RIVET_IN
                                RIVET_CONFIG_LIBS_STRING 
                                RIVET_CONFIG_CPPFLAGS_STRING 
                                RIVET_CONFIG_CPPFLAGS_DIRS
-                              RIVET_CONFIG_LIBS
+                               RIVET_CONFIG_LIBS
                                RIVET_CONFIG_LIB_DIRS
+                               VERSION_VAR RIVET_VERSION
                                )
 
 set(RIVET_LIBRARIES ${RIVET_LIBRARY})

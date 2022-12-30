@@ -5,14 +5,15 @@ image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 variables:
   DOCKER_DRIVER: overlay2
 #  CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=install
-  CONFIGURE_FLAGS: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_TESTING:BOOL=ON  -DSHERPA_ENABLE_EWSUD:BOOL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
+  CONFIGURE_FLAGS: -DSHERPA_ENABLE_TESTING=ON -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_TESTING:BOOL=ON  -DSHERPA_ENABLE_EWSUD:BOOL=ON -DLibZip_ROOT_DIR=/usr
   MAKE_FLAGS: -j4
 
 .build_template: &build
   stage: build
   before_script:
     # set up ccache
-    - yum -y install cmake3  wget
+    - yum -y install cmake3  wget python2-lhapdf lhapdf-devel
+    - lhapdf install PDF4LHC21_40_pdfas
     - mkdir -p ccache
     - export CCACHE_BASEDIR=${PWD}
     - export CCACHE_DIR=${PWD}/ccache
@@ -58,8 +59,8 @@ build:
     - cd build
     - cmake3 -S ../ -B .  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
-    - make install
     - ctest3 . --output-on-failure
+    - make install
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -74,20 +75,31 @@ build-rivet:
   stage: build
   script:
     - apt-get -y install cmake  wget
+    - wget https://lhapdf.hepforge.org/downloads/?f=LHAPDF-6.5.3.tar.gz -O LHAPDF-6.5.3.tar.gz
+    - tar zxfv LHAPDF-6.5.3.tar.gz
+    - cd LHAPDF-6.5.3
+    - ./configure --disable-python --without-doxygen 
+    - make install -j 8
+    - cd ..
+    - lhapdf install PDF4LHC21_40_pdfas
     - mkdir -p build-rivet
     - cd build-rivet
-    - cmake -S ../ -B . -DSHERPA_ENABLE_TESTING:BOOL=OFF -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON  -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_DIR=$(rivet-config --prefix)
+    - cmake -S ../ -B . -DSHERPA_ENABLE_TESTING:BOOL=ON -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_ROOT_DIR=$(rivet-config --prefix)
     - make $MAKE_FLAGS
+    - ctest . --output-on-failure
     - cmake --install .
     - ldd $(pwd)/install/bin/Sherpa
-#    - ctest . 
+    - ls 
+    - mv Tests/test-rivet-LO_Z ../
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
     paths:
       - build-rivet/install
       - Examples/CI/
-
+      - test-rivet-LO_Z/Analysis.yoda.gz
+      - test-rivet-LO_Z/deviations.pdf
+      - test-rivet-LO_Z/rivet-plots
 # build with clang and -Werror
 build-clang-strict:
   <<: *build
@@ -96,8 +108,8 @@ build-clang-strict:
     - cd build-clang-strict
     - cmake3 -S ../ -B .  -DCMAKE_CXX_FLAGS="-Werror -Wno-error=unused-function "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
-    - make install
     - ctest3 . --output-on-failure
+    - make install
   # store what's required to run the tests
   artifacts:
     expire_in: 2 days
@@ -124,91 +136,6 @@ build-manual:
         - Manual/**/*
       when: always
     - when: never
-
-#
-# Test
-#
-
-# define test runs as single jobs; this is less dynamic then just cycling
-# through all sub-directories of Examples/CI, but it makes sure that all test
-# jobs will be run simultaneously; at least we use anchors and map merging to
-# inherit parameters set in .test_template
-
-.test_template: &test
-  stage: test
-  variables:
-    GIT_STRATEGY: none  # we only need the artifacts from the build
-
-test-LO_Z: &test_lo_z
-  <<: *test
-  needs:
-    - build
-  script:
-    - mkdir test-LO_Z
-    - cd test-LO_Z
-    - export LHAPDF_DATA_PATH=$(pwd)/../build/install/share/SHERPA-MC/LHAPDF
-    - mkdir -p $LHAPDF_DATA_PATH
-    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O - | tar xz -C $LHAPDF_DATA_PATH
-    - export PATH=$(pwd)../build/install/bin:$PATH 
-    - export LD_LIBRARY_PATH=$(pwd)/../build/install/lib/SHERPA-MC:$(pwd)/../build/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
-    - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
-
-test-LO_Z-Amegic:
-  <<: *test_lo_z
-  script:
-    - mkdir test-LO_Z-Amegic
-    - cd test-LO_Z-Amegic
-    - export LHAPDF_DATA_PATH=$(pwd)/../build/install/share/SHERPA-MC/LHAPDF
-    - mkdir -p $LHAPDF_DATA_PATH
-    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O - | tar xz -C $LHAPDF_DATA_PATH
-    - export PATH=$(pwd)../build/install/bin:$PATH 
-    - export LD_LIBRARY_PATH=$(pwd)/../build/install/lib/SHERPA-MC:$(pwd)/../build/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
-    - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
-    - ./makelibs
-    - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
-
-test-clang-strict-LO_Z:
-  <<: *test
-  needs:
-    - build-clang-strict
-  script:
-    - mkdir test-clang-strict-LO_Z
-    - cd test-clang-strict-LO_Z
-    - export LHAPDF_DATA_PATH=$(pwd)/../build-clang-strict/install/share/SHERPA-MC/LHAPDF
-    - mkdir -p $LHAPDF_DATA_PATH
-    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O - | tar xz -C $LHAPDF_DATA_PATH
-    - export PATH=$(pwd)../build-clang-strict/install/bin:$PATH 
-    - export LD_LIBRARY_PATH=$(pwd)/../build-clang-strict/install/lib/SHERPA-MC:$(pwd)/../build-clang-strict/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH 
-    - ../build-clang-strict/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
-
-test-rivet-LO_Z:
-  <<: *test
-  image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/analysis"
-  needs:
-    - build-rivet
-  script:
-    - mkdir test-rivet-LO_Z
-    - cd test-rivet-LO_Z
-    - . /etc/profile
-    - . /etc/bash.bashrc
-    - for i in /etc/profile.d/*.sh; do source $i; done
-    - export LHAPDF_DATA_PATH=$(pwd)/../build-rivet/install/share/SHERPA-MC/LHAPDF
-    - mkdir -p $LHAPDF_DATA_PATH
-    - wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/PDF4LHC21_40_pdfas.tar.gz -O - | tar xz -C $LHAPDF_DATA_PATH
-    - export PATH=$(pwd)../build-rivet/install/bin:$PATH 
-    - export LD_LIBRARY_PATH=$(pwd)/../build-rivet/install/lib/SHERPA-MC:$(pwd)/../build-rivet/install/lib64/SHERPA-MC:$LD_LIBRARY_PATH
-    - ls $(pwd)/../build-rivet/install/lib*/SHERPA-MC -lah
-    - ldd ../build-rivet/install/bin/Sherpa
-    - ../build-rivet/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml ANALYSIS=Rivet
-    - rivet-mkhtml --mc-errs ../Examples/CI/LO_Z/Reference.yoda.gz Analysis.yoda.gz PLOT:RatioPlotMode=deviation
-    - ../Examples/CI/plot_deviations ../Examples/CI/LO_Z/Reference.yoda.gz Analysis.yoda.gz
-  artifacts:
-    when: always
-    expire_in: 7 days
-    paths:
-      - test-rivet-LO_Z/Analysis.yoda.gz
-      - test-rivet-LO_Z/deviations.pdf
-      - test-rivet-LO_Z/rivet-plots
 
 #
 # Deploy
