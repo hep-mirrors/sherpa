@@ -101,8 +101,8 @@ namespace EXTAMP {
     /* Now check if any of the has alpha<alpha_min */
     if(!PassesAlphaMin(m_dipoles))
       {
-	SetSubEventsToZero(m_subevents);
-	return m_lastxs = 0.0;
+	    SetSubEventsToZero(m_subevents);
+	    return m_lastxs = 0.0;
       }
 
     /* Check trigger and set m_trig of subevents accordingly */
@@ -110,6 +110,11 @@ namespace EXTAMP {
     
     /* Trigger the calculation scales (including those of dipoles) */
     ScaleSetter()->CalculateScale(p);
+    
+    /* This variable is used to check whether a ME has been
+       set to 0 due to instability internal check of the ME 
+       provider */
+    bool stable=true;
 
     /* Calculate sum of dipole subtraction terms */
     double S(0.0);
@@ -119,15 +124,21 @@ namespace EXTAMP {
 	   Dipoles approximate +real emission term. Sign convention in
 	   Dipole_Wrapper_Processes is such that ADDING their
 	   contribution cancels divergencies. */
-	bool sub_trig   = m_subevents[i]->m_trig;
-	double sub_dxs = (sub_trig ? m_dipole_wrappers[i]->Calc(m_subevents[i]) : 0.0);
-	S += sub_dxs;
+      bool sub_trig   = m_subevents[i]->m_trig;
+      double sub_dxs = (sub_trig ? m_dipole_wrappers[i]->Calc(m_subevents[i]) : 0.0);
+
+	    S += sub_dxs;
       }
 
     /* Check if kinematics passes trigger before calculating real
        emission matrix element */
     bool trig = m_subevents.back()->m_trig;
-    double R  = (trig ? p_real_me->Calc(p)/NormFac() : 0.0);
+    double R = (trig ? p_real_me->Calc(p)/NormFac() : 0.0);
+    if(R==0&&trig)
+    {
+	    SetSubEventsToZero(m_subevents);
+	    return m_lastxs = 0.0;
+    }
 
     /* Update real emission subevent */
     m_subevents.back()->m_trig   = trig;
@@ -137,6 +148,7 @@ namespace EXTAMP {
 
     /* Apply smearing to reduce binning fluctuations */
     if(m_alpha_0!=0.0) SmearSubEvents(m_dipoles, m_subevents, ATOOLS::dabs(m_alpha_0), m_smear_power);
+  
 
     return m_lastxs = R + S;
   }
@@ -175,6 +187,9 @@ namespace EXTAMP {
     int subtraction_type = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
     double alphamin = s["DIPOLES"]["AMIN"].Get<double>();
     double alphamax = s["DIPOLES"]["ALPHA"].Get<double>();
+    PHASIC::Process_Info pi = Info();
+    pi.m_maxcpl[0] -= 1;
+
 
     /* Build dipoles */
     Dipole_Vector ret;
@@ -184,7 +199,9 @@ namespace EXTAMP {
 	  {
 	    if(i==k || j==k) continue;
 	    if(!Combinable((1<<(*i)), (1<<(*j)))) continue;
+
 	    Dipole_Info di(m_flavs, *i, *j, *k, subtraction_type, alphamin, alphamax);
+      di.m_dorders=pi.m_maxcpl;
 	    switch(di.m_split_type)
 	      {
 	      case SplittingType::FF:
@@ -299,7 +316,7 @@ namespace EXTAMP {
   {
     PHASIC::Single_Process::SetScale(args);
     for(Dipole_Wrappers::const_iterator it=m_dipole_wrappers.begin();
-	it!=m_dipole_wrappers.end(); ++it) (*it)->SetScaleSetter(p_scale);
+	    it!=m_dipole_wrappers.end(); ++it) (*it)->SetScaleSetter(p_scale);
   }
 
 
@@ -307,7 +324,7 @@ namespace EXTAMP {
   {
     PHASIC::Single_Process::SetKFactor(args);
     for(Dipole_Wrappers::const_iterator it=m_dipole_wrappers.begin();
-	it!=m_dipole_wrappers.end(); ++it) (*it)->SetKFactor(args);
+	    it!=m_dipole_wrappers.end(); ++it) (*it)->SetKFactor(args);
   }
 
 
@@ -315,7 +332,7 @@ namespace EXTAMP {
   {
     PHASIC::Single_Process::SetSelector(key);
     for(Dipole_Wrappers::const_iterator it=m_dipole_wrappers.begin();
-	it!=m_dipole_wrappers.end(); ++it) (*it)->SetSelector(key);
+	    it!=m_dipole_wrappers.end(); ++it) (*it)->SetSelector(key);
   }
 
 
@@ -323,7 +340,7 @@ namespace EXTAMP {
   {
     PHASIC::Process_Base::SetNLOMC(nlomc);
     for(Dipole_Wrappers::const_iterator it=m_dipole_wrappers.begin();
-	it!=m_dipole_wrappers.end(); ++it) (*it)->SetNLOMC(nlomc);
+	    it!=m_dipole_wrappers.end(); ++it) (*it)->SetNLOMC(nlomc);
   }
 
 
@@ -331,7 +348,7 @@ namespace EXTAMP {
   {
     PHASIC::Process_Base::SetShower(ps);
     for(Dipole_Wrappers::const_iterator it=m_dipole_wrappers.begin();
-	it!=m_dipole_wrappers.end(); ++it) (*it)->SetShower(ps);
+	    it!=m_dipole_wrappers.end(); ++it) (*it)->SetShower(ps);
   }
 
 
@@ -339,15 +356,17 @@ namespace EXTAMP {
   {
     PHASIC::Process_Base::SetGenerator(gen);
     for(Dipole_Wrappers::const_iterator it=m_dipole_wrappers.begin();
-	it!=m_dipole_wrappers.end(); ++it) (*it)->SetGenerator(gen);
+	    it!=m_dipole_wrappers.end(); ++it) (*it)->SetGenerator(gen);
   }
 
 
   void RS_Process::FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap)
   {
-    PHASIC::Process_Base::FillProcessMap(apmap);
+    if((*this).Info().m_fi.m_nlotype==(ATOOLS::nlo_type::real|ATOOLS::nlo_type::rsub))
+      PHASIC::Process_Base::FillProcessMap(apmap);
     for(Dipole_Wrappers::const_iterator it=m_dipole_wrappers.begin();
-	it!=m_dipole_wrappers.end(); ++it) (*it)->FillProcessMap(apmap);
+	    it!=m_dipole_wrappers.end(); ++it) (*it)->FillProcessMap(apmap);
+    
   }
 
   
@@ -355,7 +374,7 @@ namespace EXTAMP {
   {
     size_t previous_mode = PHASIC::Process_Base::SetMCMode(mcmode);
     for(Dipole_Wrappers::const_iterator it=m_dipole_wrappers.begin();
-	it!=m_dipole_wrappers.end(); ++it) (*it)->SetMCMode(mcmode);
+	    it!=m_dipole_wrappers.end(); ++it) (*it)->SetMCMode(mcmode);
     m_mcmode = mcmode;
     return previous_mode;
   }

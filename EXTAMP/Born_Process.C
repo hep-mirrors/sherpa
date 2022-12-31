@@ -35,6 +35,7 @@ namespace EXTAMP {
     m_mewgtinfo.m_B = dxs;
     m_lastxs        = dxs;
 
+
     return dxs;
   }
 

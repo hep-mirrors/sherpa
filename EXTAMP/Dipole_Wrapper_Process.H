@@ -73,6 +73,8 @@ namespace EXTAMP {
 
   private:
 
+  ATOOLS::nlo_type::code m_nlotyp;
+
     /* Flavours of this process have to be those of real emission
        config. NLO_subevts are assigned the born configuration,
        however. Store corresponding information in these members: */

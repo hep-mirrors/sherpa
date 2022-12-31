@@ -20,8 +20,6 @@ Dipole_Wrapper_Process::Dipole_Wrapper_Process(const RS_Process& rsproc,
   /* Follow sherpa convetions here and set i<j */
   m_norm = rsproc.NormFac();
 
-
-
   m_born_procinfo = ConstructBornProcessInfo(rsproc.Info(),I(),J(),
 					     Dipole()->FlavIJ());
   PHASIC::Process_Base::SortFlavours(m_born_procinfo);
