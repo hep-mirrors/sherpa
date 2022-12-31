@@ -61,6 +61,9 @@
 /* OpenLoops installation prefix */
 #undef OPENLOOPS_PREFIX
 
+/* ggvvamp installation prefix */
+#undef GGVVAMP_PREFIX
+
 /* GoSam installation prefix */
 #undef GOSAM_PREFIX
 

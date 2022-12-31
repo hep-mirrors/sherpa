@@ -2,10 +2,13 @@ GITTAG = AddOns/ggvvamp
 include ../../git.make
 
 GGVVAMP_SOURCES=Virtual_Amp.C \
-				Precise_Amp.C
+				Precise_Amp.C \
+				Grids.C
 
 GGVVAMP_ADDS=Virtual_Amp.H \
-			 Precise_Amp.H
+			 Precise_Amp.H \
+			 Grids.H \
+			 Grid.h
 
 if GGVVAMP_SUPPORT
 pkglib_LTLIBRARIES = libSherpaggvvamp.la

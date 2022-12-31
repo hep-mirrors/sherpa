@@ -8,6 +8,7 @@
 #include "ggvvamp.h"
 #include "ggvvampprec.h"
 #include "Precise_Amp.H"
+#include "Grids.H"
 
 namespace DiBosonsNLO{
 
@@ -36,6 +37,9 @@ class Virtual_Amp: public PHASIC::Virtual_ME2_Base{
     Precision::Precise_Amp F;
     int m_process_type_on_shell;
     double m_on_shell_factor;
+
+    Grids::Grids interp_amp;
+    bool m_use_grid;
 
     // General parameters
     //TODO: they might be moved into a Interface file/class
@@ -68,7 +72,7 @@ class Virtual_Amp: public PHASIC::Virtual_ME2_Base{
 
     Virtual_Amp(const PHASIC::Process_Info& pi,
                 const ATOOLS::Flavour_Vector& flavs,
-                const bool off_shell);
+                const bool off_shell, const bool use_grid);
     ~Virtual_Amp();
 
 
@@ -76,6 +80,7 @@ class Virtual_Amp: public PHASIC::Virtual_ME2_Base{
     std::complex<double> calc_hel_amp(const int hel, const int nLoop);
     std::complex<double> hm(char hel, int i, int j);
     void get_form_factors();
+    void get_interp_form_factors();
     inline ATOOLS::Vec4D hel_to_mom(int i) {return m_P[i];}
     void kin_factors_calc(const char hs[], int i0, int i1, int i2, int i3, int i4, int i5);
     void calc_hel_amp();
@@ -95,8 +100,10 @@ class Virtual_Amp: public PHASIC::Virtual_ME2_Base{
     double Calc_OffShell(const ATOOLS::Vec4D_Vector& P, const double& Born);
 
 
+    double Interp_OffShell(const ATOOLS::Vec4D_Vector& P, const double& Born);
 
-    // Methods for the off-shell case
+
+    // Methods for the on-shell case
     double Calc_OnShell(const ATOOLS::Vec4D_Vector& P, const double& Born);
     void Form_Factors_Computation(const ATOOLS::Vec4D_Vector& P);
     int Process_Type();

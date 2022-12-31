@@ -726,8 +726,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
              ggvvamp=true;
              if test -d "${GGVVAMP_PREFIX}"; then
                 AC_MSG_RESULT([${GGVVAMP_PREFIX}]);
-                CONDITIONAL_GGVVAMPINCS="-I$GGVVAMP_PREFIX/include";
-                CONDITIONAL_GGVVAMPLIBS="-L$GGVVAMP_PREFIX/lib";
+                CONDITIONAL_GGVVAMPINCS="-I${GGVVAMP_PREFIX}/include -I/scratch/villani1/btwxt/src";
+                CONDITIONAL_GGVVAMPLIBS="-L${GGVVAMP_PREFIX}/lib -lginac -lcln -lquadmath -lggvvamp -L/scratch/villani1/btwxt/build/src -lbtwxt";
              else
                 AC_MSG_WARN(${GGVVAMP_PREFIX} is not a valid path.);
              fi;;
