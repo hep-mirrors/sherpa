@@ -1,0 +1,28 @@
+EVENTS: 500k
+MI_HANDLER: None
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+BEAM_REMNANTS: false
+EVENT_GENERATION_MODE: Weighted
+ME_GENERATORS:
+- External
+- OpenLoops
+
+BEAMS: 2212
+BEAM_ENERGIES: 7000
+SCALES: VAR{sqr(2*91.2)}
+
+
+PROCESSES:
+- 21 21 -> 11 -11 13 -13:
+    NLO_Mode: Fixed_Order
+    NLO_Part: BVI
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 2, EW: 4}
+    Loop_Generator: ggvvamp
+    Integrator: Rambo
+
+SELECTORS:
+- [Mass, 11, -11, 60.0, 120.0]
+- [PT,  11, 20.0, E_CMS]
+- [PT, -11, 20.0, E_CMS]

@@ -28,10 +28,10 @@ namespace DiBosonsNLO{
 
 Virtual_Amp::Virtual_Amp(const PHASIC::Process_Info& pi,
                          const ATOOLS::Flavour_Vector& flavs,
-                         const bool off_shell) :
+                         const bool off_shell, const bool use_grid) :
     PHASIC::Virtual_ME2_Base(pi, flavs),
     amp(5,IRschemeQt), F(5,IRschemeQt),
-    m_off_shell(off_shell),
+    interp_amp(), m_off_shell(off_shell),
     m_current_1_type{0,0,0}, m_current_2_type{0,0,0},
     Z(23), W(24)
 {
@@ -61,6 +61,10 @@ Virtual_Amp::Virtual_Amp(const PHASIC::Process_Info& pi,
     {
       m_process_type_on_shell = Process_Type();
     }
+
+
+    if(use_grid) interp_amp.Init_Grids(4);
+    m_use_grid=use_grid;
 }
 
 Virtual_Amp::~Virtual_Amp()
@@ -122,10 +126,6 @@ double Virtual_Amp::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& p)
 void Virtual_Amp::Calc(const ATOOLS::Vec4D_Vector& P, const double& Born)
 {
 
-    // Here I've copied the momentum vector in order to use the same momentum labeling
-    // used in the ggvvamp paper and thus ease the comparison
-
-
     alphaqed =  AlphaQED();
     alphas   =  AlphaQCD();
     double V=0.;
@@ -145,6 +145,7 @@ double Virtual_Amp::Calc_OffShell(const ATOOLS::Vec4D_Vector& P, const double& B
 {
   m_P = P;
 
+
   m_P[3] = P[4];
   m_P[4] = P[3];
 
@@ -153,21 +154,29 @@ double Virtual_Amp::Calc_OffShell(const ATOOLS::Vec4D_Vector& P, const double& B
   double s   = (m_P[0]+m_P[1]).Abs2();
   double t   = (m_P[0]-m_P[2]-m_P[3]).Abs2();
 
-
   double V0(0.);
   double V(0.);
   double B_mless(0.);
+  
   // m_gluon_induced is a check in case sherpa also look for 
   // di-loop quark initiated. They are not in ggvvamp so I set them 
   // to 0
   m_gluon_induced=1;
+  int overflow=0;
   if(m_gluon_induced)
   {
-      amp.compute(s, t, ma2, mb2);
-      get_form_factors();
+      if(m_use_grid)
+      {
+        overflow = interp_amp.Interpolate(s,t,ma2,mb2);
+        get_interp_form_factors();
+      }
+      else
+      {
+        amp.compute(s, t, ma2, mb2);
+        get_form_factors(); 
+      }
 
       calc_hel_amp();
-
 
       for(int i=0;i<4;i++)
           for(int j=0;j<4;j++)
@@ -176,11 +185,15 @@ double Virtual_Amp::Calc_OffShell(const ATOOLS::Vec4D_Vector& P, const double& B
               B_mless+=born_hel_squared(i,j);
           }
 
+
       V0 = Born*V0/B_mless;
       V =  V0 + Born*(m_beta0*log(m_mur2/s));
+
   }else V=0;
   return V;
 }
+
+
 
 
 double Virtual_Amp::Calc_OnShell(const ATOOLS::Vec4D_Vector& P, const double& Born)
@@ -221,10 +234,22 @@ void Virtual_Amp::get_form_factors()
         for(int j=0; j<(m_nCoeff); j++)
             for(int k=0; k<m_nLoop; k++)
                 for(int m=0; m<m_nreim; m++)
+                {
                     m_E[i][j][k][m]=amp.E[i][j+1][k][m];
+                }
 }
 
 
+void Virtual_Amp::get_interp_form_factors()
+{
+    for(int i=0; i<m_nHel; i++)
+        for(int j=0; j<(m_nCoeff); j++)
+            for(int k=0; k<m_nLoop; k++)
+                for(int m=0; m<m_nreim; m++)
+                {
+                  m_E[i][j][k][m]=interp_amp.E[i][j+1][k][m];
+                }
+}
 
 double Virtual_Amp::EWCouplings(int process_type)
 {
@@ -243,7 +268,8 @@ double Virtual_Amp::EWCouplings(int process_type)
   //      -- 4    WW      |
   //-----------------------
 
-  // Only 1 and 3 implemented so far in the onshell!!
+  // Only 1 and 3 implemented so far in the onshell!! 
+  // Cases 2 and 4 can be easily implemented following the ggvvamp paper
   // offshell has them all
 
 
@@ -640,14 +666,17 @@ operator()(const PHASIC::Process_Info &pi) const
       (pi.m_fi.m_nlocpl[0]!=1 && pi.m_fi.m_nlocpl[1]!=0)) return NULL;
   if(pi.m_maxcpl[0]!=3) return NULL;
 
+  
+  Settings& s = ATOOLS::Settings::GetMainSettings();
+  bool use_grid = s["GGVVAMP_USE_GRID"].SetDefault(false).Get<bool>();
+
   ATOOLS::Flavour_Vector flavs = pi.ExtractFlavours();
   bool fs_on_shell=false, fs_off_shell=false;
   if(flavs.size()==6) fs_off_shell=true;
   if(flavs.size()==4) fs_on_shell=true;
-  std::cout<<fs_on_shell<<' '<<fs_off_shell<<std::endl;
   if(!(fs_on_shell^fs_off_shell)) return NULL;
 
-  //if(!flavs[0].IsGluon() && !flavs[1].IsGluon()) return NULL;
+  if(!flavs[0].IsGluon() && !flavs[1].IsGluon()) return NULL;
 
-  return new DiBosonsNLO::Virtual_Amp(pi, flavs, fs_off_shell);
+  return new DiBosonsNLO::Virtual_Amp(pi, flavs, fs_off_shell, use_grid);
 }

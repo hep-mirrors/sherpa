@@ -141,7 +141,7 @@ namespace Precision{
 
         // run3: quad precision GPL, quad precision algebra
         Digits = 32;
-        cerr << "ggvvamp: increasing precision to " << Digits << endl;
+        //cerr << "ggvvamp: increasing precision to " << Digits << endl;
         q.compute(      nq(s), nq(t), nq(ma2), nq(mb2));
         qx12.compute(   nq(s), nq(u), nq(ma2), nq(mb2));
         qx34.compute(   nq(s), nq(u), nq(mb2), nq(ma2));
@@ -157,7 +157,7 @@ namespace Precision{
     #ifdef ARBITRARY_PRECISION
         // run4 and more: arbitrary precision GPL and algebra
         for (Digits = 64; Digits <= maxdigits; Digits = Digits*2) {
-            cerr << "ggvvamp: increasing precision to " << Digits << endl;
+            //cerr << "ggvvamp: increasing precision to " << Digits << endl;
             cln::cl_F (*na)(const GiNaC::ex&) = &ggvvamp<cln::cl_F>::n;
             a.compute(      na(s), na(t), na(ma2), na(mb2));
             ax12.compute(   na(s), na(u), na(ma2), na(mb2));
