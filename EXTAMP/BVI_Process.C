@@ -30,9 +30,10 @@ namespace EXTAMP {
     loop_pi.m_mincpl[0] = pi.m_mincpl[0];
     p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
     if (!p_loop_me)
-      THROW(not_implemented, "Couldn't find virtual ME for this process.");
+    {
+        THROW(not_implemented, "Couldn't find virtual ME for this process.");
+    }
 
-    /* Load color-correlated ME. TODO: orders */
     std::vector<double> born_order;
     born_order.push_back(pi.m_maxcpl[0] - 1.);
     born_order.push_back(pi.m_maxcpl[1]);
@@ -80,8 +81,7 @@ namespace EXTAMP {
   double BVI_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int mode)
   {
     DEBUG_FUNC(this);
-    
-   if (!Selector()->Result())
+    if (!Selector()->Result())
      return m_mewgtinfo.m_B=m_mewgtinfo.m_VI=m_mewgtinfo.m_KP=m_lastbxs=m_lastxs=0.0;
 
     double B(0.0),V(0.0),I(0.0),KP(0.0);
@@ -109,26 +109,31 @@ namespace EXTAMP {
     /* Calculate V and corresponding scale dependence terms only for a
        fraction m_vfrac of PS points. */
     if(ATOOLS::ran->Get() < m_vfrac)
-      {
-	V = Calc_V(p,B,mur)/m_vfrac;
+    {
+	    V = Calc_V(p,B,mur)/m_vfrac;
 	
-	std::pair<double,double> vscterms =
-	  Calc_ScaleDependenceTerms_V(p,B,mur);
+	    std::pair<double,double> vscterms =
+	        Calc_ScaleDependenceTerms_V(p,B,mur);
 	
-	scaleterms.first  += vscterms.first/m_vfrac; 
-	scaleterms.second += vscterms.second/m_vfrac; 
-      }
+	    scaleterms.first  += vscterms.first/m_vfrac; 
+	    scaleterms.second += vscterms.second/m_vfrac; 
+    }
+    
+
+    //if(B==0||I==0||KP==0)
+    //    return m_mewgtinfo.m_B=m_mewgtinfo.m_VI=m_mewgtinfo.m_KP=m_lastbxs=m_lastxs=0.0;
 
     /* Now divide all components by the symfac */
     B  /= NormFac(); V  /= NormFac(); I  /= NormFac(); KP /= NormFac();
     scaleterms.first /= NormFac(); scaleterms.second /= NormFac();
-    
+     
     /* Store all XS components in ME weight info */
     m_mewgtinfo.m_B       = B  ;
     m_mewgtinfo.m_VI      = V+I;
     m_mewgtinfo.m_KP      = KP ;
     m_mewgtinfo.m_wren[0] = scaleterms.first;
     m_mewgtinfo.m_wren[1] = scaleterms.second;
+
 
     /* Results to debugging output */
     msg_Debugging() << "Results of " << METHOD << "() {"
@@ -142,8 +147,10 @@ namespace EXTAMP {
 
     /* Store born in m_lastbxs (used in PHASIC::Single_Process) */
     m_lastbxs        = B;
-
+    
+    
     /* Store full XS in m_lastxs (used in PHASIC::Single_Process) */
+
     return m_lastxs = (B + V + I + KP);
   }
 
@@ -197,8 +204,7 @@ namespace EXTAMP {
 	     assume poles to be included in virtuals, rendering them finite */
 	  double Vi_fin = (Vi_eps0(fl_i, m_subtype) + Vi_eps1(fl_i)*logf +  0.5*Vi_eps2(fl_i)*sqr(logf));
 	  double Vj_fin = (Vi_eps0(fl_j, m_subtype) + Vi_eps1(fl_j)*logf +  0.5*Vi_eps2(fl_j)*sqr(logf));
-	  I += Vi_fin*M_ij + Vj_fin*M_ji;
-	  
+	  I += Vi_fin*M_ij + Vj_fin*M_ji; 
 	}
     
     /* Do not divide by symfac at this stage, this is done for all
@@ -341,17 +347,17 @@ namespace EXTAMP {
        the volume of those intervals */
     double w(1.0);
     if(m_flavs[0].Strong())
-      {
-	m_x0 = m_eta0+ATOOLS::ran->Get()*(1.-m_eta0);
-	//m_x0 = m_eta0+0.2               *(1.-m_eta0); // set ran to 0.2 for unit tests
-	w *= (1.-m_eta0);
-      }
+    {
+	    m_x0 = m_eta0+ATOOLS::ran->Get()*(1.-m_eta0);
+	    //m_x0 = m_eta0+0.2               *(1.-m_eta0); // set ran to 0.2 for unit tests
+	    w *= (1.-m_eta0);
+    }
     if(m_flavs[1].Strong())
-      {
-	m_x1 = m_eta1+ATOOLS::ran->Get()*(1.-m_eta1);
-	//m_x1 = m_eta1+               0.8*(1.-m_eta1); // set ran to 0.8 for unit tests
-	w *= (1.-m_eta1);
-      }
+    {
+	    m_x1 = m_eta1+ATOOLS::ran->Get()*(1.-m_eta1);
+	    //m_x1 = m_eta1+               0.8*(1.-m_eta1); // set ran to 0.8 for unit tests
+	    w *= (1.-m_eta1);
+    }
 
     /* Populate a 2D array with color correlated MEs for KP_Terms.
        This assumes that p_corr_me->Calc(p) has already been called!
@@ -388,17 +394,22 @@ namespace EXTAMP {
   }
 
   
-  double BVI_Process::KPTerms(int mode, double scalefac2)
+  double BVI_Process::KPTerms(int mode, PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
+          double sf)
   {
     /* Used by PHASIC::Single_Process for reweighting, so have to
        include the normalization factor here */
-    double muf2(ScaleSetter()->Scale(stp::fac,1));
-    return p_kpterms->Get(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),
-			  m_x0, m_x1,
-			  m_eta0, m_eta1,
-			  muf2, muf2,
-			  1.0,1.0,
-			  m_flavs[0], m_flavs[1])/NormFac();
+  if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
+  const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
+  double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBeam(0).PPlus():
+                        p0.PMinus()/rpa->gen.PBeam(1).PMinus());
+  double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBeam(1).PMinus():
+                          p1.PPlus()/rpa->gen.PBeam(0).PPlus());
+  double muf2(ScaleSetter(1)->Scale(stp::fac,1));
+  return p_kpterms->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,
+                        muf2,muf2,sf,sf,m_flavs[0],m_flavs[1])/NormFac();
+
+
   }
 
 

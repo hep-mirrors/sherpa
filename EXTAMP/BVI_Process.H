@@ -53,7 +53,8 @@ namespace EXTAMP {
     double m_x0, m_x1, m_eta0, m_eta1;
 
     /* Used by PHASIC::Single_Process for reweighting op KP terms */
-    double KPTerms(int mode, double scalefac2=1.0);
+    double KPTerms(int mode, PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
+            double scalefac2=1.0);
 
 
     /* Calc all terms explicitly dependent on renormalization scale
@@ -84,7 +85,6 @@ namespace EXTAMP {
     double m_beta0;
     
     static double Ti2(const ATOOLS::Flavour& fl);
-
   };
 
 }

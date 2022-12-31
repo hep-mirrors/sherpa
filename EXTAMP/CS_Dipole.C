@@ -45,7 +45,8 @@ std::ostream& EXTAMP::operator<<(std::ostream& str, const Dipole_Info& di)
 Dipole_Info::Dipole_Info(const ATOOLS::Flavour_Vector& flavs,
 			 const size_t& i, const size_t& j, const size_t& k,
 			 const int& subtrtype, const double& alphamin, const double& alphamax)
-  : m_real_flavs(flavs), m_subtype(subtrtype), m_alphamin(alphamin), m_alphamax(alphamax)
+  : m_real_flavs(flavs), m_subtype(subtrtype), m_alphamin(alphamin), 
+    m_alphamax(alphamax)
 {
 
   /* Position of flavours i,j,k in the real emission flavour vector */
@@ -116,7 +117,7 @@ CS_Dipole::CS_Dipole(const Dipole_Info& di)
   /* TODO: pass orders correctly!! */
   PHASIC::External_ME_Args args(ATOOLS::Flavour_Vector(Flavours().begin(),Flavours().begin()+2),
 				ATOOLS::Flavour_Vector(Flavours().begin()+2, Flavours().end()),
-				{-1,-1});
+                (*this).Info().m_dorders);
   p_corr_me = PHASIC::Spin_Color_Correlated_ME2::GetME2(args);
   if(!p_corr_me) THROW(fatal_error, "Could not find correlated ME for this process.");
 

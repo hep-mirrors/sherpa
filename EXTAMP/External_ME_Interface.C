@@ -90,10 +90,11 @@ namespace EXTAMP{
         if (pi.m_maxcpl[i]!=pi.m_mincpl[i])
           THROW(fatal_error,"Inconsistent order input.");
     } 
- 
+  
     std::vector<double> orders = pi.m_maxcpl; 
     if ( pi.m_fi.m_nlotype&ATOOLS::nlo_type::vsub ) orders[0] -= 1;
     
+
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(), 
 				                  pi.m_fi.GetExternal(),
 				                  orders);
@@ -123,21 +124,25 @@ namespace EXTAMP{
   {
     ATOOLS::nlo_type::code nlotype=pi.m_fi.m_nlotype;
 
-    if( nlotype==ATOOLS::nlo_type::lo )
-        return new Born_Process(pi);
-    
-    if ( nlotype&ATOOLS::nlo_type::vsub )
+    if( nlotype!=ATOOLS::nlo_type::lo )
     {
-      ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
-      int subtractiontype = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
-      double virtfrac     = s["VIRTUAL_EVALUATION_FRACTION"].Get<double>();
-	  if (virtfrac!=1.0)
-	    msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " << virtfrac << std::endl;
-	  return new BVI_Process(pi, virtfrac, subtractiontype);
-    }
+        if ( nlotype&ATOOLS::nlo_type::vsub )
+        {
+            ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
+            int subtractiontype = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
+            double virtfrac     = s["VIRTUAL_EVALUATION_FRACTION"].Get<double>();
+	        if (virtfrac!=1.0)
+	            msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " 
+                                  << virtfrac << std::endl;
+	        return new BVI_Process(pi, virtfrac, subtractiontype);
+        }
     
-    if ( nlotype&ATOOLS::nlo_type::rsub )
-      return new RS_Process(pi);
+        if ( nlotype&ATOOLS::nlo_type::real || nlotype&ATOOLS::nlo_type::rsub )
+            return new RS_Process(pi);
+        
+    }
+    else if( nlotype==ATOOLS::nlo_type::lo  )
+      return new Born_Process(pi);
 
     THROW(fatal_error, "Internal error");
     return NULL;
@@ -186,10 +191,10 @@ namespace EXTAMP{
 	cpi.Combine(i,j, i<nin ? fl_ij.Bar() : fl_ij);
 
 	std::vector<double> orders = cpi.m_maxcpl; orders[0] -= 1; 
-	if (!(cpi.m_fi.m_nlotype&ATOOLS::nlo_type::rsub)) orders[0] -= 1;
 	PHASIC::External_ME_Args args(cpi.m_ii.GetExternal(),
 				      cpi.m_fi.GetExternal(),
 				      orders);
+  
 
 	if(!External_ME_Interface::PartonicProcessExists(args)){
 	  msg_Debugging() << "Discarding clustering "

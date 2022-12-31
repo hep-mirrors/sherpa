@@ -61,13 +61,6 @@ namespace EXTAMP {
     static Combinable_Map ConstructCombinableMap(const ATOOLS::Flavour_Vector&,
 						 const PHASIC::Process_Info&,
 						 const size_t& n_in);
-
-    /* Propagate cluster definitions to cluster algorithm member */
-    // void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
-    
-    // ATOOLS::Cluster_Amplitude* ClusterConfiguration(PHASIC::Process_Base *const proc,
-    // 						    const ATOOLS::Vec4D_Vector &p,
-    // 						    const size_t &mode);
   };
 
 }

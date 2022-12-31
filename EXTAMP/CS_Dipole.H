@@ -4,6 +4,7 @@
 #include <string>
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "PHASIC++/Process/Process_Info.H"
 
 namespace PHASIC {
   class Spin_Color_Correlated_ME2;
@@ -28,6 +29,7 @@ namespace EXTAMP {
 		const size_t& i, const size_t& j, const size_t& k,
 		const int& subtrtype, const double& alphamin, const double& alphamax);
 
+    std::vector<double>    m_dorders;
     SplittingType          m_split_type;
     FlavourType            m_flav_type;
     ATOOLS::Flavour_Vector m_real_flavs;
@@ -38,7 +40,7 @@ namespace EXTAMP {
     
     /* Subtraction type: 0: plain Catani-Seymour
                          1: Dire
-			 2: modified Catani-Seymour (Stefan) */
+			                   2: modified Catani-Seymour (Stefan) */
     int m_subtype;
 
     /* Cuts on alpha as defined in hep-ph/0307268 */
