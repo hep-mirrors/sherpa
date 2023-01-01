@@ -25,6 +25,8 @@ FIND_PATH(CERNLIB_INCLUDE_DIR NAMES CERNLIB PATHS
   $ENV{CERN_ROOT}/include  
   /usr/include/cernlib/2006
   /usr/include/cernlib/2022
+  /usr/include/cernlib/2023
+  /usr/include/cernlib/2024
   NO_DEFAULT_PATH 
 )
 
@@ -34,6 +36,8 @@ FIND_PATH(CERNLIB_LIBRARY_DIR NAMES  libpacklib.a   libkernlib.a libmathlib.a   
   /usr/lib64/cernlib/2022/lib
   /usr/lib/cernlib/2006/lib
   /usr/lib/cernlib/2022/lib
+  /usr/lib/cernlib/2023/lib
+  /usr/lib/cernlib/2024/lib
   NO_DEFAULT_PATH
 )
 

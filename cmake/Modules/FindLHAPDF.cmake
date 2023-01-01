@@ -27,10 +27,12 @@ if (LHAPDF_SEARCH_DIRS)
   find_program(LHAPDF_CONFIG_EXE NAMES lhapdf-config PATHS ${LHAPDF_SEARCH_DIRS} PATH_SUFFIXES bin NO_DEFAULT_PATH )
   find_path(LHAPDF_INCLUDE_DIR LHAPDF/LHAPDF.h PATHS ${LHAPDF_SEARCH_DIRS} PATH_SUFFIXES include NO_DEFAULT_PATH)
   find_library(LHAPDF_LIBRARY NAMES LHAPDF PATHS ${LHAPDF_SEARCH_DIRS}  PATH_SUFFIXES lib lib64 NO_DEFAULT_PATH)
+  find_path(LHAPDF_DATA_PATH lhapdf.conf PATHS ${LHAPDF_SEARCH_DIRS}  PATH_SUFFIXES share/LHAPDF share/lhapdf NO_DEFAULT_PATH)
 else()
   find_program(LHAPDF_CONFIG_EXE NAMES lhapdf-config PATH_SUFFIXES bin)
   find_path(LHAPDF_INCLUDE_DIR LHAPDF/LHAPDF.h PATH_SUFFIXES include ../include)
   find_library(LHAPDF_LIBRARY NAMES LHAPDF PATH_SUFFIXES lib lib64 ../lib ../lib64)
+  find_path(LHAPDF_DATA_PATH lhapdf.conf   PATH_SUFFIXES ../share/LHAPDF ../share/lhapdf )  
 endif()
 set(LHAPDF_VERSION 0.0.0)
 if (LHAPDF_INCLUDE_DIR)
@@ -56,6 +58,7 @@ mark_as_advanced(LHAPDF_INCLUDE_DIR LHAPDF_LIBRARY)
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(LHAPDF REQUIRED_VARS LHAPDF_INCLUDE_DIR LHAPDF_LIBRARY LHAPDF_PATH LHAPDF_CONFIG_CPPFLAGS_STRING
+                                  LHAPDF_DATA_PATH
                                   VERSION_VAR LHAPDF_VERSION 
                                   )
 

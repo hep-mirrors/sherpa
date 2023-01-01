@@ -25,12 +25,16 @@ else()
   find_path(RECOLA_INCLUDE_DIR recola.h PATH_SUFFIXES include ../include)
   find_library(RECOLA_LIBRARY NAMES recola PATH_SUFFIXES lib lib64 ../lib ../lib64)
 endif()
-set(RECOLA_VERSION 0.0.0)
 if (RECOLA_LIBRARY)
   get_filename_component(T_PATH ${RECOLA_LIBRARY} DIRECTORY)
   get_filename_component(RECOLA_PREFIX ${T_PATH} DIRECTORY)
 endif()
-
+find_package(recola CONFIG HINTS ${RECOLA_PREFIX} ${RECOLA_PREFIX}/share QUIET)
+if (NOT recola_FOUND)
+ set(RECOLA_VERSION 0.0.0)
+else()
+  set(RECOLA_VERSION ${recola_VERSION})
+endif()
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Recola REQUIRED_VARS RECOLA_PREFIX RECOLA_LIBRARY RECOLA_INCLUDE_DIR 
                                  VERSION_VAR RECOLA_VERSION

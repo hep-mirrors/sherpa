@@ -5,14 +5,19 @@ image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 variables:
   DOCKER_DRIVER: overlay2
 #  CONFIGURE_FLAGS: --enable-analysis --enable-ewsud --with-libzip=/usr --with-lhapdf=install
-  CONFIGURE_FLAGS: -DSHERPA_ENABLE_TESTING=ON -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_TESTING:BOOL=ON  -DSHERPA_ENABLE_EWSUD:BOOL=ON -DLibZip_ROOT_DIR=/usr
+  CONFIGURE_FLAGS: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_TESTING:BOOL=ON  -DSHERPA_ENABLE_EWSUD:BOOL=ON -DLibZip_ROOT_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
+  EXTRAFLAGS2: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_BINRELOC:BOOL=ON -DSHERPA_ENABLE_BLACKHAT:BOOL=ON -DSHERPA_ENABLE_DIHIGGS:BOOL=OFF -DSHERPA_ENABLE_EWSUD:BOOL=ON -DSHERPA_ENABLE_EXAMPLES:BOOL=ON -DSHERPA_ENABLE_GOSAM:BOOL=ON -DSHERPA_ENABLE_GZIP:BOOL=ON -DSHERPA_ENABLE_HEPMC2:BOOL=ON -DSHERPA_ENABLE_HEPMC3:BOOL=ON -DSHERPA_ENABLE_HEPMC3_ROOT:BOOL=ON -DSHERPA_ENABLE_HZTOOL:BOOL=ON -DSHERPA_ENABLE_INTERNAL_PDFS:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=OFF -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=OFF -DSHERPA_ENABLE_LHOLE:BOOL=ON -DSHERPA_ENABLE_MADLOOP:BOOL=ON -DSHERPA_ENABLE_MANUAL:BOOL=OFF -DSHERPA_ENABLE_MCFM:BOOL=OFF -DSHERPA_ENABLE_MPI:BOOL=OFF -DSHERPA_ENABLE_OPENLOOPS:BOOL=ON -DSHERPA_ENABLE_PYTHIA6:BOOL=ON -DSHERPA_ENABLE_PYTHIA8:BOOL=ON -DSHERPA_ENABLE_PYTHON:BOOL=ON -DSHERPA_ENABLE_RECOLA:BOOL=ON -DSHERPA_ENABLE_RIVET:BOOL=ON -DSHERPA_ENABLE_ROOT:BOOL=ON -DSHERPA_ENABLE_THREADING:BOOL=ON -DSHERPA_ENABLE_TESTING:BOOL=ON -DSHERPA_ENABLE_UFO:BOOL=ON
   MAKE_FLAGS: -j4
 
 .build_template: &build
+  only:
+    variables:
+     - $CI_SERVER_HOST=="gitlab.com"
   stage: build
   before_script:
     # set up ccache
     - yum -y install cmake3  wget python2-lhapdf lhapdf-devel
+    - lhapdf update
     - lhapdf install PDF4LHC21_40_pdfas
     - mkdir -p ccache
     - export CCACHE_BASEDIR=${PWD}
@@ -29,6 +34,9 @@ variables:
       - ccache/
 
 .build_ubuntu_template: &build_ubuntu
+  only:
+    variables:
+     - $CI_SERVER_HOST=="gitlab.com"
   stage: build
   before_script:
     # set up ccache
@@ -55,11 +63,14 @@ variables:
 build:
   <<: *build
   script:
+    - lhapdf update
+    - lhapdf install PDF4LHC21_40_pdfas
+    - yum -y install python-matplotlib  
     - mkdir -p build
     - cd build
     - cmake3 -S ../ -B .  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
-    - ctest3 . --output-on-failure
+    - ctest3 . --output-on-failure -E '^Maintest-rivet.*'
     - make install
   # store what's required to run the tests
   artifacts:
@@ -81,12 +92,13 @@ build-rivet:
     - ./configure --disable-python --without-doxygen 
     - make install -j 8
     - cd ..
+    - lhapdf update
     - lhapdf install PDF4LHC21_40_pdfas
     - mkdir -p build-rivet
     - cd build-rivet
     - cmake -S ../ -B . -DSHERPA_ENABLE_TESTING:BOOL=ON -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX="$PWD/install" -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_EWSUD:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=ON -DSHERPA_ENABLE_RIVET=ON -DSHERPA_ENABLE_HEPMC3=ON -DRivet_ROOT_DIR=$(rivet-config --prefix)
     - make $MAKE_FLAGS
-    - ctest . --output-on-failure
+    - ctest . --output-on-failure -E '^Maintest-Amegic.*'
     - cmake --install .
     - ldd $(pwd)/install/bin/Sherpa
     - ls 
@@ -104,11 +116,14 @@ build-rivet:
 build-clang-strict:
   <<: *build
   script:
+    - lhapdf update
+    - lhapdf install PDF4LHC21_40_pdfas
+    - yum -y install python-matplotlib    
     - mkdir -p build-clang-strict
     - cd build-clang-strict
     - cmake3 -S ../ -B .  -DCMAKE_CXX_FLAGS="-Werror -Wno-error=unused-function "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX="$PWD/install" $CONFIGURE_FLAGS
     - make $MAKE_FLAGS
-    - ctest3 . --output-on-failure
+    - ctest3 . --output-on-failure  -E '^Maintest-rivet.*'
     - make install
   # store what's required to run the tests
   artifacts:
@@ -136,6 +151,7 @@ build-manual:
         - Manual/**/*
       when: always
     - when: never
+    - if: '$CI_SERVER_HOST=="gitlab.com"'
 
 #
 # Deploy
@@ -151,6 +167,7 @@ trigger_pages:
     - if: '$CI_COMMIT_TAG'
       when: always
     - when: never
+    - if: '$CI_SERVER_HOST=="gitlab.com"'
   script:
     - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
   needs: []
@@ -162,6 +179,7 @@ dist:
     - if: '$CI_COMMIT_TAG'
       when: always
     - when: never
+    - if: '$CI_SERVER_HOST=="gitlab.com"'
   image: registry.gitlab.com/sherpa-team/sherpa-docker-build
   script:
     - pip3 install -r Manual/requirements.txt
@@ -199,4 +217,345 @@ pages:
         - Manual/**/*
       when: always
     - when: never
+    - if: '$CI_SERVER_HOST=="gitlab.com"'
 
+##########################################################################
+##########################################################################
+
+
+LCG_102_x86_64-centos7-gcc11-opt:
+  only:
+    variables:
+     - $CI_SERVER_HOST=="gitlab.cern.chxxx"
+  image: gitlab-registry.cern.ch/sft/docker:lcg-cc7
+  stage: build
+  script:
+      - export RELPATH=/cvmfs/sft.cern.ch/lcg/releases/LCG_102
+      - export LCGPLATFORM=x86_64-centos7-gcc11-opt
+      - export PATH=$RELPATH/swig/4.0.2/bin:/cvmfs/sft.cern.ch/lcg/contrib/CMake/3.23.2/Linux-x86_64/bin/:$PATH
+      - set -x
+      - export S_ROOT=6.26.04
+      - export S_HEPMC2=2.06.11
+      - export S_HEPMC3=3.2.4
+      - export S_PYTHIA8=307p1
+      - export S_RIVET=3.1.6
+      - export S_MG5=3.3.1.atlas3
+      - export S_OPENLOOPS=2.1.2
+      - export S_RECOLA=2.2.0
+      - export S_GOSAM=2.0.4
+      - export S_LHAPDF=6.5.1
+      - export S_PYTHON=3.9.12
+      - set +x
+      - source $RELPATH/../gcc/11.2.0/x86_64-centos7/setup.sh
+      - source $RELPATH/ROOT/$S_ROOT/${LCGPLATFORM}/bin/thisroot.sh
+      - source $RELPATH/Python/$S_PYTHON/${LCGPLATFORM}/Python-env.sh
+      - set -x
+      - which -a g++
+      - which -a cmake
+      - which -a gzip
+      - LARG=" "
+      - LARG="$LARG "-DCMAKE_INSTALL_PREFIX=$(pwd)/install  
+      - LARG="$LARG "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
+      - LARG="$LARG "-DHepMC3_DIR=$RELPATH/hepmc3/$S_HEPMC3/${LCGPLATFORM}/share/HepMC3/cmake/  
+      - LARG="$LARG "-DSHERPA_ENABLE_INSTALL_LIBZIP=ON 
+      - LARG="$LARG "-DPYTHIA8_DIR=$RELPATH/MCGenerators/pythia8/$S_PYTHIA8/${LCGPLATFORM} 
+      - LARG="$LARG "-DRIVET_DIR=$RELPATH/MCGenerators/rivet/$S_RIVET/${LCGPLATFORM} 
+      - LARG="$LARG "-DOPENLOOPS_DIR=$RELPATH/MCGenerators/openloops/$S_OPENLOOPS/${LCGPLATFORM}/  
+      - LARG="$LARG "-DSHERPA_ENABLE_RECOLA=OFF 
+      - LARG="$LARG "-DLHAPDF_DIR=$RELPATH/MCGenerators/lhapdf/$S_LHAPDF/${LCGPLATFORM}/  
+      - LARG="$LARG "-DHEPMC2_DIR=$RELPATH/HepMC/$S_HEPMC2/${LCGPLATFORM}/ 
+      - LARG="$LARG "-DMADLOOP_DIR=$RELPATH/MCGenerators/madgraph5amc/$S_MG5/${LCGPLATFORM}/  
+      - LARG="$LARG "-DGOSAM_DIR=$RELPATH/MCGenerators/gosam/$S_GOSAM/${LCGPLATFORM}/  
+      - LARG="$LARG "-DSHERPA_ENABLE_ROOT=OFF   
+      - LARG="$LARG "-DSHERPA_ENABLE_HEPMC3_ROOT=OFF   
+      - LARG="$LARG "-DSHERPA_ENABLE_PYTHON=OFF   
+      - LARG="$LARG "-DSHERPA_ENABLE_MCFM=OFF   
+      - LARG="$LARG "-DSHERPA_ENABLE_MANUAL=OFF  
+      - LARG="$LARG "-DSHERPA_ENABLE_HZTOOL=OFF  
+      - LARG="$LARG "-DSHERPA_ENABLE_THREADING=OFF  
+      - LARG="$LARG "-DSHERPA_ENABLE_BLACKHAT=OFF 
+      - cmake -S . -B BUILD  $LARG
+      - cmake --build BUILD -j 10
+      - ctest --test-dir BUILD --output-on-failure -E '^Maintest-Amegic.*' '^Maintest-rivet.*'
+##########################################################################
+##########################################################################
+
+stages:
+  - check_if_dockerfile_updated
+  - build_docker_image
+  - build
+  - test
+  - deploy
+
+.check_commit_CentOS: &check_commit_CentOS
+  stage: check_if_dockerfile_updated
+  image: 
+        name: alpine/git
+        entrypoint: [""]
+  script:
+        - rm -rf todo-CentOS_$FREL.txt
+        - git log -1 | grep CentOSDockerfile$FREL | head -n 1 >> todo-CentOS_$FREL.txt || touch todo-CentOS_$FREL.txt
+        - git diff --name-only HEAD HEAD~1 | grep CI/CentOS/Dockerfile$FREL | head -n 1 >> todo-CentOS_$FREL.txt || touch todo-CentOS_$FREL.txt
+        - if [ -s todo-CentOS_$FREL.txt ]; then cat CI/CentOS/Dockerfile$FREL  > todo-CentOS_$FREL.txt; fi
+        - if [ $CI_PIPELINE_SOURCE == "schedule" ]; then cat CI/CentOS/Dockerfile$FREL  > todo-CentOS_$FREL.txt; fi
+        - cat todo-CentOS_$FREL.txt
+        - exit 0
+  variables:
+    GIT_DEPTH: "3"
+  artifacts:
+    paths:
+      - todo-CentOS_$FREL.txt
+    expire_in: 1 day
+
+.check_commit_Fedora: &check_commit_Fedora
+  stage: check_if_dockerfile_updated
+  image: 
+        name: alpine/git
+        entrypoint: [""]
+  script:
+        - rm -rf todo-Fedora_$FREL.txt
+        - git log -1 | grep FedoraDockerfile$FREL | head -n 1 >> todo-Fedora_$FREL.txt || touch todo-Fedora_$FREL.txt
+        - git diff --name-only HEAD HEAD~1 | grep CI/Fedora/Dockerfile | head -n 1 >> todo-Fedora_$FREL.txt || touch todo-Fedora_$FREL.txt
+        - if [ -s todo-Fedora_$FREL.txt ]; then cat CI/Fedora/Dockerfile | sed 's/fedora:35/fedora:$FREL/g' > todo-Fedora_$FREL.txt; fi
+        - if [ $CI_PIPELINE_SOURCE == "schedule" ]; then cat CI/Fedora/Dockerfile | sed 's/fedora:35/fedora:$FREL/g' > todo-Fedora_$FREL.txt; fi
+        - cat todo-Fedora_$FREL.txt
+        - exit 0
+  variables:
+    GIT_DEPTH: "3"
+  artifacts:
+    paths:
+      - todo-Fedora_$FREL.txt
+    expire_in: 1 day
+
+.build_image_Fedora: &build_image_Fedora
+  stage: build_docker_image
+  image: 
+        name: gcr.io/kaniko-project/executor:debug
+        entrypoint: [""]
+  script:
+        - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+        - if [ -s todo-Fedora_$FREL.txt ]; then /kaniko/executor --context $CI_PROJECT_DIR --dockerfile todo-Fedora_$FREL.txt --destination $CI_REGISTRY_IMAGE:Fedora_$FREL ; fi
+  variables:
+    GIT_DEPTH: "1"
+
+.build_image_Fedora_alt: &build_image_Fedora_alt
+  stage: build_docker_image
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo $CI_REGISTRY_IMAGE  $CI_REGISTRY
+    - if [ -s todo-Fedora_$FREL.txt ]; then docker build --file todo-Fedora_$FREL.txt -t $CI_REGISTRY_IMAGE:Fedora_$FREL ; fi
+    - if [ -s todo-Fedora_$FREL.txt ]; then docker push $CI_REGISTRY_IMAGE:Fedora_$FREL ; fi
+  variables:
+    GIT_DEPTH: "1"
+
+.build_image_CentOS: &build_image_CentOS
+  stage: build_docker_image
+  image: 
+        name: gcr.io/kaniko-project/executor:debug
+        entrypoint: [""]
+  script:
+        - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+        - if [ -s todo-CentOS_$FREL.txt ]; then /kaniko/executor --context $CI_PROJECT_DIR --dockerfile todo-CentOS_$FREL.txt --destination $CI_REGISTRY_IMAGE:CentOS_$FREL ; fi
+  variables:
+    GIT_DEPTH: "1"
+
+
+.any: &any
+  image: $CI_REGISTRY_IMAGE:${OS}_${FREL}
+  stage: build
+#  only:
+#    variables:
+#     - $CI_SERVER_HOST=="gitlab.cern.ch"
+  stage: build
+  before_script:
+    - set -x
+    - uname -a 
+    - cat /etc/issue
+    - export GIT_DEPTH=1
+
+.cmake: &cmake
+    - export CMAKE=cmake3
+    - export CTEST=ctest3
+    - if [ "${FREL}" == "7" ]; then export CMAKE=cmake3; CTEST=ctest3; fi
+    - export COMPILATIONSTART=$(date +%s)
+    - $CMAKE -S . -B BUILD -DCMAKE_INSTALL_PREFIX=$(pwd)/CM  $EXTRACMAKEFLAGS $CACHINGFLAGS
+    - $CMAKE --build BUILD -j 10
+    - export COMPILATIONEND=$(date +%s)
+    - $CMAKE --install BUILD
+    - echo $COMPILATIONSTART $COMPILATIONEND $(echo $COMPILATIONEND-$COMPILATIONSTART | bc -l)
+    - $CTEST --test-dir BUILD --output-on-failure -E '^Maintest-Amegic.*' '^Maintest-rivet.*'
+
+.ex:  &ex
+    - if [ "${TOOLSET}" == "LLVM" ]; then export CXX=clang++; export CC=clang; export FC=gfortran; fi  
+    - if [ "${TOOLSET}" == "GNU" ]; then export CXX=g++; export CC=gcc; export FC=gfortran; fi   
+
+.any-cmake: &any-cmake
+  extends: .any
+  script:
+      - *ex
+      - *cmake
+
+.any-cmake-ccache: &any-cmake-ccache
+  extends: .any
+  script:
+    - export CCACHE_BASEDIR=`pwd`/cmake-$TOOLSET-cache-$FREL    
+    - export CCACHE_BASEDIR=${PWD}
+    - export CCACHE_DIR=`pwd`/cmake-$TOOLSET-cache-$FREL/ccache
+    - export CCACHE_COMPILERCHECK=content
+    - export F90CACHE_DIR=`pwd`/cmake-$TOOLSET-cache-$FREL/f90cache
+    - export F90CACHE_TMPDIR=`pwd`/tmpf90cache
+    - mkdir -p ${F90CACHE_TMPDIR}
+    - export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_Fortran_COMPILER_LAUNCHER=f90cache"
+    - if [ "${FREL}" == "7" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi
+    - *ex
+    - *cmake
+  cache:
+   - key: cmake-$TOOLSET-cache-$FREL
+     paths:
+       - cmake-$TOOLSET-cache-$FREL/
+
+###########################################################################
+# Here we check if we have changes to the Docker files
+
+check_commit_Fedora35:
+  variables:
+    OS: Fedora
+    FREL: 35
+  extends: .check_commit_Fedora
+    
+check_commit_Fedora34:
+  variables:
+    OS: Fedora
+    FREL: 34
+  extends: .check_commit_Fedora
+
+check_commit_CentOS7:
+  variables:
+    OS: centOS
+    FREL: 7
+  extends: .check_commit_CentOS
+
+check_commit_CentOS8:
+  variables:
+    OS: centOS
+    FREL: 8
+  extends: .check_commit_CentOS
+
+check_commit_CentOS9:
+  variables:
+    OS: centOS
+    FREL: 9
+  extends: .check_commit_CentOS
+
+###########################################################################
+
+###########################################################################
+#Build images
+build_image_Fedora34:
+  variables:
+    OS: Fedora
+    FREL: 34
+  extends: .build_image_Fedora
+  needs:
+    - job: check_commit_Fedora34
+
+build_image_Fedora35:
+  variables:
+    OS: Fedora
+    FREL: 35
+  extends: .build_image_Fedora
+  needs:
+    - job: check_commit_Fedora35
+
+build_image_CentOS7:
+  variables:
+    OS: CentOS
+    FREL: 7
+  extends: .build_image_CentOS
+  needs:
+    - job: check_commit_CentOS7
+
+build_image_CentOS8:
+  variables:
+    OS: CentOS
+    FREL: 8
+  extends: .build_image_CentOS
+  needs:
+    - job: check_commit_CentOS8
+
+build_image_CentOS9:
+  variables:
+    OS: CentOS
+    FREL: 9
+  extends: .build_image_CentOS
+  needs:
+    - job: check_commit_CentOS9
+
+###########################################################################
+
+Fedora35-make-ccache-GNU:
+  variables:
+    OS: Fedora
+    FREL: 35
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS:   -DSHERPA_ENABLE_TESTING=ON -DSHERPA_ENABLE_EWSUD=ON $EXTRAFLAGS2
+  extends: .any-cmake-ccache
+  needs:
+    - job: build_image_Fedora35
+
+  
+Fedora34-make-ccache-GNU:
+  variables:
+    OS: Fedora
+    FREL: 34
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS:   -DSHERPA_ENABLE_TESTING=ON -DSHERPA_ENABLE_EWSUD=ON $EXTRAFLAGS2
+  extends: .any-cmake-ccache
+  needs:
+    - job: build_image_Fedora34
+
+Fedora34-make-ccache-LLVM:
+  variables:
+    OS: Fedora
+    FREL: 34
+    TOOLSET: LLVM
+    EXTRACMAKEFLAGS:   -DSHERPA_ENABLE_TESTING=ON -DSHERPA_ENABLE_EWSUD=ON $EXTRAFLAGS2
+  extends: .any-cmake-ccache
+  needs:
+    - job: build_image_Fedora34
+
+CentOS7-make-ccache-GNU:
+  variables:
+    OS: CentOS
+    FREL: 7
+    TOOLSET: GNU    
+    EXTRACMAKEFLAGS:    -DSHERPA_ENABLE_TESTING=ON -DSHERPA_ENABLE_EWSUD=ON
+  extends: .any-cmake-ccache
+  needs:
+    - job: build_image_CentOS7
+
+
+
+CentOS8-make-ccache-GNU:
+  variables:
+    OS: CentOS
+    FREL: 8
+    TOOLSET: GNU    
+    EXTRACMAKEFLAGS:    -DSHERPA_ENABLE_TESTING=ON -DSHERPA_ENABLE_EWSUD=ON 
+  extends: .any-cmake-ccache
+  needs:
+    - job: build_image_CentOS8
+
+
+CentOS9-make-ccache-GNU:
+  variables:
+    OS: CentOS
+    FREL: 9
+    TOOLSET: GNU    
+    EXTRACMAKEFLAGS:   -DSHERPA_ENABLE_TESTING=ON -DSHERPA_ENABLE_EWSUD=ON
+  extends: .any-cmake-ccache
+  needs:
+    - job: build_image_CentOS9

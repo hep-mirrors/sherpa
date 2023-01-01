@@ -27,7 +27,7 @@ find_path(HZTOOL_INCLUDE_DIR  heracmn.inc PATH_SUFFIXES include/hztool  ../inclu
 endif()
 set(HZTOOL_VERSION 0.0.0)
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(HZTool DEFAULT_MSG HZTOOL_INCLUDE_DIR HZTOOL_LIBRARY
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(HZTool REQUIRED_VARS HZTOOL_INCLUDE_DIR HZTOOL_LIBRARY
                                  VERSION_VAR HZTOOL_VERSION
                                  )
 

@@ -19,10 +19,19 @@ if (GOSAM_ROOT_DIR OR GOSAM_DIR OR (DEFINED ENV{GOSAM_ROOT_DIR}) OR (DEFINED ENV
   endif()
 endif()
 set(GOSAM_VERSION 0.0.0)
-find_program(GOSAM NAMES gosam gosam.py PATHS ${GOSAM_SEARCH_DIRS} PATH_SUFFIXES bin )
+if (GOSAM_SEARCH_DIRS)
+  find_program(GOSAM NAMES gosam gosam.py PATHS ${GOSAM_SEARCH_DIRS} PATH_SUFFIXES bin NO_DEFAULT_PATH)
+else()
+  find_program(GOSAM NAMES gosam gosam.py)
+endif()
 if (GOSAM)
   get_filename_component(GOSAM_PREFIX_BIN ${GOSAM} DIRECTORY)
   get_filename_component(GOSAM_PREFIX ${GOSAM_PREFIX_BIN} DIRECTORY)
+  execute_process(COMMAND ${GOSAM} --version
+                  OUTPUT_VARIABLE GOSAM_VERSION_STRING
+                  OUTPUT_STRIP_TRAILING_WHITESPACE) 
+  string(REPLACE " " ";" GOSAM_VERSION_LIST "${GOSAM_VERSION_STRING}")
+  list(GET GOSAM_VERSION_LIST 1 GOSAM_VERSION)
 endif()
 
 include(FindPackageHandleStandardArgs)
