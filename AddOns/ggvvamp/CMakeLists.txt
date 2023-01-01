@@ -1,0 +1,6 @@
+set(ggvvamp_SOURCES Virtual_Amp.C Precise_Amp.C)
+sherpa_create_git_info(ggvvamp)
+add_library(Sherpaggvvamp SHARED ${ggvvamp_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+sherpa_handle_shared_library(Sherpaggvvamp Sherpaggvvamp)
+target_link_libraries(Sherpaggvvamp PRIVATE ${GGVVAMP_LIBRARY} ${GINAC_LIBRARIES})
+target_include_directories(Sherpaggvvamp PRIVATE ${GINAC_INCLUDE_DIRS})

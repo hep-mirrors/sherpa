@@ -66,7 +66,9 @@ option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 ###########################Options handeling############################
-set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
+set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD EXAMPLES GOSAM 
+GGVVAMP
+GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
 INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF 
  LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
@@ -555,7 +557,13 @@ if (SHERPA_ENABLE_PYTHON OR SHERPA_ENABLE_DIHIGGS OR SHERPA_ENABLE_UFO OR (SHERP
 endif()
 #This directory is unconditional install, but requires Python for extra files to be installed
 add_subdirectory(MODEL/UFO)
-
+if (SHERPA_ENABLE_GGVVAMP)
+  find_package(ggvvamp REQUIRED)
+  message(STATUS "SHERPA: GGVVAMP_VERSION=${GGVVAMP_VERSION} GGVVAMP_LIBRARY=${GGVVAMP_LIBRARY} GGVVAMP_INCLUDE_DIR=${GGVVAMP_INCLUDE_DIR}")
+  find_package(ginac REQUIRED)
+  message(STATUS "SHERPA: GINAC_LIBRARIES=${GINAC_LIBRARIES} GINAC_INCLUDE_DIRS=${GINAC_INCLUDE_DIRS}")
+  add_subdirectory(AddOns/ggvvamp)
+endif()
 
 
 
