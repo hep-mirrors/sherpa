@@ -29,7 +29,8 @@ namespace PHASIC {
 
     Process_Base *p_proc;
 
-    std::shared_ptr<PHASIC::Phase_Space_Handler> p_pshandler;
+    //std::shared_ptr<PHASIC::Phase_Space_Handler> p_pshandler;
+    Phase_Space_Handler * p_pshandler;
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
@@ -94,7 +95,8 @@ namespace PHASIC {
     void ResetMax(int);  
     void OptimizeSubResult(const double &s2);
 
-    void SetPSHandler(const std::shared_ptr<Phase_Space_Handler> &pshandler);
+    //void SetPSHandler(const std::shared_ptr<Phase_Space_Handler> &pshandler);
+    void SetPSHandler(Phase_Space_Handler * pshandler);
     void SetISRThreshold(const double threshold);
     
     void InitWeightHistogram();
@@ -164,8 +166,10 @@ namespace PHASIC {
     inline PDF::ISR_Handler           *ISR() const  
     { return p_isrhandler;  }
 
-    inline std::shared_ptr<Phase_Space_Handler> PSHandler() const
-    { return p_pshandler; }
+    //inline std::shared_ptr<Phase_Space_Handler> PSHandler() const
+    //{ return p_pshandler; }
+
+    inline Phase_Space_Handler * PSHandler() const { return p_pshandler; }
 
     inline void SetColorIntegrator(const std::shared_ptr<Color_Integrator> colint)
     { p_colint=colint; }

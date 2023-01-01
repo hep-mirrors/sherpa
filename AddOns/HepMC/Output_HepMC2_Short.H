@@ -27,9 +27,10 @@ namespace SHERPA {
   public:
     Output_HepMC2_Short(const Output_Arguments &args);
     ~Output_HepMC2_Short();
-    void SetXS(const double& xs, const double& xserr);
-    void Output(ATOOLS::Blob_List* blobs);
-    void ChangeFile();
+    void SetXS(const ATOOLS::Weights_Map& xs,
+               const ATOOLS::Weights_Map& err) override;
+    void Output(ATOOLS::Blob_List* blobs) override;
+    void ChangeFile() override;
   };
 
 }

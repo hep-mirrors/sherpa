@@ -38,7 +38,7 @@ bool Single_Process::Initialize()
   DEBUG_VAR(m_pinfo);
   MODEL::s_model->GetCouplings(m_cpls);
   if (m_nin!=2) return false;
-  
+
   // can't do resonant processes, with one exception: ee -> Y(4S) -> B Bbar
   if (m_pinfo.m_fi.m_ps.size()!=m_pinfo.m_fi.NExternal()) {
     if (m_pinfo.m_fi.m_ps[0].m_fl.Kfcode()!=kf_Upsilon_4S) {
@@ -48,7 +48,8 @@ bool Single_Process::Initialize()
   }
 
   // can't do any BSM
-  if (/*m_pinfo.m_special!="MPI_Process" && */ MODEL::s_model->Name()!="SM") {
+  if (/*m_pinfo.m_special!="MPI_Process" && */
+      MODEL::s_model->Name()!="SM" && MODEL::s_model->Name()!="SMDM") {
     DEBUG_INFO("Requested BSM, Internal can't cope, it's too dumb...");
     return false;
   }
@@ -118,7 +119,9 @@ void Single_Process::OverwriteOriginalWithLocalFlavoursAndMomenta() {
   m_nout = m_flavs.size()-m_nin;
 }
 
-double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta, int mode)
+double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
+                                Variations_Mode varmode,
+                                int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (m_nlotype==nlo_type::lo && !Selector()->Result())
@@ -139,9 +142,9 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta, int mode)
   return m_lastxs;
 }
 
-bool EXTRAXS::Single_Process::FillIntegrator
-(PHASIC::Phase_Space_Handler *const psh)
+bool EXTRAXS::Single_Process::FillIntegrator(PHASIC::Phase_Space_Handler *const psh)
 {
+  msg_Out()<<METHOD<<".\n";
   PHASIC::Multi_Channel *mc(psh->FSRIntegrator());
   mc->DropAllChannels();
   if (m_nin==2 && m_nout==1 && m_flavs[2]==Flavour(kf_instanton)) {

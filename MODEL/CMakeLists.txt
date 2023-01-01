@@ -1,0 +1,7 @@
+add_subdirectory(SM)
+add_subdirectory(Main)
+add_subdirectory(TauPi)
+add_subdirectory(HEFT)
+add_subdirectory(SMGold)
+add_subdirectory(SMEHC)
+add_subdirectory(SMDM)

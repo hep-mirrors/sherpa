@@ -18,7 +18,7 @@ namespace AHADIC {
     KT_Selector            m_ktselector;
     Z_Selector             m_zselector;
     
-    double m_minmass;
+    double m_kt2max, m_minmass;
 
     std::list<Proto_Particle *> * p_singlet;
     Proto_Particle * p_part1, * p_part2;

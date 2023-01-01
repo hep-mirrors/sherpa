@@ -32,19 +32,21 @@ Process_Base *Process_Group::operator[](const size_t &i)
   return m_procs[i];
 }
 
-Weight_Info *Process_Group::OneEvent(const int wmode,const int mode) 
+Weight_Info *Process_Group::OneEvent(const int wmode,
+                                     Variations_Mode varmode,
+                                     const int mode)
 {
   p_selected=NULL;
   if (p_int->TotalXS()==0.0) {
     p_selected=m_procs[int(ATOOLS::ran->Get()*m_procs.size())];
-    return p_selected->OneEvent(mode);
+    return p_selected->OneEvent(mode, varmode);
   }
   double disc=p_int->SelectionWeight(wmode)*ATOOLS::ran->Get();
   for (size_t i=0;i<m_procs.size();++i) {
     disc-=dabs(m_procs[i]->Integrator()->SelectionWeight(wmode));
     if (disc<=0.) {
       p_selected=m_procs[i];
-      return p_selected->OneEvent(mode);
+      return p_selected->OneEvent(mode, varmode);
     }
   }
   msg_Error()<<METHOD<<"(): Cannot select any process. xs = "
@@ -84,6 +86,11 @@ void Process_Group::SetScale(const Scale_Setter_Arguments &args)
 void Process_Group::SetKFactor(const KFactor_Setter_Arguments &args)
 {
   for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetKFactor(args);
+}
+
+void Process_Group::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
+{
+  for (auto* p : m_procs) p->InitializeTheReweighting(mode);
 }
 
 bool Process_Group::IsGroup() const
@@ -177,13 +184,13 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
     for (size_t i=0;i<m_procs.size();++i)
       m_procs[i]->BuildCuts(psh->Cuts());
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
+    p_int->Beam()->SetSprimeMin(psh->Cuts()->Smin());
   }
   psh->CreateIntegrators();
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   p_int->SetTotal(0);
   exh->AddTerminatorObject(p_int);
-  psh->InitIncoming();
   double var(p_int->TotalVar());
   std::string namestring("");
   if (p_gen) {

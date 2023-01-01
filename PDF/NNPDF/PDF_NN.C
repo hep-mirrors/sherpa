@@ -18,7 +18,7 @@ namespace PDF {
 
     std::string m_path, m_file;
 
-    int    m_anti, m_nf;
+    int    m_nf;
     int m_lookup[28];
     int m_prefix;
 
@@ -60,7 +60,7 @@ PDF_NNPDF::PDF_NNPDF
 (const ATOOLS::Flavour &bunch,
  const std::string &bfile,
  const std::string &set,int member, int prefix):
-  m_file(bfile), m_anti(1)
+  m_file(bfile)
 {
   Settings& s = Settings::GetMainSettings();
   m_path = s["NNPDF_GRID_PATH"]
@@ -74,7 +74,6 @@ PDF_NNPDF::PDF_NNPDF
   p_pdf = new NNPDFDriver(m_path+"/"+file, m_member); // Path to the file to load
 
   m_bunch=bunch; // This is the beam
-  if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   m_type=set;
   // initialise all book-keep arrays etc.
   // This is copied from LHAPDF_CPP_Interface.C
@@ -178,7 +177,8 @@ void PDF_NNPDF::CalculateSpec(const double& x, const double& Q2)
 double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour& infl)
 {
   // Parton flavour IDs
-  int kfc = (infl == 21 || infl == 22) ? int(infl) : m_anti*int(infl);
+  int kfc = (infl == Flavour(kf_gluon) || infl == Flavour(kf_photon))
+            ? int(infl) : (m_bunch.IsAnti()?-1:1)*int(infl);
   // Hopefully efficient lookup --- relate 21 to 0
   int kfc_nn(m_lookup[kfc+6]); // kfc runs from -6 to 6 and also 21
                                // While the driver wants 
@@ -191,7 +191,8 @@ double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour& infl)
 double PDF_NNPDF::GetXPDF(const kf_code& kf, bool anti)
 {
   // Parton flavour IDs
-  int kfc = (kf == 21 || kf == 22) ? kf : m_anti*(anti?-kf:kf);
+  int kfc = (kf == Flavour(kf_gluon) || kf == Flavour(kf_photon))
+            ? kf : (m_bunch.IsAnti()?-1:1)*(anti?-kf:kf);
   // Hopefully efficient lookup --- relate 21 to 0
   int kfc_nn(m_lookup[kfc+6]); // kfc runs from -6 to 6 and also 21
                                // While the driver wants
@@ -210,14 +211,14 @@ PDF_Base *NNPDF_Getter::operator()
   if (!args.m_bunch.IsHadron()) return NULL;
   std::string gfile;
   int pdfsetprefix=-1;
-  if (args.m_set == "NNPDF30NLO") {
+  if (args.m_set == "NNPDF30_nlo_as_0118") {
     gfile = std::string("NNPDF30_nlo_as_0118");
     pdfsetprefix=260000;
     if (args.m_member>100 || args.m_member <0) {
       THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
     }
   }
-  else if (args.m_set == "NNPDF30NNLO") {
+  else if (args.m_set == "NNPDF30_nnlo_as_0118") {
     gfile = std::string("NNPDF30_nnlo_as_0118");
     pdfsetprefix=261000;
     if (args.m_member>100 || args.m_member <0) {
@@ -246,8 +247,8 @@ NNPDF_Getter *p_get_nnpdf[3];
 
 extern "C" void InitPDFLib()
 {
-  p_get_nnpdf[0] = new NNPDF_Getter("NNPDF30NLO");
-  p_get_nnpdf[1] = new NNPDF_Getter("NNPDF30NNLO");
+  p_get_nnpdf[0] = new NNPDF_Getter("NNPDF30_nlo_as_0118");
+  p_get_nnpdf[1] = new NNPDF_Getter("NNPDF30_nnlo_as_0118");
   p_get_nnpdf[2] = new NNPDF_Getter("NNPDF31_nnlo_as_0118_mc");
 }
 

@@ -222,17 +222,21 @@ bool Blob_List::FourMomentumConservation() const
         s["ALLOW_MOMENTUM_NONCONSERVATION"].SetDefault(1).Get<int>();
     }
     if (!allow) Abort();
-      for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
-	Vec4D sum((*bit)->CheckMomentumConservation());
-	if (sum!=Vec4D()) {
-	  msg_Error()<<METHOD<<" throws four momentum error for "<<(*bit)->Type()<<": "<<sum<<"\n";
+    for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
+      Vec4D sum((*bit)->CheckMomentumConservation());
+      if (sum!=Vec4D()) {
+	btp::code btype = (*bit)->Type();
+	if (s_momfails.find(btype)==s_momfails.end()) {
+	  s_momfails[btype] = 1;
+	}
+	else s_momfails[btype] = s_momfails[btype]+1;
+	if (s_momfails[btype] <= 5) {
+	  msg_Error()<<METHOD<<" throws four momentum error for "<<(*bit)->Type()<<": "<<sum
+		     <<" ("<<s_momfails[btype]<<")\n";
 	  //<<" in\n"<<**bit<<std::endl;
 	}
-	btp::code btype = (*bit)->Type();
-	if (s_momfails.find(btype)==s_momfails.end()) s_momfails[btype] = 1;
-	else s_momfails[btype] = s_momfails[btype]+1;
       }
-      //}
+    }
   }
   return test;
 }
@@ -312,7 +316,7 @@ bool Blob_List::ColorConservation() const
       if (anti!=0 && real==-anti) {
 	msg_Error()<<"Blob_List::ColorConservation(): "
 		   <<"Color singlet gluon "<<**pit<<std::endl;
-	msg_Out()<<(*this)<<"\n";
+	msg_Error()<<(*this)<<"\n";
 	//exit(1);
 	return false;
       }

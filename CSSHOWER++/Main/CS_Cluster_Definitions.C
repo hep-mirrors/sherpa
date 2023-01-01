@@ -105,7 +105,6 @@ CS_Parameters CS_Cluster_Definitions::KT2
       }
       else {
 	lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|8|(kin?4:0));
-	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if (lt.m_pk[3]*pk[3]>0.0 ||
 	    lt.m_pk[0]<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinFI()->GetKT2(Q2,1.0-lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
@@ -117,7 +116,6 @@ CS_Parameters CS_Cluster_Definitions::KT2
   }
   else {
     if ((j->Id()&3)==0) {
-      Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
       if ((k->Id()&3)==0) {
 	lt=ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),3|(kin?4:0));
 	if ((kmode&1) && lt.m_mode) lt.m_stat=-1;

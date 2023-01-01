@@ -1,7 +1,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include <vector>
 #include <algorithm>
-#include <limits>
+#include <cerrno>
 
 #include "ATOOLS/Org/Exception.H"
 
@@ -32,20 +32,23 @@ namespace ATOOLS {
 
   template <> double ToType(const std::string &value,
 		            const size_t precision) {
-    MyStrStream converter;
-    double converted;
-    converter.precision(precision);
-    converter<<value;
-    converter>>converted;
-    if (converter.fail()) {
-      if (value == "inf")
-        converted = std::numeric_limits<double>::infinity();
-      else if (value == "-inf")
-        converted = -std::numeric_limits<double>::infinity();
-      else
-        THROW(fatal_error, "Failed to parse " + value);
+    errno = 0;
+    const char* p = value.c_str();
+    char* end;
+    double ret {std::strtod(value.c_str(), &end)};
+    if (errno == ERANGE) {
+      static bool did_warn {false};
+      if (!did_warn) {
+        msg_Error() << "ToType<double>: Range error parsing \"" << value
+          << "\". Will return " << ret
+          << " and omit further warnings of this kind.\n";
+        did_warn = true;
+      }
+      errno = 0;
+    } else if (p == end && ret == 0.0) {
+      THROW(fatal_error, "ToType<double>: Failed to parse " + value);
     }
-    return converted;
+    return ret;
   }
 
   std::string StringTrim(const std::string& untrimmed)

@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+
+import yoda
+import sys
+from math import sqrt
+import matplotlib.pyplot as plt
+
+import numpy as np
+
+def fuzzyeq(a, b, rel_tol=1e-6):
+    return abs(a - b) <= (rel_tol * max(abs(a), abs(b)))
+
+def zip_bins(hist1, hist2):
+    if len(hist1.bins()) != len(hist2.bins()):
+        print('+++ Error in Histogram.zip_bins(): different numbers of bins in %s and %s' % (hist1.path, hist2.path))
+    bins1 = hist1.bins()
+    bins1_rem = set(bins1)
+    bins2_rem = set(hist2.bins())
+    for bin1 in bins1:
+        for bin2 in bins2_rem:
+            if fuzzyeq(bin1.xEdges()[0], bin2.xEdges()[0]) and \
+               fuzzyeq(bin1.xEdges()[1], bin2.xEdges()[1]):
+                bins1_rem.remove(bin1)
+                bins2_rem.remove(bin2)
+                yield (bin1, bin2)
+                break
+    for bin1 in bins1_rem:
+        print('+++ Error in Histogram.zip_bins(): no matching bin in %s for (%f, %f) from %s' % (hist2.path, bin1.xEdges()[0], bin1.xEdges()[1], hist1.path))
+    for bin2 in bins2_rem:
+        print('+++ Error in Histogram.zip_bins(): no matching bin in %s for (%f, %f) from %s' % (hist1.path, bin2.xEdges()[0], bin2.xEdges()[1], hist2.path))
+
+def deviation(self, other):
+    deviations = []
+    for bin_subtrahend, bin_minuend in zip_bins(self, other):
+        val = 0
+        err = [0, 0]
+        if self==other:
+            # if this is the reference histogram, should be zero and one by definition.
+            val=0
+            err[0]=1.0
+            err[1]=1.0
+        else:
+            val = bin_subtrahend.height() - bin_minuend.height()
+            try:
+                val /= 0.5*sqrt((bin_minuend.heightErr() + bin_minuend.heightErr())**2 + \
+                                           (bin_subtrahend.heightErr() + bin_subtrahend.heightErr())**2)
+            except ZeroDivisionError:
+                val = 0.0
+            try:
+                err[0] = bin_subtrahend.heightErr() / sqrt(bin_minuend.heightErr()**2 + bin_subtrahend.heightErr()**2)
+            except ZeroDivisionError:
+                err[0] = 0.0
+            try:
+                err[1] = bin_subtrahend.heightErr() / sqrt(bin_minuend.heightErr()**2 + bin_subtrahend.heightErr()**2)
+            except ZeroDivisionError:
+                err[1] = 0.0
+        deviations.append([val, err])
+    return deviations
+
+files = sys.argv[1:]
+dos = [yoda.read(f) for f in files]
+
+# collect all histos
+histos = dos[0].keys()
+histos = [h for h in histos if not "/RAW/" in h]
+histos = [h for h in histos if not "/_" in h]
+
+# collect all deviations
+deviations = []
+for histo in histos:
+    if dos[0][histo].type() == "Histo1D":
+        deviations.extend(deviation(dos[0][histo], dos[1][histo]))
+deviations = [d[0] for d in deviations if d != [0, [0, 0]]]
+
+mean = np.mean(deviations)
+std = np.std(deviations)
+
+plt.hist(deviations, bins=21, range=[-5.25, 5.25], density=True, label="deviations")
+plt.text(0.02, 0.98, "mean = {:.2f}\nstd = {:.2f}".format(mean, std),
+    horizontalalignment='left',
+    verticalalignment='top',
+    transform=plt.gca().transAxes)
+
+def gaussian(x, a, x0, sigma):
+    return a * np.exp(-(x - x0)**2 / (2 * sigma**2)) / (sigma * sqrt(2 * np.pi))
+x_array = np.arange(-5, 5, 0.2)
+y_pdf = gaussian(x_array,1,0,1)
+plt.plot(x_array, y_pdf, label="normal distribution")
+
+plt.legend()
+
+plt.savefig("deviations.pdf")
+
+return_code = 0
+
+print("The mean (standard deviation) of the bin-to-bin deviations is {:.2f} ({:.2f}) sigma.".format(mean, std))
+
+if abs(mean) > 0.3:
+    print("ERROR: The mean of the bin-to-bin deviations is substantially off (expect: -0.3...0.3).")
+    return_code = 1
+
+if std > 1.1:
+    print("ERROR: The standard deviation of the bin-to-bin deviations is substantially off (expect: <= 1.1).")
+    return_code = 1
+
+sys.exit(return_code)

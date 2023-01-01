@@ -32,6 +32,10 @@
 #define      kf_Hplusplus                 38
 #define      kf_graviton                  39
 #define      kf_gscalar                   40
+// goldstones
+#define      kf_chi                       41
+#define      kf_phiplus                   42
+// dark matter
 #define      kf_DM_scalar                 51
 #define      kf_DM_fermion                52
 #define      kf_DM_vector                 53
@@ -393,6 +397,9 @@
 #define      kf_Xi_1820                 103324
 #define      kf_N_1440                  202112
 #define      kf_N_1440_plus             202212
+#define      kf_N_1720_plus             212214
+#define      kf_N_1710                  212112
+#define      kf_N_1710_plus             212212
 #define      kf_Sigma_1660_minus        203112
 #define      kf_Lambda_1600             203122
 #define      kf_Sigma_1660              203212

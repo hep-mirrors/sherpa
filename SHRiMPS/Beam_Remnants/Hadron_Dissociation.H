@@ -9,8 +9,6 @@
 #include <set>
 #include <map>
 
-namespace BEAM   { class Beam_Base; }
-
 namespace SHRIMPS {
 
   class Hadron_Dissociation {
@@ -19,37 +17,42 @@ namespace SHRIMPS {
     Form_Factor   * p_ff;
     ATOOLS::Flavour m_beamflav;
     ATOOLS::Vec4D   m_beamvec, m_outmom;
-    int    m_dir;
-    double m_xmin, m_QT2max;
+    int             m_beam, m_dir;
+    double          m_xmin, m_QT2max, m_expo;
 
-    ATOOLS::Blob  * p_blob;
-    std::set<int>   m_cols[2];
-    ATOOLS::Flavour m_quark, m_diquark;
-    std::map<ATOOLS::Particle *,ATOOLS::Vec4D> * m_qtmap;
-    
-    void SpecifyBeamBlob();
-    void AddPartonsFromCollision(ATOOLS::Blob_List * blobs);
-    void HarvestBlob(ATOOLS::Blob * blob);
-    void IdentifyAndFillSoftBlob(ATOOLS::Blob_List * blobs);
-    void AddSpectatorPartons(ATOOLS::Blob * softblob);
+    ATOOLS::Blob                             * p_blob, * p_softblob;
+    std::list<ATOOLS::Flavour>                 m_beamflavs;
+    std::set<int>                              m_beamcols[2];
+    ATOOLS::Flavour                            m_quark, m_diquark;
+    std::map<ATOOLS::Particle *,ATOOLS::Vec4D> m_qtmap;
+
+    bool CheckResiduals();
+    void AddBeamBlob(ATOOLS::Blob_List * blobs,const double & B);
+    void HarvestCollision(ATOOLS::Blob_List * blobs);
+    bool CompensateFlavours();
+    bool AddFlavourCompensator(const ATOOLS::Flavour & flav);
+    bool AddColourCompensator(const ATOOLS::Flavour & flav);
+    bool SelectCompensatorMomentum(ATOOLS::Particle * part);
+    bool SelectCompensatorTripletColours(ATOOLS::Particle * part);
+    bool CompensateColours();
+    void CleanColours();
+    void AddSpectatorPartons();
     void FixConstituentFlavours();
     void CalculateParallelMomenta(ATOOLS::Vec4D & qmom,ATOOLS::Vec4D & dimom);
     void SelectTrialTransverseMomenta();
   public:
     Hadron_Dissociation() {};
-    Hadron_Dissociation(BEAM::Beam_Base * beambase,Continued_PDF * pdf);
-    ~Hadron_Dissociation() {}
+    Hadron_Dissociation(const int & beam,
+			const ATOOLS::Vec4D & inmom,const ATOOLS::Flavour & flav,
+			Continued_PDF * pdf);
+    ~Hadron_Dissociation();
 
     void Reset();
-    bool FillBeamBlob(ATOOLS::Blob_List * blobs);
-    void SetBeamBlob(ATOOLS::Blob * blob=NULL) { p_blob = blob; }
-    
-    inline void SetFormFactor(Form_Factor * ff) { p_ff = ff; }
-    inline void SetQTMap(std::map<ATOOLS::Particle *,ATOOLS::Vec4D> * qtmap) {
-      m_qtmap = qtmap;
-    }
-    inline ATOOLS::Blob  * GetBeamBlob() const { return p_blob; }
-    inline Continued_PDF * GetPDF()      const { return p_pdf; }
-  };
+    bool FillBeamBlob(ATOOLS::Blob_List * blobs, const double & B=0.);
+    inline void SetSoftBlob(ATOOLS::Blob * blob=NULL) { p_softblob = blob; }
+    inline void SetFormFactor(Form_Factor * ff)       { p_ff = ff; }
+    inline Continued_PDF * GetPDF() const { return p_pdf; }
+    inline ATOOLS::Blob  * GetSoftBlob()  { return p_softblob; }
+   };
 }
 #endif

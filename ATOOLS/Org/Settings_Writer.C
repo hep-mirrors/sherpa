@@ -66,8 +66,39 @@ void Settings_Writer::WriteSettings(Settings& s)
     if (iscustomised) {
       vals.push_back(s.m_overrides[keysetpair.first]);
       Settings_Keys keys{ keysetpair.first };
-      for (auto it = s.m_yamlreaders.rbegin(); it != s.m_yamlreaders.rend(); ++it)
-        vals.push_back((*it)->GetMatrix<std::string>(keys));
+      for (auto it = s.m_yamlreaders.rbegin();
+           it != s.m_yamlreaders.rend();
+           ++it) {
+        auto new_vals =
+          (*it)->GetFlattenedStringVectorWithDelimiters(keys, "{{", "}}");
+        int maxdim = 0, curdim = 0;
+        for (const auto& val : new_vals) {
+          if (val == "{{") {
+            maxdim = std::max(maxdim, ++curdim);
+          } else if (val == "}}") {
+            --curdim;
+          }
+        }
+        String_Matrix pruned_new_vals;
+        pruned_new_vals.emplace_back();
+        for (const auto& val : new_vals) {
+          if (val == "{{") {
+            ++curdim;
+          } else if (val == "}}") {
+            if (curdim > 1 && curdim < maxdim) {
+              pruned_new_vals.emplace_back();
+            }
+            --curdim;
+            if (curdim == 0 && maxdim > 2 && &val != &new_vals.back()) {
+              pruned_new_vals.back().push_back("-- AND --");
+              pruned_new_vals.emplace_back();
+            }
+          } else {
+            pruned_new_vals.back().push_back(val);
+          }
+        }
+        vals.push_back(pruned_new_vals);
+      }
       if (!finalvals.empty()) {
         vals.push_back(*finalvals.begin());
         for (auto it = ++finalvals.begin(); it != finalvals.end(); ++it) {
@@ -114,13 +145,15 @@ void Settings_Writer::WriteSettings(Settings& s)
   file << "date: " << rpa->gen.Timer().TimeString(0) << "\n";
   file << "...\n\n";
 
-  file << "Unused settings\n";
-  file << "-------------------\n";
-  file << "Parameters that have never been read by Sherpa during its"
-       << " run are listed here. If you did expect the setting to be used,"
-       << " check its spelling, and note that Sherpa setting names are case"
-       << "-sensitive.\n\n";
-  file << unused.str();
+  if (did_find_unused) {
+    file << "Unused settings\n";
+    file << "-------------------\n";
+    file << "Parameters that have never been read by Sherpa during its"
+         << " run are listed here. If you did expect the setting to be used,"
+         << " check its spelling, and note that Sherpa setting names are case"
+         << "-sensitive.\n\n";
+    file << unused.str();
+  }
 
   file << "Customised settings\n";
   file << "-------------------\n";
@@ -171,6 +204,9 @@ void Settings_Writer::WriteSettings(Settings& s)
   std::ofstream makefile(path + "/Makefile");
   makefile << "Settings_Report.html: Settings_Report.md\n"
            << "\tpandoc -s -o Settings_Report.html -c Style.css"
+           << " Settings_Report.md\n\n"
+	   << "Settings_Report.org: Settings_Report.md\n"
+           << "\tpandoc -f markdown -t org -c Style.css -o Settings_Report.org"
            << " Settings_Report.md\n\n"
            << "clean:\n"
            << "\trm -f Settings_Report.html\n\n"

@@ -9,8 +9,9 @@ ME_GENERATORS: [Amegic, Internal, OpenLoops]
 HARD_DECAYS:
   Enabled: true
   Channels:
-    25 -> 22 22: {Status: 2}
+    25,22,22: {Status: 2}
   Apply_Branching_Ratios: false
+  Use_HO_SM_Widths: false
 
 # model parameters
 MODEL: HEFT
@@ -27,7 +28,7 @@ OL_PARAMETERS:
 
 PROCESSES:
 - 93 93 -> 25 93{1}:
-    Order: {QCD: 0, EW: 0, HEFT: 1}
+    Order: {QCD: 2, EW: 0, HEFT: 1}
     CKKW: 30
     Loop_Generator: Internal
     2->1-2:

@@ -251,7 +251,9 @@ int AMEGIC::Single_Process_MHV::Tests()
 bool AMEGIC::Single_Process_MHV::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return Process_Base::FillIntegrator(psh);
 }
 
@@ -294,7 +296,9 @@ void AMEGIC::Single_Process_MHV::Minimize()
   m_mincpl = p_partner->MinOrders();
 }
 
-double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms, int mode)
+double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms,
+                                            Variations_Mode varmode,
+                                            int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs = 0.0;

@@ -1,17 +1,14 @@
 #include "AMISIC++/Tools/Over_Estimator.H"
 #include "AMISIC++/Perturbative/MI_Processes.H"
-#include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
-#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
 
-Over_Estimator::Over_Estimator() :
-  m_muR_fac(1.), m_muF_fac(1.),
-  m_nbins(100), m_pref(1.), m_bfac(1.)
+Over_Estimator::Over_Estimator() : m_nbins(100), m_muR_fac(1.), m_muF_fac(1.),
+                                   m_pref(1.), m_bfac(1.)
 {}
 
 Over_Estimator::~Over_Estimator() {}
@@ -23,16 +20,26 @@ void Over_Estimator::Initialize(MI_Processes * procs) {
   // momenta.  We observe that the cross section dsigma/dp_T^2 falls quickly with
   // the transverse momentum squared p_T^2, suggesting a logarithmic binning in
   // p_T^2.  This is achieved in the FixMaximum method.
-  m_s      = sqr(procs->Ecms());
-  m_pt02   = sqr(procs->PT0());
-  m_ptmin2 = sqr(procs->PTmin());
-  p_alphaS = procs->AlphaS();
-  p_pdf[0] = procs->PDF(0);
-  p_pdf[1] = procs->PDF(1);
-  FixMaximum(procs);
+  p_procs  = procs;
+  m_s      = sqr(p_procs->Ecms());
+  m_pt02   = sqr(p_procs->PT0());
+  m_ptmin2 = sqr(p_procs->PTmin());
+  p_alphaS = p_procs->AlphaS();
+  for (size_t i=0;i<2;i++) {
+    p_pdf[i]  = p_procs->PDF(i);
+    m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
+  }
+  FixMaximum();
 }
 
-void Over_Estimator::FixMaximum(MI_Processes * procs) {
+void Over_Estimator::Update() {
+  m_s      = sqr(p_procs->Ecms());
+  m_pt02   = sqr(p_procs->PT0());
+  m_ptmin2 = sqr(p_procs->PTmin());
+  FixMaximum();
+}
+
+void Over_Estimator::FixMaximum() {
   m_muR_fac      = (*mipars)("RenScale_Factor"); 
   m_muF_fac      = (*mipars)("FacScale_Factor"); 
   double pt2step = log(m_s/(4.*m_ptmin2))/double(m_nbins);
@@ -47,7 +54,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs) {
     m_xt          = sqrt(4.*pt2/m_s);
     double yvol   = sqr(2.*log(1./m_xt*(1.+sqrt(1.-m_xt*m_xt))));
     double approx = ApproxME(pt2);    
-    double exact  = ExactME(procs,pt2);
+    double exact  = ExactME(pt2);
     // In both the approximate and the exact ME we factor out an appoximated, regularised
     // (with m_pt02) t-channel propagator and the rapidity volume to define a constant
     // prefactor that ensures that the approximation is always larger than the exact
@@ -73,30 +80,33 @@ double Over_Estimator::ApproxME(const double & pt2) {
   // that the t-channel exchange of gluons in elastic scattering dominates, and that the
   // product of PDFs is largest for both x being minimal, i.e. for x = xT = 4pT^2/s.
   double scale = pt2+m_pt02;
-  double est   = M_PI/2.*sqr((*p_alphaS)(m_muR_fac * scale/4.)) / sqr(scale);
+  double est   = M_PI/2.*sqr((*p_alphaS)(Max(m_pt02,m_muR_fac * scale/4.))) / sqr(scale);
   for (size_t i=0;i<2;i++) {
-    double Q2     = m_muF_fac*Max(pt2,p_pdf[i]->Q2Min());
-    p_pdf[i]->Calculate(m_xt,Q2);
     double pdfsum = 0.;
-    for (Flavour_Set::const_iterator fl=p_pdf[i]->Partons().begin();
-	 fl!=p_pdf[i]->Partons().end();fl++) {
-      // only allow u, d, s, c, b quarks and gluons
-      if (fl->Kfcode()>=6 && fl->Kfcode()!=21) continue;
-      pdfsum += Max(0.,((*fl).IsGluon()?9./4.:1.)*p_pdf[i]->GetXPDF(*fl));
+    double Q2     = m_muF_fac*Max(pt2,p_pdf[i]->Q2Min());
+    if (m_xt>m_xmin[i]) {
+      p_pdf[i]->Calculate(m_xt,Q2);
+      for (Flavour_Set::const_iterator fl=p_pdf[i]->Partons().begin();
+	   fl!=p_pdf[i]->Partons().end();fl++) {
+	// only allow u, d, s, c, b quarks and gluons
+	if (fl->Kfcode()>=6 && fl->Kfcode()!=21) continue;
+	pdfsum += Max(0.,((*fl).IsGluon()?9./4.:1.)*p_pdf[i]->GetXPDF(*fl));
+      }
     }
     est *= pdfsum;
   }
   return est;
 }
 
-double Over_Estimator::ExactME(MI_Processes * procs,const double & pt2) {
+double Over_Estimator::ExactME(const double & pt2) {
   // For the exact MEs we assume a "minimal" kinematics with smallest values for
   // s', t' and u' given by multiples of pT^2.  
   double shat  = 4.*pt2, that=-2.*pt2, uhat=-2.*pt2;
   double x1    = m_xt, x2 = m_xt;
   double scale = pt2;
-  procs->CalcPDFs(x1,x2,m_muF_fac * scale);
-  return (*procs)(shat,that,uhat);
+  if (x1<m_xmin[0] || x2<m_xmin[1]) return 0.;
+  p_procs->CalcPDFs(x1,x2,m_muF_fac * scale);
+  return (*p_procs)(shat,that,uhat);
 }
   
 double Over_Estimator::operator()(const double & pt2) {

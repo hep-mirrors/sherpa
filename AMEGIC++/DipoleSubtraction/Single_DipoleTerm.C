@@ -7,6 +7,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -452,14 +453,7 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,
   size_t ndip=(p_dipole->GetDiPolarizations())->size();
   for (size_t i=0;i<ndip;i++) bst.Boost((*(p_dipole->GetDiPolarizations()))[i]);
 
-  if (m_subevt.m_i<m_nin &&
-      m_subevt.m_ijt!=m_subevt.m_i) {
-    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.Boost(p_LO_labmom[i]);
-  }
-  else {
-    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.BoostBack(p_LO_labmom[i]);
-  }
-
+  for (size_t i = 0; i < m_nin + m_nout - 1; ++i) cms.BoostBack(p_LO_labmom[i]);
 }
 
 bool Single_DipoleTerm::CompareLOmom(const ATOOLS::Vec4D* p)
@@ -609,12 +603,14 @@ bool Single_DipoleTerm::Trigger(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms, int mode)
+double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms,
+                                   Variations_Mode varmode,
+                                   int mode)
 {
   p_int->SetMomenta(_moms);
   Poincare cms;
   Vec4D_Vector pp(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+  if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     cms=Poincare(pp[0]+pp[1]);
     for (size_t i(0);i<pp.size();++i) cms.Boost(pp[i]);
   }

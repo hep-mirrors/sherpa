@@ -130,6 +130,7 @@ namespace PHASIC {
 
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
     virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;
+    virtual void InitializeTheReweighting(ATOOLS::Variations_Mode) = 0;
 
     virtual void SetFixedScale(const std::vector<double> &s);
     virtual void SetSelectorOn(const bool on);
@@ -141,7 +142,10 @@ namespace PHASIC {
     virtual size_t Size() const = 0;
     virtual Process_Base *operator[](const size_t &i) = 0;
 
-    virtual ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) = 0;
+    virtual ATOOLS::Weight_Info *OneEvent(
+        const int wmode,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        const int mode=0) = 0;
 
     /*!
      * Calculate the nominal differential
@@ -188,6 +192,7 @@ namespace PHASIC {
     virtual bool FillIntegrator(Phase_Space_Handler *const psh);
     virtual bool InitIntegrator(Phase_Space_Handler *const psh);
     virtual void UpdateIntegrator(Phase_Space_Handler *const psh);
+    virtual bool FillResonances(ATOOLS::Flavour_Vector & flavs) { return false; }
 
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);

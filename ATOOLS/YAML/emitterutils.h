@@ -10,8 +10,8 @@
 #include <string>
 
 #include "emitterstate.h"
-#include "yaml-cpp/emittermanip.h"
-#include "yaml-cpp/ostream_wrapper.h"
+#include "ATOOLS/YAML/yaml-cpp/emittermanip.h"
+#include "ATOOLS/YAML/yaml-cpp/ostream_wrapper.h"
 
 namespace SHERPA_YAML {
 class ostream_wrapper;
@@ -24,6 +24,10 @@ struct StringFormat {
   enum value { Plain, SingleQuoted, DoubleQuoted, Literal };
 };
 
+struct StringEscaping {
+  enum value { None, NonAscii, JSON };
+};
+
 namespace Utils {
 StringFormat::value ComputeStringFormat(const std::string& str,
                                         EMITTER_MANIP strFormat,
@@ -32,10 +36,11 @@ StringFormat::value ComputeStringFormat(const std::string& str,
 
 bool WriteSingleQuotedString(ostream_wrapper& out, const std::string& str);
 bool WriteDoubleQuotedString(ostream_wrapper& out, const std::string& str,
-                             bool escapeNonAscii);
+                             StringEscaping::value stringEscaping);
 bool WriteLiteralString(ostream_wrapper& out, const std::string& str,
                         std::size_t indent);
-bool WriteChar(ostream_wrapper& out, char ch);
+bool WriteChar(ostream_wrapper& out, char ch,
+               StringEscaping::value stringEscapingStyle);
 bool WriteComment(ostream_wrapper& out, const std::string& str,
                   std::size_t postCommentIndent);
 bool WriteAlias(ostream_wrapper& out, const std::string& str);

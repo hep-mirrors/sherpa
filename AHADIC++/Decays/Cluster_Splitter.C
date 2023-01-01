@@ -11,7 +11,8 @@ Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters) :
   Splitter_Base(cluster_list,softclusters),
   m_output(false) 
-{ }
+{
+}
 
 void Cluster_Splitter::Init(const bool & isgluon) {
   Splitter_Base::Init(false);
@@ -63,27 +64,28 @@ bool Cluster_Splitter::MakeLongitudinalMomenta() {
 }
 
 void Cluster_Splitter::FixCoefficients() {
-  // here there are significant differences.
+  // this is where the magic happens.  
   m_mode = m_defmode;
   double sum_mass = 0, massfac;
+  double threshold = p_softclusters->DecayThreshold(p_part[0]->Flavour(),p_part[1]->Flavour()); 
   for (size_t i=0;i<2;i++) {
     Proto_Particle * part = p_part[i];
     Flavour flav = part->Flavour();
     massfac      = 1.;
     size_t flcnt = 0;
     if (p_part[i]->IsLeading() ||
-	     (m_mode==0 && p_part[1-i]->IsLeading())) {
+	(m_mode==0 && p_part[1-i]->IsLeading())) {
       flcnt   = 1;
       massfac = 2.;
     }
     else if (flav.IsDiQuark())
       flcnt = 2;
-    else if (part->IsBeam()) {
+    if (part->IsBeam()) {
       flcnt  = 3;
       m_mode = m_beammode;
     }
-    m_a[i] = m_alpha[flcnt];
-    m_b[i] = m_beta[flcnt];
+    m_a[i] = m_alpha[flcnt]; // * m_Q/threshold
+    m_b[i] = m_beta[flcnt]  * threshold/m_Q;
     m_c[i] = m_gamma[flcnt];
     sum_mass += massfac * p_constituents->Mass(flav);
   }
@@ -148,16 +150,22 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {
   // identical, just have to check the m_a, m_b, m_c
   double norm = 1., arg;
+  double value = 1.;
   if (m_a[cnt]>=0.) norm *= pow(zmax,m_a[cnt]);
                else norm *= pow(zmin,m_a[cnt]);
   if (m_b[cnt]>=0.) norm *= pow(1.-zmin,m_b[cnt]);
                else norm *= pow(1.-zmax,m_b[cnt]);
   double wt = pow(z,m_a[cnt]) * pow(1.-z,m_b[cnt]);
+
+  value = wt/norm;
+  
   if (m_mode==2) {
     arg   = dabs(m_c[cnt])>1.e-2 ? m_c[cnt]*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
+    value *= exp(-arg*((zmax-z)/(z*zmax)));
     norm *= exp(-arg/zmax);
     wt   *= exp(-arg/z);
   }
+
   if (wt>norm) {
     msg_Error()<<"Error in "<<METHOD<<": wt(z) = "<<wt<<"("<<z<<") "
 	       <<"for wtmax = "<<norm<<" "
@@ -167,7 +175,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       <<"c part = "<<exp(-arg/z)<<"/"<<exp(-arg/zmax)<<".\n";
     exit(1);
   }
-  return wt / norm;
+  return value;
 }
 
 bool Cluster_Splitter::RecalculateZs() {
@@ -230,8 +238,80 @@ double Cluster_Splitter::DeltaM(const size_t & cl) {
 
 
 bool Cluster_Splitter::FillParticlesInLists() {
-  for (size_t i=0;i<2;i++) p_cluster_list->push_back(MakeCluster(i));
+  size_t shuffle = MakeAndCheckClusters();
+  if (shuffle) MakeNewMomenta(shuffle);
+  for (size_t i=0;i<2;i++) {
+    if (shuffle&(i+1)) FillHadronAndDeleteCluster(i);
+    else if (shuffle)  UpdateAndFillCluster(i);
+    else p_cluster_list->push_back(p_out[i]);
+  }
+  /*
+  if (shuffle>0) 
+    msg_Out()<<METHOD<<" shuffled momenta:\n"
+	     <<m_cms<<" -> "<<(m_newmom[0]+m_newmom[1])<<"\n = "<<m_newmom[0]<<" + "<<m_newmom[1]<<"\n";
+  else {
+    msg_Out()<<METHOD<<" didn't shuffle momenta:\n"
+	     <<m_cms<<"("<<sqrt(m_cms.Abs2())<<") -> \n"<<(*p_out[0])<<(*p_out[1]);
+    double mass1_0 = sqrt(((*p_out[0])[0]->Momentum()+(*p_out[0])[1]->Momentum()).Abs2());
+    double mass2_0 = sqrt(((*p_out[1])[0]->Momentum()+(*p_out[1])[1]->Momentum()).Abs2());
+    double mass1_1 = sqrt(((*p_out[0])[0]->Momentum()+(*p_out[1])[0]->Momentum()).Abs2());
+    double mass2_1 = sqrt(((*p_out[0])[1]->Momentum()+(*p_out[1])[1]->Momentum()).Abs2());
+    msg_Out()<<"--> mass shuffle "<<mass1_0<<" + "<<mass2_0<<" --> "
+	     <<mass1_1<<" + "<<mass2_1<<"\n\n";
+  }
+  */
   return true;
+}
+
+size_t Cluster_Splitter::MakeAndCheckClusters() {
+  size_t  shuffle = 0;
+  for (size_t i=0;i<2;i++) {
+    p_out[i]     = MakeCluster(i);
+    m_cms       += m_mom[i] = p_out[i]->Momentum();
+    m_mass2[i]   = m_mom[i].Abs2();
+    if (p_softclusters->PromptTransit(p_out[i],m_fl[i])) shuffle += (i+1);
+    else m_fl[i] = Flavour(kf_none);
+  }
+  return shuffle;
+}
+
+void Cluster_Splitter::MakeNewMomenta(size_t shuffle) {    
+  double mt2[2], alpha[2], beta[2];
+  for (size_t i=0;i<2;i++) {
+    mt2[i]    = (shuffle&(i+1) ? sqr(m_fl[i].Mass()) : m_mass2[i] ) + m_kt2;
+  }
+  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0]))/(2.*m_Q2); 
+  beta[0]     = mt2[0]/(m_Q2*alpha[0]);
+  alpha[1]    = 1.-alpha[0];
+  beta[1]     = 1.-beta[0];
+  m_newmom[0] = m_E*(alpha[0]*s_AxisP + beta[0]*s_AxisM)+m_ktvec;
+  m_newmom[1] = Vec4D(m_Q,0.,0.,0.)-m_newmom[0];
+}
+
+void Cluster_Splitter::FillHadronAndDeleteCluster(size_t i) {
+  delete p_out[i];
+  m_rotat.RotateBack(m_newmom[i]);
+  m_boost.BoostBack(m_newmom[i]);
+  p_softclusters->GetHadrons()->push_back(new Proto_Particle(m_fl[i],m_newmom[i],false));
+}
+
+void Cluster_Splitter::UpdateAndFillCluster(size_t i) {
+  Poincare BoostIn(m_mom[i]);
+  Poincare BoostOut(m_newmom[i]);
+  //Vec4D check(0.,0.,0.,0.);
+  for (size_t j=0;j<2;j++) {
+    Vec4D partmom = (*p_out[i])[j]->Momentum(); 
+    BoostIn.Boost(partmom);
+    BoostOut.BoostBack(partmom);
+    m_rotat.RotateBack(partmom);
+    m_boost.BoostBack(partmom);
+    //check += partmom;
+    (*p_out[i])[j]->SetMomentum(partmom);
+  }
+  m_rotat.RotateBack(m_newmom[i]);
+  m_boost.BoostBack(m_newmom[i]);
+  p_out[i]->SetMomentum(m_newmom[i]);
+  p_cluster_list->push_back(p_out[i]);
 }
 
 Cluster * Cluster_Splitter::MakeCluster(size_t i) {
@@ -266,10 +346,11 @@ Cluster * Cluster_Splitter::MakeCluster(size_t i) {
     new Proto_Particle(m_newflav[i],newmom12,false,
 		       p_part[0]->IsBeam()||p_part[1]->IsBeam());
   newp->SetKT2_Max(m_kt2);
-  Cluster * cluster(i==0?new Cluster(p_part[0],newp):new Cluster(newp,p_part[1]));
-  //msg_Out()<<"   make cluster("<<cluster<<":"<<(*cluster)[0]->Flavour()<<" "
-  //	   <<(*cluster)[1]->Flavour()<<"), "
-  //	   <<"m = "<<sqrt(cluster->Momentum().Abs2())<<"\n";
+  Cluster * cluster;
+  if (i==0) cluster = new Cluster(p_part[0],newp);
+  if (i==1) cluster = new Cluster(newp,p_part[1]);
+  newp->SetGeneration(p_part[i]->Generation()+1);
+  p_part[i]->SetGeneration(p_part[i]->Generation()+1);
   if (m_analyse) {
     if (m_Q>91.) {
       if (i==1) {

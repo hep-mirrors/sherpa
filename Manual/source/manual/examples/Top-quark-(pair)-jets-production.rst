@@ -21,8 +21,8 @@ Things to notice:
 * We enable top decays through the internal decay module using
   :option:`HARD_DECAYS:Enabled: true`
 
-* We calculate on-the-fly a 7-point scale variation, cf. :ref:`Scale and PDF
-  variations`.
+* We calculate on-the-fly a 7-point scale variation,
+  cf. :ref:`On-the-fly event weight variations`.
 
 .. _Top quark pair production including approximate EW corrections:
 

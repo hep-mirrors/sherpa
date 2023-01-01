@@ -17,6 +17,7 @@ namespace AHADIC {
     Cluster(Proto_Particle * part1,Proto_Particle * part2);
     ~Cluster();
     void Clear();
+    void SetMomentum(const ATOOLS::Vec4D & mom) { m_momentum = mom; } 
     ATOOLS::Vec4D Momentum() { return m_momentum; } 
     Proto_Particle * operator[](size_t pos) {
       if (pos==0) return m_parts.first;

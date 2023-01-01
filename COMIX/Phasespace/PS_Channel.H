@@ -108,7 +108,7 @@ namespace COMIX {
 			 ATOOLS::Vec4D &p2,const double &s1,
 			 const double &s2,const double *rns);
     double SChannelWeight(PS_Current *cur,PS_Vertex *v,
-			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2);
+			  const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2);
 
     bool GeneratePoint(PS_Current *const ja,PS_Current *const jb,
 		       PS_Current *const jc,PS_Vertex *const v,size_t &nr);
@@ -156,7 +156,7 @@ namespace COMIX {
 
     std::string ChID();
 
-    size_t NChannels() const;
+    const size_t NChannels() const;
 
     void AddPoint(double value);
 

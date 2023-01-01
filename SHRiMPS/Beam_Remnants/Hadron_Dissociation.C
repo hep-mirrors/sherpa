@@ -1,5 +1,5 @@
 #include "SHRiMPS/Beam_Remnants/Hadron_Dissociation.H"
-#include "BEAM/Main/Beam_Base.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -9,93 +9,230 @@ using namespace BEAM;
 using namespace ATOOLS;
 
 Hadron_Dissociation::
-Hadron_Dissociation(Beam_Base * beambase,Continued_PDF * pdf) :
-  p_pdf(pdf),
-  m_beamvec(beambase->OutMomentum()), m_outmom(Vec4D(0.,0.,0.,0.)),
-  m_beamflav(beambase->Bunch()),
-  m_dir(m_beamvec[3]>0.?1:-1), m_xmin(2./m_beamvec[0]), m_QT2max(4.),
+Hadron_Dissociation(const int & beam,
+		    const ATOOLS::Vec4D & inmom,const ATOOLS::Flavour & inflav,
+		    Continued_PDF * pdf) :
+  m_beam(beam),p_pdf(pdf),
+  m_beamvec(inmom), m_outmom(Vec4D(0.,0.,0.,0.)),m_beamflav(inflav),
+  m_dir(m_beamvec[3]>0.?1:-1), m_xmin(2./m_beamvec[0]), m_QT2max(4.), m_expo(2.),
   p_blob(NULL)
 { }
 
-void Hadron_Dissociation::Reset() {
-  m_outmom = m_beamvec;
-  for (size_t i=0;i<2;i++) m_cols[i].clear();
+Hadron_Dissociation::~Hadron_Dissociation() {
+  if (p_pdf) delete p_pdf;
 }
 
-bool Hadron_Dissociation::FillBeamBlob(Blob_List * blobs) {
-  SpecifyBeamBlob();
-  AddPartonsFromCollision(blobs);
-  IdentifyAndFillSoftBlob(blobs);
-  //msg_Out()<<METHOD<<": "<<m_cols[0].size()<<" "<<m_cols[1].size()<<"\n";
+void Hadron_Dissociation::Reset() {
+  m_outmom = m_beamvec;
+  for (size_t i=0;i<2;i++) m_beamcols[i].clear();
+  m_beamflavs.clear();
+  m_qtmap.clear();
+  p_blob = NULL;
+}
+
+bool Hadron_Dissociation::FillBeamBlob(Blob_List * blobs, const double & B) {
+  AddBeamBlob(blobs, B);
+  HarvestCollision(blobs);
+  if (m_outmom[0] < 2.) {
+    msg_Tracking()<<METHOD<<" arrives at residual mom = "<<m_outmom<<"\n"; 
+    return false;
+  }
+  if (!CompensateFlavours() ||
+      !CompensateColours()) {
+    msg_Error()<<METHOD<<" could not compensate flavours or colours.  Exit.\n"
+	       <<(*blobs)<<"\n";
+    exit(1);
+  }
+  AddSpectatorPartons();
+  if (!CheckResiduals()) {
+    msg_Error()<<METHOD<<" doesn't check out residual colour or flavour.  Exit.\n"
+	       <<(*blobs)<<"\n";
+    exit(1);
+  }
   return true;
 }
 
-void Hadron_Dissociation::SpecifyBeamBlob() {
+void Hadron_Dissociation::AddBeamBlob(Blob_List * blobs,const double & B) {
   if (!p_blob) p_blob = new Blob();
   p_blob->SetType(btp::Beam);
   p_blob->SetTypeSpec("Shrimps");
   p_blob->SetStatus(blob_status::inactive);
   p_blob->SetId();
+  Particle * inpart = new Particle(-1,m_beamflav,m_beamvec);
+  inpart->SetNumber();
+  inpart->SetBeam(m_beam);
+  p_blob->AddToInParticles(inpart);
+  blobs->push_front(p_blob);
+  if (m_beam==1) p_blob->SetPosition(Vec4D(0.,B,0.,0.));
 }
   
-void Hadron_Dissociation::AddPartonsFromCollision(Blob_List * blobs) {
+void Hadron_Dissociation::HarvestCollision(Blob_List * blobs) {
   for (Blob_List::iterator biter=blobs->begin();biter!=blobs->end();biter++) {
-    if ((*biter)->Has(blob_status::needs_beams) &&
-	(*biter)->Type()==btp::Shower) {
-      HarvestBlob((*biter));
-    }
-  }
-}
-
-void Hadron_Dissociation::HarvestBlob(Blob * blob) {
-  for (size_t in=0;in<blob->NInP();in++) {
-    Particle * part(blob->InParticle(in));
-    if (!part->ProductionBlob() && m_dir*part->Momentum()[3]>0) {
-      p_blob->AddToOutParticles(part);
-      m_outmom -= part->Momentum();
-      for (size_t i=0;i<2;i++) {
-	std::set<int>::iterator cit(m_cols[i].find(part->GetFlow(1+i)));
-	if (cit==m_cols[i].end()) m_cols[1-i].insert(part->GetFlow(1+i));
-	else m_cols[i].erase(cit);
+    Blob * blob = (*biter);
+    if (blob->Has(blob_status::needs_beams)) {
+      for (size_t in=0;in<blob->NInP();in++) {
+	Particle * part(blob->InParticle(in));
+	if (!part->ProductionBlob() && m_dir*part->Momentum()[3]>0) {
+	  p_blob->AddToOutParticles(part);
+	  m_outmom -= part->Momentum();
+	  //msg_Out()<<m_beam<<" subtracts: "<<part->Momentum()<<" --> "<<m_outmom[0]<<"\n";
+	  if (!part->Flav().IsGluon()) m_beamflavs.push_back(part->Flav());
+	  for (size_t i=0;i<2;i++) {
+	    if (part->GetFlow(1+i)==0) continue;
+	    std::set<int>::iterator cit(m_beamcols[i].find(part->GetFlow(1+i)));
+	    if (cit==m_beamcols[i].end()) m_beamcols[1-i].insert(part->GetFlow(1+i));
+	    else m_beamcols[i].erase(cit);
+	  }
+	}
       }
     }
   }
 }
 
-void Hadron_Dissociation::IdentifyAndFillSoftBlob(Blob_List * blobs) {
-  Blob * softblob = blobs->FindFirst(btp::Soft_Collision);
-  softblob->SetTypeSpec("Four_Momentum_Compensation");
-  softblob->UnsetStatus(blob_status::needs_minBias);
-  softblob->SetStatus(blob_status::needs_hadronization);
-  AddSpectatorPartons(softblob);
+bool Hadron_Dissociation::CompensateFlavours() {
+  if (m_beamflavs.empty()) return true;
+  while (!m_beamflavs.empty()) {
+    //msg_Out()<<"Add compensator for "<<m_beamflavs.front()<<"\n";
+    if (!AddFlavourCompensator(m_beamflavs.front())) return false;
+    m_beamflavs.pop_front();
+  }
+  return true;
 }
 
-void Hadron_Dissociation::AddSpectatorPartons(Blob * softblob) {
+bool Hadron_Dissociation::CompensateColours() {
+  CleanColours();
+  if (m_beamcols[0].size()==1 &&
+      m_beamcols[0].size()==m_beamcols[1].size()) return true;
+  while (m_beamcols[0].size()>1) {
+    Particle * compensator = new Particle(0,Flavour(kf_gluon),Vec4D(0.,0.,0.,0.));
+    if (!SelectCompensatorMomentum(compensator)) {
+      delete compensator;
+      return false;
+    }
+    for (size_t i=0;i<2;i++) {
+      compensator->SetFlow(i+1,(*m_beamcols[i].begin()));
+      m_beamcols[i].erase(compensator->GetFlow(i+1));
+    }
+    compensator->SetNumber();
+    compensator->SetBeam(m_beam);
+    compensator->SetInfo('B');
+    compensator->SetPosition(p_blob->Position());
+    p_blob->AddToOutParticles(compensator);
+    p_softblob->AddToInParticles(compensator);
+    //msg_Out()<<"Added compensator to blob:\n"<<(*compensator)<<"\n";
+    
+    Particle * out = new Particle(*compensator);
+    out->SetPosition(p_blob->Position());
+    p_softblob->AddToOutParticles(out);
+    m_qtmap[out] = Vec4D(0.,0.,0.,0.);
+  }
+  return true;
+}
+
+void Hadron_Dissociation::CleanColours() {
+  std::set<int>::iterator cit[2];
+  for (size_t i=0;i<2;i++) cit[i] = m_beamcols[i].begin();
+  while (cit[0]!=m_beamcols[0].end()) {
+    cit[1] = m_beamcols[1].begin();
+    do {
+      if ((*cit[0])==(*cit[1])) {
+	msg_Out()<<METHOD<<" deletes identical colour in triplet and anti-triplet:"<<(*cit[0])<<"\n";
+	for (size_t i=0;i<2;i++) cit[i] = m_beamcols[i].erase(cit[i]);
+	break;
+      }
+      else cit[1]++;
+    } while (cit[1]!=m_beamcols[1].end());
+    cit[0]++;
+  }
+}
+  
+bool Hadron_Dissociation::AddFlavourCompensator(const Flavour & flav) {
+  Particle * compensator = new Particle(0,flav.Bar(),Vec4D(0.,0.,0.,0.));
+  if (!SelectCompensatorMomentum(compensator) ||
+      !SelectCompensatorTripletColours(compensator)) {
+    msg_Error()<<"Error in "<<METHOD<<": could not compensate "<<flav<<".\n"
+	       <<"   Return false and hope for the best.\n";
+    delete compensator;
+    return false;
+  }
+  compensator->SetNumber();
+  compensator->SetBeam(m_beam);
+  compensator->SetInfo('B');
+  p_blob->AddToOutParticles(compensator);
+  p_softblob->AddToInParticles(compensator);
+  //msg_Out()<<"Added compensator to blob:\n"<<(*compensator)<<"\n";
+
+  Particle * out = new Particle(*compensator);
+  p_softblob->AddToOutParticles(out);
+  m_qtmap[out] = Vec4D(0.,0.,0.,0.);
+  return true;
+}
+
+bool Hadron_Dissociation::SelectCompensatorMomentum(Particle * part) {
+  double xmax = m_outmom[0]/m_beamvec[0] - 2.*m_xmin;
+  if (xmax<m_xmin) return false;
+  double rand = ran->Get();
+  double x    = pow(1./rand * (pow(xmax,1.-m_expo) + (1.-rand) * pow(m_xmin,1.-m_expo)),
+		    1./(1.-m_expo));
+  part->SetMomentum(x * m_beamvec);
+  m_outmom -= part->Momentum();
+  //msg_Out()<<METHOD<<" selected x = "<<x<<" in ["<<m_xmin<<", "<<xmax<<"]: "
+  //	   <<"residual momentum = "<<m_outmom<<"\n";
+  return true;
+}
+
+bool Hadron_Dissociation::SelectCompensatorTripletColours(Particle * part) {
+  if (part->Flav().IsQuark()) {
+    size_t index = part->Flav().IsAnti()?1:0; 
+    if (m_beamcols[index].size()>1) {
+      part->SetFlow(index+1,(*m_beamcols[index].begin()));
+      m_beamcols[index].erase(part->GetFlow(index+1));
+      return true;
+    }
+    else {
+      part->SetFlow(index+1,-1);
+      m_beamcols[1-index].insert(part->GetFlow(index+1));
+      //msg_Out()<<METHOD<<" adds "<<part->GetFlow(index+1)<<" to beamcols["<<(1-index)<<"]\n";
+      return true;
+    }
+  }
+  return false;
+}
+
+void Hadron_Dissociation::AddSpectatorPartons() {
   FixConstituentFlavours();
   Vec4D qmom,dimom;
   CalculateParallelMomenta(qmom,dimom);
   Particle * quark(new Particle(0,m_quark,qmom,'B'));
-  quark->SetNumber(-1);
-  quark->SetFlow(1,(*m_cols[0].begin()));
+  quark->SetNumber();
+  quark->SetBeam(m_beam);
+  quark->SetFlow(1,(*m_beamcols[0].begin()));
+  quark->SetPosition(p_blob->Position());
   p_blob->AddToOutParticles(quark);
-  softblob->AddToInParticles(quark);
+  p_softblob->AddToInParticles(quark);
   Particle * diquark(new Particle(0,m_diquark,dimom,'B'));
-  diquark->SetNumber(-1);
-  diquark->SetFlow(2,(*m_cols[1].begin()));
+  diquark->SetNumber();
+  diquark->SetFlow(2,(*m_beamcols[1].begin()));
+  diquark->SetBeam(m_beam);
+  diquark->SetPosition(p_blob->Position());
   p_blob->AddToOutParticles(diquark);
-  softblob->AddToInParticles(diquark);
+  p_softblob->AddToInParticles(diquark);
 
   Particle * outquark(new Particle(*quark));
-  outquark->SetNumber(-1);
-  outquark->SetInfo('F');
-  softblob->AddToOutParticles(outquark);
+  outquark->SetNumber();
+  outquark->SetInfo('B');
+  outquark->SetBeam(m_beam);
+  outquark->SetPosition(p_blob->Position());
+  p_softblob->AddToOutParticles(outquark);
   Particle * outdiquark(new Particle(*diquark));
-  outdiquark->SetNumber(-1);
-  outdiquark->SetInfo('F');
-  softblob->AddToOutParticles(outdiquark);
+  outdiquark->SetNumber();
+  outdiquark->SetInfo('B');
+  outdiquark->SetBeam(m_beam);
+  outdiquark->SetPosition(p_blob->Position());
+  p_softblob->AddToOutParticles(outdiquark);
 
-  (*m_qtmap)[outquark]   = Vec4D(0.,0.,0.,0.);
-  (*m_qtmap)[outdiquark] = Vec4D(0.,0.,0.,0.);
+  m_qtmap[outquark]   = Vec4D(0.,0.,0.,0.);
+  m_qtmap[outdiquark] = Vec4D(0.,0.,0.,0.);
 }
 
 
@@ -108,14 +245,15 @@ CalculateParallelMomenta(Vec4D & qmom,Vec4D & dimom) {
     x = m_xmin+ran->Get()*(xmax-m_xmin);
     p_pdf->Calculate(x,0.);
     if (p_pdf->XPDF(m_quark)/p_pdf->XPDFMax(m_quark)>ran->Get()) break;
+    trials++;
   }
   qmom  = x*m_beamvec;
   dimom = m_outmom-qmom;
 }
 
 void Hadron_Dissociation::SelectTrialTransverseMomenta() {
-  for (std::map<Particle *,Vec4D>::iterator pvit=m_qtmap->begin();
-       pvit!=m_qtmap->end();pvit++) {
+  for (std::map<Particle *,Vec4D>::iterator pvit=m_qtmap.begin();
+       pvit!=m_qtmap.end();pvit++) {
     double phi = ran->Get()*2.*M_PI;
     pvit->second = Vec4D(0.,cos(phi),sin(phi),0.);
   }
@@ -156,4 +294,21 @@ void Hadron_Dissociation::FixConstituentFlavours() {
 	       <<"   No parton dissociation found.  Will exit.\n";
     exit(1);
   }
+}
+
+
+bool Hadron_Dissociation::CheckResiduals() {
+  if (m_beamcols[0].size()>1 || m_beamcols[1].size()>1 || !m_beamflavs.empty()) {
+    msg_Out()<<METHOD<<": "
+	     <<"colours = ("<<m_beamcols[0].size()<<" "<<m_beamcols[1].size()<<"), "
+	     <<"flavour = "<<m_beamflavs.size()<<".\n";
+    for (size_t i=0;i<2;i++) {
+      msg_Out()<<"   colours["<<i<<"]: ";
+      for (std::set<int>::iterator cit=m_beamcols[i].begin();
+	   cit!=m_beamcols[i].end();cit++) msg_Out()<<(*cit)<<" ";
+      msg_Out()<<"\n";
+    }
+    return false;
+  }
+  return true;
 }

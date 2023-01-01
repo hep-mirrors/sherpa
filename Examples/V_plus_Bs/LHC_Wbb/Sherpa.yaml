@@ -8,7 +8,7 @@ HARD_DECAYS:
   Enabled: true
   Mass_Smearing: 0
   Channels:
-    24 -> 12 -11: {Status: 2}
+    24,12,-11: {Status: 2}
 
 PARTICLE_DATA:
    5:

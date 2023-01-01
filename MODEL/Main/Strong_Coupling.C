@@ -65,8 +65,7 @@ Strong_Coupling::Strong_Coupling(Running_AlphaS * as,const asform::code & asf,
 }
 
 double Strong_Coupling::operator()(double q2,bool reweight) const {
-  double Q2(dabs(q2)), Q; 
-
+  double Q2(dabs(q2)), Q;
   switch (m_form) {
   case asform::constant:
     return m_asmax;

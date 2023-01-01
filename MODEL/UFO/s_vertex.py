@@ -1,8 +1,9 @@
-from s_particle import s_particle
-from s_coupling import s_coupling
-from s_lorentz import s_lorentz
-from s_color import s_color
-from ufo_exception import ufo_exception
+from __future__ import division 
+from ufo_interface.s_particle import s_particle
+from ufo_interface.s_coupling import s_coupling
+from ufo_interface.s_lorentz import s_lorentz
+from ufo_interface.s_color import s_color
+from ufo_interface.ufo_exception import ufo_exception
 
 spin_dict = {0 : "S",
              1 : "F",
@@ -42,7 +43,7 @@ def split_by_orders(ufo_vertex, hierarchy):
         cur_cpl_list = [cur_cpl         ]
         cur_lor_list = [lor_list.pop(-1)]
         cur_col_list = [col_list.pop(-1)]
-        for i in xrange(len(cpl_list)-1,-1,-1):
+        for i in range(len(cpl_list)-1,-1,-1):
             if cur_cpl.ufo_coupling.order == cpl_list[i].ufo_coupling.order:
                 cur_cpl_list.append(cpl_list.pop(i))
                 cur_lor_list.append(lor_list.pop(i))
@@ -81,7 +82,7 @@ class s_vertex():
         ret = [s_particle(part).spin_times_two() for part in self._ufo_vertex.particles]
         ret.sort()
         ret = "".join([ spin_dict[val] for val in ret ])
-        return ret if not ret in translate.keys() else translate[ret]
+        return ret if not ret in list(translate.keys()) else translate[ret]
 
     def name(self):
         return self._ufo_vertex.name

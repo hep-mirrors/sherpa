@@ -29,6 +29,8 @@ MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
   m_ncolinds(0), m_npsp(0), m_nin(0), m_nout(0), p_colint(NULL)
 {
   m_kpz[0]=m_kpz[1]=0.;
+  ATOOLS::Settings::GetMainSettings()
+    .DeclareMatrixSettingsWithEmptyDefault({"MOMENTA"});
 }
 
 MEProcess::~MEProcess()
@@ -80,14 +82,13 @@ size_t MEProcess::NumberOfPoints()
 void MEProcess::ReadProcess(size_t n)
 {
   DEBUG_FUNC("n="<<n);
-  p_amp->Delete();
-  p_amp=ATOOLS::Cluster_Amplitude::New();
   size_t id{ 0 };
 
   if (NumberOfPoints() == 0)
     THROW(missing_input,"Define momenta using the MOMENTA settings.");
 
   ATOOLS::Settings& main_settings = ATOOLS::Settings::GetMainSettings();
+  main_settings.DeclareMatrixSettingsWithEmptyDefault({ "MOMENTA" });
   ATOOLS::Scoped_Settings s{ main_settings["MOMENTA"].GetItemAtIndex(n - 1) };
   for (const auto& row : s.GetMatrix<std::string>()) {
     msg_Debugging()<<row<<std::endl;

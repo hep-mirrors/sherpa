@@ -17,6 +17,12 @@ using namespace ATOOLS;
 using namespace METOOLS;
 using namespace std;
 
+namespace PHASIC {
+  std::map<std::string,double> Decay_Channel::s_kinmaxfails;
+}
+
+
+
 Decay_Channel::Decay_Channel(const Flavour & _flin,
                              const ATOOLS::Mass_Selector* ms) :
   m_width(0.), m_deltawidth(-1.), m_minmass(0.), m_max(0.), m_symfac(-1.0),
@@ -369,9 +375,11 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
     value = Differential(momenta,anti,sigma, parts);
     if(value/m_max>1.05 && m_max>1e-30) {
       if(value/m_max>1.3) {
-        msg_Info()<<METHOD<<"("<<Name()<<") warning:"<<endl
-                  <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<m_max
+        msg_Tracking()<<METHOD<<"("<<Name()<<") warning:"<<endl
+		      <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<m_max
                   <<std::endl;
+	if (s_kinmaxfails.find(Name())==s_kinmaxfails.end()) s_kinmaxfails[Name()] = value/m_max;
+	else if (s_kinmaxfails[Name()] < value/m_max) s_kinmaxfails[Name()] = value/m_max;
       }
       m_max=value;
       Return_Value::IncRetryMethod(mname);
@@ -380,6 +388,17 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
     trials++;
   } while( ran->Get() > value/m_max );
 }
+
+void Decay_Channel::PrintMaxKinFailStatistics(std::ostream &str)
+{
+  str<<"Decay_Channel: Kinematics max fail statistics {\n";
+  for (std::map<std::string,double>::iterator fit=s_kinmaxfails.begin();
+       fit!=s_kinmaxfails.end();fit++) {
+    str<<"  "<<fit->first<<" maximal fail by "<<fit->second<<".\n";
+  }
+  str<<"}\n";
+}
+
 
 namespace ATOOLS {
   template <> Blob_Data<PHASIC::Decay_Channel*>::~Blob_Data() {}

@@ -737,6 +737,7 @@ void AMEGIC::Single_Process_Combined::Minimize()
 }
 
 double AMEGIC::Single_Process_Combined::Partonic(const Vec4D_Vector &moms,
+                                                 Variations_Mode varmode,
                                                  int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
@@ -752,7 +753,7 @@ double AMEGIC::Single_Process_Combined::DSigma(const ATOOLS::Vec4D_Vector &_moms
 {
   m_lastbxs = m_lastxs = 0.;
   Vec4D_Vector mom(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+  if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     Poincare cms=Poincare(mom[0]+mom[1]);
     for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
   }

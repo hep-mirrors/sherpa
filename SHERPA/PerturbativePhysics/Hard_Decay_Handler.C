@@ -50,7 +50,7 @@ public:
 
 Hard_Decay_Handler::Hard_Decay_Handler() :
   p_newsublist(NULL), m_resultdir(""), m_offshell(""),
-  m_decay_tau(false), m_set_widths(false),
+  m_decay_tau(false), m_set_widths(false), m_use_ho_sm_widths(true),
   m_br_weights(true), m_usemass(true), m_min_prop_width(0.0)
 {
   auto& s = Settings::GetMainSettings();
@@ -64,6 +64,11 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   m_br_weights      = ds["Apply_Branching_Ratios"].SetDefault(true).Get<bool>();
   m_decay_tau       = ds["Decay_Tau"].SetDefault(false).Get<bool>();
   m_set_widths      = ds["Set_Widths"].SetDefault(false).Get<bool>();
+  m_use_ho_sm_widths= ds["Use_HO_SM_Widths"].SetDefault(true).Get<bool>();
+  if (m_use_ho_sm_widths &&
+      (Flavour(kf_h0).Mass()<125.07 || Flavour(kf_h0).Mass()>125.11 ||
+       Flavour(kf_t).Mass()<172.4 || Flavour(kf_t).Mass()>172.6))
+    THROW(fatal_error, "Use_HO_SM_Widths specified, but particle masses not in SM range.");
   m_min_prop_width  = ds["Min_Prop_Width"].SetDefault(0.0).Get<double>();
   m_int_accuracy    = ds["Int_Accuracy"].SetDefault(0.01).Get<double>();
   m_int_niter       = ds["Int_NIter"].SetDefault(2500).Get<int>();
@@ -123,6 +128,7 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
     InitializeOffshellDecays(dmit->second.at(0));
   }
   msg_Debugging()<<"Initialising hard decay tables: customizing decay tables.\n";
+  ApplySMWidths();
   CustomizeDecayTables();
 
   if (m_set_widths)
@@ -302,6 +308,57 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
   if (m_set_widths) dt->Flav().SetWidth(dt->TotalWidth());
 }
 
+
+void Hard_Decay_Handler::ApplySMWidths()
+{
+  if (!m_use_ho_sm_widths) return;
+
+  std::map<std::string, double> ho_sm_widths;
+  // Higgs WG BRs 2022
+  ho_sm_widths["25,5,-5"]    = 2.382E-03;
+  ho_sm_widths["25,15,-15"]  = 2.565E-04;
+  ho_sm_widths["25,13,-13"]  = 8.901E-07;
+  ho_sm_widths["25,4,-4"]    = 1.182E-04;
+  ho_sm_widths["25,3,-3"]    = 1E-06;
+  ho_sm_widths["25,21,21"]   = 3.354E-04;
+  ho_sm_widths["25,22,22"]   = 9.307E-06;
+  ho_sm_widths["25,23,22"]   = 6.318E-06;
+  ho_sm_widths["24,2,-1"]    = 0.7041;
+  ho_sm_widths["24,4,-3"]    = 0.7041;
+  ho_sm_widths["24,12,-11"]  = 0.2256;
+  ho_sm_widths["24,14,-13"]  = 0.2256;
+  ho_sm_widths["24,16,-15"]  = 0.2256;
+  ho_sm_widths["-24,-2,1"]   = 0.7041;
+  ho_sm_widths["-24,-4,3"]   = 0.7041;
+  ho_sm_widths["-24,-12,11"] = 0.2256;
+  ho_sm_widths["-24,-14,13"] = 0.2256;
+  ho_sm_widths["-24,-16,15"] = 0.2256;
+  ho_sm_widths["23,1,-1"]    = 0.3828;
+  ho_sm_widths["23,2,-2"]    = 0.2980;
+  ho_sm_widths["23,3,-3"]    = 0.3828;
+  ho_sm_widths["23,4,-4"]    = 0.2980;
+  ho_sm_widths["23,5,-5"]    = 0.3828;
+  ho_sm_widths["23,11,-11"]  = 0.0840;
+  ho_sm_widths["23,12,-12"]  = 0.1663;
+  ho_sm_widths["23,13,-13"]  = 0.0840;
+  ho_sm_widths["23,14,-14"]  = 0.1663;
+  ho_sm_widths["23,15,-15"]  = 0.0840;
+  ho_sm_widths["23,16,-16"]  = 0.1663;
+  ho_sm_widths["6,24,5"]     = 1.32;
+  ho_sm_widths["-6,-24,-5"]  = 1.32;
+
+  for (const auto& channel_width : ho_sm_widths) {
+    std::string channelid = channel_width.first;
+    double width = channel_width.second;
+    pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(channelid, true);
+    Decay_Channel* dc = match.second;
+    if (!match.first || !dc) {
+      PRINT_INFO("Ignoring unknown decay channel: " << channelid);
+      continue;
+    }
+    dc->SetWidth(width);
+  }
+}
 
 void Hard_Decay_Handler::CustomizeDecayTables()
 {
@@ -768,8 +825,10 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
     d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
+    d1->SetFromDec(true);
     copy->CreateLeg(RecombinedMomentum(daughters[1],photons,stat2),
                     daughters[1]->RefFlav());
+    copy->Legs().back()->SetFromDec(true);
     size_t idnew=1<<(++imax);
     copy->Legs().back()->SetId(idnew);
     copy->Legs().back()->SetStat(stat2);
@@ -846,6 +905,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
     d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
+    d1->SetFromDec(true);
     // todo: 1->2 qcd shower with ew fs recoil partner
     // d1->SetK(idmother);// not that simple: w->qq' has color connection in fs
     Decay_Channel* dc(NULL);
@@ -865,6 +925,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     size_t idnew1=1<<(++imax);
     step1->Legs().back()->SetId(idnew1);
     step1->Legs().back()->SetStat(0);
+    step1->Legs().back()->SetFromDec(true);
     Cluster_Amplitude::SetColours(ampl->IdLeg(idmother),
                                   step1->IdLeg(idmother),
                                   step1->Legs().back());
@@ -904,6 +965,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     size_t idnew2=1<<(++imax);
     step2->Legs().back()->SetId(idnew2);
     step2->Legs().back()->SetStat(stat3);
+    step2->Legs().back()->SetFromDec(true);
     Cluster_Amplitude::SetColours(step1->IdLeg(idnew1),
                                   step2->IdLeg(idnew1),
                                   step2->Legs().back());

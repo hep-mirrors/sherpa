@@ -34,6 +34,7 @@ bool EXTRAXS::Process_Group::Initialize(Process_Base *const proc)
 bool EXTRAXS::Process_Group::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
+  msg_Out()<<METHOD<<" for "<<m_procs.size()<<" processes.\n";
   Multi_Channel *mc(psh->FSRIntegrator());
   mc->DropAllChannels();
   size_t sintt(0);
@@ -44,5 +45,11 @@ bool EXTRAXS::Process_Group::FillIntegrator
   if (sintt&1) mc->Add(new S1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
   if (sintt&2) mc->Add(new T1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
   if (sintt&4) mc->Add(new U1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
-  return false;
+  return true;
 }      
+
+bool EXTRAXS::Process_Group::FillResonances(ATOOLS::Flavour_Vector & flavs) {
+  bool flag = false;
+  for (size_t i=0;i<m_procs.size();i++) flag = flag | m_procs[i]->FillResonances(flavs); 
+  return flag;
+}

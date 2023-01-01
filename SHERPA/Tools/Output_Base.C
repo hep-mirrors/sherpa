@@ -32,6 +32,7 @@ void Output_Base::ChangeFile()
 {
 }
 
-void Output_Base::SetXS(const double&, const double&)
+void Output_Base::SetXS(const ATOOLS::Weights_Map& xs,
+		        const ATOOLS::Weights_Map& err)
 {
 }

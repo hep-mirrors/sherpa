@@ -91,7 +91,9 @@ namespace EXTAMP {
   }
 
 
-  double RS_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int mode)
+  double RS_Process::Partonic(const ATOOLS::Vec4D_Vector &p,
+                              ATOOLS::Variations_Mode varmode,
+                              int mode)
   {
     /* Calculate dipole kinematics and update subevents accordingly */
     CalculateKinematics(p);

@@ -32,14 +32,14 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   p_cid(new CId_Map())
 {
   RegisterDefaults();
-  nin=_nin;
-  nout=_nout;
+  m_nin=_nin;
+  m_nout=_nout;
   m_p.resize(1<<(m_n+1));
-  ms = new double[m_n];
+  p_ms = new double[m_n];
   for (size_t i(0);i<m_n;++i) {
-    ms[i]=sqr(_fl[i].Mass());
+    p_ms[i]=sqr(_fl[i].Mass());
   }
-  name="CDBG_Channel";
+  m_name="CDBG_Channel";
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
   m_zmode = s["ZMODE"].Get<int>();
   m_bmode = s["BMODE"].Get<int>();
@@ -57,9 +57,9 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   m_mfac = s["MFAC"].Get<double>();
   if (!(m_vmode&8)) m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
-  m_nr=3*nout-4;
-  rannum=m_nr+m_n-2+1;
-  rans=new double[rannum];
+  m_nr=3*m_nout-4;
+  m_rannum=m_nr+m_n-2+1;
+  p_rans=new double[m_rannum];
 }
 
 PS_Channel::~PS_Channel()
@@ -147,9 +147,14 @@ PHASIC::Vegas *PS_Channel::GetSVegas(const PS_Vertex *v)
     VVegas_Map::const_iterator it(vit->second.find(v));
     if (it!=vit->second.end()) vgs=it->second;
   }
-  if (vgs==NULL) vgs=m_sicmap[v->Type()][v]=
-    GetVegas("S_"+ToString(v->Type())+"_"+
-	     v->J(0)->PSInfo()+"_"+v->J(1)->PSInfo(),2);
+  if (vgs==NULL) {
+    vgs=m_sicmap[v->Type()][v]=
+      GetVegas("S_"+ToString(v->Type())+"_"+
+	       v->J(0)->PSInfo()+"_"+v->J(1)->PSInfo(),2);
+    if ((m_nin==2 && (v->JC()->CId()==((1<<m_n)-1-3))) ||
+	(m_nin==1 && (v->JC()->CId()==((1<<m_n)-1-1))))
+      vgs->ConstChannel(1);
+  }
   return vgs;
 }
 
@@ -202,7 +207,7 @@ double PS_Channel::PropMomenta(const PS_Current *cur,const size_t &id,
   double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
   if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
     if (cur->Width()>s_pwmin)
-      return CE.MassivePropMomenta(cur->Mass(),cur->Width(),1,smin,smax,*cr);
+      return CE.MassivePropMomenta(cur->Mass(),cur->Width(),smin,smax,*cr);
     if (cur->Mass()>s_pmmin) 
       return CE.ThresholdMomenta(m_thexp,m_mfac*cur->Mass(),smin,smax,*cr);
     return CE.MasslessPropMomenta(sexp,smin,smax,*cr);
@@ -221,7 +226,7 @@ double PS_Channel::PropWeight(const PS_Current *cur,const size_t &id,
   if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
     if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
     if (cur->Width()>s_pwmin) 
-      wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),1,smin,smax,s,rn);
+      wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),smin,smax,s,rn);
     else if (cur->Mass()>s_pmmin) 
       wgt=CE.ThresholdWeight(m_thexp,m_mfac*cur->Mass(),smin,smax,s,rn);
     else wgt=CE.MasslessPropWeight(sexp,smin,smax,s,rn);
@@ -265,8 +270,7 @@ void PS_Channel::SingleTChannelBounds
  const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
  const double &s1,const double &s2,const int mode)
 {
-  double ctmin=p_cuts->cosmin[a][j];
-  double ctmax=p_cuts->cosmax[a][j];
+  double ctmin=-1., ctmax=1.;
 #ifdef DEBUG__BG
   msg_Debugging()<<"    set t_{"<<a<<","<<j<<"} ctmin = "
 		 <<ctmin<<", ctmax = "<<ctmax<<" ("<<mode<<")\n";
@@ -312,8 +316,7 @@ void PS_Channel::TChannelMomenta
   double ctmin(-1.0), ctmax(1.0);
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,s1,s2);
   CE.TChannelMomenta(pa,pb,p1,p2,s1,s2,cur->Mass(),
-		     dip?m_stexp:m_texp,ctmax,ctmin,
-		     1.0,0,cr[0],cr[1]);
+		     dip?m_stexp:m_texp,ctmax,ctmin,cr[0],cr[1]);
 }
 
 double PS_Channel::TChannelWeight
@@ -323,8 +326,7 @@ double PS_Channel::TChannelWeight
   double ctmin(-1.0), ctmax(1.0), rns[2];
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,p1.Abs2(),p2.Abs2());
   double wgt(CE.TChannelWeight(pa,pb,p1,p2,cur->Mass(),
-			       dip?m_stexp:m_texp,ctmax,ctmin,
-			       1.0,0,rns[0],rns[1]));
+			       dip?m_stexp:m_texp,ctmax,ctmin,rns[0],rns[1]));
   if (m_vmode&3) {
     Vegas *cvgs(GetTVegas(id,cur,dip));
     size_t id(0);
@@ -373,44 +375,32 @@ void PS_Channel::SChannelMomenta
   double ctmin(-1.0), ctmax(1.0);
   SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);  
   const Vertex_Vector &vs(cur->Out());
-  size_t id(vs[0]->J()[(vs[0]->J()[0]==cur)?1:0]->CId());
-  for (size_t i(1);i<vs.size();++i)
-    if (id!=vs[i]->J()[(vs[i]->J()[0]==cur)?1:0]->CId()) {
-      id=0;
-      break;
-    }
   if (v->Type()==2) {
-    CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],cr[1],m_aexp,ctmin,ctmax,m_p[id]);
+    CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],cr[1],m_aexp,ctmin,ctmax);
   }
   else if (v->Type()==4) {
-    CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],m_aexp,ctmin,ctmax,m_p[id]);
+    CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],m_aexp,ctmin,ctmax);
   }
   else {
-    CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],ctmin,ctmax,m_p[id]);
+    CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],ctmin,ctmax);
   }
 }
 
 double PS_Channel::SChannelWeight
-(PS_Current *cur,PS_Vertex *v,Vec4D &p1,Vec4D &p2)
+(PS_Current *cur,PS_Vertex *v,const Vec4D &p1,const Vec4D &p2)
 {
   double ctmin(-1.0), ctmax(1.0), rns[2];
   SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);
   const Vertex_Vector &vs(cur->Out());
-  size_t id(vs[0]->J()[(vs[0]->J()[0]==cur)?1:0]->CId());
-  for (size_t i(1);i<vs.size();++i)
-    if (id!=vs[i]->J()[(vs[i]->J()[0]==cur)?1:0]->CId()) {
-      id=0;
-      break;
-    }
   double wgt(0.0);
   if (v->Type()==2) {
-    wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
+    wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax);
   }
   else if (v->Type()==4) {
-    wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
+    wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax);
   }
   else {
-    wgt=CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax,m_p[id]);
+    wgt=CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax);
   }
   if (m_vmode&3) {
     Vegas *cvgs(GetSVegas(v));
@@ -440,16 +430,16 @@ bool PS_Channel::GeneratePoint
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
     if (CIdCount(bid)>1) {
       double smin(se), smax(sqr(rtsmax-sqrt(sp)));
-      se=PropMomenta(jb,bid,smin,smax,&rans[nr++]);
+      se=PropMomenta(jb,bid,smin,smax,&p_rans[nr++]);
     }
     if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
       sp=PropMomenta((PS_Current*)jc->SCC(),pid,
-		     smin,smax,&rans[nr++]);
+		     smin,smax,&p_rans[nr++]);
     }
     TChannelMomenta(jc,jc->Dip()?jc->Dip():v->Dip(),
 		    bid,(1<<m_n)-1-aid,m_p[aid],m_p[m_rid],
-		    m_p[bid],m_p[pid],se,sp,&rans[nr]);
+		    m_p[bid],m_p[pid],se,sp,&p_rans[nr]);
     nr+=2;
     m_p[cid]=m_p[aid]-m_p[bid];
 #ifdef DEBUG__BG
@@ -466,14 +456,14 @@ bool PS_Channel::GeneratePoint
     double rts(m_p[cid].Mass()), sl(SCut(lid)), sr(SCut(rid));
     if (CIdCount(lid)>1) {
       double smin(sl), smax(sqr(rts-sqrt(sr)));
-      sl=PropMomenta(ja,lid,smin,smax,&rans[nr++]);
+      sl=PropMomenta(ja,lid,smin,smax,&p_rans[nr++]);
     }
     if (CIdCount(rid)>1) {
       double smin(sr), smax(sqr(rts-sqrt(sl)));
-      sr=PropMomenta(jb,rid,smin,smax,&rans[nr++]);
+      sr=PropMomenta(jb,rid,smin,smax,&p_rans[nr++]);
     }
     SChannelMomenta(jc,(PS_Vertex*)v,
-		    m_p[cid],m_p[aid],m_p[bid],sl,sr,&rans[nr]);
+		    m_p[cid],m_p[aid],m_p[bid],sl,sr,&p_rans[nr]);
     nr+=2;
     m_p[(1<<m_n)-1-aid]=m_p[aid];
     m_p[(1<<m_n)-1-bid]=m_p[bid];
@@ -585,7 +575,7 @@ bool PS_Channel::GenerateChannel
     }
   Vertex *vtx(NULL);
   for (size_t i(0);i<psum.size();++i)
-    if (psum[i]>=rans[m_nr+v.size()]*sum) {
+    if (psum[i]>=p_rans[m_nr+v.size()]*sum) {
       vtx=vtcs[i];
       break;
     }
@@ -635,7 +625,7 @@ bool PS_Channel::GenerateChannels()
   return true;
 }
 
-size_t PS_Channel::NChannels() const
+const size_t PS_Channel::NChannels() const
 {
   return 2*p_xs->Process()->Get<Process_Base>()
     ->PSGenerator()->NChannels();
@@ -654,14 +644,23 @@ void PS_Channel::GeneratePoint
   m_p[(1<<m_n)-1-3]=m_p[3]=
     (m_p[(1<<m_n)-1-1]=m_p[1]=p[0])+
     (m_p[(1<<m_n)-1-2]=m_p[2]=p[1]);
-  for (int i(0);i<rannum;++i) rans[i]=rn[i];
+  for (int i(0);i<m_rannum;++i) p_rans[i]=rn[i];
   Vertex_Vector v;
   if (!GenerateChannel(v)) return;
   m_vgs.clear();
   m_rns.clear();
   if (!GeneratePoint(v)) return;
+#ifdef DEBUG__BG
+  msg_Debugging()<<"  p[0]="<<p[0]<<"\n";
+  msg_Debugging()<<"  p[1]="<<p[1]<<"\n";
+#endif
   Vec4D sum(-p[0]-p[1]);
-  for (size_t i(2);i<m_n;++i) sum+=p[i]=m_p[1<<i];
+  for (size_t i(2);i<m_n;++i) {
+    sum+=p[i]=m_p[1<<i];
+#ifdef DEBUG__BG
+    msg_Debugging()<<"  p["<<i<<"]="<<p[i]<<"\n";
+#endif
+  }
   if (!IsEqual(sum,Vec4D(),sqrt(Accu()))) msg_Error()
     <<METHOD<<"(): Four momentum not conserved. Diff "<<sum<<std::endl;
 #ifdef DEBUG__BG
@@ -674,7 +673,6 @@ double PS_Channel::GenerateWeight
  PS_Current *const jc,PS_Vertex *const v,size_t &nr)
 {
   double wgt(1.0);
-  m_p[0]=Vec4D(0.,1.,1.,0.);
   size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
     size_t pid(aid-(m_rid+bid));
@@ -716,7 +714,7 @@ double PS_Channel::GenerateWeight
       double smin(sr), smax(sqr(rts-sqrt(sl)));
       wgt*=PropWeight(jb,rid,smin,smax,sr=m_p[rid].Abs2());
     }
-    wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[rid]);
+    wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[lid|rid]-m_p[lid]);
     nr+=2;
 #ifdef DEBUG__BG
     msg_Debugging()<<"    s "<<nr<<": {"<<ID(cid)
@@ -831,11 +829,11 @@ bool PS_Channel::GenerateWeight()
     for (size_t i(0);i<(*p_cur)[n].size();++i) 
       if (!GenerateWeight((PS_Current*)(*p_cur)[n][i])) return 0.0;
   }
-  weight=(*(*p_cur)[m_n-1].back()->J().front().
+  m_weight=(*(*p_cur)[m_n-1].back()->J().front().
 	  Get<PS_Info>()->front())[0]/
-    pow(2.0*M_PI,3.0*nout-4.0);
+    pow(2.0*M_PI,3.0*m_nout-4.0);
 #ifdef DEBUG__BG
-  msg_Debugging()<<"} -> "<<weight<<"\n";
+  msg_Debugging()<<"} -> "<<m_weight<<"\n";
 #endif
   return true;
 }
@@ -843,6 +841,7 @@ bool PS_Channel::GenerateWeight()
 void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts) 
 {
   p_cuts=cuts;
+  m_p[0]=Vec4D(0.,1.,1.,0.);
   if (p_cur==NULL) GenerateChannels();
   for (size_t i(0);i<m_n;++i) {
     m_p[1<<i]=i<2?-p[i]:p[i];
@@ -865,6 +864,10 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
 #endif
     }
   for (size_t i(0);i<m_n;++i) m_p[1<<i]=i<2?-p[i]:p[i];
+  if(m_nin == 2) {
+    m_p[3] = m_p[1]+m_p[2];
+    m_p[(1<<m_n)-1-3] = -m_p[3];
+  }
   if (!GenerateWeight())
     THROW(fatal_error,"Internal error");
 }
@@ -1058,7 +1061,7 @@ void PS_Channel::SetChNumber(int n)
 
 std::string PS_Channel::ChID() 
 {
-  return name;
+  return m_name;
 }
 
 void PS_Channel::WriteOut(std::string pid)
@@ -1066,7 +1069,7 @@ void PS_Channel::WriteOut(std::string pid)
   {
     Data_Writer writer;
     writer.SetOutputPath(pid);
-    writer.SetOutputFile("_"+name+"_PS");
+    writer.SetOutputFile("_"+m_name+"_PS");
     writer.WriteToFile(m_zmode,"m_zmode");
     writer.WriteToFile(m_bmode,"m_bmode");
     writer.WriteToFile(m_omode,"m_omode");
@@ -1091,7 +1094,7 @@ void PS_Channel::WriteOut(std::string pid)
     }
     Data_Writer writer;
     writer.SetOutputPath(pid);
-    writer.SetOutputFile("_"+name+"_VI");
+    writer.SetOutputFile("_"+m_name+"_VI");
     writer.MatrixToFile(vids);
   }
   p_cur = (Current_Matrix*)
@@ -1114,7 +1117,7 @@ void PS_Channel::WriteOut(std::string pid)
     }
   Data_Writer writer;
   writer.SetOutputPath(pid);
-  writer.SetOutputFile("_"+name+"_PV");
+  writer.SetOutputFile("_"+m_name+"_PV");
   writer.MatrixToFile(pvds);
 }
 
@@ -1123,7 +1126,7 @@ void PS_Channel::ReadIn(std::string pid)
   {
     Data_Reader reader;
     reader.SetInputPath(pid);
-    reader.SetInputFile("_"+name+"_PS");
+    reader.SetInputFile("_"+m_name+"_PS");
     reader.ReadFromFile(m_zmode,"m_zmode");
     reader.ReadFromFile(m_bmode,"m_bmode");
     reader.ReadFromFile(m_omode,"m_omode");
@@ -1142,7 +1145,7 @@ void PS_Channel::ReadIn(std::string pid)
     (p_xs->Process()->Integrator()->PSHandler()->Cuts());
   Data_Reader reader;
   reader.SetInputPath(pid);
-  reader.SetInputFile("_"+name+"_PV");
+  reader.SetInputFile("_"+m_name+"_PV");
   std::vector<std::vector<std::string> > pvds;
   reader.MatrixFromFile(pvds);
   p_cur = (Current_Matrix*)
@@ -1164,7 +1167,7 @@ void PS_Channel::ReadIn(std::string pid)
   if (m_vmode>0) {
     Data_Reader reader;
     reader.SetInputPath(pid);
-    reader.SetInputFile("_"+name+"_VI");
+    reader.SetInputFile("_"+m_name+"_VI");
     std::vector<std::vector<std::string> > vids;
     if (reader.MatrixFromFile(vids)) {
       for (size_t i(0);i<vids.size();++i) {

@@ -113,8 +113,7 @@ bool NJet_Finder::Trigger(Selector_List &sl)
   size_t n(0);
   Vec4D * moms = new Vec4D[m_nout];
   for (size_t i=m_nin;i<sl.size();i++) {
-    if (sl[i].Flavour().Resummed() ||
-        (sl[i].Flavour().Strong() && sl[i].Flavour().Mass()<m_massmax)) {
+    if (sl[i].Flavour().Strong() && sl[i].Flavour().Mass()<=m_massmax) {
       moms[n]=sl[i].Momentum();
       n++;
     }

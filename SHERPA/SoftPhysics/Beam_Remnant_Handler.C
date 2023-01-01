@@ -11,31 +11,37 @@ Beam_Remnant_Handler::
 Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 		     REMNANTS::Remnant_Handler *const remnants,
 		     Soft_Collision_Handler *const softcollisions):
-  p_remnants(remnants), p_beam(beam), m_fill(true)
+  p_remnants(remnants),
+  p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
+  p_beam(beam), m_fill(true), m_vmode(false)
 {
   Settings& s = Settings::GetMainSettings();
   m_fill  = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
   m_vmode = s["BRH_VMODE"].SetDefault(false).Get<bool>();
   p_remnants->SetScale2(sqr(4.0));
-  m_name = std::string("On");
+  m_name = std::string("Parametrised");
 }
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 
-
-Return_Value::code Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
+Return_Value::code
+Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
+					    const bool & onlyBunch)
 {
   if (!m_fill) return TreatNoFill(bloblist);
+  Return_Value::code fbc(Return_Value::Nothing);
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
-    if ((*bit)->Type()==btp::Beam) return Return_Value::Nothing;
+    if ((*bit)->Type()==btp::Beam) return fbc;
   }
-  Return_Value::code fbc = p_remnants->MakeBeamBlobs(bloblist);
-  if (fbc==Return_Value::New_Event && m_vmode)
-    THROW(fatal_error,"Four Momentum not conserved.");
-  if (fbc!=Return_Value::Success) return fbc;
-  fbc = FillBunchBlobs(bloblist);
-  return fbc;
+  if (!onlyBunch) {
+    if (p_shrimps) fbc = p_shrimps->MakeBeamBlobs(bloblist);
+    else           fbc = p_remnants->MakeBeamBlobs(bloblist);
+    if (fbc==Return_Value::New_Event && m_vmode)
+      THROW(fatal_error,"Four Momentum not conserved.");
+    if (fbc!=Return_Value::Success) return fbc;
+  }
+  return FillBunchBlobs(bloblist);
 }
 
 
@@ -63,7 +69,7 @@ FillBunchBlobs(Blob_List *const  bloblist,
 	       Particle_List *const particlelist)
 {
   for (Blob_List::iterator bit=bloblist->begin();
-	 bit!=bloblist->end();++bit) {
+       bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Bunch) return Return_Value::Nothing;
   }
   bool flag(false);
@@ -83,11 +89,22 @@ FillBunchBlobs(Blob_List *const  bloblist,
       }
       flag=true;
     }
+    else if ((*bit)->Has(blob_status::needs_beams) ||
+	     (*bit)->Type()==btp::Elastic_Collision ||
+	     (*bit)->Type()==btp::Soft_Diffractive_Collision ||
+	     (*bit)->Type()==btp::Quasi_Elastic_Collision) {
+      (*bit)->UnsetStatus(blob_status::needs_beams);
+      for (size_t i=0;i<(*bit)->NInP();i++) {
+	bunch = FillBunchBlob((*bit)->InParticle(i)->Beam(),(*bit)->InParticle(i));
+	bloblist->push_front(bunch);
+      }
+      flag=true;
+    }
   }
   return (flag?Return_Value::Success:Return_Value::Nothing);
 }
 
-Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle) 
+Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle) 
 {
   Blob *blob = new Blob();
   blob->SetType(btp::Bunch);
@@ -98,6 +115,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle)
 		  blob_status::needs_softUE &
 		  blob_status::needs_hadronization);
   blob->AddToOutParticles(particle);
+  blob->SetPosition(p_remnants->GetRemnant(beam)->Position());
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
       IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0])) {
     Particle *p = new Particle(*particle);

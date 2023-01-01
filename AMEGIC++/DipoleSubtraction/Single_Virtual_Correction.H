@@ -132,9 +132,15 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &,int mode);
-    double         DSigma(const ATOOLS::Vec4D_Vector &,bool,const int);
-    double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector&,
+                    ATOOLS::Variations_Mode varmode,
+                    int mode);
+    double DSigma(const ATOOLS::Vec4D_Vector &,bool,
+                  ATOOLS::Variations_Mode varmode,
+                  const int);
+    double operator()(const ATOOLS::Vec4D_Vector &,
+                      ATOOLS::Variations_Mode varmode,
+                      const int mode);
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                         std::vector<std::vector<Complex> >& cols);
 
@@ -161,8 +167,10 @@ namespace AMEGIC {
 
   protected:
     double         Calc_B();
-    double         Calc_V(const ATOOLS::Vec4D_Vector&);
-    double         Calc_V_WhenMapped(const ATOOLS::Vec4D_Vector&);
+    double         Calc_V(const ATOOLS::Vec4D_Vector&,
+                          ATOOLS::Variations_Mode varmode);
+    double         Calc_V_WhenMapped(const ATOOLS::Vec4D_Vector&,
+                                     ATOOLS::Variations_Mode varmode);
     double         Calc_I(const ATOOLS::Vec4D_Vector&);
     double         Calc_I(const ATOOLS::sbt::subtype,
                           const std::vector<size_t>&,

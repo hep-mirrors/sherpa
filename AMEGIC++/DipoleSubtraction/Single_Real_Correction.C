@@ -205,9 +205,13 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
         for (size_t s(0);s<stypes.size();++s) {
           ststr+=ToString(stypes[s])+" ";
         }
-        msg_Debugging()<<"[("<<i<<","<<j<<");"<<k<<"] : "
-                       <<(Combinable(1<<i,1<<j)?"":"not ")<<"combinable"
-                       <<", types: "<<ststr<<std::endl;
+        if (msg_LevelIsDebugging()) {
+          msg_Out()<<"[("<<i<<","<<j<<");"<<k<<"] : ";
+          if (!m_no_tree) {
+            msg_Out()<<(Combinable(1<<i,1<<j)?"":"not ") << "combinable, ";
+          }
+          msg_Out()<<"types: "<<ststr<<std::endl;
+        }
         for (size_t s(0);s<stypes.size();++s) {
 	  if ((m_pinfo.m_ckkw || m_pinfo.m_nlomode==nlo_mode::mcatnlo) &&
 	      stypes[s]==sbt::qed) continue;
@@ -231,9 +235,16 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
               if (isPFFsplitting) nPFFsplittings++;
               m_subevtlist.push_back(pdummy->GetSubevt());
             }
-            else delete pdummy;
+            else {
+              if (links.size() && links.back()==pdummy->GetLOProcess()) links.pop_back();
+              delete pdummy;
+            }
+
           }
-          else delete pdummy;
+          else {
+            if (links.size() && links.back()==pdummy->GetLOProcess()) links.pop_back();
+            delete pdummy;
+          }
           msg_Debugging()<<"\n";
         }
         msg_Debugging()<<"---------------------------------------------\n";
@@ -279,9 +290,15 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
               m_subostermlist.back()->SetNorm(p_tree_process->Norm());
 	      m_subevtlist.push_back(pdummy->GetSubevt());
             }
-            else delete pdummy;
+            else {
+              if (links.size() && links.back()==pdummy->GetOSProcess() ) links.pop_back();
+              delete pdummy;
+            }
 	  }
-	  else delete pdummy;
+	  else {
+            if (links.size() && links.back()==pdummy->GetOSProcess()) links.pop_back();
+            delete pdummy;
+          }
         }
       }
     }
@@ -409,6 +426,7 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
 }
 
 double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
+                                        Variations_Mode varmode,
                                         int mode)
 {
   DEBUG_FUNC("mode="<<mode);
@@ -449,7 +467,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
 
   Vec4D_Vector mom(_mom);
   Poincare cms;
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+  if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     cms=Poincare(mom[0]+mom[1]);
     for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
   }

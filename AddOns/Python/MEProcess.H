@@ -97,6 +97,7 @@ public:
   inline ATOOLS::Flavour GetOutFlav(size_t i) { return GetFlav(i+m_nin); }
 
   inline ATOOLS::Cluster_Amplitude* GetAmp() { return p_amp; }
+  inline PHASIC::Process_Base* GetProc() {return p_proc;}
   std::string Name() const;
 
   inline void SetNLOType(ATOOLS::nlo_type::code nlotype) { m_nlotype=nlotype; }

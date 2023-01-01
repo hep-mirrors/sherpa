@@ -24,27 +24,24 @@ using namespace MODEL;
 using namespace std;
 
 Resonance_Finder::Resonance_Finder(Matrix_Element_Handler* meh) :
-  p_mehandler(meh)
+  p_mehandler(meh), m_on(false)
 {
-  Scoped_Settings meqedsettings{
-    Settings::GetMainSettings()["ME_QED"] };
-  m_on = meqedsettings["CLUSTERING_ENABLED"].SetDefault(true).Get<bool>();
-  m_resdist =
-    meqedsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
-  m_inclres =
-    meqedsettings["INCLUDE_RESONANCES"].SetDefault(false).Get<bool>();
-
-  InitialiseHelperParticles();
-
-  if (!m_on) return;
-
-  ScanModelForEWResonances();
-  IdentifyEWSubprocesses();
+  if (meh) {
+    Scoped_Settings meqedsettings{Settings::GetMainSettings()["ME_QED"] };
+    m_on = meqedsettings["CLUSTERING_ENABLED"].SetDefault(true).Get<bool>();
+    m_resdist =
+      meqedsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
+    m_inclres =
+      meqedsettings["INCLUDE_RESONANCES"].SetDefault(false).Get<bool>(); 
+    InitialiseHelperParticles();
+  }
+  if (m_on) {
+    ScanModelForEWResonances();
+    IdentifyEWSubprocesses();
+  }
 }
 
-Resonance_Finder::~Resonance_Finder()
-{
-}
+Resonance_Finder::~Resonance_Finder() {}
 
 void Resonance_Finder::ScanModelForEWResonances()
 {
@@ -160,9 +157,15 @@ void Resonance_Finder::FindSubProcessInfosContainingLeptons
 void Resonance_Finder::BuildResonantBlobs
 (Particle_Vector& pv, Blob_Vector& blobs)
 {
+  BuildResonantBlobs(pv, blobs, p_mehandler->Process());
+}
+
+void Resonance_Finder::BuildResonantBlobs
+(Particle_Vector& pv, Blob_Vector& blobs, Process_Base* proc)
+{
   DEBUG_FUNC(pv.size()<<" particles to treat, clustering = "<<m_on);
   // get production subprocesses for the active process
-  std::string name(p_mehandler->Process()->Name());
+  std::string name(proc->Name());
   SubInfoVector siv(m_proc_lep_map[name]);
   // create blobs accordingly (only if lepton list is unambiguous)
   msg_Debugging()<<siv.size()<<" subprocess infos for process "

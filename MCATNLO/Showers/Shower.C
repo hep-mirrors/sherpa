@@ -229,8 +229,8 @@ int Shower::MakeKinematics
 bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
 {
   m_weightsmap.Clear();
-  m_weightsmap["MC@NLO_PS"] = 1.0;
-  m_weightsmap["MC@NLO_QCUT"] = 1.0;
+  m_weightsmap["MC@NLO_PS"] = Weights {Variations_Type::qcd};
+  m_weightsmap["MC@NLO_QCUT"] = Weights {Variations_Type::qcut};
   p_actual=act;
   Parton * split;
   Vec4D mom;

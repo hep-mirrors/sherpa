@@ -41,7 +41,7 @@ operator()(const Analysis_Key& key) const
                                           s.Interprete<int>(hcparams[2]),
                                           s.Interprete<int>(hcparams[3]),
                                           hcparams.size()>4?hcparams[4]:"NotLepton"));
-  if (s["CalCone"].IsCustomised())
+  if (s["CalCone"].IsSetExplicitly())
     msg_Out()<<"WARNING CalCone   no longer supported by Primitive Detector ! "<<std::endl;
   return detector;
 }

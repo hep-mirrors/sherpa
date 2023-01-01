@@ -118,7 +118,7 @@ void Model_Base::RegisterDefaults() const
   s["CKM"]["Eta"].SetDefault(0.353);
   s["CKM"]["Rho"].SetDefault(0.117);
   s["DECOMPOSE_4G_VERTEX"].SetDefault(1);
-  s["EW_SCHEME"].SetDefault(ew_scheme::alphamZ);
+  s["EW_SCHEME"].SetDefault(ew_scheme::Gmu);
   const ew_scheme::code ewscheme( s["EW_SCHEME"].Get<ew_scheme::code>() );
   s["EW_REN_SCHEME"].SetDefault(ewscheme);
   if (ewscheme == ew_scheme::UserDefined)
@@ -230,6 +230,15 @@ void Model_Base::SetRunningFermionMasses()
   }
 }
 
+void Model_Base::SetRunningBosonMasses()
+{
+  for (size_t i=23;i<26; ++i) {
+    Flavour yfl((kf_code)i);
+    if (yfl.Yuk()==0.0) continue;
+    p_constants->insert(make_pair("m"+yfl.IDName(),yfl.Yuk()));
+  }
+}
+
 void Model_Base::ReadExplicitCKM(CMatrix& CKM)
 {
   Settings& s = Settings::GetMainSettings();
@@ -328,6 +337,9 @@ void Model_Base::ReadParticleData()
 
 void Model_Base::AddStandardContainers()
 {
+  if (s_kftable.find(kf_jet) != s_kftable.end()) {
+    return;
+  }
   // kf,mass,width,icharge,strong,spin,majo,on,stable,massive,
   //   idname,antiidname,texname,antitexname,dummy,group
   s_kftable[kf_jet] = new

@@ -8,6 +8,7 @@ namespace ATOOLS { class Cluster_Amplitude; }
 namespace BEAM { class Beam_Spectra_Handler; }
 namespace PDF { class ISR_Handler; }
 namespace MODEL { class Model_Base; }
+namespace REMNANTS { class Remnant_Handler; }
 
 namespace PHASIC {
 
@@ -20,6 +21,7 @@ namespace PHASIC {
     std::string         m_name;
     ATOOLS::Flavour_Set m_psmass;
     ME_Generators*      p_gens;
+    REMNANTS::Remnant_Handler *p_remnant;
 
     void RegisterDefaults();
     void RegisterDipoleParameters();
@@ -73,6 +75,11 @@ namespace PHASIC {
 
     inline ME_Generators *Generators() const { return p_gens; }
 
+    virtual void SetModel(MODEL::Model_Base*) {};
+
+    inline void SetRemnantHandler(REMNANTS::Remnant_Handler *remnant) {
+      p_remnant = remnant;
+    }
   };// end of class ME_Generator_Base
 
   struct ME_Generator_Key {

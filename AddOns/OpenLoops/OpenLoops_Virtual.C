@@ -68,14 +68,16 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta)
     msg_Out()<<"V_e1  = "<<m_res.IR()<<" -> "<<m_res.IR()/m_born/factor<<std::endl;
     msg_Out()<<"V_e2  = "<<m_res.IR2()<<" -> "<<m_res.IR2()/m_born/factor<<std::endl;
   }
-  for (size_t i(0);i<m_ol_asscontribs;++i) {
-    m_asscontribs[i]=0.;
-    if (msg_LevelIsDebugging()) timing->Start();
-    OpenLoops_Interface::EvaluateAssociated(m_ol_id, momenta, i+1, m_asscontribs[i]);
-    if (shouldprinttime) {
-      timing->Stop();
-      PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" = "<<m_asscontribs[i]<<" user="<<timing->UserTime()
-                 <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
+  if (m_calcass) {
+    for (size_t i(0);i<m_ol_asscontribs;++i) {
+      m_asscontribs[i]=0.;
+      if (msg_LevelIsDebugging()) timing->Start();
+      OpenLoops_Interface::EvaluateAssociated(m_ol_id, momenta, i+1, m_asscontribs[i]);
+      if (shouldprinttime) {
+        timing->Stop();
+        PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" = "<<m_asscontribs[i]<<" user="<<timing->UserTime()
+            <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
+      }
     }
   }
   if (shouldprinttime) {

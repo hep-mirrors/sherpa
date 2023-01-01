@@ -36,7 +36,7 @@ void hzfinl()
 
 #if HEPEVT_CB_SIZE != 4000
 #error Wrong HepEvt common block size. Must be 4000 when using HZTool.
-#error Use './configure --enable-hepevtsize=4000' to reconfigure.
+#error Use 'cmake -DHEPEVT_CB_SIZE=4000' to reconfigure.
 #endif
 
 const int nmxhep = HEPEVT_CB_SIZE;

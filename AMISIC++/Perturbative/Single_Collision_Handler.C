@@ -1,8 +1,6 @@
 #include "AMISIC++/Perturbative/Single_Collision_Handler.H"
-#include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/Histogram.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -11,18 +9,18 @@ using namespace std;
 Single_Collision_Handler::Single_Collision_Handler() :
   p_processes(NULL), p_overestimator(NULL),
   m_pt2(0.), m_pt2min(0.),  
-  m_pbeam1(rpa->gen.PBeam(0)), m_pbeam2(rpa->gen.PBeam(1)),
-  m_S((m_pbeam1+m_pbeam2).Abs2()), m_lastpt2(m_S), 
-  m_residualx1(1.), m_residualx2(1.),
-  m_xt(1.), m_ymax(0.), m_y3(0.), m_y4(0.), m_x1(1.), m_x2(1.),
-  m_ana(true)
+  m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
+  m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
+  m_xt(1.), m_y3(0.), m_y4(0.), m_x1(1.), m_x2(1.),
+  m_ana(false)
 {}
 
 Single_Collision_Handler::~Single_Collision_Handler() {
   if (m_ana) FinishAnalysis();
 }
 
-void Single_Collision_Handler::Init() {
+void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler) {
+  p_remnants = remnant_handler;
   m_pt2min = sqr((*mipars)("pt_min"));
   if (m_ana) InitAnalysis();
 }
@@ -40,8 +38,13 @@ Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
     p_proc = p_processes->SelectProcess();
   }
   while (!p_proc || !p_proc->MakeKinematics(m_pt2,m_y3,m_y4,sqrt(m_shat)) ||
-	 !p_proc->SetColours());
+	 !p_proc->SetColours() || !TestRemnants());
   return MakeBlob();
+}
+
+bool Single_Collision_Handler::TestRemnants() const {
+  return p_remnants->GetRemnant(0)->TestExtract(p_proc->Flav(0), p_proc->Momentum(0))
+         && p_remnants->GetRemnant(1)->TestExtract(p_proc->Flav(1), p_proc->Momentum(1));
 }
 
 bool Single_Collision_Handler::SelectPT2(const double & pt2) {
@@ -81,18 +84,24 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
 Blob * Single_Collision_Handler::MakeBlob() {
   Blob * blob = new Blob();
   blob->SetType(btp::Hard_Collision);
-  blob->SetStatus(blob_status::needs_showers |
-		  blob_status::needs_beams |
-		  blob_status::needs_reconnections |
-		  blob_status::needs_hadronization);
+  blob->SetStatus(blob_status::needs_showers);
   blob->SetId();
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  blob->AddData("Renormalization_Scale",new Blob_Data<double>(m_pt2));
+  blob->AddData("Factorization_Scale",new Blob_Data<double>(m_pt2));
+  blob->AddData("Resummation_Scale",new Blob_Data<double>(m_pt2));
   for (size_t i=0;i<2;i++) blob->AddToInParticles(p_proc->GetParticle(i));
   for (size_t i=2;i<4;i++) blob->AddToOutParticles(p_proc->GetParticle(i));
   if (m_ana) Analyse(m_pt2,blob);
   return blob;
 }
 
+void Single_Collision_Handler::UpdateSandY(double s, double y) {
+  // does m_lastpt2 also have to be set?
+  m_lastpt2 = s;
+  m_S = s;
+  m_Ycms = y;
+}
 
 bool Single_Collision_Handler::SelectRapidities() {
   // Generate two trial rapidities
@@ -106,14 +115,17 @@ bool Single_Collision_Handler::SelectRapidities() {
 }
 
 bool Single_Collision_Handler::CalcXs() {
-  m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.;
-  m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.;
+  // Misses term for the masses?
+  m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.*exp(-m_Ycms);
+  m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.*exp(m_Ycms);
+  if (m_x1<p_processes->PDFXmin(0) || m_x2<p_processes->PDFXmin(1)) return 0.;
+  if (m_x1>1. || m_x2>1.) return 0.;
   return (m_x1<m_residualx1 && m_x2<m_residualx2);
 }
 
 bool Single_Collision_Handler::CalcMandelstams() {
   if (m_xt*m_xt>m_x1*m_x2) return false;
-  double tanhy = sqrt(1.-(m_xt*m_xt)/(m_x1*m_x2));
+  double tanhy = sqrt(1.-(m_xt*m_xt)/(m_x1*m_x2)); // = tanh((y3+y4)/2)
   m_shat = m_x1*m_x2*m_S;
   m_that = -0.5*m_shat*(1.-tanhy);
   m_uhat = -0.5*m_shat*(1.+tanhy);

@@ -3,14 +3,14 @@
 import sys,os,subprocess
 
 def printhelp():
-    print "usage: %s <graphs-paths>" % (sys.argv[0])
+    print("usage: %s <graphs-paths>" % (sys.argv[0]))
 
 def plot(htmlfile):
     texfiles  = []
     directory = os.getcwd()[os.getcwd().rfind("/")+1:]
     for f in os.listdir(os.getcwd()):
-	if f.endswith(".tex"):
-	    texfiles.append(f.replace(".tex",""))
+        if f.endswith(".tex"):
+            texfiles.append(f.replace(".tex",""))
     if not texfiles:
         return
     htmlfile.print_tablehead(directory)
@@ -18,7 +18,7 @@ def plot(htmlfile):
     for i in texfiles:
         ngraphs=numberofgraphs(i)
         ie=escapecharacters(i)
-        print "plotting",i,"with",ngraphs,"graphs"
+        print("plotting",i,"with",ngraphs,"graphs")
         subprocess.check_output("latex "+ie+".tex",shell=True)
         subprocess.check_output("mpost "+ie+"_fg.mp",shell=True)
         subprocess.check_output("latex "+ie+".tex",shell=True)
@@ -27,10 +27,10 @@ def plot(htmlfile):
         #subprocess.check_output("ghostscript -dBATCH -dNOPAUSE -sDEVICE=png16m -r96-dUseCropBox  -sOutputFile="+ie+"-%04d.png "+ie+".pdf",shell=True)
         subprocess.check_output("convert -trim "+ie+".pdf"+" "+ie+"-%04d.png",shell=True)
         pngfiles = []
-	for f in os.listdir(os.getcwd()):
-	    if f.startswith(i) and f.endswith(".png"):
-		pngfiles.append(f)
-	pngfiles.sort(key=str.lower)
+        for f in os.listdir(os.getcwd()):
+            if f.startswith(i) and f.endswith(".png"):
+                pngfiles.append(f)
+        pngfiles.sort(key=str.lower)
         htmlfile.print_entry(directory,i,ngraphs,pngfiles)
     cleanup(0)
     htmlfile.print_tablefoot()
@@ -40,8 +40,8 @@ def sub(subdir,htmlfile):
     plot(htmlfile)
     for i in os.listdir(os.getcwd()):
         if os.path.isdir(i):
-	    print "plotting in subdir",i
-	    sub(i,htmlfile)
+            print("plotting in subdir",i)
+            sub(i,htmlfile)
     os.chdir("..")
 
 def escapecharacters(i):
@@ -52,12 +52,12 @@ def escapecharacters(i):
     return i
 
 def numberofgraphs(name):
-    texfile = file(name+".tex")
+    texfile = open(name+".tex")
     for line in texfile:
-	if 'Graph' in line:
-	    n=line[line.find('Graph')+6:]
-	    n=n[:n.find('$')]
-	    n=n[:n.find('\\')]
+        if 'Graph' in line:
+            n=line[line.find('Graph')+6:]
+            n=n[:n.find('$')]
+            n=n[:n.find('\\')]
     return int(n)
 
 def cleanup(mode):
@@ -91,7 +91,7 @@ class HTMLFile:
         self.file.write('<a href='+directory+'/'+entry+'.pdf>[pdf]</a>')
         self.file.write('</td><td>\n')
         for f in pngfiles:
-	    self.file.write('<img src="'+directory+"/"+f+'">\n')
+            self.file.write('<img src="'+directory+"/"+f+'">\n')
 
     def print_tablefoot(self):
         self.file.write('    </table>\n')
@@ -111,10 +111,10 @@ if len(sys.argv)==1 or sys.argv[1]=="-h" or sys.argv[1]=="--help":
 topdir = os.getcwd()+"/"+sys.argv[1]
 htmlfile = HTMLFile(topdir,"index.html")
 
-print "Rendering graphs in %s" % (topdir)
+print("Rendering graphs in %s" % (topdir))
 
 if not os.path.exists(topdir) and not os.path.isdir(topdir):
-    print "%s is not a directory" % s
+    print("%s is not a directory" % s)
     sys.exit(1)
 
 htmlfile.print_header()

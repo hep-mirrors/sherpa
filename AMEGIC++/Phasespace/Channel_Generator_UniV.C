@@ -175,7 +175,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 
   //actual Channel
   chf <<"    double m_salpha,m_thexp;"<<endl;
-  if (tcount>0) chf <<"    double m_amct,m_alpha,m_ctmax,m_ctmin;"<<endl;
+  if (tcount>0) chf <<"    double m_alpha,m_ctmax,m_ctmin;"<<endl;
   if (m_idc.size()>0) {
     chf <<"    Info_Key ";
     bool first=true;
@@ -218,7 +218,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"{"<<endl;
   //chf<<"std::cout<<\""<<name<<"\"<<std::endl;"<<endl;
   chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
-  chf<<"  for(int i=0;i<rannum;i++) rans[i]=ran[i];"<<endl;
+  chf<<"  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
 
   acount = 0;
@@ -238,24 +238,23 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 
   Step0(1,m_topos[echflag],rannum,chf);
   ClearDeclarations();
-  chf<<"  double vw = p_vegas->GenerateWeight(rans);"<<endl;
-  chf<<"  if (wt!=0.) wt = vw/wt/pow(2.*M_PI,"<<nout<<"*3.-4.);"<<endl;
-  chf<<endl<<"  weight = wt;"<<endl; 
-  chf<<"}"<<endl<<endl;
-    
+  chf << "  double vw = p_vegas->GenerateWeight(p_rans);" << endl;
+  chf << "  if (wt!=0.) wt = vw/wt/pow(2.*M_PI," << nout << "*3.-4.);" << endl;
+  chf << endl << "  m_weight = wt;" << endl;
+  chf << "}" << endl << endl;
+
   //Constructor
   chf	<<name<<"::"<<name<<"(int nin,int nout,Flavour* fl,Integration_Info * const info)"<<endl
 	<<"       : Single_Channel(nin,nout,fl)"<<endl
 	<<"{"<<endl
 	<<"  Settings& s = Settings::GetMainSettings();"<<endl
-	<<"  name = std::string(\""<<name<<"\");"<<endl
-	<<"  rannum = "<<rannumber<<";"<<endl
-	<<"  rans  = new double[rannum];"<<endl
+	<<"  m_name = std::string(\""<<name<<"\");"<<endl
+	<<"  m_rannum = "<<rannumber<<";"<<endl
+	<<"  p_rans  = new double[m_rannum];"<<endl
         <<"  m_salpha = s[\"SCHANNEL_ALPHA\"].Get<double>();"<<endl
-	<<"  m_thexp = s[\"THRESHOLD_EPSILON\"].Get<double>();"<<endl;
+	<<"  m_thexp = s[\"THRESHOLD_EXPONENT\"].Get<double>();"<<endl;
   if (tcount>0) {
-    chf	<<"  m_amct  = 1.0 + s[\"CHANNEL_EPSILON\"].Get<double>();"<<endl
-        <<"  m_alpha = s[\"TCHANNEL_ALPHA\"].Get<double>();"<<endl
+    chf	<<"  m_alpha = s[\"TCHANNEL_ALPHA\"].Get<double>();"<<endl
 	<<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
@@ -264,7 +263,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
       chf <<"  m_k"<<m_idc[i]<<".Assign(std::string(\""<<m_idc[i]<<"\"),2,0,info);"<<endl;
     }
   }
-  chf	<<"  p_vegas = new Vegas(rannum,100,name);"<<endl;
+  chf	<<"  p_vegas = new Vegas(m_rannum,100,m_name);"<<endl;
   chf	<<"}"<<endl<<endl;
 
   //Destructor
@@ -281,7 +280,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"void "<<name<<"::AddPoint(double Value)";
   chf<<endl<<"{"<<endl;  
   chf<<"  Single_Channel::AddPoint(Value);"<<endl;
-  chf<<"  p_vegas->AddPoint(Value,rans);"<<endl;  
+  chf<<"  p_vegas->AddPoint(Value,p_rans);"<<endl;  
   chf<<"}"<<endl;
 
   chf<<"std::string "<<name<<"::ChID()";
@@ -441,7 +440,7 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       if (pout0sum.length()==1) sf<<",p["<<GetMassIndex(pout0sum)<<"]"; else sf<<",p"<<pout0sum;
       if (pout1sum.length()==1) sf<<",p["<<GetMassIndex(pout1sum)<<"]"; else sf<<",p"<<pout1sum;
       sf<<",s"<<pout0sum<<",s"<<pout1sum;
-      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,ran["<<rannum++<<"],ran[";
+      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",ran["<<rannum++<<"],ran[";
       sf<<rannum++<<"]);"<<endl;
       break;
     default:
@@ -454,10 +453,10 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       if (pin1.size()==0) sf<<",p[1]"; else sf<<",p"<<pin1sum;
       if (pout0sum.length()==1) sf<<",p["<<GetMassIndex(pout0sum)<<"]"; else sf<<",p"<<pout0sum;
       if (pout1sum.length()==1) sf<<",p["<<GetMassIndex(pout1sum)<<"]"; else sf<<",p"<<pout1sum;
-      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
       sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
-      sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
-      sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
+      sf<<"  p_rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
+      sf<<"  p_rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
     }
     if (p->left->m==0)  pin1.push_back(Order(LinkedMasses(p->right)));
     if (p->right->m==0) pin0.push_back(Order(LinkedMasses(p->left)));
@@ -468,12 +467,14 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
     string lm    = LinkedMasses(l);
     string rm    = LinkedMasses(r);
     string mummy = Order(lm+rm);
-    string moml,momr;
+    string moml,momr,momlalt,momralt;
     //Minima
     if (l->left==0) moml = string("p[") + GetMassIndex(lm) + string("]");
     else moml = string("p") + Order(lm);
     if (r->left==0) momr = string("p[") + GetMassIndex(rm) + string("]");
     else momr = string("p") + Order(rm);
+    momlalt = string("p")+Order(mummy)+string("-")+momr;
+    momralt = string("p")+Order(mummy)+string("-")+moml;
 
     bool first = p->prev->number==0;
     // Check for decay type.
@@ -490,7 +491,7 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
 	string idh = string("AI_")+Order(lm)+string("_")+Order(rm);
 	//sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
         sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-        sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight(1,-1.,1.,"<<moml<<","<<momr<<");"<<endl;
+        sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight("<<moml<<","<<momralt<<",1,-1.,1.);"<<endl;
         sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
       }
     }
@@ -509,7 +510,7 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
 	  string idh = string("AI_")+Order(rm)+string("_")+Order(lm);
 	  //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
 	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-	  sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight(1,-1.,1.,"<<momr<<","<<moml<<");"<<endl;
+	  sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight("<<momr<<","<<momlalt<<",1,-1.,1.);"<<endl;
 	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
 	  //	sf<<"  wt *= CE.Anisotropic2Weight(1.,-1.,1.,"<<momr<<","<<moml<<");"<<endl;
 	}
@@ -526,10 +527,10 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
 	    string idh = string("I_")+Order(lm)+string("_")+Order(rm);
 	    //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
 	    sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-	    sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momr<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+	    sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momralt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
 	    sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
-	    sf<<"  rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
-	    sf<<"  rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
+	    sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
+	    sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
 	  }
 	}
       else {
@@ -543,10 +544,10 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
  	  string idh = string("I_")+Order(rm)+string("_")+Order(lm);
 	  //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
   	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-  	  sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<moml<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+          sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<momlalt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
   	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
-	  sf<<"  rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
-	  sf<<"  rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
+	  sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
+	  sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
 	  //	  	  sf<<"  wt *= CE.Isotropic2Weight("<<momr<<","<<moml<<");"<<endl;
 	}
       }
@@ -608,7 +609,8 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
 {
   if (p->left==0) {
     string m = LinkedMasses(p);
-    AddToVariables(flag,m,string("ms[")+GetMassIndex(m)+string("]"),0,sf);
+    AddToVariables(flag, m, string("p_ms[") + GetMassIndex(m) + string("]"), 0,
+                   sf);
     return;
   }
   string lm,rm;
@@ -631,8 +633,10 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
 		   string("_max)-sqrt(s") + prt + string("_min))"),0,sf);    
   }
   if (prt.length()==1) {
-    AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
-		   string("_max)-sqrt(ms[") + GetMassIndex(prt) + string("]))"),0,sf);
+    AddToVariables(flag, mummy + string("_max"),
+                   string("sqr(sqrt(s") + clm + string("_max)-sqrt(p_ms[") +
+                       GetMassIndex(prt) + string("]))"),
+                   0, sf);
   }
   
   if (rm.length()>1 && lm.length()>1) sclmp = p;
@@ -655,7 +659,7 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
 //     }
 //     if (prt.length()==1) {
 //       AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
-// 		     string("_max)-sqrt(ms[") + prt + string("]))"),0,sf);
+// 		     string("_max)-sqrt(p_ms") + prt + string("]))"),0,sf);
 //     }
 //   }
   //min
@@ -691,7 +695,7 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
     sf<<"  Vec4D  p"<<mummy<<";"<<endl;
     if (maxpole>0.) {
       sf<<"  double s"<< mummy
-	<<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
+	<<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),"
 	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
     }
     else {
@@ -717,17 +721,17 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
     AddToVariables(flag,mummy,s,1,sf);
     AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
     if (maxpole>0.) {
-      sf<<"  wt *= CE.MassivePropWeight(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
-	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,"<<"s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
+      sf<<"  wt *= CE.MassivePropWeight(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),"
+	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,"<<"s"<<mummy<<",p_rans["<<rannum<<"]);"<<endl;
     }
     else {
       if (!dth) {
 	sf<<"  wt *= CE.MasslessPropWeight("<<mlexp<<",s"<<mummy<<"_min,"
-	  <<"s"<<mummy<<"_max,s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
+	  <<"s"<<mummy<<"_max,s"<<mummy<<",p_rans["<<rannum<<"]);"<<endl;
       }
       else {
         sf<<"  wt *= CE.ThresholdWeight(m_thexp,"<<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"
-	  <<"s"<<mummy<<"_max,s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
+	  <<"s"<<mummy<<"_max,s"<<mummy<<",p_rans["<<rannum<<"]);"<<endl;
       }
     }
     rannum++;
@@ -811,8 +815,8 @@ void Channel_Generator_UniV::CalcSmin(int flag,const char* min,string lm,ofstrea
 		   string("cuts->GetscutAmegic(std::string(\"") + Order(lm) + string("\"))"),0,sf);
   }
   else {
-    AddToVariables(flag,Order(lm) + string("_") + string(min),
-		   string("ms[") + GetMassIndex(lm) + string("]"),0,sf);
+    AddToVariables(flag, Order(lm) + string("_") + string(min),
+                   string("p_ms[") + GetMassIndex(lm) + string("]"), 0, sf);
   }
   /*  string s("");
 
@@ -821,12 +825,12 @@ void Channel_Generator_UniV::CalcSmin(int flag,const char* min,string lm,ofstrea
       s += string("cuts->scut[")+lm[i]+string("][")+lm[j]+string("]+");
   }
   
-  if (lm.length()==1) s += string("ms[")+lm[0]+string("]");
+  if (lm.length()==1) s += string("p_ms")+lm[0]+string("]");
   else {
     if (lm.length()==2) s +=string("0");
     else {      
-      s += string("(2-")+IString(lm.length())+string(")*(ms[")+lm[0]+string("]");
-      for (short int i=1;i<lm.length();i++) s += string("+ms[")+lm[i]+string("]");
+      s += string("(2-")+IString(lm.length())+string(")*(p_ms")+lm[0]+string("]");
+      for (short int i=1;i<lm.length();i++) s += string("+p_ms")+lm[i]+string("]");
       s += string(")");
     }
   }

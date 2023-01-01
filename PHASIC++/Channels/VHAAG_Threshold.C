@@ -67,7 +67,6 @@ namespace PHASIC {
     void AddPoint(double Value);
     void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
     void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *,double *);
-    std::string Name() {return name;}
     void   MPISync()                 { p_vegas->MPISync(); }
     void   Optimize()                { p_vegas->Optimize(); }
     void   EndOptimize()             { p_vegas->EndOptimize(); }
@@ -118,7 +117,7 @@ const double s_xx  =.5;
 VHAAG_Threshold::VHAAG_Threshold(int _nin,int _nout,int pn,int d1,int d2,double th,VHAAG_Threshold* ovl)
 {
   m_first=!ovl;
-  nin=_nin; nout=_nout;n_ap=nin+nout-1;
+  m_nin=_nin; m_nout=_nout;n_ap=m_nin+m_nout-1;
   if (n_ap<5) {
     msg_Error()<<"Minimum number of final state particles for VHAAG_Threshold integrator is 4!"<<std::endl;
     Abort();
@@ -163,20 +162,20 @@ void VHAAG_Threshold::Initialize(std::vector<int> perm, VHAAG_Threshold* ovl)
   p_s = new double[n_ap];
   for (int i=0;i<n_ap;i++) p_s[i]=0.;
   msg_Tracking()<<"Init VHAAG_Threshold: 0";
-  name = "VHAAG_Threshold";
+  m_name = "VHAAG_Threshold";
   char hlp[4];
   for (int i=1;i<n_ap;i++) {
     p_perm[i] = perm[i];
     if (perm[i]==1) n_p1=i;
-    name+= "_";
+    m_name+= "_";
     sprintf(hlp,"%i",p_perm[i]);
-    name+= std::string(hlp);
+    m_name+= std::string(hlp);
     msg_Tracking()<<" "<<p_perm[i];
   }
 
-  rannum = 3*nout-4;;
-  rans  = new double[rannum];
-  m_q = new Vec4D[n_ap];
+  m_rannum = 3*m_nout-4;;
+  p_rans   = new double[m_rannum];
+  m_q      = new Vec4D[n_ap];
   m_ownvegas = false;
   if (ovl) p_sharedvegaslist = ovl->GetSharedVegasList();
   else p_sharedvegaslist = NULL;
@@ -191,8 +190,8 @@ void VHAAG_Threshold::Initialize(std::vector<int> perm, VHAAG_Threshold* ovl)
 
   if (1) {
     if (p_sharedvegaslist->find(m_type)==p_sharedvegaslist->end()) {
-      (*p_sharedvegaslist)[m_type] = new Vegas(rannum,100,Name());
-//       (*p_sharedvegaslist)[m_type]->SetAutoOptimize(n_ap*10);//Min(nout,5)*15);
+      (*p_sharedvegaslist)[m_type] = new Vegas(m_rannum,100,Name());
+//       (*p_sharedvegaslist)[m_type]->SetAutoOptimize(n_ap*10);//Min(m_nout,5)*15);
       if (0) {
 	if (abs(m_type)<3) {
 	  for (int i=0;i<=n_ap-5;i++) (*p_sharedvegaslist)[m_type]->ConstChannel(2+3*i);
@@ -203,7 +202,7 @@ void VHAAG_Threshold::Initialize(std::vector<int> perm, VHAAG_Threshold* ovl)
 	  for (int i=0;i<n_ap-abs(m_type)-3;i++) 
 	    (*p_sharedvegaslist)[m_type]->ConstChannel(3*abs(m_type)+3*i-1);
 	} 
-	(*p_sharedvegaslist)[m_type]->ConstChannel(rannum-4);
+	(*p_sharedvegaslist)[m_type]->ConstChannel(m_rannum-4);
       } 
       m_ownvegas = true;
     } 
@@ -211,7 +210,7 @@ void VHAAG_Threshold::Initialize(std::vector<int> perm, VHAAG_Threshold* ovl)
   } 
   else  {
     m_ownvegas = true;
-    p_vegas = new Vegas(rannum,100,Name());
+    p_vegas = new Vegas(m_rannum,100,Name());
     p_vegas->SetAutoOptimize(50);
     delete p_sharedvegaslist;
     p_sharedvegaslist=0;
@@ -224,7 +223,7 @@ void VHAAG_Threshold::Initialize(std::vector<int> perm, VHAAG_Threshold* ovl)
 	p_vegas->ConstChannel(3*(abs(m_type)-2)+2);
 	for (int i=0;i<n_ap-abs(m_type)-3;i++) p_vegas->ConstChannel(3*abs(m_type)+3*i-1);
       } 
-      p_vegas->ConstChannel(rannum-4);
+      p_vegas->ConstChannel(m_rannum-4);
     } 
   } 
 
@@ -248,7 +247,7 @@ VHAAG_Threshold::~VHAAG_Threshold()
 void VHAAG_Threshold::AddPoint(double Value)
 {
   Single_Channel::AddPoint(Value);
-  p_vegas->AddPoint(Value,rans);
+  p_vegas->AddPoint(Value,p_rans);
 }
 
 double VHAAG_Threshold::PiFunc(double a1,double a2,
@@ -567,14 +566,14 @@ double VHAAG_Threshold::SingleSplitF0Weight(ATOOLS::Vec4D q1,ATOOLS::Vec4D Q,
 void VHAAG_Threshold::GenerateBosonMass(ATOOLS::Vec4D *p,double *ran)
 {
   double smax=(p[0]+p[1]).Abs2();
-  p_s[n_b]=CE.ThresholdMomenta(1.0,m_thmass,0.,smax,ran[rannum-3]);
+  p_s[n_b]=CE.ThresholdMomenta(1.0,m_thmass,0.,smax,ran[m_rannum-3]);
 }
 
 double VHAAG_Threshold::BosonWeight(ATOOLS::Vec4D *p,double *ran)
 {
   double smax=(p[0]+p[1]).Abs2();
-  double w=CE.ThresholdWeight(1.0,m_thmass,0.,smax,m_q[n_b].Abs2(),ran[rannum-3]);
-  w*=CE.Isotropic2Weight(p[n_d1],p[n_d2],ran[rannum-2],ran[rannum-1]);
+  double w=CE.ThresholdWeight(1.0,m_thmass,0.,smax,m_q[n_b].Abs2(),ran[m_rannum-3]);
+  w*=CE.Isotropic2Weight(p[n_d1],p[n_d2],ran[m_rannum-2],ran[m_rannum-1]);
   return w;
 }
 
@@ -618,8 +617,8 @@ void VHAAG_Threshold::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts)
 
   if (n_ap==4) {
     Vec4D Q(p[0]+p[1]);
-    wt=SingleSplitF0Weight(p[0],Q,p[2],p[3],p_s[3],rans);  
-    weight = p_vegas->GenerateWeight(rans)/wt/pow(2.*M_PI,2);
+    wt=SingleSplitF0Weight(p[0],Q,p[2],p[3],p_s[3],p_rans);  
+    m_weight = p_vegas->GenerateWeight(p_rans)/wt/pow(2.*M_PI,2);
     return;
   }
 
@@ -630,46 +629,46 @@ void VHAAG_Threshold::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts)
   
   if (n_p1==1){
     Vec4D P;
-    wt*=BranchWeight(m_q[2],P,&(m_q[3]),&(p_s[3]),n_ap-3,rans+3);
-    wt*=Split0Weight(m_q[1],Q,m_q[2],P,2,3,rans);    
+    wt*=BranchWeight(m_q[2],P,&(m_q[3]),&(p_s[3]),n_ap-3,p_rans+3);
+    wt*=Split0Weight(m_q[1],Q,m_q[2],P,2,3,p_rans);    
   }
   else if (n_p1==n_ap-1){
     Vec4D P;
-    wt*=BranchWeight(m_q[1],P,&(m_q[2]),&(p_s[2]),n_ap-3,rans+3);
-    wt*=Split0Weight(m_q[0],Q,m_q[1],P,1,2,rans);    
+    wt*=BranchWeight(m_q[1],P,&(m_q[2]),&(p_s[2]),n_ap-3,p_rans+3);
+    wt*=Split0Weight(m_q[0],Q,m_q[1],P,1,2,p_rans);    
   }
   else if (n_p1==2){
     Vec4D P;
-    wt*=BranchWeight(m_q[2],P,&(m_q[3]),&(p_s[3]),n_ap-3,rans+3);
-    wt*=Split0Weight(m_q[0],Q,m_q[1],P,1,3,rans);    
+    wt*=BranchWeight(m_q[2],P,&(m_q[3]),&(p_s[3]),n_ap-3,p_rans+3);
+    wt*=Split0Weight(m_q[0],Q,m_q[1],P,1,3,p_rans);    
   }
   else if (n_p1==n_ap-2){
     Vec4D P;
-    wt*=BranchWeight(m_q[0],P,&(m_q[1]),&(p_s[1]),n_ap-3,rans+3);
-    wt*=Split0Weight(m_q[n_p1],Q,m_q[n_ap-1],P,n_ap-1,1,rans);    
+    wt*=BranchWeight(m_q[0],P,&(m_q[1]),&(p_s[1]),n_ap-3,p_rans+3);
+    wt*=Split0Weight(m_q[n_p1],Q,m_q[n_ap-1],P,n_ap-1,1,p_rans);    
   }
   else if (n_p1<=(n_ap-1)/2) {
     Vec4D Q1,Q2;
-    wt*=BranchWeight(m_q[0],Q1,&(m_q[1]),&(p_s[1]),n_p1-1,rans+4);
-    wt*=BranchWeight(m_q[n_p1],Q2,&(m_q[n_p1+1]),&(p_s[n_p1+1]),n_ap-n_p1-1,rans+3*(n_p1-1));
-    wt*=SplitWeight(m_q[0],Q,Q1,Q2,0,n_p1,rans);
+    wt*=BranchWeight(m_q[0],Q1,&(m_q[1]),&(p_s[1]),n_p1-1,p_rans+4);
+    wt*=BranchWeight(m_q[n_p1],Q2,&(m_q[n_p1+1]),&(p_s[n_p1+1]),n_ap-n_p1-1,p_rans+3*(n_p1-1));
+    wt*=SplitWeight(m_q[0],Q,Q1,Q2,0,n_p1,p_rans);
   }
   else {
     Vec4D Q1,Q2;
-    wt*=BranchWeight(m_q[n_p1],Q1,&(m_q[n_p1+1]),&(p_s[n_p1+1]),n_ap-n_p1-1,rans+4);
-    wt*=BranchWeight(m_q[0],Q2,&(m_q[1]),&(p_s[1]),n_p1-1,rans+3*(n_ap-n_p1-1));
-    wt*=SplitWeight(m_q[n_p1],Q,Q1,Q2,n_p1,0,rans);
+    wt*=BranchWeight(m_q[n_p1],Q1,&(m_q[n_p1+1]),&(p_s[n_p1+1]),n_ap-n_p1-1,p_rans+4);
+    wt*=BranchWeight(m_q[0],Q2,&(m_q[1]),&(p_s[1]),n_p1-1,p_rans+3*(n_ap-n_p1-1));
+    wt*=SplitWeight(m_q[n_p1],Q,Q1,Q2,n_p1,0,p_rans);
   }
-  wt*=BosonWeight(p,rans);
-  double vw = p_vegas->GenerateWeight(rans);
-  weight = vw/wt/pow(2.*M_PI,nout*3.-4.);
+  wt*=BosonWeight(p,p_rans);
+  double vw = p_vegas->GenerateWeight(p_rans);
+  m_weight = vw/wt/pow(2.*M_PI,m_nout*3.-4.);
 }
 
 void VHAAG_Threshold::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *ran)
 {
   CalculateS0(cuts);
   double *vran = p_vegas->GeneratePoint(ran);
-  for(int i=0;i<rannum;i++) rans[i]=vran[i];
+  for(int i=0;i<m_rannum;i++) p_rans[i]=vran[i];
 
   GenerateBosonMass(p,vran);
   if (n_ap==4) {
@@ -712,7 +711,7 @@ void VHAAG_Threshold::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *ran)
   }
 
   for (int i=1;i<n_ap;i++) p[p_perm[i]]=m_q[i];
-  CE.Isotropic2Momenta(m_q[n_b],0.,0.,p[n_d1],p[n_d2],vran[rannum-2],vran[rannum-1]);
+  CE.Isotropic2Momenta(m_q[n_b],0.,0.,p[n_d1],p[n_d2],vran[m_rannum-2],vran[m_rannum-1]);
 }
 
 void VHAAG_Threshold::CalculateS0(Cut_Data * cuts) 

@@ -1,10 +1,6 @@
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Impact_Parameter.H"
-#include "ATOOLS/Math/Gauss_Integrator.H"
-#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/Histogram.H"
-#include "ATOOLS/Org/Message.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -15,7 +11,7 @@ using namespace ATOOLS;
 
 Impact_Parameter::Impact_Parameter() : p_pint(new Interaction_Probability()),
 				       p_mo(p_pint->GetOverlap()),
-				       m_test(false), m_ana(true) {}
+				       m_test(false), m_ana(false) {}
 
 Impact_Parameter::~Impact_Parameter() {
   delete p_pint;
@@ -32,12 +28,21 @@ void Impact_Parameter::Initialize(const double & xsecratio) {
   if (m_ana)  InitAnalysis();
 }
 
+void Impact_Parameter::Update(double xsecratio) {
+  p_pint->Update(xsecratio);
+  m_oexp  = p_pint->OverlapExpectation();
+  m_fc    = m_oexp/p_mo->Integral()*p_pint->Integral();
+  m_bmax  = p_mo->Bmax();
+  m_bnorm = p_pint->Bnorm();
+}
+
 double Impact_Parameter::operator()(const double & b) {
   // This is f(b), the enhancement factor
   return m_enhancement = (b<m_bmax? (*p_mo)(b)/m_oexp : 0.);
 }
 
 double Impact_Parameter::SelectB(const double & pt2) {
+  if (pt2<0.) return (m_b = p_mo->SelectB());
   // Select b according to f(b) and accept or reject b with probability given by
   // "factorized Sudakov form factor", Eq. (37)
   double hardpart = p_procs->SudakovArgument(pt2);
@@ -48,8 +53,9 @@ double Impact_Parameter::SelectB(const double & pt2) {
     softpart = m_fc * (*this)(m_b);
     sudakov  = exp(-softpart * hardpart);
     if (m_ana) Analyse(pt2,sudakov,softpart,hardpart);
-    //msg_Out()<<METHOD<<" sudakov = "<<sudakov<<" = exp(-"<<softpart<<" * "<<hardpart<<") "
-    //	     <<"for b = "<<m_b<<"(max = "<<p_mo->Bmax()<<"), pt = "<<sqrt(pt2)<<"\n";
+    msg_Debugging()<<METHOD<<" sudakov = "<<sudakov<<" = exp(-"<<softpart<<" * "
+              <<hardpart<<") for b = "<<m_b<<"(max = "<<p_mo->Bmax()<<"), pt = "
+              <<sqrt(pt2)<<"\n";
   } while (sudakov<ran->Get() && (trials--)>0);
   if (trials<=0)
     msg_Error()<<METHOD<<" throws warning:\n"
@@ -133,7 +139,7 @@ void Impact_Parameter::Analyse(const double & pt2,const double & sudakov,
 void Impact_Parameter::Test() {
   msg_Out()<<METHOD<<" starts testing enhancement factor.\n";
   Histogram histoOverlap(0,0.,m_bmax,100);
-  double b(0.), btot(0.), bstep(m_bmax/100.);
+  double b(0.), bstep(m_bmax/100.);
   while (b<m_bmax) {
     histoOverlap.Insert(b+bstep/2.,(*p_mo)(b+bstep/2.));
     b+= bstep;
@@ -165,24 +171,6 @@ void Impact_Parameter::Test() {
   }
   histoB.Finalize();
   histoB.Output("B_Distribution.dat");
-
-  /*
-  Histogram histoB10(0,0.,1.1*m_bmax,100);
-  for (long int i=0;double(i)<ntrials;i++) {
-    b = SelectB(100.);
-    histoB10.Insert(b,1.);
-  }
-  histoB10.Finalize();
-  histoB10.Output("B_Distribution_10.dat");
-
-  Histogram histoB100(0,0.,1.1*m_bmax,100);
-  for (long int i=0;double(i)<ntrials;i++) {
-    b = SelectB(10000.);
-    histoB100.Insert(b,1.);
-  }
-  histoB100.Finalize();
-  histoB100.Output("B_Distribution_100.dat");
-  */
   exit(1);
 }
 

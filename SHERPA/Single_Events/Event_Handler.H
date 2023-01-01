@@ -6,7 +6,9 @@
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/Tools/Definitions.H"
+#include "ATOOLS/Math/Uncertain.H"
 #include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/Weights.H"
 
 namespace SHERPA {
   class Filter;
@@ -18,8 +20,8 @@ namespace SHERPA {
   private:
 
     long int m_lastparticlecounter, m_lastblobcounter;
-    double m_n, m_addn, m_sum, m_sumsqr, m_maxweight;
-    double m_mn, m_msum, m_msumsqr;
+    double m_n, m_addn, m_maxweight;
+    double m_mn;
     std::map<std::string,double> m_maxweights;
     int m_checkweight;
     size_t m_lastrss;
@@ -31,7 +33,8 @@ namespace SHERPA {
     Filter            * p_filter;
 
     const ATOOLS::Variations  * p_variations;
-
+    ATOOLS::Weights_Map m_wgtmapsum, m_wgtmapsumsqr;
+    ATOOLS::Weights_Map m_mwgtmapsum, m_mwgtmapsumsqr;
     
     void WriteRNGStatus(const std::string &file,
 			const std::string &message) const;
@@ -44,6 +47,16 @@ namespace SHERPA {
     bool AnalyseEvent();
     bool WeightsAreGood(const ATOOLS::Weights_Map&);
     int  IterateEventPhases(eventtype::code & mode);
+
+    void MPISync();
+
+    // This entails costly operations and should not be done too often (e.g.
+    // only after a successful run).
+    void MPISyncXSAndErrMaps();
+
+    // These are only valid after calling MPISyncXSAndErrMaps().
+    ATOOLS::Weights_Map TotalXSMPI();
+    ATOOLS::Weights_Map TotalErrMPI();
 
   public:
 
@@ -59,19 +72,21 @@ namespace SHERPA {
 
     bool GenerateEvent(eventtype::code mode=eventtype::StandardPerturbative);
     void Reset();
+    void ResetNonPerturbativePhases();
     void Finish();
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
 
     void SetFilter(Filter * filter) { p_filter = filter; }
     
-    void MPISync();
-    double TotalXS();
-    double TotalVar();
-    double TotalErr();
-    double TotalXSMPI();
-    double TotalVarMPI();
-    double TotalErrMPI();
+    void PerformMemoryMonitoring();
+
+    ATOOLS::Weights_Map TotalXS();
+    ATOOLS::Weights_Map TotalErr();
+    ATOOLS::Uncertain<double> TotalNominalXS();
+    ATOOLS::Uncertain<double> TotalNominalXSMPI();
+
+    std::string CurrentProcess() const;
 
   };
 

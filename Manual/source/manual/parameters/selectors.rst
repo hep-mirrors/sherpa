@@ -96,6 +96,9 @@ respective keywords are
   cut on the z-component of the momentum, acts on initial-state flavours only
   (commonly used in DIS analyses)
 
+:option:`HT`
+  Visible transverse energy cut
+
 
 .. _Two particle selectors:
 

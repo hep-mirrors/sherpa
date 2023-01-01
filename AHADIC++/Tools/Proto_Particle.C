@@ -9,7 +9,8 @@ std::set<Proto_Particle *> Proto_Particle::s_protos =
   std::set<Proto_Particle *>();
 
 Proto_Particle::Proto_Particle(const Proto_Particle & proto) :
-  m_flav(proto.m_flav), m_momentum(proto.m_momentum), m_kt2max(proto.KT2_Max()),
+  m_flav(proto.m_flav), m_momentum(proto.m_momentum), m_gen(1),
+  m_kt2max(proto.KT2_Max()),
   m_isleading(proto.m_isleading), m_isbeam(proto.m_isbeam)
 {
   s_protos.insert(this);

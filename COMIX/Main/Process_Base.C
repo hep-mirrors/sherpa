@@ -50,13 +50,13 @@ bool COMIX::Process_Base::Initialize(std::map<std::string,std::string> *const pm
 
 bool COMIX::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)
 {
-  if (p_proc->NOut()==1) return false;
   p_ismc=psh->ISRIntegrator();
+  if (p_proc->NOut()==1) return false;
   p_fsmc=psh->FSRIntegrator();
   p_fsmc->DropAllChannels();
   PS_Channel *ch(new PS_Channel(p_proc->NIn(),p_proc->NOut(),
 				(Flavour*)&p_proc->Flavours().front(),this));
   InitPSGenerator(0);
   p_fsmc->Add(ch);
-  return false;
+  return true;
 }      

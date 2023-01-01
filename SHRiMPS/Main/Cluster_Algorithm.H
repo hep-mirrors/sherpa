@@ -28,7 +28,8 @@ namespace SHRIMPS {
     int           m_mode,m_nlad;
     bool          m_resc;
     ATOOLS::Vec4D m_rescvec;
-    double        m_minkt2,m_showerfac,m_tmax;
+    double        m_minkt2,m_Ymax;
+    double        m_showerfac, m_tmax;
 
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
@@ -49,7 +50,7 @@ namespace SHRIMPS {
 			  const ATOOLS::ColorID &j) const;
     void   WriteOutAndDeleteHistograms();
   public:
-    Cluster_Algorithm();
+    Cluster_Algorithm(const double & Ymax=10.,const double & minkt2=4.);
 
     ~Cluster_Algorithm();
 
@@ -62,12 +63,10 @@ namespace SHRIMPS {
       m_minkt2 = minkt2;
       if (m_mode<2) m_minkt2 = 0.;
     }
-    inline void SetShowerFac(const double & sfac) {
-      m_showerfac = sfac; 
-    }
-    inline void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const cb) 
-    { p_clus=cb; }
-    inline void SetMinKT2(const double & minkt2) { m_minkt2 = minkt2; }
+    inline void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const cb) { p_clus=cb; }
+    inline void SetShowerFac(const double & sfac) { m_showerfac = sfac; }
+    inline void SetYmax(const double & Ymax)      { m_Ymax      = Ymax; }
+    inline void SetMinKT2(const double & minkt2)  { m_minkt2    = minkt2; }
     inline void SetRescatt(const double & resc)  { m_resc = resc; }
     inline void SetTMax(const double & tmax)     { m_tmax = tmax; }
     inline void SetNLad(const int & nlad)        { m_nlad = nlad; }

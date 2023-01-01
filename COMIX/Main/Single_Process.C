@@ -31,7 +31,8 @@ COMIX::Single_Process::Single_Process():
   m_checkpoles(false), m_allowmap(true)
 {
   Settings& s = Settings::GetMainSettings();
-  m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
+  m_itype     = s["NLO_IMODE"].Get<cs_itype::type>();
+  m_allowmap  = s["KFACTOR_ALLOW_MAPPING"].SetDefault(true).Get<bool>();
 }
 
 COMIX::Single_Process::~Single_Process()
@@ -418,7 +419,9 @@ double COMIX::Single_Process::SetZero()
   return m_w=m_dxs=m_lastxs=0.0;
 }
 
-double COMIX::Single_Process::Partonic(const Vec4D_Vector &p, int mode)
+double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
+                                       Variations_Mode varmode,
+                                       int mode)
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
   if (mode==1) {
@@ -582,10 +585,10 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return;
   if (!((m_itype&cs_itype::K) || (m_itype&cs_itype::P))) return;
   const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
-  double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBeam(0).PPlus():
-	      p0.PMinus()/rpa->gen.PBeam(1).PMinus());
-  double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBeam(1).PMinus():
-	      p1.PPlus()/rpa->gen.PBeam(0).PPlus());
+  double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBunch(0).PPlus():
+	      p0.PMinus()/rpa->gen.PBunch(1).PMinus());
+  double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBunch(1).PMinus():
+	      p1.PPlus()/rpa->gen.PBunch(0).PPlus());
   Single_Process *sp(p_map!=NULL?p_map:this);
   double w(1.0);
   bool map(p_map!=NULL && m_lookup && p_map->m_lookup);
@@ -606,10 +609,10 @@ double COMIX::Single_Process::KPTerms
 {
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
   const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
-  double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBeam(0).PPlus():
-	      p0.PMinus()/rpa->gen.PBeam(1).PMinus());
-  double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBeam(1).PMinus():
-	      p1.PPlus()/rpa->gen.PBeam(0).PPlus());
+  double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBunch(0).PPlus():
+	      p0.PMinus()/rpa->gen.PBunch(1).PMinus());
+  double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBunch(1).PMinus():
+	      p1.PPlus()/rpa->gen.PBunch(0).PPlus());
   double muf2(ScaleSetter(1)->Scale(stp::fac,1));
   return m_w*p_kpterms->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
 			    muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]);

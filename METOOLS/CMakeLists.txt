@@ -1,0 +1,7 @@
+add_subdirectory(Colors)
+add_subdirectory(Currents)
+add_subdirectory(Explicit)
+add_subdirectory(Loops)
+add_subdirectory(Main)
+add_subdirectory(SpinCorrelations)
+add_subdirectory(Vertices)

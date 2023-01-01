@@ -90,10 +90,12 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   p_kernel->SetVSubtractionMode(m_Vsubmode);
 
   int collVFF = s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].Get<int>();
-  if (!s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].IsCustomised()
+  if (!s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].IsSetExplicitly()
       && m_stype == sbt::qed) {
     collVFF = 0;  // overwrite default for QED splittings
   }
+  msg_Tracking()<<"Switch collinear VFF splittings "<<(collVFF?"on":"off")
+                <<"."<<std::endl;
   p_kernel->SetCollinearVFFSplitting(collVFF);
 
   SetMassive();
@@ -557,8 +559,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
   // assumption: a/a' = gluon/photon, quark only
   if (m_sa) {
     msg_Debugging()<<"sa"<<std::endl;
-    if (m_cemode && eta0*rpa->gen.PBeam(0)[0]<fl0.Mass(true)) {
-      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBeam(0)[0]
+    if (m_cemode && eta0*rpa->gen.PBunch(0)[0]<fl0.Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBunch(0)[0]
                     <<" vs. "<<fl0.Mass(true)<<" )"<<std::endl;
       return 0.0;
     }
@@ -615,8 +617,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
 
   if (m_sb) {
     msg_Debugging()<<"sb"<<std::endl;
-    if (m_cemode && eta1*rpa->gen.PBeam(1)[0]<fl1.Mass(true)) {
-      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBeam(1)[0]
+    if (m_cemode && eta1*rpa->gen.PBunch(1)[0]<fl1.Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBunch(1)[0]
                     <<" vs. "<<fl1.Mass(true)<<" )"<<std::endl;
       return 0.0;
     }

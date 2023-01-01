@@ -7,7 +7,7 @@ A posteriori scale variations
 There are several ways to compute the effects of changing the scales
 and PDFs of any event produced by Sherpa. They can computed
 explicitly, cf. :ref:`Explicit scale variations`, on-the-fly, cf.
-:ref:`Scale and PDF variations` (restricted to multiplicative
+:ref:`On-the-fly event weight variations` (restricted to multiplicative
 factors), or reconstructed a posteriori. The latter method needs
 plenty of additional information in the event record and is (depending
 on the actual calculation) available in two formats:
@@ -23,7 +23,7 @@ A posteriori scale and PDF variations using the HepMC GenEvent Output
 
 Events generated in a LO, LOPS, NLO, NLOPS, MEPS\@LO, MEPS\@NLO or
 MENLOPS calculation can be written out in the HepMC format including
-all infomation to carry out arbitrary scale variations a
+all information to carry out arbitrary scale variations a
 posteriori. For this feature HepMC of at least version 2.06 is
 necessary and both ``HEPMC_USE_NAMED_WEIGHTS: true`` and
 ``HEPMC_EXTENDED_WEIGHTS: true`` have to enabled. Detailed

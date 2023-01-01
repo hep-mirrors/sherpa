@@ -6,7 +6,7 @@
 
 namespace AMISIC {
   struct overlap_form {
-    enum code {
+    enum class code {
       Single_Gaussian,
       Double_Gaussian
     };
@@ -14,7 +14,7 @@ namespace AMISIC {
   std::ostream &operator<<(std::ostream&, const overlap_form::code&);
   std::istream &operator>>(std::istream&, overlap_form::code&);
   struct scale_scheme {
-    enum code {
+    enum class code {
       PT,
       PT_with_Raps
     };
@@ -28,19 +28,17 @@ namespace AMISIC {
     scale_scheme::code m_scalescheme;
     std::map<std::string,double> m_parameters;
 
-    void   ReadParameters();
     double CalculatePT(const double & pt);
   public:
     MI_Parameters();
-    ~MI_Parameters() {}
+    ~MI_Parameters() = default;
 
-    bool Init();
-    double operator()(std::string keyword);
+    double operator()(const std::string& keyword) const;
 
-    const overlap_form::code & GetOverlapForm() { return m_overlapform; } 
-    const scale_scheme::code & GetScaleScheme() { return m_scalescheme; } 
+    const overlap_form::code & GetOverlapForm() const { return m_overlapform; }
+    const scale_scheme::code & GetScaleScheme() const { return m_scalescheme; }
   };
   
-  extern MI_Parameters * mipars;
+  extern const MI_Parameters * mipars;
 }
 #endif

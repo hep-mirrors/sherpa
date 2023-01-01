@@ -707,7 +707,9 @@ bool AMEGIC::Single_Process::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
   if (p_partner!=this) return true;
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return Process_Base::FillIntegrator(psh);
 }
 
@@ -750,7 +752,9 @@ void AMEGIC::Single_Process::Minimize()
   m_mincpl    = p_partner->MinOrders();
 }
 
-double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms, int mode)
+double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,
+                                        Variations_Mode varmode,
+                                        int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
@@ -771,7 +775,7 @@ double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool loo
 {
   m_lastbxs = m_lastxs = 0.;
   Vec4D_Vector mom(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+  if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     Poincare cms=Poincare(mom[0]+mom[1]);
     for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
     /////////////////////////////////////

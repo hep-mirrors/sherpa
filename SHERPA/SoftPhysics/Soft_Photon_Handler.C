@@ -5,7 +5,6 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "PHOTONS++/Main/Photons.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
@@ -19,6 +18,7 @@ using namespace std;
 
 Soft_Photon_Handler::Soft_Photon_Handler(Matrix_Element_Handler * meh) :
   m_photonsadded(false), m_name(""),
+  m_stretcher(Momenta_Stretcher("Soft_Photon_Handler")),
   p_yfs(NULL), p_clusterer(NULL), p_mehandler(meh)
 {
   p_yfs       = new PHOTONS::Photons();
@@ -120,7 +120,6 @@ bool Soft_Photon_Handler::CheckOnshellness(Blob* blob)
   msg_Debugging()<<"masses="<<masses<<std::endl;
   if (allonshell) return true;
   msg_Debugging()<<"need to put on-shell"<<std::endl;
-  Momenta_Stretcher momstretch;
-  momstretch.StretchMomenta(blob->GetOutParticles(),masses);
+  m_stretcher.StretchMomenta(blob->GetOutParticles(),masses);
   return false;
 }

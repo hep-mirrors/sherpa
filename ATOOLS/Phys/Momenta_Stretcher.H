@@ -2,15 +2,18 @@
 #define ATOOLS_Phys_Momenta_Stretcher_H
 
 #include <vector>
+#include <string>
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Math/Vector.H"
 
 namespace ATOOLS {
   
   class Momenta_Stretcher {
-    long int m_fails;
+    std::string m_module;
+    static unsigned long int s_fails;
   public:
-    Momenta_Stretcher() : m_fails(0) {}
+    Momenta_Stretcher(const std::string module=std::string("")) : m_module(module) {}
+    ~Momenta_Stretcher();
     bool MassThem(const int, const int, Vec4D *, const double *,const double=-1.e-14);
     bool MassThem(const int n0, std::vector<Vec4D>& moms, std::vector<double> masses,const double=-1.e-14);
     bool ZeroThem(const int, const int, Vec4D *,const double=-1.e-14);
@@ -19,7 +22,7 @@ namespace ATOOLS {
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<Vec4D>& moms);
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<double>& masses);
 
-    inline void Reset() { m_fails = 0; }
+    //inline void Reset() { s_fails = 0; }
   };
 }
   ////////////////////////////////////////////////////////////////////////////////////////////////////

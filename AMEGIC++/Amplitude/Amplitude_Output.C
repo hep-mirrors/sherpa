@@ -17,7 +17,7 @@ Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top,
     Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+script,
          rpa->gen.Variable("SHERPA_CPP_PATH")+script);
   gpath+=std::string("/Amegic/");
-  MakeDir(gpath);
+  MakeDir(gpath,448);
   pid=pid.substr(pid.rfind('/')+1);
   std::string fname=gpath+pid+std::string(".tex");
   pios.open(fname.c_str());

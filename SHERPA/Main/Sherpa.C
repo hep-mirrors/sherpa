@@ -17,6 +17,7 @@
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/Tools/HepMC2_Interface.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
+#include "PHASIC++/Decays/Decay_Channel.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -72,8 +73,9 @@ Sherpa::~Sherpa()
     if (p_inithandler->GetVariations()) {
       p_inithandler->GetVariations()->PrintStatistics(msg->Out());
     }
-    Blob_List::PrintMomFailStatistics(msg->Out());
   }
+  Blob_List::PrintMomFailStatistics(msg->Out());
+  PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }
@@ -172,27 +174,24 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
   else {
-    p_eventhandler->AddEventPhase(
-        new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+    p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),
 						    p_inithandler->GetHDHandler(),
 						    p_inithandler->GetMIHandler(),
 						    p_inithandler->GetSoftCollisionHandler(),
-						    p_inithandler->GetShowerHandlers()));
-    p_eventhandler->AddEventPhase(
-        new Signal_Process_FS_QED_Correction(
-          p_inithandler->GetMatrixElementHandler(),
-          p_inithandler->GetSoftPhotonHandler()));
-    p_eventhandler->AddEventPhase(
-        new Multiple_Interactions(p_inithandler->GetMIHandler()));
-    p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
+						    p_inithandler->GetShowerHandlers(),
+						    p_inithandler->GetBeamRemnantHandler()));
+    p_eventhandler->AddEventPhase(new Signal_Process_FS_QED_Correction(
+						    p_inithandler->GetMatrixElementHandler(),
+						    p_inithandler->GetSoftPhotonHandler()));
+    p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
 						    p_inithandler->GetFragmentation()));
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
-
   }
   p_eventhandler->AddEventPhase(new Userhook_Phase(this));
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
@@ -288,16 +287,26 @@ bool Sherpa::GenerateOneEvent(bool reset)
 	 (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
 	i<rpa->gen.NumberOfEvents()) {
       double diff=rpa->gen.Timer().RealTime()-m_evt_starttime;
-      msg_Info()<<"  Event "<<i<<(m_showtrials?"("+ToString(m_trials)+")":"")<<" ( "
-		<<FormatTime(size_t(diff))<<" elapsed / "
-		<<FormatTime(size_t((nevt-i)/(double)i*diff))
-		<<" left ) -> ETA: "<<rpa->gen.Timer().
-	StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
-      double xs(GetEventHandler()->TotalXSMPI());
-      double err(GetEventHandler()->TotalErrMPI());
+      msg_Info()<<"  Event "<<i;
+      if (m_showtrials)
+        msg_Info()<<"("+ToString(m_trials)+")";
+      msg_Info()<<" ( ";
+      if (rpa->gen.BatchMode()&16) {
+        msg_Info()<<diff<<"s elapsed / "
+                  <<((nevt-i)/(double)i*diff)<<"s";
+      } else {
+        msg_Info()<<FormatTime(size_t(diff))<<" elapsed / "
+                  <<FormatTime(size_t((nevt-i)/(double)i*diff));
+      }
+      msg_Info()<<" left ) -> ETA: "<<rpa->gen.Timer().
+        StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
+      p_eventhandler->PerformMemoryMonitoring();
+      const Uncertain<double> xs = p_eventhandler->TotalNominalXSMPI();
       if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
-      msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
-		<<((int(err/xs*10000))/100.0)<<" % )  ";
+      msg_Info() << "XS = " << xs.value << " pb +- ( " << xs.error
+                 << " pb = " << xs.PercentError() << " % )  ";
+      if (rpa->gen.BatchMode()&8)
+        msg_Info()<<"  Process was "<<p_eventhandler->CurrentProcess()<<"  ";
       if (!(rpa->gen.BatchMode()&2))
 	msg_Info()<<mm(1,mm::up);
       if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
@@ -314,7 +323,7 @@ void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)
   if (!p_hepmc2) p_hepmc2 = new SHERPA::HepMC2_Interface();
   ATOOLS::Blob_List* blobs = GetEventHandler()->GetBlobs();
   p_hepmc2->Sherpa2HepMC(blobs, event);
-  p_hepmc2->AddCrossSection(event, TotalXS(), TotalErr());
+  p_hepmc2->AddCrossSection(event, p_eventhandler->TotalNominalXS());
 }
 #endif
 
@@ -324,18 +333,14 @@ void Sherpa::FillHepMCEvent(HepMC3::GenEvent& event)
   if (p_hepmc3==NULL) p_hepmc3 = new SHERPA::HepMC3_Interface();
   ATOOLS::Blob_List* blobs=GetEventHandler()->GetBlobs();
   p_hepmc3->Sherpa2HepMC(blobs, event);
-  p_hepmc3->AddCrossSection(event, TotalXS(), TotalErr());
+  p_hepmc3->AddCrossSection(event, p_eventhandler->TotalXS(),
+                            p_eventhandler->TotalErr());
 }
 #endif
 
-double Sherpa::TotalXS()
+Uncertain<double> Sherpa::TotalNominalXS() const
 {
-  return p_eventhandler->TotalXS();
-}
-
-double Sherpa::TotalErr()
-{
-  return p_eventhandler->TotalErr();
+  return p_eventhandler->TotalNominalXS();
 }
 
 std::string Sherpa::PDFInfo()
@@ -443,8 +448,7 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
 	    <<"                                                                             "<<std::endl
 	    <<"     for news, bugreports, updates and new releases.                         "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"-----------------------------------------------------------------------------"<<std::endl
-	    <<std::endl;
+	    <<"-----------------------------------------------------------------------------"<<std::endl;
   rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");

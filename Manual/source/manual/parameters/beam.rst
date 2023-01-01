@@ -127,35 +127,69 @@ Backscattering with ``LASER_MODE: -1``.
 EPA
 ---
 
-.. index:: EPA_q2Max
-.. index:: EPA_ptMin
-.. index:: EPA_Form_Factor
-.. index:: EPA_AlphaQED
+.. index:: EPA:Q2Max
+.. index:: EPA:ThetaMax
+.. index:: EPA:XMin
+.. index:: EPA:Use_old_WW
+.. index:: EPA:PTMin
+.. index:: EPA:Form_Factor
+.. index:: EPA:AlphaQED
 
 The equivalent photon approximation, cf. :cite:`Archibald2008aa`,
-:cite:`Budnev1974de`, has a few free parameters:
+:cite:`Budnev1974de`, has a few free parameters, listed below.
+Each of these parameters has to be set in the subsetting ``EPA``, like so
 
-:option:`EPA_q2Max`
-  Parameter of the EPA spectra of the two beams, defaults to ``2.`` in
-  units of GeV squared.
+.. code-block:: yaml
 
-:option:`EPA_ptMin`
+   EPA:
+     XMin: 0.01
+
+The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
+
+:option:`Q2Max`
+  Parameter of the EPA spectra of the two beams, defaults to ``3.`` in
+  units of GeV squared. For the electron, the maximum virtuality is taken
+  to be the minimum of this value and the kinematical limit, given by
+
+  .. math::
+
+    Q^2_{max,kin} = \frac{(m_e x)^2}{1-x} + E_e^2 (1-x) \theta^2_{max}
+
+  with :math:`m_e` is the electron mass, :math:`E_e` the electron energy,
+  :math:`x` the energy fraction that the photon carries and
+  :math:`\theta_{max}` the maximum electron deflection angle, see below.
+
+:option:`ThetaMax`
+  Parameter of the EPA spectrum of an electron beam, c.f. :cite:`Frixione:1993yw`.
+  Describes the maximum angle of the electron deflection, which
+  translates to the maximum virtuality in the photon spectrum. It defaults to ``0.3``.
+
+:option:`XMin`
+  Restricts the phase space by imposing a minimum energy fraction that the photon must have with respect to the beam energy.
+  Its default value is ``0``.
+
+:option:`Use_old_WW`
+  In Sherpa version 3, a more accurate Weizsäcker-Williams weight for electron beams is used, as described in
+  :cite:`Schuler:1996qr` and :cite:`Frixione:1993yw`. By default, Sherpa uses this improved version of the formula,
+  if you would like to use the previous version, set this switch to ``true``.
+
+:option:`PTMin`
   Infrared regulator to the EPA beam spectra. Given in GeV, the value
   must be between ``0.`` and ``1.`` for EPA approximation to hold.
   Defaults to ``0.``, i.e. the spectrum has to be regulated by cuts on
   the observable, cf :ref:`Selectors`.
 
-:option:`EPA_Form_Factor`
+:option:`Form_Factor`
   Form factor model to be used on the beams. The options are ``0``
   (pointlike), ``1`` (homogeneously charged sphere, ``2`` (gaussian
   shaped nucleus), and ``3`` (homogeneously charged sphere, smoothed
   at low and high x). Applicable only to heavy ion beams.  Defaults to
   ``0``.
 
-:option:`EPA_AlphaQED`
+:option:`AlphaQED`
   Value of alphaQED to be used in the EPA. Defaults to ``0.0072992701``.
 
-``EPA_q2Max``, ``EPA_ptMin``, ``EPA_Form_Factor`` can either be set to
+``Q2Max``, ``PTMin``, ``Form_Factor``, ``XMin`` can either be set to
 single values that are then applied to both beams, or to a list of two
 values, for the respective beams.
 

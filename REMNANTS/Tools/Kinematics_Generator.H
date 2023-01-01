@@ -44,7 +44,6 @@ namespace REMNANTS {
     bool TransverseKinematicsHH();
     bool TransverseKinematicsDIS(const size_t & beam);
     bool AdjustShowerInitiators();
-    bool ConstructMomentaAndBoosts(ATOOLS::Particle * part[2]);
     bool BoostConnectedBlob(ATOOLS::Blob * blob,size_t & catcher);
     bool AdjustRemnants();
     bool AdjustFinalStateDIS(const size_t & beam);

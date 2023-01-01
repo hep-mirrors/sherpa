@@ -72,9 +72,10 @@ void Avarage_Photon_Number::CalculateAvaragePhotonNumber() {
                      <<(1-ai*aj+bi*bj)*intterm<<endl;
       msg_Debugging()<<"Emax,Emin: "<<m_omegaMax<<" ,  "<<m_omegaMin<<endl;
 #endif
+      // check we are entering something sensible, nan's will also fail
       if (intterm!=0.) m_nbars.push_back(IdPairNbar(IdPair(i,j),dipoleij));
       else             m_nbars.push_back(IdPairNbar(IdPair(i,j),0.));
-      sum += dipoleij;
+      sum += m_nbars.back().nbar;
     }
   }
   m_nbar = sum;

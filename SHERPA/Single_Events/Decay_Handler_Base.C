@@ -3,7 +3,6 @@
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
-#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Tensor.H"
@@ -28,13 +27,18 @@ using namespace std;
 
 Decay_Handler_Base::Decay_Handler_Base() :
   p_softphotons(NULL), p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
+  m_stretcher(Momenta_Stretcher("Decay_Handler")),
   m_qedmode(0), m_spincorr(false), m_decaychainend(false), m_cluster(true),
-  m_mass_smearing(1)
+  m_mass_smearing(1), m_oserrors(0)
 {
+  auto& s = Settings::GetMainSettings();
+  m_specialtauspincorr = s["SPECIAL_TAU_SPIN_CORRELATIONS"].SetDefault(0).Get<size_t>();
 }
 
 Decay_Handler_Base::~Decay_Handler_Base()
 {
+  if (m_oserrors>0)
+    msg_Error()<<METHOD<<" with "<<m_oserrors<<" particles not on their mass shell.\n";
   if (p_decaymap) delete p_decaymap; p_decaymap=NULL;
 }
 
@@ -149,10 +153,10 @@ void Decay_Handler_Base::BoostAndStretch(Blob* blob, const Vec4D& labmom)
   DEBUG_VAR(blob->MomentumConserved());
 
   // 3.
-  Momenta_Stretcher stretch;
-  if (!stretch.StretchBlob(blob)) {
-    msg_Error()<<METHOD<<" failed to stretch blob, retrying event."<<endl
-               <<*blob<<endl;
+  if (!m_stretcher.StretchBlob(blob)) {
+    msg_Error()<<METHOD<<" failed to stretch blob ("<<blob->Type()<<", "
+	       <<blob->NInP()<<" -> "<<blob->NOutP()<<"), retrying event.\n";
+    msg_Tracking()<<*blob<<endl;
     throw Return_Value::Retry_Event;
   }
   for (size_t i(0); i<blob->NOutP(); ++i)
@@ -161,6 +165,65 @@ void Decay_Handler_Base::BoostAndStretch(Blob* blob, const Vec4D& labmom)
           ->AddData("p_actual",
                     new Blob_Data<Vec4D>(blob->OutParticle(i)->Momentum()));
   DEBUG_VAR(blob->MomentumConserved());
+}
+
+Blob* FindSPBlob(Blob* startblob)
+{
+  if (startblob->Type()==btp::Signal_Process) {
+    return startblob;
+  }
+
+  for (size_t i=0; i<startblob->NInP(); ++i) {
+    if (startblob->InParticle(i)->ProductionBlob()) {
+      Blob* blob = FindSPBlob(startblob->InParticle(i)->ProductionBlob());
+      if (blob) return blob;
+    }
+  }
+  return NULL;
+}
+
+
+typedef std::vector<std::pair<std::pair<ATOOLS::Flavour,ATOOLS::Vec4D>, Spin_Density*> > SpinDensityMap;
+bool Decay_Handler_Base::DoSpecialDecayTauSC(Particle* part)
+{
+  if (!m_specialtauspincorr) return false;
+  Blob* blob=part->ProductionBlob();
+  if (blob==NULL || blob->Type()!=btp::Fragmentation) return false;
+  for (size_t i=0; i<blob->NOutP(); ++i)
+    if (blob->OutParticle(i)->Flav().Kfcode()!=kf_tau)
+      return false;
+  DEBUG_FUNC(*part);
+
+  Blob* signal=FindSPBlob(blob);
+  if (!signal) {
+    PRINT_INFO("Signal blob not found.");
+    return false;
+  }
+  Blob_Data_Base* data = (*signal)["Tau_SpinDensity"];
+  SpinDensityMap* tau_spindensity = data ? data->Get<SpinDensityMap*>() : NULL;
+  if (!tau_spindensity) return false;
+
+  double bestDeltaR=1000.0; Spin_Density* sigma_tau=NULL;
+  for (SpinDensityMap::iterator it=tau_spindensity->begin(); it!=tau_spindensity->end(); ++it) {
+    if (it->first.first==part->Flav()) {
+      double newDeltaR=part->Momentum().DR(it->first.second);
+      if (newDeltaR<bestDeltaR) {
+        bestDeltaR=newDeltaR;
+        sigma_tau=it->second;
+      }
+    }
+  }
+  if (sigma_tau==NULL) {
+    PRINT_INFO("Tau Spin_Density not found");
+  }
+  else {
+    DEBUG_VAR(*sigma_tau);
+    sigma_tau->SetParticle(part);
+    Decay_Matrix* D=FillDecayTree(part->DecayBlob(), sigma_tau);
+    delete D;
+    return true;
+  }
+  return false;
 }
 
 void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
@@ -178,9 +241,11 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
     if (!daughters[i]->Flav().Stable() &&
 	abs(daughters[i]->Momentum().Abs2()-
 	    sqr(daughters[i]->FinalMass()))>1e-6) {
-      PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
-                 <<"p^2="<<daughters[i]->Momentum().Mass()
-                 <<" vs. m^2="<<daughters[i]->FinalMass());
+      if ((m_oserrors++)<5) {
+	PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
+		   <<"sqrt|p^2|="<<sqrt(daughters[i]->Momentum().Abs2())
+		   <<" vs. m="<<daughters[i]->FinalMass());
+      }
       throw Return_Value::Retry_Event;
     }
   }
@@ -195,10 +260,10 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
     CreateDecayBlob(daughters[shuffled[i]]);
   }
   SetMasses(blob, false);
-  Momenta_Stretcher stretch;
-  if (!stretch.StretchBlob(blob)) {
-    msg_Error()<<METHOD<<" failed to stretch blob, retrying event."<<endl
-               <<*blob<<endl;
+  if (!m_stretcher.StretchBlob(blob)) {
+    msg_Error()<<METHOD<<" failed to stretch blob ("<<blob->Type()<<", "
+	       <<blob->NInP()<<" -> "<<blob->NOutP()<<"), retrying event.\n";
+    msg_Tracking()<<*blob<<endl;
     throw Return_Value::Retry_Event;
   }
   for (size_t i(0); i<blob->NOutP(); ++i)
@@ -228,7 +293,13 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
           D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
           D->SetParticle(origparts[i]);
         }
-        if (amps->Contains(origparts[i])) {
+        if (amps->Contains(origparts[i]) &&
+            // Contract tau spins here only if they are globally stable or decayed here,
+            // i.e. not in hard decays if taus will be decayed in hadron decays
+            // (this is relevant e.g. for tttautau)
+            (origparts[i]->Flav().Kfcode()!=kf_tau ||
+             Flavour(kf_tau).IsStable() ||
+             Decays(Flavour(kf_tau)))) {
           DEBUG_INFO("contracting with D["<<D->Particle()<<"]");
           amps->Contract(D);
         }
@@ -237,8 +308,13 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
       else {
         Spin_Density sigma(daughters[i]);
         if (Decays(daughters[i]->Flav())) {
-          Decay_Matrix* D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
-          delete D;
+          if (DoSpecialDecayTauSC(daughters[i])) {
+            DEBUG_INFO("did special tau spin correlation treatment");
+          }
+          else {
+            Decay_Matrix* D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
+            delete D;
+          }
         }
       }
     }
@@ -264,8 +340,9 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   Blob_Data_Base* data = (*blob)["p_onshell"];
   if (data) inpart->SetMomentum(data->Get<Vec4D>());
   else {
-    msg_Error()<<METHOD<<" could not find p_onshell, retrying event."<<endl
-               <<*blob<<endl;
+    msg_Error()<<METHOD<<" could not find p_onshell tag in ("<<blob->Type()<<", "
+	       <<blob->NInP()<<" -> "<<blob->NOutP()<<"), retrying event.\n";
+    msg_Tracking()<<*blob<<endl;
     throw Return_Value::Retry_Event;
   }
   msg_Debugging()<<*blob<<std::endl;
@@ -307,10 +384,25 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
         (blob->Type()==btp::Hadron_Decay &&
          blob->Has(blob_status::needs_showers))) {
       DEBUG_INFO("is stable.");
-      if (daughters[i]->Flav().Kfcode()==kf_tau &&
-          !daughters[i]->Flav().IsStable() &&
+      if (m_specialtauspincorr && daughters[i]->Flav().Kfcode()==kf_tau &&
+          !daughters[i]->Flav().IsStable() && blob->Type()==btp::Hard_Decay &&
           rpa->gen.SoftSC()) {
-        DEBUG_INFO("  ... but keeping tau spin density for hadronic tau decays.");
+        DEBUG_INFO("  keeping tau spin information for hadronic tau decays.");
+        SpinDensityMap* tau_spindensity;
+        Blob* spblob(FindSPBlob(blob));
+        if (!spblob) THROW(fatal_error, "Internal Error 1");
+        Blob_Data_Base * bdb((*spblob)["Tau_SpinDensity"]);
+        if (!bdb) {
+          tau_spindensity = new SpinDensityMap;
+          spblob->AddData("Tau_SpinDensity",new Blob_Data<SpinDensityMap*>(tau_spindensity));
+        }
+        else {
+          tau_spindensity = bdb->Get<SpinDensityMap*>();
+        }
+        tau_spindensity->push_back(make_pair(make_pair(daughters[i]->Flav(), daughters[i]->Momentum()),
+                                             new Spin_Density(daughters[i],amps)));
+        DEBUG_VAR(*(tau_spindensity->back().second));
+        tau_spindensity->back().second->SetParticle(NULL);
       }
       else if (m_spincorr) {
         Decay_Matrix* D=new Decay_Matrix(daughters[i]);
@@ -321,9 +413,10 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
     }
     else {
       if (!CanDecay(inpart->Flav())) {
-        msg_Error()<<METHOD<<" Particle '"<<inpart->Flav()<<"' set unstable, "
-                   <<"but decay handler doesn't know how to deal with it."
-                   <<endl<<*blob<<endl;
+	msg_Error()<<METHOD<<" could not decay particle flavour "<<inpart->Flav()
+		   <<" in ("<<blob->Type()<<", "
+		   <<blob->NInP()<<" -> "<<blob->NOutP()<<"), retrying event.\n";
+	msg_Tracking()<<*blob<<endl;
       }
       Spin_Density* si=m_spincorr?new Spin_Density(daughters[i],s0,amps):NULL;
       DEBUG_INFO("decaying with spin density "<<si);
@@ -607,7 +700,6 @@ bool Decay_Handler_Base::CheckOnshellness(Blob* blob)
   msg_Debugging()<<"masses="<<masses<<std::endl;
   if (allonshell) return true;
   msg_Debugging()<<"need to put on-shell"<<std::endl;
-  Momenta_Stretcher momstretch;
-  momstretch.StretchMomenta(blob->GetOutParticles(),masses);
+  m_stretcher.StretchMomenta(blob->GetOutParticles(),masses);
   return false;
 }

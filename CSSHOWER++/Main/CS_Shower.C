@@ -102,7 +102,6 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
       for (Singlet::iterator it((*sit)->begin());it!=(*sit)->end();++it)
 	if (*it!=d[0] && *it!=d[1]) (*it)->SetStart(0.0);
     }
-    msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
     m_weightsmap["PS"] *= p_shower->WeightsMap().at("PS");
@@ -157,7 +156,7 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
     psblob->OutParticle(i)->SetStatus(part_status::decayed);
   
   psblob->SetStatus(blob_status::needs_beams |
-		    blob_status::needs_hadronization);
+		    blob_status::needs_reconnections);
   
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit)
@@ -281,7 +280,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
   std::map<Parton*,Cluster_Leg*> almap;
   std::map<Cluster_Leg*,Parton*> apmap;
   for (Cluster_Amplitude *campl(ampl);campl;campl=campl->Next()) {
-    msg_Debugging()<<*campl<<"\n";
     Parton *split(NULL);
     std::map<Parton*,Cluster_Leg*> lmap;
     std::map<Cluster_Leg*,Parton*> pmap;
@@ -293,6 +291,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       Parton *k(pmap[cl]);
       k->SetId(cl->Id());
       k->SetStat(cl->Stat());
+      k->SetFromDec(cl->FromDec());
       almap[apmap[cl]=k]=cl;
       std::map<size_t,Parton*>::iterator cit(kmap.find(cl->Id()));
       if (cit!=kmap.end()) {
@@ -421,8 +420,9 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       for (Singlet::const_iterator 
 	     pit((*sit)->begin());pit!=(*sit)->end();++pit) {
 	if ((*pit)->GetPrev()) {
-	  if ((*pit)->GetPrev()->GetNext()==*pit) 
+	  if ((*pit)->GetPrev()->GetNext()==*pit) {
 	    (*pit)->SetStart((*pit)->GetPrev()->KtStart());
+	  }
 	}
       }
       (*sit)->SetDecays(campl->Decays());
@@ -481,6 +481,9 @@ Singlet *CS_Shower::TranslateAmplitude
     if (is) parton->SetBeam(cl->Mom()[3]<0.0?0:1);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(m_respectq2?ampl->MuQ2():xit->second.second);
+    // This is where I modifed stuff - will need to formalise this much much better.
+    //msg_Out()<<METHOD<<"(my stuff): "<<cl->KT2(0)<<"\n";
+    //parton->SetStart(sqrt(cl->KT2(0)*cl->KT2(0)));
     if (m_respectq2)
       if (IsDecay(ampl,cl)) parton->SetStart(xit->second.second);
     if (cl->KT2(0)>=0.0) parton->SetSoft(0,cl->KT2(0)); 
@@ -516,7 +519,7 @@ Singlet *CS_Shower::TranslateAmplitude
     }
     if ((flow[0] && (*sit)->GetLeft()==NULL) ||
 	(flow[1] && (*sit)->GetRight()==NULL)) {
-      msg_Out()<<METHOD<<" has a problem with\n"<<(*ampl)<<"\n";
+      msg_Error()<<METHOD<<" has a problem with\n"<<(*ampl)<<"\n";
       THROW(fatal_error,"Missing colour partner");
     }
   }

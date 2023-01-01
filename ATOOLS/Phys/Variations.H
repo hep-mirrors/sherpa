@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Enum_Flags.H"
@@ -74,7 +73,9 @@ namespace ATOOLS {
     QCD_Variation_Params& Parameters(size_t i) { return *m_parameters_vector[i]; }
     Qcut_Variation_Params& Qcut_Parameters(size_t i) { return m_qcut_parameters_vector[i]; }
     std::string
-        GetVariationNameAt(Variations::Parameters_Vector::size_type, Variations_Type type=Variations_Type::qcd) const;
+        GetVariationNameAt(Variations::Parameters_Vector::size_type,
+            Variations_Type type=Variations_Type::qcd,
+            Variations_Source source=Variations_Source::all) const;
     size_t Size(Variations_Type t=Variations_Type::qcd) const;
     bool HasVariations() const {
       for (const auto t : ManagedVariationTypes())
@@ -91,9 +92,7 @@ namespace ATOOLS {
 
   private:
     void ReadDefaults();
-#if defined USING__LHAPDF && defined USING__LHAPDF6
     void LoadLHAPDFInterfaceIfNecessary();
-#endif
     void InitialiseParametersVector();
     void AddParameters(Scoped_Settings&);
     struct PDFs_And_AlphaS {
@@ -109,7 +108,8 @@ namespace ATOOLS {
                                            ScaleFactorExpansions::code,
                                            std::vector<Variations::PDFs_And_AlphaS>);
     void AddParameters(double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfs, bool deletealphas);
-    std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf);
+    std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(const std::string& pdfstringparam) const;
+    std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf) const;
 
     bool m_enabled;
     Parameters_Vector m_parameters_vector;
@@ -157,21 +157,13 @@ namespace ATOOLS {
   };
 #endif
 
-  struct QCD_Variation_Params_Base {
-    virtual bool IsTrivial() const = 0;
-    std::string m_name;
-    //! Return part of a name based on a tag name and the associated value
-    template <typename U>
-    std::string GenerateNamePart(std::string tag, U value) const;
-  };
-
-  struct Qcut_Variation_Params : public QCD_Variation_Params_Base {
-    Qcut_Variation_Params(double scale_factor) : m_scale_factor{scale_factor} {
-      m_name = GenerateName();
-    }
-    bool IsTrivial() const override { return (m_scale_factor == 1.0); }
+  struct Qcut_Variation_Params {
+    Qcut_Variation_Params(double scale_factor):
+      m_scale_factor{scale_factor}
+    {}
+    bool IsTrivial() const { return (m_scale_factor == 1.0); }
+    std::string Name(Variations_Source source=ATOOLS::Variations_Source::all) const;
     double m_scale_factor;
-    std::string GenerateName() const;
   };
 
   /*!
@@ -179,7 +171,7 @@ namespace ATOOLS {
    *
    * Used as an argument to a reweighting function.
    */
-  struct QCD_Variation_Params : public QCD_Variation_Params_Base {
+  struct QCD_Variation_Params {
     QCD_Variation_Params(double muR2fac, double muF2fac,
                          double showermuR2fac, double showermuF2fac,
                          PDF::PDF_Base *pdf1,
@@ -192,9 +184,7 @@ namespace ATOOLS {
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
       m_deletepdfs(deletepdfs),
       m_deletealphas(deletealphas)
-    {
-      m_name = GenerateName();
-    };
+    {}
     ~QCD_Variation_Params();
 
     void IncrementOrInitialiseWarningCounter(const std::string name) { m_warnings[name]++; }
@@ -203,7 +193,8 @@ namespace ATOOLS {
     void FillReweightingFactorsHisto(std::string name, double value) { m_rewfachisto.Fill(name, value); }
 #endif
 
-    bool IsTrivial() const override;
+    bool IsTrivial() const;
+    std::string Name(Variations_Source source=ATOOLS::Variations_Source::all) const;
 
     const double m_muR2fac, m_muF2fac;
     const double m_showermuR2fac, m_showermuF2fac;
@@ -216,8 +207,6 @@ namespace ATOOLS {
     const bool m_deletealphas;
 
   private:
-    //! Return a name based on the scale and PDF variations
-    std::string GenerateName() const;
     //! (name -> counter value) map used to track warnings
     std::map<std::string, unsigned long> m_warnings;
     friend class Variations;
@@ -225,6 +214,11 @@ namespace ATOOLS {
     ReweightingFactorHistogram m_rewfachisto;
 #endif
   };
+
+  template <typename U>
+  std::string GenerateVariationNamePart(std::string tag, U value) {
+    return tag + ToString(value);
+  }
 
 };
 

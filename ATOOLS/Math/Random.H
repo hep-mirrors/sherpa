@@ -20,6 +20,13 @@ namespace ATOOLS {
 
     virtual double Get() = 0;
 
+    // Derived classes can opt in to support status saving/restoring.
+    // In that case, override all three of the below functions and
+    // in particular return true in CanRestoreStatus().
+    virtual bool CanRestoreStatus() const { return false; }
+    virtual void SaveStatus() {}
+    virtual void RestoreStatus() {}
+
   };
 
   typedef Getter_Function<External_RNG,RNG_Key> RNG_Getter;
@@ -77,6 +84,7 @@ namespace ATOOLS {
     int  WriteOutSavedStatus(const char *outfile);
     void ReadInStatus(const char *infile);
     size_t ReadInStatus(std::istream &is,const size_t &idx);
+    bool CanRestoreStatus() const;
     void SaveStatus();
     void RestoreStatus();
     void FastForward(const size_t &n);

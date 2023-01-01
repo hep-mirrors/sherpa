@@ -23,13 +23,13 @@ Ahadic::Ahadic(string shower) :
   ReadMassParameters();
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
+  m_sformer.Init();
   m_beamparticles.Init();
   m_softclusters.Init();
   m_singletchecker.Init();
   m_gluondecayer.Init();
   m_clusterdecayer.Init();
 }
-
 
 Ahadic::~Ahadic() 
 {
@@ -53,16 +53,16 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	blobs->ColorConservation();
 	msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
 		      <<"   Hadronization for blob "
-		      <<"("<<blobs<<"; "
-		      <<blob->NInP()<<" -> "<<blob->NOutP()<<") "
+	  //	      <<"("<<blobs<<"; "
+	  //	      <<blob->NInP()<<" -> "<<blob->NOutP()<<") "*/
 		      <<"did not work out,";
-        if (result == Return_Value::New_Event)
+        if (result==Return_Value::New_Event)
           msg_Tracking()<<" due to momentum problems,";
         msg_Tracking()<<"\n   will trigger "<<result<<":\n"
                       <<(*blobs);
 	CleanUp(blob);
-	if (result == Return_Value::Retry_Event
-            && (rpa->gen.Beam1().IsLepton() || rpa->gen.Beam2().IsLepton())) {
+	if (result == Return_Value::Retry_Event &&
+	    (rpa->gen.Beam1().IsLepton() || rpa->gen.Beam2().IsLepton())) {
 	  msg_Tracking()<<METHOD<<": Non-hh collision.\n"
 			<<"   Request new event instead.\n";
 	  return Return_Value::New_Event;
@@ -82,14 +82,12 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 }  
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
-  //msg_Out()<<"######################################################################\n"
-  //	   <<(*blob)<<"\n";
   Reset();
   m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
-    msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
-	       <<(*blob);
+    //msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
+    //	       <<(*blob);
     Reset(blob);
     Reset();
     return Return_Value::New_Event;
@@ -106,16 +104,13 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     Reset(blob);
     return Return_Value::Retry_Event;
   }
-  //msg_Out()<<(*blob)<<"\n"
-  //	   <<"######################################################################\n";
   return Return_Value::Success;
 }
 
 bool Ahadic::ExtractSinglets(Blob * blob)
 {
-  //msg_Out()<<"   ### "<<METHOD<<"\n";
   if (!m_sformer.Extract(blob)) {
-    msg_Error()<<METHOD<<" could not extract singlet.\n";
+    //msg_Error()<<METHOD<<" could not extract singlet.\n";
     return false;
   }
   return true;
@@ -123,9 +118,8 @@ bool Ahadic::ExtractSinglets(Blob * blob)
 
 bool Ahadic::ShiftBeamParticles()
 {
-  //msg_Out()<<"   ### "<<METHOD<<"\n";
   if (!m_beamparticles()) {
-    msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
+    //msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
     return false;
   }
   return true;
@@ -133,38 +127,35 @@ bool Ahadic::ShiftBeamParticles()
 
 bool Ahadic::CheckSinglets()
 {
-  //msg_Out()<<"   ### "<<METHOD<<"\n";
   if (!m_singletchecker()) {
-    msg_Error()<<METHOD<<" singlets did not check out.\n";
+    //msg_Error()<<METHOD<<" singlets did not check out.\n";
     return false;
   }
   return true;
 }
 
 bool Ahadic::DecayGluons() {
-  //msg_Out()<<"   ### "<<METHOD<<"\n";
+  m_gluondecayer.ResetN();
   while (!m_singlet_list.empty()) {
     if (m_gluondecayer(m_singlet_list.front())) {
       m_singlet_list.pop_front();
     }
     else {
-      msg_Error()<<METHOD<<" could not decay all gluons.\n";
+      //msg_Error()<<METHOD<<" could not decay all gluons.\n";
       return false;
     }
   }
-  //msg_Out()<<m_cluster_list<<"\n";
+  m_gluondecayer.FillNs(m_hadron_list.size());
   return true;
 }
 
 bool Ahadic::DecayClusters() {
-  //msg_Out()<<"   ### "<<METHOD<<"\n";
   bool success = m_clusterdecayer();
-  if (!success) msg_Error()<<METHOD<<" could not decay all clusters.\n";
+  //if (!success) msg_Error()<<METHOD<<" could not decay all clusters.\n";
   return success;
 }
 
 void Ahadic::FillOutgoingParticles(Blob * blob) {
-  //msg_Out()<<"   ### "<<METHOD<<" for "<<m_hadron_list.size()<<"\n";
   while (!m_hadron_list.empty()) {
     Particle * part = (*m_hadron_list.front())();
     part->SetNumber();
@@ -199,10 +190,10 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
   Vec4D checkmom(blob->CheckMomentumConservation());
   if (dabs(checkmom.Abs2())/norm2>1.e-12 ||
       (norm2<0. && norm2>0.)) {
-    msg_Error()<<"ERROR in "<<METHOD<<" :\n"
-	       <<"   Momentum violation in blob: "
-	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
-	       <<(*blob)<<"\n";
+    //msg_Error()<<"ERROR in "<<METHOD<<" :\n"
+    //	       <<"   Momentum violation in blob: "
+    //	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
+    //	       <<(*blob)<<"\n";
     return false;
   }
   return true;

@@ -18,6 +18,17 @@ MODEL: ${model_name}
 # Uncomment to disable shower:
 # SHOWER_GENERATOR: None
 
+# set quarks and leptons massless in ME
+PARTICLE_DATA:
+  1: {Massive: false}
+  2: {Massive: false}
+  3: {Massive: false}
+  4: {Massive: false}
+  5: {Massive: false}
+  11: {Massive: false}
+  13: {Massive: false}
+  15: {Massive: false}
+
 # LHC beam setup:
 BEAMS: 2212
 BEAM_ENERGIES: 6500
@@ -29,7 +40,7 @@ PROCESSES:
     ${order_statement}
 
     # Generate feynman diagrans in directory 'diagrams'.
-    # Run '<SHERPA_PREFIX>/bin/plot_graphs.sh diagrams'
+    # Run './plot_graphs diagrams'
     # to plot graphs. Use web browser to view diagrams/index.html
     Print_Graphs: diagrams
 

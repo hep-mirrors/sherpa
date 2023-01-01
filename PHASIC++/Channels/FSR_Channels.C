@@ -17,26 +17,28 @@ bool FSR_Channels::Initialize()
   Settings& s = Settings::GetMainSettings();
   std::vector<std::string> inttypes{
     s["INTEGRATOR"].SetDefault("Default").GetVector<std::string>() };
-  if (p_psh->Process()->Process()->Info().m_integrator!="") {
+  Process_Integrator * process_integrator = p_psh->Process();
+  if (process_integrator->Process()->Info().m_integrator!="") {
     Data_Reader reader(" ", ";", "#", "=");
     reader.AddComment("!");
     reader.AddWordSeparator("\t");
-    reader.SetString(p_psh->Process()->Process()->Info().m_integrator);
+    reader.SetString(process_integrator->Process()->Info().m_integrator);
     reader.VectorFromString(inttypes, "");
   }
-  nin=p_psh->Process()->NIn();
-  nout=p_psh->Process()->NOut();
+  nin=process_integrator->NIn();
+  nout=process_integrator->NOut();
+  
   int sintegrator=0;
-  for (size_t i(0);i<inttypes.size();++i) { Channel_Generator *cg=
+  for (size_t i(0);i<inttypes.size();++i) {
+    Channel_Generator * cg =
       Channel_Generator::Getter_Function::GetObject
-      (inttypes[i],Channel_Generator_Key
-       (inttypes[i],p_psh->Process()->Process(),this));
+      (inttypes[i],Channel_Generator_Key(inttypes[i],process_integrator->Process(),this));
     if (cg==NULL) {
       s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
       if (s_loader->LoadLibrary("Proc_"+inttypes[i])) {
 	cg=Channel_Generator::Getter_Function::GetObject
 	  (inttypes[i],Channel_Generator_Key
-	   (inttypes[i],p_psh->Process()->Process(),this));
+	   (inttypes[i],process_integrator->Process(),this));
       }
       if (cg==NULL) {
 	THROW(fatal_error,"Channel generator '"
@@ -46,9 +48,9 @@ bool FSR_Channels::Initialize()
     sintegrator|=cg->GenerateChannels();
     delete cg;
   }
-  if (!p_psh->Process()->Process()->InitIntegrator(p_psh))
+  if (!process_integrator->Process()->InitIntegrator(p_psh))
     THROW(critical_error,"InitIntegrator failed");
-  return sintegrator;
+  return true;
 }
 
 void FSR_Channels::DropRedundantChannels()

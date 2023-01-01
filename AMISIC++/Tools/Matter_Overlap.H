@@ -3,6 +3,7 @@
 
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Math/Vector.H"
 
 
 namespace AMISIC {
@@ -22,17 +23,20 @@ namespace AMISIC {
 
     void   Initialize();    
     double operator()(double b);
-    double SelectB() const;
-    const double & Bstep()    const { return m_bstep; }
+    double SelectB(const bool & mode=false) const;
+
+    ATOOLS::Vec4D SelectPositionForScatter(const double & b) const;
+    ATOOLS::Vec4D SelectRelativePositionForParton() const;
+
     const double & Bmax()     const { return m_bmax; }
     const double & Integral() const { return m_integral; }
     
     inline const double & Radius() const {
       switch (m_overlapform) {
-      case overlap_form::Single_Gaussian:
-	return m_radius1;
-      case overlap_form::Double_Gaussian:
-	return m_radius3;
+      case overlap_form::code::Single_Gaussian:
+        return m_radius1;
+      case overlap_form::code::Double_Gaussian:
+        return m_radius3;
       }
     }
   };
@@ -41,7 +45,7 @@ namespace AMISIC {
     Matter_Overlap * p_mo;
   public:
     MO_Integrand(Matter_Overlap * mo) : p_mo(mo) {}
-    ~MO_Integrand() {}
+    ~MO_Integrand() = default;
     double operator()(double b);
   };
 }

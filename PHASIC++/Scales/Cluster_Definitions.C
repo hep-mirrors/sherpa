@@ -64,7 +64,7 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
 	  }
 	}
 	if (fip.m_pk[0]<0.0 || fip.m_stat<0 ||
-	    fip.m_pk[0]>rpa->gen.PBeam(cc.m_k)[0]) t=-1.0;
+	    fip.m_pk[0]>rpa->gen.PBunch(cc.m_k)[0]) t=-1.0;
 	cp=Cluster_Param(this,0.0,t,t,cpl,kin,0,fip.m_pi,-fip.m_pk,fip.m_lam);
       }
     }
@@ -85,7 +85,7 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
 	  }
 	}
 	if (ifp.m_pi[0]<0.0 || ifp.m_stat<0 ||
-	    ifp.m_pi[0]>rpa->gen.PBeam(ib)[0]) t=-1.0;
+	    ifp.m_pi[0]>rpa->gen.PBunch(ib)[0]) t=-1.0;
 	cp=Cluster_Param(this,0.0,t,mu,cpl,kin,0,-ifp.m_pi,ifp.m_pk,ifp.m_lam);
       }
       else {
@@ -101,7 +101,7 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
 	  }
 	}
 	if (iip.m_pi[0]<0.0 || iip.m_stat<0 ||
-	    iip.m_pi[0]>rpa->gen.PBeam(ib)[0]) t=-1.0;
+	    iip.m_pi[0]>rpa->gen.PBunch(ib)[0]) t=-1.0;
 	cp=Cluster_Param(this,0.0,t,mu,cpl,kin,0,-iip.m_pi,-iip.m_pk,iip.m_lam);
       }
     }

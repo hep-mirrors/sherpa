@@ -232,9 +232,20 @@ void ATOOLS::Random::SetSeed(long int nid)
 }
 
 
+bool ATOOLS::Random::CanRestoreStatus() const
+{
+  if (p_external)
+    return p_external->CanRestoreStatus();
+  return true;
+}
+
+
 void ATOOLS::Random::SaveStatus()
 {
-  if (p_external!=NULL) return;
+  if (p_external!=NULL) {
+    p_external->SaveStatus();
+    return;
+  }
   if (activeGenerator==4) { return SaveStatus4(); };
   m_sid=m_id;
   siy=iy;
@@ -245,7 +256,10 @@ void ATOOLS::Random::SaveStatus()
 
 void ATOOLS::Random::RestoreStatus()
 {
-  if (p_external!=NULL) return;
+  if (p_external!=NULL) {
+    p_external->RestoreStatus();
+    return;
+  }
   if (activeGenerator==4) { return RestoreStatus4(); };
   m_id=m_sid;
   iy=siy;

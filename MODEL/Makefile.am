@@ -1,1 +1,0 @@
-SUBDIRS    = Main SM HEFT SMEHC TauPi UFO

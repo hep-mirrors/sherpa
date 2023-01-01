@@ -69,7 +69,7 @@ Kin_Args PHASIC::ClusterFFDipole
   Kin_Args res(yijk,zi,0.0,(mode&4)?1:0,1);
   res.m_pk=sqrt(po/pn)*(pk-(Q*pk)/Q2*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q;
   res.m_pi=Q-res.m_pk;
-  if (res.m_pi[0]<0.0 || res.m_pk[0]<0.0) {
+  if (res.m_pi[0]<0.0 || res.m_pk[0]*pk[0]<0.0) {
     msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }

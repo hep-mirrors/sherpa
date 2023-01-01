@@ -18,7 +18,7 @@ namespace SHRIMPS {
     Double_Diffractive_Event_Generator * p_doubdiff;
     double                               m_el, m_sd, m_dd, m_stot;
   public:
-    Quasi_Elastic_Event_Generator() {}
+    Quasi_Elastic_Event_Generator(Sigma_Base * sigma) {}
     Quasi_Elastic_Event_Generator(Elastic_Event_Generator * elastic,
 				  Single_Diffractive_Event_Generator * sdiff,
 				  Double_Diffractive_Event_Generator * ddiff);

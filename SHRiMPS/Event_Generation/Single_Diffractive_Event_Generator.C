@@ -13,7 +13,8 @@ Single_Diffractive_Event_Generator::Single_Diffractive_Event_Generator(){
 }
 
 Single_Diffractive_Event_Generator::
-Single_Diffractive_Event_Generator(Sigma_SD * sigma,Beam_Remnant_Handler * beams,
+Single_Diffractive_Event_Generator(Sigma_SD * sigma,
+				   Beam_Remnant_Handler * beams,
 				   const int & test) :
   p_sigma(sigma), p_beams(beams), 
   m_beam1(ATOOLS::rpa->gen.Beam1()), m_beam2(ATOOLS::rpa->gen.Beam2()),
@@ -35,12 +36,6 @@ Single_Diffractive_Event_Generator(Sigma_SD * sigma,Beam_Remnant_Handler * beams
     exit(1);
   }
 
-  // Assume pp/ppbar collisions only
-  if(s_kftable.find(kf_N_1440)==s_kftable.end()) // if not initialised
-    s_kftable[kf_N_1440]=new Particle_Info(kf_N_1440_plus,1.44,0.35,0,1,1,0,"N(1440)","N(1440)");
-  if(s_kftable.find(kf_N_1440_plus)==s_kftable.end()) // if not initialised
-    s_kftable[kf_N_1440_plus]=new Particle_Info(kf_N_1440_plus,1.44,0.35,3,1,1,0,"N(1440)+","N(1440)+");
-
 
   if (m_beam1==ATOOLS::Flavour(kf_p_plus))            
     m_out1 = ATOOLS::Flavour(kf_N_1440_plus);
@@ -54,12 +49,12 @@ Single_Diffractive_Event_Generator(Sigma_SD * sigma,Beam_Remnant_Handler * beams
   if (m_out1==ATOOLS::Flavour(kf_none) || 
       m_out2==ATOOLS::Flavour(kf_none)) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   No proton-proton collisions, instead: "<<m_beam1<<" on "<<m_beam2<<"."<<std::endl
-	       <<"   Cannot deal with this setup, will terminate the run."<<std::endl;
+	       <<"   No proton-proton collisions, instead: "
+	       <<m_beam1<<" on "<<m_beam2<<"."<<std::endl
+	       <<"   Cannot deal with this setup, will terminate the run."
+	       <<std::endl;
     exit(1);
   }
-
-//   m_pl12 = m_pl22 = m_pl12+sqr(m_beam1.Mass())-sqr(m_out1.Mass());
 }
 
 Single_Diffractive_Event_Generator::~Single_Diffractive_Event_Generator() {

@@ -46,7 +46,8 @@ compilation has to be configured with the following options:
 
 .. code-block:: shell-session
 
-   $ ./configure --enable-hepmc3=/path/to/hepmc3 --enable-rivet=/path/to/rivet
+   $ cmake -DSHERPA_ENABLE_HEPMC3=ON -DHepMC3_DIR=/path/to/hepmc3 \
+           -DSHERPA_ENABLE_RIVET=ON -DRIVET_DIR=/path/to/rivet
 
 (Note: Both paths are equal if you used the Rivet bootstrap script.)
 
@@ -113,7 +114,8 @@ Sherpa compilation has to be configured with the following options:
 
 .. code-block:: shell-session
 
-   $ ./configure --enable-hztool=/path/to/hztool --enable-cernlib=/path/to/cernlib --enable-hepevtsize=4000
+   $ cmake -DSHERPA_ENABLE_HZTOOL=ON -DHZTOOL_DIR=/path/to/hztool \
+           -DCERNLIB_DIR=/path/to/cernlib -DHEPEVT_CB_SIZE=4000
 
 Note that an example CERNLIB installation bootstrap script is provided
 in ``AddOns/HZTool/start_cern_64bit``. Note that this script is only
@@ -161,7 +163,7 @@ following options:
 
 .. code-block:: yaml
 
-   $ ./configure --enable-mcfm=/path/to/mcfm
+   $ cmake -DSHERPA_ENABLE_MCFM=ON -DMCFM_DIR=/path/to/MCFM
 
 To use the interface, specify
 
@@ -248,7 +250,7 @@ Versioned installation
 
 If you want to install different Sherpa versions into the same prefix
 (e.g. `/usr/local`), you have to enable versioning of the installed
-directories by using the configure option ``--enable-versioning``.
+directories by using the configure option ``-DSHERPA_ENABLE_VERSIONING=ON``.
 Optionally you can even pass an argument to this parameter of what you
 want the version tag to look like.
 
@@ -282,11 +284,11 @@ Hints to find a good value:
   calculated, thus the less time the evaluation/phase space point
   takes.
 
-* Too small choices lead to large cancelations between the ``RS``
-  and the ``I`` parts and thus to large statisical errors.
+* Too small choices lead to large cancellations between the ``RS``
+  and the ``I`` parts and thus to large statistical errors.
 
 * For very simple processes (with only a total of two partons in the
-  iniatial and the final state of the born process) the best choice is
+  initial and the final state of the born process) the best choice is
   typically ``DIPOLES: {ALPHA: 1``}.  The more complicated a process
   is the smaller ``DIPOLES:ALPHA`` should be (e.g. with 5 partons the
   best choice is typically around 0.01).
@@ -306,7 +308,7 @@ integration grid can become prohibitively long. Rather than using a
 poorly optimized grid in this case it is more advisable to use a grid
 optimized with either the born matrix elements or the born matrix
 elements and the finite part of the integrated subtraction terms only,
-working under the assumption that the distibutions in phase space are
+working under the assumption that the distributions in phase space are
 rather similar.
 
 This can be done by one of the following methods:

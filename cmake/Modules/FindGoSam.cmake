@@ -1,0 +1,40 @@
+# - Try to find GOSAM
+# Defines:
+#
+#  GOSAM_FOUND
+#  GOSAM_PREFIX
+if (GOSAM_ROOT_DIR OR GOSAM_DIR OR (DEFINED ENV{GOSAM_ROOT_DIR}) OR (DEFINED ENV{GOSAM_DIR}) )
+  set(GOSAM_SEARCH_DIRS "" CACHE STRING "" FORCE)
+  if (GOSAM_ROOT_DIR)
+    list (APPEND GOSAM_SEARCH_DIRS "${GOSAM_ROOT_DIR}" )
+  endif()
+  if (GOSAM_DIR)
+    list (APPEND GOSAM_SEARCH_DIRS "${GOSAM_DIR}" )
+  endif()
+  if (DEFINED EVN{GOSAM_ROOT_DIR})
+    list (APPEND GOSAM_SEARCH_DIRS "$ENV{GOSAM_ROOT_DIR}" )
+  endif()
+  if (DEFINED ENV{GOSAM_DIR})
+    list (APPEND GOSAM_SEARCH_DIRS "ENV{GOSAM_DIR}" )
+  endif()
+endif()
+set(GOSAM_VERSION 0.0.0)
+if (GOSAM_SEARCH_DIRS)
+  find_program(GOSAM NAMES gosam gosam.py PATHS ${GOSAM_SEARCH_DIRS} PATH_SUFFIXES bin NO_DEFAULT_PATH)
+else()
+  find_program(GOSAM NAMES gosam gosam.py)
+endif()
+if (GOSAM)
+  get_filename_component(GOSAM_PREFIX_BIN ${GOSAM} DIRECTORY)
+  get_filename_component(GOSAM_PREFIX ${GOSAM_PREFIX_BIN} DIRECTORY)
+  execute_process(COMMAND ${GOSAM} --version
+                  OUTPUT_VARIABLE GOSAM_VERSION_STRING
+                  OUTPUT_STRIP_TRAILING_WHITESPACE) 
+  string(REPLACE " " ";" GOSAM_VERSION_LIST "${GOSAM_VERSION_STRING}")
+  list(GET GOSAM_VERSION_LIST 1 GOSAM_VERSION)
+endif()
+
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(GoSam REQUIRED_VARS GOSAM_PREFIX VERSION_VAR GOSAM_VERSION)
+
+mark_as_advanced(GoSam_FOUND)

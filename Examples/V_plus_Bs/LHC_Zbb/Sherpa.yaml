@@ -11,8 +11,8 @@ HARD_DECAYS:
   Enabled: true
   Mass_Smearing: 0
   Channels:
-    23 -> 11 -11: {Status: 2}
-    23 -> 13 -13: {Status: 2}
+    23,11,-11: {Status: 2}
+    23,13,-13: {Status: 2}
 
 PARTICLE_DATA:
   5:

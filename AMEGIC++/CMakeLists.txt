@@ -1,0 +1,6 @@
+add_subdirectory(Amplitude)
+add_subdirectory(DipoleSubtraction)
+add_subdirectory(Main)
+add_subdirectory(Phasespace)
+add_subdirectory(String)
+add_subdirectory(Amplitude/Zfunctions)

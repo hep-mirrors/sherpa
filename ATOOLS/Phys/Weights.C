@@ -20,14 +20,14 @@ bool Weights::IsZero() const
   return true;
 }
 
-std::string Weights::Name(size_t i) const
+std::string Weights::Name(size_t i, Variations_Source source) const
 {
   if (i == 0) {
     return "Nominal";
   } else if (type == Variations_Type::custom) {
     return names[i];
   } else {
-    return s_variations->GetVariationNameAt(i - 1, type);
+    return s_variations->GetVariationNameAt(i - 1, type, source);
   }
 }
 
@@ -342,6 +342,16 @@ Weights Weights_Map::Combine(Variations_Type type) const
   return w;
 }
 
+void Weights_Map::SetZeroIfCloseToZero(double tolerance)
+{
+  MakeAbsolute();
+  for (auto& kv : *this)
+    for (auto& w : kv.second.weights)
+      if (IsEqual(w, tolerance))
+        w = 0.0;
+  MakeRelative();
+}
+
 Weights_Map ATOOLS::operator*(Weights_Map lhs, double rhs)
 {
   lhs *= rhs;
@@ -372,6 +382,12 @@ Weights_Map& Weights_Map::operator*=(const Weights_Map& rhs)
   return *this;
 }
 
+Weights_Map ATOOLS::operator*(Weights_Map lhs, const Weights_Map& rhs)
+{
+  lhs *= rhs;
+  return lhs;
+}
+
 Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
 {
   assert(!is_absolute);
@@ -388,15 +404,30 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
     return *this;
   }
 
+  // insert ones on the lhs when a key that is present on the rhs is missing
+  for (auto& kv : rhs) {
+    auto it = find(kv.first);
+    if (it == end()) {
+      this->emplace(kv.first, kv.second.type);
+    }
+  }
+
   // transform both sides into absolute storage instead of the default relative
   // storage
   MakeAbsolute();
-  auto rhs_abs = rhs;
-  rhs_abs.MakeAbsolute();
+  auto abs_rhs = rhs;
+  abs_rhs.MakeAbsolute();
 
-  // now addition is trivial
-  for (auto& kv : rhs_abs) {
-    (*this)[kv.first] += kv.second;
+  // now addition is trivial; if a key is missing on the rhs, we use its
+  // nominal value to construct a Weights object
+  const double rhs_nominal = rhs.Nominal();
+  for (auto& kv : *this) {
+    auto it = abs_rhs.find(kv.first);
+    if (it == abs_rhs.end()) {
+      kv.second += Weights {kv.second.type, rhs_nominal};
+    } else {
+      kv.second += it->second;
+    }
   }
 
   // transform back to relative storage
@@ -411,6 +442,18 @@ Weights_Map& Weights_Map::operator-=(const Weights_Map& rhs)
   Weights_Map negative_rhs = rhs;
   negative_rhs.base_weight = -negative_rhs.base_weight;
   return operator+=(negative_rhs);
+}
+
+Weights_Map ATOOLS::operator+(Weights_Map lhs, const Weights_Map& rhs)
+{
+  lhs += rhs;
+  return lhs;
+}
+
+Weights_Map ATOOLS::operator-(Weights_Map lhs, const Weights_Map& rhs)
+{
+  lhs -= rhs;
+  return lhs;
 }
 
 void Weights_Map::MakeRelative()
@@ -444,7 +487,14 @@ void Weights_Map::MakeRelative()
     nominals_prefactor = 1.0;
   }
   if (norm == 0.0) {
-    THROW(not_implemented, "Missing implementation for all-zero case.");
+    // Everything is zero, represent this with base_weight et to 0.0 and
+    // everything else set to 1.0 and return.
+    base_weight = 0.0;
+    nominals_prefactor = 1.0;
+    for (auto& kv : *this)
+      kv.second = 1.0;
+    is_absolute = false;
+    return;
   }
 
   // apply normalisation
@@ -508,6 +558,75 @@ void Weights_Map::MakeAbsolute()
   is_absolute = true;
 }
 
+#ifdef USING__MPI
+void Weights_Map::MPI_Allreduce()
+{
+  int n_ranks=mpi->Size();
+  if (n_ranks>1) {
+    assert(!is_absolute);
+
+    // Get the maximum size of the map across all ranks.
+    const int map_size {static_cast<int>(size())};
+    const int max_map_size = mpi->Allmax(map_size);
+
+    std::vector<std::string> keys;
+    keys.reserve(size());
+    for (const auto& kv : *this)
+      keys.push_back(kv.first);
+
+    for (int i {0}; i < max_map_size; ++i) {
+      // Get ith set of keys from all ranks.
+      std::vector<std::string> gathered_keys {
+          (i < keys.size()) ? mpi->AllgatherStrings(keys[i])
+                            : mpi->AllgatherStrings("")};
+
+      // Get ith variations type from all ranks.
+      std::vector<Variations_Type> gathered_types(n_ranks, Variations_Type::custom);
+      int type {static_cast<int>((i < keys.size()) ? (*this)[keys[i]].Type()
+                                                   : Variations_Type::custom)};
+      mpi->Allgather(&type, 1, MPI_INT, &(gathered_types[0]), 1, MPI_INT);
+
+      // Now add missing entries.
+      for (int i{0}; i < n_ranks; ++i) {
+        if (gathered_keys[i] != "")
+          emplace(gathered_keys[i], gathered_types[i]);
+      }
+    }
+
+    // At this point, the weights maps across all ranks have the same keys.
+    // Now we need to make sure that all custom weights have the same keys,
+    // too.
+    for (auto& kv : *this) {
+      if (kv.second.Type() == Variations_Type::custom) {
+        const int weights_size {static_cast<int>(kv.second.Size())};
+        const int max_weights_size = mpi->Allmax(weights_size);
+        for (int i {0}; i < max_weights_size; ++i) {
+          // Get ith set of keys from all ranks.
+          std::vector<std::string> gathered_keys {
+              (i < kv.second.names.size())
+                  ? mpi->AllgatherStrings(kv.second.names[i])
+                  : mpi->AllgatherStrings("")};
+          // Now add missing entries.
+          for (int i{0}; i < n_ranks; ++i) {
+            if (gathered_keys[i] != "")
+              emplace(gathered_keys[i], Variations_Type::custom);
+          }
+        }
+      }
+    }
+
+    // Finally, the structure of all weights maps is the same, so we can
+    // trivially Allreduce all doubles.
+    MakeAbsolute();
+    for (auto& kv : *this) {
+      const size_t n_wgts = kv.second.Size();
+      mpi->Allreduce(&kv.second[0], n_wgts, MPI_DOUBLE, MPI_SUM);
+    }
+    MakeRelative();
+  }
+}
+#endif
+
 double Weights_Map::NominalIgnoringPrefactor() const
 {
   if (is_absolute) {
@@ -538,6 +657,20 @@ std::ostream& ATOOLS::operator<<(std::ostream& out, const Weights_Map& w)
 }
 
 namespace ATOOLS {
+
+  Weights_Map sqrt(const Weights_Map& w)
+  {
+    auto root = w;
+    root.base_weight = std::sqrt(root.base_weight);
+    root.nominals_prefactor = std::sqrt(root.nominals_prefactor);
+    for (auto& kv : root) {
+      const size_t n_wgts = kv.second.Size();
+      for (size_t i {0}; i < n_wgts; ++i) {
+        kv.second[i] = std::sqrt(kv.second[i]);
+      }
+    }
+    return root;
+  }
 
   template <> Blob_Data<Weights_Map>::~Blob_Data() {}
   template class Blob_Data<Weights_Map>;

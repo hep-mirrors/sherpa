@@ -28,7 +28,7 @@ An example setup for interfacing such an external one-loop code,
 following the Binoth Les Houches interface proposal
 :cite:`Binoth2010xt` of the 2009 Les Houches workshop, is provided in
 :ref:`LHC_Zbb`. To use the LH-OLE interface, Sherpa has to be
-configured with :option:`--enable-lhole`.
+configured with :option:`-DSHERPA_ENABLE_LHOLE=ON`.
 
 The interface:
 
@@ -102,5 +102,5 @@ The setup (cf. example :ref:`LHC_Zbb`):
 
 * Sherpa's internal analysis package can be used to generate a few
   histograms. Thus, then when installing Sherpa the option
-  :option:`--enable-analysis` must be include on the command line when
+  :option:`-DSHERPA_ENABLE_ANALYSIS=ON` must be include on the command line when
   Sherpa is configured, see :ref:`ANALYSIS`.

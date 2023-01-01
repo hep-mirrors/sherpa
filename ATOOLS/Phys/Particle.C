@@ -80,9 +80,9 @@ Particle::~Particle()
 Particle::Particle():
   m_number(-1), m_beam(-1), m_meid(0), m_status(part_status::undefined), 
   m_info('X'), 
-  m_fl(Flavour(kf_none)), m_momentum(Vec4D(0,0,0,0)), 
+  m_fl(Flavour(kf_none)), m_momentum(Vec4D()), m_position(Vec4D()), 
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
-  m_dec_time(0.), m_finalmass(0.)
+  m_dec_time(0.), m_finalmass(0.), m_ownpos(false), m_fromdec(false)
 {
   ++s_totalnumber;
 }
@@ -90,9 +90,9 @@ Particle::Particle():
 Particle::Particle(const Particle &in): 
   m_number(in.m_number), m_beam(in.m_beam), m_meid(in.m_meid), m_status(in.m_status), 
   m_info(in.m_info), 
-  m_fl(in.m_fl), m_momentum(in.m_momentum), 
+  m_fl(in.m_fl), m_momentum(in.m_momentum), m_position(in.m_position), 
   p_startblob(NULL),p_endblob(NULL), p_originalpart(in.p_originalpart),
-  m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass)
+  m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass), m_ownpos(in.m_ownpos), m_fromdec(in.m_fromdec)
 {
   ++s_totalnumber;
   m_flow.SetCode(1,in.GetFlow(1));
@@ -109,8 +109,11 @@ Particle& Particle::operator=(const Particle &in)
     m_status    = in.m_status;
     m_fl        = in.m_fl;
     m_momentum  = in.m_momentum;
+    m_position  = in.m_position;
     m_dec_time  = in.m_dec_time;
     m_finalmass = in.m_finalmass;
+    m_ownpos    = in.m_ownpos;
+    m_fromdec = in.m_fromdec;
     p_startblob = NULL;
     p_endblob   = NULL;
     m_flow.SetCode(1,in.GetFlow(1));
@@ -123,9 +126,9 @@ Particle& Particle::operator=(const Particle &in)
 Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
   m_number(number), m_beam(-1), m_meid(0), m_status(part_status::active),
   m_info(a), 
-  m_fl(fl), m_momentum(p),
+  m_fl(fl), m_momentum(p), m_position(Vec4D()), 
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
-  m_dec_time(0.), m_finalmass(fl.Mass())
+  m_dec_time(0.), m_finalmass(fl.Mass()), m_ownpos(false), m_fromdec(false)
 {
   ++s_totalnumber;
 }
@@ -139,8 +142,11 @@ void Particle::Copy(Particle * in)  {
   m_status    = in->m_status;
   m_fl        = in->m_fl;
   m_momentum  = in->m_momentum;
+  m_position  = in->m_position;
   m_dec_time  = in->m_dec_time;
   m_finalmass = in->m_finalmass;
+  m_ownpos    = in->m_ownpos;
+  m_fromdec =in->m_fromdec;
   p_startblob = in->p_startblob;
   p_endblob   = in->p_endblob;
   p_originalpart = in->p_originalpart,
@@ -192,9 +198,9 @@ void Particle::SetProductionBlob(Blob *blob)
   if (p_startblob!=NULL && blob!=NULL) {
     if (p_startblob->Id()>-1) 
       msg_Out()<<"WARNING in Particle::SetProductionBlob("<<blob<<"):"<<std::endl
-		       <<"   blob->Id() = "<<blob->Id()<<std::endl
-		       <<"   Particle already has a production blob!"<<std::endl
-		       <<"   "<<*this<<std::endl;
+	       <<"   blob->Id() = "<<blob->Id()<<std::endl
+	       <<"   Particle ["<<this<<"]already has a production blob!"<<std::endl
+	       <<"   "<<*this<<std::endl;
   }
   p_startblob=blob; 
 }
@@ -219,12 +225,20 @@ double       Particle::Time() const                  { return m_dec_time; }
 void         Particle::SetTime(const double t)       { m_dec_time = t; }
 void         Particle::SetTime()                     { m_dec_time = m_fl.GenerateLifeTime(); }
 
-// Production and decay vertices
-Vec4D Particle::XProd() const
-{ if (p_startblob) return p_startblob->Position(); return Vec4D(); }
-Blob *       Particle::ProductionBlob() const {return p_startblob;}
-Vec4D Particle::XDec() const
-{ if (p_endblob) return p_endblob->Position(); return Vec4D(); }
+// Position, production and decay vertices
+void Particle::SetPosition(const Vec4D & pos) {
+  m_position = pos;
+  m_ownpos = true;
+}
+Vec4D Particle::XProd() const {
+  if (m_ownpos)    return m_position;
+  if (p_startblob) return p_startblob->Position(); return Vec4D();
+}
+
+Blob *       Particle::ProductionBlob() const { return p_startblob; }
+Vec4D Particle::XDec() const {
+  if (p_endblob) return p_endblob->Position(); return Vec4D();
+}
 Blob *       Particle::DecayBlob() const      {return p_endblob;}
 Particle *   Particle::OriginalPart() const   {
   if (p_originalpart==this) return p_originalpart;

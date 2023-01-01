@@ -1,1 +1,0 @@
-SUBDIRS       = Amplitude Main Phasespace

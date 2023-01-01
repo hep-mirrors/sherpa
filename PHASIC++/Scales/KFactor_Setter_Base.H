@@ -9,8 +9,9 @@ namespace PHASIC {
   struct KFactor_Setter_Arguments {
     Process_Base *p_proc;
     std::string m_kfac;
-    KFactor_Setter_Arguments(const std::string &kfac):
-      m_kfac(kfac) {}
+    KFactor_Setter_Arguments(const std::string& kfac,
+                             Process_Base* proc=nullptr):
+      m_kfac{kfac}, p_proc{proc} {}
   };// end of class KFactor_Setter_Arguments
 
   class KFactor_Setter_Base {

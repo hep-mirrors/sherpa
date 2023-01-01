@@ -56,14 +56,15 @@ employed during event generation.
 
 .. code-block:: yaml
 
+   SHERPA_LDADD: SherpaPythia
    FRAGMENTATION: Pythia8
    PYTHIA8:
      PARAMETERS:
        - StringZ:aLund: 0.68
        - StringZ:bLund: 0.98
          ...
-     DECAYS: false
-     SHERPA_MASSES: true
+     DECAYS: true
+     SHERPA_MASSES: false
 
 * Alternatively, Sherpa  also provides an interface to
   Pythia 6.4 :cite:`Sjostrand2006za` by using the setting
@@ -235,12 +236,12 @@ production of up/down flavours through the parameters
 The transition of clusters to hadrons is governed by the following
 considerations:
 
-* Clusters can be interpreted as excited hadrons, with a continous
+* Clusters can be interpreted as excited hadrons, with a continuous
   mass spectrum.
 
 * When a cluster becomes sufficiently light such that its mass is
   below the largest mass of any hadron with the same flavour content,
-  it must be re-iterpreted as such a hadron.  In this case it will be
+  it must be re-interpreted as such a hadron.  In this case it will be
   shifted on the corresponding hadron mass, and the recoil will be
   distributed to the "neighbouring" clusters or by emitting a soft
   photon.  This comparison of masses clearly depends on the multiplets
@@ -271,7 +272,7 @@ and hadron and the width of the latter.
 For the direct decay of a cluster into two hadrons the overlaps with the
 wave functions of all hadrons, their respective multiplet suppression weights,
 the flavour weight for the creation of the new flavour q and a kinematical
-factor are relevant.  Here, yet another tuning paramter enters,
+factor are relevant.  Here, yet another tuning parameter enters,
 
 * ``MASS_EXPONENT`` (default 4.0)
 
@@ -293,7 +294,7 @@ energy of the gluon is selected according to a flat distribution.
 
 In clusters decaying to hadrons, the transverse momentum is chosen according
 to a distribution given by an infrared-continued strong coupling and a
-term inversemly proportional to the infrared-modified transverse momentum,
+term inversely proportional to the infrared-modified transverse momentum,
 
 constrained to be below a maximal transverse momentum.
 
@@ -302,10 +303,10 @@ Splitting kinematics
 
 In each splitting, the kinematics is given by the transverse momentum,
 the energy splitting parameter and the azimuthal angle.  The latter,
-the azimuthal angle is always seleectred according to a flat
+the azimuthal angle is always selected according to a flat
 distribution, while the energy splitting parameter will either be
 chosen according to the quark-to-gluon splitting function (if the
-quark is a leading quark, i.e. produced in the pertrubative phase), to
+quark is a leading quark, i.e. produced in the perturbative phase), to
 the gluon-to-quark splitting function, or according to a flat
 distribution.  The transverse momentum is given by the same
 distribution as in the cluster decays to hadrons.
@@ -366,10 +367,12 @@ Some general switches which relate to hadron decays are
 
 .. _MAX_PROPER_LIFETIME:
 
-* ``MAX_PROPER_LIFETIME = [mm]`` Parameter for maximum proper lifetime
-  (in mm) up to which particles are considered unstable. If specified,
-  this will make long-living particles stable, even if they are set
-  unstable by default or by the user.
+* ``MAX_PROPER_LIFETIME = [mm]`` (default: 10.0) Parameter for maximum proper lifetime
+  (in mm) up to which particles are considered unstable.
+  This will make long-living particles stable, even if they are set
+  unstable by default or by the user. If you do not want to set this globally,
+  set this to a value of -1 and steer the stability
+  through :option:`PARTICLE_DATA`, cf. :ref:`Models`.
 
 Many aspects of the above mentioned "Decaydata" can be adjusted.
 There exist three levels of data files, which are explained in the following
@@ -538,36 +541,34 @@ in decay channel files. Here, the ``Interference_X = 1`` switch would
 enable rate asymmetries due to CP violation in the interference
 between mixing and decay (cf. :ref:`Decay channel files`), and setting
 ``Mixing_X = 1`` enables explicit mixing in the event record according
-to the time evolution of the flavour states. By default, all mixing
-effects are turned off.
-
-Mixing parameters with some example values
+to the time evolution of the flavour states. By default, the mixing
+parameters are set to the following values:
 
 .. code-block:: python
 
-   x_K = 0.946
-   y_K = -0.9965
-   qoverp2_K = 1.0
-   Interference_K = 0
-   Mixing_K = 0
+   # x_K = 0.946
+   # y_K = -0.9965
+   # qoverp2_K = 1.0
+   # Interference_K = 0
+   # Mixing_K = 0
 
-   x_D = 0.0
-   y_D = 0.0
+   x_D = 0.0032
+   y_D = 0.0069
    qoverp2_D = 1.0
    Interference_D = 0
-   Mixing_D = 0
+   Mixing_D = 1
 
-   x_B = 0.776
-   y_B = 0.0
+   x_B = 0.770
+   y_B = 0.0069
    qoverp2_B = 1.0
-   Interference_B = 1
-   Mixing_B = 0
+   Interference_B = 0
+   Mixing_B = 1
 
-   x_B(s) = 30.0
-   y_B(s) = 0.155
+   x_B(s) = 26.72
+   y_B(s) = 0.130
    qoverp2_B(s) = 1.0
    Interference_B(s) = 0
-   Mixing_B(s) = 0
+   Mixing_B(s) = 1
 
 Further remarks
 ---------------

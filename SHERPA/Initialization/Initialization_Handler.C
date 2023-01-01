@@ -105,6 +105,7 @@ void Initialization_Handler::RegisterDefaults()
   Settings& s = Settings::GetMainSettings();
   s["EVENT_GENERATION_MODE"].SetDefault("PartiallyUnweighted");
   s["EVENT_TYPE"].SetDefault("StandardPerturbative");
+  s["SOFT_COLLISIONS"].SetDefault("None");
   s["EVT_FILE_PATH"].SetDefault(".");
   s["ANALYSIS_OUTPUT"].SetDefault("Analysis/");
   s["RESULT_DIRECTORY"].SetDefault("Results");
@@ -122,6 +123,7 @@ void Initialization_Handler::RegisterDefaults()
   s["DECAYMODEL"]
     .SetDefault((frag == "Lund") ? "Lund" : "Hadrons")
     .UseNoneReplacements();
+  s["MAX_PROPER_LIFETIME"].SetDefault(10.0);
 
   s["SOFT_SPIN_CORRELATIONS"].SetDefault(0);
   auto hdenabled = s["HARD_DECAYS"]["Enabled"].Get<bool>();
@@ -142,6 +144,9 @@ void Initialization_Handler::RegisterDefaults()
       "PDF_SET",
       "MPI_PDF_SET",
       "VARIATIONS",
+      "SCALE_VARIATIONS",
+      "PDF_VARIATIONS",
+      "QCUT_VARIATIONS",
       "BUNCHES",
       "PDF_SET_VERSIONS",
       "MPI_PDF_SET_VERSIONS",
@@ -149,9 +154,15 @@ void Initialization_Handler::RegisterDefaults()
       "MASSIVE_PS",
       "MASSLESS_PS"
       });
-  s.DeclareMatrixSettingsWithEmptyDefault({ "CSS_ENHANCE" });
+  s.DeclareMatrixSettingsWithEmptyDefault({
+      "CSS_ENHANCE",
+      "ASSOCIATED_CONTRIBUTIONS_VARIATIONS"
+      });
   s["EVENT_OUTPUT"].UseNoneReplacements();
   s["VARIATIONS"].UseNoneReplacements();
+  s["SCALE_VARIATIONS"].UseNoneReplacements();
+  s["PDF_VARIATIONS"].UseNoneReplacements();
+  s["QCUT_VARIATIONS"].UseNoneReplacements().SetSynonyms({"CKKW_VARIATIONS"});
   s["PDF_LIBRARY"].UseNoneReplacements();
   s["ANALYSIS"].UseNoneReplacements();
 
@@ -183,7 +194,7 @@ void Initialization_Handler::RegisterDefaults()
 
   s["OVERRIDE_PDF_INFO"].SetDefault(false);
 
-  s["NLO_SUBTRACTION_SCHEME"].SetDefault(0);
+  s["NLO_SUBTRACTION_SCHEME"].SetDefault(2);
 
   Scoped_Settings metssettings{ Settings::GetMainSettings()["METS"] };
   metssettings["CLUSTER_MODE"].SetDefault(0);
@@ -222,7 +233,7 @@ void Initialization_Handler::RegisterDefaults()
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   s["CSS_RECO_CHECK"].SetDefault(0);
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
-  s["CSS_REWEIGHT"].SetDefault(false);
+  s["CSS_REWEIGHT"].SetDefault(true);
   s["CSS_MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
   s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
@@ -291,6 +302,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_remnants)      { delete p_remnants;      p_remnants      = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
+  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_variations)    { delete p_variations;    p_variations    = NULL; }
   if (p_filter)        { delete p_filter;        p_filter        = NULL; }
   while (m_analyses.size()>0) {
@@ -501,11 +513,16 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       m_mode=eventtype::StandardPerturbative;
     else if (eventtype=="MinimumBias") {
       m_mode=eventtype::MinimumBias;
-      s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      if (s["SOFT_COLLISIONS"].Get<string>()==string("Amisic"))
+        s["MI_HANDLER"].OverrideScalar<std::string>("Amisic");
+      else if (s["SOFT_COLLISIONS"].Get<string>()==string("Shrimps"))
+        s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else if (eventtype=="HadronDecay") {
       m_mode=eventtype::HadronDecay;
       s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
@@ -516,9 +533,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheRemnants();
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
-  okay = okay && p_beamspectra->Init();
   p_model->InitializeInteractionModel();
-  okay = okay && InitializeTheAnalyses();
   if (!CheckBeamISRConsistency()) return 0.;
   if (m_mode==eventtype::EventReader) {
     std::string infile;
@@ -537,6 +552,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
     msg_Events()<<"SHERPA will read in the events."<<std::endl
   		<<"   The full framework is not needed."<<std::endl;
+    InitializeTheAnalyses();
     InitializeTheHardDecays();
     InitializeTheBeamRemnants();
     InitializeTheIO();
@@ -544,23 +560,21 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
-  if (rpa->gen.NumberOfEvents()>0) {
-  }
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheHardDecays();
-  okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheBeamRemnants();
-  //  only if events:
+  okay = okay && InitializeTheMatrixElements();
   if (rpa->gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheUnderlyingEvents();
+    okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
-    okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheHadronDecays();
-    okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
     okay = okay && InitializeTheFilter();
     okay = okay && InitializeTheReweighting(Variations_Mode::all);
+    okay = okay && InitializeTheAnalyses();
   } else {
     okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);
   }
@@ -712,12 +726,8 @@ bool Initialization_Handler::InitializeThePDFs()
        ++pdflib) {
     if (*pdflib=="None") continue;
     if (*pdflib=="LHAPDFSherpa") {
-#ifdef USING__LHAPDF
       s_loader->AddPath(std::string(LHAPDF_PATH)+"/lib");
       s_loader->LoadLibrary("LHAPDF");
-#else
-      THROW(fatal_error, "Sherpa not compiled with LHAPDF support.");
-#endif
     }
     void *init(s_loader->GetLibraryFunction(*pdflib,"InitPDFLib"));
     if (init==NULL) THROW(fatal_error,"Cannot load PDF library "+*pdflib);
@@ -854,14 +864,14 @@ bool Initialization_Handler::InitializeThePDFs()
 		 <<"   Abort program."<<endl;
       Abort();
     }
+    m_isrhandlers[id]->Output();
   }
   msg_Info() << "Initialized the ISR." << endl;
   return 1;
 }
 
 bool Initialization_Handler::InitializeTheRemnants() {
-  isr::id id=isr::hard_process;
-  p_remnants = new Remnant_Handler(m_isrhandlers[id],p_beamspectra);
+  p_remnants = new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra);
   return true;
 }
 
@@ -879,6 +889,12 @@ bool Initialization_Handler::InitializeTheHardDecays()
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
+#ifdef USING__EWSud
+  // in case that KFACTOR=EWSud is used we need to be ready when the ME handler
+  // sets up the KFactor setters
+  if (!s_loader->LoadLibrary("SherpaEWSud"))
+    THROW(missing_module,"Cannot load EWsud library.");
+#endif
   if (p_mehandler) delete p_mehandler;
   p_mehandler = new Matrix_Element_Handler(p_model);
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
@@ -888,19 +904,6 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
   return ret==1;
-}
-
-bool Initialization_Handler::InitializeTheUnderlyingEvents()
-{
-  as->SetActiveAs(isr::hard_subprocess);
-  p_mihandler = new MI_Handler(p_model,
-			       m_isrhandlers[isr::hard_subprocess]);
-  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
-  p_mihandler->SetRemnantHandler(p_remnants);
-  as->SetActiveAs(isr::hard_process);
-  if (p_mihandler->Type()!=0)
-    msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
-  return true;
 }
 
 bool Initialization_Handler::InitializeTheShowers()
@@ -915,6 +918,8 @@ bool Initialization_Handler::InitializeTheShowers()
     m_showerhandlers[isrtypes[i]] =
       new Shower_Handler(p_model, m_isrhandlers[isrtypes[i]], i);
     m_showerhandlers[isrtypes[i]]->SetRemnants(p_remnants);
+    for (size_t beam=0;beam<2;beam++)
+      m_isrhandlers[isrtypes[i]]->SetRemnant(p_remnants->GetRemnant(beam),beam);
   }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
@@ -922,11 +927,24 @@ bool Initialization_Handler::InitializeTheShowers()
 }
 
 
+bool Initialization_Handler::InitializeTheUnderlyingEvents()
+{
+  as->SetActiveAs(isr::hard_subprocess);
+  p_mihandler = new MI_Handler(p_model,
+			       m_isrhandlers[isr::hard_subprocess], p_remnants);
+  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
+  as->SetActiveAs(isr::hard_process);
+  if (p_mihandler->Type()!=0)
+    msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
+  return true;
+}
+
+
 bool Initialization_Handler::InitializeTheSoftCollisions() 
 {
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
-  p_softcollisions = new Soft_Collision_Handler(p_beamspectra,
-                                                m_isrhandlers[isr::hard_process]);
+  p_softcollisions = new Soft_Collision_Handler(p_mihandler->Amisic(),
+						p_mihandler->Shrimps());
   msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
   return 1;
 }
@@ -996,7 +1014,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     p_hdhandler=hd;
 #else
     THROW(fatal_error, string("Pythia not enabled during compilation. ")+
-          "Use the configure option --enable-pythia to enable it.");
+          "Use the cmake option -DSHERPA_ENABLE_PYTHIA6=ON to enable it.");
 #endif
   }
   else {
@@ -1028,12 +1046,21 @@ bool Initialization_Handler::InitializeTheAnalyses()
     if (analyses[i]=="None") continue;
     if (analyses[i]=="Internal")
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
-        THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
+        THROW(missing_module,"Cannot load Analysis library (-DSHERPA_ENABLE_ANALYSIS=ON).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
-      if (!s_loader->LoadLibrary("SherpaHepMCOutput")&& !s_loader->LoadLibrary("SherpaHepMC3Output")) 
-        THROW(missing_module,"Cannot load HepMC library (--enable-hepmc2 or --enable-hepmc3).");
+      bool hepmc_loaded {false};
+#ifdef USING__HEPMC2
+      hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMCOutput") != nullptr);
+#endif
+#ifdef USING__HEPMC3
+      hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMC3Output") != nullptr);
+#endif
+      if (!hepmc_loaded) {
+        THROW(missing_module,
+              "Cannot load HepMC library (-DSHERPA_ENABLE_HEPMC2=ON and/or -DSHERPA_ENABLE_HEPMC3=ON).");
+      }
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
-        THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
+        THROW(missing_module,"Cannot load RivetAnalysis library (-DSHERPA_ENABLE_RIVET=ON).");
     }
     Analysis_Interface* ana =
       Analysis_Interface::Analysis_Getter_Function::GetObject(analyses[i], args);
@@ -1058,6 +1085,8 @@ bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
     Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   p_variations = new Variations(mode);
   s_variations = p_variations;
+  if (p_mehandler)
+    p_mehandler->InitializeTheReweighting(mode);
   if (mode != Variations_Mode::nominal_only)
     msg_Info()<<"Initialized the Reweighting."<<endl;
   return true;

@@ -101,7 +101,7 @@ void Settings::DeclareMatrixSettingsWithEmptyDefault(
   }
 }
 
-bool Settings::IsCustomised(const Settings_Keys& keys)
+bool Settings::IsSetExplicitly(const Settings_Keys& keys)
 {
   for (auto& reader : m_yamlreaders)
     if (reader->IsParameterCustomised(keys))
@@ -114,7 +114,15 @@ std::vector<std::string> Settings::GetKeys(const Settings_Keys& scopekeys)
   std::vector<std::string> keys;
   for (auto& reader : m_yamlreaders) {
     std::vector<std::string> yamlkeys{ reader->GetKeys(scopekeys) };
-    keys.insert(keys.end(), yamlkeys.begin(), yamlkeys.end());
+    if (!yamlkeys.empty()) {
+      keys.insert(keys.end(), yamlkeys.begin(), yamlkeys.end());
+      if (!scopekeys.ContainsNoIndizes()) {
+        // we do not want to merge keys from different YAML documents when we
+        // are somehow within a YAML sequence, since we do not have a clear
+        // correspondence between elements of different sequences
+        return keys;
+      }
+    }
   }
   keys.erase(AllUnique(keys.begin(), keys.end()), keys.end());
   return keys;
@@ -137,17 +145,13 @@ std::string Settings::GetPath()
 
 String_Vector Settings::GetConfigFiles()
 {
-  for (auto& reader : m_yamlreaders) {
-    const auto filenames
-      = reader->GetVector<std::string>(Settings_Keys{"RUNDATA"});
-    if (!filenames.empty())
-      return filenames;
-  }
+  auto s = (*this)["RUNDATA"];
   if (FileExists(GetPath() + "Sherpa.yaml")) {
-    return {"Sherpa.yaml"};
+    s.SetDefault("Sherpa.yaml");
   } else {
-    return {};
+    s.SetDefault(std::vector<std::string>{});
   }
+  return s.GetVector<std::string>();
 }
 
 bool Settings::IsScalar(const Settings_Keys& keys)

@@ -264,6 +264,9 @@ understood by the internal interpreter, see
 
 * DIS: ``CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT)/$(SDIS))/Abs2(p[2]-p[0]))``
 
+See :ref:`On-the-fly event weight variations`
+to find out how to vary the merging cut on-the-fly.
+
 .. _param_Process_Selectors:
 
 Process_Selectors
@@ -504,7 +507,7 @@ They can be combined, eg. @code{[EW, LO1, LO2, LO3]}.
 Please note, the associated contributions will not be
 added to the nominal event weight but instead are available to
 be included in the on-the-fly calculation of alternative event
-weights, cf. :ref:`Associated contributions variations`.
+weights, cf. :ref:`EWVirt`.
 
 
 .. _Integrator:

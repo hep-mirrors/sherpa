@@ -41,9 +41,9 @@ Omega_ik * Eikonal_Creator::InitialiseEikonal()
 void Eikonal_Creator::
 FillBYGrids(Eikonal_Contributor * omegai,Eikonal_Contributor * omegak)
 {
-  msg_Info()<<METHOD<<" with lambda = "<<m_params.lambda<<", "
-	    <<"Delta = "<<m_params.Delta<<") in "
-	    <<"["<<(-m_params.Ymax)<<", "<<m_params.Ymax<<"].\n";
+  //msg_Info()<<METHOD<<" with lambda = "<<m_params.lambda<<", "
+  //	    <<"Delta = "<<m_params.Delta<<") in "
+  //	    <<"["<<(-m_params.Ymax)<<", "<<m_params.Ymax<<"].\n";
 
   omegai->PrepareGrid(m_ff1steps+1,m_ff2steps+1);
   omegak->PrepareGrid(m_ff1steps+1,m_ff2steps+1);
@@ -104,8 +104,8 @@ void Eikonal_Creator::FixGridAndBorders(DEQ_Solver * solver,int & ysteps,
 void Eikonal_Creator::CreateImpactParameterGrid(Omega_ik * eikonal)
 {
   double B(0.), Bmax(m_params.bmax), deltaB(Bmax/double(m_Bsteps)), yref(0.);
-  msg_Info()<<METHOD<<" up to B = "<<Bmax<<" in "<<m_Bsteps<<" steps, "
-	    <<"delta = "<<deltaB<<".\n";
+  //msg_Info()<<METHOD<<" up to B = "<<Bmax<<" in "<<m_Bsteps<<" steps, "
+  //	    <<"delta = "<<deltaB<<".\n";
   eikonal->SetDeltaB(deltaB);
 
   double beta02(m_params.beta02), value(0.), accu(0.01);
