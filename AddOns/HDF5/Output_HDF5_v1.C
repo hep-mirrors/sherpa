@@ -337,7 +337,7 @@ namespace SHERPA {
 
     void Initialize(const size_t &nup)
     {
-      size_t size(MPI::COMM_WORLD.Get_size());
+      size_t size(mpi->Size());
       std::vector<size_t> min(1,size);
       min.front()*=m_unweight?1:rpa->gen.NumberOfEvents();
       std::vector<size_t> max(min);
@@ -429,10 +429,10 @@ namespace SHERPA {
       }
       m_events=0;
       size_t ncache(m_scache["start"].size());
-      std::size_t size(MPI::COMM_WORLD.Get_size());
-      std::size_t crank(MPI::COMM_WORLD.Get_rank());
+      std::size_t size(mpi->Size());
+      std::size_t crank(mpi->Rank());
       std::vector<int> ncaches(size,ncache);
-      MPI::COMM_WORLD.Allgather(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,&ncaches[0],1,MPI::INT);
+      mpi->Allgather(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,&ncaches[0],1,MPI_INT);
       size_t sumcache(0), rank(0);
       for (size_t i(0);i<size;++i) sumcache+=ncaches[i];
       for (size_t i(0);i<crank;++i) rank+=ncaches[i];
