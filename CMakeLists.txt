@@ -556,31 +556,15 @@ endif()
 #This directory is unconditional install, but requires Python for extra files to be installed
 add_subdirectory(MODEL/UFO)
 
-
-
-
 foreach ( IDIR ${IDIRS} )
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${IDIR} 
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}  COMPONENT devel  
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H" PATTERN "*.icc"  
                              PATTERN "*\.c" EXCLUDE 
                              PATTERN "*/fjcore.hh" 
-                             PATTERN "*/SoftPhysics/Cluster_Algorithm.H" EXCLUDE
-                             PATTERN "*Cluster_Decay_Analysis.H" EXCLUDE 
-                             PATTERN "*Splitting_Tools.H" EXCLUDE 
-                             PATTERN "*Running_Alpha_HV.H" EXCLUDE 
-                             PATTERN "*Sigma_DD.H" EXCLUDE 
-                             PATTERN "*Full_Amplitude_Base.H" EXCLUDE 
-                             PATTERN "*Event_Generation/Ladder.H" EXCLUDE 
-                             PATTERN "*Ladder_Generator_LDC.H" EXCLUDE 
-                             PATTERN "*Quasi_Elastic_Event_Generator.H" EXCLUDE 
-                             PATTERN "*Double_Diffractive_Event_Generator.H" EXCLUDE 
-                             PATTERN "*EXTRA_XS/Special" EXCLUDE 
-                             PATTERN "*EXTRA_XS/Two2Two" EXCLUDE 
                              PATTERN "*Math/Sobol/*" EXCLUDE 
                              PATTERN "*Math/Sobol" EXCLUDE 
                              PATTERN "*EXTAMP/Example*" EXCLUDE 
-                             PATTERN "*HADRONS++/Run/Main*" EXCLUDE 
                              PATTERN "*MODEL/AQGC*" EXCLUDE 
                              PATTERN "*MODEL/MUED*" EXCLUDE 
                              PATTERN "*MODEL/SM/*" EXCLUDE 
@@ -588,19 +572,10 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*MODEL/SMDM*" EXCLUDE 
                              PATTERN "*MODEL/SMGold*" EXCLUDE 
                              PATTERN "*MODEL/TauPi*" EXCLUDE 
-                             PATTERN "*DIM/Gauge*" EXCLUDE 
-                             PATTERN "*DIM/Lorentz*" EXCLUDE 
-                             PATTERN "*DIRE/Gauge*" EXCLUDE 
-                             PATTERN "*DIRE/Lorentz*" EXCLUDE 
-                             PATTERN "*DIRE/Main*" EXCLUDE 
                              PATTERN "*PDF/CT14*" EXCLUDE 
                              PATTERN "*PDF/GRS/GRSGrid*" EXCLUDE 
                              PATTERN "*PDF/SAL/SALGrid*" EXCLUDE 
                              PATTERN "*PDF/LHAPDF" EXCLUDE 
-                             PATTERN "*METOOLS/Vertices" EXCLUDE 
-                             PATTERN "*MCATNLO/Calculators" EXCLUDE 
-                             PATTERN "*CSSHOWER++/Calculators" EXCLUDE 
-                             PATTERN "*METOOLS/Colors" EXCLUDE 
                              PATTERN "*SHERPA/Run" EXCLUDE 
                              PATTERN "*HADRONS++/Run" EXCLUDE 
                              PATTERN "*makefile*" EXCLUDE  
@@ -617,9 +592,6 @@ if (SHERPA_ENABLE_EXAMPLES)
                          COMPONENT doc 
                          PATTERN test.py.in EXCLUDE 
                          PATTERN CI EXCLUDE 
-                         PATTERN Examples/Makefile EXCLUDE 
-                         PATTERN Makefile.am EXCLUDE 
-                         PATTERN Makefile.in EXCLUDE 
                           )
 endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Sobol/21201 ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201)
