@@ -429,12 +429,12 @@ endif()
 message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
 
 if (SHERPA_ENABLE_GGVVAMP)
-  message(STATUS "SHERPA: Libbtwxt will be downloaded and compiled")
+  message(STATUS "SHERPA: btwxt will be downloaded and compiled")
   include(ExternalProject)
   include(FetchContent)
   ExternalProject_Add(downloadedlibbtwxt
-    GIT_REPOSITORY https://github.com/bigladder/btwxt
-    GIT_TAG v0.2.0
+    GIT_REPOSITORY https://github.com/andriish/btwxt
+    GIT_TAG doinstall
     STEP_TARGETS build
     GIT_SHALLOW 1
     UPDATE_COMMAND ""
@@ -442,29 +442,28 @@ if (SHERPA_ENABLE_GGVVAMP)
     PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libbtwxt -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -Dbtwxt_STATIC_LIB=OFF -DBTWXT_STATIC_LIB=OFF
     BUILD_BYPRODUCTS ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libbtwxt/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX}
-    INSTALL_COMMAND ""
   )
-  unset(Libbtwxt_ROOT)
-  set(Libbtwxt_DIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libbtwxt)
-  set(Libbtwxt_VERSION 0.2.0)
-  set(Libbtwxt_LIBRARIES ${Libbtwxt_DIR}/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX})
-  set(Libbtwxt_INCLUDE_DIRS ${Libbtwxt_DIR}/include)
-  file(MAKE_DIRECTORY ${Libbtwxt_DIR}/include)
-  add_library(Libbtwxt::Libbtwxt UNKNOWN IMPORTED)
-  set_target_properties(Libbtwxt::Libbtwxt PROPERTIES
-        IMPORTED_LOCATION "${Libbtwxt_LIBRARIES}"
-        INTERFACE_INCLUDE_DIRECTORIES "${Libbtwxt_INCLUDE_DIRS}"
+  unset(btwxt_ROOT)
+  set(btwxt_DIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libbtwxt)
+  set(btwxt_VERSION 0.2.0)
+  set(btwxt_LIBRARIES ${btwxt_DIR}/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(btwxt_INCLUDE_DIRS ${btwxt_DIR}/include/btwxt)
+  file(MAKE_DIRECTORY ${btwxt_DIR}/include)
+  add_library(btwxt::btwxt UNKNOWN IMPORTED)
+  set_target_properties(btwxt::btwxt PROPERTIES
+        IMPORTED_LOCATION "${btwxt_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${btwxt_INCLUDE_DIRS}"
     )
   if (CMAKE_SYSTEM_NAME MATCHES Darwin)
-    install(FILES ${Libbtwxt_DIR}/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
-    install(FILES ${Libbtwxt_DIR}/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+    install(FILES ${btwxt_DIR}/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+    install(FILES ${btwxt_DIR}/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
   else()
-    install(FILES ${Libbtwxt_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
-    install(FILES ${Libbtwxt_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)  
+    install(FILES ${btwxt_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+    install(FILES ${btwxt_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)  
   endif()
-  install(FILES ${Libbtwxt_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
-  install(FILES ${Libbtwxt_INCLUDE_DIRS}/btwxt.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
-  add_dependencies(Libbtwxt::Libbtwxt PRIVATE downloadedlibbtwxt)
+  install(FILES ${btwxt_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+  install(DIRECTORY ${btwxt_INCLUDE_DIRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+  add_dependencies(btwxt::btwxt PRIVATE downloadedlibbtwxt)
 endif()
 
 
@@ -601,7 +600,7 @@ if (SHERPA_ENABLE_GGVVAMP)
   find_package(ggvvamp REQUIRED)
   message(STATUS "SHERPA: GGVVAMP_VERSION=${GGVVAMP_VERSION} GGVVAMP_LIBRARY=${GGVVAMP_LIBRARY} GGVVAMP_INCLUDE_DIR=${GGVVAMP_INCLUDE_DIR}")
   find_package(ginac REQUIRED)
-  message(STATUS "SHERPA: GINAC_LIBRARIES=${GINAC_LIBRARIES} GINAC_INCLUDE_DIRS=${GINAC_INCLUDE_DIRS}")
+  message(STATUS "SHERPA: ginac_VERSION=${ginac_VERSION}")
   add_subdirectory(AddOns/ggvvamp)
 endif()
 
