@@ -398,7 +398,7 @@ namespace SHERPA {
       if (mode!=1 && m_events<m_ncache) return;
       if (m_trials>0) {
 	std::vector<double> eprops(m_neprops+m_nweights,-1.);
-	eprops[0]=0;
+	eprops[0]=1;
 	eprops[1]=m_nmax;
 	eprops[2]=m_offset*m_nmax;
 	for (size_t i(0);i<m_nweights;++i) eprops[m_neprops+i]=0.;
