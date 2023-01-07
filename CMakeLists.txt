@@ -66,7 +66,9 @@ option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 ###########################Options handeling############################
-set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
+set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD EXAMPLES GOSAM 
+GGVVAMP
+GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
 INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF 
  LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
@@ -426,6 +428,45 @@ else()
 endif()
 message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
 
+if (SHERPA_ENABLE_GGVVAMP)
+  message(STATUS "SHERPA: btwxt will be downloaded and compiled")
+  include(ExternalProject)
+  include(FetchContent)
+  ExternalProject_Add(downloadedlibbtwxt
+    GIT_REPOSITORY https://github.com/andriish/btwxt
+    GIT_TAG doinstall
+    STEP_TARGETS build
+    GIT_SHALLOW 1
+    UPDATE_COMMAND ""
+    PATCH_COMMAND ""
+    PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libbtwxt -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -Dbtwxt_STATIC_LIB=OFF -DBTWXT_STATIC_LIB=OFF
+    BUILD_BYPRODUCTS ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libbtwxt/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX}
+  )
+  unset(btwxt_ROOT)
+  set(btwxt_DIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libbtwxt)
+  set(btwxt_VERSION 0.2.0)
+  set(btwxt_LIBRARIES ${btwxt_DIR}/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(btwxt_INCLUDE_DIRS ${btwxt_DIR}/include/btwxt)
+  file(MAKE_DIRECTORY ${btwxt_DIR}/include)
+  add_library(btwxt::btwxt UNKNOWN IMPORTED)
+  set_target_properties(btwxt::btwxt PROPERTIES
+        IMPORTED_LOCATION "${btwxt_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${btwxt_INCLUDE_DIRS}"
+    )
+  if (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    install(FILES ${btwxt_DIR}/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+    install(FILES ${btwxt_DIR}/lib/libbtwxt${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+  else()
+    install(FILES ${btwxt_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+    install(FILES ${btwxt_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)  
+  endif()
+  install(FILES ${btwxt_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+  install(DIRECTORY ${btwxt_INCLUDE_DIRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+  add_dependencies(btwxt::btwxt PRIVATE downloadedlibbtwxt)
+endif()
+
+
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
 add_subdirectory(AMISIC++)
@@ -555,7 +596,13 @@ if (SHERPA_ENABLE_PYTHON OR SHERPA_ENABLE_DIHIGGS OR SHERPA_ENABLE_UFO OR (SHERP
 endif()
 #This directory is unconditional install, but requires Python for extra files to be installed
 add_subdirectory(MODEL/UFO)
-
+if (SHERPA_ENABLE_GGVVAMP)
+  find_package(ggvvamp REQUIRED)
+  message(STATUS "SHERPA: GGVVAMP_VERSION=${GGVVAMP_VERSION} GGVVAMP_LIBRARY=${GGVVAMP_LIBRARY} GGVVAMP_INCLUDE_DIR=${GGVVAMP_INCLUDE_DIR}")
+  find_package(ginac REQUIRED)
+  message(STATUS "SHERPA: ginac_VERSION=${ginac_VERSION}")
+  add_subdirectory(AddOns/ggvvamp)
+endif()
 
 
 
