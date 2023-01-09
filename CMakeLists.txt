@@ -64,6 +64,7 @@ option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." OFF)
 option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
+option(SHERPA_ENABLE_YFSNNLO                 "Enables NNLO Corrections for YFS." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
@@ -934,6 +935,8 @@ $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MC
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define MCFM_PATH \"${MCFM_PATH}\",/* #undef MCFM_PATH */>\n\n\
 /* using EWSud */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_EWSUD}>,#define USING__EWSud \"1\",/* #undef USING__EWSud */>\n\n\
+/* using YFSNNLO */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_YFSNNLO}>,#define USING__YFS_NNLO \"1\",/* #undef USING__YFS_NNLO */>\n\n\
 #endif")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H CONTENT "${CXXFLAGS_PACKAGES_H_CONTENT}")
 ########################################################################

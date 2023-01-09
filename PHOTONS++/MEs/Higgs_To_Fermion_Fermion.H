@@ -6,7 +6,7 @@
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #ifdef USING__YFS_NNLO
-#include "PHOTONS++/MEs/RVTools/Higgs_Decay_Two_Loop_Functions.H"
+#include "PHOTONS++/MEs/Higgs_Decay_Two_Loop_Functions.H"
 #endif
 
 namespace PHOTONS {

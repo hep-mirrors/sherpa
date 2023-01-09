@@ -10,7 +10,7 @@
 #include "METOOLS/Loops/PV_Integrals.H"
 #include "ATOOLS/Org/Message.H"
 #ifdef USING__YFS_NNLO
-#include "PHOTONS++/MEs/RVTools/Z_Decay_Two_Loop_Functions.H"
+#include "PHOTONS++/MEs/Z_Decay_Two_Loop_Functions.H"
 #endif
 
 #define B_0(A,B,C,M)        Master_Bubble(A,B,C,M)

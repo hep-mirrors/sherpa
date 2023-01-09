@@ -5,7 +5,7 @@
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "METOOLS/Loops/Master_Integrals.H"
 #include "PHOTONS++/MEs/EW_One_Loop_Functions_Base.H"
-#include "PHOTONS++/MEs/RVTools/Higgs_Decay_RV_Diagrams.H"
+#include "PHOTONS++/MEs/Higgs_Decay_RV_Diagrams.H"
 #include "ATOOLS/Phys/Particle.H"
 
 namespace PHOTONS{
