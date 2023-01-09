@@ -8,6 +8,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "METOOLS/Main/Polarization_Tools.H"
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "PHOTONS++/Main/Dipole_Type.H"
 
 namespace ATOOLS {
