@@ -7,16 +7,9 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
-#ifdef USING__HEPMC2__IOGENEVENT
 #include "HepMC/IO_GenEvent.h"
-#endif
-
-#ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
-#ifdef HEPMC_HAS_CROSS_SECTION
 #include "HepMC/GenCrossSection.h"
-#endif
-#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -29,17 +22,9 @@ Output_HepMC2_Short::Output_HepMC2_Short(const Output_Arguments &args) :
   m_ext=".hepmc";
   const int precision{
     Settings::GetMainSettings()["EVENT_OUTPUT_PRECISION"].Get<int>() };
-#ifdef USING__HEPMC2__IOGENEVENT
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
-#ifdef HEPMC_HAS_CROSS_SECTION
   p_iogenevent->precision(precision);
-#endif
-#else
-  THROW(fatal_error,"HepMC::IO_GenEvent asked for, but HepMC version too old.");
-#endif
-#ifdef HEPMC_HAS_CROSS_SECTION
   p_xs=new HepMC::GenCrossSection();
-#endif
   p_event=new HepMC::GenEvent();
 #ifdef USING__GZIP
   m_ext += ".gz";
@@ -57,12 +42,8 @@ Output_HepMC2_Short::Output_HepMC2_Short(const Output_Arguments &args) :
 
 Output_HepMC2_Short::~Output_HepMC2_Short()
 {
-#ifdef USING__HEPMC2__IOGENEVENT
   delete p_iogenevent;
-#endif
-#ifdef HEPMC_HAS_CROSS_SECTION
   delete p_xs;
-#endif
   m_outstream.close();
   delete p_event;
 }
@@ -70,23 +51,18 @@ Output_HepMC2_Short::~Output_HepMC2_Short()
 void Output_HepMC2_Short::SetXS(const ATOOLS::Weights_Map& xs,
 			        const ATOOLS::Weights_Map& xserr)
 {
-#ifdef HEPMC_HAS_CROSS_SECTION
   p_xs->set_cross_section(xs.Nominal(), xserr.Nominal());
-#endif
 }
 
 void Output_HepMC2_Short::Output(Blob_List* blobs)
 {
-#ifdef USING__HEPMC2__IOGENEVENT
   p_event->clear();
   m_hepmc2.Sherpa2ShortHepMC(blobs, *p_event);
   std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
-#ifdef HEPMC_HAS_CROSS_SECTION
   p_event->set_cross_section(*p_xs);
   for (size_t i(0); i<subevents.size(); ++i) {
     subevents[i]->set_cross_section(*p_xs);
   }
-#endif
   if (subevents.size()) {
     for (size_t i(0); i<subevents.size(); ++i) {
       p_iogenevent->write_event(subevents[i]);
@@ -95,12 +71,10 @@ void Output_HepMC2_Short::Output(Blob_List* blobs)
   } else {
     p_iogenevent->write_event(p_event);
   }
-#endif
 }
 
 void Output_HepMC2_Short::ChangeFile()
 {
-#ifdef USING__HEPMC2__IOGENEVENT
   delete p_iogenevent;
   m_outstream.close();
   std::string newname(m_basename+m_ext);
@@ -110,7 +84,6 @@ void Output_HepMC2_Short::ChangeFile()
   if (!m_outstream.good())
     THROW(fatal_error, "Could not open event file "+newname+".")
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
-#endif
 }
 
 DECLARE_GETTER(Output_HepMC2_Short,"HepMC_Short",

@@ -487,7 +487,7 @@ set(HEPMC2_REQUIRED FALSE)
 #For Rivet one should guess which verson is required
 if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_HEPMC2 OR SHERPA_ENABLE_RIVET)
   if (SHERPA_ENABLE_HEPMC2 OR ( SHERPA_ENABLE_RIVET  AND Rivet_HEPMC2_FOUND) )
-     find_package(HepMC2 REQUIRED)
+     find_package(HepMC2 2.06.10...<2.07.00 REQUIRED)
      message(STATUS "SHERPA: HEPMC2_VERSION=${HEPMC2_VERSION} HEPMC2_LIBRARIES=${HEPMC2_LIBRARIES} HEPMC2_FIO_LIBRARIES=${HEPMC2_FIO_LIBRARIES} HEPMC2_INCLUDE_DIRS=${HEPMC2_INCLUDE_DIRS}")
      set(HEPMC2_REQUIRED TRUE)
   endif()
@@ -873,12 +873,6 @@ $<IF:$<BOOL:${HEPMC3_REQUIRED}>,#define USING__HEPMC3 \"1\",/* #undef USING__HEP
 $<IF:$<BOOL:${SHERPA_ENABLE_HEPMC3_ROOT}>,#define USING__HEPMC3__ROOT \"1\",/* #undef USING__HEPMC3__ROOT */>\n\n\
 /* Using HEPMC2 */\n\
 $<IF:$<BOOL:${HEPMC2_REQUIRED}>,#define USING__HEPMC2 \"1\",/* #undef USING__HEPMC2 */>\n\n\
-/* HepMC::IO_GenEvent available */\n\
-$<IF:$<BOOL:${HEPMC2_REQUIRED}>,#define USING__HEPMC2__IOGENEVENT \"1\",/* #undef USING__HEPMC2__IOGENEVENT */>\n\n\
-/* HepMC::Units available */\n\
-$<IF:$<BOOL:${HEPMC2_REQUIRED}>,#define USING__HEPMC2__UNITS \"1\",/* #undef USING__HEPMC2__UNITS */>\n\n\
-/* HepMCDefs.h available */\n\
-$<IF:$<BOOL:${HEPMC2_REQUIRED}>,#define USING__HEPMC2__DEFS \"1\",/* #undef USING__HEPMC2__DEFS */>\n\n\
 /* using gzip */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_GZIP}>,#define USING__GZIP \"1\",/* #undef USING__GZIP */>\n\n\
 /* hztool found */\n\

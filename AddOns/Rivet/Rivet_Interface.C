@@ -31,10 +31,7 @@
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenCrossSection.h"
 #include "HepMC/WeightContainer.h"
-
-#ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
-#endif
 #define SHERPA__HepMC_Interface SHERPA::HepMC2_Interface
 #define HEPMCNS HepMC
 #endif
@@ -275,12 +272,10 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event);
   else                  m_hepmc2.Sherpa2HepMC(bl, event);
   std::vector<HEPMCNS::GenEvent*> subevents(m_hepmc2.GenSubEventList());
-#ifdef HEPMC_HAS_CROSS_SECTION
 #ifdef  RIVET_ENABLE_HEPMC_3
   m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
 #else
   m_hepmc2.AddCrossSection(event, p_eventhandler->TotalNominalXS());
-#endif
 #endif
 
   if (subevents.size()) {
@@ -471,9 +466,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenCrossSection.h"
 #include "HepMC/WeightContainer.h"
-#ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
-#endif
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
 
@@ -678,21 +671,6 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
   std::map<std::string,double> wgtmap;
   double ntrials(1.);
   size_t xstype(0);
-#ifdef HEPMC_HAS_NAMED_WEIGHTS
-#ifdef HEPMC_HAS_WORKING_NAMED_WEIGHTS // replace by final HepMC-2.07 variable
-  std::vector<std::string> keys(wc.keys());
-  msg_Debugging()<<keys<<std::endl;
-  for (size_t i(0);i<keys.size();++i) {
-    std::string cur(keys[i]);
-    // use a heuristic to detect variation weight names
-    if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
-      wgtmap[cur] = wc[cur];
-    }
-    else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
-    else if (cur=="EXTRA__NTrials") ntrials=wc[cur];
-    else if (cur=="IRREG__Reweight_Type" && wc[cur]&64) xstype=1;
-  }
-#else
   // lookup all evt-wgts with a variation weight name
   // at the moment the only way to do that is to filter the printout
   // accuracy limited to print out accu of 6 digits, must suffice
@@ -719,12 +697,9 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     else if (cur=="EXTRA__NTrials") ntrials=wgt;
     else if (cur=="IRREG__Reweight_Type" && ((int)wgt)&64) xstype=1;
   }
-#endif /* HEPMC_HAS_WORKING_NAMED_WEIGHTS */
-#else
   wgtmap["nominal"]=wc[0];
   ntrials=wc[3];
   xstype=(((wc.size()==5&&((int)wc[4]&64))||(wc.size()==11&&((int)wc[10]&64)))?1:0);
-#endif /* HEPMC_HAS_NAMED_WEIGHTS */
   if (msg_LevelIsDebugging()) {
     for (std::map<std::string,double>::iterator wit(wgtmap.begin());
          wit!=wgtmap.end();++wit)
@@ -754,9 +729,7 @@ void Rivet_Interface::SetEventWeight(const Rivet_Scale_Variation* rsv,
   double wgt(idx<0?rsv->Weight():rsv->Weight(idx));
   DEBUG_FUNC(rsv->Name()<<": "<<wgt);
   evt.weights()[0]=wgt;
-#ifdef HEPMC_HAS_CROSS_SECTION
   evt.cross_section()->set_cross_section(rsv->TotalXS(),rsv->TotalErr());
-#endif
 }
 
 void Rivet_Interface::ResetRivetScaleVariationMapRSWeights()
@@ -930,10 +903,8 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event);
   else                  m_hepmc2.Sherpa2HepMC(bl, event);
   std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
-#ifdef HEPMC_HAS_CROSS_SECTION
   // leave this, although will be overwritten later
   m_hepmc2.AddCrossSection(event, p_eventhandler->TotalNominalXS());
-#endif
 
   // 1st event build index map, thereafter only lookup
   ExtractVariations(event,subevents);

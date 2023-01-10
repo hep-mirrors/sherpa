@@ -7,16 +7,9 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
-#ifdef USING__HEPMC2__IOGENEVENT
 #include "HepMC/IO_GenEvent.h"
-#endif
-
-#ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
-#ifdef HEPMC_HAS_CROSS_SECTION
 #include "HepMC/GenCrossSection.h"
-#endif
-#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -29,17 +22,9 @@ Output_HepMC2_Genevent::Output_HepMC2_Genevent(const Output_Arguments &args) :
   m_ext=".hepmc2g";
   const int precision{
     Settings::GetMainSettings()["EVENT_OUTPUT_PRECISION"].Get<int>() };
-#ifdef USING__HEPMC2__IOGENEVENT
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
-#ifdef HEPMC_HAS_CROSS_SECTION
   p_iogenevent->precision(precision);
-#endif
-#else
-  THROW(fatal_error,"HepMC::IO_GenEvent asked for, but HepMC version too old.");
-#endif
-#ifdef HEPMC_HAS_CROSS_SECTION
   p_xs=new HepMC::GenCrossSection();
-#endif
 #ifdef USING__GZIP
   m_ext += ".gz";
 #endif
@@ -56,37 +41,26 @@ Output_HepMC2_Genevent::Output_HepMC2_Genevent(const Output_Arguments &args) :
 
 Output_HepMC2_Genevent::~Output_HepMC2_Genevent()
 {
-#ifdef USING__HEPMC2__IOGENEVENT
   delete p_iogenevent;
-#endif
-#ifdef HEPMC_HAS_CROSS_SECTION
   delete p_xs;
-#endif
   m_outstream.close();
 }
 
 void Output_HepMC2_Genevent::SetXS(const ATOOLS::Weights_Map& xs,
 				   const ATOOLS::Weights_Map& xserr)
 {
-#ifdef HEPMC_HAS_CROSS_SECTION
   p_xs->set_cross_section(xs.Nominal(), xserr.Nominal());
-#endif
 }
 
 void Output_HepMC2_Genevent::Output(Blob_List* blobs) 
 {
-#ifdef USING__HEPMC2__IOGENEVENT
   m_hepmc2.Sherpa2HepMC(blobs);
-#ifdef HEPMC_HAS_CROSS_SECTION
   m_hepmc2.GenEvent()->set_cross_section(*p_xs);
-#endif
   p_iogenevent->write_event(m_hepmc2.GenEvent());
-#endif
 }
 
 void Output_HepMC2_Genevent::ChangeFile()
 {
-#ifdef USING__HEPMC2__IOGENEVENT
   delete p_iogenevent;
   m_outstream.close();
   std::string newname(m_basename+m_ext);
@@ -96,7 +70,6 @@ void Output_HepMC2_Genevent::ChangeFile()
   if (!m_outstream.good())
     THROW(fatal_error, "Could not open event file "+newname+".")
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
-#endif
 }
 
 DECLARE_GETTER(Output_HepMC2_Genevent,"HepMC_GenEvent",

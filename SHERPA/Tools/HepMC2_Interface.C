@@ -18,15 +18,9 @@
 #include "HepMC/SimpleVector.h"
 #include "HepMC/PdfInfo.h"
 #include "HepMC/WeightContainer.h"
-#ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
-#ifdef HEPMC_HAS_CROSS_SECTION
 #include "HepMC/GenCrossSection.h"
-#endif
-#endif
-#ifdef USING__HEPMC2__UNITS
 #include "HepMC/Units.h"
-#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -150,8 +144,6 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
              <<", extended weights: "<<m_extendedweights);
   HepMC::WeightContainer wc;
   if (m_usenamedweights) {
-#ifdef HEPMC_HAS_NAMED_WEIGHTS
-
     wc["Weight"]=m_wgt;
 
     // fill weight variations into weight container
@@ -270,9 +262,6 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       // if using minimal weights still dump event type if RS need correls
       wc["IRREG__Reweight_Type"] = p_subevtlist ? 64 : 0;
     }
-#else
-    THROW(fatal_error,"Asked for named weights, but HepMC version too old.");
-#endif
   }
   else {
     // only offer basic event record for unnamed weights
@@ -322,10 +311,8 @@ HepMC2_Interface::HepMC2_Interface() :
   p_event(NULL)
 {
   Settings& s = Settings::GetMainSettings();
-#ifdef HEPMC_HAS_NAMED_WEIGHTS
   m_usenamedweights =
     s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(true).Get<bool>();
-#endif
   m_extendedweights =
     s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
   m_includemeonlyweights =
@@ -345,10 +332,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                                          HepMC::GenEvent& event)
 {
   const auto weight(blobs->Weight());
-#ifdef USING__HEPMC2__UNITS
   event.use_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
-#endif
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
   Blob *mp(blobs->FindFirst(btp::Hard_Collision));  
@@ -431,10 +416,8 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
 	!(sub->IsReal() && m_subeventlist.empty())) continue;
     HepMC::GenVertex * subvertex(new HepMC::GenVertex());
     HepMC::GenEvent * subevent(new HepMC::GenEvent());
-    #ifdef USING__HEPMC2__UNITS
     subevent->use_units(HepMC::Units::GEV,
                         HepMC::Units::MM);
-    #endif
     // set the event number (could be used to identify correlated events)
     subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
     // assume that only 2->(n-2) processes, flip for Comix, flavs are correct
@@ -532,10 +515,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
 {
   const auto weight(blobs->Weight());
   DEBUG_FUNC("");
-#ifdef USING__HEPMC2__UNITS
   event.use_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
-#endif
   // Signal Process blob --- there is only one
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
@@ -761,16 +742,12 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
 
 void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event, const Uncertain<double>& xs)
 {
-#ifdef HEPMC_HAS_CROSS_SECTION
   HepMC::GenCrossSection gxs;
   gxs.set_cross_section(xs.value, xs.error);
   event.set_cross_section(gxs);
   for (size_t i(0);i<m_subeventlist.size();++i) {
     m_subeventlist[i]->set_cross_section(gxs);
   }
-#else
-  msg_Info()<<METHOD<<"(): Cannot add XS info to GenEvent."<<std::endl;
-#endif
 }
 
 bool HepMC2_Interface::StartsLikeVariationName(const std::string& s)
