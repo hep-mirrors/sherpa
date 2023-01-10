@@ -127,6 +127,7 @@ void Amegic::RegisterDefaults() const
   s["CHECK_LOOP_MAP"].SetDefault(0);
   s["KEEP_ZERO_PROCS"].SetDefault(0);
   s["CHECK_BORN"].SetDefault(false);
+  s["CHECK_POLES"].SetDefault(false);
   s["CHECK_FINITE"].SetDefault(false);
   s["CHECK_THRESHOLD"].SetDefault(0.0);
   s["LOOP_ME_INIT"].SetDefault(false);
