@@ -559,3 +559,21 @@ CentOS9-make-ccache-GNU:
   extends: .any-cmake-ccache
   needs:
     - job: build_image_CentOS9
+
+
+
+
+
+.macos_saas_runners:
+  tags:
+    - shared-macos-amd64
+  image: macos-11-xcode-12
+
+
+macos-build:
+  extends:
+    - .macos_saas_runners
+  stage: build
+  script:
+    - echo "running scripts in the build job"
+    - uname 
