@@ -184,6 +184,27 @@ stages:
       - todo-CentOS_$FREL.txt
     expire_in: 1 day
 
+.check_commit_Archlinux: &check_commit_Archlinux
+  stage: check_if_dockerfile_updated
+  image: 
+        name: alpine/git
+        entrypoint: [""]
+  script:
+        - rm -rf todo-Archlinux_$FREL.txt
+        - git log -1 | grep ArchlinuxDockerfile$FREL | head -n 1 >> todo-Archlinux_$FREL.txt || touch todo-Archlinux_$FREL.txt
+        - git diff --name-only HEAD HEAD~1 | grep CI/Archlinux/Dockerfile | head -n 1 >> todo-Archlinux_$FREL.txt || touch todo-Archlinux_$FREL.txt
+        - if [ -s todo-Archlinux_$FREL.txt ]; then cat CI/Archlinux/Dockerfile | sed 's/Archlinux:35/Archlinux:$FREL/g' > todo-Archlinux_$FREL.txt; fi
+        - if [ $CI_PIPELINE_SOURCE == "schedule" ]; then cat CI/Archlinux/Dockerfile | sed 's/Archlinux:35/Archlinux:$FREL/g' > todo-Archlinux_$FREL.txt; fi
+        - cat todo-Archlinux_$FREL.txt
+        - exit 0
+  variables:
+    GIT_DEPTH: "3"
+  artifacts:
+    paths:
+      - todo-Archlinux_$FREL.txt
+    expire_in: 1 day
+
+
 .check_commit_Fedora: &check_commit_Fedora
   stage: check_if_dockerfile_updated
   image: 
@@ -203,6 +224,17 @@ stages:
     paths:
       - todo-Fedora_$FREL.txt
     expire_in: 1 day
+
+.build_image_Archlinux: &build_image_Archlinux
+  stage: build_docker_image
+  image: 
+        name: gcr.io/kaniko-project/executor:debug
+        entrypoint: [""]
+  script:
+        - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+        - if [ -s todo-Archlinux_$FREL.txt ]; then /kaniko/executor --context $CI_PROJECT_DIR --dockerfile todo-Archlinux_$FREL.txt --destination $CI_REGISTRY_IMAGE:Archlinux_$FREL ; fi
+  variables:
+    GIT_DEPTH: "1"
 
 .build_image_Fedora: &build_image_Fedora
   stage: build_docker_image
@@ -257,6 +289,7 @@ stages:
     - export CMAKE=cmake3
     - export CTEST=ctest3
     - if [ "${FREL}" == "7" ]; then export CMAKE=cmake3; CTEST=ctest3; fi
+    - if [ "${FREL}" == "0" ]; then export CMAKE=cmake; CTEST=ctest; fi
     - export COMPILATIONSTART=$(date +%s)
     - $CMAKE -S . -B BUILD -DCMAKE_INSTALL_PREFIX=$(pwd)/CM  $EXTRACMAKEFLAGS $CACHINGFLAGS
     - $CMAKE --build BUILD -j 10
@@ -287,6 +320,7 @@ stages:
     - mkdir -p ${F90CACHE_TMPDIR}
     - export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_Fortran_COMPILER_LAUNCHER=f90cache"
     - if [ "${FREL}" == "7" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi
+    - if [ "${FREL}" == "0" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi
     - *ex
     - *cmake
   cache:
@@ -326,6 +360,12 @@ check_commit_CentOS9:
     OS: centOS
     FREL: 9
   extends: .check_commit_CentOS
+
+check_commit_Archlinux0:
+  variables:
+    OS: Archlinux
+    FREL: 0
+  extends: .check_commit_Archlinux
 
 ###########################################################################
 
@@ -370,6 +410,15 @@ build_image_CentOS9:
   extends: .build_image_CentOS
   needs:
     - job: check_commit_CentOS9
+
+build_image_Archlinux0:
+  variables:
+    OS: Archlinux
+    FREL: 0
+  extends: .build_image_Archlinux
+  needs:
+    - job: check_commit_Archlinux0
+
 
 ###########################################################################
 
@@ -436,3 +485,14 @@ CentOS9-make-ccache-GNU:
   extends: .any-cmake-ccache
   needs:
     - job: build_image_CentOS9
+
+Archlinux0-make-ccache-GNU:
+  variables:
+    OS: Archlinux
+    FREL: 0
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS:   -DSHERPA_ENABLE_TESTING=ON -DSHERPA_ENABLE_EWSUD=ON
+  extends: .any-cmake-ccache
+  needs:
+    - job: build_image_Archlinux0
+
