@@ -424,5 +424,16 @@
 // #define      kf_Xi_b_5960               205312
 // #define      kf_Xi_b_5960_minus         205322
 // #define      kf_Omega_b_0               205332
-
+//
+// ions
+#define      kf_deuterium               1000010020
+#define      kf_helium4                 1000020040
+#define      kf_carbon12                1000060120
+#define      kf_calcium40               1000200400 
+#define      kf_silver107               1000471070
+#define      kf_gold197                 1000791970  
+#define      kf_lead206                 1000822060
+#define      kf_lead207                 1000822070
+#define      kf_lead208                 1000822080
+#define      kf_uranium238              1000922380
 #endif

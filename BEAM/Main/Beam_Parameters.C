@@ -334,41 +334,41 @@ void Beam_Parameters::InitializeFlav(kf_code flav) {
   if (s_kftable.find(flav)==s_kftable.end()) {
     bool initialize_diquarks(false);
     if (flav==kf_p_plus) {
-      s_kftable[flav] = new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,
+      s_kftable[flav] = new Particle_Info(kf_p_plus,0.938272,0.8783,.0,3,1,1,1,
 					  "P+","P^{+}");
       initialize_diquarks=true;
     }
     else if (flav==kf_n) {
-      s_kftable[flav] = new Particle_Info(kf_n,0.939566,7.424e-28,0,1,1,1,
+      s_kftable[flav] = new Particle_Info(kf_n,0.939566,0.8783,7.424e-28,0,1,1,1,
 					  "n","n");
       initialize_diquarks=true;
     }
     else if (flav==kf_e) {
-      s_kftable[flav] = new Particle_Info(kf_e,0.000511,.0,-3,0,1,0,1,1,0,
+      s_kftable[flav] = new Particle_Info(kf_e,0.000511,.0,.0,-3,0,1,0,1,1,0,
 					  "e-","e+","e^{-}","e^{+}");
     }
     else if (flav==kf_photon) {
-      s_kftable[flav] = new Particle_Info(22,.0,.0,0,0,2,-1,1,1,0,
+      s_kftable[flav] = new Particle_Info(22,.0,.0,.0,0,0,2,-1,1,1,0,
 					  "P","P","P","P");
     }
-    else if (flav==1000822080) {
-      s_kftable[flav] = new Particle_Info(1000822080, 193.75, 246, 0, 0,
+    else if (flav==kf_lead208) {
+      s_kftable[flav] = new Particle_Info(1000822080, 193.75, 5.5012, 246, 0, 0,
 					  "Pb208", "Pb208");
     }
-    else if (flav==1000822070) {
-      s_kftable[flav] = new Particle_Info(1000822070, 192.82, 246, -1, 2,
+    else if (flav==kf_lead207) {
+      s_kftable[flav] = new Particle_Info(1000822070, 192.82, 5.4943, 246, -1, 2,
 					  "Pb207", "Pb207");
     }
-    else if (flav==1000822060) {
-      s_kftable[flav] = new Particle_Info(1000822060, 192.82, 246, 0, 2,
+    else if (flav==kf_lead206) {
+      s_kftable[flav] = new Particle_Info(1000822060, 192.82, 5.4902, 246, 0, 2,
 					  "Pb206", "Pb206");
     }
-    else if (flav==1000791970) {
-      s_kftable[flav] = new Particle_Info(1000791970, 183.5, 237, 3, 2,
+    else if (flav==kf_gold197) {
+      s_kftable[flav] = new Particle_Info(1000791970, 183.5, 5.4371, 237, 3, 2,
 					  "Au197", "Au197");
     }
-    else if (flav==1000200400) {
-      s_kftable[flav] = new Particle_Info(1000200400, 37.26, 60, 0, 2,
+    else if (flav==kf_calcium40) {
+      s_kftable[flav] = new Particle_Info(1000200400, 37.26, 3.4776, 60, 0, 2,
 					  "Ca40", "Ca40");
     }
     else {
@@ -376,55 +376,55 @@ void Beam_Parameters::InitializeFlav(kf_code flav) {
             "which is not contained in your chosen model. Will abort.");
     }
     if (initialize_diquarks) {
-      s_kftable[1103] = new Particle_Info(1103,0.77133,0,-2,-3,2,0,0,1,1,
+      s_kftable[1103] = new Particle_Info(1103,0.77133,0.,0,-2,-3,2,0,0,1,1,
 					  "dd_1","dd_1b","dd_1b","dd_1b");
-      s_kftable[2101] = new Particle_Info(2101,0.57933,0,1,-3,0,0,0,1,1,
+      s_kftable[2101] = new Particle_Info(2101,0.57933,0.,0,1,-3,0,0,0,1,1,
 					  "ud_0","ud_0b","ud_0b","ud_0b");
-      s_kftable[2103] = new Particle_Info(2103,0.77133,0,1,-3,2,0,0,1,1,
+      s_kftable[2103] = new Particle_Info(2103,0.77133,0.,0,1,-3,2,0,0,1,1,
 					  "ud_1","ud_1b","ud_1b","ud_1b");
-      s_kftable[2203] = new Particle_Info(2203,0.77133,0,4,-3,2,0,0,1,1,
+      s_kftable[2203] = new Particle_Info(2203,0.77133,0.,0,4,-3,2,0,0,1,1,
 					  "uu_1","uu_1b","uu_1b","uu_1b");
-      s_kftable[3101] = new Particle_Info(3101,0.80473,0,-2,-3,0,0,0,1,1,
+      s_kftable[3101] = new Particle_Info(3101,0.80473,0.,0,-2,-3,0,0,0,1,1,
 					  "sd_0","sd_0b","sd_0b","sd_0b");
-      s_kftable[3103] = new Particle_Info(3103,0.92953,0,-2,-3,2,0,0,1,1,
+      s_kftable[3103] = new Particle_Info(3103,0.92953,0.,0,-2,-3,2,0,0,1,1,
 					  "sd_1","sd_1b","sd_1b","sd_1b");
-      s_kftable[3201] = new Particle_Info(3201,0.80473,0,1,-3,0,0,0,1,1,
+      s_kftable[3201] = new Particle_Info(3201,0.80473,0.,0,1,-3,0,0,0,1,1,
 					  "su_0","su_0b","su_0b","su_0b");
-      s_kftable[3203] = new Particle_Info(3203,0.92953,0,1,-3,2,0,0,1,1,
+      s_kftable[3203] = new Particle_Info(3203,0.92953,0.,0,1,-3,2,0,0,1,1,
 					  "su_1","su_1b","su_1b","su_1b");
-      s_kftable[3303] = new Particle_Info(3303,1.09361,0,-2,-3,2,0,0,1,1,
+      s_kftable[3303] = new Particle_Info(3303,1.09361,0.,0,-2,-3,2,0,0,1,1,
 					  "ss_1","ss_1b","ss_1b","ss_1b");
-      s_kftable[4101] = new Particle_Info(4101,1.96908,0,1,-3,0,0,0,1,1,
+      s_kftable[4101] = new Particle_Info(4101,1.96908,0.,0,1,-3,0,0,0,1,1,
 					  "cd_0","cd_0b","cd_0b","cd_0b");
-      s_kftable[4103] = new Particle_Info(4103,2.00808,0,1,-3,2,0,0,1,1,
+      s_kftable[4103] = new Particle_Info(4103,2.00808,0.,0,1,-3,2,0,0,1,1,
 					  "cd_1","cd_1b","cd_1b","cd_1b");
-      s_kftable[4201] = new Particle_Info(4201,1.96908,0,4,-3,0,0,0,1,1,
+      s_kftable[4201] = new Particle_Info(4201,1.96908,0.,0,4,-3,0,0,0,1,1,
 					  "cu_0","cu_0b","cu_0b","cu_0b");
-      s_kftable[4203] = new Particle_Info(4203,2.00808,0,4,-3,2,0,0,1,1,
+      s_kftable[4203] = new Particle_Info(4203,2.00808,0.,0,4,-3,2,0,0,1,1,
 					  "cu_1","cu_1b","cu_1b","cu_1b");
-      s_kftable[4301] = new Particle_Info(4301,2.15432,0,1,-3,0,0,0,1,1,
+      s_kftable[4301] = new Particle_Info(4301,2.15432,0.,0,1,-3,0,0,0,1,1,
 					  "cs_0","cs_0b","cs_0b","cs_0b");
-      s_kftable[4303] = new Particle_Info(4303,2.17967,0,1,-3,2,0,0,1,1,
+      s_kftable[4303] = new Particle_Info(4303,2.17967,0.,0,1,-3,2,0,0,1,1,
 					  "cs_1","cs_1b","cs_1b","cs_1b");
-      s_kftable[4403] = new Particle_Info(4403,3.27531,0,4,-3,2,0,0,1,1,
+      s_kftable[4403] = new Particle_Info(4403,3.27531,0.,0,4,-3,2,0,0,1,1,
 					  "cc_1","cc_1b","cc_1b","cc_1b");
-      s_kftable[5101] = new Particle_Info(5101,5.38897,0,-2,-3,0,0,0,1,1,
+      s_kftable[5101] = new Particle_Info(5101,5.38897,0.,0,-2,-3,0,0,0,1,1,
 					  "bd_0","bd_0b","bd_0b","bd_0b");
-      s_kftable[5103] = new Particle_Info(5103,5.40145,0,-2,-3,2,0,0,1,1,
+      s_kftable[5103] = new Particle_Info(5103,5.40145,0.,0,-2,-3,2,0,0,1,1,
 					  "bd_1","bd_1b","bd_1b","bd_1b");
-      s_kftable[5201] = new Particle_Info(5201,5.38897,0,1,-3,0,0,0,1,1,
+      s_kftable[5201] = new Particle_Info(5201,5.38897,0.,0,1,-3,0,0,0,1,1,
 					  "bu_0","bu_0b","bu_0b","bu_0b");
-      s_kftable[5203] = new Particle_Info(5203,5.40145,0,1,-3,2,0,0,1,1,
+      s_kftable[5203] = new Particle_Info(5203,5.40145,0.,0,1,-3,2,0,0,1,1,
 					  "bu_1","bu_1b","bu_1b","bu_1b");
-      s_kftable[5301] = new Particle_Info(5301,5.56725,0,-2,-3,0,0,0,1,1,
+      s_kftable[5301] = new Particle_Info(5301,5.56725,0.,0,-2,-3,0,0,0,1,1,
 					  "bs_0","bs_0b","bs_0b","bs_0b");
-      s_kftable[5303] = new Particle_Info(5303,5.57536,0,-2,-3,2,0,0,1,1,
+      s_kftable[5303] = new Particle_Info(5303,5.57536,0.,0,-2,-3,2,0,0,1,1,
 					  "bs_1","bs_1b","bs_1b","bs_1b");
-      s_kftable[5401] = new Particle_Info(5401,6.67143,0,1,-3,0,0,0,1,1,
+      s_kftable[5401] = new Particle_Info(5401,6.67143,0.,0,1,-3,0,0,0,1,1,
 					  "bc_0","bc_0b","bc_0b","bc_0b");
-      s_kftable[5403] = new Particle_Info(5403,6.67397,0,1,-3,2,0,0,1,1,
+      s_kftable[5403] = new Particle_Info(5403,6.67397,0.,0,1,-3,2,0,0,1,1,
 					  "bc_1","bc_1b","bc_1b","bc_1b");
-      s_kftable[5503] = new Particle_Info(5503,10.07354,0,-2,-3,2,0,0,1,1,
+      s_kftable[5503] = new Particle_Info(5503,10.07354,0.,0,-2,-3,2,0,0,1,1,
 					  "bb_1","bb_1b","bb_1b","bb_1b");
     }
   }

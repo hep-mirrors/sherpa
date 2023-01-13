@@ -22,9 +22,9 @@ namespace ATOOLS {
 
   struct Particle_Info {
   public:
-
+    // masses, yukawa's etc. in GeV, radius in fm
     kf_code m_kfc;
-    double  m_mass, m_hmass, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
+    double  m_mass, m_hmass, m_radius, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
     int     m_icharge, m_strong, m_resummed, m_priority;
     int     m_spin, m_stable, m_masssign, m_dummy, m_majorana, m_formfactor;
     bool    m_on, m_massive, m_hadron, m_isgroup;
@@ -37,24 +37,24 @@ namespace ATOOLS {
 
     // default constructor
     inline Particle_Info(): 
-      m_kfc(kf_none), m_mass(0.0), m_hmass(0.0), m_yuk(-1.0), m_width(0.0),
+      m_kfc(kf_none), m_mass(0.0), m_radius(0.0), m_hmass(0.0), m_yuk(-1.0), m_width(0.0),
       m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0),
       m_strong(0), m_resummed(0), m_priority(0), m_spin(0), m_stable(1),
       m_masssign(0), m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0),
       m_massive(0), m_hadron(0), m_isgroup(0) {}
     Particle_Info(const Particle_Info &info);
-    Particle_Info(const kf_code &kfc,const double &mass,const double &width,
+    Particle_Info(const kf_code &kfc,const double &mass,const double &radius,const double &width,
       const int icharge,const int strong,
       const int spin,const int majorana,const bool on,
       const int stable,bool massive,const std::string &idname,
       const std::string &antiname, const std::string &texname,
       const std::string &antitexname ,const bool dummy=0,
       const bool isgroup=false);
-    Particle_Info(const kf_code &kfc,const double &mass,const double &width, 
+    Particle_Info(const kf_code &kfc,const double &mass,const double &radius,const double &width, 
       const int icharge,const int spin,
       const bool on,const int stable,const std::string &idname,
       const std::string &texname);
-    Particle_Info(const kf_code &kfc,const double &mass,const int icharge,
+    Particle_Info(const kf_code &kfc,const double &mass,const double &radius,const int icharge,
                   const int spin,const int formfactor,const std::string &idname,
                   const std::string &texname);
 
@@ -212,10 +212,15 @@ namespace ATOOLS {
     inline bool IsMassive() const 
     { return p_info->m_mass?p_info->m_massive:0; }
 
+    inline void SetRadius(const double & radius)
+    { p_info->m_radius=radius; }
+
     inline double Mass(const bool set=0) const    
     { return set||p_info->m_massive?p_info->m_mass:0.0; }
     inline double SelMass() const 
     { return p_info->m_massive&&!IsKK()?p_info->m_mass:0.0; }
+    inline double Radius() const
+    { return p_info->m_radius ;}
     inline double HadMass() const  
     { return p_info->m_hmass; }
     inline double Yuk() const     

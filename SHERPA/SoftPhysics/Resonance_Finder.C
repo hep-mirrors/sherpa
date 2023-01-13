@@ -90,7 +90,7 @@ void Resonance_Finder::FindProcessPossibleResonances
 
 void Resonance_Finder::InitialiseHelperParticles()
 {
-  // Need to use full Particle_Info constructor here. Arguments are: 
+  // Need to use full Particle_Info constructor here. Arguments are:
   /* const kf_code &kfc, const double &mass, const double &width,
    const int icharge, const int strong,
    const int spin, const int majorana, const bool on,
