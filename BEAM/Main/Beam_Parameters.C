@@ -107,7 +107,7 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
 Beam_Base * Beam_Parameters::InitializeMonochromatic(int num)
 {
   Flavour beam_particle     = GetFlavour("BEAMS",num);
-  double beam_energy        = (*this)("BEAM_ENERGIES",num); 
+  double beam_energy        = Max( (*this)("BEAM_ENERGIES",num), beam_particle.Mass()); 
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
   return new Monochromatic(beam_particle,beam_energy,beam_polarization,1-2*num);
 }
