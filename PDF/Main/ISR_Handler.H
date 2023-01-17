@@ -16,6 +16,7 @@ namespace PDF {
       none            =  0,
       hard_process    =  1,
       hard_subprocess =  2,
+      bunch_rescatter =  3,
       unknown         = 99
     };
   };

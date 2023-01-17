@@ -34,6 +34,7 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Beam) return fbc;
   }
+  msg_Out()<<METHOD<<": only bunch = "<<onlyBunch<<".\n";
   if (!onlyBunch) {
     if (p_shrimps) fbc = p_shrimps->MakeBeamBlobs(bloblist);
     else           fbc = p_remnants->MakeBeamBlobs(bloblist);
@@ -72,6 +73,9 @@ FillBunchBlobs(Blob_List *const  bloblist,
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Bunch) return Return_Value::Nothing;
   }
+  msg_Out()<<"-----------------------------------------------------------------------------\n"
+	   <<"   "<<METHOD<<":\n";
+  p_beam->FixPositions();
   bool flag(false);
   m_beam = 0;
   Blob * bunch;
@@ -115,12 +119,12 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
 		  blob_status::needs_softUE &
 		  blob_status::needs_hadronization);
   blob->AddToOutParticles(particle);
-  blob->SetPosition(p_remnants->GetRemnant(beam)->Position());
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
       IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0])) {
     Particle *p = new Particle(*particle);
     p->SetNumber(0);
     blob->AddToInParticles(p);
+    blob->SetPosition(p_remnants->GetRemnant(beam)->Position());
   }
   else {
     Particle *p = new Particle(-1,p_beam->GetBeam(beam)->Beam(),
@@ -135,7 +139,10 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
     p->SetStatus(part_status::active);
     p->SetFinalMass();
     blob->AddToOutParticles(p);
+    blob->SetPosition(p_beam->GetBeam(beam)->Position());
   }
+  msg_Out()<<"   "<<METHOD<<"(beam = "<<beam<<", particle = "<<blob->InParticle(0)->Flav()<<", "
+	   <<"position = "<<blob->Position()<<").\n";
   m_beam++;
   return blob;
 }

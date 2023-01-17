@@ -115,6 +115,10 @@ bool Beam_Spectra_Handler::InitTheWeight() {
   return (p_weight != nullptr);
 }
 
+void Beam_Spectra_Handler::FixPositions() {
+  for (short int beam=0;beam<2;beam++) p_BeamBase[beam]->FixPosition();
+}
+
 void Beam_Spectra_Handler::Output() {
   msg_Info() << "Beam_Spectra_Handler: type = " << m_type << endl
              << "    for " << p_BeamBase[0]->Beam()

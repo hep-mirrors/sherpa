@@ -5,13 +5,10 @@
 #include "REMNANTS/Tools/Kinematics_Generator.H"
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include "REMNANTS/Tools/Beam_Decorrelator.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Return_Value.H"
-
-namespace PDF {
-  class ISR_Handler;
-}
 
 namespace BEAM {
   class Beam_Spectra_Handler;
@@ -72,6 +69,8 @@ namespace REMNANTS {
     }
     inline Primordial_KPerp * GetKPerp() { return m_kinematics.GetKPerp(); }
   };
+  
+  typedef std::map<PDF::isr::id, Remnant_Handler*> Remnant_Handler_Map;
 }
 
 #endif

@@ -38,7 +38,6 @@ namespace SHERPA {
 
   };
   typedef std::map<PDF::isr::id, Shower_Handler*> Shower_Handler_Map;
-
 }
 
 #endif

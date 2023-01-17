@@ -9,6 +9,8 @@
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
+#include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
+#include "SHERPA/PerturbativePhysics/MI_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "SHERPA/Tools/Analysis_Interface.H"
@@ -22,6 +24,7 @@
 namespace ATOOLS {
   class Variations;
   class Fragmentation_Base;
+  class Settings;
 }
 
 namespace SHERPA {
@@ -31,43 +34,42 @@ namespace SHERPA {
   class Beam_Remnant_Handler;
   class Colour_Reconnection_Handler;
   class Decay_Handler_Base;
-  class MI_Handler;
   class Soft_Photon_Handler;
   class Lund_Interface;
   class Event_Reader_Base;
   class Analysis_Interface;
-  class Soft_Collision_Handler;
   class Filter;
   
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
     std::string m_evtform;
     std::set<std::string> m_pdflibs;
+    std::map<PDF::isr::id, std::string * > m_defsets;
 
     ATOOLS::Flavour m_bunch_particles[2];
 
     eventtype::code m_mode;
     bool            m_savestatus;
 
-    MODEL::Model_Base           * p_model;
-    BEAM::Beam_Spectra_Handler  * p_beamspectra;
-    PDF::ISR_Handler_Map          m_isrhandlers;
-    REMNANTS::Remnant_Handler   * p_remnants;
-    Matrix_Element_Handler      * p_mehandler;
-    Hard_Decay_Handler          * p_harddecays;
-    Shower_Handler_Map            m_showerhandlers;
-    Beam_Remnant_Handler        * p_beamremnants;
-    Colour_Reconnection_Handler * p_reconnections;
-    ATOOLS::Fragmentation_Base  * p_fragmentation;
-    Soft_Collision_Handler      * p_softcollisions;
-    Decay_Handler_Base          * p_hdhandler;
-    MI_Handler                  * p_mihandler; 
-    Soft_Photon_Handler         * p_softphotons;
-    Event_Reader_Base           * p_evtreader;
-    Analysis_Vector               m_analyses;
-    Output_Vector                 m_outputs;
-    ATOOLS::Variations          * p_variations;
-    Filter                      * p_filter;
+    MODEL::Model_Base            * p_model;
+    BEAM::Beam_Spectra_Handler   * p_beamspectra;
+    PDF::ISR_Handler_Map           m_isrhandlers;
+    REMNANTS::Remnant_Handler_Map  m_remnanthandlers;
+    Matrix_Element_Handler       * p_mehandler;
+    Hard_Decay_Handler           * p_harddecays;
+    Shower_Handler_Map             m_showerhandlers;
+    Beam_Remnant_Handler         * p_beamremnants;
+    Colour_Reconnection_Handler  * p_reconnections;
+    ATOOLS::Fragmentation_Base   * p_fragmentation;
+    Soft_Collision_Handler_Map     m_schandlers;
+    Decay_Handler_Base           * p_hdhandler;
+    MI_Handler_Map                 m_mihandlers;
+    Soft_Photon_Handler          * p_softphotons;
+    Event_Reader_Base            * p_evtreader;
+    Analysis_Vector                m_analyses;
+    Output_Vector                  m_outputs;
+    ATOOLS::Variations           * p_variations;
+    Filter                       * p_filter;
     
     void ShowParameterSyntax();
     void CheckVersion();
@@ -96,6 +98,9 @@ namespace SHERPA {
 
     void RegisterDefaults();
     bool CheckBeamISRConsistency();
+    void LoadPDFLibraries(ATOOLS::Settings& settings);
+    void InitISRHandler(const PDF::isr::id & pid,ATOOLS::Settings& settings);
+    void DefineBunchFlavours(ATOOLS::Settings& settings);
     void SetGlobalVariables();
     void PrepareTerminate();
 
@@ -107,26 +112,26 @@ namespace SHERPA {
     bool InitializeTheFramework(int =-1);
     bool CalculateTheHardProcesses();
 
-    Matrix_Element_Handler       * GetMatrixElementHandler()  const { return p_mehandler; }
-    Decay_Handler_Base           * GetHDHandler() { return p_hdhandler; }
-    inline PDF::ISR_Handler      * GetISRHandler(const PDF::isr::id id) { return m_isrhandlers[id]; }
-    Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
-    Output_Vector                * GetOutputs()                     { return &m_outputs;        }
-    MODEL::Model_Base            * GetModel()                 const { return p_model;           }
-    PDF::ISR_Handler_Map         * GetISRHandlers()                 { return &m_isrhandlers;    }
-    BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
-    Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
-    const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;  }
-    Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
-    Colour_Reconnection_Handler  * GetColourReconnectionHandler() const { return p_reconnections;  }
-    ATOOLS::Fragmentation_Base   * GetFragmentation()         const { return p_fragmentation;   }
-    Soft_Collision_Handler       * GetSoftCollisionHandler()  const { return p_softcollisions;  }
-    ATOOLS::Flavour              * GetBunches()                     { return m_bunch_particles; }
-    MI_Handler                   * GetMIHandler()             const { return p_mihandler;       }
-    Soft_Photon_Handler          * GetSoftPhotonHandler()     const { return p_softphotons;     }
-    Event_Reader_Base            * GetEventReader()           const { return p_evtreader;       }
-    ATOOLS::Variations           * GetVariations()            const { return p_variations;      }
-    Filter                       * GetFilter()                const { return p_filter;          }
+    Matrix_Element_Handler      * GetMatrixElementHandler()  const { return p_mehandler; }
+    Decay_Handler_Base          * GetHDHandler() { return p_hdhandler; }
+    inline PDF::ISR_Handler     * GetISRHandler(const PDF::isr::id id) { return m_isrhandlers[id]; }
+    Analysis_Vector             * GetAnalyses()                        { return &m_analyses; }
+    Output_Vector               * GetOutputs()                         { return &m_outputs; }
+    MODEL::Model_Base           * GetModel()                     const { return p_model; }
+    PDF::ISR_Handler_Map        * GetISRHandlers()                     { return &m_isrhandlers; }
+    BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()        const { return p_beamspectra; }
+    Hard_Decay_Handler          * GetHardDecayHandler()          const { return p_harddecays; }
+    const Shower_Handler_Map    & GetShowerHandlers()            const { return m_showerhandlers; }
+    Beam_Remnant_Handler        * GetBeamRemnantHandler()        const { return p_beamremnants; }
+    Colour_Reconnection_Handler * GetColourReconnectionHandler() const { return p_reconnections; }
+    ATOOLS::Fragmentation_Base  * GetFragmentation()             const { return p_fragmentation; }
+    Soft_Collision_Handler      * GetSCHandler(const PDF::isr::id id)  { return m_schandlers[id];  }
+    ATOOLS::Flavour             * GetBunches()                         { return m_bunch_particles; }
+    MI_Handler                  * GetMIHandler(const PDF::isr::id id)  { return m_mihandlers[id]; }
+    Soft_Photon_Handler         * GetSoftPhotonHandler()         const { return p_softphotons; }
+    Event_Reader_Base           * GetEventReader()               const { return p_evtreader; }
+    ATOOLS::Variations          * GetVariations()                const { return p_variations; }
+    Filter                      * GetFilter()                    const { return p_filter; }
     
     eventtype::code Mode() const { return m_mode; };
 

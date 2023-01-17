@@ -25,6 +25,7 @@ namespace BEAM {
     Beam_Spectra_Handler();
     ~Beam_Spectra_Handler();
 
+    void FixPositions();
     inline const bool                 On()           const { return m_on; }
     inline const beammode::code     & BeamMode()     const { return m_beammode; }
     inline const collidermode::code & ColliderMode() const { return m_collidermode; }
@@ -48,7 +49,6 @@ namespace BEAM {
     inline void BoostInLab(ATOOLS::Vec4D_Vector& p) {
       p_kinematics->BoostInLab(p);
     }
-
     inline void SetType(const std::string & type) { m_type = type; }
     inline void SetSprimeMin(const double & smin) { p_kinematics->SetSprimeMin(smin); }
     inline void SetSprimeMax(const double & smax) { p_kinematics->SetSprimeMax(smax); }
@@ -72,8 +72,8 @@ namespace BEAM {
 
     void   Output();
 
-    // possible deprecated methods
-    int             Polarisation()        { return m_polarisation; }
+    // possibly deprecated methods
+    int    Polarisation()        { return m_polarisation; }
     bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
     bool   CheckConsistency(ATOOLS::Flavour *);
   };

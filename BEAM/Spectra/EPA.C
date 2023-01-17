@@ -1,6 +1,7 @@
 #include "BEAM/Spectra/EPA.H"
 
 #include "ATOOLS/Math/Gauss_Integrator.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -13,14 +14,16 @@ using namespace BEAM;
 using namespace ATOOLS;
 
 EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
-         const int _dir)
-    : Beam_Base(beamspectrum::EPA, _beam, _energy, _pol, _dir),
-      m_mass(_beam.Mass(true)), m_charge(_beam.Charge()) {
+         const int _dir) :
+  Beam_Base(beamspectrum::EPA, _beam, _energy, _pol, _dir),
+  m_mass(_beam.Mass(true)), m_gamma(_energy/m_mass), m_charge(_beam.Charge()),
+  m_minR(Max(1.e-6,_beam.Radius())), m_maxR(1.e3)    
+{
   Settings &s = Settings::GetMainSettings();
   RegisterDefaults();
-  m_bunch = Flavour(kf_photon);
-  m_vecout = Vec4D(m_energy, 0., 0., _dir * m_energy);
-  m_on = true;
+  m_bunch     = Flavour(kf_photon);
+  m_vecout    = Vec4D(m_energy, 0., 0., _dir * m_energy);
+  m_on        = true;
 
   std::vector<double> q2Max{s["EPA"]["Q2Max"].GetVector<double>()};
   if (q2Max.size() != 1 && q2Max.size() != 2)
@@ -80,6 +83,18 @@ void EPA::RegisterDefaults() {
   s["EPA"]["Use_old_WW"].SetDefault(false);
   s["EPA"]["Debug"].SetDefault(false);
   s["EPA"]["Debug_Files"].SetDefault("EPA_debugOutput");
+}
+
+void EPA::FixPosition() {
+  if (false) {
+    double R   = m_minR * pow(m_maxR/m_minR,ran->Get());
+    double phi = 2.*M_PI*ran->Get();
+    m_position = R * Vec4D(0., cos(phi), sin(phi), 0.);
+  }
+  // This is a bit of a poor-man's choice for a point-like source.
+  // I use the limit for small products of distance times photon energy and it would be better to interpolate
+  // between both.  Maybe by just fusing the two expansions.
+  // It would be even better to have a two-dimnesional look-up table here which also includes the form factors.
 }
 
 double EPA::CosInt::GetCosInt(double X) {

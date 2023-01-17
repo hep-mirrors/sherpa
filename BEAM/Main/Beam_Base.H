@@ -11,7 +11,7 @@ namespace BEAM {
   protected:
     beamspectrum::code m_type;
     ATOOLS::Flavour    m_beam, m_bunch;
-    ATOOLS::Vec4D      m_lab, m_vecout;
+    ATOOLS::Vec4D      m_lab, m_vecout, m_position;
     int                m_dir;
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
@@ -25,6 +25,7 @@ namespace BEAM {
 
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
+    virtual void FixPosition() {}
     virtual inline const beamspectrum::code & Type()    const { return m_type; }
     virtual inline const ATOOLS::Flavour    & Beam()    const { return m_beam; }
     virtual inline const ATOOLS::Flavour    & Bunch()   const { return m_bunch; }
@@ -32,6 +33,7 @@ namespace BEAM {
 
     virtual inline const ATOOLS::Vec4D & OutMomentum() const { return m_vecout; }
     virtual inline const ATOOLS::Vec4D & InMomentum()  const { return m_lab; }
+    virtual inline const ATOOLS::Vec4D & Position()    const { return m_position; }
 
     virtual inline const double & Energy()       const { return m_energy; }
     virtual inline const double & Polarisation() const { return m_polarisation; }

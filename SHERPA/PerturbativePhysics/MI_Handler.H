@@ -1,17 +1,17 @@
 #ifndef SHERPA_PerturbativePhysics_MI_Handler_H
 #define SHERPA_PerturbativePhysics_MI_Handler_H
 
+#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-namespace ATOOLS   { class Cluster_Amplitude;    }
+namespace ATOOLS   { class Cluster_Amplitude; }
 namespace BEAM     { class Beam_Spectra_Handler; }
-namespace PDF      { class ISR_Handler;          }
-namespace REMNANTS { class Remnant_Handler;      }
-namespace PHASIC   { class Process_Base;         }
-namespace MODEL    { class Model_Base;           }
-namespace AMISIC   { class Amisic;               }
-namespace SHRIMPS  { class Shrimps;              }
+namespace REMNANTS { class Remnant_Handler; }
+namespace PHASIC   { class Process_Base; }
+namespace MODEL    { class Model_Base; }
+namespace AMISIC   { class Amisic; }
+namespace SHRIMPS  { class Shrimps; }
 
 namespace SHERPA {
   class Matrix_Element_Handler;
@@ -84,6 +84,7 @@ namespace SHERPA {
     void   SetMassMode(const int & massmode);
     int    ShiftMasses(ATOOLS::Cluster_Amplitude * ampl);
   }; 
+  typedef std::map<PDF::isr::id,MI_Handler *> MI_Handler_Map;
 }
 
 #endif
