@@ -26,6 +26,7 @@
  */
 
 #include "NNPDFDriver.h"
+#include "ATOOLS/Org/My_File.H"
 #include <fstream>
 #include <stdlib.h>
 #include <sstream>
@@ -167,16 +168,18 @@ inline int readInt(string const &t, string const &key) {
  */
 void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
 {
-  fstream f;
+  My_In_File f;
   stringstream file("");
   int firstindex = (int) grid.find_last_of("/") + 1;
   int lastindex  = (int) grid.length() - firstindex;
   
   string name = grid.substr(firstindex, lastindex);      
   file << grid << "/" << name << ".info";
-  f.open(file.str().c_str(), ios::in);
+  f.SetPath("");
+  f.SetFile(file.str().c_str());
+  f.Open();
   
-  if (f.fail())
+  if (f->fail())
     {
       cout << "In NNPDFDriver::readPDFSet fLHAPDF6 --- Error: cannot open file " << file.str() << endl;
       exit(-1);
@@ -187,7 +190,7 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
   vector<string> splitstring;	      
   for (;;)
     {
-      getline(f,tmp);
+      getline(*f,tmp);
 
       // Be a bit quieter
       //if (tmp.find("SetDesc:") != string::npos)
@@ -229,9 +232,9 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
       if (hasKey(tmp, "MTop"))     fMTop     = readDouble(tmp, "MTop");
 
       
-      if (f.eof()) break;
+      if (f->eof()) break;
     }
-  f.close();
+  f.Close();
 
   //// single member switcher
   fMem=0;
@@ -250,12 +253,14 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
   // Some status/debug message
   // cout <<"NNPDFDriver 1.0.5, opening file " << gfile.str().c_str() << " to read PDF data " << endl;
   // cout << "The NNPDF collaboration:   arXiv:1410.8849 [hep-ph]" << endl;
-  fstream g;
-  g.open(gfile.str().c_str(), ios::in);
+  My_In_File g;
+  g.SetPath("");
+  g.SetFile(gfile.str().c_str());
+  g.Open();
   
-  getline(g, tmp);
-  getline(g, tmp);
-  getline(g, tmp);
+  getline(*g, tmp);
+  getline(*g, tmp);
+  getline(*g, tmp);
 
   int sub = 0;
   for (;;)
@@ -263,7 +268,7 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
       if (sub == 0)
         {
           // reading Xgrid
-          getline(g, tmp);
+          getline(*g, tmp);
           split(splitstring,tmp);
       
           fNX = splitstring.size();
@@ -276,7 +281,7 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
             }
         }
 
-      getline(g, tmp);
+      getline(*g, tmp);
       split(splitstring, tmp);
       
       fNQ2.push_back(splitstring.size());	    
@@ -290,7 +295,7 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
         }
 
       // skip flavor line
-      getline(g, tmp);
+      getline(*g, tmp);
 
       // This is nasty --- a vector is created that keeps track of the
       // order in which parton flavours are stored in the file
@@ -329,22 +334,22 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
             for (int fl = 0; fl < fls.size(); fl++) {
               // The filling of the grid here is done in the same order as they appear in the file
               // fls[fl] has values in [1, 11] the last iteration fills the gluon
-              g >> fPDFGrid[sub][imem][fls[fl]][ix][iq];
+              *g >> fPDFGrid[sub][imem][fls[fl]][ix][iq];
             }
 
-      getline(g, tmp);
-      getline(g, tmp);
+      getline(*g, tmp);
+      getline(*g, tmp);
 
       if (tmp.find("---") != string::npos)
         {
           sub++;
-          getline(g, tmp);
-          if (g.eof()) break;
+          getline(*g, tmp);
+          if (g->eof()) break;
           continue;
         }
     }
   
-  g.close();
+  g.Close();
 
 }
 
