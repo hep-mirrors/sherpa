@@ -254,7 +254,7 @@ int Shower::MakeKinematics
   if (stype&1) pi->SetBeam(split->Beam());
   if (stat==1) {
     if (split->GetType()==pst::IS &&
-	RemnantTest(pi,&split->LT())==-1) stat=-1;
+	RemnantTest(pi,NULL)==-1) stat=-1;
     if (split->GetSpect()->GetType()==pst::IS &&
 	RemnantTest(split->GetSpect(),
 		    split->GetType()==pst::IS?
