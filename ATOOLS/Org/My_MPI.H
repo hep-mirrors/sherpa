@@ -102,6 +102,12 @@ namespace ATOOLS {
     // and should not be used too often.
     std::vector<std::string> AllgatherStrings(const std::string&);
 
+#else
+
+    int Rank() { return 0; }
+
+    int Size() { return 1; }
+
 #endif
 
   private:
