@@ -92,6 +92,7 @@ Photons::Photons() :
   m_name("Photons")
 {
   RegisterDefaults();
+
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   rpa->gen.AddCitation(1,
                        "Photons is published under \\cite{Schonherr:2008av}.");
@@ -122,6 +123,10 @@ Photons::Photons() :
   s_ffrecscheme   = s["FF_RECOIL_SCHEME"].Get<int>();
   s_firecscheme   = s["FI_RECOIL_SCHEME"].Get<int>();
   s_accu          = sqrt(rpa->gen.Accu());
+  m_splitphotons  = s["PHOTON_SPLITTER_MODE"].Get<int>();
+
+  m_photonsplitter = Photon_Splitter(m_splitphotons);
+
 #ifdef PHOTONS_DEBUG
   s_histo_base_name = s["HISTO_BASE_NAME"].Get<std::string>();
 #endif
@@ -184,6 +189,7 @@ void Photons::RegisterDefaults()
 {
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   s["MODE"].SetDefault(yfsmode::full).UseNoneReplacements();
+  s["PHOTON_SPLITTER_MODE"].SetDefault(15);
   s["USE_ME"].SetDefault(1);
   s["IR_CUTOFF"].SetDefault(1E-3);
   s["UV_CUTOFF"].SetDefault(std::numeric_limits<double>::max());
@@ -225,6 +231,9 @@ bool Photons::AddRadiation(Blob * blob)
                <<blob->CheckMomentumConservation()<<std::endl;
     msg_Debugging()<<*blob<<std::endl;
     return m_success=false;
+  }
+  if (m_success && m_photonsadded && m_splitphotons) {
+    m_success = m_photonsplitter.SplitPhotons(blob);
   }
   return m_success;
 }

@@ -650,7 +650,7 @@ HadronsMain HadronsMEs HadronsCurrents HadronsPSs
 Reconnections 
 AhadicMain AhadicTools AhadicFormation AhadicDecays 
 Amisic AmisicTools AmisicPerturbative 
-PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs 
+PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
 Remnants  RemnantsTools 
 MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools 
 DIMTools DIMShower DIMGauge DIMLorentz DIMMain 

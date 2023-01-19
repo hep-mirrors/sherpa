@@ -3,6 +3,7 @@
 
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "PHOTONS++/Main/Dipole_Type.H"
+#include "PHOTONS++/PhotonSplitter/Photon_Splitter.H"
 
 namespace ATOOLS {
   class Blob;
@@ -29,6 +30,8 @@ namespace PHOTONS {
     std::string                 m_name;
     bool                        m_photonsadded;
     bool                        m_success;
+    Photon_Splitter             m_photonsplitter;
+    int                         m_splitphotons;
     void RegisterDefaults();
   public:
     Photons();
@@ -62,6 +65,7 @@ namespace PHOTONS {
     static bool                 s_checkfirst;
     static int                  s_ffrecscheme;
     static int                  s_firecscheme;
+
 #ifdef PHOTONS_DEBUG
     static std::string          s_histo_base_name;
     static ATOOLS::Histogram_2D s_histo_dipole;
