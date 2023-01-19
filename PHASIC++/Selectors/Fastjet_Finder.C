@@ -37,6 +37,7 @@ namespace PHASIC {
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -59,6 +60,7 @@ Fastjet_Finder::Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl, std::stri
   m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_nb(nb), m_nb2(nb2), m_eekt(0), p_jdef(0),
   p_siscplug(NULL), p_eecamplug(NULL), p_jadeplug(NULL)
 {
+  if (mpi->Rank()) fastjet::ClusterSequence::set_fastjet_banner_stream(NULL);
   bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
 
   fastjet::JetAlgorithm ja(fastjet::kt_algorithm);

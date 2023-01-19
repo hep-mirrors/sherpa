@@ -43,6 +43,7 @@ namespace PHASIC {
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -67,6 +68,7 @@ Fastjet_Selector::Fastjet_Selector
   m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_bmode(bmode),
   p_jdef(0), p_siscplug(0)
 {
+  if (mpi->Rank()) fastjet::ClusterSequence::set_fastjet_banner_stream(NULL);
   fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
 
   if (algo=="cambridge") ja=fastjet::cambridge_algorithm;

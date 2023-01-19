@@ -3,6 +3,7 @@
 
 #include "PHASIC++/Enhance/Enhance_Observable_Base.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/SISConePlugin.hh"
@@ -71,6 +72,9 @@ Fastjet_Enhance_Observable::Fastjet_Enhance_Observable
 (const Enhance_Arguments &args): Enhance_Observable_Base(args),
   p_jdef(NULL), p_siscplug(NULL)
 {
+  if (mpi->Rank())
+    fastjet::ClusterSequence::
+      set_fastjet_banner_stream(NULL);
   std::string jtag(args.m_enhance);
   size_t pos(jtag.find("FASTJET["));
   if (pos==std::string::npos)

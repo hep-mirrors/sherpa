@@ -62,6 +62,12 @@ namespace ATOOLS {
       return MPI_Send(buf, count, datatype, dest, tag, m_comm);
     }
 
+#else
+
+    int Rank() { return 0; }
+
+    int Size() { return 1; }
+
 #endif
 
   private:
