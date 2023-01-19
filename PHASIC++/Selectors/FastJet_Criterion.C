@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -24,6 +25,8 @@ namespace PHASIC {
     {
       rpa->gen.AddCitation(
           1, "FastJet is published under \\cite{Cacciari:2011ma}.");
+      fjcore::ClusterSequence::set_fastjet_banner_stream(
+          mpi->Rank() ? nullptr : &ATOOLS::msg->Out());
       std::string jtag(args);
       size_t pos(jtag.find("FASTJET["));
       if (pos==std::string::npos)

@@ -1,5 +1,7 @@
 #include "PHASIC++/Selectors/Fastjet_Selector_Base.H"
 
+#include "ATOOLS/Org/My_MPI.H"
+
 namespace PHASIC {
   class Fastjet_Selector: public Fastjet_Selector_Base, public ATOOLS::Tag_Replacer {
     int m_bmode;
@@ -40,6 +42,8 @@ Fastjet_Selector::Fastjet_Selector(Process_Base* const proc,
   Fastjet_Selector_Base("FastjetSelector", proc, s),
   m_bmode(bmode)
 {
+  fjcore::ClusterSequence::set_fastjet_banner_stream(
+      mpi->Rank() ? nullptr : &ATOOLS::msg->Out());
   m_p.resize(m_nin+m_nout);
   m_mu2.resize(m_nout);
 

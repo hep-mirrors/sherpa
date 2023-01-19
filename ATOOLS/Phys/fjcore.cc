@@ -1411,6 +1411,7 @@ FJCORE_END_NAMESPACE
 #include "ATOOLS/Org/Message.H"
 FJCORE_BEGIN_NAMESPACE      // defined in fastjet/internal/base.hh
 using namespace std;
+std::ostream * ClusterSequence::_fastjet_banner_ostr;
 ClusterSequence::~ClusterSequence () {
   if (_structure_shared_ptr){
     ClusterSequenceStructure* csi = dynamic_cast<ClusterSequenceStructure*>(_structure_shared_ptr.get()); 
@@ -1557,7 +1558,6 @@ string fastjet_version_string() {
 void ClusterSequence::print_banner() {
   if (!_first_time) {return;}
   _first_time = false;
-  std::ostream * _fastjet_banner_ostr = &ATOOLS::msg->Out();
   ostream * ostr = _fastjet_banner_ostr;
   if (!ostr) return;  
   (*ostr) << "#--------------------------------------------------------------------------\n";

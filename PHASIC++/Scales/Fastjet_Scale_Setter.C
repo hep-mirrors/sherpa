@@ -8,6 +8,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -78,6 +79,8 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   p_jdef(NULL)
 {
   rpa->gen.AddCitation(1,"FastJet is published under \\cite{Cacciari:2011ma}.");
+  fjcore::ClusterSequence::set_fastjet_banner_stream(
+      mpi->Rank() ? nullptr : &ATOOLS::msg->Out());
   std::string jtag(args.m_scale);
   size_t pos(jtag.find("FASTJET["));
   if (pos==std::string::npos)
