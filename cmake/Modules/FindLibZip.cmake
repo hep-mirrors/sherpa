@@ -29,7 +29,6 @@ find_library(LibZip_LIBRARIES
   NAMES zip libzip
   HINTS ${PC_LIBZIP_LIBDIR})
 
-set(LibZip_INCLUDE_DIRS ${LibZip_INCLUDE_DIR} ${LibZip_INCLUDE_CONF_DIR})
 
 if ( NOT LibZip_INCLUDE_DIR OR NOT LibZip_INCLUDE_CONF_DIR OR NOT LibZip_LIBRARIES)
   if (LibZip_ROOT_DIR OR LibZip_DIR OR (DEFINED ENV{LibZip_ROOT_DIR}) OR (DEFINED ENV{LibZip_DIR}) )
@@ -57,6 +56,8 @@ if ( NOT LibZip_INCLUDE_DIR OR NOT LibZip_INCLUDE_CONF_DIR OR NOT LibZip_LIBRARI
     find_library(LibZip_LIBRARIES NAMES zip libzip PATH_SUFFIXES lib lib64)
   endif()
 endif()
+set(LibZip_INCLUDE_DIRS ${LibZip_INCLUDE_DIR} ${LibZip_INCLUDE_CONF_DIR})
+
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LibZip
