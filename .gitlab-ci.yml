@@ -263,6 +263,11 @@ stages:
     - uname -a 
     - cat /etc/issue
     - export GIT_DEPTH=1
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - BUILD/Tests/test-rivet-LO_Z/deviations.pdf
+      - BUILD/Tests/test-rivet-LO_Z/rivet-plots
 
 .cmake: &cmake
     - export CMAKE=cmake3
