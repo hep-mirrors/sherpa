@@ -205,10 +205,6 @@ if (SHERPA_ENABLE_CLANG_TIDY)
   set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--checks=*,-readability-identifier-length,-modernize-use-trailing-return-type,-cppcoreguidelines-avoid-non-const-global-variables,-llvmlibc-callee-namespace,-bugprone-easily-swappable-parameters,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-readability-implicit-bool-conversion,-hicpp-braces-around-statements,-readability-braces-around-statements,-cert-err34-c,-modernize-return-braced-init-list")
 endif()
 ########################################################################
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${PROJECT_SOURCE_DIR})
-add_definitions(-DHAVE_CONFIG_H)
-add_definitions(-DPIC)
 
 find_program(GIT NAMES git)
 if (GIT)
@@ -268,20 +264,18 @@ endmacro(sherpa_create_git_info )
 
 if(SHERPA_ENABLE_MPI)
   find_package(MPI REQUIRED)
-  message(STATUS "SHERPA: MPI_HOME=${MPI_HOME}")
+  message(STATUS "SHERPA: MPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}")
   if (SHERPA_ENABLE_FORTRAN)
     message(STATUS "SHERPA: MPI_CXX_COMPILE_OPTIONS=${MPI_CXX_COMPILE_OPTIONS} MPI_C_COMPILE_OPTIONS=${MPI_C_COMPILE_OPTIONS} MPI_Fortran_COMPILE_OPTIONS=${MPI_Fortran_COMPILE_OPTIONS}")
     message(STATUS "SHERPA: MPI_CXX_COMPILE_DEFINITIONS=${MPI_CXX_COMPILE_DEFINITIONS} MPI_C_COMPILE_DEFINITIONS=${MPI_C_COMPILE_DEFINITIONS} MPI_Fortran_COMPILE_DEFINITIONS=${MPI_Fortran_COMPILE_DEFINITIONS}")
     message(STATUS "SHERPA: MPI_CXX_INCLUDE_DIRS=${MPI_CXX_INCLUDE_DIRS} MPI_C_INCLUDE_DIRS=${MPI_C_INCLUDE_DIRS} MPI_Fortran_INCLUDE_DIRS=${MPI_Fortran_INCLUDE_DIRS}")
     message(STATUS "SHERPA: MPI_CXX_LINK_FLAGS=${MPI_CXX_LINK_FLAGS} MPI_C_LINK_FLAGS=${MPI_C_LINK_FLAGS} MPI_Fortran_LINK_FLAGS=${MPI_Fortran_LINK_FLAGS}")
-    include_directories(${MPI_Fortran_INCLUDE_DIRS})
   else()
     message(STATUS "SHERPA: MPI_CXX_COMPILE_OPTIONS=${MPI_CXX_COMPILE_OPTIONS} MPI_C_COMPILE_OPTIONS=${MPI_C_COMPILE_OPTIONS}")
     message(STATUS "SHERPA: MPI_CXX_COMPILE_DEFINITIONS=${MPI_CXX_COMPILE_DEFINITIONS} MPI_C_COMPILE_DEFINITIONS=${MPI_C_COMPILE_DEFINITIONS}")
     message(STATUS "SHERPA: MPI_CXX_INCLUDE_DIRS=${MPI_CXX_INCLUDE_DIRS} MPI_C_INCLUDE_DIRS=${MPI_C_INCLUDE_DIRS}")
     message(STATUS "SHERPA: MPI_CXX_LINK_FLAGS=${MPI_CXX_LINK_FLAGS} MPI_C_LINK_FLAGS=${MPI_C_LINK_FLAGS}")
   endif()
-  include_directories(${MPI_CXX_INCLUDE_DIRS})
   set (LOADMPIFORPY "from mpi4py import MPI")
 else()
   set (LOADMPIFORPY "")
@@ -294,8 +288,11 @@ macro(sherpa_handle_shared_library  mylib mylibname)
        target_link_libraries(${mylib} PRIVATE MPI::MPI_Fortran)
      endif()
   endif()
-  target_include_directories(${mylib}  PRIVATE ${FREETYPE_INCLUDE_DIRS})
-  install(TARGETS ${mylib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs) 
+  target_include_directories(${mylib} PUBLIC 
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}>)
+  install(TARGETS ${mylib} EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs) 
   set_target_properties(${mylib}        PROPERTIES POSITION_INDEPENDENT_CODE ON  SOVERSION 0.0.0)
   set_target_properties(${mylib}        PROPERTIES DEFINE_SYMBOL "")
   set_target_properties(${mylib}        PROPERTIES OUTPUT_NAME ${mylibname})
@@ -303,7 +300,9 @@ macro(sherpa_handle_shared_library  mylib mylibname)
  set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
                                              LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
                                              RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                             EXPORT_NAME SHERPA::${mylib}
                                                )
+  
 endmacro(sherpa_handle_shared_library  mylib mylibname)
 
 macro(sherpa_handle_executable  mylib )
@@ -640,13 +639,11 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh
                 ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa${VERSIONING}-config
                 DESTINATION  ${CMAKE_INSTALL_BINDIR}  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 
-set(Sherpa_SRCS_C Sherpa.C Filter.C)
-list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
-add_executable(Sherpa  ${Sherpa_SRCS_C} ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA//Run/Main.C)
-target_link_libraries(Sherpa PRIVATE LibZip::LibZip)
-sherpa_handle_executable(Sherpa)
-set_target_properties(Sherpa        PROPERTIES OUTPUT_NAME Sherpa${VERSIONING})
-target_link_libraries(Sherpa PRIVATE    
+
+add_library(SHERPAAll INTERFACE)
+add_library(SHERPA::All ALIAS SHERPAAll)
+set_target_properties(SHERPAAll PROPERTIES EXPORT_NAME SHERPA::All)
+target_link_libraries(SHERPAAll INTERFACE 
 SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics LundTools SherpaTools 
 ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools 
 HadronsMain HadronsMEs HadronsCurrents HadronsPSs 
@@ -669,7 +666,15 @@ PDF
 BeamMain BeamSpectra 
 ToolsPhys ToolsMath ToolsYaml ToolsOrg
 )
+install(TARGETS SHERPAAll EXPORT SHERPATargets)
 
+set(Sherpa_SRCS_C Sherpa.C Filter.C)
+list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
+add_executable(Sherpa  ${Sherpa_SRCS_C} ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Main.C)
+target_link_libraries(Sherpa PRIVATE LibZip::LibZip SHERPA::All)
+sherpa_handle_executable(Sherpa)
+set_target_properties(Sherpa PROPERTIES OUTPUT_NAME Sherpa${VERSIONING})
+target_link_libraries(Sherpa PRIVATE )
 
 if (SHERPA_ENABLE_HEPMC3)
   target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_LIB} ${HEPMC3_SEARCH_LIB} )
@@ -681,15 +686,12 @@ if (SHERPA_ENABLE_HEPMC2)
   target_link_libraries(Sherpa PRIVATE SherpaHepMCOutput  ${HEPMC2_LIBRARIES} )
 endif()
 
-target_include_directories(Sherpa PRIVATE ${PROJECT_SOURCE_DIR}/include)
 install(TARGETS Sherpa DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 
 add_subdirectory(AddOns/Weights)
 add_subdirectory(AddOns/NNLO)
 add_subdirectory(AddOns/Higgs)
 add_subdirectory(AddOns/EWSud)
-
-
 
 if (SHERPA_ENABLE_PYTHIA8)
   find_package(Pythia8 8.220 REQUIRED)
@@ -711,10 +713,10 @@ if (SHERPA_ENABLE_ROOT)
   find_program(ROOT_CONFIG_EXE NAMES root-config PATHS ${ROOT_BINDIR}  NO_DEFAULT_PATH )
   
   set(ROOT_CONFIG_CPPFLAGS_STRING)
+  set(ROOT_CONFIG_LIBS_STRING)
   if (ROOT_CONFIG_EXE)
-    execute_process(COMMAND ${ROOT_CONFIG_EXE} --cflags
-                  OUTPUT_VARIABLE ROOT_CONFIG_CPPFLAGS_STRING
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${ROOT_CONFIG_EXE} --cflags OUTPUT_VARIABLE ROOT_CONFIG_CPPFLAGS_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${ROOT_CONFIG_EXE} --libs   OUTPUT_VARIABLE ROOT_CONFIG_LIBS_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
   message(STATUS "SHERPA: ROOT_VERSION=${ROOT_VERSION} ROOT_CONFIG_EXE=${ROOT_CONFIG_EXE} ROOT_LIBRARIES=${ROOT_LIBRARIES} ROOT_INCLUDE_DIRS=${ROOT_INCLUDE_DIRS} ROOT_CXX_FLAGS=${ROOT_CXX_FLAGS}")
   add_subdirectory(AddOns/Root)
@@ -739,7 +741,6 @@ if (SHERPA_ENABLE_MADLOOP)
   message(STATUS "SHERPA: MADLOOP_PREFIX=${MADLOOP_PREFIX}")
   add_subdirectory(AddOns/MadLoop)
 endif()
-
 
 if (SHERPA_ENABLE_LHOLE)
   add_subdirectory(AddOns/LH_OLE)
@@ -820,18 +821,12 @@ set( LD_LIBRARY_PATH "LD_LIBRARY_PATH")
 if (CMAKE_SYSTEM_NAME MATCHES Darwin)
   set( LD_LIBRARY_PATH "DYLD_LIBRARY_PATH")
 endif()
-set (PYLIBDIR ${SHERPA_Python_SITEARCH})
 
-if (SHERPA_ENABLE_ROOT)
-  set(CONDITIONAL_ROOTFLAGS "${ROOT_CONFIG_CPPFLAGS_STRING}")
-endif()
 if (SHERPA_ENABLE_HEPMC2)
   set(CONDITIONAL_HEPMC2LIBS "-L${HEPMC2_LIBRARY_DIR} -lHepMC")
   set(CONDITIONAL_HEPMC2INCS "-I${HEPMC2_INCLUDE_DIRS}")
-else()
-  set(CONDITIONAL_HEPMC2LIBS )
-  set(CONDITIONAL_HEPMC2INCS )
 endif()
+
 if (SHERPA_ENABLE_HEPMC3)
   set(CONDITIONAL_HEPMC3INCS "-I${HEPMC3_INCLUDE_DIR}")
   get_filename_component (HEPMC3_LIBRARY_DIR ${HEPMC3_LIB} DIRECTORY)
@@ -841,21 +836,8 @@ if (SHERPA_ENABLE_HEPMC3)
   else()
     set(CONDITIONAL_HEPMC3LIBS "-L${HEPMC3_LIBRARY_DIR} -lHepMC3")
   endif()
-else()
-  set(CONDITIONAL_HEPMC3INCS )
-  set(CONDITIONAL_HEPMC3LIBS )
 endif()
 
-set(CONDITIONAL_LHAPDFLIBS  "-L${LHAPDF_LIBRARY_DIR} -lLHAPDF")
-set(CONDITIONAL_LHAPDFINCS  "${LHAPDF_CONFIG_CPPFLAGS_STRING}")
-
-if (SHERPA_ENABLE_RIVET)
-  set(CONDITIONAL_RIVETLDADD " ${RIVET_CONFIG_LIBS_STRING}")
-  set(CONDITIONAL_RIVETCPPFLAGS "${RIVET_CONFIG_CPPFLAGS_STRING}")
-else()
-  set(CONDITIONAL_RIVETLDADD )
-  set(CONDITIONAL_RIVETCPPFLAGS )
-endif()
 ########################################################################
 if (SHERPA_ENABLE_RIVET AND RIVET_VERSION VERSION_LESS 3.0.0)
   set(RIVET2 1)
@@ -911,10 +893,7 @@ file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/pythia-6.4.18.f.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/LundTools/pythia-6.4.18.f @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/make2scons.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/make2scons @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa-config @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/make2scons   DESTINATION  ${CMAKE_INSTALL_BINDIR} PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 
 if (SHERPA_ENABLE_UFO)
   set (PYTHON "${Python_EXECUTABLE}")
@@ -924,6 +903,18 @@ if (SHERPA_ENABLE_UFO)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/Sherpa-generate-model DESTINATION  ${CMAKE_INSTALL_BINDIR} PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/sconstruct_template DESTINATION ${SHERPA_Python_SITEARCH}/ufo_interface/  COMPONENT python PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 endif()
+install(EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC)
+
+########################################################################
+include(CMakePackageConfigHelpers)
+configure_package_config_file(cmake/Templates/SHERPA-MCConfig.cmake.in ${PROJECT_BINARY_DIR}/outputs/share/SHERPA-MC/SHERPA-MCConfig.cmake
+                              INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC)
+write_basic_package_version_file(${PROJECT_BINARY_DIR}/outputs/share/SHERPA-MC/SHERPA-MCConfig-version.cmake 
+                                 COMPATIBILITY SameMajorVersion VERSION ${PROJECT_VERSION})
+install(FILES ${PROJECT_BINARY_DIR}/outputs/share/SHERPA-MC/SHERPA-MCConfig.cmake
+              ${PROJECT_BINARY_DIR}/outputs/share/SHERPA-MC/SHERPA-MCConfig-version.cmake
+              DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT devel)
+export(EXPORT SHERPATargets  FILE ${PROJECT_BINARY_DIR}/outputs/share/SHERPA-MC/SHERPATargets.cmake)
 ########################################################################
 if (CMAKE_SYSTEM_NAME MATCHES Darwin)
   set(DARWIN_SYS 1)
