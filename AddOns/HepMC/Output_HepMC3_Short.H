@@ -22,7 +22,12 @@ namespace SHERPA {
     HepMC3_Interface m_hepmc3;
     HepMC::Writer* p_writer = nullptr;
     std::shared_ptr<HepMC::GenRunInfo> m_run_info;
-    std::string m_basename;
+    std::string m_basename, m_ext;
+#ifdef USING__GZIP
+    ATOOLS::ogzstream m_outstream;
+#else
+    std::ofstream     m_outstream;
+#endif
     int m_iotype;
     ATOOLS::Weights_Map m_xs;
     ATOOLS::Weights_Map m_err;

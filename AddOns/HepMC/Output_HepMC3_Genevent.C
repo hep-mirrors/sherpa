@@ -28,28 +28,36 @@ Output_HepMC3_Genevent::Output_HepMC3_Genevent(const Output_Arguments &args) :
   m_iotype
     = Settings::GetMainSettings()["HEPMC3_IO_TYPE"].SetDefault(0).Get<int>();
   int precision       = Settings::GetMainSettings()["HEPMC3_OUTPUT_PRECISION"].SetDefault(12).Get<int>();
+#ifdef USING__GZIP
+  m_ext += ".gz";
+#endif
 #ifdef USING__MPI
   if (mpi->Size()>1) {
     m_basename+="_"+rpa->gen.Variable("RNG_SEED");
   }
 #endif
-  m_basename+=".hepmc";
 
 switch (m_iotype)
     {
     case 0:
     {
-        HepMC::WriterAscii* t_writer=new HepMC::WriterAscii( m_basename);
+        m_outstream.open((m_basename+m_ext).c_str());
+        if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
+        HepMC::WriterAscii* t_writer=new HepMC::WriterAscii(m_outstream);
         t_writer->set_precision(precision);
         p_writer=t_writer;
     }
     break;
     case 1:
-        p_writer=new HepMC::WriterHEPEVT( m_basename);
+        m_outstream.open((m_basename+m_ext).c_str());
+        if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
+        p_writer=new HepMC::WriterHEPEVT(m_outstream);
         break;
     case 2:
     {
-        HepMC::WriterAsciiHepMC2* t_writer=new HepMC::WriterAsciiHepMC2( m_basename);
+        m_outstream.open((m_basename+m_ext).c_str());
+        if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
+        HepMC::WriterAsciiHepMC2* t_writer=new HepMC::WriterAsciiHepMC2(m_outstream);
         t_writer->set_precision(precision);
         p_writer=t_writer;
     }
@@ -78,7 +86,7 @@ switch (m_iotype)
 Output_HepMC3_Genevent::~Output_HepMC3_Genevent()
 {
   p_writer->close();
-
+  m_outstream.close();
 }
 
 void Output_HepMC3_Genevent::SetXS(const Weights_Map& xs,
