@@ -1,4 +1,4 @@
-find_program(SWIG NAMES swig  REQUIRED)
+find_program(SWIG NAMES swig  PATHS ${SWIG_DIR} PATH_SUFFIXES bin REQUIRED)
 if (SWIG)
  message(STATUS "SHERPA: SWIG=${SWIG}")
 else()
@@ -21,6 +21,7 @@ set( PYEXTFILES_GEN
 
 set(PYTHONSRC)
 foreach( file_i ${PYEXTFILES_GEN})
+  if ( NOT ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}") )
     add_custom_command(
     PRE_BUILD
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file_i}
@@ -28,7 +29,8 @@ foreach( file_i ${PYEXTFILES_GEN})
     ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${file_i} ${CMAKE_CURRENT_BINARY_DIR}/${file_i}
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${file_i}
     )
-    list( APPEND PYTHONSRC ${CMAKE_CURRENT_BINARY_DIR}/${file_i})
+  endif()
+  list( APPEND PYTHONSRC ${CMAKE_CURRENT_BINARY_DIR}/${file_i})
 endforeach( file_i )
 add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx
