@@ -88,6 +88,7 @@ namespace AMISIC {
     bool InitMPIs(const double & scale);
     bool VetoEvent(const double & scale=-1.);
     int  InitMinBiasEvent();
+    int  InitRescatterEvent();
     void Reset();
     void CleanUpMinBias();
     void Test();
@@ -112,6 +113,13 @@ namespace AMISIC {
     }
     inline int ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) {
         return p_processes->ShiftMasses(ampl);
+    }
+    inline void SetPosition(const size_t & beam,const ATOOLS::Vec4D & pos) {
+      m_singlecollision.SetPosition(beam,pos);
+    }
+    inline void CalculateImpact() {
+      m_b    = m_singlecollision.B();
+      m_bfac = ATOOLS::Max(0.,m_impact(m_b));
     }
     inline ATOOLS::Vec4D SelectPositionForScatter(const double & b) const {
       return m_impact.SelectPositionForScatter(b);

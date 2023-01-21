@@ -37,22 +37,24 @@ MI_Process_Group::~MI_Process_Group() {
 }
 
 double MI_Process_Group::
-operator()(const double & shat,const double & that,const double & uhat) {
+operator()(const double & shat,const double & that,const double & uhat,const bool & out) {
   PreCalculate(shat,that,uhat);
   double tot  = 0.,xs;
   for (list<MI_Process * >::iterator mit=m_processes.begin();
        mit!=m_processes.end();mit++) {
     tot += xs = ( p_pdf[0]->GetXPDF((*mit)->Flav(0)) *
-            p_pdf[1]->GetXPDF((*mit)->Flav(1)) ) * (**mit)();
+		  p_pdf[1]->GetXPDF((*mit)->Flav(1)) ) * (**mit)();
+    if (out) {
+      msg_Out()<<"Add dSigma("<<Name()<<", scale = "<<sqrt(m_scale)<<", "
+	       <<"flavs = "<<(*mit)->Flav(0)<<"/"<<(*mit)->Flav(1)<<") = "
+	       <<p_pdf[0]->GetXPDF((*mit)->Flav(0))<<" * "
+	       <<p_pdf[1]->GetXPDF((*mit)->Flav(1))<<" * "
+	       <<(**mit)()<<" = "<<xs<<" frpm "<<p_pdf[0]<<".\n";
+    }
   }
-  msg_Debugging()<<"Add dSigma("<<Name()<<", scale = "<<sqrt(m_scale)<<") = "
-            <<m_pref/sqr(shat)<<" * "<<Coupling(Scale(m_scale))
-            <<" * "<<SoftCorrection(m_scale)<<" * "<<xs<<" --> tot = "
-            <<(m_pref/sqr(shat) * Coupling(Scale(m_scale)) * SoftCorrection(m_scale)) * tot
-            <<"\n";
-  return m_lastxs = m_pref/sqr(shat) *
-                    Coupling(Scale(m_scale)) *
-                    SoftCorrection(m_scale) * tot;
+  return m_lastxs = ( m_pref/sqr(shat) *
+		      Coupling(Scale(m_scale)) *
+		      SoftCorrection(m_scale) * tot );
 }
 
 double MI_Process_Group::PreCalculate(const double & shat,const double & that,

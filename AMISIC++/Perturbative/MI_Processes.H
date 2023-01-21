@@ -54,9 +54,10 @@ namespace AMISIC {
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
 
-    void CalcPDFs(const double & x1,const double & x2,const double & scale);
+    void CalcPDFs(const double & x1,const double & x2,const double & scale,
+		  const bool & out=false);
     const double operator()(const double & shat,const double & that,
-			    const double & uhat);
+			    const double & uhat,const bool & out=false);
     const double SudakovArgument(const double & pt2) const;
 
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &,

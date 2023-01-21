@@ -29,6 +29,7 @@ namespace REMNANTS {
 
   class Remnant_Handler {
   private:
+    PDF::isr::id         m_id;
     Remnant_Base       * p_remnants[2];
     strat::code          m_type;
     Kinematics_Generator m_kinematics;
@@ -62,6 +63,7 @@ namespace REMNANTS {
     inline void SetScale2(const double & scale2) {
       for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
     }
+    inline const PDF::isr::id Id()  const { return m_id; }
     inline const strat::code Type() const { return m_type; }
     
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {

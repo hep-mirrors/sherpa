@@ -45,8 +45,8 @@ std::ostream &PDF::operator<<(std::ostream &s, const PDF::isrmode::code mode) {
   return s;
 }
 
-ISR_Handler::ISR_Handler(ISR_Base **isrbase)
-    : m_rmode(0), m_swap(0), m_info_lab(8), m_info_cms(8),
+ISR_Handler::ISR_Handler(ISR_Base **isrbase,const isr::id & id)
+  : m_id(id), m_rmode(0), m_swap(0), m_info_lab(8), m_info_cms(8),
       m_freezePDFforLowQ(false) {
   p_isrbase[0] = isrbase[0];
   p_isrbase[1] = isrbase[1];

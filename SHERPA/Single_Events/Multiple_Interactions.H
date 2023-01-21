@@ -4,10 +4,6 @@
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 
-namespace REMNANTS {
-  class Remnant_Base;
-}
-
 namespace SHERPA {
 
   class Multiple_Interactions: public Event_Phase_Handler {
@@ -18,26 +14,28 @@ namespace SHERPA {
     double m_weight, m_ntrials;
     bool   m_isfirstMB;
 
-    MI_Handler              * p_mihandler;
-    REMNANTS::Remnant_Base  * p_remnants[2];
-    ATOOLS::Blob_List       * p_bloblist;
-    ATOOLS::Blob            * p_lastblob;
+    MI_Handler_Map    * p_mihandlers;
+    MI_Handler        * p_activeMI;
+    ATOOLS::Blob_List * p_bloblist;
+    ATOOLS::Blob      * p_lastblob;
 
     std::set<ATOOLS::Blob *> m_ISblobs;
     bool m_vetoed, m_newevent;
 
     ATOOLS::Return_Value::code m_result;
+    void Reset();
+    void SwapToRescatter();
+    void ResetMIHandler();
     bool CheckBlobList();    
     bool InitNewEvent();
     void InitMinBiasEvent();
-    void ResetIS();
     bool BeamsViable();
     bool ExtractISInfo(ATOOLS::Blob * blob);
     void SwitchPerturbativeInputsToMIs();
     bool MIKinematics();
 
   public:
-    Multiple_Interactions(MI_Handler *);
+    Multiple_Interactions(MI_Handler_Map *);
     ~Multiple_Interactions();
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);

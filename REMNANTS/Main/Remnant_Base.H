@@ -55,7 +55,7 @@ namespace REMNANTS {
 			  const bool & copy=true)=0;
     virtual void MakeSpectator(ATOOLS::Particle * parton) {}
     
-    virtual void Reset(const bool & DIS=false);
+    virtual void Reset(const bool & resc=false,const bool & DIS=false);
     inline rtp::code                  Type() const       { return m_type; }
     inline unsigned int               Beam() const       { return m_beam; }
     inline const ATOOLS::Vec4D      & Position() const   { return m_position; }

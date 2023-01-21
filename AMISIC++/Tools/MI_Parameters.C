@@ -37,9 +37,9 @@ MI_Parameters::MI_Parameters()
   m_parameters[string("Matter_Fraction1")]
     = s["MATTER_FRACTION1"].SetDefault(0.5).Get<double>();
   m_parameters[string("Matter_Radius1")]
-    = s["MATTER_RADIUS1"].SetDefault(0.4).Get<double>();
+    = s["MATTER_RADIUS1"].SetDefault(1.0).Get<double>();
   m_parameters[string("Matter_Radius2")]
-    = s["MATTER_RADIUS2"].SetDefault(1.0).Get<double>();
+    = s["MATTER_RADIUS2"].SetDefault(2.0).Get<double>();
   m_overlapform = s["MATTER_FORM"]
 	  .SetDefault(overlap_form::code::Single_Gaussian)
 	  .Get<overlap_form::code>();

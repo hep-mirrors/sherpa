@@ -176,19 +176,19 @@ bool Sherpa::InitializeTheEventHandler()
   }
   else {
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
-    p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSCHandler(PDF::isr::hard_subprocess)));
+    p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandlers()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),
 						    p_inithandler->GetHDHandler(),
-						    p_inithandler->GetMIHandler(PDF::isr::hard_process),
-						    p_inithandler->GetSCHandler(PDF::isr::hard_subprocess),
+						    p_inithandler->GetMIHandlers(),
+						    p_inithandler->GetSoftCollisionHandlers(),
 						    p_inithandler->GetShowerHandlers(),
-						    p_inithandler->GetBeamRemnantHandler()));
+						    p_inithandler->GetRemnantHandlers()));
     p_eventhandler->AddEventPhase(new Signal_Process_FS_QED_Correction(
 						    p_inithandler->GetMatrixElementHandler(),
 						    p_inithandler->GetSoftPhotonHandler()));
-    p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler(PDF::isr::hard_subprocess)));
+    p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandlers()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
 						    p_inithandler->GetFragmentation()));

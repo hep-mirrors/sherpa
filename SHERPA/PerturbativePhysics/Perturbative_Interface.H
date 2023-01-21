@@ -6,13 +6,14 @@
 #include "ATOOLS/Org/Return_Value.H"
 
 namespace ATOOLS {
-
   class Cluster_Amplitude;
+}
 
+namespace REMNANTS {
+  class Remnant_Handler;
 }
 
 namespace SHERPA {
-
   class Matrix_Element_Handler;
   class Hard_Decay_Handler;
   class Decay_Handler_Base;
@@ -54,12 +55,13 @@ namespace SHERPA {
   class Perturbative_Interface {
   protected :
 
-    Matrix_Element_Handler *p_me;
-    Hard_Decay_Handler     *p_dec;
-    MI_Handler             *p_mi;
-    Decay_Handler_Base     *p_hd;
-    Soft_Collision_Handler *p_sc;
-    Shower_Handler         *p_shower;        
+    Matrix_Element_Handler    * p_me;
+    Hard_Decay_Handler        * p_dec;
+    MI_Handler                * p_mi;
+    Decay_Handler_Base        * p_hd;
+    Soft_Collision_Handler    * p_sc;
+    Shower_Handler            * p_shower;        
+    REMNANTS::Remnant_Handler * p_remnants;
 
     ATOOLS::Blob *p_hard;
     ATOOLS::Blob_List *p_bloblist;
@@ -98,13 +100,15 @@ namespace SHERPA {
 
     void CleanUp();
 
+    inline void SetRemnantHandler(REMNANTS::Remnant_Handler * remnants) { p_remnants = remnants; }
+
     inline ATOOLS::Weights_Map WeightsMap() const { return m_weightsmap; }
 
-    inline Matrix_Element_Handler    * MEHandler() const { return p_me; }
-    inline ATOOLS::Cluster_Amplitude * Amplitude() const { return p_ampl; }
-    inline Shower_Handler            * Shower() { return p_shower; }
-    inline MI_Handler                * MIHandler()  const { return p_mi; }
-
+    inline Matrix_Element_Handler    * MEHandler()      const { return p_me; }
+    inline ATOOLS::Cluster_Amplitude * Amplitude()      const { return p_ampl; }
+    inline Shower_Handler            * Shower()               { return p_shower; }
+    inline MI_Handler                * MIHandler()      const { return p_mi; }
+    inline REMNANTS::Remnant_Handler * RemnantHandler() const { return p_remnants; }
   };// end of class Perturbative_Interface
 
   typedef std::map<std::string,Perturbative_Interface *> PertInterfaceMap;

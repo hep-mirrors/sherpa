@@ -40,7 +40,7 @@ namespace REMNANTS {
 
     bool FillBlob(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true) final;
     bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom) final;
-    void Reset(const bool & DIS=false) final;
+    void Reset(const bool & resc=false,const bool & DIS=false) final;
     
     inline ATOOLS::Particle * GetRecoiler()            { return p_recoiler; }
     inline ATOOLS::Particle * GetSpectator()           { return p_spectator; }

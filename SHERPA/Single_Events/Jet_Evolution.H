@@ -23,6 +23,13 @@ namespace SHERPA {
     REMNANTS::Remnant_Handler * p_remnants;
     PertInterfaceMap            m_interfaces;
 
+    void FillPerturbativeInterfaces(Matrix_Element_Handler *,
+				    Hard_Decay_Handler*,
+				    Decay_Handler_Base *,
+				    const MI_Handler_Map *,
+				    const Soft_Collision_Handler_Map *,
+				    const Shower_Handler_Map &,
+				    REMNANTS::Remnant_Handler_Map &);
     ATOOLS::Return_Value::code AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,
 					     Perturbative_Interface *);
 
@@ -38,9 +45,13 @@ namespace SHERPA {
 					 ATOOLS::Blob_List * const bloblist);
 
   public :
-    Jet_Evolution(Matrix_Element_Handler *, Hard_Decay_Handler*,
-                  Decay_Handler_Base *,MI_Handler *, Soft_Collision_Handler *,
-                  const Shower_Handler_Map &,Beam_Remnant_Handler *);
+    Jet_Evolution(Matrix_Element_Handler * me,
+		  Hard_Decay_Handler * harddecs,
+		  Decay_Handler_Base * decs,
+		  const MI_Handler_Map * mihandlers,
+		  const Soft_Collision_Handler_Map * schandlers,
+		  const Shower_Handler_Map &showers,
+		  REMNANTS::Remnant_Handler_Map &remnanthandlers);
     ~Jet_Evolution();
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);

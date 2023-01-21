@@ -864,7 +864,7 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     }
   }
   if ((pid==PDF::isr::bunch_rescatter && needs_rescatter) || pid!=PDF::isr::bunch_rescatter) {
-    ISR_Handler * isr = new ISR_Handler(isrbases);
+    ISR_Handler * isr = new ISR_Handler(isrbases,pid);
     for (size_t beam=0;beam<2;beam++) isr->SetBeam(p_beamspectra->GetBeam(beam),beam);
     isr->Init();
     if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
@@ -1002,6 +1002,7 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
   ///////////////////////////////////////////////////////////
   // define up to two soft collision handlers -
   // they will have to differ in how they fill blobs.
+  // modify the beam remnants to take care of the rescatter
   ///////////////////////////////////////////////////////////
   std::vector<isr::id> isrtypes;
   isrtypes.push_back(isr::hard_subprocess);
@@ -1011,11 +1012,12 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
     isr::id id = isrtypes[i];
     if (m_schandlers.find(id)!=m_schandlers.end()) delete m_schandlers[id];
     MI_Handler * mih = m_mihandlers[id];
-    msg_Out()<<"Try to init SCH["<<id<<"] : "<<mih<<".\n";
     m_schandlers[id] = new Soft_Collision_Handler(mih->Amisic(),mih->Shrimps(),
 						  id==isr::bunch_rescatter);
-    msg_Info()<<"Initialized Soft_Collision_Handler["<<id<<"]."<<endl;
+    p_beamremnants->AddBunchRescattering(m_remnanthandlers[isr::bunch_rescatter],
+					 m_schandlers[isr::bunch_rescatter]);
   }
+  msg_Info()<<"Initialized "<<isrtypes.size()<<" Soft_Collision_Handlers."<<endl;
   return true;
 }
 
@@ -1024,7 +1026,7 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
   if (p_beamremnants)  delete p_beamremnants;
   p_beamremnants = new Beam_Remnant_Handler(p_beamspectra,
 					    m_remnanthandlers[isr::hard_process],
-					    m_schandlers[isr::hard_process]);
+					    m_schandlers[isr::hard_subprocess]);
   msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
 }

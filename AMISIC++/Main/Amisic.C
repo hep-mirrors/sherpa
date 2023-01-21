@@ -21,9 +21,15 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 {
   InitParameters();
   bool shown = false;
-  // if EPA is used the energies entering the ISR will vary
-  m_variable_s = isr->GetBeam(0)->Type() == BEAM::beamspectrum::EPA ||
-                 isr->GetBeam(1)->Type() == BEAM::beamspectrum::EPA;
+  /////////////////////////////////////////////////////////////////
+  // Here we will have to distinguish the rescatter and the hard process.
+  // For the former, the energies are fixed, for the latter we will
+  // have to check the spectrum: if EPA is used the energies entering
+  // the ISR will vary.
+  ////////////////////////////////////////////////////////////////
+  m_variable_s = ( isr->Id()!=PDF::isr::bunch_rescatter &&
+		   ( isr->GetBeam(0)->Type() == BEAM::beamspectrum::EPA ||
+		     isr->GetBeam(1)->Type() == BEAM::beamspectrum::EPA ) );
   if (isr->Flav(0).IsHadron() && isr->Flav(1).IsHadron())
     m_type = mitype::hadron_hadron;
   else if ((isr->Flav(0).IsHadron() && isr->Flav(1).IsPhoton()) ||
@@ -46,6 +52,10 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   }
   m_pbeam0 = isr->GetBeam(0)->OutMomentum();
   m_pbeam1 = isr->GetBeam(1)->OutMomentum();
+
+  msg_Out()<<METHOD<<" for flavs = "<<isr->Flav(0)<<" & "<<isr->Flav(1)<<", "
+	   <<"beams = "<<isr->GetBeam(0)->Beam()<<" & "<<isr->GetBeam(1)->Beam()<<" "
+	   <<"--> type "<<int(m_type)<<".\n";
 
   // Calculate hadronic non-diffractive cross sections, to act as normalization for the
   // multiple scattering probability. 
@@ -129,6 +139,8 @@ bool Amisic::VetoEvent(const double & scale) {
 
 Blob * Amisic::GenerateScatter() {
   Blob * blob = m_singlecollision.NextScatter(m_bfac);
+  msg_Out()<<METHOD<<" for B = "<<m_singlecollision.B()<<", "
+	   <<"pt^2 = "<<m_singlecollision.LastPT2()<<": blob = "<<blob<<".\n";
   if (blob) {
     m_pt2 = m_singlecollision.LastPT2();
     blob->SetPosition(m_impact.SelectPositionForScatter(m_b));
@@ -144,9 +156,22 @@ int Amisic::InitMinBiasEvent() {
   if (m_isFirst) {
     m_isFirst   = false;
     m_isMinBias = true;
-    m_b    = m_impact.SelectB();
-    m_bfac = Max(0.,m_impact(m_b));
+    SetB();
   }
+  msg_Out()<<METHOD<<".\n";
+  return 0;
+}
+
+int Amisic::InitRescatterEvent() {
+  if (m_isFirst) {
+    m_isFirst   = false;
+    m_isMinBias = true;
+    SetB(m_singlecollision.B());
+    m_singlecollision.SetLastPT2();
+  }
+  msg_Out()<<METHOD<<"(first = "<<m_isFirst<<", B = "<<m_singlecollision.B()<<", "
+	   <<"pt^2 = "<<m_singlecollision.LastPT2()<<", bfac = "<<m_bfac<<")\n"
+	   <<"   from "<<m_singlecollision.Position(0)<<" + "<<m_singlecollision.Position(1)<<"\n";
   return 0;
 }
 

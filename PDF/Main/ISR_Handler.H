@@ -43,9 +43,10 @@ namespace PDF {
   protected:
     ISR_Base *p_isrbase[2];
 
+    isr::id       m_id;
     std::string   m_name;
     isrmode::code m_type;
-
+    
     int m_mode, m_rmode, m_swap; 
 
     std::array<double, 2> m_mass2, m_exponent, m_x, m_mu2;
@@ -69,7 +70,7 @@ namespace PDF {
 				double &x,int beam,bool swaped);
 
   public:
-    ISR_Handler(ISR_Base **isrbase);
+    ISR_Handler(ISR_Base **isrbase,const isr::id & id=isr::hard_process);
     ~ISR_Handler() = default;
 
     void Init();
@@ -114,6 +115,7 @@ namespace PDF {
     inline void SetName(const std::string& name) { m_name = name;        }
     inline std::string Name() const             { return m_name; }
     inline isrtype::code Type(const int & i=-1) const { return p_isrbase[i]->Type(); }
+    inline isr::id Id() const                   { return m_id; }
     inline const isrmode::code & Mode() const   { return m_type; }
     inline int    On() const                    { return m_mode;    }
     inline double * SprimeRange()               { return m_splimits;    }

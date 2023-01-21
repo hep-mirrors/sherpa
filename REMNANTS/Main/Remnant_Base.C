@@ -79,7 +79,7 @@ Blob *Remnant_Base::MakeBlob() {
   return p_beamblob;
 }
 
-void Remnant_Base::Reset(const bool &DIS) {
+void Remnant_Base::Reset(const bool & resc,const bool &DIS) {
   m_extracted.clear();
   p_beamblob = nullptr;
 }

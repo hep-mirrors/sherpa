@@ -129,14 +129,15 @@ void MI_Processes::SetAlphaS() {
 }
 
 void MI_Processes::CalcPDFs(const double & x1,const double & x2,
-			    const double & scale) {
+			    const double & scale,const bool & out) {
   // Calculate both sets of PDFs at the relevant x and Q^2
+  //if (out) msg_Out()<<METHOD<<"(x1 = "<<x1<<", x2 = "<<x2<<", Q2 = "<<scale<<")\n";
   p_pdf[0]->Calculate(x1,Max(m_muFfac*scale,p_pdf[0]->Q2Min()));
   p_pdf[1]->Calculate(x2,Max(m_muFfac*scale,p_pdf[1]->Q2Min()));
 }
 
 const double MI_Processes::operator()(const double & shat,const double & that,
-				      const double & uhat) {
+				      const double & uhat,const bool & out) {
   // Return the total parton-level scattering cross section, summed over all
   // contributing processes.  This implicitly assumes that the PDFs have already
   // been set.  
@@ -145,7 +146,7 @@ const double MI_Processes::operator()(const double & shat,const double & that,
   for (list<MI_Process_Group *>::iterator mig = m_groups.begin();
        mig!=m_groups.end();mig++) {
     (*mig)->SetScale(pt2);
-    m_lastxs += (**mig)(shat,that,uhat);
+    m_lastxs += (**mig)(shat,that,uhat,out);
   }
   return m_lastxs;  
 }
@@ -302,7 +303,7 @@ void MI_Processes::Update(double s) {
 }
 
 bool MI_Processes::FillCaches() {
-  msg_Out() << METHOD << ": Filling cache for multi-parton interactions, for " << m_sbins << " bins: \n";
+  msg_Info() << METHOD << ": Filling cache for multi-parton interactions, for " << m_sbins << " bins: \n";
   m_test = false;
   m_sstep = std::pow(4*m_ptmin2/m_S_lab, 1./m_sbins);
   m_cache_diffbins.resize(m_sbins,std::vector<double>(m_nbins));

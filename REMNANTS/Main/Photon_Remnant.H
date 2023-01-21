@@ -34,7 +34,7 @@ public:
   // member functions
   bool FillBlob(ATOOLS::ParticleMomMap *ktmap, const bool &copy) override;
   bool TestExtract(const ATOOLS::Flavour &flav, const ATOOLS::Vec4D &mom) override;
-  void Reset(const bool &DIS) override;
+  void Reset(const bool & resc=false, const bool &DIS=false) override;
   void CompensateColours();
 
   inline ATOOLS::Particle *GetRecoiler() override { return p_recoiler; }

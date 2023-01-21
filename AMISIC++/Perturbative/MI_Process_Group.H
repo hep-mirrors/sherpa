@@ -34,7 +34,7 @@ namespace AMISIC {
     virtual ~MI_Process_Group();
 
     virtual double operator()(const double & shat,const double & that,
-			      const double & uhat);
+			      const double & uhat,const bool & out=false);
     virtual MI_Process * SelectProcess();
    
     inline const std::string & Name() const{ return m_name; }

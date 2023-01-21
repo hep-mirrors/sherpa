@@ -46,7 +46,7 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
   return true;
 }
 
-void Photon_Remnant::Reset(const bool &DIS) {
+void Photon_Remnant::Reset(const bool & resc,const bool &DIS) {
   Remnant_Base::Reset();
   while (!m_spectators.empty()) {
     Particle *part = m_spectators.front();
@@ -58,7 +58,8 @@ void Photon_Remnant::Reset(const bool &DIS) {
     m_spectators.pop_front();
   }
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum()[0];
+  m_residualE = ( resc ? (p_beam->InMomentum()-p_beam->OutMomentum())[0] :
+		  p_beam->OutMomentum()[0] );
   m_valence = false;
   p_recoiler = nullptr;
 }

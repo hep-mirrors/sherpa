@@ -56,6 +56,7 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler *isr,
     p_remnants[i]->Reset();
     isr->SetRemnant(p_remnants[i], i);
   }
+  m_id = isr->Id();
 }
 
 void Remnant_Handler::DefineRemnantStrategy() {
@@ -260,7 +261,7 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
 void Remnant_Handler::Reset() {
   bool DIS = m_type == strat::DIS1 || m_type == strat::DIS2;
   for (size_t beam = 0; beam < 2; beam++)
-    p_remnants[beam]->Reset(DIS);
+    p_remnants[beam]->Reset(false,DIS);
   m_treatedshowerblobs.clear();
   m_kinematics.Reset();
   m_colours.Reset();

@@ -7,47 +7,61 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "SHERPA/PerturbativePhysics/Perturbative_Interface.H"
+#include <map>
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace PDF;
 using namespace std;
 
-Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
-                             Hard_Decay_Handler *_dechandler,
-                             Decay_Handler_Base *_hdhandler,
-                             MI_Handler *_mihandler,
-                             Soft_Collision_Handler *_schandler,
+Jet_Evolution::Jet_Evolution(Matrix_Element_Handler * me,
+                             Hard_Decay_Handler * harddecs,
+                             Decay_Handler_Base * decs,
+                             const MI_Handler_Map *mihandlers,
+                             const Soft_Collision_Handler_Map *schandlers,
                              const Shower_Handler_Map &showers,
-			     Beam_Remnant_Handler * _brhandler) {
+                             REMNANTS::Remnant_Handler_Map &remnanthandlers) {
   Shower_Handler_Map::const_iterator shIter = showers.find(isr::hard_process);
   m_name = string("Jet_Evolution:") + shIter->second->ShowerGenerator();
   m_type = eph::Perturbative;
-
-  Perturbative_Interface *interface;
-  shIter = showers.find(isr::hard_process);
-  interface =
-      new Perturbative_Interface(_mehandler, _dechandler, shIter->second);
-  if (interface != NULL)
-    m_interfaces.insert(make_pair("SignalMEs", interface));
-
-  shIter = showers.find(isr::hard_subprocess);
-  interface = new Perturbative_Interface(_hdhandler, shIter->second);
-  if (interface != NULL)
-    m_interfaces.insert(make_pair("HadronDecays", interface));
-
-  if (_mihandler) {
-    interface = new Perturbative_Interface(_mihandler, shIter->second);
-    if (interface != NULL)
-      m_interfaces.insert(make_pair("MPIs", interface));
-  }
-  if (_schandler) {
-    interface = new Perturbative_Interface(_schandler, shIter->second);
-    if (interface != NULL)
-      m_interfaces.insert(make_pair("SoftCollisions", interface));
-  }
-  p_remnants = _brhandler->GetRemnants();
+  FillPerturbativeInterfaces(me,harddecs,decs,mihandlers,schandlers,showers,remnanthandlers);
 }
+
+void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
+					       Hard_Decay_Handler* harddecs,
+					       Decay_Handler_Base * decs,
+					       const MI_Handler_Map * mis,
+					       const Soft_Collision_Handler_Map * scs,
+					       const Shower_Handler_Map & showers,
+					       REMNANTS::Remnant_Handler_Map & rhs) {
+  REMNANTS::Remnant_Handler * remnants = NULL; 
+  if (rhs.find(PDF::isr::hard_process)!=rhs.end()) remnants = rhs[PDF::isr::hard_process];
+  else msg_Error()<<"Error in "<<METHOD<<":\n"
+		  <<"  No remnant handling found for hard part of the process.\n"
+		  <<"  Continue and hope for the best.\n";
+  
+  Shower_Handler_Map::const_iterator shower = showers.find(isr::hard_process);
+  if (shower!=showers.end() && me) {
+    m_interfaces["SignalMEs"] = new Perturbative_Interface(me, harddecs, shower->second);
+    m_interfaces["SignalMEs"]->SetRemnantHandler(remnants);
+  }
+
+  shower = showers.find(isr::hard_subprocess);
+  if (shower!=showers.end()) {
+    m_interfaces["HadronDecays"] = new Perturbative_Interface(decs, shower->second);
+    MI_Handler_Map::const_iterator mihandler = mis->find(isr::hard_subprocess);
+    if (mihandler!=mis->end()) {
+      m_interfaces["MPIs"] = new Perturbative_Interface(mihandler->second, shower->second);
+      m_interfaces["MPIs"]->SetRemnantHandler(remnants);
+    }
+    Soft_Collision_Handler_Map::const_iterator schandler = scs->find(isr::hard_subprocess);
+    if (schandler!=scs->end()) {
+      m_interfaces["SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
+      m_interfaces["SoftCollisions"]->SetRemnantHandler(remnants);
+    }
+  }
+}
+
 
 Jet_Evolution::~Jet_Evolution() {
   while (m_interfaces.size() > 0) {
@@ -152,6 +166,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
 Return_Value::code
 Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
                              Perturbative_Interface *interface) {
+  p_remnants = interface->RemnantHandler();
   if (!interface->Shower()->On() ||
       (interface->MEHandler() &&
        interface->MEHandler()->Process()->Info().m_nlomode ==

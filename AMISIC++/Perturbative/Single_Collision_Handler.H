@@ -65,6 +65,16 @@ namespace AMISIC {
     inline void SetLastPT2(const double pt2=-1.) {
       m_lastpt2 = pt2<0.?m_S/4.:pt2; 
     }
+    inline void SetPosition(const size_t & beam,const ATOOLS::Vec4D & pos) {
+      p_remnants->GetRemnant(beam)->SetPosition(pos);
+    }
+    inline ATOOLS::Vec4D Position(const size_t & beam) const {
+      return p_remnants->GetRemnant(beam)->Position();
+    }
+    inline const double B() const {
+      return sqrt(ATOOLS::dabs((p_remnants->GetRemnant(0)->Position()-
+				p_remnants->GetRemnant(1)->Position()).Abs2()));
+    }
     inline const double & LastPT2() const { return m_lastpt2; }
     inline const double & PT2()     const { return m_pt2; }
     inline const double & Y3()      const { return m_y3; }

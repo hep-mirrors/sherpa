@@ -10,11 +10,9 @@ namespace SHERPA {
 
   class Minimum_Bias: public Event_Phase_Handler {
   private:
-    double m_weight;
-    Soft_Collision_Handler * p_schandler;
-    PDF::Remnant_Base      * p_remnants[2];
+    Soft_Collision_Handler_Map * p_schandlers;
   public:
-    Minimum_Bias(Soft_Collision_Handler * schandler);
+    Minimum_Bias(Soft_Collision_Handler_Map * schandlers);
     ~Minimum_Bias();
 
     // member functions

@@ -33,6 +33,7 @@ Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
   // - construct its full kinematics and set the colours
   // - return a filled (at the moment 2->2 only) scattering blob
   p_overestimator->SetBFac(bfac);
+  msg_Out()<<METHOD<<" sets bfac = "<<bfac<<".\n";
   do {
     if (!SelectPT2(m_lastpt2)) return NULL;
     p_proc = p_processes->SelectProcess();
@@ -43,6 +44,9 @@ Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
 }
 
 bool Single_Collision_Handler::TestRemnants() const {
+  //msg_Out()<<METHOD<<"(id = "<<p_remnants->Id()<<", "
+  //	   <<"moms = "<<p_proc->Momentum(0)<<"/"<<p_remnants->GetRemnant(0)
+  //	   <<" & "<<p_proc->Momentum(1)<<"):\n";
   return p_remnants->GetRemnant(0)->TestExtract(p_proc->Flav(0), p_proc->Momentum(0))
          && p_remnants->GetRemnant(1)->TestExtract(p_proc->Flav(1), p_proc->Momentum(1));
 }
@@ -59,20 +63,21 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
   //   cross section
   m_pt2 = pt2;
   double sigmatrue, sigmaapprox, weight;
-  bool success(false);
+  bool success(false), output(false);
   do {
     m_pt2  = p_overestimator->TrialPT2(m_pt2);
+    //msg_Out()<<"   * pt^2 = "<<m_pt2<<" > "<<m_pt2min<<", S = "<<m_S<<".\n";
     m_muf2 = m_mur2 = m_pt2;
     if (m_pt2<m_pt2min) return false;
     if (!SelectRapidities() || !CalcXs() || !CalcMandelstams()) continue;
-    p_processes->CalcPDFs(m_x1,m_x2,m_pt2);
-    sigmatrue   = (*p_processes)(m_shat,m_that,m_uhat) * m_yvol;
-    sigmaapprox = (*p_overestimator)(m_pt2);
+    p_processes->CalcPDFs(m_x1,m_x2,m_pt2,output);
+    sigmatrue   = (*p_processes)(m_shat,m_that,m_uhat,output) * m_yvol;
+    sigmaapprox = (*p_overestimator)(m_pt2) * m_yvol;
     weight      = sigmatrue/sigmaapprox;
-    if (weight>1.) {
-      msg_Out()<<"      * ratio = "<<(sigmatrue/sigmaapprox)<<" "
-	       <<" from sigma(true) = "<<sigmatrue<<", "
-	       <<"sigma(approx) = "<<sigmaapprox<<"\n";
+    if (output && weight>1.) {
+      msg_Out()<<"    --> ratio = "<<(sigmatrue/sigmaapprox)<<" "
+    	       <<" from sigma(true) = "<<sigmatrue<<", "
+    	       <<"sigma(approx) = "<<sigmaapprox<<"\n";
     }
     if (m_ana) AnalyseWeight(weight);
     if (weight > ran->Get()) success = true;
@@ -118,8 +123,11 @@ bool Single_Collision_Handler::CalcXs() {
   // Misses term for the masses?
   m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.*exp(-m_Ycms);
   m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.*exp(m_Ycms);
-  if (m_x1<p_processes->PDFXmin(0) || m_x2<p_processes->PDFXmin(1)) return 0.;
-  if (m_x1>1. || m_x2>1.) return 0.;
+  //msg_Out()<<"    --> x1 = "<<m_x1<<" ("<<m_residualx1<<"), "
+  //	   <<"x2 = "<<m_x2<<" ("<<m_residualx2<<"), "
+  //	   <<"xt = "<<m_xt<<".\n";
+  if (m_x1<p_processes->PDFXmin(0) || m_x2<p_processes->PDFXmin(1) ||
+      m_x1>1. || m_x2>1.) return 0.;
   return (m_x1<m_residualx1 && m_x2<m_residualx2);
 }
 

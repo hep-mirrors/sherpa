@@ -27,6 +27,7 @@ namespace SHERPA {
 
   private:
     PDF::ISR_Handler          * p_isr;
+    PDF::isr::id                m_id;   
     REMNANTS::Remnant_Handler * p_remnants;
     AMISIC::Amisic            * p_amisic;
     SHRIMPS::Shrimps          * p_shrimps;
@@ -34,9 +35,9 @@ namespace SHERPA {
     PHASIC::Process_Base      * p_proc;
     Shower_Handler            * p_shower;
 
-    bool        m_stop;
-    typeID      m_type;
-    std::string m_name;
+    bool         m_on, m_stop, m_firstrescatter;
+    typeID       m_type;
+    std::string  m_name;
 
     double m_ycut; 
     
@@ -61,11 +62,15 @@ namespace SHERPA {
     const double ImpactParameter() const;
     const ATOOLS::Vec4D SelectPositionForScatter() const;
 
-    inline const typeID      & Type() const { return m_type; }
-    inline const std::string & Name() const { return m_name; }
-    inline const bool        & Done() const { return m_stop; }
-    inline const double      & YCut() const { return m_ycut; }
+    inline const typeID       & Type() const { return m_type; }
+    inline const std::string  & Name() const { return m_name; }
+    inline const bool           Done() const { return !m_on || m_stop; }
+    inline const double       & YCut() const { return m_ycut; }
+    inline const PDF::isr::id & Id()   const { return m_id; }
     const bool   IsMinBias() const;
+    inline const bool IsFirstRescatter() const {
+      return m_id==PDF::isr::bunch_rescatter && m_firstrescatter;
+    }
     
     inline PDF::ISR_Handler          * ISRHandler() const { return p_isr; }
     inline REMNANTS::Remnant_Handler * Remnants()   const { return p_remnants; }
@@ -73,12 +78,10 @@ namespace SHERPA {
     inline Shower_Handler            * Shower()     const { return p_shower; }
     inline AMISIC::Amisic            * Amisic()     const { return p_amisic; }
     inline SHRIMPS::Shrimps          * Shrimps()    const { return p_shrimps; }
-    
     inline void SetShowerHandler(Shower_Handler * const sh) { p_shower=sh; }
     inline void SetRemnantHandler(REMNANTS::Remnant_Handler *const rh) {
       p_remnants = rh;
     }
-
 
     bool   VetoScatter(ATOOLS::Blob *blob);
     void   SetMassMode(const int & massmode);

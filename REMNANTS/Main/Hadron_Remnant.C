@@ -231,7 +231,7 @@ double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,
   return z;
 }
 
-void Hadron_Remnant::Reset(const bool & DIS) {
+void Hadron_Remnant::Reset(const bool & resc,const bool & DIS) {
   Remnant_Base::Reset();
   while (!m_spectators.empty()) {
     Particle * part = m_spectators.front();
@@ -242,15 +242,20 @@ void Hadron_Remnant::Reset(const bool & DIS) {
     delete part;
     m_spectators.pop_front();
   }
+  /////// TODO: Have to fix this!!!!!
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum()[0];
+  if (resc)
+    msg_Out()<<METHOD<<"(resc = "<<resc<<"): "
+	     <<p_beam->InMomentum()<<" - "<<p_beam->OutMomentum()<<"\n";
+  m_residualE = ( resc ? (p_beam->InMomentum()-p_beam->OutMomentum())[0] :
+		  p_beam->OutMomentum()[0] );
   m_valence   = false;
   p_valence   = p_remnant = p_recoiler = nullptr; 
 }
 
 bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   DEBUG_FUNC("");
-  // Is flavour element of flavours allowed by PDF? 
+  // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav)==p_partons->end()) {
     msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
     return false;

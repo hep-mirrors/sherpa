@@ -17,7 +17,7 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
          const int _dir) :
   Beam_Base(beamspectrum::EPA, _beam, _energy, _pol, _dir),
   m_mass(_beam.Mass(true)), m_gamma(_energy/m_mass), m_charge(_beam.Charge()),
-  m_minR(Max(1.e-6,_beam.Radius())), m_maxR(1.e3)    
+  m_minR(Max(1.e-6,_beam.Radius())), m_maxR(10.*m_minR)    
 {
   Settings &s = Settings::GetMainSettings();
   RegisterDefaults();
@@ -86,11 +86,16 @@ void EPA::RegisterDefaults() {
 }
 
 void EPA::FixPosition() {
-  if (false) {
-    double R   = m_minR * pow(m_maxR/m_minR,ran->Get());
-    double phi = 2.*M_PI*ran->Get();
-    m_position = R * Vec4D(0., cos(phi), sin(phi), 0.);
+  double ratio = m_maxR/m_minR, logratio = log(ratio), R, phi;
+  if (ran->Get()< logratio/(0.5+logratio)) {
+    R = m_minR * pow(ratio,ran->Get());
   }
+  else {
+    R = m_minR * sqrt(ran->Get());
+  }
+  phi = 2.*M_PI*ran->Get();
+  m_position = R * Vec4D(0., cos(phi), sin(phi), 0.);
+  msg_Out()<<METHOD<<"(R = "<<R<<" in ["<<m_minR<<", "<<m_maxR<<"]"<<")\n";
   // This is a bit of a poor-man's choice for a point-like source.
   // I use the limit for small products of distance times photon energy and it would be better to interpolate
   // between both.  Maybe by just fusing the two expansions.
