@@ -11,7 +11,9 @@ this task. It employes a YFS-type resummation :cite:`Yennie1961ad` of
 all infrared singular terms to all orders and is equipped with
 complete first order corrections for the most relevant cases (all
 other ones receive approximate real emission corrections built up by
-Catani-Seymour splitting kernels).
+Catani-Seymour splitting kernels). The module is also equipped with 
+an algorithm to allow any photons produced to split into charged 
+particle pairs.
 
 .. contents::
    :local:
@@ -89,6 +91,44 @@ this cut-off will be assumed to have negligible impact on the
 final-state momentum distributions. The default is ``IR_CUTOFF: 1E-3``
 (GeV). Of course, this switch is only effective if Photons is switched
 on, i.e. ``MODE`` is not set to ``None``.
+
+.. _PHOTON_SPLITTER_MODE:
+
+PHOTON_SPLITTER_MODE
+----
+
+.. index:: PHOTON_SPLITTER_MODE
+
+The parameter :OPTION:`PHOTON_SPLITTER_MODE` determines which particles, if any, may be produced in 
+photon splittings:
+  :option:`0`
+    All photon splitting functions are turned off.
+  :option:`1`
+    Photons may split into electron-positron pairs;
+  :option:`2`
+    muons;
+  :option:`4`
+    tau leptons;
+  :option:`8`
+    light hadrons up to ``PHOTON_SPLITTER_MAX_HADMASS``.
+  The settings are additive, e.g. ``PHOTON_SPLITTER_MODE: 3``
+  allows splittings into electron-positron and muon-antimuon pairs.
+  The default is ``PHOTON_SPLITTER_MODE: 15`` (all splittings turned on).
+This parameter is of course only effective if the Photons module is 
+switched on using the ``MODE`` keyword.
+
+.. _PHOTON_SPLITTER_MAX_HADMASS:
+
+PHOTON_SPLITTER_MAX_HADMASS
+----
+
+.. index:: PHOTON_SPLITTER_MAX_HADMASS
+
+``PHOTON_SPLITTER_MAX_HADMASS`` sets the mass (in GeV) of the heaviest 
+hadron which may be produced in photon splittings. Note that vector 
+splitting functions are currently not implemented: only fermions, 
+scalars and pseudoscalars up to this cutoff will be considered. 
+The default is 0.5 GeV.
 
 .. _QED Corrections to the Hard Interaction:
 
