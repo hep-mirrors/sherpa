@@ -17,5 +17,6 @@ macro(amegic_handle_shared_library  mylib)
      target_link_libraries(${mylib} PRIVATE MPI::MPI_CXX)
   endif()
   target_link_libraries(${mylib} PRIVATE SHERPA::All)
+  target_compile_features(${mylib} PRIVATE cxx_std_11)
 endmacro()
 

@@ -25,7 +25,6 @@ SET_TESTS_PROPERTIES( Main${test}part3 PROPERTIES ENVIRONMENT "${STANDARDENVIRON
 set_tests_properties( Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
 set_tests_properties( Main${test}part3 PROPERTIES DEPENDS Main${test}part2)
 
-
 set(test test-LO_Z)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
 add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml 

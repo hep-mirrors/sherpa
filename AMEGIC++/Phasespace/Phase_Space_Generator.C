@@ -164,8 +164,8 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	    if (nout==1) rannumber=1;
 	    if (!cg->Valid() && msg_LevelIsTracking()) PRINT_INFO("Channel "<<procname<<" kicked because of decoupled particle");
 	    if (rannumber>0 && cg->Valid()) {
-	      string makefilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+fsrp+string("/Makefile.am");
-	      AddToMakefileAM(makefilename,fsrp,procname);
+	      string makefilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+fsrp+string("/CMakeLists.txt");
+	      AddToCMakefile(makefilename,fsrp,procname);
 	      cnt++;
 	      newchannels = 1;
 	    }
@@ -199,7 +199,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 
 
 
-void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,string fileID)
+void Phase_Space_Generator::AddToCMakefile(string makefilename,string pathID,string fileID)
 {
   size_t hit=pathID.find("/");
   string base=pathID.substr(0,hit);
@@ -208,12 +208,15 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
   if (!IsFile(makefilename)) {
     ofstream file(makefilename.c_str());
 
-    file<<"lib_LTLIBRARIES = libProc_"<<subdirname<<".la"<<endl;
-    file<<"libProc_"<<subdirname<<"_la_SOURCES = CG.C "<<'\\'<<endl;
-    file<<"\t"<<fileID<<".C"<<endl;
-    file<<"CURRENT_SHERPASYS ?= "<<ATOOLS::rpa->gen.Variable("SHERPA_INC_PATH")<<endl;
-    file<<"INCLUDES = -I$(CURRENT_SHERPASYS)"<<endl;
-    file<<"DEFS     = "<<endl;
+    file<<"set(libProc_"<<subdirname<<"_la_SOURCES"<<endl;
+    file<<fileID<<".C"<<endl;
+    file<<"CG.C"<<endl;
+    file<<")"<<endl;
+    file<<"add_library(Proc_"<<subdirname<<" SHARED ${libProc_"<<subdirname<<"_la_SOURCES})"<<endl;
+    file<<"amegic_handle_shared_library(Proc_"<<subdirname<<")"<<endl;
+    file<<"install(TARGETS Proc_"<<subdirname<<" DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})"<<endl;
+    
+    
     ofstream cgfile((rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+pathID+"/CG.C").c_str());
     cgfile<<"#include \"PHASIC++/Channels/Channel_Generator.H\"\n"
 	  <<"#include \"PHASIC++/Channels/Multi_Channel.H\"\n"
@@ -264,13 +267,10 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
     ofstream to((makefilename+string(".tmp")).c_str());  
 
     string buffer;
-    string key=string("libProc_"+subdirname+"_la_SOURCES");
     for (;from;) {
       getline(from,buffer);
       to<<buffer<<endl;
-      if (buffer.find(key)!=string::npos) {
-	to<<"\t"<<fileID<<".C"<<'\\'<<endl;
-      }
+      if (buffer.find(std::string("set(libProc_")+subdirname+"_la_SOURCES")!=string::npos) {to<<fileID<<".C"<<endl;}
     }
     from.close();
     to.close();
@@ -282,14 +282,13 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
       ofstream to((fname+".tmp").c_str());
       bool first=true;
       string buffer;
-      string key=string("p_mc->Add");
       for (;from;) {
-	getline(from,buffer);
-	if (first && buffer.find(key)!=string::npos) {
-	  to<<"      p_mc->Add(LoadChannel(nin,nout,fl,\""<<fileID<<"\",psh));\n";
-	  first=false;
-	}
-	to<<buffer<<endl;
+        getline(from,buffer);
+        if (first && buffer.find("p_mc->Add")!=string::npos) {
+          to<<"      p_mc->Add(LoadChannel(nin,nout,fl,\""<<fileID<<"\",psh));\n";
+          first=false;
+        }
+        to<<buffer<<endl;
       }
       from.close();
       to.close();
@@ -299,75 +298,6 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
   }
 }
 
-
-void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,string fileID)
-{
-  if (IsFile(makefilename)==0) {
-    cerr<<makefilename.c_str()<<" is not available !"<<endl;
-    return;
-  }
-
-  if (Search(makefilename,string(fileID)+string(".C"))) return;
-
-  AddToMakefileAM(makefilename+string(".am"),pathID,fileID);
-
-  ofstream to;  
-  ifstream from;
-
-
-  from.open(makefilename.c_str()); 
-  to.open((makefilename+string(".tmp")).c_str());
-
-  char buffer[buffersize];
-
-  string pID;
-  pID=pathID;
-  for (short int i=pathID.length()-1;i>=0;i--) {
-    if (pathID[i]=='/') {
-      pID    = pathID.substr(i+1);
-      break;
-    }
-  }
-
-  string lib = string("libProc_")+pID;
-
-  for(;from;) {
-    from.getline(buffer,buffersize);
-    if (string(buffer).find(lib+string("_la_SOURCES"))==0) {
-      if (string(buffer).find(string("\\"))==string::npos) {
-	//no backslash
-	to<<buffer<<"\\"<<endl
-	  <<"\t"<<(fileID+string(".C")).c_str()<<endl; 
-      }
-      else {
-	to<<buffer<<endl
-	  <<"\t"<<(fileID+string(".C")).c_str()<<" \\"<<endl; 
-      }
-    }
-    else {
-      if (string(buffer).find(lib+string("_la_OBJECTS"))==0) {
-	if (string(buffer).find(string("\\"))==string::npos) {
-	  //no backslash
-	  to<<buffer<<"\\"<<endl
-	    <<"\t"<<(fileID+string(".lo")).c_str()<<endl; 
-	}
-	else {
-	  to<<buffer<<endl
-	    <<"\t"<<(fileID+string(".lo"))<<" \\"<<endl; 
-	}
-      }
-      else to<<buffer<<endl;
-    }
-  }
-  from.close();
-  to.close();
-
-  //copy back
-  Copy(makefilename+string(".tmp"),makefilename);
-}
-
-
-
 bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
 {
   string chlname   = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+pathID + string("/fsrchannels");
@@ -376,8 +306,7 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
   My_In_File chlist(chlname);
   chlist.Open();
   if (!My_In_File::FileInDB(chmapname)) {
-    msg_Error()<<"Error in Phase_Space_Generator:"
-		       <<chmapname<<" not found."<<endl;
+    msg_Error()<<"Error in Phase_Space_Generator:" <<chmapname<<" not found."<<endl;
     return 0;
   }
 
@@ -388,8 +317,7 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
     libname = string(buffer);
     if (*chlist && libname[0]!='%') {
       if (!RSearchInDB(chmapname,libname) || libname.find(": ")==string::npos) {
-	msg_Error()<<"Error in Phase_Space_Generator:"
-			   <<"Mapping for "<<libname<<" not found."<<endl;	
+	msg_Error()<<"Error in Phase_Space_Generator:"  <<"Mapping for "<<libname<<" not found."<<endl;
 	return 0;
       }
 

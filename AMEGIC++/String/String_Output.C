@@ -81,7 +81,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
   cfile.open((cfilename+string(".C")).c_str());
 
   string Makefile = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+pathID+string("/Makefile");
-  slib.AddToMakefile(Makefile,pathID,string("V"));
+  slib.AddToCMakefile(Makefile,pathID,string("V"));
 
   int lines   = 0;
   int fnumber = 0;
@@ -168,7 +168,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
 	char numb[5];
 	sprintf(numb,"%i",fnumber);	
 	cfile.open((cfilename+string("_")+string(numb)+string(".C")).c_str());
-	slib.AddToMakefile(Makefile,pathID,string("V_")+string(numb));
+	slib.AddToCMakefile(Makefile,pathID,string("V_")+string(numb));
 	cfile<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
 	cfile<<"using namespace AMEGIC;"<<endl;  
 	cfile<<"using namespace ATOOLS;"<<endl<<endl;
@@ -201,7 +201,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
 	  char numb[5];
 	  sprintf(numb,"%i",fnumber);	
 	  cfile.open((cfilename+string("_")+string(numb)+string(".C")).c_str());
-	  slib.AddToMakefile(Makefile,pathID,string("V_")+string(numb));
+	  slib.AddToCMakefile(Makefile,pathID,string("V_")+string(numb));
 	  header<<"  void Calculate_M"<<ihel<<"_"<<divnum<<"();"<<endl;
 	  cfile<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
 	  cfile<<"using namespace AMEGIC;"<<endl;  
@@ -227,7 +227,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
   zf.open((Zname+string(".C")).c_str());
 
   string Makefile = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+pathID+string("/Makefile");
-  slib.AddToMakefile(Makefile,pathID,string("V_Z"));
+  slib.AddToCMakefile(Makefile,pathID,string("V_Z"));
 
   int lines = 0;
   zf<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
@@ -259,7 +259,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
   if (mvz) { 
     divnum = 1;
     szf.open((Zname+string("_")+ToString(divnum)+string(".C")).c_str());
-    slib.AddToMakefile(Makefile,pathID,string("V_Z_")+ToString(divnum));
+    slib.AddToCMakefile(Makefile,pathID,string("V_Z_")+ToString(divnum));
     szf<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
     szf<<"using namespace AMEGIC;"<<endl;  
     szf<<"using namespace ATOOLS;"<<endl<<endl;
@@ -475,7 +475,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
       (*pz).close();
       // new file
       (*pz).open((Zname+string("_")+ToString(divnum)+string(".C")).c_str());
-      slib.AddToMakefile(Makefile,pathID,string("V_Z_")+ToString(divnum));
+      slib.AddToCMakefile(Makefile,pathID,string("V_Z_")+ToString(divnum));
       (*pz)<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
       (*pz)<<"using namespace AMEGIC;"<<endl;  
       (*pz)<<"using namespace ATOOLS;"<<endl<<endl;
@@ -582,11 +582,9 @@ void String_Output::Add_To_Set_Values()
 
   for(;from;) {
     getline(from,buffer);
-    
     if (buffer.find(pID)!=string::npos) break;
 
-    if (buffer.find(string("return 0"))!=string::npos || 
-	buffer.find(string("libname"))!=string::npos) {
+    if (buffer.find(string("return 0"))!=string::npos || buffer.find(string("libname"))!=string::npos) {
       hit = 1;
       to<<"#ifdef "<<pID<<"_on"<<endl;
       to<<"  if (pID==string("<<'"'<<pID<<'"'<<")) return (new "<<pID<<"(BS));"<<endl;

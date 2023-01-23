@@ -24,12 +24,10 @@ namespace AMEGIC {
     int   Search(std::string file,std::string search);
     int   RSearchInDB(std::string file,std::string &search);
     void  Copy(std::string,std::string);
-    void  AddToMakefile(std::string Makefile,std::string pathID,std::string fileID);
-    void  AddToMakefileAM(std::string, std::string, std::string);
+    void  AddToCMakefile(std::string Makefile,std::string pathID,std::string fileID);
   public:
     Phase_Space_Generator(int, int);
-    bool Construct(std::list<std::string>*,std::string,std::string,ATOOLS::Flavour *, 
-		   Process_Base *);
+    bool Construct(std::list<std::string>*,std::string,std::string,ATOOLS::Flavour *, Process_Base *);
     //PHASIC::Single_Channel * SetChannel(int,int,ATOOLS::Flavour* fl,std::string&,ATOOLS::Integration_Info * const);
   };
 
