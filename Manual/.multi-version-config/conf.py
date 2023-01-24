@@ -19,4 +19,5 @@ for extra in extra_sidebars:
         html_sidebars["**"].append(extra)
 
 # Configure sphinx-multiversion
+smv_tag_whitelist = r'^.*$'
 smv_branch_whitelist = r"^.*$"

@@ -77,7 +77,8 @@ pages:
   stage: deploy
   script:
     - cd Manual
-    - git branch -r | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done
+    # only include the manual for recent branches, i.e. any that are up-to-date with master
+    - git branch -r --contains origin/master | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done
     - git fetch --all
     - git checkout master  # we only build with master config, because
                            # this will get uploaded globaly
