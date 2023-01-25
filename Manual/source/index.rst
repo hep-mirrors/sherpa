@@ -15,7 +15,6 @@ be found `here <https://sherpa.hepforge.org/doc/>`_.
    manual/input-structure
    manual/parameters
    manual/tips-and-tricks
-   manual/a-posteriori-scale-variations
    manual/customization
    manual/examples
    manual/outro

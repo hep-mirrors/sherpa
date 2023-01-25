@@ -578,7 +578,7 @@ which expands to a 7-point scale variation:
 
 .. code-block:: yaml
 
-   SCALE_VARIATION:
+   SCALE_VARIATIONS:
    - 4.0*
 
 is therefore equivalent to
