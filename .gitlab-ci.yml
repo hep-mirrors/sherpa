@@ -49,28 +49,6 @@ trigger_pages:
     - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
   needs: []
 
-# build the dist-tarball
-dist:
-  stage: deploy
-  rules:
-    - if: '$CI_COMMIT_TAG'
-      when: always
-    - when: never
-    - if: '$CI_SERVER_HOST=="gitlab.com"'
-  image: registry.gitlab.com/sherpa-team/sherpa-docker-build
-  script:
-    - pip3 install -r Manual/requirements.txt
-    - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON   # build the manual into the dist tarball
-    - make -C build/ dist
-
-    # upload to gitlab releases
-    - "REL=$(git describe --abbrev=0 --tags)"
-    - "TARBALL=$(ls *.tar.gz | cut -d ' ' -f1)"
-    - 'URL=$(curl --request POST --header "PRIVATE-TOKEN: $UPLOAD_TOKEN" --form "file=@./$TARBALL" https://gitlab.com/api/v4/projects/13884060/uploads | grep -o -P "\"url\":\"(.*?)\"" | sed "s/\"//g" | sed "s/url://")' # TODO: use regex
-    - "echo $URL"
-    - 'curl --request POST --header "PRIVATE-TOKEN: $UPLOAD_TOKEN" --data name="$TARBALL" --data url="https://gitlab.com/vale9811/sherpa$URL" "https://gitlab.com/api/v4/projects/13884060/releases/$REL/assets/links"'
-    - 'curl --request POST --header "PRIVATE-TOKEN: $UPLOAD_TOKEN" --data name="Manual" --data url="https://sherpa-team.gitlab.io/sherpa/$REL/" "https://gitlab.com/api/v4/projects/13884060/releases/$REL/assets/links"'
-
 # Build Manual
 pages:
   image: registry.gitlab.com/sherpa-team/sherpa-docker-build
