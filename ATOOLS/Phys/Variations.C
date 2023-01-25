@@ -485,7 +485,7 @@ Variations::PDFsAndAlphaSList(const std::string &pdf) const
       s["PDF_VARIATION_ALPHAS_BEAM"].SetDefault(0).Get<int>() - 1};
     int beammask {0};
     for (int i : s["PDF_VARIATION_BEAMS"].SetDefault({1, 2}).GetVector<int>()) {
-      if (rpa->gen.Bunch(i - 1).IsHadron()) {
+      if (rpa->gen.Bunch(i - 1).IsHadron() || rpa->gen.Bunch(i - 1).IsPhoton()) {
         beammask |= 1 << (i - 1);
         if (alphasbeam < 0)
           alphasbeam = i - 1;
@@ -597,7 +597,7 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(
       if (pdf == NULL) THROW(fatal_error, "PDF set " + pdfname + " not available.");
       pdf->SetBounds();
       m_pdfs.push_back(pdf);
-    } else if (rpa->gen.Bunch(i).IsHadron()) {
+    } else if (rpa->gen.Bunch(i).IsHadron() || rpa->gen.Bunch(i).IsPhoton()) {
       m_pdfs.push_back(rpa->gen.PDF(i));
     } else {
       m_pdfs.push_back(NULL);
