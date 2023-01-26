@@ -1,6 +1,6 @@
 # If you have questions or requests contact Valentin Boettcher <hiro@protagon.space> (Gitlab: vale9811)
 workflow:
-  - rules:
+  rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /fullbuild/' # run on merge requests, if label 'fullbuild' is set
     - if: '$CI_PIPELINE_SOURCE == "schedule"
     - if: '$CI_PIPELINE_SOURCE == "push"
