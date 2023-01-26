@@ -1,4 +1,7 @@
 # If you have questions or requests contact Valentin Boettcher <hiro@protagon.space> (Gitlab: vale9811)
+rules:
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /fullbuild/' # run on merge requests, if label 'fullbuild' is set
+
 
 image: "registry.gitlab.com/sherpa-team/sherpa-docker-build/slim"
 
