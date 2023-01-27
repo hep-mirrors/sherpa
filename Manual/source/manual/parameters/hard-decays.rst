@@ -361,3 +361,241 @@ can be used to change the number of points per integration iteration,
 and thus also the minimal number of points to be used in an
 integration.  All decay table integration settings are sub-settings of
 :option:`HARD_DECAYS`.
+
+.. _Simulation of polarized cross sections for intermediate particles:
+
+
+Simulation of polarized cross sections for intermediate particles
+=================================================================
+
+.. index:: Simulation of polarized cross sections for intermediate particles
+
+In this chapter it is described how Sherpa can be used to simulate
+polarized cross sections for unstable intermediate state particles.
+At the moment, only the simulation of polarized
+cross sections for massive vector bosons is supported.
+Sherpa can simulate all polarized cross sections in one simulation
+run. The polarized cross sections are handled during event 
+generation and printed out as additional event weights similar to 
+variation weights.   
+By default, the cross sections for all polarization combinations of 
+the intermediate particles are printed out. For massive vector 
+bosons also all transverse weights are calculated automatically. 
+Beside this, user-specified weights can be determined which is described
+in section :ref:`Custom polarized cross sections`.
+Weight names for automatically provided weights have the form
+``PolWeight_ReferenceSystem.particle1.helicity1_particle2.helicity2...``
+e.g. for two W+-bosons PolWeight.W+.+_W+.-. Ordering of the particles
+in the weight name corresponds to Sherpa's internal particle ordering
+which can be read off from the ordering in the process printed out
+when Sherpa starts running. 
+More details about the definition of polarization for intermediate 
+vector bosons and the implementation can be found in     .
+
+.. contents::
+   :local:
+
+.. _General procedure:
+
+General procedure
+------------------
+
+.. index:: General procedure
+
+The definition of polarization for particles in intermediate states is only 
+possible for processes which can be factorized into a production matrix
+element and decay matrix elements of them. 
+To neglect possible non-resonant processes, for which this factorization
+is not possible, Sherpa applies an extended narrow-width approximation. All intermediate
+particles are considered as on shell but all spin correlations are preserved. 
+The production process is specified in the :ref:`Processes` part 
+whereas the possible decays are characterized in the :ref:`Hard decays` section.
+Details about :option:`PROCESSES` and :option:`HARD_DECAYS` definition are described
+in the corresponding chapters of this manual. The following example shows 
+:option:`PROCESSES` and :option:`HARD_DECAYS` definition of the same-sign :math:`W^+ W^+`-scattering
+with the W decaying to electrons or muons.
+
+.. code-block:: yaml
+
+   PARTICLE_DATA:
+     24: 
+       Width: 0
+
+   HARD_DECAYS:
+     Enabled: true
+     Mass_Smearing: 1
+     Channels:
+      24,12,-11: {Status: 2}
+      24,14,-13: {Status: 2}
+
+   PROCESSES:
+   - 93 93 -> 24 24 93 93:
+      Order: {QCD: 0, EW: 4} 
+
+Things to notice:
+
+* In :option:`PARTICLE_DATA` the :option:`Width` of the intermediate particles must
+  be set to zero since they are handled as stable for the hard process
+  matrix element calculation. The particles are then decayed by the internal
+  (hard) decay module.
+
+* Spin correlations must be enabled during the hard decays (which is the default).
+
+The central setting to enable the calculation of polarized cross sections is:
+
+.. code-block:: yaml
+
+   HARD_DECAYS:
+     Pol_Cross_Section: 
+       Enabled: true
+
+The polarization vectors of massive vector bosons are implemented according to
+:cite:`Dittmaier1998nn`, equation (3.19). Specifically, the polarization vectors 
+are expressed in terms of Weyl spinors. For that, an arbitrary light-like vector
+needs to be chosen. The definition of vector boson polarization
+is not unambiguous. It can be specified by the options described in the following 
+sections: 
+:option:`Pol_Cross_Section:Spin_Basis` and 
+:option:`Pol_Cross_Section:Reference_System`.  
+
+.. _Spin basis:
+
+Spin basis
+----------
+
+.. index:: Spin basis
+
+For massive vector bosons the choice of a light-like vector for their description 
+in the Weyl spinor formalism is not really arbitrary since it characterizes the 
+spin axis chosen to define the polarization.
+By default, the reference vector is selected such that polarization vectors are expressed 
+in the helicity basis since this is the common choice for vector boson polarization.
+The polarization vectors are then eigenvectors of the helicity operator and have the same
+form as in (3.15) in :cite:`Dittmaier1998nn` after transformation from spinor to vector
+representation. Sherpa provides several gauge choices for the Weyl spinors. To really get
+the polarization vectors in this form, the following spinor gauge choice must be chosen:
+
+.. code-block:: yaml
+
+   COMIX_DEFAULT_GAUGE: 0
+
+.. code-block:: yaml
+
+   HARD_DECAYS:
+     Pol_Cross_Section: 
+       Enabled: true
+       Spin_Basis: Helicity
+
+If :option:`Spin_Basis: ComixDefault` is selected the COMIX default reference vector 
+specified by :option:`COMIX_DEFAULT_GAUGE` (default 1 which corresponds to
+(1.0, 0.0, 1/:math:`\sqrt{2}`, 1/:math:`\sqrt{2}`)) is used. 
+Furthermore, it is possible to hand over any constant reference vector:
+
+.. code-block:: yaml
+
+   HARD_DECAYS:
+     Pol_Cross_Section:
+       Enabled: true
+       Spin_Basis: 1.0, 0.0, 1.0, 0.0
+
+.. _Reference system:
+
+Reference system
+-----------------
+
+.. index:: Reference system
+
+The helicity of a massive particle is not Lorentz invariant. Therefore a reference system
+needs to be chosen to define vector boson polarization unambiguous. Sherpa supports the 
+following options: 
+
+:option:`Reference_System: Lab` (default)
+  Vector boson polarization is defined in the laboratory frame. 
+
+:option:`Reference_System: COM`
+  Vector boson polarization is defined in the center of mass system of all 
+  hard-decaying particles.
+
+:option:`Reference_System: PPFr`
+  Vector boson polarization is defined in the center of mass system of the two interacting
+  partons.
+
+:option:`Reference_System: RestFrames`
+  Vector boson polarization for each hard decaying particle is defined in its own
+  center of mass system. If the helicity basis is selected as spin basis the spin axis lies along the flight
+  direction of the hard decaying particle in the laboratory frame.
+
+Sherpa allows the calculation of polarized cross sections for different polarization 
+definitions specified by different reference systems in one simulation run:
+
+.. code-block:: yaml
+
+   HARD_DECAYS:
+     Pol_Cross_Section: 
+       Enabled: true
+       Reference_System: [Lab, COM]
+
+Additionally to the options explained above, each reference system defined by one or several
+hard process initial or final state particles can be used. This can be specified by the 
+particle numbers of the desired particles according to the Sherpa numbering scheme.
+Distinct particle numbers should only be separated by a single white space, at least if more 
+than one reference system is specified. The second reference frame in the following example
+is the parton-parton rest frame.
+
+.. code-block:: yaml
+
+   HARD_DECAYS:
+     Pol_Cross_Section: 
+       Enabled: true
+       Reference_System: [Lab, 0 1]
+
+In the Sherpa event output, polarized cross sections of vector bosons defined
+in different frames are distinguished by adding the reference frame to the weight names, 
+e.g. PolWeight_Lab.W+.+_W+.-. For reference systems defined by particle numbers,  
+``refsystemn`` is added to avoid commas in weight names. n is the place in the reference 
+system list specified in the YAML-File starting at 0. For the example above this means
+e.g. PolWeight_refsystem1.W+.+_W+.-.
+
+.. _Custom polarized cross sections:
+
+Custom polarized cross sections
+--------------------------------
+
+.. index:: Custom polarized cross sections
+
+Sherpa provides the calculation of two different types of custom polarized cross sections.
+On the one hand, it is possible to hand over a comma separated list of weight names from the 
+automatically calculated cross sections.
+These cross sections are then added by Sherpa and printed out as additional event weight.
+On the other hand, partially unpolarized cross sections can be calculated. 
+These can be specified by the numbers of the particles which should be considered 
+as unpolarized. Also here the numbering of the particles is according to the Sherpa numbering
+scheme.  
+Custom weights are generally specified by :option:`Weight`. By adding numbers to 
+:option:`Weight` e.g. :option:`Weight1`, :option:`Weight2` ... more than one custom cross 
+section can be calculated. The number is limited to :option:`Weight10` by default but can
+be increased by using :option:`Number_Of_Custom_Weights`.
+In the following example the W- is considered as unpolarized: 
+
+.. code-block:: yaml
+
+   HARD_DECAYS:
+    Enabled: true
+    Mass_Smearing: 1
+    Channels:
+     24,12,-11: {Status: 2}
+     -24,-14,13: {Status: 2}
+    Pol_Cross_Section: 
+      Enabled: true
+      Weight1: W+.+_W-.+, W+.-_W-.+
+      Weight2: 3
+
+   PROCESSES:
+    - 93 93 -> 24 -24 93 93:
+      Order: {QCD: 0, EW: 4} 
+
+In the case of partially unpolarized cross sections the helicity of the unpolarized particle
+is set to ``u`` in the weight names, e.g. PolWeight_Lab.W+.+_W-.u. For custom cross
+sections specified by weight names PolWeight_refsystem. ``Weightn`` is used instead to avoid
+long weight names. Hereby, :option:`Weightn` corresponds to the corresponding setting in the 
+YAML-File.  

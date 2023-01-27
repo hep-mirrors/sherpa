@@ -4,6 +4,8 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
+#include "METOOLS/SpinCorrelations/Decay_Matrix.H"
+#include "METOOLS/SpinCorrelations/Polarized_CrossSections_Handler.H"
 
 namespace ATOOLS {
   class Blob_List;
@@ -31,11 +33,13 @@ namespace SHERPA {
   class Decay_Handler_Base : public ATOOLS::Mass_Selector {
   protected:
     SHERPA::Soft_Photon_Handler * p_softphotons;
+    METOOLS::Polarized_CrossSections_Handler* p_polarization_handler;
     PHASIC::Decay_Map           * p_decaymap;
     ATOOLS::Blob_List           * p_bloblist;
     ATOOLS::Cluster_Amplitude   * p_ampl;
     ATOOLS::Momenta_Stretcher     m_stretcher;
-    bool m_spincorr, m_decaychainend, m_cluster;
+    std::vector<METOOLS::Decay_Matrix> m_decaymatrices;
+    bool m_spincorr, m_decaychainend, m_cluster, m_polcrosssec;
     int m_mass_smearing;
     size_t m_qedmode;
     unsigned long int m_oserrors;
@@ -67,7 +71,10 @@ namespace SHERPA {
     ATOOLS::Cluster_Amplitude* ClusterConfiguration(ATOOLS::Blob*const);
 
     inline void SetBlobList(ATOOLS::Blob_List* bl) { p_bloblist=bl; }
+    inline std::vector<METOOLS::Decay_Matrix> GetDecayMatrices() { return m_decaymatrices; }
     inline bool SpinCorr() { return m_spincorr; }
+    inline bool PolCrossSec(){ return  m_polcrosssec; }
+    inline METOOLS::Polarized_CrossSections_Handler* GetPolarizationHandler() { return p_polarization_handler; }
     virtual bool Decays(const ATOOLS::Flavour& flav);
     virtual bool CanDecay(const ATOOLS::Flavour& flav);
     inline PHASIC::Decay_Map* DecayMap() { return p_decaymap; }

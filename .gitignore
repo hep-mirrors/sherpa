@@ -38,6 +38,7 @@ SHERPA/LundTools/pythia-6.4.18.f
 SHERPA/Run/Sherpa-config
 install_manifest.txt
 Manual/sherpa-completion
+Manual/sherpamanual.fls
 MODEL/UFO/Sherpa-generate-model
 MODEL/UFO/sconstruct_template
 test.py

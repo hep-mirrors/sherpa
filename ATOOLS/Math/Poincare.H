@@ -19,6 +19,7 @@ namespace ATOOLS {
  
     void Boost(Vec4D &v) const;
     void BoostBack(Vec4D &v) const;
+    void BoostBack(Vec4C &v) const;
 
     void Rotate(Vec4D &v) const;
     void RotateBack(Vec4D &v) const;

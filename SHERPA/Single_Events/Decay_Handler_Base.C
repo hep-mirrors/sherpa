@@ -26,10 +26,11 @@ using namespace METOOLS;
 using namespace std;
 
 Decay_Handler_Base::Decay_Handler_Base() :
-  p_softphotons(NULL), p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
+  p_softphotons(NULL), p_polarization_handler(NULL), p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
+  m_decaymatrices(std::vector<METOOLS::Decay_Matrix>()),
   m_stretcher(Momenta_Stretcher("Decay_Handler")),
-  m_qedmode(0), m_spincorr(false), m_decaychainend(false), m_cluster(true),
-  m_mass_smearing(1), m_oserrors(0)
+  m_qedmode(0), m_spincorr(false), m_polcrosssec(false),
+  m_decaychainend(false), m_cluster(true), m_mass_smearing(1), m_oserrors(0)
 {
   auto& s = Settings::GetMainSettings();
   m_specialtauspincorr = s["SPECIAL_TAU_SPIN_CORRELATIONS"].SetDefault(0).Get<size_t>();
@@ -40,6 +41,7 @@ Decay_Handler_Base::~Decay_Handler_Base()
   if (m_oserrors>0)
     msg_Error()<<METHOD<<" with "<<m_oserrors<<" particles not on their mass shell.\n";
   if (p_decaymap) delete p_decaymap; p_decaymap=NULL;
+  if (p_polarization_handler) { delete p_polarization_handler;  p_polarization_handler = NULL; }
 }
 
 class Decay_Width_Sorter {
@@ -233,6 +235,8 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
   DEBUG_FUNC("");
   DEBUG_VAR(*blob);
   m_decaychainend=false;
+  // delete decay matrices from the previous event
+  if (m_polcrosssec && !m_decaymatrices.empty()) m_decaymatrices=std::vector<METOOLS::Decay_Matrix>();
   // random shuffle, against bias in spin correlations and mixing
   Particle_Vector daughters = blob->GetOutParticles();
   std::vector<size_t> shuffled(daughters.size());
@@ -292,6 +296,13 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
           DEBUG_VAR(sigma);
           D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
           D->SetParticle(origparts[i]);
+
+          // save all decay matrices for later transformation to desired bases of polarization definition
+          // and calculation of polarized cross sections
+          if (m_polcrosssec) {
+            // TODO: What happens if vector bosons decay into unstable particles?
+            m_decaymatrices.push_back(*D);
+          }
         }
         if (amps->Contains(origparts[i]) &&
             // Contract tau spins here only if they are globally stable or decayed here,
@@ -559,7 +570,7 @@ Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
       }
       if (lij) break;
     }
-    if (lij==NULL) THROW(fatal_error,"Internal eror");
+    if (lij==NULL) THROW(fatal_error,"Internal error");
     for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
       Cluster_Leg *cl(ampl->Leg(i));
       if (cl->Id()&lij->Id()) continue;

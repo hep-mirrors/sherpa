@@ -49,6 +49,14 @@ void Poincare::BoostBack(Vec4D &v) const
   v=Vec4D(v0,Vec3D(v)+c1*Vec3D(m_l));
 }
 
+void Poincare::BoostBack(Vec4C &v) const
+{
+  Complex lv(m_l[1]*v[1]+m_l[2]*v[2]+m_l[3]*v[3]);
+  Complex v0((m_l[0]*v[0]+lv)/m_rsq);
+  Complex c1((v[0]+v0)/(m_rsq+m_l[0]));
+  v=Vec4<Complex>(v0,Vec3<Complex>(v)+c1*Vec3<Complex>(m_l));
+}
+
 void Poincare::Rotate(Vec4D &v) const
 {
   double vx(-m_l*v), vy(-m_t*v);

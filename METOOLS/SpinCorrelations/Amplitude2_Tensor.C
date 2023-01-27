@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Poincare.H"
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -262,6 +263,40 @@ void Amplitude2_Tensor::Multiply(const Complex& factor)
   else m_value*=factor;
 }
 
+void Amplitude2_Tensor::Multiply(const Amplitude2_Matrix* D)
+{
+  const Particle* part=D->Particle();
+  if (part==p_part) {
+    if (p_next) {
+      if (p_next->size() != D->size()){
+        THROW(fatal_error, "InternalError");
+      }
+      for (size_t i=0; i<p_next->size(); ++i)
+        (*p_next)[i]->Multiply((*D)[i]);
+    }
+    else THROW(fatal_error, "Particle not found");
+  }
+  else {
+    if (p_next) {
+      for (size_t i(0);i<p_next->size();++i) {
+        (*p_next)[i]->Multiply(D);
+      }
+    }
+    else THROW(fatal_error, "Particle not found");
+  }
+}
+
+Complex Amplitude2_Tensor::Sum()
+{
+  while (p_next) {
+    Amplitude2_Matrix* Ones = new Amplitude2_Matrix(p_part);
+    fill(Ones->begin(), Ones->end(), Complex(1.0, 0.0));
+    Contract(Ones);
+    delete Ones;
+  }
+  return m_value;
+}
+
 Complex Amplitude2_Tensor::Trace() const
 {
   if (!p_part) {
@@ -337,6 +372,124 @@ bool Amplitude2_Tensor::SortCrit(const pair<Particle*, size_t>& p1,
   return p1.first->RefFlav().IsStable()<p2.first->RefFlav().IsStable();
 }
 
+void Amplitude2_Tensor::PolBasisTrafo(const std::vector<std::vector<std::vector<Complex> > >& coeff,
+                                      const std::vector<std::vector<std::vector<Complex> > >& conj_coeff, int level,
+                                      std::vector<std::vector<std::vector<Complex> > > coeff_tmp,
+                                      std::vector<std::vector<std::vector<Complex> > > conj_coeff_tmp,
+                                      Amplitude2_Tensor* old_amps) {
+  // TODO: Tests of properties of coefficient matrices like unitarity
+  // TODO: calculate conj_coeff here such that no input necessary?
+  // TODO: Tests of some fundamental properties of transformed Amplitude2_Tensor like all polarized entries are real,
+  //       unpol identical, real & overall interferences zero ...
+  // copy old amplitude2_tensor since each component of the original one will be overridden but depends one all the
+  // entries of old tensor
+  if (level == 0) {
+    old_amps = new METOOLS::Amplitude2_Tensor(*this);
+    coeff_tmp = std::vector<std::vector<std::vector<Complex> > >(NumberParticles(),
+                                                               std::vector<std::vector<Complex> >(1,
+                                                                 std::vector<Complex>(1, Complex())));
+    conj_coeff_tmp = std::vector<std::vector<std::vector<Complex> > >(NumberParticles(),
+                                                                    std::vector<std::vector<Complex> >(1,
+                                                                      std::vector<Complex>(1, Complex())));
+  }
+  // runs through the original, in this context new amplitude2_tensor and selects for each entry the transformation
+  // coefficients according to the helicities of the entry under consideration
+  if (level < coeff.size()) {
+    if (p_next) {
+      for (size_t i(0); i < p_next->size(); ++i) {
+        // coeff_tmp and conj_coeff_tmp are necessary since coeff, conj_coeff must be unchanged for the next loop step
+        coeff_tmp[level][0]=coeff[level][i - (i / m_nhel) * m_nhel];
+        conj_coeff_tmp[level][0]=conj_coeff[level][i / m_nhel];
+        (*p_next)[i]->PolBasisTrafo(coeff, conj_coeff, level+1, coeff_tmp, conj_coeff_tmp, old_amps);
+      }
+    }
+    else {
+      THROW(fatal_error, "size of coefficient vector does not match number of particles in Amplitude2_Tensor")
+    }
+  }
+    // if entering the end of the orignal amplitude tensor, its new value is calculated by running through the
+    // old (copied) amplitude tensor
+    // recursive calling of this function by its own now determine the corresponding coefficients for the
+    // transformation of the single (old) entries from the coefficient matrices filtered above (see next else if)
+    // and multiply it with them
+    // if this is done for all entries of the old amplitude2_tensor all entries of the tensor are summed up to
+    // build the entry of the new tensor considered above
+  else if (level == coeff.size()) {
+    if (p_next) {THROW(fatal_error,
+                       "size of coefficient vector does not match number of particles in Amplitude2_Tensor")}
+    if (old_amps->IsP_Next()) {
+      Amplitude2_Tensor* old_amps_tmp = new Amplitude2_Tensor(*old_amps);
+      old_amps_tmp->PolBasisTrafo(coeff_tmp, conj_coeff_tmp, level+1,
+                                  std::vector<std::vector<std::vector<Complex> > >(old_amps->NumberParticles(),
+                                                                                 std::vector<std::vector<Complex> >(1,
+                                                                                   std::vector<Complex>(1, Complex()))),
+                                  std::vector<std::vector<std::vector<Complex> > >(old_amps->NumberParticles(),
+                                                                                 std::vector<std::vector<Complex> >(1,
+                                                                                   std::vector<Complex>(1, Complex()))));
+      m_value = old_amps_tmp->Sum();
+      delete old_amps_tmp;
+    }
+    else {
+      THROW(fatal_error, "Internal error")
+    }
+  }
+    // determine transformation coefficients for the old entries to build up the new one considered above
+  else if (level > coeff.size() && level < coeff.size() * 2 + 1) {
+    if (p_next) {
+      for (size_t j(0); j < p_next->size(); ++j) {
+        coeff_tmp[level - coeff.size() - 1][0][0]=coeff[level - coeff.size() - 1][0][j - (j / m_nhel) * m_nhel];
+        conj_coeff_tmp[level - coeff.size() - 1][0][0]=conj_coeff[level - coeff.size() - 1][0][j / m_nhel];
+        (*p_next)[j]->PolBasisTrafo(coeff, conj_coeff, level + 1, coeff_tmp, conj_coeff_tmp);
+      }
+    }
+    else {
+      THROW(fatal_error, "size of coefficient vector does not match number of particles in Amplitude2_Tensor")
+    }
+  }
+    // Multiplication of transformation coefficients with the old tensor entry
+  else if (level == coeff.size() * 2 + 1) {
+    if (p_next) {THROW(fatal_error,
+                       "size of coefficient vector does not match number of particles in Amplitude2_Tensor")}
+    for (size_t k(0); k < coeff.size(); ++k) {
+      m_value *= coeff_tmp[k][0][0] * conj_coeff_tmp[k][0][0];
+    }
+  }
+  else {
+    THROW(fatal_error, "Internal error")
+  }
+  if (level==0){
+    delete old_amps;
+  }
+}
+
+bool Amplitude2_Tensor::IsP_Next() const {
+  if (p_next){
+    return true;
+  }
+  return false;
+}
+
+int Amplitude2_Tensor::NumberParticles(int num) const {
+  if (p_next) {
+    num += 1;
+    return (*p_next)[0]->NumberParticles(num);
+  }
+  else{
+    return num;
+  }
+}
+
+std::pair<const int, const ATOOLS::Particle> Amplitude2_Tensor::Search(const int part_number, int level) const {
+  if (p_part->Number()==part_number) {
+    return std::make_pair(level, *p_part);
+  }
+  else {
+    if (p_next) {
+      return (*p_next)[0]->Search(part_number, level+1);
+    }
+  }
+  return std::make_pair(level, ATOOLS::Particle());
+}
 
 namespace ATOOLS {
 

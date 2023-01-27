@@ -20,6 +20,7 @@
 #include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Channels/Decay_Dalitz.H"
 #include "METOOLS/Main/Spin_Structure.H"
+#include "METOOLS/SpinCorrelations/Polarized_CrossSections_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 #include "ATOOLS/Phys/Variations.H"
@@ -84,6 +85,16 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
     MakeDir(m_resultdir, true);
 
   m_spincorr=rpa->gen.HardSC();
+  m_polcrosssec = ds["Pol_Cross_Section"]["Enabled"].SetDefault(false).Get<bool>();
+  // if also final state polarization should be enabled, initialize polarization handler in a separate method in the
+  // Initialization_Handler analogous to the Hard_Decay_Handler
+  if (m_polcrosssec){
+    if (!m_spincorr){
+      THROW(fatal_error, "Calculation of polarized cross sections only possible together with spin correlations")
+    }
+    p_polarization_handler = new METOOLS::Polarized_CrossSections_Handler();
+  }
+
 
   // also need to tell shower whats massive now
   // TODO: need to use the same mass-selector
