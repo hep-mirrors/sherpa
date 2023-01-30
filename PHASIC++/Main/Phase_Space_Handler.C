@@ -238,6 +238,7 @@ void Phase_Space_Handler::RegisterDefaults() const
   settings["FINISH_OPTIMIZATION"].SetDefault(true);
   settings["PRINT_PS_POINTS"].SetDefault(false);
   settings["PS_PT_FILE"].SetDefault("");
+  settings["PS_POINT"].SetDefault("");
   settings["TCHANNEL_ALPHA"].SetDefault(0.9);
   settings["SCHANNEL_ALPHA"].SetDefault(0.5);
   settings["CHANNEL_EPSILON"].SetDefault(0.0);
@@ -272,23 +273,37 @@ void Phase_Space_Handler::CheckSinglePoint()
       else p_lab[i]=ToType<Vec4D>(vec.front());
       msg_Debugging()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";\n";
     }
-    Process_Base *proc(p_active->Process());
-    proc->Trigger(p_lab);
-    CalculateME(Variations_Mode::nominal_only);
-    msg->SetPrecision(16);
-    msg_Out()<<"// "<<proc->Name()<<"\n";
-    for (size_t i(0);i<p_lab.size();++i)
-      msg_Out()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";"<<std::endl;
-    if (proc->Get<Single_Process>()) {
-      msg_Out()<<"double ME = "<<proc->Get<Single_Process>()->LastXS()
-	       <<"; // in GeV^2, incl. symfacs"<<std::endl;
-      if (proc->GetSubevtList()) {
-	NLO_subevtlist * subs(proc->GetSubevtList());
-	for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i]);
-      }
+  } else if (s["PS_POINT"].IsSetExplicitly()){
+    std::istringstream point(s["PS_POINT"].Get<std::string>());
+    std::string vec;
+    for (size_t i = 0; i<p_lab.size(); ++i) {
+      std::getline(point, vec);
+      if (vec.empty())
+        THROW(fatal_error, "Momentum missing for calculation. ")
+      auto pos1 = vec.find_first_of('(');
+      auto pos2 = vec.find_first_of(')');
+      vec = vec.substr(pos1, pos2-pos1+1);
+      if (vec[1] == '-') p_lab[i] = -ToType<Vec4D>(vec);
+      else p_lab[i] = ToType<Vec4D>(vec);
     }
-    THROW(normal_exit,"Computed ME^2");
+  } else
+    return ;
+  Process_Base *proc(p_active->Process());
+  proc->Trigger(p_lab);
+  CalculateME(Variations_Mode::nominal_only);
+  msg->SetPrecision(16);
+  msg_Out()<<"// "<<proc->Name()<<"\n";
+  for (size_t i(0);i<p_lab.size();++i)
+    msg_Out()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";"<<std::endl;
+  if (proc->Get<Single_Process>()) {
+    msg_Out()<<"double ME = "<<proc->Get<Single_Process>()->LastXS()
+             <<"; // in GeV^2, incl. symfacs"<<std::endl;
+    if (proc->GetSubevtList()) {
+      NLO_subevtlist * subs(proc->GetSubevtList());
+      for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i]);
+    }
   }
+  THROW(normal_exit,"Computed ME^2");
 }
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
