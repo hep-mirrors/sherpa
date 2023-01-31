@@ -38,8 +38,6 @@ namespace PHOTONS {
 
     static std::string          s_histo_base_name;
     static ATOOLS::Histogram    s_histo_dipole;
-    static ATOOLS::Histogram_2D s_histo_zy;
-    static ATOOLS::Histogram_2D s_histo_zy_llbar;
     static ATOOLS::Histogram_2D s_histo_tdR;
 
     void RegisterDefaults();

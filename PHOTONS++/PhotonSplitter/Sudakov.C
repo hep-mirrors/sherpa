@@ -19,8 +19,6 @@ using namespace ATOOLS;
 #ifdef PHOTONSPLITTER_DEBUG
 std::string PHOTONS::Sudakov::s_histo_base_name;
 Histogram PHOTONS::Sudakov::s_histo_dipole = Histogram(10,1e-18,1e3,200,"");
-Histogram_2D PHOTONS::Sudakov::s_histo_zy = Histogram_2D(1,0.,1.,100,0.,1.,100);
-Histogram_2D PHOTONS::Sudakov::s_histo_zy_llbar = Histogram_2D(1,0.,1.,100,0.,1.,100);
 Histogram_2D PHOTONS::Sudakov::s_histo_tdR = Histogram_2D(1,-6.,2.,100,-5,log10(0.5),100);
 #endif 
 
@@ -74,10 +72,6 @@ Sudakov::~Sudakov()
   if (pos!=std::string::npos) MakeDir(s_histo_base_name.substr(0,pos));
   s_histo_dipole.Finalize();
   s_histo_dipole.Output(s_histo_base_name+"starting_scale.dat");
-  s_histo_zy.Finalize();
-  s_histo_zy.Output(s_histo_base_name+"zy.dat");
-  s_histo_zy_llbar.Finalize();
-  s_histo_zy_llbar.Output(s_histo_base_name+"zy_llbar.dat");
   s_histo_tdR.Finalize();
   s_histo_tdR.Output(s_histo_base_name+"tdR.dat");
   #endif
@@ -395,18 +389,14 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
         return false;
       }
 
-      #ifdef PHOTONSPLITTER_DEBUG
-      s_histo_zy_llbar.Insert(z,y);
-      #endif 
-
       // veto 
       if (f/g > ran->Get()) {
         msg_Debugging() << "A photon split!\n";
         msg_Debugging() << "Spectator flavour is " << m_splitters[ind]->GetSpectator()->GetFlavour() << "\n";
-        if (abs(m_splitters[ind]->FlB().Kfcode()) == 15) { msg_Debugging() << "Split into taus!\n"; }
-        else if (abs(m_splitters[ind]->FlB().Kfcode()) == 211) { msg_Debugging() << "Split into pions!\n"; }
-        else if (abs(m_splitters[ind]->FlB().Kfcode()) == 321) { msg_Debugging() << "Split into kaons!\n"; }
-        else if (abs(m_splitters[ind]->FlB().Kfcode()) == 13) { msg_Debugging() << "Split into muons\n"; }
+        if (m_splitters[ind]->FlB().Kfcode() == 15) { msg_Debugging() << "Split into taus!\n"; }
+        else if (m_splitters[ind]->FlB().Kfcode() == 211) { msg_Debugging() << "Split into pions!\n"; }
+        else if (m_splitters[ind]->FlB().Kfcode() == 321) { msg_Debugging() << "Split into kaons!\n"; }
+        else if (m_splitters[ind]->FlB().Kfcode() == 13) { msg_Debugging() << "Split into muons\n"; }
 
         phi = 2*M_PI * ran->Get();
         bool madeKinematics = p_kinematics->MakeKinematics(z,y,phi,pij,pk,pi,pj,
