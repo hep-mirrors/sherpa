@@ -1,5 +1,6 @@
 #include "ATOOLS/Org/Stacktrace.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 
 #include <iomanip>
@@ -27,7 +28,8 @@ void ATOOLS::GenerateStackTrace(std::ostream &ostr,
 				const std::string &comment)
 {
 #ifdef USING_Stack_Trace
-    ostr<<comment<<om::bold<<"GenerateStackTrace(..): "
+    ostr<<comment<<om::bold<<"GenerateStackTrace"
+	<<"(rank "<<mpi->Rank()<<"): "
 	<<om::reset<<om::blue<<"Generating stack trace "
 	<<om::reset<<om::bold<<"\n{"<<om::reset<<std::endl;
     // adapted from root version 3.10 TUnixSystem.cxx

@@ -16,6 +16,8 @@
 
 #include "ATOOLS/Org/Message.H"
 
+#define FIX__BROKEN_EVENT_FILES
+
 using namespace HighFive;
 
 namespace LHEH5 {
@@ -109,6 +111,12 @@ namespace LHEH5 {
       std::vector<double> wgts(evts[i].begin()+9,evts[i].end());
       Event e(GetProcInfo(evts[i][0]?evts[i][0]-1:0),evts[i][3],wgts,
 	      evts[i][6],evts[i][5],evts[i][4],evts[i][7],evts[i][8]);
+#ifdef FIX__BROKEN_EVENT_FILES
+      double wgt(0.);
+      for (std::vector<double>::const_iterator
+	     it(wgts.begin());it!=wgts.end();++it) wgt+=std::abs(*it);
+      if (wgt)
+#endif
       for (int n(0);n<evts[i][1];++n)
 	e.push_back(GetParticle(evts[i][2]-evts[0][2]+n));
       return e;
@@ -177,7 +185,7 @@ namespace LHEH5 {
     LHEFile *OpenFile(const std::string &fname)
     {
       m_ievt=0;
-      int size(mpi->Size()), rank(mpi->Rank());
+      int size(mpi->MySize()), rank(mpi->MyRank());
       File file(fname,File::ReadOnly,
 		MPIOFileDriver(MPI_COMM_WORLD, MPI_INFO_NULL));
       LHEFile *e(new LHEFile());
@@ -185,7 +193,7 @@ namespace LHEH5 {
       m_totalxs=e->TotalXS();
       long int nevts(file.getDataSet("events").getSpace().
 		     getDimensions().front());
-      if (rank==0) {
+      if (mpi->Rank()==0) {
 	msg_Info()<<METHOD<<"(): File '"<<fname
 		  <<"' contains "<<nevts<<" events.\n";
       }
@@ -199,7 +207,7 @@ namespace LHEH5 {
 
     Cluster_Amplitude *ReadEvent()
     {
-      DEBUG_FUNC("");
+      DEBUG_FUNC("i="<<m_ievt<<",n_evts="<<p_file->NEvents());
       if (m_ievt>=p_file->NEvents()) {
 	delete p_file;
 	p_file=NULL;
@@ -214,6 +222,7 @@ namespace LHEH5 {
       }
       if (p_ampl==NULL) {
 	Event e(p_file->GetEvent(m_ievt++));
+	if (e.empty()) return NULL;
 	if (e[0].pz<0 && e[1].pz>0) std::swap<Particle>(e[0],e[1]);
 	msg_Debugging()<<e<<"\n";
 	p_ampl = Cluster_Amplitude::New();
