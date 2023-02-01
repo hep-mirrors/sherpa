@@ -12,6 +12,12 @@
 namespace ATOOLS {
 
   class My_MPI {
+  private:
+
+#ifdef USING__MPI
+    MPI_Comm m_comm;
+#endif
+    int m_rank, m_size, m_myrank, m_mysize;
 
   public:
 
@@ -19,22 +25,13 @@ namespace ATOOLS {
 
     void PrintRankInfo();
 
+    inline void SetMyRank(const int rank) { m_myrank=rank; }
+    inline void SetMySize(const int size) { m_mysize=size; }
+
 #ifdef USING__MPI
 
     void Barrier() {
       MPI_Barrier(m_comm);
-    }
-
-    int Rank() {
-      int rank;
-      MPI_Comm_rank(m_comm, &rank);
-      return rank;
-    }
-
-    int Size() {
-      int size;
-      MPI_Comm_size(m_comm, &size);
-      return size;
     }
 
     void Bcast(void* buffer, int count, MPI_Datatype type, int root=0) {
@@ -62,19 +59,13 @@ namespace ATOOLS {
       return MPI_Send(buf, count, datatype, dest, tag, m_comm);
     }
 
-#else
-
-    int Rank() { return 0; }
-
-    int Size() { return 1; }
-
 #endif
 
-  private:
+    inline int Rank() { return m_rank; }
+    inline int Size() { return m_size; }
 
-#ifdef USING__MPI
-    MPI_Comm m_comm;
-#endif
+    inline int MyRank() { return m_myrank; }
+    inline int MySize() { return m_mysize; }
 
   };// end of class My_MPI
 

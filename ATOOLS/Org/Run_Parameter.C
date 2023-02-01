@@ -242,6 +242,15 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   dr.SetAllowUnits(false);
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
+  std::vector<int> mpiinfo;
+  if (dr.VectorFromFile(mpiinfo,"EMULATE_MPI")) {
+    if (mpiinfo.size()==2) {
+      msg_Info()<<METHOD<<"(): Emulating a run on rank "
+		<<mpiinfo[0]<<" of "<<mpiinfo[1]<<"."<<std::endl;
+      mpi->SetMyRank(mpiinfo[0]);
+      mpi->SetMySize(mpiinfo[1]);
+    }
+  }
   // read only if defined (no error message if not defined)
   long int seed;
   std::vector<long int> seeds;
@@ -267,8 +276,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   }
 
 #ifdef USING__MPI
-  int rank=mpi->Rank();
-  int size=mpi->Size();
+  int rank=mpi->MyRank();
+  int size=mpi->MySize();
   if (dr.GetValue<int>("MPI_EVENT_MODE",0)==1) {
     gen.m_nevents = (gen.m_nevents%size == 0) ? (gen.m_nevents/size) : (gen.m_nevents/size+1);
   }
@@ -415,7 +424,7 @@ void Run_Parameter::Gen::WriteCitationInfo()
   *f<<"%% You have used the following configuration:\n";
   PrintGitVersion(*f,1,"%% ");
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
   std::cout<<std::string(72,'-')<<"\n"
 	   <<om::bold<<"Please cite the publications listed in '"

@@ -9,11 +9,15 @@ using namespace ATOOLS;
 
 My_MPI *ATOOLS::mpi(NULL);
 
-My_MPI::My_MPI()
+My_MPI::My_MPI(): m_rank(0), m_size(1)
 {
 #ifdef USING__MPI
   m_comm = MPI_COMM_WORLD;
+  MPI_Comm_rank(m_comm,&m_rank);
+  MPI_Comm_size(m_comm,&m_size);
 #endif
+  m_myrank=m_rank;
+  m_mysize=m_size;
 }
 
 void My_MPI::PrintRankInfo()
