@@ -165,12 +165,13 @@ void Channel_Elements::TChannelMomenta
   double s1in(p1in.Abs2()), s2in(p2in.Abs2());
   double e1in((s+s1in-s2in)/2./rs), m1in(sqrt(e1in*e1in-s1in));
   double e1out((s+s1out-s2out)/2./rs), m1out(sqrt(e1out*e1out-s1out));
-  double a=(mt*mt-s1in-s1out+2.*e1in*e1out)/(2.*m1in*m1out);
+  double a= 1.;
+  if (mt>0.) a=(mt*mt-s1in-s1out+2.*e1in*e1out)/(2.*m1in*m1out);
   if (a<=1.0+1.0e-6) a=1.0+1.0e-6;
   double aminct(PeakedDist(0.,ctexp,a-ctmax,a-ctmin,1,ran1));
   double ct(a-aminct), st(sqrt(1.-ct*ct));
   double phi(2.*M_PI*ran2);
-  p1out=Vec4D(e1out,m1out*Vec3D(st*cos(phi),st*sin(phi),ct)); 
+  p1out=Vec4D(e1out,m1out*Vec3D(st*cos(phi),st*sin(phi),ct));
   Poincare cms(pin);
   cms.Boost(p1in);
   Poincare zax(p1in,p1in[3]<0?-Vec4D::ZVEC:Vec4D::ZVEC);
@@ -189,7 +190,8 @@ double Channel_Elements::TChannelWeight
   double s1out(p1out.Abs2()), s2out(p2out.Abs2());
   double e1in((s+s1in-s2in)/2./rs), m1in(sqrt(e1in*e1in-s1in));
   double e1out((s+s1out-s2out)/2./rs), m1out(sqrt(e1out*e1out-s1out));
-  double a=(mt*mt-s1in-s1out+2.*e1in*e1out)/(2.*m1in*m1out);
+  double a= 1.;
+  if (mt>0) a=(mt*mt-s1in-s1out+2.*e1in*e1out)/(2.*m1in*m1out);
   if (a<=1.0+1.0e-6) a=1.0+1.0e-6;
   Poincare cms(pin);
   cms.Boost(p1inh);
@@ -204,8 +206,6 @@ double Channel_Elements::TChannelWeight
     ran1=ran2=-1.;
     return 0.;
   }
-  ran1=(pow(a-ct,1.-ctexp)-pa1);
-  ran1/=(pow(a-ctmin,1.-ctexp)-pa1);
   ran2=asin(p1outh[2]/p1outh.PPerp())/(2.*M_PI);
   if (p1outh[1]<0.) ran2=.5-ran2;
   if (ran2<0.) ran2+=1.;
