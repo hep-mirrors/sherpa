@@ -1,6 +1,11 @@
 #include "AMISIC++/Perturbative/MI_Process.H"
 #include "ATOOLS/Math/Random.H"
 
+#define COMPILE__Getter_Function
+#define OBJECT_TYPE AMISIC::XS_Base
+#define PARAMETER_TYPE ATOOLS::Flavour_Vector
+#include "ATOOLS/Org/Getter_Function.C"
+
 using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
