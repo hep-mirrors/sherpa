@@ -7,6 +7,7 @@
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Color_Integrator.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include "PDF/Main/PDF_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Math/Random.H"
@@ -33,14 +34,16 @@ namespace SHERPA {
     File *p_file;
     std::map<std::string,DataSet> m_dss;
     std::vector<std::vector<double> > m_ecache, m_pcache;
-    ATOOLS::Weights_Map m_xs;
-    ATOOLS::Weights_Map m_err;
+    std::vector<std::vector<double> > m_necache, m_npcache;
+    ATOOLS::Weights_Map m_xs, m_err;
     double m_max, m_trials;
     std::string m_basename;
     int m_setcol, m_ncache, m_events, m_unweight, m_offset, m_nmax;
     size_t m_nweights, m_neprops, m_npprops, m_clabel;
+    size_t m_nneprops, m_nnpprops;
     Matrix_Element_Handler *p_me;
     Variations *p_vars;
+    bool m_hasnlo;
 
   public:
 
@@ -277,6 +280,7 @@ namespace SHERPA {
       pnames[3]="xSection";
       pnames[4]="error";
       pnames[5]="unitWeight";
+      m_hasnlo=false;
       for (size_t i(0);i<pdata.size();++i) {
 	pdata[i][0]=i+1;
 	pdata[i][1]=pdata[i][2]=-1;
@@ -288,6 +292,7 @@ namespace SHERPA {
 	    (*procs[i])[1]->Integrator()->TotalXS();
 	  pdata[i][4]=sqrt(sqr((*procs[i])[0]->Integrator()->TotalError())+
 		      sqr((*procs[i])[1]->Integrator()->TotalError()));
+	  m_hasnlo=true;
 	}
 	else {
 	  pdata[i][3]=procs[i]->Integrator()->TotalXS();
@@ -357,6 +362,34 @@ namespace SHERPA {
 	m_ecache[i].reserve(m_neprops+m_nweights);
       m_dss["events"].createAttribute<std::string>
 	("events",DataSpace::From(enames)).write(enames);
+      if (m_hasnlo) {
+	// LHEF bbar event information
+	std::vector<std::string> nenames(m_nneprops=9);
+	nenames[0]="start";
+	nenames[1]="ijt";
+	nenames[2]="kt";
+	nenames[3]="i";
+	nenames[4]="j";
+	nenames[5]="k";
+	nenames[6]="z1";
+	nenames[7]="z2";
+	nenames[8]="bbpsw";
+	min.back()=nenames.size();
+	max.back()=nenames.size();
+	if (m_unweight) {
+	  props=DataSetCreateProps();
+	  props.add(Chunking({m_unweight*size,m_nneprops}));
+	}
+	m_dss["ctevents"]=p_file->createDataSet<double>
+	  ("ctevents",DataSpace(min,max),props);
+	m_necache.reserve(m_ncache);
+	for (size_t i(0);i<m_necache.size();++i)
+	  m_necache[i].reserve(m_nneprops);
+	m_dss["ctevents"].createAttribute<std::string>
+	  ("ctevents",DataSpace::From(nenames)).write(nenames);
+      }
+      min.front()*=nup;
+      if (!m_unweight) max.front()*=nup;
       // LHEF particle information
       std::vector<std::string> pnames(m_npprops=13);
       pnames[0]="id";
@@ -372,8 +405,6 @@ namespace SHERPA {
       pnames[10]="m";
       pnames[11]="lifetime";
       pnames[12]="spin";
-      min.front()*=nup;
-      if (!m_unweight) max.front()*=nup;
       min.back()=pnames.size();
       max.back()=pnames.size();
       if (m_unweight) {
@@ -382,11 +413,32 @@ namespace SHERPA {
       }
       m_dss["particles"]=p_file->createDataSet<double>
 	("particles",DataSpace(min,max),props);
-      m_pcache.reserve(m_ncache);
+      m_pcache.reserve(m_ncache*nup);
       for (size_t i(0);i<m_pcache.size();++i)
 	m_pcache[i].reserve(m_npprops);
       m_dss["particles"].createAttribute<std::string>
 	("properties",DataSpace::From(pnames)).write(pnames);
+      if (m_hasnlo) {
+	// LHEF bbar particle information
+	std::vector<std::string> npnames(m_nnpprops=4);
+	npnames[0]="px";
+	npnames[1]="py";
+	npnames[2]="pz";
+	npnames[3]="e";
+	min.back()=npnames.size();
+	max.back()=npnames.size();
+	if (m_unweight) {
+	  props=DataSetCreateProps();
+	  props.add(Chunking({m_unweight*size*nup,m_nnpprops}));
+	}
+	m_dss["ctparticles"]=p_file->createDataSet<double>
+	  ("ctparticles",DataSpace(min,max),props);
+	m_npcache.reserve(m_ncache*nup);
+	for (size_t i(0);i<m_npcache.size();++i)
+	  m_npcache[i].reserve(m_nnpprops);
+	m_dss["ctparticles"].createAttribute<std::string>
+	  ("properties",DataSpace::From(npnames)).write(npnames);
+      }
     }
 
     void Write(const int &mode=0)
@@ -407,6 +459,13 @@ namespace SHERPA {
 	m_trials=0.0;
 	for (size_t i(0);i<m_nmax;++i)
 	  m_pcache.push_back(std::vector<double>(m_npprops,0.));
+	if (m_hasnlo) {
+	  std::vector<double> neprops(m_nneprops,-1.);
+	  neprops[0]=(m_ecache.size()+m_offset)*m_nmax;
+	  m_necache.push_back(neprops);
+	  for (size_t i(0);i<m_nmax;++i)
+	    m_npcache.push_back(std::vector<double>(m_nnpprops,0.));
+	}
       }
       m_events=0;
       size_t ncache(m_ecache.size());
@@ -423,12 +482,25 @@ namespace SHERPA {
 	m_dss["events"].resize({m_offset+sumcache,m_neprops+m_nweights});
 	m_dss["particles"].resize({(m_offset+sumcache)*m_nmax,m_npprops});
       }
+      if (m_hasnlo) {
+	for (size_t i(0);i<m_necache.size();++i) m_necache[i][0]+=rank*m_nmax;
+	if (m_unweight) {
+	  m_dss["ctevents"].resize({m_offset+sumcache,m_nneprops});
+	  m_dss["ctparticles"].resize({(m_offset+sumcache)*m_nmax,m_nnpprops});
+	}
+      }
       rank+=m_offset;
       m_offset+=sumcache;
       m_dss["events"].select({rank,0},{ncache,m_ecache.front().size()}).write(m_ecache, xfer_props);
       m_ecache.clear();
       m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_pcache.front().size()}).write(m_pcache, xfer_props);
       m_pcache.clear();
+      if (m_hasnlo) {
+	m_dss["ctevents"].select({rank,0},{ncache,m_necache.front().size()}).write(m_necache);
+	m_necache.clear();
+	m_dss["ctparticles"].select({rank*m_nmax,0},{ncache*m_nmax,m_npcache.front().size()}).write(m_npcache);
+	m_npcache.clear();
+      }
     }
 
     void Output(Blob_List* blobs) override
@@ -465,10 +537,11 @@ namespace SHERPA {
       }
       m_ecache.back()[0]=0;
       if (proc) {
-	while (proc->Parent()!=proc) proc=proc->Parent();
+	Process_Base *cproc(proc);
+	while (cproc->Parent()!=cproc) cproc=cproc->Parent();
 	const PHASIC::Process_Vector procs(p_me->AllProcesses());
 	for (size_t i(0);i<procs.size();++i)
-	  if (procs[i]==proc) m_ecache.back()[0]=i+1;
+	  if (procs[i]==cproc) m_ecache.back()[0]=i+1;
       }
       m_ecache.back()[1]=nup;
       m_ecache.back()[3]=m_trials+trials;
@@ -484,7 +557,7 @@ namespace SHERPA {
       m_ecache.back()[8]=mur2?(*MODEL::as)(mur2):-1.0;
       for (int i=0;i<sp->NInP();++i) {
 	Vec4D p(sp->InParticle(i)->Momentum());
-	m_pcache.push_back(std::vector<double>(13,0));
+	m_pcache.push_back(std::vector<double>(m_npprops,0));
 	m_pcache.back()[9]=p[0];
 	m_pcache.back()[6]=p[1];
 	m_pcache.back()[7]=p[2];
@@ -502,7 +575,7 @@ namespace SHERPA {
       for (int k=0;k<sp->NOutP();++k) {
 	int i(k+sp->NInP());
 	Vec4D p(sp->OutParticle(k)->Momentum());
-	m_pcache.push_back(std::vector<double>(13,0));
+	m_pcache.push_back(std::vector<double>(m_npprops,0));
 	m_pcache.back()[9]=p[0];
 	m_pcache.back()[6]=p[1];
 	m_pcache.back()[7]=p[2];
@@ -520,7 +593,37 @@ namespace SHERPA {
       size_t rank(m_ecache.size()-1);
       m_ecache.back()[2]=(m_offset+rank)*m_nmax;
       for (size_t i(nup);i<m_nmax;++i)
-	m_pcache.push_back(std::vector<double>(13,0));
+	m_pcache.push_back(std::vector<double>(m_npprops,0));
+      if (m_hasnlo) {
+	m_necache.push_back(std::vector<double>(m_nneprops,-1));
+	m_necache.back()[0]=(m_offset+rank)*m_nmax;
+	NLO_subevt *sub(proc->SubEvt());
+	if (sub) {
+	  PHASIC::Multi_Channel *isr=((Process_Base*)sub->p_proc)
+	    ->Integrator()->PSHandler()->ISRIntegrator();
+	  m_necache.back()[6]=isr->ERan("z_1");
+	  m_necache.back()[7]=isr->ERan("z_2");
+	  m_necache.back()[1]=sub->m_ijt;
+	  m_necache.back()[2]=sub->m_kt;
+	  m_necache.back()[3]=sub->m_i;
+	  m_necache.back()[4]=sub->m_j;
+	  m_necache.back()[5]=sub->m_k;
+	  m_necache.back()[8]=sub->m_result;
+	  for (size_t i(0);i<sub->m_n+1;++i) {
+	    m_npcache.push_back(std::vector<double>(m_nnpprops,0));
+	    m_npcache.back()[0]=sub->p_mom[i][1];
+	    m_npcache.back()[1]=sub->p_mom[i][2];
+	    m_npcache.back()[2]=sub->p_mom[i][3];
+	    m_npcache.back()[3]=sub->p_mom[i][0];
+	  }
+	  for (size_t i(sub->m_n+1);i<m_nmax;++i)
+	    m_npcache.push_back(std::vector<double>(m_nnpprops,0));
+	}
+	else {
+	  for (size_t i(0);i<m_nmax;++i)
+	    m_npcache.push_back(std::vector<double>(m_nnpprops,0));
+	}
+      }
       Write();
     }
 

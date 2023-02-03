@@ -8,19 +8,18 @@ namespace ATOOLS { class Integration_Info; }
 
 namespace PHASIC {
 
-  class BBar_Process;
   class Phase_Space_Handler;
 
   struct Dipole_Params {
     CS_Dipole *p_dip;
     Process_Vector m_procs;
-    ATOOLS::Vec4D_Vector m_p;
+    const ATOOLS::Vec4D_Vector *p_p;
     double m_weight;
     inline Dipole_Params(CS_Dipole *const dip=NULL,
 			 const Process_Vector &procs=Process_Vector(),
-			 const ATOOLS::Vec4D_Vector &p=ATOOLS::Vec4D_Vector(),
+			 const ATOOLS::Vec4D_Vector *p=NULL,
 			 const double weight=0.0):
-      p_dip(dip), m_procs(procs), m_p(p), m_weight(weight) {}
+      p_dip(dip), m_procs(procs), p_p(p), m_weight(weight) {}
   };// end of struct Dipole_Params
 
   std::ostream &operator<<(std::ostream &ostr,const Dipole_Params &dp);

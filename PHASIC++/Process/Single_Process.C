@@ -35,6 +35,8 @@ Single_Process::Single_Process():
   m_lastxs(0.0), m_lastbxs(0.0), m_dsweight(1.0), m_lastflux(0.0),
   m_zero(false), m_dads(true), m_pdfcts(true), m_nfconvscheme(0)
 {
+  p_sub = NULL;
+
   Settings& s = Settings::GetMainSettings();
   m_pdfcts = s["MEPSNLO_PDFCT"].SetDefault(true).Get<bool>();
   m_dads = s["MCNLO_DADS"].SetDefault(true).Get<bool>();
@@ -604,10 +606,14 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
         if (dps.p_dip != nullptr) {
 
+          p_sub=dps.p_dip->GetSubEvt();
+          p_sub->p_mom=(Vec4D*)&(*dps.p_p)[0];
+          p_sub->m_result=dps.m_weight;
+
           // calculate incoming parton longitudinal momentum fractions
           std::array<double, 2> x;
           for (size_t i {0}; i < 2; ++i) {
-            x[i] = Min(p_int->ISR()->CalcX(dps.m_p[i]), 1.0);
+            x[i] = Min(p_int->ISR()->CalcX((*dps.p_p)[i]), 1.0);
           }
 
           for (Process_Base* proc : dps.m_procs) {
@@ -621,7 +627,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
               proc->ScaleSetter(true)->SetFixedScale(
                   ScaleSetter(true)->FixedScales());
 
-            auto wgtmap = proc->Differential(dps.m_p, varmode);
+            auto wgtmap = proc->Differential(*dps.p_p, varmode);
 
             if (p_read)
               proc->ScaleSetter(true)->SetFixedScale(std::vector<double>());

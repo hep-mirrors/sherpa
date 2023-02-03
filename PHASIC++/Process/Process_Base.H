@@ -95,6 +95,8 @@ namespace PHASIC {
 
     NLOTypeStringProcessMap_Map *p_apmap;
 
+    ATOOLS::NLO_subevt *p_sub;
+
     Color_Matrix m_cols;
     Event_Reader *p_read;
 
@@ -331,6 +333,10 @@ namespace PHASIC {
     inline void SetEventReader(Event_Reader *const read) { p_read=read; }
 
     inline Event_Reader *EventReader() const { return p_read; }
+
+    inline ATOOLS::NLO_subevt *SubEvt() const { return p_sub; }
+
+    inline void SetSubEvt(ATOOLS::NLO_subevt *sub) { p_sub=sub; }
 
   };// end of class Process_Base
 

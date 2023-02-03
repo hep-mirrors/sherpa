@@ -146,7 +146,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   m_kfacmode = s["KFACTOR_MODE"].Get<int>();
   m_fomode   = s["FOMODE"].Get<int>();
   m_rsscale  = s["RS_SCALE"].Get<std::string>();
-  if (!m_fomode) {
+  if (m_fomode!=2) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
     p_ddproc->SetMCMode(2);
@@ -529,6 +529,8 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     (p_bviproc->Selected()->Integrator()->Max());
   bproc->Integrator()->SetEnhanceFactor
     (p_bviproc->Selected()->Integrator()->EnhanceFactor());
+  bproc->SetSubEvt(p_bviproc->Selected()->SubEvt());
+  bproc->SubEvt()->p_proc=p_bviproc->Selected();
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
   p_ampl = dynamic_cast<Single_Process*>
     (p_bviproc->Selected())->Cluster(p);
@@ -544,9 +546,13 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
   for (Cluster_Amplitude *ampl(p_ampl);
        ampl;ampl=ampl->Next()) ampl->SetLKF(lkf);
   int stat(1);
+  Weights_Map mcwgt(1);
   if (!(m_psmode&2)) {
     p_nlomc->SetShower(p_shower);
-    stat=p_nlomc->GeneratePoint(p_ampl);
+    if (!m_fomode) {
+      stat=p_nlomc->GeneratePoint(p_ampl);
+      mcwgt=p_nlomc->WeightsMap().Nominal();
+    }
   }
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());
   if (ampl) {
@@ -624,9 +630,9 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
       }
     }
     msg_Debugging()<<"R selected via Sudakov "<<*p_ampl
-		   <<" ( w = "<<p_nlomc->WeightsMap().Nominal()<<" )\n";
+		   <<" ( w = "<<mcwgt.Nominal()<<" )\n";
     p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
-    return p_nlomc->WeightsMap();
+    return mcwgt;
   }
   p_selected=p_bproc;
   ampl=p_ampl;
@@ -634,12 +640,12 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
   else ampl->SetNLO(0);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
-		 <<" ( w = "<<p_nlomc->WeightsMap().Nominal()<<" )\n";
+		 <<" ( w = "<<mcwgt.Nominal()<<" )\n";
   for (Cluster_Amplitude *campl(p_ampl->Next());campl;
        campl=campl->Next()) msg_Debugging()<<*campl<<"\n";
   bproc->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
   if (m_psmode&2) return Weights_Map{1.0};
-  return stat ? p_nlomc->WeightsMap() : Weights_Map{0.0};
+  return stat ? mcwgt : Weights_Map{0.0};
 }
 
 Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
@@ -683,7 +689,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
   if (S > ran->Get() * (S + H)) {
     p_selected = p_bviproc;
     if (p_read==NULL) winfo = p_bviproc->OneEvent(wmode, varmode, mode);
-    if (winfo && m_fomode == 0) {
+    if (winfo && m_fomode != 2) {
       // calculate and apply weight factor
       const Weights_Map Swgts {OneSEvent(wmode)};
       assert(p_ampl);
@@ -698,7 +704,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
   } else {
     p_selected = p_rsproc;
     if (p_read==NULL) winfo = p_rsproc->OneEvent(wmode, varmode, mode);
-    if (winfo && m_fomode == 0) {
+    if (winfo && m_fomode != 2) {
       // calculate and apply weight factor
       const Weights_Map Hwgts {OneHEvent(wmode)};
       const double Rsel(p_rproc->Selected()->Integrator()->SelectionWeight(wmode));
