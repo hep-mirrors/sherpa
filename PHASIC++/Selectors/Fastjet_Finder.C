@@ -8,7 +8,9 @@ namespace PHASIC {
     Fastjet_Finder(Process_Base* const proc, ATOOLS::Scoped_Settings s,
                    int nb, int nb2);
     bool Trigger(ATOOLS::Selector_List&);
-    void BuildCuts(Cut_Data*) {}
+    void BuildCuts(Cut_Data* cuts) {
+      cuts->smin= ATOOLS::Max(cuts->smin,m_smin);
+    }
   };
 }
 

@@ -17,7 +17,9 @@ namespace PHASIC {
                      int bmode,
                      const std::string& expression);
     bool Trigger(ATOOLS::Selector_List&);
-    void BuildCuts(Cut_Data*) {}
+    void BuildCuts(Cut_Data* cuts) {
+      cuts->smin= ATOOLS::Max(cuts->smin,m_smin);
+    }
   };
 }
 

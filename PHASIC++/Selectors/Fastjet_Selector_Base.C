@@ -46,7 +46,7 @@ Fastjet_Selector_Base::Fastjet_Selector_Base(const std::string& name,
   }
   else p_jdef=new fjcore::JetDefinition(ja,m_delta_r);
 
-  m_smin = Max(sqr(m_ptmin),sqr(m_etmin));
+  m_smin = Max(sqr(m_nj*m_ptmin),sqr(m_nj*m_etmin));
 }
 
 Fastjet_Selector_Base::~Fastjet_Selector_Base()

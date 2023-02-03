@@ -120,18 +120,19 @@ void Cut_Data::Complete()
     }
     if (i>=2) str|=(1<<i);
   }
-  smin = 0.;
+  double local_smin = 0.;
   double etmm = 0.; 
   double e1=0.,e2=0.;
   for (int i=2;i<ncut;i++) {
     if (etmin[i]>etmm) etmm = etmin[i];
-    smin += etmin[i];
+    local_smin += etmin[i];
     e1 += energymin[i];
     e2 += energymin[i]*cosmax[0][i];
   }
-  smin = Max(sqr(smin),sqr(e1)-sqr(e2));
+  smin = Max(smin,sqr(local_smin));
+  smin = Max(smin,sqr(e1)-sqr(e2));
   smin = Max(smin,sqr(2.*etmm));
-  smin = Max(Getscut(str),smin);
+  smin = Max(smin,Getscut(str));
 
   msg_Tracking()<<"Cut_Data::Complete(): s_{min} = "<<smin<<endl;
   m_smin_map.clear();

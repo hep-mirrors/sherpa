@@ -71,7 +71,7 @@ NJet_Finder::NJet_Finder(Process_Base *const proc, size_t nj,
 {
   m_ene        = rpa->gen.Ecms()/2.;
   m_sprime     = m_s = sqr(2.*m_ene); 
-  m_smin       = Max(m_pt2min,m_et2min);
+  m_smin       = sqr(nj)*Max(m_pt2min,m_et2min);
 
   m_r2min      = sqr(m_delta_r);
 
@@ -221,6 +221,7 @@ void NJet_Finder::ConstructJets(Vec4D * p, int n)
 
 void NJet_Finder::BuildCuts(Cut_Data * cuts) 
 {
+  cuts->smin=Max(cuts->smin,m_smin);
 }
 
 
