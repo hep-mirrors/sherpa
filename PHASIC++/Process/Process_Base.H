@@ -92,6 +92,8 @@ namespace PHASIC {
 
     NLOTypeStringProcessMap_Map *p_apmap;
 
+    ATOOLS::NLO_subevt *p_sub;
+
     Color_Matrix m_cols;
 
     static int s_usefmm;
@@ -321,6 +323,10 @@ namespace PHASIC {
 
     inline const Color_Matrix &ColorMatrix(const int map=0) const
     { return map?(p_mapproc?p_mapproc->m_cols:m_cols):m_cols; }
+
+    inline ATOOLS::NLO_subevt *SubEvt() const { return p_sub; }
+
+    inline void SetSubEvt(ATOOLS::NLO_subevt *sub) { p_sub=sub; }
 
   };// end of class Process_Base
 

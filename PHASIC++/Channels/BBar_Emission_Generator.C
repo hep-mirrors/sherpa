@@ -124,7 +124,7 @@ Dipole_Params BBar_Emission_Generator::Active
   if (p_active==NULL) return Dipole_Params();
   return Dipole_Params(p_active,m_pmap.find(p_active)
 		       ->second.find(bviproc)->second,
-		       m_p,m_weight);
+		       &m_p,m_weight);
 }
 
 bool BBar_Emission_Generator::GeneratePoint
@@ -333,8 +333,8 @@ namespace PHASIC
     ostr<<*dp.p_dip<<"\n";
     for (size_t i(0);i<dp.m_procs.size();++i)
       ostr<<"  "<<dp.m_procs[i]->Name()<<"\n";
-    for (size_t i(0);i<dp.m_p.size();++i)
-      ostr<<"  "<<dp.m_p[i]<<"\n";
+    for (size_t i(0);i<(dp.p_p?dp.p_p->size():0);++i)
+      ostr<<"  "<<(*dp.p_p)[i]<<"\n";
     ostr<<"-> "<<dp.m_weight<<"\n";
     return ostr;
   }

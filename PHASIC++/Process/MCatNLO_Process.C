@@ -610,7 +610,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
   if (S > ran->Get() * (S + H)) {
     p_selected = p_bviproc;
     winfo = p_bviproc->OneEvent(wmode, varmode, mode);
-    if (winfo && m_fomode == 0) {
+    if (winfo && m_fomode != 2) {
       // calculate and apply weight factor
       const Weights_Map Swgts {OneSEvent(wmode)};
       assert(p_ampl);
@@ -625,7 +625,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
   } else {
     p_selected = p_rsproc;
     winfo = p_rsproc->OneEvent(wmode, varmode, mode);
-    if (winfo && m_fomode == 0) {
+    if (winfo && m_fomode != 2) {
       // calculate and apply weight factor
       const Weights_Map Hwgts {OneHEvent(wmode)};
       const double Rsel(p_rproc->Selected()->Integrator()->SelectionWeight(wmode));
