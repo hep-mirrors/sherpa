@@ -48,10 +48,10 @@ namespace PHASIC {
     virtual double ScaleDependenceCoefficient(const int i);
     virtual bool   IsMappableTo(const Process_Info& pi);
 
-    inline double ME_Finite() { return m_res.GetFinite(); }
-    inline double ME_E1() { return m_res.GetIR(); }
-    inline double ME_E2() { return m_res.GetIR2(); }
-    inline double ME_Born() { return m_born; }
+    inline double ME_Finite() const { return m_res.GetFinite(); }
+    inline double ME_E1() const { return m_res.GetIR(); }
+    inline double ME_E2() const { return m_res.GetIR2(); }
+    inline double ME_Born() const { return m_born; }
     
     inline bool ProvidesPoles() const { return m_providespoles; }
     inline bool fixedIRscale() const  { return m_fixedIRscale; }
@@ -59,8 +59,8 @@ namespace PHASIC {
     inline double UVscale() const { return m_UVscale; }
 
     inline void SetCalcAssContribs(const bool calcass) { m_calcass=calcass; }
-    inline size_t ME_AssContribs_Size() { return m_asscontribs.size(); }
-    inline double ME_AssContribs(size_t i) { return m_asscontribs[i]; }
+    inline size_t ME_AssContribs_Size() const { return m_asscontribs.size(); }
+    inline double ME_AssContribs(size_t i) const { return m_asscontribs[i]; }
 
     inline void SetSubType(const ATOOLS::sbt::subtype& st) { m_stype=st; }
     inline void SetRenScale(const double& mur2) { m_mur2=mur2; }

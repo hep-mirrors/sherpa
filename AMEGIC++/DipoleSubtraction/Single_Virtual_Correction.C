@@ -653,7 +653,7 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
   // virtual me2 is returning local nlo kfactor to born -> needs coupling
   if (p_loopme->Mode()==0) {
     res = m_lastb*cplfac*p_loopme->ME_Finite();
-    if (m_murcoeffvirt) {
+    if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
       if (m_sccmur) {
         m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*m_lastb*cplfac;
         m_cmur[1]+=p_loopme->ME_E2()*m_lastb*cplfac;
@@ -667,7 +667,7 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
   // virtual me2 is returning full Re(M_B M_V^*)
   else if (p_loopme->Mode()==1) {
     res = cplfac*p_loopme->ME_Finite();
-    if (m_murcoeffvirt) {
+    if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
       if (m_sccmur) {
         m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*cplfac;
         m_cmur[1]+=p_loopme->ME_E2()*cplfac;
