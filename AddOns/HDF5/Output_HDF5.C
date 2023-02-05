@@ -364,16 +364,15 @@ namespace SHERPA {
 	("events",DataSpace::From(enames)).write(enames);
       if (m_hasnlo) {
 	// LHEF bbar event information
-	std::vector<std::string> nenames(m_nneprops=9);
-	nenames[0]="start";
-	nenames[1]="ijt";
-	nenames[2]="kt";
-	nenames[3]="i";
-	nenames[4]="j";
-	nenames[5]="k";
-	nenames[6]="z1";
-	nenames[7]="z2";
-	nenames[8]="bbpsw";
+	std::vector<std::string> nenames(m_nneprops=8);
+	nenames[0]="ijt";
+	nenames[1]="kt";
+	nenames[2]="i";
+	nenames[3]="j";
+	nenames[4]="k";
+	nenames[5]="z1";
+	nenames[6]="z2";
+	nenames[7]="bbpsw";
 	min.back()=nenames.size();
 	max.back()=nenames.size();
 	if (m_unweight) {
@@ -596,19 +595,18 @@ namespace SHERPA {
 	m_pcache.push_back(std::vector<double>(m_npprops,0));
       if (m_hasnlo) {
 	m_necache.push_back(std::vector<double>(m_nneprops,-1));
-	m_necache.back()[0]=(m_offset+rank)*m_nmax;
 	NLO_subevt *sub(proc->SubEvt());
 	if (sub) {
 	  PHASIC::Multi_Channel *isr=((Process_Base*)sub->p_proc)
 	    ->Integrator()->PSHandler()->ISRIntegrator();
-	  m_necache.back()[6]=isr->ERan("z_1");
-	  m_necache.back()[7]=isr->ERan("z_2");
-	  m_necache.back()[1]=sub->m_ijt;
-	  m_necache.back()[2]=sub->m_kt;
-	  m_necache.back()[3]=sub->m_i;
-	  m_necache.back()[4]=sub->m_j;
-	  m_necache.back()[5]=sub->m_k;
-	  m_necache.back()[8]=sub->m_result;
+	  m_necache.back()[5]=isr->ERan("z_1");
+	  m_necache.back()[6]=isr->ERan("z_2");
+	  m_necache.back()[0]=sub->m_ijt;
+	  m_necache.back()[1]=sub->m_kt;
+	  m_necache.back()[2]=sub->m_i;
+	  m_necache.back()[3]=sub->m_j;
+	  m_necache.back()[4]=sub->m_k;
+	  m_necache.back()[7]=sub->m_result;
 	  for (size_t i(0);i<sub->m_n+1;++i) {
 	    m_npcache.push_back(std::vector<double>(m_nnpprops,0));
 	    m_npcache.back()[0]=sub->p_mom[i][1];
