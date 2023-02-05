@@ -446,21 +446,38 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	m_procs.back()->FillProcessMap(pmap);
       }
       if (m_fosettings==0) {
-        Settings& s = Settings::GetMainSettings();
+        // since we are in Fixed_Order NLO mode, ensure that we generate
+        // parton-level events only, disabling physics beyond that
+
+        // remember we did this
 	m_fosettings=1;
+
+        Settings& s = Settings::GetMainSettings();
+
+        // disable showering, fragmentation and multiple interactions
 	if (p_shower->GetShower())
 	  p_shower->GetShower()->SetOn(false);
         s["FRAGMENTATION"].OverrideScalar<std::string>("None");
         s["MI_HANDLER"].OverrideScalar<std::string>("None");
-        if (s["BEAM_REMNANTS"].GetScalarWithOtherDefault<std::string>("None") == "None") {
-          s["BEAM_REMNANTS"].OverrideScalar<bool>(false);
-        } else {
+
+        // we allow beam remnants to be enabled explicitly by the user
+        if (s["BEAM_REMNANTS"].IsSetExplicitly() &&
+            s["BEAM_REMNANTS"].Get<bool>()) {
+          // beam remnants are requested explicitly, but let us at least disable
+          // intrinsic k_perp
           Scoped_Settings kperp_settings{ s["INTRINSIC_KPERP"] };
           kperp_settings["MEAN"].OverrideScalar<double>(0.0);
           kperp_settings["SIGMA"].OverrideScalar<double>(0.0);
-	}
+        } else {
+          // if not requested explicitly, we turn it off, too
+          s["BEAM_REMNANTS"].OverrideScalar<bool>(false);
+        }
+
+        // we allow higher-order QED effects to be enabled explicitly by the
+        // user
         Scoped_Settings meqedsettings{ s["ME_QED"] };
         if (!meqedsettings["ENABLED"].IsSetExplicitly()) {
+          // if not requested explicitly, we turn it off, too
           meqedsettings["ENABLED"].OverrideScalar<bool>(false);
         }
       }
