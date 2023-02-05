@@ -24,7 +24,7 @@ namespace ATOOLS {
   {
     std::string v{ value };
     std::transform(v.begin(), v.end(), v.begin(), ::tolower);
-    if (v == "false" || v == "no" || v == "off" || v == "0") {
+    if (v == "false" || v == "no" || v == "none" || v == "off" || v == "0") {
       return false;
     }
     return true;
