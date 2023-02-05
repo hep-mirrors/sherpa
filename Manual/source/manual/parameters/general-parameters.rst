@@ -517,6 +517,9 @@ There are also on-the-fly variations for approximate electroweak corrections,
 this is discussed in its own section, :ref:`Approximate Electroweak
 Corrections`.
 
+Specifying variations
+---------------------
+
 There are two ways to specify scale and PDF variations.
 Either using the unified ``VARIATIONS`` list,
 and/or by using the specialised ``SCALE_VARIATIONS``
@@ -711,6 +714,11 @@ reweighting is enabled (see below).
 The rest of this section applies to both the combined ``VARIATIONS``
 and the individual ``SCALE_VARIATIONS`` etc. syntaxes.
 
+Variation output
+----------------
+
+.. index:: OUTPUT_ME_ONLY_VARIATIONS
+
 The total cross section for all variations along with the nominal cross section
 are written to the standard output after the event generation has finalized.
 Additionally, some event output (see :ref:`Event output formats`) and analysis methods
@@ -734,6 +742,15 @@ Extending the naming convention, for pure strong coupling variations, an additio
 tag ``ASMZ=<val>`` is appended. Another set of tags is appended if shower scale
 variations are enabled, then giving ``PS:MUR=<fac>__PS:MUF=<fac>``.
 
+If parton-shower variations are enabled, ``CSS_REWEIGHT: false``,
+then ME-only variations are included along with the full variations in the
+HepMC/Rivet output by default. They can be disabled using
+``OUTPUT_ME_ONLY_VARIATIONS: false``.
+Extra weight names of ME-only variations
+include a "ME" as part of the keys to indicate that
+only the ME part of the calculation has been varied, e.g.
+``ME:MUR=<fac>__ME:MUF=<fac>__ME:LHAPDF=<id>``.
+
 The user must also be aware that, of course, the cross section of the
 event sample, changes when using an alternative event weight as
 compared to the nominal one. Any histogramming therefore has to account
@@ -745,9 +762,35 @@ GenCrossSection entry of the event record, such that no manual intervention is
 required (as long as the correct cross section variation is picked in
 downstream processing steps).
 
+Variations for different event generation modes
+-----------------------------------------------
+
 The on-the-fly reweighting works for all event generation modes
 (weighted or (partially) unweighted) and all calculation types (LO,
 LOPS, NLO, NLOPS, NNLO, NNLOPS, MEPS\@LO, MEPS\@NLO and MENLOPS).
+
+NLO calculations
+````````````````
+
+.. index:: NLO_MUR_COEFFICIENT_FROM_VIRTUAL
+
+For NLO calculations, note that some loop providers (e.g. Recola)
+do not provide the pole coefficients, while others do (e.g. OpenLoops).
+For the former, Sherpa will automatically exclude the IR pole
+coefficients from the scale variation.
+One can also manually exclude them using
+``NLO_MUR_COEFFICIENT_FROM_VIRTUAL: false``.
+If they are excluded,
+then IR pole cancellation is assumed and, thus,
+only the UV renormalisation term pole coefficient is considered in the scale variation.
+
+Parton shower emissions
+```````````````````````
+
+.. index:: CSS_REWEIGHT
+.. index:: CSS_REWEIGHT_SCALE_CUTOFF
+.. index:: CSS_MAX_REWEIGHT_FACTOR
+
 By default, the reweighting of parton shower emissions is included in the variations.
 It can be disabled explicitly,
 using :option:`CSS_REWEIGHT: false`.  This should work out of the box for all
@@ -760,14 +803,6 @@ An additional safeguard against rare spuriously large shower variation
 weights is implemented as :option:`CSS_MAX_REWEIGHT_FACTOR` (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
 will be ignored and reset to 1.
-
-ME-only variations are included along with the full variations in the
-HepMC/Rivet output by default. They can be disabled, e.g. when not using
-``CSS_REWEIGHT: false``, using
-``OUTPUT_ME_ONLY_VARIATIONS: false``.
-The extra weight names then include a "ME" as part of the keys to indicate that
-only the ME part of the calculation has been varied, e.g.
-``ME:MUR=<fac>__ME:MUF=<fac>__ME:LHAPDF=<id>``.
 
 .. _MPI parallelization:
 
