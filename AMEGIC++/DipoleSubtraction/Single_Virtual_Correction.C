@@ -62,8 +62,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_checkthreshold = amegicsettings["CHECK_THRESHOLD"].Get<double>();
   m_force_init = amegicsettings["LOOP_ME_INIT"].Get<size_t>();
   m_sccmur = s["USR_WGT_MODE"].Get<bool>();
-  m_murcoeffvirt =
-    amegicsettings["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].Get<size_t>();
+  m_murcoeffvirt = s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].Get<bool>();
   m_user_bvimode = amegicsettings["NLO_BVI_MODE"].Get<size_t>();
   m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
   m_ipart = amegicsettings["NLO_IPART"].Get<sbt::subtype>();
