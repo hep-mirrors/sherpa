@@ -246,7 +246,6 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_PDFCHECK"].SetDefault(1);
   s["CSS_QCD_MODE"].SetDefault(1);
   s["CSS_EW_MODE"].SetDefault(false);
-  s["CSS_USE_BBW"].SetDefault(1);
   s["CSS_RECO_DECAYS"].SetDefault(0);
   s["CSS_MAXPART"].SetDefault(std::numeric_limits<int>::max());
   s["CSS_PDF_MIN"].SetDefault(1.0e-4);

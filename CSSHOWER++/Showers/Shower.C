@@ -29,7 +29,6 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
   double is_pdf_fac{ s["CSS_PDF_FAC"].Get<double>() };
   const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
-  m_use_bbw           = s["CSS_USE_BBW"].Get<int>();
   m_reweight          = s["CSS_REWEIGHT"].Get<bool>();
   m_maxreweightfactor = s["CSS_MAX_REWEIGHT_FACTOR"].Get<double>();
   m_kscheme           = s["CSS_KIN_SCHEME"].Get<int>();
