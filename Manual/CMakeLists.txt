@@ -7,7 +7,7 @@ message(STATUS "SHERPA Manual: LATEXMK=${LATEXMK}")
 
 file (GLOB_RECURSE MANUALDEPS ${CMAKE_CURRENT_SOURCE_DIR}/source/manual/*.rst)
 
-set (sphinx_options  "-D release=${SHERPA_VERSION}")
+set (sphinx_options  "-Drelease=${SHERPA_VERSION}")
 add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/completion.index  ${CMAKE_CURRENT_BINARY_DIR}/options.index
        DEPENDS ${MANUALDEPS}

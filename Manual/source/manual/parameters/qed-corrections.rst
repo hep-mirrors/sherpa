@@ -95,12 +95,13 @@ on, i.e. ``MODE`` is not set to ``None``.
 .. _PHOTON_SPLITTER_MODE:
 
 PHOTON_SPLITTER_MODE
-----
+--------------------
 
 .. index:: PHOTON_SPLITTER_MODE
 
 The parameter :OPTION:`PHOTON_SPLITTER_MODE` determines which particles, if any, may be produced in 
 photon splittings:
+
   :option:`0`
     All photon splitting functions are turned off.
   :option:`1`
@@ -111,16 +112,17 @@ photon splittings:
     tau leptons;
   :option:`8`
     light hadrons up to ``PHOTON_SPLITTER_MAX_HADMASS``.
-  The settings are additive, e.g. ``PHOTON_SPLITTER_MODE: 3``
-  allows splittings into electron-positron and muon-antimuon pairs.
-  The default is ``PHOTON_SPLITTER_MODE: 15`` (all splittings turned on).
+
+The settings are additive, e.g. ``PHOTON_SPLITTER_MODE: 3``
+allows splittings into electron-positron and muon-antimuon pairs.
+The default is ``PHOTON_SPLITTER_MODE: 15`` (all splittings turned on).
 This parameter is of course only effective if the Photons module is 
 switched on using the ``MODE`` keyword.
 
 .. _PHOTON_SPLITTER_MAX_HADMASS:
 
 PHOTON_SPLITTER_MAX_HADMASS
-----
+---------------------------
 
 .. index:: PHOTON_SPLITTER_MAX_HADMASS
 

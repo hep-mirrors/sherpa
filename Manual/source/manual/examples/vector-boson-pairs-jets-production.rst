@@ -49,7 +49,7 @@ Same sign dilepton, missing energy and jets production
 .. _Polarized same-sign W-pair production in association with two jets:
 
 Polarized same-sign W-pair production in association with two jets
-======================================================
+==================================================================
 This is an example for the simulation of polarized cross sections for pure electroweak same-sign W-pair production in
 association with two jets at leading order.
 
