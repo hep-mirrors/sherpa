@@ -32,7 +32,8 @@ AMEGIC:
 PROCESSES:
 - "2 -2 -> 21 21":
     NLO_Mode: Fixed_Order
-    Order: {QCD: Any, EW: 0}
+    Order: {QCD: 2, EW: 0}
+    NLO_Order: {QCD: 1, EW: 0}
     NLO_Part: VI
     Enable_MHV: 0
     Loop_Generator: $(LOOPGEN)
