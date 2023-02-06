@@ -27,7 +27,7 @@ PARTICLE_DATA:
 
 AMEGIC:
   CHECK_POLES: false
-  CHECK_BORN: 0
+  CHECK_BORN: false
 
 PROCESSES:
 - "2 -2 -> 21 21":

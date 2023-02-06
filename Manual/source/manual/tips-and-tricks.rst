@@ -414,7 +414,7 @@ Checking the pole cancellation
 To check whether the poles of the dipole subtraction and the
 interfaced one-loop matrix element cancel for each phase space point,
 specify
-``AMEGIC: { CHECK_POLES: 1 }`` and/or ``COMIX: { CHECK_POLES: 1 }``.
+``AMEGIC: { CHECK_POLES: true }`` and/or ``COMIX: { CHECK_POLES: true }``.
 
 In the same way, the
 finite contributions of the infrared subtraction and the one-loop
@@ -425,7 +425,7 @@ poles, finite parts and Born matrix elements are checked is set via
 These three settings are only supported by Amegic
 and are thus set using
 ``AMEGIC: { <PARAMETER>: <VALUE> }``,
-where ``<VALUE>`` is ``0`` or ``1`` for ``CHECK_FINITE``/``CHECK_BORN``,
+where ``<VALUE>`` is ``false`` or ``true`` for ``CHECK_FINITE``/``CHECK_BORN``,
 or a number specifying the desired accuracy for ``CHECK_THRESHOLD``.
 
 

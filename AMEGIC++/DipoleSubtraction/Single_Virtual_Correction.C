@@ -56,9 +56,9 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   Settings& s = Settings::GetMainSettings();
   Scoped_Settings amegicsettings{ s["AMEGIC"] };
   p_fsmc=NULL;
-  m_checkborn = amegicsettings["CHECK_BORN"].Get<size_t>();
-  m_checkpoles = amegicsettings["CHECK_POLES"].Get<size_t>();
-  m_checkfinite = amegicsettings["CHECK_FINITE"].Get<size_t>();
+  m_checkborn = amegicsettings["CHECK_BORN"].Get<bool>();
+  m_checkpoles = amegicsettings["CHECK_POLES"].Get<bool>();
+  m_checkfinite = amegicsettings["CHECK_FINITE"].Get<bool>();
   m_checkthreshold = amegicsettings["CHECK_THRESHOLD"].Get<double>();
   m_force_init = amegicsettings["LOOP_ME_INIT"].Get<size_t>();
   m_sccmur = s["USR_WGT_MODE"].Get<bool>();
