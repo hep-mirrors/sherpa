@@ -675,6 +675,12 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   // perform on-the-fly QCD reweighting of BVI or RS events
   m_last *= nominal;
   if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
+    if (m_mewgtinfo.m_oqcd == 99) {
+      THROW(not_implemented,
+            "O(AlphaS)=99 detected when calculating variations.\n"
+            "This is likely due to the ME generator/hard process\n"
+            "not supporting on-the-fly reweighting.");
+    }
     if (GetSubevtList() == nullptr) {
       ReweightBVI(scales->Amplitudes());
     } else {
