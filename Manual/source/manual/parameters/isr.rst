@@ -40,38 +40,14 @@ They can be configured with the following parameters.
   following options are distributed with Sherpa:
 
   :option:`LHAPDFSherpa`
-    Use PDF's from LHAPDF :cite:`Buckley2011ms`.
+    Use PDF's from LHAPDF :cite:`Buckley2011ms`. This is the default.
 
   :option:`CT14Sherpa`
     Built-in library for some PDF sets from the CTEQ collaboration,
-    cf. :cite:`Dulat2015mca`. This is the default.
+    cf. :cite:`Dulat2015mca`.
 
-  :option:`CT12Sherpa`
-    Built-in library for some PDF sets from the CTEQ collaboration,
-    cf. :cite:`Gao2013xoa`.
-
-  :option:`CT10Sherpa`
-    Built-in library for some PDF sets from the CTEQ collaboration,
-    cf. :cite:`Lai2010vv`.
-
-  :option:`CTEQ6Sherpa`
-    Built-in library for some PDF sets from the CTEQ collaboration,
-    cf. :cite:`Nadolsky2008zw`.
-
-  :OPTION:`NNPDF30Sherpa`
+  :OPTION:`NNPDFSherpa`
     Built-in library for PDF sets from the NNPDF group, cf. :cite:`Ball2014uwa`.
-
-  :option:`MSTW08Sherpa`
-    Built-in library for PDF sets from the MSTW group, cf. :cite:`Martin2009iq`.
-
-  :option:`MRST04QEDSherpa`
-    Built-in library for photon PDF sets from the MRST group, cf. :cite:`Martin2004dh`.
-
-  :option:`MRST01LOSherpa`
-    Built-in library for the 2001 leading-order PDF set from the MRST group, cf. :cite:`Martin2001es`.
-
-  :option:`MRST99Sherpa`
-    Built-in library for the 1999 PDF sets from the MRST group, cf. :cite:`Martin1999ww`.
 
   :option:`GRVSherpa`
     Built-in library for the GRV photon PDF :cite:`Gluck1991jc`, :cite:`Gluck1991ee`.
