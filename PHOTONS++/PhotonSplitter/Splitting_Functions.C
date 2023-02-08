@@ -22,10 +22,12 @@ Splitting_Function::Splitting_Function(ATOOLS::Particle * splitter, int fla,
   m_flavs[0] = Flavour(fla);
   m_flavs[1] = Flavour(flb);
   m_flavs[2] = Flavour(flc);
-  m_mij2 = sqr(m_flavs[0].Mass());
-  m_mi2  = sqr(m_flavs[1].Mass());
-  m_mj2  = sqr(m_flavs[2].Mass());
-  msg_Debugging() << "Flb = " << flb << ", mass^2 cutoff is " << m_mi2 << "\n";
+  m_mij2 = sqr(m_flavs[0].Mass(1));
+  m_mi2  = sqr(m_flavs[1].Mass(1));
+  m_mj2  = sqr(m_flavs[2].Mass(1));
+  msg_Debugging()<<m_flavs[0]<<"("<<m_mij2<<") -> "
+                 <<m_flavs[1]<<"("<<m_mi2<<") "
+                 <<m_flavs[2]<<"("<<m_mj2<<")"<<std::endl;
   
   // possiblity to enhance splitting here by multiplying alpha 
   m_alpha = PHOTONS::Photons::s_alpha;
@@ -45,7 +47,7 @@ void Splitting_Function::SetSpec(Spectator *spec)
 {
   p_spec = spec;
   m_flspec = spec->GetFlavour();
-  m_mk2 = sqr(m_flspec.Mass());
+  m_mk2 = sqr(m_flspec.Mass(1));
 }
 
 void Splitting_Function::AddSpec(Spectator *spec)

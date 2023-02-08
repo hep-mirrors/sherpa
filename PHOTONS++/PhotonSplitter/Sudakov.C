@@ -85,13 +85,13 @@ void Sudakov::AddSplitter(ATOOLS::Particle *softphoton, const size_t &id)
   m_remainingphotons.push_back(p);
   m_splitterIds.push_back(id);
 
-  if (m_mode & 1) m_splitters.push_back(new Splitting_Function(p,22,-11,11,1,id));
-  if (m_mode & 2) m_splitters.push_back(new Splitting_Function(p,22,-13,13,1,id));
-  if (m_mode & 4) m_splitters.push_back(new Splitting_Function(p,22,-15,15,1,id));
+  if (m_mode & 1) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_e,kf_e,1,id));
+  if (m_mode & 2) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_mu,kf_mu,1,id));
+  if (m_mode & 4) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_tau,kf_tau,1,id));
   if (m_mode & 8) {
     for (KF_Table::const_iterator it(s_kftable.begin()); it!=s_kftable.end(); ++it) {
       if (it->second->m_hadron && it->second->m_icharge && it->second->m_mass<m_masscutoff) {
-        m_splitters.push_back(new Splitting_Function(p,22,it->second->m_kfc,-it->second->m_kfc,2*it->second->m_spin,id));
+        m_splitters.push_back(new Splitting_Function(p,kf_photon,it->second->m_kfc,-it->second->m_kfc,2*it->second->m_spin,id));
       }
     }
   }
@@ -237,7 +237,7 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
   }
 
   // select emitter particle and starting scale 
-  int winnerIndex;
+  int winnerIndex(-1);
   if (!m_debug_initProbabilistic) {
     // select winner 
     winnerIndex = std::max_element(Kp.begin(),Kp.end()) - Kp.begin();
@@ -247,12 +247,14 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
     double rand = ran->Get();
     if (rand < Kcumu[0]/Kcumu.back()) { winnerIndex = 0; }
     else {
+      PRINT_VAR(Kcumu.size());
       for (int i = 1; i < Kcumu.size(); ++i) {
         if (rand >= Kcumu[i-1]/Kcumu.back() && rand < Kcumu[i]/Kcumu.back()) {
           winnerIndex = i;
         }
       }
     }
+   PRINT_VAR(winnerIndex);
   }
   
   if (winnerIndex < 0 || winnerIndex >= ts.size()) { 
