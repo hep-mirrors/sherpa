@@ -385,7 +385,10 @@ bool PT_Selector::Trigger(Selector_List &sl)
 
 void PT_Selector::BuildCuts(Cut_Data * cuts)
 {
-  if (m_isnlo) return;
+  if (m_isnlo) {
+    cuts->smin=ATOOLS::Max(cuts->smin, m_smin);
+    return;
+  }
   double sumM2=0.;
   for (int i=m_nin;i<m_n;i++) {
     sumM2+=sqr(p_fl[i].SelMass());
@@ -487,7 +490,10 @@ bool ET_Selector::Trigger(Selector_List &sl)
 
 void ET_Selector::BuildCuts(Cut_Data * cuts)
 {
-  if (m_isnlo) return;
+    if (m_isnlo) {
+    cuts->smin=ATOOLS::Max(cuts->smin, m_smin);
+    return;
+  }
   double sumM2=0.;
   for (int i=m_nin;i<m_n;i++) {
     sumM2+=sqr(p_fl[i].SelMass());
@@ -771,7 +777,10 @@ bool IMass_Selector::Trigger(Selector_List &sl)
 
 void IMass_Selector::BuildCuts(Cut_Data * cuts)
 {
-  if (m_isnlo) return;
+  if (m_isnlo) {
+    cuts->smin=ATOOLS::Max(cuts->smin, m_smin);
+    return;
+  }
   for (size_t i=m_nin;i<m_n;i++) {
     for (size_t j=i+1;j<m_n;j++) {
       if ( (m_flav1.Includes(p_fl[i]) && m_flav2.Includes(p_fl[j])) ||
