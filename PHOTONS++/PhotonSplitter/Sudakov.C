@@ -149,23 +149,40 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
   
   // build momentum vectors
   for (int i = 0; i < m_spectators.size(); ++i) {
-    if (m_spectators[i]->Id() < m_NInP) continue; // incoming particles cannot be emitters 
+    // incoming particles cannot be emitters
+    if (m_spectators[i]->Id() < m_NInP) continue;
     
     ptotal += m_spectators[i]->Momentum();
     // choose spectator for splitter i 
     bool selected = false;
     for (int k = 0; k < m_spectators.size(); ++k) {
       if (!selected && i != k) {
-        if ((m_spectators[k]->Id() < m_NInP && m_spectators[k]->GetFlavour().Charge() == m_spectators[i]->GetFlavour().Charge()) || 
-            (m_spectators[k]->Id() >= m_NInP && m_spectators[k]->GetFlavour().Charge() == -m_spectators[i]->GetFlavour().Charge())) {
-          initial_splitters.push_back(m_spectators[i]); // add as photon emitter
+        if ((m_spectators[k]->Id() < m_NInP &&
+             m_spectators[k]->GetFlavour().Charge() == m_spectators[i]->GetFlavour().Charge()) ||
+            (m_spectators[k]->Id() >= m_NInP &&
+             m_spectators[k]->GetFlavour().Charge() == -m_spectators[i]->GetFlavour().Charge())) {
+          // add as photon emitter
+          initial_splitters.push_back(m_spectators[i]);
           pis.push_back(m_spectators[i]->Momentum());
-          pks.push_back(m_spectators[k]->Momentum()); // set spectator in pks[i]
-          dipoleFI.push_back(m_spectators[k]->Id() < m_NInP); // true if FI dipole, false if FF dipole 
+          // set spectator in pks[i]
+          pks.push_back(m_spectators[k]->Momentum());
+          // true if FI dipole, false if FF dipole
+          dipoleFI.push_back(m_spectators[k]->Id() < m_NInP);
           selected = true;
+          msg_Debugging()<<"Added photon emission dipole: "<<i<<"("
+                         <<m_spectators[i]->GetFlavour()<<") "<<k<<"("
+                         <<m_spectators[k]->GetFlavour()<<") "
+                         <<(dipoleFI.back()?"FI":"FF")<<std::endl;
         }
       }
     }
+  }
+
+  // if no photon emitter identified, stop here
+  if (pis.empty()) {
+    msg_Tracking()<<METHOD<<"(): No photon emitter identified, stop here."
+                  <<std::endl;
+    return NULL;
   }
 
   // build splitting functions 
@@ -247,19 +264,17 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
     double rand = ran->Get();
     if (rand < Kcumu[0]/Kcumu.back()) { winnerIndex = 0; }
     else {
-      PRINT_VAR(Kcumu.size());
       for (int i = 1; i < Kcumu.size(); ++i) {
         if (rand >= Kcumu[i-1]/Kcumu.back() && rand < Kcumu[i]/Kcumu.back()) {
           winnerIndex = i;
         }
       }
     }
-   PRINT_VAR(winnerIndex);
   }
   
   if (winnerIndex < 0 || winnerIndex >= ts.size()) { 
-    msg_Error() << "No max splitting function found, skipping blob\n"; 
-    return 0;
+    msg_Error() << "No splitting function selected, skipping blob\n";
+    return NULL;
   }
 
   t = ts[winnerIndex];
