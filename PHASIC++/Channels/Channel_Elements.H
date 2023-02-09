@@ -9,6 +9,8 @@ namespace PHASIC {
   double SqLam(double,double,double);
   double PeakedDist(double,double,double,double,int,double);
   double PeakedWeight(double,double,double,double,double,int,double&);
+  double RegulatedPeakedDist(double,double,double,double,double);
+  double RegulatedPeakedWeight(double,double,double,double,double,double&);
   double ExponentialDist(double ca,double cxm,double cxp,double ran);
   double ExponentialWeight(double ca,double cxm,double cxp);
   double BoundaryPeakedDist(double cxm,double cxp,double ran);
@@ -53,8 +55,10 @@ namespace PHASIC {
 			       const double,const double,const double,
 			       ATOOLS::Vec4D &, ATOOLS::Vec4D &,const double,const double);
 
-    double MasslessPropWeight(double,double,double,double,double&);
     double MasslessPropMomenta(double,double,double,double);
+    double MasslessPropWeight(double,double,double,double,double&);
+    double MasslessPropMomenta(double,double,double,double,double);
+    double MasslessPropWeight(double,double,double,double,double,double&);
 
     double ExponentialMomenta(double,double,double,double[],double);
     double ExponentialWeight(double,double,double,double[],double,double&);

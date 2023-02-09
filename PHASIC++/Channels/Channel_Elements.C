@@ -22,10 +22,7 @@ double PHASIC::PeakedDist(double a,double cn,double cxm,double cxp,int k,double 
 {
   double ce(1.-cn);
   if (ce!=0.) return k*(pow(ran*pow(a+k*cxp,ce)+(1.-ran)*pow(a+k*cxm,ce),1/ce)-a);
-  if (a != 0.) return k*((a+k*cxm)*pow((a+k*cxp)/(a+k*cxm),ran)-a);
-  cxm = sqrt(cxm);
-  cxp = sqrt(cxp);
-  return sqr(2*cxm*cxp*ran/(2*cxm+cxp*(1-ran)));
+  return k*((a+k*cxm)*pow((a+k*cxp)/(a+k*cxm),ran)-a);
 }
 
 double PHASIC::PeakedWeight(double a,double cn,double cxm,double cxp,double res,int k,double &ran)
@@ -37,20 +34,49 @@ double PHASIC::PeakedWeight(double a,double cn,double cxm,double cxp,double res,
     ran=(pow(a+k*res,ce)-amin)/w;
     w/=k*ce;
   }
-  else if (a != 0.) {
+  else {
     double amin=a+k*cxm;
     w=log((a+k*cxp)/amin);
     ran=log((a+k*res)/amin)/w;
     w/=k;
   }
-  else {
-    cxm = sqrt(cxm);
-    cxp = sqrt(cxp);
-    res = sqrt(res);
-    w = res*cxp/2/cxm/(2*cxm+cxp)*pow(2*cxm+res, 2);
-    ran = res*(cxp+2*cxm)/(cxp*(res+2*cxm));
-  }
   return w;
+}
+
+double PHASIC::RegulatedPeakedDist(double reg,double expo,double min,double max,double ran)
+{
+  // This distribution samples in p_T and squared to then get a s
+  // pdf = 1 / ( 2 * p_T,reg + p_T)^expo
+  min = sqrt(min); // change the given s cuts to p_T cuts
+  max = sqrt(max);
+  reg = sqrt(reg);
+  if (expo != 1.) {
+    expo = 1. - expo;
+    double cdfmax = pow(2. * reg + max, expo);
+    double cdfmin = pow(2. * reg + min, expo);
+    return sqr(pow(ran * cdfmax + (1. - ran) * cdfmin, 1./expo)-2.*reg);
+  } else {
+    return sqr((2.*reg+min)*pow((2.*reg+max)/(2.*reg+min),ran)-2.*reg);
+  }
+}
+
+double PHASIC::RegulatedPeakedWeight(double reg,double expo,double min,double max,double res,double &ran)
+{
+  min = sqrt(min); // change the given s cuts to p_T cuts
+  max = sqrt(max);
+  reg = sqrt(reg);
+  res = sqrt(res);
+  if (expo != 1.) {
+    expo = 1. - expo;
+    double cdfmax = pow(2. * reg + max, expo);
+    double cdfmin = pow(2. * reg + min, expo);
+    ran = (pow(2.*reg+res, expo)-cdfmin)/(cdfmax-cdfmin);
+    return (cdfmax - cdfmin)/expo;
+  } else {
+    double w = log((2.*reg+max)/(2.*reg+min));
+    ran = log((2.*reg+res)/(2.*reg+min))/w;
+    return w;
+  }
 }
 
 double Channel_Elements::MasslessPropWeight
@@ -69,6 +95,26 @@ double Channel_Elements::MasslessPropMomenta
 (double sexp,double smin,double smax, double ran)
 {
   double s(PeakedDist(0.,sexp,smin,smax,1,ran));
+  if (IsBad(s)) msg_Error()<<METHOD<<"(): Value is "<<s<<std::endl;
+  return s;
+}
+
+double Channel_Elements::MasslessPropWeight
+    (double sexp,double smin,double smax,const double s, double speak,double &ran)
+{
+  if (sexp != 1. && (s<smin || s>smax)) {
+    msg_Error()<<METHOD<<"(): Value out of bounds: "
+                <<smin<<" .. " <<smax<<" vs. "<<s<< std::endl;
+  }
+  double w(RegulatedPeakedWeight(speak,sexp,smin,smax,s,ran)/pow(s,-sexp));
+  if (IsBad(w)) msg_Error()<<METHOD<<"(): Weight is "<<w<<std::endl;
+  return 1./w;
+}
+
+double Channel_Elements::MasslessPropMomenta
+    (double sexp,double smin,double smax,double speak,double ran)
+{
+  double s(RegulatedPeakedDist(speak,sexp,smin,smax,ran));
   if (IsBad(s)) msg_Error()<<METHOD<<"(): Value is "<<s<<std::endl;
   return s;
 }
@@ -175,9 +221,8 @@ void Channel_Elements::TChannelMomenta
   double s1in(p1in.Abs2()), s2in(p2in.Abs2());
   double e1in((s+s1in-s2in)/2./rs), m1in(sqrt(e1in*e1in-s1in));
   double e1out((s+s1out-s2out)/2./rs), m1out(sqrt(e1out*e1out-s1out));
-  double a= 1.;
+  double a=1.+1.e-6;
   if (mt>0.) a=(mt*mt-s1in-s1out+2.*e1in*e1out)/(2.*m1in*m1out);
-  if (a<=1.0+1.0e-6) a=1.0+1.0e-6;
   double aminct(PeakedDist(0.,ctexp,a-ctmax,a-ctmin,1,ran1));
   double ct(a-aminct), st(sqrt(1.-ct*ct));
   double phi(2.*M_PI*ran2);
@@ -200,9 +245,8 @@ double Channel_Elements::TChannelWeight
   double s1out(p1out.Abs2()), s2out(p2out.Abs2());
   double e1in((s+s1in-s2in)/2./rs), m1in(sqrt(e1in*e1in-s1in));
   double e1out((s+s1out-s2out)/2./rs), m1out(sqrt(e1out*e1out-s1out));
-  double a= 1.;
+  double a=1.+1.e-6;
   if (mt>0) a=(mt*mt-s1in-s1out+2.*e1in*e1out)/(2.*m1in*m1out);
-  if (a<=1.0+1.0e-6) a=1.0+1.0e-6;
   Poincare cms(pin);
   cms.Boost(p1inh);
   Poincare zax(p1inh,p1inh[3]<0?-Vec4D::ZVEC:Vec4D::ZVEC);
