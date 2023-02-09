@@ -22,7 +22,10 @@ double PHASIC::PeakedDist(double a,double cn,double cxm,double cxp,int k,double 
 {
   double ce(1.-cn);
   if (ce!=0.) return k*(pow(ran*pow(a+k*cxp,ce)+(1.-ran)*pow(a+k*cxm,ce),1/ce)-a);
-  return k*((a+k*cxm)*pow((a+k*cxp)/(a+k*cxm),ran)-a);
+  if (a != 0.) return k*((a+k*cxm)*pow((a+k*cxp)/(a+k*cxm),ran)-a);
+  cxm = sqrt(cxm);
+  cxp = sqrt(cxp);
+  return sqr(2*cxm*cxp*ran/(2*cxm+cxp*(1-ran)));
 }
 
 double PHASIC::PeakedWeight(double a,double cn,double cxm,double cxp,double res,int k,double &ran)
@@ -34,11 +37,18 @@ double PHASIC::PeakedWeight(double a,double cn,double cxm,double cxp,double res,
     ran=(pow(a+k*res,ce)-amin)/w;
     w/=k*ce;
   }
-  else {
+  else if (a != 0.) {
     double amin=a+k*cxm;
     w=log((a+k*cxp)/amin);
     ran=log((a+k*res)/amin)/w;
     w/=k;
+  }
+  else {
+    cxm = sqrt(cxm);
+    cxp = sqrt(cxp);
+    res = sqrt(res);
+    w = res*cxp/2/cxm/(2*cxm+cxp)*pow(2*cxm+res, 2);
+    ran = res*(cxp+2*cxm)/(cxp*(res+2*cxm));
   }
   return w;
 }
@@ -46,7 +56,7 @@ double PHASIC::PeakedWeight(double a,double cn,double cxm,double cxp,double res,
 double Channel_Elements::MasslessPropWeight
 (double sexp,double smin,double smax,const double s,double &ran)
 {
-  if (s<smin || s>smax) {
+  if (sexp != 1. && (s<smin || s>smax)) {
     msg_Error()<<METHOD<<"(): Value out of bounds: "
 	       <<smin<<" .. " <<smax<<" vs. "<<s<< std::endl;
   }
