@@ -55,6 +55,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   m_aexp = s["AEXP"].Get<double>();
   m_thexp = s["THEXP"].Get<double>();
   m_mfac = s["MFAC"].Get<double>();
+  m_speak = s["SPEAK"].Get<double>();
   if (!(m_vmode&8)) m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
   m_nr=3*m_nout-4;
@@ -81,11 +82,12 @@ void PS_Channel::RegisterDefaults() const
   s["VINTS"].SetDefault(8);       // vegas intervals
   s["TEXP"].SetDefault(0.9);      // t-channel exp
   s["STEXP"].SetDefault(1.0e-3);  // t-channel sub exp
-  s["SEXP"].SetDefault(0.75);     // s-channel exp
+  s["SEXP"].SetDefault(1.);     // s-channel exp
   s["SRBASE"].SetDefault(1.05);   // s-channel exp scale
   s["AEXP"].SetDefault(0.9);      // aniso s-channel exp
   s["THEXP"].SetDefault(1.5);     // threshold exponent
   s["MFAC"].SetDefault(1.0);      // m_{min} factor
+  s["SPEAK"].SetDefault(1.0);      // Peak for the regulated 1/s distribution
 }
 
 const std::vector<int> &PS_Channel::GetCId(const size_t &id)
@@ -210,9 +212,9 @@ double PS_Channel::PropMomenta(const PS_Current *cur,const size_t &id,
       return CE.MassivePropMomenta(cur->Mass(),cur->Width(),smin,smax,*cr);
     if (cur->Mass()>s_pmmin) 
       return CE.ThresholdMomenta(m_thexp,m_mfac*cur->Mass(),smin,smax,*cr);
-    return CE.MasslessPropMomenta(sexp,smin,smax,*cr);
+    return CE.MasslessPropMomenta(sexp,smin?smin:m_speak,smax,*cr);
   }
-  return CE.MasslessPropMomenta(sexp,smin,smax,*cr);
+  return CE.MasslessPropMomenta(sexp,smin?smin:m_speak,smax,*cr);
 }
 
 double PS_Channel::PropWeight(const PS_Current *cur,const size_t &id,
@@ -229,9 +231,9 @@ double PS_Channel::PropWeight(const PS_Current *cur,const size_t &id,
       wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),smin,smax,s,rn);
     else if (cur->Mass()>s_pmmin) 
       wgt=CE.ThresholdWeight(m_thexp,m_mfac*cur->Mass(),smin,smax,s,rn);
-    else wgt=CE.MasslessPropWeight(sexp,smin,smax,s,rn);
+    else wgt=CE.MasslessPropWeight(sexp,smin?smin:m_speak,smax,s,rn);
   }
-  else wgt=CE.MasslessPropWeight(sexp,smin,smax,s,rn);
+  else wgt=CE.MasslessPropWeight(sexp,smin?smin:m_speak,smax,s,rn);
   }
   if (m_vmode&3) {
     Vegas *cvgs(GetPVegas(cur,id));

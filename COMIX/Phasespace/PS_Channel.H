@@ -59,7 +59,7 @@ namespace COMIX {
 
     size_t m_n, m_nr, m_num, m_lid, m_rid;
     double m_texp, m_stexp, m_sexp, m_thexp, m_mfac;
-    double m_aexp, m_srbase;
+    double m_aexp, m_srbase, m_speak;
 
     int m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
     int m_nvints, m_vsopt, m_nopt;
