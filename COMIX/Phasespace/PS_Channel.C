@@ -35,6 +35,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   m_nin=_nin;
   m_nout=_nout;
   m_p.resize(1<<(m_n+1));
+  m_s.resize(1<<(m_n+1));
   p_ms = new double[m_n];
   for (size_t i(0);i<m_n;++i) {
     p_ms[i]=sqr(_fl[i].Mass());
@@ -710,7 +711,7 @@ double PS_Channel::GenerateWeight
     double rts(m_p[cid].Mass()), sl(SCut(lid)), sr(SCut(rid));
     if (CIdCount(lid)>1) {
       double smin(sl), smax(sqr(rts-sqrt(sr)));
-      wgt*=PropWeight(ja,lid,smin,smax,sl=m_p[lid].Abs2());
+      wgt*=PropWeight(ja,lid,smin,smax,sl=m_s[lid]);
     }
     if (CIdCount(rid)>1) {
       double smin(sr), smax(sqr(rts-sqrt(sl)));
@@ -859,10 +860,17 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
       m_p[(1<<m_n)-1-cur->CId()]=
 	-(m_p[cur->CId()]=m_p[cur->In().front()->J(0)->CId()]
 	  +m_p[cur->In().front()->J(1)->CId()]);
+      m_s[(1<<m_n)-1-cur->CId()]=m_s[cur->CId()]=m_p[cur->CId()].Abs2();
+      if (cur->In().front()->J(0)->Flav().Mass()==0. &&
+          cur->In().front()->J(1)->Flav().Mass()==0.)
+        m_s[(1<<m_n)-1-cur->CId()]=m_s[cur->CId()]=
+            m_p[cur->In().front()->J(0)->CId()].SmallMLDP
+            (m_p[cur->In().front()->J(1)->CId()]);
 #ifdef DEBUG__BG
 	msg_Debugging()<<"  -p_"<<ID((1<<m_n)-1-cur->CId())
 		       <<" = p_"<<ID(cur->CId())
-		       <<" = "<<m_p[cur->CId()]<<"\n";
+		       <<" = "<<m_p[cur->CId()]
+                       <<", s = "<<m_s[cur->CId()]<<"\n";
 #endif
     }
   for (size_t i(0);i<m_n;++i) m_p[1<<i]=i<2?-p[i]:p[i];

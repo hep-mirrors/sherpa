@@ -53,6 +53,7 @@ namespace COMIX {
     PHASIC::Cut_Data *p_cuts;
 
     ATOOLS::Vec4D_Vector m_p;
+    std::vector<double> m_s;
 
     Double_Matrix m_rns;
     Vegas_Vector  m_vgs;
