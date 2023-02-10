@@ -43,46 +43,10 @@ double PHASIC::PeakedWeight(double a,double cn,double cxm,double cxp,double res,
   return w;
 }
 
-double PHASIC::RegulatedPeakedDist(double reg,double expo,double min,double max,double ran)
-{
-  // This distribution samples in p_T and squared to then get a s
-  // pdf = 1 / ( 2 * p_T,reg + p_T)^expo
-  min = sqrt(min); // change the given s cuts to p_T cuts
-  max = sqrt(max);
-  reg = sqrt(reg);
-  if (expo != 1.) {
-    expo = 1. - expo;
-    double cdfmax = pow(2. * reg + max, expo);
-    double cdfmin = pow(2. * reg + min, expo);
-    return sqr(pow(ran * cdfmax + (1. - ran) * cdfmin, 1./expo)-2.*reg);
-  } else {
-    return sqr((2.*reg+min)*pow((2.*reg+max)/(2.*reg+min),ran)-2.*reg);
-  }
-}
-
-double PHASIC::RegulatedPeakedWeight(double reg,double expo,double min,double max,double res,double &ran)
-{
-  min = sqrt(min); // change the given s cuts to p_T cuts
-  max = sqrt(max);
-  reg = sqrt(reg);
-  res = sqrt(res);
-  if (expo != 1.) {
-    expo = 1. - expo;
-    double cdfmax = pow(2. * reg + max, expo);
-    double cdfmin = pow(2. * reg + min, expo);
-    ran = (pow(2.*reg+res, expo)-cdfmin)/(cdfmax-cdfmin);
-    return (cdfmax - cdfmin)/expo;
-  } else {
-    double w = log((2.*reg+max)/(2.*reg+min));
-    ran = log((2.*reg+res)/(2.*reg+min))/w;
-    return w;
-  }
-}
-
 double Channel_Elements::MasslessPropWeight
 (double sexp,double smin,double smax,const double s,double &ran)
 {
-  if (sexp != 1. && (s<smin || s>smax)) {
+  if (s<smin || s>smax) {
     msg_Error()<<METHOD<<"(): Value out of bounds: "
 	       <<smin<<" .. " <<smax<<" vs. "<<s<< std::endl;
   }
@@ -106,7 +70,7 @@ double Channel_Elements::MasslessPropWeight
     msg_Error()<<METHOD<<"(): Value out of bounds: "
                 <<smin<<" .. " <<smax<<" vs. "<<s<< std::endl;
   }
-  double w(RegulatedPeakedWeight(speak,sexp,smin,smax,s,ran)/pow(s,-sexp));
+  double w(PeakedWeight(smin?0.:speak,sexp,smin,smax,s,1,ran)/pow(s,-sexp));
   if (IsBad(w)) msg_Error()<<METHOD<<"(): Weight is "<<w<<std::endl;
   return 1./w;
 }
@@ -114,7 +78,7 @@ double Channel_Elements::MasslessPropWeight
 double Channel_Elements::MasslessPropMomenta
     (double sexp,double smin,double smax,double speak,double ran)
 {
-  double s(RegulatedPeakedDist(speak,sexp,smin,smax,ran));
+  double s(PeakedDist(smin?0.:speak,sexp,smin,smax,1,ran));
   if (IsBad(s)) msg_Error()<<METHOD<<"(): Value is "<<s<<std::endl;
   return s;
 }
