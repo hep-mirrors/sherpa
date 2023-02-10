@@ -100,7 +100,8 @@ namespace COMIX {
     double TChannelWeight(PS_Current *cur,ATOOLS::NLO_subevt *const dip,
 			  const size_t &id,const size_t &aid,
 			  const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
-			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2);
+			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2,
+			  const double &s1,const double &s2);
 
     void SChannelBounds(const size_t &id,const size_t &lid,
 			double &ctmin,double &ctmax);
