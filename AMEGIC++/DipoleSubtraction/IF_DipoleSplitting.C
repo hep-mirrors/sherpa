@@ -38,7 +38,7 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
   switch (m_ftype) {
   case spt::q2qg:
     m_sff = 2./(1.-m_xijk+m_uj)-(1.+m_xijk);
-    if (m_subtype==2) m_sff = 2.*m_xijk/(1.-m_xijk+m_uj)+(1.-m_xijk);
+    if (m_subtype==subscheme::CSS) m_sff = 2.*m_xijk/(1.-m_xijk+m_uj)+(1.-m_xijk);
     m_av  = m_sff;
     break;
   case spt::q2gq:
@@ -51,7 +51,7 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
     break;
   case spt::g2gg:
     m_sff = 1./(1.-m_xijk+m_uj)-1.+m_xijk*(1.-m_xijk);
-    if (m_subtype==2) m_sff = m_xijk/(1.-m_xijk+m_uj)+m_xijk*(1.-m_xijk);
+    if (m_subtype==subscheme::CSS) m_sff = m_xijk/(1.-m_xijk+m_uj)+m_xijk*(1.-m_xijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
     break;
   case spt::none:

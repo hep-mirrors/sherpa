@@ -12,6 +12,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
                    const std::vector<size_t>& partonlist):
   m_stype(st), m_itype(cs_itype::K|cs_itype::P),
   m_kcontrib(cs_kcontrib::Kb|cs_kcontrib::KFS|cs_kcontrib::t|cs_kcontrib::Kt),
+  m_subtype(subscheme::CS),
   p_proc(proc), p_nlomc(NULL), p_kernel(NULL),
   p_cpl(NULL), m_flavs(p_proc->Flavours()),
   m_massive(true), m_cemode(false), m_cpldef(0.), m_NC(3.),
@@ -25,7 +26,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   Settings& s = Settings::GetMainSettings();
   Scoped_Settings kpsettings{ s["KP"] };
 
-  m_subtype = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
+  m_subtype = s["DIPOLES"]["SCHEME"].Get<subscheme::code>();
 
   const size_t nf(Flavour(kf_quark).Size()/2);
   const auto nfgs
@@ -149,7 +150,7 @@ void KP_Terms::SetNLOMC(PDF::NLOMC_Base *const nlomc)
   p_nlomc=nlomc;
   m_subtype=p_nlomc->SubtractionType();
   p_kernel->SetSubType(m_subtype);
-  if (m_subtype==1) p_kernel->SetKappa(1.0);
+  if (m_subtype==subscheme::Dire) p_kernel->SetKappa(1.0);
 }
 
 void KP_Terms::SetMassive()

@@ -14,7 +14,7 @@ using namespace ATOOLS;
 MCatNLO::MCatNLO(const NLOMC_Key &key):
   NLOMC_Base("Dire"), p_ms(NULL)
 {
-  m_subtype=1;
+  m_subtype=subscheme::Dire;
   p_mcatnlo = new Shower();
   p_gamma = new Gamma(this,p_mcatnlo);
   p_mcatnlo->SetGamma(p_gamma);

@@ -4,6 +4,7 @@
 #include <string>
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 
 namespace PHASIC {
   class Spin_Color_Correlated_ME2;
@@ -25,8 +26,9 @@ namespace EXTAMP {
   struct Dipole_Info {
     
     Dipole_Info(const ATOOLS::Flavour_Vector& flavs,
-		const size_t& i, const size_t& j, const size_t& k,
-		const int& subtrtype, const double& alphamin, const double& alphamax);
+                const size_t& i, const size_t& j, const size_t& k,
+                const ATOOLS::subscheme::code& subtrtype,
+                const double& alphamin, const double& alphamax);
 
     SplittingType          m_split_type;
     FlavourType            m_flav_type;
@@ -36,10 +38,8 @@ namespace EXTAMP {
        emission process */
     size_t m_real_i, m_real_j, m_real_k;
     
-    /* Subtraction type: 0: plain Catani-Seymour
-                         1: Dire
-			 2: modified Catani-Seymour (Stefan) */
-    int m_subtype;
+    /* Subtraction scheme: plain CS, Dire, or CSS (modfied CS, as used in CSS) */
+    ATOOLS::subscheme::code m_subtype;
 
     /* Cuts on alpha as defined in hep-ph/0307268 */
     double m_alphamin, m_alphamax;
@@ -137,8 +137,10 @@ namespace EXTAMP {
     static std::vector<size_t> ConstructIDVector(const size_t& i, const size_t& j,
 						 const ATOOLS::Flavour_Vector& flavs);
 
-    const int& SubtractionType() const   { return m_dip_info.m_subtype; }
-    void SetSubtractionType(int subtype) { m_dip_info.m_subtype = subtype; }
+    const ATOOLS::subscheme::code& SubtractionType() const
+    { return m_dip_info.m_subtype; }
+    void SetSubtractionType(ATOOLS::subscheme::code subtype)
+    { m_dip_info.m_subtype = subtype; }
 
     virtual const Dipole_Kinematics* const LastKinematics() const = 0;
 

@@ -34,7 +34,7 @@ DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
 {
   p_nlomc=NULL;
   Settings& s = Settings::GetMainSettings();
-  m_subtype = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
+  m_subtype = s["DIPOLES"]["SCHEME"].Get<subscheme::code>();
   m_name=ToString(m_dtype)+"["+ToString(m_ftype)
          +"("+ToString(m_i)+","+ToString(m_j)+")("+ToString(m_k)+")]"
          +"("+ToString(m_stype)+")";
@@ -62,7 +62,7 @@ DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
   m_k0sqf = s["CSS_FS_PT2MIN"].Get<double>();
   m_k0sqi = s["CSS_IS_PT2MIN"].Get<double>();
   m_es = s["CSS_EVOLUTION_SCHEME"].Get<int>();
-  if (m_subtype==1) m_kappa=1.0;
+  if (m_subtype==subscheme::Dire) m_kappa=1.0;
 }
 
 void DipoleSplitting_Base::SetCoupling(const MODEL::Coupling_Map *cpls)

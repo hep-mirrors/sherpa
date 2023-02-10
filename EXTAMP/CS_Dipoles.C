@@ -244,7 +244,8 @@ double IF_Dipole::CalcA() const
 double II_Dipole::CalcA() const
 {
   const double& x  = (m_kin.m_x);
-  const double& z  = (SubtractionType()==1) ? m_kin.m_x+m_kin.m_v : x;
+  const double& z  = (SubtractionType()==ATOOLS::subscheme::Dire) ?
+                       m_kin.m_x+m_kin.m_v : x;
   
   /* Need this to distinguish (5.145) from (5.147) */
   const ATOOLS::Flavour& flav_a = RealFlavours()[std::min(I(),J())];
@@ -353,31 +354,31 @@ double II_Dipole::CalcB() const
   if(FlavType()==FlavourType::gtoqq)
     {
       switch(SubtractionType())
-	{
-	case 0:
-	  return  -4.0*(1.0-x)/x;
-	case 1:
-	  return  -4.0*( (x+v)/(ATOOLS::sqr(x+v) +v*(1-x-v)) -1);
-	case 2:
-	  return  -4.0*(1.0/(x+v)-1.0);
-	default:
-	  THROW(not_implemented, "Not implemented");
-	}
+      {
+        case ATOOLS::subscheme::CS:
+          return  -4.0*(1.0-x)/x;
+        case ATOOLS::subscheme::Dire:
+          return  -4.0*( (x+v)/(ATOOLS::sqr(x+v) +v*(1-x-v)) -1);
+        case ATOOLS::subscheme::CSS:
+          return  -4.0*(1.0/(x+v)-1.0);
+        default:
+          THROW(not_implemented, "Not implemented");
+      }
     }
       
   if(FlavType()==FlavourType::gtogg)
     {
       switch(SubtractionType())
-	{
-	case 0:
-	  return -2.0*(1.0-x)/x;
-	case 1:
-	  return -2.0*( (x+v)/(ATOOLS::sqr(x+v) +v*(1-x-v)) -1);
-	case 2:
-	  return -2.0*(1.0/(x+v)-1.0);
-	default:
-	  THROW(not_implemented, "Not implemented");
-	}
+      {
+        case ATOOLS::subscheme::CS:
+          return -2.0*(1.0-x)/x;
+        case ATOOLS::subscheme::Dire:
+          return -2.0*( (x+v)/(ATOOLS::sqr(x+v) +v*(1-x-v)) -1);
+        case ATOOLS::subscheme::CSS:
+          return -2.0*(1.0/(x+v)-1.0);
+        default:
+          THROW(not_implemented, "Not implemented");
+      }
     }
       
   THROW(fatal_error, "Internal error");

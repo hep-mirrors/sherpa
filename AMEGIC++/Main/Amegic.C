@@ -132,7 +132,6 @@ void Amegic::RegisterDefaults() const
   s["CHECK_THRESHOLD"].SetDefault(0.0);
   s["LOOP_ME_INIT"].SetDefault(false);
   s["NLO_BVI_MODE"].SetDefault(0);
-  s["NLO_IPART"].SetDefault("QCD+QED");
   s["NLO_EPS_MODE"].SetDefault(0);
   s["NLO_DR_MODE"].SetDefault(0);
 }

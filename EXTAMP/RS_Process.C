@@ -172,7 +172,8 @@ namespace EXTAMP {
   {
     /* Get subtraction parameters */
     auto& s = ATOOLS::Settings::GetMainSettings();
-    int subtraction_type = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
+    ATOOLS::subscheme::code subtraction_type
+                    = s["DIPOLES"]["SCHEME"].Get<ATOOLS::subscheme::code>();
     double alphamin = s["DIPOLES"]["AMIN"].Get<double>();
     double alphamax = s["DIPOLES"]["ALPHA"].Get<double>();
 

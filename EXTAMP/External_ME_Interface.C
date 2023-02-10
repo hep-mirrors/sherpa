@@ -127,7 +127,8 @@ namespace EXTAMP{
     if ( nlotype&ATOOLS::nlo_type::vsub )
     {
       ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
-      int subtractiontype = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
+      ATOOLS::subscheme::code subtractiontype
+                          = s["DIPOLES"]["SCHEME"].Get<ATOOLS::subscheme::code>();
       double virtfrac     = s["VIRTUAL_EVALUATION_FRACTION"].Get<double>();
 	  if (virtfrac!=1.0)
 	    msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " << virtfrac << std::endl;

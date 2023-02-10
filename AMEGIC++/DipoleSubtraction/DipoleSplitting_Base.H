@@ -36,7 +36,7 @@ namespace AMEGIC {
     std::vector<ATOOLS::Vec4D> m_dpollist;
     std::vector<ATOOLS::Vec4D> m_mom;
     std::vector<double> m_pfactors;
-    int m_subtype;
+    ATOOLS::subscheme::code m_subtype;
     double m_spfdef;
     bool m_collVFF;
     int m_Vsubmode;
@@ -87,7 +87,7 @@ namespace AMEGIC {
     inline const ATOOLS::spt::splittingtype GetSplittingType() const   { return m_ftype; }
     inline void SetNLOMC(PDF::NLOMC_Base *const mc)
     { p_nlomc=mc; m_subtype=p_nlomc->SubtractionType();
-      if (m_subtype==1) m_kappa=1.0; }
+      if (m_subtype==ATOOLS::subscheme::Dire) m_kappa=1.0; }
   };
 
   inline std::ostream & operator<<(std::ostream & s,

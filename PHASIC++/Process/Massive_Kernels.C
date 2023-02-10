@@ -16,7 +16,7 @@ using namespace PHASIC;
 
 Massive_Kernels::Massive_Kernels(ATOOLS::sbt::subtype st,
                                  const size_t &nf, const size_t nmf) :
-  m_stype(st),
+  m_stype(st), m_subtype(subscheme::CS),
   m_nf(nf), m_nmf(nmf), m_NC(3.), m_CA(3.), m_CF(4./3.), m_TR(0.5),
   m_TRbyCA(m_TR/m_CA), m_CFbyCA(m_CF/m_CA), m_TRbyCF(m_TR/m_CF),
   m_g1t(0.), m_g2t(0.), m_g3t(0.), m_K1t(0.), m_K2t(0.), m_K3t(0.),
@@ -26,7 +26,6 @@ Massive_Kernels::Massive_Kernels(ATOOLS::sbt::subtype st,
   m_logaff(0.), m_logafi(0.), m_logaif(0.), m_logaii(0.),
   m_VNS(0.), m_gKterm(0.), m_aterm(0.), m_Vsubmode(1)
 {
-  m_subtype = 0;
   for (size_t i(1);i<=m_nf+m_nmf;i++) {
     Flavour flav((kf_code)(i));
     if (flav.IsMassive()) m_massflav.push_back(flav.Mass());
@@ -104,7 +103,7 @@ void Massive_Kernels::SetNC(const double &nc)
   }
 }
 
-void Massive_Kernels::SetSubType(const int subtype)
+void Massive_Kernels::SetSubType(const subscheme::code subtype)
 {
   m_subtype=subtype;
 }
@@ -197,14 +196,16 @@ void Massive_Kernels::CalcVNSq(double s,double mj,double mk)
     double Q=sqrt(Q2);
     m_VNS = m_g1t*(log(s/Q2)-2.*log(1.-mk/Q)-2.*mk/(Q+mk))
             +sqr(M_PI)/6.-DiLog(s/Q2);
-    if (m_subtype==1) m_VNS += .25-(Q-mk)*(Q+3.*mk)/(4.*sqr(Q+mk));
+    if (m_subtype==subscheme::Dire)
+      m_VNS += .25-(Q-mk)*(Q+3.*mk)/(4.*sqr(Q+mk));
   }
   else if (mk==0.) {
     double mj2=sqr(mj);
     double mk2=sqr(mk);
     double Q2=s+mj2+mk2;
     m_VNS = (m_g1t-2.)*log(s/Q2)+sqr(M_PI)/6.-DiLog(s/Q2)-mj2/s*log(mj2/Q2);
-    if (m_subtype==1) m_VNS += .25*(1.-(Q2+mj2)/(Q2-mj2))
+    if (m_subtype==subscheme::Dire)
+      m_VNS += .25*(1.-(Q2+mj2)/(Q2-mj2))
 			-mj2/(Q2-mj2)*(1.+(2.*Q2+mj2)/(Q2-mj2)*log(mj2/Q2)/2.);
   }
   else {
@@ -222,7 +223,7 @@ void Massive_Kernels::CalcVNSq(double s,double mj,double mk)
               -sqr(M_PI)/6.)/vjk
             +log(1.-mk/Q)-2.*log((sqr(Q-mk)-mj2)/Q2)-2.*mj2/s*log(mj/(Q-mk))
             -mk/(Q-mk)+2.*mk*(2.*mk-Q)/s+0.5*sqr(M_PI);
-    if (m_subtype==1) {
+    if (m_subtype==subscheme::Dire) {
       double muj=mj/Q, muk=mk/Q, muj2=mj2/Q2, muk2=mk2/Q2;
       m_VNS += .25+(muj2*((muj2*(.25+1./(1.-muk)-3.*log(muj/(1.-muk))))/(1.-muj2-muk2)
 	-2.*log(muj/(1.-muk))))/(1.-muj2-muk2)-((1.+4.*muj2+2.*(1.-muk)*muk-muk2)*sqr(1.-muk))/(4.*sqr(1.-muj2-muk2));
@@ -243,7 +244,7 @@ void Massive_Kernels::CalcVNSg(double s,double mk,bool ini)
       double rho1=sqrt(1.-4.*sqr(m_massflav[i])/s);
       m_VNS+=log(0.5+0.5*rho1)-rho1*(1.+sqr(rho1)/3.)
              -0.5*log(sqr(m_massflav[i])/s);
-      if (m_subtype==1) {
+      if (m_subtype==subscheme::Dire) {
 	double muj2=sqr(m_massflav[i])/s;
 	m_VNS+=3./4.*(12.*muj2*log((1.-rho1)/(1.+rho1))*(-4.-17.*muj2+4.*sqr(muj2))+
 	  (-1.-154.*muj2-152.*sqr(muj2)+64.*pow(muj2,3))*rho1)/(18.*sqr(1.-2.*muj2));
@@ -261,7 +262,7 @@ void Massive_Kernels::CalcVNSg(double s,double mk,bool ini)
     if (!simplev)
       m_VNS+=(m_kappa-2./3.)*sqr(mk)/s
              *((2.*m_nf*m_TRbyCA-1.)*log(2.*mk/(Q+mk)));
-    if (m_subtype==1) {
+    if (m_subtype==subscheme::Dire) {
       m_VNS += (muk2*log((2.*muk)/(1.+muk)))/(3.*(1.-muk2))+muk2/(2.*pow(1.+muk,3))-pow(muk/(1.+muk),3)/18.;
       m_VNS += m_nf*m_TR/m_CA*(-muk2*(9.-muk)/(9.*pow(1.+muk,3))-2.*muk2/(3.*(1.-muk2))*log(2.*muk/(1.+muk)));
     }
@@ -276,7 +277,7 @@ void Massive_Kernels::CalcVNSg(double s,double mk,bool ini)
              *(rho2*rho2*rho2*log((rho2-rho1)/(rho2+rho1))
                -log((1.-rho1)/(1.+rho1))-8.*rho1*sqr(m_massflav[i])/s);
       }
-      if (m_subtype==1) {
+      if (m_subtype==subscheme::Dire) {
 	double muj2=sqr(m_massflav[i])/(Q2+sqr(m_massflav[i]));
 	nfc += (-2.*muk2*((-8.*muj2*rho1)/(1-muk2)-log((1-rho1)/(1+rho1))+log((-rho1+rho2)/(rho1+rho2))*pow(rho2,3)))/(3.*(1.-muk2))
 	  -log((1.-rho1)/(1.+rho1))*((3.-2.*muj2)/(3.*(1-muk2))-(muj2*(3.+2.*muj2-(2.*muj2*(9.+5.*muj2))/(1.-2.*muj2-muk2)))/(3.*(1.-2.*muj2-muk2)*muj2))
@@ -324,18 +325,18 @@ void Massive_Kernels::CalcGamma(ist::itype type, double mu2, double s, double m)
   case ist::q:
     p_Gammat[0]=0.;
     p_Gammat[1]=m_g1t;
-    if (m_subtype==1) p_Gammat[0]+=-1./4.;
+    if (m_subtype==subscheme::Dire) p_Gammat[0]+=-1./4.;
     break;
   case ist::g:
     p_Gammat[0]=0.;
     p_Gammat[1]=m_g2t;
-    if (m_subtype==1) p_Gammat[0]+=1./36.-m_nf*m_TRbyCA/18.;
+    if (m_subtype==subscheme::Dire) p_Gammat[0]+=1./36.-m_nf*m_TRbyCA/18.;
     break;
   case ist::Q:
   case ist::sG:
     p_Gammat[0]=0.5*log(sqr(m)/mu2)-2.;
     p_Gammat[1]=1.;
-    if (m_subtype==1) p_Gammat[0]+=-1./4.;
+    if (m_subtype==subscheme::Dire) p_Gammat[0]+=-1./4.;
     break;
   case ist::sQ:
     p_Gammat[0]=log(sqr(m)/mu2)-2.;
@@ -699,7 +700,7 @@ double Massive_Kernels::Kb2(int type)
 double Massive_Kernels::Kb3(int type,double x)
 {
   double me(0.0);
-  if (m_subtype==2) me=2.*log((2.-x)/(1.-x));
+  if (m_subtype==subscheme::CSS) me=2.*log((2.-x)/(1.-x));
   if (m_stype==sbt::qed && type==4) return 0.;
   switch(type) {
   case 1:
@@ -830,21 +831,25 @@ double Massive_Kernels::Kt3(int type,double x)
   switch(type) {
   case 1:
     ax*=(1.+x*x)/(1.-x);
-    if (m_subtype==1) ax+=-(1.-x);
-    if (m_subtype==2) ax+=2.-(1.-x)-4.*log((2.-x)/(1.-x));
+    if (m_subtype==subscheme::Dire) ax+=-(1.-x);
+    if (m_subtype==subscheme::CSS)  ax+=2.-(1.-x)-4.*log((2.-x)/(1.-x));
     return -(1.+x)*log(1.-x)+ax;
   case 2:
     ax*=(1.+sqr(1.-x))/x;
-    if (m_subtype&3) ax+=(1.-x)+2.*log(x)/x;
+    if (m_subtype==subscheme::Dire || m_subtype==subscheme::CSS)
+      ax+=(1.-x)+2.*log(x)/x;
     return m_CFbyCA*((1.+sqr(1.-x))/x*log(1.-x)+ax);
   case 3:
     ax*=(1.-2.*x*(1.-x));
-    if (m_subtype&3) ax+=-(1.-x)*(1.-3.*x);
+    if (m_subtype==subscheme::Dire || m_subtype==subscheme::CSS)
+      ax+=-(1.-x)*(1.-3.*x);
     return m_TRbyCF*((x*x+sqr(1.-x))*log(1.-x)+ax);
   case 4:
     ax*=x/(1.-x)+(1.-x)/x+x*(1.-x);
-    if (m_subtype==1) ax+=0.5*(1.-x*(4.-3.*x)+2.*log(x)/x);
-    if (m_subtype==2) ax+=0.5*(3.-x*(4.-3.*x)+2.*log(x)/x-4.*log((2.-x)/(1.-x)));
+    if (m_subtype==subscheme::Dire)
+      ax+=0.5*(1.-x*(4.-3.*x)+2.*log(x)/x);
+    if (m_subtype==subscheme::CSS)
+      ax+=0.5*(3.-x*(4.-3.*x)+2.*log(x)/x-4.*log((2.-x)/(1.-x)));
     return 2.*((1.-x)/x-1.+x*(1.-x))*log(1.-x)+2.*ax;
   }
   return 0.;
@@ -972,7 +977,7 @@ double Massive_Kernels::t2(int type,int spin,double muq2)
 
 double Massive_Kernels::t2c(int type,int spin,double muq2,double saj)
 {
-  if (m_subtype==1) {
+  if (m_subtype==subscheme::Dire) {
     double gc=0.0, muq(sqrt(muq2));
     switch(spin) {// FS parton, spectator must be massless
     case 1:// muq is scaled quark mass

@@ -18,8 +18,8 @@ namespace EXTAMP {
   double BVI_Process::m_NF = 5.0;
 
   BVI_Process::BVI_Process(const PHASIC::Process_Info& pi,
-			   const double& vfrac,
-			   const int& subtraction_type) :
+         const double& vfrac,
+         const ATOOLS::subscheme::code &subtraction_type) :
     Process(pi), m_vfrac(vfrac), m_subtype(subtraction_type)
   {
 
@@ -279,16 +279,17 @@ namespace EXTAMP {
   }
 
   
-  double BVI_Process::Vi_eps0(const ATOOLS::Flavour& flav, int subtype)
+  double BVI_Process::Vi_eps0(const ATOOLS::Flavour& flav,
+                              ATOOLS::subscheme::code subtype)
   {
-    if(subtype==1)
+    if(subtype==subscheme::Dire)
       {
 	if(flav.IsGluon())
 	  return m_CA*(50./9.-M_PI*M_PI/2.0 + 1./36.) +  m_NF  * m_TR * (-16./9.-1./18.);
 	if(flav.IsQuark())
 	  return m_CF*(5.0-sqr(M_PI)/2.0 - 1./4.);
       }
-    else if(subtype==0||subtype==2)
+    else if(subtype==subscheme::CS||subtype==subscheme::CSS)
       {
 	if(flav.IsGluon())
 	  return m_CA*(50./9.-M_PI*M_PI/2.0) +  m_NF  * m_TR * (-16./9.);

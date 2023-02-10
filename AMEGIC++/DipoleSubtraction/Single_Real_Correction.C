@@ -32,7 +32,7 @@ using namespace std;
 Single_Real_Correction::Single_Real_Correction() :
   m_newlib(false), m_no_tree(false), m_listdips(false),
   m_iresult(0.), m_smear_threshold(0.), m_smear_power(0.),
-  m_libnumb(0), m_ossubon(0),
+  m_libnumb(0), m_ossubon(0), m_user_stype(sbt::none),
   m_pspisrecscheme(0), m_pspfsrecscheme(0),
   p_partner(this), p_tree_process(NULL)
 {
@@ -47,7 +47,10 @@ Single_Real_Correction::Single_Real_Correction() :
   m_smear_threshold=ToType<double>(rpa->gen.Variable("NLO_SMEAR_THRESHOLD"));
   m_smear_power=ToType<double>(rpa->gen.Variable("NLO_SMEAR_POWER"));
 
-  auto dipolesettings = Settings::GetMainSettings()["DIPOLES"];
+  Settings& s = Settings::GetMainSettings();
+  m_user_stype = s["NLO_SUBTRACTION_MODE"].Get<sbt::subtype>();
+
+  Scoped_Settings dipolesettings = Settings::GetMainSettings()["DIPOLES"];
   m_listdips = dipolesettings["LIST"].Get<size_t>();
   m_pspisrecscheme = dipolesettings["PFF_IS_RECOIL_SCHEME"].Get<size_t>();
   m_pspfsrecscheme = dipolesettings["PFF_FS_RECOIL_SCHEME"].Get<size_t>();
@@ -174,31 +177,38 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
         bool isPFFsplitting(false);
         if (cinfo.m_maxcpl[0]>=1.) {
           if (m_flavs[i].IsQCD() && m_flavs[j].IsQCD() && m_flavs[k].IsQCD()) {
-            stypes.push_back(sbt::qcd);
+            if (m_user_stype&sbt::qcd) stypes.push_back(sbt::qcd);
+            else msg_Debugging()<<"QCD subtraction possible, but not wanted."
+                                <<std::endl;
           }
         }
         else msg_Debugging()<<"No QCD subtraction possible."<<std::endl;
         if (cinfo.m_maxcpl[1]>=1.) {
+          bool qedsub(false);
           if (m_flavs[i].IsPhoton() && m_flavs[j].Charge() &&
               m_flavs[k].Charge()) {
-            stypes.push_back(sbt::qed);
+            qedsub=true;
           }
           else if (m_flavs[i].Charge() && m_flavs[j].IsPhoton() &&
               m_flavs[k].Charge()) {
-            stypes.push_back(sbt::qed);
+            qedsub=true;
           }
           else if (i<m_nin &&
                    m_flavs[i].Charge() && m_flavs[j].Charge() &&
                    m_flavs[i]==m_flavs[j] && AllowAsSpecInISPFF(k)) {
-            stypes.push_back(sbt::qed);
+            qedsub=true;
             isPFFsplitting=true;
           }
           else if (i>=m_nin &&
                    m_flavs[i].Charge() && m_flavs[j].Charge() &&
                    m_flavs[i]==m_flavs[j].Bar() && AllowAsSpecInFSPFF(k)) {
-            stypes.push_back(sbt::qed);
+            qedsub=true;
             isPFFsplitting=true;
           }
+          if (qedsub)
+            if (m_user_stype&sbt::qed) stypes.push_back(sbt::qed);
+            else msg_Debugging()<<"QED subtraction possible, but not wanted."
+                                <<std::endl;
         }
         else msg_Debugging()<<"No QED subtraction possible."<<std::endl;
         std::string ststr("");

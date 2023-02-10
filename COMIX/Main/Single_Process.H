@@ -36,7 +36,8 @@ namespace COMIX {
     double m_w, m_dxs, m_x[2];
     bool   m_checkpoles, m_allowmap, m_hasmapfile;
 
-    ATOOLS::cs_itype::type m_itype;
+    ATOOLS::sbt::subtype   m_user_stype;
+    ATOOLS::cs_itype::type m_user_imode;
     ATOOLS::NLO_subevtlist m_subs;
 
     void InitPSGenerator(const size_t &ismode);

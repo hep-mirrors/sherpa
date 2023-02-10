@@ -96,7 +96,7 @@ void VVV_SCalculator<SType>::ConstructSDipole()
     Vec4D pi(p_v->Kin()->PI()), pj(p_v->Kin()->PJ());
     double pipj(pi*pj), sl(1.0);
     double zim(zi), zjm(zj), zti(zi), ztj(zj);
-    if (p_v->Info()->SubType()==1) {
+    if (p_v->Info()->SubType()==subscheme::Dire) {
       zti=1.0-(1.0-zti)*(1.0-p_v->Kin()->Y());
       ztj=1.0-(1.0-ztj)*(1.0-p_v->Kin()->Y());
     }
@@ -123,7 +123,7 @@ void VVV_SCalculator<SType>::ConstructSDipole()
     Vec4D pi(p_v->Kin()->PI()), pj(p_v->Kin()->PJ());
     Ai=2.0*(zi-y)/(1.0-zi+y);
     Aj=2.0*(zj-y)/(1.0-zj+y);
-    if (p_v->Info()->SubType()==2) {
+    if (p_v->Info()->SubType()==subscheme::CSS) {
       Ai=2.0*zi/(1.0-zi+y);
       Aj=2.0*zj/(1.0-zj+y);
     }
@@ -138,7 +138,7 @@ void VVV_SCalculator<SType>::ConstructSDipole()
     Vec4D pi(p_v->Kin()->PJ()), pk(p_v->Kin()->PK());
     Ai=2.0*(x-ui)/(1.0-x+ui);
     Aj=2.0*x*(1.0-x);
-    if (p_v->Info()->SubType()==2 &&
+    if (p_v->Info()->SubType()==subscheme::CSS &&
 	!p_v->Kin()->Massive()) {
       Ai=2.0*x/(1.0-x+ui);
     }
@@ -158,11 +158,13 @@ void VVV_SCalculator<SType>::ConstructSDipole()
     double x(p_v->Kin()->Z()), vi(p_v->Kin()->Y());
     Vec4D pi(p_v->Kin()->PJ()), pk(-p_v->Kin()->PK());
     double z(x), tc((1.0-x)/x);
-    if (p_v->Info()->SubType()&3) z=x+vi;
-    if (p_v->Info()->SubType()&3) tc+=1.0/(x+vi)-1.0/x;
+    if (p_v->Info()->SubType()==subscheme::Dire ||
+        p_v->Info()->SubType()==subscheme::CSS) z=x+vi;
+    if (p_v->Info()->SubType()==subscheme::Dire ||
+        p_v->Info()->SubType()==subscheme::CSS) tc+=1.0/(x+vi)-1.0/x;
     Ai=2.0*x/(1.0-x);
     Aj=2.0*z*(1.0-z);
-    if (p_v->Info()->SubType()==2) Ai+=2.0*(z/(1.0-x)-x/(1.0-x));
+    if (p_v->Info()->SubType()==subscheme::CSS) Ai+=2.0*(z/(1.0-x)-x/(1.0-x));
     if (p_v->Kin()->Swap()) std::swap<double>(Ai,Aj);
     B=-2.0*tc;
     q=pi-vi*pk;

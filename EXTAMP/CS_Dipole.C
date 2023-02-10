@@ -43,9 +43,11 @@ std::ostream& EXTAMP::operator<<(std::ostream& str, const Dipole_Info& di)
 
 
 Dipole_Info::Dipole_Info(const ATOOLS::Flavour_Vector& flavs,
-			 const size_t& i, const size_t& j, const size_t& k,
-			 const int& subtrtype, const double& alphamin, const double& alphamax)
-  : m_real_flavs(flavs), m_subtype(subtrtype), m_alphamin(alphamin), m_alphamax(alphamax)
+                         const size_t& i, const size_t& j, const size_t& k,
+                         const ATOOLS::subscheme::code& subtrtype,
+                         const double& alphamin, const double& alphamax)
+  : m_real_flavs(flavs), m_subtype(subtrtype),
+    m_alphamin(alphamin), m_alphamax(alphamax)
 {
 
   /* Position of flavours i,j,k in the real emission flavour vector */
@@ -105,9 +107,9 @@ CS_Dipole::CS_Dipole(const Dipole_Info& di)
 
   switch (SubtractionType())
     {
-    case 0: break;
-    case 1: break;
-    case 2: break;
+    case ATOOLS::subscheme::CS: break;
+    case ATOOLS::subscheme::Dire: break;
+    case ATOOLS::subscheme::CSS: break;
     default: THROW(not_implemented, "Subtraction type "+
 		   ATOOLS::ToString(SubtractionType())+
 		   " not implemented");

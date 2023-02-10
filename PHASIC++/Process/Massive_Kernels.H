@@ -31,7 +31,8 @@ namespace PHASIC {
   class Massive_Kernels {
   protected:
     const ATOOLS::sbt::subtype m_stype;
-    size_t m_nf,m_nmf,m_subtype;
+    ATOOLS::subscheme::code m_subtype;
+    size_t m_nf,m_nmf;
     double m_NC,m_CA,m_CF,m_TR,m_TRbyCA,m_CFbyCA,m_TRbyCF;
     double m_g1t,m_g2t,m_g3t,m_K1t,m_K2t,m_K3t;
     double m_beta0qcd, m_beta0qed;
@@ -66,7 +67,7 @@ namespace PHASIC {
 
     void SetAlpha(double aff, double afi, double aif, double aii); 
     void SetNC(const double &n);
-    void SetSubType(const int type);
+    void SetSubType(const ATOOLS::subscheme::code type);
 
     inline void   SetKappa(double k)                { m_kappa=k; }
 

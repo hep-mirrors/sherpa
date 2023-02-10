@@ -625,14 +625,39 @@ default until 1.2.1.
 Dipole subtraction
 ==================
 
-.. index:: DIPOLES_ALPHA
-.. index:: DIPOLES_KAPPA
-.. index:: DIPOLES_NF_GSPLIT
-.. index:: DIPOLES_AMIN
+.. index:: NLO_SUBTRACTION_MODE
+.. index:: NLO_SUBTRACTION_SCHEME
+.. index:: ALPHA
+.. index:: ALPHA_FF
+.. index:: ALPHA_FI
+.. index:: ALPHA_IF
+.. index:: ALPHA_II
+.. index:: KAPPA
+.. index:: NF_GSPLIT
+.. index:: AMIN
+.. index:: LIST
 
-This list of parameters can be used to optimize the performance when
-employing the Catani-Seymour dipole subtraction :cite:`Catani1996vz`
-as implemented in Amegic :cite:`Gleisberg2007md`.  The dipole
+There is one general switch that governs the behaviour of the
+Catani-Seymour subtraction :cite:`Catani1996vz` as implemented
+in Sherpa :cite:`Gleisberg2007md,Schonherr2017qcj`.
+`NLO_SUBTRACTION_MODE` defines which type of divergences will
+be subtracted (both off the virtual and real amplitudes).
+Options are:
+
+:option:`QCD`
+  Only QCD infrared divergences will be subtracted.
+  This is the default as most users will be familiar with this
+  setting corresponding to the abililities of older Sherpa
+  versions.
+
+:option:`QED`
+  Only QED infrared divergences will be subtracted.
+
+:option:`QCD+QED`
+  All Standard Model infrared divergences will be subtracted.
+
+Further, the following list of parameters can be used to optimise
+the performance of the dipole subtraction.  These dipole
 parameters are specified as subsettings to the ``DIPOLES`` setting,
 like this:
 
@@ -645,6 +670,25 @@ like this:
 
 The following parameters can be customised:
 
+:option:`SCHEME`
+  Defines the finite parts of the splitting functions used.
+  Options are:
+
+  `CS`,
+  this is the standard Catani-Seymour subtraction definition
+  of the splitting functions. This is the default for fixed-order
+  calculations.
+
+  `Dire`,
+  this selects the modified splitting functions used in the Dire
+  dipole shower. It is the default for MC@NLO calculations matching
+  to Dire.
+
+  `CSS`,
+  this selects the modified splitting functions used in the CSS
+  parton shower. It is the default for MC@NLO calculations matching
+  to the CSS.
+
 :option:`ALPHA`
   Specifies a dipole cutoff in the nonsingular region :cite:`Nagy2003tz`.
   Changing this parameter shifts contributions from the subtracted real
@@ -656,6 +700,9 @@ The following parameters can be customised:
   reduced number of contributing dipole terms. For most processes
   a reasonable choice is between 0.01 and 1 (default). See also
   :ref:`Choosing DIPOLES ALPHA`
+
+:option:`ALPHA_FF, ALPHA_FI, ALPHA_IF, ALPHA_II`
+  Specifies the above dipole alpha only for FF, FI, IF, or II dipoles, respectively.
 
 :option:`AMIN`
   Specifies the cutoff of real correction terms in the infrared reagion
@@ -670,3 +717,6 @@ The following parameters can be customised:
 :option:`KAPPA`
   Specifies the kappa-parameter in the massive dipole subtraction formalism
   :cite:`Catani2002hc`. The default is 2.0/3.0.
+
+:option:`LIST`
+  If set to 1 all generated dipoles will be listed for all generated processes.

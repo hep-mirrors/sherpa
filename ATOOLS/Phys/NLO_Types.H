@@ -179,6 +179,17 @@ namespace ATOOLS {
   std::ostream &operator<<(std::ostream &ostr,const sbt::subtype &st);
   std::istream &operator>>(std::istream &str,sbt::subtype &st);
 
+  struct subscheme {
+    enum code {
+      CS        = 0,
+      Dire      = 1,
+      CSS       = 2
+    };
+  };// end of struct subtraction_variant
+
+  std::ostream &operator<<(std::ostream &ostr,const subscheme::code &ss);
+  std::istream &operator>>(std::istream &str,subscheme::code &ss);
+
   struct dpt {
     enum dipoletype {
       none = 0,

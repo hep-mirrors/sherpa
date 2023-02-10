@@ -10,7 +10,7 @@ using namespace PDF;
 using namespace ATOOLS;
 
 NLOMC_Base::NLOMC_Base(const std::string& name)
-    : m_name(name), p_shower(NULL), m_subtype(0)
+    : m_name(name), p_shower(NULL), m_subtype(subscheme::CS)
 {
   m_kt2min[0]=m_kt2min[1]=-1.0;
 }

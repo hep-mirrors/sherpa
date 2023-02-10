@@ -18,7 +18,7 @@ namespace EXTAMP {
 
     BVI_Process(const PHASIC::Process_Info& pi,
 		const double& vfrac,
-		const int& subtraction_type);
+    const ATOOLS::subscheme::code& subtraction_type);
     
     ~BVI_Process();
 
@@ -30,10 +30,8 @@ namespace EXTAMP {
 
   private :
 
-    /* Subtraction scheme: O: plain CS
-                           1: Dire
-			   2: modfied CS */
-    int m_subtype;
+    /* Subtraction scheme: plain CS, Dire, or CSS (modfied CS, as used in CSS) */
+    ATOOLS::subscheme::code m_subtype;
 
     /* Evaluate virtuals only for a fraction m_vfrac of PS points */
     double m_vfrac;
@@ -73,7 +71,8 @@ namespace EXTAMP {
     /* epsilon^0, epsilon^{-1}, epsilon^{-2} coefficients of eq.
        (5.32) through (5.34) of arXiv:hep-ph/9605323, linearly
        combined according to (8.13) and (8.14) */
-    static double Vi_eps0(const ATOOLS::Flavour& fl, int subtype);
+    static double Vi_eps0(const ATOOLS::Flavour& fl,
+                          ATOOLS::subscheme::code subtype);
     static double Vi_eps1(const ATOOLS::Flavour& fl);
     static double Vi_eps2(const ATOOLS::Flavour& fl);
 

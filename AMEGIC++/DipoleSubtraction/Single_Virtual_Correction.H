@@ -23,9 +23,8 @@ namespace AMEGIC {
 
   protected:
     std::string             m_ptypename,m_pslibname;
-    ATOOLS::sbt::subtype    m_stype;
-    ATOOLS::sbt::subtype    m_ipart;
-    ATOOLS::cs_itype::type  m_itype;
+    ATOOLS::sbt::subtype    m_stype,m_user_stype;
+    ATOOLS::cs_itype::type  m_user_imode;
     double                  m_iresult;
     Phase_Space_Generator * p_psgen;
     PHASIC::Multi_Channel * p_fsmc;

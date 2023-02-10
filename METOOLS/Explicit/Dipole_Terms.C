@@ -96,7 +96,7 @@ NLO_Value METOOLS::FFQQ(const I_Args &a,const Dipole_Info *info)
   NLO_Value i(FFVS(a,info)+FFGQQ(a,info));
   i.m_f+=FFVNSQQ(a,info)-sqr(M_PI)/3.0;
   i.m_f+=7.0/2.0-sqr(M_PI)/6.0+2.0*FFAE(a,info)+FFACQQ(a,info);
-  if (info->SubType()==1) i.m_f-=1.0/4.0;
+  if (info->SubType()==subscheme::Dire) i.m_f-=1.0/4.0;
   return i;
 }
 
@@ -155,7 +155,7 @@ NLO_Value METOOLS::FFGQ(const I_Args &a,const Dipole_Info *info,const double &m)
   NLO_Value i(FFGGQ(a,info,m));
   i.m_f+=FFVNSGQ(a,info,m);
   i.m_f+=(m?0.0:-10.0/9.0)+FFACGQ(a,info,m);
-  if (info->SubType()==1) i.m_f-=1.0/18.0;
+  if (info->SubType()==subscheme::Dire) i.m_f-=1.0/18.0;
   return i;
 }
 
@@ -225,7 +225,7 @@ NLO_Value METOOLS::FFGG(const I_Args &a,const Dipole_Info *info)
   NLO_Value i(FFVS(a,info)+FFGGG(a,info));
   i.m_f+=FFVNSGG(a,info)-sqr(M_PI)/3.0;
   i.m_f+=67.0/18.0-sqr(M_PI)/6.0+2.0*FFAE(a,info)+FFACGG(a,info);
-  if (info->SubType()==1) i.m_f+=1.0/36.0;
+  if (info->SubType()==subscheme::Dire) i.m_f+=1.0/36.0;
   return i;
 }
 

@@ -194,8 +194,6 @@ void Initialization_Handler::RegisterDefaults()
 
   s["OVERRIDE_PDF_INFO"].SetDefault(false);
 
-  s["NLO_SUBTRACTION_SCHEME"].SetDefault(2);
-
   Scoped_Settings metssettings{ Settings::GetMainSettings()["METS"] };
   metssettings["CLUSTER_MODE"].SetDefault(0);
 
@@ -271,6 +269,7 @@ void Initialization_Handler::RegisterDefaults()
 
   s["COMIX_DEFAULT_GAUGE"].SetDefault(1);
 
+  s["DIPOLES"]["SCHEME"].SetDefault(subscheme::CSS);
   s["DIPOLES"]["KAPPA"].SetDefault(2.0/3.0);
 
   s["COUPLINGS"].SetDefault("Alpha_QCD 1");

@@ -27,10 +27,12 @@ using namespace ATOOLS;
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
   p_bg(NULL), p_hc(NULL), p_map(NULL),
-  p_loop(NULL), p_kpterms(NULL)
+  p_loop(NULL), p_kpterms(NULL),
+  m_user_stype(sbt::none), m_user_imode(cs_itype::none)
 {
   Settings& s = Settings::GetMainSettings();
-  m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
+  m_user_stype = s["NLO_SUBTRACTION_MODE"].Get<sbt::subtype>();
+  m_user_imode = s["NLO_IMODE"].Get<cs_itype::type>();
   m_allowmap = s["KFACTOR_ALLOW_MAPPING"].SetDefault(true).Get<bool>();
   m_checkpoles = s["COMIX"]["CHECK_POLES"].SetDefault(false).Get<bool>();
 }
@@ -126,11 +128,13 @@ bool COMIX::Single_Process::Initialize
   // smode -> 0 LO, 1 RS, 2 I, 4 B, 8 Polecheck, 16 V
   if (m_pinfo.m_fi.m_nlocpl.size()) {
     if (m_pinfo.m_fi.m_nlocpl[0]==0. &&
-	m_pinfo.m_fi.m_nlocpl[1]==0.) stype=0;
-    else if (m_pinfo.m_fi.m_nlocpl[0]==1. &&
-	     m_pinfo.m_fi.m_nlocpl[1]==0.) stype=0;
-    else if (m_pinfo.m_fi.m_nlocpl[0]==0. &&
-	     m_pinfo.m_fi.m_nlocpl[1]==1.) stype=1;
+        m_pinfo.m_fi.m_nlocpl[1]==0.) stype=0;
+    else if (m_user_stype&sbt::qcd &&
+             m_pinfo.m_fi.m_nlocpl[0]==1. &&
+             m_pinfo.m_fi.m_nlocpl[1]==0.) stype=0;
+    else if (m_user_stype&sbt::qed &&
+             m_pinfo.m_fi.m_nlocpl[0]==0. &&
+             m_pinfo.m_fi.m_nlocpl[1]==1.) stype=1;
     else THROW(fatal_error,"Cannot do NLO QCD+EW");
     msg_Debugging()<<"Subtraction type: "<<(sbt::subtype)(stype+1)<<"\n";
   }
@@ -158,7 +162,7 @@ bool COMIX::Single_Process::Initialize
       minacpl[i]-=m_pinfo.m_fi.m_nlocpl[i];
     }
   if (p_bg->Initialize(m_nin,m_nout,m_flavs,isf,fsf,mapstream,
-		       &*p_model,&m_cpls,stype,smode,m_itype,
+           &*p_model,&m_cpls,stype,smode,m_user_imode,
 		       maxcpl,mincpl,maxacpl,minacpl,
 		       m_pinfo.m_ntchan,m_pinfo.m_mtchan,m_name)) {
     m_mincpl.resize(p_bg->MinCpl().size());
@@ -186,12 +190,12 @@ bool COMIX::Single_Process::Initialize
 	}
       p_bg->DInfo()->SetMassive(massive);
       p_kpterms = new KP_Terms(this, ATOOLS::sbt::qcd, pl);
-      p_kpterms->SetIType(m_itype);
+      p_kpterms->SetIType(m_user_imode);
       p_kpterms->SetCoupling(&m_cpls);
       m_mewgtinfo.m_type|=
-	((m_itype&cs_itype::I)?mewgttype::VI:mewgttype::none);
+  ((m_user_imode&cs_itype::I)?mewgttype::VI:mewgttype::none);
       m_mewgtinfo.m_type|=
-	(((m_itype&cs_itype::K)||(m_itype&cs_itype::P))?
+  (((m_user_imode&cs_itype::K)||(m_user_imode&cs_itype::P))?
 	 mewgttype::KP:mewgttype::none);
       if (smode&4) m_mewgtinfo.m_type|=mewgttype::B;
     }
@@ -290,7 +294,7 @@ bool COMIX::Single_Process::MapProcess()
 	  for (size_t j(0);j<m_nin+m_nout;++j)
 	    if (m_flavs[j].Strong()) pl.push_back(j);
 	  p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
-	  p_kpterms->SetIType(p_map->m_itype);
+    p_kpterms->SetIType(p_map->m_user_imode);
 	  p_kpterms->SetCoupling(&p_map->m_cpls);
 	}
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";
@@ -341,7 +345,7 @@ bool COMIX::Single_Process::MapProcess()
 	for (size_t j(0);j<m_nin+m_nout;++j)
 	  if (m_flavs[j].Strong()) pl.push_back(j);
 	p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
-	p_kpterms->SetIType(p_map->m_itype);
+  p_kpterms->SetIType(p_map->m_user_imode);
 	p_kpterms->SetCoupling(&p_map->m_cpls);
       }
       mapname=p_map->Name();
@@ -582,7 +586,7 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
   DEBUG_FUNC("");
   m_x[0]=m_x[1]=1.0;
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return;
-  if (!((m_itype&cs_itype::K) || (m_itype&cs_itype::P))) return;
+  if (!((m_user_imode&cs_itype::K) || (m_user_imode&cs_itype::P))) return;
   const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
   double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBunch(0).PPlus():
 	      p0.PMinus()/rpa->gen.PBunch(1).PMinus());

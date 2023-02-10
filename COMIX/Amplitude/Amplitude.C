@@ -63,9 +63,9 @@ Amplitude::Amplitude():
   p_dinfo->SetNf(s["DIPOLES"]["NF_GSPLIT"].Get<int>());
   p_dinfo->SetKT2Max(s["DIPOLES"]["KT2MAX"].Get<double>());
   p_dinfo->SetDRMode(0);
-  const int subtype{ s["NLO_SUBTRACTION_SCHEME"].Get<int>() };
+  const subscheme::code subtype{ s["DIPOLES"]["SCHEME"].Get<subscheme::code>() };
   p_dinfo->SetSubType(subtype);
-  if (subtype==1) p_dinfo->SetKappa(1.0);
+  if (subtype==subscheme::Dire) p_dinfo->SetKappa(1.0);
   m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");
   m_smpow=GetParameter<double>("NLO_SMEAR_POWER");
 }

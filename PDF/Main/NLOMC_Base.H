@@ -35,7 +35,7 @@ namespace PDF {
 
     ATOOLS::Weights_Map m_weightsmap;
 
-    int m_subtype;
+    ATOOLS::subscheme::code m_subtype;
 
   public:
 
@@ -59,7 +59,7 @@ namespace PDF {
 
     inline void SetShower(Shower_Base *const shower) { p_shower=shower; }
 
-    inline int SubtractionType() const { return m_subtype; }
+    inline ATOOLS::subscheme::code SubtractionType() const { return m_subtype; }
 
   };// end of class NLOMC_Base
 

@@ -57,6 +57,7 @@ void Matrix_Element_Handler::RegisterDefaults()
     .SetDefault(1)
     .SetReplacementList(hls::HelicitySchemeTags());
 
+  s["NLO_SUBTRACTION_MODE"].SetDefault("QCD");
   s["NLO_IMODE"].SetDefault("IKP");
   s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].SetDefault(true);
 

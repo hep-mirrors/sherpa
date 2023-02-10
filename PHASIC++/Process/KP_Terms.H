@@ -20,6 +20,7 @@ namespace PHASIC {
     ATOOLS::sbt::subtype       m_stype;
     ATOOLS::cs_itype::type     m_itype;
     ATOOLS::cs_kcontrib::type  m_kcontrib;
+    ATOOLS::subscheme::code    m_subtype;
 
     Process_Base    *p_proc;
     PDF::NLOMC_Base *p_nlomc;
@@ -33,7 +34,7 @@ namespace PHASIC {
     double m_kpca[8], m_kpcb[8], m_cpldef, m_NC;
     int    m_Vsubmode, m_facscheme;
     bool   m_sa,m_sb;
-    int    m_typea, m_typeb, m_subtype;
+    int    m_typea, m_typeb;
 
     std::vector<size_t> m_plist;
 

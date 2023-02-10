@@ -30,6 +30,7 @@ namespace AMEGIC {
     double                  m_smear_threshold, m_smear_power;
     int                     m_libnumb;
     bool                    m_ossubon;
+    ATOOLS::sbt::subtype    m_user_stype;
     size_t                  m_pspisrecscheme,m_pspfsrecscheme;
 
     Single_Real_Correction     * p_partner;

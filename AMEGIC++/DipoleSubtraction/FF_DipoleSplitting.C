@@ -46,7 +46,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
     m_Q2*m_yijk*m_zi*m_zj;
 
   double zi(m_zi), zj(m_zj);
-  if (m_subtype==1) {
+  if (m_subtype==subscheme::Dire) {
     zi=1.0-(1.0-zi)*(1.0-m_yijk);
     zj=1.0-(1.0-zj)*(1.0-m_yijk);
   }
@@ -95,7 +95,7 @@ double FF_DipoleSplitting::GetValue()
 void FF_DipoleSplitting::CalcDiPolarizations()
 {
   double zi(m_zi), zj(m_zj);
-  if (m_subtype==1) {
+  if (m_subtype==subscheme::Dire) {
     zi=1.0-(1.0-zi)*(1.0-m_yijk);
     zj=1.0-(1.0-zj)*(1.0-m_yijk);
   }
@@ -174,7 +174,7 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pt2   =     m_ptij;
 
   double zi(m_zi), zj(m_zj);
-  if (m_subtype==1) {
+  if (m_subtype==subscheme::Dire) {
     zi=1.0-(1.0-zi)*(1.0-m_yijk);
     zj=1.0-(1.0-zj)*(1.0-m_yijk);
   }
@@ -190,13 +190,13 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   case spt::g2qq:
     m_sff = (1.-2.*m_kappa*(m_zpm-m_mi2/(m_pi+m_pj).Abs2()))/m_vijk;
     m_av  = m_sff - 2.0 * ( m_zi*m_zj - m_zpm )/m_vijk;
-    if (m_subtype==1) m_av = m_sff - ( zi*(1.-zi) + zj*(1.-zj) - 2.*m_zpm )/m_vijk;
+    if (m_subtype==subscheme::Dire) m_av = m_sff - ( zi*(1.-zi) + zj*(1.-zj) - 2.*m_zpm )/m_vijk;
     break;
   case spt::g2gg:
     m_sff = 1./(1.-m_zi*(1.-m_yijk))+1./(1.-m_zj*(1.-m_yijk))
             -(2.-m_kappa*m_zpm)/m_vijk;
     m_av  = m_sff + ( m_zi*m_zj - m_zpm )/m_vijk;
-    if (m_subtype==1) m_av = m_sff + ( zi*(1.-zi) + zj*(1.-zj) - 2.*m_zpm )/(2.*m_vijk);
+    if (m_subtype==subscheme::Dire) m_av = m_sff + ( zi*(1.-zi) + zj*(1.-zj) - 2.*m_zpm )/(2.*m_vijk);
     break;
   case spt::s2sg:
     m_sff = 2./(1.-m_zi*(1.-m_yijk))
@@ -255,7 +255,7 @@ double FF_MassiveDipoleSplitting::GetValue()
 void FF_MassiveDipoleSplitting::CalcDiPolarizations()
 {
   double zi(m_zi), zj(m_zj);
-  if (m_subtype==1) {
+  if (m_subtype==subscheme::Dire) {
     zi=1.0-(1.0-zi)*(1.0-m_yijk);
     zj=1.0-(1.0-zj)*(1.0-m_yijk);
   }

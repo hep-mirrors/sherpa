@@ -23,7 +23,7 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   p_mcatnlo(NULL), p_cluster(NULL), p_gamma(NULL)
 {
   Settings& s = Settings::GetMainSettings();
-  m_subtype=2;
+  m_subtype=subscheme::CSS;
   m_psmode=s["NLO_CSS_PSMODE"].Get<int>();
   if (m_psmode) msg_Info()<<METHOD<<"(): Set PS mode "<<m_psmode<<".\n";
   m_maxweight=s["NLO_CSS_MAXWEIGHT"].SetDefault(1.0e3).Get<double>();

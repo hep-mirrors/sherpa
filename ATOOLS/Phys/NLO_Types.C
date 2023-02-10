@@ -155,6 +155,26 @@ std::istream &ATOOLS::operator>>(std::istream &str,sbt::subtype &st)
   return str;
 }
 
+std::ostream &ATOOLS::operator<<(std::ostream &ostr,const subscheme::code &ss)
+{
+  if      (ss==subscheme::CS)   return ostr<<"CS";
+  else if (ss==subscheme::Dire) return ostr<<"Dire";
+  else if (ss==subscheme::CSS)  return ostr<<"CSS";
+  return ostr<<"UNKNOWN";
+}
+
+std::istream &ATOOLS::operator>>(std::istream &str,subscheme::code &ss)
+{
+  std::string tag;
+  str>>tag;
+  ss=subscheme::CS;
+  if (tag.find("1")!=std::string::npos)    ss=subscheme::Dire;
+  if (tag.find("Dire")!=std::string::npos) ss=subscheme::Dire;
+  if (tag.find("2")!=std::string::npos)    ss=subscheme::CSS;
+  if (tag.find("CSS")!=std::string::npos)  ss=subscheme::CSS;
+  return str;
+}
+
 std::ostream &ATOOLS::operator<<(std::ostream &ostr,const dpt::dipoletype &dt)
 {
   if      (dt==dpt::none) return ostr<<"NONE";
