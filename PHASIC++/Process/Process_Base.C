@@ -290,9 +290,19 @@ void Process_Base::Init(const Process_Info &pi,
 	  "-"+ToString(m_pinfo.m_nmaxq);
     }
   }
+  bool widthcheck = true;
   double massin=0.0, massout=0.0;
-  for (size_t i=0;i<m_nin;++i) massin+=m_flavs[i].Mass();
-  for (size_t i=m_nin;i<m_nin+m_nout;++i) massout+=m_flavs[i].Mass();
+  for (size_t i=0;i<m_nin;++i) {
+    massin+=m_flavs[i].Mass();
+    if (m_flavs[i].Width()>1.e-10) widthcheck=false;
+  }
+  for (size_t i=m_nin;i<m_nin+m_nout;++i) {
+    massout+=m_flavs[i].Mass();
+    if (m_flavs[i].Width()>1.e-10) widthcheck=false;
+  }
+  if (!widthcheck)
+    msg_Error()<<"Non-zero width for external particle in process "
+                << m_name << std::endl;
   p_int->SetISRThreshold(Max(massin,massout));
   p_int->Initialize(beamhandler,isrhandler);
   m_issymfac=1.0;
