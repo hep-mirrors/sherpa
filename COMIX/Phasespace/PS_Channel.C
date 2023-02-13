@@ -870,7 +870,7 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
 	  cur->In().front()->J(0)->Flav().Mass()==0. &&
           cur->In().front()->J(1)->Flav().Mass()==0.)
         m_s[(1<<m_n)-1-cur->CId()]=m_s[cur->CId()]=
-            m_p[cur->In().front()->J(0)->CId()].SmallMLDP
+            2.*m_p[cur->In().front()->J(0)->CId()].SmallMLDP
             (m_p[cur->In().front()->J(1)->CId()]);
 #ifdef DEBUG__BG
 	msg_Debugging()<<"  -p_"<<ID((1<<m_n)-1-cur->CId())
