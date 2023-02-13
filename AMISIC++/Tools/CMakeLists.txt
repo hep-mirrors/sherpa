@@ -5,7 +5,8 @@ set(Tools_SOURCES MI_Parameters.C
                   Impact_Parameter.C
                   Matter_Overlap.C
                   Interaction_Probability.C
-                  Over_Estimator.C)
+                  Over_Estimator.C
+		  Lookup_Tables.C)
 
 set(Tools_HEADERS MI_Parameters.H
                   MPI_Scale_Setter.H
@@ -14,7 +15,8 @@ set(Tools_HEADERS MI_Parameters.H
                   Impact_Parameter.H
                   Matter_Overlap.H
                   Interaction_Probability.H
-                  Over_Estimator.H)
+                  Over_Estimator.H
+		  Lookup_Tables.H)
 
 sherpa_create_git_info(Tools)
  

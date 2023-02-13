@@ -9,9 +9,12 @@ namespace BEAM {
 
   class Beam_Base {
   protected:
-    beamspectrum::code m_type;
-    ATOOLS::Flavour    m_beam, m_bunch;
-    ATOOLS::Vec4D      m_lab, m_vecout, m_position;
+    beamspectrum::code           m_type;
+    ATOOLS::Flavour              m_beam;
+    ATOOLS::Vec4D                m_lab, m_position;
+    std::vector<ATOOLS::Flavour> m_bunches;
+    std::vector<ATOOLS::Vec4D>   m_vecouts;
+    size_t             m_Nbunches;
     int                m_dir;
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
@@ -26,15 +29,17 @@ namespace BEAM {
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
     virtual void FixPosition() {}
-    virtual inline const beamspectrum::code & Type()    const { return m_type; }
-    virtual inline const ATOOLS::Flavour    & Beam()    const { return m_beam; }
-    virtual inline const ATOOLS::Flavour    & Bunch()   const { return m_bunch; }
-    virtual inline const ATOOLS::Flavour    & Remnant() const { return m_beam; }
-
-    virtual inline const ATOOLS::Vec4D & OutMomentum() const { return m_vecout; }
-    virtual inline const ATOOLS::Vec4D & InMomentum()  const { return m_lab; }
-    virtual inline const ATOOLS::Vec4D & Position()    const { return m_position; }
-
+    virtual inline const beamspectrum::code & Type()                      const { return m_type; }
+    virtual inline const size_t             & NBunches()                  const { return m_Nbunches; } 
+    virtual inline const ATOOLS::Flavour    & Beam()                      const { return m_beam; }
+    virtual inline const ATOOLS::Flavour    & Bunch(const size_t & i=0)   const { return m_bunches[i]; }
+    virtual inline const ATOOLS::Flavour    & Remnant()                   const { return m_beam; }
+    virtual inline const ATOOLS::Vec4D & OutMomentum(const size_t & i=0)  const { return m_vecouts[i]; }
+    virtual inline const ATOOLS::Vec4D & InMomentum()                     const { return m_lab; }
+    virtual inline const ATOOLS::Vec4D & Position()                       const { return m_position; }
+    virtual inline const std::vector<ATOOLS::Flavour> & Bunches()         const { return m_bunches; }
+    virtual inline const std::vector<ATOOLS::Vec4D> & OutMomenta()        const { return m_vecouts; }
+    
     virtual inline const double & Energy()       const { return m_energy; }
     virtual inline const double & Polarisation() const { return m_polarisation; }
     virtual inline double Weight(ATOOLS::Flavour fl=kf_none) { return m_weight; }
@@ -44,11 +49,11 @@ namespace BEAM {
     virtual inline double Xmax()          const { return 1.; }
     virtual inline double Peak()          const { return 1.; }
 
-    virtual inline bool On()              const { return m_on; }
+    virtual inline bool On()             const { return m_on; }
     virtual inline bool PolarisationOn() const { return (m_polarisation!=0.); }
 
-    virtual inline void SetInMomentum(const ATOOLS::Vec4D &in) { m_lab = in; }
-    virtual inline void SetOutMomentum(const ATOOLS::Vec4D &out) { m_vecout = out; }
+    virtual inline void SetInMomentum(const ATOOLS::Vec4D &in)                       { m_lab = in; }
+    virtual inline void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0) { m_vecouts[i] = out; }
 
     inline void SetX(const double &x) { m_x=x; }
   };

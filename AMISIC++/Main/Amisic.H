@@ -2,11 +2,10 @@
 #define AMISIC_Main_Amisic_H
 
 #include "AMISIC++/Perturbative/Single_Collision_Handler.H"
-#include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Over_Estimator.H"
 #include "AMISIC++/Tools/Impact_Parameter.H"
 #include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
-#include "MODEL/Main/Model_Base.H"
+#include "AMISIC++/Tools/MI_Parameters.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
@@ -22,6 +21,7 @@
 
 namespace ATOOLS {
   class Cluster_Amplitude;
+  class MI_Processes;
 }
 
 namespace AMISIC {
@@ -46,31 +46,23 @@ namespace AMISIC {
   */
 
   class Amisic: public ATOOLS::File_IO_Base, ATOOLS::Mass_Selector {
-  public:
-    enum class mitype {
-      none           = 0,
-      hadron_hadron  = 1,
-      gamma_hadron   = 2,
-      gamma_gamma    = 3
-    };
   private:
-    double m_sigmaND_norm;
-    double m_b, m_bfac, m_pt2;
-
     MI_Processes             * p_processes;
     Hadronic_XSec_Calculator * p_xsecs;
     Over_Estimator             m_overestimator;
     Impact_Parameter           m_impact;
     Single_Collision_Handler   m_singlecollision;
 
-    bool m_variable_s;
-    mitype m_type;
-    bool   m_isMinBias, m_isFirst, m_ana;
-    size_t m_nscatters;
+    mitype::code m_type;
+    bool         m_variable_s;
+    double       m_sigmaND_norm;
+    double       m_b, m_bfac, m_S, m_Y, m_pt2;
+
+    bool         m_isMinBias, m_isFirst, m_ana;
+    size_t       m_nscatters;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
-    ATOOLS::Vec4D m_pbeam0, m_pbeam1;
     
-    void InitParameters();
+    void InitParametersAndType(PDF::ISR_Handler *const isr);
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
 			     ATOOLS::Blob * blob);
     void FillAmplitudeSettings(ATOOLS::Cluster_Amplitude * ampl);
@@ -85,7 +77,7 @@ namespace AMISIC {
 		    PDF::ISR_Handler *const isr,
                     REMNANTS::Remnant_Handler * remnant_handler);
     
-    bool InitMPIs(const double & scale);
+    bool InitMPIs(PDF::ISR_Handler *const isr, const double & scale);
     bool VetoEvent(const double & scale=-1.);
     int  InitMinBiasEvent();
     int  InitRescatterEvent();
@@ -97,7 +89,7 @@ namespace AMISIC {
 
     void Update(const PDF::ISR_Handler *isr);
     inline void SetMaxEnergies(const double & E0,const double & E1) {
-      m_singlecollision.SetResidualX(E0/m_pbeam0[0],E1/m_pbeam1[0]);
+      m_singlecollision.SetResidualX(E0,E1);
     }
     inline void SetMaxScale(const double & scale) {
       m_pt2 = ATOOLS::sqr(scale);
@@ -105,7 +97,7 @@ namespace AMISIC {
     }
     inline void SetB(const double & b=-1.) {
       // Select b and set the enhancement factor
-      m_b    = (b<0.)?m_impact.SelectB(m_pt2):b;
+      m_b    = (b<0.)?m_impact.SelectB(m_S,m_pt2):b;
       m_bfac = ATOOLS::Max(0.,m_impact(m_b));
     }
     inline void SetMassMode(const int & mode) {

@@ -88,10 +88,12 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
     m_x[1] = m_xkey[5] = sqrt(tau) / yt;
     moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
     moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
-  } else
-    return false;
-  if (m_x[0] > 1. || m_x[1] > 1.)
-    return false;
+    //msg_Out()<<METHOD<<": P = "<<m_Plab<<", x = "<<m_x[0]<<", "<<m_x[1]<<" "
+    //	     <<"from tau = "<<tau<<", y = "<<yt<<", y' = "<<m_ykey[2]<<"\n"
+    //	     <<" --> "<<moms[0]<<" + "<<moms[1]<<"\n";
+  }
+  else return false;
+  if (m_x[0] > 1. || m_x[1] > 1.) return false;
   for (size_t i = 0; i < 2; ++i) {
     p_beams[i]->SetOutMomentum(moms[i]);
     rpa->gen.SetPBunch(i, moms[i]);
@@ -113,10 +115,12 @@ double Collider_Kinematics::CalculateTau() {
 void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid + string("s'"), 5, 0, info);
   m_ykey.Assign(m_keyid + string("y"), 3, 0, info);
+  /////////////////////////////////////////////////////////////////////////////
   // Convention for m_xkey:
   // [x_{min,beam0}, x_{min,beam1}, x_{max,beam0}, x_{max,beam1}, x_{val,beam0},
   // x_{val,beam1}] The limits, i.e. index 0,1,2,3 are saved as log(x), the
-  // values are saved linearly.
+  // other values are saved linearly.
+  /////////////////////////////////////////////////////////////////////////////
   m_xkey.Assign(m_keyid + string("x"), 6, 0, info);
   m_sprimekey[0] = Max(m_smin, m_sminPS);
   m_sprimekey[1] = m_smax;

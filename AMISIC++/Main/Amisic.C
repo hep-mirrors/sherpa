@@ -1,31 +1,72 @@
 #include "AMISIC++/Main/Amisic.H"
+#include "AMISIC++/Perturbative/MI_Processes.H"
+#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL),
-                   m_isMinBias(false), m_ana(false)
+Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_isMinBias(false), m_ana(false)
 {}
 
 Amisic::~Amisic() {
   if (p_processes) delete p_processes;
   if (m_ana) FinishAnalysis();
-  if (p_xsecs) delete p_xsecs;
 }
 
 bool Amisic::Initialize(MODEL::Model_Base *const model,
 			PDF::ISR_Handler *const isr,
                         REMNANTS::Remnant_Handler * remnant_handler)
 {
-  InitParameters();
+  InitParametersAndType(isr);
+  msg_Out()<<METHOD<<" for flavs = "<<isr->Flav(0)<<" & "<<isr->Flav(1)<<", "
+	   <<"beams = "<<isr->GetBeam(0)->Beam()<<" & "<<isr->GetBeam(1)->Beam()<<" "
+	   <<"--> type = "<<int(m_type)<<".\n";
+  Vec4D P = isr->GetBeam(0)->OutMomentum()+isr->GetBeam(1)->OutMomentum();
+  m_S     = P.Abs2();
+  m_Y     = P.Y();
+  // Calculate hadronic non-diffractive cross sections, to act as normalization for the
+  // multiple scattering probability. 
+  p_xsecs = new Hadronic_XSec_Calculator(model,isr->Flav(0),isr->Flav(1));
+  // Initialize the parton-level processes - currently only 2->2 scatters and use the
+  // information to construct a very quick overestimator - this follows closely the
+  // algorithm in the original Sjostrand - van Zijl publication.
+  // The logic for the overestimator is based on
+  // - t-channel dominance allowing to approximate differential cross sections as
+  //   dsigma ~ dp_T dy f(x_1) f_(x_2) C_1 C_2 as(t)^2/(t+t_0)^2
+  //   where C_1/2 are the colour factors of the incoming partons, x_1/2 are the
+  //   Bjorken-x.
+  // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
+  //   where x_1 and x_2 are identical
+  p_processes = new MI_Processes(m_variable_s);
+  p_processes->SetXSecCalculator(p_xsecs);
+  p_processes->Initialize(model,NULL,isr);
+  
+  m_overestimator.Initialize(p_processes);
+  
+  m_singlecollision.Init(remnant_handler);
+  m_singlecollision.SetMIProcesses(p_processes);
+  m_singlecollision.SetOverEstimator(&m_overestimator);
+
+  m_impact.Initialize(p_processes); 
+
+  if (m_ana) InitAnalysis();
+  m_isFirst   = true;
+  m_isMinBias = false;
+
+  return true;
+}
+
+void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr) {
+  mipars = new MI_Parameters();
   bool shown = false;
   /////////////////////////////////////////////////////////////////
-  // Here we will have to distinguish the rescatter and the hard process.
+  // Here must distinguish the rescatter and the hard process.
   // For the former, the energies are fixed, for the latter we will
   // have to check the spectrum: if EPA is used the energies entering
   // the ISR will vary.
+  // TODO: fix things up for pomerons - another interesting case
   ////////////////////////////////////////////////////////////////
   m_variable_s = ( isr->Id()!=PDF::isr::bunch_rescatter &&
 		   ( isr->GetBeam(0)->Type() == BEAM::beamspectrum::EPA ||
@@ -50,59 +91,27 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
       shown = true;
     }
   }
-  m_pbeam0 = isr->GetBeam(0)->OutMomentum();
-  m_pbeam1 = isr->GetBeam(1)->OutMomentum();
-
-  msg_Out()<<METHOD<<" for flavs = "<<isr->Flav(0)<<" & "<<isr->Flav(1)<<", "
-	   <<"beams = "<<isr->GetBeam(0)->Beam()<<" & "<<isr->GetBeam(1)->Beam()<<" "
-	   <<"--> type "<<int(m_type)<<".\n";
-
-  // Calculate hadronic non-diffractive cross sections, to act as normalization for the
-  // multiple scattering probability. 
-  p_xsecs = new Hadronic_XSec_Calculator((int)m_type);
-  (*p_xsecs)((m_pbeam0 + m_pbeam1).Abs2());
-  // show output if the calculation is not repeated for different energies
-  if (!m_variable_s)
-    p_xsecs->Output();
-
-  // Initialize the parton-level processes - currently only 2->2 scatters and use the
-  // information to construct a very quick overestimator - this follows closely the
-  // algorithm in the original Sjostrand - van Zijl publication.
-  // The logic for the overestimator is based on
-  // - t-channel dominance allowing to approximate differential cross sections as
-  //   dsigma ~ dp_T dy f(x_1) f_(x_2) C_1C_2 as(t)^2/(t+t_0)^2
-  //   where C_1/2 are the colour factors of the incoming partons, x_1/2 are the
-  //   Bjorken-x.
-  // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
-  //   where x_1 and x_2 are identical
-  m_sigmaND_norm = (*mipars)("SigmaND_Norm");
-  p_processes = new MI_Processes(m_variable_s);
-  p_processes->SetSigmaND(m_sigmaND_norm * p_xsecs->XSnd());
-  p_processes->SetXSecCalculator(p_xsecs);
-  p_processes->Initialize(model,NULL,isr);
-  
-  m_overestimator.Initialize(p_processes);
-  m_overestimator.SetXSnd(m_sigmaND_norm * p_xsecs->XSnd());
-  
-  m_singlecollision.Init(remnant_handler);
-  m_singlecollision.SetMIProcesses(p_processes);
-  m_singlecollision.SetOverEstimator(&m_overestimator);
-
-  m_impact.SetProcesses(p_processes);
-  m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * p_xsecs->XSnd()));
-
-  if (m_ana) InitAnalysis();
-  m_isFirst   = true;
-  m_isMinBias = false;
-
-  return true;
 }
-
-void Amisic::InitParameters() {
-  mipars = new MI_Parameters();
-}
-
-bool Amisic::InitMPIs(const double & scale) {
+  
+bool Amisic::InitMPIs(PDF::ISR_Handler *const isr, const double & scale) {
+  if (m_variable_s && m_isFirst) {
+    ////////////////////////////////////////////////////////////////////////
+    // Update the processes: if first scatter with variable c.m. energy,
+    // need to update the c.m. energy in processes, re-calculate non-diffractive
+    // cross sections for normalisation, adjust prefactors for overestimators,
+    // etc..
+    ////////////////////////////////////////////////////////////////////////
+    m_isFirst = false;
+    Vec4D P(0.,0.,0.,0.);
+    for (size_t beam=0;beam<2;beam++) P += m_singlecollision.InMomentum(beam);
+    m_S = P.Abs2();
+    m_Y = P.Y();
+    msg_Out()<<"     --> "<<METHOD<<" checks s = "<<m_S<<" vs. "<<p_processes->S()<<"\n";
+    p_processes->SetS(m_S);
+    (*p_xsecs)(m_S);
+    m_overestimator.Update();
+    m_singlecollision.UpdateSandY(m_S, m_Y);
+  }
   SetMassMode(1);
   SetMaxScale(scale);
   SetB();
@@ -110,28 +119,7 @@ bool Amisic::InitMPIs(const double & scale) {
   return false;
 }
 
-void Amisic::Update(const PDF::ISR_Handler *isr) {
-  if (!m_variable_s || !m_isFirst)
-    return;
-  m_isFirst = false;
-  // Get new energy from Beams
-  m_pbeam0 = isr->GetBeam(0)->OutMomentum();
-  m_pbeam1 = isr->GetBeam(1)->OutMomentum();
-  double s = (m_pbeam0 + m_pbeam1).Abs2();
-  double y = (m_pbeam0 + m_pbeam1).Y();
-  // Calculate new cross-sections
-  (*p_xsecs)(s);
-  // Update the processes
-  p_processes->SetSigmaND(m_sigmaND_norm * p_xsecs->XSnd());
-  p_processes->Update(s);
-  // Update the over-estimator (implicitly uses the processes)
-  m_overestimator.Update();
-  m_overestimator.SetXSnd(m_sigmaND_norm * p_xsecs->XSnd());
-  // Update the single-collision handler and impact parameter
-  m_singlecollision.UpdateSandY(s, y);
-  m_impact.Update(p_processes->XShard()/(m_sigmaND_norm * p_xsecs->XSnd()));
-}
-  
+
 bool Amisic::VetoEvent(const double & scale) {
   if (scale<0.) return false;
   return false;

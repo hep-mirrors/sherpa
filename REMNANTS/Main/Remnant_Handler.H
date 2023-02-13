@@ -31,6 +31,7 @@ namespace REMNANTS {
   private:
     PDF::isr::id         m_id;
     Remnant_Base       * p_remnants[2];
+    size_t               m_tags[2];
     strat::code          m_type;
     Kinematics_Generator m_kinematics;
     Colour_Generator     m_colours;
@@ -42,13 +43,15 @@ namespace REMNANTS {
     bool m_check, m_output;
     
     void InitializeRemnants(PDF::ISR_Handler * isr,
-			    BEAM::Beam_Spectra_Handler * beam);
+			    BEAM::Beam_Spectra_Handler * beam,
+			    const std::vector<size_t> & tags);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup(ATOOLS::Blob_List * bloblist);
     void InitBeamAndSoftBlobs(ATOOLS::Blob_List *const blobs);
  public:
-    Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
+    Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
+		    const std::vector<size_t> & tags);
     ~Remnant_Handler();
     
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);

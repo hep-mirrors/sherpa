@@ -8,11 +8,12 @@
 
 namespace AMISIC {
   class MI_Processes;
+  class Sudakov_Argument;
   
   class Impact_Parameter {
     Interaction_Probability * p_pint;
     Matter_Overlap          * p_mo;
-    MI_Processes            * p_procs;
+    Sudakov_Argument        * p_sudakov;
     double m_fc, m_oexp, m_enhancement;
     double m_b, m_bmax, m_bnorm;
     bool   m_test, m_ana;
@@ -28,12 +29,11 @@ namespace AMISIC {
     Impact_Parameter();
     ~Impact_Parameter();
 
-    void   Initialize(const double & xsecratio);
-    void   Update(double xsecratio);
-    double SelectB(const double & pt2=-1.);
+    void   Initialize(MI_Processes * processes);
+    void   Update(const double & s);
+    double SelectB(const double & s,const double & pt2=-1.);
     double operator()(const double & b);
 
-    inline void SetProcesses(MI_Processes * procs) { p_procs = procs; }
     inline ATOOLS::Vec4D  SelectPositionForScatter(const double & b) const {
       return p_mo->SelectPositionForScatter(b);
     }

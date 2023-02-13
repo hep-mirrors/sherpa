@@ -1,7 +1,7 @@
 #include "BEAM/Main/Beam_Parameters.H"
 #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Spectra/Monochromatic.H"
-#include "BEAM/Spectra/Spectrum_Reader.H"
+//#include "BEAM/Spectra/Spectrum_Reader.H"
 #include "BEAM/Spectra/Laser_Backscattering.H"
 #include "BEAM/Spectra/EPA.H"
 #include "BEAM/Spectra/DM_beam.H"
@@ -54,8 +54,8 @@ ostream& BEAM::operator<<(ostream& ostr, const beamspectrum::code spect) {
     return ostr<<"Laser Backscattering";
   case beamspectrum::DM:
     return ostr<<"Dark Matter";
-  case beamspectrum::spectrum_reader:
-    return ostr<<"Spectrum Reader";
+    //case beamspectrum::spectrum_reader:
+    //return ostr<<"Spectrum Reader";
   default:
     break;
   }
@@ -76,7 +76,7 @@ void Beam_Parameters::RegisterDefaults()
   RegisterDarkMatterDefaults();
   RegisterLaserDefaults();
   RegisterEPADefaults();
-  RegisterSpectrumReaderDefaults();
+  //RegisterSpectrumReaderDefaults();
 }
 
 Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
@@ -93,8 +93,8 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
     return InitializeEPA(num);
   case beamspectrum::DM :
     return InitializeDM_beam(num);
-  case beamspectrum::spectrum_reader :
-    return InitializeSpectrumReader(num);
+    //case beamspectrum::spectrum_reader :
+    //return InitializeSpectrumReader(num);
   default :
     break;
   }
@@ -180,18 +180,18 @@ Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
 		     formfactor,relativistic,1-2*num);
 }
 
-Beam_Base * Beam_Parameters::InitializeSpectrumReader(int num)
-{
-  Flavour beam_particle     = GetFlavour("BEAMS",num);
-  double beam_energy        = (*this)("BEAM_ENERGIES",num); 
-  double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
-  double laser_energy       = (*this)("E_LASER",num);
-  double laser_polarization = (*this)("P_LASER",num);
-  string spectrumfile       = String("SPECTRUM_FILES",num);
-  return new Spectrum_Reader(beam_particle,beam_energy,beam_polarization,
-			     laser_energy, laser_polarization,
-			     spectrumfile,1-2*num);
-}
+// Beam_Base * Beam_Parameters::InitializeSpectrumReader(int num)
+// {
+//   Flavour beam_particle     = GetFlavour("BEAMS",num);
+//   double beam_energy        = (*this)("BEAM_ENERGIES",num); 
+//   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
+//   double laser_energy       = (*this)("E_LASER",num);
+//   double laser_polarization = (*this)("P_LASER",num);
+//   string spectrumfile       = String("SPECTRUM_FILES",num);
+//   return new Spectrum_Reader(beam_particle,beam_energy,beam_polarization,
+// 			     laser_energy, laser_polarization,
+// 			     spectrumfile,1-2*num);
+// }
 
 const Flavour Beam_Parameters::GetFlavour(const std::string & tag,const size_t & pos) {
   vector<int> beam{ m_settings[tag].GetVector<int>() };
@@ -285,10 +285,10 @@ void Beam_Parameters::RegisterLaserDefaults() {
   m_settings["LASER_NONLINEARITY"].SetDefault(false);
 }
 
-void Beam_Parameters::RegisterSpectrumReaderDefaults() {
-  RegisterLaserDefaults();
-  m_settings["SPECTRUM_FILES"].SetDefault("");
-}
+// void Beam_Parameters::RegisterSpectrumReaderDefaults() {
+//   RegisterLaserDefaults();
+//   m_settings["SPECTRUM_FILES"].SetDefault("");
+// }
 
 bool Beam_Parameters::SpecifyMode() {
   bool okay(true);
@@ -322,8 +322,8 @@ bool Beam_Parameters::SpecifySpectra() {
       m_beamspec[num] = beamspectrum::EPA;
     else if (bs == "DM_beam")
       m_beamspec[num] = beamspectrum::DM;
-    else if (bs == "Spectrum_Reader")
-      m_beamspec[num] = beamspectrum::spectrum_reader;
+    //else if (bs == "Spectrum_Reader")
+    //m_beamspec[num] = beamspectrum::spectrum_reader;
     else
       m_beamspec[num] = beamspectrum::unknown;
   }

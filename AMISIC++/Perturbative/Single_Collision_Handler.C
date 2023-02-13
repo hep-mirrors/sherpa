@@ -21,17 +21,19 @@ Single_Collision_Handler::~Single_Collision_Handler() {
 
 void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler) {
   p_remnants = remnant_handler;
-  m_pt2min = sqr((*mipars)("pt_min"));
+  m_pt2min   = sqr((*mipars)("pt_min"));
   if (m_ana) InitAnalysis();
 }
 
 Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
-  // Simple logic - bfactor is provided from outside, now
+  /////////////////////////////////////////////////////////////////////////////////
+  // Simple logic - bfac is provided from outside, now
   // - produce a trial kinematics (new transverse momentum smaller than the last one,
   //   supplemented with rapidities, Mandelstams ...)
   // - select a process
   // - construct its full kinematics and set the colours
   // - return a filled (at the moment 2->2 only) scattering blob
+  /////////////////////////////////////////////////////////////////////////////////
   p_overestimator->SetBFac(bfac);
   msg_Out()<<METHOD<<" sets bfac = "<<bfac<<".\n";
   do {
@@ -44,14 +46,15 @@ Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
 }
 
 bool Single_Collision_Handler::TestRemnants() const {
-  //msg_Out()<<METHOD<<"(id = "<<p_remnants->Id()<<", "
-  //	   <<"moms = "<<p_proc->Momentum(0)<<"/"<<p_remnants->GetRemnant(0)
-  //	   <<" & "<<p_proc->Momentum(1)<<"):\n";
-  return p_remnants->GetRemnant(0)->TestExtract(p_proc->Flav(0), p_proc->Momentum(0))
-         && p_remnants->GetRemnant(1)->TestExtract(p_proc->Flav(1), p_proc->Momentum(1));
+  /////////////////////////////////////////////////////////////////////////////////
+  // Make sure there is enough energy left in the remnants
+  /////////////////////////////////////////////////////////////////////////////////
+  return ( p_remnants->GetRemnant(0)->TestExtract(p_proc->Flav(0), p_proc->Momentum(0)) &&
+	   p_remnants->GetRemnant(1)->TestExtract(p_proc->Flav(1), p_proc->Momentum(1)) );
 }
 
 bool Single_Collision_Handler::SelectPT2(const double & pt2) {
+  /////////////////////////////////////////////////////////////////////////////////
   // Generate a trial kinematics
   // - produces a trial pt2 based on a fast and crude overestimator (in TrialPT2).
   //   if it falls below the minimal value, false is returned which effectively stops
@@ -60,25 +63,23 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
   //   Bjorken-x for the PDFs and the Mandelstams
   // - calculate the cross section summed over all parton-level processes
   // - accept or reject the kinematics with a hit-or-miss of true over overestimated
-  //   cross section
+  //   differential cross section dsigma/dpt2
+  /////////////////////////////////////////////////////////////////////////////////
   m_pt2 = pt2;
   double sigmatrue, sigmaapprox, weight;
   bool success(false), output(false);
   do {
     m_pt2  = p_overestimator->TrialPT2(m_pt2);
-    //msg_Out()<<"   * pt^2 = "<<m_pt2<<" > "<<m_pt2min<<", S = "<<m_S<<".\n";
     m_muf2 = m_mur2 = m_pt2;
     if (m_pt2<m_pt2min) return false;
     if (!SelectRapidities() || !CalcXs() || !CalcMandelstams()) continue;
-    p_processes->CalcPDFs(m_x1,m_x2,m_pt2,output);
-    sigmatrue   = (*p_processes)(m_shat,m_that,m_uhat,output) * m_yvol;
-    sigmaapprox = (*p_overestimator)(m_pt2) * m_yvol;
+    sigmatrue   = (*p_processes)(m_shat,m_that,m_uhat,m_x1,m_x2);
+    sigmaapprox = (*p_overestimator)(m_pt2);
     weight      = sigmatrue/sigmaapprox;
-    if (output && weight>1.) {
-      msg_Out()<<"    --> ratio = "<<(sigmatrue/sigmaapprox)<<" "
-    	       <<" from sigma(true) = "<<sigmatrue<<", "
-    	       <<"sigma(approx) = "<<sigmaapprox<<"\n";
-    }
+    msg_Out()<<"    pt^2 = "<<m_pt2<<" --> ratio = "<<(sigmatrue/sigmaapprox)<<" "
+	     <<" from sigma(true) = "<<sigmatrue<<", "
+	     <<"sigma(approx) = "<<sigmaapprox
+	     <<" vs. [pt^2/shat]^2 = "<<sqr(m_pt2/m_shat)<<"\n";
     if (m_ana) AnalyseWeight(weight);
     if (weight > ran->Get()) success = true;
   } while (!success);

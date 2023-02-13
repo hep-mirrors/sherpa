@@ -6,8 +6,10 @@ using namespace AMISIC;
 using namespace ATOOLS;
 
 
+/////////////////////////////////////////////////////////////////////////////////
 // All equations in this file refer to 
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019.
+/////////////////////////////////////////////////////////////////////////////////
 
 Impact_Parameter::Impact_Parameter() : p_pint(new Interaction_Probability()),
 				       p_mo(p_pint->GetOverlap()),
@@ -18,44 +20,54 @@ Impact_Parameter::~Impact_Parameter() {
   if (m_ana) FinishAnalysis();
 }
 
-void Impact_Parameter::Initialize(const double & xsecratio) {
-  p_pint->Initialize(xsecratio);
-  m_oexp  = p_pint->OverlapExpectation();
-  m_fc    = m_oexp/p_mo->Integral()*p_pint->Integral();
-  m_bmax  = p_mo->Bmax();
-  m_bnorm = p_pint->Bnorm();
+void Impact_Parameter::Initialize(MI_Processes * processes) {
+  p_sudakov = processes->GetSudakov();
+  p_pint->Initialize(processes);
+  Update(processes->S());
   if (m_test) Test();
   if (m_ana)  InitAnalysis();
+  msg_Out()<<"   * "<<METHOD<<"(bnorm = "<<m_bnorm<<" "
+	   <<"for R = "<<processes->XSratio(processes->S())<<", "
+	   <<"exp = "<<m_oexp<<", ints = "<<p_mo->Integral()<<" / "
+	   <<p_pint->Integral(processes->S())<<").\n";
 }
 
-void Impact_Parameter::Update(double xsecratio) {
-  p_pint->Update(xsecratio);
-  m_oexp  = p_pint->OverlapExpectation();
-  m_fc    = m_oexp/p_mo->Integral()*p_pint->Integral();
+void Impact_Parameter::Update(const double & s) {
+  /////////////////////////////////////////////////////////////////////////////////
+  // this function here is called only if the CMS energy is varied, i.e. for
+  // EPA photons. In that case, we don't want to flood the output with messages
+  /////////////////////////////////////////////////////////////////////////////////
+  m_oexp  = p_pint->OverlapExpectation(s);
+  m_fc    = m_oexp/p_mo->Integral()*p_pint->Integral(s);
   m_bmax  = p_mo->Bmax();
-  m_bnorm = p_pint->Bnorm();
+  m_bnorm = p_pint->Bnorm(s);
 }
 
 double Impact_Parameter::operator()(const double & b) {
+  /////////////////////////////////////////////////////////////////////////////////
   // This is f(b), the enhancement factor
+  /////////////////////////////////////////////////////////////////////////////////
   return m_enhancement = (b<m_bmax? (*p_mo)(b)/m_oexp : 0.);
 }
 
-double Impact_Parameter::SelectB(const double & pt2) {
+double Impact_Parameter::SelectB(const double & s,const double & pt2) {
   if (pt2<0.) return (m_b = p_mo->SelectB());
+  /////////////////////////////////////////////////////////////////////////////////
   // Select b according to f(b) and accept or reject b with probability given by
   // "factorized Sudakov form factor", Eq. (37)
-  double hardpart = p_procs->SudakovArgument(pt2);
+  /////////////////////////////////////////////////////////////////////////////////
+  double hardpart = (*p_sudakov)(s,pt2);
+  msg_Out()<<"     --> "<<METHOD<<"(s = "<<s<<", pt^2 = "<<pt2<<"), Sudakov = "<<hardpart<<"\n";
   double sudakov, softpart;
   int    trials   = 1000;
   do {
     m_b      = p_mo->SelectB();
     softpart = m_fc * (*this)(m_b);
     sudakov  = exp(-softpart * hardpart);
-    if (m_ana) Analyse(pt2,sudakov,softpart,hardpart);
-    msg_Debugging()<<METHOD<<" sudakov = "<<sudakov<<" = exp(-"<<softpart<<" * "
-              <<hardpart<<") for b = "<<m_b<<"(max = "<<p_mo->Bmax()<<"), pt = "
-              <<sqrt(pt2)<<"\n";
+    //if (m_ana) Analyse(pt2,sudakov,softpart,hardpart);
+    msg_Out()<<METHOD<<" sudakov = "<<sudakov<<" = exp(-"<<softpart<<" * "
+	     <<hardpart<<") for b = "<<m_b<<"(max = "<<p_mo->Bmax()<<"), pt = "
+	     <<sqrt(pt2)<<"\n";
   } while (sudakov<ran->Get() && (trials--)>0);
   if (trials<=0)
     msg_Error()<<METHOD<<" throws warning:\n"
@@ -64,6 +76,8 @@ double Impact_Parameter::SelectB(const double & pt2) {
 	       <<"   Return b = "<<m_b<<" for pt = "<<sqrt(pt2)
 	       <<" without Sudakov argument.\n";
   if (m_ana) BAnalyse(pt2,m_b);
+  msg_Out()<<"     --> "<<METHOD<<" yields b = "<<m_b<<" / norm = "<<m_bnorm<<"\n";
+  // TODO: Why do we divide by bnorm here?  and what is it exactly?
   return m_b/m_bnorm;
 }
 

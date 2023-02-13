@@ -29,7 +29,7 @@ private:
   void Output() const;
 public:
   // constructor
-  Photon_Remnant(PDF::PDF_Base *pdf, const unsigned int beam);
+  Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag=0);
 
   // member functions
   bool FillBlob(ATOOLS::ParticleMomMap *ktmap, const bool &copy) override;

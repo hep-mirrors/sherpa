@@ -58,7 +58,7 @@ namespace BEAM {
     void RegisterLaserDefaults();
     void RegisterEPADefaults();
     void RegisterDarkMatterDefaults();
-    void RegisterSpectrumReaderDefaults();
+    //void RegisterSpectrumReaderDefaults();
     void InitializeFlav(kf_code flav);
     void SetBeamMode();
     Beam_Base * InitializeSimpleCompton(int);

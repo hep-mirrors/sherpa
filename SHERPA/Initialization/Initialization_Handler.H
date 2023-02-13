@@ -44,7 +44,8 @@ namespace SHERPA {
   private :
     std::string m_evtform;
     std::set<std::string> m_pdflibs;
-    std::map<PDF::isr::id, std::string * > m_defsets;
+    std::map<PDF::isr::id, std::string * >       m_defsets;
+    std::map<PDF::isr::id, std::vector<size_t> > m_bunchtags;
 
     ATOOLS::Flavour m_bunch_particles[2];
 

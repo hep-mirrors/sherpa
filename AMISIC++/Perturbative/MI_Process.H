@@ -68,9 +68,9 @@ namespace AMISIC {
     inline const ATOOLS::Vec4D & Momentum(size_t i) const {
       return m_momenta[i];
     }
-    inline void SetME2(XS_Base * me2) { p_me2 = me2; }
-    inline double operator()() const { return (*p_me2)(); }
-    inline bool SetColours() const { return p_me2->SetColours(m_flavs); }    
+    inline void SetME2(XS_Base * me2)       { p_me2 = me2; }
+    inline double operator()()        const { return (*p_me2)(); }
+    inline bool SetColours()          const { return p_me2->SetColours(m_flavs); }    
     inline const std::string & Name() const { return m_name; }
   };
 }

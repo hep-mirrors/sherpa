@@ -129,79 +129,21 @@ void Beam_Spectra_Handler::Output() {
              << "p = " << p_BeamBase[1]->InMomentum() << ")." << endl;
 }
 
-/* ----------------------------------------------------------------
-
-   Boosts
-
-   ---------------------------------------------------------------- */
-
+////////////////////////////////////////////////////////////////////////////
+// TODO: Improve this handling for rescattering etc.
+///////////////////////////////////////////////////////////////////////////
 bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *_beams,
                                             ATOOLS::Flavour *_bunches) {
-  bool fit = true;
   for (int i = 0; i < 2; i++) {
-    if ((_beams[i] != GetBeam(i)->Beam()) ||
-        (_bunches[i] != GetBeam(i)->Bunch())) {
-      fit = false;
-      break;
-    }
-    /*
-      if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
-      if (! ( ((_beams[i]==Flavour(kf_e)) || (_beams[i]==Flavour(kf_e).Bar()))
-      &&
-      (_bunches[i]==Flavour(kf_photon))         ) ) {
-      fit = 0;
-      break;
-      }
-      }
-      if (p_BeamBase[i]->Type() == string("Beam_Strahlung")) {
-      if (! ( ((_beams[i] == Flavour(kf_e)) || (_beams[i] ==
-      Flavour(kf_e).Bar())) &&
-      (_beams[i] == _bunches[i])         ) ) {
-      fit = 0;
-      break;
-      }
-      }
-      if (p_BeamBase[i]->Type() == string("Monochromatic") ||
-      p_BeamBase[i]->Type() == string("Gaussian") ) {
-      if (_bunches[i]!=_beams[i]) {
-      fit = 0;
-      break;
-      }
-      }
-    */
+    if (_beams[i]   != GetBeam(i)->Beam() ||
+	_bunches[i] != GetBeam(i)->Bunch() ) return false;
   }
-  return fit;
+  return true;
 }
 
 bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *_bunches) {
-  bool fit = true;
   for (int i = 0; i < 2; i++) {
-    if (_bunches[i] != GetBeam(i)->Bunch()) {
-      fit = false;
-      break;
-    }
-    /*
-      if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
-      if (_bunches[i]!=Flavour(kf_photon)) {
-      fit = 0;
-      break;
-      }
-      }
-      if (p_BeamBase[i]->Type() == string("Beam_Strahlung")) {
-      if ((_bunches[i]!=Flavour(kf_e) && _bunches[i]!=Flavour(kf_e).Bar()) ||
-      (_bunches[i]!=GetBeam(i)->Bunch()) ){
-      fit = 0;
-      break;
-      }
-      }
-      if (p_BeamBase[i]->Type() == string("Monochromatic") ||
-      p_BeamBase[i]->Type() == string("Gaussian") ) {
-      if (_bunches[i]!=GetBeam(i)->Bunch()) {
-      fit = 0;
-      break;
-      }
-      }
-    */
+    if (_bunches[i] != GetBeam(i)->Bunch()) return false;
   }
-  return fit;
+  return true;
 }

@@ -71,11 +71,15 @@ bool Beam_Channels::MakeChannels() {
 }
 
 bool Beam_Channels::DefineColliderChannels() {
+  ////////////////////////////////////////////////////////////////////////
   // default collider setup - no spectra
+  ////////////////////////////////////////////////////////////////////////
   if (m_beamtype[0] == beamspectrum::monochromatic &&
       m_beamtype[1] == beamspectrum::monochromatic)
     return true;
+  ////////////////////////////////////////////////////////////////////////
   // one or two laser backscattering spectra with monochromatic beams
+  ////////////////////////////////////////////////////////////////////////
   if ((m_beamtype[0] == beamspectrum::monochromatic &&
        (m_beamtype[1] == beamspectrum::laser_backscattering ||
         m_beamtype[1] == beamspectrum::simple_Compton)) ||
@@ -91,10 +95,12 @@ bool Beam_Channels::DefineColliderChannels() {
     CheckForStructuresFromME();
     return true;
   }
+  ////////////////////////////////////////////////////////////////////////
   // one or two EPA spectra with monochromatic beams
   // currently our EPA is completely collinear, with real photons:
-  // - todo: add proper EPA, with virtual photons and a physical deflection angle of
-  //         the emitters.
+  // TODO: add proper EPA, with virtual photons and a physical deflection
+  //       angle of the emitters.
+  ////////////////////////////////////////////////////////////////////////
   if ((m_beamtype[0] == beamspectrum::monochromatic &&
        m_beamtype[1] == beamspectrum::EPA) ||
       (m_beamtype[0] == beamspectrum::EPA &&
@@ -235,21 +241,22 @@ void Beam_Channels::AddSimplePole(const size_t &chno, const size_t &mode) {
   } else {
     for (set<double>::iterator yit = m_yexponents.begin();
          yit != m_yexponents.end(); yit++) {
+      msg_Out()<<METHOD<<" adds simple_pole channels for yexp = "<<(*yit)<<" and mode = "<<mode<<"\n";
       if (dabs(*yit) < 1.e-3) {
         Add(new Simple_Pole_Uniform(spex, m_keyid, p_psh->GetInfo(), mode));
         Add(new Simple_Pole_Central(spex, m_keyid, p_psh->GetInfo(), mode));
-      } else if (mode == 3) {
-        Add(new Simple_Pole_Forward(spex, (*yit), m_keyid, p_psh->GetInfo(),
-                                    mode));
-        Add(new Simple_Pole_Backward(spex, (*yit), m_keyid, p_psh->GetInfo(),
-                                     mode));
+	//} else if (mode == 3) {
+        //Add(new Simple_Pole_Forward(spex, (*yit), m_keyid, p_psh->GetInfo(),
+        //                            mode));
+        //Add(new Simple_Pole_Backward(spex, (*yit), m_keyid, p_psh->GetInfo(),
+	//                            mode));
       }
     }
   }
 }
 
 void Beam_Channels::AddResonance(const size_t &chno, const size_t &mode) {
-  double mass = m_beamparams[chno].parameters[0];
+  double mass  = m_beamparams[chno].parameters[0];
   double width = m_beamparams[chno].parameters[1];
   if (m_beammode == beammode::relic_density) {
     Add(new Resonance_RelicDensity(mass,

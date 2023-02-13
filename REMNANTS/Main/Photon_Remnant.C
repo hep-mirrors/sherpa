@@ -8,11 +8,13 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Photon_Remnant::Photon_Remnant(PDF::PDF_Base *pdf, const unsigned int beam)
-    : Remnant_Base(rtp::photon, beam), p_pdf(pdf),
-      p_partons(&(pdf->Partons())), m_LambdaQCD(0.25), m_beta_quark(-1.),
-      m_beta_gluon(-1.2), m_valence(false), p_spectator(nullptr),
-      p_recoiler(nullptr), m_ff(Form_Factor()) {}
+Photon_Remnant::
+Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag) :
+  Remnant_Base(pdf->Bunch(), beam, tag),
+  p_pdf(pdf), p_partons(&(pdf->Partons())),
+  m_LambdaQCD(0.25), m_beta_quark(-1.), m_beta_gluon(-1.2),
+  m_valence(false), p_spectator(nullptr),
+  p_recoiler(nullptr), m_ff(Form_Factor()) {}
 
 Particle *Photon_Remnant::MakeParticle(const Flavour &flav) {
   Particle *part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
@@ -58,10 +60,9 @@ void Photon_Remnant::Reset(const bool & resc,const bool &DIS) {
     m_spectators.pop_front();
   }
   m_spectators.clear();
-  m_residualE = ( resc ? (p_beam->InMomentum()-p_beam->OutMomentum())[0] :
-		  p_beam->OutMomentum()[0] );
-  m_valence = false;
-  p_recoiler = nullptr;
+  m_residualE = p_beam->OutMomentum(m_tag)[0];
+  m_valence   = false;
+  p_recoiler  = nullptr;
 }
 
 void Photon_Remnant::Output() const {
@@ -109,7 +110,7 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
   // rest is taken by the quark.
-  Vec4D availMom = p_beam->OutMomentum();
+  Vec4D availMom = p_beam->OutMomentum(m_tag);
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();
     if (copy) {

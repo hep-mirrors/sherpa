@@ -47,10 +47,10 @@ namespace BEAM {
     ATOOLS::Vec4D   OutMomentum();
     ATOOLS::Flavour Remnant();
 
-    bool        CalculateWeight(const double,const double);
-    double      Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
+    bool            CalculateWeight(const double,const double);
+    double          Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
     double          Polarisation()       { return m_polar; }
-    bool        On() { return 1; }
+    bool            On()                 { return 1; }
     double          Exponent()           { return 0.5; }
     double          Xmax()               { return m_upper; }
     double          Peak()               { return m_peak; }

@@ -20,10 +20,12 @@ namespace SHERPA {
   class MI_Handler {
   public:
     
-    enum typeID { none    =  0,
-		  amisic  =  1,
-		  shrimps =  2,
-		  unknown = 99 };
+    enum typeID {
+      none    =  0,
+      amisic  =  1,
+      shrimps =  2,
+      unknown = 99
+    };
 
   private:
     PDF::ISR_Handler          * p_isr;

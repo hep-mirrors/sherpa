@@ -2,31 +2,34 @@
 #define AMISIC_Tools_Interaction_Probability_H
 
 #include "AMISIC++/Tools/Matter_Overlap.H"
+#include "AMISIC++/Tools/Lookup_Tables.H"
 
 namespace AMISIC {
+  class MI_Processes;
+  
   class Interaction_Probability {
     Matter_Overlap * p_mo;
+    OneDim_Table   * p_prefKs, * p_oexpvalues, * p_integrals;
     double m_prefK, m_integral, m_integralB, m_bnorm, m_oexpvalue, m_fc;
-    bool m_suppress_output;
+    bool   m_output;
     
-    bool FixPrefactor(const double & xsecratio);
+    bool FixPrefactor(MI_Processes * processes);
     void CalculateIntegral();
     void CalculateBNorm();
-    void CalculateOExpValue();
+    void CalculateOExpValue(MI_Processes * processes);
   public:
     Interaction_Probability();
-    ~Interaction_Probability() { delete p_mo; }
-
-    void   Initialize(const double & xsecratio);
+    ~Interaction_Probability();
+    
+    void   Initialize(MI_Processes * processes);
     void   Update(double xsecratio);
     double operator()(const double & b);
-
-    inline void SetPrefactor(const double & prefK)   { m_prefK = prefK; }
-    inline const double & Prefactor() const          { return m_prefK; }
-    inline const double & Integral() const           { return m_integral; }
-    inline const double & OverlapExpectation() const { return m_oexpvalue; }
-    inline const double & Bnorm() const              { return m_bnorm; }
-    inline Matter_Overlap * GetOverlap()             { return p_mo; }
+    
+    inline Matter_Overlap * GetOverlap()               { return p_mo; }
+    inline double Prefactor(const double & s) const    { return (*p_prefKs)(s); }
+    inline double Integral(const double & s) const     { return (*p_integrals)(s); }
+    inline double OverlapExpectation(const double & s) { return (*p_oexpvalues)(s); }
+    inline double Bnorm(const double & s) const        { return m_bnorm/(*p_integrals)(s); }
   };
 
 

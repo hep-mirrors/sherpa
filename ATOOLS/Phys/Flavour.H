@@ -106,6 +106,7 @@ namespace ATOOLS {
 
     bool IsDiQuark() const;
     bool IsBaryon() const;
+    bool IsNucleon() const;
     bool IsB_Hadron() const;
     bool IsC_Hadron() const;
 

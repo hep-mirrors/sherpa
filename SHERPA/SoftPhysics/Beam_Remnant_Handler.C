@@ -11,7 +11,7 @@ Beam_Remnant_Handler::
 Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 		     REMNANTS::Remnant_Handler *const remnants,
 		     Soft_Collision_Handler *const softcollisions):
-  p_remnants(remnants), m_bunchrescatter(false),
+  p_remnants(remnants), p_bunchremnants(NULL), m_bunchrescatter(false),
   p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
   p_beam(beam), m_fill(true), m_vmode(false)
 {
@@ -26,7 +26,8 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 
 void Beam_Remnant_Handler::AddBunchRescattering(REMNANTS::Remnant_Handler *const remnants,
 					       Soft_Collision_Handler *const softcollisions) {
-  if (remnants->Id()==PDF::isr::bunch_rescatter) {
+  if (remnants && remnants->Id()==PDF::isr::bunch_rescatter) {
+    msg_Out()<<METHOD<<"("<<remnants->Id()<<"): "<<remnants<<" / "<<softcollisions<<"\n";
     p_bunchremnants = remnants; p_schandler = softcollisions;
     m_bunchrescatter = true;
     msg_Out()<<METHOD<<" adds bunch rescattering: "<<p_bunchremnants<<"/"<<p_schandler<<".\n";

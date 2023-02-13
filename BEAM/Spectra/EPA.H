@@ -37,8 +37,9 @@ namespace BEAM {
     ~EPA();
 
     Beam_Base *Copy();     
-    bool       CalculateWeight(double, double);
-    void       FixPosition();
+    bool CalculateWeight(double, double);
+    void FixPosition();
+    void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0);
   };// end of class EPA
 
 }// end of namespace BEAM

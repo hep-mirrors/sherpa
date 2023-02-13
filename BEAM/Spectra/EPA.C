@@ -21,9 +21,14 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
 {
   Settings &s = Settings::GetMainSettings();
   RegisterDefaults();
-  m_bunch     = Flavour(kf_photon);
-  m_vecout    = Vec4D(m_energy, 0., 0., _dir * m_energy);
-  m_on        = true;
+  m_Nbunches   = 2; 
+  m_bunches.resize(m_Nbunches);
+  m_bunches[0] = Flavour(kf_photon);
+  m_bunches[1] = m_beam;
+  m_vecouts.resize(m_Nbunches);
+  m_vecouts[0] = Vec4D(m_energy, 0., 0., m_dir * m_energy);
+  m_vecouts[1] = Vec4D(0.,0.,0.,0.);
+  m_on         = true;
 
   std::vector<double> q2Max{s["EPA"]["Q2Max"].GetVector<double>()};
   if (q2Max.size() != 1 && q2Max.size() != 2)
@@ -100,6 +105,14 @@ void EPA::FixPosition() {
   // I use the limit for small products of distance times photon energy and it would be better to interpolate
   // between both.  Maybe by just fusing the two expansions.
   // It would be even better to have a two-dimnesional look-up table here which also includes the form factors.
+}
+
+void EPA::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {
+  if (i==0) {
+    m_vecouts[0] = out;
+    m_vecouts[1] = m_lab-out;
+    m_x = m_vecouts[0][0]/m_lab[0];
+  }
 }
 
 double EPA::CosInt::GetCosInt(double X) {
@@ -234,7 +247,7 @@ bool EPA::CalculateWeight(double x, double q2) {
   // x = omega/E = (E-E')/E  ; E,E' - incoming and outgoing protons energy
   //                           omega = E-E' - energy of emitted photon
   const double alpha = m_aqed;
-  m_x = x;
+  m_x  = x;
   m_Q2 = q2;
   if (x > sqrt(1. - sqr(m_mass / m_energy)) || x < m_xmin) {
     m_weight = 0.0;

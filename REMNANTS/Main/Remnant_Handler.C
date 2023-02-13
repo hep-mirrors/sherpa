@@ -14,10 +14,10 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 using namespace std;
 
-Remnant_Handler::Remnant_Handler(PDF::ISR_Handler *isr,
-                                 BEAM::Beam_Spectra_Handler *beam)
-    : p_softblob(nullptr), m_check(true), m_output(true) {
-  InitializeRemnants(isr, beam);
+Remnant_Handler::
+Remnant_Handler(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,const vector<size_t> & tags) :
+  p_softblob(nullptr), m_check(true), m_output(true) {
+  InitializeRemnants(isr, beam,tags);
   DefineRemnantStrategy();
   InitializeKinematicsAndColours();
 }
@@ -29,22 +29,26 @@ Remnant_Handler::~Remnant_Handler() {
   }
 }
 
-void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler *isr,
-                                         BEAM::Beam_Spectra_Handler *beam) {
+void Remnant_Handler::
+InitializeRemnants(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,
+		   const vector<size_t> & tags) {
   for (size_t i = 0; i < 2; ++i) {
+    m_tags[i]     = tags[i];
     p_remnants[i] = nullptr;
-    Flavour flav = isr->Flav(i);
+    Flavour flav  = isr->Flav(i);
     if (isr->PDF(i) != nullptr) {
       if (flav.IsHadron())
-        p_remnants[i] = new Hadron_Remnant(isr->PDF(i), i);
+        p_remnants[i] = new Hadron_Remnant(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsLepton())
-        p_remnants[i] = new Electron_Remnant(isr->PDF(i), i);
+        p_remnants[i] = new Electron_Remnant(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsPhoton()) {
-        p_remnants[i] = new Photon_Remnant(isr->PDF(i), i);
+        p_remnants[i] = new Photon_Remnant(isr->PDF(i), i, m_tags[i]);
       }
     }
     if (p_remnants[i] == nullptr)
-      p_remnants[i] = new No_Remnant(i);
+      p_remnants[i] = new No_Remnant(i, m_tags[i]);
+    msg_Out()<<"   * "<<METHOD<<"(beam = "<<i<<", flav = "<<flav<<", tag = "<<m_tags[i]<<"): "
+	     <<beam->GetBeam(i)->Bunch(m_tags[i])<<" and type = "<<p_remnants[i]->Type()<<".\n";
   }
   // Finish the initialisation of the Remnant_Bases: make sure they know
   // each other, their beam, the Colour_Generator, and hand them also to

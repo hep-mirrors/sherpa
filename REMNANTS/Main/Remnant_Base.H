@@ -32,9 +32,9 @@ namespace REMNANTS {
   
   class Remnant_Base {
   protected:
-    rtp::code    m_type;
-    unsigned int m_beam;
-
+    ATOOLS::Flavour    m_beamflav;
+    rtp::code          m_type;
+    size_t             m_beam, m_tag;
     BEAM::Beam_Base  * p_beam;
     ATOOLS::Blob     * p_beamblob;
     ATOOLS::Vec4D      m_position;
@@ -42,8 +42,11 @@ namespace REMNANTS {
     Colour_Generator * p_colours;
 
     double m_residualE, m_scale2;
+    
+    rtp::code FixType(ATOOLS::Flavour & flav);
   public:
-    Remnant_Base(rtp::code type,unsigned int beam);
+    Remnant_Base(const ATOOLS::Flavour & flav,const size_t & beam,
+		 const size_t & tag=0);
     virtual ~Remnant_Base();
 
     virtual bool Extract(ATOOLS::Particle *parton);
@@ -54,14 +57,15 @@ namespace REMNANTS {
     virtual bool FillBlob(ATOOLS::ParticleMomMap *ktmap=nullptr,
 			  const bool & copy=true)=0;
     virtual void MakeSpectator(ATOOLS::Particle * parton) {}
+    virtual ATOOLS::Vec4D IncomingMomentum();
     
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
     inline rtp::code                  Type() const       { return m_type; }
-    inline unsigned int               Beam() const       { return m_beam; }
+    inline size_t                     Beam() const       { return m_beam; }
     inline const ATOOLS::Vec4D      & Position() const   { return m_position; }
     inline BEAM::Beam_Base          * GetBeam() const    { return p_beam; }
     inline ATOOLS::Blob             * GetBlob()          { return p_beamblob; }
-    inline const ATOOLS::Vec4D      & InMomentum() const { return p_beam->OutMomentum(); }
+    inline const ATOOLS::Vec4D      & InMomentum() const { return p_beam->OutMomentum(m_tag); }
     inline ATOOLS::Part_List        * GetExtracted()     { return &m_extracted; }
     inline ATOOLS::Part_List        * GetSpectators()    { return &m_spectators; }
     inline virtual ATOOLS::Particle * GetRecoiler()      { return nullptr; }

@@ -6,9 +6,9 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam):
-  Remnant_Base(rtp::hadron,beam),
-  p_pdf(pdf), p_partons(&(p_pdf->Partons())), m_beamflav(pdf->Bunch()),
+Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,const unsigned int & tag):
+  Remnant_Base(pdf->Bunch(),beam,tag),
+  p_pdf(pdf), p_partons(&(p_pdf->Partons())),
   p_valence(nullptr), p_remnant(nullptr), p_recoiler(nullptr), p_spectator(nullptr), m_ff(Form_Factor()),
   m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
 {
@@ -155,7 +155,7 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
   // rest is taken by the diquark.
-  Vec4D availMom = p_beam->OutMomentum();
+  Vec4D availMom = p_beam->OutMomentum(m_tag);
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();
     if (copy) {
@@ -242,13 +242,14 @@ void Hadron_Remnant::Reset(const bool & resc,const bool & DIS) {
     delete part;
     m_spectators.pop_front();
   }
-  /////// TODO: Have to fix this!!!!!
+  /////// TODO: Have to check / fix this!!!!!
   m_spectators.clear();
   if (resc)
     msg_Out()<<METHOD<<"(resc = "<<resc<<"): "
-	     <<p_beam->InMomentum()<<" - "<<p_beam->OutMomentum()<<"\n";
-  m_residualE = ( resc ? (p_beam->InMomentum()-p_beam->OutMomentum())[0] :
-		  p_beam->OutMomentum()[0] );
+	     <<p_beam->InMomentum()<<" - "<<p_beam->OutMomentum()<<" = \n"
+	     <<"   "<<(p_beam->InMomentum()-p_beam->OutMomentum())<<" vs. "
+	     <<p_beam->OutMomentum(m_tag)<<"\n";;
+  m_residualE = p_beam->OutMomentum(m_tag)[0];
   m_valence   = false;
   p_valence   = p_remnant = p_recoiler = nullptr; 
 }

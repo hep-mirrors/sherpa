@@ -44,6 +44,7 @@ double Matter_Overlap::SelectB(const bool & mode) const {
   //    - for double Gaussian, one of the three radii is picked.
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
   double b, radius;
+  msg_Out()<<"         * "<<METHOD<<"(mode = "<<mode<<", form = "<<m_overlapform<<")\n";
   switch (m_overlapform) {
     case overlap_form::code::Single_Gaussian:
       radius = m_radius1;
@@ -103,7 +104,7 @@ void Matter_Overlap::CalculateIntegral() {
   } while (dabs(previous/result)>1.e-10);
   m_bmax     = bmin;
   m_integral = result;
-  msg_Tracking()<<METHOD<<" for form = "<<m_overlapform<<": "
+  msg_Tracking()<<METHOD<<" for form = "<<int(m_overlapform)<<": "
 	   <<"Integral(num) = "<<m_integral<<", ana = "<<(M_PI*m_norm)<<"\n";
 }
 

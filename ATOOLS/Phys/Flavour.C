@@ -369,6 +369,11 @@ bool Flavour::IsBaryon() const
   return !IsDiQuark();
 }
 
+bool Flavour::IsNucleon() const
+{
+  return (Kfcode()==2212 || Kfcode()==2112);
+}
+
 bool Flavour::IsB_Hadron() const 
 {
   if (Kfcode() < 100)                               return 0;

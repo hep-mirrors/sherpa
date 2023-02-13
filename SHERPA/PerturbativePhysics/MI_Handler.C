@@ -42,6 +42,8 @@ MI_Handler::MI_Handler(MODEL::Model_Base * model,
     if ((scm==string("Shrimps") && p_amisic==NULL) ||
 	m_name==string("Shrimps")) InitShrimps(model);
   }
+  msg_Out()<<METHOD<<"(id = "<<m_id<<", mode = "<<isr->Mode()<<"): name = "<<m_name<<", "
+	   <<"on = "<<m_on<<" ["<<this<<"].\n";
 }
 
 MI_Handler::~MI_Handler() 
@@ -70,10 +72,12 @@ void MI_Handler::InitShrimps(MODEL::Model_Base *model)
 
 bool MI_Handler::InitialiseMPIs(const double & scale) 
 {
-  if (m_type==typeID::amisic) {
-    p_amisic->Update(p_isr);
-    return p_amisic->InitMPIs(scale);
-  }
+  msg_Out()<<"     --> "<<METHOD<<"("<<scale<<"):\n";
+  for (size_t i=0;i<2;i++)
+    msg_Out()<<"         mom["<<i<<"] = "
+	     <<p_remnants->GetRemnant(i)->IncomingMomentum()<<" "
+	     <<"["<<p_remnants->GetRemnant(i)->Type()<<"].\n";
+  if (m_type==typeID::amisic) return p_amisic->InitMPIs(p_isr, scale);
   return true;
 }
 
@@ -88,7 +92,7 @@ void MI_Handler::SetMaxEnergies(const double & E1,const double & E2) {
 }
 
 void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
-  msg_Out()<<METHOD<<" for "<<showerblob<<"\n";
+  msg_Out()<<METHOD<<"("<<m_firstrescatter<<") for "<<showerblob<<"\n";
   msg_Out()<<(*showerblob)<<"\n";
   if (!m_firstrescatter && showerblob) p_remnants->ConnectColours(showerblob);
 }

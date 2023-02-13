@@ -57,6 +57,7 @@ Soft_Collision_Handler::~Soft_Collision_Handler()
 }
 
 void Soft_Collision_Handler::CleanUp() {
+  msg_Out()<<"   * "<<METHOD<<" for mode = "<<m_mode<<".\n";
   switch (m_mode) {
   case scmode::shrimps: 
     p_shrimps->CleanUp();

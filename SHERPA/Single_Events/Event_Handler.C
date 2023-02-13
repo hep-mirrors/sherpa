@@ -214,6 +214,9 @@ bool Event_Handler::AnalyseEvent() {
 }
 
 int Event_Handler::IterateEventPhases(eventtype::code & mode) {
+  msg_Out()<<"====================================================================\n"
+	   <<"====================================================================\n"
+	   <<"====================================================================\n";
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;
@@ -236,6 +239,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
 	return 2;
       }
     }
+    msg_Out()<<METHOD<<": try "<<(*pit)->Name()<<"\n";
     DEBUG_INFO("Treating "<<(*pit)->Name());
     Return_Value::code rv((*pit)->Treat(&m_blobs));
     if (rv!=Return_Value::Nothing)
@@ -526,14 +530,14 @@ void Event_Handler::Finish() {
 			   abserr_size + relerr_size};
 
   // Print cross section table header.
-  msg_Out() << std::string(table_size, '-') << '\n';
-  msg_Out() << std::left << std::setw(max_weight_name_size)
-	    << "Nominal or variation name";
-  msg_Out() << std::right << std::setw(12) << "XS [pb]";
-  msg_Out() << std::right << std::setw(12) << "RelDev";
-  msg_Out() << std::right << std::setw(13) << "AbsErr [pb]";
-  msg_Out() << std::right << std::setw(12) << "RelErr" << '\n';
-  msg_Out() << std::string(table_size, '-') << '\n';
+  msg_Out() << std::string(table_size, '-') << '\n'
+	    << std::left << std::setw(max_weight_name_size)
+	    << "Nominal or variation name"
+	    << std::right << std::setw(12) << "XS [pb]"
+	    << std::right << std::setw(12) << "RelDev"
+	    << std::right << std::setw(13) << "AbsErr [pb]"
+	    << std::right << std::setw(12) << "RelErr" << '\n'
+	    << std::string(table_size, '-') << '\n';
   // Define table row printer.
   auto printxs = [max_weight_name_size, xs_size, reldev_size, abserr_size,
 		  relerr_size](const std::string& name, double xs, double nom,

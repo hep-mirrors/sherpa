@@ -5,10 +5,18 @@
 #include <string>
 
 namespace AMISIC {
+  struct mitype {
+    enum code {
+      none           = 0,
+      hadron_hadron  = 1,
+      gamma_hadron   = 2,
+      gamma_gamma    = 3
+    };
+  };
   struct overlap_form {
-    enum class code {
-      Single_Gaussian,
-      Double_Gaussian
+    enum code {
+      Single_Gaussian = 1,
+      Double_Gaussian = 2
     };
   };
   std::ostream &operator<<(std::ostream&, const overlap_form::code&);
