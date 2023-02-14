@@ -119,30 +119,29 @@ void Sigma_SD::CombineTGrids(const size_t diff) {
   for (size_t q=0;q<m_steps;q++) {
     t     = m_tmin + m_delta*q;
     value = 0.;
-    for (size_t i=0;i<p_eikonals->size();i++) {
-      for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
-	for (size_t k=0;k<(*p_eikonals)[i].size();k++) {
-	  if (diff==0) {
-	    pref  = ((*p_eikonals)[i][j]->Prefactor()*(*p_eikonals)[i][k]->Prefactor()/
-		     sqrt((*p_eikonals)[i][i]->Prefactor())/
-		     (4.*M_PI));
-	    value += pref * m_tgrids[i][j][q] * m_tgrids[i][k][q] * rpa->Picobarn();
-	  }
-	  else if (diff==1) {
-	    pref  = ((*p_eikonals)[j][i]->Prefactor()*(*p_eikonals)[k][i]->Prefactor()/
-		     sqrt((*p_eikonals)[i][i]->Prefactor())/
-		     (4.*M_PI));
-	    value += pref * m_tgrids[j][i][q] * m_tgrids[k][i][q] * rpa->Picobarn();
-	  }
-	  else if (diff==2) {
-	    for (size_t l=0;l<p_eikonals->size();l++) {
-	      pref  = ((*p_eikonals)[i][j]->Prefactor()*(*p_eikonals)[l][k]->Prefactor()/
-		       (4.*M_PI));
-	      value += pref * m_tgrids[i][j][q] * m_tgrids[l][k][q] * rpa->Picobarn();
-	    }
-	  }
-	}
-      }
+    for (size_t i=0;i<p_eikonals->size();i++) {        
+        for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+            if (diff == 2) {
+                pref = (*p_eikonals)[i][j]->Prefactor()/(4.*M_PI);
+                value += pref * sqr(m_tgrids[i][j][q]) * rpa->Picobarn();
+            }
+            else {
+                for (size_t k=0;k<(*p_eikonals)[i].size();k++) {
+                    if (diff==0) {
+                        pref  = ((*p_eikonals)[i][j]->Prefactor()*(*p_eikonals)[i][k]->Prefactor()/
+                                   sqrt((*p_eikonals)[i][i]->Prefactor())/
+                                   (4.*M_PI));
+                        value += pref * m_tgrids[i][j][q] * m_tgrids[i][k][q] * rpa->Picobarn();
+                    }
+                    else if (diff==1) {
+                        pref  = ((*p_eikonals)[j][i]->Prefactor()*(*p_eikonals)[k][i]->Prefactor()/
+                                   sqrt((*p_eikonals)[i][i]->Prefactor())/
+                                   (4.*M_PI));
+                        value += pref * m_tgrids[j][i][q] * m_tgrids[k][i][q] * rpa->Picobarn();
+                    }
+                }
+            }
+        }
     }
     m_diffgrids[diff].push_back(value);
   }
@@ -152,7 +151,14 @@ void Sigma_SD::CreateIntGrids(const size_t diff,Sigma_Elastic * sigma_el) {
   m_summed[diff] = 0.;
   m_intgrids[diff].push_back(0.);
   std::vector<double> el_grid = sigma_el->GetDiffGrid();
-  for (size_t i=0;i<m_diffgrids[diff].size();i++) m_diffgrids[diff][i] -= el_grid[i];
+  if (diff < 2) {
+      for (size_t i=0;i<m_diffgrids[diff].size();i++) m_diffgrids[diff][i] -= el_grid[i];
+  }
+  else if (diff == 2) {
+      for (size_t i=0;i<m_diffgrids[diff].size();i++) {
+          m_diffgrids[diff][i] -= (m_diffgrids[0][i] + m_diffgrids[1][i] + el_grid[i]);
+      }
+  }
   for (size_t i=1;i<m_diffgrids[diff].size();i++) {
     m_summed[diff] += (m_diffgrids[diff][i]+m_diffgrids[diff][i-1])/2. * m_delta;
     m_intgrids[diff].push_back(m_summed[diff]);
