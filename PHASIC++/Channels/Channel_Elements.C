@@ -746,7 +746,7 @@ double Channel_Elements::GenerateYForward(
   ymin = ATOOLS::Max(yinfo[0], ymin);
   ymax = ATOOLS::Min(yinfo[1], ymax);
   double ypeak = ymax - xinfo[3];
-  if (yexponent>=1. && ATOOLS::IsEqual(ypeak, ymax)) {
+  if (yexponent>=0. && ATOOLS::IsEqual(ypeak, ymax)) {
     if (ypeak > 0)
       ypeak *= 1.00000001;
     if (ypeak < 0)
@@ -788,7 +788,7 @@ double Channel_Elements::WeightYForward(const double yexponent,
   if (yinfo[2] < ymin || yinfo[2] > ymax)
     return 0.0;
   double ypeak = ymax - xinfo[3];
-  if (yexponent>=1. && ATOOLS::IsEqual(ypeak, ymax)) {
+  if (yexponent>=0. && ATOOLS::IsEqual(ypeak, ymax)) {
     if (ypeak > 0)
       ypeak *= 1.00000001;
     if (ypeak < 0)
@@ -819,7 +819,7 @@ double Channel_Elements::GenerateYBackward(
   ymin = ATOOLS::Max(yinfo[0], ymin);
   ymax = ATOOLS::Min(yinfo[1], ymax);
   double ypeak = -ymin - xinfo[2];
-  if (yexponent>=1. && ATOOLS::IsEqual(ypeak, -ymin)) {
+  if (yexponent>=0. && ATOOLS::IsEqual(ypeak, -ymin)) {
     if (ypeak > 0)
       ypeak *= 1.00000001;
     if (ypeak < 0)
@@ -862,7 +862,7 @@ double Channel_Elements::WeightYBackward(const double yexponent,
   if (yinfo[2] < ymin || yinfo[2] > ymax)
     return 0.0;
   double ypeak = -ymin - xinfo[2];
-  if (yexponent>=1. && ATOOLS::IsEqual(ypeak, -ymin)) {
+  if (yexponent>=0. && ATOOLS::IsEqual(ypeak, -ymin)) {
     if (ypeak > 0)
       ypeak *= 1.00000001;
     if (ypeak < 0)
