@@ -1,15 +1,15 @@
-#ifndef SHRIMPS_Cross_Sections_Sigma_SD_H
-#define SHRIMPS_Cross_Sections_Sigma_SD_H
+#ifndef SHRIMPS_Cross_Sections_Sigma_D_H
+#define SHRIMPS_Cross_Sections_Sigma_D_H
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
 
 namespace SHRIMPS {
-  class Sigma_SD : public Sigma_Base {
-    class SD_Term : public Function_Base {
+  class Sigma_D : public Sigma_Base {
+    class D_Term : public Function_Base {
     protected:
       Omega_ik * p_eikonal;
       double     m_Q;
     public:
-      SD_Term() {}
+      D_Term() {}
       void   SetEikonal(Omega_ik * eikonal) { p_eikonal = eikonal; }
       void   SetQ(const double & Q)         { m_Q = Q; }
       double operator()(double B);
@@ -27,7 +27,7 @@ namespace SHRIMPS {
 
     double GetCombinedValueEL(const double & B);
   public:
-    Sigma_SD();
+    Sigma_D();
 
     double SelectT(const size_t & mode) const;
     double GetValue(const double & B); 

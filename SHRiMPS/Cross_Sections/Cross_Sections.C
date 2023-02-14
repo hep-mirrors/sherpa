@@ -14,7 +14,7 @@ Cross_Sections::Cross_Sections() :
   m_xstot(0.), m_slope(0.), m_xsinel(0.), m_xsel(0.),
   m_sigma_inelastic(Sigma_Inelastic()),
   m_sigma_elastic(Sigma_Elastic()),
-  m_sigma_SD(Sigma_SD())
+  m_sigma_D(Sigma_D())
 { }
 
 Cross_Sections::~Cross_Sections()
@@ -29,9 +29,9 @@ void Cross_Sections::CalculateCrossSections()
   m_xsinel = m_sigma_inelastic.Calculate();
   m_xsel   = m_sigma_elastic.Calculate();
   m_sigma_elastic.FillGrids();
-  m_sigma_SD.FillGrids(&m_sigma_elastic);
-  for (size_t i=0;i<2;i++) m_xsSD[i] = m_sigma_SD.GetXSec(i);
-  m_xsDD = m_sigma_SD.GetXSec(2);
+  m_sigma_D.FillGrids(&m_sigma_elastic);
+  for (size_t i=0;i<2;i++) m_xsSD[i] = m_sigma_D.GetXSec(i);
+  m_xsDD = m_sigma_D.GetXSec(2);
 
   msg_Info()<<"===========================================================\n"
 	    <<"   sigma_tot                 = "<<m_xstot/1.e9<<" mb, (B = "<<m_slope<<")\n"
@@ -46,7 +46,7 @@ void Cross_Sections::CalculateCrossSections()
   MBpars.SetXSecs(this);
   m_sigma_inelastic.SetSigma(m_xsinel);
   m_sigma_elastic.SetSigma(m_xsel);
-  m_sigma_SD.SetSigma(m_xsSD[0]+m_xsSD[1]+m_xsSD[2]);
+  m_sigma_D.SetSigma(m_xsSD[0]+m_xsSD[1]+m_xsDD);
 }
 
 void Cross_Sections::Test(const std::string & dirname)
