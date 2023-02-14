@@ -35,12 +35,10 @@ initial state radiation (ISR).
   be set to 22, the PDG code of the photon.
 
 :OPTION:`ISR_SMIN/ISR_SMAX`
-  This parameter specifies the minimum fraction of cms energy squared
-  after ISR. The reference value is the total centre of mass energy
-  squared of the collision, `not` the centre of mass energy after
-  eventual Beamstrahlung.
+  This parameter specifies the minimum (maximum) cms energy squared
+  after ISR.
   The parameter can be specified using the internal interpreter, see
-  :ref:`Interpreter`, e.g. as ``ISR_SMIN: sqr(20/E_CMS)``.
+  :ref:`Interpreter`.
 
 Sherpa provides access to a variety of structure functions.
 They can be configured with the following parameters.
