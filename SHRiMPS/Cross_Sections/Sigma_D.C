@@ -1,4 +1,4 @@
-#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
+#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 #include "SHRiMPS/Tools/Special_Functions.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Math/Random.H"
@@ -8,20 +8,20 @@
 using namespace SHRIMPS;
 using namespace ATOOLS;
 
-double Sigma_SD::SD_Term::operator()(double B) {
+double Sigma_D::D_Term::operator()(double B) {
   return B * 2.*M_PI*SF.Jn(0,B*m_Q) * (1.-exp(-(*p_eikonal)(B)/2.));
 }
 
-Sigma_SD::Sigma_SD() :
+Sigma_D::Sigma_D() :
   m_tmin(0.), m_tmax(1.), m_steps(1), m_delta(1.) {
   for (size_t i=0;i<2;i++) m_summed[i] = 0.;
 }
 
-double Sigma_SD::GetValue(const double & B) {
+double Sigma_D::GetValue(const double & B) {
     return p_eikonal->Prefactor()*sqr(1.-exp(-(*p_eikonal)(B)/2.));
 }
 
-double Sigma_SD::GetCombinedValue(const double & B) {
+double Sigma_D::GetCombinedValue(const double & B) {
   double value(0.);
   for (size_t i=0;i<p_eikonals->size();i++) {
     for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
@@ -32,7 +32,7 @@ double Sigma_SD::GetCombinedValue(const double & B) {
   return value;
 }
 
-double Sigma_SD::GetCombinedValueEL(const double & B) {
+double Sigma_D::GetCombinedValueEL(const double & B) {
     double value(0.);
     for (size_t i=0;i<p_eikonals->size();i++) {
       for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
@@ -43,7 +43,7 @@ double Sigma_SD::GetCombinedValueEL(const double & B) {
     return sqr(value);
 }
 
-double Sigma_SD::GetCombinedValueSD0(const double & B) {
+double Sigma_D::GetCombinedValueSD0(const double & B) {
   double value(0.),kaverage(0.);
   for (size_t i=0;i<p_eikonals->size();i++) {
       kaverage = 0.;
@@ -56,7 +56,7 @@ double Sigma_SD::GetCombinedValueSD0(const double & B) {
   return value - GetCombinedValueEL(B);
 }
 
-double Sigma_SD::GetCombinedValueSD1(const double & B) {
+double Sigma_D::GetCombinedValueSD1(const double & B) {
     double value(0.),kaverage(0.);
     for (size_t i=0;i<p_eikonals->size();i++) {
         kaverage = 0.;
@@ -69,11 +69,11 @@ double Sigma_SD::GetCombinedValueSD1(const double & B) {
     return value - GetCombinedValueEL(B);
 }
 
-double Sigma_SD::GetCombinedValueDD(const double & B) {
+double Sigma_D::GetCombinedValueDD(const double & B) {
   return GetCombinedValue(B) - GetCombinedValueSD0(B) - GetCombinedValueSD1(B) - GetCombinedValueEL(B);
 }
 
-void Sigma_SD::FillGrids(Sigma_Elastic * sigma_el) {
+void Sigma_D::FillGrids(Sigma_Elastic * sigma_el) {
   m_tgrids.clear();
   for (size_t i = 0; i < 3; ++i) {
     m_intgrids[i].clear();
@@ -95,8 +95,8 @@ void Sigma_SD::FillGrids(Sigma_Elastic * sigma_el) {
   }
 }
 
-void Sigma_SD::FillTGrids() {
-  SD_Term term;
+void Sigma_D::FillTGrids() {
+  D_Term term;
   Gauss_Integrator integrator(&term);
   double t,value;
   for (size_t k=0;k<m_steps;k++) {
@@ -114,7 +114,7 @@ void Sigma_SD::FillTGrids() {
   }
 }
 
-void Sigma_SD::CombineTGrids(const size_t diff) {
+void Sigma_D::CombineTGrids(const size_t diff) {
   double pref, value, t;
   for (size_t q=0;q<m_steps;q++) {
     t     = m_tmin + m_delta*q;
@@ -147,7 +147,7 @@ void Sigma_SD::CombineTGrids(const size_t diff) {
   }
 }
 
-void Sigma_SD::CreateIntGrids(const size_t diff,Sigma_Elastic * sigma_el) {
+void Sigma_D::CreateIntGrids(const size_t diff,Sigma_Elastic * sigma_el) {
   m_summed[diff] = 0.;
   m_intgrids[diff].push_back(0.);
   std::vector<double> el_grid = sigma_el->GetDiffGrid();
@@ -166,7 +166,7 @@ void Sigma_SD::CreateIntGrids(const size_t diff,Sigma_Elastic * sigma_el) {
   for (size_t i=0;i<m_intgrids[diff].size();i++) m_intgrids[diff][i] /= m_summed[diff];
 }
 
-double Sigma_SD::SelectT(const size_t & mode) const {
+double Sigma_D::SelectT(const size_t & mode) const {
   double random(ran->Get());
   unsigned int i(0);
   while (random-m_intgrids[mode][i]>=0) i++;

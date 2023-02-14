@@ -3,7 +3,7 @@ set(Cross_Sections_SOURCES Cross_Sections.C
                            Sigma_Total.C
                            Sigma_Inelastic.C
                            Sigma_Elastic.C
-                           Sigma_SD.C
+                           Sigma_D.C
                            Sigma_Partonic.C)
 
 set(Cross_Sections_HEADERS Cross_Sections.H
@@ -11,7 +11,7 @@ set(Cross_Sections_HEADERS Cross_Sections.H
                            Sigma_Total.H
                            Sigma_Inelastic.H
                            Sigma_Elastic.H
-                           Sigma_SD.H
+                           Sigma_D.H
                            Sigma_Partonic.H)
 
 sherpa_create_git_info(Cross_Sections)

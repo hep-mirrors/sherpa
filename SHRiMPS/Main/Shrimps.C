@@ -323,28 +323,28 @@ void Shrimps::WriteOutDiffXSecs(double energy, std::string dirname){
     was<<"# 3 - sigma_qe\n";
     for (int i = 0; i < Nstep; ++i) {
         double B(i*Bmax/Nstep);
-        double val(p_xsecs->GetSigmaSD()->GetCombinedValue(B));
+        double val(p_xsecs->GetSigmaD()->GetCombinedValue(B));
         was<<B<<"     "<<val<<endl;
     }
     was<<"\n\n";
     was<<"# 4 - sigma_sd0\n";
     for (int i = 0; i < Nstep; ++i) {
         double B(i*Bmax/Nstep);
-        double val(p_xsecs->GetSigmaSD()->GetCombinedValueSD0(B));
+        double val(p_xsecs->GetSigmaD()->GetCombinedValueSD0(B));
         was<<B<<"     "<<val<<endl;
     }
     was<<"\n\n";
     was<<"# 5 - sigma_sd1\n";
     for (int i = 0; i < Nstep; ++i) {
         double B(i*Bmax/Nstep);
-        double val(p_xsecs->GetSigmaSD()->GetCombinedValueSD1(B));
+        double val(p_xsecs->GetSigmaD()->GetCombinedValueSD1(B));
         was<<B<<"     "<<val<<endl;
     }
     was<<"\n\n";
     was<<"# 6 - sigma_dd\n";
     for (int i = 0; i < Nstep; ++i) {
         double B(i*Bmax/Nstep);
-        double val(p_xsecs->GetSigmaSD()->GetCombinedValueDD(B));
+        double val(p_xsecs->GetSigmaD()->GetCombinedValueDD(B));
         was<<B<<"     "<<val<<endl;
     }
     was.close();
