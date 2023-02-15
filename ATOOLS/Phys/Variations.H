@@ -104,12 +104,16 @@ namespace ATOOLS {
       bool m_shoulddeletepdf {false};
       bool m_shoulddeletealphas {false};
     };
+    struct PDFs_And_AlphaS_List {
+      std::vector<PDFs_And_AlphaS> items;
+      bool did_expand {false};
+    };
     void AddParameterExpandingScaleFactors(std::vector<std::string> scalestringparams,
                                            ScaleFactorExpansions::code,
-                                           std::vector<Variations::PDFs_And_AlphaS>);
+                                           PDFs_And_AlphaS_List);
     void AddParameters(double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfs, bool deletealphas);
-    std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(const std::string& pdfstringparam) const;
-    std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf) const;
+    PDFs_And_AlphaS_List PDFsAndAlphaSList(const std::string& pdfstringparam) const;
+    PDFs_And_AlphaS_List PDFsAndAlphaSList(std::string pdfstringparam, bool expandpdf) const;
 
     bool m_enabled;
     Parameters_Vector m_parameters_vector;
@@ -219,6 +223,12 @@ namespace ATOOLS {
   std::string GenerateVariationNamePart(std::string tag, U value) {
     return tag + ToString(value);
   }
+
+  bool IsQCDVariationTrivial(
+      double muR2fac, double muF2fac,
+      PDF::PDF_Base * const pdf1,
+      PDF::PDF_Base * const pdf2,
+      MODEL::Running_AlphaS * const);
 
 };
 

@@ -234,11 +234,11 @@ void Variations::InitialiseParametersVector()
   // ... or by using the specialised (and easier to remember) versions below.
 
   for (auto single_variation_settings : s["PDF_VARIATIONS"].GetItems()) {
-    std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector =
-        PDFsAndAlphaSVector(single_variation_settings.Get<std::string>());
+    PDFs_And_AlphaS_List pdfsandalphaslist =
+        PDFsAndAlphaSList(single_variation_settings.Get<std::string>());
     AddParameterExpandingScaleFactors({"1.0", "1.0", "1.0"},
                                       ScaleFactorExpansions::None,
-                                      pdfsandalphasvector);
+                                      pdfsandalphaslist);
   }
 
   for (auto single_variation_settings : s["SCALE_VARIATIONS"].GetItems()) {
@@ -275,22 +275,6 @@ void Variations::InitialiseParametersVector()
     scalestringparams = {"1.0", "1.0", var.var};
     AddParameterExpandingScaleFactors(scalestringparams, scalefactorexpansions,
                                       {});
-  }
-
-  // erase all trivial variations
-  if (!m_includecentralvaluevariation) {
-    m_parameters_vector.erase(std::remove_if(m_parameters_vector.begin(),
-                                             m_parameters_vector.end(),
-                                             [](const QCD_Variation_Params* v) {
-                                               return v->IsTrivial();
-                                             }),
-                              m_parameters_vector.end());
-    m_qcut_parameters_vector.erase(std::remove_if(m_qcut_parameters_vector.begin(),
-                                             m_qcut_parameters_vector.end(),
-                                             [](const Qcut_Variation_Params& v) {
-                                               return v.IsTrivial();
-                                             }),
-                              m_qcut_parameters_vector.end());
   }
 }
 
@@ -341,23 +325,23 @@ void Variations::AddParameters(Scoped_Settings& s)
 
   // parse PDF set, and check whether it is requested to be expanded to all its
   // members via an appended asterisk
-  std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector =
-      PDFsAndAlphaSVector(s["PDF"].SetDefault("None").Get<std::string>());
+  PDFs_And_AlphaS_List pdfsandalphaslist =
+      PDFsAndAlphaSList(s["PDF"].SetDefault("None").Get<std::string>());
 
   // parse AlphaS(MZ) variations and append them
   auto alphasmz = s["AlphaS(MZ)"].SetDefault(-1.0).Get<double>();
   if (alphasmz != -1.0) {
-    pdfsandalphasvector.push_back(PDFs_And_AlphaS(alphasmz));
+    pdfsandalphaslist.items.push_back(PDFs_And_AlphaS(alphasmz));
   }
 
   AddParameterExpandingScaleFactors(scalestringparams,
                                     scalefactorexpansions,
-                                    pdfsandalphasvector);
+                                    pdfsandalphaslist);
 }
 
 void Variations::AddParameterExpandingScaleFactors(
     std::vector<std::string> scalestringparams, ScaleFactorExpansions::code expansions,
-    std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector)
+    PDFs_And_AlphaS_List pdfsandalphaslist)
 {
   bool scalevariationrequested(!scalestringparams.empty());
 
@@ -366,14 +350,15 @@ void Variations::AddParameterExpandingScaleFactors(
   const double qcutfac {ToType<double>(scalestringparams[2])};
 
   if (qcutfac != 1.0) {
-    if (muF2fac != 1.0 || muR2fac != 1.0 || !pdfsandalphasvector.empty()) {
+    if (muF2fac != 1.0 || muR2fac != 1.0 || !pdfsandalphaslist.items.empty()) {
       THROW(not_implemented,
             "Simultaneous variations of QCUT and QCD"
             " parameters (muF2, muR2, PDFs/AlphaS(mZ)) are not supported.")
     }
     m_qcut_parameters_vector.push_back({qcutfac});
     if (expansions & ScaleFactorExpansions::QCUT) {
-      m_qcut_parameters_vector.push_back({1.0});
+      if (m_includecentralvaluevariation)
+        m_qcut_parameters_vector.push_back({1.0});
       m_qcut_parameters_vector.push_back({1.0 / qcutfac});
     } else {
       m_qcut_parameters_vector.push_back({qcutfac});
@@ -385,6 +370,7 @@ void Variations::AddParameterExpandingScaleFactors(
   // necessary
 
   std::vector<ScaleFactor_Pair> scalefactorpairs;
+  bool did_expand {true};
   if (expansions & ScaleFactorExpansions::SevenPoint) {
     scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, 1.0));
     scalefactorpairs.push_back(ScaleFactor_Pair(1.0, muF2fac));
@@ -416,18 +402,26 @@ void Variations::AddParameterExpandingScaleFactors(
     scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, 1.0 / muF2fac));
   } else {
     scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, muF2fac));
+    did_expand = false;
   }
 
   // if there is no explicit PDF requested, we use the nominal one
-  if (pdfsandalphasvector.empty()) {
-    pdfsandalphasvector.push_back(PDFs_And_AlphaS());
+  if (pdfsandalphaslist.items.empty()) {
+    pdfsandalphaslist.items.push_back(PDFs_And_AlphaS());
+    pdfsandalphaslist.did_expand = true;
   }
 
   // now add all possible combinations to our list of parameters
-  for (std::vector<PDFs_And_AlphaS>::const_iterator pdfasit(pdfsandalphasvector.begin());
-        pdfasit != pdfsandalphasvector.end(); pdfasit++) {
+  for (std::vector<PDFs_And_AlphaS>::const_iterator pdfasit(pdfsandalphaslist.items.begin());
+        pdfasit != pdfsandalphaslist.items.end(); pdfasit++) {
     bool assignedownershipofpdfsandalphas {false};
     for (const auto sfpair : scalefactorpairs) {
+      if (!m_includecentralvaluevariation && did_expand &&
+          pdfsandalphaslist.did_expand &&
+          IsQCDVariationTrivial(sfpair.first, sfpair.second, pdfasit->m_pdfs[0],
+                                pdfasit->m_pdfs[1], pdfasit->p_alphas)) {
+        continue;
+      }
       AddParameters(
           sfpair.first,
           sfpair.second,
@@ -456,12 +450,12 @@ void Variations::AddParameters(double muR2fac, double muF2fac,
   m_parameters_vector.push_back(params);
 }
 
-std::vector<Variations::PDFs_And_AlphaS>
-Variations::PDFsAndAlphaSVector(const std::string &pdf) const
+Variations::PDFs_And_AlphaS_List
+Variations::PDFsAndAlphaSList(const std::string &pdf) const
 {
   // parse PDF set, and check whether it is requested to be expanded to all its
   // members via an appended asterisk
-  std::vector<PDFs_And_AlphaS> pdfsandalphasvector;
+  PDFs_And_AlphaS_List pdfsandalphaslist;
   if (pdf != "None") {
     if (Settings::GetMainSettings()["OVERRIDE_PDF_INFO"].Get<bool>()) {
       THROW(fatal_error,
@@ -470,20 +464,21 @@ Variations::PDFsAndAlphaSVector(const std::string &pdf) const
     }
     // translate PDF string parameter into actual AlphaS and PDF objects
     ExpandableVariation var{pdf};
-    pdfsandalphasvector = PDFsAndAlphaSVector(var.var, var.expand);
+    pdfsandalphaslist = PDFsAndAlphaSList(var.var, var.expand);
   }
-  return pdfsandalphasvector;
+  return pdfsandalphaslist;
 }
 
-std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
+Variations::PDFs_And_AlphaS_List Variations::PDFsAndAlphaSList(
     std::string pdfstringparam,
     bool expandpdf) const
 {
   // parse PDF member(s)
-  std::vector<PDFs_And_AlphaS> pdfsandalphasvector;
+  PDFs_And_AlphaS_List pdfsandalphaslist;
   size_t firstmember(0);
   size_t lastmember(0);
   if (expandpdf) {
+    pdfsandalphaslist.did_expand = true;
     // determine the number of set members to load
     bool lhapdflookupsuccessful(false);
     if (s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
@@ -517,9 +512,9 @@ std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
     lastmember = member;
   }
   for (size_t j(firstmember); j <= lastmember; ++j) {
-    pdfsandalphasvector.push_back(PDFs_And_AlphaS(pdfstringparam, j));
+    pdfsandalphaslist.items.push_back(PDFs_And_AlphaS(pdfstringparam, j));
   }
-  return pdfsandalphasvector;
+  return pdfsandalphaslist;
 }
 
 
@@ -733,14 +728,7 @@ std::string QCD_Variation_Params::Name(Variations_Source source) const
 
 bool QCD_Variation_Params::IsTrivial() const
 {
-  if (m_muR2fac != 1.0
-      || m_muF2fac != 1.0
-      || p_pdf1 != rpa->gen.PDF(0)
-      || p_pdf2 != rpa->gen.PDF(1)
-      || p_alphas != MODEL::as
-     )
-    return false;
-  return true;
+  return IsQCDVariationTrivial(m_muR2fac, m_muF2fac, p_pdf1, p_pdf2, p_alphas);
 }
 
 std::string Qcut_Variation_Params::Name(Variations_Source source) const
@@ -791,4 +779,19 @@ namespace ATOOLS {
     return s;
   }
 
+  bool IsQCDVariationTrivial(
+      double muR2fac, double muF2fac,
+      PDF::PDF_Base * const pdf1,
+      PDF::PDF_Base * const pdf2,
+      MODEL::Running_AlphaS * const alphas)
+  {
+    if (muR2fac != 1.0
+        || muF2fac != 1.0
+        || pdf1 != rpa->gen.PDF(0)
+        || pdf2 != rpa->gen.PDF(1)
+        || alphas != MODEL::as
+       )
+      return false;
+    return true;
+  }
 }
