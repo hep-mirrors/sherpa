@@ -231,7 +231,8 @@ void Initialization_Handler::RegisterDefaults()
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   s["CSS_RECO_CHECK"].SetDefault(0);
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
-  s["CSS_REWEIGHT"].SetDefault(true);
+  s["CSS_REWEIGHT"].SetDefault(showergen != "None");
+  s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(showergen != "None");
   s["CSS_MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
   s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);

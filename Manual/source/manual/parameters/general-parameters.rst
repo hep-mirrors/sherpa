@@ -742,9 +742,10 @@ Extending the naming convention, for pure strong coupling variations, an additio
 tag ``ASMZ=<val>`` is appended. Another set of tags is appended if shower scale
 variations are enabled, then giving ``PS:MUR=<fac>__PS:MUF=<fac>``.
 
-If parton-shower variations are enabled, ``CSS_REWEIGHT: false``,
+If parton-shower variations are enabled, ``CSS_REWEIGHT: true``
+(the default if parton showering is enabled),
 then ME-only variations are included along with the full variations in the
-HepMC/Rivet output by default. They can be disabled using
+HepMC/Rivet output by default. This can be disabled using
 ``OUTPUT_ME_ONLY_VARIATIONS: false``.
 Extra weight names of ME-only variations
 include a "ME" as part of the keys to indicate that

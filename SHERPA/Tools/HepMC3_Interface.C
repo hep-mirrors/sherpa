@@ -319,7 +319,7 @@ HepMC3_Interface::HepMC3_Interface() :
   m_extendedweights =
     s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
   m_includemeonlyweights =
-    s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(true).Get<bool>();
+    s["OUTPUT_ME_ONLY_VARIATIONS"].Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
   m_runinfo = std::make_shared<HepMC::GenRunInfo>();
