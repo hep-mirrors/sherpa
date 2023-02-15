@@ -34,8 +34,8 @@ Photon_PDF_Base::Photon_PDF_Base(const Flavour _bunch, const std::string _set, i
 
 double Photon_PDF_Base::GetPhotonCoefficient(double x,double Q2) {
   // The coefficient is proportional to a Dirac delta d(1-x)
-  double epsilon = Min(m_xmax, 1.-1.e-6);
-  if (x < 1. - epsilon)
+  double dx = Max(1.-m_xmax, 1.e-6);
+  if (x < 1. - dx)
     return m_ph = 0.;
   // Get the coefficient of the photon component in the photon, c.f. hep-ph/9605240
   // It is equal 1, subtracted by the VMD and anomalous (i.e. perturbative q-qbar) terms
@@ -58,7 +58,7 @@ double Photon_PDF_Base::GetPhotonCoefficient(double x,double Q2) {
   if (m_ph < 0)
     msg_Error() << METHOD << ": Photon component is negative! Check the point, scale = "
                 << Q2 << ", photon coefficient = " << m_ph << std::endl;
-  return m_ph;
+  return m_ph/dx;
 }
 
 double Photon_PDF_Base::GetXPDF(const ATOOLS::Flavour &infl) {
