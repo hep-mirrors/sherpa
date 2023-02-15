@@ -739,15 +739,18 @@ For Rivet 3, the internal multi-weight handling capabilities are used instead,
 such that there are no alternate histogram files, just one containing
 histograms for all variations.
 Extending the naming convention, for pure strong coupling variations, an additional
-tag ``ASMZ=<val>`` is appended. Another set of tags is appended if shower scale
-variations are enabled, then giving ``PS:MUR=<fac>__PS:MUF=<fac>``.
+tag ``ASMZ=<val>`` is appended.
+If shower scale variations are disabled (either implicitly, because ``SHOWER_GENERATOR: None``,
+or explicitly, see below),
+you will find ``ME.MUR``/``ME.MUF`` tags instead of the simple ones
+to make explicit that the parton-shower scales are not varied with the ME scales.
 
 If parton-shower variations are enabled, ``CSS_REWEIGHT: true``
 (the default if parton showering is enabled),
-then ME-only variations are included along with the full variations in the
+then pure ME-only variations are included along with the full variations in the
 HepMC/Rivet output by default. This can be disabled using
 ``OUTPUT_ME_ONLY_VARIATIONS: false``.
-Extra weight names of ME-only variations
+All weight names of ME-only variations
 include a "ME" as part of the keys to indicate that
 only the ME part of the calculation has been varied, e.g.
 ``ME:MUR=<fac>__ME:MUF=<fac>__ME:LHAPDF=<id>``.
