@@ -596,18 +596,21 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
       // calculate new J
       const double lastJ(info.sf->Lorentz()->LastJ());
       double newJ;
+      double muF2fac {1.0};
+      if (varparams->m_showermuF2enabled)
+	muF2fac = varparams->m_muF2fac;
       switch (type) {
       case cstp::II:
         newJ = info.sf->Lorentz()->JII(
-            info.z, info.y, info.x, varparams->m_showermuF2fac * info.scale);
+            info.z, info.y, info.x, muF2fac * info.scale);
         break;
       case cstp::IF:
         newJ = info.sf->Lorentz()->JIF(
-            info.z, info.y, info.x, varparams->m_showermuF2fac * info.scale);
+            info.z, info.y, info.x, muF2fac * info.scale);
         break;
       case cstp::FI:
         newJ = info.sf->Lorentz()->JFI(
-            info.y, info.x, varparams->m_showermuF2fac * info.scale);
+            info.y, info.x, muF2fac * info.scale);
         break;
       case cstp::FF:
       case cstp::none:
@@ -636,8 +639,11 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
     if (info.sf->Coupling()->AllowsAlternativeCouplingUsage()) {
       // insert new AlphaS
       const double lastcpl {info.sf->Coupling()->Last()};
+      double muR2fac {1.0};
+      if (varparams->m_showermuR2enabled)
+	muR2fac = varparams->m_muR2fac;
       info.sf->Coupling()->SetAlternativeUnderlyingCoupling(
-          varparams->p_alphas, varparams->m_showermuR2fac);
+          varparams->p_alphas, muR2fac);
       // calculate new coupling
       double newcpl {info.sf->Coupling()->Coupling(info.scale, 0)};
       // clean up

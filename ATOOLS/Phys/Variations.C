@@ -439,11 +439,11 @@ void Variations::AddParameters(double muR2fac, double muF2fac,
                                bool deletepdf,
                                bool deletealphas)
 {
-  const double showermuR2fac = (m_reweightsplittingalphasscales) ? muR2fac : 1.0;
-  const double showermuF2fac = (m_reweightsplittingpdfsscales) ? muF2fac : 1.0;
+  const bool showermuR2enabled {m_reweightsplittingalphasscales};
+  const bool showermuF2enabled {m_reweightsplittingpdfsscales};
   QCD_Variation_Params *params =
     new QCD_Variation_Params(
-	muR2fac, muF2fac, showermuR2fac, showermuF2fac,
+	muR2fac, muF2fac, showermuR2enabled, showermuF2enabled,
         pdfsandalphas->m_pdfs[0], pdfsandalphas->m_pdfs[1],
         pdfsandalphas->p_alphas,
         deletepdf, deletealphas);
@@ -687,10 +687,28 @@ QCD_Variation_Params::~QCD_Variation_Params()
 std::string QCD_Variation_Params::Name(Variations_Source source) const
 {
   static const std::string divider("__");
-  std::string level_prefix;
-  if (source == Variations_Source::main)
-    level_prefix = "ME.";
+
   std::string name;
+
+  // scale factors tags; note that we assume here that the shower scale factors
+  // are either equal to the matrix-element scale factors, or 1.0
+  if (source == Variations_Source::main || !m_showermuR2enabled) {
+    name += GenerateVariationNamePart("ME.MUR=", sqrt(m_muR2fac));
+  } else {
+    name += GenerateVariationNamePart("MUR=", sqrt(m_muR2fac));
+  }
+  name += divider;
+  if (source == Variations_Source::main || !m_showermuF2enabled) {
+    name += GenerateVariationNamePart("ME.MUF=", sqrt(m_muF2fac));
+  } else {
+    name += GenerateVariationNamePart("MUF=", sqrt(m_muF2fac));
+  }
+  name += divider;
+
+  // PDF tags
+  std::string pdf_alphas_level_prefix;
+  if (source == Variations_Source::main)
+    pdf_alphas_level_prefix = "ME.";
   if (p_pdf1 == NULL || p_pdf2 == NULL || p_pdf1->LHEFNumber() == p_pdf2->LHEFNumber()) {
     // there is only one relevant PDF ID
     int pdfid(-1);
@@ -703,26 +721,21 @@ std::string QCD_Variation_Params::Name(Variations_Source source) const
     } else {
       // THROW(fatal_error, "Cannot obtain PDF IDF");
     }
-    name = level_prefix + GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
-           + level_prefix + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
-           + level_prefix + GenerateVariationNamePart("LHAPDF=", pdfid);
+    name += pdf_alphas_level_prefix + GenerateVariationNamePart("LHAPDF=", pdfid);
   } else {
     // there are two relevant PDF IDs, quote both
-    name = level_prefix + GenerateVariationNamePart("MUR=", sqrt(m_muR2fac)) + divider
-           + level_prefix + GenerateVariationNamePart("MUF=", sqrt(m_muF2fac)) + divider
-           + level_prefix + GenerateVariationNamePart("LHAPDF.BEAM1=", p_pdf1->LHEFNumber()) + divider
-           + level_prefix + GenerateVariationNamePart("LHAPDF.BEAM2=", p_pdf2->LHEFNumber());
+    name += pdf_alphas_level_prefix +
+            GenerateVariationNamePart("LHAPDF.BEAM1=", p_pdf1->LHEFNumber()) +
+            divider + pdf_alphas_level_prefix +
+            GenerateVariationNamePart("LHAPDF.BEAM2=", p_pdf2->LHEFNumber());
   }
-  // append non-trival AlphaS(MZ) variation (which is not related to a change
-  // in the PDF set)
+
+  // append optional non-trival AlphaS(MZ) variation (which is not related to a
+  // change in the PDF set)
   if (p_alphas != MODEL::as && p_alphas->GetAs()->PDF() != p_pdf1) {
-    name += divider + level_prefix + GenerateVariationNamePart("ASMZ=", p_alphas->AsMZ());
+    name += divider + pdf_alphas_level_prefix + GenerateVariationNamePart("ASMZ=", p_alphas->AsMZ());
   }
-  // append non-trivial shower scale factors
-  if (m_showermuR2fac != 1.0 || m_showermuF2fac != 1.0) {
-    name += divider + level_prefix + GenerateVariationNamePart("PS.MUR=", sqrt(m_showermuR2fac));
-    name += divider + level_prefix + GenerateVariationNamePart("PS.MUF=", sqrt(m_showermuF2fac));
-  }
+
   return name;
 }
 

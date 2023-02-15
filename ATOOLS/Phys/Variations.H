@@ -177,14 +177,16 @@ namespace ATOOLS {
    */
   struct QCD_Variation_Params {
     QCD_Variation_Params(double muR2fac, double muF2fac,
-                         double showermuR2fac, double showermuF2fac,
+                         bool showermuR2enabled,
+                         bool showermuF2enabled,
                          PDF::PDF_Base *pdf1,
                          PDF::PDF_Base *pdf2,
                          MODEL::Running_AlphaS *alphas,
                          bool deletepdfs,
                          bool deletealphas):
       m_muR2fac(muR2fac), m_muF2fac(muF2fac),
-      m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac),
+      m_showermuR2enabled(showermuR2enabled),
+      m_showermuF2enabled(showermuF2enabled),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
       m_deletepdfs(deletepdfs),
       m_deletealphas(deletealphas)
@@ -201,7 +203,7 @@ namespace ATOOLS {
     std::string Name(Variations_Source source=ATOOLS::Variations_Source::all) const;
 
     const double m_muR2fac, m_muF2fac;
-    const double m_showermuR2fac, m_showermuF2fac;
+    const double m_showermuR2enabled, m_showermuF2enabled;
     //! Pointers to the beam PDFs, which can be NULL for (semi-)leptonic events
     PDF::PDF_Base * const p_pdf1;
     PDF::PDF_Base * const p_pdf2;

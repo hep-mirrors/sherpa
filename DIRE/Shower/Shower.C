@@ -461,8 +461,10 @@ void Shower::Reweight(QCD_Variation_Params* params,
                       const Reweight_Args& a)
 {
   double rsf(m_rsf), fsf(m_fsf);
-  m_rsf*=params->m_showermuR2fac;
-  m_fsf*=params->m_showermuF2fac;
+  if (params->m_showermuR2enabled)
+    m_rsf*=params->m_muR2fac;
+  if (params->m_showermuF2enabled)
+    m_fsf*=params->m_muF2fac;
   MODEL::Running_AlphaS *as(p_as);
   p_as=params->p_alphas;
   PDF::PDF_Base *pdf[2]={p_pdf[0],p_pdf[1]};
