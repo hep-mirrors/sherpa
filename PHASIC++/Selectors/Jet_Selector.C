@@ -138,7 +138,7 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
 
   ReadInSubSelectors(key);
 
-  m_smin       = sqr(m_ptmin);
+  m_smin       = sqr(m_ptmin*m_nmin);
 
   if (m_nmin>m_nmax) THROW(fatal_error,"Inconsistent setup.");
   if (msg_LevelIsDebugging()) {
@@ -301,6 +301,7 @@ bool Jet_Selector::Trigger(Selector_List &sl)
 
 void Jet_Selector::BuildCuts(Cut_Data * cuts)
 {
+  cuts->smin=Max(cuts->smin,m_smin);
   for (size_t i(0);i<m_sels.size();++i) m_sels[i]->BuildCuts(cuts);
 }
 
