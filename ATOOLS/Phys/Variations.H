@@ -107,10 +107,11 @@ namespace ATOOLS {
     struct PDFs_And_AlphaS {
       PDFs_And_AlphaS();
       PDFs_And_AlphaS(double alphasmz);
-      PDFs_And_AlphaS(std::string pdfname, int pdfmember);
+      PDFs_And_AlphaS(std::string pdfname, int pdfmember, int beammask,
+                      int alphasbeam);
       std::vector<PDF::PDF_Base *> m_pdfs;
       MODEL::Running_AlphaS *p_alphas;
-      bool m_shoulddeletepdf {false};
+      int m_shoulddeletepdfmask {0};
       bool m_shoulddeletealphas {false};
     };
     struct PDFs_And_AlphaS_List {
@@ -120,9 +121,13 @@ namespace ATOOLS {
     void AddParameterExpandingScaleFactors(std::vector<std::string> scalestringparams,
                                            ScaleFactorExpansions::code,
                                            PDFs_And_AlphaS_List);
-    void AddParameters(double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfs, bool deletealphas);
+    void AddParameters(double, double,
+                       std::vector<PDFs_And_AlphaS>::const_iterator,
+                       int deletepdfmask, bool deletealphas);
     PDFs_And_AlphaS_List PDFsAndAlphaSList(const std::string& pdfstringparam) const;
-    PDFs_And_AlphaS_List PDFsAndAlphaSList(std::string pdfstringparam, bool expandpdf) const;
+    PDFs_And_AlphaS_List PDFsAndAlphaSList(std::string pdfstringparam,
+                                           bool expandpdf, int beammask,
+                                           int alphasbeam) const;
 
     bool m_enabled;
     Parameters_Vector m_parameters_vector;
@@ -182,13 +187,13 @@ namespace ATOOLS {
                          PDF::PDF_Base *pdf1,
                          PDF::PDF_Base *pdf2,
                          MODEL::Running_AlphaS *alphas,
-                         bool deletepdfs,
+                         int deletepdfmask,
                          bool deletealphas):
       m_muR2fac(muR2fac), m_muF2fac(muF2fac),
       m_showermuR2enabled(showermuR2enabled),
       m_showermuF2enabled(showermuF2enabled),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
-      m_deletepdfs(deletepdfs),
+      m_deletepdfmask(deletepdfmask),
       m_deletealphas(deletealphas)
     {}
     ~QCD_Variation_Params();
@@ -209,7 +214,7 @@ namespace ATOOLS {
     PDF::PDF_Base * const p_pdf2;
     MODEL::Running_AlphaS * const p_alphas;
     //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
-    const bool m_deletepdfs;
+    const int m_deletepdfmask;
     const bool m_deletealphas;
 
   private:

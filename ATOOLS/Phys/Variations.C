@@ -434,13 +434,19 @@ void Variations::AddParameterExpandingScaleFactors(
                                 pdfasit->m_pdfs[1], pdfasit->p_alphas)) {
         continue;
       }
+      int shoulddeletepdfmask {0};
+      bool shoulddeletealphas {false};
+      if (!assignedownershipofpdfsandalphas) {
+        shoulddeletepdfmask = pdfasit->m_shoulddeletepdfmask;
+        shoulddeletealphas = pdfasit->m_shoulddeletealphas;
+        assignedownershipofpdfsandalphas = true;
+      }
       AddParameters(
           sfpair.first,
           sfpair.second,
           pdfasit,
-          !assignedownershipofpdfsandalphas && pdfasit->m_shoulddeletepdf,
-          !assignedownershipofpdfsandalphas && pdfasit->m_shoulddeletealphas);
-      assignedownershipofpdfsandalphas = true;
+          shoulddeletepdfmask,
+          shoulddeletealphas);
     }
   }
 }
@@ -448,7 +454,7 @@ void Variations::AddParameterExpandingScaleFactors(
 
 void Variations::AddParameters(double muR2fac, double muF2fac,
                                std::vector<PDFs_And_AlphaS>::const_iterator pdfsandalphas,
-                               bool deletepdf,
+                               int deletepdfmask,
                                bool deletealphas)
 {
   const bool showermuR2enabled {m_reweightsplittingalphasscales};
@@ -458,7 +464,7 @@ void Variations::AddParameters(double muR2fac, double muF2fac,
 	muR2fac, muF2fac, showermuR2enabled, showermuF2enabled,
         pdfsandalphas->m_pdfs[0], pdfsandalphas->m_pdfs[1],
         pdfsandalphas->p_alphas,
-        deletepdf, deletealphas);
+        deletepdfmask, deletealphas);
   m_parameters_vector.push_back(params);
 }
 
@@ -469,21 +475,36 @@ Variations::PDFsAndAlphaSList(const std::string &pdf) const
   // members via an appended asterisk
   PDFs_And_AlphaS_List pdfsandalphaslist;
   if (pdf != "None") {
-    if (Settings::GetMainSettings()["ALPHAS"]["USE_PDF"].Get<int>() == 0) {
+    Settings& s = Settings::GetMainSettings();
+    if (s["ALPHAS"]["USE_PDF"].Get<int>() == 0) {
       THROW(fatal_error,
             "`ALPHAS: {USE_PDF: 0}` is incompatible with doing PDF/AlphaS "
             "variations.");
     }
+    int alphasbeam {
+      s["PDF_VARIATION_ALPHAS_BEAM"].SetDefault(0).Get<int>() - 1};
+    int beammask {0};
+    for (int i : s["PDF_VARIATION_BEAMS"].SetDefault({1, 2}).GetVector<int>()) {
+      if (rpa->gen.Bunch(i - 1).IsHadron()) {
+        beammask |= 1 << (i - 1);
+        if (alphasbeam < 0)
+          alphasbeam = i - 1;
+      }
+    }
+
     // translate PDF string parameter into actual AlphaS and PDF objects
     ExpandableVariation var{pdf};
-    pdfsandalphaslist = PDFsAndAlphaSList(var.var, var.expand);
+    pdfsandalphaslist =
+        PDFsAndAlphaSList(var.var, var.expand, beammask, alphasbeam);
   }
   return pdfsandalphaslist;
 }
 
 Variations::PDFs_And_AlphaS_List Variations::PDFsAndAlphaSList(
     std::string pdfstringparam,
-    bool expandpdf) const
+    bool expandpdf,
+    int beammask,
+    int alphasbeam) const
 {
   // parse PDF member(s)
   PDFs_And_AlphaS_List pdfsandalphaslist;
@@ -526,7 +547,8 @@ Variations::PDFs_And_AlphaS_List Variations::PDFsAndAlphaSList(
     lastmember = member;
   }
   for (size_t j(firstmember); j <= lastmember; ++j) {
-    pdfsandalphaslist.items.push_back(PDFs_And_AlphaS(pdfstringparam, j));
+    pdfsandalphaslist.items.push_back(
+        PDFs_And_AlphaS(pdfstringparam, j, beammask, alphasbeam));
   }
   return pdfsandalphaslist;
 }
@@ -565,37 +587,36 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(double alphasmz)
 
 
 Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(
-    std::string pdfname, int pdfmember)
+    std::string pdfname, int pdfmember, int beammask, int alphasbeam)
 {
   // obtain PDFs
-  PDF::PDF_Base *aspdf(NULL);
   for (int i(0); i < 2; ++i) {
-    if (rpa->gen.Bunch(i).IsHadron()) {
+    if ((1 << i) & beammask) {
       PDF::PDF_Arguments args{ rpa->gen.Bunch(i), i, pdfname, pdfmember };
       PDF::PDF_Base *pdf = PDF::PDF_Base::PDF_Getter_Function::GetObject(pdfname, args);
       if (pdf == NULL) THROW(fatal_error, "PDF set " + pdfname + " not available.");
       pdf->SetBounds();
       m_pdfs.push_back(pdf);
-      if (aspdf == NULL) {
-        aspdf = pdf;
-      }
+    } else if (rpa->gen.Bunch(i).IsHadron()) {
+      m_pdfs.push_back(rpa->gen.PDF(i));
     } else {
       m_pdfs.push_back(NULL);
     }
   }
+  m_shoulddeletepdfmask = beammask;
 
   // obtain AlphaS based on a loaded PDF or a new one (if none is found)
+  PDF::PDF_Base *aspdf {m_pdfs[alphasbeam]};
   if (aspdf == NULL) {
     p_alphas = new MODEL::Running_AlphaS(pdfname, pdfmember);
+    m_shoulddeletealphas = true;
   } else {
     p_alphas = new MODEL::Running_AlphaS(aspdf);
+    m_shoulddeletealphas = (1 << alphasbeam) & beammask;
   }
   if (p_alphas == NULL) {
     THROW(fatal_error, "AlphaS for " + pdfname + " could not be initialised.");
   }
-
-  m_shoulddeletealphas = true;
-  m_shoulddeletepdf = true;
 }
 
 
@@ -685,8 +706,10 @@ void ReweightingFactorHistogram::Write(std::string filenameaffix)
 
 QCD_Variation_Params::~QCD_Variation_Params()
 {
-  if (m_deletepdfs) {
+  if (m_deletepdfmask & 1) {
     if (p_pdf1) { delete p_pdf1; }
+  }
+  if (m_deletepdfmask & 2) {
     if (p_pdf2) { delete p_pdf2; }
   }
   if (m_deletealphas) {
@@ -787,7 +810,7 @@ namespace ATOOLS {
     s << '\n';
     for (Variations::Parameters_Vector::const_iterator it(paramsvec->begin());
          it != paramsvec->end(); ++it) {
-      s << (*it)->Name() << " (" << (*it)->m_deletepdfs << ","
+      s << (*it)->Name() << " (" << (*it)->m_deletepdfmask << ","
         << (*it)->m_deletealphas << ")" << '\n';
     }
     return s;
