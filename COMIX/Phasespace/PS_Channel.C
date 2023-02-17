@@ -681,20 +681,20 @@ double PS_Channel::GenerateWeight
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
     size_t pid(aid-(m_rid+bid));
     aid=(1<<m_n)-1-aid;
-    if (IdCount(pid)>1 && m_s[pid]==0.0) {
+    if (IdCount(pid)>1) {
       m_p[pid]=-m_p[aid]-m_p[m_rid]-m_p[bid];
-      m_s[pid]=m_p[pid].Abs2();
+      if (m_s[pid]==0.0) m_s[pid]=m_p[pid].Abs2();
     }
     double se(SCut(bid)), sp(SCut(pid));
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
     if (CIdCount(bid)>1) {
       double smin(se), smax(sqr(rtsmax-sqrt(sp)));
-      wgt*=PropWeight(jb,bid,smin,smax,m_s[bid]);
+      wgt*=PropWeight(jb,bid,smin,smax,se=m_s[bid]);
     }
     if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
       wgt*=PropWeight((PS_Current*)jc->SCC(),pid,
-		      smin,smax,m_s[pid]);
+		      smin,smax,sp=m_s[pid]);
     }
     wgt*=TChannelWeight(jc,jc->Dip()?jc->Dip():v->Dip(),
 			bid,aid,-m_p[aid],-m_p[m_rid],
@@ -719,7 +719,7 @@ double PS_Channel::GenerateWeight
     }
     if (CIdCount(rid)>1) {
       double smin(sr), smax(sqr(rts-sqrt(sl)));
-      wgt*=PropWeight(jb,rid,smin,smax,m_s[rid]);
+      wgt*=PropWeight(jb,rid,smin,smax,sr=m_s[rid]);
     }
     wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[lid|rid]-m_p[lid]);
     nr+=2;
