@@ -30,6 +30,9 @@ namespace PHOTONS {
     double m_t0;
     double m_t;
 
+    // flavour-dependent enhancements
+    std::map<kf_code,double> m_enhancefac;
+
     // for storing splittings
     Part_List m_remainingphotons;
     Particle_Vector m_addedparticles;

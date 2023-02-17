@@ -227,13 +227,19 @@ bool Photons::AddRadiation(Blob * blob)
   m_photonsadded = dress.AddedAnything();
   m_success = dress.DoneSuccessfully();
   if (!blob->MomentumConserved()) {
-    msg_Error()<<METHOD<<"(): Momentum not conserved after treatment: "
+    msg_Error()<<METHOD<<"(): Momentum not conserved after photon radiation: "
                <<blob->CheckMomentumConservation()<<std::endl;
     msg_Debugging()<<*blob<<std::endl;
     return m_success=false;
   }
   if (m_success && m_photonsadded && m_splitphotons) {
     m_success = m_photonsplitter.SplitPhotons(blob);
+  }
+  if (!blob->MomentumConserved()) {
+    msg_Error()<<METHOD<<"(): Momentum not conserved after photon splitting: "
+               <<blob->CheckMomentumConservation()<<std::endl;
+    msg_Debugging()<<*blob<<std::endl;
+    return m_success=false;
   }
   return m_success;
 }

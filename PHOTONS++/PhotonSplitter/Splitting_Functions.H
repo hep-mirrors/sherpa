@@ -43,12 +43,12 @@ namespace PHOTONS {
     Spectator * p_spec;
     double m_zmin, m_zmax;
     double m_mij2, m_mi2, m_mj2, m_mk2;
-    double m_alpha;
+    double m_alpha, m_enhancefac;
     double m_startscale;
 
   public:
     Splitting_Function(ATOOLS::Particle *splitter, int fla, 
-        int flb, int flc, int intspin, const size_t &id);
+        int flb, int flc, int intspin, const size_t &id, const double &enh);
 
     void SetSpec(Spectator *spec);
     void AddSpec(Spectator *spec);

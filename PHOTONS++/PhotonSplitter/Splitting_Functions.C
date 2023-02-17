@@ -15,8 +15,8 @@ Spectator::Spectator(const ATOOLS::Vec4D &p, const int &id, const ATOOLS::Flavou
 
 // begin Splitting_Function class
 Splitting_Function::Splitting_Function(ATOOLS::Particle * splitter, int fla, 
-      int flb, int flc, int intspin, const size_t &id) 
-      : m_id(id), m_intspin(intspin), m_on(true)
+      int flb, int flc, int intspin, const size_t &id, const double &enh)
+      : m_id(id), m_intspin(intspin), m_on(true), m_enhancefac(enh)
 {
   p_splitter = splitter;
   m_flavs[0] = Flavour(fla);
@@ -30,7 +30,7 @@ Splitting_Function::Splitting_Function(ATOOLS::Particle * splitter, int fla,
                  <<m_flavs[2]<<"("<<m_mj2<<")"<<std::endl;
   
   // possiblity to enhance splitting here by multiplying alpha 
-  m_alpha = PHOTONS::Photons::s_alpha;
+  m_alpha = PHOTONS::Photons::s_alpha*m_enhancefac;
 };
 
 double Splitting_Function::Lambda(const double &a, const double &b, const double &c) const

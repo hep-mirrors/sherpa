@@ -47,7 +47,8 @@ bool Photon_Splitter::SplitPhotons(ATOOLS::Blob * blob)
     size_t i = 0;
     while (i<blob->NOutP())
     {
-      if (blob->OutParticle(i)->Info() == 'S' && blob->OutParticle(i)->Flav().Kfcode() == 22)
+      if (blob->OutParticle(i)->Info() == 'S' &&
+          blob->OutParticle(i)->Flav().Kfcode() == kf_photon)
       {
         blob->DeleteOutParticle(blob->OutParticle(i));
       }

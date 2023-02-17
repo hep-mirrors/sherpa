@@ -25,7 +25,9 @@ namespace PHASIC {
 namespace SHERPA {
 
   typedef std::pair<ATOOLS::Particle *,ATOOLS::Particle *> ParticlePair;
+  typedef std::pair<std::pair<ATOOLS::Particle *,ATOOLS::Particle *>,ATOOLS::Particle *> ParticlePairPair;
   typedef std::vector<ParticlePair> ParticlePair_Vector;
+  typedef std::vector<ParticlePairPair> ParticlePairPair_Vector;
 
   class Hard_Decay_Handler : public Decay_Handler_Base {
     std::string              m_resultdir, m_offshell;
@@ -57,15 +59,25 @@ namespace SHERPA {
                             ATOOLS::Blob* blob,
                             size_t& imax,
                             size_t idmother);
+    void AddSplitPhotonsClustering(ATOOLS::Cluster_Amplitude*& ampl,
+                              const ATOOLS::Particle_Vector daughters,
+                              ParticlePairPair_Vector& splitphotons,
+                              size_t& imax,
+                              const std::vector<size_t>& ids);
     void AddPhotonsClustering(ATOOLS::Cluster_Amplitude*& ampl,
                               const ATOOLS::Particle_Vector daughters,
                               ParticlePair_Vector& photons,
                               size_t& imax,
                               const std::vector<size_t>& ids);
+    void UnsplitPhotons(const ATOOLS::Particle_Vector& splitphotonproducts,
+                        ParticlePairPair_Vector& splitphotons);
     void AssignPhotons(const ATOOLS::Particle_Vector& daughters,
                        ParticlePair_Vector& photons);
+    void AssignSplitPhotons(const ATOOLS::Particle_Vector& daughters,
+                            ParticlePairPair_Vector& splitphotons);
     ATOOLS::Vec4D RecombinedMomentum(const ATOOLS::Particle * daughter,
                                      const ParticlePair_Vector& photons,
+                                     const ParticlePairPair_Vector& splitphotons,
                                      size_t& stat);
 
     void ReadDecayTable(ATOOLS::Flavour decayer);

@@ -49,6 +49,13 @@ public:
   { return (a.first->Momentum()[0]<b.first->Momentum()[0]); }
 };
 
+class ParticlePairPairFirstEnergySort {
+public:
+  bool operator()(const ParticlePairPair& a,const ParticlePairPair& b)
+  { return (a.first.first->Momentum()[0]+a.first.second->Momentum()[0]
+            <b.first.first->Momentum()[0]+b.first.second->Momentum()[0]); }
+};
+
 Hard_Decay_Handler::Hard_Decay_Handler() :
   p_newsublist(NULL), m_resultdir(""), m_offshell(""),
   m_decay_tau(false), m_set_widths(false), m_use_ho_sm_widths(true),
@@ -783,18 +790,25 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
 {
   DEBUG_FUNC("blob->Id()="<<blob->Id()<<" idmother="<<ID(idmother));
   DEBUG_VAR(*blob);
-  Particle_Vector daughters;
+  Particle_Vector daughters, splitphotonproducts;
   ParticlePair_Vector photons;
+  ParticlePairPair_Vector splitphotons;
   for (size_t i(0);i<blob->GetOutParticles().size();++i) {
     Particle * p(blob->OutParticle(i));
-    if (p->Info()=='S') photons.push_back(make_pair(p,p));
-    else                daughters.push_back(p);
+    if      (p->Info()=='S') photons.push_back(make_pair(p,p));
+    else if (p->Info()=='s') splitphotonproducts.push_back(p);
+    else                     daughters.push_back(p);
   }
-  std::sort(photons.begin(),photons.end(),ParticlePairFirstEnergySort());
   msg_Debugging()<<"daughters: ";
   for (size_t i(0);i<daughters.size();++i)
     msg_Debugging()<<daughters[i]->Flav().IDName()<<" ";
-  msg_Debugging()<<" +  "<<photons.size()<<" soft photon(s)"<<std::endl;
+  msg_Debugging()<<" +  "<<photons.size()<<" soft photon(s)"
+                 <<" +  "<<splitphotonproducts.size()<<" photon splitting products"
+                 <<std::endl;
+  UnsplitPhotons(splitphotonproducts,splitphotons);
+  std::sort(photons.begin(),photons.end(),ParticlePairFirstEnergySort());
+  std::sort(splitphotons.begin(),splitphotons.end(),ParticlePairPairFirstEnergySort());
+  AssignSplitPhotons(daughters,splitphotons);
   AssignPhotons(daughters,photons);
   if (daughters.size()==2) {
     msg_Debugging()<<"1 to 2 case"<<std::endl;
@@ -833,11 +847,11 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     lij->SetK(idk);
     Cluster_Leg *d1(copy->IdLeg(idmother));
     size_t stat1(0), stat2(0);
-    d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
+    d1->SetMom(RecombinedMomentum(daughters[0],photons,splitphotons,stat1));
     d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
     d1->SetFromDec(true);
-    copy->CreateLeg(RecombinedMomentum(daughters[1],photons,stat2),
+    copy->CreateLeg(RecombinedMomentum(daughters[1],photons,splitphotons,stat2),
                     daughters[1]->RefFlav());
     copy->Legs().back()->SetFromDec(true);
     size_t idnew=1<<(++imax);
@@ -865,6 +879,10 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     std::vector<size_t> ids;
     ids.push_back(idmother);
     ids.push_back(idnew);
+    // always combine radiated (split) photons with
+    // identified primary charged decay particle
+    while (splitphotons.size())
+      AddSplitPhotonsClustering(copy, daughters, splitphotons, imax, ids);
     while (photons.size())
       AddPhotonsClustering(copy, daughters, photons, imax, ids);
     if (daughters[0]->DecayBlob())
@@ -913,7 +931,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     lij->SetK(idk);
     Cluster_Leg *d1(step1->IdLeg(idmother));
     size_t stat1(0),stat2(0),stat3(0);
-    d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
+    d1->SetMom(RecombinedMomentum(daughters[0],photons,splitphotons,stat1));
     d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
     d1->SetFromDec(true);
@@ -929,8 +947,8 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     Comix1to3* amp=dynamic_cast<Comix1to3*>(dc->GetDiagrams()[0]);
     if (!amp) THROW(fatal_error, "Internal error.");
     Flavour prop_flav=amp->Prop();
-    Vec4D momd2=RecombinedMomentum(daughters[1],photons,stat2);
-    Vec4D momd3=RecombinedMomentum(daughters[2],photons,stat3);
+    Vec4D momd2=RecombinedMomentum(daughters[1],photons,splitphotons,stat2);
+    Vec4D momd3=RecombinedMomentum(daughters[2],photons,splitphotons,stat3);
     Vec4D prop_mom=momd2+momd3;
     step1->CreateLeg(prop_mom, prop_flav);
     size_t idnew1=1<<(++imax);
@@ -1002,6 +1020,10 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     ids.push_back(idmother);
     ids.push_back(idnew1);
     ids.push_back(idnew2);
+    // always combine radiated (split) photons with
+    // identified primary charged decay particle
+    while (splitphotons.size())
+      AddSplitPhotonsClustering(step2,daughters,splitphotons,imax,ids);
     while (photons.size())
       AddPhotonsClustering(step2,daughters,photons,imax,ids);
     if (daughters[0]->DecayBlob())
@@ -1016,6 +1038,176 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     PRINT_VAR(*blob);
     THROW(fatal_error, "1 -> n not implemented yet.");
   }
+}
+
+void Hard_Decay_Handler::AddSplitPhotonsClustering(Cluster_Amplitude*& ampl,
+                                                   const Particle_Vector daughters,
+                                                   ParticlePairPair_Vector& splitphotons,
+                                                   size_t& imax,
+                                                   const std::vector<size_t>& ids)
+{
+  DEBUG_FUNC(splitphotons.size()<<" split photons to be clustered");
+  // will need to construct two cluster steps
+  // 1) the (offshell) photon is radiated
+  // 2) the (offshell) photon splits into the identified pair
+  Particle * splitphoton1(splitphotons.back().first.first);
+  Particle * splitphoton2(splitphotons.back().first.second);
+  Particle * daughter(splitphotons.back().second);
+  splitphotons.pop_back();
+  size_t idmother(0),idphoton(0);
+  if      (daughter==daughters[0]) idmother=ids[0];
+  else if (daughter==daughters[1]) idmother=ids[1];
+  else if (daughter==daughters[2]) idmother=ids[2];
+  else THROW(fatal_error,"Did not find id for "+daughter->Flav().IDName());
+  // construct recombined (off-shell) photon momentum
+  Vec4D pmom(splitphoton1->Momentum()+splitphoton2->Momentum());
+  msg_Debugging()<<"Cluster recombined photon with "<<pmom
+                <<" with "<<daughter->Flav()<<" "<<ID(idmother)<<std::endl;
+
+  // construct photon splitting cluster step
+  Cluster_Amplitude* copy=ampl->InitPrev();
+  copy->CopyFrom(ampl);
+  copy->SetNLO(0);
+  copy->SetFlag(1);
+  copy->SetMS(ampl->MS());
+  Cluster_Leg *lij(ampl->IdLeg(idmother));
+  for (size_t i=0; i<ampl->Legs().size(); ++i)
+    ampl->Leg(i)->SetStat(ampl->Leg(i)->Stat()|1);
+  lij->SetStat(1|2|4);
+  size_t idk(0);
+  for (size_t i=0; i<copy->Legs().size(); ++i)
+    copy->Leg(i)->SetK(0);
+  if (lij->Col().m_i!=0 || lij->Col().m_j!=0)
+    THROW(fatal_error,"Adding QED to coloured particle.");
+  // Ad hoc QED partner, must not be another soft photon
+  size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
+  if (ampl_nout==1) idk=ampl->Leg(0)->Id();
+  else {
+    size_t select(0);
+    size_t nvalid(0);
+    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+      if (!(ampl->Leg(i)->Id()&idmother || i>ampl->Legs().size()-1 ||
+            ampl->Leg(i)->Flav().Kfcode()==kf_photon)) {
+        nvalid++;
+      }
+    }
+    if (nvalid==0) select=0;
+    else {
+      do {
+        select=ampl->NIn()+floor(ran->Get()*ampl_nout);
+      } while (ampl->Leg(select)->Id()&idmother ||
+          select>ampl->Legs().size()-1 ||
+          ampl->Leg(select)->Flav().Kfcode()==kf_photon);
+    }
+    msg_Debugging()<<"choose ("<<ID(ampl->Leg(select)->Id())<<") "
+      <<ampl->Leg(select)->Flav()<<std::endl;
+    idk=ampl->Leg(select)->Id();
+  }
+  if (idk==0) THROW(fatal_error,"Colour partner not found");
+  lij->SetK(idk);
+  Cluster_Leg *d1(copy->IdLeg(idmother));
+  size_t stat1(0), stat2(0);
+  d1->SetMom(RecombinedMomentum(daughter,ParticlePair_Vector(),splitphotons,stat1));
+  d1->SetStat(stat1);
+  d1->SetFlav(daughter->Flav());
+  copy->CreateLeg(pmom,Flavour(kf_photon));
+  idphoton=1<<(++imax);
+  copy->Legs().back()->SetId(idphoton);
+  copy->Legs().back()->SetStat(stat2);
+  Cluster_Amplitude::SetColours(ampl->IdLeg(idmother),
+                                copy->IdLeg(idmother),
+                                copy->Legs().back());
+  copy->SetIdNew(idphoton);
+  DEBUG_VAR(*copy);
+  // update IDs
+  Cluster_Amplitude* tmp=copy;
+  while (tmp->Next()) {
+    tmp=tmp->Next();
+    if (tmp->IdNew()&idmother) tmp->SetIdNew(tmp->IdNew()|idphoton);
+    for (size_t i=0; i<tmp->Legs().size(); ++i) {
+      if (tmp->Leg(i)->Id()&idmother) {
+        tmp->Leg(i)->SetId(tmp->Leg(i)->Id()|idphoton);
+      }
+      if (tmp->Leg(i)->K()&idmother) {
+        tmp->Leg(i)->SetK(tmp->Leg(i)->K()|idphoton);
+      }
+    }
+    DEBUG_VAR(*tmp);
+  }
+  ampl=copy;
+
+  // construct the photon splitting cluster step
+  copy=ampl->InitPrev();
+  copy->CopyFrom(ampl);
+  copy->SetNLO(0);
+  copy->SetFlag(1);
+  copy->SetMS(ampl->MS());
+  lij=ampl->IdLeg(idphoton);
+  for (size_t i=0; i<ampl->Legs().size(); ++i)
+    ampl->Leg(i)->SetStat(ampl->Leg(i)->Stat()|1);
+  lij->SetStat(1|2|4);
+  idk=0;
+  for (size_t i=0; i<copy->Legs().size(); ++i)
+    copy->Leg(i)->SetK(0);
+  if (lij->Col().m_i!=0 || lij->Col().m_j!=0)
+    THROW(fatal_error,"Adding QED to coloured particle.");
+  // Ad hoc QED partner, must not be another soft photon
+  ampl_nout=ampl->Legs().size()-ampl->NIn();
+  if (ampl_nout==1) idk=ampl->Leg(0)->Id();
+  else {
+    size_t select(0);
+    size_t nvalid(0);
+    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+      if (!(ampl->Leg(i)->Id()&idmother || i>ampl->Legs().size()-1 ||
+            ampl->Leg(i)->Flav().Kfcode()==kf_photon)) {
+        nvalid++;
+      }
+    }
+    if (nvalid==0) select=0;
+    else {
+      do {
+        select=ampl->NIn()+floor(ran->Get()*ampl_nout);
+      } while (ampl->Leg(select)->Id()&idmother ||
+          select>ampl->Legs().size()-1 ||
+          ampl->Leg(select)->Flav().Kfcode()==kf_photon);
+    }
+    msg_Debugging()<<"choose ("<<ID(ampl->Leg(select)->Id())<<") "
+      <<ampl->Leg(select)->Flav()<<std::endl;
+    idk=ampl->Leg(select)->Id();
+  }
+  if (idk==0) THROW(fatal_error,"Colour partner not found");
+  lij->SetK(idk);
+  d1=copy->IdLeg(idphoton);
+  stat1=0; stat2=0;
+  // we know the splitting products are not evolved further yet
+  d1->SetMom(splitphoton1->Momentum());
+  d1->SetStat(stat1);
+  d1->SetFlav(splitphoton1->Flav());
+  copy->CreateLeg(splitphoton2->Momentum(),splitphoton2->Flav());
+  size_t idnew=1<<(++imax);
+  copy->Legs().back()->SetId(idnew);
+  copy->Legs().back()->SetStat(stat2);
+  Cluster_Amplitude::SetColours(ampl->IdLeg(idmother),
+                                copy->IdLeg(idmother),
+                                copy->Legs().back());
+  copy->SetIdNew(idnew);
+  DEBUG_VAR(*copy);
+  // update IDs
+  tmp=copy;
+  while (tmp->Next()) {
+    tmp=tmp->Next();
+    if (tmp->IdNew()&idphoton) tmp->SetIdNew(tmp->IdNew()|idnew);
+    for (size_t i=0; i<tmp->Legs().size(); ++i) {
+      if (tmp->Leg(i)->Id()&idphoton) {
+        tmp->Leg(i)->SetId(tmp->Leg(i)->Id()|idnew);
+      }
+      if (tmp->Leg(i)->K()&idphoton) {
+        tmp->Leg(i)->SetK(tmp->Leg(i)->K()|idnew);
+      }
+    }
+    DEBUG_VAR(*tmp);
+  }
+  ampl=copy;
 }
 
 void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
@@ -1079,7 +1271,7 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
   lij->SetK(idk);
   Cluster_Leg *d1(copy->IdLeg(idmother));
   size_t stat1(0), stat2(0);
-  d1->SetMom(RecombinedMomentum(daughter,photons,stat1));
+  d1->SetMom(RecombinedMomentum(daughter,photons,ParticlePairPair_Vector(),stat1));
   d1->SetStat(stat1);
   d1->SetFlav(daughter->Flav());
   copy->CreateLeg(photon->Momentum(),photon->RefFlav());
@@ -1091,6 +1283,7 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
                                 copy->Legs().back());
   copy->SetIdNew(idnew);
   DEBUG_VAR(*copy);
+  // update IDs
   Cluster_Amplitude* tmp=copy;
   while (tmp->Next()) {
     tmp=tmp->Next();
@@ -1108,12 +1301,78 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
   ampl=copy;
 }
 
+void Hard_Decay_Handler::UnsplitPhotons(const ATOOLS::Particle_Vector& spp,
+                                        ParticlePairPair_Vector& splitphotons)
+{
+  // undo the splitting of a photon, recombine particle-anti-particle pair
+  // into (off-shell) photon
+  if (spp.size()) {
+    if (spp.size()%2!=0)
+      THROW(fatal_error,"Uneven number of photon-splitting products, cannot proceed.");
+    if (spp.size()==2) {
+      splitphotons.push_back(make_pair(make_pair(spp[0],spp[1]),spp[0]));
+    }
+    else {
+      // find (particle,anti-particle)-pairs in spp,
+      // order by invariant mass, starting with the smallest
+      std::map<double,std::pair<size_t,size_t> > pairtable;
+      for (size_t i(0);i<spp.size();++i) {
+        for (size_t j(i+1);j<spp.size();++j) {
+          if (spp[i]->Flav()==spp[j]->Flav().Bar()) {
+            double m2((spp[i]->Momentum()+spp[j]->Momentum()).Mass());
+            pairtable[m2]=make_pair(i,j);
+          }
+        }
+      }
+      if (pairtable.empty()) {
+        msg_Debugging()<<"no pairs found"<<std::endl;
+      }
+      else if (pairtable.size()==1) {
+        splitphotons.push_back(make_pair(make_pair(spp[0],spp[1]),spp[0]));
+      }
+      else {
+        if (msg_LevelIsDebugging()) {
+          msg_Debugging()<<"pairs found:\n";
+          for (std::map<double,std::pair<size_t,size_t> >::const_iterator
+               it=pairtable.begin();it!=pairtable.end();++it)
+            msg_Debugging()<<it->second.first<<" "<<it->second.second<<": "
+                <<", m2="<<it->first<<std::endl;
+        }
+        std::vector<size_t> usedindices;
+        for (std::map<double,std::pair<size_t,size_t> >::const_iterator it=pairtable.begin();
+             it!=pairtable.end();++it) {
+          bool valid(true);
+          for (size_t i(0);i<usedindices.size();++i)
+            if (it->second.first==usedindices[i] ||
+                it->second.second==usedindices[i]) { valid=false; break; }
+          if (!valid) continue;
+          usedindices.push_back(it->second.first);
+          usedindices.push_back(it->second.second);
+          msg_Debugging()<<"constructing split pair: P -> "
+                        <<spp[it->second.first]->Flav()<<" "
+                        <<spp[it->second.second]->Flav()<<" ,  m2 = "
+                        <<it->first<<std::endl;
+          splitphotons.push_back(make_pair(make_pair(spp[it->second.first],
+                                                     spp[it->second.second]),
+                                           spp[it->second.first]));
+        }
+        if (2*splitphotons.size()!=spp.size()) {
+          msg_Error()<<METHOD<<"(): Found "<<splitphotons.size()<<" pairs in "
+                     <<spp.size()<<" particles."<<std::endl;
+          THROW(fatal_error,"Wrong number of pairs found.");
+        }
+      }
+    }
+  }
+}
+
 void Hard_Decay_Handler::AssignPhotons(const Particle_Vector& daughters,
                                        ParticlePair_Vector& photons)
 {
-  // for every photon, find charged particle that's closest
+  // for every photon, find charged particle that's closest (using dR)
   // ignore radiation off charged resonance for now
   if (photons.size()) {
+    // first
     Particle_Vector cdaughters;
     for (size_t i(0);i<daughters.size();++i)
       if (daughters[i]->Flav().Charge()) cdaughters.push_back(daughters[i]);
@@ -1152,11 +1411,68 @@ void Hard_Decay_Handler::AssignPhotons(const Particle_Vector& daughters,
   }
 }
 
+void Hard_Decay_Handler::AssignSplitPhotons(const Particle_Vector& daughters,
+                                            ParticlePairPair_Vector& splitphotons)
+{
+  // for every split photon, find charged particle that's closest (using dR)
+  // ignore radiation off charged resonance for now
+  if (splitphotons.size()) {
+    // first
+    Particle_Vector cdaughters;
+    for (size_t i(0);i<daughters.size();++i)
+      if (daughters[i]->Flav().Charge()) cdaughters.push_back(daughters[i]);
+    if (cdaughters.size()==1) {
+      for (size_t i(0);i<splitphotons.size();++i)
+        splitphotons[i].second=cdaughters[0];
+    }
+    else {
+      Vec4D cmom(0.,0.,0.,0.);
+      Vec4D_Vector cmoms;
+      for (size_t i(0);i<cdaughters.size();++i) {
+        cmoms.push_back(cdaughters[i]->Momentum());
+        cmom+=cmoms[i];
+      }
+      Poincare ccms(cmom);
+      for (size_t i(0);i<cdaughters.size();++i) ccms.Boost(cmoms[i]);
+      for (size_t i(0);i<splitphotons.size();++i){
+        Vec4D pmom(splitphotons[i].first.first->Momentum()
+                   +splitphotons[i].first.second->Momentum());
+        ccms.Boost(pmom);
+        size_t id(0);
+        double dR(pmom.DR(cmoms[0]));
+        for (size_t j(1);j<cmoms.size();++j) {
+          double dRj(pmom.DR(cmoms[j]));
+          if (dRj<dR) { id=j; dR=dRj; }
+        }
+        splitphotons[i].second=cdaughters[id];
+      }
+    }
+    for (size_t i(0);i<splitphotons.size();++i) {
+      if (splitphotons[i].first.first==splitphotons[i].second ||
+          splitphotons[i].first.second==splitphotons[i].second)
+        THROW(fatal_error,"Split photon has not been assigned.");
+      msg_Debugging()<<splitphotons[i].first.first->Flav()<<" "
+                     <<splitphotons[i].first.first->Momentum()<<" and "
+                     <<splitphotons[i].first.second->Flav()<<" "
+                     <<splitphotons[i].first.second->Momentum()
+                     <<" assigned to "<<splitphotons[i].second->Flav()<<std::endl;
+    }
+  }
+}
+
 Vec4D Hard_Decay_Handler::RecombinedMomentum(const Particle * daughter,
                                              const ParticlePair_Vector& photons,
+                                             const ParticlePairPair_Vector& splitphotons,
                                              size_t& stat)
 {
   Vec4D mom(0.,0.,0.,0.);
+  for (size_t i(0);i<splitphotons.size();++i) {
+    if (splitphotons[i].second==daughter) {
+      mom+=splitphotons[i].first.first->Momentum()
+           +splitphotons[i].first.second->Momentum();
+      stat|=2|4;
+    }
+  }
   for (size_t i(0);i<photons.size();++i) {
     if (photons[i].second==daughter) {
       mom+=photons[i].first->Momentum();

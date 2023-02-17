@@ -151,6 +151,7 @@ namespace ATOOLS {
     i - particle from ISR, f - particle from FSR, decayed
     D - particle from hadron decays,
     P - primary hadrons
+    S - soft photons, s - soft photons splitting products
     \endverbatim
   */ 
   

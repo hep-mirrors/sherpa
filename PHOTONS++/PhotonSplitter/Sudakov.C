@@ -43,6 +43,16 @@ Sudakov::Sudakov(int mode) : m_mode(mode), m_addedanything(false), p_kinematics(
 
   m_debug_initProbabilistic = s["PHOTON_SPLITTER_STARTING_SCALE_SCHEME"].Get<int>();
 
+  // replace by a proper flavour-dependent read-in, for now use the enhance
+  // factor for all leptons only
+  double enh(s["PHOTON_SPLITTER_ENHANCE_FACTOR"].Get<double>());
+  m_enhancefac[kf_e]=enh;
+  if (m_enhancefac[kf_e]!=1.) msg_Info()<<"METHOD(): Enhancing P->ee splittings by factor "<<m_enhancefac[kf_e]<<std::endl;
+  m_enhancefac[kf_mu]=enh;
+  if (m_enhancefac[kf_mu]!=1.) msg_Info()<<"METHOD(): Enhancing P->mumu splittings by factor "<<m_enhancefac[kf_mu]<<std::endl;
+  m_enhancefac[kf_tau]=enh;
+  if (m_enhancefac[kf_tau]!=1.) msg_Info()<<"METHOD(): Enhancing P->tautau splittings by factor "<<m_enhancefac[kf_tau]<<std::endl;
+
   #ifdef PHOTONSPLITTER_DEBUG
   s_histo_base_name = s["PHOTON_SPLITTER_HISTO_BASE_NAME"].Get<std::string>();
   #endif
@@ -57,6 +67,7 @@ void Sudakov::RegisterDefaults()
   s["PHOTON_SPLITTER_SPECTATOR_SCHEME"].SetDefault(0);
   s["PHOTON_SPLITTER_STARTING_SCALE_SCHEME"].SetDefault(1);
   s["PHOTON_SPLITTER_HISTO_BASE_NAME"].SetDefault("histos/");
+  s["PHOTON_SPLITTER_ENHANCE_FACTOR"].SetDefault(1.);
 }
 
 Sudakov::~Sudakov()
@@ -82,16 +93,20 @@ void Sudakov::AddSplitter(ATOOLS::Particle *softphoton, const size_t &id)
   // id is for blob->GetParticle()
   Particle* p = new Particle();
   p->Copy(softphoton);
+  p->SetProductionBlob(NULL);
+  p->SetOriginalPart(p);
   m_remainingphotons.push_back(p);
   m_splitterIds.push_back(id);
 
-  if (m_mode & 1) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_e,kf_e,1,id));
-  if (m_mode & 2) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_mu,kf_mu,1,id));
-  if (m_mode & 4) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_tau,kf_tau,1,id));
+  if (m_mode & 1) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_e,kf_e,1,id,m_enhancefac[kf_e]));
+  if (m_mode & 2) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_mu,kf_mu,1,id,m_enhancefac[kf_mu]));
+  if (m_mode & 4) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_tau,kf_tau,1,id,m_enhancefac[kf_tau]));
   if (m_mode & 8) {
     for (KF_Table::const_iterator it(s_kftable.begin()); it!=s_kftable.end(); ++it) {
       if (it->second->m_hadron && it->second->m_icharge && it->second->m_mass<m_masscutoff) {
-        m_splitters.push_back(new Splitting_Function(p,kf_photon,it->second->m_kfc,-it->second->m_kfc,2*it->second->m_spin,id));
+        kf_code kfc(it->second->m_kfc);
+        double enh(m_enhancefac.find(kfc)!=m_enhancefac.end()?m_enhancefac[kfc]:1.);
+        m_splitters.push_back(new Splitting_Function(p,kf_photon,kfc,-kfc,2*it->second->m_spin,id,enh));
       }
     }
   }
@@ -331,16 +346,16 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
     t = m_t0; // comparing value
     for (size_t i=0; i<m_splitters.size(); i++)
     {
-      if (!m_splitters[i]->On()) continue; // if photon no longer exists 
+      if (!m_splitters[i]->On()) continue; // if photon no longer exists
       if (m_t > m_splitters[i]->StartScale()) continue; // if we're above the photon's starting scale
-      if (m_t < m_splitters[i]->Cutoff()) continue; // if we're below the cutoff 
+      if (m_t < m_splitters[i]->Cutoff()) continue; // if we're below the cutoff
 
       Particle *split = blob->GetParticle(m_splitters[i]->Id());
       for (Spectator* spectator : m_splitters[i]->GetSpecs())
       {
         // compute z boundaries
         if (m_virtualityOrdering) {
-          // the z boundaries are complicated, we just reject if the generated z is not allowed later 
+          // the z boundaries are complicated, we just reject if the generated z is not allowed later
           zmax = 1.;
           zmin = 1.-zmax;
           // double Q2tmp, mui2, muk2, viji, vijk, tQ;
@@ -421,9 +436,9 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
           m_splitters[ind]->Mass2Spec(), m_splitters[ind]->Mass2A());
         if (!madeKinematics) THROW(fatal_error, "Invalid kinematics");
 
-        // create new particles 
-        Particle *newparticle = new Particle(-1,m_splitters[ind]->FlB(),pi,'F');
-        Particle *newantiparticle = new Particle(-1,m_splitters[ind]->FlC(),pj,'F');
+        // create new particles, use info 's' to identify them later on
+        Particle *newparticle = new Particle(-1,m_splitters[ind]->FlB(),pi,'s');
+        Particle *newantiparticle = new Particle(-1,m_splitters[ind]->FlC(),pj,'s');
         m_addedparticles.push_back(newparticle);
         m_addedparticles.push_back(newantiparticle);
 
