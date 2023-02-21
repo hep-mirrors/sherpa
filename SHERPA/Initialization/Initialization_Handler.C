@@ -117,6 +117,7 @@ void Initialization_Handler::RegisterDefaults()
 
   s["MODEL"].SetDefault("SM");
   s["FRAGMENTATION"].SetDefault("Ahadic").UseNoneReplacements();
+  s["BEAM_REMNANTS"].SetDefault(true);
   s["HARD_DECAYS"]["Enabled"].SetDefault(false);
   s["N_COLOR"].SetDefault(3.0);
 
