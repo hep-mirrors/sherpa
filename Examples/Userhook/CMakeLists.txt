@@ -1,0 +1,7 @@
+project(SherpaUserhookExample LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.11.0)
+find_package(SHERPA-MC REQUIRED)
+add_library(SherpaUserhookExample SHARED Userhook_Example.C)
+amegic_handle_shared_library(SherpaUserhookExample SherpaUserhookExample)
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
+install(TARGETS SherpaUserhookExample DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})

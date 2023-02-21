@@ -1,0 +1,7 @@
+project(SherpaWbb LANGUAGES C CXX Fortran)
+cmake_minimum_required(VERSION 3.11.0)
+find_package(SHERPA-MC REQUIRED)
+add_library(SherpaWbb SHARED Wbb_Virtual.f Wbb_Interface.C)
+amegic_handle_shared_library(SherpaWbb SherpaWbb)
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
+install(TARGETS SherpaWbb DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
