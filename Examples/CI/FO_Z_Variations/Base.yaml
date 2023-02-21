@@ -28,8 +28,6 @@ FINISH_OPTIMIZATION: false
 
 PROCESSES:
 - 93 93 -> 11 -11:
-    NLO_Mode: Fixed_Order
-    NLO_Order: {QCD: 1, EW: 0}
     Order: {QCD: 0, EW: 2}
 
 SELECTORS:

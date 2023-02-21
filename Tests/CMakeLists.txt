@@ -97,9 +97,10 @@ if(SHERPA_ENABLE_RIVET)
   # do Sherpa runs (part 1/2)
   add_test(
     NAME Main${test}part1
-    COMMAND sh ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z_Variations/run.sh
+    COMMAND sh ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/run.sh
       $<TARGET_FILE:Sherpa>
-      ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z_Variations/Sherpa.yaml
+      ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml
+      ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/LO.yaml
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
     )
   set_tests_properties(Main${test}part1
@@ -108,7 +109,7 @@ if(SHERPA_ENABLE_RIVET)
   # run rivet-mkhtml (part 2/2)
   add_test(
     NAME Main${test}part2
-    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z_Variations/diff_variations.py
+    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/diff_variations.py
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
     )
   set_tests_properties(Main${test}part2 PROPERTIES
@@ -133,9 +134,10 @@ if(SHERPA_ENABLE_RIVET)
   # do Sherpa runs (part 1/2)
   add_test(
     NAME Main${test}part1
-    COMMAND sh ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z_Variations/run.sh
+    COMMAND sh ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/run.sh
       $<TARGET_FILE:Sherpa>
-      ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z_Variations/Sherpa_NLO.yaml
+      ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml
+      ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/NLO.yaml
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
     )
   set_tests_properties(Main${test}part1
@@ -144,7 +146,7 @@ if(SHERPA_ENABLE_RIVET)
   # run rivet-mkhtml (part 2/2)
   add_test(
     NAME Main${test}part2
-    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z_Variations/diff_variations.py
+    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/diff_variations.py
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
     )
   set_tests_properties(Main${test}part2 PROPERTIES
