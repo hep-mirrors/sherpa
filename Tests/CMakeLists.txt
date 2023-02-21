@@ -33,23 +33,50 @@ add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI
 SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
 
 
-if (SHERPA_ENABLE_RIVET)
+# ==============================
+# Declare test "test-rivet-LO_Z"
+# ==============================
+#
+# Run a simple Z production set-up and compare its Rivet analysis results
+# against previously generated reference results.
+#
+if(SHERPA_ENABLE_RIVET)
+  # create test directory within the build directory
   set(test test-rivet-LO_Z)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
-  add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml ANALYSIS=Rivet
-                              WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
-           )
-  SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
 
-  add_test( NAME Main${test}part2 COMMAND  ${Python_EXECUTABLE} ${RIVET_MKHTML_EXE} --mc-errs ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Reference.yoda.gz  ${CMAKE_CURRENT_BINARY_DIR}/${test}/Analysis.yoda.gz PLOT:RatioPlotMode=deviation
-                                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
-           )
-  SET_TESTS_PROPERTIES( Main${test}part2 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
+  # run Sherpa (part 1/3)
+  add_test(
+    NAME Main${test}part1
+    COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml ANALYSIS=Rivet
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+    )
+  set_tests_properties(Main${test}part1
+    PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
 
-  add_test( NAME Main${test}part3 COMMAND  ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/plot_deviations ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Reference.yoda.gz ${CMAKE_CURRENT_BINARY_DIR}/${test}/Analysis.yoda.gz
-                                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
-           )
-  SET_TESTS_PROPERTIES( Main${test}part3 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
-  set_tests_properties( Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
-  set_tests_properties( Main${test}part3 PROPERTIES DEPENDS Main${test}part2)
+  # run rivet-mkhtml (part 2/3)
+  add_test(
+    NAME Main${test}part2
+    COMMAND ${Python_EXECUTABLE} ${RIVET_MKHTML_EXE} --mc-errs
+      ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Reference.yoda.gz
+      ${CMAKE_CURRENT_BINARY_DIR}/${test}/Analysis.yoda.gz
+      PLOT:RatioPlotMode=deviation
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+    )
+  set_tests_properties(Main${test}part2 PROPERTIES
+    ENVIRONMENT "${STANDARDENVIRONMENT}"
+    DEPENDS Main${test}part1)
+
+  # plot and check deviations (part 3/3)
+  add_test(
+    NAME Main${test}part3
+    COMMAND ${Python_EXECUTABLE}
+      ${PROJECT_SOURCE_DIR}/Examples/CI/plot_deviations
+      ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Reference.yoda.gz
+      ${CMAKE_CURRENT_BINARY_DIR}/${test}/Analysis.yoda.gz
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+    )
+  set_tests_properties(Main${test}part3 PROPERTIES
+    ENVIRONMENT "${STANDARDENVIRONMENT}"
+    DEPENDS Main${test}part2)
 endif()
