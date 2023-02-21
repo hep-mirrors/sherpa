@@ -82,74 +82,72 @@ if(SHERPA_ENABLE_RIVET)
 endif()
 
 
-# =========================================
-# Declare test "test-rivet-LO_Z_Variations"
-# =========================================
+# ================================================
+# Declare tests "test-rivet-[LO|NLO]_Z_Variations"
+# ================================================
 #
 # Run a simple Z production set-up with on-the-fly variations and compare its
-# Rivet analysis results with runs that use explicit variations.
+# Rivet analysis results with runs that use explicit variations, both at LO and
+# at NLO.
 #
 if(SHERPA_ENABLE_RIVET)
-  # create test directory within the build directory
-  set(test test-rivet-LO_Z_Variations)
-  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+  # macro that declares the tests, order is either LO or NLO
+  macro(declare_variations_test order)
 
-  # do Sherpa runs (part 1/2)
-  add_test(
-    NAME Main${test}part1
-    COMMAND sh ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/run.sh
-      $<TARGET_FILE:Sherpa>
-      ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml
-      ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/LO.yaml
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
-    )
-  set_tests_properties(Main${test}part1
-    PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
+    # create test directory within the build directory
+    set(test test-rivet-${order}_Z_Variations)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
 
-  # run rivet-mkhtml (part 2/2)
-  add_test(
-    NAME Main${test}part2
-    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/diff_variations.py
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
-    )
-  set_tests_properties(Main${test}part2 PROPERTIES
-    ENVIRONMENT "${STANDARDENVIRONMENT}"
-    DEPENDS Main${test}part1)
-endif()
+    # do initialization and integration run (part A)
+    # doing this separately ensures that all runs below start with the same
+    # Results.db and random state
+    add_test(
+      NAME Main${test}partA
+      COMMAND Sherpa -e 0 ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/${order}.yaml
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+      )
 
+    # do on-the-fly run
+    add_test(
+      NAME Main${test}partB
+      COMMAND Sherpa -A OTF ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/${order}.yaml
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+      )
+    set_tests_properties(Main${test}partA Main${test}partB
+      PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
+    set_tests_properties(Main${test}partB PROPERTIES DEPENDS Main${test}partA)
 
-# ==========================================
-# Declare test "test-rivet-NLO_Z_Variations"
-# ==========================================
-#
-# Run a simple Z production set-up with on-the-fly variations and compare its
-# Rivet analysis results with runs that use explicit variations. This is the
-# NLO variant of the test-rivet-LO_Z_Variations test declared above.
-#
-if(SHERPA_ENABLE_RIVET)
-  # create test directory within the build directory
-  set(test test-rivet-NLO_Z_Variations)
-  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    # now do explicit variation runs
+    macro(run_var NN a b c d)
+      add_test(
+        NAME Main${test}partC${NN} 
+        COMMAND Sherpa SCALE_VARIATIONS:None RSF:=${a} FSF:=${b} -A Explicit__ME.MUR=${c}__ME.MUF=${d}__LHAPDF=93300
+          ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml
+          ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/${order}.yaml
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+      )  
+      set_tests_properties(Main${test}partC${NN} PROPERTIES DEPENDS Main${test}partA)
+      set_tests_properties(Main${test}partC${NN} PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+    endmacro()
+    run_var(1 1.00 1.00 1   1)
+    run_var(2 4.00 1.00 2   1)
+    run_var(3 4.00 4.00 2   2)
+    run_var(4 1.00 4.00 1   2)
+    run_var(5 0.25 1.00 0.5 1)
+    run_var(6 0.25 0.25 0.5 0.5)
+    run_var(7 1.00 0.25 1   0.5)
 
-  # do Sherpa runs (part 1/2)
-  add_test(
-    NAME Main${test}part1
-    COMMAND sh ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/run.sh
-      $<TARGET_FILE:Sherpa>
-      ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml
-      ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/NLO.yaml
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
-    )
-  set_tests_properties(Main${test}part1
-    PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
-
-  # run rivet-mkhtml (part 2/2)
-  add_test(
-    NAME Main${test}part2
-    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/diff_variations.py
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
-    )
-  set_tests_properties(Main${test}part2 PROPERTIES
-    ENVIRONMENT "${STANDARDENVIRONMENT}"
-    DEPENDS Main${test}part1)
+    # finally, run python script to check for any diffs between the on-the-fly
+    # and the explicit runs' analysis results
+    add_test(
+      NAME Main${test}partD
+      COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/diff_variations.py
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+      )
+    set_tests_properties(Main${test}partD PROPERTIES
+      ENVIRONMENT "${STANDARDENVIRONMENT}"
+      DEPENDS Main${test}C1 Main${test}C2 Main${test}C3 Main${test}C4 Main${test}C5 Main${test}C6 Main${test}C7)
+  endmacro()
+  declare_variations_test(LO)
+  declare_variations_test(NLO)
 endif()
