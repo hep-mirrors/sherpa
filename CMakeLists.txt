@@ -601,12 +601,11 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Sobol/21201 ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201)
 
 if (SHERPA_ENABLE_GZIP)
-  find_program(GZIP NAMES gzip  REQUIRED)
-  message(STATUS "SHERPA: GZIP=${GZIP}")
   set(SOBOL_EXT .gz)
   add_custom_target( ZipSobol ALL)
+#TAR IS INTERNAL CMAKE COMMAND!
   add_custom_command(TARGET ZipSobol PRE_BUILD
-       COMMAND ${GZIP} -k -f 21201
+       COMMAND ${CMAKE_COMMAND} -E tar cfz 21201${SOBOL_EXT} --  21201
        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol
        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201
        VERBATIM)
