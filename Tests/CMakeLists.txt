@@ -146,7 +146,7 @@ if(SHERPA_ENABLE_RIVET)
       )
     set_tests_properties(Main${test}partD PROPERTIES
       ENVIRONMENT "${STANDARDENVIRONMENT}"
-      DEPENDS Main${test}C1 Main${test}C2 Main${test}C3 Main${test}C4 Main${test}C5 Main${test}C6 Main${test}C7)
+      DEPENDS Main${test}partC1 Main${test}partC2 Main${test}partC3 Main${test}partC4 Main${test}partC5 Main${test}partC6 Main${test}partC7)
   endmacro()
   declare_variations_test(LO)
   declare_variations_test(NLO)
