@@ -115,3 +115,39 @@ if(SHERPA_ENABLE_RIVET)
     ENVIRONMENT "${STANDARDENVIRONMENT}"
     DEPENDS Main${test}part1)
 endif()
+
+
+# ==========================================
+# Declare test "test-rivet-NLO_Z_Variations"
+# ==========================================
+#
+# Run a simple Z production set-up with on-the-fly variations and compare its
+# Rivet analysis results with runs that use explicit variations. This is the
+# NLO variant of the test-rivet-LO_Z_Variations test declared above.
+#
+if(SHERPA_ENABLE_RIVET)
+  # create test directory within the build directory
+  set(test test-rivet-NLO_Z_Variations)
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+
+  # do Sherpa runs (part 1/2)
+  add_test(
+    NAME Main${test}part1
+    COMMAND sh ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z_Variations/run.sh
+      $<TARGET_FILE:Sherpa>
+      ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z_Variations/Sherpa_NLO.yaml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+    )
+  set_tests_properties(Main${test}part1
+    PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
+
+  # run rivet-mkhtml (part 2/2)
+  add_test(
+    NAME Main${test}part2
+    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z_Variations/diff_variations.py
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+    )
+  set_tests_properties(Main${test}part2 PROPERTIES
+    ENVIRONMENT "${STANDARDENVIRONMENT}"
+    DEPENDS Main${test}part1)
+endif()
