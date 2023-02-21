@@ -3,16 +3,7 @@
 
 #include "ATOOLS/Org/My_File.H"
 #include <vector>
-
-#ifdef __GNUC__
-#if __GNUC__ < 3
-#define AT(VECTOR,ELEMENT) VECTOR[ELEMENT]
-#else
 #define AT(VECTOR,ELEMENT) VECTOR.at(ELEMENT)
-#endif
-#else
-#define AT(VECTOR,ELEMENT) VECTOR.at(ELEMENT)
-#endif
 
 namespace ATOOLS {
 
