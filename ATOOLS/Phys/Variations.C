@@ -246,7 +246,10 @@ void Variations::InitialiseParametersVector()
     ScaleFactorExpansions::code scalefactorexpansions(
         ScaleFactorExpansions::None);
     if (single_variation_settings.IsScalar()) {
-      ExpandableVariation var {single_variation_settings.Get<std::string>()};
+      const auto val = single_variation_settings.Get<std::string>();
+      if (val == "None")
+        continue;
+      ExpandableVariation var {val};
       if (var.expand)
         scalefactorexpansions |= ScaleFactorExpansions::SevenPoint;
       scalestringparams = {var.var, var.var, "1.0"};
