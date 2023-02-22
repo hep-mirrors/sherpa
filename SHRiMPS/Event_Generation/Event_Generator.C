@@ -27,7 +27,7 @@ void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
   msg_Out()<<METHOD<<"(runmode = "<<int(m_runmode)<<")\n";
   switch (m_runmode) {
   case run_mode::inelastic_events:
-    p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
+    p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test,xsecs->GetSigmaElastic(),xsecs->GetSigmaSD());
     break; 
   case run_mode::elastic_events:
     p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
@@ -36,7 +36,7 @@ void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
     p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
     break;
   case run_mode::all_min_bias:
-    p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
+    p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test,xsecs->GetSigmaElastic(),xsecs->GetSigmaSD());
     p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
     p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
     break;

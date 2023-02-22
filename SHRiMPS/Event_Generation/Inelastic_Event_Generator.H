@@ -2,6 +2,7 @@
 #define SHRIMPS_Main_Inelastic_Event_Generator_H
 
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
+#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
 #include "SHRiMPS/Ladders/Primary_Ladders.H"
 #include "SHRiMPS/Beam_Remnants/Colour_Generator.H"
@@ -16,9 +17,13 @@ namespace SHRIMPS {
   class Inelastic_Event_Generator : public Event_Generator_Base {
   private:
     Sigma_Inelastic * p_sigma;
+    Sigma_Elastic * p_sigma_el;
+    Sigma_SD * p_sigma_sd;
     Primary_Ladders   m_primaries;
     bool m_mustinit;
     int  m_test;
+
+    double m_abs_t;
     
     std::map<Omega_ik *,double>                 m_xsecs; 
     std::map<Omega_ik *,std::vector<double> * > m_Bgrids; 
@@ -33,7 +38,7 @@ namespace SHRIMPS {
     bool SelectB();
     ATOOLS::Blob * MakePrimaryScatterBlob();
   public:
-    Inelastic_Event_Generator(Sigma_Inelastic * sigma,const int & test);
+    Inelastic_Event_Generator(Sigma_Inelastic * sigma,const int & test,Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd);
     ~Inelastic_Event_Generator();
 
     void Reset();

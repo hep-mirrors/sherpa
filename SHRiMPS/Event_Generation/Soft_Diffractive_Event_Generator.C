@@ -223,22 +223,25 @@ void Soft_Diffractive_Event_Generator::FillBlob() {
     part->SetInfo('I');
     p_blob->AddToInParticles(part);
   }
+  Vec4D Pfrombeams[2];
   for (size_t beam=0;beam<2;beam++) {
     if (m_contMassRange[beam]) {
       msg_Out()<<"  - "<<METHOD<<"(beam = "<<beam<<") selected continuous mass range.\n";
       p_blob->AddStatus(blob_status::needs_hadronization);
       for (size_t j=0;j<2;j++) {
-	part = new Particle(-1,m_out[2*beam+j],m_pout[2*beam+j]);
-	part->SetNumber();
-	part->SetBeam(beam);
-	part->SetInfo('F');
-	if ((m_out[2*beam+j].IsQuark() && !m_out[2*beam+j].IsAnti()) ||
-	    (m_out[2*beam+j].IsDiQuark() && m_out[2*beam+j].IsAnti()))
-	  part->SetFlow(1,500+beam);
-	else if ((m_out[2*beam+j].IsQuark() && m_out[2*beam+j].IsAnti()) ||
-		 (m_out[2*beam+j].IsDiQuark() && !m_out[2*beam+j].IsAnti()))
-	  part->SetFlow(2,500+beam);
-	p_blob->AddToOutParticles(part);
+	      part = new Particle(-1,m_out[2*beam+j],m_pout[2*beam+j]);
+	      part->SetNumber();
+	      part->SetBeam(beam);
+	      part->SetInfo('F');
+	    if ((m_out[2*beam+j].IsQuark() && !m_out[2*beam+j].IsAnti()) ||
+	        (m_out[2*beam+j].IsDiQuark() && m_out[2*beam+j].IsAnti()))
+	      part->SetFlow(1,500+beam);
+	    else if ((m_out[2*beam+j].IsQuark() && m_out[2*beam+j].IsAnti()) ||
+		          (m_out[2*beam+j].IsDiQuark() && !m_out[2*beam+j].IsAnti()))
+	      part->SetFlow(2,500+beam);
+	    p_blob->AddToOutParticles(part);
+      Pfrombeams[beam]+=part->Momentum();
+      //msg_Out() << part->Momentum() << "\t" << (part->Momentum() ).Abs2() << "\n";
       }
     }
     else {
@@ -246,8 +249,11 @@ void Soft_Diffractive_Event_Generator::FillBlob() {
       part->SetNumber();
       part->SetBeam(beam);
       part->SetInfo('F');
+      Pfrombeams[beam]+=part->Momentum();
+      //msg_Out() << part->Momentum() << "\t" << (part->Momentum() ).Abs2() << "\n";
       p_blob->AddToOutParticles(part);
     }
+    //msg_Out() << "beam " << beam << "\t" << Pfrombeams[beam] << "\t" << Pfrombeams[beam].Abs2() << "\n";
   }
   p_blob->UnsetStatus(blob_status::needs_minBias);
   if (!p_blob->Has(blob_status::needs_hadronization))
