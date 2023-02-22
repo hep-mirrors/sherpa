@@ -47,6 +47,7 @@ ATOOLS::Random::Random(long nid):
   SaveStatus();
   p_ran4[0] = new Marsaglia();
   p_ran4[1] = new Marsaglia();
+  m_npe=0;
 }
 
 
@@ -336,6 +337,7 @@ ATOOLS::Random::Random(unsigned int i1,unsigned int i2,unsigned int i3,
   p_ran4[0] = new Marsaglia();
   SetSeed(i1,i2,i3,i4);
   p_ran4[1] = new Marsaglia(*p_ran4[0]);
+  m_npe=0;
 }
 
 
@@ -414,6 +416,7 @@ void ATOOLS::Random::FastForward(const size_t &n)
 
 double ATOOLS::Random::Get()
 {
+  if (m_npe<=0) --m_npe;
   if (p_external) return p_external->Get();
   // Sherpa internal
   double rng(0.);

@@ -3,7 +3,7 @@
 # into the lorentz calculator source code or tensors
 # with symbolic string-like expressions.
 
-from __future__ import division 
+from __future__ import division
 from ufo_interface.tensor import tensor
 from ufo_interface.lorentz_structures import mink_metric
 from ufo_interface.sym_var import sym_var
@@ -43,7 +43,7 @@ def get_in_mom_declaration(key, index):
     return ret
 
 def get_out_mom_declaration(out_key, key_index_dict):
-    keys = list(key_index_dict.keys())
+    keys = list(key_index_dict))
     keys.remove(out_key)
     assert(len(keys)>0)
     ret =  "ATOOLS::Vec4D p{0} = -p{1}".format(out_key, keys[0])

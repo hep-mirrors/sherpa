@@ -30,10 +30,10 @@ CS_Dipole::CS_Dipole(NLO_subevt *const sub,
   m_isrmode=psh->Process()->ISR()->On();
   for (size_t i(0);i<m_sub.m_n;++i) {
     size_t k(ID(sub->p_id[i]).front());
-    if (k==m_sub.m_i) m_ijt=i;
-    else if (k==m_sub.m_k) m_kt=i;
     m_rbmap[m_brmap[i]=k]=i;
   }
+  m_ijt=m_sub.m_ijt;
+  m_kt=m_sub.m_kt;
   m_rbmap[m_sub.m_i]=m_rbmap[m_sub.m_j]=m_ijt;
   m_flij=m_sub.p_fl[m_ijt];
   m_fli=m_sub.p_real->p_fl[m_sub.m_i];

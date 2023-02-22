@@ -1,4 +1,4 @@
-from __future__ import division 
+from __future__ import division
 #from parameters import ZERO
 from ufo_interface.s_parameter import s_parameter
 from ufo_interface.ufo_exception import ufo_exception
@@ -10,6 +10,9 @@ class s_particle:
 
     def kf_code(self):
         return self.ufo_particle.pdg_code
+
+    def hadron(self):
+        return hasattr(self.ufo_particle,'hadron') and self.ufo_particle.hadron == 1
 
     def mass(self):
         return self.ufo_particle.mass

@@ -23,10 +23,6 @@ namespace COMIX {
 
     time_t m_mets;
 
-#ifdef USING__Threading
-    CDBG_ME_TID_Vector m_cts;
-#endif
-
     void RegisterDefaults() const;
 
     void PrintLogo(std::ostream &s);
@@ -64,7 +60,6 @@ namespace COMIX {
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "MODEL/Main/Model_Base.H"
-//#include "REMNANTS/Main/Remnant_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "METOOLS/Explicit/Vertex.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -78,30 +73,10 @@ using namespace ATOOLS;
 
 Comix::Comix():
   ME_Generator_Base("Comix")
-{
-#ifdef USING__Threading
-  p_cts=&m_cts;
-#endif
-}
+{ }
 
 Comix::~Comix() 
-{
-#ifdef USING__Threading
-  for (size_t i(0);i<m_cts.size();++i) {
-    CDBG_ME_TID *tid(m_cts[i]);
-    tid->m_s=0;
-    pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-    int tec(0);
-    if ((tec=pthread_join(tid->m_id,NULL)))
-      THROW(fatal_error,"Cannot join thread"+ToString(i));
-    pthread_mutex_unlock(&tid->m_t_mtx);
-    pthread_mutex_destroy(&tid->m_t_mtx);
-    pthread_mutex_destroy(&tid->m_s_mtx);
-    pthread_cond_destroy(&tid->m_t_cnd);
-    pthread_cond_destroy(&tid->m_s_cnd);
-  }
-#endif
-}
+{ }
 
 #define RED(ARG) om::red<<ARG<<om::reset
 #define GREEN(ARG) om::green<<ARG<<om::reset
@@ -138,9 +113,6 @@ void Comix::PrintLogo(std::ostream &s)
   s<<"|     http://comix.freacafe.de     |\n";
   s<<"|   please cite  JHEP12(2008)039   |\n";
   s<<"+----------------------------------+\n";
-#ifdef USING__Threading
-  s<<"Comix was compiled with thread support.\n";
-#endif
   rpa->gen.AddCitation
     (1,"Comix is published under \\cite{Gleisberg:2008fv}.");
 }
@@ -180,26 +152,8 @@ bool Comix::Initialize(MODEL::Model_Base *const model,
   Vertex::SetVLMode(helpi);
 
   double helpd;
-
-#ifdef USING__Threading
-  helpi = s["THREADS"].Get<int>();
-  if (helpi>0) {
-    m_cts.resize(helpi);
-    for (size_t i(0);i<m_cts.size();++i) {
-      CDBG_ME_TID *tid(new CDBG_ME_TID());
-      m_cts[i] = tid;
-      pthread_cond_init(&tid->m_s_cnd,NULL);
-      pthread_cond_init(&tid->m_t_cnd,NULL);
-      pthread_mutex_init(&tid->m_s_mtx,NULL);
-      pthread_mutex_init(&tid->m_t_mtx,NULL);
-      pthread_mutex_lock(&tid->m_t_mtx);
-      tid->m_s=1;
-      int tec(0);
-      if ((tec=pthread_create(&tid->m_id,NULL,&Amplitude::TCalcJL,(void*)tid)))
-	THROW(fatal_error,"Cannot create thread "+ToString(i));
-    }
-  }
-#endif
+  My_In_File::OpenDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
   return true;
 }
 
@@ -238,11 +192,15 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
     if (!newxs->Get<PHASIC::Process_Group>()->ConstructProcesses()) {
+      My_In_File::CloseDB
+	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
       msg_Debugging()<<METHOD<<"(): Construct failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
       return NULL;
     }
+    My_In_File::CloseDB
+      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
     msg_Tracking()<<"Initialized '"<<newxs->Name()<<"'\n";
   }
   else {
@@ -255,6 +213,8 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
     if (!newxs->Get<Single_Process>()->Initialize
 	(&pmap,&m_umprocs.back(),m_blocks,m_nproc)) {
+      My_In_File::CloseDB
+	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
@@ -262,6 +222,8 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     }
     if (!newxs->Get<Single_Process>()->MapProcess())
       if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
+    My_In_File::CloseDB
+      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
   }
   if (add) Add(newxs,1);
   else m_rsprocs.push_back(newxs);

@@ -1,8 +1,5 @@
 #include "MCATNLO/Tools/Singlet.H"
 #include "MCATNLO/Tools/Parton.H"
-#include "PDF/Main/Shower_Base.H"
-#include "PDF/Main/Jet_Criterion.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -53,28 +50,6 @@ Singlet::~Singlet() {
     clear();
   }
   
-}
-
-double Singlet::JetVeto(Sudakov *const sud) const
-{
-  if (p_jf==NULL) return 0.0;
-  Cluster_Amplitude *ampl(Cluster_Amplitude::New()); 
-  ampl->SetJF(p_jf);
-  size_t nin(0);
-  for (const_iterator iit(begin());iit!=end();++iit)
-    if ((*iit)->GetType()==pst::IS) ++nin;
-  ampl->SetNIn(nin);
-  for (const_iterator iit(begin());iit!=end();++iit)
-    if ((*iit)->GetType()==pst::IS)
-      ampl->CreateLeg(-(*iit)->Momentum(),
-		      (*iit)->GetFlavour().Bar(),ColorID());
-  for (const_iterator iit(begin());iit!=end();++iit)
-    if ((*iit)->GetType()==pst::FS)
-      ampl->CreateLeg((*iit)->Momentum(),
-		      (*iit)->GetFlavour(),ColorID());
-  double jcv(p_jf->JC()->Value(ampl));
-  ampl->Delete();
-  return jcv;
 }
 
 int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2) 

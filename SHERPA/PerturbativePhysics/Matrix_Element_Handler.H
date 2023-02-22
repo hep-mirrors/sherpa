@@ -48,7 +48,7 @@ namespace SHERPA {
     struct Processblock_Info {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrsefac;
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
-        m_vnlomode, m_vnlopart, m_vnlocpl,
+        m_vsfile, m_vnlomode, m_vnlopart, m_vnlocpl,
 	m_vnlosubv, m_vasscontribs, m_vmegen, m_vrsmegen, m_vloopgen, m_vint,
         m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vacpl,
 	m_vmaxacpl, m_vminacpl, m_vaddname, m_vspecial;
@@ -57,8 +57,8 @@ namespace SHERPA {
       ATOOLS::Scoped_Settings m_selectors;
 
       std::string m_gycut;
-      int m_cutcore;
-      inline Processblock_Info(): m_cutcore(0) {}
+      int m_cutcore, m_sort;
+      inline Processblock_Info(): m_cutcore(0), m_sort(3) {}
     };// end of struct Processblock_Info
 
   private :
@@ -84,7 +84,7 @@ namespace SHERPA {
     PDF::NLOMC_Base   *p_nlomc;
 
     double m_sum, m_ovwth, m_weightfactor;
-    size_t m_ranidx, m_fosettings;
+    size_t m_ranidx, m_fosettings, m_ntrials;
     ATOOLS::nlo_mode::code m_nlomode;
 
 #ifdef USING__GZIP

@@ -9,6 +9,8 @@
 
 namespace COMIX {
 
+  typedef std::vector<std::vector<Complex> > Hard_Matrix;
+
   class Amplitude;
 
   typedef std::set<PS_Generator*> PSGenerator_Set;
@@ -76,7 +78,8 @@ namespace COMIX {
 
     const Hard_Matrix *ComputeHardMatrix
     (ATOOLS::Cluster_Amplitude *const ampl,const int mode);
-    double Partonic(const ATOOLS::Vec4D_Vector&,
+
+    double Partonic(const ATOOLS::Vec4D_Vector &,
                     ATOOLS::Variations_Mode varmode,
                     int mode);
     ATOOLS::Weights_Map Differential
@@ -95,8 +98,11 @@ namespace COMIX {
 
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
 
+    std::map<std::pair<int,int>,std::vector<int> > CombinableInfo();
+
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes> &amps,
 			std::vector<std::vector<Complex> > &cols);
+    const Amplitude::LeptonCurrents &LeptonicCurrent() const;
 
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,
 			  const size_t &id) const;
@@ -105,7 +111,6 @@ namespace COMIX {
     ATOOLS::NLO_subevtlist *GetRSSubevtList();
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
-    void SetShower(PDF::Shower_Base *const ps);
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 
     size_t SetMCMode(const size_t mcmode);

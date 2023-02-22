@@ -20,7 +20,7 @@ My_MPI::My_MPI()
 void My_MPI::PrintRankInfo()
 {
 #ifdef USING__MPI
-  const auto size = Size();
+  const int size = Size();
   if (size > 1)
     msg_Info() << METHOD << "(): Running on " << size << " ranks." << std::endl;
 #endif
@@ -120,7 +120,7 @@ std::vector<std::string> My_MPI::AllgatherStrings(const std::string& s) {
 void ATOOLS::Abort(const int mode)
 {
 #ifdef USING__MPI
-  MPI_Abort(MPI_COMM_WORLD, 1 + mode);
+  mpi->Abort(mode);
 #else
   if (mode)
     kill(getpid(), 9);

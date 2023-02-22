@@ -246,15 +246,14 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
               m_subevtlist.push_back(pdummy->GetSubevt());
             }
             else {
-              if (links.size() && links.back()==pdummy->GetLOProcess()) links.pop_back();
-              delete pdummy;
-            }
-
+	      if (links.size() && links.back()==pdummy->GetLOProcess()) links.pop_back();
+	      delete pdummy;
+	    }
           }
           else {
-            if (links.size() && links.back()==pdummy->GetLOProcess()) links.pop_back();
-            delete pdummy;
-          }
+	    if (links.size() && links.back()==pdummy->GetLOProcess()) links.pop_back();
+	    delete pdummy;
+	  }
           msg_Debugging()<<"\n";
         }
         msg_Debugging()<<"---------------------------------------------\n";
@@ -698,16 +697,6 @@ void Single_Real_Correction::SetGenerator(ME_Generator_Base *const gen)
   }
   for (size_t i=0;i<m_subostermlist.size();++i) {
     m_subostermlist[i]->GetOSProcess()->SetGenerator(gen);
-  }
-}
-
-void Single_Real_Correction::SetShower(PDF::Shower_Base *const ps)
-{
-  p_shower=ps;
-  p_tree_process->SetShower(ps);
-  for (size_t i=0;i<m_subtermlist.size();++i) {
-    if (m_subtermlist[i]->GetLOProcess())
-    m_subtermlist[i]->SetShower(ps);
   }
 }
 

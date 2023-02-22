@@ -4,8 +4,6 @@
 #include "MCATNLO/Tools/Parton.H"
 #include "ATOOLS/Math/Vector.H"
 
-namespace PHASIC { class Jet_Finder; }
-
 namespace MCATNLO {
   class Sudakov;
   class Kinematics_Base {

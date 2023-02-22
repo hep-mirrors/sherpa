@@ -4,7 +4,6 @@
 #include "ATOOLS/Math/Uncertain.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
-#include "SHERPA/Main/Filter.H"
 
 namespace ATOOLS {
   class Blob_List;

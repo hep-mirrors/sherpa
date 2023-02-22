@@ -1,4 +1,4 @@
-from __future__ import division 
+from __future__ import division
 
 try:
     import colorama
@@ -29,16 +29,16 @@ indent        = len(exec_str)*" "
 def error(string):
     lines = [l.rstrip() for l in string.split("\n")]
     if len(lines)==0: lines = [""]
-    print((red_indent+lines[0]))
+    print(red_indent+lines[0])
     for line in lines[1:]:
-        print((indent+line+reset))
+        print(indent+line+reset)
 
 def warning(string):
     lines = [l.rstrip() for l in string.split("\n")]
     if len(lines)==0: lines = [""]
-    print((yellow_indent+lines[0]))
+    print(yellow_indent+lines[0])
     for line in lines[1:]:
-        print((indent+line+reset))
+        print(indent+line+reset)
 
 def progress(string):
     try:
@@ -47,6 +47,6 @@ def progress(string):
         pass
     lines = [l.rstrip() for l in string.split("\n")]
     if len(lines)==0: lines = [""]
-    print((green_indent+lines[0]))
+    print(green_indent+lines[0])
     for line in lines[1:]:
-        print((indent+line+reset))
+        print(indent+line+reset)

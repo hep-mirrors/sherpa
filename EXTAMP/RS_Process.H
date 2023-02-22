@@ -58,7 +58,6 @@ namespace EXTAMP {
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
     void SetSelector(const PHASIC::Selector_Key &key);
     void SetNLOMC(PDF::NLOMC_Base* const nlomc);
-    void SetShower(PDF::Shower_Base *const ps);
     void SetGenerator(PHASIC::ME_Generator_Base *const gen);
     void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
     size_t SetMCMode(const size_t mcmode);

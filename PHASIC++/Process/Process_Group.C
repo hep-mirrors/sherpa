@@ -191,7 +191,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   p_int->ReadResults();
   p_int->SetTotal(0);
   exh->AddTerminatorObject(p_int);
-  double var(p_int->TotalVar());
+  double var(p_int->TotalError());
   std::string namestring("");
   if (p_gen) {
     namestring+="("+p_gen->Name();
@@ -201,14 +201,14 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   msg_Info()<<METHOD<<"(): Calculate xs for '"
             <<m_resname<<"' "<<namestring<<std::endl;
   double totalxs(psh->Integrate()/rpa->Picobarn());
-  if (!IsEqual(totalxs,p_int->TotalResult())) {
+  if (!IsEqual(totalxs,p_int->TotalXS())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"
 	       <<"  '"<<m_name<<"': "<<totalxs
-	       <<" vs. "<<p_int->TotalResult()<<std::endl;
+	       <<" vs. "<<p_int->TotalXS()<<std::endl;
   }
   if (p_int->TotalXS()!=0.0) {
     p_int->SetTotal();
-    if (var==p_int->TotalVar()) {
+    if (var==p_int->TotalError()) {
       exh->RemoveTerminatorObject(p_int);
       return 1;
     }
@@ -309,9 +309,7 @@ bool Process_Group::ConstructProcess(Process_Info &pi)
 bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
 {
   if (ci==m_nin+m_nout) {
-    if (!ConstructProcess(pi)) {
-      return false;
-    }
+    if (!ConstructProcess(pi)) return false;
     std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			+"/Process/Sherpa/"+m_name);
     if (pi.m_megenerator.length()) mapfile+="__"+pi.m_megenerator;
@@ -383,14 +381,13 @@ bool Process_Group::ConstructProcesses()
         *map>>cfl;
       }
       int construct(ConstructProcess(cpi));
-      msg_Debugging()<<" ... "<<cpi<<"\n";
       if (m_blocks.empty()) {
 	if (cnt!=m_nin+m_nout || cfl || !construct)
 	  THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
       }
       *map>>cfl;
     }
-    msg_Debugging()<<METHOD<<" in PHASIC (mapping ok), with "<<m_procs.size()<<".\n";  
+    msg_Debugging()<<METHOD<<" in PHASIC (mapping ok), with "<<m_procs.size()<<".\n";
     return m_procs.size();
   }
   msg_Debugging()<<"not found"<<std::endl;
@@ -409,13 +406,6 @@ void Process_Group::SetGenerator(ME_Generator_Base *const gen)
   Process_Base::SetGenerator(gen);
   for (size_t i(0);i<m_procs.size();++i) 
     m_procs[i]->SetGenerator(gen);
-}
-
-void Process_Group::SetShower(PDF::Shower_Base *const ps) 
-{ 
-  Process_Base::SetShower(ps);
-  for (size_t i(0);i<m_procs.size();++i) 
-    m_procs[i]->SetShower(ps);
 }
 
 void Process_Group::SetNLOMC(PDF::NLOMC_Base *const mc) 
@@ -481,4 +471,33 @@ void Process_Group::ConstructColorMatrix()
   DEBUG_VAR(m_name);
   for (size_t i=0;i<m_procs.size();i++)
     m_procs[i]->ConstructColorMatrix();
+}
+
+std::map<std::pair<int,int>,std::vector<int> >
+Process_Group::CombinableInfo()
+{
+  std::map<std::pair<int,int>,std::vector<int> > combs;
+  for (size_t i(0);i<m_procs.size();++i) {
+    std::map<std::pair<int,int>,std::vector<int> >
+      cur(m_procs[i]->CombinableInfo());
+    for (std::map<std::pair<int,int>,std::vector<int> >::const_iterator
+	   cit(cur.begin());cit!=cur.end();++cit) {
+      std::map<std::pair<int,int>,std::vector<int> >::iterator
+	ait(combs.find(cit->first));
+      if (ait==combs.end()) combs[cit->first]=cit->second;
+      else {
+	for (size_t i(0);i<cit->second.size();++i) {
+	  int found(false);
+	  for (size_t j(0);j<ait->second.size();++j)
+	    if (ait->second[j]==cit->second[i]) {
+	      found=true;
+	      break;
+	    }
+	  if (found) continue;
+	  ait->second.push_back(cit->second[i]);
+	}
+      }
+    }
+  }
+  return combs;
 }

@@ -8,10 +8,6 @@
 
 namespace ATOOLS { class Mass_Selector; }
 
-namespace PDF { class Shower_Base; }
-
-namespace PHASIC { class Jet_Finder; }
-
 namespace MCATNLO {
 
   class Singlet;
@@ -21,8 +17,6 @@ namespace MCATNLO {
   typedef All_Singlets::iterator ASiter;
 
   class Singlet : public Parton_List {
-    PHASIC::Jet_Finder *p_jf;
-    PDF::Shower_Base *p_shower;
     All_Singlets *p_all;
     ATOOLS::Mass_Selector *p_ms;
     void *p_procs;
@@ -30,7 +24,7 @@ namespace MCATNLO {
     Parton_List m_dels;
   public :
     Singlet() : 
-      p_jf(NULL), p_all(NULL), p_procs(NULL) {}
+      p_all(NULL), p_procs(NULL) {}
     ~Singlet();
 
     int       SplitParton(Parton *, Parton *, Parton *);
@@ -39,16 +33,10 @@ namespace MCATNLO {
     void        BoostAllFS(Parton *l,Parton *r,Parton *s);
     void        BoostBackAllFS(Parton *l,Parton *r,Parton *s);
 
-    double JetVeto(Sudakov *const sud) const;
-      
     friend std::ostream& operator<<(std::ostream &,Singlet &);
 
-    inline void SetShower(PDF::Shower_Base *const s) { p_shower=s; }
-
-    inline void SetJF(PHASIC::Jet_Finder *const jf) { p_jf=jf; }
     inline void SetAll(All_Singlets *const all) { p_all=all; }
 
-    inline PHASIC::Jet_Finder *JF() const { return p_jf; }
     inline All_Singlets *All() const { return p_all; }
 
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }

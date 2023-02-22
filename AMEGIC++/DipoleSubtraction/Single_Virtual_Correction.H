@@ -75,7 +75,6 @@ namespace AMEGIC {
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
 
     void SetSelector(const PHASIC::Selector_Key &key);
-    void SetShower(PDF::Shower_Base *const ps);
     void SetNLOMC(PDF::NLOMC_Base *const mc);
     void SetFixedScale(const std::vector<double> &s);
     void SetSelectorOn(const bool on);

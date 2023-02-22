@@ -135,7 +135,7 @@ void Event_Handler::ResetNonPerturbativePhases()
   }
 }
 
-bool Event_Handler::GenerateEvent(eventtype::code mode) 
+bool Event_Handler::GenerateEvent(eventtype::code mode)
 {
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
   ATOOLS::ran->SaveStatus();
@@ -480,7 +480,8 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 
 void Event_Handler::Finish() {
   msg_Info()<<"In Event_Handler::Finish : "
-	    <<"Summarizing the run may take some time.\n";
+	    <<"Summarizing the run at "
+            <<rpa->gen.Timer().StrFTime("%H:%M:%S")<<"."<<std::endl;
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
     (*pit)->CleanUp();

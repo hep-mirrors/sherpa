@@ -11,7 +11,8 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
   {
     ostr<<"  cls = "<<info.m_cls<<", hls = "<<info.m_hls<<"\n";
     ostr<<"  mincpl = "<<info.m_mincpl<<"/"<<info.m_minacpl
-	<<", maxcpl = "<<info.m_maxcpl<<"/"<<info.m_maxacpl<<"\n";
+	<<", maxcpl = "<<info.m_maxcpl<<"/"<<info.m_maxacpl
+	<<", borncpl = "<<info.m_borncpl<<"\n";
     ostr<<"  ckkw = "<<info.m_ckkw
 	<<", nlo = "<<info.m_nlomode<<", mhv = "<<info.m_amegicmhv<<"\n";
     ostr<<"  scale = '"<<info.m_scale<<"', kfactor = '"<<info.m_kfactor<<"'\n";
@@ -20,7 +21,8 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
     if (info.m_special!="") ostr<<"  special = "<<info.m_special<<"\n";
     ostr<<"  gpath = '"<<info.m_gpath
 	<<"', min t-channels = "<<info.m_ntchan
-	<<"', max t-channels = "<<info.m_mtchan<<"\n";
+	<<"', max t-channels = "<<info.m_mtchan
+	<<", sort "<<info.m_sort<<"\n";
     if (info.m_nodecs.size()) ostr<<"  nodecs = "<<info.m_nodecs<<"\n";
     info.m_ii.Print(ostr,2);
     info.m_fi.Print(ostr,2);

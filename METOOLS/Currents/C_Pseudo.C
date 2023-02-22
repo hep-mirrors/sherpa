@@ -141,9 +141,7 @@ CAsT4<Scalar>::s_objects;
 template <class Scalar>
 CAsT4<Scalar> *CAsT4<Scalar>::New()
 {
-#ifndef USING__Threading
   if (s_objects.empty())
-#endif
     return new CAsT4();
   CAsT4 *v(s_objects.back());
   s_objects.pop_back();
@@ -153,9 +151,7 @@ CAsT4<Scalar> *CAsT4<Scalar>::New()
 template <class Scalar>
 CAsT4<Scalar> *CAsT4<Scalar>::New(const CAsT4 &s)
 {
-#ifndef USING__Threading
   if (s_objects.empty())
-#endif
     return new CAsT4(s);
   CAsT4 *v(s_objects.back());
   s_objects.pop_back();
@@ -172,11 +168,7 @@ CObject *CAsT4<Scalar>::Copy() const
 template <class Scalar>
 void CAsT4<Scalar>::Delete()
 {
-#ifndef USING__Threading
   s_objects.push_back(this);
-#else
-  delete this;
-#endif
 }
 
 namespace METOOLS {

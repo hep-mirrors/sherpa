@@ -17,8 +17,6 @@
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
-#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
-
 using namespace SHERPA;
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -336,8 +334,6 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
     }
     m_decaychainend=true;
   }
-  if (p_softphotons && m_qedmode==2)
-    AttachExtraQEDRecursively(blob);
 }
 
 Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
@@ -382,7 +378,6 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   SetMasses(blob, true);
   BoostAndStretch(blob, labmom);
   DEBUG_VAR(*blob);
-  if (p_softphotons) AttachExtraQED(blob);
 
   DEBUG_INFO("recursively treating the created daughter decay blobs:");
   if (m_spincorr) DEBUG_VAR(*amps);
@@ -607,64 +602,6 @@ bool Decay_Handler_Base::CanDecay(const ATOOLS::Flavour& flav)
 {
   if (p_decaymap) return p_decaymap->Knows(flav);
   else return false;
-}
-
-bool Decay_Handler_Base::AttachExtraQED(Blob* blob, size_t mode)
-{
-  DEBUG_FUNC("qedmode="<<m_qedmode
-             <<", shower="<<blob->Has(blob_status::needs_showers)
-             <<", qed="<<blob->Has(blob_status::needs_extraQED)
-             <<", mode="<<mode
-             <<", process="<<blob->ShortProcessName());
-  if (!blob->Has(blob_status::needs_extraQED)) return false;
-  if (blob->NInP()!=1) return AttachExtraQEDToProductionBlob(blob);
-  if (mode==0 && m_qedmode!=1) return false;
-  if (mode==1 && m_qedmode!=2) return false;
-  for (size_t i(0);i<blob->NOutP();++i)
-    if (blob->OutParticle(i)->Flav().Strong()) return false;
-  msg_Debugging()<<*blob<<std::endl;
-  msg_Debugging()<<"Momentum conserved: "<<blob->CheckMomentumConservation()
-                 <<std::endl;
-  if (!p_softphotons->AddRadiation(blob)) {
-    msg_Error()<<METHOD<<"(): Soft photon handler failed, retrying event."
-               <<std::endl;
-    throw Return_Value::Retry_Event;
-  }
-  msg_Debugging()<<*blob<<std::endl;
-  msg_Debugging()<<"Momentum conserved: "<<blob->CheckMomentumConservation()
-                 <<std::endl;
-  blob->UnsetStatus(blob_status::needs_extraQED);
-  msg_Debugging()<<"Added anything? "<<p_softphotons->AddedAnything()
-                 <<std::endl;
-  return p_softphotons->AddedAnything();
-}
-
-bool Decay_Handler_Base::AttachExtraQEDToProductionBlob(Blob* blob)
-{
-  DEBUG_FUNC("qedmode="<<m_qedmode<<", decay "<<blob->ShortProcessName());
-  return false;
-}
-
-bool Decay_Handler_Base::AttachExtraQEDRecursively(Blob* blob, bool aa)
-{
-  DEBUG_FUNC("qedmode="<<m_qedmode<<", decay "<<blob->ShortProcessName()
-             <<", already boosted="<<aa);
-  if (m_qedmode!=2) return false;
-  aa+=AttachExtraQED(blob,1);
-  msg_Debugging()<<"added anything: "<<aa<<std::endl;
-  for (size_t i(0);i<blob->NOutP();++i) {
-    if (blob->OutParticle(i)->DecayBlob()) {
-      Blob * decblob(blob->OutParticle(i)->DecayBlob());
-      msg_Debugging()<<blob->OutParticle(i)->Flav()<<" has "
-                     <<(blob->OutParticle(i)->DecayBlob()?"a ":"no ")
-                     <<"decay blob"<<std::endl;
-      if (decblob) {
-        if (aa) UpdateDecayBlob(decblob);
-        AttachExtraQEDRecursively(decblob,aa);
-      }
-    }
-  }
-  return aa;
 }
 
 void Decay_Handler_Base::UpdateDecayBlob(Blob* blob)

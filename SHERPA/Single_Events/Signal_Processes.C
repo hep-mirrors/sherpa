@@ -109,12 +109,12 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       else {
         blob->SetTypeSpec(proc->Parent()->Name()+"+H");
       }
-      if (m_setcolors) ampl=mcatnloproc->GetAmplitude();
+      // if (m_setcolors) ampl=mcatnloproc->GetAmplitude();
     }
   }
   else {
-    if (m_setcolors) ampl=proc->Get<Single_Process>()->
-		       Cluster(proc->Integrator()->Momenta(),m_cmode);
+    // if (m_setcolors) ampl=proc->Get<Single_Process>()->
+    // 		       Cluster(proc->Integrator()->Momenta(),m_cmode);
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
   for (size_t i=0;i<proc->NIn();i++) cms += proc->Integrator()->Momenta()[i];
@@ -203,6 +203,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("Weight_Norm",new Blob_Data<double>
 		(p_mehandler->Sum()*rpa->Picobarn()));
   blob->AddData("Trials",new Blob_Data<double>(winfo.m_ntrial));
+  blob->AddData("Max",new Blob_Data<double>(winfo.m_max));
   blob->AddData("Enhance",new Blob_Data<double>
                 (proc->Integrator()->EnhanceFactor()));
   blob->AddData("Factorisation_Scale",new Blob_Data<double>
@@ -214,6 +215,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (ToString(proc->Info().m_fi.m_nlotype)));
   blob->AddData("NLOOrder",new Blob_Data<std::vector<double> >
                 (proc->Info().m_fi.m_nlocpl));
+  blob->AddData("Process",new Blob_Data<PHASIC::Process_Base*>
+		(p_mehandler->Process()));
 
   ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {

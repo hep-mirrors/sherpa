@@ -1,4 +1,4 @@
-from __future__ import division 
+from __future__ import division
 from copy import deepcopy, copy
 from ufo_interface.ufo_exception import ufo_exception
 from ufo_interface.py_to_cpp import c_string_from_num
@@ -194,6 +194,12 @@ class tensor(object):
 
     def __rmul__(self, lhs):
         return self.__mul__(lhs)
+
+    def __truediv__(self, rhs):
+        if isinstance(rhs, tensor):
+            if rhs._elementary:
+                return self.__mul__(tensor([1.0/rhs._array[0]], None))
+        return self.__mul__(1.0/rhs)
 
     def __truediv__(self, rhs):
         if isinstance(rhs, tensor):

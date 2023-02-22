@@ -113,6 +113,10 @@ bool Color_Integrator::ConstructRepresentations
   m_msum=m_sum;
 #endif
   if (fermions!=0) THROW(fatal_error,"Invalid number of fermions.");
+  m_iids.clear();
+  for (size_t i(0);i<m_ids.size();++i)
+    if (m_ids[i]->Act() && m_ids[i]->Type()>=0) m_iids.push_back(i);
+  m_wfac=pow(3.0,m_iids.size())*Factorial(m_iids.size());
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): Weight = "<<m_weight<<"\n";
 #endif
@@ -132,7 +136,7 @@ void Color_Integrator::MPISync(const int mode)
   }
   m_sn+=m_msn;
   m_msn=0.0;
-  for (size_t i(0);i<m_msum.size();++i) 
+  for (size_t i(0);i<m_msum.size();++i)
     for (size_t j(0);j<m_msum[i].size();++j) {
       m_sum[i][j]+=m_msum[i][j];
       m_msum[i][j]=0.0;
@@ -220,7 +224,7 @@ std::pair<int,double> Color_Integrator::GenerateIndex
 
 bool Color_Integrator::GenerateColours()
 {
-  Idx_Vector iids, jids;
+  m_jids.clear();
   const auto size = m_ids.size();
   iids.reserve(size);
   jids.reserve(size);
@@ -239,7 +243,7 @@ bool Color_Integrator::GenerateColours()
     m_weight*=res.second;
   }
   size_t nr(0), ng(0), nb(0);
-  for (size_t i(0);i<iids.size();++i) {
+  for (size_t i(0);i<m_iids.size();++i) {
     // select partner
     size_t j(0);
     if (jids.size()>1) {
@@ -264,14 +268,13 @@ bool Color_Integrator::GenerateColours()
     else if (idx[i]==3) ++nb;
     else THROW(fatal_error,"Internal error");
     // remove partner from list
-    for (Idx_Vector::iterator jit(jids.begin());
-	 jit!=jids.end();++jit) if (*jit==jids[j]) {
-	jids.erase(jit);
+    for (Idx_Vector::iterator jit(m_jids.begin());
+	 jit!=m_jids.end();++jit) if (*jit==m_jids[j]) {
+	m_jids.erase(jit);
 	break;
       }
   }
-  m_weight*=pow(3.0,iids.size())*Factorial(iids.size())/
-    (Factorial(nr)*Factorial(ng)*Factorial(nb));
+  m_weight*=m_wfac/(Factorial(nr)*Factorial(ng)*Factorial(nb));
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): w = "<<m_weight<<"\n";
 #endif
@@ -361,7 +364,11 @@ int Color_Integrator::ConstructConfigurations
     // last step of permutation 
     if (m_ids[perm.front()]->Type()==0) {
       // pure gluonic -> last i must match first j
-      if (m_ids[perm.back()]->I()!=
+      int lastg(0);
+      for (size_t i(0);i<m_ids.size();++i)
+	if (m_ids[perm[i]]->I() &&
+	    m_ids[perm[i]]->J()) lastg=perm[i];
+      if (m_ids[lastg]->I()!=
 	  m_ids[perm.front()]->J()) return 0;
     }
     else if (2*m_pairs<perm.size()) {
@@ -475,6 +482,18 @@ int Color_Integrator::ConstructConfigurations
       // partons left
       perm.push_back(0);
       Idx_Vector nids(newstr?ids.size()-2:ids.size()-1);
+      if (pids.empty()) {
+	int ewonly(true);
+	for (size_t i(0);i<ids.size();++i)
+	  if (m_ids[ids[i]]->I()||m_ids[ids[i]]->J()) {
+	    ewonly=false;
+	    break;
+	  }
+	if (ewonly) {
+	  pids.push_back(ids.front());
+	  sing=true;
+	}
+      }
       while (i<pids.size()) {
 	// loop over all possible next partons
 	size_t shift(0);
@@ -511,7 +530,12 @@ void Color_Integrator::InitConstruction
     // find first fermion
     if (m_ids[fid]->Type()>0) break;
   // if no quark is present take any gluon
-  if (fid==m_ids.size()) --fid;
+  if (fid==m_ids.size())
+    for (size_t i(0);i<=ids.size();++i)
+      if (m_ids[i]->I() && m_ids[i]->J()) {
+	fid=i;
+	break;
+      }
   for (size_t i(0);i<=ids.size();++i) {
     // reorder amplitude, starting with a quark
     // the rest is ordered automatically, when 

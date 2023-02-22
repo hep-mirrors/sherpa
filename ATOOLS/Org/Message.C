@@ -74,13 +74,13 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const mm modifier)
   return str;
 }
 
-std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier) 
+std::ostream &ATOOLS::operator<<(std::ostream &str,const cm::code modifier)
 {
   if (!msg->Modifiable()) return str;
   switch (modifier) {
 #ifdef USING__COLOUR
-  case tm::curon:  return str<<"\033[?25h";
-  case tm::curoff: return str<<"\033[?25l";
+  case cm::curon:  return str<<"\033[?25h";
+  case cm::curoff: return str<<"\033[?25l";
   case tm::none:   return str;
 #else
   default: return str;
@@ -188,8 +188,7 @@ void Message::SetStandard()
 std::ostream &Message::Out()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode && mpi->Rank()) return m_devnull;
 #endif
   return m_output; 
 }
@@ -237,8 +236,7 @@ std::ostream &Message::Tracking()
 std::ostream &Message::Debugging()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 8) return m_output; 
   return m_devnull;  
@@ -247,8 +245,7 @@ std::ostream &Message::Debugging()
 std::ostream &Message::IODebugging()
 {
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 32) return m_output;
   return m_devnull;

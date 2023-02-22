@@ -164,7 +164,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/MyStrStream.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Scoped_Settings.H"<<'"'<<endl;
-  chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;  
+  chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Vegas.H"<<'"'<<endl<<endl;  
 
   chf<<"using namespace PHASIC;"<<endl;  
@@ -193,7 +193,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 	<<"  public:"<<endl
 	<<"    "<<name<<"(int,int,Flavour*,Integration_Info * const);"<<endl
 	<<"    ~"<<name<<"();"<<endl
-	<<"    void   GenerateWeight(Vec4D *,Cut_Data *);"<<endl
+	<<"    void   GenerateWeight(Vec4D *,Cut_Data *,bool=true);"<<endl
 	<<"    void   GeneratePoint(Vec4D *,Cut_Data *,double *);"<<endl
 	<<"    void   AddPoint(double);"<<endl
 	<<"    void   MPISync()                 { p_vegas->MPISync(); }"<<endl
@@ -231,7 +231,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   rannum = 0;
   //Weight
   chf<<"void "<<name<<"::";
-  chf<<"GenerateWeight(Vec4D* p,Cut_Data * cuts)"<<endl<<"{"<<endl;
+  chf<<"GenerateWeight(Vec4D* p,Cut_Data * cuts,bool)"<<endl<<"{"<<endl;
   chf<<"  double wt = 1.;"<<endl;
 
   acount = 0;
@@ -280,7 +280,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"void "<<name<<"::AddPoint(double Value)";
   chf<<endl<<"{"<<endl;  
   chf<<"  Single_Channel::AddPoint(Value);"<<endl;
-  chf<<"  p_vegas->AddPoint(Value,p_rans);"<<endl;  
+  chf<<"  p_vegas->AddPoint(Value,p_rans);"<<endl;
   chf<<"}"<<endl;
 
   chf<<"std::string "<<name<<"::ChID()";
@@ -527,7 +527,7 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
 	    string idh = string("I_")+Order(lm)+string("_")+Order(rm);
 	    //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
 	    sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-	    sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momralt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+	    sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momralt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1],-1.,1.);"<<endl;
 	    sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
 	    sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
 	    sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
@@ -544,7 +544,7 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
  	  string idh = string("I_")+Order(rm)+string("_")+Order(lm);
 	  //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
   	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-          sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<momlalt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+          sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<momlalt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1],-1.,1.);"<<endl;
   	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
 	  sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
 	  sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;

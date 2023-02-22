@@ -23,7 +23,6 @@ namespace BEAM { class Beam_Spectra_Handler; }
 
 namespace PDF { 
   class ISR_Handler;
-  class Shower_Base;
   class NLOMC_Base;
 }
 
@@ -63,7 +62,6 @@ namespace PHASIC {
     Cut_Data           *p_cuts;
     ME_Generator_Base  *p_gen;
 
-    PDF::Shower_Base   *p_shower;
     PDF::NLOMC_Base    *p_nlomc;
 
     BBar_Multi_Channel *p_mc;
@@ -124,6 +122,12 @@ namespace PHASIC {
     std::string ShellName(std::string name="") const;
 
     Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;
+
+    virtual void ConstructColorMatrix();
+    Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;
+
+    virtual std::map<std::pair<int,int>,
+		     std::vector<int> > CombinableInfo();
 
     virtual void ConstructColorMatrix();
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
@@ -195,7 +199,6 @@ namespace PHASIC {
     virtual bool FillResonances(ATOOLS::Flavour_Vector & flavs) { return false; }
 
     virtual void SetGenerator(ME_Generator_Base *const gen);
-    virtual void SetShower(PDF::Shower_Base *const ps);
     virtual void SetNLOMC(PDF::NLOMC_Base *const mc);
     const ATOOLS::Weights_Map& WeightsMap() const { return m_last; }
     virtual void SetSelector(const Selector_Key &key);
@@ -259,7 +262,6 @@ namespace PHASIC {
     inline double MaxOrder(const size_t &id) const { return m_maxcpl[id]; }
     inline double MinOrder(const size_t &id) const { return m_mincpl[id]; }
 
-    PDF::Shower_Base *Shower() const { return p_shower; }
     PDF::NLOMC_Base  *NLOMC() const  { return p_nlomc;  }
 
     inline Process_Info       &Info()       { return m_pinfo; }
@@ -272,7 +274,7 @@ namespace PHASIC {
     inline void SetMEwgtinfo(const ATOOLS::ME_Weight_Info i) { m_mewgtinfo=i; }
 
     inline Process_Integrator *Integrator() const { return p_int; }
-    
+
     inline virtual const bool   HasInternalScale() const { return m_hasinternalscale; }
     inline virtual const double InternalScale()    const { return m_internalscale; }
 
@@ -323,18 +325,18 @@ namespace PHASIC {
 
   class Order_Flavour {
     FMMap* p_fmm;
-    int Order_SVFT(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b) 
+    int Order_SVFT(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b)
     {
       if (a.IsScalar() && !b.IsScalar()) return 1;
-      if (a.IsVector() && !b.IsScalar() && 
+      if (a.IsVector() && !b.IsScalar() &&
 	  !b.IsVector()) return 1;
-      if (a.IsFermion() && !b.IsFermion() && 
+      if (a.IsFermion() && !b.IsFermion() &&
 	  !b.IsScalar() && !b.IsVector()) return 1;
       return 0;
     }
     int Order_Multi(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b)
     {
-      if ((*p_fmm)[int(a.Kfcode())]==0 || 
+      if ((*p_fmm)[int(a.Kfcode())]==0 ||
 	  (*p_fmm)[int(b.Kfcode())]==0) return 0;
       if ((*p_fmm)[int(a.Kfcode())]>
 	  (*p_fmm)[int(b.Kfcode())]) return 1;

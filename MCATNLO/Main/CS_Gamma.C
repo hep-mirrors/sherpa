@@ -4,7 +4,6 @@
 #include "MCATNLO/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "PDF/Main/Jet_Criterion.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
@@ -148,7 +147,7 @@ int CS_Gamma::SingleWeight
   if (cs.m_mode==1) eta=p_cluster->GetX(li,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=p_cluster->GetX(lk,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=p_cluster->GetX(li,cdip)*cs.m_z;
-  Weight_Value meps(Differential(ampl));
+  Weight_Value meps(Differential(ampl,nlo_type::vsub));
   meps.p_sf=cdip;
   meps.m_me*=cdip->SymFac()/
     cdip->AsymmetryFactor(cs.m_z,cs.m_y,Q2);
@@ -273,7 +272,7 @@ Weight_Value CS_Gamma::Differential
 #endif
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
-  Process_Base::SortFlavours(ampl);
+  Process_Base::SortFlavours(ampl,1);
   std::string pname(Process_Base::GenerateName(ampl));
   StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname+add));
   if (pit==(*(*procs)[type]).end())
@@ -281,8 +280,12 @@ Weight_Value CS_Gamma::Differential
   Weight_Value meps(pit->second);
   bool kon(pit->second->KFactorSetter(true)->On());
   pit->second->KFactorSetter(true)->SetOn(false);
+  Variation_Weights *vars(pit->second->VariationWeights());
+  pit->second->SetVariationWeights(NULL);
   meps.m_b = meps.m_me = static_cast<double>(
-      pit->second->Differential(*ampl, Variations_Mode::nominal_only, 1 | 2 | 4));
+      pit->second->Differential(*ampl, Variations_Mode::nominal_only, 1 | 2 | 4|256);
+  pit->second->SetVariationWeights(vars);
+  if (type&nlo_type::vsub) meps.m_b=meps.m_me=pit->second->LastB());
   pit->second->KFactorSetter(true)->SetOn(kon);
   meps.m_me*=pit->second->SymFac();
   meps.m_muf2=ampl->MuF2();

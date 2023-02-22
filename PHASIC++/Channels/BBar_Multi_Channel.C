@@ -36,15 +36,16 @@ Dipole_Params BBar_Multi_Channel::Active(Process_Base *const bviproc) const
 
 void BBar_Multi_Channel::Reset() 
 {
+  Multi_Channel::Reset();
   p_fsmc->Reset();
   Print();
 }
 
 void BBar_Multi_Channel::GenerateWeight
-(ATOOLS::Vec4D *p,Cut_Data *cuts)
+(ATOOLS::Vec4D *p,Cut_Data *cuts,bool compute)
 {
   m_eeg.GenerateWeight(p_cuts,true);
-  p_fsmc->GenerateWeight(p,cuts);
+  p_fsmc->GenerateWeight(p,cuts,compute);
   m_weight=p_fsmc->Weight();
 }
 

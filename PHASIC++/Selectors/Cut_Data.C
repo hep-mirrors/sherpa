@@ -36,19 +36,12 @@ Cut_Data::~Cut_Data() {
   for (short int i=0;i<ncut;i++) {
     delete[] cosmin[i];
     delete[] cosmax[i];
-    delete[] cosmin_save[i];
-    delete[] cosmax_save[i];
     delete[] scut[i];
-    delete[] scut_save[i];
   }
   delete[] cosmin;
   delete[] cosmax;
-  delete[] cosmin_save;
-  delete[] cosmax_save;
   delete[] scut;
-  delete[] scut_save;
   delete[] energymin;
-  delete[] energymin_save;
   delete[] etmin;
 }
 
@@ -59,26 +52,19 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   ncut           = _fl.size();
   fl             = &_fl.front();
   energymin      = new double[ncut];
-  energymin_save = new double[ncut];
   etmin          = new double[ncut];
   cosmin         = new double*[ncut];
   cosmax         = new double*[ncut];
-  cosmin_save    = new double*[ncut];
-  cosmax_save    = new double*[ncut];
   scut           = new double*[ncut];
-  scut_save      = new double*[ncut];
 
   for (int i=0;i<ncut;i++) {
     cosmin[i]      = new double[ncut];
     cosmax[i]      = new double[ncut];
-    cosmin_save[i] = new double[ncut];
-    cosmax_save[i] = new double[ncut];
     scut[i]        = new double[ncut];
-    scut_save[i]   = new double[ncut];
     energymin[i]   = Max(0.,fl[i].SelMass());
     if (fl[i].IsKK()) energymin[i] = 0.;
-    smin += energymin_save[i] = energymin[i];
-    etmin[i]       = 0.;
+    smin += energymin[i];
+    etmin[i]       = energymin[i];
   }
   smin = sqr(smin);
 
@@ -86,10 +72,9 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   double sijminfac{ s["INT_MINSIJ_FACTOR"].SetDefault(0.).Get<double>() };
   for (int i=0;i<ncut;i++) {
     for (int j=i;j<ncut;j++) {
-      cosmin[i][j] = cosmin[j][i] = cosmin_save[i][j] = -1.;
-      cosmax[i][j] = cosmax[j][i] = cosmax_save[i][j] = 1.;
-      scut[i][j] = scut[j][i] = scut_save[i][j] =
-              (i<nin)^(j<nin)?0.0:sijminfac*sqr(rpa->gen.Ecms());
+      cosmin[i][j] = cosmin[j][i] = -1.;
+      cosmax[i][j] = cosmax[j][i] = 1.;
+      scut[i][j] = scut[j][i] = (i<nin)^(j<nin)?0.0:sijminfac*sqr(rpa->gen.Ecms());
     }
   }  
 }
@@ -112,27 +97,24 @@ void Cut_Data::Complete()
 
   size_t str(0);
   for (int i=0;i<ncut;i++) {
-    energymin_save[i] = energymin[i];
-    for (int j=i+1;j<ncut;j++) {
-      cosmin_save[i][j] = cosmin[i][j];
-      cosmax_save[i][j] = cosmax[i][j];
-      scut_save[i][j]   = scut[i][j];
-    }
+    if (i>=2) str|=(1<<i);
+  }
     if (i>=2) str|=(1<<i);
   }
   double local_smin = 0.;
-  double etmm = 0.; 
+  double ptmm = 0.;
   double e1=0.,e2=0.;
   for (int i=2;i<ncut;i++) {
-    if (etmin[i]>etmm) etmm = etmin[i];
-    local_smin += etmin[i];
+    double pt(sqrt(sqr(etmin[i])-sqr(fl[i].SelMass())));
+    if (pt>ptmm) ptmm = pt;
+    smin += etmin[i];
     e1 += energymin[i];
     e2 += energymin[i]*cosmax[0][i];
   }
   smin = Max(smin,sqr(local_smin));
   smin = Max(smin,sqr(e1)-sqr(e2));
-  smin = Max(smin,sqr(2.*etmm));
-  smin = Max(smin,Getscut(str));
+  smin = Max(smin,sqr(2.*ptmm));
+  smin = Max(Getscut(str),smin);
 
   msg_Tracking()<<"Cut_Data::Complete(): s_{min} = "<<smin<<endl;
   m_smin_map.clear();
@@ -234,35 +216,4 @@ double Cut_Data::Getscut(size_t str)
 void Cut_Data::Setscut(size_t str,double d)
 {
   m_smin_map[str]=d;
-}
-
-void Cut_Data::Update(double sprime,double y) 
-{
-  // reset cuts to lab values
-  Reset(false);
-  // boost from lab to cms
-  double chy(cosh(y)), shy(sinh(y));
-  Poincare cms[2]={Poincare(Vec4D(chy,0.0,0.0,shy)),
-		   Poincare(Vec4D(chy,0.0,0.0,-shy))};
-  for (int a=0;a<2;++a) {
-    for (int i=2;i<ncut;i++) {
-      if (cosmax[a][i]<1.0 && !fl[i].IsMassive()) {
-	Vec4D help(1.0,sqrt(1.0-sqr(cosmax[a][i])),0.0,cosmax[a][i]);
-	cms[a].Boost(help);
-	cosmax[a][i]=cosmax[i][a]=help[3]/help[0];
-      } 
-      else cosmax[a][i] = cosmax[i][a] = 1.0;
-      if (cosmin[a][i]>-1.0 && !fl[i].IsMassive()) {
-	Vec4D help(1.0,sqrt(1.0-sqr(cosmin[a][i])),0.0,cosmin[a][i]);
-	cms[a].Boost(help);
-	cosmin[a][i]=cosmin[i][a]=help[3]/help[0];
-      } 
-      else cosmin[a][i] = cosmin[i][a] = -1.0;
-      double ct=sqrt(1.0-(sqr(etmin[i])-sqr(fl[i].SelMass()))/
-		     (sprime/4.0-sqr(fl[i].SelMass())));
-      if (etmin[i]<fl[i].SelMass()) ct=1.0;
-      cosmax[i][a]=cosmax[a][i]=Min(cosmax[a][i],ct);
-      cosmin[i][a]=cosmin[a][i]=Max(cosmin[a][i],-ct);
-    }
-  }
 }

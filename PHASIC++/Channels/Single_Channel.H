@@ -13,6 +13,7 @@ namespace PHASIC {
   class Single_Channel {
   protected:
     size_t   m_nin, m_nout;
+    int m_incisr, m_status;
     double * p_ms;
     size_t   m_rannum;
     double * p_rans;
@@ -38,7 +39,7 @@ namespace PHASIC {
 
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *,double *);
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
-    virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
+    virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *,bool=true);
 
     virtual void GeneratePoint(const double * rns);
     virtual void GenerateWeight(const int & mode=0);
@@ -49,7 +50,7 @@ namespace PHASIC {
     virtual inline const size_t &      Nin() const       { return m_nin; }
     virtual inline const size_t &      Nout() const      { return m_nout; }
     virtual inline const size_t &      Dimension() const { return m_rannum; }
-    virtual inline const size_t        NChannels() const { return 1; } 
+    virtual inline const size_t        NChannels() const { return 1; }
     virtual inline const std::string & Name() const      { return m_name; }
     virtual inline const double &      Res1() const      { return m_res1; }
     virtual inline const double &      Res2() const      { return m_res2; }
@@ -60,8 +61,8 @@ namespace PHASIC {
     virtual inline const double &      AlphaSave() const { return m_alpha_save; }
     virtual inline const int           OType() const     { return 0; }
     const std::string ChID() const;
-    
-    
+
+
     virtual inline void SetRes1(double _r)          { m_res1       = _r; }
     virtual inline void SetRes2(double _r)          { m_res2       = _r; }
     inline void AddMPIVars(const double &r1,const double &r2) { m_mres1+=r1; m_mres2+=r2; }
@@ -70,13 +71,13 @@ namespace PHASIC {
     virtual inline void SetWeight(double _weight)   { m_weight     = _weight; }
     virtual inline void SetAlpha(double _alpha)     { m_alpha      = _alpha; }
     virtual inline void SetAlphaSave(double _alpha) { m_alpha_save = _alpha; }
-    
+
     virtual inline void Optimize()              {}
     virtual inline void EndOptimize()           {}
     virtual inline void WriteOut(std::string)   {}
     virtual inline void ReadIn(std::string)     {}
     virtual inline bool OptimizationFinished()  { return false; }
-        
+
     virtual void ISRInfo(int & type,double & mass,double & width) {
       type = 0; mass = width = 0.0;
     }
@@ -93,10 +94,20 @@ namespace PHASIC {
       m_res1 += m_mres1;
       m_res2 += m_mres2;
       m_mres1 = m_mres2 = 0.0;
+      m_status = 1;
     }
   };
 
-  // end of class Single_Channel
+    inline double MRes1() { return mres1; }
+    inline double MRes2() { return mres2; }
+
+    inline double SPrime() { return sprime; }
+    inline double Y()      { return y;      }
+
+    inline int IncludesISR() { return m_incisr; }
+    inline int Status() { return m_status; }
+
+  };// end of class Single_Channel
 
   /*! 
     \enum chr::type

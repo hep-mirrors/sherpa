@@ -7,6 +7,7 @@ namespace PHASIC {
 
   class Cut_Data;
   class Single_Channel;
+  class Vegas;
 
   struct channel_type {
     enum code {
@@ -60,15 +61,16 @@ namespace PHASIC {
     std::vector<Single_Channel *> channels;
     std::map<std::string,double>  m_erans;
     bool m_readin;
-    int m_lastdice;
-    int m_otype;
+    double m_minalpha, m_sprime, m_y;
+    int m_lastdice,m_optcnt;
+    int m_otype, m_incisr, m_status;
   public:
     Multi_Channel(std::string name);
     virtual ~Multi_Channel();
 
     virtual bool Initialize();
 
-    void             Add(Single_Channel *);
+    virtual void     Add(Single_Channel *);
     virtual void     DropAllChannels(const bool del=true);
     void             DropChannel(int);
     Single_Channel * Channel(int);
@@ -91,7 +93,7 @@ namespace PHASIC {
 
     virtual void AddPoint(double);
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
-    virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
+    virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *,bool=false);
 
     void GeneratePoint(int mode=0);
     void GenerateWeight(int mode=0);
@@ -126,8 +128,13 @@ namespace PHASIC {
     int                         OType() const  { return m_otype; }
 
     virtual int                 HandicapFactor() { return 1; }
+    inline int IncludesISR() { return m_incisr; }
+    inline int Status() { return m_status; }
     inline void AddERan(const std::string &id) { m_erans[id]=0.0; }
     inline double ERan(const std::string &id) const { return m_erans.find(id)->second; }
+
+    inline double SPrime() { return m_sprime; }
+    inline double Y() { return m_y; }
   };
 
 

@@ -4,7 +4,6 @@
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "PDF/Main/Cluster_Definitions_Base.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Math/Vector.H"
@@ -49,7 +48,6 @@ namespace PHASIC {
     std::string m_coupling;
 
     size_t m_nin, m_nout;
-    size_t m_l1, m_l2;
 
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 

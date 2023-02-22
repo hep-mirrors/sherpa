@@ -36,6 +36,7 @@ int Single_Vertex::Compare(const Single_Vertex *v) const
   for (size_t i(0);i<Lorentz.size();++i) {
     if (!(Color[i]==v->Color[i])) return 3;
     if (!(Lorentz[i]==v->Lorentz[i])) return 4;
+    if (!(FormFactor[i]==v->FormFactor[i])) return 5;
   }
   return 0;
 }
@@ -53,7 +54,8 @@ bool Single_Vertex::operator==(const Single_Vertex& probe)
 	  cpl==probe.cpl &&
 	  order==probe.order &&
 	  Color==probe.Color &&
-	  Lorentz==probe.Lorentz);
+	  Lorentz==probe.Lorentz &&
+	  FormFactor==probe.FormFactor);
 }
 
 namespace MODEL{ 
@@ -72,8 +74,11 @@ namespace MODEL{
     }
     if (sv.cpl.size() && sv.Color.size() && sv.Lorentz.size()) {
       s<<"{{"<<sv.Coupling(0)<<"*"<<sv.Color[0].FullString()<<"*"<<sv.Lorentz[0];
-      for (size_t i(1);i<sv.cpl.size();++i)
+      if (sv.FormFactor[0]!="") s<<"*"<<sv.FormFactor[0];
+      for (size_t i(1);i<sv.cpl.size();++i) {
        	s<<"}{"<<sv.Coupling(i)<<"*"<<sv.Color[i].FullString()<<"*"<<sv.Lorentz[i];
+	if (sv.FormFactor[i]!="") s<<"*"<<sv.FormFactor[i];
+      }
       s<<"}}";
     }
     return s;

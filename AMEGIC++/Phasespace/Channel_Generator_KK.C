@@ -194,7 +194,7 @@ int Channel_Generator_KK::MakeChannel(int& echflag,int n,string& path,string& pI
 	<<"  public:"<<endl
 	<<"    "<<name<<"(int,int,Flavour*,Integration_Info * const);"<<endl
 	<<"    ~"<<name<<"();"<<endl
-	<<"    void   GenerateWeight(Vec4D *,Cut_Data *);"<<endl
+	<<"    void   GenerateWeight(Vec4D *,Cut_Data *,bool=true);"<<endl
 	<<"    void   GeneratePoint(Vec4D *,Cut_Data *,double *);"<<endl
 	<<"    void   AddPoint(double);"<<endl
 	<<"    void   MPISync()                 { p_vegas->MPISync(); }"<<endl
@@ -232,7 +232,7 @@ int Channel_Generator_KK::MakeChannel(int& echflag,int n,string& path,string& pI
   rannum = 1;
   //Weight
   chf<<"void "<<name<<"::";
-  chf<<"GenerateWeight(Vec4D* p,Cut_Data * cuts)"<<endl<<"{"<<endl;
+  chf<<"GenerateWeight(Vec4D* p,Cut_Data * cuts,bool)"<<endl<<"{"<<endl;
   chf<<"  double wt = 1.;"<<endl;
 
   acount = 0;
@@ -529,7 +529,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
 	    string idh = string("I_")+Order(lm)+string("_")+Order(rm);
 	    //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
 	    sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-	    sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momralt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+	    sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momralt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1],-1.,1.);"<<endl;
 	    sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
 	    sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
 	    sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
@@ -546,7 +546,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
  	  string idh = string("I_")+Order(rm)+string("_")+Order(lm);
 	  //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
   	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
-          sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<momlalt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+          sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<momlalt<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1],-1.,1.);"<<endl;
   	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
 	  sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
 	  sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;

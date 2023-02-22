@@ -15,7 +15,6 @@
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "PDF/Main/NLOMC_Base.H"
-#include "PDF/Main/Shower_Base.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
@@ -89,6 +88,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
 {
   Settings& s = Settings::GetMainSettings();
   RegisterDefaults();
+  m_ntrials = reader.Get<int>("MEH_MAX_TRIALS",std::numeric_limits<int>::max());
   m_respath = s["RESULT_DIRECTORY"].Get<std::string>();
   m_respath=ShortenPathName(m_respath);
   if (m_respath[0]!='/' && s.GetPath()!="")
@@ -202,7 +202,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
 
   // generate trial events until we accept one
-  for (size_t n(1);true;++n) {
+  for (size_t n(1);n<=m_ntrials;++n) {
     rpa->gen.SetNumberOfTrials(rpa->gen.NumberOfTrials()+1);
     if (m_seedmode==3)
       ran->ResetToLastIncrementedSeed();
@@ -211,7 +211,15 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     m_evtinfo.m_ntrial=n;
     return true;
   }
-  return false;
+  m_evtinfo.m_weight=0.0;
+  if (p_proc->GetSubevtList()) {
+    (*p_proc->GetSubevtList())*=0.0;
+    p_proc->GetSubevtList()->MultMEwgt(0.0);
+  }
+  if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=0.0;
+  (*p_variationweights)*=0.0;
+  m_evtinfo.m_ntrial=m_ntrials;
+  return true;
 }
 
 bool Matrix_Element_Handler::GenerateOneTrialEvent()
@@ -258,8 +266,9 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
+  const auto maxwt  = p_proc->Integrator()->Max();
+  m_evtinfo.m_max = max;
   if (m_eventmode!=0) {
-    const auto maxwt  = p_proc->Integrator()->Max();
     const auto disc   = maxwt * ran->Get();
     const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     if (abswgt < disc) {
@@ -301,6 +310,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // trial event is accepted, apply weight factor
   m_evtinfo.m_weightsmap*=wf;
+  m_evtinfo.m_max*=wf;
   if (p_proc->GetSubevtList()) {
     (*p_proc->GetSubevtList())*=wf;
     p_proc->GetSubevtList()->MultMEwgt(wf);
@@ -368,9 +378,6 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	delete proc;
 	return procs;
       }
-      if (!p_shower->GetShower())
-        THROW(fatal_error,"Shower needs to be set for MC@NLO");
-      proc->SetShower(p_shower->GetShower());
       proc->SetNLOMC(p_nlomc);
       m_procs.push_back(proc);
       procs.push_back(proc);
@@ -510,6 +517,11 @@ void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
 int Matrix_Element_Handler::InitializeProcesses(
   BEAM::Beam_Spectra_Handler* beam, PDF::ISR_Handler* isr)
 {
+  /*
+    This is the basis for all CKKW and process interplay.
+    Don't even try to think about modifying
+    either this routine or any of its dependencies !!!
+  */
   p_beam=beam;
   p_isr=isr;
   if (!m_gens.InitializeGenerators(p_model,beam,isr)) return false;
@@ -862,6 +874,29 @@ void Matrix_Element_Handler::LimitCouplings
   std::string ds;
   if (!GetMPvalue(pbi,nfs,pnid,ds)) return;
   while (ds.find("*")!=std::string::npos) ds.replace(ds.find("*"),1,"-1");
+  Data_Reader read(",",";",")","(");
+  read.SetString(ds);
+  std::vector<double> cpl;
+  read.VectorFromString(cpl,"");
+  if (mode&1) {
+    if (cpl.size()>mincpl.size()) mincpl.resize(cpl.size(),0);
+    for (size_t i(0);i<mincpl.size();++i)
+      if (cpl[i]>=0 && cpl[i]>mincpl[i]) mincpl[i]=cpl[i];
+  }
+  if (mode&2) {
+    if (cpl.size()>maxcpl.size()) maxcpl.resize(cpl.size(),99);
+    for (size_t i(0);i<maxcpl.size();++i)
+      if (cpl[i]>=0 && cpl[i]<maxcpl[i]) maxcpl[i]=cpl[i];
+  }
+}
+
+void Matrix_Element_Handler::LimitCouplings
+(MPSV_Map &pbi,const size_t &nfs,const std::string &pnid,
+ std::vector<double> &mincpl,std::vector<double> &maxcpl,const int mode)
+{
+  std::string ds;
+  if (!GetMPvalue(pbi,nfs,pnid,ds)) return;
+  while (ds.find("*")!=std::string::npos) ds.replace(ds.find("*"),1,"-1");
   std::vector<double> cpl(ToVector<double>(ds));
   if (mode&1) {
     if (cpl.size()>mincpl.size()) mincpl.resize(cpl.size(),0);
@@ -902,7 +937,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 		     <<fss<<"): {\n"<<IS<<FS<<"}\n";
       std::vector<Flavour> flavs;
       IS.GetExternal(flavs);
-      if (flavs.size()>1) {
+      if (flavs.size()>1 &&
+	  (flavs[0]!=p_isr->Flav(0) || flavs[1]!=p_isr->Flav(1))) {
         if (!p_isr->CheckConsistency(&flavs.front())) {
           msg_Error()<<METHOD<<"(): Error in initialising ISR ("
                      <<p_isr->Flav(0)<<" -> "<<flavs[0]<<") x ("
@@ -1024,6 +1060,7 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	if (GetMPvalue(args.pbi.m_vitmin,nfs,pnid,di)) cpi.m_itmin=di;
 	if (GetMPvalue(args.pbi.m_vrsitmin,nfs,pnid,di)) cpi.m_rsitmin=di;
 	else cpi.m_rsitmin=cpi.m_itmin;
+	cpi.m_sort=pbi.m_sort;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)
@@ -1045,7 +1082,6 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	  if (GetMPvalue(args.pbi.m_veobs,nfs,pnid,ds)) eobs=ds;
 	  if (GetMPvalue(args.pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
-	  proc[i]->SetShower(p_shower->GetShower());
 	}
 	if (loprocs==0) loprocs=procs.size();
       }

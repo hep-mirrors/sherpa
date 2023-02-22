@@ -22,8 +22,8 @@ long unsigned int Phase_Space_Integrator::m_nrawmax(std::numeric_limits<long uns
 Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   m_iter(1000), m_itmin(1000),
   m_n(0), m_nstep(0), m_ncstep(0), m_mn(0), m_mnstep(0), m_mncstep(0),
-  m_ncontrib(0), m_maxopt(0), m_stopopt(1000), m_nlo(0), m_fin_opt(true),
-  m_starttime(0.), m_lotime(0.), m_addtime(0.), m_lrtime(0.),
+  m_ncontrib(0), m_maxopt(0), m_nlo(0), m_fin_opt(true),
+  m_starttime(0.), m_addtime(0.), m_lrtime(0.),
   m_maxerror(0.), m_maxabserror(0.), m_lastrss(0), p_psh(_psh)
 {
   RegisterDefaults();
@@ -33,9 +33,9 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   // number of optimisation steps
   m_npower = s["NPOWER"].Get<double>();
   m_nopt = s["NOPT"].GetScalarWithOtherDefault
-    <long unsigned int>(m_npower?10:25);
+    <long unsigned int>(m_npower?7:25);
   m_maxopt = s["MAXOPT"].GetScalarWithOtherDefault
-    <long unsigned int>(m_npower?1:5);
+    <long unsigned int>(m_npower?3:5);
   m_stopopt = s["STOPOPT"].Get<long unsigned int>();
   // number of points per iteration
   const auto procitmin = p_psh->Process()->Process()->Info().m_itmin;
@@ -109,7 +109,7 @@ void Phase_Space_Integrator::MPISync()
 double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
                                          bool _fin_opt)
 {
-  if (p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt) return true;
+  if (p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
   m_mn=m_mnstep=m_mncstep=0;
   m_maxerror=_maxerror;
   m_maxabserror=_maxabserror;
@@ -145,7 +145,7 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
 #endif
 
   m_addtime = 0.0;
-  m_stepstart = m_lotime = m_starttime = ATOOLS::rpa->gen.Timer().RealTime();
+  m_stepstart = m_starttime = ATOOLS::rpa->gen.Timer().RealTime();
   if (p_psh->Stats().size()>0)
     m_addtime=p_psh->Stats().back()[6];
 
@@ -179,7 +179,7 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
     }
   }
 
-  return p_psh->Process()->TotalResult() * rpa->Picobarn();
+  return p_psh->Process()->TotalXS() * rpa->Picobarn();
 
 }
 
@@ -220,40 +220,36 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     msg_Tracking()<<" n="<<m_ncontrib<<"  iter="<<m_iter<<endl;
     if (p_psh->Stats().size()<m_nopt) {
       p_psh->Optimize();
-      p_psh->Process()->OptimizeResult();
-      if ((p_psh->Process())->SPoints()==0)
-        m_lotime = ATOOLS::rpa->gen.Timer().RealTime();
       fotime    = true;
       optimized = true;
       m_iter*=pow(2.,m_npower);
     }
     else if (p_psh->Stats().size()==m_nopt) {
-      p_psh->Process()->ResetMax(0);
       p_psh->EndOptimize();
-      p_psh->Process()->ResetMax(1);
       p_psh->Process()->InitWeightHistogram();
       p_psh->Process()->EndOptimize();
-      m_lotime = ATOOLS::rpa->gen.Timer().RealTime();
     }
+    p_psh->Process()->OptimizeResult();
+    p_psh->Process()->SetTotal(0);
     double time = ATOOLS::rpa->gen.Timer().RealTime();
     double timeest=0.;
     timeest = m_nexpected/double(m_ncontrib)*(time-m_starttime);
-    double error=dabs(p_psh->Process()->TotalVar()/
-                      p_psh->Process()->TotalResult());
+    double error=dabs(p_psh->Process()->TotalError()/
+                      p_psh->Process()->TotalXS());
     if (m_maxabserror>0.0) {
       msg_Info()<<om::blue
-                <<p_psh->Process()->TotalResult()*rpa->Picobarn()
+                <<p_psh->Process()->TotalXS()*rpa->Picobarn()
                 <<" pb"<<om::reset<<" +- ( "<<om::red
-                <<p_psh->Process()->TotalVar()*rpa->Picobarn()
+                <<p_psh->Process()->TotalError()*rpa->Picobarn()
                 <<" pb <-> "<<m_maxabserror<<" pb"<<om::reset<<" ) "
                 <<m_ncontrib<<" ( "<<m_n<<" -> "<<(m_ncstep*1000/m_nstep)/10.0
                 <<" % )"<<endl;
     }
     else {
       msg_Info()<<om::blue
-                <<p_psh->Process()->TotalResult()*rpa->Picobarn()
+                <<p_psh->Process()->TotalXS()*rpa->Picobarn()
                 <<" pb"<<om::reset<<" +- ( "<<om::red
-                <<p_psh->Process()->TotalVar()*rpa->Picobarn()
+                <<p_psh->Process()->TotalError()*rpa->Picobarn()
                 <<" pb = "<<error*100<<" %"<<om::reset<<" ) "
                 <<m_ncontrib<<" ( "<<m_n<<" -> "<<(m_ncstep*1000/m_nstep)/10.0
                 <<" % )"<<endl;
@@ -277,8 +273,8 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       m_lastrss=currentrss;
     }
     std::vector<double> stats(6);
-    stats[0]=p_psh->Process()->TotalResult()*rpa->Picobarn();
-    stats[1]=p_psh->Process()->TotalVar()*rpa->Picobarn();
+    stats[0]=p_psh->Process()->TotalXS()*rpa->Picobarn();
+    stats[1]=p_psh->Process()->TotalError()*rpa->Picobarn();
     stats[2]=error;
     stats[3]=m_ncontrib;
     stats[4]=m_ncontrib/(double)m_n;
@@ -286,13 +282,13 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     p_psh->AddStats(stats);
     p_psh->Process()->StoreResults(1);
     m_stepstart=ATOOLS::rpa->gen.Timer().RealTime();
-    double var(p_psh->Process()->TotalVar());
+    double var(p_psh->Process()->TotalError());
     bool wannabreak = dabs(error)<m_maxerror ||
       (var!=0. && dabs(var*rpa->Picobarn())<m_maxabserror);
     if (!m_fin_opt && wannabreak && m_nopt>p_psh->Stats().size())
       m_nopt=p_psh->Stats().size();
     if (wannabreak && p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
-    if (p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt) return true;
+    if (p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
   }
   return false;
 }
@@ -321,19 +317,19 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
         p_psh->EndOptimize();
         m_iter = 50000;
       }
-      if (p_psh->Process()->TotalResult()==0.) break;
+      if (p_psh->Process()->TotalXS()==0.) break;
 
-      double error = p_psh->Process()->TotalVar()/
-                     p_psh->Process()->TotalResult();
+      double error = p_psh->Process()->TotalError()/
+                     p_psh->Process()->TotalXS();
 
       msg_Info()<<om::blue
-                <<p_psh->Process()->TotalResult()
+                <<p_psh->Process()->TotalXS()
                 <<" GeV"<<om::reset<<" +- ( "<<om::red
-                <<p_psh->Process()->TotalVar()
+                <<p_psh->Process()->TotalError ()
                 <<" GeV = "<<error*100<<" %"<<om::reset<<" ) "<<n<<endl;
       if (error<maxerror) break;
     }
   }
-  return p_psh->Process()->TotalResult()*rpa->Picobarn();
+  return p_psh->Process()->TotalXS()*rpa->Picobarn();
 }
 

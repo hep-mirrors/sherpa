@@ -32,11 +32,12 @@ namespace ATOOLS {
   typedef Getter_Function<External_RNG,RNG_Key> RNG_Getter;
 
   class Marsaglia;
+  class Sobol;
 
   class Random: public Terminator_Object {
   private:
 
-    int      activeGenerator;
+    int      activeGenerator, m_npe;
 
     long int m_id, m_sid;
 
@@ -46,6 +47,8 @@ namespace ATOOLS {
     External_RNG *p_external;
 
     Marsaglia *p_ran4[2];
+
+    std::vector<double> m_p;
 
     double Ran2(long *idum);
     double Ran4();
@@ -132,6 +135,11 @@ namespace ATOOLS {
 
     External_RNG* GetExternalRng() { return p_external; }
 
+    inline void StartCount() { m_npe=0; }
+    inline void StopCount() { m_npe=-m_npe; }
+    inline int  Count() { return m_npe; }
+
+    inline void Clear() { m_p.clear(); }
     // adopt requirements for UniformRandomBitGenerator
     // (e.g. for use in std::shuffle)
     typedef size_t result_type;

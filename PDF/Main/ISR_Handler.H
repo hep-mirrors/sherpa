@@ -32,7 +32,7 @@ namespace PDF {
   };
   std::ostream& operator<<(std::ostream&,isrmode::code mode);
 
-  
+
   class ISR_Handler;
   typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
   typedef std::vector<double> Double_Vector;

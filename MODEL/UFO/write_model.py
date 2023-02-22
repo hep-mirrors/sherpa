@@ -1,4 +1,4 @@
-from __future__ import division 
+from __future__ import division
 from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, split_by_orders, vertex_collection
 from ufo_interface.tensor import tensor
 from ufo_interface.templates import model_template
@@ -44,7 +44,19 @@ def write_model(model, lorentzes, model_name, model_file_name):
         if kfcode < 0:
             continue
         massive = 0 if (s_part.ufo_particle.mass is model.parameters.ZERO) else 1
-        part_init += ("\n    ATOOLS::s_kftable["+str(s_part.kf_code())+"] = new ATOOLS::Particle_Info("+
+        if s_part.hadron():
+            part_init += ("\n    ATOOLS::s_kftable["+str(s_part.kf_code())+"] = new ATOOLS::Particle_Info("+
+                      str(s_part.kf_code())+", "+                                 # kf_code
+                      str(1000.0)+", "+                                           # mass
+                      str(0.0)+", "+                                              # width
+                      str(s_part.charge_times_three())+", "+                      # 3*(electrical_charge)
+                      str(s_part.spin_times_two())+", "+                          # 2*spin
+                      str(1)+", "+                                                # is active
+                      str(1)+", "+                                                # stable
+                      "\""+str(s_part.name())+"\", "+                             # name
+                      "\""+str(s_part.texname())+"\");")                          # antitexname
+        else:
+            part_init += ("\n    ATOOLS::s_kftable["+str(s_part.kf_code())+"] = new ATOOLS::Particle_Info("+
                       str(s_part.kf_code())+", "+                                 # kf_code
                       str(1000.0)+", "+                                           # mass
                       str(0.0)+", "+                                              # width

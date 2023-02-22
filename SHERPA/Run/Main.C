@@ -17,17 +17,7 @@ int main(int argc,char* argv[])
 {
 
 #ifdef USING__MPI
-#ifdef USING__Threading
-  int provided;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &provided);
-  if (provided<MPI_THREAD_SERIALIZED) {
-    printf("MPI library does not provide required thread support\n");
-    MPI_Finalize();
-    return 1;
-  }
-#else
   MPI_Init(&argc, &argv);
-#endif
 #endif
 
   try {

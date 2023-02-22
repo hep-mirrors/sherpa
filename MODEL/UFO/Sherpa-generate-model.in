@@ -8,11 +8,12 @@ from os import makedirs
 from argparse import ArgumentParser,ArgumentDefaultsHelpFormatter
 from subprocess import check_output
 
-sys_path.append('@PYLIBDIR@')
+sys_path.insert(0, '@PYLIBDIR@')
 
 from ufo_interface import s_lorentz, s_color, write_model, write_run_card
 from ufo_interface.templates import sconstruct_template
 from ufo_interface.message import error, warning, progress
+from ufo_interface import ufo_exception
 
 def parse_args():
       arg_parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
@@ -154,7 +155,7 @@ def check_model(model_name, model_path):
             non_ct_vertices  = [vtx for vtx in model.all_vertices if vtx not in model.all_CTvertices]
             model.non_ct_couplings = sum([list(vtx.couplings.values()) for vtx in non_ct_vertices], [])
 
-      # For NLO models: filter out lorentz structures 
+      # For NLO models: filter out lorentz structures
       # that ONLY apper in CT vertices as they are somtimes ill-formatted
       needed_names = []
       for v in model.all_vertices:
@@ -194,7 +195,7 @@ if __name__ == "__main__":
       # Need this list in order to write model source code
       lorentzes = [s_lorentz(l) for l in model.all_lorentz]
       lorentzes = list(filter(lambda l: l.n_ext()<=args.nmax and not l.has_ghosts(), lorentzes))
-      
+
       # Set of all color structures, no duplicates
       colors = set(sum([v.color for v in model.all_vertices if len(v.particles)<=args.nmax],[]))
       colors = [col for col in colors if col!='1']
@@ -232,10 +233,10 @@ if __name__ == "__main__":
       # compile and install
       if not args.nocompile:
           progress("Compiling sources using scons")
-          sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install'] 
-          if (args.ncore>1):
+          sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install']
+          if (int(args.ncore)>1):
               sconsargs.append('-j{0}'.format(args.ncore))
-          progress(check_output(sconsargs))
+      progress(check_output(sconsargs).decode())
 
       # write example run card to working dir
       run_card_path="Sherpa.{0}_Example.yaml".format(model_name)

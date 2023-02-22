@@ -3,6 +3,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Channels/Channel_Generator.H"
+#include "PHASIC++/Channels/Single_Channel.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -11,6 +12,14 @@
 
 using namespace PHASIC;
 using namespace ATOOLS;
+
+FSR_Channels::FSR_Channels(Phase_Space_Handler *const psh,
+			   const std::string &name):
+  Multi_Channel(name), p_psh(psh)
+{
+  nin=p_psh->Process()->NIn();
+  nout=p_psh->Process()->NOut();
+}
 
 bool FSR_Channels::Initialize()
 {
@@ -27,7 +36,7 @@ bool FSR_Channels::Initialize()
   }
   nin=process_integrator->NIn();
   nout=process_integrator->NOut();
-  
+
   int sintegrator=0;
   for (size_t i(0);i<inttypes.size();++i) {
     Channel_Generator * cg =
@@ -50,6 +59,10 @@ bool FSR_Channels::Initialize()
   }
   if (!process_integrator->Process()->InitIntegrator(p_psh))
     THROW(critical_error,"InitIntegrator failed");
+  m_incisr|=channels.size()?channels[0]->IncludesISR():0;
+  for (size_t i(1);i<channels.size();++i)
+    if (m_incisr!=channels[i]->IncludesISR())
+      THROW(fatal_error,"Inconsistent ISR handling");
   return true;
 }
 

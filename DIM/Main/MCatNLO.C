@@ -101,7 +101,7 @@ GetRealEmissionAmplitude(const int mode)
   }
   ampl->SetKT2(p_mcatnlo->LastSplitting().m_t);
   ampl->SetMuQ2(p_rampl->KT2());
-  Process_Base::SortFlavours(ampl);
+  Process_Base::SortFlavours(ampl,1);
   return ampl;
 }
 
@@ -117,7 +117,8 @@ Amplitude *MCatNLO::Convert
  std::map<Cluster_Leg*,Parton*> &lmap)
 {
   Amplitude *ampl(new Amplitude(campl));
-  ampl->SetT(campl->KT2());
+  ampl->SetT(campl->MuQ2());
+  if (campl->KT2()) ampl->SetT(campl->KT2());
   if (campl->Prev()) ampl->SetT0(campl->Prev()->KT2());
   for (size_t i(0);i<campl->Legs().size();++i) {
     Cluster_Leg *cl(campl->Leg(i));

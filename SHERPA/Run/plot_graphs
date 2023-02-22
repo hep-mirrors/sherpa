@@ -27,11 +27,11 @@ def plot(htmlfile):
         #subprocess.check_output("ghostscript -dBATCH -dNOPAUSE -sDEVICE=png16m -r96-dUseCropBox  -sOutputFile="+ie+"-%04d.png "+ie+".pdf",shell=True)
         subprocess.check_output("convert -trim "+ie+".pdf"+" "+ie+"-%04d.png",shell=True)
         pngfiles = []
-        for f in os.listdir(os.getcwd()):
-            if f.startswith(i) and f.endswith(".png"):
-                pngfiles.append(f)
-        pngfiles.sort(key=str.lower)
-        htmlfile.print_entry(directory,i,ngraphs,pngfiles)
+    for f in os.listdir(os.getcwd()):
+        if f.startswith(i) and f.endswith(".png"):
+            pngfiles.append(f)
+    pngfiles.sort(key=str.lower)
+    htmlfile.print_entry(directory,i,ngraphs,pngfiles)
     cleanup(0)
     htmlfile.print_tablefoot()
 
@@ -41,7 +41,7 @@ def sub(subdir,htmlfile):
     for i in os.listdir(os.getcwd()):
         if os.path.isdir(i):
             print("plotting in subdir",i)
-            sub(i,htmlfile)
+        sub(i,htmlfile)
     os.chdir("..")
 
 def escapecharacters(i):

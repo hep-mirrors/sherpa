@@ -723,12 +723,6 @@ void Single_DipoleTerm::SetSelector(const PHASIC::Selector_Key &key)
   p_selector=p_LO_process->Selector();
 }
 
-void Single_DipoleTerm::SetShower(PDF::Shower_Base *const ps)
-{
-  p_shower=ps;
-  if (p_LO_process) p_LO_process->SetShower(ps);
-}
-
 void Single_DipoleTerm::SetNLOMC(PDF::NLOMC_Base *const mc)
 {
   p_nlomc=mc;

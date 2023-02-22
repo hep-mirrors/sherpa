@@ -7,7 +7,6 @@
 #include <vector>
 #include "ATOOLS/Phys/Flavour.H"
 #include "SHERPA/Single_Events/Decay_Handler_Base.H"
-#include "PDF/Main/Cluster_Definitions_Base.H"
 
 namespace MODEL {
   class Single_Vertex;
@@ -41,7 +40,6 @@ namespace SHERPA {
     ATOOLS::Flavour_Set      m_decmass;
     std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > >
                              m_read;
-    PDF::Cluster_Definitions_Base *p_clus;
     ATOOLS::NLO_subevtlist *p_newsublist;
     double                   m_int_accuracy;
     int                      m_int_niter, m_int_target_mode;
@@ -103,7 +101,6 @@ namespace SHERPA {
     double Mass(const ATOOLS::Flavour &fl) const;
     bool Decays(const ATOOLS::Flavour& flav);
 
-    inline void SetCluster(PDF::Cluster_Definitions_Base *clus) { p_clus=clus; }
   };
 }
 

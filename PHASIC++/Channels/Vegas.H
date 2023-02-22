@@ -21,7 +21,7 @@ namespace PHASIC {
     };// end of class Power
   private:
     std::string m_name;
-    int m_nd;
+    int m_nd, m_maxref;
     unsigned long m_nevt,m_nopt,m_snevt,m_cevt;
     unsigned long m_mnevt, m_mcevt, m_const;
     double m_alpha;
@@ -69,6 +69,7 @@ namespace PHASIC {
     void SetAutoOptimize(int ao)    { m_autooptimize=ao*m_nd; }
 
     void SetAutoRefine() { m_sint=1; }
+    void SetMaxRefine(const int &maxref) { m_maxref=maxref; }
 
     static inline void SetOnExternal(const bool on) { s_onext=on;     }
     static inline bool OnExternal()                 { return s_onext; }

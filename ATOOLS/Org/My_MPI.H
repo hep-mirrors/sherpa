@@ -8,17 +8,6 @@
 #include <string>
 #endif
 
-#ifdef USING__Threading
-#include <pthread.h>
-inline int pthread_cond_signal
-(pthread_cond_t *c,pthread_mutex_t *m)
-{
-  pthread_mutex_lock(m);
-  int r(pthread_cond_signal(c));
-  pthread_mutex_unlock(m);
-  return r;
-}
-#endif
 
 #include <vector>
 

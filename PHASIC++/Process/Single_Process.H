@@ -93,6 +93,10 @@ namespace PHASIC {
 
     inline bool Zero() const { return m_zero; }
 
+    inline double DSWeight() const { return m_dsweight; }
+
+    inline void SetDSWeight(const double &dsweight) { m_dsweight=dsweight; }
+
   private:
 
     //! Generate cluster sequence info (containing the ISR+beam weight)

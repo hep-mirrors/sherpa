@@ -486,6 +486,7 @@ void Model_Base::InitializeInteractionModel()
   InitMEInfo();
 }
 
+
 int Model_Base::ScalarNumber(const std::string _name) const {
   if (p_numbers->count(_name)>0) return (*p_numbers)[_name];
   THROW(fatal_error, "Key "+_name+" not found");
@@ -537,9 +538,13 @@ void Model_Base::InitMEInfo()
         <<"  "<<all[i].PID()<<" ["<<all[i].id[0];
       for (size_t j(1);j<all[i].id.size();++j) msg_Out()<<","<<all[i].id[j];
       msg_Out()<<"] "<<all[i].order<<" "<<(all[i].dec>0?'{':(all[i].dec<0?'(':'['))
-               <<all[i].Lorentz.front()<<","<<all[i].Color[0].PID();
+               <<all[i].Lorentz.front()<<(all[i].FormFactor.size()?
+					  "*"+all[i].FormFactor.front():"")
+	       <<","<<all[i].Color[0].PID();
       for (size_t j(1);j<all[i].Lorentz.size();++j)
-        msg_Out()<<"|"<<all[i].Lorentz[j]<<","<<all[i].Color[j].PID();
+        msg_Out()<<"|"<<all[i].Lorentz[j]<<(all[i].FormFactor.size()?
+					    "*"+all[i].FormFactor[j]:"")
+		 <<","<<all[i].Color[j].PID();
       msg_Out()<<(all[i].dec>0?'}':(all[i].dec<0?')':']'));
       for (size_t l(0);l<all[i].cpl.size();++l)
           msg_Out()<<", C"<<l<<" = "<<all[i].Coupling(l);

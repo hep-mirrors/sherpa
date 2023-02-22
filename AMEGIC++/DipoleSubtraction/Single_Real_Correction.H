@@ -100,7 +100,6 @@ namespace AMEGIC {
     void             Minimize();
 
     void SetSelector(const PHASIC::Selector_Key &key);
-    void SetShower(PDF::Shower_Base *const ps);
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 
     inline ATOOLS::NLO_subevtlist*             GetSubevtList()

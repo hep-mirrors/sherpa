@@ -7,13 +7,6 @@
 #include "SHERPA/Single_Events/EvtReadin_Phase.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #include "SHERPA/Single_Events/Hard_Decays.H"
-#include "SHERPA/Single_Events/Minimum_Bias.H"
-#include "SHERPA/Single_Events/Multiple_Interactions.H"
-#include "SHERPA/Single_Events/Jet_Evolution.H"
-#include "SHERPA/Single_Events/Signal_Process_FS_QED_Correction.H"
-#include "SHERPA/Single_Events/Beam_Remnants.H"
-#include "SHERPA/Single_Events/Hadronization.H"
-#include "SHERPA/Single_Events/Hadron_Decays.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/Tools/HepMC2_Interface.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
@@ -24,6 +17,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -47,7 +41,7 @@ Sherpa::Sherpa(int argc, char* argv[]) :
 #endif
 {
   ATOOLS::mpi = new My_MPI();
-  ATOOLS::exh = new Terminator_Object_Handler();
+  ATOOLS::exh = new Terminator_Object_Handler(mode);
   ATOOLS::msg = new Message();
   // rpa should be constructed before initializing the main settings, since the
   // latter might throw an exception and rpa would be involved in terminating
@@ -117,7 +111,7 @@ bool Sherpa::InitializeTheRun()
   if (p_inithandler->InitializeTheFramework()) {
     int initonly=s["INIT_ONLY"].Get<int>();
     if (initonly==1) THROW(normal_exit,"Initialization complete.");
-    if (initonly==2) return true;
+    if (initonly&2) return true;
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
     m_showtrials=s["SHOW_NTRIALS"].Get<bool>();
 
@@ -171,7 +165,6 @@ bool Sherpa::InitializeTheEventHandler()
   if (mode==eventtype::EventReader) {
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
-    p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
   else {
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
@@ -228,9 +221,9 @@ bool Sherpa::GenerateOneEvent(bool reset)
       ran->FastForward(m_debugstep);
     }
   }
-  
+
   if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
-  
+
   if (reset) p_eventhandler->Reset();
   if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
@@ -248,7 +241,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
     }
     rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
     Blob_List *blobs(p_eventhandler->GetBlobs());
-    
+
     /// Increase m_trials --- based on signal blob["Trials"] if existent
     if (blobs->FindFirst(btp::Signal_Process) == nullptr) {
       m_trials+=1;
@@ -257,18 +250,18 @@ bool Sherpa::GenerateOneEvent(bool reset)
     else {
       m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
     }
-    
+
     if (msg_LevelIsEvents()) {
       if (!blobs->empty()) {
 	msg_Out()<<"  -------------------------------------------------\n";
 	for (Blob_List::iterator blit=blobs->begin();
-	     blit!=blobs->end();++blit) 
+	     blit!=blobs->end();++blit)
 	  msg_Out()<<*(*blit)<<std::endl;
 	msg_Out()<<"  -------------------------------------------------\n";
       }
       else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
     }
-    
+
     for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
       double currQ = (*bit)->CheckChargeConservation();
       if (fabs(currQ)>1e-12) {
@@ -277,7 +270,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
 	return 0;
       }
     }
-    
+
     int i=rpa->gen.NumberOfGeneratedEvents();
     int nevt=rpa->gen.NumberOfEvents();
     msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;

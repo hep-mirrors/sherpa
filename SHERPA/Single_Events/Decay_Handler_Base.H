@@ -62,9 +62,6 @@ namespace SHERPA {
     virtual METOOLS::Decay_Matrix*
     FillDecayTree(ATOOLS::Blob * blob, METOOLS::Spin_Density* s0);
     virtual void CreateDecayBlob(ATOOLS::Particle* inpart)=0;
-    virtual bool AttachExtraQED(ATOOLS::Blob* blob,size_t mode=0);
-    virtual bool AttachExtraQEDToProductionBlob(ATOOLS::Blob* blob);
-    virtual bool AttachExtraQEDRecursively(ATOOLS::Blob* blob, bool aa=false);
     virtual void UpdateDecayBlob(ATOOLS::Blob* blob);
     virtual bool CheckOnshellness(ATOOLS::Blob* blob);
     virtual void CleanUp();

@@ -12,11 +12,11 @@ Single_Channel::Single_Channel() :
   m_rannum(0),p_rans(NULL),
   m_res1(0.),m_res2(0.),m_mres1(0.),m_mres2(0.),
   m_alpha(0.),m_alpha_save(0.),m_weight(1.),
-  m_name("no_name")
+  m_name("no_name"),m_incisr(0),m_status(1)
 { }
 
 Single_Channel::Single_Channel(size_t _nin,size_t _nout,const Flavour * _fl) :
-  m_nin(_nin),m_nout(_nout),p_ms(new double[m_nin+m_nout+1]),
+  m_nin(_nin),m_nout(_nout),m_incisr(0),m_status(1),p_ms(new double[m_nin+m_nout+1]),
   m_rannum(0),p_rans(NULL),
   m_res1(0.),m_res2(0.),m_mres1(0.),m_mres2(0.),
   m_alpha(0.),m_alpha_save(0.),m_weight(1.),
@@ -26,19 +26,20 @@ Single_Channel::Single_Channel(size_t _nin,size_t _nout,const Flavour * _fl) :
 }
 
 Single_Channel::Single_Channel(Single_Channel * old) :
-  m_nin(old->m_nin),m_nout(old->m_nout),p_ms(new double[m_nin+m_nout]),
+  m_nin(old->m_nin),m_nout(old->m_nout),m_incisr(0),m_status(1),p_ms(new double[m_nin+m_nout]),
   m_rannum(old->m_rannum),p_rans(new double[m_rannum]),
   m_res1(0.),m_res2(0.),m_mres1(0.),m_mres2(0.),
   m_alpha(0.),m_alpha_save(0.),m_weight(1.),
   m_name(old->m_name)
 {
   for (int i(0);i<m_nin+m_nout;i++) p_ms[i] = old->p_ms[i];
+  m_incisr=old->IncludesISR();
 }
 
 Single_Channel::~Single_Channel()
 {
-  if (p_ms)   delete[] p_ms; 
-  if (p_rans) delete[] p_rans; 
+  if (p_ms)   delete[] p_ms;
+  if (p_rans) delete[] p_rans;
 }
 
 void Single_Channel::Reset(double value) {
@@ -67,22 +68,22 @@ void Single_Channel::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *rans)
 	     <<"Virtual Method called !"<<std::endl;
 }
 
-void Single_Channel::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts) 
+void Single_Channel::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts,bool recompute)
 {
   msg_Error()<<"Single_Channel::GenerateWeight(Vec4D *p,Cut_Data *cuts): "
-	     <<"Virtual Method called !"<<std::endl; 
+	     <<"Virtual Method called !"<<std::endl;
 }
 
 void Single_Channel::GeneratePoint(const double * rns)
 {
   msg_Error()<<"Single_Channel::GeneratePoint(): "
-	     <<"Virtual Method called !"<<std::endl; 
+	     <<"Virtual Method called !"<<std::endl;
 }
 
-void Single_Channel::GenerateWeight(const int & mode) 
+void Single_Channel::GenerateWeight(const int & mode)
 {
   msg_Error()<<"Single_Channel::GenerateWeight(): "
-	     <<"Virtual Method called !"<<std::endl; 
+	     <<"Virtual Method called !"<<std::endl;
 }
 
 void Single_Channel::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 

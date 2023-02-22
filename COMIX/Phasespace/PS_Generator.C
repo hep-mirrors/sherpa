@@ -86,46 +86,47 @@ void PS_Generator::SetColors(const Int_Vector &rc,
 
 void PS_Generator::CalcJL()
 {
-  for (size_t i(0);i<m_cur[1].size();++i) 
+  for (size_t n(m_n-2);n>=1;--n)
+    for (size_t i(0);i<m_cur[n].size();++i)
+      ((PS_Current*)m_cur[n][i])->SetWeight(1.);
+  if (m_zmode==0) return;
+  for (size_t i(0);i<m_cur[1].size();++i)
     m_cur[1][i]->ConstructJ(Vec4D(),0,m_cl[i][0],m_cl[i][1],0);
-  if (m_zmode>0) {
-    for (size_t n(2);n<m_n;++n) {
-      for (size_t i(0);i<m_cur[n].size();++i) 
-	m_cur[n][i]->Evaluate();
-    }
-    for (size_t n(m_n-2);n>=2;--n)
-      for (size_t i(0);i<m_cur[n].size();++i)
-	m_cur[n][i]->ResetZero();
+  for (size_t n(2);n<m_n;++n) {
+    for (size_t i(0);i<m_cur[n].size();++i)
+      m_cur[n][i]->Evaluate();
   }
+  for (size_t n(m_n-2);n>=2;--n)
+    for (size_t i(0);i<m_cur[n].size();++i)
+      m_cur[n][i]->ResetZero();
 }
 
 bool PS_Generator::Evaluate()
 {
-  if (m_zmode>0) {
-    PHASIC::Process_Base *cur(p_xs->Process());
-    while ((*cur)[0]!=cur) {
-      double sum(0.0);
-      Double_Vector sums;
-      std::vector<PHASIC::Process_Base*> pss;
-      for (size_t i(0);i<cur->Size();++i)
-	if (!(*cur)[i]->Get<PHASIC::Single_Process>()->Zero()) {
-	  if ((*cur)[i]->Integrator()->SumSqr()==0) sum+=1.0;
-	  else sum+=(*cur)[i]->Integrator()->SumSqr();
-	  sums.push_back(sum);
-	  pss.push_back((*cur)[i]);
-	}
-      double disc(sum*ran->Get());
-      for (size_t i(0);i<pss.size();++i)
-	if (disc<=sums[i]) {
-	  cur=pss[i];
-	  break;
-	}
-    }
-    std::shared_ptr<Color_Integrator> ci(cur->Integrator()->ColorIntegrator());
-    if (ci==NULL) 
-      THROW(fatal_error,"No color integrator for "+cur->Name());
-    SetColors(ci->I(),ci->J());
+  if (m_zmode==0) return true;
+  PHASIC::Process_Base *cur(p_xs->Process());
+  while ((*cur)[0]!=cur) {
+    double sum(0.0);
+    Double_Vector sums;
+    std::vector<PHASIC::Process_Base*> pss;
+    for (size_t i(0);i<cur->Size();++i)
+      if (!(*cur)[i]->Get<PHASIC::Single_Process>()->Zero()) {
+	if ((*cur)[i]->Integrator()->TotalError()==0.) sum+=1.0;
+	else sum+=(*cur)[i]->Integrator()->TotalError();
+	sums.push_back(sum);
+	pss.push_back((*cur)[i]);
+      }
+    double disc(sum*ran->Get());
+    for (size_t i(0);i<pss.size();++i)
+      if (disc<=sums[i]) {
+	cur=pss[i];
+	break;
+      }
   }
+    std::shared_ptr<Color_Integrator> ci(cur->Integrator()->ColorIntegrator());
+  if (ci==NULL)
+    THROW(fatal_error,"No color integrator for "+cur->Name());
+  SetColors(ci->I(),ci->J());
   CalcJL();
   return true;
 }

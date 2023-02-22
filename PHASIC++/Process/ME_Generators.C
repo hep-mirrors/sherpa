@@ -27,8 +27,11 @@ ME_Generators::ME_Generators()
       if (s_loader->LoadLibrary("Sherpa"+megens[i]))
 	back()=ME_Generator_Getter::GetObject(megens[i],ME_Generator_Key());
     }
-    if (back()==NULL)
-      THROW(fatal_error, "ME generator '"+megens[i]+"' not found");
+    if (back()==NULL) {
+      pop_back();
+      msg_Error()<<METHOD<<"(): ME generator '"<<megens[i]
+		 <<"' not found. Ignoring it."<<std::endl;
+    }
   }
   for (size_t i(0);i<size();++i) {
     rpa->gen.SetVariable(at(i)->Name(),ToString(at(i)));

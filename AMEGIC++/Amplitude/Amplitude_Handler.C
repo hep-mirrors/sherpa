@@ -901,13 +901,12 @@ Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 }
 
 Complex Amplitude_Handler::Zvalue(int ihel)
-{ 
-  DEBUG_FUNC(ihel);
+{
   // Called for actual calculation of the CS
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): {\n";
-#endif
   msg_Debugging()<<"2: #graphs: "<<graphs.size()<<std::endl;
+#endif
   double gsfac(p_aqcd?sqrt(p_aqcd->Factor()):1.0);
   double gwfac(p_aqed?sqrt(p_aqed->Factor()):1.0);
   for (size_t i=0;i<graphs.size();i++) {
@@ -932,18 +931,26 @@ Complex Amplitude_Handler::Zvalue(int ihel)
     msg_Debugging()<<"  graph "<<i<<" -> "<<cplfac<<"\n";
 #endif
     Mi[i] = cplfac*(graphs[i]->Zvalue(ihel));
+#ifdef DEBUG__BG
     msg_Debugging()<<"  "<<i<<": O"<<order<<" "<<Mi[i]<<std::endl;
+#endif
   }
   Complex M(0.,0.);
   for (size_t i=0;i<graphs.size();i++) {
     for (size_t j=0;j<graphs.size();j++) {
+#ifdef DEBUG__BG
       msg_Debugging()<<(m_on.empty()?"m_on empty, ":"m_on")
                      <<"["<<i<<"]["<<j<<"]=";
+#endif
       if (m_on.empty() || m_on[i][j]) {
+#ifdef DEBUG__BG
         msg_Debugging()<<"  col="<<CFCol_Matrix->Mij(i,j);
+#endif
         M+= Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
       }
+#ifdef DEBUG__BG
       msg_Debugging()<<std::endl;
+#endif
     }
   }
 #ifdef DEBUG__BG
@@ -962,39 +969,7 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
                                   const std::vector<double>& mxc,
                                   const std::vector<double>& mnc)
 {
-  std::vector<int> maxcpl(mxc.size(),0),mincpl(mnc.size(),0);
-  for (size_t i(0);i<mnc.size();++i) mincpl[i]=2*mnc[i];
-  for (size_t i(0);i<mxc.size();++i) maxcpl[i]=2*mxc[i];
-  DEBUG_FUNC(ci<<" "<<cj<<" "<<maxcpl<<" "<<mincpl);
-  std::vector<std::vector<int> > on;
-  std::vector<std::vector<std::vector<int> > > cplmatrix;
-  on.resize(graphs.size());
-  cplmatrix.resize(graphs.size());
-  for (size_t i(0);i<graphs.size();++i) {
-    on[i].resize(graphs.size(),1);
-    cplmatrix[i].resize(graphs.size());
-    for (size_t j(0);j<graphs.size();++j) {
-      msg_Debugging()<<"("<<i<<","<<j<<"): ";
-      cplmatrix[i][j].resize(graphs[j]->GetOrder().size(),0);
-      for (size_t k(0);k<graphs[j]->GetOrder().size();++k) {
-        cplmatrix[i][j][k]=graphs[i]->GetOrder()[k]
-                           +graphs[j]->GetOrder()[k];
-      }
-      for (size_t k(0);k<Min(cplmatrix[i][j].size(),maxcpl.size());++k) {
-        msg_Debugging()<<mincpl[k]<<" < "<<cplmatrix[i][j][k]<<" < "
-                       <<maxcpl[k]<<" ? ";
-        if (cplmatrix[i][j][k]>maxcpl[k] || cplmatrix[i][j][k]<mincpl[k]) {
-          msg_Debugging()<<om::bold<<"0"<<om::reset;
-          on[i][j]=0;
-        }
-        else msg_Debugging()<<om::bold<<"1"<<om::reset;
-        msg_Debugging()<<"   ";
-      }
-      msg_Debugging()<<" -> "<<om::blue<<om::bold<<on[i][j]
-                     <<om::reset<<"  "<<m_on[i][j]<<std::endl;
-    }
-  }
-  return Zvalue(ihel,ci,cj,on);
+  return Zvalue(ihel,ci,cj,m_on);
 }
 
 Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
@@ -1014,15 +989,17 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
     col = cit->second;
   }
   msg_Debugging()<<"3: #graphs: "<<graphs.size()<<std::endl;
+  double gsfac(p_aqcd?sqrt(p_aqcd->Factor()):1.);
+  double gwfac(p_aqed?sqrt(p_aqed->Factor()):1.);
   for (size_t i=0;i<graphs.size();i++) {
     double cplfac(1.0);
     const std::vector<int> &order(graphs[i]->GetOrder());
     msg_Debugging()<<i<<": O("<<order<<")";
     if (p_aqcd && order.size()>0 && order[0]) {
-      cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
+      cplfac *= intpow(gsfac,order[0]);
     }
     if (p_aqed && order.size()>1 && order[1]) {
-      cplfac *= pow(p_aqed->Factor(),order[1]/2.0);
+      cplfac *= intpow(gwfac,order[1]);
     }
     Mi[i] = cplfac*(graphs[i]->Zvalue(ihel));
     msg_Debugging()<<", cpl="<<cplfac<<", Mi="<<Mi[i]<<std::endl;
@@ -1051,14 +1028,16 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
   /* For all graphs: Calculate all the helicity formalisms amplitudes
      and transform them to desired polarisation states, if nessecary. */
   msg_Debugging()<<"4: #graphs: "<<graphs.size()<<std::endl;
+  double gsfac(p_aqcd?sqrt(p_aqcd->Factor()):1.);
+  double gwfac(p_aqed?sqrt(p_aqed->Factor()):1.);
   for (size_t col=0; col<graphs.size(); ++col) {
     double cplfac(1.0);
     const std::vector<int> &order(graphs[col]->GetOrder());
     if (p_aqcd && order.size()>0 && order[0]) {
-      cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
+      cplfac *= intpow(gsfac,order[0]);
     }
     if (p_aqed && order.size()>1 && order[1]) {
-      cplfac *= pow(p_aqed->Factor(),order[1]/2.0);
+      cplfac *= intpow(gwfac,order[1]);
     }
     for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel)
       A[col].push_back(cplfac*(graphs[col]->Zvalue(ihel)));
@@ -1089,6 +1068,8 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
   // This is called for the gauge test
   DEBUG_FUNC("");
   msg_Debugging()<<"5: #graphs: "<<graphs.size()<<std::endl;
+  double gsfac(p_aqcd?sqrt(p_aqcd->Factor()):1.);
+  double gwfac(p_aqed?sqrt(p_aqed->Factor()):1.);
   for (size_t i=0;i<graphs.size();i++) {
     double cplfac(1.0);
     const std::vector<int> &order(graphs[i]->GetOrder());
@@ -1096,15 +1077,15 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
 #ifdef DEBUG__BG
       msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<order[0]
 		     <<" = "<<pow(p_aqcd->Factor(),order[0]/2.0)<<"\n";
-#endif     
-      cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
+#endif
+      cplfac *= intpow(gsfac,order[0]);
     }
     if (p_aqed && order.size()>1 && order[1]) {
 #ifdef DEBUG__BG
       msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<order[1]
 		     <<" = "<<pow(p_aqed->Factor(),order[1]/2.0)<<"\n";
-#endif   
-      cplfac *= pow(p_aqed->Factor(),order[1]/2.0);
+#endif
+      cplfac *= intpow(gwfac,order[1]);
     }
     Mi[i] = cplfac*(graphs[i]->Zvalue(ihel,sign));
   }

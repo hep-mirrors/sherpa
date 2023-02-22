@@ -33,9 +33,7 @@ ATOOLS::AutoDelete_Vector<PS_Info> PS_Info::s_objects;
 
 PS_Info *PS_Info::New()
 {
-#ifndef USING__Threading
   if (s_objects.empty())
-#endif
     return new PS_Info();
   PS_Info *v(s_objects.back());
   s_objects.pop_back();
@@ -44,9 +42,7 @@ PS_Info *PS_Info::New()
 
 PS_Info *PS_Info::New(const PS_Info &s)
 {
-#ifndef USING__Threading
   if (s_objects.empty())
-#endif
     return new PS_Info(s);
   PS_Info *v(s_objects.back());
   s_objects.pop_back();
@@ -61,11 +57,7 @@ METOOLS::CObject *PS_Info::Copy() const
 
 void PS_Info::Delete()
 {
-#ifndef USING__Threading
   s_objects.push_back(this);
-#else
-  delete this;
-#endif
 }
 
 std::ostream &COMIX::operator<<(std::ostream &str,const PS_Info &s)

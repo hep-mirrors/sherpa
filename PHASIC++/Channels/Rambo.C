@@ -67,7 +67,7 @@ Rambo::~Rambo()
 
 
 
-void Rambo::GenerateWeight(Vec4D * p,Cut_Data * cuts)
+void Rambo::GenerateWeight(Vec4D * p,Cut_Data * cuts,bool)
 {
   Vec4D sump(0.,0.,0.,0.);
   for (short int i=0;i<m_nin;i++) sump += p[i];

@@ -4,7 +4,6 @@
 #include "DIM/Shower/Kernel.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "PDF/Main/Jet_Criterion.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
@@ -36,7 +35,7 @@ Weight_Value Gamma::Differential
 #endif
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
-  Process_Base::SortFlavours(ampl);
+  Process_Base::SortFlavours(ampl,1);
   std::string pname(Process_Base::GenerateName(ampl));
   StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname+add));
   if (pit==(*(*procs)[type]).end()) return Weight_Value();
@@ -44,7 +43,8 @@ Weight_Value Gamma::Differential
   bool kon(pit->second->KFactorSetter(true)->On());
   pit->second->KFactorSetter(true)->SetOn(false);
   meps.m_b = meps.m_me = static_cast<double>(
-      pit->second->Differential(*ampl, Variations_Mode::nominal_only, 1 | 2 | 4));
+      pit->second->Differential(*ampl, Variations_Mode::nominal_only, 1 | 2 | 4|256);
+  if (type&nlo_type::vsub) meps.m_b=meps.m_me=pit->second->LastB());
   pit->second->KFactorSetter(true)->SetOn(kon);
   meps.m_me*=pit->second->SymFac();
   meps.m_muf2=ampl->MuF2();
@@ -76,7 +76,7 @@ Weight_Map Gamma::CalculateWeight(Cluster_Amplitude *const ampl)
 		 <<cdip->LF()->Flav(0)<<" -> "<<cdip->LF()->Flav(1)
 		 <<" "<<cdip->LF()->Flav(2)<<" )\n";
 #endif
-  Weight_Value meps(Differential(bampl));
+  Weight_Value meps(Differential(bampl,nlo_type::vsub));
   if (meps.p_proc==NULL) return Weight_Map();
   meps.p_sf=cdip;
   meps.m_me/=cdip->LF()->AsymmetryFactor(s);

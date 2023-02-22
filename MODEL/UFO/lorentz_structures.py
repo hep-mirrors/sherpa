@@ -1,4 +1,4 @@
-from __future__ import division 
+from __future__ import division
 from ufo_interface.tensor import tensor, new, lorentz_key
 from sympy.parsing.sympy_parser import parse_expr
 from itertools import permutations
@@ -186,7 +186,7 @@ class Epsilon(tensor):
 # mutations of key assignments
 def is_ffv(tns):
     if not isinstance(tns, tensor): return False
-    keys = list(tns.key_dim_dict().keys())
+    keys = list(tns.key_dim_dict()))
     if len(keys)!=3: return False
     dims = list(tns.key_dim_dict().values())
     if not all([dim==4 for dim in dims]): return False

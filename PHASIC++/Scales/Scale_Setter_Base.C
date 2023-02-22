@@ -3,8 +3,6 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "PDF/Main/Cluster_Definitions_Base.H"
-#include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -24,8 +22,7 @@ Scale_Setter_Base::Scale_Setter_Base
   p_proc(args.p_proc),
   p_model(args.p_model), p_cpls(args.p_cpls), p_subs(NULL),
   m_scale(stp::size), m_coupling(args.m_coupling),
-  m_nin(args.m_nin), m_nout(args.m_nout),
-  m_l1(0), m_l2(0)
+  m_nin(args.m_nin), m_nout(args.m_nout)
 {
   Settings& s = Settings::GetMainSettings();
   s["CORE_SCALE"].SetDefault("Default");
@@ -33,17 +30,6 @@ Scale_Setter_Base::Scale_Setter_Base
   if (p_proc) {
     m_nin=p_proc->NIn();
     m_nout=p_proc->NOut();
-  }
-  size_t nl(0);
-  if (p_proc) {
-    for (size_t i(m_nin);i<p_proc->Flavours().size();++i) {
-      if (p_proc->Flavours()[i].IsLepton()) {
-        nl++;
-        if      (nl==1) m_l1=i;
-        else if (nl==2) m_l2=i;
-        else           {m_l1=m_l2=0; break;}
-      }
-    }
   }
   m_p.resize(m_nin+m_nout);
 }
@@ -139,19 +125,29 @@ double Scale_Setter_Base::HT() const
 
 double Scale_Setter_Base::HTMprime() const
 {
-  if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
-  double htmp((m_p[m_l1]+m_p[m_l2]).MPerp());
-  for (size_t i(m_nin);i<m_p.size();++i)
-    if (i!=m_l1 && i!=m_l2) htmp+=m_p[i].MPerp();
+  if (m_p.size()>p_proc->NIn()+p_proc->NOut())
+    THROW(fatal_error,"invalid number of momenta");
+  double htmp(0.0);
+  Vec4D pew(0.,0.,0.,0.);
+  for (size_t i(m_nin);i<m_p.size();++i) {
+    if (!p_proc->Flavours()[i].Strong()) pew+=m_p[i];
+    else htmp+=m_p[i].MPerp();
+  }
+  htmp+=pew.MPerp();
   return htmp;
 }
 
 double Scale_Setter_Base::HTprime() const
 {
-  if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
-  double htp((m_p[m_l1]+m_p[m_l2]).MPerp());
-  for (size_t i(m_nin);i<m_p.size();++i)
-    if (i!=m_l1 && i!=m_l2) htp+=m_p[i].PPerp();
+  if (m_p.size()>p_proc->NIn()+p_proc->NOut())
+    THROW(fatal_error,"invalid number of momenta");
+  double htp(0.0);
+  Vec4D pew(0.,0.,0.,0.);
+  for (size_t i(m_nin);i<m_p.size();++i) {
+    if (!p_proc->Flavours()[i].Strong()) pew+=m_p[i];
+    else htp+=m_p[i].PPerp();
+  }
+  htp+=pew.MPerp();
   return htp;
 }
 

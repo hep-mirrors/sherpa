@@ -3,7 +3,6 @@
 #include "MCATNLO/Main/CS_Gamma.H"
 #include "MCATNLO/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -165,8 +164,6 @@ bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl)
   msg_Debugging()<<"\nSinglet lists:\n\n";
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
-    (*sit)->SetJF(ampl->JF<PHASIC::Jet_Finder>());
-    (*sit)->SetShower(p_shower);
     (*sit)->SetAll(p_next);
     msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
@@ -187,7 +184,6 @@ Singlet *CS_MCatNLO::TranslateAmplitude
       muQ2=campl->KT2();
       break;
     }
-  PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
   singlet->SetProcs(ampl->Procs<void>());
@@ -231,7 +227,7 @@ Singlet *CS_MCatNLO::TranslateAmplitude
       }
     }
     parton->SetStart(muQ2);
-    double ktveto2(jf?sqr(jf->Qcut()):parton->KtStart());
+    double ktveto2(parton->KtStart());
     double ktmax2(ampl->Legs().size()-ampl->NIn()+1==
 		  ampl->Leg(0)->NMax()?parton->KtStart():0.0);
     parton->SetKtMax(ktmax2);
@@ -276,7 +272,7 @@ GetRealEmissionAmplitude(const int mode)
   }
   ampl->SetKT2(p_mcatnlo->GetLast()[3]->KtTest());
   ampl->SetNewCol(p_mcatnlo->GetLast()[3]->Color().m_new);
-  Process_Base::SortFlavours(ampl);
+  Process_Base::SortFlavours(ampl,1);
   return ampl;
 }
 

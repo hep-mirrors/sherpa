@@ -685,7 +685,7 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
     // loop ME already contains I and is returning full Re(M_B M_V^*)+I
     res = cplfac*p_loopme->ME_Finite();
   }
-  else THROW(not_implemented,"Unknown mode");
+  else { THROW(not_implemented,"Unknown mode"); }
   return res;
 }
 
@@ -780,7 +780,7 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
 
 
       double lsc(0.);
-      if (!p_loopme || !(p_loopme->fixedIRscale())) 
+      if (!p_loopme || !(p_loopme->fixedIRscale()))
         lsc = log(4.*M_PI*mur2/dabs(sik)/Eps_Scheme_Factor(mom));
       else{
         double irscale=p_loopme->IRscale();
@@ -1131,12 +1131,6 @@ void Single_Virtual_Correction::SetGenerator(ME_Generator_Base *const gen)
 { 
   if (p_LO_process) p_LO_process->SetGenerator(gen);
   p_gen=gen;
-}
-
-void Single_Virtual_Correction::SetShower(PDF::Shower_Base *const ps)
-{
-  p_LO_process->SetShower(ps);
-  p_shower=ps;
 }
 
 void Single_Virtual_Correction::SetNLOMC(PDF::NLOMC_Base *const mc)

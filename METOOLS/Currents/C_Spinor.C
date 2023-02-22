@@ -326,9 +326,7 @@ CSpinor<Scalar>::s_objects;
 template <class Scalar>
 CSpinor<Scalar> *CSpinor<Scalar>::New()
 {
-#ifndef USING__Threading
   if (s_objects.empty())
-#endif
     return new CSpinor();
   CSpinor *v(s_objects.back());
   s_objects.pop_back();
@@ -338,9 +336,7 @@ CSpinor<Scalar> *CSpinor<Scalar>::New()
 template <class Scalar>
 CSpinor<Scalar> *CSpinor<Scalar>::New(const CSpinor &s)
 {
-#ifndef USING__Threading
   if (s_objects.empty())
-#endif
     return new CSpinor(s);
   CSpinor *v(s_objects.back());
   s_objects.pop_back();
@@ -353,9 +349,7 @@ CSpinor<Scalar> *CSpinor<Scalar>::New
 (const int r,const int b,const int cr,const int ca,
  const size_t &h,const size_t &s,const int on)
 {
-#ifndef USING__Threading
   if (s_objects.empty())
-#endif
     return new CSpinor(r,b,cr,ca,h,s,on);
   CSpinor *v(s_objects.back());
   s_objects.pop_back();
@@ -379,11 +373,7 @@ CObject *CSpinor<Scalar>::Copy() const
 template <class Scalar>
 void CSpinor<Scalar>::Delete()
 {
-#ifndef USING__Threading
   s_objects.push_back(this);
-#else
-  delete this;
-#endif
 }
 
 namespace METOOLS {

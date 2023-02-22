@@ -130,7 +130,6 @@ namespace AMEGIC {
 
     void SetChargeFactors();
     void SetSelector(const PHASIC::Selector_Key &key);
-    void SetShower(PDF::Shower_Base *const ps);
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 
     void SetRealSubevt(ATOOLS::NLO_subevt *real) { m_subevt.p_real=real; }

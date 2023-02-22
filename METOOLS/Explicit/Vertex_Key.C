@@ -30,9 +30,7 @@ Vertex_Key *Vertex_Key::New
  Vertex *const v,Color_Calculator *const cc,
  Lorentz_Calculator *const lc)
 {
-#ifndef USING__Threading
   if (s_objects.empty())
-#endif
     return new Vertex_Key(j,c,model,mv,p,v,cc,lc);
   Vertex_Key *k(s_objects.back());
   s_objects.pop_back();
@@ -53,11 +51,7 @@ Vertex_Key *Vertex_Key::New
 
 void Vertex_Key::Delete()
 {
-#ifdef USING__Threading
   s_objects.push_back(this);
-#else
-  delete this;
-#endif
 }
 
 std::string Vertex_Key::Type() const

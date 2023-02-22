@@ -16,7 +16,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Color.H"
 #include "ATOOLS/Math/Permutation.H"
@@ -34,7 +33,7 @@ Process_Base::Process_Base():
   p_parent(NULL), p_selected(this), p_mapproc(NULL),
   p_sproc(NULL), p_caller(this),
   p_int(new Process_Integrator(this)), p_selector(NULL),
-  p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_nlomc(NULL), p_mc(NULL),
+  p_cuts(NULL), p_gen(NULL), p_nlomc(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
   m_mcmode(0), m_cmode(0),
@@ -179,6 +178,11 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
       s[stp::size+stp::res]=ampl.KT2();
     SetFixedScale(s);
   }
+  double dsw(0.0);
+  if (mode&256) {
+    dsw=this->Get<Single_Process>()->DSWeight();
+    this->Get<Single_Process>()->SetDSWeight(0.0);
+  }
   if (mode&4) SetUseBIWeight(false);
   if (mode&128) while (!this->GeneratePoint()); 
   else {
@@ -198,6 +202,7 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
     wgtmap*=psh->Weight(p);
   }
   if (mode&4) SetUseBIWeight(true);
+  if (mode&256) this->Get<Single_Process>()->SetDSWeight(dsw);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
   return wgtmap;
@@ -241,23 +246,14 @@ void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
 void Process_Base::SortFlavours(Process_Info &pi,const int mode)
 {
   FMMap fmm;
-  for (size_t i(0);i<pi.m_ii.m_ps.size();++i) {
-    const Flavour *hfl=&pi.m_ii.m_ps[i].m_fl;
-    if (fmm.find(int(hfl->Kfcode()))==fmm.end())
-      fmm[int(hfl->Kfcode())]=0;
-    if (hfl->IsFermion()) {
-      fmm[int(hfl->Kfcode())]+=10;
-      if (!hfl->IsAnti()) fmm[int(hfl->Kfcode())]+=10;
-    }
-  }
   for (size_t i(0);i<pi.m_fi.m_ps.size();++i) {
     const Flavour *hfl=&pi.m_fi.m_ps[i].m_fl;
     if (fmm.find(int(hfl->Kfcode()))==fmm.end())
       fmm[int(hfl->Kfcode())]=0;
     if (hfl->IsFermion()) fmm[int(hfl->Kfcode())]++;
   }
-  if (mode&1) SortFlavours(pi.m_ii,s_usefmm?&fmm:NULL);
-  SortFlavours(pi.m_fi,s_usefmm?&fmm:NULL);
+  if ((mode&1) && (pi.m_sort&1)) SortFlavours(pi.m_ii,NULL);
+  if (pi.m_sort&2) SortFlavours(pi.m_fi,s_usefmm?&fmm:NULL);
 }
 
 bool Process_Base::InitScale()
@@ -413,12 +409,6 @@ void Process_Base::SortFlavours
     if (i<ampl->NIn()) {
       ampl->Leg(i)->SetFlav(ampl->Leg(i)->Flav().Bar());
       il.push_back(ampl->Leg(i));
-      int kfc(ampl->Leg(i)->Flav().Kfcode());
-      if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
-      if (ampl->Leg(i)->Flav().IsFermion()) {
-	fmm[kfc]+=10;
-	if (!ampl->Leg(i)->Flav().IsAnti()) fmm[kfc]+=10;
-      }
     }
     else {
       if (dec[i]) continue;
@@ -427,7 +417,7 @@ void Process_Base::SortFlavours
       if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
       if (ampl->Leg(i)->Flav().IsFermion()) ++fmm[kfc];
     }
-  if (mode&1) SortFlavours(il,s_usefmm?&fmm:NULL);
+  if (mode&1) SortFlavours(il,NULL);
   for (size_t i(0);i<cs.size();++i) {
     ampl->CreateLeg(Vec4D(),cs[i]->m_fl,ColorID(),cs[i]->m_id);
     fl.push_back(ampl->Legs().back());
@@ -501,11 +491,6 @@ std::string Process_Base::GenerateName(const NLO_subevt *sub,const size_t &nin)
 void Process_Base::SetGenerator(ME_Generator_Base *const gen) 
 { 
   p_gen=gen; 
-}
-
-void Process_Base::SetShower(PDF::Shower_Base *const ps)
-{
-  p_shower=ps; 
 }
 
 void Process_Base::SetNLOMC(PDF::NLOMC_Base *const mc)
@@ -761,7 +746,7 @@ std::string Process_Base::ShellName(std::string name) const
 
 void Process_Base::ConstructColorMatrix()
 {
-  DEBUG_FUNC(m_name);
+  DEBUG_VAR(m_name);
   if (IsMapped()) return;
   std::string file(rpa->gen.Variable("SHERPA_CPP_PATH")
 		   +"/Process/Sherpa/"+m_name+".col");
@@ -837,21 +822,23 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
     iqbs.push_back(sids.back());
   }
   int unique(iqbs.size()==1?1:0);
-  if (unique) {
-    for (std::vector<int>::iterator
-	   sidit(sids.begin());sidit!=sids.end();++sidit)
-      if (*sidit==iqbs.front()) sidit=--sids.erase(sidit);
-    sids.push_back(iqbs.front());
-  }
   std::vector<int> idr(sids.size()+1), idc(sids.size()+1);
   idc.front()=idr.front()=iq;
-  if (unique) idc.back()=idr.back()=iqbs.front();
-  Permutation perms(sids.size()-unique);
+  if (unique) {
+    idc.back()=idr.back()=iqbs.front();
+    for (std::vector<int>::iterator
+	   it(sids.begin());it!=sids.end();++it)
+      if (*it==iqbs.front()) {
+	sids.erase(it);
+	break;
+      }
+  }
+  Permutation perms(sids.size());
   std::vector<int> act(perms.MaxNumber(),0);
   std::map<int,std::map<int,double> > cij2;
   for (size_t i(0);i<perms.MaxNumber();++i) {
     int *cur(perms.Get(i));
-    for (size_t k(0);k<sids.size()-unique;++k)
+    for (size_t k(0);k<sids.size();++k)
       idr[k+1]=sids[cur[k]];
     int valid(false);
     for (size_t l(0);l<iqbs.size();++l)
@@ -859,7 +846,7 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
     if (!valid) continue;
     for (size_t j(i);j<perms.MaxNumber();++j) {
       int *cur(perms.Get(j));
-      for (size_t k(0);k<sids.size()-unique;++k)
+      for (size_t k(0);k<sids.size();++k)
 	idc[k+1]=sids[cur[k]];
       int valid(false), lqr(0), lqc(0);
       for (size_t l(0);l<iqbs.size();++l)
@@ -938,7 +925,7 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
   for (size_t i(0);i<act.size();++i)
     if (act[i]) {
       int *cur(perms.Get(i));
-      for (size_t k(0);k<sids.size()-unique;++k)
+      for (size_t k(0);k<sids.size();++k)
 	idc[k+1]=sids[cur[k]];
       cij.m_perms[act[i]-1]=idc;
       for (size_t j(i);j<act.size();++j)
@@ -955,4 +942,18 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
     msg_Debugging()<<"\n";
   }
   return cij;
+}
+
+std::map<std::pair<int,int>,std::vector<int> >
+Process_Base::CombinableInfo()
+{
+  THROW(not_implemented, "To be implemented by child classes");
+  return std::map<std::pair<int,int>,std::vector<int> >();
+}
+
+template Process_Base* &Blob_Data_Base::Get<Process_Base*>();
+
+namespace ATOOLS {
+  template <> Blob_Data<Process_Base*>::~Blob_Data() {}
+  template class Blob_Data<Process_Base*>;
 }

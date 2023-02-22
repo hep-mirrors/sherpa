@@ -4,6 +4,7 @@
 #include "PHASIC++/Main/Channel_Creator.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PHASIC++/Channels/RS_Multi_Channel.H"
 #include "PHASIC++/Channels/FSR_Channels.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Process/Process_Info.H"
@@ -42,6 +43,11 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
   p_process->SetPSHandler(this);
 
   p_lab.resize(m_nvec);
+  if (proc->Process()->Info().Has(nlo_type::rsub) &&
+      reader.Get<int>("PSH_USE_EEG",0)==1) {
+    RS_Multi_Channel *rsmc(new RS_Multi_Channel(proc->Process(),this));
+    p_fsrchannels = rsmc;
+  }
 }
 
 Phase_Space_Handler::~Phase_Space_Handler() { delete p_integrator; }
@@ -63,7 +69,7 @@ bool Phase_Space_Handler::CreateIntegrators() {
 double Phase_Space_Handler::Integrate() 
 {
   CheckSinglePoint();
-  if (p_process->Points()>0)
+  if (p_process->N()>0)
     return p_process->TotalXS()*rpa->Picobarn();
   p_integrator = new Phase_Space_Integrator(this);
   if (m_nin==1) return p_integrator->CalculateDecay(m_error);
@@ -203,7 +209,7 @@ void Phase_Space_Handler::AddPoint(const double _value)
   }
 }
 
-void Phase_Space_Handler::WriteOut(const std::string &pID) 
+void Phase_Space_Handler::WriteOut(const std::string &pID)
 {
   m_pspoint.WriteOut(pID);
   m_psenhance.WriteOut(pID);
@@ -213,7 +219,7 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
   writer.MatrixToFile(m_stats);
 }
 
-bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
+bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
 {
   msg_Info()<<"Read in channels from directory: "<<pID<<std::endl;
   if (m_pspoint.ReadIn(pID,exclude)) {
@@ -246,7 +252,7 @@ void Phase_Space_Handler::RegisterDefaults() const
   settings["ENHANCE_XS"].SetDefault(0);
 }
 
-void Phase_Space_Handler::InitParameters(const double & error) { 
+void Phase_Space_Handler::InitParameters(const double & error) {
   Settings& s    = Settings::GetMainSettings();
   m_thkill       = s["IB_THRESHOLD_KILL"].Get<double>();
   m_error        = s["INTEGRATION_ERROR"].Get<double>();
@@ -255,7 +261,7 @@ void Phase_Space_Handler::InitParameters(const double & error) {
   m_printpspoint = s["PRINT_PS_POINTS"].Get<bool>();
   if (error>0.) { m_error = error; }
 }
-  
+
 void Phase_Space_Handler::CheckSinglePoint()
 {
   Settings& s = Settings::GetMainSettings();

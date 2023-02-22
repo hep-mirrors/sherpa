@@ -9,7 +9,6 @@
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PHASIC++/Channels/CS_Dipole.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
@@ -1154,18 +1153,18 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
-  double var(p_int->TotalVar());
+  double var(p_int->TotalError());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
             <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;
   double totalxs(psh->Integrate()/rpa->Picobarn());
-  if (!IsEqual(totalxs,p_int->TotalResult())) {
+  if (!IsEqual(totalxs,p_int->TotalXS())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"
 	       <<"  '"<<m_name<<"': "<<totalxs
-	       <<" vs. "<<p_int->TotalResult()<<std::endl;
+	       <<" vs. "<<p_int->TotalXS()<<std::endl;
   }
-  if (p_int->Points()) {
+  if (p_int->N()) {
     p_int->SetTotal();
-    if (var==p_int->TotalVar()) {
+    if (var==p_int->TotalError()) {
       exh->RemoveTerminatorObject(p_int);
       return 1;
     }

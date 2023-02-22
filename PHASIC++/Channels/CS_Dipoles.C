@@ -90,7 +90,7 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
   pp[m_kt]=ff.m_pk;
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_bmcw) {
-    p_fsmc->GenerateWeight(&pp.front(),cuts);
+    p_fsmc->GenerateWeight(&pp.front(),cuts,true);
     if (p_ismc) {
       m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
       m_isrykey[2]=(pp[0]+pp[1]).Y();
@@ -230,7 +230,7 @@ double FI_Dipole::GenerateWeight
     return 0.0;
   }
   if (m_bmcw) {
-    p_fsmc->GenerateWeight(&pp.front(),cuts);
+    p_fsmc->GenerateWeight(&pp.front(),cuts,true);
     m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
     m_isrykey[2]=(pp[0]+pp[1]).Y();
     p_ismc->GenerateWeight(m_isrmode);
@@ -341,7 +341,7 @@ double IF_Dipole::GenerateWeight
     return 0.0;
   }
   if (m_bmcw) {
-    p_fsmc->GenerateWeight(&pp.front(),cuts);
+    p_fsmc->GenerateWeight(&pp.front(),cuts,true);
     m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
     m_isrykey[2]=(pp[0]+pp[1]).Y();
     p_ismc->GenerateWeight(m_isrmode);
@@ -432,7 +432,7 @@ double II_Dipole::GenerateWeight
     return 0.0;
   }
   if (m_bmcw) {
-    p_fsmc->GenerateWeight(&pp.front(),cuts);
+    p_fsmc->GenerateWeight(&pp.front(),cuts,true);
     m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
     m_isrykey[2]=(pp[0]+pp[1]).Y();
     p_ismc->GenerateWeight(m_isrmode);

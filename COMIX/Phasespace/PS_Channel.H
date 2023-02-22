@@ -28,6 +28,8 @@ namespace COMIX {
   typedef std::map<ATOOLS::NLO_subevt*,CVegas_Map>  SCVegas_Map;
   typedef std::map<ATOOLS::NLO_subevt*,ICVegas_Map> SICVegas_Map;
 
+  typedef std::map<size_t,size_t> PSId_Map;
+
   typedef std::map<size_t,std::vector<int> > CId_Map;
 
   typedef std::map<size_t,const METOOLS::Current*> STCC_Map;
@@ -42,7 +44,7 @@ namespace COMIX {
     Process_Base   *p_xs;
     Current_Matrix *p_cur;
 
-    Vertex_Vector  m_vtc;
+    Vertex_Vector  m_vtc, m_vtcs, m_v;
     Vegas_Map      m_vmap;
 
     SCVegas_Map  m_pcmap;
@@ -55,12 +57,12 @@ namespace COMIX {
     ATOOLS::Vec4D_Vector m_p;
     std::vector<double> m_s;
 
-    Double_Matrix m_rns;
-    Vegas_Vector  m_vgs;
+    Double_Vector m_rns, m_wrns, m_psum;
+    Vegas_Vector  m_vgs, m_wvgs;
 
     size_t m_n, m_nr, m_num, m_lid, m_rid;
     double m_texp, m_stexp, m_sexp, m_thexp, m_mfac;
-    double m_aexp, m_srbase, m_speak;
+    double m_aexp, m_srbase, m_speak, m_gweight;
 
     int m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
     int m_nvints, m_vsopt, m_nopt;
@@ -68,7 +70,7 @@ namespace COMIX {
     std::shared_ptr<PS_Generator> p_gen;
 
     CId_Map  *p_cid;
-    
+
     const std::vector<int> &GetCId(const size_t &id);
 
     inline size_t CIdCount(const size_t &id) { return GetCId(id).size(); }
@@ -123,13 +125,15 @@ namespace COMIX {
     bool GeneratePoint(const size_t &id,size_t &nr,Vertex_Vector &v);
     bool GeneratePoint(Vertex_Vector v);
 
-    bool GenerateChannel(Current *const cur,Vertex_Vector &v);
+    bool GenerateChannel(Current *const cur,Vertex_Vector &v,
+			 Double_Vector &psum,
+			 Vertex_Vector &vtcs);
     bool GenerateChannel(Vertex_Vector &v);
     bool GenerateChannels();
 
     bool Zero(METOOLS::Vertex *const vtx) const;
 
-    PHASIC::Vegas *GetVegas(const std::string &tag,int nd=1);
+    PHASIC::Vegas *GetVegas(const std::string &tag);
 
     PHASIC::Vegas *GetPVegas(const PS_Current *cur,const size_t &id);
     PHASIC::Vegas *GetSVegas(const PS_Vertex *v);
@@ -147,7 +151,7 @@ namespace COMIX {
 
     // member functions
     void GeneratePoint(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts,double *rn);
-    void GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts);
+    void GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts,bool);
 
     void ISRInfo(int &type,double &m,double &w);
     void ISRInfo(std::vector<int> &ts,

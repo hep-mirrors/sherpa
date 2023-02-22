@@ -12,10 +12,6 @@
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-#ifdef USING__Threading 
-#include <pthread.h> 
-#endif 
-
 namespace PHASIC {
   class Color_Integrator;
   class Helicity_Integrator;
@@ -55,21 +51,6 @@ namespace COMIX {
   typedef std::map<size_t,ATOOLS::Flavour_Vector> CFlavVector_Map;
 
   typedef std::map<size_t,size_t> SizeT_Map;
-
-#ifdef USING__Threading
-  class Amplitude;
-
-  struct CDBG_ME_TID {
-    pthread_t m_id;
-    Amplitude *p_ampl;
-    size_t m_s, m_n, m_b, m_e, m_i;
-    pthread_mutex_t m_s_mtx, m_t_mtx;
-    pthread_cond_t m_s_cnd, m_t_cnd;
-    CDBG_ME_TID(): p_ampl(NULL), m_s(2), m_b(0), m_e(0) {}
-  };// end of struct CDBG_ME_TID
-
-  typedef std::vector<CDBG_ME_TID*> CDBG_ME_TID_Vector; 
-#endif
  
   class Amplitude {
   public:
@@ -77,6 +58,8 @@ namespace COMIX {
     typedef std::complex<double> DComplex;
 
     typedef std::vector<DComplex> DComplex_Vector;
+
+    typedef std::map<int, std::vector<DComplex_Vector>> LeptonCurrents;
 
   private:
 
@@ -129,11 +112,10 @@ namespace COMIX {
 
     ATOOLS::NLO_subevt *p_sub;
 
-    size_t BornID(const size_t &id,const NLO_subevt *sub) const;
+    LeptonCurrents m_lmu;
+    bool m_calc_lmu{false};
 
-#ifdef USING__Threading 
-    CDBG_ME_TID_Vector *p_cts;
-#endif 
+    size_t BornID(const size_t &id,const NLO_subevt *sub) const;
 
     void CleanUp();
     void Prune();
@@ -241,10 +223,6 @@ namespace COMIX {
 
     void SetCTS(void *const cts);
 
-#ifdef USING__Threading 
-    static void *TCalcJL(void *arg);
-#endif 
-
     // inline functions
     inline void SetColorIntegrator(PHASIC::Color_Integrator *const cint)
     { p_colint=cint; }
@@ -288,6 +266,9 @@ namespace COMIX {
     { return m_dsij; }
 
     inline double Born() const { return m_born; }
+
+    inline const LeptonCurrents &
+    LeptonicCurrent() const { return m_lmu; }
 
   };// end of class Amplitude
 

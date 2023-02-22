@@ -39,7 +39,8 @@ namespace PHASIC {
 
     void AddPoint(double value);
 
-    void GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts);
+    void GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts,
+			bool compute=false);
     void GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts);
     
     void GenerateEmissionPoint

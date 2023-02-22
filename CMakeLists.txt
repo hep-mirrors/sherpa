@@ -62,14 +62,14 @@ option(SHERPA_ENABLE_PYTHON                  "Enables building of Python interfa
 option(SHERPA_ENABLE_RECOLA                  "Enables building with Recola." OFF)
 option(SHERPA_ENABLE_RIVET                   "Enables building with Rivet." OFF)
 option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." OFF)
-option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)
+option(SHERPA_ENABLE_HDF5                    "Enables building with HDF5." OFF)
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CLANG_TIDY DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
 INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF 
- LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
+ LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT HDF5 TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -914,8 +914,8 @@ $<IF:$<BOOL:${UNIX_SYS}>,#define ARCH_UNIX 1,/* #undef ARCH_UNIX */>\n\n\
 /* #undef FC_DUMMY_MAIN_EQ_F77 */\n\n\
 /* MPI support */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MPI}>,#define USING__MPI \"1\",/* #undef USING__MPI */>\n\n\
-/* Thread support */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_THREADING}>,#define USING__Threading \"1\",/* #undef USING__Threading */>\n\n\
+/* HDF5 support */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_HDF5}>,#define USING__HDF5 \"1\",/* #undef USING__HDF5 */>\n\n\
 /* ld path name */\n\
 #define LD_PATH_NAME \"${LD_LIBRARY_PATH}\"\n\n\
 /* library suffix */\n\

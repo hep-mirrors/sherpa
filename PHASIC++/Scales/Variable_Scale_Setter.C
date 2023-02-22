@@ -1,7 +1,6 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 
 #include "PHASIC++/Scales/Tag_Setter.H"
-#include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
@@ -15,8 +14,6 @@ namespace PHASIC {
 
   class Variable_Scale_Setter: public Scale_Setter_Base {
   protected:
-
-    Core_Scale_Setter *p_core;
 
     std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
 
@@ -63,14 +60,13 @@ Variable_Scale_Setter::Variable_Scale_Setter
   Scale_Setter_Base(args), m_tagset(this)
 {
   Settings& s = Settings::GetMainSettings();
-  std::string tag(args.m_scale), core;
+  std::string tag(args.m_scale);
   size_t pos(tag.find("VAR["));
   if (pos!=std::string::npos) {
     tag=tag.substr(pos+4);
     pos=tag.find(']');
     if (pos==std::string::npos) 
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
-    core=tag.substr(0,pos);
     tag=tag.substr(pos+1);
   }
   if (core == "") {
@@ -103,7 +99,6 @@ Variable_Scale_Setter::Variable_Scale_Setter
 Variable_Scale_Setter::~Variable_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
-  delete p_core;
 }
 
 double Variable_Scale_Setter::Calculate

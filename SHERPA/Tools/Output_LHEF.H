@@ -8,6 +8,8 @@
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
 
+namespace ATOOLS { class Cluster_Amplitude; }
+
 namespace SHERPA {
 
   class Output_LHEF : public Output_Base {
@@ -18,7 +20,9 @@ namespace SHERPA {
 #else
     std::ofstream     m_outstream;
 #endif    
-    int m_bntp;
+    int m_bntp, m_setcol;
+    bool SetSumSqrColors(ATOOLS::Cluster_Amplitude *const ampl);
+    void SetColors(ATOOLS::Blob_List* blobs);
   public:
     Output_LHEF(const Output_Arguments &args);
     ~Output_LHEF();

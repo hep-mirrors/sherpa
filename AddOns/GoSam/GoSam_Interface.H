@@ -44,9 +44,6 @@ namespace GoSam {
                                             bool add)
     { return NULL; }
     bool NewLibraries() { return s_newlibs; }
-    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {}
-    ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const size_t &mode) { return NULL; }
 
     int  PerformTests();
     void PrepareTerminate();

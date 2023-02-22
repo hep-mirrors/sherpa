@@ -67,7 +67,7 @@ namespace ATOOLS {
 
   };// end of struct bm
 
-  struct tm {
+  struct cm {
 
     enum code {
       none   = 0,
@@ -75,14 +75,14 @@ namespace ATOOLS {
       curoff = 2
     };
 
-  };// end of struct tm
+  };// end of struct cm
 
   std::ostream &operator<<(std::ostream &str,const bm::code modifier); 
   std::ostream &operator<<(std::ostream &str,const om::code modifier);
 
   std::ostream &operator<<(std::ostream &str,const mm modifier); 
 
-  std::ostream &operator<<(std::ostream &str,const tm::code modifier); 
+  std::ostream &operator<<(std::ostream &str,const cm::code modifier); 
 
   class Indentation;
 

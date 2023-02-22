@@ -40,6 +40,8 @@ namespace PHASIC {
 
     void ConstructColorMatrix() override;
 
+    std::map<std::pair<int,int>,std::vector<int> > CombinableInfo();
+
     void DeSelect();
     bool SelectOne(const int mode);
 

@@ -328,14 +328,6 @@ namespace EXTAMP {
   }
 
 
-  void RS_Process::SetShower(PDF::Shower_Base *const ps)
-  {
-    PHASIC::Process_Base::SetShower(ps);
-    for(Dipole_Wrappers::const_iterator it=m_dipole_wrappers.begin();
-	it!=m_dipole_wrappers.end(); ++it) (*it)->SetShower(ps);
-  }
-
-
   void RS_Process::SetGenerator(PHASIC::ME_Generator_Base *const gen)
   {
     PHASIC::Process_Base::SetGenerator(gen);

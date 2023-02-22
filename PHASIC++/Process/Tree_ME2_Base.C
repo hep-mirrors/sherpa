@@ -115,6 +115,8 @@ Tree_ME2_Base *Tree_ME2_Base::GetME2(const std::string& tag,
 
 Tree_ME2_Base* Tree_ME2_Base::GetME2(const PHASIC::Process_Info& pi)
  {
+   int sum(0);
+   for (size_t i(0);i<pi.m_borncpl.size();++i) sum+=pi.m_borncpl[i];
    External_ME_Args args(pi.m_ii.GetExternal(),
 			 pi.m_fi.GetExternal(),
 			 pi.m_maxcpl,pi.m_loopgenerator.length()?

@@ -69,14 +69,14 @@ namespace PHASIC {
     std::vector<size_t> m_specs;
 
     Idx_Matrix m_orders;
-    Idx_Vector m_lastids, m_lastperm, m_nexti;
+    Idx_Vector m_lastids, m_lastperm, m_nexti, m_iids, m_jids;
 
     Double_Vector m_weights, m_cweights, m_alpha;
 
     size_t m_pairs, m_lastconf, m_alphamode, m_csmode, m_omode;
     bool   m_check, m_on, m_otfcc, m_fincc, m_valid, m_nogen, m_won;
 
-    double m_weight, m_n, m_nv, m_max, m_over, m_cmax, m_mean, m_cweight;
+    double m_weight, m_n, m_nv, m_max, m_over, m_cmax, m_mean, m_cweight, m_wfac;
     double m_sn, m_msn;
 
     double Factorial(const double &n) const;

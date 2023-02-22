@@ -1,7 +1,6 @@
 #include "PHASIC++/Process/MCatNLO_Process.H"
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -11,8 +10,6 @@
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PDF/Main/NLOMC_Base.H"
-#include "PDF/Main/Shower_Base.H"
-#include "PDF/Main/Jet_Criterion.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -80,6 +77,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
     THROW(fatal_error, "R/S can't be initialised separately.");
   Process_Info spi(pi);
   ++spi.m_fi.m_nmax;
+  spi.m_megenerator=m_brgen;
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
   p_bproc=InitProcess(spi,nlo_type::lo,false);
   if (p_bproc==NULL) return;
@@ -117,6 +115,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   m_kfacmode = s["KFACTOR_MODE"].Get<int>();
   m_fomode   = s["FOMODE"].Get<int>();
   m_rsscale  = s["RS_SCALE"].Get<std::string>();
+  m_brgen    = reader.Get<std::string>("MC@NLO_BR_GENERATOR", "Comix", "BR generator", METHOD);
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
@@ -407,12 +406,6 @@ Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
     gen->SetMassMode(mm);
     return NULL;
   }
-  if (stat==1) {
-    stat=p_shower->GetClusterDefinitions()->ReCluster(ampl);
-    if (stat!=1) {
-      msg_Debugging()<<METHOD<<"(): Reclustering failed."<<std::endl;
-    }
-  }
   gen->SetMassMode(mm);
   return ampl;
 }
@@ -540,28 +533,14 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     size_t iid(1<<ids.front()), jid(1<<ids.back()), kid(lij->K());
     ids.push_back(ID(lij->K()).front());
     if (ids.size()!=3) THROW(fatal_error,"Internal error");
-    Cluster_Amplitude *campl(ampl->Copy());
-    campl->IdSort();
-    Cluster_Definitions_Base *clus(p_shower->GetClusterDefinitions());
-    Cluster_Param kt2=clus->Cluster
-      (Cluster_Config(campl,ids[0],ids[1],ids[2],lij->Flav(),
-		      p_bviproc->Generator(),NULL,1));
-    if (kt2.m_kt2<=0.0) {
-      kt2=clus->Cluster
-	(Cluster_Config(campl,ids[1],ids[0],ids[2],lij->Flav(),
-			p_bviproc->Generator(),NULL,1));
-    }
-    campl->Delete();
-    ampl->SetKT2(kt2.m_kt2);
-    ampl->SetMu2(kt2.m_kt2);
+    // ampl->SetKT2(kt2);
+    // ampl->SetMu2(kt2);
     p_ampl=ampl;
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());
     ampl->SetOrderQCD(next->OrderQCD()+1);
     ampl->Next()->SetNLO(4);
     ampl->SetJF(ampl->Next()->JF<void>());
-    ampl->Next()->SetCA(clus);
-    next->SetKin(kt2.m_kin);
     while (ampl->Next()) {
       ampl=ampl->Next();
       if (!(ampl->Leg(0)->Id()&p_ampl->Leg(0)->Id()))
@@ -692,10 +671,8 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   psh=p_rsproc->Integrator()->PSHandler();
   if (psh->AbsError()==0.0)
     psh->SetAbsError(psh->Error()*rpa->Picobarn()*
-		     dabs(p_bviproc->Integrator()->TotalResult()));
-#ifndef USING__Threading
+		     dabs(p_bviproc->Integrator()->TotalXS()));
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
-#endif
   for (size_t i(0);i<p_bviproc->Size();++i)
     (*p_bproc)[i]->Integrator()->SetMax
       ((*p_bviproc)[i]->Integrator()->Max());
@@ -788,16 +765,6 @@ void MCatNLO_Process::SetSelector(const Selector_Key &key)
   p_rsproc->SetSelector(key);
   p_rproc->SetSelector(key);
   p_bproc->SetSelector(key);
-}
-
-void MCatNLO_Process::SetShower(PDF::Shower_Base *const ps)
-{
-  p_shower=ps;
-  p_bviproc->SetShower(ps);
-  p_ddproc->SetShower(ps);
-  p_rsproc->SetShower(ps);
-  p_rproc->SetShower(ps);
-  p_bproc->SetShower(ps);
 }
 
 void MCatNLO_Process::SetNLOMC(PDF::NLOMC_Base *const mc)

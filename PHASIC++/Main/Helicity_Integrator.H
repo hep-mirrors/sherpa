@@ -31,7 +31,7 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector m_flavs;
 
-    size_t m_valid, m_id, m_iter;
+    size_t m_valid, m_id, m_iter, m_nin;
     double m_weight;
     bool   m_new, m_on;
 
@@ -47,13 +47,14 @@ namespace PHASIC {
     ~Helicity_Integrator();
 
     // member functions
-    bool Construct(const ATOOLS::Flavour_Vector &flavs);
+    bool Construct(const ATOOLS::Flavour_Vector &flavs,const int nin);
 
     bool   GeneratePoint();
     double Weight();
     
     void AddPoint(const double &weight);
 
+    void MPISync();
     void Optimize();
     void WriteOut(const std::string &pid);
     void ReadIn(const std::string &pid);

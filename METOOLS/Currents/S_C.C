@@ -33,6 +33,7 @@ namespace METOOLS {
     void SContract
     (const Current &c,const Int_Vector &pols,
      SComplex_Vector &ress,const size_t &offset) const;
+    std::vector<std::vector<Complex> > SGetCurrent() const;
 
     std::string Format(const CObject *c) const;
 
@@ -150,6 +151,35 @@ template <typename SType> void CS<SType>::SContract
 #ifdef DEBUG__BG
   msg_Debugging()<<"}\n";
 #endif
+}
+
+template <typename SType> std::vector<std::vector<Complex> >
+CS<SType>::SGetCurrent() const
+{
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Indent();
+#endif
+  size_t n(0);
+  std::vector<std::vector<Complex> > cur
+    (m_j.size(),std::vector<Complex>(4,Complex(0.,0.)));
+  for (typename CObject_Matrix::const_iterator
+	 ajit1(m_j.begin());ajit1!=m_j.end();++ajit1,++n) {
+    const CScalarType_Vector *j(ajit1->Get<CScalarType>());
+    for (typename CScalarType_Vector::const_iterator
+	   jit1(j->begin());jit1!=j->end();++jit1) {
+#ifdef DEBUG__BG
+      msg_Debugging()<<"Add ["<<m_hm[n]<<"]"
+		     <<m_h(m_hm[n])<<": "<<**jit1<<"\n";
+#endif
+      for (size_t i(0);i<cur[n].size();++i)
+	cur[n][i]+=SComplex((**jit1)[i]);
+    }
+  }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"}\n";
+#endif
+  return cur;
 }
 
 template <typename SType>

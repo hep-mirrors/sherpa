@@ -41,6 +41,7 @@ Vegas::Vegas(int dim, int ndx, const std::string &name) {
   m_mode = 0;
   m_nd = (s_on & 2) ? 10 : ndx;
   m_sint = (s_on & 2) ? 1 : 0;
+  m_maxref=128;
   m_scnt = 0;
   m_alpha = 1.;
   m_autooptimize = -1;
@@ -480,6 +481,7 @@ void Vegas::Optimize() {
 }
 
 void Vegas::Refine() {
+  if (m_nd>=m_maxref) return;
   if (m_omode & 1)
     msg_Tracking() << "Refine '" << m_name << "' " << m_nd << " -> "
                    << 2 * m_nd << " ( int = " << m_sint << " )\n";
@@ -601,20 +603,19 @@ void Vegas::WriteOut(const std::string &pid) {
   if (m_nopt > 0) {
     ofile->precision(12);
     for (int i = 0; i < m_dim; i++) {
-      *ofile << "(";
       for (int j = 0; j < m_nd; j++) {
-        if (j != 0) *ofile << ",";
+	if (j!=0) *ofile<<" ";
         *ofile << p_xi[i][j];
       }
-      *ofile << ")" << endl;
+      *ofile<<endl;
     }
     for (int i = 0; i < m_dim; i++) {
-      *ofile << p_opt[i] << " " << p_chi[i] << " (";
+      *ofile<<p_opt[i]<<" "<<p_chi[i]<<" ";
       for (int j = 0; j < m_nd; j++) {
-        if (j != 0) *ofile << ",";
+	if (j!=0) *ofile<<" ";
         *ofile << p_bestxi[i][j];
       }
-      *ofile << ")" << endl;
+      *ofile<<endl;
     }
   }
   ofile.Close();
@@ -659,28 +660,14 @@ void Vegas::ReadIn(const std::string &pid) {
   std::string buffer;
   getline(*ifile, buffer);
   for (int i = 0; i < m_dim; ++i) {
-    getline(*ifile, buffer);
-    size_t a = buffer.find("(") + 1;
-    size_t b = buffer.find(")");
-    char *err;
-    buffer = buffer.substr(a, b - a);
     for (int j = 0; j < m_nd; ++j) {
-      size_t c = buffer.find(",");
-      p_xi[i][j] = strtod(buffer.substr(0, c).c_str(), &err);
-      buffer = buffer.substr(c + 1);
+      *ifile>>p_xi[i][j];
     }
   }
   for (int i = 0; i < m_dim; ++i) {
     *ifile >> p_opt[i] >> p_chi[i];
-    getline(*ifile, buffer);
-    size_t a = buffer.find("(") + 1;
-    size_t b = buffer.find(")");
-    char *err;
-    buffer = buffer.substr(a, b - a);
     for (int j = 0; j < m_nd; ++j) {
-      size_t c = buffer.find(",");
-      p_bestxi[i][j] = strtod(buffer.substr(0, c).c_str(), &err);
-      buffer = buffer.substr(c + 1);
+      *ifile>>p_bestxi[i][j];
     }
   }
 }

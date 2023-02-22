@@ -59,6 +59,7 @@ COMIX::Single_Process::~Single_Process()
 		 <Single_Dipole_Term*>((*subs)[i]->p_proc);
   }
   if (p_bg!=NULL) delete p_bg;
+  if (p_hc!=NULL) delete p_hc;
 }
 
 bool COMIX::Single_Process::Initialize
@@ -218,7 +219,6 @@ bool COMIX::Single_Process::Initialize
       m_mewgtinfo.m_type|=mewgttype::VI;
     }
     p_bg->SetLoopME(p_loop);
-    p_bg->FillCombinations(m_ccombs,m_cflavs);
     if (m_pinfo.m_fi.m_nlotype&(nlo_type::loop|nlo_type::vsub))
       for (size_t i(0);i<m_maxcpl.size();++i) {
 	m_mincpl[i]=p_bg->MinCpl()[i]/2.0+m_pinfo.m_fi.m_nlocpl[i];
@@ -323,7 +323,6 @@ bool COMIX::Single_Process::MapProcess()
 	    THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
 	}
 	MapSubEvts(0);
-	p_map->p_bg->FillCombinations(m_ccombs,m_cflavs);
 	for (CFlavVector_Map::iterator fit(m_cflavs.begin());
 	     fit!=m_cflavs.end();++fit)
 	  for (size_t i(0);i<fit->second.size();++i)
@@ -389,6 +388,8 @@ bool COMIX::Single_Process::GeneratePoint()
   SetZero();
   if (m_pinfo.m_cls==cls::sum) {
     m_zero=false;
+    if (p_int->HelicityIntegrator()!=NULL &&
+	!p_int->HelicityIntegrator()->GeneratePoint()) return false;
     return true;
   }
   m_zero=true;
@@ -426,6 +427,7 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
                                        Variations_Mode varmode,
                                        int mode)
 {
+  DEBUG_VAR(m_zero<<" "<<Selector()->Result());
   Single_Process *sp(p_map!=NULL?p_map:this);
   if (mode==1) {
     UpdateKPTerms(mode);
@@ -465,7 +467,7 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
 	for (size_t j(0); j<m_cols.m_perms.size(); ++j)
 	  m_dxs+=((*p_hc)[i][j]*m_cols.m_colfacs[i][j]).real();
     }
-    if (p_int->HelicityIntegrator()!=NULL) 
+    if (p_int->HelicityIntegrator()!=NULL)
       m_w*=p_int->HelicityIntegrator()->Weight();
     int isb(m_dxs==sp->p_bg->Born());
     double kb(sp->p_bg->Born()?sp->KFactor(1|2):1.0);
@@ -661,8 +663,8 @@ bool COMIX::Single_Process::Tests()
     p_int->SetHelicityIntegrator(std::make_shared<Helicity_Integrator>());
     p_bg->SetHelicityIntegrator(&*p_int->HelicityIntegrator());
     Flavour_Vector fl(m_nin+m_nout);
-    for (size_t i(0);i<fl.size();++i) fl[i]=m_flavs[i];
-    if (!p_int->HelicityIntegrator()->Construct(fl)) return false;
+    if (!p_int->HelicityIntegrator()->
+	Construct(m_flavs,m_nin)) return false;
   }
   p_int->SetColorIntegrator(std::make_shared<Color_Integrator>());
   p_bg->SetColorIntegrator(&*p_int->ColorIntegrator());
@@ -770,7 +772,11 @@ Flavour COMIX::Single_Process::ReMap
 bool COMIX::Single_Process::Combinable
 (const size_t &idi,const size_t &idj)
 {
-  Combination_Set::const_iterator 
+  if (m_ccombs.empty()) {
+    if (p_map==NULL) p_bg->FillCombinations(m_ccombs,m_cflavs);
+    else p_map->p_bg->FillCombinations(m_ccombs,m_cflavs);
+  }
+  Combination_Set::const_iterator
     cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
   return cit!=m_ccombs.end();
 }
@@ -778,9 +784,34 @@ bool COMIX::Single_Process::Combinable
 const Flavour_Vector &COMIX::Single_Process::
 CombinedFlavour(const size_t &idij)
 {
+  if (m_cflavs.empty()) {
+    if (p_map==NULL) p_bg->FillCombinations(m_ccombs,m_cflavs);
+    else p_map->p_bg->FillCombinations(m_ccombs,m_cflavs);
+  }
   CFlavVector_Map::const_iterator fit(m_cflavs.find(idij));
   if (fit==m_cflavs.end()) THROW(fatal_error,"Invalid request");
   return fit->second;
+}
+
+std::map<std::pair<int,int>,std::vector<int> >
+COMIX::Single_Process::CombinableInfo()
+{
+  if (m_ccombs.empty()) {
+    if (p_map==NULL) p_bg->FillCombinations(m_ccombs,m_cflavs);
+    else p_map->p_bg->FillCombinations(m_ccombs,m_cflavs);
+  }
+  std::map<std::pair<int,int>,std::vector<int> > combs;
+  for (Combination_Set::const_iterator
+	 cit(m_ccombs.begin());cit!=m_ccombs.end();++cit) {
+    int idi(cit->first), idj(cit->second);
+    if (IdCount(idi|idj)==m_nin+m_nout-1) continue;
+    if (ID(idi).front()>ID(idj).front()) continue;
+    const Flavour_Vector &fl(m_cflavs[idi|idj]);
+    std::vector<int> fls(fl.size());
+    for (size_t i(0);i<fls.size();++i) fls[i]=fl[i];
+    combs[std::pair<int,int>(idi,idj)]=fls;
+  }
+  return combs;
 }
 
 void COMIX::Single_Process::FillAmplitudes
@@ -788,6 +819,12 @@ void COMIX::Single_Process::FillAmplitudes
  std::vector<std::vector<Complex> > &cols)
 {
   (p_map?p_map->p_bg:p_bg)->FillAmplitudes(amps,cols);
+}
+
+const COMIX::Amplitude::LeptonCurrents &
+COMIX::Single_Process::LeptonicCurrent() const
+{
+  return (p_map?p_map->p_bg:p_bg)->LeptonicCurrent();
 }
 
 NLO_subevtlist *COMIX::Single_Process::GetSubevtList()
@@ -811,17 +848,6 @@ void COMIX::Single_Process::SetScale(const Scale_Setter_Arguments &args)
     for (size_t i(0);i<subs->size()-1;++i)
       static_cast<Single_Dipole_Term*>
 	((*subs)[i]->p_proc)->SetScaleSetter(scs);
-  }
-}
-
-void COMIX::Single_Process::SetShower(PDF::Shower_Base *const ps)
-{
-  PHASIC::Single_Process::SetShower(ps);
-  NLO_subevtlist *subs(GetSubevtList());
-  if (subs) {
-    for (size_t i(0);i<subs->size()-1;++i)
-      static_cast<Single_Dipole_Term*>
-	((*subs)[i]->p_proc)->SetShower(ps);
   }
 }
 

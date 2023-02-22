@@ -36,7 +36,7 @@ namespace PHASIC {
     PDF::ISR_Handler           *p_isrhandler;
 
     std::string m_resultpath;
-    size_t      m_nin, m_nout, m_smode, m_swmode;
+    size_t      m_nin, m_nout, m_swmode;
 
     ATOOLS::Vec4D_Vector p_momenta;
 
@@ -45,16 +45,13 @@ namespace PHASIC {
 
     double m_threshold, m_enhancefac, m_maxeps, m_rsfac;
 
-    long unsigned int m_n, m_itmin;
+    unsigned int m_itmin, m_start;
 
-    double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
-    double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
-    double m_mssum, m_mssumsqr, m_msn;
+    double m_totalxs, m_totalerr, m_max;
+    double m_sn, m_sv, m_ssum, m_ssumsqr, m_smax;
+    double m_msn, m_msv, m_mssum, m_mssumsqr;
 
-    std::vector<double> m_vsmax, m_vsum;
-    std::vector<long unsigned int> m_vsn;
-
-    long unsigned int m_sn, m_son;
+    std::vector<double> m_vn, m_vsum, m_vsumsqr, m_vmax, m_vw;
 
     bool m_writeout;
 
@@ -63,13 +60,14 @@ namespace PHASIC {
     std::shared_ptr<Color_Integrator>    p_colint;
     std::shared_ptr<Helicity_Integrator> p_helint;
 
-    double Sigma2() const;
+    double Sum() const;
+    double SumSqr() const;
+    double GetMax() const;
 
-  public:
+    double Result() const;
+    double Variance() const;
 
-    double TotalSigma2() const;
-    double TotalResult() const;
-    double TotalVar() const;
+    void OptimizeResult(const double &s2);
 
   public:
 
@@ -92,10 +90,6 @@ namespace PHASIC {
     void SetMax(const double max);
     void SetTotal(const int mode=1);
 
-    void ResetMax(int);  
-    void OptimizeSubResult(const double &s2);
-
-    //void SetPSHandler(const std::shared_ptr<Phase_Space_Handler> &pshandler);
     void SetPSHandler(Phase_Space_Handler * pshandler);
     void SetISRThreshold(const double threshold);
     
@@ -126,6 +120,10 @@ namespace PHASIC {
     void MPICollect(std::vector<double> &sv,std::vector<double> &mv,size_t &i);
     void MPIReturn(std::vector<double> &sv,std::vector<double> &mv,size_t &i);
 
+    double N() const;
+
+    double RemainTimeFactor(double maxerr);
+
     // inline functions
     inline Process_Base *Process() const { return p_proc; }
 
@@ -139,11 +137,6 @@ namespace PHASIC {
 
     inline const ATOOLS::Vec4D_Vector &Momenta() const { return p_momenta;  }
     inline ATOOLS::Vec4D_Vector       &Momenta()       { return p_momenta;  }
-
-    inline double   Sum() const     { return m_totalsum;    }
-    inline double   SumSqr() const  { return m_totalsumsqr; }
-    inline long int Points() const  { return m_n+m_sn;      }
-    inline long int SPoints() const { return m_sn;          }
 
     inline double TotalXS() const    { return m_totalxs;  }
     inline double TotalError() const { return m_totalerr; }

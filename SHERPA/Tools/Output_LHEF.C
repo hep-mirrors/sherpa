@@ -1,5 +1,9 @@
 #include "SHERPA/Tools/Output_LHEF.H"
+#include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Main/Color_Integrator.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -16,6 +20,7 @@
 #include <cassert>
 
 using namespace SHERPA;
+using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
@@ -30,6 +35,7 @@ Output_LHEF::Output_LHEF(const Output_Arguments &args):
   m_ext=".lhe";
   const int precision = s["EVENT_OUTPUT_PRECISION"].Get<int>();
   m_bntp = s["LHEF_BNTP"].Get<int>();
+  m_setcol=args.p_reader->GetValue<int>("LHEF_SET_COLORS",1);
 #ifdef USING__GZIP
   m_ext += ".gz";
 #endif
@@ -131,8 +137,135 @@ void Output_LHEF::Header()
   m_outstream<<"</init>"<<std::endl;
 }
 
+bool Output_LHEF::SetSumSqrColors(Cluster_Amplitude *const ampl)
+{
+  Process_Base *proc(ampl->Proc<Process_Base>());
+  SP(Color_Integrator) colint(proc->Integrator()->ColorIntegrator());
+  colint->GenerateOrders();
+  const Idx_Matrix &orders(colint->Orders());
+  std::vector<double> psum(orders.size());
+  double csum(0.0);
+  for (int i(0);i<orders.size();++i) {
+    int last(0), first(-1);
+    for (size_t j(0);j<orders[i].size();++j) {
+      Cluster_Leg *cl(ampl->Leg((size_t)orders[i][j]));
+      if (cl->Flav().StrongCharge()==3) {
+	last=Flow::Counter();
+	cl->SetCol(ColorID(last,0));
+      }
+      else if (cl->Flav().StrongCharge()==-3) {
+	cl->SetCol(ColorID(0,last));
+	last=0;
+      }
+      else if (cl->Flav().StrongCharge()==8) {
+	int nlast(last);
+	last=Flow::Counter();
+	cl->SetCol(ColorID(last,nlast));
+	if (nlast==0) first=j;
+      }
+      else {
+	cl->SetCol(ColorID(0,0));
+      }
+    }
+    if (first>=0) {
+      Cluster_Leg *fl(ampl->Leg((size_t)orders[i][first]));
+      fl->SetCol(ColorID(fl->Col().m_i,last));
+    }
+    msg_Debugging()<<"odering "<<orders[i]<<", first = "<<first<<"\n";
+    msg_Debugging()<<*ampl<<"\n";
+    if ((m_setcol&2) && first) continue;
+    int valid(true);
+    for (size_t j(0);j<ampl->Legs().size();++j) {
+      Cluster_Leg *fl(ampl->Leg(j));
+      if (fl->Flav().Strong() &&
+	  fl->Col().m_i==fl->Col().m_j) valid=false;
+    }
+    if (!valid) continue;
+    csum+=psum[i]=dabs(proc->Differential(*ampl,1|2|4));
+    msg_Debugging()<<"sc: csum = "<<psum[i]<<"\n";
+  }
+  if (csum==0.0) return false;
+  double disc(csum*ran->Get()), sum(0.0);
+  for (size_t i(0);i<orders.size();++i)
+    if ((sum+=psum[i])>=disc) {
+      msg_Debugging()<<"selected ordering "<<i<<" -> "<<orders[i]<<"\n";
+      int last(0), first(-1);
+      for (size_t j(0);j<orders[i].size();++j) {
+	Cluster_Leg *cl(ampl->Leg((size_t)orders[i][j]));
+	if (cl->Flav().StrongCharge()==3) {
+	  last=Flow::Counter();
+	  cl->SetCol(ColorID(last,0));
+	}
+	else if (cl->Flav().StrongCharge()==-3) {
+	  cl->SetCol(ColorID(0,last));
+	  last=0;
+	}
+	else if (cl->Flav().StrongCharge()==8) {
+	  int nlast(last);
+	  last=Flow::Counter();
+	  cl->SetCol(ColorID(last,nlast));
+	  if (nlast==0) first=j;
+	}
+	else {
+	  cl->SetCol(ColorID(0,0));
+	}
+      }
+      if (first>=0) {
+	Cluster_Leg *fl(ampl->Leg((size_t)orders[i][first]));
+	fl->SetCol(ColorID(fl->Col().m_i,last));
+      }
+      return true;
+    }
+  THROW(fatal_error,"Internal error");
+}
+
+void Output_LHEF::SetColors(Blob_List* blobs)
+{
+  Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  Process_Base *proc((*sp)["Process"]->Get<Process_Base*>());
+  SP(Color_Integrator) ci(proc->Integrator()->ColorIntegrator());
+  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
+  ampl->SetNIn(sp->NInP());
+  ampl->SetProc(proc);
+  ampl->SetMuF2((*sp)["Factorisation_Scale"]->Get<double>());
+  ampl->SetMuR2((*sp)["Renormalization_Scale"]->Get<double>());
+  for (size_t i(0);i<sp->NInP();++i) {
+    Particle *p(sp->InParticle(i));
+    ColorID col(0,0);
+    if (ci!=NULL) col=ColorID(ci->I()[i],ci->J()[i]);
+    ampl->CreateLeg(-p->Momentum(),p->Flav().Bar(),col);
+  }
+  for (size_t i(0);i<sp->NOutP();++i) {
+    Particle *p(sp->OutParticle(i));
+    ColorID col(0,0);
+    if (ci!=NULL) col=ColorID(ci->I()[sp->NInP()+i],ci->J()[sp->NInP()+i]);
+    ampl->CreateLeg(p->Momentum(),p->Flav(),col);
+  }
+  msg_Debugging()<<"before color setting "<<*ampl<<"\n";
+  while (!SetSumSqrColors(ampl)) {
+    msg_Debugging()<<"color setting failed. generate new point\n";
+    while (!ci->GeneratePoint());
+    const PHASIC::Int_Vector &ni(ci->I()), &nj(ci->J());
+    for (size_t i(0);i<ampl->Legs().size();++i)
+      ampl->Leg(i)->SetCol(ColorID(ni[i],nj[i]));
+  }
+  msg_Debugging()<<"after color setting "<<*ampl<<"\n";
+  for (size_t i(0);i<sp->NInP();++i) {
+    Particle *p(sp->InParticle(i));
+    p->SetFlow(1,ampl->Leg(i)->Col().m_j);
+    p->SetFlow(2,ampl->Leg(i)->Col().m_i);
+  }
+  for (size_t i(0);i<sp->NOutP();++i) {
+    Particle *p(sp->OutParticle(i));
+    p->SetFlow(1,ampl->Leg(sp->NInP()+i)->Col().m_i);
+    p->SetFlow(2,ampl->Leg(sp->NInP()+i)->Col().m_j);
+  }
+  ampl->Delete();
+}
+
 void Output_LHEF::Output(Blob_List* blobs)
 {
+  if (m_setcol) SetColors(blobs);
   const auto weight(blobs->Weight());
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   m_outstream<<"<event trials='"<<(int)(*sp)["Trials"]->Get<double>();

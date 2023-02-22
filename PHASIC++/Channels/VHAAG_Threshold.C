@@ -65,7 +65,7 @@ namespace PHASIC {
     ~VHAAG_Threshold();
 
     void AddPoint(double Value);
-    void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
+    void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *,bool=true);
     void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *,double *);
     void   MPISync()                 { p_vegas->MPISync(); }
     void   Optimize()                { p_vegas->Optimize(); }
@@ -571,7 +571,7 @@ double VHAAG_Threshold::BosonWeight(ATOOLS::Vec4D *p,double *ran)
 {
   double smax=(p[0]+p[1]).Abs2();
   double w=CE.ThresholdWeight(1.0,m_thmass,0.,smax,m_q[n_b].Abs2(),ran[m_rannum-3]);
-  w*=CE.Isotropic2Weight(p[n_d1],p[n_d2],ran[m_rannum-2],ran[m_rannum-1]);
+  w*=CE.Isotropic2Weight(p[n_d1],p[n_d2],ran[m_rannum-2],ran[m_rannum-1],-1.0,1.0);
   return w;
 }
 
@@ -608,14 +608,14 @@ double VHAAG_Threshold::BranchWeight(ATOOLS::Vec4D q1,ATOOLS::Vec4D &Q,
   return wt;
 }
 
-void VHAAG_Threshold::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts)
+void VHAAG_Threshold::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts,bool)
 {
   CalculateS0(cuts);
   double wt=1.;
 
   if (n_ap==4) {
     Vec4D Q(p[0]+p[1]);
-    wt=SingleSplitF0Weight(p[0],Q,p[2],p[3],p_s[3],p_rans);  
+    wt=SingleSplitF0Weight(p[0],Q,p[2],p[3],p_s[3],p_rans);
     m_weight = p_vegas->GenerateWeight(p_rans)/wt/pow(2.*M_PI,2);
     return;
   }
@@ -628,22 +628,22 @@ void VHAAG_Threshold::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts)
   if (n_p1==1){
     Vec4D P;
     wt*=BranchWeight(m_q[2],P,&(m_q[3]),&(p_s[3]),n_ap-3,p_rans+3);
-    wt*=Split0Weight(m_q[1],Q,m_q[2],P,2,3,p_rans);    
+    wt*=Split0Weight(m_q[1],Q,m_q[2],P,2,3,p_rans);
   }
   else if (n_p1==n_ap-1){
     Vec4D P;
     wt*=BranchWeight(m_q[1],P,&(m_q[2]),&(p_s[2]),n_ap-3,p_rans+3);
-    wt*=Split0Weight(m_q[0],Q,m_q[1],P,1,2,p_rans);    
+    wt*=Split0Weight(m_q[0],Q,m_q[1],P,1,2,p_rans);
   }
   else if (n_p1==2){
     Vec4D P;
     wt*=BranchWeight(m_q[2],P,&(m_q[3]),&(p_s[3]),n_ap-3,p_rans+3);
-    wt*=Split0Weight(m_q[0],Q,m_q[1],P,1,3,p_rans);    
+    wt*=Split0Weight(m_q[0],Q,m_q[1],P,1,3,p_rans);
   }
   else if (n_p1==n_ap-2){
     Vec4D P;
     wt*=BranchWeight(m_q[0],P,&(m_q[1]),&(p_s[1]),n_ap-3,p_rans+3);
-    wt*=Split0Weight(m_q[n_p1],Q,m_q[n_ap-1],P,n_ap-1,1,p_rans);    
+    wt*=Split0Weight(m_q[n_p1],Q,m_q[n_ap-1],P,n_ap-1,1,p_rans);
   }
   else if (n_p1<=(n_ap-1)/2) {
     Vec4D Q1,Q2;

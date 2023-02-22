@@ -33,6 +33,7 @@ namespace PHASIC {
     virtual ~Virtual_ME2_Base();
 
     virtual void SwitchMode(const int mode=0);
+    virtual void SetPoleCheck(const int check=0);
 
     // Allow to pass a born value for virtuals that don't calculate it
     // themselves but need it for the renormalization scale dependence

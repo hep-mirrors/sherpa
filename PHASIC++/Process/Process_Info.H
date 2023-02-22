@@ -22,7 +22,7 @@ namespace PHASIC {
     std::vector<double> m_maxcpl, m_mincpl, m_maxacpl, m_minacpl;
 
     size_t m_nminq, m_nmaxq, m_ckkw, m_itmin, m_rsitmin;
-    size_t m_amegicmhv, m_ntchan, m_mtchan;
+    size_t m_amegicmhv, m_ntchan, m_mtchan, m_sort;
 
     ATOOLS::nlo_mode::code m_nlomode;
 
@@ -43,7 +43,7 @@ namespace PHASIC {
       m_ii(ii), m_fi(fi), m_cls(cls::unknown), m_hls(hls::sum),
       m_maxcpl(2,99), m_mincpl(2,0), m_maxacpl(2,99), m_minacpl(2,0),
       m_nminq(0), m_nmaxq(99), m_ckkw(0), m_itmin(1000), m_rsitmin(1000),
-      m_amegicmhv(1), m_ntchan(0), m_mtchan(99),
+      m_amegicmhv(1), m_ntchan(0), m_mtchan(99), m_sort(3),
       m_nlomode(ATOOLS::nlo_mode::none),
       m_scale("VAR"), m_kfactor("None"), m_loopgenerator("Internal"),
       p_gens(NULL) {}

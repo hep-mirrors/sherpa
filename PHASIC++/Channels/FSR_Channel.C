@@ -151,7 +151,7 @@ void T1Channel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts)
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   double rans[2];
   m_weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,
-				    .5,ctmax,-ctmax,rans[0],rans[1]) 
+				    .5,ctmax,-ctmax,rans[0],rans[1])
 		  * pow(2.*M_PI,2*3.-4.) );
   m_weight *= p_vegas->GenerateWeight(rans);
 }
@@ -198,7 +198,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res) :
     Single_Channel(_nin,_nout,fl)
-{  
+{
   if (m_nout != 2 || m_nin!=2) {
     msg_Error()<<"Tried to initialize U1Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
     Abort();
@@ -240,7 +240,7 @@ void U1Channel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts)
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   double rans[2];
   m_weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,
-				    .5,ctmax,-ctmax,rans[0],rans[1]) 
+				    .5,ctmax,-ctmax,rans[0],rans[1])
 		  * pow(2.*M_PI,2*3.-4.) );
   m_weight *= p_vegas->GenerateWeight(rans);
 }
@@ -367,7 +367,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 NoChannel::NoChannel(int _nin,int _nout,Flavour * fl,Flavour res) :
   Single_Channel(_nin,_nout,fl)
-{  
+{
   if (_nin != 2 || !(_nout==1 && fl[2].Kfcode()==999)) {
     msg_Error()<<"Tried to initialize NoChannel for = "<<_nin<<" -> "<<_nout<<endl;
     Abort();
@@ -378,7 +378,7 @@ NoChannel::NoChannel(int _nin,int _nout,Flavour * fl,Flavour res) :
   E      = 0.5 * sqrt(s);
   m_name   = "NoChannel";
 
-  mass = width = 0.; 
+  mass = width = 0.;
   type = 0;
 }
 
@@ -398,7 +398,7 @@ namespace PHASIC {
 
   class No_Channel_Generator: public Channel_Generator {
   public:
-    
+
     No_Channel_Generator(const Channel_Generator_Key &key):
     Channel_Generator(key) {}
 
@@ -427,6 +427,6 @@ operator()(const Channel_Generator_Key &args) const
 void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
 		    No_Channel_Generator>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"2->1 NoChannel integrator for Instanton production";
 }

@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/My_File.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -37,14 +38,18 @@ Helicity_Integrator::~Helicity_Integrator()
 
 bool Helicity_Integrator::CheckChirs(const Int_Vector &chirs)
 {
-  size_t p(0), m(0);
+  size_t p(0), m(0), msv(0);
   Int_Vector q(94,0);
   for (size_t i(0);i<chirs.size();++i) {
-    if (m_flavs[i].IsQuark()) q[m_flavs[i].Kfcode()]+=chirs[i];
-    if (chirs[i]>0) ++p;
-    else if (chirs[i]<0) ++m;
+    int ch(i<m_nin?-chirs[i]:chirs[i]);
+    Flavour fl(i<m_nin?m_flavs[i].Bar():m_flavs[i]);
+    if (fl.IsQuark() && !fl.IsMassive()) q[fl.Kfcode()]+=ch;
+    if (ch>0) ++p;
+    else if (ch<0) ++m;
     else THROW(fatal_error,"Invalid helicities");
+    if (fl.IsMassive() || !fl.Strong()) ++msv;
   }
+  if (msv) return true;
   for (size_t i(0);i<q.size();++i) 
     if (q[i]!=0) return false;
   return p>1 && m>1;
@@ -73,8 +78,11 @@ void Helicity_Integrator::Construct(Int_Vector chirs,const size_t i)
   }
 }
 
-bool Helicity_Integrator::Construct(const Flavour_Vector &flavs)
+bool Helicity_Integrator::Construct
+(const Flavour_Vector &flavs,const int nin)
 {
+  DEBUG_FUNC(flavs);
+  m_nin=nin;
   m_flavs=flavs;
   m_chirs.resize(m_flavs.size());
   m_valid=0;
@@ -135,6 +143,7 @@ bool Helicity_Integrator::GeneratePoint()
     a=m_asum[i];
   }
   while (r>0 && m_weights[r]==0.0) --r;
+  if (disc<m_asum[l]) --r;
   msg_Debugging()<<"selected "<<r<<" -> "<<MakeId(r)<<" from l="
 		 <<m_asum[l]<<" < d="<<disc<<" < r="<<m_asum[r]<<"\n";
   m_chirs=MakeId(m_id=r);
@@ -158,27 +167,30 @@ void Helicity_Integrator::AddPoint(const double &weight)
   ++m_n[m_id];
 }
 
+void Helicity_Integrator::MPISync()
+{
+#ifdef USING__MPI
+  mpi->Allreduce(&m_sum[0],m_sum.size(),MPI_DOUBLE,MPI_SUM);
+  mpi->Allreduce(&m_sum2[0],m_sum2.size(),MPI_DOUBLE,MPI_SUM);
+  mpi->Allreduce(&m_n[0],m_n.size(),MPI_DOUBLE,MPI_SUM);
+#endif
+}
+
 void Helicity_Integrator::Optimize()
 {
-  size_t generated(0);
   double norm(0.0), oldnorm(0.0);
   for (size_t i(0);i<m_weights.size();++i)
-    if (m_weights[i]!=0.0 && m_n[i]<(int)(5000*m_iter)) return;
+    if (m_n[i]==0) return;
   ++m_iter;
   for (size_t i(0);i<m_weights.size();++i) {
-    if (m_weights[i]==0.0) continue;
     double alpha(m_weights[i]);
     oldnorm+=alpha;
-    alpha=sqrt(sqrt(alpha)*m_sum2[i]/m_sum[i]);
-    if (!(alpha>0.0)) 
-      THROW(fatal_error,"Invalid weight.");
+    alpha=m_sum[i]?sqrt(sqrt(alpha)*m_sum2[i]/m_sum[i]):0.;
     m_weights[i]=alpha;
     norm+=alpha;
-    ++generated;
   }
   norm/=oldnorm;
   oldnorm=0.0;
-  if (generated==0) THROW(fatal_error,"No channel generated.");
   for (size_t i(0);i<m_weights.size();++i) {
     if (m_sum2[i]!=0.0) m_weights[i]/=norm;
     m_asum[i]=oldnorm+=m_weights[i];

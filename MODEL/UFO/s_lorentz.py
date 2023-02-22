@@ -1,4 +1,4 @@
-from __future__ import division 
+from __future__ import division
 from itertools import chain
 from copy import deepcopy
 from ufo_interface.tensor import tensor

@@ -168,7 +168,7 @@ namespace ATOOLS {
 
     Term *Calculate();
 
-    void AddFunction(Function *const f);
+    void AddFunction(Function *const f,const int mode=0);
 
     void AddLeaf(Function *const f);
     void AddTerm(Term *const t);
