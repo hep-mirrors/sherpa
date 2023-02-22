@@ -3,6 +3,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
 #include <list>
 
 using namespace SHRIMPS;

@@ -15,7 +15,7 @@ Ladder_Generator_Eik::Ladder_Generator_Eik() : Ladder_Generator_Base() {}
 
 Ladder_Generator_Eik::~Ladder_Generator_Eik() {}
 
-Ladder * Ladder_Generator_Eik::operator()(const Vec4D & pos) {
+Ladder * Ladder_Generator_Eik::operator()(const Vec4D & pos,Sigma_Elastic * sigma_el) {
   InitLadder(pos);
   FillGluons();
   SelectPropagatorColours();
@@ -34,6 +34,29 @@ Ladder * Ladder_Generator_Eik::operator()(const Vec4D & pos) {
       else m_weight = 0.;
     } while (m_weight<ran->Get());
   }
+  msg_Out() << *p_ladder << endl;
+
+  Vec4D Pbeam0 = ATOOLS::rpa->gen.PBeam(0);
+  Vec4D Pgluon0 = p_emissions->begin()->second.Momentum();
+  Vec4D Prem0 = Pbeam0 - p_ladder->InPart(0)->Momentum();
+  Vec4D Pfinal0 = Prem0 + Pgluon0;
+  cout << "total 4momentum from beam 0: " << Pfinal0 << endl;
+  cout << "inv. mass2: " << Pfinal0.Abs2() << endl;
+  cout << "gluon 4momentum from beam 0: " << Pgluon0 << endl;
+  cout << "inv. mass2: " << Pgluon0.Abs2() << endl;
+  cout << "remnant 4momentum from beam 0: " << Prem0 << endl;
+  cout << "inv. mass2: " << Prem0.Abs2() << endl;
+
+  Vec4D Pbeam1 = ATOOLS::rpa->gen.PBeam(1);
+  Vec4D Pgluon1 = p_emissions->rbegin()->second.Momentum();
+  Vec4D Prem1 = Pbeam1 - p_ladder->InPart(1)->Momentum();
+  Vec4D Pfinal1 = Prem1 + Pgluon1;
+  cout << "total 4momentum from beam 1: " << Pfinal1 << endl;
+  cout << "inv. mass2: " << Pfinal1.Abs2() << endl;
+  cout << "gluon 4momentum from beam 1: " << Pgluon1 << endl;
+  cout << "inv. mass2: " << Pgluon1.Abs2() << endl;
+  cout << "remnant 4momentum from beam 1: " << Prem1 << endl;
+  cout << "inv. mass2: " << Prem1.Abs2() << endl;
   return p_ladder;
 }
 
@@ -42,7 +65,7 @@ void Ladder_Generator_Eik::FillGluons() {
     m_ylimits[beam] = (beam==0? 1. : -1.) * (m_Ymax + ran->Get()*m_deltaY);
     p_ladder->AddRapidity(m_ylimits[beam]);
   }
-  size_t N = m_density.NGluons(m_ylimits[1], m_ylimits[0]);
+  size_t N = 0;//m_density.NGluons(m_ylimits[1], m_ylimits[0]);
   for (size_t i=0;i<N;i++) {
     p_ladder->AddRapidity(m_density.SelectRapidity(m_ylimits[1], m_ylimits[0]));
   }
@@ -50,7 +73,8 @@ void Ladder_Generator_Eik::FillGluons() {
 
 void Ladder_Generator_Eik::SelectPropagatorColours() {
   for (size_t i=0;i<p_emissions->size()-1;i++)
-    p_props->push_back(T_Prop(colour_type::octet,Vec4D(0.,0.,0.,0.),m_qt2min));
+    p_props->push_back(T_Prop(colour_type::singlet,Vec4D(0.,0.,0.,0.),m_qt2min));
+    //p_props->push_back(T_Prop(colour_type::octet,Vec4D(0.,0.,0.,0.),m_qt2min));
   
   LadderMap::iterator lit1=p_emissions->begin(),  lit2=p_emissions->end();  lit2--;
   TPropList::iterator pit1=p_props->begin(), pit2=p_props->end(); pit2--;

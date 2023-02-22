@@ -20,7 +20,7 @@ namespace SHRIMPS {
     Ladder_Generator_Eik();
     ~Ladder_Generator_Eik();
     
-    Ladder * operator()(const ATOOLS::Vec4D & pos);    
+    Ladder * operator()(const ATOOLS::Vec4D & pos,Sigma_Elastic * sigma_el);    
   };
 }
 #endif
