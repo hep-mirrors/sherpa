@@ -114,10 +114,10 @@ and all massless quarks, as set by
 A list of particle containers is printed at the start of each Sherpa
 run, when the :ref:`OUTPUT` is set at level :option:`2`.
 
-.. index:: PARTICLE_CONTAINER
+.. index:: PARTICLE_CONTAINERS
 
 It is also possible to define a custom particle container using the
-keyword ``PARTICLE_CONTAINER``. The container must be given an
+keyword ``PARTICLE_CONTAINERS``. The container must be given an
 unassigned particle ID (kf-code) and its name (freely chosen by you)
 and the flavour content must be specified.  An example would be the
 collection of all down-type quarks using the unassigned ID 98, which
@@ -125,7 +125,7 @@ could be declared as
 
 .. code-block:: yaml
 
-   PARTICLE_CONTAINER:
+   PARTICLE_CONTAINERS:
      98:
        Name: downs
        Flavours: [1, -1, 3, -3, 5, -5]
@@ -149,7 +149,7 @@ following can be used:
 
    PARTICLE_DATA:
      5: {Massive: true}
-   PARTICLE_CONTAINER:
+   PARTICLE_CONTAINERS:
      98: {Name: B, Flavours: [5, -5]}
    PROCESSES:
    - 11 -11 -> (93,98) (93,98):

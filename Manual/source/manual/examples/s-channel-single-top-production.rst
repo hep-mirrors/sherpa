@@ -9,7 +9,7 @@ s-channel single-top production
 Things to notice:
 
 * By excluding the bottom quark from the initial-state at Born level
-  using :option:`PARTICLE_CONTAINER`, and by setting
+  using :option:`PARTICLE_CONTAINERS`, and by setting
   :option:`Max_N_TChannels: 0`, only s-channel diagrams are used for
   the calculation
 
