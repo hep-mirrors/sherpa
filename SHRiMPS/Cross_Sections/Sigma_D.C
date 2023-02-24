@@ -51,7 +51,7 @@ double Sigma_D::GetCombinedValueSD0(const double & B) {
           Omega_ik * eikonal = (*p_eikonals)[i][j];
           kaverage += sqr(eikonal->FF2()->Prefactor())*(1.-exp(-(*eikonal)(B)/2.));
       }
-      value += sqr((*p_eikonals)[0][0]->FF1()->Prefactor())*sqr(kaverage);
+      value += sqr((*p_eikonals)[i][i]->FF1()->Prefactor())*sqr(kaverage);
   }
   return value - GetCombinedValueEL(B);
 }
@@ -64,7 +64,7 @@ double Sigma_D::GetCombinedValueSD1(const double & B) {
             Omega_ik * eikonal = (*p_eikonals)[i][j];
             kaverage += sqr(eikonal->FF1()->Prefactor())*(1.-exp(-(*eikonal)(B)/2.));
         }
-        value += sqr((*p_eikonals)[0][0]->FF2()->Prefactor())*sqr(kaverage);
+        value += sqr((*p_eikonals)[i][i]->FF2()->Prefactor())*sqr(kaverage);
     }
     return value - GetCombinedValueEL(B);
 }
@@ -72,6 +72,7 @@ double Sigma_D::GetCombinedValueSD1(const double & B) {
 double Sigma_D::GetCombinedValueDD(const double & B) {
   return GetCombinedValue(B) - GetCombinedValueSD0(B) - GetCombinedValueSD1(B) - GetCombinedValueEL(B);
 }
+
 
 void Sigma_D::FillGrids(Sigma_Elastic * sigma_el) {
   m_tgrids.clear();
@@ -107,7 +108,7 @@ void Sigma_D::FillTGrids() {
 	term.SetEikonal((*p_eikonals)[i][j]);
 	value = integrator.Integrate(0.,MBpars.GetEikonalParameters().bmax,
 				     MBpars.GetEikonalParameters().accu,1.);
-    if (dabs(value<0.)) value = 0.;
+    //if (dabs(value<0.)) value = 0.;
 	m_tgrids[i][j].push_back(value);
       }
     }
