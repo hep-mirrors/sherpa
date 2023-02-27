@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 from mpi4py import MPI
 import sys
 import Sherpa
@@ -13,7 +13,7 @@ assert(megen is not None)
 
 Generator=Sherpa.Sherpa()
 
-print sys.argv[-1]
+print(sys.argv[-1])
 
 Generator.InitializeTheRun(len(sys.argv),sys.argv)
 Process=Sherpa.MEProcess(Generator)
@@ -36,7 +36,7 @@ from json import dump
 with open(megen, 'w') as outfile:
     dump(Process.CSMatrixElement(), outfile)
         
-print 'Squared ME: ', Process.CSMatrixElement(), '\n'
+print('Squared ME: ', Process.CSMatrixElement(), '\n')
 
 exit(0)
 

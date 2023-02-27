@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 from mpi4py import MPI
 import sys
 import Sherpa
@@ -20,10 +20,10 @@ try:
 
     for i in range(5):
         wgt = Process.TestPoint(E_cms)
-        print 'Squared ME: ', Process.CSMatrixElement(), '\n'
-        print Process.GetMomenta()[2]
-    print Process.GeneratorName()
+        print('Squared ME: ', Process.CSMatrixElement(), '\n')
+        print(Process.GetMomenta()[2])
+    print(Process.GeneratorName())
 
 except Sherpa.SherpaException as exc:
-    print exc
+    print(exc)
     exit(1)

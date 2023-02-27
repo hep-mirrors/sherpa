@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python
 @LOADMPIFORPY@
 import sys
 sys.path.append('@PYLIBDIR@')
@@ -34,7 +34,7 @@ try:
                 outfile.write("E "+str(weight)+" "+str(trials)+"\n")
                 for p in parts:
                     outfile.write(str(p)+"\n")
-            if (n%100)==0: print "  Event",n
+            if (n%100)==0: print("  Event",n)
         outfile.close()
     else:
         for n in range(1,1+Generator.NumberOfEvents()):

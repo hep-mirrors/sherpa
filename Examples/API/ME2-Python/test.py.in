@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 @LOADMPIFORPY@
 import sys
 sys.path.append('@PYLIBDIR@')
@@ -25,21 +25,21 @@ try:
     Process.SetMomentum(1, 45.6,0.,0.,-45.6)
     Process.SetMomentum(2, 45.6,0.,45.6,0.)
     Process.SetMomentum(3, 45.6,0.,-45.6,0.)
-    print '\nSquared ME: ', Process.CSMatrixElement()
+    print('\nSquared ME: ', Process.CSMatrixElement())
 
     # Momentum setting via list of floats
     Process.SetMomenta([[45.6,0.,0.,45.6],
                         [45.6,0.,0.,-45.6],
                         [45.6,0.,45.6,0.],
                         [45.6,0.,-45.6,0.]])
-    print '\nSquared ME: ', Process.CSMatrixElement()
+    print('\nSquared ME: ', Process.CSMatrixElement())
     
     # Random momenta
     E_cms = 500.0
     wgt = Process.TestPoint(E_cms)
-    print '\nRandom test point '
-    print 'Squared ME: ', Process.CSMatrixElement(), '\n'
+    print('\nRandom test point ')
+    print('Squared ME: ', Process.CSMatrixElement(), '\n')
 
 except Sherpa.SherpaException as exc:
-    print exc
+    print(exc)
     exit(1)

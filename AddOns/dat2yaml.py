@@ -138,10 +138,10 @@ class runcard():
                     if l.find('Order')!=-1:
                         # assumes no model coupling (like HEFT)
                         orders = l.split(' ')[1].strip('\(\)').split(',')
-                        process_entry[process_entry.keys()[0]]['Order'] = {'QCD':qcd_order(orders[0]),'EW':orders[1]};
+                        process_entry[list(process_entry.keys())[0]]['Order'] = {'QCD':qcd_order(orders[0]),'EW':orders[1]};
                         continue
                     if l.find('CKKW')!=-1:
-                        process_entry[process_entry.keys()[0]]['CKKW'] = '$(QCUT)'
+                        process_entry[list(process_entry.keys())[0]]['CKKW'] = '$(QCUT)'
                         continue
 
                     # above are all the common options, all other
@@ -159,16 +159,16 @@ class runcard():
                         if(entry in self.tags['TAGS']):
                             entry = '$('+entry+ ')'
                         try:
-                            process_entry[process_entry.keys()[0]][par_info][l.split(' ')[0]] = entry
+                            process_entry[list(process_entry.keys())[0]][par_info][l.split(' ')[0]] = entry
                         except (KeyError,AttributeError):
-                            process_entry[process_entry.keys()[0]][par_info] = dict({l.split(' ')[0]:entry})
+                            process_entry[list(process_entry.keys())[0]][par_info] = dict({l.split(' ')[0]:entry})
 
                         continue
                     else:
                         entry = l.split(' ')[1]
                         if(entry in self.tags['TAGS']):
                             entry = '$('+entry+ ')'
-                        process_entry[process_entry.keys()[0]][l.split(' ')[0]] = entry
+                        process_entry[list(process_entry.keys())[0]][l.split(' ')[0]] = entry
                 self.process['PROCESSES'].append(process_entry)
 
     def get_selectors(self):

@@ -139,14 +139,14 @@ class Grid:
     def polyfit2d(self, x, y, z, orders):
         ncols = np.prod(orders + 1)
         G = np.zeros((x.size, ncols))
-        ij = itertools.product(range(orders[0] + 1), range(orders[1] + 1))
+        ij = itertools.product(list(range(orders[0] + 1)), list(range(orders[1] + 1)))
         for k, (i, j) in enumerate(ij):
             G[:, k] = x ** i * y ** j
         m, _, _, _ = np.linalg.lstsq(G, z)
         return m
 
     def polyval2d(self, x, y, m, orders):
-        ij = itertools.product(range(orders[0] + 1), range(orders[1] + 1))
+        ij = itertools.product(list(range(orders[0] + 1)), list(range(orders[1] + 1)))
         z = np.zeros_like(x)
         for a, (i, j) in zip(m, ij):
             z += a * x ** i * y ** j
@@ -165,12 +165,12 @@ class Grid:
 
     def gridpoints(self, sample=False, flag='k', extendToBorder=False, returnError=False):
         if flag == 'k':
-            return [[k, d.gety(sample)] for k, d in self.data.iteritems()]
+            return [[k, d.gety(sample)] for k, d in self.data.items()]
         if flag == 'x':
             if (returnError):
-                res = [[self.x(k), d.gety(sample), d.gete()] for k, d in self.data.iteritems()]
+                res = [[self.x(k), d.gety(sample), d.gete()] for k, d in self.data.items()]
             else:
-                res = [[self.x(k), d.gety(sample)] for k, d in self.data.iteritems()]
+                res = [[self.x(k), d.gety(sample)] for k, d in self.data.items()]
             if (extendToBorder):
                 for d in range(self.dim):
                     nbin = self.nbin.copy()
@@ -190,11 +190,11 @@ class Grid:
                     res += [[x.copy(), self.data[tuple(k)].gety(sample)], ]
             return res
         if flag == 'plain':
-            return [self.x(k).tolist() + [d.gety(sample), ] for k, d in self.data.iteritems()]
+            return [self.x(k).tolist() + [d.gety(sample), ] for k, d in self.data.items()]
 
     def printgrid(self):
-        for k, d in self.data.iteritems():
-            print(k, d, d.n)
+        for k, d in self.data.items():
+            print((k, d, d.n))
 
     def addPoint(self, data):
         if (type(data[-1]) is float or type(data[-1]) is np.float64):
@@ -210,7 +210,7 @@ class Grid:
         self.interpolators = []
         self.nsamples = nsamples
         for i in range(nsamples):
-            temp = zip(*self.gridpoints(sample=(nsamples != 1), flag='x', extendToBorder=True))
+            temp = list(zip(*self.gridpoints(sample=(nsamples != 1), flag='x', extendToBorder=True)))
             self.interpolators.append(interpolate.CloughTocher2DInterpolator(list(temp[0]), temp[1], fill_value=0.))
             #      temp=zip(*self.gridpoints(sample=(nsamples!=1),flag='plain',extendToBorder=False))
             #      self.interpolators.append(interpolate.SmoothBivariateSpline(temp[0],temp[1],temp[2],bbox=[0.,1.,0.,1.]))
@@ -227,7 +227,7 @@ class Grid:
                 xx = self.x(k)
                 dat = [np.append(self.x(x + kmin), self.data[tuple(x + kmin)].gety(sample=(nsamples != 1))) for x in
                        np.ndindex(*(degree + 1))]
-                x, y, z = np.asarray(zip(*dat))
+                x, y, z = np.asarray(list(zip(*dat)))
                 #        z=np.asarray(zip(*dat)[2])
                 self.pol[k, i] = self.polyfit2d(x, y, z, orders=degree)
 

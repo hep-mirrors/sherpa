@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 from mpi4py import MPI
 import sys, os, shutil, tempfile
 sys.path.append('@PYLIBDIR@')
@@ -73,10 +73,10 @@ PROCESSES:\n\
             return res
 
         except Sherpa.Exception as exc:
-            print exc
+            print(exc)
             exit(1)
 
-print 'Running tests ',
+print('Running tests ', end=' ')
 sys.stdout.flush()
 
 wc=process(fl=[1,4,22,22,3,2])
@@ -97,11 +97,11 @@ zs=[
 ]
 for i in zs: i.append(zc.differential(pargs=i[1]))
 
-print ' done\n'
-print wc.fl
+print(' done\n')
+print(wc.fl)
 for i in ws:
-    print '\033[1m{0}\033[0m: {1} vs. {2}, rel. dev. \033[31m{3}\033[0m'.format(i[0],i[3],i[2],i[3]/i[2]-1)
-print
-print zc.fl
+    print('\033[1m{0}\033[0m: {1} vs. {2}, rel. dev. \033[31m{3}\033[0m'.format(i[0],i[3],i[2],i[3]/i[2]-1))
+print()
+print(zc.fl)
 for i in zs:
-    print '\033[1m{0}\033[0m: {1} vs. {2}, rel. dev. \033[31m{3}\033[0m'.format(i[0],i[3],i[2],i[3]/i[2]-1)
+    print('\033[1m{0}\033[0m: {1} vs. {2}, rel. dev. \033[31m{3}\033[0m'.format(i[0],i[3],i[2],i[3]/i[2]-1))

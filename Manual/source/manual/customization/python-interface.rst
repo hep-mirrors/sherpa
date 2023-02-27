@@ -16,11 +16,11 @@ Problems might occur if more than one version of Python is present on
 the system since automake currently doesn't always handle multiple
 Python installations properly. If you have multiple Python versions
 installed on your system, please set the ``PYTHON`` environment
-variable to the Python 2 executable via
+variable to the Python 3 executable via
 
 .. code-block:: shell-session
 
-   $ export PYTHON=<path-to-python2>
+   $ export PYTHON=<path-to-python3>
 
 before executing ``cmake`` script (see.  Certain Sherpa
 classes and methods can be made available to the Python interpreter in

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 from mpi4py import MPI
 import sys
 import Sherpa
@@ -15,5 +15,5 @@ Process.SetMomenta([[250,0,0,250],
                     [250,245.669,-44.8756,11.5211],
                     [250,-245.669,44.8756,-11.5211]])
 
-print 'Squared ME: ', Process.CSMatrixElement(), '\n'
+print('Squared ME: ', Process.CSMatrixElement(), '\n')
 
