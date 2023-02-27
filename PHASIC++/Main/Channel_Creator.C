@@ -54,9 +54,6 @@ bool Channel_Creator::CreateISRIntegrator() {
 }
 
 bool Channel_Creator::CreateFSRIntegrator() {
-  FSR_Channels * fsrchannels =
-    new FSR_Channels(p_psh,"fsr_"+p_psh->Process()->Process()->Name());
-  p_psh->SetFSRIntegrator(fsrchannels);
-  return fsrchannels != NULL;
+  return true;
 }
 

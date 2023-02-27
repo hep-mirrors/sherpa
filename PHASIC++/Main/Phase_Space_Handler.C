@@ -40,7 +40,9 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
   RegisterDefaults();
   InitParameters(error);
   p_process->SetPSHandler(this);
-
+  FSR_Channels * fsrchannels =
+    new FSR_Channels(this,"fsr_"+p_process->Process()->Name());
+  SetFSRIntegrator(fsrchannels);
   p_lab.resize(m_nvec);
 }
 
