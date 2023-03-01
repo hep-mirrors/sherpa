@@ -1083,14 +1083,14 @@ void Amplitude::SetCouplings() const
 #ifdef DEBUG__CF
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
-  MODEL::Coupling_Data *aqcd(m_cpls.front().p_aqcd);
-  MODEL::Coupling_Data *aqed(m_cpls.front().p_aqed);
-  double gsfac(aqcd?sqrt(aqcd->Factor()):1.0);
-  double gwfac(aqed?sqrt(aqed->Factor()):1.0);
   for (size_t i(0);i<m_cpls.size();++i) {
     double fac(1.0);
     Vertex *v(m_cpls[i].p_v);
     size_t oqcd(m_cpls[i].m_oqcd), oew(m_cpls[i].m_oew);
+    MODEL::Coupling_Data *aqcd(m_cpls[i].p_aqcd);
+    MODEL::Coupling_Data *aqed(m_cpls[i].p_aqed);
+    double gsfac(aqcd?sqrt(aqcd->Factor()):1.0);
+    double gwfac(aqed?sqrt(aqed->Factor()):1.0);
     if (aqcd && oqcd) {
 #ifdef DEBUG__CF
       msg_Debugging()<<"  qcd: "<<sqrt(aqcd->Factor())<<" ^ "<<oqcd
