@@ -151,7 +151,7 @@ void Dipole_Kinematics::Evaluate()
     if (m_kt2<-p_info->AMin()) p_info->SetStat(0);
   }
   if (p_info->Stat() &&
-      p_i->P()+p_j->P()+p_k->P()!=p_ijt->P()+p_kt->P()) {
+      !IsEqual(p_i->P()+p_j->P()+p_k->P(),p_ijt->P()+p_kt->P())) {
     msg_Error()<<METHOD<<"(): Momentum not conserved in type "<<m_type
 	       <<" {\n  before "<<p_i->P()+p_j->P()+p_k->P()
 	       <<"\n  after  "<<p_ijt->P()+p_kt->P()
