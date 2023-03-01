@@ -6,8 +6,6 @@ ISR parameters
 
 .. index:: BUNCH_1
 .. index:: BUNCH_2
-.. index:: ISR_SMIN
-.. index:: ISR_SMAX
 .. index:: ISR_E_ORDER
 .. index:: ISR_E_SCHEME
 .. index:: PDF_LIBRARY
@@ -33,12 +31,6 @@ initial state radiation (ISR).
   beam spectrum is Monochromatic. In case the Simple Compton or Laser
   Backscattering spectra are enabled the bunch particles would have to
   be set to 22, the PDG code of the photon.
-
-:OPTION:`ISR_SMIN/ISR_SMAX`
-  This parameter specifies the minimum (maximum) cms energy squared
-  after ISR.
-  The parameter can be specified using the internal interpreter, see
-  :ref:`Interpreter`.
 
 Sherpa provides access to a variety of structure functions.
 They can be configured with the following parameters.

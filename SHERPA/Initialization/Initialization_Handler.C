@@ -179,8 +179,6 @@ void Initialization_Handler::RegisterDefaults()
   s["SHOW_VARIABLE_SYNTAX"].SetDefault(0);
   s["SHOW_PDF_SETS"].SetDefault(0);
 
-  s["ISR_SMIN"].SetDefault(1e-10);
-  s["ISR_SMAX"].SetDefault(1.0);
   s["ISR_E_ORDER"].SetDefault(1);
   s["ISR_E_SCHEME"].SetDefault(2);
 
@@ -748,7 +746,6 @@ bool Initialization_Handler::InitializeThePDFs()
       delete m_isrhandlers[id]; 
     PDF_Base * pdfbase;
     ISR_Base ** isrbases = new ISR_Base*[2];
-    double m_bunch_splimits[2];
     for (int j=0;j<2;++j) {
       std::string indextag("_" + ToString(j + 1));
 
@@ -851,12 +848,10 @@ bool Initialization_Handler::InitializeThePDFs()
       }
       ATOOLS::rpa->gen.SetBunch(m_bunch_particles[j],j);
     }
-    m_bunch_splimits[0] = s["ISR_SMIN"].Get<double>();
-    m_bunch_splimits[1] = s["ISR_SMAX"].Get<double>();
     m_isrhandlers[id] = new ISR_Handler(isrbases);
     m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(0),0);
     m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(1),1);
-    m_isrhandlers[id]->Init(m_bunch_splimits);
+    m_isrhandlers[id]->Init();
     if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
       msg_Error()<<"Error in Environment::InitializeThePDFs()"<<endl
 		 <<"   Inconsistent ISR & Beam:"<<endl

@@ -97,11 +97,11 @@ void ISR_Handler::Output() {
               << " (internal structure = " << p_isrbase[1]->On() << ")\n";
 }
 
-void ISR_Handler::Init(const double *splimits) {
+void ISR_Handler::Init() {
   double s = (p_beam[0]->OutMomentum() + p_beam[1]->OutMomentum()).Abs2();
 
-  m_splimits[0] = s * splimits[0];
-  m_splimits[1] = ATOOLS::Min(s * splimits[1], s * Upper1() * Upper2());
+  m_splimits[0] = 0.;
+  m_splimits[1] = ATOOLS::Min(s, s * Upper1() * Upper2());
   m_splimits[2] = s;
   m_fixed_smin = m_splimits[0];
   m_fixed_smax = m_splimits[1];

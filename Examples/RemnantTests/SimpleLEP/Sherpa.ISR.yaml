@@ -2,7 +2,6 @@
 BEAMS: [11, -11]
 BEAM_ENERGIES: 45.6
 PDF_LIBRARY: PDFESherpa
-ISR_SMIN: sqr(20/E_CMS)
 
 # general setting
 EVENTS: 50k

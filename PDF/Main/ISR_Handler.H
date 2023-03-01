@@ -71,7 +71,7 @@ namespace PDF {
     ISR_Handler(ISR_Base **isrbase);
     ~ISR_Handler() = default;
 
-    void Init(const double *splimits);
+    void Init();
 
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
     bool CheckConsistency(ATOOLS::Flavour *partons);

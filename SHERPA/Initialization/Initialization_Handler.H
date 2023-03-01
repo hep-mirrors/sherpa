@@ -44,7 +44,6 @@ namespace SHERPA {
     std::string m_evtform;
     std::set<std::string> m_pdflibs;
 
-    double          m_bunch_splimits[2];
     ATOOLS::Flavour m_bunch_particles[2];
 
     eventtype::code m_mode;
@@ -157,12 +156,6 @@ namespace SHERPA {
 
     These modules are later on taken by the main steering class, Sherpa, and put into 
     corresponding Event_Phase_Handlers. After termination of the run, they are all deleted.
-  */
-  /*!
-    \var double Initialization_Handler::m_bunch_splimits[2]
-    The boundaries for the s' after ISR. These paraermters are read in in the Initialization_Handler
-    and passed to the ISR_Handler. They are given in units of the total energy squared under
-    consideration.
   */
   /*!
     \var ATOOLS::Flavour Initialization_Handler::m_bunch_particles[2]
