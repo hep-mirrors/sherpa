@@ -42,7 +42,6 @@ namespace PHASIC {
     void          AssignId(ATOOLS::Term *term);
 
     bool   Trigger(ATOOLS::Selector_List &p);
-    bool   RSTrigger(ATOOLS::NLO_subevtlist *const subs);
 
     void   BuildCuts(Cut_Data *cuts);
 
