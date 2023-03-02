@@ -30,6 +30,7 @@ namespace AMISIC {
     bool InitializeAllProcesses();
     void SetPDFs(); 
     void SetAlphaS();
+    void CalcPDFs(const double & x1,const double & x2,const double & scale);
     bool PrepareSudakovFactor();
     void Test();
   public:
@@ -43,8 +44,7 @@ namespace AMISIC {
 			    const double & uhat,const double & x1,const double & x2);
     const double dSigma(const double & pt2);
     MI_Process * SelectProcess();
-    void         CalcPDFs(const double & x1,const double & x2,const double & scale);
-    void         SetS(const double & s);
+    void         UpdateS(const double & s);
 
     inline const double  & Ecms()      const { return m_ecms; }
     inline const double  & S()         const { return m_S; }

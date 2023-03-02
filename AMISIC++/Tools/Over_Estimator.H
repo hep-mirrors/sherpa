@@ -28,9 +28,9 @@ namespace AMISIC {
     ~Over_Estimator();
 
     void   Initialize(MI_Processes * procs);
-    void   Update();
+    void   UpdateS();
 
-    double operator()(const double & pt2);
+    double operator()(const double & pt2, const double & yvol);
     double TrialPT2(const double & Q2);
     
     inline void SetBFac(const double & bfac) { m_bfac = bfac; }

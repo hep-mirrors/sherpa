@@ -44,7 +44,6 @@ double Matter_Overlap::SelectB(const bool & mode) const {
   //    - for double Gaussian, one of the three radii is picked.
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
   double b, radius;
-  msg_Out()<<"         * "<<METHOD<<"(mode = "<<mode<<", form = "<<m_overlapform<<")\n";
   switch (m_overlapform) {
     case overlap_form::code::Single_Gaussian:
       radius = m_radius1;
@@ -94,7 +93,9 @@ void Matter_Overlap::InitializeFormFactors() {
 }
   
 void Matter_Overlap::CalculateIntegral() {
+  /////////////////////////////////////////////////////////////////////////////////
   // Integral int d^2b O(b), numerator Eq.(32)
+  /////////////////////////////////////////////////////////////////////////////////
   MO_Integrand moint(this);
   Gauss_Integrator integrator(&moint);
   double bmin = 0., bstep = m_bstep, previous, result = 0.;
@@ -105,7 +106,7 @@ void Matter_Overlap::CalculateIntegral() {
   m_bmax     = bmin;
   m_integral = result;
   msg_Tracking()<<METHOD<<" for form = "<<int(m_overlapform)<<": "
-	   <<"Integral(num) = "<<m_integral<<", ana = "<<(M_PI*m_norm)<<"\n";
+		<<"Integral(num) = "<<m_integral<<", ana = "<<(M_PI*m_norm)<<"\n";
 }
 
 Vec4D Matter_Overlap::SelectPositionForScatter(const double & b) const {

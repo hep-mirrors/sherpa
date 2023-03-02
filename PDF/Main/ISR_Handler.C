@@ -496,6 +496,7 @@ REMNANTS::Remnant_Base* ISR_Handler::GetRemnant(const size_t beam) const {
 
 bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl, double &x,
                                          int beam, bool swapped) {
+  msg_Out()<<"   * "<<METHOD<<" will reset remnants.\n";
   if (x > p_isrbase[beam]->PDF()->RescaleFactor())
     return false;
   if (m_rmode == 0)

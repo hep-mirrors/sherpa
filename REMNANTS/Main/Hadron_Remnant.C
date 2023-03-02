@@ -41,12 +41,12 @@ bool Hadron_Remnant::IsValence(Particle * part) {
   Flavour flav = part->Flav();
   for (const auto& flit : m_constituents) {
     if (flav==flit) {
-      Vec4D   mom  = part->Momentum();
-      double x = mom[0]/m_residualE;
+      Vec4D   mom = part->Momentum();
+      double x    = mom[0]/m_residualE;
       p_pdf->Calculate(x,sqr(flav.Mass())+m_scale2);
-      double val = p_pdf->GetXPDF(flav)-p_pdf->GetXPDF(flav.Bar());
-      double tot = p_pdf->GetXPDF(flav);
-      m_valence = (val/tot > ran->Get());
+      double val  = p_pdf->GetXPDF(flav)-p_pdf->GetXPDF(flav.Bar());
+      double tot  = p_pdf->GetXPDF(flav);
+      m_valence   = (val/tot > ran->Get());
       if (m_valence) p_valence = part;
       return m_valence;
     }

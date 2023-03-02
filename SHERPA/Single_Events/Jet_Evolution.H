@@ -22,7 +22,7 @@ namespace SHERPA {
   private :
     REMNANTS::Remnant_Handler * p_remnants;
     PertInterfaceMap            m_interfaces;
-
+    
     void FillPerturbativeInterfaces(Matrix_Element_Handler *,
 				    Hard_Decay_Handler*,
 				    Decay_Handler_Base *,
@@ -30,6 +30,7 @@ namespace SHERPA {
 				    const Soft_Collision_Handler_Map *,
 				    const Shower_Handler_Map &,
 				    REMNANTS::Remnant_Handler_Map &);
+    PertInterfaceIter          SelectInterface(ATOOLS::Blob * blob);
     ATOOLS::Return_Value::code AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,
 					     Perturbative_Interface *);
 

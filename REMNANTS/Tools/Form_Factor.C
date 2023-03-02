@@ -14,7 +14,7 @@ ATOOLS::Vec4D REMNANTS::Form_Factor::operator()() {
     double rand = ATOOLS::ran->Get()-ATOOLS::sqr(m_fraction1);
     if (rand>=0.) {
       if ((rand-=ATOOLS::sqr(1-m_fraction1))<=0.) radius = m_radius2;
-      else                                radius = m_radius3;
+      else                                        radius = m_radius3;
     }
   }
   double x1 = ATOOLS::ran->GetGaussian(), x2 = ATOOLS::ran->GetGaussian();

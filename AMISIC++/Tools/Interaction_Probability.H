@@ -9,47 +9,70 @@ namespace AMISIC {
   
   class Interaction_Probability {
     Matter_Overlap * p_mo;
-    OneDim_Table   * p_prefKs, * p_oexpvalues, * p_integrals;
-    double m_prefK, m_integral, m_integralB, m_bnorm, m_oexpvalue, m_fc;
-    bool   m_output;
+    OneDim_Table   * p_k, * p_integral, * p_expO, * p_fc;
+    bool   m_test;
     
-    bool FixPrefactor(MI_Processes * processes);
-    void CalculateIntegral();
-    void CalculateBNorm();
-    void CalculateOExpValue(MI_Processes * processes);
+    void   FixK(MI_Processes * processes);
+    double Integral(const double & k,const int & diff=0);
+    double NewtonRaphson(const double & xsratio);
+    void   FixOExp();
+    void   OutputTables(MI_Processes * processes);
   public:
     Interaction_Probability();
     ~Interaction_Probability();
     
     void   Initialize(MI_Processes * processes);
-    void   Update(double xsecratio);
-    double operator()(const double & b);
     
-    inline Matter_Overlap * GetOverlap()               { return p_mo; }
-    inline double Prefactor(const double & s) const    { return (*p_prefKs)(s); }
-    inline double Integral(const double & s) const     { return (*p_integrals)(s); }
-    inline double OverlapExpectation(const double & s) { return (*p_oexpvalues)(s); }
-    inline double Bnorm(const double & s) const        { return m_bnorm/(*p_integrals)(s); }
+    inline Matter_Overlap * GetOverlap()                        { return p_mo; }
+    /////////////////////////////////////////////////////////////////////////////////
+    // Probability for at least one interaction, Eq. (24)
+    /////////////////////////////////////////////////////////////////////////////////
+    inline double operator()(const double & s,const double & b) { return 1.-exp(-(*p_k)(s) * (*p_mo)(b)); }
+    /////////////////////////////////////////////////////////////////////////////////
+    // b-dependent modification factor, Eq. (28)
+    /////////////////////////////////////////////////////////////////////////////////
+    inline double fb(const double & s,const double & b)         { return (*p_mo)(b)/(*p_expO)(s); }
+    /////////////////////////////////////////////////////////////////////////////////
+    // Correction factor for demaning at least one interaction, Eq. (31)
+    /////////////////////////////////////////////////////////////////////////////////
+    inline double fc(const double & s)                          { return (*p_fc)(s); }
   };
 
 
-  class IP_Integrand : public ATOOLS::Function_Base {
-    Interaction_Probability * p_ip;
-    int m_expo;
+  /////////////////////////////////////////////////////////////////////////////////
+  // Interaction probability, Eq. (24) as operator, needs to be integrated for
+  // Eqs.(26, 32)
+  /////////////////////////////////////////////////////////////////////////////////
+  class P_Integrand : public ATOOLS::Function_Base {
+    Matter_Overlap * p_mo;
+    double           m_k;
   public:
-    IP_Integrand(Interaction_Probability * ip,const int & expo=1) :
-      p_ip(ip), m_expo(expo) {}
-    ~IP_Integrand() {};
+    P_Integrand(Matter_Overlap * mo, const double & k) : p_mo(mo), m_k(k) {}
+    ~P_Integrand() {};
     double operator()(double b);
   };
 
-  class O_ExpV_Integrand : public ATOOLS::Function_Base {
-    Matter_Overlap          * p_mo;
-    Interaction_Probability * p_ip;
+  /////////////////////////////////////////////////////////////////////////////////
+  // Integrand O(b) exp[-kO(b)], used by the Newton-Raphson method to fix k
+  /////////////////////////////////////////////////////////////////////////////////
+  class OtimesExp_Integrand : public ATOOLS::Function_Base {
+    Matter_Overlap * p_mo;
+    double           m_k;
   public:
-    O_ExpV_Integrand(Interaction_Probability * ip) :
-      p_ip(ip), p_mo(ip->GetOverlap()) {}
-    ~O_ExpV_Integrand() {};
+    OtimesExp_Integrand(Matter_Overlap * mo, const double & k) : p_mo(mo), m_k(k) {}
+    ~OtimesExp_Integrand() {};
+    double operator()(double b);
+  };
+
+  /////////////////////////////////////////////////////////////////////////////////
+  // Integrand of numerator in Eqs. (29, 31) as operator, given by O(b) Pint(b)
+  /////////////////////////////////////////////////////////////////////////////////
+  class OtimesP_Integrand : public ATOOLS::Function_Base {
+    Matter_Overlap * p_mo;
+    double           m_k;
+  public:
+    OtimesP_Integrand(Matter_Overlap * mo, const double & k) : p_mo(mo), m_k(k) {}
+    ~OtimesP_Integrand() {};
     double operator()(double b);
   };
 }

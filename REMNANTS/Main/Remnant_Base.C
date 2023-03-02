@@ -40,29 +40,27 @@ rtp::code Remnant_Base::FixType(ATOOLS::Flavour & flav) {
 }
 
 bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
+  ////////////////////////////////////////////////////////////////////////////
+  // Extracting a parton from a remnant (usually stemming from a shower blob) 
+  // and, if necessary, create a spectator to compensate flavour.
+  ////////////////////////////////////////////////////////////////////////////
   if (TestExtract(parton->Flav(), parton->Momentum())) {
-    if (std::find(m_extracted.begin(), m_extracted.end(), parton) ==
-        m_extracted.end()) {
+    if (std::find(m_extracted.begin(), m_extracted.end(), parton)==m_extracted.end()) {
+      msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<"): add "<<parton->Number()<<"\n";
       m_extracted.push_back(parton);
-      ////////////////////////////////////////////////////////////////////////////
-      // right now this works for Hadron_Remnant only, all other remnants do not
-      // have the notion of a spectator
-      ////////////////////////////////////////////////////////////////////////////
       MakeSpectator(parton);
-      for (size_t index = 0; index < 2; index++)
-        p_colours->AddColour(m_beam, index, parton);
+      for (size_t index = 0; index < 2; index++) p_colours->AddColour(m_beam, index, parton);
       m_residualE -= parton->E();
     }
     return true;
   }
-  msg_Error() << METHOD << ": Cannot extract particle:\n"
+  msg_Error() <<"==> "<<METHOD << ": Cannot extract particle:\n"
               << (*parton) << "\n  from: " << p_beam->Bunch()
               << " with momentum " << p_beam->OutMomentum() << "\n";
   return false;
 }
 
 bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
-  //msg_Out()<<METHOD<<" for "<<parton->Flav()<<"\n";
   if (parton == nullptr) {
     msg_Error() << "Error in " << METHOD << "():\n"
                 << "   Called with NULL pointer.\n";
@@ -71,7 +69,7 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
   ////////////////////////////////////////////////////////////////////////////
   // TODO: In Multiple_Interactions.C, TestExtract is called for the hard-interacting 
   // parton, after it has been extracted here. As it has been already been extracted,
-  // it will fail now iff E_parton > 0.5 * beam energy
+  // it will fail now if E_parton > 0.5 * beam energy - this must be checked.
   ////////////////////////////////////////////////////////////////////////////
   if (std::find(m_extracted.begin(), m_extracted.end(), parton) != m_extracted.end())
     return true;
@@ -91,12 +89,14 @@ Blob *Remnant_Base::MakeBlob() {
   part->SetStatus(part_status::decayed);
   part->SetFinalMass();
   p_beamblob->AddToInParticles(part);
+  msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<"):\n"<<(*p_beamblob)<<"\n";
   return p_beamblob;
 }
 
 Vec4D Remnant_Base::IncomingMomentum() { return p_beam->OutMomentum(m_tag); }
 
 void Remnant_Base::Reset(const bool & resc,const bool &DIS) {
+  msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<")\n";
   m_extracted.clear();
   p_beamblob = nullptr;
 }

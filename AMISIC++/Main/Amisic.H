@@ -63,6 +63,7 @@ namespace AMISIC {
     std::map<std::string,ATOOLS::Histogram *> m_histos;
     
     void InitParametersAndType(PDF::ISR_Handler *const isr);
+    void UpdateForNewS();
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
 			     ATOOLS::Blob * blob);
     void FillAmplitudeSettings(ATOOLS::Cluster_Amplitude * ampl);
@@ -81,6 +82,8 @@ namespace AMISIC {
     bool VetoEvent(const double & scale=-1.);
     int  InitMinBiasEvent();
     int  InitRescatterEvent();
+    void SetB(const double & b=-1.);
+    
     void Reset();
     void CleanUpMinBias();
     void Test();
@@ -92,13 +95,7 @@ namespace AMISIC {
       m_singlecollision.SetResidualX(E0,E1);
     }
     inline void SetMaxScale(const double & scale) {
-      m_pt2 = ATOOLS::sqr(scale);
-      m_singlecollision.SetLastPT2(m_pt2);
-    }
-    inline void SetB(const double & b=-1.) {
-      // Select b and set the enhancement factor
-      m_b    = (b<0.)?m_impact.SelectB(m_S,m_pt2):b;
-      m_bfac = ATOOLS::Max(0.,m_impact(m_b));
+      m_singlecollision.SetLastPT2(m_pt2 = ATOOLS::sqr(scale));
     }
     inline void SetMassMode(const int & mode) {
       p_processes->SetMassMode(mode);
@@ -111,7 +108,7 @@ namespace AMISIC {
     }
     inline void CalculateImpact() {
       m_b    = m_singlecollision.B();
-      m_bfac = ATOOLS::Max(0.,m_impact(m_b));
+      m_bfac = ATOOLS::Max(0.,m_impact(m_S, m_b));
     }
     inline ATOOLS::Vec4D SelectPositionForScatter(const double & b) const {
       return m_impact.SelectPositionForScatter(b);
@@ -120,7 +117,7 @@ namespace AMISIC {
       return m_impact.SelectRelativePositionForParton();
     }
     inline const double ScaleMin()    const { return (*mipars)("pt_min"); }
-    inline const double & ScaleMax()  const { return m_pt2; }
+    inline const double ScaleMax()    const { return sqrt(m_pt2); }
     inline const bool   & IsMinBias() const { return m_isMinBias; }
     inline const double & B()         const { return m_b; }
     inline double Mass(const ATOOLS::Flavour &fl) const {

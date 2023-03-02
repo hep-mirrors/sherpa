@@ -50,10 +50,12 @@ InitializeRemnants(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,
     msg_Out()<<"   * "<<METHOD<<"(beam = "<<i<<", flav = "<<flav<<", tag = "<<m_tags[i]<<"): "
 	     <<beam->GetBeam(i)->Bunch(m_tags[i])<<" and type = "<<p_remnants[i]->Type()<<".\n";
   }
+  /////////////////////////////////////////////////////////////////////////////////
   // Finish the initialisation of the Remnant_Bases: make sure they know
   // each other, their beam, the Colour_Generator, and hand them also to
   // the ISR_Handler.
   // TODO: this latter part may become obsolete - I will have to check this.
+  /////////////////////////////////////////////////////////////////////////////////
   for (size_t i = 0; i < 2; ++i) {
     p_remnants[i]->SetBeam(beam->GetBeam(i));
     p_remnants[i]->SetColours(&m_colours);
@@ -64,6 +66,7 @@ InitializeRemnants(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,
 }
 
 void Remnant_Handler::DefineRemnantStrategy() {
+  /////////////////////////////////////////////////////////////////////////////////
   // Pretty self-explanatory.  This covers the way of how we make sure that
   // potential intrinsic transverse momenta in the beam breakups do not lead
   // to violation of four-momentum conservation.  We have pretty much 4
@@ -78,6 +81,7 @@ void Remnant_Handler::DefineRemnantStrategy() {
   // For the latter two we will realize four-momentum conservation through
   // insertion of a "soft" blob, mainly a garbage collection where we collect
   // particles and shuffle them in a pretty minimal fashion.
+  /////////////////////////////////////////////////////////////////////////////////
   if (p_remnants[0]->Type() == rtp::intact &&
       p_remnants[1]->Type() == rtp::intact)
     m_type = strat::simple;
@@ -119,6 +123,7 @@ void Remnant_Handler::InitializeKinematicsAndColours() {
 }
 
 bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
+  /////////////////////////////////////////////////////////////////////////////////
   // This method is called after each successful parton shower off a hard
   // scatter.  It extracts the two initial particles from the shower and
   // extracts them from the corresponding beam remnant.
@@ -126,6 +131,7 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
   // Make sure only shower blobs with exactly two initiators are treated,
   // and only once.
   // (Shower blob with more initiators are typically from hadron decays.)
+  /////////////////////////////////////////////////////////////////////////////////
   if (showerblob->Type() != btp::Shower ||
       m_treatedshowerblobs.find(showerblob) != m_treatedshowerblobs.end())
     return true;
@@ -134,13 +140,17 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
     if (!showerblob->InParticle(i)->ProductionBlob()) countIn++;
   }
   if (countIn!=2) return true;
+  /////////////////////////////////////////////////////////////////////////////////
   // Now extract the shower initiators from the remnants - they will get added
   // to the lists of extracted particles for each remnant and their colour will
   // be added to the Colour_Generator in each beam.
+  /////////////////////////////////////////////////////////////////////////////////
   for (size_t i = 0; i < showerblob->NInP(); ++i) {
     Particle *part = showerblob->InParticle(i);
     if (part->ProductionBlob() != nullptr) continue;
+    ///////////////////////////////////////////////////////////////////////////////
     // Make sure extraction works out - mainly subject to energy conservation
+    ///////////////////////////////////////////////////////////////////////////////
     if (!Extract(part, part->Beam()))      return false;
   }
   m_treatedshowerblobs.insert(showerblob);
@@ -148,6 +158,7 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
 }
 
 void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
+  /////////////////////////////////////////////////////////////////////////////////
   // After each showering step, we try to compensate some of the colours.
   // In the absence of multiple parton interactions this will not involve
   // anything complicated with colours.  In each step, the shower initiators
@@ -157,32 +168,40 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
   // of the shower initiators and, possibly, spectators will be added to a
   // stack which will in turn partially replace the new colours.  This is
   // handled in the Colour_Generator.
+  /////////////////////////////////////////////////////////////////////////////////
   m_colours.ConnectColours(showerblob);
 }
 
 Return_Value::code
 Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
                                Particle_List *const particlelist) {
+  /////////////////////////////////////////////////////////////////////////////////
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
+  /////////////////////////////////////////////////////////////////////////////////
   InitBeamAndSoftBlobs(bloblist);
+  /////////////////////////////////////////////////////////////////////////////////
   // Fill in the transverse momenta through the Kinematics_Generator.
   // Check for colour connected parton-pairs including beam partons and
   // add soft gluons in between them if their invariant mass is too large.
   // This still needs debugging - therefore it is commented out.
+  /////////////////////////////////////////////////////////////////////////////////
   if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist)) {
     // || !m_decorrelator(p_softblob)) {
     Reset();
     msg_Error()
         << "Warning in " << METHOD
-        << ": FillBlobs or CheckBeamBreakup failed. Will return new event\n";
+        << ": FillBlobs or CheckBeamBreakup failed. Will return new event\n"
+	<<(*bloblist)<<"\n";
     return Return_Value::New_Event;
   }
   Reset();
+  msg_Out()<<"   * "<<METHOD<<" is successful:"<<(*p_softblob)<<"\n";
   return Return_Value::Success;
 }
 
 void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
+  /////////////////////////////////////////////////////////////////////////////////
   // Making a new blob (softblob) to locally compensate 4 momentum.
   // Ultimately, it will reflect different strategies of how to compensate
   // intrinsic kperp: hadron colliders vs. DIS
@@ -199,6 +218,7 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
   // coloured FS particles and then shuffle their momenta together with the
   // beam remnants.  To visualise this better, here the soft blob is
   // inserted after both beam and shower blobs.
+  /////////////////////////////////////////////////////////////////////////////////
   if (!(m_type == strat::simple || m_type == strat::ll)) {
     p_softblob = m_kinematics.MakeSoftBlob();
     if (m_type == strat::DIS1 || m_type == strat::DIS2)
@@ -206,14 +226,18 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
     else
       bloblist->push_front(p_softblob);
   }
+  /////////////////////////////////////////////////////////////////////////////////
   // Look for shower blobs that need beams and unset the flag
+  /////////////////////////////////////////////////////////////////////////////////
   for (auto &bit : *bloblist) {
     if (bit->Has(blob_status::needs_beams) && bit->Type() == btp::Shower) {
       bit->UnsetStatus(blob_status::needs_beams);
     }
   }
+  /////////////////////////////////////////////////////////////////////////////////
   // Remnant bases will generate their beam blobs, reset the incoming
   // four-momenta and make the two beam blobs
+  /////////////////////////////////////////////////////////////////////////////////
   m_colours.ResetFlags();
   for (size_t beam = 0; beam < 2; beam++) {
     bloblist->push_front(p_remnants[beam]->MakeBlob());
@@ -221,7 +245,9 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
 }
 
 bool Remnant_Handler::CheckBeamBreakup(Blob_List *bloblist) {
+  /////////////////////////////////////////////////////////////////////////////////
   // Final checks on beam breakup: four-momentum and colour conservation
+  /////////////////////////////////////////////////////////////////////////////////
   if (m_type == strat::simple || !m_check)
     return true;
   bool ok = true;
@@ -253,7 +279,9 @@ void Remnant_Handler::SetImpactParameter(const double & b) {
 }
 
 bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
+  /////////////////////////////////////////////////////////////////////////////////
   // Extracting a particle from a remnant only works for positive energies.
+  /////////////////////////////////////////////////////////////////////////////////
   if (part->Momentum()[0] < 0.) {
     msg_Error() << METHOD << " yields shower with negative incoming energies.\n"
                 << (*part->DecayBlob()) << "\n";

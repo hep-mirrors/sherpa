@@ -28,7 +28,7 @@ void Sudakov_Argument::FillTables() {
   for (size_t sbin=0;sbin<m_sbins.m_nbins;sbin++) {
     double s = m_sbins.x(sbin);
     (*p_processes->GetXSecs())(s);
-    p_processes->SetS(s);
+    p_processes->UpdateS(s);
     FillPT2Values(sbin,p_processes->GetXSecs()->XSnd());
     // msg_Out()<<METHOD<<"(Ecms = "<<sqrt(s)<<"): "
     // 	     <<"xsnd = "<<(p_processes->GetXSecs()->XSnd()*
@@ -65,3 +65,4 @@ void Sudakov_Argument::FillPT2Values(const size_t & sbin,const double & norm) {
 const double Sudakov_Argument::XSratio(const double & s) {
   return m_integral.Value(m_sbins.bin(s),0);
 }
+

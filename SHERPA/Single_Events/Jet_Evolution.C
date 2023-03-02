@@ -80,7 +80,6 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
     return Return_Value::Error;
   }
   PertInterfaceIter piIter;
-  string tag("SignalMEs");
   bool hit(false), found(true);
   while (found) {
     found = false;
@@ -88,35 +87,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
       Blob *meblob = (*bloblist)[i];
       if (meblob->Has(blob_status::needs_showers) &&	  
           meblob->Type() != btp::Hard_Decay) {
-        switch (int(meblob->Type())) {
-        case (int(btp::Signal_Process)):
-          tag = string("SignalMEs");
-          MODEL::as->SetActiveAs(PDF::isr::hard_process);
-          break;
-        case (int(btp::Hard_Collision)):
-          tag = string("MPIs");
-          if (meblob->TypeSpec() == "MinBias" || meblob->TypeSpec()=="Shrimps")
-            tag = string("SoftCollisions");
-          MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
-          break;
-        case (int(btp::Hadron_Decay)):
-          tag = string("HadronDecays");
-          MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
-          break;
-        default:
-          msg_Error() << "ERROR in " << METHOD << ": "
-                      << "Do not have an interface for this type of blob.\n"
-                      << (*meblob) << "\n   Will abort.\n";
-          THROW(fatal_error, "No perturbative interface found.");
-        }
-        piIter = m_interfaces.find(tag);
-        if (piIter == m_interfaces.end()) {
-          msg_Error() << "Error in Jet_Evolution::Treat: "
-                      << "No Perturbative_Interface found for type " << tag
-                      << "\n"
-                      << "   Abort the run.\n";
-          THROW(fatal_error, "No perturbative interface found.");
-        }
+	piIter = SelectInterface(meblob);
         switch (AttachShowers(meblob, bloblist, piIter->second)) {
         case Return_Value::Success:
           found = hit = true;
@@ -138,29 +109,72 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
         }
       }
     }
-    if (found)
-      hit = true;
+    if (found) hit = true;
     Reset();
   }
   if (hit) {
+    ///////////////////////////////////////////////////////////////////////////////
     // enable shower generator independent FS QED correction to ME
     // TODO: check first, whether shower did FS QED
+    ///////////////////////////////////////////////////////////////////////////////
     if (!bloblist->FourMomentumConservation()) {
       msg_Tracking() << METHOD << " found four momentum conservation error.\n";
       return Return_Value::New_Event;
     }
-    Blob *showerblob = bloblist->FindLast(btp::Shower);
+    Blob * showerblob = bloblist->FindLast(btp::Shower);
     showerblob->AddStatus(blob_status::needs_extraQED);
     return Return_Value::Success;
   }
+  /////////////////////////////////////////////////////////////////////////////////
   // Capture potential problem with empty remnants here.
   // This should only happen after retrying an event has been called.  In this
   // case we find the last (and hopefully only) shower blob and extract its
   // initiators.
+  /////////////////////////////////////////////////////////////////////////////////
   Blob *showerblob = bloblist->FindLast(btp::Shower);
-  if (showerblob != NULL && !p_remnants->ExtractShowerInitiators(showerblob))
-    return Return_Value::New_Event;
+  if (showerblob!=NULL && showerblob->Has(blob_status::needs_beams)) {
+    Blob * meblob = showerblob->InParticle(0)->ProductionBlob();
+    msg_Out()<<(*meblob)<<"\n"<<(*showerblob)<<"\n";
+    if (meblob->Type()!=btp::Hadron_Decay &&
+	!p_remnants->ExtractShowerInitiators(showerblob))
+      return Return_Value::New_Event;
+  }
   return Return_Value::Nothing;
+}
+
+
+PertInterfaceIter Jet_Evolution::SelectInterface(Blob * blob) {
+  string tag("SignalMEs");
+  switch (int(blob->Type())) {
+  case (int(btp::Signal_Process)):
+    tag = string("SignalMEs");
+    MODEL::as->SetActiveAs(PDF::isr::hard_process);
+    break;
+  case (int(btp::Hard_Collision)):
+    tag = string("MPIs");
+    if (blob->TypeSpec() == "MinBias" || blob->TypeSpec()=="Shrimps")
+      tag = string("SoftCollisions");
+    MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
+    break;
+  case (int(btp::Hadron_Decay)):
+    tag = string("HadronDecays");
+    MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
+    break;
+  default:
+    msg_Error() << "ERROR in " << METHOD << ": "
+		<< "Do not have an interface for this type of blob.\n"
+		<< (*blob) << "\n   Will abort.\n";
+    THROW(fatal_error, "No perturbative interface found.");
+  }
+  PertInterfaceIter piIter = m_interfaces.find(tag);
+  if (piIter == m_interfaces.end()) {
+    msg_Error() << "Error in Jet_Evolution::Treat: "
+		<< "No Perturbative_Interface found for type " << tag
+		<< "\n"
+		<< "   Abort the run.\n";
+    THROW(fatal_error, "No perturbative interface found.");
+  }
+  return piIter;
 }
 
 Return_Value::code
@@ -278,8 +292,8 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
   return p_remnants->ExtractShowerInitiators(noshowerblob);
 }
 
-bool Jet_Evolution::AftermathOfSuccessfulShower(
-    Blob *blob, Blob_List *bloblist, Perturbative_Interface *interface) {
+bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
+						Perturbative_Interface *interface) {
   if (blob->NInP() == 1 && blob->Type() != btp::Hadron_Decay)
     blob->InParticle(0)->SetInfo('h');
   interface->FillBlobs();
@@ -287,13 +301,9 @@ bool Jet_Evolution::AftermathOfSuccessfulShower(
   Blob *showerblob =
       (!interface->Shower()->On() ? CreateMockShowerBlobs(blob, bloblist)
                                   : bloblist->FindLast(btp::Shower));
-  if (showerblob != NULL) {
-    if (blob->Type() != btp::Hadron_Decay) {
-      showerblob->AddStatus(blob_status::needs_reconnections);
-    }
-    return p_remnants->ExtractShowerInitiators(showerblob);
-  }
-  return true;
+  if (showerblob==NULL || blob->Type()== btp::Hadron_Decay) return true;
+  showerblob->AddStatus(blob_status::needs_reconnections);
+  return p_remnants->ExtractShowerInitiators(showerblob);
 }
 
 ATOOLS::Blob *Jet_Evolution::CreateMockShowerBlobs(Blob *const meblob,

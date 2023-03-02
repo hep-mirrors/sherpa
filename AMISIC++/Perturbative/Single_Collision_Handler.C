@@ -19,13 +19,21 @@ Single_Collision_Handler::~Single_Collision_Handler() {
   if (m_ana) FinishAnalysis();
 }
 
-void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler) {
-  p_remnants = remnant_handler;
-  m_pt2min   = sqr((*mipars)("pt_min"));
+void Single_Collision_Handler::
+Init(REMNANTS::Remnant_Handler * remnant_handler,
+     MI_Processes * processes, Over_Estimator * overestimator) {
+  p_remnants      = remnant_handler;
+  p_processes     = processes;
+  p_overestimator = overestimator;
+  /////////////////////////////////////////////////////////////////////////////////
+  // TODO: Will have to make pt2min initial-particle dependent
+  //       (currently: photon vs proton, but treated the same)
+  /////////////////////////////////////////////////////////////////////////////////
+  m_pt2min        = sqr((*mipars)("pt_min"));
   if (m_ana) InitAnalysis();
 }
 
-Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
+Blob * Single_Collision_Handler::NextScatter() {
   /////////////////////////////////////////////////////////////////////////////////
   // Simple logic - bfac is provided from outside, now
   // - produce a trial kinematics (new transverse momentum smaller than the last one,
@@ -34,8 +42,6 @@ Blob * Single_Collision_Handler::NextScatter(const double & bfac) {
   // - construct its full kinematics and set the colours
   // - return a filled (at the moment 2->2 only) scattering blob
   /////////////////////////////////////////////////////////////////////////////////
-  p_overestimator->SetBFac(bfac);
-  msg_Out()<<METHOD<<" sets bfac = "<<bfac<<".\n";
   do {
     if (!SelectPT2(m_lastpt2)) return NULL;
     p_proc = p_processes->SelectProcess();
@@ -66,20 +72,19 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
   //   differential cross section dsigma/dpt2
   /////////////////////////////////////////////////////////////////////////////////
   m_pt2 = pt2;
-  double sigmatrue, sigmaapprox, weight;
+  double dsigmatrue, dsigmaapprox, weight;
   bool success(false), output(false);
   do {
     m_pt2  = p_overestimator->TrialPT2(m_pt2);
     m_muf2 = m_mur2 = m_pt2;
+    msg_Debugging()<<"         * "<<METHOD<<"(pt^2 = "<<m_pt2<<"):\n";
     if (m_pt2<m_pt2min) return false;
     if (!SelectRapidities() || !CalcXs() || !CalcMandelstams()) continue;
-    sigmatrue   = (*p_processes)(m_shat,m_that,m_uhat,m_x1,m_x2);
-    sigmaapprox = (*p_overestimator)(m_pt2);
-    weight      = sigmatrue/sigmaapprox;
-    msg_Out()<<"    pt^2 = "<<m_pt2<<" --> ratio = "<<(sigmatrue/sigmaapprox)<<" "
-	     <<" from sigma(true) = "<<sigmatrue<<", "
-	     <<"sigma(approx) = "<<sigmaapprox
-	     <<" vs. [pt^2/shat]^2 = "<<sqr(m_pt2/m_shat)<<"\n";
+    dsigmatrue   = (*p_processes)(m_shat,m_that,m_uhat,m_x1,m_x2);
+    dsigmaapprox = (*p_overestimator)(m_pt2, m_yvol);
+    weight       = dsigmatrue/dsigmaapprox;
+    msg_Debugging()<<"                xsec ratio = "<<weight<<" from "
+		   <<dsigmatrue<<" / "<<dsigmaapprox<<"\n";
     if (m_ana) AnalyseWeight(weight);
     if (weight > ran->Get()) success = true;
   } while (!success);
@@ -88,6 +93,10 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
 }
 
 Blob * Single_Collision_Handler::MakeBlob() {
+  //////////////////////////////////////////////////////////////////////////////////////
+  // Making a hard collision blob for pertutbative scatters and fill it with scales
+  // and incoming and outgoing particles.
+  //////////////////////////////////////////////////////////////////////////////////////
   Blob * blob = new Blob();
   blob->SetType(btp::Hard_Collision);
   blob->SetStatus(blob_status::needs_showers);
@@ -103,14 +112,22 @@ Blob * Single_Collision_Handler::MakeBlob() {
 }
 
 void Single_Collision_Handler::UpdateSandY(double s, double y) {
-  // does m_lastpt2 also have to be set?
-  m_lastpt2 = s;
-  m_S = s;
+  //////////////////////////////////////////////////////////////////////////////////////
+  // Updating everything that is needed for generation of next scatter
+  // Setting the last pT^2 on s, as a default.
+  //////////////////////////////////////////////////////////////////////////////////////
+  m_lastpt2 = m_S = s;
   m_Ycms = y;
+  p_processes->UpdateS(m_S);
+  p_overestimator->UpdateS();
 }
 
 bool Single_Collision_Handler::SelectRapidities() {
-  // Generate two trial rapidities
+  //////////////////////////////////////////////////////////////////////////////////////
+  // Generate two trial rapidities and keep the volume of the rapidity range -
+  // it has to be divided out of the approximated/overestimated differential cross section 
+  // as the prefactor there includes the volume to allow fast pt^2 generation.
+  //////////////////////////////////////////////////////////////////////////////////////
   m_xt   = sqrt(4.*m_pt2/m_S);
   if (m_xt>1.) return false;
   m_ymax = log(1./m_xt*(1.+sqrt(1.-m_xt*m_xt)));
@@ -121,18 +138,29 @@ bool Single_Collision_Handler::SelectRapidities() {
 }
 
 bool Single_Collision_Handler::CalcXs() {
-  // Misses term for the masses?
+  //////////////////////////////////////////////////////////////////////////////////////
+  // Obtain Bjorken-x from the trial rapidities and make sure they are still smaller
+  // than the residual x in the remnants.  Will enter the exact PDF calculation in
+  // the exact differential cross section.
+  //////////////////////////////////////////////////////////////////////////////////////
   m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.*exp(-m_Ycms);
   m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.*exp(m_Ycms);
-  //msg_Out()<<"    --> x1 = "<<m_x1<<" ("<<m_residualx1<<"), "
-  //	   <<"x2 = "<<m_x2<<" ("<<m_residualx2<<"), "
-  //	   <<"xt = "<<m_xt<<".\n";
+  //////////////////////////////////////////////////////////////////////////////////////
+  // TODO: Misses term for incoming masses, we will hope for the best by treating them
+  //       as massless - that could be improved in the future.
+  //////////////////////////////////////////////////////////////////////////////////////
+  msg_Debugging()<<"                x1 = "<<m_x1<<" ("<<m_residualx1<<"), "
+		 <<"x2 = "<<m_x2<<" ("<<m_residualx2<<"), "
+		 <<"xt = "<<m_xt<<".\n";
   if (m_x1<p_processes->PDFXmin(0) || m_x2<p_processes->PDFXmin(1) ||
       m_x1>1. || m_x2>1.) return 0.;
   return (m_x1<m_residualx1 && m_x2<m_residualx2);
 }
 
 bool Single_Collision_Handler::CalcMandelstams() {
+  //////////////////////////////////////////////////////////////////////////////////////
+  // Mandelstams for the exact matrix element.
+  //////////////////////////////////////////////////////////////////////////////////////
   if (m_xt*m_xt>m_x1*m_x2) return false;
   double tanhy = sqrt(1.-(m_xt*m_xt)/(m_x1*m_x2)); // = tanh((y3+y4)/2)
   m_shat = m_x1*m_x2*m_S;

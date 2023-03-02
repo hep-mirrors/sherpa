@@ -14,8 +14,8 @@ namespace AMISIC {
     Interaction_Probability * p_pint;
     Matter_Overlap          * p_mo;
     Sudakov_Argument        * p_sudakov;
-    double m_fc, m_oexp, m_enhancement;
-    double m_b, m_bmax, m_bnorm;
+
+    double m_b, m_bmax;
     bool   m_test, m_ana;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
 
@@ -30,9 +30,8 @@ namespace AMISIC {
     ~Impact_Parameter();
 
     void   Initialize(MI_Processes * processes);
-    void   Update(const double & s);
-    double SelectB(const double & s,const double & pt2=-1.);
-    double operator()(const double & b);
+    double CalculateB(const double & s,const double & pt2=-1.);
+    double operator()(const double & s,const double & b);
 
     inline ATOOLS::Vec4D  SelectPositionForScatter(const double & b) const {
       return p_mo->SelectPositionForScatter(b);

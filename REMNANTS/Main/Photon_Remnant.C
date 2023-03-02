@@ -23,6 +23,38 @@ Particle *Photon_Remnant::MakeParticle(const Flavour &flav) {
   return part;
 }
 
+bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
+  ////////////////////////////////////////////////////////////////////////////
+  // Is flavour element of flavours allowed by PDF?
+  ////////////////////////////////////////////////////////////////////////////
+  if (p_partons->find(flav) == p_partons->end()) {
+    msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
+    return false;
+  }
+  if (mom[0] < flav.HadMass()) {
+    msg_Debugging() << METHOD << ": parton too soft, mass = " << flav.HadMass()
+                    << " and energy = " << mom[0] << "\n";
+    return false;
+  }
+  // This respects the masses of all current remnants in m_spectator,
+  // the energy of the extracted parton and potentially the mass of its antiflavour.
+  // For the case of gluons, this is not necessary, but its HadMass() is zero anyway.
+  double required_energy =
+      EstimateRequiredEnergy(!flav.IsQuark() && !m_valence)
+      + mom[0] + Max(flav.HadMass(), m_LambdaQCD);
+  if (m_residualE < required_energy) {
+    msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
+    return false;
+  }
+  // Still in range?
+  double x = mom[0] / m_residualE;
+  if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
+    msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
+    return false;
+  }
+  return true;
+}
+
 bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
   if (m_extracted.empty()) {
     msg_Error() << METHOD
@@ -37,11 +69,14 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
                   << m_extracted << ", \n and spectators = " << m_spectators
                   << "\n";
   FindRecoiler();
+  // Possibly adjust final pending colours with extra gluons - in prinicple one may have
+  // to check that they are not singlets ....
   CompensateColours();
   // Assume all remnant bases already produced a beam blob = p_beamblob
   MakeLongitudinalMomenta(ktmap, copy);
   if (!p_beamblob->CheckColour(true)) {
-    msg_Error() << "Error in " << METHOD << " for \n" << (*p_beamblob) << "\n";
+    msg_Error()<<"   * Error in "<<METHOD<<" (illegal colour) for \n"
+	       <<(*p_beamblob)<<"\n";
     p_colours->Output();
     return false;
   }
@@ -74,36 +109,6 @@ void Photon_Remnant::Output() const {
   msg_Out() << "}.\n";
 }
 
-bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
-  // Is flavour element of flavours allowed by PDF?
-  if (p_partons->find(flav) == p_partons->end()) {
-    msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
-    return false;
-  }
-  if (mom[0] < flav.HadMass()) {
-    msg_Debugging() << METHOD << ": parton too soft, mass = " << flav.HadMass()
-                    << " and energy = " << mom[0] << "\n";
-    return false;
-  }
-  // This respects the masses of all current remnants in m_spectator,
-  // the energy of the extracted parton and potentially the mass of its antiflavour.
-  // For the case of gluons, this is not necessary, but its HadMass() is zero anyway.
-  double required_energy =
-      EstimateRequiredEnergy(!flav.IsQuark() && !m_valence)
-      + mom[0] + Max(flav.HadMass(), m_LambdaQCD);
-  if (m_residualE < required_energy) {
-    msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
-    return false;
-  }
-  // Still in range?
-  double x = mom[0] / m_residualE;
-  if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
-    msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
-    return false;
-  }
-  return true;
-}
-
 void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
                                              const bool &copy) {
   // Calculate the total momentum that so far has been extracted through
@@ -118,7 +123,8 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       pcopy->SetNumber();
       pcopy->SetBeam(m_beam);
       p_beamblob->AddToOutParticles(pcopy);
-    } else
+    }
+    else
       p_beamblob->AddToOutParticles(pmit);
     (*ktmap)[pmit] = Vec4D();
   }
@@ -142,11 +148,10 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   for (auto part : m_spectators) {
     if (availMom[0] < 0)
       msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
-    if (part == m_spectators.back()) {
-      part->SetMomentum(availMom);
-    } else {
+    if (part==m_spectators.back()) part->SetMomentum(availMom);
+    else {
       part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses) * availMom);
-      availMom -= part->Momentum();
+      availMom       -= part->Momentum();
       remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
     }
     msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
@@ -156,8 +161,8 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       pcopy->SetNumber();
       pcopy->SetBeam(m_beam);
       p_beamblob->AddToOutParticles(pcopy);
-    } else
-      p_beamblob->AddToOutParticles(part);
+    }
+    else p_beamblob->AddToOutParticles(part);
     (*ktmap)[part] = Vec4D();
   }
 }
@@ -217,11 +222,10 @@ void Photon_Remnant::MakeRemnants() {
   else
     quark = kf_s;
   int factor = 1;
-  Vec4D pos = m_position+m_ff();
   for (int i = 1; i < 3; i++) {
     part = MakeParticle(factor * quark);
     part->SetFlow(i, p_colours->NextColour(m_beam,i-1));
-    part->SetPosition(pos);
+    part->SetPosition(m_position+m_ff());
     m_spectators.push_front(part);
     factor *= -1;
   }

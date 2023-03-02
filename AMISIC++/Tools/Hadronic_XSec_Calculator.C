@@ -24,11 +24,11 @@ Hadronic_XSec_Calculator(MODEL::Model_Base *const model,
 			 const Flavour & fl1,const Flavour & fl2) :
   m_mass_proton(Flavour(kf_p_plus).Mass()),m_mass_proton2(sqr(m_mass_proton)),
   m_mass_pi(Flavour(kf_pi).Mass()), m_mass2_pi(sqr(m_mass_pi)), m_s1(sqr(20.)),
-  m_Ypp(-1.), m_c0(2.), m_c1(2.1), m_mres(2.), m_cres(2.)
+  m_Ypp(-1.), m_c0(2.), m_c1(2.1), m_mres(2.), m_cres(2.),
+  m_testmode(0)
 {
   m_flavs[0] = fl1; m_flavs[1] = fl2;
   for (size_t i=0;i<2;i++) {
-    m_flavs[i]  = Flavour(kf_p_plus); 
     m_masses[i] = m_flavs[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
   }
   m_alphaQED       = (dynamic_cast<MODEL::Running_AlphaQED *>
@@ -53,7 +53,7 @@ Hadronic_XSec_Calculator(MODEL::Model_Base *const model,
   m_prefDD         = sqr(m_triple_pomeron) * pow(m_s1,2.*m_eps_pomeron/2.)/(16.*M_PI) / (rpa->Picobarn()/1e9);
   FixType();
   FixTables();
-  TestXSecs(1);
+  if (m_testmode>0) TestXSecs();
 }
 
 void Hadronic_XSec_Calculator::FixType() {
@@ -68,28 +68,31 @@ void Hadronic_XSec_Calculator::FixType() {
   if (m_type==xsec_type::none) THROW(fatal_error,"Unknown type of hadronic cross section.");
 }
 
-void Hadronic_XSec_Calculator::TestXSecs(const size_t & testmode) {
-  list<double> Es = { 23.5, 62.5, 546., 1800. };
+void Hadronic_XSec_Calculator::TestXSecs() {
+  list<double> Es = { 23.5, 62.5, 546., 1800., 7000. };
   for (size_t i=0;i<2;i++) {
-    switch (testmode) {
-    case 2:
+    switch (m_testmode) {
+    case 3:
       m_flavs[i] = Flavour(kf_photon);
       m_type     = xsec_type::nucleon_photon;
       break;
-    case 1:
+    case 2:
       m_flavs[i] = (i==0) ? Flavour(kf_p_plus) : Flavour(kf_photon);
       m_type     = xsec_type::nucleon_photon;
       break; 
-    case 0:
-    default:
+    case 1:
       m_flavs[i] = Flavour(kf_p_plus);
       m_type     = xsec_type::nucleon_nucleon;
       break;
+    case 0:
+    default:
+      return;
     }
     m_masses[i] = m_flavs[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
   }
   for (list<double>::iterator E=Es.begin();E!=Es.end();E++) {
     (*this)(sqr(*E));
+    Output();
   }
   exit(1);
 }
@@ -112,7 +115,6 @@ void Hadronic_XSec_Calculator::operator()(double s)
     exit(1);
   }
   m_xsnd    = m_xstot - m_xsel - m_xssdA - m_xssdB - m_xsdd;
-  Output();
   ////////////////////////////////////////////////////////////////////////////////////////////
   // convert non-diffractive cross section from millibarn to 1/GeV^2
   ////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,7 +143,6 @@ void Hadronic_XSec_Calculator::CalculateHGammaXSecs(const size_t photon) {
   ////////////////////////////////////////////////////////////////////////////////////////////
   for (std::map<Flavour, double>::const_iterator flit=m_fVs.begin();
        flit!=m_fVs.end();flit++) {
-    msg_Out()<<METHOD<<"(photon = "<<photon<<", Flav = "<<flit->first<<")\n";
     hadtags[photon] = m_indexmap[flit->first];
     masses[photon]  = flit->first.Mass();
     prefV           = m_alphaQED/m_fVs[flit->first];
@@ -168,8 +169,11 @@ void Hadronic_XSec_Calculator::CalculatePhotonPhotonXSecs() {
       hadtags[1] = m_indexmap[flit1->first];
       masses[1]  = flit0->first.Mass();
       prefVV     = sqr(m_alphaQED)/(m_fVs[flit0->first] * m_fVs[flit1->first]);
-      m_xstot   += xstot = prefVV * TotalXSec(hadtags);
+      m_xstot   += prefVV * (xstot = TotalXSec(hadtags));
       m_xsel    += prefVV * IntElXSec(hadtags,xstot);
+      m_xssdA   += prefVV * IntSDXSec(hadtags,0,masses);
+      m_xssdB   += prefVV * IntSDXSec(hadtags,1,masses);
+      m_xsdd    += prefVV * IntDDXSec(hadtags,masses);
     }
   }
 }
@@ -201,16 +205,17 @@ double Hadronic_XSec_Calculator::IntSDXSec(const size_t hadtags[2],const size_t 
   // Note: To arrive at the correct prefactor, need to rescale the beta according to Eq.(27).
   ////////////////////////////////////////////////////////////////////////////////////////////
   size_t nodiff = 1-diff;
-  double bA     = s_slopes[hadtags[nodiff]];
-  double mres   = masses[nodiff]-m_mass_proton+m_mres, mres2 = sqr(mres);
   double mmin2  = sqr(masses[diff]+2.*m_mass_pi),      mmin  = sqrt(mmin2);
+  double mres   = masses[nodiff]-m_mass_proton+m_mres, mres2 = sqr(mres);
   double mmax2  = s_c[hadtags[0]][hadtags[1]][0+4*diff]*m_s + s_c[hadtags[0]][hadtags[1]][1+4*diff];
+  if (m_s<=mmin2 || m_s<=mmin*mres) return 0.;
+  double bA     = s_slopes[hadtags[nodiff]];
   double B_AX   = s_c[hadtags[0]][hadtags[1]][2+4*diff]     + s_c[hadtags[0]][hadtags[1]][3+4*diff]/m_s;
-  double J_AX   = ( 1./(2.*m_alphaP_pomeron) *
-		    log((bA+m_alphaP_pomeron*log(m_s/mmin2))/
-		    	(bA+m_alphaP_pomeron*log(m_s/mmax2))) +
-		    m_cres/(2.*(bA+m_alphaP_pomeron*log(m_s/(mmin*mres)))+B_AX) *
-		    log(1.+mres2/mmin2) );
+  double J_AX   = Max(0., ( 1./(2.*m_alphaP_pomeron) *
+			    log((bA+m_alphaP_pomeron*log(m_s/mmin2))/
+				(bA+m_alphaP_pomeron*log(m_s/mmax2))) +
+			    m_cres/(2.*(bA+m_alphaP_pomeron*log(m_s/(mmin*mres)))+B_AX) *
+			    log(1.+mres2/mmin2) ) );
   return m_prefSD * m_beta0[hadtags[nodiff]] * s_X[hadtags[0]][hadtags[1]] * J_AX;
 }
 
@@ -221,33 +226,39 @@ double Hadronic_XSec_Calculator::IntDDXSec(const size_t hadtags[2],
   // for pp taken from PRD 49 and for VMD states from Table 1 in Schuler and Sjostrand
   // Z fuer Physik C 73
   ////////////////////////////////////////////////////////////////////////////////////////////
+  double logs   = log(m_s),                       log2s  = sqr(logs);
+  double s0     = 1./m_alphaP_pomeron,            ss0    = m_s*s0;;
   double m1min2 = sqr(masses[0]+2.*m_mass_pi),    m1min  = sqrt(m1min2);
   double m2min2 = sqr(masses[1]+2.*m_mass_pi),    m2min  = sqrt(m2min2);
   double m1res  = masses[0]-m_mass_proton+m_mres, m1res2 = sqr(m1res);
   double m2res  = masses[1]-m_mass_proton+m_mres, m2res2 = sqr(m2res);
-  double logs   = log(m_s),                       log2s  = sqr(logs);
-  double Delta0 = ( s_d[hadtags[0]][hadtags[1]][0] +
-		    s_d[hadtags[0]][hadtags[1]][1]/logs +
-		    s_d[hadtags[0]][hadtags[1]][2]/log2s );
   double mmax2  = ( s_d[hadtags[0]][hadtags[1]][3] +
 		    s_d[hadtags[0]][hadtags[1]][4]/logs +
 		    s_d[hadtags[0]][hadtags[1]][5]/log2s ) * m_s;
+  if (m_s    <= sqr(m1min+m2min)   ||
+      m1min2 > mmax2               || m2min2 > mmax2||
+      ss0    <= m1min2*m2res*m2min || ss0 <= m2min2*m1res*m1min ||
+      ss0    <= mmax2*m1res*m1min  || ss0 <= mmax2*m2res*m2min  ||
+      ss0    <= m1res*m1min*m2res*m2min ||
+      m_s    <= (m1min2*m2min2)/m_mass_proton2) return 0.;
+  double arg11  = Max(1.001, ss0/(m1min2*m2res*m2min)), arg12 = Max(1.001, ss0/(mmax2*m2res*m2min));
+  double arg21  = Max(1.001, ss0/(m2min2*m1res*m1min)), arg22 = Max(1.001, ss0/(mmax2*m1res*m1min));
+  double Delta0 = ( s_d[hadtags[0]][hadtags[1]][0] +
+		    s_d[hadtags[0]][hadtags[1]][1]/logs +
+		    s_d[hadtags[0]][hadtags[1]][2]/log2s );
+  if (Delta0 <= 0.) return 0.;
   double Bxx    = ( s_d[hadtags[0]][hadtags[1]][6] +
 		    s_d[hadtags[0]][hadtags[1]][7]/sqrt(m_s) +
 		    s_d[hadtags[0]][hadtags[1]][8]/m_s );
-  double s0     = 1./m_alphaP_pomeron;
-  if (m_s*s0 < m1min2*m2res*m2min || m_s*s0 < mmax2*m2res*m2min ||
-      m_s*s0 < m2min2*m1res*m1min || m_s*s0 < mmax2*m1res*m1min) return 0.;
   double Deltay = log((m_s * m_mass_proton2)/(m1min2 * m2min2));
-  double J_XX   = ( 1./(2.*m_alphaP_pomeron) * ( Deltay*( log(Deltay/(Delta0)) - 1.) + Delta0 ) +
-		    m_cres/(2.*m_alphaP_pomeron) * (log(1.+m2res2/m2min2) *
-						    log(log((m_s*s0)/(m1min2*m2res*m2min))/
-							log((m_s*s0)/(mmax2*m2res*m2min))) +
-						    log(1.+m1res2/m1min2) *
-						    log(log((m_s*s0)/(m2min2*m1res*m1min))/
-							log((m_s*s0)/(mmax2*m1res*m1min))) ) +
-		    m_cres/(2.*m_alphaP_pomeron*log((m_s*s0)/(m1res*m1min*m2res*m2min))+Bxx) *
-		    log(1.+m1res2/m1min2) * log(1.+m2res2/m2min2) );
+  double J_XX   = Max(0.,
+		      ( 1./(2.*m_alphaP_pomeron) * ( Deltay*( log(Deltay/Delta0) - 1.) + Delta0 ) +
+			m_cres/(2.*m_alphaP_pomeron) * (log(1.+m2res2/m2min2) *
+							log(log(arg11)/log(arg12)) +
+							log(1.+m1res2/m1min2) *
+							log(log(arg21)/log(arg22)) ) +
+			m_cres/(2.*m_alphaP_pomeron*log(ss0/(m1res*m1min*m2res*m2min))+Bxx) *
+			log(1.+m1res2/m1min2) * log(1.+m2res2/m2min2) ) );
   return m_prefDD * s_X[hadtags[0]][hadtags[1]] * J_XX;
 }
 

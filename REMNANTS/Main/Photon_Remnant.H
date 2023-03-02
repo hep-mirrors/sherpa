@@ -32,11 +32,12 @@ public:
   Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag=0);
 
   // member functions
-  bool FillBlob(ATOOLS::ParticleMomMap *ktmap, const bool &copy) override;
   bool TestExtract(const ATOOLS::Flavour &flav, const ATOOLS::Vec4D &mom) override;
-  void Reset(const bool & resc=false, const bool &DIS=false) override;
+  bool FillBlob(ATOOLS::ParticleMomMap *ktmap, const bool &copy) override;
   void CompensateColours();
 
+  void Reset(const bool & resc=false, const bool &DIS=false) override;
+  
   inline ATOOLS::Particle *GetRecoiler() override { return p_recoiler; }
   inline ATOOLS::Particle *GetSpectator() override { return p_spectator; }
 }; // end of class Remnant_Base

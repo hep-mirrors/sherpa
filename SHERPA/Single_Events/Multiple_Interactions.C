@@ -78,64 +78,93 @@ void Multiple_Interactions::ResetMIHandler() {
 Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
 {
   msg_Out()<<"#################################################\n"
-	   <<"Entering "<<METHOD<<": Id = "<<p_activeMI->Id()<<", "
-	   <<"MI MinBias/Type = "<<p_activeMI->IsMinBias()<<"/"<<int(p_activeMI->Type())<<", "
-	   <<"done = "<<p_activeMI->Done()<<".\n";
+	   <<"Entering "<<METHOD<<": ";
+  if (p_activeMI)
+    msg_Out()<<"Id = "<<p_activeMI->Id()<<", done = "<<p_activeMI->Done()<<", "
+	     <<"MI MinBias/Type = "<<p_activeMI->IsMinBias()<<"/"<<int(p_activeMI->Type())<<", "
+	     <<"done = "<<p_activeMI->Done()<<".\n";
+  else
+    msg_Out()<<"No MI Handler.\n";
+  /////////////////////////////////////////////////////////////////////////////////
+  // The "regular" multi-parton interactions are done - do we need to do some
+  // beam rescattering (which will be some MinBias collisions?
+  /////////////////////////////////////////////////////////////////////////////////
+  if (p_activeMI && p_activeMI->Done() && p_activeMI->Id()==PDF::isr::hard_subprocess) SwapToRescatter();
   if (!p_activeMI || p_activeMI->Type()==MI_Handler::none) return Return_Value::Nothing; 
   m_result   = Return_Value::Nothing;  
   p_bloblist = bloblist;
-  // Try to colour-connect the last interaction with the remnants
-  p_activeMI->ConnectColours(p_bloblist->FindLast(btp::Shower));
+  /////////////////////////////////////////////////////////////////////////////////
+  // Try to colour-connect the last interaction with the remnants, if necessary:
+  // this is the case if the shower_blob has the "needs_beams" tag still attached.
+  /////////////////////////////////////////////////////////////////////////////////
+  Blob * lastShower = p_bloblist->FindLast(btp::Shower);
+  if (lastShower->Has(blob_status::needs_beams)) {
+    p_activeMI->ConnectColours(p_bloblist->FindLast(btp::Shower));
+  }
   m_isfirstMB = ( (p_bloblist->size()==1 && p_activeMI->IsMinBias()) ||
 		  p_activeMI->IsFirstRescatter() );
+  /////////////////////////////////////////////////////////////////////////////////
   // CheckBlobList makes sure a new interaction can be added.
   // If its the first then a completely new chain of 2->2 scatters 
   // must be initialised.  This is steered by a flag m_newevent, which is 
   // set to true in the CleanUp() method.
+  /////////////////////////////////////////////////////////////////////////////////
   if (m_newevent) {
+    msg_Out()<<"   * resetting energies and remnants.\n";
+    ///////////////////////////////////////////////////////////////////////////////
     // The flag m_newevent is then set to false after the bloblist and the
     // energies have been checked, i.e. in the InitNewEvent function.
     // The emax has to be set here (instead of e.g. the CleanUp()) to ensure
     // that the correct energy is taken in case of EPA-approximated beams.
+    ///////////////////////////////////////////////////////////////////////////////
     for (short unsigned int i = 0; i < 2; ++i) {
       m_emax[i] = ( (p_activeMI->Remnants()->Id()==PDF::isr::bunch_rescatter) ?
 		    (p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->InMomentum()-
 		     p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum())[0] :
 		    p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0]); 
-      p_activeMI->Remnants()->GetRemnant(i)->Reset(p_activeMI->Id()==PDF::isr::bunch_rescatter);
     }
   }
   if (!CheckBlobList() || !InitNewEvent() || !MIKinematics()) {
     return m_result;
   }
+  /////////////////////////////////////////////////////////////////////////////////
   // Possibly switch to new PDF and alphaS.
   // TODO: will have to check that this happens.
+  /////////////////////////////////////////////////////////////////////////////////
   SwitchPerturbativeInputsToMIs();
   p_lastblob = p_activeMI->GenerateHardProcess();
   if (p_lastblob) {
+    ///////////////////////////////////////////////////////////////////////////////
     // This assumes that the scatters are ordered in transverse momentum.
     // Then maximal scale of subsequent scatters is given by the pT of the
     // previous ones.
+    ///////////////////////////////////////////////////////////////////////////////
     m_ptmax = p_lastblob->OutParticle(0)->Momentum().PPerp();
+    ///////////////////////////////////////////////////////////////////////////////
     // Check that the partons can be extracted from remnant - mainly a
     // confirmation that the remnant has enough energy to accommodate
     // the extra parton.
+    ///////////////////////////////////////////////////////////////////////////////
     for (size_t i=0;i<(size_t)p_lastblob->NInP();++i) {
       if (!p_activeMI->Remnants()->GetRemnant(i)->TestExtract(p_lastblob->InParticle(i))) {
         delete p_lastblob;
         return Return_Value::Retry_Event;
       }
     }
+    ///////////////////////////////////////////////////////////////////////////////
     // If it is a MinBias event, the first blob is a dummy soft collision blob.
     // We have to fill it with the content of the actual blob created by
     // the MI_Handler
+    ///////////////////////////////////////////////////////////////////////////////
     if (m_isfirstMB) InitMinBiasEvent();
     else p_bloblist->push_back(p_lastblob);
     if (m_ptmax > m_hardveto) return Return_Value::New_Event;
     return Return_Value::Success;
   }
+  /////////////////////////////////////////////////////////////////////////////////
   // If we have reached the end of MPI production with a meaningful event,
   // we can stop here.
+  /////////////////////////////////////////////////////////////////////////////////
   if (p_activeMI->Done()) {
     if (!(p_activeMI->IsMinBias() &&
 	  bloblist->size()==1 &&
@@ -143,18 +172,24 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
 	   (*p_bloblist)[0]->Has(blob_status::needs_minBias))))
 	return Return_Value::Nothing;
   }
+  /////////////////////////////////////////////////////////////////////////////////
   // If it is a MinBias event where the event handler didn't manage to produce a
   // first scatter (i.e. the first blob still needs a signal) then we have to
   // produce a new event.
+  /////////////////////////////////////////////////////////////////////////////////
   return Return_Value::New_Event;
 }
 
 bool Multiple_Interactions::CheckBlobList() 
 {
   msg_Out()<<"   * "<<METHOD<<"\n";
+  /////////////////////////////////////////////////////////////////////////////////
   // don't need to check trivial first MB blob
+  /////////////////////////////////////////////////////////////////////////////////
   if (m_isfirstMB) return true;
+  /////////////////////////////////////////////////////////////////////////////////
   // naive checks on blob list - does it exist and conserve momentum.
+  /////////////////////////////////////////////////////////////////////////////////
   if (p_bloblist->empty()) {
     msg_Error()<<METHOD<<": incoming blob list is empty.\n";
     m_result = Return_Value::Error;
@@ -165,7 +200,9 @@ bool Multiple_Interactions::CheckBlobList()
     m_result = Return_Value::Retry_Event;
     return false;
   }
+  /////////////////////////////////////////////////////////////////////////////////
   // check if there is a blob that must shower first.
+  /////////////////////////////////////////////////////////////////////////////////
   for (Blob_List::const_iterator bit=p_bloblist->begin();
        bit!=p_bloblist->end();++bit) {
     if (((*bit)->Type()==btp::Hard_Collision ||
@@ -179,6 +216,7 @@ bool Multiple_Interactions::CheckBlobList()
 }
 
 bool Multiple_Interactions::BeamsViable() {
+  /////////////////////////////////////////////////////////////////////////////////
   // Checking if the total energy in shower initiators exceeds the
   // energies of the incoming beams.  If yes, undo showering and
   // start with the signal process (if this happens after first shower)
@@ -188,6 +226,7 @@ bool Multiple_Interactions::BeamsViable() {
   // MI interaction) gives rise to last shower blob, while the Signal
   // Process comes first.  It also knows that the shower initiators
   // in the In-state of the shower blobs are sorted ....
+  /////////////////////////////////////////////////////////////////////////////////
   msg_Out()<<"   * "<<METHOD<<"\n";
   Blob_List isr=p_bloblist->Find(btp::Shower);
   for (Blob_List::iterator bit=isr.begin();bit!=isr.end();++bit) {

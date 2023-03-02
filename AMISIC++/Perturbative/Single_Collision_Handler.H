@@ -44,17 +44,13 @@ namespace AMISIC {
     Single_Collision_Handler();
     ~Single_Collision_Handler();
 
-    void Init(REMNANTS::Remnant_Handler * remnant_handler);
-    void UpdateSandY(double s, double y);
-    ATOOLS::Blob * NextScatter(const double & bfac=1.);
-    bool TestRemnants() const;
+    void           Init(REMNANTS::Remnant_Handler * remnant_handler,
+			MI_Processes * processes, Over_Estimator * overestimator);
+    void           UpdateSandY(double s, double y);
+    ATOOLS::Blob * NextScatter();
+    bool           TestRemnants() const;
 
-    inline void SetMIProcesses(MI_Processes * processes) {
-      p_processes = processes;
-    }
-    inline void SetOverEstimator(Over_Estimator * overestimator) {
-      p_overestimator = overestimator;
-    }
+    
     inline void SetResidualX(const double & E1, const double & E2) {
       m_residualx1 = E1/InMomentum(0)[0];
       m_residualx2 = E2/InMomentum(1)[0];

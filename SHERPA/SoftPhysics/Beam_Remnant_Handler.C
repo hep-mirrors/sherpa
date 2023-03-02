@@ -198,5 +198,6 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
 
 void Beam_Remnant_Handler::CleanUp(const size_t & mode)
 {
+  msg_Out()<<"   * "<<METHOD<<"\n";
   p_remnants->Reset();
 }

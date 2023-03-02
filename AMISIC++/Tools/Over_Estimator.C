@@ -38,7 +38,13 @@ void Over_Estimator::Initialize(MI_Processes * procs) {
   FixMaximum();
 }
 
-void Over_Estimator::Update() {
+void Over_Estimator::UpdateS() {
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Updating to new variable centre-of-mass energy if necessary, and fixing a
+  // suitable overestimating prefactor by interpolation in the look-up tables.
+  // The non-diffractive cross section will have been calculated during the update
+  // of the MI_Processes.
+  ///////////////////////////////////////////////////////////////////////////////////
   m_s    = p_procs->S();
   m_xsnd = p_procs->GetXSecs()->XSnd();
   m_pref = (*p_prefs)(m_s);
@@ -53,8 +59,8 @@ void Over_Estimator::FixMaximum() {
   p_prefs    = new OneDim_Table(sbins);
   for (size_t sbin=0;sbin<sbins.m_nbins;sbin++) {
     m_s = sbins.x(sbin);   
-    double pt2step = log(m_s/(4.*m_ptmin2))/double(m_pt2bins), maxpref = 0.;
-    //double int1(0.),int2(0.);
+    double pt2step = log(m_s/(4.*m_ptmin2))/double(m_pt2bins);
+    double maxpref = 0.;
     for (size_t bin=0;bin<m_pt2bins;bin++) {
       /////////////////////////////////////////////////////////////////////////////////
       // The actual value of p_T^2 for the bin, giving the maximal rapidity range
@@ -76,17 +82,21 @@ void Over_Estimator::FixMaximum() {
       /////////////////////////////////////////////////////////////////////////////////
       double test   = Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.);
       if (test > maxpref) maxpref = test;
-      //if (bin>=1) {
-      //int1 += approx*yvol*m_ptmin2*(exp(pt2step*bin)-exp(pt2step*(bin-1.)));
-      //int2 += exact *yvol*m_ptmin2*(exp(pt2step*bin)-exp(pt2step*(bin-1.)));
-      //}
     }
     p_prefs->Fill(sbin,maxpref);
-    //msg_Out()<<METHOD<<"(sbin = "<<sbin<<", s = "<<m_s<<"): pref = "<<maxpref<<": "
-    //	     <<"I = "<<(int1*rpa->Picobarn())<<" pb (approx) & "
-    //	     <<(int2*rpa->Picobarn())<<" pb (exact).\n";
   }
 }
+
+double Over_Estimator::operator()(const double & pt2,const double & yvol) {
+  /////////////////////////////////////////////////////////////////////////////////
+  // Overestimator for differential cross section.
+  // Have to divide out the volume of the rapidity integration which is also
+  // not present in the true differential cross section calculated by the
+  // MI_Processes.
+  /////////////////////////////////////////////////////////////////////////////////
+  return m_pref/(yvol * sqr(pt2+m_pt02/4.));
+}
+
 
 double Over_Estimator::ApproxME(const double & pt2,const double & xt) {
   /////////////////////////////////////////////////////////////////////////////////
@@ -125,11 +135,6 @@ double Over_Estimator::ExactME(const double & pt2,const double & xt) {
   return 0.;
 }
   
-double Over_Estimator::operator()(const double & pt2) {
-  msg_Out()<<METHOD<<"(pt^2 = "<<pt2<<", pref = "<<m_pref<<") = "<<m_pref/sqr(pt2+m_pt02/4.)<<"\n";
-  return m_pref/sqr(pt2+m_pt02/4.);
-}
-
 double Over_Estimator::TrialPT2(const double & Q2) {
   /////////////////////////////////////////////////////////////////////////////////
   // Produce an overestimated q2 by solving for q2

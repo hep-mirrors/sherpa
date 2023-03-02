@@ -72,7 +72,7 @@ void MI_Handler::InitShrimps(MODEL::Model_Base *model)
 
 bool MI_Handler::InitialiseMPIs(const double & scale) 
 {
-  msg_Out()<<"     --> "<<METHOD<<"("<<scale<<"):\n";
+  msg_Out()<<"   * "<<METHOD<<"("<<scale<<"):\n";
   for (size_t i=0;i<2;i++)
     msg_Out()<<"         mom["<<i<<"] = "
 	     <<p_remnants->GetRemnant(i)->IncomingMomentum()<<" "
@@ -92,8 +92,10 @@ void MI_Handler::SetMaxEnergies(const double & E1,const double & E2) {
 }
 
 void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
-  msg_Out()<<METHOD<<"("<<m_firstrescatter<<") for "<<showerblob<<"\n";
+  msg_Out()<<"   * "<<METHOD<<"("<<m_firstrescatter<<") for "<<showerblob<<"\n";
+  msg->Indent(5);
   msg_Out()<<(*showerblob)<<"\n";
+  msg->Indent(-5);
   if (!m_firstrescatter && showerblob) p_remnants->ConnectColours(showerblob);
 }
 
@@ -104,8 +106,12 @@ Blob * MI_Handler::GenerateHardProcess()
   if (m_type==typeID::shrimps) blob = p_shrimps->GenerateEvent();
   if (blob==NULL) m_stop = true;
   m_firstrescatter = false;
-  msg_Out()<<METHOD<<" yields blob = "<<blob<<"\n";
-  if (blob!=NULL) msg_Out()<<(*blob)<<"\n";
+  msg_Out()<<"   * "<<METHOD<<" yields blob = "<<blob<<"\n";
+  if (blob!=NULL) {
+    msg->Indent(5);
+    msg_Out()<<(*blob)<<"\n";
+    msg->Indent(-5);
+  }
   return blob;
 }
 
@@ -117,6 +123,7 @@ bool MI_Handler::VetoScatter(Blob *blob)
 
 void MI_Handler::Reset()
 {
+  msg_Out()<<"   * "<<METHOD<<"\n";
   m_stop = false;
   if (m_type==typeID::amisic) p_amisic->Reset();
   for (short unsigned int i=0;i<2;++i) {

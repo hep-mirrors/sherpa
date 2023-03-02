@@ -35,9 +35,10 @@ namespace AMISIC {
     double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_eta_reggeon;
     double m_alphaQED;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
+    size_t m_testmode;
     
     void   FixType();
-    void   TestXSecs(const size_t & testmode=0);
+    void   TestXSecs();
     void   CalculateHHXSecs();
     void   CalculateHGammaXSecs(const size_t photon);
     void   CalculatePhotonPhotonXSecs();

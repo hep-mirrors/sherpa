@@ -37,6 +37,7 @@ namespace AMISIC {
     const double operator()(const double & x) const;
     inline const double Value(const size_t & xbin) const { return m_values[xbin]; }
     inline const double Size()                     const { return m_values.size(); }
+    inline const axis & GetAxis()                  const { return m_x; }
   };
 
   class TwoDim_Table {

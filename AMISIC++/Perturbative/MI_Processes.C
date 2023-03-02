@@ -244,11 +244,13 @@ const double MI_Processes::dSigma(const double & pt2) {
   return res/double(m_MCpoints);
 }
 
-void MI_Processes::SetS(const double & s) {
+void MI_Processes::UpdateS(const double & s) {
   /////////////////////////////////////////////////////////////////////////////////
-  // Update relevant parameters for variable centre-of-mass energies:
-  // relevant for processes involving EPA photons etc.
+  // Update parameters (mainly c.m. energy) for variable centre-of-mass energies:
+  // relevant for processes involving EPA photons etc..
+  // Recalculate the non-diffractive and other cross sections
   /////////////////////////////////////////////////////////////////////////////////
   m_S    = s; 
   m_ecms = sqrt(m_S);
+  (*p_xsecs)(m_S);
 }
