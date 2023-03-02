@@ -297,8 +297,9 @@ void Phase_Space_Handler::CheckSinglePoint()
   msg_Out()<<"// "<<proc->Name()<<"\n";
   for (size_t i(0);i<p_lab.size();++i)
     msg_Out()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";"<<std::endl;
-  if (proc->Get<Single_Process>()) {
-    msg_Out()<<"double ME = "<<proc->Get<Single_Process>()->LastXS()
+  for (int i=0; i<proc->Size(); ++i) {
+    msg_Out()<<(*proc)[i]->Name()<<" ME = "<<(*proc)[i]->Get<Single_Process>()->LastXS()
+             <<", ME with PDF = "<<(*proc)[i]->Get<Single_Process>()->Last()
              <<"; // in GeV^2, incl. symfacs"<<std::endl;
     if (proc->GetSubevtList()) {
       NLO_subevtlist * subs(proc->GetSubevtList());
