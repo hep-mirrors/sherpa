@@ -46,7 +46,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
     Process_Base *proc((*(*p_apmap)[nlo_type::lo])[pname]);
     if (proc==NULL) THROW(fatal_error,"Process not found: "+pname);
     for (size_t i(0);i<m_procs.size();++i)
-      if (m_procs[i]->Name()==pname) {
+      if (m_procs[i]->Name().find(pname)==0) {
 	p_selected=m_procs[i];
 	proc=NULL;
 	break;

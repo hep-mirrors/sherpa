@@ -69,6 +69,11 @@ void BBar_Multi_Channel::GenerateEmissionPoint
   m_eeg.GenerateWeight(p_cuts,true);
 }
 
+void BBar_Multi_Channel::SetPoint(NLO_subevt *sub)
+{
+  m_eeg.SetPoint(sub);
+}
+
 void BBar_Multi_Channel::AddPoint(double value)
 { 
   m_lastdice=-1;

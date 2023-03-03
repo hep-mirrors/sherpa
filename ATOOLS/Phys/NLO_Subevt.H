@@ -74,7 +74,7 @@ namespace ATOOLS {
 
     size_t m_n, m_idx;
     double m_result, m_me, m_mewgt, m_kt2;
-    double m_x1, m_x2,m_xf1, m_xf2;
+    double m_x1, m_x2, m_xf1, m_xf2;
     
     std::vector<double> m_mu2;
 

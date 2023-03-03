@@ -2,6 +2,7 @@
 #define PHASIC__Main__Event_Reader_H
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
 #include <vector>
@@ -16,6 +17,9 @@ namespace PHASIC {
   class Event_Reader {
   protected:
 
+    ATOOLS::Cluster_Amplitude *p_ampl;
+    ATOOLS::NLO_subevt        *p_sub;
+
     std::vector<std::string> m_files;
 
     double m_totalxs;
@@ -29,7 +33,7 @@ namespace PHASIC {
   public:
 
     inline Event_Reader(const Event_Reader_Key &key):
-      m_files(key.m_files), m_compute(true) {}
+      m_files(key.m_files), m_compute(true), p_ampl(NULL), p_sub(NULL) {}
     virtual ~Event_Reader() = default;
 
     virtual ATOOLS::Cluster_Amplitude *ReadEvent() = 0;
@@ -37,6 +41,10 @@ namespace PHASIC {
     inline double TotalXS() const { return m_totalxs; }
 
     inline bool Compute() const { return m_compute; }
+
+    inline void SetAmpl(ATOOLS::Cluster_Amplitude *ampl) { p_ampl=ampl; }
+
+    inline ATOOLS::NLO_subevt *SubEvt() const { return p_sub; }
 
   };// end of class Event_Reader
   

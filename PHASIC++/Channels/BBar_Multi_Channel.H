@@ -45,6 +45,8 @@ namespace PHASIC {
     void GenerateEmissionPoint
     (const ATOOLS::Cluster_Amplitude &ampl,int mode);
 
+    void SetPoint(ATOOLS::NLO_subevt *sub);
+
     void WriteOut(std::string pId);
     bool ReadIn(std::string pId);
 

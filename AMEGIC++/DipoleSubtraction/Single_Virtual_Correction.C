@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
@@ -508,6 +509,13 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
   p_partner->m_bvimode=bvimode;
 
   m_lastbxs*=m_Norm;
+  size_t precision(msg->Out().precision());
+  msg->SetPrecision(16);
+  DEBUG_VAR(m_lastb);
+  DEBUG_VAR(m_lastv);
+  DEBUG_VAR(m_lasti);
+  DEBUG_VAR(m_lastkp);
+  msg->SetPrecision(precision);
   return m_lastxs = wgt * m_Norm * (m_lastdxs+m_lastkp);
 }
 
@@ -862,6 +870,10 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   if (m_flavs[0].Strong()) {
     eta0 = mom[0].PPlus()/p_int->Beam()->GetBeam(0)->OutMomentum().PPlus();
     m_x0 = eta0+ran->Get()*(1.-eta0);
+    if (p_read) {
+      m_x0=eta0+p_read->SubEvt()->m_x1*(1.-eta0);
+      msg_Debugging()<<"read in x0 = "<<m_x0<<"\n";
+    }
     w *= (1.-eta0);
 //       m_x0 = eta0*std::exp(-ran->Get()*log(eta0));
 //       w *= -m_x0*log(eta0);
@@ -869,6 +881,10 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   if (m_flavs[1].Strong()) {
     eta1 = mom[1].PMinus()/p_int->Beam()->GetBeam(1)->OutMomentum().PMinus();
     m_x1 = eta1+ran->Get()*(1.-eta1);
+    if (p_read) {
+      m_x1 = eta1+p_read->SubEvt()->m_x2*(1.-eta1);
+      msg_Debugging()<<"read in x1 = "<<m_x1<<"\n";
+    }
     w *= (1.-eta1);
 //        m_x1 = eta1*std::exp(-ran->Get()*log(eta1));
 //        w *= -m_x1*log(eta1);

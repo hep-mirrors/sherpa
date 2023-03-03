@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -529,13 +530,40 @@ double MCatNLO_Process::OneSEvent(const int wmode)
 
 Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 {
-  DEBUG_FUNC("");
-  const double S(p_bviproc->Integrator()->SelectionWeight(wmode));
-  const double H(p_rsproc->Integrator()->SelectionWeight(wmode));
+  DEBUG_FUNC(m_name<<" "<<p_read);
+  double S(p_bviproc->Integrator()->SelectionWeight(wmode));
+  double H(p_rsproc->Integrator()->SelectionWeight(wmode));
   Weight_Info *winfo(NULL);
+  if (p_read) {
+    msg_Debugging()<<"Reader type is "<<Demangle(typeid(*p_read).name())<<"\n";
+    Cluster_Amplitude *ampl(p_read->ReadEvent());
+    if (ampl==NULL) return NULL;
+    msg_Debugging()<<*ampl<<"\n";
+    if (p_read->SubEvt()->m_n) {
+      msg_Debugging()<<"S event\n";
+      p_read->SetAmpl(ampl);
+      p_bviproc->SetEventReader(p_read);
+      winfo = p_bviproc->OneEvent(wmode);
+      p_bviproc->SetEventReader(NULL);
+      S=1; H=0;
+    }
+    else {
+      msg_Debugging()<<"H event\n";
+      p_read->SetAmpl(ampl);
+      p_rsproc->SetEventReader(p_read);
+      winfo = p_rsproc->OneEvent(wmode);
+      p_rsproc->SetEventReader(NULL);
+      S=0; H=1;
+    }
+    if (winfo==NULL) {
+      msg_Debugging()<<"No weight info\n";
+      return winfo;
+    }
+    msg_Debugging()<<"Weight info: "<<*winfo<<"\n";
+  }
   if (S > ran->Get() * (S + H)) {
     p_selected = p_bviproc;
-    winfo = p_bviproc->OneEvent(wmode, mode);
+    if (p_read==NULL) winfo = p_bviproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
       const double Swgt(OneSEvent(wmode));
@@ -583,7 +611,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       rpa->gen.SetPilotRun(false);
     }
     p_selected = p_rsproc;
-    winfo = p_rsproc->OneEvent(wmode, mode);
+    if (p_read==NULL) winfo = p_rsproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
       const double Hwgt(OneHEvent(wmode));
@@ -650,11 +678,16 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
     p_ddproc->Differential(*ampl,4);
   } while (!InitSubtermInfo());
   ampl->Delete();
+  p_bviproc->SetEventReader(p_read);
   bool res(p_bviproc->CalculateTotalXSec(resultpath,create));
+  p_bviproc->SetEventReader(NULL);
   psh=p_rsproc->Integrator()->PSHandler();
-  psh->SetAbsError(psh->Error()*rpa->Picobarn()*
-		   dabs(p_bviproc->Integrator()->TotalResult()));
+  if (!p_read)
+    psh->SetAbsError(psh->Error()*rpa->Picobarn()*
+		     dabs(p_bviproc->Integrator()->TotalResult()));
+  p_rsproc->SetEventReader(p_read);
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
+  p_rsproc->SetEventReader(NULL);
   for (size_t i(0);i<p_bviproc->Size();++i)
     (*p_bproc)[i]->Integrator()->SetMax
       ((*p_bviproc)[i]->Integrator()->Max());

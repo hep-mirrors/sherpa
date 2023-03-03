@@ -230,10 +230,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     }
     proc->SetVariationWeights(NULL);
     p_proc=proc->Selected();
-    if (p_proc->Generator()==NULL)
-      THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
-    if (p_proc->Generator()->MassMode()!=0)
-      THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
     double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
     if (info==NULL) {
       if (m_recalculate_zeros && !skip_rerun && m_haspilotscale) {

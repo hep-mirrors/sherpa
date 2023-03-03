@@ -472,6 +472,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     if (p_mc!=NULL && m_dadsmode && m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) {
       // calculate DADS for MC@NLO, one PS point, many dipoles
       msg_Debugging()<<"Calculating DADS terms"<<std::endl;
+      if (p_read) p_mc->SetPoint(p_read->SubEvt());
       m_mewgtinfo.m_type|=mewgttype::DADS;
       Dipole_Params dps(p_mc->Active(this));
       if (dps.p_dip!=NULL) {
@@ -490,7 +491,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
             SHERPA::Variation_Weights * vw = new SHERPA::Variation_Weights(v);
             cp->SetOwnedVariationWeights(vw);
           }
+	  if (p_read) cp->ScaleSetter(true)->SetFixedScale
+			(ScaleSetter(true)->FixedScales());
           double dadswgt(cp->Differential(dps.m_p)*dps.m_weight);
+	  if (p_read) cp->ScaleSetter(true)->SetFixedScale(std::vector<double>());
           msg_Debugging()<<"DADS_"<<i<<" = "<<-dadswgt<<std::endl;
           double dadsmewgt(cp->GetMEwgtinfo()->m_B*dps.m_weight);
           DADS_Info dads(-dadsmewgt,x[0],x[1],
