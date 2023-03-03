@@ -86,7 +86,7 @@ bool Combined_Selector::RSTrigger(NLO_subevtlist *const subs)
   int pass(0);
   for (size_t n(0);n<subs->size();++n) {
     p_sub=(*subs)[n];
-    Vec4D_Vector mom(p_sub->p_mom,&p_sub->p_mom[m_n]);
+    Vec4D_Vector mom(p_sub->p_mom,&p_sub->p_mom[p_sub->m_n]);
     for (size_t i(0);i<m_nin;++i)
       if (mom[i][0]<0.0) mom[i]=-mom[i];
     Selector_List sl=Selector_List
