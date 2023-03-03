@@ -50,7 +50,7 @@ you use the distribution tarball:
    $ cmake --install <builddir>
 
 where `<builddir>` has to be replaced with the (temporary) directory in which intermediate files are stored during the build process.
-Normally you can simply use the current working directory, i.e. `.`.
+You can simply use the current working directory, i.e. `cmake -S . -B .` to compile in-source if you want to keep everything Sherpa-related in one directory.
 
 Note that re-running ``cmake`` with different configuration options is `not the same <https://gitlab.kitware.com/cmake/cmake/-/issues/19622>`_ as running it in a fresh working directory. Use ``ccmake .`` instead to check/change the current configuration. To start afresh, e.g. to pick up a different version of a dependency, you can use the ``cmake --fresh [...]`` option in recent versions of cmake, or just delete the cache (``rm -rf CMakeCache.txt CMakeFiles``).
 
