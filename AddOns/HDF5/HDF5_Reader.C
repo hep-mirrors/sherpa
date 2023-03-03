@@ -55,12 +55,19 @@ namespace LHEH5 {
     size_t trials;
     std::vector<double> wgts;
     double mur, muf, muq, aqed, aqcd;
+    std::vector<Particle> ctparts;
+    int ijt, kt, i, j, k;
+    double z1, z2, bbpsw;
     inline Event(const ProcInfo &_pinfo,
 		 size_t _trials,std::vector<double> _wgts,
 		 double _mur,double _muf,double _muq,
 		 double _aqed,double _aqcd):
       pinfo(_pinfo), trials(_trials), wgts(_wgts),
-      mur(_mur), muf(_muf), muq(_muq), aqed(_aqed), aqcd(_aqcd) {}
+      mur(_mur), muf(_muf), muq(_muq), aqed(_aqed), aqcd(_aqcd),
+      ijt(-1), kt(-1), i(-1), j(-1), k(-1), z1(0), z2(0), bbpsw(0) {}
+    inline void AddCTInfo(int _ijt, int _kt,int _i,int _j,int _k,
+			  double _z1,double _z2,double _w)
+    { ijt=_ijt; kt=_kt, i=_i; j=_j; k=_k; z1=_z1; z2=_z2; bbpsw=_w; }
   };// end of struct Event
 
   std::ostream &operator<<(std::ostream &s,const Event &e)
@@ -70,6 +77,11 @@ namespace LHEH5 {
     s<<")\n  mur="<<e.mur<<", muf="<<e.muf<<", muq="<<e.muq
      <<",aqed="<<e.aqed<<",aqcd="<<e.aqcd<<"\n";
     for (size_t i(0);i<e.size();++i) s<<"  "<<e[i]<<"\n";
+    if (!e.ctparts.empty()) {
+      s<<"  ("<<e.ijt<<","<<e.kt<<")->("<<e.i<<","<<e.j<<","<<e.k
+       <<"), z1="<<e.z1<<", z2="<<e.z2<<", bbpsw="<<e.bbpsw<<"\n";
+      for (size_t i(0);i<e.ctparts.size();++i) s<<"  "<<e.ctparts[i]<<"\n";
+    }
     return s<<"}"; }
 
   class LHEFile {
@@ -77,6 +89,7 @@ namespace LHEH5 {
     
     std::vector<int> version;
     std::vector<std::vector<double> > evts, parts, pinfo;
+    std::vector<std::vector<double> > ctevts, ctparts;
     std::vector<std::string> wgtnames;
 
     inline Particle GetParticle(size_t i) const
@@ -84,6 +97,12 @@ namespace LHEH5 {
       return Particle(parts[i][0],parts[i][1],parts[i][2],parts[i][3],
 		      parts[i][4],parts[i][5],parts[i][6],parts[i][7],
 		      parts[i][8],parts[i][9],parts[i][10]);
+    }
+
+    inline Particle GetCTParticle(size_t i) const
+    {
+      return Particle(-1,-1,-1,-1,-1,-1,ctparts[i][0],ctparts[i][1],
+		      ctparts[i][2],ctparts[i][3],-1);
     }
 
   public:
@@ -115,10 +134,17 @@ namespace LHEH5 {
       double wgt(0.);
       for (std::vector<double>::const_iterator
 	     it(wgts.begin());it!=wgts.end();++it) wgt+=std::abs(*it);
-      if (wgt)
+      if (!wgt) return e;
 #endif
       for (int n(0);n<evts[i][1];++n)
 	e.push_back(GetParticle(evts[i][2]-evts[0][2]+n));
+      if (!ctevts.empty() && ctevts[i][0]>=0 && ctevts[i][1]>=0) {
+	e.AddCTInfo(ctevts[i][0],ctevts[i][1],ctevts[i][2],
+		    ctevts[i][3],ctevts[i][4],ctevts[i][5],
+		    ctevts[i][6],ctevts[i][7]);
+	for (int n(0);n<evts[i][1]+(ctevts[i][0]>=0?1:0);++n)
+	  e.ctparts.push_back(GetCTParticle(evts[i][2]-evts[0][2]+n));
+      }
       return e;
     }
  
@@ -144,6 +170,17 @@ namespace LHEH5 {
       size_t nps(evts.back()[2]-evts.front()[2]+evts.back()[1]);
       std::vector<size_t> pcounts{nps,13};
       particles.select(poffsets,pcounts).read(parts);
+      if (file.exist("ctevents")) {
+	DataSet events(file.getDataSet("ctevents"));
+	std::vector<size_t> eoffsets{first_event,0};
+	std::vector<size_t> ecounts{n_events,8};
+	events.select(eoffsets,ecounts).read(ctevts);
+	DataSet particles(file.getDataSet("ctparticles"));
+	std::vector<size_t> poffsets{(size_t)evts.front()[2],0};
+	size_t nps(evts.back()[2]-evts.front()[2]+evts.back()[1]);
+	std::vector<size_t> pcounts{nps,4};
+	particles.select(poffsets,pcounts).read(ctparts);
+      }
     }
     
   };// end of struct LHEFile
@@ -151,6 +188,7 @@ namespace LHEH5 {
 }// end of namespace LHEH5
 
 #include "PHASIC++/Main/Event_Reader.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -167,19 +205,21 @@ namespace LHEH5 {
     LHEFile *p_file;
     size_t   m_ievt, m_ifile, m_trials;
 
-    Cluster_Amplitude *p_ampl;
-    
+    Vec4D_Vector m_ctmoms;
+
   public:
 
     HDF5_Reader(const Event_Reader_Key &key):
-      Event_Reader(key), m_ievt(0), m_ifile(0), p_ampl(NULL)
+      Event_Reader(key), m_ievt(0), m_ifile(0), m_trials(0)
     {
       p_file = OpenFile(m_files[m_ifile]);
+      p_sub = new NLO_subevt();
     }
 
     ~HDF5_Reader()
     {
       if (p_ampl) p_ampl->Delete();
+      delete p_sub;
     }
 
     LHEFile *OpenFile(const std::string &fname)
@@ -207,7 +247,7 @@ namespace LHEH5 {
 
     Cluster_Amplitude *ReadEvent()
     {
-      DEBUG_FUNC("i="<<m_ievt<<",n_evts="<<p_file->NEvents());
+      DEBUG_FUNC("i="<<m_ievt<<"("<<p_file->NEvents()<<"),trial="<<m_trials);
       if (m_ievt>=p_file->NEvents()) {
 	delete p_file;
 	p_file=NULL;
@@ -243,6 +283,22 @@ namespace LHEH5 {
 	p_ampl->SetKT2(sqr(e.muq));
 	p_ampl->SetLKF(e.wgts[0]);
 	m_trials=e.trials;
+	if (e.ctparts.empty()) p_sub->m_n=0;
+	else {
+	  m_ctmoms.resize(p_sub->m_n=e.ctparts.size());
+	  for (size_t i(0);i<e.ctparts.size();++i)
+	    m_ctmoms[i]=Vec4D(e.ctparts[i].e,e.ctparts[i].px,
+			      e.ctparts[i].py,e.ctparts[i].pz);
+	  p_sub->p_mom=&m_ctmoms[0];
+	  p_sub->m_ijt=e.ijt;
+	  p_sub->m_kt=e.kt;
+	  p_sub->m_i=e.i;
+	  p_sub->m_j=e.j;
+	  p_sub->m_k=e.k;
+	  p_sub->m_x1=e.z1;
+	  p_sub->m_x2=e.z2;
+	  p_sub->m_result=e.bbpsw;
+	}
       }
       if (m_trials==1) {
 	Cluster_Amplitude *ampl(p_ampl);
