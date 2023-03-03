@@ -19,7 +19,7 @@ public:
 
   ~Userhook_Example() {}
 
-  ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs, double &weight) {
+  ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs) {
     DEBUG_INFO("Let's do something with the bloblist for each event:");
 
     if(blobs->FourMomentumConservation()) {
