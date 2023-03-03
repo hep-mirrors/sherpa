@@ -496,12 +496,12 @@ namespace SHERPA {
       m_offset+=sumcache;
       m_dss["events"].select({rank,0},{ncache,m_ecache.front().size()}).write(m_ecache, xfer_props);
       m_ecache.clear();
-      m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_pcache.front().size()}).write(m_pcache, xfer_props);
+      m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_pcache.front().size()}).write(m_pcache,xfer_props);
       m_pcache.clear();
       if (m_hasnlo) {
-	m_dss["ctevents"].select({rank,0},{ncache,m_necache.front().size()}).write(m_necache);
+	m_dss["ctevents"].select({rank,0},{ncache,m_necache.front().size()}).write(m_necache,xfer_props);
 	m_necache.clear();
-	m_dss["ctparticles"].select({rank*m_nmax,0},{ncache*m_nmax,m_npcache.front().size()}).write(m_npcache);
+	m_dss["ctparticles"].select({rank*m_nmax,0},{ncache*m_nmax,m_npcache.front().size()}).write(m_npcache,xfer_props);
 	m_npcache.clear();
       }
     }
