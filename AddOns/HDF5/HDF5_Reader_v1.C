@@ -277,7 +277,7 @@ namespace LHEH5 {
 	m_ievt=0;
       }
       if (p_ampl==NULL) {
-	Event e(p_file->GetEvent(m_ievt++));
+	Event e(p_file->GetEvent(m_ievt));
 	if (e[0].pz<0 && e[1].pz>0) std::swap<Particle>(e[0],e[1]);
 	msg_Debugging()<<e<<"\n";
 	p_ampl = Cluster_Amplitude::New();
@@ -299,6 +299,7 @@ namespace LHEH5 {
       if (m_trials==1) {
 	Cluster_Amplitude *ampl(p_ampl);
 	p_ampl=NULL;
+	m_ievt++;
 	return ampl;
       }
       --m_trials;
