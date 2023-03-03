@@ -138,11 +138,12 @@ Dipole_Params BBar_Emission_Generator::Active
 
 void BBar_Emission_Generator::SetPoint(ATOOLS::NLO_subevt *sub)
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC(sub);
   p_active=NULL;
   m_p.resize(sub->m_n);
   for (size_t i(0);i<sub->m_n;++i) m_p[i]=sub->p_mom[i];
-  msg_Debugging()<<"Set point {\n";
+  msg_Debugging()<<"Set point ("<<sub->m_ijt<<","<<sub->m_kt<<")->("
+		 <<sub->m_i<<","<<sub->m_j<<","<<sub->m_k<<") {\n";
   for (size_t j(0);j<m_p.size();++j)
     msg_Debugging()<<"  "<<m_p[j]<<"\n";
   msg_Debugging()<<"}\n";
