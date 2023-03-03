@@ -486,7 +486,6 @@ namespace SHERPA {
 	m_dss["particles"].resize({(m_offset+sumcache)*m_nmax,m_npprops});
       }
       if (m_hasnlo) {
-	for (size_t i(0);i<m_necache.size();++i) m_necache[i][0]+=rank*m_nmax;
 	if (m_unweight) {
 	  m_dss["ctevents"].resize({m_offset+sumcache,m_nneprops});
 	  m_dss["ctparticles"].resize({(m_offset+sumcache)*m_nmax,m_nnpprops});
