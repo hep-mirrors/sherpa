@@ -1,10 +1,11 @@
- #include "PHASIC++/Process/Single_Process.H"
+#include "PHASIC++/Process/Single_Process.H"
 
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PHASIC++/Channels/CS_Dipole.H"
@@ -569,6 +570,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     // update results
     if (p_mc != nullptr && m_dsweight && m_pinfo.Has(nlo_type::vsub)) {
       // calculate DADS term for MC@NLO: one PS point, many dipoles
+      if (p_read) p_mc->SetPoint(p_read->SubEvt());
       m_mewgtinfo.m_type |= mewgttype::DADS;
 
       if (m_dads) {
@@ -591,7 +593,15 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
             const bool lookup {proc->LookUp()};
             proc->SetLookUp(false);
 
+            if (p_read)
+              proc->ScaleSetter(true)->SetFixedScale(
+                  ScaleSetter(true)->FixedScales());
+
             auto wgtmap = proc->Differential(dps.m_p, varmode);
+
+            if (p_read)
+              proc->ScaleSetter(true)->SetFixedScale(std::vector<double>());
+
             wgtmap *= dps.m_weight * m_dsweight;
             m_dadswgtmap += wgtmap;
 

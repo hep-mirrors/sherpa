@@ -66,6 +66,8 @@ namespace PHASIC {
 
     void Print();
 
+    void SetPoint(ATOOLS::NLO_subevt *sub);
+
     Dipole_Params Active(Process_Base *const bviproc) const;
 
     inline double Weight() const { return m_weight; }

@@ -249,10 +249,6 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   if (rpa->gen.NumberOfEvents()==
     rpa->gen.NumberOfGeneratedEvents()) return false;
   p_proc=proc->Selected();
-  if (p_proc->Generator()==NULL)
-    THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
-  if (p_proc->Generator()->MassMode()!=0)
-    THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
   if (info==NULL)
     return false;
   m_evtinfo=*info;
