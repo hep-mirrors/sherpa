@@ -31,13 +31,13 @@ def parse_args():
                               default = 4,
                               help = 'Compile only Lorentz and color functions up to <n> points', type=int)
       arg_parser.add_argument("--includedir",
-                              default = '@INCLUDEDIR@',
+                              default = '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_INCLUDEDIR@/SHERPA-MC',
                               help = 'Path to Sherpa headers')
       arg_parser.add_argument("--libdir",
-                              default = '@LIBDIR@',
+                              default = '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/SHERPA-MC',
                               help = 'Path to Sherpa libraries')
       arg_parser.add_argument("--installdir",
-                              default = '@LIBDIR@',
+                              default = '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/SHERPA-MC',
                               help = 'Installation path for new shared Model library')
       arg_parser.add_argument("--noopt",
                               action="store_true",
