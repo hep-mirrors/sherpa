@@ -872,7 +872,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     m_x0 = eta0+ran->Get()*(1.-eta0);
     if (p_read) {
       m_x0=eta0+p_read->SubEvt()->m_x1*(1.-eta0);
-      msg_Debugging()<<"read in x0 = "<<m_x0<<"\n";
+      msg_Debugging()<<"read in x0 = "<<m_x0
+		     <<" ("<<p_read->SubEvt()->m_x1<<") "<<eta0<<"\n";
     }
     w *= (1.-eta0);
 //       m_x0 = eta0*std::exp(-ran->Get()*log(eta0));
@@ -883,7 +884,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     m_x1 = eta1+ran->Get()*(1.-eta1);
     if (p_read) {
       m_x1 = eta1+p_read->SubEvt()->m_x2*(1.-eta1);
-      msg_Debugging()<<"read in x1 = "<<m_x1<<"\n";
+      msg_Debugging()<<"read in x1 = "<<m_x1
+		     <<" ("<<p_read->SubEvt()->m_x2<<") "<<eta1<<"\n";
     }
     w *= (1.-eta1);
 //        m_x1 = eta1*std::exp(-ran->Get()*log(eta1));
