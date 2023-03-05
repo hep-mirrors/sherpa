@@ -368,7 +368,7 @@ namespace SHERPA {
 	("events",DataSpace::From(enames)).write(enames);
       if (m_hasnlo) {
 	// LHEF bbar event information
-	std::vector<std::string> nenames(m_nneprops=8);
+	std::vector<std::string> nenames(m_nneprops=9);
 	nenames[0]="ijt";
 	nenames[1]="kt";
 	nenames[2]="i";
@@ -377,6 +377,7 @@ namespace SHERPA {
 	nenames[5]="z1";
 	nenames[6]="z2";
 	nenames[7]="bbpsw";
+	nenames[8]="tlpsw";
 	min.back()=nenames.size();
 	max.back()=nenames.size();
 	if (m_unweight) {
@@ -598,6 +599,7 @@ namespace SHERPA {
 	m_pcache.push_back(std::vector<double>(m_npprops,0));
       if (m_hasnlo) {
 	m_necache.push_back(std::vector<double>(m_nneprops,-1));
+	m_necache.back()[8]=weight*wratio/proc->LastXS();
 	NLO_subevt *sub(proc->SubEvt());
 	if (sub) {
 	  PHASIC::Multi_Channel *isr=((Process_Base*)sub->p_proc)

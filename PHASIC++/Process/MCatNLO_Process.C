@@ -458,6 +458,7 @@ Weights_Map MCatNLO_Process::OneHEvent(const int wmode)
   const size_t selectedindex(p_rproc->SynchronizeSelectedIndex(*p_rsproc));
   assert(selectedindex != std::numeric_limits<size_t>::max());
   Process_Base *rproc((*p_rproc)[selectedindex]);
+  rproc->SetLastXS(p_rsproc->Selected()->LastXS());
   rproc->Integrator()->SetMax
     (p_rsproc->Selected()->Integrator()->Max());
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
@@ -531,6 +532,7 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     (p_bviproc->Selected()->Integrator()->EnhanceFactor());
   bproc->SetSubEvt(p_bviproc->Selected()->SubEvt());
   bproc->SubEvt()->p_proc=p_bviproc->Selected();
+  bproc->SetLastXS(p_bviproc->Selected()->LastXS());
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
   p_ampl = dynamic_cast<Single_Process*>
     (p_bviproc->Selected())->Cluster(p);

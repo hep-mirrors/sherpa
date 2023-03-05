@@ -86,6 +86,7 @@ namespace PHASIC {
     ATOOLS::ME_Weight_Info m_mewgtinfo;
 
     ATOOLS::Weights_Map m_last, m_lastb;
+    double m_lastxs;
     double m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
@@ -292,6 +293,9 @@ namespace PHASIC {
 
     inline double Last() const { return m_last.Nominal(); }
     inline double LastB() const { return m_lastb.Nominal(); }
+    inline double LastXS() const { return m_lastxs; }
+
+    inline void SetLastXS(const double &lastxs) { m_lastxs=lastxs; }
 
     inline bool LookUp() const { return m_lookup; }
 
