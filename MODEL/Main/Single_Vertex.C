@@ -67,7 +67,7 @@ namespace MODEL{
     }
     if (sv.cpl.size() && sv.Color.size() && sv.Lorentz.size()) {
       s<<"{{"<<sv.Coupling(0)<<"*"<<sv.Color[0].FullString()<<"*"<<sv.Lorentz[0];
-      if (sv.FormFactor[0]!="") s<<"*"<<sv.FormFactor[0];
+      if (sv.FormFactor.size() &&sv.FormFactor[0]!="") s<<"*"<<sv.FormFactor[0];
       for (size_t i(1);i<sv.cpl.size();++i) {
 	s<<"}{"<<sv.Coupling(i)<<"*"<<sv.Color[i].FullString()<<"*"<<sv.Lorentz[i];
 	if (sv.FormFactor[i]!="") s<<"*"<<sv.FormFactor[i];
