@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Main/Phase_Space_Integrator.H"
 #include "PHASIC++/Main/Channel_Creator.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Channels/FSR_Channels.H"
@@ -96,21 +97,42 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass()) return 0.0;
     if (p_point) {
-      std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
-      process->Process()->ScaleSetter(true)->SetFixedScale(scales);
-      double result{process->Process()
-                        ->Differential(p_lab, Variations_Mode::nominal_only)
-                        .Nominal()};
-      scales.clear();
-      process->Process()->ScaleSetter(true)->SetFixedScale(scales);
-      m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
-      m_wgtmap=CalculateME(varmode);
-      m_wgtmap*=m_psweight;
-      m_enhanceweight=1.;
-      m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
-      p_lab      = process->Momenta();
-      if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
-      ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
+      if (process->Process()->EventReader()->Compute()==1) {
+        std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
+        process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+        double result{process->Process()
+                          ->Differential(p_lab, Variations_Mode::nominal_only)
+                          .Nominal()};
+        scales.clear();
+        process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+        m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
+        m_wgtmap=CalculateME(varmode);
+        m_wgtmap*=m_psweight;
+        m_enhanceweight=1.;
+        m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+        p_lab      = process->Momenta();
+        if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
+        ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
+      }
+      else if (process->Process()->EventReader()->Compute()==2) {
+        m_psweight=p_point->LKF()/rpa->Picobarn();
+        m_wgtmap=CalculateME(varmode);
+        m_wgtmap*=m_psweight;
+        m_enhanceweight=1.;
+        m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+        p_lab      = process->Momenta();
+        if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
+        ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
+      }
+      else {
+        m_psweight=1.0;
+        m_wgtmap=Weights_Map{};
+        m_enhanceweight=1.;
+        m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+        p_lab      = process->Momenta();
+        if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
+        ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
+      }
     }
     else {
       m_psweight = CalculatePS();
