@@ -364,13 +364,18 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
     if (p_point) {
-      if (process->Process()->EventReader()->Compute()) {
+      if (process->Process()->EventReader()->Compute()==1) {
 	std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
 	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
 	double result(process->Process()->Differential(p_lab));
 	scales.clear();
 	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
 	m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
+	CalculateME();
+	m_enhance=1.;
+      }
+      else if (process->Process()->EventReader()->Compute()==2) {
+	m_psweight=p_point->LKF()/rpa->Picobarn();
 	CalculateME();
 	m_enhance=1.;
       }
