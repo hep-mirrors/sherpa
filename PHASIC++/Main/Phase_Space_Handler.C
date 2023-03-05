@@ -93,6 +93,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     if (!p_active->Process()->Selector()->Pass()) return 0.0;
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
+    p_active->Process()->SetLastXS(m_wgtmap.Nominal());
     m_wgtmap  *= m_psweight;
     m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->TotalXS()));
     m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
