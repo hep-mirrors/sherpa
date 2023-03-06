@@ -16,7 +16,7 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
   p_beam(beam), m_fill(true), m_vmode(false)
 {
   Settings& s = Settings::GetMainSettings();
-  m_fill  = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
+  m_fill  = s["BEAM_REMNANTS"].Get<bool>();
   m_vmode = s["BRH_VMODE"].SetDefault(false).Get<bool>();
   p_remnants->SetScale2(sqr(4.0));
   m_name = std::string("Parametrised");
