@@ -2,7 +2,6 @@ BEAMS: 2212
 BEAM_ENERGIES: 6500
 
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
-# to use a dedicated loop library you can run `scons` in this Example directory and replace OpenLoops with TTH throughout this run card
 
 CORE_SCALE: VAR{sqr(175+125/2)}
 

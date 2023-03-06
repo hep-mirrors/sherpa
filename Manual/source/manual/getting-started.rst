@@ -274,9 +274,7 @@ the example setups.
 If AMEGIC++ is used, Sherpa requires an initialization run, where C++
 source code is written to disk. This code must be compiled into
 dynamic libraries by the user by running the makelibs script in the
-working directory.  Alternatively, if `scons <http://www.scons.org/>`_
-is installed, you may invoke :kbd:`<prefix>/bin/make2scons` and run
-:kbd:`scons install`.  After this step Sherpa is run again for the
+working directory.  After this step Sherpa is run again for the
 actual cross section integrations and event generation.  For more
 information on and examples of how to run Sherpa using AMEGIC++, see
 :ref:`Running Sherpa with AMEGIC++`.
@@ -656,14 +654,7 @@ user (see ``./makelibs -h`` for help):
 
    $ ./makelibs
 
-Note that the following tools have to be available for this step:
-``autoconf``, ``automake`` and ``libtool``.
-
-Alternatively, if `scons <http://www.scons.org/>`_ is installed, you
-may invoke :kbd:`<prefix>/bin/make2scons` and run :kbd:`scons
-install`.  If scons was detected during the compilation of Sherpa,
-also makelibs uses ``scons`` per default (can be forced to use
-``autotools`` by :kbd:`./makelibs -s`).
+Note that the ``cmake`` tool has to be available for this step
 
 .. index:: AMEGIC_LIBRARY_MODE
 

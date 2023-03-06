@@ -56,8 +56,8 @@ The jet criterion used to define the matrix element multiplicity in
 the context of multijet merging can be supplied by the user. As an
 example the source code file
 :file:`./Examples/V_plus_Jets/LHC_WJets/My_JetCriterion.C` provides such
-an alternative jet criterion. It can be compiled using ``SCons`` via
-executing ``scons`` in that directory (edit the ``SConstruct`` file
-accordingly). The newly created library is linked at run time using
+an alternative jet criterion. It can be compiled via
+executing ``cmake .`` in that directory.
+The newly created library is linked at run time using
 the ``SHERPA_LDADD`` flag.  The new jet criterion is then evoked by
 ``JET_CRITERION``.

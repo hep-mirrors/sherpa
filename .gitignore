@@ -18,8 +18,11 @@ outputs/
 *.so.0.0.0
 *.dylib
 .libs
-.SConstruct
-.sconsign.dblite
+EXTAMP/Example/madgraph/CMakeLists.txt
+EXTAMP/Example/subtraction/CMakeLists.txt
+Examples/Userhook/CMakeLists.txt
+Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt
+Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt
 Git_Info.C
 Git_Info.C.tmp.bak
 /ATOOLS/Math/Sobol/21201.gz
@@ -42,6 +45,12 @@ Manual/sherpamanual.fls
 MODEL/UFO/Sherpa-generate-model
 MODEL/UFO/sconstruct_template
 test.py
+
+# test run output
+Examples/*/Process
+References.tex
+Results.zip
+Results.zip~
 
 # (local) make install targets
 

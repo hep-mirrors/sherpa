@@ -206,8 +206,8 @@ AMEGIC++
   initialization run the matrix elements for a given set of processes,
   as well as their specific phase-space mappings are created by
   AMEGIC++.  Corresponding C++ sourcecode is written to disk and
-  compiled by the user using the ``makelibs`` script or `scons
-  <http://www.scons.org/>`_.  The produced libraries are linked to the
+  compiled by the user using the ``makelibs`` script.
+  The produced libraries are linked to the
   main program automatically in the next run and used to calculate
   cross sections and to generate weighted or unweighted events.
   AMEGIC++ has been tested for multi-particle production in the

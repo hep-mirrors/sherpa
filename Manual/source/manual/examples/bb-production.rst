@@ -13,8 +13,8 @@ information.
    Things to notice:
 
    * The matrix elements are interfaced from :cite:`FebresCordero2006sj`.
-     The shared library necessary for running this setup is built using
-     `scons <http://www.scons.org/>`_.
+     The shared library necessary for running this setup is built by
+     running ``cmake .`` in the ``LHC_Wbb`` directory.
 
    * The W-boson is stable in the hard matrix elements.
      It is decayed using the internal decay module, indicated by
