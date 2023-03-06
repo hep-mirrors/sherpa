@@ -288,6 +288,7 @@ Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   msg_Debugging()<<*rampl<<"\n";
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
   if (rsproc==NULL) return 0.0;
+  rsproc->SetEventReader(NULL);
   msg_Debugging()<<"Found '"<<rsproc->Name()<<"'\n";
   Cluster_Amplitude *crampl(rampl->Copy());
   int mm(p_bproc->Generator()->SetMassMode(0));
@@ -314,6 +315,7 @@ Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   msg_Debugging()<<ampl<<"\n";
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
   if (bviproc==NULL) return 0.0;
+  bviproc->SetEventReader(NULL);
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
   Cluster_Amplitude *campl(ampl.Copy());
