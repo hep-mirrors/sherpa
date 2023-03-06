@@ -524,7 +524,7 @@ namespace SHERPA {
 	  Write();
 	  return;
 	}
-	wratio=max/weight;
+	if (std::abs(weight)<max) wratio=max/std::abs(weight);
       }
       if (weight!=0.0 && m_setcol) SetColors(blobs);
       size_t nup(sp->NInP()+sp->NOutP());
