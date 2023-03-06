@@ -257,6 +257,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   if (rampl->ColorMap().empty()) rm|=128;
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
   if (rsproc==NULL) return 0.0;
+  rsproc->SetEventReader(NULL);
   if (rsproc->VariationWeights() && rsproc->VariationWeights() != p_variationweights) {
     THROW(fatal_error, "Variation weights already set.");
   }
@@ -276,6 +277,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   if (rampl->ColorMap().empty()) rm|=128;
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
   if (bviproc==NULL) return 0.0;
+  bviproc->SetEventReader(NULL);
   if (bviproc->VariationWeights() && bviproc->VariationWeights() != p_variationweights) {
     THROW(fatal_error, "Variation weights already set.");
   }
