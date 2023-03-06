@@ -196,7 +196,7 @@ Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
     return Return_Value::New_Event;
   }
   Reset();
-  msg_Out()<<"   * "<<METHOD<<" is successful:"<<(*p_softblob)<<"\n";
+  //msg_Out()<<"   * "<<METHOD<<" is successful:"<<(*p_softblob)<<"\n";
   return Return_Value::Success;
 }
 

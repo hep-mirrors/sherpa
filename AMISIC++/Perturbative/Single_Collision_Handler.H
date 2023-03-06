@@ -9,11 +9,6 @@
 #include <map>
 #include <string>
 
-/*!
-  \file Single_Collision_Handler.H
-  \brief Declares the class Single_Collision_Handler
-*/
-
 namespace AMISIC {
   class Single_Collision_Handler {
   private:

@@ -71,19 +71,20 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
   // - accept or reject the kinematics with a hit-or-miss of true over overestimated
   //   differential cross section dsigma/dpt2
   /////////////////////////////////////////////////////////////////////////////////
+  if (p_processes->GetSudakov()->XSratio(m_S)<1.) return false;
   m_pt2 = pt2;
   double dsigmatrue, dsigmaapprox, weight;
   bool success(false), output(false);
   do {
     m_pt2  = p_overestimator->TrialPT2(m_pt2);
     m_muf2 = m_mur2 = m_pt2;
-    msg_Debugging()<<"         * "<<METHOD<<"(pt^2 = "<<m_pt2<<"):\n";
+    msg_Out()<<"         * "<<METHOD<<"(pt^2 = "<<m_pt2<<", s = "<<m_S<<"):\n";
     if (m_pt2<m_pt2min) return false;
     if (!SelectRapidities() || !CalcXs() || !CalcMandelstams()) continue;
     dsigmatrue   = (*p_processes)(m_shat,m_that,m_uhat,m_x1,m_x2);
     dsigmaapprox = (*p_overestimator)(m_pt2, m_yvol);
     weight       = dsigmatrue/dsigmaapprox;
-    msg_Debugging()<<"                xsec ratio = "<<weight<<" from "
+    msg_Out()<<"                xsec ratio = "<<weight<<" from "
 		   <<dsigmatrue<<" / "<<dsigmaapprox<<"\n";
     if (m_ana) AnalyseWeight(weight);
     if (weight > ran->Get()) success = true;

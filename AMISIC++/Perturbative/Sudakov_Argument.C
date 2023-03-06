@@ -29,14 +29,7 @@ void Sudakov_Argument::FillTables() {
     double s = m_sbins.x(sbin);
     (*p_processes->GetXSecs())(s);
     p_processes->UpdateS(s);
-    FillPT2Values(sbin,p_processes->GetXSecs()->XSnd());
-    // msg_Out()<<METHOD<<"(Ecms = "<<sqrt(s)<<"): "
-    // 	     <<"xsnd = "<<(p_processes->GetXSecs()->XSnd()*
-    // 			   rpa->Picobarn())<<" pb, "
-    // 	     <<"total hard xsec = "
-    // 	     <<(m_integral.Value(sbin,0)*p_processes->GetXSecs()->XSnd()*
-    // 		rpa->Picobarn())<<" pb, "
-    // 	     <<"ratio = "<<m_integral.Value(sbin,0)<<".\n";
+    FillPT2Values(sbin,p_processes->GetXSecs()->XSndNorm() * p_processes->GetXSecs()->XSnd());
   }
 }
 

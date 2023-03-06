@@ -11,17 +11,16 @@ using namespace ATOOLS;
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019.
 /////////////////////////////////////////////////////////////////////////////////
 
-Impact_Parameter::Impact_Parameter() : p_pint(new Interaction_Probability()),
-				       p_mo(p_pint->GetOverlap()),
-				       m_test(false), m_ana(false) {}
+Impact_Parameter::Impact_Parameter() : m_test(false), m_ana(false) {}
 
 Impact_Parameter::~Impact_Parameter() {
-  delete p_pint;
   if (m_ana) FinishAnalysis();
 }
 
-void Impact_Parameter::Initialize(MI_Processes * processes) {
-  p_pint->Initialize(processes);
+void Impact_Parameter::Initialize(REMNANTS::Remnant_Handler * remnant_handler,
+				  MI_Processes * processes) {
+  m_pint.Initialize(remnant_handler,processes);
+  p_mo      = m_pint.GetOverlap();
   m_bmax    = p_mo->Bmax();
   p_sudakov = processes->GetSudakov();
   if (m_test) Test();
@@ -32,7 +31,7 @@ double Impact_Parameter::operator()(const double & s,const double & b) {
   /////////////////////////////////////////////////////////////////////////////////
   // This is f(b), the enhancement factor, Eq. (28)
   /////////////////////////////////////////////////////////////////////////////////
-  return (b<m_bmax? p_pint->fb(s,b) : 0.);
+  return (b<m_bmax? m_pint.fb(s,b) : 0.);
 }
 
 double Impact_Parameter::CalculateB(const double & s,const double & pt2) {
@@ -44,13 +43,13 @@ double Impact_Parameter::CalculateB(const double & s,const double & pt2) {
   // If in contrast, it is for a rescatter event, the InitRescatter method in
   // Amisic will give it "one shot".
   /////////////////////////////////////////////////////////////////////////////////
-  if (pt2<0.) return (m_b = p_mo->SelectB());
+  if (pt2<0. || m_pint.expO(s)<=1.e-12) return (m_b = p_mo->SelectB());
   /////////////////////////////////////////////////////////////////////////////////
   // Select b according to f(b) and accept or reject b with probability given by
   // "factorized Sudakov form factor", Eq. (37).
   // Update the relevant quantities to the current c.m. energy.
   /////////////////////////////////////////////////////////////////////////////////
-  double fc       = p_pint->fc(s);
+  double fc       = m_pint.fc(s);
   double hardpart = (*p_sudakov)(s,pt2), softpart, sudakov;
   msg_Out()<<"     --> "<<METHOD<<"(s = "<<s<<", pt^2 = "<<pt2<<"), "
 	   <<"hardpart = "<<hardpart<<", fc = "<<fc<<".\n";
@@ -61,7 +60,8 @@ double Impact_Parameter::CalculateB(const double & s,const double & pt2) {
     sudakov  = exp(-softpart * hardpart);
     //if (m_ana) Analyse(pt2,sudakov,softpart,hardpart);
     msg_Out()<<"         * Sudakov = "<<sudakov<<" = exp(-"<<softpart<<" * "
-	     <<hardpart<<"), bmax = "<<p_mo->Bmax()<<" fm --> b = "<<m_b<<" fm\n";
+	     <<hardpart<<"), bmax = "<<p_mo->Bmax()<<" fm --> b = "<<m_b<<" fm "
+	     <<"from <O(s)> = "<<m_pint.expO(s)<<".\n";
   } while (sudakov<ran->Get() && (trials--)>0);
   if (trials<=0) {
     msg_Error()<<METHOD<<" throws warning:\n"
@@ -158,7 +158,7 @@ void Impact_Parameter::Test() {
   Histogram histoPInt(0,0.,m_bmax,100);
   b = 0.;
   while (b<m_bmax) {
-    histoPInt.Insert(b+bstep/2.,(*p_pint)(s,b+bstep/2.));
+    histoPInt.Insert(b+bstep/2.,m_pint(s,b+bstep/2.));
     b+= bstep;
   }
   histoPInt.Output("PInt.dat");

@@ -33,7 +33,7 @@ MI_Handler::MI_Handler(MODEL::Model_Base * model,
     msg_Out()<<METHOD<<"(mode = "<<isr->Mode()<<"): name = "<<m_name<<", resc = "<<resc<<".\n";
     scm = m_name = resc;
   }
-  if (isr->Mode() != PDF::isrmode::hadron_hadron) {
+  if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name=="None") {
     m_name = "None";
     m_on   = false;
   }

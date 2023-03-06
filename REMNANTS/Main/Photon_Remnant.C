@@ -14,7 +14,7 @@ Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag) :
   p_pdf(pdf), p_partons(&(pdf->Partons())),
   m_LambdaQCD(0.25), m_beta_quark(-1.), m_beta_gluon(-1.2),
   m_valence(false), p_spectator(nullptr),
-  p_recoiler(nullptr), m_ff(Form_Factor()) {}
+  p_recoiler(nullptr), m_ff(Form_Factor(m_beamflav)) {}
 
 Particle *Photon_Remnant::MakeParticle(const Flavour &flav) {
   Particle *part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');

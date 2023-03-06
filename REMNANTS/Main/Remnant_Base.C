@@ -46,7 +46,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
   ////////////////////////////////////////////////////////////////////////////
   if (TestExtract(parton->Flav(), parton->Momentum())) {
     if (std::find(m_extracted.begin(), m_extracted.end(), parton)==m_extracted.end()) {
-      msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<"): add "<<parton->Number()<<"\n";
+      //msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<"): add "<<parton->Number()<<"\n";
       m_extracted.push_back(parton);
       MakeSpectator(parton);
       for (size_t index = 0; index < 2; index++) p_colours->AddColour(m_beam, index, parton);
@@ -89,14 +89,14 @@ Blob *Remnant_Base::MakeBlob() {
   part->SetStatus(part_status::decayed);
   part->SetFinalMass();
   p_beamblob->AddToInParticles(part);
-  msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<"):\n"<<(*p_beamblob)<<"\n";
+  //msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<"):\n"<<(*p_beamblob)<<"\n";
   return p_beamblob;
 }
 
 Vec4D Remnant_Base::IncomingMomentum() { return p_beam->OutMomentum(m_tag); }
 
 void Remnant_Base::Reset(const bool & resc,const bool &DIS) {
-  msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<")\n";
+  //msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<")\n";
   m_extracted.clear();
   p_beamblob = nullptr;
 }

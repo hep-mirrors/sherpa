@@ -30,7 +30,7 @@ void Over_Estimator::Initialize(MI_Processes * procs) {
   m_muR_fac   = (*mipars)("RenScale_Factor"); 
   m_muF_fac   = (*mipars)("FacScale_Factor");
   m_pt2bins   = size_t((*mipars)("nPT_bins"));
-  m_xsnd      = p_procs->GetXSecs()->XSnd();
+  m_xsnd      = p_procs->GetXSecs()->XSndNorm() * p_procs->GetXSecs()->XSnd();
   for (size_t i=0;i<2;i++) {
     p_pdf[i]  = p_procs->PDF(i);
     m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
@@ -46,7 +46,7 @@ void Over_Estimator::UpdateS() {
   // of the MI_Processes.
   ///////////////////////////////////////////////////////////////////////////////////
   m_s    = p_procs->S();
-  m_xsnd = p_procs->GetXSecs()->XSnd();
+  m_xsnd = p_procs->GetXSecs()->XSndNorm() * p_procs->GetXSecs()->XSnd(m_s);
   m_pref = (*p_prefs)(m_s);
 }
 

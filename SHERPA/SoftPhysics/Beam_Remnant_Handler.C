@@ -45,7 +45,7 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Beam) return fbc;
   }
-  msg_Out()<<METHOD<<": only bunch = "<<onlyBunch<<" (rescatter = "<<m_bunchrescatter<<").\n";
+  //msg_Out()<<METHOD<<": only bunch = "<<onlyBunch<<" (rescatter = "<<m_bunchrescatter<<").\n";
   if (!onlyBunch) {
     if (p_shrimps) fbc = p_shrimps->MakeBeamBlobs(bloblist);
     else           fbc = p_remnants->MakeBeamBlobs(bloblist);
@@ -84,8 +84,8 @@ FillBunchBlobs(Blob_List *const  bloblist,
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Bunch) return Return_Value::Nothing;
   }
-  msg_Out()<<"-----------------------------------------------------------------------------\n"
-	   <<"   "<<METHOD<<":\n";
+  //msg_Out()<<"-----------------------------------------------------------------------------\n"
+  //	   <<"   "<<METHOD<<":\n";
   p_beam->FixPositions();
   if (!m_bunchrescatter)
     return (FillSimpleBunchBlobs(bloblist)?Return_Value::Success:Return_Value::Nothing);
@@ -106,8 +106,8 @@ bool Beam_Remnant_Handler::FillRescatterBunchBlobs(ATOOLS::Blob_List *const blob
 			 blob_status::needs_softUE &
 			 blob_status::needs_hadronization);
       bunch->SetStatus(blob_status::needs_minBias);
-      msg_Out()<<"Before with m_beam = "<<m_beam<<", "<<p_schandler<<", "
-	       <<"position = "<<bunch->Position()<<".\n";
+      //msg_Out()<<"Before with m_beam = "<<m_beam<<", "<<p_schandler<<", "
+      //       <<"position = "<<bunch->Position()<<".\n";
       p_schandler->SetPosition(m_beam-1,bunch->Position());
       bloblist->push_front(bunch);
       if (m_beam>2) {
@@ -190,14 +190,14 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
     blob->AddToOutParticles(p);
     blob->SetPosition(p_beam->GetBeam(beam)->Position());
   }
-  msg_Out()<<"   "<<METHOD<<"(beam = "<<beam<<", particle = "<<blob->InParticle(0)->Flav()<<", "
-	   <<"position = "<<blob->Position()<<").\n";
+  //msg_Out()<<"   "<<METHOD<<"(beam = "<<beam<<", particle = "<<blob->InParticle(0)->Flav()<<", "
+  //	   <<"position = "<<blob->Position()<<").\n";
   m_beam++;
   return blob;
 }
 
 void Beam_Remnant_Handler::CleanUp(const size_t & mode)
 {
-  msg_Out()<<"   * "<<METHOD<<"\n";
+  //msg_Out()<<"   * "<<METHOD<<"\n";
   p_remnants->Reset();
 }

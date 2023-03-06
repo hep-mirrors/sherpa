@@ -90,6 +90,7 @@ const double TwoDim_Table::operator()(const double & x,const double & y) const {
   }
   if (x<m_x.m_xmin || x>=m_x.m_xmax || y<m_y.m_xmin || y>=m_y.m_xmax) return 0.;
   size_t xbin = m_x.bin(x),             ybin = m_y.bin(y);
+  if (xbin+1>=m_x.m_nbins || ybin+1>=m_y.m_nbins)                     return 0.;
   double x1   = m_x.x(xbin),            x2   = m_x.x(xbin+1);
   double y1   = m_y.x(ybin),            y2   = m_y.x(ybin+1);
   double z11  = m_values[xbin][ybin],   z21  = m_values[xbin+1][ybin];

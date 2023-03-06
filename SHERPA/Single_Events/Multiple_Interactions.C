@@ -18,17 +18,21 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler_Map *mihandlers):
   p_mihandlers(mihandlers), m_result(Return_Value::Nothing),
   m_newevent(true)
 {
-  m_name = std::string("Multiple_Interactions: ");
-  if (p_mihandlers->find(PDF::isr::hard_subprocess)!=p_mihandlers->end())
-    m_name += ( (*p_mihandlers)[PDF::isr::hard_subprocess]->Name() +
-		std::string(" + ") ); 
-  if (p_mihandlers->find(PDF::isr::bunch_rescatter)!=p_mihandlers->end())
-    m_name += ( std::string(" ") + (*p_mihandlers)[PDF::isr::bunch_rescatter]->Name()+
+  m_name   = std::string("Multiple_Interactions: ");
+  bool add = false;
+  if (p_mihandlers->find(PDF::isr::hard_subprocess)!=p_mihandlers->end()) {
+    m_name += (*p_mihandlers)[PDF::isr::hard_subprocess]->Name();
+    add     = true;
+  }
+  if (p_mihandlers->find(PDF::isr::bunch_rescatter)!=p_mihandlers->end()) {
+    if (add)  m_name += std::string(" + "); 
+    m_name += ( (*p_mihandlers)[PDF::isr::bunch_rescatter]->Name()+
 		std::string(" (rescatter)") );
+  }
   m_type = eph::Perturbative;
   for (MI_Handler_Map::iterator mihit=p_mihandlers->begin();
        mihit!=p_mihandlers->end();mihit++) {
-    msg_Out()<<METHOD<<"("<<int(mihit->first)<<"): "<<mihit->second->Type()<<".\n";
+    //msg_Out()<<METHOD<<"("<<int(mihit->first)<<"): "<<mihit->second->Type()<<".\n";
     if (mihit->second->Type()!=0) {
       for (size_t i=0;i<2;i++) {
 	if (mihit->second->Remnants()->GetRemnant(i)==NULL) {
@@ -78,11 +82,11 @@ void Multiple_Interactions::ResetMIHandler() {
 Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
 {
   msg_Out()<<"#################################################\n"
-	   <<"Entering "<<METHOD<<": ";
+  	   <<"Entering "<<METHOD<<": ";
   if (p_activeMI)
     msg_Out()<<"Id = "<<p_activeMI->Id()<<", done = "<<p_activeMI->Done()<<", "
-	     <<"MI MinBias/Type = "<<p_activeMI->IsMinBias()<<"/"<<int(p_activeMI->Type())<<", "
-	     <<"done = "<<p_activeMI->Done()<<".\n";
+  	     <<"MI MinBias/Type = "<<p_activeMI->IsMinBias()<<"/"<<int(p_activeMI->Type())<<", "
+  	     <<"done = "<<p_activeMI->Done()<<".\n";
   else
     msg_Out()<<"No MI Handler.\n";
   /////////////////////////////////////////////////////////////////////////////////
@@ -272,13 +276,13 @@ bool Multiple_Interactions::InitNewEvent() {
   double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());
   m_ptmax = ptfac;
   if (!IsZero(ptfac-ptren)) m_ptmax += ptren;
-  msg_Out()<<"     pt = "<<m_ptmax<<" from factors = "<<ptfac<<"/"<<ptren<<"\n";
   p_activeMI->InitialiseMPIs(m_ptmax_fac*m_ptmax);
   p_lastblob->SetPosition(p_activeMI->SelectPositionForScatter());
   Blob * showerblob = p_lastblob->OutParticle(0)->DecayBlob();
   if (showerblob) showerblob->SetPosition(p_lastblob->Position());
   p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
   m_newevent = false;
+  msg_Out()<<"     maximal pt = "<<m_ptmax<<" from factors = "<<ptfac<<"/"<<ptren<<"\n";
   return true;
 }  
 
@@ -334,4 +338,6 @@ void Multiple_Interactions::CleanUp(const size_t & mode)
   }
   m_vetoed   = false;
   m_newevent = true;
+  if (p_mihandlers->find(PDF::isr::hard_subprocess)!=p_mihandlers->end()) 
+    p_activeMI = (*p_mihandlers)[PDF::isr::hard_subprocess];
 }

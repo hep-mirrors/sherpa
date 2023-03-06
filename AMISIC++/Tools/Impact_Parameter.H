@@ -11,9 +11,9 @@ namespace AMISIC {
   class Sudakov_Argument;
   
   class Impact_Parameter {
-    Interaction_Probability * p_pint;
-    Matter_Overlap          * p_mo;
-    Sudakov_Argument        * p_sudakov;
+    Interaction_Probability m_pint;
+    Matter_Overlap        * p_mo;
+    Sudakov_Argument      * p_sudakov;
 
     double m_b, m_bmax;
     bool   m_test, m_ana;
@@ -29,7 +29,8 @@ namespace AMISIC {
     Impact_Parameter();
     ~Impact_Parameter();
 
-    void   Initialize(MI_Processes * processes);
+    void   Initialize(REMNANTS::Remnant_Handler * remnant_handler,
+		      MI_Processes * processes);
     double CalculateB(const double & s,const double & pt2=-1.);
     double operator()(const double & s,const double & b);
 

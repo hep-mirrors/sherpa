@@ -16,18 +16,18 @@ using namespace ATOOLS;
 /////////////////////////////////////////////////////////////////////////////////
 
 Interaction_Probability::Interaction_Probability() :
-  p_mo(new Matter_Overlap()), m_test(false) {}
+  m_test(false) {}
 
 Interaction_Probability::~Interaction_Probability() {
-  delete p_mo;
   delete p_k;
   delete p_integral;
   delete p_expO;
   delete p_fc;
 }
 
-void Interaction_Probability::Initialize(MI_Processes * processes) {
-  p_mo->Initialize();
+void Interaction_Probability::Initialize(REMNANTS::Remnant_Handler * remnant_handler,
+					 MI_Processes * processes) {
+  m_mo.Initialize(remnant_handler);
   axis sbins = processes->GetSudakov()->GetSbins();
   p_k        = new OneDim_Table(sbins);
   p_integral = new OneDim_Table(sbins);
@@ -68,7 +68,7 @@ void Interaction_Probability::FixOExp() {
     double intP  = p_integral->Value(bin);
     double intOP = Integral(k, 2);
     p_expO->Fill(bin, intP>1.e-12 ? intOP/intP : 0.);
-    p_fc->Fill(bin,   intP>1.e-12 ? intOP/p_mo->Integral() : 0.);
+    p_fc->Fill(bin,   intP>1.e-12 ? intOP/m_mo.Integral() : 0.);
   }
 }
 
@@ -80,8 +80,8 @@ double Interaction_Probability::NewtonRaphson(const double & ratio) {
   do {
     double intP0 = Integral(k,0); // b-integral of   {1-exp[-k O(b)]} 
     double intP1 = Integral(k,1); // b-integral of   O(b) exp[-k O(b)] 
-    f0 = k*p_mo->Integral()/intP0 - ratio;          
-    f1 = p_mo->Integral()*(intP0 - k*intP1)/sqr(intP0); 
+    f0 = k*m_mo.Integral()/intP0 - ratio;          
+    f1 = m_mo.Integral()*(intP0 - k*intP1)/sqr(intP0); 
     k -= f0/f1;
     if (intP0<=1.e-12) return 0.;
   } while (dabs(f0/f1)>1.e-6 && k>0.);
@@ -96,19 +96,19 @@ double Interaction_Probability::Integral(const double & k,const int & diff) {
   // diff = 2: int d^2b O(b) P_int(b),      numrtator in Eq. (31) 
   /////////////////////////////////////////////////////////////////////////////////
   if (diff==0) {
-    P_Integrand p(p_mo,k);
+    P_Integrand p(&m_mo,k);
     Gauss_Integrator integrator(&p);
-    return integrator.Integrate(0.,p_mo->Bmax(),1.e-8,1);
+    return integrator.Integrate(0.,m_mo.Bmax(),1.e-8,1);
   }
   else if (diff==1) {
-    OtimesExp_Integrand oe(p_mo,k);
+    OtimesExp_Integrand oe(&m_mo,k);
     Gauss_Integrator integrator(&oe);
-    return integrator.Integrate(0.,p_mo->Bmax(),1.e-8,1);
+    return integrator.Integrate(0.,m_mo.Bmax(),1.e-8,1);
   }
   else if (diff==2) {
-    OtimesP_Integrand op(p_mo,k);
+    OtimesP_Integrand op(&m_mo,k);
     Gauss_Integrator integrator(&op);
-    return integrator.Integrate(0.,p_mo->Bmax(),1.e-8,1);
+    return integrator.Integrate(0.,m_mo.Bmax(),1.e-8,1);
   }
   return 0.;
 }

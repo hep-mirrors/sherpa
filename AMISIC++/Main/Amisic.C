@@ -59,7 +59,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   //////////////////////////////////////////////////////////////////////////////////////
   // Initialize everything to do with the inpact parameter dependence.
   //////////////////////////////////////////////////////////////////////////////////////
-  m_impact.Initialize(p_processes); 
+  m_impact.Initialize(remnant_handler,p_processes); 
 
   if (m_ana) InitAnalysis();
   m_isFirst   = true;
@@ -143,7 +143,7 @@ void Amisic::SetB(const double & b) {
   //////////////////////////////////////////////////////////////////////////////////////
   // Generation of the next sctter in the Single_Collision_Handler depends on the
   // impact-parameter enhancement, f(b), Eq. (28), here named m_bfac.
-  // It is obtained by intperloation from a look-up table in the Interaction_Probability,
+  // It is obtained by intpolation from a look-up table in the Interaction_Probability,
   // accessed through the Impact_Paramter class.
   //////////////////////////////////////////////////////////////////////////////////////
   m_b = (b<0.) ? m_impact.CalculateB(m_S,m_pt2) : b;
@@ -189,10 +189,11 @@ Blob * Amisic::GenerateScatter() {
   Blob * blob = m_singlecollision.NextScatter();
   if (blob) {
     m_pt2 = m_singlecollision.LastPT2();
+    msg_Out()<<"     --> "<<METHOD<<" succcesful at pt^2 = "<<m_pt2<<": blob = "<<blob<<".\n"
+	     <<"         select position now.\n";
     blob->SetPosition(m_impact.SelectPositionForScatter(m_b));
     blob->SetTypeSpec("AMISIC++ 1.1");
     if (m_ana) Analyse(false);
-    msg_Out()<<"     --> "<<METHOD<<" succcesful at pt^2 = "<<m_pt2<<": blob = "<<blob<<".\n";
     return blob;
   }
   if (m_ana) Analyse(true);

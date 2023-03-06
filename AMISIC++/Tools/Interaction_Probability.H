@@ -8,7 +8,7 @@ namespace AMISIC {
   class MI_Processes;
   
   class Interaction_Probability {
-    Matter_Overlap * p_mo;
+    Matter_Overlap   m_mo;
     OneDim_Table   * p_k, * p_integral, * p_expO, * p_fc;
     bool   m_test;
     
@@ -21,17 +21,22 @@ namespace AMISIC {
     Interaction_Probability();
     ~Interaction_Probability();
     
-    void   Initialize(MI_Processes * processes);
+    void   Initialize(REMNANTS::Remnant_Handler * remnant_handler,
+		      MI_Processes * processes);
     
-    inline Matter_Overlap * GetOverlap()                        { return p_mo; }
+    inline Matter_Overlap * GetOverlap()                        { return &m_mo; }
     /////////////////////////////////////////////////////////////////////////////////
     // Probability for at least one interaction, Eq. (24)
     /////////////////////////////////////////////////////////////////////////////////
-    inline double operator()(const double & s,const double & b) { return 1.-exp(-(*p_k)(s) * (*p_mo)(b)); }
+    inline double operator()(const double & s,const double & b) { return 1.-exp(-(*p_k)(s) * m_mo(b)); }
     /////////////////////////////////////////////////////////////////////////////////
     // b-dependent modification factor, Eq. (28)
     /////////////////////////////////////////////////////////////////////////////////
-    inline double fb(const double & s,const double & b)         { return (*p_mo)(b)/(*p_expO)(s); }
+    inline double fb(const double & s,const double & b)         { return m_mo(b)/(*p_expO)(s); }
+    /////////////////////////////////////////////////////////////////////////////////
+    // b-dependent modification factor, Eq. (28)
+    /////////////////////////////////////////////////////////////////////////////////
+    inline double expO(const double & s)                        { return (*p_expO)(s); }
     /////////////////////////////////////////////////////////////////////////////////
     // Correction factor for demaning at least one interaction, Eq. (31)
     /////////////////////////////////////////////////////////////////////////////////

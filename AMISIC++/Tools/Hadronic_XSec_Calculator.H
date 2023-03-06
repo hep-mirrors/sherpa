@@ -57,8 +57,9 @@ namespace AMISIC {
     void Output() const;
     inline double XSnd(const double & s=-1.) {
       if (s>0.) (*this)(s);
-      return m_xsnd_norm*m_xsnd;
+      return m_xsnd;
     }
+    inline const double & XSndNorm() const { return m_xsnd_norm; }
   };
 }
 

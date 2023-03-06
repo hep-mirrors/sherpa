@@ -9,8 +9,10 @@ using namespace ATOOLS;
 Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,const unsigned int & tag):
   Remnant_Base(pdf->Bunch(),beam,tag),
   p_pdf(pdf), p_partons(&(p_pdf->Partons())),
-  p_valence(nullptr), p_remnant(nullptr), p_recoiler(nullptr), p_spectator(nullptr), m_ff(Form_Factor()),
-  m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
+  p_valence(nullptr), p_remnant(nullptr), p_recoiler(nullptr), p_spectator(nullptr),
+  m_ff(Form_Factor(m_beamflav)),
+  m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),
+  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
 {
   m_scale2 = Max(4.0,p_pdf->Q2Min());
   ConstructConstituentFlavours();
@@ -155,6 +157,7 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
   // rest is taken by the diquark.
+  // TODO: Will have to adapt it to the case of mesons.
   Vec4D availMom = p_beam->OutMomentum(m_tag);
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();

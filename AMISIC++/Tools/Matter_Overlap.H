@@ -1,6 +1,7 @@
 #ifndef AMISIC_Tools_Matter_Overlap_H
 #define AMISIC_Tools_Matter_Overlap_H
 
+#include "REMNANTS/Main/Remnant_Handler.H"
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Vector.H"
@@ -21,7 +22,7 @@ namespace AMISIC {
     Matter_Overlap();
     ~Matter_Overlap();
 
-    void   Initialize();    
+    void   Initialize(REMNANTS::Remnant_Handler * remnant_handler);    
     double operator()(double b);
     double SelectB(const bool & mode=false) const;
 

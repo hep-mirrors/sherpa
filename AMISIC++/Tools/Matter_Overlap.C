@@ -8,23 +8,31 @@ using namespace AMISIC;
 using namespace ATOOLS;
 
 
+/////////////////////////////////////////////////////////////////////////////////
 // All equations in this file refer to 
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019.
+/////////////////////////////////////////////////////////////////////////////////
 
 Matter_Overlap::Matter_Overlap() :
-  m_bstep(0.), m_bmax(0.), m_integral(0.), m_norm(1./M_PI) ///(4.*M_PI*M_PI))
+  ///////////////////////////////////////////////////////////////////////////////
+  // The norm come from the (implicitly normalised) Gaussian matter distributions
+  // of the hadron form factors ~pi^{-3/2} times the pi^2 from the time-integrated
+  // overlap when they collide.
+  ///////////////////////////////////////////////////////////////////////////////
+  m_bstep(0.), m_bmax(0.), m_integral(0.), m_norm(1./M_PI)
 {}
 
 Matter_Overlap::~Matter_Overlap() {}
 
-void Matter_Overlap::Initialize() {
+void Matter_Overlap::Initialize(REMNANTS::Remnant_Handler * remnant_handler) {
   InitializeFormFactors();
   CalculateIntegral();
 }
 
 double Matter_Overlap::operator()(double b) {
-  // Matter overlap in two forms available, but only Single_Gaussian fully
-  // functional at the moment.
+  /////////////////////////////////////////////////////////////////////////////////
+  // Matter overlap in two forms available: Single_Gaussian and Double_Gaussian
+  /////////////////////////////////////////////////////////////////////////////////
   switch (m_overlapform) {
   case overlap_form::code::Single_Gaussian:
     return m_norm * m_norm1 * exp(-b*b/m_radius12);
@@ -38,11 +46,13 @@ double Matter_Overlap::operator()(double b) {
 }
 
 double Matter_Overlap::SelectB(const bool & mode) const {
+  /////////////////////////////////////////////////////////////////////////////////
   // Algorithm:
   // 1. select a radius R according to matter content:
   //    - for single Gaussian, there is no selection to be made
   //    - for double Gaussian, one of the three radii is picked.
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
+  /////////////////////////////////////////////////////////////////////////////////
   double b, radius;
   switch (m_overlapform) {
     case overlap_form::code::Single_Gaussian:
@@ -55,7 +65,9 @@ double Matter_Overlap::SelectB(const bool & mode) const {
       else                                     radius = m_radius3;
       break;
   }
+  /////////////////////////////////////////////////////////////////////////////////
   // b from Matter_Overlap, hence r^2_overlap = 2*r^2_formfactor
+  /////////////////////////////////////////////////////////////////////////////////
   if (mode) radius *= sqrt(2.);
   do {
     b = sqrt(-log(Max(1.e-12,ran->Get())))*radius;
@@ -65,8 +77,9 @@ double Matter_Overlap::SelectB(const bool & mode) const {
 
 
 void Matter_Overlap::InitializeFormFactors() {
-  // Matter overlap in two forms available, but only Single_Gaussian fully
-  // functional at the moment.
+  /////////////////////////////////////////////////////////////////////////////////
+  // Matter overlap in two forms available
+  /////////////////////////////////////////////////////////////////////////////////
   m_overlapform = mipars->GetOverlapForm();
   switch (m_overlapform) {
     case overlap_form::code::Single_Gaussian:
@@ -105,8 +118,6 @@ void Matter_Overlap::CalculateIntegral() {
   } while (dabs(previous/result)>1.e-10);
   m_bmax     = bmin;
   m_integral = result;
-  msg_Tracking()<<METHOD<<" for form = "<<int(m_overlapform)<<": "
-		<<"Integral(num) = "<<m_integral<<", ana = "<<(M_PI*m_norm)<<"\n";
 }
 
 Vec4D Matter_Overlap::SelectPositionForScatter(const double & b) const {
@@ -127,9 +138,11 @@ ATOOLS::Vec4D Matter_Overlap::SelectRelativePositionForParton() const {
 }
 
 double MO_Integrand::operator()(double b) {
+  /////////////////////////////////////////////////////////////////////////////////
   // Integrand for d^2b O(b) = 2 pi b db O(b), where O(b) is the time-integrated
   // matter overlap, being the tricky part of the numerator in Eq.(32).
   // This does not include the prefactor k.
+  /////////////////////////////////////////////////////////////////////////////////
   return 2.*M_PI*b*(*p_mo)(b);
 }
 

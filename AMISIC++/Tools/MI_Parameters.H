@@ -16,7 +16,8 @@ namespace AMISIC {
   struct overlap_form {
     enum code {
       Single_Gaussian = 1,
-      Double_Gaussian = 2
+      Double_Gaussian = 2,
+      unknown         = -1
     };
   };
   std::ostream &operator<<(std::ostream&, const overlap_form::code&);
