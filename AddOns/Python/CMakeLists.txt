@@ -39,6 +39,7 @@ add_custom_command(
        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
        VERBATIM)
 Python_add_library(_Sherpa MODULE  ${CMAKE_CURRENT_BINARY_DIR}/Sherpa_wrap.cxx    )
+target_compile_features(_Sherpa PRIVATE cxx_std_11)
 set_target_properties(_Sherpa   PROPERTIES      ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/$<0:>
                                                LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/$<0:>
                                                RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/$<0:>
@@ -48,6 +49,7 @@ install(TARGETS _Sherpa DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.py DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python)
 
 add_library(MEProcess SHARED MEProcess.C)
+target_compile_features(MEProcess PRIVATE cxx_std_11)
 target_include_directories(MEProcess PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/ ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
 install(TARGETS MEProcess DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
 set_target_properties(MEProcess       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME MEProcess SOVERSION 0.0.0)
