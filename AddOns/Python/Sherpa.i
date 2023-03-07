@@ -30,7 +30,7 @@ namespace std {
 %catches (const ATOOLS::Exception&) SHERPA::Sherpa::InitializeTheRun();
 
 // A typemap is required in order to be able to pass
-// the python arguments to SHERPA::Sherpa::InitializeTheRun()
+// the python arguments to SHERPA::Sherpa::Sherpa()
 %typemap(in) char ** {
   // Check if is a list
   if (PyList_Check($input)) {
@@ -39,13 +39,10 @@ namespace std {
     $1 = (char **) malloc((size+1)*sizeof(char *));
     for (i = 0; i < size; i++) {
       PyObject *o = PyList_GetItem($input,i);
-      if (PyString_Check(o))
-	$1[i] = PyString_AsString(PyList_GetItem($input,i));
-      else {
-	PyErr_SetString(PyExc_TypeError,"Sherpa execution argument list must contain strings");
-	free($1);
-	return NULL;
-      }
+      Py_ssize_t str_size = 0;
+      const char* str = PyUnicode_AsUTF8AndSize(o, &str_size);
+      $1[i] = (char *)malloc((str_size + 1) * sizeof(char));
+      std::strcpy($1[i], str);
     }
     $1[i] = 0;
   } else {
