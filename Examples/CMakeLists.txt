@@ -5,7 +5,8 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         COMPONENT doc 
         PATTERN CI EXCLUDE
         PATTERN CMakeLists.txt EXCLUDE
-        REGEX ".*\.in$" EXCLUDE)
+        REGEX ".*\.in$" EXCLUDE
+        REGEX "\..*\.sw.$" EXCLUDE)
 
 # configures and installs an ".in" file; the argument PATH must specify the
 # file's path, without the ".in" extension
