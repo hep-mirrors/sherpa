@@ -585,21 +585,22 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*makefile*" EXCLUDE  
                              )    
 endforeach (  IDIR ${IDIRS}  )
-#Workaround for the Mac OS
+# workaround for macOS
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Org/Node.C  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/ATOOLS/Org/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Org/Getter_Function.C  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/ATOOLS/Org/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/Dummy.C      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/LundTools/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/Lund_Interface.C      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/LundTools/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Cluster_Algorithm.C      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/ATOOLS/Math/)
 if (SHERPA_ENABLE_EXAMPLES)
-  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Examples DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} 
-                         COMPONENT doc 
-                         PATTERN test.py.in EXCLUDE 
-                         PATTERN CI EXCLUDE 
-                          )
+  # install all under Examples/, except CI and ".in" files that will be configured and installed below
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Examples
+          DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} 
+          COMPONENT doc 
+          REGEX ".*\.in$" EXCLUDE 
+          PATTERN CI EXCLUDE)
 endif()
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Sobol/21201 ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Sobol/21201 ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201)
 if (SHERPA_ENABLE_GZIP)
   set(SOBOL_EXT .gz)
   add_custom_target( ZipSobol ALL)
