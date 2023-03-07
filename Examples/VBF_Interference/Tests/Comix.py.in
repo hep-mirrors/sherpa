@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from mpi4py import MPI
+@LOADMPIFORPY@
 import sys, os, shutil, tempfile
 sys.path.append('@PYLIBDIR@')
 import Sherpa
@@ -18,14 +18,6 @@ SCALES: \"VAR{sqr(91.188)}\"\n\
 COUPLINGS: None\n\
 MODEL: HEFT\n\
 EVENTS: 0\n\
-SHERPA_LDADD:\n\
-- PhasicProcess\n\
-- ToolsOrg\n\
-- ToolsPhys\n\
-- ToolsMath\n\
-- ModelMain\n\
-- METoolsExplicit\n\
-- METoolsCurrents\n\
 INIT_ONLY: 2\n\
 OUTPUT: 0\n\
 WRITE_REFERENCES_FILE: false\n\
@@ -46,7 +38,7 @@ PROCESSES:\n\
 \n")
         card.flush()
 
-        sys.argv.append('-f'+os.path.basename(card.name))
+        sys.argv.append(os.path.basename(card.name))
 
         if os.path.exists("Process"): shutil.rmtree('Process')
         if os.path.exists("graphs"): shutil.rmtree('graphs')
