@@ -55,4 +55,6 @@ install(TARGETS MEProcess DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONEN
 set_target_properties(MEProcess       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME MEProcess SOVERSION 0.0.0)
 set_target_properties(MEProcess       PROPERTIES DEFINE_SYMBOL "")
 
+target_link_libraries(_Sherpa PRIVATE SHERPA::All MEProcess)
+
 set(PYLIBDIR ${SHERPA_Python_SITEARCH})
