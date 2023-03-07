@@ -57,4 +57,4 @@ set_target_properties(MEProcess       PROPERTIES DEFINE_SYMBOL "")
 
 target_link_libraries(_Sherpa PRIVATE SHERPA::All MEProcess)
 
-set(PYLIBDIR ${SHERPA_Python_SITEARCH})
+set(PYLIBDIR ${SHERPA_Python_SITEARCH} PARENT_SCOPE)
