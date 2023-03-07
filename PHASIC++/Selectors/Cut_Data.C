@@ -99,14 +99,8 @@ void Cut_Data::Complete()
   for (int i=0;i<ncut;i++) {
     for (int j=i+1;j<ncut;j++) {
       if ((i<nin)^(j<nin)) continue;
-      scut[i][j] =  
-// 	Max(scut[i][j],2.*energymin[i]*energymin[j]*(1.-cosmax[i][j])+sqr(fl[i].SelMass())+sqr(fl[j].SelMass()));
-	Max(scut[i][j],2.*energymin[i]*energymin[j]-2.*sqrt(sqr(energymin[i])-sqr(fl[i].SelMass()))
-	    *sqrt(sqr(energymin[j])-sqr(fl[j].SelMass()))*cosmax[i][j]
-	    +sqr(fl[i].SelMass())+sqr(fl[j].SelMass()));
-      scut[i][j] = scut[j][i] = 
+      scut[i][j] = scut[j][i] =
 	Max(scut[i][j],sqr(fl[i].SelMass()+fl[j].SelMass()));
-//       std::cout<<i<<","<<j<<": "<<scut[i][j]<<std::endl;
     }
   } 
 
