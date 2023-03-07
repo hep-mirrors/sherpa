@@ -56,6 +56,3 @@ set_target_properties(MEProcess       PROPERTIES POSITION_INDEPENDENT_CODE ON OU
 set_target_properties(MEProcess       PROPERTIES DEFINE_SYMBOL "")
 
 set(PYLIBDIR ${SHERPA_Python_SITEARCH})
-configure_file(${PROJECT_SOURCE_DIR}//Examples/API/Events/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/Events/test.py  @ONLY)
-configure_file(${PROJECT_SOURCE_DIR}//Examples/API/ME2-Python/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/ME2-Python/test.py @ONLY)
-configure_file(${PROJECT_SOURCE_DIR}//Examples/API/MPIEvents/test.py.in ${PROJECT_SOURCE_DIR}//Examples/API/MPIEvents/test.py @ONLY)
