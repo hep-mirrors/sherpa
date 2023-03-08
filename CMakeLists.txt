@@ -550,7 +550,9 @@ if (SHERPA_ENABLE_PYTHON OR SHERPA_ENABLE_DIHIGGS OR SHERPA_ENABLE_UFO OR (SHERP
   else()
     message(STATUS "SHERPA: Python_VERSION_MAJOR.Python_VERSION_MINOR=${Python_VERSION_MAJOR}${Python_VERSION_MINOR}Python_VERSION_MAJOR.Python_VERSION_MINOR=${Python_VERSION_MAJOR}${Python_VERSION_MINOR} SHERPA_Python_SITEARCH${Python_VERSION_MAJOR}${Python_VERSION_MINOR} is set to to ${SHERPA_Python_SITEARCH}")
   endif()
+  set (PYTHON "${Python_EXECUTABLE}")
   if (SHERPA_ENABLE_PYTHON)
+    set (PYLIBDIR "${SHERPA_Python_SITEARCH}")
     add_subdirectory(AddOns/Python)
   endif()
   if (SHERPA_ENABLE_DIHIGGS)
@@ -870,8 +872,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt @ONLY)
 
 if (SHERPA_ENABLE_UFO)
-  set (PYTHON "${Python_EXECUTABLE}")
-  set (PYLIBDIR "${SHERPA_Python_SITEARCH}")
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/sconstruct_template.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/sconstruct_template @ONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/Sherpa-generate-model.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/Sherpa-generate-model @ONLY)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/Sherpa-generate-model DESTINATION  ${CMAKE_INSTALL_BINDIR} PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
