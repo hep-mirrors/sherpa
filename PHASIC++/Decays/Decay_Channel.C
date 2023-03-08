@@ -26,7 +26,7 @@ namespace PHASIC {
 Decay_Channel::Decay_Channel(const Flavour & _flin,
                              const ATOOLS::Mass_Selector* ms) :
   m_width(0.), m_deltawidth(-1.), m_minmass(0.), m_max(0.), m_symfac(-1.0),
-  m_iwidth(0.), m_ideltawidth(-1.), m_active(1),
+  m_iwidth(0.), m_ideltawidth(-1.), m_active(vector<int>(1,1)),
   p_channels(NULL), p_amps(NULL), p_ms(ms)
 {
   m_flavours.push_back(_flin);
@@ -114,7 +114,7 @@ namespace PHASIC {
     os<<setw(10)<<dc.m_width;
     if (dc.m_deltawidth>0.) os<<"("<<setw(10)<<dc.m_deltawidth<<")";
     os<<" GeV";
-    if (dc.Active()<1) {
+    if (dc.Active(0)<1) {
       os<<" [disabled]";
     }
     return os;

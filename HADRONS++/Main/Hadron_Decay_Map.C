@@ -212,11 +212,10 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
       // add decayer to decaymap
       Decay_Map::iterator it = find(decayerflav);
       if (it==end()) {
-        insert(make_pair(decayerflav, vector<Decay_Table*>(1,dt)));
+        insert(make_pair(decayerflav, dt));
       }
       else {
-        it->second.push_back(dt);
-        m_counters.insert(make_pair(decayerflav,0));
+        THROW(fatal_error, "Duplicate decay table for "+decayerflav.IDName());
       }
     }
     else {
@@ -299,10 +298,8 @@ void Hadron_Decay_Map::ClearFixedDecayTables()
 void Hadron_Decay_Map::Initialise()
 {
   for (Decay_Map::iterator pos = this->begin(); pos != this->end(); ++pos) {
-    for(size_t i=0; i<pos->second.size(); i++) {
-      Hadron_Decay_Table* dt = (Hadron_Decay_Table*) pos->second[i];
-      dt->Initialise(m_startmd);
-    }
+    Hadron_Decay_Table* dt = (Hadron_Decay_Table*) pos->second;
+    dt->Initialise(m_startmd);
   }
 }
 
@@ -342,7 +339,7 @@ void Hadron_Decay_Map::CreateBooklet(std::string & name)
   f<<"\\section{Decay Channels}"<<endl;
   std::vector<HD_ME_Base*> mes;
   for ( Decay_Map::iterator pos = begin(); pos != end(); ++pos) {
-    Hadron_Decay_Table* dt=(Hadron_Decay_Table*) pos->second[0];
+    Hadron_Decay_Table* dt=(Hadron_Decay_Table*) pos->second;
     if(dt==NULL) continue;
     dt->LatexOutput(f);
   }

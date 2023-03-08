@@ -121,16 +121,12 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
     Flavour flav(it->first);
     if (Decays(flav)) {
       Decay_Table* dt=new Decay_Table(flav, this);
-      vector<Decay_Table*> decaytables;
-      decaytables.push_back(dt);
-      p_decaymap->insert(make_pair(flav,decaytables));
+      p_decaymap->insert(make_pair(flav,dt));
       ReadDecayTable(flav);
     }
     if (flav!=flav.Bar() && Decays(flav.Bar())) {
       Decay_Table* dt=new Decay_Table(flav.Bar(), this);
-      vector<Decay_Table*> decaytables;
-      decaytables.push_back(dt);
-      p_decaymap->insert(make_pair(flav.Bar(),decaytables));
+      p_decaymap->insert(make_pair(flav.Bar(),dt));
       ReadDecayTable(flav.Bar());
     }
   }
@@ -139,11 +135,11 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   Decay_Map::iterator dmit;
   msg_Debugging()<<"Initialising hard decay tables: two-body decays.\n";
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    InitializeDirectDecays(dmit->second.at(0));
+    InitializeDirectDecays(dmit->second);
   }
   msg_Debugging()<<"Initialising hard decay tables: three-body decays.\n";
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    InitializeOffshellDecays(dmit->second.at(0));
+    InitializeOffshellDecays(dmit->second);
   }
   msg_Debugging()<<"Initialising hard decay tables: customizing decay tables.\n";
   ApplySMWidths();
@@ -151,7 +147,7 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
 
   if (m_set_widths)
     for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-      dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
+      dmit->second->Flav().SetWidth(dmit->second->TotalWidth());
     }
 
   if (p_decaymap->size()) msg_Info()<<endl<<*p_decaymap<<endl;
@@ -291,11 +287,11 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
     Decay_Channel* dc=dt->at(i);
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc);
     if (TriggerOffshell(dc, new_dcs)) {
-      dc->SetActive(-1);
+      dc->SetActiveAll(-1);
       for (size_t j=0; j<new_dcs.size(); ++j) {
         // check for duplicates
         Decay_Channel* dup=dt->GetDecayChannel(new_dcs[j]->Flavs());
-        if (dup && dup->Active()>=0) {
+        if (dup && dup->Active(0)>=0) {
           DEBUG_INFO("Adding new diagram to "<<*dup);
           for (size_t k=0; k<new_dcs[j]->GetDiagrams().size(); ++k) {
             dup->AddDiagram(new_dcs[j]->GetDiagrams()[k]);
@@ -318,7 +314,7 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
     else {
       DEBUG_INFO("Keeping factorised.");
       for (size_t j=0; j<new_dcs.size(); ++j) {
-        if (new_dcs[j]) new_dcs[j]->SetActive(-1);
+        if (new_dcs[j]) new_dcs[j]->SetActiveAll(-1);
       }
     }
   }
@@ -365,10 +361,11 @@ void Hard_Decay_Handler::ApplySMWidths()
   ho_sm_widths["6,24,5"]     = 1.32;
   ho_sm_widths["-6,-24,-5"]  = 1.32;
 
+  /* TODO
   for (const auto& channel_width : ho_sm_widths) {
     std::string channelid = channel_width.first;
     double width = channel_width.second;
-    pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(channelid, true);
+    pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(channelid);
     Decay_Channel* dc = match.second;
     if (!match.first || !dc) {
       PRINT_INFO("Ignoring unknown decay channel: " << channelid);
@@ -376,17 +373,19 @@ void Hard_Decay_Handler::ApplySMWidths()
     }
     dc->SetWidth(width);
   }
+  */
 }
 
 void Hard_Decay_Handler::CustomizeDecayTables()
 {
+  /* TODO
   auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"];
   DEBUG_FUNC(s.GetKeys().size());
   for (const auto& decay : s.GetKeys()) {
     DEBUG_VAR(decay);
 
     // obtain decay channel (creating it if appropriate)
-    pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(decay, true);
+    pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(decay);
     Decay_Channel* dc = match.second;
     if (!match.first || !dc) {
       PRINT_INFO("Ignoring unknown decay channel: " << decay);
@@ -416,6 +415,7 @@ void Hard_Decay_Handler::CustomizeDecayTables()
   for (Decay_Map::iterator dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     dmit->second.at(0)->UpdateWidth();
   }
+  */
 }
 
 
@@ -555,7 +555,7 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
     }
   }
   else {
-    dc->SetActive(-1);
+    dc->SetActiveAll(-1);
     dc->SetIWidth(0.0);
     dc->SetIDeltaWidth(0.0);
     dc->SetMax(0.0);
@@ -630,7 +630,7 @@ double Hard_Decay_Handler::BRFactor(ATOOLS::Blob* blob) const
     Particle* part=blob->OutParticle(i);
     Decay_Table* dt=p_decaymap->FindDecay(part->RefFlav());
     if (dt) {
-      brfactor*=dt->ActiveWidth()/dt->TotalWidth();
+      brfactor*=dt->ActiveWidth(0)/dt->TotalWidth();
       if (part->DecayBlob() && part->DecayBlob()->Type()==btp::Hard_Decay)
         brfactor*=BRFactor(part->DecayBlob());
     }
@@ -1521,7 +1521,7 @@ void Hard_Decay_Handler::WriteDecayTables()
     ostr<<"# Decay table for "<<dmit->first<<endl;
     ostr<<"# IDCode                   \tWidth     \tDeltaWidth \tMaximum"<<endl<<endl;
     Decay_Table::iterator dtit;
-    for (dtit=dmit->second[0]->begin(); dtit!=dmit->second[0]->end(); ++dtit) {
+    for (dtit=dmit->second->begin(); dtit!=dmit->second->end(); ++dtit) {
       ostr<<setw(25)<<left<<(*dtit)->IDCode()<<"\t"
           <<setw(12)<<left<<(*dtit)->IWidth()<<"\t"
           <<setw(12)<<left<<(*dtit)->IDeltaWidth()<<"\t"

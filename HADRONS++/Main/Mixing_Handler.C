@@ -86,7 +86,7 @@ bool Mixing_Handler::PerformMixing(Particle* decayer) const
 
 
 Hadron_Decay_Channel* Mixing_Handler::Select(Particle* decayer,
-                                             const Hadron_Decay_Table& ot) const
+                                             Hadron_Decay_Table& ot) const
 {
   Flavour flav = decayer->Flav();
   string tag = flav.IsAnti() ? flav.Bar().IDName() : flav.IDName();

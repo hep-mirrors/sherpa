@@ -16,6 +16,13 @@ namespace PHASIC {
   class Decay_Table : public std::vector<Decay_Channel *> {
   protected :
     /**
+     * This variable keeps track how many decays
+     * have already been used in this event from this table.
+     * It allows to enable/disable some decay channels only for e.g. the
+     * first/second/... tau decay in the event.
+     */
+    size_t m_counter;
+    /**
      * Sum over the decay channel widths (for this decayer's nominal decay table)
      */
     double                        m_totalwidth;
@@ -41,10 +48,11 @@ namespace PHASIC {
 
     const ATOOLS::Flavour& Flav() const      { return m_flin;      }
     const double &  TotalWidth() const       { return m_totalwidth; }
-    const double &  ActiveWidth() const;
+    const double    ActiveWidth(const size_t& counter) const;
     Decay_Channel * GetDecayChannel(const ATOOLS::Flavour_Vector&) const;
     void            EraseDecayChannel(const int);
-    Decay_Channel * Select() const;
+    Decay_Channel * Select();
+    void ResetCounter() { m_counter=0; }
 
     friend std::ostream &operator<<(std::ostream &os, const Decay_Table &dt);
   };

@@ -173,7 +173,7 @@ RejectExclusiveChannelsFromFragmentation(Blob* fblob)
     if (dt==p_decaymap->end()) {
       anti=true;
       dt=p_decaymap->find(decayblob->InParticle(0)->Flav().Bar());
-      if (dt==p_decaymap->end() || dt->second.size()!=1) {
+      if (dt==p_decaymap->end() || !dt->second) {
 	PRINT_INFO("Internal error.");
 	throw Return_Value::Retry_Event;
       }
@@ -204,9 +204,9 @@ RejectExclusiveChannelsFromFragmentation(Blob* fblob)
 		      decayblob->InParticle(0)->Flav());
       for (size_t i=0; i<tmpno.size(); ++i) compflavsno[i+1]=tmpno[i];
     }
-    if (dt->second[0]->GetDecayChannel(compflavs) ||
+    if (dt->second->GetDecayChannel(compflavs) ||
        (tmpno.size()!=tmp.size() && 
-	dt->second[0]->GetDecayChannel(compflavsno))) {
+	dt->second->GetDecayChannel(compflavsno))) {
       Return_Value::IncRetryPhase(mname);
       DEBUG_INFO("rejected. retrying decay.");
       if (fblob!=decayblob) p_bloblist->Delete(fblob);

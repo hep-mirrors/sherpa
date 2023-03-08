@@ -19,14 +19,8 @@ namespace PHASIC {
   };
 
   class Decay_Map : 
-    public std::map<ATOOLS::Flavour, std::vector<Decay_Table *>, FlavourComp> {
+    public std::map<ATOOLS::Flavour, Decay_Table *, FlavourComp> {
   protected:
-    /**
-     * For each Flavour multiple decay tables can exist, and are used
-     * successively during an event. This variable keeps track of how many
-     * have already been used in this event for each Flavour.
-     */
-    std::map<ATOOLS::Flavour,int> m_counters;
     /**
      * The Mass_Selector knows which type of mass is to be used for all decays
      * associated with this decay map. This can be the HadMass() if the decays
@@ -67,8 +61,7 @@ namespace PHASIC {
      * 
      * @return The decay channel and its decay table.
      */
-    std::pair<Decay_Table*, Decay_Channel*> FindDecayChannel(std::string name,
-                                                             bool create=false);
+    //std::pair<Decay_Table*, Decay_Channel*> FindDecayChannel(std::string name);
 
     /**
      * Resets the counters (cf. Decay_Map::m_counters) for flavour types.

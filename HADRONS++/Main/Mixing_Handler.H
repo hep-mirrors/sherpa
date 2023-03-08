@@ -58,7 +58,7 @@ namespace HADRONS {
      * @return true if decay table needed adjustment, false if not
      */
     Hadron_Decay_Channel* Select(ATOOLS::Particle* decayer,
-                                 const Hadron_Decay_Table& table) const;
+                                 Hadron_Decay_Table& table) const;
     
     /**
       * Set the model which contains all parameters relevant for mixing

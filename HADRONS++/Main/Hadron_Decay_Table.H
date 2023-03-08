@@ -22,7 +22,6 @@ namespace HADRONS {
     /// Pointer to the mixing handler. Needed for rate asymmetries.
     Mixing_Handler* p_mixinghandler;
     double m_flavwidth;
-    void ScaleToWidth();
 
   public:
     /** 
@@ -38,7 +37,7 @@ namespace HADRONS {
     /** 
      * Wrapper function.
      */
-    inline Hadron_Decay_Channel* Select() const {
+    inline Hadron_Decay_Channel* Select() {
       return (Hadron_Decay_Channel*) Decay_Table::Select();
     }
 
@@ -83,7 +82,7 @@ namespace HADRONS {
      * 
      * @return Decay_Channel selected according to branching ratios.
      */
-    PHASIC::Decay_Channel* Select(ATOOLS::Blob* blob) const;
+    PHASIC::Decay_Channel* Select(ATOOLS::Blob* blob);
 
     //@{
     /** Getter/setter method */
