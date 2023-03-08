@@ -10,7 +10,7 @@ using namespace std;
 
 Decay_Table::Decay_Table(const Flavour _flin, const ATOOLS::Mass_Selector* ms) :
   vector<Decay_Channel*>(0),
-  m_activewidth(0.), m_totalwidth(0.), m_flin(_flin), p_ms(ms)
+  m_totalwidth(0.), m_flin(_flin), p_ms(ms)
 { }
 
 Decay_Table::~Decay_Table()
@@ -24,8 +24,7 @@ void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
 {
   for(size_t i=0;i<size();i++) {
     if(at(i)->Flavs()==_dc->Flavs() &&
-       _dc->Width()!=0.0 && at(i)->Width()!=0.0 &&
-       _dc->Active()>-1 && at(i)->Active()>-1) {
+       _dc->Width()!=0.0 && at(i)->Width()!=0.0) {
       msg_Error()<<METHOD<<" Warning: Duplicate decaychannel: ";
       _dc->Output();
       msg_Error()<<endl;
@@ -33,13 +32,11 @@ void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
   }
   push_back(_dc);
   if (_dc->Active()>=0) m_totalwidth += _dc->Width();
-  if (_dc->Active()>0) m_activewidth += _dc->Width();
 }
 
 void Decay_Table::RemoveDecayChannel(size_t i)
 {
   if (at(i)->Active()>=0) m_totalwidth -= at(i)->Width();
-  if (at(i)->Active()>0) m_activewidth -= at(i)->Width();
   erase(begin()+i);
 }
 
@@ -65,8 +62,6 @@ namespace PHASIC {
   {
     os<<"Decay table for : "<<dt.m_flin<<"."<<endl;
     os<<setw(30)<<"Total width: "<<dt.TotalWidth()<<" GeV"<<endl;
-    if (dt.ActiveWidth()!=dt.TotalWidth())
-      os<<setw(30)<<"Active width: "<<dt.ActiveWidth()<<" GeV"<<endl;
     if (dt.Flav().Width()!=dt.TotalWidth())
       os<<setw(30)<<"Flavour width: "<<dt.Flav().Width()<<" GeV"<<endl;
     os<<"----------------------------------------"<<endl;
@@ -85,20 +80,26 @@ namespace PHASIC {
 }
 
 void Decay_Table::UpdateWidth() {
-  m_activewidth = m_totalwidth = 0.;
+  m_totalwidth = 0.;
   for (size_t i=0;i<size();i++) {
     if (at(i)->Active()>=0) m_totalwidth += at(i)->Width();
-    if (at(i)->Active()>0) m_activewidth += at(i)->Width();
   }
 }
 
 void Decay_Table::UpdateWidth(Decay_Channel * hdc,const double &width)
 {
   if (hdc->Active()>=0) m_totalwidth -= hdc->Width();
-  if (hdc->Active()>0) m_activewidth -= hdc->Width();
   hdc->SetWidth(width);
   if (hdc->Active()>=0) m_totalwidth += hdc->Width();
-  if (hdc->Active()>0) m_activewidth += hdc->Width();
+}
+
+const double& Decay_Table::ActiveWidth() const
+{
+  double activewidth=0.0;
+  for (size_t i=0;i<size();++i) {
+    if (at(i)->Active()>0) activewidth += at(i)->Width();
+  }
+  return activewidth;
 }
 
 Decay_Channel * Decay_Table::GetDecayChannel
@@ -122,9 +123,9 @@ Decay_Channel* Decay_Table::Select() const
   DEBUG_FUNC(m_flin);
   Decay_Channel* selected(NULL);
   if (size()==1) return at(0);
-  double disc = m_activewidth*ran->Get();
+  double disc = ActiveWidth()*ran->Get();
   for (size_t i=0;i<size();++i) {
-    if (at(i)->Active()<1) continue;
+     if (at(i)->Active()<1) continue;
     disc -= at(i)->Width();
     if (disc<0) {
       selected=at(i);

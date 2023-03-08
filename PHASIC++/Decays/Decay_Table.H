@@ -15,7 +15,10 @@ namespace PHASIC {
 
   class Decay_Table : public std::vector<Decay_Channel *> {
   protected :
-    double                        m_activewidth, m_totalwidth;
+    /**
+     * Sum over the decay channel widths (for this decayer's nominal decay table)
+     */
+    double                        m_totalwidth;
     ATOOLS::Flavour               m_flin;
     /**
      * The Mass_Selector knows which type of mass is to be used for all decays
@@ -38,7 +41,7 @@ namespace PHASIC {
 
     const ATOOLS::Flavour& Flav() const      { return m_flin;      }
     const double &  TotalWidth() const       { return m_totalwidth; }
-    const double &  ActiveWidth() const      { return m_activewidth; }
+    const double &  ActiveWidth() const;
     Decay_Channel * GetDecayChannel(const ATOOLS::Flavour_Vector&) const;
     void            EraseDecayChannel(const int);
     Decay_Channel * Select() const;
