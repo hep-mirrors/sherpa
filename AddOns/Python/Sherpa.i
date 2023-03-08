@@ -25,6 +25,8 @@ namespace std {
   // made available:
 #include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Model_Base.H"
+
+#include <cstring>
   %}
 
 %catches (const ATOOLS::Exception&) SHERPA::Sherpa::InitializeTheRun();
