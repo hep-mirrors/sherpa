@@ -18,13 +18,18 @@ function(CONFIGURE_AND_INSTALL PATH)
 endfunction()
 
 # configure and install all ".in" files (insofar it makes sense to do so)
-if (PYLIBDIR)
-  configure_and_install(API/ME2-Python/test.py)
-  configure_and_install(API/MPIEvents/test.py)
-  configure_and_install(VBF_Interference/BH_Interface/BlackHat.py)
-  configure_and_install(VBF_Interference/BH_Interface/Comix.py)
-  configure_and_install(VBF_Interference/Tests/Comix.py)
+set (IN_FILE_PATHS
+     Userhook/CMakeLists.txt
+     V_plus_Bs/LHC_Wbb/CMakeLists.txt
+     V_plus_Jets/LHC_WJets/CMakeLists.txt)
+if (SHERPA_ENABLE_PYTHON)
+  set (IN_FILE_PATHS ${IN_FILE_PATHS}
+       API/ME2-Python/test.py
+       API/MPIEvents/test.py
+       VBF_Interference/BH_Interface/BlackHat.py
+       VBF_Interference/BH_Interface/Comix.py
+       VBF_Interference/Tests/Comix.py)
 endif()
-configure_and_install(Userhook/CMakeLists.txt)
-configure_and_install(V_plus_Bs/LHC_Wbb/CMakeLists.txt)
-configure_and_install(V_plus_Jets/LHC_WJets/CMakeLists.txt)
+foreach (PATH ${IN_FILE_PATHS})
+  configure_and_install(${PATH})
+endforeach()
