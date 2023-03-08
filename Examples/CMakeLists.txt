@@ -12,7 +12,7 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 # file's path, without the ".in" extension
 function(CONFIGURE_AND_INSTALL PATH)
   configure_file(${PATH}.in ${CMAKE_CURRENT_BINARY_DIR}/${PATH} @ONLY)
-  cmake_path(GET PATH PARENT_PATH target_dir)
+  get_filename_component(target_dir ${PATH} DIRECTORY)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PATH}
           DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/Examples/${target_dir})
 endfunction()
