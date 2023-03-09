@@ -133,12 +133,10 @@ namespace LHEH5 {
       std::vector<double> wgts(evts[i].begin()+9,evts[i].end());
       Event e(GetProcInfo(evts[i][0]?evts[i][0]-1:0),evts[i][3],wgts,
 	      evts[i][6],evts[i][5],evts[i][4],evts[i][7],evts[i][8]);
-#ifdef FIX__BROKEN_EVENT_FILES
       double wgt(0.);
       for (std::vector<double>::const_iterator
 	     it(wgts.begin());it!=wgts.end();++it) wgt+=std::abs(*it);
       if (!wgt) return e;
-#endif
       for (int n(0);n<evts[i][1];++n)
 	e.push_back(GetParticle(evts[i][2]-evts[0][2]+n));
       if (!ctevts.empty()) {
@@ -271,7 +269,9 @@ namespace LHEH5 {
       }
       if (p_ampl==NULL) {
 	Event e(p_file->GetEvent(m_ievt));
+	msg_Debugging()<<e<<"\n";
 	if (e.empty()) {
+	  m_trials+=e.trials;
 	  m_ievt++;
 	  return NULL;
 	}
@@ -279,7 +279,6 @@ namespace LHEH5 {
 	  std::swap<Particle>(e[0],e[1]);
 	  std::swap<double>(e.z1,e.z2);
 	}
-	msg_Debugging()<<e<<"\n";
 	p_ampl = Cluster_Amplitude::New();
 	for (size_t i(0);i<e.size();++i) {
 	  Flavour fl((long int)(e[i].id));
@@ -295,7 +294,7 @@ namespace LHEH5 {
 	p_ampl->SetKT2(sqr(e.muq));
 	p_ampl->SetLKF(e.wgts[0]);
 	m_compute=1;
-	m_trials=e.trials;
+	m_trials+=e.trials;
 	if (e.pinfo.npnlo>0) {
 	  p_ampl->SetLKF(e.psw);
 	  m_compute=2;
