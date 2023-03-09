@@ -12,7 +12,7 @@ RUN  dnf -y copr enable averbyts/HEPrpms &&  yum -y  install  gosam  fastjet fas
                       blackhat-devel blackhat recola cernlib cernlib-devel cernlib-static MCFM MG5_aMC openloops \ 
                       f90cache  && yum -y update lhapdf && yum -y clean all
 #Packages coming from HEPrpms <-
-RUN  yum -y  install  sphinx python3-sphinx python3-sphinxcontrib-bibtex \
+RUN  yum -y  install  sphinx python3-sphinx python3-sphinxcontrib-bibtex python3-sphinx* \
                       'tex(atbegshi.sty)' 'tex(babel.sty)' 'tex(bigintcalc.sty)' 'tex(bitset.sty)' 'tex(etexcmds.sty)' 'tex(gettitlestring.sty)'   \
                       'tex(iftex.sty)' 'tex(ifvtex.sty)' 'tex(infwarerr.sty)' 'tex(intcalc.sty)' 'tex(kvdefinekeys.sty)' 'tex(kvsetkeys.sty)'  \
                       'tex(ltxcmds.sty)' 'tex(pdfescape.sty)' 'tex(pdftexcmds.sty)' 'tex(uniquecounter.sty)' 'tex(amsfonts.sty)' 'tex(amssymb.sty)'   \
@@ -23,5 +23,5 @@ RUN  yum -y  install  sphinx python3-sphinx python3-sphinxcontrib-bibtex \
                       'tex(nameref.sty)' 'tex(kvoptions.sty)' 'tex(letltxmacro.sty)' 'tex(needspace.sty)' 'tex(hypcap.sty)' 'tex(parskip-2001-04-09.sty)' 'tex(parskip.sty)'  \
                       'tex(refcount.sty)' 'tex(rerunfilecheck.sty)' 'tex(tabulary.sty)' 'tex(tgheros.sty)' 'tex(tgtermes.sty)' 'tex(titlesec.sty)' 'tex(array.sty)'   \
                       'tex(longtable.sty)' 'tex(multicol.sty)' 'tex(upquote.sty)' 'tex(url.sty)' 'tex(varwidth.sty)' 'tex(wrapfig.sty)' 'tex(xcolor.sty)' \
-                        && yum -y  clean all  
+                       rsync  && yum -y  clean all  
 RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas
