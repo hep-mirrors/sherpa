@@ -92,6 +92,20 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     string content = infile.FileContent();
     DEBUG_VAR(content);
 
+    std::string code;
+    Flavour_Vector daughters(m_flavours.begin() + 1, m_flavours.end()-1); // TODO remove ff
+    for (const auto& daughter : daughters) {
+      code += ToString((long int)daughter) + ",";
+    }
+    code += ToString((long int)(*(m_flavours.end()-1)));
+    std::cerr<<"      "<<code<<":"<<std::endl;
+    
+    double m_flavwidth=m_flavours[0].Width();
+    if (m_flavours[0].Kfcode()==kf_tau && m_flavwidth==0.0) {
+      m_flavwidth = 2.26735e-12;
+    }
+    std::cerr<<"        BR: ["<<m_width/m_flavwidth<<", "<<m_deltawidth/m_flavwidth<<"]"<<std::endl;
+    if (m_origin!="") std::cerr<<"        Origin: "<<m_origin<<std::endl;
     GeneralModel model_for_ps = m_startmd;
     ProcessOptions(content);
     ProcessME(content, model_for_ps);
@@ -125,9 +139,11 @@ void Hadron_Decay_Channel::ProcessOptions(const string& content)
     }
     else if (helpsvv[i][0]==string("CPAsymmetryS")) {
       m_cp_asymmetry_S = ToType<double>(helpsvv[i][1]);
+      std::cerr<<"        CPAsymmetryS: "<<m_cp_asymmetry_S<<std::endl;
     }
     else if (helpsvv[i][0]==string("CPAsymmetryC")) {
       m_cp_asymmetry_C = ToType<double>(helpsvv[i][1]);
+      std::cerr<<"        CPAsymmetryC: "<<m_cp_asymmetry_C<<std::endl;
     }
   }
   // convert C and S to lambda, assuming DeltaGamma=0 for the determination 
@@ -143,7 +159,8 @@ void Hadron_Decay_Channel::ProcessPhasespace(const string& content,
                                              const GeneralModel& model_for_ps)
 {
   vector<vector<string> > ps_svv = Process(content,"<Phasespace>","</Phasespace>");
-  
+
+  std::cerr<<"        PhaseSpace:"<<std::endl;
   int nr_of_channels=0;
   for (size_t i=0;i<ps_svv.size();i++) {
     double weight = ToType<double>(ps_svv[i][0]);
@@ -154,6 +171,8 @@ void Hadron_Decay_Channel::ProcessPhasespace(const string& content,
 	  	 <<" is not a valid phase space channel.\n"
 	  	 <<"   Will ignore it and hope for the best.\n";
     }
+    std::cerr<<"          - "<<ps_svv[i][1]<<":"<<std::endl;
+    std::cerr<<"              Weight: "<<ps_svv[i][0]<<std::endl;
   }
   if(nr_of_channels == 0) {
     msg_Error()<<METHOD<<": Warning. No valid phase space channels found in "
@@ -171,6 +190,7 @@ void Hadron_Decay_Channel::ProcessME(const string& content,
   Algebra_Interpreter ip;
   ip.AddTag("GF", "8.24748e-6");
 
+  std::cerr<<"        ME:"<<std::endl;
   for (size_t i=0;i<me_svv.size();i++) {
     if(me_svv[i].size()==3) {
       msg_Tracking()<<"Selecting ME for "<<Name()<<endl;
@@ -178,7 +198,9 @@ void Hadron_Decay_Channel::ProcessME(const string& content,
       me->SetPath(m_path);
       msg_Tracking()<<"  "<<me->Name()<<endl;
       GeneralModel me_model = m_startmd;
-      me_model.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
+      std::cerr<<"          - "<<me_svv[i][2]<<":"<<std::endl;
+      std::cerr<<"              Factor: ["<<me_svv[i][0]<<", "<<me_svv[i][1]<<"]"<<std::endl;
+      me_model.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"), "");
       model_for_ps.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
       me->SetModelParameters( me_model );
       Complex factor = Complex(ToType<double>(ip.Interprete(me_svv[i][0])),
@@ -189,17 +211,22 @@ void Hadron_Decay_Channel::ProcessME(const string& content,
     }
     if(me_svv[i].size()==4) {
       msg_Tracking()<<"Selecting currents for "<<Name()<<endl;
+      std::cerr<<"          - Currents:"<<std::endl;
+      std::cerr<<"              Factor: ["<<me_svv[i][0]<<", "<<me_svv[i][1]<<"]"<<std::endl;
+      std::cerr<<"              J1:"<<std::endl;
       Current_Base* current1 = SelectCurrent(me_svv[i][2]);
       current1->SetPath(m_path);
       GeneralModel current1_model = m_startmd;
-      current1_model.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
+      current1_model.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"), "  ");
       model_for_ps.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
       current1->SetModelParameters( current1_model );
 
+      std::cerr<<"              J2:"<<std::endl;
       Current_Base* current2 = SelectCurrent(me_svv[i][3]);
       current2->SetPath(m_path);
+      //std::cerr<<"              "<<me_svv[i][3]<<":"<<std::endl;
       GeneralModel current2_model = m_startmd;
-      current2_model.AddParameters(SubString(content,"<"+me_svv[i][3]+">","</"+me_svv[i][3]+">"));
+      current2_model.AddParameters(SubString(content,"<"+me_svv[i][3]+">","</"+me_svv[i][3]+">"), "  ");
       model_for_ps.AddParameters(SubString(content,"<"+me_svv[i][3]+">","</"+me_svv[i][3]+">"));
       current2->SetModelParameters( current2_model );
 
@@ -272,6 +299,7 @@ void Hadron_Decay_Channel::ProcessResult(const string& content)
     THROW(fatal_error, "Result section of "+m_path+"/"+m_filename+" did not "+
           "contain three entries. Aborting.");
   }
+  std::cerr<<"        IntResults: ["<<m_iwidth<<", "<<m_ideltawidth<<", "<<m_max<<"]"<<std::endl;
 }
 
 void Hadron_Decay_Channel::WriteOut(bool newfile, string path, string file)
@@ -415,6 +443,8 @@ Current_Base* Hadron_Decay_Channel::SelectCurrent(string current_string)
   vector<int> indices(n);
   for(int i=0; i<n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
   ME_Parameters fi(m_physicalflavours, indices);
+  std::cerr<<"                Type: "<<resultstrings[0]<<std::endl;
+  std::cerr<<"                Indices: "<<indices<<std::endl;
 
   Current_Base* current=Current_Getter_Function::GetObject(resultstrings[0],fi);
   if(current==NULL) {

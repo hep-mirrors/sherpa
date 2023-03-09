@@ -205,10 +205,12 @@ void Hadron_Decay_Table::Initialise(GeneralModel& startmd)
       <<" ("<<TotalWidth()/m_flavwidth*100.0<<"%)"<<endl;
     if(msg_LevelIsDebugging()) Output();
   }
+  std::cerr<<"    "<<Flav().Kfcode()<<":"<<std::endl;
   Hadron_Decay_Channel* hdc;
   for (size_t i=0; i<size(); i++) {
     hdc = at(i);
     hdc->Initialise(startmd);
+    std::cerr<<std::endl;
   }
 }
 

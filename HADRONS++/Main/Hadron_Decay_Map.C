@@ -22,7 +22,9 @@ using namespace std;
 Hadron_Decay_Map::Hadron_Decay_Map(const Mass_Selector* ms) :
   Decay_Map(ms),
   m_fixed_next_tables(0), p_mixinghandler(NULL)
-{}
+{
+  std::cerr<<"HADRON_DECAYS:"<<std::endl;
+}
 
 Hadron_Decay_Map::~Hadron_Decay_Map()
 {
@@ -50,12 +52,15 @@ void Hadron_Decay_Map::ReadInConstants(const string& path, const string& file)
     return;
   }
 
+  std::cerr<<"  Constants:"<<std::endl;
   for (size_t i=0;i<constants.size();++i) {
     if( constants[i][1] == "=" ) {              // <name> = <value>
+      std::cerr<<"    "<<constants[i][0]<<": "<<constants[i][2]<<std::endl;
       m_startmd[constants[i][0]] = ToType<double> (
           reader.Interpreter()->Interprete(constants[i][2]) );
     }
   }
+  std::cerr<<std::endl;
   
   set<Flavour> neutral_mesons;
   neutral_mesons.insert(Flavour(kf_K));
@@ -297,6 +302,7 @@ void Hadron_Decay_Map::ClearFixedDecayTables()
 
 void Hadron_Decay_Map::Initialise()
 {
+  std::cerr<<"  Channels:"<<std::endl;
   for (Decay_Map::iterator pos = this->begin(); pos != this->end(); ++pos) {
     Hadron_Decay_Table* dt = (Hadron_Decay_Table*) pos->second;
     dt->Initialise(m_startmd);
