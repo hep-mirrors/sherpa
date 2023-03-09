@@ -6,53 +6,33 @@
 using namespace SHERPA;
 
 
-Minimum_Bias::Minimum_Bias(Soft_Collision_Handler_Map * schandlers) :
-  p_schandlers(schandlers)
+Minimum_Bias::Minimum_Bias(Soft_Collision_Handler_Map * schandlers) : m_on(false)
 {
-  //msg_Out()<<METHOD<<":\n";
-  for (Soft_Collision_Handler_Map::iterator scit=schandlers->begin();scit!=schandlers->end();scit++) {
-    msg_Out()<<"  * "<<scit->first<<": "<<scit->second<<"\n";
-  }
   m_type   = eph::Perturbative;
   m_name   = std::string("Minimum_Bias: ");
-  bool add = false;
-  if (p_schandlers->find(PDF::isr::hard_subprocess)!=p_schandlers->end()) {
-    m_name += (*p_schandlers)[PDF::isr::hard_subprocess]->Soft_CollisionModel();
-    add     = true;
+  if (schandlers->find(PDF::isr::hard_subprocess)!=schandlers->end() &&
+      (*schandlers)[PDF::isr::hard_subprocess]!=NULL) {
+    p_schandler = (*schandlers)[PDF::isr::hard_subprocess];
+    m_name     += p_schandler->Soft_CollisionModel();
+    m_on        = true;
   }
-  if (p_schandlers->find(PDF::isr::bunch_rescatter)!=p_schandlers->end()) {
-    if (add) m_name += std::string(" + ");		
-    m_name          += ( (*p_schandlers)[PDF::isr::bunch_rescatter]->Soft_CollisionModel()+
-			 std::string(" (rescatter)") );
-  }
-  //for (Soft_Collision_Handler_Map::iterator scit=p_schandlers->begin();
-  //     scit!=p_schandlers->end();scit++) {
-  //  msg_Out()<<METHOD<<"["<<this<<"], model["<<scit->first<<"] --> "<<scit->second<<"\n";
-  //}
+  else m_name += "None";
 }
 
 Minimum_Bias::~Minimum_Bias() {}
 
 ATOOLS::Return_Value::code Minimum_Bias::Treat(ATOOLS::Blob_List* blobs)
 {
-  for (ATOOLS::Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
-    if ((*bit)->Has(ATOOLS::blob_status::needs_minBias))
-      return (*p_schandlers)[PDF::isr::hard_subprocess]->GenerateMinimumBiasEvent(blobs);
-    if ((*bit)->Has(ATOOLS::blob_status::needs_beamRescatter))
-      return (*p_schandlers)[PDF::isr::bunch_rescatter]->GenerateBunchRescatter(blobs);
+  if (m_on) {
+    for (ATOOLS::Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
+      if ((*bit)->Has(ATOOLS::blob_status::needs_minBias))
+	return p_schandler->GenerateMinimumBiasEvent(blobs);
+    }
   }
   return ATOOLS::Return_Value::Nothing;
 }
 
-void Minimum_Bias::CleanUp(const size_t & mode) {
-  for (Soft_Collision_Handler_Map::iterator scit=p_schandlers->begin();
-       scit!=p_schandlers->end();scit++) {
-    //msg_Out()<<METHOD<<" [MinBias = "<<this<<", model = "<<scit->first<<"] "
-    //	     <<"--> SC_Handler = "<<scit->second<<".\n";
-    scit->second->CleanUp();
-  }
-  //msg_Out()<<"Out of "<<METHOD<<"\n";
-}
+void Minimum_Bias::CleanUp(const size_t & mode) { if (m_on) p_schandler->CleanUp(); }
 
 void Minimum_Bias::Finish(const std::string &) {}
 

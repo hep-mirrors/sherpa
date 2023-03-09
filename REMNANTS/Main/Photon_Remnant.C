@@ -14,7 +14,9 @@ Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag) :
   p_pdf(pdf), p_partons(&(pdf->Partons())),
   m_LambdaQCD(0.25), m_beta_quark(-1.), m_beta_gluon(-1.2),
   m_valence(false), p_spectator(nullptr),
-  p_recoiler(nullptr), m_ff(Form_Factor(m_beamflav)) {}
+  p_recoiler(nullptr) {
+  p_ff = new Form_Factor(pdf->Bunch());
+}
 
 Particle *Photon_Remnant::MakeParticle(const Flavour &flav) {
   Particle *part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
@@ -225,7 +227,7 @@ void Photon_Remnant::MakeRemnants() {
   for (int i = 1; i < 3; i++) {
     part = MakeParticle(factor * quark);
     part->SetFlow(i, p_colours->NextColour(m_beam,i-1));
-    part->SetPosition(m_position+m_ff());
+    part->SetPosition(m_position+(*p_ff)());
     m_spectators.push_front(part);
     factor *= -1;
   }
@@ -238,7 +240,7 @@ void Photon_Remnant::CompensateColours() {
          p_colours->Colours(m_beam,0)!=p_colours->Colours(m_beam,1)) {
     Particle * gluon = MakeParticle(Flavour(kf_gluon));
     for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
-    gluon->SetPosition(m_position+m_ff());
+    gluon->SetPosition(m_position+(*p_ff)());
     m_spectators.push_back(gluon);
   }
 }

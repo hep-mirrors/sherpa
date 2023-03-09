@@ -1,6 +1,7 @@
 #ifndef REMNANTS_Main_Remnant_Base_H
 #define REMNANTS_Main_Remnant_Base_H
 
+#include "REMNANTS/Tools/Form_Factor.H"
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -36,6 +37,7 @@ namespace REMNANTS {
     rtp::code          m_type;
     size_t             m_beam, m_tag;
     BEAM::Beam_Base  * p_beam;
+    Form_Factor      * p_ff;
     ATOOLS::Blob     * p_beamblob;
     ATOOLS::Vec4D      m_position;
     ATOOLS::Part_List  m_extracted, m_spectators;
@@ -64,6 +66,7 @@ namespace REMNANTS {
     inline size_t                     Beam() const       { return m_beam; }
     inline const ATOOLS::Vec4D      & Position() const   { return m_position; }
     inline BEAM::Beam_Base          * GetBeam() const    { return p_beam; }
+    inline Form_Factor              * GetFF() const      { return p_ff; }
     inline ATOOLS::Blob             * GetBlob()          { return p_beamblob; }
     inline const ATOOLS::Vec4D      & InMomentum() const { return p_beam->OutMomentum(m_tag); }
     inline ATOOLS::Part_List        * GetExtracted()     { return &m_extracted; }

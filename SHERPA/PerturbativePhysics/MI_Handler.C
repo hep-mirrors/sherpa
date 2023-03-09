@@ -30,7 +30,6 @@ MI_Handler::MI_Handler(MODEL::Model_Base * model,
   string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
   if (m_id==PDF::isr::bunch_rescatter) {
     string resc = s["BEAM_RESCATTERING"].Get<string>();
-    msg_Out()<<METHOD<<"(mode = "<<isr->Mode()<<"): name = "<<m_name<<", resc = "<<resc<<".\n";
     scm = m_name = resc;
   }
   if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name=="None") {
@@ -42,8 +41,6 @@ MI_Handler::MI_Handler(MODEL::Model_Base * model,
     if ((scm==string("Shrimps") && p_amisic==NULL) ||
 	m_name==string("Shrimps")) InitShrimps(model);
   }
-  msg_Out()<<METHOD<<"(id = "<<m_id<<", mode = "<<isr->Mode()<<"): name = "<<m_name<<", "
-	   <<"on = "<<m_on<<" ["<<this<<"].\n";
 }
 
 MI_Handler::~MI_Handler() 
@@ -72,11 +69,6 @@ void MI_Handler::InitShrimps(MODEL::Model_Base *model)
 
 bool MI_Handler::InitialiseMPIs(const double & scale) 
 {
-  msg_Out()<<"   * "<<METHOD<<"("<<scale<<"):\n";
-  for (size_t i=0;i<2;i++)
-    msg_Out()<<"         mom["<<i<<"] = "
-	     <<p_remnants->GetRemnant(i)->IncomingMomentum()<<" "
-	     <<"["<<p_remnants->GetRemnant(i)->Type()<<"].\n";
   if (m_type==typeID::amisic) return p_amisic->InitMPIs(p_isr, scale);
   return true;
 }
@@ -92,10 +84,6 @@ void MI_Handler::SetMaxEnergies(const double & E1,const double & E2) {
 }
 
 void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
-  msg_Out()<<"   * "<<METHOD<<"("<<m_firstrescatter<<") for "<<showerblob<<"\n";
-  msg->Indent(5);
-  msg_Out()<<(*showerblob)<<"\n";
-  msg->Indent(-5);
   if (!m_firstrescatter && showerblob) p_remnants->ConnectColours(showerblob);
 }
 
@@ -106,12 +94,6 @@ Blob * MI_Handler::GenerateHardProcess()
   if (m_type==typeID::shrimps) blob = p_shrimps->GenerateEvent();
   if (blob==NULL) m_stop = true;
   m_firstrescatter = false;
-  msg_Out()<<"   * "<<METHOD<<" yields blob = "<<blob<<"\n";
-  if (blob!=NULL) {
-    msg->Indent(5);
-    msg_Out()<<(*blob)<<"\n";
-    msg->Indent(-5);
-  }
   return blob;
 }
 
@@ -123,7 +105,6 @@ bool MI_Handler::VetoScatter(Blob *blob)
 
 void MI_Handler::Reset()
 {
-  msg_Out()<<"   * "<<METHOD<<"\n";
   m_stop = false;
   if (m_type==typeID::amisic) p_amisic->Reset();
   for (short unsigned int i=0;i<2;++i) {

@@ -12,7 +12,6 @@ namespace SHERPA {
     double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_emax[2];
     double m_defaultptmax;
     double m_weight, m_ntrials;
-    bool   m_isfirstMB;
 
     MI_Handler_Map    * p_mihandlers;
     MI_Handler        * p_activeMI;
@@ -20,23 +19,30 @@ namespace SHERPA {
     ATOOLS::Blob      * p_lastblob;
 
     std::set<ATOOLS::Blob *> m_ISblobs;
-    bool m_vetoed, m_newevent;
+    bool m_vetoed, m_newevent[2];
 
     ATOOLS::Return_Value::code m_result;
-    void Reset();
-    void SwapToRescatter();
-    void ResetMIHandler();
-    bool CheckBlobList();    
-    bool InitNewEvent();
-    void InitMinBiasEvent();
-    bool BeamsViable();
-    bool ExtractISInfo(ATOOLS::Blob * blob);
-    void SwitchPerturbativeInputsToMIs();
-    bool MIKinematics();
+    void   Reset();
+    bool   CheckBlobList();    
+    bool   BeamsViable();
+    bool   ExtractISInfo(ATOOLS::Blob * blob);
+    void   SwitchPerturbativeInputsToMIs();
+    double ExtractMPIStartingScale(ATOOLS::Blob * blob);
 
+    std::string MakeNameSpec();
+    
+    bool CheckMIHandlers();    
+    bool CheckForMinBias();
+    bool CheckForMPIs();
+    bool CheckForRescatter();
+    void FixMaxEnergies();
+    bool TestHardScatter();
+    ATOOLS::Return_Value::code InitMinBias(); 
+    bool                       InitMPIs(); 
+    ATOOLS::Return_Value::code InitRescatter();
   public:
     Multiple_Interactions(MI_Handler_Map *);
-    ~Multiple_Interactions();
+    ~Multiple_Interactions() {}
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void CleanUp(const size_t & mode=0);

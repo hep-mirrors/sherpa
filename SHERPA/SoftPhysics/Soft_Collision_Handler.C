@@ -1,6 +1,7 @@
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "SHRiMPS/Main/Shrimps.H"
@@ -31,10 +32,6 @@ Soft_Collision_Handler(AMISIC::Amisic * amisic,SHRIMPS::Shrimps * shrimps,
   m_scmodel = (m_bunch_rescatter ?
 	       s["BEAM_RESCATTERING"].SetDefault("None").UseNoneReplacements().Get<string>() :
 	       s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>() );
-  msg_Out()<<METHOD<<"("<<this<<"), model = "<<m_scmodel<<"\n";
-  if (m_bunch_rescatter) {
-    msg_Out()<<METHOD<<" for bunch rescattering: amisic = "<<amisic<<", shrimps = "<<shrimps<<".\n";
-  }
   if (m_scmodel==string("Shrimps")) {
     m_mode    = scmode::shrimps;
     p_shrimps = shrimps;
@@ -75,6 +72,7 @@ void Soft_Collision_Handler::PrepareTerminate() {}
 ATOOLS::Return_Value::code
 Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
 {
+  msg_Out()<<"   * "<<METHOD<<"\n";
   PROFILE_HERE;
   int outcome(-1);
   switch (m_mode) {
@@ -100,13 +98,13 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   return Return_Value::New_Event;
 }
 
+
 ATOOLS::Return_Value::code
 Soft_Collision_Handler::GenerateBunchRescatter(ATOOLS::Blob_List * blobs) {
   int outcome(-1);
   switch (m_mode) {
   case scmode::shrimps: 
-    msg_Error()<<METHOD<<" not yet available for SHRiMPS.  Will exit the run.\n";
-    exit(1);
+    THROW(fatal_error, "not yet available for SHRiMPS.  Will exit the run.");
   case scmode::amisic:
     outcome = p_amisic->InitRescatterEvent();
     break;
@@ -116,9 +114,16 @@ Soft_Collision_Handler::GenerateBunchRescatter(ATOOLS::Blob_List * blobs) {
   default:
     break;
   }
+  Blob * soft;
   switch (outcome) {
-  case 1:  return Return_Value::Success;
-  case 0:  return Return_Value::Nothing;
+  case 1:
+    soft = new Blob();
+    soft->SetType(btp::Soft_Collision);
+    soft->AddStatus(blob_status::needs_beamRescatter);
+    blobs->push_back(soft);
+    return Return_Value::Success;
+  case 0:
+    return Return_Value::Nothing;
   default: break;
   }  
   return Return_Value::Nothing;
@@ -127,8 +132,7 @@ Soft_Collision_Handler::GenerateBunchRescatter(ATOOLS::Blob_List * blobs) {
 void Soft_Collision_Handler::SetPosition(const size_t & beam,const Vec4D & pos) {
   switch (m_mode) {
   case scmode::shrimps: 
-    msg_Error()<<METHOD<<" not yet available for SHRiMPS.  Will exit the run.\n";
-    exit(1);
+    THROW(fatal_error, "not yet available for SHRiMPS.  Will exit the run.");
   case scmode::amisic:
     p_amisic->SetPosition(beam,pos);
     break;

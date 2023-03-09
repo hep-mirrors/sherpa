@@ -66,6 +66,7 @@ namespace SHERPA {
 
     inline const typeID       & Type() const { return m_type; }
     inline const std::string  & Name() const { return m_name; }
+    inline const bool           On()   const { return m_on; }
     inline const bool           Done() const { return !m_on || m_stop; }
     inline const double       & YCut() const { return m_ycut; }
     inline const PDF::isr::id & Id()   const { return m_id; }

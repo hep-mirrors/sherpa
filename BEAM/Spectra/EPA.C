@@ -91,6 +91,11 @@ void EPA::RegisterDefaults() {
 }
 
 void EPA::FixPosition() {
+  ///////////////////////////////////////////////////////////////////
+  // This is a bit of a poor-man's choice for a point-like source,
+  // with a minmimal distance m_minR ... we would need some notion of
+  // off'shellness here ...
+  ///////////////////////////////////////////////////////////////////
   double ratio = m_maxR/m_minR, logratio = log(ratio), R, phi;
   if (ran->Get()< logratio/(0.5+logratio)) {
     R = m_minR * pow(ratio,ran->Get());
@@ -100,11 +105,6 @@ void EPA::FixPosition() {
   }
   phi = 2.*M_PI*ran->Get();
   m_position = R * Vec4D(0., cos(phi), sin(phi), 0.);
-  msg_Out()<<METHOD<<"(R = "<<R<<" in ["<<m_minR<<", "<<m_maxR<<"]"<<")\n";
-  // This is a bit of a poor-man's choice for a point-like source.
-  // I use the limit for small products of distance times photon energy and it would be better to interpolate
-  // between both.  Maybe by just fusing the two expansions.
-  // It would be even better to have a two-dimnesional look-up table here which also includes the form factors.
 }
 
 void EPA::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {

@@ -27,10 +27,8 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 void Beam_Remnant_Handler::AddBunchRescattering(REMNANTS::Remnant_Handler *const remnants,
 					       Soft_Collision_Handler *const softcollisions) {
   if (remnants && remnants->Id()==PDF::isr::bunch_rescatter) {
-    msg_Out()<<METHOD<<"("<<remnants->Id()<<"): "<<remnants<<" / "<<softcollisions<<"\n";
     p_bunchremnants = remnants; p_schandler = softcollisions;
     m_bunchrescatter = true;
-    msg_Out()<<METHOD<<" adds bunch rescattering: "<<p_bunchremnants<<"/"<<p_schandler<<".\n";
   }
 }
 
@@ -45,7 +43,7 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Beam) return fbc;
   }
-  //msg_Out()<<METHOD<<": only bunch = "<<onlyBunch<<" (rescatter = "<<m_bunchrescatter<<").\n";
+  msg_Out()<<METHOD<<": only bunch = "<<onlyBunch<<" (rescatter = "<<m_bunchrescatter<<").\n";
   if (!onlyBunch) {
     if (p_shrimps) fbc = p_shrimps->MakeBeamBlobs(bloblist);
     else           fbc = p_remnants->MakeBeamBlobs(bloblist);
@@ -84,12 +82,12 @@ FillBunchBlobs(Blob_List *const  bloblist,
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Bunch) return Return_Value::Nothing;
   }
-  //msg_Out()<<"-----------------------------------------------------------------------------\n"
-  //	   <<"   "<<METHOD<<":\n";
+  msg_Out()<<"-----------------------------------------------------------------------------\n"
+  	   <<"   * "<<METHOD<<":\n";
   p_beam->FixPositions();
   if (!m_bunchrescatter)
     return (FillSimpleBunchBlobs(bloblist)?Return_Value::Success:Return_Value::Nothing);
-  return (FillRescatterBunchBlobs(bloblist)?Return_Value::Success:Return_Value::Nothing);
+  if (FillRescatterBunchBlobs(bloblist)) return p_schandler->GenerateBunchRescatter(bloblist);
 }
 
 bool Beam_Remnant_Handler::FillRescatterBunchBlobs(ATOOLS::Blob_List *const bloblist) {
@@ -101,13 +99,6 @@ bool Beam_Remnant_Handler::FillRescatterBunchBlobs(ATOOLS::Blob_List *const blob
 	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
       Blob * bunch = FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0));
-      bunch->UnsetStatus(blob_status::needs_beams &
-			 blob_status::needs_reconnections &
-			 blob_status::needs_softUE &
-			 blob_status::needs_hadronization);
-      bunch->SetStatus(blob_status::needs_minBias);
-      //msg_Out()<<"Before with m_beam = "<<m_beam<<", "<<p_schandler<<", "
-      //       <<"position = "<<bunch->Position()<<".\n";
       p_schandler->SetPosition(m_beam-1,bunch->Position());
       bloblist->push_front(bunch);
       if (m_beam>2) {
@@ -142,7 +133,7 @@ bool Beam_Remnant_Handler::FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblis
 	     (*bit)->Type()==btp::Elastic_Collision ||
 	     (*bit)->Type()==btp::Soft_Diffractive_Collision ||
 	     (*bit)->Type()==btp::Quasi_Elastic_Collision) {
-      (*bit)->UnsetStatus(blob_status::needs_beams);
+      //(*bit)->UnsetStatus(blob_status::needs_beams);
       for (size_t i=0;i<(*bit)->NInP();i++) {
 	Blob * bunch = FillBunchBlob((*bit)->InParticle(i)->Beam(),(*bit)->InParticle(i));
 	bloblist->push_front(bunch);
@@ -163,10 +154,10 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
   //////////////////////////////////////////////////////////////////
   // I have the feeling this is obsolete - need to test this.
   //////////////////////////////////////////////////////////////////  
-  blob->SetStatus(blob_status::needs_beams &
-		  blob_status::needs_reconnections &
-		  blob_status::needs_softUE &
-		  blob_status::needs_hadronization);
+  //blob->SetStatus(blob_status::needs_beams &
+  //		  blob_status::needs_reconnections &
+  //		  blob_status::needs_softUE &
+  //		  blob_status::needs_hadronization);
   blob->AddToOutParticles(particle);
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
       IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0])) {

@@ -5,7 +5,10 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 
 No_Remnant::No_Remnant(const size_t & beam,const size_t & tag):
-  Remnant_Base(Flavour(kf_none),beam,tag) { }
+  Remnant_Base(Flavour(kf_none),beam,tag)
+{
+  m_type = rtp::intact;
+}
 
 bool No_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   if (m_extracted.size()==0) {

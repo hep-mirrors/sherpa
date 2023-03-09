@@ -89,12 +89,9 @@ void ISR_Handler::FixType() {
 }
 
 void ISR_Handler::Output() {
-  if (msg_LevelIsTracking() || msg_LevelIsInfo())
-    msg_Out() << "ISR_Handler: type = " << m_type << "\n"
-              << "    for " << p_isrbase[0]->Flavour()
-              << " (internal structure = " << p_isrbase[0]->On() << ")\n"
-              << "    and " << p_isrbase[1]->Flavour()
-              << " (internal structure = " << p_isrbase[1]->On() << ")\n";
+  msg_Tracking() << "ISR_Handler: type = "<<m_type <<": "
+		 <<p_isrbase[0]->Flavour()<<" (internal structure = "<< p_isrbase[0]->On()<<") + "
+		 <<p_isrbase[1]->Flavour()<<" (internal structure = "<< p_isrbase[1]->On()<<")\n";
 }
 
 void ISR_Handler::Init() {

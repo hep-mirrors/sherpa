@@ -243,7 +243,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
 	return 2;
       }
     }
-    //msg_Out()<<METHOD<<": try "<<(*pit)->Name()<<"\n";
+    msg_Out()<<"==== "<<METHOD<<": try "<<(*pit)->Name()<<"\n";
     DEBUG_INFO("Treating "<<(*pit)->Name());
     Return_Value::code rv((*pit)->Treat(&m_blobs));
     if (rv!=Return_Value::Nothing)

@@ -134,7 +134,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
   Blob *showerblob = bloblist->FindLast(btp::Shower);
   if (showerblob!=NULL && showerblob->Has(blob_status::needs_beams)) {
     Blob * meblob = showerblob->InParticle(0)->ProductionBlob();
-    msg_Out()<<(*meblob)<<"\n"<<(*showerblob)<<"\n";
+    //msg_Out()<<(*meblob)<<"\n"<<(*showerblob)<<"\n";
     if (meblob->Type()!=btp::Hadron_Decay &&
 	!p_remnants->ExtractShowerInitiators(showerblob))
       return Return_Value::New_Event;

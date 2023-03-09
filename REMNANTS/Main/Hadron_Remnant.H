@@ -14,9 +14,7 @@ namespace REMNANTS {
     FlavourList                 m_constituents;
     
     ATOOLS::Particle * p_valence, * p_remnant, * p_recoiler, * p_spectator;
-
-    Form_Factor        m_ff;
-
+    
     bool   m_valence;
     double m_alpha, m_gamma, m_beta, m_invb, m_LambdaQCD;
 

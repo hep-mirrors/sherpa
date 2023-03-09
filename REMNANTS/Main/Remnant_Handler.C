@@ -24,8 +24,7 @@ Remnant_Handler(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,const vec
 
 Remnant_Handler::~Remnant_Handler() {
   for (size_t i(0); i < 2; ++i) {
-    if (p_remnants[i] != nullptr)
-      delete p_remnants[i];
+    if (p_remnants[i]!=nullptr) delete p_remnants[i];
   }
 }
 
@@ -47,8 +46,6 @@ InitializeRemnants(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,
     }
     if (p_remnants[i] == nullptr)
       p_remnants[i] = new No_Remnant(i, m_tags[i]);
-    msg_Out()<<"   * "<<METHOD<<"(beam = "<<i<<", flav = "<<flav<<", tag = "<<m_tags[i]<<"): "
-	     <<beam->GetBeam(i)->Bunch(m_tags[i])<<" and type = "<<p_remnants[i]->Type()<<".\n";
   }
   /////////////////////////////////////////////////////////////////////////////////
   // Finish the initialisation of the Remnant_Bases: make sure they know
