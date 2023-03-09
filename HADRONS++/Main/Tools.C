@@ -191,7 +191,7 @@ void Tools::ExtractBRInfo( std::string entry, double & br,
   if (dbr==-1.0) dbr = br;
 }
 
-void GeneralModel::AddParameters(const std::string& params, std::string print)
+void GeneralModel::AddParameters(const std::string& params)
 {
   Data_Reader reader(" ",";","!");
   reader.AddComment("#");
@@ -209,12 +209,10 @@ void GeneralModel::AddParameters(const std::string& params, std::string print)
       if( helpsvv[i].size() == 3 ) {        // <name> = <real value>
         double real = ToType<double> (ip.Interprete(helpsvv[i][2]) );
         (*this)[helpsvv[i][0]] = real;
-        if (print!="no") std::cerr<<"              "<<print<<helpsvv[i][0]<<": "<<helpsvv[i][2]<<std::endl;
       }
       if( helpsvv[i].size() == 4 ) {        // <name> = <complex value>
         double abs   = ToType<double>(ip.Interprete(helpsvv[i][2]) );
         double phase = ToType<double>( ip.Interprete(helpsvv[i][3]) );
-        if (print!="no") std::cerr<<"              "<<print<<helpsvv[i][0]<<": ["<<helpsvv[i][2]<<","<<helpsvv[i][3]<<"]"<<std::endl;
         (*this)[helpsvv[i][0]+string("_abs")] = abs;
         (*this)[helpsvv[i][0]+string("_phase")] = phase;
       }
@@ -223,14 +221,12 @@ void GeneralModel::AddParameters(const std::string& params, std::string print)
       if( helpsvv[i].size() == 4 ) {        // <name> <index> = <real value>
         double real = ToType<double>( ip.Interprete(helpsvv[i][3]) );
         (*this)[helpsvv[i][0]+string("_")+helpsvv[i][1]] = real;
-        if (print!="no") std::cerr<<"              "<<print<<(helpsvv[i][0]+string("_")+helpsvv[i][1])<<": "<<helpsvv[i][3]<<std::endl;
       }
       if( helpsvv[i].size() == 5 ) {        // <name> <index> = <complex value>
         double abs   = ToType<double> ( ip.Interprete(helpsvv[i][3]) );
         double phase = ToType<double> ( ip.Interprete(helpsvv[i][4]) );
         (*this)[helpsvv[i][0]+"_"+helpsvv[i][1]+"_abs"] = abs;
         (*this)[helpsvv[i][0]+"_"+helpsvv[i][1]+"_phase"] = phase;
-        if (print!="no") std::cerr<<"              "<<print<<(helpsvv[i][0]+string("_")+helpsvv[i][1])<<": ["<<helpsvv[i][3]<<","<<helpsvv[i][4]<<"]"<<std::endl;
       }
     }
   }

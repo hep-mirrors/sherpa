@@ -56,7 +56,7 @@ namespace HADRONS
      * @param parameters string containing parameter = value lines
      * 
      */    
-    void AddParameters(const std::string& parameters, std::string print="no");
+    void AddParameters(const std::string& parameters);
   };
 
   /** 
