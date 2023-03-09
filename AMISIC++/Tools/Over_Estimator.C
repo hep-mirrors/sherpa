@@ -84,6 +84,7 @@ void Over_Estimator::FixMaximum() {
       if (test > maxpref) maxpref = test;
     }
     p_prefs->Fill(sbin,maxpref);
+    if (sbins.m_nbins==1) m_pref = maxpref;
   }
 }
 
@@ -143,6 +144,8 @@ double Over_Estimator::TrialPT2(const double & Q2) {
   /////////////////////////////////////////////////////////////////////////////////
   double Q2tilde = Q2+m_pt02/4.;
   double prefb   = m_pref*m_bfac/m_xsnd;
+  msg_Out()<<"     -----> "<<METHOD<<"(Q2 = "<<Q2<<", pref = "<<m_pref<<" * "<<m_bfac<<" / "<<m_xsnd<<" "
+  	   <<"= "<<prefb<<" and pt02 = "<<m_pt02<<"\n";
   return prefb*Q2tilde/(prefb-Q2tilde*log(ran->Get())) - m_pt02/4.;
 }
 

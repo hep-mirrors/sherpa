@@ -11,12 +11,10 @@ namespace AMISIC {
   class Matter_Overlap : public ATOOLS::Function_Base {
   private:
     overlap_form::code m_overlapform;
-    double m_radius1, m_radius2, m_radius3;
-    double m_radius12, m_radius22, m_radius32, m_fraction1;
-    double m_norm1, m_norm2, m_norm3;
     double m_bstep, m_bmax, m_norm, m_integral;
+    double m_radius[4], m_radius2[4], m_rnorm[4], m_fraction[4];
     
-    void InitializeFormFactors();
+    void InitializeFormFactors(REMNANTS::Remnant_Handler * remnant_handler);
     void CalculateIntegral();
  public:
     Matter_Overlap();
@@ -30,16 +28,7 @@ namespace AMISIC {
     ATOOLS::Vec4D SelectRelativePositionForParton() const;
 
     const double & Bmax()     const { return m_bmax; }
-    const double & Integral() const { return m_integral; }
-    
-    inline const double & Radius() const {
-      switch (m_overlapform) {
-      case overlap_form::code::Single_Gaussian:
-        return m_radius1;
-      case overlap_form::code::Double_Gaussian:
-        return m_radius3;
-      }
-    }
+    const double & Integral() const { return m_integral; }    
   };
 
   class MO_Integrand : public ATOOLS::Function_Base {

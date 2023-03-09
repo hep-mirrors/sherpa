@@ -21,8 +21,8 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 {
   InitParametersAndType(isr);
   msg_Out()<<METHOD<<" for flavs = "<<isr->Flav(0)<<" & "<<isr->Flav(1)<<", "
-	   <<"beams = "<<isr->GetBeam(0)->Beam()<<" & "<<isr->GetBeam(1)->Beam()<<" "
-	   <<"--> type = "<<int(m_type)<<".\n";
+  	   <<"beams = "<<isr->GetBeam(0)->Beam()<<" & "<<isr->GetBeam(1)->Beam()<<" "
+  	   <<"--> type = "<<int(m_type)<<".\n";
   Vec4D P = isr->GetBeam(0)->OutMomentum()+isr->GetBeam(1)->OutMomentum();
   m_S     = P.Abs2();
   m_Y     = P.Y();
@@ -133,10 +133,10 @@ void Amisic::UpdateForNewS() {
     P += m_singlecollision.InMomentum(beam);
   }
   m_singlecollision.UpdateSandY(m_S = P.Abs2(), m_Y = P.Y());
-  msg_Out()<<"     --> "<<METHOD<<":\n"
-	   <<"         P = "<<m_singlecollision.InMomentum(0)<<" + "
-	   <<m_singlecollision.InMomentum(1)<<"\n"
-	   <<"         checks E = "<<sqrt(m_S)<<" vs. "<<sqrt(p_processes->S())<<"\n";
+  //msg_Out()<<"     --> "<<METHOD<<":\n"
+  //	   <<"         P = "<<m_singlecollision.InMomentum(0)<<" + "
+  //	   <<m_singlecollision.InMomentum(1)<<"\n"
+  //	   <<"         checks E = "<<sqrt(m_S)<<" vs. "<<sqrt(p_processes->S())<<"\n";
 }
 
 void Amisic::SetB(const double & b) {
@@ -153,27 +153,27 @@ void Amisic::SetB(const double & b) {
 
 
 int Amisic::InitMinBiasEvent() {
-  exit(1);
   if (m_isFirst) {
+    msg_Out()<<"   * "<<METHOD<<"(first = "<<m_isFirst<<").\n";
     m_isFirst   = false;
     m_isMinBias = true;
     SetB();
+    return 1;
   }
-  msg_Out()<<METHOD<<".\n";
   return 0;
 }
 
 int Amisic::InitRescatterEvent() {
-  exit(1);
   if (m_isFirst) {
     m_isFirst   = false;
     m_isMinBias = true;
     SetB(m_singlecollision.B());
     m_singlecollision.SetLastPT2();
+    msg_Out()<<METHOD<<"(first = "<<m_isFirst<<", B = "<<m_singlecollision.B()<<", "
+	     <<"pt^2 = "<<m_singlecollision.LastPT2()<<", bfac = "<<m_bfac<<")\n"
+	     <<"   from "<<m_singlecollision.Position(0)<<" + "<<m_singlecollision.Position(1)<<"\n";
+    return 1;
   }
-  msg_Out()<<METHOD<<"(first = "<<m_isFirst<<", B = "<<m_singlecollision.B()<<", "
-	   <<"pt^2 = "<<m_singlecollision.LastPT2()<<", bfac = "<<m_bfac<<")\n"
-	   <<"   from "<<m_singlecollision.Position(0)<<" + "<<m_singlecollision.Position(1)<<"\n";
   return 0;
 }
 

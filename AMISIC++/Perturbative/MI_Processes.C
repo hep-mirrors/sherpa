@@ -200,7 +200,7 @@ bool MI_Processes::PrepareSudakovFactor() {
   /////////////////////////////////////////////////////////////////////////////////
   axis sbins   = (m_variable_s ?
 		  axis(m_sbins, 4.*m_ptmin2, m_S, axis_mode::log) :
-		  axis(1, m_S , m_S) );
+		  axis(1, m_S , m_S, axis_mode::linear) );
   axis pt2bins = axis(m_pt2bins,m_ptmin2,m_ptmax2,axis_mode::log);
   p_sudakov = new Sudakov_Argument(this,sbins,pt2bins);
   return true;

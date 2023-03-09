@@ -85,7 +85,7 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
     dsigmaapprox = (*p_overestimator)(m_pt2, m_yvol);
     weight       = dsigmatrue/dsigmaapprox;
     msg_Out()<<"                xsec ratio = "<<weight<<" from "
-		   <<dsigmatrue<<" / "<<dsigmaapprox<<"\n";
+	     <<dsigmatrue<<" / "<<dsigmaapprox<<"\n";
     if (m_ana) AnalyseWeight(weight);
     if (weight > ran->Get()) success = true;
   } while (!success);

@@ -18,6 +18,7 @@ axis::axis(const size_t & nbins,const double & xmin,const double & xmax,
 }
 
 const double axis::x(const size_t & bin) const {
+  if (m_nbins==1) return m_mode==axis_mode::linear ? (m_xmin+m_xmax)/2. : sqrt(m_xmin*m_xmax);
   if (bin<m_nbins) {
     if (m_mode==axis_mode::linear)   return m_xmin + bin*m_xstep;
     else if (m_mode==axis_mode::log) return m_xmin * exp(m_xstep*bin);
