@@ -155,6 +155,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     }
 
     m_displayinterval=read.GetValue<int>("EVENT_DISPLAY_INTERVAL",100);
+    m_printmpixs=read.GetValue<int>("PRINT_MPI_XS",1);
     m_evt_output =read.GetValue<int>("EVT_OUTPUT",msg->Level());
     m_evt_output_start=read.GetValue<int>("EVT_OUTPUT_START",
                                           m_evt_output!=msg->Level()?1:0);
@@ -281,8 +282,12 @@ bool Sherpa::GenerateOneEvent(bool reset)
                     <<FormatTime(size_t((nevt-i)/(double)i*diff));
         msg_Info()<<" left ) -> ETA: "<<rpa->gen.Timer().
           StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
-        double xs(GetEventHandler()->TotalXSMPI());
-        double err(GetEventHandler()->TotalErrMPI());
+        double xs(GetEventHandler()->TotalXS());
+        double err(GetEventHandler()->TotalErr());
+	if (m_printmpixs) {
+	  xs=GetEventHandler()->TotalXSMPI();
+	  err=GetEventHandler()->TotalErrMPI();
+	}
         if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
         msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
                   <<((int(err/xs*10000))/100.0)<<" % )  ";
