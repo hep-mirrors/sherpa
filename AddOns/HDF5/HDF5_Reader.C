@@ -206,9 +206,11 @@ namespace LHEH5 {
   private:
 
     LHEFile *p_file;
-    size_t   m_ievt, m_ifile, m_trials;
+    size_t   m_ievt, m_ifile, m_trials, m_lhid;
 
     Vec4D_Vector m_ctmoms;
+
+    static std::vector<HDF5_Reader*> s_allreaders;
 
   public:
 
@@ -217,6 +219,8 @@ namespace LHEH5 {
     {
       p_file = OpenFile(m_files[m_ifile]);
       p_sub = new NLO_subevt();
+      m_lhid=s_allreaders.size();
+      s_allreaders.push_back(this);
     }
 
     ~HDF5_Reader()
@@ -227,6 +231,20 @@ namespace LHEH5 {
 
     LHEFile *OpenFile(const std::string &fname)
     {
+      if (fname=="") {
+	std::vector<int> ids(s_allreaders.size(),0);
+	ids[m_lhid]=1;
+	std::cout<<"\n"<<mpi->Rank()<<" targets "<<m_files[m_ifile+1]<<std::endl;
+	mpi->Allreduce(&ids[0],ids.size(),MPI_INT,MPI_SUM);
+	for (size_t i(0);i<ids.size();++i)
+	  if (ids[i]) {
+	    HDF5_Reader *r(s_allreaders[i]);
+	    std::cout<<"\n"<<mpi->Rank()<<" reads "<<r->m_files[r->m_ifile+1]<<std::endl;
+	    delete r->p_file;
+	    r->p_file = r->OpenFile(r->m_files[++r->m_ifile]);
+	  }
+	return p_file;
+      }
       m_ievt=0;
       int size(mpi->MySize()), rank(mpi->MyRank());
       File file(fname,File::ReadOnly,
@@ -256,15 +274,12 @@ namespace LHEH5 {
 	--m_ievt;
       }
       if (m_ievt>=p_file->NEvents()) {
-	delete p_file;
-	p_file=NULL;
-	++m_ifile;
-	if (m_ifile>=m_files.size()) {
+	if (m_ifile+1>=m_files.size()) {
 	  msg_Info()<<METHOD<<"(): No more events in "<<m_files<<".\n";
 	  rpa->gen.SetNumberOfEvents(rpa->gen.NumberOfGeneratedEvents());
 	  return NULL;
 	}
-	p_file = OpenFile(m_files[m_ifile]);
+	p_file = OpenFile("");
 	m_ievt=0;
       }
       if (p_ampl==NULL) {
@@ -332,6 +347,8 @@ namespace LHEH5 {
 }// end of namespace LHEH5
 
 using namespace LHEH5;
+
+std::vector<HDF5_Reader*> HDF5_Reader::s_allreaders;
 
 DECLARE_GETTER(HDF5_Reader,"HDF5",Event_Reader,Event_Reader_Key);
 
