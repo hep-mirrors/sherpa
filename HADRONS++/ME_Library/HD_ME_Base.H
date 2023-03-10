@@ -8,6 +8,7 @@
 #include "METOOLS/Main/Spin_Structure.H"
 #include "HADRONS++/Main/Tools.H"
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #define DEFINE_ME_GETTER(CLASS,TAG)				       \
   DECLARE_GETTER(CLASS,TAG,HD_ME_Base,ME_Parameters);		       \
@@ -32,12 +33,8 @@ namespace HADRONS {
     const ATOOLS::Flavour_Vector& m_flavs;
     /// Array of masses of the external particles
     double          * p_masses,* p_masses2;
-    /// Path to the directory which contains the decay channel's file
-    std::string       m_path;
     /// Index mapping from external flavours/momenta to amplitude internal ones
     std::vector<int>  p_i;
-    /// Pre-factor for amplitude
-    Complex           m_factor;
 
     virtual double lambdaNorm(const double,const double,const double);
   public:
@@ -66,29 +63,13 @@ namespace HADRONS {
     virtual void Calculate(const ATOOLS::Vec4D_Vector& momenta,bool anti)=0;
 
     /** 
-     * Redefinition of the Spin_Amplitudes::Insert method, to take into
-     * account the pre-factor HD_ME_Base::m_factor.
-     * 
-     * @param value Amplitude value (w/o pre-factor)
-     * @param spins List of helicities for each particle in the decay,
-     * describing the helicity combination for this <var>value</var>
-     */
-    inline void Insert(Complex value, std::vector<std::pair<int,int> >& spins)
-    {
-      (*this)[GetNumber(spins)]=m_factor*value;
-    }
-
-    /** 
      * This method sets the parameters for the decay amplitude.
      * Every subclass of HD_ME_Base \b must have this method if it needs
-     * parameters that are written in the decay channel file.
-     * Basically, this method gets called after reading the corresponding DC
-     * file and it is its job to set the parameters in the ME class to the
-     * values written in the DC file.
+     * parameters that are written in the decay data.
      * 
-     * @param _md Has to contain the values and names of all parameters
-     * relevant for the amplitude
+     * @param s Settings scoped to the ME's scope within the decay data
      */
+    virtual void   SetModelParameters(ATOOLS::Scoped_Settings& s);
     virtual void   SetModelParameters( GeneralModel _md ) {};
 
     /** 
@@ -107,9 +88,7 @@ namespace HADRONS {
 
     //@{
     /// Getter/setter method.
-    void SetPath( std::string s ) { m_path=s; }
     virtual std::string Name() { return m_name; }
-    inline void SetFactor(const Complex& factor) { m_factor=factor; }
     //@}
   };
 

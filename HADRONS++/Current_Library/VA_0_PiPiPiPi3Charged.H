@@ -47,7 +47,7 @@ namespace HADRONS {
 	   
 	  public:
 
-		Novo(std::string path, GeneralModel _md );
+		Novo(GeneralModel _md );
           ~Novo() {
             delete p_G;
             delete p_Go;
@@ -90,7 +90,7 @@ namespace HADRONS {
        
       public : 
        
-      KS(std::string path, GeneralModel _md );
+      KS(GeneralModel _md );
       ATOOLS::Vec4C operator()();
     }; 
 

@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -28,12 +29,11 @@ SimpleResonanceFlavour::SimpleResonanceFlavour( std::string name, double _mass,
 {
 }
   
-ResonanceFlavour::ResonanceFlavour( kf_code _kfc, double _mass, double _width, int _run, string path )
+ResonanceFlavour::ResonanceFlavour( kf_code _kfc, double _mass, double _width, int _run )
   : SimpleResonanceFlavour( Flavour(_kfc).IDName(), _mass, _width)
 {
   m_kfc = _kfc;
   m_running = _run;
-  m_path = path;
   m_body = 2;
   p_hist = NULL;
   m_G_at_m2 = 1.;
@@ -61,8 +61,9 @@ Histogram * ResonanceFlavour::CreateGHistogram( ResonanceFlavour res1, Resonance
       res1.Mass(), res1.Width(), res2.Mass(), res2.Width(), beta, Flavour(out).HadMass() );
 
   // look if file already exists
+  std::string filename=rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/"+string(fn);
   // if file does not exist
-  if (!FileExists(m_path+"PhaseSpaceFunctions/"+string(fn))) {
+  if (!FileExists(filename)) {
     // create histogram (i.e. table of values)
     msg_Out()<<"Create necessary phase space function for chosen parameters.\n"
              <<"This may take some time. Please wait..."<<endl;
@@ -78,14 +79,14 @@ Histogram * ResonanceFlavour::CreateGHistogram( ResonanceFlavour res1, Resonance
       myHist->Insert( q2, phi );        // insert into histogram
       q2 += step;       
     }
-    myHist->Output(m_path+"PhaseSpaceFunctions/"+fn);         // write into file
+    myHist->Output(filename);         // write into file
     return myHist;
   }
   else {
     // read table and create histogram
     msg_Tracking()<<"HADRONS::Tau_Three_Pseudo::KS::CreateGHistogram : \n"
              <<"     Read G(q2) from "<<fn<<"."<<endl;
-    My_In_File infile(m_path+"PhaseSpaceFunctions/"+string(fn));
+    My_In_File infile(filename);
     infile.Open();
     std::string found_file_name = infile.FileContent();
     return new Histogram("PhaseSpaceFunctions/GQ2_Mres=%.3f_Gres=%.3f_MresP=%.3f_GresP=%.3f_beta=%.3f_Mout=%.3f.dat",0,found_file_name);

@@ -14,7 +14,7 @@ HD_ME_Base::HD_ME_Base(const ATOOLS::Flavour_Vector& flavs,
                        const std::vector<int>& decayindices,
                        const std::string& name) :
   METOOLS::Spin_Amplitudes(flavs,Complex(0.0,0.0)),
-  m_name(name), m_flavs(flavs), m_factor(1.0)
+  m_name(name), m_flavs(flavs)
 {
   p_masses = new double[m_flavs.size()];
   p_masses2 = new double[m_flavs.size()];
@@ -46,4 +46,20 @@ bool HD_ME_Base::SetColorFlow(std::vector<Particle*> outparts,int n_q, int n_g,
                               bool anti)
 {
   return false;
+}
+
+void HD_ME_Base::SetModelParameters(ATOOLS::Scoped_Settings& s)
+{
+  DEBUG_FUNC("");
+  GeneralModel model;
+  for (const auto& key: s.GetKeys()) {
+    //if (m_name=="Current_ME" && key=="J1") continue;
+    //if (m_name=="Current_ME" && key=="J2") continue;
+    if (s[key].GetItemsCount()>1) {
+      model[key+string("_abs")] = s[key][0].GetScalarWithOtherDefault(-1.0);
+      model[key+string("_phase")] = s[key][1].GetScalarWithOtherDefault(0.0);
+    }
+    else model[key] = s[key].GetScalarWithOtherDefault(-1.0);
+  }
+  SetModelParameters(model);
 }

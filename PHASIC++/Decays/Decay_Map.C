@@ -33,34 +33,6 @@ Decay_Table* Decay_Map::FindDecay(const ATOOLS::Flavour & decayer)
   else return it->second;
 }
 
-/* probably not needed anymore
-pair<Decay_Table*, Decay_Channel*> Decay_Map::FindDecayChannel(string name)
-{
-  Flavour_Vector flavs;
-  std::replace(name.begin(),name.end(),',',' ');
-  auto pdgcodes = ToVector<int>(name);
-  transform(pdgcodes.begin(), pdgcodes.end(), back_inserter(flavs),
-            [](int i) -> Flavour { return Flavour(i); });
-  
-  Decay_Table* dt = FindDecay(flavs[0]);
-  if (dt) {
-    Decay_Channel::SortFlavours(flavs);
-    for (Decay_Table::iterator it=dt->begin(); it!=dt->end(); ++it) {
-      if ((*it)->Flavs()==flavs) return make_pair(dt, (*it));
-    }
-    if (create) {
-      Decay_Channel* dc = new Decay_Channel(flavs[0], p_ms);
-      for (int j=1; j<flavs.size(); ++j) dc->AddDecayProduct(flavs[j]);
-      dc->SetActive(0);
-      dt->AddDecayChannel(dc);
-      return make_pair(dt, dc);
-    }
-    else return make_pair(dt, (Decay_Channel*) NULL);
-  }
-  else return make_pair((Decay_Table*) NULL, (Decay_Channel*) NULL);
-}
-*/
-
 void Decay_Map::ResetCounters()
 {
   for (Decay_Map::const_iterator it=begin(); it!=end(); ++it) {

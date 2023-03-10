@@ -57,13 +57,6 @@ namespace PHASIC {
     virtual Decay_Table* FindDecay(const ATOOLS::Flavour& decayer);
 
     /**
-     * @param name Name of the wanted decay channel in the format a->b c ...
-     * 
-     * @return The decay channel and its decay table.
-     */
-    //std::pair<Decay_Table*, Decay_Channel*> FindDecayChannel(std::string name);
-
-    /**
      * Resets the counters (cf. Decay_Map::m_counters) for flavour types.
      * Typically used at the end of one event.
      */

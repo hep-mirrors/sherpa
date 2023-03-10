@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include <string>
 #include "HADRONS++/Main/Tools.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace HADRONS {
 
@@ -22,7 +23,7 @@ namespace HADRONS {
   public:
     static PHASIC::Single_Channel*
     GetChannel(int nin, int nout, const ATOOLS::Flavour * flavs,
-               std::string name, GeneralModel const &,
+               std::string name, ATOOLS::Scoped_Settings& s,
                const ATOOLS::Mass_Selector* ms);
   };
   

@@ -4,7 +4,6 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
@@ -73,10 +72,12 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   m_decay_tau       = ds["Decay_Tau"].SetDefault(false).Get<bool>();
   m_set_widths      = ds["Set_Widths"].SetDefault(false).Get<bool>();
   m_use_ho_sm_widths= ds["Use_HO_SM_Widths"].SetDefault(true).Get<bool>();
-  if (m_use_ho_sm_widths &&
-      (Flavour(kf_h0).Mass()<125.07 || Flavour(kf_h0).Mass()>125.11 ||
-       Flavour(kf_t).Mass()<172.4 || Flavour(kf_t).Mass()>172.6))
-    THROW(fatal_error, "Use_HO_SM_Widths specified, but particle masses not in SM range.");
+  if (m_use_ho_sm_widths) {
+    if (Flavour(kf_h0).Mass()<125.07 || Flavour(kf_h0).Mass()>125.11 ||
+        Flavour(kf_t).Mass()<172.4 || Flavour(kf_t).Mass()>172.6)
+      THROW(fatal_error, "Use_HO_SM_Widths specified, but particle masses not in SM range.");
+    SetHOSMWidths(ds);
+  }
   m_min_prop_width  = ds["Min_Prop_Width"].SetDefault(0.0).Get<double>();
   m_int_accuracy    = ds["Int_Accuracy"].SetDefault(0.01).Get<double>();
   m_int_niter       = ds["Int_NIter"].SetDefault(2500).Get<int>();
@@ -140,10 +141,8 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   msg_Debugging()<<"Initialising hard decay tables: three-body decays.\n";
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     InitializeOffshellDecays(dmit->second);
+    dmit->second->UpdateChannelStatuses();
   }
-  msg_Debugging()<<"Initialising hard decay tables: customizing decay tables.\n";
-  ApplySMWidths();
-  CustomizeDecayTables();
 
   if (m_set_widths)
     for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
@@ -273,6 +272,9 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     dc->Channels()->Add(rambo);
     dc->Channels()->Reset();
 
+    auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][dc->IDCode()];
+    dc->SetActive(s["Status"].SetDefault(dc->Active()).GetVector<int>());
+
     if (CalculateWidth(dc)) dt->AddDecayChannel(dc);
     else delete dc;
   }
@@ -307,6 +309,8 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
         }
         else {
           DEBUG_INFO("Adding "<<new_dcs[j]->Name());
+          auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][new_dcs[j]->IDCode()];
+          new_dcs[j]->SetActive(s["Status"].SetDefault(new_dcs[j]->Active()).GetVector<int>());
           dt->AddDecayChannel(new_dcs[j]);
         }
       }
@@ -323,101 +327,43 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
 }
 
 
-void Hard_Decay_Handler::ApplySMWidths()
+void Hard_Decay_Handler::SetHOSMWidths(ATOOLS::Scoped_Settings& s)
 {
-  if (!m_use_ho_sm_widths) return;
-
+  
   std::map<std::string, double> ho_sm_widths;
   // Higgs WG BRs 2022
-  ho_sm_widths["25,5,-5"]    = 2.382E-03;
-  ho_sm_widths["25,15,-15"]  = 2.565E-04;
-  ho_sm_widths["25,13,-13"]  = 8.901E-07;
-  ho_sm_widths["25,4,-4"]    = 1.182E-04;
-  ho_sm_widths["25,3,-3"]    = 1E-06;
-  ho_sm_widths["25,21,21"]   = 3.354E-04;
-  ho_sm_widths["25,22,22"]   = 9.307E-06;
-  ho_sm_widths["25,23,22"]   = 6.318E-06;
-  ho_sm_widths["24,2,-1"]    = 0.7041;
-  ho_sm_widths["24,4,-3"]    = 0.7041;
-  ho_sm_widths["24,12,-11"]  = 0.2256;
-  ho_sm_widths["24,14,-13"]  = 0.2256;
-  ho_sm_widths["24,16,-15"]  = 0.2256;
-  ho_sm_widths["-24,-2,1"]   = 0.7041;
-  ho_sm_widths["-24,-4,3"]   = 0.7041;
-  ho_sm_widths["-24,-12,11"] = 0.2256;
-  ho_sm_widths["-24,-14,13"] = 0.2256;
-  ho_sm_widths["-24,-16,15"] = 0.2256;
-  ho_sm_widths["23,1,-1"]    = 0.3828;
-  ho_sm_widths["23,2,-2"]    = 0.2980;
-  ho_sm_widths["23,3,-3"]    = 0.3828;
-  ho_sm_widths["23,4,-4"]    = 0.2980;
-  ho_sm_widths["23,5,-5"]    = 0.3828;
-  ho_sm_widths["23,11,-11"]  = 0.0840;
-  ho_sm_widths["23,12,-12"]  = 0.1663;
-  ho_sm_widths["23,13,-13"]  = 0.0840;
-  ho_sm_widths["23,14,-14"]  = 0.1663;
-  ho_sm_widths["23,15,-15"]  = 0.0840;
-  ho_sm_widths["23,16,-16"]  = 0.1663;
-  ho_sm_widths["6,24,5"]     = 1.32;
-  ho_sm_widths["-6,-24,-5"]  = 1.32;
-
-  /* TODO
-  for (const auto& channel_width : ho_sm_widths) {
-    std::string channelid = channel_width.first;
-    double width = channel_width.second;
-    pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(channelid);
-    Decay_Channel* dc = match.second;
-    if (!match.first || !dc) {
-      PRINT_INFO("Ignoring unknown decay channel: " << channelid);
-      continue;
-    }
-    dc->SetWidth(width);
-  }
-  */
+  s["Channels"]["25,5,-5"]   ["Width"].SetDefault(2.382E-03);
+  s["Channels"]["25,15,-15"] ["Width"].SetDefault(2.565E-04);
+  s["Channels"]["25,13,-13"] ["Width"].SetDefault(8.901E-07);
+  s["Channels"]["25,4,-4"]   ["Width"].SetDefault(1.182E-04);
+  s["Channels"]["25,3,-3"]   ["Width"].SetDefault(1E-06);
+  s["Channels"]["25,21,21"]  ["Width"].SetDefault(3.354E-04);
+  s["Channels"]["25,22,22"]  ["Width"].SetDefault(9.307E-06);
+  s["Channels"]["25,23,22"]  ["Width"].SetDefault(6.318E-06);
+  s["Channels"]["24,2,-1"]   ["Width"].SetDefault(0.7041);
+  s["Channels"]["24,4,-3"]   ["Width"].SetDefault(0.7041);
+  s["Channels"]["24,12,-11"] ["Width"].SetDefault(0.2256);
+  s["Channels"]["24,14,-13"] ["Width"].SetDefault(0.2256);
+  s["Channels"]["24,16,-15"] ["Width"].SetDefault(0.2256);
+  s["Channels"]["-24,-2,1"]  ["Width"].SetDefault(0.7041);
+  s["Channels"]["-24,-4,3"]  ["Width"].SetDefault(0.7041);
+  s["Channels"]["-24,-12,11"]["Width"].SetDefault(0.2256);
+  s["Channels"]["-24,-14,13"]["Width"].SetDefault(0.2256);
+  s["Channels"]["-24,-16,15"]["Width"].SetDefault(0.2256);
+  s["Channels"]["23,1,-1"]   ["Width"].SetDefault(0.3828);
+  s["Channels"]["23,2,-2"]   ["Width"].SetDefault(0.2980);
+  s["Channels"]["23,3,-3"]   ["Width"].SetDefault(0.3828);
+  s["Channels"]["23,4,-4"]   ["Width"].SetDefault(0.2980);
+  s["Channels"]["23,5,-5"]   ["Width"].SetDefault(0.3828);
+  s["Channels"]["23,11,-11"] ["Width"].SetDefault(0.0840);
+  s["Channels"]["23,12,-12"] ["Width"].SetDefault(0.1663);
+  s["Channels"]["23,13,-13"] ["Width"].SetDefault(0.0840);
+  s["Channels"]["23,14,-14"] ["Width"].SetDefault(0.1663);
+  s["Channels"]["23,15,-15"] ["Width"].SetDefault(0.0840);
+  s["Channels"]["23,16,-16"] ["Width"].SetDefault(0.1663);
+  s["Channels"]["6,24,5"]    ["Width"].SetDefault(1.32);
+  s["Channels"]["-6,-24,-5"] ["Width"].SetDefault(1.32);
 }
-
-void Hard_Decay_Handler::CustomizeDecayTables()
-{
-  /* TODO
-  auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"];
-  DEBUG_FUNC(s.GetKeys().size());
-  for (const auto& decay : s.GetKeys()) {
-    DEBUG_VAR(decay);
-
-    // obtain decay channel (creating it if appropriate)
-    pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(decay);
-    Decay_Channel* dc = match.second;
-    if (!match.first || !dc) {
-      PRINT_INFO("Ignoring unknown decay channel: " << decay);
-      continue;
-    }
-
-    DEBUG_VAR(dc->Name());
-
-    // update properties
-    for (const auto& propname : s[decay].GetKeys()) {
-      auto propsetting = s[decay][propname];
-      DEBUG_VAR(propname);
-      if (propname == "Status") {
-        match.first->SetChannelStatus
-          (dc,propsetting.SetDefault(dc->Active()).Get<int>());
-      }
-      else if (propname == "Width") {
-        dc->SetWidth(propsetting.SetDefault(dc->Width()).Get<double>());
-        dc->SetDeltaWidth(0.0);
-      }
-      else {
-        THROW(fatal_error,
-              "Unknown HARD_DECAYS:Channels property '" + propname + "'");
-      }
-    }
-  }
-  for (Decay_Map::iterator dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    dmit->second.at(0)->UpdateWidth();
-  }
-  */
-}
-
 
 bool Hard_Decay_Handler::TriggerOffshell(Decay_Channel* dc, vector<Decay_Channel*> new_dcs) {
   DEBUG_FUNC(dc->Name()<<"... "<<new_dcs.size());
@@ -560,7 +506,8 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
     dc->SetIDeltaWidth(0.0);
     dc->SetMax(0.0);
   }
-  dc->SetWidth(dc->IWidth());
+  auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][dc->IDCode()];
+  dc->SetWidth(s["Width"].SetDefault(dc->IWidth()).Get<double>());
   dc->SetDeltaWidth(dc->IDeltaWidth());
   return true;
 }

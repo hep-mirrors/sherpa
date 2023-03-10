@@ -94,8 +94,8 @@ Initialization_Handler::Initialization_Handler() :
   ShowParameterSyntax();
   ran->InitExternal();
 
-  rpa->gen.SetSoftSC(s["SOFT_SPIN_CORRELATIONS"].Get<int>());
-  rpa->gen.SetHardSC(s["HARD_SPIN_CORRELATIONS"].Get<int>());
+  rpa->gen.SetSoftSC(s["HADRON_DECAYS"]["Spin_Correlations"].Get<int>());
+  rpa->gen.SetHardSC(s["HARD_DECAYS"]["Spin_Correlations"].Get<int>());
 
   exh->AddTerminatorObject(this);
 }
@@ -122,14 +122,14 @@ void Initialization_Handler::RegisterDefaults()
   s["N_COLOR"].SetDefault(3.0);
 
   std::string frag{ s["FRAGMENTATION"].Get<std::string>() };
-  s["DECAYMODEL"]
-    .SetDefault((frag == "Lund") ? "Lund" : "Hadrons")
+  s["HADRON_DECAYS"]["Model"]
+    .SetDefault((frag == "Lund") ? "Lund" : "HADRONS++")
     .UseNoneReplacements();
-  s["MAX_PROPER_LIFETIME"].SetDefault(10.0);
+  s["HADRON_DECAYS"]["Max_Proper_Lifetime"].SetDefault(10.0);
 
-  s["SOFT_SPIN_CORRELATIONS"].SetDefault(0);
+  s["HADRON_DECAYS"]["Spin_Correlations"].SetDefault(0);
   auto hdenabled = s["HARD_DECAYS"]["Enabled"].Get<bool>();
-  s["HARD_SPIN_CORRELATIONS"].SetDefault(hdenabled);
+  s["HARD_DECAYS"]["Spin_Correlations"].SetDefault(hdenabled);
 
   s["EVENT_INPUT"].SetDefault("");
   s["STATUS_PATH"].SetDefault("");
@@ -979,10 +979,10 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   Settings& s = Settings::GetMainSettings();
   if (s["FRAGMENTATION"].Get<std::string>() == "None")
     return true;
-  std::string decmodel{ s["DECAYMODEL"].Get<std::string>() };
+  std::string decmodel{ s["HADRON_DECAYS"]["Model"].Get<std::string>() };
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
   if (decmodel=="None") return true;
-  else if (decmodel==std::string("Hadrons")) {
+  else if (decmodel==std::string("HADRONS++")) {
     as->SetActiveAs(isr::hard_subprocess);
     Hadron_Decay_Handler* hd=new Hadron_Decay_Handler();
     as->SetActiveAs(isr::hard_process);

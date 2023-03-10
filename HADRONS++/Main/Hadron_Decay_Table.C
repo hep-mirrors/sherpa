@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include <algorithm>
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -20,99 +21,66 @@ Hadron_Decay_Table::Hadron_Decay_Table(Flavour decayer, const Mass_Selector* ms,
   if (Flav().Kfcode()==kf_tau && m_flavwidth==0.0) {
     m_flavwidth = 2.26735e-12;
   }
-
 }
 
 Hadron_Decay_Table::~Hadron_Decay_Table()
 {
 }
 
-void Hadron_Decay_Table::Read(std::string path, std::string file)
+void Hadron_Decay_Table::Read(Scoped_Settings s, GeneralModel& startmd)
 {
-  Data_Reader reader = Data_Reader("|",";","!");
-  reader.AddComment("#");
-  reader.AddComment("//");
-  reader.SetInputPath(path);
-  reader.SetInputFile(file);
+  DEBUG_FUNC((int) Flav());
 
-  // read decay table file
-  vector<vector<string> > helpsvv;
-  if(!reader.MatrixFromFile(helpsvv,"")) {
-    msg_Error()<<"ERROR in "<<METHOD<<endl
-      <<"   Read in failure "<<path<<file<<", will abort."<<endl;
-    Abort();
+  // read "Partonics" block
+  vector<int> specs;
+  vector<double> specweights;
+  for (auto spec: s["Spectators"].GetItems()) {
+    specs.push_back(ToType<int>(spec.GetKeys()[0]));
+    specweights.push_back(spec[spec.GetKeys()[0]]["Weight"].SetDefault(1).Get<double>());
   }
+  for (size_t j=0;j<specs.size();j++) DEBUG_INFO("found spectator for "<<m_flin<<": "<<specs[j]);
 
-  int nchannels(0), rewrite(0);
-  vector<int>      helpkfc;
-  double           BR, dBR, totBR(0.);
-  string           origin;
-  bool haspartonics(false);
-  std::vector<int> specs;
-  std::vector<double> specweights;
-  for (size_t i=0;i<helpsvv.size();i++) {
-    if ( helpsvv[i][0] == string("NO_ANTI") )
+  // read "Forced" block
+  vector<string> forced_channels(s["Forced"].SetDefault(vector<string>()).GetVector<string>());
+
+  // read all other entries (= real channels)
+  double totwidth(0.);
+  for (const auto& channel: s.GetKeys()) {
+    if (channel=="Spectators" || channel=="Forced") continue;
+
+    DEBUG_VAR(channel);
+    vector<int> helpkfc;
+    Tools::ExtractFlavours(helpkfc,channel);
+    Hadron_Decay_Channel* hdc = new Hadron_Decay_Channel(Flav(),p_ms);
+    int charge = Flav().IntCharge();
+    double mass = Flav().HadMass();
+    for (size_t j=0;j<helpkfc.size();++j) {
+      Flavour flav = Flavour(abs(helpkfc[j]));
+      if (helpkfc[j]<0) flav = flav.Bar();
+      hdc->AddDecayProduct(flav);
+      charge-=flav.IntCharge();
+      mass-=flav.HadMass();
+    }
+    if (mass<0.) THROW(fatal_error, "Mass too low.");
+    if (charge!=0) THROW(fatal_error,"Charge not conserved for "+hdc->IDCode());
+    if (s[channel]["BR"].GetItemsCount()==0) {
+      // some partonic channels will be constructed manually below.
+      // these will not have a BR provided in the decay data.
+      // (they are nevertheless stored in the decay table for the intresults)
+      delete hdc;
       continue;
-    if (helpsvv[i].size()!=3
-        && StringTrim(helpsvv[i][0])==string("SPECTATORS")) {
-      haspartonics = true;
-      Tools::ExtractSpecs(helpsvv[i][1],specs,specweights);
-      DEBUG_INFO("found spectators for "<<m_flin);
-      for (size_t j=0;j<specs.size();j++) DEBUG_VAR(specs[j]);
     }
-    else if (helpsvv[i].size()>1 && Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
-      Tools::ExtractBRInfo(helpsvv[i][1], BR, dBR, origin);
-      Hadron_Decay_Channel* hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
-      int charge = Flav().IntCharge();
-      double mass = Flav().HadMass();
-      for (size_t j=0;j<helpkfc.size();++j) {
-        Flavour flav = Flavour(abs(helpkfc[j]));
-        if (helpkfc[j]<0) flav = flav.Bar();
-        hdc->AddDecayProduct(flav);
-	charge-=flav.IntCharge();
-	mass-=flav.HadMass();
-      }
-      if (mass<0.) { 
-	msg_Tracking()<<"Found too low mass.";
-	BR = 0.; dBR = 0.; continue; 
-      }
-      totBR += BR;
-      hdc->SetWidth(BR*m_flavwidth);
-      hdc->SetDeltaWidth(dBR*m_flavwidth);
-      hdc->SetOrigin(origin);
-      if(helpsvv[i].size()==3) hdc->SetFileName(StringTrim(helpsvv[i][2]));
-      else {
-        hdc->SetFileName();
-
-        double dBR=hdc->DeltaWidth()/Flav().Width();
-        msg_Info()<<"{"<<int(hdc->Flavs()[1]);
-        if (hdc->Flavs().size()>2) {
-          for (size_t k=2; k<hdc->Flavs().size();++k) msg_Info()<<","<<int(hdc->Flavs()[k]);
-        }
-        msg_Info()<<"}\t | ";
-        msg_Info()<<hdc->Width()/Flav().Width();
-        if(dBR>0.0)           msg_Info()<<"("<<dBR<<")";
-        if(hdc->Origin()!="") msg_Info()<<"["<<hdc->Origin()<<"]";
-        msg_Info()<<"\t | ";
-        msg_Info()<<hdc->FileName()<<";"<<endl;
-    
-        rewrite=1;
-      }
-      if(charge!=0)
-	THROW(fatal_error,"Charge not conserved for "+hdc->FileName());
-      if(mass<-Accu())
-	THROW(fatal_error,"Decaying mass "+ToString(mass)+" too low in "+
-              hdc->FileName());
-      AddDecayChannel(hdc);
-      nchannels++;
-    }
-  }
-  if (rewrite) {
-    PRINT_INFO("Found new decay channels. Please add the above lines to "<<file<<".");
+    hdc->SetWidth(s[channel]["BR"][0].SetDefault(-1.0).Get<double>()*m_flavwidth);
+    hdc->SetDeltaWidth(s[channel]["BR"][1].SetDefault(-1.0).Get<double>()*m_flavwidth);
+    hdc->SetOrigin(s[channel]["Origin"].SetDefault("").Get<string>());
+    hdc->SetActive(s[channel]["Status"].SetDefault(hdc->Active()).GetVector<int>());
+    totwidth += hdc->Width();
+    hdc->Initialise(s[channel], startmd);
+    AddDecayChannel(hdc);
   }
 
-  DEBUG_VAR(totBR);
-  if (haspartonics) {
+  DEBUG_VAR(totwidth);
+  if (specs.size()>0) {
     PHASIC::Decay_Table * dectable(NULL);
     if (!Flav().IsB_Hadron() && !Flav().IsC_Hadron()) {
       msg_Error()<<"ERROR in "<<METHOD<<":\n"
@@ -144,17 +112,20 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	if (Flav().IsB_Hadron())      dectable = Tools::partonic_b;
 	else if (Flav().IsC_Hadron()) dectable = Tools::partonic_c;
       }
-      msg_Tracking()<<"Total hadronic width for "<<Flav()<<" = "<<totBR<<".\n";
-      double  partWidth((1.-totBR)*m_flavwidth/
+      msg_Tracking()<<"Total hadronic width for "<<Flav()<<" = "<<totwidth<<".\n";
+      double  partWidth((m_flavwidth-totwidth)/
 			(dectable->TotalWidth()*totspec));
       for (size_t i=0;i<dectable->size();i++) {
-	BR = ((*dectable)[i]->Width()*specweights[k]);
-	int charge = Flav().IntCharge();
+	double BR = ((*dectable)[i]->Width()*specweights[k]);
 	double mass = Flav().HadMass();
-	charge-=spec.IntCharge();
+        string fsidcode;
 	mass-=spec.HadMass();
+        fsidcode=ToString((int)spec);
 	for (size_t j=0;j<(*dectable)[i]->NOut();j++) {
-	  mass -= ((*dectable)[i]->GetDecayProduct(j)).HadMass();
+          Flavour flav = (*dectable)[i]->GetDecayProduct(j);
+	  if (isAnti) flav=flav.Bar();
+	  mass -= flav.HadMass();
+          fsidcode=fsidcode+","+ToString((int)flav);
 	}
 	if (mass<0.) {
 	  msg_Tracking()<<"Mass too low for "<<Flav()<<" -->";
@@ -164,53 +135,28 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	  msg_Tracking()<<".\n";
 	  continue;
 	}
-	Hadron_Decay_Channel* hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
+	Hadron_Decay_Channel* hdc = new Hadron_Decay_Channel(Flav(),p_ms);
 	hdc->AddDecayProduct(spec,false);
-	std::string filename=m_flin.LegacyShellName();
-	filename += "_"+spec.LegacyShellName();
 	msg_Tracking()<<"   Add partonic decay: "<<Flav()<<" --> ";
 	for (size_t j=0;j<(*dectable)[i]->NOut();j++) {
 	  Flavour flav = (*dectable)[i]->GetDecayProduct(j);
 	  if (isAnti) flav=flav.Bar();
 	  msg_Tracking()<<flav<<" ";
 	  hdc->AddDecayProduct(flav,false);
-	  charge   -= flav.IntCharge();
-	  mass     -= flav.HadMass();
-	  filename += flav.LegacyShellName();
 	}
 	hdc->SetWidth(BR*partWidth);
 	hdc->SetDeltaWidth(0.);
 	hdc->SetOrigin("");
-	filename += ".dat";
-	msg_Tracking()<<"  ---> "<<filename<<".\n";
-	hdc->SetFileName(filename);
+        hdc->Initialise(s[fsidcode],startmd);
 	AddDecayChannel(hdc);
-	nchannels++;
       }
     }
   }
+
+  // set forced channels
+  UpdateChannelStatuses();
 }
 
-
-void Hadron_Decay_Table::Initialise(GeneralModel& startmd)
-{
-  if(size()==0) {
-    msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
-      <<"   No decay channels found for "<<Flav()<<endl
-      <<"   Will continue and hope for the best."<<endl;
-  }
-  else {
-    msg_Tracking()<<"Initialising "<<size()
-      <<" decay channels for "<<Flav()
-      <<" ("<<TotalWidth()/m_flavwidth*100.0<<"%)"<<endl;
-    if(msg_LevelIsDebugging()) Output();
-  }
-  Hadron_Decay_Channel* hdc;
-  for (size_t i=0; i<size(); i++) {
-    hdc = at(i);
-    hdc->Initialise(startmd);
-  }
-}
 
 void Hadron_Decay_Table::LatexOutput(std::ostream& f)
 {

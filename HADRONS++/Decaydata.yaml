@@ -117,8 +117,6 @@ HADRON_DECAYS:
         BR: [0.98823, 0.00034]
         Origin: PDG
         IntResults: [0.2948, 0, 0.07958]
-        ME:
-          - Generic: { Test: 2.3 }
 
       22,11,-11:
         BR: [0.01174, 0.00035]

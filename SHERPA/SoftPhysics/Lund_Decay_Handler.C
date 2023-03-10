@@ -22,11 +22,11 @@ Lund_Decay_Handler::Lund_Decay_Handler(Lund_Interface* lund) :
   Decay_Handler_Base(), p_lund(lund)
 {
 #ifdef USING__PYTHIA
-  Settings& s = Settings::GetMainSettings();
+  auto s = Settings::GetMainSettings()["HADRON_DECAYS"];
   m_qedmode =
-    s["HADRON_DECAYS_QED_CORRECTIONS"].SetDefault(1).Get<size_t>();
+    s["QED_Corrections"].SetDefault(1).Get<size_t>();
   const double maxproperlifetime{
-    s["MAX_PROPER_LIFETIME"].Get<double>() };
+    s["Max_Proper_Lifetime"].Get<double>() };
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
       kfit!=s_kftable.end();++kfit) {
     Flavour flav(kfit->first);

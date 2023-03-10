@@ -25,10 +25,8 @@ using namespace METOOLS;
 Hadron_Decay_Handler::Hadron_Decay_Handler() :
   Decay_Handler_Base()
 {
-  Settings& s = Settings::GetMainSettings();
-  RegisterSettings();
-  m_qedmode = s["HADRON_DECAYS_QED_CORRECTIONS"].Get<size_t>();
-  const double maxproperlifetime{ s["MAX_PROPER_LIFETIME"].Get<double>() };
+  auto s = Settings::GetMainSettings()["HADRON_DECAYS"];
+  const double maxproperlifetime{ s["Max_Proper_Lifetime"].Get<double>() };
   if(maxproperlifetime > 0.0) {
     for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
 	kfit!=s_kftable.end();++kfit) {
@@ -40,34 +38,17 @@ Hadron_Decay_Handler::Hadron_Decay_Handler() :
       }
     }
   }
-
-  string decaydatazip = s["DECAYDATA"].Get<std::string>();
-  string decaydata = decaydatazip.replace(decaydatazip.length()-4,4,"/");
-  string decayfile = s["DECAYFILE"].Get<std::string>();
-  string decayconstfile = s["DECAYCONSTFILE"].Get<std::string>();
-  string bdecayfile = s["B_DECAYFILE"].Get<std::string>();
-  string cdecayfile = s["C_DECAYFILE"].Get<std::string>();
-  string aliasfile = s["HADRONALIASESFILE"].Get<std::string>();
-  string aliasdecayfile = s["ALIASDECAYFILE"].Get<std::string>();
-  m_mass_smearing = s["SOFT_MASS_SMEARING"].Get<int>();
+  m_qedmode = s["QED_Corrections"].SetDefault(1).Get<size_t>();
+  m_mass_smearing = s["Mass_Smearing"].SetDefault(1).Get<int>();
   m_spincorr = rpa->gen.SoftSC();
   m_cluster = false;
-  My_In_File::OpenDB(decaydatazip);
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
-  dmap->ReadInConstants(decaydata, decayconstfile);
-  dmap->ReadInPartonicDecays(Flavour(kf_b),decaydata,bdecayfile);
-  dmap->ReadInPartonicDecays(Flavour(kf_c),decaydata,cdecayfile);
-  dmap->ReadHadronAliases(decaydata, aliasfile);
-  dmap->Read(decaydata, decayfile, true);
-  dmap->Read(decaydata, aliasdecayfile);
-  dmap->Initialise();
-  dmap->ReadFixedTables(decaydata, "FixedDecays.dat");
+  dmap->Read(s);
+  dmap->ReadFixedTables();
   p_decaymap=dmap;
 
-  p_mixinghandler = new Mixing_Handler();
-  p_mixinghandler->SetModel(dmap->StartModel());
+  p_mixinghandler = new Mixing_Handler(s["Mixing"]);
   dmap->SetMixingHandler(p_mixinghandler);
-  My_In_File::CloseDB(decaydatazip);
 }
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler()
@@ -75,23 +56,6 @@ Hadron_Decay_Handler::~Hadron_Decay_Handler()
   Hadron_Decay_Map* dmap=dynamic_cast<Hadron_Decay_Map*>(p_decaymap);
   delete dmap; p_decaymap=NULL;
   delete p_mixinghandler; p_mixinghandler=NULL;
-}
-
-void Hadron_Decay_Handler::RegisterSettings()
-{
-  Settings& s = Settings::GetMainSettings();
-  s["HADRON_DECAYS_QED_CORRECTIONS"].SetDefault(1);
-  const auto path = s["DECAYPATH"]
-    .SetDefault(rpa->gen.Variable("SHERPA_SHARE_PATH") + "/")
-    .Get<std::string>();
-  s["DECAYDATA"].SetDefault(path + "Decaydata.zip");
-  s["DECAYFILE"].SetDefault("HadronDecays.dat");
-  s["DECAYCONSTFILE"].SetDefault("HadronConstants.dat");
-  s["B_DECAYFILE"].SetDefault("Partonic_b/Decays.dat");
-  s["C_DECAYFILE"].SetDefault("Partonic_c/Decays.dat");
-  s["HADRONALIASESFILE"].SetDefault("HadronAliases.dat");
-  s["ALIASDECAYFILE"].SetDefault("AliasDecays.dat");
-  s["SOFT_MASS_SMEARING"].SetDefault(1);
 }
 
 void Hadron_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,

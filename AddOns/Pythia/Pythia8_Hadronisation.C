@@ -37,7 +37,7 @@ public:
     m_pythia.readString("Next:numberShowEvent = 0");
     m_pythia.readString("Main:timesAllowErrors = 500");
     m_pythia.readString("Check:mTolErr = 1e-1");
-    const double maxproperlifetime{m_settings["MAX_PROPER_LIFETIME"].Get<double>()};
+    const double maxproperlifetime{m_settings["HADRON_DECAYS"]["Max_Proper_Lifetime"].Get<double>()};
     if (maxproperlifetime > 0.0) {
       m_pythia.readString("ParticleDecays:limitTau0 = on");
       m_pythia.readString("ParticleDecays:tau0Max = "+std::to_string(maxproperlifetime));

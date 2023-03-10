@@ -9,6 +9,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Particle.H"
 #include <set>
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace METOOLS {
   class Spin_Amplitudes;
@@ -99,6 +100,7 @@ namespace PHASIC {
     std::string IDCode() const;
     static std::string IDCode(const ATOOLS::Flavour& decayer,
                               const ATOOLS::Flavour_Vector& daughters);
+    std::string FSIDCode();
     inline const double& Width() const { return m_width; }
     inline const double& DeltaWidth() const { return m_deltawidth; }
     inline const double& IWidth() const { return m_iwidth; }
@@ -108,9 +110,13 @@ namespace PHASIC {
     inline const double& Max() const { return m_max; }
     inline void SetMax(const double& max) { m_max=max; }
     inline const double& MinimalMass() const { return m_minmass; }
-    inline int Active(const size_t& counter) const { return counter<m_active.size() ? m_active[counter] : m_active[m_active.size()-1]; }
+    inline int Active(const size_t& count) const { return count<m_active.size() ? m_active[count] : m_active[0]; }
+    inline const std::vector<int>& Active() const { return m_active; }
     inline void SetActive(std::vector<int> active) { m_active=active; }
-    inline void SetActive(size_t counter, int active) { m_active[counter]=active; }
+    inline void SetActive(size_t count, int active) {
+      if (count>=m_active.size()) m_active.resize(count+1,m_active[0]);
+      m_active[count]=active;
+    }
     inline void SetActiveAll(int active) { for (size_t i=0; i<m_active.size(); ++i) m_active[i]=active; }
 
     double GenerateMass(const double& max, const double &width) const;

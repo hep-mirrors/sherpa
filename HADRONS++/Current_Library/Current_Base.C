@@ -4,6 +4,7 @@
 #define OBJECT_TYPE HADRONS::Current_Base
 #define PARAMETER_TYPE HADRONS::ME_Parameters
 #include "ATOOLS/Org/Getter_Function.C"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace std;
 using namespace ATOOLS;

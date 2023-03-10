@@ -28,7 +28,6 @@ enum optionIndex {
   EVENT_GENERATION_MODE,
   SHOWER_GENERATOR,
   FRAGMENTATION,
-  DECAYMODEL,
   ANALYSIS,
   ANALYSIS_OUTPUT,
   OUTPUT,
@@ -176,14 +175,6 @@ const ATOOLS::Option_Parser::Descriptor usage[] = {
     "  --fragmentation, -F <module>  \tSet fragmentation <module>."
   },
   {
-    DECAYMODEL,
-    REGULAR,
-    "D",
-    "decay",
-    ATOOLS::Option_Parser::Arg::Required,
-    "  --decay, -D <model>  \tSet the decay <model>."
-  },
-  {
     ANALYSIS,
     REGULAR,
     "a",
@@ -285,7 +276,6 @@ String_Option_Map create_parameter_index_map() {
     map["EVENT_GENERATION_MODE"]     = EVENT_GENERATION_MODE;
     map["SHOWER_GENERATOR"]          = SHOWER_GENERATOR;
     map["FRAGMENTATION"]             = FRAGMENTATION;
-    map["DECAYMODEL"]                = DECAYMODEL;
     map["ANALYSIS"]                  = ANALYSIS;
     map["ANALYSIS_OUTPUT"]           = ANALYSIS_OUTPUT;
     map["OUTPUT"]                    = OUTPUT;

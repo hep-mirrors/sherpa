@@ -146,6 +146,15 @@ string Decay_Channel::IDCode(const Flavour& decayer,
   return code;
 }
 
+string Decay_Channel::FSIDCode()
+{
+  std::string fscode;
+  Flavour_Vector daughters(m_flavours.begin() + 1, m_flavours.end()-1);
+  for (const auto& daughter : daughters) fscode += ToString((long int)daughter) + ",";
+  fscode += ToString((long int)(*(m_flavours.end()-1)));
+  return fscode;
+}
+
 double Decay_Channel::Lambda(const double& a,
                              const double& b,
                              const double& c) const

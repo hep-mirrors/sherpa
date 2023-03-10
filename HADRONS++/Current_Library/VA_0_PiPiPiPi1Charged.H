@@ -44,7 +44,7 @@ namespace HADRONS {
 	  ATOOLS::Vec4C t2( int a, int b, int c, int d );
 
       public : 
-      Novo(GeneralModel _md, std::string path);
+      Novo(GeneralModel _md);
       ~Novo() {
         delete p_G;
         delete p_zforma1;

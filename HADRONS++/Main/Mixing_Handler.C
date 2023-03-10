@@ -13,8 +13,20 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace std;
 
-Mixing_Handler::Mixing_Handler()
+Mixing_Handler::Mixing_Handler(Scoped_Settings s)
 {
+  // TODO: Make syntax nicer with YAML structure
+  vector<Flavour> neutral_mesons({kf_K, kf_D, kf_B, kf_B_s});
+  for(auto meson: neutral_mesons) {
+    double x = s["x_"+meson.IDName()].SetDefault(0.0).Get<double>();
+    double y = s["y_"+meson.IDName()].SetDefault(0.0).Get<double>();
+    double qoverp2 = s["qoverp2_"+meson.IDName()].SetDefault(1.0).Get<double>();
+    meson.SetDeltaM(meson.Width()*x);
+    meson.SetDeltaGamma(2.0*meson.Width()*y);
+    meson.SetQOverP2(qoverp2);
+    m_mixing_switch[meson] = s["Mixing_"+meson.IDName()].SetDefault(false).Get<bool>();
+    m_interference_switch[meson] = s["Interference_"+meson.IDName()].SetDefault(false).Get<bool>();
+  }
 }
 
 Mixing_Handler::~Mixing_Handler()
@@ -59,9 +71,8 @@ double Mixing_Handler::DetermineMixingTime(Particle* decayer,
 bool Mixing_Handler::PerformMixing(Particle* decayer) const
 {
   // explicit mixing in event record
-  Flavour flav = decayer->Flav();
-  string tag = flav.IsAnti() ? flav.Bar().IDName() : flav.IDName();
-  if(m_model("Mixing_"+tag,0.0)!=0.0 && decayer->Info()!=char('M')) {
+  Flavour flav = Flavour(decayer->Flav().Kfcode());
+  if (m_mixing_switch.count(flav)>0 && m_mixing_switch.at(flav) && decayer->Info()!=char('M')) {
     DEBUG_FUNC("Try mixing for "<<*decayer);
     double t = DetermineMixingTime(decayer,true)/rpa->hBar();
     if(t==0.0) return false;
@@ -88,9 +99,8 @@ bool Mixing_Handler::PerformMixing(Particle* decayer) const
 Hadron_Decay_Channel* Mixing_Handler::Select(Particle* decayer,
                                              Hadron_Decay_Table& ot) const
 {
-  Flavour flav = decayer->Flav();
-  string tag = flav.IsAnti() ? flav.Bar().IDName() : flav.IDName();
-  if(m_model("Interference_"+tag,0.0)!=0.0) {
+  Flavour flav = Flavour(decayer->Flav().Kfcode()); // not antipart
+  if (m_interference_switch.count(flav)>0 && m_interference_switch.at(flav)) {
     double lifetime = DetermineMixingTime(decayer,false);
     bool anti_at_t0 = decayer->Flav().IsAnti();
     if(decayer->Info()=='m') anti_at_t0 = !anti_at_t0;

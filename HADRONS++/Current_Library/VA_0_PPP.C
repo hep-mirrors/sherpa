@@ -94,11 +94,11 @@ void VA_0_PPP::SetModelParameters( struct GeneralModel _md )
   }
   m_global   = 4./(3.*fpi)*A123;
   switch( int(_md("FORM_FACTOR", 1)) ) {
-    case 2 : p_ff = new RChT(m_mode,m_kaon_mode, m_path,_md,m_ms);
+    case 2 : p_ff = new RChT(m_mode,m_kaon_mode,_md,m_ms);
     break;
-    case 1 : p_ff = new KS95(m_mode,m_kaon_mode, m_path,_md,m_ms);
+    case 1 : p_ff = new KS95(m_mode,m_kaon_mode,_md,m_ms);
     break;
-    case 3 : p_ff = new KS(m_mode,m_kaon_mode, m_path,_md,m_ms);
+    case 3 : p_ff = new KS(m_mode,m_kaon_mode,_md,m_ms);
     break;
   }
 }
@@ -147,7 +147,7 @@ Complex VA_0_PPP::FormFactor( int j, double Q2, double s, double t )
 }
 
 
-VA_0_PPP::FF_Base::FF_Base(int mode, int kaon_mode, std::string path, GeneralModel _md, double * _ms)
+VA_0_PPP::FF_Base::FF_Base(int mode, int kaon_mode, GeneralModel _md, double * _ms)
   : m_mode (mode), m_kaon_mode (kaon_mode)
 {
   // set resonances and parameters
@@ -237,8 +237,8 @@ VA_0_PPP::FF_Base::FF_Base(int mode, int kaon_mode, std::string path, GeneralMod
 	wAA     = _md("Width_"+Flavour(resAA).IDName(),    0.599 );         // width of axial resonance'
 	m_alpha        = _md("alpha_"+Flavour(resAA).IDName(),  0. );                              // weight factor for A'
   }
-  m_A = ResonanceFlavour( resA, mA, wA, running&1, path );
-  m_AA = ResonanceFlavour( resAA, mAA, wAA, running&1, path );
+  m_A = ResonanceFlavour( resA, mA, wA, running&1);
+  m_AA = ResonanceFlavour( resAA, mAA, wAA, running&1);
   ResonanceFlavour help_rho = ResonanceFlavour(
       kf_rho_770_plus, 
       _md("Mass_rho(770)+", _md("Mass_rho(770)", 0.773 )),
@@ -286,8 +286,8 @@ VA_0_PPP::FF_Base::FF_Base(int mode, int kaon_mode, std::string path, GeneralMod
 }
 
 
-VA_0_PPP::RChT::RChT(int mode, int kaon_mode, string path, GeneralModel _md, double * _ms)
-  : FF_Base(mode,kaon_mode,path,_md,_ms)
+VA_0_PPP::RChT::RChT(int mode, int kaon_mode, GeneralModel _md, double * _ms)
+  : FF_Base(mode,kaon_mode,_md,_ms)
 {
   // set resonances and parameters
   if( m_mode != 1200 && 
@@ -455,8 +455,8 @@ double VA_0_PPP::RChT::FFunc( double a, double b, double c)
 // Parameterisation
 // DECKER, FINKEMEIER, MIRKES hep-ph/9310270
 
-VA_0_PPP::KS::KS(int mode, int kaon_mode, string path, GeneralModel _md, double * _ms)
-  : FF_Base(mode,kaon_mode,path,_md,_ms)
+VA_0_PPP::KS::KS(int mode, int kaon_mode, GeneralModel _md, double * _ms)
+  : FF_Base(mode,kaon_mode,_md,_ms)
 {
   bool anomaly (false);
    
@@ -534,9 +534,9 @@ VA_0_PPP::KS::KS(int mode, int kaon_mode, string path, GeneralModel _md, double 
     double GV   = _md("Width_anomaly_"+Flavour(resAnoV).IDName(),   Flavour(resAnoV).Width()   );   // width V
     double GVV  = _md("Width_anomaly_"+Flavour(resAnoVV).IDName(),  Flavour(resAnoVV).Width()   );  // width V'
     double GVVV = _md("Width_anomaly_"+Flavour(resAnoVVV).IDName(), Flavour(resAnoVVV).Width()   ); // width V'
-    m_AnoV      = ResonanceFlavour( resAnoV, MV, GV, running&2, path );
-    m_AnoVV     = ResonanceFlavour( resAnoVV, MVV, GVV, running&2, path );
-    m_AnoVVV    = ResonanceFlavour( resAnoVVV, MVVV, GVVV, running&2, path );
+    m_AnoV      = ResonanceFlavour( resAnoV, MV, GV, running&2 );
+    m_AnoVV     = ResonanceFlavour( resAnoVV, MVV, GVV, running&2 );
+    m_AnoVVV    = ResonanceFlavour( resAnoVVV, MVVV, GVVV, running&2 );
     m_AlphaV    = _md("alpha_anomaly_K*(892)", _md("alpha_anomaly_K*(892)+", 0. ));   // alpha for K*
     m_BetaV[0]  = _md("beta_anomaly_"+Flavour(resAnoVV).IDName(), 0. );        // beta for V'
     m_BetaV[1]  = _md("gamma_anomaly_"+Flavour(resAnoVVV).IDName(), 0. );      // gamma for V''
@@ -654,8 +654,8 @@ Complex VA_0_PPP::KS::FormFactor( int j, double Q2, double s, double t )
 // Parameterisation
 // FINKEMEIER, MIRKES hep-ph/9503474
 
-VA_0_PPP::KS95::KS95(int mode, int kaon_mode, string path, GeneralModel _md, double * _ms)
-  : FF_Base(mode,kaon_mode,path,_md,_ms)
+VA_0_PPP::KS95::KS95(int mode, int kaon_mode, GeneralModel _md, double * _ms)
+  : FF_Base(mode,kaon_mode,_md,_ms)
 {
   kf_code resV, resVV, resVVV;
   int running    = int( _md("RUNNING_WIDTH", 3 ) );     // running width

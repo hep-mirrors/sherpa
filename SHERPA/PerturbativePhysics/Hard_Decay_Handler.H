@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "SHERPA/Single_Events/Decay_Handler_Base.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
 
@@ -49,8 +50,7 @@ namespace SHERPA {
     void SetDecayMasses();
     void InitializeDirectDecays(PHASIC::Decay_Table* dt);
     void InitializeOffshellDecays(PHASIC::Decay_Table* dt);
-    void ApplySMWidths();
-    void CustomizeDecayTables();
+    void SetHOSMWidths(ATOOLS::Scoped_Settings& s);
     bool TriggerOffshell(PHASIC::Decay_Channel* dc, std::vector<PHASIC::Decay_Channel*> new_dcs);
     std::vector<PHASIC::Decay_Channel*> ResolveDecay(PHASIC::Decay_Channel* dc);
     bool ProperVertex(MODEL::Single_Vertex* sv);

@@ -41,3 +41,5 @@ sherpa_create_git_info(Current_Library)
  
 add_library(HadronsCurrents SHARED ${Current_Library_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(HadronsCurrents HadronsCurrents)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PhaseSpaceFunctions DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc )

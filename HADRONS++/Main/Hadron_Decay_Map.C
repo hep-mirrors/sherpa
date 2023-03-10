@@ -13,6 +13,7 @@
 #include "HADRONS++/Main/Mixing_Handler.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Phys/KF_Table.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -22,7 +23,8 @@ using namespace std;
 Hadron_Decay_Map::Hadron_Decay_Map(const Mass_Selector* ms) :
   Decay_Map(ms),
   m_fixed_next_tables(0), p_mixinghandler(NULL)
-{}
+{
+}
 
 Hadron_Decay_Map::~Hadron_Decay_Map()
 {
@@ -32,209 +34,92 @@ Hadron_Decay_Map::~Hadron_Decay_Map()
   }
 }
 
-void Hadron_Decay_Map::ReadInConstants(const string& path, const string& file)
+void Hadron_Decay_Map::Read(Scoped_Settings& s)
 {
-  m_startmd.clear();                            // clear model
-  Data_Reader reader = Data_Reader(" ",";","!","|");
-  reader.AddWordSeparator("\t");
-  reader.AddComment("#");
-  reader.AddComment("//");
-  reader.SetInputPath(path);
-  reader.SetInputFile(file);
-  reader.AddLineSeparator("\n");
-  vector<vector<string> > constants;
-  if(!reader.MatrixFromFile(constants,"")) {
-    msg_Error()<<"Warning! The file "<<path<<file<<" does not exist"<<endl
-             <<"     or has some syntax error."<<endl;
-    msg_Error()<<"     Will ignore it and hope for the best."<<endl;
-    return;
+  // constants
+  m_startmd.clear();
+  for (const auto& key: s["Constants"].GetKeys()) {
+    m_startmd[key] = s["Constants"][key].SetDefault(-1.0).Get<double>();
   }
 
-  for (size_t i=0;i<constants.size();++i) {
-    if( constants[i][1] == "=" ) {              // <name> = <value>
-      m_startmd[constants[i][0]] = ToType<double> (
-          reader.Interpreter()->Interprete(constants[i][2]) );
-    }
-  }
-  
-  set<Flavour> neutral_mesons;
-  neutral_mesons.insert(Flavour(kf_K));
-  neutral_mesons.insert(Flavour(kf_D));
-  neutral_mesons.insert(Flavour(kf_B));
-  neutral_mesons.insert(Flavour(kf_B_s));
-  set<Flavour>::const_iterator flavit;
-  for(flavit = neutral_mesons.begin(); flavit!=neutral_mesons.end(); flavit++) {
-    GeneralModel::iterator yit(m_startmd.find("y_"+flavit->IDName()));
-    GeneralModel::iterator xit(m_startmd.find("x_"+flavit->IDName()));
-    GeneralModel::iterator qit(m_startmd.find("qoverp2_"+flavit->IDName()));
-    if(yit!=m_startmd.end()) flavit->SetDeltaGamma(2.0*flavit->Width()*yit->second);
-    if(xit!=m_startmd.end()) flavit->SetDeltaM(flavit->Width()*xit->second);
-    if(qit!=m_startmd.end()) flavit->SetQOverP2(qit->second);
-  }
-}
-
-void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
-					    const std::string& path, 
-					    const std::string& file) 
-{
-  Data_Reader reader = Data_Reader(" ",";","!","|");
-  reader.AddWordSeparator("\t");
-  reader.AddComment("#");
-  reader.AddComment("//");
-  reader.SetInputPath(path);
-  reader.SetInputFile(file);
-  reader.AddLineSeparator("\n");
-  vector<vector<string> > helpsvv;
-  vector<int>             helpkfc;
-  if(!reader.MatrixFromFile(helpsvv,"")) {
-    msg_Error()<<"ERROR in "<<METHOD<<endl
-      <<"   Read in failure "<<path<<file<<", will abort."<<endl;
-    abort();
-  }
-
-  Flavour flav;
-  double  width(0.),BR,dBR;
-  std::string origin;
-  Decay_Table * dt=NULL;
-  if (decflav==Flavour(kf_b))
-    dt = Tools::partonic_b;
-  else if (decflav==Flavour(kf_c))
-    dt = Tools::partonic_c;
-  else {
-    msg_Error()<<"Error in "<<METHOD<<":\n"
-               <<"   No structure to read in partonic decays of "<<decflav<<".";
-    return;
-  }
-  double decmass = decflav.HadMass(); 
-  
-  for (size_t i=0;i<helpsvv.size();i++) {
-    if (helpsvv[i].size()==2) {
-      if (helpsvv[i][0]=="Width:") width = ToType<double>(helpsvv[i][1]);
-    }
-    else if (helpsvv[i].size()==3) {
-      if (Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
-	double mass(decmass);
-	for (size_t j=0;j<helpkfc.size();++j) 
-	  mass -= Flavour(abs(helpkfc[j])).HadMass();
-	if (mass<0.) {
-	  msg_Tracking()<<METHOD<<": decay "<<decflav<<" --> ";
-	  for (size_t j=0;j<helpkfc.size();++j) 
-	    msg_Tracking()<<(helpkfc[j]>0?Flavour(helpkfc[j]):
-			Flavour(helpkfc[j]).Bar())<<" ";
-	  msg_Tracking()<<"cannot be initialised - not enough mass.\n";
-	  continue;
-	}
-	Decay_Channel * dc(new Decay_Channel(decflav,p_ms));
-	for (size_t j=0;j<helpkfc.size();++j) {
-	  flav = Flavour(abs(helpkfc[j]));
-	  if (helpkfc[j]<0) flav = flav.Bar();
-	  dc->AddDecayProduct(flav,false);
-	}
-	Tools::ExtractBRInfo(helpsvv[i][1], BR, dBR, origin);
-	dc->SetWidth(BR*width);
-	dt->AddDecayChannel(dc);
-	msg_Tracking()<<METHOD<<" adds "<<(*dc)<<"\n";
-      }
-    }
-  }
-  dt->UpdateWidth();
-  msg_Tracking()<<om::red<<"Read in partonic "<<decflav<<"-decays "
-		<<"from "<<file<<".  Found "<<dt->size()
-		<<" channels.\n"<<om::reset;
-}
-
-
-void Hadron_Decay_Map::ReadHadronAliases(const string& path, const string& file)
-{
-  Data_Reader reader = Data_Reader("->", ";", "#", "");
-  reader.AddWordSeparator("\t");
-  reader.AddComment("#");
-  reader.AddComment("//");
-  reader.SetInputPath(path);
-  reader.SetInputFile(file);
-  reader.AddLineSeparator("\n");
- 
-  vector<vector<string> > aliases;
-  reader.MatrixFromFile(aliases,"");
-
-  for (size_t i=0;i<aliases.size();++i) {
-    if (aliases[i].size()!=2) {
-      msg_Error()<<METHOD<<": Wrong syntax in hadron alias file."<<endl
-          <<"  "<<aliases[i]<<endl;
-    }
-    kf_code alias = ToType<kf_code>(aliases[i][0]);
-    kf_code real = ToType<kf_code>(aliases[i][1]);
-    m_startmd.m_aliases[alias]=real;
+  // aliases
+  for (const auto& key: s["Aliases"].GetKeys()) {
+    kf_code alias = ToType<kf_code>(key);
+    kf_code real = s["Aliases"][key].SetDefault(0).Get<kf_code>();
+    Tools::aliases[alias]=real;
     Particle_Info* aliasinfo = new Particle_Info(*s_kftable[real]);
     aliasinfo->m_kfc=alias;
     s_kftable[alias]=aliasinfo;
     msg_Info()<<METHOD<<" created alias "<<alias<<" for "<<Flavour(alias)<<endl;
   }
-}
 
-void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
-{
-  Data_Reader reader = Data_Reader(" ",";","!","->");
-  reader.AddWordSeparator("\t");
-  reader.AddComment("#");
-  reader.AddComment("//");
-  reader.SetInputPath(path);
-  reader.SetInputFile(file);
-  reader.AddLineSeparator("\n");
-  
-  vector<vector<string> > Decayers;
-  if(reader.MatrixFromFile(Decayers,"")) {
-    msg_Info()<<METHOD<<":"
-              <<"   Initializing "<<file<<". This may take some time."
-              <<endl;
-  }
-  else {
-    if (verify) {
-      THROW(fatal_error, "Could not read from DECAYFILE="+file);
-    }
-  }
+  // partonic decay tables for b and c quark
+  ReadInPartonicDecays(Flavour(kf_b),s);
+  ReadInPartonicDecays(Flavour(kf_c),s);
 
+  // hadron decay tables
   Flavour fl;
-  std::string createbooklet;
-  for (size_t i=0;i<Decayers.size();++i) {
-    vector<string> line = Decayers[i];
-    if( line.size()>0 && line[0] == string("CREATE_BOOKLET") ) {
-      createbooklet = line.size()>1?line[1]:"hadrons.tex";
-    }
-    else if (line.size()==3) {
-      int decayerkf = atoi((line[0]).c_str());
-      Flavour decayerflav = Flavour( (kf_code) abs(decayerkf), decayerkf<0);
-      msg_Tracking()<<"New hadron decay table for "<<decayerflav<<", "
-		    <<"with mass = "<<decayerflav.HadMass()<<"\n";
-      Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav, p_ms,
-                                                       p_mixinghandler);
-      dt->Read(path+line[1], line[2]);
-      // add decayer to decaymap
-      Decay_Map::iterator it = find(decayerflav);
-      if (it==end()) {
-        insert(make_pair(decayerflav, dt));
-      }
-      else {
-        THROW(fatal_error, "Duplicate decay table for "+decayerflav.IDName());
-      }
+  for (const auto& decayer: s["Channels"].GetKeys()) {
+    Flavour decayerflav( (kf_code) abs(atoi(decayer.c_str())), atoi(decayer.c_str())<0);
+    Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav, p_ms,
+                                                     p_mixinghandler);
+    dt->Read(s["Channels"][decayer], m_startmd);
+    // add decayer to decaymap
+    Decay_Map::iterator it = find(decayerflav);
+    if (it==end()) {
+      insert(make_pair(decayerflav, dt));
     }
     else {
-      PRINT_INFO("Warning: Decay table in "<<path<<" / "<<file
-                 <<" contains incorrect line: "<<endl<<line);
+      THROW(fatal_error, "Duplicate decay table for "+decayerflav.IDName());
     }
   }
-  //createbooklet = "hadrons.tex";
-  if(!createbooklet.empty()) {
-    Initialise();
-    CreateBooklet(createbooklet);
+
+  // create booklet
+  if (s["CreateBooklet"].SetDefault(false).Get<bool>()) {
+    CreateBooklet();
     THROW(normal_exit, string("Created HADRONS++ booklet. ")
           +"Run 'latex hadrons.tex' for compilation.");
   }
 }
 
 
-void Hadron_Decay_Map::ReadFixedTables(const string& path, const string& file)
+void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav, Scoped_Settings& ss)
 {
+  Flavour flav;
+  std::string origin;
+  Decay_Table * dt=NULL;
+  if (decflav==Flavour(kf_b))
+    dt = Tools::partonic_b;
+  else if (decflav==Flavour(kf_c))
+    dt = Tools::partonic_c;
+  else
+    THROW(fatal_error, "Internal error.");
+  
+  auto s = ss["Partonics"][decflav.IDName()];
+  double width = s["Width"].SetDefault(-1.0).Get<double>();
+  for (const auto& channel: s["Channels"].GetKeys()) {
+    vector<int> helpkfc;
+    Tools::ExtractFlavours(helpkfc,channel);
+    Decay_Channel * dc(new Decay_Channel(decflav,p_ms));
+    for (size_t j=0;j<helpkfc.size();++j) {
+      flav = Flavour(abs(helpkfc[j]));
+      if (helpkfc[j]<0) flav = flav.Bar();
+      dc->AddDecayProduct(flav,false);
+    }
+    dc->SetWidth(s["Channels"][channel]["BR"][0].SetDefault(-1.0).Get<double>()*width);
+    dc->SetDeltaWidth(s["Channels"][channel]["BR"][1].SetDefault(-1.0).Get<double>()*width);
+    dt->AddDecayChannel(dc);
+    msg_Tracking()<<METHOD<<" adds "<<(*dc)<<"\n";
+  }
+  dt->UpdateWidth();
+  msg_Tracking()<<om::red<<"Read in partonic "<<decflav<<"-decays. Found "<<dt->size()
+		<<" channels.\n"<<om::reset;
+}
+
+
+void Hadron_Decay_Map::ReadFixedTables()
+{
+  /* TODO
   Data_Reader reader = Data_Reader(" ",";","!","->");
   reader.AddWordSeparator("\t");
   reader.AddComment("#");
@@ -277,6 +162,7 @@ void Hadron_Decay_Map::ReadFixedTables(const string& path, const string& file)
        it!=m_fixed_tables.end(); ++it) {
     it->second->Initialise(m_startmd);
   }
+  */
 }
 
 
@@ -295,18 +181,9 @@ void Hadron_Decay_Map::ClearFixedDecayTables()
 }
 
 
-void Hadron_Decay_Map::Initialise()
+void Hadron_Decay_Map::CreateBooklet()
 {
-  for (Decay_Map::iterator pos = this->begin(); pos != this->end(); ++pos) {
-    Hadron_Decay_Table* dt = (Hadron_Decay_Table*) pos->second;
-    dt->Initialise(m_startmd);
-  }
-}
-
-
-void Hadron_Decay_Map::CreateBooklet(std::string & name)
-{
-  ofstream f(name.c_str());
+  ofstream f("hadrons.tex");
   // header
   f<<"\\documentclass[a4paper]{scrartcl}\n"
    <<"\\usepackage{latexsym,amssymb,amsmath,amsxtra,longtable,fullpage}\n"

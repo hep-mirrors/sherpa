@@ -1,7 +1,9 @@
 #ifndef HADRONS_Main_Mixing_Handler_H
 #define HADRONS_Main_Mixing_Handler_H
 
-#include "HADRONS++/Main/Tools.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include <map>
 
 namespace ATOOLS {
   class Blob;
@@ -19,7 +21,7 @@ namespace HADRONS {
    */
   class Mixing_Handler {
     private:
-      GeneralModel m_model;
+    std::map<ATOOLS::Flavour, bool> m_mixing_switch, m_interference_switch;
 
     /** 
      * Determines the time relevant for mixing of that particle. Usually this
@@ -35,7 +37,7 @@ namespace HADRONS {
                                  bool checkforpartstatus) const;
 
     public:
-      Mixing_Handler();
+    Mixing_Handler(ATOOLS::Scoped_Settings s);
       ~Mixing_Handler();
 
     /** 
@@ -59,11 +61,6 @@ namespace HADRONS {
      */
     Hadron_Decay_Channel* Select(ATOOLS::Particle* decayer,
                                  Hadron_Decay_Table& table) const;
-    
-    /**
-      * Set the model which contains all parameters relevant for mixing
-      */
-    void SetModel(GeneralModel model) { m_model = model; }
   };
 }
 

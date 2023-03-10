@@ -41,14 +41,14 @@ namespace PHASIC {
     virtual ~Decay_Table();
     void AddDecayChannel(Decay_Channel *);
     void RemoveDecayChannel(size_t i);
-    void SetChannelStatus(Decay_Channel* dc, int status);
+    void UpdateChannelStatuses();
     void Output();
     void UpdateWidth();
     void UpdateWidth(Decay_Channel * dc,const double &width);
 
     const ATOOLS::Flavour& Flav() const      { return m_flin;      }
     const double &  TotalWidth() const       { return m_totalwidth; }
-    const double    ActiveWidth(const size_t& counter) const;
+    const double    ActiveWidth(const size_t& count) const;
     Decay_Channel * GetDecayChannel(const ATOOLS::Flavour_Vector&) const;
     void            EraseDecayChannel(const int);
     Decay_Channel * Select();

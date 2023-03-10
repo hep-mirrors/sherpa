@@ -22,7 +22,7 @@ namespace HADRONS {
         bool   m_deltas;              // Delta S 
        
       public :
-        FF_Base(int mode, int kaon_mode, std::string path, GeneralModel _md, double * ms );
+        FF_Base(int mode, int kaon_mode, GeneralModel _md, double * ms );
         virtual ~FF_Base();
         virtual Complex FormFactor( int, double, double, double ) = 0;
         inline double Mass2(int i)    { return m_ms[i]; }
@@ -51,7 +51,7 @@ namespace HADRONS {
       double m_l1, m_l2;
        
       public:
-        RChT(int mode, int kaon_mode, std::string path, GeneralModel _md, double * _ms);
+        RChT(int mode, int kaon_mode, GeneralModel _md, double * _ms);
         ~RChT() {}
         Complex FormFactor( int, double, double, double ); 
     }; 
@@ -82,7 +82,7 @@ namespace HADRONS {
       Complex T_V13V23( double s, double t );
 
       public:
-        KS(int mode, int kaon_mode, std::string path, GeneralModel _md, double * _ms);
+        KS(int mode, int kaon_mode, GeneralModel _md, double * _ms);
         ~KS() {}
         Complex FormFactor( int, double, double, double );
     }; 
@@ -103,7 +103,7 @@ namespace HADRONS {
 	  Complex G3(double q2, double s, double t, double u );
 
 	  public:
-		KS95(int mode, int kaon_mode, std::string path, GeneralModel _md, double * _ms);
+		KS95(int mode, int kaon_mode, GeneralModel _md, double * _ms);
 		~KS95() {}
 		Complex FormFactor( int, double, double, double );
 	}; 

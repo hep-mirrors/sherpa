@@ -27,7 +27,7 @@ void Generic::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
   p_me->Calculate(p, m_anti);
   for(size_t i(0);i<size();++i) {
-    (*this)[i]=m_factor*(*p_me)[i];
+    (*this)[i]=(*p_me)[i];
   }
 }
 

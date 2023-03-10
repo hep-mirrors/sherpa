@@ -29,6 +29,9 @@ const double Tools::Vcb = 41.6e-3;
 const double Tools::Vtd = 7.4e-3;
 const double Tools::Vts = Tools::Vtd/0.208;
 const double Tools::Vtb = 1.0;
+const double Tools::GF = 1.16639e-5;
+
+std::map<kf_code, kf_code> Tools::aliases;
 
 // 3 particle phase space function lambda
 double Tools::Lambda( double a, double b, double c )
@@ -69,29 +72,14 @@ double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms
 
 bool Tools::ExtractFlavours(std::vector<int> & helpkfc,std::string help)
 {
-  helpkfc.clear();    
-  size_t pos = help.find("{");
-  bool             hit;
-  if (pos!=std::string::npos) help = help.substr(pos+1);
-  else {
-    msg_Error()<<"WARNING in "<<METHOD<<": \n"
-	       <<"   Something wrong with final state of decay "
-	       <<"({ - Bracket missing) : |"<<help<<"|\n"
-	       <<"   Will skip it.\n";
-    return false;
-  }
-  pos    = help.find("}");
-  if (pos!=std::string::npos) help = help.substr(0,pos);
-  else {
-    msg_Error()<<"WARNING in "<<METHOD<<": \n"
-	       <<"   Something wrong with final state of decay "
-	       <<"(} - Bracket missing): |"<<help<<"|\n"
-	       <<"   Will skip it.\n";
-    return false;
-  }
-  hit    = true;
+  helpkfc.clear();
+  if (help.find("{")!=string::npos)
+    help = help.replace(help.find("{"), sizeof("{") - 1, ""); // TODO remove
+  if (help.find("}")!=string::npos)
+    help = help.replace(help.find("}"), sizeof("}") - 1, ""); // TODO remove
+  bool hit    = true;
   while (hit) {
-    pos      = help.find(",");
+    size_t pos      = help.find(",");
     if (pos!=std::string::npos) {
       helpkfc.push_back(atoi((help.substr(0,pos)).c_str()));
       help  = help.substr(pos+1);
@@ -108,126 +96,4 @@ bool Tools::ExtractFlavours(std::vector<int> & helpkfc,std::string help)
     return false;
   } 
   return true;
-}
-
-bool Tools::ExtractSpecs(std::string entry,std::vector<int> & specs,
-			 std::vector<double> & specweights) {
-  specs.clear();
-  specweights.clear();
-  size_t pos = entry.find("{");
-  bool             hit;
-  if (pos!=std::string::npos) entry = entry.substr(pos+1);
-  else {
-    msg_Error()<<"WARNING in "<<METHOD<<": \n"
-	       <<"   Something wrong with spectators "
-	       <<"({-Bracket missing) : |"<<entry<<"|\n"
-	       <<"   Will skip it.\n";
-    return false;
-  }
-  pos    = entry.find("}");
-  if (pos!=std::string::npos) entry = entry.substr(0,pos);
-  else {
-    msg_Error()<<"WARNING in "<<METHOD<<": \n"
-	       <<"   Something wrong with spectators "
-	       <<"(}-Bracket missing) : |"<<entry<<"|\n"
-	       <<"   Will skip it.\n";
-    return false;
-  }
-  hit    = true;
-  std::string help;
-  while (hit) {
-    pos      = entry.find(",");
-    if (pos!=std::string::npos) { 
-      help   = entry.substr(0,pos);
-      entry  = entry.substr(pos+1);
-    }
-    else {
-      help = entry;
-      hit  = false;
-    }
-    pos = help.find(":");
-    specs.push_back(atoi((help.substr(0,pos)).c_str()));
-    specweights.push_back(atof((help.substr(pos+1)).c_str()));
-  }
-  return (specs.size()==specweights.size() && specs.size()>0);
-}
-
-void Tools::ExtractBRInfo( std::string entry, double & br, 
-			   double & dbr, std::string & origin )
-{
-  size_t posa, posb;        // start and end of things b/w brackets
-  size_t posmin;            // start of first bracket
-
-  std::string sbr(""), sdbr("");
-
-  // extract Delta BR
-  posa = entry.find("(");
-  posb = entry.find(")");
-  posmin = posa;
-  if(posa!=std::string::npos && posb!=std::string::npos && (posa+1)!=posb)
-    sdbr = entry.substr(posa+1,posb-posa-1);
-  if (sdbr=="") sdbr = "-1.0";
-
-  // extract Origin
-  posa = entry.find("[");
-  posb = entry.find("]");
-  if(posmin==std::string::npos || 
-     (posmin!=std::string::npos && posmin>posa)) posmin=posa;
-  if(posa!=std::string::npos && posb!=std::string::npos)
-    origin = entry.substr(posa+1,posb-posa-1);
-  else origin = std::string("");
-
-  // extract BR
-  if( posmin!=std::string::npos ) sbr = entry.substr(0,posmin);
-  else                            sbr = entry.substr(0);
-
-  Algebra_Interpreter ip;
-  sdbr=ip.Interprete(sdbr);
-  sbr=ip.Interprete(sbr);
-
-  dbr=ToType<double>(sdbr);
-  br=ToType<double>(sbr);
-
-  if (dbr==-1.0) dbr = br;
-}
-
-void GeneralModel::AddParameters(const std::string& params)
-{
-  Data_Reader reader(" ",";","!");
-  reader.AddComment("#");
-  reader.AddComment("//");
-  reader.SetMatrixType(mtc::transposed);
-  reader.AddLineSeparator("\n");
-
-  if (params!="") reader.RescanFileContent(params,true);
-  vector<vector<string> > helpsvv;
-  reader.MatrixFromString(helpsvv,"");
-
-  Algebra_Interpreter ip;
-  for (size_t i=0;i<helpsvv.size();i++) {
-    if ( helpsvv[i][1] == string("=")) {
-      if( helpsvv[i].size() == 3 ) {        // <name> = <real value>
-        double real = ToType<double> (ip.Interprete(helpsvv[i][2]) );
-        (*this)[helpsvv[i][0]] = real;
-      }
-      if( helpsvv[i].size() == 4 ) {        // <name> = <complex value>
-        double abs   = ToType<double>(ip.Interprete(helpsvv[i][2]) );
-        double phase = ToType<double>( ip.Interprete(helpsvv[i][3]) );
-        (*this)[helpsvv[i][0]+string("_abs")] = abs;
-        (*this)[helpsvv[i][0]+string("_phase")] = phase;
-      }
-    }
-    if ( helpsvv[i][2] == string("=")) {
-      if( helpsvv[i].size() == 4 ) {        // <name> <index> = <real value>
-        double real = ToType<double>( ip.Interprete(helpsvv[i][3]) );
-        (*this)[helpsvv[i][0]+string("_")+helpsvv[i][1]] = real;
-      }
-      if( helpsvv[i].size() == 5 ) {        // <name> <index> = <complex value>
-        double abs   = ToType<double> ( ip.Interprete(helpsvv[i][3]) );
-        double phase = ToType<double> ( ip.Interprete(helpsvv[i][4]) );
-        (*this)[helpsvv[i][0]+"_"+helpsvv[i][1]+"_abs"] = abs;
-        (*this)[helpsvv[i][0]+"_"+helpsvv[i][1]+"_phase"] = phase;
-      }
-    }
-  }
 }

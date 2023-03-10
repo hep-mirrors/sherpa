@@ -6,6 +6,7 @@
 #include "HADRONS++/Main/Tools.H"
 #include "PHASIC++/Decays/Decay_Channel.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace ATOOLS {
   class Blob;
@@ -23,10 +24,6 @@ namespace HADRONS {
    * channel files.
    */
   class Hadron_Decay_Channel : public PHASIC::Decay_Channel {
-    /// Path name where decay channel file can be found
-    std::string             m_path;
-    /// Name of decay channel file
-    std::string             m_filename;
     /// Origin of branching ratio/error
     std::string             m_origin;
     /// Whether to ignore stored integration results
@@ -45,59 +42,13 @@ namespace HADRONS {
     /// mapping of alias flavours to physical flavours
     ATOOLS::Flavour_Vector  m_physicalflavours;
 
-    /**
-     *  Gets relevant section between begin and end from a decay channel
-     *  file.
-     *  
-     *  @param content Content of decay channel file
-     *  @param begin Begin of needed section
-     *  @param end End of needed section
-     */
-    std::vector<std::vector<std::string> > Process(const std::string& content,
-                                                   const std::string& begin,
-                                                   const std::string& end);
     
     /** 
-     * Process <Options> section in decay channel file.
+     * Add (automatic) partonic channels settings
      * 
-     * @param content of DC file
+     * @param s the channel settings block from HADRON_DECAYS: { <decayer>: {channel: {...}}}
      */
-    void   ProcessOptions(const std::string& content);
-
-    /** 
-     * Process <Phasespace> section in decay channel file.
-     * 
-     * @param content of DC file
-     * @param model Global hadron decay parameters
-     */
-    void   ProcessPhasespace(const std::string& content,
-                             const GeneralModel& model );
-
-    /** 
-     * Process <ME> section in decay channel file.
-     * 
-     * @param content of DC file
-     * @param model Global hadron decay parameters
-     */
-    void   ProcessME(const std::string& content,
-                     GeneralModel& model_for_ps );
-
-    /** 
-     * Process <Result> section in decay channel file.
-     * 
-     * @param content of DC file
-     */
-    void   ProcessResult(const std::string& content);
-
-    /** 
-     * Writes out to a decay channel file.
-     * 
-     * @param newfile If true write a completely new file with trivial
-     *                sections, otherwise only update the <Results> section.
-     * @param path    Path of the file that has to be edited/created.
-     * @param file    File name of the file that has to be edited/created.
-     */
-    void WriteOut(bool newfile, std::string path, std::string file);
+    void   ProcessPartonic(ATOOLS::Scoped_Settings& s);
 
     /** 
      * Select a matrix element from a string like B_KStar_Semileptonic[0,1,2,3]
@@ -106,34 +57,21 @@ namespace HADRONS {
      * @param me_string String containing the (getter-able) name of the matrix
      * element, and in square brackets the mapping of external particle
      * indices in the decay blob to internal indices in the matrix element.
+     * @param s the ME settings block from HADRON_DECAYS: { <decayer>: {channel: { ME: {...}}}}
      * 
      * @return The matrix element it has created from the information. If
      * it can't find a valid matrix element, it will abort.
      */
-    HD_ME_Base            * SelectME(std::string me_string);
-
-    /** 
-     * Select a matrix element from a string like B_KStar_Semileptonic[0,1,2,3]
-     *   using the Getter_Function for HD_ME_Base.
-     * 
-     * @param current_string String containing the (getter-able) name of the
-     * current, and in square brackets the mapping of external particle
-     * indices in the decay blob to internal indices in the current.
-     * 
-     * @return The current it has created from the information. If
-     *   it can't find a valid current, it will abort.
-     */
-    Current_Base          * SelectCurrent(std::string current_string);
+    HD_ME_Base            * SelectME(std::string me_string, ATOOLS::Scoped_Settings s);
 
   public:
     /** 
      * Nothing initialised here, only created.
      * 
      * @param flin Incoming particle flavour
-     * @param _path Path to this flavour's decay table/channel files.
+     * @param ms mass setter to be used for flavours in this channel
      */
-    Hadron_Decay_Channel(ATOOLS::Flavour flin, const ATOOLS::Mass_Selector* ms,
-                         std::string _path);
+    Hadron_Decay_Channel(ATOOLS::Flavour flin, const ATOOLS::Mass_Selector* ms);
     ~Hadron_Decay_Channel();
 
     /** 
@@ -141,8 +79,9 @@ namespace HADRONS {
      * elements, phase space mappings etc. from that.
      * 
      * @param startmd Global hadron decay parameters.
+     * @param s the channel settings block from HADRON_DECAYS: { <decayer>: {channel: {...}}}
      */
-    bool   Initialise(GeneralModel startmd);
+    void   Initialise(ATOOLS::Scoped_Settings s, GeneralModel startmd);
 
     /** 
      * Tries to set the color flow for the outparticles of the blob given.
@@ -173,12 +112,11 @@ namespace HADRONS {
      * then added to the decay channel's PHASIC::Multi_Channel.
      * 
      * @param name String describing the phase space channel
-     * @param weight Weight of this phase space channel in the Multi_Channel
-     * @param md Parameters which might be needed for the phase space channel
+     * @param s the PS settings block from HADRON_DECAYS: { <decayer>: {channel: { PhaseSpace: {...}}}}
      * 
      * @return true if an appropriate channel was found, false if not.
      */
-    bool AddPSChannel(std::string name, double weight, GeneralModel const & md);
+    bool AddPSChannel(std::string name, ATOOLS::Scoped_Settings s);
 
     //@{
     /** Getter/setter method. */
@@ -186,8 +124,6 @@ namespace HADRONS {
     inline const double& CPAsymmetryS() const { return m_cp_asymmetry_S; }
     inline const Complex&
     CPAsymmetryLambda() const { return m_cp_asymmetry_lambda; }
-    inline const std::string& FileName() const { return m_filename; }
-    void SetFileName(std::string filename="");
     inline const std::string& Origin() const { return m_origin; }
     inline void SetOrigin(const std::string& origin) { m_origin=origin; }    
     //@}

@@ -3,6 +3,7 @@
 
 #include "PHASIC++/Decays/Decay_Table.H"
 #include "HADRONS++/Main/Tools.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace ATOOLS {
   class Blob;
@@ -50,19 +51,11 @@ namespace HADRONS {
 
     /** 
      * Adds all decay channels and their branching ratios from the decay table
-     * file to the decay table, but doesn't initialise them yet.
+     * file to the decay table and initialises them with their settings
      * 
-     * @param path Path where decay table can be found (e.g. B+)
-     * @param file Filename of decay table (e.g. Decays.dat)
+     * @param s Settings block from HADRON_DECAYS:Channels:<pdgid>
      */
-    void Read(std::string path, std::string file);
-
-    /** 
-     * Initialises all decay channels.
-     * 
-     * @param startmd The global hadron decay parameters.
-     */
-    void Initialise(GeneralModel& startmd);
+    void Read(ATOOLS::Scoped_Settings s, GeneralModel& startmd);
 
     /** 
      * Outputs the Latex lines for a hadron decay table (to be embedded in a

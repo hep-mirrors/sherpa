@@ -40,9 +40,7 @@ namespace HADRONS {
 
     /// name of the current
     std::string       m_name;
-    /// Path to the directory which contains the decay channel's file
-    std::string       m_path;
-    
+
   public:
     /** 
      * Constructor which initialises all fields of the class.
@@ -85,8 +83,6 @@ namespace HADRONS {
     /// Getter/setter method
     inline std::string Name() const              { return m_name; }
     inline void        SetName(std::string name) { m_name = name; }
-    inline std::string Path() const              { return m_path; }
-    inline void        SetPath(std::string path) { m_path = path; }
     inline int         GetN() const              { return p_i.size(); }
     inline const std::vector<int>& DecayIndices() const { return p_i; }
     //@}

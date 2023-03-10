@@ -28,7 +28,6 @@ namespace SHERPA {
     long int bs, bs_cs_semilep, bs_ccss, bs_ccds, bs_cuds;
     long int bs_cs_semilep_rej, bs_ccss_rej, bs_ccds_rej, bs_cuds_rej;
 
-    void RegisterSettings();
   public :
     Hadron_Decay_Handler();
     ~Hadron_Decay_Handler();

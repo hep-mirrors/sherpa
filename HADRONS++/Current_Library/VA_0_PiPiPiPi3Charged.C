@@ -13,7 +13,7 @@ void VA_0_PiPiPiPi3Charged::SetModelParameters( GeneralModel _md )
   double Vud = _md("Vud", Tools::Vud);
   m_global   = Vud;
 
-  p_lorenz = new Novo(m_path,_md);
+  p_lorenz = new Novo(_md);
 }
 
 void VA_0_PiPiPiPi3Charged::LorenzBase::SetPrivates(
@@ -29,7 +29,7 @@ void VA_0_PiPiPiPi3Charged::LorenzBase::SetPrivates(
 // see hep-ph/0201149 for details and
 // hep-ph/0312240 for errata
 
-VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
+VA_0_PiPiPiPi3Charged::Novo::Novo( GeneralModel _md )
   : LorenzBase()
 {
   m_mpi2 = sqr( Flavour(kf_pi_plus).HadMass() );
@@ -61,16 +61,14 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
 
   // G(q2) function (read as histogram)
   // if file does not exist
-  if (!FileExists(path+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat")) {
-    msg_Error()<<"The file "<<path<<"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat does"
-               <<"not exist. Don't know what to do. Will abort."<<endl;
-	Abort();		   
+  if (!FileExists(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat")) {
+    THROW(fatal_error, rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat not found.");
   }
   else {
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read G_{pi-pi+pi-pi0}(q2)."<<endl;
-    My_In_File infile(path+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat");
+    My_In_File infile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat");
     infile.Open();
     std::string found_file_name = infile.FileContent();
     p_G = new Histogram("PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat",0,found_file_name);
@@ -78,16 +76,14 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
 
   // Gomega(q2) function (read as histogram)
   // if file does not exist
-  if (!FileExists(path+"PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat")) {
-    msg_Error()<<"The file "<<path<<"/PhaseSpaceFunctions/Gomega_pi+pi0pi-pi-.dat does"
-               <<"not exist. Don't know what to do. Will abort."<<endl;
-	Abort();		   
+  if (!FileExists(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat")) {
+    THROW(fatal_error, rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat not found.");
   }
   else {
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read Gomega_{pi+pi0pi-pi-}(q2)."<<endl;
-    My_In_File infile(path+"PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat");
+    My_In_File infile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat");
     infile.Open();
     std::string found_file_name = infile.FileContent();
     p_Go = new Histogram("PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat",0,found_file_name);
@@ -95,16 +91,14 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
 
   // RunningWidth_a1(q2) function (read as histogram)
   // if file does not exist
-  if (!FileExists(path+"PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat")) {
-    msg_Error()<<"The file "<<path<<"/PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat does"
-               <<"not exist. Don't know what to do. Will abort."<<endl;
-	Abort();		   
+  if (!FileExists(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat")) {
+    THROW(fatal_error, rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat not found");
   }
   else {
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read a1's running width (q2)."<<endl;
-    My_In_File infile(path+"PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat");
+    My_In_File infile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat");
     infile.Open();
     std::string found_file_name = infile.FileContent();
     p_a1width = new Histogram("PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat",0,found_file_name);
@@ -314,7 +308,7 @@ Vec4C VA_0_PiPiPiPi3Charged::Novo::operator()()
 // CLEO parameterisation
 // see hep-ex/9908024 and CERN-TH.6793/93 for details
 
-VA_0_PiPiPiPi3Charged::KS::KS( string path, GeneralModel _md )
+VA_0_PiPiPiPi3Charged::KS::KS( GeneralModel _md )
   : LorenzBase()
 {
   for (int i=1; i<=3; i++ ) {
@@ -353,7 +347,7 @@ VA_0_PiPiPiPi3Charged::KS::KS( string path, GeneralModel _md )
   m_O   = ResonanceFlavour( kf_omega_782, MO, GO, 0 );
   m_F   = ResonanceFlavour( kf_f_0_980, MF, GF, 1 );
   m_S   = ResonanceFlavour( kf_f_0_980, MS, GS, 1 );
-  m_A   = ResonanceFlavour( kf_a_1_1260_plus, MA, GA, 1, path );
+  m_A   = ResonanceFlavour( kf_a_1_1260_plus, MA, GA, 1 );
   m_beta    = _md("beta", 0.);
   m_gamma   = _md("gamma", 0.);
   m_sigma   = _md("sigma", 0.);

@@ -63,7 +63,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     int nout, 
     const Flavour * flavs, 
     string name,
-    GeneralModel const & md,
+    ATOOLS::Scoped_Settings& s,
     const ATOOLS::Mass_Selector* ms)
 {
   if ( nin>1 || nout<1 ) {
@@ -98,8 +98,8 @@ Single_Channel * HD_Channel_Selector::GetChannel(
       }
       SimpleResonanceFlavour res(
           Flavour(kfres).IDName(),
-          md("Mass_"+Flavour(kfres).IDName(), Flavour(kfres).HadMass() ),
-          md("Width_"+Flavour(kfres).IDName(), width ) );
+          s["Mass_"+Flavour(kfres).IDName()].SetDefault(Flavour(kfres).HadMass()).Get<double>(),
+          s["Width_"+Flavour(kfres).IDName()].SetDefault(width).Get<double>());
       return new Dalitz(flavs,res,ci.a,ci.b);
     }
     if( ci.name==string("IsotropicSpectator") ) {
@@ -110,13 +110,13 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     if( ci.name==string("TwoResonances") ) {
       SimpleResonanceFlavour res_a( 
           ci.res1, 
-          md("Mass_"+ci.res1, Flavour(kf_a_1_1260_plus).HadMass()),
-          md("Width_"+ci.res1,Flavour(kf_a_1_1260_plus).Width())); 
+          s["Mass_"+ci.res1].SetDefault(Flavour(kf_a_1_1260_plus).HadMass()).Get<double>(),
+          s["Width_"+ci.res1].SetDefault(Flavour(kf_a_1_1260_plus).Width()).Get<double>()); 
       string helpname = ci.res2; // vector resonanance as it appears in md
       SimpleResonanceFlavour res_v( 
           ci.res2,
-          md("Mass_"+helpname, Flavour(kf_rho_770_plus).HadMass()),
-          md("Width_"+helpname,Flavour(kf_rho_770_plus).Width()) ); 
+          s["Mass_"+helpname].SetDefault(Flavour(kf_rho_770_plus).HadMass()).Get<double>(),
+          s["Width_"+helpname].SetDefault(Flavour(kf_rho_770_plus).Width()).Get<double>()); 
       return new TwoResonances( flavs, res_a, ci.a, res_v, ci.b, ci.c );
     }
     if( ci.name==string("IsotropicSpectator") ) {

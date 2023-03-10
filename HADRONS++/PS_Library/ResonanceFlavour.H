@@ -31,7 +31,6 @@ namespace HADRONS {
     protected:
       kf_code    m_kfc;
       int                 m_running;
-      std::string         m_path;
       ATOOLS::Histogram * p_hist;
       double              m_G_at_m2;
       int                 m_body;
@@ -50,7 +49,7 @@ namespace HADRONS {
       static double Sqrt_Lambda( double a, double b, double c); 
 	public:
       ResonanceFlavour() {}
-      ResonanceFlavour( kf_code _kfc, double _mass, double _width, int _run, std::string path="" );
+      ResonanceFlavour( kf_code _kfc, double _mass, double _width, int _run );
       ~ResonanceFlavour() { if(p_hist) delete p_hist; }
 
       void        InitialiseThreeBodyResonance( ResonanceFlavour &res1, ResonanceFlavour &res2, double beta=0. );

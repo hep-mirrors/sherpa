@@ -12,6 +12,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Matrix.H"
 #include "PHASIC++/Decays/Decay_Table.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace HADRONS
 {
@@ -36,7 +37,6 @@ namespace HADRONS
    * in the decay channel file) and its (double precision) value.
    */
   struct GeneralModel: public std::map<std::string,double> {
-    std::map<kf_code, kf_code> m_aliases;
     
   public:
     /** 
@@ -50,13 +50,6 @@ namespace HADRONS
       return fit!=end()?fit->second:def;
     }
 
-    /** 
-     * Helper function to create a GeneralModel from parameter = value pairs
-     * 
-     * @param parameters string containing parameter = value lines
-     * 
-     */    
-    void AddParameters(const std::string& parameters);
   };
 
   /** 
@@ -76,6 +69,8 @@ namespace HADRONS
      * 
      * @return \f$ \lambda \f$
      */
+    
+    static std::map<kf_code, kf_code> aliases;
 
     static double   Lambda(double a,double b,double c);
     static Complex  BreitWigner( double s, double Mass2, double MassWidth );
@@ -95,18 +90,6 @@ namespace HADRONS
      * @return bool indicating whether parsing succeeded.
      */
     static bool     ExtractFlavours(std::vector<int>& kfc,std::string tag);
-    static bool     ExtractSpecs(std::string entry,std::vector<int> & specs,
-				 std::vector<double> & specweights);
-    /** 
-     * Extracts branching ratio information from a string like 0.5(0.01)[PDG]
-     * 
-     * @param entry The string to be parsed.
-     * @param sbr Extracted branching ratio (e.g. 0.5)
-     * @param sdbr Extracted error on branching ratio (e.g. 0.01)
-     * @param sorigin Extracted source of the branching ratio (e.g. PDG)
-     */
-    static void     ExtractBRInfo(std::string entry, double & sbr, 
-				  double & sdbr,std::string & sorigin );
 
     //@{
     /** CKM matrix element. */
@@ -120,6 +103,8 @@ namespace HADRONS
     static const double Vts;
     static const double Vtb;
     //@}
+
+    static const double GF;
   }; 
 }
 

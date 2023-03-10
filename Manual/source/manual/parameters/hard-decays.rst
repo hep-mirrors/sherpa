@@ -190,18 +190,17 @@ widths taking higher-order corrections into account. By default
 the LO widths with the values given in the :option:`Width` example above.
 
 
-.. _HARD_SPIN_CORRELATIONS:
+.. _HARD_DECAYS_Spin_Correlations:
 
-HARD_SPIN_CORRELATIONS
-======================
+Spin_Correlations
+=================
 
-.. index:: HARD_SPIN_CORRELATIONS
+.. index:: Spin_Correlations
 
 Spin correlations between the hard scattering process and the
 following decay processes are enabled by default. If you want to
 disable them, e.g. for spin correlation studies, you can specify the
-option :option:`HARD_SPIN_CORRELATIONS: 0`. This is a top-level
-setting as opposed to the other ``HARD_DECAYS``-related settings.
+option :option:`Spin_Correlations: 0`.
 
 .. _Store_Results:
 

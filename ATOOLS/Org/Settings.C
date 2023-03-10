@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Data_Writer.H"
 #include "ATOOLS/Org/Strings.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace ATOOLS;
 
@@ -151,7 +152,9 @@ String_Vector Settings::GetConfigFiles()
   } else {
     s.SetDefault(std::vector<std::string>{});
   }
-  return s.GetVector<std::string>();
+  String_Vector ret=s.GetVector<std::string>();
+  ret.insert(ret.begin(), rpa->gen.Variable("SHERPA_SHARE_PATH")+"/Decaydata.yaml");
+  return ret;
 }
 
 bool Settings::IsScalar(const Settings_Keys& keys)

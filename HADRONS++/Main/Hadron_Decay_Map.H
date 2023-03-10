@@ -40,40 +40,20 @@ namespace HADRONS {
     Hadron_Decay_Map(const ATOOLS::Mass_Selector* ms);
     ~Hadron_Decay_Map();
     /**
-     * Reads all decay tables and create their decay channels, but does not
-     * initialise (integrate) them.
+     * Reads all decay tables and create their decay channels and initialises them.
      */
-    void Read(const std::string& path, const std::string& file, 
-	      bool verify=false);
+    void Read(ATOOLS::Scoped_Settings& s);
     /**
      * Reads fixed decay tables from FixedDecays.dat which can later be
      * programmatically set to be used for the next decay of a certain decayer,
      * typically some kind of signal decay
      * (useful within frameworks like LHCb)
      */
-    void ReadFixedTables(const std::string& path, const std::string& file);
-    /**
-     * Reads HadronConstants.dat & fills them into Hadron_Decay_Map::m_startmd.
-     * Also checks for hadron specific properties like mixing parameters in
-     * HadronConstants.dat and sets them to the flavour.
-     */
-    void ReadInConstants(const std::string& path, const std::string& file);
+    void ReadFixedTables();
     /**
      * Reads partonic decay data.
      */
-    void ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
-			      const std::string& path,const std::string& file);
-    /**
-     * Reads a file with lines of the format "1234->111" and creates alias
-     * particles 1234 with the properties of 111, which can be used in
-     * decay tables and decay channels such that e.g. a signal decay chain
-     * can be specified.
-     */
-    void ReadHadronAliases(const std::string& path, const std::string& file);
-    /**
-     * Initialises and integrates all decay channels built up.
-     */
-    void Initialise();
+    void ReadInPartonicDecays(const ATOOLS::Flavour & decflav, ATOOLS::Scoped_Settings& s);
     /** 
      * 
      * @return The global hadron decay parameter model.
@@ -81,11 +61,9 @@ namespace HADRONS {
     inline GeneralModel& StartModel() { return m_startmd; }
     /**
      * Creates a Latex booklet containing all decay tables and information
-     * about available matrix elements and currents.
-     * 
-     * @param f ostream the booklet is written to
+     * about available matrix elements and currents, in hadrons.tex
      */
-    void CreateBooklet(std::string& name);
+    void CreateBooklet();
     /**
      * Activate a previously read fixed decay table 
      */

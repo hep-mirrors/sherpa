@@ -40,16 +40,26 @@ void Decay_Table::RemoveDecayChannel(size_t i)
   erase(begin()+i);
 }
 
-void Decay_Table::SetChannelStatus(Decay_Channel* dc, int status)
+void Decay_Table::UpdateChannelStatuses()
 {
-  if (status>1) {
-    for (size_t i=0;i<size();i++) {
-      if (at(i)->Active(0)==1) at(i)->SetActive(0,0);
+  DEBUG_FUNC(m_flin);
+  // take into account forced channels at all levels (counts)
+  size_t maxcount=1;
+  for (auto channel: *this) maxcount = max(maxcount, channel->Active().size());
+  DEBUG_VAR(maxcount);
+
+  for (size_t count=0; count<maxcount; ++count) {
+    DEBUG_FUNC(count);
+    bool forced_channels(false);
+    for (auto channel: *this) forced_channels = (forced_channels || channel->Active(count)>1);
+
+    if (forced_channels) {
+      DEBUG_INFO("found forced channels at level "<<count);
+      for (auto channel: *this) {
+        if (channel->Active(count)==1) channel->SetActive(count,0);
+      }
     }
-    dc->SetActive(0,2);
-  }
-  else {
-    dc->SetActive(0,status);
+    for (auto channel: *this) DEBUG_INFO(channel->Name()<<" -> active="<<channel->Active(count));
   }
 }
 
@@ -126,9 +136,10 @@ Decay_Channel* Decay_Table::Select()
   // decay channel status can depend on counter in event
   // starting counting at 1, since 0 is reserved for nominal table
   m_counter++;
+  DEBUG_VAR(m_counter);
   double disc = ActiveWidth(m_counter)*ran->Get();
   for (size_t i=0;i<size();++i) {
-     if (at(i)->Active(m_counter)<1) continue;
+    if (at(i)->Active(m_counter)<1) continue;
     disc -= at(i)->Width();
     if (disc<0) {
       selected=at(i);
