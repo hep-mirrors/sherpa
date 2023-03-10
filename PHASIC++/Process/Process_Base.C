@@ -335,7 +335,20 @@ bool Process_Base::SetupEventReader(const std::string &fnames)
   Event_Reader_Key key;
   while (args.length()) {
     pos=args.find(',');
-    key.m_files.push_back(args.substr(0,pos));
+    std::string tag(args.substr(0,pos));
+    size_t bpos(tag.find('[')), epos(tag.find(']')), mpos (tag.find('-'));
+    if (bpos!=std::string::npos && epos!=std::string::npos &&
+	mpos>bpos+1 && mpos<epos-1) {
+      size_t start(ToType<int>(tag.substr(bpos+1,mpos-bpos-1)));
+      size_t stop(ToType<int>(tag.substr(mpos+1,epos-mpos-1)));
+      std::string left(tag.substr(0,bpos));
+      std::string right(tag.substr(epos+1,tag.length()-epos-1));
+      for (size_t i(start);i<=stop;++i)
+	key.m_files.push_back(left+ToString(i)+right);
+    }
+    else {
+      key.m_files.push_back(tag);
+    }
     args.erase(0,pos!=std::string::npos?pos+1:args.length());
   }
   if (key.m_files.empty()) return false;
