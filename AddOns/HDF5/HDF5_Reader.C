@@ -234,12 +234,10 @@ namespace LHEH5 {
       if (fname=="") {
 	std::vector<int> ids(s_allreaders.size(),0);
 	ids[m_lhid]=1;
-	std::cout<<"\n"<<mpi->Rank()<<" targets "<<m_files[m_ifile+1]<<std::endl;
 	mpi->Allreduce(&ids[0],ids.size(),MPI_INT,MPI_SUM);
 	for (size_t i(0);i<ids.size();++i)
 	  if (ids[i]) {
 	    HDF5_Reader *r(s_allreaders[i]);
-	    std::cout<<"\n"<<mpi->Rank()<<" reads "<<r->m_files[r->m_ifile+1]<<std::endl;
 	    delete r->p_file;
 	    r->p_file = r->OpenFile(r->m_files[++r->m_ifile]);
 	  }
