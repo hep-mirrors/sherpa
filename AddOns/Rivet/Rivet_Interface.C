@@ -17,6 +17,7 @@
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
 #include "YODA/Config/BuildConfig.h"
+#include "YODA/AnalysisObject.h"
 #ifdef RIVET_ENABLE_HEPMC_3
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "HepMC3/GenEvent.h"
@@ -36,6 +37,7 @@
 #define HEPMCNS HepMC
 #endif
 
+// #define USING__Rivet_MPI_Merge
 
 namespace SHERPARIVET {
   typedef std::pair<std::string, int> RivetMapKey;
@@ -110,9 +112,10 @@ Rivet_Interface::Rivet_Interface(const std::string &inpath,
       MakeDir(m_outpath.substr(0,m_outpath.rfind('/')));
 #ifdef USING__MPI
   }
-  if (mpi->Size()>1) {
+#if ! ( defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge) )
+  if (mpi->Size()>1)
     m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
-  }
+#endif
 #endif
 }
 
@@ -373,10 +376,14 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 bool Rivet_Interface::Finish()
 {
   PRINT_FUNC(m_outpath);
-  GetRivet("",0)->finalize();
-  const double nomsumw = GetRivet("",0)->sumW();
+  double nomsumw = 0;
+#if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+  const double nomxsec = p_eventhandler->TotalXSMPI();
+  const double nomxerr = p_eventhandler->TotalErrMPI();
+#else
   const double nomxsec = p_eventhandler->TotalXS();
   const double nomxerr = p_eventhandler->TotalErr();
+#endif
   // first call finalize to collapse the event group,
   // then scale the cross-section before re-finalizing
   for (Rivet_Map::iterator it=m_rivet.begin(); it!=m_rivet.end(); it++) {
@@ -384,11 +391,24 @@ bool Rivet_Interface::Finish()
     if (it->first.first!="") out+="."+it->first.first;
     if (it->first.second!=0) out+=".j"+ToString(it->first.second);
     it->second->finalize();
+#if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+    std::vector<double> data;
+    it->second->serialize(data);
+    mpi->Allreduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
+    size_t i(0);
+    it->second->deserialize(data,i);
+    if (i!=data.size()) THROW(fatal_error,"serialization error");
+#endif
+    if (it->first.first=="" &&
+	it->first.second==0) nomsumw = it->second->sumW();
     const double wgtfrac = it->second->sumW()/nomsumw;
     const double thisxs  = nomxsec*wgtfrac;
     const double thiserr = nomxerr*wgtfrac;
     it->second->setCrossSection(thisxs, thiserr, true);
     it->second->finalize();
+#if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+    if (mpi->Rank()==0)
+#endif
 #ifdef HAVE_LIBZ
     it->second->writeData(out+".yoda.gz");
 #else
