@@ -105,10 +105,8 @@ namespace PDF {
 
     inline void SetSprimeMin(const double spmin) { m_splimits[0]=ATOOLS::Max(m_fixed_smin,spmin); }
     inline void SetSprimeMax(const double spmax) { m_splimits[1]=ATOOLS::Min(m_fixed_smax,spmax); }
-    inline void SetFixedSprimeMin(const double spmin) { m_fixed_smin = ATOOLS::Max(m_fixed_smin, spmin);
-      m_splimits[0] = m_fixed_smin; }
-    inline void SetFixedSprimeMax(const double spmax) { m_fixed_smax = ATOOLS::Min(m_fixed_smax,spmax);
-      m_splimits[1] = m_fixed_smax; }
+    inline void SetFixedSprimeMin(const double spmin) { m_fixed_smin = m_splimits[0] = spmin; }
+    inline void SetFixedSprimeMax(const double spmax) { m_fixed_smax = m_splimits[1] = spmax; }
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
     inline void SetYMin(const double ymin)      { m_ylimits[0]  = ymin; }
     inline void SetYMax(const double ymax)      { m_ylimits[1]  = ymax; }
