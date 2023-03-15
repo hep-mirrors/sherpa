@@ -592,15 +592,6 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 
   double smin=0;
   double smax=sqr(rpa->gen.Ecms());
-  smin = Max(smin,p_beamspectra->SprimeMin());
-  smax = Min(smax,p_beamspectra->SprimeMax());
-  if (m_isrhandlers[isr::hard_process]->On()) {
-    smin = Max(smin,m_isrhandlers[isr::hard_process]->SprimeMin());
-    smax = Min(smax,m_isrhandlers[isr::hard_process]->SprimeMax());
-  }
-  if (p_beamspectra->On()) {
-    p_beamspectra->SetSprimeMin(smin);
-  }
   string name=p_model->Name();
   if (name==std::string("ADD")) {
     double mcut2 = sqr(p_model->ScalarConstant("M_cut"));
@@ -612,7 +603,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
       if (m_isrhandlers[id]->On()) {
 	m_isrhandlers[id]->SetFixedSprimeMax(smax);
 	m_isrhandlers[id]->SetFixedSprimeMin(smin);
-      } 
+      }
       else if (p_beamspectra->On()) {
 	p_beamspectra->SetSprimeMax(smax);
       }

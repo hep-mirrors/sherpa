@@ -265,8 +265,6 @@ void Beam_Parameters::RegisterDefaultBeams() {
   m_settings["BEAM_ENERGIES"].SetDefault({energy1, energy2});
 
   m_settings["BEAM_POLARIZATIONS"].SetDefault({0.0, 0.0});
-  m_settings["BEAM_SMIN"].SetDefault(1e-10);
-  m_settings["BEAM_SMAX"].SetDefault(1.0);
 }
 
 void Beam_Parameters::RegisterDarkMatterDefaults() {

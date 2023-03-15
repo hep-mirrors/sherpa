@@ -39,14 +39,10 @@ void Collider_Kinematics::InitSystem() {
 }
 
 void Collider_Kinematics::InitIntegration() {
-  Beam_Parameters parameters;
-  // check for if they have been initialised to other values
-  double sminratio = parameters("BEAM_SMIN");
-  double smaxratio = parameters("BEAM_SMAX");
   m_xmin = p_beams[0]->Xmin() * p_beams[1]->Xmin();
   m_xmax = p_beams[0]->Xmax() * p_beams[1]->Xmax();
-  m_smin = m_S * Max(m_xmin, sminratio);
-  m_smax = m_S * Min(m_xmax, smaxratio);
+  m_smin = m_S * m_xmin;
+  m_smax = m_S * m_xmax;
   m_ymin = -10.;
   m_ymax = 10.;
   m_exponent[0] = .5;
