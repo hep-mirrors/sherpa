@@ -88,7 +88,7 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   // For the case of gluons, this is not necessary, but its HadMass() is zero anyway.
   double required_energy =
       EstimateRequiredEnergy(!flav.IsQuark() && !m_valence)
-      + mom[0] + flav.HadMass();
+      + mom[0] + Max(flav.HadMass(), m_LambdaQCD);
   if (m_residualE < required_energy) {
     msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
     return false;
