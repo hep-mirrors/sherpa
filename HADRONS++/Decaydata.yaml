@@ -3040,8 +3040,8 @@ HADRON_DECAYS:
 
     421:
       -321,12,-11:
-        BR: [0.0357, 0.0006]
-        Origin: PDG2016
+        BR: [0.03549, 0.0026]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3054,8 +3054,8 @@ HADRON_DECAYS:
         IntResults: [5.53e-14, 4.537e-16, 5.161e-13]
 
       -321,14,-13:
-        BR: [0.0333, 0.0013]
-        Origin: PDG2016
+        BR: [0.0341, 0.0004]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3068,8 +3068,8 @@ HADRON_DECAYS:
         IntResults: [5.202e-14, 5.054e-16, 4.45e-13]
 
       -323,12,-11:
-        BR: [0.0216, 0.0016]
-        Origin: PDG2016
+        BR: [0.0215, 0.0016]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3082,8 +3082,8 @@ HADRON_DECAYS:
         IntResults: [3.38e-14, 1.667e-16, 2.527e-13]
 
       -323,14,-13:
-        BR: [0.0192, 0.0025]
-        Origin: PDG2016
+        BR: [0.0189, 0.0024]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3152,8 +3152,8 @@ HADRON_DECAYS:
         IntResults: [3.298e-18, 2.134e-20, 7.575e-17]
 
       -10323,12,-11:
-        BR: [0.00076, 0.0004]
-        Origin: PDG2016
+        BR: [0.00101, 0.00018]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3166,8 +3166,8 @@ HADRON_DECAYS:
         IntResults: [1.936e-15, 8.823e-18, 2.02e-14]
 
       -10323,14,-13:
-        BR: [0.00076, 0.0004]
-        Origin: PDG2016
+        BR: [0.00101, 0.00018]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3180,8 +3180,8 @@ HADRON_DECAYS:
         IntResults: [1.634e-15, 7.51e-18, 1.751e-14]
 
       -211,12,-11:
-        BR: [0.00289, 8e-05]
-        Origin: PDG2016
+        BR: [0.00291, 4e-05]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3194,8 +3194,8 @@ HADRON_DECAYS:
         IntResults: [2.327e-16, 9.828e-19, 1.782e-15]
 
       -211,14,-13:
-        BR: [0.00238, 0.00024]
-        Origin: PDG2016
+        BR: [0.00267, 0.00012]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3208,8 +3208,8 @@ HADRON_DECAYS:
         IntResults: [2.249e-16, 9.426e-19, 1.714e-15]
 
       -213,12,-11:
-        BR: [0.0017, 0.00016]
-        Origin: PDG2016
+        BR: [0.0015, 0.00012]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3222,8 +3222,8 @@ HADRON_DECAYS:
         IntResults: [1.674e-15, 7.253e-18, 1.632e-14]
 
       -213,14,-13:
-        BR: [0.0017, 0.00016]
-        Origin: PDG2016
+        BR: [0.00135, 0.00013]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3236,23 +3236,23 @@ HADRON_DECAYS:
         IntResults: [1.607e-15, 6.672e-18, 1.458e-14]
 
       -311,-211,12,-11:
-        BR: [0.027, 0.009]
-        Origin: PDG2016
+        BR: [0.0144, 0.0004]
+        Origin: PDG2022
         IntResults: [5.417e-07, 1.87e-09, 4.192e-06]
 
       -311,-211,14,-13:
-        BR: [0.027, 0.009]
-        Origin: PDG2016
+        BR: [0.0144, 0.0004]
+        Origin: PDG2022
         IntResults: [4.729e-07, 1.637e-09, 3.776e-06]
 
       -321,111,12,-11:
-        BR: [0.0006, 0.0006]
-        Origin: EvtGen
+        BR: [0.016, 0.013]
+        Origin: PDG2022
         IntResults: [5.541e-07, 1.893e-09, 4.233e-06]
 
       -321,111,14,-13:
-        BR: [0.0006, 0.0006]
-        Origin: EvtGen
+        BR: [0.016, 0.013]
+        Origin: PDG2022
         IntResults: [4.844e-07, 1.661e-09, 3.823e-06]
 
       -321,211:
@@ -3771,8 +3771,8 @@ HADRON_DECAYS:
         IntResults: [7.769e-16, 0, 2.905e-15]
 
       -311,12,-11:
-        BR: [0.083, 0.0022]
-        Origin: PDG
+        BR: [0.0872, 0.0009]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3785,8 +3785,8 @@ HADRON_DECAYS:
         IntResults: [6.776e-14, 5.677e-16, 6.386e-13]
 
       -311,14,-13:
-        BR: [0.093, 0.007]
-        Origin: PDG
+        BR: [0.0876, 0.0019]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3799,8 +3799,8 @@ HADRON_DECAYS:
         IntResults: [6.094e-14, 5.026e-16, 5.522e-13]
 
       -313,12,-11:
-        BR: [0.0552, 0.0015]
-        Origin: PDG
+        BR: [0.054, 0.001]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3813,8 +3813,8 @@ HADRON_DECAYS:
         IntResults: [3.366e-14, 1.665e-16, 2.534e-13]
 
       -313,14,-13:
-        BR: [0.053, 0.0015]
-        Origin: PDG
+        BR: [0.0527, 0.0015]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3911,18 +3911,18 @@ HADRON_DECAYS:
         IntResults: [1.698e-15, 7.806e-18, 1.824e-14]
 
       -321,211,12,-11:
-        BR: [0.0035, 0.0035]
+        BR: [0.0019, 0.0005]
         Origin: PDG <0.007
         IntResults: [5.553e-07, 1.901e-09, 4.272e-06]
 
       -321,211,14,-13:
-        BR: [0.0035, 0.0035]
-        Origin: PDG <0.007
+        BR: [0.0019, 0.0005]
+        Origin: PDG2022
         IntResults: [4.855e-07, 1.667e-09, 3.852e-06]
 
       111,12,-11:
-        BR: [0.0044, 0.0007]
-        Origin: PDG
+        BR: [0.00372, 0.00017]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3935,8 +3935,8 @@ HADRON_DECAYS:
         IntResults: [2.331e-16, 9.815e-19, 1.783e-15]
 
       111,14,-13:
-        BR: [0.0044, 0.0007]
-        Origin: PDG
+        BR: [0.0035, 0.00015]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3949,8 +3949,8 @@ HADRON_DECAYS:
         IntResults: [2.254e-16, 9.416e-19, 1.716e-15]
 
       113,12,-11:
-        BR: [0.0022, 0.0004]
-        Origin: PDG
+        BR: [0.00218, 0.00025]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3963,8 +3963,8 @@ HADRON_DECAYS:
         IntResults: [1.701e-15, 7.39e-18, 1.668e-14]
 
       113,14,-13:
-        BR: [0.0022, 0.0004]
-        Origin: PDG
+        BR: [0.0024, 0.0004]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3977,8 +3977,8 @@ HADRON_DECAYS:
         IntResults: [1.633e-15, 6.802e-18, 1.492e-14]
 
       221,12,-11:
-        BR: [0.0048, 0.0048]
-        Origin: FS, PDG:<0.007
+        BR: [0.00111, 7e-05]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -3991,8 +3991,8 @@ HADRON_DECAYS:
         IntResults: [2.256e-16, 9.973e-19, 2.266e-15]
 
       221,14,-13:
-        BR: [0.0047, 0.0047]
-        Origin: FS, PDG:<0.007
+        BR: [0.00104, 0.00011]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4005,8 +4005,8 @@ HADRON_DECAYS:
         IntResults: [2.151e-16, 9.467e-19, 2.162e-15]
 
       223,12,-11:
-        BR: [0.0016, 0.0007]
-        Origin: PDG
+        BR: [0.00169, 0.00011]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4019,8 +4019,8 @@ HADRON_DECAYS:
         IntResults: [1.615e-15, 7.046e-18, 1.589e-14]
 
       223,14,-13:
-        BR: [0.0016, 0.0007]
-        Origin: PDG
+        BR: [0.00177, 0.00021]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4033,8 +4033,8 @@ HADRON_DECAYS:
         IntResults: [1.55e-15, 6.471e-18, 1.416e-14]
 
       331,12,-11:
-        BR: [0.0019, 0.0019]
-        Origin: FS, PDG:<0.011
+        BR: [0.0002, 4e-05]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4047,8 +4047,8 @@ HADRON_DECAYS:
         IntResults: [9.09e-17, 4.511e-19, 1.317e-15]
 
       331,14,-13:
-        BR: [0.0018, 0.0018]
-        Origin: FS, PDG:<0.011
+        BR: [0.0002, 4e-05]
+        Origin: PDG:<0.011
         ME:
           - Current_ME:
               J1:
@@ -4076,8 +4076,8 @@ HADRON_DECAYS:
         IntResults: [0.07139, 0, 0.2669]
 
       321,-313:
-        BR: [0.043, 0.006]
-        Origin: PDG
+        BR: [0.0037, 0.0002]
+        Origin: PDG2022+MShapiro
         IntResults: [0.04508, 0, 0.1685]
 
       -10313,211:
@@ -4312,8 +4312,8 @@ HADRON_DECAYS:
         IntResults: [9.126e-14, 0, 3.593e-13]
 
       333,12,-11:
-        BR: [0.0239, 0.0023]
-        Origin: PDG
+        BR: [0.0239, 0.0016]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4327,8 +4327,8 @@ HADRON_DECAYS:
         IntResults: [3.317e-14, 3.008e-16, 2.17e-13]
 
       333,14,-13:
-        BR: [0.0239, 0.0023]
-        Origin: PDG
+        BR: [0.019, 0.005]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4342,8 +4342,8 @@ HADRON_DECAYS:
         IntResults: [3.155e-14, 2.765e-16, 2.021e-13]
 
       221,12,-11:
-        BR: [0.0229, 0.0019]
-        Origin: PDG
+        BR: [0.0232, 8e-05]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4357,8 +4357,8 @@ HADRON_DECAYS:
         IntResults: [2.943e-14, 2.94e-16, 2.813e-13]
 
       221,14,-13:
-        BR: [0.0229, 0.0019]
-        Origin: PDG
+        BR: [0.024, 0.0005]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4372,8 +4372,8 @@ HADRON_DECAYS:
         IntResults: [2.722e-14, 2.68e-16, 2.474e-13]
 
       331,12,-11:
-        BR: [0.0074, 0.0014]
-        Origin: PDG
+        BR: [0.008, 0.0007]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4387,8 +4387,8 @@ HADRON_DECAYS:
         IntResults: [9.27e-15, 8.58e-17, 1.274e-13]
 
       331,14,-13:
-        BR: [0.0074, 0.0014]
-        Origin: PDG
+        BR: [0.011, 0.005]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4402,8 +4402,8 @@ HADRON_DECAYS:
         IntResults: [7.908e-15, 7.15e-17, 9.911e-14]
 
       311,12,-11:
-        BR: [0.0039, 0.0009]
-        Origin: PDG
+        BR: [0.0034, 0.0004]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4416,8 +4416,8 @@ HADRON_DECAYS:
         IntResults: [3.861e-15, 3.637e-17, 3.4e-14]
 
       311,14,-13:
-        BR: [0.0039, 0.0009]
-        Origin: PDG
+        BR: [0.0034, 0.0004]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4430,8 +4430,8 @@ HADRON_DECAYS:
         IntResults: [3.718e-15, 3.513e-17, 3.296e-14]
 
       313,12,-11:
-        BR: [0.0018, 0.0004]
-        Origin: PDG
+        BR: [0.00215, 0.00028]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -4444,8 +4444,8 @@ HADRON_DECAYS:
         IntResults: [2.232e-15, 1.907e-17, 1.55e-14]
 
       313,14,-13:
-        BR: [0.0018, 0.0004]
-        Origin: PDG
+        BR: [0.00215, 0.00028]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -6219,8 +6219,8 @@ HADRON_DECAYS:
       Spectators: [ 2: { Weight: 1.0 } ]
 
       -423,12,-11:
-        BR: [0.0569, 0.0019]
-        Origin: PDG
+        BR: [0.0558, 0.0022]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -6236,8 +6236,8 @@ HADRON_DECAYS:
         IntResults: [2.464e-14, 1.137e-16, 5.182e-13]
 
       -423,14,-13:
-        BR: [0.0569, 0.0019]
-        Origin: PDG
+        BR: [0.0558, 0.0022]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -6254,7 +6254,7 @@ HADRON_DECAYS:
 
       -423,16,-15:
         BR: [0.0188, 0.002]
-        Origin: PDG
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -6270,8 +6270,8 @@ HADRON_DECAYS:
         IntResults: [6.326e-15, 2.703e-17, 1.526e-13]
 
       -421,12,-11:
-        BR: [0.0227, 0.0011]
-        Origin: PDG
+        BR: [0.023, 0.0009]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -6287,8 +6287,8 @@ HADRON_DECAYS:
         IntResults: [8.219e-15, 7.842e-17, 2.638e-13]
 
       -421,14,-13:
-        BR: [0.0227, 0.0011]
-        Origin: PDG
+        BR: [0.023, 0.0009]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -6305,7 +6305,7 @@ HADRON_DECAYS:
 
       -421,16,-15:
         BR: [0.0077, 0.0025]
-        Origin: PDG
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -6322,7 +6322,7 @@ HADRON_DECAYS:
 
       -10421,12,-11:
         BR: [0.0025, 0.0005]
-        Origin: PDG
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -6339,7 +6339,7 @@ HADRON_DECAYS:
 
       -10421,14,-13:
         BR: [0.0025, 0.0005]
-        Origin: PDG
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -10700,8 +10700,8 @@ HADRON_DECAYS:
       Spectators: [ 1: { Weight: 1.0 } ]
       
       -413,12,-11:
-        BR: [0.0493, 0.0011]
-        Origin: PDG
+        BR: [0.0497, 0.0012]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -10717,8 +10717,8 @@ HADRON_DECAYS:
         IntResults: [2.474e-14, 2.286e-16, 5.16e-13]
 
       -413,14,-13:
-        BR: [0.0493, 0.0011]
-        Origin: PDG
+        BR: [0.0497, 0.0012]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -10734,8 +10734,8 @@ HADRON_DECAYS:
         IntResults: [2.445e-14, 1.138e-16, 5.154e-13]
 
       -413,16,-15:
-        BR: [0.0184, 0.0022]
-        Origin: PDG
+        BR: [0.0158, 0.0009]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -10751,8 +10751,8 @@ HADRON_DECAYS:
         IntResults: [6.299e-15, 2.69e-17, 1.519e-13]
 
       -411,12,-11:
-        BR: [0.0219, 0.0012]
-        Origin: PDG
+        BR: [0.0224, 0.0009]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -10768,8 +10768,8 @@ HADRON_DECAYS:
         IntResults: [6.534e-15, 3.009e-17, 2.001e-13]
 
       -411,14,-13:
-        BR: [0.0219, 0.0012]
-        Origin: PDG
+        BR: [0.0224, 0.0009]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -10785,8 +10785,8 @@ HADRON_DECAYS:
         IntResults: [6.409e-15, 2.909e-17, 1.862e-13]
 
       -411,16,-15:
-        BR: [0.0103, 0.0022]
-        Origin: PDG
+        BR: [0.0105, 0.0023]
+        Origin: PDG2022
         ME:
           - Current_ME:
               J1:
@@ -10802,8 +10802,8 @@ HADRON_DECAYS:
         IntResults: [8.252e-16, 3.59e-18, 1.808e-14]
 
       -10411,12,-11:
-        BR: [0.0045, 0.0045]
-        Origin: EvtGen
+        BR: [0.00362, 0.00362]
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10819,8 +10819,8 @@ HADRON_DECAYS:
         IntResults: [3.653e-16, 1.612e-18, 1.317e-14]
 
       -10411,14,-13:
-        BR: [0.0045, 0.0045]
-        Origin: EvtGen
+        BR: [0.00362, 0.00362]
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10837,7 +10837,7 @@ HADRON_DECAYS:
 
       -10411,16,-15:
         BR: [0.0013, 0.0013]
-        Origin: EvtGen
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10853,8 +10853,8 @@ HADRON_DECAYS:
         IntResults: [2.583e-17, 1.105e-19, 6.889e-16]
 
       -10413,12,-11:
-        BR: [0.0052, 0.0052]
-        Origin: EvtGen
+        BR: [0.00704, 0.00704]
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10870,8 +10870,8 @@ HADRON_DECAYS:
         IntResults: [1.982e-15, 9.084e-18, 6.983e-14]
 
       -10413,14,-13:
-        BR: [0.0052, 0.0052]
-        Origin: EvtGen
+        BR: [0.00704, 0.00704]
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10888,7 +10888,7 @@ HADRON_DECAYS:
 
       -10413,16,-15:
         BR: [0.0013, 0.0013]
-        Origin: EvtGen
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10904,8 +10904,8 @@ HADRON_DECAYS:
         IntResults: [1.517e-16, 5.891e-19, 3.307e-15]
 
       -20413,12,-11:
-        BR: [0.0083, 0.0083]
-        Origin: EvtGen
+        BR: [0.00401, 0.00401]
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10921,8 +10921,8 @@ HADRON_DECAYS:
         IntResults: [4.323e-16, 1.771e-18, 1.22e-14]
 
       -20413,14,-13:
-        BR: [0.0083, 0.0083]
-        Origin: EvtGen
+        BR: [0.00401, 0.00401]
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10939,7 +10939,7 @@ HADRON_DECAYS:
 
       -20413,16,-15:
         BR: [0.002, 0.002]
-        Origin: EvtGen
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10955,8 +10955,8 @@ HADRON_DECAYS:
         IntResults: [3.429e-17, 1.457e-19, 7.154e-16]
 
       -415,12,-11:
-        BR: [0.0023, 0.0023]
-        Origin: EvtGen
+        BR: [0.00347, 0.00347]
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10972,8 +10972,8 @@ HADRON_DECAYS:
         IntResults: [1.062e-15, 5.162e-18, 2.857e-14]
 
       -415,14,-13:
-        BR: [0.0023, 0.0023]
-        Origin: EvtGen
+        BR: [0.00347, 0.00347]
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
@@ -10990,7 +10990,7 @@ HADRON_DECAYS:
 
       -415,16,-15:
         BR: [0.002, 0.002]
-        Origin: EvtGen
+        Origin: EvtGen2022
         ME:
           - Current_ME:
               J1:
