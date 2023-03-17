@@ -72,7 +72,6 @@ void Soft_Collision_Handler::PrepareTerminate() {}
 ATOOLS::Return_Value::code
 Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
 {
-  msg_Out()<<"   * "<<METHOD<<"\n";
   PROFILE_HERE;
   int outcome(-1);
   switch (m_mode) {
