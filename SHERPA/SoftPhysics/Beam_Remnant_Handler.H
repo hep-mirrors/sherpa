@@ -19,28 +19,39 @@ namespace SHERPA {
     std::string m_name;
 
     ATOOLS::Return_Value::code TreatNoFill(ATOOLS::Blob_List *const bloblist);
-    ATOOLS::Blob             * FillBunchBlob(int,ATOOLS::Particle *);
     ATOOLS::Return_Value::code FillBunchBlobs(ATOOLS::Blob_List *const,
 					      ATOOLS::Particle_List *const=NULL);
-    bool FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblist);
-    bool FillRescatterBunchBlobs(ATOOLS::Blob_List *const bloblist);
+    bool           FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblist);
+    bool           FillRescatterBunchBlobs(ATOOLS::Blob_List *const bloblist);
+    ATOOLS::Blob * FillBunchBlob(int,ATOOLS::Particle *);
   public :
     Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 			 REMNANTS::Remnant_Handler *const remnants,
 			 Soft_Collision_Handler *const softcollisions);
     ~Beam_Remnant_Handler();
-    void AddBunchRescattering(REMNANTS::Remnant_Handler *const remnants,
-			      Soft_Collision_Handler *const softcollisions);
+    
     ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List *const,
 						     const bool & onlyBunch=false);
+    ATOOLS::Return_Value::code FillRescatterBeamBlobs(ATOOLS::Blob_List *const);
     void CleanUp(const size_t & mode=0);
     
-    inline REMNANTS::Remnant_Handler * GetRemnants()   { return p_remnants; }
-    inline void SetShrimps(SHRIMPS::Shrimps * shrimps) {
+    inline void AddBunchRescattering(REMNANTS::Remnant_Handler *const remnants,
+				     Soft_Collision_Handler *const softcollisions) {
+      if (remnants && remnants->Id()==PDF::isr::bunch_rescatter) {
+	p_bunchremnants = remnants; p_schandler = softcollisions;
+	m_bunchrescatter = true;
+      }
+    }
+    inline void SetShrimps(SHRIMPS::Shrimps * shrimps) { 
       if (shrimps!=NULL) { p_shrimps = shrimps; m_name = std::string("Shrimps"); }
     }
-    inline const int Fill()           const { return m_fill; }
-    inline const std::string & Name() const { return m_name; }
+    inline const bool NeedsToDealWithRescattering()  {
+      return p_bunchremnants->NeedsToMakeBeamBlobs();
+    }
+    inline REMNANTS::Remnant_Handler * GetRemnants()      const { return p_remnants; }
+    inline REMNANTS::Remnant_Handler * GetBunchRemnants() const { return p_bunchremnants; }
+    inline const int Fill()                               const { return m_fill; }
+    inline const std::string & Name()                     const { return m_name; }
    };
 }
 

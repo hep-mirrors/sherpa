@@ -74,6 +74,7 @@ namespace SHERPA {
     double m_globalkfac, m_maxkfac;
     mets_bbar_mode::code m_bbarmode;
 
+    long int m_fails_Moms, m_fails_Ampls, m_fails_Masses;
     bool LocalKFactor(ATOOLS::Cluster_Amplitude* ampl);
 
   public :

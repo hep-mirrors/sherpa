@@ -5,7 +5,7 @@ BEAM_ENERGIES:     103
 BEAM_SPECTRA:      EPA
 PDF_LIBRARY:       SASGSherpa
 PDF_SET:           SAS2D
-MI_HANDLER:        Amisic
+MI_HANDLER:        None
 MPI_PDF_LIBRARY:   SASGSherpa
 MPI_PDF_SET:       SAS2D
 BEAM_RESCATTERING: None
@@ -42,4 +42,4 @@ RIVET:
   --analyses: [OPAL_2008_I754316]
   --ignore-beams: 1
   USE_HEPMC_SHORT: 1
-ANALYSIS_OUTPUT: ee_MI_new
+ANALYSIS_OUTPUT: ee_None_new

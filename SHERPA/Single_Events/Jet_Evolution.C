@@ -35,7 +35,7 @@ void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
 					       const Shower_Handler_Map & showers,
 					       REMNANTS::Remnant_Handler_Map & rhs) {
   REMNANTS::Remnant_Handler * remnants = NULL; 
-  if (rhs.find(PDF::isr::hard_process)!=rhs.end()) remnants = rhs[PDF::isr::hard_process];
+  if (rhs.find(isr::hard_process)!=rhs.end()) remnants = rhs[isr::hard_process];
   else msg_Error()<<"Error in "<<METHOD<<":\n"
 		  <<"  No remnant handling found for hard part of the process.\n"
 		  <<"  Continue and hope for the best.\n";
@@ -58,6 +58,24 @@ void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
     if (schandler!=scs->end()) {
       m_interfaces["SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
       m_interfaces["SoftCollisions"]->SetRemnantHandler(remnants);
+    }
+  }
+
+  shower = showers.find(isr::bunch_rescatter);
+  if (shower!=showers.end()) {
+    if (rhs.find(isr::bunch_rescatter)!=rhs.end()) remnants = rhs[isr::bunch_rescatter];
+    else msg_Error()<<"Error in "<<METHOD<<":\n"
+		    <<"  No remnant handling found for bunch rescattering.\n"
+		    <<"  Continue and hope for the best.\n";
+    MI_Handler_Map::const_iterator mihandler = mis->find(isr::bunch_rescatter);
+    if (mihandler!=mis->end()) {
+      m_interfaces["BR_MPIs"] = new Perturbative_Interface(mihandler->second, shower->second);
+      m_interfaces["BR_MPIs"]->SetRemnantHandler(remnants);
+    }
+    Soft_Collision_Handler_Map::const_iterator schandler = scs->find(isr::bunch_rescatter);
+    if (schandler!=scs->end()) {
+      m_interfaces["BR_SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
+      m_interfaces["BR_SoftCollisions"]->SetRemnantHandler(remnants);
     }
   }
 }
@@ -134,7 +152,6 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
   Blob *showerblob = bloblist->FindLast(btp::Shower);
   if (showerblob!=NULL && showerblob->Has(blob_status::needs_beams)) {
     Blob * meblob = showerblob->InParticle(0)->ProductionBlob();
-    //msg_Out()<<(*meblob)<<"\n"<<(*showerblob)<<"\n";
     if (meblob->Type()!=btp::Hadron_Decay &&
 	!p_remnants->ExtractShowerInitiators(showerblob))
       return Return_Value::New_Event;
@@ -144,16 +161,17 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
 
 
 PertInterfaceIter Jet_Evolution::SelectInterface(Blob * blob) {
-  string tag("SignalMEs");
+  string tag("");
   switch (int(blob->Type())) {
   case (int(btp::Signal_Process)):
     tag = string("SignalMEs");
     MODEL::as->SetActiveAs(PDF::isr::hard_process);
     break;
   case (int(btp::Hard_Collision)):
-    tag = string("MPIs");
+    if (blob->Has(blob_status::needs_beamRescatter)) tag = string("BR_");
+    tag += string("MPIs");
     if (blob->TypeSpec() == "MinBias" || blob->TypeSpec()=="Shrimps")
-      tag = string("SoftCollisions");
+      tag += string("SoftCollisions");
     MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
     break;
   case (int(btp::Hadron_Decay)):
@@ -211,10 +229,11 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
   case Return_Value::Success:
     if (blob->Type() != ::btp::Hadron_Decay)
       DefineInitialConditions(blob, bloblist, interface);
-    if (blob->NInP() == 1)
-      shower = interface->PerformDecayShowers();
-    if (blob->NInP() == 2)
+    if (blob->NInP() == 1) shower = interface->PerformDecayShowers();
+    else if (blob->NInP() == 2) {
       shower = interface->PerformShowers();
+      blob->UnsetStatus(blob_status::needs_beamRescatter);
+    }
     switch (shower) {
     case 1:
       // No Sudakov rejection

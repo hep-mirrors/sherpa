@@ -62,6 +62,10 @@ namespace REMNANTS {
     virtual ATOOLS::Vec4D IncomingMomentum();
     
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
+    virtual void SetResidualEnergy(const double & E=-1.) {
+      m_residualE = (E>=0.) ? E : p_beam->OutMomentum(m_tag)[0];
+    }
+    
     inline rtp::code                  Type() const       { return m_type; }
     inline size_t                     Beam() const       { return m_beam; }
     inline const ATOOLS::Vec4D      & Position() const   { return m_position; }

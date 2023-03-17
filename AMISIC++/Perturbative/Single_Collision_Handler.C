@@ -78,16 +78,16 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
   do {
     m_pt2  = p_overestimator->TrialPT2(m_pt2);
     m_muf2 = m_mur2 = m_pt2;
-    msg_Out()<<"         * "<<METHOD<<"(pt^2 = "<<m_pt2<<", s = "<<m_S<<"):\n";
     if (m_pt2<m_pt2min) return false;
     if (!SelectRapidities() || !CalcXs() || !CalcMandelstams()) continue;
     dsigmatrue   = (*p_processes)(m_shat,m_that,m_uhat,m_x1,m_x2);
     dsigmaapprox = (*p_overestimator)(m_pt2, m_yvol);
     weight       = dsigmatrue/dsigmaapprox;
-    msg_Out()<<"                xsec ratio = "<<weight<<" from "
-	     <<dsigmatrue<<" / "<<dsigmaapprox<<"\n";
     if (m_ana) AnalyseWeight(weight);
-    if (weight > ran->Get()) success = true;
+    double rand = ran->Get();
+    if (weight>=rand) {
+      success = true;
+    }
   } while (!success);
   SetLastPT2(m_pt2);
   return true;

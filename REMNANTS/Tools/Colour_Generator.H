@@ -54,6 +54,10 @@ namespace REMNANTS {
 		   ATOOLS::Particle * part);
     int  NextColour(const size_t & beam,const size_t & pos);
 
+    inline bool HasColours(const size_t & beam) const {
+      return ((m_cols[beam][0].size()+m_cols[beam][1].size()) > 0);
+    }
+    
     inline std::list<int> & Colours(const size_t & beam,const size_t & pos) {
       return m_cols[beam][pos];
     }

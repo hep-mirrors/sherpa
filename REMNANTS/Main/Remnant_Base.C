@@ -91,7 +91,6 @@ Blob *Remnant_Base::MakeBlob() {
   part->SetStatus(part_status::decayed);
   part->SetFinalMass();
   p_beamblob->AddToInParticles(part);
-  //msg_Out()<<"   * "<<METHOD<<"(beam = "<<m_beam<<"):\n"<<(*p_beamblob)<<"\n";
   return p_beamblob;
 }
 

@@ -101,9 +101,7 @@ bool Kinematics_Generator::TransverseKinematics() {
   case kin_type::hh:
     return TransverseKinematicsHH();
   default:
-    THROW(fatal_error, "Error in " + METHOD + ":\n" +
-                           "   no meaningful kinematics strategy " +
-                           ToString(m_kintype) + "\n");
+    THROW(fatal_error, "no meaningful kinematics strategy " +ToString(m_kintype)+"\n");
   }
 }
 
@@ -217,13 +215,13 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
       scale *= 0.1;
     }
     if (scale < 1.e-3) {
-      msg_Error() << "Warning: " << METHOD
-                  << ": Not able to create the breakup kinematics for "
-                  << p_remnants[0]->GetExtracted()[0] << " and "
-                  << p_remnants[1]->GetExtracted()[0]
-                  << " and the corresponding remnants are "
-                  << p_remnants[0]->GetSpectators()[0] << " and "
-                  << p_remnants[1]->GetSpectators()[0] << "\n";
+      msg_Debugging() << "Warning: " << METHOD
+		      << ": Not able to create the breakup kinematics for "
+		      << p_remnants[0]->GetExtracted()[0] << " and "
+		      << p_remnants[1]->GetExtracted()[0]
+		      << " and the corresponding remnants are "
+		      << p_remnants[0]->GetSpectators()[0] << " and "
+		      << p_remnants[1]->GetSpectators()[0] << "\n";
       return false;
     }
   } while (!CheckHH() && scale > 0.);
@@ -518,10 +516,7 @@ bool Kinematics_Generator::AdjustShowerInitiators() {
     m_newcmsboost = Poincare(newLab);
     size_t catchit(0);
     if (blob != part[1]->DecayBlob() || !BoostConnectedBlob(blob, catchit)) {
-      msg_Error() << "Error in " << METHOD << ": catchit = " << catchit
-                  << " for \n"
-                  << (*blob) << "\n";
-      exit(1);
+      THROW(fatal_error, "wrong blob or nesting too deep.\n");
     }
     for (size_t beam = 0; beam < 2; beam++) {
       plit[beam]++;
@@ -540,11 +535,7 @@ bool Kinematics_Generator::BoostConnectedBlob(ATOOLS::Blob *blob,
   // Iterate recursively through blobs and boost them into their new systems.
   if (blob == NULL || m_boostedblobs.find(blob) != m_boostedblobs.end())
     return true;
-  if (++catchit > 100) {
-    msg_Error() << METHOD << ": Error\n"
-                << "   Blob nesting is too deep.\n";
-    return false;
-  }
+  if (++catchit > 100) THROW(fatal_error, " blob nesting it too deep\n");
   m_boostedblobs.insert(blob);
   btp::code btype = blob->Type();
   for (size_t i = 0; i < blob->NOutP(); ++i) {

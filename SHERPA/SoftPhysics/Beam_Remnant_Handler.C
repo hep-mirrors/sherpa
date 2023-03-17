@@ -24,15 +24,6 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 
-void Beam_Remnant_Handler::AddBunchRescattering(REMNANTS::Remnant_Handler *const remnants,
-					       Soft_Collision_Handler *const softcollisions) {
-  if (remnants && remnants->Id()==PDF::isr::bunch_rescatter) {
-    p_bunchremnants = remnants; p_schandler = softcollisions;
-    m_bunchrescatter = true;
-  }
-}
-
-
 Return_Value::code
 Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
 					    const bool & onlyBunch)
@@ -43,7 +34,6 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Beam) return fbc;
   }
-  msg_Out()<<METHOD<<": only bunch = "<<onlyBunch<<" (rescatter = "<<m_bunchrescatter<<").\n";
   if (!onlyBunch) {
     if (p_shrimps) fbc = p_shrimps->MakeBeamBlobs(bloblist);
     else           fbc = p_remnants->MakeBeamBlobs(bloblist);
@@ -54,6 +44,11 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
   return FillBunchBlobs(bloblist);
 }
 
+Return_Value::code
+Beam_Remnant_Handler::FillRescatterBeamBlobs(Blob_List *const bloblist) {
+  Return_Value::code fbc = p_bunchremnants->MakeBeamBlobs(bloblist,NULL,true);
+  return fbc;
+}
 
 Return_Value::code 
 Beam_Remnant_Handler::TreatNoFill(Blob_List *const bloblist)
@@ -82,12 +77,11 @@ FillBunchBlobs(Blob_List *const  bloblist,
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Bunch) return Return_Value::Nothing;
   }
-  msg_Out()<<"-----------------------------------------------------------------------------\n"
-  	   <<"   * "<<METHOD<<":\n";
   p_beam->FixPositions();
   if (!m_bunchrescatter)
     return (FillSimpleBunchBlobs(bloblist)?Return_Value::Success:Return_Value::Nothing);
   if (FillRescatterBunchBlobs(bloblist)) return p_schandler->GenerateBunchRescatter(bloblist);
+  return Return_Value::Nothing;
 }
 
 bool Beam_Remnant_Handler::FillRescatterBunchBlobs(ATOOLS::Blob_List *const bloblist) {
@@ -98,14 +92,15 @@ bool Beam_Remnant_Handler::FillRescatterBunchBlobs(ATOOLS::Blob_List *const blob
     if ((*bit)->Has(blob_status::needs_beams) && 
 	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
+      if ((*bit)->NInP()==1 && (*bit)->NOutP()==1 &&
+	  !(*bit)->InParticle(0)->Flav().IsHadron() &&
+	  (*bit)->InParticle(0)->Flav()==(*bit)->OutParticle(0)->Flav())
+	(*bit)->UnsetStatus(blob_status::needs_softUE);
       Blob * bunch = FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0));
+      bunch->AddStatus(blob_status::needs_beamRescatter);
       p_schandler->SetPosition(m_beam-1,bunch->Position());
       bloblist->push_front(bunch);
-      if (m_beam>2) {
-	msg_Error()<<"ERROR in "<<METHOD<<": Too many bunch blobs required, "
-		   <<"return 'Error' and hope for the best.\n";
-	return Return_Value::Error;
-      }
+      if (m_beam>2) THROW(fatal_error,"Too many bunch blobs required");
       flag=true;
     }
   }
@@ -120,24 +115,18 @@ bool Beam_Remnant_Handler::FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblis
     if ((*bit)->Has(blob_status::needs_beams) && 
 	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
-      Blob * bunch = FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0));
-      bloblist->push_front(bunch);
-      if (m_beam>2) {
-	msg_Error()<<"ERROR in "<<METHOD<<": Too many bunch blobs required, "
-		   <<"return 'Error' and hope for the best.\n";
-	return Return_Value::Error;
-      }
+      bloblist->push_front(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
+      if (m_beam>2) THROW(fatal_error,"Too many bunch blobs required");
       flag=true;
     }
     else if ((*bit)->Has(blob_status::needs_beams) ||
 	     (*bit)->Type()==btp::Elastic_Collision ||
 	     (*bit)->Type()==btp::Soft_Diffractive_Collision ||
 	     (*bit)->Type()==btp::Quasi_Elastic_Collision) {
-      //(*bit)->UnsetStatus(blob_status::needs_beams);
-      for (size_t i=0;i<(*bit)->NInP();i++) {
-	Blob * bunch = FillBunchBlob((*bit)->InParticle(i)->Beam(),(*bit)->InParticle(i));
-	bloblist->push_front(bunch);
-      }
+      (*bit)->UnsetStatus(blob_status::needs_beams);
+      for (size_t i=0;i<(*bit)->NInP();i++) 
+	bloblist->push_front(FillBunchBlob((*bit)->InParticle(i)->Beam(),
+					   (*bit)->InParticle(i)));
       flag=true;
     }
   }
@@ -176,19 +165,24 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
     p = new Particle(-1,p_beam->GetBeam(beam)->Remnant(),
 		     p_beam->GetBeam(beam)->InMomentum()-particle->Momentum());
     p->SetNumber(0);
-    p->SetStatus(part_status::active);
+    p->SetStatus(part_status::decayed);
     p->SetFinalMass();
     blob->AddToOutParticles(p);
     blob->SetPosition(p_beam->GetBeam(beam)->Position());
+    /*
+    Blob * blob2 = new Blob(); 
+    blob2->SetType(btp::Beam);
+    blob2->SetStatus(blob_status::needs_beams);
+    blob2->SetBeam(beam);
+    blob2->SetId();
+    blob2->SetPosition(p_beam->GetBeam(beam)->Position());
+    blob2->AddToInParticles(p);
+    */
   }
-  //msg_Out()<<"   "<<METHOD<<"(beam = "<<beam<<", particle = "<<blob->InParticle(0)->Flav()<<", "
-  //	   <<"position = "<<blob->Position()<<").\n";
   m_beam++;
   return blob;
 }
 
-void Beam_Remnant_Handler::CleanUp(const size_t & mode)
-{
-  //msg_Out()<<"   * "<<METHOD<<"\n";
+void Beam_Remnant_Handler::CleanUp(const size_t & mode) {
   p_remnants->Reset();
 }

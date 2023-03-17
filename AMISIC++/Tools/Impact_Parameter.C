@@ -51,17 +51,11 @@ double Impact_Parameter::CalculateB(const double & s,const double & pt2) {
   /////////////////////////////////////////////////////////////////////////////////
   double fc       = m_pint.fc(s);
   double hardpart = (*p_sudakov)(s,pt2), softpart, sudakov;
-  msg_Out()<<"     --> "<<METHOD<<"(s = "<<s<<", pt^2 = "<<pt2<<"), "
-	   <<"hardpart = "<<hardpart<<", fc = "<<fc<<".\n";
   int    trials   = 1000;
   do {
     m_b      = p_mo->SelectB();
     softpart = fc * (*this)(s,m_b);
     sudakov  = exp(-softpart * hardpart);
-    //if (m_ana) Analyse(pt2,sudakov,softpart,hardpart);
-    msg_Out()<<"         * Sudakov = "<<sudakov<<" = exp(-"<<softpart<<" * "
-	     <<hardpart<<"), bmax = "<<p_mo->Bmax()<<" fm --> b = "<<m_b<<" fm "
-	     <<"from <O(s)> = "<<m_pint.expO(s)<<".\n";
   } while (sudakov<ran->Get() && (trials--)>0);
   if (trials<=0) {
     msg_Error()<<METHOD<<" throws warning:\n"

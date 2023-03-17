@@ -40,7 +40,8 @@ namespace REMNANTS {
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
-    bool m_check, m_output;
+    bool     m_check, m_output;
+    long int m_fails;
     
     void InitializeRemnants(PDF::ISR_Handler * isr,
 			    BEAM::Beam_Spectra_Handler * beam,
@@ -48,7 +49,10 @@ namespace REMNANTS {
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup(ATOOLS::Blob_List * bloblist);
-    void InitBeamAndSoftBlobs(ATOOLS::Blob_List *const blobs);
+    void InitBeamAndSoftBlobs(ATOOLS::Blob_List *const blobs,
+			      const bool & isrescatter);
+    ATOOLS::Blob_List::iterator FindInsertPositionForRescatter(ATOOLS::Blob_List *const bloblist,
+							       const bool & isrescatter);
  public:
     Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
 		    const std::vector<size_t> & tags);
@@ -60,9 +64,14 @@ namespace REMNANTS {
     void Reset();
     
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List *const blobs,
-					     ATOOLS::Particle_List *const=nullptr);
+					     ATOOLS::Particle_List *const=nullptr,
+					     const bool & isrescatter=false);
 
     void SetImpactParameter(const double & b);
+    
+    inline bool NeedsToMakeBeamBlobs() {
+      return (m_colours.HasColours(0) || m_colours.HasColours(0));
+    }
     inline void SetScale2(const double & scale2) {
       for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
     }

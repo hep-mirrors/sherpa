@@ -301,7 +301,6 @@ Initialization_Handler::~Initialization_Handler()
   if (p_softphotons)   { delete p_softphotons;   p_softphotons   = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
-  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_variations)    { delete p_variations;    p_variations    = NULL; }
   if (p_filter)        { delete p_filter;        p_filter        = NULL; }
   while (m_analyses.size()>0) {

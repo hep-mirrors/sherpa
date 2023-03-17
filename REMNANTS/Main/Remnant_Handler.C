@@ -1,4 +1,5 @@
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -16,7 +17,7 @@ using namespace std;
 
 Remnant_Handler::
 Remnant_Handler(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,const vector<size_t> & tags) :
-  p_softblob(nullptr), m_check(true), m_output(true) {
+  p_softblob(nullptr), m_check(true), m_output(false), m_fails(0) {
   InitializeRemnants(isr, beam,tags);
   DefineRemnantStrategy();
   InitializeKinematicsAndColours();
@@ -26,6 +27,8 @@ Remnant_Handler::~Remnant_Handler() {
   for (size_t i(0); i < 2; ++i) {
     if (p_remnants[i]!=nullptr) delete p_remnants[i];
   }
+  if (m_fails>0)
+    msg_Out()<<"Remnant handling yields "<<m_fails<<" fails in creating good beam breakups.\n";
 }
 
 void Remnant_Handler::
@@ -105,12 +108,8 @@ void Remnant_Handler::DefineRemnantStrategy() {
            (p_remnants[0]->Type() == rtp::intact &&
             p_remnants[1]->Type() == rtp::lepton))
     m_type = strat::simple;
-  else {
-    msg_Error() << METHOD << " throws error: no strategy found for remnants "
-                << p_remnants[0]->Type() << " & " << p_remnants[1]->Type()
-                << "\n";
-    exit(1);
-  }
+  else 
+    THROW(fatal_error,"no strategy found for remnants");
 }
 
 void Remnant_Handler::InitializeKinematicsAndColours() {
@@ -171,12 +170,12 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
 
 Return_Value::code
 Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
-                               Particle_List *const particlelist) {
+                               Particle_List *const particlelist,const bool & isrescatter) {
   /////////////////////////////////////////////////////////////////////////////////
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   /////////////////////////////////////////////////////////////////////////////////
-  InitBeamAndSoftBlobs(bloblist);
+  InitBeamAndSoftBlobs(bloblist,isrescatter);
   /////////////////////////////////////////////////////////////////////////////////
   // Fill in the transverse momenta through the Kinematics_Generator.
   // Check for colour connected parton-pairs including beam partons and
@@ -186,18 +185,18 @@ Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
   if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist)) {
     // || !m_decorrelator(p_softblob)) {
     Reset();
-    msg_Error()
-        << "Warning in " << METHOD
-        << ": FillBlobs or CheckBeamBreakup failed. Will return new event\n"
-	<<(*bloblist)<<"\n";
+    m_fails++;
+    if (m_output)
+      msg_Out()<< "Warning in " << METHOD
+	       << ": FillBlobs or CheckBeamBreakup failed. Will return new event\n"
+	       <<(*bloblist)<<"\n";
     return Return_Value::New_Event;
   }
   Reset();
-  //msg_Out()<<"   * "<<METHOD<<" is successful:"<<(*p_softblob)<<"\n";
   return Return_Value::Success;
 }
 
-void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
+void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist,const bool & isrescatter) {
   /////////////////////////////////////////////////////////////////////////////////
   // Making a new blob (softblob) to locally compensate 4 momentum.
   // Ultimately, it will reflect different strategies of how to compensate
@@ -216,12 +215,15 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
   // beam remnants.  To visualise this better, here the soft blob is
   // inserted after both beam and shower blobs.
   /////////////////////////////////////////////////////////////////////////////////
+  Blob_List::iterator pos=FindInsertPositionForRescatter(bloblist,isrescatter);
   if (!(m_type == strat::simple || m_type == strat::ll)) {
     p_softblob = m_kinematics.MakeSoftBlob();
     if (m_type == strat::DIS1 || m_type == strat::DIS2)
       bloblist->push_back(p_softblob);
-    else
-      bloblist->push_front(p_softblob);
+    else {
+      if (isrescatter) bloblist->insert(pos,p_softblob);
+      else bloblist->push_front(p_softblob);
+    }
   }
   /////////////////////////////////////////////////////////////////////////////////
   // Look for shower blobs that need beams and unset the flag
@@ -237,9 +239,28 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
   /////////////////////////////////////////////////////////////////////////////////
   m_colours.ResetFlags();
   for (size_t beam = 0; beam < 2; beam++) {
-    bloblist->push_front(p_remnants[beam]->MakeBlob());
+    if (isrescatter) bloblist->insert(pos,p_remnants[beam]->MakeBlob());
+    else bloblist->push_front(p_remnants[beam]->MakeBlob());
   }
 }
+
+Blob_List::iterator Remnant_Handler::
+FindInsertPositionForRescatter(Blob_List *const bloblist,const bool & isrescatter) {
+  Blob_List::iterator pos=bloblist->begin();
+  if (!isrescatter) return pos;
+  bool found = false;
+  do {
+    if ((*pos)->Type()==btp::Shower) {
+      for (size_t i=0;i<(*pos)->NInP();i++) {
+	if ((*pos)->InParticle(i)->ProductionBlob()==NULL) { found = true; break; }
+      }
+    }
+    pos++;
+  } while (!found && pos!=bloblist->end());
+  if (pos!=bloblist->begin()) { pos--; if (pos!=bloblist->begin()) pos--;}
+  return pos;
+}
+
 
 bool Remnant_Handler::CheckBeamBreakup(Blob_List *bloblist) {
   /////////////////////////////////////////////////////////////////////////////////
@@ -280,8 +301,8 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
   // Extracting a particle from a remnant only works for positive energies.
   /////////////////////////////////////////////////////////////////////////////////
   if (part->Momentum()[0] < 0.) {
-    msg_Error() << METHOD << " yields shower with negative incoming energies.\n"
-                << (*part->DecayBlob()) << "\n";
+    //msg_Error() << METHOD << " yields shower with negative incoming energies.\n"
+    //          << (*part->DecayBlob()) << "\n";
     return false;
   }
   return p_remnants[beam]->Extract(part);

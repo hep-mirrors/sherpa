@@ -27,38 +27,96 @@ Beam_Remnants::~Beam_Remnants() {
   }
 }
 
-Return_Value::code Beam_Remnants::Treat(ATOOLS::Blob_List* bloblist)
+Return_Value::code Beam_Remnants::Treat(Blob_List* bloblist)
 {
-  if (bloblist->empty()) {
-    msg_Error()<<"Beam_Remnants::Treat("<<bloblist<<"): "<<endl
-	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
-	       <<"   Continue and hope for the best."<<endl;
-    return Return_Value::Error;
-  }
-  Blob *signal(bloblist->FindFirst(btp::Signal_Process));
-  if (signal && signal->NInP()<2) return Return_Value::Nothing;
   bool onlyBunch = false;
+  switch (EstablishNeed(bloblist)) {
+  case 10: return DealWithRescattering(bloblist);
+  case 2:  return StandardTreatment(bloblist,false);
+  case 1:  return StandardTreatment(bloblist,true);
+  case 0:
+  default:
+    break;
+  }
+  return Return_Value::Nothing;
+}
+
+Return_Value::code Beam_Remnants::StandardTreatment(Blob_List* bloblist,const bool & onlyBunch)
+{
+  Return_Value::code rv = p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist,onlyBunch); 
+  if (m_ana) Analyse(bloblist);
+  //msg_Out()<<"-----------------------------------------------------\n"
+  //	   <<METHOD<<"\n"<<(*bloblist)<<"\n"
+  //	   <<"-----------------------------------------------------\n";
+  return rv;  
+}
+
+Return_Value::code Beam_Remnants::DealWithRescattering(Blob_List* bloblist)
+{
+  Blob * shower = bloblist->FindLast(btp::Shower);
+  if (shower) {
+    //msg_Out()<<(*shower)<<"\n"
+    //	     <<"-----------------------------------------------------\n";
+    if (p_beamremnanthandler->NeedsToDealWithRescattering()) {
+      return p_beamremnanthandler->FillRescatterBeamBlobs(bloblist);
+    }
+  }
+  //////////////////////////////////////////////////////////////////////////////////
+  // No blobs to be created or filled for bunch-rescattering - there is no
+  // hard process in need of it
+  // TODO: Extend this for elastic, diffractive, soft etc. scattering
+  //////////////////////////////////////////////////////////////////////////////////
+  for (Blob_List::iterator bit=bloblist->begin();
+       bit!=bloblist->end();bit++) {
+    if ((*bit)->Type()==btp::Bunch) (*bit)->UnsetStatus(blob_status::needs_beamRescatter);
+  }
+  return Return_Value::Nothing;  
+}
+
+
+int Beam_Remnants::EstablishNeed(Blob_List * bloblist) {
+  if (bloblist->empty()) THROW(fatal_error,"Blob list is empty.");
+  //////////////////////////////////////////////////////////////////////////////////
+  // Nothing to be done for 1->N processes or if we already have filled bunch
+  // blobs without rescattering
+  //////////////////////////////////////////////////////////////////////////////////
+  Blob *signal(bloblist->FindFirst(btp::Signal_Process));
+  if (signal && signal->NInP()<2)                             return 0;
+  //////////////////////////////////////////////////////////////////////////////////
+  // Some open bunch rescattering business to be taken care off.
+  //////////////////////////////////////////////////////////////////////////////////
+  Blob * bunch(bloblist->FindFirst(btp::Bunch));
+  if (bunch && bunch->Has(blob_status::needs_beamRescatter)) return 10;
+  //////////////////////////////////////////////////////////////////////////////////
+  // Beam blobs already exists, and they do not need beams any more -
+  // so nothing to be done here.
+  //////////////////////////////////////////////////////////////////////////////////
+  Blob * beam(bloblist->FindFirst(btp::Beam));
+  if (beam && !beam->Has(blob_status::needs_beams))           return 0;
+  bool onlyBunch = false;
+  //////////////////////////////////////////////////////////////////////////////////
+  // Funny or absent signal blob - suggest we have a case of soft or semi-soft
+  // scattering - check if we need beam blobs at all.
+  //////////////////////////////////////////////////////////////////////////////////
   if (!signal || signal->Has(blob_status::needs_signal)) {
     Blob * hard  = bloblist->FindFirst(btp::Hard_Collision);
     Blob * qelas = bloblist->FindFirst(btp::Elastic_Collision);
     if (!qelas) qelas = bloblist->FindFirst(btp::Soft_Diffractive_Collision);        
     if (!qelas) qelas = bloblist->FindFirst(btp::Quasi_Elastic_Collision);        
-    if (!hard && !qelas) return Return_Value::Nothing;
-    if (qelas) onlyBunch = true;
+    if (!hard && !qelas) return 0;
+    if (qelas)           return 1;
   }
   else {
     btp::code signal_type = signal->Type();
     if (signal_type==btp::Elastic_Collision ||
 	signal_type==btp::Soft_Diffractive_Collision ||
-	signal_type==btp::Quasi_Elastic_Collision)
-      onlyBunch = true;
+	signal_type==btp::Quasi_Elastic_Collision) return 1;
   }
-  Blob * beam(bloblist->FindFirst(btp::Beam));
-  if (beam && !beam->Has(blob_status::needs_beams)) return Return_Value::Nothing;
-  if (m_ana) Analyse(bloblist);
-  return p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist,onlyBunch);
+  //////////////////////////////////////////////////////////////////////////////////
+  // Standard case, fill beam blobs in full beam remnant treatment
+  //////////////////////////////////////////////////////////////////////////////////
+  return 2;
 }
-
 
 void Beam_Remnants::CleanUp(const size_t & mode) 
 {
@@ -75,7 +133,7 @@ void Beam_Remnants::InitHistos() {
   m_histos["B"]     = new Histogram(0,0.,20.,200);
 }
 
-void Beam_Remnants::Analyse(ATOOLS::Blob_List * blobs) {
+void Beam_Remnants::Analyse(Blob_List * blobs) {
   Vec4D B1 = p_beamremnanthandler->GetRemnants()->GetRemnant(0)->Position(), B2 = -B1;
   m_histos["B"]->Insert(2.*B1.PPerp());
   for (deque<Blob *>::iterator bit=blobs->begin();bit!=blobs->end();bit++) {

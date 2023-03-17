@@ -27,23 +27,27 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist)
   bool didit(false);
   for (size_t blit(0);blit<bloblist->size();++blit) {
     Blob* blob=(*bloblist)[blit];
-    if (p_dechandler && blob->Has(blob_status::needs_harddecays)) {
-      DEBUG_FUNC("Treating blob "<<blob->Id());
-      didit = true;
-      p_dechandler->SetBlobList(bloblist);
+    if (blob->Has(blob_status::needs_harddecays)) {
+      if (!p_dechandler) {
+	blob->UnsetStatus(blob_status::needs_harddecays);
+      }
+      else {
+	DEBUG_FUNC("Treating blob "<<blob->Id());
+	didit = true;
+	p_dechandler->SetBlobList(bloblist);
       if (blob->OutParticle(0)->Flav().Kfcode() == kf_instanton) {
         blob->UnsetStatus(blob_status::needs_harddecays);
         continue;
       }
-      try {
-        if (p_dechandler->SpinCorr()) {
-          Blob* signal=bloblist->FindFirst(btp::Signal_Process);
-          if (signal) {
-            METOOLS::Amplitude2_Tensor* amps(NULL);
+	try {
+	  if (p_dechandler->SpinCorr()) {
+	    Blob* signal=bloblist->FindFirst(btp::Signal_Process);
+	    if (signal) {
+	      METOOLS::Amplitude2_Tensor* amps(NULL);
             METOOLS::Amplitude2_Tensor* prod_amps(NULL);
             bool Pol_CrossSec = p_dechandler->PolCrossSec();
             bool Spin_Coor = p_dechandler->SpinCorr();
-            Blob_Data_Base* data = (*signal)["ATensor"];
+	      Blob_Data_Base* data = (*signal)["ATensor"];
             if (data) {
               amps=data->Get<METOOLS::Amplitude2_Tensor*>();
               // save production amplitude tensor before it is changed by the spin correlation algorithm
@@ -51,8 +55,8 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist)
                 prod_amps = new METOOLS::Amplitude2_Tensor(*amps);
               }
             }
-            Particle_Vector outparts=blob->GetOutParticles();
-            p_dechandler->TreatInitialBlob(blob, amps, outparts);
+	      Particle_Vector outparts=blob->GetOutParticles();
+	      p_dechandler->TreatInitialBlob(blob, amps, outparts);
             // writing polarisation fractions to Weights_Map of signal blob
 
             if (Pol_CrossSec) {
@@ -84,16 +88,18 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist)
                 THROW(fatal_error, "No Amplitude2_Tensor for calculation of polarized cross sections found")
               }
             }
-          }
-        }
-        else p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
-      } catch (Return_Value::code ret) {
-        return ret;
-      }
-      blob->UnsetStatus(blob_status::needs_harddecays);
-      if (!bloblist->FourMomentumConservation()) {
-	msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
-	return Return_Value::New_Event;
+	    }
+	  }
+	  else p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
+	} catch (Return_Value::code ret) {
+	  blob->UnsetStatus(blob_status::needs_harddecays);
+	  return ret;
+	}
+	blob->UnsetStatus(blob_status::needs_harddecays);
+	if (!bloblist->FourMomentumConservation()) {
+	  msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
+	  return Return_Value::New_Event;
+	}
       }
     }
   }

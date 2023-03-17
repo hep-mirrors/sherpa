@@ -16,13 +16,27 @@ REMNANTS:
     FORM:      Double_Gaussian
     FRACTION1: 0.5
     RADIUS1:   0.75
-    RADIUS2:   0.5
+    RADIUS2:   1.50
 
 AMISIC:
   nS_bins: 10
-  PT_Min: 1.
-  SIGMA_ND_NORM: 0.4
+  PT_Min:        2.5
+  PT_0:          2.2
+  SIGMA_ND_NORM: 1.0
 
+COLOUR_RECONNECTIONS:
+  MODE:      0
+  Q_0:       2.0
+  R_0:       0.5
+  etaR:      0.25
+  Reshuffle: 1.
+
+INTRINSIC_KPERP:
+  MEAN:      1.0 # 0.0
+  SIGMA:     1.5 # 1.5
+  MAX:       5.0 # 3.0
+  CUT_EXPO:  5.0 # 5.0
+  
 
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
@@ -40,5 +54,5 @@ SELECTORS:
 
 ANALYSIS: Rivet
 RIVET:
-  --analyses: ATLAS_2014_I1315949
-ANALYSIS_OUTPUT: DY_MI_new
+  --analyses: [ATLAS_2014_I1315949, ATLAS_2011_S9131140]
+ANALYSIS_OUTPUT: DY_MoreKT_PT0_2.2

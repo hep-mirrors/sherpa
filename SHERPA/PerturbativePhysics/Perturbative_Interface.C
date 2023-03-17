@@ -54,7 +54,8 @@ Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh
                                                Shower_Handler *const psh):
   p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_sc(NULL), p_shower(psh),
   p_ampl(NULL), m_globalkfac(0.), m_maxkfac(0.),
-  m_bbarmode(mets_bbar_mode::none)
+  m_bbarmode(mets_bbar_mode::none),
+  m_fails_Moms(0), m_fails_Ampls(0), m_fails_Masses(0)
 {
   Settings& s = Settings::GetMainSettings();
   m_bbarmode = s["METS_BBAR_MODE"].SetDefault(mets_bbar_mode::enabled|
@@ -67,17 +68,17 @@ Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh
 Perturbative_Interface::Perturbative_Interface
 (MI_Handler *const mi,Shower_Handler *const psh):
   p_me(NULL), p_mi(mi), p_hd(NULL), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL) {}
+  p_ampl(NULL), m_fails_Moms(0), m_fails_Ampls(0), m_fails_Masses(0) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Decay_Handler_Base *const hdh,Shower_Handler *const psh):
   p_me(NULL), p_mi(NULL), p_hd(hdh), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL) {}
+  p_ampl(NULL), m_fails_Moms(0), m_fails_Ampls(0), m_fails_Masses(0) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Soft_Collision_Handler *const sch,Shower_Handler *const psh):
   p_me(NULL), p_mi(NULL), p_hd(NULL), p_sc(sch), p_shower(psh),
-  p_ampl(NULL) {}
+  p_ampl(NULL), m_fails_Moms(0), m_fails_Ampls(0), m_fails_Masses(0) {}
 
 Perturbative_Interface::~Perturbative_Interface() 
 {
@@ -85,6 +86,18 @@ Perturbative_Interface::~Perturbative_Interface()
     Cluster_Amplitude *campl(p_ampl);
     while (campl->Prev()) campl=campl->Prev();
     campl->Delete();
+  }
+  if (m_fails_Moms>0 || m_fails_Ampls>0 || m_fails_Masses>0) {
+    msg_Out()<<"Perturbative Interface(";
+    if (p_me) msg_Out()<<"Matrix Elements      ";
+    else if (p_mi) msg_Out()<<"Multiple Interactions";
+    else if (p_hd) msg_Out()<<"Hard Decays          ";
+    else if (p_sc) msg_Out()<<"Soft Collisions      ";
+    msg_Out()<<"):";
+    if (m_fails_Moms>0)   { msg_Out()<<" "<<m_fails_Moms<<" momentum fails"; }
+    if (m_fails_Ampls>0)  { msg_Out()<<" "<<m_fails_Ampls<<" ampl fails"; }
+    if (m_fails_Masses>0) { msg_Out()<<" "<<m_fails_Masses<<" mass fails"; }
+    msg_Out()<<"\n";
   }
 }
 
@@ -116,23 +129,19 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     p_ampl=p_mi->ClusterConfiguration(blob);
     if (p_ampl==NULL) return Return_Value::Retry_Event;
     if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
-      msg_Tracking()<<METHOD<<"(): Invalid beams. Retry event."<<std::endl;
+      m_fails_Moms++;
       return Return_Value::Retry_Event;
     }
     p_mi->SetMassMode(1);
     int stat(p_mi->ShiftMasses(p_ampl));
     if (stat<0) {
-      msg_Error()<<METHOD<<"(): MI Mass shift failed. Reject event.\n"
-		 <<(*blob)<<"\n";
-      exit(1);
+      m_fails_Masses++;
       return Return_Value::Retry_Event;
     }
     if (stat==1) {
       stat=p_mi->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(p_ampl);
       if (stat!=1) {
-	msg_Error()<<METHOD<<"(): MI Reclustering failed. Reject event.\n"
-		   <<(*blob)<<"\n";
-	exit(1);
+	m_fails_Ampls++;
 	return Return_Value::Retry_Event;
       }
     }
@@ -142,18 +151,20 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   }
   if (p_hd) {
     p_ampl=p_hd->ClusterConfiguration(blob);
-    if (!p_shower->GetShower()->PrepareShower(p_ampl))
+    if (!p_shower->GetShower()->PrepareShower(p_ampl)) {
+      m_fails_Ampls++;
       return Return_Value::New_Event;
+    }
     return Return_Value::Success;
   }
   if (p_sc) {
     p_ampl=p_sc->ClusterConfiguration(blob);
     if (p_ampl==NULL) {
-      msg_Error()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
+      m_fails_Ampls++;
       return Return_Value::New_Event;
     }
     if (!p_shower->GetShower()->PrepareShower(p_ampl,true)) {
-      msg_Error()<<METHOD<<": could not prepare shower.\n"; 
+      m_fails_Ampls++;
       return Return_Value::New_Event;
     }
     return Return_Value::Success;
@@ -162,11 +173,11 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   p_ampl=p_me->Process()->Get<Single_Process>()->Cluster
     (p_me->Process()->Integrator()->Momenta());
   if (p_ampl==NULL) {
-    msg_Error()<<METHOD<<"(): Clustering failed. Reject event."<<std::endl;
+    m_fails_Ampls++;
     return Return_Value::New_Event;
   }
   if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
-    msg_Tracking()<<METHOD<<"(): Invalid beams. Reject event."<<std::endl;
+    m_fails_Moms++;
     return Return_Value::New_Event;
   }
   m_weightsmap.Clear();
@@ -186,7 +197,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   if (p_dec) {
     p_dec->SetCluster(p_me->Shower()->GetShower()->GetClusterDefinitions());
     if (!p_dec->DefineInitialConditions(p_ampl, blob)) {
-      msg_Tracking()<<METHOD<<"(): Decay clustering failed. Reject event."<<std::endl;
+      m_fails_Ampls++;
       return Return_Value::Retry_Event;
     }
   }
@@ -206,8 +217,10 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     }
     p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
   }
-  if (!p_shower->GetShower()->PrepareShower(p_ampl)) 
+  if (!p_shower->GetShower()->PrepareShower(p_ampl)) {
+    m_fails_Ampls++;
     return Return_Value::New_Event;
+  }
   return Return_Value::Success;
 }
 
