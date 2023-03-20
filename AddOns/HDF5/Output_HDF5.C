@@ -465,7 +465,6 @@ namespace SHERPA {
 	  m_pcache.push_back(std::vector<double>(m_npprops,0.));
 	if (m_hasnlo) {
 	  std::vector<double> neprops(m_nneprops,-1.);
-	  neprops[0]=(m_ecache.size()+m_offset)*m_nmax;
 	  m_necache.push_back(neprops);
 	  for (size_t i(0);i<m_nmax;++i)
 	    m_npcache.push_back(std::vector<double>(m_nnpprops,0.));
