@@ -320,8 +320,12 @@ Initialization_Handler::~Initialization_Handler()
     m_mihandlers.erase(m_mihandlers.begin());
   }
   while (m_remnanthandlers.size()>0) {
-    delete m_remnanthandlers.begin()->second;
-    m_remnanthandlers.erase(m_remnanthandlers.begin());
+    REMNANTS::Remnant_Handler * rh = m_remnanthandlers.begin()->second;
+    for (REMNANTS::Remnant_Handler_Map::iterator rit=m_remnanthandlers.begin();
+	 rit!=m_remnanthandlers.end();rit++) {
+      if (rit->second==rh) m_remnanthandlers.erase(rit);
+    }
+    delete rh;
   }
   while (m_schandlers.size()>0) {
     delete m_schandlers.begin()->second;

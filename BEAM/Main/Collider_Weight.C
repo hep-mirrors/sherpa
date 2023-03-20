@@ -72,9 +72,7 @@ double Collider_Weight::operator()(ATOOLS::Flavour *flin) {
     m_weight = p_beams[0]->Weight(flavour1) * p_beams[1]->Weight(flavour2);
     break;
   case collidermode::unknown:
-    msg_Error() << "Error in " << METHOD << ": unknown mode.\n"
-                << "   Will exit the run.\n";
-    exit(1);
+    THROW(fatal_error,"unknown mode.");
   }
   return m_weight;
 }

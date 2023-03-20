@@ -1,5 +1,6 @@
 #include "AMISIC++/Perturbative/MI_Process.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE AMISIC::XS_Base
@@ -60,13 +61,8 @@ MI_Process::MI_Process(const vector<Flavour> & flavs) :
   m_masslessIS((flavs[0].Kfcode()<4 || flavs[0].Kfcode()==21) &&
 	       (flavs[1].Kfcode()<4 || flavs[1].Kfcode()==21))
 {
-  if (flavs.size()!=4) {
-    msg_Error()<<"Error in "<<METHOD<<":\n"
-	       <<"   Tried to initialize MPI process with wrong number of "
-	       <<"flavours ("<<m_flavs.size()<<" --> "<<m_name<<".\n"
-	       <<"   Will exit the run.\n";
-    exit(1);
-  }
+  if (flavs.size()!=4)
+    THROW(fatal_error,"Tried to initialize MPI process with wrong number of flavours.");
   m_flavs.resize(flavs.size());
   m_momenta.resize(m_flavs.size());
   m_masses.resize(m_flavs.size());

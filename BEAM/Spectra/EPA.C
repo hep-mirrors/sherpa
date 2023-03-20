@@ -116,8 +116,7 @@ void EPA::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {
 }
 
 double EPA::CosInt::GetCosInt(double X) {
-  if (X < 0.)
-    exit(1);
+  if (X < 0.) THROW(fatal_error,"method called with negative X");
   ATOOLS::Gauss_Integrator integrator(this);
   return integrator.Integrate(X, 100000., 1.e-4, 1);
 }

@@ -1,5 +1,6 @@
 #include "AMISIC++/Perturbative/QCD_Processes.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -146,12 +147,7 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
       flavs[2].IsQuark() && !flavs[2].IsAnti() && 
       flavs[3]==flavs[2].Bar()) {
     if (flavs[2].Mass()<=1.e-6) return new gg_qqbar();
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for gg -> QQbar "
-		 <<"with Q = "<<flavs[2]<<".\n";
-      exit(1);
-    }
+    THROW(fatal_error,"Massive quarks not yet enabled in gg -> QQbar");
   }
   return NULL;
 }
@@ -216,12 +212,7 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
   if (flavs[0].IsQuark() && flavs[0]==flavs[1].Bar() &&
       flavs[2]==Flavour(kf_gluon) && flavs[3]==Flavour(kf_gluon)) {
     if (flavs[0].Mass()<1.e-6) return new qqbar_gg();
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for QQbar->gg "
-		 <<"with Q = "<<flavs[0]<<".\n";
-      exit(1);
-    }
+    THROW(fatal_error,"Massive quarks not yet enabled in QQbar->gg");
   }
   return NULL;
 }
@@ -286,25 +277,13 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
   if (flavs.size()!=4) return NULL;
   if (flavs[0].IsQuark() && flavs[0]==flavs[2] &&
       flavs[1]==Flavour(kf_gluon) && flavs[3]==Flavour(kf_gluon)) {
-    if (flavs[0].Mass()<1.e-6) {
-      return new qg_qg();
-    }
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for Qg->Qg "
-		 <<"with Q = "<<flavs[0]<<".\n";
-      exit(1);
-    }
+    if (flavs[0].Mass()<1.e-6) return new qg_qg();
+    THROW(fatal_error,"Massive quarks not yet enabled in Qg->Qg");
   }
   else if (flavs[1].IsQuark() && flavs[1]==flavs[3] &&
 	   flavs[0]==Flavour(kf_gluon) && flavs[2]==Flavour(kf_gluon)) {
     if (flavs[1].Mass()<1.e-6) return new qg_qg();
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for gQ->gQ "
-		 <<"with Q = "<<flavs[1]<<".\n";
-      exit(1);
-    }
+    THROW(fatal_error,"Massive quarks not yet enabled in gQ->gQ");
   }
   return NULL;
 }
@@ -365,15 +344,7 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
   if (flavs[0].IsQuark() && flavs[1]==flavs[0] &&
       flavs[2]==flavs[0] && flavs[3]==flavs[0]) {
     if (flavs[0].Mass()<1.e-6) return new qq_qq();
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for QQ->QQ "
-		 <<"with Q = "<<flavs[0]<<".\n";
-      exit(1);
-      vector<double> masses;
-      masses.resize(4);
-      for (size_t i=0;i<4;i++) masses[i] = flavs[i].Mass();
-    }
+    THROW(fatal_error,"Massive quarks not yet enabled in QQ->QQ");
   }
   return NULL;
 }
@@ -434,15 +405,7 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
   if (flavs[0].IsQuark() && flavs[1]==flavs[0].Bar() &&
       flavs[2]==flavs[0] && flavs[3]==flavs[2].Bar()) {
     if (flavs[0].Mass()<1.e-6) return new qqbar_qqbar();
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for QQBAR->QQBAR "
-		 <<"with Q = "<<flavs[0]<<".\n";
-      exit(1);
-      vector<double> masses;
-      masses.resize(4);
-      for (size_t i=0;i<4;i++) masses[i] = flavs[i].Mass();
-    }
+    THROW(fatal_error,"Massive quarks not yet enabled in QQbar->QQbar");
   }
   return NULL;
 }
@@ -486,16 +449,7 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
   if (flavs[0].IsQuark() && flavs[1].IsQuark() &&
       flavs[0]!=flavs[1] && flavs[2]==flavs[0] && flavs[3]==flavs[1]) {
     if (flavs[0].Mass()<1.e-6 && flavs[1].Mass()<1.e-6) return new q1q2_q1q2();
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for qq'->qq' "
-		 <<"with q, q' = "<<flavs[0]<<", "<<flavs[1]<<".\n";
-      exit(1);
-      vector<double> masses;
-      masses.resize(4);
-      for (size_t i=0;i<4;i++) masses[i] = flavs[i].Mass();
-      //return new q1q2_q1q2(masses);
-    }
+    THROW(fatal_error,"Massive quarks not yet enabled in QQ'->QQ'");
   }
   return NULL;
 }
@@ -530,18 +484,8 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
   if (flavs.size()!=4) return NULL;
   if (flavs[0].IsQuark() && flavs[1]==flavs[0].Bar() &&
       flavs[2].IsQuark() && flavs[2]!=flavs[0] && flavs[3]==flavs[2].Bar()) {
-    if (flavs[0].Mass()<1.e-6 && flavs[1].Mass()<1.e-6)
-      return new q1q1bar_q2q2bar();
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for qqbar->q'q'bar"
-		 <<"with q, q' = "<<flavs[0]<<", "<<flavs[2]<<".\n";
-      exit(1);
-      vector<double> masses;
-      masses.resize(4);
-      for (size_t i=0;i<4;i++) masses[i] = flavs[i].Mass();
-      //return new q1q1bar_q2q2bar(masses);
-    }
+    if (flavs[0].Mass()<1.e-6 && flavs[1].Mass()<1.e-6) return new q1q1bar_q2q2bar();
+    THROW(fatal_error,"Massive quarks not yet enabled in QQbar'->QQbar'");
   }
   return NULL;
 }

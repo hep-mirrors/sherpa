@@ -38,7 +38,8 @@ Return_Value::code Hadronization::Treat(ATOOLS::Blob_List* bloblist)
     return Return_Value::Retry_Event;
   }
   Return_Value::code ret = (*p_reconnectionhandler)(bloblist);
-  if (ret!=Return_Value::Success && ret!=Return_Value::Nothing) exit(1);
+  if (ret!=Return_Value::Success && ret!=Return_Value::Nothing)
+    THROW(fatal_error,"unexpected (and undefined) result.")
   return p_fragmentationhandler->Hadronize(bloblist);
 }
 

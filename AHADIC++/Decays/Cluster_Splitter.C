@@ -2,6 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -166,15 +167,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
     wt   *= exp(-arg/z);
   }
 
-  if (wt>norm) {
-    msg_Error()<<"Error in "<<METHOD<<": wt(z) = "<<wt<<"("<<z<<") "
-	       <<"for wtmax = "<<norm<<" "
-	       <<"[a, b, c = "<<m_a[cnt]<<", "<<m_b[cnt]<<", "<<m_c[cnt]<<"] from \n"
-	       <<"a part = "<<pow(z,m_a[cnt])<<"/"<<pow(zmax,m_a[cnt])<<", "
-	       <<"b part = "<<pow(1.-z,m_b[cnt])<<"/"<<pow(1.-zmin,m_b[cnt])<<", "
-	       <<"c part = "<<exp(-arg/z)<<"/"<<exp(-arg/zmax)<<".\n";
-    exit(1);
-  }
+  if (wt>norm) THROW(fatal_error,"wt is larger than assumed maxwt - this should never happen.");
   return value;
 }
 

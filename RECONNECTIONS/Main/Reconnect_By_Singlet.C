@@ -109,10 +109,7 @@ Particle * Reconnect_By_Singlet::FindStart() {
 
 Particle * Reconnect_By_Singlet::FindNext(const size_t & col) {
   std::map<unsigned int, ATOOLS::Particle *>::iterator cpit = m_cols[1].find(col);
-  if (cpit==m_cols[1].end()) {
-    msg_Error()<<"Error in "<<METHOD<<" did not find particle with colour[1] = "<<col<<"\n";
-    exit(1);
-  }
+  if (cpit==m_cols[1].end()) THROW(fatal_error,"did not find particle with the right colour.");
   Particle * part = cpit->second;
   m_cols[1].erase(cpit);
   return part;

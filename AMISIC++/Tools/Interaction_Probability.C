@@ -133,7 +133,7 @@ void Interaction_Probability::OutputTables(MI_Processes * processes) {
 	     <<std::setw(10)<<p_fc->Value(bin)<<"\n";
   }
   msg_Out()<<"-------------------------------------------------------------------------------\n";
-  exit(1);
+  THROW(normal_exit,"testing complete");
 }
 
 double P_Integrand::operator()(double b) {

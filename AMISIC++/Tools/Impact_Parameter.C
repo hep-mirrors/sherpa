@@ -174,6 +174,6 @@ void Impact_Parameter::Test() {
   }
   histoB.Finalize();
   histoB.Output("B_Distribution.dat");
-  exit(1);
+  THROW(normal_exit,"testing complete");
 }
 

@@ -2,6 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -35,7 +36,6 @@ bool Cluster_Decayer::operator()(bool breakit) {
 
 bool Cluster_Decayer::Treat(Cluster * cluster) {
   bool mustdecay = p_softclusters->MustPromptDecay(cluster);
-  //msg_Out()<<METHOD<<": "<<mustdecay<<" ===========================\n";
   if (!mustdecay && m_splitter((*cluster)[0],(*cluster)[1])) {
     delete cluster;
     return true;
@@ -58,7 +58,6 @@ bool Cluster_Decayer::Treat(Cluster * cluster) {
     //cluster should have decayed into clusters - throw error
     break;
   }
-  msg_Tracking()<<METHOD<<" throws error for:\n"<<(*cluster)<<"\n";
   return false;
 }
 
@@ -106,8 +105,6 @@ void Cluster_Decayer::Test(const double & Q, const Flavour & flav,
 	    histos[string("xb_hadrons")]->Insert(mom.PSpat()/momz);
 	  else
 	    histos[string("x_hadrons")]->Insert(mom.PSpat()/momz);
-	  //msg_Out()<<"* "<<mom.PPerp()<<" "<<mom.Y()<<" "
-	  //	   <<(*hadrons->front());
 	  delete hadrons->front();
 	  hadrons->pop_front();
 	}
@@ -124,6 +121,4 @@ void Cluster_Decayer::Test(const double & Q, const Flavour & flav,
     delete histo;
   }
   histos.clear();
-
-  exit(1);
 }

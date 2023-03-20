@@ -5,6 +5,7 @@
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace AHADIC;
@@ -56,7 +57,7 @@ void Hadronisation_Parameters::Init(string shower)
     multipletconstructor.PrintMultiplets();
     p_stransitions->Print();
     p_dtransitions->Print(true);
-    exit(1); // exit after output of parameters
+    THROW(normal_exit,"test wavefunctions etc.");
   }
 }
 

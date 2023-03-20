@@ -1,6 +1,7 @@
 #include "AHADIC++/Formation/Gluon_Decayer.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include <cassert>
 
@@ -61,10 +62,7 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
   }
   if (p_singlet->size()==2) {
     bool flag = Trivial(p_singlet->front(),p_singlet->back(),false);
-    if (!flag) {
-      msg_Error()<<"Couldn't deal with 2-parton singlet.\n"<<(*singlet)<<"\n";
-      exit(1);
-    }
+    if (!flag) THROW(fatal_error,"Couldn't deal with 2-parton singlet.");
     delete p_singlet;
     return flag;
   }

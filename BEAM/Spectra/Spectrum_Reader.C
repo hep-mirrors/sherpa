@@ -270,7 +270,7 @@ void Spectrum_Reader::ReadFromFile()
 
   // --- this is a test ---
   PrintSpectra("tspec");
-  //  exit(0);
+  exit(0);
 }
 
 

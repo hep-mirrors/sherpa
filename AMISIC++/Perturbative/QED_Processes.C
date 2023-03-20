@@ -51,13 +51,7 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
        flavs[2].IsPhoton())) {
     if ((flavs[0].IsQuark() && flavs[0].Mass()<1.e-6) ||
 	(flavs[1].IsQuark() && flavs[1].Mass()<1.e-6)) return new qg_qgamma();
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for Qg->Qgamma "
-		 <<"with Q = "<<(flavs[0].IsQuark()?flavs[0]:flavs[1])<<".\n";
-      exit(1);
-    }
-
+    THROW(fatal_error,"no massive matrix element yet for Qg->Qgamma.");
   }
   return NULL;
 }
@@ -89,12 +83,7 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
   if (flavs[0].IsQuark() && flavs[1]==flavs[0].Bar() &&
       flavs[2].IsGluon() && flavs[3].IsPhoton()) {
     if (flavs[0].Mass()<=1.e-6) return new qqbar_ggamma();
-    else {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   no massive matrix element yet for QQbar -> ggamma"
-		 <<"with Q = "<<flavs[0]<<".\n";
-      exit(1);
-    }
+    THROW(fatal_error,"no massive matrix element yet for QQbar->g gamma.");
   }
   return NULL;
 }

@@ -1,6 +1,7 @@
 #include "AHADIC++/Tools/Double_Transitions.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include <cmath>
 
@@ -141,13 +142,8 @@ Double_Transitions::~Double_Transitions() {
 
 Double_Transition_List *
 Double_Transitions::operator[](const Flavour_Pair & flavs) {
-  if (m_transitions.find(flavs)==m_transitions.end()) {
-    msg_Error()<<"Error in "<<METHOD<<"["<<m_transitions.size()<<"] for "
-	       <<"["<<flavs.first<<", "<<flavs.second<<"]:\n"
-	       <<"   Illegal flavour combination, will return 0.\n";
-    exit(1);
-    return 0;
-  }
+  if (m_transitions.find(flavs)==m_transitions.end())
+    THROW(fatal_error,"Illegal flavour combination.");
   return m_transitions.find(flavs)->second;
 }
 

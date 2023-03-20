@@ -1,6 +1,7 @@
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 #include <list>
 #include <set>
 
@@ -526,7 +527,7 @@ bool Colour_Generator::ConstrainedQQFlows(const size_t & tbeam) {
     replacecol = true;
   }
   if (replacecol) return true;
-  exit(1);
+  THROW(fatal_error,"no replacement colour found.");
   return true;
 }
 
@@ -540,10 +541,8 @@ bool Colour_Generator::ConstrainedColourFlows(const size_t & tbeam) {
   if (tflav.IsGluon() && aflav.IsQuark()) return ConstrainedGQFlows(tbeam);
   if (tflav.IsQuark() && aflav.IsGluon()) return ConstrainedQGFlows(tbeam);
   if (tflav.IsQuark() && aflav.IsQuark()) return ConstrainedQQFlows(tbeam);
-  msg_Error()<<METHOD<<" no obvious solution available for "
-	     <<"["<<tflav<<"]"<<"["<<aflav<<"] and we should not end up here.\n"
-	     <<"   Will exit the run.\n";
-  exit(1);
+  THROW(fatal_error,"cannot fix colouir flows.");
+  return false;
 }
 
 void Colour_Generator::AssignColours(const size_t & beam,Particle * trip,Particle * anti) {

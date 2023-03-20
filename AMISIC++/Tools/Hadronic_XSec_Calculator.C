@@ -94,7 +94,7 @@ void Hadronic_XSec_Calculator::TestXSecs() {
     (*this)(sqr(*E));
     Output();
   }
-  exit(1);
+  THROW(normal_exit,"testing complete");
 }
 
 void Hadronic_XSec_Calculator::operator()(double s)
@@ -110,9 +110,7 @@ void Hadronic_XSec_Calculator::operator()(double s)
   case xsec_type::nucleon_photon:  CalculateHGammaXSecs(1);      break;
   case xsec_type::photon_photon:   CalculatePhotonPhotonXSecs(); break;
   default:
-    msg_Error()<<"Error in "<<METHOD<<".  Not yet implemented for type = "<<m_type<<".\n"
-	       <<"   Will exit the run.\n";
-    exit(1);
+    THROW(fatal_error, "Not yet implemented for unknown type");
   }
   m_xsnd    = m_xstot - m_xsel - m_xssdA - m_xssdB - m_xsdd;
   ////////////////////////////////////////////////////////////////////////////////////////////

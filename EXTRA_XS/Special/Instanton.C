@@ -198,7 +198,6 @@ namespace EXTRAXS {
 	     <<Sigmahat()*rpa->Picobarn()<<" pb, "
 	     <<"1/rho = "<<Rho()<<" GeV, "
 	   <<"<Ngluons> = "<<Ngluons()<<".\n";
-    exit(1);
   }
 
   struct instantonScale {
@@ -452,12 +451,10 @@ void XS_instanton::Test() {
     msg_Out()<<"Run for E = "<<E<<": <ngluons> = "<<m_mean_Ngluons
 	     <<" --> "<<double(totn)/double(maxtrials)<<" generated.\n";    
   }
-  exit(1);
 }
 
 bool XS_instanton::SetColours(const Vec4D_Vector& mom) {
-  msg_Error()<<METHOD<<" shouldn't be called. Will terminate run.\n";
-  exit(1);
+  THROW(fatal_error,"this method should never be called.");
 }
 
 DECLARE_TREEME2_GETTER(XS_instanton,"XS_instanton")

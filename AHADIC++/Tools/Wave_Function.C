@@ -1,6 +1,7 @@
 #include "AHADIC++/Tools/Wave_Function.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -29,12 +30,7 @@ Wave_Function::~Wave_Function()
 void Wave_Function::AddToWaves(Flavour_Pair * pair,double weight)
 {
   if (m_waves.find(pair)==m_waves.end()) m_waves[pair] = weight;
-  else {
-    msg_Error()<<"Error in "<<METHOD<<":\n"
-	       <<"   "<<pair->first<<"/"<<pair->second<<" already in map.\n"
-	       <<"   Will ignore this and continue."<<endl;
-    exit(1);
-  }
+  else THROW(fatal_error,"double entry in map - should not happen.");
   if (pair->first!=pair->second.Bar()) m_barrable = true;
 }
 

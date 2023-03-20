@@ -2,6 +2,7 @@
 #include "AMISIC++/Perturbative/QCD_Processes.H"
 #include "AMISIC++/Perturbative/QED_Processes.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -80,7 +81,7 @@ double MI_Process_Group::Scale(const double & pt2) const {
   //////////////////////////////////////////////////////////////////////////////////
   switch (m_muR_scheme) {
   case scale_scheme::code::PT_with_Raps:
-    exit(1);
+    THROW(fatal_error,"Scale scheme PT_with_Rapidities not implemented yet.");
   case scale_scheme::code::PT:
   default:
     return (pt2+m_pt02);
