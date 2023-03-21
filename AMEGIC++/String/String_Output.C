@@ -166,7 +166,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
 	// new file
 	fnumber++;
 	char numb[5];
-	sprintf(numb,"%i",fnumber);	
+	snprintf(numb,5,"%i",fnumber);	
 	cfile.open((cfilename+string("_")+string(numb)+string(".C")).c_str());
 	slib.AddToCMakefile(Makefile,pathID,string("V_")+string(numb));
 	cfile<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
@@ -199,7 +199,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
 	  // new file
 	  fnumber++;
 	  char numb[5];
-	  sprintf(numb,"%i",fnumber);	
+	  snprintf(numb,5,"%i",fnumber);	
 	  cfile.open((cfilename+string("_")+string(numb)+string(".C")).c_str());
 	  slib.AddToCMakefile(Makefile,pathID,string("V_")+string(numb));
 	  header<<"  void Calculate_M"<<ihel<<"_"<<divnum<<"();"<<endl;

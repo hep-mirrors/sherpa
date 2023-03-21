@@ -197,7 +197,7 @@ int Channel_Generator_NPV::MakeChannel(int& echflag,int n,string& path,string& p
 
   //add Channel
   char name[22];
-  sprintf(name,"C%i_%i",nout,n);
+  snprintf(name,22,"C%i_%i",nout,n);
 
   string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+path+string("/")+
                     string(name)+string(".C");
@@ -997,7 +997,7 @@ string Channel_Generator_NPV::LinkedMasses(Point* p)
 {
   if (p->left==0) {
     char help[4];
-    sprintf(help,"%i",0);
+    snprintf(help,4,"%i",0);
     if (p->number<10) help[0]=p->number+48;
     else help[0]=p->number+55;
     return string(help);

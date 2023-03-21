@@ -624,7 +624,7 @@ void Vertex::TexOutput()
       }
       
       char help[30];
-      sprintf(help,"./tex/Vertex3_%i.tex",fmfcount);
+      snprintf(help,30,"./tex/Vertex3_%i.tex",fmfcount);
 
       sf.open(help);
       sf<<"\\documentclass[a4paper,10pt]{article}"<<endl;
@@ -778,7 +778,7 @@ void Vertex::TexOutput()
       }
       
       char help[30];
-      sprintf(help,"./tex/Vertex4_%i.tex",fmfcount);
+      snprintf(help,30,"./tex/Vertex4_%i.tex",fmfcount);
       sf.open(help);
       sf<<"\\documentclass[a4paper,10pt]{article}"<<endl;
       sf<<"\\newcommand{\\nnb}{\\nonumber}"<<endl;

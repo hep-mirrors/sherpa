@@ -466,10 +466,10 @@ void Hadron_Decay_Channel::LatexOutput(std::ostream& f, double totalwidth)
     f<<"$"<<m_flavours[i].TexName()<<"$ ";
   f<<" & ";
   char helpstr[100];
-  sprintf( helpstr, "%.4f", Width()/totalwidth*100. );
+  snprintf( helpstr, 100, "%.4f", Width()/totalwidth*100. );
   f<<helpstr;
   if( DeltaWidth() > 0. ) {
-    sprintf( helpstr, "%.4f", DeltaWidth()/totalwidth*100. );
+    snprintf( helpstr, 100, "%.4f", DeltaWidth()/totalwidth*100. );
     f<<" $\\pm$ "<<helpstr;
   }
   f<<" \\% ";
@@ -479,10 +479,10 @@ void Hadron_Decay_Channel::LatexOutput(std::ostream& f, double totalwidth)
   f<<"\\\\"<<endl;
   if((m_diagrams.size()>0 &&
       ((HD_ME_Base*) m_diagrams[0])->Name()!="Generic")) {
-    sprintf( helpstr, "%.4f", IWidth()/totalwidth*100. );
+    snprintf( helpstr, 100, "%.4f", IWidth()/totalwidth*100. );
     f<<" & "<<helpstr;
     if( IDeltaWidth() > 0. ) {
-      sprintf( helpstr, "%.4f", IDeltaWidth()/totalwidth*100. );
+      snprintf( helpstr, 100, "%.4f", IDeltaWidth()/totalwidth*100. );
       f<<" $\\pm$ "<<helpstr;
     }
     f<<" \\% ";

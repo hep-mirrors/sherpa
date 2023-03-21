@@ -90,11 +90,11 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   string fsrpath0= string("fsrchannels");
   string fsrpath = fsrpath0;
   char hlp[4];
-  sprintf(hlp,"%i",nout);
+  snprintf(hlp,4,"%i",nout);
   fsrpath += string(hlp);
   fsrpath0 = fsrpath;
   if (cnt>=maxchannels) {
-    sprintf(hlp,"_%i",cnt/maxchannels);
+    snprintf(hlp,4,"_%i",cnt/maxchannels);
     fsrpath = fsrpath+string(hlp);
   }
   string fsrp = path+string("/")+fsrpath;
@@ -139,8 +139,8 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	  if (!RSearchInDB(mapname,chID)) {
 	    bool hit;
 	    do {
-	      if (nin==2) sprintf(procname,"C%i_%i",nout,cnt);
-	      else sprintf(procname,"CD%i_%i",nout,cnt);
+	      if (nin==2) snprintf(procname,12,"C%i_%i",nout,cnt);
+	      else snprintf(procname,12,"CD%i_%i",nout,cnt);
 	      string help = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+fsrp+string(procname);
 	      hit = My_In_File::FileInDB(help);
 	      if (hit) cnt++;
@@ -149,7 +149,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	  // making directory
 	    if (cnt%maxchannels==0) {
 	      if (cnt>0) {
-		sprintf(hlp,"_%i",cnt/maxchannels);
+		snprintf(hlp,4,"_%i",cnt/maxchannels);
 		fsrpath = fsrpath0 + string(hlp);
 		fsrp = path+string("/")+fsrpath;
 	      }

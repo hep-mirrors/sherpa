@@ -190,7 +190,7 @@ int String_Generator::GetFnumber(long int fl)
 Kabbala String_Generator::Number(int n,Complex value)
 {
   char help[10];
-  sprintf(help,"Z[%i]",n);
+  snprintf(help,10,"Z[%i]",n);
   return Kabbala(string(help),value);
 }
 

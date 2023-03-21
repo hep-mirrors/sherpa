@@ -373,7 +373,7 @@ VA_0_PiPiPiPi3Charged::KS::KS( string path, GeneralModel _md )
   char helps[20];
   double absol, phase;
   for (int i=0; i<4; i++) {
-    sprintf( helps,"alpha_%i",i );
+    snprintf( helps,20,"alpha_%i",i );
     absol = _md(helps+string("_abs"), 0. );
     phase = _md(helps+string("_phase"), 0. );
     m_Alpha[i]  = Complex( absol*cos(phase), absol*sin(phase) );
@@ -382,22 +382,22 @@ VA_0_PiPiPiPi3Charged::KS::KS( string path, GeneralModel _md )
   m_SumAlpha = sum;
 
   for (int i=0; i<4; i++) {
-    sprintf( helps, "beta_omega_pi_%i", i );
+    snprintf( helps, 20, "beta_omega_pi_%i", i );
     absol = _md( helps+string("_abs"), 0. );
     phase = _md( helps+string("_phase"), 0. );
     m_Beta_opi[i] = Complex( absol*cos(phase), absol*sin(phase) );
      
-    sprintf( helps, "beta_a1_pi_%i", i );
+    snprintf( helps, 20, "beta_a1_pi_%i", i );
     absol = _md( helps+string("_abs"), 0. );
     phase = _md( helps+string("_phase"), 0. );
     m_Beta_api[i] = Complex( absol*cos(phase), absol*sin(phase) );
      
-    sprintf( helps, "beta_sigma_rho_%i", i );
+    snprintf( helps, 20, "beta_sigma_rho_%i", i );
     absol = _md( helps+string("_abs"), 0. );
     phase = _md( helps+string("_phase"), 0. );
     m_Beta_srh[i] = Complex( absol*cos(phase), absol*sin(phase) );
      
-    sprintf( helps, "beta_f0_rho_%i", i );
+    snprintf( helps, 20, "beta_f0_rho_%i", i );
     absol = _md( helps+string("_abs"), 0. );
     phase = _md( helps+string("_phase"), 0. );
     m_Beta_frh[i] = Complex( absol*cos(phase), absol*sin(phase) );

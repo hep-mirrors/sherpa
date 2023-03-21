@@ -51,8 +51,8 @@ void ATOOLS::GenerateStackTrace(std::ostream &ostr,
 	unsigned long libaddr=(unsigned long)info.dli_fbase;
 	unsigned long offset=(addr>=libaddr)?addr-libaddr:libaddr-libaddr;
 	char cmd[4096];
-	sprintf(cmd,"addr2line -se %s 0x%016lx 2>/dev/null",
-		info.dli_fname,offset);
+	snprintf(cmd,4096,"addr2line -se %s 0x%016lx 2>/dev/null",
+		 info.dli_fname,offset);
 	if (FILE *pf=popen(cmd,"r")) {
 	  char buf[2048];
 	  if (fgets(buf,2048,pf)) {
@@ -61,8 +61,8 @@ void ATOOLS::GenerateStackTrace(std::ostream &ostr,
 	  }
 	  if (linfo=="??:0") {
 	    pclose(pf);
-	    sprintf(cmd,"addr2line -se %s 0x%016lx 2>/dev/null",
-		    info.dli_fname,addr);
+	    snprintf(cmd,4096,"addr2line -se %s 0x%016lx 2>/dev/null",
+		     info.dli_fname,addr);
 	    pf=popen(cmd,"r");
 	    if (fgets(buf,2048,pf)) {
 	      linfo=buf;
