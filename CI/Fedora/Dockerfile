@@ -7,11 +7,11 @@ RUN  yum -y  install  dnf-plugins-core \
                       texinfo latexmk 'tex(latex)' ghostscript 'tex(sectsty.sty)' \
                       openmpi environment-modules  openmpi-devel  \
                       python3 python3-devel swig python3-matplotlib && yum -y clean all
-#Packages coming from HEPrpms ->
+# Packages coming from HEPrpms ->
 RUN  dnf -y copr enable averbyts/HEPrpms &&  yum -y  install  gosam  fastjet fastjet-devel  YODA-devel Rivet-devel Rivet Rivet-devel hztool qd qd-devel \
                       blackhat-devel blackhat recola cernlib cernlib-devel cernlib-static MCFM MG5_aMC openloops \ 
                       f90cache  && yum -y update lhapdf && yum -y clean all
-#Packages coming from HEPrpms <-
+# Packages coming from HEPrpms <-
 RUN  yum -y  install  sphinx python3-sphinx python3-sphinxcontrib-bibtex python3-sphinx* \
                       'tex(atbegshi.sty)' 'tex(babel.sty)' 'tex(bigintcalc.sty)' 'tex(bitset.sty)' 'tex(etexcmds.sty)' 'tex(gettitlestring.sty)'   \
                       'tex(iftex.sty)' 'tex(ifvtex.sty)' 'tex(infwarerr.sty)' 'tex(intcalc.sty)' 'tex(kvdefinekeys.sty)' 'tex(kvsetkeys.sty)'  \
