@@ -140,7 +140,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
 
 
 
-.check_commit_CentOS: &check_commit_CentOS
+.check_commit_CentOS:
   stage: check_if_dockerfile_updated
   image: 
         name: alpine/git
@@ -160,7 +160,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
       - todo-CentOS_$FREL.txt
     expire_in: 1 day
 
-.check_commit_Archlinux: &check_commit_Archlinux
+.check_commit_Archlinux:
   stage: check_if_dockerfile_updated
   image: 
         name: alpine/git
@@ -181,7 +181,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
     expire_in: 1 day
 
 
-.check_commit_Fedora: &check_commit_Fedora
+.check_commit_Fedora:
   stage: check_if_dockerfile_updated
   image: 
         name: alpine/git
@@ -201,7 +201,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
       - todo-Fedora_$FREL.txt
     expire_in: 1 day
 
-.build_image_Archlinux: &build_image_Archlinux
+.build_image_Archlinux:
   stage: build_docker_image
   image: 
         name: gcr.io/kaniko-project/executor:debug
@@ -212,7 +212,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
   variables:
     GIT_DEPTH: "1"
 
-.build_image_Fedora: &build_image_Fedora
+.build_image_Fedora:
   stage: build_docker_image
   image: 
         name: gcr.io/kaniko-project/executor:debug
@@ -223,7 +223,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
   variables:
     GIT_DEPTH: "1"
 
-.build_image_Fedora_alt: &build_image_Fedora_alt
+.build_image_Fedora_alt:
   stage: build_docker_image
   image: docker:20.10.16
   services:
@@ -236,7 +236,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
   variables:
     GIT_DEPTH: "1"
 
-.build_image_CentOS: &build_image_CentOS
+.build_image_CentOS:
   stage: build_docker_image
   image: 
         name: gcr.io/kaniko-project/executor:debug
@@ -248,12 +248,8 @@ LCG_102_x86_64-centos7-gcc11-opt:
     GIT_DEPTH: "1"
 
 
-.any: &any
+.any:
   image: $CI_REGISTRY_IMAGE:${OS}_${FREL}
-  stage: build
-#  only:
-#    variables:
-#     - $CI_SERVER_HOST=="gitlab.cern.ch"
   stage: build
   before_script:
     - set -x
@@ -283,13 +279,13 @@ LCG_102_x86_64-centos7-gcc11-opt:
     - if [ "${TOOLSET}" == "LLVM" ]; then export CXX=clang++; export CC=clang; export FC=gfortran; fi  
     - if [ "${TOOLSET}" == "GNU" ]; then export CXX=g++; export CC=gcc; export FC=gfortran; fi   
 
-.any-cmake: &any-cmake
+.any-cmake:
   extends: .any
   script:
       - *ex
       - *cmake
 
-.any-cmake-ccache: &any-cmake-ccache
+.any-cmake-ccache:
   extends: .any
   script:
     - export CCACHE_BASEDIR=`pwd`/cmake-$TOOLSET-cache-$FREL    
@@ -300,8 +296,8 @@ LCG_102_x86_64-centos7-gcc11-opt:
     - export F90CACHE_TMPDIR=`pwd`/tmpf90cache
     - mkdir -p ${F90CACHE_TMPDIR}
     - export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_Fortran_COMPILER_LAUNCHER=f90cache"
-    - if [ "${FREL}" == "7" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi
-    - if [ "${FREL}" == "0" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi
+    - 'if [ "${FREL}" == "7" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
+    - 'if [ "${FREL}" == "0" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
     - *ex
     - *cmake
   cache:
