@@ -34,6 +34,7 @@ Event_Handler::Event_Handler():
   m_checkweight = s["CHECK_WEIGHT"].SetDefault(0).Get<int>();
   m_decayer = s["DECAYER"].SetDefault(kf_none).Get<int>();
   m_lastrss=0;
+  s_objects.push_back(this);
 }
 
 Event_Handler::~Event_Handler()
@@ -498,7 +499,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 }
 
 void Event_Handler::Finish() {
-  MPISyncXSAndErrMaps();
+  while (Communicate(1)<0);
   msg_Info()<<"Summarizing the run may take some time ...\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
@@ -595,11 +596,6 @@ void Event_Handler::MPISync()
       mpi->Allreduce(&m_maxweight, 1, MPI_DOUBLE, MPI_MAX);
   }
 #endif
-}
-
-void Event_Handler::MPISyncXSAndErrMaps()
-{
-  MPISync();
   m_mwgtmapsum = m_wgtmapsum;
   m_mwgtmapsumsqr = m_wgtmapsumsqr;
 #ifdef USING__MPI
@@ -645,7 +641,7 @@ Uncertain<double> Event_Handler::TotalNominalXS()
 
 Uncertain<double> Event_Handler::TotalNominalXSMPI()
 {
-  MPISync();
+  while (Communicate(1)<0);
   if (m_mn == 0.0)
     return {0.0, 0.0};
 
