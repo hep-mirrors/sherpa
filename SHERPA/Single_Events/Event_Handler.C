@@ -35,6 +35,7 @@ Event_Handler::Event_Handler():
   Data_Reader reader(" ",";","!","=");
   m_checkweight = reader.GetValue<int>("CHECK_WEIGHT", 0);
   m_lastrss=0;
+  s_objects.push_back(this);
 }
 
 Event_Handler::~Event_Handler() 
@@ -462,7 +463,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 }
 
 void Event_Handler::Finish() {
-  MPISync();
+  while (Communicate(1)<0);
   msg_Info()<<"In Event_Handler::Finish : "
 	    <<"Summarizing the run may take some time.\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -564,7 +565,6 @@ double Event_Handler::TotalErr()
 
 double Event_Handler::TotalXSMPI()
 {
-  MPISync();
   if (m_mn==0.0) return 0.0;
   return m_msum/m_mn;
 }

@@ -37,7 +37,7 @@
 #define HEPMCNS HepMC
 #endif
 
-// #define USING__Rivet_MPI_Merge
+#define USING__Rivet_MPI_Merge
 
 namespace SHERPARIVET {
   typedef std::pair<std::string, int> RivetMapKey;

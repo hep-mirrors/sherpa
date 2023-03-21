@@ -71,6 +71,19 @@ namespace ATOOLS {
 
   extern My_MPI* mpi;
 
+  class MPI_Object {
+  protected:
+
+    static std::vector<MPI_Object*> s_objects;
+
+  public:
+
+    virtual void MPISync() = 0;
+
+    int Communicate(const int mode=0);
+
+  };// end of class MPI_Object
+
 }// end of namespace ATOOLS
 
 #endif
