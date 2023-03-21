@@ -134,7 +134,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
       - LARG="$LARG "-DSHERPA_ENABLE_BLACKHAT=OFF 
       - cmake -S . -B BUILD  $LARG
       - cmake --build BUILD -j 10
-      - ctest --test-dir BUILD --output-on-failure -E '^Maintest-Amegic.*' '^Maintest-rivet.*'
+      - ctest --test-dir BUILD --output-on-failure
 ##########################################################################
 ##########################################################################
 
@@ -273,7 +273,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
     - export COMPILATIONEND=$(date +%s)
     - $CMAKE --install BUILD
     - echo $COMPILATIONSTART $COMPILATIONEND $(echo $COMPILATIONEND-$COMPILATIONSTART | bc -l)
-    - $CTEST --test-dir BUILD --output-on-failure -E '^Maintest-Amegic.*' '^Maintest-rivet.*'
+    - $CTEST --test-dir BUILD --output-on-failure
 
 .ex:  &ex
     - if [ "${TOOLSET}" == "LLVM" ]; then export CXX=clang++; export CC=clang; export FC=gfortran; fi  
