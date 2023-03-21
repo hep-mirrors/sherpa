@@ -289,8 +289,16 @@ namespace LHEH5 {
 	  return NULL;
 	}
 	if (e[0].pz<0 && e[1].pz>0) {
+	  msg_Debugging()<<"Flip initial states\n";
 	  std::swap<Particle>(e[0],e[1]);
 	  std::swap<double>(e.z1,e.z2);
+	  if (e.ctparts.size()) {
+	    std::swap<Particle>(e.ctparts[0],e.ctparts[1]);
+	    if (e.ijt<2) e.ijt=1-e.ijt;
+	    if (e.kt<2) e.kt=1-e.kt;
+	    if (e.i<2) e.i=1-e.i;
+	    if (e.k<2) e.k=1-e.k;
+	  }
 	}
 	p_ampl = Cluster_Amplitude::New();
 	for (size_t i(0);i<e.size();++i) {

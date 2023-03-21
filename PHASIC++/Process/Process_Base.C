@@ -239,12 +239,12 @@ class Order_Flavour {
     if (a.Priority()<b.Priority()) return 0;
     if (!a.Strong()&&b.Strong()) return 1;
     if (a.Strong()&&!b.Strong()) return 0;
+    if (a.Mass()>b.Mass()) return 1;
+    if (a.Mass()<b.Mass()) return 0;
     if (p_fmm) {
       if (Order_Multi(a,b)) return 1;
       if (Order_Multi(b,a)) return 0;
     }
-    if (a.Mass()>b.Mass()) return 1;
-    if (a.Mass()<b.Mass()) return 0;
     if (Order_SVFT(a,b)) return 1;
     if (Order_SVFT(b,a)) return 0;
     if (!a.IsAnti()&&b.IsAnti()) return 1;
@@ -275,15 +275,6 @@ void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
 void Process_Base::SortFlavours(Process_Info &pi,const int mode)
 {
   FMMap fmm;
-  for (size_t i(0);i<pi.m_ii.m_ps.size();++i) {
-    const Flavour *hfl=&pi.m_ii.m_ps[i].m_fl;
-    if (fmm.find(int(hfl->Kfcode()))==fmm.end()) 
-      fmm[int(hfl->Kfcode())]=0;
-    if (hfl->IsFermion()) {
-      fmm[int(hfl->Kfcode())]+=10;
-      if (!hfl->IsAnti()) fmm[int(hfl->Kfcode())]+=10;
-    }
-  }
   for (size_t i(0);i<pi.m_fi.m_ps.size();++i) {
     const Flavour *hfl=&pi.m_fi.m_ps[i].m_fl;
     if (fmm.find(int(hfl->Kfcode()))==fmm.end()) 
@@ -446,12 +437,6 @@ void Process_Base::SortFlavours
     if (i<ampl->NIn()) {
       ampl->Leg(i)->SetFlav(ampl->Leg(i)->Flav().Bar());
       il.push_back(ampl->Leg(i));
-      int kfc(ampl->Leg(i)->Flav().Kfcode());
-      if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
-      if (ampl->Leg(i)->Flav().IsFermion()) {
-	fmm[kfc]+=10;
-	if (!ampl->Leg(i)->Flav().IsAnti()) fmm[kfc]+=10;
-      }
     }
     else {
       if (dec[i]) continue;
@@ -460,7 +445,7 @@ void Process_Base::SortFlavours
       if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
       if (ampl->Leg(i)->Flav().IsFermion()) ++fmm[kfc];
     }
-  if (mode&1) SortFlavours(il,s_usefmm?&fmm:NULL);
+  if (mode&1) SortFlavours(il,NULL);
   for (size_t i(0);i<cs.size();++i) {
     ampl->CreateLeg(Vec4D(),cs[i]->m_fl,ColorID(),cs[i]->m_id);
     fl.push_back(ampl->Legs().back());
