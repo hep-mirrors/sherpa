@@ -41,7 +41,8 @@ Weight_Info *Process_Group::OneEvent(const int wmode,
   if (p_read) {
     Cluster_Amplitude *ampl(p_read->ReadEvent());
     if (ampl==NULL) return NULL;
-    SortFlavours(ampl);
+    if (p_read->SubEvt()==NULL ||
+	p_read->SubEvt()->m_n==0) SortFlavours(ampl);
     std::string pname(GenerateName(ampl));
     msg_Debugging()<<*ampl<<"\n";
     msg_Debugging()<<"Found process name "<<pname<<"\n";
