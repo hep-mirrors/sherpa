@@ -7,6 +7,7 @@
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/Tools/Definitions.H"
 #include "ATOOLS/Math/Uncertain.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Phys/Weights.H"
 
@@ -16,7 +17,7 @@ namespace SHERPA {
   typedef std::vector<Event_Phase_Handler *> Phase_List;
   typedef Phase_List::iterator Phase_Iterator;
 
-  class Event_Handler {
+  class Event_Handler: public ATOOLS::MPI_Object {
   private:
 
     long int m_lastparticlecounter, m_lastblobcounter;
@@ -49,10 +50,6 @@ namespace SHERPA {
     int  IterateEventPhases(eventtype::code & mode);
 
     void MPISync();
-
-    // This entails costly operations and should not be done too often (e.g.
-    // only after a successful run).
-    void MPISyncXSAndErrMaps();
 
   public:
 
