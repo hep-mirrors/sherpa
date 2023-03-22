@@ -193,7 +193,7 @@ double Scale_Setter_Base::CalculateScale
   else {
     bool calc(false);
     for (size_t i(0);i<p_subs->size();++i)
-      if ((*p_subs)[i]->m_trig) {
+      if ((*p_subs)[i]->m_trig || (*p_subs)[i]->IsReal()) {
 	p_caller=p_proc;
 	PreCalc(p,mode);
 	calc=true;
@@ -202,7 +202,7 @@ double Scale_Setter_Base::CalculateScale
     if (!calc) return m_scale[stp::fac];
     for (size_t i(0);i<p_subs->size();++i) {
       NLO_subevt *sub((*p_subs)[i]);
-      if (!sub->m_trig) {
+      if (!(sub->m_trig || (*p_subs)[i]->IsReal())) {
 	for (size_t j(0);j<sub->m_mu2.size();++j) sub->m_mu2[j]=0.0;
 	if (sub->p_ampl) {
 	  sub->p_ampl->Delete();
