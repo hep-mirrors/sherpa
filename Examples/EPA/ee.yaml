@@ -1,11 +1,11 @@
-EVENTS: 10M
+EVENTS: 100000
 
 BEAMS:             [11, -11]
 BEAM_ENERGIES:     103
 BEAM_SPECTRA:      EPA
 PDF_LIBRARY:       SASGSherpa
 PDF_SET:           SAS2D
-MI_HANDLER:        None
+MI_HANDLER:        Amisic
 MPI_PDF_LIBRARY:   SASGSherpa
 MPI_PDF_SET:       SAS2D
 BEAM_RESCATTERING: None
@@ -18,10 +18,10 @@ REMNANTS:
     RADIUS2:   0.5
 
 AMISIC:
-  nS_bins: 10
-  PT_Min: 1.
-  MATTER_FORM: Single_Gaussian
-  SIGMA_ND_NORM: 0.4
+  nS_bins:       20
+  PT_Min:        2.
+  Eta:           0.08
+  SIGMA_ND_NORM: 1.0
 
 
 ALPHAS(MZ): 0.1188
@@ -42,4 +42,4 @@ RIVET:
   --analyses: [OPAL_2008_I754316]
   --ignore-beams: 1
   USE_HEPMC_SHORT: 1
-ANALYSIS_OUTPUT: ee_None_new
+ANALYSIS_OUTPUT: WW_in_ee
