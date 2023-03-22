@@ -14,17 +14,22 @@ Reconnect_Statistical::~Reconnect_Statistical() {
 }
 
 void Reconnect_Statistical::SetParameters() {
-  // Pmode is the mode for the distance measure in momentum space.
-  // 0 - mode is "linear":    dist = log(1+sij/Q0^2)
-  // 1 - mode is "power law": dist = exp[eta * log(1+sij/Q0^2) ] 
+  // Pmode is the mode for the distance measure in momentum space, 
+  // based on the notion of the string are law, cf. hep-ph/9812423, where the
+  // area of a "string" made up of two coloured particles i and j is given by
+  // pi*pj-mi*mj (note we assume the gluons to distribute their momentum equally
+  // between the two colours).
+  // 0 - mode is "linear":    dist = etaQ * (pipj-mimj)/norm
+  // 1 - mode is "power law": dist = log[1+etaQ * (pipj-mimj)/norm]
+  // where norm is the total area of the ordered ensemble
   auto s = Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
   m_Pmode     = s["PMODE"].SetDefault(0).Get<int>();
   m_Q02       = sqr(s["Q_0"].SetDefault(1.00).Get<double>());
-  m_etaQ      = sqr(s["etaQ"].SetDefault(0.16).Get<double>());
-  m_R02       = sqr(s["R_0"].SetDefault(1.00).Get<double>());
+  m_etaQ      = sqr(s["etaQ"].SetDefault(0.1).Get<double>());
+  m_R02       = sqr(s["R_0"].SetDefault(100.).Get<double>());
   m_etaR      = sqr(s["etaR"].SetDefault(0.16).Get<double>());
-  m_reshuffle = 1./(s["Reshuffle"].SetDefault(1./3.).Get<double>());
-  m_kappa     = 1./(s["kappa"].SetDefault(2.).Get<double>());
+  m_reshuffle = s["Reshuffle"].SetDefault(1./9.).Get<double>();
+  m_kappa     = s["kappa"].SetDefault(2.).Get<double>();
 }
 
 void Reconnect_Statistical::Reset() {
@@ -35,7 +40,7 @@ void Reconnect_Statistical::Reset() {
 int Reconnect_Statistical::operator()(Blob_List *const blobs) {
   if (!HarvestParticles(blobs))               return -1;
   if (m_cols[0].empty() && m_cols[1].empty()) return 0;
-  m_norm = TotalLength()/pow(m_parts[0].size(),m_kappa);
+  m_norm = TotalLength();
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
        cit!=m_cols[0].end();cit++) m_collist.push_back(cit->first);
   size_t N = m_collist.size();
@@ -76,7 +81,12 @@ bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
   }
   double dist0  = Distance(part[0],part[2]), dist1  = Distance(part[1],part[3]);
   double ndist0 = Distance(part[0],part[3]), ndist1 = Distance(part[1],part[2]);
-  double prob   = exp(-((ndist0+ndist1)-(dist0+dist1))/m_norm);
+  double prob   = m_reshuffle * exp(-m_etaQ*((ndist0+ndist1)-(dist0+dist1)));
+  //msg_Out()<<METHOD<<"(dist = "<<dist0<<" + "<<dist1<<" --> "<<ndist0<<" + "<<ndist1<<"): prob = "<<prob<<" for\n"
+  //	   <<(*part[0])<<"\n"
+  //	   <<(*part[1])<<"\n"
+  //	   <<(*part[2])<<"\n"
+  //	   <<(*part[3])<<"\n";
   if (prob>ran->Get()) {
     m_cols[1][col[0]] = part[3];
     m_cols[1][col[1]] = part[2];
@@ -94,17 +104,18 @@ void Reconnect_Statistical::UpdateColours() {
 }
 
 double Reconnect_Statistical::Distance(Particle * trip,Particle * anti) {
+  return MomDistance(trip,anti);
   return (MomDistance(trip,anti) *
 	  PosDistance(trip,anti) *
 	  ColDistance(trip,anti));
 }
 
 double Reconnect_Statistical::MomDistance(Particle * trip,Particle * anti) {
-  double p1p2 = ( ((trip->Flav().IsGluon() ? 0.5 : 1.) * trip->Momentum()+
-		   (anti->Flav().IsGluon() ? 0.5 : 1.) * anti->Momentum()).
-		  Abs2() -
-		  (trip->Momentum().Abs2()+anti->Momentum().Abs2()) );
-  return m_Pmode==0 ? log(1.+p1p2/m_Q02) : pow(1.+p1p2/m_Q02,m_etaQ);
+  double p1p2 = trip->Momentum() * anti->Momentum();
+  if (trip->Flav().IsGluon()) p1p2 /= 2.;
+  if (anti->Flav().IsGluon()) p1p2 /= 2.;
+  double m1m2 = trip->Flav().HadMass() * anti->Flav().HadMass();
+  return p1p2-m1m2;
 }
 
 double Reconnect_Statistical::PosDistance(Particle * trip,Particle * anti) {
@@ -117,14 +128,14 @@ double Reconnect_Statistical::ColDistance(Particle * trip,Particle * anti) {
 }
 
 double Reconnect_Statistical::TotalLength() {
-  double total = 0.;
+  double total = 1.;
   Particle * part1, * part2;
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
        cit!=m_cols[0].end();cit++) {
-    part1 = cit->second;
-    part2 = m_cols[1].find(cit->first)->second;
-    total += Distance(part1,part2);
+    part1  = cit->second;
+    part2  = m_cols[1].find(cit->first)->second;
+    total *= Distance(part1,part2);
   }
-  return total;
+  return total/pow(m_parts[0].size(),m_kappa);
 }
 

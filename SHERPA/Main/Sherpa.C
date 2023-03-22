@@ -272,8 +272,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
     for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
       double currQ = (*bit)->CheckChargeConservation();
       if (fabs(currQ)>1e-12) {
-	msg_Error() << "Charge conservation failed, aborting: " << currQ << "\n";
-	msg_Error() << (**bit) << "\n";
+	msg_Error()<<"Charge conservation failed for "<<(*bit)->Type()<<": "<<currQ<<".\n"
+		   <<"Will ignore event.\n";
 	return 0;
       }
     }
