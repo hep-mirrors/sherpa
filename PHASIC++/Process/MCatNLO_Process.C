@@ -103,7 +103,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->FillProcessMap(p_apmap);
   if (!read.ReadFromFile(m_psmode,"NLO_CSS_PSMODE")) m_psmode=0;
   else msg_Info()<<METHOD<<"(): Set MC@NLO shower mode "<<m_psmode<<".\n";
-  if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=8;
+  if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=0;
   else msg_Info()<<METHOD<<"(): Set H event shower mode "<<m_hpsmode<<".\n";
   if (!read.ReadFromFile(m_kfacmode,"PP_KFACTOR_MODE")) m_kfacmode=0;
   else msg_Info()<<METHOD<<"(): Set K-factor mode "<<m_kfacmode<<".\n";
