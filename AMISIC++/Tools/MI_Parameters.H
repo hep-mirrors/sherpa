@@ -33,16 +33,18 @@ namespace AMISIC {
 
   class MI_Parameters {
   private:
+    double m_pt02ref, m_pt02IR, m_ptmin2ref, m_ptmin2IR;
+    double m_Eref, m_Sref, m_Ecms, m_Scms, m_eta;
     overlap_form::code m_overlapform;
     scale_scheme::code m_scalescheme;
     std::map<std::string,double> m_parameters;
 
-    double CalculatePT(const double & pt);
   public:
     MI_Parameters();
     ~MI_Parameters() = default;
 
     double operator()(const std::string& keyword) const;
+    double CalculatePT02(const double & s=-1) const;
 
     const overlap_form::code & GetOverlapForm() const { return m_overlapform; }
     const scale_scheme::code & GetScaleScheme() const { return m_scalescheme; }

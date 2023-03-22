@@ -10,9 +10,11 @@ Sudakov_Argument::
 Sudakov_Argument(MI_Processes * procs,const axis & sbins,const axis & pt2bins) :
   p_processes(procs), m_sbins(sbins), m_pt2bins(pt2bins),
   m_integral(TwoDim_Table(m_sbins,m_pt2bins)),
-  m_function(TwoDim_Table(m_sbins,m_pt2bins))
+  m_function(TwoDim_Table(m_sbins,m_pt2bins)),
+  m_test(false)
 {
   FillTables();
+  if (m_test) OutputTables();
 }
 
 void Sudakov_Argument::FillTables() {
@@ -59,3 +61,27 @@ const double Sudakov_Argument::XSratio(const double & s) {
   return m_integral.Value(m_sbins.bin(s),0);
 }
 
+void Sudakov_Argument::OutputTables() {
+  msg_Out()<<"-------------------------------------------------------------------------------\n"
+	   <<"Calculated look-up tables and values for the Sudakov_Argument:\n"
+	   <<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "
+	   <<std::setw(15)<<"xs_hard/xs_ND"<<" | "
+	   <<std::setw(10)<<"pt^2"<<" | "
+	   <<std::setw(10)<<"f(pt^2)"<<" |  "
+	   <<std::setw(10)<<"Int(pt^2)\n"
+	   <<std::fixed<<std::setprecision(4);
+  for (size_t sbin=0;sbin<m_sbins.m_nbins;sbin++) {
+    msg_Out()<<"-------------------------------------------------------------------------------\n";
+    double s       = m_sbins.x(sbin);
+    double xsratio = XSratio(s);
+    for (size_t bin=0;bin<m_pt2bins.m_nbins;bin+=10) {
+      msg_Out()<<std::setw(15)<<sqrt(s)<<" | "
+	       <<std::setw(15)<<xsratio<<" | "
+	       <<std::setw(10)<<m_pt2bins.x(bin)<<" | "
+	       <<std::setw(10)<<m_function.Value(sbin,bin)<<" | "
+	       <<std::setw(10)<<m_integral.Value(sbin,bin)<<"\n";
+    }
+  }
+  msg_Out()<<"-------------------------------------------------------------------------------\n";
+  THROW(normal_exit,"testing complete");
+}

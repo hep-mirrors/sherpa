@@ -46,10 +46,8 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   // - pt_min, the IR cut-off for the 2->2 scatters
   // - Ecms, the cms energy of the hadron collision
   /////////////////////////////////////////////////////////////////////////////////
-  m_pt0         = (*mipars)("pt_0");
-  m_pt02        = m_pt0*m_pt0;
-  m_ptmin       = (*mipars)("pt_min");
-  m_ptmin2      = m_ptmin*m_ptmin;
+  m_pt02        = sqr((*mipars)("pt_0"));
+  m_ptmin2      = sqr((*mipars)("pt_min"));
   m_ecms        = rpa->gen.Ecms();
   m_S = m_S_lab = m_ecms*m_ecms;
   m_ptmax2      = m_S/4.;
@@ -149,7 +147,7 @@ CalcPDFs(const double & x1,const double & x2,const double & scale) {
   // Calculate both sets of PDFs at the relevant x and Q^2
   /////////////////////////////////////////////////////////////////////////////////
   p_pdf[0]->Calculate(x1,Min(Max(m_muFfac*scale,p_pdf[0]->Q2Min()),p_pdf[0]->Q2Max()));
-  p_pdf[1]->Calculate(x2,Min(Max(m_muFfac*scale,p_pdf[1]->Q2Min()),p_pdf[0]->Q2Max()));
+  p_pdf[1]->Calculate(x2,Min(Max(m_muFfac*scale,p_pdf[1]->Q2Min()),p_pdf[1]->Q2Max()));
 }
 
 const double MI_Processes::
@@ -198,11 +196,11 @@ bool MI_Processes::PrepareSudakovFactor() {
   // N.B.: Note that we count the bins "down", i.e. bin 0 is at pt_nmax^2.
   // N.B.: Using left steps, thereby somewhat overestimating the integral.
   /////////////////////////////////////////////////////////////////////////////////
-  axis sbins   = (m_variable_s ?
-		  axis(m_sbins, 4.*m_ptmin2, m_S, axis_mode::log) :
-		  axis(1, m_S , m_S, axis_mode::linear) );
-  axis pt2bins = axis(m_pt2bins,m_ptmin2,m_ptmax2,axis_mode::log);
-  p_sudakov = new Sudakov_Argument(this,sbins,pt2bins);
+  axis sbins    = (m_variable_s ?
+		   axis(m_sbins, 4.*m_ptmin2, m_S, axis_mode::log) :
+		   axis(1, m_S , m_S, axis_mode::linear) );
+  axis pt2bins  = axis(m_pt2bins,m_ptmin2,m_ptmax2,axis_mode::log);
+  p_sudakov     = new Sudakov_Argument(this,sbins,pt2bins);
   return true;
 }
 
@@ -218,6 +216,7 @@ const double MI_Processes::dSigma(const double & pt2) {
   // full interval and hit-or-miss by making sure the x values are inside the allowed
   // range:  x_{1,2} = xT/2 * [exp(+/- y1) + exp(+/- y2)] with xT = (4pt^2/S)^0.5.
   /////////////////////////////////////////////////////////////////////////////////
+  if (pt2<m_ptmin2 || 4.*pt2>m_S) return 0.;
   double xt       = sqrt(4.*pt2/m_S);
   double ymax     = log(1./xt*(1.+sqrt(1.-xt*xt)));
   double yvolume  = sqr(2.*ymax);
@@ -227,7 +226,8 @@ const double MI_Processes::dSigma(const double & pt2) {
     double y2     = ymax*(-1.+2.*ran->Get());
     double x1     = xt * (exp(y1)  + exp(y2))/2.;
     double x2     = xt * (exp(-y1) + exp(-y2))/2.;
-    if (x1>m_xmin[0] && x1<1. && x2>m_xmin[1] && x2<1.) {
+    if (x1>m_xmin[0] && x1<1. && x2>m_xmin[1] && x2<1. &&
+	xt*xt<x1*x2) {
       double cost = sqrt(1.-Min(1.,(xt*xt)/(x1*x2)));
       double shat = x1 * x2 * m_S;
       double that = -0.5 * shat * (1.-cost);
@@ -239,6 +239,9 @@ const double MI_Processes::dSigma(const double & pt2) {
       // |M_{ij}|^2 are given by the operators of the underlying XS_Base
       // realised e.g. in QCD_Processes.C, and including colour factors.
       res += (*this)(shat,that,uhat,x1,x2) * yvolume;
+      //if (IsNan(res)) msg_Out()<<"   * "<<METHOD<<" yields nan for "
+      //		       <<"x1,2 = "<<x1<<", "<<x2<<", xt = "<<xt<<", cost = "<<cost<<", "
+      //		       <<"s,t,u = "<<shat<<", "<<that<<", "<<uhat<<"\n"; 
     }
   }
   return res/double(m_MCpoints);
@@ -246,11 +249,17 @@ const double MI_Processes::dSigma(const double & pt2) {
 
 void MI_Processes::UpdateS(const double & s) {
   /////////////////////////////////////////////////////////////////////////////////
-  // Update parameters (mainly c.m. energy) for variable centre-of-mass energies:
+  // Update c.m. energy for variable centre-of-mass energies:
   // relevant for processes involving EPA photons etc..
   // Recalculate the non-diffractive and other cross sections
   /////////////////////////////////////////////////////////////////////////////////
-  m_S    = s; 
-  m_ecms = sqrt(m_S);
+  m_S      = s; 
+  m_ecms   = sqrt(m_S);
+  m_pt02   = mipars->CalculatePT02(m_S);
   (*p_xsecs)(m_S);
+  /////////////////////////////////////////////////////////////////////////////////
+  // need to upate pt02 and ptmin2 for new s as well.
+  /////////////////////////////////////////////////////////////////////////////////
+  for (list<MI_Process_Group *>::iterator mig = m_groups.begin();
+       mig!=m_groups.end();mig++)  (*mig)->SetPT02(m_pt02); 
 }

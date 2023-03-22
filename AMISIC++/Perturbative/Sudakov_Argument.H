@@ -11,9 +11,11 @@ namespace AMISIC {
     axis           m_sbins, m_pt2bins;   
     TwoDim_Table   m_integral, m_function;
     MI_Processes * p_processes;
+    bool           m_test;
     
     void FillTables();
     void FillPT2Values(const size_t & sbin,const double & norm);
+    void OutputTables();
   public:
     Sudakov_Argument(MI_Processes * procs,const axis & sbins, const axis & pt2bins);
 

@@ -10,21 +10,30 @@ using namespace std;
 
 const MI_Parameters * AMISIC::mipars = NULL;
 
-MI_Parameters::MI_Parameters()
+MI_Parameters::MI_Parameters() :
+  m_pt02ref(0.), m_ptmin2ref(0.),
+  m_Sref(0.), m_Eref(0.), m_Scms(0.), m_Ecms(0.), m_eta(0.)
 {
   auto s = Settings::GetMainSettings()["AMISIC"];
   m_parameters[string("pt_0(ref)")]
-    = s["PT_0(ref)"].SetDefault(2.5).Get<double>();
+    = s["PT_0(ref)"].SetDefault(2.2).Get<double>();
+  m_parameters[string("pt_0(IR)")]
+    = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault(3.).Get<double>();
-  m_parameters[string("eta")]
-    = s["Eta"].SetDefault(0.16).Get<double>();
+    = s["PT_Min(ref)"].SetDefault(2.5).Get<double>();
   m_parameters[string("Ecms(ref)")]
     = s["E(ref)"].SetDefault(7000.).Get<double>();
-  double pt_0   = CalculatePT(m_parameters[string("pt_0(ref)")]);
-  double pt_min = CalculatePT(m_parameters[string("pt_min(ref)")]);
+  m_parameters[string("eta")]
+    = s["Eta"].SetDefault(0.08).Get<double>();
+  m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
+  m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
+  m_ptmin2ref = sqr(m_parameters[string("pt_min(ref)")]);
+  m_Sref      = sqr(m_Eref = m_parameters[string("Ecms(ref)")]);
+  m_Scms      = sqr(m_Ecms = rpa->gen.Ecms());
+  m_eta       = m_parameters[string("eta")];
+  double pt_0 = sqrt(CalculatePT02(m_Scms));
   m_parameters[string("pt_min")]
-    = s["PT_Min"].SetDefault(pt_min).Get<double>();
+    = s["PT_Min"].SetDefault(m_parameters[string("pt_min(ref)")]).Get<double>();
   m_parameters[string("pt_0")]
     = s["PT_0"].SetDefault(pt_0).Get<double>();
   m_scalescheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme::code>();
@@ -59,17 +68,15 @@ MI_Parameters::MI_Parameters()
     = s["ReggeonIntercept"].SetDefault(-0.4525).Get<double>();
 }
 
-double MI_Parameters::CalculatePT(const double & pt) {
-  return pt * pow(rpa->gen.Ecms()/m_parameters[string("Ecms(ref)")],
-		   m_parameters[string("eta")]);
+double MI_Parameters::CalculatePT02(const double & s) const {
+  return Max(m_pt02IR, m_pt02ref * pow((s<0 ? m_Scms : s)/m_Sref,m_eta));
 }
-
 
 double MI_Parameters::operator()(const string& keyword) const
 {
   map<string,double>::const_iterator piter = m_parameters.find(keyword);
   if (piter!=m_parameters.end()) return piter->second;
-  THROW(fatal_error,"Keyword not found.");
+  THROW(fatal_error,"Keyword "+keyword+" not found.");
   return 0.;
 }
 

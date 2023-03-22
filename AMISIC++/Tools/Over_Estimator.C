@@ -48,6 +48,7 @@ void Over_Estimator::UpdateS() {
   m_s    = p_procs->S();
   m_xsnd = p_procs->GetXSecs()->XSndNorm() * p_procs->GetXSecs()->XSnd(m_s);
   m_pref = (*p_prefs)(m_s);
+  m_pt02 = p_procs->PT02();
 }
 
 void Over_Estimator::FixMaximum() {
@@ -58,7 +59,8 @@ void Over_Estimator::FixMaximum() {
   axis sbins = p_procs->GetSudakov()->GetSbins();
   p_prefs    = new OneDim_Table(sbins);
   for (size_t sbin=0;sbin<sbins.m_nbins;sbin++) {
-    m_s = sbins.x(sbin);   
+    m_s      = sbins.x(sbin);
+    m_pt02   = mipars->CalculatePT02(m_s);
     double pt2step = log(m_s/(4.*m_ptmin2))/double(m_pt2bins);
     double maxpref = 0.;
     for (size_t bin=0;bin<m_pt2bins;bin++) {
@@ -102,7 +104,7 @@ double Over_Estimator::operator()(const double & pt2,const double & yvol) {
 double Over_Estimator::ApproxME(const double & pt2,const double & xt) {
   /////////////////////////////////////////////////////////////////////////////////
   // Approximate differential cross section is given by
-  // dsigma = pi/2 * alphaS^2(pT^2+pT0^2)/(pT^2+pT0^2)^2 *
+  // dsigma = pi/2 * alphaS^2[(pT^2+pT0^2)/4]/(pT^2+pT0^2)^2 *
   //          [sum_q q(xT,pT^2) + 9/4*g(xT,pT^2)]^2
   // which assumes
   // negligible s- and u-channel contributions and interference,
@@ -144,7 +146,10 @@ double Over_Estimator::TrialPT2(const double & Q2) {
   /////////////////////////////////////////////////////////////////////////////////
   double Q2tilde = Q2+m_pt02/4.;
   double prefb   = m_pref*m_bfac/m_xsnd;
-  return prefb*Q2tilde/(prefb-Q2tilde*log(ran->Get())) - m_pt02/4.;
+  double pt2     = prefb*Q2tilde/(prefb-Q2tilde*log(ran->Get())) - m_pt02/4.;
+  //msg_Out()<<METHOD<<"(pt2 = "<<pt2<<", pt02 = "<<m_pt02<<", Q2 = "<<Q2<<", "
+  //	   <<"pref = "<<m_pref<<", bfac = "<<m_bfac<<", xs = "<<m_xsnd<<")\n";
+  return pt2;
 }
 
 void Over_Estimator::Test(const double & Q2,const long int & n) {

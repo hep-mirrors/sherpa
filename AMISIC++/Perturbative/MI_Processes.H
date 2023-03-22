@@ -48,7 +48,6 @@ namespace AMISIC {
 
     inline const double  & Ecms()      const { return m_ecms; }
     inline const double  & S()         const { return m_S; }
-    inline const double  & PT0()       const { return m_pt0; }
     inline const double  & PT02()      const { return m_pt02; }
     inline const double  & PTMin()     const { return m_ptmin; }
     inline const double  & PT2Min()    const { return m_ptmin2; }

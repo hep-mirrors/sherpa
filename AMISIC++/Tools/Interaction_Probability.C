@@ -15,8 +15,7 @@ using namespace ATOOLS;
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019.
 /////////////////////////////////////////////////////////////////////////////////
 
-Interaction_Probability::Interaction_Probability() :
-  m_test(false) {}
+Interaction_Probability::Interaction_Probability() : m_test(false) {}
 
 Interaction_Probability::~Interaction_Probability() {
   delete p_k;
