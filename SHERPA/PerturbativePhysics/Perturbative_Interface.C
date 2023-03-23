@@ -63,6 +63,7 @@ Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh
                                   .Get<mets_bbar_mode::code>();
   m_globalkfac = s["GLOBAL_KFAC"].SetDefault(0.0).Get<double>();
   m_maxkfac    = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
+  m_nmaxkfac   = s["MEPSNLO_NMAX_KFAC"].SetDefault(10).Get<int>();
 }
 
 Perturbative_Interface::Perturbative_Interface
@@ -237,7 +238,7 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
     ampl=ampl->Next();
     Process_Base::SortFlavours(ampl);
     if (m_bbarmode&mets_bbar_mode::lowestmulti) {
-      if (ampl->Next()) continue;
+      if (ampl->Next() && ampl->Legs().size()>m_nmaxkfac) continue;
       Single_Process *proc(ampl->Proc<Single_Process>());
       if (ampl->Legs().size()-ampl->NIn()>
 	  proc->Info().m_fi.NMinExternal()) break;
