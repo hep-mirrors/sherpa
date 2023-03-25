@@ -78,9 +78,16 @@ void Tag_Setter::AssignId(Term *term)
   else if (term->Tag()=="P_TM2") term->SetId(9);
   else if (term->Tag()=="N_FS") term->SetId(0);
   else {
-    term->SetId(100+ToType<int>
-		(term->Tag().substr
-		 (2,term->Tag().length()-3)));
+    std::string tag(term->Tag().substr
+		    (2,term->Tag().length()-3));
+    int nj(ToType<int>(tag));
+    if (isalpha(tag[0])) {
+      int nfs(p_setter->Caller()->NIn()+
+	      p_setter->Caller()->NOut());
+      if (p_setter->Caller()->GetSubevtList()) nfs-=1;
+      nj=nfs-1-((int)(tag[0])-65);
+    }
+    term->SetId(100+nj);
   }
 }
 
@@ -131,6 +138,8 @@ void Tag_Setter::SetTags(Algebra_Interpreter *const calc)
   calc->AddTag("TAU_B2","1.0");
   for (size_t i=0;i<p_setter->Scales().size();++i) 
     calc->AddTag("MU_"+ToString(i)+"2","1.0");
-  for (size_t i=0;i<p_setter->NIn()+p_setter->NOut();++i) 
+  for (size_t i=0;i<p_setter->NIn()+p_setter->NOut();++i) {
     calc->AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
+    calc->AddTag("p["+ToString(char(65+i))+"]",ToString(Vec4D()));
+  }
 }
