@@ -327,7 +327,8 @@ bool Process_Base::SetupEventReader(const std::string &fnames)
   while (args.length()) {
     pos=args.find(',');
     std::string tag(args.substr(0,pos));
-    size_t bpos(tag.find('[')), epos(tag.find(']')), mpos (tag.find('-'));
+    size_t bpos(tag.find('[')), epos(tag.find(']'));
+    size_t mpos (tag.find('-',bpos));
     if (bpos!=std::string::npos && epos!=std::string::npos &&
 	mpos>bpos+1 && mpos<epos-1) {
       size_t start(ToType<int>(tag.substr(bpos+1,mpos-bpos-1)));
