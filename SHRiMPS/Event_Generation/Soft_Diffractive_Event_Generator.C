@@ -10,7 +10,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Soft_Diffractive_Event_Generator::
-Soft_Diffractive_Event_Generator(Sigma_D * sigma,const int & test) :
+Soft_Diffractive_Event_Generator(Sigma_SD * sigma,const int & test) :
   Event_Generator_Base(sigma),
   p_sigma(sigma), m_sigma(0.),
   m_massexp(0.5), m_Prob1440(.4),  m_Prob1710(0.2)

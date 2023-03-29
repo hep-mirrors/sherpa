@@ -33,12 +33,12 @@ void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
     p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
     break;
   case run_mode::soft_diffractive_events:
-    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
+    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),test);
     break;
   case run_mode::all_min_bias:
     p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test,xsecs->GetSigmaElastic(),xsecs->GetSigmaSD());
     p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
-    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
+    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),test);
     break;
   }
 } 
