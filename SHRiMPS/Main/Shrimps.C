@@ -9,7 +9,6 @@
 #include "MODEL/Main/Strong_Coupling.H"
 #include "MODEL/Main/Model_Base.H"
 #include "SHRiMPS/Glauber/Glauber.H"
-#include "SHRiMPS/Glauber/Nucleus.H"
 #include <string>
 #include <vector>
 

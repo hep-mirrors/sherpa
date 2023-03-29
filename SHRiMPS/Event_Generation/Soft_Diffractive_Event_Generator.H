@@ -2,7 +2,7 @@
 #define SHRIMPS_Main_Soft_Diffractive_Event_Generator_H
 
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
-#include "SHRiMPS/Cross_Sections/Sigma_D.H"
+#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -14,7 +14,7 @@
 namespace SHRIMPS {
   class Soft_Diffractive_Event_Generator : public Event_Generator_Base{
   private:
-    Sigma_D       * p_sigma;
+    Sigma_SD       * p_sigma;
     ATOOLS::Flavour m_beam[2], m_out[4];
     std::map<std::pair<ATOOLS::Flavour,ATOOLS::Flavour>,double> m_hadronmaps[2];
     ATOOLS::Blob  * p_blob;
@@ -41,7 +41,7 @@ namespace SHRIMPS {
     //std::vector<double> ComputePxPyPz(double p, int sign1, int mode);
     //ATOOLS::Vec4D Get4Vector(double M2[], double Etot);
   public:
-    Soft_Diffractive_Event_Generator(Sigma_D * sigma,const int & test=0);
+    Soft_Diffractive_Event_Generator(Sigma_SD * sigma,const int & test=0);
     ~Soft_Diffractive_Event_Generator();
 				       
     int InitEvent(ATOOLS::Blob_List * blobs);
