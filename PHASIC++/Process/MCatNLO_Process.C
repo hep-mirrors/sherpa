@@ -533,10 +533,13 @@ double MCatNLO_Process::OneSEvent(const int wmode)
 Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 {
   DEBUG_FUNC(m_name<<" "<<p_read);
-  double S(p_bviproc->Integrator()->SelectionWeight(wmode));
-  double H(p_rsproc->Integrator()->SelectionWeight(wmode));
+  double S(0), H(0);
   Weight_Info *winfo(NULL);
-  if (p_read) {
+  if (p_read==NULL) {
+    S=p_bviproc->Integrator()->SelectionWeight(wmode);
+    H=p_rsproc->Integrator()->SelectionWeight(wmode);
+  }
+  else {
     msg_Debugging()<<"Reader type is "<<Demangle(typeid(*p_read).name())<<"\n";
     Cluster_Amplitude *ampl(p_read->ReadEvent());
     if (ampl==NULL) return NULL;

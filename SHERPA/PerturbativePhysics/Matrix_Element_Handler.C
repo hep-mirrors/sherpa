@@ -185,25 +185,26 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   if (m_seedmode!=3) SetRandomSeed();
   p_isr->SetPDFMember();
   m_sum=0.0;
+  std::vector<double> psum(m_procs.size(),0);
   for (size_t i(0);i<m_procs.size();++i)
-    m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+    psum[i]=m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
   for (size_t n(1);true;++n) {
     if (m_seedmode==3 && rpa->gen.NumberOfGeneratedEvents())
       ran->ResetToLastIncrementedSeed();
-    double disc(m_sum*ran->Get()), csum(0.0);
+    double disc(m_sum*ran->Get());
     Process_Base *proc(NULL);
     for (size_t i(0);i<m_procs.size();++i) {
-      if ((csum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode))>=disc) {
+      if (psum[i]>=disc) {
         proc=m_procs[i];
         break;
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
     p_variationweights->Reset();
-    proc->SetVariationWeights(NULL);
     const bool hasvars(
         p_variationweights->GetVariations()->GetParametersVector()->empty()
         == false);
+    if (hasvars) proc->SetVariationWeights(NULL);
     const double unweighting_r = ran->Get();
     if (m_pilotrunenabled && (hasvars || m_pilotrunrequired)) {
       // in pilot run mode, calculate nominal only, and prepare to restore the
@@ -228,7 +229,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       }
       skip_rerun = true;
     }
-    proc->SetVariationWeights(NULL);
+    if (hasvars) proc->SetVariationWeights(NULL);
     p_proc=proc->Selected();
     double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
     if (info==NULL) {
@@ -305,7 +306,17 @@ bool Matrix_Element_Handler::GenerateOneEvent()
         delete info;
         wf *= m_pilotweightfactor;
 	m_evtinfo.m_weight /= m_pilotweightfactor;
-        proc->SetVariationWeights(NULL);
+        if (hasvars) proc->SetVariationWeights(NULL);
+      }
+    }
+    else {
+      double cur=m_evtinfo.m_weight*wf/m_sum;
+      if (std::abs(cur) > m_ovwth) {
+        Return_Value::IncWarning(METHOD);
+        msg_Info() <<METHOD<<"(): Point for '"<<p_proc->Name()
+                   <<"' exceeds average by "<<cur-1.0
+		   <<". Reject event."<< std::endl;
+        continue;
       }
     }
     if (!hasvars) {
