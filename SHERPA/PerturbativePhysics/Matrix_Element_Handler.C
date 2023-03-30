@@ -40,7 +40,7 @@ using namespace ATOOLS;
 void Matrix_Element_Handler::RegisterDefaults()
 {
   Settings& s = Settings::GetMainSettings();
-  s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12);
+  s["OVERWEIGHT_THRESHOLD"].SetDefault(1e3);
   s["MEH_NLOADD"].SetDefault(1);
   s["MEH_EWADDMODE"].SetDefault(0);
   s["MEH_QCDADDMODE"].SetDefault(0);
