@@ -59,6 +59,9 @@ namespace SHERPARIVET {
     SHERPA__HepMC_Interface       m_hepmc2;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
+#if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+    HepMC::GenEvent m_lastevent;
+#endif
 
     Rivet::AnalysisHandler* GetRivet(std::string proc,
                                      int jetcont);
@@ -324,6 +327,13 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     subevents[i]->set_cross_section(xs);
   }
 #endif
+#if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+  if (m_lastevent.vertices_begin()==m_lastevent.vertices_end()) {
+    m_lastevent=event;
+    for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
+  }
+  m_lastevent.set_cross_section(xs);
+#endif
 
   if (subevents.size()) {
     for (size_t i(0);i<subevents.size();++i) {
@@ -383,6 +393,62 @@ bool Rivet_Interface::Finish()
 #else
   const double nomxsec = p_eventhandler->TotalXS();
   const double nomxerr = p_eventhandler->TotalErr();
+#endif
+#if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+  // synchronize analyses among MPI processes
+  std::string mynames;
+  for (Rivet_Map::iterator it=m_rivet.begin();it!=m_rivet.end();++it) {
+    std::string out;
+    if (it->first.first!="") out+="."+it->first.first;
+    if (it->first.second!=0) out+=".j"+ToString(it->first.second);
+    mynames+=out+"|";
+  }
+  int len(mynames.length()+1);
+  mpi->Allreduce(&len,1,MPI_INT,MPI_MAX);
+  std::string allnames;
+  mynames.reserve(len);
+  allnames.reserve(len*mpi->Size()+1);
+  mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
+  char *catname = new char[len+1];
+  for (size_t i(0);i<mpi->Size();++i) {
+    sprintf(catname,"%s",&allnames[len*i]);
+    std::string curname(catname);
+    for (size_t epos(curname.find('|'));
+	 epos<curname.length();epos=curname.find('|')) {
+      std::string cur(curname.substr(0,epos)), proc, jets;
+      curname=curname.substr(epos+1,curname.length()-epos-1);
+      size_t dpos(cur.find('.'));
+      if (dpos<cur.length()) {
+	proc=cur.substr(dpos+1,cur.length()-dpos-1);
+	cur=cur.substr(0,dpos);
+	size_t jpos(proc.find(".j"));
+	if (jpos<cur.length()) {
+	  jets=proc.substr(jpos+1,proc.length()-jpos-1);
+	  proc=proc.substr(0,jpos);
+	}
+	else if (proc[0]=='j' && proc.length()>1) {
+	  bool isnumber(true);
+	  for (size_t j(1);j<proc.length();++j)
+	    if (!isdigit(proc[j])) isnumber=false;
+	  if (isnumber) {
+	    jets=proc.substr(1,proc.length()-1);
+	    proc="";
+	  }
+	}
+      }
+      RivetMapKey key = std::make_pair(proc,ToType<int>(jets));
+      Rivet_Map::iterator it=m_rivet.find(key);
+      if (it==m_rivet.end()) {
+	AnalysisHandler* rivet(new AnalysisHandler());
+	rivet->setIgnoreBeams(m_ignorebeams);
+	rivet->skipMultiWeights(m_skipweights);
+	rivet->addAnalyses(m_analyses);
+	rivet->init(m_lastevent);
+	m_rivet.insert(std::make_pair(key, rivet));
+      }
+    }
+  }
+  delete [] catname;
 #endif
   // first call finalize to collapse the event group,
   // then scale the cross-section before re-finalizing
