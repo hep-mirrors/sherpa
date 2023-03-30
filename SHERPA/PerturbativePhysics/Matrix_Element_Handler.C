@@ -200,8 +200,9 @@ bool Matrix_Element_Handler::GenerateOneEvent()
 
   // calculate total selection weight sum
   m_sum=0.0;
+  psum.resize(m_procs.size());
   for (size_t i(0);i<m_procs.size();++i)
-    m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+    psum[i]=m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
 
   // generate trial events until we accept one
   for (size_t n(1);true;++n) {
@@ -219,11 +220,10 @@ bool Matrix_Element_Handler::GenerateOneEvent()
 bool Matrix_Element_Handler::GenerateOneTrialEvent()
 {
   // select process
-  double disc(m_sum*ran->Get()), csum(0.0);
+  double disc(m_sum*ran->Get());
   Process_Base *proc(NULL);
   for (size_t i(0);i<m_procs.size();++i) {
-    if ((csum+=m_procs[i]->Integrator()->
-          SelectionWeight(m_eventmode))>=disc) {
+    if (psum[i]>=disc) {
       proc=m_procs[i];
       break;
     }
@@ -255,13 +255,13 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   delete info;
 
   // calculate weight factor and/or apply unweighting and weight threshold
+  const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
   if (m_eventmode!=0) {
     const auto maxwt  = p_proc->Integrator()->Max();
     const auto disc   = maxwt * ran->Get();
-    const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     if (abswgt < disc) {
       return false;
     }
@@ -296,6 +296,16 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       // also consume random number used to set the discriminator for
       // unweighting above, such that it is not re-used in the future
       ran->Get();
+    }
+  }
+  else {
+    double cur=abswgt*wf/m_sum;
+    if (std::abs(cur) > m_ovwth) {
+      Return_Value::IncWarning(METHOD);
+      msg_Info() <<METHOD<<"(): Point for '"<<p_proc->Name()
+                 <<"' exceeds average by "<<cur-1.0
+                 <<". Reject event."<< std::endl;
+      return false;
     }
   }
 

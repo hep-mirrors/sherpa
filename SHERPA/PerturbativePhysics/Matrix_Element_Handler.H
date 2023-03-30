@@ -92,6 +92,8 @@ namespace SHERPA {
     size_t m_ranidx, m_fosettings;
     ATOOLS::nlo_mode::code m_nlomode;
 
+    mutable std::vector<double> psum;
+
 #ifdef USING__GZIP
     ATOOLS::igzstream *p_ranin;
     ATOOLS::ogzstream *p_ranout;
