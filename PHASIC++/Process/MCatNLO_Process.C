@@ -101,7 +101,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
-  if (!read.ReadFromFile(m_psmode,"NLO_CSS_PSMODE")) m_psmode=0;
+  if (!read.ReadFromFile(m_psmode,"NLO_CSS_PSMODE")) m_psmode=2;
   else msg_Info()<<METHOD<<"(): Set MC@NLO shower mode "<<m_psmode<<".\n";
   if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=0;
   else msg_Info()<<METHOD<<"(): Set H event shower mode "<<m_hpsmode<<".\n";
