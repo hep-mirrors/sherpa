@@ -430,8 +430,8 @@ bool Rivet_Interface::Finish()
 	proc=cur.substr(dpos+1,cur.length()-dpos-1);
 	cur=cur.substr(0,dpos);
 	size_t jpos(proc.find(".j"));
-	if (jpos<cur.length()) {
-	  jets=proc.substr(jpos+1,proc.length()-jpos-1);
+	if (jpos<proc.length()) {
+	  jets=proc.substr(jpos+2,proc.length()-jpos-1);
 	  proc=proc.substr(0,jpos);
 	}
 	else if (proc[0]=='j' && proc.length()>1) {
@@ -444,6 +444,7 @@ bool Rivet_Interface::Finish()
 	  }
 	}
       }
+      if (jets=="") jets="0";
       RivetMapKey key = std::make_pair(proc,ToType<int>(jets));
       Rivet_Map::iterator it=m_rivet.find(key);
       if (it==m_rivet.end()) {
