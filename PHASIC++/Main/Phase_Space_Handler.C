@@ -365,11 +365,14 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     Check4Momentum(p_lab);
     if (p_point) {
       if (process->Process()->EventReader()->Compute()==1) {
+	SHERPA::Variation_Weights *variationweights(process->Process()->VariationWeights());
+	process->Process()->SetVariationWeights(NULL);
 	std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
 	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
 	double result(process->Process()->Differential(p_lab));
 	scales.clear();
 	process->Process()->ScaleSetter(true)->SetFixedScale(scales);
+	process->Process()->SetVariationWeights(variationweights);
 	m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
 	CalculateME();
 	m_enhance=1.;
