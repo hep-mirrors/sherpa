@@ -532,6 +532,15 @@ void Process_Base::SetNLOMC(PDF::NLOMC_Base *const mc)
   p_nlomc=mc;
 }
 
+bool Process_Base::IsZeroEvent()
+{
+  if (p_read==NULL) return false;
+  Cluster_Amplitude *ampl(p_read->ReadEvent());
+  if (ampl==NULL) return true;
+  p_read->SetAmpl(ampl);
+  return false;
+}
+
 void Process_Base::FillOnshellConditions()
 {
   if (!Selector()) return;

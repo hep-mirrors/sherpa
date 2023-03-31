@@ -229,6 +229,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     }
   }
   if (proc==NULL) THROW(fatal_error,"No process selected");
+  if (proc->IsZeroEvent()) return false;
 
   // if variations are enabled and we do unweighting, we do a pilot run first
   // where no on-the-fly variations are calculated
