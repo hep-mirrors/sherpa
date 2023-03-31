@@ -141,6 +141,7 @@ namespace SHERPA {
     void SetPoleCheck(const int check)
     {
       p_proc->SetPoleCheck(check);
+      m_providespoles=check;
     }
 
     void Calc(const ATOOLS::Vec4D_Vector &p)
