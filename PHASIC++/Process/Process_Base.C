@@ -535,6 +535,15 @@ void Process_Base::SetShower(PDF::Shower_Base *const ps)
   p_shower=ps; 
 }
 
+bool Process_Base::IsZeroEvent()
+{
+  if (p_read==NULL) return false;
+  Cluster_Amplitude *ampl(p_read->ReadEvent());
+  if (ampl==NULL) return true;
+  p_read->SetAmpl(ampl);
+  return false;
+}
+
 void Process_Base::SetVariationWeights(SHERPA::Variation_Weights *const vw)
 {
   if (m_variationweightsowned) {

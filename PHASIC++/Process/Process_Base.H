@@ -125,6 +125,7 @@ namespace PHASIC {
     Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;
 
     bool SetupEventReader(const std::string &fnames);
+    bool IsZeroEvent();
 
     virtual void ConstructColorMatrix();
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);

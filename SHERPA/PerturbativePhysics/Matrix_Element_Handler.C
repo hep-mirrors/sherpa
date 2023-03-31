@@ -200,6 +200,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
+    if (proc->IsZeroEvent()) continue;
     p_variationweights->Reset();
     const bool hasvars(
         p_variationweights->GetVariations()->GetParametersVector()->empty()
