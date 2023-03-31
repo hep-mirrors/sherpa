@@ -60,7 +60,11 @@ namespace SHERPARIVET {
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
 #if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+#ifndef  RIVET_ENABLE_HEPMC_3
     HepMC::GenEvent m_lastevent;
+#else
+    HepMC3::GenEvent m_lastevent;
+#endif
 #endif
 
     Rivet::AnalysisHandler* GetRivet(std::string proc,
@@ -328,7 +332,11 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   }
 #endif
 #if defined(USING__RIVET3) && defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+#ifndef  RIVET_ENABLE_HEPMC_3
   if (m_lastevent.vertices_begin()==m_lastevent.vertices_end()) {
+#else
+  if (m_lastevent.vertices().empty()) {
+#endif
     m_lastevent=event;
     for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
   }
