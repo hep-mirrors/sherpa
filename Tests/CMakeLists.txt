@@ -7,7 +7,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
 add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
                               WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
            )
-add_test( NAME Main${test}part2 COMMAND makelibs
+add_test( NAME Main${test}part2 COMMAND ${makelibsscript}
                               WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
            )
 
