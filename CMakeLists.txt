@@ -680,6 +680,7 @@ target_link_libraries(SHERPAAll INTERFACE
 SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
 ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
 HadronsMain HadronsMEs HadronsCurrents HadronsPSs
+NeutrinosMain NeutrinosTools NeutrinosCurrent_Library
 Reconnections
 AhadicMain AhadicTools AhadicFormation AhadicDecays
 Amisic AmisicTools AmisicPerturbative

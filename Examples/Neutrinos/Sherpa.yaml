@@ -1,0 +1,22 @@
+EVENTS: 100000
+
+BEAMS:             [ 11, 2212 ]
+BEAM_ENERGIES:     [ 5., 1. ]
+BEAM_SPECTRA:      Monochromatic
+PDF_LIBRARY:       [ None, None ]
+PDF_SET:           [ None, None ]
+
+ME_GENERATORS: Internal
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+ALPHAS: {USE_PDF: 0}
+SCALES: METS{H_T2}{H_T2}
+
+SELECTORS:
+  - [PT, 11, 0.01, 1000.]
+
+
+PROCESSES:
+  - 11 2212 -> 11 2212:
+      Order: {QCD: 0, EW: 2}
+

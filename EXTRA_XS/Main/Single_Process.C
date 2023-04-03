@@ -34,6 +34,7 @@ Single_Process::~Single_Process()
 
 bool Single_Process::Initialize()
 {
+  msg_Out()<<METHOD<<"\n";
   DEBUG_FUNC(&m_pinfo);
   DEBUG_VAR(m_pinfo);
   MODEL::s_model->GetCouplings(m_cpls);
