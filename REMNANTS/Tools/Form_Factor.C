@@ -10,7 +10,8 @@ std::ostream& REMNANTS::operator<<(std::ostream& s, const REMNANTS::matter_form:
   switch (f) {
     case matter_form::code::Single_Gaussian: return s << "Single_Gaussian";
     case matter_form::code::Double_Gaussian: return s << "Double_Gaussian";
-  }
+    case matter_form::code::unknown: return s << "Unknown";
+    }
   return s;
 }
 

@@ -705,8 +705,6 @@ bool Initialization_Handler::InitializeThePDFs()
   // Define bunch flavours
   DefineBunchFlavours(settings);
   // Initialisation of PDF sets
-  m_bunch_splimits[0] = settings["ISR_SMIN"].Get<double>();
-  m_bunch_splimits[1] = settings["ISR_SMAX"].Get<double>();
   for (size_t i=1;i<4;++i) InitISRHandler((isr::id)(i),settings);
   msg_Info()<<"ISR handling:"<<endl;
   bool needs_resc = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
@@ -812,7 +810,7 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   }
 
   // PDF set listing output
-  int helpi{ s["SHOW_PDF_SETS"].Get<int>() };
+  int helpi{ settings["SHOW_PDF_SETS"].Get<int>() };
   if (helpi>0) {
     msg->SetLevel(2);
     PDF::PDF_Base::ShowSyntax(helpi);

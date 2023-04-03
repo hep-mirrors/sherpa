@@ -100,19 +100,19 @@ void Resonance_Finder::InitialiseHelperParticles()
 
   if(s_kftable.find(kf_PhotonsHelperNeutral)==s_kftable.end())
     s_kftable[kf_PhotonsHelperNeutral]
-        =new Particle_Info(kf_PhotonsHelperNeutral,0.0,0.0,0,0,0,0,1,1,0,
+        =new Particle_Info(kf_PhotonsHelperNeutral,0.0,0.0,0.0,0,0,0,0,1,1,0,
                            "PH0","PH0b","H_P^{0}","\\overline{H_P^{0}}",0,0);
   if(s_kftable.find(kf_PhotonsHelperPlus)==s_kftable.end())
     s_kftable[kf_PhotonsHelperPlus]
-        =new Particle_Info(kf_PhotonsHelperPlus,0.0,0.0,3,0,0,0,1,1,0,
+        =new Particle_Info(kf_PhotonsHelperPlus,0.0,0.0,0.0,3,0,0,0,1,1,0,
                            "PH+","PH-","H_P^{+}","H_P^{-}",0,0);
   if(s_kftable.find(kf_PhotonsHelperPlusPlus)==s_kftable.end())
     s_kftable[kf_PhotonsHelperPlusPlus]
-        =new Particle_Info(kf_PhotonsHelperPlusPlus,0.0,0.0,6,0,0,0,1,1,0,
+        =new Particle_Info(kf_PhotonsHelperPlusPlus,0.0,0.0,0.0,6,0,0,0,1,1,0,
                            "PH++","PH--","H_P^{++}","H_P^{--}",0,0);
   if(s_kftable.find(kf_PhotonsHelperPlusPlusPlus)==s_kftable.end())
     s_kftable[kf_PhotonsHelperPlusPlusPlus]
-        =new Particle_Info(kf_PhotonsHelperPlusPlusPlus,0.0,0.0,9,0,0,0,1,1,0,
+        =new Particle_Info(kf_PhotonsHelperPlusPlusPlus,0.0,0.0,0.0,9,0,0,0,1,1,0,
                            "PH+++","PH---","H_P^{+++}","H_P^{---}",0,0);
 }
 

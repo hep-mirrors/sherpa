@@ -7,7 +7,7 @@ using namespace ATOOLS;
 
 Electron_Remnant::
 Electron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,const unsigned int & tag):
-  Remnant_Base(p_pdfbase->Bunch(),beam,tag), p_pdfbase(pdf)
+  Remnant_Base(pdf->Bunch(),beam,tag), p_pdfbase(pdf)
 {
   ////////////////////////////////////////////////////////////////////////////
   // This is a *** very *** specific ordering - lepton at front, photon at back.

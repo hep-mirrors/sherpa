@@ -31,7 +31,7 @@ Remnant_Base(const ATOOLS::Flavour & flav, const size_t & beam, const size_t & t
   p_colours(nullptr), m_scale2(-1.) {}
 
 Remnant_Base::~Remnant_Base() {
-  if (p_ff=nullptr) { delete p_ff; p_ff = NULL; }
+  if (p_ff==nullptr) { delete p_ff; p_ff = NULL; }
 }
 
 rtp::code Remnant_Base::FixType(ATOOLS::Flavour & flav) {
