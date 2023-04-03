@@ -350,7 +350,34 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     m_hepmc2.DeleteGenSubEventList();
   }
   else {
+#ifdef RIVET__Use_Explicit_Variations
+    const HepMC::WeightContainer& wc(event.weights());
+    std::map<std::string,double> wgtmap;
+    MyStrStream str;
+    str.precision(m_hepmcoutputprecision);
+    wc.print(str);
+    while (str) {
+      double wgt(0.);
+      std::string cur("");
+      str>>cur;
+      if (cur.length()==0) continue;
+      wgt=ToType<double>(cur.substr(cur.find(",")+1,cur.find(")")-1));
+      cur=cur.substr(1,cur.find(",")-1);
+      if (cur.find("MUR")!=std::string::npos &&
+	  cur.find("MUF")!=std::string::npos &&
+	  cur.find("PDF")!=std::string::npos) {
+	wgtmap[cur]=wgt;
+      }
+      else if (cur=="Weight")  wgtmap[""]=wgt;
+    }
+    for (std::map<std::string,double>::const_iterator
+	   wit(wgtmap.begin());wit!=wgtmap.end();++wit) {
+      event.weights().front()=wit->second;
+      GetRivet(wit->first,0)->analyze(event);
+    }
+#else
     GetRivet("",0)->analyze(event);
+#endif
     Blob *sp(bl->FindFirst(btp::Signal_Process));
     size_t parts=0;
     if (sp) {
@@ -360,7 +387,15 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
       parts=ToType<size_t>(multi);
     }
     if (m_splitjetconts && sp) {
+#ifdef RIVET__Use_Explicit_Variations
+      for (std::map<std::string,double>::const_iterator
+	     wit(wgtmap.begin());wit!=wgtmap.end();++wit) {
+	event.weights().front()=wit->second;
+	GetRivet(wit->first,parts)->analyze(event);
+      }
+#else
       GetRivet("",parts)->analyze(event);
+#endif
     }
     if (m_splitcoreprocs && sp) {
       GetRivet(GetCoreProc(sp->TypeSpec()),0)->analyze(event);
