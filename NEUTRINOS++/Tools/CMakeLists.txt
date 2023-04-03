@@ -1,0 +1,12 @@
+set(Tools_SOURCES
+	Form_Factor_Library.C
+	)
+
+set(Tools_HEADERS
+	Form_Factor_Library.H
+	)
+
+sherpa_create_git_info(Tools)
+ 
+add_library(NeutrinosTools SHARED ${Tools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+sherpa_handle_shared_library(NeutrinosTools NeutrinosTools)
