@@ -4,6 +4,7 @@ set(Two2Two_SOURCES XS_Drell_Yan.C
 		    XS_HadronsQED.C
 		    XS_Lepton_Nucleon.C
                     ee_Y4S_BB.C
+		    eP_eP.C
                     gg_yy.C
                     DMDM_mumu.C)
 
