@@ -68,6 +68,7 @@ XS_lepton_nucleon::~XS_lepton_nucleon() {
 
 double XS_lepton_nucleon::operator()(const ATOOLS::Vec4D_Vector& momenta) {
   msg_Out()<<METHOD<<":\n";
+  msg->SetPrecision(12);
   for (size_t i=0;i<4;i++) msg_Out()<<"   "<<m_flavs[i]<<": "<<momenta[i]<<", "
 				    <<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
   double result = (*p_ME)(momenta);

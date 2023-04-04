@@ -1,7 +1,7 @@
 EVENTS: 100000
 
 BEAMS:             [ 11, 2212 ]
-BEAM_ENERGIES:     [ 5., 1. ]
+BEAM_ENERGIES:     [ 5., 0.938272 ]
 BEAM_SPECTRA:      Monochromatic
 PDF_LIBRARY:       [ None, None ]
 PDF_SET:           [ None, None ]

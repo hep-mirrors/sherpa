@@ -6,6 +6,7 @@
 
 namespace NEUTRINOS {
   class Nucleon_Nucleon : public Scatter_Current_Base {
+    double  m_massin, m_massout;
     Complex m_cR, m_cL;
   public:
     Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,

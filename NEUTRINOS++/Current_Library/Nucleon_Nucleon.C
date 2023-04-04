@@ -12,7 +12,9 @@ using namespace std;
 Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 				 const std::vector<int>& indices,
 				 const std::string& name) :
-  Scatter_Current_Base(flavs, indices, name) {
+  Scatter_Current_Base(flavs, indices, name),
+  m_massin(m_flavs[m_indices[0]].HadMass()),
+  m_massout(m_flavs[m_indices[1]].HadMass()) {
   /////////////////////////////////////////////////////////////////////////////
   // As a quick fix, add relevant parameters here.
   // TODO: Will have to make them part of an overall "reduced" model or input 
@@ -51,13 +53,28 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   /////////////////////////////////////////////////////////////////////////////
   // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2)] u(1) 
   /////////////////////////////////////////////////////////////////////////////
+  double ff1 = 1., ff2 = 1.;
   Vec4C amp;
   for(int h0=0; h0<2; h0++) {
     for(int h1=0; h1<2; h1++) {
       /////////////////////////////////////////////////////////////////////////
-      // L() = ubar(0) gamma^mu (c_L+c_R) u(1) 
+      // L(0, 1) = ubar(0) gamma^mu (c_L+c_R) u(1) 
       /////////////////////////////////////////////////////////////////////////
-      amp = F->L(2,h0, 3,h1, m_cR,m_cL);
+      amp = ff1 * F->L(2,h0, 3,h1, m_cR,m_cL);
+      /////////////////////////////////////////////////////////////////////////
+      // adding sum_{hel_q} [ L(0, q) Y(q, 1) - Y(0, q) L(q, 1) ]
+      //      = sum_{hel_q} [ L(0, 0) Y(0, 1) - Y(0, 0) L(0, 1) -
+      //                      L(0, 1) Y(1, 1) - Y(0, 1) L(1, 1) ]
+      // This assumes the momentum transfer from the other (lepton) current
+      // taken as incoming, i.e. p_0 = p_1 + q.
+      /////////////////////////////////////////////////////////////////////////
+      for (int h2=0;h2<2;h2++) {
+	amp += ( 1./(4.*m_massin) *
+		 ( F->L(2,h0, 2,h2, 1.,1.) * F->Y(2,h2, 3,h1, 1.,1.) -
+		   F->Y(2,h0, 2,h2, 1.,1.) * F->L(2,h2, 3,h1, 1.,1.) -
+		   F->L(2,h0, 3,h2, 1.,1.) * F->Y(3,h2, 3,h1, 1.,1.) +
+		   F->Y(2,h0, 3,h2, 1.,1.) * F->L(3,h2, 3,h1, 1.,1.) ) );
+      }
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(0,h0));
       spins.push_back(make_pair(1,h1));
