@@ -810,7 +810,6 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     if (init==NULL) THROW(fatal_error,"Cannot load PDF library "+*pdflib);
     ((PDF_Init_Function)init)();
   }
-
   // PDF set listing output
   int helpi{ settings["SHOW_PDF_SETS"].Get<int>() };
   if (helpi>0) {
@@ -864,15 +863,18 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
 			   p_beamspectra->GetBeam(beam)->Beam() );
     PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
     if (pid!=PDF::isr::bunch_rescatter) {
-      PDF_Base * pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set,args);
-      if (m_bunch_particles[beam].IsHadron() && pdfbase==NULL)
-	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
+      PDF_Base * pdfbase = nullptr;
+      if (set!="None") {// TODO can prob be done better
+        pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set,args);
+        if (m_bunch_particles[beam].IsHadron() && pdfbase==NULL)
+	  THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
 	      +" libraries for "+ToString(m_bunch_particles[beam])+" bunch.");
-      if (pid==PDF::isr::hard_process) rpa->gen.SetPDF(beam,pdfbase);
+        if (pid==PDF::isr::hard_process) rpa->gen.SetPDF(beam,pdfbase);
+      }
       if (pdfbase==NULL) {
 	isrbases[beam]  = new Intact(flav);
 	needs_resc      = false;
-      }
+	}
       else {
 	pdfbase->SetBounds();
 	isrbases[beam] = new Structure_Function(pdfbase,flav);
