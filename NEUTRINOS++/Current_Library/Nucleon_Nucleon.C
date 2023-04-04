@@ -20,7 +20,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   /////////////////////////////////////////////////////////////////////////////
   double alphaQED   = 1./137.;
   double sin2thetaW = 0.22290, cos2thetaW = 1.-sin2thetaW;
-  if (m_flavs[m_indices[2]]==m_flavs[m_indices[3]]) {
+  if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
     ///////////////////////////////////////////////////////////////////////////
     // Electromagnetic interaction (ignoring neutral weak interaction for the
     // time being).

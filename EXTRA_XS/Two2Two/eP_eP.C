@@ -58,6 +58,7 @@ DECLARE_TREEME2_GETTER(eP_eP,"eP_eP")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,eP_eP>::
 operator()(const External_ME_Args &args) const
 {
+  return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   const Flavour_Vector fl=args.Flavours();
   if (fl.size()!=4) return NULL;

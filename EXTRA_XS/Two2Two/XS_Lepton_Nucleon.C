@@ -39,13 +39,25 @@ XS_lepton_nucleon::XS_lepton_nucleon(const External_ME_Args& args)
   : ME2_Base(args), p_ME(NULL), p_JLL(NULL), p_JNN(NULL)
 {
   DEBUG_INFO("now entered EXTRAXS::XS_lepton_nucleon ...");
+  m_indices.resize(2);
+  m_indices[0] = 2;
+  m_indices[1] = 0;
+  p_JLL  = new Lepton_Lepton(m_flavs,m_indices,"ee");
+  m_indices.resize(2);
+  m_indices[0] = 3;
+  m_indices[1] = 1;
+  p_JNN  = new Nucleon_Nucleon(m_flavs,m_indices,"pp");
   m_indices.resize(4);
-  m_indices[0] = 0; m_indices[1] = 2; m_indices[2] = 1; m_indices[3] = 3;
-  p_JLL = new Lepton_Lepton(m_flavs,m_indices,"ee");
-  p_JNN = new Nucleon_Nucleon(m_flavs,m_indices,"pp");
-  p_ME  = new Current_ME(m_flavs, m_indices, "Current_ME");
+  m_indices[0] = 2;
+  m_indices[1] = 0;
+  m_indices[2] = 3;
+  m_indices[3] = 1;
+  p_ME   = new Current_ME(m_flavs, m_indices, "Current_ME");
   p_ME->SetCurrent1(p_JLL);
   p_ME->SetCurrent2(p_JNN);
+  m_oew  = 2;
+  m_oqcd = 0;
+
 }
 
 XS_lepton_nucleon::~XS_lepton_nucleon() {
@@ -56,10 +68,11 @@ XS_lepton_nucleon::~XS_lepton_nucleon() {
 
 double XS_lepton_nucleon::operator()(const ATOOLS::Vec4D_Vector& momenta) {
   msg_Out()<<METHOD<<":\n";
-  for (size_t i=0;i<4;i++) msg_Out()<<"   "<<m_flavs[i]<<": "<<m_momenta[i]<<"\n";
+  for (size_t i=0;i<4;i++) msg_Out()<<"   "<<m_flavs[i]<<": "<<momenta[i]<<", "
+				    <<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
   double result = (*p_ME)(momenta);
   msg_Out()<<"|M|^2 = "<<result<<".\n";
-  exit(1);
+  return result;
 }
 
 DECLARE_TREEME2_GETTER(XS_lepton_nucleon,"XS_lepton_nucleon")
