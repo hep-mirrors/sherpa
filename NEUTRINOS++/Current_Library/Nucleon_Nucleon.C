@@ -68,12 +68,13 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
       // This assumes the momentum transfer from the other (lepton) current
       // taken as incoming, i.e. p_0 = p_1 + q.
       /////////////////////////////////////////////////////////////////////////
+      Complex c = Complex(1., 0.);
       for (int h2=0;h2<2;h2++) {
 	amp += ( 1./(4.*m_massin) *
-		 ( F->L(2,h0, 2,h2, 1.,1.) * F->Y(2,h2, 3,h1, 1.,1.) -
-		   F->Y(2,h0, 2,h2, 1.,1.) * F->L(2,h2, 3,h1, 1.,1.) -
-		   F->L(2,h0, 3,h2, 1.,1.) * F->Y(3,h2, 3,h1, 1.,1.) +
-		   F->Y(2,h0, 3,h2, 1.,1.) * F->L(3,h2, 3,h1, 1.,1.) ) );
+		 ( F->L(2,h0, 2,h2, c,c) * F->Y(2,h2, 3,h1, c,c) -
+		   F->Y(2,h0, 2,h2, c,c) * F->L(2,h2, 3,h1, c,c) -
+		   F->L(2,h0, 3,h2, c,c) * F->Y(3,h2, 3,h1, c,c) +
+		   F->Y(2,h0, 3,h2, c,c) * F->L(3,h2, 3,h1, c,c) ) );
       }
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(0,h0));
