@@ -6,6 +6,8 @@
 
 namespace BEAM {
   class Monochromatic : public Beam_Base {
+  private:
+    const ATOOLS::Flavour m_none;
   public:
     Monochromatic(const ATOOLS::Flavour,const double,const double,const int);
     Beam_Base * Copy();
