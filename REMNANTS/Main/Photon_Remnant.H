@@ -10,9 +10,8 @@ class Photon_Remnant : public Remnant_Base {
 private:
   PDF::PDF_Base *p_pdf;
   const ATOOLS::Flavour_Set *p_partons;
-  ATOOLS::Flavour m_beamflav;
 
-  double m_LambdaQCD, m_beta_quark, m_beta_gluon;
+  const double m_LambdaQCD, m_beta_quark, m_beta_gluon;
   bool m_valence;
 
   ATOOLS::Particle * p_spectator, * p_recoiler;
@@ -34,7 +33,7 @@ public:
   void CompensateColours();
 
   void Reset(const bool & resc=false, const bool &DIS=false) override;
-  
+
   inline ATOOLS::Particle *GetRecoiler() override { return p_recoiler; }
   inline ATOOLS::Particle *GetSpectator() override { return p_spectator; }
 }; // end of class Remnant_Base
