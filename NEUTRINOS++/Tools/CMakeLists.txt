@@ -1,9 +1,11 @@
 set(Tools_SOURCES
 	Form_Factor_Library.C
+	Form_Factor_Parameter_Maps.C
 	)
 
 set(Tools_HEADERS
 	Form_Factor_Library.H
+	Form_Factor_Parameter_Maps.H
 	)
 
 sherpa_create_git_info(Tools)

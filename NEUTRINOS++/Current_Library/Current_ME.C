@@ -1,5 +1,6 @@
 #include "NEUTRINOS++/Current_Library/Current_ME.H"
 #include "NEUTRINOS++/Current_Library/Scatter_Current_Base.H"
+#include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
 #include "METOOLS/Main/XYZFuncs.H"
 
 using namespace NEUTRINOS;
@@ -9,7 +10,9 @@ using namespace std;
 Current_ME::Current_ME(const ATOOLS::Flavour_Vector& flavs,
                        const std::vector<int>& decayindices,
                        const std::string& name):
-  HADRONS::HD_ME_Base(flavs,decayindices,name), p_c1(NULL), p_c2(NULL) { }
+  HADRONS::HD_ME_Base(flavs,decayindices,name), p_c1(NULL), p_c2(NULL) {
+  Form_Factor_Parameter_Maps maps;
+}
 
 Current_ME::~Current_ME() {
   if (p_c1) delete p_c1;

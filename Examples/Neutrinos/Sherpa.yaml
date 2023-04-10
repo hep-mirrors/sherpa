@@ -20,3 +20,22 @@ PROCESSES:
   - 11 2212 -> 11 2212:
       Order: {QCD: 0, EW: 2}
 
+
+TRANSITIONS:
+  Constants:
+    Vud:  0.9744
+    Vus:  0.2204
+    Vcd: -0.2204
+    fpi:  0.1307
+    fK:   0.1598
+
+  Transitions:
+    2212 2212 22:
+      vector:
+        form:   dipole
+        params: 0.847 2.79278
+      tensor:
+        form:   dipole
+        params: 0.847 2.79278
+      pseudoscalar:
+        form: none

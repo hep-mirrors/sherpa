@@ -70,7 +70,7 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
       /////////////////////////////////////////////////////////////////////////
       Complex c = Complex(1., 0.);
       for (int h2=0;h2<2;h2++) {
-	amp += ( 1./(4.*m_massin) *
+	amp += ff2 * ( 1./(4.*m_massin) *
 		 ( F->L(2,h0, 2,h2, c,c) * F->Y(2,h2, 3,h1, c,c) -
 		   F->Y(2,h0, 2,h2, c,c) * F->L(2,h2, 3,h1, c,c) -
 		   F->L(2,h0, 3,h2, c,c) * F->Y(3,h2, 3,h1, c,c) +

@@ -1,7 +1,21 @@
 #ifndef NEUTRINOS_Tools_Form_Factor_Library_H
 #define NEUTRINOS_Tools_Form_Factor_Library_H
 
+#include <iostream>
+
 namespace NEUTRINOS {
+  struct ff_type {
+    enum code {
+      unknown     = 0,
+      none        = 1,
+      dipole      = 2,
+      exponential = 3,
+      Gaussian    = 4
+    };
+  };
+  std::ostream & operator<<(std::ostream & s,const ff_type::code & type);
+
+  
   class Form_Factor_Base {
   protected:
     double m_norm, m_arg;
