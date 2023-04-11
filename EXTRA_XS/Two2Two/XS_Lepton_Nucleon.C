@@ -53,11 +53,12 @@ XS_lepton_nucleon::XS_lepton_nucleon(const External_ME_Args& args)
   m_indices[2] = 3;
   m_indices[3] = 1;
   p_ME   = new Current_ME(m_flavs, m_indices, "Current_ME");
+  msg_Out()<<METHOD<<": setting currents "<<p_JLL<<" + "<<p_JNN<<" into "<<p_ME<<".\n";
   p_ME->SetCurrent1(p_JLL);
   p_ME->SetCurrent2(p_JNN);
   m_oew  = 2;
   m_oqcd = 0;
-
+  msg_Out()<<"Out of "<<METHOD<<"\n";
 }
 
 XS_lepton_nucleon::~XS_lepton_nucleon() {

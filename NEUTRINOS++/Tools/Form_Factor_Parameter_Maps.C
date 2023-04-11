@@ -80,11 +80,9 @@ void Form_Factor_Parameter_Maps::Output() {
 }
 
 void Form_Factor_Parameter_Maps::InitialiseMaps() {
-  msg_Info()<<METHOD<<" starts initialising form factors.\n";
   m_alltransitions = Settings::GetMainSettings()["TRANSITIONS"];
   InitialiseConstants();
   InitialiseFFMaps();
-  Output();
 }
 
 void Form_Factor_Parameter_Maps::InitialiseConstants() {

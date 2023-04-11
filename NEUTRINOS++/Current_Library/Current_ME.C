@@ -12,6 +12,7 @@ Current_ME::Current_ME(const ATOOLS::Flavour_Vector& flavs,
                        const std::string& name):
   HADRONS::HD_ME_Base(flavs,decayindices,name), p_c1(NULL), p_c2(NULL) {
   Form_Factor_Parameter_Maps maps;
+  maps.Output();
 }
 
 Current_ME::~Current_ME() {
