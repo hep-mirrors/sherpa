@@ -15,32 +15,6 @@ namespace ATOOLS {
 }
 
 namespace NEUTRINOS {
-  struct cpl_info {
-    enum code {
-      unknown      = 0,
-      scalar       = 1,
-      pseudoscalar = 2,
-      vector       = 3,
-      axialvector  = 4,
-      tensor       = 5
-    };
-  };
-  std::ostream & operator<<(std::ostream & s,const cpl_info::code & cpl);
-  
-  struct ff_info {
-    cpl_info::code      m_cpl;
-    ff_type::code       m_type;
-    std::vector<double> m_params;
-    ff_info(const cpl_info::code & cpl, const ff_type::code & type, 
-	    const size_t & nparams=2) :
-      m_cpl(cpl), m_type(type) { m_params.resize(nparams); }
-  };
-  std::ostream & operator<<(std::ostream & s,const ff_info & info);
-  
-  
-  struct ModelParameters: public std::map<std::string, double> {
-  };
-  
   class Form_Factor_Entry {
   private:
     std::pair<kf_code, kf_code > m_pair;

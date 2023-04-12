@@ -43,10 +43,10 @@ TRANSITIONS:
     2112 2112 22:
       vector:
         form:   dipole
-        params: 0.847 2.79278
+        params: 0.847 -1.91315
       tensor:
         form:   dipole
-        params: 0.847 2.79278
+        params: 0.847 -1.91315
       pseudoscalar:
         form: none
 

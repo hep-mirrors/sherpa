@@ -7,25 +7,6 @@ using namespace NEUTRINOS;
 using namespace ATOOLS;
 using namespace std;
 
-std::ostream & NEUTRINOS::operator<<(std::ostream & s,const cpl_info::code & cpl) {
-  if (cpl==cpl_info::unknown)      s<<setw(12)<<"unknown";
-  if (cpl==cpl_info::scalar)       s<<setw(12)<<"scalar";
-  if (cpl==cpl_info::pseudoscalar) s<<setw(12)<<"pseudoscalar";
-  if (cpl==cpl_info::vector)       s<<setw(12)<<"vector";
-  if (cpl==cpl_info::axialvector)  s<<setw(12)<<"axialvector";
-  if (cpl==cpl_info::tensor)       s<<setw(12)<<"tensor";
-  return s;
-}
-
-std::ostream & NEUTRINOS::operator<<(std::ostream & s,const ff_info & info) {
-  s<<"     "<<info.m_cpl<<" ["<<info.m_type<<", "<<info.m_params.size()<<" parameters]: \n";
-  s<<"                  ";
-  if (info.m_type!=ff_type::none && info.m_type!=ff_type::unknown) {
-    for (size_t i=0;i<info.m_params.size();i++) s<<info.m_params[i]<<" "; s<<"\n";
-  }
-  return s;
-}
-  
 std::ostream & NEUTRINOS::operator<<(std::ostream & s, Form_Factor_Entry & entry) {
   for (map<kf_code, list<ff_info * > >::iterator eit=entry.GetAllEntries()->begin();
        eit!=entry.GetAllEntries()->end();eit++) { 
