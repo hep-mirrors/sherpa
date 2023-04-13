@@ -223,7 +223,7 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_FS_PT2MIN"].SetDefault(1.0);
   s["CSS_IS_PT2MIN"].SetDefault(2.0);
   s["CSS_FS_AS_FAC"].SetDefault(1.0);
-  s["CSS_IS_AS_FAC"].SetDefault(1.0);
+  s["CSS_IS_AS_FAC"].SetDefault(0.5);
   s["CSS_PDF_FAC"].SetDefault(1.0);
   s["CSS_SCALE_FACTOR"].SetDefault(1.);
   s["CSS_MASS_THRESHOLD"].SetDefault(0.0);
@@ -235,8 +235,8 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
   s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
-  s["CSS_KIN_SCHEME"].SetDefault(1);
-  s["NLO_CSS_KIN_SCHEME"].SetDefault(1);
+  s["CSS_KIN_SCHEME"].SetDefault(0);
+  s["NLO_CSS_KIN_SCHEME"].SetDefault(0);
   s["CSS_OEF"].SetDefault(3.0);
   s["CSS_KMODE"].SetDefault(2);
   s["CSS_RESPECT_Q2"].SetDefault(false);
