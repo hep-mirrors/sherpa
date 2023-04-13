@@ -149,6 +149,7 @@ bool Event_Handler::GenerateEvent(eventtype::code mode)
   }
   switch (mode) {
   case eventtype::StandardPerturbative:
+  case eventtype::NeutrinoNucleon:
   case eventtype::EventReader:
     return GenerateStandardPerturbativeEvent(mode);
   case eventtype::MinimumBias:

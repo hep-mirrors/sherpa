@@ -9,11 +9,17 @@ using namespace ATOOLS;
 using namespace std;
 
 std::ostream & NEUTRINOS::operator<<(std::ostream & s,const ff_type::code & type) {
-  if (type==ff_type::none)        s<<setw(12)<<"none";
-  if (type==ff_type::dipole)      s<<setw(12)<<"dipole";
-  if (type==ff_type::exponential) s<<setw(12)<<"exponential";
-  if (type==ff_type::Gaussian)    s<<setw(12)<<"Gaussian";
-  if (type==ff_type::unknown)     s<<setw(12)<<"unknown";
+  if (type==ff_type::none)             s<<setw(18)<<"none";
+  if (type==ff_type::dipole)           s<<setw(18)<<"dipole";
+  if (type==ff_type::neutron_electric) s<<setw(18)<<"neutron_electric";
+  if (type==ff_type::exponential)      s<<setw(18)<<"exponential";
+  if (type==ff_type::Gaussian)         s<<setw(18)<<"Gaussian";
+  if (type==ff_type::Kelly)            s<<setw(18)<<"Kelly";
+  if (type==ff_type::BBBA)             s<<setw(18)<<"BBBA";
+  if (type==ff_type::ArringtonHill)    s<<setw(18)<<"Arrington-Hill";
+  if (type==ff_type::Helm)             s<<setw(18)<<"Helm";
+  if (type==ff_type::Lovato)           s<<setw(18)<<"Lovato";
+  if (type==ff_type::unknown)          s<<setw(18)<<"unknown";
   return s;
 }
 
@@ -36,160 +42,175 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const ff_info & info) {
   return s;
 }
   
-class Dipole_Form_Factor : public Form_Factor_Base {
-private:
-  double m_norm, m_invlambda2;
-public:
-  Dipole_Form_Factor(const ff_info & info) :
-    Form_Factor_Base("Dipole", info),
-    m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])) {}
-  ~Dipole_Form_Factor() {}
-  double Calc(const double & q2) { return m_norm / sqr(1.+m_invlambda2*q2); }
-};
 
-class Neutron_Electric_Form_Factor : public Form_Factor_Base {
-private:
-  double m_norm, m_invlambda2, m_mass2, m_pref;
-public:
-  Neutron_Electric_Form_Factor(const ff_info & info) :
-    Form_Factor_Base("Neutron_Electric", info),
-    m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])),
-    m_mass2(sqr(info.m_params[2])), m_pref(info.m_params[3]) {}
-  ~Neutron_Electric_Form_Factor() {}
-  double Calc(const double & q2) {
-    return m_norm /sqr(1.+m_invlambda2*q2) * q2/(1.+m_pref*q2/(4.*sqr(m_mass2)));
-  }
-};
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+Dipole_Form_Factor::Dipole_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("Dipole", info),
+  m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])) {}
 
-class Exponential_Form_Factor : public Form_Factor_Base {
-private:
-  double m_norm, m_invlambda2;
-public:
-  Exponential_Form_Factor(const ff_info & info) :
-    Form_Factor_Base("Exponential", info),
-    m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])) {}
-  ~Exponential_Form_Factor() {}
-  double Calc(const double & q2) { return m_norm * exp(-m_invlambda2*q2); }
-};
-
-class Gaussian_Form_Factor : public Form_Factor_Base {
-private:
-  double m_norm, m_invlambda2;
-public:
-  Gaussian_Form_Factor(const ff_info & info) :
-    Form_Factor_Base("Gaussian", info),
-    m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])) {}
-  ~Gaussian_Form_Factor() {}
-  double Calc(const double & q2) { return m_norm * exp(-m_invlambda2*q2); }
-};
-
-class Kelly_Form_Factor : public Form_Factor_Base {
-private:
-  double m_norm, m_invlambda2, m_mass2, m_A[4], m_En[2];
-  const double ModifiedDipole(const double & q2) const {
-    double tau = q2/(4.*m_mass2);
-    return (m_En[0]*tau/(1.+m_En[1]*tau)) * 1./sqr(1.+m_invlambda2*q2);
-  }
-  const double Polynomial(const double & q2) const {
-    double tau = q2/(4.*m_mass2);
-    return m_norm*(1.+m_A[0]*tau)/(1.+m_A[1]*tau+m_A[2]*tau*tau+m_A[3]*tau*tau*tau);
-  }
-public:
-  Kelly_Form_Factor(const ff_info & info) :
-    Form_Factor_Base("Kelly", info),
-    m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])),
-    m_mass2(sqr(info.m_params[2])) {
-    for (size_t i=0;i<4;i++) m_A[i]  = info.m_params[i+3];
-    for (size_t i=0;i<2;i++) m_En[i] = info.m_params[i+7];
-  }
-  ~Kelly_Form_Factor() {}
-  double Calc(const double & q2) { return ModifiedDipole(q2) + Polynomial(q2); }
-};
-
-class BBBA_Form_Factor : public Form_Factor_Base {
-private:
-  double m_norm, m_mass2, m_A[4], m_B[4];
-  const double Numerator(const double & tau) const {
-    return m_A[0]+tau*(m_A[1]+tau*(m_A[2]+tau*m_A[3]));
-  }
-  const double Denominator(const double & tau) const {
-    return 1+tau*(m_B[0]+tau*(m_B[1]+tau*(m_B[2]+tau*m_B[3])));
-  }
-public:
-  BBBA_Form_Factor(const ff_info & info) :
-    Form_Factor_Base("BBBA", info),
-    m_norm(info.m_params[0]), m_mass2(sqr(info.m_params[1])) {
-    for (size_t i=0;i<4;i++) { m_A[i]  = info.m_params[i+2]; m_A[i]  = info.m_params[i+6]; }
-  }
-  ~BBBA_Form_Factor() {}
-  double Calc(const double & q2) {
-    double tau = q2/(4.*m_mass2);
-    return m_norm * Numerator(tau)/Denominator(tau);
-  }
-};
-
-class ArringtonHill_Form_Factor : public Form_Factor_Base {
-private:
-  double m_mass2, m_tcut, m_t0, m_A[13];
-  const double ZExpand(const double & z) const {
-    double result = 0.;
-    for (size_t i=12;i>0;i--) { result += m_A[i]; result *= z; }
-    return result + m_A[0];
-  }
-public:
-  ArringtonHill_Form_Factor(const ff_info & info) :
-    Form_Factor_Base("ArringtonHill", info),
-    m_mass2(sqr(info.m_params[0])), m_tcut(info.m_params[1]), m_t0(info.m_params[2]) {
-    for (size_t i=0;i<13;i++) { m_A[i]  = info.m_params[i+4]; }
-  }
-  ~ArringtonHill_Form_Factor() {}
-  double Calc(const double & q2) {
-    double z = sqr(sqrt(m_tcut+q2)-sqrt(m_tcut-m_t0))/(q2+m_t0);
-    return ZExpand(z);
-  }
-};
-
-class Helm_Form_Factor : public Form_Factor_Base {
-private:
-  double m_s, m_r, m_kappa, m_hbarc;
-public:
-  Helm_Form_Factor(const ff_info & info) :
-    Form_Factor_Base("Helm", info),
-    m_s(info.m_params[0]),
-    m_r(sqrt(sqr(1.2*std::cbrt(info.m_params[1]))-5.*sqr(m_s))),
-    m_kappa(info.m_params[2]),
-    m_hbarc(rpa->hBar()*rpa->c()) {}
-  ~Helm_Form_Factor() {}
-  double Calc(const double & q2) {
-    double kappa = sqrt(q2)/m_hbarc, kappaR = kappa*m_r;
-    return 3.*exp(-sqr(kappa*m_s)/2.)*(sin(kappaR)-kappaR*cos(kappaR))/pow(kappaR,3);
-  }
-};
-
-class Lovato_Form_Factor : public Form_Factor_Base {
-private:
-  double m_b, m_c[5], m_hbarc;
-  const double Polynomial(const double & bx) const {
-    double result = 0.;
-    for (size_t i=4;i>0;i--) {result += m_c[i]; result *= bx; }
-    return (m_c[0]+result)/6.;
-  }
-public:
-  Lovato_Form_Factor(const ff_info & info) :
-    Form_Factor_Base("Lovato", info),
-    m_b(info.m_params[0]), m_hbarc(rpa->hBar()*rpa->c()) {
-    for (size_t i=0;i<5;i++) m_c[i] = info.m_params[i+1];
-  }
-  ~Lovato_Form_Factor() {}
-  double Calc(const double & q2) {
-    double x = sqrt(q2)/m_hbarc, bx = m_b*x;
-    return exp(-sqr(bx)/2.)*Polynomial(bx);
-  }
-};
+double Dipole_Form_Factor::Calc(const double & q2) { return m_norm / sqr(1.+m_invlambda2*q2); }
 
 
-//DECLARE_NN_FORMFACTOR_GETTER(Form_Factor_Base,"NN_Form_Factor_Base")
-//Form_Factor_Base * ATOOLS::Getter<Form_Factor_Base,ff_info,Form_Factor_Base>::	
-//operator()(const ff_info & info) {
-//  return NULL;
-//}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+Neutron_Electric_Form_Factor::Neutron_Electric_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("Neutron_Electric", info),
+  m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])),
+  m_mass2(sqr(info.m_params[2])), m_pref(info.m_params[3]) {}
+
+double Neutron_Electric_Form_Factor::Calc(const double & q2) {
+  return m_norm /sqr(1.+m_invlambda2*q2) * q2/(1.+m_pref*q2/(4.*sqr(m_mass2)));
+}
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+Exponential_Form_Factor::Exponential_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("Exponential", info),
+  m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])) {}
+
+double Exponential_Form_Factor::Calc(const double & q2) { return m_norm * exp(-m_invlambda2*q2); }
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+Gaussian_Form_Factor::Gaussian_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("Gaussian", info),
+  m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])) {}
+
+
+double Gaussian_Form_Factor::Calc(const double & q2) { return m_norm * exp(-m_invlambda2*q2); }
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+Kelly_Form_Factor::Kelly_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("Kelly", info),
+  m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])),
+  m_mass2(sqr(info.m_params[2])) {
+  for (size_t i=0;i<4;i++) m_A[i]  = info.m_params[i+3];
+  for (size_t i=0;i<2;i++) m_En[i] = info.m_params[i+7];
+}
+
+double Kelly_Form_Factor::Calc(const double & q2) { return ModifiedDipole(q2) + Polynomial(q2); }
+
+const double Kelly_Form_Factor::ModifiedDipole(const double & q2) const {
+  double tau = q2/(4.*m_mass2);
+  return (m_En[0]*tau/(1.+m_En[1]*tau)) * 1./sqr(1.+m_invlambda2*q2);
+}
+
+const double Kelly_Form_Factor::Polynomial(const double & q2) const {
+  double tau = q2/(4.*m_mass2);
+  return m_norm*(1.+m_A[0]*tau)/(1.+m_A[1]*tau+m_A[2]*tau*tau+m_A[3]*tau*tau*tau);
+}
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+BBBA_Form_Factor::BBBA_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("BBBA", info),
+  m_norm(info.m_params[0]), m_mass2(sqr(info.m_params[1])) {
+  for (size_t i=0;i<4;i++) { m_A[i]  = info.m_params[i+2]; m_A[i]  = info.m_params[i+6]; }
+}
+
+double BBBA_Form_Factor::Calc(const double & q2) {
+  double tau = q2/(4.*m_mass2);
+  return m_norm * Numerator(tau)/Denominator(tau);
+}
+
+const double BBBA_Form_Factor::Numerator(const double & tau) const {
+  return m_A[0]+tau*(m_A[1]+tau*(m_A[2]+tau*m_A[3]));
+}
+
+const double BBBA_Form_Factor::Denominator(const double & tau) const {
+  return 1+tau*(m_B[0]+tau*(m_B[1]+tau*(m_B[2]+tau*m_B[3])));
+}
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+ArringtonHill_Form_Factor::ArringtonHill_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("ArringtonHill", info),
+  m_mass2(sqr(info.m_params[0])), m_tcut(info.m_params[1]), m_t0(info.m_params[2]) {
+  for (size_t i=0;i<13;i++) { m_A[i]  = info.m_params[i+3]; }
+}
+
+double ArringtonHill_Form_Factor::Calc(const double & q2) {
+  double z = sqr(sqrt(m_tcut+q2)-sqrt(m_tcut-m_t0))/(q2+m_t0);
+  return ZExpand(z);
+}
+
+const double ArringtonHill_Form_Factor::ZExpand(const double & z) const {
+  double result = 0.;
+  for (size_t i=12;i>0;i--) { result += m_A[i]; result *= z; }
+  return result + m_A[0];
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+Helm_Form_Factor::Helm_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("Helm", info),
+  m_s(info.m_params[0]),
+  m_r(sqrt(sqr(1.2*std::cbrt(info.m_params[1]))-5.*sqr(m_s))),
+  m_kappa(info.m_params[2]),
+  m_hbarc(rpa->hBar()*rpa->c()) {}
+
+double Helm_Form_Factor::Calc(const double & q2) {
+  double kappa = sqrt(q2)/m_hbarc, kappaR = kappa*m_r;
+  return 3.*exp(-sqr(kappa*m_s)/2.)*(sin(kappaR)-kappaR*cos(kappaR))/pow(kappaR,3);
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+Lovato_Form_Factor::Lovato_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("Lovato", info),
+  m_b(info.m_params[0]), m_hbarc(rpa->hBar()*rpa->c()) {
+  for (size_t i=0;i<5;i++) m_c[i] = info.m_params[i+1];
+}
+
+double Lovato_Form_Factor::Calc(const double & q2) {
+  double x = sqrt(q2)/m_hbarc, bx = m_b*x;
+  return exp(-sqr(bx)/2.)*Polynomial(bx);
+}
+
+const double Lovato_Form_Factor::Polynomial(const double & bx) const {
+  double result = 0.;
+  for (size_t i=4;i>0;i--) {result += m_c[i]; result *= bx; }
+  return (m_c[0]+result)/6.;
+}
+

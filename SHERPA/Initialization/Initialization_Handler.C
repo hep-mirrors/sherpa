@@ -539,6 +539,11 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       s["MI_HANDLER"].OverrideScalar<std::string>("None");
       s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
+    else if (eventtype=="NeutrinoNucleon") {
+      m_mode=eventtype::NeutrinoNucleon;
+      s["MI_HANDLER"].OverrideScalar<std::string>("None");
+      Hadron_Init().Init();
+    }
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
     }

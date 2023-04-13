@@ -8,6 +8,7 @@ namespace SHERPA {
       StandardPerturbative = 1,
       MinimumBias          = 2,
       HadronDecay          = 3,
+      NeutrinoNucleon      = 4,
       EventReader          = 10
     };
   };

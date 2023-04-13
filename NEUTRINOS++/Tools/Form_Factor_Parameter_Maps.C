@@ -8,12 +8,12 @@ using namespace ATOOLS;
 using namespace std;
 
 std::ostream & NEUTRINOS::operator<<(std::ostream & s, Form_Factor_Entry & entry) {
-  for (map<kf_code, list<ff_info * > >::iterator eit=entry.GetAllEntries()->begin();
-       eit!=entry.GetAllEntries()->end();eit++) { 
+  for (map<kf_code, map<cpl_info::code, ff_info * > >::iterator eit=entry.GetAll()->begin();
+       eit!=entry.GetAll()->end();eit++) { 
     s<<"   - "<<Flavour(eit->first).TexName()<<" mediated transitions:\n";
-    for (list<ff_info * >::iterator ffit=eit->second.begin();
+    for (map<cpl_info::code, ff_info * > ::iterator ffit=eit->second.begin();
 	 ffit!=eit->second.end();ffit++) {
-      s<<(**ffit)<<"\n";
+      s<<(*ffit->second)<<"\n";
     }
   }
   return s;
@@ -21,16 +21,22 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s, Form_Factor_Entry & entry
 
 Form_Factor_Entry::~Form_Factor_Entry() {
   while (!m_entries.empty()) {
-    m_entries.begin()->second.erase(m_entries.begin()->second.begin(),
-				    m_entries.begin()->second.end());
+    map<cpl_info::code, ff_info * > ffinfos = m_entries.begin()->second;  
+    while (!ffinfos.empty()) {
+      delete (ffinfos.begin()->second); ffinfos.erase(ffinfos.begin());
+    }
+    m_entries.erase(m_entries.begin());
   }
 }
 
-void Form_Factor_Entry::Add(const kf_code & prop, list<ff_info * > & ffinfos) {
+void Form_Factor_Entry::Add(const kf_code & prop, map<cpl_info::code, ff_info * > & ffinfos) {
   if (m_entries.find(prop)!=m_entries.end()) {
     msg_Error()<<"Error in "<<METHOD<<": will override form factor information for "
 	       <<prop<<" in the transition "<<m_pair.first<<" -> "<<m_pair.second<<"\n";
-    m_entries[prop].erase(m_entries[prop].begin(),m_entries[prop].end());
+    map<cpl_info::code, ff_info * > ffinfos = m_entries[prop];
+    while (!ffinfos.empty()) {
+      delete (ffinfos.begin()->second); ffinfos.erase(ffinfos.begin());
+    }
   }
   m_entries[prop] = ffinfos;
 }
@@ -44,6 +50,41 @@ Form_Factor_Parameter_Maps::~Form_Factor_Parameter_Maps() {
     delete begin()->second;
     erase(begin());
   }      
+}
+
+Form_Factor_Base *
+Form_Factor_Parameter_Maps::GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_info::code & cpl) {
+  ff_info * info = FindInfo(n1,n2,prop,cpl);
+  if (info!=NULL) {
+    switch (info->m_type) {
+    case ff_type::dipole:
+      return new Dipole_Form_Factor(*info);
+    case ff_type::neutron_electric:
+      return new Neutron_Electric_Form_Factor(*info);
+    case ff_type::exponential:
+      return new Exponential_Form_Factor(*info);
+    case ff_type::Gaussian:
+      return new Gaussian_Form_Factor(*info);
+    case ff_type::Kelly:
+      return new Kelly_Form_Factor(*info);
+    case ff_type::BBBA:
+      return new BBBA_Form_Factor(*info);
+    case ff_type::ArringtonHill:
+      return new ArringtonHill_Form_Factor(*info);
+    case ff_type::Helm:
+      return new Helm_Form_Factor(*info);
+    case ff_type::Lovato:
+      return new Lovato_Form_Factor(*info);
+    case ff_type::unknown:
+      msg_Error()<<"Error in "<<METHOD<<": found unknown FF type.\n"
+		 <<"    Will return Dummy Form Factor for "
+		 <<Flavour(n1)<<" -> "<<Flavour(n2)<<" + "<<Flavour(prop)<<"\n";
+    case ff_type::none:
+    default:
+      break;
+    }
+  }
+  return new Dummy_Form_Factor(cpl);
 }
 
 void Form_Factor_Parameter_Maps::Output() {
@@ -82,7 +123,7 @@ void Form_Factor_Parameter_Maps::InitialiseFFMaps() {
 bool Form_Factor_Parameter_Maps::InitialiseFormFactor(string & name) {
   vector<kf_code> kfcs;
   vector<double>  parameters;
-  list<ff_info *> ffinfos;
+  map<cpl_info::code, ff_info *> ffinfos;
   Scoped_Settings transition = m_alltransitions["Transitions"][name]; 
   if (ExtractFlavours(name,kfcs)) {
     pair<kf_code, kf_code> kfpair = make_pair(kfcs[0], kfcs[1]);
@@ -95,18 +136,12 @@ bool Form_Factor_Parameter_Maps::InitialiseFormFactor(string & name) {
 	  string form = transition[cpl][key].SetDefault("none").Get<string>();
 	  type        = FFType(form);
 	}
-      }
-      for (auto & key: transition[cpl].GetKeys()) {
-	if (key=="params") {
-	  string params = transition[cpl][key].SetDefault("").Get<string>();
-	  if (ExtractParameters(params,parameters)) {
-	  }
-	}
+	parameters  = transition[cpl]["params"].SetDefault(vector<double>{}).GetVector<double>();
       }
       cpl_info::code cplinfo = CplInfo(cpl);
       ff_info * ffinfo = new ff_info(cplinfo,type,parameters.size());
       for (size_t i=0;i<parameters.size();i++) ffinfo->m_params[i] = parameters[i];
-      ffinfos.push_back(ffinfo);
+      ffinfos[cplinfo] = ffinfo;
     }
     Form_Factor_Entry * entry = (*this)[kfpair];
     entry->Add(kfcs[2], ffinfos);
@@ -127,13 +162,4 @@ bool Form_Factor_Parameter_Maps::ExtractFlavours(string & name,vector<kf_code> &
   }
 }
 
-bool Form_Factor_Parameter_Maps::ExtractParameters(string & name,vector<double> & parameters) {
-  string buffer = name;
-  while (true) {
-    while (buffer.length()>0 && (buffer[0]==' ' || buffer[0]=='\t')) buffer.erase(0,1);
-    if (buffer.length()==0) return (parameters.size()>0);
-    size_t pos(Min(buffer.find(' '),buffer.length()));
-    parameters.push_back(ToType<double>(buffer.substr(0,pos)));
-    buffer=buffer.substr(pos);
-  }
-}
+
