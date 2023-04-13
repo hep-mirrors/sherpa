@@ -12,7 +12,7 @@ double Sigma_DD::dSigma_dt_Kernel::operator()(double B) {
   return 2.*M_PI*B*SF.Jn(0,B*m_Q)*(1.-exp(-(*p_eikonal)(B)/2.));
 }
 
-Sigma_DD::Sigma_DD(Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd) :
+Sigma_DD::Sigma_DD(Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) :
   Sigma_Base(sigma_el->Eikonals()),
   p_sigma_el(sigma_el),p_sigma_sd(sigma_sd),
   m_Bmin(p_sigma_el->Bmin()), m_Bmax(p_sigma_el->Bmax()),

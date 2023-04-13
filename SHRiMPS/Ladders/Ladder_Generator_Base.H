@@ -9,7 +9,7 @@
 #include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
-#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
+#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 
 
 namespace SHRIMPS {
@@ -59,7 +59,7 @@ namespace SHRIMPS {
 
     virtual void Initialise(Remnant_Handler * remnants);
     virtual void Test();
-    virtual Ladder * operator()(const ATOOLS::Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd) = 0;
+    virtual Ladder * operator()(const ATOOLS::Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) = 0;
     virtual void QuarkReplace();
     inline virtual void FixLadderType() {
       //p_ladder->FixType(-m_Ymax + m_deltaY, m_Ymax - m_deltaY);

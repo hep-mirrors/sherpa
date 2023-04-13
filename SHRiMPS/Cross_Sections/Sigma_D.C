@@ -153,12 +153,14 @@ void Sigma_D::CreateIntGrids(const size_t diff,Sigma_Elastic * sigma_el) {
   m_intgrids[diff].push_back(0.);
   std::vector<double> el_grid = sigma_el->GetDiffGrid();
   if (diff < 2) {
-      for (size_t i=0;i<m_diffgrids[diff].size();i++) m_diffgrids[diff][i] -= el_grid[i];
+    for (size_t i=0;i<m_diffgrids[diff].size();i++) {
+      m_diffgrids[diff][i] -= el_grid[i];
+    }
   }
   else if (diff == 2) {
-      for (size_t i=0;i<m_diffgrids[diff].size();i++) {
-          m_diffgrids[diff][i] -= (m_diffgrids[0][i] + m_diffgrids[1][i] + el_grid[i]);
-      }
+    for (size_t i=0;i<m_diffgrids[diff].size();i++) {
+      m_diffgrids[diff][i] -= (m_diffgrids[0][i] + m_diffgrids[1][i] + el_grid[i]);
+    }
   }
   for (size_t i=1;i<m_diffgrids[diff].size();i++) {
     m_summed[diff] += (m_diffgrids[diff][i]+m_diffgrids[diff][i-1])/2. * m_delta;

@@ -1,7 +1,7 @@
 #ifndef SHRIMPS_Cross_Sections_Sigma_DD_H
 #define SHRIMPS_Cross_Sections_Sigma_DD_H
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
-#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
+#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 
 namespace SHRIMPS {
   class Sigma_DD : public Sigma_Base {
@@ -16,7 +16,7 @@ namespace SHRIMPS {
       double operator()(double B);
     };
     Sigma_Elastic     * p_sigma_el;
-    Sigma_SD          * p_sigma_sd;
+    Sigma_D          * p_sigma_sd;
 
 
     double              m_Bmin, m_Bmax;
@@ -30,7 +30,7 @@ namespace SHRIMPS {
     void FillGrids();
   public:
     Sigma_DD() {};
-    Sigma_DD(Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd);
+    Sigma_DD(Sigma_Elastic * sigma_el,Sigma_D * sigma_sd);
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
     double GetDiffArgument(const double & B);

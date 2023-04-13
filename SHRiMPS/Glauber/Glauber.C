@@ -6,7 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
-#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
+#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 #include "SHRiMPS/Cross_Sections/Sigma_DD.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
@@ -24,7 +24,7 @@ Glauber::Glauber(Cross_Sections * xsecs, int N1, int N2) :
   m_rho0(0.17), m_w(0.), m_a(0.54), 
   m_nucleus_1_position(ATOOLS::Vec4D(0.,0.,0.,0.)),
   m_nucleus_2_position(ATOOLS::Vec4D(0.,0.,0.,0.)),
-  m_type_abs(1), m_type_SD1(2), m_type_SD2(3), m_type_DD(4), m_type_elas(5)
+  m_type_abs(3), m_type_SD1(0), m_type_SD2(1), m_type_DD(2), m_type_elas(4)
 {
   double maxB = ( m_radius1 > m_radius2 )? 2*m_radius1 : 2*m_radius2;
   double impact_parameter = sqrt(ran->Get())*maxB;
@@ -75,10 +75,10 @@ void Glauber::SaveXSs(Cross_Sections * xsecs,double bmin, double bmax,int num) {
     double b_GeVmin1 = current_b/0.197;
     double inel(xsecs->GetSigmaInelastic()->GetCombinedValue(b_GeVmin1));
     double el(xsecs->GetSigmaElastic()->GetCombinedValue(b_GeVmin1));
-    double QE(xsecs->GetSigmaSD()->GetCombinedValue(b_GeVmin1));
-    double SD0(xsecs->GetSigmaSD()->GetCombinedValueSD0(b_GeVmin1));
-    double SD1(xsecs->GetSigmaSD()->GetCombinedValueSD1(b_GeVmin1));
-    double DD(xsecs->GetSigmaSD()->GetCombinedValueDD(b_GeVmin1));
+    double QE(xsecs->GetSigmaD()->GetCombinedValue(b_GeVmin1));
+    double SD0(xsecs->GetSigmaD()->GetCombinedValueSD0(b_GeVmin1));
+    double SD1(xsecs->GetSigmaD()->GetCombinedValueSD1(b_GeVmin1));
+    double DD(xsecs->GetSigmaD()->GetCombinedValueDD(b_GeVmin1));
     cross_sections << current_b << "\t" << inel << "\t" << SD0 << "\t" << SD1 << "\t" << DD << "\t" << el << "\t" << QE << endl;
     current_b = current_b + b_increment;
   }
@@ -93,10 +93,10 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
       //distance = distance*1.e-4; //
       double inel(xsecs->GetSigmaInelastic()->GetCombinedValue(distance/0.197));
       double el(xsecs->GetSigmaElastic()->GetCombinedValue(distance/0.197));
-      double QE(xsecs->GetSigmaSD()->GetCombinedValue(distance/0.197));
-      double SD0(xsecs->GetSigmaSD()->GetCombinedValueSD0(distance/0.197));
-      double SD1(xsecs->GetSigmaSD()->GetCombinedValueSD1(distance/0.197));
-      double DD(xsecs->GetSigmaSD()->GetCombinedValueDD(distance/0.197));
+      double QE(xsecs->GetSigmaD()->GetCombinedValue(distance/0.197));
+      double SD0(xsecs->GetSigmaD()->GetCombinedValueSD0(distance/0.197));
+      double SD1(xsecs->GetSigmaD()->GetCombinedValueSD1(distance/0.197));
+      double DD(xsecs->GetSigmaD()->GetCombinedValueDD(distance/0.197));
 
       double prob_SD0(0.);  
       double prob_SD1(0.);  

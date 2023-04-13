@@ -7,7 +7,7 @@
 #include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
-#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
+#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 #include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
 
 
@@ -20,7 +20,7 @@ namespace SHRIMPS {
     void   CalculateWeight();
     void   FixEmissionsKinematics_elastic();
     Sigma_Elastic * p_sigma_el;
-    Sigma_SD * p_sigma_sd;
+    Sigma_D * p_sigma_d;
     Sigma_Partonic   m_partonic;
     Continued_PDF  * p_pdf[2];
     double m_abs_t;
@@ -39,7 +39,7 @@ namespace SHRIMPS {
     int GetIntType() {return 2;};
     void FixEmissionsKinematics_SD(int mode);
     
-    Ladder * operator()(const ATOOLS::Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd);  
+    Ladder * operator()(const ATOOLS::Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_D * sigma_d);  
   };
 }
 #endif

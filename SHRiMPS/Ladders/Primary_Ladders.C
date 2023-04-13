@@ -13,7 +13,7 @@
 using namespace SHRIMPS;
 using namespace ATOOLS;
 
-Primary_Ladders::Primary_Ladders(Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd) :
+Primary_Ladders::Primary_Ladders(Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) :
   p_sigma_el(sigma_el), p_sigma_sd(sigma_sd),
   p_laddergenerator(new Ladder_Generator_QE()),
   m_Ecms(rpa->gen.Ecms()/2.),

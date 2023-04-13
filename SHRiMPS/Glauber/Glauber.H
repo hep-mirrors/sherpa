@@ -2,7 +2,7 @@
 #define SHRIMPS_Glauber_Glauber_H
 
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
-#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
+#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 #include "SHRiMPS/Cross_Sections/Sigma_DD.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"

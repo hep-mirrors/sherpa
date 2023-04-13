@@ -23,9 +23,9 @@ Ladder_Generator_QE::Ladder_Generator_QE() :
   
 Ladder_Generator_QE::~Ladder_Generator_QE() {}
 
-Ladder * Ladder_Generator_QE::operator()(const Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd) {
+Ladder * Ladder_Generator_QE::operator()(const Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_D * sigma_d) {
   p_sigma_el = sigma_el;
-  p_sigma_sd = sigma_sd;
+  p_sigma_d = sigma_d;
   InitLadder(pos);
   for (int beam=0;beam<2;beam++) m_ladder_ends[beam] = ATOOLS::Flavour(kf_gluon);
   FillGluons();
@@ -58,15 +58,20 @@ void Ladder_Generator_QE::FixEmissionsKinematics_elastic() {
   m_pl1 = sqrt(m_pl12);
   m_pl2 = sqrt(m_pl22);
   switch (m_interactionType) {
-    case 2: m_abs_t = p_sigma_sd->SelectT(0);
-    case 3: m_abs_t = p_sigma_sd->SelectT(1);
-    case 5: m_abs_t = p_sigma_el->SelectT();
+    case 0: m_abs_t = p_sigma_d->SelectT(0);
+    case 1: m_abs_t = p_sigma_d->SelectT(1);
+    case 2: m_abs_t = p_sigma_d->SelectT(2);
+    case 4: m_abs_t = p_sigma_el->SelectT();
   }
-  std::ofstream tvals;
-  tvals.open("./tvals_bias_large.txt", std::ios::app);
-  tvals << 2 << "\t" << p_sigma_sd->SelectT(0) << endl;
-  tvals << 5 << "\t" << p_sigma_el->SelectT() << endl;
-  tvals.close();
+  //std::ofstream tvals;
+  //tvals.open("./tvals_bias_large.txt", std::ios::app);
+  //for (int i = 0; i < 1000; i++) {
+  //  tvals << 0 << "\t" << p_sigma_d->SelectT(0) << endl;
+  //  tvals << 1 << "\t" << p_sigma_d->SelectT(1) << endl;
+  //  tvals << 2 << "\t" << p_sigma_d->SelectT(2) << endl;
+  //  tvals << 4 << "\t" << p_sigma_el->SelectT() << endl;
+  //}
+  //tvals.close();
   double costheta = 1.-m_abs_t/(2.*m_pl12), sintheta = sqrt(1.-sqr(costheta));
   double pt = m_pl1*sintheta, pt2 = sqr(pt);
   double phi(2.*M_PI*ran->Get()), ptx(pt*cos(phi)), pty(pt*sin(phi));
