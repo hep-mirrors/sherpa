@@ -366,3 +366,43 @@ void Simple_Pole_Central::GenerateWeight(const int &mode) {
   double pw = p_vegas->GenerateWeight(p_rans);
   m_weight = pw * m_spkey.Weight() * m_ykey.Weight() / m_spkey[2];
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+Simple_Pole_YFS::Simple_Pole_YFS(const double exponent,const std::string cinfo,ATOOLS::Integration_Info *info):
+  ISR_Channel_Base(info),
+  m_sexponent(exponent)
+{
+  m_name="Simple_Pole_YFS_"+ATOOLS::ToString(exponent)+"_Uniform";
+  m_spkey.SetInfo(std::string("Simple_Pole_YFS")+ATOOLS::ToString(exponent));
+  m_spkey.Assign(cinfo + std::string("::s'"),5,0,info);
+  m_xkey.Assign(std::string("x")+cinfo,5,0,info);
+  m_sgridkey.Assign(m_spkey.Info(),1,0,info);
+  m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  m_rannum=1;
+  p_vegas = new Vegas(m_rannum,100,m_name);
+  p_rans  = new double[1];
+}
+
+void Simple_Pole_YFS::GeneratePoint(const double *rns)
+{
+  double *ran = p_vegas->GeneratePoint(rns);
+  for(int i=0;i<1;i++) p_rans[i]=ran[i];
+  m_spkey[3]=CE.MasslessPropMomenta(m_sexponent,m_spkey[0],m_spkey[1],p_rans[0]);
+}
+
+void Simple_Pole_YFS::GenerateWeight(const int & mode) 
+{
+
+  if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
+    if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
+      m_spkey<<1./CE.MasslessPropWeight(m_sexponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
+
+    }
+  }
+  p_rans[0] = m_sgridkey[0];
+  double pw= p_vegas->GenerateWeight(p_rans);
+  m_weight=pw*m_spkey.Weight()/m_spkey[3];
+}

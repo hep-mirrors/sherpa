@@ -225,12 +225,14 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
       p_LO_process = new Single_LOProcess_External(lopi,
                                                    p_int->Beam(),
                                                    p_int->ISR(),
+                                                   p_int->YFS(),
                                                    m_stype);
     }
     else if (CF.MHVCalculable(lopi))
       p_LO_process = new Single_LOProcess_MHV(lopi,
                                               p_int->Beam(),
                                               p_int->ISR(),
+                                              p_int->YFS(),
                                               m_stype);
     if (lopi.m_amegicmhv==2) return 0;
   }
@@ -238,6 +240,7 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     p_LO_process = new Single_LOProcess(lopi,
                                         p_int->Beam(),
                                         p_int->ISR(),
+                                        p_int->YFS(),
                                         m_stype);
   p_LO_process->SetTestMoms(p_testmoms);
   p_LO_process->SetPrintGraphs(lopi.m_gpath);

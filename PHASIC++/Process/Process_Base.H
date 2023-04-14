@@ -29,6 +29,8 @@ namespace PDF {
 
 namespace METOOLS { class Spin_Amplitudes; }
 
+namespace YFS { class YFS_Handler; }
+
 namespace PHASIC {
 
   typedef std::map<int,int> FMMap;
@@ -187,7 +189,8 @@ namespace PHASIC {
     virtual bool InitScale();
     virtual void Init(const Process_Info &pi,
 		      BEAM::Beam_Spectra_Handler *const beamhandler,
-		      PDF::ISR_Handler *const isrhandler,const int mode=0);
+		      PDF::ISR_Handler *const isrhandler,
+		      YFS::YFS_Handler *const yfshandler,const int mode=0);
 
     virtual bool FillIntegrator(Phase_Space_Handler *const psh);
     virtual bool InitIntegrator(Phase_Space_Handler *const psh);

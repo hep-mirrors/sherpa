@@ -268,7 +268,8 @@ bool Process_Base::InitScale()
 
 void Process_Base::Init(const Process_Info &pi,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
-			PDF::ISR_Handler *const isrhandler,const int mode)
+			PDF::ISR_Handler *const isrhandler,
+			YFS::YFS_Handler *const yfshandler, const int mode)
 {
   m_pinfo=pi;
   m_nin=m_pinfo.m_ii.NExternal();
@@ -303,8 +304,9 @@ void Process_Base::Init(const Process_Info &pi,
   if (!widthcheck)
     msg_Error()<<"Non-zero width for external particle in process "
                 << m_name << std::endl;
+  if(yfshandler->GetMode())  yfshandler->SetFlavours(m_flavs);
   p_int->SetISRThreshold(Max(massin,massout));
-  p_int->Initialize(beamhandler,isrhandler);
+  p_int->Initialize(beamhandler,isrhandler,yfshandler);
   m_issymfac=1.0;
   m_symfac=m_pinfo.m_fi.FSSymmetryFactor();
   if ((m_nin==2 && m_flavs[0]==m_flavs[1] &&

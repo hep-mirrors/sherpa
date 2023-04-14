@@ -4,6 +4,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "YFS/Main/YFS_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
@@ -31,6 +32,8 @@ namespace PHASIC {
   class Single_Process;
   class Selector_Key;
 }
+
+namespace YFS { class YFS_Handler; }
 
 namespace SHERPA {
 
@@ -70,6 +73,7 @@ namespace SHERPA {
 
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
+    YFS::YFS_Handler           *p_yfs;
     REMNANTS::Remnant_Handler  *p_remnants;
     MODEL::Model_Base          *p_model;
 
@@ -159,7 +163,8 @@ namespace SHERPA {
     ~Matrix_Element_Handler();
 
     int InitializeProcesses(BEAM::Beam_Spectra_Handler*,
-                            PDF::ISR_Handler*);
+                            PDF::ISR_Handler*,
+                            YFS::YFS_Handler*);
 
     int InitializeTheReweighting(ATOOLS::Variations_Mode mode);
 
@@ -188,6 +193,7 @@ namespace SHERPA {
     }
     inline BEAM::Beam_Spectra_Handler *GetBeam() const  { return p_beam; }
     inline PDF::ISR_Handler           *GetISR() const   { return p_isr;  }
+    inline YFS::YFS_Handler           *GetYFS() const   { return p_yfs;  }
     inline REMNANTS::Remnant_Handler  *Remnants() const { return p_remnants; }
     inline Shower_Handler *Shower() const { return p_shower; }
 

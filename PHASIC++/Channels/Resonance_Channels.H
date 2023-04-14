@@ -101,5 +101,21 @@ namespace PHASIC {
     void GenerateWeight(const int & mode=0);
   };
 
+  ////////////////////////////////////////////////////////////////////////
+
+  class Resonance_YFS: public ISR_Channel_Base {
+  protected :
+    double m_mass, m_width;
+    bool m_zchannel;
+    size_t m_mode;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_sgridkey;
+  public :
+    Resonance_YFS(const double mass,const double width, const std::string cinfo,
+      ATOOLS::Integration_Info *info);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight(const int & mode=0);
+    };
+
+
 }
 #endif

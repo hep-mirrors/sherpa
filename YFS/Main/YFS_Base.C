@@ -1,0 +1,133 @@
+#include "YFS/Main/YFS_Base.H"
+#include "ATOOLS/Math/Random.H" 
+// #include "ATOOLS/Org/Run_Parameter.H" 
+#include "ATOOLS/Org/My_File.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+
+
+
+using namespace ATOOLS;
+using namespace MODEL;
+using namespace YFS;
+
+YFS_Base::YFS_Base()
+{
+  // p_yfsFormFact = new YFS::YFS_Form_Factor();
+  RegisterDefaults();
+  RegisterSettings();  
+}
+
+YFS_Base::~YFS_Base() 
+{
+}
+
+
+void YFS_Base::RegisterDefaults(){
+  Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
+  s["ISR_MODE"].SetDefault(0);
+  s["BETA"].SetDefault(0);
+  s["SEMI"].SetDefault(0);
+  s["VMIN1"].SetDefault(1e-9);
+  s["VMAX"].SetDefault(1);
+  s["VMIN"].SetDefault(1e-6);
+  s["ISR_CUT"].SetDefault(1e-6);
+  s["PHOTON_MAX"].SetDefault(100);
+  s["LOOP_TOOL"].SetDefault(false);
+  s["RS"].SetDefault(false);
+  s["FSR"].SetDefault(0);
+  s["SET_MASSES"].SetDefault(false);
+  s["FILL_BLOB"].SetDefault(true);
+  s["FSR_DEBUG"].SetDefault(false);
+  s["ISR_DEBUG"].SetDefault(false);
+  s["DEBUG_DIR_ISR"].SetDefault("ISR_DEBUG");
+  s["DEBUG_DIR_FSR"].SetDefault("FSR_DEBUG");
+  s["TChannel-Cut"].SetDefault(0);
+  s["COULOMB"].SetDefault(false);
+  s["FSR_CONST_WEIGHT"].SetDefault(false);
+  s["HIDE_PHOTONS"].SetDefault(true);
+  s["FULL_FORM"].SetDefault(1);
+  s["WW_FORM"].SetDefault(0);
+  s["WW_BETAT"].SetDefault(0.382);
+  s["INT"].SetDefault(0);
+  s["CHECK_MASS_REG"].SetDefault(0);
+  s["CHECK_POLES"].SetDefault(0);
+  s["VIRTUAL_ONLY"].SetDefault(0);
+  s["REAL_ONLY"].SetDefault(0);
+  s["USE_MODEL_ALPHA"].SetDefault(0);
+  s["FSR_BETA"].SetDefault(1);
+  s["KKMC_ANG"].SetDefault(1);
+  s["FIXED_WEIGHT"].SetDefault(0);
+  s["GRIFFIN_MODE"].SetDefault(0);
+  s["GRIFFIN_ORDER"].SetDefault(2);
+  s["HARD_MIN"].SetDefault(0.1);
+  s["PHOTON_MASS"].SetDefault(0.1);
+  s["CEEX"].SetDefault(0);
+  s["Resonance_Max"].SetDefault(10);
+}
+
+void YFS_Base::RegisterSettings(){
+  Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
+  m_betaorder = s["BETA"].Get<int>();
+  m_mode = s["ISR_MODE"].Get<int>();
+  m_isrcut   = s["ISR_CUT"].Get<double>();
+  s["DELTA"].SetDefault(1e-2*m_isrcut);
+  m_vmin1 = s["VMIN1"].Get<double>();
+  m_vmin = s["VMIN"].Get<double>();
+  m_vmax = s["VMAX"].Get<double>();
+  m_nmax  = s["PHOTON_MAX"].Get<int>();
+  m_fillblob  = s["FILL_BLOB"].Get<bool>();
+  m_looptool  = s["LOOP_TOOL"].Get<bool>();
+  m_YFS_RS  = s["RS"].Get<bool>();
+  m_setmass = s["SET_MASSES"].Get<bool>();
+  m_RealPhotons = s["NO_PHOTONS"].SetDefault(false).Get<bool>();
+  m_NReal       = s["REAL_PHOTONS"].SetDefault(-1).Get<int>();
+  m_fsrmode  = s["FSR"].Get<int>();
+  m_debugDIR_ISR = s["DEBUG_DIR_ISR"].Get<std::string>();
+  m_debugDIR_FSR = s["DEBUG_DIR_FSR"].Get<std::string>();
+  m_fsr_debug = s["FSR_DEBUG"].Get<bool>();
+  m_isr_debug = s["ISR_DEBUG"].Get<bool>();
+  m_deltacut = s["DELTA"].Get<double>();
+  m_coulomb = s["COULOMB"].Get<bool>();
+  m_constfsrW = s["FSR_CONST_WEIGHT"].Get<bool>();
+  m_hidephotons=s["HIDE_PHOTONS"].Get<bool>();
+  m_fullform = s["FULL_FORM"].Get<int>();
+  m_formWW = s["WW_FORM"].Get<int>();
+  m_betatWW = s["WW_BETAT"].Get<double>();
+  m_useint = s["INT"].Get<int>();
+  m_check_mass_reg = s["CHECK_MASS_REG"].Get<int>();
+  m_check_poles = s["CHECK_POLES"].Get<int>();
+  m_virtual_only = s["VIRTUAL_ONLY"].Get<bool>();
+  m_real_only = s["REAL_ONLY"].Get<bool>();
+  m_use_model_alpha = s["USE_MODEL_ALPHA"].Get<bool>();
+  m_use_fsr_beta = s["FSR_BETA"].Get<int>();
+  m_semiyfs = s["SEMI"].Get<int>();
+  m_kkmcAngles =  s["KKMC_ANG"].Get<int>();
+  m_fixed_weight = s["FIXED_WEIGHT"].Get<double>();
+  m_griff = s["GRIFFIN_MODE"].Get<int>();
+  m_hardmin = s["HARD_MIN"].Get<double>();
+  m_photonMass = s["PHOTON_MASS"].Get<double>();
+  m_useceex = s["CEEX"].Get<int>();
+  m_resonace_max = s["Resonance_Max"].Get<double>();
+  m_CalForm = false;
+  m_realtool = false;
+  //update when beamstrahlung is added
+  m_beamspread=false;
+  m_isrinital=true;
+  m_g = 0;
+  m_gp = 0;
+  if(m_use_model_alpha) m_alpha = s_model->ScalarConstant("alpha_QED");
+  else m_alpha  = (*aqed)(0); 
+  if (m_use_model_alpha) m_rescale_alpha = 1;
+  else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
+  m_alpi = m_alpha/M_PI;
+  PRINT_VAR(m_mode);
+  // p_yfsFormFact = new YFS::YFS_Form_Factor();
+
+}
+

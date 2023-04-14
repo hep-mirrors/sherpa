@@ -26,9 +26,11 @@ MI_Processes::~MI_Processes() {
 
 bool MI_Processes::Initialize(MODEL::Model_Base *const model,
 			      BEAM::Beam_Spectra_Handler *const beam,
-			      PDF::ISR_Handler *const isr) {
+			      PDF::ISR_Handler *const isr,
+			      YFS::YFS_Handler *const yfs) {
   // Get PDFs and couplings
   p_isr       = isr;
+  p_yfs       = yfs;
   m_muFfac    = sqr((*mipars)("FacScale_Factor"));
   for (size_t i=0;i<2;i++) {
     p_pdf[i]  = p_isr->PDF(i);

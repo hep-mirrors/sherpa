@@ -17,6 +17,7 @@ Amisic::~Amisic() {
 
 bool Amisic::Initialize(MODEL::Model_Base *const model,
 			PDF::ISR_Handler *const isr,
+			YFS::YFS_Handler *const yfs,
                         REMNANTS::Remnant_Handler * remnant_handler)
 {
   InitParameters();
@@ -69,7 +70,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   p_processes = new MI_Processes(m_variable_s);
   p_processes->SetSigmaND(m_sigmaND_norm * p_xsecs->XSnd());
   p_processes->SetXSecCalculator(p_xsecs);
-  p_processes->Initialize(model,NULL,isr);
+  p_processes->Initialize(model,NULL,isr,yfs);
   
   m_overestimator.Initialize(p_processes);
   m_overestimator.SetXSnd(m_sigmaND_norm * p_xsecs->XSnd());

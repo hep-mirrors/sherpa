@@ -33,6 +33,7 @@ Phase_Space_Point::~Phase_Space_Point() {
 void Phase_Space_Point::Init() {
   p_beamhandler = p_pshandler->GetBeamSpectra();
   p_isrhandler = p_pshandler->GetISRHandler();
+  p_yfshandler = p_pshandler->GetYFSHandler();
   m_nin = p_pshandler->Process()->Process()->NIn();
   m_nout = p_pshandler->Process()->Process()->NOut();
   m_nvec = m_nin + m_nout;
@@ -128,7 +129,7 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
       return false;
     }
   }
-  DefineFSRKinematics();
+  if(p_yfshandler->GetMode()==0) DefineFSRKinematics();
   CorrectMomenta();
   return true;
 }
@@ -193,6 +194,28 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
                              ? 2.0
                              : 1.0;
   }
+  if(p_yfshandler->GetMode() && p_yfshandler->GetFSRMode()!=2){
+    p_yfshandler->SetSprimeMin(m_smin);
+    p_isrchannels->GeneratePoint();
+    p_yfshandler->SetSprimeLimits(m_isrspkey.Doubles());
+    DefineFSRKinematics();
+    p_yfshandler->SetBornMomenta(p_moms);
+    m_sprime = m_osmass ? m_isrspkey[4] : m_isrspkey[3];
+    p_yfshandler->SetMomenta(p_moms);
+    p_yfshandler->SetSprime(m_sprime);
+    if(!p_yfshandler->MakeYFS(p_moms)) return 0;
+    DefineFSRKinematics();
+    p_yfshandler->SetMomenta(p_moms);
+    if(!p_yfshandler->CalculateFSR(p_moms)) return false;
+    return true;
+  }
+  else if(p_yfshandler->GetFSRMode()==2){
+    p_yfshandler->SetSprimeLimits(m_isrspkey.Doubles());
+    DefineFSRKinematics();
+    p_yfshandler->SetBornMomenta(p_moms);
+    return(p_yfshandler->CalculateFSR(p_moms));
+
+  }
   return p_isrhandler->MakeISR(m_sprime, m_isrykey[2], p_moms,
                                process->Process()->Selected()->Flavours());
 }
@@ -208,6 +231,7 @@ void Phase_Space_Point::CorrectMomenta() {
   if (m_nin!=2 || (m_nin==2 && m_nout==1 &&
        p_pshandler->Active()->Process()->Flavours()[2].Kfcode()==999))
     return;
+  if(p_yfshandler->GetMode()==1) return;
   Vec4D  momsum(0.,0.,0.,0.);
   size_t imax(0);
   double Emax(0.0);

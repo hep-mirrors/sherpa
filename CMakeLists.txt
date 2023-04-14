@@ -457,6 +457,7 @@ add_subdirectory(PDF/SAL)
 add_subdirectory(RECONNECTIONS)
 add_subdirectory(REMNANTS)
 add_subdirectory(SHRiMPS)
+add_subdirectory(YFS)
 IF (SHERPA_ENABLE_MCFM)
   find_package(MCFM REQUIRED)
   message(STATUS "SHERPA: MCFM_VERSION=${MCFM_VERSION} MCFM_LIBRARY=${MCFM_LIBRARY} MCFM_INCLUDE_DIR=${MCFM_INCLUDE_DIR}")
@@ -503,7 +504,7 @@ endif()
 add_subdirectory(SHERPA)
 
 set( IDIRS  AHADIC++ AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXTAMP EXTRA_XS HADRONS++
-METOOLS MCATNLO MODEL PHASIC++ PHOTONS++ PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA)
+METOOLS MCATNLO MODEL PHASIC++ PHOTONS++  PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA YFS)
 
 if (SHERPA_ENABLE_MANUAL)
   add_subdirectory(Manual)
@@ -640,6 +641,7 @@ Reconnections
 AhadicMain AhadicTools AhadicFormation AhadicDecays 
 Amisic AmisicTools AmisicPerturbative 
 PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
+YFSCEEX YFSGriffin  YFSMain YFSNLO  YFSTools 
 Remnants  RemnantsTools 
 MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools 
 DIMTools DIMShower DIMGauge DIMLorentz DIMMain 

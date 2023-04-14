@@ -28,6 +28,10 @@ namespace PDF {
   class ISR_Handler;
 }
 
+namespace YFS {
+  class YFS_Handler;
+}
+
 namespace PHASIC {
   class Multi_Channel;
   class Beam_Channels;
@@ -42,6 +46,7 @@ namespace PHASIC {
   private: 
     BEAM::Beam_Spectra_Handler * p_beamhandler;
     PDF::ISR_Handler           * p_isrhandler;
+    YFS::YFS_Handler           * p_yfshandler;
     std::string                  m_name;
     int                          m_nin, m_nout, m_nvec;
     ATOOLS::Flavour_Vector       p_flavours;
@@ -131,6 +136,7 @@ namespace PHASIC {
 
     void   WriteOut(const std::string &path);
     bool   ReadIn(const std::string &path,const size_t exclude=0);
+    bool   YFSEvent();
 
     inline void MPISync() {
       m_pspoint.MPISync();
@@ -159,6 +165,7 @@ namespace PHASIC {
 
     inline BEAM::Beam_Spectra_Handler   * GetBeamSpectra() const { return p_beamhandler; }
     inline PDF::ISR_Handler              * GetISRHandler() const { return p_isrhandler; }
+    inline YFS::YFS_Handler              * GetYFSHandler() const { return p_yfshandler; }
     inline Phase_Space_Integrator           * Integrator() const { return p_integrator; }
     inline const std::vector<std::vector<double> > Stats() const { return m_stats; }
     inline ATOOLS::Vec4D_Vector &                Momenta()       { return p_lab; }

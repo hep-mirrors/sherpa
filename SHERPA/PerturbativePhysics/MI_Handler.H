@@ -7,6 +7,7 @@
 namespace ATOOLS   { class Cluster_Amplitude;    }
 namespace BEAM     { class Beam_Spectra_Handler; }
 namespace PDF      { class ISR_Handler;          }
+namespace YFS      { class YFS_Handler;          }
 namespace REMNANTS { class Remnant_Handler;      }
 namespace PHASIC   { class Process_Base;         }
 namespace MODEL    { class Model_Base;           }
@@ -27,6 +28,7 @@ namespace SHERPA {
 
   private:
     PDF::ISR_Handler          * p_isr;
+    YFS::YFS_Handler          * p_yfs;
     REMNANTS::Remnant_Handler * p_remnants;
     AMISIC::Amisic            * p_amisic;
     SHRIMPS::Shrimps          * p_shrimps;
@@ -44,7 +46,7 @@ namespace SHERPA {
     void InitShrimps(MODEL::Model_Base *model);
   public:
     MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr,
-               REMNANTS::Remnant_Handler * remnant_handler);
+               YFS::YFS_Handler *yfs, REMNANTS::Remnant_Handler * remnant_handler);
     ~MI_Handler();
     
     bool InitialiseMPIs(const double & scale);

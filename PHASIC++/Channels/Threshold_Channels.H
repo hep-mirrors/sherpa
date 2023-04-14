@@ -82,5 +82,23 @@ namespace PHASIC {
     inline const double Mass()         const { return m_mass; }
   };
 
+  ////////////////////////////////////////////////////////////////////////
+
+  class Threshold_YFS: public ISR_Channel_Base {
+  protected:
+    double m_mass,m_sexp;
+    bool   m_zchannel;
+    size_t m_mode;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_sgridkey;
+    ATOOLS::Info_Key m_kp1key, m_kp2key;
+  public:
+    Threshold_YFS(const double mass,const double sexp,
+          const std::string cinfo,ATOOLS::Integration_Info *info);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight(const int & mode=0);
+    inline void   SetMass(const double mass) { m_mass=mass; }
+    inline const double Mass()         const { return m_mass; }
+  };
+
 }
 #endif

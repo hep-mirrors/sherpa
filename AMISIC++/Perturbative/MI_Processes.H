@@ -12,6 +12,7 @@ namespace AMISIC {
   class MI_Processes : public PHASIC::ME_Generator_Base {
   private:
     PDF::ISR_Handler           * p_isr;
+    YFS::YFS_Handler           * p_yfs;
     PDF::PDF_Base              * p_pdf[2];
     MODEL::Running_AlphaS      * p_alphaS;
     MODEL::Running_AlphaQED    * p_alpha;
@@ -52,7 +53,8 @@ namespace AMISIC {
 
     bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
-		    PDF::ISR_Handler *const isr);
+		    PDF::ISR_Handler *const isr,
+		    YFS::YFS_Handler *const yfs);
 
     void CalcPDFs(const double & x1,const double & x2,const double & scale);
     const double operator()(const double & shat,const double & that,

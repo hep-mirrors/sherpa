@@ -39,6 +39,11 @@ namespace Recola {
   size_t         Recola_Interface::s_vmode = 0;
   int            Recola_Interface::s_ewscheme = 3;
   int            Recola_Interface::s_amptype = 1;
+  bool           Recola_Interface::s_mass_reg = 0;
+  double         Recola_Interface::s_photon_mass = 0.1;
+  bool           Recola_Interface::s_check_mass = 0;
+  bool           Recola_Interface::s_self_energy_off = 0;
+  bool           Recola_Interface::s_use_decay = 0;
 
   
   std::map<size_t,PHASIC::Process_Info> Recola_Interface::s_procmap;
@@ -109,19 +114,19 @@ namespace Recola {
 
     if(p=="e-")    return "e-";
     if(p=="e+")    return "e+";
-    if(p=="nue")     return "nu_e";
-    if(p=="nueb")   return "nu_e~";
+    if(p=="ve")     return "nu_e";
+    if(p=="veb")   return "nu_e~";
 
     if(p=="mu-")   return "mu-";
     if(p=="mu+")   return "mu+";
-    if(p=="numu")   return "nu_mu";
-    if(p=="numub")  return "nu_mu~";
+    if(p=="vmu")   return "nu_mu";
+    if(p=="vmub")  return "nu_mu~";
 
 
     if(p=="tau-")  return "tau-";
     if(p=="tau+")  return "tau+";
-    if(p=="nutau")  return "nu_tau";
-    if(p=="nutaub") return "nu_tau~";
+    if(p=="vtau")  return "nu_tau";
+    if(p=="vtaub") return "nu_tau~";
 
     if(p=="G")     return "g";
     if(p=="P")     return "A";
@@ -145,22 +150,27 @@ namespace Recola {
 
   void Recola_Interface::RegisterDefaults() const
   {
-    Settings& s = Settings::GetMainSettings();
-    s["RECOLA_VERBOSITY"].SetDefault(0);
-    s["RECOLA_IGNORE_MODEL"].SetDefault(0);
-    s["RECOLA_EXIT_ON_ERROR"].SetDefault(1);
-    s["RECOLA_USE_I_IN_EWAPPROX"].SetDefault(false);
-    s["RECOLA_GETPDF_DEFAULT"].SetDefault(0);
-    s["RECOLA_IR_SCALE"].SetDefault(100);
-    s["RECOLA_UV_SCALE"].SetDefault(100);
-    s["RECOLA_LIGHT_FERMION_THRESHOLD"].SetDefault(1e-20);
-    s["RECOLA_OUTPUT"].SetDefault("*");
-    s["RECOLA_INTERFERENCE"].SetDefault(1);
-    s["RECOLA_ONSHELLZW"].SetDefault(0);
-    s["RECOLA_COMPUTE_POLES"].SetDefault(0);
-    s["RECOLA_COLLIER_CACHE"].SetDefault(-1);
-    s["RECOLA_VMODE"].SetDefault(0);
-    s["RECOLA_AMPTYPE"].SetDefault(1);
+    Scoped_Settings s{ Settings::GetMainSettings()["Recola"] };
+    s["VERBOSITY"].SetDefault(0);
+    s["IGNORE_MODEL"].SetDefault(0);
+    s["EXIT_ON_ERROR"].SetDefault(1);
+    s["USE_I_IN_EWAPPROX"].SetDefault(false);
+    s["GETPDF_DEFAULT"].SetDefault(0);
+    s["IR_SCALE"].SetDefault(100);
+    s["UV_SCALE"].SetDefault(100);
+    s["LIGHT_FERMION_THRESHOLD"].SetDefault(1e-20);
+    s["OUTPUT"].SetDefault("*");
+    s["INTERFERENCE"].SetDefault(1);
+    s["ONSHELLZW"].SetDefault(0);
+    s["COMPUTE_POLES"].SetDefault(0);
+    s["COLLIER_CACHE"].SetDefault(-1);
+    s["VMODE"].SetDefault(0);
+    s["AMPTYPE"].SetDefault(1);
+    s["PHOTON_MASS"].SetDefault(0.1);
+    s["USE_DECAY"].SetDefault(1);
+    s["MASS_REG"].SetDefault(false);
+    s["NO_SELF_ENERGY"].SetDefault(false);
+
     // find RECOLA installation prefix with several overwrite options
     char *var=NULL;
     s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -168,20 +178,22 @@ namespace Recola {
     struct stat st;
     if(stat(s_recolaprefix.c_str(), &st) != 0)
         s_recolaprefix = RECOLA_PREFIX;
-    s["RECOLA_PREFIX"].SetDefault(s_recolaprefix);
-    s_recolaprefix = s["RECOLA_PREFIX"].Get<string>();
+    s["PREFIX"].SetDefault(s_recolaprefix);
+    s_recolaprefix = s["PREFIX"].Get<string>();
   }
 
 
 
   bool Recola_Interface::Initialize(MODEL::Model_Base *const model,
             BEAM::Beam_Spectra_Handler *const beam,
-            PDF::ISR_Handler *const isr)
+            PDF::ISR_Handler *const isr,
+            YFS::YFS_Handler *const yfs)
   {
     msg_Info()<<"Initialising Recola generator from "<<s_recolaprefix<<endl;
-    Settings& s = Settings::GetMainSettings();
+    Scoped_Settings s{ Settings::GetMainSettings()["Recola"] };
+
     //This check could be added if a different model from the SM wants to be used
-    s_ignore_model = s["RECOLA_IGNORE_MODEL"].Get<bool>();
+    s_ignore_model = s["IGNORE_MODEL"].Get<bool>();
     if (s_ignore_model) {
       msg_Info()<<METHOD<<"(): Recola will use the "
                         <<"Standard Model even if you set a "
@@ -190,25 +202,27 @@ namespace Recola {
     }
 
     // VERBOSITY
-    int recolaVerbosity=s["RECOLA_VERBOSITY"].Get<int>();
+    int recolaVerbosity=s["VERBOSITY"].Get<int>();
     if(recolaVerbosity<0 || recolaVerbosity >2)
       THROW(fatal_error, "Invalid value for RECOLA_VERBOSITY");
     set_print_level_squared_amplitude_rcl(recolaVerbosity);
     set_print_level_amplitude_rcl(recolaVerbosity);
     set_print_level_correlations_rcl(recolaVerbosity);
 
-    string recolaOutput = s["RECOLA_OUTPUT"].Get<std::string>();
-    s_amptype           = s["RECOLA_AMPTYPE"].Get<int>();
+    string recolaOutput = s["OUTPUT"].Get<std::string>();
+    s_amptype           = s["AMPTYPE"].Get<int>();
     set_output_file_rcl(recolaOutput.c_str());
-    s_vmode = s["RECOLA_VMODE"].Get<int>();
+    s_vmode = s["VMODE"].Get<int>();
+    PRINT_INFO(s_vmode);
     msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
-
+    s_photon_mass = s["PHOTON_MASS"].Get<double>();
+    s_use_decay   = s["USE_DECAY"].Get<bool>();
     
     if (s_vmode&2) THROW(fatal_error,"Inclusion of I operator not implemented.");
 
     // Compute poles
     int cp(0);
-    s_compute_poles = s["RECOLA_COMPUTE_POLES"].Get<int>();
+    s_compute_poles = s["COMPUTE_POLES"].Get<int>();
     if (s_compute_poles) {
       msg_Info()<<METHOD<<"(): Instructing Recola to compute poles."<<std::endl;
     }
@@ -219,7 +233,7 @@ namespace Recola {
     
 
 
-    bool recolaOnShellZW = s["RECOLA_ONSHELLZW"].Get<bool>();
+    bool recolaOnShellZW = s["ONSHELLZW"].Get<bool>();
     // set particle masses/widths
     if(recolaOnShellZW != 0){
       set_onshell_mass_z_rcl(Flavour(kf_Z).Mass(),Flavour(kf_Z).Width());
@@ -239,7 +253,7 @@ namespace Recola {
     set_pole_mass_charm_rcl(Flavour(kf_c).Mass(),Flavour(kf_c).Width());
     set_pole_mass_bottom_rcl(Flavour(kf_b).Mass(),Flavour(kf_b).Width());
     set_pole_mass_top_rcl(Flavour(kf_t).Mass(),Flavour(kf_t).Width());
-    s_light_fermion_threshold = s["RECOLA_LIGHT_FERMION_THRESHOLD"].Get<double>();
+    s_light_fermion_threshold = s["LIGHT_FERMION_THRESHOLD"].Get<double>();
     set_light_fermions_rcl(s_light_fermion_threshold);
     set_delta_ir_rcl(0.0,M_PI*M_PI/6.0); // adapts the conventions from COLLIER to Catani-Seymour
     
@@ -293,7 +307,22 @@ namespace Recola {
                           Flavour(kf_c).Width(),Flavour(kf_b).Width(),
                           Flavour(kf_t).Width()); 
     
-    s_fixed_flav=Recola_Interface::GetDefaultFlav()+10; 
+    s_fixed_flav=Recola_Interface::GetDefaultFlav()+10;
+    s_mass_reg = s["MASS_REG"].Get<bool>();
+    s_check_mass = s["MASS_REG"].Get<bool>();
+    s_self_energy_off = s["NO_SELF_ENERGY"].Get<bool>();
+    if(s_self_energy_off) switchon_resonant_selfenergies_rcl();
+    if(s_mass_reg){
+      s_photon_mass = s["PHOTON_MASS"].Get<double>();
+      if(s_photon_mass != yfs->m_photonMass){
+        msg_Error()<<"Mismatch between YFS and Recola photon mass"
+                   <<"\n mass in YFS = "<<yfs->m_photonMass
+                   <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
+        THROW(fatal_error,"Mismatch in photon mass regulator");
+    }
+    set_dynamic_settings_rcl(1);
+    use_mass_reg_soft_rcl((s_photon_mass));
+  }
     return true;
   }
 
@@ -316,7 +345,7 @@ namespace Recola {
     define_process_rcl(procIndex, procstring.c_str(), "NLO");
     
     
-    Settings& s = Settings::GetMainSettings();
+    Scoped_Settings s{ Settings::GetMainSettings()["Recola"] };
 
     /* Set coupling orders */
     unselect_all_gs_powers_BornAmpl_rcl(procIndex);
@@ -324,7 +353,7 @@ namespace Recola {
     if (amptype==12)
     {
       // set collier caching level
-      int cc=s["RECOLA_COLLIER_CACHE"].Get<int>();
+      int cc=s["COLLIER_CACHE"].Get<int>();
       if (cc>=0) split_collier_cache_rcl(procIndex,cc);
       select_gs_power_LoopAmpl_rcl(procIndex,args.m_orders[0]);
     }
@@ -356,12 +385,12 @@ namespace Recola {
     
     
     s_interference[procIndex]=false;
-    Settings& s = Settings::GetMainSettings();
+    Scoped_Settings s{ Settings::GetMainSettings()["Recola"] };
     
-    s_doint=s["RECOLA_INTERFERENCE"].Get<int>();
+    s_doint=s["INTERFERENCE"].Get<int>();
     
     // set collier caching level
-    int cc=s["RECOLA_COLLIER_CACHE"].Get<int>();
+    int cc=s["COLLIER_CACHE"].Get<int>();
     if (cc>=0) split_collier_cache_rcl(procIndex,cc);
 
     // find out whether we need multiple orders or not

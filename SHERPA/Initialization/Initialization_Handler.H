@@ -14,6 +14,7 @@
 #include "SHERPA/Tools/Analysis_Interface.H"
 #include "SHERPA/Tools/Output_Base.H"
 #include "SHERPA/Tools/Definitions.H"
+#include "YFS/Main/YFS_Handler.H"
 
 #include <map>
 #include <string>
@@ -68,6 +69,7 @@ namespace SHERPA {
     Output_Vector                 m_outputs;
     ATOOLS::Variations          * p_variations;
     Filter                      * p_filter;
+    YFS::YFS_Handler            * p_yfshandler;
     
     void ShowParameterSyntax();
     void CheckVersion();
@@ -93,6 +95,7 @@ namespace SHERPA {
     bool InitializeTheFilter();
     bool InitializeTheAnalyses();
     bool InitializeTheReweighting(ATOOLS::Variations_Mode);
+    bool InitializeTheYFS();
 
     void RegisterDefaults();
     bool CheckBeamISRConsistency();

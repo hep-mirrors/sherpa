@@ -14,6 +14,7 @@
 #include "SHERPA/Single_Events/Beam_Remnants.H"
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
+#include "SHERPA/Single_Events/Soft_Photons.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/Tools/HepMC2_Interface.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
@@ -187,6 +188,7 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Signal_Process_FS_QED_Correction(
 						    p_inithandler->GetMatrixElementHandler(),
 						    p_inithandler->GetSoftPhotonHandler()));
+    // p_eventhandler->AddEventPhase(new Soft_Photons(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),

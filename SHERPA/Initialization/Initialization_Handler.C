@@ -304,6 +304,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_variations)    { delete p_variations;    p_variations    = NULL; }
   if (p_filter)        { delete p_filter;        p_filter        = NULL; }
+  if (p_yfshandler)    { delete p_yfshandler;    p_yfshandler    = NULL; }
   while (m_analyses.size()>0) {
     delete m_analyses.back();
     m_analyses.pop_back();
@@ -533,6 +534,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
   p_model->InitializeInteractionModel();
+  okay = okay && InitializeTheYFS();
   if (!CheckBeamISRConsistency()) return 0.;
   if (m_mode==eventtype::EventReader) {
     std::string infile;
@@ -678,6 +680,23 @@ bool Initialization_Handler::InitializeTheBeams()
   p_beamspectra = new Beam_Spectra_Handler();
   p_beamspectra->Output();
   return 1;
+}
+
+bool Initialization_Handler::InitializeTheYFS(){
+  Settings& s = Settings::GetMainSettings();
+  p_yfshandler = new YFS::YFS_Handler();
+  if(p_yfshandler->GetMode()!=0) msg_Info()<<"Initialized YFS for Soft Photon Resummation"<<std::endl;
+  if(p_yfshandler->GetMode()==1){
+    //YFS + Remnants not yet working
+    //The no remnants case misses photons
+    // and complains about Mom conservation.
+    // Here we set the remnant type to be YFS
+    for (int i = 0; i < 2; ++i)
+    {
+      p_remnants->GetRemnant(i)->SetYFSType();
+    }
+  }
+  return true;
 }
 
 bool Initialization_Handler::InitializeThePDFs()
@@ -887,7 +906,8 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
   p_mehandler->SetRemnantHandler(p_remnants);
   auto ret = p_mehandler->InitializeProcesses(p_beamspectra,
-                                              m_isrhandlers[isr::hard_process]);
+                                              m_isrhandlers[isr::hard_process],
+                                              p_yfshandler);
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
   return ret==1;
@@ -918,7 +938,7 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
   as->SetActiveAs(isr::hard_subprocess);
   p_mihandler = new MI_Handler(p_model,
-			       m_isrhandlers[isr::hard_subprocess], p_remnants);
+			       m_isrhandlers[isr::hard_subprocess], p_yfshandler, p_remnants);
   p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
   as->SetActiveAs(isr::hard_process);
   if (p_mihandler->Type()!=0)

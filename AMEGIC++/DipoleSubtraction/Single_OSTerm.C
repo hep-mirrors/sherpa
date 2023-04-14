@@ -45,7 +45,7 @@ Single_OSTerm::Single_OSTerm(const Process_Info &pinfo,
   p_realint(pint)
 {
   DEBUG_FUNC("");
-  PHASIC::Process_Base::Init(pinfo, pint->Beam(), pint->ISR());
+  PHASIC::Process_Base::Init(pinfo, pint->Beam(), pint->ISR(), pint->YFS());
   AMEGIC::Process_Base::Init();
 
   m_pi = pi;
@@ -307,7 +307,7 @@ int Single_OSTerm::InitAmplitude(Amegic_Model *model,Topology* top,
   if (!p_os_process) p_os_process = new AMEGIC::Single_Process();
 
   int status;
-  p_os_process->PHASIC::Process_Base::Init(m_osinfo,p_realint->Beam(),p_realint->ISR());
+  p_os_process->PHASIC::Process_Base::Init(m_osinfo,p_realint->Beam(),p_realint->ISR(),p_realint->YFS());
   Poincare cms;
   SetLOMomenta(p_testmoms,cms);
   p_os_process->SetTestMoms(p_OS_mom);

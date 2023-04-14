@@ -272,6 +272,16 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
   DEBUG_FUNC(Name());
+  if(p_int->YFS()->GetMode()!=0){
+    //need to set born for YFS subtraction
+    p_int->YFS()->SetBorn(m_lastxs);
+    p_int->YFS()->GenerateWeight();
+    double yfsW = p_int->YFS()->GetWeight();
+    if(IsBad(yfsW)){
+      msg_Error()<<"YFS Weight is "<<yfsW<<std::endl;
+    }
+    csi.AddWeight(yfsW);
+  }
   if (p_int->ISR()) {
     // add external PDF weight (before clustering)
     double pdfext(p_int->ISR()->PDFWeight(0,
