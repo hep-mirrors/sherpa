@@ -142,6 +142,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
              <<", extended weights: "<<m_extendedweights);
   HepMC::WeightContainer wc;
   if (m_usenamedweights) {
+
     wc["Weight"]=m_wgt;
 
     // fill weight variations into weight container
@@ -154,6 +155,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       for (const auto& source : m_variationsources) {
         wgtmap.FillVariations(wc, source);
       }
+
     }
 
     if (m_userhook) wc["UserHook"]=m_userweight;
@@ -710,7 +712,6 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
   if (parton->DecayBlob()==NULL ||
       m_ignoreblobs.count(parton->DecayBlob()->Type())!=0) {
     status=1;
-    DEBUG_VAR(*parton);
   }
   // Non-stable particles --- what about Hard_Decay?
   else {

@@ -278,7 +278,6 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
     }
      evt.weights().push_back(p_subevtlist?64:0);
   }
-  //evt.weights()=wc;
   if (p_pdfinfo) {
     double q(sqrt(sqrt(p_pdfinfo->m_muf12*p_pdfinfo->m_muf22)));
     HepMC::GenPdfInfoPtr pdfinfo = std::make_shared<HepMC::GenPdfInfo>();
@@ -567,7 +566,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                      m_extendedweights, 
                      m_includemeonlyweights);
   evtinfo.WriteTo(event);
-  
+
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
   HepMC::GenVertexPtr  vertex,psvertex;
@@ -594,7 +593,6 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                 +std::string(" format.\n")
                 +std::string("   Try 'EVENT_OUTPUT: HepMC_Short' instead."));
         }
-        //event.set_signal_process_vertex(vertex);
       }
       // Find beam particles
       else if ((*blit)->Type()==ATOOLS::btp::Beam || 
@@ -740,7 +738,8 @@ bool HepMC3_Interface::Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob * blob, HepMC::G
                  <<std::endl<<(*blob)<<std::endl;
       vertex->print(msg_Error());
       msg_Error()<<"-----------------------------------------------"<<std::endl;
-    }*/
+    }
+    */
   }
   return okay;
 }
