@@ -170,7 +170,6 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
                   << "  '" << m_name << "': " << totalxsborn
                   << " vs. " << p_int->TotalResult() << std::endl;
     }
-    // else return 1;
     if (p_int->Points()) {
       p_int->SetTotal();
       if (var == p_int->TotalVar()) {
@@ -184,74 +183,14 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
     exh->RemoveTerminatorObject(p_int);
     return 0;
   }
+  return 1;
 }
-
-// double YFS_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int){
-//   THROW(fatal_error,"Invalid function call");
-
-// }
 
 
  ATOOLS::Weights_Map YFS_Process::Differential(const Vec4D_Vector& p,
                                          Variations_Mode varmode) {
-  msg_Error() << METHOD << std::endl << "Virtual Method called" << std::endl;
+  THROW(fatal_error,"Invalid function call");
 }
-//     // m_mewgtinfo.Reset();
-//     // m_mewgtinfo.m_oqcd=MaxOrder(0);
-//     // m_mewgtinfo.m_oew=MaxOrder(1);
-//     // m_mewgtinfo.m_fl1=(int)(Flavours()[0]);
-//     // m_mewgtinfo.m_fl2=(int)(Flavours()[1]);
-//     // m_mewgtinfo.m_x1=p_int->ISR()->X1();
-//     // m_mewgtinfo.m_x2=p_int->ISR()->X2();
-//     // m_mewgtinfo.m_yfsW=p_int->YFS()->GetWeight();
-//     // m_mewgtinfo.m_NPhotons=p_int->YFS()->NPhoton();
-//     Scale_Setter_Base *scs(ScaleSetter(1));
-//     Partonic(p,0);
-//     m_last=m_lastxs;
-//     m_lastflux = p_int->YFS()->Flux(p[0],p[1]);
-//     PRINT_VAR(m_lastflux);
-//     PRINT_VAR(m_mewgtinfo);
-//     // m_mewgtinfo*=m_lastflux;
-//     m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
-//     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
-//     const double facscale(scs->Scale(stp::fac));
-//     msg_Debugging()<<m_mewgtinfo;
-//     YFS_Sequence_Info ysi(YFSSequenceInfo());
-//     ysi.AddFlux(m_lastflux);
-//     m_mewgtinfo.m_B=m_lastbxs=m_lastxs=m_last;
-//     ysi.AddFlux(m_lastflux);
-//     m_last=(m_last*ysi.m_yfswgt*ysi.m_flux);
-//     m_mewgtinfo.m_B=m_last;
-//     // if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
-//     return m_last;
-// }
-// void YFS_Process::AddYFS(ATOOLS::YFS_Sequence_Info &ysi)
-// {
-//   if(p_int->YFS()->GetMode()!=0){
-//     p_int->YFS()->GenerateWeight();
-//     // PRINT_VAR(m_lastxs);
-//     // PRINT_VAR(m_last);
-//     double yfsW = p_int->YFS()->GetWeight();
-//     if(IsBad(yfsW)){
-//       msg_Error()<<"YFS Weight is "<<yfsW<<std::endl;
-//     }
-//     ysi.AddYFSWeight(yfsW);
-//   }
-// }
-
-
-// ATOOLS::YFS_Sequence_Info YFS_Process::YFSSequenceInfo(const ATOOLS::YFS_Sequence_Info * const nominalysi)
-// {
-//   if (m_nin == 1) {
-//     return 1.0;
-//   } else if (m_nin > 2) {
-//     THROW(not_implemented, "More than two incoming particles.");
-//   }
-//   YFS_Sequence_Info ysi;
-//   AddYFS(ysi);
-//   return ysi;
-// }
-
 
 void YFS_Process::InitPSHandler(const double &maxerror,
                                 const std::string eobs,
@@ -260,10 +199,6 @@ void YFS_Process::InitPSHandler(const double &maxerror,
   p_bornproc->InitPSHandler(maxerror, eobs, efunc);
   p_bornproc->Integrator()->SetPSHandler
   (p_bornproc->Integrator()->PSHandler());
-  // if(p_realproc) {
-  //   p_realproc->InitPSHandler(maxerror,eobs,efunc);
-  //   p_realproc->Integrator()->SetPSHandler(p_realproc->Integrator()->PSHandler());
-  // }
 }
 
 
