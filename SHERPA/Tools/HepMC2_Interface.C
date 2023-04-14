@@ -43,8 +43,6 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   if (p_sp) {
     DEBUG_FUNC(*p_sp);
     Blob_Data_Base *db;
-    ReadIn(db,"Weight",true);
-    m_wgt=db->Get<double>();
     ReadIn(db,"MEWeight",false);
     if (db) m_mewgt=db->Get<double>();
     m_pswgt=m_wgt/m_mewgt;
