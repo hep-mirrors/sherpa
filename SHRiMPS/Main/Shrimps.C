@@ -187,17 +187,27 @@ void Shrimps::CleanUp(const size_t & mode) {
 }
 
 void Shrimps::GenerateXsecs() {
+    bool plotting(true);
   std::string dirname = std::string("InclusiveQuantities");
   ATOOLS::MakeDir(dirname);
 
   InitialiseFormFactors();
-  std::set<double> energies, energies_sd, energies_dd;
-  std::set<double> energies_tot {52.817,62.5,546.0,900.35,1800.0,6166.500,7000.000,8128.9,10716.0,14126.0,18622.0};
-  std::set<double> energies_inel {6.900000e+03, 6.950000e+03, 7.000000e+03, 7.050000e+03};
-  std::set<double> energies_el {5.2817e+01, 6.2500e+01, 5.4600e+02, 1.8000e+03, 7.0000e+03};
-  std::set<double> elastics {62.5, 546, 1800, 7000};
-  ReadEnergiesFromFile(energies_sd,"energies_xsecs_sd.dat");
-  ReadEnergiesFromFile(energies_dd,"energies_xsecs_dd.dat");
+  std::set<double> energies, energies_tot, energies_inel, energies_el, energies_sd, energies_dd, elastics;
+  if (plotting) {
+      ReadEnergiesFromFile(energies_tot,"energies_plotting.dat");
+      ReadEnergiesFromFile(energies_inel,"energies_plotting.dat");
+      ReadEnergiesFromFile(energies_el,"energies_plotting.dat");
+      ReadEnergiesFromFile(energies_sd,"energies_plotting.dat");
+      ReadEnergiesFromFile(energies_dd,"energies_plotting.dat");
+  }
+  else {
+      ReadEnergiesFromFile(energies_tot,"energies_xsecs_tot.dat");
+      ReadEnergiesFromFile(energies_inel,"energies_xsecs_inel.dat");
+      ReadEnergiesFromFile(energies_el,"energies_xsecs_el.dat");
+      ReadEnergiesFromFile(energies_sd,"energies_xsecs_sd.dat");
+      ReadEnergiesFromFile(energies_dd,"energies_xsecs_dd.dat");
+  }
+  ReadEnergiesFromFile(elastics,"energies_elastics.dat");
   energies = energies_tot;
   for (std::set<double>::iterator siter = energies_inel.begin(); siter != energies_inel.end(); ++siter) {
       if (energies.find(*siter) == energies.end()) energies.insert(*siter);
@@ -366,14 +376,14 @@ void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
   std::ofstream was;
   was.open(filename.c_str());
   was<<"# BEGIN HISTO1D /XSECS/total\n";
-  was<<"Path=/XSECS/total"<<std::endl;
+  was<<"#Path=/XSECS/total"<<std::endl;
   size_t i(0);
   for (std::set<double>::iterator energy_iter=energies_tot.begin();
        energy_iter!=energies_tot.end();energy_iter++) {
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsectot[i++]<<"   0.0   0.0\n";
   }
-  was<<"# END HISTO1D\n"<<std::endl;
+  was<<"# END HISTO1D\n\n";
   was<<"# BEGIN HISTO1D /XSECS/inel\n";
   was<<"Path=/XSECS/inel"<<std::endl;
   i = 0;
@@ -382,9 +392,9 @@ void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsecinel[i++]<<"   0.0   0.0\n";
   }
-  was<<"# END HISTO1D\n"<<std::endl;
+  was<<"# END HISTO1D\n\n";
   was<<"# BEGIN HISTO1D /XSECS/el\n";
-  was<<"Path=/XSECS/el"<<std::endl;
+  was<<"#Path=/XSECS/el"<<std::endl;
   i = 0;
   for (std::set<double>::iterator energy_iter=energies_el.begin();
        energy_iter!=energies_el.end();energy_iter++) {
@@ -393,16 +403,16 @@ void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
   }
   was<<"# END HISTO1D"<<std::endl;
   was<<"# BEGIN HISTO1D /XSECS/sd\n";
-  was<<"Path=/XSECS/sd"<<std::endl;
+  was<<"#Path=/XSECS/sd"<<std::endl;
   i = 0;
   for (std::set<double>::iterator energy_iter=energies_sd.begin();
        energy_iter!=energies_sd.end();energy_iter++) {
     was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
        <<xsecsd[i++]<<"   0.0   0.0\n";
   }
-  was<<"# END HISTO1D"<<std::endl;
+  was<<"# END HISTO1D\n\n";
   was<<"# BEGIN HISTO1D /XSECS/dd\n";
-  was<<"Path=/XSECS/dd"<<std::endl;
+  was<<"#Path=/XSECS/dd"<<std::endl;
   i = 0;
   for (std::set<double>::iterator energy_iter=energies_dd.begin();
        energy_iter!=energies_dd.end();energy_iter++) {
