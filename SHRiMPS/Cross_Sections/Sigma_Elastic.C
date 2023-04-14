@@ -61,8 +61,8 @@ void Sigma_Elastic::FillDiffQGrid() {
     differential.SetQ(sqrt(t));
     value = rpa->Picobarn()/(4.*M_PI) *
       ATOOLS::sqr(integrator.Integrate(0.,MBpars.GetEikonalParameters().bmax,
-				       MBpars.GetEikonalParameters().accu,1.));
-    if (dabs(value<0.)) value = 0.;
+                       MBpars.GetEikonalParameters().accu,1.));
+    //if (dabs(value<0.)) value = 0.;
     m_diffgrid.push_back(value);
   }
 }
