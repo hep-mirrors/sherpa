@@ -30,7 +30,8 @@ Single_Dipole_Term::Single_Dipole_Term
   Process_Info info(rs->Info());
   info.Combine(sub->m_i,sub->m_j,msub->p_fl[sub->m_ijt]);
   info.m_fi.m_nlotype&=~nlo_type::real;
-  Init(info,rs->Integrator()->Beam(),rs->Integrator()->ISR(),1);
+  Init(info,rs->Integrator()->Beam(),rs->Integrator()->ISR(),
+      rs->Integrator()->YFS(),1);
   p_rsint=rs->Integrator();
   m_name+="_RS"+ToString(sub->m_i)+"_"
     +ToString(sub->m_j)+"_"+ToString(sub->m_k);

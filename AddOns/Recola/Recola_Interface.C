@@ -35,6 +35,10 @@ bool           Recola::Recola_Interface::s_compute_poles = false;
 size_t         Recola::Recola_Interface::s_vmode = 0;
 int            Recola::Recola_Interface::s_ewscheme = 3;
 int            Recola::Recola_Interface::s_amptype = 1;
+bool           Recola::Recola_Interface::s_mass_reg = 0;
+double         Recola::Recola_Interface::s_photon_mass = 0.1;
+bool           Recola::Recola_Interface::s_check_mass = 0;
+bool           Recola::Recola_Interface::s_use_decay = 0;
 
   
 std::map<size_t,PHASIC::Process_Info> Recola::Recola_Interface::s_procmap;
@@ -157,6 +161,10 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_COLLIER_CACHE"].SetDefault(-1);
   s["RECOLA_VMODE"].SetDefault(0);
   s["RECOLA_AMPTYPE"].SetDefault(1);
+  s["RECOLA_PHOTON_MASS"].SetDefault(0.1);
+  s["RECOLA_USE_DECAY"].SetDefault(1);
+  s["RECOLA_MASS_REG"].SetDefault(false);
+  s["RECOLA_NO_SELF_ENERGY"].SetDefault(false);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -172,7 +180,8 @@ void Recola::Recola_Interface::RegisterDefaults() const
 
 bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
           BEAM::Beam_Spectra_Handler *const beam,
-          PDF::ISR_Handler *const isr)
+          PDF::ISR_Handler *const isr,
+          YFS::YFS_Handler *const yfs)
 {
   msg_Info()<<"Initialising Recola generator from "<<s_recolaprefix<<endl;
   Settings& s = Settings::GetMainSettings();
@@ -198,7 +207,21 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   set_output_file_rcl(recolaOutput.c_str());
   s_vmode = s["RECOLA_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
-
+  s_photon_mass = s["RECOLA_PHOTON_MASS"].Get<double>();
+  s_use_decay   = s["RECOLA_USE_DECAY"].Get<bool>();
+  s_mass_reg = s["RECOLA_MASS_REG"].Get<bool>();
+  s_check_mass = s["RECOLA_MASS_REG"].Get<bool>();
+  if(s_mass_reg){
+    s_photon_mass = s["PHOTON_MASS"].Get<double>();
+    if(s_photon_mass != yfs->m_photonMass){
+      msg_Error()<<"Mismatch between YFS and Recola photon mass"
+                 <<"\n mass in YFS = "<<yfs->m_photonMass
+                 <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
+      THROW(fatal_error,"Mismatch in photon mass regulator");
+    }
+    set_dynamic_settings_rcl(1);
+    use_mass_reg_soft_rcl((s_photon_mass));
+  }
   
   if (s_vmode&2) THROW(fatal_error,"Inclusion of I operator not implemented.");
 
@@ -320,7 +343,7 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   if (amptype==12)
   {
     // set collier caching level
-    int cc=s["RECOLA_COLLIER_CACHE"].Get<int>();
+    int cc=s["COLLIER_CACHE"].Get<int>();
     if (cc>=0) split_collier_cache_rcl(procIndex,cc);
     select_gs_power_LoopAmpl_rcl(procIndex,args.m_orders[0]);
   }

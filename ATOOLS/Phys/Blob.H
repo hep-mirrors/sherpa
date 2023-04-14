@@ -55,6 +55,7 @@ namespace ATOOLS {
       needs_beamRescatter = 1024,
       needs_smearing      = 16384,
       internal_flag       = 32768,
+      needs_yfs           = 131070,
       fully_active        = 65535
     };
   };

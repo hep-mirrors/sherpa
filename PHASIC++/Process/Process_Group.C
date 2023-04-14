@@ -292,7 +292,7 @@ bool Process_Group::ConstructProcess(Process_Info &pi)
   Process_Base *proc(GetProcess(cpi));
   if (!proc) return false;
   proc->SetGenerator(Generator());
-  proc->Init(pi,p_int->Beam(),p_int->ISR());
+  proc->Init(pi,p_int->Beam(),p_int->ISR(),p_int->YFS());
   if (!Initialize(proc)) {
     msg_Debugging()<<METHOD<<"(): Init failed for '"
 		   <<proc->Name()<<"'\n";

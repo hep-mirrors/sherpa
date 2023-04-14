@@ -7,11 +7,21 @@
 
 namespace ATOOLS   { class Cluster_Amplitude; }
 namespace BEAM     { class Beam_Spectra_Handler; }
+// <<<<<<< HEAD
 namespace REMNANTS { class Remnant_Handler; }
 namespace PHASIC   { class Process_Base; }
 namespace MODEL    { class Model_Base; }
 namespace AMISIC   { class Amisic; }
 namespace SHRIMPS  { class Shrimps; }
+namespace YFS      { class YFS_Handler;          }
+// =======
+// namespace PDF      { class ISR_Handler;          }
+// namespace REMNANTS { class Remnant_Handler;      }
+// namespace PHASIC   { class Process_Base;         }
+// namespace MODEL    { class Model_Base;           }
+// namespace AMISIC   { class Amisic;               }
+// namespace SHRIMPS  { class Shrimps;              }
+// >>>>>>> fa825e862 (This commit introduces the YFS style resummation for Lepton Colliders.)
 
 namespace SHERPA {
   class Matrix_Element_Handler;
@@ -29,6 +39,7 @@ namespace SHERPA {
 
   private:
     PDF::ISR_Handler          * p_isr;
+    YFS::YFS_Handler          * p_yfs;
     PDF::isr::id                m_id;   
     REMNANTS::Remnant_Handler * p_remnants;
     AMISIC::Amisic            * p_amisic;
@@ -47,7 +58,7 @@ namespace SHERPA {
     void InitShrimps(MODEL::Model_Base *model);
   public:
     MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr,
-               REMNANTS::Remnant_Handler * remnant_handler);
+               YFS::YFS_Handler *yfs, REMNANTS::Remnant_Handler * remnant_handler);
     ~MI_Handler();
     
     bool InitialiseMPIs(const double & scale);

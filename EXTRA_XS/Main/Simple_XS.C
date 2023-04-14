@@ -26,7 +26,8 @@ namespace EXTRAXS {
     // member functions
     bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
-		    PDF::ISR_Handler *const isr);
+		    PDF::ISR_Handler *const isr,
+		    YFS::YFS_Handler *const yfs);
     Process_Base *InitializeProcess(const PHASIC::Process_Info &, bool add);
     int PerformTests();
     bool NewLibraries();
@@ -69,11 +70,13 @@ Simple_XS::~Simple_XS()
 
 bool Simple_XS::Initialize(Model_Base *const model,
 			   BEAM::Beam_Spectra_Handler *const beam,
-			   PDF::ISR_Handler *const isrhandler)
+			   PDF::ISR_Handler *const isrhandler,
+			   YFS::YFS_Handler *const yfshandler)
 {
   SetPSMasses();
   p_int->SetBeam(beam); 
   p_int->SetISR(isrhandler);
+  p_int->SetYFS(yfshandler);
   return true;
 }
 
@@ -83,7 +86,7 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
   if (oneisgroup) {
     Process_Group* newxs = new Process_Group();
     newxs->SetGenerator(this);
-    newxs->Init(pi,p_int->Beam(),p_int->ISR());
+    newxs->Init(pi,p_int->Beam(),p_int->ISR(),p_int->YFS());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     if (!newxs->ConstructProcesses()) {
       msg_Debugging()<<METHOD<<": group construction failed for "
@@ -99,7 +102,7 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
   else {
     Single_Process* newxs = new Single_Process();
     newxs->SetGenerator(this);
-    newxs->Init(pi,p_int->Beam(),p_int->ISR());
+    newxs->Init(pi,p_int->Beam(),p_int->ISR(),p_int->YFS());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     if (!newxs->Initialize()) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"

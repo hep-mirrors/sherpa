@@ -212,9 +212,9 @@ bool Blob_List::FourMomentumConservation() const
   static double accu(std::sqrt(rpa->gen.Accu()));
   bool test=IsEqual(inisum,finsum,accu);
   if (!test) {
-    //msg_Error()<<METHOD<<"(): ("<<this<<") Four Momentum is not conserved.\n"
-    //         <<"   p_{in} = "<<inisum<<" vs. p_{out} = "<<finsum<<",\n"
-    //         <<"   diff = "<<finsum-inisum<<"."<<std::endl;
+    msg_Error()<<METHOD<<"(): ("<<this<<") Four Momentum is not conserved.\n"
+            <<"   p_{in} = "<<inisum<<" vs. p_{out} = "<<finsum<<",\n"
+            <<"   diff = "<<finsum-inisum<<"."<<std::endl;
     static int allow(-1);
     if (allow<0) {
       Settings& s = Settings::GetMainSettings();

@@ -503,6 +503,7 @@ add_subdirectory(PDF/SAL)
 add_subdirectory(RECONNECTIONS)
 add_subdirectory(REMNANTS)
 add_subdirectory(SHRiMPS)
+add_subdirectory(YFS)
 IF (SHERPA_ENABLE_MCFM)
   find_package(MCFM NAMES mcfm QUIET)
   if (NOT MCFM_FOUND)
@@ -549,7 +550,7 @@ endif()
 add_subdirectory(SHERPA)
 
 set( IDIRS  AHADIC++ AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXTAMP EXTRA_XS HADRONS++
-METOOLS MCATNLO MODEL PHASIC++ PHOTONS++ PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA)
+METOOLS MCATNLO MODEL PHASIC++ PHOTONS++  PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA YFS)
 
 if (SHERPA_ENABLE_MANUAL)
   add_subdirectory(Manual)
@@ -695,6 +696,7 @@ DIMTools DIMShower DIMGauge DIMLorentz DIMMain
 CSMain CSCalculators CSShowers CSTools
 DireTools DireShower DireGauge DireLorentz DireMain
 PhasicScales Comix  ComixPhasespace ComixAmplitude
+YFSCEEX YFSGriffin  YFSMain YFSNLO  YFSTools 
 PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
 Amegic DipoleSubtraction Amplitude AmegicPSGen
 String Zfunctions

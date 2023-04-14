@@ -13,7 +13,9 @@ namespace ATOOLS {
       loop = 2,
       vsub = 4,
       real = 8,
-      rsub = 16
+      rsub = 16,
+      rvirt = 32,
+      realreal = 64
     };
   };// end of struct nlo_type
 
@@ -73,6 +75,7 @@ namespace ATOOLS {
       fixedorder = 1,
       powheg     = 2,
       mcatnlo    = 3,
+      yfs        = 4,
       unknown    = 99
     };
   };// end of struct nlo_type

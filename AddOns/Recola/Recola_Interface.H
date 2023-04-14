@@ -29,6 +29,11 @@ namespace Recola {
     static int          s_ewscheme;
     static int          s_amptype;
     static bool         s_compute_poles;
+    static bool         s_mass_reg;
+    static double       s_photon_mass;
+    static bool         s_check_mass;
+    static bool         s_self_energy_off;
+    static bool         s_use_decay;
     static size_t       s_getPDF_default;
 
     static std::vector<double> s_pdfmass;
@@ -49,7 +54,8 @@ namespace Recola {
 
     bool Initialize(MODEL::Model_Base *const model,
             BEAM::Beam_Spectra_Handler *const beam,
-            PDF::ISR_Handler *const isr);
+            PDF::ISR_Handler *const isr,
+            YFS::YFS_Handler *const yfs);
 
     static std::string process2Recola(const ATOOLS::Flavour_Vector& fl);
     static std::string process2Recola(const PHASIC::Process_Info &pi)

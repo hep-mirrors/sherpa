@@ -77,7 +77,7 @@ void PDF_Electron::CalculateSpec(const double& x, const double& Q2)
   // Produces collinear bremsstrahlung in exponentiated LLA,
   double S=0.,h0=0.,h1=0.,h2=0.;
   S  = exp(-.5*GAMMA_E*m_beta+.375*betaS)/gamma*m_beta/2.;
-  h0 = -.25*(1.+x)*betaH;
+  if(m_order>=1)  h0 = -.25*(1.+x)*betaH;
 
   if (m_order>=2) {  
     h1   = -1./32.*betaH*betaH*

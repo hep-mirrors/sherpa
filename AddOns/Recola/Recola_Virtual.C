@@ -29,7 +29,6 @@ Recola::Recola_Virtual::Recola_Virtual(const Process_Info& pi,
   m_modebackup=m_mode=Recola_Interface::s_vmode;
   m_voqcd = pi.m_maxcpl[0];
   m_boqcd = pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0];
-
   // init associated contribs
   size_t n(0);
   if (pi.m_fi.m_asscontribs&asscontrib::EW) {

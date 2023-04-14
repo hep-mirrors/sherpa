@@ -1,0 +1,5 @@
+add_subdirectory(Main)
+add_subdirectory(NLO)
+add_subdirectory(CEEX)
+add_subdirectory(Griffin)
+add_subdirectory(Tools)
