@@ -32,20 +32,20 @@ TRANSITIONS:
 
   Transitions:
     2212 2212 22:
-      vector:
+      G_E:
         form:   dipole
         params: [ 1.,      0.847 ] 
-      tensor:
+      G_M:
         form:   dipole
         params: [ 2.79278, 0.847 ]
       pseudoscalar:
         form: none
 
     2112 2112 22:
-      vector:
+      G_E:
         form:   neutron_electric
         params: [ 1., 0.847, 0.9395654205, 5.6 ]
-      tensor:
+      G_M:
         form:   dipole
         params: [ -1.91315, 0.847 ] 
       pseudoscalar:
@@ -53,7 +53,7 @@ TRANSITIONS:
 
 
 
-# Parameters form factors:
+# Parameters for form factors:
 # dipole  :         norm, Lambda
 # neutron electric: norm, Lambda, mass, prefactor 
 # exponential:      norm, Lambda

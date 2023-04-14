@@ -29,7 +29,9 @@ namespace NEUTRINOS {
       pseudoscalar = 2,
       vector       = 3,
       axialvector  = 4,
-      tensor       = 5
+      tensor       = 5,
+      GE           = 10,
+      GM           = 11
     };
   };
   std::ostream & operator<<(std::ostream & s,const cpl_info::code & cpl);

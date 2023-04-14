@@ -30,6 +30,8 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const cpl_info::code & cpl
   if (cpl==cpl_info::vector)       s<<setw(12)<<"vector";
   if (cpl==cpl_info::axialvector)  s<<setw(12)<<"axialvector";
   if (cpl==cpl_info::tensor)       s<<setw(12)<<"tensor";
+  if (cpl==cpl_info::GE)           s<<setw(12)<<"G_E";
+  if (cpl==cpl_info::GM)           s<<setw(12)<<"G_M";
   return s;
 }
 

@@ -50,6 +50,8 @@ namespace NEUTRINOS {
       if (cpl=="vector")       return cpl_info::vector;
       if (cpl=="axialvector")  return cpl_info::axialvector;
       if (cpl=="tensor")       return cpl_info::tensor;
+      if (cpl=="G_E")          return cpl_info::GE;
+      if (cpl=="G_M")          return cpl_info::GM;
       return cpl_info::unknown;
     }
     inline ff_type::code FFType(const std::string & form) {
