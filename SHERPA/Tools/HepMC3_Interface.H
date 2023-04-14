@@ -46,7 +46,7 @@ namespace SHERPA {
     std::vector<ATOOLS::Variations_Source> m_variationsources;
     std::vector<double> m_orders;
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
-    double m_mur2, m_muf12, m_muf22, m_muq2;
+    double m_mur2, m_muf12, m_muf22;
     double m_alphas, m_alpha;
     bool m_userhook;
     double m_userweight;
