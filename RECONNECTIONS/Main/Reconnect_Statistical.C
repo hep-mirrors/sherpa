@@ -14,7 +14,7 @@ Reconnect_Statistical::~Reconnect_Statistical() {
 }
 
 void Reconnect_Statistical::SetParameters() {
-  // Pmode is the mode for the distance measure in momentum space, 
+  // Pmode is the mode for the distance measure in momentum space,
   // based on the notion of the string are law, cf. hep-ph/9812423, where the
   // area of a "string" made up of two coloured particles i and j is given by
   // pi*pj-mi*mj (note we assume the gluons to distribute their momentum equally
@@ -82,11 +82,6 @@ bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
   double dist0  = Distance(part[0],part[2]), dist1  = Distance(part[1],part[3]);
   double ndist0 = Distance(part[0],part[3]), ndist1 = Distance(part[1],part[2]);
   double prob   = m_reshuffle * exp(-m_etaQ*((ndist0+ndist1)-(dist0+dist1)));
-  //msg_Out()<<METHOD<<"(dist = "<<dist0<<" + "<<dist1<<" --> "<<ndist0<<" + "<<ndist1<<"): prob = "<<prob<<" for\n"
-  //	   <<(*part[0])<<"\n"
-  //	   <<(*part[1])<<"\n"
-  //	   <<(*part[2])<<"\n"
-  //	   <<(*part[3])<<"\n";
   if (prob>ran->Get()) {
     m_cols[1][col[0]] = part[3];
     m_cols[1][col[1]] = part[2];
@@ -105,9 +100,6 @@ void Reconnect_Statistical::UpdateColours() {
 
 double Reconnect_Statistical::Distance(Particle * trip,Particle * anti) {
   return MomDistance(trip,anti);
-  return (MomDistance(trip,anti) *
-	  PosDistance(trip,anti) *
-	  ColDistance(trip,anti));
 }
 
 double Reconnect_Statistical::MomDistance(Particle * trip,Particle * anti) {
