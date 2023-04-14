@@ -52,10 +52,13 @@ namespace NEUTRINOS {
       if (cpl=="tensor")       return cpl_info::tensor;
       if (cpl=="G_E")          return cpl_info::GE;
       if (cpl=="G_M")          return cpl_info::GM;
+      if (cpl=="F1")           return cpl_info::F1;
+      if (cpl=="F2")           return cpl_info::F2;
       return cpl_info::unknown;
     }
     inline ff_type::code FFType(const std::string & form) {
       if (form=="none")             return ff_type::none;
+      if (form=="constant")         return ff_type::constant;
       if (form=="dipole")           return ff_type::dipole;
       if (form=="neutron_electric") return ff_type::neutron_electric;
       if (form=="exponential")      return ff_type::exponential;
@@ -64,7 +67,7 @@ namespace NEUTRINOS {
       if (form=="BBBA")             return ff_type::BBBA;
       if (form=="ArringtonHill")    return ff_type::ArringtonHill;
       if (form=="Helm")             return ff_type::Helm;
-      if (form=="Lovato")          return ff_type::Lovato;
+      if (form=="Lovato")           return ff_type::Lovato;
       return ff_type::unknown;
     } 
     inline Form_Factor_Entry * Entry(kf_code & n1,kf_code & n2) {

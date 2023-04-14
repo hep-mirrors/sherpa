@@ -2,6 +2,8 @@
 #include "METOOLS/Main/XYZFuncs.H"
 #include "ATOOLS/Org/Exception.H"
 
+#include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
+
 using namespace NEUTRINOS;
 using namespace ATOOLS;
 using namespace std;
@@ -22,6 +24,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   /////////////////////////////////////////////////////////////////////////////
   double alphaQED   = 1./137.;
   double sin2thetaW = 0.22290, cos2thetaW = 1.-sin2thetaW;
+  double I_f = -1.0/2.0;
   if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
     ///////////////////////////////////////////////////////////////////////////
     // Electromagnetic interaction (ignoring neutral weak interaction for the
@@ -32,9 +35,32 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     m_cL = m_cR = ( -Complex( 0., 1.) *
 		    m_flavs[m_indices[0]].Charge() *
 		    sqrt(4.*M_PI*alphaQED) );
+
+
+    /////////////////////////////////////////////////////////////////////////
+    // Weak Neutral coupling:  -i g_Z/(2) (gamma^{mu L} + gamma^{mu R})
+    /////////////////////////////////////////////////////////////////////////
+    
+    // wn_cL = ( -Complex( 0., 1.) * 
+    //     ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW) *
+    //     sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW))
+    // );
+
+    // wn_cR = ( -Complex( 0., 1.) * 
+    //     (-(m_flavs[m_indices[0]].Charge())*sin2thetaW) *
+    //     sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW))
+    // );  
+
+    /////////////////////////////////////////////////////////////////////////
+    // Weak Charged coupling:  -i g_Z/(2) (gamma^{mu L} + gamma^{mu R})
+    /////////////////////////////////////////////////////////////////////////
+    
+    //#TODO
+
     if (dabs(m_flavs[m_indices[0]].Charge())>0.) {
       /////////////////////////////////////////////////////////////////////////
       // TODO: Charged baryon (most likely proton)
+      // FORM FACTORS
       /////////////////////////////////////////////////////////////////////////
       //THROW(fatal_error,"weak neutral current not yet implemented.")
     }
@@ -45,7 +71,18 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
       //THROW(fatal_error,"weak neutral current not yet implemented.")
     }
   }
-  else THROW(fatal_error,"current not yet implemented.")
+  else {
+
+    /////////////////////////////////////////////////////////////////////////
+    // TODO: Charged Current. TODO Add formfactors
+    /////////////////////////////////////////////////////////////////////////
+
+    // m_cL = Complex( 0., 1. ) * sqrt(4.*M_PI*alphaQED/(sqrt(8.)*sin2thetaW)) ;
+    // m_cR = Complex( 0., 0. );
+    
+    //THROW(fatal_error,"current not yet implemented.")
+
+  }
 };
 
 void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
@@ -53,33 +90,86 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   /////////////////////////////////////////////////////////////////////////////
   // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2)] u(1) 
   /////////////////////////////////////////////////////////////////////////////
-  double ff1 = 1., ff2 = 1.;
+
+  Form_Factor_Parameter_Maps maps;
+  kf_code A = 2212;
+  kf_code B = 2212;
+  kf_code P = 22;
+  
+  NEUTRINOS::cpl_info::code Code = cpl_info::scalar;  
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+
+  Code = cpl_info::pseudoscalar;  
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+
+  Code = cpl_info::vector;  
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  
+  Code = cpl_info::axialvector;  
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+
+  Code = cpl_info::tensor;  
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+
+  Code = cpl_info::GE;  
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+
+  Code = cpl_info::GM;  
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+
+  Code = cpl_info::F1;  
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+
+  Code = cpl_info::F2;  
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+
+
+  complex ff1 = Complex( 1., 0. ), ff2 = Complex( 0., 0. ), ff3 = Complex( 0., 0. );
+  complex c = Complex( 1., 0. );
+  const int N = m_flavs.size();
+
+  const int pf = 2; const int pf_bar = 2+N; 
+  const int pi = 3; const int pi_bar = 3+N; 
+  const ATOOLS::Vec4<Complex> qmom = (F->P(pf)-F->P(pi));
+  
   Vec4C amp;
-  for(int h0=0; h0<2; h0++) {
-    for(int h1=0; h1<2; h1++) {
+  for(int hf=0; hf<2; hf++) {
+    for(int hi=0; hi<2; hi++) {
       /////////////////////////////////////////////////////////////////////////
       // L(0, 1) = ubar(0) gamma^mu (c_L+c_R) u(1) 
       /////////////////////////////////////////////////////////////////////////
-      amp = ff1 * F->L(2,h0, 3,h1, m_cR,m_cL);
+      amp = ff1 * F->L(pf,hf, pi,hi, m_cR,m_cL);
       /////////////////////////////////////////////////////////////////////////
-      // adding sum_{hel_q} [ L(0, q) Y(q, 1) - Y(0, q) L(q, 1) ]
-      //      = sum_{hel_q} [ L(0, 0) Y(0, 1) - Y(0, 0) L(0, 1) -
-      //                      L(0, 1) Y(1, 1) - Y(0, 1) L(1, 1) ]
+      // adding sum_{hel_q} [ L(0, q) Y(q, 1) ]
+      //      = sum_{hel_q} [ L(0, 0) Y(0, 1) - L(0, 1) Y(1, 1)  ]
+      //             
       // This assumes the momentum transfer from the other (lepton) current
       // taken as incoming, i.e. p_0 = p_1 + q.
       /////////////////////////////////////////////////////////////////////////
-      Complex c = Complex(1., 0.);
-      for (int h2=0;h2<2;h2++) {
-	amp += ff2 * ( 1./(4.*m_massin) *
-		 ( F->L(2,h0, 2,h2, c,c) * F->Y(2,h2, 3,h1, c,c) -
-		   F->Y(2,h0, 2,h2, c,c) * F->L(2,h2, 3,h1, c,c) -
-		   F->L(2,h0, 3,h2, c,c) * F->Y(3,h2, 3,h1, c,c) +
-		   F->Y(2,h0, 3,h2, c,c) * F->L(3,h2, 3,h1, c,c) ) );
-      }
+      for (int hq=0;hq<2;hq++) {
+
+        
+        
+        amp += ff2 * (( Complex( 1., 0. ) /(4.*m_massin)) * 0.5 *
+          (
+            -F->Y(pf,hf, pi,hq, m_cR,m_cL) * F->L(pi,hq, pi,hi, c,c) +
+             F->Y(pi,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi,hq, c,c) +
+            -F->Y(pf,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf,hq, c,c) +
+             F->Y(pf,hf, pf,hq, m_cR,m_cL) * F->L(pf,hq, pi,hi, c,c) +
+
+            -F->Y(pf,hf, pi_bar,hq, m_cR,m_cL) * F->L(pi_bar,hq, pi,hi, c,c) +
+             F->Y(pi_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi_bar,hq, c,c) +
+            -F->Y(pf_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf_bar,hq, c,c) +
+             F->Y(pf,hf, pf_bar,hq, m_cR,m_cL) * F->L(pf_bar,hq, pi,hi, c,c) 
+          )
+        );
+      };
+      amp += -ff3 * qmom * F->Y(pf,hf, pi,hi, m_cR,m_cL) / m_massin;
+
       vector<pair<int,int> > spins;
-      spins.push_back(make_pair(0,h0));
-      spins.push_back(make_pair(1,h1));
-      Insert( amp ,spins );
+      spins.push_back(make_pair(0,hf));
+      spins.push_back(make_pair(1,hi));
+      Insert( amp/2.0 ,spins );
     }
   }
 }

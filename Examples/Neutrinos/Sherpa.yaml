@@ -54,12 +54,13 @@ TRANSITIONS:
 
 
 # Parameters for form factors:
+# constant  :         norm
 # dipole  :         norm, Lambda
 # neutron electric: norm, Lambda, mass, prefactor 
-# exponential:      norm, Lambda
-# Gaussian:         norm, Lambda
+# exponential:      norm, Lambda //ours
+# Gaussian:         norm, Lambda //ours
 # Kelly:            norm, Lambda, mass, A[4], En[2]
 # BBBA:             norm, mass, A[4], B[4]
 # Arrington-Hill:   mass, t_cut, t_0, A[13]
-# Helm:             s, A, kappa
-# Lovato:           b, c[5]
+# Helm:             s, A, kappa //Other Maybe check
+# Lovato:           b, c[5] //Other Maybe check

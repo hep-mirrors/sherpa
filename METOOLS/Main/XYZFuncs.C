@@ -107,19 +107,20 @@ void XYZFunc::CalcEtaMu()
       _m_eta = csqrt( 2.*(pi[0]-(pi[1]+pi[2])*SQRT_05) );
       break;
     case 10 :
-      _m_eta = csqrt( 2.*(pi[0]+pi[Spinor<double>::R3()]) );
+      //_m_eta = csqrt( 2.*(pi[0]+pi[Spinor<double>::R3()]));//JW Sign mistake?
+      _m_eta = csqrt( 2.*(pi[0]-pi[Spinor<double>::R3()]));
       break;
     default :
         THROW(not_implemented, "");
     }
     m_eta.push_back( _m_eta );
     Complex help = Complex( ((pi*pi>0.)?sqrt(pi*pi):0.0), 0. );
+
     m_mu.push_back( help/m_eta[i] );
     if((p_flav[i].IsAnti() && m_anti==false) ||
        (!p_flav[i].IsAnti() && m_anti==true)) m_mu[i] *= -1.;
   }
 }
-
 
 // building blocks
 
@@ -132,11 +133,11 @@ Complex XYZFunc::S( const int s, const int i, const int j )
   switch( m_k0n ) {
   case 1 :
     ret = Complex( 1.*(double)s*pi[1], SQRT_05*(pi[2]-pi[3]) )*A;
-    ret -= Complex( 1.*(double)s*pj[1], SQRT_05*(pj[2]-pj[3]) )/A;
+    ret += Complex( -1.*(double)s*pj[1], SQRT_05*(pj[2]-pj[3]) )/A;
     break;
-  case 10:
+  case 10:    
     ret = Complex( 1.*(double)s*pi[Spinor<double>::R1()], -pi[Spinor<double>::R2()] )*A;
-    ret -= Complex( 1.*(double)s*pj[Spinor<double>::R1()], -pj[Spinor<double>::R2()] )/A;
+    ret += Complex( -1.*(double)s*pj[Spinor<double>::R1()], -pj[Spinor<double>::R2()] )/A;
     break;
   default:
     THROW(not_implemented, "k0n choice not fully implemented yet.");
@@ -180,7 +181,7 @@ Complex XYZFunc::S( const int s, const Vec4C p, Complex eta, const int j )
     break;
   case 10:
     ret  = (1.*(double)s*pi[Spinor<double>::R1()] - ci*pi[Spinor<double>::R2()] )*A
-          -(1.*(double)s*pj[Spinor<double>::R1()] - ci*pj[Spinor<double>::R2()] )/A;
+        -(1.*(double)s*pj[Spinor<double>::R1()] - ci*pj[Spinor<double>::R2()] )/A;
     break;
   default:
     THROW(not_implemented, "k0n choice not fully implemented yet.");
@@ -284,20 +285,27 @@ Complex XYZFunc::Y( const int t1, const int t2, const int hel_comb, const Comple
   return y;
 }  
 
+//JW: OLD X Functions It is used elsewhere in the code so have left this be...
+//It is missing half the terms...
+//No anti particle check for mu2...
 Complex XYZFunc::X( const int t1, const Vec4C p2, const int t3, 
 		    const int hel_comb, const Complex cR, const Complex cL )
 {
   Complex x(0., 0.);
   Complex eta2 (0.,0.);
   switch( m_k0n ) {
+  case 0 : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[3])*SQRT_05) );
+    break;
   case 1  : eta2 = sqrt( 2.*(p2[0]-(p2[2]+p2[3])*SQRT_05) );
     break;
   case 2  : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[2])*SQRT_05) );
     break;
-  case 10 : eta2 = sqrt( 2.*(p2[0]+p2[Spinor<double>::R3()]) );
+  case 10 : eta2 = sqrt( 2.*(p2[0]-p2[Spinor<double>::R3()]) );
     break;
-  default : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[3])*SQRT_05) );
+  default:
+    THROW(not_implemented, "k0n choice not fully implemented yet.");
   }
+
   Complex mu2 = sqrt(p2*p2)/eta2;
   
   switch( hel_comb ) {
@@ -317,6 +325,53 @@ Complex XYZFunc::X( const int t1, const Vec4C p2, const int t3,
   case 3: // --
     x  = m_mu[t1]*m_mu[t3]*eta2*eta2*cR;
     x += mu2*mu2*m_eta[t1]*m_eta[t3]*cL;
+    x += cL*S(-1,t1,p2,eta2)*S(+1,p2,eta2,t3);
+    break;
+  }
+  return x;
+}
+
+//JW: NEW X Function with p2 anti flag + Correct terms...
+Complex XYZFunc::X( const int t1, const Vec4C p2, const bool p2anti, const int t3, 
+		    const int hel_comb, const Complex cR, const Complex cL )
+{
+  Complex x(0., 0.);
+  Complex eta2 (0.,0.);
+  switch( m_k0n ) {
+  case 0 : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[3])*SQRT_05) );
+    break;
+  case 1  : eta2 = sqrt( 2.*(p2[0]-(p2[2]+p2[3])*SQRT_05) );
+    break;
+  case 2  : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[2])*SQRT_05) );
+    break;
+  //case 10 : eta2 = sqrt( 2.*(p2[0]+p2[Spinor<double>::R3()]) );//JW Sign mistake?
+  case 10 : eta2 = sqrt( 2.*(p2[0]-p2[Spinor<double>::R3()]) );
+    break;
+  default:
+    THROW(not_implemented, "k0n choice not fully implemented yet.");
+  }
+
+
+  Complex mu2 = sqrt(p2*p2)/eta2;
+  if (p2anti) mu2 *= -1;
+  
+  switch( hel_comb ) {
+  case 0: // ++
+    x  = (m_mu[t1]*eta2+mu2*m_eta[t1])*m_mu[t3]*eta2*cL; 
+    x  += (m_mu[t1]*eta2+mu2*m_eta[t1])*mu2*m_eta[t3]*cR;
+    x += cR*S(+1,t1,p2,eta2)*S(-1,p2,eta2,t3);
+    break;
+  case 1: // +-
+    x  = cL*(m_mu[t1]*eta2 + mu2*m_eta[t1])*S(+1,p2,eta2,t3);
+    x += (cL*mu2*m_eta[t3]+cR*m_mu[t3]*eta2)*S(+1,t1,p2,eta2);
+    break;
+  case 2: // -+
+    x  = cR*(m_mu[t1]*eta2 + mu2*m_eta[t1])*S(-1,p2,eta2,t3);
+    x += (cR*mu2*m_eta[t3]+cL*m_mu[t3]*eta2)*S(-1,t1,p2,eta2);
+    break;
+  case 3: // --
+    x  = (m_mu[t1]*eta2+mu2*m_eta[t1])*m_mu[t3]*eta2*cR;
+    x  += (m_mu[t1]*eta2+mu2*m_eta[t1])*mu2*m_eta[t3]*cL;
     x += cL*S(-1,t1,p2,eta2)*S(+1,p2,eta2,t3);
     break;
   }
@@ -348,7 +403,7 @@ Vec4C XYZFunc::L( const int t1, const int t3,
   default :
       THROW(not_implemented, "");
   }
-  
+
   Complex A, B;
   ATOOLS::Vec4D tmp_cross, tmp_cross2;
   switch( hel_comb ) {
@@ -380,7 +435,7 @@ Vec4C XYZFunc::L( const int t1, const int t3,
             +B*( -k1[i]*(k0*p_mom[t3]) + k0[i]*(k1*p_mom[t3]) + Complex(0.0,1.0)*tmp_cross2[i] );
       }
       break;
-    case 3: // ++
+    case 3: // --
       A = 2.*cL/m_eta[t1]/m_eta[t3];
       tmp_cross = cross(k0,p_mom[t1],p_mom[t3]);
       for(int i=0; i<4; i++) {
@@ -391,6 +446,8 @@ Vec4C XYZFunc::L( const int t1, const int t3,
   }
   return l;
 }
+
+
  
 Complex XYZFunc::Z( 
 	const int t1, const int l1, 
@@ -428,6 +485,19 @@ Complex XYZFunc::X(
     X(t1,p2,t3,hel_comb,cR,cL);
 }
 
+Complex XYZFunc::X( 
+                    const int t1, const int l1,
+                    const Vec4C p2,
+                    const bool p2anti,
+                    const int t3, const int l3,
+                    const Complex cR, const Complex cL )
+{
+  const int hel_comb = (l1<<1) + l3;
+  return m_anti?
+    conj(X(t1,conj(p2), !p2anti, t3,hel_comb,conj(cR),conj(cL))):
+    X(t1,p2,p2anti,t3,hel_comb,cR,cL);
+}
+
 Complex XYZFunc::G(
                    const int t1, const int l1,
                    const Vec4C p2,
@@ -438,6 +508,12 @@ Complex XYZFunc::G(
   Complex cR(1.0,0.0);
   return i*((p2*(p_mom[t1]+p_mom[t3]))*Y(t1,l1,t3,l3,cL,cR)-
             (p_flav[t1].HadMass()+p_flav[t3].HadMass())*X(t1,l1,p2,t3,l3,cL,cR));
+}
+
+Vec4C XYZFunc::P(
+                   const int t1)
+{
+  return p_mom[t1];
 }
  
 Vec4C XYZFunc::L(

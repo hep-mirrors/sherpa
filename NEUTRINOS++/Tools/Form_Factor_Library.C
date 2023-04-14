@@ -10,6 +10,7 @@ using namespace std;
 
 std::ostream & NEUTRINOS::operator<<(std::ostream & s,const ff_type::code & type) {
   if (type==ff_type::none)             s<<setw(18)<<"none";
+  if (type==ff_type::constant)         s<<setw(18)<<"constant";
   if (type==ff_type::dipole)           s<<setw(18)<<"dipole";
   if (type==ff_type::neutron_electric) s<<setw(18)<<"neutron_electric";
   if (type==ff_type::exponential)      s<<setw(18)<<"exponential";
@@ -32,6 +33,8 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const cpl_info::code & cpl
   if (cpl==cpl_info::tensor)       s<<setw(12)<<"tensor";
   if (cpl==cpl_info::GE)           s<<setw(12)<<"G_E";
   if (cpl==cpl_info::GM)           s<<setw(12)<<"G_M";
+  if (cpl==cpl_info::F1)           s<<setw(12)<<"F1";
+  if (cpl==cpl_info::F2)           s<<setw(12)<<"F2";
   return s;
 }
 
@@ -43,6 +46,32 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const ff_info & info) {
   }
   return s;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+// GsToFs::GsToFs(const ff_info & info) : 
+// {}
+// double GsToFs::CalcF1(double & GE, double & GM, double & M, double & q2) { 
+//   double tau = (-1.0*(q2 / (4*M*M))); 
+//   return (GE + tau * GM)/(1 + tau);
+// }
+// double GsToFs::CalcF2(double & GE, double & GM, double & M, double & q2) { 
+//   double tau = (-1.0*(q2 / (4*M*M))); 
+//   return (GM - GE)/(1 + tau);
+// }
+
+  
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+Constant_Form_Factor::Constant_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("Constant", info),
+  m_norm(info.m_params[0]) {}
+
+double Constant_Form_Factor::Calc(const double & q2) { return m_norm; }
+
   
 
 /////////////////////////////////////////////////////////////////////////////////////////////

@@ -39,6 +39,8 @@ XS_lepton_nucleon::XS_lepton_nucleon(const External_ME_Args& args)
   : ME2_Base(args), p_ME(NULL), p_JLL(NULL), p_JNN(NULL)
 {
   DEBUG_INFO("now entered EXTRAXS::XS_lepton_nucleon ...");
+  
+
   m_indices.resize(2);
   m_indices[0] = 2;
   m_indices[1] = 0;
@@ -53,7 +55,7 @@ XS_lepton_nucleon::XS_lepton_nucleon(const External_ME_Args& args)
   m_indices[2] = 3;
   m_indices[3] = 1;
   p_ME   = new Current_ME(m_flavs, m_indices, "Current_ME");
-  msg_Out()<<METHOD<<": setting currents "<<p_JLL<<" + "<<p_JNN<<" into "<<p_ME<<".\n";
+  msg_Out()<<METHOD<<": setting currents "<<p_JLL->Name()<<" + "<<p_JNN->Name()<<" into "<<p_ME->Name()<<".\n";
   p_ME->SetCurrent1(p_JLL);
   p_ME->SetCurrent2(p_JNN);
   m_oew  = 2;
@@ -68,12 +70,21 @@ XS_lepton_nucleon::~XS_lepton_nucleon() {
 }
 
 double XS_lepton_nucleon::operator()(const ATOOLS::Vec4D_Vector& momenta) {
-  msg_Out()<<METHOD<<":\n";
-  msg->SetPrecision(12);
-  for (size_t i=0;i<4;i++) msg_Out()<<"   "<<m_flavs[i]<<": "<<momenta[i]<<", "
-				    <<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
+  bool printout = true;
+  msg->SetPrecision(16);
   double result = (*p_ME)(momenta);
-  msg_Out()<<"|M|^2 = "<<result<<".\n";
+
+  // if (printout) {
+  //   msg_Out()<<METHOD<<":\n";
+  //   for (size_t i=0;i<4;i++) msg_Out()<<"   "<<i<<"     "<<m_flavs[i]<<": "<<momenta[i]<<", "<<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
+  //   msg_Out()<<"|M|^2 = "<<result<<".\n";
+  // }
+  msg_Out()<<"Joe Python Script"<<":\n";
+  if (printout) {
+    for (size_t i=0;i<4;i++) msg_Out()<<"p_"<<i+1<<" = Particle.fromFourMom("<<momenta[i][0]<<","<<momenta[i][1]<<","<<momenta[i][2]<<","<<momenta[i][3]<<", anti=False, flavour=None)"<<"\n";
+    msg_Out()<<"Sherpa = "<<result<<"\n";
+  }
+  msg_Out()<<"\n\n\n";
   return result;
 }
 

@@ -32,6 +32,9 @@ namespace METOOLS {
                const Complex cR, const Complex cL );
     Complex X( const int t1, const ATOOLS::Vec4C p2, const int t3,
 	       const int hel_comb, const Complex cR, const Complex cL );
+    Complex X( const int t1, const ATOOLS::Vec4C p2, const bool p2anti, const int t3,
+	       const int hel_comb, const Complex cR, const Complex cL );
+        
     ATOOLS::Vec4C L( const int t1, const int t2,
 		      const int hel_comb, const Complex cR, const Complex cL );
 
@@ -64,10 +67,18 @@ namespace METOOLS {
 	      const ATOOLS::Vec4C p2,
 	      const int t3, const int l3,
 	      const Complex cR, const Complex cL );
+    Complex X( //With anti p2 term + corrections
+	      const int t1, const int l1,
+	      const ATOOLS::Vec4C p2,
+        const bool p2anti,
+	      const int t3, const int l3,
+	      const Complex cR, const Complex cL );
     Complex G(
 	      const int t1, const int l1,
 	      const ATOOLS::Vec4C p2,
 	      const int t3, const int l3 );
+    ATOOLS::Vec4C P(
+	      const int t1);
     ATOOLS::Vec4C L(
 	      const int t1, const int l1,
 	      const int t2, const int l2,
@@ -103,7 +114,7 @@ namespace METOOLS {
   };
 
 
-  /*!
+  /*!Msq_i_ep_gamma_f_ep
     \file XYZFuncs.H
     \brief Declares the class ATOOLS::XYZFunc
 

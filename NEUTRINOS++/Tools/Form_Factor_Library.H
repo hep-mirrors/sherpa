@@ -8,15 +8,16 @@ namespace NEUTRINOS {
   struct ff_type {
     enum code {
       none             = 0,
-      dipole           = 1,
-      neutron_electric = 2,
-      exponential      = 3,
-      Gaussian         = 4,
-      Kelly            = 5,
-      BBBA             = 6,
-      ArringtonHill    = 7,
-      Helm             = 8,
-      Lovato           = 9,
+      constant         = 1,
+      dipole           = 2,
+      neutron_electric = 3,
+      exponential      = 4,
+      Gaussian         = 5,
+      Kelly            = 6,
+      BBBA             = 7,
+      ArringtonHill    = 8,
+      Helm             = 9,
+      Lovato           = 10,
       unknown          = 99
     };
   };
@@ -31,7 +32,9 @@ namespace NEUTRINOS {
       axialvector  = 4,
       tensor       = 5,
       GE           = 10,
-      GM           = 11
+      GM           = 11,
+      F1           = 20,
+      F2           = 21
     };
   };
   std::ostream & operator<<(std::ostream & s,const cpl_info::code & cpl);
@@ -65,11 +68,28 @@ namespace NEUTRINOS {
     const cpl_info::code & Cpl()  const { return m_cpl; } 
   };
 
+  // class GsToFs : public Form_Factor_Base {
+  // public:
+  //   GsToFs(const ff_info & info);
+  //   ~GsToFs() {}
+  //   double CalcF1(double & GE, double & GM, double & M, double & q2);
+  //   double CalcF2(double & GE, double & GM, double & M, double & q2);
+  // };
+
   class Dummy_Form_Factor : public Form_Factor_Base {
   public:
     Dummy_Form_Factor(cpl_info::code & cpl) : Form_Factor_Base("No_FF", ff_info(cpl)) {}
     ~Dummy_Form_Factor() {}
-    double Calc(const double & q2) { return 1.; }
+    double Calc(const double & q2) { return 0.; } //JW: Changed this to one, but added a constant term instead for testing
+  };
+
+  class Constant_Form_Factor : public Form_Factor_Base {
+  private:
+    double m_norm;
+  public:
+    Constant_Form_Factor(const ff_info & info);
+    ~Constant_Form_Factor() {}
+    double Calc(const double & q2);
   };
 
   class Dipole_Form_Factor : public Form_Factor_Base {

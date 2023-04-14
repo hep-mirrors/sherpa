@@ -1230,7 +1230,8 @@ bool Initialization_Handler::InitializeTheFilter()
 
 bool Initialization_Handler::CalculateTheHardProcesses()
 {
-  if (m_mode!=eventtype::StandardPerturbative) return true;
+  //JW: Added NeutrinoNucleon here.
+  if (m_mode!=eventtype::StandardPerturbative & m_mode!=eventtype::NeutrinoNucleon) return true;
 
   msg_Events()<<"===================================================================\n"
               <<"Start calculating the hard cross sections. This may take some time.\n";

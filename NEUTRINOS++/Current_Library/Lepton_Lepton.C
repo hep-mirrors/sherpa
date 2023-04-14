@@ -20,6 +20,7 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
   /////////////////////////////////////////////////////////////////////////////
   double alphaQED   = 1./137.;
   double sin2thetaW = 0.22290, cos2thetaW = 1.-sin2thetaW;
+  double I_f = -1.0/2.0;
   /////////////////////////////////////////////////////////////////////////////
   // fixing the coupling constants:
   // - if both flavours identical, check if neutral weak/electromagnetic current
@@ -30,26 +31,47 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
   if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
     if (m_flavs[m_indices[0]].IsNeutrino()) {
       /////////////////////////////////////////////////////////////////////////
-      // TODO: Weak coupling only, to be implemented later  
+      // Weak Neutral coupling: -i g_Z/(2) (gamma^{mu L} + gamma^{mu R})
       /////////////////////////////////////////////////////////////////////////
-      THROW(fatal_error,"weak neutral current not yet implemented.")
+      
+      // m_cL = ( -Complex( 0., 1.) * 
+      //     ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW) *
+		  //     sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW))
+      // );
+      // m_cR = Complex( 0., 0.);   
+
+      // TODO   
     }
     else if (m_flavs[m_indices[0]].IsChargedLepton()) {
       /////////////////////////////////////////////////////////////////////////
-      // assume QED coupling only for the time being:  -i e e_f gamma^mu
-      // TODO: add weak neutral coupling
+      // QED coupling only for the time being:  -i e e_f gamma^mu
       /////////////////////////////////////////////////////////////////////////
       m_cL = m_cR = ( -Complex( 0., 1.) *
 		      m_flavs[m_indices[0]].Charge() *
 		      sqrt(4.*M_PI*alphaQED) );
+
+      /////////////////////////////////////////////////////////////////////////
+      // Weak Neutral coupling:  -i g_Z/(2) (gamma^{mu L} + gamma^{mu R})
+      // TODO Add diagrams together...
+      /////////////////////////////////////////////////////////////////////////
+
+      // m_cL = ( -Complex( 0., 1.) * 
+      //     ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW) *
+		  //     sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW))
+      // );
+
+      // m_cR = ( -Complex( 0., 1.) * 
+      //     (-(m_flavs[m_indices[0]].Charge())*sin2thetaW) *
+		  //     sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW))
+      // );    
     }
   }
   else if (m_flavs[m_indices[0]].LeptonFamily()==m_flavs[m_indices[1]].LeptonFamily()) {
     ///////////////////////////////////////////////////////////////////////////
     // Weak left-handed coupling: -i g_W/(2 sqrt(2)) gamma^{mu L}
     ///////////////////////////////////////////////////////////////////////////
-    m_cL = Complex( 0., 1. ) * sqrt(4.*M_PI*alphaQED/(sqrt(8.)*sin2thetaW)) ;
-    m_cR = Complex( 0., 0. );
+    // m_cL = Complex( 0., 1. ) * sqrt(4.*M_PI*alphaQED/(sqrt(8.)*sin2thetaW)) ;
+    // m_cR = Complex( 0., 0. );
   }
   else THROW(fatal_error,"family non-diagonal lepton interaction not yet implemented.")
 };

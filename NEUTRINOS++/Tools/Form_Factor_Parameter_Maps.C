@@ -57,6 +57,8 @@ Form_Factor_Parameter_Maps::GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_i
   ff_info * info = FindInfo(n1,n2,prop,cpl);
   if (info!=NULL) {
     switch (info->m_type) {
+    case ff_type::constant:
+      return new Constant_Form_Factor(*info);
     case ff_type::dipole:
       return new Dipole_Form_Factor(*info);
     case ff_type::neutron_electric:
@@ -121,6 +123,7 @@ void Form_Factor_Parameter_Maps::InitialiseFFMaps() {
 }
 
 bool Form_Factor_Parameter_Maps::InitialiseFormFactor(string & name) {
+  //JW: ADD Fs if Gs defined, ADD Gs if Fs defined
   vector<kf_code> kfcs;
   vector<double>  parameters;
   map<cpl_info::code, ff_info *> ffinfos;
@@ -132,11 +135,11 @@ bool Form_Factor_Parameter_Maps::InitialiseFormFactor(string & name) {
       parameters.clear();
       ff_type::code type = ff_type::none;
       for (auto & key: transition[cpl].GetKeys()) {
-	if (key=="form") {
-	  string form = transition[cpl][key].SetDefault("none").Get<string>();
-	  type        = FFType(form);
-	}
-	parameters  = transition[cpl]["params"].SetDefault(vector<double>{}).GetVector<double>();
+        if (key=="form") {
+          string form = transition[cpl][key].SetDefault("none").Get<string>();
+          type        = FFType(form);
+        }
+        parameters  = transition[cpl]["params"].SetDefault(vector<double>{}).GetVector<double>();
       }
       cpl_info::code cplinfo = CplInfo(cpl);
       ff_info * ffinfo = new ff_info(cplinfo,type,parameters.size());

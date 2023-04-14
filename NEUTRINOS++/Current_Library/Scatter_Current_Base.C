@@ -16,7 +16,7 @@ Scatter_Current_Base::Scatter_Current_Base(const ATOOLS::Flavour_Vector& flavs,
   Spin_Structure<ATOOLS::Vec4C>(flavs,indices),
   m_flavs(flavs), 
   m_name(name)
-{
+{ //This is the old unedited code.
   m_indices.resize(indices.size());
   m_masses.resize(indices.size());
   for(int i=0; i<indices.size(); ++i) {

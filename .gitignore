@@ -60,3 +60,4 @@ Results.zip~
 /lib/
 /share/
 *.DS_Store
+.vscode/
