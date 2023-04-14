@@ -33,14 +33,15 @@ namespace ATOOLS {
 
   template <class Value_Type>
   std::string VectorToString(const std::vector<Value_Type> &values,
-                             const size_t precision=12) {
+                             const size_t precision=12,
+                             const std::string& separator=" ") {
     MyStrStream converter;
     converter.precision(precision);
     for (typename std::vector<Value_Type>::const_iterator it = values.begin();
          it != values.end();
          ++it) {
       if (it != values.begin()) {
-        converter << " ";
+        converter << separator;
       }
       converter << ToString<Value_Type>(*it);
     }

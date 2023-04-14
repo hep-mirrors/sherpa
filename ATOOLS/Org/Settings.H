@@ -176,6 +176,7 @@ namespace ATOOLS {
     template <typename T>
     void SetDefaultMatrix(const std::vector<std::string>& keys,
                           const std::vector<std::vector<T>>& values);
+    void ResetDefault(const std::vector<std::string> &keys);
 
     bool IsSetExplicitly(const Settings_Keys&);
 
@@ -265,9 +266,9 @@ namespace ATOOLS {
     const auto it = m_defaults.find(keys);
     if (it != m_defaults.end()) {
       if (it->second != stringvalues) {
-        THROW(fatal_error,
-               "The default value for "
-               + keys.back() + " is already set to a different value.");
+        THROW(fatal_error, "The default value for " +
+                               VectorToString(keys, 12, ":") +
+                               " is already set to a different value.");
       } else {
         return;
       }
