@@ -14,6 +14,7 @@
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
 #include "METOOLS/Currents/C_Spinor.H"
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
@@ -543,6 +544,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       m_mode=eventtype::NeutrinoNucleon;
       s["MI_HANDLER"].OverrideScalar<std::string>("None");
       Hadron_Init().Init();
+      NEUTRINOS::ffs->Initialize();
     }
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");

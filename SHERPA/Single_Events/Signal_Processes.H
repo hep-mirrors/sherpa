@@ -13,18 +13,18 @@ namespace SHERPA {
   class Signal_Processes: public Event_Phase_Handler {
   private:
 
-    Matrix_Element_Handler    *p_mehandler;
-    ATOOLS::Variations        *p_variations;
-    REMNANTS::Remnant_Base    *p_remnants[2];
-
+    Matrix_Element_Handler * p_mehandler;
+    ATOOLS::Variations     * p_variations;
+    REMNANTS::Remnant_Base * p_remnants[2];
+    
     double m_overweight;
-    int m_cmode;
-    bool m_setcolors, m_adddocumentation;
+    int    m_cmode;
+    bool   m_setcolors, m_adddocumentation;
 
+    
     bool FillBlob(ATOOLS::Blob_List *const bl,ATOOLS::Blob *const b);
 
   public:
-
     Signal_Processes(Matrix_Element_Handler*);
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
@@ -32,7 +32,6 @@ namespace SHERPA {
     void Finish(const std::string &);
 
     inline Matrix_Element_Handler *GetMEHandler() const { return p_mehandler; }
-
   };
 
 }

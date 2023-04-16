@@ -24,7 +24,8 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   /////////////////////////////////////////////////////////////////////////////
   double alphaQED   = 1./137.;
   double sin2thetaW = 0.22290, cos2thetaW = 1.-sin2thetaW;
-  double I_f = -1.0/2.0;
+  double I_f        = -1.0/2.0;
+  kf_code N1        = m_flavs[m_indices[0]].Kfcode(), N2 = m_flavs[m_indices[1]].Kfcode();
   if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
     ///////////////////////////////////////////////////////////////////////////
     // Electromagnetic interaction (ignoring neutral weak interaction for the
@@ -35,7 +36,13 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     m_cL = m_cR = ( -Complex( 0., 1.) *
 		    m_flavs[m_indices[0]].Charge() *
 		    sqrt(4.*M_PI*alphaQED) );
-
+    kf_code photon    = kf_photon;
+    cpl_info::code GE = cpl_info::GE, GM = cpl_info::GM;
+    cpl_info::code A  = cpl_info::axialvector, P = cpl_info::pseudoscalar;
+    m_ffs["GE"] = ffs->GetFF(N1,N2,photon,GE); 
+    m_ffs["GM"] = ffs->GetFF(N1,N2,photon,GM); 
+    m_ffs["A"]  = new Zero_Form_Factor(A);
+    m_ffs["P"]  = new Zero_Form_Factor(P);
 
     /////////////////////////////////////////////////////////////////////////
     // Weak Neutral coupling:  -i g_Z/(2) (gamma^{mu L} + gamma^{mu R})
@@ -91,47 +98,73 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2)] u(1) 
   /////////////////////////////////////////////////////////////////////////////
 
+  /*
   Form_Factor_Parameter_Maps maps;
   kf_code A = 2212;
   kf_code B = 2212;
   kf_code P = 22;
-  
+
   NEUTRINOS::cpl_info::code Code = cpl_info::scalar;  
-  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  msg_Info()<<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "
+	    <<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "
+	    <<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
 
   Code = cpl_info::pseudoscalar;  
-  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
 
   Code = cpl_info::vector;  
-  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()
+	     <<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
   
   Code = cpl_info::axialvector;  
-  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
 
   Code = cpl_info::tensor;  
-  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
 
   Code = cpl_info::GE;  
-  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
 
   Code = cpl_info::GM;  
-  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
 
   Code = cpl_info::F1;  
-  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
 
   Code = cpl_info::F2;  
-  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "<<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "<<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  msg_Info() <<" SFInfo:"<< maps.GetFF(A, B, P, Code)->Cpl()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Name()<<" "<<maps.GetFF(A, B, P, Code)->Type()<<" "
+	     <<maps.GetFF(A, B, P, Code)->Calc(1.0)<< "\n";
+  */
 
-
-  complex ff1 = Complex( 1., 0. ), ff2 = Complex( 0., 0. ), ff3 = Complex( 0., 0. );
-  complex c = Complex( 1., 0. );
-  const int N = m_flavs.size();
-
+  const int N  = m_flavs.size();
   const int pf = 2; const int pf_bar = 2+N; 
   const int pi = 3; const int pi_bar = 3+N; 
   const ATOOLS::Vec4<Complex> qmom = (F->P(pf)-F->P(pi));
+  const double q2  = (moms[pf]-moms[pi]).Abs2();
+  const double G_E = m_ffs["GE"]->Calc(q2), G_M = m_ffs["GM"]->Calc(q2);
+  const double F_A = m_ffs["A"]->Calc(q2),  F_P = m_ffs["P"]->Calc(q2);
+  const double tau = q2/(4.*m_massin*m_massout); 
   
+  complex ff1 = Complex( (G_E+tau*G_M)/(1.+tau), 0. ), ff2 = Complex( (G_E-G_M)/(1.+tau), 0. );
+  complex ff3 = Complex( F_A, 0. ), ff4 = Complex( F_P, 0. ), c = Complex( 1., 0. );
+  //msg_Info()<<"Form factors for q2 = "<<q2<<":\n"
+  //	    <<"  F_1 = "<<ff1<<", F_2 = "<<ff2<<" from G_E = "<<G_E<<" and G_M = "<<G_M<<",\n"
+  //	    <<"  F_A = "<<F_A<<" and F_P = "<<F_P<<"\n";
+    
   Vec4C amp;
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
@@ -147,11 +180,8 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
       // taken as incoming, i.e. p_0 = p_1 + q.
       /////////////////////////////////////////////////////////////////////////
       for (int hq=0;hq<2;hq++) {
-
-        
-        
-        amp += ff2 * (( Complex( 1., 0. ) /(4.*m_massin)) * 0.5 *
-          (
+        amp += ff2/(4.*m_massin) * 0.5 *
+	  (
             -F->Y(pf,hf, pi,hq, m_cR,m_cL) * F->L(pi,hq, pi,hi, c,c) +
              F->Y(pi,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi,hq, c,c) +
             -F->Y(pf,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf,hq, c,c) +
@@ -161,9 +191,8 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
              F->Y(pi_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi_bar,hq, c,c) +
             -F->Y(pf_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf_bar,hq, c,c) +
              F->Y(pf,hf, pf_bar,hq, m_cR,m_cL) * F->L(pf_bar,hq, pi,hi, c,c) 
-          )
-        );
-      };
+	   );
+      }
       amp += -ff3 * qmom * F->Y(pf,hf, pi,hi, m_cR,m_cL) / m_massin;
 
       vector<pair<int,int> > spins;

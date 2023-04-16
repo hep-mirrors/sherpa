@@ -10,9 +10,8 @@ using namespace std;
 Current_ME::Current_ME(const ATOOLS::Flavour_Vector& flavs,
                        const std::vector<int>& decayindices,
                        const std::string& name):
-  HADRONS::HD_ME_Base(flavs,decayindices,name), p_c1(NULL), p_c2(NULL) {
-  Form_Factor_Parameter_Maps maps;
-  maps.Output();
+  HADRONS::HD_ME_Base(flavs,decayindices,name), p_c1(NULL), p_c2(NULL), m_factor(1.) {
+  ffs->Output();
 }
 
 Current_ME::~Current_ME() {
@@ -24,7 +23,7 @@ void Current_ME::Calculate(const Vec4D_Vector& momenta,METOOLS::XYZFunc * F)
 {
   p_c1->Calc(momenta, F);
   p_c2->Calc(momenta, F);
-  
+
   std::vector<int> spins,spins1,spins2;
   for(size_t i=0;i<size();i++) {
     spins=GetSpinCombination(i);
@@ -62,7 +61,7 @@ void Current_ME::Calculate(const Vec4D_Vector& momenta,bool m_anti)
     flavs_doubled[i] = flavs_doubled[i].Bar();
   }
   const ATOOLS::Flavour_Vector m_flavs_xyz = flavs_doubled;
-  
+
   METOOLS::XYZFunc F(momenta_xyz, m_flavs_xyz, false, p_i_xyz);
   Calculate(momenta_xyz, &F);
 }

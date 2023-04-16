@@ -1,10 +1,5 @@
 #include "NEUTRINOS++/Current_Library/Scatter_Current_Base.H"
 
-//#define COMPILE__Getter_Function
-//#define OBJECT_TYPE NEUTRINOS::Scatter_Current_Base
-//#define PARAMETER_TYPE NEUTRINOS::ME_Parameters
-#include "ATOOLS/Org/Getter_Function.C"
-
 using namespace NEUTRINOS;
 using namespace METOOLS;
 using namespace ATOOLS;

@@ -38,11 +38,10 @@ namespace NEUTRINOS {
     ATOOLS::Scoped_Settings m_alltransitions;
     ModelParameters         m_parameters;
     
-    void InitialiseMaps();
-    void InitialiseConstants();
-    void InitialiseFFMaps();
+    void InitializeConstants();
+    void InitializeFFMaps();
     
-    bool InitialiseFormFactor(std::string & name);
+    bool InitializeFormFactor(std::string & name);
     bool ExtractFlavours(std::string & buffer,std::vector<kf_code> & kfcs);
     inline cpl_info::code CplInfo(const std::string & cpl) {
       if (cpl=="scalar")       return cpl_info::scalar;
@@ -93,9 +92,14 @@ namespace NEUTRINOS {
   public:
     Form_Factor_Parameter_Maps();
     ~Form_Factor_Parameter_Maps();
+
+    void Initialize();
     void Output();
 
     Form_Factor_Base * GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_info::code & cpl);
   };
+
+  extern Form_Factor_Parameter_Maps * ffs;
+
 }
 #endif

@@ -1,6 +1,7 @@
 #ifndef SHERPA_Single_Events_Event_Phase_Handler_H
 #define SHERPA_Single_Events_Event_Phase_Handler_H
 
+#include "SHERPA/Tools/Definitions.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -21,8 +22,9 @@ namespace SHERPA {
 
   class Event_Phase_Handler {
   protected :
-    eph::code   m_type;
-    std::string m_name;
+    eph::code       m_type;
+    std::string     m_name;
+    eventtype::code m_mode;
   public :
     Event_Phase_Handler();
     Event_Phase_Handler(std::string);
@@ -33,8 +35,9 @@ namespace SHERPA {
 
     const eph::code & Type() const          { return m_type; }
     const std::string & Name() const        { return m_name; }
-    void  SetType(const eph::code & type)   { m_type = type; }
-    void  SetName(const std::string & name) { m_name = name; }
+    inline void SetType(const eph::code & type)            { m_type = type; }
+    inline void SetName(const std::string & name)          { m_name = name; }
+    inline void SetEventType(const eventtype::code & mode) { m_mode = mode; }
   };
   /*!
     \file 

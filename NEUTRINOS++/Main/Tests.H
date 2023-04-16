@@ -46,7 +46,7 @@ void small_sherpa_init(int argc, char *argv[])
   SHERPA::Initialization_Handler init;
   MODEL::s_model=MODEL::Model_Base::Model_Getter_Function::
     GetObject("SM",MODEL::Model_Arguments(true));
-  PDF::ISR_Base ** isrbases = new PDF::ISR_Base*[2];
+  std::array<PDF::ISR_Base *,2> isrbases = {nullptr, nullptr};
   isrbases[0] = new PDF::Intact(ATOOLS::Flavour(kf_e));
   isrbases[1] = new PDF::Intact(ATOOLS::Flavour(kf_e).Bar());
   PDF::ISR_Handler_Map isrhandlers;
@@ -64,13 +64,13 @@ void small_sherpa_init(int argc, char *argv[])
 namespace NEUTRINOS {
   class Tests {
   private:
-    ATOOLS::Flavour_Vector     m_flavs;   
-    std::vector<int>           m_indices; 
-    std::vector<ATOOLS::Vec4D> m_momenta; 
+    ATOOLS::Flavour_Vector     m_flavs;
+    std::vector<int>           m_indices;
+    std::vector<ATOOLS::Vec4D> m_momenta;
 
     Current_ME           * p_ME;
     Scatter_Current_Base * p_JLL, * p_JNN;
-    
+
     void InitVectors(const size_t n=4);
     void MakeSimpleScatterKinematics(const double & E,const double & costheta,const double & phi);
     void ep_ep();

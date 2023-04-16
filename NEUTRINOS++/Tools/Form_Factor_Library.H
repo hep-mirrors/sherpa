@@ -76,11 +76,18 @@ namespace NEUTRINOS {
   //   double CalcF2(double & GE, double & GM, double & M, double & q2);
   // };
 
+  class Zero_Form_Factor : public Form_Factor_Base {
+  public:
+    Zero_Form_Factor(cpl_info::code & cpl) : Form_Factor_Base("Zero_FF", ff_info(cpl)) {}
+    ~Zero_Form_Factor() {}
+    double Calc(const double & q2) { return 0.; } 
+  };
+
   class Dummy_Form_Factor : public Form_Factor_Base {
   public:
     Dummy_Form_Factor(cpl_info::code & cpl) : Form_Factor_Base("No_FF", ff_info(cpl)) {}
     ~Dummy_Form_Factor() {}
-    double Calc(const double & q2) { return 0.; } //JW: Changed this to one, but added a constant term instead for testing
+    double Calc(const double & q2) { return 1.; } 
   };
 
   class Constant_Form_Factor : public Form_Factor_Base {

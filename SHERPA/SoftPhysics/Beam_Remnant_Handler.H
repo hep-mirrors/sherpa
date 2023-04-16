@@ -13,15 +13,15 @@ namespace SHERPA {
     BEAM::Beam_Spectra_Handler * p_beam;
     ATOOLS::Blob               * p_beamblobs[2];
     Soft_Collision_Handler     * p_schandler;
-    
-    bool m_bunchrescatter, m_fill, m_vmode;
+
+    bool m_bunchrescatter, m_fill, m_vmode, m_isNN;
     int  m_beam;
     std::string m_name;
 
     ATOOLS::Return_Value::code TreatNoFill(ATOOLS::Blob_List *const bloblist);
     ATOOLS::Return_Value::code FillBunchBlobs(ATOOLS::Blob_List *const,
-					      ATOOLS::Particle_List *const=NULL);
-    bool           FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblist);
+                                              const bool & isNeutrinoNucleon=false);
+    bool           FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblist,const bool & isNeutrinoNucleon=false);
     bool           FillRescatterBunchBlobs(ATOOLS::Blob_List *const bloblist);
     ATOOLS::Blob * FillBunchBlob(int,ATOOLS::Particle *);
   public :
@@ -30,7 +30,8 @@ namespace SHERPA {
 			 Soft_Collision_Handler *const softcollisions);
     ~Beam_Remnant_Handler();
     ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List *const,
-						     const bool & onlyBunch=false);
+						     const bool & onlyBunch=false,
+						     const bool & isNeutrinoNucleon=false);
     ATOOLS::Return_Value::code FillRescatterBeamBlobs(ATOOLS::Blob_List *const);
     void CleanUp(const size_t & mode=0);
 
@@ -41,7 +42,7 @@ namespace SHERPA {
 	m_bunchrescatter = true;
       }
     }
-    inline void SetShrimps(SHRIMPS::Shrimps * shrimps) { 
+    inline void SetShrimps(SHRIMPS::Shrimps * shrimps) {
       if (shrimps!=NULL) { p_shrimps = shrimps; m_name = std::string("Shrimps"); }
     }
     inline const bool NeedsToDealWithRescattering()  {

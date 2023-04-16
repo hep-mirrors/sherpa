@@ -3,6 +3,10 @@
 #include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
+namespace NEUTRINOS {
+  Form_Factor_Parameter_Maps * ffs(NULL);
+}
+
 using namespace NEUTRINOS;
 using namespace ATOOLS;
 using namespace std;
@@ -41,9 +45,7 @@ void Form_Factor_Entry::Add(const kf_code & prop, map<cpl_info::code, ff_info * 
   m_entries[prop] = ffinfos;
 }
 
-Form_Factor_Parameter_Maps::Form_Factor_Parameter_Maps() {
-  InitialiseMaps();
-}
+Form_Factor_Parameter_Maps::Form_Factor_Parameter_Maps() {}
 
 Form_Factor_Parameter_Maps::~Form_Factor_Parameter_Maps() {
   while (!empty()) {
@@ -103,27 +105,28 @@ void Form_Factor_Parameter_Maps::Output() {
   msg_Info()<<"--------------------------------------------------------------------------------------\n";
 }
 
-void Form_Factor_Parameter_Maps::InitialiseMaps() {
+void Form_Factor_Parameter_Maps::Initialize() {
   m_alltransitions = Settings::GetMainSettings()["TRANSITIONS"];
-  InitialiseConstants();
-  InitialiseFFMaps();
+  InitializeConstants();
+  InitializeFFMaps();
 }
 
-void Form_Factor_Parameter_Maps::InitialiseConstants() {
+void Form_Factor_Parameter_Maps::InitializeConstants() {
   m_parameters.clear();
   for (const auto& key: m_alltransitions["Constants"].GetKeys()) {
     m_parameters[key] = m_alltransitions["Constants"][key].SetDefault(-1.0).Get<double>();
   }
 }
 
-void Form_Factor_Parameter_Maps::InitialiseFFMaps() {
+void Form_Factor_Parameter_Maps::InitializeFFMaps() {
   for (auto& transition: m_alltransitions["Transitions"].GetKeys()) {
-    InitialiseFormFactor(transition);
+    InitializeFormFactor(transition);
   }
 }
 
-bool Form_Factor_Parameter_Maps::InitialiseFormFactor(string & name) {
-  //JW: ADD Fs if Gs defined, ADD Gs if Fs defined
+bool Form_Factor_Parameter_Maps::InitializeFormFactor(string & name) {
+  // JW: ADD Fs if Gs defined, ADD Gs if Fs defined
+  // FK: or construct the F's out of the G's in the current?
   vector<kf_code> kfcs;
   vector<double>  parameters;
   map<cpl_info::code, ff_info *> ffinfos;

@@ -11,6 +11,7 @@ namespace NEUTRINOS {
 
   class Current_ME : public HADRONS::HD_ME_Base {
     Scatter_Current_Base* p_c1, * p_c2;
+    double m_factor;
   public:
     Current_ME(const ATOOLS::Flavour_Vector& flavs,
                const std::vector<int>& decayindices,

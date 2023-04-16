@@ -26,7 +26,7 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 
 Return_Value::code
 Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
-					    const bool & onlyBunch)
+					    const bool & onlyBunch,const bool & isNeutrinoNucleon)
 {
   if (!m_fill) return TreatNoFill(bloblist);
   Return_Value::code fbc(Return_Value::Nothing);
@@ -41,7 +41,7 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
       THROW(fatal_error,"Four Momentum not conserved.");
     if (fbc!=Return_Value::Success) return fbc;
   }
-  return FillBunchBlobs(bloblist);
+  return FillBunchBlobs(bloblist,isNeutrinoNucleon);
 }
 
 Return_Value::code
@@ -70,8 +70,7 @@ Beam_Remnant_Handler::TreatNoFill(Blob_List *const bloblist)
 }
 
 Return_Value::code Beam_Remnant_Handler::
-FillBunchBlobs(Blob_List *const  bloblist,
-	       Particle_List *const particlelist)
+FillBunchBlobs(Blob_List *const  bloblist,const bool & isNeutrinoNucleon)
 {
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
@@ -79,7 +78,7 @@ FillBunchBlobs(Blob_List *const  bloblist,
   }
   p_beam->FixPositions();
   if (!m_bunchrescatter)
-    return (FillSimpleBunchBlobs(bloblist)?Return_Value::Success:Return_Value::Nothing);
+    return (FillSimpleBunchBlobs(bloblist,isNeutrinoNucleon)?Return_Value::Success:Return_Value::Nothing);
   if (FillRescatterBunchBlobs(bloblist)) return p_schandler->GenerateBunchRescatter(bloblist);
   return Return_Value::Nothing;
 }
@@ -107,17 +106,25 @@ bool Beam_Remnant_Handler::FillRescatterBunchBlobs(ATOOLS::Blob_List *const blob
   return flag;
 }
 
-bool Beam_Remnant_Handler::FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblist) {
+bool Beam_Remnant_Handler::FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblist,
+                                                const bool & isNeutrinoNucleon) {
   bool flag(false);
   m_beam = 0;
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
-    if ((*bit)->Has(blob_status::needs_beams) &&
-	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
-      (*bit)->UnsetStatus(blob_status::needs_beams);
-      bloblist->push_front(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
-      if (m_beam>2) THROW(fatal_error,"Too many bunch blobs required");
-      flag=true;
+    if ((*bit)->Has(blob_status::needs_beams)) {
+      if (((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
+        (*bit)->UnsetStatus(blob_status::needs_beams);
+        bloblist->push_front(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
+        if (m_beam>2) THROW(fatal_error,"Too many bunch blobs required");
+        flag=true;
+      }
+      else if (isNeutrinoNucleon &&
+                 (*bit)->Type()==btp::Signal_Process &&
+                 !(*bit)->Has(blob_status::needs_showers)) {
+        (*bit)->UnsetStatus(blob_status::needs_beams);
+        flag = true;
+      }
     }
     else if ((*bit)->Has(blob_status::needs_beams) ||
 	     (*bit)->Type()==btp::Elastic_Collision ||

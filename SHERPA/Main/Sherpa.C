@@ -18,6 +18,7 @@
 #include "SHERPA/Tools/HepMC2_Interface.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "PHASIC++/Decays/Decay_Channel.H"
+#include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -54,11 +55,12 @@ Sherpa::Sherpa(int argc, char* argv[]) :
   // latter might throw an exception and rpa would be involved in terminating
   // the program then; however, do not call its Init method yet, because this
   // in turn needs the Settings to be initialized
-  ATOOLS::rpa = new Run_Parameter();
+  ATOOLS::rpa      = new Run_Parameter();
+  NEUTRINOS::ffs   = new NEUTRINOS::Form_Factor_Parameter_Maps(); 
   Settings::InitializeMainSettings(argc, argv);
-  ATOOLS::ran = new Random(1234);
+  ATOOLS::ran      = new Random(1234);
   ATOOLS::s_loader = new Library_Loader();
-  PDF::pdfdefs = new PDF::PDF_Defaults();
+  PDF::pdfdefs     = new PDF::PDF_Defaults();
   m_trials = 0;
   m_debuginterval = 0;
   m_debugstep = -1;

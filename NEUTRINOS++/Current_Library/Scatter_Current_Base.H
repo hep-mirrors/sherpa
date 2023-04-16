@@ -1,12 +1,12 @@
 #ifndef NEUTRINOS_Current_Library_Scatter_Current_Base_H
 #define NEUTRINOS_Current_Library_Scatter_Current_Base_H
 
+#include "NEUTRINOS++/Tools/Form_Factor_Library.H"
+#include "METOOLS/Main/Spin_Structure.H"
+#include "METOOLS/Main/XYZFuncs.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Org/Getter_Function.H"
-#include "METOOLS/Main/Spin_Structure.H"
-#include "METOOLS/Main/XYZFuncs.H"
 
 /*
 #define DEFINE_CURRENT_GETTER(CLASS,TAG)				\
@@ -31,12 +31,15 @@ namespace NEUTRINOS {
     std::vector<double> m_masses;
     std::vector<int>    m_indices;
     std::string         m_name;
-    std::string       m_path;
+    std::string         m_path;
+    std::map<std::string, Form_Factor_Base *> m_ffs;
   public:
     Scatter_Current_Base(const ATOOLS::Flavour_Vector& flavs,
 			 const std::vector<int>& indices,
 			 const std::string& name);
-    virtual ~Scatter_Current_Base() {}
+    virtual ~Scatter_Current_Base() {
+      while (!m_ffs.empty()) { delete m_ffs.begin()->second; m_ffs.erase(m_ffs.begin()); }
+    }
     virtual void Calc(const ATOOLS::Vec4D_Vector& moms,
 		      METOOLS::XYZFunc * F) = 0;
 

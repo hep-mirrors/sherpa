@@ -5,7 +5,6 @@
 #include <iostream>
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
-#include "SHERPA/Tools/Definitions.H"
 #include "ATOOLS/Math/Uncertain.H"
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Phys/Weights.H"
@@ -31,7 +30,7 @@ namespace SHERPA {
     ATOOLS::Blob_List   m_blobs, m_sblobs;
     ATOOLS::Blob      * p_signal;
     Filter            * p_filter;
-
+    
     const ATOOLS::Variations  * p_variations;
     ATOOLS::Weights_Map m_wgtmapsum, m_wgtmapsumsqr;
     ATOOLS::Weights_Map m_mwgtmapsum, m_mwgtmapsumsqr;
