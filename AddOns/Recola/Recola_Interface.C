@@ -120,8 +120,8 @@ namespace Recola {
 
     if(p=="tau-")  return "tau-";
     if(p=="tau+")  return "tau+";
-    if(p=="nutau")  return "nu_tau";
-    if(p=="nutaub") return "nu_tau~";
+    if(p=="vtau")  return "nu_tau";
+    if(p=="vtaub") return "nu_tau~";
 
     if(p=="G")     return "g";
     if(p=="P")     return "A";
