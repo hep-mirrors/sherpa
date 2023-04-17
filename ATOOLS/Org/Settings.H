@@ -176,6 +176,7 @@ namespace ATOOLS {
     template <typename T>
     void SetDefaultMatrix(const std::vector<std::string>& keys,
                           const std::vector<std::vector<T>>& values);
+    bool HasDefault(const std::vector<std::string> &keys) const;
     void ResetDefault(const std::vector<std::string> &keys);
 
     bool IsSetExplicitly(const Settings_Keys&);

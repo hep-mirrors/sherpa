@@ -102,6 +102,10 @@ void Settings::DeclareMatrixSettingsWithEmptyDefault(
   }
 }
 
+bool Settings::HasDefault(const std::vector<std::string> &keys) const {
+  return (m_defaults.find(keys) != m_defaults.end());
+}
+
 void Settings::ResetDefault(const std::vector<std::string> &keys) {
   const auto it = m_defaults.find(keys);
   if (it == m_defaults.end())
