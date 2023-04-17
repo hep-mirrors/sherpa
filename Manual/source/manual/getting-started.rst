@@ -85,36 +85,36 @@ each run:
   * ``LD_LIBRARY_PATH=$SHERPA_LIBRARY_PATH:$LD_LIBRARY_PATH``
 
 
-Sherpa can be interfaced with various external packages, e.g. `HepMC
-<http://lcgapp.cern.ch/project/simu/HepMC/>`_, for event output, or
-`Rivet <https://rivet.hepforge.org/>`_, for analysis. For this to work,
-the user has to pass the appropriate commands to the configure
-step. This is achieved adding corresponding options to the configuration
+Sherpa can be interfaced with various external packages,
+e.g. `HepMC <http://hepmc.web.cern.ch/hepmc/>`_ for event output,
+`LHAPDF <https://lhapdf.hepforge.org/>`_ for PDF sets,
+or `Rivet <https://rivet.hepforge.org/>`_ for analysis.
+For this to work, the user has to add the corresponding options to the
+cmake configuration, e.g. for Rivet:
 
 .. code-block:: shell-session
 
-   $  ... -DSHERPA_ENABLE_RIVET=ON  ...
+   $  cmake [...] -DSHERPA_ENABLE_RIVET=ON
 
-To point the cmake to the path where the Rivet is installed use 
+If your Rivet installation is not in a standard directory, you also have to
+point cmake to the path where Rivet is installed as follows:
 
 .. code-block:: shell-session
 
-   $  ... -DRIVET_DIR=/my/rivet/install/dir
+   $  cmake [...] -DRIVET_DIR=/my/rivet/install/dir
 
 Here, the paths have to point to the top level installation
 directories of the external packages, i.e. the ones containing the
 ``lib/``, ``share/``, ... subdirectories.
 
+Other external packages are activated using equivalent configuration options.
 For a complete list of possible configuration options run
-:option:`cmake -LA`.
-
-.. If you want to use the built-in interface to Lund fragmentation and hadron
-.. decays, you have to compile with Pythia support by specifying the
-.. ``-DSHERPA_ENABLE_PYTHIA6=ON`` without adding 
+``cmake -LA``. Be aware that the capitalisation of the ``-D<name>_DIR``
+option might differ depending on the tool.
 
 The Sherpa package has successfully been compiled, installed and
 tested on Arch, SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux/ Mac OS X
-systems using the GNU compilers collection 4.8.5+, clang  3.4+ and Intel OneAPI 2022.
+systems using the GNU compilers collection, clang and Intel OneAPI 2022.
 
 If you have multiple compilers installed on your system, you can use
 shell environment variables to specify which of these are to be
