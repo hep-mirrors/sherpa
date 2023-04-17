@@ -277,5 +277,5 @@ void Ladder_Generator_Base::Test() {
       }
     }
   }
-  exit(1);
+  THROW(normal_exit,"Testing of Ladder_Generator_Base finished.");
 }

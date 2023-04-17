@@ -609,6 +609,6 @@ TestSingleEikonal(const double & b1,const double & b2) {
     was<<y<<"  "<<ana<<"  "<<num<<"  "<<dabs(1.-num/ana)<<std::endl; 
   }
   was.close();
-  exit(1);
+  THROW(normal_exit,"Testing of Single_Eikonal finished.");
 }
 

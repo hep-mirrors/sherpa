@@ -54,7 +54,7 @@ void Inelastic_Event_Generator::Reset() {
 }
 
 int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
-  msg_Out()<<"   - "<<METHOD<<"\n";
+  //msg_Out()<<"   - "<<METHOD<<"\n";
   Blob * blob = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
   if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return -1;
   if (blob->NInP()>0)  {
@@ -69,7 +69,7 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   p_eikonal  = 0; m_B = -1;
   for (size_t trials=0;trials<1000;trials++) {
     if (SelectEikonal() && SelectB()) {
-      m_Nladders = 1+int(ran->Poissonian((*p_eikonal)(m_B)));
+      m_Nladders = 1; //+int(ran->Poissonian((*p_eikonal)(m_B)));
       if (m_Nladders>0) {
 	do { } while (!m_primaries(p_eikonal,m_B,m_Nladders));
 	return 0;
@@ -80,7 +80,7 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
 }
 
 Blob * Inelastic_Event_Generator::GenerateEvent() {
-  msg_Out()<<"   - "<<METHOD<<"\n";
+  //msg_Out()<<"   - "<<METHOD<<"\n";
   return MakePrimaryScatterBlob();
 }
 

@@ -12,7 +12,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders() :
-  p_laddergenerator(new Ladder_Generator_Seeded()),
+  p_laddergenerator(new Ladder_Generator_Eik()),
   m_Ecms(rpa->gen.Ecms()/2.),
   m_test(true),
   n_calls(0), n_start(0), n_gen(0)
@@ -59,25 +59,26 @@ void Primary_Ladders::Test() { return; if (m_test) p_laddergenerator->Test(); }
 
 bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_t & N) {
   Reset();
-  msg_Out()<<"     -------------------------------------------------------------\n"
-  	   <<"     --- Make "<<N<<" new ladders at B = "<<B<<"\n";
+  //msg_Out()<<"     -------------------------------------------------------------\n"
+  //	   <<"     --- Make "<<N<<" new ladders at B = "<<B<<"\n";
   p_laddergenerator->InitCollision(eikonal,B);
   size_t Ngen = 0, trials = 0;
   double b1, b2;
   bool   contains_one_inelastic = false;
-  msg_Out()<<"--------------------------------------------------------------\n";
+  //msg_Out()<<"--------------------------------------------------------------\n";
   while (Ngen<N) {
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
     p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
-    msg_Out()<<"   - "<<METHOD<<" generates new ladder with energy limits = "
-	     <<m_E[0]<<" and "<<m_E[1]<<"\n";
+    //msg_Out()<<"   - "<<METHOD<<" generates new ladder with energy limits = "
+    //	     <<m_E[0]<<" and "<<m_E[1]<<"\n";
     Ladder * ladder = (*p_laddergenerator)(position);
     if (m_test && ladder) FillAnalysis(ladder,"trial");
     if (IsAllowed(ladder) && m_colourgenerator(ladder)) {	
       p_laddergenerator->QuarkReplace();
       p_laddergenerator->FixLadderType();
-      if (ladder->Type()==ladder_type::inelastic) contains_one_inelastic = true;
+      //if (ladder->Type()==ladder_type::inelastic)
+      contains_one_inelastic = true;
       Add(ladder);
       Ngen++;
       trials = 0;

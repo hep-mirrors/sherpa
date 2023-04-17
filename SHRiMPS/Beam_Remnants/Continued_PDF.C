@@ -65,7 +65,7 @@ void Continued_PDF::Test()  {
     double sum = testint.Integrate(0.,1.,0.000001,1);
     msg_Out()<<"   --> sum at Q2 = "<<m_Q2<<" = "<<sum<<"\n";
   }
-  exit(1);
+  THROW(normal_exit,"Testing of Continued_PDF finished.");
 }
   
 void Continued_PDF::Scan()  {
