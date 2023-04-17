@@ -64,6 +64,12 @@ void Scoped_Settings::DeclareMatrixSettingsWithEmptyDefault(
   m_rootsettings->DeclareMatrixSettingsWithEmptyDefault(keys, m_scopes);
 }
 
+Scoped_Settings& Scoped_Settings::ResetDefault()
+{
+  m_rootsettings->ResetDefault(m_scopes.IndizesRemoved());
+  return *this;
+}
+
 Scoped_Settings& Scoped_Settings::SetDefaultSynonyms(const String_Vector& list)
 {
   m_rootsettings->SetDefaultSynonyms(m_scopes, list);

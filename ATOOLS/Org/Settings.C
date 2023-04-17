@@ -102,6 +102,13 @@ void Settings::DeclareMatrixSettingsWithEmptyDefault(
   }
 }
 
+void Settings::ResetDefault(const std::vector<std::string> &keys) {
+  const auto it = m_defaults.find(keys);
+  if (it == m_defaults.end())
+    return;
+  m_defaults.erase(it);
+}
+
 bool Settings::IsSetExplicitly(const Settings_Keys& keys)
 {
   for (auto& reader : m_yamlreaders)
