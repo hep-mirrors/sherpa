@@ -188,13 +188,13 @@ FixKinematics(double kt2, double z, Vec4D & split, Vec4D & gluon , Vec4D & spec)
   Vec4D pk((1.-kt2/(2.*z*(1.-z)*split*spec))*spec);
   if (split+spec != pj+gluon+pk ||
       dabs(pj.Abs2())>1.e-6 || dabs(gluon.Abs2())>1.e-6 || dabs(pk.Abs2())>1.e-6){
-    msg_Out()<<METHOD<<": 4-momentum not conserved:\n"<<endl
-	     <<split<<" ("<<split.Abs2()<<") + "<<spec<<" ("<<spec.Abs2()<<")\n"
-	     <<" = "<<split+spec<<" vs.\n"
-	     <<pj<<" ("<<pj.Abs2()<<") + "<<gluon<<" ("<<gluon.Abs2()<<") + "<<pk<<" ("<<pk.Abs2()<<"\n"
-	     <<" = "<<(pj+gluon+pk)<<"\n"
-	     <<"for kt2 = "<<kt2<<" and z = "<<z<<".\n";
-    exit(1);
+    msg_Debugging()<<METHOD<<": 4-momentum not conserved:\n"<<endl
+		   <<split<<" ("<<split.Abs2()<<") + "<<spec<<" ("<<spec.Abs2()<<")\n"
+		   <<" = "<<split+spec<<" vs.\n"
+		   <<pj<<" ("<<pj.Abs2()<<") + "<<gluon<<" ("<<gluon.Abs2()<<") + "<<pk<<" ("<<pk.Abs2()<<"\n"
+		   <<" = "<<(pj+gluon+pk)<<"\n"
+		   <<"for kt2 = "<<kt2<<" and z = "<<z<<".\n";
+    THROW(fatal_error,"Four-momentum non-conservation.")
   }
   rotat.RotateBack(pj);
   rotat.RotateBack(gluon);

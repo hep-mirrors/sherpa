@@ -37,17 +37,12 @@ bool Hadron_Dissociation::FillBeamBlob(Blob_List * blobs, const double & B) {
     msg_Tracking()<<METHOD<<" arrives at residual mom = "<<m_outmom<<"\n"; 
     return false;
   }
-  if (!CompensateFlavours() ||
-      !CompensateColours()) {
-    msg_Error()<<METHOD<<" could not compensate flavours or colours.  Exit.\n"
-	       <<(*blobs)<<"\n";
-    exit(1);
+  if (!CompensateFlavours() || !CompensateColours()) {
+    THROW(fatal_error,"Error compensating flavours or colours");
   }
   AddSpectatorPartons();
   if (!CheckResiduals()) {
-    msg_Error()<<METHOD<<" doesn't check out residual colour or flavour.  Exit.\n"
-	       <<(*blobs)<<"\n";
-    exit(1);
+    THROW(fatal_error,"Error with residual flavours");
   }
   return true;
 }
@@ -288,9 +283,7 @@ void Hadron_Dissociation::FixConstituentFlavours() {
     }
   }
   else {
-    msg_Error()<<"Error in "<<METHOD<<"(bunch = "<<m_beamflav<<"):\n"
-	       <<"   No parton dissociation found.  Will exit.\n";
-    exit(1);
+    THROW(fatal_error,"No parton dissociation found.")
   }
 }
 

@@ -26,9 +26,9 @@ Ladder * Ladder_Generator_Seeded::operator()(const Vec4D & pos) {
   ConstructFSMomenta();
   FillPropagators();
   ConstructISKinematics();
-  msg_Out()<<METHOD<<"["<<m_emissions[0]<<", "<<m_emissions[1]<<", "<<m_emissions[2]<<"], "
-  	   <<"ktsum = "<<m_ktsum<<" for incoming E's "<<p_ladder->InPart(0)->Momentum()[0]<<" and "
-	   <<p_ladder->InPart(1)->Momentum()[0]<<" \n";//<<(*p_ladder)<<"\n";
+  //msg_Out()<<METHOD<<"["<<m_emissions[0]<<", "<<m_emissions[1]<<", "<<m_emissions[2]<<"], "
+  //	   <<"ktsum = "<<m_ktsum<<" for incoming E's "<<p_ladder->InPart(0)->Momentum()[0]<<" and "
+  //	   <<p_ladder->InPart(1)->Momentum()[0]<<" \n";//<<(*p_ladder)<<"\n";
   return p_ladder;
 }
 

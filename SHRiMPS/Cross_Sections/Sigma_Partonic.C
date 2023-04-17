@@ -58,7 +58,7 @@ const double Sigma_Partonic::MakeEvent() {
       m_phi = 2.*M_PI*ran->Get();
       SelectFlavours(m_fixflavour); 
       if (m_ana) {
-	msg_Out()<<"   - "<<METHOD<<"(yhat = "<<m_yhat<<")\n";
+	//msg_Out()<<"   - "<<METHOD<<"(yhat = "<<m_yhat<<")\n";
 	m_histos[string("Yhat_sigma")]->Insert(m_yhat);
 	m_histos[string("Yhat_asym_sigma")]->Insert(dabs(m_yhat),(m_yhat>0.?1.:-1.));
 	m_histos[string("Y1_sigma")]->Insert(m_y[0]);
