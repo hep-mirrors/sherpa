@@ -36,7 +36,7 @@ namespace SHERPA {
     std::map<ATOOLS::Flavour,std::set<std::string> > m_forced_channels;
     std::map<std::string, double> m_external_widths;
     int                      m_store_results;
-    bool                     m_decay_tau, m_set_widths, m_use_ho_sm_widths,
+    bool                     m_decay_tau, m_set_widths,
                              m_br_weights, m_usemass;
     double                   m_min_prop_width;
     ATOOLS::Flavour_Set      m_decmass;

@@ -57,7 +57,7 @@ public:
 
 Hard_Decay_Handler::Hard_Decay_Handler() :
   p_newsublist(NULL), m_resultdir(""), m_offshell(""),
-  m_decay_tau(false), m_set_widths(false), m_use_ho_sm_widths(true),
+  m_decay_tau(false), m_set_widths(false),
   m_br_weights(true), m_usemass(true), m_min_prop_width(0.0)
 {
   auto& s = Settings::GetMainSettings();
@@ -71,13 +71,6 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   m_br_weights      = ds["Apply_Branching_Ratios"].SetDefault(true).Get<bool>();
   m_decay_tau       = ds["Decay_Tau"].SetDefault(false).Get<bool>();
   m_set_widths      = ds["Set_Widths"].SetDefault(false).Get<bool>();
-  m_use_ho_sm_widths= ds["Use_HO_SM_Widths"].SetDefault(true).Get<bool>();
-  if (m_use_ho_sm_widths) {
-    if (Flavour(kf_h0).Mass()<125.07 || Flavour(kf_h0).Mass()>125.11 ||
-        Flavour(kf_t).Mass()<172.4 || Flavour(kf_t).Mass()>172.6)
-      THROW(fatal_error, "Use_HO_SM_Widths specified, but particle masses not in SM range.");
-    SetHOSMWidths(ds);
-  }
   m_min_prop_width  = ds["Min_Prop_Width"].SetDefault(0.0).Get<double>();
   m_int_accuracy    = ds["Int_Accuracy"].SetDefault(0.01).Get<double>();
   m_int_niter       = ds["Int_NIter"].SetDefault(2500).Get<int>();
@@ -142,6 +135,22 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     InitializeOffshellDecays(dmit->second);
     dmit->second->UpdateChannelStatuses();
+  }
+
+
+  // overwrite partial widths from HO SM or user input
+  if (ds["Use_HO_SM_Widths"].SetDefault(true).Get<bool>()) {
+    if (Flavour(kf_h0).Mass()<125.07 || Flavour(kf_h0).Mass()>125.11 ||
+        Flavour(kf_t).Mass()<172.4 || Flavour(kf_t).Mass()>172.6)
+      THROW(fatal_error, "Use_HO_SM_Widths specified, but particle masses not in SM range.");
+    SetHOSMWidths(ds);
+  }
+  for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
+    for (auto dc: *(dmit->second)) {
+      auto s = ds["Channels"][dc->IDCode()]["Width"];
+      if (!s.HasDefault()) s.SetDefault(dc->IWidth());
+      dc->SetWidth(s.Get<double>());
+    }
   }
 
   if (m_set_widths)
@@ -329,8 +338,6 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
 
 void Hard_Decay_Handler::SetHOSMWidths(ATOOLS::Scoped_Settings& s)
 {
-  
-  std::map<std::string, double> ho_sm_widths;
   // Higgs WG BRs 2022
   s["Channels"]["25,5,-5"]   ["Width"].SetDefault(2.382E-03);
   s["Channels"]["25,15,-15"] ["Width"].SetDefault(2.565E-04);
@@ -507,7 +514,7 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
     dc->SetMax(0.0);
   }
   auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][dc->IDCode()];
-  dc->SetWidth(s["Width"].SetDefault(dc->IWidth()).Get<double>());
+  dc->SetWidth(dc->IWidth());
   dc->SetDeltaWidth(dc->IDeltaWidth());
   return true;
 }
