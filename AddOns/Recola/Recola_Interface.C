@@ -109,13 +109,13 @@ namespace Recola {
 
     if(p=="e-")    return "e-";
     if(p=="e+")    return "e+";
-    if(p=="nue")     return "nu_e";
-    if(p=="nueb")   return "nu_e~";
+    if(p=="ve")     return "nu_e";
+    if(p=="veb")   return "nu_e~";
 
     if(p=="mu-")   return "mu-";
     if(p=="mu+")   return "mu+";
-    if(p=="numu")   return "nu_mu";
-    if(p=="numub")  return "nu_mu~";
+    if(p=="vmu")   return "nu_mu";
+    if(p=="vmub")  return "nu_mu~";
 
 
     if(p=="tau-")  return "tau-";
