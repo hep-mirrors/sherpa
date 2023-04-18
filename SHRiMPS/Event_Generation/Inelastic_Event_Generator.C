@@ -89,6 +89,34 @@ Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
   Ladder * ladder = m_primaries.GetLadders()->front();
   Blob * blob     = new Blob();
   blob->SetId();
+  //blob->AddData("Weight",new Blob_Data<double>(1.));
+  blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
+  blob->AddData("Factorization_Scale",new Blob_Data<double>(1.));
+  blob->AddData("Resummation_Scale",new Blob_Data<double>(1.));
+  blob->SetPosition(ladder->Position());
+  blob->SetType(btp::Hard_Collision);
+  blob->SetTypeSpec("MinBias");
+  blob->UnsetStatus(blob_status::needs_minBias);
+  blob->SetStatus(blob_status::needs_showers);
+  for (size_t i=0;i<2;i++) blob->AddToInParticles(ladder->InPart(i)->GetParticle());
+  for (LadderMap::iterator lmit=ladder->GetEmissions()->begin();
+       lmit!=ladder->GetEmissions()->end();lmit++) {
+    Particle * part = lmit->second.GetParticle();
+    blob->AddToOutParticles(part);
+    if (dabs(lmit->first)>m_primaries.Ymax()) part->SetInfo('B');
+  }
+  delete ladder;
+  m_primaries.GetLadders()->pop_front();
+  //return p_collemgen->GenerateEmissions(blobs);
+  return blob;
+}
+
+/*
+Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
+  if (m_primaries.GetLadders()->empty()) return 0;
+  Ladder * ladder = m_primaries.GetLadders()->front();
+  Blob * blob     = new Blob();
+  blob->SetId();
   blob->AddData("Weight",new Blob_Data<double>(1.));
   blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
   blob->AddData("Factorization_Scale",new Blob_Data<double>(1.));
@@ -117,7 +145,7 @@ Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
   //return p_collemgen->GenerateEmissions(blobs);
   return blob;
 }
-
+*/
 bool Inelastic_Event_Generator::SelectEikonal() {
   p_eikonal = 0;
   while (p_eikonal==NULL) {

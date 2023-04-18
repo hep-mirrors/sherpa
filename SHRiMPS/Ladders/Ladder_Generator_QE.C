@@ -17,7 +17,7 @@ Ladder_Generator_QE::Ladder_Generator_QE() :
   Ladder_Generator_Base(),
   m_beam1(ATOOLS::rpa->gen.Beam1()), m_beam2(ATOOLS::rpa->gen.Beam2()),
   m_Pbeam1((ATOOLS::rpa->gen.PBeam(0))), m_Pbeam2(ATOOLS::rpa->gen.PBeam(1)),
-  m_sign1(-1+2*int(m_Pbeam1[3]>0)), m_fraction(.01),
+  m_sign1(-1+2*int(m_Pbeam1[3]>0)), m_fraction(.1),
   m_partonic(Sigma_Partonic(xs_mode::perturbative))
   {}
   
@@ -103,7 +103,6 @@ void Ladder_Generator_QE::FixEmissionsKinematics_elastic() {
   msg_Out() << "inv. mass2: " << remnantP2.Abs2() << endl;
 
   //PRINT_VAR(sqrt(m_abs_t));
-
   //if (m_ana) m_histomap[std::string("Q_elastic")]->Insert(m_abs_t);
   T_Prop & prop = *p_props->begin();
   prop.SetQT2(m_qt2);
