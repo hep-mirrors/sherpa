@@ -33,6 +33,7 @@ Ladder * Ladder_Generator_QE::operator()(const Vec4D & pos,Sigma_Elastic * sigma
   if (p_ladder->GetEmissions()->size()==2) {
     m_interactionType = GetIntType();
     FixEmissionsKinematics_elastic();
+    //ConstructSimpleLadder();
     ConstructISKinematics();
   }
   else {

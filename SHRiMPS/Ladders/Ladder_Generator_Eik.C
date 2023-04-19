@@ -15,7 +15,7 @@ Ladder_Generator_Eik::Ladder_Generator_Eik() : Ladder_Generator_Base() {}
 
 Ladder_Generator_Eik::~Ladder_Generator_Eik() {}
 
-Ladder * Ladder_Generator_Eik::operator()(const Vec4D & pos,Sigma_Elastic * sigma_el) {
+Ladder * Ladder_Generator_Eik::operator()(const Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) {
   InitLadder(pos);
   FillGluons();
   SelectPropagatorColours();
