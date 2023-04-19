@@ -16,7 +16,7 @@ Hard_Decays::Hard_Decays(Decay_Handler_Base* dechandler) :
   m_type      = eph::Perturbative;
 }
 
-Hard_Decays::~Hard_Decays() 
+Hard_Decays::~Hard_Decays()
 {
 }
 
@@ -27,11 +27,11 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist)
   bool didit(false);
   for (size_t blit(0);blit<bloblist->size();++blit) {
     Blob* blob=(*bloblist)[blit];
-    if (blob->Has(blob_status::needs_harddecays)) {
-      if (!p_dechandler) {
-	blob->UnsetStatus(blob_status::needs_harddecays);
-      }
-      else {
+    if (blob->Has(blob_status::needs_harddecays) && !p_dechandler) {
+      blob->UnsetStatus(blob_status::needs_harddecays);
+      continue;
+    }
+    if (blob->Has(blob_status::needs_harddecays) && p_dechandler) {
 	DEBUG_FUNC("Treating blob "<<blob->Id());
 	didit = true;
 	p_dechandler->SetBlobList(bloblist);

@@ -149,8 +149,8 @@ bool Event_Handler::GenerateEvent(eventtype::code mode)
   }
   switch (mode) {
   case eventtype::StandardPerturbative:
-  case eventtype::NeutrinoNucleon:
   case eventtype::EventReader:
+  case eventtype::NeutrinoNucleon:
     return GenerateStandardPerturbativeEvent(mode);
   case eventtype::MinimumBias:
     return GenerateMinimumBiasEvent(mode);
@@ -213,6 +213,9 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;
+  //msg_Out()<<"------------------------------------------------------------------------------\n"
+  //	   <<"------------------------------------------------------------------------------\n"
+  //	   <<"------------------------------------------------------------------------------\n";
   do {
     if ((*pit)->Type()==eph::Analysis || (*pit)->Type()==eph::Userhook) {
       ++pit;
@@ -233,7 +236,9 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       }
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
+    (*pit)->SetEventType(mode);
     Return_Value::code rv((*pit)->Treat(&m_blobs));
+    //msg_Out()<<METHOD<<" for "<<(*pit)->Name()<<", rv = "<<rv<<"\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;

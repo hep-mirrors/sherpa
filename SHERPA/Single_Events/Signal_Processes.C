@@ -124,8 +124,11 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   bool success(true);
   Particle *particle(NULL);
   blob->SetStatus(blob_status::needs_harddecays);
-  if (proc->Info().m_nlomode!=nlo_mode::fixedorder)
+  if (proc->Info().m_nlomode!=nlo_mode::fixedorder &&
+      m_mode!=eventtype::NeutrinoNucleon)
     blob->AddStatus(blob_status::needs_showers);
+  if (m_mode==eventtype::NeutrinoNucleon)
+    blob->AddStatus(blob_status::needs_beams);
   const DecayInfo_Vector &decs(proc->DecayInfos());
   blob->AddData("Decay_Info",new Blob_Data<DecayInfo_Vector>(decs));
   for (unsigned int i=0;i<proc->NIn();i++) {

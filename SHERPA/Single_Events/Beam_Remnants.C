@@ -23,7 +23,7 @@ Beam_Remnants::~Beam_Remnants() {
       hit->second->Finalize();
       hit->second->Output(name+hit->first+string(".dat"));
       delete hit->second;
-    }   
+    }
   }
 }
 
@@ -43,12 +43,13 @@ Return_Value::code Beam_Remnants::Treat(Blob_List* bloblist)
 
 Return_Value::code Beam_Remnants::StandardTreatment(Blob_List* bloblist,const bool & onlyBunch)
 {
-  Return_Value::code rv = p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist,onlyBunch); 
+  Return_Value::code rv = p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist,onlyBunch,
+                                                                      m_mode==eventtype::NeutrinoNucleon);
   if (m_ana) Analyse(bloblist);
   //msg_Out()<<"-----------------------------------------------------\n"
   //	   <<METHOD<<"\n"<<(*bloblist)<<"\n"
   //	   <<"-----------------------------------------------------\n";
-  return rv;  
+  return rv;
 }
 
 Return_Value::code Beam_Remnants::DealWithRescattering(Blob_List* bloblist)
@@ -70,7 +71,7 @@ Return_Value::code Beam_Remnants::DealWithRescattering(Blob_List* bloblist)
        bit!=bloblist->end();bit++) {
     if ((*bit)->Type()==btp::Bunch) (*bit)->UnsetStatus(blob_status::needs_beamRescatter);
   }
-  return Return_Value::Nothing;  
+  return Return_Value::Nothing;
 }
 
 
@@ -99,8 +100,8 @@ int Beam_Remnants::EstablishNeed(Blob_List * bloblist) {
   if (!signal || signal->Has(blob_status::needs_signal)) {
     Blob * hard  = bloblist->FindFirst(btp::Hard_Collision);
     Blob * qelas = bloblist->FindFirst(btp::Elastic_Collision);
-    if (!qelas) qelas = bloblist->FindFirst(btp::Soft_Diffractive_Collision);        
-    if (!qelas) qelas = bloblist->FindFirst(btp::Quasi_Elastic_Collision);        
+    if (!qelas) qelas = bloblist->FindFirst(btp::Soft_Diffractive_Collision);
+    if (!qelas) qelas = bloblist->FindFirst(btp::Quasi_Elastic_Collision);
     if (!hard && !qelas) return 0;
     if (qelas)           return 1;
   }
@@ -108,13 +109,15 @@ int Beam_Remnants::EstablishNeed(Blob_List * bloblist) {
     btp::code signal_type = signal->Type();
     if (signal_type==btp::Elastic_Collision ||
 	signal_type==btp::Soft_Diffractive_Collision ||
-	signal_type==btp::Quasi_Elastic_Collision) return 1;
+	signal_type==btp::Quasi_Elastic_Collision ||
+	m_mode==eventtype::NeutrinoNucleon)
+      return 1;
   }
   // Standard case, fill beam blobs in full beam remnant treatment
   return 2;
 }
 
-void Beam_Remnants::CleanUp(const size_t & mode) 
+void Beam_Remnants::CleanUp(const size_t & mode)
 {
   p_beamremnanthandler->CleanUp(mode);
 }
