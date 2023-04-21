@@ -120,8 +120,8 @@ void Shrimps::InitialiseTheEventGenerator() {
 }
 
 int Shrimps::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
-  if (blobs->FindFirst(ATOOLS::btp::Fragmentation)!=NULL &&
-      blobs->FindFirst(ATOOLS::btp::Hadron_Decay)==NULL) Analyse(blobs);
+  //if (blobs->FindFirst(ATOOLS::btp::Fragmentation)!=NULL &&
+  //    blobs->FindFirst(ATOOLS::btp::Hadron_Decay)==NULL) Analyse(blobs);
   return p_generator->InitMinimumBiasEvent(blobs);
 }
 

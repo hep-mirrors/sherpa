@@ -102,6 +102,10 @@ void MinBias_Parameters::FillRunParameters() {
     m_runmode = m_run_params.runmode = run_mode::quasi_elastic_events;
   else if (runmode==std::string("Inelastic")) 
     m_runmode = m_run_params.runmode = run_mode::inelastic_events;
+  else if (runmode==std::string("DD")) 
+    m_runmode = m_run_params.runmode = run_mode::double_diffractive_events;
+  else if (runmode==std::string("SD")) 
+    m_runmode = m_run_params.runmode = run_mode::single_diffractive_events;
   else if (runmode==std::string("All")) 
     m_runmode = m_run_params.runmode = run_mode::all_min_bias;
   else if (runmode==std::string("Underlying")) 
