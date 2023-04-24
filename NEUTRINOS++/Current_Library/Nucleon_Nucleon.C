@@ -159,8 +159,9 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   const double F_A = m_ffs["A"]->Calc(q2),  F_P = m_ffs["P"]->Calc(q2);
   const double tau = q2/(4.*m_massin*m_massout); 
   
-  complex ff1 = Complex( (G_E+tau*G_M)/(1.+tau), 0. ), ff2 = Complex( (G_E-G_M)/(1.+tau), 0. );
-  complex ff3 = Complex( F_A, 0. ), ff4 = Complex( F_P, 0. ), c = Complex( 1., 0. );
+  double ff1  = (G_E+tau*G_M)/(1.+tau), ff2 = (G_E-G_M)/(1.+tau);
+  double ff3  = F_A, ff4 = F_P;
+  Complex One = Complex(1.,0.);
   //msg_Info()<<"Form factors for q2 = "<<q2<<":\n"
   //	    <<"  F_1 = "<<ff1<<", F_2 = "<<ff2<<" from G_E = "<<G_E<<" and G_M = "<<G_M<<",\n"
   //	    <<"  F_A = "<<F_A<<" and F_P = "<<F_P<<"\n";
@@ -182,15 +183,15 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
       for (int hq=0;hq<2;hq++) {
         amp += ff2/(4.*m_massin) * 0.5 *
 	  (
-            -F->Y(pf,hf, pi,hq, m_cR,m_cL) * F->L(pi,hq, pi,hi, c,c) +
-             F->Y(pi,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi,hq, c,c) +
-            -F->Y(pf,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf,hq, c,c) +
-             F->Y(pf,hf, pf,hq, m_cR,m_cL) * F->L(pf,hq, pi,hi, c,c) +
+            -F->Y(pf,hf, pi,hq, m_cR,m_cL) * F->L(pi,hq, pi,hi, One,One) +
+             F->Y(pi,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi,hq, One,One) +
+            -F->Y(pf,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf,hq, One,One) +
+             F->Y(pf,hf, pf,hq, m_cR,m_cL) * F->L(pf,hq, pi,hi, One,One) +
 
-            -F->Y(pf,hf, pi_bar,hq, m_cR,m_cL) * F->L(pi_bar,hq, pi,hi, c,c) +
-             F->Y(pi_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi_bar,hq, c,c) +
-            -F->Y(pf_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf_bar,hq, c,c) +
-             F->Y(pf,hf, pf_bar,hq, m_cR,m_cL) * F->L(pf_bar,hq, pi,hi, c,c) 
+            -F->Y(pf,hf, pi_bar,hq, m_cR,m_cL) * F->L(pi_bar,hq, pi,hi, One,One) +
+             F->Y(pi_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi_bar,hq, One,One) +
+            -F->Y(pf_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf_bar,hq, One,One) +
+             F->Y(pf,hf, pf_bar,hq, m_cR,m_cL) * F->L(pf_bar,hq, pi,hi, One,One) 
 	   );
       }
       amp += -ff3 * qmom * F->Y(pf,hf, pi,hi, m_cR,m_cL) / m_massin;
