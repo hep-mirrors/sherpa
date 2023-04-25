@@ -26,7 +26,7 @@
 
 (processes){
   Process 2 -2 -> 21 21;
-  Order_EW 0
+  Order (*,0);
   NLO_QCD_Part VI;
   Enable_MHV 0;
   Loop_Generator LOOPGEN;
