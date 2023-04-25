@@ -4,11 +4,9 @@ GITTAG = SHRiMPS/Glauber
 include ../../git.make
 
 libShrimpsGlauber_la_SOURCES = \
-			Glauber.C \
-			Nucleus.C
+			Glauber.C 
 
 localincdir = $(pkgincludedir)/SHRiMPS/Glauber
 
 localinc_HEADERS   = \
-			Glauber.H \
-			Nucleus.H
+			Glauber.H 

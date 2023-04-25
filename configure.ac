@@ -233,6 +233,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  SHRiMPS/Cross_Sections/Makefile \
 	  SHRiMPS/Eikonals/Makefile \
 	  SHRiMPS/Tools/Makefile \
+	  SHRiMPS/Glauber/Makefile \
 	  SHERPA/Tools/Makefile \
 	  SHERPA/LundTools/Makefile \
 	  SHERPA/LundTools/pythia-6.4.18.f \
