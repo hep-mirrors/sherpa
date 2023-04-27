@@ -51,7 +51,7 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_xf1[1]=m_xf1[0]=0.0;
   m_xf2[1]=m_xf2[0]=0.0;
   for (size_t i=0;i<2;++i) {
-    if (Flav(i).IsHadron()) {
+    if (Flav(i).IsHadron() && isrbase[i]->On()) {
       Hadron_Remnant *remnant = new Hadron_Remnant(this,i);
       remnant->SetStringDrawing(1.0,0);
       remnant->SetStringDrawing(0.0,1);

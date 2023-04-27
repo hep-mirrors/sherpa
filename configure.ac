@@ -122,6 +122,7 @@ AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  PDF/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/SM/Makefile \
+	  MODEL/SMnu/Makefile \
 	  MODEL/HEFT/Makefile \
 	  MODEL/TauPi/Makefile \
 	  MODEL/UFO/Makefile \

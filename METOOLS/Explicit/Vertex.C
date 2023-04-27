@@ -81,6 +81,15 @@ Vertex::Vertex(const Vertex_Key &key):
       THROW(fatal_error,"Lorentz calculator not implemented '"+
 	    ckey.m_p+ckey.p_mv->Lorentz[ckey.m_n]+"'");
     }
+    std::string ffkey("1");
+    if (ckey.p_mv->FormFactor.size()>ckey.m_n)
+      ffkey=ckey.p_mv->FormFactor[ckey.m_n];
+    m_ff.push_back(FF_Getter::GetObject(ffkey,ckey));
+    if (m_ff.back()==NULL) {
+      msg_Out()<<*ckey.p_mv<<std::endl;
+      THROW(fatal_error,"Form factor not implemented '"+
+	    ckey.p_mv->FormFactor[ckey.m_n]+"'");
+    }
   }
 }
 
@@ -130,7 +139,8 @@ void Vertex::Evaluate()
 	      if (m_cc[k]->Evaluate(m_cjj)) {
 		CObject *j(m_lc[k]->Evaluate(m_cjj));
 		if (j==NULL) continue;
-		j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
+		j->Multiply(p_v->Coupling(k)*
+			    m_cc[k]->Coupling()*m_ff[k]->FF());
 		j->SetH(H(hid));
 		m_cc[k]->AddJ(j);
 		SetZero(false);
@@ -162,7 +172,8 @@ void Vertex::Evaluate()
 	if (m_cc[k]->Evaluate(m_cjj)) {
 	  CObject *j(m_lc[k]->Evaluate(m_cjj));
 	  if (j==NULL) continue;
-	  j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
+	  j->Multiply(p_v->Coupling(k)*
+		      m_cc[k]->Coupling()*m_ff[k]->FF());
 	  j->SetH(H(hid));
 	  m_cc[k]->AddJ(j);
 	  SetZero(false);
@@ -400,9 +411,14 @@ std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
     if (v.Color().size() && v.Lorentz().size()) {
       str<<"'"<<GetName(*v.Color().front())
 	 <<"*"<<GetName(*v.Lorentz().front());
-      for (size_t i(1);i<v.Color().size();++i)
+      if (v.FormFactor().size())
+	str<<"*"<<GetName(*v.FormFactor().front());
+      for (size_t i(1);i<v.Color().size();++i) {
 	str<<"+"<<GetName(*v.Color()[i])
 	   <<"*"<<GetName(*v.Lorentz()[i]);
+	if (v.FormFactor().size()>i)
+	  str<<"*"<<GetName(*v.FormFactor()[i]);
+      }
       str<<"'";
     }
     if (v.V()) str<<v.Order();

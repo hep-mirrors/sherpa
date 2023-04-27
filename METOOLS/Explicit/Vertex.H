@@ -3,6 +3,7 @@
 
 #include "METOOLS/Explicit/Vertex_Key.H"
 #include "METOOLS/Explicit/Current.H"
+#include "METOOLS/Explicit/Form_Factor.H"
 #include "METOOLS/Explicit/Color_Calculator.H"
 #include "METOOLS/Explicit/Lorentz_Calculator.H"
 
@@ -27,6 +28,7 @@ namespace METOOLS {
 
     LC_Vector m_lc;
     CC_Vector m_cc;
+    FF_Vector m_ff;
 
     CObject_Vector m_cjj;
 
@@ -111,8 +113,9 @@ namespace METOOLS {
 
     inline static size_t VLMode() { return s_vlmode; }
 
-    inline const LC_Vector &Lorentz() const { return m_lc; }
-    inline const CC_Vector &Color() const   { return m_cc; }
+    inline const LC_Vector &Lorentz() const    { return m_lc; }
+    inline const CC_Vector &Color() const      { return m_cc; }
+    inline const FF_Vector &FormFactor() const { return m_ff; }
 
     inline size_t H(const size_t &i) const { return (*p_h)[i]; }
 

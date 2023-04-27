@@ -10,6 +10,7 @@ libMEToolsExplicit_la_SOURCES         =	\
 					Vertex_Key.C \
 					Color_Calculator.C \
 					Lorentz_Calculator.C \
+					Form_Factor.C \
 					NLO_Counter_Terms.C \
 					Dipole_Kinematics.C \
 					Dipole_Color.C \
@@ -22,6 +23,7 @@ localinc_HEADERS      =	\
 			Vertex_Key.H \
 			Color_Calculator.H \
 			Lorentz_Calculator.H \
+			Form_Factor.H \
 			NLO_Counter_Terms.H \
 			Dipole_Info.H \
 			Dipole_Kinematics.H \

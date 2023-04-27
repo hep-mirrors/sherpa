@@ -140,6 +140,8 @@ void Comix::PrintVertices()
     LC_Getter::PrintGetterInfo(msg_Out(),10);
     msg_Out()<<"\n   Implemented color calculators:\n\n";
     CC_Getter::PrintGetterInfo(msg_Out(),10);
+    msg_Out()<<"\n   Implemented form factors:\n\n";
+    FF_Getter::PrintGetterInfo(msg_Out(),10);
     msg_Out()<<"\n}\n";
   }
 }
