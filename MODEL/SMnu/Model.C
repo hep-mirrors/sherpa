@@ -670,7 +670,7 @@ void Standard_Model::InitNuclearVertices()
     m_v.back().AddParticle(flav);
     m_v.back().AddParticle(Flavour(kf_photon));
     m_v.back().Color.push_back(Color_Function(cf::None));
-    m_v.back().Lorentz.push_back("FFV");
+    m_v.back().Lorentz.push_back("FFVM");
     m_v.back().FormFactor.push_back("F2p");
     m_v.back().cpl.push_back(cpl*Q);
     m_v.back().order[1]=1;

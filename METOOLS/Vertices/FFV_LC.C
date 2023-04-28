@@ -95,6 +95,31 @@ namespace METOOLS {
       return j;
     }
 
+    CVec4<SType> *LorentzMagnetic
+    (const CSpinorType &a,const CSpinorType &b,const Vec4D pab)
+    {
+#ifdef DEBUG__BG
+      msg_Debugging()<<"<> sig "<<a<<"\n";
+      msg_Debugging()<<"       "<<b<<"\n";
+      msg_Debugging()<<"       "<<pab<<"\n";
+#endif
+      const SComplex I(0,1);
+      SComplex p0(pab[0]), p3(-pab[Spinor<SType>::R3()]);
+      SComplex p1(-pab[Spinor<SType>::R1()]), p2(-pab[Spinor<SType>::R2()]);
+      SComplex l12(a[0]*b[0]-a[1]*b[1]+a[2]*b[2]-a[3]*b[3]);
+      SComplex l13(I*(a[0]*b[1]-a[1]*b[0]+a[2]*b[3]-a[3]*b[2]));
+      SComplex l23(a[0]*b[1]+a[1]*b[0]+a[2]*b[3]+a[3]*b[2]);
+      SComplex l01(I*(-a[0]*b[1]-a[1]*b[0]+a[2]*b[3]+a[3]*b[2]));
+      SComplex l02(-a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2]);
+      SComplex l03(I*(-a[0]*b[0]+a[1]*b[1]+a[2]*b[2]-a[3]*b[3]));
+      CVec4Type *j(CVec4Type::New(0.0,0.0,0.0,0.0,0,0,0,a.S()|b.S()));
+      (*j)[0]=l01*p1+l02*p2+l03*p3;
+      (*j)[Spinor<SType>::R1()]=-l01*p0+l12*p2+l13*p3;
+      (*j)[Spinor<SType>::R2()]=-l02*p0-l12*p1+l23*p3;
+      (*j)[Spinor<SType>::R3()]=-l03*p0-l13*p1-l23*p2;
+      return j;
+    }
+
     CSpinor<SType> *LorentzLeft(const CSpinorType &a,const CVec4Type &b)
     {
       switch (a.B()) {
@@ -184,6 +209,96 @@ namespace METOOLS {
 	(*j)[1]=(-a[2]*jt+a[3]*jp);
 	(*j)[2]=(a[0]*jp+a[1]*jtc);
 	(*j)[3]=(a[0]*jt+a[1]*jm);
+	return j;
+      }
+      }
+      return NULL;
+    }
+
+    CSpinor<SType> *LorentzMagnetic
+    (const CSpinorType &a,const CVec4Type &b,const Vec4D &pb)
+    {
+      switch (a.B()) {
+      case -1: {
+#ifdef DEBUG__BG
+	msg_Debugging()<<"<|sig  "<<a<<"\n";
+	msg_Debugging()<<"       "<<b<<"\n";
+	msg_Debugging()<<"       "<<pb<<"\n";
+#endif
+	CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),3));
+	SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
+	SComplex j0(a[2]*jp+a[3]*jt);
+	SComplex j1(a[2]*jtc+a[3]*jm);
+	SComplex j2(a[0]*jm-a[1]*jt);
+	SComplex j3(-a[0]*jtc+a[1]*jp);
+	SComplex pe(pb*b), I(0,1);
+	SComplex pp(PPlus(pb)), pm(PMinus(pb)), pt(PT(pb)), ptc(PTC(pb));
+	(*j)[0]=I*(j2*pp+j3*pt-pe*a[0]);
+	(*j)[1]=I*(j2*ptc+j3*pm-pe*a[1]);
+	(*j)[2]=I*(j0*pm-j1*pt-pe*a[2]);
+	(*j)[3]=I*(-j0*ptc+j1*pp-pe*a[3]);
+#ifdef CHECK__Sigma
+	{
+        const SComplex I(0,1);
+	CSpinorType *k(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),3));
+	SComplex ep01(-I*(b[0]*pb[Spinor<SType>::R1()]-b[Spinor<SType>::R1()]*pb[0]));
+	SComplex ep02(-(b[0]*pb[Spinor<SType>::R2()]-b[Spinor<SType>::R2()]*pb[0]));
+	SComplex ep03(-I*(b[0]*pb[Spinor<SType>::R3()]-b[Spinor<SType>::R3()]*pb[0]));
+	SComplex ep12(b[Spinor<SType>::R1()]*pb[Spinor<SType>::R2()]
+		      -b[Spinor<SType>::R2()]*pb[Spinor<SType>::R1()]);
+	SComplex ep13(I*(b[Spinor<SType>::R1()]*pb[Spinor<SType>::R3()]
+			 -b[Spinor<SType>::R3()]*pb[Spinor<SType>::R1()]));
+	SComplex ep23(b[Spinor<SType>::R2()]*pb[Spinor<SType>::R3()]
+		      -b[Spinor<SType>::R3()]*pb[Spinor<SType>::R2()]);
+	(*k)[0]=a[0]*(ep12-ep03)+a[1]*(-ep13+ep23-ep01+ep02);
+	(*k)[1]=a[1]*(-ep12+ep03)+a[0]*(ep13+ep23-ep01-ep02);
+	(*k)[2]=a[2]*(ep12+ep03)+a[3]*(-ep13+ep23+ep01-ep02);
+	(*k)[3]=a[3]*(-ep12-ep03)+a[2]*(ep13+ep23+ep01+ep02);
+	DEBUG_VAR(*j);
+	DEBUG_VAR(*k);
+	}
+#endif
+	return j;
+      }
+      case 1: {
+#ifdef DEBUG__BG
+	msg_Debugging()<<"sig|>  "<<a<<"\n";
+	msg_Debugging()<<"       "<<b<<"\n";
+	msg_Debugging()<<"       "<<pb<<"\n";
+#endif
+	CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),3));
+	SComplex pp(PPlus(pb)), pm(PMinus(pb)), pt(PT(pb)), ptc(PTC(pb));
+	SComplex j0(a[2]*pm-a[3]*ptc);
+	SComplex j1(-a[2]*pt+a[3]*pp);
+	SComplex j2(a[0]*pp+a[1]*ptc);
+	SComplex j3(a[0]*pt+a[1]*pm);
+	SComplex pe(pb*b), I(0,1);
+	SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
+	(*j)[0]=I*(j2*jm-j3*jtc-pe*a[0]);
+	(*j)[1]=I*(-j2*jt+j3*jp-pe*a[1]);
+	(*j)[2]=I*(j0*jp+j1*jtc-pe*a[2]);
+	(*j)[3]=I*(j0*jt+j1*jm-pe*a[3]);
+#ifdef CHECK__Sigma
+	{
+        const SComplex I(0,1);
+	CSpinorType *k(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),3));
+	SComplex ep01(-I*(b[0]*pb[Spinor<SType>::R1()]-b[Spinor<SType>::R1()]*pb[0]));
+	SComplex ep02(-(b[0]*pb[Spinor<SType>::R2()]-b[Spinor<SType>::R2()]*pb[0]));
+	SComplex ep03(-I*(b[0]*pb[Spinor<SType>::R3()]-b[Spinor<SType>::R3()]*pb[0]));
+	SComplex ep12(b[Spinor<SType>::R1()]*pb[Spinor<SType>::R2()]
+		      -b[Spinor<SType>::R2()]*pb[Spinor<SType>::R1()]);
+	SComplex ep13(I*(b[Spinor<SType>::R1()]*pb[Spinor<SType>::R3()]
+			 -b[Spinor<SType>::R3()]*pb[Spinor<SType>::R1()]));
+	SComplex ep23(b[Spinor<SType>::R2()]*pb[Spinor<SType>::R3()]
+		      -b[Spinor<SType>::R3()]*pb[Spinor<SType>::R2()]);
+	(*k)[0]=a[0]*(ep12-ep03)+a[1]*(ep13+ep23-ep01-ep02);
+	(*k)[1]=a[1]*(-ep12+ep03)+a[0]*(-ep13+ep23-ep01+ep02);
+	(*k)[2]=a[2]*(ep12+ep03)+a[3]*(ep13+ep23+ep01+ep02);
+	(*k)[3]=a[3]*(-ep12-ep03)+a[2]*(-ep13+ep23+ep01-ep02);
+	DEBUG_VAR(*j);
+	DEBUG_VAR(*k);
+	}
+#endif
 	return j;
       }
       }
@@ -297,6 +412,37 @@ namespace METOOLS {
 
   template class FFVR_Calculator<double>;
 
+  template <typename SType>
+  class FFVM_Calculator: public Lorentz_Calculator,
+			 public FFV_Worker<SType> {
+  public:
+
+    typedef CSpinor<SType> CSpinorType;
+    typedef CVec4<SType> CVec4Type;
+
+    FFVM_Calculator(const Vertex_Key &key):
+      Lorentz_Calculator(key) {}
+
+    std::string Label() const { return "FFVM"; }
+
+    CObject *Evaluate(const CObject_Vector &jj)
+    {
+      if (p_v->V()->id.back()==2) {
+	CSpinorType *a(jj[1]->Get<CSpinorType>());
+	CSpinorType *b(jj[0]->Get<CSpinorType>());
+	Vec4D pab(p_v->J(0)->P()+p_v->J(1)->P());
+	return this->LorentzMagnetic(*a,*b,pab);
+      }
+      const CSpinorType &a(*jj[p_v->V()->id.back()]->Get<CSpinorType>());
+      const CVec4Type &b(*jj[1-p_v->V()->id.back()]->Get<CVec4Type>());
+      Vec4D pb(p_v->J(1)->P());
+      return this->LorentzMagnetic(a,b,pb);
+    }
+
+  };// end of class FFVM_Calculator
+
+  template class FFVM_Calculator<double>;
+
 }// end of namespace METOOLS
 
 using namespace METOOLS;
@@ -336,3 +482,15 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    FFVR_Calculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"FFVR vertex"; }
+
+DECLARE_GETTER(FFVM_Calculator<double>,"DFFVM",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFVM_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new FFVM_Calculator<double>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFVM_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFVM vertex"; }
