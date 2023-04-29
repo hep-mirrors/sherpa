@@ -117,6 +117,31 @@ namespace METOOLS {
       (*j)[Spinor<SType>::R1()]=-l01*p0+l12*p2+l13*p3;
       (*j)[Spinor<SType>::R2()]=-l02*p0-l12*p1+l23*p3;
       (*j)[Spinor<SType>::R3()]=-l03*p0-l13*p1-l23*p2;
+#ifdef CHECK__Sigma
+      {
+	CSpinorType h(a.R(),a.B(),0,0,0,a.S()|b.S(),3);
+	CVec4Type *k(CVec4Type::New(0.0,0.0,0.0,0.0,0,0,0,a.S()|b.S()));
+	SComplex pp(PPlus(pab)), pm(PMinus(pab)), pt(PT(pab)), ptc(PTC(pab));
+	SComplex j0(b[2]*pm-b[3]*ptc);
+	SComplex j1(-b[2]*pt+b[3]*pp);
+	SComplex j2(b[0]*pp+b[1]*ptc);
+	SComplex j3(b[0]*pt+b[1]*pm);
+	SComplex ab(a*b), I(0,1);
+	SComplex l01(a[3]*j1), l02(a[2]*j0);
+	SComplex l11(-a[2]*j1), l12(-a[3]*j0), l112(l11-l12);
+	SComplex r01(a[0]*j2), r02(a[1]*j3);
+	SComplex r11(a[0]*j3), r12(a[1]*j2), r112(r11-r12);
+	(*k)[0]+=I*((l01+l02)+(r01+r02)-pab[0]*ab);
+	(*k)[Spinor<SType>::R3()]=I*((l01-l02)+(r01-r02)-pab[Spinor<SType>::R3()]*ab);
+	(*k)[Spinor<SType>::R1()]=I*((l11+l12)+(r11+r12)-pab[Spinor<SType>::R1()]*ab);
+	(*k)[Spinor<SType>::R2()]=I*
+	  (SComplex(l112.imag(),-l112.real())+
+	   SComplex(r112.imag(),-r112.real())
+	   -pab[Spinor<SType>::R2()]*ab);
+	DEBUG_VAR(*j);
+	DEBUG_VAR(*k);
+      }
+#endif
       return j;
     }
 
