@@ -13,8 +13,9 @@ Soft_Diffractive_Event_Generator::
 Soft_Diffractive_Event_Generator(Sigma_D * sigma,const int & test) :
   Event_Generator_Base(sigma),
   p_sigma(sigma), m_sigma(0.),
-  m_massexp(0.5), m_Prob1440(.4),  m_Prob1710(0.2)
+  m_massexp(0.5), m_Prob1440(.4),  m_Prob1710(0.2), m_runmode(MBpars.RunMode())
 {
+  msg_Out() << "RUN MODE: " << m_runmode << "\n";
   for (size_t i=0;i<3;i++) m_sigma   += m_rate[i] = p_sigma->GetXSec(i);
   for (size_t i=0;i<3;i++) {
     m_rate[i] /= m_sigma;
@@ -117,6 +118,7 @@ int Soft_Diffractive_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   }
   for (size_t i=0;i<2;i++) m_contMassRange[i] = false;
   SelectMode();
+  msg_Out() << "MODE PICKED = " << m_mode << "  " << int(m_runmode) << std::endl;
   SelectFS();
   FixKinematics();
   FillBlob();
@@ -125,9 +127,18 @@ int Soft_Diffractive_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
 
 void Soft_Diffractive_Event_Generator::SelectMode() {
   double disc = ran->Get();
-  for (m_mode=0;m_mode<3;++m_mode) {
-    disc -= m_rate[m_mode];
-    if (disc<=0.) break;
+  switch(m_runmode) {
+    case run_mode::soft_diffractive_events:
+      for (m_mode=0;m_mode<3;++m_mode) {
+        disc -= m_rate[m_mode];
+        if (disc<=0.) break;
+      }
+    case run_mode::single_diffractive_events:
+      m_mode = 1;
+      break;
+    case run_mode::double_diffractive_events:
+      m_mode = 2;
+      break;
   }
 }
 

@@ -89,19 +89,19 @@ void Ladder_Generator_QE::FixEmissionsKinematics_elastic() {
   Vec4D remnantP2 = (1. - m_fraction)*m_Pbeam2;
   Vec4D beam0stuff = remnantP1 + Pgluon1;
   Vec4D beam1stuff = remnantP2 + Pgluon2;
-  msg_Out() << "total 4momentum from beam 0: " << beam0stuff << endl;
-  msg_Out() << "inv. mass2: " << beam0stuff.Abs2() << endl;
-  msg_Out() << "gluon 4momentum from beam 0: " << Pgluon1 << endl;
-  msg_Out() << "inv. mass2: " << Pgluon1.Abs2() << endl;
-  msg_Out() << "remnant 4momentum from beam 0: " << remnantP1 << endl;
-  msg_Out() << "inv. mass2: " << remnantP1.Abs2() << endl;
+  //msg_Out() << "total 4momentum from beam 0: " << beam0stuff << endl;
+  //msg_Out() << "inv. mass2: " << beam0stuff.Abs2() << endl;
+  //msg_Out() << "gluon 4momentum from beam 0: " << Pgluon1 << endl;
+  //msg_Out() << "inv. mass2: " << Pgluon1.Abs2() << endl;
+  //msg_Out() << "remnant 4momentum from beam 0: " << remnantP1 << endl;
+  //msg_Out() << "inv. mass2: " << remnantP1.Abs2() << endl;
 
-  msg_Out() << "total 4momentum from beam 1: " << beam1stuff << endl;
-  msg_Out() << "inv. mass2: " << beam1stuff.Abs2() << endl;
-  msg_Out() << "gluon 4momentum from beam 1: " << Pgluon2 << endl;
-  msg_Out() << "inv. mass2: " << Pgluon2.Abs2() << endl;
-  msg_Out() << "remnant 4momentum from beam 1: " << remnantP2 << endl;
-  msg_Out() << "inv. mass2: " << remnantP2.Abs2() << endl;
+  //msg_Out() << "total 4momentum from beam 1: " << beam1stuff << endl;
+  //msg_Out() << "inv. mass2: " << beam1stuff.Abs2() << endl;
+  //msg_Out() << "gluon 4momentum from beam 1: " << Pgluon2 << endl;
+  //msg_Out() << "inv. mass2: " << Pgluon2.Abs2() << endl;
+  //msg_Out() << "remnant 4momentum from beam 1: " << remnantP2 << endl;
+  //msg_Out() << "inv. mass2: " << remnantP2.Abs2() << endl;
 
   //PRINT_VAR(sqrt(m_abs_t));
   //if (m_ana) m_histomap[std::string("Q_elastic")]->Insert(m_abs_t);

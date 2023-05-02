@@ -25,6 +25,7 @@ namespace SHRIMPS {
     double          m_Prob1440,  m_Prob1710;
     double          m_minmass2[2], m_maxmass2[2], m_expargUp[2], m_expargLow[2];
     bool            m_contMassRange[2];
+    run_mode::code  m_runmode;
     
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
