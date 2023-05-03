@@ -288,7 +288,7 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
   }
   
   if (winnerIndex < 0 || winnerIndex >= ts.size()) { 
-    msg_Error() << "No splitting function selected, skipping blob\n";
+    msg_Tracking() << "No splitting function selected, skipping blob\n";
     return NULL;
   }
 
