@@ -32,7 +32,7 @@ The central setting to enable the hard decays is
 .. code-block:: yaml
 
    HARD_DECAYS:
-     Enable: true
+     Enabled: true
 
 The channel ID codes are of the form ``a,b,c,...``, where ``a`` is the
 PDG ID of the decaying particle and ``b,c,...`` are the decay products.
