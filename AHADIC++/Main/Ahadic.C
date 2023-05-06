@@ -19,7 +19,7 @@ Ahadic::Ahadic(string shower) :
   m_singletchecker(Singlet_Checker(&m_singlet_list, &m_softclusters)),
   m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters)),
   m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
-{  
+{
   ReadMassParameters();
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
@@ -31,7 +31,7 @@ Ahadic::Ahadic(string shower) :
   m_clusterdecayer.Init();
 }
 
-Ahadic::~Ahadic() 
+Ahadic::~Ahadic()
 {
   Reset();
 }
@@ -75,11 +75,11 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 		      <<"   Continue and hope for the best.\n";
       }
     }
-    blit++;      
+    blit++;
   }
   if (m_shrink) Shrink(blobs);
   return Return_Value::Success;
-}  
+}
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   Reset();

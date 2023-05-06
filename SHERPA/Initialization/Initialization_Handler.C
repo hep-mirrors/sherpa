@@ -58,11 +58,11 @@ typedef void (*PDF_Init_Function)();
 typedef void (*PDF_Exit_Function)();
 
 Initialization_Handler::Initialization_Handler() :
-  m_mode(eventtype::StandardPerturbative), 
-  m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
+  m_mode(eventtype::StandardPerturbative),
+  m_savestatus(false), p_model(NULL), p_beamspectra(NULL),
   p_mehandler(NULL), p_harddecays(NULL),
   p_beamremnants(NULL), p_reconnections(NULL),
-  p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
+  p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL),
   p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL),
   p_variations(NULL), p_filter(NULL)
 {
@@ -294,8 +294,8 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   if (p_hdhandler)     { delete p_hdhandler;     p_hdhandler     = NULL; }
-  if (p_softphotons)   { delete p_softphotons;   p_softphotons   = NULL; } 
-  if (p_softcollisions){ delete p_softcollisions;p_softcollisions= NULL; } 
+  if (p_softphotons)   { delete p_softphotons;   p_softphotons   = NULL; }
+  if (p_softcollisions){ delete p_softcollisions;p_softcollisions= NULL; }
   if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
   if (p_remnants)      { delete p_remnants;      p_remnants      = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
@@ -542,7 +542,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     }
     std::string libname(m_evtform);
     if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
-    if (!s_loader->LoadLibrary("Sherpa"+libname+"Input")) 
+    if (!s_loader->LoadLibrary("Sherpa"+libname+"Input"))
       THROW(missing_module,"Cannot load input library Sherpa"+libname+"Input.");
     p_evtreader = Event_Reader_Base::Getter_Function::GetObject
       (m_evtform,Input_Arguments(s.GetPath(), infile,
@@ -640,7 +640,7 @@ bool Initialization_Handler::InitializeTheIO()
     Output_Base* out=Output_Base::Getter_Function::GetObject
       (outputs[i], Output_Arguments(outpath, outfile));
     if (out==NULL) {
-      if (!s_loader->LoadLibrary("Sherpa"+libname+"Output")) 
+      if (!s_loader->LoadLibrary("Sherpa"+libname+"Output"))
 	THROW(missing_module,"Cannot load output library Sherpa"+libname+"Output.");
       out=Output_Base::Getter_Function::GetObject
 	(outputs[i], Output_Arguments(outpath, outfile));
@@ -734,8 +734,8 @@ bool Initialization_Handler::InitializeThePDFs()
   // Initialisation of PDF sets
   for (size_t i=0;i<2;++i) {
     isr::id id=(isr::id)(i+1);
-    if (m_isrhandlers.find(id)!=m_isrhandlers.end()) 
-      delete m_isrhandlers[id]; 
+    if (m_isrhandlers.find(id)!=m_isrhandlers.end())
+      delete m_isrhandlers[id];
     PDF_Base * pdfbase;
     ISR_Base ** isrbases = new ISR_Base*[2];
     for (int j=0;j<2;++j) {
@@ -833,7 +833,7 @@ bool Initialization_Handler::InitializeThePDFs()
 	msg_Info()<<"PDF set '"<<set<<"' loaded for beam "<<j+1<<" ("
 		  <<m_bunch_particles[j]<<") for multiple interactions."<<std::endl;
       }
-      if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
+      if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);
       else {
 	pdfbase->SetBounds();
 	isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
@@ -926,7 +926,7 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
 }
 
 
-bool Initialization_Handler::InitializeTheSoftCollisions() 
+bool Initialization_Handler::InitializeTheSoftCollisions()
 {
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
   p_softcollisions = new Soft_Collision_Handler(p_mihandler->Amisic(),
@@ -935,7 +935,7 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
   return 1;
 }
 
-bool Initialization_Handler::InitializeTheBeamRemnants() 
+bool Initialization_Handler::InitializeTheBeamRemnants()
 {
   if (p_beamremnants)  delete p_beamremnants;
   p_beamremnants = new Beam_Remnant_Handler(p_beamspectra,
@@ -945,7 +945,7 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
   return 1;
 }
 
-bool Initialization_Handler::InitializeTheColourReconnections() 
+bool Initialization_Handler::InitializeTheColourReconnections()
 {
   if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   p_reconnections = new Colour_Reconnection_Handler();
@@ -953,13 +953,17 @@ bool Initialization_Handler::InitializeTheColourReconnections()
   return 1;
 }
 
-bool Initialization_Handler::InitializeTheFragmentation() 
+bool Initialization_Handler::InitializeTheFragmentation()
 {
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   as->SetActiveAs(isr::hard_subprocess);
   Settings& s = Settings::GetMainSettings();
   string fragmentationmodel = s["FRAGMENTATION"].Get<std::string>();
   if (fragmentationmodel!="None") {
+    if (!s["BEAM_REMNANTS"].Get<bool>())
+      msg_Error()<<METHOD<<om::red<<": Fragmentation called without beam remnants, "<<
+        "hadronization might not be possible due to missing colour partners "<<
+        "in the beam!\nFragmentation might stall, please consider aborting manually.\n"<<om::reset;
     Hadron_Init().Init();
     ATOOLS::OutputHadrons(msg->Tracking());
   }
@@ -973,7 +977,7 @@ bool Initialization_Handler::InitializeTheFragmentation()
   return 1;
 }
 
-bool Initialization_Handler::InitializeTheHadronDecays() 
+bool Initialization_Handler::InitializeTheHadronDecays()
 {
   Settings& s = Settings::GetMainSettings();
   if (s["FRAGMENTATION"].Get<std::string>() == "None")
@@ -1031,7 +1035,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
     if (analyses[i]=="1") analyses[i]="Internal";
     if (analyses[i]=="None") continue;
     if (analyses[i]=="Internal")
-      if (!s_loader->LoadLibrary("SherpaAnalysis")) 
+      if (!s_loader->LoadLibrary("SherpaAnalysis"))
         THROW(missing_module,"Cannot load Analysis library (-DSHERPA_ENABLE_ANALYSIS=ON).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
       bool hepmc_loaded {false};
@@ -1045,13 +1049,13 @@ bool Initialization_Handler::InitializeTheAnalyses()
         THROW(missing_module,
               "Cannot load HepMC library (-DSHERPA_ENABLE_HEPMC2=ON and/or -DSHERPA_ENABLE_HEPMC3=ON).");
       }
-      if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
+      if (!s_loader->LoadLibrary("SherpaRivetAnalysis"))
         THROW(missing_module,"Cannot load RivetAnalysis library (-DSHERPA_ENABLE_RIVET=ON).");
     }
     Analysis_Interface* ana =
       Analysis_Interface::Analysis_Getter_Function::GetObject(analyses[i], args);
     if (ana==NULL) {
-      if (!s_loader->LoadLibrary("Sherpa"+analyses[i]+"Analysis")) 
+      if (!s_loader->LoadLibrary("Sherpa"+analyses[i]+"Analysis"))
 	THROW(missing_module,"Cannot load Analysis library '"+analyses[i]+"'.");
       ana = Analysis_Interface::Analysis_Getter_Function::GetObject(
           analyses[i], args);
@@ -1078,7 +1082,7 @@ bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
   return true;
 }
 
-bool Initialization_Handler::InitializeTheFilter() 
+bool Initialization_Handler::InitializeTheFilter()
 {
   if (p_filter)
     delete p_filter;
@@ -1090,7 +1094,7 @@ bool Initialization_Handler::InitializeTheFilter()
 bool Initialization_Handler::CalculateTheHardProcesses()
 {
   if (m_mode!=eventtype::StandardPerturbative) return true;
-  
+
   msg_Events()<<"===================================================================\n"
               <<"Start calculating the hard cross sections. This may take some time.\n";
   as->SetActiveAs(isr::hard_process);
@@ -1108,7 +1112,7 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   return ok;
 }
 
-void Initialization_Handler::SetGlobalVariables() 
+void Initialization_Handler::SetGlobalVariables()
 {
   Settings& s = Settings::GetMainSettings();
   double sf(s["SCALE_FACTOR"].Get<double>());
