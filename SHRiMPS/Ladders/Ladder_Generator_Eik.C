@@ -42,7 +42,8 @@ void Ladder_Generator_Eik::FillGluons() {
     m_ylimits[beam] = (beam==0? 1. : -1.) * (m_Ymax + ran->Get()*m_deltaY);
     p_ladder->AddRapidity(m_ylimits[beam]);
   }
-  size_t N = 0; //m_density.NGluons(m_ylimits[1], m_ylimits[0]);
+  // -> set this to 0 for ladder tests
+  size_t N = m_density.NGluons(m_ylimits[1], m_ylimits[0]);
   for (size_t i=0;i<N;i++) {
     p_ladder->AddRapidity(m_density.SelectRapidity(m_ylimits[1], m_ylimits[0]));
   }
@@ -51,9 +52,12 @@ void Ladder_Generator_Eik::FillGluons() {
 void Ladder_Generator_Eik::SelectPropagatorColours() {
   for (size_t i=0;i<p_emissions->size()-1;i++)
     p_props->push_back(T_Prop(colour_type::singlet,Vec4D(0.,0.,0.,0.),m_qt2min));
-  /*
-  LadderMap::iterator lit1=p_emissions->begin(),  lit2=p_emissions->end();  lit2--;
-  TPropList::iterator pit1=p_props->begin(), pit2=p_props->end(); pit2--;
+
+  // -> comment out rest for ladder tests
+  LadderMap::iterator lit1=p_emissions->begin();
+  LadderMap::iterator lit2=p_emissions->end();  lit2--;
+  TPropList::iterator pit1=p_props->begin();
+  TPropList::iterator pit2=p_props->end(); pit2--;
   double y1, y2, wt1, wt8;
   size_t dir;
   while (lit1->first>lit2->first) {
@@ -67,15 +71,28 @@ void Ladder_Generator_Eik::SelectPropagatorColours() {
       else     { pit2->SetCol(colour_type::singlet); pit2--; }
     }
   }
-  pit1 = p_props->begin(); pit2 = pit1; pit2++;
-  while (pit2!=p_props->end()) {
-    if (pit1->Col()==colour_type::singlet && pit2->Col()==colour_type::singlet) {
-      if (ran->Get()>0.5) pit1->SetCol(colour_type::octet); 
-      else pit2->SetCol(colour_type::octet);
-    }
-    pit1++; pit2++;
+  dir = (ran->Get()>0.5);
+  if (dir) {
+      pit1 = p_props->begin(); pit2 = pit1; pit2++;
+      while (pit2!=p_props->end()) {
+        if (pit1->Col()==colour_type::singlet && pit2->Col()==colour_type::singlet) {
+          if (ran->Get()>0.5) pit1->SetCol(colour_type::octet);
+          else pit2->SetCol(colour_type::octet);
+        }
+        pit1++; pit2++;
+      }
   }
-  */
+  else {
+      pit1 = p_props->end(); pit1--;
+      pit2 = pit1; pit2--;
+      while (pit1!=p_props->begin()) {
+        if (pit1->Col()==colour_type::singlet && pit2->Col()==colour_type::singlet) {
+          if (ran->Get()>0.5) pit1->SetCol(colour_type::octet);
+          else pit2->SetCol(colour_type::octet);
+        }
+        pit1--; pit2--;
+      }
+  }
 }
 
 bool Ladder_Generator_Eik::SelectPropagatorQTs() {
