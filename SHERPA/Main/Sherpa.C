@@ -19,6 +19,7 @@
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "PHASIC++/Decays/Decay_Channel.H"
 #include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
+#include "NEUTRINOS++/Tools/Propagator_Maps.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -57,6 +58,7 @@ Sherpa::Sherpa(int argc, char* argv[]) :
   // in turn needs the Settings to be initialized
   ATOOLS::rpa      = new Run_Parameter();
   NEUTRINOS::ffs   = new NEUTRINOS::Form_Factor_Parameter_Maps(); 
+  NEUTRINOS::ffprops = new NEUTRINOS::Propagator_Maps();
   Settings::InitializeMainSettings(argc, argv);
   ATOOLS::ran      = new Random(1234);
   ATOOLS::s_loader = new Library_Loader();

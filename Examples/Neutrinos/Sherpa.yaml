@@ -1,4 +1,4 @@
-EVENTS:     100000
+EVENTS:     10
 EVENT_TYPE: NeutrinoNucleon
 
 BEAMS:             [ 11, 2212 ]
@@ -14,13 +14,18 @@ ALPHAS: {USE_PDF: 0}
 SCALES: METS{H_T2}{H_T2}
 
 SELECTORS:
-  - [PT, 11, 0.01, 1000.]
-
+  - [PT, 11, 0.001, 10000.]
 
 PROCESSES:
   - 11 2212 -> 11 2212:
       Order: {QCD: 0, EW: 2}
 
+
+#ANALYSIS: Rivet
+#RIVET:
+#    --analyses:
+#      - PionProd
+#    --skip-weights: 1
 
 TRANSITIONS:
   Constants:
@@ -51,10 +56,8 @@ TRANSITIONS:
       pseudoscalar:
         form: none
 
-
-
 # Parameters for form factors:
-# constant  :         norm
+# constant  :       norm
 # dipole  :         norm, Lambda
 # neutron electric: norm, Lambda, mass, prefactor 
 # exponential:      norm, Lambda //ours

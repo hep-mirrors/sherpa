@@ -50,22 +50,6 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const ff_info & info) {
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
-// GsToFs::GsToFs(const ff_info & info) : 
-// {}
-// double GsToFs::CalcF1(double & GE, double & GM, double & M, double & q2) { 
-//   double tau = (-1.0*(q2 / (4*M*M))); 
-//   return (GE + tau * GM)/(1 + tau);
-// }
-// double GsToFs::CalcF2(double & GE, double & GM, double & M, double & q2) { 
-//   double tau = (-1.0*(q2 / (4*M*M))); 
-//   return (GM - GE)/(1 + tau);
-// }
-
-  
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-//
-/////////////////////////////////////////////////////////////////////////////////////////////
 Constant_Form_Factor::Constant_Form_Factor(const ff_info & info) :
   Form_Factor_Base("Constant", info),
   m_norm(info.m_params[0]) {}

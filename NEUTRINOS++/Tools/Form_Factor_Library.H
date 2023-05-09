@@ -51,6 +51,7 @@ namespace NEUTRINOS {
 
   struct ModelParameters: public std::map<std::string, double> {
   };
+  //std::ostream & operator<<(std::ostream & s,const ff_type::code & type);
   
   
   class Form_Factor_Base {
@@ -67,14 +68,6 @@ namespace NEUTRINOS {
     const ff_type::code  & Type() const { return m_type; } 
     const cpl_info::code & Cpl()  const { return m_cpl; } 
   };
-
-  // class GsToFs : public Form_Factor_Base {
-  // public:
-  //   GsToFs(const ff_info & info);
-  //   ~GsToFs() {}
-  //   double CalcF1(double & GE, double & GM, double & M, double & q2);
-  //   double CalcF2(double & GE, double & GM, double & M, double & q2);
-  // };
 
   class Zero_Form_Factor : public Form_Factor_Base {
   public:

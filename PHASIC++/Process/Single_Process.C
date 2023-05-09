@@ -725,7 +725,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   // will be populated with it)
   p_int->ISR()->SetMuF2(facscale, 0);
   p_int->ISR()->SetMuF2(facscale, 1);
-
   return m_last;
 }
 

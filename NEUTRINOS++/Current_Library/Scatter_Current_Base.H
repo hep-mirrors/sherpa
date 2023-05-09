@@ -2,6 +2,7 @@
 #define NEUTRINOS_Current_Library_Scatter_Current_Base_H
 
 #include "NEUTRINOS++/Tools/Form_Factor_Library.H"
+#include "NEUTRINOS++/Tools/Propagator_Library.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "METOOLS/Main/XYZFuncs.H"
 #include "ATOOLS/Math/MathTools.H"
@@ -33,12 +34,14 @@ namespace NEUTRINOS {
     std::string         m_name;
     std::string         m_path;
     std::map<std::string, Form_Factor_Base *> m_ffs;
+    std::map<std::string, Propagator_Base *> m_ffprops;
   public:
     Scatter_Current_Base(const ATOOLS::Flavour_Vector& flavs,
 			 const std::vector<int>& indices,
 			 const std::string& name);
     virtual ~Scatter_Current_Base() {
       while (!m_ffs.empty()) { delete m_ffs.begin()->second; m_ffs.erase(m_ffs.begin()); }
+      while (!m_ffprops.empty()) { delete m_ffprops.begin()->second; m_ffprops.erase(m_ffprops.begin()); }
     }
     virtual void Calc(const ATOOLS::Vec4D_Vector& moms,
 		      METOOLS::XYZFunc * F) = 0;

@@ -107,7 +107,7 @@ void XYZFunc::CalcEtaMu()
       _m_eta = csqrt( 2.*(pi[0]-(pi[1]+pi[2])*SQRT_05) );
       break;
     case 10 :
-      //_m_eta = csqrt( 2.*(pi[0]+pi[Spinor<double>::R3()]));//JW Sign mistake?
+      //_m_eta = csqrt( 2.*(pi[0]+pi[Spinor<double>::R3()]));//JW: Sign mistake?
       _m_eta = csqrt( 2.*(pi[0]-pi[Spinor<double>::R3()]));
       break;
     default :
@@ -344,7 +344,7 @@ Complex XYZFunc::X( const int t1, const Vec4C p2, const bool p2anti, const int t
     break;
   case 2  : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[2])*SQRT_05) );
     break;
-  //case 10 : eta2 = sqrt( 2.*(p2[0]+p2[Spinor<double>::R3()]) );//JW Sign mistake?
+  //case 10 : eta2 = sqrt( 2.*(p2[0]+p2[Spinor<double>::R3()]) );//JW: Sign mistake?
   case 10 : eta2 = sqrt( 2.*(p2[0]-p2[Spinor<double>::R3()]) );
     break;
   default:

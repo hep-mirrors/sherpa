@@ -82,10 +82,10 @@ namespace NEUTRINOS {
     inline ff_info * FindInfo(kf_code & n1,kf_code & n2,kf_code & prop,cpl_info::code & cpl) {
       Form_Factor_Entry * entry = FindEntry(n1,n2);
       if (entry!=NULL) {
-	map<cpl_info::code, ff_info * > * infos = entry->Get(prop);
-	if (infos!=NULL) {
-	  if (infos->find(cpl)!=infos->end()) return (*infos)[cpl];
-	}
+        map<cpl_info::code, ff_info * > * infos = entry->Get(prop);
+        if (infos!=NULL) {
+          if (infos->find(cpl)!=infos->end()) return (*infos)[cpl];
+        }
       }
       return NULL;
     }
@@ -97,6 +97,7 @@ namespace NEUTRINOS {
     void Output();
 
     Form_Factor_Base * GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_info::code & cpl);
+    double GetModelParms(std::string constantName);
   };
 
   extern Form_Factor_Parameter_Maps * ffs;

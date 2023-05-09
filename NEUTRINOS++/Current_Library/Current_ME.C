@@ -3,6 +3,8 @@
 #include "NEUTRINOS++/Current_Library/Nucleon_Nucleon.H"
 #include "NEUTRINOS++/Current_Library/Lepton_Lepton.H"
 #include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
+#include "NEUTRINOS++/Tools/Propagator_Maps.H"
+
 #include "METOOLS/Main/XYZFuncs.H"
 
 using namespace NEUTRINOS;

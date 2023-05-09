@@ -15,6 +15,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
+#include "NEUTRINOS++/Tools/Propagator_Maps.H"
 #include "METOOLS/Currents/C_Spinor.H"
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
@@ -545,6 +546,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       s["MI_HANDLER"].OverrideScalar<std::string>("None");
       Hadron_Init().Init();
       NEUTRINOS::ffs->Initialize();
+      NEUTRINOS::ffprops->Initialize();
+      //JW: EH?
+      //m_mode=eventtype::StandardPerturbative;
     }
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");

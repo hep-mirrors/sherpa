@@ -69,21 +69,22 @@ XS_lepton_nucleon::~XS_lepton_nucleon() {
 }
 
 double XS_lepton_nucleon::operator()(const ATOOLS::Vec4D_Vector& momenta) {
+  bool printout = false;
+  msg->SetPrecision(16);
   double result = (*p_ME)(momenta);
 
-  //bool printout = true;
-  //msg->SetPrecision(16);
-  // if (printout) {
-  //   msg_Out()<<METHOD<<":\n";
-  //   for (size_t i=0;i<4;i++) msg_Out()<<"   "<<i<<"     "<<m_flavs[i]<<": "<<momenta[i]<<", "<<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
-  //   msg_Out()<<"|M|^2 = "<<result<<".\n";
-  // }
-  //msg_Out()<<"Joe Python Script"<<":\n";
-  //if (printout) {
-  //  for (size_t i=0;i<4;i++) msg_Out()<<"p_"<<i+1<<" = Particle.fromFourMom("<<momenta[i][0]<<","<<momenta[i][1]<<","<<momenta[i][2]<<","<<momenta[i][3]<<", anti=False, flavour=None)"<<"\n";
-  //  msg_Out()<<"Sherpa = "<<result<<"\n";
-  //}
-  //msg_Out()<<"\n\n\n";
+  if (printout) {
+    msg_Out()<<METHOD<<":\n";
+    for (size_t i=0;i<4;i++) msg_Out()<<"   "<<i<<"     "<<m_flavs[i]<<": "<<momenta[i]<<", "<<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
+    msg_Out()<<"|M|^2 = "<<result<<".\n";
+    msg_Out()<<"\n\n\n";
+
+    msg_Out()<<"Joe Python Script"<<":\n";
+    for (size_t i=0;i<4;i++) msg_Out()<<"p_"<<i+1<<" = Particle.fromFourMom("<<momenta[i][0]<<","<<momenta[i][1]<<","<<momenta[i][2]<<","<<momenta[i][3]<<", anti=False, flavour=None)"<<"\n";
+    msg_Out()<<"Sherpa = "<<result<<"\n";
+    msg_Out()<<"\n\n\n";
+  }
+  
   return result;
 }
 

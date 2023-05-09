@@ -88,7 +88,16 @@ Form_Factor_Parameter_Maps::GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_i
       break;
     }
   }
-  return new Dummy_Form_Factor(cpl);
+  //return new Dummy_Form_Factor(cpl);
+  // JW: Does it make more sense to return a 0 form factor for the form factor type if not defined in runcard?
+  return new Zero_Form_Factor(cpl);
+}
+
+double Form_Factor_Parameter_Maps::GetModelParms(std::string constantName) {
+    for (map<string, double>::iterator pit=m_parameters.begin();pit!=m_parameters.end();pit++) {
+      if (pit->first.c_str() == constantName) return pit->second;
+    }
+    return 0.0;
 }
 
 void Form_Factor_Parameter_Maps::Output() {
@@ -125,8 +134,6 @@ void Form_Factor_Parameter_Maps::InitializeFFMaps() {
 }
 
 bool Form_Factor_Parameter_Maps::InitializeFormFactor(string & name) {
-  // JW: ADD Fs if Gs defined, ADD Gs if Fs defined
-  // FK: or construct the F's out of the G's in the current?
   vector<kf_code> kfcs;
   vector<double>  parameters;
   map<cpl_info::code, ff_info *> ffinfos;
