@@ -34,12 +34,12 @@ bool Photon_Splitter::SplitPhotons(ATOOLS::Blob * blob)
   }
 
   m_sudakov.SetCutoff();
-  bool success = m_sudakov.Run(blob);
+  bool success = m_sudakov.Run();
 
   if (m_sudakov.AddedAnything())
   {
     // update spectator momenta
-    Spec_Vector specs = m_sudakov.GetSpectators();
+    YFS_Particle_Vector specs = m_sudakov.GetSpectators();
     for (size_t i=0; i<specs.size(); ++i) {
       blob->GetParticle(specs[i]->Id())->SetMomentum(specs[i]->Momentum());
     }
@@ -55,18 +55,21 @@ bool Photon_Splitter::SplitPhotons(ATOOLS::Blob * blob)
       else ++i;
     }
     // add photons back
-    Part_List remainingphotons = m_sudakov.GetRemainingSoftPhotons();
-    for (Part_Iterator pvit=remainingphotons.begin();pvit!=remainingphotons.end();++pvit)
+    YFS_Particle_List remainingphotons = m_sudakov.GetRemainingSoftPhotons();
+    for (YFS_Particle_List::iterator pvit=remainingphotons.begin();pvit!=remainingphotons.end();++pvit)
     {
-      (*pvit)->SetNumber(0);
-      blob->AddToOutParticles(*pvit);
+      Particle *newphoton = new Particle(-1,(*pvit)->GetFlavour(),(*pvit)->Momentum(),'S');
+      newphoton->SetNumber(0);
+      blob->AddToOutParticles(newphoton);
     }
     // add fermions 
-    Particle_Vector addedparticles = m_sudakov.GetAddedParticles();
-    for (Particle_Vector::iterator pvit=addedparticles.begin();pvit!=addedparticles.end();++pvit)
+    // create new particles, use info 's' to identify them later on
+    YFS_Particle_Vector addedparticles = m_sudakov.GetAddedParticles();
+    for (YFS_Particle_Vector::iterator pvit=addedparticles.begin();pvit!=addedparticles.end();++pvit)
     {
-      (*pvit)->SetNumber(0);
-      blob->AddToOutParticles(*pvit);
+      Particle *newparticle = new Particle(-1,(*pvit)->GetFlavour(),(*pvit)->Momentum(),'s');
+      newparticle->SetNumber(0);
+      blob->AddToOutParticles(newparticle);
     }
   }
 

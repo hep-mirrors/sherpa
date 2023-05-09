@@ -13,13 +13,13 @@ namespace PHOTONS {
 
   class Sudakov {
   private:
-    Kinematics_FF * p_kinematics;
-    Kinematics_FI * p_FIkinematics;
-    SF_Vector       m_splitters;
-    Spec_Vector     m_spectators;
+    SF_Vector           m_splitters;
+    YFS_Particle_Vector m_splittingphotons;
+    YFS_Particle_Vector m_spectators;
 
     std::vector<size_t> m_splitterIds;
     int                 m_NInP;
+    bool                m_decay;
 
     int m_mode;
     int m_virtualityOrdering;
@@ -34,8 +34,8 @@ namespace PHOTONS {
     std::map<kf_code,double> m_enhancefac;
 
     // for storing splittings
-    Part_List m_remainingphotons;
-    Particle_Vector m_addedparticles;
+    YFS_Particle_List m_remainingphotons;
+    YFS_Particle_Vector m_addedparticles;
 
     bool m_addedanything;
 
@@ -50,22 +50,22 @@ namespace PHOTONS {
     Sudakov(int mode);
     ~Sudakov();
 
-    inline void SetNInParticles(int n) { m_NInP = n; }
+    void SetNInParticles(int n);
     void AddSplitter(ATOOLS::Particle *softphoton, const size_t&);
     void AddChargedParticle(ATOOLS::Particle* p, const size_t& id);
-    inline Spec_Vector GetSpectators() { return m_spectators; }
+    inline YFS_Particle_Vector GetSpectators() { return m_spectators; }
     bool ClearAll();
 
     void SetCutoff();
-    Spectator* DefineInitialConditions(double &t,ATOOLS::Vec4D pphoton);
+    YFS_Particle* DefineInitialConditions(double &t,ATOOLS::Vec4D pphoton);
 
-    bool Run(ATOOLS::Blob *blob);
-    bool Generate(ATOOLS::Blob *blob);
+    bool Run();
+    bool Generate();
 
     std::string Info() const { return std::string(""); }
     
-    inline Part_List GetRemainingSoftPhotons() { return m_remainingphotons; }
-    inline Particle_Vector GetAddedParticles() { return m_addedparticles; }
+    inline YFS_Particle_List GetRemainingSoftPhotons() { return m_remainingphotons; }
+    inline YFS_Particle_Vector GetAddedParticles() { return m_addedparticles; }
     inline bool AddedAnything() { return m_addedanything; }
   };
 
@@ -112,11 +112,11 @@ namespace PHOTONS {
     particle which can be produced in photon splittings. 
   */
   /*!
-    \var Part_List m_remainingphotons
+    \var YFS_Particle_List m_remainingphotons
     \brief stores the photons which have not (yet) split.
   */
   /*!
-    \var Particle_Vector m_addedparticles
+    \var YFS_Particle_Vector m_addedparticles
     \brief stores the particles which are to be added to the blob. 
   */
   /*!
@@ -153,7 +153,7 @@ namespace PHOTONS {
     \brief sets the IR cutoff for the algorithm as described above. 
   */
   /*!
-    \fn Spectator* DefineInitialConditions(double &t, Vec4D pphoton)
+    \fn YFS_Particle* DefineInitialConditions(double &t, Vec4D pphoton)
     \brief Reconstructs the emission history of the given photon and returns 
     the recontructed spectator and starting scale. 
   */

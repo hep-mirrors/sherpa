@@ -22,9 +22,9 @@ Histogram PHOTONS::Sudakov::s_histo_dipole = Histogram(10,1e-18,1e3,200,"");
 Histogram_2D PHOTONS::Sudakov::s_histo_tdR = Histogram_2D(1,-6.,2.,100,-5,log10(0.5),100);
 #endif 
 
-Sudakov::Sudakov() : m_mode(0), m_addedanything(false), p_kinematics(), p_FIkinematics(), m_NInP(0) {}
+Sudakov::Sudakov() : m_mode(0), m_addedanything(false), m_NInP(0) {}
 
-Sudakov::Sudakov(int mode) : m_mode(mode), m_addedanything(false), p_kinematics(), p_FIkinematics(), m_NInP(0)
+Sudakov::Sudakov(int mode) : m_mode(mode), m_addedanything(false), m_NInP(0), m_decay(0)
 {
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
@@ -72,11 +72,7 @@ void Sudakov::RegisterDefaults()
 
 Sudakov::~Sudakov()
 {
-  m_splitterIds.clear();
-  for (size_t i=0; i<m_splitters.size(); i++) delete m_splitters[i];
-  if (m_splitters.size()) m_splitters.clear();
-  for (size_t i=0; i<m_spectators.size(); i++) delete m_spectators[i];
-  if (m_spectators.size()) m_spectators.clear();
+  ClearAll();
 
   #ifdef PHOTONSPLITTER_DEBUG
   size_t pos(s_histo_base_name.find_last_of("/"));
@@ -88,25 +84,31 @@ Sudakov::~Sudakov()
   #endif
 }
 
+void Sudakov::SetNInParticles(int n)
+{
+  m_NInP = n;
+  if (n == 1) { m_decay = 1; }
+  else if (n == 2) { m_decay = 0; }
+  else { msg_Out() << "More than 2 incoming particles...\n"; m_decay = 0; }
+}
+
 void Sudakov::AddSplitter(ATOOLS::Particle *softphoton, const size_t &id)
 {
   // id is for blob->GetParticle()
-  Particle* p = new Particle();
-  p->Copy(softphoton);
-  p->SetProductionBlob(NULL);
-  p->SetOriginalPart(p);
+  YFS_Particle * p = new YFS_Particle(softphoton->Momentum(),id,softphoton->Flav());
   m_remainingphotons.push_back(p);
   m_splitterIds.push_back(id);
+  m_splittingphotons.push_back(p); // this list will stay invariant
 
-  if (m_mode & 1) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_e,kf_e,1,id,m_enhancefac[kf_e]));
-  if (m_mode & 2) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_mu,kf_mu,1,id,m_enhancefac[kf_mu]));
-  if (m_mode & 4) m_splitters.push_back(new Splitting_Function(p,kf_photon,-kf_tau,kf_tau,1,id,m_enhancefac[kf_tau]));
+  if (m_mode & 1) m_splitters.push_back(new SF_FF(p,kf_photon,-kf_e,kf_e,1,id,m_enhancefac[kf_e]));
+  if (m_mode & 2) m_splitters.push_back(new SF_FF(p,kf_photon,-kf_mu,kf_mu,1,id,m_enhancefac[kf_mu]));
+  if (m_mode & 4) m_splitters.push_back(new SF_FF(p,kf_photon,-kf_tau,kf_tau,1,id,m_enhancefac[kf_tau]));
   if (m_mode & 8) {
     for (KF_Table::const_iterator it(s_kftable.begin()); it!=s_kftable.end(); ++it) {
       if (it->second->m_hadron && it->second->m_icharge && it->second->m_mass<m_masscutoff) {
         kf_code kfc(it->second->m_kfc);
         double enh(m_enhancefac.find(kfc)!=m_enhancefac.end()?m_enhancefac[kfc]:1.);
-        m_splitters.push_back(new Splitting_Function(p,kf_photon,kfc,-kfc,2*it->second->m_spin,id,enh));
+        m_splitters.push_back(new SF_FF(p,kf_photon,kfc,-kfc,2*it->second->m_spin,id,enh));
       }
     }
   }
@@ -114,7 +116,7 @@ void Sudakov::AddSplitter(ATOOLS::Particle *softphoton, const size_t &id)
 
 void Sudakov::AddChargedParticle(Particle* p, const size_t &id)
 {
-  m_spectators.push_back(new Spectator(p->Momentum(),id,p->Flav()));
+  m_spectators.push_back(new YFS_Particle(p->Momentum(),id,p->Flav()));
 }
 
 bool Sudakov::ClearAll()
@@ -122,22 +124,24 @@ bool Sudakov::ClearAll()
   m_splitterIds.clear();
   m_NInP = 0;
 
-  if (!m_addedanything)
-  {
-    for (Part_Iterator pvit=m_remainingphotons.begin();pvit!=m_remainingphotons.end();++pvit)
-    {
-      delete *pvit;
-    }
-  }
   m_addedanything = false;
+
   for (size_t i=0; i<m_spectators.size(); i++) delete m_spectators[i];
   m_spectators.clear();
+
   for (size_t i=0; i<m_splitters.size(); i++) delete m_splitters[i];
   m_splitters.clear();
+
+  for (size_t i=0; i<m_addedparticles.size(); i++) delete m_addedparticles[i];
   m_addedparticles.clear();
+
   m_remainingphotons.clear();
+
+  for (size_t i=0; i<m_splittingphotons.size(); i++) delete m_splittingphotons[i];
+  m_splittingphotons.clear();
+
   if (m_splitters.size() != 0 || m_spectators.size() != 0 
-      || m_addedparticles.size() != 0 || m_remainingphotons.size() != 0) return false;
+      || m_addedparticles.size() != 0 || m_splittingphotons.size() != 0) return false;
   return true;
 }
 
@@ -151,160 +155,26 @@ void Sudakov::SetCutoff()
   }
 }
 
-Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
+YFS_Particle* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
 {
-  // choose starting t based on photon and lepton momenta 
-
-  std::vector<Vec4D> pis, pks;
-  Spec_Vector initial_splitters = {};
-  std::vector<bool> dipoleFI = {};
-  std::vector<double> Kp, Kcumu, ts;
-  Kcumu = {0.};
-  Vec4D ptotal = Vec4D(0.,0.,0.,0.);
-  
-  // build momentum vectors
-  for (int i = 0; i < m_spectators.size(); ++i) {
-    // incoming particles cannot be emitters
-    if (m_spectators[i]->Id() < m_NInP) continue;
-    
-    ptotal += m_spectators[i]->Momentum();
-    // choose spectator for splitter i 
-    bool selected = false;
-    for (int k = 0; k < m_spectators.size(); ++k) {
-      if (!selected && i != k) {
-        if ((m_spectators[k]->Id() < m_NInP &&
-             m_spectators[k]->GetFlavour().Charge() == m_spectators[i]->GetFlavour().Charge()) ||
-            (m_spectators[k]->Id() >= m_NInP &&
-             m_spectators[k]->GetFlavour().Charge() == -m_spectators[i]->GetFlavour().Charge())) {
-          // add as photon emitter
-          initial_splitters.push_back(m_spectators[i]);
-          pis.push_back(m_spectators[i]->Momentum());
-          // set spectator in pks[i]
-          pks.push_back(m_spectators[k]->Momentum());
-          // true if FI dipole, false if FF dipole
-          dipoleFI.push_back(m_spectators[k]->Id() < m_NInP);
-          selected = true;
-          msg_Debugging()<<"Added photon emission dipole: "<<i<<"("
-                         <<m_spectators[i]->GetFlavour()<<") "<<k<<"("
-                         <<m_spectators[k]->GetFlavour()<<") "
-                         <<(dipoleFI.back()?"FI":"FF")<<std::endl;
-        }
-      }
+  // loop over possible emitters
+  for (size_t i=0; i < m_spectators.size(); ++i) {
+    // loop over possible spectators 
+    for (size_t j=0; j < m_spectators.size(); ++j) {
+      if (i == j) continue;
     }
   }
-
-  // if no photon emitter identified, stop here
-  if (pis.empty()) {
-    msg_Tracking()<<METHOD<<"(): No photon emitter identified, stop here."
-                  <<std::endl;
-    return NULL;
-  }
-
-  // build splitting functions 
-  for (int i = 0; i < pis.size(); ++i) 
-  {
-    double Q2, s12, s13, s23, z, y, mi2, mij2, mk2, vtijk, vijk, pipj;
-
-    s12 = 2.*pis[i]*pks[i];
-    s13 = 2.*pis[i]*pphoton;
-    s23 = 2.*pks[i]*pphoton;
-
-    // calculate masses
-    mi2 = mij2 = pis[i].Abs2();
-    mk2 = pks[i].Abs2();
-
-    // calculate invariants 
-    if (dipoleFI[i]) { 
-      Q2 = (pis[i] - pks[i] + pphoton).Abs2();
-
-      y = s13/(s12+s23-s13-2.*mi2);
-      z = (s12-s13-mi2)/(s12+s23-2.*s13-mi2);
-
-      pipj  = (mk2-mi2-Q2)*y/2.0;
-
-      // splitting functions for photon emission off fermion
-      // no need for coupling and other constants 
-      double sf = 1./y * (2./(1.-z+z*y) * (1. + 2.*mi2/(mk2-mi2-Q2)) 
-                    - (1.+z) - mi2/pipj 
-                    -pipj*mk2/sqr(mk2-mi2-Q2) * 4./sqr(1.-z+z*y) );
-      if (IsBad(sf)) { sf = 0; }
-      Kp.push_back(sf);
-    }
-    else { 
-      Q2 = (pis[i] + pks[i] + pphoton).Abs2();
-
-      y = s13/(s12+s13+s23);
-      z = s12/(s12+s23);
-
-      vtijk = sqrt(Q2)*sqrt(Q2+sqr(mij2)+sqr(mk2)-2.*mij2-2.*mij2*mk2-2.*mk2)/(Q2-mij2-mk2);
-      vijk = sqrt(Q2)*sqrt(sqr(2.*mk2+(Q2-mi2-mk2)*(1.-y))-4.*mk2*Q2)/((Q2-mij2-mk2)*(1.-y));
-
-      pipj  = (Q2-mi2-mk2)*y/2.0;
-
-      // splitting functions for photon emission off fermion
-      // no need for coupling and other constants 
-      double sf = 1./y * ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
-      if (IsBad(sf)) { sf = 0; }
-      Kp.push_back(sf);
-    }
-
-    if (i==0) Kcumu[0] = Kp[0]; // first time 
-    else Kcumu.push_back(Kcumu[i-1] + Kp[i]); // every other time 
-
-    if (m_virtualityOrdering%2==1) {
-      // this t is q2-mij2 = virtuality 
-      double q2;
-      if (dipoleFI[i]) q2 = p_FIkinematics->GetVirt(Q2,y,z,mi2,0,mk2);
-      else q2 = p_kinematics->GetVirt(Q2,y,z,mi2,0,mk2);
-      ts.push_back(q2-mij2);
-    }
-    else {
-      // mixed or kT scheme 
-      // this t is kT2, Krauss & Schumann 07 eq.27, mj2 = 0
-      double kT2;
-      if (dipoleFI[i]) kT2 = p_FIkinematics->GetKT2(Q2,y,z,mi2,0,mk2);
-      else kT2 = p_kinematics->GetKT2(Q2,y,z,mi2,0,mk2);
-      ts.push_back(kT2);
-    }
-  }
-
-  // select emitter particle and starting scale 
-  int winnerIndex(-1);
-  if (!m_debug_initProbabilistic) {
-    // select winner 
-    winnerIndex = std::max_element(Kp.begin(),Kp.end()) - Kp.begin();
-  }
-  else {
-    // select probabilistic
-    double rand = ran->Get();
-    if (rand < Kcumu[0]/Kcumu.back()) { winnerIndex = 0; }
-    else {
-      for (int i = 1; i < Kcumu.size(); ++i) {
-        if (rand >= Kcumu[i-1]/Kcumu.back() && rand < Kcumu[i]/Kcumu.back()) {
-          winnerIndex = i;
-        }
-      }
-    }
-  }
-  
-  if (winnerIndex < 0 || winnerIndex >= ts.size()) { 
-    msg_Error() << "No splitting function selected, skipping blob\n";
-    return NULL;
-  }
-
-  t = ts[winnerIndex];
-
-  return initial_splitters[winnerIndex];
+  return 0; // to do
 }
 
-bool Sudakov::Run(ATOOLS::Blob *blob)
+bool Sudakov::Run()
 {
   // set initial conditions 
   double tstart;
   m_t = 0.;
-  for (size_t i : m_splitterIds)
+  for (size_t i = 0; i < m_splittingphotons.size(); ++i)
   {
-    Spectator* initial_emitter = DefineInitialConditions(tstart,blob->GetParticle(i)->Momentum());
+    YFS_Particle* initial_emitter = DefineInitialConditions(tstart,m_splittingphotons[i]->Momentum());
 
     if (!initial_emitter) return true; // PhotonSplitter cannot act here
     
@@ -313,7 +183,7 @@ bool Sudakov::Run(ATOOLS::Blob *blob)
         m_splitters[j]->SetStartScale(tstart);
         if (m_spectatorScheme == 1) { m_splitters[j]->AddSpec(initial_emitter); }
         else {
-          for (Spectator* s : m_spectators) {
+          for (YFS_Particle* s : m_spectators) {
             if (s->Id() >= m_NInP) { // for now, no W spectator for photon splittings 
               m_splitters[j]->AddSpec(s);
             }
@@ -331,12 +201,12 @@ bool Sudakov::Run(ATOOLS::Blob *blob)
   // run
   while (m_t > m_t0) 
   {
-    if (!Generate(blob)) return false;
+    if (!Generate()) return false;
   }
   return true;
 }
 
-bool Sudakov::Generate(ATOOLS::Blob *blob)
+bool Sudakov::Generate()
 {
   double t, Q2, zmax, zmin, f, g, tgen, z, y, phi;
   int ind;
@@ -350,8 +220,8 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
       if (m_t > m_splitters[i]->StartScale()) continue; // if we're above the photon's starting scale
       if (m_t < m_splitters[i]->Cutoff()) continue; // if we're below the cutoff
 
-      Particle *split = blob->GetParticle(m_splitters[i]->Id());
-      for (Spectator* spectator : m_splitters[i]->GetSpecs())
+      YFS_Particle *split = m_splitters[i]->GetSplitter();
+      for (YFS_Particle* spectator : m_splitters[i]->GetSpecs())
       {
         // compute z boundaries
         if (m_virtualityOrdering) {
@@ -401,11 +271,11 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
       if (m_virtualityOrdering) {
         // virtuality or mixed scheme 
         // what is passed in the second argument is q2, not t. t = q2 - m2 so we add the mass here. For photon splittings m2=0.
-        y = p_kinematics->GetYVirt(Q2,t+m_splitters[ind]->Mass2A(),m_splitters[ind]->Mass2B(),m_splitters[ind]->Mass2C(),
+        y = m_splitters[ind]->KinFF()->GetYVirt(Q2,t+m_splitters[ind]->Mass2A(),m_splitters[ind]->Mass2B(),m_splitters[ind]->Mass2C(),
                             m_splitters[ind]->Mass2Spec());
       }
       else {
-        y = p_kinematics->GetY(Q2,t,z,m_splitters[ind]->Mass2B(),m_splitters[ind]->Mass2C(),
+        y = m_splitters[ind]->KinFF()->GetY(Q2,t,z,m_splitters[ind]->Mass2B(),m_splitters[ind]->Mass2C(),
                             m_splitters[ind]->Mass2Spec()); // this t is kT2
       }
 
@@ -413,7 +283,7 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
       if (y <= 0) break;
 
       f = (*m_splitters[ind])(t,z,y,Q2); // this t is only used for cutoff 
-      g = m_splitters[ind]->OverEstimated();
+      g = m_splitters[ind]->OverEstimated(z);
 
       if (f/g > 1.) {
         msg_Debugging() << "f = " << f << ", g = " << g << "\n";
@@ -431,23 +301,22 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
         else if (m_splitters[ind]->FlB().Kfcode() == 13) { msg_Debugging() << "Split into muons\n"; }
 
         phi = 2*M_PI * ran->Get();
-        bool madeKinematics = p_kinematics->MakeKinematics(z,y,phi,pij,pk,pi,pj,
+        bool madeKinematics = m_splitters[ind]->KinFF()->MakeKinematics(z,y,phi,pij,pk,pi,pj,
           m_splitters[ind]->Mass2B(),m_splitters[ind]->Mass2C(),
           m_splitters[ind]->Mass2Spec(), m_splitters[ind]->Mass2A());
         if (!madeKinematics) THROW(fatal_error, "Invalid kinematics");
 
-        // create new particles, use info 's' to identify them later on
-        Particle *newparticle = new Particle(-1,m_splitters[ind]->FlB(),pi,'s');
-        Particle *newantiparticle = new Particle(-1,m_splitters[ind]->FlC(),pj,'s');
+        // set ID to -1 such that this will get initialised correctly by the blob
+        YFS_Particle *newparticle = new YFS_Particle(pi,-1,m_splitters[ind]->FlB());
+        YFS_Particle *newantiparticle = new YFS_Particle(pj,-1,m_splitters[ind]->FlC());
         m_addedparticles.push_back(newparticle);
         m_addedparticles.push_back(newantiparticle);
 
         m_splitters[ind]->GetSpectator()->SetMomentum(pk); 
         
         // remove photon as splitter
-        Part_Iterator PLIt = std::find(m_remainingphotons.begin(),m_remainingphotons.end(),m_splitters[ind]->GetSplitter());
+        YFS_Particle_List::iterator PLIt = std::find(m_remainingphotons.begin(),m_remainingphotons.end(),m_splitters[ind]->GetSplitter());
         m_remainingphotons.erase(PLIt);
-        delete *PLIt; // since it will not be added back
 
         // turn off future splittings of this photon
         for (size_t i=0; i<m_splitters.size(); i++) {

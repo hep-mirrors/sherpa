@@ -85,6 +85,8 @@ bool Kinematics_FF::MakeKinematics(const double z, const double y, const double 
   return true;
 }
 
+//////////////// begin Kinematics_FI ///////////////
+
 double Kinematics_FI::GetKT2(const double &Q2,const double &y,const double &z,
 			     const double mi2,const double mj2,const double ma2) const
 {
@@ -104,7 +106,7 @@ double Kinematics_FI::GetVirt(const double &Q2,const double &y,const double &z,
 double Kinematics_FI::GetY(const double Q2,const double kt2,const double z,
 			   const double mi2,const double mj2,const double ma2) const
 {
-  // not used 
+  // to do
   if (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+ma2) return -1.0;
   return 0;
 }
@@ -112,11 +114,85 @@ double Kinematics_FI::GetY(const double Q2,const double kt2,const double z,
 double Kinematics_FI::GetYVirt(const double Q2, const double q2, const double mi2, const double mj2,
       const double ma2) const
 {
-  // not used 
+  // to do
   return 0;
 }
 
 bool Kinematics_FI::MakeKinematics(const double z, const double y, const double phi, 
+      Vec4D &pij,Vec4D &pk, Vec4D &pi, Vec4D &pj, const double mi2, const double mj2,
+      const double ma2, const double mij2)
+{
+  // to do
+  return 0;
+}
+
+/////////////// begin Kinematics_IF /////////////////
+
+double Kinematics_IF::GetKT2(const double &Q2,const double &y,const double &z,
+			     const double mi2,const double mj2,const double ma2) const
+{
+  return 0; // to do...
+}
+
+double Kinematics_IF::GetVirt(const double &Q2,const double &y,const double &z,
+           const double mi2,const double mj2,const double ma2) const
+{
+  return 0; // to do...
+}
+
+double Kinematics_IF::GetY(const double Q2,const double kt2,const double z,
+			   const double mi2,const double mj2,const double ma2) const
+{
+  // not used 
+  if (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+ma2) return -1.0;
+  return 0;
+}
+
+double Kinematics_IF::GetYVirt(const double Q2, const double q2, const double mi2, const double mj2,
+      const double ma2) const
+{
+  // not used 
+  return 0;
+}
+
+bool Kinematics_IF::MakeKinematics(const double z, const double y, const double phi, 
+      Vec4D &pij,Vec4D &pk, Vec4D &pi, Vec4D &pj, const double mi2, const double mj2,
+      const double ma2, const double mij2)
+{
+  // not used
+  return 0;
+}
+
+/////////////// begin Kinematics_II /////////////////
+
+double Kinematics_II::GetKT2(const double &Q2,const double &y,const double &z,
+			     const double mi2,const double mj2,const double ma2) const
+{
+  return 0; // to do...
+}
+
+double Kinematics_II::GetVirt(const double &Q2,const double &y,const double &z,
+           const double mi2,const double mj2,const double ma2) const
+{
+  return 0; // to do...
+}
+
+double Kinematics_II::GetY(const double Q2,const double kt2,const double z,
+			   const double mi2,const double mj2,const double ma2) const
+{
+  // not used 
+  if (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+ma2) return -1.0;
+  return 0;
+}
+
+double Kinematics_II::GetYVirt(const double Q2, const double q2, const double mi2, const double mj2,
+      const double ma2) const
+{
+  // not used 
+  return 0;
+}
+
+bool Kinematics_II::MakeKinematics(const double z, const double y, const double phi, 
       Vec4D &pij,Vec4D &pk, Vec4D &pi, Vec4D &pj, const double mi2, const double mj2,
       const double ma2, const double mij2)
 {
