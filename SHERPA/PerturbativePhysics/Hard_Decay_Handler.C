@@ -151,6 +151,7 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
       if (!s.HasDefault()) s.SetDefault(dc->IWidth());
       dc->SetWidth(s.Get<double>());
     }
+    dmit->second->UpdateWidth();
   }
 
   if (m_set_widths)
