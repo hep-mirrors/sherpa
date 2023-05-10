@@ -169,8 +169,8 @@ LCG_102_x86_64-centos7-gcc11-opt:
         - rm -rf todo-Archlinux_$FREL.txt
         - git log -1 | grep ArchlinuxDockerfile$FREL | head -n 1 >> todo-Archlinux_$FREL.txt || touch todo-Archlinux_$FREL.txt
         - git diff --name-only HEAD HEAD~1 | grep CI/Archlinux/Dockerfile | head -n 1 >> todo-Archlinux_$FREL.txt || touch todo-Archlinux_$FREL.txt
-        - if [ -s todo-Archlinux_$FREL.txt ]; then cat CI/Archlinux/Dockerfile | sed 's/Archlinux:35/Archlinux:$FREL/g' > todo-Archlinux_$FREL.txt; fi
-        - if [ $CI_PIPELINE_SOURCE == "schedule" ]; then cat CI/Archlinux/Dockerfile | sed 's/Archlinux:35/Archlinux:$FREL/g' > todo-Archlinux_$FREL.txt; fi
+        - if [ -s todo-Archlinux_$FREL.txt ]; then cat CI/Archlinux/Dockerfile  > todo-Archlinux_$FREL.txt; fi
+        - if [ $CI_PIPELINE_SOURCE == "schedule" ]; then cat CI/Archlinux/Dockerfile  > todo-Archlinux_$FREL.txt; fi
         - cat todo-Archlinux_$FREL.txt
         - exit 0
   variables:
@@ -190,8 +190,8 @@ LCG_102_x86_64-centos7-gcc11-opt:
         - rm -rf todo-Fedora_$FREL.txt
         - git log -1 | grep FedoraDockerfile$FREL | head -n 1 >> todo-Fedora_$FREL.txt || touch todo-Fedora_$FREL.txt
         - git diff --name-only HEAD HEAD~1 | grep CI/Fedora/Dockerfile | head -n 1 >> todo-Fedora_$FREL.txt || touch todo-Fedora_$FREL.txt
-        - if [ -s todo-Fedora_$FREL.txt ]; then cat CI/Fedora/Dockerfile | sed 's/fedora:35/fedora:$FREL/g' > todo-Fedora_$FREL.txt; fi
-        - if [ $CI_PIPELINE_SOURCE == "schedule" ]; then cat CI/Fedora/Dockerfile | sed 's/fedora:35/fedora:$FREL/g' > todo-Fedora_$FREL.txt; fi
+        - if [ -s todo-Fedora_$FREL.txt ]; then cat CI/Fedora/Dockerfile | sed 's/fedora:35/fedora:'$FREL'/g' > todo-Fedora_$FREL.txt; fi
+        - if [ $CI_PIPELINE_SOURCE == "schedule" ]; then cat CI/Fedora/Dockerfile | sed 's/fedora:35/fedora:'$FREL'/g' > todo-Fedora_$FREL.txt; fi
         - cat todo-Fedora_$FREL.txt
         - exit 0
   variables:
@@ -308,16 +308,16 @@ LCG_102_x86_64-centos7-gcc11-opt:
 ###########################################################################
 # Here we check if we have changes to the Docker files
 
-check_commit_Fedora35:
+check_commit_Fedora36:
   variables:
     OS: Fedora
-    FREL: 35
+    FREL: 36
   extends: .check_commit_Fedora
     
-check_commit_Fedora34:
+check_commit_Fedora37:
   variables:
     OS: Fedora
-    FREL: 34
+    FREL: 37
   extends: .check_commit_Fedora
 
 check_commit_CentOS7:
@@ -348,21 +348,21 @@ check_commit_Archlinux0:
 
 ###########################################################################
 #Build images
-build_image_Fedora34:
+build_image_Fedora36:
   variables:
     OS: Fedora
-    FREL: 34
+    FREL: 36
   extends: .build_image_Fedora
   needs:
-    - job: check_commit_Fedora34
+    - job: check_commit_Fedora36
 
-build_image_Fedora35:
+build_image_Fedora37:
   variables:
     OS: Fedora
-    FREL: 35
+    FREL: 37
   extends: .build_image_Fedora
   needs:
-    - job: check_commit_Fedora35
+    - job: check_commit_Fedora37
 
 build_image_CentOS7:
   variables:
@@ -399,36 +399,36 @@ build_image_Archlinux0:
 
 ###########################################################################
 
-Fedora35-make-ccache-GNU:
+Fedora37-make-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 35
+    FREL: 37
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora35
+    - job: build_image_Fedora37
 
   
-Fedora34-make-ccache-GNU:
+Fedora36-make-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 34
+    FREL: 36
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora34
+    - job: build_image_Fedora36
 
-Fedora34-make-ccache-LLVM:
+Fedora36-make-ccache-LLVM:
   variables:
     OS: Fedora
-    FREL: 34
+    FREL: 36
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora34
+    - job: build_image_Fedora36
 
 CentOS7-make-ccache-GNU:
   variables:
