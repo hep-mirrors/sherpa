@@ -77,6 +77,7 @@ Primitive_Observable_Base *ATOOLS::Getter
 operator()(const Analysis_Key& key) const
 {
   ATOOLS::Scoped_Settings s{ key.m_settings };
+  s.SetDefault("");
   const auto listname = s.Get<std::string>();
   if (listname.empty())
     THROW(missing_input, "Missing list.");
