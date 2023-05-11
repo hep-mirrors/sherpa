@@ -205,10 +205,12 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
             qedsub=true;
             isPFFsplitting=true;
           }
-          if (qedsub)
-            if (m_user_stype&sbt::qed) stypes.push_back(sbt::qed);
-            else msg_Debugging()<<"QED subtraction possible, but not wanted."
-                                <<std::endl;
+          if (qedsub) {
+            if (m_user_stype & sbt::qed) stypes.push_back(sbt::qed);
+            else
+              msg_Debugging()
+                << "QED subtraction possible, but not wanted." << std::endl;
+          }
         }
         else msg_Debugging()<<"No QED subtraction possible."<<std::endl;
         std::string ststr("");
@@ -330,9 +332,9 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 
 
 /*------------------------------------------------------------------------------
-  
+
   Phase space initialization
-  
+
   ------------------------------------------------------------------------------*/
 
 bool AMEGIC::Single_Real_Correction::FillIntegrator
@@ -353,16 +355,16 @@ bool AMEGIC::Single_Real_Correction::Combinable
   return p_tree_process->Combinable(idi, idj);
 }
 
-  
+
 const Flavour_Vector &AMEGIC::Single_Real_Correction::CombinedFlavour
 (const size_t &idij)
 {
   return p_tree_process->CombinedFlavour(idij);
 }
 
-  
-bool Single_Real_Correction::SetUpIntegrator() 
-{  
+
+bool Single_Real_Correction::SetUpIntegrator()
+{
   if (m_nin==2) {
     if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
 	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(m_flavs);
@@ -372,15 +374,15 @@ bool Single_Real_Correction::SetUpIntegrator()
 
 
 /*------------------------------------------------------------------------------
-  
+
   Process management
-  
+
   ------------------------------------------------------------------------------*/
 void Single_Real_Correction::SetLookUp(const bool lookup)
 {
-  m_lookup=lookup; 
+  m_lookup=lookup;
   if (p_tree_process) p_tree_process->SetLookUp(false);
-  for (size_t i=0;i<m_subtermlist.size();i++) 
+  for (size_t i=0;i<m_subtermlist.size();i++)
     m_subtermlist[i]->SetLookUp(false);
 }
 
@@ -388,9 +390,9 @@ void Single_Real_Correction::Minimize()
 {
   if (p_partner==this) return;
   p_tree_process->Minimize();
-  for (size_t i=0;i<m_subtermlist.size();i++) 
+  for (size_t i=0;i<m_subtermlist.size();i++)
     m_subtermlist[i]->Minimize();
-  for (size_t i=0;i<m_subostermlist.size();i++) 
+  for (size_t i=0;i<m_subostermlist.size();i++)
     m_subostermlist[i]->Minimize();
   m_subevtlist.clear();
   for (size_t i=0;i<p_partner->m_subtermlist.size();i++)
@@ -618,17 +620,17 @@ void Single_Real_Correction::SetKFactor(const KFactor_Setter_Arguments &args)
 }
 
 
-int Single_Real_Correction::NumberOfDiagrams() { 
+int Single_Real_Correction::NumberOfDiagrams() {
   return m_subtermlist.size()+1;
 }
 
-Point * Single_Real_Correction::Diagram(int i) { 
-  if (p_partner==this) return p_tree_process->Diagram(i); 
+Point * Single_Real_Correction::Diagram(int i) {
+  if (p_partner==this) return p_tree_process->Diagram(i);
   return p_partner->Diagram(i);
-} 
+}
 
-void Single_Real_Correction::AddChannels(std::list<std::string>* list) 
-{ 
+void Single_Real_Correction::AddChannels(std::list<std::string>* list)
+{
   if (m_pinfo.m_nlomode==nlo_mode::powheg) {
     for (size_t i(0);i<m_subtermlist.size();++i)
       m_subtermlist[i]->AddChannels(list);
@@ -638,9 +640,9 @@ void Single_Real_Correction::AddChannels(std::list<std::string>* list)
 
 
 /*------------------------------------------------------------------------------
-  
+
   Helpers
-  
+
   ------------------------------------------------------------------------------*/
 
 
@@ -658,11 +660,11 @@ void Single_Real_Correction::PrintProcessSummary(int it)
   p_tree_process->PrintProcessSummary(it+1);
   for(int i=0;i<it+1;i++) cout<<"  ";
   cout<<"----dipole terms--------------------------"<<endl;
-  for (size_t i=0;i<m_subtermlist.size();++i) 
+  for (size_t i=0;i<m_subtermlist.size();++i)
     if (m_subtermlist[i]->IsValid()) m_subtermlist[i]->PrintProcessSummary(it+1);
   for(int i=0;i<it+1;i++) cout<<"  ";
   cout<<"++++++++++++++++++++++++++++++++++++++++++"<<endl;
-} 
+}
 
 void Single_Real_Correction::PrintSubevtSummary()
 {
@@ -670,7 +672,7 @@ void Single_Real_Correction::PrintSubevtSummary()
   for (size_t i=0;i<m_subevtlist.size();++i) {
     std::cout<<m_subevtlist[i];
     for (size_t j=0;j<m_subevtlist[i]->m_n;++j)
-      cout<<"Mom "<<j<<": "<<m_subevtlist[i]->p_mom[j]<<" ("<<m_subevtlist[i]->p_fl[j]<<")"<<endl; 
+      cout<<"Mom "<<j<<": "<<m_subevtlist[i]->p_mom[j]<<" ("<<m_subevtlist[i]->p_fl[j]<<")"<<endl;
   }
 }
 
@@ -686,8 +688,8 @@ void Single_Real_Correction::SetSelector(const Selector_Key &key)
   p_selector=p_tree_process->Selector();
 }
 
-void Single_Real_Correction::SetGenerator(ME_Generator_Base *const gen) 
-{ 
+void Single_Real_Correction::SetGenerator(ME_Generator_Base *const gen)
+{
   if (p_tree_process==NULL) {
     p_gen=gen;
     return;
