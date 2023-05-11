@@ -18,8 +18,8 @@ Kinematics_Generator::~Kinematics_Generator() {}
 void Kinematics_Generator::Initialize(Remnant_Handler *const rhandler) {
   p_rhandler = rhandler;
   for (size_t beam = 0; beam < 2; beam++) {
-    p_remnants[beam] = p_rhandler->GetRemnant(beam);
-    p_extracted[beam] = p_remnants[beam]->GetExtracted();
+    p_remnants[beam]   = p_rhandler->GetRemnant(beam);
+    p_extracted[beam]  = p_remnants[beam]->GetExtracted();
     p_spectators[beam] = p_remnants[beam]->GetSpectators();
   }
   if (p_rhandler->Type() != strat::simple)

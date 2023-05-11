@@ -24,13 +24,13 @@ Event_Generator::~Event_Generator()
 }
 
 void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
-  msg_Out()<<METHOD<<"(runmode = "<<int(m_runmode)<<")\n";
+  //msg_Out()<<METHOD<<"(runmode = "<<int(m_runmode)<<")\n";
   switch (m_runmode) {
   case run_mode::inelastic_events:
     p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test,xsecs->GetSigmaElastic(),xsecs->GetSigmaD());
     break; 
   case run_mode::double_diffractive_events:
-    msg_Out() << "DD events\n";
+    //msg_Out() << "DD events\n";
     p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
     //p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test,xsecs->GetSigmaElastic(),xsecs->GetSigmaD());
     break; 
@@ -82,7 +82,7 @@ bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
     msg_Error()<<"Error in "<<METHOD<<" for run mode = "<<m_runmode<<".\n";
     return false;
   }
-  msg_Out()<<METHOD<<" for run mode = "<<m_runmode<<".\n";
+  //msg_Out()<<METHOD<<" for run mode = "<<m_runmode<<".\n";
   return false; 
 }
 

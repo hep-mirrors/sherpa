@@ -62,22 +62,22 @@ void Primary_Ladders::Test() { return; if (m_test) p_laddergenerator->Test(); }
 
 bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_t & N) {
   Reset();
-  msg_Out()<<"     -------------------------------------------------------------\n"
-  	   <<"     --- Make "<<N<<" new ladders at B = "<<B<<"\n";
+  //msg_Out()<<"     -------------------------------------------------------------\n"
+  //	   <<"     --- Make "<<N<<" new ladders at B = "<<B<<"\n";
   p_laddergenerator->InitCollision(eikonal,B);
   size_t Ngen = 0, trials = 0;
   double b1, b2;
   bool   contains_one_inelastic = false;
-  msg_Out()<<"--------------------------------------------------------------\n";
+  //msg_Out()<<"--------------------------------------------------------------\n";
   while (Ngen<N) {
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
     p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
-    msg_Out()<<"   - "<<METHOD<<" generates new ladder with energy limits = "
-	     <<m_E[0]<<" and "<<m_E[1]<<"\t"<<trials<<"\t"<<Ngen<<"\n";
+    //msg_Out()<<"   - "<<METHOD<<" generates new ladder with energy limits = "
+    //	     <<m_E[0]<<" and "<<m_E[1]<<"\t"<<trials<<"\t"<<Ngen<<"\n";
     Ladder * ladder = (*p_laddergenerator)(position,p_sigma_el,p_sigma_sd);
     if (m_test && ladder) FillAnalysis(ladder,"trial");
-    msg_Out() << IsAllowed(ladder) << "\t" << m_colourgenerator(ladder) << "\n";
+    //msg_Out() << IsAllowed(ladder) << "\t" << m_colourgenerator(ladder) << "\n";
     if (IsAllowed(ladder) && m_colourgenerator(ladder)) {	
       p_laddergenerator->QuarkReplace();
       p_laddergenerator->FixLadderType();
@@ -116,8 +116,8 @@ bool Primary_Ladders::IsAllowed(Ladder * ladder) {
   if (ladder==NULL) return false;
   for (size_t i=0;i<2;i++) {
     if (m_E[i]-ladder->InPart(i)->Momentum()[0] < 5.) {
-      msg_Out() << "here 1: " << m_E[i] << "\t" <<ladder->InPart(i)->Momentum()[0] << "\n";
-      msg_Out() << "here 2: " << m_E[1] << "\t" <<ladder->InPart(1)->Momentum()[0] << "\n";
+      //msg_Out() << "here 1: " << m_E[i] << "\t" <<ladder->InPart(i)->Momentum()[0] << "\n";
+      //msg_Out() << "here 2: " << m_E[1] << "\t" <<ladder->InPart(1)->Momentum()[0] << "\n";
       return false;
     }
   }

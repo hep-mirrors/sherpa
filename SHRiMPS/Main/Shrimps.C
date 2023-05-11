@@ -126,8 +126,8 @@ int Shrimps::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
 }
 
 void Shrimps::Analyse(ATOOLS::Blob_List * blobs) {
-  msg_Out()<<"  * "<<METHOD<<"("<<blobs->size()<<" blobs).\n";
-  msg_Out()<<"   - "<<METHOD<<"(yhat = "<<p_generator->Yhat()<<")\n";
+  //msg_Out()<<"  * "<<METHOD<<"("<<blobs->size()<<" blobs).\n";
+  //msg_Out()<<"   - "<<METHOD<<"(yhat = "<<p_generator->Yhat()<<")\n";
   m_histos[std::string("Yasym_core")]->Insert(p_generator->Yhat());
   ATOOLS::Blob * hard = blobs->FindFirst(ATOOLS::btp::Hard_Collision);
   Analyse(hard,std::string("Yasym_hard"));  
@@ -141,7 +141,7 @@ void Shrimps::Analyse(ATOOLS::Blob_List * blobs) {
 }
 
 void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
-  msg_Out()<<"   - "<<METHOD<<"("<<blob->Type()<<", "<<blob->NOutP()<<" outgoing particles.)\n";
+  //msg_Out()<<"   - "<<METHOD<<"("<<blob->Type()<<", "<<blob->NOutP()<<" outgoing particles.)\n";
   if (tag==std::string("Yasym_frag_in")) {
     for (size_t i=0;i<blob->NInP();i++) {
       double y = blob->InParticle(i)->Momentum().Y();
@@ -158,7 +158,7 @@ void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
 
 
 ATOOLS::Blob * Shrimps::GenerateEvent() {
-  msg_Out()<<"  * "<<METHOD<<".\n";
+  //msg_Out()<<"  * "<<METHOD<<".\n";
   //Glauber glauberTest(p_xsecs,1,208);
   return p_generator->GenerateEvent();
 }
@@ -262,10 +262,10 @@ void Shrimps::WriteOutElasticsYodaFile(const double & energy,
     const size_t & steps = p_xsecs->GetSigmaElastic()->Steps();
     const std::vector<double> & eldiffgrid = p_xsecs->GetSigmaElastic()->GetDiffGrid();
     unsigned int ilow, ihigh;
-
+    
     //     msg_Out()<<"Calculating differential elastic cross sections for tuning."<<std::endl;
     for (std::set<double>::iterator iter=tvals.begin(); iter != tvals.end(); iter++) {
-//       msg_Out()<<"calculating for t = "<<tvals[i]<<" GeV^2"<<std::endl;
+      //       msg_Out()<<"calculating for t = "<<tvals[i]<<" GeV^2"<<std::endl;
         t = *iter;
       ilow=int((t-tmin)/(tmax-tmin)*steps);
       if(ilow>steps) ilow=steps-1;

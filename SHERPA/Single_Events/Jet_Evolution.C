@@ -247,7 +247,7 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
   for (size_t i = 0; i < blob->GetInParticles().size(); ++i) {
     noshowerblob->AddToOutParticles(blob->InParticle(i));
     noshowerblob->AddToInParticles(new Particle(*blob->InParticle(i)));
-    noshowerblob->InParticle(i)->SetBeam(i);
+    noshowerblob->InParticle(i)->SetBeam(blob->InParticle(i)->Beam());
     blob->InParticle(i)->SetStatus(part_status::decayed);
   }
   for (size_t i = 0; i < blob->GetOutParticles().size(); ++i) {
