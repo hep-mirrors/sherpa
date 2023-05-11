@@ -19,11 +19,6 @@ void sasgam_(int &, float &, float &, float &, int &, float &, float *);
 SASGph_Fortran_Interface::SASGph_Fortran_Interface(const ATOOLS::Flavour _bunch,
                                                    const std::string _set)
     : Photon_PDF_Base(_bunch, _set, 6) {
-  m_xmin = 1.e-5;
-  m_xmax = 1.;
-  m_q2min = .25;
-  m_q2max = 1.e6;
-
   if (m_set == std::string("SAS1D"))
     m_iset = 1;
   else if (m_set == std::string("SAS1M"))
@@ -38,6 +33,10 @@ SASGph_Fortran_Interface::SASGph_Fortran_Interface(const ATOOLS::Flavour _bunch,
                  "use the Leading Order parametrization. \n";
     m_iset = 1;
   }
+  m_xmin  = 1.e-5;
+  m_xmax  = 1.;
+  m_q2min = (m_iset<=2) ? .36 : 4.;
+  m_q2max = 1.e6;
 
   rpa->gen.AddCitation(1, "The SaSg photon PDF is published under "
                           "\\cite{Schuler:1995fk} and \\cite{Schuler:1996fc}.");
@@ -52,7 +51,8 @@ void SASGph_Fortran_Interface::CalculateSpec(const double &_x,
   if (m_include_photon_in_photon)
     m_ph = GetPhotonCoefficient(_x, _Q2);
 
-  float x = _x / m_rescale, Q2 = _Q2;
+  float x = _x / m_rescale, Q2 = float(_Q2);
+  if (Q2==float(m_q2min)) Q2+=0.0001;
 
   float f2photon = 0;
   float pdf[13];
