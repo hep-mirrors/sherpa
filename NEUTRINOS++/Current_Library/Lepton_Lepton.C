@@ -46,7 +46,8 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
       // m_cR = Complex( 0., 0.);   
 
     }
-    else if (m_flavs[m_indices[0]].IsChargedLepton()) {
+    else if (m_flavs[m_indices[0]].IsChargedLepton() ||
+	     m_flavs[m_indices[0]].IsBaryon()) {
       /////////////////////////////////////////////////////////////////////////
       // QED coupling only for the time being:  -i e e_f gamma^mu To leptons
       /////////////////////////////////////////////////////////////////////////

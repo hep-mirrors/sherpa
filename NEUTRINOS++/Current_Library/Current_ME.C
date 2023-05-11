@@ -39,6 +39,11 @@ void Current_ME::Calculate(const Vec4D_Vector& momenta,METOOLS::XYZFunc * F)
     // now we know the spin combinations in both currents
     // let's fill the results:
     (*this)[i]=m_factor*p_c1->Get(spins1)*p_c2->Get(spins2);
+    //if (abs((*this)[i])>0.0) {
+    //msg->SetPrecision(4);
+    //msg_Out()<<"   ["<<spins1<<" "<<spins2<<"] = "<<(*this)[i]<<" from "
+    //	       <<m_factor<<"\n     * "<<p_c1->Get(spins1)<<"\n     * "<<p_c2->Get(spins2)<<"\n";
+    //}
   }
 }
 

@@ -48,7 +48,8 @@ XS_lepton_nucleon::XS_lepton_nucleon(const External_ME_Args& args)
   m_indices.resize(2);
   m_indices[0] = 3;
   m_indices[1] = 1;
-  p_JNN  = new Nucleon_Nucleon(m_flavs,m_indices,"pp");
+  p_JNN  = new Lepton_Lepton(m_flavs,m_indices,"pp");
+  //p_JNN  = new Nucleon_Nucleon(m_flavs,m_indices,"pp");
   m_indices.resize(4);
   m_indices[0] = 2;
   m_indices[1] = 0;
@@ -69,20 +70,25 @@ XS_lepton_nucleon::~XS_lepton_nucleon() {
 }
 
 double XS_lepton_nucleon::operator()(const ATOOLS::Vec4D_Vector& momenta) {
-  bool printout = false;
+  bool printout = true;
   msg->SetPrecision(16);
   double result = (*p_ME)(momenta);
 
   if (printout) {
-    msg_Out()<<METHOD<<":\n";
-    for (size_t i=0;i<4;i++) msg_Out()<<"   "<<i<<"     "<<m_flavs[i]<<": "<<momenta[i]<<", "<<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
-    msg_Out()<<"|M|^2 = "<<result<<".\n";
-    msg_Out()<<"\n\n\n";
-
-    msg_Out()<<"Joe Python Script"<<":\n";
-    for (size_t i=0;i<4;i++) msg_Out()<<"p_"<<i+1<<" = Particle.fromFourMom("<<momenta[i][0]<<","<<momenta[i][1]<<","<<momenta[i][2]<<","<<momenta[i][3]<<", anti=False, flavour=None)"<<"\n";
-    msg_Out()<<"Sherpa = "<<result<<"\n";
-    msg_Out()<<"\n\n\n";
+    double t = (momenta[0]-momenta[2]).Abs2(); 
+    msg_Out()<<METHOD<<" |M|^2("<<sqrt(-t)<<" vs "<<momenta[2].PPerp()<<"), t = "<<t<<", "
+	     <<"result/t^2 = "<<(result/(t*t))<<".\n";
+    //for (size_t i=0;i<4;i++)
+    //msg_Out()<<"   "<<i<<"     "<<m_flavs[i]<<": "
+    //	       <<momenta[i]<<", "<<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
+    //msg_Out()<<"\n\n\n";
+    //
+    //msg_Out()<<"Joe Python Script"<<":\n";
+    //for (size_t i=0;i<4;i++) msg_Out()<<"p_"<<i+1<<" = "
+    //<<"Particle.fromFourMom("<<momenta[i][0]<<","<<momenta[i][1]<<","<<momenta[i][2]<<","<<momenta[i][3]<<", "
+    //<<"anti=False, flavour=None)"<<"\n";
+    //msg_Out()<<"Sherpa = "<<result<<"\n";
+    //msg_Out()<<"\n\n\n";
   }
   
   return result;

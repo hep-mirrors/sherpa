@@ -116,6 +116,14 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   Complex Zero = Complex(0.,0.);
   Complex One = Complex(1.,0.);
 
+  /*
+  msg->SetPrecision(4);
+  msg_Out()<<METHOD<<" yields q^2 = "<<prop_factor<<", tau = "<<tau<<"\n"
+	   <<"   from p("<<pf<<") = "<<F->P(pf)<<"\n"
+	   <<"      - p("<<pi<<") = "<<F->P(pi)<<"\n"
+	   <<"      = "<<q2<<"\n";
+  */
+  
   Vec4C amp;
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
@@ -141,7 +149,7 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
       //TODO Add ff4?
 
       //Divide by propagator on Nucleon Current side
-      amp = amp / prop_factor;
+      amp = amp * prop_factor;
 
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(0,hf));
