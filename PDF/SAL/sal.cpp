@@ -46,7 +46,7 @@ enum {gluon, d_quark, u_quark, s_quark, c_quark, b_quark, t_quark};
     return n == fread(v, sizeof(double), n, f);
   }
 #else
-char *DEF_INPUT = "SAL.dat";
+char DEF_INPUT[8] = "SAL.dat";
 
 //===================================
   static int GetByte(FILE* f, unsigned char *v, int n=1) {
@@ -74,7 +74,7 @@ SAL::SAL(char* iname /* = NULL */) {
   char Label[32];
   Nf = 6;
   FILE *infil;
-  
+
   if(!iname) iname = DEF_INPUT;
   infil = fopen(iname, "rb");
   if(!infil) {
@@ -213,7 +213,7 @@ double SAL::F2(double x, double QQ, int hflav /* =0 */) {
   int pn,pn0,pn1;
 
   if(x > 0.995) return 0;
-  
+
   PDF(x,QQ,f);
   t = log(QQ);
   double fac0 = 1/(x*x);
