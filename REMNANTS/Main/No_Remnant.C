@@ -19,14 +19,7 @@ bool No_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
 }
 
 bool No_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
-  for (size_t i=0;i<4;i++) {
-    double diff = ((mom[i]-p_beam->OutMomentum()[i])/
-		   (mom[i]+p_beam->OutMomentum()[i]));
-    if (diff>1.e-6) {
-      msg_Error()<<"Error in "<<METHOD<<": difference in four-momenta = "
-		 <<diff<<" = "<<mom<<" - "<<p_beam->OutMomentum()<<".\n";
-      return false;
-    }
-  }
+  if (mom[0]>p_beam->OutMomentum()[0])
+    return false;
   return true;
 }
