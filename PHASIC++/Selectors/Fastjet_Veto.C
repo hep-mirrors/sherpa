@@ -72,9 +72,10 @@ bool Fastjet_Veto::Trigger(Selector_List &sl)
   msg_Debugging()<<"njets(fin)="<<n<<std::endl;
 
   bool trigger(true);
-  if (n>m_nj)   trigger=false;
-  if (m_nb>=0 && nb>m_nb) trigger=false;
-  if (m_nb2>=0 && nb2>m_nb2) trigger=false;
+  if (n<m_nj)   trigger=false;
+  if (nb<m_nb) trigger=false;
+  if (nb2<m_nb2) trigger=false;
+  trigger=!trigger;
 
   if (!trigger) {
     msg_Debugging()<<"Point discarded by jet veto"<<std::endl;
