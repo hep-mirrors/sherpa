@@ -14,18 +14,19 @@ ALPHAS: {USE_PDF: 0}
 SCALES: METS{H_T2}{H_T2}
 
 SELECTORS:
-  - [PT, 11, 0.001, 10000.]
+  - [PT, 11, 0.01, 10000.]
+
 
 PROCESSES:
   - 11 2212 -> 11 2212:
       Order: {QCD: 0, EW: 2}
+      2->2:
+        Enhance_Observable: VAR{(ThetaR(p[0],p[2]))}|0.1|2.0
 
-
-#ANALYSIS: Rivet
-#RIVET:
-#    --analyses:
-#      - PionProd
-#    --skip-weights: 1
+ANALYSIS: Rivet
+RIVET:
+    --analyses:
+      - PionProd
 
 TRANSITIONS:
   Constants:
