@@ -31,6 +31,11 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 
   //Read in model parameters
   double Vud = ffs->GetModelParms("Vud");
+  double Vuc = ffs->GetModelParms("Vuc");
+  double Vub = ffs->GetModelParms("Vub");
+  double Vcs = ffs->GetModelParms("Vcs");
+  double Vcb = ffs->GetModelParms("Vcb");
+  double Vtb = ffs->GetModelParms("Vtb");
 
   if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
     ///////////////////////////////////////////////////////////////////////////
@@ -78,10 +83,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 
     m_cL = Complex( 0., 1. ) * sqrt(4.*M_PI*alphaQED/(8.0*sin2thetaW)) ;
     m_cR = Complex( 0., 0. );
-    if (m_flavs[m_indices[0]].IsBaryon()) {
-      m_cL *= Vud;
-      //m_cR *= Vud;
-    }    
+    // TODO Vckm factor
     THROW(fatal_error,"current not yet implemented.")
   }
 };
@@ -102,50 +104,63 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   const int pi = 3; const int pi_bar = 3+N; 
 
   const ATOOLS::Vec4<Complex> qmom = (F->P(pf)-F->P(pi));
-  const double q2  = (qmom[0]*qmom[0]-qmom[1]*qmom[1]-qmom[2]*qmom[2]-qmom[3]*qmom[3]).real();
+  const double q2  = qmom.Abs2().real();
   const complex prop_factor = m_ffprops["prop"]->Calc(q2);
 
+  const double G_E = m_ffs["GE"]->Calc(-q2), G_M = m_ffs["GM"]->Calc(-q2);
+  const double F_A = m_ffs["A"]->Calc(-q2),  F_P = m_ffs["P"]->Calc(-q2);
+  const double tau = -q2/(4.*m_massin*m_massout); 
 
-  const double G_E = m_ffs["GE"]->Calc(q2), G_M = m_ffs["GM"]->Calc(q2);
-  const double F_A = m_ffs["A"]->Calc(q2),  F_P = m_ffs["P"]->Calc(q2);
-  const double tau = q2/(4.*m_massin*m_massout); 
+  // msg_Out() << q2 << "\n";
+  // msg_Out() << "GE: " << m_ffs["GE"]->Name() << " "<< m_ffs["GE"]->Type() << " " << m_ffs["GE"]->Cpl() << "\n\n";
+
+  // msg_Out() << "qsq= " << 0 << " " << m_ffs["GE"]->Calc(0) << "\n";
+  // msg_Out() << "qsq= " << -1 << " " << m_ffs["GE"]->Calc(-1) << "\n";
+  // msg_Out() << "qsq= " << -2 << " " << m_ffs["GE"]->Calc(-2) << "\n";
+  // msg_Out() << "qsq= " << -3 << " " << m_ffs["GE"]->Calc(-3) << "\n";
+  // msg_Out() << "qsq= " << -4 << " " << m_ffs["GE"]->Calc(-4) << "\n";
+  // msg_Out() << "qsq= " << -5 << " " << m_ffs["GE"]->Calc(-5) << "\n";
+  // exit(1);
 
   
-  double ff1  = (G_E+tau*G_M)/(1.+tau), ff2 = (G_E-G_M)/(1.+tau);
+  //double ff1  = (G_E+tau*G_M)/(1.+tau), ff2 = (G_E-G_M)/(1.+tau);
+  double ff1  = (G_E+tau*G_M)/(1.+tau), ff2 = (G_M-G_E)/(1.+tau);
   double ff3  = F_A, ff4 = F_P;
   Complex Zero = Complex(0.,0.);
   Complex One = Complex(1.,0.);
 
-  /*
-  msg->SetPrecision(4);
-  msg_Out()<<METHOD<<" yields q^2 = "<<prop_factor<<", tau = "<<tau<<"\n"
-	   <<"   from p("<<pf<<") = "<<F->P(pf)<<"\n"
-	   <<"      - p("<<pi<<") = "<<F->P(pi)<<"\n"
-	   <<"      = "<<q2<<"\n";
-  */
+  ff1 = 1.0;
+  ff2 = 0.0;
+  ff3 = 0.0;
+  ff4 = 0.0;
   
   Vec4C amp;
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
-      amp = ff1 * F->L(pf,hf, pi,hi, m_cR,m_cL);
+      if ( ff1 != 0.0 ) {
+        amp = ff1 * F->L(pf,hf, pi,hi, m_cR,m_cL);
+      } 
+      
+      if ( ff2 != 0.0 ) {
+        for (int hq=0;hq<2;hq++) {
+          amp += ff2/(4.*m_massin) * 0.5 *
+        (
+              -F->Y(pf,hf, pi,hq, m_cR,m_cL) * F->L(pi,hq, pi,hi, One,One) +
+              F->Y(pi,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi,hq, One,One) +
+              -F->Y(pf,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf,hq, One,One) +
+              F->Y(pf,hf, pf,hq, m_cR,m_cL) * F->L(pf,hq, pi,hi, One,One) +
 
-      for (int hq=0;hq<2;hq++) {
-        amp += ff2/(4.*m_massin) * 0.5 *
-	    (
-            -F->Y(pf,hf, pi,hq, m_cR,m_cL) * F->L(pi,hq, pi,hi, One,One) +
-             F->Y(pi,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi,hq, One,One) +
-            -F->Y(pf,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf,hq, One,One) +
-             F->Y(pf,hf, pf,hq, m_cR,m_cL) * F->L(pf,hq, pi,hi, One,One) +
-
-            -F->Y(pf,hf, pi_bar,hq, m_cR,m_cL) * F->L(pi_bar,hq, pi,hi, One,One) +
-             F->Y(pi_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi_bar,hq, One,One) +
-            -F->Y(pf_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf_bar,hq, One,One) +
-             F->Y(pf,hf, pf_bar,hq, m_cR,m_cL) * F->L(pf_bar,hq, pi,hi, One,One) 
-	    );
+              -F->Y(pf,hf, pi_bar,hq, m_cR,m_cL) * F->L(pi_bar,hq, pi,hi, One,One) +
+              F->Y(pi_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pi_bar,hq, One,One) +
+              -F->Y(pf_bar,hq, pi,hi, m_cR,m_cL) * F->L(pf,hf, pf_bar,hq, One,One) +
+              F->Y(pf,hf, pf_bar,hq, m_cR,m_cL) * F->L(pf_bar,hq, pi,hi, One,One) 
+        );
+        }
       }
 
-      amp += -ff3 * qmom * F->Y(pf,hf, pi,hi, m_cR,m_cL) / m_massin;
-
+      if ( ff3 != 0.0 ) {
+        amp += -ff3 * qmom * F->Y(pf,hf, pi,hi, m_cR,m_cL) / m_massin;
+      }
       //TODO Add ff4?
 
       //Divide by propagator on Nucleon Current side
@@ -154,7 +169,7 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(0,hf));
       spins.push_back(make_pair(1,hi));
-      Insert( amp ,spins );
+      Insert( amp, spins );
     }
   }
 }
