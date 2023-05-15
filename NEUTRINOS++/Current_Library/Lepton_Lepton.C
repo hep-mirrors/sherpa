@@ -103,7 +103,7 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
       /////////////////////////////////////////////////////////////////////////
       // L() = ubar(0) gamma^mu (P_L c_L + P_R c_R) u(1) 
       /////////////////////////////////////////////////////////////////////////
-      amp = F->L(pi,hf, pf,hi, m_cR,m_cL);
+      amp = F->L(pi,hi, pf,hf, m_cR,m_cL);
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(0,hf));
       spins.push_back(make_pair(1,hi));
