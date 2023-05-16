@@ -107,38 +107,38 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
   // generic parameter for non-perturbative transverse momentum
   m_parametermap[string("kT_0")]   =
-    s["KT_0"].SetDefault(1.34).Get<double>();
+    s["KT_0"].SetDefault(1.21).Get<double>();
   // gluon fragmentation
   m_parametermap[string("alphaG")] =
-    s["ALPHA_G"].SetDefault(0.67).Get<double>();
+    s["ALPHA_G"].SetDefault(0.97).Get<double>();
   // light quark fragmentation
   m_parametermap[string("alphaL")] =
-    s["ALPHA_L"].SetDefault(2.5).Get<double>();
+    s["ALPHA_L"].SetDefault(3.9).Get<double>();
   m_parametermap[string("betaL")]  =
-    s["BETA_L"].SetDefault(m_shower ? 0.13 : 0.12).Get<double>();
+    s["BETA_L"].SetDefault(0.18).Get<double>();
   m_parametermap[string("gammaL")] =
-    s["GAMMA_L"].SetDefault(0.27).Get<double>();
+    s["GAMMA_L"].SetDefault(0.48).Get<double>();
   // di-quark fragmentation
   m_parametermap[string("alphaD")] =
-    s["ALPHA_D"].SetDefault(m_shower ? 3.26 : 3.26).Get<double>();
+    s["ALPHA_D"].SetDefault(3.4).Get<double>();
   m_parametermap[string("betaD")]  =
-    s["BETA_D"].SetDefault(0.11).Get<double>();
+    s["BETA_D"].SetDefault(0.72).Get<double>();
   m_parametermap[string("gammaD")] =
-    s["GAMMA_D"].SetDefault(0.39).Get<double>();
+    s["GAMMA_D"].SetDefault(0.77).Get<double>();
   // beam particle fragmentation
   m_parametermap[string("alphaB")] =
-    s["ALPHA_B"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
+    s["ALPHA_B"].SetDefault(14.2).Get<double>();
   m_parametermap[string("betaB")]  =
-    s["BETA_B"].SetDefault(0.25).Get<double>();
+    s["BETA_B"].SetDefault(1.6).Get<double>();
   m_parametermap[string("gammaB")] =
-    s["GAMMA_B"].SetDefault(0.50).Get<double>();
+    s["GAMMA_B"].SetDefault(8.1).Get<double>();
   // heavy quark fragmentation function
   m_parametermap[string("alphaH")] =
-    s["ALPHA_H"].SetDefault(1.26).Get<double>();
+    s["ALPHA_H"].SetDefault(-0.6).Get<double>();
   m_parametermap[string("betaH")]  =
-    s["BETA_H"].SetDefault(0.98).Get<double>();
+    s["BETA_H"].SetDefault(1.8).Get<double>();
   m_parametermap[string("gammaH")] =
-    s["GAMMA_H"].SetDefault(m_shower ? 0.05 : 0.054).Get<double>();
+    s["GAMMA_H"].SetDefault(0.024).Get<double>();
   // These guys make a lot of difference - especially the transition ones, once we switch them on. 
   m_switchmap["direct_transition"] =
     s["DIRECT_TRANSITIONS"].SetDefault(1).Get<int>();
@@ -232,15 +232,15 @@ void Hadronisation_Parameters::ReadPoppingParameters()
   auto s = Settings::GetMainSettings()["AHADIC"];
   double strange;
   m_parametermap[string("Strange_fraction")] = strange =
-    s["STRANGE_FRACTION"].SetDefault(m_shower ? 0.46 : 0.4).Get<double>();
+    s["STRANGE_FRACTION"].SetDefault(0.46).Get<double>();
   m_parametermap[string("Baryon_fraction")]        =
-    s["BARYON_FRACTION"].SetDefault(m_shower ? 0.15 : 0.2).Get<double>();
+    s["BARYON_FRACTION"].SetDefault(0.17).Get<double>();
   m_parametermap[string("P_qs_by_P_qq")]           =
-    (s["P_QS_by_P_QQ_norm"].SetDefault(0.71).Get<double>())*strange;
+    (s["P_QS_by_P_QQ_norm"].SetDefault(0.56).Get<double>())*strange;
   m_parametermap[string("P_ss_by_P_qq")]           =
-    (s["P_SS_by_P_QQ_norm"].SetDefault(m_shower ? 0.01 : 0.02).Get<double>())*sqr(strange);
+    (s["P_SS_by_P_QQ_norm"].SetDefault(0.056).Get<double>())*sqr(strange);
   m_parametermap[string("P_di_1_by_P_di_0")]       =
-    s["P_QQ1_by_P_QQ0"].SetDefault(m_shower ? 0.94 : 0.57).Get<double>();
+    s["P_QQ1_by_P_QQ0"].SetDefault(0.60).Get<double>();
 }
 
 
