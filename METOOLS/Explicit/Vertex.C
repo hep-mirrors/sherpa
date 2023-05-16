@@ -44,7 +44,8 @@ std::map<std::string,Int_Vector> Vertex::s_h;
 Vertex::Vertex(const Vertex_Key &key): 
   p_v(key.p_mv), p_c(NULL),
   p_info(key.p_dinfo), p_kin(NULL), p_h(NULL),
-  m_sign(false), m_fperm(0), m_icplfac(1.0)
+  m_sign(false), m_fperm(0), m_stype(key.m_stype),
+  m_icplfac(1.0)
 {
   if (key.p_mv==NULL) return;
   if (p_info)
@@ -55,7 +56,7 @@ Vertex::Vertex(const Vertex_Key &key):
   for (ckey.m_n=0;ckey.m_n<key.p_mv->Lorentz.size();++ckey.m_n) {
     std::string ctag(ToString(ckey.p_mv->Color[ckey.m_n].PID()));
     if (key.p_dinfo) {
-      if (key.p_dinfo->Type()==1) ctag="S-D";
+      if (key.m_stype==2) ctag="S-D";
       else if (abs(ckey.p_c->Flav().StrongCharge())==3) ctag="S-T";
       else if (key.p_c->Flav().StrongCharge()==8) ctag="S-F";
       else {

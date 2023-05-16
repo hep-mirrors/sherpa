@@ -42,7 +42,6 @@ Amplitude::Amplitude():
   Scoped_Settings comixsettings{ s["COMIX"] };
   m_sccmur = s["USR_WGT_MODE"].Get<bool>();
   m_murcoeffvirt = s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].Get<bool>();
-  p_dinfo->SetType(0);
   p_dinfo->SetMassive(0);
   m_pmode = comixsettings["PMODE"].Get<std::string>()[0];
   m_wfmode = comixsettings["WF_MODE"].Get<int>();
@@ -134,6 +133,7 @@ bool Amplitude::AddRSDipoles()
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
   Current_Vector scur;
+  if (m_stype&1) {
   for (size_t j(0);j<m_n;++j) {
     Flavour flc(m_cur[1][j]->Flav());
     for (size_t i(0);i<m_cur[2].size();++i) {
@@ -142,16 +142,29 @@ bool Amplitude::AddRSDipoles()
       Flavour fla(v->J(0)->Flav()), flb(v->J(1)->Flav());
       bool isa(v->J(0)->CId()&(1<<m_nin)-1);
       bool isb(v->J(1)->CId()&(1<<m_nin)-1);
-      if (!((p_dinfo->Type()==0 &&
-	     v->Order(0)==1 && flc.StrongCharge()) ||
-	    (p_dinfo->Type()==1 && !isa &&
-	     fla.IsPhoton() && flc.Charge()) ||
-	    (p_dinfo->Type()==1 && !isb &&
-	     flb.IsPhoton() && flc.Charge()))) continue;
+      if (!(v->Order(0)==1 && flc.StrongCharge())) continue;
       if (m_cur[2][i]->In().size()!=1)
 	THROW(not_implemented,"Invalid current");
-      if (!AddRSDipole(m_cur[2][i],m_cur[1][j],scur)) return false;
+      if (!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,1)) return false;
     }
+  }
+  }
+  if (m_stype&2) {
+  for (size_t j(0);j<m_n;++j) {
+    Flavour flc(m_cur[1][j]->Flav());
+    for (size_t i(0);i<m_cur[2].size();++i) {
+      if (m_cur[2][i]->CId()&m_cur[1][j]->CId()) continue;
+      Vertex *v(m_cur[2][i]->In().front());
+      Flavour fla(v->J(0)->Flav()), flb(v->J(1)->Flav());
+      bool isa(v->J(0)->CId()&(1<<m_nin)-1);
+      bool isb(v->J(1)->CId()&(1<<m_nin)-1);
+      if (!((/*!isa &&*/ fla.IsPhoton() && flc.Charge()) ||
+	    (/*!isb &&*/ flb.IsPhoton() && flc.Charge()))) continue;
+      if (m_cur[2][i]->In().size()!=1)
+	THROW(not_implemented,"Invalid current");
+      if (!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,2)) return false;
+    }
+  }
   }
   m_cur[2].insert(m_cur[2].end(),scur.begin(),scur.end());
 #ifdef DEBUG__BG
@@ -166,7 +179,7 @@ bool Amplitude::AddRSDipoles()
 }
 
 bool Amplitude::AddRSDipole
-(Current *const c,Current *const s,Current_Vector &scur)
+(Current *const c,Current *const s,Current_Vector &scur,int stype)
 {
 #ifdef DEBUG__BG
   msg_Indent();
@@ -197,6 +210,7 @@ bool Amplitude::AddRSDipole
   Vertex_Key *svkey(Vertex_Key::New(cin->J(),jijt,p_model));
   svkey->m_p=std::string(1,m_pmode);
   svkey->p_dinfo=p_dinfo;
+  svkey->m_stype=stype;
   svkey->p_k=s;
   svkey->p_kt=jkt;
   MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey->ID()));
@@ -225,7 +239,7 @@ bool Amplitude::AddVIDipoles()
     for (size_t j(i+1);j<m_n;++j) {
       int sc[2]={m_cur[1][i]->Flav().StrongCharge(),
 		 m_cur[1][j]->Flav().StrongCharge()};
-      if (p_dinfo->Type()==1) {
+      if (m_stype==2) {
 	sc[0]=m_cur[1][i]->Flav().IntCharge();
 	sc[1]=m_cur[1][j]->Flav().IntCharge();
       }
@@ -765,11 +779,11 @@ bool Amplitude::Initialize
   m_n=m_nin+m_nout;
   m_minntc=minntc;
   m_maxntc=maxntc;
+  m_stype=stype;
   m_maxcpl=maxcpl;
   m_mincpl=mincpl;
   m_maxacpl=maxacpl;
   m_minacpl=minacpl;
-  p_dinfo->SetType(stype);
   p_dinfo->SetMode(smode);
   p_dinfo->SetIType(itype);
   ReadInAmpFile(name,ampfile);
@@ -843,7 +857,7 @@ void Amplitude::ConstructNLOEvents()
     for (size_t j(m_nin);j<m_nin+m_nout-1;++j)
       cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
     sub->m_pname=PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
-    sub->m_stype=(sbt::subtype)(p_dinfo->Type()+1);
+    sub->m_stype=(sbt::subtype)(m_stype);
     msg_Indent();
     msg_Debugging()<<*sub<<"\n";
   }
@@ -894,7 +908,7 @@ void Amplitude::ConstructDSijMap()
   m_dsf.clear();
   size_t c(0), ifp(0);
   std::vector<int> plist(m_fl.size());
-  if (p_dinfo->Type()==0) {
+  if (m_stype==1) {
     for (size_t i(0);i<m_fl.size();++i)
       plist[i]=m_fl[i].Strong()?c++:0;
   }
@@ -1351,7 +1365,7 @@ bool Amplitude::EvaluateAll(const bool& mode)
   for (size_t i(0);i<m_subs.size();++i) m_subs[i]->Reset(0);
   for (size_t j(0);j<m_n;++j) m_ch[j]=0;
   MODEL::Coupling_Data *cpl(m_cpls.front().p_aqcd);
-  if (p_dinfo->Type()==1) cpl=m_cpls.front().p_aqed;
+  // if (m_stype==1) cpl=m_cpls.front().p_aqed;
   double mu2(cpl?cpl->Scale():-1.0);
   p_dinfo->SetMu2(mu2);
   CalcJL();
@@ -1475,7 +1489,8 @@ bool Amplitude::EvaluateAll(const bool& mode)
 		     <<m_cur.back()[i]->Order()<<"x"
 		     <<m_cur.back()[j]->Order()<<", dipole "
 		     <<m_cur.back()[i]->Sub()->Sub()->Id()
-		     <<m_cur.back()[i]->Sub()->Id()<<" {\n";
+		     <<m_cur.back()[i]->Sub()->Id()<<" (type="
+		     <<m_cur.back()[i]->Sub()->Sub()->In().front()->SType()<<") {\n";
 #endif
       double ccsum(0.0);
       for (size_t k(0);k<m_ress[i].size();++k)

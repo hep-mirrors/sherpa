@@ -5,7 +5,8 @@ set(Colors_SOURCES None_CC.C
                    FF_CC.C
                    TT_CC.C
                    ST_CC.C
-                   SF_CC.C)
+                   SF_CC.C
+		   SD_CC.C)
 
 set(Colors_HEADERS)
 

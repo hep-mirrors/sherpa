@@ -35,13 +35,13 @@ namespace METOOLS {
       m_cjk.clear();
       m_ci.push_back(CInfo((*j[0])(0),(*j[0])(1),m_si,0));
       m_cjk.push_back(CInfo((*j[1])(0),(*j[1])(1),m_sjk,0));
-      return m_stat=true;
+      return true;
       }
       m_ci.clear();
       m_cjk.clear();
       m_ci.push_back(CInfo((*j[0])(0)|(*j[1])(0),(*j[0])(1)|(*j[1])(1),m_si,0));
       m_cjk.push_back(CInfo((*j[2])(0),(*j[2])(1),m_sjk,0));
-      return m_stat=p_cc->Evaluate(j);
+      return p_cc->Evaluate(j);
     }
 
   };// end of class SD_Calculator

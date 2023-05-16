@@ -19,7 +19,7 @@ Vertex_Key::Vertex_Key
   m_j(j), p_c(c), p_k(NULL), p_kt(NULL),
   p_model(model), p_mv(mv),
   m_p(p), m_n(0), m_d(0), p_v(v),
-  p_cc(cc), p_lc(lc), p_dinfo(NULL)
+  p_cc(cc), p_lc(lc), p_dinfo(NULL), m_stype(0)
 {
 }
 
@@ -72,14 +72,14 @@ const std::string &Vertex_Key::ID() const
   m_id.clear();
   for (size_t i(0);i<m_j.size();++i)
     m_id+=(m_j[i]?m_j[i]->Flav().IDName():
-	   Flavour(p_dinfo->Type()?kf_photon:kf_gluon).IDName())+"|";
+	   Flavour(m_stype?kf_photon:kf_gluon).IDName())+"|";
   if (p_c!=NULL) m_id+=p_c->Flav().Bar().IDName();
   return m_id;
 }
 
 ATOOLS::Flavour Vertex_Key::Fl(const size_t &i) const
 {
-  return m_j[i]?m_j[i]->Flav():Flavour(p_dinfo->Type()?kf_photon:kf_gluon);
+  return m_j[i]?m_j[i]->Flav():Flavour(m_stype?kf_photon:kf_gluon);
 }
 
 Current *Vertex_Key::J(const size_t &i) const

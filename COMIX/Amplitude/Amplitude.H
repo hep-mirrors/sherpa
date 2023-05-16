@@ -95,7 +95,7 @@ namespace COMIX {
     size_t m_nin, m_nout, m_dec;
     size_t m_n, m_wfmode, m_pgmode, m_ngpl;
     bool m_sccmur, m_murcoeffvirt;
-    size_t m_minntc, m_maxntc;
+    size_t m_minntc, m_maxntc, m_stype;
     char   m_pmode;
 
     std::vector<int> m_maxcpl, m_mincpl, m_maxacpl, m_minacpl;
@@ -150,7 +150,8 @@ namespace COMIX {
 		    const ATOOLS::Flavour &fl,const int dir);
 
     Current *CopyCurrent(Current *const c);
-    bool AddRSDipole(Current *const c,Current *const sc,Current_Vector &scur);
+    bool AddRSDipole(Current *const c,Current *const sc,
+		     Current_Vector &scur,int stype);
     bool AddRSDipoles();
     bool AddVIDipole(Current *const c,Current *const sc,Current_Vector &scur);
     bool AddVIDipoles();

@@ -33,7 +33,7 @@ namespace METOOLS {
     Int_Vector *p_h;
 
     bool   m_sign, m_zero;
-    size_t m_fperm;
+    size_t m_fperm, m_stype;
 
     double m_icplfac;
 
@@ -116,6 +116,8 @@ namespace METOOLS {
     inline size_t H(const size_t &i) const { return (*p_h)[i]; }
 
     inline MODEL::Single_Vertex *V() const { return p_v; }
+
+    inline size_t SType() const { return m_stype; }
 
   };// end of class Vertex
   
