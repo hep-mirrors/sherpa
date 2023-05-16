@@ -7,7 +7,8 @@
 namespace NEUTRINOS {
   class Lepton_Lepton : public Scatter_Current_Base {
     bool    m_anti;
-    Complex m_cR, m_cL;
+    Complex QED_coupling, QED_cR, QED_cL;
+    Complex Weak_coupling, Weak_cR, Weak_cL;
   public:
     Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
 		  const std::vector<int>& indices,

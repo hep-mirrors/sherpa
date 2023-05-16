@@ -20,7 +20,7 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
   /////////////////////////////////////////////////////////////////////////////
 
   double alphaQED   = 1./137.;
-  double sin2thetaW = 0.22290, cos2thetaW = 1.-sin2thetaW;
+  double sin2thetaW = 0.22290, cos2thetaW = 1. - sin2thetaW;
   double I_f        = -1.0/2.0;
   kf_code N1        = m_flavs[m_indices[0]].Kfcode(), N2 = m_flavs[m_indices[1]].Kfcode();
 
@@ -34,49 +34,42 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
   if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
     if (m_flavs[m_indices[0]].IsNeutrino() ) {
       /////////////////////////////////////////////////////////////////////////
-      // Weak Neutral coupling: -i g_Z/(2) (gamma^{mu L} + gamma^{mu R}) To neutinos
+      // Weak Neutral coupling: -i g_Z/(2) (gamma^{mu L} + gamma^{mu R}) To neutrinos
       /////////////////////////////////////////////////////////////////////////
-      
-      //TODO Think how to add these if cL and cR are asymmetric...
+      QED_coupling = Complex( 0., 0.);
+      QED_cR = QED_cL = Complex(0.,0.);
 
-      // m_cL = ( -Complex( 0., 1.) * 
-      //     ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW) *
-		  //     sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW))
-      // );
-      // m_cR = Complex( 0., 0.);   
-
+      Weak_coupling = (-Complex( 0., 1.) * sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW)));
+      Weak_cR = Complex(0.,0.);
+      Weak_cL = Complex(1.,0.) * I_f;
     }
-    else if (m_flavs[m_indices[0]].IsChargedLepton() ||
-	     m_flavs[m_indices[0]].IsBaryon()) {
+    else if (m_flavs[m_indices[0]].IsChargedLepton() || m_flavs[m_indices[0]].IsBaryon()) {
       /////////////////////////////////////////////////////////////////////////
       // QED coupling only for the time being:  -i e e_f gamma^mu To leptons
       /////////////////////////////////////////////////////////////////////////
-      m_cL = m_cR = ( -Complex( 0., 1.) *
-		      m_flavs[m_indices[0]].Charge() *
-		      sqrt(4.*M_PI*alphaQED) );
+      QED_coupling = ( -Complex( 0., 1.) * m_flavs[m_indices[0]].Charge() * sqrt(4.*M_PI*alphaQED) );
+      QED_cR = QED_cL = Complex(1.,0.);
 
       /////////////////////////////////////////////////////////////////////////
       // Weak Neutral coupling:  -i g_Z/(2) (gamma^{mu L} + gamma^{mu R}) To leptons
-      // TODO Add diagrams together...
       /////////////////////////////////////////////////////////////////////////
 
-      // m_cL = ( -Complex( 0., 1.) * 
-      //     ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW) *
-		  //     sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW))
-      // );
-
-      // m_cR = ( -Complex( 0., 1.) * 
-      //     (-(m_flavs[m_indices[0]].Charge())*sin2thetaW) *
-		  //     sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW))
-      // );    
+      Weak_coupling = (-Complex( 0., 1.) * sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW)));
+      Weak_cR = Complex(1.,0.) * -(m_flavs[m_indices[0]].Charge())*sin2thetaW;
+      Weak_cL = Complex(1.,0.) * ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW);
     }
   }
   else if (m_flavs[m_indices[0]].LeptonFamily()==m_flavs[m_indices[1]].LeptonFamily()) {
     ///////////////////////////////////////////////////////////////////////////
     // Weak left-handed coupling: -i g_W/(2 sqrt(2)) gamma^{mu L}
     ///////////////////////////////////////////////////////////////////////////
-    // m_cL = Complex( 0., 1. ) * sqrt(4.*M_PI*alphaQED/(sqrt(8.)*sin2thetaW)) ;
-    // m_cR = Complex( 0., 0. );
+    QED_coupling = Complex( 0., 0.);
+    QED_cR = QED_cL = Complex(0.,0.);
+
+    Weak_coupling = -Complex( 0., 1. ) * sqrt(4.*M_PI*alphaQED/(sqrt(8.)*sin2thetaW));
+    Weak_cR = Complex(0.,0.);
+    Weak_cL = Complex(1.,0.);
+
   }
   else THROW(fatal_error,"family non-diagonal lepton interaction not yet implemented.")
 };
@@ -94,16 +87,26 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
   const int pf = 0; 
   const int pi = 1;
 
+  Complex Zero = Complex(0.,0.);
+  Complex One = Complex(1.,0.);
+
   /////////////////////////////////////////////////////////////////////////
   // J^mu = ubar(0) gamma^mu (P_L c_L + P_R c_R) u(1) 
+  // We separate the left and right handed terms 
   /////////////////////////////////////////////////////////////////////////
+
+
   Vec4C amp;
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
-      /////////////////////////////////////////////////////////////////////////
-      // L() = ubar(0) gamma^mu (P_L c_L + P_R c_R) u(1) 
-      /////////////////////////////////////////////////////////////////////////
-      amp = F->L(pi,hi, pf,hf, m_cR,m_cL);
+      amp *= 0.0;
+      
+      amp +=  QED_cR * F->L(pi,hi, pf,hf, One, Zero); //Right handed
+      amp +=  QED_cL * F->L(pi,hi, pf,hf, Zero, One); //Left handed
+
+      amp = amp * QED_coupling;
+
+      
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));
       spins.push_back(make_pair(pi,hi));

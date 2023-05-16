@@ -19,7 +19,6 @@ Propagator_Base *
 Propagator_Maps::GetProp(kf_code & prop,prop_type::code & prop_type) {
   double mass = Flavour(prop).Mass();
   double width = Flavour(prop).Width();
-  msg_Out() << mass << " " << width << "\n";
   prop_info info = prop_info(prop_type, mass, width);
   switch (prop_type) {
   case prop_type::none:

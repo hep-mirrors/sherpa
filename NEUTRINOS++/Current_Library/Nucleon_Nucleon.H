@@ -7,8 +7,8 @@
 namespace NEUTRINOS {
   class Nucleon_Nucleon : public Scatter_Current_Base {
     double  m_massin, m_massout;
-    Complex m_cR, m_cL, m_cR_A, m_cL_A;
-    Complex wn_cR, wn_cL;
+    Complex QED_coupling, QED_cR, QED_cL;
+    Complex Weak_coupling, Weak_cR, Weak_cL;
   public:
     Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 		    const std::vector<int>& indices,
