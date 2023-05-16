@@ -14,6 +14,7 @@ set(Scales_SOURCES Cluster_Definitions.C
                    Democratic_Scale_Setter.C
                    QCD_Scale_Setter.C
                    QCD_Core_Scale.C
+                   Photons_Core_Scale.C
                    TTBar_Core_Scale.C
                    TZj_Core_Scale.C
                    SingleTop_Core_Scale.C

@@ -546,6 +546,15 @@ setters are
   If the W is in the t-channel (s-channel), the squared scales are set to the
   Mandelstam variables ``t=2*p[0]*p[2]`` (``t=2*p[0]*p[1]``).
 
+:option:`Photons`
+  Core scale setter for photon(s)+jets production.
+  Sets the following scales for the possible core process:
+
+    - :math:`\gamma\gamma`: :math:`\mu_f=\mu_r=\mu_q=m_{\gamma\gamma}`
+    - :math:`\gamma j`: :math:`\mu_f=\mu_r=\mu_q=p_{\perp,\gamma}`
+    - :math:`jj`: same as QCD core scale (harmonic mean of s, t, u)
+
+
 .. _COUPLINGS:
 
 COUPLINGS
