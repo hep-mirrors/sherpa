@@ -4,6 +4,7 @@
 #include <numeric>
 #include <algorithm>
 
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -13,7 +14,9 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/PDF_Base.H"
-#include "LHAPDF/LHAPDF.h"
+#ifdef USING__LHAPDF
+  #include "LHAPDF/LHAPDF.h"
+#endif
 
 namespace ATOOLS {
 
@@ -87,23 +90,29 @@ Variations::Variations(Variations_Mode mode)
   ReadDefaults();
   int lhapdfverbosity(0);
   const bool needslhapdf(NeedsLHAPDF6Interface());
-  if (needslhapdf) {
-    if (!s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
-      THROW(fatal_error, "LHAPDF interface is not initialised.");
+  #ifndef USING__LHAPDF
+    if(needslhapdf) {
+      THROW(fatal_error, "LHAPDF has not been enabled during configuration and is required for PDF variations");
     }
-    lhapdfverbosity = LHAPDF::verbosity();
-    LHAPDF::setVerbosity(0);
-  }
+  #endif
+  #ifdef USING__LHAPDF
+    if (needslhapdf) {
+      if (!s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
+        THROW(fatal_error, "LHAPDF interface is not initialised.");
+      }
+      lhapdfverbosity = LHAPDF::verbosity();
+      LHAPDF::setVerbosity(0);
+    }
+    InitialiseParametersVector();
 
-  InitialiseParametersVector();
+    if (!m_parameters_vector.empty() || !m_qcut_parameters_vector.empty()) {
+      rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in \\cite{Bothmann:2016nao}.");
+    }
 
-  if (!m_parameters_vector.empty() || !m_qcut_parameters_vector.empty()) {
-    rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in \\cite{Bothmann:2016nao}.");
-  }
-
-  if (needslhapdf) {
-    LHAPDF::setVerbosity(lhapdfverbosity);
-  }
+    if (needslhapdf) {
+      LHAPDF::setVerbosity(lhapdfverbosity);
+    }
+  #endif
 }
 
 
@@ -484,26 +493,28 @@ Variations::PDFs_And_AlphaS_List Variations::PDFsAndAlphaSList(
     pdfsandalphaslist.did_expand = true;
     // determine the number of set members to load
     bool lhapdflookupsuccessful(false);
-    if (s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
-      const std::vector<std::string>& availablepdfsets(LHAPDF::availablePDFSets());
-      if (std::find(availablepdfsets.begin(), availablepdfsets.end(), pdfstringparam)
-          != availablepdfsets.end()) {
-        LHAPDF::PDFSet set(pdfstringparam);
-        lastmember = set.size() - 1; // this assumes members are labelled 0...(set.size()-1)
-        lhapdflookupsuccessful = true;
+    #ifdef USING__LHAPDF
+      if (s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
+        const std::vector<std::string>& availablepdfsets(LHAPDF::availablePDFSets());
+        if (std::find(availablepdfsets.begin(), availablepdfsets.end(), pdfstringparam)
+            != availablepdfsets.end()) {
+          LHAPDF::PDFSet set(pdfstringparam);
+          lastmember = set.size() - 1; // this assumes members are labelled 0...(set.size()-1)
+          lhapdflookupsuccessful = true;
+        }
       }
+      if (!lhapdflookupsuccessful) {
+        // the LHAPDF interface is not available or does not know about this set
+        // provide a fallback at least for the default PDF set
+        if (pdfstringparam == "PDF4LHC21_40_pdfas") {
+          lastmember = 42;
+        } else {
+          THROW(not_implemented,
+                "Full PDF set reweightings only work with LHAPDF6 sets or the internal default set."
+                + std::string(" Otherwise specify explicitly."));
+        }
     }
-    if (!lhapdflookupsuccessful) {
-      // the LHAPDF interface is not available or does not know about this set
-      // provide a fallback at least for the default PDF set
-      if (pdfstringparam == "PDF4LHC21_40_pdfas") {
-        lastmember = 42;
-      } else {
-        THROW(not_implemented,
-              "Full PDF set reweightings only work with LHAPDF6 sets or the internal default set."
-              + std::string(" Otherwise specify explicitly."));
-      }
-    }
+    #endif
   } else {
     // single PDF member: "Set/i" or just "Set"
     int member(0);

@@ -76,6 +76,16 @@ They can be configured with the following parameters.
   arbitrary PDF and load that dynamically in the Sherpa run. See
   :ref:`External PDF` for instructions.
 
+  By default, Sherpa will try to install with the LHAPDF interface enabled.
+  If this is not desired, for example in lepton-lepton collisions
+  where LHAPDF is not used, the user can disable the interface
+  with the cmake option ``-DCMAKE_ENABLE_LHAPDF=OFF``.
+  Sherpa will then use the internal :OPTION:`PDF_LIBRARY` for
+  hadronic collisions, with the default set being
+  ``NNPDF31_nnlo_as_0118_mc``. Note that PDF variations
+  and the evolution of ALPHAS, ``ALPHAS: {USE_PDF: 1}``,
+  can only be used with LHAPDF enabled.
+
 :OPTION:`PDF_SET`
   Specifies the PDF set for hadronic bunch particles. All
   sets available in the chosen :OPTION:`PDF_LIBRARY` can be figured by

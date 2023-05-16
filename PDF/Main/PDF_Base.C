@@ -5,6 +5,7 @@
 #define PARAMETER_TYPE PDF::PDF_Arguments
 #include "ATOOLS/Org/Getter_Function.C"
 
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
@@ -19,9 +20,13 @@ namespace PDF {
 
 PDF_Defaults::PDF_Defaults()
 {
-  m_deflib[kf_p_plus] = "LHAPDFSherpa";
-  m_defset[kf_p_plus] = "PDF4LHC21_40_pdfas";
-
+  #ifdef USING__LHAPDF
+    m_deflib[kf_p_plus] = "LHAPDFSherpa";
+    m_defset[kf_p_plus] = "PDF4LHC21_40_pdfas";
+  #else
+    m_deflib[kf_p_plus] = "NNPDFSherpa";
+    m_defset[kf_p_plus] = "NNPDF31_nnlo_as_0118_mc";
+  #endif
   m_deflib[kf_e] = "PDFESherpa";
   m_defset[kf_e] = "PDFe";
 

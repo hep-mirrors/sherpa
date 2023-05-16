@@ -64,5 +64,7 @@ sherpa_create_git_info(Phys)
 add_library(ToolsPhys SHARED ${Phys_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsPhys ToolsPhys)
 
-target_link_libraries(ToolsPhys PRIVATE LHAPDF::LHAPDF)
 
+if(SHERPA_ENABLE_LHAPDF)
+    target_link_libraries(ToolsPhys PRIVATE LHAPDF::LHAPDF)
+endif()
