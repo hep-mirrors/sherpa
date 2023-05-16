@@ -76,10 +76,10 @@ double XS_lepton_nucleon::operator()(const ATOOLS::Vec4D_Vector& momenta) {
 
   if (printout) {
     double t = (momenta[0]-momenta[2]).Abs2(); 
-    msg_Out()<<METHOD<<" |M|^2("<<sqrt(-t)<<" vs "<<momenta[2].PPerp()<<"), t = "<<t<<", "<<"result/t^2 = "<<(result/(t*t))<<".\n\n\n";
+    // msg_Out()<<METHOD<<" |M|^2("<<sqrt(-t)<<" vs "<<momenta[2].PPerp()<<"), t = "<<t<<", "<<"result/t^2 = "<<(result/(t*t))<<".\n\n\n";
 
-    for (size_t i=0;i<4;i++)msg_Out()<<"   "<<i<<"     "<<m_flavs[i]<<": " <<momenta[i]<<", "<<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
-    msg_Out()<<"\n\n\n";
+    // for (size_t i=0;i<4;i++)msg_Out()<<"   "<<i<<"     "<<m_flavs[i]<<": " <<momenta[i]<<", "<<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";
+    // msg_Out()<<"\n\n\n";
 
     msg_Out()<<"Joe Python Script"<<":\n";
     for (size_t i=0;i<4;i++) msg_Out()<<"p_"<<i+1<<" = " <<"Particle.fromFourMom("<<momenta[i][0]<<","<<momenta[i][1]<<","<<momenta[i][2]<<","<<momenta[i][3]<<", "<<"anti=False, flavour=None)"<<"\n";

@@ -24,20 +24,20 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const prop_type::code & ty
 Dummy_Prop::Dummy_Prop(const prop_info & info) :
   Propagator_Base("None", info) {}
 Complex Dummy_Prop::Calc(const double & p2) { 
-  return Complex(1.0,0.0); 
+  return Complex(0.0,-1.0)*Complex(1.0,0.0); 
 }
 
 Massless_Prop::Massless_Prop(const prop_info & info) :
   Propagator_Base("Massless", info) {}
 Complex Massless_Prop::Calc(const double & p2) { 
-  return Complex(1.0 / (p2),0.0); 
+  return Complex(0.0,-1.0)*Complex(1.0 / (p2),0.0); 
 }
 
 Massive_Prop::Massive_Prop(const prop_info & info) :
   Propagator_Base("Massive", info),
   mass(info.m_mass) {}
 Complex Massive_Prop::Calc(const double & p2) { 
-  return Complex(1.0 / (p2 - mass*mass),0.0); 
+  return Complex(0.0,-1.0)*Complex(1.0 / (p2 - mass*mass),0.0); 
 }
 
 Unstable_Prop::Unstable_Prop(const prop_info & info) :
@@ -46,5 +46,5 @@ Unstable_Prop::Unstable_Prop(const prop_info & info) :
 Complex Unstable_Prop::Calc(const double & p2) { 
   double X = p2 - mass*mass;
   double Y = mass*width;
-  return Complex(X/(X*X+Y*Y),-Y/(X*X+Y*Y)); 
+  return Complex(0.0,-1.0)*Complex(X/(X*X+Y*Y),-Y/(X*X+Y*Y)); 
 }

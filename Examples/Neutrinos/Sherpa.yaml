@@ -2,7 +2,7 @@ EVENTS:     10
 EVENT_TYPE: NeutrinoNucleon
 
 BEAMS:             [ 11, 2212 ]
-BEAM_ENERGIES:     [ 5., 0.938272 ]
+BEAM_ENERGIES:     [ 0.5, 0.938272 ]
 BEAM_SPECTRA:      Monochromatic
 PDF_LIBRARY:       [ None, None ]
 PDF_SET:           [ None, None ]
@@ -14,14 +14,14 @@ ALPHAS: {USE_PDF: 0}
 SCALES: METS{H_T2}{H_T2}
 
 SELECTORS:
-  - [PT, 11, 0.01, 10000.]
+  - [PT, 11, 0.01, E_CMS]
 
 
 PROCESSES:
   - 11 2212 -> 11 2212:
       Order: {QCD: 0, EW: 2}
       2->2:
-        Enhance_Observable: VAR{(ThetaR(p[0],p[2]))}|0.1|2.0
+        Enhance_Observable: VAR{(log10(ThetaR(p[0],p[2])))}|-1|0.49
 
 ANALYSIS: Rivet
 RIVET:
