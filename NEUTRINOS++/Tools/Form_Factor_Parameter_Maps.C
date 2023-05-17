@@ -97,7 +97,11 @@ double Form_Factor_Parameter_Maps::GetModelParms(std::string constantName) {
     for (map<string, double>::iterator pit=m_parameters.begin();pit!=m_parameters.end();pit++) {
       if (pit->first.c_str() == constantName) return pit->second;
     }
-    return 1.0;
+    //Return non-valid ckm transition
+    if ( constantName == "Vuu_Vdd") return 0.;
+    if ( constantName == "Vqq") return 1.;
+
+    return 0.0;
 }
 
 void Form_Factor_Parameter_Maps::Output() {

@@ -9,6 +9,68 @@ using namespace NEUTRINOS;
 using namespace ATOOLS;
 using namespace std;
 
+vector<int> getQuarkContent(int x)
+{
+    //Pull out quark content from kf_code
+    vector<int> digits = {};
+    for(int di=0; di<7; di++) {
+      digits.push_back(x % 10);
+      x /= 10;
+      if (x == 0) break;
+    }
+    int length = digits.size();
+    return {digits[length-4],digits[length-3],digits[length-2]};
+}
+
+std::string compareQuarkContent(vector<int> x1, vector<int> x2)
+{
+  std::sort(x1.begin(), x1.end());
+  std::sort(x2.begin(), x2.end());
+
+  //Get Intersection of quark content
+  vector<int> inter;
+  set_intersection(
+    x1.begin(), x1.end(),
+    x2.begin(), x2.end(),
+    back_inserter(inter)
+  );
+
+  //Remove mutual quark content
+  x1.erase(
+    set_difference(
+      x1.begin(), x1.end(),
+      inter.begin(), inter.end(),
+      x1.begin()
+    ),
+    x1.end()
+  );
+
+  x2.erase(
+    set_difference(
+      x2.begin(), x2.end(),
+      inter.begin(), inter.end(),
+      x2.begin()
+    ),
+    x2.end()
+  );
+  if ( x1.size() == 0 && x2.size() == 0 ) return "Vqq";
+  if ( x1.size() != 1 | x2.size() != 1 ) THROW(fatal_error,"Flavour changing of more or less than one quarks not implemented");
+  if ( x1[0] == 2 | x2[0] == 2 ){ // u
+    if ( x1[0] == 1 | x2[0] == 1 ) return "Vud";
+    if ( x1[0] == 3 | x2[0] == 3 ) return "Vus";
+    if ( x1[0] == 5 | x2[0] == 5 ) return "Vub";
+  } else if ( x1[0] == 4 | x2[0] == 4 ){ // c
+    if ( x1[0] == 1 | x2[0] == 1 ) return "Vcd";
+    if ( x1[0] == 3 | x2[0] == 3 ) return "Vcs";
+    if ( x1[0] == 5 | x2[0] == 5 ) return "Vcb";
+  } else if ( x1[0] == 6 | x2[0] == 6 ){ // c
+    if ( x1[0] == 1 | x2[0] == 1 ) return "Vtd";
+    if ( x1[0] == 3 | x2[0] == 3 ) return "Vts";
+    if ( x1[0] == 5 | x2[0] == 5 ) return "Vtb";
+  }
+  return "Vuu_Vdd";
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // The first index must denote the "barred spinor", the second the non-barred one
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,13 +90,15 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   double I_f        = -1.0/2.0;
   kf_code N1        = m_flavs[m_indices[0]].Kfcode(), N2 = m_flavs[m_indices[1]].Kfcode();
 
+  //kf_code of nucleons IN vs OUT
+  kf_code IN = m_flavs[m_indices[0]].Kfcode();
+  kf_code OUT = m_flavs[m_indices[1]].Kfcode();
+
   //Read in model parameters
-  double Vud = ffs->GetModelParms("Vud");
-  double Vuc = ffs->GetModelParms("Vuc");
-  double Vub = ffs->GetModelParms("Vub");
-  double Vcs = ffs->GetModelParms("Vcs");
-  double Vcb = ffs->GetModelParms("Vcb");
-  double Vtb = ffs->GetModelParms("Vtb");
+  std::string Vckm_string = compareQuarkContent(getQuarkContent(IN), getQuarkContent(OUT)); 
+  double Vckm = ffs->GetModelParms(Vckm_string);
+  
+  //msg_Out() << "TEST" << m_flavs[m_indices[0]].Includes(Flavour(quark_u)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_d)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_s)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_c)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_t)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_b))  << "\n\n\n";
 
   cpl_info::code GE = cpl_info::GE, GM = cpl_info::GM;
   cpl_info::code A  = cpl_info::axialvector, P = cpl_info::pseudoscalar;
@@ -83,12 +147,9 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     QED_coupling = Complex( 0., 0.);
     QED_cR = QED_cL = Complex(0.,0.);
 
-    //TODO How to pick this...? Check quark content between in and out particles?
-    double Vckm = 1;
-
-    Weak_coupling = sqrt(4.*M_PI*alphaQED/(8.0*sin2thetaW))*Vckm;
-    Weak_cR = 0.;
-    Weak_cL = 1.;
+    Weak_coupling = -Complex( 0., 1.) * sqrt(4.*M_PI*alphaQED/(8.0*sin2thetaW))*Vckm;
+    Weak_cR = Complex( 0., 0.);
+    Weak_cL = Complex( 1., 0.);
 
     kf_code prop_kf_W   = kf_Wplus;
     m_ffs["GE_W"] = ffs->GetFF(N1,N2,prop_kf_W,GE); 
@@ -103,7 +164,6 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
 {
   //JW: TODO. I think we need to specify the diagrams carefully here so that we're only multiplying the currents between the same diagrams?
-  
   /////////////////////////////////////////////////////////////////////////////
   // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2) + q^{mu} F_3(q^2)] u(1) 
   /////////////////////////////////////////////////////////////////////////////
@@ -130,10 +190,10 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   Complex Zero = Complex(0.,0.);
   Complex One = Complex(1.,0.);
 
-  ff1 = 1.0;
-  ff2 = 0.0;
-  ff3 = 0.0;
-  ff4 = 0.0;
+  // ff1 = 1.0;
+  // ff2 = 0.0;
+  // ff3 = 0.0;
+  // ff4 = 0.0;
   
   Vec4C amp;
   for(int hf=0; hf<2; hf++) {
