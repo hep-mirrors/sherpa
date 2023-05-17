@@ -26,6 +26,8 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
+#include <cfloat>
+
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace BEAM;
@@ -40,7 +42,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_enhanceobs(NULL), p_enhancefunc(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
   m_enhance(1.0),
-  m_enhancefunc_min(numeric_limits<double>::lowest()), m_enhancefunc_max(numeric_limits<double>::max()),
+  m_enhancefunc_min(-DBL_MAX), m_enhancefunc_max(+DBL_MAX),
   p_variationweights(NULL),
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
