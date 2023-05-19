@@ -22,3 +22,5 @@ the options
 to the first `cmake` command. There are some optional features which can be compiled 
 into Sherpa, please read the info page (`info Manual/Sherpa.info`) 
 or run `cmake -LAH` to find out more about the available options.
+
+Check out our [Getting started section](Manual/source/manual/getting-started.rst) for additional guidance.
