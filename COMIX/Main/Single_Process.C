@@ -151,7 +151,7 @@ bool COMIX::Single_Process::Initialize
   for (size_t i(0);i<maxcpl.size();++i) maxcpl[i]=m_pinfo.m_maxcpl[i]*2;
   for (size_t i(0);i<minacpl.size();++i) minacpl[i]=m_pinfo.m_minacpl[i];
   for (size_t i(0);i<maxacpl.size();++i) maxacpl[i]=m_pinfo.m_maxacpl[i];
-  if (smode&18)
+  if (smode&22)
     for (int i(0);i<2;++i) {
       maxcpl[i]-=m_pinfo.m_fi.m_nlocpl[i]*2;
       mincpl[i]-=m_pinfo.m_fi.m_nlocpl[i]*2;
