@@ -211,6 +211,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
         - if [ -s todo-Archlinux_$FREL.txt ]; then /kaniko/executor --context $CI_PROJECT_DIR --dockerfile todo-Archlinux_$FREL.txt --destination $CI_REGISTRY_IMAGE:Archlinux_$FREL ; fi
   variables:
     GIT_DEPTH: "1"
+  retry: 2
 
 .build_image_Fedora:
   stage: build_docker_image
@@ -222,6 +223,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
         - if [ -s todo-Fedora_$FREL.txt ]; then /kaniko/executor --context $CI_PROJECT_DIR --dockerfile todo-Fedora_$FREL.txt --destination $CI_REGISTRY_IMAGE:Fedora_$FREL ; fi
   variables:
     GIT_DEPTH: "1"
+  retry: 2
 
 .build_image_Fedora_alt:
   stage: build_docker_image
@@ -235,6 +237,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
     - if [ -s todo-Fedora_$FREL.txt ]; then docker push $CI_REGISTRY_IMAGE:Fedora_$FREL ; fi
   variables:
     GIT_DEPTH: "1"
+  retry: 2
 
 .build_image_CentOS:
   stage: build_docker_image
@@ -246,6 +249,7 @@ LCG_102_x86_64-centos7-gcc11-opt:
         - if [ -s todo-CentOS_$FREL.txt ]; then /kaniko/executor --context $CI_PROJECT_DIR --dockerfile todo-CentOS_$FREL.txt --destination $CI_REGISTRY_IMAGE:CentOS_$FREL ; fi
   variables:
     GIT_DEPTH: "1"
+  retry: 2
 
 
 .any:
