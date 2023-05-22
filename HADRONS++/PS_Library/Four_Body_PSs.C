@@ -116,7 +116,7 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
   double s123 = dabs(p123.Abs2());
   wt *= CE.MassivePropWeight(m_prop1.Mass(),m_prop1.Width(),
 			     s123_min,s123_max,s123,p_rans[0]);
-  m_kI_123_4<<CE.Isotropic2Weight(p123,p[m_dir],m_kI_123_4[0],m_kI_123_4[1]);
+  m_kI_123_4<<CE.Isotropic2Weight(p[0]-p[m_dir],p[m_dir],m_kI_123_4[0],m_kI_123_4[1]);
   wt *= m_kI_123_4.Weight();
 
   p_rans[1]= m_kI_123_4[0];
