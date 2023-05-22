@@ -288,12 +288,18 @@ LCG_102_x86_64-centos7-gcc11-opt:
 .any-cmake-ccache:
   extends: .any
   script:
+    - if [ $CI_COMMIT_MESSAGE == "cleancache" ]; then rm -rf cmake-$TOOLSET-cache-$FREL; fi 
+    - if [ $CI_PIPELINE_SOURCE == "schedule" ]; then rm -rf cmake-$TOOLSET-cache-$FREL; fi
+    - df -h ./
+    - df -h /tmp
     - export CCACHE_BASEDIR=`pwd`/cmake-$TOOLSET-cache-$FREL    
-    - export CCACHE_BASEDIR=${PWD}
     - export CCACHE_DIR=`pwd`/cmake-$TOOLSET-cache-$FREL/ccache
+    - mkdir -p ${CCACHE_DIR}
+    - mkdir -p ${CCACHE_BASEDIR}
     - export CCACHE_COMPILERCHECK=content
     - export F90CACHE_DIR=`pwd`/cmake-$TOOLSET-cache-$FREL/f90cache
     - export F90CACHE_TMPDIR=`pwd`/tmpf90cache
+    - mkdir -p ${F90CACHE_DIR}
     - mkdir -p ${F90CACHE_TMPDIR}
     - export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_Fortran_COMPILER_LAUNCHER=f90cache"
     - 'if [ "${FREL}" == "7" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
