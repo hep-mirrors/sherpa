@@ -392,9 +392,6 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
   // want this to happen after the following switch-statement, where this is
   // set in preparation of the p_isrbase[i]->Weight(fl) calls that get the PDF
   // values below
-  const auto has_nonexistent_or_correct_remnant_kinematics =
-      (!include_both_pdfs || (CheckRemnantKinematics(fl1, x1, 0, false) &&
-                              CheckRemnantKinematics(fl2, x2, 1, false)));
   switch (cmode) {
   case 3:
     if (x1 > p_isrbase[0]->PDF()->RescaleFactor() ||
@@ -427,7 +424,7 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
   default:
     return 0.;
   }
-  if (has_nonexistent_or_correct_remnant_kinematics) {
+  if (true) {
     double f1 = (cmode & 1) ? p_isrbase[0]->Weight(fl1) : 1.0;
     double f2 = (cmode & 2) ? p_isrbase[1]->Weight(fl2) : 1.0;
     m_xf1 = x1 * f1;
