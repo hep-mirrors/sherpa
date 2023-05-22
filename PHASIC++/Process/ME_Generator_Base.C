@@ -264,12 +264,7 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
     p[0]=sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
     ampl->Leg(i)->SetMom(boost*p);
   }
-  for (int i = 0; i < 2; i++) {
-    if (p_remnant != NULL && !(p_remnant->GetRemnant(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)
-              ->TestExtract(ampl->Leg(i)->Flav().Bar(), -ampl->Leg(i)->Mom())))
-      return -1;
-  }
-  msg_Debugging() << "After shift: " << *ampl << "\n";
+  msg_Debugging()<<"After shift: "<<*ampl<<"\n";
   return 1;
 }
 

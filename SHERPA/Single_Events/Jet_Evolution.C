@@ -298,8 +298,7 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
     noshowerblob->AddToOutParticles(new Particle(*blob->OutParticle(i)));
     blob->OutParticle(i)->SetStatus(part_status::decayed);
   }
-  noshowerblob->SetStatus(blob_status::needs_beams |
-                          blob_status::needs_hadronization);
+  noshowerblob->SetStatus();
   if (blob->Type() != btp::Hadron_Decay) {
     noshowerblob->AddStatus(blob_status::needs_reconnections);
   }
@@ -307,7 +306,7 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
   noshowerblob->SetTypeSpec("No_Shower");
   bloblist->push_back(noshowerblob);
   blob->SetStatus(blob_status::inactive);
-  return p_remnants->ExtractShowerInitiators(noshowerblob);
+  return true;
 }
 
 bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
