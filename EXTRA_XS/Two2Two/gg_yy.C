@@ -39,17 +39,21 @@ namespace EXTRAXS {
 
     for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
 
-    m_colours[0][0] = m_colours[1][1] = 500;
-    m_colours[0][1] = m_colours[1][0] = 501;
-    
-    
+    if (m_flavs[0] == Flavour(kf_gluon)) {
+      m_colours[0][0] = m_colours[1][1] = 500;
+      m_colours[0][1] = m_colours[1][0] = 501;
+    } else {
+      m_colours[2][0] = m_colours[3][1] = 500;
+      m_colours[2][1] = m_colours[3][0] = 501;
+    }
+
     double qcharge[6] = {-1., 2, -1., 2., -1., 2.};
     double sumc = 0;
     for (size_t i=0; i<5; ++i) {
       sumc += sqr(qcharge[i]);
     }
     double sumc4 = sqr(sumc)/81.0;
-    
+
     m_fac = 1.0;
     // sum over loop charges
     m_fac *= sumc4;
@@ -58,7 +62,11 @@ namespace EXTRAXS {
     m_fac *= alphas2*alphaqed2;
 
     // average over initial state heli/colour
-    m_fac /= 4.0*64;
+    if (m_flavs[0] == Flavour(kf_gluon)) {
+       m_fac /= 4.0*64;
+    } else {
+       m_fac /= 4.0;
+    }
 
     // sym factor for two photons
     m_fac /= 2.0;
@@ -67,7 +75,7 @@ namespace EXTRAXS {
     m_cfls[3].push_back(kf_gluon);
     m_cfls[12].push_back(kf_gluon);
   }
-  
+
   double gg_yy::operator()(const ATOOLS::Vec4D_Vector& mom)
   {
     double s=(mom[0]+mom[1]).Abs2();
@@ -79,7 +87,7 @@ namespace EXTRAXS {
     double u2 = sqr(u);
     double pi2 = sqr(M_PI);
 
-    double box = 
+    double box =
       256.0*sqr(-1.0-(t-u)/s*log(t/u)-(t2+u2)/s2*(sqr(log(t/u))+pi2)/2.0)+
       256.0*sqr(-1.0-(s-u)/t*log(-s/u)-(s2+u2)/t2*sqr(log(-s/u))/2.0)+
       256.0*pi2*sqr((s-u)/t+(s2+u2)/t2*log(-s/u))+
@@ -100,8 +108,10 @@ operator()(const External_ME_Args &args) const
   if(args.m_orders[0]!=2 || args.m_orders[1]!=2) return NULL;
   const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=4) return NULL;
-  if (fl[0].Kfcode()==kf_gluon && fl[1].Kfcode()==kf_gluon &&
-      fl[2].Kfcode()==kf_photon && fl[3].Kfcode()==kf_photon)
+  if ((fl[0].Kfcode()==kf_gluon && fl[1].Kfcode()==kf_gluon &&
+      fl[2].Kfcode()==kf_photon && fl[3].Kfcode()==kf_photon) ||
+      (fl[0].Kfcode()==kf_photon && fl[1].Kfcode()==kf_photon &&
+       fl[2].Kfcode()==kf_gluon && fl[3].Kfcode()==kf_gluon))
   {
     return new gg_yy(args);
   }

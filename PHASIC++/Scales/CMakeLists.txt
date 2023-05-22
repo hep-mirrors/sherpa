@@ -12,7 +12,6 @@ set(Scales_SOURCES Cluster_Definitions.C
                    Variable_Core_Scale.C
                    Fastjet_Scale_Setter.C
                    Democratic_Scale_Setter.C
-                   QCD_Scale_Setter.C
                    QCD_Core_Scale.C
                    Photons_Core_Scale.C
                    TTBar_Core_Scale.C
@@ -35,6 +34,6 @@ set(Scales_HEADERS Cluster_Definitions.H
                    Tag_Setter.H)
 
 sherpa_create_git_info(Scales)
- 
+
 add_library(PhasicScales SHARED ${Scales_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicScales PhasicScales)
