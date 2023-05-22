@@ -17,7 +17,7 @@ variables:
 
 build-manual:
   stage: build
-  image: $CI_REGISTRY_IMAGE:Fedora_35
+  image: $CI_REGISTRY_IMAGE:Fedora_37
   script:
     - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON  
     - cd build/Manual
@@ -55,7 +55,7 @@ trigger_pages:
 
 # Build Manual
 pages:
-  image: $CI_REGISTRY_IMAGE:Fedora_35
+  image: $CI_REGISTRY_IMAGE:Fedora_37
   stage: deploy
   script:
     - cd Manual
