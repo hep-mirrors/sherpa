@@ -14,6 +14,11 @@ void Settings_Writer::WriteSettings(Settings& s)
   MyStrStream unused;
   bool did_find_unused {false};
   for (const auto& reader : s.m_yamlreaders) {
+    // Ignore Decaydata.yaml, which is not under the control of the user,
+    // and would just clutter the not-used section of the Settings report,
+    // and/or confuse the user by the unused-settings WARNING issued below.
+    if (reader->Name().rfind("Decaydata.yaml") != std::string::npos)
+      continue;
     bool did_print_file_header {false};
     auto keys_vec = reader->AllSettingsKeys();
     for (const auto& keys : keys_vec) {
