@@ -63,7 +63,8 @@ void Settings_Writer::WriteSettings(Settings& s)
     vals.push_back(s.m_defaults[keysetpair.first]);
     const auto otherdefaultsit = s.m_otherscalardefaults.find(keysetpair.first);
     for (const auto& v : s.m_otherscalardefaults[keysetpair.first]) {
-      vals.back().push_back({"-- AND --"});
+      if (!vals.back().empty())
+        vals.back().push_back({"-- AND --"});
       vals.back().push_back({v});
     }
     const auto iscustomised
