@@ -139,6 +139,7 @@ bool COMIX::Single_Process::Initialize
     msg_Debugging()<<"Subtraction type: "<<(sbt::subtype)(stype+1)<<"\n";
   }
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
+  else if(m_pinfo.m_nlomode&nlo_mode::yfs) smode=0;
   else {
     if (m_pinfo.m_fi.NLOType()&nlo_type::vsub) smode|=2;
     if (m_pinfo.m_fi.NLOType()&nlo_type::born) smode|=4;
