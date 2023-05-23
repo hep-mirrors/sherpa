@@ -2,6 +2,8 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/Settings.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -57,7 +59,17 @@ Pol_Info& Pol_Info::operator=(const Pol_Info& p)
   }
   return *this;
 }
-Pol_Info::Pol_Info() { num=0; type=0; factor=0; pol_type=' '; angle=0.;}
+Pol_Info::Pol_Info() {
+  num=0; type=0; factor=0; pol_type=' '; angle=0.;
+  Scoped_Settings s{ Settings::GetMainSettings()["POLARIZATIONS"] };
+  // Polairzation should be between -1...1
+  m_pol1 = s["BEAM_1"].SetDefault(0.).Get<double>();
+  m_pol2 = s["BEAM_2"].SetDefault(0.).Get<double>();
+  // Also can be given as a percentage
+  // assuming a minimum abs value of 1
+  if(abs(m_pol1) > 1 && abs(m_pol1) <= 100) m_pol1/=100;
+  if(abs(m_pol2) > 1 && abs(m_pol2) <= 100) m_pol2/=100;
+}
 Pol_Info::Pol_Info(const ATOOLS::Flavour& fl)
 {
   int dof = 1;

@@ -49,7 +49,6 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) :
   // The total number of different polarisation combinations
   m_nsign = 1; for(int pNum=0; pNum<N; ++pNum) m_nsign *= m_nPols[pNum];
 
-
   /* Create the list of all nessecary polarisation combinations that need to be 
      evaluated to obtain the cross section for the specified process. Also calculate the
      respective weights of the physical helicity amplitudes */
@@ -81,6 +80,9 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) :
       }          
      
     } 
+  }
+  for (size_t i=0;i<m_nsign;i++) {
+      p_slist[i].polfactor = (1.-*p_slist[i].s*(pl[0].m_pol1))*(1.+*p_slist[i].s*(pl[0].m_pol2));
   }
 }
 
@@ -178,7 +180,7 @@ void Helicity::SpinorTransformation(std::vector<Complex>& A)
       std::vector<Complex> Atemp(A);
       for (size_t helComb=0; helComb<MaxHel(); ++helComb) {
       	int lambda;
-	int helComb2 = GetPartnerPol(helComb, *flav, lambda);  
+	int helComb2 = GetPartnerPol(helComb, *flav, lambda);
 	A[helComb] =    m_trafoMatrices[i][lambda][lambda  ] * Atemp[helComb]
 	              + m_trafoMatrices[i][lambda][1-lambda] * Atemp[helComb2];
       }
