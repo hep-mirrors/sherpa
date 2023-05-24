@@ -477,17 +477,18 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
     }
   }
   if (p_partner == this) {
-    m_lastdxs = operator()(_moms,mode);
+    m_lastdxs = m_Norm*operator()(_moms,mode);
   }
   else {
     if (lookup) {
       m_lastdxs = p_partner->LastDXS()*m_sfactor;
+      m_lastbxs = p_partner->m_lastbxs*m_sfactor/p_partner->m_Norm;
     }
     else {
       p_LO_process->Integrator()->SetMomenta(p_int->Momenta());
-      m_lastdxs = p_partner->operator()(_moms,mode)*m_sfactor;
+      m_lastdxs = m_Norm*p_partner->operator()(_moms,mode)*m_sfactor;
+      m_lastbxs = p_partner->m_lastbxs*m_sfactor;
     }
-    m_lastbxs = p_partner->m_lastbxs*m_sfactor;
     m_lastb=p_partner->m_lastb*m_sfactor;
     m_lastv=Calc_V_WhenMapped(_moms);
     m_lasti=p_partner->m_lasti*m_sfactor;
@@ -503,7 +504,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
   m_mewgtinfo*=m_Norm*m_sfactor;
 
   const double kpterm(KPTerms(0));
-  m_lastkp = kpterm / m_Norm;
+  m_lastkp = kpterm;
   m_mewgtinfo.m_KP = kpterm;
 
   p_partner->m_bvimode=bvimode;
@@ -516,7 +517,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
   DEBUG_VAR(m_lasti);
   DEBUG_VAR(m_lastkp);
   msg->SetPrecision(precision);
-  return m_lastxs = wgt * m_Norm * (m_lastdxs+m_lastkp);
+  return m_lastxs = wgt * (m_lastdxs+m_lastkp);
 }
 
 double Single_Virtual_Correction::Calc_V_WhenMapped
