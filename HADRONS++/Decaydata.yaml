@@ -22,64 +22,44 @@ HADRON_DECAYS:
       Channels:
         4,-4,3:
           BR: [0.237317, 0.0130512]
-          Origin: Lenz
         4,-4,1:
           BR: [0.0130816, 0.000737991]
-          Origin: Lenz
         4, -2, 1:
           BR: [0.449723, 0.0208523]
-          Origin: Lenz
         4, -2, 3:
           BR: [0.0240716, 0.00115004]
-          Origin: Lenz
         4, 11, -12:
           BR: [0.111298, 0.00833233]
-          Origin: Lenz
         4, 13, -14:
           BR: [0.111298, 0.00833233]
-          Origin: Lenz
         4, 15, -16:
           BR: [0.0259687, 0.00771439]
-          Origin: Lenz
         2, -4, 1:
           BR: [0.000232958, 0.0000690244]
-          Origin: Lenz
         2, -4, 3:
           BR: [0.00435022, 0.0012877]
-          Origin: Lenz
         2, -2, 1:
           BR: [0.00632617, 0.00184988]
-          Origin: Lenz
         2, -2, 3:
           BR: [0.0025128, 0.00132086]
-          Origin: Lenz
         2, 11, -12:
           BR: [0.00165537, 0.000472511]
-          Origin: Lenz
         2, 13, -14:
           BR: [0.00165537, 0.000472511]
-          Origin: Lenz
         2, 15, -16:
           BR: [0.000590092, 0.000190537]
-          Origin: Lenz
         1, -1, 1:
           BR: [0.0000785521, 0.0000486246]
-          Origin: Lenz
         1, -1, 3:
           BR: [0.00236816, 0.00121302]
-          Origin: Lenz
         3, -3, 3:
           BR: [0.00191558, 0.000970039]
-          Origin: Lenz
         3, -3, 1:
           BR: [0.0000970136, 0.0000604352]
-          Origin: Lenz
         21, 3:
           BR: [0.00521212, 0.00105567]
-          Origin: Lenz
         21, 1:
           BR: [0.000247894, 0.000103851]
-          Origin: Lenz
 
 
     c:
@@ -87,28 +67,20 @@ HADRON_DECAYS:
       Channels:
         3, -1, 2:
           BR: [0.706, 0]
-          Origin: Lenz
         3, -3, 2:
           BR: [0.033, 0]
-          Origin: Lenz
         3, -11, 12:
           BR: [0.104, 0]
-          Origin: Lenz
         3, -13, 14:
           BR: [0.101, 0]
-          Origin: Lenz
         1, -1, 2:
           BR: [0.042, 0]
-          Origin: Lenz
         1, -3, 2:
           BR: [0.002, 0]
-          Origin: Lenz
         1, -11, 12:
           BR: [0.006, 0]
-          Origin: Lenz
         1, -13, 14:
           BR: [0.006, 0]
-          Origin: Lenz
 
 
   Channels:
@@ -437,22 +409,10 @@ HADRON_DECAYS:
     311:
       130:
         BR: [0.5, 0.5]
-        ME:
-          - Generic:
-              Factor: [1.0, 0.0]
-        PhaseSpace:
-          - Isotropic:
-              Weight: 1.0
         IntResults: [1.0, 1.0, 1.0]
 
       310:
         BR: [0.5, 0.5]
-        ME:
-          - Generic:
-              Factor: [1.0, 0.0]
-        PhaseSpace:
-          - Isotropic:
-              Weight: 1.0
         IntResults: [1.0, 1.0, 1.0]
 
     221:
@@ -3671,7 +3631,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - Current_ME:
-              Factor: [1.0, 0.0]
               J1:
                 Type: VA_P_P
                 Indices: [0,4]
@@ -3688,7 +3647,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - Current_ME:
-              Factor: [1.0, 0.0]
               J1:
                 Type: VA_P_P
                 Indices: [0,2]
@@ -4159,7 +4117,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - Current_ME:
-              Factor: [1.0, 0.0]
               J1:
                 Type: VA_P_P
                 Indices: [0,3]
@@ -5661,7 +5618,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 4.4216
         IntResults: [0.0022, 0, 0.01079]
 
@@ -5670,7 +5626,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 4.44
         IntResults: [0.002297, 0, 0.01127]
 
@@ -5679,7 +5634,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 3.936
         IntResults: [0.0023, 0, 0.01129]
 
@@ -5810,7 +5764,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 10.42
         IntResults: [0.01498, 1.45e-07, 0.07556]
 
@@ -5819,7 +5772,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 10.55
         IntResults: [0.015, 1.429e-07, 0.07567]
 
@@ -5828,7 +5780,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 10.36
         IntResults: [0.01499, 1.464e-07, 0.07571]
 
@@ -5860,7 +5811,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - B_Bphoton_M1[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 1.73
         IntResults: [0.002462, 0, 0.01268]
 
@@ -5870,7 +5820,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - B_Bphoton_M1[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 1.62
         IntResults: [0.002633, 0, 0.01358]
 
@@ -5879,7 +5828,6 @@ HADRON_DECAYS:
         BR: [0.24, 0.24]
         ME:
           - B_Bpi_swave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 0.45
         IntResults: [0.0008658, 0, 0.004494]
 
@@ -5887,7 +5835,6 @@ HADRON_DECAYS:
         BR: [0.24, 0.24]
         ME:
           - B_Bpi_swave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 0.37
         IntResults: [0.0008705, 0, 0.004518]
 
@@ -5895,7 +5842,6 @@ HADRON_DECAYS:
         BR: [0.24, 0.24]
         ME:
           - B_Bpi_swave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 0.43
         IntResults: [0.0008659, 0, 0.004495]
 
@@ -5917,7 +5863,6 @@ HADRON_DECAYS:
         BR: [0.67, 0.67]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 11.65
         IntResults: [0.004332, 1.338e-08, 0.02293]
 
@@ -5925,7 +5870,6 @@ HADRON_DECAYS:
         BR: [0.33, 0.33]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 8.374
         IntResults: [0.002142, 6.398e-09, 0.01134]
 
@@ -5934,7 +5878,6 @@ HADRON_DECAYS:
         BR: [0.67, 0.67]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 13.76
         IntResults: [0.004918, 1.318e-08, 0.02603]
 
@@ -5942,7 +5885,6 @@ HADRON_DECAYS:
         BR: [0.33, 0.33]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 7.28
         IntResults: [0.00195, 6.622e-09, 0.01032]
 
@@ -6031,8 +5973,7 @@ HADRON_DECAYS:
         BR: [0.088, 0.005]
         Origin: PDG
         ME:
-          - QQ_PGG[0,1,2,3]:
-              Factor: [1.0, 0.0]
+          - QQ_PGG[0,1,2,3]: {}
         IntResults: [0.0005852, 0.0001951, 0.004833]
 
     10441:
@@ -6153,8 +6094,7 @@ HADRON_DECAYS:
       22,21,21:
         BR: [0.014, 0.014]
         ME:
-          - QQ_PGG[0,1,2,3]:
-              Factor: [1.0, 0.0]
+          - QQ_PGG[0,1,2,3]: {}
         IntResults: [0.0009287, 0, 0.006847]
 
       1,-1:
@@ -7013,7 +6953,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - B_K_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               C1: -0.248
               C2: 1.107
@@ -7034,7 +6973,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - B_K_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               C1: -0.248
               C2: 1.107
@@ -7055,7 +6993,6 @@ HADRON_DECAYS:
         Origin: EvtGen
         ME:
           - B_K_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               C1: -0.248
               C2: 1.107
@@ -7076,7 +7013,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - B_KStar_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               C1: -0.248
               C2: 1.107
@@ -7125,7 +7061,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - B_KStar_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               C1: -0.248
               C2: 1.107
@@ -7174,7 +7109,6 @@ HADRON_DECAYS:
         Origin: EvtGen
         ME:
           - B_KStar_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               C1: -0.248
               C2: 1.107
@@ -11260,7 +11194,6 @@ HADRON_DECAYS:
         Origin: HFAG0307
         ME:
           - B_K_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
@@ -11284,7 +11217,6 @@ HADRON_DECAYS:
         Origin: HFAG0307
         ME:
           - B_K_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
@@ -11308,7 +11240,6 @@ HADRON_DECAYS:
         Origin: EvtGen
         ME:
           - B_K_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
@@ -11332,7 +11263,6 @@ HADRON_DECAYS:
         Origin: HFAG0307
         ME:
           - B_KStar_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
@@ -11384,7 +11314,6 @@ HADRON_DECAYS:
         Origin: HFAG0307
         ME:
           - B_KStar_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
@@ -11436,7 +11365,6 @@ HADRON_DECAYS:
         Origin: EvtGen
         ME:
           - B_KStar_Semileptonic[0,1,2,3]:
-              Factor: [1.0, 0.0]
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
@@ -14299,7 +14227,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - Current_ME:
-              Factor: [8.24748e-6, 0.0]
               J1:
                 Type: VA_B_B
                 Indices: [0,1]
@@ -14336,7 +14263,6 @@ HADRON_DECAYS:
         Origin: PDG
         ME:
           - Current_ME:
-              Factor: [8.24748e-6, 0.0]
               J1:
                 Type: VA_B_B
                 Indices: [0,1]
@@ -15405,7 +15331,6 @@ HADRON_DECAYS:
         Origin: EvtGen
         ME:
           - B_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 1.593
         IntResults: [0.0007151, 0, 0.008309]
 
@@ -15414,7 +15339,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 1.52
         IntResults: [0.0007342, 0, 0.008532]
 
@@ -15423,7 +15347,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 1.59
         IntResults: [0.0007124, 0, 0.008278]
 
@@ -15432,7 +15355,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 14.83
         IntResults: [0.01807, 1.972e-08, 0.2107]
 
@@ -15441,7 +15363,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 13.966
         IntResults: [0.01739, 2.004e-08, 0.2028]
 
@@ -15450,7 +15371,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 14.83
         IntResults: [0.01807, 1.972e-08, 0.2107]
 
@@ -15562,7 +15482,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B_Bphoton_M1[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 1.369e-5
         IntResults: [0.0004549, 0, 0.005358]
 
@@ -15571,7 +15490,6 @@ HADRON_DECAYS:
         BR: [1, 1]
         ME:
           - B_Bphoton_M1[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 1.369e-5
         IntResults: [0.0004549, 0, 0.005358]
 
@@ -15591,7 +15509,6 @@ HADRON_DECAYS:
         BR: [0.67, 0.67]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 142.49
         IntResults: [0.0006687, 0, 0.007931]
 
@@ -15599,7 +15516,6 @@ HADRON_DECAYS:
         BR: [0.33, 0.33]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 16.03
         IntResults: [0.0003297, 0, 0.00391]
 
@@ -15608,7 +15524,6 @@ HADRON_DECAYS:
         BR: [0.67, 0.67]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 142.49
         IntResults: [0.0006687, 0, 0.007931]
 
@@ -15616,7 +15531,6 @@ HADRON_DECAYS:
         BR: [0.33, 0.33]
         ME:
           - B3_Bpi_pwave[0,1,2]:
-              Factor: [1.0, 0.0]
               f: 16.03
         IntResults: [0.0003297, 0, 0.00391]
 
@@ -16785,8 +16699,7 @@ HADRON_DECAYS:
       22,21,21:
         BR: [0.0221, 0.0221]
         ME:
-          - QQ_PGG[0,1,2,3]:
-              Factor: [1.0, 0.0]
+          - QQ_PGG[0,1,2,3]: {}
         IntResults: [0.002384, 0, 0.0451]
 
     10551:
@@ -16906,8 +16819,7 @@ HADRON_DECAYS:
         BR: [0.0136, 0.0136]
         Origin: FS
         ME:
-          - QQ_PGG[0,1,2,3]:
-              Factor: [1.0, 0.0]
+          - QQ_PGG[0,1,2,3]: {}
         IntResults: [0.002526, 0, 0.05063]
 
       21,21,21:
