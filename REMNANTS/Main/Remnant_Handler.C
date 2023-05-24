@@ -1,6 +1,5 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Math/Random.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "REMNANTS/Main/Electron_Remnant.H"
@@ -34,7 +33,7 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler *isr,
   for (size_t i = 0; i < 2; ++i) {
     p_remnants[i] = nullptr;
     Flavour flav = isr->Flav(i);
-    if (isr->PDF(i) != nullptr) {
+    if (isr->PDF(i) != nullptr && Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
       if (flav.IsHadron())
         p_remnants[i] = new Hadron_Remnant(isr->PDF(i), i);
       else if (flav.IsLepton())
@@ -244,7 +243,7 @@ bool Remnant_Handler::CheckBeamBreakup(Blob_List *bloblist) {
 
 void Remnant_Handler::SetImpactParameter(const double & b) {
   Vec4D  pos = b/2.*Vec4D(0.,1.,0.,0.);
-  for (size_t i=0;i<2;i++) p_remnants[i]->SetPosition((i==0?1.:-1.) * pos);      
+  for (size_t i=0;i<2;i++) p_remnants[i]->SetPosition((i==0?1.:-1.) * pos);
 }
 
 bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
