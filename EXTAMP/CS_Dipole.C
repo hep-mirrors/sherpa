@@ -3,6 +3,7 @@
 
 #include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Org/Exception.H"
+#include <algorithm>
 
 using namespace EXTAMP;
 

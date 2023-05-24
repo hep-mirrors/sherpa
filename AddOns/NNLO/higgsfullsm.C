@@ -1,5 +1,6 @@
 #include "higgsfullsm.H"
 #include "Tools.H"
+#include <algorithm>
 
 namespace SHNNLO {
 

@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 
 #include <cassert>
+#include <algorithm>
 
 using namespace ATOOLS;
 

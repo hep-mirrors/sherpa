@@ -58,8 +58,8 @@ namespace ATOOLS {
   }
   inline Complex csqrt(const double &d)
   {
-    if (d<0) return Complex(0.,sqrt(-d));
-    return sqrt(d);
+    if (d<0) return Complex(0.,std::sqrt(-d));
+    return std::sqrt(d);
   }
 
   inline double intpow(const double &a,int b)

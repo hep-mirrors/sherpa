@@ -230,7 +230,11 @@ void Two_Partonpair_Theta::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
     plab[1]=plab[2]=0.0;
     if(plab.Abs2()<=0.0) {
       p_histo->Insert(-M_PI/100.0, weight, ncount);
+#if defined(__PRETTY_FUNCTION__)
       msg_Error()<<__PRETTY_FUNCTION__<<":\n   Warning:"
+#else
+      msg_Error()<<":\n   Warning:"
+#endif
 		 <<" Not able to boost the system. Insert theta=-pi/100.\n"
 		 <<std::endl;
       return;

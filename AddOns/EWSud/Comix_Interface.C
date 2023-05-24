@@ -193,7 +193,7 @@ PHASIC::Process_Base* Comix_Interface::InitializeProcess(const Process_Info& pi)
 void Comix_Interface::AdaptToProcessColorScheme()
 {
   if (p_proc->Generator()->Name() == "Comix"
-      and p_proc->Integrator()->ColorScheme() == cls::sum) {
+      && p_proc->Integrator()->ColorScheme() == cls::sum) {
     // for some reason, this is needed when summing colours; if colour are
     // sampled, however, we can't have this because it then triggers the
     // generation of a new random colour point each time we call Differential()

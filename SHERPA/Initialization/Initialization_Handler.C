@@ -722,7 +722,7 @@ bool Initialization_Handler::InitializeThePDFs()
         THROW(fatal_error, "LHAPDF has not been enabled during configuration.")
       #endif
     }
-    void *init(s_loader->GetLibraryFunction(*pdflib,"InitPDFLib"));
+    void *init(s_loader->GetLibraryFunction(*pdflib,std::string("InitPDFLib")));
     if (init==NULL) THROW(fatal_error,"Cannot load PDF library "+*pdflib);
     ((PDF_Init_Function)init)();
   }

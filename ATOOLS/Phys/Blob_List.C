@@ -176,7 +176,7 @@ Vec4D Blob_List::TotalFourMomentum() const
   Vec4D inisum,finsum;
   std::set<ATOOLS::Blob*> summed;
   if (!TotalFourMomentum(*begin(),summed,inisum,finsum,0)) 
-    return Vec4D(sqrt(-1.0),Vec3D());
+    return Vec4D(std::sqrt(-1.0),Vec3D());
   return finsum-inisum;
 }
 
@@ -186,7 +186,7 @@ Vec4D Blob_List::IncomingFourMomentum() const
   Vec4D inisum,finsum;
   std::set<ATOOLS::Blob*> summed;
   if (!TotalFourMomentum(*begin(),summed,inisum,finsum,-1))
-    return Vec4D(sqrt(-1.0),Vec3D());
+    return Vec4D(std::sqrt(-1.0),Vec3D());
   return inisum;
 }
 
@@ -196,7 +196,7 @@ Vec4D Blob_List::OutgoingFourMomentum() const
   Vec4D inisum,finsum;
   std::set<ATOOLS::Blob*> summed;
   if (!TotalFourMomentum(*begin(),summed,inisum,finsum,1))
-    return Vec4D(sqrt(-1.0),Vec3D());
+    return Vec4D(std::sqrt(-1.0),Vec3D());
   return finsum;
 }
 
@@ -209,7 +209,7 @@ bool Blob_List::FourMomentumConservation() const
     msg_Error()<<METHOD<<"(): ("<<this<<") Invalid momenta."<<std::endl;
     return false;
   }
-  static double accu(sqrt(rpa->gen.Accu()));
+  static double accu(std::sqrt(rpa->gen.Accu()));
   bool test=IsEqual(inisum,finsum,accu);
   if (!test) {
     //msg_Error()<<METHOD<<"(): ("<<this<<") Four Momentum is not conserved.\n"

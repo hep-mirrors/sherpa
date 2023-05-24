@@ -16,6 +16,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <assert.h>
+#include <algorithm>
 
 namespace EXTAMP{
 

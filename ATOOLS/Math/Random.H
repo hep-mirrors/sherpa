@@ -3,6 +3,8 @@
 
 #include <limits>
 #include <fstream>
+#include <cmath>
+#include <algorithm>
 #include <stddef.h>
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
@@ -110,7 +112,7 @@ namespace ATOOLS {
         ran2 = 2.*Get()-1.;
         R    = ran1*ran1+ran2*ran2;
       } while (R>1. || R==0.);
-      R  = sqrt(-2.*log(R)/R);
+      R  = std::sqrt(-2.*std::log(R)/R);
       hasSpare = true;
       spare = ran2 * R;
       return ran1 * R;
@@ -120,14 +122,14 @@ namespace ATOOLS {
       if(lambda>500.) {
 	double u = Get();
 	double v = Get();
-	return int(sqrt(lambda)*sqrt(-2.*log(u))*cos(2.*M_PI*v)+lambda);
+	return int(std::sqrt(lambda)*std::sqrt(-2.*std::log(u))*std::cos(2.*M_PI*v)+lambda);
       }
       double disc(std::exp(-lambda)),p(1.);
       int N(0);
       while ((p*=Get())>disc) N++;
       return N;
     }
-    double Theta() { return acos(2.*Get()-1.); }
+    double Theta() { return std::acos(2.*Get()-1.); }
     double GetNZ();
 
     External_RNG* GetExternalRng() { return p_external; }

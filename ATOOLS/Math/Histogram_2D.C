@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/MathTools.H"
 #include <stdio.h>
+#include <algorithm>
 
 using namespace ATOOLS;
 

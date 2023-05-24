@@ -5,6 +5,7 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
+#include <algorithm>
 
 using namespace PHASIC;
 using namespace ATOOLS;

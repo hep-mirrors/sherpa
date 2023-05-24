@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include <algorithm>
 
 using namespace REMNANTS;
 using namespace ATOOLS;

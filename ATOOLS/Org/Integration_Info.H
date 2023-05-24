@@ -11,6 +11,7 @@ Please include the header 'Info_Key.H' instead.
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <map>
 #include <vector>
+#include <limits>
 
 namespace ATOOLS {
 
