@@ -244,6 +244,7 @@ bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
 
 bool ISR_Handler::AllowSwap(const ATOOLS::Flavour &f1,
                             const ATOOLS::Flavour &f2) const {
+  if (f1.Mass()!=f2.Mass()) return false;
   if (p_isrbase[0]->PDF() == nullptr || p_isrbase[1]->PDF() == nullptr)
     return false;
   int ok[2] = {0, 0};
