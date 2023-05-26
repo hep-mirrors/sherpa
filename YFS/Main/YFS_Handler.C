@@ -69,16 +69,17 @@ void YFS_Handler::SetBeam(BEAM::Beam_Spectra_Handler *beam)
 
 void YFS_Handler::SetSprimeLimits(std::vector<double> &splimits) {
   if (m_flavs.size() == 0) return;
+  double s = sqr(rpa->gen.Ecms());
   p_yfsFormFact->SetCharge(1);
   p_coulomb->SetAlphaQED(m_alpha);
-  double maxV = 1. - m_smin / m_s;
+  double maxV = 1. - m_smin / s;
   if (m_vmax > maxV) {
     msg_Error() << "Warning: vmax to large in YFS integration reseting to " << maxV << std::endl;
     m_vmax = maxV;
   }
   splimits[0] = 0;
-  splimits[1] = m_s;
-  splimits[2] = m_s;
+  splimits[1] = s;
+  splimits[2] = s;
   for (int i = 0; i < splimits.size(); ++i) m_splimits[i] = splimits[i];
 }
 
@@ -329,7 +330,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       if (m_hidephotons) p_fsr->HidePhotons();
       p_fsr->YFS_FORM();
       Dip->Boost();
-      m_FSRPhotons   = Dip->GetPhotons();
+      m_FSRPhotons  = Dip->GetPhotons();
       m_photonSumFSR = Dip->GetPhotonSum();
       
       p_fsr->Weight();
@@ -433,14 +434,11 @@ void YFS_Handler::CalculateBeta() {
   }
   // PRINT_VAR(m_nlotype);
   if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
-    m_real=(m_born + CalculateNLO());
-    m_real+=realISR+realFSR;// + ((m_betaorder > 1 ? p_realff->AddVirtual(m_betaorder) - p_realff->AddVirtual(1) : 0));
+    m_real=m_born+CalculateNLO();
     m_real /= m_born;
   }
   if (m_griff != 0) {
-      m_real=1+(CalculateNLO());///m_born;
-      // PRINT_VAR(CalculateNLO()/m_born);
-  //   m_real = CalculateVirtual(m_bornMomenta, m_born);//-m_born;
+      m_real=1+CalculateNLO();
   }
 }
 
@@ -451,7 +449,7 @@ double YFS_Handler::CalculateNLO(){
   p_nlo->p_dipoles = p_dipoles;
   p_nlo->SetBorn(m_born);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  p_nlo->m_FSRPhotons = m_FSRPhotons;
+  p_nlo->m_FSRPhotons = m_fsrphotonsforME;
   return p_nlo->CalculateNLO();
 }
 
@@ -530,8 +528,9 @@ double YFS_Handler::Eikonal(Vec4D k) {
 }
 
 
-double YFS_Handler::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
-  return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2() * m_rescale_alpha;
+Vec4D_Vector YFS_Handler::GetPhotons(){
+  Vec4D_Vector k;
+  for(auto p: m_ISRPhotons) k.push_back(p);
+  for(auto p: m_FSRPhotons) k.push_back(p);
+  return k;
 }
-
-

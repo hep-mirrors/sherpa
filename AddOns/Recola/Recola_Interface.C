@@ -236,8 +236,6 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   if(MODEL::s_model->Name() != "SM")
     THROW(not_implemented, "ONLY Standard Model so far supported in RECOLA");
   
-
-
   bool recolaOnShellZW = s["RECOLA_ONSHELLZW"].Get<bool>();
   // set particle masses/widths
   if(recolaOnShellZW != 0){
@@ -679,6 +677,38 @@ void Recola::Recola_Interface::EvaluateBorn(int id, const Vec4D_Vector& momenta,
     bornres = fA2[0];
   } 
 }
+
+void Recola::Recola_Interface::EvaluateReal(int id, const Vec4D_Vector& momenta, METOOLS::DivArrD& real, int amptype)
+  {
+    const int NN = momenta.size();
+    double fpp[NN][4];
+    
+    for (int i=0; i<NN; i++){
+      for (int mu=0; mu<4; mu++){
+        fpp[i][mu] = momenta[i][mu];
+      }
+    }
+    double fA2[2]={0.0};
+    
+    bool momcheck(0);
+    int procIndex(id);
+    PHASIC::Process_Info pi(s_procmap[id]);
+    
+    /*if (s_interference[procIndex]){
+      get_squared_amplitude_rcl(id,pi.m_maxcpl[0],"LO",fA2[0]);
+      }*/
+    if(amptype==12)
+    {
+      compute_process_rcl(id,fpp,"NLO",fA2,momcheck);
+      real.Finite() = fA2[1];
+
+    }
+    else if (amptype==1)
+    {
+      compute_process_rcl(id,fpp,"LO",fA2,momcheck);
+      real.Finite() = fA2[0];
+    } 
+  }
 
 size_t Recola::Recola_Interface::PDFnf(double scale, size_t maxn){
   size_t nf(0);

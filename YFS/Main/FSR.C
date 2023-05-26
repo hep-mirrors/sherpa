@@ -710,9 +710,7 @@ void FSR::Reset() {
 double FSR::Eikonal(Vec4D k) {
   return -m_alpi / (4.*M_PI) * (m_dipole[0] / (m_dipole[0] * k) - m_dipole[1] / (m_dipole[1] * k)).Abs2();
 }
-double FSR::Eikonal(Vec4D k, Vec4D p1, Vec4D p2){
-  return -m_alpi/(4.*M_PI)*(p1/(p1*k)-p2/(p2*k)).Abs2();
-}
+
 double FSR::EikonalInterferance(Vec4D k) {
   return m_alpi / (4.*M_PI) * 2.*m_dipole[0] * m_dipole[1] / ((k * m_dipole[0]) * (k * m_dipole[1]));
 }

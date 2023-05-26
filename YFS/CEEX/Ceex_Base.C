@@ -1224,10 +1224,6 @@ void Ceex_Base::SumAmplitude(Complex &sum, const Amplitude &Amp1, const Amplitud
   }
 }
 
-double Ceex_Base::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
-  return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
-}
-
 
 void Ceex_Base::AddU(Complex &sum, const Amplitude &Born, const Amplitude &U, const Complex fac) {
   for (int h0 = 0; h0 <= 1; ++h0) {

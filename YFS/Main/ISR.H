@@ -38,7 +38,7 @@ public:
   double m_nsuccess, m_nfail, m_ntotal;
   // ATOOLS::Particle *p_photon;
   std::vector<double> m_yini, m_AA, m_K2, m_PTK, m_del1, m_del2;
-  std::vector<double> m_zini, m_eikonals, m_cos, m_jacvec, m_scale;
+  std::vector<double> m_zini, m_cos, m_jacvec, m_scale;
   Vec4D m_pvec1, m_pvec2, m_qvec1, m_qvec2, m_photon, m_photonSum;
   Vec4D_Vector m_photons;
   void GeneratePhotonAngleMassless();
@@ -68,7 +68,6 @@ public:
   void Sort(std::vector<double> &p);
   void GenerateAnglesForMassless();
   double Flux();
-  double Eikonal(Vec4D k, Vec4D p1, Vec4D p2);
   void Clean();
 
   inline double GetWeight() { return m_weight; }
@@ -84,7 +83,6 @@ public:
   inline int  GetCut() { return m_cut; }
   inline std::vector<double>  GetSudakovY() { return m_yini; }
   inline std::vector<double>  GetSudakovZ() { return m_zini; }
-  inline std::vector<double>  GetEikonals() { return m_eikonals; }
   void SetMinimalPhotonAngle(const double&);
 
 

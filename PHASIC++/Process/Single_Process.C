@@ -279,7 +279,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
     double yfsW = p_int->YFS()->GetWeight();
     if(IsBad(yfsW)){
       msg_Error()<<"YFS Weight is "<<yfsW<<std::endl;
-    }
+    } 
     csi.AddWeight(yfsW);
   }
   if (p_int->ISR()) {
@@ -549,7 +549,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   Scale_Setter_Base* scales {ScaleSetter(1)};
 
   Partonic(p, varmode);
-
   double nominal {0.0};
   double facscale {0.0};
 
@@ -565,7 +564,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     m_csi = ClusterSequenceInfo(scales->Amplitudes(), facscale);
     m_csi.AddFlux(m_lastflux);
 
-    // update results
     nominal = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
     m_lastb = m_lastbxs;
     if (m_use_biweight) {
@@ -574,6 +572,12 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       m_lastb *= prefac;
     }
 
+  if(p.size()==5){
+    PRINT_VAR(p);
+    PRINT_VAR(m_lastxs);
+    PRINT_VAR(nominal);
+  }
+    // update results
     if (p_mc != nullptr && m_dsweight && m_pinfo.Has(nlo_type::vsub)) {
       // calculate DADS term for MC@NLO: one PS point, many dipoles
       m_mewgtinfo.m_type |= mewgttype::DADS;
@@ -620,7 +624,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
 
   } else {
-
+    PRINT_VAR(p);
     const auto triggers = Selector()->CombinedResults();
 
     for (int i {0}; i < GetSubevtList()->size(); ++i) {

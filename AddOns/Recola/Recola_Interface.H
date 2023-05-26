@@ -81,6 +81,7 @@ namespace Recola {
     static void EvaluateLoop(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, METOOLS::DivArrD& virt, 
                              std::vector<double> &asscontribs);
     static void EvaluateBorn(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, int amptype);
+    static void EvaluateReal(int id, const Vec4D_Vector& momenta, METOOLS::DivArrD& real, int amptype);
 
     static bool   ExitOnError()              { return s_exit_on_error; }
     static size_t GetFixedFlav()             { return s_fixed_flav; }

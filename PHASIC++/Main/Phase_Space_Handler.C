@@ -180,6 +180,10 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,
   int fl1(0), fl2(0);
   double x1(0.0), x2(0.0), xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
   dxs=p_active->Process()->Get<PHASIC::Single_Process>()->LastXS();
+  // if(p_yfshandler->GetMode()==1){
+  //   p_yfshandler->CalculateBeta();
+  //   wgtmap*=p_yfshandler->m_real;
+  // }
   const int swap(p_isrhandler->Swap());
   fl1=(long int)p_active->Process()->Flavours()[swap];
   fl2=(long int)p_active->Process()->Flavours()[1-swap];

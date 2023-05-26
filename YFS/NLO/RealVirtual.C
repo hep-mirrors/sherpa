@@ -34,6 +34,8 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     p_loop_me->SetCouplings(m_cpls);
     m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
     m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
+    m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
+
   }
 
 RealVirtual::~RealVirtual()
@@ -58,5 +60,5 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
     // p_loop_me->SetRenScale(mur);
     p_loop_me->Calc(p,B);
     V = p_loop_me->ME_Finite();
-    return V*m_rescale_alpha/m_sym;
+    return V*m_rescale_alpha/m_sym*m_factor*m_factor;
   }

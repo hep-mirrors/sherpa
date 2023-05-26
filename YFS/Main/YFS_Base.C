@@ -29,6 +29,7 @@ YFS_Base::~YFS_Base()
 
 
 void YFS_Base::RegisterDefaults(){
+  m_s = sqr(rpa->gen.Ecms());
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   s["ISR_MODE"].SetDefault(0);
   s["BETA"].SetDefault(0);
@@ -57,6 +58,7 @@ void YFS_Base::RegisterDefaults(){
   s["INT"].SetDefault(0);
   s["CHECK_MASS_REG"].SetDefault(0);
   s["CHECK_POLES"].SetDefault(0);
+  s["CHECK_REAL"].SetDefault(0);
   s["VIRTUAL_ONLY"].SetDefault(0);
   s["REAL_ONLY"].SetDefault(0);
   s["USE_MODEL_ALPHA"].SetDefault(0);
@@ -69,6 +71,12 @@ void YFS_Base::RegisterDefaults(){
   s["PHOTON_MASS"].SetDefault(0.1);
   s["CEEX"].SetDefault(0);
   s["Resonance_Max"].SetDefault(10);
+  s["N_Photons"].SetDefault(-1);
+  //fcc defaults
+  s["BES"].SetDefault(0);
+  s["BES_SIG_X"].SetDefault(0.132e-2);
+  s["BES_SIG_Y"].SetDefault(0.132e-2);
+  s["BES_rho"].SetDefault(-0.745e0);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -102,6 +110,7 @@ void YFS_Base::RegisterSettings(){
   m_useint = s["INT"].Get<int>();
   m_check_mass_reg = s["CHECK_MASS_REG"].Get<int>();
   m_check_poles = s["CHECK_POLES"].Get<int>();
+  m_check_real = s["CHECK_REAL"].Get<int>();
   m_virtual_only = s["VIRTUAL_ONLY"].Get<bool>();
   m_real_only = s["REAL_ONLY"].Get<bool>();
   m_use_model_alpha = s["USE_MODEL_ALPHA"].Get<bool>();
@@ -114,10 +123,14 @@ void YFS_Base::RegisterSettings(){
   m_photonMass = s["PHOTON_MASS"].Get<double>();
   m_useceex = s["CEEX"].Get<int>();
   m_resonace_max = s["Resonance_Max"].Get<double>();
+  m_fixed_photons = s["N_Photons"].Get<int>();
+  m_beam_rho = s["BES_rho"].Get<double>();
+  m_beam_sigx = s["BES_SIG_X"].Get<double>();
+  m_beam_sigy = s["BES_SIG_Y"].Get<double>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
-  m_beamspread=false;
+  m_beamspread=s["BES"].Get<int>();;
   m_isrinital=true;
   m_g = 0;
   m_gp = 0;
@@ -126,8 +139,14 @@ void YFS_Base::RegisterSettings(){
   if (m_use_model_alpha) m_rescale_alpha = 1;
   else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
   m_alpi = m_alpha/M_PI;
-  PRINT_VAR(m_mode);
+  m_beam_sigx*=sqrt(m_s)/2.;
+  m_beam_sigy*=sqrt(m_s)/2.;
   // p_yfsFormFact = new YFS::YFS_Form_Factor();
 
 }
 
+
+
+double YFS_Base::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {
+  return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2() * m_rescale_alpha;
+}

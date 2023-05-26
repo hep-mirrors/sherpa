@@ -51,10 +51,11 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   }
   for (auto &v : born) m_bornmomenta.push_back(v);
   if (ty == dipoletype::code::initial) {
-    m_thetai = m_thetaj = -1;
+    m_thetai = m_thetaj = m_thetaij = 1;
     for (int i = 0; i < 2; ++i) m_beams.push_back(m_bornmomenta[i]);
   }
-  else if (ty == dipoletype::code::initial) m_thetai = m_thetaj = 1;
+  else if (ty == dipoletype::code::final) m_thetai = m_thetaj = m_thetaij = -1;
+  else if (ty == dipoletype::code::ifi) m_thetai = m_thetaj = m_thetaij = -1;
   if ((m_momenta.size() != m_oldmomenta.size()) || m_newmomenta.size() != 2 || m_bornmomenta.size() != 2) {
     THROW(fatal_error, "Incorrect dipole size in YFS");
   }
@@ -249,7 +250,7 @@ bool Dipole::IsDecayAllowed(){
 
 
 double Dipole::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
-  return -m_QiQj*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2()*m_rescale_alpha;
+  return -m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2()*m_rescale_alpha;
   // return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2() * m_rescale_alpha;
 }
 
@@ -257,7 +258,7 @@ double Dipole::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
 double Dipole::Eikonal(Vec4D k) {
   Vec4D p1 = m_bornmomenta[0];
   Vec4D p2 = m_bornmomenta[1];
-  return -m_QiQj*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2()*m_rescale_alpha;
+  return -m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2()*m_rescale_alpha;
   // return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2() * m_rescale_alpha;
 }
 

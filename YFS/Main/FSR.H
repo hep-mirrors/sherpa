@@ -48,7 +48,6 @@ namespace YFS {
       double YEta(double eta,double y1, double y2, double y3, double y4);
       double BVR_A(Vec4D p1, Vec4D p2);
       double Eikonal(Vec4D);
-      double Eikonal(Vec4D k, Vec4D p1, Vec4D p2);
       double EikonalInterferance(Vec4D);
       inline double GetWeight() {return m_fsrWeight;}
       inline double GetSQ() {return m_sQ;}

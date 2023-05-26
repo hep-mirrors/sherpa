@@ -63,7 +63,9 @@ void ISR::NPhotons() {
     return;
   }
   else m_nbar = m_gp * log(m_v / m_vmin);
-  
+  if(m_fixed_photons!=-1) {
+    m_n = m_fixed_photons;
+  }
   if (m_nbar < 0 ) {
     msg_Error() << METHOD << "Warning: ISR photon average is less than 0" << std::endl;
   }
@@ -181,10 +183,8 @@ void ISR::GeneratePhotonMomentum() {
       m_massW *= m_f / m_fbar;
       m_yini.push_back(m_w * del1 / 2);
       m_zini.push_back(m_w * del2 / 2);
-      // m_eikonals.push_back(m_f);
     }
     MapPhotonMomentun();
-    // PRINT_VAR(m_eikonals);
   }
 }
 
@@ -223,7 +223,6 @@ void ISR::MapPhotonMomentun() {
     m_yini[i] /= m_lam0;
     m_zini[i] /= m_lam0;
     if (m_photons[i][0] < m_Kmin) m_cut = 0.;
-    m_eikonals.push_back(Eikonal(m_photons[i], m_beam1, m_beam2));
   }
 }
 
@@ -296,7 +295,6 @@ void ISR::Clean() {
   m_zini.clear();
   m_del1.clear();
   m_del2.clear();
-  m_eikonals.clear();
   m_photons.clear();
   m_photonSum = Vec4D(0, 0, 0, 0);
   m_weight = 1.0;
@@ -315,9 +313,6 @@ void ISR::Clean() {
 }
 
 
-double ISR::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
-  return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
-}
 
 void ISR::MakeYFS() {
   GeneratePhotonMomentum();

@@ -79,7 +79,7 @@ namespace PHASIC {
     void InitPSHandler(const double &maxerror,
                const std::string eobs,
                const std::string efunc);
-
+    void OneRealEvent();
     inline Process_Base* GetBornProcess() {return p_bornproc;}
     inline Process_Base* GetRealProcess() {return p_realproc;}
     inline Process_Base* GetVirtProcess() {return p_virtproc;}

@@ -68,7 +68,7 @@ bool Griffin_Interface::Initialize(const Process_Info& pi)
   griffin_input.set(G_MM, Flavour(kf_mu).Mass());
   griffin_input.set(ME, Flavour(kf_e).Mass());
   griffin_input.set(Delal, delap);
-  // griffin_input.set(Gmu, GF);
+  griffin_input.set(Gmu, GF);
 
   PrintLogo(msg->Info());
   std::cout << "Griffin initialization complete...\n";
@@ -102,10 +102,10 @@ double Griffin_Interface::EvaluateLoop(const Vec4D_Vector& momenta)
     FA_SMNNLO FAi(ELE, griffin_input), FAf(MUO, griffin_input);
     SW_SMNNLO SWi(ELE, griffin_input), SWf(MUO, griffin_input); 
   }
-  double s = (momenta[0]+momenta[1]).Abs2();
-  double cost = (momenta[0]+momenta[1]).CosTheta();
+  double s = (momenta[2]+momenta[3]).Abs2();
+  double cost = (momenta[2]+momenta[3]).CosTheta();
   // double cost = 0;
-  if(sqrt(s)<40) return 0;
+  // if(sqrt(s)<40) return 0;
   // cost=1;
   matel M(m_inital, m_final, VEC, VEC, FAi, FAf, SWi, SWf, s, cost, griffin_input);
 
@@ -129,6 +129,8 @@ double Griffin_Interface::EvaluateLoop(const Vec4D_Vector& momenta)
     + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real()
     -2*(1+cost*cost)*(resvv*conj(resav) + resva*conj(resaa)).real()
     -4*cost*(resvv*conj(resva) + resav*conj(resaa)));
+  // return res*3*s*m_rescale_alpha/32/M_PI;
+  // return m_rescale_alpha*3*res*s/(32*M_PI);
   return res*s*s*m_alpha;
 }
 
