@@ -1311,54 +1311,5 @@ Cluster_Amplitude *Single_Process::Cluster
       msg_Debugging()<<*ampl<<"\n";
     return ampls.front()->CopyAll();
   }
-  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-  ampl->SetNIn(m_nin);
-  ampl->SetOrderQCD(m_maxcpl[0]);
-  ampl->SetOrderEW(m_maxcpl[1]);
-  ampl->SetProc(this);
-  ampl->SetMS(p_gen);
-  ampl->SetProcs(p_apmap);
-  if (p_int->ColorIntegrator()==NULL) {
-    for (size_t i(0);i<m_nin+m_nout;++i)
-      ampl->CreateLeg(i<m_nin?-p_int->Momenta()[i]:p_int->Momenta()[i],
-		      i<m_nin?m_flavs[i].Bar():m_flavs[i]);
-    std::vector<int> tids, atids;
-    for (size_t i(0);i<ampl->Legs().size();++i)
-      if (ampl->Leg(i)->Flav().StrongCharge()>0) {
-	tids.push_back(i);
-	if (ampl->Leg(i)->Flav().StrongCharge()==8)
-	  atids.push_back(i);
-	else ampl->Leg(i)->SetCol(ColorID(ampl->Leg(i)->Col().m_i,0));
-      }
-      else if (ampl->Leg(i)->Flav().StrongCharge()<0) {
-	ampl->Leg(i)->SetCol(ColorID(0,ampl->Leg(i)->Col().m_j));
-	atids.push_back(i);
-      }
-      else {
-	ampl->Leg(i)->SetCol(ColorID(0,0));
-      }
-    while (true) {
-      std::shuffle(atids.begin(),atids.end(),*ran);
-      size_t i(0);
-      for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
-      if (i==atids.size()) break;
-    }
-    for (size_t i(0);i<tids.size();++i) {
-      int cl(Flow::Counter());
-      ampl->Leg(tids[i])->SetCol(ColorID(cl,ampl->Leg(tids[i])->Col().m_j));
-      ampl->Leg(atids[i])->SetCol(ColorID(ampl->Leg(atids[i])->Col().m_i,cl));
-    }
-  }
-  else {
-    Int_Vector ci(p_int->ColorIntegrator()->I());
-    Int_Vector cj(p_int->ColorIntegrator()->J());
-    for (size_t i(0);i<m_nin+m_nout;++i)
-      ampl->CreateLeg(i<m_nin?-p_int->Momenta()[i]:p_int->Momenta()[i],
-		      i<m_nin?m_flavs[i].Bar():m_flavs[i],
-		      ColorID(ci[i],cj[i]));
-  }
-  ampl->SetMuF2(ScaleSetter(1)->Scale(stp::fac));
-  ampl->SetMuR2(ScaleSetter(1)->Scale(stp::ren));
-  ampl->SetMuQ2(ScaleSetter(1)->Scale(stp::res));
-  return ampl;
+  return nullptr;
 }

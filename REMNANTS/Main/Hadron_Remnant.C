@@ -90,7 +90,10 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   // Assume all remnant bases already produced a beam blob = p_beamblob
   SquashFlavourSinglets();
   SquashColourSinglets();
-  MakeLongitudinalMomenta(ktmap,copy);
+  if (!MakeLongitudinalMomenta(ktmap, copy)) {
+    msg_Debugging() << METHOD << ": Cannot put all particles on mass-shell, returning false.\n";
+    return false;
+  }
   bool colourconserved = p_beamblob->CheckColour(true);
   if (!colourconserved) {
     msg_Error()<<"Error in "<<METHOD<<" for \n"<<(*p_beamblob)<<"\n";
@@ -269,7 +272,7 @@ Flavour Hadron_Remnant::RemnantFlavour(const Flavour & flav) {
   return m_beamflav.IsAnti()?Flavour(kfcode).Bar():Flavour(kfcode);
 }
 
-void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & copy) {
+bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & copy) {
   // Calculate the total momentum that so far has been extracted through
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
@@ -293,11 +296,13 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
   for (Particle  const * pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
   }
-  if (remnant_masses > m_residualE && m_resenergyWarnings++<5)
-    msg_Debugging() << METHOD << ": Warning, HadMasses of remnants = "
-                << remnant_masses << " vs. residual energy = " << m_residualE << "\n";
+  if (remnant_masses > availMom[0]) {
+    msg_Debugging() << METHOD
+                    << ": Warning, HadMasses of remnants = " << remnant_masses
+                    << " vs. residual energy = " << availMom[0] << "\n";
+    return false;
+  }
   for (auto part : m_spectators) {
-    if (availMom[0] < 0) msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
     if (part==m_spectators.back()) part->SetMomentum(availMom);
     else {
       part->SetMomentum(SelectZ(part->Flav(),availMom[0], remnant_masses)*availMom);
@@ -315,6 +320,7 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     else p_beamblob->AddToOutParticles(part);
     (*ktmap)[part] = Vec4D();
   }
+  return true;
 }
 
 double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,
@@ -373,31 +379,13 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   DEBUG_FUNC("");
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav)==p_partons->end()) {
-    if (m_extractionErrors++<5) {
-      msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
-    }
-    return false;
-  }
-  if (mom[0] < flav.HadMass()) {
-    msg_Debugging() << METHOD << ": parton too soft, mass = " << flav.HadMass()
-                    << " and energy = " << mom[0] << "\n";
-    return false;
-  }
-  // Still enough energy for parton and its remnant quark?
-  // We're checking for the remnant masses as well, so the stretching onto the
-  // mass-shell works out later.
-  double required_energy = MinRequiredEnergy(mom[0], flav);
-  if (required_energy>m_residualE) {
-    msg_Debugging()<<METHOD<<": not enough energy for remnants, E_{required} "
-		   <<mom[0]<<" > E_{in beam} = "<<m_residualE<<".\n";
+    msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
     return false;
   }
   // Still enough energy?  And in range?
   double x = mom[0]/m_residualE;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
-    if (m_extractionErrors++<5) {
-      msg_Error()<<METHOD<<": out of limits, x = "<<x<<".\n";
-    }
+    msg_Error()<<METHOD<<": out of limits, x = "<<x<<".\n";
     return false;
   }
   msg_Debugging()<<flav<<" with mom = "<<mom<<" can be extracted.\n";
@@ -414,17 +402,4 @@ void Hadron_Remnant::Output() {
     msg_Out()<<" "<<flit;
   }
   msg_Out()<<"}.\n";
-}
-
-double Hadron_Remnant::EstimateRequiredEnergy() const
-{
-  double masses = 0.;
-  for (Particle const * pit : m_spectators) {
-    masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
-  }
-  if (!m_valence) {
-    masses += 2 * Flavour(kf_d).HadMass();
-  }
-  // Adding lambda_QCD for the gluon that might be added later in CompensateColours()
-  return masses + m_LambdaQCD;
 }

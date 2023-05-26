@@ -102,7 +102,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
     found = false;
     for (size_t i = 0; i < bloblist->size(); ++i) {
       Blob *meblob = (*bloblist)[i];
-      if (meblob->Has(blob_status::needs_showers) &&	  
+      if (meblob->Has(blob_status::needs_showers) &&
           meblob->Type() != btp::Hard_Decay) {
 	piIter = SelectInterface(meblob);
         switch (AttachShowers(meblob, bloblist, piIter->second)) {
@@ -213,6 +213,11 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
     pertinterface->CleanUp();
     return stat;
   }
+  if (blob->Type() == ::btp::Signal_Process) {
+    for (int i=0; i<2; ++i) {
+      p_remnants->GetRemnant(i)->Reset();
+    }
+  }
   if (blob->Type() != ::btp::Hadron_Decay) {
     msg_Debugging() << METHOD << "(): Setting scale for MI {\n";
     double scale(0.0);
@@ -298,7 +303,8 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
     noshowerblob->AddToOutParticles(new Particle(*blob->OutParticle(i)));
     blob->OutParticle(i)->SetStatus(part_status::decayed);
   }
-  noshowerblob->SetStatus();
+  noshowerblob->SetStatus(blob_status::needs_beams |
+                          blob_status::needs_hadronization);
   if (blob->Type() != btp::Hadron_Decay) {
     noshowerblob->AddStatus(blob_status::needs_reconnections);
   }
@@ -306,7 +312,7 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
   noshowerblob->SetTypeSpec("No_Shower");
   bloblist->push_back(noshowerblob);
   blob->SetStatus(blob_status::inactive);
-  return true;
+  return p_remnants->ExtractShowerInitiators(noshowerblob);
 }
 
 bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
