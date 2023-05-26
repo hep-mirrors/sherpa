@@ -1,5 +1,5 @@
 
-set(Recola_SOURCES Recola_Interface.C Recola_Born.C  Recola_Virtual.C)
+set(Recola_SOURCES Recola_Interface.C Recola_Born.C Recola_Real.C Recola_Virtual.C)
 
 sherpa_create_git_info(Recola)
 

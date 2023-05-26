@@ -1,4 +1,5 @@
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/Real.H"
 
@@ -12,17 +13,18 @@
 using namespace YFS;
 using namespace MODEL;
 
+std::ofstream real_out, out_ps;
+
 
 Real::Real(const PHASIC::Process_Info& pi)  {
    /* Load Real ME */
    PRINT_VAR(pi);
    PHASIC::Process_Info real_pi(pi);
-   real_pi.m_fi.m_nlotype = ATOOLS::nlo_type::lo;
    real_pi.m_mincpl[0] = pi.m_mincpl[0];
    real_pi.m_maxcpl[0] = pi.m_maxcpl[0];
-   real_pi.m_mincpl[1] = pi.m_mincpl[1] + 1;
-   real_pi.m_maxcpl[1] = pi.m_maxcpl[1] + 1;
-   p_real_me = PHASIC::Tree_ME2_Base::GetME2(real_pi);
+   real_pi.m_mincpl[1] = pi.m_mincpl[1];
+   real_pi.m_maxcpl[1] = pi.m_maxcpl[1];
+   p_real_me =  PHASIC::Virtual_ME2_Base::GetME2(real_pi);
    if (!p_real_me)  THROW(not_implemented, "Couldn't find real ME for this process.");
    MODEL::s_model->GetCouplings(m_cpls);
    /* Load color-correlated ME. TODO: orders */
@@ -33,7 +35,15 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
    m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
-  m_factor = p_real_me->AlphaQED()/2.0/M_PI;
+   // m_factor = m_sym*p_real_me->AlphaQED()/2/M_PI;
+  m_factor = p_real_me->AlphaQED()/m_sym;
+  if(m_check_real){
+    if(FileExists("recola-real.txt")) Remove("recola-real.txt");
+    if(FileExists("ps-points.yaml")) Remove("ps-points.yaml");
+    real_out.open("recola-real.txt", std::ios_base::app); // append instead of overwrite
+    out_ps.open("ps-points.yaml",std::ios_base::app);
+    out_ps<<"MOMENTA:"<<std::endl;
+  }
 
 }
 
@@ -42,6 +52,27 @@ Real::~Real() {
 
 double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
   {
-    double R = p_real_me->Calc(p);
-    return R*m_rescale_alpha/m_sym;
+    if(m_check_real){
+      out_ps<<std::setprecision(15)<<"  - ["<<std::endl;
+      int j=0;
+      for(auto k: p){
+        out_ps<<"      [";
+        if(j==0) out_ps<<"11, ";
+        if(j==1) out_ps<<"-11, ";
+        if(j==2) out_ps<<"13, ";
+        if(j==3) out_ps<<"-13, ";
+        if(j==4) out_ps<<"22, ";
+        for(int i=0; i<4; i++){
+          if(i!=3) out_ps<<k[i]<<",";
+          else out_ps<<k[i];
+        }
+        out_ps<<"],"<<std::endl;
+        j++;
+      }
+      out_ps<<"    ]"<<std::endl;
+  }
+    p_real_me->Calc(p);
+    double R = p_real_me->ME_Finite();
+    if(m_check_real) real_out<<std::setprecision(15)<<R/2/M_PI<<std::endl;
+    return R*m_rescale_alpha/2./M_PI;
   }

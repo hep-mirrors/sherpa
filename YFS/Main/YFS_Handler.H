@@ -130,6 +130,7 @@ public:
     void GenerateWeight();
     void CreatMomentumMap();
     void MakeCEEX(const Vec4D_Vector &p);
+    Vec4D_Vector GetPhotons();
     double Flux(const Vec4D&, const Vec4D&);
     inline double GetWeight() const      { return m_yfsweight;  }
     inline ATOOLS::Vec4D GetPhotonSum() const      { return m_photonSumISR;  }
@@ -166,6 +167,7 @@ public:
     inline void SetSprimeMin(double sp) {m_smin = sp;}
     inline void SetCouplings(MODEL::Coupling_Map &cpls)   { m_cpls = cpls; }
     inline void SetNLOType(ATOOLS::nlo_type::code nlo_type) {m_nlotype = nlo_type;}
+    inline NLO_Base *NLO() {return p_nlo; }
     // inline void SetFSRMomenta(ATOOLS::Vec4D_Vector f) { m_FSRMomentaME = f;}
     inline std::vector<double> SetOrder(double qcd, double ew) {
         m_MEorder.clear();
@@ -191,7 +193,6 @@ public:
     inline YFS::Ceex_Base *CEEX() {return p_ceex;}
 
     double Eikonal(Vec4D k);
-    double Eikonal(Vec4D k, Vec4D p1, Vec4D p2);
     double CalculateNLO();
     double MasslessEikonal(Vec4D k, Vec4D p1, Vec4D p2);
     bool CalculateFSR();

@@ -41,6 +41,7 @@ public:
   double CalculateReal(Vec4D &k);
   double CalculateRealVirtual();
   double CalculateRealReal();
+  double CollinearReal(Vec4D &k, Vec4D_Vector &p);
 
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   double CalculateNLO();

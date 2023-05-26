@@ -151,6 +151,7 @@ namespace Recola {
   void Recola_Interface::RegisterDefaults() const
   {
     Scoped_Settings s{ Settings::GetMainSettings()["Recola"] };
+    Scoped_Settings spol{ Settings::GetMainSettings()["POLARIZATIONS"] };
     s["VERBOSITY"].SetDefault(0);
     s["IGNORE_MODEL"].SetDefault(0);
     s["EXIT_ON_ERROR"].SetDefault(1);
@@ -170,7 +171,7 @@ namespace Recola {
     s["USE_DECAY"].SetDefault(1);
     s["MASS_REG"].SetDefault(false);
     s["NO_SELF_ENERGY"].SetDefault(false);
-
+    
     // find RECOLA installation prefix with several overwrite options
     char *var=NULL;
     s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -342,7 +343,8 @@ namespace Recola {
     
       
     string procstring(process2Recola(args.Flavours()));
-    define_process_rcl(procIndex, procstring.c_str(), "NLO");
+    if(amptype==1) define_process_rcl(procIndex, procstring.c_str(), "LO");
+    else define_process_rcl(procIndex, procstring.c_str(), "NLO");
     
     
     Scoped_Settings s{ Settings::GetMainSettings()["Recola"] };
@@ -381,8 +383,8 @@ namespace Recola {
     }
 
     // define process in Recola, at this stage always 'NLO'
-    define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
-    
+    if(amptype==-1) define_process_rcl(procIndex, process2Recola(pi).c_str(), "LO");
+    else define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
     
     s_interference[procIndex]=false;
     Scoped_Settings s{ Settings::GetMainSettings()["Recola"] };
@@ -404,7 +406,6 @@ namespace Recola {
       
       int quarkcount(0), gluoncount(0);
       int tempQCD(pi.m_maxcpl[0]), tempEW(pi.m_maxcpl[1]);
-      
       if(pi.m_fi.m_nlotype==nlo_type::loop){
         
         // Check whether for this process any interference 
@@ -659,6 +660,39 @@ namespace Recola {
     }
   }
   
+
+  void Recola_Interface::EvaluateReal(int id, const Vec4D_Vector& momenta, METOOLS::DivArrD& real, int amptype)
+  {
+    const int NN = momenta.size();
+    double fpp[NN][4];
+    
+    for (int i=0; i<NN; i++){
+      for (int mu=0; mu<4; mu++){
+        fpp[i][mu] = momenta[i][mu];
+      }
+    }
+    double fA2[2]={0.0};
+    
+    bool momcheck(0);
+    int procIndex(id);
+    PHASIC::Process_Info pi(s_procmap[id]);
+    
+    /*if (s_interference[procIndex]){
+      get_squared_amplitude_rcl(id,pi.m_maxcpl[0],"LO",fA2[0]);
+      }*/
+    if(amptype==12)
+    {
+      compute_process_rcl(id,fpp,"NLO",fA2,momcheck);
+      real.Finite() = fA2[1];
+
+    }
+    else if (amptype==1)
+    {
+      compute_process_rcl(id,fpp,"LO",fA2,momcheck);
+      real.Finite() = fA2[0];
+    } 
+  }
+
   void Recola_Interface::EvaluateBorn(int id, const Vec4D_Vector& momenta, double& bornres, int amptype)
   {
     const int NN = momenta.size();

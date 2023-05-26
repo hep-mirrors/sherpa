@@ -68,7 +68,7 @@ void YFS_Process::Init(const Process_Info &pi,
   Process_Info ypi(pi), vpi(pi);
   if (pi.m_fi.m_nlocpl[0] != 0) THROW(not_implemented, "YFS cannot do NLO QCD.");
   if (pi.Has(nlo_type::rsub) || pi.Has(nlo_type::vsub)) {
-    THROW(fatal_error, "YFS subtraction terms cannot be seperated. Only use BVR in NLO_Type");
+    THROW(fatal_error, "YFS subtraction terms cannot be seperated. Only use BVR in NLO_Part");
   }
   m_name = GenerateName(ypi.m_ii, ypi.m_fi);
   Process_Base::Init(ypi, beam, isr, yfs);
@@ -82,13 +82,14 @@ void YFS_Process::Init(const Process_Info &pi,
     }
     rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     // rpi.m_megenerator = rpi.m_rsmegenerator;
-    // p_realproc = InitProcess(rpi,nlo_type::rsub, true);
+    // p_realproc = InitProcess(rpi,nlo_type::born, false);
     // p_realproc->FillProcessMap(p_apmap);
-    // p_ampl = CreateAmplitude(p_realproc->Selected()->GetSubevtList()->back());
+    // // p_ampl = new CreateAmplitude(p_realproc->Selected()->GetSubevtList()->back());
     // p_realproc->InitScale();
     // p_realproc->SetLookUp(false);
     // p_realproc->SetParent(this);
     // p_realproc->SetSelected(this);
+
     p_yfs->p_nlo->InitializeReal(rpi);
     p_yfs->SetNLOType(nlo_type::real);
 
@@ -139,7 +140,8 @@ Process_Base* YFS_Process::InitProcess
 {
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
-  Process_Base* proc = m_gens.InitializeProcess(cpi, true);
+  Process_Base* proc;
+  if(!real) proc = m_gens.InitializeProcess(pi, false);
   if (!proc)
   {
     std::stringstream msg;
@@ -183,7 +185,7 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
     exh->RemoveTerminatorObject(p_int);
     return 0;
   }
-  return 1;
+  // return 1;
 }
 
 
@@ -206,6 +208,7 @@ Cluster_Amplitude *YFS_Process::CreateAmplitude(const NLO_subevt *sub) const
 {
   Cluster_Amplitude *ampl = Cluster_Amplitude::New();
   ampl->SetNIn(m_nin);
+  PRINT_INFO(p_realproc->Generator());
   ampl->SetMS(p_realproc->Generator());
   ampl->SetMuF2(sub->m_mu2[stp::fac]);
   ampl->SetMuR2(sub->m_mu2[stp::ren]);
@@ -232,25 +235,43 @@ Weight_Info *YFS_Process::OneEvent(const int wmode,ATOOLS::Variations_Mode varmo
 {
   p_selected = p_bornproc;
   Weight_Info *winfo(NULL);
+  // if(p_int->YFS()->GetWeight()!=0.) p_yfs->CalculateBeta();
   winfo = p_int->PSHandler()->OneEvent(this, varmode, mode);
+  // if(p_realproc) OneRealEvent();
   return winfo;
 }
 
 
 void YFS_Process::FindResonances() {
-  // SHERPA::Resonance_Finder rf = SHERPA::Resonance_Finder(p_me);
   std::map<std::string, MODEL::Vertex_List> restab_map;
-
-  PRINT_VAR("Finding resonaces");
-  // for (size_t j=0;j<this->Size();++j) {
   Vertex_List vlist;
   FindProcessPossibleResonances(m_flavs, vlist);
-  msg_Out() << "Process: " << this->Name() << " -> "
+  msg_Debugging() << "Process: " << this->Name() << " -> "
             << vlist.size() << " non-QCD resonances.\n";
   for (size_t k = 0; k < vlist.size(); ++k) msg_Out() << vlist[k] << endl;
   restab_map[this->Name()] = vlist;
   p_yfs->p_dipoles->SetProcResMap(restab_map);
 }
+
+void YFS_Process::OneRealEvent(){
+  // Vec4D_Vector &p(p_yfs);
+  Weight_Info *winfo(NULL);
+  Vec4D_Vector plab;
+  Vec4D_Vector pho = p_yfs->GetPhotons();
+  // Flavour *fl = p_realproc->Flavours();
+  for(auto k: pho){
+    Vec4D_Vector bornmom = p_yfs->BornMomenta();
+    p_yfs->NLO()->MapMomenta(bornmom,k);
+    bool checkK = p_yfs->NLO()->CheckPhotonForReal(k);
+    if(!checkK) return;
+    bornmom.push_back(k);
+    p_realproc->Integrator()->SetMomenta(bornmom);
+    p_realproc->Selector()->Trigger(bornmom);
+    ATOOLS::Weights_Map  wgtmap = p_realproc->Integrator()->Process()->Differential(bornmom, Variations_Mode::all);
+    // PRINT_VAR(p_realproc->Integrator()->Process()->m_last);
+  }
+}
+
 
 
 void YFS_Process::FindProcessPossibleResonances

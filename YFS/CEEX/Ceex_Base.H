@@ -110,7 +110,6 @@ namespace YFS {
     Complex CouplingG();
     void MakeProp();
     void Reset();
-    double Eikonal(Vec4D k, Vec4D p1, Vec4D p2);
     
     inline double GetResult() {return m_result;}
     inline void SetISRPhotons(Vec4D_Vector &k) {m_isrphotons=k;}
