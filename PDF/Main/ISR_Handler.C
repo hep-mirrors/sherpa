@@ -424,31 +424,28 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
   default:
     return 0.;
   }
-  if (true) {
-    double f1 = (cmode & 1) ? p_isrbase[0]->Weight(fl1) : 1.0;
-    double f2 = (cmode & 2) ? p_isrbase[1]->Weight(fl2) : 1.0;
-    m_xf1 = x1 * f1;
-    m_xf2 = x2 * f2;
-    msg_IODebugging() << "  PDF1: " << rpa->gen.Beam1() << " -> " << fl1
-                      << " at (" << x1 << "," << sqrt(Q12) << ") -> "
-                      << om::bold << f1 << om::reset << "\n";
-    msg_IODebugging() << "  PDF2: " << rpa->gen.Beam2() << " -> " << fl2
-                      << " at (" << x2 << "," << sqrt(Q22) << ") -> "
-                      << om::bold << f2 << om::reset << "\n";
-    msg_IODebugging() << "  Weight: " << f1 * f2 << std::endl;
-    if (IsBad(f1 * f2))
-      return 0.0;
-    if (s_nozeropdf && f1 * f2 == 0.0)
-      return pow(std::numeric_limits<double>::min(), 0.25);
-    if (mode & 8) {
-      if (mode & 2)
-        return f1;
-      if (mode & 4)
-        return f2;
-    }
-    return f1 * f2;
+  double f1 = (cmode & 1) ? p_isrbase[0]->Weight(fl1) : 1.0;
+  double f2 = (cmode & 2) ? p_isrbase[1]->Weight(fl2) : 1.0;
+  m_xf1 = x1 * f1;
+  m_xf2 = x2 * f2;
+  msg_IODebugging() << "  PDF1: " << rpa->gen.Beam1() << " -> " << fl1
+                    << " at (" << x1 << "," << sqrt(Q12) << ") -> "
+                    << om::bold << f1 << om::reset << "\n";
+  msg_IODebugging() << "  PDF2: " << rpa->gen.Beam2() << " -> " << fl2
+                    << " at (" << x2 << "," << sqrt(Q22) << ") -> "
+                    << om::bold << f2 << om::reset << "\n";
+  msg_IODebugging() << "  Weight: " << f1 * f2 << std::endl;
+  if (IsBad(f1 * f2))
+    return 0.0;
+  if (s_nozeropdf && f1 * f2 == 0.0)
+    return pow(std::numeric_limits<double>::min(), 0.25);
+  if (mode & 8) {
+    if (mode & 2)
+      return f1;
+    if (mode & 4)
+      return f2;
   }
-  return 0.;
+  return f1 * f2;
 }
 
 double ISR_Handler::Flux(const Vec4D &p1, const Vec4D &p2) {

@@ -19,10 +19,9 @@ private:
 
   void MakeSpectator(ATOOLS::Particle *parton) override;
   void MakeRemnants();
-  void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap, const bool &copy);
+  bool MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap, const bool &copy);
   double SelectZ(const ATOOLS::Flavour &flav, double restmom, double remnant_masses) const;
   ATOOLS::Particle *MakeParticle(const ATOOLS::Flavour &flav);
-  double EstimateRequiredEnergy(bool needs_valence_quarks) const;
   void FindRecoiler();
   void Output() const;
 public:
