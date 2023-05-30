@@ -81,13 +81,12 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   m_massin(m_flavs[m_indices[0]].HadMass()),
   m_massout(m_flavs[m_indices[1]].HadMass()) {
   /////////////////////////////////////////////////////////////////////////////
-  // As a quick fix, add relevant parameters here.
-  // TODO: Will have to make them part of an overall "reduced" model or input 
-  //       structure at a later stage.
+  // Relevant parameters here.
   /////////////////////////////////////////////////////////////////////////////
+  
   double alphaQED   = 1./137.;
   double sin2thetaW = 0.22290, cos2thetaW = 1.-sin2thetaW;
-  double I_f        = -1.0/2.0;
+  double e_coupling = sqrt(4.*M_PI*alphaQED);
   kf_code N1        = m_flavs[m_indices[0]].Kfcode(), N2 = m_flavs[m_indices[1]].Kfcode();
 
   //kf_code of nucleons IN vs OUT
@@ -98,79 +97,96 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   std::string Vckm_string = compareQuarkContent(getQuarkContent(IN), getQuarkContent(OUT)); 
   double Vckm = ffs->GetModelParms(Vckm_string);
   
-  //msg_Out() << "TEST" << m_flavs[m_indices[0]].Includes(Flavour(quark_u)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_d)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_s)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_c)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_t)) << " " << m_flavs[m_indices[0]].Includes(Flavour(quark_b))  << "\n\n\n";
-
   cpl_info::code GE = cpl_info::GE, GM = cpl_info::GM;
   cpl_info::code A  = cpl_info::axialvector, P = cpl_info::pseudoscalar;
 
+  /////////////////////////////////////////////////////////////////////////////
+  // Propagator info
+  // We define all propagators here by QED (Photon), NC (Z boson), CC (W boson)
+  /////////////////////////////////////////////////////////////////////////////
   prop_type::code prop_type = prop_type::unstable;
+  kf_code prop_kf_P   = kf_photon;
+  kf_code prop_kf_Z   = kf_Z;
+  kf_code prop_kf_W   = kf_Wplus;
+
+  m_ffs["QED_GE"] = ffs->GetFF(N1,N2,prop_kf_P,GE); 
+  m_ffs["QED_GM"] = ffs->GetFF(N1,N2,prop_kf_P,GM); 
+  m_ffs["QED_A"]  = ffs->GetFF(N1,N2,prop_kf_P,A);
+  m_ffs["QED_P"]  = ffs->GetFF(N1,N2,prop_kf_P,P);
+  m_ffprops["QED"] = ffprops->GetProp(prop_kf_P, prop_type);
+
+  m_ffs["NC_GE"] = ffs->GetFF(N1,N2,prop_kf_Z,GE); 
+  m_ffs["NC_GM"] = ffs->GetFF(N1,N2,prop_kf_Z,GM); 
+  m_ffs["NC_A"]  = ffs->GetFF(N1,N2,prop_kf_Z,A);
+  m_ffs["NC_P"]  = ffs->GetFF(N1,N2,prop_kf_Z,P);
+  m_ffprops["NC"] = ffprops->GetProp(prop_kf_Z, prop_type);
+
+  m_ffs["CC_GE"] = ffs->GetFF(N1,N2,prop_kf_W,GE); 
+  m_ffs["CC_GM"] = ffs->GetFF(N1,N2,prop_kf_W,GM); 
+  m_ffs["CC_A"]  = ffs->GetFF(N1,N2,prop_kf_W,A);
+  m_ffs["CC_P"]  = ffs->GetFF(N1,N2,prop_kf_W,P);
+  m_ffprops["CC"] = ffprops->GetProp(prop_kf_W, prop_type);
 
   if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
-    ///////////////////////////////////////////////////////////////////////////
-    // Electromagnetic interaction (ignoring neutral weak interaction for the
-    // time being).
-    // TODO: Add weak neutral interaction & form factors - we will have to
-    //       find a way to make this "switchable" with an input/model file. 
-    ///////////////////////////////////////////////////////////////////////////
-    QED_coupling = ( -Complex( 0., 1.) * m_flavs[m_indices[0]].Charge() * sqrt(4.*M_PI*alphaQED) );
+    /////////////////////////////////////////////////////////////////////////
+    // Hadron => Hadron
+    /////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////////
+    // QED coupling:  -i e e_f gamma^mu
+    /////////////////////////////////////////////////////////////////////////
+    QED_coupling = ( -Complex( 0., 1.) * m_flavs[m_indices[0]].Charge() *  e_coupling);
     QED_cR = QED_cL = Complex(1.,0.);
 
-    kf_code prop_kf_P   = kf_photon;
-    m_ffs["GE_P"] = ffs->GetFF(N1,N2,prop_kf_P,GE); 
-    m_ffs["GM_P"] = ffs->GetFF(N1,N2,prop_kf_P,GM); 
-    m_ffs["A_P"]  = ffs->GetFF(N1,N2,prop_kf_P,A);
-    m_ffs["P_P"]  = ffs->GetFF(N1,N2,prop_kf_P,P);
-
-    m_ffprops["prop_P"] = ffprops->GetProp(prop_kf_P, prop_type);
+    /////////////////////////////////////////////////////////////////////////
+    // Weak Neutral coupling:  -i g_Z/(2) (cL gamma^{mu L} + cR gamma^{mu R})
+    /////////////////////////////////////////////////////////////////////////
+    double I_f = 1./2.; //TODO: Check the sign of different nucleons
+    Weak_NC_coupling = -Complex( 0., 1.) * e_coupling / (sqrt(sin2thetaW*cos2thetaW)*2);
+    Weak_NC_cR = Complex(1.,0.) * -(m_flavs[m_indices[0]].Charge())*sin2thetaW;
+    Weak_NC_cL = Complex(1.,0.) * ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW);
 
     /////////////////////////////////////////////////////////////////////////
-    // Weak Neutral coupling:  -i g_Z/(2) (gamma^{mu L} + gamma^{mu R})
+    // Weak Charged (left-handed) coupling:  0
     /////////////////////////////////////////////////////////////////////////
-
-    Weak_coupling = (-Complex( 0., 1.) * sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW)));
-    Weak_cR = Complex(1.,0.) * -(m_flavs[m_indices[0]].Charge())*sin2thetaW;
-    Weak_cL = Complex(1.,0.) * ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW);
-
-    kf_code prop_kf_Z   = kf_Z;
-    m_ffs["GE_Z"] = ffs->GetFF(N1,N2,prop_kf_Z,GE); 
-    m_ffs["GM_Z"] = ffs->GetFF(N1,N2,prop_kf_Z,GM); 
-    m_ffs["A_Z"]  = ffs->GetFF(N1,N2,prop_kf_Z,A);
-    m_ffs["P_Z"]  = ffs->GetFF(N1,N2,prop_kf_Z,P);
-
-    m_ffprops["prop_Z"] = ffprops->GetProp(prop_kf_Z, prop_type);
+    Weak_CC_coupling = Weak_CC_cR = Weak_CC_cL = Complex(0.,0.);
   }
   else {
+    /////////////////////////////////////////////////////////////////////////
+    // Hadron_A => Hadron_B
+    /////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////////
-    // Weak Charged coupling
+    // QED coupling:  0
+    /////////////////////////////////////////////////////////////////////////    
+    QED_coupling = QED_cR = QED_cL = Complex( 0., 0.);
+
     /////////////////////////////////////////////////////////////////////////
-    QED_coupling = Complex( 0., 0.);
-    QED_cR = QED_cL = Complex(0.,0.);
+    // Weak Neutral coupling:  0
+    /////////////////////////////////////////////////////////////////////////
+    Weak_NC_coupling = Weak_NC_cR = Weak_NC_cL = Complex(0.,0.);
 
-    Weak_coupling = -Complex( 0., 1.) * sqrt(4.*M_PI*alphaQED/(8.0*sin2thetaW))*Vckm;
-    Weak_cR = Complex( 0., 0.);
-    Weak_cL = Complex( 1., 0.);
-
-    kf_code prop_kf_W   = kf_Wplus;
-    m_ffs["GE_W"] = ffs->GetFF(N1,N2,prop_kf_W,GE); 
-    m_ffs["GM_W"] = ffs->GetFF(N1,N2,prop_kf_W,GM); 
-    m_ffs["A_W"]  = ffs->GetFF(N1,N2,prop_kf_W,A);
-    m_ffs["P_W"]  = ffs->GetFF(N1,N2,prop_kf_W,P);
-
-    m_ffprops["prop_W"] = ffprops->GetProp(prop_kf_W, prop_type);
+    ///////////////////////////////////////////////////////////////////////////
+    // Weak Charged (left-handed) coupling: -i Vckm g_W/(2 sqrt(2)) gamma^{mu L}
+    ///////////////////////////////////////////////////////////////////////////
+    Weak_CC_coupling = -Complex( 0., 1.) * e_coupling * Vckm / (sqrt(2*sin2thetaW)*4);
+    Weak_CC_cR = Complex( 0., 0.);
+    Weak_CC_cL = Complex( 1., 0.);
   }
 };
 
 void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
 {
-  //JW: TODO. I think we need to specify the diagrams carefully here so that we're only multiplying the currents between the same diagrams?
   /////////////////////////////////////////////////////////////////////////////
   // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2) + q^{mu} F_3(q^2)] u(1) 
   /////////////////////////////////////////////////////////////////////////////
+  // , std::string Diagram_Type
+  std::string Diagram_Type = "QED";
 
   /////////////////////////////////////////////////////////////////////////
   // This assumes the momentum transfer from the other (lepton) current
   // taken as incoming, i.e. p_0 = p_1 + q.
+  // Propagator term in Nucleon side. (HERE)
   /////////////////////////////////////////////////////////////////////////
 
   const int N  = m_flavs.size();
@@ -179,10 +195,11 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
 
   const ATOOLS::Vec4<Complex> qmom = (F->P(pf)-F->P(pi));
   const double q2  = qmom.Abs2().real();
-  const complex prop_factor = m_ffprops["prop_P"]->Calc(q2);
 
-  const double G_E = m_ffs["GE_P"]->Calc(-q2), G_M = m_ffs["GM_P"]->Calc(-q2);
-  const double F_A = m_ffs["A_P"]->Calc(-q2),  F_P = m_ffs["P_P"]->Calc(-q2);
+  const complex prop_factor = m_ffprops[Diagram_Type]->Calc(q2);
+
+  const double G_E = m_ffs[Diagram_Type+"_GE"]->Calc(-q2), G_M = m_ffs[Diagram_Type+"_GM"]->Calc(-q2);
+  const double F_A = m_ffs[Diagram_Type+"_A"]->Calc(-q2),  F_P = m_ffs[Diagram_Type+"_P"]->Calc(-q2);
   const double tau = -q2/(4.*m_massin*m_massout); 
  
   double ff1  = (G_E+tau*G_M)/(1.+tau), ff2 = (G_M-G_E)/(1.+tau);
@@ -190,8 +207,10 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   Complex Zero = Complex(0.,0.);
   Complex One = Complex(1.,0.);
 
-  // ff1 = 1.0;
-  // ff2 = 0.0;
+  // double mass_gordon = sqrt((m_massin*m_massin + m_massout*m_massout) / 2.0);
+
+  // ff1 = 0.0;
+  // ff2 = 1.0;
   // ff3 = 0.0;
   // ff4 = 0.0;
   
@@ -200,34 +219,32 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
     for(int hi=0; hi<2; hi++) {
       amp *= 0.0;
 
-      if ( ff1 != 0.0 ) {
-        amp += ff1 * F->L(pf,hf, pi,hi, One,One);
-      } 
-      
-      if ( ff2 != 0.0 ) {
-        for (int hq=0;hq<2;hq++) {
-          amp += (ff2/(4.*m_massin)) * 0.5 *
-            (
-                F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
-                F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
-                F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,One) +
-                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One) +
-
-                F->L(pf_bar,hq,pi,hi,One,One) * F->Y(pf,hf,pf_bar,hq,One,One) -
-                F->L(pi_bar,hq,pi,hi,One,One) * F->Y(pf,hf,pi_bar,hq,One,One) - 
-                F->L(pf,hf,pf_bar,hq,One,One) * F->Y(pf_bar,hq,pi,hi,One,One) +
-                F->L(pf,hf,pi_bar,hq,One,One) * F->Y(pi_bar,hq,pi,hi,One,One)
-          );
+      //TODO CHECK THESE...
+      if ( Diagram_Type == "QED" && fabs(QED_coupling) > 0.0 ) {
+        if ( ff1 != 0.0 ) {
+          amp += ff1 * F->L(pf,hf, pi,hi, One,One);
+        } 
+        
+        if ( ff2 != 0.0 ) {
+          for (int hq=0;hq<2;hq++) {
+            amp += (ff2/(4.*m_massin)) *
+              (
+                  F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
+                  F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
+                  F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,One) +
+                  F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One)
+            );
+          }
         }
-      }
 
-      if ( ff3 != 0.0 ) {
-        amp += ff3 * qmom * F->Y(pf,hf, pi,hi, One,One) / m_massin;
-      }
-      //TODO Add ff4?
+        if ( ff3 != 0.0 ) {
+          amp += ff3 * qmom * F->Y(pf,hf, pi,hi, One,One) / m_massin;
+        }
+        //TODO: Add ff4?
 
-      //Divide by propagator on Nucleon Current side
-      amp = amp * QED_coupling * prop_factor / 2.0; //JW: Factor of two required...
+        //Divide by propagator on Nucleon Current side
+        amp = amp * QED_coupling * prop_factor;
+      }
 
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));

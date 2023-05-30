@@ -14,14 +14,12 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
   Scatter_Current_Base(flavs, indices, name),
   m_anti(m_flavs[m_indices[0]].IsAnti()) {
   /////////////////////////////////////////////////////////////////////////////
-  // As a quick fix, add relevant parameters here.
-  // TODO: Will have to make them part of an overall "reduced" model or input 
-  //       structure at a later stage.
+  // Relevant parameters here.
   /////////////////////////////////////////////////////////////////////////////
 
   double alphaQED   = 1./137.;
   double sin2thetaW = 0.22290, cos2thetaW = 1. - sin2thetaW;
-  double I_f        = -1.0/2.0;
+  double e_coupling = sqrt(4.*M_PI*alphaQED);
   kf_code N1        = m_flavs[m_indices[0]].Kfcode(), N2 = m_flavs[m_indices[1]].Kfcode();
 
   /////////////////////////////////////////////////////////////////////////////
@@ -34,41 +32,71 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
   if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
     if (m_flavs[m_indices[0]].IsNeutrino() ) {
       /////////////////////////////////////////////////////////////////////////
+      // Neutrino => Neutrino
+      /////////////////////////////////////////////////////////////////////////
+
+      /////////////////////////////////////////////////////////////////////////
+      // QED coupling:  0
+      /////////////////////////////////////////////////////////////////////////
+      QED_coupling = QED_cR = QED_cL = Complex( 0., 0.);
+
+      /////////////////////////////////////////////////////////////////////////
       // Weak Neutral coupling: -i g_Z/(2) (gamma^{mu L} + gamma^{mu R}) To neutrinos
       /////////////////////////////////////////////////////////////////////////
-      QED_coupling = Complex( 0., 0.);
-      QED_cR = QED_cL = Complex(0.,0.);
+      Weak_NC_coupling = (-Complex( 0., 1.) * e_coupling / (sqrt(sin2thetaW*cos2thetaW)*2.));
+      Weak_NC_cR = Complex(0.,0.);
+      Weak_NC_cL = Complex(1.,0.) * (1./2.);
 
-      Weak_coupling = (-Complex( 0., 1.) * sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW)));
-      Weak_cR = Complex(0.,0.);
-      Weak_cL = Complex(1.,0.) * I_f;
+      /////////////////////////////////////////////////////////////////////////
+      // Weak Charged coupling:  0
+      /////////////////////////////////////////////////////////////////////////
+      Weak_CC_coupling = Weak_CC_cR = Weak_CC_cL = Complex(0.,0.);
     }
     else if (m_flavs[m_indices[0]].IsChargedLepton() || m_flavs[m_indices[0]].IsBaryon()) {
       /////////////////////////////////////////////////////////////////////////
-      // QED coupling only for the time being:  -i e e_f gamma^mu To leptons
+      // Lepton => Lepton
       /////////////////////////////////////////////////////////////////////////
-      QED_coupling = ( -Complex( 0., 1.) * m_flavs[m_indices[0]].Charge() * sqrt(4.*M_PI*alphaQED) );
+
+      /////////////////////////////////////////////////////////////////////////
+      // QED coupling:  -i e e_f gamma^mu
+      /////////////////////////////////////////////////////////////////////////
+      QED_coupling = ( -Complex( 0., 1.) * m_flavs[m_indices[0]].Charge() * e_coupling );
       QED_cR = QED_cL = Complex(1.,0.);
 
       /////////////////////////////////////////////////////////////////////////
-      // Weak Neutral coupling:  -i g_Z/(2) (gamma^{mu L} + gamma^{mu R}) To leptons
+      // Weak Neutral coupling:  -i g_Z/(2) (cL gamma^{mu L} + cR gamma^{mu R})
       /////////////////////////////////////////////////////////////////////////
+      Weak_NC_coupling = (-Complex( 0., 1.) * e_coupling /(sqrt(sin2thetaW*cos2thetaW)*2.));
+      Weak_NC_cR = Complex(1.,0.) * -(m_flavs[m_indices[0]].Charge())*sin2thetaW;
+      Weak_NC_cL = Complex(1.,0.) * ((-1./2.) - (m_flavs[m_indices[0]].Charge())*sin2thetaW);
 
-      Weak_coupling = (-Complex( 0., 1.) * sqrt(4.*M_PI*alphaQED/(2*sin2thetaW*cos2thetaW)));
-      Weak_cR = Complex(1.,0.) * -(m_flavs[m_indices[0]].Charge())*sin2thetaW;
-      Weak_cL = Complex(1.,0.) * ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW);
+      /////////////////////////////////////////////////////////////////////////
+      // Weak Charged coupling:  0
+      /////////////////////////////////////////////////////////////////////////
+      Weak_CC_coupling = Weak_CC_cR = Weak_CC_cL = Complex(0.,0.);
     }
   }
   else if (m_flavs[m_indices[0]].LeptonFamily()==m_flavs[m_indices[1]].LeptonFamily()) {
-    ///////////////////////////////////////////////////////////////////////////
-    // Weak left-handed coupling: -i g_W/(2 sqrt(2)) gamma^{mu L}
-    ///////////////////////////////////////////////////////////////////////////
-    QED_coupling = Complex( 0., 0.);
-    QED_cR = QED_cL = Complex(0.,0.);
+    /////////////////////////////////////////////////////////////////////////
+    // Lepton_i => Lepton_f 
+    /////////////////////////////////////////////////////////////////////////
 
-    Weak_coupling = -Complex( 0., 1. ) * sqrt(4.*M_PI*alphaQED/(sqrt(8.)*sin2thetaW));
-    Weak_cR = Complex(0.,0.);
-    Weak_cL = Complex(1.,0.);
+    /////////////////////////////////////////////////////////////////////////
+    // QED coupling:  0
+    /////////////////////////////////////////////////////////////////////////    
+    QED_coupling = QED_cR = QED_cL = Complex( 0., 0.);
+
+    /////////////////////////////////////////////////////////////////////////
+    // Weak Neutral coupling:  0
+    /////////////////////////////////////////////////////////////////////////
+    Weak_NC_coupling = Weak_NC_cR = Weak_NC_cL = Complex(0.,0.);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Weak Charged (left-handed) coupling: -i g_W/(2 sqrt(2)) gamma^{mu L}
+    ///////////////////////////////////////////////////////////////////////////
+    Weak_CC_coupling = -Complex( 0., 1. ) * e_coupling / (sqrt(2*sin2thetaW)*2);
+    Weak_CC_cR = Complex(0.,0.);
+    Weak_CC_cL = Complex(1.,0.);
 
   }
   else THROW(fatal_error,"family non-diagonal lepton interaction not yet implemented.")
@@ -76,6 +104,9 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
 
 void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
 {
+
+  // , std::string Diagram_Type
+  std::string Diagram_Type = "QED";
 
   /////////////////////////////////////////////////////////////////////////
   // This assumes the momentum transfer from the other (lepton) current
@@ -95,18 +126,19 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
   // We separate the left and right handed terms 
   /////////////////////////////////////////////////////////////////////////
 
-
   Vec4C amp;
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
       amp *= 0.0;
       
-      amp +=  QED_cR * F->L(pi,hi, pf,hf, One, Zero); //Right handed
-      amp +=  QED_cL * F->L(pi,hi, pf,hf, Zero, One); //Left handed
+      if ( Diagram_Type == "QED" && fabs(QED_coupling) > 0.0 ) {
+        amp +=  QED_cR * F->L(pi,hi, pf,hf, One, Zero); //Right handed
+        amp +=  QED_cL * F->L(pi,hi, pf,hf, Zero, One); //Left handed
 
-      amp = amp * QED_coupling;
+        // Factor of two to undo spin averaging.
+        amp = amp * QED_coupling / 2.0;
+      }
 
-      
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));
       spins.push_back(make_pair(pi,hi));
