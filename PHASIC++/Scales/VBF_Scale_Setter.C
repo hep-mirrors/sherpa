@@ -211,13 +211,16 @@ VBF_Scale_Setter::~VBF_Scale_Setter()
 
 bool VBF_Scale_Setter::Initialize()
 {
-  if (p_proc->NOut()!=3) return true;
+  int sout(0);
+  for (size_t i(0);i<p_proc->NOut();++i)
+    sout+=p_proc->Flavours()[p_proc->NIn()+i].Strong();
+  if (sout!=2) return true;
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetProc(p_proc);
   ampl->SetNIn(2);
   for (size_t i(0);i<2;++i)
     ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i].Bar());
-  for (size_t i(2);i<5;++i)
+  for (size_t i(2);i<p_proc->NIn()+p_proc->NOut();++i)
     ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i]);
   bool init(p_cs->GetProcess(ampl)!=NULL);
   if (!init) init=p_cs->Initialize(ampl);
@@ -408,7 +411,11 @@ double VBF_Scale_Setter::Calculate
   p_sproc=p_proc->Caller()->Get<Single_Process>();
   ampl->SetLKF(1.0);
   int mm(p_proc->Caller()->Generator()->SetMassMode(m_nproc?0:1));
-  if (!m_nproc) p_proc->Caller()->Generator()->ShiftMasses(ampl);
+  if (!m_nproc)
+    if (p_proc->Caller()->Generator()->ShiftMasses(ampl)<0) {
+       p_proc->Caller()->Generator()->SetMassMode( mm);
+       return sqrt(-1.0);
+    }
   Cluster(ampl,ampls,1);
   p_proc->Caller()->Generator()->SetMassMode(mm);
   if (ampls.empty()) {
