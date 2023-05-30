@@ -86,7 +86,11 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   
   double alphaQED   = 1./137.;
   double sin2thetaW = 0.22290, cos2thetaW = 1.-sin2thetaW;
+
   double e_coupling = sqrt(4.*M_PI*alphaQED);
+  double gz_coupling = e_coupling/(sqrt(sin2thetaW*cos2thetaW));
+  double gw_coupling = e_coupling/(sqrt(sin2thetaW));
+
   kf_code N1        = m_flavs[m_indices[0]].Kfcode(), N2 = m_flavs[m_indices[1]].Kfcode();
 
   //kf_code of nucleons IN vs OUT
@@ -133,21 +137,21 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     /////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////////
-    // QED coupling:  -i e e_f gamma^mu
+    // QED coupling: -i e e_f gamma^{mu}
     /////////////////////////////////////////////////////////////////////////
     QED_coupling = ( -Complex( 0., 1.) * m_flavs[m_indices[0]].Charge() *  e_coupling);
     QED_cR = QED_cL = Complex(1.,0.);
 
     /////////////////////////////////////////////////////////////////////////
-    // Weak Neutral coupling:  -i g_Z/(2) (cL gamma^{mu L} + cR gamma^{mu R})
+    // Weak Neutral coupling: -i g_Z gamma^{mu} (cL P^{L} + cR P^{R})
     /////////////////////////////////////////////////////////////////////////
     double I_f = 1./2.; //TODO: Check the sign of different nucleons
-    Weak_NC_coupling = -Complex( 0., 1.) * e_coupling / (sqrt(sin2thetaW*cos2thetaW)*2);
+    Weak_NC_coupling = (-Complex( 0., 1.) * gz_coupling );
     Weak_NC_cR = Complex(1.,0.) * -(m_flavs[m_indices[0]].Charge())*sin2thetaW;
     Weak_NC_cL = Complex(1.,0.) * ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW);
 
     /////////////////////////////////////////////////////////////////////////
-    // Weak Charged (left-handed) coupling:  0
+    // Weak Charged (left-handed) coupling: 0
     /////////////////////////////////////////////////////////////////////////
     Weak_CC_coupling = Weak_CC_cR = Weak_CC_cL = Complex(0.,0.);
   }
@@ -157,19 +161,19 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     /////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////////
-    // QED coupling:  0
+    // QED coupling: 0
     /////////////////////////////////////////////////////////////////////////    
     QED_coupling = QED_cR = QED_cL = Complex( 0., 0.);
 
     /////////////////////////////////////////////////////////////////////////
-    // Weak Neutral coupling:  0
+    // Weak Neutral coupling: 0
     /////////////////////////////////////////////////////////////////////////
     Weak_NC_coupling = Weak_NC_cR = Weak_NC_cL = Complex(0.,0.);
 
     ///////////////////////////////////////////////////////////////////////////
-    // Weak Charged (left-handed) coupling: -i Vckm g_W/(2 sqrt(2)) gamma^{mu L}
+    // Weak Charged (left-handed) coupling: -i g_W gamma^{mu} / (sqrt(2)) * (cL P^{L}) 
     ///////////////////////////////////////////////////////////////////////////
-    Weak_CC_coupling = -Complex( 0., 1.) * e_coupling * Vckm / (sqrt(2*sin2thetaW)*4);
+    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * Vckm ) / (sqrt(2.));
     Weak_CC_cR = Complex( 0., 0.);
     Weak_CC_cL = Complex( 1., 0.);
   }
@@ -178,7 +182,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
 {
   /////////////////////////////////////////////////////////////////////////////
-  // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2) + q^{mu} F_3(q^2)] u(1) 
+  // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2) / m + q^{mu} F_3(q^2) / m] u(1) 
   /////////////////////////////////////////////////////////////////////////////
   // , std::string Diagram_Type
   std::string Diagram_Type = "QED";
@@ -191,7 +195,10 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
 
   const int N  = m_flavs.size();
   const int pf = 2; const int pf_bar = 2+N; 
-  const int pi = 3; const int pi_bar = 3+N; 
+  const int pi = 3; const int pi_bar = 3+N;
+
+  Complex Zero = Complex(0.,0.);
+  Complex One = Complex(1.,0.); 
 
   const ATOOLS::Vec4<Complex> qmom = (F->P(pf)-F->P(pi));
   const double q2  = qmom.Abs2().real();
@@ -204,8 +211,7 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
  
   double ff1  = (G_E+tau*G_M)/(1.+tau), ff2 = (G_M-G_E)/(1.+tau);
   double ff3  = F_A, ff4 = F_P;
-  Complex Zero = Complex(0.,0.);
-  Complex One = Complex(1.,0.);
+  
 
   // double mass_gordon = sqrt((m_massin*m_massin + m_massout*m_massout) / 2.0);
 
@@ -218,33 +224,40 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
       amp *= 0.0;
-
-      //TODO CHECK THESE...
-      if ( Diagram_Type == "QED" && fabs(QED_coupling) > 0.0 ) {
-        if ( ff1 != 0.0 ) {
-          amp += ff1 * F->L(pf,hf, pi,hi, One,One);
-        } 
-        
-        if ( ff2 != 0.0 ) {
-          for (int hq=0;hq<2;hq++) {
-            amp += (ff2/(4.*m_massin)) *
-              (
-                  F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
-                  F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
-                  F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,One) +
-                  F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One)
-            );
-          }
+      
+      if ( ff1 != 0.0 ) {
+        amp += ff1 * F->L(pf,hf, pi,hi, One,One);
+      } 
+      
+      if ( ff2 != 0.0 ) {
+        for (int hq=0;hq<2;hq++) {
+          amp += (ff2/(4.*m_massin)) *
+            (
+                F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
+                F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
+                F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,One) +
+                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One)
+          );
         }
-
-        if ( ff3 != 0.0 ) {
-          amp += ff3 * qmom * F->Y(pf,hf, pi,hi, One,One) / m_massin;
-        }
-        //TODO: Add ff4?
-
-        //Divide by propagator on Nucleon Current side
-        amp = amp * QED_coupling * prop_factor;
       }
+
+      if ( ff3 != 0.0 ) {
+        amp += ff3 * qmom * F->Y(pf,hf, pi,hi, One,One) / m_massin;
+      }
+      //TODO: Add ff4?
+
+      if ( Diagram_Type == "QED" && fabs(QED_coupling) > 0.0 ) {
+        amp = amp * QED_coupling;
+      } 
+      else if ( Diagram_Type == "NC" && fabs(Weak_NC_coupling) > 0.0 ) {
+        amp = amp * Weak_NC_coupling;
+      }
+      else if ( Diagram_Type == "CC" && fabs(Weak_CC_coupling) > 0.0 ) {
+        amp = amp * Weak_CC_coupling;
+      }
+      
+      //Propagator on Nucleon Current side
+      amp = amp * prop_factor;
 
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));
