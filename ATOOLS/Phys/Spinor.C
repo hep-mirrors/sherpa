@@ -30,8 +30,8 @@ void Spinor<Scalar>::SetGauge(const int gauge)
 template <class Scalar> Vec4<Scalar> Spinor<Scalar>::GetK0()
 {
   Vec4<Scalar> k0(1.0,0.0,0.0,0.0);
-  //k0[R3()]-=1.0; //JW: Flipped sign?
-  k0[R3()]=1.0;
+  k0[R3()]-=1.0; //JW: Flipped sign?
+  //k0[R3()]=1.0;
   return k0;
 }
 

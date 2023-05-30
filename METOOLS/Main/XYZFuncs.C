@@ -107,8 +107,8 @@ void XYZFunc::CalcEtaMu()
       _m_eta = csqrt( 2.*(pi[0]-(pi[1]+pi[2])*SQRT_05) );
       break;
     case 10 :
-      //_m_eta = csqrt( 2.*(pi[0]+pi[Spinor<double>::R3()]));//JW: Sign mistake?
-      _m_eta = csqrt( 2.*(pi[0]-pi[Spinor<double>::R3()]));
+      _m_eta = csqrt( 2.*(pi[0]+pi[Spinor<double>::R3()]));//JW: Sign mistake?
+      //_m_eta = csqrt( 2.*(pi[0]-pi[Spinor<double>::R3()]));
       break;
     default :
         THROW(not_implemented, "");
@@ -344,8 +344,8 @@ Complex XYZFunc::X( const int t1, const Vec4C p2, const bool p2anti, const int t
     break;
   case 2  : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[2])*SQRT_05) );
     break;
-  //case 10 : eta2 = sqrt( 2.*(p2[0]+p2[Spinor<double>::R3()]) );//JW: Sign mistake?
-  case 10 : eta2 = sqrt( 2.*(p2[0]-p2[Spinor<double>::R3()]) );
+  case 10 : eta2 = sqrt( 2.*(p2[0]+p2[Spinor<double>::R3()]) );//JW: Sign mistake?
+  //case 10 : eta2 = sqrt( 2.*(p2[0]-p2[Spinor<double>::R3()]) );
     break;
   default:
     THROW(not_implemented, "k0n choice not fully implemented yet.");
@@ -432,7 +432,7 @@ Vec4C XYZFunc::L( const int t1, const int t3,
       tmp_cross2 = cross( k1, k0, p_mom[t3]);
       for(int i=0; i<4; i++) {
         l[i] = A*( -k0[i]*(k1*p_mom[t1]) + k1[i]*(k0*p_mom[t1]) - Complex(0.0,1.0)*tmp_cross[i] )
-            +B*( -k1[i]*(k0*p_mom[t3]) + k0[i]*(k1*p_mom[t3]) + Complex(0.0,1.0)*tmp_cross2[i] );
+              +B*( -k1[i]*(k0*p_mom[t3]) + k0[i]*(k1*p_mom[t3]) + Complex(0.0,1.0)*tmp_cross2[i] );
       }
       break;
     case 3: // --
