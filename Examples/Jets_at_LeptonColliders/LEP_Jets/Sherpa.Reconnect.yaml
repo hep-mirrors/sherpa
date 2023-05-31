@@ -22,6 +22,9 @@ AHADIC:
   DIRECT_TRANSITIONS:    1     # switching on direct transitions of clusters to hadrons
   TRANSITION_THRESHOLD:  0.5
 
+HADRON_DECAYS:
+  Max_Proper_Lifetime: 100
+
 ANALYSIS: Rivet
 ANALYSIS_OUTPUT:  Direct_KT
 

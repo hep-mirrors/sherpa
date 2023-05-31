@@ -25,6 +25,8 @@ AMEGIC: {INTEGRATOR: 4}
 MODEL: SM
 ALPHAS(MZ): 0.118
 PARTICLE_DATA: {5: {Massive: true}}
+HADRON_DECAYS:
+  Max_Proper_Lifetime: 100
 
 PROCESSES:
 - 11 -11 -> 93 93 93{3}:
