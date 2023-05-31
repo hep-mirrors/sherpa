@@ -58,6 +58,10 @@ They can be configured with the following parameters.
   :option:`SALSherpa`
     Built-in library for the SAL photon PDF :cite:`Slominski2005bw`.
 
+  :option:`CJKSherpa`
+    Built-in library for the CJK photon PDF :cite:`Cornet:2002iy`,
+    :cite:`Cornet:2003ry`, :cite:`Cornet:2004ng`, :cite:`Cornet:2004nb`.
+
   :option:`SASGSherpa`
     Built-in library for the SaSgam photon PDF :cite:`Schuler1995fk`, :cite:`Schuler1996fc`.
 
