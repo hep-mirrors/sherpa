@@ -24,7 +24,7 @@ current working directory with
    $ tar -zxf SHERPA-MC-<VERSION>.tar.gz
 
 Alternatively, it can also be accessed via Git through the location
-specified on the download page. 
+specified on the download page.
 
 To guarantee successful installation, the following tools should be
 available on the system:
@@ -34,7 +34,7 @@ available on the system:
   * make or ninja
 
 
-Recommended:   
+Recommended:
   * Fortran compiler
   * LHAPDF  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LHAPDF=ON` cmake option to install LHAPDF on-the-fly during the Sherpa installation (internet connection required).
   * libzip  (including devel packages). If not available, use the `-DSHERPA_ENABLE_INSTALL_LIBZIP=ON` cmake option to install libzip on-the-fly during the Sherpa installation (internet connection required).
@@ -143,7 +143,7 @@ following configure command should be used
 
 .. code-block:: shell-session
 
-   $ cmake -DSHERPA_ENABLE_MPI=ON <your options> 
+   $ cmake -DSHERPA_ENABLE_MPI=ON <your options>
 
 Sherpa can then be run with
 
@@ -162,7 +162,7 @@ The following cmake command should be used
 
 .. code-block:: shell-session
 
-   $ cmake <your options> -DSHERPA_ENABLE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_Fortran_COMPILER=mpif90 
+   $ cmake <your options> -DSHERPA_ENABLE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_Fortran_COMPILER=mpif90
 
 Sherpa can then be run with
 
@@ -174,7 +174,7 @@ MacOS Installation
 ==================
 
 Installation on macOS has been tested with the native clang compiler and the native ``make``, installed through the Xcode Command Line Tools,
-and the package ``cmake``, installed through `Homebrew <https://brew.sh/>`_. With this setup it runs analogously to the usual installation procedure. 
+and the package ``cmake``, installed through `Homebrew <https://brew.sh/>`_. With this setup it runs analogously to the usual installation procedure.
 
 Please be aware of the following
 issues which have come up on Mac installations before:
@@ -735,7 +735,7 @@ event weight to unity using ``w_norm``. The above equation then reads
 .. math::
    \langle O \rangle = \frac{w_\text{norm}}{N_\text{trial}} \cdot \sum_i^n{\frac{w_i(\Phi_i)}{w_\text{norm} O(\Phi_i)}}
 
-wherein :math:`\frac{w_i(\Phi_i)}{w_norm} = 1`, i.e. the sum simply
+wherein :math:`\frac{w_i(\Phi_i)}{w_\text{norm}} = 1`, i.e. the sum simply
 counts how many events pass the selection criteria of the
 observable. If however, ``PartiallyUnweighted`` event weights or
 ``Enhance_Factor`` or ``Enhance_Observable`` are used, this is no
