@@ -110,8 +110,7 @@ factorization scale and potential additional scales.
 
    In a setup with the parton shower enabled, it is strongly recommended to
    leave this at its default value, :option:`METS`, and to instead customise the
-   :option:`CORE_SCALE` setting as described in :ref:`METS scale setting with
-   multiparton core processes`.
+   :option:`CORE_SCALE` setting as described in :ref:`METS scale setting with multiparton core processes`.
 
 .. contents::
    :local:
@@ -161,6 +160,13 @@ Scale setters
 
 
 The scale setter options which are currently available are
+
+:option:`METS`
+  ``METS`` is the default scale scheme in Sherpa and employed
+  for multi-leg merging, both at leading and next-to-leading order.
+  Since it is important and complex at the same time, it will be described in
+  detail in the next section.
+
 
 :option:`VAR`
   The variable scale setter is the simplest scale setter available. Scales
@@ -274,82 +280,142 @@ The scale setter options which are currently available are
      Scales are defined as the minimum of the largest transverse momentum
      during clustering and the lowest invariant mass in the core process.
 
-:option:`METS`
-  The matrix element is clustered onto a core 2->2 configuration using
-  an inversion of current parton shower, cf. :ref:`SHOWER_GENERATOR`,
-  recombining (n+1) particles into n on-shell particles. Their
-  corresponding flavours are determined using run-time information
-  from the matrix element generator.  It defines the three tags
-  ``MU_F2``, ``MU_R2`` and ``MU_Q2`` whose values are assigned through
-  this clustering procedure. While ``MU_F2`` and ``MU_Q2`` are defined
-  as the lowest invariant mass or negative virtuality in the core
-  process (for core interactions which are pure QCD processes scales
-  are set to the maximum transverse mass squared of the outgoing
-  particles), ``MU_R2`` is determined using this core scale and the
-  individual clustering scales such that
 
-  .. math::
+:option:`VBF`                                                                                                                                                                                                                                                                                                                
+  Very similar to the :option:`METS` scale setter and thus also applicable in multi-leg merged setups, but
+  catering specifically to topologies with two colour-separated parton lines like in VBF/VBS
+  processes for the incoming quarks. 
 
-     \alpha_s(\mu_{R2})^{n+k} = \alpha_s(\text{core}-\text{scale})^k \alpha_s(kt_1) \dots \alpha_s(kt_n)
 
-  where k is the order in strong coupling of the core process and k is
-  the number of clusterings, kt_i are the relative transverse momenta
-  at each clustering.
-  The tags ``MU_F2``, ``MU_R2`` and ``MU_Q2`` can then be used
-  on equal footing with the tags of :ref:`Predefined scale tags` to define
-  the final scale.
 
-  ``METS`` is the default scale scheme in Sherpa, since it is employed
-  for truncated shower merging, see :ref:`Multijet merged event
-  generation with Sherpa`, both at leading and next-to-leading
-  order. Thus, Sherpa's default is
+.. _METS scale setting with multiparton core processes:
 
-  .. code-block:: yaml
+Scale setting in multi-parton processes (METS)
+----------------------------------------------
 
-     SCALES: METS{MU_F2}{MU_R2}{MU_Q2}
+.. index:: METS
+.. index:: CORE_SCALE
 
-  As the tags ``MU_F2``, ``MU_R2`` and ``MU_Q2`` are predefined by the
-  ``METS`` scale setter, they may be omitted, i.e.
+``METS`` is the default scale setting in Sherpa, since it is employed
+for multi-leg merging, both at leading and next-to-leading order.
+It dynamically defines the three tags ``MU_F2``, ``MU_R2`` and
+``MU_Q2`` as will be explained below. Those can then be employed in the
+actual ``<scale-definition>`` in the scale setter. The default is
 
-  .. code-block:: yaml
+.. code-block:: yaml
 
-     SCALES: METS
+   SCALES: METS{MU_F2}{MU_R2}{MU_Q2}
 
-  leads to an identical scale definition.
+The tags may be omitted, i.e.
 
-  Unordered cluster histories are by default not allowed. Instead, if during
-  clustering a new smaller scale is encountered, the previous maximal scale
-  will be used, or alternatively a user-defined scale specified, e.g.
+.. code-block:: yaml
+
+   SCALES: METS
+
+leads to an identical scale definition.
+
+``METS`` is a very dynamic scheme and depends on two ingredients to construct
+a scale that preserves the logarithmic accuracy of the parton evolution defined
+by the parton shower:
+
+1. A sequential recombination algorithm to cluster the multi-leg matrix element onto a core
+   configuration (typically 2->2) using an inversion of the current parton shower.
+   The clustered flavours are determined using run-time information from the matrix element
+   generator. The clustering stops, when no combination
+   is found that corresponds to a parton shower branching, or if
+   two subsequent branchings are unordered in terms of the parton shower
+   evolution parameter. That defines the core process.
+
+2. A freely choosable scale in the core process, ``CORE_SCALE``.
+
+These are then defined to calculate ``MU_R2`` from the core scale and the
+individual clustering scales such that:
+
+.. math::
+
+   \alpha_s(\mu_{R}^2)^{n+k} = \alpha_s(\mu_{R,\text{core-scale}}^2)^k \alpha_s(k_{t,1}^2) \dots \alpha_s(k_{t,n}^2)
+
+where :math:`n` is the order in strong coupling of the core process and :math:`k` is
+the number of clusterings, :math:`k_{t,i}` are the relative transverse momenta
+at each clustering.
+
+The definition of ``MU_F2`` and ``MU_Q2`` are passed directly on from the core scale setter.
+
+The functional form of the core scale can be defined by the user in the ``MEPS``
+settings block as follows:
   
-  .. code-block:: yaml
+.. code-block:: yaml
 
-     MEPS:
-       UNORDERED_SCALE: VAR{H_Tp2/sqr(N_FS-2)}
+   MEPS:
+     CORE_SCALE: <core-scale-setter>{<core-fac-scale-definition>}{<core-ren-scale-definition>}{<core-res-scale-definition>}
 
-  If instead you want to allow unordered histories you can also enable them with
-  ``ALLOW_SCALE_UNORDERING: 1``.
+Again, for core scale setters which define ``MU_F2``, ``MU_R2`` and
+``MU_Q2`` the actual scale listing can be dropped.
 
-  Clusterings onto 2->n (n>2) configurations is possible, see
-  :ref:`METS scale setting with multiparton core processes`.
+Possible choices for the core scale setter are:
 
-  This scheme might be subject to changes to enable further classes of
-  processes for merging in the future and should therefore be seen
-  with care. Integration results might change slightly between
-  different Sherpa versions.
+:option:`Default`
+  The core scales are defined depending on the core process and as the list
+  and functional form is regularly extended to more core processes, its definition
+  is most easily seen in the `source code <https://gitlab.com/sherpa-team/sherpa/-/blob/master/PHASIC%2B%2B/Scales/Default_Core_Scale.C>`_
 
-  Occasionally, users might encounter the warning message
+:option:`VAR`
+  Variable core scale setter for free functional definition by the user.
+  Syntax is identical to variable scale setter.
 
-  .. code-block:: console
+:option:`QCD`
+  QCD core scale setter. Scales are set to harmonic mean of s, t and u. Only
+  useful for 2->2 cores as alternative to the :option:`Default` core scale.
 
-     METS_Scale_Setter::CalculateScale(): No CSS history for '<process name>' in <percentage>% of calls. Set \hat{s}.
+:option:`TTBar`
+  Core scale setter for processes involving top quarks. Implementation details
+  are described in Appendix C of :cite:`Hoeche2013mua`.
 
-  As long as the percentage quoted here is not too high, this does not pose
-  a serious problem. The warning occurs when - based on the current colour
-  configuration and matrix element information - no suitable clustering is
-  found by the algorithm. In such cases the scale is set to the invariant mass
-  of the partonic process.
+:option:`SingleTop`
+  Core scale setter for single-top production in association with one jet.
+  If the W is in the t-channel (s-channel), the squared scales are set to the
+  Mandelstam variables ``t=2*p[0]*p[2]`` (``t=2*p[0]*p[1]``).
+
+:option:`Photons`
+  Core scale setter for photon(s)+jets production.
+  Sets the following scales for the possible core process:
+
+    - :math:`\gamma\gamma`: :math:`\mu_f=\mu_r=\mu_q=m_{\gamma\gamma}`
+    - :math:`\gamma j`: :math:`\mu_f=\mu_r=\mu_q=p_{\perp,\gamma}`
+    - :math:`jj`: same as QCD core scale (harmonic mean of s, t, u)
 
 
+
+Unordered cluster histories are by default not allowed. Instead, if during
+clustering a new smaller scale is encountered, the previous maximal scale
+will be used, or alternatively a user-defined scale specified, e.g.
+  
+.. code-block:: yaml
+
+   MEPS:
+     UNORDERED_SCALE: VAR{H_Tp2/sqr(N_FS-2)}
+
+If instead you want to allow unordered histories you can also enable them with
+``ALLOW_SCALE_UNORDERING: 1``.
+
+Clusterings onto 2->n (n>2) configurations is possible and for complicated
+processes can warrant the implementation of a custom core scale, cf. :ref:`Customization`.
+
+Occasionally, users might encounter the warning message
+
+.. code-block:: console
+
+   METS_Scale_Setter::CalculateScale(): No CSS history for '<process name>' in <percentage>% of calls. Set \hat{s}.
+
+As long as the percentage quoted here is not too high, this does not pose
+a serious problem. The warning occurs when - based on the current colour
+configuration and matrix element information - no suitable clustering is
+found by the algorithm. In such cases the scale is set to the invariant mass
+of the partonic process.
+
+One final word of caution: The ``METS`` scale scheme might be subject to changes
+to enable further classes of processes for merging in the future and integration
+results might thus change slightly between different Sherpa versions.
 
 
 .. _Custom scale implementation:
@@ -507,52 +573,6 @@ in the third argument of the METS scale setter:
 .. code-block:: yaml
 
    SCALES: METS{MU_F2}{MU_R2}{4.0*MU_Q2}
-
-.. _METS scale setting with multiparton core processes:
-
-METS scale setting with multiparton core processes
---------------------------------------------------
-
-.. index:: CORE_SCALE
-
-The METS scale setter stops clustering when no combination
-is found that corresponds to a parton shower branching, or if
-two subsequent branchings are unordered in terms of the parton shower
-evolution parameter. The core scale of the remaining 2->n process then
-needs to be defined. This is done by specifying a core scale through
-
-.. code-block:: yaml
-
-   CORE_SCALE: <core-scale-setter>{<core-fac-scale-definition>}{<core-ren-scale-definition>}{<core-res-scale-definition>}
-
-As always, for scale setters which define ``MU_F2``, ``MU_R2`` and
-``MU_Q2`` the scale definition can be dropped. Possible core scale
-setters are
-
-:option:`VAR`
-  Variable core scale setter. Syntax is identical to variable scale setter.
-
-:option:`QCD`
-  QCD core scale setter. Scales are set to harmonic mean of s, t and u. Only
-  useful for 2->2 cores as alternatives to the usual core scale of the METS
-  scale setter.
-
-:option:`TTBar`
-  Core scale setter for processes involving top quarks. Implementation details
-  are described in Appendix C of :cite:`Hoeche2013mua`.
-
-:option:`SingleTop`
-  Core scale setter for single-top production in association with one jet.
-  If the W is in the t-channel (s-channel), the squared scales are set to the
-  Mandelstam variables ``t=2*p[0]*p[2]`` (``t=2*p[0]*p[1]``).
-
-:option:`Photons`
-  Core scale setter for photon(s)+jets production.
-  Sets the following scales for the possible core process:
-
-    - :math:`\gamma\gamma`: :math:`\mu_f=\mu_r=\mu_q=m_{\gamma\gamma}`
-    - :math:`\gamma j`: :math:`\mu_f=\mu_r=\mu_q=p_{\perp,\gamma}`
-    - :math:`jj`: same as QCD core scale (harmonic mean of s, t, u)
 
 
 .. _COUPLINGS:
