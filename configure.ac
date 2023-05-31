@@ -64,6 +64,9 @@ if test x$pyext == xtrue; then
 fi
 AM_CONDITIONAL(ENABLE_PYEXT, [test x$pyext == xtrue])
 
+dnl Now that CXX is set we require C++11
+AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
+
 AC_ARG_ENABLE(ufo,
   AS_HELP_STRING([--enable-ufo],[Enable UFO support]),
   [ AC_MSG_CHECKING(for UFO support)
