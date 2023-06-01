@@ -136,7 +136,7 @@ void Beam_Channels::CheckForStructuresFromME() {
     p_psh->FSRIntegrator()->ISRInfo(i, types[i], masses[i], widths[i]);
   }
   p_psh->FSRIntegrator()->ISRInfo(types, masses, widths);
-  bool onshellresonance(false), fromFSR(false);
+  bool fromFSR(false);
   for (size_t i = 0; i < types.size(); i++) {
     channel_type::code type = channel_type::code(abs(types[i]));
     switch (type) {
@@ -147,9 +147,9 @@ void Beam_Channels::CheckForStructuresFromME() {
         break;
       case channel_type::resonance:
         if (ATOOLS::IsZero(masses[i])) continue;
+        if (ATOOLS::IsZero(widths[i])) continue;
         if (types[i] == -1) {
           p_psh->SetOSMass(masses[i]);
-          onshellresonance = true;
         }
         fromFSR = true;
         m_beamparams.push_back(Channel_Info(type, masses[i], widths[i]));
