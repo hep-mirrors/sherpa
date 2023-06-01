@@ -208,7 +208,7 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector& p,
   } else if (m_mode == 3) {
     double yt =
         exp(y - 0.5 * log((tau + m_mass2[1] / s) / (tau + m_mass2[0] / s)) -
-            (pp + pm).Y());
+            (p0 + p1).Y());
     tau = sqrt(tau);
     m_x[0] = m_xkey[4] = tau * yt;
     m_x[1] = m_xkey[5] = tau / yt;
@@ -221,6 +221,8 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector& p,
     return false;
   p[0] = m_x[0] * pp + m_mass2[0] / s / m_x[0] * pm;
   p[1] = m_x[1] * pm + m_mass2[1] / s / m_x[1] * pp;
+  if (p[0][3]<0. || p[1][3]>0.)
+    return false;
   if (m_swap) {
     std::swap<Vec4D>(p[0], p[1]);
   }
