@@ -33,8 +33,12 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const cpl_info::code & cpl
   if (cpl==cpl_info::tensor)       s<<setw(12)<<"tensor";
   if (cpl==cpl_info::GE)           s<<setw(12)<<"G_E";
   if (cpl==cpl_info::GM)           s<<setw(12)<<"G_M";
-  if (cpl==cpl_info::F1)           s<<setw(12)<<"F1";
-  if (cpl==cpl_info::F2)           s<<setw(12)<<"F2";
+  if (cpl==cpl_info::f1)           s<<setw(12)<<"f1";
+  if (cpl==cpl_info::f2)           s<<setw(12)<<"f2";
+  if (cpl==cpl_info::f3)           s<<setw(12)<<"f3";
+  if (cpl==cpl_info::g1)           s<<setw(12)<<"g1";
+  if (cpl==cpl_info::g2)           s<<setw(12)<<"g2";
+  if (cpl==cpl_info::g3)           s<<setw(12)<<"g3";
   return s;
 }
 

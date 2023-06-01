@@ -33,8 +33,14 @@ namespace NEUTRINOS {
       tensor       = 5,
       GE           = 10,
       GM           = 11,
-      F1           = 20,
-      F2           = 21
+
+      f1           = 20,
+      f2           = 21,
+      f3           = 22,
+      g1           = 30,
+      g2           = 31,
+      g3           = 32,
+
     };
   };
   std::ostream & operator<<(std::ostream & s,const cpl_info::code & cpl);
