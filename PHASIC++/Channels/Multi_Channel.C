@@ -363,7 +363,7 @@ void Multi_Channel::GenerateWeight(int mode)
       if (!(channels[i]->Weight()>0)&&
 	  !(channels[i]->Weight()<0)&&(channels[i]->Weight()!=0)) {
 	msg_Error()<<"Multi_Channel::GenerateWeight(): ("<<this->name
-		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
+		   <<"): Channel "<<i<<" ("<<channels[i]->Name()<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0)
 	m_weight += channels[i]->Alpha()/channels[i]->Weight();
