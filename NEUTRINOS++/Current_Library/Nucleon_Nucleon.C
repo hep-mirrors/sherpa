@@ -83,7 +83,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   /////////////////////////////////////////////////////////////////////////////
   // Relevant parameters here.
   /////////////////////////////////////////////////////////////////////////////
-  
+
   double alphaQED   = 1./137.;
   double sin2thetaW = 0.22290, cos2thetaW = 1.-sin2thetaW;
 
@@ -184,13 +184,15 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   /////////////////////////////////////////////////////////////////////////////
   // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2) / m + q^{mu} F_3(q^2) / m] u(1) 
   /////////////////////////////////////////////////////////////////////////////
-  // , std::string Diagram_Type
-  std::string Diagram_Type = "QED";
 
   /////////////////////////////////////////////////////////////////////////
   // This assumes the momentum transfer from the other (lepton) current
   // taken as incoming, i.e. p_0 = p_1 + q.
   // Propagator term in Nucleon side. (HERE)
+  /////////////////////////////////////////////////////////////////////////
+
+  /////////////////////////////////////////////////////////////////////////
+  // TODO: ONLY CODED UP FOR PHOTON EXCHANGE
   /////////////////////////////////////////////////////////////////////////
 
   const int N  = m_flavs.size();
@@ -203,35 +205,33 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   const ATOOLS::Vec4<Complex> qmom = (F->P(pf)-F->P(pi));
   const double q2  = qmom.Abs2().real();
 
-  const complex prop_factor = m_ffprops[Diagram_Type]->Calc(q2);
+  const complex QED_prop_factor = m_ffprops["QED"]->Calc(q2);
+  const complex Weak_NC_prop_factor = m_ffprops["NC"]->Calc(q2);
+  const complex Weak_CC_prop_factor = m_ffprops["CC"]->Calc(q2);
 
-  const double G_E = m_ffs[Diagram_Type+"_GE"]->Calc(-q2), G_M = m_ffs[Diagram_Type+"_GM"]->Calc(-q2);
-  const double F_A = m_ffs[Diagram_Type+"_A"]->Calc(-q2),  F_P = m_ffs[Diagram_Type+"_P"]->Calc(-q2);
+  const double G_E = m_ffs["QED_GE"]->Calc(-q2), G_M = m_ffs["QED_GM"]->Calc(-q2);
+  const double F_A = m_ffs["QED_A"]->Calc(-q2),  F_P = m_ffs["QED_P"]->Calc(-q2);
   const double tau = -q2/(4.*m_massin*m_massout); 
  
   double ff1  = (G_E+tau*G_M)/(1.+tau), ff2 = (G_M-G_E)/(1.+tau);
   double ff3  = F_A, ff4 = F_P;
   
-
   // double mass_gordon = sqrt((m_massin*m_massin + m_massout*m_massout) / 2.0);
-
-  // ff1 = 0.0;
-  // ff2 = 1.0;
-  // ff3 = 0.0;
-  // ff4 = 0.0;
   
-  Vec4C amp;
+  Vec4C QED_amp, Weak_NC_amp, Weak_CC_amp;
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
-      amp *= 0.0;
+      QED_amp *= 0.0;
+      Weak_NC_amp *= 0.0;
+      Weak_CC_amp *= 0.0;
       
       if ( ff1 != 0.0 ) {
-        amp += ff1 * F->L(pf,hf, pi,hi, One,One);
+        QED_amp += ff1 * F->L(pf,hf, pi,hi, One,One);
       } 
       
       if ( ff2 != 0.0 ) {
         for (int hq=0;hq<2;hq++) {
-          amp += (ff2/(4.*m_massin)) *
+          QED_amp += (ff2/(4.*m_massin)) *
             (
                 F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
                 F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
@@ -242,27 +242,32 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
       }
 
       if ( ff3 != 0.0 ) {
-        amp += ff3 * qmom * F->Y(pf,hf, pi,hi, One,One) / m_massin;
+        QED_amp += ff3 * qmom * F->Y(pf,hf, pi,hi, One,One) / m_massin;
       }
       //TODO: Add ff4?
 
-      if ( Diagram_Type == "QED" && fabs(QED_coupling) > 0.0 ) {
-        amp = amp * QED_coupling;
+      //Propagator on Nucleon Current side
+      if ( fabs(QED_coupling) > 0.0 ) {
+        QED_amp = QED_amp * QED_coupling * QED_prop_factor;
       } 
-      else if ( Diagram_Type == "NC" && fabs(Weak_NC_coupling) > 0.0 ) {
-        amp = amp * Weak_NC_coupling;
+      else if ( fabs(Weak_NC_coupling) > 0.0 ) {
+        Weak_NC_amp = Weak_NC_amp * Weak_NC_coupling * Weak_NC_prop_factor;
       }
-      else if ( Diagram_Type == "CC" && fabs(Weak_CC_coupling) > 0.0 ) {
-        amp = amp * Weak_CC_coupling;
+      else if ( fabs(Weak_CC_coupling) > 0.0 ) {
+        Weak_CC_amp = Weak_CC_amp * Weak_CC_coupling * Weak_CC_prop_factor;
       }
       
-      //Propagator on Nucleon Current side
-      amp = amp * prop_factor;
-
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));
       spins.push_back(make_pair(pi,hi));
-      Insert( amp, spins );
+
+      //Old Method QED ONLY
+      Insert(QED_amp, spins);
+
+      //New Method
+      Insert_ProcessType("QED", QED_amp, spins);
+      Insert_ProcessType("Weak_NC", Weak_NC_amp, spins);
+      Insert_ProcessType("Weak_CC", Weak_CC_amp, spins);
     }
   }
 }

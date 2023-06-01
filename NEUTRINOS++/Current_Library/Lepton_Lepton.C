@@ -108,10 +108,6 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
 
 void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
 {
-
-  // , std::string Diagram_Type
-  std::string Diagram_Type = "QED";
-
   /////////////////////////////////////////////////////////////////////////
   // This assumes the momentum transfer from the other (lepton) current
   // taken as incoming, i.e. p_0 = p_1 + q.
@@ -130,31 +126,44 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
   // We separate the left and right handed terms 
   /////////////////////////////////////////////////////////////////////////
 
-  Vec4C amp;
+  Vec4C QED_amp, Weak_NC_amp, Weak_CC_amp;
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
-      amp *= 0.0;
+      QED_amp *= 0.0;
+      Weak_NC_amp *= 0.0;
+      Weak_CC_amp *= 0.0;
 
-      if ( Diagram_Type == "QED" && fabs(QED_coupling) > 0.0 ) {
-        amp += F->L(pi,hi, pf,hf, QED_cR, QED_cL);
-        amp = amp * QED_coupling;
+      if ( fabs(QED_coupling) > 0.0 ) {
+        QED_amp += F->L(pi,hi, pf,hf, QED_cR, QED_cL);
+        QED_amp = QED_amp * QED_coupling;
       }
-      else if ( Diagram_Type == "NC" && fabs(Weak_NC_coupling) > 0.0 ) {
-        amp += F->L(pi,hi, pf,hf, Weak_NC_cR, Weak_NC_cL);
-        amp = amp * Weak_NC_coupling;
+      else if ( fabs(Weak_NC_coupling) > 0.0 ) {
+        Weak_NC_amp += F->L(pi,hi, pf,hf, Weak_NC_cR, Weak_NC_cL);
+        Weak_NC_amp = Weak_NC_amp * Weak_NC_coupling;
       }
-      else if ( Diagram_Type == "CC" && fabs(Weak_CC_coupling) > 0.0 ) {
-        amp += F->L(pi,hi, pf,hf, Weak_CC_cR, Weak_CC_cL);
-        amp = amp * Weak_CC_coupling;
+      else if ( fabs(Weak_CC_coupling) > 0.0 ) {
+        Weak_CC_amp += F->L(pi,hi, pf,hf, Weak_CC_cR, Weak_CC_cL);
+        Weak_CC_amp = Weak_CC_amp * Weak_CC_coupling;
       }
+
+      
 
       // Factor of two to undo spin averaging.
-      amp = amp / 2.0;
+      QED_amp = QED_amp / 2.0;
+      Weak_NC_amp = Weak_NC_amp / 2.0;
+      Weak_CC_amp = Weak_CC_amp / 2.0;
 
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));
       spins.push_back(make_pair(pi,hi));
-      Insert( amp ,spins );
+
+      //Old Method QED ONLY
+      Insert(QED_amp, spins);
+
+      //New Method
+      Insert_ProcessType("QED", QED_amp, spins);
+      Insert_ProcessType("Weak_NC", Weak_NC_amp, spins);
+      Insert_ProcessType("Weak_CC", Weak_CC_amp, spins);
     }
   }
 }
