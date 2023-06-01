@@ -35,8 +35,7 @@ namespace NEUTRINOS {
     std::string         m_path;
     std::map<std::string, Form_Factor_Base *> m_ffs;
     std::map<std::string, Propagator_Base *> m_ffprops;
-
-    std::map<std::string,std::map<size_t, Vec4C>> ProcessCurrents;
+    //std::map<std::string,std::map<size_t, Vec4C > > ProcessCurrents;
   public:
     Scatter_Current_Base(const ATOOLS::Flavour_Vector& flavs,
 			 const std::vector<int>& indices,
@@ -44,17 +43,20 @@ namespace NEUTRINOS {
     virtual ~Scatter_Current_Base() {
       while (!m_ffs.empty()) { delete m_ffs.begin()->second; m_ffs.erase(m_ffs.begin()); }
       while (!m_ffprops.empty()) { delete m_ffprops.begin()->second; m_ffprops.erase(m_ffprops.begin()); }
+      //while (!ProcessCurrents.empty()) { ProcessCurrents.erase(ProcessCurrents.begin()); }
     }
+    
     virtual void Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F) = 0;
 
-    virtual void Insert_ProcessType(string diagram, Vec4C value, std::vector<std::pair<int,int> >& spins)
-    {
-      ProcessCurrents[diagram][GetNumber(spins)] = value;
-    }
-    virtual Vec4C Get_ProcessType(string diagram, const std::vector<int>& spins)
-    {
-      return ProcessCurrents[diagram][GetNumber(spins)];
-    }
+    // virtual void Insert_ProcessType(string diagram, Vec4C value, std::vector<std::pair<int,int> >& spins)
+    // {
+    //   ProcessCurrents[diagram][GetNumber(spins)] = value;
+    // }
+
+    // virtual Vec4C Get_ProcessType(string diagram, const std::vector<int>& spins)
+    // {
+    //   return ProcessCurrents[diagram][GetNumber(spins)];
+    // }
 
     inline std::string Name()                     const { return m_name; }
     inline void        SetName(std::string name)        { m_name = name; }
@@ -62,7 +64,6 @@ namespace NEUTRINOS {
     inline const std::vector<int>& DecayIndices() const { return m_indices; }
   };
   
-
   //typedef ATOOLS::Getter_Function<Scatter_Current_Base,ME_Parameters>
   //Current_Getter_Function;
 }

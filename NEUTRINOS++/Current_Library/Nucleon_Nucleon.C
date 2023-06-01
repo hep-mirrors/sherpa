@@ -113,22 +113,22 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   kf_code prop_kf_Z   = kf_Z;
   kf_code prop_kf_W   = kf_Wplus;
 
-  m_ffs["QED_GE"] = ffs->GetFF(N1,N2,prop_kf_P,GE); 
-  m_ffs["QED_GM"] = ffs->GetFF(N1,N2,prop_kf_P,GM); 
-  m_ffs["QED_A"]  = ffs->GetFF(N1,N2,prop_kf_P,A);
-  m_ffs["QED_P"]  = ffs->GetFF(N1,N2,prop_kf_P,P);
+  m_ffs["QED_GE"]  = ffs->GetFF(N1,N2,prop_kf_P,GE); 
+  m_ffs["QED_GM"]  = ffs->GetFF(N1,N2,prop_kf_P,GM); 
+  m_ffs["QED_A"]   = ffs->GetFF(N1,N2,prop_kf_P,A);
+  m_ffs["QED_P"]   = ffs->GetFF(N1,N2,prop_kf_P,P);
   m_ffprops["QED"] = ffprops->GetProp(prop_kf_P, prop_type);
 
-  m_ffs["NC_GE"] = ffs->GetFF(N1,N2,prop_kf_Z,GE); 
-  m_ffs["NC_GM"] = ffs->GetFF(N1,N2,prop_kf_Z,GM); 
-  m_ffs["NC_A"]  = ffs->GetFF(N1,N2,prop_kf_Z,A);
-  m_ffs["NC_P"]  = ffs->GetFF(N1,N2,prop_kf_Z,P);
+  m_ffs["NC_GE"]  = ffs->GetFF(N1,N2,prop_kf_Z,GE); 
+  m_ffs["NC_GM"]  = ffs->GetFF(N1,N2,prop_kf_Z,GM); 
+  m_ffs["NC_A"]   = ffs->GetFF(N1,N2,prop_kf_Z,A);
+  m_ffs["NC_P"]   = ffs->GetFF(N1,N2,prop_kf_Z,P);
   m_ffprops["NC"] = ffprops->GetProp(prop_kf_Z, prop_type);
 
-  m_ffs["CC_GE"] = ffs->GetFF(N1,N2,prop_kf_W,GE); 
-  m_ffs["CC_GM"] = ffs->GetFF(N1,N2,prop_kf_W,GM); 
-  m_ffs["CC_A"]  = ffs->GetFF(N1,N2,prop_kf_W,A);
-  m_ffs["CC_P"]  = ffs->GetFF(N1,N2,prop_kf_W,P);
+  m_ffs["CC_GE"]  = ffs->GetFF(N1,N2,prop_kf_W,GE); 
+  m_ffs["CC_GM"]  = ffs->GetFF(N1,N2,prop_kf_W,GM); 
+  m_ffs["CC_A"]   = ffs->GetFF(N1,N2,prop_kf_W,A);
+  m_ffs["CC_P"]   = ffs->GetFF(N1,N2,prop_kf_W,P);
   m_ffprops["CC"] = ffprops->GetProp(prop_kf_W, prop_type);
 
   if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
@@ -265,9 +265,9 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
       Insert(QED_amp, spins);
 
       //New Method
-      Insert_ProcessType("QED", QED_amp, spins);
-      Insert_ProcessType("Weak_NC", Weak_NC_amp, spins);
-      Insert_ProcessType("Weak_CC", Weak_CC_amp, spins);
+      // Insert_ProcessType("QED", QED_amp, spins);
+      // Insert_ProcessType("Weak_NC", Weak_NC_amp, spins);
+      // Insert_ProcessType("Weak_CC", Weak_CC_amp, spins);
     }
   }
 }
