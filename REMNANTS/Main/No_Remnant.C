@@ -19,7 +19,7 @@ bool No_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
 }
 
 bool No_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
-  if (mom[0]>p_beam->OutMomentum()[0])
+  if ((mom[0]-p_beam->OutMomentum()[0])/p_beam->OutMomentum()[0]>1.e-6)
     return false;
   return true;
 }
