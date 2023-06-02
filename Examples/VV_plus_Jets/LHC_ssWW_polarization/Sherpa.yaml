@@ -12,9 +12,11 @@ MEPS:
   CORE_SCALE: VAR{0.5*Abs2(p[2]+p[3])} 
 
 # width 0 for the stable W bosons in the hard matrix element
-# (WW-production)
+# width 0 for Z boson to preserve SU(2) Ward Identities
 PARTICLE_DATA:
   24: {Width: 0}
+  23: {Width: 0}
+WIDTH_SCHEME: Fixed
 
 # decay channels & polarization settings
 HARD_DECAYS:

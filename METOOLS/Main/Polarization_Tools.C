@@ -230,7 +230,7 @@ void Polarization_Vector::Test(Vec4D p)
   std::cout<<METHOD<<"... "<<(success?"passed":"failed")<<std::endl<<std::endl;
 }
 
-vector<vector<Complex>> Polarization_Vector::BasisTrafo(const Polarization_Vector& old_basis) const {
+vector<vector<Complex>> Polarization_Vector::BasisTrafo(const Polarization_Vector& old_basis, bool pol_checks) const {
   // TODO: Generalization to other particles than massive spin 1 particles
   // TODO: Avoid matrix formulation
   int m_nhel = old_basis.size();
@@ -294,7 +294,7 @@ vector<vector<Complex>> Polarization_Vector::BasisTrafo(const Polarization_Vecto
       // test, whether inverse matrix is calculated correctly
       if ((i==j && (abs(test.real()-1)>1e-8 || abs(test.imag())>1e-8)) || (i!=j &&
                                                                            (abs(test.real())>1e-8 || abs(test.imag())>1e-8))){
-        THROW(fatal_error, "multiplikation of matrix and its inverse does not result in identity matrix")
+        THROW(fatal_error, "multiplication of matrix and its inverse does not result in identity matrix")
       }
       // test, whether transformation also works for the zeroth component of the polarisation vectors
       zero_comp += coeff[i][j] * old_basis[j][0];
@@ -303,70 +303,74 @@ vector<vector<Complex>> Polarization_Vector::BasisTrafo(const Polarization_Vecto
       two_comp += coeff[i][j] * old_basis[j][2];
       three_comp += coeff[i][j] * old_basis[j][3];
     }
-    if  (((fabs(zero_comp.real()) > 1e-8 || fabs((*this)[i][0].real())>1e-8) &&
-          (((*this)[i][0] - zero_comp).real() > fabs(zero_comp.real())*1e-8)) ||
-         ((fabs(zero_comp.imag()) > 1e-8 || fabs((*this)[i][0].imag())>1e-8) &&
-          (((*this)[i][0] - zero_comp).imag() > fabs(zero_comp.imag())*1e-8))){
-      std::cout<<"Polarization_Warning in"<< METHOD <<
-               ": Testing polarisation vector transformation's system of equations - "
-               "zeroth component of polarization vector failed..."<<std::endl;
-      msg_Out()<< "zeroth component of the new polarization vector calculated from linear superposition "
-               << std::setprecision(20) << (*this)[i][0] << std::endl;
-      msg_Out() << "has to be the same as the zeroth component in new "
-                   "polarization vector" << std::setprecision(20) <<
-                zero_comp << std::endl;
-    }
-    if (((fabs(one_comp.real())>1e-8 || fabs((*this)[i][1].real())>1e-8) &&
-         (((*this)[i][1] - one_comp).real() > fabs(one_comp.real())*1e-8)) ||
-        ((fabs(one_comp.imag())>1e-8 || fabs((*this)[i][1].imag())>1e-8) &&
-         (((*this)[i][1] - one_comp).imag() > fabs(one_comp.imag())*1e-8))){
-      std::cout<<"Polarization_Warning in"<< METHOD <<
-               ": Testing polarisation vector transformation's system of equations - "
-               "first component of polarization vector failed..."<<std::endl;
-      msg_Out()<< "first component of the new polarization vector calculated from linear superposition "
-               << std::setprecision(20) << (*this)[i][1] << std::endl;
-      msg_Out() << "has to be the same as the first component in new polarization vector" <<
-                std::setprecision(20) << one_comp << std::endl;
-    }
-    if (((fabs(two_comp.real())>1e-8 || fabs((*this)[i][2].real())>1e-8) &&
-         (((*this)[i][2] - two_comp).real() > fabs(two_comp.real())*1e-8)) ||
-        ((fabs(two_comp.imag())>1e-8 || fabs((*this)[i][2].imag())>1e-8) &&
-         (((*this)[i][2] - two_comp).imag() > fabs(two_comp.imag())*1e-8))){
-      std::cout<<"Polarization_Warning in"<< METHOD <<
-               ": Testing polarisation vector transformation's system of equations - "
-               "second component of polarization vector failed..."<<std::endl;
-      msg_Out()<< "second component of the new polarization vector calculated from linear superposition "
-               << std::setprecision(20) << (*this)[i][2] << std::endl;
-      msg_Out() << "has to be the same as the second component in new polarization vector" <<
-                std::setprecision(20) << two_comp << std::endl;
-    }
-    if (((fabs(three_comp.real())>1e-8 || fabs((*this)[i][3].real())>1e-8) &&
-         (((*this)[i][3] - three_comp).real() > fabs(three_comp.real())*1e-8)) ||
-        ((fabs(three_comp.imag())>1e-8 || fabs((*this)[i][3].imag())>1e-8) &&
-         (((*this)[i][3] - three_comp).imag() > fabs(three_comp.imag())*1e-8))){
-      std::cout<<"Polarization_Warning in"<< METHOD <<
-               ": Testing polarisation vector transformation's system of equations - "
-               "third component of polarization vector failed... "<<std::endl;
-      msg_Out()<< "third component of the new polarization vector calculated from linear superposition "
-               << std::setprecision(20) << (*this)[i][3] << std::endl;
-      msg_Out() << "has to be the same as the third component in new polarization vector" <<
-                std::setprecision(20) << three_comp << std::endl;
+    if (pol_checks) {
+      if (((fabs(zero_comp.real()) > 1e-8 || fabs((*this)[i][0].real()) > 1e-8) &&
+           (((*this)[i][0] - zero_comp).real() > fabs(zero_comp.real()) * 1e-8)) ||
+          ((fabs(zero_comp.imag()) > 1e-8 || fabs((*this)[i][0].imag()) > 1e-8) &&
+           (((*this)[i][0] - zero_comp).imag() > fabs(zero_comp.imag()) * 1e-8))) {
+        std::cout << "Polarization_Warning in " << METHOD <<
+                  ": Testing polarisation vector transformation's system of equations - "
+                  "zeroth component of polarization vector failed..." << std::endl;
+        msg_Out() << "zeroth component of the new polarization vector calculated from linear superposition "
+                  << std::setprecision(20) << (*this)[i][0] << std::endl;
+        msg_Out() << "has to be the same as the zeroth component in new "
+                     "polarization vector" << std::setprecision(20) <<
+                  zero_comp << std::endl;
+      }
+      if (((fabs(one_comp.real()) > 1e-8 || fabs((*this)[i][1].real()) > 1e-8) &&
+           (((*this)[i][1] - one_comp).real() > fabs(one_comp.real()) * 1e-8)) ||
+          ((fabs(one_comp.imag()) > 1e-8 || fabs((*this)[i][1].imag()) > 1e-8) &&
+           (((*this)[i][1] - one_comp).imag() > fabs(one_comp.imag()) * 1e-8))) {
+        std::cout << "Polarization_Warning in " << METHOD <<
+                  ": Testing polarisation vector transformation's system of equations - "
+                  "first component of polarization vector failed..." << std::endl;
+        msg_Out() << "first component of the new polarization vector calculated from linear superposition "
+                  << std::setprecision(20) << (*this)[i][1] << std::endl;
+        msg_Out() << "has to be the same as the first component in new polarization vector" <<
+                  std::setprecision(20) << one_comp << std::endl;
+      }
+      if (((fabs(two_comp.real()) > 1e-8 || fabs((*this)[i][2].real()) > 1e-8) &&
+           (((*this)[i][2] - two_comp).real() > fabs(two_comp.real()) * 1e-8)) ||
+          ((fabs(two_comp.imag()) > 1e-8 || fabs((*this)[i][2].imag()) > 1e-8) &&
+           (((*this)[i][2] - two_comp).imag() > fabs(two_comp.imag()) * 1e-8))) {
+        std::cout << "Polarization_Warning in " << METHOD <<
+                  ": Testing polarisation vector transformation's system of equations - "
+                  "second component of polarization vector failed..." << std::endl;
+        msg_Out() << "second component of the new polarization vector calculated from linear superposition "
+                  << std::setprecision(20) << (*this)[i][2] << std::endl;
+        msg_Out() << "has to be the same as the second component in new polarization vector" <<
+                  std::setprecision(20) << two_comp << std::endl;
+      }
+      if (((fabs(three_comp.real()) > 1e-8 || fabs((*this)[i][3].real()) > 1e-8) &&
+           (((*this)[i][3] - three_comp).real() > fabs(three_comp.real()) * 1e-8)) ||
+          ((fabs(three_comp.imag()) > 1e-8 || fabs((*this)[i][3].imag()) > 1e-8) &&
+           (((*this)[i][3] - three_comp).imag() > fabs(three_comp.imag()) * 1e-8))) {
+        std::cout << "Polarization_Warning in " << METHOD <<
+                  ": Testing polarisation vector transformation's system of equations - "
+                  "third component of polarization vector failed... " << std::endl;
+        msg_Out() << "third component of the new polarization vector calculated from linear superposition "
+                  << std::setprecision(20) << (*this)[i][3] << std::endl;
+        msg_Out() << "has to be the same as the third component in new polarization vector" <<
+                  std::setprecision(20) << three_comp << std::endl;
+      }
     }
   }
 
   // test, whether transformation matrix is unitary
-  for (size_t i(0); i<m_nhel; i++){
-    for (size_t j(0); j<m_nhel; j++){
-      tmp = Complex(0,0);
-      for (size_t k(0); k<m_nhel; k++){
-        tmp += coeff[i][k] * conj(coeff[j][k]);
-      }
-      if ((i==j && (abs((tmp-Complex(1, 0)).real()) > 1e-8 || abs(tmp.imag()) > 1e-8)) ||
-          (i!=j && (abs(tmp.real()) > 1e-8 || abs(tmp.imag()) > 1e-8))) {
-        std::cout<<"Polarization_Warning in"<< METHOD <<
-                 ": Testing unitarity of transformation matrix failed..." << std::endl;
-        msg_Out() << "failed for matrix entry" << i << j << "of unit matrix" << std::endl;
-        msg_Out() << std::setprecision(20) << "actual value of this entry is " << tmp << std::endl;
+  if (pol_checks){
+    for (size_t i(0); i<m_nhel; i++){
+      for (size_t j(0); j<m_nhel; j++){
+        tmp = Complex(0,0);
+        for (size_t k(0); k<m_nhel; k++){
+          tmp += coeff[i][k] * conj(coeff[j][k]);
+        }
+        if ((i==j && (abs((tmp-Complex(1, 0)).real()) > 1e-8 || abs(tmp.imag()) > 1e-8)) ||
+            (i!=j && (abs(tmp.real()) > 1e-8 || abs(tmp.imag()) > 1e-8))) {
+          std::cout<<"Polarization_Warning in "<< METHOD <<
+                   ": Testing unitarity of transformation matrix failed..." << std::endl;
+          msg_Out() << "failed for matrix entry" << i << j << "of unit matrix" << std::endl;
+          msg_Out() << std::setprecision(20) << "actual value of this entry is " << tmp << std::endl;
+        }
       }
     }
   }

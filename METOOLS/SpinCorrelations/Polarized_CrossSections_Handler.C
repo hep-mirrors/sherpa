@@ -2,7 +2,7 @@
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include "METOOLS/Main/Polarization_Tools.H"
-#include "METOOLS/SpinCorrelations/PolWeight_Map.H"
+#include "METOOLS/SpinCorrelations/PolWeights_Map.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -10,7 +10,7 @@
 using namespace METOOLS;
 
 Polarized_CrossSections_Handler::Polarized_CrossSections_Handler()
-  : m_old_refmom(ATOOLS::Vec4D()), m_new_refmom(ATOOLS::Vec4D()), m_helicitybasis(false),
+  : m_old_refmom(ATOOLS::Vec4D()), m_new_refmom(ATOOLS::Vec4D()), m_helicitybasis(false), m_trans_mode(1),
   m_customweights(std::map<std::string, std::string>())
  {
   // set polarization settings
@@ -25,15 +25,16 @@ void Polarized_CrossSections_Handler::InitPolSettings() {
   auto pol = s["HARD_DECAYS"]["Pol_Cross_Section"];
 
   // set settings for polarization definition:
-  // spin basis (default is helicity basis according to common definition
-  // of polarization in terms of helicity) and reference system (default: Lab)
+
+  // spin basis, reference system, transverse polarization definition
   // it is possible to specify more than one reference system but only one spin basis per simulation run
   m_spinbasis = pol["Spin_Basis"].SetDefault("Helicity").Get<std::string>();
   m_refsystem = pol["Reference_System"].SetDefault(std::vector<std::string>(1, "Lab"))
     .GetVector<std::string>();
+  m_trans_mode = pol["Transverse_Weights_Mode"].SetDefault("1").Get<int>();
 
   // read in specified desired custom weights:
-  // maximum number of custom weights in 12 (Weight0-Weight10 + Weight)
+  // maximum number of custom weights is 12 (Weight0-Weight10 + Weight)
   // but can be increased by Number_Of_Custom_Weights setting in YAML-File
   // set defaults
   int number_of_custom_weights = pol["Number_Of_Custom_Weights"].SetDefault(10).Get<int>()+1;
@@ -57,6 +58,9 @@ void Polarized_CrossSections_Handler::InitPolSettings() {
   // decay channels, and where the different decay channels should specify which of the intermediate particles should be
   // taken as polarized, the decay channel of the polarized particle is set here.
   m_singlepol_channel = pol["Single_Polarized_Channel"].SetDefault("no channel").Get<std::string>();
+
+  // enable several checks (e.g. unpol=polsum+int or transformation checks) for debugging
+  m_pol_checks = pol["Pol_Checks"].SetDefault(false).Get<bool>();
 }
 
 void Polarized_CrossSections_Handler::InitRefMoms() {
@@ -96,9 +100,9 @@ void Polarized_CrossSections_Handler::InitRefMoms() {
   }
 }
 
-std::vector<METOOLS::PolWeight_Map*> Polarized_CrossSections_Handler::Treat(ATOOLS::Blob* signalblob,
-                                                                            const METOOLS::Amplitude2_Tensor* prod_amps,
-                                                                            const std::vector<METOOLS::Decay_Matrix>& decay_matrices)
+std::vector<METOOLS::PolWeights_Map*> Polarized_CrossSections_Handler::Treat(ATOOLS::Blob* signalblob,
+                                                                             const METOOLS::Amplitude2_Tensor* prod_amps,
+                                                                             const std::vector<METOOLS::Decay_Matrix>& decay_matrices)
 const{
   if (decay_matrices.empty()){
     THROW(not_implemented, "Polarization for final or initial state particles is not supported yet.")
@@ -114,14 +118,14 @@ const{
     std::map<int,METOOLS::Polarization_Vector>();
   std::map<int, SpinorType> default_spinors = std::map<int, SpinorType>();
   // Calculate polarization fractions for each desired reference system
-  std::vector<METOOLS::PolWeight_Map*> polweights;
-  for (size_t h(0); h<m_refsystem.size(); ++h){
+  std::vector<METOOLS::PolWeights_Map*> polweights;
+  for (const auto & current_refsystem : m_refsystem){
     ATOOLS::Vec4D beta = ATOOLS::Vec4D();
-    if (m_refsystem[h]!="Lab" && m_refsystem[h]!="RestFrames") {
-      beta = Beta(signalblob, prod_amps, m_refsystem[h]);
+    if (current_refsystem != "Lab" && current_refsystem != "RestFrames") {
+      beta = Beta(signalblob, prod_amps, current_refsystem);
     }
     polweights.push_back(Calculation(signalblob, prod_amps, decay_matrices, default_polarization_vectors,
-                                     default_spinors, beta, m_refsystem[h]));
+                                     default_spinors, beta, current_refsystem));
   }
   return polweights;
 }
@@ -131,7 +135,12 @@ ATOOLS::Vec4D Polarized_CrossSections_Handler::Beta(const ATOOLS::Blob* signalbl
                                                     std::string refsystem) const {
   // PREPARATION FOR DEFINITION OF NEW REFERENCE FRAME
   // Polarization is by default defined in laboratory system
-  // possible user input keywords: Lab, COM, PPFr, RestFrames
+  // possible user input keywords: Lab, COM, PPFr
+  // In simulations with ssWW @ fixed LO it could be seen, that Lab and RestFrames lead to the same results, which is
+  // expected since using the spin direction along the VB Lab momentum when calculating the polarization vectors in the
+  // VBs rest frame and then boosting the result to the Lab leads to the same polarization definition as if the Lab is
+  // directly assumed as reference system: remove it from manual but leave it in code for further tests, perhaps also
+  // with different choice of spin axis in VB rest frame
   // Selecting particles in which center of mass frame the polarization vectors should be defined
   std::vector<int> particles;
   ATOOLS::Vec4D beta = ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0);
@@ -175,17 +184,17 @@ ATOOLS::Vec4D Polarized_CrossSections_Handler::Beta(const ATOOLS::Blob* signalbl
       // only exception is, if only one weight is given, then comma separation is also possible
       std::replace(refsystem.begin(),refsystem.end(),',',' ');
       auto particle_numbers = ATOOLS::ToVector<int>(refsystem);
-      for (size_t i(0); i<particle_numbers.size(); ++i){
-        if (particle_numbers[i]+1 > signalblob->NInP()+signalblob->NOutP()){
+      for (int particle_number : particle_numbers){
+        if (particle_number+1 > signalblob->NInP()+signalblob->NOutP()){
           THROW(invalid_input, "Particle number inputs for defining reference system for polarization "
                                "definition are not valid, particles numbers must be bigger than 0 and "
                                "only particles from hard process can be considered for system definition")
         }
-        // +1 due to discrepany between particle numbering in YAML-File and internal particle numbering
+        // +1 due to discrepancy between particle numbering in YAML-File and internal particle numbering
         // (former starts at 0, latter at 1)
-        if (particle_numbers[i]+1 <= signalblob->NInP()){
+        if (particle_number+1 <= signalblob->NInP()){
           for (size_t j(0); j<signalblob->NInP(); ++j){
-            if (signalblob->ConstInParticle(j)->Number() == particle_numbers[i]+1){
+            if (signalblob->ConstInParticle(j)->Number() == particle_number+1){
               particles.push_back(signalblob->ConstInParticle(j)->Number());
               beta+=signalblob->ConstInParticle(j)->Momentum();
               break;
@@ -194,7 +203,7 @@ ATOOLS::Vec4D Polarized_CrossSections_Handler::Beta(const ATOOLS::Blob* signalbl
         }
         else{
           for (size_t j(0); j<signalblob->NOutP(); ++j){
-            if (signalblob->ConstOutParticle(j)->Number() == particle_numbers[i]+1){
+            if (signalblob->ConstOutParticle(j)->Number() == particle_number+1){
               particles.push_back(signalblob->ConstOutParticle(j)->Number());
               if (signalblob->ConstOutParticle(j)->DecayBlob()){
                 beta += (*(signalblob->ConstOutParticle(j)->DecayBlob()))["p_onshell"]->Get<ATOOLS::Vec4D>();
@@ -210,8 +219,8 @@ ATOOLS::Vec4D Polarized_CrossSections_Handler::Beta(const ATOOLS::Blob* signalbl
                   particle_numbers.size() << " particle numbers are specified in YAML, but only "
                   << particles.size() << " particle numbers are found in hard process! Continue with particles found: "
                   << std::endl;
-        for (size_t m(0); m < particles.size(); ++m){
-          std::cout << particles[m] - 1 << std::endl;
+        for (int particle : particles){
+          std::cout << particle - 1 << std::endl;
         }
       }
     }
@@ -223,12 +232,12 @@ ATOOLS::Vec4D Polarized_CrossSections_Handler::Beta(const ATOOLS::Blob* signalbl
   return beta;
 }
 
-PolWeight_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signalblob,
-                                                  const METOOLS::Amplitude2_Tensor* prod_amps,
-                                                  const std::vector<METOOLS::Decay_Matrix>& decay_matrices,
-                                                  std::map<int, METOOLS::Polarization_Vector>& default_polarization_vectors,
-                                                  std::map<int, SpinorType>& default_spinors,
-                                                  ATOOLS::Vec4D beta, std::string refsystem) const {
+PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signalblob,
+                                                             const METOOLS::Amplitude2_Tensor* prod_amps,
+                                                             const std::vector<METOOLS::Decay_Matrix>& decay_matrices,
+                                                             std::map<int, METOOLS::Polarization_Vector>& default_polarization_vectors,
+                                                             std::map<int, SpinorType>& default_spinors,
+                                                             ATOOLS::Vec4D beta, std::string refsystem) const {
 
   METOOLS::Amplitude2_Tensor* pol_amps = new METOOLS::Amplitude2_Tensor(*prod_amps);
   std::vector<METOOLS::Decay_Matrix> trafo_decay_matrices = std::vector<METOOLS::Decay_Matrix>();
@@ -271,7 +280,6 @@ PolWeight_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signal
       double spin = tmp_amps->CurrentParticle().RefFlav().Spin();
       // from comparison with literature: seems that W- has the same polarization vectors than W+
       // (not complex conjugate)
-      // TODO: Check with Stefan (Comix) and Giovanni
       if (tmp_amps->CurrentParticle().RefFlav().IDName()=="W-"){
         anti = false;
       }
@@ -299,7 +307,7 @@ PolWeight_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signal
       }
 
       // DETERMINATION OF NEW REFERENCE VECTOR
-      // For getting physical polarisation in helicity basis a special reference vector must be used
+      // For getting physical polarization in helicity basis a special reference vector must be used
       // Reference vector according to Alnefjord et al. 2021
       if (m_helicitybasis) {
         // more general if-condition than only regarding RestFrames refsystem, since if user chooses
@@ -317,12 +325,12 @@ PolWeight_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signal
       std::vector<std::vector<Complex>> coeff_in;
       std::vector<std::vector<Complex>> coeff_out;
       if (spin==1){
-        // calculate polarisation vectors with new reference momentum
-        METOOLS::Polarization_Vector new_polarisation(mom, new_ref_mom);
+        // calculate polarization vectors with new reference momentum
+        METOOLS::Polarization_Vector new_polarization(mom, new_ref_mom);
         // transformation back to laboratory system where matrix elements are calculated
         if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
           for (size_t i(0); i < 3; ++i) {
-            momboost.BoostBack(new_polarisation[i]);
+            momboost.BoostBack(new_polarization[i]);
           }
           momboost.BoostBack(mom);
         }
@@ -332,8 +340,8 @@ PolWeight_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signal
         // generate ingoing polarization vectors for particles, for outgoing ones or antiparticles (or equivalently the
         // complex conjugate ones in the squared amplitude tensor) the transformation coefficients should be the complex
         // conjugate of the ingoing coefficients
-        coeff_in = new_polarisation.BasisTrafo(
-            default_polarization_vectors.find(tmp_amps->CurrentParticle().Number())->second);
+        coeff_in = new_polarization.BasisTrafo(
+            default_polarization_vectors.find(tmp_amps->CurrentParticle().Number())->second, m_pol_checks);
         coeff_out = std::vector<std::vector<Complex>>(coeff_in);
         // determine complex conjugate coefficients
         for (size_t i(0); i < coeff_in.size(); ++i) {
@@ -350,9 +358,9 @@ PolWeight_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signal
         }
       }
       // --- TRANSFORMATION OF THE DECAY MATRICES ---
-      for (size_t k(0); k<decay_matrices.size(); ++k){
-        if (decay_matrices[k].Particle()->Number()==tmp_amps->CurrentParticle().Number()){
-          METOOLS::Decay_Matrix decay_matrix(decay_matrices[k]);
+      for (const auto & current_decay_matrix : decay_matrices){
+        if (current_decay_matrix.Particle()->Number() == tmp_amps->CurrentParticle().Number()){
+          METOOLS::Decay_Matrix decay_matrix(current_decay_matrix);
           if (anti) decay_matrix.PolBasisTrafo(coeff_out, coeff_in);
           else decay_matrix.PolBasisTrafo(coeff_in, coeff_out);
           trafo_decay_matrices.push_back(decay_matrix);
@@ -373,16 +381,16 @@ PolWeight_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signal
 
   // Multiplication of production tensor and decay matrices to get the actual polarized matrix elements
   if (!decay_matrices.empty()){
-    for (size_t k(0); k<trafo_decay_matrices.size(); ++k){
-      METOOLS::Decay_Matrix* pointer_to_Decay_Matrix = new METOOLS::Decay_Matrix(trafo_decay_matrices[k]);
+    for (const auto & current_trafo_decay_matrix : trafo_decay_matrices){
+      METOOLS::Decay_Matrix* pointer_to_Decay_Matrix = new METOOLS::Decay_Matrix(current_trafo_decay_matrix);
       pol_amps->Multiply(pointer_to_Decay_Matrix);
       delete pointer_to_Decay_Matrix;
     }
   }
   // Labeling the polarized matrix elements and storing results in p_polweights
-  PolWeight_Map* polWeightMap = new METOOLS::PolWeight_Map(pol_amps,m_customweights,
-                                                           m_singlepol_channel);
-  Tests((*signalblob)["ATensor"]->Get<METOOLS::Amplitude2_Tensor*>(), pol_amps);
+  PolWeights_Map* polWeightMap = new METOOLS::PolWeights_Map(pol_amps, m_trans_mode, m_customweights,
+                                                             m_singlepol_channel, m_pol_checks);
+  if (m_pol_checks) Tests((*signalblob)["ATensor"]->Get<METOOLS::Amplitude2_Tensor*>(), pol_amps);
   delete pol_amps;
   return polWeightMap;
 }
@@ -398,8 +406,8 @@ void Polarized_CrossSections_Handler::Tests(const METOOLS::Amplitude2_Tensor* am
   Complex trafo_unpol = tmpTrafoTensor->Sum();
   if ((trafo_unpol-unpol).real()>ATOOLS::dabs(trafo_unpol.real())*1e-8 || ATOOLS::dabs(trafo_unpol.imag())>1e-8 ||
       ATOOLS::dabs(unpol.imag())>1e-8){
-    std::cout<<"Polarization_Warning in"<< METHOD <<
-               "Testing consistency between unpolarized cross section before and after transformation"
+    std::cout<<"Polarization_Warning in" << METHOD <<
+               " Testing consistency between unpolarized cross section before and after transformation"
                " to another bases failed..." << std::endl;
     msg_Out() << "Unpolarized cross section resulting after spin correlation algorithm: "
               << std::setprecision(20) << unpol << std::endl;

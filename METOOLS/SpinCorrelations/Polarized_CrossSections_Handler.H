@@ -17,7 +17,7 @@ namespace ATOOLS{
 namespace METOOLS {
   class Decay_Matrix;
   class Amplitude2_Tensor;
-  class PolWeight_Map;
+  class PolWeights_Map;
   class Polarization_Vector;
   typedef ATOOLS::Spinor<double> SpinorType;
 
@@ -25,26 +25,28 @@ namespace METOOLS {
     std::vector<std::string> m_refsystem;
     std::string m_spinbasis, m_singlepol_channel;
     std::map<std::string, std::string> m_customweights;
+    int m_trans_mode;
     ATOOLS::Vec4D m_old_refmom;
     ATOOLS::Vec4D m_new_refmom;
     bool m_helicitybasis;
+    bool m_pol_checks;
 
     void InitPolSettings();
     void InitRefMoms();
     ATOOLS::Vec4D Beta(const ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
                        std::string refsystem) const;
-    METOOLS::PolWeight_Map* Calculation(ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
-                                        const std::vector<METOOLS::Decay_Matrix>& decay_matrices,
-                                        std::map<int, METOOLS::Polarization_Vector>& default_polarization_vectors,
-                                        std::map<int, SpinorType>& default_spinors, ATOOLS::Vec4D beta,
-                                        std::string refsystem) const;
+    METOOLS::PolWeights_Map* Calculation(ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
+                                         const std::vector<METOOLS::Decay_Matrix>& decay_matrices,
+                                         std::map<int, METOOLS::Polarization_Vector>& default_polarization_vectors,
+                                         std::map<int, SpinorType>& default_spinors, ATOOLS::Vec4D beta,
+                                         std::string refsystem) const;
     void Tests(const METOOLS::Amplitude2_Tensor* amps, const METOOLS::Amplitude2_Tensor* trafo_pol_amps) const;
 
   public:
     Polarized_CrossSections_Handler();
 
-    std::vector<METOOLS::PolWeight_Map*> Treat(ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
-                                              const std::vector<METOOLS::Decay_Matrix>& decay_matrices) const;
+    std::vector<METOOLS::PolWeights_Map*> Treat(ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
+                                                const std::vector<METOOLS::Decay_Matrix>& decay_matrices) const;
     inline std::vector<std::string> GetRefSystems() { return m_refsystem; }
   };
 
@@ -72,7 +74,7 @@ namespace METOOLS {
       To enable various polarization definitions in one simulation run independent of the matrix
       element generator, the Amplitude2_Tensor and the decay matrices are transformed according to the desired
       polarization definition. It is possible to calculate cross sections for several reference frames in one run.
-      The result of the calculation performed here is a PolWeight_Map for each polarization definition containing
+      The result of the calculation performed here is a PolWeights_Map for each polarization definition containing
       polarization fractions of all polarization definitions. Cross sections are calculated out of that during the event
       output together with all other events weights.
     */
@@ -98,6 +100,13 @@ namespace METOOLS {
   \brief Map containing the settings for custom weights specified by the user, default: empty map
   */
   /*!
+  \var int m_trans_mode
+  \brief trans_mode specifies how transverse polarized cross sections should be derived from the "base" polarization
+  combinations, 0 = incoherent sum of left and right polarization, 1 = coherent sum of left and right polarization
+  including left-right-interference, 2 = cross sections/fractions for both transverse polarization definitions are
+  calculated, default: 1
+  */
+  /*!
   \var ATOOLS::Vec4D m_old_refmom
   \brief Reference momentum used in matrix element generation, defines spin axes for massive particles
   */
@@ -109,6 +118,11 @@ namespace METOOLS {
   /*!
   \var bool m_helicitybasis
   \brief Boolean specifies whether the helicity basis is chosen to define the spin axis
+  */
+  /*!
+  \var bool m_pol_checks
+  \brief Boolean specifies whether polarization consistency checks should be done (especially unpol=polsum+int and
+   checks whether transformation works properly and is unitary)
   */
   /*!
   \fn Polarized_CrossSections_Handler::Polarized_CrossSections_Handler()
@@ -151,7 +165,7 @@ namespace METOOLS {
   /*!
   \fn Polarized_CrossSections_Handler::Treat(ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
                                              std::vector<METOOLS::Decay_Matrix> decay_matrices) const
-  \brief Method steers the calculation of the polarized cross sections with the desired polarization definitions
+  \brief Method steers the calculation of the polarization fractions with the desired polarization definitions
          This method needs to be called for the actual calculation, it then will call Beta() and Calculate()
   Input:
     - <var>signalblob</var>: (pointer to) the signalblob describing the production of the particles whose polarization
@@ -233,7 +247,7 @@ namespace METOOLS {
    - <var>refsystem</var>: specifies the desired reference frame
      .
   Output:
-   - (pointer to) PolWeight_Map
+   - (pointer to) PolWeights_Map
    .
   */
   /*!

@@ -479,16 +479,14 @@ int Amplitude2_Tensor::NumberParticles(int num) const {
   }
 }
 
-std::pair<const int, const ATOOLS::Particle> Amplitude2_Tensor::Search(const int part_number, int level) const {
-  if (p_part->Number()==part_number) {
-    return std::make_pair(level, *p_part);
-  }
+std::pair<const int, const ATOOLS::Particle*> Amplitude2_Tensor::Search(const int part_number, int level) const {
+  if (p_part && p_part->Number()==part_number) return std::make_pair(level, p_part);
   else {
     if (p_next) {
       return (*p_next)[0]->Search(part_number, level+1);
     }
   }
-  return std::make_pair(level, ATOOLS::Particle());
+  return std::make_pair(level, nullptr);
 }
 
 namespace ATOOLS {

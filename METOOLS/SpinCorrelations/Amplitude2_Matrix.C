@@ -17,6 +17,15 @@ Amplitude2_Matrix::Amplitude2_Matrix(const ATOOLS::Particle* p) :
   resize(m_nhel*m_nhel, Complex(0.0,0.0));
 }
 
+Amplitude2_Matrix::Amplitude2_Matrix(const ATOOLS::Particle* p, Complex factor) :
+  p_part(p)
+{
+  m_nhel=p_part->RefFlav().IntSpin()+1;
+  if (m_nhel==3 && IsZero(p_part->RefFlav().Mass())) m_nhel=2;
+
+  resize(m_nhel*m_nhel, factor);
+}
+
 Amplitude2_Matrix::~Amplitude2_Matrix()
 {
 }

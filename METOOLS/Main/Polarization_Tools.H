@@ -35,7 +35,7 @@ namespace METOOLS
     Polarization_Vector(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom);
     void Test(ATOOLS::Vec4D p=ATOOLS::Vec4D(3.0399e+00, 1.7523e+00,-1.4883e-01, 3.1938e-01));
 
-    vector<vector<Complex>> BasisTrafo(const Polarization_Vector& old_basis) const;
+    vector<vector<Complex>> BasisTrafo(const Polarization_Vector& old_basis, bool pol_checks=0) const;
   };
 
   class Polarization_Tensor : public std::vector<ATOOLS::CMatrix> {
@@ -73,13 +73,18 @@ namespace METOOLS
       .
     */
   /*!
-  \fn Polarization_Vector::BasisTrafo(const Polarization_Vector& old_basis) ()
+  \fn Polarization_Vector::BasisTrafo(const Polarization_Vector& old_basis, bool pol_checks) ()
   \brief Method determine transformation coefficients from one basis (e.g. spin basis given by reference vector in
          Weyl-van-der-Waerden formalism or reference frame for defining the polarisation) for defining polarisation
          vectors to another, if the new polarization vectors can be determined as a linear combination of the ones
          defined in the old basis;
   Input:
     - <var>old_basis</var>: Polarization vectors in old basis (in the most cases COMIX default polarization vectors)
+    - <var>pol_checks</var>: Boolean specifies whether polarization consistency checks should be done (especially
+                             unpol=polsum+int and checks whether transformation works properly and is unitary)
+                             default: false
+  */
+  /*!
     .
   Output:
     - vector<vector<Complex>>, which contains the transformation coefficients for each new polarization vector as

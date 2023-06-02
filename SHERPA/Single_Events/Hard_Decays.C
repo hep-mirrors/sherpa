@@ -3,7 +3,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 #include "METOOLS/SpinCorrelations/Polarized_CrossSections_Handler.H"
-#include "METOOLS/SpinCorrelations/PolWeight_Map.H"
+#include "METOOLS/SpinCorrelations/PolWeights_Map.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -62,8 +62,8 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist)
               }
               METOOLS::Polarized_CrossSections_Handler* pol_crosssection_handler = p_dechandler->GetPolarizationHandler();
               if (prod_amps){
-                std::vector<METOOLS::PolWeight_Map*> polweights = pol_crosssection_handler->Treat(signal, prod_amps,
-                                                                                                  p_dechandler->GetDecayMatrices());
+                std::vector<METOOLS::PolWeights_Map*> polweights = pol_crosssection_handler->Treat(signal, prod_amps,
+                                                                                                   p_dechandler->GetDecayMatrices());
                 std::vector<std::string> refsystem = pol_crosssection_handler->GetRefSystems();
                 Weights_Map wgtmap = bloblist->WeightsMap();
                 for (size_t p(0); p<polweights.size(); ++p){

@@ -17,6 +17,7 @@ namespace METOOLS {
 
   public:
     Amplitude2_Matrix(const ATOOLS::Particle* p);
+    Amplitude2_Matrix(const ATOOLS::Particle* p, Complex factor);
     Amplitude2_Matrix(const Amplitude2_Matrix& amp) : std::vector<Complex>(amp), p_part(amp.p_part), m_nhel(amp.m_nhel) {}
     ~Amplitude2_Matrix();
 

@@ -65,12 +65,12 @@ namespace METOOLS {
     * @param level level of Amplitude2_Tensor which describes the searched particle, only for recursive calls;
      * default: 1
     *
-    * @return Pair of level of and the searched particle; if particle is not found, an empty particle is returned which
-     * can be identified by particle number -1
+    * @return Pair of level of and the pointer to searched particle; if particle is not found, pair of last level and
+    *         an empty pointer is returned
     *
-    * method for searching, whether a particle with a specific particle number is included in the Amplitude2_Tensor
+    * method for searching, whether (and where) a particle with a specific particle number is included in the Amplitude2_Tensor
     */
-    std::pair<const int, const ATOOLS::Particle> Search(int part_number, int level=1) const;
+    std::pair<const int, const ATOOLS::Particle*> Search(int part_number, int level=1) const;
     /**
     * @param num current number of particles, necessary for recursive call of the function; default: 0
     *
