@@ -12,10 +12,10 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   case btp::Signal_Process:             return ostr<<"Signal Process             ";
   case btp::Hard_Decay:                 return ostr<<"Hard Decay                 ";
   case btp::Hard_Collision:             return ostr<<"Hard Collision             ";
-  case btp::Soft_Collision:             return ostr<<"Soft Collision             "; 
-  case btp::Elastic_Collision:          return ostr<<"Elastic Collision          "; 
-  case btp::Soft_Diffractive_Collision: return ostr<<"Soft Diffractive Collision "; 
-  case btp::Quasi_Elastic_Collision:    return ostr<<"Quasi-Elastic Collision    "; 
+  case btp::Soft_Collision:             return ostr<<"Soft Collision             ";
+  case btp::Elastic_Collision:          return ostr<<"Elastic Collision          ";
+  case btp::Soft_Diffractive_Collision: return ostr<<"Soft Diffractive Collision ";
+  case btp::Quasi_Elastic_Collision:    return ostr<<"Quasi-Elastic Collision    ";
   case btp::Shower:                     return ostr<<"Shower                     ";
   case btp::QED_Radiation:              return ostr<<"QED Radiation              ";
   case btp::Beam:                       return ostr<<"Beam                       ";
@@ -70,10 +70,10 @@ namespace ATOOLS {
 
 }
 
-Blob::Blob(const Vec4D _pos, const int _id) : 
+Blob::Blob(const Vec4D _pos, const int _id) :
   m_position(_pos), m_id(_id), m_status(blob_status::inactive),
-  m_beam(-1), m_hasboost(false), 
-  m_type(btp::Unspecified), m_typespec(std::string("none")) 
+  m_beam(-1), m_hasboost(false),
+  m_type(btp::Unspecified), m_typespec(std::string("none"))
 { ++s_totalnumber; }
 
 Blob::Blob(const Blob * blob,const bool copyparts) :
@@ -84,7 +84,7 @@ Blob::Blob(const Blob * blob,const bool copyparts) :
 {
   ++s_totalnumber;
   if (copyparts) {
-  for (int i=0;i<blob->NInP();i++)  
+  for (int i=0;i<blob->NInP();i++)
     AddToInParticles(new Particle((*blob->ConstInParticle(i))));
   Particle * part(NULL);
   for (int i=0;i<blob->NOutP();i++) {
@@ -102,7 +102,7 @@ Blob::Blob(const Blob * blob,const bool copyparts) :
 Blob::~Blob() {
   DeleteOwnedParticles();
   // delete data container
-  ClearAllData();  
+  ClearAllData();
   --s_totalnumber;
 }
 
@@ -140,9 +140,9 @@ const Particle *Blob::ConstInParticle(const size_t i) const
   return m_inparticles[i];
 }
 
-const Particle *Blob::ConstOutParticle(const size_t i) const 
+const Particle *Blob::ConstOutParticle(const size_t i) const
 {
-  if (i>m_outparticles.size()-1) return NULL; 
+  if (i>m_outparticles.size()-1) return NULL;
   return m_outparticles[i];
 }
 
@@ -173,7 +173,7 @@ Particle * Blob::RemoveOutParticle(int _pos,bool setit) {
   return NULL;
 }
 
-void Blob::RemoveInParticles(const int all) 
+void Blob::RemoveInParticles(const int all)
 {
   for (Particle_Vector::iterator part=m_inparticles.begin();
        part!=m_inparticles.end();) {
@@ -189,7 +189,7 @@ void Blob::RemoveInParticles(const int all)
   }
 }
 
-void Blob::RemoveOutParticles(const int all) 
+void Blob::RemoveOutParticles(const int all)
 {
   for (Particle_Vector::iterator part=m_outparticles.begin();
        part!=m_outparticles.end();) {
@@ -205,14 +205,14 @@ void Blob::RemoveOutParticles(const int all)
   }
 }
 
-void Blob::DeleteInParticles(const int all) 
+void Blob::DeleteInParticles(const int all)
 {
   for (Particle_Vector::iterator part=m_inparticles.begin();
        part!=m_inparticles.end();) {
     if ((all==-1&&(*part)->ProductionBlob()==NULL) ||
 	all==0 ||
 	(all==1&&(*part)->ProductionBlob()!=NULL)) {
-      if ((*part)->ProductionBlob()!=NULL) 
+      if ((*part)->ProductionBlob()!=NULL)
 	(*part)->ProductionBlob()->RemoveOutParticle(*part);
       (*part)->SetDecayBlob(NULL);
       delete *part;
@@ -224,14 +224,14 @@ void Blob::DeleteInParticles(const int all)
   }
 }
 
-void Blob::DeleteOutParticles(const int all) 
+void Blob::DeleteOutParticles(const int all)
 {
   for (Particle_Vector::iterator part=m_outparticles.begin();
        part!=m_outparticles.end();) {
     if ((all==-1&&(*part)->DecayBlob()==NULL) ||
 	all==0 ||
 	(all==1&&(*part)->DecayBlob()!=NULL)) {
-      if ((*part)->DecayBlob()!=NULL) 
+      if ((*part)->DecayBlob()!=NULL)
 	(*part)->DecayBlob()->RemoveInParticle(*part);
       (*part)->SetProductionBlob(NULL);
       delete *part;
@@ -348,18 +348,18 @@ Vec4D Blob::CheckMomentumConservation() const {
   Vec4D sump = Vec4D(0.,0.,0.,0.);
   for (Particle_Vector::const_iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
-    //if (((*part)->Info()=='F'||(*part)->Info()=='B'||(*part)->Info()=='R') && 
-    //	m_type==btp::Shower) 
+    //if (((*part)->Info()=='F'||(*part)->Info()=='B'||(*part)->Info()=='R') &&
+    //	m_type==btp::Shower)
     //  sump = sump + (-1.) * (*part)->Momentum();
-    //else 
+    //else
     sump = sump + (*part)->Momentum();
   }
   for (Particle_Vector::const_iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
-    //if (((*part)->Info()=='I') 
-    //	&& m_type==btp::Shower) 
+    //if (((*part)->Info()=='I')
+    //	&& m_type==btp::Shower)
     // sump = sump + (*part)->Momentum();
-    //else 
+    //else
     sump = sump + (-1.)*((*part)->Momentum());
   }
   return sump;
@@ -407,12 +407,12 @@ bool Blob::CheckColour(const bool & transient) {
   bool error(false);
   for (int i=0;i<NInP();i++) {
     part = InParticle(i);
-    if ((part->Flav().IsGluon() && 
+    if ((part->Flav().IsGluon() &&
 	 (part->GetFlow(1)==0 || part->GetFlow(2)==0 ||
 	  part->GetFlow(1)==part->GetFlow(2))) ||
-	(part->Flav().IsQuark() && part->Flav().IsAnti() && 
+	(part->Flav().IsQuark() && part->Flav().IsAnti() &&
 	 part->GetFlow(2)==0) ||
-	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
+	(part->Flav().IsQuark() && !part->Flav().IsAnti() &&
 	 part->GetFlow(1)==0)) {
       if (!transient) {
 	msg_Error()<<"Error in "<<METHOD<<": "
@@ -425,12 +425,12 @@ bool Blob::CheckColour(const bool & transient) {
   }
   for (int i=0;i<NOutP();i++) {
     part = OutParticle(i);
-    if ((part->Flav().IsGluon() && 
+    if ((part->Flav().IsGluon() &&
 	 (part->GetFlow(1)==0 || part->GetFlow(2)==0 ||
 	  part->GetFlow(1)==part->GetFlow(2))) ||
-	(part->Flav().IsQuark() && part->Flav().IsAnti() && 
+	(part->Flav().IsQuark() && part->Flav().IsAnti() &&
 	 part->GetFlow(2)==0) ||
-	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
+	(part->Flav().IsQuark() && !part->Flav().IsAnti() &&
 	 part->GetFlow(1)==0)) {
       if (!transient) {
 	msg_Error()<<"Error in "<<METHOD<<": "
@@ -490,9 +490,9 @@ void Blob::BoostInCMS() {
     m_cms_boost = Poincare(cm);
     m_cms_vec   = cm;
   }
-  for (int i=0;i<NInP();i++) 
+  for (int i=0;i<NInP();i++)
     InParticle(i)->SetMomentum(m_cms_boost*InParticle(i)->Momentum());
-  for (int i=0;i<NOutP();i++) 
+  for (int i=0;i<NOutP();i++)
     OutParticle(i)->SetMomentum(m_cms_boost*OutParticle(i)->Momentum());
   m_hasboost = true;
 }
@@ -508,7 +508,7 @@ void Blob::BoostInLab() {
     m_cms_boost.BoostBack(dummy);
     InParticle(i)->SetMomentum(dummy);
   }
-  for (int i=0;i<NOutP();i++) { 
+  for (int i=0;i<NOutP();i++) {
     dummy = OutParticle(i)->Momentum();
     m_cms_boost.BoostBack(dummy);
     OutParticle(i)->SetMomentum(dummy);
@@ -535,12 +535,12 @@ void Blob::SetVecs() {
 }
 
 
-void  Blob::SetId(const int _id) { 
+void  Blob::SetId(const int _id) {
   if (_id<0) m_id = -_id;
-        else m_id = ++s_currentnumber; 
+        else m_id = ++s_currentnumber;
 }
 
-void  Blob::AddData(const std::string name, Blob_Data_Base * data) 
+void  Blob::AddData(const std::string name, Blob_Data_Base * data)
 {
   String_BlobDataBase_Map::iterator it=m_datacontainer.find(name);
   if (it==m_datacontainer.end()) {
@@ -552,8 +552,9 @@ void  Blob::AddData(const std::string name, Blob_Data_Base * data)
   }
 }
 
-void Blob::ClearAllData() 
+void Blob::ClearAllData()
 {
+  if (m_datacontainer.empty()) return;
   for (String_BlobDataBase_Map::iterator it=m_datacontainer.begin();
        it!=m_datacontainer.end(); ++it) delete it->second;
   m_datacontainer.clear();
@@ -563,7 +564,7 @@ void Blob::ClearAllData()
 
 
 
-std::ostream& ATOOLS::operator<<( std::ostream& s, const Blob_Data_Base & bd) 
+std::ostream& ATOOLS::operator<<( std::ostream& s, const Blob_Data_Base & bd)
 {
   bd>>s;
   return s;
@@ -587,7 +588,7 @@ Blob_Data_Base::~Blob_Data_Base()
 }
 
 template <class Type>
-Blob_Data<Type>::~Blob_Data() 
+Blob_Data<Type>::~Blob_Data()
 {
 }
 
@@ -619,7 +620,7 @@ template class ATOOLS::Blob_Data<std::vector<double> >;
 template class ATOOLS::Blob_Data<std::vector<int> >;
 template class ATOOLS::Blob_Data<Vec4D>;
 
-void Blob::SwapInParticles(const size_t i, const size_t j) 
+void Blob::SwapInParticles(const size_t i, const size_t j)
 {
   if (i<m_inparticles.size() && j<m_inparticles.size()) {
     ATOOLS::Particle *help=m_inparticles[j];
@@ -628,7 +629,7 @@ void Blob::SwapInParticles(const size_t i, const size_t j)
   }
 }
 
-void Blob::SwapOutParticles(const size_t i, const size_t j) 
+void Blob::SwapOutParticles(const size_t i, const size_t j)
 {
   if (i<m_outparticles.size() && j<m_outparticles.size()) {
     ATOOLS::Particle *help=m_outparticles[j];
@@ -644,13 +645,13 @@ bool Blob::IsConnectedTo(const btp::code &type,
   if (checked.find(this)!=checked.end()) return false;
   checked.insert(this);
   if (Type()==type) return true;
-  for (int i(0);i<NOutP();++i) 
+  for (int i(0);i<NOutP();++i)
     if (ConstOutParticle(i)->DecayBlob())
-      if (ConstOutParticle(i)->DecayBlob()->IsConnectedTo(type,checked)) 
+      if (ConstOutParticle(i)->DecayBlob()->IsConnectedTo(type,checked))
         return true;
-  for (int i(0);i<NInP();++i) 
+  for (int i(0);i<NInP();++i)
     if (ConstInParticle(i)->ProductionBlob())
-      if (ConstInParticle(i)->ProductionBlob()->IsConnectedTo(type,checked)) 
+      if (ConstInParticle(i)->ProductionBlob()->IsConnectedTo(type,checked))
         return true;
   return false;
 }
