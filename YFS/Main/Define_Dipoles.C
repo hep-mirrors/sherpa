@@ -333,7 +333,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   }
 
   for (auto &D : m_dipolesIF){
-    // sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    sub -= D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   return sub;
 }
@@ -350,7 +350,7 @@ double Define_Dipoles::CalculateRealSubLocal(const Vec4D_Vector &p, const Vec4D 
   }
 
   for (auto &D : m_dipolesIF){
-    // sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    sub -= D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   return sub;
 }
