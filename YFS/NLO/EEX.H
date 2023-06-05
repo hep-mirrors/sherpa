@@ -37,7 +37,7 @@ namespace YFS{
     // EXTRAXS::ME2_Base *p_ME;
     PHASIC::Tree_ME2_Base *p_tree;
     int m_order, m_fsrmode, m_usefulleik, m_formfactor, m_usenllv, m_use_fac;
-    double m_alp, m_alpi, m_L, m_gamma, m_gammap, m_Emin, m_sp, m_u;
+    double m_alp, m_alpi, m_L, m_gamma, m_gammap, m_Emin, m_u;
     double m_mass, m_mass2, m_p1p2, m_cth11, m_cth12, m_cth21, m_cth22;
     double m_born1, m_born2,m_borncrude, m_D, m_D10, m_D11, m_D12, m_beta1;
     double m_born11, m_born12, m_born21,m_born22;

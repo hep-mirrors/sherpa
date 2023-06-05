@@ -49,6 +49,7 @@ namespace YFS{
         double Mass();
         double Eikonal(Vec4D k, Vec4D p1, Vec4D p2);
         double Eikonal(Vec4D k);
+        double EEX(const Vec4D & k);
         void Boost();
         void Boost(Vec4D &p);
         void RandomRotate(Vec4D &p);

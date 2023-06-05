@@ -56,5 +56,5 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
     double V(0.0);
     p_loop_me->Calc(p,B);
     V = p_loop_me->ME_Finite();
-    return V*m_rescale_alpha*m_factor;
+    return V*m_rescale_alpha*m_factor*B;
   }
