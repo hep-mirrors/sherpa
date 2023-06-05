@@ -434,8 +434,8 @@ void YFS_Handler::CalculateBeta() {
   }
   // PRINT_VAR(m_nlotype);
   if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
-    m_real=m_born+CalculateNLO();
-    m_real /= m_born;
+    m_real=1+CalculateNLO()/m_born;
+    // m_real /= m_born;
   }
   if (m_griff != 0) {
       m_real=1+CalculateNLO();

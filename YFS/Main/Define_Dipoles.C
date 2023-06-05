@@ -326,14 +326,14 @@ void Define_Dipoles::Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
 double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   double sub(0), Y;
   for (auto &D : m_dipolesII) {
-    sub += D.Eikonal(k, D.GetOldMomenta(0), D.GetOldMomenta(1));
+    sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   for (auto &D : m_dipolesFF) {
-    sub += D.Eikonal(k, D.GetOldMomenta(0), D.GetOldMomenta(1));
+    sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
 
   for (auto &D : m_dipolesIF){
-    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+    // sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   return sub;
 }
@@ -345,12 +345,12 @@ double Define_Dipoles::CalculateRealSubLocal(const Vec4D_Vector &p, const Vec4D 
     sub += D.Eikonal(k, p[0], p[1]);
   }
   for (auto &D : m_dipolesFF) {
-    sub += D.Eikonal(k, D.GetOldMomenta(0), D.GetOldMomenta(1));
-    // sub += -D.Eikonal(k, p[2], p[3]);
+    // sub += D.Eikonal(k, D.GetOldMomenta(0), D.GetOldMomenta(1));
+    sub += D.Eikonal(k, p[2], p[3]);
   }
 
   for (auto &D : m_dipolesIF){
-    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+    // sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   return sub;
 }
@@ -362,7 +362,7 @@ double Define_Dipoles::CalculateVirtualSub() {
     sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
   for (auto &D : m_dipolesFF) {
-    sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetOldMomenta(0), D.GetOldMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetMomenta(0), D.GetMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
 
   }
 
@@ -396,6 +396,14 @@ double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
   return sub;
 }
 
+
+double Define_Dipoles::CalculateEEX(const Vec4D & k){
+  double eex=0;
+  for (auto &D: m_dipolesII){
+    eex += D.EEX(k);
+  }
+  return eex;
+}
 
 
 void Define_Dipoles::CleanInParticles() {

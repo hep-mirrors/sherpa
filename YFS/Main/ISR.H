@@ -20,7 +20,7 @@ static histograms m_histograms;
 #endif
 class ISR : public YFS_Base {
 public:
-  double  m_b1, m_sp;
+  double  m_b1;
   double  m_b2;
   double  m_theta, m_angleWeight;
   double  m_phi;
