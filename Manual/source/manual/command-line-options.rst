@@ -104,6 +104,12 @@ The available command line options for Sherpa.
 
    Switch to non-batch mode, see :REF:`BATCH_MODE`.
 
+.. option:: -I
+
+   Only initialize the run, i.e. writes out the ``Process`` directory, if
+   necessary writes out the libraries for AMEGIC++ and quits the run,
+   see :ref:`Running Sherpa`.
+
 .. option:: --print-version-info, -V
 
    Print extended version information at startup.
