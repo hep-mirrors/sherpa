@@ -40,7 +40,6 @@ localinc_HEADERS      =	\
 			fjcore.hh \
 			Fragmentation_Base.H \
 			Remnant_Base.H \
-			Remnant_Handler_Base.H \
 			Ordering.H \
 			Flavour_Tags.H \
 			Flavour.H \
