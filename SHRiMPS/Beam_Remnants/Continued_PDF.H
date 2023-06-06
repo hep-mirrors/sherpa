@@ -61,7 +61,7 @@ namespace SHRIMPS {
     void   Test();
     double GluonAtZero(const double & x);
   public:
-    Continued_PDF(PDF::PDF_Base * pdf,const ATOOLS::Flavour & bunch);
+    Continued_PDF(PDF::PDF_Base * pdf);
     ~Continued_PDF();
 
     void   Calculate(const double & x,const double & Q2);

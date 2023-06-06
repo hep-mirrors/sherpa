@@ -32,6 +32,7 @@ namespace BEAM {
 
     virtual inline const ATOOLS::Vec4D & OutMomentum() const { return m_vecout; }
     virtual inline const ATOOLS::Vec4D & InMomentum()  const { return m_lab; }
+    virtual inline const int             Dir()         const { return m_dir; } 
 
     virtual inline const double & Energy()       const { return m_energy; }
     virtual inline const double & Polarisation() const { return m_polarisation; }

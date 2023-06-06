@@ -15,7 +15,7 @@ using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders(Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) :
   p_sigma_el(sigma_el), p_sigma_sd(sigma_sd),
-  p_laddergenerator(new Ladder_Generator_QE()),
+  p_laddergenerator(new Ladder_Generator_Eik()),
   m_Ecms(rpa->gen.Ecms()/2.),
   m_test(true),
   n_calls(0), n_start(0), n_gen(0)
@@ -62,8 +62,10 @@ void Primary_Ladders::Test() { return; if (m_test) p_laddergenerator->Test(); }
 
 bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_t & N) {
   Reset();
-  //msg_Out()<<"     -------------------------------------------------------------\n"
-  //	   <<"     --- Make "<<N<<" new ladders at B = "<<B<<"\n";
+  msg_Out()<<"\n\n\n"
+	   <<"---------------------------------------------------------------------\n"
+	   <<"---------------------------------------------------------------------\n"
+  	   <<"--- "<<METHOD<<": "<<N<<" new ladders at B = "<<B<<"\n";
   p_laddergenerator->InitCollision(eikonal,B);
   size_t Ngen = 0, trials = 0;
   double b1, b2;
@@ -79,7 +81,7 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     if (m_test && ladder) FillAnalysis(ladder,"trial");
     //msg_Out() << IsAllowed(ladder) << "\t" << m_colourgenerator(ladder) << "\n";
     if (IsAllowed(ladder) && m_colourgenerator(ladder)) {	
-      p_laddergenerator->QuarkReplace();
+      //p_laddergenerator->QuarkReplace();
       p_laddergenerator->FixLadderType();
       if (ladder->Type()==ladder_type::inelastic) contains_one_inelastic = true;
       Add(ladder);

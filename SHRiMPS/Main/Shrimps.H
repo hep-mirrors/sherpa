@@ -14,6 +14,7 @@
 #include <list>
 
 namespace PDF    { class ISR_Handler; }
+namespace BEAM   { class Beam_Spectra_Handler; }
 namespace ATOOLS { class Cluster_Amplitude; }
 
 namespace SHRIMPS {
@@ -65,13 +66,13 @@ namespace SHRIMPS {
 			       const std::vector<double> & xsecdd,
 			       std::string dirname);
     
-    void InitialiseTheRun(PDF::ISR_Handler *const isr);
+    void InitialiseTheRun(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
     void InitialiseFormFactors();
     void InitialiseSingleChannelEikonals();
-    void InitialiseRemnants(PDF::ISR_Handler *const isr);
+    void InitialiseRemnants(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
     void InitialiseTheEventGenerator();
     
-    void TestShrimps(PDF::ISR_Handler *const isr);
+    void TestShrimps(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
     void PrintAlphaS(const std::string & dirname);
     void PrintPDFs(const std::string & dirname);
     void TestEikonalGrids(const std::string & dirname);
@@ -80,7 +81,7 @@ namespace SHRIMPS {
     void Analyse(ATOOLS::Blob_List * blobs);
     void Analyse(ATOOLS::Blob * blob,std::string tag);
   public:
-    Shrimps(PDF::ISR_Handler *const);
+    Shrimps(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
     ~Shrimps();
 
     int  InitMinBiasEvent(ATOOLS::Blob_List * blobs);

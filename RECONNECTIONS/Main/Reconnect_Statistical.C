@@ -100,11 +100,18 @@ double Reconnect_Statistical::Distance(Particle * trip,Particle * anti) {
 }
 
 double Reconnect_Statistical::MomDistance(Particle * trip,Particle * anti) {
+  double p1p2 = trip->Momentum() * anti->Momentum();
+  if (trip->Flav().IsGluon()) p1p2 /= 2.;
+  if (anti->Flav().IsGluon()) p1p2 /= 2.;
+  double m1m2 = trip->Flav().HadMass() * anti->Flav().HadMass();
+  return p1p2-m1m2;
+  /*
   double p1p2 = ( ((trip->Flav().IsGluon() ? 0.5 : 1.) * trip->Momentum()+
 		   (anti->Flav().IsGluon() ? 0.5 : 1.) * anti->Momentum()).
 		  Abs2() -
 		  (trip->Momentum().Abs2()+anti->Momentum().Abs2()) );
   return m_Pmode==0 ? log(1.+p1p2/m_Q02) : pow(1.+p1p2/m_Q02,m_etaQ);
+  */
 }
 
 double Reconnect_Statistical::PosDistance(Particle * trip,Particle * anti) {

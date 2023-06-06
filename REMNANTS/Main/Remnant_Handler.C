@@ -15,8 +15,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Remnant_Handler::Remnant_Handler(PDF::ISR_Handler *isr,
-                                 BEAM::Beam_Spectra_Handler *beam)
-    : p_softblob(nullptr), m_check(true), m_output(true) {
+                                 BEAM::Beam_Spectra_Handler *beam) :
+  p_softblob(nullptr), m_active(true), m_check(true), m_output(true) {
   InitializeRemnants(isr, beam);
   DefineRemnantStrategy();
   InitializeKinematicsAndColours();
@@ -115,6 +115,7 @@ void Remnant_Handler::InitializeKinematicsAndColours() {
 }
 
 bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
+  if (!m_active) return true;
   // This method is called after each successful parton shower off a hard
   // scatter.  It extracts the two initial particles from the shower and
   // extracts them from the corresponding beam remnant.
@@ -144,6 +145,7 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
 }
 
 void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
+  if (!m_active) return;
   // After each showering step, we try to compensate some of the colours.
   // In the absence of multiple parton interactions this will not involve
   // anything complicated with colours.  In each step, the shower initiators
@@ -159,6 +161,10 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
 Return_Value::code
 Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
                                Particle_List *const particlelist) {
+  if (!m_active) {
+    THROW(critical_error,"this should not happen: inactive Remnant_Handler");
+    return Return_Value::Nothing;
+  }
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   InitBeamAndSoftBlobs(bloblist);
@@ -249,6 +255,7 @@ void Remnant_Handler::SetImpactParameter(const double & b) {
 }
 
 bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
+  if (!m_active) return true;
   // Extracting a particle from a remnant only works for positive energies.
   if (part->Momentum()[0] < 0.) {
     msg_Error() << METHOD << " yields shower with negative incoming energies.\n"
@@ -259,6 +266,7 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
 }
 
 void Remnant_Handler::Reset() {
+  if (!m_active) return;
   bool DIS = m_type == strat::DIS1 || m_type == strat::DIS2;
   for (size_t beam = 0; beam < 2; beam++)
     p_remnants[beam]->Reset(DIS);

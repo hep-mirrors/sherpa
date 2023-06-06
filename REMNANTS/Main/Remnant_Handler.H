@@ -41,7 +41,7 @@ namespace REMNANTS {
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
-    bool m_check, m_output;
+    bool m_active, m_check, m_output;
     
     void InitializeRemnants(PDF::ISR_Handler * isr,
 			    BEAM::Beam_Spectra_Handler * beam);
@@ -55,18 +55,25 @@ namespace REMNANTS {
     
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
     bool Extract(ATOOLS::Particle * part,const unsigned int beam);
+    bool TestExtract(ATOOLS::Particle *parton,const unsigned int beam) {
+      return !(m_active) || p_remnants[beam]->TestExtract(parton);
+    }
+    bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom,const unsigned int beam) {
+      return !(m_active) || p_remnants[beam]->TestExtract(flav,mom);
+    }
     void ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
-    
+    void Reset(const unsigned int beam) { p_remnants[beam]->Reset(); }
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List *const blobs,
 					     ATOOLS::Particle_List *const=nullptr);
 
     void SetImpactParameter(const double & b);
+    inline const strat::code Type()      const { return m_type; }
+    inline const bool IsActive()         const { return m_active; }
+    inline void SetActive(const bool & active) { m_active = active; } 
     inline void SetScale2(const double & scale2) {
       for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
     }
-    inline const strat::code Type() const { return m_type; }
-    
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
       return (beam<2)?p_remnants[beam]:nullptr;
     }

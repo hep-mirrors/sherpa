@@ -23,9 +23,10 @@ std::ostream &REMNANTS::operator<<(std::ostream &ostr, const rtp::code code) {
   return ostr;
 }
 
-Remnant_Base::Remnant_Base(const rtp::code type, const unsigned int beam)
-    : m_type(type), m_beam(beam), p_beam(nullptr), p_partner(nullptr),
-      p_beamblob(nullptr), m_position(Vec4D(0.,0.,0.,0.)),
+Remnant_Base::Remnant_Base(const rtp::code type, const unsigned int beam) :
+  Basic_Remnant_Base(beam),
+  m_type(type), p_partner(nullptr),
+  m_position(Vec4D(0.,0.,0.,0.)),
   p_colours(nullptr), m_rescale(true), m_scale2(-1.) {}
 
 Remnant_Base::~Remnant_Base() = default;

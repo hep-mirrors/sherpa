@@ -17,7 +17,8 @@ using namespace ATOOLS;
 using namespace std;
 
 MI_Handler::MI_Handler(MODEL::Model_Base *model,
-		       PDF::ISR_Handler *isr) :
+		       PDF::ISR_Handler *isr,
+		       BEAM::Beam_Spectra_Handler * beam) :
   p_isr(isr), p_amisic(NULL), p_shrimps(NULL), 
   p_ampl(NULL), p_proc(NULL), p_shower(NULL),
   m_stop(false), m_type(typeID::none), m_name("None")
@@ -28,9 +29,9 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) {
     m_name = "None";
   }
-  if (m_name==string("Amisic"))  InitAmisic(model);
+  if (m_name==string("Amisic"))  InitAmisic(model,isr);
   if ((scm==string("Shrimps") && p_amisic==NULL) ||
-      m_name==string("Shrimps")) InitShrimps(model);
+      m_name==string("Shrimps")) InitShrimps(isr,beam);
 }
 
 MI_Handler::~MI_Handler() 
@@ -39,11 +40,11 @@ MI_Handler::~MI_Handler()
   if (p_shrimps!=NULL) { delete p_shrimps; p_shrimps = NULL; }
 }
 
-void MI_Handler::InitAmisic(MODEL::Model_Base *model)
+void MI_Handler::InitAmisic(MODEL::Model_Base *model,PDF::ISR_Handler *isr)
 {
   p_amisic    = new AMISIC::Amisic();
   p_amisic->SetOutputPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
-  if (!p_amisic->Initialize(model,p_isr)) {
+  if (!p_amisic->Initialize(model,isr)) {
     msg_Error()<<METHOD<<"(): Cannot initialize MPI generator.\n"
 	       <<"   Continue without MPIs and hope for the best.\n";
     delete p_amisic; p_amisic=NULL;
@@ -51,9 +52,9 @@ void MI_Handler::InitAmisic(MODEL::Model_Base *model)
   else m_type = typeID::amisic;
 }
 
-void MI_Handler::InitShrimps(MODEL::Model_Base *model)
+void MI_Handler::InitShrimps(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler * beam)
 {
-  p_shrimps = new SHRIMPS::Shrimps(p_isr);
+  p_shrimps = new SHRIMPS::Shrimps(isr,beam);
   m_type = typeID::shrimps;
 }
 
@@ -74,7 +75,7 @@ void MI_Handler::SetMaxEnergies(const double & E1,const double & E2) {
 }
 
 void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
-  if (showerblob) p_remnants->ConnectColours(showerblob);
+  if (m_type==typeID::amisic && showerblob) p_remnants->ConnectColours(showerblob);
 }
 
 Blob * MI_Handler::GenerateHardProcess()

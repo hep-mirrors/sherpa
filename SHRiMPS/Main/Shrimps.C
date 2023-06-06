@@ -18,7 +18,7 @@ using namespace SHRIMPS;
 using namespace std;
 
 
-Shrimps::Shrimps(PDF::ISR_Handler *const isr) :
+Shrimps::Shrimps(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam) :
   p_remnants(NULL), p_generator(NULL),
   m_ana(true)
 {
@@ -36,9 +36,9 @@ Shrimps::Shrimps(PDF::ISR_Handler *const isr) :
   }
   else if (MBpars.RunMode()==run_mode::test) {
     msg_Events()<<METHOD<<": run tests.\n";
-    TestShrimps(isr);
+    TestShrimps(isr,beam);
   }
-  InitialiseTheRun(isr);
+  InitialiseTheRun(isr,beam);
   if (m_ana) {
     m_histos[std::string("Yasym_core")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
     m_histos[std::string("Yasym_hard")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
@@ -65,11 +65,11 @@ Shrimps::~Shrimps()
   }
 }
 
-void Shrimps::InitialiseTheRun(PDF::ISR_Handler *const isr) {
+void Shrimps::InitialiseTheRun(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam) {
   Hadron_Init().Init();
   InitialiseFormFactors();
   InitialiseSingleChannelEikonals();
-  InitialiseRemnants(isr);
+  InitialiseRemnants(isr,beam);
   InitialiseTheEventGenerator();  
 }
 
@@ -101,8 +101,8 @@ void Shrimps::InitialiseSingleChannelEikonals()
   }
 }
 
-void Shrimps::InitialiseRemnants(PDF::ISR_Handler *const isr) { 
-  p_remnants = new Remnant_Handler(isr);
+void Shrimps::InitialiseRemnants(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam) { 
+  p_remnants = new Remnant_Handler(isr,beam);
 }
 
 void Shrimps::InitialiseTheEventGenerator() {
@@ -110,7 +110,6 @@ void Shrimps::InitialiseTheEventGenerator() {
   p_xsecs->CalculateCrossSections();
   p_generator = new Event_Generator(p_xsecs,false);
   p_generator->Initialise(p_remnants,&m_cluster);
-  p_remnants->SetColourGenerator(p_generator->GetColourGenerator());
   m_cluster.SetYmax(p_generator->Ymax());
   m_cluster.SetMinKT2(p_generator->MinKT2());
   m_cluster.SetShowerParams(ShowerMode(),ShowerMinKT2());
@@ -432,12 +431,12 @@ void Shrimps::ReadEnergiesFromFile(std::set<double> & energies,
 
 
 
-void Shrimps::TestShrimps(PDF::ISR_Handler *const isr) {
+void Shrimps::TestShrimps(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam) {
   msg_Info()<<"Start testing SHRiMPS.\n";
   std::string dirname = std::string("Tests");
   ATOOLS::MakeDir(dirname);
   InitialiseFormFactors();
-  InitialiseRemnants(isr);
+  InitialiseRemnants(isr,beam);
   InitialiseSingleChannelEikonals();
 
   PrintAlphaS(dirname);

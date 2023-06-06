@@ -40,10 +40,10 @@ namespace SHERPA {
 
     double m_ycut; 
     
-    void InitAmisic(MODEL::Model_Base *model);
-    void InitShrimps(MODEL::Model_Base *model);
+    void InitAmisic(MODEL::Model_Base *model,PDF::ISR_Handler *isr);
+    void InitShrimps(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler * beam);
   public:
-    MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr);
+    MI_Handler(MODEL::Model_Base *model,PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler * beam);
     ~MI_Handler();
     
     bool InitialiseMPIs(const double & scale);
@@ -73,10 +73,8 @@ namespace SHERPA {
     inline AMISIC::Amisic            * Amisic()     const { return p_amisic; }
     inline SHRIMPS::Shrimps          * Shrimps()    const { return p_shrimps; }
     
-    inline void SetShowerHandler(Shower_Handler * const sh) { p_shower=sh; }
-    inline void SetRemnantHandler(REMNANTS::Remnant_Handler *const rh) {
-      p_remnants = rh;
-    }
+    inline void SetShowerHandler(Shower_Handler * const sh)            { p_shower   = sh; }
+    inline void SetRemnantHandler(REMNANTS::Remnant_Handler *const rh) { p_remnants = rh; }
 
 
     bool   VetoScatter(ATOOLS::Blob *blob);

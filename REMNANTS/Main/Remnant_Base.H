@@ -2,11 +2,10 @@
 #define REMNANTS_Main_Remnant_Base_H
 
 #include "BEAM/Main/Beam_Base.H"
+#include "ATOOLS/Phys/Remnant_Base.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Blob.H"
 #include <vector>
-
-namespace BEAM { class Beam_Base; }
 
 namespace REMNANTS {  
   struct rtp {
@@ -30,15 +29,11 @@ namespace REMNANTS {
 
   class Colour_Generator;
   
-  class Remnant_Base {
+  class Remnant_Base : public ATOOLS::Basic_Remnant_Base {
   protected:
     rtp::code    m_type;
-    unsigned int m_beam;
-
-    BEAM::Beam_Base  * p_beam;
+    
     Remnant_Base     * p_partner;    
-    ATOOLS::Blob     * p_beamblob;
-    ATOOLS::Vec4D      m_pbeam;
     ATOOLS::Vec4D      m_position;
     ATOOLS::Part_List  m_extracted, m_spectators;
     Colour_Generator * p_colours;
@@ -64,17 +59,15 @@ namespace REMNANTS {
     inline rtp::code                  Type() const       { return m_type; }
     inline unsigned int               Beam() const       { return m_beam; }
     inline const ATOOLS::Vec4D      & Position() const   { return m_position; }
-    inline BEAM::Beam_Base          * GetBeam() const    { return p_beam; }
     inline ATOOLS::Blob             * GetBlob()          { return p_beamblob; }
     inline const ATOOLS::Vec4D      & InMomentum() const { return p_beam->OutMomentum(); }
     inline ATOOLS::Part_List        * GetExtracted()     { return &m_extracted; }
     inline ATOOLS::Part_List        * GetSpectators()    { return &m_spectators; }
     inline virtual ATOOLS::Particle * GetRecoiler()      { return nullptr; }
     inline virtual ATOOLS::Particle * GetSpectator()     { return nullptr; }
-    inline void SetPartner(Remnant_Base * partner)       { p_partner = partner; }
-    inline void SetBeam(BEAM::Beam_Base * beam)          { p_beam = beam; }
-    inline void SetScale2(const double & scale2)         { m_scale2 = scale2; }
-    inline void SetColours(Colour_Generator * cgen)      { p_colours = cgen; } 
+    inline void SetPartner(Remnant_Base * partner)       { p_partner  = partner; }
+    inline void SetScale2(const double & scale2)         { m_scale2   = scale2; }
+    inline void SetColours(Colour_Generator * cgen)      { p_colours  = cgen; } 
     inline void SetPosition(const ATOOLS::Vec4D & pos)   { m_position = pos; }
   };
 }

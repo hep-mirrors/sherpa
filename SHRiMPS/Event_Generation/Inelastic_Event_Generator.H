@@ -17,8 +17,8 @@ namespace SHRIMPS {
   class Inelastic_Event_Generator : public Event_Generator_Base {
   private:
     Sigma_Inelastic * p_sigma;
-    Sigma_Elastic * p_sigma_el;
-    Sigma_D * p_sigma_sd;
+    Sigma_Elastic   * p_sigma_el;
+    Sigma_D         * p_sigma_sd;
     Primary_Ladders   m_primaries;
     bool m_mustinit;
     int  m_test;

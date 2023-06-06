@@ -9,19 +9,10 @@ using namespace ATOOLS;
 
 Beam_Remnant_Handler::
 Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
-		     REMNANTS::Remnant_Handler *const remnants,
-		     Soft_Collision_Handler *const softcollisions):
-  p_remnants(remnants),
-  p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
+		     REMNANTS::Remnant_Handler *const remnants):
+  p_remnants(remnants), p_shrimps(NULL),
   p_beam(beam), m_fill(true), m_vmode(false)
 {
-  /*
-    if (p_shrimps) {
-    m_name = std::string("Shrimps");
-    return;
-    }
-  */
-  p_shrimps = NULL;
   Settings& s = Settings::GetMainSettings();
   m_fill  = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
   m_vmode = s["BRH_VMODE"].SetDefault(false).Get<bool>();
@@ -31,10 +22,17 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 
+void Beam_Remnant_Handler::SetShrimps(SHRIMPS::Shrimps * shrimps) {
+  if (shrimps==NULL) return;
+  p_shrimps = shrimps;
+  m_name    = std::string("Shrimps");
+}
+
 Return_Value::code
 Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
 					    const bool & onlyBunch)
 {
+  //msg_Out()<<METHOD<<": shrimps = "<<m_name<<"\n"; exit(1);
   if (!m_fill) return TreatNoFill(bloblist);
   Return_Value::code fbc(Return_Value::Nothing);
   for (Blob_List::iterator bit=bloblist->begin();

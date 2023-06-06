@@ -23,17 +23,15 @@ namespace SHERPA {
 					      ATOOLS::Particle_List *const=NULL);
   public :
     Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
-			 REMNANTS::Remnant_Handler *const remnants,
-			 Soft_Collision_Handler *const softcollisions);
+			 REMNANTS::Remnant_Handler *const remnants);
     ~Beam_Remnant_Handler();
+    
+    void SetShrimps(SHRIMPS::Shrimps * shrimps);
     ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List *const,
 						     const bool & onlyBunch=false);
     void CleanUp(const size_t & mode=0);
 
     inline REMNANTS::Remnant_Handler * GetRemnants()   { return p_remnants; }
-    inline void SetShrimps(SHRIMPS::Shrimps * shrimps) {
-      if (shrimps!=NULL) { p_shrimps = shrimps; m_name = std::string("Shrimps"); }
-    }
     inline const int Fill()           const { return m_fill; }
     inline const std::string & Name() const { return m_name; }
    };

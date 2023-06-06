@@ -50,7 +50,6 @@ using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;
 using namespace PDF;
-using namespace REMNANTS;
 using namespace ATOOLS;
 using namespace std;
 
@@ -302,7 +301,6 @@ Initialization_Handler::~Initialization_Handler()
   if (p_remnants)      { delete p_remnants;      p_remnants      = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
-  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_variations)    { delete p_variations;    p_variations    = NULL; }
   if (p_filter)        { delete p_filter;        p_filter        = NULL; }
   while (m_analyses.size()>0) {
@@ -496,8 +494,41 @@ void Initialization_Handler::PrepareTerminate()
 
 bool Initialization_Handler::InitializeTheFramework(int nr)
 {
+  InitializeMainSettings();
   Settings& s = Settings::GetMainSettings();
-  bool okay = true;
+  bool okay   = ( InitializeTheModel() &&
+		  InitializeTheBeams() &&
+		  InitializeThePDFs() &&
+		  InitializeTheRemnants() );
+  if (!p_model->ModelInit(m_isrhandlers))
+    THROW(critical_error,"Model cannot be initialized");
+  p_model->InitializeInteractionModel();
+  if (!CheckBeamISRConsistency()) return 0.;
+  if (m_mode==eventtype::EventReader) return (okay && InitializeEventReaderMode());
+  PHASIC::Phase_Space_Handler::GetInfo();
+  okay = okay && InitializeTheShowers();
+  okay = okay && InitializeTheHardDecays();
+  okay = okay && InitializeTheBeamRemnants();
+  okay = okay && InitializeTheMatrixElements();
+  if (rpa->gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheUnderlyingEvents();
+    okay = okay && InitializeTheSoftCollisions();
+    okay = okay && InitializeTheColourReconnections();
+    okay = okay && InitializeTheFragmentation();
+    okay = okay && InitializeTheHadronDecays();
+    okay = okay && InitializeTheSoftPhotons();
+    okay = okay && InitializeTheIO();
+    okay = okay && InitializeTheFilter();
+    okay = okay && InitializeTheReweighting(Variations_Mode::all);
+    okay = okay && InitializeTheAnalyses();
+  } else {
+    okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);
+  }
+  return okay;
+}
+
+void Initialization_Handler::InitializeMainSettings() {
+  Settings& s = Settings::GetMainSettings();
   const int defgauge{ s["COMIX_DEFAULT_GAUGE"].Get<int>() };
   Spinor<double>::SetDefaultGauge(defgauge);
   Spinor<long double>::SetDefaultGauge(defgauge);
@@ -505,7 +536,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   std::string stag(rpa->gen.Variable("RNG_SEED"));
   while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
   s.AddTag("RNG_SEED", stag);
-  okay = okay && InitializeTheModel();
 
   if (m_mode==eventtype::StandardPerturbative) {
     std::string eventtype{ s["EVENT_TYPE"].Get<std::string>() };
@@ -528,57 +558,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
     }
   }
-  okay = okay && InitializeTheBeams();
-  okay = okay && InitializeThePDFs();
-  okay = okay && InitializeTheRemnants();
-  if (!p_model->ModelInit(m_isrhandlers))
-    THROW(critical_error,"Model cannot be initialized");
-  p_model->InitializeInteractionModel();
-  if (!CheckBeamISRConsistency()) return 0.;
-  if (m_mode==eventtype::EventReader) {
-    std::string infile;
-    size_t bpos(m_evtform.find('[')), epos(m_evtform.rfind(']'));
-    if (bpos!=std::string::npos && epos!=std::string::npos) {
-      infile=m_evtform.substr(bpos+1,epos-bpos-1);
-      m_evtform=m_evtform.substr(0,bpos);
-    }
-    std::string libname(m_evtform);
-    if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
-    if (!s_loader->LoadLibrary("Sherpa"+libname+"Input")) 
-      THROW(missing_module,"Cannot load input library Sherpa"+libname+"Input.");
-    p_evtreader = Event_Reader_Base::Getter_Function::GetObject
-      (m_evtform,Input_Arguments(s.GetPath(), infile,
-				 p_model, m_isrhandlers[isr::hard_process]));
-    if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
-    msg_Events()<<"SHERPA will read in the events."<<std::endl
-  		<<"   The full framework is not needed."<<std::endl;
-    InitializeTheAnalyses();
-    InitializeTheHardDecays();
-    InitializeTheBeamRemnants();
-    InitializeTheIO();
-    InitializeTheReweighting(Variations_Mode::all);
-    return true;
-  }
-  PHASIC::Phase_Space_Handler::GetInfo();
-  okay = okay && InitializeTheShowers();
-  okay = okay && InitializeTheHardDecays();
-  okay = okay && InitializeTheBeamRemnants();
-  okay = okay && InitializeTheMatrixElements();
-  if (rpa->gen.NumberOfEvents()>0) {
-    okay = okay && InitializeTheUnderlyingEvents();
-    okay = okay && InitializeTheSoftCollisions();
-    okay = okay && InitializeTheColourReconnections();
-    okay = okay && InitializeTheFragmentation();
-    okay = okay && InitializeTheHadronDecays();
-    okay = okay && InitializeTheSoftPhotons();
-    okay = okay && InitializeTheIO();
-    okay = okay && InitializeTheFilter();
-    okay = okay && InitializeTheReweighting(Variations_Mode::all);
-    okay = okay && InitializeTheAnalyses();
-  } else {
-    okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);
-  }
-  return okay;
 }
 
 bool Initialization_Handler::CheckBeamISRConsistency()
@@ -632,6 +611,33 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 
   return 1;
 }
+
+bool Initialization_Handler::InitializeEventReaderMode() {
+  Settings& s = Settings::GetMainSettings();
+  std::string infile;
+  size_t bpos(m_evtform.find('[')), epos(m_evtform.rfind(']'));
+  if (bpos!=std::string::npos && epos!=std::string::npos) {
+    infile=m_evtform.substr(bpos+1,epos-bpos-1);
+    m_evtform=m_evtform.substr(0,bpos);
+  }
+  std::string libname(m_evtform);
+  if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
+  if (!s_loader->LoadLibrary("Sherpa"+libname+"Input")) 
+    THROW(missing_module,"Cannot load input library Sherpa"+libname+"Input.");
+  p_evtreader = Event_Reader_Base::Getter_Function::GetObject
+    (m_evtform,Input_Arguments(s.GetPath(), infile,
+			       p_model, m_isrhandlers[isr::hard_process]));
+  if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
+  msg_Events()<<"SHERPA will read in the events."<<std::endl
+	      <<"   The full framework is not needed."<<std::endl;
+  InitializeTheAnalyses();
+  InitializeTheHardDecays();
+  InitializeTheBeamRemnants();
+  InitializeTheIO();
+  InitializeTheReweighting(Variations_Mode::all);
+  return true;
+}
+
 
 bool Initialization_Handler::InitializeTheIO()
 {
@@ -871,7 +877,7 @@ bool Initialization_Handler::InitializeThePDFs()
 }
 
 bool Initialization_Handler::InitializeTheRemnants() {
-  p_remnants = new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra);
+  p_remnants = new REMNANTS::Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra);
   return true;
 }
 
@@ -931,12 +937,14 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
   as->SetActiveAs(isr::hard_subprocess);
   p_mihandler = new MI_Handler(p_model,
-			       m_isrhandlers[isr::hard_subprocess]);
+			       m_isrhandlers[isr::hard_subprocess],
+			       p_beamspectra);
   p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
   p_mihandler->SetRemnantHandler(p_remnants);
   as->SetActiveAs(isr::hard_process);
   if (p_mihandler->Type()!=0)
     msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
+  if (p_mihandler->Type()==MI_Handler::typeID::shrimps) p_remnants->SetActive(false);
   return true;
 }
 
@@ -946,7 +954,7 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
   p_softcollisions = new Soft_Collision_Handler(p_mihandler->Amisic(),
 						p_mihandler->Shrimps());
-  //p_beamremnants->SetShrimps(p_softcollisions->GetShrimps());
+  p_beamremnants->SetShrimps(p_softcollisions->GetShrimps());
   msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
   return 1;
 }
@@ -955,8 +963,7 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
 {
   if (p_beamremnants)  delete p_beamremnants;
   p_beamremnants = new Beam_Remnant_Handler(p_beamspectra,
-					    p_remnants,
-					    p_softcollisions);
+					    p_remnants);
   msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
 }

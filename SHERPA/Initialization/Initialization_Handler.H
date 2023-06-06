@@ -76,6 +76,8 @@ namespace SHERPA {
                          const size_t& a2,const size_t& b2,const size_t& c2);
     void LoadLibraries();
   private :
+    void InitializeMainSettings();
+    bool InitializeEventReaderMode();
     bool InitializeTheIO();
     bool InitializeTheModel();
     bool InitializeTheBeams();
