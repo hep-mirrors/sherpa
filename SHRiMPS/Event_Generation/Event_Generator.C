@@ -50,10 +50,10 @@ void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
     p_elastic          = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
     p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
     break;
-  }
   default:
     break;
-} 
+  }
+}
 
 void Event_Generator::
 Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
