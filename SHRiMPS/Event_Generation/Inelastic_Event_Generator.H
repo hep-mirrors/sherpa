@@ -38,7 +38,7 @@ namespace SHRIMPS {
     bool SelectB();
     ATOOLS::Blob * MakePrimaryScatterBlob();
   public:
-    Inelastic_Event_Generator(Sigma_Inelastic * sigma,const int & test,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd);
+    Inelastic_Event_Generator(Sigma_Inelastic * sigma,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd,const int & test);
     ~Inelastic_Event_Generator();
 
     void Reset();

@@ -12,7 +12,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Inelastic_Event_Generator::
-Inelastic_Event_Generator(Sigma_Inelastic * sigma,const int & test,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) :
+Inelastic_Event_Generator(Sigma_Inelastic * sigma,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd,const int & test) :
   Event_Generator_Base(sigma), p_sigma(sigma), p_sigma_el(sigma_el),
   p_sigma_sd(sigma_sd), m_primaries(Primary_Ladders(p_sigma_el,p_sigma_sd)),
   m_mustinit(true),
