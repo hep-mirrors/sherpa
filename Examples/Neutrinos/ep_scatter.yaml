@@ -1,0 +1,70 @@
+EVENTS:     10
+EVENT_TYPE: NeutrinoNucleon
+
+BEAMS:             [ 11, 2212 ]
+BEAM_ENERGIES:     [ 0.5, 0.938272 ]
+BEAM_SPECTRA:      Monochromatic
+PDF_LIBRARY:       [ None, None ]
+PDF_SET:           [ None, None ]
+
+ME_GENERATORS: Internal
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+ALPHAS: {USE_PDF: 0}
+SCALES: METS{H_T2}{H_T2}
+
+SELECTORS:
+  - [PT, 11, 0.01, E_CMS]
+
+
+PROCESSES:
+  - 11 2212 -> 11 2212:
+      Order: {QCD: 0, EW: 2}
+      2->2:
+        Enhance_Observable: VAR{(log10(ThetaR(p[0],p[2])))}|-1|0.49
+
+ANALYSIS: Rivet
+RIVET:
+    --analyses:
+      - PionProd
+
+TRANSITIONS:
+  Constants:
+    Vud:  0.9744
+    Vus:  0.2204
+    Vcd: -0.2204
+    fpi:  0.1307
+    fK:   0.1598
+
+  Transitions:
+    2212 2212 22:
+      G_E:
+        form:   dipole
+        params: [ 1.,      0.847 ] 
+      G_M:
+        form:   dipole
+        params: [ 2.79278, 0.847 ]
+      pseudoscalar:
+        form: none
+
+    2112 2112 22:
+      G_E:
+        form:   neutron_electric
+        params: [ 1., 0.847, 0.9395654205, 5.6 ]
+      G_M:
+        form:   dipole
+        params: [ -1.91315, 0.847 ] 
+      pseudoscalar:
+        form: none
+
+# Parameters for form factors:
+# constant  :       norm
+# dipole  :         norm, Lambda
+# neutron electric: norm, Lambda, mass, prefactor 
+# exponential:      norm, Lambda //ours
+# Gaussian:         norm, Lambda //ours
+# Kelly:            norm, Lambda, mass, A[4], En[2]
+# BBBA:             norm, mass, A[4], B[4]
+# Arrington-Hill:   mass, t_cut, t_0, A[13]
+# Helm:             s, A, kappa //Other Maybe check
+# Lovato:           b, c[5] //Other Maybe check
