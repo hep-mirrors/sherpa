@@ -35,28 +35,42 @@ namespace NEUTRINOS {
     std::string         m_path;
     std::map<std::string, Form_Factor_Base *> m_ffs;
     std::map<std::string, Propagator_Base *> m_ffprops;
-    //std::map<std::string,std::map<size_t, Vec4C > > ProcessCurrents;
+
+    // Add currents for each diagram type explicitly.
+    std::map<size_t, Vec4C > QED_Current;
+    std::map<size_t, Vec4C > Weak_CC_Current;
+    std::map<size_t, Vec4C > Weak_NC_Current;
   public:
     Scatter_Current_Base(const ATOOLS::Flavour_Vector& flavs,
 			 const std::vector<int>& indices,
-			 const std::string& name);
+			 const std::string& name
+       );
     virtual ~Scatter_Current_Base() {
       while (!m_ffs.empty()) { delete m_ffs.begin()->second; m_ffs.erase(m_ffs.begin()); }
       while (!m_ffprops.empty()) { delete m_ffprops.begin()->second; m_ffprops.erase(m_ffprops.begin()); }
-      //while (!ProcessCurrents.empty()) { ProcessCurrents.erase(ProcessCurrents.begin()); }
+
+      while (!QED_Current.empty()) { QED_Current.clear();}
+      while (!Weak_NC_Current.empty()) { Weak_NC_Current.clear();}
+      while (!Weak_CC_Current.empty()) { Weak_CC_Current.clear();}
     }
     
     virtual void Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F) = 0;
 
-    // virtual void Insert_ProcessType(string diagram, Vec4C value, std::vector<std::pair<int,int> >& spins)
-    // {
-    //   ProcessCurrents[diagram][GetNumber(spins)] = value;
-    // }
+    virtual void Insert_ProcessType(string diagram, Vec4C value, std::vector<std::pair<int,int> >& spins)
+    {
+      if ( diagram == "QED") (QED_Current)[GetNumber(spins)] = value;
+      if ( diagram == "Weak_NC") (Weak_NC_Current)[GetNumber(spins)] = value;
+      if ( diagram == "Weak_CC") (Weak_CC_Current)[GetNumber(spins)] = value;
+    }
 
-    // virtual Vec4C Get_ProcessType(string diagram, const std::vector<int>& spins)
-    // {
-    //   return ProcessCurrents[diagram][GetNumber(spins)];
-    // }
+    virtual Vec4C Get_ProcessType(string diagram, const std::vector<int>& spins)
+    {
+      if ( diagram == "QED") return QED_Current[GetNumber(spins)];
+      if ( diagram == "Weak_NC") return Weak_NC_Current[GetNumber(spins)];
+      if ( diagram == "Weak_CC") return Weak_CC_Current[GetNumber(spins)];
+      Vec4C null;
+      return null;
+    }
 
     inline std::string Name()                     const { return m_name; }
     inline void        SetName(std::string name)        { m_name = name; }

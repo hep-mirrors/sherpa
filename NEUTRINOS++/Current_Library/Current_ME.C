@@ -39,7 +39,7 @@ void Current_ME::Calculate(const Vec4D_Vector& momenta,METOOLS::XYZFunc * F)
     // now we know the spin combinations in both currents
     // let's fill the results:
 
-    (*this)[i]=m_factor*p_c1->Get(spins1)*p_c2->Get(spins2); // OLD METHOD QED ONLY
+    //(*this)[i]=m_factor*p_c1->Get(spins1)*p_c2->Get(spins2); // OLD METHOD QED ONLY
 
     // Print Out checks
     // if (abs((*this)[i])>0.0) {
@@ -48,11 +48,11 @@ void Current_ME::Calculate(const Vec4D_Vector& momenta,METOOLS::XYZFunc * F)
     //     <<p_c1->Get(spins1)<<" * "<<p_c2->Get(spins2) <<"\n         )\n\n";
     // }
     
-    // (*this)[i]=m_factor*(
-    //   p_c1->Get_ProcessType("QED", spins1)*p_c2->Get_ProcessType("QED", spins2) +
-    //   p_c1->Get_ProcessType("Weak_NC", spins1)*p_c2->Get_ProcessType("Weak_NC", spins2) +
-    //   p_c1->Get_ProcessType("Weak_CC", spins1)*p_c2->Get_ProcessType("Weak_CC", spins2)
-    // );
+    (*this)[i]=m_factor*(
+      p_c1->Get_ProcessType("QED", spins1)*p_c2->Get_ProcessType("QED", spins2) +
+      p_c1->Get_ProcessType("Weak_NC", spins1)*p_c2->Get_ProcessType("Weak_NC", spins2) +
+      p_c1->Get_ProcessType("Weak_CC", spins1)*p_c2->Get_ProcessType("Weak_CC", spins2)
+    );
 
     // Print Out checks NEW CURRENT METHOD
     // if (abs((*this)[i])>0.0) {

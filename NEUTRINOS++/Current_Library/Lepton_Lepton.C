@@ -161,9 +161,9 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
       Insert(QED_amp, spins);
 
       //New Method
-      // Insert_ProcessType("QED", QED_amp, spins);
-      // Insert_ProcessType("Weak_NC", Weak_NC_amp, spins);
-      // Insert_ProcessType("Weak_CC", Weak_CC_amp, spins);
+      Insert_ProcessType("QED", QED_amp, spins);
+      Insert_ProcessType("Weak_NC", Weak_NC_amp, spins);
+      Insert_ProcessType("Weak_CC", Weak_CC_amp, spins);
     }
   }
 }
