@@ -3,6 +3,7 @@ set(NeutrinosTools_SOURCES
 	Form_Factor_Parameter_Maps.C
 	Propagator_Library.C
 	Propagator_Maps.C
+	Transition_Maps.C
 	)
 
 set(NeutrinosTools_HEADERS
@@ -10,6 +11,7 @@ set(NeutrinosTools_HEADERS
 	Form_Factor_Parameter_Maps.H
 	Propagator_Library.H
 	Propagator_Maps.H
+	Transition_Maps.H
 	)
 
 sherpa_create_git_info(Tools)
