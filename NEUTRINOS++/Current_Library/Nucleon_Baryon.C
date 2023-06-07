@@ -194,7 +194,7 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
       //QED TERM
       if ( fabs(QED_coupling) > 0.0 ) {
         if ( f1_QED != 0.0 ) {
-          QED_amp += ff1_QED * F->L(pf,hf, pi,hi, One,One);
+          QED_amp += f1_QED * F->L(pf,hf, pi,hi, One,One);
         } 
         if ( f2_QED != 0.0 ) {
           for (int hq=0;hq<2;hq++) {
