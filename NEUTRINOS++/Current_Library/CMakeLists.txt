@@ -3,6 +3,7 @@ set(NeutrinosCurrent_Library_SOURCES
 	Current_ME.C
 	Lepton_Lepton.C
 	Nucleon_Nucleon.C
+	Nucleon_Baryon.C
 	)
 
 set(NeutrinosCurrent_Library_HEADERS
@@ -10,6 +11,7 @@ set(NeutrinosCurrent_Library_HEADERS
 	Current_ME.H
 	Lepton_Lepton.H
 	Nucleon_Nucleon.H
+	Nucleon_Baryon.H
 	)
 
 sherpa_create_git_info(NeutrinosCurrent_Library)

@@ -102,6 +102,7 @@ namespace NEUTRINOS {
 
     Form_Factor_Base * GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_info::code & cpl);
     double GetModelParms(std::string constantName);
+    bool ContainsFormFactorType(cpl_info::code & cpl);
   };
 
   extern Form_Factor_Parameter_Maps * ffs;

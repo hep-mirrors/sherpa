@@ -104,6 +104,23 @@ double Form_Factor_Parameter_Maps::GetModelParms(std::string constantName) {
     return 0.0;
 }
 
+bool Form_Factor_Parameter_Maps::ContainsFormFactorType(cpl_info::code & cpl) {
+  kf_code prop_kf_P   = kf_photon;
+  kf_code prop_kf_Z   = kf_Z;
+  kf_code prop_kf_W   = kf_Wplus;
+
+  for (std::map<std::pair<kf_code, kf_code > , Form_Factor_Entry * >::iterator it=begin(); it!=end();it++) {
+      kf_code N1 = it->first.first;
+      kf_code N2 = it->first.second;
+
+      ff_info * is_QED = FindInfo(N1,N2,prop_kf_P,cpl);
+      ff_info * is_Weak_NC = FindInfo(N1,N2,prop_kf_Z,cpl);
+      ff_info * is_Weak_CC = FindInfo(N1,N2,prop_kf_W,cpl);
+      if (is_QED != NULL || is_Weak_NC != NULL || is_Weak_CC != NULL) return true;
+  }
+  return false;
+}
+
 void Form_Factor_Parameter_Maps::Output() {
   msg_Info()<<"--------------------------------------------------------------------------------------\n";
   msg_Info()<<"* Global constants and parameters:\n";
