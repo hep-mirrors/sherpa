@@ -131,7 +131,11 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
 void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
 {
   /////////////////////////////////////////////////////////////////////////////
-  // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2) / m + q^{mu} F_3(q^2) / m] u(1) 
+  // J^mu =  
+  //  ubar(0) [ 
+  //    (f_1(q^2) gamma^mu  + f_2(q^2) (i/2) sigma^{mu nu} q_nu  / m + f_3(q^2) q^{mu} / m)
+  //    (g_1(q^2) gamma^mu  + g_2(q^2) (i/2) sigma^{mu nu} q_nu  / m + g_3(q^2) q^{mu} / m) gamma^5
+  //  ] u(1) 
   /////////////////////////////////////////////////////////////////////////////
 
   /////////////////////////////////////////////////////////////////////////
@@ -184,43 +188,53 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   //JW: TODO ONLY QED SO FAR (f1,f2,f3). ADD NC and CC Terms and g1 g2 g3 terms.
   
   Vec4C QED_amp, Weak_NC_amp, Weak_CC_amp;
+  Vec4C f1_term, f2_term, f3_term, g1_term, g2_term, g3_term;
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
       QED_amp *= 0.0;
       Weak_NC_amp *= 0.0;
       Weak_CC_amp *= 0.0;
-    
+
+      f1_term = F->L(pf,hf, pi,hi, One,One);
+      g1_term = F->L(pf,hf, pi,hi, One,-One);
+
+      for (int hq=0;hq<2;hq++) {
+          f2_term += (1/(4.*m_massin)) *
+            (
+                F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
+                F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
+                F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,One) +
+                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One)
+          );
+          g2_term += (1/(4.*m_massin)) *
+            (
+                F->L(pf,hq,pi,hi,One,-One) * F->Y(pf,hf,pf,hq,One,One) -
+                F->L(pi,hq,pi,hi,One,-One) * F->Y(pf,hf,pi,hq,One,One) - 
+                F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,-One) +
+                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,-One)
+          );
+        }
+
+      f3_term = qmom * F->Y(pf,hf, pi,hi, One,One) / m_massin;
+      g3_term = qmom * F->Y(pf,hf, pi,hi, One,-One) / m_massin;
+
       //Propagator on Nucleon Current side
       //QED TERM
       if ( fabs(QED_coupling) > 0.0 ) {
-        if ( f1_QED != 0.0 ) {
-          QED_amp += f1_QED * F->L(pf,hf, pi,hi, One,One);
-        } 
-        if ( f2_QED != 0.0 ) {
-          for (int hq=0;hq<2;hq++) {
-            QED_amp += (f2_QED/(4.*m_massin)) *
-              (
-                  F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
-                  F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
-                  F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,One) +
-                  F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One)
-            );
-          }
-        }
-        if ( f3_QED != 0.0 ) {
-          QED_amp += f3_QED * qmom * F->Y(pf,hf, pi,hi, One,One) / m_massin;
-        }
+        QED_amp = f1_term*f1_QED + f2_term*f2_QED + f3_term*f3_QED + g1_term*g1_QED + g2_term*g2_QED + g3_term*g3_QED;
         QED_amp = QED_amp * QED_coupling * QED_prop_factor;
       } 
       //NC TERM
       else if ( fabs(Weak_NC_coupling) > 0.0 ) {
+        Weak_NC_amp = f1_term*f1_NC + f2_term*f2_NC + f3_term*f3_NC + g1_term*g1_NC + g2_term*g2_NC + g3_term*g3_NC;
         Weak_NC_amp = Weak_NC_amp * Weak_NC_coupling * Weak_NC_prop_factor;
       }
       //CC TERM
       else if ( fabs(Weak_CC_coupling) > 0.0 ) {
+        Weak_CC_amp = f1_term*f1_CC + f2_term*f2_CC + f3_term*f3_CC + g1_term*g1_CC + g2_term*g2_CC + g3_term*g3_CC;
         Weak_CC_amp = Weak_CC_amp * Weak_CC_coupling * Weak_CC_prop_factor;
       }
-      
+
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));
       spins.push_back(make_pair(pi,hi));
