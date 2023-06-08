@@ -1,8 +1,10 @@
 EVENTS:     10
 EVENT_TYPE: NeutrinoNucleon
 
+TAGS: {"E1":2.0}
+
 BEAMS:             [ 14, 2112 ]
-BEAM_ENERGIES:     [ 2., 0.939566 ]
+BEAM_ENERGIES:     [ $(E1), 0.939566 ]
 BEAM_SPECTRA:      Monochromatic
 PDF_LIBRARY:       [ None, None ]
 PDF_SET:           [ None, None ]
@@ -24,9 +26,9 @@ PROCESSES:
         Enhance_Observable: VAR{(log10(ThetaR(p[0],p[2])))}|-1|0.49
 
 ANALYSIS: Rivet
-# RIVET:
-#     --analyses:
-#       - PionProd
+RIVET:
+    --analyses:
+      - PionProd
 
 TRANSITIONS:
   Constants:
@@ -43,7 +45,7 @@ TRANSITIONS:
         params: [ 1.,      0.84 ] 
       f2:
         form:   dipole
-        params: [ -1.855, 0.84 ]
+        params: [ 1.855, 0.84 ]
       f3:
         form:   none
 
