@@ -166,6 +166,7 @@ namespace LHEH5 {
       DataSet events(file.getDataSet("events"));
       std::vector<size_t> eoffsets{first_event,0};
       std::vector<size_t> ecounts{n_events,9+wgtnames.size()};
+      evts.resize(n_events,std::vector<double>(9+wgtnames.size()));
       events.select(eoffsets,ecounts).read(evts);
       DataSet particles(file.getDataSet("particles"));
       std::vector<size_t> poffsets{(size_t)evts.front()[2],0};
@@ -173,15 +174,18 @@ namespace LHEH5 {
       for (size_t i(0);i<pinfo.size();++i)
 	nmax=std::max((size_t)std::max(pinfo[i][1],pinfo[i][2]+1),nmax);
       std::vector<size_t> pcounts{n_events*nmax,13};
+      parts.resize(n_events*nmax,std::vector<double>(13));
       particles.select(poffsets,pcounts).read(parts);
       if (file.exist("ctevents")) {
 	DataSet events(file.getDataSet("ctevents"));
 	std::vector<size_t> eoffsets{first_event,0};
 	std::vector<size_t> ecounts{n_events,9};
+	ctevts.resize(n_events,std::vector<double>(9));
 	events.select(eoffsets,ecounts).read(ctevts);
 	DataSet particles(file.getDataSet("ctparticles"));
 	std::vector<size_t> poffsets{(size_t)evts.front()[2],0};
 	std::vector<size_t> pcounts{n_events*nmax,4};
+	ctparts.resize(n_events*nmax,std::vector<double>(4));
 	particles.select(poffsets,pcounts).read(ctparts);
       }
     }
@@ -193,6 +197,7 @@ namespace LHEH5 {
 #include "PHASIC++/Main/Event_Reader.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Message.H"
@@ -206,15 +211,18 @@ namespace LHEH5 {
   private:
 
     LHEFile *p_file;
-    size_t   m_ievt, m_ifile, m_trials;
+    size_t   m_ievt, m_ifile, m_trials, m_nstart, m_ncache;
 
     Vec4D_Vector m_ctmoms;
 
   public:
 
     HDF5_Reader(const Event_Reader_Key &key):
-      Event_Reader(key), m_ievt(0), m_ifile(0), m_trials(0)
+      Event_Reader(key), m_ievt(0), m_ifile(0), m_trials(0),
+      m_nstart(0), m_ncache(0)
     {
+      Data_Reader read(" ",";","#","=");
+      m_ncache=read.GetValue<int>("HDF5_CACHE_SIZE",10000);
       p_file = OpenFile(m_files[m_ifile]);
       p_sub = new NLO_subevt();
       s_objects.push_back(this);
@@ -229,7 +237,8 @@ namespace LHEH5 {
     void MPISync()
     {
       delete p_file;
-      p_file = OpenFile(m_files[++m_ifile]);
+      if (m_nstart==0) ++m_ifile;
+      p_file = OpenFile(m_files[m_ifile]);
     }
 
     LHEFile *OpenFile(const std::string &fname)
@@ -245,13 +254,16 @@ namespace LHEH5 {
 		     getDimensions().front());
       if (mpi->Rank()==0) {
 	msg_Info()<<METHOD<<"(): File '"<<fname
-		  <<"' contains "<<nevts<<" events.\n";
+		  <<"' contains "<<nevts
+		  <<" events ( read "<<m_nstart<<" ).\n";
       }
       mpi->Bcast(&nevts,1,MPI_LONG_INT,0);
       size_t iStart(rank*nevts/size);
       size_t iStop((rank+1)*nevts/size-1);
       if (rank==size-1) iStop=nevts-1;
-      e->ReadEvents(file,iStart,iStop-iStart+1);
+      size_t nread(std::min(m_ncache,iStop-iStart-m_nstart+1));
+      e->ReadEvents(file,iStart+m_nstart,nread);
+      if (iStart+(m_nstart+=nread)>iStop) m_nstart=0;
       return e;
     }
 
