@@ -56,7 +56,16 @@ Form_Factor_Parameter_Maps::~Form_Factor_Parameter_Maps() {
 
 Form_Factor_Base *
 Form_Factor_Parameter_Maps::GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_info::code & cpl) {
-  ff_info * info = FindInfo(n1,n2,prop,cpl);
+  ff_info * info1 = FindInfo(n1,n2,prop,cpl);
+  ff_info * info2 = FindInfo(n2,n1,prop,cpl);
+
+  ff_info * info;
+  if (n1 != n2) {
+    if (info1 == NULL && info2 != NULL) info = info2;
+    else if (info2 == NULL && info1 != NULL) info = info1;
+    else info = NULL;
+  } else info = info1;
+
   if (info!=NULL) {
     switch (info->m_type) {
     case ff_type::constant:
