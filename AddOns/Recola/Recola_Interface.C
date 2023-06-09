@@ -171,7 +171,7 @@ namespace Recola {
     s["USE_DECAY"].SetDefault(1);
     s["MASS_REG"].SetDefault(false);
     s["NO_SELF_ENERGY"].SetDefault(false);
-    
+    s["COMPLEX_MASS_SCHEME"].SetDefault(true);
     // find RECOLA installation prefix with several overwrite options
     char *var=NULL;
     s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -235,6 +235,8 @@ namespace Recola {
 
 
     bool recolaOnShellZW = s["ONSHELLZW"].Get<bool>();
+    bool recolaComplexMass = s["COMPLEX_MASS_SCHEME"].Get<bool>();
+    if(!recolaComplexMass) set_on_shell_scheme_rcl();
     // set particle masses/widths
     if(recolaOnShellZW != 0){
       set_onshell_mass_z_rcl(Flavour(kf_Z).Mass(),Flavour(kf_Z).Width());
