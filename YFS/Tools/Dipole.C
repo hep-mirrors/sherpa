@@ -236,6 +236,15 @@ double Dipole::EEX(const Vec4D &k){
     double V = 1+m_gamma/2.;
     return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b));
   }
+  // else if (Type() == dipoletype::final) {
+  //   double p1p2 = m_momenta[0]*m_momenta[1];
+  //   double ap = k*m_momenta[0]/p1p2;
+  //   double bp = k*m_momenta[1]/p1p2;
+  //   double V = 1+m_gamma/2.;
+  //   double a = ap/(1.+ap+bp);
+  //   double b = bp/(1.+ap+bp);
+  //   return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b));
+  // }
   return 0;
 }
 

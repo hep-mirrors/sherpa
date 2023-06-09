@@ -156,7 +156,7 @@ double NLO_Base::CalculateReal() {
 	double real(0), sub(0);
 	Vec4D_Vector photons;
 	for (auto k : m_ISRPhotons) photons.push_back(k);
-	// for (auto kk : m_FSRPhotons) photons.push_back(kk);
+	for (auto kk : m_FSRPhotons) photons.push_back(kk);
 	for (auto k : photons) {
 		double tot = CalculateReal(k);
 		real += tot;
@@ -187,11 +187,8 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	m_evts+=1;
 	if (!CheckPhotonForReal(k)) { 
-		rcoll = CollinearReal(k,p);
-		colltot = (rcoll-subloc*born)/subb;
-		// colltot = p_dipoles->CalculateEEX(kk)*m_born;
-		// colltot-= subloc*m_born;
-		return colltot*0;
+		rcoll = p_nlodipoles->CalculateEEXReal(k)*born/M_PI/2.;
+		return (rcoll -subloc*born)/subb;
 	}
 	p.push_back(k);
 	double r = p_real->Calc_R(p) / norm;
@@ -242,6 +239,7 @@ double NLO_Base::CalculateRealVirtual() {
 	for (auto k : photons) {
 		Vec4D_Vector p(m_plab);
 		MapMomenta(p, k);
+		if(k.PPerp()<5) return 0;
 		if(!CheckPhotonForReal(k)) return 0;
 		// double subb  = p_dipoles->CalculateRealSub(k);
 		// double subloc = 0;
@@ -272,13 +270,14 @@ double NLO_Base::CalculateRealReal() {
 	double real(0), sub(0);
 	Vec4D_Vector photons, p(m_plab);
 	for (auto k : m_ISRPhotons) photons.push_back(k);
-	// for (auto k : m_FSRPhotons) photons.push_back(k);
+	for (auto k : m_FSRPhotons) photons.push_back(k);
 	// if (NHardPhotons(photons) == 0) return 0;
 	double norm = 2.*pow(2 * M_PI, 3);
 	for (int i = 0; i < photons.size(); ++i) {
 		for (int j = 0; j < i; ++j) {
 			Vec4D k  = photons[i];
 			Vec4D kk = photons[j];
+			if(k.PPerp()<5 || kk.PPerp()<5) return 0;
 			if (!CheckPhotonForReal(k) || !CheckPhotonForReal(kk)) {
 				return 0;
 				// continue;

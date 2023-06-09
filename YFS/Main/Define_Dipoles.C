@@ -327,7 +327,7 @@ void Define_Dipoles::Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
 
 
 double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
-  double sub(0), Y;
+  double sub(0);
   for (auto &D : m_dipolesII) {
     sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
@@ -384,14 +384,27 @@ double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
 }
 
 
-double Define_Dipoles::CalculateEEX(const Vec4D & k){
+double Define_Dipoles::CalculateEEXReal(const Vec4D & k){
   double eex=0;
   for (auto &D: m_dipolesII){
+    eex += D.EEX(k);
+  }
+  for (auto &D: m_dipolesFF){
     eex += D.EEX(k);
   }
   return eex;
 }
 
+double Define_Dipoles::CalculateEEXVirtual(){
+  double v{0.};
+  for (auto &D: m_dipolesII){
+    v+=0.5*D.m_gamma;
+  }
+  for (auto &D: m_dipolesFF){
+    v+=0.5*D.m_gamma;
+  }
+  return v;
+}
 
 void Define_Dipoles::CleanInParticles() {
   m_chargedinparticles.clear();

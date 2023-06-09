@@ -67,7 +67,8 @@ namespace YFS {
       double CalculateRealSub(const Vec4D &k);
       double CalculateVirtualSub();
       double CalculateRealVirtualSub(const Vec4D & k);
-      double CalculateEEX(const Vec4D & k);
+      double CalculateEEXReal(const Vec4D & k);
+      double CalculateEEXVirtual();
       double CalculateEEX(const Vec4D & k1, const Vec4D & k2);
       void generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums);
       // inline void SetOldMomentum(int i, ATOOLS::Vec4D mom) { m_olddipoles.m_momenta[i] = mom;}
