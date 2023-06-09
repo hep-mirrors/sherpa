@@ -156,7 +156,7 @@ double NLO_Base::CalculateReal() {
 	double real(0), sub(0);
 	Vec4D_Vector photons;
 	for (auto k : m_ISRPhotons) photons.push_back(k);
-	for (auto kk : m_FSRPhotons) photons.push_back(kk);
+	// for (auto kk : m_FSRPhotons) photons.push_back(kk);
 	for (auto k : photons) {
 		double tot = CalculateReal(k);
 		real += tot;
@@ -235,7 +235,7 @@ double NLO_Base::CalculateRealVirtual() {
 	double norm = 2.*pow(2 * M_PI, 3);
 	Vec4D_Vector photons;
 	for (auto k : m_ISRPhotons) photons.push_back(k);
-	for (auto k : m_FSRPhotons) photons.push_back(k);
+	// for (auto k : m_FSRPhotons) photons.push_back(k);
 	for (auto k : photons) {
 		Vec4D_Vector p(m_plab);
 		MapMomenta(p, k);
@@ -270,7 +270,7 @@ double NLO_Base::CalculateRealReal() {
 	double real(0), sub(0);
 	Vec4D_Vector photons, p(m_plab);
 	for (auto k : m_ISRPhotons) photons.push_back(k);
-	for (auto k : m_FSRPhotons) photons.push_back(k);
+	// for (auto k : m_FSRPhotons) photons.push_back(k);
 	// if (NHardPhotons(photons) == 0) return 0;
 	double norm = 4.*pow(2 * M_PI, 6);
 	for (int i = 0; i < photons.size(); ++i) {
