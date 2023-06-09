@@ -332,7 +332,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       Dip->Boost();
       m_FSRPhotons  = Dip->GetPhotons();
       m_photonSumFSR = Dip->GetPhotonSum();
-      
       p_fsr->Weight();
       m_fsrWeight = p_fsr->GetWeight();
       int i(0);
@@ -430,11 +429,12 @@ void YFS_Handler::CalculateBeta() {
       if (m_looptool) m_real = realISR + realFSR + ((m_betaorder > 1 ? p_realff->AddVirtual(m_betaorder) - p_realff->AddVirtual(1) : 0));
       else m_real = realISR + realFSR + m_born;
     }
-    if (m_useint) m_real += p_realff->IntIF(m_ISRPhotons, m_finalFSRPhotons, p_isr->m_yini, p_isr->m_zini, p_fsr->m_yini, p_fsr->m_zini);
+    if (m_useint) m_real += p_realff->IntIF(m_ISRPhotons, m_FSRPhotons, p_isr->m_yini, p_isr->m_zini, p_fsr->m_yini, p_fsr->m_zini);
   }
   // PRINT_VAR(m_nlotype);
   if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
     m_real=1+CalculateNLO()/m_born;
+    if(m_real_only) m_real+=(realISR + realFSR)/m_born;
     // m_real /= m_born;
   }
   if (m_griff != 0) {
@@ -449,7 +449,7 @@ double YFS_Handler::CalculateNLO(){
   p_nlo->p_dipoles = p_dipoles;
   p_nlo->SetBorn(m_born);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  p_nlo->m_FSRPhotons = m_fsrphotonsforME;
+  p_nlo->m_FSRPhotons = m_FSRPhotons;
   return p_nlo->CalculateNLO();
 }
 

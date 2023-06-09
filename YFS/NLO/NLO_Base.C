@@ -48,8 +48,10 @@ NLO_Base::~NLO_Base() {
 			histo1d->Output(name);
 			delete histo1d;
 		}
-		msg_Out()<<"Percentage of Recola events = "<<m_recola_evts/m_evts*100.<<"% "<<std::endl;
 	}
+	PRINT_VAR(m_recola_evts);
+	PRINT_VAR(m_evts);
+	msg_Out()<<"Percentage of Recola events = "<<m_recola_evts/m_evts*100.<<"% "<<std::endl;
 }
 
 
@@ -91,7 +93,8 @@ double NLO_Base::CalculateNLO() {
 	double result{0.0};
 	if (p_virt || m_griff) result += CalculateVirtual();
 	if (p_real) result += CalculateReal();
-	// if (p_realvirt) result += CalculateRealVirtual();
+	if (p_realvirt) result += CalculateRealVirtual();
+	if (p_realreal) result += CalculateRealReal();
 	return result;
 }
 
@@ -152,12 +155,8 @@ double NLO_Base::CalculateReal() {
 	if (!m_realtool) return 0;
 	double real(0), sub(0);
 	Vec4D_Vector photons;
-	if(m_ISRPhotons.size()!=1) return 0;
 	for (auto k : m_ISRPhotons) photons.push_back(k);
-	for (auto kk : m_FSRPhotons) photons.push_back(kk);
-	int i(-1);
-	int NISR = m_ISRPhotons.size();
-	int nn(0);
+	// for (auto kk : m_FSRPhotons) photons.push_back(kk);
 	for (auto k : photons) {
 		double tot = CalculateReal(k);
 		real += tot;
@@ -174,7 +173,6 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	double flux = (p[2]+p[3]+k).Abs2()/(p[0]+p[1]).Abs2();
 	MapMomenta(p, k);
 		// PRINT_VAR(kk);
-		// PRINT_VAR(k);
 	pp=p;
 	// p_virt->Calc(p, m_born);
 	// double born = p_virt->p_loop_me->ME_Born();
@@ -187,7 +185,6 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	// p_dipoles->MakeDipoles(m_flavs, m_plab, p);
 	double subb   = p_dipoles->CalculateRealSub(k);
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subborn = p_nlodipoles->CalculateRealSubLocal(m_bornMomenta, k);
 	m_evts+=1;
 	if (!CheckPhotonForReal(k)) { 
 		rcoll = CollinearReal(k,p);
@@ -200,7 +197,7 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	double r = p_real->Calc_R(p) / norm;
 	if (r == 0) return 0;
 	m_recola_evts+=1;
-	tot =  ( r - subloc * born)/subb;
+	tot =  ( r - subloc*born)/subb;
   if(m_isr_debug || m_fsr_debug){
 
 		m_histograms2d["Real_me"]->Insert(k.CosTheta(m_bornMomenta[0]), k.E(), r/rcoll);
@@ -255,15 +252,13 @@ double NLO_Base::CalculateRealVirtual() {
 		// p_dipoles->MakeDipoles(m_flavs, m_plab, p);
 		double subb   = p_dipoles->CalculateRealSub(k);
 		double subloc = p_nlodipoles->CalculateRealSub(k);
-		double subborn = p_nlodipoles->CalculateRealSubLocal(m_bornMomenta, k);
 		p.push_back(k);
 		double r = p_realvirt->Calc(p, m_born);
 		if (r == 0 || IsBad(r)) continue;
-		double aB = p_dipoles->CalculateRealSub(k)*CalculateVirtual();
+		double aB = p_dipoles->CalculateRealSub(k)*m_oneloop;
 		// PRINT_VAR(aB);
 		// PRINT_VAR(r);
 		double tot = (r-aB) / p_dipoles->CalculateRealSub(k);
-		// double tot =  ( r + p_dipoles->CalculateRealSubLocal(p,k) * (CalculateVirtual())) / p_dipoles->CalculateRealSub(k);
 		// tot -= m_born * p_yfsFormFact->BVV_full(p[0], p[1], m_photonMass, sqrt(m_s) / 2., 3);
 		real += tot;
 	}
@@ -275,128 +270,40 @@ double NLO_Base::CalculateRealReal() {
 	if (!m_realrealtool) return 0;
 	// if (m_ISRPhotons.size() <= 1 && m_FSRPhotons.size() <= 1) return 0;
 	double real(0), sub(0);
-	Vec4D_Vector photons;
+	Vec4D_Vector photons, p(m_plab);
 	for (auto k : m_ISRPhotons) photons.push_back(k);
-	for (auto k : m_FSRPhotons) photons.push_back(k);
+	// for (auto k : m_FSRPhotons) photons.push_back(k);
 	// if (NHardPhotons(photons) == 0) return 0;
 	double norm = 2.*pow(2 * M_PI, 3);
-	// double real =
-	// p_realff->CalculateVirt();
-	// int NISR = m_ISRPhotons.size();
-	int nisr(0);
-	int nfsr(m_ISRPhotons.size());
-	// for (auto &k : photons) {
-	// for (auto &kk: photons){
 	for (int i = 0; i < photons.size(); ++i) {
 		for (int j = 0; j < i; ++j) {
 			Vec4D k  = photons[i];
 			Vec4D kk = photons[j];
-
-			// k *= scale;
 			if (!CheckPhotonForReal(k) || !CheckPhotonForReal(kk)) {
-				// use collinear approx
-				// if (nn < NISR) {
-				//   p_realff->SetMode(0);
-				//   p_realff->SetIncoming(p_dipoles->GetDipoleII());
-				//   p_realff->SetBorn(m_born);
-				//   real += p_realff->Beta10(k);
-				// }
-				// else if (m_fsrmode != 0 && nn > NISR) {
-				//   p_realff->SetMode(m_fsrmode);
-				//   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
-				//        Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
-				//     p_realff->SetIncoming(Dip, m_bornMomenta, m_fsrphotonsforME, p_fsr->m_yini, p_fsr->m_zini);
-				//     p_realff->SetBorn(m_born);
-				//     // p_realff->CalculateVirt();
-				//     // PRINT_VAR(p_realff->Beta10(k));
-				//     real += p_realff->Beta10(k);
-				//   }
-				// }
-				// return real;
-				continue;
+				return 0;
+				// continue;
 			}
-			// if(k.PPerp() < m_hardmin) continue;
-			Vec4D_Vector p(m_reallab);
-			Vec4D Q;
-			Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
-			for (int i = 2; i < p.size(); ++i)
-			{
-				Q += p[i];
-			}
-			double sq = Q.Abs2();
-			Q += k;
-			Q += kk;
-			Poincare boostQ(Q);
-			for (int i = 0; i < p.size(); ++i) {
-				boostQ.Boost(p[i]);
-			}
-			boostQ.Boost(k);
-			boostQ.Boost(kk);
-			double qx(0), qy(0), qz(0);
-			for (int i = 2; i < p.size(); ++i)
-			{
-				qx += p[i][1];
-				qy += p[i][2];
-				qz += p[i][3];
-			}
-			Vec4D tk = k + kk;
-			if (!IsEqual(tk[1], -qx, 1e-3) || !IsEqual(tk[2], -qy, 1e-3) || !IsEqual(tk[3], -qz, 1e-3) ) {
-				// if( k[1]!=-qx || k[2]!=-qy || k[3]!=-qz ){
-				msg_Error() << "YFS Mapping has failed for ISR\n";
-				msg_Error() << " Photons px = " << tk[1] << "\n Qx = " << -qx << std::endl;
-				msg_Error() << " Photons py = " << tk[2] << "\n Qy = " << -qy << std::endl;
-				msg_Error() << " Photons pz = " << tk[3] << "\n Qz = " << -qz << std::endl;
-				continue;
-			}
-			Vec4D QQ, PP;
-			for (int i = 2; i < p.size(); ++i)
-			{
-				QQ += p[i];
-			}
-			double sqq = QQ.Abs2();
-			if (!IsEqual(sqq, sq, 1e-4))
-			{
-				msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD << std::endl;
-			}
-			QQ += k;
-			QQ += kk;
-			PHASIC::CE.Isotropic2Momenta(QQ, sqr(p[0].Mass()), sqr(p[1].Mass()), p[0], p[1], ran->Get(), ran->Get(), -1, 1);
-			for (int ii = 0; ii < p.size(); ++ii)
-			{
-				boostLab.Boost(p[ii]);
-			}
-			for (int ij = 0; ij < 2; ++ij)
-			{
-				PP += p[ij];
-			}
-			double s1 = p_dipoles->CalculateRealSubLocal(p, k);
-			double s2 = p_dipoles->CalculateRealSubLocal(p, kk);
-			double subb = p_dipoles->CalculateRealSub(k) * p_dipoles->CalculateRealSub(kk);
-			// subloc += Eikonal(k, p[0], p[1]) * m_realcorr[j];
-			// subloc += Eikonal(kk, p[0], p[1]) * m_realcorr[i];
-			// subloc += Eikonal(k, p[0], p[1]) * Eikonal(kk, p[0], p[1]) * m_born;
-			// if (m_fsrmode != 0) {
-			//   subloc += Eikonal(k, p[2], p[3]);
-			//   subloc += Eikonal(k, p[0], p[2]);
-			//   subloc -= Eikonal(k, p[0], p[3]);
-			//   subloc -= Eikonal(k, p[1], p[2]);
-			//   subloc += Eikonal(k, p[1], p[3]);
-			// }
-			// for (int i = 0; i < p.size; ++i)
-			// {
-			//   subloc +=
-			// }
+			Vec4D ksum = k + kk;
+			p = m_plab;
+			MapMomenta(p, ksum);
+			// MapMomenta(p, kk);
+			p_nlodipoles->MakeDipoles(m_flavs,p,m_bornMomenta);
+			p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
+			// p_nlodipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
+			double subloc1 = p_nlodipoles->CalculateRealSub(k);
+			double subloc2 = p_nlodipoles->CalculateRealSub(kk);
+
+			double subb = subloc1*CalculateReal(kk);
+			subb += subloc2*CalculateReal(k);
+			subb += subloc1*subloc2*m_born;
 			p.push_back(k);
 			p.push_back(kk);
 			double r = p_realreal->Calc_R(p) / norm / norm;
-			// double rc = p_realff->Beta10(k);
+			if(IsNan(r)) r=0;
 			if (r == 0) continue;
-			// double tot =  ( r - s1 * r2 - s2 * r1 - s1 * s2 * m_born) / subb;
-			// real += (r/Eikonal(k,p[0], p[1]) -  m_born)*m_sp/m_s;
-			// real += tot;
+			real += r - subb;
 		}
 	}
-	PRINT_VAR(real);
 	return real;
 }
 
@@ -456,11 +363,12 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 
 bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
 	if (k.E() < m_hardmin) return false;
+	if(k.PPerp() < m_hardmin) return false;
 	for (int i = 0; i < m_bornMomenta.size(); ++i)
 	{
 		if (m_flavs[i].IsChargedLepton()) {
-			double sik = (k + m_plab[i]).Abs2();
-			if (sik < m_hardmin) {
+			double sik = (k + m_bornMomenta[i]).Abs2();
+			if (sqrt(sik) < m_hardmin) {
 				return false;
 			}
 		}

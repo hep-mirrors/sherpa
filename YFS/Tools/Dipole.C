@@ -34,6 +34,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   if (use_model_alpha) m_rescale_alpha = 1;
   else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
   m_QiQj = 1;
+  m_sp = (mom[0]+mom[1]).Abs2();
   for (auto &v : fl)
   {
     m_masses.push_back(v.Mass());
