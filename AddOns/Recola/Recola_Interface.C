@@ -165,6 +165,7 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_USE_DECAY"].SetDefault(1);
   s["RECOLA_MASS_REG"].SetDefault(false);
   s["RECOLA_NO_SELF_ENERGY"].SetDefault(false);
+  s["RECOLA_CMS"].SetDefault(true);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -212,7 +213,7 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   s_mass_reg = s["RECOLA_MASS_REG"].Get<bool>();
   s_check_mass = s["RECOLA_MASS_REG"].Get<bool>();
   if(s_mass_reg){
-    s_photon_mass = s["PHOTON_MASS"].Get<double>();
+    s_photon_mass = s["RECOLA_PHOTON_MASS"].Get<double>();
     if(s_photon_mass != yfs->m_photonMass){
       msg_Error()<<"Mismatch between YFS and Recola photon mass"
                  <<"\n mass in YFS = "<<yfs->m_photonMass
@@ -237,6 +238,8 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
     THROW(not_implemented, "ONLY Standard Model so far supported in RECOLA");
   
   bool recolaOnShellZW = s["RECOLA_ONSHELLZW"].Get<bool>();
+  bool recolaCMS = s["RECOLA_CMS"].Get<bool>();
+  if(!recolaCMS) set_on_shell_scheme_rcl();
   // set particle masses/widths
   if(recolaOnShellZW != 0){
     set_onshell_mass_z_rcl(Flavour(kf_Z).Mass(),Flavour(kf_Z).Width());
