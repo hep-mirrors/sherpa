@@ -37,7 +37,7 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
    double bornsym = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
    bornsym*= ATOOLS::Flavour::FSSymmetryFactor(born_flavs);
-   // m_sym/=bornsym;
+   m_sym*=bornsym;
    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
    // m_factor = m_sym*p_real_me->AlphaQED()/2/M_PI;
   m_factor = p_real_me->AlphaQED();///m_sym;
@@ -78,5 +78,5 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
     
     double R = p_real_me->Calc(p);
     if(m_check_real) real_out<<std::setprecision(15)<<R/2/M_PI<<std::endl;
-    return R*m_rescale_alpha/m_sym;//*m_factor/2/M_PI;
+    return R*m_rescale_alpha/m_sym/m_sym;///2/M_PI;
   }

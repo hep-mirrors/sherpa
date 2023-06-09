@@ -77,5 +77,5 @@ double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p)
 
   }
     // double R = p_real_me->ME_Finite();
-    return R*m_rescale_alpha/m_sym;
+    return R*m_rescale_alpha/m_sym/m_sym;
   }
