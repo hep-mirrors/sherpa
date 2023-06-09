@@ -31,7 +31,7 @@ public:
   ~RealReal();
   // void InitME(MODEL::Model_Base *const model);
   double Calc(const ATOOLS::Vec4D_Vector momenta);
-  PHASIC::Virtual_ME2_Base     *p_real_me;
+  PHASIC::Tree_ME2_Base     *p_real_me;
   double Calc_R(const ATOOLS::Vec4D_Vector& p);
   MODEL::Coupling_Map m_cpls;
   PHASIC::Scale_Setter_Base *p_scale;

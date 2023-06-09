@@ -31,7 +31,7 @@ namespace YFS {
     double m_photonMass, m_oneloop, m_born,m_isrWeight, m_fsrWeight, m_rescale_alpha;
     double m_nbar, m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
     int m_yfsmode, m_N, m_order, m_nmax, m_betaorder, m_N_FSR, m_fullform, m_formWW;
-    int m_fsrmode, m_useint, m_check_mass_reg, m_check_poles, m_check_real, m_use_fsr_beta;
+    int m_fsrmode, m_useint, m_check_mass_reg, m_check_poles, m_check_real,m_check_rr, m_use_fsr_beta;
     int m_mode, m_rmode, m_semiyfs, m_NReal, m_qedmode,m_kkmcAngles, m_griff, m_fixed_photons; 
     bool m_looptool, m_setmass, m_YFS_RS, m_RealPhotons, m_hidephotons, m_virtual_only, m_real_only, m_use_model_alpha;
     bool m_beamspread, m_isrinital,m_realtool,m_realvirt,m_useceex,m_realrealtool;
