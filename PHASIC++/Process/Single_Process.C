@@ -564,11 +564,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       m_lastb *= prefac;
     }
 
-  if(p.size()==5){
-    PRINT_VAR(p);
-    PRINT_VAR(m_lastxs);
-    PRINT_VAR(nominal);
-  }
     // update results
     if (p_mc != nullptr && m_dsweight && m_pinfo.Has(nlo_type::vsub)) {
       // calculate DADS term for MC@NLO: one PS point, many dipoles
@@ -616,7 +611,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
 
   } else {
-    PRINT_VAR(p);
     const auto triggers = Selector()->CombinedResults();
 
     for (int i {0}; i < GetSubevtList()->size(); ++i) {
