@@ -59,6 +59,7 @@ void YFS_Base::RegisterDefaults(){
   s["CHECK_MASS_REG"].SetDefault(0);
   s["CHECK_POLES"].SetDefault(0);
   s["CHECK_REAL"].SetDefault(0);
+  s["CHECK_REAL_REAL"].SetDefault(0);
   s["VIRTUAL_ONLY"].SetDefault(0);
   s["REAL_ONLY"].SetDefault(0);
   s["USE_MODEL_ALPHA"].SetDefault(0);
@@ -111,6 +112,7 @@ void YFS_Base::RegisterSettings(){
   m_check_mass_reg = s["CHECK_MASS_REG"].Get<int>();
   m_check_poles = s["CHECK_POLES"].Get<int>();
   m_check_real = s["CHECK_REAL"].Get<int>();
+  m_check_rr = s["CHECK_REAL_REAL"].Get<int>();
   m_virtual_only = s["VIRTUAL_ONLY"].Get<bool>();
   m_real_only = s["REAL_ONLY"].Get<bool>();
   m_use_model_alpha = s["USE_MODEL_ALPHA"].Get<bool>();

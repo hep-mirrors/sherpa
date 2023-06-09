@@ -186,10 +186,10 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	double subb   = p_dipoles->CalculateRealSub(k);
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	m_evts+=1;
-	if (!CheckPhotonForReal(k)) { 
-		rcoll = p_nlodipoles->CalculateEEXReal(k)*born/M_PI/2.;
-		return (rcoll -subloc*born)/subb;
-	}
+	// if (!CheckPhotonForReal(k)) { 
+	// 	rcoll = p_nlodipoles->CalculateEEXReal(k)*born/M_PI/2.;
+	// 	return (rcoll -subloc*born)/subb;
+	// }
 	p.push_back(k);
 	double r = p_real->Calc_R(p) / norm;
 	if (r == 0) return 0;
@@ -239,7 +239,7 @@ double NLO_Base::CalculateRealVirtual() {
 	for (auto k : photons) {
 		Vec4D_Vector p(m_plab);
 		MapMomenta(p, k);
-		if(k.PPerp()<5) return 0;
+		// if(k.PPerp()<5) return 0;
 		if(!CheckPhotonForReal(k)) return 0;
 		// double subb  = p_dipoles->CalculateRealSub(k);
 		// double subloc = 0;
@@ -272,12 +272,12 @@ double NLO_Base::CalculateRealReal() {
 	for (auto k : m_ISRPhotons) photons.push_back(k);
 	for (auto k : m_FSRPhotons) photons.push_back(k);
 	// if (NHardPhotons(photons) == 0) return 0;
-	double norm = 2.*pow(2 * M_PI, 3);
+	double norm = 4.*pow(2 * M_PI, 6);
 	for (int i = 0; i < photons.size(); ++i) {
 		for (int j = 0; j < i; ++j) {
 			Vec4D k  = photons[i];
 			Vec4D kk = photons[j];
-			if(k.PPerp()<5 || kk.PPerp()<5) return 0;
+			// if(k.PPerp()<1 || kk.PPerp()<1) return 0;
 			if (!CheckPhotonForReal(k) || !CheckPhotonForReal(kk)) {
 				return 0;
 				// continue;
@@ -288,19 +288,21 @@ double NLO_Base::CalculateRealReal() {
 			// MapMomenta(p, kk);
 			p_nlodipoles->MakeDipoles(m_flavs,p,m_bornMomenta);
 			p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
-			// p_nlodipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
+			p_nlodipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
 			double subloc1 = p_nlodipoles->CalculateRealSub(k);
 			double subloc2 = p_nlodipoles->CalculateRealSub(kk);
+			double subb1   = p_dipoles->CalculateRealSub(k);
+			double subb2   = p_dipoles->CalculateRealSub(kk);
 
-			double subb = subloc1*CalculateReal(kk);
-			subb += subloc2*CalculateReal(k);
+			double subb = subloc1*CalculateReal(kk)*subb2;
+			subb += subloc2*CalculateReal(k)*subb1;
 			subb += subloc1*subloc2*m_born;
 			p.push_back(k);
 			p.push_back(kk);
-			double r = p_realreal->Calc_R(p) / norm / norm;
+			double r = p_realreal->Calc_R(p) / norm ;
 			if(IsNan(r)) r=0;
 			if (r == 0) continue;
-			real += r - subb;
+			real += (r - subb)/subb1/subb2;
 		}
 	}
 	return real;
