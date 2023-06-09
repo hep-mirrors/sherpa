@@ -15,21 +15,24 @@ using namespace MODEL;
 
 RealReal::RealReal(const PHASIC::Process_Info& pi)  {
    /* Load RealReal ME */
-   PRINT_VAR(pi);
    PHASIC::Process_Info real_pi(pi);
-   real_pi.m_fi.m_nlotype = ATOOLS::nlo_type::lo;
+   real_pi.m_fi.m_nlotype = ATOOLS::nlo_type::loop;
    real_pi.m_mincpl[0] = pi.m_mincpl[0];
    real_pi.m_maxcpl[0] = pi.m_maxcpl[0];
-   real_pi.m_mincpl[1] = pi.m_mincpl[1] + 2;
-   real_pi.m_maxcpl[1] = pi.m_maxcpl[1] + 2;
-   p_real_me = PHASIC::Tree_ME2_Base::GetME2(real_pi);
-   if (!p_real_me)  THROW(not_implemented, "Couldn't find real ME for this process.");
+   real_pi.m_mincpl[1] = pi.m_mincpl[1];
+   real_pi.m_maxcpl[1] = pi.m_maxcpl[1];
+   p_real_me = PHASIC::Virtual_ME2_Base::GetME2(real_pi);;
+   if (!p_real_me)  {
+    msg_Error()<<real_pi;
+    THROW(not_implemented, "Couldn't find real ME for this process.");
+  }
    MODEL::s_model->GetCouplings(m_cpls);
    /* Load color-correlated ME. TODO: orders */
    PHASIC::External_ME_Args args(real_pi.m_ii.GetExternal(),
                                  real_pi.m_fi.GetExternal(),
                                  real_pi.m_maxcpl);
    p_real_me->SetCouplings(m_cpls);
+   p_real_me->SetSubType(sbt::qed);
    m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
    m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
@@ -41,6 +44,7 @@ RealReal::~RealReal() {
 
 double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p)
   {
-    double R = p_real_me->Calc(p);
-    return R*m_rescale_alpha/m_sym;
+    p_real_me->Calc(p);
+    double R = p_real_me->ME_Finite();
+    return R*m_rescale_alpha;
   }

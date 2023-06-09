@@ -92,6 +92,10 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
   m_olddipoles.clear();
   m_dipolesFF.clear();
   m_dipolesIF.clear();
+  for (int i = 0; i < fl.size(); ++i)
+  {
+    m_flav_label[fl[i]] = i;
+  }
   if (m_fsrmode == 0 ) return;
   if (fl.size() == 4) {
     Flavour_Vector ff;
@@ -196,7 +200,6 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
             ff.push_back(f2);
             mm.push_back(mom[d1]);
             mm.push_back(mom[d2]);
-
             bm.push_back(m_bornmomenta[d1]);
             bm.push_back(m_bornmomenta[d2]);
             // PRINT_VAR(d1);
@@ -333,27 +336,11 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   }
 
   for (auto &D : m_dipolesIF){
-    sub -= D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   return sub;
 }
 
-
-double Define_Dipoles::CalculateRealSubLocal(const Vec4D_Vector &p, const Vec4D &k) {
-  double sub(0), Y;
-  for (auto &D : m_dipolesII) {
-    sub += D.Eikonal(k, p[0], p[1]);
-  }
-  for (auto &D : m_dipolesFF) {
-    // sub += D.Eikonal(k, D.GetOldMomenta(0), D.GetOldMomenta(1));
-    sub += D.Eikonal(k, p[2], p[3]);
-  }
-
-  for (auto &D : m_dipolesIF){
-    sub -= D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-  }
-  return sub;
-}
 
 
 double Define_Dipoles::CalculateVirtualSub() {

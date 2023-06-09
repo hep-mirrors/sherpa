@@ -16,7 +16,6 @@ namespace MODEL {
 
 namespace YFS {
   typedef std::vector<YFS::Dipole> Dipole_Vector;
-  // typedef std::vector<std::vector<int> Dipoles;
 
  
 
@@ -66,7 +65,6 @@ namespace YFS {
       bool CheckMasses();
       void IsResonant(YFS::Dipole &D);
       double CalculateRealSub(const Vec4D &k);
-      double CalculateRealSubLocal(const Vec4D_Vector &p, const Vec4D &k);
       double CalculateVirtualSub();
       double CalculateRealVirtualSub(const Vec4D & k);
       double CalculateEEX(const Vec4D & k);

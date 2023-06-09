@@ -76,12 +76,12 @@ bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
   m_Q1 = p_dipole->m_charges[0];
   m_Q2 = p_dipole->m_charges[1];
   m_QF2 = m_Q1 * m_Q2;
-  m_sp = m_QFrame.Abs2();
-  MakePair(sqrt(m_sp), m_bornQ1, m_bornQ2);
-  m_EQ = sqrt(m_sp) / 2.;
+  m_dip_sp = p_dipole->Sprime();
+  MakePair(sqrt(m_dip_sp), m_bornQ1, m_bornQ2);
+  m_EQ = sqrt(m_dip_sp) / 2.;
   m_Emin = 0.5 * sqrt(m_s) * m_vmin;
-  m_Kmin = 0.5 * m_fsrcut * sqrt(m_sp);
-  m_Kmax = sqrt(m_sp) / 2.;
+  m_Kmin = 0.5 * m_fsrcut * sqrt(m_dip_sp);
+  m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
   if (m_dipole.size() != 2) {
     THROW(fatal_error, "Dipole size incorrect in YFS FSR")
@@ -104,7 +104,7 @@ bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
     PRINT_VAR(m_QF2);
     PRINT_VAR(m_betaf);
     PRINT_VAR(m_amc2);
-    PRINT_VAR(m_sp);
+    PRINT_VAR(m_dip_sp);
   }
   p_fsrFormFact->SetCharge((-m_QF2));
   return true;
@@ -118,9 +118,9 @@ double FSR::CalculateBeta(const Vec4D& p) {
 }
 
 void FSR::CalculateBetaBar() {
-  m_betaBar = m_sp - sqr(m_mass[0] - m_mass[1]);
-  m_betaBar *= m_sp - sqr(m_mass[0] + m_mass[1]);
-  m_betaBar = sqrt(m_betaBar) / m_sp;
+  m_betaBar = m_dip_sp - sqr(m_mass[0] - m_mass[1]);
+  m_betaBar *= m_dip_sp - sqr(m_mass[0] + m_mass[1]);
+  m_betaBar = sqrt(m_betaBar) / m_dip_sp;
   m_betaBar1 = CalculateBeta(m_dipole[0]);
   m_betaBar2 = CalculateBeta(m_dipole[1]);
   m_betaBar1 = m_betaBar2 = m_betaBar;
@@ -139,7 +139,7 @@ void FSR::CalculateBetaBar() {
 void FSR::GenerateAngles() {
 // Generation of theta for two massive particles
   double del1, del2;
-  double am2 = 4.*sqr((m_mass[0])) / m_sp;
+  double am2 = 4.*sqr((m_mass[0])) / m_dip_sp;
 
   double P  = log((1. + m_beta1) / (1. - m_beta1))
               / (log((1. + m_beta1) / (1. - m_beta1)) + log((1. + m_beta2) / (1. - m_beta2)));
@@ -261,12 +261,12 @@ bool FSR::MakeFSR() {
   m_wt2 = 1.0;
   m_yy = 1.0;
   m_xfact = 1.0;
-  m_sQ = m_sp;
+  m_sQ = m_dip_sp;
   double smin = (m_mass[0] + m_mass[1]);
   NPhotons();
   GeneratePhotonMomentum(); // Run this even if no photons to clear previous event
   if (m_photons.size() == 0) {
-    m_sprim = m_sp;
+    m_sprim = m_dip_sp;
     m_sQ = m_sprim;
   }
   else {
@@ -276,7 +276,7 @@ bool FSR::MakeFSR() {
       return false;
     }
     RescalePhotons();
-    m_sQ = m_sp * m_yy;
+    m_sQ = m_dip_sp * m_yy;
     if ( sqrt(m_sQ) < smin ) {
       RejectEvent();
       m_cut = 3;
@@ -286,13 +286,13 @@ bool FSR::MakeFSR() {
   if (m_n == 0 && m_wt2 != 1) {
     msg_Error() << METHOD << "Incorrect jacobian in YFS FSR" << std::endl;
   }
-  m_u = 1 - m_sprim / m_sp;
+  m_u = 1 - m_sprim / m_dip_sp;
   MakePair(sqrt(m_sprim), m_dipole[0], m_dipole[1]);
   m_px = m_dipole[0] + m_dipole[1] + m_photonSum;
   m_sX = m_px.Abs2();
   m_Q = m_dipole[0] + m_dipole[1];
-  double masc1 = m_mass[0] * sqrt(m_sQ / m_sp);
-  double masc2 = m_mass[1] * sqrt(m_sQ / m_sp);
+  double masc1 = m_mass[0] * sqrt(m_sQ / m_dip_sp);
+  double masc2 = m_mass[1] * sqrt(m_sQ / m_dip_sp);
   CE.Isotropic2Momenta(m_Q, sqr(masc1), sqr(masc2), m_r1, m_r2, ran->Get(), ran->Get(), -1, -1);
   CalculateBetaBar();
   p_dipole->AddToGhosts(m_r1);
@@ -310,7 +310,7 @@ void FSR::RescalePhotons() {
   // K = m_photonSum;
   m_yy = 1. / (1. + m_photonSum[0] + 0.25 * m_photonSum.Abs2());
   m_wt2 = m_yy * (1. + m_photonSum[0]);
-  m_sprim = m_sp * m_yy;
+  m_sprim = m_dip_sp * m_yy;
   m_sqtest = m_sprim;
 
   // Rescale all photons
@@ -328,7 +328,7 @@ void FSR::RescalePhotons() {
 
 bool FSR::F(ATOOLS::Vec4D_Vector &k) {
   double del1, del2;
-  m_sqtest = m_sp;
+  m_sqtest = m_dip_sp;
   m_sX = (m_dipole[0] + m_dipole[1] + m_photonSum).Abs2();
   double ener = sqrt(m_sprim) / 2.;
   double am1 = sqr(m_dipole[0].Mass() / ener);
@@ -543,7 +543,7 @@ void FSR::BoostDipole(Vec4D_Vector &dipole) {
 void FSR::Weight() {
   CalculateBetaBar();
   // m_fsrWeight=m_massW*m_hideW*m_wt2;
-  double spp = m_sprim * m_sX / m_sp;
+  double spp = m_sprim * m_sX / m_dip_sp;
   double form = p_fsrFormFact->BVV_full(m_dipole[0], m_dipole[1], 1e-15, sqrt(m_sQ) / 2., 1);
   if (IsBad(form)) form = exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
   if (m_photons.size() == 0) m_sprim = m_sX;
@@ -551,7 +551,7 @@ void FSR::Weight() {
   double L = 2 * m_alpha / M_PI * (log(m_sprim / sqr(m_mass[0]) - 1));
   if (sqrt(m_s) > 150) form = m_gBar;
   else form = L;
-  // PRINT_VAR(m_sp/m_sQ);
+  // PRINT_VAR(m_dip_sp/m_sQ);
   // PRINT_VAR(m_mass);
   m_betaBar = m_sprim - sqr(m_mass[0] - m_mass[1]);
   m_betaBar *= m_sprim - sqr(m_mass[0] + m_mass[1]);
@@ -568,7 +568,7 @@ void FSR::Weight() {
   m_fsrWeight = m_massW * m_hideW * m_wt2 * exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
   if (IsBad(m_fsrWeight)) {
     msg_Error() << METHOD << "\n FSR weight is NaN\n"
-                << "\n Eprime = " << sqrt(m_sp)
+                << "\n Eprime = " << sqrt(m_dip_sp)
                 << "\n Eq = " << sqrt(m_sQ)
                 << "\n EminQ = " << m_EminQ
                 << "\n q1q2 = " << m_q1q2
@@ -589,7 +589,7 @@ void FSR::Weight() {
   DEBUG_FUNC("FSR for Dipole  = " << m_dipoleFl
              << "\n N Photons = " << m_N
              << "\n N Photons removed = " << m_NRemoved
-             << "\n Eprime = " << sqrt(m_sp)
+             << "\n Eprime = " << sqrt(m_dip_sp)
              << "\n Eq = " << sqrt(m_sQ)
              << "\n EminQ = " << m_EminQ
              << "\n q1q2 = " << m_q1q2
