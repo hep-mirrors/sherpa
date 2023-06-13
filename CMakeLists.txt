@@ -204,7 +204,7 @@ endif()
 ########################################################################
 
 find_program(GIT NAMES git)
-if (GIT)
+if (GIT AND EXISTS ".git") 
   execute_process(COMMAND ${GIT} rev-parse --abbrev-ref HEAD
                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITURL
@@ -222,7 +222,7 @@ endif()
 
 
 macro(sherpa_create_git_info name)
-  if (GIT)
+  if (GIT AND EXISTS ".git") 
     execute_process(COMMAND ${GIT} status -s --untracked-files=no .
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITCLEAN
