@@ -36,7 +36,7 @@ ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
   - [EW, LO1, LO2, LO3]
 
 # speed and neg weight fraction improvements
-NLO_CSS_PSMODE: 2
+NLO_CSS_PSMODE: 1
 MC@NLO:
   RS_SCALE: METS{H_Tp2/4}
 

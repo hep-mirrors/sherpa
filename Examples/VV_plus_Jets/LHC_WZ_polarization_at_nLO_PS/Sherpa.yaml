@@ -21,7 +21,7 @@ PARTICLE_DATA:
 WIDTH_SCHEME: Fixed
 
 # speed and neg weight fraction improvements
-NLO_CSS_PSMODE: 2
+NLO_CSS_PSMODE: 1
 
 # vector boson production part pp -> WZ
 PROCESSES:
