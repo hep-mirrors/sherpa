@@ -42,6 +42,7 @@ void Ladder_Generator_Eik::FillGluons() {
     m_ylimits[beam] = (beam==0? 1. : -1.) * (m_Ymax + ran->Get()*m_deltaY);
     p_ladder->AddRapidity(m_ylimits[beam]);
   }
+  //size_t N = 0; //m_density.NGluons(m_ylimits[1], m_ylimits[0]);
   size_t N = m_density.NGluons(m_ylimits[1], m_ylimits[0]);
   for (size_t i=0;i<N;i++) {
     p_ladder->AddRapidity(m_density.SelectRapidity(m_ylimits[1], m_ylimits[0]));
@@ -50,11 +51,10 @@ void Ladder_Generator_Eik::FillGluons() {
 
 void Ladder_Generator_Eik::SelectPropagatorColours() {
   for (size_t i=0;i<p_emissions->size()-1;i++)
-    p_props->push_back(T_Prop(colour_type::octet,Vec4D(0.,0.,0.,0.),m_qt2min));
-  // -> comment in for ladder tests
-  //p_props->push_back(T_Prop(colour_type::singlet,Vec4D(0.,0.,0.,0.),m_qt2min));
-  //return;
-  
+        p_props->push_back(T_Prop(colour_type::octet,Vec4D(0.,0.,0.,0.),m_qt2min));
+    //p_props->push_back(T_Prop(colour_type::singlet,Vec4D(0.,0.,0.,0.),m_qt2min));
+
+  // -> comment out rest for ladder tests
   LadderMap::iterator lit1=p_emissions->begin();
   LadderMap::iterator lit2=p_emissions->end();  lit2--;
   TPropList::iterator pit1=p_props->begin();
