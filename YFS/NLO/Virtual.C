@@ -26,10 +26,13 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
     if (!p_loop_me)  THROW(not_implemented, "Couldn't find virtual ME for this process.");
     MODEL::s_model->GetCouplings(m_cpls);
     p_loop_me->SetSubType(ATOOLS::sbt::qed);
-    /* Load color-correlated ME. TODO: orders */
     PHASIC::External_ME_Args args(loop_pi.m_ii.GetExternal(),
           loop_pi.m_fi.GetExternal(),
           loop_pi.m_maxcpl);
+
+    double sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
+    sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
+    /* Load color-correlated ME. TODO: orders */
     p_corr_me = PHASIC::Color_Correlated_ME2::GetME2(args);  
     p_loop_me->SetCouplings(m_cpls);
     m_factor = p_loop_me->AlphaQED()/2.0/M_PI;

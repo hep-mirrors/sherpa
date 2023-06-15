@@ -36,7 +36,7 @@ public:
   MODEL::Coupling_Map m_cpls;
   PHASIC::Scale_Setter_Base *p_scale;
   PHASIC::Tree_ME2_Base* p_born_me;
-  double m_sym;
+  double m_sym,m_factor;
 };
 }
 

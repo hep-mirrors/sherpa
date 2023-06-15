@@ -179,17 +179,17 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	double born = m_born;
 	double tot,colltot,rcoll;
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_bornMomenta);
-	p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
+	p_nlodipoles->MakeDipolesII(m_flavs,p,p);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
 	// p_dipoles->MakeDipolesIF(m_flavs, m_plab, p);
 	// p_dipoles->MakeDipoles(m_flavs, m_plab, p);
 	double subb   = p_dipoles->CalculateRealSub(k);
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	m_evts+=1;
-	// if (!CheckPhotonForReal(k)) { 
-	// 	rcoll = p_nlodipoles->CalculateEEXReal(k)*born/M_PI/2.;
-	// 	return (rcoll -subloc*born)/subb;
-	// }
+	if (!CheckPhotonForReal(k)) { 
+		rcoll = p_dipoles->CalculateEEXReal(k)*born/M_PI/2.;
+		return 0*(rcoll -subloc*born)/subb;
+	}
 	p.push_back(k);
 	double r = p_real->Calc_R(p) / norm;
 	if (r == 0) return 0;
@@ -240,7 +240,8 @@ double NLO_Base::CalculateRealVirtual() {
 		Vec4D_Vector p(m_plab);
 		MapMomenta(p, k);
 		// if(k.PPerp()<5) return 0;
-		if(!CheckPhotonForReal(k)) return 0;
+		// if(!CheckPhotonForReal(k)) return 0;
+		// if(k.E() < 0.01) continue;
 		// double subb  = p_dipoles->CalculateRealSub(k);
 		// double subloc = 0;
 		p_nlodipoles->MakeDipoles(m_flavs,p,m_bornMomenta);
@@ -272,22 +273,23 @@ double NLO_Base::CalculateRealReal() {
 	for (auto k : m_ISRPhotons) photons.push_back(k);
 	// for (auto k : m_FSRPhotons) photons.push_back(k);
 	// if (NHardPhotons(photons) == 0) return 0;
-	double norm = 4.*pow(2 * M_PI, 6);
+	double norm = 2.*pow(2 * M_PI, 3);
 	for (int i = 0; i < photons.size(); ++i) {
 		for (int j = 0; j < i; ++j) {
 			Vec4D k  = photons[i];
 			Vec4D kk = photons[j];
-			// if(k.PPerp()<1 || kk.PPerp()<1) return 0;
-			if (!CheckPhotonForReal(k) || !CheckPhotonForReal(kk)) {
-				return 0;
-				// continue;
-			}
+			if(k.PPerp()<0.1 || kk.PPerp()<0.1) return 0;
+			// if (!CheckPhotonForReal(k) || !CheckPhotonForReal(kk)) {
+			// 	return 0;
+			// 	// continue;
+			// }
+			// PRINT_VAR("HERE");
 			Vec4D ksum = k + kk;
 			p = m_plab;
 			MapMomenta(p, ksum);
 			// MapMomenta(p, kk);
 			p_nlodipoles->MakeDipoles(m_flavs,p,m_bornMomenta);
-			p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
+			p_nlodipoles->MakeDipolesII(m_flavs,p,p);
 			p_nlodipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
 			double subloc1 = p_nlodipoles->CalculateRealSub(k);
 			double subloc2 = p_nlodipoles->CalculateRealSub(kk);
@@ -299,7 +301,7 @@ double NLO_Base::CalculateRealReal() {
 			subb += subloc1*subloc2*m_born;
 			p.push_back(k);
 			p.push_back(kk);
-			double r = p_realreal->Calc_R(p) / norm ;
+			double r = p_realreal->Calc_R(p) / norm / norm;
 			if(IsNan(r)) r=0;
 			if (r == 0) continue;
 			real += (r - subb)/subb1/subb2;
@@ -356,10 +358,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	{
 		boostLab.Boost(p[i]);
 	}
-	for (int i = 0; i < 2; ++i)
-	{
-		PP += p[i];
-	}
+	// boostLab.Boost(k);
 }
 
 bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {

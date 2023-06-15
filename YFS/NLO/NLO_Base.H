@@ -57,6 +57,7 @@ public:
   bool CheckPhotonForReal(const Vec4D &k);
 
   inline void SetBorn(double b) { m_born = b;}
+  inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
 
 };
 
