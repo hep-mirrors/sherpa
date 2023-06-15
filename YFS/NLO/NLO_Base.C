@@ -13,6 +13,10 @@ NLO_Base::NLO_Base() {
   p_nlodipoles = new YFS::Define_Dipoles();
   m_evts = 0;
   m_recola_evts = 0;
+  m_realrealtool = 0;
+  m_realtool = 0;
+  m_looptool = 0;
+  m_realvirt = 0;
   if(m_isr_debug || m_fsr_debug){
   	m_histograms2d["Real_me"] = new Histogram_2D(0, -1, 1, 20, 0, sqrt(m_s)/2., 20 );
   	m_histograms1d["Real_diff"] = new Histogram(0, -1, 1, 40);
@@ -91,10 +95,10 @@ void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab, Vec4D_Vector &bor
 
 double NLO_Base::CalculateNLO() {
 	double result{0.0};
-	if (p_virt || m_griff) result += CalculateVirtual();
-	if (p_real) result += CalculateReal();
-	if (p_realvirt) result += CalculateRealVirtual();
-	if (p_realreal) result += CalculateRealReal();
+	result += CalculateVirtual();
+	result += CalculateReal();
+	result += CalculateRealVirtual();
+	result += CalculateRealReal();
 	return result;
 }
 
@@ -230,7 +234,7 @@ double NLO_Base::CollinearReal(Vec4D k, Vec4D_Vector p){
 }
 
 double NLO_Base::CalculateRealVirtual() {
-	if (!m_realvirt || m_ISRPhotons.size() == 0) return 0;
+	if (!m_realvirt) return 0;
 	double real(0), sub(0);
 	double norm = 2.*pow(2 * M_PI, 3);
 	Vec4D_Vector photons;
@@ -240,6 +244,8 @@ double NLO_Base::CalculateRealVirtual() {
 		Vec4D_Vector p(m_plab);
 		MapMomenta(p, k);
 		// if(k.PPerp()<5) return 0;
+		if(k.PPerp()<1) return 0;
+
 		// if(!CheckPhotonForReal(k)) return 0;
 		// if(k.E() < 0.01) continue;
 		// double subb  = p_dipoles->CalculateRealSub(k);
