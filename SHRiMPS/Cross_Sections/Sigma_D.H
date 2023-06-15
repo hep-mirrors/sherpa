@@ -32,6 +32,7 @@ namespace SHRIMPS {
     double SelectT(const size_t & mode) const;
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
+    double GetValuePerChannel(const int i, const int j, const double & B);
     double GetCombinedValueSD0(const double & B);
     double GetCombinedValueSD1(const double & B);
     double GetCombinedValueDD(const double & B);

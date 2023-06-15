@@ -22,6 +22,32 @@ double Sigma_Inelastic::GetCombinedValue(const double & B) {
   return value;
 }
 
+double Sigma_Inelastic::GetValuePerChannel(const int k, const int l, const double &B) {
+    if (k >= int(p_eikonals->size()) || l >= int(p_eikonals->size())) {
+        msg_Error()<<"Error in "<<METHOD<<": requested GW state does not exist, will return zero for cross section.\n";
+        return 0.;
+    }
+    double value(0.);
+    if (k > 0 && l > 0) {
+        Omega_ik * eikonal = (*p_eikonals)[k][l];
+        value = eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)));
+    }
+    if (k > 0 && l < 0) {
+        for (size_t j=0;j<(*p_eikonals)[k].size();j++) {
+            Omega_ik * eikonal = (*p_eikonals)[k][j];
+            value += eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)));
+        }
+    }
+    if (k > 0 && l < 0) {
+        for (size_t i=0;i<(*p_eikonals)[l].size();i++) {
+            Omega_ik * eikonal = (*p_eikonals)[i][l];
+            value += eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)));
+        }
+    }
+    if (k < 0 && l < 0) value = GetCombinedValue(B);
+    return value;
+}
+
 std::vector<double> * Sigma_Inelastic::FillBGrid(Omega_ik * eikonal) {
   p_eikonal = eikonal;
   std::vector<double> * grid = new std::vector<double>;
