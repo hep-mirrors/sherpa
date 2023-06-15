@@ -117,6 +117,7 @@ namespace SHERPA {
     Output_Vector                * GetOutputs()                     { return &m_outputs;        }
     MODEL::Model_Base            * GetModel()                 const { return p_model;           }
     PDF::ISR_Handler_Map         * GetISRHandlers()                 { return &m_isrhandlers;    }
+    YFS::YFS_Handler             * GetYFSHandler()                  { return p_yfshandler;    }
     BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
     Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
     const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;  }
