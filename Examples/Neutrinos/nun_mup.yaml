@@ -1,7 +1,9 @@
 EVENTS:     10
 EVENT_TYPE: NeutrinoNucleon
 
-TAGS: {"E1":2.0}
+#TAGS: {"E1":2.0}
+TAGS: {"E1":0.753982300884956}
+
 
 BEAMS:             [ 14, 2112 ]
 BEAM_ENERGIES:     [ $(E1), 0.939566 ]
@@ -14,6 +16,14 @@ ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
 ALPHAS: {USE_PDF: 0}
 SCALES: METS{H_T2}{H_T2}
+
+PARTICLE_DATA:
+  11:
+    Massive: true
+  13:
+    Massive: true
+
+
 
 SELECTORS:
   - [PT, 11, 0.01, E_CMS]
@@ -32,9 +42,15 @@ RIVET:
 
 TRANSITIONS:
   Constants:
-    Vud:  0.9744
-    Vus:  0.2204
-    Vcd: -0.2204
+    Vud:  0.974
+    Vus:  0.225
+    Vub:  0.003
+    Vcd:  0.225
+    Vcs:  0.973
+    Vcb:  0.041
+    Vtd:  0.009
+    Vts:  0.040
+    Vtb:  0.999
     fpi:  0.1307
     fK:   0.1598
 
@@ -42,16 +58,16 @@ TRANSITIONS:
     2112 2212 24:
       f1:
         form:   dipole
-        params: [ 1.,      0.84 ] 
+        params: [ .5,      0.84 ] #1 /2
       f2:
         form:   dipole
-        params: [ 1.855, 0.84 ]
+        params: [ -1.885, 0.84 ] #-1.885 /2 *2
       f3:
         form:   none
 
       g1:
         form:   dipole
-        params: [ -1.267,      1.08 ] 
+        params: [ 0.6335,      1.08 ] #-1.267 /-2
       g2:
         form:   none
       g3:
