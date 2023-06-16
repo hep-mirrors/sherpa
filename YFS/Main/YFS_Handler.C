@@ -424,10 +424,10 @@ void YFS_Handler::CalculateBeta() {
       if (m_use_fsr_beta == 0) realFSR = 0;
     }
     m_real = (realISR + realFSR + p_realff->AddVirtual())/m_born;
-    if (m_virtual_only) m_real = p_realff->AddVirtual();
+    if (m_virtual_only) m_real = p_realff->AddVirtual()/m_born;
     if (m_real_only) {
       if (m_looptool) m_real = realISR + realFSR + ((m_betaorder > 1 ? p_realff->AddVirtual(m_betaorder) - p_realff->AddVirtual(1) : 0));
-      else m_real = realISR + realFSR + m_born;
+      else m_real = (realISR + realFSR + m_born)/m_born;
     }
     if (m_useint) m_real += p_realff->IntIF(m_ISRPhotons, m_FSRPhotons, p_isr->m_yini, p_isr->m_zini, p_fsr->m_yini, p_fsr->m_zini);
   }
