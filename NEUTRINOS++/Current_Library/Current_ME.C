@@ -48,7 +48,7 @@ void Current_ME::Calculate(const Vec4D_Vector& momenta,METOOLS::XYZFunc * F)
     //   msg_Out()<<"["<<spins1<<" "<<spins2<<"] = "<<(*this)[i]<<" from\n         "<<m_factor<<"*( \nQED         "
     //     <<p_c1->Get(spins1)<<" * "<<p_c2->Get(spins2) <<"\n         )\n\n";
     // }
-    
+
     (*this)[i]=m_factor*(
       p_c1->Get_ProcessType("QED", spins1)*p_c2->Get_ProcessType("QED", spins2) +
       p_c1->Get_ProcessType("Weak_NC", spins1)*p_c2->Get_ProcessType("Weak_NC", spins2) +
@@ -89,8 +89,8 @@ void Current_ME::Calculate(const Vec4D_Vector& momenta,bool m_anti)
     flavs_doubled[i] = flavs_doubled[i].Bar();
   }
   const ATOOLS::Flavour_Vector m_flavs_xyz = flavs_doubled;
-
   METOOLS::XYZFunc F(momenta_xyz, m_flavs_xyz, false, p_i_xyz);
+  F.CheckOrdering();
   Calculate(momenta_xyz, &F);
 }
 

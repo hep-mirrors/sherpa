@@ -532,10 +532,9 @@ void XYZFunc::CheckOrdering()
   //Debugging purposes 
   for( int i=0; i<m_N; i++ ) {
     const ATOOLS::Vec4<Complex> mom = p_mom[i];
-    msg_Out() << i << ": {\n     Flav: " << p_flav[i] << ", \n     Mom: " << mom << ", \n     Mass: "<< sqrt(Max(0.,mom.Abs2().real()))<<" \n},\n";
+    msg_Debugging() << i << ": {\n     Flav: " << p_flav[i] << ", \n     Mom: " << mom << ", \n     Mass: "<< sqrt(Max(0.,mom.Abs2().real()))<<" \n},\n";
   }
-  msg_Out() << "\n";
-  exit(1);
+  msg_Debugging() << "\n";
 }
 
 int XYZFunc::MToL(int m)
