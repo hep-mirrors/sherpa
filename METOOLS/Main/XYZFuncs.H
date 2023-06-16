@@ -83,6 +83,7 @@ namespace METOOLS {
 	      const int t1, const int l1,
 	      const int t2, const int l2,
 	      const Complex cR, const Complex cL );
+    void CheckOrdering();
 
     ATOOLS::Vec4C Y31(const int t1, const int l1,
                        const int t2, const int l2,

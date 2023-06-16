@@ -527,6 +527,17 @@ Vec4C XYZFunc::L(
     L(t1,t2,hel_comb,cR,cL);
 }
 
+void XYZFunc::CheckOrdering()
+{
+  //Debugging purposes 
+  for( int i=0; i<m_N; i++ ) {
+    const ATOOLS::Vec4<Complex> mom = p_mom[i];
+    msg_Out() << i << ": {\n     Flav: " << p_flav[i] << ", \n     Mom: " << mom << ", \n     Mass: "<< sqrt(Max(0.,mom.Abs2().real()))<<" \n},\n";
+  }
+  msg_Out() << "\n";
+  exit(1);
+}
+
 int XYZFunc::MToL(int m)
 {
   switch(m) {
