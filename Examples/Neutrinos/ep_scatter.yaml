@@ -1,10 +1,12 @@
+#NOTE:
+#Sort_Flavors: 0 
+#Process needs to be specified lepton baryon -> lepton baryon in EVENT_TYPE: NeutrinoNucleon.
+
 EVENTS:     10
 EVENT_TYPE: NeutrinoNucleon
 
-TAGS: {"E1":1.0}
+TAGS: {"E1":.5}
 
-#BEAMS:             [ 2212, 11 ]
-#BEAM_ENERGIES:     [ 0.938272, $(E1) ]
 BEAMS:             [ 11, 2212 ]
 BEAM_ENERGIES:     [ $(E1), 0.938272 ]
 BEAM_SPECTRA:      Monochromatic
@@ -22,10 +24,11 @@ SELECTORS:
 
 PARTICLE_DATA:
   11:
-    Massive: true
+    Massive: false
 
 PROCESSES:
   - 11 2212 -> 11 2212:
+      Sort_Flavors: 0 
       Order: {QCD: 0, EW: 2}
       2->2:
         Enhance_Observable: VAR{(log10(ThetaR(p[0],p[2])))}|-1|0.49
@@ -37,11 +40,15 @@ RIVET:
 
 TRANSITIONS:
   Constants:
-    Vud:  0.9744
-    Vus:  0.2204
-    Vcd: -0.2204
-    fpi:  0.1307
-    fK:   0.1598
+    Vud:  0.974
+    Vus:  0.225
+    Vub:  0.003
+    Vcd:  0.225
+    Vcs:  0.973
+    Vcb:  0.041
+    Vtd:  0.009
+    Vts:  0.040
+    Vtb:  0.999
 
   Transitions:
     #p   p    gamma
