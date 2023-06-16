@@ -6,6 +6,7 @@
 
 namespace NEUTRINOS {
   class Nucleon_Nucleon : public Scatter_Current_Base {
+    bool m_anti;
     double  m_massin, m_massout;
     Complex QED_coupling, QED_cR, QED_cL;
     Complex Weak_NC_coupling, Weak_NC_cR, Weak_NC_cL;

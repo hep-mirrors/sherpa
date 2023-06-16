@@ -17,8 +17,9 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 				 const std::vector<int>& indices,
 				 const std::string& name) :
   Scatter_Current_Base(flavs, indices, name),
-  m_massin(m_flavs[m_indices[0]].HadMass()),
-  m_massout(m_flavs[m_indices[1]].HadMass()) {
+  m_anti(m_flavs[m_indices[0]].IsAnti()),
+  m_massin(m_flavs[m_indices[1]].HadMass()),
+  m_massout(m_flavs[m_indices[0]].HadMass()) {
   /////////////////////////////////////////////////////////////////////////////
   // Relevant parameters here.
   /////////////////////////////////////////////////////////////////////////////
@@ -30,11 +31,9 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   double gz_coupling = e_coupling/(sqrt(sin2thetaW*cos2thetaW));
   double gw_coupling = e_coupling/(sqrt(sin2thetaW));
 
-  kf_code N1        = m_flavs[m_indices[0]].Kfcode(), N2 = m_flavs[m_indices[1]].Kfcode();
-
   //kf_code of nucleons IN vs OUT
-  kf_code IN = m_flavs[m_indices[0]].Kfcode();
-  kf_code OUT = m_flavs[m_indices[1]].Kfcode();
+  kf_code IN = m_flavs[m_indices[1]].Kfcode();
+  kf_code OUT = m_flavs[m_indices[0]].Kfcode();
 
   //Read in model parameters
   std::string Vckm_string = compareQuarkContent(getQuarkContent(IN), getQuarkContent(OUT)); 
@@ -56,25 +55,25 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   kf_code prop_kf_Z   = kf_Z;
   kf_code prop_kf_W   = kf_Wplus;
 
-  m_ffs["QED_GE"]  = ffs->GetFF(N1,N2,prop_kf_P,GE); 
-  m_ffs["QED_GM"]  = ffs->GetFF(N1,N2,prop_kf_P,GM); 
-  m_ffs["QED_A"]   = ffs->GetFF(N1,N2,prop_kf_P,A);
-  m_ffs["QED_P"]   = ffs->GetFF(N1,N2,prop_kf_P,P);
+  m_ffs["QED_GE"]  = ffs->GetFF(IN,OUT,prop_kf_P,GE); 
+  m_ffs["QED_GM"]  = ffs->GetFF(IN,OUT,prop_kf_P,GM); 
+  m_ffs["QED_A"]   = ffs->GetFF(IN,OUT,prop_kf_P,A);
+  m_ffs["QED_P"]   = ffs->GetFF(IN,OUT,prop_kf_P,P);
   m_ffprops["QED"] = ffprops->GetProp(prop_kf_P, prop_type);
 
-  m_ffs["NC_GE"]  = ffs->GetFF(N1,N2,prop_kf_Z,GE); 
-  m_ffs["NC_GM"]  = ffs->GetFF(N1,N2,prop_kf_Z,GM); 
-  m_ffs["NC_A"]   = ffs->GetFF(N1,N2,prop_kf_Z,A);
-  m_ffs["NC_P"]   = ffs->GetFF(N1,N2,prop_kf_Z,P);
+  m_ffs["NC_GE"]  = ffs->GetFF(IN,OUT,prop_kf_Z,GE); 
+  m_ffs["NC_GM"]  = ffs->GetFF(IN,OUT,prop_kf_Z,GM); 
+  m_ffs["NC_A"]   = ffs->GetFF(IN,OUT,prop_kf_Z,A);
+  m_ffs["NC_P"]   = ffs->GetFF(IN,OUT,prop_kf_Z,P);
   m_ffprops["NC"] = ffprops->GetProp(prop_kf_Z, prop_type);
 
-  m_ffs["CC_GE"]  = ffs->GetFF(N1,N2,prop_kf_W,GE); 
-  m_ffs["CC_GM"]  = ffs->GetFF(N1,N2,prop_kf_W,GM); 
-  m_ffs["CC_A"]   = ffs->GetFF(N1,N2,prop_kf_W,A);
-  m_ffs["CC_P"]   = ffs->GetFF(N1,N2,prop_kf_W,P);
+  m_ffs["CC_GE"]  = ffs->GetFF(IN,OUT,prop_kf_W,GE); 
+  m_ffs["CC_GM"]  = ffs->GetFF(IN,OUT,prop_kf_W,GM); 
+  m_ffs["CC_A"]   = ffs->GetFF(IN,OUT,prop_kf_W,A);
+  m_ffs["CC_P"]   = ffs->GetFF(IN,OUT,prop_kf_W,P);
   m_ffprops["CC"] = ffprops->GetProp(prop_kf_W, prop_type);
 
-  if (m_flavs[m_indices[0]]==m_flavs[m_indices[1]]) {
+  if (IN==OUT) {
     /////////////////////////////////////////////////////////////////////////
     // Hadron => Hadron
     /////////////////////////////////////////////////////////////////////////
@@ -82,7 +81,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     /////////////////////////////////////////////////////////////////////////
     // QED coupling: -i e e_f gamma^{mu}
     /////////////////////////////////////////////////////////////////////////
-    QED_coupling = ( -Complex( 0., 1.) * m_flavs[m_indices[0]].Charge() *  e_coupling);
+    QED_coupling = ( -Complex( 0., 1.) * Flavour(IN).Charge() *  e_coupling);
     QED_cR = QED_cL = Complex(1.,0.);
 
     /////////////////////////////////////////////////////////////////////////
@@ -90,8 +89,8 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     /////////////////////////////////////////////////////////////////////////
     double I_f = 1./2.; //TODO: Check the sign of different nucleons
     Weak_NC_coupling = (-Complex( 0., 1.) * gz_coupling );
-    Weak_NC_cR = Complex(1.,0.) * -(m_flavs[m_indices[0]].Charge())*sin2thetaW;
-    Weak_NC_cL = Complex(1.,0.) * ((I_f) - (m_flavs[m_indices[0]].Charge())*sin2thetaW);
+    Weak_NC_cR = Complex(1.,0.) * -(Flavour(IN).Charge())*sin2thetaW;
+    Weak_NC_cL = Complex(1.,0.) * ((I_f) - (Flavour(IN).Charge())*sin2thetaW);
 
     /////////////////////////////////////////////////////////////////////////
     // Weak Charged (left-handed) coupling: 0
@@ -139,8 +138,14 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   /////////////////////////////////////////////////////////////////////////
 
   const int N  = m_flavs.size();
-  const int pf = 2; const int pf_bar = 2+N; 
-  const int pi = 3; const int pi_bar = 3+N;
+  int pf = 2; 
+  int pi = 3; 
+  if (m_anti) {
+    pf = 3;
+    pi = 2;
+  }
+  const int pf_bar = pf+N; 
+  const int pi_bar = pi+N;
 
   Complex Zero = Complex(0.,0.);
   Complex One = Complex(1.,0.); 
@@ -158,7 +163,7 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
  
   double ff1  = (G_E+tau*G_M)/(1.+tau), ff2 = (G_M-G_E)/(1.+tau);
   double ff3  = F_A, ff4 = F_P;
-  
+
   // double mass_gordon = sqrt((m_massin*m_massin + m_massout*m_massout) / 2.0);
   
   Vec4C QED_amp, Weak_NC_amp, Weak_CC_amp;
@@ -179,7 +184,7 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
                 F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
                 F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
                 F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,One) +
-                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One)
+                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One) 
           );
         }
       }

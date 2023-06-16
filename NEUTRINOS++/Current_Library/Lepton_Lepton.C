@@ -24,8 +24,6 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
   double gz_coupling = e_coupling/(sqrt(sin2thetaW*cos2thetaW));
   double gw_coupling = e_coupling/(sqrt(sin2thetaW));
 
-  kf_code N1        = m_flavs[m_indices[0]].Kfcode(), N2 = m_flavs[m_indices[1]].Kfcode();
-
   /////////////////////////////////////////////////////////////////////////////
   // fixing the coupling constants:
   // - if both flavours identical, check if neutral weak/electromagnetic current
@@ -101,7 +99,6 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
     Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling) / (sqrt(2.));
     Weak_CC_cR = Complex(0.,0.);
     Weak_CC_cL = Complex(1.,0.);
-
   }
   else THROW(fatal_error,"family non-diagonal lepton interaction not yet implemented.")
 };
@@ -115,8 +112,12 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
   /////////////////////////////////////////////////////////////////////////
 
   const int N  = m_flavs.size();
-  const int pf = 0; 
-  const int pi = 1;
+  int pf = 0;
+  int pi = 1;
+  if (m_anti) {
+    pf = 1;
+    pi = 0;
+  }
 
   Complex Zero = Complex(0.,0.);
   Complex One = Complex(1.,0.);
@@ -146,8 +147,6 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
         Weak_CC_amp = Weak_CC_amp * Weak_CC_coupling;
       }
 
-      
-
       // Factor of two to undo spin averaging.
       QED_amp = QED_amp / 2.0;
       Weak_NC_amp = Weak_NC_amp / 2.0;
@@ -167,3 +166,10 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
     }
   }
 }
+
+// msg_Out() << "Lepton_Lepton\n";
+// msg_Out() << "QED, CC, NC " <<  QED_amp << " " << Weak_CC_amp << " " << Weak_NC_amp << "\n";
+// msg_Out() << "QED "  << QED_coupling << " " << QED_cL << " " << QED_cR << "\n";
+// msg_Out() << "NC "  << Weak_NC_coupling << " " << Weak_NC_cL << " " << Weak_NC_cR << "\n\n\n";
+// msg_Out() << "CC "  << Weak_CC_coupling << " " << Weak_CC_cL << " " << Weak_CC_cR << "\n";
+
