@@ -183,7 +183,7 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	double born = m_born;
 	double tot,colltot,rcoll;
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_bornMomenta);
-	p_nlodipoles->MakeDipolesII(m_flavs,p,p);
+	p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
 	// p_dipoles->MakeDipolesIF(m_flavs, m_plab, p);
 	// p_dipoles->MakeDipoles(m_flavs, m_plab, p);
