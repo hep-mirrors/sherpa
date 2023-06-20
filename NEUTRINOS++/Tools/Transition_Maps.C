@@ -15,7 +15,7 @@ namespace NEUTRINOS {
         if (x == 0) break;
       }
       int length = digits.size();
-      return {digits[length-4],digits[length-3],digits[length-2]};
+      return {digits[length-3],digits[length-2],digits[length-1]};
   }
 
   std::string compareQuarkContent(vector<int> x1, vector<int> x2)
@@ -49,6 +49,7 @@ namespace NEUTRINOS {
       ),
       x2.end()
     );
+
     if ( x1.size() == 0 && x2.size() == 0 ) return "Vqq";
     if ( x1.size() != 1 | x2.size() != 1 ) THROW(fatal_error,"Flavour changing of more or less than one quarks not implemented");
     if ( x1[0] == 2 | x2[0] == 2 ){ // u
