@@ -8,7 +8,7 @@ EVENT_TYPE: NeutrinoNucleon
 TAGS: {"E1":2.0}
 
 BEAMS:             [ -14, 2212 ]
-BEAM_ENERGIES:     [ $(E1), 0.938272 ]
+BEAM_ENERGIES:     [ $(E1), 0.938272]
 BEAM_SPECTRA:      Monochromatic
 PDF_LIBRARY:       [ None, None ]
 PDF_SET:           [ None, None ]
@@ -20,13 +20,11 @@ ALPHAS: {USE_PDF: 0}
 SCALES: METS{H_T2}{H_T2}
 
 PARTICLE_DATA:
-  11:
-    Massive: true
   13:
     Massive: true
 
 SELECTORS:
-  - [PT, 11, 0.01, E_CMS]
+  - [PT, 13, 0.01, E_CMS]
 
 
 PROCESSES:

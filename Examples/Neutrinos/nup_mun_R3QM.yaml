@@ -20,13 +20,11 @@ ALPHAS: {USE_PDF: 0}
 SCALES: METS{H_T2}{H_T2}
 
 PARTICLE_DATA:
-  11:
-    Massive: true
   13:
     Massive: true
 
 SELECTORS:
-  - [PT, 11, 0.01, E_CMS]
+  - [PT, 13, 0.01, E_CMS]
 
 
 PROCESSES:
