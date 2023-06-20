@@ -72,6 +72,8 @@ Form_Factor_Parameter_Maps::GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_i
       return new Constant_Form_Factor(*info);
     case ff_type::dipole:
       return new Dipole_Form_Factor(*info);
+    case ff_type::lambda_dipole:
+      return new Lambda_Dipole_Form_Factor(*info);
     case ff_type::neutron_electric:
       return new Neutron_Electric_Form_Factor(*info);
     case ff_type::exponential:

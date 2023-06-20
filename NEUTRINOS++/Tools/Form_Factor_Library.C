@@ -12,6 +12,7 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const ff_type::code & type
   if (type==ff_type::none)             s<<setw(18)<<"none";
   if (type==ff_type::constant)         s<<setw(18)<<"constant";
   if (type==ff_type::dipole)           s<<setw(18)<<"dipole";
+  if (type==ff_type::lambda_dipole)     s<<setw(18)<<"lambda_dipole";
   if (type==ff_type::neutron_electric) s<<setw(18)<<"neutron_electric";
   if (type==ff_type::exponential)      s<<setw(18)<<"exponential";
   if (type==ff_type::Gaussian)         s<<setw(18)<<"Gaussian";
@@ -70,6 +71,19 @@ Dipole_Form_Factor::Dipole_Form_Factor(const ff_info & info) :
   m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])) {}
 
 double Dipole_Form_Factor::Calc(const double & q2) { return m_norm / sqr(1.+m_invlambda2*q2); }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+Lambda_Dipole_Form_Factor::Lambda_Dipole_Form_Factor(const ff_info & info) :
+  Form_Factor_Base("Lambda_Dipole", info),
+  m_norm(info.m_params[0]), m_invlambda_1_2(sqr(1./info.m_params[1])), m_invlambda_2_4(sqr(sqr(1./info.m_params[2]))) {}
+
+double Lambda_Dipole_Form_Factor::Calc(const double & q2) { 
+  //msg_Out() << m_norm << " " << q2 << " " << m_norm / (1.+m_invlambda_1_2*q2+m_invlambda_2_4*(q2*q2)) << "\n";
+  return m_norm / (1.+m_invlambda_1_2*q2+m_invlambda_2_4*(q2*q2)); 
+}
 
 
 

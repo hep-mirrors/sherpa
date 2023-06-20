@@ -55,27 +55,26 @@ TRANSITIONS:
   Transitions:
     2112 2212 24:
       f1:
-        form:   dipole
-        params: [ .5,      0.84 ] #1 /2
+        form:   lambda_dipole
+        params: [ .5,      0.69,   0.96 ] #1 /2
       f2:
-        form:   dipole
-        params: [ -1.885, 0.84 ] #-1.885 /2 *2
+        form:   lambda_dipole
+        params: [ -1.81,   0.69,   0.96 ] #-1.81 /2 *2
       f3:
         form:   none
 
       g1:
-        form:   dipole
-        params: [ 0.6335,      1.08 ] #-1.267 /-2
+        form:   lambda_dipole
+        params: [ 0.625,   0.76,   1.04 ] #-1.25 /-2
       g2:
         form:   none
       g3:
         form:   none
 
-
-
 # Parameters for form factors:
 # constant  :       norm
 # dipole  :         norm, Lambda
+# lambda dipole:    norm, Lambda1, Lambda2
 # neutron electric: norm, Lambda, mass, prefactor 
 # exponential:      norm, Lambda //ours
 # Gaussian:         norm, Lambda //ours

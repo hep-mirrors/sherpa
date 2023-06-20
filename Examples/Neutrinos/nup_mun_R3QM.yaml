@@ -5,9 +5,9 @@
 EVENTS:     10
 EVENT_TYPE: NeutrinoNucleon
 
-TAGS: {"E1":.5}
+TAGS: {"E1":2.0}
 
-BEAMS:             [ 11, 2212 ]
+BEAMS:             [ -14, 2212 ]
 BEAM_ENERGIES:     [ $(E1), 0.938272 ]
 BEAM_SPECTRA:      Monochromatic
 PDF_LIBRARY:       [ None, None ]
@@ -19,16 +19,19 @@ ORDER_ALPHAS: 1
 ALPHAS: {USE_PDF: 0}
 SCALES: METS{H_T2}{H_T2}
 
+PARTICLE_DATA:
+  11:
+    Massive: true
+  13:
+    Massive: true
+
 SELECTORS:
   - [PT, 11, 0.01, E_CMS]
 
-PARTICLE_DATA:
-  11:
-    Massive: false
 
 PROCESSES:
-  - 11 2212 -> 11 2212:
-      Sort_Flavors: 0 
+  - -14 2212 -> -13 2112:
+      Sort_Flavors: 0
       Order: {QCD: 0, EW: 2}
       2->2:
         Enhance_Observable: VAR{(log10(ThetaR(p[0],p[2])))}|-1|0.49
@@ -51,27 +54,24 @@ TRANSITIONS:
     Vtb:  0.999
 
   Transitions:
-    #p   p    gamma
-    2212 2212 22:
-      G_E:
-        form:   dipole
-        params: [ 1.,      0.847 ] 
-      G_M:
-        form:   dipole
-        params: [ 2.79278, 0.847 ]
-      pseudoscalar:
-        form: none
+    2112 2212 24:
+      f1:
+        form:   lambda_dipole
+        params: [ .5,      0.69,   0.96 ] #1 /2
+      f2:
+        form:   lambda_dipole
+        params: [ -1.81,   0.69,   0.96 ] #-1.81 /2 *2
+      f3:
+        form:   none
 
-    #n   n    gamma
-    2112 2112 22:
-      G_E:
-        form:   neutron_electric
-        params: [ 1., 0.847, 0.9395654205, 5.6 ]
-      G_M:
-        form:   dipole
-        params: [ -1.91315, 0.847 ] 
-      pseudoscalar:
-        form: none
+      g1:
+        form:   lambda_dipole
+        params: [ 0.625,   0.76,   1.04 ] #-1.25 /-2
+      g2:
+        form:   none
+      g3:
+        form:   none
+
 
 # Parameters for form factors:
 # constant  :       norm

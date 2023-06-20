@@ -7,8 +7,8 @@ EVENT_TYPE: NeutrinoNucleon
 
 TAGS: {"E1":2.0}
 
-BEAMS:             [ -14, 2212 ]
-BEAM_ENERGIES:     [ $(E1), 0.938272 ]
+BEAMS:             [ 14, 2112 ]
+BEAM_ENERGIES:     [ $(E1), 0.939566 ]
 BEAM_SPECTRA:      Monochromatic
 PDF_LIBRARY:       [ None, None ]
 PDF_SET:           [ None, None ]
@@ -28,9 +28,8 @@ PARTICLE_DATA:
 SELECTORS:
   - [PT, 11, 0.01, E_CMS]
 
-
 PROCESSES:
-  - -14 2212 -> -13 2112:
+  - 14 2112 -> 13 2212:
       Sort_Flavors: 0
       Order: {QCD: 0, EW: 2}
       2->2:
@@ -72,11 +71,10 @@ TRANSITIONS:
       g3:
         form:   none
 
-
-
 # Parameters for form factors:
 # constant  :       norm
 # dipole  :         norm, Lambda
+# lambda dipole:    norm, Lambda1, Lambda2
 # neutron electric: norm, Lambda, mass, prefactor 
 # exponential:      norm, Lambda //ours
 # Gaussian:         norm, Lambda //ours

@@ -10,14 +10,15 @@ namespace NEUTRINOS {
       none             = 0,
       constant         = 1,
       dipole           = 2,
-      neutron_electric = 3,
-      exponential      = 4,
-      Gaussian         = 5,
-      Kelly            = 6,
-      BBBA             = 7,
-      ArringtonHill    = 8,
-      Helm             = 9,
-      Lovato           = 10,
+      lambda_dipole    = 3,
+      neutron_electric = 4,
+      exponential      = 5,
+      Gaussian         = 6,
+      Kelly            = 7,
+      BBBA             = 8,
+      ArringtonHill    = 9,
+      Helm             = 10,
+      Lovato           = 11,
       unknown          = 99
     };
   };
@@ -104,6 +105,15 @@ namespace NEUTRINOS {
   public:
     Dipole_Form_Factor(const ff_info & info);
     ~Dipole_Form_Factor() {}
+    double Calc(const double & q2);
+  };
+
+  class Lambda_Dipole_Form_Factor : public Form_Factor_Base {
+  private:
+    double m_norm, m_invlambda_1_2, m_invlambda_2_4;
+  public:
+    Lambda_Dipole_Form_Factor(const ff_info & info);
+    ~Lambda_Dipole_Form_Factor() {}
     double Calc(const double & q2);
   };
 

@@ -63,6 +63,7 @@ namespace NEUTRINOS {
       if (form=="none")             return ff_type::none;
       if (form=="constant")         return ff_type::constant;
       if (form=="dipole")           return ff_type::dipole;
+      if (form=="lambda_dipole")    return ff_type::lambda_dipole;
       if (form=="neutron_electric") return ff_type::neutron_electric;
       if (form=="exponential")      return ff_type::exponential;
       if (form=="Gaussian")         return ff_type::Gaussian;
