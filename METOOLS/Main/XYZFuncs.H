@@ -51,6 +51,8 @@ namespace METOOLS {
 
     void Prepare( const ATOOLS::Vec4D_Vector& p, const bool anti=false );
 
+    void Set_m_Anti(const bool set);
+
     Complex Z(
 	      const int t1, const int l1,
 	      const int t2, const int l2,

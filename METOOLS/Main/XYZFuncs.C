@@ -122,6 +122,12 @@ void XYZFunc::CalcEtaMu()
   }
 }
 
+//JW: TEST
+void XYZFunc::Set_m_Anti(const bool set) {
+  m_anti = set;
+  CalcEtaMu();
+}
+
 // building blocks
 
 Complex XYZFunc::S( const int s, const int i, const int j )
