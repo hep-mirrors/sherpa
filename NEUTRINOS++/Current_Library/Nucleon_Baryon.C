@@ -58,27 +58,30 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
 
   m_ffs["QED_f1"]  = ffs->GetFF(IN,OUT,prop_kf_P,f1); 
   m_ffs["QED_f2"]  = ffs->GetFF(IN,OUT,prop_kf_P,f2); 
-  m_ffs["QED_f3"]   = ffs->GetFF(IN,OUT,prop_kf_P,f3);
+  m_ffs["QED_f3"]  = ffs->GetFF(IN,OUT,prop_kf_P,f3);
   m_ffs["QED_g1"]  = ffs->GetFF(IN,OUT,prop_kf_P,g1); 
   m_ffs["QED_g2"]  = ffs->GetFF(IN,OUT,prop_kf_P,g2); 
-  m_ffs["QED_g3"]   = ffs->GetFF(IN,OUT,prop_kf_P,g3);
+  m_ffs["QED_g3"]  = ffs->GetFF(IN,OUT,prop_kf_P,g3);
   m_ffprops["QED"] = ffprops->GetProp(prop_kf_P, prop_type);
 
   m_ffs["NC_f1"]  = ffs->GetFF(IN,OUT,prop_kf_Z,f1); 
   m_ffs["NC_f2"]  = ffs->GetFF(IN,OUT,prop_kf_Z,f2); 
-  m_ffs["NC_f3"]   = ffs->GetFF(IN,OUT,prop_kf_Z,f3);
+  m_ffs["NC_f3"]  = ffs->GetFF(IN,OUT,prop_kf_Z,f3);
   m_ffs["NC_g1"]  = ffs->GetFF(IN,OUT,prop_kf_Z,g1); 
   m_ffs["NC_g2"]  = ffs->GetFF(IN,OUT,prop_kf_Z,g2); 
-  m_ffs["NC_g3"]   = ffs->GetFF(IN,OUT,prop_kf_Z,g3);
+  m_ffs["NC_g3"]  = ffs->GetFF(IN,OUT,prop_kf_Z,g3);
   m_ffprops["NC"] = ffprops->GetProp(prop_kf_Z, prop_type);
 
   m_ffs["CC_f1"]  = ffs->GetFF(IN,OUT,prop_kf_W,f1); 
   m_ffs["CC_f2"]  = ffs->GetFF(IN,OUT,prop_kf_W,f2); 
-  m_ffs["CC_f3"]   = ffs->GetFF(IN,OUT,prop_kf_W,f3);
+  m_ffs["CC_f3"]  = ffs->GetFF(IN,OUT,prop_kf_W,f3);
   m_ffs["CC_g1"]  = ffs->GetFF(IN,OUT,prop_kf_W,g1); 
   m_ffs["CC_g2"]  = ffs->GetFF(IN,OUT,prop_kf_W,g2); 
-  m_ffs["CC_g3"]   = ffs->GetFF(IN,OUT,prop_kf_W,g3);
+  m_ffs["CC_g3"]  = ffs->GetFF(IN,OUT,prop_kf_W,g3);
   m_ffprops["CC"] = ffprops->GetProp(prop_kf_W, prop_type);
+
+  // double GF = (sqrt(2)/8) * sqr(gw_coupling)/sqr(Flavour(prop_kf_W).Mass());
+  // msg_Out() << Flavour(prop_kf_W).Mass() << " " << GF << " " << gw_coupling << "\n";
 
   if (IN==OUT) {
     /////////////////////////////////////////////////////////////////////////
@@ -122,9 +125,7 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
     ///////////////////////////////////////////////////////////////////////////
     // Weak Charged (left-handed) coupling: -i g_W gamma^{mu} / (sqrt(2)) * (cL P^{L}) 
     ///////////////////////////////////////////////////////////////////////////
-    //Vckm = 0.225;
-
-    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * Vckm ) / (sqrt(2.));
+    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * fabs(Vckm) ) / (sqrt(2.)); /// 0.7337242933671304;
     Weak_CC_cR = Complex( 0., 0.);
     Weak_CC_cL = Complex( 1., 0.);
   }
@@ -153,12 +154,11 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   const int N  = m_flavs.size();
   int pf = 2; 
   int pi = 3; 
-  if (m_anti) {
-    pf = 3;
-    pi = 2;
-  }
   const int pf_bar = pf+N; 
   const int pi_bar = pi+N;
+
+  if (m_anti) F->Set_m_Anti(true);
+  else        F->Set_m_Anti(false);
 
   Complex Zero = Complex(0.,0.);
   Complex One = Complex(1.,0.); 
@@ -193,8 +193,6 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   
   // double mass_gordon = sqrt((m_massin*m_massin + m_massout*m_massout) / 2.0);
 
-  //JW: TODO ONLY QED SO FAR (f1,f2,f3). ADD NC and CC Terms and g1 g2 g3 terms.
-  
   Vec4C QED_amp, Weak_NC_amp, Weak_CC_amp;
   Vec4C f1_term, f2_term, f3_term, g1_term, g2_term, g3_term;
   for(int hf=0; hf<2; hf++) {
@@ -219,7 +217,7 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
                 F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
                 F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
                 F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,One) +
-                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One)
+                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One) 
           );
           g2_term += 1.0*(1/(4.*m_massout)) *
             (
@@ -237,18 +235,59 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
       //QED TERM
       if ( fabs(QED_coupling) > 0.0 ) {
         QED_amp = f1_term*f1_QED + f2_term*f2_QED + f3_term*f3_QED - g1_term*g1_QED - g2_term*g2_QED - g3_term*g3_QED;
-        QED_amp = QED_amp * QED_coupling * QED_prop_factor;
+
+        if (!m_anti) QED_amp = QED_amp * QED_coupling * QED_prop_factor;
+        else         QED_amp = QED_amp * (QED_coupling) * QED_prop_factor;
       } 
       //NC TERM
       else if ( fabs(Weak_NC_coupling) > 0.0 ) {
         Weak_NC_amp = f1_term*f1_NC + f2_term*f2_NC + f3_term*f3_NC - g1_term*g1_NC - g2_term*g2_NC - g3_term*g3_NC;
-        Weak_NC_amp = Weak_NC_amp * Weak_NC_coupling * Weak_NC_prop_factor;
+
+        if (!m_anti) Weak_NC_amp = Weak_NC_amp * Weak_NC_coupling * Weak_NC_prop_factor;
+        else         Weak_NC_amp = Weak_NC_amp * (Weak_NC_coupling) * Weak_NC_prop_factor;
       }
       //CC TERM
       else if ( fabs(Weak_CC_coupling) > 0.0 ) {
         Weak_CC_amp = f1_term*f1_CC + f2_term*f2_CC + f3_term*f3_CC - g1_term*g1_CC - g2_term*g2_CC - g3_term*g3_CC;
-        Weak_CC_amp = Weak_CC_amp * Weak_CC_coupling * Weak_CC_prop_factor;
+
+        if (!m_anti) Weak_CC_amp = Weak_CC_amp * Weak_CC_coupling * Weak_CC_prop_factor;
+        else         Weak_CC_amp = Weak_CC_amp * (Weak_CC_coupling) * Weak_CC_prop_factor;
       }
+
+      // msg_Out() << "Nucleon_Baryon\n";
+      // msg_Out() 
+      //   << "Anti?: " << m_anti << "\n"
+      //   << "QED: \n     " 
+      //   << "Coupling: " << QED_coupling << " \n     "
+      //   << "Left: " << QED_cL << " \n     "
+      //   << "Right: " << QED_cR << " \n     "
+      //   << "f1: " << f1_QED << " \n     "
+      //   << "f2: " << f2_QED << " \n     "
+      //   << "f3: " << f3_QED << " \n     "
+      //   << "g1: " << g1_QED << " \n     "
+      //   << "g2: " << g2_QED << " \n     "
+      //   << "g3: " << g3_QED << " \n"
+      //   << "Weak_NC: \n     " 
+      //   << "Coupling: " << Weak_NC_coupling << " \n     "
+      //   << "Left: " << Weak_NC_cL << " \n     "
+      //   << "Right: " << Weak_NC_cR << " \n     "
+      //   << "f1: " << f1_NC << " \n     "
+      //   << "f2: " << f2_NC << " \n     "
+      //   << "f3: " << f3_NC << " \n     "
+      //   << "g1: " << g1_NC << " \n     "
+      //   << "g2: " << g2_NC << " \n     "
+      //   << "g3: " << g3_NC << " \n"
+      //   << "Weak_CC: \n     " 
+      //   << "Coupling: " << Weak_CC_coupling << " \n     "
+      //   << "Left: " << Weak_CC_cL << " \n     "
+      //   << "Right: " << Weak_CC_cR << " \n     "
+      //   << "f1: " << f1_CC << " \n     "
+      //   << "f2: " << f2_CC << " \n     "
+      //   << "f3: " << f3_CC << " \n     "
+      //   << "g1: " << g1_CC << " \n     "
+      //   << "g2: " << g2_CC << " \n     "
+      //   << "g3: " << g3_CC << " \n\n\n";
+      // exit(1);
 
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));

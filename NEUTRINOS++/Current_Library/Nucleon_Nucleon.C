@@ -140,10 +140,10 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   const int N  = m_flavs.size();
   int pf = 2; 
   int pi = 3; 
-  if (m_anti) {
-    pf = 3;
-    pi = 2;
-  }
+
+  if (m_anti) F->Set_m_Anti(true);
+  else        F->Set_m_Anti(false);
+  
   const int pf_bar = pf+N; 
   const int pi_bar = pi+N;
 
