@@ -36,6 +36,7 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
     p_corr_me = PHASIC::Color_Correlated_ME2::GetME2(args);  
     p_loop_me->SetCouplings(m_cpls);
     m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
+    // m_factor = 1./2.0/M_PI/137.036;
   }
 
 Virtual::~Virtual()
