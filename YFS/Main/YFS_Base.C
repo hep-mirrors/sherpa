@@ -138,7 +138,7 @@ void YFS_Base::RegisterSettings(){
   m_gp = 0;
   if(m_use_model_alpha) m_alpha = s_model->ScalarConstant("alpha_QED");
   else m_alpha  = (*aqed)(0); 
-  if (m_use_model_alpha) m_rescale_alpha = 1;
+  if (!m_use_model_alpha) m_rescale_alpha = 1;
   else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
   m_alpi = m_alpha/M_PI;
   m_beam_sigx*=sqrt(m_s)/2.;

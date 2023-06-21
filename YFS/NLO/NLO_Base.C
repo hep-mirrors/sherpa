@@ -25,11 +25,11 @@ NLO_Base::NLO_Base() {
 
 
 NLO_Base::~NLO_Base() {
-	if (p_real) delete p_real;
-	if (p_virt) delete p_virt;
-	if (p_realvirt) delete p_realvirt;
-	if (p_realreal) delete p_realreal;
-	if (p_griffin)   delete p_griffin;
+	// if (p_real) delete p_real;
+	// if (p_virt) delete p_virt;
+	// if (p_realvirt) delete p_realvirt;
+	// if (p_realreal) delete p_realreal;
+	// if (p_griffin)   delete p_griffin;
   if(m_isr_debug || m_fsr_debug){
 		Histogram_2D * histo2d;
 		string name;
