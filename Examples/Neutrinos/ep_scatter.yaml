@@ -40,15 +40,15 @@ RIVET:
 
 TRANSITIONS:
   Constants:
-    Vud:  0.974
-    Vus:  0.225
-    Vub:  0.003
-    Vcd:  0.225
-    Vcs:  0.973
-    Vcb:  0.041
-    Vtd:  0.009
-    Vts:  0.040
-    Vtb:  0.999
+
+  CG:
+    a: 1.0
+    b: 0.33333333333
+
+  Bosons:
+    gamma: 1
+    W: 0
+    Z: 0
 
   Transitions:
     #p   p    gamma

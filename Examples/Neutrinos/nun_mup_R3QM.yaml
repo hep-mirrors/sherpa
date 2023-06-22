@@ -42,14 +42,16 @@ RIVET:
 
 TRANSITIONS:
   Constants:
+
+  CKM:
     Vud:  0.974
     Vus:  0.225
     Vub:  0.003
-    Vcd:  0.225
+    Vcd:  -0.225
     Vcs:  0.973
     Vcb:  0.041
     Vtd:  0.009
-    Vts:  0.040
+    Vts:  -0.040
     Vtb:  0.999
 
   Transitions:

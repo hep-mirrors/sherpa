@@ -8,7 +8,7 @@ EVENT_TYPE: NeutrinoNucleon
 TAGS: {"E1":2.0}
 
 BEAMS:             [ -14, 2212 ]
-BEAM_ENERGIES:     [ $(E1), 0.938272]
+BEAM_ENERGIES:     [ $(E1), 0.939]
 BEAM_SPECTRA:      Monochromatic
 PDF_LIBRARY:       [ None, None ]
 PDF_SET:           [ None, None ]
@@ -24,6 +24,10 @@ PARTICLE_DATA:
     Massive: true
   3212:
     Mass: 1.193
+  2212: #Proton
+    Mass: 0.939
+  2112: #Neutron
+    Mass: 0.939
 
 SELECTORS:
   - [PT, 13, 0.01, E_CMS]
@@ -43,6 +47,8 @@ RIVET:
 
 TRANSITIONS:
   Constants:
+
+  CKM:
     Vud:  0.974
     Vus:  0.225
     Vub:  0.003
@@ -57,16 +63,16 @@ TRANSITIONS:
     2212 3212 24:
       f1:
         form:   dipole
-        params: [ -0.35355,      0.97 ] #-1/sqrt(2) /2
+        params: [ -0.3535533906,      0.97 ] #(-0.7071067812 / 2 = -0.3535533906
       f2:
         form:   dipole
-        params: [ -0.68, 0.97 ] #-0.68 /2 *2
+        params: [ -0.68, 0.97 ] #(-0.68) * (2/2) = -0.68
       f3:
         form:   none
 
       g1:
         form:   dipole
-        params: [ 0.1155,      1.25 ] #-0.231 /-2
+        params: [ 0.1155,      1.25 ] #(-0.231) / -2 = 0.1155
       g2:
         form:   none
       g3:
