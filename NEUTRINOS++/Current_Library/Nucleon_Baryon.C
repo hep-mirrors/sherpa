@@ -51,8 +51,9 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
   // Form factor info
   /////////////////////////////////////////////////////////////////////////////
   
-  cpl_info::code GE = cpl_info::GE, GM = cpl_info::GM;
-  cpl_info::code A  = cpl_info::axialvector, P = cpl_info::pseudoscalar;
+  cpl_info::code GE = cpl_info::GE, GM = cpl_info::GM, f3 = cpl_info::f3;
+  cpl_info::code g1 = cpl_info::g1, g2 = cpl_info::g2, g3 = cpl_info::g3;
+  cpl_info::code ffsnull = cpl_info::unknown;
 
   /////////////////////////////////////////////////////////////////////////////
   // Propagator info
@@ -71,9 +72,22 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
   //Using the EM form factors...
   m_ffs["GE_proton"]  = ffs->GetFF(proton_pid,proton_pid,prop_kf_P,GE); 
   m_ffs["GM_proton"]  = ffs->GetFF(proton_pid,proton_pid,prop_kf_P,GM); 
+  m_ffs["f3_proton"]  = ffs->GetFF(proton_pid,proton_pid,prop_kf_P,f3); 
 
   m_ffs["GE_neutron"]  = ffs->GetFF(neutron_pid,neutron_pid,prop_kf_P,GE); 
   m_ffs["GM_neutron"]  = ffs->GetFF(neutron_pid,neutron_pid,prop_kf_P,GM); 
+  m_ffs["f3_neutron"]  = ffs->GetFF(neutron_pid,neutron_pid,prop_kf_P,f3); 
+
+  //Only valid for X->Y & X != Y
+  if ( IN != OUT ) {
+    m_ffs["g1_protonneutron"]  = ffs->GetFF(proton_pid,neutron_pid,prop_kf_P,g1); 
+    m_ffs["g2_protonneutron"]  = ffs->GetFF(proton_pid,neutron_pid,prop_kf_P,g2); 
+    m_ffs["g3_protonneutron"]  = ffs->GetFF(proton_pid,neutron_pid,prop_kf_P,g3); 
+  } else {
+    m_ffs["g1_protonneutron"]  = ffs->GetFF(proton_pid,neutron_pid,prop_kf_P,ffsnull); 
+    m_ffs["g2_protonneutron"]  = ffs->GetFF(proton_pid,neutron_pid,prop_kf_P,ffsnull); 
+    m_ffs["g3_protonneutron"]  = ffs->GetFF(proton_pid,neutron_pid,prop_kf_P,ffsnull); 
+  }
 
   m_ffprops["QED"] = ffprops->GetProp(prop_kf_P, prop_type);
   m_ffprops["NC"] = ffprops->GetProp(prop_kf_Z, prop_type);
@@ -121,7 +135,7 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
     ///////////////////////////////////////////////////////////////////////////
     // Weak Charged (left-handed) coupling: -i g_W gamma^{mu} / (sqrt(2)) * (cL P^{L}) 
     ///////////////////////////////////////////////////////////////////////////
-    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * fabs(Vckm) ) / (sqrt(2.));
+    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * fabs(Vckm) ) / (2.0 * sqrt(2.));
     Weak_CC_cR = Complex( 0., 0.);
     Weak_CC_cL = Complex( 1., 0.);
   }
@@ -167,13 +181,15 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   const double GE_n = m_ffs["GE_neutron"]->Calc(-q2), GM_n = m_ffs["GM_neutron"]->Calc(-q2);
   
   //f1, f2, f3 for Proton and Neutron
-  double f1_p  = (GE_p+tau*GM_p)/(1.+tau), f2_p = (GM_p-GE_p)/(1.+tau), f3_p = 0.0;
-  double f1_n  = (GE_n+tau*GM_n)/(1.+tau), f2_n = (GM_n-GE_n)/(1.+tau), f3_n = 0.0;
+  double f1_p = (GE_p+tau*GM_p)/(1.+tau), f2_p = (GM_p-GE_p)/(1.+tau);
+  double f3_p = m_ffs["f3_proton"]->Calc(-q2);
+  double f1_n = (GE_n+tau*GM_n)/(1.+tau), f2_n = (GM_n-GE_n)/(1.+tau);
+  double f3_n = m_ffs["f3_neutron"]->Calc(-q2);
 
   //g1, g2, g3 for Proton and Neutron
-  //TODO
-  double g1_p  = 0.0, g2_p = 0.0, g3_p = 0.0;
-  double g1_n  = 0.0, g2_n = 0.0, g3_n = 0.0;
+  double g1_pn = m_ffs["g1_protonneutron"]->Calc(-q2);
+  double g2_pn = m_ffs["g2_protonneutron"]->Calc(-q2);
+  double g3_pn = m_ffs["g3_protonneutron"]->Calc(-q2);
 
   /////////////////////////////////////////////////////////////////////////
   // Derive Fi^V and Di^V, Fi^A and Di^A
@@ -182,21 +198,24 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   // Fi^A = gi^p + 0.5*gi^n, Di^A = (-3/2)*gi^n
   /////////////////////////////////////////////////////////////////////////
 
-  //Vector
+  //Vector using f1, f2, f3
   double F1V = f1_p + 0.5*f1_n, F2V = f2_p + 0.5*f2_n, F3V = f3_p + 0.5*f3_n;
   double D1V = (-3.0/2.0)*f1_n, D2V = (-3.0/2.0)*f2_n, D3V = (-3.0/2.0)*f3_n;
-  //Axial
-  double F1A = g1_p + 0.5*g1_n, F2A = g2_p + 0.5*g2_n, F3A = g3_p + 0.5*g3_n;
-  double D1A = (-3.0/2.0)*g1_n, D2A = (-3.0/2.0)*g2_n, D3A = (-3.0/2.0)*g3_n;
+  //Axial using g1, g2
+  double x1_np = 0.364, x2_np = x1_np;
+  double F1A = g1_pn * x1_np, F2A = g2_pn * x2_np;
+  double D1A = g1_pn * (1-x1_np), D2A = g2_pn * (1-x2_np);
 
   /////////////////////////////////////////////////////////////////////////
   // Now using Clebsch-Gordan coefficients get relevant form factors for N -> Y.
   /////////////////////////////////////////////////////////////////////////  
-
-  //Vector
+  //Vector 
   double f1_NY = a_CG*F1V  + b_CG*D1V, f2_NY = a_CG*F2V  + b_CG*D2V, f3_NY = a_CG*F3V  + b_CG*D3V;
   //Axial
-  double g1_NY = a_CG*F1A  + b_CG*D1A, g2_NY = a_CG*F2A  + b_CG*D2A, g3_NY = a_CG*F3A  + b_CG*D3A;
+  double g1_NY = a_CG*F1A  + b_CG*D1A, g2_NY = a_CG*F2A  + b_CG*D2A;
+
+  double masskaon = .497648; //TODO Check this
+  double g3_NY = g1_NY*sqr(m_massin+m_massout)/(2*(sqr(masskaon)-q2)); //Nambu...
 
   /////////////////////////////////////////////////////////////////////////////
   // J^mu =  

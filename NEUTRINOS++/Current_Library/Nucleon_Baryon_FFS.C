@@ -130,8 +130,8 @@ Nucleon_Baryon_FFS::Nucleon_Baryon_FFS(const ATOOLS::Flavour_Vector& flavs,
     ///////////////////////////////////////////////////////////////////////////
     // Weak Charged (left-handed) coupling: -i g_W gamma^{mu} / (sqrt(2)) * (cL P^{L}) 
     ///////////////////////////////////////////////////////////////////////////
-    double Fudge = 1;//sqrt(Flavour(prop_kf_W).Mass());
-    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * fabs(Vckm) ) / (sqrt(2.) * Fudge);
+    double Fudge = 1;//sqrt(sqrt(sqrt(sin2thetaW)));
+    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * fabs(Vckm) ) / (2.0 * sqrt(2.) * Fudge);
     Weak_CC_cR = Complex( 0., 0.);
     Weak_CC_cL = Complex( 1., 0.);
   }
