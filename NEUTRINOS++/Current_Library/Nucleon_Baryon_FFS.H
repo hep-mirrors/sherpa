@@ -1,0 +1,22 @@
+#ifndef NEUTRINOS_Current_Library_Nucleon_Baryon_FFS_H
+#define NEUTRINOS_Current_Library_Nucleon_Baryon_FFS_H
+
+#include "NEUTRINOS++/Current_Library/Scatter_Current_Base.H"
+
+
+namespace NEUTRINOS {
+  class Nucleon_Baryon_FFS : public Scatter_Current_Base {
+    bool    m_anti;
+    double  m_massin, m_massout;
+    Complex QED_coupling, QED_cR, QED_cL;
+    Complex Weak_NC_coupling, Weak_NC_cR, Weak_NC_cL;
+    Complex Weak_CC_coupling, Weak_CC_cR, Weak_CC_cL;
+  public:
+    Nucleon_Baryon_FFS(const ATOOLS::Flavour_Vector& flavs,
+		    const std::vector<int>& indices,
+		    const std::string& name);
+    ~Nucleon_Baryon_FFS() {}
+    void Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F);
+  };
+}
+#endif

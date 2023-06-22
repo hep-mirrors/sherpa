@@ -2,6 +2,7 @@
 #include "NEUTRINOS++/Current_Library/Scatter_Current_Base.H"
 #include "NEUTRINOS++/Current_Library/Nucleon_Nucleon.H"
 #include "NEUTRINOS++/Current_Library/Nucleon_Baryon.H"
+#include "NEUTRINOS++/Current_Library/Nucleon_Baryon_FFS.H"
 #include "NEUTRINOS++/Current_Library/Lepton_Lepton.H"
 #include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
 #include "NEUTRINOS++/Tools/Propagator_Maps.H"

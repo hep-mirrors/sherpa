@@ -3,6 +3,7 @@
 #include "NEUTRINOS++/Current_Library/Lepton_Lepton.H"
 #include "NEUTRINOS++/Current_Library/Nucleon_Nucleon.H"
 #include "NEUTRINOS++/Current_Library/Nucleon_Baryon.H"
+#include "NEUTRINOS++/Current_Library/Nucleon_Baryon_FFS.H"
 #include "NEUTRINOS++/Tools/Form_Factor_Library.H"
 #include "NEUTRINOS++/Tools/Propagator_Library.H"
 #include "HADRONS++/ME_Library/Current_ME.H"

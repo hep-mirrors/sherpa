@@ -7,6 +7,7 @@
 #include "NEUTRINOS++/Current_Library/Scatter_Current_Base.H"
 #include "NEUTRINOS++/Current_Library/Lepton_Lepton.H"
 #include "NEUTRINOS++/Current_Library/Nucleon_Nucleon.H"
+#include "NEUTRINOS++/Current_Library/Nucleon_Baryon_FFS.H"
 #include "NEUTRINOS++/Current_Library/Nucleon_Baryon.H"
 
 using namespace NEUTRINOS;

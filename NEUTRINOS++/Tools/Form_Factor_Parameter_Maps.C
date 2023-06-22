@@ -132,6 +132,15 @@ bool Form_Factor_Parameter_Maps::ContainsFormFactorType(cpl_info::code & cpl) {
   return false;
 }
 
+bool Form_Factor_Parameter_Maps::ContainsFormFactorTransition(kf_code & pid1, kf_code & pid2) {
+  for (std::map<std::pair<kf_code, kf_code > , Form_Factor_Entry * >::iterator it=begin(); it!=end();it++) {
+      kf_code N1 = it->first.first;
+      kf_code N2 = it->first.second;
+      if ( (N1 != pid1 & N2 != pid2) || (N1 != pid2 & N2 != pid1)) return true;
+  }
+  return false;
+}
+
 void Form_Factor_Parameter_Maps::Output() {
   msg_Info()<<"--------------------------------------------------------------------------------------\n";
   msg_Info()<<"* Global constants and parameters:\n";

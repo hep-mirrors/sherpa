@@ -9,6 +9,7 @@
 #include "NEUTRINOS++/Current_Library/Lepton_Lepton.H"
 #include "NEUTRINOS++/Current_Library/Nucleon_Nucleon.H"
 #include "NEUTRINOS++/Current_Library/Nucleon_Baryon.H"
+#include "NEUTRINOS++/Current_Library/Nucleon_Baryon_FFS.H"
 
 #include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
 
@@ -51,18 +52,24 @@ XS_lepton_nucleon::XS_lepton_nucleon(const External_ME_Args& args)
   cpl_info::code f1 = cpl_info::f1;
   bool Bool_fsgs = ffs->ContainsFormFactorType(f1);
 
+  kf_code proton  = kf_p_plus;
+  kf_code neutron = kf_n;
+  bool Bool_pn = ffs->ContainsFormFactorTransition(proton, neutron);
+
+  
   if (Bool_GMsGEs && Bool_fsgs) exit(1); //Can't mix declaration types TODO JW: Add exit statement
   if (!Bool_GMsGEs && !Bool_fsgs) exit(1); //Need some form factors! TODO JW: Add exit statement
 
   m_indices.resize(2);
   m_indices[0] = 2;
   m_indices[1] = 0;
-  p_JLL  = new Lepton_Lepton(m_flavs,m_indices,"ee");
+  p_JLL  = new Lepton_Lepton(m_flavs,m_indices,"ll");
   m_indices.resize(2);
   m_indices[0] = 3;
   m_indices[1] = 1;
-  if (Bool_GMsGEs) p_JNN  = new Nucleon_Nucleon(m_flavs,m_indices,"pp");
-  if (Bool_fsgs) p_JNN  = new Nucleon_Baryon(m_flavs,m_indices,"pp");
+  //if (Bool_GMsGEs) p_JNN  = new Nucleon_Nucleon(m_flavs,m_indices,"NN");
+  if (Bool_GMsGEs) p_JNN  = new Nucleon_Baryon(m_flavs,m_indices,"NY");
+  if (Bool_fsgs) p_JNN  = new Nucleon_Baryon_FFS(m_flavs,m_indices,"NY");
   m_indices.resize(4);
   m_indices[0] = 2;
   m_indices[1] = 0;
