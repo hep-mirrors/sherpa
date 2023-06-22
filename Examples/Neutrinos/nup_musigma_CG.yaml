@@ -1,0 +1,106 @@
+#NOTE:
+#Sort_Flavors: 0 
+#Process needs to be specified lepton baryon -> lepton baryon in EVENT_TYPE: NeutrinoNucleon.
+
+EVENTS:     10
+EVENT_TYPE: NeutrinoNucleon
+
+TAGS: {"E1":2.0}
+
+BEAMS:             [ -14, 2212 ]
+BEAM_ENERGIES:     [ $(E1), 0.939]
+BEAM_SPECTRA:      Monochromatic
+PDF_LIBRARY:       [ None, None ]
+PDF_SET:           [ None, None ]
+
+ME_GENERATORS: Internal
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+ALPHAS: {USE_PDF: 0}
+SCALES: METS{H_T2}{H_T2}
+
+PARTICLE_DATA:
+  13:
+    Massive: true
+  3212:
+    Mass: 1.193
+  2212: #Proton
+    Mass: 0.939
+  2112: #Neutron
+    Mass: 0.939
+
+SELECTORS:
+  - [PT, 13, 0.01, E_CMS]
+
+
+PROCESSES:
+  - -14 2212 -> -13 3212:
+      Sort_Flavors: 0
+      Order: {QCD: 0, EW: 2}
+      2->2:
+        Enhance_Observable: VAR{(log10(ThetaR(p[0],p[2])))}|-1|0.49
+
+ANALYSIS: Rivet
+RIVET:
+    --analyses:
+      - PionProd
+
+TRANSITIONS:
+  Constants:
+
+  CG:
+    a: -0.7071067812
+    b:  0.7071067812
+
+  Bosons:
+    gamma: 0
+    W: 1
+    Z: 0
+
+  Transitions:
+    #p   p    gamma
+    2212 2212 22:
+      G_E:
+        form:   dipole
+        params: [ 1.,      0.847 ] 
+      G_M:
+        form:   dipole
+        params: [ 2.79278, 0.847 ]
+      f3:
+        form: none
+
+    #n   n    gamma
+    2112 2112 22:
+      G_E:
+        form:   neutron_electric
+        params: [ 1., 0.847, 0.9395654205, 5.6 ]
+      G_M:
+        form:   dipole
+        params: [ -1.91315, 0.847 ] 
+      f3:
+        form: none
+
+    #p   n    gamma
+    2212 2112 22:
+      g1:
+        form:   dipole
+        params: [ 1.2723 ,1.026] #Check dummy value g1(0)
+      g2:
+        form:   dipole
+        params: [ 0.0 ,1.026] #Check dummy value g2(0)
+      g3:
+        form: none
+
+
+# Parameters for form factors:
+# constant  :       norm
+# dipole  :         norm, Lambda
+# lambda dipole:    norm, Lambda1, Lambda2
+# neutron electric: norm, Lambda, mass, prefactor 
+# exponential:      norm, Lambda //ours
+# Gaussian:         norm, Lambda //ours
+# Kelly:            norm, Lambda, mass, A[4], En[2]
+# BBBA:             norm, mass, A[4], B[4]
+# Arrington-Hill:   mass, t_cut, t_0, A[13]
+# Helm:             s, A, kappa //Other Maybe check
+# Lovato:           b, c[5] //Other Maybe check
