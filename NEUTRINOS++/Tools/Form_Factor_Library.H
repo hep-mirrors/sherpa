@@ -27,21 +27,30 @@ namespace NEUTRINOS {
   struct cpl_info {
     enum code {
       unknown      = 0,
-      scalar       = 1,
-      pseudoscalar = 2,
-      vector       = 3,
+      f1           = 1,
+      f2           = 2,
+      f3           = 3,
+      vector       = 1,
+      weakmagnetic = 2,
+      scalar       = 3,
+
+      g1           = 4,
+      g2           = 5,
+      g3           = 6,
       axialvector  = 4,
       tensor       = 5,
+      weakelectric = 5,
+      pseudoscalar = 6,
+
       GE           = 10,
       GM           = 11,
+      sachselectric= 10,
+      sachsmagnetic= 11,
 
-      f1           = 20,
-      f2           = 21,
-      f3           = 22,
-      g1           = 30,
-      g2           = 31,
-      g3           = 32,
-
+      F1           = 20,
+      F2           = 21,
+      dirac        = 20,
+      pauli        = 21,
     };
   };
   std::ostream & operator<<(std::ostream & s,const cpl_info::code & cpl);

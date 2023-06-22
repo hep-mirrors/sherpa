@@ -47,19 +47,33 @@ namespace NEUTRINOS {
     bool InitializeFormFactor(std::string & name);
     bool ExtractFlavours(std::string & buffer,std::vector<kf_code> & kfcs);
     inline cpl_info::code CplInfo(const std::string & cpl) {
-      if (cpl=="scalar")       return cpl_info::scalar;
-      if (cpl=="pseudoscalar") return cpl_info::pseudoscalar;
-      if (cpl=="vector")       return cpl_info::vector;
-      if (cpl=="axialvector")  return cpl_info::axialvector;
-      if (cpl=="tensor")       return cpl_info::tensor;
-      if (cpl=="G_E")          return cpl_info::GE;
-      if (cpl=="G_M")          return cpl_info::GM;
-      if (cpl=="f1")           return cpl_info::f1;
-      if (cpl=="f2")           return cpl_info::f2;
-      if (cpl=="f3")           return cpl_info::f3;
-      if (cpl=="g1")           return cpl_info::g1;
-      if (cpl=="g2")           return cpl_info::g2;
-      if (cpl=="g3")           return cpl_info::g3;
+      if (cpl=="f1")            return cpl_info::f1;
+      if (cpl=="f2")            return cpl_info::f2;
+      if (cpl=="f3")            return cpl_info::f3;
+      if (cpl=="vector")        return cpl_info::f1;
+      if (cpl=="weakmagnetic")  return cpl_info::f2;
+      if (cpl=="scalar")        return cpl_info::f3;
+      
+      if (cpl=="g1")            return cpl_info::g1;
+      if (cpl=="g2")            return cpl_info::g2;
+      if (cpl=="g3")            return cpl_info::g3;
+      if (cpl=="axialvector")   return cpl_info::g1;
+      if (cpl=="tensor")        return cpl_info::g2;
+      if (cpl=="weakelectric")  return cpl_info::g2;
+      if (cpl=="pseudoscalar")  return cpl_info::g3; 
+
+      if (cpl=="GE")            return cpl_info::GE; 
+      if (cpl=="GM")            return cpl_info::GM;
+      if (cpl=="G_E")           return cpl_info::GE; 
+      if (cpl=="G_M")           return cpl_info::GM;
+      if (cpl=="sachselectric") return cpl_info::GE; 
+      if (cpl=="sachsmagnetic") return cpl_info::GM;
+
+      if (cpl=="F1")            return cpl_info::F1; 
+      if (cpl=="F2")            return cpl_info::F2;
+      if (cpl=="dirac")         return cpl_info::F1; 
+      if (cpl=="pauli")         return cpl_info::F2;
+      
       return cpl_info::unknown;
     }
     inline ff_type::code FFType(const std::string & form) {

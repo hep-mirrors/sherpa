@@ -12,7 +12,7 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const ff_type::code & type
   if (type==ff_type::none)             s<<setw(18)<<"none";
   if (type==ff_type::constant)         s<<setw(18)<<"constant";
   if (type==ff_type::dipole)           s<<setw(18)<<"dipole";
-  if (type==ff_type::lambda_dipole)     s<<setw(18)<<"lambda_dipole";
+  if (type==ff_type::lambda_dipole)    s<<setw(18)<<"lambda_dipole";
   if (type==ff_type::neutron_electric) s<<setw(18)<<"neutron_electric";
   if (type==ff_type::exponential)      s<<setw(18)<<"exponential";
   if (type==ff_type::Gaussian)         s<<setw(18)<<"Gaussian";
@@ -26,20 +26,20 @@ std::ostream & NEUTRINOS::operator<<(std::ostream & s,const ff_type::code & type
 }
 
 std::ostream & NEUTRINOS::operator<<(std::ostream & s,const cpl_info::code & cpl) {
-  if (cpl==cpl_info::unknown)      s<<setw(12)<<"unknown";
-  if (cpl==cpl_info::scalar)       s<<setw(12)<<"scalar";
-  if (cpl==cpl_info::pseudoscalar) s<<setw(12)<<"pseudoscalar";
-  if (cpl==cpl_info::vector)       s<<setw(12)<<"vector";
-  if (cpl==cpl_info::axialvector)  s<<setw(12)<<"axialvector";
-  if (cpl==cpl_info::tensor)       s<<setw(12)<<"tensor";
-  if (cpl==cpl_info::GE)           s<<setw(12)<<"G_E";
-  if (cpl==cpl_info::GM)           s<<setw(12)<<"G_M";
-  if (cpl==cpl_info::f1)           s<<setw(12)<<"f1";
-  if (cpl==cpl_info::f2)           s<<setw(12)<<"f2";
-  if (cpl==cpl_info::f3)           s<<setw(12)<<"f3";
-  if (cpl==cpl_info::g1)           s<<setw(12)<<"g1";
-  if (cpl==cpl_info::g2)           s<<setw(12)<<"g2";
-  if (cpl==cpl_info::g3)           s<<setw(12)<<"g3";
+  if (cpl==cpl_info::unknown)      s<<setw(26)<<"unknown";
+
+  if (cpl==cpl_info::f1)           s<<setw(26)<<"f1: vector";
+  if (cpl==cpl_info::f2)           s<<setw(26)<<"f2: weak magnetic";
+  if (cpl==cpl_info::f3)           s<<setw(26)<<"f3: scalar";
+  if (cpl==cpl_info::g1)           s<<setw(26)<<"g1: axial vector";
+  if (cpl==cpl_info::g2)           s<<setw(26)<<"g2: tensor / weak electric";
+  if (cpl==cpl_info::g3)           s<<setw(26)<<"g3: pseudoscalar";
+
+  if (cpl==cpl_info::GE)           s<<setw(26)<<"GE: Sachs' electric";
+  if (cpl==cpl_info::GM)           s<<setw(26)<<"GM: Sachs' magnetic";
+
+  if (cpl==cpl_info::F1)           s<<setw(26)<<"F1: Dirac";
+  if (cpl==cpl_info::F2)           s<<setw(26)<<"F2: Pauli";
   return s;
 }
 
