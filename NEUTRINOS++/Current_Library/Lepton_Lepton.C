@@ -100,7 +100,9 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
     ///////////////////////////////////////////////////////////////////////////
     // Weak Charged (left-handed) coupling: -i g_W gamma^{mu} / (sqrt(2)) * (cL P^{L}) 
     ///////////////////////////////////////////////////////////////////////////
-    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling ) / (sqrt(2.));
+    kf_code prop_kf_W   = kf_Wplus;
+    double Fudge =  1;//sqrt(Flavour(prop_kf_W).Mass());
+    Weak_CC_coupling = (-Complex( 1., 0.) * gw_coupling ) / (sqrt(2.) * Fudge);
     Weak_CC_cR = Complex(0.,0.);
     Weak_CC_cL = Complex(1.,0.);
   }

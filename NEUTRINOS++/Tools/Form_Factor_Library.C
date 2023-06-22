@@ -61,8 +61,6 @@ Constant_Form_Factor::Constant_Form_Factor(const ff_info & info) :
 
 double Constant_Form_Factor::Calc(const double & q2) { return m_norm; }
 
-  
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +70,6 @@ Dipole_Form_Factor::Dipole_Form_Factor(const ff_info & info) :
 
 double Dipole_Form_Factor::Calc(const double & q2) { return m_norm / sqr(1.+m_invlambda2*q2); }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,13 +77,9 @@ Lambda_Dipole_Form_Factor::Lambda_Dipole_Form_Factor(const ff_info & info) :
   Form_Factor_Base("Lambda_Dipole", info),
   m_norm(info.m_params[0]), m_invlambda_1_2(sqr(1./info.m_params[1])), m_invlambda_2_4(sqr(sqr(1./info.m_params[2]))) {}
 
-double Lambda_Dipole_Form_Factor::Calc(const double & q2) { 
-  //msg_Out() << m_norm << " " << q2 << " " << m_norm / (1.+m_invlambda_1_2*q2+m_invlambda_2_4*(q2*q2)) << "\n";
+double Lambda_Dipole_Form_Factor::Calc(const double & q2) {
   return m_norm / (1.+m_invlambda_1_2*q2+m_invlambda_2_4*(q2*q2)); 
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -100,10 +93,6 @@ double Neutron_Electric_Form_Factor::Calc(const double & q2) {
   return m_norm /sqr(1.+m_invlambda2*q2) * q2/(1.+m_pref*q2/(4.*sqr(m_mass2)));
 }
 
-
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,10 +101,6 @@ Exponential_Form_Factor::Exponential_Form_Factor(const ff_info & info) :
   m_norm(info.m_params[0]), m_invlambda2(sqr(1./info.m_params[1])) {}
 
 double Exponential_Form_Factor::Calc(const double & q2) { return m_norm * exp(-m_invlambda2*q2); }
-
-
-
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -126,11 +111,6 @@ Gaussian_Form_Factor::Gaussian_Form_Factor(const ff_info & info) :
 
 
 double Gaussian_Form_Factor::Calc(const double & q2) { return m_norm * exp(-m_invlambda2*q2); }
-
-
-
-
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -155,11 +135,6 @@ const double Kelly_Form_Factor::Polynomial(const double & q2) const {
   return m_norm*(1.+m_A[0]*tau)/(1.+m_A[1]*tau+m_A[2]*tau*tau+m_A[3]*tau*tau*tau);
 }
 
-
-
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,10 +157,6 @@ const double BBBA_Form_Factor::Denominator(const double & tau) const {
   return 1+tau*(m_B[0]+tau*(m_B[1]+tau*(m_B[2]+tau*m_B[3])));
 }
 
-
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -206,9 +177,6 @@ const double ArringtonHill_Form_Factor::ZExpand(const double & z) const {
   return result + m_A[0];
 }
 
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -223,9 +191,6 @@ double Helm_Form_Factor::Calc(const double & q2) {
   double kappa = sqrt(q2)/m_hbarc, kappaR = kappa*m_r;
   return 3.*exp(-sqr(kappa*m_s)/2.)*(sin(kappaR)-kappaR*cos(kappaR))/pow(kappaR,3);
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -246,4 +211,3 @@ const double Lovato_Form_Factor::Polynomial(const double & bx) const {
   for (size_t i=4;i>0;i--) {result += m_c[i]; result *= bx; }
   return (m_c[0]+result)/6.;
 }
-
