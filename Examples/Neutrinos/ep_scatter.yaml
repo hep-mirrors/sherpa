@@ -59,7 +59,7 @@ TRANSITIONS:
       G_M:
         form:   dipole
         params: [ 2.79278, 0.847 ]
-      pseudoscalar:
+      f3:
         form: none
 
     #n   n    gamma
@@ -70,7 +70,7 @@ TRANSITIONS:
       G_M:
         form:   dipole
         params: [ -1.91315, 0.847 ] 
-      pseudoscalar:
+      f3:
         form: none
 
 # Parameters for form factors:

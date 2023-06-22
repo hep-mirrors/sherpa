@@ -52,27 +52,25 @@ TRANSITIONS:
     Vtd:  0.009
     Vts:  -0.040
     Vtb:  0.999
-    
+
   Transitions:
     2112 2212 24:
       f1:
         form:   dipole
-        params: [ .5,      0.84 ] #1 /2
+        params: [ 1.,      0.84 ]
       f2:
         form:   dipole
-        params: [ -1.885, 0.84 ] #-1.885 /2 *2
+        params: [ 3.77, 0.84 ] #-1.885 * -2
       f3:
         form:   none
 
       g1:
         form:   dipole
-        params: [ 0.6335,      1.08 ] #-1.267 /-2
+        params: [ 1.267,      1.08 ] #-1.267 / -1
       g2:
         form:   none
       g3:
         form:   none
-
-
 # Parameters for form factors:
 # constant  :       norm
 # dipole  :         norm, Lambda

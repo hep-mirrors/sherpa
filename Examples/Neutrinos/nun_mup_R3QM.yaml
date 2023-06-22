@@ -58,16 +58,16 @@ TRANSITIONS:
     2112 2212 24:
       f1:
         form:   lambda_dipole
-        params: [ .5,      0.69,   0.96 ] #1 /2
+        params: [ 1.0,      0.69,   0.96 ]
       f2:
         form:   lambda_dipole
-        params: [ -1.81,   0.69,   0.96 ] #-1.81 /2 *2
+        params: [ 3.62,   0.69,   0.96 ] #-1.81 * -2
       f3:
         form:   none
 
       g1:
         form:   lambda_dipole
-        params: [ 0.625,   0.76,   1.04 ] #-1.25 /-2
+        params: [ 1.25,   0.76,   1.04 ] #-1.25 *-1
       g2:
         form:   none
       g3:
