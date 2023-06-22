@@ -37,6 +37,9 @@ namespace NEUTRINOS {
   private:
     ATOOLS::Scoped_Settings m_alltransitions;
     ModelParameters         m_parameters;
+    ModelParameters         m_CKM;
+    ModelParameters         m_CG;
+    ModelParameters         m_Bosons;
     
     void InitializeConstants();
     void InitializeFFMaps();
@@ -102,7 +105,7 @@ namespace NEUTRINOS {
     void Output();
 
     Form_Factor_Base * GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_info::code & cpl);
-    double GetModelParms(std::string constantName);
+    double GetModelParms(std::string ParaType, std::string constantName);
     bool ContainsFormFactorType(cpl_info::code & cpl);
     bool ContainsFormFactorTransition(kf_code & pid1,kf_code & pid2);
   };

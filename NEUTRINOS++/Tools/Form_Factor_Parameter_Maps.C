@@ -104,15 +104,23 @@ Form_Factor_Parameter_Maps::GetFF(kf_code & n1,kf_code & n2,kf_code & prop,cpl_i
   return new Zero_Form_Factor(cpl);
 }
 
-double Form_Factor_Parameter_Maps::GetModelParms(std::string constantName) {
-    for (map<string, double>::iterator pit=m_parameters.begin();pit!=m_parameters.end();pit++) {
-      if (pit->first.c_str() == constantName) return pit->second;
-    }
+double Form_Factor_Parameter_Maps::GetModelParms(std::string ParaType, std::string constantName) {
+  ModelParameters LIST;
+  if (ParaType == "Constants") LIST = m_parameters;
+  if (ParaType == "CKM") {
     //Return non-valid ckm transition
     if ( constantName == "Vuu_Vdd") return 0.;
     if ( constantName == "Vqq") return 1.;
+    LIST = m_CKM;
+  }
+  if (ParaType == "CG")        LIST = m_CG;
+  if (ParaType == "Bosons")    LIST = m_Bosons;
 
-    return 0.0;
+  for (map<string, double>::iterator pit=LIST.begin();pit!=LIST.end();pit++) {
+    if (pit->first.c_str() == constantName) return pit->second;
+  }
+
+  return 0.0;
 }
 
 bool Form_Factor_Parameter_Maps::ContainsFormFactorType(cpl_info::code & cpl) {
@@ -147,6 +155,19 @@ void Form_Factor_Parameter_Maps::Output() {
   for (map<string, double>::iterator pit=m_parameters.begin();pit!=m_parameters.end();pit++) {
     msg_Info()<<"   "<<setw(12)<<pit->first.c_str()<<": "<<pit->second<<"\n";
   }
+  msg_Info()<<"\n* V_CKM:\n";
+  for (map<string, double>::iterator pit=m_CKM.begin();pit!=m_CKM.end();pit++) {
+    msg_Info()<<"   "<<setw(12)<<pit->first.c_str()<<": "<<pit->second<<"\n";
+  }
+  msg_Info()<<"\n* Clebsch-Gordan coefficients:\n";
+  for (map<string, double>::iterator pit=m_CG.begin();pit!=m_CG.end();pit++) {
+    msg_Info()<<"   "<<setw(12)<<pit->first.c_str()<<": "<<pit->second<<"\n";
+  }
+  msg_Info()<<"\n* Bosons active:\n";
+  for (map<string, double>::iterator pit=m_Bosons.begin();pit!=m_Bosons.end();pit++) {
+    msg_Info()<<"   "<<setw(12)<<pit->first.c_str()<<": "<<pit->second<<"\n";
+  }
+  msg_Info()<<"\n";
   for (std::map<std::pair<kf_code, kf_code > , Form_Factor_Entry * >::iterator it=begin();
        it!=end();it++) {
     msg_Info()<<"* Transitions for "<<Flavour(it->first.first)<<" --> "<<Flavour(it->first.second)<<":\n"
@@ -166,6 +187,31 @@ void Form_Factor_Parameter_Maps::InitializeConstants() {
   for (const auto& key: m_alltransitions["Constants"].GetKeys()) {
     m_parameters[key] = m_alltransitions["Constants"][key].SetDefault(-1.0).Get<double>();
   }
+
+  //Default SM
+  m_CKM.clear();
+  m_CKM["Vtb"] = m_alltransitions["CKM"]["Vtb"].SetDefault(0.999).Get<double>();
+  m_CKM["Vts"] = m_alltransitions["CKM"]["Vts"].SetDefault(-0.040).Get<double>();
+  m_CKM["Vtd"] = m_alltransitions["CKM"]["Vtd"].SetDefault(0.009).Get<double>();
+  m_CKM["Vcb"] = m_alltransitions["CKM"]["Vcb"].SetDefault(0.041).Get<double>();
+  m_CKM["Vcs"] = m_alltransitions["CKM"]["Vcs"].SetDefault(0.973).Get<double>();
+  m_CKM["Vcd"] = m_alltransitions["CKM"]["Vcd"].SetDefault(-0.225).Get<double>();
+  m_CKM["Vub"] = m_alltransitions["CKM"]["Vub"].SetDefault(0.003).Get<double>();
+  m_CKM["Vus"] = m_alltransitions["CKM"]["Vus"].SetDefault(0.225).Get<double>();
+  m_CKM["Vud"] = m_alltransitions["CKM"]["Vud"].SetDefault(0.974).Get<double>();
+
+  //Default P+ -> P+ EM (QED)
+  m_CG.clear();
+  m_CG["b"] = m_alltransitions["CG"]["b"].SetDefault(1.0/3.0).Get<double>();
+  m_CG["a"] = m_alltransitions["CG"]["a"].SetDefault(1.0).Get<double>();
+  
+  //Default currents all on (QED, NC, CC)
+  m_Bosons.clear();
+  m_Bosons["W"] =     m_alltransitions["Bosons"]["W"].SetDefault(1.0).Get<double>();
+  m_Bosons["Z"] =     m_alltransitions["Bosons"]["Z"].SetDefault(1.0).Get<double>();
+  m_Bosons["gamma"] = m_alltransitions["Bosons"]["gamma"].SetDefault(1.0).Get<double>();
+  
+  
 }
 
 void Form_Factor_Parameter_Maps::InitializeFFMaps() {

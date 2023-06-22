@@ -36,7 +36,16 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
 
   //Read in model parameters
   std::string Vckm_string = compareQuarkContent(getQuarkContent(IN), getQuarkContent(OUT)); 
-  double Vckm = ffs->GetModelParms(Vckm_string);
+  double Vckm = ffs->GetModelParms("CKM", Vckm_string);
+
+  //Turn contributions from currents on or off...
+  double QED_ON = ffs->GetModelParms("Bosons", "gamma");
+  double Weak_NC_ON = ffs->GetModelParms("Bosons", "Z");
+  double Weak_CC_ON = ffs->GetModelParms("Bosons", "W");
+
+  //Get the Clebsch–Gordan coefficients
+  a_CG = ffs->GetModelParms("CG", "a");
+  b_CG = ffs->GetModelParms("CG", "b");
 
   /////////////////////////////////////////////////////////////////////////////
   // Form factor info
@@ -116,6 +125,9 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
     Weak_CC_cR = Complex( 0., 0.);
     Weak_CC_cL = Complex( 1., 0.);
   }
+  QED_coupling *= QED_ON;
+  Weak_NC_coupling *= Weak_NC_ON;
+  Weak_CC_coupling *= Weak_CC_ON;
 };
 
 void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
@@ -180,9 +192,6 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   /////////////////////////////////////////////////////////////////////////
   // Now using Clebsch-Gordan coefficients get relevant form factors for N -> Y.
   /////////////////////////////////////////////////////////////////////////  
-
-  //TODO Add these to right place...
-  double a_CG = 1.0, b_CG=1./3.;
 
   //Vector
   double f1_NY = a_CG*F1V  + b_CG*D1V, f2_NY = a_CG*F2V  + b_CG*D2V, f3_NY = a_CG*F3V  + b_CG*D3V;

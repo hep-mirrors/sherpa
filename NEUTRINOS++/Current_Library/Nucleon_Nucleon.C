@@ -37,7 +37,12 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 
   //Read in model parameters
   std::string Vckm_string = compareQuarkContent(getQuarkContent(IN), getQuarkContent(OUT)); 
-  double Vckm = ffs->GetModelParms(Vckm_string);
+  double Vckm = ffs->GetModelParms("CKM", Vckm_string);
+
+  //Turn contributions from currents on or off...
+  double QED_ON = ffs->GetModelParms("Bosons", "gamma");
+  double Weak_NC_ON = ffs->GetModelParms("Bosons", "Z");
+  double Weak_CC_ON = ffs->GetModelParms("Bosons", "W");
 
   /////////////////////////////////////////////////////////////////////////////
   // Form factor info
@@ -119,6 +124,9 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     Weak_CC_cR = Complex( 0., 0.);
     Weak_CC_cL = Complex( 1., 0.);
   }
+  QED_coupling *= QED_ON;
+  Weak_NC_coupling *= Weak_NC_ON;
+  Weak_CC_coupling *= Weak_CC_ON;
 };
 
 void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)

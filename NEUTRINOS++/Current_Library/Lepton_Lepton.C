@@ -1,6 +1,8 @@
 #include "NEUTRINOS++/Current_Library/Lepton_Lepton.H"
 #include "ATOOLS/Org/Exception.H"
 
+#include "NEUTRINOS++/Tools/Form_Factor_Parameter_Maps.H"
+
 using namespace NEUTRINOS;
 using namespace ATOOLS;
 using namespace std;
@@ -23,10 +25,15 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
   double e_coupling = sqrt(4.*M_PI*alphaQED);
   double gz_coupling = e_coupling/(sqrt(sin2thetaW*cos2thetaW));
   double gw_coupling = e_coupling/(sqrt(sin2thetaW));
-
+  
   //kf_code of nucleons IN vs OUT
   kf_code IN = m_flavs[m_indices[1]].Kfcode();
   kf_code OUT = m_flavs[m_indices[0]].Kfcode();
+
+  //Turn contributions from currents on or off...
+  double QED_ON = ffs->GetModelParms("Bosons", "gamma");
+  double Weak_NC_ON = ffs->GetModelParms("Bosons", "Z");
+  double Weak_CC_ON = ffs->GetModelParms("Bosons", "W");
 
   /////////////////////////////////////////////////////////////////////////////
   // fixing the coupling constants:
@@ -107,6 +114,10 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
     Weak_CC_cL = Complex(1.,0.);
   }
   else THROW(fatal_error,"family non-diagonal lepton interaction not yet implemented.")
+
+  QED_coupling *= QED_ON;
+  Weak_NC_coupling *= Weak_NC_ON;
+  Weak_CC_coupling *= Weak_CC_ON;
 };
 
 void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)

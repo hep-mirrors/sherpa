@@ -11,6 +11,7 @@ namespace NEUTRINOS {
     Complex QED_coupling, QED_cR, QED_cL;
     Complex Weak_NC_coupling, Weak_NC_cR, Weak_NC_cL;
     Complex Weak_CC_coupling, Weak_CC_cR, Weak_CC_cL;
+    double a_CG, b_CG;
   public:
     Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
 		    const std::vector<int>& indices,
