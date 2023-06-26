@@ -105,13 +105,13 @@ void Real_ff::CalculateVirt() {
   m_beta02f = m_born * (1. + m_gammaF / 2. + m_delF2);
   m_beta02i =  m_born * (1. + m_gammaI / 2. + m_delI2);
   m_beta01 = m_born * (1. + m_gammaI / 2.) * (1. + m_gammaF / 2.);
-  if (m_gammaF < 0) {
-    PRINT_VAR(m_gammaF / 2.);
-    PRINT_VAR(sqrt((m_q1 + m_q2).Abs2()));
-    PRINT_VAR(m_q1.Mass());
-    PRINT_VAR(m_q1);
-    abort();
-  }
+  // if (m_gammaF < 0) {
+  //   PRINT_VAR(m_gammaF / 2.);
+  //   PRINT_VAR(sqrt((m_q1 + m_q2).Abs2()));
+  //   PRINT_VAR(m_q1.Mass());
+  //   PRINT_VAR(m_q1);
+  //   abort();
+  // }
   m_beta02 = m_born * (1. + m_gammaI / 2. + m_delI2) * (1. + m_gammaF / 2. + m_delF2);
   // PRINT_VAR(m_beta02/m_born);
   m_beta03 = m_born * (1. + m_gammaI / 2. + m_delI2 + pow(m_gammaI, 3.) / 48) * (1. + m_gammaF / 2. + m_delF2 + pow(m_gammaF, 3) / 48.);

@@ -109,6 +109,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
     }
     Dipole D(ff, mm, bm, dipoletype::final);
     D.SetResonance(true);
+    // IsResonant(D);
     Dipole_FF(ff, mm);
     m_dipolesFF.push_back(D);
     return;
@@ -146,6 +147,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       }
       Dipole D(ff, mm, bm, dipoletype::final);
       Dipole_FF(ff, mm);
+      IsResonant(D);
       m_dipolesFF.push_back(D);
       msg_Debugging() << "Added " << ff << " to dipole " << a << std::endl;
     }
@@ -336,7 +338,19 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   }
 
   for (auto &D : m_dipolesIF){
-    // sub -= D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    // sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+  }
+  if(m_dipolesIF.size()>0){
+    // Calculate addition subtraction 
+    // Eq. 7 1801.08611
+    double t = (m_dipolesII[0].GetBornMomenta(0)-m_dipolesFF[0].GetMomenta(0)).Abs2();
+    double u = (m_dipolesII[0].GetBornMomenta(0)-m_dipolesFF[0].GetMomenta(1)).Abs2();
+    double s = (m_dipolesII[0].GetBornMomenta(0)+m_dipolesII[0].GetBornMomenta(1)).Abs2();
+    double mz = Flavour(kf_Z).Mass();
+    double gz = Flavour(kf_Z).Width();
+    Complex mbar2 = (mz*mz, -mz*gz);
+    Complex resSub = (m_alpha/M_PI*log(t/u)*log((mbar2-s)/mbar2)); 
+    // sub -= sqrt((resSub*conj(resSub)).real());
   }
   return sub;
 }
@@ -441,6 +455,7 @@ void Define_Dipoles::IsResonant(YFS::Dipole &D) {
       }
       else D.SetResonance(false);
     }
+    D.SetResonance(false);
   }
 }
 

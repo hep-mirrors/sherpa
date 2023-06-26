@@ -39,8 +39,9 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    bornsym*= ATOOLS::Flavour::FSSymmetryFactor(born_flavs);
    // m_sym/=bornsym;
    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
-   // m_factor = m_sym*p_real_me->AlphaQED()/2/M_PI;
-  m_factor = 1./2/M_PI;///m_sym;
+   m_factor = 1./2/M_PI;
+   m_factor *= m_rescale_alpha;
+  // m_factor = 1./2/M_PI;
   if(m_check_real){
     if(FileExists("recola-real.txt")) Remove("recola-real.txt");
     if(FileExists("ps-points.yaml")) Remove("ps-points.yaml");
@@ -78,5 +79,5 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
     
     double R = p_real_me->Calc(p);
     if(m_check_real) real_out<<std::setprecision(15)<<R/m_sym<<std::endl;
-    return R*m_rescale_alpha*m_factor;///2/M_PI;
+    return m_rescale_alpha*R/m_sym;
   }
