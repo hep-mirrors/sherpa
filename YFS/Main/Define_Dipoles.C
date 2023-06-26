@@ -349,8 +349,8 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     double mz = Flavour(kf_Z).Mass();
     double gz = Flavour(kf_Z).Width();
     Complex mbar2 = (mz*mz, -mz*gz);
-    Complex resSub = (m_alpha/M_PI*log(t/u)*log((mbar2-s)/mbar2)); 
-    // sub -= sqrt((resSub*conj(resSub)).real());
+    Complex resSub = 0.5*(m_alpha/M_PI*log(t/u)*log((mbar2-s)/mbar2)); 
+    sub += ((resSub*conj(resSub)).real());
   }
   return sub;
 }
