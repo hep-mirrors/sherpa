@@ -163,7 +163,7 @@ double NLO_Base::CalculateReal() {
 	Poincare Boost(m_bornMomenta[0]+m_bornMomenta[1]);
 	for (auto kk : m_FSRPhotons) { 
 		// Boost.BoostBack(kk);
-		// photons.push_back(kk);
+		photons.push_back(kk);
 		// if(kk.E() > 4.56e-05) photons.push_back(kk);
 	}
 	for (auto k : photons) {
