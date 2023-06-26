@@ -30,8 +30,8 @@ namespace YFS{
         Vec4D_Vector m_dipolePhotons;
         std::vector<std::string> m_names;
         double m_QiQj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
-        bool m_setBorn, m_setbeams=1, m_resonance;
-        int m_Nphotons;
+        bool m_setBorn, m_setbeams=1;
+        int m_Nphotons, m_resonance;
         dipoletype::code m_type;
         Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams;
         Flavour_Vector m_flavs;

@@ -160,8 +160,14 @@ double NLO_Base::CalculateReal() {
 	double real(0), sub(0);
 	Vec4D_Vector photons;
 	for (auto k : m_ISRPhotons) photons.push_back(k);
-	// for (auto kk : m_FSRPhotons) photons.push_back(kk);
+	Poincare Boost(m_bornMomenta[0]+m_bornMomenta[1]);
+	for (auto kk : m_FSRPhotons) { 
+		// Boost.BoostBack(kk);
+		// photons.push_back(kk);
+		// if(kk.E() > 4.56e-05) photons.push_back(kk);
+	}
 	for (auto k : photons) {
+		// Boost.Boost(k);
 		double tot = CalculateReal(k);
 		real += tot;
 	}
