@@ -204,7 +204,7 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	double r = p_real->Calc_R(p) / norm;
 	if (r == 0) return 0;
 	m_recola_evts+=1;
-	tot =  ( r - subloc*born)/subb;
+	tot =  ( r - subloc*born)/subloc;
   if(m_isr_debug || m_fsr_debug){
 
 		m_histograms2d["Real_me"]->Insert(k.CosTheta(m_bornMomenta[0]), k.E(), r/rcoll);
