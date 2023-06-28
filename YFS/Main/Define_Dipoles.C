@@ -338,7 +338,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   }
 
   for (auto &D : m_dipolesIF){
-    // sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   if(m_dipolesIF.size()>0){
     // Calculate addition subtraction 
@@ -349,8 +349,13 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     double mz = Flavour(kf_Z).Mass();
     double gz = Flavour(kf_Z).Width();
     Complex mbar2 = (mz*mz, -mz*gz);
-    Complex resSub = 2.*(m_alpha/M_PI*log(t/u)*log((mbar2-s)/mbar2)); 
-    sub += ((resSub*conj(resSub)).real());
+    Complex resSub = (m_alpha/M_PI*log(t/u));//*log((mbar2-s)/mbar2)); 
+    // sub += exp(0.5*sqrt(resSub*conj(resSub)).real());
+    if(k.E() <= gz) {
+      resSub*=log((mbar2-s)/mbar2);
+      sub += sqrt((resSub*conj(resSub)).real());
+    }
+    else sub += sqrt((resSub*conj(resSub)).real());
   }
   return sub;
 }
@@ -419,6 +424,19 @@ double Define_Dipoles::CalculateEEXVirtual(){
   }
   return v;
 }
+
+double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
+  double sub(0);
+  for (auto &D : m_dipolesII) {
+    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+  }
+  for (auto &D : m_dipolesFF) {
+    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+  }
+
+  return sub;
+}
+
 
 void Define_Dipoles::CleanInParticles() {
   m_chargedinparticles.clear();

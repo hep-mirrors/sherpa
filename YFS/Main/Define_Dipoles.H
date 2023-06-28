@@ -65,6 +65,7 @@ namespace YFS {
       bool CheckMasses();
       void IsResonant(YFS::Dipole &D);
       double CalculateRealSub(const Vec4D &k);
+      double CalculateRealSubEEX(const Vec4D &k);
       double CalculateVirtualSub();
       double CalculateRealVirtualSub(const Vec4D & k);
       double CalculateEEXReal(const Vec4D & k);

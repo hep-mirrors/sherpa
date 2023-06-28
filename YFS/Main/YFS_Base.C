@@ -78,6 +78,7 @@ void YFS_Base::RegisterDefaults(){
   s["BES_SIG_X"].SetDefault(0.132e-2);
   s["BES_SIG_Y"].SetDefault(0.132e-2);
   s["BES_rho"].SetDefault(-0.745e0);
+  s["No_Born"].SetDefault(0);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -129,6 +130,7 @@ void YFS_Base::RegisterSettings(){
   m_beam_rho = s["BES_rho"].Get<double>();
   m_beam_sigx = s["BES_SIG_X"].Get<double>();
   m_beam_sigy = s["BES_SIG_Y"].Get<double>();
+  m_no_born = s["No_Born"].Get<int>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
@@ -136,8 +138,8 @@ void YFS_Base::RegisterSettings(){
   m_isrinital=true;
   m_g = 0;
   m_gp = 0;
-  if(m_use_model_alpha) m_alpha = s_model->ScalarConstant("alpha_QED");
-  else m_alpha  = (*aqed)(0); 
+  // if(m_use_model_alpha) m_alpha = s_model->ScalarConstant("alpha_QED");
+  m_alpha  = (*aqed)(0); 
   if (!m_use_model_alpha) m_rescale_alpha = 1;
   else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
   m_alpi = m_alpha/M_PI;
@@ -150,5 +152,5 @@ void YFS_Base::RegisterSettings(){
 
 
 double YFS_Base::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {
-  return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2() * m_rescale_alpha;
+  return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }

@@ -28,8 +28,8 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   // todo get alpha from YFS_BASE
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   bool use_model_alpha = s["USE_MODEL_ALPHA"].Get<bool>();
-  if(use_model_alpha) m_alp = s_model->ScalarConstant("alpha_QED");
-  else m_alp  = (*aqed)(0); 
+  // if(use_model_alpha) m_alp = s_model->ScalarConstant("alpha_QED");
+  m_alp  = (*aqed)(0); 
   m_alpi = m_alp/M_PI;
   if (use_model_alpha) m_rescale_alpha = 1;
   else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
@@ -236,15 +236,15 @@ double Dipole::EEX(const Vec4D &k){
     double V = 1+m_gamma/2.;
     return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b));
   }
-  // else if (Type() == dipoletype::final) {
-  //   double p1p2 = m_momenta[0]*m_momenta[1];
-  //   double ap = k*m_momenta[0]/p1p2;
-  //   double bp = k*m_momenta[1]/p1p2;
-  //   double V = 1+m_gamma/2.;
-  //   double a = ap/(1.+ap+bp);
-  //   double b = bp/(1.+ap+bp);
-  //   return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b));
-  // }
+  else if (Type() == dipoletype::final) {
+    double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
+    double ap = k*m_bornmomenta[0]/p1p2;
+    double bp = k*m_bornmomenta[1]/p1p2;
+    double V = 1+m_gamma/2.;
+    double a = ap/(1.+ap+bp);
+    double b = bp/(1.+ap+bp);
+    return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b));
+  }
   return 0;
 }
 
@@ -277,7 +277,6 @@ bool Dipole::IsDecayAllowed(){
 
 double Dipole::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
-  // return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2() * m_rescale_alpha;
 }
 
 
@@ -285,7 +284,6 @@ double Dipole::Eikonal(Vec4D k) {
   Vec4D p1 = m_bornmomenta[0];
   Vec4D p2 = m_bornmomenta[1];
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
-  // return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2() * m_rescale_alpha;
 }
 
 
