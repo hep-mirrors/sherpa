@@ -200,18 +200,18 @@ void Real_ff::SetIncoming(YFS::Dipole_Vector::iterator dipole, Vec4D_Vector &bor
   double beta1 = CalculateBeta(m_q1);
   double beta2 = CalculateBeta(m_q2);
   double t1 = (1. + beta1 * beta2) / (beta1 + beta2);
-  double logarg =  2.*(1. + beta1) * (1. + beta2) / ((1. - beta1) * (1. - beta2));
+  double logarg =  (1. + beta1) * (1. + beta2) / ((1. - beta1) * (1. - beta2));
   double QF2 = D.m_QiQj;
-  logarg = (D.m_newmomenta[0] + D.m_newmomenta[1]).Abs2() / sqr(m_beam1.Mass());
-  m_gamma  = 2 * m_alpi * (log(logarg) - 1.); // See Mareks phd thesis A.2.1
-  m_gammap = m_alpi * t1 * (log(logarg / 2.));
+  // logarg = (D.m_newmomenta[0] + D.m_newmomenta[1]).Abs2() / sqr(m_beam1.Mass());
+  m_gamma  =  m_alpi * t1* (log(logarg) - 2.); // See Mareks phd thesis A.2.1
+  m_gammap = m_alpi * t1 * (log(logarg ));
   m_gammaF = m_gamma;
   m_mass = (m_q1.Mass() + m_q2.Mass()) / 2.;
   m_mass2 = sqr(m_mass);
   for (auto &kk : k) m_sfsr.push_back(Eikonal(kk));
   ATOOLS::Poincare poin(m_beam1 + m_beam2);
   for (auto &kk : m_photons) poin.Boost(kk);
-  m_gammaF  = 2 * m_alpi * (log(logarg) - 1.);
+  // m_gammaF  = 2 * m_alpi * (log(logarg) - 1.);
   m_delF2 = sqr(m_alpi * (log(logarg))) / 2.;
   if (m_fsrmode == 0) m_gammaF = m_delF2 = 0;
   if (m_fsrmode == 2) m_gammaI = m_delI2 = 0;

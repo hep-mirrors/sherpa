@@ -186,32 +186,33 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	pp=p;
 	// p_virt->Calc(p, m_born);
 	// double born = p_virt->p_loop_me->ME_Born();
-	double born = m_born;
 	double tot,colltot,rcoll;
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_bornMomenta);
 	p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
 	// p_dipoles->MakeDipolesIF(m_flavs, m_plab, p);
 	// p_dipoles->MakeDipoles(m_flavs, m_plab, p);
-	double subb   = p_dipoles->CalculateRealSub(k);
+	double subb   = p_dipoles->CalculateRealSubEEX(k);
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	m_evts+=1;
 	if (!CheckPhotonForReal(k)) { 
-		rcoll = p_dipoles->CalculateEEXReal(k)*born/M_PI/2.;
-		return 0*(rcoll -subloc*born)/subb;
+		rcoll = p_dipoles->CalculateEEXReal(k)*m_born;
+		return (rcoll -subb*m_born)/subb;
+		// return (rcoll)/subb;
 	}
 	p.push_back(k);
 	double r = p_real->Calc_R(p) / norm;
-	if (r == 0) return 0;
+	// if (r == 0) return 0;
 	m_recola_evts+=1;
-	tot =  ( r - subloc*born)/subloc;
+	tot =  ( r - subloc*m_born)/subloc;
+	// tot =  ( r - subloc*born)/subloc;
+	// tot =  ( r )/subloc;
   if(m_isr_debug || m_fsr_debug){
-
 		m_histograms2d["Real_me"]->Insert(k.CosTheta(m_bornMomenta[0]), k.E(), r/rcoll);
 		double diff = (tot-colltot)/(tot+colltot);
 		m_histograms1d["Real_diff"]->Insert(diff);
   }
-	return tot;
+	return tot/4.;
 }
 
 double NLO_Base::CollinearReal(Vec4D k, Vec4D_Vector p){
@@ -338,7 +339,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	for (int i = 2; i < p.size(); ++i) {
 		boostQ.Boost(p[i]);
 	}
-	// boostQ.Boost(k);
+	boostQ.Boost(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
 	{
@@ -346,14 +347,14 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		qy += p[i][2];
 		qz += p[i][3];
 	}
-	// if (!IsEqual(k[1], -qx, 1e-3) || !IsEqual(k[2], -qy, 1e-3) || !IsEqual(k[3], -qz, 1e-3) ) {
-	// 	if( k[1]> 1e-5 && k[2]> 1e-5 && k[3]> 1e-5 ){
-	// 		msg_Error() << "YFS Mapping has failed for ISR\n";
-	// 		msg_Error() << " Photons px = " << k[1] << "\n Qx = " << -qx << std::endl;
-	// 		msg_Error() << " Photons py = " << k[2] << "\n Qy = " << -qy << std::endl;
-	// 		msg_Error() << " Photons pz = " << k[3] << "\n Qz = " << -qz << std::endl;
-	// 	}
-	// }
+	if (!IsEqual(k[1], -qx, 1e-3) || !IsEqual(k[2], -qy, 1e-3) || !IsEqual(k[3], -qz, 1e-3) ) {
+		if( k[1]> 1e-5 && k[2]> 1e-5 && k[3]> 1e-5 ){
+			msg_Error() << "YFS Mapping has failed for ISR\n";
+			msg_Error() << " Photons px = " << k[1] << "\n Qx = " << -qx << std::endl;
+			msg_Error() << " Photons py = " << k[2] << "\n Qy = " << -qy << std::endl;
+			msg_Error() << " Photons pz = " << k[3] << "\n Qz = " << -qz << std::endl;
+		}
+	}
 	Vec4D QQ, PP;
 	for (int i = 2; i < p.size(); ++i)
 	{
@@ -370,7 +371,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	{
 		boostLab.Boost(p[i]);
 	}
-	// boostLab.Boost(k);
+	boostLab.Boost(k);
 }
 
 bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {

@@ -424,18 +424,23 @@ void YFS_Handler::CalculateBeta() {
       if (m_use_fsr_beta == 0) realFSR = 0;
     }
     m_real = (realISR + realFSR + p_realff->AddVirtual())/m_born;
-    if (m_virtual_only) m_real = p_realff->AddVirtual()/m_born;
+    if (m_virtual_only) {
+      if(m_no_born) m_real = p_realff->AddVirtual()/m_born-1;
+      else m_real = p_realff->AddVirtual()/m_born;
+    }
     if (m_real_only) {
       if (m_looptool) m_real = realISR + realFSR + ((m_betaorder > 1 ? p_realff->AddVirtual(m_betaorder) - p_realff->AddVirtual(1) : 0));
-      else m_real = (realISR + realFSR + m_born)/m_born;
+      else {
+        if(m_no_born) m_real = (realISR + realFSR)/m_born;
+        else m_real = (m_born+realISR + realFSR)/m_born;
+      }
     }
     if (m_useint) m_real += p_realff->IntIF(m_ISRPhotons, m_FSRPhotons, p_isr->m_yini, p_isr->m_zini, p_fsr->m_yini, p_fsr->m_zini);
   }
   // PRINT_VAR(m_nlotype);
   if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
-    m_real=1+CalculateNLO()/m_born;
-    // if(m_real_only) m_real+=(realISR + realFSR)/m_born;
-    // m_real /= m_born;
+    if(m_no_born) m_real=CalculateNLO()/m_born;
+    else m_real=1+CalculateNLO()/m_born;
   }
   if (m_griff != 0) {
       m_real=1+CalculateNLO();
@@ -449,7 +454,7 @@ double YFS_Handler::CalculateNLO(){
   p_nlo->p_dipoles = p_dipoles;
   p_nlo->SetBorn(m_born);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  p_nlo->m_FSRPhotons = m_fsrphotonsforME;
+  p_nlo->m_FSRPhotons = m_FSRPhotons;
   return p_nlo->CalculateNLO();
 }
 
@@ -485,7 +490,6 @@ void YFS_Handler::GenerateWeight() {
              "  Coulomb Weight = " << p_coulomb->GetWeight() << "\n" <<
              " Coulomb Subtraction Weight = " << exp(m_coulSub) << "\n" <<
              "Total Weight = " << m_yfsweight << "\n");
-  if (m_yfsweight < 0) m_yfsweight = 0;
 }
 
 
@@ -523,7 +527,7 @@ double YFS_Handler::Flux()
 
 double YFS_Handler::Eikonal(Vec4D k) {
   double frac = (m_beam1 / (k * m_beam1) - m_beam2 / (k * m_beam2)).Abs2(); //*(m_beam1/(k*m_beam1) - m_beam2/(k*m_beam2));
-  double s = -m_alpha / (4 * M_PI * M_PI) * frac * m_rescale_alpha;
+  double s = -m_alpha / (4 * M_PI * M_PI) * frac ;
   return s;
 }
 
