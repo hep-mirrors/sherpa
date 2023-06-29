@@ -431,7 +431,7 @@ double Real_ff::Beta(Vec4D k) {
 
 
 double Real_ff::Eikonal(Vec4D k) {
-  return -m_alpi / (4.*M_PI) * (m_beam1 / (m_beam1 * k) - m_beam2 / (m_beam2 * k)).Abs2();
+  return -m_alpi / (4.*M_PI) * (m_beam1 / (m_beam1 * k) - m_beam2 / (m_beam2 * k)).Abs2()/m_rescale_alpha;
 
 }
 

@@ -442,9 +442,9 @@ void YFS_Handler::CalculateBeta() {
     if(m_no_born) m_real=CalculateNLO()/m_born;
     else m_real=1+CalculateNLO()/m_born;
   }
-  if (m_griff != 0) {
-      m_real=1+CalculateNLO();
-  }
+  // if (m_griff != 0) {
+  //     m_real=1+CalculateNLO();
+  // }
 }
 
 

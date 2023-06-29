@@ -102,8 +102,8 @@ double Griffin_Interface::EvaluateLoop(const Vec4D_Vector& momenta)
     FA_SMNNLO FAi(ELE, griffin_input), FAf(MUO, griffin_input);
     SW_SMNNLO SWi(ELE, griffin_input), SWf(MUO, griffin_input); 
   }
-  double s = (momenta[2]+momenta[3]).Abs2();
-  double cost = (momenta[2]+momenta[3]).CosTheta();
+  double s = (momenta[0]+momenta[1]).Abs2();
+  double cost = (momenta[0]+momenta[1]).CosTheta();
   // double cost = 0;
   // if(sqrt(s)<40) return 0;
   // cost=1;
@@ -131,7 +131,7 @@ double Griffin_Interface::EvaluateLoop(const Vec4D_Vector& momenta)
     -4*cost*(resvv*conj(resva) + resav*conj(resaa)));
   // return res*3*s*m_rescale_alpha/32/M_PI;
   // return m_rescale_alpha*3*res*s/(32*M_PI);
-  return res*s*s*m_alpha;
+  return res*91.2*91.2/(16.);
 }
 
 void Griffin_Interface::EvaluateBorn(const Vec4D_Vector& momenta)

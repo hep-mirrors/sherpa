@@ -124,10 +124,10 @@ double NLO_Base::CalculateVirtual() {
 		}
 		// born = p_virt->p_loop_me->ME_Born();
 		sub = p_dipoles->CalculateVirtualSub();
-		std::cout << setprecision(16);
-		out_sub << m_photonMass << "," << -sub*m_born << std::endl;
-		out_recola << m_photonMass << "," << virt << std::endl;
-		out_finite << m_photonMass << "," << virt  -sub*m_born << std::endl;
+		std::cout << setprecision(10);
+		out_sub<< setprecision(10) << m_photonMass << "," << -sub*m_born << std::endl;
+		out_recola<< setprecision(10) << m_photonMass << "," << virt << std::endl;
+		out_finite<< setprecision(10) << m_photonMass << "," << virt  -sub*m_born << std::endl;
 		out_sub.close();
 		out_recola.close();
 		exit(1);
@@ -147,7 +147,7 @@ double NLO_Base::CalculateVirtual() {
 								<< "Loop Provider " << ":  "<<p_virt->p_loop_me->ME_Born()
 								<< "\nSherpa" << ":  "<<m_born<<std::endl
 								<<"PhaseSpace Point = ";
-	for(auto p: m_plab) msg_Error()<<p<<std::endl;
+		for(auto p: m_plab) msg_Error()<<p<<std::endl;
 	}
 	sub = p_dipoles->CalculateVirtualSub();
 	m_oneloop = (virt - sub * m_born);
@@ -204,8 +204,12 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 	double r = p_real->Calc_R(p) / norm;
 	// if (r == 0) return 0;
 	m_recola_evts+=1;
+	// rcoll = p_dipoles->CalculateEEXReal(k)*m_born;
+	// double b = m_born*m_rescale_alpha;
+	// r*=m_rescale_alpha;
+	// subloc*=m_rescale_alpha;
+
 	tot =  ( r - subloc*m_born)/subloc;
-	// tot =  ( r - subloc*born)/subloc;
 	// tot =  ( r )/subloc;
   if(m_isr_debug || m_fsr_debug){
 		m_histograms2d["Real_me"]->Insert(k.CosTheta(m_bornMomenta[0]), k.E(), r/rcoll);
@@ -339,7 +343,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	for (int i = 2; i < p.size(); ++i) {
 		boostQ.Boost(p[i]);
 	}
-	boostQ.Boost(k);
+	// boostQ.Boost(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
 	{
@@ -347,14 +351,14 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		qy += p[i][2];
 		qz += p[i][3];
 	}
-	if (!IsEqual(k[1], -qx, 1e-3) || !IsEqual(k[2], -qy, 1e-3) || !IsEqual(k[3], -qz, 1e-3) ) {
-		if( k[1]> 1e-5 && k[2]> 1e-5 && k[3]> 1e-5 ){
-			msg_Error() << "YFS Mapping has failed for ISR\n";
-			msg_Error() << " Photons px = " << k[1] << "\n Qx = " << -qx << std::endl;
-			msg_Error() << " Photons py = " << k[2] << "\n Qy = " << -qy << std::endl;
-			msg_Error() << " Photons pz = " << k[3] << "\n Qz = " << -qz << std::endl;
-		}
-	}
+	// if (!IsEqual(k[1], -qx, 1e-3) || !IsEqual(k[2], -qy, 1e-3) || !IsEqual(k[3], -qz, 1e-3) ) {
+	// 	if( k[1]> 1e-5 && k[2]> 1e-5 && k[3]> 1e-5 ){
+	// 		msg_Error() << "YFS Mapping has failed for ISR\n";
+	// 		msg_Error() << " Photons px = " << k[1] << "\n Qx = " << -qx << std::endl;
+	// 		msg_Error() << " Photons py = " << k[2] << "\n Qy = " << -qy << std::endl;
+	// 		msg_Error() << " Photons pz = " << k[3] << "\n Qz = " << -qz << std::endl;
+	// 	}
+	// }
 	Vec4D QQ, PP;
 	for (int i = 2; i < p.size(); ++i)
 	{
@@ -371,11 +375,11 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	{
 		boostLab.Boost(p[i]);
 	}
-	boostLab.Boost(k);
+	// boostLab.Boost(k);
 }
 
 bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
-	if (k.E() < m_hardmin) return false;
+	if (k.E()/sqrt(m_s) < m_hardmin) return false;
 	if(k.PPerp() < m_hardmin) return false;
 	for (int i = 0; i < m_bornMomenta.size(); ++i)
 	{

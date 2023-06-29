@@ -338,7 +338,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   }
 
   for (auto &D : m_dipolesIF){
-    sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    // sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   if(m_dipolesIF.size()>0){
     // Calculate addition subtraction 
@@ -353,11 +353,11 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     // sub += exp(0.5*sqrt(resSub*conj(resSub)).real());
     if(k.E() <= gz) {
       resSub*=log((mbar2-s)/mbar2);
-      sub += sqrt((resSub*conj(resSub)).real());
+      sub += 2*((resSub*conj(resSub)).real());
     }
-    else sub += sqrt((resSub*conj(resSub)).real());
+    else sub += 2*((resSub*conj(resSub)).real());
   }
-  return sub;
+  return sub;///m_rescale_alpha;
 }
 
 
@@ -366,6 +366,9 @@ double Define_Dipoles::CalculateVirtualSub() {
   double sub(0);
   for (auto &D : m_dipolesII) {
     sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    // DivArrC res;
+    // res = -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    // PRINT_VAR(res.GetEpsilon());
   }
   for (auto &D : m_dipolesFF) {
     sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetMomenta(0), D.GetMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
