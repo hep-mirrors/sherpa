@@ -42,8 +42,8 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    // m_sym*=bornsym;
    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
    // m_factor = 2./M_PI;
-   m_factor *= m_rescale_alpha/m_sym;
-  // m_factor = 1./2/M_PI;
+   m_factor = m_rescale_alpha/m_sym;
+  // m_factor *= 1./2/M_PI;
   if(m_check_real){
     if(FileExists("recola-real.txt")) Remove("recola-real.txt");
     if(FileExists("ps-points.yaml")) Remove("ps-points.yaml");

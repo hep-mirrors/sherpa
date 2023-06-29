@@ -216,7 +216,7 @@ double NLO_Base::CalculateReal(Vec4D &k) {
 		double diff = (tot-colltot)/(tot+colltot);
 		m_histograms1d["Real_diff"]->Insert(diff);
   }
-	return tot/4.;
+	return tot;
 }
 
 double NLO_Base::CollinearReal(Vec4D k, Vec4D_Vector p){
@@ -379,7 +379,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 }
 
 bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
-	if (k.E()/sqrt(m_s) < m_hardmin) return false;
+	if (k.E() < m_hardmin) return false;
 	if(k.PPerp() < m_hardmin) return false;
 	for (int i = 0; i < m_bornMomenta.size(); ++i)
 	{
