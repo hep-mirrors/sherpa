@@ -36,11 +36,13 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
    m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
    double bornsym = ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
-   bornsym*= ATOOLS::Flavour::FSSymmetryFactor(born_flavs);
-   // m_sym/=bornsym;
+   for(auto f: args.m_inflavs) m_flavs.push_back(f);
+   for(auto f: args.m_outflavs) m_flavs.push_back(f);
+   // bornsym*= ATOOLS::Flavour::FSSymmetryFactor(born_flavs);
+   // m_sym*=bornsym;
    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
-   // m_factor = 1./2/M_PI;
-   m_factor = m_rescale_alpha;
+   // m_factor = 2./M_PI;
+   m_factor *= m_rescale_alpha/m_sym;
   // m_factor = 1./2/M_PI;
   if(m_check_real){
     if(FileExists("recola-real.txt")) Remove("recola-real.txt");
@@ -62,11 +64,8 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
       int j=0;
       for(auto k: p){
         out_ps<<"      [";
-        if(j==0) out_ps<<"11, ";
-        if(j==1) out_ps<<"-11, ";
-        if(j==2) out_ps<<"13, ";
-        if(j==3) out_ps<<"-13, ";
-        if(j==4) out_ps<<"22, ";
+        if(m_flavs[j].IsAnti()) out_ps<<"-"<<m_flavs[j].Kfcode()<<", ";
+        else out_ps<<m_flavs[j].Kfcode()<<", ";
         for(int i=0; i<4; i++){
           if(i!=3) out_ps<<k[i]<<",";
           else out_ps<<k[i];
@@ -79,5 +78,5 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
     
     double R = p_real_me->Calc(p);
     if(m_check_real) real_out<<std::setprecision(15)<<R/m_sym<<std::endl;
-    return m_factor*R/m_sym;
+    return m_factor*R;
   }
