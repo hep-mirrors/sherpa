@@ -498,11 +498,11 @@ double Real_ff::Beta10(Vec4D k) {
     at = a / (1. + a + b);
     bt = b / (1. + a + b);
     if (m_use_fac) virtfac = 1 + m_gammaI / 2;
-    // S = 2./(a*b)*wm0(a,b);
+    S = 2./(a*b)*wm0(a,b);
     // double hfac = S*wmd(m_mass2/m_s,at,bt);
     // m_Sfac.push_back(S);
     D1(k, at, bt, wm, m_order);
-    m_D10 *= S;//*wmd(a,b);//*(1+m_gammaI/2);;
+    m_D10 *= S*wmd(a,b);//*(1+m_gammaI/2);;
     m_D11 *= S;
     m_D12 *= S;
     m_d10vec.push_back(m_D10);

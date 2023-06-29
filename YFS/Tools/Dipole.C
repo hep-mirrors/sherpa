@@ -59,9 +59,9 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   }
   else if (ty == dipoletype::code::final) m_thetai = m_thetaj = m_thetaij = 1;
   else if (ty == dipoletype::code::ifi) {
-    m_thetai = -1;
-    m_thetaj = 1;
-    m_thetaij = -1;
+    // m_thetai = -1;
+    // m_thetaj = 1;
+    m_thetaij = 1;
   }
   if ((m_momenta.size() != m_oldmomenta.size()) || m_newmomenta.size() != 2 || m_bornmomenta.size() != 2) {
     THROW(fatal_error, "Incorrect dipole size in YFS");
