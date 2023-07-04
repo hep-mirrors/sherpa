@@ -12,6 +12,7 @@
 #include "ATOOLS/Math/Histogram_2D.H"
 #include "ATOOLS/Math/Histogram.H"
 
+#include "PHASIC++/Process/Single_Process.H"
 
 
 
@@ -33,6 +34,7 @@ public:
   YFS::Define_Dipoles *p_nlodipoles;
   Griffin::Griffin_Interface *p_griffin;
   YFS::YFS_Form_Factor *p_yfsFormFact;
+  PHASIC::Single_Process *p_born;
   YFS::Define_Dipoles *p_dipoles;
   Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta;
   ATOOLS::Flavour_Vector m_flavs;
@@ -58,6 +60,7 @@ public:
 
   inline void SetBorn(double b) { m_born = b;}
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
+  inline void SetBornProc(PHASIC::Single_Process *p) {p_born = p;}
 
 };
 

@@ -38,7 +38,7 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    double bornsym = ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
    for(auto f: args.m_inflavs) m_flavs.push_back(f);
    for(auto f: args.m_outflavs) m_flavs.push_back(f);
-   // bornsym*= ATOOLS::Flavour::FSSymmetryFactor(born_flavs);
+   bornsym*= ATOOLS::Flavour::FSSymmetryFactor(born_flavs);
    // m_sym*=bornsym;
    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
    // m_factor = 2./M_PI;

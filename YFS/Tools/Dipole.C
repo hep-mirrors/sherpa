@@ -31,8 +31,8 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   // if(use_model_alpha) m_alp = s_model->ScalarConstant("alpha_QED");
   m_alp  = (*aqed)(0); 
   m_alpi = m_alp/M_PI;
-  if (use_model_alpha) m_rescale_alpha = 1;
-  else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
+  // if (use_model_alpha) m_rescale_alpha = 1;
+  // else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
   m_QiQj = 1;
   m_sp = (mom[0]+mom[1]).Abs2();
   for (auto &v : fl)
@@ -244,6 +244,15 @@ double Dipole::EEX(const Vec4D &k){
     double a = ap/(1.+ap+bp);
     double b = bp/(1.+ap+bp);
     return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b));
+  }
+  else if (Type() == dipoletype::ifi) {
+    double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
+    double ap = k*m_bornmomenta[0]/p1p2;
+    double bp = k*m_bornmomenta[1]/p1p2;
+    double V = 1+m_gamma/2.;
+    // double a = ap/(1.+ap+bp);
+    double b = bp/(1.+ap+bp);
+    return 0.5*Eikonal(k)*(sqr(1-ap)+sqr(1-b));
   }
   return 0;
 }
