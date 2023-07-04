@@ -51,6 +51,15 @@ namespace ATOOLS {
   };
   DEFINE_ENUM_FLAG_OPERATORS(ScaleFactorExpansions::code)
 
+  struct Qcut_Variation_Params {
+    Qcut_Variation_Params(double scale_factor):
+      m_scale_factor{scale_factor}
+    {}
+    bool IsTrivial() const { return (m_scale_factor == 1.0); }
+    std::string Name(Variations_Source source=ATOOLS::Variations_Source::all) const;
+    double m_scale_factor;
+  };
+
   //! Initialise and hold all information that is needed for varying input parameters
   class Variations {
   public:
@@ -160,15 +169,6 @@ namespace ATOOLS {
     std::vector<Bin> m_bins;
   };
 #endif
-
-  struct Qcut_Variation_Params {
-    Qcut_Variation_Params(double scale_factor):
-      m_scale_factor{scale_factor}
-    {}
-    bool IsTrivial() const { return (m_scale_factor == 1.0); }
-    std::string Name(Variations_Source source=ATOOLS::Variations_Source::all) const;
-    double m_scale_factor;
-  };
 
   /*!
    * Hold a set of input parameters and factors for a single input parameter variation
