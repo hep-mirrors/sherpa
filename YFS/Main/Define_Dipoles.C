@@ -336,27 +336,27 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   for (auto &D : m_dipolesFF) {
     sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
-
   for (auto &D : m_dipolesIF){
-    // sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    // sub -= D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    // if(D.IsResonance()) sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
-  // if(m_dipolesIF.size()>0){
-  //   // Calculate addition subtraction 
-  //   // Eq. 7 1801.08611
-  //   double t = (m_dipolesII[0].GetBornMomenta(0)-m_dipolesFF[0].GetMomenta(0)).Abs2();
-  //   double u = (m_dipolesII[0].GetBornMomenta(0)-m_dipolesFF[0].GetMomenta(1)).Abs2();
-  //   double s = (m_dipolesII[0].GetBornMomenta(0)+m_dipolesII[0].GetBornMomenta(1)).Abs2();
-  //   double mz = Flavour(kf_Z).Mass();
-  //   double gz = Flavour(kf_Z).Width();
-  //   Complex mbar2 = (mz*mz, -mz*gz);
-  //   Complex resSub = (m_alpha/M_PI*log(t/u));//*log((mbar2-s)/mbar2)); 
-  //   // sub += exp(0.5*sqrt(resSub*conj(resSub)).real());
-  //   // if(k.E() > gz) {
-  //     resSub*=log((mbar2-s)/mbar2);
-  //     // sub -= exp((resSub*conj(resSub)).real());
-  //   // }
-  //   // else sub += ((resSub*conj(resSub)).real());
-  // }
+  if(m_dipolesIF.size()>0){
+    // Calculate addition subtraction 
+    // Eq. 7 1801.08611
+      double t = (m_dipolesII[0].GetMomenta(0)-m_dipolesFF[0].GetMomenta(0)).Abs2();
+    double u = (m_dipolesII[0].GetMomenta(0)-m_dipolesFF[0].GetMomenta(1)).Abs2();
+    double s = (m_dipolesII[0].GetMomenta(0)+m_dipolesII[0].GetMomenta(1)).Abs2();
+    double mz = Flavour(kf_Z).Mass();
+    double gz = Flavour(kf_Z).Width();
+    Complex mbar2 = (mz*mz, -mz*gz);
+    Complex resSub = (m_alpha/M_PI*log(t/u));//*log((mbar2-s)/mbar2)); 
+    // sub += exp(0.5*sqrt(resSub*conj(resSub)).real());
+    // if(k.E() > gz) {
+      resSub*=log((mbar2-s)/mbar2);
+      // sub += 2.*((resSub*conj(resSub)).real());
+    // }
+    // else sub += ((resSub*conj(resSub)).real());
+  }
   return sub;///m_rescale_alpha;
 }
 
@@ -390,8 +390,9 @@ double Define_Dipoles::CalculateVirtualSub() {
     double mz = Flavour(kf_Z).Mass();
     double gz = Flavour(kf_Z).Width();
     Complex mbar2 = (mz*mz, -mz*gz);
-    Complex resSub = 2.*(m_alpha/M_PI*log(t/u)*log((mbar2-s)/mbar2)); 
-    sub += sqrt((resSub*conj(resSub)).real());
+    Complex resSub = (m_alpha/M_PI*log(t/u)*log((mbar2-s)/mbar2)); 
+    sub += 2.*((resSub*conj(resSub)).real());
+    // sub+=real(resSub);
   }
   return sub;
 }
@@ -425,6 +426,9 @@ double Define_Dipoles::CalculateEEXReal(const Vec4D & k){
   }
   for (auto &D: m_dipolesFF){
     eex += D.EEX(k);
+  }
+  for (auto &D: m_dipolesIF){
+    // eex += D.EEX(k);
   }
   return eex;
 }
