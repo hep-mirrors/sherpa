@@ -231,7 +231,7 @@ bool YFS_Handler::CalculateISR() {
   p_isr->Weight();
   m_g=p_dipoles->GetDipoleII()->m_gamma;
   m_gp=p_dipoles->GetDipoleII()->m_gamma;
-  AddFormFactor();
+  // AddFormFactor();
   if (m_isrWeight == 0) return false;
   m_photonSumISR = p_isr->GetPhotonSum();
   m_ISRPhotons   = p_isr->GetPhotons();
@@ -277,6 +277,17 @@ void YFS_Handler::AddFormFactor() {
     // high energy limit
     m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
     m_CalForm = true;
+  }
+  if(m_nlotype==nlo_type::real && m_fsrmode==1){
+    double yfsint = 1.;
+    double v,t;
+    for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleIF()->begin();
+         Dip != p_dipoles->GetDipoleIF()->end(); ++Dip) {
+        v= p_yfsFormFact->BVR_full(Dip->GetMomenta(0), Dip->GetMomenta(1),  sqrt(m_s) / 2., m_photonMass, 0);
+        t =  p_yfsFormFact->BVirtT(Dip->GetMomenta(0), Dip->GetMomenta(1));
+        yfsint*=exp(v+t);
+    }
+    m_formfactor*=yfsint;
   }
 }
 
@@ -460,6 +471,7 @@ double YFS_Handler::CalculateNLO(){
 
 
 void YFS_Handler::GenerateWeight() {
+  AddFormFactor();
   if (m_fixed_weight != 0) {
     m_yfsweight = m_fixed_weight;
     return;

@@ -29,7 +29,7 @@ namespace YFS{
         std::vector<double> m_masses, m_charges;
         Vec4D_Vector m_dipolePhotons;
         std::vector<std::string> m_names;
-        double m_QiQj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
+        double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
         bool m_setBorn, m_setbeams=1;
         int m_Nphotons, m_resonance;
         dipoletype::code m_type;

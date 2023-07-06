@@ -483,4 +483,21 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
 }
 
 
+double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
+  double m1 = p1.Mass();
+  double m2 = p2.Mass();
+  double p1p2 = p1*p2;
+  double t  = m1*m1 +m2*m2 -2.0*p1p2;
+  double ta = abs(t);
+  double zeta = 1+ m2*m2/ta;
+  double TBvirt = m_alpi*(
+       (log(2.0*p1p2/(m1*m2)) -1.0)*log(1./(m1*m2))
+       +0.5*zeta*log(ta*zeta/(m1*m2))
+       -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+       +DiLog(1/zeta) -1.0
+       +0.5*(zeta -1.0)*log(m1/m2)
+       -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+       );
+  return TBvirt;
+}
 

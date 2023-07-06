@@ -28,18 +28,20 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   // todo get alpha from YFS_BASE
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   bool use_model_alpha = s["USE_MODEL_ALPHA"].Get<bool>();
-  // if(use_model_alpha) m_alp = s_model->ScalarConstant("alpha_QED");
-  m_alp  = (*aqed)(0); 
+  if(use_model_alpha) m_alp = s_model->ScalarConstant("alpha_QED");
+  else m_alp  = (*aqed)(0); 
   m_alpi = m_alp/M_PI;
-  // if (use_model_alpha) m_rescale_alpha = 1;
-  // else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
-  m_QiQj = 1;
+  if (!use_model_alpha) m_rescale_alpha = 1;
+  else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
+  // m_QiQj = 1;
   m_sp = (mom[0]+mom[1]).Abs2();
+  m_Qi = fl[0].Charge();
+  m_Qj = fl[1].Charge();
+  m_QiQj = m_Qi*m_Qj;
   for (auto &v : fl)
   {
     m_masses.push_back(v.Mass());
     m_charges.push_back(v.Charge());
-    m_QiQj *= v.Charge();
     m_names.push_back(v.IDName());
     m_flavs.push_back(v);
   }
@@ -53,15 +55,16 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   for (auto &v : born) m_bornmomenta.push_back(v);
   if (ty == dipoletype::code::initial) {
     m_thetai = 1;
-    m_thetaj = -1;
-    m_thetaij = 1;
+    m_thetaj = 1;
     for (int i = 0; i < 2; ++i) m_beams.push_back(m_bornmomenta[i]);
   }
-  else if (ty == dipoletype::code::final) m_thetai = m_thetaj = m_thetaij = 1;
+  else if (ty == dipoletype::code::final) {
+    m_thetai = -1;
+    m_thetaj = -1;
+  }
   else if (ty == dipoletype::code::ifi) {
-    // m_thetai = -1;
-    // m_thetaj = 1;
-    m_thetaij = 1;
+    m_thetai = -1;
+    m_thetaj = 1;
   }
   if ((m_momenta.size() != m_oldmomenta.size()) || m_newmomenta.size() != 2 || m_bornmomenta.size() != 2) {
     THROW(fatal_error, "Incorrect dipole size in YFS");
@@ -72,6 +75,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
     // p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 0., 1.));
   }
   CalculateBeta();
+    m_thetaij = m_thetai*m_thetaj;
 }
 
 
@@ -213,7 +217,7 @@ void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D_Vector &Photons) {
 
 ATOOLS::Vec4D Dipole::Sum() {
   ATOOLS::Vec4D sum;
-  for (auto m : m_momenta) sum += m;
+  for (auto m : m_bornmomenta) sum += m;
   return sum;
 }
 
@@ -250,9 +254,9 @@ double Dipole::EEX(const Vec4D &k){
     double ap = k*m_bornmomenta[0]/p1p2;
     double bp = k*m_bornmomenta[1]/p1p2;
     double V = 1+m_gamma/2.;
-    // double a = ap/(1.+ap+bp);
+    double a = ap/(1.+ap+bp);
     double b = bp/(1.+ap+bp);
-    return 0.5*Eikonal(k)*(sqr(1-ap)+sqr(1-b));
+    return -2*Eikonal(k)*((sqr(1-ap)+sqr(1-b))+(sqr(1-a)+sqr(1-bp)));
   }
   return 0;
 }
@@ -286,6 +290,15 @@ bool Dipole::IsDecayAllowed(){
 
 double Dipole::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
+  // if(Type()!=dipoletype::ifi) return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
+  // else{
+  //   // PRINT_VAR(m_Qi);
+  //   // PRINT_VAR(m_Qj);
+  //   // if(m_Qi==m_Qj) return 0;
+  //   double s = m_thetaij*m_alp / (4 * M_PI * M_PI) * (m_Qi*p1 / (p1 * k) - m_Qj*p2 / (p2 * k)).Abs2();
+  //   // PRINT_VAR(s);
+  //   return m_thetaij*m_alp / (4 * M_PI * M_PI) * (m_Qi*p1 / (p1 * k) + m_Qj*p2 / (p2 * k)).Abs2(); 
+  // }
 }
 
 
@@ -304,7 +317,8 @@ std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
   for (int i = 0; i < 2; ++i)
   {
     out << "Mass of " << Dip.m_names[i] << " = " << Dip.m_masses[i] << std::endl
-        << "Charge of " << Dip.m_names[i] << " = " << Dip.m_charges[i] << std::endl;
+        << "Charge of " << Dip.m_names[i] << " = " << Dip.m_charges[i] << std::endl
+        << "Momentum of " << Dip.m_names[i] << " = " << Dip.m_momenta[i] << std::endl;
   }
 
   return out;
