@@ -105,6 +105,7 @@ void Real_ff::CalculateVirt() {
   m_beta02f = m_born * (1. + m_gammaF / 2. + m_delF2);
   m_beta02i =  m_born * (1. + m_gammaI / 2. + m_delI2);
   m_beta01 = m_born * (1. + m_gammaI / 2.) * (1. + m_gammaF / 2.);
+  m_beta01 = m_born * (1. + m_gammaI / 2.) * (1. + m_gammaF / 2.);
   // if (m_gammaF < 0) {
   //   PRINT_VAR(m_gammaF / 2.);
   //   PRINT_VAR(sqrt((m_q1 + m_q2).Abs2()));
@@ -189,8 +190,8 @@ void Real_ff::SetIncoming(YFS::Dipole_Vector::iterator dipole, Vec4D_Vector &bor
   m_alpi = m_alpha / M_PI;
   m_q1 = D.m_oldmomenta[0];
   m_q2 = D.m_oldmomenta[1];
-  m_beam1 = D.m_oldmomenta[0]; // called beam not to break for now. Is actually born final state momentum
-  m_beam2 = D.m_oldmomenta[1];
+  m_beam1 = D.m_momenta[0]; // called beam not to break for now. Is actually born final state momentum
+  m_beam2 = D.m_momenta[1];
   m_p1p2 = m_beam1 * m_beam2;
   Vec4D sumk;
   for (auto kk : k) sumk += kk;
@@ -202,9 +203,9 @@ void Real_ff::SetIncoming(YFS::Dipole_Vector::iterator dipole, Vec4D_Vector &bor
   double t1 = (1. + beta1 * beta2) / (beta1 + beta2);
   double logarg =  (1. + beta1) * (1. + beta2) / ((1. - beta1) * (1. - beta2));
   double QF2 = D.m_QiQj;
-  // logarg = (D.m_newmomenta[0] + D.m_newmomenta[1]).Abs2() / sqr(m_beam1.Mass());
-  m_gamma  =  m_alpi * t1* (log(logarg) - 2.); // See Mareks phd thesis A.2.1
-  m_gammap = m_alpi * t1 * (log(logarg ));
+  logarg = (D.m_oldmomenta[0] + D.m_oldmomenta[1]).Abs2() / sqr(m_beam1.Mass());
+  m_gamma  =  2.*m_alpi * (log(logarg) - 1.); // See Mareks phd thesis A.2.1
+  m_gammap =  2.*m_alpi  * (log(logarg ));
   m_gammaF = m_gamma;
   m_mass = (m_q1.Mass() + m_q2.Mass()) / 2.;
   m_mass2 = sqr(m_mass);
@@ -498,11 +499,11 @@ double Real_ff::Beta10(Vec4D k) {
     at = a / (1. + a + b);
     bt = b / (1. + a + b);
     if (m_use_fac) virtfac = 1 + m_gammaI / 2;
-    S = 2./(a*b)*wm0(a,b);
+    // S = 2./(a*b)*wm0(a,b);
     // double hfac = S*wmd(m_mass2/m_s,at,bt);
     // m_Sfac.push_back(S);
     D1(k, at, bt, wm, m_order);
-    m_D10 *= S*wmd(a,b);//*(1+m_gammaI/2);;
+    m_D10 *= S;//*wmd(a,b);//*(1+m_gammaI/2);;
     m_D11 *= S;
     m_D12 *= S;
     m_d10vec.push_back(m_D10);

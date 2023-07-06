@@ -79,6 +79,26 @@ void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
   Dipole_IF(fl, mom, born);
 }
 
+void Define_Dipoles::MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born) {
+  if ((mom.size() != fl.size())) {
+    msg_Out()<<"Dipole type is  =  "<<dipoletype::ifi<<std::endl
+             <<" mom.size() =  "<<mom.size()<<std::endl
+             <<" fl.size() =  "<<fl.size()<<std::endl
+             <<" born.size() =  "<<born.size()<<std::endl;
+    THROW(fatal_error, "Incorrect dipole size in YFS for dipoletype");
+  }
+  ATOOLS::Flavour_Vector dipoleFlav;
+  ATOOLS::Vec4D_Vector dipoleMom;
+  Dipole_Vector dipoles;
+  m_test_dip.clear();
+  m_flav_label.clear();
+  m_softphotonSum *= 0;
+  m_out = fl.size() - m_in;
+  m_olddipoles.clear();
+  m_dipolesFF.clear();
+  m_bornmomenta = born;
+  Dipole_FF(fl, mom);
+}
 
 void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born ) {
   ATOOLS::Flavour_Vector dipoleFlav;
@@ -91,7 +111,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
   m_out = fl.size() - m_in;
   m_olddipoles.clear();
   m_dipolesFF.clear();
-  m_dipolesIF.clear();
+  // m_dipolesIF.clear();
   for (int i = 0; i < fl.size(); ++i)
   {
     m_flav_label[fl[i]] = i;
@@ -103,10 +123,13 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
     m_flav_label[fl[2]] = 2;
     m_flav_label[fl[3]] = 3;
     for (int i = 2; i < fl.size(); i++) {
-      ff.push_back(fl[i]);
-      mm.push_back(mom[i]);
-      bm.push_back(m_bornmomenta[i]);
+      if(fl[i].IsChargedLepton()){
+        ff.push_back(fl[i]);
+        mm.push_back(mom[i]);
+        bm.push_back(m_bornmomenta[i]);
+      }
     }
+    if(ff.size()==0) return;
     Dipole D(ff, mm, bm, dipoletype::final);
     D.SetResonance(true);
     // IsResonant(D);
@@ -336,27 +359,32 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   for (auto &D : m_dipolesFF) {
     sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
-  for (auto &D : m_dipolesIF){
-    // sub -= D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-    // if(D.IsResonance()) sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-  }
+  // for (auto &D : m_dipolesIF){
+    // sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+  //   // sub-=D.m_QiQj*p_yfsFormFact->BVirtT(D.GetMomenta(0), D.GetMomenta(1));
+  //   // sub+=p_yfsFormFact->BVR_full(D.GetMomenta(0), D.GetMomenta(1),  sqrt(m_s) / 2., 1., 0);;
+  //   // if(D.IsResonance()) sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+  // }
+  // PRINT_VAR(sub);
   if(m_dipolesIF.size()>0){
     // Calculate addition subtraction 
     // Eq. 7 1801.08611
-      double t = (m_dipolesII[0].GetMomenta(0)-m_dipolesFF[0].GetMomenta(0)).Abs2();
-    double u = (m_dipolesII[0].GetMomenta(0)-m_dipolesFF[0].GetMomenta(1)).Abs2();
-    double s = (m_dipolesII[0].GetMomenta(0)+m_dipolesII[0].GetMomenta(1)).Abs2();
     double mz = Flavour(kf_Z).Mass();
     double gz = Flavour(kf_Z).Width();
-    Complex mbar2 = (mz*mz, -mz*gz);
-    Complex resSub = (m_alpha/M_PI*log(t/u));//*log((mbar2-s)/mbar2)); 
-    // sub += exp(0.5*sqrt(resSub*conj(resSub)).real());
-    // if(k.E() > gz) {
-      resSub*=log((mbar2-s)/mbar2);
-      // sub += 2.*((resSub*conj(resSub)).real());
-    // }
-    // else sub += ((resSub*conj(resSub)).real());
-  }
+    // if(abs(sqrt(m_s)-mz)<=2.*gz){
+      double t = (m_dipolesII[0].GetMomenta(0)-m_dipolesFF[0].GetMomenta(0)).Abs2();
+      double u = (m_dipolesII[0].GetMomenta(0)-m_dipolesFF[0].GetMomenta(1)).Abs2();
+      double s = (m_dipolesII[0].GetMomenta(0)+m_dipolesII[0].GetMomenta(1)).Abs2();
+      Complex mbar2 = (mz*mz, -mz*gz);
+      // Complex resSub = m_alpha/M_PI*(log(t/u)*(-log(sqrt(t*u)))+0.5*log(t/u)); 
+      Complex resSub = m_alpha/M_PI*(log(t/u)*log((mbar2-s)/mbar2)); 
+      // double resSub = -2*m_alpha/M_PI*(log(t/u)); 
+      // sub += ((resSub*conj(resSub)).real());
+      // sub += resSub.real();
+      // sub += resSub*resSub;
+    }
+  //   // else sub += ((resSub*conj(resSub)).real());
+  // }
   return sub;///m_rescale_alpha;
 }
 
@@ -379,7 +407,7 @@ double Define_Dipoles::CalculateVirtualSub() {
     // change to + for IFI terms
     // Note Born momenta are redifined
     // for IFI terms.
-    sub += D.m_QiQj*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
    if(m_dipolesIF.size()>0){
     // Calculate addition subtraction 
@@ -390,8 +418,8 @@ double Define_Dipoles::CalculateVirtualSub() {
     double mz = Flavour(kf_Z).Mass();
     double gz = Flavour(kf_Z).Width();
     Complex mbar2 = (mz*mz, -mz*gz);
-    Complex resSub = (m_alpha/M_PI*log(t/u)*log((mbar2-s)/mbar2)); 
-    sub += 2.*((resSub*conj(resSub)).real());
+    Complex resSub = 2.*(m_alpha/M_PI*log(t/u)*log((mbar2-s)/mbar2)); 
+    // sub += ((resSub*conj(resSub)).real());
     // sub+=real(resSub);
   }
   return sub;
@@ -427,9 +455,9 @@ double Define_Dipoles::CalculateEEXReal(const Vec4D & k){
   for (auto &D: m_dipolesFF){
     eex += D.EEX(k);
   }
-  for (auto &D: m_dipolesIF){
-    // eex += D.EEX(k);
-  }
+  // for (auto &D: m_dipolesIF){
+  //   eex += D.EEX(k);
+  // }
   return eex;
 }
 
