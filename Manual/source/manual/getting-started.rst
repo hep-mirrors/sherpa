@@ -162,7 +162,7 @@ The following cmake command should be used
 
 .. code-block:: shell-session
 
-   $ cmake <your options> -DSHERPA_ENABLE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_Fortran_COMPILER=mpif90
+   $ cmake <your options> -DSHERPA_ENABLE_MPI=ON -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_Fortran_COMPILER=mpif90
 
 Sherpa can then be run with
 
