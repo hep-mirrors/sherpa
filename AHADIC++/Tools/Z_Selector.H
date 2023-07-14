@@ -3,10 +3,11 @@
 
 namespace AHADIC {
   class Splitter_Base;
-  
+
   class Z_Selector {
   private:
     Splitter_Base * p_splitterbase;
+    std::vector<double> variation_weights;
   public:
     Z_Selector();
     ~Z_Selector();

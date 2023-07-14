@@ -22,7 +22,16 @@ double Z_Selector::operator()(const double & zmin,const double & zmax,
   double z(-1.);
   do {
     z = zmin+ran->Get()*(zmax-zmin);
-  } while (p_splitterbase->WeightFunction(z,zmin,zmax,cnt)<ran->Get());
+    auto wgt = p_splitterbase->WeightFunction(z,zmin,zmax,cnt);
+    if((wgt<ran->Get())) {
+      // add acceptance weight
+      break;
+    }
+    else {
+      // add rejection weight
+      continue;
+    }
+  } while (true);
   return z;
 }
 
