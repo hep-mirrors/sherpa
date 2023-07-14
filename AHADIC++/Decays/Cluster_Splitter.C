@@ -146,6 +146,11 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   return (ok && (mustrecalc?RecalculateZs():true));
 }
 
+std::vector<double>& Cluster_Splitter::get_variationweights(){
+  return m_zselector.variation_weights;
+}
+
+
 double Cluster_Splitter::
 WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {

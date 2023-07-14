@@ -62,11 +62,11 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	break;
       }
     }
-    blit++;      
+    blit++;
   }
   if (m_shrink) Shrink(blobs);
   return Return_Value::Success;
-}  
+}
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   Reset();
@@ -91,6 +91,9 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     Reset(blob);
     return Return_Value::Retry_Event;
   }
+
+  //Ask for weight vector and add to blob
+  const auto wgts = m_clusterdecayer->get_variationweights();
   return Return_Value::Success;
 }
 

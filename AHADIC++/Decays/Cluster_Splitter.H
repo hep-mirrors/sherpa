@@ -43,6 +43,7 @@ namespace AHADIC {
 			  const double & zmin,const double & zmax,
 			  const unsigned int & cnt);
     void   SetOutput(const bool & out) { m_output = out; }
+    std::vector<double>& get_variationweights();
   };
 }
 
