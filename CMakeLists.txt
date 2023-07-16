@@ -65,6 +65,17 @@ option(SHERPA_ENABLE_THREADING               "Enables building with threading." 
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
+
+########################################################################
+### enable option when path was provided explicitly via cmake
+set(alldirenables BLACKHAT GOSAM HEPMC2 HepMC3 HZTOOL LHAPDF MCFM OPENLOOPS PYTHIA6 PYTHIA8 RECOLA RIVET)
+foreach (en IN LISTS alldirenables)
+  if (${en}_DIR)
+     string(TOUPPER "${en}" ENUP)
+     SET(SHERPA_ENABLE_${ENUP} ON CACHE BOOL "" FORCE)
+     message(STATUS "SHERPA: Set SHERPA_ENABLE_${ENUP}=ON as ${en}_DIR is given")
+  endif()
+endforeach()
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CLANG_TIDY DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
 INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
