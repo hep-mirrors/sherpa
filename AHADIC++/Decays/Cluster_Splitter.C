@@ -10,7 +10,7 @@ using namespace std;
 Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters) :
   Splitter_Base(cluster_list,softclusters),
-  m_output(false) 
+  m_output(false)
 {
 }
 
@@ -18,18 +18,23 @@ void Cluster_Splitter::Init(const bool & isgluon) {
   Splitter_Base::Init(false);
   m_defmode  = hadpars->Switch("ClusterSplittingForm");
   m_beammode = hadpars->Switch("RemnantSplittingForm");
-  m_alpha[0] = hadpars->Get("alphaL");
-  m_beta[0]  = hadpars->Get("betaL");
-  m_gamma[0] = hadpars->Get("gammaL");
-  m_alpha[1] = hadpars->Get("alphaH");
-  m_beta[1]  = hadpars->Get("betaH");
-  m_gamma[1] = hadpars->Get("gammaH");
-  m_alpha[2] = hadpars->Get("alphaD");
-  m_beta[2]  = hadpars->Get("betaD");
-  m_gamma[2] = hadpars->Get("gammaD");
-  m_alpha[3] = hadpars->Get("alphaB");
-  m_beta[3]  = hadpars->Get("betaB");
-  m_gamma[3] = hadpars->Get("gammaB");
+
+  m_alpha[0].push_back(hadpars->Get("alphaL"));
+  m_beta[0].push_back(hadpars->Get("betaL"));
+  m_gamma[0].push_back(hadpars->Get("gammaL"));
+
+  m_alpha[1].push_back( hadpars->Get("alphaH"));
+  m_beta[1].push_back(hadpars->Get("betaH"));
+  m_gamma[1].push_back(hadpars->Get("gammaH"));
+
+  m_alpha[2].push_back( hadpars->Get("alphaD"));
+  m_beta[2].push_back(hadpars->Get("betaD"));
+  m_gamma[2].push_back(hadpars->Get("gammaD"));
+
+  m_alpha[3].push_back( hadpars->Get("alphaB"));
+  m_beta[3].push_back(hadpars->Get("betaB"));
+  m_gamma[3].push_back(hadpars->Get("gammaB"));
+
   m_kt02     = sqr(hadpars->Get("kT_0"));
   m_analyse  = false; //hadpars->Switch("Analysis");
   if (m_analyse) {
@@ -64,10 +69,10 @@ bool Cluster_Splitter::MakeLongitudinalMomenta() {
 }
 
 void Cluster_Splitter::FixCoefficients() {
-  // this is where the magic happens.  
+  // this is where the magic happens.
   m_mode = m_defmode;
   double sum_mass = 0, massfac;
-  double threshold = p_softclusters->DecayThreshold(p_part[0]->Flavour(),p_part[1]->Flavour()); 
+  double threshold = p_softclusters->DecayThreshold(p_part[0]->Flavour(),p_part[1]->Flavour());
   for (size_t i=0;i<2;i++) {
     Proto_Particle * part = p_part[i];
     Flavour flav = part->Flavour();
@@ -84,9 +89,10 @@ void Cluster_Splitter::FixCoefficients() {
       flcnt  = 3;
       m_mode = m_beammode;
     }
-    m_a[i] = m_alpha[flcnt]; // * m_Q/threshold
-    m_b[i] = m_beta[flcnt]  * threshold/m_Q;
-    m_c[i] = m_gamma[flcnt];
+    threshold_fac = threshold/m_Q;
+    m_a[i] = flcnt;
+    m_b[i] = flcnt;
+    m_c[i] = flcnt;
     sum_mass += massfac * p_constituents->Mass(flav);
   }
   m_masses = Max(1.,sum_mass);
@@ -113,14 +119,16 @@ void Cluster_Splitter::CalculateLimits() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
+  msg_Out() << "Got to a non-ported place" << std::endl;
+  msg_Out() << "bool Cluster_Splitter::MakeLongitudinalMomentaZ()\n";
   size_t maxcounts=1000;
   while ((maxcounts--)>0) {
     if (MakeLongitudinalMomentaZSimple()) {
       double weight=1.;
       for (size_t i=0;i<2;i++) {
-	if (m_gamma[i]>1.e-4) {
+	if (m_gamma[i][0]>1.e-4) {
 	  double DeltaM2 = m_R2[i]-m_minQ2[i];
-	  weight *= DeltaM2>0.?exp(-m_gamma[i]*DeltaM2/m_sigma[i]):0.;
+	  weight *= DeltaM2>0.?exp(-m_gamma[i][0]*DeltaM2/m_sigma[i]):0.;
 	}
       }
       if (weight>=ran->Get()) return true;
@@ -144,11 +152,6 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   bool ok = (m_R2[0]>m_mdec2[0]+m_kt2) && (m_R2[1]>m_mdec2[1]+m_kt2);
   return (ok && (mustrecalc?RecalculateZs():true));
 }
-
-std::vector<double>& Cluster_Splitter::get_variationweights(){
-  return m_zselector.variation_weights;
-}
-
 
 double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
 					       double alpha, double beta,
@@ -185,9 +188,53 @@ double Cluster_Splitter::
 WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {
   // identical, just have to check the m_a, m_b, m_c
-  auto value = FragmentationFunction(z,zmin,zmax,m_a[cnt], m_b[cnt], m_c[cnt]);
+  const double alpha = m_alpha[m_a[cnt]][0];
+  const double beta  = m_beta [m_b[cnt]][0];
+  const double gamma = m_gamma[m_c[cnt]][0];
+  auto value = FragmentationFunction(z,zmin,zmax,alpha, beta, gamma);
   return value;
 }
+
+void Cluster_Splitter::z_rejected(const double wgt, const double & z,
+				  const double & zmin,const double & zmax,
+				  const unsigned int & cnt) {
+  // sanity checks, should probably be done somewhere else
+  if(variation_weights.size() != m_alpha[0].size()) {
+    // should in principle always be the case
+    variation_weights.resize(m_alpha[0].size());
+  }
+
+  for (int i{0}; i<m_alpha[0].size(); i++) {
+    const auto a = m_alpha[cnt][i];
+    const auto b = m_alpha[cnt][i];
+    const auto c = m_alpha[cnt][i];
+    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c);
+    // TODO THINK!
+    variation_weights[i] *= wgt / wgt_new;
+  }
+  return;
+}
+
+void Cluster_Splitter::z_accepted(const double wgt, const double & z,
+				  const double & zmin,const double & zmax,
+				  const unsigned int & cnt) {
+  // sanity checks, should probably be done somewhere else
+  if(variation_weights.size() != m_alpha[0].size()) {
+    // should in principle always be the case
+    variation_weights.resize(m_alpha[0].size());
+  }
+
+  for (int i{0}; i<m_alpha[0].size(); i++) {
+    const auto a = m_alpha[cnt][i];
+    const auto b = m_alpha[cnt][i];
+    const auto c = m_alpha[cnt][i];
+    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c);
+    // TODO THINK!
+    variation_weights[i] *= 1 - wgt / wgt_new;
+  }
+  return;
+}
+
 
 bool Cluster_Splitter::RecalculateZs() {
   double e12  = (m_R2[0]+m_kt2)/m_Q2, e21 = (m_R2[1]+m_kt2)/m_Q2;
@@ -215,13 +262,15 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
+  msg_Out() << "Got to a non-ported place" << std::endl;
+  msg_Out() << "bool Cluster_Splitter::MakeLongitudinalMomentaMass()" << std::endl;
   size_t maxcounts=1000;
   while ((maxcounts--)>0) {
     if (MakeLongitudinalMomentaMassSimple()) {
       double weight=1.;
       for (size_t i=0;i<2;i++) {
-	if (m_alpha[i]>1.e-4) weight *= pow(m_z[i],m_alpha[i]);
-	if (m_beta[i]>1.e-4)  weight *= pow(1.-m_z[i],m_beta[i]);
+	if (m_alpha[i][0]>1.e-4) weight *= pow(m_z[i],m_alpha[i][0]);
+	if (m_beta[i][0]>1.e-4)  weight *= pow(1.-m_z[i],m_beta[i][0]);
       }
       if (weight>=ran->Get()) return true;
     }
@@ -257,7 +306,7 @@ bool Cluster_Splitter::FillParticlesInLists() {
     else p_cluster_list->push_back(p_out[i]);
   }
   /*
-  if (shuffle>0) 
+  if (shuffle>0)
     msg_Out()<<METHOD<<" shuffled momenta:\n"
 	     <<m_cms<<" -> "<<(m_newmom[0]+m_newmom[1])<<"\n = "<<m_newmom[0]<<" + "<<m_newmom[1]<<"\n";
   else {
@@ -286,12 +335,12 @@ size_t Cluster_Splitter::MakeAndCheckClusters() {
   return shuffle;
 }
 
-void Cluster_Splitter::MakeNewMomenta(size_t shuffle) {    
+void Cluster_Splitter::MakeNewMomenta(size_t shuffle) {
   double mt2[2], alpha[2], beta[2];
   for (size_t i=0;i<2;i++) {
     mt2[i]    = (shuffle&(i+1) ? sqr(m_fl[i].Mass()) : m_mass2[i] ) + m_kt2;
   }
-  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0]))/(2.*m_Q2); 
+  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0]))/(2.*m_Q2);
   beta[0]     = mt2[0]/(m_Q2*alpha[0]);
   alpha[1]    = 1.-alpha[0];
   beta[1]     = 1.-beta[0];
@@ -311,7 +360,7 @@ void Cluster_Splitter::UpdateAndFillCluster(size_t i) {
   Poincare BoostOut(m_newmom[i]);
   //Vec4D check(0.,0.,0.,0.);
   for (size_t j=0;j<2;j++) {
-    Vec4D partmom = (*p_out[i])[j]->Momentum(); 
+    Vec4D partmom = (*p_out[i])[j]->Momentum();
     BoostIn.Boost(partmom);
     BoostOut.BoostBack(partmom);
     m_rotat.RotateBack(partmom);

@@ -23,14 +23,15 @@ double Z_Selector::operator()(const double & zmin,const double & zmax,
   do {
     z = zmin+ran->Get()*z_range;
     // should eventually return a vector
-    auto wgt = p_splitterbase->WeightFunction(z,zmin,zmax,cnt);
-    if((wgt<ran->Get())) {
-      // add acceptance weight
-      break;
+    auto sel_wgt = p_splitterbase->WeightFunction(z,zmin,zmax,cnt);
+    if((sel_wgt<ran->Get())) {
+      p_splitterbase->z_rejected(sel_wgt, z,zmin,zmax,cnt);
+      continue;
     }
     else {
       // add rejection weight
-      continue;
+      p_splitterbase->z_accepted(sel_wgt, z,zmin,zmax,cnt);
+      break;
     }
   } while (true);
   return z;

@@ -66,7 +66,7 @@ void Hadronisation_Parameters::ReadParameters()
   ReadGeneralSwitches();
   auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("minmass2")] =
-    s["MIN_MASS2"].SetDefault(0.10).Get<double>(); 
+    s["MIN_MASS2"].SetDefault(0.10).Get<double>();
   ReadPoppingParameters();
   ReadMesonWeights();
   ReadSplittingParameters();
@@ -138,8 +138,8 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_parametermap[string("betaH")]  =
     s["BETA_H"].SetDefault(1.8).Get<double>();
   m_parametermap[string("gammaH")] =
-    s["GAMMA_H"].SetDefault(0.024).Get<double>();
-  // These guys make a lot of difference - especially the transition ones, once we switch them on. 
+    s["GAMMA_H"].SetDefault(m_shower ? 0.05 : 0.054).Get<double>();
+  // These guys make a lot of difference - especially the transition ones, once we switch them on.
   m_switchmap["direct_transition"] =
     s["DIRECT_TRANSITIONS"].SetDefault(1).Get<int>();
   m_parametermap[string("decay_threshold")] =
@@ -171,17 +171,17 @@ void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
 void Hadronisation_Parameters::ReadMesonWeights()
 {
   auto s = Settings::GetMainSettings()["AHADIC"];
-  m_parametermap[string("Singlet_Suppression")]   = 
+  m_parametermap[string("Singlet_Suppression")]   =
     s["SINGLET_MODIFIER"].SetDefault(2.0).Get<double>();
-  m_parametermap[string("Mixing_Angle_0+")]    = 
+  m_parametermap[string("Mixing_Angle_0+")]    =
     s["Mixing_0+"].SetDefault<double>(-14.1/180.0*M_PI).Get<double>();;
-  m_parametermap[string("Mixing_Angle_1-")]    = 
+  m_parametermap[string("Mixing_Angle_1-")]    =
     s["Mixing_1-"].SetDefault<double>(36.4/180.0*M_PI).Get<double>();;
-  m_parametermap[string("Mixing_Angle_2+")]    = 
+  m_parametermap[string("Mixing_Angle_2+")]    =
     s["Mixing_2+"].SetDefault<double>(27.0/180.0*M_PI).Get<double>();;
-  m_parametermap[string("Mixing_Angle_3-")]    = 
+  m_parametermap[string("Mixing_Angle_3-")]    =
     s["Mixing_3-"].SetDefault<double>(0.5411).Get<double>();;
-  m_parametermap[string("Mixing_Angle_4+")]    = 
+  m_parametermap[string("Mixing_Angle_4+")]    =
     s["Mixing_4+"].SetDefault<double>(0.6283).Get<double>();;
 
   // Mesons currently included
@@ -268,8 +268,8 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,
       cms  += moms[i];
       mass += masses[i];
       if (dabs(moms[i].Abs2())>1.e-6) prepare = true;
-    } 
-    if (Vec3D(cms).Abs()>1.e-6) { 
+    }
+    if (Vec3D(cms).Abs()>1.e-6) {
       boost = true;
       rest  = Poincare(cms);
       for (int i=0;i<n;i++) rest.Boost(moms[i]);

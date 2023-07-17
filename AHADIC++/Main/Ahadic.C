@@ -86,8 +86,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
-    //msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
-    //	       <<(*blob);
     Reset(blob);
     Reset();
     return Return_Value::New_Event;
@@ -106,7 +104,8 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   }
 
   //Ask for weight vector and add to blob
-  const auto wgts = m_clusterdecayer.get_variationweights();
+  const auto wgts        = m_clusterdecayer.get_variationweights();
+  const auto wgts_gluons = m_gluondecayer.get_variationweights();
   if(wgts.size() != 0) {
     // add weight vector to blob
     msg_Out()<<"wgts.size = " << wgts.size() << std::endl;

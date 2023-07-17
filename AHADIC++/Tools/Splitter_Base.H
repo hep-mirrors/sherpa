@@ -12,7 +12,7 @@
 namespace AHADIC {
   class Splitter_Base {
   protected:
-    std::list<Cluster *> * p_cluster_list; 
+    std::list<Cluster *> * p_cluster_list;
     Soft_Cluster_Handler * p_softclusters;
 
     Single_Transitions   * p_singletransitions;
@@ -24,7 +24,7 @@ namespace AHADIC {
 
     bool   m_ktorder;
     size_t m_attempts;
-    
+
     Proto_Particle * p_part[3];
     ATOOLS::Vec4D    m_Qvec;
     bool   m_barrd;
@@ -36,11 +36,11 @@ namespace AHADIC {
     double          m_popped_mass, m_popped_mass2, m_msum[2], m_msum2[2];
     ATOOLS::Flavour m_newflav[2];
     double          m_minQ[2], m_minQ2[2], m_mdec[2], m_mdec2[2];
-    
+
     double          m_zmin[2], m_zmax[2], m_z[2];
     double          m_ktmax, m_kt2max, m_ktfac, m_kt, m_kt2, m_phi;
     ATOOLS::Vec4D   m_ktvec;
-    
+
     ATOOLS::Poincare m_boost, m_rotat;
 
     bool m_analyse;
@@ -65,14 +65,21 @@ namespace AHADIC {
 		  Soft_Cluster_Handler * softclusters);
     ~Splitter_Base();
     virtual void Init(const bool & isgluon);
-    
+
     virtual bool operator()(Proto_Particle * part1,Proto_Particle * part2,
 			    Proto_Particle * part3=0);
+    // virtual double WeightFunction(const double & z,
+    // 				  const double & zmin,const double & zmax,
+    // 				  const unsigned int & cnt)=0;
     virtual double WeightFunction(const double & z,
-				  const double & zmin,const double & zmax,
-				  const unsigned int & cnt)=0;
+					const double & zmin,const double & zmax,
+					const unsigned int & cnt)=0;
+    virtual void z_rejected(const double wgt, const double &, const double &,
+			    const double &, const unsigned int &) = 0;
+    virtual void z_accepted(const double wgt, const double &, const double &,
+			    const double &, const unsigned int &) = 0;
   };
-  
+
 }
 
 #endif

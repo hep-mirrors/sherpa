@@ -61,10 +61,6 @@ bool Cluster_Decayer::Treat(Cluster * cluster) {
   return false;
 }
 
-std::vector<double>& Cluster_Decayer::get_variationweights() {
-  return m_splitter.get_variationweights();
-}
-
 void Cluster_Decayer::Test(const double & Q, const Flavour & flav,
 			   bool clustermasses) {
   map<string,Histogram *> histos;
