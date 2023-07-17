@@ -16,9 +16,6 @@ namespace AHADIC {
 
     double operator()(const double & zmin=1.e-6,const double & zmax=0.999999,
 		      const unsigned int & cnt=0);
-
-    // This should be a getter rather than allowing direct access
-    std::vector<double> variation_weights;
   };
 }
 

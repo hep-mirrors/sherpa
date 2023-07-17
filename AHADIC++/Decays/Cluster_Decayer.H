@@ -22,7 +22,9 @@ namespace AHADIC {
     ~Cluster_Decayer();
     void Init();
     void Reset();
-    std::vector<double>& get_variationweights();
+    std::vector<double>& get_variationweights() {
+      return m_splitter.get_variationweights();
+    };
     bool operator()(bool breakit=false);
   };
 }

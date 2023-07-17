@@ -187,3 +187,12 @@ void Splitter_Base::MakeTransverseMomentum() {
   m_phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);
 }
+
+// void Splitter_Base::z_rejected(double, double, double, int) override {
+//   return;
+// }
+// void Splitter_Base::z_accepted(double, double, double, int) override {
+//   return;
+// }
+
+

@@ -23,7 +23,7 @@ void Gluon_Splitter::Init(const bool & isgluon) {
     m_histograms[std::string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
   }
 }
-  
+
 bool Gluon_Splitter::MakeLongitudinalMomenta() {
   m_arg = (sqr(m_Q2-m_minQ2[0]-m_popped_mass2)-
 	   4.*(m_Q2*m_kt2 + m_minQ2[0]*m_popped_mass2));
@@ -82,6 +82,17 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   return (pow(z,m_alpha)+pow(1.-z,m_alpha))/norm;
 }
 
+void Gluon_Splitter::z_rejected(const double wgt, const double & z,
+				const double & zmin,const double & zmax,
+				const unsigned int & cnt) {
+  return;
+}
+
+void Gluon_Splitter::z_accepted(const double wgt, const double & z,
+				const double & zmin,const double & zmax,
+				const unsigned int & cnt) {
+  return;
+}
 
 bool Gluon_Splitter::CheckKinematics() {
   // check if:

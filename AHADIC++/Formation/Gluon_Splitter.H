@@ -10,9 +10,9 @@ namespace AHADIC {
     int    m_mode;
     double m_alpha, m_arg, m_x, m_y, m_lastmass;
     bool   m_lastB, m_lastC;
-    
+
     long int  m_kin_fails{ 0 };
-    
+
     bool      MakeLongitudinalMomenta();
     void      CalculateLimits();
     bool      CalculateXY();
@@ -24,6 +24,7 @@ namespace AHADIC {
     Cluster * MakeCluster();
     void      ReplaceClusterWithHadron(const ATOOLS::Flavour & fl,ATOOLS::Vec4D & mom);
     void      UpdateSpectator(const ATOOLS::Vec4D & clumom);
+    std::vector<double> variation_weights;
   public:
     Gluon_Splitter(std::list<Cluster *> * cluster_list,
 		   Soft_Cluster_Handler * softclusters) :
@@ -34,9 +35,20 @@ namespace AHADIC {
     double WeightFunction(const double & z,
 			  const double & zmin=0.,const double & zmax=1.,
 			  const unsigned int & cnt=0);
+
     inline void GetLast(double & lastmass, bool & isB, bool & isC) {
       lastmass = m_lastmass; isB = m_lastB; isC = m_lastC;
     }
+    std::vector<double>& get_variationweights() {return variation_weights;};
+
+    void z_rejected(const double wgt, const double & z,
+		    const double & zmin,const double & zmax,
+		    const unsigned int & cnt) override;
+
+    void z_accepted(const double wgt, const double & z,
+		    const double & zmin,const double & zmax,
+		    const unsigned int & cnt) override;
+
   };
 }
 
