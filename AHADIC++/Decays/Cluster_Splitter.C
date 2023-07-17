@@ -150,22 +150,20 @@ std::vector<double>& Cluster_Splitter::get_variationweights(){
 }
 
 
-double Cluster_Splitter::
-WeightFunction(const double & z,const double & zmin,const double & zmax,
-	       const unsigned int & cnt) {
-  // identical, just have to check the m_a, m_b, m_c
+double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
+					       double alpha, double beta,
+					       double gamma) {
   double norm = 1., arg;
   double value = 1.;
-  if (m_a[cnt]>=0.) norm *= pow(zmax,m_a[cnt]);
-               else norm *= pow(zmin,m_a[cnt]);
-  if (m_b[cnt]>=0.) norm *= pow(1.-zmin,m_b[cnt]);
-               else norm *= pow(1.-zmax,m_b[cnt]);
-  double wt = pow(z,m_a[cnt]) * pow(1.-z,m_b[cnt]);
-
+  if (alpha>=0.) norm *= pow(zmax,alpha);
+               else norm *= pow(zmin,alpha);
+  if (beta>=0.) norm *= pow(1.-zmin,beta);
+               else norm *= pow(1.-zmax,beta);
+  double wt = pow(z,alpha) * pow(1.-z,beta);
   value = wt/norm;
-  
+
   if (m_mode==2) {
-    arg   = dabs(m_c[cnt])>1.e-2 ? m_c[cnt]*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
+    arg   = dabs(gamma)>1.e-2 ? gamma*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
     value *= exp(-arg*((zmax-z)/(z*zmax)));
     norm *= exp(-arg/zmax);
     wt   *= exp(-arg/z);
@@ -180,6 +178,14 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       <<"c part = "<<exp(-arg/z)<<"/"<<exp(-arg/zmax)<<".\n";
     exit(1);
   }
+  return value;
+}
+
+double Cluster_Splitter::
+WeightFunction(const double & z,const double & zmin,const double & zmax,
+	       const unsigned int & cnt) {
+  // identical, just have to check the m_a, m_b, m_c
+  auto value = FragmentationFunction(z,zmin,zmax,m_a[cnt], m_b[cnt], m_c[cnt]);
   return value;
 }
 

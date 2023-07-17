@@ -1,13 +1,14 @@
 #ifndef AHADIC_Tools_Z_Selector_H
 #define AHADIC_Tools_Z_Selector_H
 
+#include <vector>
+
 namespace AHADIC {
   class Splitter_Base;
 
   class Z_Selector {
   private:
     Splitter_Base * p_splitterbase;
-    std::vector<double> variation_weights;
   public:
     Z_Selector();
     ~Z_Selector();
@@ -15,6 +16,9 @@ namespace AHADIC {
 
     double operator()(const double & zmin=1.e-6,const double & zmax=0.999999,
 		      const unsigned int & cnt=0);
+
+    // This should be a getter rather than allowing direct access
+    std::vector<double> variation_weights;
   };
 }
 

@@ -9,7 +9,7 @@
 namespace AHADIC {
   class Cluster_Decayer {
   private:
-    std::list<Cluster *> * p_cluster_list; 
+    std::list<Cluster *> * p_cluster_list;
     Soft_Cluster_Handler * p_softclusters;
     Cluster_Splitter m_splitter;
 
