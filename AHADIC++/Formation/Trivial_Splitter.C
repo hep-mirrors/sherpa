@@ -12,7 +12,7 @@ Trivial_Splitter::Trivial_Splitter() {}
 void Trivial_Splitter::Init() {
   p_constituents = hadpars->GetConstituents();
   // minmass is the mass of the lightest constituent (usually u/d quark)
-  m_kt2max       = sqr(hadpars->Get("kT_max")); 
+  m_kt2max       = sqr(hadpars->Get("kT_max"));
   m_minmass      = p_constituents->MinMass();
   m_flavourselector.InitWeights();
   m_ktselector.Init(false);
@@ -27,7 +27,7 @@ bool Trivial_Splitter::operator()(Proto_Particle * part1,
   SelectFlavour();
   FixTransverseMomentum(true);
   ConstructRescueMomenta();
-  
+
   p_part1->SetFlavour(m_newflav.Bar());
   p_part1->SetMomentum(m_q1mom);
   p_part2->SetFlavour(m_newflav);

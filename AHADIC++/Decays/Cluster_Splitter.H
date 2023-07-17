@@ -35,6 +35,8 @@ namespace AHADIC {
     bool   RecalculateZs();
     bool   CheckKinematics() { return true; }
     Cluster * MakeCluster(size_t i);
+    double FragmentationFunction(double z, double zmin, double zmax,
+				 double alpha, double beta, double gamma);
   public:
     Cluster_Splitter(std::list<Cluster *> * cluster_list,
 		     Soft_Cluster_Handler * softclusters);

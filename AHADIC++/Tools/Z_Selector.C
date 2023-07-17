@@ -19,9 +19,10 @@ Z_Selector::~Z_Selector() {}
 double Z_Selector::operator()(const double & zmin,const double & zmax,
 			      const unsigned int & cnt) {
   if (p_splitterbase==NULL) return zmin+ran->Get()*(zmax-zmin);
-  double z(-1.);
+  double z{-1.}, z_range {zmax-zmin};
   do {
-    z = zmin+ran->Get()*(zmax-zmin);
+    z = zmin+ran->Get()*z_range;
+    // should eventually return a vector
     auto wgt = p_splitterbase->WeightFunction(z,zmin,zmax,cnt);
     if((wgt<ran->Get())) {
       // add acceptance weight

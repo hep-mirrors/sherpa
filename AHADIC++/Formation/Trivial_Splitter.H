@@ -17,7 +17,7 @@ namespace AHADIC {
     Flavour_Selector       m_flavourselector;
     KT_Selector            m_ktselector;
     Z_Selector             m_zselector;
-    
+
     double m_kt2max, m_minmass;
 
     std::list<Proto_Particle *> * p_singlet;
@@ -30,7 +30,7 @@ namespace AHADIC {
     double          m_popped_mass, m_popped_mass2;
     double          m_ktmax, m_kt, m_kt2, m_phi, m_beta, m_z;
     ATOOLS::Vec4D   m_ktvec, m_q1mom, m_q2mom, m_glumom;
-    
+
 
     bool InitKinematics(bool rescue=false);
     void SelectFlavour();
@@ -44,9 +44,9 @@ namespace AHADIC {
     void ConstructRescueMomenta();
  public:
     Trivial_Splitter();
-    ~Trivial_Splitter() {}  
+    ~Trivial_Splitter() {}
     void Init();
-    
+
     bool operator()(Singlet * singlet);
     bool operator()(Proto_Particle * part1, Proto_Particle * part2);
 
