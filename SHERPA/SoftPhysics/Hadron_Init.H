@@ -16,6 +16,7 @@ namespace SHERPA {
     void InitHadron(const kf_code&,
                     const bool checkinitialised,
                     const double &mass,
+                    const double &radius,
                     const double &width,
                     const int icharge,
                     const int spin,
@@ -26,6 +27,7 @@ namespace SHERPA {
                     const std::string& texname);
     void InitHadron(const kf_code&,
                     const double &mass,
+                    const double &radius,
                     const double &width,
                     const int icharge,
                     const int strong,

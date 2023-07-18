@@ -35,7 +35,6 @@ bool Cluster_Decayer::operator()(bool breakit) {
 
 bool Cluster_Decayer::Treat(Cluster * cluster) {
   bool mustdecay = p_softclusters->MustPromptDecay(cluster);
-  //msg_Out()<<METHOD<<": "<<mustdecay<<" ===========================\n";
   if (!mustdecay && m_splitter((*cluster)[0],(*cluster)[1])) {
     delete cluster;
     return true;
@@ -106,8 +105,6 @@ void Cluster_Decayer::Test(const double & Q, const Flavour & flav,
 	    histos[string("xb_hadrons")]->Insert(mom.PSpat()/momz);
 	  else
 	    histos[string("x_hadrons")]->Insert(mom.PSpat()/momz);
-	  //msg_Out()<<"* "<<mom.PPerp()<<" "<<mom.Y()<<" "
-	  //	   <<(*hadrons->front());
 	  delete hadrons->front();
 	  hadrons->pop_front();
 	}

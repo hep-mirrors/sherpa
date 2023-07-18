@@ -2,6 +2,7 @@
 #include "AMISIC++/Perturbative/QCD_Processes.H"
 #include "AMISIC++/Perturbative/QED_Processes.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -38,37 +39,36 @@ MI_Process_Group::~MI_Process_Group() {
 
 double MI_Process_Group::
 operator()(const double & shat,const double & that,const double & uhat) {
+  // This calculates dsigma/dpt^2 in units of 1/GeV^4
+  // It is given by
+  // pi/shat^2 * f_1(x_1) f_2(x_2) * alpha_{S,QED}^2 |ME|^2 * [pt^2/(pt^2+pt0^2)]^2
+  // where the last term regularises the t/u-channel singluarities
   PreCalculate(shat,that,uhat);
-  double tot  = 0.,xs;
+  double tot  = 0.;
   for (list<MI_Process * >::iterator mit=m_processes.begin();
        mit!=m_processes.end();mit++) {
-    tot += xs = ( p_pdf[0]->GetXPDF((*mit)->Flav(0)) *
-            p_pdf[1]->GetXPDF((*mit)->Flav(1)) ) * (**mit)();
+    tot += ( p_pdf[0]->GetXPDF((*mit)->Flav(0)) *
+		  p_pdf[1]->GetXPDF((*mit)->Flav(1)) ) * (**mit)();
+    if (std::isnan(tot))
+      tot = 0.;
   }
-  msg_Debugging()<<"Add dSigma("<<Name()<<", scale = "<<sqrt(m_scale)<<") = "
-            <<m_pref/sqr(shat)<<" * "<<Coupling(Scale(m_scale))
-            <<" * "<<SoftCorrection(m_scale)<<" * "<<xs<<" --> tot = "
-            <<(m_pref/sqr(shat) * Coupling(Scale(m_scale)) * SoftCorrection(m_scale)) * tot
-            <<"\n";
-  return m_lastxs = m_pref/sqr(shat) *
-                    Coupling(Scale(m_scale)) *
-                    SoftCorrection(m_scale) * tot;
+  m_lastxs = m_pref/sqr(shat) *
+             Coupling(Scale(m_scale)) *
+             SoftCorrection(m_scale) * tot;
+  return m_lastxs;
 }
 
-double MI_Process_Group::PreCalculate(const double & shat,const double & that,
-				      const double & uhat) {
+void MI_Process_Group::
+PreCalculate(const double & shat,const double & that,const double & uhat) {
   // Calculating the squared MEs depending on the Mandelstam variables.
-  double tot  = 0.;
+  // They do not include couplings, flux factors, pdf's, and are in units of 1.
   for (list<XS_Base * >::iterator xsit=m_me2s.begin();
-       xsit!=m_me2s.end();xsit++) {
+       xsit!=m_me2s.end();xsit++) 
     (*xsit)->Calc(shat,that,uhat);
-    tot += (**xsit)();
-  }
-  return tot;
 }
 
 double MI_Process_Group::SoftCorrection(const double & pt2) const {
-  // Getting rid of the t-channel singularity
+  // Getting rid of the t/u-channel singularities
   return sqr(pt2/(pt2+m_pt02));
 }
 
@@ -76,7 +76,7 @@ double MI_Process_Group::Scale(const double & pt2) const {
   // Default scale, including an IR regularisation - maybe we should get more choices.
   switch (m_muR_scheme) {
   case scale_scheme::code::PT_with_Raps:
-    exit(1);
+    THROW(fatal_error,"Scale scheme PT_with_Rapidities not implemented yet.");
   case scale_scheme::code::PT:
   default:
     return (pt2+m_pt02);
@@ -98,14 +98,13 @@ MI_Process * MI_Process_Group::SelectProcess() {
        mipit!=m_processes.end();mipit++) {
     MI_Process * mip = (*mipit);
     tot += (p_pdf[0]->GetXPDF(mip->Flav(0)) *
-		 p_pdf[1]->GetXPDF(mip->Flav(1)) * (*mip)());
+	    p_pdf[1]->GetXPDF(mip->Flav(1)) * (*mip)());
   }
   tot *= ran->Get();
-  for (list<MI_Process *>::iterator mipit=m_processes.begin();
-       mipit!=m_processes.end();mipit++) {
-    tot -= (p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
-	    p_pdf[1]->GetXPDF((*mipit)->Flav(1)) * (**mipit)());
-    if (tot<=0.) return &(**mipit);
+  for (auto mipit : m_processes) {
+    tot -= (p_pdf[0]->GetXPDF(mipit->Flav(0)) *
+	    p_pdf[1]->GetXPDF(mipit->Flav(1)) * (*mipit)());
+    if (tot<=0.) return mipit;
   }
   return m_processes.back();
 }
@@ -193,7 +192,7 @@ MI_QQB_Processes::MI_QQB_Processes():
     for (size_t j=0;j<2;j++) flavs[j] = flavs[j].Bar();
     m_processes.push_back(new MI_Process(flavs));
     m_processes.back()->SetME2(qqbar2gg);
-    // now loop over all flavours, where i and j are idfferent
+    // now loop over all flavours, where i and j are different
     for (size_t j=1;j<2;j++) {
       if (i==j || Flavour(j).Mass()>0.) continue;
       // q1 q1bar -> q2 q2bar
@@ -249,11 +248,10 @@ MI_Process * MI_QQ_Processes::SelectProcess() {
     pdf += p_pdf[0]->GetXPDF(mip->Flav(0)) * p_pdf[1]->GetXPDF(mip->Flav(1));
   }
   pdf *= ran->Get();
-  for (list<MI_Process *>::iterator mipit=m_processes.begin();
-       mipit!=m_processes.end();mipit++) {
-    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
-           p_pdf[1]->GetXPDF((*mipit)->Flav(1));
-    if (pdf<=0.) return &(**mipit);
+  for (auto mipit : m_processes) {
+    pdf -= p_pdf[0]->GetXPDF(mipit->Flav(0)) *
+           p_pdf[1]->GetXPDF(mipit->Flav(1));
+    if (pdf<=0.) return mipit;
   }
   return m_processes.back();
 }
@@ -294,26 +292,6 @@ double MI_QG_Processes::Coupling(const double & scale) const {
   return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
 }
 
-/*
-double MI_QG_Processes::
-operator()(const double & shat,const double & that,const double & uhat) {
-  double tot  = PreCalculate(shat,that,uhat);
-  double pref = m_pref/sqr(shat);
-  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
-  double pdf  = 0;
-  Flavour gluon(kf_gluon);
-  for (size_t i=1;i<6;i++) {
-    Flavour flav = Flavour(i);
-    if (flav.Mass()>0.) continue;
-    pdf += p_pdf[0]->GetXPDF(gluon)*p_pdf[1]->GetXPDF(flav);
-    pdf += p_pdf[0]->GetXPDF(gluon)*p_pdf[1]->GetXPDF(flav.Bar());
-    pdf += p_pdf[0]->GetXPDF(flav)*p_pdf[1]->GetXPDF(gluon);
-    pdf += p_pdf[0]->GetXPDF(flav.Bar())*p_pdf[1]->GetXPDF(gluon);
-  }
-  return m_lastxs = pref*pdf*cpl*tot*SoftCorrection(m_scale);
-}
-*/
-
 MI_Process * MI_QG_Processes::SelectProcess() {
   double pdf = 0.;
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
@@ -322,11 +300,10 @@ MI_Process * MI_QG_Processes::SelectProcess() {
     pdf += p_pdf[0]->GetXPDF(mip->Flav(0))*p_pdf[1]->GetXPDF(mip->Flav(1));
   }
   pdf *= ran->Get();
-  for (list<MI_Process *>::iterator mipit=m_processes.begin();
-       mipit!=m_processes.end();mipit++) {
-    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
-           p_pdf[1]->GetXPDF((*mipit)->Flav(1));
-    if (pdf<=0.) return &(**mipit);
+  for (auto mipit : m_processes) {
+    pdf -= p_pdf[0]->GetXPDF(mipit->Flav(0)) *
+           p_pdf[1]->GetXPDF(mipit->Flav(1));
+    if (pdf<=0.) return mipit;
   }
   return m_processes.back();
 }
@@ -370,33 +347,6 @@ double MI_Q1Q2_Processes::Coupling(const double & scale) const {
   return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
 }
 
-/*double MI_Q1Q2_Processes::
-operator()(const double & shat,const double & that,const double & uhat) {
-  double tot  = PreCalculate(shat,that,uhat);
-  double pref = m_pref/sqr(shat);
-  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
-  double pdf  = 0;
-  for (size_t i=1;i<6;i++) {
-    Flavour flav1 = Flavour(i);
-    if (flav1.Mass()>0.) continue;
-    for (size_t j=1;j<6;j++) {
-      if (i==j) continue;
-      Flavour flav2 = Flavour(j);
-      if (flav2.Mass()>0.) continue;
-      pdf += p_pdf[0]->GetXPDF(flav1)*p_pdf[1]->GetXPDF(flav2);
-      pdf += p_pdf[0]->GetXPDF(flav2)*p_pdf[1]->GetXPDF(flav1);
-      pdf += p_pdf[0]->GetXPDF(flav1)*p_pdf[1]->GetXPDF(flav2.Bar());
-      pdf += p_pdf[0]->GetXPDF(flav2)*p_pdf[1]->GetXPDF(flav1.Bar());
-      pdf += p_pdf[0]->GetXPDF(flav1.Bar())*p_pdf[1]->GetXPDF(flav2);
-      pdf += p_pdf[0]->GetXPDF(flav2.Bar())*p_pdf[1]->GetXPDF(flav1);
-      pdf += p_pdf[0]->GetXPDF(flav1.Bar())*p_pdf[1]->GetXPDF(flav2.Bar());
-      pdf += p_pdf[0]->GetXPDF(flav2.Bar())*p_pdf[1]->GetXPDF(flav1.Bar());
-    }
-  }
-  return m_lastxs = pref*pdf*cpl*tot*SoftCorrection(m_scale);
-}
-*/
-
 MI_Process * MI_Q1Q2_Processes::SelectProcess() {
   double pdf = 0.;
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
@@ -405,11 +355,10 @@ MI_Process * MI_Q1Q2_Processes::SelectProcess() {
     pdf += p_pdf[0]->GetXPDF(mip->Flav(0))*p_pdf[1]->GetXPDF(mip->Flav(1));
   }
   pdf *= ran->Get();
-  for (list<MI_Process *>::iterator mipit=m_processes.begin();
-       mipit!=m_processes.end();mipit++) {
-    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
-           p_pdf[1]->GetXPDF((*mipit)->Flav(1));
-    if (pdf<=0.) return &(**mipit);
+  for (auto mipit : m_processes) {
+    pdf -= p_pdf[0]->GetXPDF(mipit->Flav(0)) *
+           p_pdf[1]->GetXPDF(mipit->Flav(1));
+    if (pdf<=0.) return mipit;
   }
   return m_processes.back();
 }
@@ -452,26 +401,6 @@ double MI_QG_QGamma_Processes::Coupling(const double & scale) const {
 	   (*p_alpha)(Max(m_pt02,Scale(m_scale)) ));
 }
 
-/*double MI_QG_QGamma_Processes::
-operator()(const double & shat,const double & that,const double & uhat) {
-  double me2  = PreCalculate(shat,that,uhat);
-  double pref = m_pref/sqr(shat);
-  double cpl  = (*p_alphaS)(m_muR_fac*Scale(m_scale)) * (*p_alpha)(Scale(m_scale));
-  double pdf  = 0;
-  Flavour gluon(kf_gluon);
-  for (size_t i=1;i<6;i++) {
-    Flavour quark = Flavour(i);
-    if (quark.Mass()>1.e-6) continue;
-    double  eq2  = sqr(quark.Charge());
-    pdf += (p_pdf[0]->GetXPDF(quark)*p_pdf[1]->GetXPDF(gluon) +
-	    p_pdf[0]->GetXPDF(gluon)*p_pdf[1]->GetXPDF(quark) +
-	    p_pdf[0]->GetXPDF(quark.Bar())*p_pdf[1]->GetXPDF(gluon) +
-	    p_pdf[0]->GetXPDF(gluon)*p_pdf[1]->GetXPDF(quark.Bar())) * eq2;
-  }
-  return m_lastxs = pref*pdf*cpl*me2*SoftCorrection(m_scale);
-}
-*/
-
 MI_Process * MI_QG_QGamma_Processes::SelectProcess() {
   double pdf = 0.;
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
@@ -481,13 +410,12 @@ MI_Process * MI_QG_QGamma_Processes::SelectProcess() {
       sqr(mip->Flav(0).IsQuark()?mip->Flav(0).Charge():mip->Flav(1).Charge());
   }
   pdf *= ran->Get();
-  for (list<MI_Process *>::iterator mipit=m_processes.begin();
-       mipit!=m_processes.end();mipit++) {
-    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
-           p_pdf[1]->GetXPDF((*mipit)->Flav(1)) *
-           sqr((*mipit)->Flav(0).IsQuark()?(*mipit)->Flav(0).Charge()
-                                           :(*mipit)->Flav(1).Charge());
-    if (pdf<=0.) return &(**mipit);
+  for (auto mipit : m_processes) {
+    pdf -= p_pdf[0]->GetXPDF(mipit->Flav(0)) *
+           p_pdf[1]->GetXPDF(mipit->Flav(1)) *
+           sqr(mipit->Flav(0).IsQuark()?mipit->Flav(0).Charge()
+                                           :mipit->Flav(1).Charge());
+    if (pdf<=0.) return mipit;
   }
   return m_processes.back();
 }
@@ -531,12 +459,11 @@ MI_Process * MI_QQ_GGamma_Processes::SelectProcess() {
       sqr(mip->Flav(0).Charge());
   }
   pdf *= ran->Get();
-  for (list<MI_Process *>::iterator mipit=m_processes.begin();
-       mipit!=m_processes.end();mipit++) {
-    pdf -= p_pdf[0]->GetXPDF((*mipit)->Flav(0)) *
-           p_pdf[1]->GetXPDF((*mipit)->Flav(1)) *
-           sqr((*mipit)->Flav(0).Charge());
-    if (pdf<=0.) return &(**mipit);
+  for (auto mipit : m_processes) {
+    pdf -= p_pdf[0]->GetXPDF(mipit->Flav(0)) *
+           p_pdf[1]->GetXPDF(mipit->Flav(1)) *
+           sqr(mipit->Flav(0).Charge());
+    if (pdf<=0.) return mipit;
   }
   return m_processes.back();
 }

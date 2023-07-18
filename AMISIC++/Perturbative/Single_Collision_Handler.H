@@ -9,17 +9,12 @@
 #include <map>
 #include <string>
 
-/*!
-  \file Single_Collision_Handler.H
-  \brief Declares the class Single_Collision_Handler
-*/
-
 namespace AMISIC {
   class Single_Collision_Handler {
   private:
+    REMNANTS::Remnant_Handler * p_remnants;
     MI_Processes   * p_processes;
     Over_Estimator * p_overestimator;
-    REMNANTS::Remnant_Handler * p_remnants;
     double           m_pt2, m_pt2min;
     double           m_S, m_lastpt2, m_residualx1, m_residualx2, m_Ycms;
 
@@ -44,27 +39,38 @@ namespace AMISIC {
     Single_Collision_Handler();
     ~Single_Collision_Handler();
 
-    void Init(REMNANTS::Remnant_Handler * remnant_handler);
+    void Init(REMNANTS::Remnant_Handler * remnant_handler,
+			MI_Processes * processes, Over_Estimator * overestimator);
     void UpdateSandY(double s, double y);
-    ATOOLS::Blob * NextScatter(const double & bfac=1.);
+    ATOOLS::Blob * NextScatter();
     bool TestRemnants() const;
 
-    inline const double & muF2() const { return m_muf2; }
-    inline const double & muR2() const { return m_mur2; }
     
-    inline void SetMIProcesses(MI_Processes * processes) {
-      p_processes = processes;
-    }
-    inline void SetOverEstimator(Over_Estimator * overestimator) {
-      p_overestimator = overestimator;
-    }
-    inline void SetResidualX(const double & x1=1., const double & x2=1.) {
-      m_residualx1 = x1;
-      m_residualx2 = x2;
+    inline void SetResidualX(const double & E1, const double & E2) {
+      m_residualx1 = E1/InMomentum(0)[0];
+      m_residualx2 = E2/InMomentum(1)[0];
     }
     inline void SetLastPT2(const double pt2=-1.) {
       m_lastpt2 = pt2<0.?m_S/4.:pt2; 
     }
+    inline void SetPosition(const size_t & beam,const ATOOLS::Vec4D & pos) {
+      p_remnants->GetRemnant(beam)->SetPosition(pos);
+    }
+    inline REMNANTS::Remnant_Base * GetRemnant(const size_t & beam) const {
+      return p_remnants->GetRemnant(beam);
+    }
+    inline ATOOLS::Vec4D Position(const size_t & beam) const {
+      return p_remnants->GetRemnant(beam)->Position();
+    }
+    inline ATOOLS::Vec4D InMomentum(const size_t & beam) const {
+      return p_remnants->GetRemnant(beam)->InMomentum();
+    }
+    inline const double B() const {
+      return sqrt(ATOOLS::dabs((p_remnants->GetRemnant(0)->Position()-
+				p_remnants->GetRemnant(1)->Position()).Abs2()));
+    }
+    inline const double & muF2()    const { return m_muf2; }
+    inline const double & muR2()    const { return m_mur2; }    
     inline const double & LastPT2() const { return m_lastpt2; }
     inline const double & PT2()     const { return m_pt2; }
     inline const double & Y3()      const { return m_y3; }

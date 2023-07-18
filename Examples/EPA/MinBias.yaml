@@ -1,0 +1,30 @@
+# Sherpa configuration for Min Bias
+
+EVENT_TYPE:      MinimumBias
+ME_GENERATORS:   None
+
+# set up beams for LHC run 1
+BEAMS:           2212
+BEAM_ENERGIES:   3500
+MI_HANDLER:      Amisic
+SOFT_COLLISIONS: Amisic
+
+
+REMNANTS:
+  2212:
+    FORM:      Double_Gaussian
+    FRACTION1: 0.5
+    RADIUS1:   0.75
+    RADIUS2:   0.5
+
+AMISIC:
+  nS_bins: 10
+  PT_Min: 1.
+  SIGMA_ND_NORM: 0.4
+
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: MinBias_Enhanced
+
+RIVET:
+  --analyses: [ATLAS_2010_S8918562, ATLAS_2010_S8894728, ATLAS_2011_S8994773, ATLAS_2012_I1084540, TOTEM_2012_I1115294, CMS_2011_S8978280, CMS_2011_S9120041, CMS_2011_S9215166]

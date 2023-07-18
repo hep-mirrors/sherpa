@@ -45,8 +45,8 @@ std::ostream &PDF::operator<<(std::ostream &s, const PDF::isrmode::code mode) {
   return s;
 }
 
-ISR_Handler::ISR_Handler(ISR_Base **isrbase)
-    : m_rmode(0), m_swap(0), m_info_lab(8), m_info_cms(8),
+ISR_Handler::ISR_Handler(ISR_Base **isrbase, const isr::id &id)
+    : m_id(id), m_rmode(0), m_swap(0), m_info_lab(8), m_info_cms(8),
       m_freezePDFforLowQ(false) {
   p_isrbase[0] = isrbase[0];
   p_isrbase[1] = isrbase[1];
@@ -89,12 +89,11 @@ void ISR_Handler::FixType() {
 }
 
 void ISR_Handler::Output() {
-  if (msg_LevelIsTracking() || msg_LevelIsInfo())
-    msg_Out() << "ISR_Handler: type = " << m_type << "\n"
-              << "    for " << p_isrbase[0]->Flavour()
-              << " (internal structure = " << p_isrbase[0]->On() << ")\n"
-              << "    and " << p_isrbase[1]->Flavour()
-              << " (internal structure = " << p_isrbase[1]->On() << ")\n";
+  msg_Tracking() << "ISR_Handler: type = " << m_type << ": "
+                 << p_isrbase[0]->Flavour()
+                 << " (internal structure = " << p_isrbase[0]->On() << ") + "
+                 << p_isrbase[1]->Flavour()
+                 << " (internal structure = " << p_isrbase[1]->On() << ")\n";
 }
 
 void ISR_Handler::Init() {
@@ -172,8 +171,13 @@ void ISR_Handler::SetMasses(const Flavour_Vector &fl) {
 
 void ISR_Handler::SetPartonMasses(const Flavour_Vector &fl) { SetMasses(fl); }
 
-bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector& p,
+bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector &p,
                           const Flavour_Vector &flavs) {
+  if ((p_isrbase[0]->PDF() != nullptr &&
+       !p_isrbase[0]->PDF()->Contains(flavs[0])) ||
+      (p_isrbase[0]->PDF() != nullptr &&
+       !p_isrbase[1]->PDF()->Contains(flavs[1])))
+    return false;
   if (m_mode == 0) {
     m_x[1] = m_x[0] = 1.;
     return true;
@@ -221,7 +225,7 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector& p,
     return false;
   p[0] = m_x[0] * pp + m_mass2[0] / s / m_x[0] * pm;
   p[1] = m_x[1] * pm + m_mass2[1] / s / m_x[1] * pp;
-  if (p[0][3]<0. || p[1][3]>0.)
+  if (p[0][3] < 0. || p[1][3] > 0.)
     return false;
   if (m_swap) {
     std::swap<Vec4D>(p[0], p[1]);
@@ -388,10 +392,6 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
                               CheckRemnantKinematics(fl2, x2, 1, false)));
   switch (cmode) {
   case 3:
-    if (!p_isrbase[0]->PDF()->Contains(fl1) ||
-        !p_isrbase[1]->PDF()->Contains(fl2)) {
-      return 0.;
-    }
     if (x1 > p_isrbase[0]->PDF()->RescaleFactor() ||
         x2 > p_isrbase[1]->PDF()->RescaleFactor()) {
       return 0.;
@@ -402,9 +402,6 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
     }
     break;
   case 2:
-    if (!p_isrbase[1]->PDF()->Contains(fl2)) {
-      return 0.;
-    }
     if (x2 > p_isrbase[1]->PDF()->RescaleFactor()) {
       return 0.;
     }
@@ -413,9 +410,6 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
     }
     break;
   case 1:
-    if (!p_isrbase[0]->PDF()->Contains(fl1)) {
-      return 0.;
-    }
     if (x1 > p_isrbase[0]->PDF()->RescaleFactor()) {
       return 0.;
     }
@@ -463,15 +457,17 @@ double ISR_Handler::Flux(const Vec4D &p1) { return 0.5 / p1.Mass(); }
 
 double ISR_Handler::CalcX(ATOOLS::Vec4D p) {
   if (p[3] > 0.) {
-    if (msg_LevelIsDebugging() && p[0] > p_beam[0]->OutMomentum()[0]+1.e-10)
-      msg_Out() << METHOD
+    if (msg_LevelIsDebugging() && p[0] > p_beam[0]->OutMomentum()[0] + 1.e-10)
+      msg_Out()
+          << METHOD
           << ": Warning, parton energy is larger than beam energy, p_parton = "
           << p << ", p_beam = " << p_beam[0]->OutMomentum() << "\n";
     return Min(PDF(0) ? PDF(0)->XMax() : 1.,
-                 p.PPlus() / p_beam[0]->OutMomentum().PPlus());
+               p.PPlus() / p_beam[0]->OutMomentum().PPlus());
   } else {
-    if (msg_LevelIsDebugging() && p[0] > p_beam[1]->OutMomentum()[0]+1.e-10)
-      msg_Out() << METHOD
+    if (msg_LevelIsDebugging() && p[0] > p_beam[1]->OutMomentum()[0] + 1.e-10)
+      msg_Out()
+          << METHOD
           << ": Warning, parton energy is larger than beam energy, p_parton = "
           << p << ", p_beam = " << p_beam[1]->OutMomentum() << "\n";
     return Min(PDF(1) ? PDF(1)->XMax() : 1.,
@@ -493,8 +489,8 @@ bool ISR_Handler::BoostInLab(Vec4D *p, const size_t n) {
   return true;
 }
 
-REMNANTS::Remnant_Base* ISR_Handler::GetRemnant(const size_t beam) const {
-  return beam<2?p_remnants[beam]:nullptr;
+REMNANTS::Remnant_Base *ISR_Handler::GetRemnant(const size_t beam) const {
+  return beam < 2 ? p_remnants[beam] : nullptr;
 }
 
 bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl, double &x,

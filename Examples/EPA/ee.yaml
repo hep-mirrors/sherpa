@@ -1,0 +1,45 @@
+EVENTS: 100000
+
+BEAMS:             [11, -11]
+BEAM_ENERGIES:     103
+BEAM_SPECTRA:      EPA
+PDF_LIBRARY:       SASGSherpa
+PDF_SET:           SAS2D
+MI_HANDLER:        Amisic
+MPI_PDF_LIBRARY:   SASGSherpa
+MPI_PDF_SET:       SAS2D
+BEAM_RESCATTERING: None
+
+REMNANTS:
+  22:
+    FORM:      Double_Gaussian
+    FRACTION1: 0.5
+    RADIUS1:   0.75
+    RADIUS2:   0.5
+
+AMISIC:
+  nS_bins:       20
+  PT_Min:        2.
+  Eta:           0.08
+  SIGMA_ND_NORM: 1.0
+
+
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+ALPHAS: {USE_PDF: 0}
+SCALES: METS{H_T2}{H_T2}
+
+SELECTORS:
+  - [PT, 93, 4., 1000.]
+
+
+PROCESSES:
+  - 93 93 -> 93 93:
+      Order: {QCD: 2, EW: 0}
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses: [OPAL_2008_I754316]
+  --ignore-beams: 1
+  USE_HEPMC_SHORT: 1
+ANALYSIS_OUTPUT: WW_in_ee

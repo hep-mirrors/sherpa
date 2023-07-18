@@ -19,18 +19,29 @@ using namespace std;
 MI_Handler::MI_Handler(MODEL::Model_Base *model,
 		       PDF::ISR_Handler *isr,
                        REMNANTS::Remnant_Handler * remnant_handler) :
-  p_isr(isr),p_remnants(remnant_handler),p_amisic(NULL),p_shrimps(NULL), p_ampl(NULL),
-  p_proc(NULL),p_shower(NULL),m_stop(false),m_type(typeID::none),m_name("None")
+  p_isr(isr), m_id(p_isr->Id()), p_remnants(remnant_handler),
+  p_amisic(NULL), p_shrimps(NULL), p_ampl(NULL),
+  p_proc(NULL), p_shower(NULL), m_on(true), m_stop(false),
+  m_firstrescatter((m_id==PDF::isr::bunch_rescatter) ? true : false),
+  m_type(typeID::none), m_name("None")
 {
   Settings& s = Settings::GetMainSettings();
   m_name      = s["MI_HANDLER"].SetDefault("Amisic").UseNoneReplacements().Get<string>();
   string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
-  if (isr->Mode() != PDF::isrmode::hadron_hadron) {
-    m_name = "None";
+  if (m_id==PDF::isr::bunch_rescatter) {
+    string resc = s["BEAM_RESCATTERING"].Get<string>();
+    scm = m_name = resc;
   }
-  if (m_name==string("Amisic"))  InitAmisic(model);
-  if ((scm==string("Shrimps") && p_amisic==NULL) ||
-      m_name==string("Shrimps")) InitShrimps(model);
+  if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name=="None") {
+    m_name = "None";
+    m_on   = false;
+  }
+  else {
+    if (m_name==string("Amisic"))  InitAmisic(model);
+    if ((scm==string("Shrimps") && p_amisic==NULL) ||
+	m_name==string("Shrimps")) InitShrimps(model);
+  }
+  msg_Out()<<METHOD<<"(id = "<<m_id<<", name = "<<m_name<<", type = "<<m_type<<")\n";
 }
 
 MI_Handler::~MI_Handler() 
@@ -59,10 +70,7 @@ void MI_Handler::InitShrimps(MODEL::Model_Base *model)
 
 bool MI_Handler::InitialiseMPIs(const double & scale) 
 {
-  if (m_type==typeID::amisic) {
-    p_amisic->Update(p_isr);
-    return p_amisic->InitMPIs(scale);
-  }
+  if (m_type==typeID::amisic) return p_amisic->InitMPIs(p_isr, scale);
   return true;
 }
 
@@ -77,7 +85,7 @@ void MI_Handler::SetMaxEnergies(const double & E1,const double & E2) {
 }
 
 void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
-  if (showerblob) p_remnants->ConnectColours(showerblob);
+  if (!m_firstrescatter && showerblob) p_remnants->ConnectColours(showerblob);
 }
 
 Blob * MI_Handler::GenerateHardProcess()
@@ -86,6 +94,7 @@ Blob * MI_Handler::GenerateHardProcess()
   if (m_type==typeID::amisic)  blob = p_amisic->GenerateScatter();
   if (m_type==typeID::shrimps) blob = p_shrimps->GenerateEvent();
   if (blob==NULL) m_stop = true;
+  m_firstrescatter = false;
   return blob;
 }
 
@@ -99,11 +108,17 @@ void MI_Handler::Reset()
 {
   m_stop = false;
   if (m_type==typeID::amisic) p_amisic->Reset();
+  for (short unsigned int i=0;i<2;++i) {
+    p_remnants->GetRemnant(i)->Reset(m_id);
+    p_isr->ResetRescaleFactor(i);
+    p_isr->Reset(i);
+  }
 }
 
 void MI_Handler::CleanUp()
 {
-  m_stop = false;
+  m_stop           = false;
+  m_firstrescatter = (m_id==PDF::isr::bunch_rescatter) ? true : false;
   if (m_type==typeID::amisic)  p_amisic->CleanUp();
   if (m_type==typeID::shrimps) p_shrimps->CleanUp();
 }

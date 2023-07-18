@@ -5,12 +5,12 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Electron_Remnant::Electron_Remnant(PDF::PDF_Base * pdf,
-				   const unsigned int _m_beam):
-  Remnant_Base(rtp::lepton,_m_beam), p_pdfbase(pdf)
+Electron_Remnant::
+Electron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,const unsigned int & tag):
+  Remnant_Base(pdf->Bunch(),beam,tag), p_pdfbase(pdf)
 {
-  // this is a *** very *** specific ordering -
-  // lepton at front, photon at back.
+  // this is a *** very *** specific ordering - lepton at front, photon at back.
+  // And we assume that we do not do anything with the photon, really.
   // This will be used explicitly in methods TestExtract and Fillblob
   m_constituents.push_back(p_pdfbase->Bunch());
   m_constituents.push_back(Flavour(kf_photon));

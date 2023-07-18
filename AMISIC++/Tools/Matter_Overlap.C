@@ -8,54 +8,47 @@ using namespace AMISIC;
 using namespace ATOOLS;
 
 
-// All equations in this file refer to 
+// All equations in this file refer to
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019.
 
 Matter_Overlap::Matter_Overlap() :
-  m_bstep(0.), m_bmax(0.), m_integral(0.), m_norm(1./M_PI) ///(4.*M_PI*M_PI))
-{}
+  // The norm come from the (implicitly normalised) Gaussian matter distributions
+  // of the hadron form factors ~pi^{-3/2} times the pi^2 from the time-integrated
+  // overlap when they collide.
+  m_bstep(0.), m_bmax(0.), m_integral(0.), m_norm(1./M_PI)
+{
+  for (size_t i=0;i<4;i++) {
+    m_radius[i]   = (i==0) ? 1. : 0.;
+    m_radius2[i]  = sqr(m_radius[i]);
+    m_rnorm[i]    = (i==0) ? 1./m_radius2[i] : 0.;
+    m_fraction[i] = (i==0) ? 1. : 0.;
+  }
+}
 
 Matter_Overlap::~Matter_Overlap() {}
 
-void Matter_Overlap::Initialize() {
-  InitializeFormFactors();
+void Matter_Overlap::Initialize(REMNANTS::Remnant_Handler * remnant_handler) {
+  InitializeFormFactors(remnant_handler);
   CalculateIntegral();
 }
 
 double Matter_Overlap::operator()(double b) {
-  // Matter overlap in two forms available, but only Single_Gaussian fully
-  // functional at the moment.
-  switch (m_overlapform) {
-  case overlap_form::code::Single_Gaussian:
-    return m_norm * m_norm1 * exp(-b*b/m_radius12);
-  case overlap_form::code::Double_Gaussian:
-  default:
-    double b2(b*b);
-    return m_norm * (m_norm1 * exp(-b2/m_radius12) +
-		     m_norm2 * exp(-b2/m_radius22) +
-		     m_norm3 * exp(-b2/m_radius32));
-  }
+  // Matter overlap in two forms available: Single_Gaussian and Double_Gaussian
+  double result = 0., b2 = b*b;
+  for (size_t i=0;i<4;i++) result += (m_rnorm[i]>0) ? m_rnorm[i] * exp(-b2/m_radius2[i]) : 0.;
+  return m_norm * result;
 }
 
 double Matter_Overlap::SelectB(const bool & mode) const {
   // Algorithm:
   // 1. select a radius R according to matter content:
-  //    - for single Gaussian, there is no selection to be made
-  //    - for double Gaussian, one of the three radii is picked.
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
-  double b, radius;
-  switch (m_overlapform) {
-    case overlap_form::code::Single_Gaussian:
-      radius = m_radius1;
-      break;
-    case overlap_form::code::Double_Gaussian:
-      double rand = ran->Get();
-      if ((rand-=sqr(m_fraction1))<=0.)        radius = m_radius1;
-      else if ((rand-=sqr(1-m_fraction1))<=0.) radius = m_radius2;
-      else                                     radius = m_radius3;
-      break;
+  double b, radius, rand = ran->Get();
+  for (size_t i=3;i>=0;i--) {
+    rand -= m_fraction[i];
+    if (rand<=0.) { radius = m_radius[i]; break; }
   }
-  // b from Matter_Overlap, hence r^2_overlap = 2*r^2_formfactor
+  // b from Matter_Overlap, hence r^2_overlap = 2*r^2_formfactor (?)
   if (mode) radius *= sqrt(2.);
   do {
     b = sqrt(-log(Max(1.e-12,ran->Get())))*radius;
@@ -64,32 +57,32 @@ double Matter_Overlap::SelectB(const bool & mode) const {
 }
 
 
-void Matter_Overlap::InitializeFormFactors() {
-  // Matter overlap in two forms available, but only Single_Gaussian fully
-  // functional at the moment.
-  m_overlapform = mipars->GetOverlapForm();
-  switch (m_overlapform) {
-    case overlap_form::code::Single_Gaussian:
-      m_fraction1 = 1.;
-      m_radius1   = (*mipars)("Matter_Radius1");
-      m_radius12  = sqr(m_radius1);
-      m_norm1     = 1./m_radius12;
-      m_bstep     = m_radius1/100.;
-      break;
-    case overlap_form::code::Double_Gaussian:
-      m_fraction1 = (*mipars)("Matter_Fraction1");
-      m_radius1   = (*mipars)("Matter_Radius1");
-      m_radius12  = sqr(m_radius1);
-      m_radius2   = (*mipars)("Matter_Radius2");
-      m_radius22  = sqr(m_radius2);
-      m_radius32  = (m_radius12+m_radius22)/2.;
-      m_radius3   = sqrt(m_radius32);
-      m_norm1     = sqr(m_fraction1)/m_radius12;
-      m_norm2     = sqr(1.-m_fraction1)/m_radius22;
-      m_norm3     = 2.*m_fraction1*(1.-m_fraction1)/m_radius32;
-      m_bstep     = Min(m_radius1,m_radius2)/100.;
-      break;
+void Matter_Overlap::InitializeFormFactors(REMNANTS::Remnant_Handler * remnant_handler) {
+  /////////////////////////////////////////////////////////////////////////////////
+  // Initialise matter overlap from the form factors: 
+  // could be single- or double Gaussians
+  /////////////////////////////////////////////////////////////////////////////////
+  double fraction[2], radius[2][2];
+  for (size_t i=0;i<2;i++) {
+    fraction[i] = remnant_handler->GetRemnant(i)->GetFF()->Fraction1();
+    for (size_t j=0;j<2;j++) {
+      radius[i][j] = ( j==0 ?
+		       remnant_handler->GetRemnant(i)->GetFF()->Radius1() :
+		       remnant_handler->GetRemnant(i)->GetFF()->Radius2() );
+    }
   }
+  double minR = 1.;
+  for (size_t i=0;i<2;i++) {
+    for (size_t j=0;j<2;j++) {
+      m_fraction[2*i+j] = ( (i==0 ? fraction[i] : 1.-fraction[i] ) *
+			    (j==0 ? fraction[j] : 1.-fraction[j] ) );
+      m_radius2[2*i+j]  = sqr(radius[0][i]) + sqr(radius[1][j]);
+      m_rnorm[2*i+j]    = ( radius[0][i] > 0. && radius[1][j]>0. ? m_fraction[2*i+j]/m_radius2[2*i+j] : 0. );
+      m_radius[2*i+j]   = sqrt(m_radius2[2*i+j]);
+      if (m_radius[2*i+j] < minR && m_radius[2*i+j]>0.) minR = m_radius[2*i+j];
+    }
+  }
+  m_bstep = minR/100.;
 }
   
 void Matter_Overlap::CalculateIntegral() {
@@ -103,8 +96,6 @@ void Matter_Overlap::CalculateIntegral() {
   } while (dabs(previous/result)>1.e-10);
   m_bmax     = bmin;
   m_integral = result;
-  msg_Tracking()<<METHOD<<" for form = "<<m_overlapform<<": "
-	   <<"Integral(num) = "<<m_integral<<", ana = "<<(M_PI*m_norm)<<"\n";
 }
 
 Vec4D Matter_Overlap::SelectPositionForScatter(const double & b) const {

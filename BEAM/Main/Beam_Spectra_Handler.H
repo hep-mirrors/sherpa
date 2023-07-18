@@ -25,6 +25,7 @@ namespace BEAM {
     Beam_Spectra_Handler();
     ~Beam_Spectra_Handler();
 
+    void FixPositions();
     inline const bool                 On()           const { return m_on; }
     inline const beammode::code     & BeamMode()     const { return m_beammode; }
     inline const collidermode::code & ColliderMode() const { return m_collidermode; }

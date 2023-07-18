@@ -317,7 +317,6 @@ bool Blob_List::ColorConservation() const
 	msg_Error()<<"Blob_List::ColorConservation(): "
 		   <<"Color singlet gluon "<<**pit<<std::endl;
 	msg_Error()<<(*this)<<"\n";
-	//exit(1);
 	return false;
       }
       if (flows.find(real)!=flows.end()) {

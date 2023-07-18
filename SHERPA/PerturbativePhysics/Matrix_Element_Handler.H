@@ -12,9 +12,9 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
-#include <map> 
+#include <map>
 
-namespace ATOOLS { 
+namespace ATOOLS {
 #ifdef USING__GZIP
   class igzstream;
   class ogzstream;
@@ -27,7 +27,7 @@ namespace PDF {
   class NLOMC_Base;
 }
 
-namespace PHASIC { 
+namespace PHASIC {
   class Single_Process;
   class Selector_Key;
 }
@@ -35,7 +35,7 @@ namespace PHASIC {
 namespace SHERPA {
 
   class Shower_Handler;
- 
+
   class Matrix_Element_Handler {
   public:
 
@@ -58,7 +58,8 @@ namespace SHERPA {
 
       std::string m_gycut;
       int m_cutcore;
-      inline Processblock_Info(): m_cutcore(0) {}
+      size_t m_sort;
+      inline Processblock_Info(): m_cutcore(0), m_sort(3) {}
     };// end of struct Processblock_Info
 
   private :

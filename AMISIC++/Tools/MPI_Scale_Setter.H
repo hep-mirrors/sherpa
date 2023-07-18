@@ -9,7 +9,7 @@ namespace AMISIC {
     MPI_Scale_Setter(const PHASIC::Scale_Setter_Arguments &args);
 
     double Calculate(const std::vector<ATOOLS::Vec4D> &p,
-		     const size_t &mode);
+		     const size_t &mode) final;
   };
 }
 

@@ -4,10 +4,6 @@
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 
-namespace REMNANTS {
-  class Remnant_Base;
-}
-
 namespace SHERPA {
 
   class Multiple_Interactions: public Event_Phase_Handler {
@@ -16,29 +12,37 @@ namespace SHERPA {
     double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_emax[2];
     double m_defaultptmax;
     double m_weight, m_ntrials;
-    bool   m_isfirstMB;
 
-    MI_Handler              * p_mihandler;
-    REMNANTS::Remnant_Base  * p_remnants[2];
-    ATOOLS::Blob_List       * p_bloblist;
-    ATOOLS::Blob            * p_lastblob;
+    MI_Handler_Map    * p_mihandlers;
+    MI_Handler        * p_activeMI;
+    ATOOLS::Blob_List * p_bloblist;
+    ATOOLS::Blob      * p_lastblob;
 
     std::set<ATOOLS::Blob *> m_ISblobs;
-    bool m_vetoed, m_newevent;
+    bool m_vetoed, m_newevent[2];
 
     ATOOLS::Return_Value::code m_result;
-    bool CheckBlobList();    
-    bool InitNewEvent();
-    void InitMinBiasEvent();
-    void ResetIS();
-    bool BeamsViable();
-    bool ExtractISInfo(ATOOLS::Blob * blob);
-    void SwitchPerturbativeInputsToMIs();
-    bool MIKinematics();
+    void   Reset();
+    bool   CheckBlobList();    
+    bool   BeamsViable();
+    bool   ExtractISInfo(ATOOLS::Blob * blob);
+    void   SwitchPerturbativeInputsToMIs();
+    double ExtractMPIStartingScale(ATOOLS::Blob * blob);
 
+    std::string MakeNameSpec();
+    
+    bool CheckMIHandlers();    
+    bool CheckForMinBias();
+    bool CheckForMPIs();
+    bool CheckForRescatter();
+    void FixMaxEnergies(const bool & updateResidualE=false);
+    bool TestHardScatter();
+    ATOOLS::Return_Value::code InitMinBias(); 
+    bool                       InitMPIs(); 
+    ATOOLS::Return_Value::code InitRescatter();
   public:
-    Multiple_Interactions(MI_Handler *);
-    ~Multiple_Interactions();
+    Multiple_Interactions(MI_Handler_Map *);
+    ~Multiple_Interactions() {}
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void CleanUp(const size_t & mode=0);

@@ -527,7 +527,7 @@ void Running_AlphaS::InitOverridingPDF(const std::string name, const int member)
   }
   // alphaS should be the same for all hadrons, so we can use a proton (as good as any)
   if (s_kftable.find(kf_p_plus)==s_kftable.end()) {
-    s_kftable[kf_p_plus] = new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
+    s_kftable[kf_p_plus] = new Particle_Info(kf_p_plus,0.938272,0.8783,0,3,1,1,1,"P+","P^{+}");
   }
   PDF::PDF_Arguments args(Flavour(kf_p_plus), 0, name, member);
   PDF::PDF_Base * pdf = PDF_Base::PDF_Getter_Function::GetObject(name, args);

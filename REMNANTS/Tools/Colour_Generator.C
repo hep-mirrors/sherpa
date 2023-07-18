@@ -1,6 +1,7 @@
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 #include <list>
 #include <set>
 
@@ -68,7 +69,7 @@ bool Colour_Generator::TChannelColourFlows() {
   // is a valence quark, its beam will become the colour donor.  In both cases, the
   // replacement colour is put back into the stack of the recipient beam, and the
   // replaced colour is erased from both stacks.
-  // Find t-channel colour flow and define beam to take replacement colour 
+  // Find t-channel colour flow and define beam to take replacement colour
   int tbeam = (p_inparts[0]->GetFlow(1)!=0 &&
 	       p_inparts[0]->GetFlow(1)==p_inparts[1]->GetFlow(2))?0:1;
   int donor = DefineColourDonor(tbeam);
@@ -79,8 +80,6 @@ bool Colour_Generator::TChannelColourFlows() {
     donor     = 1-donor;
     spectator = p_remnants[1-donor]->GetSpectator();
   }
-  //msg_Out()<<METHOD<<" (donor = "<<donor<<", tbeam = "<<tbeam<<"):\n"
-  //	   <<(*p_inparts[0])<<"\n"<<(*p_inparts[1])<<"\n";
   if (donor==tbeam) {
     // replace triplet colour in donor (and as anti-triplet in recipient)
     // and push new colour into recipient beam
@@ -142,10 +141,6 @@ bool Colour_Generator::SChannelColourFlows() {
   for (size_t beam=0;beam<2;beam++) {
     if (m_cols[beam][0].empty() || m_cols[1-beam][1].empty()) continue;
     if (m_cols[beam][0].front()==m_cols[1-beam][1].front()) {
-      //msg_Out()<<"Potential problem in "<<METHOD<<": identical colour "
-      //      <<"("<<m_cols[beam][0].front()<<") on stack for "
-      //      <<p_inparts[0]->Flav()<<" + "<<p_inparts[1]->Flav()<<".\n";
-      //Output();
       return ConstrainedColourFlows(beam);
     }
   }
@@ -191,7 +186,7 @@ bool Colour_Generator::ConstrainedGGFlows(const size_t & tbeam) {
   else if (ncola==3)        replace = 2;
   int newcolt, oldcolt, newcola, oldcola;
   switch (replace) {
-  case 2: 
+  case 2:
     // harmless triplet colour from stack for gluon in anti-triplet beam and
     // potentially dangerous triplet colour from stack for gluon from triplet beam
     oldcolt = p_inparts[tbeam]->GetFlow(1);
@@ -224,10 +219,6 @@ bool Colour_Generator::ConstrainedGGFlows(const size_t & tbeam) {
     newcola = p_inparts[1-tbeam]->GetFlow(2);
     break;    
   }
-  //msg_Out()<<METHOD<<"(replace = "<<replace<<"): "
-  //	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
-  //   <<(*p_inparts[0]->DecayBlob());
-  //Output();
   return true;
 }
 
@@ -239,7 +230,6 @@ bool Colour_Generator::ConstrainedGQFlows(const size_t & tbeam) {
   int newcolt, oldcolt, newcola, oldcola;
   bool anti = p_inparts[1-tbeam]->Flav().IsAnti();
   Particle * aspec = p_remnants[1-tbeam]->GetSpectator();
-  //msg_Out()<<METHOD<<"(anti = "<<anti<<", aspec = ["<<aspec<<"], ncol_t = "<<ncolt<<")\n";
   if (!anti) {
     // Quark on anti-triplet beam is a quark, therefore it cannot replace its original colour
     // with a dangerous one, and the gluon can do the replacement with a tricky colour.
@@ -293,11 +283,6 @@ bool Colour_Generator::ConstrainedGQFlows(const size_t & tbeam) {
       newcola = p_inparts[1-tbeam]->GetFlow(2);
     }
   }
-  //msg_Out()<<METHOD<<"(ncol_a = "<<ncola<<" for anti = "<<anti<<", spec = "<<aspec<<"): "
-  //	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
-  //	   <<(*p_inparts[0]->DecayBlob());
-  //if (aspec) msg_Out()<<(*aspec)<<"\n";
-  //Output();
   return true;
 }
 
@@ -309,7 +294,6 @@ bool Colour_Generator::ConstrainedQGFlows(const size_t & tbeam) {
   int newcolt, oldcolt, newcola, oldcola;
   bool anti = p_inparts[tbeam]->Flav().IsAnti();
   Particle * tspec = p_remnants[tbeam]->GetSpectator();
-  //msg_Out()<<METHOD<<"(anti = "<<anti<<", tspec = ["<<tspec<<", ncol_a = "<<ncola<<"])\n";
   if (anti) {
     // Quark on triplet beam is an anti-quark, therefore it cannot replace its original colour
     // with a dangerous one, and the gluon can do the replacement with a tricky colour.
@@ -361,11 +345,6 @@ bool Colour_Generator::ConstrainedQGFlows(const size_t & tbeam) {
       newcola = p_inparts[1-tbeam]->GetFlow(2);
     }
   }
-  //msg_Out()<<METHOD<<"(ncol_a = "<<ncola<<" for anti = "<<anti<<", spec = "<<tspec<<"): "
-  // 	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
-  // 	   <<(*p_inparts[0]->DecayBlob());
-  //if (tspec) msg_Out()<<(*tspec)<<"\n";
-  //Output();
   return true;
 }
 
@@ -377,9 +356,6 @@ bool Colour_Generator::ConstrainedQQFlows(const size_t & tbeam) {
   Particle * aspec = p_remnants[1-tbeam]->GetSpectator();
   int newcolt = 0, oldcolt = 0, newcola = 0, oldcola = 0;
   bool replacecol = false;
-  //msg_Out()<<METHOD<<" for\n"
-  //	   <<"   triplet (tanti = "<<tanti<<", tspec = ["<<tspec<<"]) and "
-  //	   <<"anti-triplet (aanti = "<<aanti<<", aspec = ["<<aspec<<"]).\n";
   if (tanti && aanti) {
     // harmless - both quarks are anti-quarks - the anti-quark on the anti-triplet beam
     // will get the potentially dangerous anti-triplet colour, the anti-quark on the triplet beam
@@ -430,7 +406,6 @@ bool Colour_Generator::ConstrainedQQFlows(const size_t & tbeam) {
     if (tspec && aspec)       replace = ran->Get()>0.5?1:2;
     else if (tspec && !aspec) replace = 1;
     else if (!tspec && aspec) replace = 2;
-    //msg_Out()<<"--> replace = "<<replace<<"\n";
     if (replace==1) {
       m_vetoed[tbeam][1].erase(p_inparts[tbeam]->GetFlow(1));
       oldcolt = tspec->GetFlow(2);
@@ -478,15 +453,8 @@ bool Colour_Generator::ConstrainedQQFlows(const size_t & tbeam) {
     }
     replacecol = true;
   }
-  //msg_Out()<<"--> (ncol_a = "<<ncola<<" for anti = "<<aanti<<", spec = "<<aspec<<") "
-  //	   <<"(ncol_t = "<<ncolt<<" for trip = "<<tanti<<", spec = "<<tspec<<"): "
-  //	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
-  //	   <<(*p_inparts[0]->DecayBlob())<<"\n"<<"Spectators:\n";
-  //if (tspec) msg_Out()<<(*tspec)<<"\n";
-  //if (aspec) msg_Out()<<(*aspec)<<"\n";
-  //Output();
   if (replacecol) return true;
-  exit(1);
+  THROW(fatal_error,"no replacement colour found.");
   return true;
 }
 
@@ -498,10 +466,8 @@ bool Colour_Generator::ConstrainedColourFlows(const size_t & tbeam) {
   if (tflav.IsGluon() && aflav.IsQuark()) return ConstrainedGQFlows(tbeam);
   if (tflav.IsQuark() && aflav.IsGluon()) return ConstrainedQGFlows(tbeam);
   if (tflav.IsQuark() && aflav.IsQuark()) return ConstrainedQQFlows(tbeam);
-  msg_Error()<<METHOD<<" no obvious solution available for "
-	     <<"["<<tflav<<"]"<<"["<<aflav<<"] and we should not end up here.\n"
-	     <<"   Will exit the run.\n";
-  exit(1);
+  THROW(fatal_error,"cannot fix colouir flows.");
+  return false;
 }
 
 void Colour_Generator::AssignColours(const size_t & beam,Particle * trip,Particle * anti) {

@@ -31,6 +31,7 @@ AMISIC
 
 .. index:: Amisic
 .. index:: Amisic:PT_0(ref)
+.. index:: Amisic:PT_0(IR)
 .. index:: Amisic:PT_Min(ref)
 .. index:: Amisic:Eta
 .. index:: Amisic:E(ref)
@@ -47,10 +48,14 @@ AMISIC
 .. index:: Amisic:nPT_bins
 .. index:: Amisic:nMC_points
 .. index:: Amisic:nS_bins
+.. index:: Amisic:PomeronIntercept
+.. index:: Amisic:PomeronSlope
+.. index:: Amisic:TriplePomeronCoupling
+.. index:: Amisic:ReggeonIntercept
 
 Amisic can simulate the interaction of three different combinations of incoming particles:
 proton--proton, photon--proton and photon--photon collision. The parameters for the simulation of photonic multiple
-interactions can be found in :cite:`Schuler:1996en`. It has several parameters to control the simulation of the
+interactions can be found in :cite:`Schuler:1993wr`. It has several parameters to control the simulation of the
 multiple-parton interactions, they are listed below. Each of these parameters has to be set in the
 subsetting ``AMISIC``, like so
 
@@ -62,7 +67,10 @@ subsetting ``AMISIC``, like so
 The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
 :option:`PT_0(ref)`
-    Value :math:`p_\text{T,0}^\text{(ref)}` for the calculation of the IR regulator, see formula below. Defaults to ``2.5``.
+    Value :math:`p_\text{T,0}^\text{(ref)}` for the calculation of the IR regulator, see formula below. Defaults to ``2.2``.
+
+:option:`PT_0(IR)`
+    The absolute minimum of the IR regulator, see formula below. Defaults to ``0.5``.
 
 :option:`PT_Min(ref)`
     Value :math:`p_\text{T,min}^\text{(ref)}` for the calculation of the IR cutoff, see formula below. Defaults to ``3``.
@@ -137,6 +145,28 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 :option:`nS_bins`
     Number of points to sample in the center-of-mass energy :math:`\sqrt{s}`. This is only used if the energy is not
     fixed, i.e. in the case of EPA photons. Defaults to ``100``.
+
+The total cross-section is calculated with
+
+    .. math::
+
+        \sigma_{tot} = X s^\epsilon + Y s^\eta
+
+    where :math:`s` is the Mandelstam invariant.
+
+:option:`PomeronIntercept`
+    The parameter :math:`\epsilon` in the above equation, defaults to ``0.0808``.
+
+:option:`ReggeonIntercept`
+    The parameter :math:`\eta` in the above equation, defaults to ``-0.4525``.
+
+The single- and double-diffractive cross-sections in the Regge picture have two free parameters:
+
+:option:`PomeronSlope`
+    The parameter :math:`\alpha^\prime`, default is ``0.25``.
+
+:option:`TriplePomeronCoupling`
+    The parameter :math:`g_{3\mathbb{P}}` at an input scale of 20 GeV, given in :math:`\text{mb}^{-0.5}`, with default ``0.318``.
 
 .. _MI ISR parameters:
 

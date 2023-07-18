@@ -1,6 +1,7 @@
 #include "BEAM/Spectra/EPA.H"
 
 #include "ATOOLS/Math/Gauss_Integrator.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -13,14 +14,21 @@ using namespace BEAM;
 using namespace ATOOLS;
 
 EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
-         const int _dir)
-    : Beam_Base(beamspectrum::EPA, _beam, _energy, _pol, _dir),
-      m_mass(_beam.Mass(true)), m_charge(_beam.Charge()) {
+         const int _dir) :
+  Beam_Base(beamspectrum::EPA, _beam, _energy, _pol, _dir),
+  m_mass(_beam.Mass(true)), m_gamma(_energy/m_mass), m_charge(_beam.Charge()),
+  m_minR(Max(1.e-6,_beam.Radius())), m_maxR(10.*m_minR)    
+{
   Settings &s = Settings::GetMainSettings();
   RegisterDefaults();
-  m_bunch = Flavour(kf_photon);
-  m_vecout = Vec4D(m_energy, 0., 0., _dir * m_energy);
-  m_on = true;
+  m_Nbunches   = 2; 
+  m_bunches.resize(m_Nbunches);
+  m_bunches[0] = Flavour(kf_photon);
+  m_bunches[1] = m_beam;
+  m_vecouts.resize(m_Nbunches);
+  m_vecouts[0] = Vec4D(m_energy, 0., 0., m_dir * m_energy);
+  m_vecouts[1] = Vec4D(0.,0.,0.,0.);
+  m_on         = true;
 
   std::vector<double> q2Max{s["EPA"]["Q2Max"].GetVector<double>()};
   if (q2Max.size() != 1 && q2Max.size() != 2)
@@ -82,9 +90,31 @@ void EPA::RegisterDefaults() {
   s["EPA"]["Debug_Files"].SetDefault("EPA_debugOutput");
 }
 
+void EPA::FixPosition() {
+  // This is a bit of a poor-man's choice for a point-like source,
+  // with a minmimal distance m_minR ... we would need some notion of
+  // off'shellness here ...
+  double ratio = m_maxR/m_minR, logratio = log(ratio), R, phi;
+  if (ran->Get()< logratio/(0.5+logratio)) {
+    R = m_minR * pow(ratio,ran->Get());
+  }
+  else {
+    R = m_minR * sqrt(ran->Get());
+  }
+  phi = 2.*M_PI*ran->Get();
+  m_position = R * Vec4D(0., cos(phi), sin(phi), 0.);
+}
+
+void EPA::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {
+  if (i==0) {
+    m_vecouts[0] = out;
+    m_vecouts[1] = m_lab-out;
+    m_x = m_vecouts[0][0]/m_lab[0];
+  }
+}
+
 double EPA::CosInt::GetCosInt(double X) {
-  if (X < 0.)
-    exit(1);
+  if (X < 0.) THROW(fatal_error,"method called with negative X");
   ATOOLS::Gauss_Integrator integrator(this);
   return integrator.Integrate(X, 100000., 1.e-4, 1);
 }

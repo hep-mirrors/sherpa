@@ -68,6 +68,7 @@ void Matrix_Element_Handler::RegisterMainProcessDefaults(
     Scoped_Settings& procsettings)
 {
   procsettings["Cut_Core"].SetDefault(0);
+  procsettings["Sort_Flavors"].SetDefault(3);
   procsettings["CKKW"].SetDefault("");
   procsettings.DeclareVectorSettingsWithEmptyDefault(
       {"Decay", "DecayOS", "No_Decay"});
@@ -153,7 +154,7 @@ void Matrix_Element_Handler::InitNLOMC()
 }
 
 
-bool Matrix_Element_Handler::CalculateTotalXSecs() 
+bool Matrix_Element_Handler::CalculateTotalXSecs()
 {
   Settings& s = Settings::GetMainSettings();
   bool storeresults = s["GENERATE_RESULT_DIRECTORY"].Get<bool>();
@@ -189,7 +190,7 @@ void Matrix_Element_Handler::SetRandomSeed()
   }
 }
 
-bool Matrix_Element_Handler::GenerateOneEvent() 
+bool Matrix_Element_Handler::GenerateOneEvent()
 {
   Return_Value::IncCall(METHOD);
   p_proc=NULL;
@@ -548,7 +549,7 @@ int Matrix_Element_Handler::InitializeProcesses(
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
   msg_Debugging()<<METHOD<<"(): Processes {\n";
   msg_Debugging()<<"  m_procs:\n";
-  for (size_t i(0);i<m_procs.size();++i) 
+  for (size_t i(0);i<m_procs.size();++i)
     msg_Debugging()<<"    "<<m_procs[i]->Name()<<" -> "<<m_procs[i]<<"\n";
   msg_Debugging()<<"}\n";
   msg_Info()<<METHOD<<"(): Initializing scales"<<std::flush;
@@ -689,6 +690,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
 
   // build process block info
   args.pbi.m_cutcore = proc["Cut_Core"].Get<int>();
+  args.pbi.m_sort=proc["Sort_Flavors"].Get<size_t>();
   args.pbi.m_selectors = proc["Selectors"];
 
   // make modifications for multi-jet merging
@@ -753,6 +755,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     // below
     if (subkey == "Selectors"
         || subkey == "Cut_Core"
+        || subkey == "Sort_Flavors"
         || subkey == "Decay"
         || subkey == "DecayOS"
         || subkey == "No_Decay"
@@ -1024,6 +1027,7 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	if (GetMPvalue(args.pbi.m_vitmin,nfs,pnid,di)) cpi.m_itmin=di;
 	if (GetMPvalue(args.pbi.m_vrsitmin,nfs,pnid,di)) cpi.m_rsitmin=di;
 	else cpi.m_rsitmin=cpi.m_itmin;
+        cpi.m_sort=args.pbi.m_sort;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)
@@ -1091,7 +1095,7 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,
   info.m_ps.resize(1);
   info.m_ps.front().m_ps.clear();
   while(true) {
-    while (buffer.length()>0 && 
+    while (buffer.length()>0 &&
 	   (buffer[0]==' ' || buffer[0]=='\t')) buffer.erase(0,1);
     if (buffer.length()==0) break;
     size_t pos(Min(buffer.find(' '),buffer.length()));
@@ -1154,7 +1158,7 @@ namespace SHERPA {
    const int nfs,const int &priority)
   {
     if (rstr.length()==0) {
-      if (nfs==0 && 
+      if (nfs==0 &&
 	  (dv.find(lstr)==dv.end() || dv[lstr].first>priority)) {
 	msg_Debugging()<<METHOD<<"(): adding '"<<val
 		       <<"' {"<<lstr<<"}("<<priority<<")\n";
@@ -1197,8 +1201,8 @@ namespace SHERPA {
    const int nfs,const std::string &pnid,Type &rv)
   {
     std::map<std::string,std::pair<int,Type> > cdv(dv);
-    for (typename std::map<std::string,std::pair<int,Type> >::const_iterator 
-	   dit(dv.begin());dit!=dv.end();++dit) { 
+    for (typename std::map<std::string,std::pair<int,Type> >::const_iterator
+	   dit(dv.begin());dit!=dv.end();++dit) {
       AddMPvalue<Type>("",dit->first,dit->second.second,
 		       dv,nfs,dit->second.first);
     }

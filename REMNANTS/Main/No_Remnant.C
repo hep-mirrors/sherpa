@@ -4,8 +4,11 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-No_Remnant::No_Remnant(const unsigned int _m_beam):
-  Remnant_Base(rtp::intact,_m_beam) { }
+No_Remnant::No_Remnant(const size_t & beam,const size_t & tag):
+  Remnant_Base(Flavour(kf_none),beam,tag)
+{
+  m_type = rtp::intact;
+}
 
 bool No_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   if (m_extracted.size()==0) {
@@ -19,7 +22,7 @@ bool No_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
 }
 
 bool No_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
-  if ((mom[0]-p_beam->OutMomentum()[0])/p_beam->OutMomentum()[0]>1.e-6)
+  if ((mom[0]-p_beam->OutMomentum(m_tag)[0])/p_beam->OutMomentum(m_tag)[0]>1.e-6)
     return false;
   return true;
 }

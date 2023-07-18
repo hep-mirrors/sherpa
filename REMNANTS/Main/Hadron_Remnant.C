@@ -6,12 +6,14 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam):
-  Remnant_Base(rtp::hadron,beam),
-  p_pdf(pdf), p_partons(&(p_pdf->Partons())), m_beamflav(pdf->Bunch()),
-  p_valence(nullptr), p_remnant(nullptr), p_recoiler(nullptr), p_spectator(nullptr), m_ff(Form_Factor()),
-  m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
+Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,const unsigned int & tag):
+  Remnant_Base(pdf->Bunch(),beam,tag),
+  p_pdf(pdf), p_partons(&(p_pdf->Partons())),
+  p_valence(nullptr), p_remnant(nullptr), p_recoiler(nullptr), p_spectator(nullptr),
+  m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),
+  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
 {
+  p_ff     = new Form_Factor(m_beamflav);
   m_scale2 = Max(4.0,p_pdf->Q2Min());
   ConstructConstituentFlavours();
 }
@@ -72,7 +74,7 @@ Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
   Particle * part = new Particle(-1,flav,Vec4D(0.,0.,0.,0.),'B');
   part->SetNumber();
   part->SetBeam(m_beam);
-  part->SetPosition(m_position+m_ff());
+  part->SetPosition(m_position+(*p_ff)());
   return part;
 }
 
@@ -155,7 +157,8 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
   // rest is taken by the diquark.
-  Vec4D availMom = p_beam->OutMomentum();
+  // TODO: Will have to adapt it to the case of mesons.
+  Vec4D availMom = p_beam->OutMomentum(m_tag);
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();
     if (copy) {
@@ -231,7 +234,7 @@ double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,
   return z;
 }
 
-void Hadron_Remnant::Reset(const bool & DIS) {
+void Hadron_Remnant::Reset(const bool & resc,const bool & DIS) {
   Remnant_Base::Reset();
   while (!m_spectators.empty()) {
     Particle * part = m_spectators.front();
@@ -242,15 +245,16 @@ void Hadron_Remnant::Reset(const bool & DIS) {
     delete part;
     m_spectators.pop_front();
   }
+  // TODO: Have to check / fix this!!!!!
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum()[0];
+  m_residualE = p_beam->OutMomentum(m_tag)[0];
   m_valence   = false;
   p_valence   = p_remnant = p_recoiler = nullptr; 
 }
 
 bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   DEBUG_FUNC("");
-  // Is flavour element of flavours allowed by PDF? 
+  // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav)==p_partons->end()) {
     msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
     return false;

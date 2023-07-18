@@ -19,7 +19,7 @@ namespace AMISIC {
 
     MODEL::Running_AlphaS   * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
-    PDF::PDF_Base           * p_pdf[2];
+    std::array<PDF::PDF_Base *, 2> p_pdf;
 
     std::list<XS_Base * >    m_me2s;
     std::list<MI_Process * > m_processes;
@@ -27,7 +27,7 @@ namespace AMISIC {
     virtual double Scale(const double & pt2) const;
     virtual double Coupling(const double & scale) const=0;
     virtual double SoftCorrection(const double & pt2) const;
-    virtual double PreCalculate(const double & shat,const double & that,
+    virtual void   PreCalculate(const double & shat,const double & that,
 				const double & uhat);
   public:
     MI_Process_Group(const std::string & name);
@@ -46,7 +46,8 @@ namespace AMISIC {
     }
     inline void SetAlphaS(MODEL::Running_AlphaS * alpS)  { p_alphaS = alpS; }
     inline void SetAlpha(MODEL::Running_AlphaQED  * alp) { p_alpha  = alp; }
-    inline void SetScale(const double & scale)           { m_scale = scale; }
+    inline void SetScale(const double & scale)           { m_scale  = scale; }
+    inline void SetPT02(const double & pt02)             { m_pt02   = pt02; }
   };
 
   class MI_GG_Processes: public MI_Process_Group {
@@ -55,9 +56,6 @@ namespace AMISIC {
     double Coupling(const double & scale) const;
   public:
     MI_GG_Processes();
-
-    //double operator()(const double & shat,const double & that,
-    //		      const double & uhat);
     MI_Process * SelectProcess();
   };
 
@@ -65,20 +63,12 @@ namespace AMISIC {
     double Coupling(const double & scale) const;
   public:
     MI_QQB_Processes();
-
-    //double operator()(const double & shat,const double & that,
-    //		      const double & uhat);
-    // no SelectProcess(), fall back to generic solution:
-    // smart specific solutions do not speed up the selection here
   };
 
   class MI_QQ_Processes: public MI_Process_Group {
     double Coupling(const double & scale) const;
   public:
     MI_QQ_Processes();
-
-    //double operator()(const double & shat,const double & that,
-    //		      const double & uhat);
     MI_Process * SelectProcess();
   };
 
@@ -87,9 +77,6 @@ namespace AMISIC {
     double Coupling(const double & scale) const;
   public:
     MI_QG_Processes();
-
-    //double operator()(const double & shat,const double & that,
-    //		      const double & uhat);
     MI_Process * SelectProcess();
   };
 
@@ -98,9 +85,6 @@ namespace AMISIC {
     double Coupling(const double & scale) const;
   public:
     MI_Q1Q2_Processes();
-
-    //double operator()(const double & shat,const double & that,
-    //		      const double & uhat);
     MI_Process * SelectProcess();
   };
 
@@ -108,9 +92,6 @@ namespace AMISIC {
     double Coupling(const double & scale) const;
   public:
     MI_QG_QGamma_Processes();
-
-    //double operator()(const double & shat,const double & that,
-    //		      const double & uhat);
     MI_Process * SelectProcess();
   };
 
@@ -118,9 +99,6 @@ namespace AMISIC {
     double Coupling(const double & scale) const;
   public:
     MI_QQ_GGamma_Processes();
-
-    //double operator()(const double & shat,const double & that,
-    //		      const double & uhat);
     MI_Process * SelectProcess();
   };
 }

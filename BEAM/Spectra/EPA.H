@@ -16,7 +16,8 @@ namespace BEAM {
       double GetCosInt(double X);
     };
 
-    double m_mass, m_charge, m_q2Max, m_pt_min, m_aqed, m_xmin, m_theta_max;
+    double m_mass, m_charge, m_gamma, m_minR, m_maxR;
+    double m_q2Max, m_pt_min, m_aqed, m_xmin, m_theta_max;
 
     bool m_lo_epa;
 
@@ -36,7 +37,9 @@ namespace BEAM {
     ~EPA();
 
     Beam_Base *Copy();     
-    bool   CalculateWeight(double, double);
+    bool CalculateWeight(double, double);
+    void FixPosition();
+    void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0);
   };// end of class EPA
 
 }// end of namespace BEAM

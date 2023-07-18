@@ -11,7 +11,8 @@ namespace REMNANTS {
     FlavourList     m_constituents;
     PDF::PDF_Base * p_pdfbase;
   public:
-    Electron_Remnant(PDF::PDF_Base * pdf,const unsigned int _m_beam);
+    Electron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,
+		     const unsigned int & tag=0);
 
     bool FillBlob(ATOOLS::ParticleMomMap *ktmap=NULL,const bool & copy=true);
     bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom);

@@ -11,12 +11,9 @@ namespace REMNANTS {
   private:
     PDF::PDF_Base             * p_pdf;
     const ATOOLS::Flavour_Set * p_partons;
-    ATOOLS::Flavour             m_beamflav;
     FlavourList                 m_constituents;
     
     ATOOLS::Particle * p_valence, * p_remnant, * p_recoiler, * p_spectator;
-
-    Form_Factor        m_ff;
 
     bool   m_valence;
     double m_alpha, m_gamma, m_beta, m_invb, m_LambdaQCD;
@@ -35,12 +32,13 @@ namespace REMNANTS {
     double EstimateRequiredEnergy() const;
     void Output();
   public:
-    Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam);    
+    Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,
+		   const unsigned int & tag=0);    
     ~Hadron_Remnant() = default;
 
     bool FillBlob(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true) final;
     bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom) final;
-    void Reset(const bool & DIS=false) final;
+    void Reset(const bool & resc=false,const bool & DIS=false) final;
     
     inline ATOOLS::Particle * GetRecoiler()            { return p_recoiler; }
     inline ATOOLS::Particle * GetSpectator()           { return p_spectator; }

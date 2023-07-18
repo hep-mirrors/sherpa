@@ -36,7 +36,7 @@ Process_Base::Process_Base():
   p_int(new Process_Integrator(this)), p_selector(NULL),
   p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_nlomc(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
-  m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
+  m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0),
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
@@ -47,7 +47,7 @@ Process_Base::Process_Base():
       Settings::GetMainSettings()["PB_USE_FMM"].SetDefault(0).Get<int>();
 }
 
-Process_Base::~Process_Base() 
+Process_Base::~Process_Base()
 {
   if (p_kfactor) delete p_kfactor;
   if (p_scale) delete p_scale;
@@ -56,10 +56,10 @@ Process_Base::~Process_Base()
 }
 
 Process_Base *Process_Base::Selected()
-{ 
+{
   if (!p_selected) return NULL;
   if (p_selected!=this) return p_selected->Selected();
-  return this; 
+  return this;
 }
 
 bool Process_Base::SetSelected(Process_Base *const proc)
@@ -98,9 +98,9 @@ size_t Process_Base::SelectedIndex()
 }
 
 Process_Base *Process_Base::Parent()
-{ 
+{
   if (p_parent && p_parent!=this) return p_parent->Parent();
-  return this; 
+  return this;
 }
 
 bool Process_Base::GeneratePoint() { return true; }
@@ -180,7 +180,7 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
     SetFixedScale(s);
   }
   if (mode&4) SetUseBIWeight(false);
-  if (mode&128) while (!this->GeneratePoint()); 
+  if (mode&128) while (!this->GeneratePoint());
   else {
     std::shared_ptr<Color_Integrator> ci=
       Integrator()->ColorIntegrator();
@@ -256,8 +256,8 @@ void Process_Base::SortFlavours(Process_Info &pi,const int mode)
       fmm[int(hfl->Kfcode())]=0;
     if (hfl->IsFermion()) fmm[int(hfl->Kfcode())]++;
   }
-  if (mode&1) SortFlavours(pi.m_ii,s_usefmm?&fmm:NULL);
-  SortFlavours(pi.m_fi,s_usefmm?&fmm:NULL);
+  if ((mode&1) && (pi.m_sort&1)) SortFlavours(pi.m_ii,NULL);
+  if (pi.m_sort&2) SortFlavours(pi.m_fi,s_usefmm?&fmm:NULL);
 }
 
 bool Process_Base::InitScale()
@@ -285,7 +285,7 @@ void Process_Base::Init(const Process_Info &pi,
     m_pinfo.m_fi.BuildDecayInfos(m_nin);
     m_decins=m_pinfo.m_fi.GetDecayInfos();
     if (IsGroup()) {
-      if (m_pinfo.m_nminq>0 || m_pinfo.m_nmaxq<m_nin+m_nout) 
+      if (m_pinfo.m_nminq>0 || m_pinfo.m_nmaxq<m_nin+m_nout)
         m_name+="__NQ_"+ToString(m_pinfo.m_nminq)+
 	  "-"+ToString(m_pinfo.m_nmaxq);
     }
@@ -330,13 +330,13 @@ std::string Process_Base::BaseName
   return fname;
 }
 
-std::string Process_Base::GenerateName(const Subprocess_Info &info) 
+std::string Process_Base::GenerateName(const Subprocess_Info &info)
 {
   std::string name(info.m_fl.IDName());
   if (info.m_fl.Kfcode()==kf_quark && info.m_fl.IsAnti()) name+="b";
   if (info.m_ps.empty()) return name;
   name+="["+GenerateName(info.m_ps.front());
-  for (size_t i(1);i<info.m_ps.size();++i) 
+  for (size_t i(1);i<info.m_ps.size();++i)
     name+="__"+GenerateName(info.m_ps[i]);
   if (info.m_nlotype!=nlo_type::lo) {
     if      (info.m_nlocpl[0]==1. && info.m_nlocpl[1]==0.) name+="__QCD(";
@@ -348,7 +348,7 @@ std::string Process_Base::GenerateName(const Subprocess_Info &info)
 }
 
 std::string Process_Base::GenerateName
-(const Subprocess_Info &ii,const Subprocess_Info &fi) 
+(const Subprocess_Info &ii,const Subprocess_Info &fi)
 {
   std::string name(std::to_string(ii.NExternal())+std::string("_")+
                    std::to_string(fi.NExternal()));
@@ -472,7 +472,7 @@ std::string Process_Base::GenerateName(const Cluster_Amplitude *ampl)
 {
   std::string name(std::to_string(ampl->NIn())+std::string("_")+
                    std::to_string(ampl->Legs().size()-ampl->NIn()));
-  for (size_t i(0);i<ampl->NIn();++i) 
+  for (size_t i(0);i<ampl->NIn();++i)
     name+="__"+ampl->Leg(i)->Flav().Bar().IDName();
   DecayInfo_Vector decs(ampl->Decays());
   std::sort(decs.begin(),decs.end(),Order_NDecay());
@@ -497,19 +497,19 @@ std::string Process_Base::GenerateName(const NLO_subevt *sub,const size_t &nin)
   return name;
 }
 
-void Process_Base::SetGenerator(ME_Generator_Base *const gen) 
-{ 
-  p_gen=gen; 
+void Process_Base::SetGenerator(ME_Generator_Base *const gen)
+{
+  p_gen=gen;
 }
 
 void Process_Base::SetShower(PDF::Shower_Base *const ps)
 {
-  p_shower=ps; 
+  p_shower=ps;
 }
 
 void Process_Base::SetNLOMC(PDF::NLOMC_Base *const mc)
 {
-  p_nlomc=mc; 
+  p_nlomc=mc;
 }
 
 void Process_Base::FillOnshellConditions()
@@ -555,7 +555,7 @@ bool Process_Base::Trigger(const Vec4D_Vector &p)
   if (IsMapped() && LookUp()) return Selector()->Result();
   return Selector()->Trigger(p);
 }
- 
+
 NLO_subevtlist *Process_Base::GetSubevtList()
 {
   return NULL;

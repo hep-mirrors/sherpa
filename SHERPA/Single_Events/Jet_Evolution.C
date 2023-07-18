@@ -7,46 +7,77 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "SHERPA/PerturbativePhysics/Perturbative_Interface.H"
+#include <map>
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace PDF;
 using namespace std;
 
-Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
-                             Hard_Decay_Handler *_dechandler,
-                             Decay_Handler_Base *_hdhandler,
-                             MI_Handler *_mihandler,
-                             Soft_Collision_Handler *_schandler,
+Jet_Evolution::Jet_Evolution(Matrix_Element_Handler * me,
+                             Hard_Decay_Handler * harddecs,
+                             Decay_Handler_Base * decs,
+                             const MI_Handler_Map *mihandlers,
+                             const Soft_Collision_Handler_Map *schandlers,
                              const Shower_Handler_Map &showers,
-			     Beam_Remnant_Handler * _brhandler) {
+                             REMNANTS::Remnant_Handler_Map &remnanthandlers) {
   Shower_Handler_Map::const_iterator shIter = showers.find(isr::hard_process);
   m_name = string("Jet_Evolution:") + shIter->second->ShowerGenerator();
   m_type = eph::Perturbative;
+  FillPerturbativeInterfaces(me,harddecs,decs,mihandlers,schandlers,showers,remnanthandlers);
+}
 
-  Perturbative_Interface *interface;
-  shIter = showers.find(isr::hard_process);
-  interface =
-      new Perturbative_Interface(_mehandler, _dechandler, shIter->second);
-  if (interface != NULL)
-    m_interfaces.insert(make_pair("SignalMEs", interface));
-
-  shIter = showers.find(isr::hard_subprocess);
-  interface = new Perturbative_Interface(_hdhandler, shIter->second);
-  if (interface != NULL)
-    m_interfaces.insert(make_pair("HadronDecays", interface));
-
-  if (_mihandler) {
-    interface = new Perturbative_Interface(_mihandler, shIter->second);
-    if (interface != NULL)
-      m_interfaces.insert(make_pair("MPIs", interface));
+void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
+					       Hard_Decay_Handler* harddecs,
+					       Decay_Handler_Base * decs,
+					       const MI_Handler_Map * mis,
+					       const Soft_Collision_Handler_Map * scs,
+					       const Shower_Handler_Map & showers,
+					       REMNANTS::Remnant_Handler_Map & rhs) {
+  REMNANTS::Remnant_Handler * remnants = NULL; 
+  if (rhs.find(isr::hard_process)!=rhs.end()) remnants = rhs[isr::hard_process];
+  else msg_Error()<<"Error in "<<METHOD<<":\n"
+		  <<"  No remnant handling found for hard part of the process.\n"
+		  <<"  Continue and hope for the best.\n";
+  
+  Shower_Handler_Map::const_iterator shower = showers.find(isr::hard_process);
+  if (shower!=showers.end() && me) {
+    m_interfaces["SignalMEs"] = new Perturbative_Interface(me, harddecs, shower->second);
+    m_interfaces["SignalMEs"]->SetRemnantHandler(remnants);
   }
-  if (_schandler) {
-    interface = new Perturbative_Interface(_schandler, shIter->second);
-    if (interface != NULL)
-      m_interfaces.insert(make_pair("SoftCollisions", interface));
+
+  shower = showers.find(isr::hard_subprocess);
+  if (shower!=showers.end()) {
+    m_interfaces["HadronDecays"] = new Perturbative_Interface(decs, shower->second);
+    MI_Handler_Map::const_iterator mihandler = mis->find(isr::hard_subprocess);
+    if (mihandler!=mis->end()) {
+      m_interfaces["MPIs"] = new Perturbative_Interface(mihandler->second, shower->second);
+      m_interfaces["MPIs"]->SetRemnantHandler(remnants);
+    }
+    Soft_Collision_Handler_Map::const_iterator schandler = scs->find(isr::hard_subprocess);
+    if (schandler!=scs->end()) {
+      m_interfaces["SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
+      m_interfaces["SoftCollisions"]->SetRemnantHandler(remnants);
+    }
   }
-  p_remnants = _brhandler->GetRemnants();
+
+  shower = showers.find(isr::bunch_rescatter);
+  if (shower!=showers.end()) {
+    if (rhs.find(isr::bunch_rescatter)!=rhs.end()) remnants = rhs[isr::bunch_rescatter];
+    else msg_Error()<<"Error in "<<METHOD<<":\n"
+		    <<"  No remnant handling found for bunch rescattering.\n"
+		    <<"  Continue and hope for the best.\n";
+    MI_Handler_Map::const_iterator mihandler = mis->find(isr::bunch_rescatter);
+    if (mihandler!=mis->end()) {
+      m_interfaces["BR_MPIs"] = new Perturbative_Interface(mihandler->second, shower->second);
+      m_interfaces["BR_MPIs"]->SetRemnantHandler(remnants);
+    }
+    Soft_Collision_Handler_Map::const_iterator schandler = scs->find(isr::bunch_rescatter);
+    if (schandler!=scs->end()) {
+      m_interfaces["BR_SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
+      m_interfaces["BR_SoftCollisions"]->SetRemnantHandler(remnants);
+    }
+  }
 }
 
 Jet_Evolution::~Jet_Evolution() {
@@ -66,7 +97,6 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
     return Return_Value::Error;
   }
   PertInterfaceIter piIter;
-  string tag("SignalMEs");
   bool hit(false), found(true);
   while (found) {
     found = false;
@@ -74,35 +104,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
       Blob *meblob = (*bloblist)[i];
       if (meblob->Has(blob_status::needs_showers) &&	  
           meblob->Type() != btp::Hard_Decay) {
-        switch (int(meblob->Type())) {
-        case (int(btp::Signal_Process)):
-          tag = string("SignalMEs");
-          MODEL::as->SetActiveAs(PDF::isr::hard_process);
-          break;
-        case (int(btp::Hard_Collision)):
-          tag = string("MPIs");
-          if (meblob->TypeSpec() == "MinBias" || meblob->TypeSpec()=="Shrimps")
-            tag = string("SoftCollisions");
-          MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
-          break;
-        case (int(btp::Hadron_Decay)):
-          tag = string("HadronDecays");
-          MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
-          break;
-        default:
-          msg_Error() << "ERROR in " << METHOD << ": "
-                      << "Do not have an interface for this type of blob.\n"
-                      << (*meblob) << "\n   Will abort.\n";
-          THROW(fatal_error, "No perturbative interface found.");
-        }
-        piIter = m_interfaces.find(tag);
-        if (piIter == m_interfaces.end()) {
-          msg_Error() << "Error in Jet_Evolution::Treat: "
-                      << "No Perturbative_Interface found for type " << tag
-                      << "\n"
-                      << "   Abort the run.\n";
-          THROW(fatal_error, "No perturbative interface found.");
-        }
+	piIter = SelectInterface(meblob);
         switch (AttachShowers(meblob, bloblist, piIter->second)) {
         case Return_Value::Success:
           found = hit = true;
@@ -135,7 +137,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
       msg_Tracking() << METHOD << " found four momentum conservation error.\n";
       return Return_Value::New_Event;
     }
-    Blob *showerblob = bloblist->FindLast(btp::Shower);
+    Blob * showerblob = bloblist->FindLast(btp::Shower);
     showerblob->AddStatus(blob_status::needs_extraQED);
     return Return_Value::Success;
   }
@@ -144,14 +146,55 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
   // case we find the last (and hopefully only) shower blob and extract its
   // initiators.
   Blob *showerblob = bloblist->FindLast(btp::Shower);
-  if (showerblob != NULL && !p_remnants->ExtractShowerInitiators(showerblob))
-    return Return_Value::New_Event;
+  if (showerblob!=NULL && showerblob->Has(blob_status::needs_beams)) {
+    Blob * meblob = showerblob->InParticle(0)->ProductionBlob();
+    if (meblob->Type()!=btp::Hadron_Decay &&
+	!p_remnants->ExtractShowerInitiators(showerblob))
+      return Return_Value::New_Event;
+  }
   return Return_Value::Nothing;
+}
+
+
+PertInterfaceIter Jet_Evolution::SelectInterface(Blob * blob) {
+  string tag("");
+  switch (int(blob->Type())) {
+  case (int(btp::Signal_Process)):
+    tag = string("SignalMEs");
+    MODEL::as->SetActiveAs(PDF::isr::hard_process);
+    break;
+  case (int(btp::Hard_Collision)):
+    if (blob->Has(blob_status::needs_beamRescatter)) tag = string("BR_");
+    tag += string("MPIs");
+    if (blob->TypeSpec() == "MinBias" || blob->TypeSpec()=="Shrimps")
+      tag += string("SoftCollisions");
+    MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
+    break;
+  case (int(btp::Hadron_Decay)):
+    tag = string("HadronDecays");
+    MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
+    break;
+  default:
+    msg_Error() << "ERROR in " << METHOD << ": "
+		<< "Do not have an interface for this type of blob.\n"
+		<< (*blob) << "\n   Will abort.\n";
+    THROW(fatal_error, "No perturbative interface found.");
+  }
+  PertInterfaceIter piIter = m_interfaces.find(tag);
+  if (piIter == m_interfaces.end()) {
+    msg_Error() << "Error in Jet_Evolution::Treat: "
+		<< "No Perturbative_Interface found for type " << tag
+		<< "\n"
+		<< "   Abort the run.\n";
+    THROW(fatal_error, "No perturbative interface found.");
+  }
+  return piIter;
 }
 
 Return_Value::code
 Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
                              Perturbative_Interface *interface) {
+  p_remnants = interface->RemnantHandler();
   if (!interface->Shower()->On() ||
       (interface->MEHandler() &&
        interface->MEHandler()->Process()->Info().m_nlomode ==
@@ -182,10 +225,11 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
   case Return_Value::Success:
     if (blob->Type() != ::btp::Hadron_Decay)
       DefineInitialConditions(blob, bloblist, interface);
-    if (blob->NInP() == 1)
-      shower = interface->PerformDecayShowers();
-    if (blob->NInP() == 2)
+    if (blob->NInP() == 1) shower = interface->PerformDecayShowers();
+    else if (blob->NInP() == 2) {
       shower = interface->PerformShowers();
+      blob->UnsetStatus(blob_status::needs_beamRescatter);
+    }
     switch (shower) {
     case 1:
       // No Sudakov rejection
@@ -263,8 +307,8 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
   return p_remnants->ExtractShowerInitiators(noshowerblob);
 }
 
-bool Jet_Evolution::AftermathOfSuccessfulShower(
-    Blob *blob, Blob_List *bloblist, Perturbative_Interface *interface) {
+bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
+						Perturbative_Interface *interface) {
   if (blob->NInP() == 1 && blob->Type() != btp::Hadron_Decay)
     blob->InParticle(0)->SetInfo('h');
   interface->FillBlobs();
@@ -272,13 +316,9 @@ bool Jet_Evolution::AftermathOfSuccessfulShower(
   Blob *showerblob =
       (!interface->Shower()->On() ? CreateMockShowerBlobs(blob, bloblist)
                                   : bloblist->FindLast(btp::Shower));
-  if (showerblob != NULL) {
-    if (blob->Type() != btp::Hadron_Decay) {
-      showerblob->AddStatus(blob_status::needs_reconnections);
-    }
-    return p_remnants->ExtractShowerInitiators(showerblob);
-  }
-  return true;
+  if (showerblob==NULL || blob->Type()== btp::Hadron_Decay) return true;
+  showerblob->AddStatus(blob_status::needs_reconnections);
+  return p_remnants->ExtractShowerInitiators(showerblob);
 }
 
 ATOOLS::Blob *Jet_Evolution::CreateMockShowerBlobs(Blob *const meblob,

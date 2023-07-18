@@ -17,9 +17,14 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   Beam_Base(beamspectrum::laser_backscattering,_beam,_energy,_polarisation,_dir),
   m_energyL(_energyL), m_polarisationL(_polarisationL), m_mode(_mode), m_angles(_angles)
 {
-  m_bunch      = Flavour(kf_photon);
-  double disc  = 1.-sqr(m_bunch.Mass()/m_energy);
-  m_vecout     = Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
+  m_Nbunches   = 2; 
+  m_bunches.resize(m_Nbunches);
+  m_bunches[0] = Flavour(kf_photon);
+  m_bunches[1] = m_beam;
+  m_vecouts.resize(m_Nbunches);
+  m_vecouts[0] = Vec4D(0.,0.,0.,0.);
+  double disc  = 1.-sqr(m_bunches[1].Mass()/m_energy);
+  m_vecouts[1] = Vec4D(m_energy, 0., 0., m_dir * m_energy * sqrt(disc));
   m_Ebounds[0] = 0.;  
   m_Ebounds[1] = 5.e10;
   m_on         = true;
@@ -178,11 +183,12 @@ double Laser_Backscattering::Weight(Flavour flin)
   return m_weight;
 }
 
-ATOOLS::Vec4D Laser_Backscattering::OutMomentum() {
-  if (m_angles==0) return m_x*m_vecout;
-  msg_Error()<<"Error in Laser_Backscattering::OutMomentum()."<<endl
-		     <<"    m_angles != 0 not implemented yet."<<endl;
-  return m_x*m_vecout; 
+ATOOLS::Vec4D Laser_Backscattering::OutMomentum(const size_t & i) {
+  if (m_angles!=0) {
+    msg_Error()<<"Error in "<<METHOD<<": m_angles != 0 not implemented yet.\n";
+  }
+  if (i==0) return m_x*m_energy*Vec4D(1.,0.,0.,m_dir);
+  return (1.-m_x)*m_lab;
 }
 
 double Laser_Backscattering::Compton(double x,double pole,double poll,double & deg)

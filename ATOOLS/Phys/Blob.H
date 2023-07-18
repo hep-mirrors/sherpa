@@ -52,6 +52,7 @@ namespace ATOOLS {
       needs_hadrondecays  = 128,
       needs_extraQED      = 256,
       needs_minBias       = 512,
+      needs_beamRescatter = 1024,
       needs_smearing      = 16384,
       internal_flag       = 32768,
       fully_active        = 65535
