@@ -140,7 +140,7 @@ bool Phase_Space_Point::DefineBeamKinematics() {
   // -- s', y = E1/(E1+E2), and cos(theta) for DM annihilation mode
   if (p_beamhandler->On() && p_beamchannels != NULL) {
     p_beamhandler->SetLimits();
-    p_beamchannels->GeneratePoint(int(p_beamhandler->ColliderMode()));
+    p_beamchannels->GeneratePoint();
     if (!p_beamhandler->MakeBeams(p_moms))
       return false;
   }
@@ -255,11 +255,11 @@ double Phase_Space_Point::CalculateWeight() {
   if (Check4Momentum()) {
     m_weight = 1.0;
     if (p_isrchannels && !(m_mode & psmode::no_gen_isr)) {
-      p_isrchannels->GenerateWeight(p_isrhandler->On());
+      p_isrchannels->GenerateWeight();
       m_weight *= p_isrchannels->Weight();
     }
     if (p_beamchannels) {
-      p_beamchannels->GenerateWeight(int(p_beamhandler->ColliderMode()));
+      p_beamchannels->GenerateWeight();
       m_weight *= p_beamchannels->Weight();
     }
     p_fsrchannels->GenerateWeight(p_moms.data(), p_cuts);

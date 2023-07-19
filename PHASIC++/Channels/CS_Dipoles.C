@@ -94,7 +94,7 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
     if (p_ismc) {
       m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
       m_isrykey[2]=(pp[0]+pp[1]).Y();
-      p_ismc->GenerateWeight(m_isrmode);
+      p_ismc->GenerateWeight();
     }
   }
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
@@ -144,7 +144,7 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
 FI_Dipole::FI_Dipole(ATOOLS::NLO_subevt *const sub,
 		     Phase_Space_Handler *const psh,const bool bmcw):
   CS_Dipole(sub,psh,bmcw),
-  m_mi(m_fli.Mass()), m_mj(m_flj.Mass()), 
+  m_mi(m_fli.Mass()), m_mj(m_flj.Mass()),
   m_mi2(m_mi*m_mi), m_mj2(m_mj*m_mj), m_mij2(sqr(m_flij.Mass())),
   m_massive(m_mi||m_mj||m_mij2)
 {
@@ -233,7 +233,7 @@ double FI_Dipole::GenerateWeight
     p_fsmc->GenerateWeight(&pp.front(),cuts);
     m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
     m_isrykey[2]=(pp[0]+pp[1]).Y();
-    p_ismc->GenerateWeight(m_isrmode);
+    p_ismc->GenerateWeight();
   }
   m_weight=Q2/(16.0*sqr(M_PI))/sqr(m_rn[0]);
   m_weight*=pow(m_rn[0],m_xexp)*pow(m_rn[1],m_zexp);
@@ -344,7 +344,7 @@ double IF_Dipole::GenerateWeight
     p_fsmc->GenerateWeight(&pp.front(),cuts);
     m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
     m_isrykey[2]=(pp[0]+pp[1]).Y();
-    p_ismc->GenerateWeight(m_isrmode);
+    p_ismc->GenerateWeight();
   }
   double Q2(2.0*pp[m_ijt]*pp[m_kt]);
   m_weight=Q2/(16.0*sqr(M_PI))/sqr(m_rn[0]);
@@ -435,7 +435,7 @@ double II_Dipole::GenerateWeight
     p_fsmc->GenerateWeight(&pp.front(),cuts);
     m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
     m_isrykey[2]=(pp[0]+pp[1]).Y();
-    p_ismc->GenerateWeight(m_isrmode);
+    p_ismc->GenerateWeight();
   }
   // 2(pa*pb)/16pi^2
   m_weight=(p[m_sub.m_i]+p[m_sub.m_k]).Abs2()/

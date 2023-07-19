@@ -93,8 +93,8 @@ namespace PHASIC {
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
     virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
 
-    void GeneratePoint(int mode=0);
-    void GenerateWeight(int mode=0);
+    void GeneratePoint();
+    void GenerateWeight();
 
     virtual void ISRInfo(int,int &,double &,double &);
     virtual void ISRInfo(std::vector<int> &ts,
