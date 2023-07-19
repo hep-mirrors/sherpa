@@ -35,21 +35,8 @@ void Collider_Weight::AssignKeys(Integration_Info *const info) {
 
 bool Collider_Weight::Calculate(const double &scale) {
   m_weight = 1.;
-  switch (m_mode) {
-  case collidermode::monochromatic:
-    return true;
-  case collidermode::spectral_1:
-    return p_beams[0]->CalculateWeight(m_xkey[4], scale);
-  case collidermode::spectral_2:
-    return p_beams[1]->CalculateWeight(m_xkey[5], scale);
-  case collidermode::both_spectral:
-    return (p_beams[0]->CalculateWeight(m_xkey[4], scale) &&
-            p_beams[1]->CalculateWeight(m_xkey[5], scale));
-  case collidermode::unknown:
-    THROW(fatal_error,
-          "Unknown collider mode, impossible to calculate weight.");
-  }
-  return false;
+  return (p_beams[0]->CalculateWeight(m_xkey[4], scale) &&
+          p_beams[1]->CalculateWeight(m_xkey[5], scale));
 }
 
 double Collider_Weight::operator()(ATOOLS::Flavour *flin) {
@@ -58,23 +45,6 @@ double Collider_Weight::operator()(ATOOLS::Flavour *flin) {
     flavour1 = flin[0];
     flavour2 = flin[1];
   }
-  switch (m_mode) {
-  case collidermode::monochromatic:
-    m_weight = 1.;
-    break;
-  case collidermode::spectral_1:
-    m_weight = p_beams[0]->Weight(flavour1);
-    break;
-  case collidermode::spectral_2:
-    m_weight = p_beams[1]->Weight(flavour2);
-    break;
-  case collidermode::both_spectral:
-    m_weight = p_beams[0]->Weight(flavour1) * p_beams[1]->Weight(flavour2);
-    break;
-  case collidermode::unknown:
-    msg_Error() << "Error in " << METHOD << ": unknown mode.\n"
-                << "   Will exit the run.\n";
-    exit(1);
-  }
+  m_weight = p_beams[0]->Weight(flavour1) * p_beams[1]->Weight(flavour2);
   return m_weight;
 }

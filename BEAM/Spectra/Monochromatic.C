@@ -11,13 +11,11 @@ Monochromatic::Monochromatic(const Flavour _beam,const double _energy,
 { }
 
 
-Beam_Base * Monochromatic::Copy() 
+Beam_Base * Monochromatic::Copy()
 {
   return new Monochromatic(m_beam,m_energy,m_polarisation,m_dir);
 }
 
-bool Monochromatic::CalculateWeight(double x,double q2) { return 1; }
-double Monochromatic::Weight(Flavour fl)                { return m_weight; }
 ATOOLS::Flavour Monochromatic::Remnant()                { return kf_none; }
 
 
