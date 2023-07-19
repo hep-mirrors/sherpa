@@ -58,7 +58,7 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   for (size_t i(1);i<m_nopt;++i) m_nexpected+=m_itmin*pow(2.,i*m_npower);
   m_nexpected+=m_maxopt*m_itmin*pow(2.,m_nopt*m_npower);
   msg_Info()<<"Integration parameters: n_{min} = "<<m_itmin
-	    <<", N_{opt} "<<m_nopt<<", N_{max} = "<<m_maxopt;
+	    <<", N_{opt} = "<<m_nopt<<", N_{max} = "<<m_maxopt;
   if (m_npower) msg_Info()<<", exponent = "<<m_npower;
   msg_Info()<<std::endl;
 }
