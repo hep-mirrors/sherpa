@@ -204,7 +204,7 @@ endif()
 ########################################################################
 
 find_program(GIT NAMES git)
-if (GIT AND EXISTS ".git") 
+if (GIT AND EXISTS ".git")
   execute_process(COMMAND ${GIT} rev-parse --abbrev-ref HEAD
                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITURL
@@ -222,7 +222,7 @@ endif()
 
 
 macro(sherpa_create_git_info name)
-  if (GIT AND EXISTS ".git") 
+  if (GIT AND EXISTS ".git")
     execute_process(COMMAND ${GIT} status -s --untracked-files=no .
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITCLEAN
@@ -911,6 +911,8 @@ if (UNIX AND ( NOT  CMAKE_SYSTEM_NAME MATCHES "Linux")  AND (NOT (CMAKE_SYSTEM_N
   set(UNIX_SYS 1)
 endif()
 set(CXXFLAGS_H_CONTENT "/* ATOOLS/Org/CXXFLAGS.H.  Generated from CXXFLAGS.H.in by configure.  */\n\
+#ifndef SHERPA_CXXFLAGS_H
+#define SHERPA_CXXFLAGS_H
 /* Architecture identified as Darwin MacOS */\n\
 $<IF:$<BOOL:${DARWIN_SYS}>,#define ARCH_DARWIN \"1\",/* #undef ARCH_DARWIN */>\n\n\
 /* Architecture identified as Linux */\n\
@@ -951,7 +953,8 @@ $<IF:$<BOOL:${SHERPA_ENABLE_PYTHIA6}>,#define USING__PYTHIA \"1\",/* #undef USIN
 #define HEPEVT_CB_SIZE ${HEPEVT_CB_SIZE} \n\n\
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\n\
-#define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n")
+#define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n
+#endif\n")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H CONTENT "${CXXFLAGS_H_CONTENT}")
 ########################################################################
 install(FILES
