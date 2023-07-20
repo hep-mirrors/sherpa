@@ -8,9 +8,7 @@
 #include <memory>
 
 namespace HepMC3 { 
-  class IO_GenEvent; 
-  class GenCrossSection; 
-  class GenEvent; 
+  class GenRunInfo; 
   class Writer;
 }
 namespace HepMC = HepMC3;
@@ -19,12 +17,11 @@ namespace SHERPA {
 
   class Output_HepMC3_Short : public Output_Base {
     HepMC3_Interface m_hepmc3;
-    HepMC::GenEvent* p_event = nullptr;
     HepMC::Writer *p_writer = nullptr;
-    std::shared_ptr<HepMC::GenCrossSection> p_xs;
     std::shared_ptr<HepMC::GenRunInfo> m_run_info;
     std::string m_basename;
     int m_iotype;
+    double m_xs, m_err;
 
   public:
     Output_HepMC3_Short(const Output_Arguments &args);

@@ -51,14 +51,12 @@ Output_HepMC3_Short::Output_HepMC3_Short(const Output_Arguments &args) :
         break;
     }
 
- p_xs= std::make_shared<HepMC::GenCrossSection>();
  m_run_info= std::make_shared<HepMC::GenRunInfo>();
  HepMC::GenRunInfo::ToolInfo tool;
  tool.name = std::string("SHERPA-MC");
  tool.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
  tool.description = std::string(SHERPA_NAME);
  m_run_info->tools().push_back(tool);
- p_event = new HepMC::GenEvent();
 }
 
 Output_HepMC3_Short::~Output_HepMC3_Short()
@@ -68,17 +66,21 @@ Output_HepMC3_Short::~Output_HepMC3_Short()
 
 void Output_HepMC3_Short::SetXS(const double& xs, const double& xserr)
 {
-  p_xs->set_cross_section(xs, xserr);
+  // Only copy for now, we have to wait until the event weights have been
+  // added (when Output()), otherwise HepMC3::GenCrossSection will not be
+  // initialised correctly.
+  m_xs = xs;
+  m_err = xserr;
 }
 
 void Output_HepMC3_Short::Output(Blob_List* blobs, const double weight)
 {
   m_hepmc3.Sherpa2ShortHepMC(blobs, m_run_info);
   HepMC::GenEvent* q=m_hepmc3.GenEvent();
-  if (q)  q->set_cross_section(p_xs);
+  if (q)  m_hepmc3.AddCrossSection(*q, m_xs, m_err);
   std::vector<HepMC::GenEvent*> subevents(m_hepmc3.GenSubEventList());
   for (size_t i = 0; i<subevents.size(); ++i) {
-    subevents[i]->set_cross_section(p_xs);
+    m_hepmc3.AddCrossSection(*subevents[i], m_xs, m_err);
   }
   if (subevents.size()) {
     for (size_t i = 0; i<subevents.size(); ++i) {

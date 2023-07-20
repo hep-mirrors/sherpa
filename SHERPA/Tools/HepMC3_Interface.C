@@ -783,10 +783,13 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
 void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
                                        const double &xs, const double &err)
 {
-    std::shared_ptr<HepMC::GenCrossSection> cross_section =std::make_shared<HepMC::GenCrossSection>();
-    cross_section->set_cross_section(xs,err);
-    event.set_cross_section(cross_section);
-
+  std::shared_ptr<HepMC::GenCrossSection> cross_section
+    = std::make_shared<HepMC::GenCrossSection>();
+  event.set_cross_section(cross_section);
+  for (size_t i(0);i<m_subeventlist.size();++i) {
+    m_subeventlist[i]->set_cross_section(cross_section);
+  }
+  cross_section->set_cross_section(xs, err);
 }
 
 void HepMC3_Interface::DeleteGenSubEventList()
