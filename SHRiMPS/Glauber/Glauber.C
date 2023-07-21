@@ -12,6 +12,8 @@
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Total.H"
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
+#include "SHRiMPS/Cross_Sections/Sigma_Base.H"
+#include "SHRiMPS/Tools/MinBias_Parameters.H"
 
 using namespace SHRIMPS;
 using namespace ATOOLS;
@@ -69,8 +71,11 @@ void Glauber::SaveNucleonPositions() {
 void Glauber::SaveXSs(Cross_Sections * xsecs,double bmin, double bmax,int num) {
   double b_increment = (bmax - bmin)/num;
   double current_b = bmin;
-  std::ofstream cross_sections;
-  cross_sections.open("./xsecs_organized.txt", std::ios::app);
+  std::ofstream cross_sections, cross_sections_ch, abs_xs_ch;
+  cross_sections.open("./xsecs.dat");//, std::ios::app);
+  cross_sections_ch.open("./xsecs_channels_QE.dat");//, std::ios::app);
+  abs_xs_ch.open("./xsecs_channels_abs.dat");//, std::ios::app);
+  std::vector<std::vector<Omega_ik *> > * p_eikonals(MBpars.GetEikonals());
   while (current_b < bmax) {
     double b_GeVmin1 = current_b/0.197;
     double inel(xsecs->GetSigmaInelastic()->GetCombinedValue(b_GeVmin1));
@@ -80,9 +85,46 @@ void Glauber::SaveXSs(Cross_Sections * xsecs,double bmin, double bmax,int num) {
     double SD1(xsecs->GetSigmaD()->GetCombinedValueSD1(b_GeVmin1));
     double DD(xsecs->GetSigmaD()->GetCombinedValueDD(b_GeVmin1));
     cross_sections << current_b << "\t" << inel << "\t" << SD0 << "\t" << SD1 << "\t" << DD << "\t" << el << "\t" << QE << endl;
+    
+    std::vector< std::vector<double> > QEchannels;
+    std::vector< std::vector<double> > ABSchannels;
+    for (size_t i=0;i<p_eikonals->size();i++) {
+      std::vector<double> QErow;
+      std::vector<double> ABSrow;
+      for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+        QErow.push_back(xsecs->GetSigmaD()->GetValuePerChannel(i,j,b_GeVmin1));
+        ABSrow.push_back(xsecs->GetSigmaInelastic()->GetValuePerChannel(i,j,b_GeVmin1));
+      }
+      QEchannels.push_back(QErow);
+      ABSchannels.push_back(ABSrow);
+    }
+    //msg_Out() << QEchannels.size() << " SIZE QE CHANNESL! " << std::endl;
+    //msg_Out() << QEchannels[0].size() << " SIZE QE CHANNESL! 0" << std::endl;
+    //msg_Out() << QEchannels[1].size() << " SIZE QE CHANNESL! 1" << std::endl;
+    cross_sections_ch << current_b << "\t";
+    abs_xs_ch << current_b << "\t";
+    //msg_Out() << "B!!!!!!!!!!!!!!!" << endl;
+    for(size_t i = 0; i < QEchannels.size(); i++) {
+      for(size_t j = 0; j < QEchannels[i].size(); j++) {
+        cross_sections_ch << QEchannels[i][j] << "\t";
+        abs_xs_ch << ABSchannels[i][j] << "\t";
+      }
+    }
+    for(size_t i = 0; i < QEchannels.size(); i++) {
+      double QEfixedCol(xsecs->GetSigmaD()->GetValuePerChannel(-1,i,b_GeVmin1));
+      double QEfixedRow(xsecs->GetSigmaD()->GetValuePerChannel(i,-1,b_GeVmin1));
+      double ABSfixedCol(xsecs->GetSigmaInelastic()->GetValuePerChannel(-1,i,b_GeVmin1));
+      double ABSfixedRow(xsecs->GetSigmaInelastic()->GetValuePerChannel(i,-1,b_GeVmin1));
+      cross_sections_ch << QEfixedCol << "\t" << QEfixedRow << "\t";
+      abs_xs_ch << ABSfixedCol << "\t" << ABSfixedRow << "\t";
+    }
+    cross_sections_ch << std::endl;
+    abs_xs_ch << std::endl;
     current_b = current_b + b_increment;
   }
   cross_sections.close();
+  cross_sections_ch.close();
+  abs_xs_ch.close();
 }
 
 void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos_N1,std::vector<ATOOLS::Vec4D> pos_N2) {
@@ -90,7 +132,6 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
   for(int i = 0; i < m_numNucleons1; i++) {
     for(int j = 0; j < m_numNucleons2; j++) {
       double distance = sqrt(pow(pos_N1.at(i)[1] - pos_N2.at(j)[1],2) + pow(pos_N1.at(i)[2] - pos_N2.at(j)[2],2) + pow(pos_N1.at(i)[3] - pos_N2.at(j)[3],2)); // fm
-      //distance = distance*1.e-4; //
       double inel(xsecs->GetSigmaInelastic()->GetCombinedValue(distance/0.197));
       double el(xsecs->GetSigmaElastic()->GetCombinedValue(distance/0.197));
       double QE(xsecs->GetSigmaD()->GetCombinedValue(distance/0.197));
