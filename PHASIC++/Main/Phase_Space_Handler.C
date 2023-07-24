@@ -350,8 +350,23 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       p_massboost->BoostBack(p_lab[i]);
   }
   if (p_point) {
-    if (process->ColorIntegrator()!=NULL)
+    if (process->ColorIntegrator()!=NULL) {
       process->ColorIntegrator()->SetPoint(p_point);
+      int colset(true);
+      for (size_t i(0);i<p_point->Legs().size();++i) {
+	Cluster_Leg *cl(p_point->Leg(i));
+	if (cl->Flav().Strong() &&
+	    cl->Col().m_i<=0 && cl->Col().m_j<=0) {
+	  colset=false;
+	  break;
+	}
+      }
+      if (!colset) {
+	msg_Debugging()<<"Generating color configuration for "
+		       <<process->Process()->Name()<<"\n";
+	while (!process->Process()->GeneratePoint());
+      }
+    }
     for (size_t i(0);i<m_nin;++i)
       p_lab[i]=-p_point->Leg(i)->Mom();
     for (size_t i(m_nin);i<m_nin+m_nout;++i)
