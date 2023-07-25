@@ -42,6 +42,11 @@ namespace AHADIC {
       return m_splitter.get_variationweights();
     };
 
+    void reset_variationweights() {
+      m_splitter.reset_variationweights();
+    };
+
+
     bool operator()(Singlet * singlet);
   };
 }

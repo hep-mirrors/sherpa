@@ -17,7 +17,11 @@ void Gluon_Splitter::Init(const bool & isgluon) {
   // 0: z ~ z^alpha * (1-z)^alpha
   // 1: z ~ z^alpha + (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
-  m_alpha = hadpars->Get("alphaG");
+  m_alpha.resize(3);
+  m_alpha[0] = hadpars->Get("alphaG");
+  m_alpha[1] = m_alpha[0];
+  m_alpha[2] = m_alpha[0];
+
   m_analyse = true;
   if (m_analyse) {
     m_histograms[std::string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
@@ -66,31 +70,58 @@ bool Gluon_Splitter::CalculateXY() {
   return (!(m_x>1.) && !(m_x<0.) && !(m_y>1.) && !(m_y<0.));
 }
 
-double Gluon_Splitter::
-WeightFunction(const double & z,const double & zmin,const double & zmax,
-	       const unsigned int & cnt) {
+double Gluon_Splitter::FragmentationFunction(double z, double zmin, double zmax,
+					     double alpha) {
   double norm = 1.;
   switch (m_mode) {
   case 1:
-    norm = pow(0.5,2*m_alpha);
-    return pow(z*(1.-z),m_alpha)/norm;
+    norm = pow(0.5,2*alpha);
+    return pow(z*(1.-z),alpha)/norm;
   case 0:
   default:
     break;
   }
-  if (m_alpha<=0.) norm = pow(zmin,m_alpha) + pow(1.-zmax,m_alpha);
-  return (pow(z,m_alpha)+pow(1.-z,m_alpha))/norm;
+  if (alpha<=0.) norm = pow(zmin,alpha) + pow(1.-zmax,alpha);
+  return (pow(z,alpha)+pow(1.-z,alpha))/norm;
+}
+
+double Gluon_Splitter::
+WeightFunction(const double & z,const double & zmin,const double & zmax,
+	       const unsigned int & cnt) {
+  const double alpha = m_alpha[0];
+  const auto value = FragmentationFunction(z,zmin,zmax,alpha);
+  return value;
 }
 
 void Gluon_Splitter::z_rejected(const double wgt, const double & z,
 				const double & zmin,const double & zmax,
 				const unsigned int & cnt) {
+  // sanity checks, should probably be done somewhere else
+  if(variation_weights.size() != m_alpha.size()) {
+    // should in principle always be the case
+    variation_weights.resize(m_alpha.size());
+  }
+  for (int i{0}; i<m_alpha.size(); i++) {
+    const auto a = m_alpha[i];
+    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
+    variation_weights[i] *= (1-wgt_new) / (1-wgt);
+  }
   return;
 }
 
 void Gluon_Splitter::z_accepted(const double wgt, const double & z,
 				const double & zmin,const double & zmax,
 				const unsigned int & cnt) {
+  // sanity checks, should probably be done somewhere else
+  if(variation_weights.size() != m_alpha.size()) {
+    // should in principle always be the case
+    variation_weights.resize(m_alpha.size());
+  }
+  for (int i{0}; i<m_alpha.size(); i++) {
+    const auto a = m_alpha[i];
+    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
+    variation_weights[i] *= wgt_new / wgt;
+  }
   return;
 }
 

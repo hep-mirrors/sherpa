@@ -35,6 +35,28 @@ void Cluster_Splitter::Init(const bool & isgluon) {
   m_beta[3].push_back(hadpars->Get("betaB"));
   m_gamma[3].push_back(hadpars->Get("gammaB"));
 
+  // hack variations for now
+  for(int i{0}; i<4; ++i) {
+    const double a = m_alpha[i][0];
+    const double b = m_beta[i][0];
+    const double c = m_gamma[i][0];
+    if(i == 0) {
+      m_alpha[i].push_back(a*2.0);
+      m_alpha[i].push_back(a/2.0);
+      m_beta[i].push_back(b);
+      m_beta[i].push_back(b);
+      m_gamma[i].push_back(c);
+      m_gamma[i].push_back(c);
+    } else {
+      m_alpha[i].push_back(a);
+      m_alpha[i].push_back(a);
+      m_beta[i].push_back(b);
+      m_beta[i].push_back(b);
+      m_gamma[i].push_back(c);
+      m_gamma[i].push_back(c);
+    }
+  }
+
   m_kt02     = sqr(hadpars->Get("kT_0"));
   m_analyse  = false; //hadpars->Switch("Analysis");
   if (m_analyse) {
@@ -203,14 +225,12 @@ void Cluster_Splitter::z_rejected(const double wgt, const double & z,
     // should in principle always be the case
     variation_weights.resize(m_alpha[0].size());
   }
-
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto a = m_alpha[cnt][i];
-    const auto b = m_alpha[cnt][i];
-    const auto c = m_alpha[cnt][i];
+    const auto a = m_alpha[m_a[cnt]][i];
+    const auto b = m_beta[m_b[cnt]][i];
+    const auto c = m_gamma[m_c[cnt]][i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c);
-    // TODO THINK!
-    variation_weights[i] *= wgt / wgt_new;
+    variation_weights[i] *= (1-wgt_new) / (1-wgt);
   }
   return;
 }
@@ -225,12 +245,11 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
   }
 
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto a = m_alpha[cnt][i];
-    const auto b = m_alpha[cnt][i];
-    const auto c = m_alpha[cnt][i];
+    const auto a = m_alpha[m_a[cnt]][i];
+    const auto b = m_beta[m_b[cnt]][i];
+    const auto c = m_gamma[m_c[cnt]][i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c);
-    // TODO THINK!
-    variation_weights[i] *= 1 - wgt / wgt_new;
+    variation_weights[i] *= wgt_new / wgt;
   }
   return;
 }

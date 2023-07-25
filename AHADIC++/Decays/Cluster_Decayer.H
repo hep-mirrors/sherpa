@@ -25,6 +25,10 @@ namespace AHADIC {
     std::vector<double>& get_variationweights() {
       return m_splitter.get_variationweights();
     };
+    void reset_variationweights() {
+      m_splitter.reset_variationweights();
+    };
+
     bool operator()(bool breakit=false);
   };
 }

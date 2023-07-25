@@ -54,6 +54,10 @@ namespace AHADIC {
 
     std::vector<double>& get_variationweights() {return variation_weights;};
 
+    void reset_variationweights() {
+      std::fill(variation_weights.begin(), variation_weights.end(), 1);
+    };
+
     void z_rejected(const double wgt, const double & z,
 		    const double & zmin,const double & zmax,
 		    const unsigned int & cnt) override;

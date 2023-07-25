@@ -40,6 +40,10 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 {
   static std::string mname(METHOD);
   Return_Value::IncCall(mname);
+
+  // Always make sure, all weights are unset
+  m_clusterdecayer.reset_variationweights();
+  m_gluondecayer.reset_variationweights();
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();) {
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
@@ -78,6 +82,29 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     blit++;
   }
   if (m_shrink) Shrink(blobs);
+
+  //Ask for weight vector and add to blob
+  const auto wgts_cluster = m_clusterdecayer.get_variationweights();
+  const auto wgts_gluons  = m_gluondecayer.get_variationweights();
+
+  // get signal blob
+  Blob *blob(blobs->FindFirst(btp::Signal_Process));
+  auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
+
+  if(wgts_cluster.size() == wgts_gluons.size()) {
+    for(int i{0}; i<wgts_cluster.size(); i++) {
+      const std::string name = "v"+std::to_string(i);
+      wgtmap["AHADIC"][name] = wgts_cluster[i]*wgts_gluons[i];
+    }
+  } else {
+    msg_Out()<<"Could not use AHADIC variations.\n";
+    msg_Out()<<"Cluster and Gluon have differing number of variations\n";
+  }
+
+  // Can probably be removed since already reset at the beginning
+  m_clusterdecayer.reset_variationweights();
+  m_gluondecayer.reset_variationweights();
+
   return Return_Value::Success;
 }
 
@@ -103,15 +130,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     return Return_Value::Retry_Event;
   }
 
-  //Ask for weight vector and add to blob
-  const auto wgts        = m_clusterdecayer.get_variationweights();
-  const auto wgts_gluons = m_gluondecayer.get_variationweights();
-  if(wgts.size() != 0) {
-    // add weight vector to blob
-    msg_Out()<<"wgts.size = " << wgts.size() << std::endl;
-
-    // somehow reset the weight vectors
-  }
   return Return_Value::Success;
 }
 
