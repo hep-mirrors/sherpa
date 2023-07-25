@@ -8,7 +8,8 @@ namespace AHADIC {
   class Gluon_Splitter : public Splitter_Base {
   private:
     int    m_mode;
-    double m_alpha, m_arg, m_x, m_y, m_lastmass;
+    std::vector<double> m_alpha;
+    double m_arg, m_x, m_y, m_lastmass;
     bool   m_lastB, m_lastC;
 
     long int  m_kin_fails{ 0 };
@@ -32,6 +33,7 @@ namespace AHADIC {
     ~Gluon_Splitter();
 
     void   Init(const bool & isgluon=true);
+    double FragmentationFunction(double z, double zmin, double zmax, double alpha);
     double WeightFunction(const double & z,
 			  const double & zmin=0.,const double & zmax=1.,
 			  const unsigned int & cnt=0);
@@ -41,13 +43,15 @@ namespace AHADIC {
     }
     std::vector<double>& get_variationweights() {return variation_weights;};
 
-    void z_rejected(const double wgt, const double & z,
-		    const double & zmin,const double & zmax,
-		    const unsigned int & cnt) override;
+    void reset_variationweights() {
+      std::fill(variation_weights.begin(), variation_weights.end(), 1);
+    };
 
-    void z_accepted(const double wgt, const double & z,
-		    const double & zmin,const double & zmax,
-		    const unsigned int & cnt) override;
+    void z_rejected(const double, const double&, const double&, const double&,
+		    const unsigned int&) override;
+
+    void z_accepted(const double, const double&, const double&, const double&,
+		    const unsigned int& ) override;
 
   };
 }
