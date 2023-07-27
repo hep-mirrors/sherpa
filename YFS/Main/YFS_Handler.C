@@ -89,7 +89,7 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
   for (int i = 0; i < flavs.size(); ++i) {
     m_flavs.push_back(flavs[i]);
     if (i < 2) {
-      if (m_flavs[i].Mass() == 0) {
+      if (m_flavs[i].Mass() == 0 && m_fsrmode!=2) {
         THROW(fatal_error, "Inital states must be massive for YFS");
       }
     }
