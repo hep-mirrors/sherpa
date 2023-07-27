@@ -873,6 +873,7 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
 	pdfbase->SetBounds();
 	isrbases[beam] = new Structure_Function(pdfbase,flav);
       }
+      ATOOLS::rpa->gen.SetBunch(m_bunch_particles[beam],beam);
     }
     else if (pid==PDF::isr::bunch_rescatter && needs_resc) {
       PDF_Base * pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set,args);
