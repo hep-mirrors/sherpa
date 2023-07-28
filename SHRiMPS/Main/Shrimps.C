@@ -70,7 +70,7 @@ void Shrimps::InitialiseTheRun(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Ha
   InitialiseFormFactors();
   InitialiseSingleChannelEikonals();
   InitialiseRemnants(isr,beam);
-  InitialiseTheEventGenerator();  
+  InitialiseTheEventGenerator();
 }
 
 void Shrimps::InitialiseFormFactors() {
@@ -158,7 +158,10 @@ void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
 
 ATOOLS::Blob * Shrimps::GenerateEvent() {
   //msg_Out()<<"  * "<<METHOD<<".\n";
-  //Glauber glauberTest(p_xsecs,1,208);
+  //for(int i = 0; i < 500000; i++) {
+  //  Glauber glauberTest(p_xsecs,1,208);
+  //  if( (i%100 == 0 && i < 1000) || (i%1000==0) ) msg_Out() << METHOD << " ---> " << i <<endl;
+  //}
   return p_generator->GenerateEvent();
 }
 

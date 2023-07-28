@@ -29,6 +29,8 @@ namespace SHRIMPS {
       ATOOLS::Vec4D m_nucleus_1_position;
       ATOOLS::Vec4D m_nucleus_2_position;
       std::vector<std::pair<std::pair<int,int>,int>> m_list_of_interactions;
+      bool m_pp, m_pA, m_AA;
+      int m_projState;
 
       Glauber(Cross_Sections * xsecs, int N1 = 1, int N2 = 208);
       ~Glauber();

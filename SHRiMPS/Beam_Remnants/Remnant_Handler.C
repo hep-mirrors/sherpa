@@ -36,7 +36,7 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler *isr,
 
 Return_Value::code Remnant_Handler::
 FillBeamBlobs(Blob_List * blobs,const double & B) {
-  msg_Out()<<METHOD<<"(B = "<<B<<")\n";
+  //msg_Out()<<METHOD<<"(B = "<<B<<")\n";
   InitialiseCollision(blobs);
   for (size_t beam=0;beam<2;beam++) {
     if (!m_hadrons[beam]->FillBeamBlob(blobs, B)) {
@@ -45,7 +45,7 @@ FillBeamBlobs(Blob_List * blobs,const double & B) {
   }
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++)
     (*bit)->UnsetStatus(blob_status::needs_beams);
-  msg_Out()<<(*(m_hadrons[0]->GetSoftBlob()))<<"\n";
+  //msg_Out()<<(*(m_hadrons[0]->GetSoftBlob()))<<"\n";
   return Return_Value::Success;
 }
  

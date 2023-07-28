@@ -15,7 +15,7 @@ Soft_Diffractive_Event_Generator(Sigma_D * sigma,const int & test) :
   p_sigma(sigma), m_sigma(0.),
   m_massexp(0.5), m_Prob1440(.4),  m_Prob1710(0.2), m_runmode(MBpars.RunMode())
 {
-  msg_Out() << "RUN MODE: " << m_runmode << "\n";
+  //msg_Out() << "RUN MODE: " << m_runmode << "\n";
   for (size_t i=0;i<3;i++) m_sigma   += m_rate[i] = p_sigma->GetXSec(i);
   for (size_t i=0;i<3;i++) {
     m_rate[i] /= m_sigma;
@@ -118,7 +118,7 @@ int Soft_Diffractive_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   }
   for (size_t i=0;i<2;i++) m_contMassRange[i] = false;
   SelectMode();
-  msg_Out() << "MODE PICKED = " << m_mode << "  " << int(m_runmode) << std::endl;
+  //msg_Out() << "MODE PICKED = " << m_mode << "  " << int(m_runmode) << std::endl;
   SelectFS();
   FixKinematics();
   FillBlob();
@@ -237,7 +237,7 @@ void Soft_Diffractive_Event_Generator::FillBlob() {
   Vec4D Pfrombeams[2];
   for (size_t beam=0;beam<2;beam++) {
     if (m_contMassRange[beam]) {
-      msg_Out()<<"  - "<<METHOD<<"(beam = "<<beam<<") selected continuous mass range.\n";
+      //msg_Out()<<"  - "<<METHOD<<"(beam = "<<beam<<") selected continuous mass range.\n";
       p_blob->AddStatus(blob_status::needs_hadronization);
       for (size_t j=0;j<2;j++) {
 	      part = new Particle(-1,m_out[2*beam+j],m_pout[2*beam+j]);

@@ -62,10 +62,10 @@ void Primary_Ladders::Test() { return; if (m_test) p_laddergenerator->Test(); }
 
 bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_t & N) {
   Reset();
-  msg_Out()<<"\n\n\n"
-	   <<"---------------------------------------------------------------------\n"
-	   <<"---------------------------------------------------------------------\n"
-  	   <<"--- "<<METHOD<<": "<<N<<" new ladders at B = "<<B<<"\n";
+  //msg_Out()<<"\n\n\n"
+	//   <<"---------------------------------------------------------------------\n"
+	//   <<"---------------------------------------------------------------------\n"
+  //	   <<"--- "<<METHOD<<": "<<N<<" new ladders at B = "<<B<<"\n";
   p_laddergenerator->InitCollision(eikonal,B);
   size_t Ngen = 0, trials = 0;
   double b1, b2;

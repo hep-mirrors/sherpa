@@ -26,12 +26,15 @@ Glauber::Glauber(Cross_Sections * xsecs, int N1, int N2) :
   m_rho0(0.17), m_w(0.), m_a(0.54), 
   m_nucleus_1_position(ATOOLS::Vec4D(0.,0.,0.,0.)),
   m_nucleus_2_position(ATOOLS::Vec4D(0.,0.,0.,0.)),
-  m_type_abs(3), m_type_SD1(0), m_type_SD2(1), m_type_DD(2), m_type_elas(4)
+  m_type_abs(3), m_type_SD1(0), m_type_SD2(1), m_type_DD(2), m_type_elas(4),
+  m_pp(true), m_pA(false), m_AA(false), m_projState(0)
 {
   double maxB = ( m_radius1 > m_radius2 )? 2*m_radius1 : 2*m_radius2;
   double impact_parameter = sqrt(ran->Get())*maxB;
   m_nucleus_1_position[1] = -impact_parameter/2.;
   m_nucleus_2_position[1] = impact_parameter/2.;
+  if((N1 == 1 && N2 > 1) || (N1 > 1 && N2 == 1)) {m_pA = true; m_pp = false;}
+  else if(N1 > 1 && N2 > 1) {m_AA = true; m_pp = false;}
 
   for(int i = 0; i < m_numNucleons1; i++) {
     m_nucleus1.push_back(Glauber::distributeNucleon(m_radius1,m_nucleus_1_position));
@@ -40,7 +43,7 @@ Glauber::Glauber(Cross_Sections * xsecs, int N1, int N2) :
     m_nucleus2.push_back(Glauber::distributeNucleon(m_radius2,m_nucleus_2_position));
   }
   Glauber::DoCollision(xsecs,m_nucleus1,m_nucleus2);
-  //Glauber::SaveXSs(xsecs,0.,maxB);
+  //Glauber::SaveXSs(xsecs,0.,maxB,500);
   //Glauber::SaveNucleonPositions();
 }
 
@@ -131,7 +134,7 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
   std::vector<std::pair<std::pair<int,int>,int>> interactions;
   for(int i = 0; i < m_numNucleons1; i++) {
     for(int j = 0; j < m_numNucleons2; j++) {
-      double distance = sqrt(pow(pos_N1.at(i)[1] - pos_N2.at(j)[1],2) + pow(pos_N1.at(i)[2] - pos_N2.at(j)[2],2) + pow(pos_N1.at(i)[3] - pos_N2.at(j)[3],2)); // fm
+      double distance = sqrt(sqr(pos_N1.at(i)[1] - pos_N2.at(j)[1]) + sqr(pos_N1.at(i)[2] - pos_N2.at(j)[2])); // fm
       double inel(xsecs->GetSigmaInelastic()->GetCombinedValue(distance/0.197));
       double el(xsecs->GetSigmaElastic()->GetCombinedValue(distance/0.197));
       double QE(xsecs->GetSigmaD()->GetCombinedValue(distance/0.197));
@@ -150,13 +153,26 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
         prob_el = el/QE;
         //msg_Out() << prob_SD0 + prob_SD1 + prob_DD + prob_el << endl;
       }
+      if(m_pA) {
+        if (i == 0 && j ==0) {if(ran->Get()>.5) m_projState=1;}
+        else {
+          if(m_numNucleons1==1) {
+            QE = xsecs->GetSigmaD()->GetValuePerChannel(m_projState,-1,distance/0.197);
+            inel = xsecs->GetSigmaInelastic()->GetValuePerChannel(m_projState,-1,distance/0.197);
+          }
+          else {
+            QE = xsecs->GetSigmaD()->GetValuePerChannel(-1,m_projState,distance/0.197);
+            inel = xsecs->GetSigmaInelastic()->GetValuePerChannel(-1,m_projState,distance/0.197);
+          }
+        }
+      }
       double prob_inel(inel), prob_QE(QE);
       double rand1(ran->Get()), rand2(ran->Get());
       std::pair<int,int> current_pair;
       current_pair.first = i;
       current_pair.second = j;
-      //std::ofstream interactions_file;
-      //interactions_file.open("./interactions.txt", std::ios::app);
+      std::ofstream interactions_file;
+      interactions_file.open("./interactions_500000_screen.dat", std::ios::app);
       
       bool inelastic_happened = false;
       bool QE_happened = false;
@@ -166,7 +182,7 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
         interaction1.first = current_pair;
         interaction1.second = m_type_abs; //interaction 1 = inelastic
         interactions.push_back(interaction1);
-        //interactions_file << interaction1.second << "\t" << distance << endl;
+        interactions_file << interaction1.second << "\t" << distance << endl;
       }
       if (rand2 < prob_QE) {
         QE_happened = true;
@@ -178,15 +194,15 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
         else if (rand3 < prob_SD0 + prob_SD1 + prob_DD) interaction2.second = m_type_DD; //interaction 4 = double diff
         else interaction2.second = m_type_elas; //interaction 5 = elastic
         interactions.push_back(interaction2);
-        //interactions_file << interaction2.second << "\t" << distance << endl;
+        interactions_file << interaction2.second << "\t" << distance << endl;
       }
       if (!inelastic_happened && !QE_happened) {
         std::pair<std::pair<int,int>,int> interaction3;
         interaction3.first = current_pair;
         interaction3.second = -1;
-      //interactions_file << -1 << "\t" << distance << endl;
+      interactions_file << -1 << "\t" << distance << endl;
       }
-      //interactions_file.close();
+      interactions_file.close();
     }
   }
 }
