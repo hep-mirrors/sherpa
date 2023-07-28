@@ -17,10 +17,7 @@ void Gluon_Splitter::Init(const bool & isgluon) {
   // 0: z ~ z^alpha * (1-z)^alpha
   // 1: z ~ z^alpha + (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
-  m_alpha.resize(3);
-  m_alpha[0] = hadpars->Get("alphaG");
-  m_alpha[1] = m_alpha[0];
-  m_alpha[2] = m_alpha[0];
+  m_alpha = hadpars->GetVec("alphaG");
 
   m_analyse = true;
   if (m_analyse) {
@@ -101,10 +98,11 @@ void Gluon_Splitter::z_rejected(const double wgt, const double & z,
     // should in principle always be the case
     variation_weights.resize(m_alpha.size());
   }
+
   for (int i{0}; i<m_alpha.size(); i++) {
     const auto a = m_alpha[i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
-    variation_weights[i] *= (1-wgt_new) / (1-wgt);
+    variation_weights[i] *= std::min(1.,(1-wgt_new)) / std::min(1.,(1-wgt));
   }
   return;
 }
@@ -117,10 +115,11 @@ void Gluon_Splitter::z_accepted(const double wgt, const double & z,
     // should in principle always be the case
     variation_weights.resize(m_alpha.size());
   }
+
   for (int i{0}; i<m_alpha.size(); i++) {
     const auto a = m_alpha[i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
-    variation_weights[i] *= wgt_new / wgt;
+    variation_weights[i] *= std::min(1.,wgt_new) / std::min(1.,wgt);
   }
   return;
 }
@@ -182,7 +181,7 @@ bool Gluon_Splitter::FillParticlesInLists() {
 }
 
 void Gluon_Splitter::ReplaceClusterWithHadron(const Flavour & fl,Vec4D & mom) {
-  double M2 = m_Q2, mt12 = sqr(fl.Mass())+m_kt2, mt22 = m_m2[1]+m_kt2; 
+  double M2 = m_Q2, mt12 = sqr(fl.Mass())+m_kt2, mt22 = m_m2[1]+m_kt2;
   double alpha1 = ((M2+mt12-mt22)+sqrt(sqr(M2+mt12-mt22)-4.*M2*mt12))/(2.*M2);
   double beta1  = mt12/(M2*alpha1);
   mom = m_E*(alpha1*s_AxisP + beta1*s_AxisM)+m_ktvec;

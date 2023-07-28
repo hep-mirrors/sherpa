@@ -9,7 +9,7 @@
 namespace AHADIC {
   class Soft_Cluster_Handler {
   private:
-    std::list<Proto_Particle *> * p_hadrons; 
+    std::list<Proto_Particle *> * p_hadrons;
     Constituents                * p_constituents;
     Single_Transitions          * p_singletransitions;
     Double_Transitions          * p_doubletransitions;
@@ -22,7 +22,7 @@ namespace AHADIC {
     Flavour_Pair m_flavs;
 
     bool m_forceddecay, m_direct_transition, m_ktorder;
-    
+
     ATOOLS::Vec4D   m_moms[2];
     ATOOLS::Flavour m_hads[2];
 
@@ -71,7 +71,13 @@ namespace AHADIC {
 			 const ATOOLS::Flavour & fl2);
     ATOOLS::Flavour GetDecHadron(const size_t & i) { return m_hads[i]; }
 
-    std::list<Proto_Particle *> * GetHadrons() const { return p_hadrons; } 
+    void reset_variationweights() { m_ktselector.reset_variationweights(); };
+
+    std::vector<double>& get_variationweights() {
+      return m_ktselector.get_variationweights();
+    };
+
+    std::list<Proto_Particle *> * GetHadrons() const { return p_hadrons; }
   };
 }
 #endif

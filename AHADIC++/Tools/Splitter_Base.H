@@ -60,6 +60,15 @@ namespace AHADIC {
     virtual bool MakeLongitudinalMomenta() = 0;
     virtual bool FillParticlesInLists()    = 0;
     virtual bool CheckKinematics()         = 0;
+
+    std::vector<double>& _get_variationweights() {
+      return m_ktselector.get_variationweights();
+    };
+
+    void _reset_variationweights() {
+      m_ktselector.reset_variationweights();
+    };
+
   public:
     Splitter_Base(std::list<Cluster *> * cluster_list,
 		  Soft_Cluster_Handler * softclusters);
@@ -68,12 +77,10 @@ namespace AHADIC {
 
     virtual bool operator()(Proto_Particle * part1,Proto_Particle * part2,
 			    Proto_Particle * part3=0);
-    // virtual double WeightFunction(const double & z,
-    // 				  const double & zmin,const double & zmax,
-    // 				  const unsigned int & cnt)=0;
     virtual double WeightFunction(const double & z,
-					const double & zmin,const double & zmax,
-					const unsigned int & cnt)=0;
+				  const double & zmin,const double & zmax,
+				  const unsigned int & cnt)=0;
+
     virtual void z_rejected(const double wgt, const double &, const double &,
 			    const double &, const unsigned int &) = 0;
     virtual void z_accepted(const double wgt, const double &, const double &,

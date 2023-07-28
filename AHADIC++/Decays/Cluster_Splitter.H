@@ -12,7 +12,8 @@ namespace AHADIC {
     // alpha/beta/gamme values
     std::vector<double> m_alpha[4], m_beta[4], m_gamma[4];
     int m_a[2], m_b[2], m_c[2];
-    double m_kt02;
+    //double m_kt02;
+    std::vector<double> m_kt02;
     double threshold_fac;
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
 
@@ -42,7 +43,8 @@ namespace AHADIC {
     bool   CheckKinematics() { return true; }
     Cluster * MakeCluster(size_t i);
     double FragmentationFunction(double z, double zmin, double zmax,
-				 double alpha, double beta, double gamma);
+				 double alpha, double beta, double gamma,
+				 double kt02);
   public:
     Cluster_Splitter(std::list<Cluster *> * cluster_list,
 		     Soft_Cluster_Handler * softclusters);
@@ -52,10 +54,20 @@ namespace AHADIC {
 			  const unsigned int & cnt);
     void   SetOutput(const bool & out) { m_output = out; }
 
-    std::vector<double>& get_variationweights() {return variation_weights;};
+    std::vector<double>& get_variationweights() {
+      // combine the weights here with the Splitter_Base weight
+      const auto wgts = m_ktselector.get_variationweights();
+      // const auto wgts = _get_variationweights();
+      for(int i{0}; i<wgts.size(); i++)
+	variation_weights[i] *= wgts[i];
+      return variation_weights;
+    };
 
     void reset_variationweights() {
+      // reset weights and Splitter_base weight
       std::fill(variation_weights.begin(), variation_weights.end(), 1);
+      m_ktselector.reset_variationweights();
+      //_reset_variationweights();
     };
 
     void z_rejected(const double wgt, const double & z,

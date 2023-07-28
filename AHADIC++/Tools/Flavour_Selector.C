@@ -11,17 +11,17 @@ using namespace ATOOLS;
 Flavour_Selector::Flavour_Selector() {}
 
 Flavour_Selector::~Flavour_Selector() {
-  for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) 
+  for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++)
     delete fdit->second;
   m_options.clear();
 }
-  
+
 ATOOLS::Flavour Flavour_Selector::
 operator()(const double & Emax,const bool & vetodi) {
   double disc = Norm(Emax,vetodi) * ran->Get();
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi && fdit->first.IsDiQuark()) continue;
-    if (fdit->second->popweight>0. && fdit->second->massmin<Emax/2.) 
+    if (fdit->second->popweight>0. && fdit->second->massmin<Emax/2.)
       disc -= fdit->second->popweight;
     if (disc<=0.) {
       // have to bar flavours for diquarks
@@ -31,16 +31,16 @@ operator()(const double & Emax,const bool & vetodi) {
   THROW(fatal_error, "No flavour selected.");
 }
 
-double Flavour_Selector::Norm(const double & mmax,const bool & vetodi) 
+double Flavour_Selector::Norm(const double & mmax,const bool & vetodi)
 {
   double sumwt(0.), wt;
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi && fdit->first.IsDiQuark()) continue;
     if (fdit->second->popweight>0. && fdit->second->massmin<mmax/2.) {
-      wt = fdit->second->popweight; 
+      wt = fdit->second->popweight;
       sumwt += wt;
-    }   
-  } 
+    }
+  }
   return sumwt;
 }
 

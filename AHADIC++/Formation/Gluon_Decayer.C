@@ -96,9 +96,9 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
     }
     switch (Step(part1,part2)) {
     case 1:
-      if (direction) 
+      if (direction)
 	p_singlet->pop_front();
-      else 
+      else
 	p_singlet->pop_back();
     case 0:
       break;

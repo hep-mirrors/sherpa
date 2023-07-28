@@ -13,13 +13,13 @@ namespace AHADIC {
     FlavDecayMap m_options;
     double       m_mmin, m_mmin2, m_mmax, m_mmax2, m_sumwt;
 
-    double Norm(const double & mmax=-1.,const bool & vetodi=false); 
+    double Norm(const double & mmax=-1.,const bool & vetodi=false);
   public:
     Flavour_Selector();
     ~Flavour_Selector();
 
     void   InitWeights();
-    
+
     ATOOLS::Flavour operator()(const double & Emax,const bool & vetodi);
     const double MinimalMass() const { return m_mmin; }
   };
