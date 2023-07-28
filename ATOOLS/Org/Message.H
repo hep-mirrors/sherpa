@@ -129,7 +129,7 @@ namespace ATOOLS {
     Message();
 
     // destructor
-    ~Message(); 
+    ~Message();
 
     // member functions
     void Init();

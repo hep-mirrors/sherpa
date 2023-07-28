@@ -12,12 +12,12 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons) :
   p_hadrons(hadrons), m_ktfac(1.)
 { }
 
-Soft_Cluster_Handler::~Soft_Cluster_Handler() 
+Soft_Cluster_Handler::~Soft_Cluster_Handler()
 { }
 
 void Soft_Cluster_Handler::Init() {
   p_constituents       = hadpars->GetConstituents();
-  p_singletransitions  = hadpars->GetSingleTransitions(); 
+  p_singletransitions  = hadpars->GetSingleTransitions();
   p_doubletransitions  = hadpars->GetDoubleTransitions();
   m_trans_threshold    = hadpars->Get("transition_threshold");
   m_dec_threshold      = hadpars->Get("decay_threshold");
@@ -76,16 +76,16 @@ double Soft_Cluster_Handler::TransitionThreshold(const ATOOLS::Flavour & fl1,
 						 const ATOOLS::Flavour & fl2) {
   m_flavs.first  = fl1;
   m_flavs.second = fl2;
-  return (p_singletransitions->GetLightestMass(m_flavs) * m_trans_threshold       + 
-	  p_singletransitions->GetHeaviestMass(m_flavs) * (1.-m_trans_threshold)); 
+  return (p_singletransitions->GetLightestMass(m_flavs) * m_trans_threshold       +
+	  p_singletransitions->GetHeaviestMass(m_flavs) * (1.-m_trans_threshold));
 }
 
 double Soft_Cluster_Handler::DecayThreshold(const ATOOLS::Flavour & fl1,
 					    const ATOOLS::Flavour & fl2) {
   m_flavs.first  = fl1;
   m_flavs.second = fl2;
-  return (p_doubletransitions->GetLightestMass(m_flavs) * m_dec_threshold       + 
-	  p_doubletransitions->GetHeaviestMass(m_flavs) * (1.-m_dec_threshold)); 
+  return (p_doubletransitions->GetLightestMass(m_flavs) * m_dec_threshold       +
+	  p_doubletransitions->GetHeaviestMass(m_flavs) * (1.-m_dec_threshold));
 }
 
 int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
@@ -235,7 +235,7 @@ bool Soft_Cluster_Handler::FixKinematics() {
   Vec4D mom1((*p_cluster)[0]->Momentum()), mom2((*p_cluster)[1]->Momentum());
   Poincare boost = Poincare(mom1+mom2);
   boost.Boost(mom1);
-  Poincare rotat = Poincare(mom1,s_AxisP); 
+  Poincare rotat = Poincare(mom1,s_AxisP);
 
   double M2(m_mass*m_mass);
   double m12(sqr(m_hads[0].Mass())),m22(sqr(m_hads[1].Mass()));
@@ -259,17 +259,11 @@ bool Soft_Cluster_Handler::FixKinematics() {
 			      Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
 					      (*p_cluster)[1]->KT2_Max()))):p1));
   double pt, pl;
-  //bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
-  //if (true || lead) {
+
   pt = m_ktselector(ktmax,1.);
+  // m_ktselector.accepted();
   pl = sqrt(p1*p1-pt*pt);
-  //}
-  //else {
-  //double cost = 1.-2.*ran->Get();
-  //double sint = (ran->Get()>0.5?-1:1.)*sqrt(1.-cost*cost);
-  //pt = p1*sint;
-  //pl = p1*cost;
-  // }
+
   double phi   = 2.*M_PI*ran->Get();
   m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
   m_moms[1]    = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);

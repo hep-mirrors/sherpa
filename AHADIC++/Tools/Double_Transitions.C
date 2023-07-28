@@ -34,7 +34,7 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
       if (pair2.first!=popped.Bar()) continue;
       Flavour_Pair pair;
       pair.first         = pair1.first;
-      pair.second        = pair2.second; 
+      pair.second        = pair2.second;
       double weight      = constituents->TotWeight(popped.Bar());
       if (weight<1.e-6) continue;
       if (2.*constituents->Mass(popped)+0.1<
@@ -81,7 +81,7 @@ void Double_Transitions::Normalise() {
 	 dtlit!=dtmit->second->end();dtlit++)
       totweight += dtlit->second;
     for (Double_Transition_List::iterator dtlit=dtmit->second->begin();
-	 dtlit!=dtmit->second->end();dtlit++) 
+	 dtlit!=dtmit->second->end();dtlit++)
       dtlit->second /= totweight;
   }
 }
@@ -131,7 +131,7 @@ void Double_Transitions::Print(const bool & full) {
     msg_Out()<<" --> "<<cit->first<<" with total = "<<cit->second<<".\n";
   }
 }
-      
+
 Double_Transitions::~Double_Transitions() {
   while (!m_transitions.empty()) {
     delete (m_transitions.begin()->second); 

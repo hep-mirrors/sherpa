@@ -10,7 +10,7 @@ Constituents::Constituents(bool diquarks) :
 {
   // Light quarks and diquarks
   double total(0.),udfrac(1.), ud0(1.);
-  double sfrac(hadpars->Get("Strange_fraction")); 
+  double sfrac(hadpars->Get("Strange_fraction"));
   double bfrac(hadpars->Get("Baryon_fraction"));
   double qssup(hadpars->Get("P_qs_by_P_qq"));
   double sssup(hadpars->Get("P_ss_by_P_qq"));
@@ -72,7 +72,7 @@ Constituents::Constituents(bool diquarks) :
       m_minmass  = cmit->second->Mass()+massoffset;
       m_lightest = cmit->first;
     }
-    if (cmit->second->Mass()+massoffset>m_maxmass) 
+    if (cmit->second->Mass()+massoffset>m_maxmass)
       m_maxmass = cmit->second->Mass()+massoffset;
   }
 }

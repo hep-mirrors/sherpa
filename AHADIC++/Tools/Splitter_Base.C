@@ -48,6 +48,8 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
   }
   size_t attempts(m_attempts);
   do { attempts--; } while(attempts>0 && !MakeSplitting());
+  // finally the accepted one:
+  m_ktselector.accepted();
   return (attempts>0);
 }
 
@@ -103,7 +105,7 @@ void Splitter_Base::ConstructPoincare() {
   Vec4D mom1(p_part[0]->Momentum());
   m_boost = Poincare(m_Qvec);
   m_boost.Boost(mom1);
-  m_rotat = Poincare(mom1,m_E*s_AxisP); 
+  m_rotat = Poincare(mom1,m_E*s_AxisP);
 }
 
 bool Splitter_Base::MakeSplitting() {
@@ -187,12 +189,5 @@ void Splitter_Base::MakeTransverseMomentum() {
   m_phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);
 }
-
-// void Splitter_Base::z_rejected(double, double, double, int) override {
-//   return;
-// }
-// void Splitter_Base::z_accepted(double, double, double, int) override {
-//   return;
-// }
 
 

@@ -60,7 +60,7 @@ void Beam_Particles_Shifter::ExtractBeamParticles() {
 	if (mom.Abs2()>sqr(mass)) return;
       }
     }
-  } 
+  }
 }
 
 bool Beam_Particles_Shifter::ShiftBeamParticles() {
@@ -69,11 +69,11 @@ bool Beam_Particles_Shifter::ShiftBeamParticles() {
   if (n<=1) return true;
   Vec4D  * moms   = new Vec4D[n];
   double * masses = new double[n];
-  
+
   for (list<Proto_Particle *>::iterator pit=m_beamparts.begin();
        pit!=m_beamparts.end();pit++,i++) {
     moms[i]   = (*pit)->Momentum();
-    masses[i] = p_constituents->Mass((*pit)->Flavour());  
+    masses[i] = p_constituents->Mass((*pit)->Flavour());
   }
   bool success = hadpars->AdjustMomenta(n,moms,masses);
   if (success) {

@@ -64,7 +64,7 @@ bool Trivial_Splitter::InitKinematics(bool rescue) {
   Vec4D mom1  = p_part1->Momentum(), mom2 = p_part2->Momentum();
   m_boost     = Poincare(mom1+mom2);
   m_boost.Boost(mom1);
-  m_rotat     = Poincare(mom1,m_E*s_AxisP); 
+  m_rotat     = Poincare(mom1,m_E*s_AxisP);
   if (rescue) return (m_E>m_minmass);
   if (m_E<4.*m_minmass) return false;
   double R2   = 3.*sqr(m_minmass);
@@ -72,7 +72,7 @@ bool Trivial_Splitter::InitKinematics(bool rescue) {
   double arg2 = sqr(1.-R2/m_Q2)-4.*sqr(m_minmass)/m_Q2;
   double zmin = Max(1.+R2/m_Q2-sqrt(arg2), 1.-sqrt(arg1))/2.;
   double zmax = Min(1.-R2/m_Q2+sqrt(arg2), 1.+sqrt(arg1))/2.;
-  
+
   if (m_E<m_minmass || zmin>zmax || zmax<0.) return false;
   return true;
 }
@@ -84,6 +84,9 @@ void Trivial_Splitter::SelectFlavour() {
 }
 
 void Trivial_Splitter::FixTransverseMomentum(bool rescue) {
+  // TODO: include m_ktselector weight
+  // Does shop up extremely rarely
+
   // for no transverse momentum replace m_ktmax = 0.
   m_ktmax = rescue? 0.: m_E-m_popped_mass-m_minmass/2.;
   m_kt    = m_ktmax>0.? m_ktselector(m_ktmax) : 0.;

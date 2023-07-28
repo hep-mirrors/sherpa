@@ -44,6 +44,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   // Always make sure, all weights are unset
   m_clusterdecayer.reset_variationweights();
   m_gluondecayer.reset_variationweights();
+  m_softclusters.reset_variationweights();
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();) {
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
@@ -73,16 +74,23 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   //Ask for weight vector and add to blob
   const auto wgts_cluster = m_clusterdecayer.get_variationweights();
   const auto wgts_gluons  = m_gluondecayer.get_variationweights();
+  const auto wgts_soft    = m_softclusters.get_variationweights();
 
   // get signal blob
   Blob *blob(blobs->FindFirst(btp::Signal_Process));
   auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
 
-  if(wgts_cluster.size() == wgts_gluons.size()) {
+  if(wgts_cluster.size() == wgts_gluons.size() &&
+     wgts_cluster.size() == wgts_soft.size() ) {
     for(int i{0}; i<wgts_cluster.size(); i++) {
       const std::string name = "v"+std::to_string(i);
-      wgtmap["AHADIC"][name] = wgts_cluster[i]*wgts_gluons[i];
+      double wgt = wgts_cluster[i]*wgts_gluons[i]*wgts_soft[i];
+      //msg_Out()<<"wgts_cluster[i] = " <<wgts_cluster[i] << ", wgts_gluons[i] = " << wgts_gluons[i] << ", wgts_soft[i] = " <<wgts_soft[i] <<std::endl;
+      wgt = std::max(wgt,0.01);
+      wgt = std::min(wgt,100.);
+      wgtmap["AHADIC"][name] = wgt;
     }
+
   } else {
     msg_Out()<<"Could not use AHADIC variations.\n";
     msg_Out()<<"Cluster and Gluon have differing number of variations\n";
@@ -91,6 +99,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   // Can probably be removed since already reset at the beginning
   m_clusterdecayer.reset_variationweights();
   m_gluondecayer.reset_variationweights();
+  m_softclusters.reset_variationweights();
 
   return Return_Value::Success;
 }

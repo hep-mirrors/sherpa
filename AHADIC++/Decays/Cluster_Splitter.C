@@ -20,45 +20,38 @@ void Cluster_Splitter::Init(const bool & isgluon) {
   m_defmode  = hadpars->Switch("ClusterSplittingForm");
   m_beammode = hadpars->Switch("RemnantSplittingForm");
 
-  m_alpha[0].push_back(hadpars->Get("alphaL"));
-  m_beta[0].push_back(hadpars->Get("betaL"));
-  m_gamma[0].push_back(hadpars->Get("gammaL"));
+  m_alpha[0] = hadpars->GetVec("alphaL");
+  m_beta[0]  = hadpars->GetVec("betaL");
+  m_gamma[0] = hadpars->GetVec("gammaL");
 
-  m_alpha[1].push_back( hadpars->Get("alphaH"));
-  m_beta[1].push_back(hadpars->Get("betaH"));
-  m_gamma[1].push_back(hadpars->Get("gammaH"));
+  m_alpha[1] = hadpars->GetVec("alphaH");
+  m_beta[1]  = hadpars->GetVec("betaH");
+  m_gamma[1] = hadpars->GetVec("gammaH");
 
-  m_alpha[2].push_back( hadpars->Get("alphaD"));
-  m_beta[2].push_back(hadpars->Get("betaD"));
-  m_gamma[2].push_back(hadpars->Get("gammaD"));
+  m_alpha[2] = hadpars->GetVec("alphaD");
+  m_beta[2]  = hadpars->GetVec("betaD");
+  m_gamma[2] = hadpars->GetVec("gammaD");
 
-  m_alpha[3].push_back( hadpars->Get("alphaB"));
-  m_beta[3].push_back(hadpars->Get("betaB"));
-  m_gamma[3].push_back(hadpars->Get("gammaB"));
+  m_alpha[3] = hadpars->GetVec("alphaB");
+  m_beta[3]  = hadpars->GetVec("betaB");
+  m_gamma[3] = hadpars->GetVec("gammaB");
 
-  // hack variations for now
-  for(int i{0}; i<4; ++i) {
-    const double a = m_alpha[i][0];
-    const double b = m_beta[i][0];
-    const double c = m_gamma[i][0];
-    if(i == 0) {
-      m_alpha[i].push_back(a*2.0);
-      m_alpha[i].push_back(a/2.0);
-      m_beta[i].push_back(b);
-      m_beta[i].push_back(b);
-      m_gamma[i].push_back(c);
-      m_gamma[i].push_back(c);
-    } else {
-      m_alpha[i].push_back(a);
-      m_alpha[i].push_back(a);
-      m_beta[i].push_back(b);
-      m_beta[i].push_back(b);
-      m_gamma[i].push_back(c);
-      m_gamma[i].push_back(c);
-    }
-  }
+  // // hack variations for now
+  // for(int i{0}; i<4; ++i) {
+  //   const double a = m_alpha[i][0];
+  //   const double b = m_beta[i][0];
+  //   const double c = m_gamma[i][0];
+  //   for(int ii{0}; ii<3; ++ii) {
+  //     m_alpha[i].push_back(a);
+  //     m_beta[i].push_back(b);
+  //     m_gamma[i].push_back(c);
+  //   }
+  // }
 
-  m_kt02     = sqr(hadpars->Get("kT_0"));
+  const std::vector<double> _kt0s = hadpars->GetVec("kT_0");
+  for (auto _kt0 : _kt0s)
+    m_kt02.push_back(sqr(_kt0));
+
   m_analyse  = false; //hadpars->Switch("Analysis");
   if (m_analyse) {
     m_histograms[string("kt")]      = new Histogram(0,0.,5.,100);
@@ -136,8 +129,8 @@ void Cluster_Splitter::CalculateLimits() {
     double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
     m_zmin[i]  = (centre-lambda)/(2.*m_Q2);
     m_zmax[i]  = (centre+lambda)/(2.*m_Q2);
-    m_mean[i]  = sqrt(m_kt02);
-    m_sigma[i] = sqrt(m_kt02);
+    m_mean[i]  = sqrt(m_kt02[0]);
+    m_sigma[i] = sqrt(m_kt02[0]);
   }
 }
 
@@ -178,7 +171,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
 
 double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
 					       double alpha, double beta,
-					       double gamma) {
+					       double gamma, double kt02) {
   double norm = 1., arg;
   double value = 1.;
   if (alpha>=0.) norm *= pow(zmax,alpha);
@@ -189,7 +182,7 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
   value = wt/norm;
 
   if (m_mode==2) {
-    arg   = dabs(gamma)>1.e-2 ? gamma*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
+    arg   = dabs(gamma)>1.e-2 ? gamma*(m_kt2+m_masses*m_masses)/kt02 : 0.;
     value *= exp(-arg*((zmax-z)/(z*zmax)));
     norm *= exp(-arg/zmax);
     wt   *= exp(-arg/z);
@@ -206,7 +199,8 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   const double alpha = m_alpha[m_a[cnt]][0];
   const double beta  = m_beta [m_b[cnt]][0];
   const double gamma = m_gamma[m_c[cnt]][0];
-  auto value = FragmentationFunction(z,zmin,zmax,alpha, beta, gamma);
+  const double kt02  = m_kt02[0];
+  auto value = FragmentationFunction(z,zmin,zmax,alpha, beta, gamma, kt02);
   return value;
 }
 
@@ -218,12 +212,14 @@ void Cluster_Splitter::z_rejected(const double wgt, const double & z,
     // should in principle always be the case
     variation_weights.resize(m_alpha[0].size());
   }
+
   for (int i{0}; i<m_alpha[0].size(); i++) {
     const auto a = m_alpha[m_a[cnt]][i];
     const auto b = m_beta[m_b[cnt]][i];
     const auto c = m_gamma[m_c[cnt]][i];
-    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c);
-    variation_weights[i] *= (1-wgt_new) / (1-wgt);
+    const auto kt = m_kt02[i];
+    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
+    variation_weights[i] *= std::min(1.,(1-wgt_new)) / std::min(1.,(1-wgt));
   }
   return;
 }
@@ -241,8 +237,9 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
     const auto a = m_alpha[m_a[cnt]][i];
     const auto b = m_beta[m_b[cnt]][i];
     const auto c = m_gamma[m_c[cnt]][i];
-    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c);
-    variation_weights[i] *= wgt_new / wgt;
+    const auto kt = m_kt02[i];
+    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
+    variation_weights[i] *= std::min(1.,wgt_new) / std::min(1.,wgt);
   }
   return;
 }
@@ -259,6 +256,8 @@ bool Cluster_Splitter::RecalculateZs() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
+  msg_Out() << "Got to a non-ported place" << std::endl;
+  msg_Out() << "Cluster_Splitter::MakeLongitudinalMomentaMassSimple()" << std::endl;
   bool success;
   long int trials = 1000;
   do {
@@ -291,8 +290,10 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
 }
 
 double Cluster_Splitter::DeltaM(const size_t & cl) {
+  msg_Out() << "Got to a non-ported place" << std::endl;
+  msg_Out() << "Cluster_Splitter::DeltaM\n";
   double deltaM, deltaMmax = m_Q-sqrt(m_m2min[0])-sqrt(m_m2min[1]);
-  double mean =  m_mean[cl], sigma = 1./(m_c[cl] * sqrt(m_kt02));
+  double mean =  m_mean[cl], sigma = 1./(m_c[cl] * sqrt(m_kt02[0]));
   double arg  =  1.-exp(-sigma * deltaMmax);
   size_t trials = 1000;
   do {

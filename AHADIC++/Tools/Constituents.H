@@ -14,16 +14,13 @@ namespace AHADIC {
     double m_mass;
     int    m_ispin;
     double m_weight, m_smearing;
-    ConstituentCharacteristic(double _m=0., int _is=-1, double _wt=0.) : 
+    ConstituentCharacteristic(double _m=0., int _is=-1, double _wt=0.) :
       m_mass(_m), m_ispin(_is), m_weight(_wt) {}
 
     double Mass()      { return m_mass;     }
     double TotWeight() { return m_weight;   }
     int    ISpin()     { return m_ispin;    }
   };
-
-
-
 
   typedef std::map<ATOOLS::Flavour,ConstituentCharacteristic *> FlavCCMap;
   typedef FlavCCMap::iterator FlavCCMap_Iterator;
@@ -48,13 +45,13 @@ namespace AHADIC {
 
 
   /*!
-    \file 
+    \file
     \brief Contains the classes AHADIC::ConstituentCharacteristic and AHADIC::Constituents.
   */
 
   /*!
     \class ConstituentCharacteristic
-    \brief Includes all information (constituent mass, spin d.o.f., flavour weight, 
+    \brief Includes all information (constituent mass, spin d.o.f., flavour weight,
     spin weight and angular smearing parameter) for a flavour that is needed in the cluster 
     hadronisation model. It is accessible through the class Constituents. 
 
