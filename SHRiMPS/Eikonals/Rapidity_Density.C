@@ -60,6 +60,9 @@ double Rapidity_Density::AbsorptionWeight(double y) {
   double O_ik = m_lambda/2.*(*p_omegaik)(m_b1,m_b2,y);
   double O_ki = m_lambda/2.*(*p_omegaki)(m_b1,m_b2,y);
   switch (m_absorp) {
+  case absorption::truncatedExp:
+    return 1.-(O_ik+O_ki);
+    break;
   case absorption::exponential:
     return exp(-(O_ik+O_ki));
     break;

@@ -37,6 +37,7 @@ namespace SHRIMPS {
 
   struct absorption {
     enum code {
+      truncatedExp = 3,
       exponential = 2,
       factorial   = 1
     };
