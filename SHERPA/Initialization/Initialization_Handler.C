@@ -81,8 +81,6 @@ Initialization_Handler::Initialization_Handler() :
     msg_Out()<<"Sherpa will read in events as "<<m_evtform<<endl;
   }
 
-  ATOOLS::s_loader->SetCheck(s["CHECK_LIBLOCK"].Get<int>());
-
   rpa->Init();
   CheckVersion();
   LoadLibraries();
