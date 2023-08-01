@@ -73,8 +73,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     msg_Out()<<" Sherpa will read in events as "<<m_evtform<<endl;
   }
 
-  ATOOLS::s_loader->SetCheck(p_dataread->GetValue<int>("CHECK_LIBLOCK",0));
-
   rpa->Init(m_path,m_file,argc,argv);
   CheckVersion();
   LoadLibraries();
