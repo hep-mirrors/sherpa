@@ -3,6 +3,7 @@ set(Selectors_SOURCES Cut_Data.C
                       Variable_Selector.C
                       Combined_Selector.C
                       FastJet_Criterion.C
+                      PTYDR_Criterion.C
                       Jet_Finder.C
                       Jet_Selector.C
                       Isolation_Selector.C
