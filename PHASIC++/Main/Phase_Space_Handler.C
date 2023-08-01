@@ -92,21 +92,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     if (p.Nan()) return 0.0;
   }
   if (p_point != NULL && process->ColorIntegrator() != NULL) {
-    process->ColorIntegrator()->SetPoint(p_point);
-    int colset(true);
-    for (size_t i(0);i<p_point->Legs().size();++i) {
-     Cluster_Leg *cl(p_point->Leg(i));
-     if (cl->Flav().Strong() &&
-         cl->Col().m_i<=0 && cl->Col().m_j<=0) {
-       colset=false;
-       break;
-     }
-    }
-    if (!colset) {
-     msg_Debugging()<<"Generating color configuration for "
-     	       <<process->Process()->Name()<<"\n";
-     while (!process->Process()->GeneratePoint());
-    }
+    while (!process->Process()->GeneratePoint());
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
@@ -118,6 +104,14 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
         double result{process->Process()
                           ->Differential(p_lab, Variations_Mode::nominal_only)
                           .Nominal()};
+        if (process->ColorIntegrator()!=NULL) {
+          while (result==0.0) {
+            while (!process->Process()->GeneratePoint());
+            result = process->Process()
+                         ->Differential(p_lab, Variations_Mode::nominal_only)
+                         .Nominal();
+          }
+        }
         scales.clear();
         process->Process()->ScaleSetter(true)->SetFixedScale(scales);
         m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
