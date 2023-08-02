@@ -245,8 +245,12 @@ namespace LHEH5 {
     {
       m_ievt=0;
       int size(mpi->MySize()), rank(mpi->MyRank());
-      File file(fname,File::ReadOnly,
-		MPIOFileDriver(MPI_COMM_WORLD, MPI_INFO_NULL));
+      MPI_Info info;
+      MPI_Info_create(&info);
+      FileAccessProps fapl;
+      fapl.add(MPIOFileAccess{MPI_COMM_WORLD,info});
+      fapl.add(MPIOCollectiveMetadata{});
+      File file(fname,File::ReadOnly,fapl);
       LHEFile *e(new LHEFile());
       e->ReadHeader(file);
       m_totalxs=e->TotalXS();
