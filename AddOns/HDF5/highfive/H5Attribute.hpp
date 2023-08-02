@@ -11,17 +11,25 @@
 
 #include <vector>
 
+#include "H5DataSpace.hpp"
+#include "H5DataType.hpp"
 #include "H5Object.hpp"
+#include "bits/H5Path_traits.hpp"
 
 namespace HighFive {
 
-template <typename Derivate>
-class AnnotateTraits;
-class DataType;
-class DataSpace;
-
-class Attribute : public Object {
+///
+/// \brief Class representing an attribute of a dataset or group
+///
+class Attribute: public Object, public PathTraits<Attribute> {
   public:
+    const static ObjectType type = ObjectType::Attribute;
+
+    ///
+    /// \brief return the name of the current attribute
+    /// \return the name of the attribute
+    std::string getName() const;
+
     size_t getStorageSize() const;
 
     ///
@@ -44,6 +52,11 @@ class Attribute : public Object {
     DataSpace getMemSpace() const;
 
     ///
+    /// Return the attribute
+    template <typename T>
+    T read() const;
+
+    ///
     /// Read the attribute into a buffer
     /// An exception is raised if the numbers of dimension of the buffer and of
     /// the attribute are different
@@ -52,6 +65,12 @@ class Attribute : public Object {
     /// dimensional array )
     template <typename T>
     void read(T& array) const;
+
+    ///
+    /// Read the attribute into a buffer
+    ///
+    template <typename T>
+    void read(T* array, const DataType& dtype = DataType()) const;
 
     ///
     /// Write the integrality N-dimension buffer to this attribute
@@ -63,13 +82,23 @@ class Attribute : public Object {
     template <typename T>
     void write(const T& buffer);
 
+    ///
+    /// Write a buffer to this attribute
+    ///
+    template <typename T>
+    void write_raw(const T* buffer, const DataType& dtype = DataType());
+
+    // No empty attributes
+    Attribute() = delete;
+
   private:
-    Attribute();
+    using Object::Object;
+
     template <typename Derivate>
     friend class ::HighFive::AnnotateTraits;
 };
-}
 
-#include "bits/H5Attribute_misc.hpp"
+}  // namespace HighFive
 
-#endif // H5ATTRIBUTE_HPP
+
+#endif  // H5ATTRIBUTE_HPP

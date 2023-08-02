@@ -10,45 +10,45 @@
 #define H5SELECTION_HPP
 
 #include "H5DataSet.hpp"
-#include "H5Object.hpp"
-
+#include "H5DataSpace.hpp"
 #include "bits/H5Slice_traits.hpp"
 
 namespace HighFive {
-
-template <typename Derivate>
-class SliceTraits;
 
 ///
 /// \brief Selection: represent a view on a slice/part of a dataset
 ///
 /// A Selection is valid only if its parent dataset is valid
 ///
-class Selection : public SliceTraits<Selection> {
+class Selection: public SliceTraits<Selection> {
   public:
     ///
     /// \brief getSpace
     /// \return Dataspace associated with this selection
     ///
-    DataSpace getSpace() const;
+    DataSpace getSpace() const noexcept;
 
     ///
     /// \brief getMemSpace
     /// \return Dataspace associated with the memory representation of this
     /// selection
     ///
-    DataSpace getMemSpace() const;
+    DataSpace getMemSpace() const noexcept;
 
     ///
     /// \brief getDataSet
     /// \return parent dataset of this selection
     ///
-    DataSet& getDataset();
-    const DataSet& getDataset() const;
+    DataSet& getDataset() noexcept;
+    const DataSet& getDataset() const noexcept;
+
+    ///
+    /// \brief return the datatype of the selection
+    /// \return return the datatype of the selection
+    const DataType getDataType() const;
 
   private:
-    Selection(const DataSpace& memspace, const DataSpace& file_space,
-              const DataSet& set);
+    Selection(const DataSpace& memspace, const DataSpace& file_space, const DataSet& set);
 
     DataSpace _mem_space, _file_space;
     DataSet _set;
@@ -57,8 +57,7 @@ class Selection : public SliceTraits<Selection> {
     friend class ::HighFive::SliceTraits;
     // absolute namespace naming due to GCC bug 52625
 };
-}
 
-#include "bits/H5Selection_misc.hpp"
+}  // namespace HighFive
 
-#endif // H5SELECTION_HPP
+#endif  // H5SELECTION_HPP

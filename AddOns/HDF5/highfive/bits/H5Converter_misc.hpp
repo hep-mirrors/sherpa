@@ -1,362 +1,721 @@
 /*
- *  Copyright (c), 2017, Adrien Devresse <adrien.devresse@epfl.ch>
+ *  Copyright (c) 2022 Blue Brain Project
  *
  *  Distributed under the Boost Software License, Version 1.0.
  *    (See accompanying file LICENSE_1_0.txt or copy at
  *          http://www.boost.org/LICENSE_1_0.txt)
  *
  */
-#ifndef H5CONVERTER_MISC_HPP
-#define H5CONVERTER_MISC_HPP
+#pragma once
 
-#include <algorithm>
-#include <cassert>
-#include <functional>
-#include <numeric>
-#include <sstream>
-#include <string>
+#include <type_traits>
+#include <cstring>
 
+#include "../H5Reference.hpp"
 #ifdef H5_USE_BOOST
 #include <boost/multi_array.hpp>
+// starting Boost 1.64, serialization header must come before ublas
+#include <boost/serialization/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #endif
-
-#include <H5Dpublic.h>
-#include <H5Ppublic.h>
-
-#include "../H5DataSpace.hpp"
-#include "../H5DataType.hpp"
-
-#include "H5Utils.hpp"
+#ifdef H5_USE_EIGEN
+#include <Eigen/Eigen>
+#endif
 
 namespace HighFive {
+inline size_t compute_total_size(const std::vector<size_t>& dims) {
+    return std::accumulate(dims.begin(), dims.end(), size_t{1u}, std::multiplies<size_t>());
+}
+
+template <typename T>
+using unqualified_t = typename std::remove_const<typename std::remove_reference<T>::type>::type;
+
+/*****
+inspector<T> {
+    using type = T
+    // base_type is the base type inside c++ (e.g. std::vector<int> => int)
+    using base_type
+    // hdf5_type is the base read by hdf5 (c-type) (e.g. std::vector<std::string> => const char*)
+    using hdf5_type
+
+    // Number of dimensions starting from here
+    static constexpr size_t recursive_ndim
+    // Is the inner type trivially copyable for optimisation
+    // If this value is true: data() is mandatory
+    // If this value is false: getSizeVal, getSize, serialize, unserialize are mandatory
+    static constexpr bool is_trivially_copyable
+
+    // Reading:
+    // Allocate the value following dims (should be recursive)
+    static void prepare(type& val, const std::vector<std::size_t> dims)
+    // Return the size of the vector pass to/from hdf5 from a vector of dims
+    static size_t getSize(const std::vector<size_t>& dims)
+    // Return a pointer of the first value of val (for reading)
+    static hdf5_type* data(type& val)
+    // Take a serialized vector 'in', some dims and copy value to val (for reading)
+    static void unserialize(const hdf5_type* in, const std::vector<size_t>&i, type& val)
+
+
+    // Writing:
+    // Return the size of the vector pass to/from hdf5 from a value
+    static size_t getSizeVal(const type& val)
+    // Return a point of the first value of val
+    static const hdf5_type* data(const type& val)
+    // Take a val and serialize it inside 'out'
+    static void serialize(const type& val, hdf5_type* out)
+    // Return an array of dimensions of the space needed for writing val
+    static std::vector<size_t> getDimensions(const type& val)
+}
+*****/
+
 
 namespace details {
-
-inline void check_dimensions_vector(size_t size_vec, size_t size_dataset,
-                                    size_t dimension) {
-    if (size_vec != size_dataset) {
-        std::ostringstream ss;
-        ss << "Mismatch between vector size (" << size_vec
-           << ") and dataset size (" << size_dataset;
-        ss << ") on dimension " << dimension;
-        throw DataSetException(ss.str());
-    }
-}
-
-// copy multi dimensional vector in C++ in one C-style multi dimensional buffer
 template <typename T>
-inline void vectors_to_single_buffer(const std::vector<T>& vec_single_dim,
-                                     const std::vector<size_t>& dims,
-                                     size_t current_dim,
-                                     std::vector<T>& buffer) {
+struct type_helper {
+    using type = unqualified_t<T>;
+    using base_type = unqualified_t<T>;
+    using hdf5_type = base_type;
 
-    check_dimensions_vector(vec_single_dim.size(), dims[current_dim],
-                            current_dim);
-    buffer.insert(buffer.end(), vec_single_dim.begin(), vec_single_dim.end());
-}
+    static constexpr size_t ndim = 0;
+    static constexpr size_t recursive_ndim = ndim;
+    static constexpr bool is_trivially_copyable = std::is_trivially_copyable<type>::value;
 
-template <typename T>
-inline void
-vectors_to_single_buffer(const std::vector<T>& vec_multi_dim,
-                         const std::vector<size_t>& dims, size_t current_dim,
-                         std::vector<typename type_of_array<T>::type>& buffer) {
+    static_assert(!std::is_same<type, bool>::value, "Booleans are not supported yet.");
 
-    check_dimensions_vector(vec_multi_dim.size(), dims[current_dim],
-                            current_dim);
-    for (typename std::vector<T>::const_iterator it = vec_multi_dim.begin();
-         it < vec_multi_dim.end(); ++it) {
-        vectors_to_single_buffer(*it, dims, current_dim + 1, buffer);
-    }
-}
-
-// copy single buffer to multi dimensional vector, following dimensions
-// specified
-template <typename T>
-inline typename std::vector<T>::iterator
-single_buffer_to_vectors(typename std::vector<T>::iterator begin_buffer,
-                         typename std::vector<T>::iterator end_buffer,
-                         const std::vector<size_t>& dims, size_t current_dim,
-                         std::vector<T>& vec_single_dim) {
-    const size_t n_elems = dims[current_dim];
-    typename std::vector<T>::iterator end_copy_iter =
-        std::min(begin_buffer + n_elems, end_buffer);
-    vec_single_dim.assign(begin_buffer, end_copy_iter);
-    return end_copy_iter;
-}
-
-template <typename T, typename U>
-inline typename std::vector<T>::iterator
-single_buffer_to_vectors(typename std::vector<T>::iterator begin_buffer,
-                         typename std::vector<T>::iterator end_buffer,
-                         const std::vector<size_t>& dims, size_t current_dim,
-                         std::vector<U>& vec_multi_dim) {
-
-    const size_t n_elems = dims[current_dim];
-    vec_multi_dim.resize(n_elems);
-
-    for (typename std::vector<U>::iterator it = vec_multi_dim.begin();
-         it < vec_multi_dim.end(); ++it) {
-        begin_buffer = single_buffer_to_vectors(begin_buffer, end_buffer, dims,
-                                                current_dim + 1, *it);
-    }
-    return begin_buffer;
-}
-
-// apply conversion operations to basic scalar type
-template <typename Scalar, class Enable = void>
-struct data_converter {
-    inline data_converter(Scalar& datamem, DataSpace& space) {
-
-        static_assert((std::is_arithmetic<Scalar>::value ||
-                       std::is_enum<Scalar>::value ||
-                       std::is_same<std::string, Scalar>::value),
-                      "supported datatype should be an arithmetic value, a "
-                      "std::string or a container/array");
-        (void)datamem;
-        (void)space; // do nothing
+    static std::vector<size_t> getDimensions(const type& /* val */) {
+        return {};
     }
 
-    inline Scalar* transform_read(Scalar& datamem) { return &datamem; }
+    static size_t getSizeVal(const type& val) {
+        return compute_total_size(getDimensions(val));
+    }
 
-    inline Scalar* transform_write(Scalar& datamem) { return &datamem; }
+    static size_t getSize(const std::vector<size_t>& dims) {
+        return compute_total_size(dims);
+    }
 
-    inline void process_result(Scalar& datamem) {
-        (void)datamem; // do nothing
+    static void prepare(type& /* val */, const std::vector<size_t>& /* dims */) {}
+
+    static hdf5_type* data(type& val) {
+        static_assert(is_trivially_copyable, "The type is not trivially copyable");
+        return &val;
+    }
+
+    static const hdf5_type* data(const type& val) {
+        static_assert(is_trivially_copyable, "The type is not trivially copyable");
+        return &val;
+    }
+
+    static void serialize(const type& val, hdf5_type* m) {
+        static_assert(is_trivially_copyable, "The type is not trivially copyable");
+        *m = val;
+    }
+
+    static void unserialize(const hdf5_type* vec,
+                            const std::vector<size_t>& /* dims */,
+                            type& val) {
+        static_assert(is_trivially_copyable, "The type is not trivially copyable");
+        val = vec[0];
     }
 };
 
-// apply conversion operations to the incoming data
-// if they are a cstyle array
-template <typename CArray>
-struct data_converter<CArray,
-                      typename std::enable_if<(is_c_array<CArray>::value)>::type> {
-    inline data_converter(CArray& datamem, DataSpace& space) {
-        (void)datamem;
-        (void)space; // do nothing
-    }
-
-    inline CArray& transform_read(CArray& datamem) { return datamem; }
-
-    inline CArray& transform_write(CArray& datamem) { return datamem; }
-
-    inline void process_result(CArray& datamem) {
-        (void)datamem; // do nothing
-    }
-};
-
-// apply conversion for vectors 1D
 template <typename T>
-struct data_converter<
-    std::vector<T>,
-    typename std::enable_if<(
-        std::is_same<T, typename type_of_array<T>::type>::value)>::type> {
-    inline data_converter(std::vector<T>& vec, DataSpace& space, size_t dim = 0)
-        : _space(&space), _dim(dim) {
-        assert(_space->getDimensions().size() > dim);
-        (void)vec;
+struct inspector: type_helper<T> {};
+
+template <>
+struct inspector<std::string>: type_helper<std::string> {
+    using hdf5_type = const char*;
+
+    static hdf5_type* data(type& /* val */) {
+        throw DataSpaceException("A std::string cannot be read directly.");
     }
 
-    inline typename type_of_array<T>::type*
-    transform_read(std::vector<T>& vec) {
-        vec.resize(_space->getDimensions()[_dim]);
-        return &(vec[0]);
+    static const hdf5_type* data(const type& /* val */) {
+        throw DataSpaceException("A std::string cannot be write directly.");
     }
 
-    inline typename type_of_array<T>::type*
-    transform_write(std::vector<T>& vec) {
-        return &(vec[0]);
+    static void serialize(const type& val, hdf5_type* m) {
+        *m = val.c_str();
     }
 
-    inline void process_result(std::vector<T>& vec) { (void)vec; }
-
-    DataSpace* _space;
-    size_t _dim;
+    static void unserialize(const hdf5_type* vec,
+                            const std::vector<size_t>& /* dims */,
+                            type& val) {
+        val = vec[0];
+    }
 };
 
-#ifdef H5_USE_BOOST
-// apply conversion to boost multi array
-template <typename T, std::size_t Dims>
-struct data_converter<boost::multi_array<T, Dims>, void> {
+template <>
+struct inspector<Reference>: type_helper<Reference> {
+    using hdf5_type = hobj_ref_t;
 
-    typedef typename boost::multi_array<T, Dims> MultiArray;
+    static constexpr bool is_trivially_copyable = false;
 
-    inline data_converter(MultiArray& array, DataSpace& space, size_t dim = 0)
-        : _dims(space.getDimensions()) {
-        assert(_dims.size() == Dims);
-        (void)dim;
-        (void)array;
+    static hdf5_type* data(type& /* val */) {
+        throw DataSpaceException("A Reference cannot be read directly.");
     }
 
-    inline typename type_of_array<T>::type* transform_read(MultiArray& array) {
-        if (std::equal(_dims.begin(), _dims.end(), array.shape()) == false) {
-            boost::array<typename MultiArray::index, Dims> ext;
-            std::copy(_dims.begin(), _dims.end(), ext.begin());
-            array.resize(ext);
+    static const hdf5_type* data(const type& /* val */) {
+        throw DataSpaceException("A Reference cannot be write directly.");
+    }
+
+    static void serialize(const type& val, hdf5_type* m) {
+        hobj_ref_t ref;
+        val.create_ref(&ref);
+        *m = ref;
+    }
+
+    static void unserialize(const hdf5_type* vec,
+                            const std::vector<size_t>& /* dims */,
+                            type& val) {
+        val = type{vec[0]};
+    }
+};
+
+template <size_t N>
+struct inspector<FixedLenStringArray<N>> {
+    using type = FixedLenStringArray<N>;
+    using value_type = char*;
+    using base_type = FixedLenStringArray<N>;
+    using hdf5_type = char;
+
+    static constexpr size_t ndim = 1;
+    static constexpr size_t recursive_ndim = ndim;
+    static constexpr bool is_trivially_copyable = false;
+
+    static std::vector<size_t> getDimensions(const type& val) {
+        return std::vector<size_t>{val.size()};
+    }
+
+    static size_t getSizeVal(const type& val) {
+        return N * compute_total_size(getDimensions(val));
+    }
+
+    static size_t getSize(const std::vector<size_t>& dims) {
+        return N * compute_total_size(dims);
+    }
+
+    static void prepare(type& /* val */, const std::vector<size_t>& dims) {
+        if (dims[0] > N) {
+            std::ostringstream os;
+            os << "Size of FixedlenStringArray (" << N << ") is too small for dims (" << dims[0]
+               << ").";
+            throw DataSpaceException(os.str());
         }
-        return array.data();
     }
 
-    inline typename type_of_array<T>::type* transform_write(MultiArray& array) {
-        return array.data();
+    static hdf5_type* data(type& val) {
+        return val.data();
     }
 
-    inline void process_result(MultiArray& array) { (void)array; }
+    static const hdf5_type* data(const type& val) {
+        return val.data();
+    }
 
-    std::vector<size_t> _dims;
+    static void serialize(const type& val, hdf5_type* m) {
+        for (size_t i = 0; i < val.size(); ++i) {
+            std::memcpy(m + i * N, val[i], N);
+        }
+    }
+
+    static void unserialize(const hdf5_type* vec, const std::vector<size_t>& dims, type& val) {
+        for (size_t i = 0; i < dims[0]; ++i) {
+            std::array<char, N> s;
+            std::memcpy(s.data(), vec + (i * N), N);
+            val.push_back(s);
+        }
+    }
 };
 
-// apply conversion to boost matrix ublas
 template <typename T>
-struct data_converter<boost::numeric::ublas::matrix<T>, void> {
+struct inspector<std::vector<T>> {
+    using type = std::vector<T>;
+    using value_type = unqualified_t<T>;
+    using base_type = typename inspector<value_type>::base_type;
+    using hdf5_type = typename inspector<value_type>::hdf5_type;
 
-    typedef typename boost::numeric::ublas::matrix<T> Matrix;
+    static constexpr size_t ndim = 1;
+    static constexpr size_t recursive_ndim = ndim + inspector<value_type>::recursive_ndim;
+    static constexpr bool is_trivially_copyable = std::is_trivially_copyable<value_type>::value;
 
-    inline data_converter(Matrix& array, DataSpace& space, size_t dim = 0)
-        : _dims(space.getDimensions()) {
-        assert(_dims.size() == 2);
-        (void)dim;
-        (void)array;
-    }
-
-    inline typename type_of_array<T>::type* transform_read(Matrix& array) {
-        boost::array<std::size_t, 2> sizes = {{array.size1(), array.size2()}};
-
-        if (std::equal(_dims.begin(), _dims.end(), sizes.begin()) == false) {
-            array.resize(_dims[0], _dims[1], false);
-            array(0, 0) = 0; // force initialization
+    static std::vector<size_t> getDimensions(const type& val) {
+        std::vector<size_t> sizes{val.size()};
+        if (!val.empty()) {
+            auto s = inspector<value_type>::getDimensions(val[0]);
+            sizes.insert(sizes.end(), s.begin(), s.end());
         }
-
-        return &(array(0, 0));
+        return sizes;
     }
 
-    inline typename type_of_array<T>::type* transform_write(Matrix& array) {
-        return &(array(0, 0));
+    static size_t getSizeVal(const type& val) {
+        return compute_total_size(getDimensions(val));
     }
 
-    inline void process_result(Matrix& array) { (void)array; }
+    static size_t getSize(const std::vector<size_t>& dims) {
+        return compute_total_size(dims);
+    }
 
-    std::vector<size_t> _dims;
+    static void prepare(type& val, const std::vector<size_t>& dims) {
+        val.resize(dims[0]);
+        std::vector<size_t> next_dims(dims.begin() + 1, dims.end());
+        for (auto& e: val) {
+            inspector<value_type>::prepare(e, next_dims);
+        }
+    }
+
+    static hdf5_type* data(type& val) {
+        return inspector<value_type>::data(val[0]);
+    }
+
+    static const hdf5_type* data(const type& val) {
+        return inspector<value_type>::data(val[0]);
+    }
+
+    static void serialize(const type& val, hdf5_type* m) {
+        size_t subsize = inspector<value_type>::getSizeVal(val[0]);
+        for (auto& e: val) {
+            inspector<value_type>::serialize(e, m);
+            m += subsize;
+        }
+    }
+
+    static void unserialize(const hdf5_type* vec_align,
+                            const std::vector<size_t>& dims,
+                            type& val) {
+        std::vector<size_t> next_dims(dims.begin() + 1, dims.end());
+        size_t next_size = compute_total_size(next_dims);
+        for (size_t i = 0; i < dims[0]; ++i) {
+            inspector<value_type>::unserialize(vec_align + i * next_size, next_dims, val[i]);
+        }
+    }
+};
+
+
+template <typename T, size_t N>
+struct inspector<std::array<T, N>> {
+    using type = std::array<T, N>;
+    using value_type = T;
+    using base_type = typename inspector<value_type>::base_type;
+    using hdf5_type = typename inspector<value_type>::hdf5_type;
+
+    static constexpr size_t ndim = 1;
+    static constexpr size_t recursive_ndim = ndim + inspector<value_type>::recursive_ndim;
+    static constexpr bool is_trivially_copyable = std::is_trivially_copyable<value_type>::value;
+
+    static std::vector<size_t> getDimensions(const type& val) {
+        std::vector<size_t> sizes{N};
+        if (!val.empty()) {
+            auto s = inspector<value_type>::getDimensions(val[0]);
+            sizes.insert(sizes.end(), s.begin(), s.end());
+        }
+        return sizes;
+    }
+
+    static size_t getSizeVal(const type& val) {
+        return compute_total_size(getDimensions(val));
+    }
+
+    static size_t getSize(const std::vector<size_t>& dims) {
+        return compute_total_size(dims);
+    }
+
+    static void prepare(type& /* val */, const std::vector<size_t>& dims) {
+        if (dims[0] > N) {
+            std::ostringstream os;
+            os << "Size of std::array (" << N << ") is too small for dims (" << dims[0] << ").";
+            throw DataSpaceException(os.str());
+        }
+    }
+
+    static hdf5_type* data(type& val) {
+        return inspector<value_type>::data(val[0]);
+    }
+
+    static const hdf5_type* data(const type& val) {
+        return inspector<value_type>::data(val[0]);
+    }
+
+    static void serialize(const type& val, hdf5_type* m) {
+        size_t subsize = inspector<value_type>::getSizeVal(val[0]);
+        for (auto& e: val) {
+            inspector<value_type>::serialize(e, m);
+            m += subsize;
+        }
+    }
+
+    static void unserialize(const hdf5_type* vec_align,
+                            const std::vector<size_t>& dims,
+                            type& val) {
+        if (dims[0] != N) {
+            std::ostringstream os;
+            os << "Impossible to pair DataSet with " << dims[0] << " elements into an array with "
+               << N << " elements.";
+            throw DataSpaceException(os.str());
+        }
+        std::vector<size_t> next_dims(dims.begin() + 1, dims.end());
+        size_t next_size = compute_total_size(next_dims);
+        for (size_t i = 0; i < dims[0]; ++i) {
+            inspector<value_type>::unserialize(vec_align + i * next_size, next_dims, val[i]);
+        }
+    }
+};
+
+// Cannot be use for reading
+template <typename T>
+struct inspector<T*> {
+    using type = T*;
+    using value_type = unqualified_t<T>;
+    using base_type = typename inspector<value_type>::base_type;
+    using hdf5_type = typename inspector<value_type>::hdf5_type;
+
+    static constexpr size_t ndim = 1;
+    static constexpr size_t recursive_ndim = ndim + inspector<value_type>::recursive_ndim;
+    static constexpr bool is_trivially_copyable = std::is_trivially_copyable<value_type>::value;
+
+    static size_t getSizeVal(const type& /* val */) {
+        throw DataSpaceException("Not possible to have size of a T*");
+    }
+
+    static std::vector<size_t> getDimensions(const type& /* val */) {
+        throw DataSpaceException("Not possible to have size of a T*");
+    }
+
+    static const hdf5_type* data(const type& val) {
+        return reinterpret_cast<const hdf5_type*>(val);
+    }
+
+    /* it works because there is only T[][][] currently
+       we will fix it one day */
+    static void serialize(const type& /* val */, hdf5_type* /* m */) {
+        throw DataSpaceException("Not possible to serialize a T*");
+    }
+};
+
+// Cannot be use for reading
+template <typename T, size_t N>
+struct inspector<T[N]> {
+    using type = T[N];
+    using value_type = unqualified_t<T>;
+    using base_type = typename inspector<value_type>::base_type;
+    using hdf5_type = typename inspector<value_type>::hdf5_type;
+
+    static constexpr size_t ndim = 1;
+    static constexpr size_t recursive_ndim = ndim + inspector<value_type>::recursive_ndim;
+    static constexpr bool is_trivially_copyable = std::is_trivially_copyable<value_type>::value;
+
+    static size_t getSizeVal(const type& val) {
+        return compute_total_size(getDimensions(val));
+    }
+
+    static std::vector<size_t> getDimensions(const type& val) {
+        std::vector<size_t> sizes{N};
+        if (N > 0) {
+            auto s = inspector<value_type>::getDimensions(val[0]);
+            sizes.insert(sizes.end(), s.begin(), s.end());
+        }
+        return sizes;
+    }
+
+    static const hdf5_type* data(const type& val) {
+        return inspector<value_type>::data(val[0]);
+    }
+
+    /* it works because there is only T[][][] currently
+       we will fix it one day */
+    static void serialize(const type& val, hdf5_type* m) {
+        size_t subsize = inspector<value_type>::getSizeVal(val[0]);
+        for (size_t i = 0; i < N; ++i) {
+            inspector<value_type>::serialize(val[i], m + i * subsize);
+        }
+    }
+};
+
+#ifdef H5_USE_EIGEN
+template <typename T, int M, int N>
+struct inspector<Eigen::Matrix<T, M, N>> {
+    using type = Eigen::Matrix<T, M, N>;
+    using value_type = T;
+    using base_type = typename inspector<value_type>::base_type;
+    using hdf5_type = base_type;
+
+    static constexpr size_t ndim = 2;
+    static constexpr size_t recursive_ndim = ndim + inspector<value_type>::recursive_ndim;
+    static constexpr bool is_trivially_copyable = std::is_trivially_copyable<value_type>::value;
+
+    static std::vector<size_t> getDimensions(const type& val) {
+        std::vector<size_t> sizes{static_cast<size_t>(val.rows()), static_cast<size_t>(val.cols())};
+        auto s = inspector<value_type>::getDimensions(val.data()[0]);
+        sizes.insert(sizes.end(), s.begin(), s.end());
+        return sizes;
+    }
+
+    static size_t getSizeVal(const type& val) {
+        return compute_total_size(getDimensions(val));
+    }
+
+    static size_t getSize(const std::vector<size_t>& dims) {
+        return compute_total_size(dims);
+    }
+
+    static void prepare(type& val, const std::vector<size_t>& dims) {
+        if (dims[0] != static_cast<size_t>(val.rows()) ||
+            dims[1] != static_cast<size_t>(val.cols())) {
+            val.resize(static_cast<typename type::Index>(dims[0]),
+                       static_cast<typename type::Index>(dims[1]));
+        }
+    }
+
+    static hdf5_type* data(type& val) {
+        return inspector<value_type>::data(*val.data());
+    }
+
+    static const hdf5_type* data(const type& val) {
+        return inspector<value_type>::data(*val.data());
+    }
+
+    static void serialize(const type& val, hdf5_type* m) {
+        std::memcpy(m, val.data(), static_cast<size_t>(val.size()) * sizeof(hdf5_type));
+    }
+
+    static void unserialize(const hdf5_type* vec_align,
+                            const std::vector<size_t>& dims,
+                            type& val) {
+        if (dims.size() < 2) {
+            std::ostringstream os;
+            os << "Impossible to pair DataSet with " << dims.size()
+               << " dimensions into an eigen-matrix.";
+            throw DataSpaceException(os.str());
+        }
+        std::memcpy(val.data(), vec_align, compute_total_size(dims) * sizeof(hdf5_type));
+    }
 };
 #endif
 
-// apply conversion for vectors nested vectors
+#ifdef H5_USE_BOOST
+template <typename T, size_t Dims>
+struct inspector<boost::multi_array<T, Dims>> {
+    using type = boost::multi_array<T, Dims>;
+    using value_type = T;
+    using base_type = typename inspector<value_type>::base_type;
+    using hdf5_type = typename inspector<value_type>::hdf5_type;
+
+    static constexpr size_t ndim = Dims;
+    static constexpr size_t recursive_ndim = ndim + inspector<value_type>::recursive_ndim;
+    static constexpr bool is_trivially_copyable = std::is_trivially_copyable<value_type>::value;
+
+    static std::vector<size_t> getDimensions(const type& val) {
+        std::vector<size_t> sizes;
+        for (size_t i = 0; i < ndim; ++i) {
+            sizes.push_back(val.shape()[i]);
+        }
+        auto s = inspector<value_type>::getDimensions(val.data()[0]);
+        sizes.insert(sizes.end(), s.begin(), s.end());
+        return sizes;
+    }
+
+    static size_t getSizeVal(const type& val) {
+        return compute_total_size(getDimensions(val));
+    }
+
+    static size_t getSize(const std::vector<size_t>& dims) {
+        return compute_total_size(dims);
+    }
+
+    static void prepare(type& val, const std::vector<size_t>& dims) {
+        if (dims.size() < ndim) {
+            std::ostringstream os;
+            os << "Only '" << dims.size() << "' given but boost::multi_array is of size '" << ndim
+               << "'.";
+            throw DataSpaceException(os.str());
+        }
+        boost::array<typename type::index, Dims> ext;
+        std::copy(dims.begin(), dims.begin() + ndim, ext.begin());
+        val.resize(ext);
+        std::vector<size_t> next_dims(dims.begin() + Dims, dims.end());
+        std::size_t size = std::accumulate(dims.begin(),
+                                           dims.begin() + Dims,
+                                           std::size_t{1},
+                                           std::multiplies<size_t>());
+        for (size_t i = 0; i < size; ++i) {
+            inspector<value_type>::prepare(*(val.origin() + i), next_dims);
+        }
+    }
+
+    static hdf5_type* data(type& val) {
+        return inspector<value_type>::data(*val.data());
+    }
+
+    static const hdf5_type* data(const type& val) {
+        return inspector<value_type>::data(*val.data());
+    }
+
+    static void serialize(const type& val, hdf5_type* m) {
+        size_t size = val.num_elements();
+        size_t subsize = inspector<value_type>::getSizeVal(*val.origin());
+        for (size_t i = 0; i < size; ++i) {
+            inspector<value_type>::serialize(*(val.origin() + i), m + i * subsize);
+        }
+    }
+
+    static void unserialize(const hdf5_type* vec_align,
+                            const std::vector<size_t>& dims,
+                            type& val) {
+        std::vector<size_t> next_dims(dims.begin() + ndim, dims.end());
+        size_t subsize = compute_total_size(next_dims);
+        for (size_t i = 0; i < val.num_elements(); ++i) {
+            inspector<value_type>::unserialize(vec_align + i * subsize,
+                                               next_dims,
+                                               *(val.origin() + i));
+        }
+    }
+};
+
 template <typename T>
-struct data_converter<std::vector<T>,
-                      typename std::enable_if<(is_container<T>::value)>::type> {
-    inline data_converter(std::vector<T>& vec, DataSpace& space, size_t dim = 0)
-        : _dims(space.getDimensions()), _dim(dim), _vec_align() {
-        (void)vec;
+struct inspector<boost::numeric::ublas::matrix<T>> {
+    using type = boost::numeric::ublas::matrix<T>;
+    using value_type = unqualified_t<T>;
+    using base_type = typename inspector<value_type>::base_type;
+    using hdf5_type = typename inspector<value_type>::hdf5_type;
+
+    static constexpr size_t ndim = 2;
+    static constexpr size_t recursive_ndim = ndim + inspector<value_type>::recursive_ndim;
+    static constexpr bool is_trivially_copyable = std::is_trivially_copyable<value_type>::value;
+
+    static std::vector<size_t> getDimensions(const type& val) {
+        std::vector<size_t> sizes{val.size1(), val.size2()};
+        auto s = inspector<value_type>::getDimensions(val(0, 0));
+        sizes.insert(sizes.end(), s.begin(), s.end());
+        return sizes;
     }
 
-    inline typename type_of_array<T>::type*
-    transform_read(std::vector<T>& vec) {
-        (void)vec;
-        _vec_align.resize(get_total_size());
-        return &(_vec_align[0]);
+    static size_t getSizeVal(const type& val) {
+        return compute_total_size(getDimensions(val));
     }
 
-    inline typename type_of_array<T>::type*
-    transform_write(std::vector<T>& vec) {
-        _vec_align.reserve(get_total_size());
-        vectors_to_single_buffer<T>(vec, _dims, 0, _vec_align);
-        return &(_vec_align[0]);
+    static size_t getSize(const std::vector<size_t>& dims) {
+        return compute_total_size(dims);
     }
 
-    inline void process_result(std::vector<T>& vec) {
-        single_buffer_to_vectors<typename type_of_array<T>::type, T>(
-            _vec_align.begin(), _vec_align.end(), _dims, 0, vec);
+    static void prepare(type& val, const std::vector<size_t>& dims) {
+        if (dims.size() < ndim) {
+            std::ostringstream os;
+            os << "Impossible to pair DataSet with " << dims.size() << " dimensions into a " << ndim
+               << " boost::numeric::ublas::matrix";
+            throw DataSpaceException(os.str());
+        }
+        val.resize(dims[0], dims[1], false);
     }
 
-    inline size_t get_total_size() {
-        return std::accumulate(_dims.begin(), _dims.end(), 1,
-                               std::multiplies<size_t>());
+    static hdf5_type* data(type& val) {
+        return inspector<value_type>::data(val(0, 0));
     }
 
-    std::vector<size_t> _dims;
-    size_t _dim;
-    std::vector<typename type_of_array<T>::type> _vec_align;
-};
-
-// apply conversion to scalar string
-template <>
-struct data_converter<std::string, void> {
-    inline data_converter(std::string& vec, DataSpace& space) : _c_vec(nullptr),  _space(space) {
-        (void)vec;
+    static const hdf5_type* data(const type& val) {
+        return inspector<value_type>::data(val(0, 0));
     }
 
-    // create a C vector adapted to HDF5
-    // fill last element with NULL to identify end
-    inline char** transform_read(std::string&) { return (&_c_vec); }
-
-    static inline char* char_converter(const std::string& str) {
-        return const_cast<char*>(str.c_str());
-    }
-
-    inline char** transform_write(std::string& str) {
-        _c_vec = const_cast<char*>(str.c_str());
-        return &_c_vec;
-    }
-
-    inline void process_result(std::string& str) {
-        assert(_c_vec != nullptr);
-        str = std::string(_c_vec);
-
-        if (_c_vec != NULL) {
-            AtomicType<std::string> str_type;
-            (void)H5Dvlen_reclaim(str_type.getId(), _space.getId(), H5P_DEFAULT,
-                                  &_c_vec);
+    static void serialize(const type& val, hdf5_type* m) {
+        size_t size = val.size1() * val.size2();
+        size_t subsize = inspector<value_type>::getSizeVal(val(0, 0));
+        for (size_t i = 0; i < size; ++i) {
+            inspector<value_type>::serialize(*(&val(0, 0) + i), m + i * subsize);
         }
     }
 
-    char* _c_vec;
-    DataSpace& _space;
-};
-
-// apply conversion for vectors of string (derefence)
-template <>
-struct data_converter<std::vector<std::string>, void> {
-    inline data_converter(std::vector<std::string>& vec, DataSpace& space)
-        : _space(space) {
-        (void)vec;
-    }
-
-    // create a C vector adapted to HDF5
-    // fill last element with NULL to identify end
-    inline char** transform_read(std::vector<std::string>& vec) {
-        (void)vec;
-        _c_vec.resize(_space.getDimensions()[0], NULL);
-        return (&_c_vec[0]);
-    }
-
-    static inline char* char_converter(const std::string& str) {
-        return const_cast<char*>(str.c_str());
-    }
-
-    inline char** transform_write(std::vector<std::string>& vec) {
-        _c_vec.resize(vec.size() + 1, NULL);
-        std::transform(vec.begin(), vec.end(), _c_vec.begin(), &char_converter);
-        return (&_c_vec[0]);
-    }
-
-    inline void process_result(std::vector<std::string>& vec) {
-        (void)vec;
-        vec.resize(_c_vec.size());
-        for (size_t i = 0; i < vec.size(); ++i) {
-            vec[i] = std::string(_c_vec[i]);
-        }
-
-        if (_c_vec.empty() == false && _c_vec[0] != NULL) {
-            AtomicType<std::string> str_type;
-            (void)H5Dvlen_reclaim(str_type.getId(), _space.getId(), H5P_DEFAULT,
-                                  &(_c_vec[0]));
+    static void unserialize(const hdf5_type* vec_align,
+                            const std::vector<size_t>& dims,
+                            type& val) {
+        std::vector<size_t> next_dims(dims.begin() + ndim, dims.end());
+        size_t subsize = compute_total_size(next_dims);
+        size_t size = val.size1() * val.size2();
+        for (size_t i = 0; i < size; ++i) {
+            inspector<value_type>::unserialize(vec_align + i * subsize,
+                                               next_dims,
+                                               *(&val(0, 0) + i));
         }
     }
-
-    std::vector<char*> _c_vec;
-    DataSpace& _space;
 };
-}
-}
+#endif
 
-#endif // H5CONVERTER_MISC_HPP
+template <typename T>
+struct Writer {
+    using hdf5_type = typename inspector<T>::hdf5_type;
+    const hdf5_type* get_pointer() {
+        if (vec.empty()) {
+            return ptr;
+        } else {
+            return vec.data();
+        }
+    }
+    std::vector<hdf5_type> vec{};
+    const hdf5_type* ptr{nullptr};
+};
+
+template <typename T>
+struct Reader {
+    using type = unqualified_t<T>;
+    using hdf5_type = typename inspector<type>::hdf5_type;
+
+    Reader(const std::vector<size_t>& _dims, type& _val)
+        : dims(_dims)
+        , val(_val) {}
+
+    hdf5_type* get_pointer() {
+        if (vec.empty()) {
+            return inspector<type>::data(val);
+        } else {
+            return vec.data();
+        }
+    }
+
+    void unserialize() {
+        if (!vec.empty()) {
+            inspector<type>::unserialize(vec.data(), dims, val);
+        }
+    }
+
+    std::vector<size_t> dims{};
+    std::vector<hdf5_type> vec{};
+    type& val{};
+};
+
+struct data_converter {
+    template <typename T>
+    static typename std::enable_if<inspector<T>::is_trivially_copyable, Writer<T>>::type serialize(
+        const typename inspector<T>::type& val) {
+        Writer<T> w;
+        w.ptr = inspector<T>::data(val);
+        return w;
+    }
+
+    template <typename T>
+    static typename std::enable_if<!inspector<T>::is_trivially_copyable, Writer<T>>::type serialize(
+        const typename inspector<T>::type& val) {
+        Writer<T> w;
+        w.vec.resize(inspector<T>::getSizeVal(val));
+        inspector<T>::serialize(val, w.vec.data());
+        return w;
+    }
+
+    template <typename T>
+    static
+        typename std::enable_if<inspector<unqualified_t<T>>::is_trivially_copyable, Reader<T>>::type
+        get_reader(const std::vector<size_t>& dims, T& val) {
+        Reader<T> r(dims, val);
+        inspector<T>::prepare(r.val, dims);
+        return r;
+    }
+
+    template <typename T>
+    static typename std::enable_if<!inspector<unqualified_t<T>>::is_trivially_copyable,
+                                   Reader<T>>::type
+    get_reader(const std::vector<size_t>& dims, T& val) {
+        Reader<T> r(dims, val);
+        inspector<T>::prepare(r.val, dims);
+        r.vec.resize(inspector<T>::getSize(dims));
+        return r;
+    }
+};
+
+}  // namespace details
+}  // namespace HighFive

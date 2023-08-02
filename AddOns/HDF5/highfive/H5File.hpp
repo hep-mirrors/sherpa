@@ -13,7 +13,6 @@
 
 #include "H5FileDriver.hpp"
 #include "H5Object.hpp"
-
 #include "bits/H5Annotate_traits.hpp"
 #include "bits/H5Node_traits.hpp"
 
@@ -22,41 +21,77 @@ namespace HighFive {
 ///
 /// \brief File class
 ///
-class File : public Object,
-             public NodeTraits<File>,
-             public AnnotateTraits<File> {
- public:
-    /// Open flag: Read only access
-    static const int ReadOnly = 0x00;
-    /// Open flag: Read Write access
-    static const int ReadWrite = 0x01;
-    /// Open flag: Truncate a file if already existing
-    static const int Truncate = 0x02;
-    /// Open flag: Open will fail if file already exist
-    static const int Excl = 0x04;
-    /// Open flag: Open in debug mode
-    static const int Debug = 0x08;
-    /// Open flag: Create non existing file
-    static const int Create = 0x10;
-    /// Derived open flag: common write mode (=ReadWrite | Create | Truncate)
-    static const int Overwrite = Truncate;
-    /// Derived open flag: Opens RW or exclusivelly creates
-    static const int OpenOrCreate = ReadWrite | Create;
+class File: public Object, public NodeTraits<File>, public AnnotateTraits<File> {
+  public:
+    const static ObjectType type = ObjectType::File;
 
+    enum : unsigned {
+        /// Open flag: Read only access
+        ReadOnly = 0x00u,
+        /// Open flag: Read Write access
+        ReadWrite = 0x01u,
+        /// Open flag: Truncate a file if already existing
+        Truncate = 0x02u,
+        /// Open flag: Open will fail if file already exist
+        Excl = 0x04u,
+        /// Open flag: Open in debug mode
+        Debug = 0x08u,
+        /// Open flag: Create non existing file
+        Create = 0x10u,
+        /// Derived open flag: common write mode (=ReadWrite|Create|Truncate)
+        Overwrite = Truncate,
+        /// Derived open flag: Opens RW or exclusively creates
+        OpenOrCreate = ReadWrite | Create
+    };
 
     ///
     /// \brief File
     /// \param filename: filepath of the HDF5 file
     /// \param openFlags: Open mode / flags ( ReadOnly, ReadWrite)
+    /// \param fileAccessProps: the file access properties
     ///
     /// Open or create a new HDF5 file
-    explicit File(const std::string& filename, int openFlags = ReadOnly,
-                  const Properties& fileAccessProps = FileDriver());
+    explicit File(const std::string& filename,
+                  unsigned openFlags = ReadOnly,
+                  const FileAccessProps& fileAccessProps = FileAccessProps::Default());
+
+    ///
+    /// \brief File
+    /// \param filename: filepath of the HDF5 file
+    /// \param openFlags: Open mode / flags ( ReadOnly, ReadWrite)
+    /// \param fileAccessProps: the file create properties
+    /// \param fileAccessProps: the file access properties
+    ///
+    /// Open or create a new HDF5 file
+    File(const std::string& filename,
+         unsigned openFlags,
+         const FileCreateProps& fileCreateProps,
+         const FileAccessProps& fileAccessProps = FileAccessProps::Default());
 
     ///
     /// \brief Return the name of the file
     ///
-    const std::string& getName() const;
+    const std::string& getName() const noexcept;
+
+
+    /// \brief Object path of a File is always "/"
+    std::string getPath() const noexcept {
+        return "/";
+    }
+
+    /// \brief Returns the block size for metadata in bytes
+    hsize_t getMetadataBlockSize() const;
+
+    /// \brief Returns the HDF5 version compatibility bounds
+    std::pair<H5F_libver_t, H5F_libver_t> getVersionBounds() const;
+
+#if H5_VERSION_GE(1, 10, 1)
+    /// \brief Returns the HDF5 file space strategy.
+    H5F_fspace_strategy_t getFileSpaceStrategy() const;
+
+    /// \brief Returns the page size, if paged allocation is used.
+    hsize_t getFileSpacePageSize() const;
+#endif
 
     ///
     /// \brief flush
@@ -65,12 +100,25 @@ class File : public Object,
     ///
     void flush();
 
- private:
-    std::string _filename;
+  protected:
+    hid_t getAccessPList() const;
+    hid_t getCreatePList() const;
+
+  private:
+    using Object::Object;
+
+    mutable std::string _filename{};
+
+    template <typename>
+    friend class PathTraits;
 };
+
 }  // namespace HighFive
 
+// H5File is the main user constructible -> bring in implementation headers
+#include "bits/H5Annotate_traits_misc.hpp"
 #include "bits/H5File_misc.hpp"
+#include "bits/H5Node_traits_misc.hpp"
+#include "bits/H5Path_traits_misc.hpp"
 
 #endif  // H5FILE_HPP
-
