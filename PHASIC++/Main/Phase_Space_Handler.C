@@ -11,7 +11,7 @@
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob.H"
-#include "ATOOLS/Org/Message.H"  
+#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -62,7 +62,7 @@ bool Phase_Space_Handler::CreateIntegrators() {
     THROW(fatal_error, "Creation of integrators failed.")
 }
 
-double Phase_Space_Handler::Integrate() 
+double Phase_Space_Handler::Integrate()
 {
   CheckSinglePoint();
   if (p_process->Points()>0)
@@ -114,11 +114,11 @@ void Phase_Space_Handler::PrintIntermediate() {
   msg->SetPrecision(15);
   msg_Out()<<"==========================================================\n"
 	   <<p_active->Process()->Name()
-	   <<"  ME = "<<m_wgtmap.Nominal()
+	   <<"  ME = "<<m_wgtmap.Nominal()/(m_psweight*m_enhanceweight)
            <<" ,  PS = "<<m_psweight
            <<" ,  enh = "<<m_enhanceweight
            <<"  ->  "
-	   <<m_wgtmap.Nominal()*m_psweight*m_enhanceweight<<std::endl;
+	   <<m_wgtmap.Nominal()<<std::endl;
   if (p_active->Process()->GetSubevtList()) {
     NLO_subevtlist * subs(p_active->Process()->GetSubevtList());
     for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i])<<"\n";
@@ -205,7 +205,7 @@ void Phase_Space_Handler::AddPoint(const double _value)
   }
 }
 
-void Phase_Space_Handler::WriteOut(const std::string &pID) 
+void Phase_Space_Handler::WriteOut(const std::string &pID)
 {
   m_pspoint.WriteOut(pID);
   m_psenhance.WriteOut(pID);
@@ -215,7 +215,7 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
   writer.MatrixToFile(m_stats);
 }
 
-bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
+bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
 {
   msg_Info()<<"Read in channels from directory: "<<pID<<std::endl;
   if (m_pspoint.ReadIn(pID,exclude)) {
@@ -248,7 +248,7 @@ void Phase_Space_Handler::RegisterDefaults() const
   settings["ENHANCE_XS"].SetDefault(0);
 }
 
-void Phase_Space_Handler::InitParameters(const double & error) { 
+void Phase_Space_Handler::InitParameters(const double & error) {
   Settings& s    = Settings::GetMainSettings();
   m_thkill       = s["IB_THRESHOLD_KILL"].Get<double>();
   m_error        = s["INTEGRATION_ERROR"].Get<double>();
@@ -257,7 +257,7 @@ void Phase_Space_Handler::InitParameters(const double & error) {
   m_printpspoint = s["PRINT_PS_POINTS"].Get<bool>();
   if (error>0.) { m_error = error; }
 }
-  
+
 void Phase_Space_Handler::CheckSinglePoint()
 {
   Settings& s = Settings::GetMainSettings();
@@ -384,11 +384,11 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     p[1]=cp[1]=Vec4D((1.0-x)*E,Vec3D(-p[0]));
     msg_Debugging()<<"p[0] = "<<p[0]<<"\np[1] = "<<p[1]<<"\n";
   }
-  
+
   unsigned int osd_counter=0;
   for (size_t i=0;i<info->m_fi.GetDecayInfos().size();i++)
     if (info->m_fi.GetDecayInfos()[i]->m_osd) osd_counter++;
-    
+
   if (osd_counter==info->m_fi.GetDecayInfos().size() || mode==1) {
     size_t n(fl_i.size());
     TestPoint(p,cp,fl_i,&info->m_fi,n,ms);
@@ -412,8 +412,8 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 {
   if (nin==1) {
     p[0]=Vec4D(flavs[0].Mass(),0.0,0.0,0.0);
-    if (nout==1) { 
-      p[1]=p[0]; 
+    if (nout==1) {
+      p[1]=p[0];
       return;
     }
   }
