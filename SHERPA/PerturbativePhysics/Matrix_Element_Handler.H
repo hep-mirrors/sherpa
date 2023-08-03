@@ -157,7 +157,8 @@ namespace SHERPA {
 
     // event generation helper functions
     void SetRandomSeed();
-    bool GenerateOneTrialEvent();
+    enum class trial_event_generation_result { non_zero, zero, abort };
+    trial_event_generation_result GenerateOneTrialEvent();
 
   public :
 
