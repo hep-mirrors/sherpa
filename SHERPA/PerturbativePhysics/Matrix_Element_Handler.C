@@ -200,7 +200,12 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
-    if (proc->IsZeroEvent()) continue;
+    if (proc->IsZeroEvent()) {
+      if (rpa->gen.NumberOfEvents()==
+          rpa->gen.NumberOfGeneratedEvents())
+        return false;
+      continue;
+    }
     p_variationweights->Reset();
     const bool hasvars(
         p_variationweights->GetVariations()->GetParametersVector()->empty()
@@ -218,8 +223,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       proc->SetVariationWeights(p_variationweights);
     }
     ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
-    if (rpa->gen.NumberOfEvents()==
-	rpa->gen.NumberOfGeneratedEvents()) return false;
     bool skip_rerun {false};
     if (!rpa->gen.PilotRun() && !hasvars) {
       // the process has opted out of the pilot run, so we can safely skip the
