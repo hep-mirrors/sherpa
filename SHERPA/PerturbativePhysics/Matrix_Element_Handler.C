@@ -209,15 +209,21 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     rpa->gen.SetNumberOfTrials(rpa->gen.NumberOfTrials()+1);
     if (m_seedmode==3)
       ran->ResetToLastIncrementedSeed();
-    if (!GenerateOneTrialEvent())
-      continue;
-    m_evtinfo.m_ntrial=n;
-    return true;
+    switch (GenerateOneTrialEvent()) {
+      case trial_event_generation_result::non_zero:
+        m_evtinfo.m_ntrial=n;
+        return true;
+      case trial_event_generation_result::zero:
+        continue;
+      case trial_event_generation_result::abort:
+        return false;
+    }
   }
   return false;
 }
 
-bool Matrix_Element_Handler::GenerateOneTrialEvent()
+Matrix_Element_Handler::trial_event_generation_result
+Matrix_Element_Handler::GenerateOneTrialEvent()
 {
   // select process
   double disc(m_sum*ran->Get());
@@ -229,7 +235,12 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     }
   }
   if (proc==NULL) THROW(fatal_error,"No process selected");
-  if (proc->IsZeroEvent()) return false;
+  if (proc->IsZeroEvent()) {
+    if (rpa->gen.NumberOfEvents()==
+        rpa->gen.NumberOfGeneratedEvents())
+      return trial_event_generation_result::abort;
+    return trial_event_generation_result::zero;
+  }
 
   // if variations are enabled and we do unweighting, we do a pilot run first
   // where no on-the-fly variations are calculated
@@ -247,11 +258,9 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // try to generate an event for the selected process
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
-  if (rpa->gen.NumberOfEvents()==
-    rpa->gen.NumberOfGeneratedEvents()) return false;
   p_proc=proc->Selected();
   if (info==NULL)
-    return false;
+    return trial_event_generation_result::zero;
   m_evtinfo=*info;
   delete info;
 
@@ -264,7 +273,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     const auto maxwt  = p_proc->Integrator()->Max();
     const auto disc   = maxwt * ran->Get();
     if (abswgt < disc) {
-      return false;
+      return trial_event_generation_result::zero;
     }
     if (abswgt > maxwt * m_ovwth) {
       Return_Value::IncWarning(METHOD);
@@ -307,7 +316,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
-  return true;
+  return trial_event_generation_result::non_zero;
 }
 
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(

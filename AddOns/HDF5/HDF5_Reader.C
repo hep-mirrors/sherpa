@@ -279,7 +279,7 @@ namespace LHEH5 {
 	--m_ievt;
       }
       if (m_ievt>=p_file->NEvents()) {
-	if (m_ifile+1>=m_files.size() || Communicate()<0) {
+	if ((m_ifile+1>=m_files.size() && m_nstart == 0) || Communicate()<0) {
 	  msg_Info()<<METHOD<<"(): No more events in "<<m_files<<".\n";
 	  rpa->gen.SetNumberOfEvents(rpa->gen.NumberOfGeneratedEvents());
 	  return NULL;
