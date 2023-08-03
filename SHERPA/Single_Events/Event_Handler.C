@@ -565,21 +565,21 @@ double Event_Handler::TotalErr()
 
 double Event_Handler::TotalXSMPI()
 {
-  if (m_mn==0.0) return 0.0;
+  if (m_mn==0.0) return TotalXS();
   return m_msum/m_mn;
 }
 
 
 double Event_Handler::TotalVarMPI()
 {
-  if (m_mn<=1) return sqr(TotalXSMPI());
+  if (m_mn<=1) return TotalVar();
   return (m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1);
 }
 
 
 double Event_Handler::TotalErrMPI()
 {
-  if (m_mn<=1) return TotalXS();
+  if (m_mn<=1) return TotalErr();
   if (ATOOLS::IsEqual
       (m_msumsqr*m_mn,m_msum*m_msum,1.0e-6)) return 0.0;
   return sqrt((m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1)/m_mn);
