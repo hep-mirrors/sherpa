@@ -612,26 +612,6 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   
   string sctmax("m_ctmax");
   string sctmin("m_ctmin");
-  if (flag>=0) {
-    if (pin0.size()==1 && pout0sum.length()==1 && pin1.size()==1 && pout1sum.length()==1) {
-      sf<<"  m_ctmax = Min(cuts->cosmax[0]["<<GetMassIndex(pout0sum)<<"],cuts->cosmax[1]["<<pout1sum<<"]);"<<endl;
-      if (nout>2) sf<<"  m_ctmin = Max(cuts->cosmin[0]["<<GetMassIndex(pout0sum)
-		    <<"],cuts->cosmin[1]["<<GetMassIndex(pout1sum)<<"]);"<<endl;
-    }
-    else if (pin0.size()==1 && pin1.size()==1 && pout0sum.length()==1) {
-      sf<<"  m_ctmax = cuts->cosmax[0]["<<GetMassIndex(pout0sum)<<"];"<<endl;
-      if (nout>2) sf<<"  m_ctmin = cuts->cosmin[0]["<<GetMassIndex(pout0sum)<<"];"<<endl;
-    }
-    else if (pin0.size()==1 && pin1.size()==1 && pout1sum.length()==1) {
-      sf<<"  m_ctmax = cuts->cosmax[1]["<<GetMassIndex(pout1sum)<<"];"<<endl;
-      if (nout>2) sf<<"  m_ctmin = cuts->cosmin[1]["<<GetMassIndex(pout1sum)<<"];"<<endl;
-    }
-    else {
-      sctmax = string("1.");
-      sctmin = string("-1.");
-    }
-  }
-
   string his("");
   switch (flag) {
   case -11:

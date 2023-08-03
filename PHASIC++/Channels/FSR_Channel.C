@@ -46,14 +46,14 @@ S1Channel::~S1Channel()
 
 void S1Channel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran=0) {
   double *ran = p_vegas->GeneratePoint(_ran);
-  double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
+  double ctmax=1.0;
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+p_ms[2]-p_ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   CE.Isotropic2Momenta(p[0]+p[1],p_ms[2],p_ms[3],p[2],p[3],ran[0],ran[1],-ctmax,ctmax);
 }
 
 void S1Channel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts) {
-  double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
+  double ctmax=1.0;
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+p_ms[2]-p_ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   double rans[2];
@@ -136,7 +136,7 @@ T1Channel::~T1Channel()
 
 void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran =0) 
 {
-  double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
+  double ctmax=1.0;
   double *ran = p_vegas->GeneratePoint(_ran);
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+p_ms[2]-p_ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
@@ -146,7 +146,7 @@ void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran =0)
 
 void T1Channel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts) 
 {
-  double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
+  double ctmax=1.0;
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+p_ms[2]-p_ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   double rans[2];
@@ -226,7 +226,7 @@ U1Channel::~U1Channel()
 void U1Channel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran =0) 
 {
   double *ran = p_vegas->GeneratePoint(_ran);
-  double ctmax=Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
+  double ctmax=1.0;
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+p_ms[2]-p_ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],p_ms[3],p_ms[2],0.,
@@ -235,7 +235,7 @@ void U1Channel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran =0)
 
 void U1Channel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts) 
 {
-  double ctmax=Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
+  double ctmax=1.0;
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+p_ms[2]-p_ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   double rans[2];

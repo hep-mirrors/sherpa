@@ -397,14 +397,6 @@ void PT_Selector::BuildCuts(Cut_Data * cuts)
     if (m_flav.Includes(p_fl[i])) {
       cuts->energymin[i] = Max(sqrt(sqr(m_ptmin)+sqr(p_fl[i].SelMass())),
                                cuts->energymin[i]);
-      double Emax2 = sqr((m_smax+2.*sqr(p_fl[i].SelMass())-sumM2)
-                       /(2.*sqrt(m_smax)));
-      double cosmax = Min(cuts->cosmax[0][i],
-                          sqrt(1.-sqr(m_ptmin)/(Emax2-sqr(p_fl[i].SelMass()))));
-      cuts->cosmax[0][i] = cuts->cosmax[1][i] = cosmax;
-      cuts->cosmax[i][0] = cuts->cosmax[i][1] = cosmax;
-      cuts->etmin[i] = Max(sqrt(sqr(m_ptmin)+sqr(p_fl[i].SelMass())
-                           *(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
     }
   }
 }
@@ -502,14 +494,6 @@ void ET_Selector::BuildCuts(Cut_Data * cuts)
     if (m_flav.Includes(p_fl[i])) {
       cuts->energymin[i] = Max(sqrt(sqr(m_etmin)+sqr(p_fl[i].SelMass())),
                                cuts->energymin[i]);
-      double Emax2 = sqr((m_smax+2.*sqr(p_fl[i].SelMass())-sumM2)
-                       /(2.*sqrt(m_smax)));
-      double cosmax = Min(cuts->cosmax[0][i],
-                          sqrt(1.-sqr(m_etmin)/(Emax2-sqr(p_fl[i].SelMass()))));
-      cuts->cosmax[0][i] = cuts->cosmax[1][i] = cosmax;
-      cuts->cosmax[i][0] = cuts->cosmax[i][1] = cosmax;
-      cuts->etmin[i] = Max(sqrt(sqr(m_etmin)+sqr(p_fl[i].SelMass())
-                           *(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
     }
   }
 }
@@ -593,16 +577,6 @@ bool Rapidity_Selector::Trigger(Selector_List &sl)
 void Rapidity_Selector::BuildCuts(Cut_Data * cuts)
 {
   if (m_isnlo) return;
-  for (int i=m_nin;i<m_n;i++) {
-    if (m_flav.Includes(p_fl[i])) {
-      cuts->cosmax[0][i] = cuts->cosmax[i][0] =
-        Min(cuts->cosmax[0][i],tanh(m_ymax)/sqrt(1.-sqr(p_fl[i].SelMass())
-                                                 /sqr(cuts->energymin[i])));
-      cuts->cosmax[1][i] = cuts->cosmax[i][1] =
-        Min(cuts->cosmax[1][i],tanh(-m_ymin)/sqrt(1.-sqr(p_fl[i].SelMass())
-                                                  /sqr(cuts->energymin[i])));
-    }
-  }
 }
 
 void Rapidity_Selector::SetRange(Flavour flav,double min,double max)
@@ -682,18 +656,6 @@ bool PseudoRapidity_Selector::Trigger(Selector_List &sl)
 void PseudoRapidity_Selector::BuildCuts(Cut_Data * cuts)
 {
   if (m_isnlo) return;
-  for (int i=m_nin;i<m_n;i++) {
-    if (m_flav.Includes(p_fl[i])) {
-      cuts->cosmin[1][i] = cuts->cosmin[i][1]
-        = Max(cuts->cosmin[1][i],tanh(-m_etamax));
-      cuts->cosmin[0][i] = cuts->cosmin[i][0]
-        = Max(cuts->cosmin[0][i],tanh(m_etamin));
-      cuts->cosmax[0][i] = cuts->cosmax[i][0]
-        = Min(cuts->cosmax[0][i],tanh(m_etamax));
-      cuts->cosmax[1][i] = cuts->cosmax[i][1]
-        = Min(cuts->cosmax[1][i],tanh(-m_etamin));
-    }
-  }
 }
 
 void PseudoRapidity_Selector::SetRange(Flavour flav,double min,double max)

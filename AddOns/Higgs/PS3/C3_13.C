@@ -46,8 +46,6 @@ void C3_13::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double s34_min = cuts->Getscut((1<<3)|(1<<4));
   Vec4D  p34;
   double s34 = CE.MasslessPropMomenta(.5,s34_min,s34_max,ran[0]);
-  m_ctmax = cuts->cosmax[1][2];
-  m_ctmin = cuts->cosmin[1][2];
   CE.TChannelMomenta(p[0],p[1],p34,p[2],s34,s2,0.,m_alpha,m_ctmax,m_ctmin,ran[1],ran[2]);
   CE.Isotropic2Momenta(p34,s3,s4,p[3],p[4],ran[3],ran[4]);
 }
@@ -62,8 +60,6 @@ void C3_13::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   Vec4D  p34 = p[3]+p[4];
   double s34 = dabs(p34.Abs2());
   wt *= CE.MasslessPropWeight(.5,s34_min,s34_max,s34,p_rans[0]);
-  m_ctmax = cuts->cosmax[1][2];
-  m_ctmin = cuts->cosmin[1][2];
   if (m_kTC_0__1__34_2.Weight()==ATOOLS::UNDEFINED_WEIGHT)
     m_kTC_0__1__34_2<<CE.TChannelWeight(p[0],p[1],p34,p[2],0.,m_alpha,m_ctmax,m_ctmin,m_kTC_0__1__34_2[0],m_kTC_0__1__34_2[1]);
   wt *= m_kTC_0__1__34_2.Weight();

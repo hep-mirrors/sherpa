@@ -38,7 +38,6 @@ void C2_1::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   Vec4D p23=p[0]+p[1];
   double s2 = p_ms[2];
   double s3 = p_ms[3];
-  m_ctmax = Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],s3,s2,0.,m_alpha,m_ctmax,m_ctmin,ran[0],ran[1]);
 }
 
@@ -46,7 +45,6 @@ void C2_1::GenerateWeight(Vec4D* p,Cut_Data * cuts)
 {
   double wt = 1.;
   Vec4D p23=p[0]+p[1];
-  m_ctmax = Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
   if (m_kTC_0__1__3_2.Weight()==ATOOLS::UNDEFINED_WEIGHT)
     m_kTC_0__1__3_2<<CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,m_alpha,m_ctmax,m_ctmin,m_kTC_0__1__3_2[0],m_kTC_0__1__3_2[1]);
   wt *= m_kTC_0__1__3_2.Weight();

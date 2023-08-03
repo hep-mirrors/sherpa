@@ -257,48 +257,10 @@ void Isolation_Selector::BuildCuts(Cut_Data * cuts)
       if (m_ptmin>0.) {
         cuts->energymin[i] = Max(sqrt(sqr(m_ptmin)+sqr(p_fl[i].SelMass())),
                                  cuts->energymin[i]);
-        double Emax2 = sqr((m_smax+2.*sqr(p_fl[i].SelMass())-sumM2)
-                         /(2.*sqrt(m_smax)));
-        double cosmax = Min(cuts->cosmax[0][i],
-                            sqrt(1.-sqr(m_ptmin)/(Emax2-sqr(p_fl[i].SelMass()))));
-        cuts->cosmax[0][i] = cuts->cosmax[1][i] = cosmax;
-        cuts->cosmax[i][0] = cuts->cosmax[i][1] = cosmax;
-        cuts->etmin[i] = Max(sqrt(sqr(m_ptmin)+sqr(p_fl[i].SelMass())
-                             *(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
       }
       if (m_etmin>0.) {
         cuts->energymin[i] = Max(sqrt(sqr(m_etmin)+sqr(p_fl[i].SelMass())),
                                  cuts->energymin[i]);
-        double Emax2 = sqr((m_smax+2.*sqr(p_fl[i].SelMass())-sumM2)
-                         /(2.*sqrt(m_smax)));
-        double cosmax = Min(cuts->cosmax[0][i],
-                            sqrt(1.-sqr(m_etmin)/(Emax2-sqr(p_fl[i].SelMass()))));
-        cuts->cosmax[0][i] = cuts->cosmax[1][i] = cosmax;
-        cuts->cosmax[i][0] = cuts->cosmax[i][1] = cosmax;
-        cuts->etmin[i] = Max(sqrt(sqr(m_etmin)+sqr(p_fl[i].SelMass())
-                             *(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
-      }
-      if (m_ymax<std::numeric_limits<double>::max()) {
-        cuts->cosmax[0][i] = cuts->cosmax[i][0] =
-          Min(cuts->cosmax[0][i],tanh(m_ymax)/sqrt(1.-sqr(p_fl[i].SelMass())
-                                                   /sqr(cuts->energymin[i])));
-      }
-      if (m_ymin>-std::numeric_limits<double>::max()) {
-        cuts->cosmax[1][i] = cuts->cosmax[i][1] =
-          Min(cuts->cosmax[1][i],tanh(-m_ymin)/sqrt(1.-sqr(p_fl[i].SelMass())
-                                                    /sqr(cuts->energymin[i])));
-      }
-      if (m_etamax<std::numeric_limits<double>::max()) {
-        cuts->cosmin[1][i] = cuts->cosmin[i][1]
-          = Max(cuts->cosmin[1][i],tanh(-m_etamax));
-        cuts->cosmax[0][i] = cuts->cosmax[i][0]
-          = Min(cuts->cosmax[0][i],tanh(m_etamax));
-      }
-      if (m_etamin>-std::numeric_limits<double>::max()) {
-        cuts->cosmin[0][i] = cuts->cosmin[i][0]
-          = Max(cuts->cosmin[0][i],tanh(m_etamin));
-        cuts->cosmax[1][i] = cuts->cosmax[i][1]
-          = Min(cuts->cosmax[1][i],tanh(-m_etamin));
       }
     }
   }

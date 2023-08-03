@@ -25,8 +25,6 @@ std::ostream & PHASIC::operator<<(std::ostream & s , Cut_Data & cd)
 Cut_Data::Cut_Data() {
   energymin = 0;
   etmin = 0;
-  cosmin    = 0;
-  cosmax    = 0;
   scut      = 0;
   ncut      = 0;
 }
@@ -34,17 +32,9 @@ Cut_Data::Cut_Data() {
 Cut_Data::~Cut_Data() {
   if (!scut) return;
   for (short int i=0;i<ncut;i++) {
-    delete[] cosmin[i];
-    delete[] cosmax[i];
-    delete[] cosmin_save[i];
-    delete[] cosmax_save[i];
     delete[] scut[i];
     delete[] scut_save[i];
   }
-  delete[] cosmin;
-  delete[] cosmax;
-  delete[] cosmin_save;
-  delete[] cosmax_save;
   delete[] scut;
   delete[] scut_save;
   delete[] energymin;
@@ -61,18 +51,10 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   energymin      = new double[ncut];
   energymin_save = new double[ncut];
   etmin          = new double[ncut];
-  cosmin         = new double*[ncut];
-  cosmax         = new double*[ncut];
-  cosmin_save    = new double*[ncut];
-  cosmax_save    = new double*[ncut];
   scut           = new double*[ncut];
   scut_save      = new double*[ncut];
 
   for (int i=0;i<ncut;i++) {
-    cosmin[i]      = new double[ncut];
-    cosmax[i]      = new double[ncut];
-    cosmin_save[i] = new double[ncut];
-    cosmax_save[i] = new double[ncut];
     scut[i]        = new double[ncut];
     scut_save[i]   = new double[ncut];
     energymin[i]   = Max(0.,fl[i].SelMass());
@@ -86,8 +68,6 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   double sijminfac{ s["INT_MINSIJ_FACTOR"].SetDefault(0.).Get<double>() };
   for (int i=0;i<ncut;i++) {
     for (int j=i;j<ncut;j++) {
-      cosmin[i][j] = cosmin[j][i] = cosmin_save[i][j] = -1.;
-      cosmax[i][j] = cosmax[j][i] = cosmax_save[i][j] = 1.;
       scut[i][j] = scut[j][i] = scut_save[i][j] =
               (i<nin)^(j<nin)?0.0:sijminfac*sqr(rpa->gen.Ecms());
     }
@@ -108,8 +88,6 @@ void Cut_Data::Complete()
   for (int i=0;i<ncut;i++) {
     energymin_save[i] = energymin[i];
     for (int j=i+1;j<ncut;j++) {
-      cosmin_save[i][j] = cosmin[i][j];
-      cosmax_save[i][j] = cosmax[i][j];
       scut_save[i][j]   = scut[i][j];
     }
     if (i>=2) str|=(1<<i);
@@ -121,7 +99,6 @@ void Cut_Data::Complete()
     if (etmin[i]>etmm) etmm = etmin[i];
     local_smin += etmin[i];
     e1 += energymin[i];
-    e2 += energymin[i]*cosmax[0][i];
   }
   smin = Max(smin,sqr(local_smin));
   smin = Max(smin,sqr(e1)-sqr(e2));
@@ -130,22 +107,6 @@ void Cut_Data::Complete()
 
   msg_Tracking()<<"Cut_Data::Complete(): s_{min} = "<<smin<<endl;
   m_smin_map.clear();
-}
-
-void Cut_Data::Reset(bool update)
-{
-  for (int i=0;i<ncut;i++) {
-    energymin[i] = energymin_save[i];
-    for (int j=i+1;j<ncut;j++) {
-      cosmin[i][j] = cosmin[j][i] = cosmin_save[i][j];
-      cosmax[i][j] = cosmax[j][i] = cosmax_save[i][j];
-      scut[i][j]   = scut[j][i]   = scut_save[i][j];
-    }
-  }
-  if (update) {
-    map<size_t,double>::iterator it;
-    for (it=m_smin_map.begin();it!=m_smin_map.end();++it) it->second = -1.;
-  }
 }
 
 char Cut_Data::GetIndexID(int id)
@@ -228,35 +189,4 @@ double Cut_Data::Getscut(size_t str)
 void Cut_Data::Setscut(size_t str,double d)
 {
   m_smin_map[str]=d;
-}
-
-void Cut_Data::Update(double sprime,double y) 
-{
-  // reset cuts to lab values
-  Reset(false);
-  // boost from lab to cms
-  double chy(cosh(y)), shy(sinh(y));
-  Poincare cms[2]={Poincare(Vec4D(chy,0.0,0.0,shy)),
-		   Poincare(Vec4D(chy,0.0,0.0,-shy))};
-  for (int a=0;a<2;++a) {
-    for (int i=2;i<ncut;i++) {
-      if (cosmax[a][i]<1.0 && !fl[i].IsMassive()) {
-	Vec4D help(1.0,sqrt(1.0-sqr(cosmax[a][i])),0.0,cosmax[a][i]);
-	cms[a].Boost(help);
-	cosmax[a][i]=cosmax[i][a]=help[3]/help[0];
-      } 
-      else cosmax[a][i] = cosmax[i][a] = 1.0;
-      if (cosmin[a][i]>-1.0 && !fl[i].IsMassive()) {
-	Vec4D help(1.0,sqrt(1.0-sqr(cosmin[a][i])),0.0,cosmin[a][i]);
-	cms[a].Boost(help);
-	cosmin[a][i]=cosmin[i][a]=help[3]/help[0];
-      } 
-      else cosmin[a][i] = cosmin[i][a] = -1.0;
-      double ct=sqrt(1.0-(sqr(etmin[i])-sqr(fl[i].SelMass()))/
-		     (sprime/4.0-sqr(fl[i].SelMass())));
-      if (etmin[i]<fl[i].SelMass()) ct=1.0;
-      cosmax[i][a]=cosmax[a][i]=Min(cosmax[a][i],ct);
-      cosmin[i][a]=cosmin[a][i]=Max(cosmin[a][i],-ct);
-    }
-  }
 }

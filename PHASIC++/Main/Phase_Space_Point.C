@@ -198,7 +198,6 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
 }
 
 bool Phase_Space_Point::DefineFSRKinematics() {
-  p_pshandler->Cuts()->Update(m_sprime, m_y);
   p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
   return true;
 }

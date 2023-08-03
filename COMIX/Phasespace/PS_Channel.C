@@ -295,8 +295,8 @@ void PS_Channel::SingleTChannelBounds
 		 <<ctmin<<", ctmax = "<<ctmax<<" ("<<mode<<")\n";
 #endif    
   if (ctmin>=ctmax) {
-    ctmin=p_cuts->cosmin[a][j];
-    ctmax=p_cuts->cosmax[a][j];
+    ctmin=-1.;
+    ctmax=1.;
   }
   rctmin=Max(rctmin,ctmin);
   rctmax=Min(rctmax,ctmax);
@@ -354,8 +354,8 @@ void PS_Channel::SChannelBounds
   if (m_bmode==0) return;
   const Int_Vector &aid(GetCId((id&lid)==lid?id:(1<<m_n)-1-id));
   if (aid.size()==2) {
-    ctmin=p_cuts->cosmin[aid.front()][aid.back()];
-    ctmax=p_cuts->cosmax[aid.front()][aid.back()];
+    ctmin=-1.;
+    ctmax=1.;
 #ifdef DEBUG__BG
     msg_Debugging()<<"    set s_{"<<aid.front()<<","<<aid.back()
 		   <<"} ctmin = "<<ctmin<<", ctmax = "<<ctmax<<"\n";
