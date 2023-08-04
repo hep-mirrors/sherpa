@@ -17,8 +17,7 @@ Beam_Decorrelator::~Beam_Decorrelator() {}
 void Beam_Decorrelator::
 Initialize(Remnant_Handler * const rhandler) {
   p_rhandler = rhandler;
-  if (p_rhandler->Type()==strat::DIS1 || p_rhandler->Type()==strat::DIS2 ||
-      p_rhandler->Type()==strat::hh) {
+  if (p_rhandler->Type()==strat::DIS1 || p_rhandler->Type()==strat::DIS2) {
     p_kperpGenerator = p_rhandler->GetKPerp();
     auto s = Settings::GetMainSettings()["REMNANTS"];
     m_expo    = s["SOFT_X_EXPONENT"].SetDefault(-2.0).Get<double>();
@@ -45,10 +44,12 @@ bool Beam_Decorrelator::operator()(Blob * softblob) {
     }
   }
   // Add the produced soft gluons to the blob.
+  bool out=!m_softgluons.empty();
   while (!m_softgluons.empty()) {
     p_softblob->AddToOutParticles(m_softgluons.back());
     m_softgluons.pop_back();
   }
+  //if (out) msg_Out()<<(*p_softblob)<<"\n";
   return true;
 }
 
@@ -56,11 +57,13 @@ bool Beam_Decorrelator::MustEmit(Particle * pi, Particle * pj) {
   //return false;
   // Checks if the partons must emit a soft gluon, for conditions see above.
   // Ignore parton pairs from shower or from the same beam breakup
-  if ((pi->Beam()<=0 && pj->Beam()<=0) ||
+  if (pi->Info()=='I' || pj->Info()=='I' ||
+      (pi->Beam()<=0 && pj->Beam()<=0) ||
       (pi->Beam()==pj->Beam() && pi->Beam()!=0)) return false;
   // Ignore parton pairs that are not colour-correlated
   if (!((pi->GetFlow(1)==pj->GetFlow(2) && pi->GetFlow(1)!=0) ||
 	(pi->GetFlow(2)==pj->GetFlow(1) && pi->GetFlow(2)!=0))) return false;
+  //msg_Out()<<"* testing pair ("<<pi->Number()<<", "<<pj->Number()<<")\n";
   if (pi->Beam()>0 &&
       ((pj->Beam()>0 && pi->Momentum()[0]>pj->Momentum()[0]) || pj->Beam()<=0)) {
     p_beam = pi; p_spect = pj;
@@ -102,21 +105,22 @@ bool Beam_Decorrelator::DefineKinematics() {
   m_minMspect2  = sqr(m_minMspect);
   double eps    = m_minMbeam2/m_Q2;
   double poweps = pow(eps,m_xiP);
+  //msg_Out()<<METHOD<<": Q^2 = "<<m_Q2<<", xi = "<<m_xiP<<" -> eps = "<<poweps<<"\n";
   int    trials = 1000;
   do {
     m_x     = pow(ran->Get()*(1-poweps)+poweps,m_invxiP);
-    //m_ktvec = p_kperpGenerator->KT(2.);
+    m_ktvec = p_kperpGenerator->KT(p_beam);
   } while (!MakeKinematics() && (trials--)>0);
-  //if (trials<=0) msg_Out()<<"   ---> couldn't construct kinematics.\n";
-  //else msg_Out()<<"   ---> ok with kinematics.\n";
+  if (trials<=0) msg_Out()<<"   ---> couldn't construct kinematics.\n";
+  else msg_Out()<<"   ---> ok with kinematics: x = "<<m_x<<", kt = "<<m_ktvec<<".\n";
   return (trials>0);
 }
   
 bool Beam_Decorrelator::MakeKinematics() {
   // Constructing a kinematics in the c.m. frame
-  m_kt2 = dabs(m_ktvec.Abs2());
+  m_kt2    = dabs(m_ktvec.Abs2());
   double x = m_x;
-  double y     = m_kt2/(m_Q2*x);
+  double y = m_kt2/(m_Q2*x);
   double alpha, beta;
   if (m_mspect2<1.e-12) { 
     beta  = 1.-y-(m_mbeam2+m_kt2)/((1.-x)*m_Q2);
