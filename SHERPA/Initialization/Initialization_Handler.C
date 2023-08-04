@@ -18,6 +18,7 @@
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
 #include "PDF/Main/PDF_Base.H"
+#include "REMNANTS/Tools/Remnants_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Math/Scaling.H"
@@ -926,6 +927,8 @@ bool Initialization_Handler::InitializeTheRemnants() {
   // the MPI related to the hard process - are the same.
   // I have the feeling we will have to communicate the mode to the Remnant_Handler in question
   ///////////////////////////////////////////////////////////
+  REMNANTS::rempars = new REMNANTS::Remnants_Parameters();
+  REMNANTS::rempars->ReadParameters();
   m_remnanthandlers[isr::hard_process] =
     new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra,
 			m_bunchtags[isr::hard_process]);

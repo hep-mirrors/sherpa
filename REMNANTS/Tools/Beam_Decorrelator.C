@@ -105,7 +105,7 @@ bool Beam_Decorrelator::DefineKinematics() {
   int    trials = 1000;
   do {
     m_x     = pow(ran->Get()*(1-poweps)+poweps,m_invxiP);
-    m_ktvec = p_kperpGenerator->KT(2.);
+    //m_ktvec = p_kperpGenerator->KT(2.);
   } while (!MakeKinematics() && (trials--)>0);
   //if (trials<=0) msg_Out()<<"   ---> couldn't construct kinematics.\n";
   //else msg_Out()<<"   ---> ok with kinematics.\n";

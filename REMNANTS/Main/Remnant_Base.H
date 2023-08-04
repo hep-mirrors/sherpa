@@ -68,6 +68,7 @@ namespace REMNANTS {
     
     inline rtp::code                  Type() const       { return m_type; }
     inline size_t                     Beam() const       { return m_beam; }
+    inline const ATOOLS::Flavour    & Flav() const       { return m_beamflav; }
     inline const ATOOLS::Vec4D      & Position() const   { return m_position; }
     inline BEAM::Beam_Base          * GetBeam() const    { return p_beam; }
     inline Form_Factor              * GetFF() const      { return p_ff; }

@@ -88,6 +88,8 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
                   << m_extracted << ", \n and spectators = " << m_spectators
                   << "\n";
   // Assume all remnant bases already produced a beam blob = p_beamblob
+  SquashFlavourSinglets();
+  SquashColourSinglets();
   MakeLongitudinalMomenta(ktmap,copy);
   bool colourconserved = p_beamblob->CheckColour(true);
   if (!colourconserved) {
@@ -105,6 +107,121 @@ void Hadron_Remnant::CompensateColours() {
     Particle * gluon = MakeParticle(Flavour(kf_gluon));
     for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
     m_spectators.push_back(gluon);
+  }
+}
+
+void Hadron_Remnant::SquashColourSinglets() {
+  // Iterating through all spectator gluons and checking if they can be "clustered"
+  // away by looking for colour connections with other spectators.  In the absence of
+  // colour-connected spectators we look for shower initiators - in case of a match
+  // we replace the connected colour in the shower blob.
+  bool found = true;
+  Part_List::iterator git = m_spectators.begin();
+  size_t col[2];
+  while (found || git!=m_spectators.end()) {
+    found = false;
+    while (git!=m_spectators.end() && !(*git)->Flav().IsGluon()) git++;
+    if (git==m_spectators.end()) return;
+    for (size_t i=0;i<2;i++) col[i] = (*git)->GetFlow(i+1);
+    for (Part_List::iterator sit=m_spectators.begin();sit!=m_spectators.end();sit++) {
+      for (size_t i=0;i<2;i++) {
+	if ((*sit)->GetFlow(2-i)==col[i] && (*sit)->GetFlow(1+i)!=col[1-i]) {
+	  (*sit)->SetFlow(2-i,col[1-i]);
+	  found = true;
+	  break;
+	}
+      }
+      if (found) break;
+    }
+    if (!found) {
+      for (Part_List::iterator eit=m_extracted.begin();eit!=m_extracted.end();eit++) {
+	for (size_t i=0;i<2;i++) {
+	  if ((*eit)->GetFlow(2-i)==col[i] && (*eit)->GetFlow(1+i)!=col[1-i]) {
+	    Blob * shower = (*eit)->DecayBlob();
+	    for (size_t j=2;j<shower->NOutP();j++) {
+	      if (shower->OutParticle(j)->GetFlow(2-i)==col[i] &&
+		  shower->OutParticle(j)->GetFlow(1+i)!=col[1-i] &&
+		  ReplaceInBlob(shower,true,i,col)) {
+		ReplaceInBlob(shower,false,i,col);
+		found = true;
+		break;
+	      }
+	    }
+	  }
+	  if (found) break;
+	}
+	if (found) break;
+      }
+    }
+    if (!found) git++;
+    else {
+      delete (*git);
+      git = m_spectators.erase(git);
+    }
+  }
+}
+
+bool Hadron_Remnant::ReplaceInBlob(ATOOLS::Blob * shower,const bool & check,
+				   const size_t & pos,size_t col[2]) {
+  // Here we check if we can replace one colour with another one in a shower blob
+  // (for check = true), avoiding colour singlets, or we actually do the
+  // replacement (for check = false)
+  for (size_t k=0;k<shower->NInP();k++) {
+    if (shower->InParticle(k)->GetFlow(2-pos)==col[pos]) {
+      if (check) {
+	if (shower->InParticle(k)->GetFlow(pos+1)==col[1-pos]) return false;
+      }
+      else {
+	shower->InParticle(k)->SetFlow(2-pos,col[1-pos]);
+      }
+    }
+  }
+  for (size_t k=0;k<shower->NOutP();k++) {
+    if (shower->OutParticle(k)->GetFlow(2-pos)==col[pos]) {
+      if (check) {
+	if (shower->OutParticle(k)->GetFlow(pos+1)==col[1-pos]) return false;
+      }
+      else {
+	shower->OutParticle(k)->SetFlow(2-pos,col[1-pos]);
+      }
+    }
+  }
+  return true;
+}
+  
+void Hadron_Remnant::SquashFlavourSinglets() {
+  // Iterating over the spectators and replacing flavour singlets (i.e. same-flavour
+  // colour-octet quark pairs) with gluons which inherit the colours of the two quarks.
+  bool found = true;
+  Part_List::iterator pit1 = m_spectators.begin();
+  while (found || pit1!=m_spectators.end()) {
+    found = false;
+    while (pit1!=m_spectators.end() && !(*pit1)->Flav().IsQuark()) pit1++;
+    if (pit1==m_spectators.end()) return;
+    Part_List::iterator pit2 = pit1; pit2++;
+    if (pit2==m_spectators.end()) return;
+    Flavour fl1 = (*pit1)->Flav().Bar();
+    do {
+      if ((*pit2)->Flav()==fl1) {
+	// only create gluon if not colour-singlet
+	if (fl1.IsAnti() ?
+	    (*pit1)->GetFlow(1)!=(*pit2)->GetFlow(2) :
+	    (*pit1)->GetFlow(2)!=(*pit2)->GetFlow(1) ) {
+	  Particle * gluon = MakeParticle(Flavour(kf_gluon));
+	  for (size_t i=1;i<3;i++) gluon->SetFlow(i,(*pit1)->GetFlow(i)+(*pit2)->GetFlow(i));
+	  m_spectators.push_back(gluon);
+	}
+	delete (*pit1);
+	delete (*pit2);
+	m_spectators.erase(pit1);
+	m_spectators.erase(pit2);
+	found = true;
+	break;
+      }
+      else pit2++;
+    } while (pit2!=m_spectators.end());
+    if (!found) pit1++;
+    else pit1 = m_spectators.begin();
   }
 }
 
@@ -198,6 +315,7 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     else p_beamblob->AddToOutParticles(part);
     (*ktmap)[part] = Vec4D();
   }
+  //msg_Out()<<METHOD<<"("<<m_beam<<"):\n"<<(*p_beamblob)<<"\n";
 }
 
 double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,
