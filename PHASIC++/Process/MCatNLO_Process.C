@@ -76,7 +76,6 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   if (pi.Has(nlo_type::real)!=pi.Has(nlo_type::rsub))
     THROW(fatal_error, "R/S can't be initialised separately.");
   Process_Info spi(pi);
-  ++spi.m_fi.m_nmax;
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
   p_bproc=InitProcess(spi,nlo_type::lo,false);
   spi.m_megenerator=spi.m_rsmegenerator;
@@ -111,6 +110,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
   if (!read.ReadFromFile(m_rsscale,"PP_RS_SCALE")) m_rsscale="";
   else msg_Info()<<METHOD<<"(): Set RS scale '"<<m_rsscale<<"'.\n";
+  if (pi.m_fi.m_nmax==pi.m_fi.m_ps.size()) m_hpsmode=4;
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
