@@ -21,7 +21,7 @@ Collider_Weight::Collider_Weight(Kinematics_Base *kinematics)
     THROW(fatal_error, "Bad settings for collider mode.");
 }
 
-Collider_Weight::~Collider_Weight() {}
+Collider_Weight::~Collider_Weight() = default;
 
 void Collider_Weight::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid + std::string("s'"), 5, 0, info);
@@ -34,17 +34,12 @@ void Collider_Weight::AssignKeys(Integration_Info *const info) {
 }
 
 bool Collider_Weight::Calculate(const double &scale) {
-  m_weight = 1.;
+  m_weight = 0.;
   return (p_beams[0]->CalculateWeight(m_xkey[4], scale) &&
           p_beams[1]->CalculateWeight(m_xkey[5], scale));
 }
 
-double Collider_Weight::operator()(ATOOLS::Flavour *flin) {
-  ATOOLS::Flavour flavour1 = kf_none, flavour2 = kf_none;
-  if (flin != nullptr) {
-    flavour1 = flin[0];
-    flavour2 = flin[1];
-  }
-  m_weight = p_beams[0]->Weight(flavour1) * p_beams[1]->Weight(flavour2);
+double Collider_Weight::operator()() {
+  m_weight = p_beams[0]->Weight() * p_beams[1]->Weight();
   return m_weight;
 }

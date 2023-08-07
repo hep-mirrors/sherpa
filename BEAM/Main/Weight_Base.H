@@ -19,7 +19,7 @@ public:
 
   virtual void AssignKeys(ATOOLS::Integration_Info *info) = 0;
   virtual bool Calculate(const double &scale) = 0;
-  virtual double operator()(ATOOLS::Flavour *flin = nullptr) {
+  virtual double operator()() {
     return m_weight;
   }
 };

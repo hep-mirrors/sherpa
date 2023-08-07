@@ -63,12 +63,8 @@ namespace BEAM {
     inline bool CalculateWeight(const double & scale) {
       return p_weight->Calculate(scale);
     }
-    inline const double Weight(ATOOLS::Flavour * flin=NULL) const {
-      return (*p_weight)(flin);
-    }
-    inline bool AllowSwap() {
-      return p_BeamBase[0]->Type() == beamspectrum::EPA &&
-             p_BeamBase[1]->Type() == beamspectrum::EPA;
+    inline const double Weight() const {
+      return (*p_weight)();
     }
 
     void   Output();

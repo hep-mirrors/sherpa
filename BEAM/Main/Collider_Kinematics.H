@@ -15,18 +15,18 @@ private:
   double m_sprime;
 
   void InitSystem();
-  void InitIntegration();
+  void InitIntegration() override;
   double CalculateTau();
 
 public:
   Collider_Kinematics(Beam_Base **beams);
   ~Collider_Kinematics();
 
-  inline const double Sprime() { return m_sprimekey[3]; }
-  inline const double Y() { return m_ykey[2]; }
-  void AssignKeys(ATOOLS::Integration_Info *const info);
-  void SetLimits();
-  bool operator()(ATOOLS::Vec4D_Vector& moms);
+  inline const double Sprime() override { return m_sprimekey[3]; }
+  inline const double Y() override { return m_ykey[2]; }
+  void AssignKeys(ATOOLS::Integration_Info *const info) override;
+  void SetLimits() override;
+  bool operator()(ATOOLS::Vec4D_Vector& moms) override;
 };
 }
 #endif
