@@ -44,7 +44,7 @@ void Phase_Space_Point::Init() {
       m_masses2[i] = sqr(m_masses[i]);
   }
   m_osmass =
-      (m_nout == 1 && flavours[2].Kfcode() != 999 ? m_masses[m_nin] : 0.0);
+      (m_nout == 1 && flavours[2].Kfcode() != kf_instanton ? m_masses[m_nin] : 0.0);
   m_beamspkey.Assign(std::string("BEAM::s'"), 5, 0, p_pshandler->GetInfo());
   m_beamykey.Assign(std::string("BEAM::y"), 3, 0, p_pshandler->GetInfo());
   p_beamhandler->AssignKeys(p_pshandler->GetInfo());
@@ -176,7 +176,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
       if (!p_isrhandler->CheckMasses())
         return false;
       if (m_nin == 2 && m_nout == 1 &&
-          process->Process()->Selected()->Flavours()[2].Kfcode() == 999) {
+          process->Process()->Selected()->Flavours()[2].Kfcode() == kf_instanton) {
         if (p_pshandler->Active()->Process()->SPrimeMin() > 0.)
           m_isrspkey[0] = p_pshandler->Active()->Process()->SPrimeMin();
         if (p_pshandler->Active()->Process()->SPrimeMax() > 0.)
@@ -205,7 +205,7 @@ bool Phase_Space_Point::DefineFSRKinematics() {
 
 void Phase_Space_Point::CorrectMomenta() {
   if (m_nin!=2 || (m_nin==2 && m_nout==1 &&
-       p_pshandler->Active()->Process()->Flavours()[2].Kfcode()==999))
+       p_pshandler->Active()->Process()->Flavours()[2].Kfcode()==kf_instanton))
     return;
   Vec4D  momsum(0.,0.,0.,0.);
   size_t imax(0);

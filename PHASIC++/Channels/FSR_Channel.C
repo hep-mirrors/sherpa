@@ -367,8 +367,8 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 NoChannel::NoChannel(int _nin,int _nout,Flavour * fl,Flavour res) :
   Single_Channel(_nin,_nout,fl)
-{  
-  if (_nin != 2 || !(_nout==1 && fl[2].Kfcode()==999)) {
+{
+  if (_nin != 2 || !(_nout==1 && fl[2].Kfcode()==kf_instanton)) {
     msg_Error()<<"Tried to initialize NoChannel for = "<<_nin<<" -> "<<_nout<<endl;
     Abort();
   }
