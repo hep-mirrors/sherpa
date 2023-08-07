@@ -110,7 +110,10 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
   if (!read.ReadFromFile(m_rsscale,"PP_RS_SCALE")) m_rsscale="";
   else msg_Info()<<METHOD<<"(): Set RS scale '"<<m_rsscale<<"'.\n";
-  if (pi.m_fi.m_nmax==pi.m_fi.m_ps.size()) m_hpsmode=4;
+  if (pi.m_fi.m_nmax==pi.m_fi.m_ps.size()) {
+    if (!read.ReadFromFile(m_hpsmode,"PP_NMAX_HPSMODE")) m_hpsmode=4;
+    else msg_Info()<<METHOD<<"(): Set n_{max} H shower mode "<<m_hpsmode<<".\n";
+  }
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
