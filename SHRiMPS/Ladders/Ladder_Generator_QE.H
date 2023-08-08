@@ -4,11 +4,12 @@
 #include "SHRiMPS/Ladders/Ladder_Generator_Base.H"
 #include "SHRiMPS/Ladders/Ladder.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
-#include "MODEL/Main/Strong_Coupling.H"
-#include "ATOOLS/Math/Histogram.H"
-#include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
-#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 #include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
+#include "MODEL/Main/Strong_Coupling.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Histogram.H"
+//#include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
+//#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 
 
 namespace SHRIMPS {
@@ -21,21 +22,20 @@ namespace SHRIMPS {
     void   FixEmissionsKinematics_elastic();
     Sigma_Elastic * p_sigma_el;
     Sigma_D * p_sigma_d;
-    Sigma_Partonic   m_partonic;
-    Continued_PDF  * p_pdf[2];
     double m_abs_t;
     ATOOLS::Flavour m_beam1, m_beam2, m_ladder_ends[2];                
     ATOOLS::Vec4D   m_p1, m_p2, m_Pbeam1, m_Pbeam2;
     double          m_pl12, m_pl22, m_pl1, m_pl2;
     int             m_sign1;
     double          m_fraction;
+    double          m_pdf_over_estimate;
     int m_interactionType;
     std::map <ATOOLS::Flavour,double> m_PfractionMap;
 
 
   public:
     Ladder_Generator_QE();
-    ~Ladder_Generator_QE();
+    ~Ladder_Generator_QE() {}
     int GetIntType() {return 2;};
     void FixEmissionsKinematics_SD(int mode);
     

@@ -6,7 +6,6 @@
 #include <list>
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
-#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
 
 using namespace SHRIMPS;
 using namespace MODEL;
@@ -17,11 +16,10 @@ Ladder_Generator_QE::Ladder_Generator_QE() :
   Ladder_Generator_Base(),
   m_beam1(ATOOLS::rpa->gen.Beam1()), m_beam2(ATOOLS::rpa->gen.Beam2()),
   m_Pbeam1((ATOOLS::rpa->gen.PBeam(0))), m_Pbeam2(ATOOLS::rpa->gen.PBeam(1)),
-  m_sign1(-1+2*int(m_Pbeam1[3]>0)), m_fraction(.1),
-  m_partonic(Sigma_Partonic(xs_mode::perturbative))
+  m_sign1(-1+2*int(m_Pbeam1[3]>0)), m_fraction(.1), m_pdf_over_estimate(1.5)
   {}
   
-Ladder_Generator_QE::~Ladder_Generator_QE() {}
+//Ladder_Generator_QE::~Ladder_Generator_QE() {}
 
 Ladder * Ladder_Generator_QE::operator()(const Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_D * sigma_d) {
   p_sigma_el = sigma_el;
@@ -50,29 +48,56 @@ void Ladder_Generator_QE::FixEmissionsKinematics_SD(int mode) {
 }
 
 void Ladder_Generator_QE::FixEmissionsKinematics_elastic() {
-  m_p1 = m_Pbeam1*m_fraction;
-  msg_Out() << "-----> p1 = " << m_p1 << endl;
-  m_p2 = m_Pbeam2*m_fraction;
-  msg_Out() << "-----> p2 = " << m_p2 << endl;
-  m_pl12 = Vec3D(m_p1).Sqr();
-  m_pl22 = Vec3D(m_p2).Sqr();
-  m_pl1 = sqrt(m_pl12);
-  m_pl2 = sqrt(m_pl22);
   switch (m_interactionType) {
     case 0: m_abs_t = p_sigma_d->SelectT(0);
     case 1: m_abs_t = p_sigma_d->SelectT(1);
     case 2: m_abs_t = p_sigma_d->SelectT(2);
     case 4: m_abs_t = p_sigma_el->SelectT();
   }
-  //std::ofstream tvals;
-  //tvals.open("./tvals_bias_large.txt", std::ios::app);
+  double chosen_fraction_0 = ran->Get(), rand = ran->Get()*m_pdf_over_estimate;
+  while(rand > m_partonic.PDF(0,chosen_fraction_0,m_abs_t,ATOOLS::Flavour(kf_gluon))) {
+    msg_Out() << chosen_fraction_0 << "\t" << rand << "\t" << m_partonic.PDF(0,chosen_fraction_0,m_abs_t,ATOOLS::Flavour(kf_gluon)) << std::endl;
+    chosen_fraction_0 = ran->Get();
+    rand = ran->Get()*m_pdf_over_estimate;
+  }
+  //std::ofstream xfile;
+  //xfile.open("./pdf_try_large_105.txt", std::ios::app);
+  //xfile << chosen_fraction_0 << "\t" << m_abs_t << "\t" << m_partonic.PDF(0,chosen_fraction_0,m_abs_t,ATOOLS::Flavour(kf_gluon)) << std::endl;
+  //xfile.close();
+  double chosen_fraction_1 = ran->Get();
+  rand = ran->Get()*m_pdf_over_estimate;
+  while(rand > m_partonic.PDF(0,chosen_fraction_1,m_abs_t,ATOOLS::Flavour(kf_gluon))) {
+    msg_Out() << chosen_fraction_1 << "\t" << rand << "\t" << m_partonic.PDF(0,chosen_fraction_1,m_abs_t,ATOOLS::Flavour(kf_gluon)) << std::endl;
+    chosen_fraction_1 = ran->Get();
+    rand = ran->Get()*m_pdf_over_estimate;
+  }
+  //chosen_fraction_0 = 0.1;
+  //chosen_fraction_1 = 0.1;
+  m_p1 = m_Pbeam1*chosen_fraction_0;
+  msg_Out() << "-----> p1 = " << m_p1 << endl;
+  m_p2 = m_Pbeam2*chosen_fraction_1;
+  msg_Out() << "-----> p2 = " << m_p2 << endl;
+  m_pl12 = Vec3D(m_p1).Sqr();
+  m_pl22 = Vec3D(m_p2).Sqr();
+  m_pl1 = sqrt(m_pl12);
+  m_pl2 = sqrt(m_pl22);
+  //std::ofstream tvals, pdffile;
+  //tvals.open("./tvals.txt", std::ios::app);
+  //pdffile.open("./pdf.txt", std::ios::app);
+  //double delta_x(0.01), delta_q2(0.01);
+  //for (double x = 0.; x < 1.; x = x + delta_x) {
+  //  for (double q2 = 0.; q2 < 1.; q2 = q2 + delta_q2) {
+  //    pdffile << x << "\t" << q2 << "\t" << m_partonic.PDF(0,x,q2,ATOOLS::Flavour(kf_gluon)) << std::endl;
+  //  }
+  //}
   //for (int i = 0; i < 1000; i++) {
-  //  tvals << 0 << "\t" << p_sigma_d->SelectT(0) << endl;
-  //  tvals << 1 << "\t" << p_sigma_d->SelectT(1) << endl;
-  //  tvals << 2 << "\t" << p_sigma_d->SelectT(2) << endl;
-  //  tvals << 4 << "\t" << p_sigma_el->SelectT() << endl;
+    //tvals << 0 << "\t" << p_sigma_d->SelectT(0) << endl;
+    //tvals << 1 << "\t" << p_sigma_d->SelectT(1) << endl;
+    //tvals << 2 << "\t" << p_sigma_d->SelectT(2) << endl;
+    //tvals << 4 << "\t" << p_sigma_el->SelectT() << endl;
   //}
   //tvals.close();
+  //pdffile.close();
   double costheta = 1.-m_abs_t/(2.*m_pl12), sintheta = sqrt(1.-sqr(costheta));
   double pt = m_pl1*sintheta, pt2 = sqr(pt);
   double phi(2.*M_PI*ran->Get()), ptx(pt*cos(phi)), pty(pt*sin(phi));
