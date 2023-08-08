@@ -70,7 +70,8 @@ double Channel_Elements::MasslessPropWeight
     msg_Error()<<METHOD<<"(): Value out of bounds: "
                 <<smin<<" .. " <<smax<<" vs. "<<s<< std::endl;
   }
-  double w(PeakedWeight(!IsZero(smin)?0.:speak,sexp,smin,smax,s,1,ran)/pow(s,-sexp));
+  double reg = !IsZero(smin)?0.:speak;
+  double w(PeakedWeight(reg,sexp,smin,smax,s,1,ran)*pow(reg+s,sexp));
   if (IsBad(w)) msg_Error()<<METHOD<<"(): Weight is "<<w<<std::endl;
   return 1./w;
 }
@@ -434,16 +435,16 @@ void Channel_Elements::BremsstrahlungMomenta(
   double P     = Vec3D(p).Abs();
   Vec4D  pnorm = Vec4D(1.,0.,0.,1.);
   double Q     = Vec3D(q).Abs();
-  double ctkin = (2.*p[0]*Eq-sq-sp+p1mass*p1mass)/(2.*P*Q); 
+  double ctkin = (2.*p[0]*Eq-sq-sp+p1mass*p1mass)/(2.*P*Q);
   if ((0.<ctkin) && (ctkin<1.)) ctkin = 1.;
   double cth = ctkin-Tj1(ctexp,ctkin-ctmin,ctkin-ctmax,ran1);
   double sth = sqrt(1.-cth*cth);
   double cph = cos(2.*M_PI*ran2);
   double sph = sqrt(1.-cph*cph);
-  Vec4D qref = Vec4D(Eq,Q*Vec3D(sth*cph,sth*sph,cth)); 
+  Vec4D qref = Vec4D(Eq,Q*Vec3D(sth*cph,sth*sph,cth));
   Poincare rot(pnorm,p);
   q=rot*qref;
-  p1 = p+(-1.)*q;  
+  p1 = p+(-1.)*q;
 }
 
 /* Propagators and other 1-dimensional Distributions */
@@ -890,7 +891,7 @@ double PHASIC::ExponentialDist(double ca,double cxm,double cxp,double ran)
 double PHASIC::ExponentialWeight(double ca,double cxm,double cxp)
 {
   double wt = 0;
-  if (!IsZero(ca))  wt = ca/(exp(-ca*cxm) - exp(-ca*cxp)); // 1/integral 
+  if (!IsZero(ca))  wt = ca/(exp(-ca*cxm) - exp(-ca*cxp)); // 1/integral
   else              msg_Error()<<"Flat distribution specified, expected exponential"<<endl;
   return wt;
 }
