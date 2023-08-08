@@ -50,7 +50,7 @@ Beam_Remnant_Handler::FillRescatterBeamBlobs(Blob_List *const bloblist) {
   return fbc;
 }
 
-Return_Value::code 
+Return_Value::code
 Beam_Remnant_Handler::TreatNoFill(Blob_List *const bloblist)
 {
   bool set(false);
@@ -89,7 +89,7 @@ bool Beam_Remnant_Handler::FillRescatterBunchBlobs(ATOOLS::Blob_List *const blob
   m_beam = 0;
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
-    if ((*bit)->Has(blob_status::needs_beams) && 
+    if ((*bit)->Has(blob_status::needs_beams) &&
 	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
       if ((*bit)->NInP()==1 && (*bit)->NOutP()==1 &&
@@ -112,7 +112,7 @@ bool Beam_Remnant_Handler::FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblis
   m_beam = 0;
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
-    if ((*bit)->Has(blob_status::needs_beams) && 
+    if ((*bit)->Has(blob_status::needs_beams) &&
 	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
       bloblist->push_front(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
@@ -124,7 +124,7 @@ bool Beam_Remnant_Handler::FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblis
 	     (*bit)->Type()==btp::Soft_Diffractive_Collision ||
 	     (*bit)->Type()==btp::Quasi_Elastic_Collision) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
-      for (size_t i=0;i<(*bit)->NInP();i++) 
+      for (size_t i=0;i<(*bit)->NInP();i++)
 	bloblist->push_front(FillBunchBlob((*bit)->InParticle(i)->Beam(),
 					   (*bit)->InParticle(i)));
       flag=true;
@@ -134,7 +134,7 @@ bool Beam_Remnant_Handler::FillSimpleBunchBlobs(ATOOLS::Blob_List *const bloblis
 }
 
 
-Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle) 
+Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
 {
   Blob *blob = new Blob();
   blob->SetType(btp::Bunch);
@@ -147,7 +147,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
   //		  blob_status::needs_hadronization);
   blob->AddToOutParticles(particle);
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
-      IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0])) {
+      IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0],1.e-6)) {
     Particle *p = new Particle(*particle);
     p->SetNumber(0);
     blob->AddToInParticles(p);

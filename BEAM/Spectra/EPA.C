@@ -17,11 +17,11 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
          const int _dir) :
   Beam_Base(beamspectrum::EPA, _beam, _energy, _pol, _dir),
   m_mass(_beam.Mass(true)), m_gamma(_energy/m_mass), m_charge(_beam.Charge()),
-  m_minR(Max(1.e-6,_beam.Radius())), m_maxR(10.*m_minR)    
+  m_minR(Max(1.e-6,_beam.Radius())), m_maxR(10.*m_minR)
 {
   Settings &s = Settings::GetMainSettings();
   RegisterDefaults();
-  m_Nbunches   = 2; 
+  m_Nbunches   = 2;
   m_bunches.resize(m_Nbunches);
   m_bunches[0] = Flavour(kf_photon);
   m_bunches[1] = m_beam;
@@ -109,7 +109,6 @@ void EPA::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {
   if (i==0) {
     m_vecouts[0] = out;
     m_vecouts[1] = m_lab-out;
-    m_x = m_vecouts[0][0]/m_lab[0];
   }
 }
 

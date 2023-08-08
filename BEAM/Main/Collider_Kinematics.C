@@ -32,8 +32,7 @@ void Collider_Kinematics::InitSystem() {
   m_Ecms = sqrt(m_S);
 
   m_on = (m_mode != collidermode::monochromatic);
-  m_x[0] = 1.;
-  m_x[1] = 1.;
+  m_x[0] = m_x[1] = 0.;
   m_LabBoost = Poincare(p_beams[0]->InMomentum() + p_beams[1]->InMomentum());
   m_CMSBoost = Poincare(p_beams[0]->OutMomentum() + p_beams[1]->OutMomentum());
 }
@@ -70,28 +69,24 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
   m_p_plus = bet * (pa - pa.Abs2() / gam * pb);
   m_p_minus = bet * (pb - pb.Abs2() / gam * pa);
-  double tau = CalculateTau();
+  const double tau = CalculateTau();
   if (m_mode == collidermode::spectral_1) {
     m_x[1] = m_xkey[5] = p_beams[1]->InMomentum().PMinus() / m_p_minus.PMinus();
-    m_x[0] = m_xkey[4] = CalculateTau() / m_x[1];
-    moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
-    moms[1] = p_beams[1]->InMomentum();
+    m_x[0] = m_xkey[4] = tau / m_x[1];
   } else if (m_mode == collidermode::spectral_2) {
     m_x[0] = m_xkey[4] = p_beams[0]->InMomentum().PPlus() / m_p_plus.PPlus();
-    m_x[1] = m_xkey[5] = CalculateTau() / m_x[0];
-    moms[0] = p_beams[0]->InMomentum();
-    moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
+    m_x[1] = m_xkey[5] = tau / m_x[0];
   } else if (m_mode == collidermode::both_spectral) {
-    double yt = exp(m_ykey[2] - 0.5 * log((tau + m_m2[1]) / (tau + m_m2[0])) -
-                    m_Plab.Y());
+    double yt =
+        exp(m_ykey[2] - 0.5 * log((tau + m_m2[1] / m_S) / (tau + m_m2[0] / m_S )));
     m_x[0] = m_xkey[4] = sqrt(tau) * yt;
     m_x[1] = m_xkey[5] = sqrt(tau) / yt;
-    moms[0] = m_x[0] * m_p_plus + m_m2[0] / m_S / m_x[0] * m_p_minus;
-    moms[1] = m_x[1] * m_p_minus + m_m2[1] / m_S / m_x[1] * m_p_plus;
   } else
     return false;
   if (m_x[0] > 1. || m_x[1] > 1.)
     return false;
+  moms[0] = m_xkey[4] * m_p_plus + m_m2[0] / m_S / m_xkey[4] * m_p_minus;
+  moms[1] = m_xkey[5] * m_p_minus + m_m2[1] / m_S / m_xkey[5] * m_p_plus;
   for (size_t i = 0; i < 2; ++i) {
     p_beams[i]->SetOutMomentum(moms[i]);
     rpa->gen.SetPBunch(i, moms[i]);
@@ -148,7 +143,7 @@ void Collider_Kinematics::SetLimits() {
                                 : 2. * log(m_m[i] / p));
     m_xkey[i + 2] = log(
         Min(p_beams[i]->Xmax(), (e / p * (1.0 + sqrt(1.0 - sqr(m_m[i] / e))))));
-    m_xkey[i + 4] = m_x[i];
+    m_xkey[i + 4] = 0.;
   }
   // sprime's with masses - still need to check for masses
   double sprimemin = Max(m_sprimekey[0], m_S * exp(m_xkey[0] + m_xkey[1]));

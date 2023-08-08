@@ -97,7 +97,7 @@ void ISR_Handler::Output() {
 }
 
 void ISR_Handler::Init() {
-  double s = (p_beam[0]->OutMomentum() + p_beam[1]->OutMomentum()).Abs2();
+  double s = (p_beam[0]->InMomentum() + p_beam[1]->InMomentum()).Abs2();
 
   m_splimits[0] = 0.;
   m_splimits[1] = ATOOLS::Min(s, s * Upper1() * Upper2());
@@ -211,8 +211,7 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector &p,
     m_x[1] = m_xkey[5] = tau / m_x[0];
   } else if (m_mode == 3) {
     double yt =
-        exp(y - 0.5 * log((tau + m_mass2[1] / s) / (tau + m_mass2[0] / s)) -
-            (p0 + p1).Y());
+        exp(y - 0.5 * log((tau + m_mass2[1] / s) / (tau + m_mass2[0] / s)));
     tau = sqrt(tau);
     m_x[0] = m_xkey[4] = tau * yt;
     m_x[1] = m_xkey[5] = tau / yt;
