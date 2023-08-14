@@ -10,6 +10,8 @@ list(GET EXTERNAL_VERSION_LIST 1 SHERPA_VERSION_MINOR)
 list(GET EXTERNAL_VERSION_LIST 2 SHERPA_VERSION_PATCH)
 set(PROJECT_VERSION ${SHERPA_VERSION_MAJOR}.${SHERPA_VERSION_MINOR}.${SHERPA_VERSION_PATCH})
 SET(SHERPA_VERSION ${SHERPA_VERSION_MAJOR}.${SHERPA_VERSION_MINOR}.${SHERPA_VERSION_PATCH})
+string(REGEX REPLACE ".[a-z].[0-9]" "" SHERPA_VERSION_PATCH_NUMBER "${SHERPA_VERSION_PATCH}") #Remove "alpha1", "beta2" etc.
+math(EXPR SHERPA_VERSION_CODE "${SHERPA_VERSION_MAJOR} * 1000000 + ${SHERPA_VERSION_MINOR} * 1000 + ${SHERPA_VERSION_PATCH_NUMBER}")
 message(STATUS "SHERPA: SHERPA_VERSION=${SHERPA_VERSION}")
 message(STATUS "SHERPA: SHERPA_VERSION_MAJOR=${SHERPA_VERSION_MAJOR}")
 message(STATUS "SHERPA: SHERPA_VERSION_MINOR=${SHERPA_VERSION_MINOR}")
@@ -910,9 +912,8 @@ endif()
 if (UNIX AND ( NOT  CMAKE_SYSTEM_NAME MATCHES "Linux")  AND (NOT (CMAKE_SYSTEM_NAME MATCHES Darwin)))
   set(UNIX_SYS 1)
 endif()
-set(CXXFLAGS_H_CONTENT "/* ATOOLS/Org/CXXFLAGS.H.  Generated from CXXFLAGS.H.in by configure.  */\n\
-#ifndef SHERPA_CXXFLAGS_H
-#define SHERPA_CXXFLAGS_H
+set(CXXFLAGS_H_CONTENT "#ifndef ATOOLS_Org_CXXFLAGS_H\n#define ATOOLS_Org_CXXFLAGS_H\n\n\
+/* ATOOLS/Org/CXXFLAGS.H. Automatically generated from CMakeLists.txt. */\n\n\
 /* Architecture identified as Darwin MacOS */\n\
 $<IF:$<BOOL:${DARWIN_SYS}>,#define ARCH_DARWIN \"1\",/* #undef ARCH_DARWIN */>\n\n\
 /* Architecture identified as Linux */\n\
@@ -947,13 +948,15 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 #define SHERPA_VERSION \"${SHERPA_VERSION_MAJOR}\"\n\n\
 /* Sherpa version name */\n\
 #define SHERPA_NAME \"Dhaulagiri\"\n\n\
+/* Sherpa version code */\n\
+#define SHERPA_VERSION_CODE ${SHERPA_VERSION_CODE}\n\n\
 /* using Pythia */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_PYTHIA6}>,#define USING__PYTHIA \"1\",/* #undef USING__PYTHIA */>\n\n\
 /* HEPEVT common block size */\n\
 #define HEPEVT_CB_SIZE ${HEPEVT_CB_SIZE} \n\n\
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\n\
-#define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n
+#define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n\n\
 #endif\n")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H CONTENT "${CXXFLAGS_H_CONTENT}")
 ########################################################################
