@@ -96,21 +96,29 @@ cmake configuration, e.g. for Rivet:
 
    $  cmake [...] -DSHERPA_ENABLE_RIVET=ON
 
-If your Rivet installation is not in a standard directory, you also have to
-point cmake to the path where Rivet is installed as follows:
+If your Rivet installation is not in a standard directory, you instead have to
+point cmake to the path where Rivet is installed:
 
 .. code-block:: shell-session
 
    $  cmake [...] -DRIVET_DIR=/my/rivet/install/dir
 
-Here, the paths have to point to the top level installation
-directories of the external packages, i.e. the ones containing the
+The provided path has to point to the top level installation
+directory of the external package, i.e. the one containing the
 ``lib/``, ``share/``, ... subdirectories.
 
-Other external packages are activated using equivalent configuration options.
-For a complete list of possible configuration options run
-``cmake -LA``. Be aware that the capitalisation of the ``-D<name>_DIR``
-option might differ depending on the tool.
+Other external packages are activated using equivalent configuration options,
+i.e. either using `-DSHERPA_ENABLE_<PACKAGENAME>=ON`
+or using `-D<PackageName>_DIR=/my/package/install/dir`
+(or both, but enabling a package is already implied
+if its directory is given).
+Note that the package name in the `SHERPA_ENABLE_<PACKAGENAME>`
+is always capitalised,
+while the capitalisation can differ
+in `<PackageName>_DIR`.
+For a complete list of possible configuration options
+(and their correct capitalisation),
+run ``cmake -LA``.
 
 The Sherpa package has successfully been compiled, installed and
 tested on Arch, SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux/ Mac OS X
