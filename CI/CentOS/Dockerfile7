@@ -5,8 +5,9 @@ RUN  yum -y  install  bc make ninja-build cmake binutils git wget diffutils file
                       python2-lhapdf \
                       root-core root root-physics HepMC3-rootIO-devel HepMC3-devel HepMC3-search HepMC3-search-devel  HepMC3-rootIO HepMC3  HepMC HepMC-devel \
                       texinfo git latexmk  \
-                      python3 python3-devel bzip2 \
+                      python3 python3-devel bzip2 bzip2-devel \
+                      catch-devel doxygen   \
                       cmake3 wget curl  &&  yum -y  clean all  
-RUN curl -LO https://libzip.org/download/libzip-1.8.0.tar.xz && tar -xvf libzip-1.8.0.tar.xz &&  cmake3 -S  libzip-1.8.0 -B BUILD -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_OPENSSL=on \
+RUN  wget https://github.com/nih-at/libzip/releases/download/v1.8.0/libzip-1.8.0.tar.gz && tar -xvf libzip-1.8.0.tar.gz &&  cmake3 -S  libzip-1.8.0 -B BUILD -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_OPENSSL=on \
                       -DENABLE_GNUTLS=off -DENABLE_MBEDTLS=off  && cmake3 --build BUILD && cmake3 --install BUILD  && rm -rf BUILD  libzip-1.8.0 
 RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas

@@ -319,10 +319,10 @@ LCG_102_x86_64-centos7-gcc11-opt:
 ###########################################################################
 # Here we check if we have changes to the Docker files
 
-check_commit_Fedora36:
+check_commit_Fedora38:
   variables:
     OS: Fedora
-    FREL: 36
+    FREL: 38
   extends: .check_commit_Fedora
     
 check_commit_Fedora37:
@@ -359,13 +359,13 @@ check_commit_Archlinux0:
 
 ###########################################################################
 #Build images
-build_image_Fedora36:
+build_image_Fedora38:
   variables:
     OS: Fedora
-    FREL: 36
+    FREL: 38
   extends: .build_image_Fedora
   needs:
-    - job: check_commit_Fedora36
+    - job: check_commit_Fedora38
 
 build_image_Fedora37:
   variables:
@@ -421,25 +421,25 @@ Fedora37-make-ccache-GNU:
     - job: build_image_Fedora37
 
   
-Fedora36-make-ccache-GNU:
+Fedora38-make-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 36
+    FREL: 38
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora36
+    - job: build_image_Fedora38
 
-Fedora36-make-ccache-LLVM:
+Fedora38-make-ccache-LLVM:
   variables:
     OS: Fedora
-    FREL: 36
+    FREL: 38
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora36
+    - job: build_image_Fedora38
 
 CentOS7-make-ccache-GNU:
   variables:

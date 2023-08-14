@@ -6,6 +6,7 @@ RUN  yum -y  install  dnf-plugins-core \
                       root-core root root-physics HepMC3-rootIO-devel HepMC3-devel HepMC3-search HepMC3-search-devel  HepMC3-rootIO HepMC3  HepMC HepMC-devel \
                       texinfo latexmk 'tex(latex)' ghostscript 'tex(sectsty.sty)' \
                       openmpi environment-modules  openmpi-devel  \
+                      doxygen catch-devel \
                       python3 python3-devel swig python3-matplotlib && yum -y clean all
 # Packages coming from HEPrpms ->
 RUN  dnf -y copr enable averbyts/HEPrpms &&  yum -y  install  gosam  fastjet fastjet-devel  YODA-devel Rivet-devel Rivet Rivet-devel hztool qd qd-devel \
@@ -23,5 +24,5 @@ RUN  yum -y  install  sphinx python3-sphinx python3-sphinxcontrib-bibtex python3
                       'tex(nameref.sty)' 'tex(kvoptions.sty)' 'tex(letltxmacro.sty)' 'tex(needspace.sty)' 'tex(hypcap.sty)' 'tex(parskip-2001-04-09.sty)' 'tex(parskip.sty)'  \
                       'tex(refcount.sty)' 'tex(rerunfilecheck.sty)' 'tex(tabulary.sty)' 'tex(tgheros.sty)' 'tex(tgtermes.sty)' 'tex(titlesec.sty)' 'tex(array.sty)'   \
                       'tex(longtable.sty)' 'tex(multicol.sty)' 'tex(upquote.sty)' 'tex(url.sty)' 'tex(varwidth.sty)' 'tex(wrapfig.sty)' 'tex(xcolor.sty)' \
-                       rsync  && yum -y  clean all  
+                       rsync --exclude=python3-mistune08 --exclude=python3-sphinxcontrib-openapi && yum -y  clean all  
 RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas
