@@ -32,7 +32,7 @@ namespace PHASIC {
     virtual bool Remove(Process_Base *const proc);
     virtual bool Delete(Process_Base *const proc);
     virtual void Clear();
-    
+
     virtual Process_Base *GetProcess(const PHASIC::Process_Info &pi) const = 0;
     virtual bool Initialize(Process_Base *const proc) = 0;
 
@@ -47,6 +47,7 @@ namespace PHASIC {
 
     void SetScale(const Scale_Setter_Arguments &args);
     void SetKFactor(const KFactor_Setter_Arguments &args);
+    void SetupWeightsCache();
 
     void SetFixedScale(const std::vector<double> &s);
     void SetSelectorOn(const bool on);
@@ -57,7 +58,7 @@ namespace PHASIC {
     void SetLookUp(const bool lookup);
 
     bool IsGroup() const;
-    
+
     bool ConstructProcesses();
 
     void SetGenerator(ME_Generator_Base *const gen);

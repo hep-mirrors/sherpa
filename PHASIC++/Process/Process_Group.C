@@ -33,7 +33,7 @@ Process_Base *Process_Group::operator[](const size_t &i)
   return m_procs[i];
 }
 
-Weight_Info *Process_Group::OneEvent(const int wmode,const int mode) 
+Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
 {
   p_selected=NULL;
   if (p_int->TotalXS()==0.0) {
@@ -70,10 +70,16 @@ void Process_Group::SetScale(const Scale_Setter_Arguments &args)
 {
   for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetScale(args);
 }
-  
+
 void Process_Group::SetKFactor(const KFactor_Setter_Arguments &args)
 {
   for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetKFactor(args);
+}
+
+void Process_Group::SetupWeightsCache()
+{
+  for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetupWeightsCache();
+  p_int->SetupWeightsCache();
 }
 
 bool Process_Group::IsGroup() const
@@ -81,7 +87,7 @@ bool Process_Group::IsGroup() const
   return true;
 }
 
-void Process_Group::Add(Process_Base *const proc) 
+void Process_Group::Add(Process_Base *const proc)
 {
   if (proc==NULL) return;
   std::string name(proc->Name()), add(proc->Info().m_addname);
@@ -102,13 +108,13 @@ void Process_Group::Add(Process_Base *const proc)
       (m_nin!=proc->NIn() || m_nout!=proc->NOut())) {
     msg_Error()<<METHOD<<"(): Cannot add process '"
 	       <<proc->Name()<<"' to group '"<<m_name<<"'.\n"
-	       <<"  Inconsistent number of external legs."<<std::endl; 
+	       <<"  Inconsistent number of external legs."<<std::endl;
     return;
-  }  
+  }
   m_procs.push_back(proc);
 }
 
-bool Process_Group::Remove(Process_Base *const proc) 
+bool Process_Group::Remove(Process_Base *const proc)
 {
   for (std::vector<Process_Base*>::iterator xsit=m_procs.begin();
        xsit!=m_procs.end();++xsit) {
@@ -120,7 +126,7 @@ bool Process_Group::Remove(Process_Base *const proc)
   return false;
 }
 
-bool Process_Group::Delete(Process_Base *const proc) 
+bool Process_Group::Delete(Process_Base *const proc)
 {
   if (Remove(proc)) {
     delete proc;
@@ -129,7 +135,7 @@ bool Process_Group::Delete(Process_Base *const proc)
   return false;
 }
 
-void Process_Group::Clear() 
+void Process_Group::Clear()
 {
   while (m_procs.size()>0) {
     delete m_procs.back();
@@ -139,7 +145,7 @@ void Process_Group::Clear()
 
 Process_Base *Process_Group::GetProcess(const std::string &name)
 {
-  std::map<std::string,Process_Base*>::const_iterator 
+  std::map<std::string,Process_Base*>::const_iterator
     pit(m_procmap.find(name));
   if (pit!=m_procmap.end()) return pit->second;
   if (name==m_name) return this;
@@ -357,17 +363,17 @@ bool Process_Group::ConstructProcesses()
   return res;
 }
 
-void Process_Group::SetGenerator(ME_Generator_Base *const gen) 
-{ 
+void Process_Group::SetGenerator(ME_Generator_Base *const gen)
+{
   Process_Base::SetGenerator(gen);
-  for (size_t i(0);i<m_procs.size();++i) 
+  for (size_t i(0);i<m_procs.size();++i)
     m_procs[i]->SetGenerator(gen);
 }
 
-void Process_Group::SetShower(PDF::Shower_Base *const ps) 
-{ 
+void Process_Group::SetShower(PDF::Shower_Base *const ps)
+{
   Process_Base::SetShower(ps);
-  for (size_t i(0);i<m_procs.size();++i) 
+  for (size_t i(0);i<m_procs.size();++i)
     m_procs[i]->SetShower(ps);
 }
 
@@ -413,7 +419,7 @@ bool Process_Group::Trigger(const Vec4D_Vector &p)
     if (m_procs[i]->Trigger(p)) trigger=true;
   return trigger;
 }
- 
+
 void Process_Group::FillOnshellConditions()
 {
   Process_Base::FillOnshellConditions();
