@@ -75,20 +75,18 @@ double Gluon_Splitter::FragmentationFunction(double z, double zmin, double zmax,
     norm = pow(0.5,2*alpha);
     return pow(z*(1.-z),alpha)/norm;
   case 0:
-    // in the symmetric case, the max is either at 0.5 or at one edge
-    norm = std::max(std::max(pow(zmin,alpha) + pow(1.-zmin,alpha),
-			     pow(zmax,alpha) + pow(1.-zmax,alpha)),
-		    2*pow(0.5,alpha));
-    const double ret = (pow(z,alpha)+pow(1.-z,alpha))/norm;
-    if(ret > 1.0)
-      msg_Error()<<
-	"Error in Gluon Fragmentation function, should always be < 1.0\n";
-    return ret;
   default:
     break;
   }
-
-  return 0;
+  // in the symmetric case, the max is either at 0.5 or at one edge
+  norm = std::max(std::max(pow(zmin,alpha) + pow(1.-zmin,alpha),
+			   pow(zmax,alpha) + pow(1.-zmax,alpha)),
+		  2*pow(0.5,alpha));
+  const double ret = (pow(z,alpha)+pow(1.-z,alpha))/norm;
+  if(ret > 1.0)
+    msg_Error()<<
+      "Error in Gluon Fragmentation function, should always be < 1.0\n";
+  return ret;
 }
 
 double Gluon_Splitter::
