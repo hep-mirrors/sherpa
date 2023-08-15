@@ -140,8 +140,8 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
 
   // overwrite partial widths from HO SM or user input
   if (ds["Use_HO_SM_Widths"].SetDefault(true).Get<bool>()) {
-    if (Flavour(kf_h0).Mass()<125.07 || Flavour(kf_h0).Mass()>125.11 ||
-        Flavour(kf_t).Mass()<172.4 || Flavour(kf_t).Mass()>172.6)
+    if (Flavour(kf_h0).Mass()<124.98 || Flavour(kf_h0).Mass()>125.02 ||
+        Flavour(kf_t).Mass()<173.11 || Flavour(kf_t).Mass()>173.31)
       THROW(fatal_error, "Use_HO_SM_Widths specified, but particle masses not in SM range.");
     SetHOSMWidths(ds);
   }
