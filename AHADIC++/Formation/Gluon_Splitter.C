@@ -75,11 +75,20 @@ double Gluon_Splitter::FragmentationFunction(double z, double zmin, double zmax,
     norm = pow(0.5,2*alpha);
     return pow(z*(1.-z),alpha)/norm;
   case 0:
+    // in the symmetric case, the max is either at 0.5 or at one edge
+    norm = std::max(std::max(pow(zmin,alpha) + pow(1.-zmin,alpha),
+			     pow(zmax,alpha) + pow(1.-zmax,alpha)),
+		    2*pow(0.5,alpha));
+    const double ret = (pow(z,alpha)+pow(1.-z,alpha))/norm;
+    if(ret > 1.0)
+      msg_Error()<<
+	"Error in Gluon Fragmentation function, should always be < 1.0\n";
+    return ret;
   default:
     break;
   }
-  if (alpha<=0.) norm = pow(zmin,alpha) + pow(1.-zmax,alpha);
-  return (pow(z,alpha)+pow(1.-z,alpha))/norm;
+
+  return 0;
 }
 
 double Gluon_Splitter::
@@ -101,8 +110,8 @@ void Gluon_Splitter::z_rejected(const double wgt, const double & z,
 
   for (int i{0}; i<m_alpha.size(); i++) {
     const auto a = m_alpha[i];
-    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
-    variation_weights[i] *= std::min(1.,(1-wgt_new)) / std::min(1.,(1-wgt));
+    const auto wgt_new = std::min(1.,FragmentationFunction(z,zmin,zmax,a));
+    variation_weights[i] *= (1-wgt_new) / (1-wgt);
   }
   return;
 }
@@ -118,8 +127,8 @@ void Gluon_Splitter::z_accepted(const double wgt, const double & z,
 
   for (int i{0}; i<m_alpha.size(); i++) {
     const auto a = m_alpha[i];
-    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
-    variation_weights[i] *= std::min(1.,wgt_new) / std::min(1.,wgt);
+    const auto wgt_new = std::min(1.,FragmentationFunction(z,zmin,zmax,a));
+    variation_weights[i] *= wgt_new / wgt;
   }
   return;
 }

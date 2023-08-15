@@ -31,10 +31,8 @@ namespace AHADIC {
     };
 
     void accepted() {
-      for(int i{0}; i<variation_weights.size(); ++i) {
-	//msg_Out() << tmp_variation_weights[i] << std::endl;
+      for(int i{0}; i<variation_weights.size(); ++i)
 	variation_weights[i] *= tmp_variation_weights[i];
-      }
     }
 
     double operator()(const double & ktmax,const double & M2=1.);

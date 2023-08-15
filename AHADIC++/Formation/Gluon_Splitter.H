@@ -43,16 +43,9 @@ namespace AHADIC {
       lastmass = m_lastmass; isB = m_lastB; isC = m_lastC;
     }
     std::vector<double>& get_variationweights() {
-      // combine the weights here with the Splitter_Base weight
-      //const auto wgts = _get_variationweights();
-
-      // DEBUGGING!!!
-      // there *must* be a bug somewhere here
       const auto wgts = m_ktselector.get_variationweights();
-      for(int i{0}; i<wgts.size(); i++) {
-	//msg_Out()<< wgts[i] << std::endl;
+      for(int i{0}; i<wgts.size(); i++)
 	variation_weights[i] *= wgts[i];
-      }
 
       return variation_weights;
     };
@@ -61,7 +54,6 @@ namespace AHADIC {
       // reset weights and Splitter_base weight
       std::fill(variation_weights.begin(), variation_weights.end(), 1);
       m_ktselector.reset_variationweights();
-      //_reset_variationweights();
     };
 
     void z_rejected(const double, const double&, const double&, const double&,
