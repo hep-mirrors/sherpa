@@ -440,7 +440,9 @@ The following formats are currently available:
   from the matrix-element-parton-shower interplay which would be
   otherwise stored.
 
-  Requires ``-DHepMC2_DIR=/path/to/hepmc2``.
+  Requires ``-DHepMC2_DIR=/path/to/hepmc2``
+  (or ``-DSHERPA_ENABLE_HEPMC2=ON``, if HepMC2 is installed in a
+  standard location).
 
 :option:`HepMC_Short`
 
@@ -450,7 +452,9 @@ The following formats are currently available:
   same as above, and ``HEPMC_USE_NAMED_WEIGHTS`` and
   ``HEPMC_EXTENDED_WEIGHTS`` can be used to customise.
 
-  Requires ``-DHepMC2_DIR=/path/to/hepmc2``.
+  Requires ``-DHepMC2_DIR=/path/to/hepmc2``
+  (or ``-DSHERPA_ENABLE_HEPMC2=ON``, if HepMC2 is installed in a
+  standard location).
 
 :option:`HepMC3_GenEvent`
   Generates output using HepMC3 library. The format of the output is
@@ -460,7 +464,9 @@ The following formats are currently available:
   GenEvent. 3: ROOT file with GenEvent objects writen into TTree.
   Otherwise similar to ``HepMC_GenEvent``.
 
-  Requires ``-DHepMC3_DIR=/path/to/hepmc3``.
+  Requires ``-DHepMC3_DIR=/path/to/hepmc3``
+  (or ``-DSHERPA_ENABLE_HEPMC3=ON``, if HepMC3 is installed in a
+  standard location).
 
 :option:`HEPEVT`
   Generates output in HepEvt format.
@@ -487,7 +493,9 @@ The following formats are currently available:
   read back into Sherpa and analyzed using the option
   :option:`EVENT_INPUT`. This feature is described in :ref:`NTuple production`.
 
-  Requires ``-DROOT_DIR=/path/to/root``.
+  Requires ``-DROOT_DIR=/path/to/root``
+  (or ``-DSHERPA_ENABLE_ROOT=ON``, if ROOT is installed in a
+  standard location).
   
 The output can be further customized using the following options:
 

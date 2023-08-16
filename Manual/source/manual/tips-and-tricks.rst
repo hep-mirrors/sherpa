@@ -49,6 +49,9 @@ compilation has to be configured with the following options:
    $ cmake -DHepMC3_DIR=/path/to/hepmc3 -DRIVET_DIR=/path/to/rivet
 
 (Note: Both paths are equal if you used the Rivet bootstrap script.)
+In the case that the packages are installed in standard locations,
+you can instead use ``-DSHERPA_ENABLE_HEPMC3=ON``
+and ``-DSHERPA_ENABLE_RIVET=ON``, respectively.
 
 To use the interface, you need to enable it using the
 :option:`ANALYSIS` option and to configure it it using the
@@ -117,6 +120,10 @@ Sherpa compilation has to be configured with the following options:
            -DCERNLIB_DIR=/path/to/cernlib \
            -DHEPEVT_CB_SIZE=4000
 
+In the case that the packages are installed in standard locations,
+you can instead use ``-DSHERPA_ENABLE_HZTOOL=ON``
+and ``-DSHERPA_ENABLE_CERNLIB=ON``, respectively.
+
 Note that an example CERNLIB installation bootstrap script is provided
 in ``AddOns/HZTool/start_cern_64bit``. Note that this script is only
 provided for convenience, we will not provide support if it is not
@@ -159,11 +166,17 @@ code, only few selected processes of MCFM-6.3 are available through
 the interface.
 
 Finally, your Sherpa compilation has to be configured with the
-following options:
+following option:
 
 .. code-block:: yaml
 
    $ cmake -DMCFM_DIR=/path/to/MCFM
+
+Or, if MCFM is installed in a standard location:
+
+.. code-block:: yaml
+
+   $ cmake -DSHERPA_ENABLE_MCFM=ON
 
 To use the interface, specify
 

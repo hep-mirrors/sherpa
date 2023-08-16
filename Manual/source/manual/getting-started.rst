@@ -115,7 +115,8 @@ if its directory is given).
 Note that the package name in the `SHERPA_ENABLE_<PACKAGENAME>`
 is always capitalised,
 while the capitalisation can differ
-in `<PackageName>_DIR`.
+in `<PackageName>_DIR`,
+as defined by the third-party package.
 For a complete list of possible configuration options
 (and their correct capitalisation),
 run ``cmake -LA``.
