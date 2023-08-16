@@ -67,6 +67,20 @@ option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interf
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 
 ########################################################################
+### allow the user to be sloppy and use HEPMC3_DIR instead of the correct
+### capitalisation, HepMC3_DIR. Note that the capitalisation is defined
+### by the HepMC3 package, not by us.
+if (HEPMC3_DIR AND HepMC3_DIR)
+  if (NOT "${HEPMC3_DIR}" STREQUAL "${HepMC3_DIR}")
+    unset(HEPMC3_DIR CACHE)
+    message(FATAL_ERROR "You have used both -DHEPMC3_DIR and -DHepMC3_DIR. Please only use -DHepMC3_DIR.")
+  endif()
+elseif (HEPMC3_DIR)
+  message(WARNING "Please use -DHepMC3_DIR instead of -DHEPMC3_DIR. Will use the value found in HEPMC3_DIR to set HepMC3_DIR.")
+  set(HepMC3_DIR "${HEPMC3_DIR}" CACHE)
+endif()
+unset(HEPMC3_DIR CACHE)
+########################################################################
 ### enable option when path was provided explicitly via cmake
 set(alldirenables BLACKHAT GOSAM HEPMC2 HepMC3 HZTOOL LHAPDF MCFM OPENLOOPS PYTHIA6 PYTHIA8 RECOLA RIVET)
 foreach (en IN LISTS alldirenables)
