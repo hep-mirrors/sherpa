@@ -1,5 +1,6 @@
 #include "AddOns/EWSud/Coefficient_Checker.H"
 #include "METOOLS/Main/Spin_Structure.H"
+#include <algorithm>
 
 using namespace PHASIC;
 using namespace ATOOLS;

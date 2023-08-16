@@ -42,22 +42,22 @@ void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
   
   Shower_Handler_Map::const_iterator shower = showers.find(isr::hard_process);
   if (shower!=showers.end() && me) {
-    m_interfaces["SignalMEs"] = new Perturbative_Interface(me, harddecs, shower->second);
-    m_interfaces["SignalMEs"]->SetRemnantHandler(remnants);
+    m_pertinterfaces["SignalMEs"] = new Perturbative_Interface(me, harddecs, shower->second);
+    m_pertinterfaces["SignalMEs"]->SetRemnantHandler(remnants);
   }
 
   shower = showers.find(isr::hard_subprocess);
   if (shower!=showers.end()) {
-    m_interfaces["HadronDecays"] = new Perturbative_Interface(decs, shower->second);
+    m_pertinterfaces["HadronDecays"] = new Perturbative_Interface(decs, shower->second);
     MI_Handler_Map::const_iterator mihandler = mis->find(isr::hard_subprocess);
     if (mihandler!=mis->end()) {
-      m_interfaces["MPIs"] = new Perturbative_Interface(mihandler->second, shower->second);
-      m_interfaces["MPIs"]->SetRemnantHandler(remnants);
+      m_pertinterfaces["MPIs"] = new Perturbative_Interface(mihandler->second, shower->second);
+      m_pertinterfaces["MPIs"]->SetRemnantHandler(remnants);
     }
     Soft_Collision_Handler_Map::const_iterator schandler = scs->find(isr::hard_subprocess);
     if (schandler!=scs->end()) {
-      m_interfaces["SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
-      m_interfaces["SoftCollisions"]->SetRemnantHandler(remnants);
+      m_pertinterfaces["SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
+      m_pertinterfaces["SoftCollisions"]->SetRemnantHandler(remnants);
     }
   }
 
@@ -69,22 +69,22 @@ void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
 		    <<"  Continue and hope for the best.\n";
     MI_Handler_Map::const_iterator mihandler = mis->find(isr::bunch_rescatter);
     if (mihandler!=mis->end()) {
-      m_interfaces["BR_MPIs"] = new Perturbative_Interface(mihandler->second, shower->second);
-      m_interfaces["BR_MPIs"]->SetRemnantHandler(remnants);
+      m_pertinterfaces["BR_MPIs"] = new Perturbative_Interface(mihandler->second, shower->second);
+      m_pertinterfaces["BR_MPIs"]->SetRemnantHandler(remnants);
     }
     Soft_Collision_Handler_Map::const_iterator schandler = scs->find(isr::bunch_rescatter);
     if (schandler!=scs->end()) {
-      m_interfaces["BR_SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
-      m_interfaces["BR_SoftCollisions"]->SetRemnantHandler(remnants);
+      m_pertinterfaces["BR_SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
+      m_pertinterfaces["BR_SoftCollisions"]->SetRemnantHandler(remnants);
     }
   }
 }
 
 Jet_Evolution::~Jet_Evolution() {
-  while (m_interfaces.size() > 0) {
-    if (m_interfaces.begin()->second != NULL)
-      delete m_interfaces.begin()->second;
-    m_interfaces.erase(m_interfaces.begin());
+  while (m_pertinterfaces.size() > 0) {
+    if (m_pertinterfaces.begin()->second != NULL)
+      delete m_pertinterfaces.begin()->second;
+    m_pertinterfaces.erase(m_pertinterfaces.begin());
   }
 }
 
@@ -180,8 +180,8 @@ PertInterfaceIter Jet_Evolution::SelectInterface(Blob * blob) {
 		<< (*blob) << "\n   Will abort.\n";
     THROW(fatal_error, "No perturbative interface found.");
   }
-  PertInterfaceIter piIter = m_interfaces.find(tag);
-  if (piIter == m_interfaces.end()) {
+  PertInterfaceIter piIter = m_pertinterfaces.find(tag);
+  if (piIter == m_pertinterfaces.end()) {
     msg_Error() << "Error in Jet_Evolution::Treat: "
 		<< "No Perturbative_Interface found for type " << tag
 		<< "\n"
@@ -193,11 +193,11 @@ PertInterfaceIter Jet_Evolution::SelectInterface(Blob * blob) {
 
 Return_Value::code
 Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
-                             Perturbative_Interface *interface) {
-  p_remnants = interface->RemnantHandler();
-  if (!interface->Shower()->On() ||
-      (interface->MEHandler() &&
-       interface->MEHandler()->Process()->Info().m_nlomode ==
+                             Perturbative_Interface *pertinterface) {
+  p_remnants = pertinterface->RemnantHandler();
+  if (!pertinterface->Shower()->On() ||
+      (pertinterface->MEHandler() &&
+       pertinterface->MEHandler()->Process()->Info().m_nlomode ==
            nlo_mode::fixedorder)) {
     AftermathOfNoShower(blob, bloblist);
     Blob * noshowerblob = bloblist->FindLast(btp::Shower);
@@ -205,15 +205,15 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
     return Return_Value::Nothing;
   }
   int shower(0);
-  Return_Value::code stat(interface->DefineInitialConditions(blob, bloblist));
+  Return_Value::code stat(pertinterface->DefineInitialConditions(blob, bloblist));
   if (stat == Return_Value::New_Event || stat == Return_Value::Retry_Event) {
-    interface->CleanUp();
+    pertinterface->CleanUp();
     return stat;
   }
   if (blob->Type() != ::btp::Hadron_Decay) {
     msg_Debugging() << METHOD << "(): Setting scale for MI {\n";
     double scale(0.0);
-    Cluster_Amplitude *ampl(interface->Amplitude());
+    Cluster_Amplitude *ampl(pertinterface->Amplitude());
     while (ampl->Next())
       ampl = ampl->Next();
     msg_Debugging() << *ampl << "\n";
@@ -224,18 +224,18 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
   switch (stat) {
   case Return_Value::Success:
     if (blob->Type() != ::btp::Hadron_Decay)
-      DefineInitialConditions(blob, bloblist, interface);
-    if (blob->NInP() == 1) shower = interface->PerformDecayShowers();
+      DefineInitialConditions(blob, bloblist, pertinterface);
+    if (blob->NInP() == 1) shower = pertinterface->PerformDecayShowers();
     else if (blob->NInP() == 2) {
-      shower = interface->PerformShowers();
+      shower = pertinterface->PerformShowers();
       blob->UnsetStatus(blob_status::needs_beamRescatter);
     }
     switch (shower) {
     case 1:
       // No Sudakov rejection
       Reset();
-      if (AftermathOfSuccessfulShower(blob, bloblist, interface)) {
-        interface->CleanUp();
+      if (AftermathOfSuccessfulShower(blob, bloblist, pertinterface)) {
+        pertinterface->CleanUp();
         return Return_Value::Success;
       }
       blob->SetStatus(blob_status::inactive);
@@ -251,7 +251,7 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
     }
   case Return_Value::Nothing:
     if (AftermathOfNoShower(blob, bloblist)) {
-      interface->CleanUp();
+      pertinterface->CleanUp();
       return Return_Value::Success;
     }
     blob->SetStatus(blob_status::inactive);
@@ -308,13 +308,13 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
 }
 
 bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
-						Perturbative_Interface *interface) {
+						Perturbative_Interface *pertinterface) {
   if (blob->NInP() == 1 && blob->Type() != btp::Hadron_Decay)
     blob->InParticle(0)->SetInfo('h');
-  interface->FillBlobs();
+  pertinterface->FillBlobs();
   blob->UnsetStatus(blob_status::needs_showers);
   Blob *showerblob =
-      (!interface->Shower()->On() ? CreateMockShowerBlobs(blob, bloblist)
+      (!pertinterface->Shower()->On() ? CreateMockShowerBlobs(blob, bloblist)
                                   : bloblist->FindLast(btp::Shower));
   if (showerblob==NULL || blob->Type()== btp::Hadron_Decay) return true;
   showerblob->AddStatus(blob_status::needs_reconnections);
@@ -366,15 +366,15 @@ ATOOLS::Blob *Jet_Evolution::CreateMockShowerBlobs(Blob *const meblob,
 }
 
 void Jet_Evolution::CleanUp(const size_t &mode) {
-  for (PertInterfaceIter piIter = m_interfaces.begin();
-       piIter != m_interfaces.end(); ++piIter) {
+  for (PertInterfaceIter piIter = m_pertinterfaces.begin();
+       piIter != m_pertinterfaces.end(); ++piIter) {
     piIter->second->CleanUp();
   }
 }
 
 void Jet_Evolution::Reset() {
-  for (PertInterfaceIter piIter = m_interfaces.begin();
-       piIter != m_interfaces.end(); ++piIter) {
+  for (PertInterfaceIter piIter = m_pertinterfaces.begin();
+       piIter != m_pertinterfaces.end(); ++piIter) {
     piIter->second->Shower()->GetISRHandler()->Reset(0);
     piIter->second->Shower()->GetISRHandler()->Reset(1);
   }
@@ -382,14 +382,14 @@ void Jet_Evolution::Reset() {
 
 bool Jet_Evolution::DefineInitialConditions(const Blob *blob,
                                             const Blob_List *bloblist,
-                                            Perturbative_Interface *interface) {
+                                            Perturbative_Interface *pertinterface) {
   Reset();
   msg_Debugging() << METHOD << "(): {\n";
   for (::Blob_List::const_iterator blit = bloblist->begin();
        blit != bloblist->end(); ++blit) {
     if ((*blit)->Type() == ::btp::Shower) {
-      // Update(*blit,0, interface);
-      // Update(*blit,1, interface);
+      // Update(*blit,0, pertinterface);
+      // Update(*blit,1, pertinterface);
     }
   }
   msg_Debugging() << "}\n";
@@ -397,7 +397,7 @@ bool Jet_Evolution::DefineInitialConditions(const Blob *blob,
 }
 
 void Jet_Evolution::Update(Blob *blob, const size_t beam,
-                           Perturbative_Interface *interface) {
+                           Perturbative_Interface *pertinterface) {
   size_t cbeam = 0;
   for (int i = 0; i < blob->NInP(); ++i) {
     Particle *cur = blob->InParticle(i);

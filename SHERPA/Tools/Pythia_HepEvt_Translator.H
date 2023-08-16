@@ -13,7 +13,7 @@ namespace SHERPA {
 
   class Pythia_HepEvt_Translator {
   private:
-    HepEvt_Interface                * p_interface;
+    HepEvt_Interface                * p_hepevtinterface;
     ATOOLS::Translation_Map           m_convertH2S;
     ATOOLS::Translation_Map::iterator m_piter, m_piter1;
     ATOOLS::Blob_List *               p_blobs;

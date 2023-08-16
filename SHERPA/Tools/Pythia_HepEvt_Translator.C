@@ -8,8 +8,8 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Pythia_HepEvt_Translator::Pythia_HepEvt_Translator(HepEvt_Interface * interface) :
-  p_interface(interface), p_blobs(NULL)
+Pythia_HepEvt_Translator::Pythia_HepEvt_Translator(HepEvt_Interface * hepevtinterface) :
+  p_hepevtinterface(hepevtinterface), p_blobs(NULL)
 {}
 
 bool Pythia_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
@@ -31,13 +31,13 @@ bool Pythia_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
 }
 
 void Pythia_HepEvt_Translator::CopyHepEvtBlock() {
-  m_nhep   = p_interface->m_nhep;
-  p_isthep = p_interface->p_isthep;
-  p_idhep  = p_interface->p_idhep;
-  p_jmohep = p_interface->p_jmohep;
-  p_jdahep = p_interface->p_jdahep;
-  p_phep   = p_interface->p_phep;
-  p_vhep   = p_interface->p_vhep;
+  m_nhep   = p_hepevtinterface->m_nhep;
+  p_isthep = p_hepevtinterface->p_isthep;
+  p_idhep  = p_hepevtinterface->p_idhep;
+  p_jmohep = p_hepevtinterface->p_jmohep;
+  p_jdahep = p_hepevtinterface->p_jdahep;
+  p_phep   = p_hepevtinterface->p_phep;
+  p_vhep   = p_hepevtinterface->p_vhep;
 }
 
 void Pythia_HepEvt_Translator::HepEvt2Particles()

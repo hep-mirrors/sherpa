@@ -6,6 +6,7 @@
 #include "PDF/Main/ISR_Handler.H"
 
 #include <vector>
+#include <algorithm>
 
 namespace PDF { class PDF_Base; }
 

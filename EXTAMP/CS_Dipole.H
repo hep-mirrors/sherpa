@@ -2,6 +2,7 @@
 #define EXTAMP_Process_CS_Dipole_H
 
 #include <string>
+#include <algorithm>
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/NLO_Types.H"

@@ -2,6 +2,7 @@
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include <algorithm>
 
 using namespace ATOOLS;
 

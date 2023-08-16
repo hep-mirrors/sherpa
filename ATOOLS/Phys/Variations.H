@@ -49,7 +49,7 @@ namespace ATOOLS {
       QCUT            = 1<<3
     };
   };
-  DEFINE_ENUM_FLAG_OPERATORS(ScaleFactorExpansions::code)
+  DEFINE_SHERPA_ENUM_FLAG_OPERATORS(ScaleFactorExpansions::code)
 
   struct Qcut_Variation_Params {
     Qcut_Variation_Params(double scale_factor):

@@ -21,7 +21,7 @@ namespace SHERPA {
   class Jet_Evolution: public Event_Phase_Handler {
   private :
     REMNANTS::Remnant_Handler * p_remnants;
-    PertInterfaceMap            m_interfaces;
+    PertInterfaceMap            m_pertinterfaces;
     
     void FillPerturbativeInterfaces(Matrix_Element_Handler *,
 				    Hard_Decay_Handler*,
@@ -36,9 +36,9 @@ namespace SHERPA {
 
     void Reset();
     void Update(ATOOLS::Blob *,const size_t,
-                Perturbative_Interface *interface);
+                Perturbative_Interface *);
     bool DefineInitialConditions(const ATOOLS::Blob *,const ATOOLS::Blob_List *,
-                                 Perturbative_Interface *interface);
+                                 Perturbative_Interface *);
     bool AftermathOfNoShower(ATOOLS::Blob *,ATOOLS::Blob_List *);
     bool AftermathOfSuccessfulShower(ATOOLS::Blob *,ATOOLS::Blob_List *,
 				     Perturbative_Interface *);
@@ -91,16 +91,6 @@ namespace SHERPA {
     The pointer to the Shower_Handler of choice. rightnow, only a Pythia-type parton shower (i.e. ordering by 
     virtual mass plus angular ordering imposed "by hand" to ensure coherence) is available, in the near
     future, however, there will be also a dipole shower available.
-  */
-  /*!
-    \var Perturbative_Interface * Jet_Evolution::p_interface
-    The pointer to the interface between matrix element and parton/dipole shower. This interface basically
-    is responsible for taking the blob stemming from the hard production process or decay and translate the
-    corresponding partons into a parton history suitable for showering (in the actual case of a parton shower
-    this boils down to the fillnig of the partons into a binary tree structure of 1->2 decays of "mothers"
-    into "daughters"). It should be stressed that every combination of matrix element generator and shower
-    needs a specific realization of this due to different information obtainalble from the matrix elements and
-    different shower variables used in the shower.
   */
   /*!
     \fn Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *,Shower_Handler *)
