@@ -31,18 +31,21 @@ double Sigma_Inelastic::GetValuePerChannel(const int k, const int l, const doubl
     if (k >= 0 && l >= 0) {
         Omega_ik * eikonal = (*p_eikonals)[k][l];
         value = eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)));
+        value *= sqr(p_eikonals->size());
     }
     if (k >= 0 && l < 0) {
         for (size_t j=0;j<(*p_eikonals)[k].size();j++) {
             Omega_ik * eikonal = (*p_eikonals)[k][j];
             value += eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)));
         }
+        value *= p_eikonals->size();
     }
     if (k < 0 && l >= 0) {
         for (size_t i=0;i<(*p_eikonals)[l].size();i++) {
             Omega_ik * eikonal = (*p_eikonals)[i][l];
             value += eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)));
         }
+        value *= p_eikonals->size();
     }
     if (k < 0 && l < 0) value = GetCombinedValue(B);
     return value;
