@@ -12,15 +12,12 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
 using namespace PHASIC;
 using namespace ATOOLS;
-
-namespace ATOOLS { template class SP(Process_Integrator); }
 
 static int s_whbins(1000);
 static int s_genresdir(0);
@@ -527,7 +524,7 @@ void Process_Integrator::ResetMax(int flag)
   }
 }
 
-void Process_Integrator::SetPSHandler(const SP(Phase_Space_Handler) &pshandler)
+void Process_Integrator::SetPSHandler(const std::shared_ptr<Phase_Space_Handler>& pshandler)
 {
   p_pshandler=pshandler;
   if (p_proc->IsGroup())

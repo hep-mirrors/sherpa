@@ -43,7 +43,7 @@ namespace siscone{
  * \class Cjet
  * real Jet information.
  *
- * This class contains information for one single jet. 
+ * This class contains information for one single jet.
  * That is, first, its momentum carrying information
  * about its centre and pT, and second, its particle
  * contents
@@ -79,7 +79,7 @@ class Cjet{
 
 /// ordering of jets in pt (e.g. used in final jets ordering)
 bool jets_pt_less(const Cjet &j1, const Cjet &j2);
-  
+
 
 /// the choices of scale variable that can be used in the split-merge
 /// step, both for ordering the protojets and for measuing their
@@ -109,7 +109,7 @@ std::string split_merge_scale_name(Esplit_merge_scale sms);
  */
 class Csplit_merge_ptcomparison{
 public:
-  Csplit_merge_ptcomparison() : 
+  Csplit_merge_ptcomparison() :
     particles(0), split_merge_scale(SM_pttilde){};
 
   // return the name corresponding to the SM scale variable
@@ -133,12 +133,12 @@ public:
    */
   void get_difference(const Cjet &j1, const Cjet &j2, Cmomentum *v, double *pt_tilde) const;
 
-  /// the following parameter controls the variable we're using for 
-  /// the split-merge process i.e. the variable we use for 
+  /// the following parameter controls the variable we're using for
+  /// the split-merge process i.e. the variable we use for
   ///  1. ordering jet candidates;
   ///  2. computing te overlap fraction of two candidates.
   /// The default value uses pttile (p-scheme pt). Other alternatives are
-  /// pt, mt=sqrt(pt^2+m^2)=sqrt(E^2-pz^2) or Et. 
+  /// pt, mt=sqrt(pt^2+m^2)=sqrt(E^2-pz^2) or Et.
   /// NOTE: Modifying the default choice can have nasty effects:
   /// - using pt leads to some IR unsafety when we have two jets,
   ///   e.g. back-to-back, with the same pt. In that case, their ordering
@@ -148,7 +148,7 @@ public:
   ///   investigating the IR issue
   /// - using Et is safe but do not respect boost invariance
   /// - using mt solves the IR unsafety issues with the pt variable
-  ///   for QCD jets but the IR unsafety remains for nack-to-back 
+  ///   for QCD jets but the IR unsafety remains for nack-to-back
   ///   jets of unstable narrow-width particles (e.g. Higgs).
   /// Therefore, keeping the default value is strongly advised.
   Esplit_merge_scale split_merge_scale;
@@ -218,12 +218,12 @@ class Csplit_merge{
   /////////////////////////////////
   // main parts of the algorithm //
   /////////////////////////////////
- 
+
   /**
    * build the list 'p_uncol_hard' from p_remain by clustering
    * collinear particles and removing particles softer than
    * stable_cone_soft_pt2_cutoff
-   * note that thins in only used for stable-cone detection 
+   * note that thins in only used for stable-cone detection
    * so the parent_index field is unnecessary
    */
   int merge_collinear_and_remove_soft();
@@ -241,7 +241,7 @@ class Csplit_merge{
    * really do the splitting and merging
    * At the end, the vector jets is filled with the jets found.
    * the 'contents' field of each jets contains the indices
-   * of the particles included in that jet. 
+   * of the particles included in that jet.
    * \param overlap_tshold  threshold for splitting/merging transition
    * \param ptmin           minimal pT allowed for jets
    * \return the number of jets is returned
@@ -272,7 +272,7 @@ class Csplit_merge{
   /// minimal difference in squared distance between a particle and
   /// two overlapping protojets when doing a split (useful when
   /// testing approx. collinear safety)
-  double most_ambiguous_split; 
+  double most_ambiguous_split;
 
   // jets information
   std::vector<Cjet> jets;            ///< list of jets
@@ -294,14 +294,14 @@ class Csplit_merge{
   /// member used for detailed comparisons of pt's
   Csplit_merge_ptcomparison ptcomparison;
 
-  /// stop split--merge when the SM_var of the hardest protojet 
-  /// is below this cut-off. 
+  /// stop split--merge when the SM_var of the hardest protojet
+  /// is below this cut-off.
   /// This is not collinear-safe so you should not use this
   /// variable unless you really know what you are doing
   /// Note that the cut-off is set on the variable squared.
   double SM_var2_hardest_cut_off;
 
-  /// pt cutoff for the particles to put in p_uncol_hard 
+  /// pt cutoff for the particles to put in p_uncol_hard
   /// this is meant to allow removing soft particles in the
   /// stable-cone search.
   double stable_cone_soft_pt2_cutoff;
@@ -320,7 +320,7 @@ class Csplit_merge{
   /**
    * split the two given jets.
    * during this procedure, the jets j1 & j2 are replaced
-   * by 2 new jets. Common particles are associted to the 
+   * by 2 new jets. Common particles are associted to the
    * closest initial jet.
    * \param it_j1  iterator of the first jet in 'candidates'
    * \param it_j2  iterator of the second jet in 'candidates'
@@ -341,7 +341,7 @@ class Csplit_merge{
   bool merge(cjet_iterator &it_j1, cjet_iterator &it_j2);
 
   /**
-   * Check whether or not a jet has to be inserted in the 
+   * Check whether or not a jet has to be inserted in the
    * list of protojets. If it has, set its sm_variable and
    * insert it to the list of protojets.
    * \param jet    jet to insert
@@ -349,7 +349,7 @@ class Csplit_merge{
   bool insert(Cjet &jet);
 
   /**
-   * given a 4-momentum and its associated pT, return the 
+   * given a 4-momentum and its associated pT, return the
    * variable tht has to be used for SM
    * \param v          4 momentum of the protojet
    * \param pt_tilde   pt_tilde of the protojet
@@ -358,7 +358,7 @@ class Csplit_merge{
 
   // jet information
   /// list of jet candidates
-  std::auto_ptr<std::multiset<Cjet,Csplit_merge_ptcomparison> > candidates;
+  std::shared_ptr<std::multiset<Cjet,Csplit_merge_ptcomparison> > candidates;
 
   /// minimal pt2
   double pt_min2;

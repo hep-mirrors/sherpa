@@ -3,8 +3,9 @@
 
 #include "ATOOLS/Org/Smart_Pointer.H"
 #include "SHERPA/Tools/Variations.H"
-
 #include "PHASIC++/Process/Process_Base.H"
+
+#include <memory>
 
 namespace ATOOLS { class Cluster_Amplitude; }
 
@@ -71,9 +72,9 @@ namespace PHASIC {
 
     struct KFactorReweightingInfo {
       double m_random;
-      SP(SHERPA::Variation_Weights) m_rsvarweights;
-      SP(SHERPA::Variation_Weights) m_bvivarweights;
-      SP(SHERPA::Variation_Weights) m_bvarweights;
+      std::shared_ptr<SHERPA::Variation_Weights> m_rsvarweights;
+      std::shared_ptr<SHERPA::Variation_Weights> m_bvivarweights;
+      std::shared_ptr<SHERPA::Variation_Weights> m_bvarweights;
     };
 
     double ReweightLocalKFactor(SHERPA::Variation_Parameters *,

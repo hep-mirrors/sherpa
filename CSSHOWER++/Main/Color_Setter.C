@@ -43,7 +43,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
   }
   if (vc==0) {
     // select new color configuration
-    SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+    std::shared_ptr<Color_Integrator> colint = p_xs->Integrator()->ColorIntegrator();
     while (!colint->GeneratePoint());
     PHASIC::Int_Vector ni(colint->I()), nj(colint->J());
     for (size_t i(0);i<ampl->Legs().size();++i)
@@ -60,7 +60,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
       if (col==0) continue;
       std::vector<size_t> js;
       for (size_t j(0);j<ampl->Legs().size();++j)
-	if (i!=j && oc[j].m_j==col && cs.find(j)==cs.end()) 
+	if (i!=j && oc[j].m_j==col && cs.find(j)==cs.end())
 	  js.push_back(j);
       if (js.empty()) {
 	msg_Debugging()<<"color singlet "<<*cl<<"\n";
@@ -91,7 +91,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
     }
     if ((trials%9==0 && trials>0) || sing) {
       // select new color configuration
-      SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+      std::shared_ptr<Color_Integrator> colint = p_xs->Integrator()->ColorIntegrator();
       while (!colint->GeneratePoint());
       PHASIC::Int_Vector ni(colint->I()), nj(colint->J());
       for (size_t i(0);i<ampl->Legs().size();++i)
@@ -162,14 +162,14 @@ bool Color_Setter::SetColors(Cluster_Amplitude *const ampl)
   }
   DEBUG_FUNC(p_xs->Name());
   msg_Debugging()<<*ampl<<"\n";
-  SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+  std::shared_ptr<Color_Integrator> colint = p_xs->Integrator()->ColorIntegrator();
   PHASIC::Int_Vector ci(colint->I()), cj(colint->J());
   bool sol(false);
   switch (m_cmode) {
   case 1: {
     sol=SetRandomColors(ampl);
     break;
-  } 
+  }
   default:
     THROW(fatal_error,"Invalid colour setting mode");
   }

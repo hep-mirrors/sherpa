@@ -242,12 +242,12 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   // we'll use a set of temporary variation weights,
   // which are combined only in the end
   SHERPA::Variations *variations(NULL);
-  SP(SHERPA::Variation_Weights) rsvarweights, bvivarweights, bvarweights;
+  std::shared_ptr<SHERPA::Variation_Weights> rsvarweights, bvivarweights, bvarweights;
   if (p_variationweights) {
     variations = p_variationweights->GetVariations();
-    rsvarweights  = new SHERPA::Variation_Weights(variations);
-    bvivarweights = new SHERPA::Variation_Weights(variations);
-    bvarweights   = new SHERPA::Variation_Weights(variations);
+    rsvarweights  = std::make_shared<SHERPA::Variation_Weights>(variations);
+    bvivarweights = std::make_shared<SHERPA::Variation_Weights>(variations);
+    bvarweights   = std::make_shared<SHERPA::Variation_Weights>(variations);
   }
 
   // evaluate RS process
@@ -259,7 +259,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   if (rsproc->VariationWeights() && rsproc->VariationWeights() != p_variationweights) {
     THROW(fatal_error, "Variation weights already set.");
   }
-  rsproc->SetVariationWeights(--rsvarweights);
+  rsproc->SetVariationWeights(rsvarweights.get());
   msg_Debugging()<<"Found '"<<rsproc->Name()<<"'\n";
   double rs(rsproc->Differential(*rampl,rm));
   double r(rsproc->GetSubevtList()->back()->m_result);
@@ -278,12 +278,12 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   if (bviproc->VariationWeights() && bviproc->VariationWeights() != p_variationweights) {
     THROW(fatal_error, "Variation weights already set.");
   }
-  bviproc->SetVariationWeights(--bvivarweights);
+  bviproc->SetVariationWeights(bvivarweights.get());
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
   bproc->GetMEwgtinfo()->m_type = mewgttype::none;
   if (bproc->VariationWeights()) THROW(fatal_error, "Variation weights already set.");
-  bproc->SetVariationWeights(--bvarweights);
+  bproc->SetVariationWeights(bvarweights.get());
   double b(bproc->Differential(ampl,rm));
   bproc->SetVariationWeights(NULL);
   if (b==0.0) return 0.0;
@@ -642,7 +642,7 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i(0);i<p.size();++i)
     ampl->CreateLeg(Vec4D(),Flavour(kf_jet));
-  SP(Phase_Space_Handler) psh(p_ddproc->Integrator()->PSHandler());
+  std::shared_ptr<Phase_Space_Handler> psh = p_ddproc->Integrator()->PSHandler();
   do {
     psh->TestPoint(&p.front(),&p_ddproc->Info(),p_ddproc->Generator());
     for (size_t i(0);i<p.size();++i) ampl->Leg(i)->SetMom(p[i]);

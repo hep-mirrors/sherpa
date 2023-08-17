@@ -6,8 +6,9 @@
 
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "PHASIC++/Main/Color_Integrator.H"
+
+#include <memory>
 
 namespace SHERPA{
   class Sherpa;
@@ -23,7 +24,7 @@ namespace PHASIC{
 }
 
 class MEProcess{
-  
+
 private:
 
   std::string m_name;
@@ -32,7 +33,7 @@ private:
   SHERPA::Sherpa*            p_gen;
   PHASIC::Process_Base *     p_proc;
   PHASIC::Rambo*             p_rambo;
-  ATOOLS::Smart_Pointer<PHASIC::Color_Integrator> p_colint;
+  std::shared_ptr<PHASIC::Color_Integrator> p_colint;
 
   size_t                         m_ncolinds;
   std::vector<std::vector<int> > m_colcombinations;
@@ -42,7 +43,7 @@ private:
 
   // Store flavs here separately in the same order
   // in which they were added (for performance reasons)
-  ATOOLS::Flavour_Vector         m_flavs; 
+  ATOOLS::Flavour_Vector         m_flavs;
 
   size_t m_npsp,m_nin,m_nout;
 

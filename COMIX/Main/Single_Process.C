@@ -318,7 +318,7 @@ bool COMIX::Single_Process::MapProcess()
 	My_Out_File map(mapfile);
 	if (map.Open()) {
 	  *map<<m_name<<" "<<mapname<<"\n"<<m_fmap.size()<<"\n";
-	  for (Flavour_Map::const_iterator 
+	  for (Flavour_Map::const_iterator
 		 fit(m_fmap.begin());fit!=m_fmap.end();++fit) {
 	    msg_Debugging()<<"  fmap '"<<fit->first
 			   <<"' onto '"<<fit->second<<"'\n";
@@ -356,17 +356,17 @@ bool COMIX::Single_Process::GeneratePoint()
     return true;
   }
   m_zero=true;
-  if (p_map!=NULL && m_lookup && p_map->m_lookup) 
+  if (p_map!=NULL && m_lookup && p_map->m_lookup)
     return !(m_zero=p_map->m_zero);
   if (!p_int->ColorIntegrator()->GeneratePoint()) return false;
-  if (p_int->HelicityIntegrator()!=NULL && 
+  if (p_int->HelicityIntegrator()!=NULL &&
       !p_int->HelicityIntegrator()->GeneratePoint()) return false;
   m_zero=false;
   return true;
 }
 
 double COMIX::Single_Process::Differential
-(const Cluster_Amplitude &ampl,int mode) 
+(const Cluster_Amplitude &ampl,int mode)
 {
   DEBUG_FUNC(Name());
   m_zero=false;
@@ -384,7 +384,7 @@ double COMIX::Single_Process::SetZero()
 }
 
 double COMIX::Single_Process::Partonic
-(const Vec4D_Vector &p,const int mode) 
+(const Vec4D_Vector &p,const int mode)
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
   if (mode==1) {
@@ -423,7 +423,7 @@ double COMIX::Single_Process::Partonic
 	for (size_t j(0); j<m_cols.m_perms.size(); ++j)
 	  m_dxs+=((*p_hc)[i][j]*m_cols.m_colfacs[i][j]).real();
     }
-    if (p_int->HelicityIntegrator()!=NULL) 
+    if (p_int->HelicityIntegrator()!=NULL)
       m_w*=p_int->HelicityIntegrator()->Weight();
     double kf(sp->KFactor());
     m_w*=kf;
@@ -616,14 +616,14 @@ bool COMIX::Single_Process::Tests()
     p_bg->WriteOutGraphs(m_gpath+"/"+ShellName(m_name)+".tex");
   }
   if (p_int->HelicityScheme()==hls::sample) {
-    p_int->SetHelicityIntegrator(new Helicity_Integrator());
+    p_int->SetHelicityIntegrator(std::make_shared<Helicity_Integrator>());
     p_bg->SetHelicityIntegrator(&*p_int->HelicityIntegrator());
     Flavour_Vector fl(m_nin+m_nout);
     for (size_t i(0);i<fl.size();++i) fl[i]=m_flavs[i];
     if (!p_int->HelicityIntegrator()->Construct(fl)) return false;
   }
-  p_int->SetColorIntegrator(new Color_Integrator());
-  p_bg->SetColorIntegrator(&*p_int->ColorIntegrator());
+  p_int->SetColorIntegrator(std::make_shared<Color_Integrator>());
+  p_bg->SetColorIntegrator(p_int->ColorIntegrator().get());
   Idx_Vector ids(m_nin+m_nout,0);
   Int_Vector acts(m_nin+m_nout,0), types(m_nin+m_nout,0);
   for (size_t i(0);i<ids.size();++i) {

@@ -890,7 +890,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
 					const bool create)
 {
   p_int->Reset();
-  SP(Phase_Space_Handler) psh(p_int->PSHandler());
+  std::shared_ptr<Phase_Space_Handler> psh = p_int->PSHandler();
   if (p_int->ISR()) {
     if (m_nin==2) {
       if (m_flavs[0].Mass()!=p_int->ISR()->Flav(0).Mass() ||

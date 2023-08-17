@@ -42,7 +42,7 @@ namespace PHASIC {
       m_kt2(-1.0), m_op2(-std::numeric_limits<double>::max()),
       m_mu2(-1.0), m_z(0.0), m_y(0.0), p_dec(NULL) {}
     bool operator<(const CS_Params &ck) const
-    { 
+    {
       if (m_idi<ck.m_idi) return true;
       if (m_idi>ck.m_idi) return false;
       if (m_idj<ck.m_idj) return true;
@@ -69,7 +69,7 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector m_f;
 
-    SP(Color_Integrator) p_ci;
+    std::shared_ptr<Color_Integrator> p_ci;
 
     size_t m_cnt, m_rej, m_mode, m_cmode, m_cmodebvi, m_cmoders;
     double m_lfrac, m_aqed, m_wthres, m_rsf, m_csf;
@@ -145,7 +145,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
 		    Loose_METS_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"loose mets scale scheme";
 }
 
@@ -162,7 +162,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
 		    METS_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"mets scale scheme";
 }
 
@@ -179,7 +179,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
 		    Strict_METS_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"strict mets scale scheme";
 }
 
@@ -199,7 +199,7 @@ METS_Scale_Setter::METS_Scale_Setter
   if (pos!=std::string::npos) {
     tag=tag.substr(pos+1);
     pos=tag.find(']');
-    if (pos==std::string::npos) 
+    if (pos==std::string::npos)
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     core=tag.substr(0,pos);
     tag=tag.substr(pos+1);
@@ -214,7 +214,7 @@ METS_Scale_Setter::METS_Scale_Setter
     }
     tag=tag.substr(pos+1);
     pos=tag.find('}');
-    if (pos==std::string::npos) 
+    if (pos==std::string::npos)
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
@@ -364,7 +364,7 @@ double METS_Scale_Setter::CalculateStrict
   return muf2;
 }
 
-double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mode) 
+double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mode)
 {
   ++m_cnt;
   m_p=momenta;
@@ -388,7 +388,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
   }
   else {
     Int_Vector ci(p_ci->I()), cj(p_ci->J());
-    for (size_t i(0);i<m_p.size();++i) 
+    for (size_t i(0);i<m_p.size();++i)
       ampl->CreateLeg(m_p[i],m_f[i],ColorID(ci[i],cj[i]));
   }
   Single_Process *proc(p_proc->Get<Single_Process>());
@@ -544,7 +544,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 		   <<" <-> "<<ID(ckw.m_idk)
 		   <<" => "<<sqrt(ckw.m_kt2)
 		   <<" ("<<sqrt(ckw.m_op2)<<")\n";
-    std::vector<std::pair<size_t,double> > 
+    std::vector<std::pair<size_t,double> >
       &cops(ops[ampl->Legs().size()-5]),
       &pops(ops[ampl->Legs().size()-4]);
     cops=pops;
@@ -608,7 +608,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
       kt2core=CoreScale(ampl).m_kt2;
       msg_Debugging()<<"Core = "<<*ampl<<" => "<<sqrt(kt2core)<<"\n";
       bool ord(true);
-      std::vector<std::pair<size_t,double> > 
+      std::vector<std::pair<size_t,double> >
 	&pops(ops[ampl->Legs().size()-4]);
       if (kt2core<pops.front().second) {
 	msg_Debugging()<<"unordered configuration (core) [ ord = "
@@ -752,7 +752,7 @@ double METS_Scale_Setter::SetScales
       as=pow(as,1.0/oqcd);
       mur2=MODEL::as->WDBSolve(as,m_rsf*mum2,m_rsf*1.01*sqr(rpa->gen.Ecms()));
       if (!IsEqual((*MODEL::as)(mur2),as))
-	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
+	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl;
     }
     msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
   }
@@ -788,7 +788,7 @@ double METS_Scale_Setter::SetScales
 
 void METS_Scale_Setter::SetScale
 (const std::string &mu2tag,Algebra_Interpreter &mu2calc)
-{ 
+{
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
 		 <<"' in '"<<p_caller->Name()<<"' {\n";
@@ -875,7 +875,7 @@ void METS_Scale_Setter::KT2
   }
   cs.m_op2=1.0/cs.m_kt2;
 }
-  
+
 bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
 				const CS_Params &cs) const
 {
@@ -932,9 +932,9 @@ bool METS_Scale_Setter::CheckColors
     }
     else if (lj->Flav().StrongCharge()==8) {
       if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_i==cj.m_j && 
+      if (ci.m_i==cj.m_j &&
 	  (cj.m_i==ck.m_j || ck.Singlet())) return true;
-      if ((ci.m_i==ck.m_j || ck.Singlet()) && 
+      if ((ci.m_i==ck.m_j || ck.Singlet()) &&
 	  cj.Singlet()) return true;
     }
     else {
@@ -950,9 +950,9 @@ bool METS_Scale_Setter::CheckColors
     }
     else if (lj->Flav().StrongCharge()==8) {
       if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_j==cj.m_i && 
+      if (ci.m_j==cj.m_i &&
 	  (cj.m_j==ck.m_i || ck.Singlet())) return true;
-      if ((ci.m_j==ck.m_i || ck.Singlet()) && 
+      if ((ci.m_j==ck.m_i || ck.Singlet()) &&
 	  cj.Singlet()) return true;
     }
     else {
@@ -963,11 +963,11 @@ bool METS_Scale_Setter::CheckColors
   else if (li->Flav().StrongCharge()==8) {
     if (lk->Flav().StrongCharge()==0) return false;
     if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
+      if (ci.m_i==cj.m_j &&
 	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8)))
 	return true;
-      if (ci.m_j==cj.m_i && 
+      if (ci.m_j==cj.m_i &&
 	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
 	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
 	return true;
@@ -1031,11 +1031,11 @@ ColorID METS_Scale_Setter::CombineColors
   }
   else if (li->Flav().StrongCharge()==8) {
     if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
+      if (ci.m_i==cj.m_j &&
 	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8)))
 	return ColorID(cj.m_i,ci.m_j);
-      if (ci.m_j==cj.m_i && 
+      if (ci.m_j==cj.m_i &&
 	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
 	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
 	return ColorID(ci.m_i,cj.m_j);

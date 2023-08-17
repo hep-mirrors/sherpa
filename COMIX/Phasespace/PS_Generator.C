@@ -56,8 +56,8 @@ PS_Generator::~PS_Generator()
 
 void PS_Generator::CleanUp()
 {
-  for (size_t i(0);i<m_cur.size();++i) 
-    for (size_t j(0);j<m_cur[i].size();++j) delete m_cur[i][j]; 
+  for (size_t i(0);i<m_cur.size();++i)
+    for (size_t j(0);j<m_cur[i].size();++j) delete m_cur[i][j];
   m_n=0;
   m_cl=Int_Matrix();
   m_cur=Current_Matrix();
@@ -74,7 +74,7 @@ size_t PS_Generator::NChannels() const
   for (size_t i(0);i<m_cur.size();++i)
     nch+=m_cur[i].size();
   return nch;
-}    
+}
 
 void PS_Generator::SetColors(const Int_Vector &rc,
 			     const Int_Vector &ac)
@@ -94,11 +94,11 @@ void PS_Generator::SetColors(const Int_Vector &rc,
 
 void PS_Generator::CalcJL()
 {
-  for (size_t i(0);i<m_cur[1].size();++i) 
+  for (size_t i(0);i<m_cur[1].size();++i)
     m_cur[1][i]->ConstructJ(Vec4D(),0,m_cl[i][0],m_cl[i][1],0);
   if (m_zmode>0) {
     for (size_t n(2);n<m_n;++n) {
-      for (size_t i(0);i<m_cur[n].size();++i) 
+      for (size_t i(0);i<m_cur[n].size();++i)
 	m_cur[n][i]->Evaluate();
     }
     for (size_t n(m_n-2);n>=2;--n)
@@ -129,8 +129,8 @@ bool PS_Generator::Evaluate()
 	  break;
 	}
     }
-    SP(Color_Integrator) ci(cur->Integrator()->ColorIntegrator());
-    if (ci==NULL) 
+    std::shared_ptr<Color_Integrator> ci = cur->Integrator()->ColorIntegrator();
+    if (ci==NULL)
       THROW(fatal_error,"No color integrator for "+cur->Name());
     SetColors(ci->I(),ci->J());
   }
@@ -244,7 +244,7 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
   {
     msg_Indent();
   if (m_n>0) {
-    if (m_n!=curs.size()) 
+    if (m_n!=curs.size())
       THROW(fatal_error,"Invalid number of external particles");
   }
   else {
@@ -332,7 +332,7 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
       curs[n][j]->Print();
       if (curs[n][j]->Flav().Width()<s_pwmin &&
 	  !curs[n][j]->Cut() && curs[n][j]->Flav().Mass()>0.0 &&
-	  curs[n][j]->Flav().Mass()<m_chmass && n>1 && n<m_n-1) 
+	  curs[n][j]->Flav().Mass()<m_chmass && n>1 && n<m_n-1)
 	AddCurrent(curs[n][j],curs[n][j]->Flav(),n,1);
       else AddCurrent(curs[n][j],curs[n][j]->Flav(),n);
       std::set<Vertex_Key,CB_PSSort> v3;
@@ -503,7 +503,7 @@ void PS_Generator::AddSTCC()
 	TCC_Map::const_iterator it(m_tccs.find(pid));
 	if (it==m_tccs.end()) continue;
 	for (size_t i(0);i<it->second.size();++i) {
-	  if (added.empty()) 
+	  if (added.empty())
 	    ((PS_Current*)m_cur[n][j])->SetSCC(it->second[i]);
 	  else if (added.find(it->second[i]->PSInfo())==added.end())
 	    AddExtraCurrent(m_cur[n][j],n,m_cur[n][j]->Flav().Mass(),
