@@ -2,7 +2,6 @@
 #include "AMEGIC++/Amplitude/Zfunc_Generator.H"
 #include "AMEGIC++/Main/Point.H"
 #include "AMEGIC++/Amplitude/Zfunc.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -12,9 +11,7 @@ using namespace ATOOLS;
 #define OBJECT_TYPE AMEGIC::Zfunc_Calc
 #include "ATOOLS/Org/Getter_Function.C"
 
-namespace ATOOLS { template class SP(Zfunc_Calc); }
-
-Zfunc_Calc::~Zfunc_Calc() 
+Zfunc_Calc::~Zfunc_Calc()
 {
   // for (size_t i(0);i<lorentzlist.size();++i) lorentzlist[i]->Delete();
 }
@@ -26,15 +23,15 @@ Zfunc_Calc *Zfunc_Calc::GetCopy() const
   return calc;
 }
 
-Kabbala Zfunc_Calc::Do() 
-{ 
-  std::cerr<<"Error: Virtual method Zfunc_Calc::Do() called!"<<std::endl; 
+Kabbala Zfunc_Calc::Do()
+{
+  std::cerr<<"Error: Virtual method Zfunc_Calc::Do() called!"<<std::endl;
   return Kabbala();
 }
 
-int Zfunc_Calc::GetScalarNumb() 
-{ 
-  return 0; 
+int Zfunc_Calc::GetScalarNumb()
+{
+  return 0;
 }
 
 void Zfunc_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,

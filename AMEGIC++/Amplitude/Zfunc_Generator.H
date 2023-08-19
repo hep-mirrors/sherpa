@@ -4,7 +4,6 @@
 #include "AMEGIC++/Main/Point.H"
 #include <vector>
 #include "AMEGIC++/Amplitude/Zfunc.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 
 namespace AMEGIC {
   class Zfunc_Calc;
@@ -12,7 +11,7 @@ namespace AMEGIC {
   class Basic_Sfuncs;
   class Virtual_String_Generator;
 
-  typedef std::vector<SP(Zfunc_Calc)> ZF_Vector;
+  typedef std::vector<std::shared_ptr<Zfunc_Calc>> ZF_Vector;
 
   class Zfunc_Generator {
     bool  cutvecprop;
@@ -20,10 +19,10 @@ namespace AMEGIC {
     static ZF_Vector zcalc;
     Basic_Sfuncs* BS;
     void  IsGaugeV(Point*,int&,int&);
-    
+
     int   TryArgs(int,std::vector<MODEL::Lorentz_Function*> &,int,std::vector<MODEL::Lorentz_Function*> &);
     void  LFFill_Zfunc(Zfunc*,std::vector<MODEL::Lorentz_Function*> &,Point*,Point*,Point*);
-  
+
     int   LFDetermine_Zfunc(Zfunc*,Point*,Point*,Point*);
 
     void  Lorentz_Sequence(Point*,std::vector<MODEL::Lorentz_Function*> &lflist);
@@ -41,7 +40,7 @@ namespace AMEGIC {
   public:
     Zfunc_Generator(bool cvp, Basic_Sfuncs* _BS) : cutvecprop(cvp), BS(_BS) {}
     ~Zfunc_Generator();
-    
+
     void  Set_In(Zfunc*,int,Point*,Point*,Point*);
     void  Set_Out(Zfunc*,int,Point*,Point*);
     void  Set_Tensor(Zfunc*,Point*);
@@ -57,8 +56,9 @@ namespace AMEGIC {
 
     void SetDirection(int,SpinorDirection*);
     void Get(Zfunc_List& _zlist) {
-      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) 
-	_zlist.push_back(*zit); 
+      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+        _zlist.push_back(*zit);
+      }
     }
   };
 }

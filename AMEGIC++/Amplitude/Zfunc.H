@@ -3,7 +3,8 @@
 
 #include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
 #include "AMEGIC++/Amplitude/Pfunc.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
+
+#include <memory>
 
 namespace AMEGIC {
   class Zfunc_Calc;
@@ -11,7 +12,7 @@ namespace AMEGIC {
   class Pair {
   public:
     int pold,pnew;
-    
+
     Pair(int _pold,int _pnew) : pold(_pold), pnew(_pnew) {}
   };
 
@@ -25,7 +26,7 @@ namespace AMEGIC {
     int     * p_args;
     ATOOLS::Kabbala   m_value;
     CValue() { p_args=0; }
-    CValue(int * _args, const ATOOLS::Kabbala _value) : p_args(_args) , m_value(_value) {} 
+    CValue(int * _args, const ATOOLS::Kabbala _value) : p_args(_args) , m_value(_value) {}
     inline bool Compare(int* args, int n){
       for(int i=0;i<n;++i) if (args[i]!=p_args[i]) return false;
       return true;
@@ -48,33 +49,33 @@ namespace AMEGIC {
     int       m_sign;
     std::string m_str;
     Calc_List m_calclist;
-    
-    Zfunc*            p_equal;    
-    SP(Zfunc_Calc)    p_calculator;
+
+    Zfunc*  p_equal;
+    std::shared_ptr<Zfunc_Calc>  p_calculator;
 
     Zfunc();
     Zfunc(const Zfunc& z);
     virtual ~Zfunc();
-    	
+
     Zfunc& operator=(const Zfunc& z);
     //virtual part
     virtual void ClearCalcList();
     virtual void KillZList() {}
     virtual void ReplaceProp(std::vector<Pair>*);
 
-    virtual Zfunc* operator[](const int i) {return this;} 
+    virtual Zfunc* operator[](const int i) {return this;}
 
     virtual void Print();
     virtual int  GetSize() {return 1;}
     virtual char GetOp() {return 0;}
 
-    virtual void SetSign(const int,const int) 
+    virtual void SetSign(const int,const int)
     { std::cerr<<"Called virtual function Zfunc::SetSign()!!!"<<std::endl; }
-    virtual int  GetSign(const int i) {   
+    virtual int  GetSign(const int i) {
       std::cerr<<"Called virtual function Zfunc::GetSign()!!!"<<std::endl;
       return 1;
     }
-    virtual int  GetSumIndex() {   
+    virtual int  GetSumIndex() {
       std::cerr<<"Called virtual function Zfunc::GetSumIndex()!!!"<<std::endl;
       return 0;
     }
@@ -90,12 +91,12 @@ namespace AMEGIC {
     Zfunc_Group() : Zfunc() {}
     Zfunc_Group(const Zfunc& z);
     Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,Pfunc_List* pl);
-    
-    Zfunc* operator[](const int i) { return m_zlist[i]; } 
+
+    Zfunc* operator[](const int i) { return m_zlist[i]; }
     void Print();
     int  GetSize() { return m_zlist.size(); }
-    char GetOp() { return m_op; } 
-   
+    char GetOp() { return m_op; }
+
     void SetSign(const int pos,const int _sign) { m_zsigns[pos] = _sign; }
     int  GetSign(const int i)                   { return m_zsigns[i]; }
     int  GetSumIndex() { if (m_op=='*') return m_sumindex; else return -1; }
@@ -103,7 +104,7 @@ namespace AMEGIC {
 
     void ClearCalcList();
     void KillZList();
-    void ReplaceProp(std::vector<Pair>*);  
+    void ReplaceProp(std::vector<Pair>*);
   };
 
   typedef std::vector<Zfunc*> Zfunc_List;
@@ -112,8 +113,8 @@ namespace AMEGIC {
   /*!
     \class CValue
     \brief Element for Zfunc::m_calclist
-    
-    This class contains a list of arguments and a ATOOLS::Kabbala result of a Z-function, 
+
+    This class contains a list of arguments and a ATOOLS::Kabbala result of a Z-function,
     to keep track for what sets of arguments a Z function was already calculated.
   */
   /*!
@@ -123,7 +124,7 @@ namespace AMEGIC {
   /*!
     \class Zfunc
     \brief Container for a single Z function
-    
+
     This class contains everything neccessary for the calculation of a single Z function and
     keeps track over already calculated values.
 
@@ -146,8 +147,8 @@ namespace AMEGIC {
   */
   /*!
     \var int* Zfunc::p_arguments
-    Pointer to an array of arguments. 
-    
+    Pointer to an array of arguments.
+
     Possible arguments:
     - external particles (0-9)
     - a propagator in the numbering scheme of the corresponding amplitude:
@@ -163,10 +164,10 @@ namespace AMEGIC {
     - two times the same argument for a spin-2 particle
 
     A dummy argument for a scalar is set for Z-functions, describing a vertex with scalars,
-    but where the building block to calculate the Z-function does 
+    but where the building block to calculate the Z-function does
     not depend on the scalars momentum. These arguments are always at the end of the array.
-    With the dummys, the whole information about the connection between vertices of an 
-    amplitude is contained in the argument structure of Z-functions. This allows a more 
+    With the dummys, the whole information about the connection between vertices of an
+    amplitude is contained in the argument structure of Z-functions. This allows a more
     efficient algorithm to build Super_Amplitude's.
   */
   /*!
@@ -184,7 +185,7 @@ namespace AMEGIC {
   */
   /*!
     \var int Zfunc::m_sign
-    An extra sign for the Z function, occuringfrom permutations in the legs of it's vertices 
+    An extra sign for the Z function, occuringfrom permutations in the legs of it's vertices
     (see Lorentz_Function::GetSign).
   */
   /*!
@@ -194,7 +195,7 @@ namespace AMEGIC {
   */
   /*!
     \var Calc_List Zfunc::m_calclist
-    Vector of CValue, to keep track over all sets of arguments, 
+    Vector of CValue, to keep track over all sets of arguments,
     for which the Z function was calculated.
   */
   /*!
@@ -228,11 +229,11 @@ namespace AMEGIC {
   */
   /*!
     \fn Zfunc::ReplaceProp(std::vector<Pair>*);
-    Changes the labels of propagators (Zfunc::p_propagators) and 
+    Changes the labels of propagators (Zfunc::p_propagators) and
     arguments (Zfunc::p_arguments) from Pair::pold to Pair::new.
   */
   /*!
-    \fn virtual Zfunc* Zfunc::operator[](const int i) 
+    \fn virtual Zfunc* Zfunc::operator[](const int i)
     Returns the pointer this.
   */
   /*!
@@ -242,23 +243,23 @@ namespace AMEGIC {
   /*!
     \class Zfunc_Group
     \brief Contains a list a Zfunc, connected by an operation + or *.
-    
+
     This class is derived from Zfunc and contains a list of Z functions.
     When an Single_Amplitude or Super_Amplitude is calculated in Single_Amplitude_Base,
-    it's Zfunc structure is transformed into a recursive structure of Zfunc_Group's, 
+    it's Zfunc structure is transformed into a recursive structure of Zfunc_Group's,
     connected by the operations + and *.
-    
+
     - '+' arrise when several amplitudes, containing identical parts are merged together to
-    a Super_Amplitude. 
-    The '+'-group can have two or more sub Z functions, that all have 
+    a Super_Amplitude.
+    The '+'-group can have two or more sub Z functions, that all have
     the same argument list (up to the sequence).
-    - '*' combines two Z functions (or groups) that are connected by a propagator. The 
-    sub Z functions have only the argument referring to this propagator common. The 
+    - '*' combines two Z functions (or groups) that are connected by a propagator. The
+    sub Z functions have only the argument referring to this propagator common. The
     '*'-operation here goes along with the summation over spinor/antispinor modes for
     fermion propagators or polarization vectors for boson propagators.
 
-    Zfunc_Group has no defined type and calculator. The calculation is done 
-    in Single_Amplitude_Base::SingleZGoupValue by 
+    Zfunc_Group has no defined type and calculator. The calculation is done
+    in Single_Amplitude_Base::SingleZGoupValue by
     performing the operator and the calculators of the sub Z functions.
   */
   /*!
@@ -288,7 +289,7 @@ namespace AMEGIC {
     \fn Zfunc_Group::Zfunc_Group(const Zfunc& z)
     Constructor for a group with operation '+'.
 
-    Copies the argument list of the Zfunc z to the group. 
+    Copies the argument list of the Zfunc z to the group.
     This can be done with any Z function of the latter group, since they must
     have identical arguments.
 
@@ -297,12 +298,12 @@ namespace AMEGIC {
   /*!
     \fn Zfunc_Group::Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,Pfunc_List* pl);
      Constructor for a group with operation '*'.
-     
+
      The new array of arguments contains both arrays of the sub Z functions, except
-     the label for the connecting propagator. This is now becoming an internal 
+     the label for the connecting propagator. This is now becoming an internal
      argument, to be kept in Zfunc_Group::m_sumindex.
 
-     Both propagator arrays are copied into the group array and are removed from 
+     Both propagator arrays are copied into the group array and are removed from
      the sub Z functions.
 
      All coupling constants are copied to the group.
@@ -339,12 +340,12 @@ namespace AMEGIC {
   /*!
     \fn void Zfunc_Group::ClearCalcList()
     Deletes all entries in m_calclist including all lists of its sub Z functions.
-    
+
    */
   /*!
     \fn void Zfunc_Group::ReplaceProp(std::vector<Pair>*)
     See Zfunc::ReplaceProp.
-  */ 
+  */
 }
 
 #endif
