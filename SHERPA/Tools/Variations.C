@@ -7,7 +7,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Phys/Blob.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/PDF_Base.H"
@@ -686,6 +685,5 @@ namespace ATOOLS {
   // Explicit template instantiations
   template <> Blob_Data<Variation_Weights>::~Blob_Data() {}
   template class Blob_Data<Variation_Weights>;
-  template class SP(Variation_Weights);
 
 }

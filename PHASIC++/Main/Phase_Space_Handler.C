@@ -15,14 +15,13 @@
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob.H"
-#include "ATOOLS/Org/Message.H"  
+#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
@@ -36,9 +35,7 @@ using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
-namespace ATOOLS { template class SP(Phase_Space_Handler); }
-
-Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
+Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_enhanceobs(NULL), p_enhancefunc(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
   m_enhance(1.0),
@@ -60,7 +57,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_maxtrials = dr.GetValue<int>("MAX_TRIALS",1000000);
   m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","On")=="On"?1:0;
   m_enhancexs = dr.GetValue<int>("ENHANCE_XS",0);
-  m_printpspoint = dr.GetValue<int>("PRINT_PS_POINTS",0); 
+  m_printpspoint = dr.GetValue<int>("PRINT_PS_POINTS",0);
   if (error>0.) {
     m_error   = error;
   }
@@ -71,7 +68,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
   m_osmass=(m_nout==1?p_flavours[m_nin].Mass():0.0);
   if (m_nin==2) {
-    m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
+    m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1];
     if (p_beamhandler) {
       if (p_beamhandler->On()>0) {
         p_beamchannels = new Beam_Channels(this,"beam_"+proc->Process()->Name());
@@ -109,7 +106,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
   delete p_integrator;
 }
 
-void Phase_Space_Handler::InitCuts() 
+void Phase_Space_Handler::InitCuts()
 {
   if (p_cuts!=NULL) delete p_cuts;
   p_cuts = new Cut_Data();
@@ -118,7 +115,7 @@ void Phase_Space_Handler::InitCuts()
   p_process->Process()->BuildCuts(p_cuts);
 }
 
-bool Phase_Space_Handler::InitIncoming() 
+bool Phase_Space_Handler::InitIncoming()
 {
   if (!(MakeIncoming(&p_lab.front())) ) {
     msg_Error()<<"Phase_Space_Handler::Integrate : Error !"<<std::endl
@@ -126,7 +123,7 @@ bool Phase_Space_Handler::InitIncoming()
 	       <<"  ("<<m_E<<" vs "<<m_m[0]+m_m[1]<<") or "<<std::endl
 	       <<"  bad number of incoming particles ("<<m_nin<<")."<<std::endl;
     return 0;
-  } 
+  }
   if (m_nin>1) {
     m_smin=ATOOLS::Max(sqr(p_process->ISRThreshold()),p_cuts->Smin());
   }
@@ -173,12 +170,12 @@ void Phase_Space_Handler::CheckSinglePoint()
   }
 }
 
-double Phase_Space_Handler::Integrate() 
+double Phase_Space_Handler::Integrate()
 {
   CheckSinglePoint();
   if (p_process->Points()>0 &&
       (p_process->TotalError()<dabs(m_error*p_process->TotalXS()) ||
-       p_process->TotalError()<m_abserror)) 
+       p_process->TotalError()<m_abserror))
     return p_process->TotalXS()*rpa->Picobarn();
   p_integrator = new Phase_Space_Integrator(this);
   if (!InitIncoming()) return 0;
@@ -194,10 +191,10 @@ double Phase_Space_Handler::Integrate()
   }
   msg_Debugging()<<"Phase_Space_Handler::Integrate with : "<<std::endl;
   if (m_nin>1) {
-    if (p_beamchannels) 
+    if (p_beamchannels)
       msg_Debugging()<<"  Beam   : "<<p_beamchannels->Name()<<" ("<<p_beamchannels<<") "
 		     <<"  ("<<p_beamchannels->Number()<<","<<p_beamchannels->N()<<")"<<std::endl;
-    if (p_isrchannels) 
+    if (p_isrchannels)
       msg_Debugging()<<"  ISR    : "<<p_isrchannels->Name()<<" ("<<p_isrchannels<<") "
 		     <<"  ("<<p_isrchannels->Number()<<","<<p_isrchannels->N()<<")"<<std::endl;
   }
@@ -214,7 +211,7 @@ double Phase_Space_Handler::Integrate()
   return res;
 }
 
-bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p) 
+bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p)
 {
   if (m_nin == 1) {
     m_E = m_m[0];
@@ -243,10 +240,10 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p)
     return 1;
   }
   return 0;
-} 
+}
 
 double Phase_Space_Handler::Differential()
-{ 
+{
   return Differential(p_process);
 }
 
@@ -268,7 +265,7 @@ void Phase_Space_Handler::CalculatePS()
 {
   m_psweight=1.0;
   if (m_nin>1) {
-    if (p_isrhandler->On()>0 && 
+    if (p_isrhandler->On()>0 &&
 	!(m_cmode&psm::no_gen_isr)) {
       p_isrchannels->GenerateWeight(p_isrhandler->On());
       m_psweight*=p_isrchannels->Weight();
@@ -288,21 +285,21 @@ void Phase_Space_Handler::CalculateEnhance()
 }
 
 double Phase_Space_Handler::Differential(Process_Integrator *const process,
-					 const psm::code mode) 
-{ 
+					 const psm::code mode)
+{
   m_cmode=mode;
   p_active=process;
   if (!process->Process()->GeneratePoint()) return 0.0;
   p_info->ResetAll();
   if (m_nin>1) {
     if (!(mode&psm::no_lim_isr)) p_isrhandler->Reset();
-    if (p_beamhandler->On()>0) { 
+    if (p_beamhandler->On()>0) {
       p_beamhandler->SetSprimeMin(m_smin);
       p_beamhandler->SetLimits();
       p_beamchannels->GeneratePoint(m_beamspkey,m_beamykey,
-				    p_beamhandler->On()); 
+				    p_beamhandler->On());
       if (!p_beamhandler->MakeBeams(&p_lab.front())) return 0.;
-      if (!(mode&psm::no_lim_isr)) 
+      if (!(mode&psm::no_lim_isr))
 	p_isrhandler->SetSprimeMax(m_beamspkey[3]*
 				   p_isrhandler->Upper1()*
 				   p_isrhandler->Upper2());
@@ -314,7 +311,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       p_isrhandler->SetLimits(m_isrspkey.Doubles(),m_isrykey.Doubles(),
 			      m_isrxkey.Doubles());
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
-      if (p_isrhandler->On()>0) { 
+      if (p_isrhandler->On()>0) {
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
@@ -322,8 +319,8 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 			       m_beamykey[2]+m_isrykey[2],
 			     p_lab,process->Process()->
 			     Selected()->Flavours())) {
-      if (p_beamchannels) p_beamchannels->NoGenerate();    
-      if (p_isrchannels)  p_isrchannels->NoGenerate();    
+      if (p_beamchannels) p_beamchannels->NoGenerate();
+      if (p_isrchannels)  p_isrchannels->NoGenerate();
       p_fsrchannels->NoGenerate();
       return 0.;
     }
@@ -338,7 +335,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
   if (m_nin>1) {
     if (p_isrhandler->On()>0) p_isrhandler->BoostInLab(&p_lab.front(),m_nvec);
     if (p_beamhandler->On()>0) p_beamhandler->BoostInLab(&p_lab.front(),m_nvec);
-    if (p_massboost) for (int i=0;i<m_nvec;++i) 
+    if (p_massboost) for (int i=0;i<m_nvec;++i)
       p_massboost->BoostBack(p_lab[i]);
   }
   p_fsrchannels->GeneratePoint(&p_lab.front(),p_cuts);
@@ -376,7 +373,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
   return m_result;
 }
 
-bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p) 
+bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p)
 {
   Vec4D pin,pout;
   pin = pout = Vec4D(0.,0.,0.,0.);
@@ -507,11 +504,11 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     p[1]=cp[1]=Vec4D((1.0-x)*E,Vec3D(-p[0]));
     msg_Debugging()<<"p[0] = "<<p[0]<<"\np[1] = "<<p[1]<<"\n";
   }
-  
+
   unsigned int osd_counter=0;
   for (size_t i=0;i<info->m_fi.GetDecayInfos().size();i++)
     if (info->m_fi.GetDecayInfos()[i]->m_osd) osd_counter++;
-    
+
   if (osd_counter==info->m_fi.GetDecayInfos().size() || mode==1) {
     size_t n(fl_i.size());
     TestPoint(p,cp,fl_i,&info->m_fi,n,ms);
@@ -535,8 +532,8 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 {
   if (nin==1) {
     p[0]=Vec4D(flavs[0].Mass(),0.0,0.0,0.0);
-    if (nout==1) { 
-      p[1]=p[0]; 
+    if (nout==1) {
+      p[1]=p[0];
       return;
     }
   }
@@ -684,7 +681,7 @@ void Phase_Space_Handler::EndOptimize()
   p_fsrchannels->EndOptimize(m_error);
 }
 
-void Phase_Space_Handler::WriteOut(const std::string &pID) 
+void Phase_Space_Handler::WriteOut(const std::string &pID)
 {
 #ifdef USING__MPI
   if (mpi->Rank()) return;
@@ -699,7 +696,7 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
   writer.MatrixToFile(m_stats);
 }
 
-bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
+bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
 {
   msg_Info()<<"Read in channels from directory : "<<pID<<std::endl;
   bool okay = 1;
@@ -758,22 +755,22 @@ bool Phase_Space_Handler::UpdateIntegrators()
   return true;
 }
 
-Integration_Info* Phase_Space_Handler::GetInfo() 
+Integration_Info* Phase_Space_Handler::GetInfo()
 {
   if (p_info==NULL) return p_info = new Integration_Info();
   return p_info;
 }
 
-void Phase_Space_Handler::DeleteInfo() 
+void Phase_Space_Handler::DeleteInfo()
 {
   delete p_info;
   p_info=NULL;
 }
 
 void Phase_Space_Handler::AddStats(const std::vector<double> &stats)
-{ 
+{
   std::vector<double> nstats(1,m_stats.size()+1);
   nstats.insert(nstats.end(),stats.begin(),stats.end());
-  m_stats.push_back(nstats); 
+  m_stats.push_back(nstats);
 }
 

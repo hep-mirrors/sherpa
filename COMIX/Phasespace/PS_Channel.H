@@ -6,6 +6,8 @@
 #include "PHASIC++/Channels/Vegas.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
+#include <memory>
+
 namespace PHASIC { class Color_Integrator; }
 
 namespace COMIX {
@@ -58,11 +60,11 @@ namespace COMIX {
     int m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
     int m_nvints, m_vsopt, m_nopt;
 
-    SP(PS_Generator) p_gen;
+    std::shared_ptr<PS_Generator> p_gen;
 
     PSId_Map *p_psid;
     CId_Map  *p_cid;
-    
+
     const std::string      &GetPSId(const size_t &id);
     const std::vector<int> &GetCId(const size_t &id);
 
@@ -110,7 +112,7 @@ namespace COMIX {
 		       PS_Current *const jc,PS_Vertex *const v,size_t &nr);
     double GenerateWeight(PS_Current *const ja,PS_Current *const jb,
 			  PS_Current *const jc,PS_Vertex *const v,size_t &nr);
-    
+
     bool GenerateWeight(PS_Current *const cur);
     bool GenerateWeight();
 
@@ -136,7 +138,7 @@ namespace COMIX {
 
     // constructor
     PS_Channel(const size_t &nin,const size_t &nout,
-	       ATOOLS::Flavour *fl,Process_Base *const ps); 
+	       ATOOLS::Flavour *fl,Process_Base *const ps);
 
     // destructor
     ~PS_Channel();

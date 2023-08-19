@@ -7,16 +7,13 @@
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
+
 #include <iomanip>
 #include <limits>
-
 #include <set>
 
 using namespace PHASIC;
 using namespace ATOOLS;
-
-namespace ATOOLS { template class SP(Color_Integrator); }
 
 std::ostream &PHASIC::operator<<(std::ostream &str,const cls::scheme &s)
 {
@@ -36,7 +33,7 @@ std::map<std::string,std::string> cls::ColorSchemeTags()
   tags["SAMPLE"]=ToString((int)cls::sample);
   return tags;
 }
- 
+
 std::ostream &PHASIC::operator<<(std::ostream &ostr,const Representation &v)
 {
   if (v.Act())
@@ -55,15 +52,15 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Representation &v)
 }
 
 Representation::Representation(const size_t &id,
-			       const int &type,const int &act): 
+			       const int &type,const int &act):
   m_id(id), m_i(0), m_j(0), m_type(type), m_act(act)
 {
   m_ids=ID(m_id);
 }
 
 Color_Integrator::Color_Integrator():
-  m_lastconf(0), m_alphamode(0), 
-  m_check(false), m_on(true), 
+  m_lastconf(0), m_alphamode(0),
+  m_check(false), m_on(true),
   m_otfcc(false), m_fincc(true), m_nogen(true), m_won(true),
   m_n(0), m_nv(0), m_over(0.0) {}
 
@@ -117,7 +114,7 @@ bool Color_Integrator::GenerateColours()
   Idx_Vector iids, jids;
   for (size_t i(0);i<m_ids.size();++i)
     // collect indices
-    if (m_ids[i]->Act()) { 
+    if (m_ids[i]->Act()) {
       if (m_ids[i]->Type()>=0) iids.push_back(i);
       if (m_ids[i]->Type()<=0) jids.push_back(i);
     }
@@ -150,7 +147,7 @@ bool Color_Integrator::GenerateColours()
 
 void Color_Integrator::SetPoint(const Int_Vector &ci,const Int_Vector &cj)
 {
-  if (ci.size()!=m_ids.size() || cj.size()!=m_ids.size()) 
+  if (ci.size()!=m_ids.size() || cj.size()!=m_ids.size())
     THROW(fatal_error,"Invalid number of colours");
   for (size_t i(0);i<m_ids.size();++i) {
     m_ids[i]->SetI(ci[i]);
@@ -181,7 +178,7 @@ void Color_Integrator::SetPoint(const Int_Vector &ci,const Int_Vector &cj)
 
 void Color_Integrator::SetPoint(const Cluster_Amplitude *const ampl)
 {
-  if (ampl->Legs().size()!=m_ids.size()) 
+  if (ampl->Legs().size()!=m_ids.size())
     THROW(fatal_error,"Invalid number of colours");
   CI_Map cmap(ampl->ColorMap());
   cmap[0]=0;
@@ -229,7 +226,7 @@ int Color_Integrator::ConstructConfigurations
 {
   if (perm.size()==m_ids.size()) {
     ++nexti[depth];
-    // last step of permutation 
+    // last step of permutation
     if (m_ids[perm.front()]->Type()==0) {
       // pure gluonic -> last i must match first j
       if (m_ids[perm.back()]->I()!=
@@ -240,7 +237,7 @@ int Color_Integrator::ConstructConfigurations
       // and for each singlet gluon decaying into quarks
       size_t dpairs(1);
       for (size_t i(1);i<perm.size();++i){
-	if (m_ids[perm[i-1]]->Type()>0 && 
+	if (m_ids[perm[i-1]]->Type()>0 &&
 	    m_ids[perm[i-1]]->Type()==-m_ids[perm[i]]->Type()) {
 	  ++dpairs;
 	  if (m_ids[perm[i-1]]->Id()==
@@ -249,7 +246,7 @@ int Color_Integrator::ConstructConfigurations
       }
     }
     // get particle indices for permutation
-    for (size_t i(0);i<perm.size();++i) 
+    for (size_t i(0);i<perm.size();++i)
       perm[i]=m_ids[perm[i]]->Id();
     // add permutation and weight
     m_orders.push_back(perm);
@@ -269,7 +266,7 @@ int Color_Integrator::ConstructConfigurations
   if (m_ids[perm.back()]->Type()<0) {
     newstr=true;
     tids.pop_back();
-    // find start for next string 
+    // find start for next string
     // -> quark or singlet gluon
     Idx_Vector sids(0);
     for (size_t i(0);i<ids.size();++i) {
@@ -279,7 +276,7 @@ int Color_Integrator::ConstructConfigurations
       }
     }
     if (tids.empty()) {
-      // if new string starts with gluon, 
+      // if new string starts with gluon,
       // all remaining gluons are singlets
       /*
         // pick randomized any to start
@@ -288,7 +285,7 @@ int Color_Integrator::ConstructConfigurations
         tids.push_back(sids[cg]);
       */
       tids.push_back(sids.front());
-      // broadcast that now all gluons 
+      // broadcast that now all gluons
       // must be in singlet state
       sing=true;
     }
@@ -307,7 +304,7 @@ int Color_Integrator::ConstructConfigurations
       }
       else {
 	// take only one gluon ordering -> no 1/k!
-	for (size_t i(0);i<ids.size();++i) 
+	for (size_t i(0);i<ids.size();++i)
 	  if (ids[i]!=tids[l]) {
 	    pids.push_back(ids[i]);
 	    break;
@@ -319,7 +316,7 @@ int Color_Integrator::ConstructConfigurations
     else {
       // find all matching partons
       for (size_t i(0);i<ids.size();++i) {
-	if (m_ids[ids[i]]->Type()<=0 && 
+	if (m_ids[ids[i]]->Type()<=0 &&
 	    m_ids[ids[i]]->J()==last) {
 	  pids.push_back(ids[i]);
 	  // for ew particles consider only one ordering
@@ -352,7 +349,7 @@ int Color_Integrator::ConstructConfigurations
 	for (size_t j(0);j<ids.size();++j) {
 	  // create vector of remaining indices
 	  if (j-shift<nids.size()) nids[j-shift]=ids[j];
-	  if ((newstr && ids[j]==tids[l]) || 
+	  if ((newstr && ids[j]==tids[l]) ||
 	      ids[j]==pids[i]) ++shift;
 	}
 	perm.back()=pids[i];
@@ -362,7 +359,7 @@ int Color_Integrator::ConstructConfigurations
 	if (cnc<0) return -1;
 	nc+=cnc;
 	if (one && nc>0) return nc;
-      }  
+      }
     }
     i=0;
     perm.pop_back();
@@ -378,18 +375,18 @@ void Color_Integrator::InitConstruction
   ids.resize(m_ids.size()-1);
   nexti.resize(m_ids.size(),0);
   size_t fid(0);
-  for (;fid<m_ids.size();++fid) 
+  for (;fid<m_ids.size();++fid)
     // find first fermion
     if (m_ids[fid]->Type()>0) break;
   // if no quark is present take any gluon
   if (fid==m_ids.size()) --fid;
   for (size_t i(0);i<=ids.size();++i) {
     // reorder amplitude, starting with a quark
-    // the rest is ordered automatically, when 
+    // the rest is ordered automatically, when
     // searching for matching colour indices
-    if (i>fid) ids[i-fid-1]=i; 
+    if (i>fid) ids[i-fid-1]=i;
     else if (m_ids.size()-fid-1+i<ids.size())
-      ids[m_ids.size()-fid-1+i]=i;  
+      ids[m_ids.size()-fid-1+i]=i;
     nexti[i]=0;
   }
   perm.back()=fid;
@@ -520,15 +517,15 @@ bool Color_Integrator::CheckPermutation(const Idx_Vector &perm)
       msg_Error()<<METHOD<<"(): Permutation "<<perm
 		 <<" contains invalid index "<<perm[i]
 		 <<". Abort."<<std::endl;
-      return false;      
+      return false;
     }
     all.erase(ait);
-  } 
+  }
   // check whether all indices occur
   if (all.size()>0) {
     msg_Error()<<METHOD<<"(): Permutation "<<perm
 	       <<" does not contain all indices. Abort."<<std::endl;
-    return false;      
+    return false;
   }
 #ifdef DEBUG__BG
   msg_Debugging()<<"checked "<<perm<<" -> ok\n";
@@ -562,7 +559,7 @@ bool Color_Integrator::GenerateType(const size_t &type,
   if (type>=m_ids.size()-1) return false;
   Idx_Vector perm(m_ids.size());
   for (size_t i(0);i<perm.size();++i) perm[i]=i;
-  for (size_t i(1);i<=type;++i) 
+  for (size_t i(1);i<=type;++i)
     std::swap<Idx_Type>(perm[i],perm[i+1]);
   m_weight=1.0;
   for (size_t i(0);i<m_ids.size();++i) {
@@ -672,20 +669,20 @@ bool Color_Integrator::Initialize()
 
 void Color_Integrator::SetI(const Int_Vector &i)
 {
-  for (size_t k(0);k<m_ids.size();++k) 
+  for (size_t k(0);k<m_ids.size();++k)
     m_ids[k]->SetI(i[k]);
 }
 
 void Color_Integrator::SetJ(const Int_Vector &j)
 {
-  for (size_t k(0);k<m_ids.size();++k) 
+  for (size_t k(0);k<m_ids.size();++k)
     m_ids[k]->SetJ(j[k]);
 }
 
 Int_Vector Color_Integrator::I() const
 {
   Int_Vector is(m_ids.size());
-  for (size_t i(0);i<m_ids.size();++i) 
+  for (size_t i(0);i<m_ids.size();++i)
     is[i]=m_ids[i]->I();
   return is;
 }
@@ -693,7 +690,7 @@ Int_Vector Color_Integrator::I() const
 Int_Vector Color_Integrator::J() const
 {
   Int_Vector js(m_ids.size());
-  for (size_t i(0);i<m_ids.size();++i) 
+  for (size_t i(0);i<m_ids.size();++i)
     js[i]=m_ids[i]->J();
   return js;
 }

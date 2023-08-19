@@ -16,8 +16,6 @@
 #include "COMIX/Main/Process_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 
 #include <iomanip>
 
@@ -26,8 +24,6 @@ using namespace ATOOLS;
 using namespace PHASIC;
 
 const double s_pwmin(1.0e-6);
-
-namespace ATOOLS { template class SP(PS_Generator); }
 
 PS_Generator::PS_Generator(Process_Base *const xs):
   p_xs(xs), m_n(0), m_zmode(1), m_pmsinit(0),

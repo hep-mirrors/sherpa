@@ -3,15 +3,11 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/My_File.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
-
-namespace ATOOLS { template class SP(Helicity_Integrator); }
 
 std::ostream &PHASIC::operator<<(std::ostream &str,const hls::scheme &s)
 {
@@ -31,11 +27,11 @@ std::map<std::string,std::string> hls::HelicitySchemeTags()
   tags["SAMPLE"]=ToString((int)hls::sample);
   return tags;
 }
- 
+
 Helicity_Integrator::Helicity_Integrator():
   m_iter(1), m_on(1) {}
 
-Helicity_Integrator::~Helicity_Integrator() 
+Helicity_Integrator::~Helicity_Integrator()
 {
 }
 
@@ -49,7 +45,7 @@ bool Helicity_Integrator::CheckChirs(const Int_Vector &chirs)
     else if (chirs[i]<0) ++m;
     else THROW(fatal_error,"Invalid helicities");
   }
-  for (size_t i(0);i<q.size();++i) 
+  for (size_t i(0);i<q.size();++i)
     if (q[i]!=0) return false;
   return p>1 && m>1;
 }
@@ -174,7 +170,7 @@ void Helicity_Integrator::Optimize()
     double alpha(m_weights[i]);
     oldnorm+=alpha;
     alpha=sqrt(sqrt(alpha)*m_sum2[i]/m_sum[i]);
-    if (!(alpha>0.0)) 
+    if (!(alpha>0.0))
       THROW(fatal_error,"Invalid weight.");
     m_weights[i]=alpha;
     norm+=alpha;
@@ -187,16 +183,16 @@ void Helicity_Integrator::Optimize()
     if (m_sum2[i]!=0.0) m_weights[i]/=norm;
     m_asum[i]=oldnorm+=m_weights[i];
   }
-  if (!IsEqual(oldnorm,1.0)) 
+  if (!IsEqual(oldnorm,1.0))
     THROW(fatal_error,"Summation does not agree.");
 }
 
 size_t Helicity_Integrator::MakeId(const Int_Vector &ids) const
 {
-  if (ids.size()!=m_chirs.size()) 
+  if (ids.size()!=m_chirs.size())
     THROW(fatal_error,"Invalid particle number");
   size_t id(0);
-  for (size_t i(0);i<ids.size();++i) 
+  for (size_t i(0);i<ids.size();++i)
     if (ids[i]>0) id+=1<<i;
 #ifdef DEBUG__CDBCF
   msg_Debugging()<<METHOD<<ids<<" -> "<<id<<"\n";
