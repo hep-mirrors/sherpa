@@ -34,7 +34,8 @@ namespace AHADIC {
     ~Gluon_Splitter();
 
     void   Init(const bool & isgluon=true);
-    double FragmentationFunction(double z, double zmin, double zmax, double alpha);
+    double FragmentationFunction(double z, double zmin, double zmax, double a);
+    double FragmentationFunctionProb(double z, double zmin, double zmax, double a);
     double WeightFunction(const double & z,
 			  const double & zmin=0.,const double & zmax=1.,
 			  const unsigned int & cnt=0);
