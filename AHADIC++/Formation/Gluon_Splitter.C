@@ -67,22 +67,38 @@ bool Gluon_Splitter::CalculateXY() {
   return (!(m_x>1.) && !(m_x<0.) && !(m_y>1.) && !(m_y<0.));
 }
 
+double Gluon_Splitter::FragmentationFunctionProb(double z, double zmin, double zmax,
+						 double alpha) {
+  if(m_mode != 0)
+    msg_Error()<<"Reweighting of Gluon frag. not implemented for this mode\n";
+
+  // We just need to reweight the Fragmentation-Function witht the corresponding
+  // integral
+  auto f = [](double _z, double alpha) -> double {
+    return pow(_z,alpha) + pow(1.-_z,alpha);
+  };
+  auto F = [](double _z, double alpha) -> double {
+    return 1./(alpha+1) * (pow(_z,alpha+1) - pow(1.-_z,alpha+1));
+  };
+  // const double fmax
+  //   = std::max(std::max(f(zmin,alpha), f(zmax,alpha)), f(0.5,alpha));
+  const double integral = (F(zmax,alpha) - F(zmin,alpha));
+  return f(z,alpha) / integral;
+}
+
 double Gluon_Splitter::FragmentationFunction(double z, double zmin, double zmax,
 					     double alpha) {
-  double norm = 1.;
-  switch (m_mode) {
-  case 1:
-    norm = pow(0.5,2*alpha);
+  if(m_mode == 1) {
+    const double norm = pow(0.5,2*alpha);
     return pow(z*(1.-z),alpha)/norm;
-  case 0:
-  default:
-    break;
   }
+
   // in the symmetric case, the max is either at 0.5 or at one edge
-  norm = std::max(std::max(pow(zmin,alpha) + pow(1.-zmin,alpha),
-			   pow(zmax,alpha) + pow(1.-zmax,alpha)),
-		  2*pow(0.5,alpha));
-  const double ret = (pow(z,alpha)+pow(1.-z,alpha))/norm;
+  auto f = [](double _z, double alpha) {
+    return pow(_z,alpha) + pow(1.-_z,alpha);
+  };
+  const double fmax = std::max(std::max(f(zmin,alpha), f(zmax,alpha)), f(0.5,alpha));
+  const double ret = (pow(z,alpha)+pow(1.-z,alpha))/fmax;
   if(ret > 1.0)
     msg_Error()<<
       "Error in Gluon Fragmentation function, should always be < 1.0\n";
@@ -100,16 +116,22 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 void Gluon_Splitter::z_rejected(const double wgt, const double & z,
 				const double & zmin,const double & zmax,
 				const unsigned int & cnt) {
+  return;
+  // Since the Gluon-fragmentation function is integrable
+  // we don't need multiply up accept/reject probabilities
+
+
   // sanity checks, should probably be done somewhere else
   if(variation_weights.size() != m_alpha.size()) {
     // should in principle always be the case
     variation_weights.resize(m_alpha.size());
   }
 
+  const double wgt_old = FragmentationFunction(z,zmin,zmax,m_alpha[0]);
   for (int i{0}; i<m_alpha.size(); i++) {
     const auto a = m_alpha[i];
-    const auto wgt_new = std::min(1.,FragmentationFunction(z,zmin,zmax,a));
-    variation_weights[i] *= (1-wgt_new) / (1-wgt);
+    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
+    variation_weights[i] *= (1.-wgt_new) / (1.-wgt_old);
   }
   return;
 }
@@ -123,10 +145,13 @@ void Gluon_Splitter::z_accepted(const double wgt, const double & z,
     variation_weights.resize(m_alpha.size());
   }
 
+  const double wgt_old = FragmentationFunctionProb(z,zmin,zmax,m_alpha[0]);
+  //const double wgt_old = FragmentationFunction(z,zmin,zmax,m_alpha[0]);
   for (int i{0}; i<m_alpha.size(); i++) {
     const auto a = m_alpha[i];
-    const auto wgt_new = std::min(1.,FragmentationFunction(z,zmin,zmax,a));
-    variation_weights[i] *= wgt_new / wgt;
+    const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax,a);
+    //const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
+    variation_weights[i] *= wgt_new / wgt_old;
   }
   return;
 }

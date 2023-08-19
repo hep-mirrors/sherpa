@@ -32,7 +32,7 @@ double KT_Selector::operator()(const double & ktmax,const double & M2) {
 
   variation_weights.resize(m_sigma.size());
   tmp_variation_weights.resize(m_sigma.size());
-  for(int i{i}; i<m_sigma.size(); ++i) {
+  for(int i{0}; i<m_sigma.size(); ++i) {
     double g = Gaussian(kttest, m_sigma[i]);
     double n = Erf(ktmax, m_sigma[i]);
     double p = g / n;
