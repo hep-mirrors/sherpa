@@ -5,9 +5,10 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
+
+#include <memory>
 
 using namespace ATOOLS;
 
@@ -442,8 +443,8 @@ Blob_List Blob_List::Copy() const
   if (signal) {
     Blob_Data_Base* data = (*signal)["ATensor"];
     if (data) {
-      SP(METOOLS::Amplitude2_Tensor) origamps = data->Get<SP(METOOLS::Amplitude2_Tensor)>();
-      SP(METOOLS::Amplitude2_Tensor) newamps(new METOOLS::Amplitude2_Tensor(*origamps));
+      std::shared_ptr<METOOLS::Amplitude2_Tensor> origamps = data->Get<std::shared_ptr<METOOLS::Amplitude2_Tensor>>();
+      std::shared_ptr<METOOLS::Amplitude2_Tensor> newamps(new METOOLS::Amplitude2_Tensor(*origamps));
       newamps->UpdateParticlePointers(pmap);
       data->Set(newamps);
     }

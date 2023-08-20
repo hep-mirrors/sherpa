@@ -264,10 +264,9 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     vector<int> spin_i(parts.size(), -1), spin_j(parts.size(), -1);
     vector<Particle*> partsonly(parts.size());
     for (size_t i=0; i<parts.size(); ++i) partsonly[i]=parts[i].first;
-    Amplitude2_Tensor* atensor = new Amplitude2_Tensor
-      (partsonly, permutation, 0, amps, spin_i, spin_j);
+    std::shared_ptr<Amplitude2_Tensor> atensor(new Amplitude2_Tensor(partsonly, permutation, 0, amps, spin_i, spin_j));
     DEBUG_VAR(*atensor);
-    blob->AddData("ATensor",new Blob_Data<SP(METOOLS::Amplitude2_Tensor)>(atensor));
+    blob->AddData("ATensor",new Blob_Data<std::shared_ptr<METOOLS::Amplitude2_Tensor>>(atensor));
   }
   return success;
 }

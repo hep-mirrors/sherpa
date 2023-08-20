@@ -3,11 +3,11 @@
 
 #include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Phys/Decay_Info.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "SHERPA/Tools/Variations.H"
 
 #include <vector>
 #include <map>
+#include <memory>
 
 namespace ATOOLS {
 
@@ -46,15 +46,14 @@ namespace ATOOLS {
     static ClusterAmplitude_PVector s_ampls;
 
     friend class ClusterAmplitude_PVector;
-    friend class SP(ATOOLS::Cluster_Amplitude);
 
   protected:
 
     Cluster_Amplitude(Cluster_Amplitude *const prev=NULL);
 
-    ~Cluster_Amplitude();
-
   public:
+
+    ~Cluster_Amplitude();
 
     static Cluster_Amplitude* New(Cluster_Amplitude *const prev=NULL);
 

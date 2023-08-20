@@ -4,7 +4,6 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Flow.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Phys/Blob.H"
 
 
@@ -469,10 +468,9 @@ namespace ATOOLS {
 
 
 namespace ATOOLS {
-  template class SP(ATOOLS::Cluster_Amplitude);
 
-  template <> Blob_Data<SP(ATOOLS::Cluster_Amplitude)>::~Blob_Data() {}
-  template class Blob_Data<SP(ATOOLS::Cluster_Amplitude)>;
-  template SP(ATOOLS::Cluster_Amplitude)&
-    Blob_Data_Base::Get<SP(ATOOLS::Cluster_Amplitude)>();
+  template <> Blob_Data<std::shared_ptr<ATOOLS::Cluster_Amplitude>>::~Blob_Data() {}
+  template class Blob_Data<std::shared_ptr<ATOOLS::Cluster_Amplitude>>;
+  template std::shared_ptr<ATOOLS::Cluster_Amplitude>&
+    Blob_Data_Base::Get<std::shared_ptr<ATOOLS::Cluster_Amplitude>>();
 }

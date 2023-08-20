@@ -211,8 +211,8 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
       all_amplitudes.push_back(tmp);
   }
 
-  Cluster_Amplitude * cl_all = all_amplitudes.OneAmpl(); //->CopyAll();
-  psblob->AddData("AllAmplitudes",new Blob_Data<SP(Cluster_Amplitude)>( cl_all));
+  std::shared_ptr<Cluster_Amplitude> cl_all(all_amplitudes.OneAmpl()); //->CopyAll();
+  psblob->AddData("AllAmplitudes",new Blob_Data<std::shared_ptr<Cluster_Amplitude>>(std::move(cl_all)));
   all_amplitudes.clear();
   return true;
 }

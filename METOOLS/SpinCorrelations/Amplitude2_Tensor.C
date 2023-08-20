@@ -4,7 +4,8 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
+
+#include <memory>
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -340,10 +341,9 @@ bool Amplitude2_Tensor::SortCrit(const pair<Particle*, size_t>& p1,
 
 
 namespace ATOOLS {
-  template class SP(METOOLS::Amplitude2_Tensor);
 
-  template <> Blob_Data<SP(METOOLS::Amplitude2_Tensor)>::~Blob_Data() {}
-  template class Blob_Data<SP(METOOLS::Amplitude2_Tensor)>;
-  template SP(METOOLS::Amplitude2_Tensor)&
-    Blob_Data_Base::Get<SP(METOOLS::Amplitude2_Tensor)>();
+  template <> Blob_Data<std::shared_ptr<METOOLS::Amplitude2_Tensor>>::~Blob_Data() {}
+  template class Blob_Data<std::shared_ptr<METOOLS::Amplitude2_Tensor>>;
+  template std::shared_ptr<METOOLS::Amplitude2_Tensor>&
+    Blob_Data_Base::Get<std::shared_ptr<METOOLS::Amplitude2_Tensor>>();
 }
