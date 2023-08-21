@@ -38,7 +38,7 @@ namespace ANALYSIS {
   public:
     Event_Shapes_EE(const std::string & inlistname,
 		    const std::string & outlistname,
-		    SP(ATOOLS::Particle_Qualifier_Base) const);
+		    std::shared_ptr<ATOOLS::Particle_Qualifier_Base>);
     void Evaluate(const ATOOLS::Blob_List &,double=1.,double ncount=1);
     void Evaluate(const ATOOLS::Particle_List &,double=1.,double ncount=1);
     Analysis_Object * GetCopy() const;

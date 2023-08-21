@@ -24,19 +24,18 @@ Analysis_Object * ATOOLS::Getter<Analysis_Object,Argument_Matrix,
 				 Event_Shapes_EE>::operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="EEShapes";
-  ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
+  std::shared_ptr<ATOOLS::Particle_Qualifier_Base> qualifier;
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];
     if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
     else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
     else if (cur[0]=="Qual" && cur.size()>1) {
-      if (ATOOLS::rpa->gen.Beam1().IsLepton() && 
-	  ATOOLS::rpa->gen.Beam2().IsLepton()) {
-	qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
+      if (ATOOLS::rpa->gen.Beam1().IsLepton() && ATOOLS::rpa->gen.Beam2().IsLepton()) {
+        qualifier.reset(ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]));
       }
     }
   }
-  if (!qualifier) qualifier=new ATOOLS::Is_Not_Lepton(); 
+  if (!qualifier) qualifier = std::make_shared<ATOOLS::Is_Not_Lepton>();
   return new Event_Shapes_EE(inlist,outlist,qualifier);
 }
 
@@ -76,8 +75,8 @@ template class Blob_Data<Event_Shape_EE_Data>;
 
 Event_Shapes_EE::Event_Shapes_EE(const std::string & _inlistname,
 				 const std::string & _outlistname,
-				 SP(Particle_Qualifier_Base) _quali) :
-  Final_Selector(_inlistname,_outlistname,-1,_quali),
+				 std::shared_ptr<Particle_Qualifier_Base> _quali) :
+  Final_Selector(_inlistname,_outlistname,-1, std::move(_quali)),
   m_startaxes(4), m_maxidentaxes(2), m_accuracy(1.e-4),
   m_key(std::string("EvtShapeData"))
 { 
