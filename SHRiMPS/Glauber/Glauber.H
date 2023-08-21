@@ -39,6 +39,7 @@ namespace SHRIMPS {
       void DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos_N1,std::vector<ATOOLS::Vec4D> pos_N2);
       void SaveXSs(Cross_Sections * xsecs,double bmin=0., double bmax=20., int num=100);
       void SaveNucleonPositions();
+      int FixProjectileState();
   };
 }
 #endif

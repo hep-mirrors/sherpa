@@ -130,6 +130,17 @@ void Glauber::SaveXSs(Cross_Sections * xsecs,double bmin, double bmax,int num) {
   abs_xs_ch.close();
 }
 
+int Glauber::FixProjectileState() {
+std::vector<std::vector<Omega_ik *> > * p_eikonals(MBpars.GetEikonals());
+double disc = ran->Get();
+for (size_t j=0;j<(*p_eikonals)[0].size();j++) {
+ double a0j_sqr = ( (*p_eikonals)[0][j]->Prefactor() ) / sqrt((*p_eikonals)[0][0]->Prefactor());
+ disc -= a0j_sqr;
+ if (disc <= 1.e-12) return j;
+}
+return -1;
+}
+
 void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos_N1,std::vector<ATOOLS::Vec4D> pos_N2) {
   std::vector<std::pair<std::pair<int,int>,int>> interactions;
   for(int i = 0; i < m_numNucleons1; i++) {
@@ -154,7 +165,7 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
         //msg_Out() << prob_SD0 + prob_SD1 + prob_DD + prob_el << endl;
       }
       if(m_pA) {
-        if (i == 0 && j ==0) {if(ran->Get()>.5) m_projState=1;}
+        if (i == 0 && j ==0) {m_projState=FixProjectileState();}
         else {
           if(m_numNucleons1==1) {
             QE = xsecs->GetSigmaD()->GetValuePerChannel(m_projState,-1,distance/0.197);

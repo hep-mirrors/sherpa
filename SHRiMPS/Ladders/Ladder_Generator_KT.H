@@ -9,7 +9,7 @@
 
 namespace SHRIMPS {
   struct rap_order {
-    bool operator()(const double & y1, const double & y2) {
+    bool operator()(const double & y1, const double & y2) const {
       return (ATOOLS::dabs(y1)>ATOOLS::dabs(y2));
     }
   };
