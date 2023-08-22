@@ -2,6 +2,7 @@
 #define AHADIC_Tools_Double_Transitions_H
 
 #include "AHADIC++/Tools/Single_Transitions.H"
+#include "ATOOLS/Org/Message.H"
 
 
 namespace AHADIC {
@@ -26,7 +27,7 @@ namespace AHADIC {
 
   typedef std::map<Flavour_Pair,
 		   Double_Transition_List *>          Double_Transition_Map;
-  
+
   class Double_Transitions {
   private:
     Double_Transition_Map m_transitions;
@@ -34,12 +35,13 @@ namespace AHADIC {
     double m_charm_strange_modifier, m_beauty_strange_modifier;
     double m_charm_baryon_modifier, m_beauty_baryon_modifier;
 
+    double ComputeTransitionWeight(ATOOLS::Flavour popped, Flavour_Pair pair);
     void FillMap(Single_Transitions * singles);
     void Normalise();
   public:
     Double_Transitions(Single_Transitions * singles);
     ~Double_Transitions();
-    
+
     Flavour_Pair             GetLightestTransition(const Flavour_Pair & flavs);
     Flavour_Pair             GetHeaviestTransition(const Flavour_Pair & flavs);
     double                   GetLightestMass(const Flavour_Pair & flavs);

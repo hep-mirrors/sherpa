@@ -16,13 +16,16 @@ Ahadic::Ahadic(string shower) :
   m_softclusters(Soft_Cluster_Handler(&m_hadron_list)),
   m_beamparticles(Beam_Particles_Shifter(&m_singlet_list, &m_softclusters)),
   m_sformer(Singlet_Former(&m_singlet_list)),
-  m_singletchecker(Singlet_Checker(&m_singlet_list, &m_softclusters)),
-  m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters)),
-  m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
+  m_flavourselector(),
+  m_singletchecker(Singlet_Checker(&m_singlet_list, &m_softclusters,&m_flavourselector)),
+  m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters,&m_flavourselector)),
+  m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters, &m_flavourselector))
 {
   ReadMassParameters();
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
+  // TODO: rename!
+  m_flavourselector.InitWeights();
   m_sformer.Init();
   m_beamparticles.Init();
   m_softclusters.Init();
@@ -45,6 +48,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   m_clusterdecayer.reset_variationweights();
   m_gluondecayer.reset_variationweights();
   m_softclusters.reset_variationweights();
+  m_flavourselector.reset_variationweights();
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();) {
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
@@ -72,9 +76,11 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   if (m_shrink) Shrink(blobs);
 
   //Ask for weight vector and add to blob
+  // TODO: are they copied here? Probably..
   const auto wgts_cluster = m_clusterdecayer.get_variationweights();
   const auto wgts_gluons  = m_gluondecayer.get_variationweights();
   const auto wgts_soft    = m_softclusters.get_variationweights();
+  const auto wgts_flavs   = m_flavourselector.get_variationweights();
 
   // get signal blob
   Blob *blob(blobs->FindFirst(btp::Signal_Process));
@@ -83,11 +89,12 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   DEBUG_VAR(wgts_cluster);
   DEBUG_VAR(wgts_gluons);
   DEBUG_VAR(wgts_soft);
+  DEBUG_VAR(wgts_flavs);
   if(wgts_cluster.size() == wgts_gluons.size() &&
      wgts_cluster.size() == wgts_soft.size() ) {
     for(int i{0}; i<wgts_cluster.size(); i++) {
       const std::string name = "v"+std::to_string(i);
-      double wgt = wgts_cluster[i]*wgts_gluons[i]*wgts_soft[i];
+      double wgt = wgts_cluster[i]*wgts_gluons[i]*wgts_soft[i]*wgts_flavs[i];
       wgt = std::max(wgt,0.01);
       wgt = std::min(wgt,100.);
       wgtmap["AHADIC"][name] = wgt;
@@ -101,6 +108,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   m_clusterdecayer.reset_variationweights();
   m_gluondecayer.reset_variationweights();
   m_softclusters.reset_variationweights();
+  m_flavourselector.reset_variationweights();
 
   return Return_Value::Success;
 }

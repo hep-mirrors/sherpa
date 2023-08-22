@@ -18,30 +18,56 @@ Flavour_Selector::~Flavour_Selector() {
 
 ATOOLS::Flavour Flavour_Selector::
 operator()(const double & Emax,const bool & vetodi) {
-  double disc = Norm(Emax,vetodi) * ran->Get();
+  ATOOLS::Flavour ret;
+  bool found{false};
+
+  // update norms
+  Norm(Emax,vetodi);
+  double disc = norms[0] * ran->Get();
+
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi && fdit->first.IsDiQuark()) continue;
-    if (fdit->second->popweight>0. && fdit->second->massmin<Emax/2.)
+    if (fdit->second->popweight>0. && fdit->second->massmin<Emax/2.) {
       disc -= fdit->second->popweight;
+    }
     if (disc<=0.) {
       // have to bar flavours for diquarks
-      return fdit->first.IsDiQuark()?fdit->first.Bar():fdit->first;
+      ret = fdit->first.IsDiQuark()?fdit->first.Bar():fdit->first;
+      found = true;
+      break;
     }
   }
-  THROW(fatal_error, "No flavour selected.");
+
+  // TODO: this is rather pointless. Since even for Norm=0, there will be a
+  // flavour found. Namely kf_d (the first in the list)
+  if(! found)
+    THROW(fatal_error, "No flavour selected.");
+
+  // compute probabilities for different flavours here
+  // will include different norms and popweights
+  auto opt = m_options.find(ret);
+  if(opt == m_options.end())
+    opt = m_options.find(ret.Bar());
+  if(opt == m_options.end())
+    // Something really went wrong
+    THROW(fatal_error, "No flavour selected.");
+
+  const double p0 = opt->second->popweight / norms[0];
+  for(int i; i<opt->second->popweights.size(); ++i)
+    variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;
+  return ret;
 }
 
-double Flavour_Selector::Norm(const double & mmax,const bool & vetodi)
+void Flavour_Selector::Norm(const double & mmax,const bool & vetodi)
 {
-  double sumwt(0.), wt;
+  std::fill(norms.begin(), norms.end(), 0);
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi && fdit->first.IsDiQuark()) continue;
     if (fdit->second->popweight>0. && fdit->second->massmin<mmax/2.) {
-      wt = fdit->second->popweight;
-      sumwt += wt;
+      for(int i{0}; i<norms.size(); ++i)
+	norms[i] += fdit->second->popweights[i];
     }
   }
-  return sumwt;
 }
 
 void Flavour_Selector::InitWeights() {
@@ -50,15 +76,20 @@ void Flavour_Selector::InitWeights() {
   m_mmax = constituents->MaxMass();
   m_mmin2 = ATOOLS::sqr(m_mmin);
   m_mmax2 = ATOOLS::sqr(m_mmax);
+  norms.resize(constituents->m_nvars);
+  variation_weights.resize(constituents->m_nvars);
   DecaySpecs * decspec;
   for (FlavCCMap_Iterator fdit=constituents->CCMap.begin();
        fdit!=constituents->CCMap.end();fdit++) {
     if (!fdit->first.IsAnti()) {
+      // msg_Out()<<"Filling flav: " << fdit->first
+      // 	       << ", massmin = " << constituents->Mass(fdit->first)
+      // 	       << std::endl;
       decspec = new DecaySpecs;
-      decspec->popweight = constituents->TotWeight(fdit->first);
-      decspec->massmin   = constituents->Mass(fdit->first);
+      decspec->popweight  = constituents->TotWeight(fdit->first);
+      decspec->massmin    = constituents->Mass(fdit->first);
+      decspec->popweights = constituents->Weights(fdit->first);
       m_options[fdit->first] = decspec;
     }
   }
-  m_sumwt = Norm();
 }

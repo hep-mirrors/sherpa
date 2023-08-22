@@ -20,6 +20,33 @@ Double_Transitions::Double_Transitions(Single_Transitions * singles) :
   Normalise();
 }
 
+double Double_Transitions::ComputeTransitionWeight(Flavour popped,
+						   Flavour_Pair pair) {
+  Constituents * constituents     = hadpars->GetConstituents();
+  double weight      = constituents->TotWeight(popped.Bar());
+  if (weight<1.e-6) return 0;
+  if (2.*constituents->Mass(popped)+0.1<
+      constituents->Mass(pair.first)+constituents->Mass(pair.second))
+    weight = 1.;
+  if (popped.IsDiQuark()) {
+    if (int(pair.first.Kfcode())==4)  weight *= m_charm_baryon_modifier;
+    if (int(pair.second.Kfcode())==4) weight *= m_charm_baryon_modifier;
+    if (int(pair.first.Kfcode())==5)  weight *= m_beauty_baryon_modifier;
+    if (int(pair.second.Kfcode())==5) weight *= m_beauty_baryon_modifier;
+  }
+  if (popped.Kfcode()==3 ||
+      popped.Kfcode()==3101 || popped.Kfcode()==3103 ||
+      popped.Kfcode()==3201 || popped.Kfcode()==3203 ||
+      popped.Kfcode()==3303) {
+    if (int(pair.first.Kfcode())==4)  weight *= m_charm_strange_modifier;
+    if (int(pair.second.Kfcode())==4) weight *= m_charm_strange_modifier;
+    if (int(pair.first.Kfcode())==5)  weight *= m_beauty_strange_modifier;
+    if (int(pair.second.Kfcode())==5) weight *= m_beauty_strange_modifier;
+  }
+  return weight;
+
+}
+
 void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 {
   Constituents * constituents     = hadpars->GetConstituents();
@@ -65,6 +92,10 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	  hads.first  = hit1->first;
 	  hads.second = hit2->first;
 	  double wt   = weight*hit1->second*hit2->second;
+	  // TODO: figure this out!
+	  // msg_Out()<<"wt = " << wt << std::endl;
+	  // msg_Out()<<"m_wtthres = " << m_wtthres << std::endl;
+	  // msg_Out()<<"excluded : " << (wt<m_wtthres) << std::endl;
 	  if (wt<m_wtthres) continue;
 	  (*m_transitions[pair])[hads] = wt;
 	}
@@ -134,7 +165,7 @@ void Double_Transitions::Print(const bool & full) {
 
 Double_Transitions::~Double_Transitions() {
   while (!m_transitions.empty()) {
-    delete (m_transitions.begin()->second); 
+    delete (m_transitions.begin()->second);
     m_transitions.erase(m_transitions.begin());
   }
   m_transitions.clear();
@@ -178,4 +209,3 @@ double Double_Transitions::GetHeaviestMass(const Flavour_Pair & fpair) {
   if (pair.first==Flavour(kf_none) || pair.second==Flavour(kf_none)) return -1.;
   return pair.first.HadMass()+pair.second.HadMass();
 }
-

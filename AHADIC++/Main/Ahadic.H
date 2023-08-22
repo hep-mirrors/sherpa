@@ -29,6 +29,7 @@ namespace AHADIC {
     Singlet_Checker        m_singletchecker;
     Gluon_Decayer          m_gluondecayer;
     Cluster_Decayer        m_clusterdecayer;
+    Flavour_Selector       m_flavourselector;
 
     ATOOLS::Vec4D m_totmom;
 

@@ -13,12 +13,14 @@ namespace AHADIC {
   public:
     double m_mass;
     int    m_ispin;
-    double m_weight, m_smearing;
-    ConstituentCharacteristic(double _m=0., int _is=-1, double _wt=0.) :
+    std::vector<double> m_weight;
+    double m_smearing;
+    ConstituentCharacteristic(double _m=0., int _is=-1,
+			      std::vector<double> _wt={0.}) :
       m_mass(_m), m_ispin(_is), m_weight(_wt) {}
 
     double Mass()      { return m_mass;     }
-    double TotWeight() { return m_weight;   }
+    double TotWeight(int i=0) { return m_weight[i];   }
     int    ISpin()     { return m_ispin;    }
   };
 
@@ -30,6 +32,7 @@ namespace AHADIC {
     ATOOLS::Flavour m_lightest;
   public:
     FlavCCMap CCMap;
+    int    m_nvars;
     Constituents(bool=true);
     ~Constituents();
 
@@ -37,6 +40,7 @@ namespace AHADIC {
     double MinMass();
     double MaxMass();
     double TotWeight(const ATOOLS::Flavour & flav);
+    std::vector<double> Weights(const ATOOLS::Flavour & flav);
     int    ISpin(ATOOLS::Flavour & flav);
 
     const ATOOLS::Flavour & LightestConstituent() const { return m_lightest; }

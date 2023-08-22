@@ -47,7 +47,8 @@ namespace AHADIC {
 				 double kt02);
   public:
     Cluster_Splitter(std::list<Cluster *> * cluster_list,
-		     Soft_Cluster_Handler * softclusters);
+		     Soft_Cluster_Handler * softclusters,
+		     Flavour_Selector     * flavourselector);
     void   Init(const bool & isgluon=false);
     double WeightFunction(const double & z,
 			  const double & zmin,const double & zmax,

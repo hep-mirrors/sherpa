@@ -7,14 +7,15 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Trivial_Splitter::Trivial_Splitter() {}
+Trivial_Splitter::Trivial_Splitter(Flavour_Selector * flavourselector) :
+  p_flavourselector(flavourselector)
+{}
 
 void Trivial_Splitter::Init() {
   p_constituents = hadpars->GetConstituents();
   // minmass is the mass of the lightest constituent (usually u/d quark)
   m_kt2max       = sqr(hadpars->Get("kT_max"));
   m_minmass      = p_constituents->MinMass();
-  m_flavourselector.InitWeights();
   m_ktselector.Init(false);
   m_zselector.Init();
 }
@@ -78,7 +79,7 @@ bool Trivial_Splitter::InitKinematics(bool rescue) {
 }
 
 void Trivial_Splitter::SelectFlavour() {
-  m_newflav      = m_flavourselector(m_E,true);
+  m_newflav      = (*p_flavourselector)(m_E,true);
   m_popped_mass  = p_constituents->Mass(m_newflav);
   m_popped_mass2 = sqr(m_popped_mass);
 }

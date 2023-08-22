@@ -18,7 +18,8 @@ namespace AHADIC {
 	      bool clustermasses);
   public:
     Cluster_Decayer(std::list<Cluster *> * cluster_list,
-		    Soft_Cluster_Handler * softclusters);
+		    Soft_Cluster_Handler * softclusters,
+		    Flavour_Selector     * flavourselector);
     ~Cluster_Decayer();
     void Init();
     void Reset();

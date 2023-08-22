@@ -8,8 +8,10 @@ using namespace ATOOLS;
 using namespace std;
 
 Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
-			     Soft_Cluster_Handler * softclusters) :
+			     Soft_Cluster_Handler * softclusters,
+			     Flavour_Selector     * flavourselector) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
+  p_flavourselector(flavourselector),
   m_ktorder(false), m_ktfac(1.),
   m_attempts(100),
   m_analyse(false)
@@ -32,12 +34,12 @@ void Splitter_Base::Init(const bool & isgluon) {
   p_singletransitions = hadpars->GetSingleTransitions();
   p_doubletransitions = hadpars->GetDoubleTransitions();
   p_constituents      = hadpars->GetConstituents();
-  m_flavourselector.InitWeights();
+
   m_ktorder  = (hadpars->Switch("KT_Ordering")>0);
   m_ktmax    = hadpars->Get("kT_max");
   m_ktselector.Init(isgluon);
   m_zselector.Init(this);
-  m_minmass  = m_flavourselector.MinimalMass();
+  m_minmass  = p_flavourselector->MinimalMass();
 }
 
 bool Splitter_Base::
@@ -116,7 +118,8 @@ bool Splitter_Base::MakeSplitting() {
 
 void Splitter_Base::PopFlavours() {
   // Here we should set vetodi = false -- but no heavy baryons (yet)
-  Flavour flav    = m_flavourselector(m_Emax/2.,false);
+  // TODO: SHOULD THIS REALLY BE M_EMAX/2???
+  Flavour flav    = (*p_flavourselector)(m_Emax,false);
   // m_barrd = true  if part1 = AntiQuark or DiQuark
   // m_barrd = false if part1 = Quark or AntiDiQuark
   m_newflav[0]    = m_barrd?flav:flav.Bar();
