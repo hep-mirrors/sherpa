@@ -4,9 +4,10 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "AHADIC++/Main/Ahadic.H"
+
+#include <memory>
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -153,23 +154,23 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 {
   Particle  * part(NULL);
   Blob      * blob(NULL);
-  std::vector<SP(Part_List)> plists;
-  plists.push_back(new Part_List);
-  for (Blob_List::iterator blit=bloblist->begin();
-       blit!=bloblist->end();++blit) {
+  std::vector<std::shared_ptr<Part_List>> plists = { std::make_shared<Part_List>() };
+  plists.reserve(bloblist->size());
+  const Blob_List::const_iterator& blitEnd = bloblist->end();
+  for (Blob_List::iterator blit=bloblist->begin(); blit!=blitEnd;++blit) {
     if ((*blit)->Has(blob_status::needs_hadronization)) {
       // If not coming from hadron decays, fill default plists[0].
       // If from hadron decays, create separate plist for each blob
       // such that there is a one-to-one correspondence between
       // fragmentation outcome and hadron decay. This is needed for setting
       // the correct vertex position, and to reject exclusive final states
-      SP(Part_List) plist(plists[0]);
+      std::shared_ptr<Part_List>& plist = plists[0];
       Blob* upstream_blob=(*blit)->UpstreamBlob();
       if (upstream_blob && upstream_blob->Type()==btp::Hadron_Decay) {
-        plist=new Part_List;
+        plist = std::make_shared<Part_List>();
         plists.push_back(plist);
       }
-      
+
       std::vector<Particle*> taus;
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part = (*blit)->OutParticle(i); 
@@ -211,16 +212,16 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 		   <<"   No coloured particle found leaving shower blobs.\n";
     return Return_Value::Nothing;
   }
-  
-  
+
+
   Return_Value::code ret(Return_Value::Success);
   for (size_t i=0; i<plists.size(); ++i) {
     if (plists[i]->empty()) continue;
-    SP(Part_List) plist=plists[i];
+    std::shared_ptr<Part_List>& plist=plists[i];
     int  col1, col2;
     bool hit1, hit2;
-    Part_List * pli(NULL);
-    vector<SP(Part_List)> partlists; 
+    std::shared_ptr<Part_List> pli;
+    vector<std::shared_ptr<Part_List>> partlists;
     int plsize;
     do {
       plsize=plist->size();
@@ -236,7 +237,7 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	}
 	if (col1!=0 && col2==0) {
 	  hit1 = true;
-	  pli  = new Part_List;
+	  pli  = std::make_shared<Part_List>();
 	  pli->push_back((*pit));
 	  pit  = plist->erase(pit);
 	  partlists.push_back(pli);
@@ -261,7 +262,7 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	  col2 = (*pit)->GetFlow(2);
 	  if (col1!=0 && col2!=0) {
 	    hit1 = true;
-	    pli  = new Part_List;
+	    pli  = std::make_shared<Part_List>();
 	    pli->push_back((*pit));
 	    pit  = plist->erase(pit);
 	    partlists.push_back(pli);
@@ -288,21 +289,22 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	return Return_Value::New_Event;
       }
     } while(plist->size()>0);
-    
+
     if (plist->empty()) {
       blob = new Blob();
       blob->SetId();
       blob->SetType(btp::Fragmentation);
       blob->SetStatus(blob_status::needs_hadronization);
       bloblist->push_back(blob);
-      for (vector<SP(Part_List)>::iterator pliter=partlists.begin();
-	   pliter!=partlists.end();pliter++) {
-	while (!(*pliter)->empty()) {
-	  blob->AddToInParticles((*pliter)->front());
-	  (*pliter)->pop_front();
-	}
+      const vector<std::shared_ptr<Part_List>>::const_iterator pliterEnd = partlists.end();
+      vector<std::shared_ptr<Part_List>>::iterator pliter = partlists.begin();
+      for (; pliter!=pliterEnd;pliter++) {
+        while (!(*pliter)->empty()) {
+          blob->AddToInParticles((*pliter)->front());
+          (*pliter)->pop_front();
+        }
       }
-      
+
       ret=Return_Value::Success;
     }
     else {
