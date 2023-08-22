@@ -11,7 +11,7 @@ using namespace ATOOLS;
 using namespace std;
 
 /*
-Define: 
+Define:
 
 m_min = minimal constituent mass of quark (m_minQmass)
 q     = quark or diquark
@@ -25,7 +25,7 @@ if 2-particle singlet:
                              in ration 60:30:10
        m_gg < 2.*m_pi   -->  pi0 + gamma
        m_gg < m_pi      -->  gamma + gamma
-       
+
        must write code in Soft_Cluster_Handler
 
 ** q q(bar): possible problem for massless quarks ...
@@ -43,17 +43,19 @@ if multi-particle singlet
        m_gg < 2.* m_min --> combine the gluons into one:
                  find third parton (spectator) to take recoil
 
-       m_qg similar to m_gg 
+       m_qg similar to m_gg
 
  */
 
 
 
 Singlet_Checker::Singlet_Checker(list<Singlet *> * singlets,
-				 Soft_Cluster_Handler * softclusters) :
+				 Soft_Cluster_Handler * softclusters,
+				 Flavour_Selector     * flavourselector) :
   Singlet_Tools(),
   p_singlets(singlets), p_softclusters(softclusters),
   p_hadrons(softclusters->GetHadrons()),
+  m_splitter(Trivial_Splitter(flavourselector)),
   m_direct_transitions(0), m_errors(0)
 {}
 
@@ -80,7 +82,7 @@ bool Singlet_Checker::operator()() {
   while (lsit!=p_singlets->end()) {
     p_singlet = (*lsit);
     // check if singlet is too light
-    // (mass smaller than summed constituent masses - may hint at problem) 
+    // (mass smaller than summed constituent masses - may hint at problem)
     if (!CheckSinglet()) {
       // there are only two partons in it - this will have to be fixed
       // we put all of those into a separate list to be deatl with in
@@ -390,7 +392,7 @@ void Singlet_Checker::ForcedDecays() {
       bit = m_badones.erase(bit);
     }
     else {
-      //Flavour flav1 = p_singlet->front()->Flavour(); 
+      //Flavour flav1 = p_singlet->front()->Flavour();
       //Flavour flav2 = p_singlet->back()->Flavour();
       //Flavour had   = p_softclusters->LowestTransition(flav1,flav2);
       //msg_Out()<<METHOD<<": "<<flav1<<" + "<<flav2<<" --> "<<had<<" "
@@ -404,9 +406,9 @@ void Singlet_Checker::ForcedDecays() {
 
 bool Singlet_Checker::ForcedDecayOfTwoPartonSinglet() {
   if (!ExtractAndCheckFlavours()) abort();
-  if ((p_part1->Flavour().IsGluon() && p_part2->Flavour().IsGluon() && 
+  if ((p_part1->Flavour().IsGluon() && p_part2->Flavour().IsGluon() &&
        TwoGluonSingletToHadrons()) ||
-      (!(p_part1->Flavour().IsGluon() && p_part2->Flavour().IsGluon()) && 
+      (!(p_part1->Flavour().IsGluon() && p_part2->Flavour().IsGluon()) &&
        TwoQuarkSingletToHadrons())) {
     delete p_singlet;
     return true;

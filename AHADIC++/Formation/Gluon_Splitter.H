@@ -29,8 +29,9 @@ namespace AHADIC {
     std::vector<double> variation_weights;
   public:
     Gluon_Splitter(std::list<Cluster *> * cluster_list,
-		   Soft_Cluster_Handler * softclusters) :
-      Splitter_Base(cluster_list,softclusters) {}
+		   Soft_Cluster_Handler * softclusters,
+		   Flavour_Selector     * flavourselector) :
+      Splitter_Base(cluster_list,softclusters,flavourselector) {}
     ~Gluon_Splitter();
 
     void   Init(const bool & isgluon=true);

@@ -8,8 +8,9 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
-				   Soft_Cluster_Handler * softclusters) :
-  Splitter_Base(cluster_list,softclusters),
+				   Soft_Cluster_Handler * softclusters,
+				   Flavour_Selector     * flavourselector) :
+  Splitter_Base(cluster_list,softclusters,flavourselector),
   m_output(false)
 {
 }

@@ -32,7 +32,8 @@ namespace AHADIC {
     void AnalyseClusters();
   public:
     Gluon_Decayer(std::list<Cluster *> * cluster_list,
-		  Soft_Cluster_Handler * softclusters);
+		  Soft_Cluster_Handler * softclusters,
+		  Flavour_Selector     * flavourselector);
     ~Gluon_Decayer();
     void Init();
     void Reset();

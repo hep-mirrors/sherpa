@@ -16,20 +16,20 @@ namespace AHADIC {
     using Transition = std::pair<Singlet*, ATOOLS::Flavour>;
     std::vector<Transition> m_transitions;
     std::list<Proto_Particle *>             * p_hadrons;
-    
+
     Soft_Cluster_Handler * p_softclusters;
     Trivial_Splitter       m_splitter;
-    
+
     Proto_Particle * p_part1, * p_part2;
     double           m_minSmass2;
     bool             m_isring;
-    
+
     ATOOLS::Vec4D    m_singletmom;
     double           m_targetmass;
     Singlet        * p_recoiler;
 
     long int         m_direct_transitions, m_errors;
-    
+
     bool CheckSinglet();
     bool FusePartonsInLowMassSinglet();
     bool DealWithProblematicSinglets();
@@ -48,11 +48,12 @@ namespace AHADIC {
     void AddOrUpdateTransition(Singlet*, ATOOLS::Flavour& hadron);
  public:
     Singlet_Checker(std::list<Singlet *> * p_singlets,
-		    Soft_Cluster_Handler * softclusters);
+		    Soft_Cluster_Handler * softclusters,
+		    Flavour_Selector     * flavourselector);
     ~Singlet_Checker();
     void Init();
     void Reset();
-    
+
     bool operator()();
   };
 }

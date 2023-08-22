@@ -71,6 +71,11 @@ void Hadronisation_Parameters::ReadParameters()
   ReadMesonWeights();
   ReadSplittingParameters();
   ReadClusterToMesonPSParameters();
+
+  // TODO: check correct inputs!
+  // each of the vectors should either be of size on, in which case, we pad it
+  // or of the same size, whatever that is
+  CheckAndPad();
 }
 
 const double Hadronisation_Parameters::Get(string keyword) const
@@ -158,11 +163,6 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_parametermap_vecs[string("gammaH")] =
     s["GAMMA_H"].SetDefault({0.05}).GetVector<double>();
 
-  // TODO: check correct inputs!
-  // each of the vectors should either be of size on, in which case, we pad it
-  // or of the same size, whatever that is
-  CheckAndPad();
-
   // These guys make a lot of difference - especially the transition ones, once we switch them on.
   m_switchmap["direct_transition"] =
     s["DIRECT_TRANSITIONS"].SetDefault(1).Get<int>();
@@ -192,29 +192,39 @@ void Hadronisation_Parameters::CheckAndPad() {
       "alphaD","betaD","gammaD",
       "alphaB","betaB","gammaB",
       "alphaH","betaH","gammaH",
+      "Strange_fraction","Baryon_fraction",
+      "P_qs_by_P_qq","P_ss_by_P_qq","P_di_1_by_P_di_0"
     };
 
-  size_t size = 1;
+  size_t max_size = 1;
   for(const auto key : relevant_entries) {
     const int s = m_parametermap_vecs.find(key)->second.size();
+    // TODO: some more sanity checks?
+    // - have all the entries been found?
+    // - are they all or reasonable size?
     if(s == 1) continue;
-    if(size != 1) {
+    if(max_size != 1) {
       // there has been another vector before
-      if(s != size) {
-	// TODO: proper error message
-	msg_Error()<<"PROBLEM\n";
+      if(s != max_size)
 	throw std::invalid_argument( "PROBLEM" );
-      }
     } else {
       // first vector occuring
-      size = s;
+      max_size = s;
     }
   }
 
   // second pass pad the single entry vectors
   for(const auto key : relevant_entries) {
     auto& v = m_parametermap_vecs.find(key)->second;
-    v.resize(size,v[0]);
+    v.resize(max_size,v[0]);
+  }
+
+  // modify the parameter maps
+  // this can only be done *after* all of the padding etc has been taken place
+  for (int i{0}; i<m_parametermap_vecs[string("Strange_fraction")].size(); ++i) {
+    const double strange = m_parametermap_vecs[string("Strange_fraction")][i];
+    m_parametermap_vecs[string("P_qs_by_P_qq")][i] *= strange;
+    m_parametermap_vecs[string("P_ss_by_P_qq")][i] *= sqr(strange);
   }
 }
 
@@ -290,16 +300,17 @@ void Hadronisation_Parameters::ReadPoppingParameters()
 {
   auto s = Settings::GetMainSettings()["AHADIC"];
   double strange;
-  m_parametermap[string("Strange_fraction")] = strange =
-    s["STRANGE_FRACTION"].SetDefault(0.46).Get<double>();
-  m_parametermap[string("Baryon_fraction")]        =
-    s["BARYON_FRACTION"].SetDefault(0.17).Get<double>();
-  m_parametermap[string("P_qs_by_P_qq")]           =
-    (s["P_QS_by_P_QQ_norm"].SetDefault(0.56).Get<double>())*strange;
-  m_parametermap[string("P_ss_by_P_qq")]           =
-    (s["P_SS_by_P_QQ_norm"].SetDefault(0.056).Get<double>())*sqr(strange);
-  m_parametermap[string("P_di_1_by_P_di_0")]       =
-    s["P_QQ1_by_P_QQ0"].SetDefault(0.60).Get<double>();
+  m_parametermap_vecs[string("Strange_fraction")] =
+    s["STRANGE_FRACTION"].SetDefault({0.46}).GetVector<double>();
+  m_parametermap_vecs[string("Baryon_fraction")]        =
+    s["BARYON_FRACTION"].SetDefault({0.15}).GetVector<double>();
+  m_parametermap_vecs[string("P_qs_by_P_qq")]           =
+    (s["P_QS_by_P_QQ_norm"].SetDefault({0.71}).GetVector<double>());
+  m_parametermap_vecs[string("P_ss_by_P_qq")]           =
+    (s["P_SS_by_P_QQ_norm"].SetDefault({0.01}).GetVector<double>());
+  m_parametermap_vecs[string("P_di_1_by_P_di_0")]       =
+    s["P_QQ1_by_P_QQ0"].SetDefault({m_shower ? 0.94 : 0.57}).GetVector<double>();
+  // Multiply by strange etc, afther the padding has been done
 }
 
 

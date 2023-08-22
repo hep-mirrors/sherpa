@@ -18,7 +18,7 @@ namespace AHADIC {
     Single_Transitions   * p_singletransitions;
     Double_Transitions   * p_doubletransitions;
     Constituents         * p_constituents;
-    Flavour_Selector       m_flavourselector;
+    Flavour_Selector     * p_flavourselector;
     KT_Selector            m_ktselector;
     Z_Selector             m_zselector;
 
@@ -61,17 +61,11 @@ namespace AHADIC {
     virtual bool FillParticlesInLists()    = 0;
     virtual bool CheckKinematics()         = 0;
 
-    std::vector<double>& _get_variationweights() {
-      return m_ktselector.get_variationweights();
-    };
-
-    void _reset_variationweights() {
-      m_ktselector.reset_variationweights();
-    };
-
   public:
     Splitter_Base(std::list<Cluster *> * cluster_list,
-		  Soft_Cluster_Handler * softclusters);
+		  Soft_Cluster_Handler * softclusters,
+		  Flavour_Selector     * flavourselector
+		  );
     ~Splitter_Base();
     virtual void Init(const bool & isgluon);
 

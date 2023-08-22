@@ -8,16 +8,16 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Decayer::Cluster_Decayer(list<Cluster *> * cluster_list,
-			     Soft_Cluster_Handler * softclusters) :
+				 Soft_Cluster_Handler * softclusters,
+				 Flavour_Selector     * flavourselector) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_splitter(Cluster_Splitter(cluster_list,softclusters))
+  m_splitter(Cluster_Splitter(cluster_list,softclusters,flavourselector))
 {}
 
 Cluster_Decayer::~Cluster_Decayer() {}
 
 void Cluster_Decayer::Init() {
   m_splitter.Init();
-  //Test(10.,Flavour(kf_c),true);
 }
 
 void Cluster_Decayer::Reset() {}
