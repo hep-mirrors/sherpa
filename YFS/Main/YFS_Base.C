@@ -79,6 +79,7 @@ void YFS_Base::RegisterDefaults(){
   s["BES_SIG_Y"].SetDefault(0.132e-2);
   s["BES_rho"].SetDefault(-0.745e0);
   s["No_Born"].SetDefault(0);
+  s["No_Sub"].SetDefault(0);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -131,6 +132,7 @@ void YFS_Base::RegisterSettings(){
   m_beam_sigx = s["BES_SIG_X"].Get<double>();
   m_beam_sigy = s["BES_SIG_Y"].Get<double>();
   m_no_born = s["No_Born"].Get<int>();
+  m_no_subtraction = s["No_Sub"].Get<int>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added

@@ -13,6 +13,7 @@
 #include "ATOOLS/Math/Histogram.H"
 
 #include "PHASIC++/Process/Single_Process.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
 
 
 
@@ -36,10 +37,13 @@ public:
   YFS::YFS_Form_Factor *p_yfsFormFact;
   PHASIC::Single_Process *p_born;
   YFS::Define_Dipoles *p_dipoles, *p_global_dipoles;
-  Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta;
+  Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom;
+  Vec4D m_nvec;
   ATOOLS::Flavour_Vector m_flavs;
   histograms2d m_histograms2d;
   histograms1d m_histograms1d;
+  ATOOLS::Momenta_Stretcher m_stretcher;
+
   double m_evts, m_recola_evts;
   int m_is_isr;
 
@@ -50,14 +54,16 @@ public:
   void InitializeRealVirtual(const PHASIC::Process_Info& pi);
   double CalculateVirtual();
   double CalculateReal();
-  double CalculateReal(Vec4D &k);
+  double CalculateReal(Vec4D k);
   double CalculateRealVirtual();
   double CalculateRealReal();
-  double CollinearReal(Vec4D k, Vec4D_Vector p);
-
-  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
+  void MakeHardMomenta();
+  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k, int mode=0);
+  void MapInitial(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
+  void MapFinal(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
+  void CheckMasses(Vec4D_Vector &p);
 
   inline void SetBorn(double b) { m_born = b;}
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}

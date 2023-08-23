@@ -33,16 +33,18 @@ namespace YFS{
         bool m_setBorn, m_setbeams=1;
         int m_Nphotons, m_resonance;
         dipoletype::code m_type;
-        Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams;
+        Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum;
         Flavour_Vector m_flavs;
         Vec4D m_photonSum, m_QFrame;
         Poincare *p_boost, *p_rotate, *p_Pboost, *p_Qboost;
         void PrintInfo();
         void AddPhotonsToDipole(Vec4D_Vector &Photons);
+        void AddPhotonsToDipole(Vec4D &Photon);
         inline void ClearPhotons() { m_dipolePhotons.clear(); };
         inline Vec4D Momentum(int i) { return m_momenta[i]; }
         inline void SetMomentum(int i, Vec4D mom) { m_momenta[i] = mom; }
         inline void SetNewMomentum(int i, Vec4D mom) { m_newmomenta[i] = mom; }
+        inline void SetEikMomentum(int i, Vec4D mom) { m_eikmomentum[i] = mom; }
         inline void SetBeams(int i, Vec4D mom) { m_beams[i] = mom; }
         void AddToGhosts(Vec4D &p);
         void SetBornMomentum(Vec4D_Vector k);
@@ -64,6 +66,7 @@ namespace YFS{
         inline Vec4D GetMomenta(int i) { return m_momenta[i];}
         inline Vec4D GetNewMomenta(int i) { return m_newmomenta[i];}
         inline Vec4D GetOldMomenta(int i) { return m_oldmomenta[i];}
+        inline Vec4D GetEikMomenta(int i) { return m_eikmomentum[i];}
         inline Flavour GetFlav(int i) { return m_flavs[i];}
         inline Vec4D_Vector GetPhotons() { return m_dipolePhotons;}
         inline Vec4D GetPhotonSum() { return m_photonSum;}

@@ -259,6 +259,7 @@ double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2,
   }
   double virt = m_alpi * (t1 + t2 + t3);
   if (mode == 3) return m_alpi * (t1 + t2 + t3);
+  if (mode==4) return m_alpi*t1;
   double real = BVR_full(p1p2, E1, E2, Mas1, Mas2, Kmax, MasPhot, mode);
   if (IsBad(real) || IsBad(virt)) {
     msg_Error() << METHOD << "\n"

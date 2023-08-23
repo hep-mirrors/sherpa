@@ -98,21 +98,12 @@ void Real_ff::CalculateVirt() {
   // m_delI2 = sqr(m_alpi*log(logargI))/2;
   // if(m_fsrmode==0) m_gammaF = m_delF2 = 0;
   // if(m_fsrmode==2) m_gammaI = m_delI2 = 0;
-  // PRINT_VAR(m_gammaI);
   m_beta00 = m_born;//everything is divided by born
   m_beta01f = m_born * (1. + m_gammaF / 2.);
   m_beta01i = m_born * (1. + m_gammaI / 2.);
   m_beta02f = m_born * (1. + m_gammaF / 2. + m_delF2);
   m_beta02i =  m_born * (1. + m_gammaI / 2. + m_delI2);
   m_beta01 = m_born * (1. + m_gammaI / 2.) * (1. + m_gammaF / 2.);
-  m_beta01 = m_born * (1. + m_gammaI / 2.) * (1. + m_gammaF / 2.);
-  // if (m_gammaF < 0) {
-  //   PRINT_VAR(m_gammaF / 2.);
-  //   PRINT_VAR(sqrt((m_q1 + m_q2).Abs2()));
-  //   PRINT_VAR(m_q1.Mass());
-  //   PRINT_VAR(m_q1);
-  //   abort();
-  // }
   m_beta02 = m_born * (1. + m_gammaI / 2. + m_delI2) * (1. + m_gammaF / 2. + m_delF2);
   // PRINT_VAR(m_beta02/m_born);
   m_beta03 = m_born * (1. + m_gammaI / 2. + m_delI2 + pow(m_gammaI, 3.) / 48) * (1. + m_gammaF / 2. + m_delF2 + pow(m_gammaF, 3) / 48.);
@@ -188,10 +179,10 @@ void Real_ff::SetIncoming(YFS::Dipole_Vector::iterator dipole, Vec4D_Vector &bor
   m_beta12f.clear();
   m_beta21f.clear();
   m_alpi = m_alpha / M_PI;
-  m_q1 = D.m_oldmomenta[0];
-  m_q2 = D.m_oldmomenta[1];
-  m_beam1 = D.m_momenta[0]; // called beam not to break for now. Is actually born final state momentum
-  m_beam2 = D.m_momenta[1];
+  m_q1 = D.GetNewMomenta(0);
+  m_q2 = D.GetNewMomenta(1);
+  m_beam1 = D.GetNewMomenta(0); // called beam not to break for now. Is actually born final state momentum
+  m_beam2 = D.GetNewMomenta(1);
   m_p1p2 = m_beam1 * m_beam2;
   Vec4D sumk;
   for (auto kk : k) sumk += kk;
@@ -203,15 +194,15 @@ void Real_ff::SetIncoming(YFS::Dipole_Vector::iterator dipole, Vec4D_Vector &bor
   double t1 = (1. + beta1 * beta2) / (beta1 + beta2);
   double logarg =  (1. + beta1) * (1. + beta2) / ((1. - beta1) * (1. - beta2));
   double QF2 = D.m_QiQj;
-  logarg = (D.m_oldmomenta[0] + D.m_oldmomenta[1]).Abs2() / sqr(m_beam1.Mass());
-  m_gamma  =  2.*m_alpi * (log(logarg) - 1.); // See Mareks phd thesis A.2.1
-  m_gammap =  2.*m_alpi  * (log(logarg ));
+  // logarg = (D.m_newmomenta[0]*D.m_newmomenta[1]) / sqr(m_beam1.Mass());
+  m_gamma  =  m_alpi *  (t1*log(logarg) - 2.); // See Mareks phd thesis A.2.1
+  m_gammap =  m_alpi  * (t1*log(logarg));
   m_gammaF = m_gamma;
   m_mass = (m_q1.Mass() + m_q2.Mass()) / 2.;
   m_mass2 = sqr(m_mass);
   for (auto &kk : k) m_sfsr.push_back(Eikonal(kk));
-  ATOOLS::Poincare poin(m_beam1 + m_beam2);
-  for (auto &kk : m_photons) poin.Boost(kk);
+  // ATOOLS::Poincare poin(m_beam1 + m_beam2);
+  // for (auto &kk : m_photons) poin.Boost(kk);
   // m_gammaF  = 2 * m_alpi * (log(logarg) - 1.);
   m_delF2 = sqr(m_alpi * (log(logarg))) / 2.;
   if (m_fsrmode == 0) m_gammaF = m_delF2 = 0;
@@ -273,6 +264,7 @@ void Real_ff::Calculate() {
   m_beta1 = 0;
   m_real = 0;
   m_beta20 = m_beta21 = 0;
+  int i = 0;
   if (m_order == 1 && !m_realtool) {
     for (auto k: m_photons) {
       if (m_fsrmode == 0 ) {
@@ -283,6 +275,7 @@ void Real_ff::Calculate() {
 
       else if (m_fsrmode != 0)  {
         m_real += Beta10(k); ///m_Sfac[i];//Eikonal(m_photons[i]);//+m_beta11;
+        i++;
         // m_beta10f.push_back(Beta10(m_photons[i], i));
       }
     }
@@ -372,7 +365,6 @@ void Real_ff::Calculate() {
       }
     }
   }
-
   DEBUG_FUNC("Real + Virtual = " << m_real << std::endl);
 }
 
@@ -432,7 +424,7 @@ double Real_ff::Beta(Vec4D k) {
 
 
 double Real_ff::Eikonal(Vec4D k) {
-  return -m_alpi / (4.*M_PI) * (m_beam1 / (m_beam1 * k) - m_beam2 / (m_beam2 * k)).Abs2()/m_rescale_alpha;
+  return -m_alpi / (4.*M_PI) * (m_beam1 / (m_beam1 * k) - m_beam2 / (m_beam2 * k)).Abs2();
 
 }
 
@@ -509,7 +501,48 @@ double Real_ff::Beta10(Vec4D k) {
     m_d10vec.push_back(m_D10);
     double beta10 = (m_D10 - S * m_beta00) * virtfac; //*(1+m_gamma/2);
     // return 0.5;
-    // return m_D10/S;
+    // return m_D10/1e9;
+    return beta10 / S;
+  }
+  m_D10 = 0;
+  if (m_use_fac) virtfac = 1 + m_gammaF / 2;
+  D1(k, a, b, wm, m_order);
+  m_Sfac.push_back(S);
+  m_D10 *= S;//*wmd(a,b);
+  m_D11 *= S;
+  m_D12 *= S;
+
+  m_d10vec.push_back(m_D10);
+  double beta10 = (m_D10 - S * m_beta00) * virtfac; //*(1+m_gamma/2);
+  return beta10 / S; ///S;
+}
+
+double Real_ff::Beta10(Vec4D k, int i) {
+  double d, t1, wm, S, w0;
+  double a = k * m_beam1 / (m_beam1 * m_beam2);
+  double b = k * m_beam2 / (m_beam1 * m_beam2);
+  double at = a;
+  double bt = b;
+  S = Eikonal(k);
+  double virtfac = 1;
+  // S = 2./(a*b)*wmd(a,b);
+  if (m_fsrmode >= 1) {
+    a = m_y[i];
+    b = m_z[i];
+    at = a / (1. + a + b);
+    bt = b / (1. + a + b);
+    if (m_use_fac) virtfac = 1 + m_gammaI / 2;
+    // S = 2./(a*b)*wm0(a,b);
+    // double hfac = S*wmd(m_mass2/m_s,at,bt);
+    // m_Sfac.push_back(S);
+    D1(k, at, bt, wm, m_order);
+    m_D10 *= S;//*wmd(at,bt);//*(1+m_gammaI/2);;
+    m_D11 *= S;
+    m_D12 *= S;
+    m_d10vec.push_back(m_D10);
+    double beta10 = (m_D10 - S * m_beta00) * virtfac; //*(1+m_gamma/2);
+    // return 0.5;
+    // return m_D10;
     return beta10 / S;
   }
   m_D10 = 0;
@@ -543,7 +576,7 @@ double Real_ff::Beta11(Vec4D k, int i) {
     at = a / (1. + a + b);
     bt = b / (1. + a + b);
     D1(k, at, bt, wm, m_order);
-    m_D10 *= S * wmd(a, b); //*(1+m_gammaI/2);
+    m_D10 *= S;// * wmd(a, b); //*(1+m_gammaI/2);
     m_D11 *= S * (1 + m_gammaI / 2);
     m_D12 *= S;
     m_d10vec.push_back(m_D10);
@@ -551,6 +584,7 @@ double Real_ff::Beta11(Vec4D k, int i) {
     double beta11 = (m_D11 - S * m_beta01);
     // if(m_formfactor == 2 ) beta11 = (m_D11 - S*m_beta00);
     return beta11 / S;
+    // return m_D11/1e12;
   }
   D1(k, a, b, wm, m_order);
   m_D10 *= S;//*wmd(a,b);//*(1+m_gammaF/2);
@@ -635,6 +669,10 @@ void Real_ff::D2(int i, int j)
     double bb1 = m_z[i];
     double aa2 = m_y[j];
     double bb2 = m_z[j];
+    // double aa1 = k1 * m_beam1 / m_p1p2;
+    // double bb1 = k1 * m_beam2 / m_p1p2;
+    // double aa2 = k2 * m_beam1 / m_p1p2;
+    // double bb2 = k2 * m_beam2 / m_p1p2;
     a1 = aa1 / (1 + aa1 + bb1);
     b1 = bb1 / (1 + aa1 + bb1);
     a2 = aa2 / (1 + aa2 + bb2);

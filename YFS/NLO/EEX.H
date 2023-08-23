@@ -69,6 +69,7 @@ namespace YFS{
     void Beta1(Vec4D k, double a, double b);
     void Beta2();
     double Beta10(Vec4D k1);
+    double Beta10(Vec4D k1, int i);
     double Beta10(int i);
     double Beta11(Vec4D k1, int i);
     double Beta12(Vec4D k1, int i);

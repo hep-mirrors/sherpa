@@ -31,7 +31,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   if(use_model_alpha) m_alp = s_model->ScalarConstant("alpha_QED");
   else m_alp  = (*aqed)(0); 
   m_alpi = m_alp/M_PI;
-  if (!use_model_alpha) m_rescale_alpha = 1;
+  if (use_model_alpha) m_rescale_alpha = 1;
   else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
   // m_QiQj = 1;
   m_sp = (mom[0]+mom[1]).Abs2();
@@ -49,8 +49,9 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
     m_momenta.push_back(v);
     m_oldmomenta.push_back(v);
     m_newmomenta.push_back(v);
-    // m_bornmomenta.push_back(v);
+    m_eikmomentum.push_back(v);
     m_beams.push_back(v);
+    m_ghost.push_back(v);
   }
   for (auto &v : born) m_bornmomenta.push_back(v);
   if (ty == dipoletype::code::initial) {
@@ -75,7 +76,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
     // p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 0., 1.));
   }
   CalculateBeta();
-    m_thetaij = m_thetai*m_thetaj;
+  m_thetaij = m_thetai*m_thetaj;
 }
 
 
@@ -122,7 +123,7 @@ void Dipole::Boost() {
     }
   }
   else if (Type() == dipoletype::final) {
-    // if (m_dipolePhotons.size() == 0) return;
+    if (m_dipolePhotons.size() == 0) return;
     if (m_dipolePhotons.size() != m_Nphotons){
       msg_Error()<<"Wrong Photon multiplicity in Boost \n";
     }
@@ -132,11 +133,12 @@ void Dipole::Boost() {
     if(!IsEqual(0,Q.PSpat())){
       msg_Error()<<"Dipole is in the wrong frame\n";
     }
-    Q = m_ghost[0]+m_ghost[1];
-    if(!IsEqual(0,Q.PSpat())){
-      msg_Error()<<"Dipole ghost is in the wrong frame";
+    if(m_ghost.size()!=0){
+      Q = m_ghost[0]+m_ghost[1];
+      if(!IsEqual(0,Q.PSpat())){
+        msg_Error()<<"Dipole ghost is in the wrong frame";
+      }
     }
-
 
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
@@ -148,7 +150,9 @@ void Dipole::Boost() {
     {
       Boost(m_momenta[i]);
       m_newmomenta[i]=m_momenta[i];
-      Boost(m_ghost[i]);
+      if(m_ghost.size()!=0){
+        Boost(m_ghost[i]);
+      }
     }
     m_photonSum*=0.;
     for (auto &k : m_dipolePhotons) {
@@ -199,7 +203,7 @@ void Dipole::CalculateBeta(){
 void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D_Vector &Photons) {
   m_photonSum *= 0;
   if (m_dipolePhotons.size() != 0) {
-    // msg_Error() << "Warning: Dipole still contains Photons, deleting old and adding new\n ";
+    msg_Debugging() << "Warning: Dipole still contains Photons, deleting old and adding new\n ";
     m_dipolePhotons.clear();
   }
   if (Photons.size() == 0) {
@@ -207,12 +211,14 @@ void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D_Vector &Photons) {
     return;
   }
   else {
-    for (auto &k : Photons) {
-      m_dipolePhotons.push_back(k);
-      m_photonSum += k;
-    }
+    for (auto &k : Photons) AddPhotonsToDipole(k);
   }
   DEBUG_FUNC("Photons added to this dipole " << this << "\n " << m_dipolePhotons);
+}
+
+void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D &k){
+  m_dipolePhotons.push_back(k);
+  m_photonSum +=k;
 }
 
 ATOOLS::Vec4D Dipole::Sum() {
@@ -233,31 +239,21 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
 }
 
 double Dipole::EEX(const Vec4D &k){
+  double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
+  double a = k*m_bornmomenta[0]/p1p2;
+  double b = k*m_bornmomenta[1]/p1p2;
+  double ap = a/(1.+a+b);
+  double bp = b/(1.+a+b);
+    // double V = 1+m_gamma/2.;
   if (Type() == dipoletype::initial) {
-    double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
-    double a = k*m_bornmomenta[0]/p1p2;
-    double b = k*m_bornmomenta[1]/p1p2;
-    double V = 1+m_gamma/2.;
     return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b));
   }
   else if (Type() == dipoletype::final) {
-    double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
-    double ap = k*m_bornmomenta[0]/p1p2;
-    double bp = k*m_bornmomenta[1]/p1p2;
-    double V = 1+m_gamma/2.;
-    double a = ap/(1.+ap+bp);
-    double b = bp/(1.+ap+bp);
-    return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b));
+    return 0.5*Eikonal(k)*(sqr(1-ap)+sqr(1-bp));
   }
-  else if (Type() == dipoletype::ifi) {
-    double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
-    double ap = k*m_bornmomenta[0]/p1p2;
-    double bp = k*m_bornmomenta[1]/p1p2;
-    double V = 1+m_gamma/2.;
-    double a = ap/(1.+ap+bp);
-    double b = bp/(1.+ap+bp);
-    return -2*Eikonal(k)*((sqr(1-ap)+sqr(1-b))+(sqr(1-a)+sqr(1-bp)));
-  }
+  // else if (Type() == dipoletype::ifi) {
+  //   return -2*Eikonal(k)*((sqr(1-ap)+sqr(1-b))+(sqr(1-a)+sqr(1-bp)));
+  // }
   return 0;
 }
 
@@ -272,6 +268,8 @@ void Dipole::Clean(){
   m_bornmomenta.clear();
   m_beams.clear();
   m_ghost.clear();
+  m_dipolePhotons.clear();
+  m_photonSum*=0;
 }
 
 bool Dipole::IsDecayAllowed(){
@@ -289,15 +287,17 @@ bool Dipole::IsDecayAllowed(){
 
 
 double Dipole::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
+  Vec4D eik;
+  // eik+=m_Qi*p1/(p1*k);
+  // eik+=m_Qj*p2/(p2*k);
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
+  // return m_thetm_alp / (4 * M_PI * M_PI) * (eik).Abs2();
   // if(Type()!=dipoletype::ifi) return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
   // else{
-  //   // PRINT_VAR(m_Qi);
-  //   // PRINT_VAR(m_Qj);
   //   // if(m_Qi==m_Qj) return 0;
-  //   double s = m_thetaij*m_alp / (4 * M_PI * M_PI) * (m_Qi*p1 / (p1 * k) - m_Qj*p2 / (p2 * k)).Abs2();
-  //   // PRINT_VAR(s);
-  //   return m_thetaij*m_alp / (4 * M_PI * M_PI) * (m_Qi*p1 / (p1 * k) + m_Qj*p2 / (p2 * k)).Abs2(); 
+  //   // return m_alp / (4 * M_PI * M_PI) *eik.Abs2();
+  //   if(m_Qi!=m_Qj)  return m_QiQj*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
+  //   else return m_QiQj*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) + p2 / (p2 * k)).Abs2();; 
   // }
 }
 
@@ -320,7 +320,11 @@ std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
         << "Charge of " << Dip.m_names[i] << " = " << Dip.m_charges[i] << std::endl
         << "Momentum of " << Dip.m_names[i] << " = " << Dip.m_momenta[i] << std::endl;
   }
-
+  out << "Invarinat mass " << " = " << (Dip.m_momenta[0]+Dip.m_momenta[1]).Mass() << std::endl;
+  if(Dip.m_type==dipoletype::final){
+    std::string isres = (Dip.m_resonance)?"Yes":"No";
+    out << "Is Resonance: "<< isres << std::endl;
+  }
   return out;
 }
 
