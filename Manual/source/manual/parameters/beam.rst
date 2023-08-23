@@ -129,7 +129,6 @@ EPA
 
 .. index:: EPA:Q2Max
 .. index:: EPA:ThetaMax
-.. index:: EPA:XMin
 .. index:: EPA:Use_old_WW
 .. index:: EPA:PTMin
 .. index:: EPA:Form_Factor
@@ -142,7 +141,7 @@ Each of these parameters has to be set in the subsetting ``EPA``, like so
 .. code-block:: yaml
 
    EPA:
-     XMin: 0.01
+     Q2Max: 4.5
 
 The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
@@ -163,10 +162,6 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
   Parameter of the EPA spectrum of an electron beam, c.f. :cite:`Frixione:1993yw`.
   Describes the maximum angle of the electron deflection, which
   translates to the maximum virtuality in the photon spectrum. It defaults to ``0.3``.
-
-:option:`XMin`
-  Restricts the phase space by imposing a minimum energy fraction that the photon must have with respect to the beam energy.
-  Its default value is ``0``.
 
 :option:`Use_old_WW`
   In Sherpa version 3, a more accurate Weizsäcker-Williams weight for electron beams is used, as described in

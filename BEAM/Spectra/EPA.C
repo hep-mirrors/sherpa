@@ -46,11 +46,6 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
 
   m_lo_epa = s["EPA"]["Use_old_WW"].Get<bool>();
 
-  std::vector<double> xmin{s["EPA"]["XMin"].GetVector<double>()};
-  if (xmin.size() != 1 && xmin.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `EPA:XMin'.");
-  m_xmin = (_dir > 0) ? xmin.front() : xmin.back();
-
   std::vector<int> formfactors{s["EPA"]["Form_Factor"].GetVector<int>()};
   if (formfactors.size() != 1 && formfactors.size() != 2)
     THROW(fatal_error,
@@ -84,7 +79,6 @@ void EPA::RegisterDefaults() {
   s["EPA"]["Form_Factor"].SetDefault(m_beam.FormFactor());
   s["EPA"]["AlphaQED"].SetDefault(0.0072992701);
   s["EPA"]["ThetaMax"].SetDefault(0.3);
-  s["EPA"]["XMin"].SetDefault(0);
   s["EPA"]["Use_old_WW"].SetDefault(false);
   s["EPA"]["Debug"].SetDefault(false);
   s["EPA"]["Debug_Files"].SetDefault("EPA_debugOutput");
@@ -245,7 +239,7 @@ bool EPA::CalculateWeight(double x, double q2) {
   const double alpha = m_aqed;
   m_x = x;
   m_Q2 = q2;
-  if (x > sqrt(1. - sqr(m_mass / m_energy)) || x < m_xmin) {
+  if (x > 1. - m_mass / 2. / m_energy) {
     m_weight = 0.0;
     return true;
   }
@@ -255,7 +249,7 @@ bool EPA::CalculateWeight(double x, double q2) {
     double q2min = sqr(m_mass * m_x) / (1 - m_x);
     double q2max = Min(q2min + sqr(m_energy) * (1 - m_x) * sqr(m_theta_max),m_q2Max);
     double f = alpha / M_PI / 2 / m_x *
-               ((1 + sqr(1 - m_x)) * log(q2max / q2min) +
+               ((1 + sqr(1 - m_x)) * log(q2max / q2min) -
                 2 * sqr(m_mass * m_x) * (1 / q2min - 1 / q2max));
     if (f < 0)
       f = 0.;
