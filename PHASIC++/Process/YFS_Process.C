@@ -288,6 +288,7 @@ void YFS_Process::FindProcessPossibleResonances
       for (size_t i(0); i < it->second.size(); ++i) {
         bool on(true);
         double m(it->first.Mass());
+        if(it->first.Width()==0) {on = false; break;}
         Single_Vertex * v(it->second[i]);
         for (size_t j(1); j < v->in.size(); ++j) {
           if (v->dec)        { on = false; break; }
