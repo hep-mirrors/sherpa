@@ -90,7 +90,7 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
   for (int i = 0; i < flavs.size(); ++i) {
     m_flavs.push_back(flavs[i]);
     if (i < 2) {
-      if (m_flavs[i].Mass() == 0) {
+      if (m_flavs[i].Mass() == 0 && m_fsrmode!=2) {
         THROW(fatal_error, "Inital states must be massive for YFS");
       }
     }
@@ -111,8 +111,10 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
 
 void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
   m_bornMomenta.clear();
+  m_momeikonal.clear();
   for (int i = 0; i < p.size(); ++i) {
     m_bornMomenta.push_back(p[i]);
+    m_momeikonal.push_back(p[i]);
   }
   if (m_formWW) MakeWWVecs(m_bornMomenta);
   // AddFormFactor();
@@ -236,6 +238,7 @@ bool YFS_Handler::CalculateISR() {
   m_photonSumISR = p_isr->GetPhotonSum();
   m_ISRPhotons   = p_isr->GetPhotons();
   m_isrWeight = p_isr->GetWeight() * m_formfactor;
+  // if(m_v < m_vmin) return true;
   p_dipoles->GetDipoleII()->AddPhotonsToDipole(m_ISRPhotons);
   p_dipoles->GetDipoleII()->Boost();
   for (int i = 0; i < 2; ++i) m_plab[i] = p_dipoles->GetDipoleII()->GetNewMomenta(i);
@@ -252,7 +255,8 @@ bool YFS_Handler::CalculateISR() {
   }
   if (m_isr_debug && !m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
   m_isrinital = false;
-  m_reallab = m_plab;
+  // CheckMasses();
+  // m_reallab = m_plab;
   return true;
 
 }
@@ -261,6 +265,7 @@ bool YFS_Handler::CalculateISR() {
 
 void YFS_Handler::AddFormFactor() {
   if (m_CalForm) return;
+  if(m_fsrmode==2) return; // Calculated in FSR.C for fsr dipoles
   if (m_fullform == 1) {
     m_formfactor = p_yfsFormFact->BVV_full(m_bornMomenta[0], m_bornMomenta[1], m_photonMass, sqrt(m_s) / 2., 0);
     m_CalForm = true;
@@ -278,36 +283,44 @@ void YFS_Handler::AddFormFactor() {
     m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
     m_CalForm = true;
   }
-  if(m_nlotype==nlo_type::real && m_fsrmode==1){
-    double yfsint = 1.;
-    double v,t;
-    for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleIF()->begin();
-         Dip != p_dipoles->GetDipoleIF()->end(); ++Dip) {
-        v= p_yfsFormFact->BVR_full(Dip->GetMomenta(0), Dip->GetMomenta(1),  sqrt(m_s) / 2., m_photonMass, 0);
-        t =  p_yfsFormFact->BVirtT(Dip->GetMomenta(0), Dip->GetMomenta(1));
-        yfsint*=exp(v+t);
-    }
-    m_formfactor*=yfsint;
-  }
+  // if(m_nlotype==nlo_type::real && m_fsrmode==1){
+  //   double yfsint = 1.;
+  //   double v,t;
+  //   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleIF()->begin();
+  //        Dip != p_dipoles->GetDipoleIF()->end(); ++Dip) {
+  //       v= p_yfsFormFact->BVR_full(Dip->GetMomenta(0), Dip->GetMomenta(1),  sqrt(m_s) / 2., m_photonMass, 0);
+  //       t =  p_yfsFormFact->BVirtT(Dip->GetMomenta(0), Dip->GetMomenta(1));
+  //       yfsint*=exp(v+t);
+  //   }
+  //   m_formfactor*=yfsint;
+  // }
 }
 
 bool YFS_Handler::CalculateFSR(){
-  if(m_fsrmode==2) m_plab=m_bornMomenta;
   return CalculateFSR(m_plab);
 }
 
 bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   // update NLO momenta from PHASIC
+  // m_reallab should be used for 
+  // fixed order corrections.
+  // Final state eikonals should be constructed
+  // for the final state momenta before emissions
+  // of photons. 
   m_reallab = p;
   if (m_fsrmode == 0) return true;
   m_plab=p;
   p_dipoles->MakeDipoles(m_flavs, m_plab, m_bornMomenta);
+  for (int i = 2; i < m_momeikonal.size(); ++i)
+  {
+    m_momeikonal[i] = m_plab[i];
+  }
   m_fsrWeight = 1;
   m_finalFSRPhotons.clear();
   m_newdipoles.clear();
   m_real = 1;
   Vec4D_Vector oldplab = m_plab;
-  m_reallab = m_plab;
+  m_FSRPhotons.clear();
   if (m_fsrmode >= 1) {
     if (p_dipoles->GetDipoleFF()->size() == 0) {
       msg_Error() << "No dipoles found for YFS FSR " << std::endl;
@@ -331,18 +344,24 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       m_photonSumFSR = p_fsr->GetPhotonSum();
       m_FSRPhotons   = p_fsr->GetPhotons();
       m_fsrphotonsforME = m_FSRPhotons;
-      Dip->AddPhotonsToDipole(m_FSRPhotons);
       if (!p_fsr->F(m_FSRPhotons)) {
         m_fsrWeight = 0;
         if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
         return false;
-      }
+      } 
 
       if (m_hidephotons) p_fsr->HidePhotons();
+      m_FSRPhotons   = p_fsr->GetPhotons();
+      Dip->AddPhotonsToDipole(m_FSRPhotons);
       p_fsr->YFS_FORM();
       Dip->Boost();
       m_FSRPhotons  = Dip->GetPhotons();
       m_photonSumFSR = Dip->GetPhotonSum();
+      // if(m_photonSumFSR.E() > sqrt(m_s)/2) {
+      //   // PRINT_VAR(m_photonSumFSR);
+      //   m_fsrWeight = 0;
+      //   return false;
+      // }
       p_fsr->Weight();
       m_fsrWeight = p_fsr->GetWeight();
       int i(0);
@@ -360,7 +379,17 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   // if (m_looptool) {
   //   CalculateVirtual(m_bornMomenta, m_born);
   // }
-  p_dipoles->MakeDipolesIF(m_flavs, m_plab, oldplab);
+  // get all photons
+  m_FSRPhotons.clear();
+  for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
+         Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
+    for(auto k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
+  }
+  if(m_fsrmode==1)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, oldplab);
+  // if(m_fsrmode==0){
+  //   CheckMasses();
+  //   CheckMomentumConservation();
+  // }
   return true;
 }
 
@@ -427,7 +456,7 @@ void YFS_Handler::CalculateBeta() {
       p_realff->SetMode(m_fsrmode);
       for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
            Dip != p_dipoles->GetDipoleFF()->end(); ++Dip)  {
-        p_realff->SetIncoming(Dip, m_bornMomenta, m_fsrphotonsforME, p_fsr->m_yini, p_fsr->m_zini);
+        p_realff->SetIncoming(Dip, m_bornMomenta, m_FSRPhotons, p_fsr->m_yini, p_fsr->m_zini);
         p_realff->CalculateVirt();
         p_realff->Calculate();
         realFSR += p_realff->GetReal();// - p_realff->m_beta01; // Subtract common virtual correction
@@ -451,8 +480,9 @@ void YFS_Handler::CalculateBeta() {
   // PRINT_VAR(m_nlotype);
   if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
     if(m_no_born) m_real=CalculateNLO()/m_born;
-    else m_real=1+CalculateNLO()/m_born;
+    else m_real=(m_born+CalculateNLO())/m_born;
   }
+  // m_real*=m_resca
   // if (m_griff != 0) {
   //     m_real=1+CalculateNLO();
   // }
@@ -463,9 +493,11 @@ void YFS_Handler::CalculateBeta() {
 double YFS_Handler::CalculateNLO(){
   p_nlo->Init(m_flavs,m_reallab,m_bornMomenta);
   p_nlo->p_dipoles = p_dipoles;
+  p_nlo->m_eikmom = m_plab;
   p_nlo->SetBorn(m_born);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
   p_nlo->m_FSRPhotons = m_FSRPhotons;
+  // if(m_photonSumFSR.E() > sqrt(m_s)/2) return 0;
   return p_nlo->CalculateNLO();
 }
 
@@ -496,6 +528,7 @@ void YFS_Handler::GenerateWeight() {
   m_yfsweight*=m_real;
   // PRINT_VAR(m_ww_formfact);
   // m_yfsweight = 1.;
+  // m_yfsweight*=m_rescale_alpha; 
   DEBUG_FUNC("\nISR Weight = " << m_isrWeight << "\n" <<
              "  FSR Weight = " << m_fsrWeight << "\n" <<
              "  WW form Weight = " << m_ww_formfact << "\n" <<
@@ -523,7 +556,41 @@ void YFS_Handler::Reset() {
   m_real = 1;
 }
 
+bool YFS_Handler::CheckMomentumConservation(){
+  Vec4D incoming = m_bornMomenta[0]+m_bornMomenta[1];
+  Vec4D outgoing;
+  for(auto k: m_ISRPhotons)  outgoing+=k;
+  for(auto kk: m_FSRPhotons) outgoing+=kk;
+  for (int i = 2; i < m_plab.size(); ++i)
+  {
+    outgoing+=m_plab[i];
+  }
+  Vec4D diff = incoming - outgoing;
+  if(!IsEqual(incoming,outgoing, 1e-5)){
+    msg_Error()<<"Momentum not conserverd in YFS"<<std::endl
+               <<"Incoming momentum = "<<incoming<<std::endl
+               <<"Outgoing momentum = "<<outgoing<<std::endl
+               <<"Difference = "<<diff<<std::endl;
+  }
+  return true;
+}
 
+
+void YFS_Handler::CheckMasses(){
+  bool allonshell=true;
+  for (int i = 0; i < m_plab.size(); ++i)
+  {
+    if(!IsEqual(m_plab[i].Mass(),m_flavs[i].Mass(),1e-5)){
+      msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
+                     <<"Flavour = "<<m_flavs[i]<<", with mass = "<<m_flavs[i].Mass()<<std::endl
+                     <<"Four momentum = "<<m_plab[i]<<", with mass = "<<m_plab[i].Mass()<<std::endl;
+      allonshell = false;
+
+    }
+  }
+  if(!allonshell) m_stretcher.StretchMomenta(m_plab, m_mass);
+  // return true;
+}
 
 double YFS_Handler::Flux(const Vec4D& p1, const Vec4D& p2)
 {

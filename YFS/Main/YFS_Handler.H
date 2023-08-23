@@ -17,6 +17,7 @@
 #include "YFS/Main/Define_Dipoles.H"
 #include "YFS/CEEX/Ceex_Base.H"
 #include "YFS/NLO/NLO_Base.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
 
 
 
@@ -70,9 +71,11 @@ public:
     ATOOLS::Flavour m_bunch;
     std::vector<double> m_info_lab, m_info_cms, m_dvir, m_y, m_z, m_eikonalsISR, m_eikonalsFSR, m_realcorr;
     // Remnant_Base    *p_remnants[2];
-    Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta;
+    Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_momeikonal;
     ATOOLS::Flavour_Vector m_flavs;
     std::vector<double> m_mass;
+    ATOOLS::Momenta_Stretcher m_stretcher;
+
 
     double m_f;
 
@@ -198,6 +201,8 @@ public:
     bool CalculateFSR();
     bool CalculateISR();
     bool CalculateFSR(Vec4D_Vector &k);
+    bool CheckMomentumConservation();
+    void CheckMasses();
     void Reset();
     int NHardPhotons(const Vec4D_Vector &k);
     double Flux();

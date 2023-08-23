@@ -27,7 +27,7 @@ namespace YFS {
     double m_BtiXcru, m_BtiQcru, m_Edelta, m_fsrcutF, m_omegaMax, m_omegaMin, m_A4, m_A, m_betaBar1, m_betaBar2;
       // double m_btilde
       std::vector<double> m_mass, m_MassWls, m_cos, m_sin, m_dist1, m_dist2, m_del1, m_del2, m_yini, m_zini, m_phi_vec, m_k0, m_rand, m_fvev, m_fbarvec;
-    int m_n, m_N, m_NRemoved, m_eikonal_mode, m_use_crude;
+    int m_n, m_N, m_NRemoved, m_eikonal_mode, m_use_crude, m_fixed_ngamma;
       bool m_kkmcAngles, m_use_massive_nbar, m_failed, m_use_model_alpha;
     Vec4D_Vector m_photons, m_dipole, m_photonspreboost;
       Flavour_Vector m_dipoleFl;
