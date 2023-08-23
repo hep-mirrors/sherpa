@@ -206,8 +206,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     if(!p_yfshandler->MakeYFS(p_moms)) return 0;
     DefineFSRKinematics();
     p_yfshandler->SetMomenta(p_moms);
-    if(!p_yfshandler->CalculateFSR(p_moms)) return false;
-    return true;
+    return(p_yfshandler->CalculateFSR(p_moms));
   }
   else if(p_yfshandler->GetFSRMode()==2){
     p_yfshandler->SetSprimeLimits(m_isrspkey.Doubles());
