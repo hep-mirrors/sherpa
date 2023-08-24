@@ -168,43 +168,16 @@ double NLO_Base::CalculateReal(Vec4D k) {
 	MapMomenta(p, k);
 	CheckMasses(p);
 	double sx = (m_plab[0]+m_plab[1]).Abs2();
-	double sq = (m_plab[1]+m_plab[0]+kk).Abs2();
+	double sq = (m_eikmom[3]+m_eikmom[2]+kk).Abs2();
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesII(m_flavs,p,p);
-	p_nlodipoles->MakeDipolesIF(m_flavs,p,p);
+	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
 	p_global_dipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
 	p_global_dipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
 	p_global_dipoles->MakeDipoles(m_flavs,m_plab,m_bornMomenta);
 	double flux;
-	if(m_is_isr) {
-		Vec4D Q = m_bornMomenta[0]+m_bornMomenta[1]-kk;
-		// for (int i = 2; i < m_flavs.size(); ++i)
-		// 	{
-		// 			// if(!m_flavs[i].IsQED()) Q+=m_bornMomenta[i];
-		// 	}
-		flux = (Q).Abs2()/(m_bornMomenta[0]+m_bornMomenta[1]).Abs2();
-	}
-	// else {
-	// 	double sum{0.};
-	// 	Vec4D Q;
-	// 	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-  //        Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
-	// 			Q+=Dip->Sum();
-	// 			// sum+=(Q).Abs2();
-	// 	}
-	// 	// Q = m_eikmom[3]+m_eikmom[2];
-
-	// 	Q =  m_bornMomenta[2]+m_bornMomenta[3];
-	// 	for (int i = 2; i < m_flavs.size(); ++i)
-	// 	// for (int i = 0; i < 2; ++i)
-	// 	{
-	// 		if(!m_flavs[i].IsQED()) Q+=m_bornMomenta[i];
-	// 	}
-	// 	sum=(Q).Abs2();
-	// 	flux = (Q+kk).Abs2()/sum;
-	// }
-
-
+	Vec4D Q = m_bornMomenta[0]+m_bornMomenta[1];
+	flux = (Q-kk).Abs2()/(m_bornMomenta[0]+m_bornMomenta[1]).Abs2();
 	double tot,colltot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb   = p_dipoles->CalculateRealSubEEX(kk);
@@ -215,7 +188,7 @@ double NLO_Base::CalculateReal(Vec4D k) {
 		return ( rcoll/subb - B);
 	}
 	double eex = rcoll/subb - B;
-	if(m_fsrmode!=0) flux = sqr(sx/sq)*(sqr(sq-91.1876*91.1876)+sqr(2.4952*sq)/sqr(91.1876))/(sqr(sx-91.1876*91.1876)+sqr(2.4952*sx)/sqr(91.1876));
+	if(m_fsrmode==2) flux = sqr(sx/sq)*(sqr(sq-91.1876*91.1876)+sqr(2.4952*sq)/sqr(91.1876))/(sqr(sx-91.1876*91.1876)+sqr(2.4952*sx)/sqr(91.1876));
 	p.push_back(k);
 	double r = p_real->Calc_R(p) / norm * flux; 
 	if(IsBad(r) || IsBad(flux)) {
