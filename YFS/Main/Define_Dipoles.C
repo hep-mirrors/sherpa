@@ -358,8 +358,8 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   for (auto &D : m_dipolesFF) {
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
-    for (auto &D : m_dipolesIF){
-      sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+  for (auto &D : m_dipolesIF){
+    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetMomenta(1));
   }
   // double ifi;
   // if(m_dipolesIF.size()>0){
