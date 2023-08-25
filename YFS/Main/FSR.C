@@ -78,6 +78,7 @@ bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
   m_Q2 = p_dipole->m_charges[1];
   m_QF2 = m_Q1 * m_Q2;
   m_dip_sp = p_dipole->Sprime();
+  if(IsBad(m_dip_sp)) return false;
   MakePair(sqrt(m_dip_sp), m_bornQ1, m_bornQ2);
   m_EQ = sqrt(m_dip_sp) / 2.;
   m_Emin = 0.5 * sqrt(m_s) * m_vmin;
