@@ -65,6 +65,8 @@ void YFS_Handler::SetBeam(BEAM::Beam_Spectra_Handler *beam)
   for (int i = 0; i < 2; ++i) m_beams.push_back(beam->GetBeam(i)->InMomentum());
   m_beam1 = m_beams[0];
   m_beam2 = m_beams[1];
+  if(m_beam1 != -m_beam2) m_asymbeams = true;
+    else m_asymbeams = false;
 }
 
 void YFS_Handler::SetSprimeLimits(std::vector<double> &splimits) {
@@ -243,7 +245,7 @@ bool YFS_Handler::CalculateISR() {
   p_dipoles->GetDipoleII()->Boost();
   for (int i = 0; i < 2; ++i) m_plab[i] = p_dipoles->GetDipoleII()->GetNewMomenta(i);
   double sp = (m_plab[0] + m_plab[1]).Abs2();
-  if (!IsEqual(sp, m_sp, 1e-4)) {
+  if (!IsEqual(sp, m_sp, 1e-4) && !m_asymbeams) {
     msg_Error() << "Boost failed, sprime"
                 << " is " << sp << " and should be "
                 << m_sp << std::endl << "Diff = " <<
