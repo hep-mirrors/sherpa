@@ -13,7 +13,7 @@ namespace PDF {
   class PDF_NNPDF : public PDF_Base {
   private:
 
-    // Use the driver supplied by NNPDF  
+    // Use the driver supplied by NNPDF
     NNPDFDriver *p_pdf;
 
     std::string m_path, m_file;
@@ -34,7 +34,7 @@ namespace PDF {
     PDF_NNPDF(const ATOOLS::Flavour &bunch,const std::string &file,
               const std::string &set,int member, int prefix);
 
-    ~PDF_NNPDF(); 
+    ~PDF_NNPDF();
 
     PDF_Base * GetCopy();
 
@@ -44,7 +44,7 @@ namespace PDF {
 
   };// end of class PDF_NNPDF
 
-}  
+}
 
 #endif
 
@@ -124,8 +124,8 @@ PDF_NNPDF::PDF_NNPDF
   }
 
   // Read more stuff from .info
-  m_xmin=p_pdf->GetXMin(); 
-  m_xmax=p_pdf->GetXMax(); 
+  m_xmin=p_pdf->GetXMin();
+  m_xmax=p_pdf->GetXMax();
   m_q2min=pow(p_pdf->GetQMin(),2);
   m_q2max=pow(p_pdf->GetQMax(),2);
   m_asinfo.m_order=p_pdf->GetOrderAlphaS();
@@ -156,7 +156,7 @@ PDF_NNPDF::~PDF_NNPDF()
 }
 
 // Necessary?
-PDF_Base *PDF_NNPDF::GetCopy() 
+PDF_Base *PDF_NNPDF::GetCopy()
 {
   PDF_Base *copy = new PDF_NNPDF(m_bunch,m_file,m_set,m_member,m_prefix);
   m_copies.push_back(copy);
@@ -181,17 +181,17 @@ double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour& infl)
             ? int(infl) : (m_bunch.IsAnti()?-1:1)*int(infl);
   // Hopefully efficient lookup --- relate 21 to 0
   int kfc_nn(m_lookup[kfc+6]); // kfc runs from -6 to 6 and also 21
-                               // While the driver wants 
+                               // While the driver wants
                                // numbers from 0 to 12 to access
                                // array elements
- 
+
   return m_rescale*p_pdf->xfx(m_x, m_Q2, kfc_nn);
 }
 
 double PDF_NNPDF::GetXPDF(const kf_code& kf, bool anti)
 {
   // Parton flavour IDs
-  int kfc = (kf == Flavour(kf_gluon) || kf == Flavour(kf_photon))
+  int kfc = (kf == kf_gluon || kf == kf_photon)
             ? kf : (m_bunch.IsAnti()?-1:1)*(anti?-kf:kf);
   // Hopefully efficient lookup --- relate 21 to 0
   int kfc_nn(m_lookup[kfc+6]); // kfc runs from -6 to 6 and also 21

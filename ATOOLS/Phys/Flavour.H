@@ -7,7 +7,7 @@
 #include "ATOOLS/Phys/Flavour_Tags.H"
 #include "ATOOLS/Math/MathTools.H"
 
-#include <string> 
+#include <string>
 #include <vector>
 #include <set>
 #include <iostream>
@@ -17,7 +17,7 @@ namespace ATOOLS {
 
   class Flavour;
   class Mass_Selector;
-  
+
   typedef std::vector<Flavour*> PFlavour_Vector;
 
   struct Particle_Info {
@@ -36,7 +36,7 @@ namespace ATOOLS {
   public:
 
     // default constructor
-    inline Particle_Info(): 
+    inline Particle_Info():
       m_kfc(kf_none), m_mass(0.0), m_radius(0.0), m_hmass(0.0), m_yuk(-1.0), m_width(0.0),
       m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0),
       m_strong(0), m_resummed(0), m_priority(0), m_spin(0), m_stable(1),
@@ -50,7 +50,7 @@ namespace ATOOLS {
       const std::string &antiname, const std::string &texname,
       const std::string &antitexname ,const bool dummy=0,
       const bool isgroup=false);
-    Particle_Info(const kf_code &kfc,const double &mass,const double &radius,const double &width, 
+    Particle_Info(const kf_code &kfc,const double &mass,const double &radius,const double &width,
       const int icharge,const int spin,
       const bool on,const int stable,const std::string &idname,
       const std::string &texname);
@@ -62,12 +62,12 @@ namespace ATOOLS {
 
     // member functions
     bool Includes(const Flavour &fl) const;
-    
+
     void Add(const Flavour &fl);
     void Clear();
 
     Flavour operator[](const size_t &i) const;
-    
+
     inline size_t Size() const  { return m_content.size();   }
     inline bool   Group() const { return m_isgroup||m_content.size()>1; }
     inline void   SetIsGroup(bool isgroup) { m_isgroup = isgroup; };
@@ -128,25 +128,25 @@ namespace ATOOLS {
     inline size_t Size() const { return p_info->Size(); }
     inline size_t IsGroup() const { return p_info->Group(); }
 
-    inline bool Includes(const Flavour &fl) const 
+    inline bool Includes(const Flavour &fl) const
     {
       if (p_info->Group()) return p_info->Includes(fl);
       return p_info==fl.p_info && m_anti==fl.m_anti;
     }
 
-    inline Flavour operator[](const size_t &i) const  
-    { 
+    inline Flavour operator[](const size_t &i) const
+    {
       if (!p_info->Group()) return *this;
       return m_anti?(*p_info)[i].Bar():(*p_info)[i];
     }
 
-    inline bool operator==(const Flavour &fl)
+    inline bool operator==(const Flavour &fl) const
     { return p_info==fl.p_info && m_anti==fl.m_anti; }
 
-    inline operator long int() const 
+    inline operator long int() const
     { return m_anti?-(long int)Kfcode():(long int)Kfcode(); }
 
-    inline Flavour &operator=(const Flavour& fl) 
+    inline Flavour &operator=(const Flavour& fl)
     { if (this!=&fl) { p_info=fl.p_info; m_anti=fl.m_anti; } return *this; }
 
     inline bool IsAnti() const { return m_anti; }
@@ -158,14 +158,14 @@ namespace ATOOLS {
     inline bool IsQED() const
     { return (IsPhoton()||IntCharge());}
 
-    inline double IsoWeak() const 
+    inline double IsoWeak() const
     { double c((p_info->m_kfc<7 || (p_info->m_kfc>10 && p_info->m_kfc<17))
 	       ?((p_info->m_kfc%2)?-0.5:0.5):0); return m_anti?-c:c; }
 
     Flavour IsoWeakPartner() const;
     Flavour GoldstoneBosonPartner() const;
 
-    inline int  StrongCharge() const 
+    inline int  StrongCharge() const
     { int c(p_info->m_strong); return m_anti?-c:c; }
     inline bool Strong() const
     { return p_info->m_strong!=0&&!IsDiQuark(); }
@@ -194,37 +194,37 @@ namespace ATOOLS {
 
     inline bool IsOn() const { return p_info->m_on; }
 
-    inline void SetStable(const int stable) const 
+    inline void SetStable(const int stable) const
     { p_info->m_stable=stable; }
 
     inline int  Stable() const   { return p_info->m_stable;   }
     bool IsStable() const;
 
-    inline void SetMassOn(const bool on) const    
+    inline void SetMassOn(const bool on) const
     { p_info->m_massive=on; }
 
-    inline void SetMass(const double &mass) const 
-    { p_info->m_mass=dabs(mass);  
+    inline void SetMass(const double &mass) const
+    { p_info->m_mass=dabs(mass);
       p_info->m_masssign = mass < 0.0 ? -1 : 1; }
 
-    inline void SetHadMass(const double &hmass) const 
+    inline void SetHadMass(const double &hmass) const
     { p_info->m_hmass=hmass;  }
 
-    inline bool IsMassive() const 
+    inline bool IsMassive() const
     { return p_info->m_mass?p_info->m_massive:0; }
 
     inline void SetRadius(const double & radius)
     { p_info->m_radius=radius; }
 
-    inline double Mass(const bool set=0) const    
+    inline double Mass(const bool set=0) const
     { return set||p_info->m_massive?p_info->m_mass:0.0; }
-    inline double SelMass() const 
+    inline double SelMass() const
     { return p_info->m_massive&&!IsKK()?p_info->m_mass:0.0; }
     inline double Radius() const
     { return p_info->m_radius ;}
-    inline double HadMass() const  
+    inline double HadMass() const
     { return p_info->m_hmass; }
-    inline double Yuk() const     
+    inline double Yuk() const
     { return p_info->m_yuk>=0.0 ? p_info->m_yuk : (p_info->m_massive ? p_info->m_mass : 0.0); }
     inline double DeltaGamma() const
     { return p_info->m_dg; }
@@ -240,10 +240,10 @@ namespace ATOOLS {
     {  p_info->m_qoverp2 = qoverp2; }
     inline int MassSign() const { return p_info->m_masssign; }
 
-    inline void SetWidth(const double &width) const 
+    inline void SetWidth(const double &width) const
     { p_info->m_width=width; }
 
-    inline double Width() const 
+    inline double Width() const
     { return p_info->m_width; }
 
     inline bool IsHadron() const { return p_info->m_hadron; }
@@ -255,9 +255,9 @@ namespace ATOOLS {
     inline bool IsRaritaSchwinger() const { return IntSpin()==3; }
     inline bool IsTensor() const  { return IntSpin()==4;   }
 
-    inline int LeptonFamily() const 
+    inline int LeptonFamily() const
     { if (IsLepton()) return (Kfcode()-9)/2; return 0; }
-    inline int QuarkFamily() const 
+    inline int QuarkFamily() const
     { if (IsQuark()) return (Kfcode()+1)/2; return 0; }
 
     inline bool IsPhoton() const { return Kfcode()==kf_photon;   }
@@ -266,34 +266,34 @@ namespace ATOOLS {
     inline bool IsNeutrino()      const { return IsLepton()&&IsUptype(); }
 
     inline bool IsQuark() const { return Kfcode()<10; }
-    inline bool IsGluon() const 
+    inline bool IsGluon() const
     { return Kfcode()==kf_gluon||Kfcode()==kf_shgluon; }
     inline bool IsJet() const   { return Kfcode()==kf_jet; }
 
     inline bool IsUptype() const   { return IsAnti()?IsoWeak()<0:IsoWeak()>0; }
     inline bool IsDowntype() const { return IsAnti()?IsoWeak()>0:IsoWeak()<0; }
 
-    inline bool IsKK() const 
+    inline bool IsKK() const
     { if (Kfcode()==kf_graviton || Kfcode()==kf_gscalar) return 1;
       return 0; }
-    inline int KKGeneration() const 
-    { if (!IsKK()) return 0; 
+    inline int KKGeneration() const
+    { if (!IsKK()) return 0;
       return (Kfcode()-1000000*(Kfcode()/1000000))/100000; }
 
-    inline bool IsDummy() const 
-    { return p_info->m_dummy; }   
+    inline bool IsDummy() const
+    { return p_info->m_dummy; }
 
-    inline bool operator<(const Flavour &f) const 
+    inline bool operator<(const Flavour &f) const
     {
       if (Kfcode()<f.Kfcode()) return true;
       if (Kfcode()>f.Kfcode()) return false;
       return m_anti<f.m_anti;
     }
-    
+
   };// end of class Flavour
 
   std::ostream &operator<<(std::ostream &os, const Flavour &fl);
-  
+
   typedef std::vector<Flavour> Flavour_Vector;
   typedef std::map<Flavour,Flavour> Flavour_Map;
   typedef std::set<Flavour> Flavour_Set;

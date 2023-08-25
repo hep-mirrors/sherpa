@@ -40,9 +40,9 @@ operator()(const Analysis_Key& key) const
 
   Final_Selector_Data data;
   int jetmode=0;
-  if (ATOOLS::rpa->gen.Beam1().IsLepton() || 
+  if (ATOOLS::rpa->gen.Beam1().IsLepton() ||
       ATOOLS::rpa->gen.Beam2().IsLepton()) jetmode=3;
-  if (ATOOLS::rpa->gen.Beam1().IsLepton() && 
+  if (ATOOLS::rpa->gen.Beam1().IsLepton() &&
       ATOOLS::rpa->gen.Beam2().IsLepton()) jetmode=1;
 
   const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
@@ -141,7 +141,7 @@ operator()(const Analysis_Key& key) const
     qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(rawqualifier,
                                                              rawqualifier);
   }
-  if (!qualifier) qualifier = new ATOOLS::Is_Hadron(); 
+  if (!qualifier) qualifier = new ATOOLS::Is_Hadron();
   Leading_Particle *selector = new Leading_Particle(inlist,outlist,mode,qualifier);
   selector->SetAnalysis(key.p_analysis);
   return selector;
@@ -199,7 +199,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
   }
 }
 
-void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data & fs) 
+void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data & fs)
 {
   msg_Tracking()<<" AddSelector("<<fl<<","<<fs<<")"<<std::endl;
   Final_Data_Map::iterator it = m_fmap.find(fl);
@@ -208,7 +208,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     if (m_extract) m_fmap[fl].keep = false;
   }
   else {
-    it->second.eta_min = fs.eta_min; 
+    it->second.eta_min = fs.eta_min;
     it->second.eta_max = fs.eta_max;
     it->second.et_min  = fs.et_min;
     it->second.pt_min  = fs.pt_min;
@@ -216,10 +216,10 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     it->second.bf      = fs.bf;
     it->second.f       = fs.f;
   }
-  
-  if (fl==kf_jet || fl==kf_bjet) {
+
+  if (fl==Flavour(kf_jet) || fl==Flavour(kf_bjet)) {
     switch(m_mode) {
-    case 2: p_jetalg = new 
+    case 2: p_jetalg = new
 	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
     case 10: p_jetalg = new Midpoint_Cone(p_qualifier.get(),0,fs.f); break;
     case 11: p_jetalg = new Midpoint_Cone(p_qualifier.get(),1,fs.f); break;
@@ -231,8 +231,8 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
   }
 }
 
-void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2, 
-				 const Final_Selector_Data & fs) 
+void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2,
+				 const Final_Selector_Data & fs)
 {
   msg_Tracking()<<" AddSelector("<<flav1<<","<<flav2<<","<<fs<<")"<<std::endl;
   std::pair<Flavour,Flavour> flavs(flav1,flav2);
@@ -249,27 +249,27 @@ void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2,
       if (m_extract) m_cmap[flavs].keep = false;
     }
     else {
-      it->second.mass_min = fs.mass_min; 
+      it->second.mass_min = fs.mass_min;
       it->second.mass_max = fs.mass_max;
       it->second.r_min    = fs.r_min;
     }
   }
 }
 
-void Final_Selector::AddSelector(const Flavour & fl, int min, int max) 
+void Final_Selector::AddSelector(const Flavour & fl, int min, int max)
 {
   msg_Tracking()<<" AddSelector("<<fl<<", n("<<min<<","<<max<<") )"<<std::endl;
   Final_Data_Map::iterator it = m_fmap.find(fl);
   if (it==m_fmap.end()) {
     Final_Selector_Data fs;
-    fs.min_n = min;  
-    fs.max_n = max;  
+    fs.min_n = min;
+    fs.max_n = max;
     if (m_extract) fs.keep = false;
     m_fmap.insert(std::make_pair(fl,fs));
   }
   else {
-    it->second.min_n = min;  
-    it->second.max_n = max;  
+    it->second.min_n = min;
+    it->second.max_n = max;
     it->second.ko    = false;
   }
 }
@@ -283,7 +283,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     if (m_extract) m_fmap[fl].keep = false;
   }
   else {
-    it->second.eta_min = fs.eta_min; 
+    it->second.eta_min = fs.eta_min;
     it->second.eta_max = fs.eta_max;
     it->second.et_min  = fs.et_min;
     it->second.pt_min  = fs.pt_min;
@@ -300,7 +300,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
   p_jetalg = cone;
 }
 
-void Final_Selector::AddKeepFlavour(const Flavour & fl) 
+void Final_Selector::AddKeepFlavour(const Flavour & fl)
 {
   msg_Tracking()<<" AddKeepFlavour("<<fl<<")"<<std::endl;
   if (fl==Flavour(kf_lepton)) {
@@ -321,7 +321,7 @@ void Final_Selector::Output()
   if (!msg_LevelIsTracking()) return;
   msg_Out()<<"Final_Selector : "<<m_fmap.size()<<"/"<<m_cmap.size()<<":"<<std::endl;
   for (Final_Data_Map::iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
-    if (it->first!=Flavour(kf_jet) && it->first!=Flavour(kf_bjet)) 
+    if (it->first!=Flavour(kf_jet) && it->first!=Flavour(kf_bjet))
       msg_Out()<<" "<<it->first<<" : pt_min = "<<it->second.pt_min<<", eta = "
 	       <<it->second.eta_min<<" ... "<<it->second.eta_max<<std::endl;
     else
@@ -340,26 +340,26 @@ void Final_Selector::Output()
 }
 
 
-bool Final_Selector::PtSelect(const Vec4D & mom, double ptmin) 
+bool Final_Selector::PtSelect(const Vec4D & mom, double ptmin)
 {
   if (mom.PPerp()<ptmin) return true;
   return false;
 }
 
-bool Final_Selector::EtSelect(const Vec4D & mom, double etmin) 
+bool Final_Selector::EtSelect(const Vec4D & mom, double etmin)
 {
   if (mom.EPerp()<etmin) return true;
   return false;
 }
 
-bool Final_Selector::EtaSelect(const Vec4D & mom, double etamin,double etamax) 
+bool Final_Selector::EtaSelect(const Vec4D & mom, double etamin,double etamax)
 {
   double eta = mom.Eta();
   if (eta<etamin || etamax<eta ) return true;
   return false;
 }
 
-bool Final_Selector::DeltaRSelect(const Vec4D & p1,const Vec4D & p2,double rmin) 
+bool Final_Selector::DeltaRSelect(const Vec4D & p1,const Vec4D & p2,double rmin)
 {
   double deta12 = p1.Eta()-p2.Eta();
   double dphi12 = acos(Min(1.0,Max(-1.0,( (p1[1]*p2[1]+p1[2]*p2[2])/(p1.PPerp()*p2.PPerp()) ))));
@@ -368,34 +368,34 @@ bool Final_Selector::DeltaRSelect(const Vec4D & p1,const Vec4D & p2,double rmin)
 }
 
 bool Final_Selector::MassSelect(const Vec4D & p1,const Vec4D & p2,
-				double massmin,double massmax) 
+				double massmin,double massmax)
 {
   double mass = (p1+p2).Abs2();
   if (mass<massmin || mass>massmax) return true;
   return false;
 }
 
-double Final_Selector::DeltaR(const Vec4D & p1,const Vec4D & p2) 
+double Final_Selector::DeltaR(const Vec4D & p1,const Vec4D & p2)
 {
   double deta12 = p1.Eta() - p2.Eta();
 
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
   double dphi12=acos(Min(1.0,Max(-1.0,((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2)))));
-  
+
   return sqrt(sqr(deta12) + sqr(dphi12));
 }
 
 
 
 
-void Final_Selector::Select(Particle_List * pl,Final_Data_Map::iterator it) 
+void Final_Selector::Select(Particle_List * pl,Final_Data_Map::iterator it)
 {
   bool hit;
   for (Particle_List::iterator pit=pl->begin();pit!=pl->end();) {
     if ((*pit)->Flav()==it->first) {
       hit = false;
-      if (it->second.eta_min!=it->second.eta_max)  
+      if (it->second.eta_min!=it->second.eta_max)
 	hit=EtaSelect((*pit)->Momentum(),it->second.eta_min,it->second.eta_max);
       if (it->second.et_min!=0. && !hit) hit=EtSelect((*pit)->Momentum(),it->second.et_min);
       if (it->second.pt_min!=0. && !hit) hit=PtSelect((*pit)->Momentum(),it->second.pt_min);
@@ -411,7 +411,7 @@ void Final_Selector::Select(Particle_List * pl,Final_Data_Map::iterator it)
   }
 }
 
-void Final_Selector::JetSelect(Particle_List * pl,const Flavour& jf) 
+void Final_Selector::JetSelect(Particle_List * pl,const Flavour& jf)
 {
   for (Particle_List::iterator pit=pl->begin();pit!=pl->end();) {
     if ((*pit)->Flav()!=jf) {
@@ -424,7 +424,7 @@ void Final_Selector::JetSelect(Particle_List * pl,const Flavour& jf)
   }
 }
 
-void Final_Selector::Select2(Particle_List * pl,Final_Correlator_Map::iterator it) 
+void Final_Selector::Select2(Particle_List * pl,Final_Correlator_Map::iterator it)
 {
   if (it->second.r_min<=0.) return;
 
@@ -440,7 +440,7 @@ void Final_Selector::Select2(Particle_List * pl,Final_Correlator_Map::iterator i
       }
     }
     if (hit) break;
-  } 
+  }
   if (hit) {
     for (Particle_List::iterator pit=pl->begin();pit!=pl->end();) {
       if (m_ownlist) delete *pit;
@@ -449,7 +449,7 @@ void Final_Selector::Select2(Particle_List * pl,Final_Correlator_Map::iterator i
   }
 }
 
-void Final_Selector::SelectN(Particle_List * pl,Final_Data_Map::iterator it) 
+void Final_Selector::SelectN(Particle_List * pl,Final_Data_Map::iterator it)
 {
   if (pl->size()==0) return;
   if (it->second.min_n==-1 && it->second.max_n==-1) return;
@@ -463,13 +463,13 @@ void Final_Selector::SelectN(Particle_List * pl,Final_Data_Map::iterator it)
     for (Particle_List::iterator pit=pl->begin();pit!=pl->end();) {
       if (m_ownlist) delete *pit;
       pit=pl->erase(pit);
-    }   
+    }
   }
 }
 
 
 
-void Final_Selector::Extract(Particle_List * pl) 
+void Final_Selector::Extract(Particle_List * pl)
 {
   if (!m_extract) return;
   if (pl->size()==0) return;
@@ -542,17 +542,17 @@ void Final_Selector::Evaluate(const Blob_List &bl,double value, double ncount) {
     m_ownlist=false;
   }
   // one particle select
-  for (it=m_fmap.begin();it!=m_fmap.end();++it) Select(pl_out,it);  
+  for (it=m_fmap.begin();it!=m_fmap.end();++it) Select(pl_out,it);
 
   // two particle corr.
   Final_Correlator_Map::iterator ct;
-  for (ct=m_cmap.begin();ct!=m_cmap.end();++ct) Select2(pl_out,ct);  
+  for (ct=m_cmap.begin();ct!=m_cmap.end();++ct) Select2(pl_out,ct);
 
   // event conditions.
-  for (it=m_fmap.begin();it!=m_fmap.end();++it) SelectN(pl_out,it);  
+  for (it=m_fmap.begin();it!=m_fmap.end();++it) SelectN(pl_out,it);
 
   // particle extraction
-  Extract(pl_out);  
+  Extract(pl_out);
 
   if (!m_ownlist) {
     for (Particle_List::iterator itp=pl_out->begin(); itp!=pl_out->end();++itp) {
@@ -573,7 +573,7 @@ void Final_Selector::SetAnalysis(Primitive_Analysis  * ana)
 }
 
 
-Analysis_Object * Final_Selector::GetCopy() const 
+Analysis_Object * Final_Selector::GetCopy() const
 {
   Final_Selector *fs = new Final_Selector(m_inlistname,m_outlistname,m_mode,p_qualifier);
   fs->SetAnalysis(p_ana);
@@ -589,7 +589,7 @@ Analysis_Object * Final_Selector::GetCopy() const
     fs->AddSelector(ct->first.first,ct->first.second,ct->second);
   }
   return fs;
-}    
+}
 
 
 Final_Selector::~Final_Selector() {
@@ -625,12 +625,12 @@ Leading_Particle::Leading_Particle(const std::string & inlistname,
 
 Leading_Particle::~Leading_Particle() {}
 
-Analysis_Object * Leading_Particle::GetCopy() const 
+Analysis_Object * Leading_Particle::GetCopy() const
 {
   Leading_Particle * lp = new Leading_Particle(m_inlistname,m_outlistname,m_mode,p_qualifier);
   lp->SetAnalysis(p_ana);
   return lp;
-}    
+}
 
 void Leading_Particle::Evaluate(const Blob_List &,double value, double ncount) {
   Particle_List * pl_in = p_ana->GetParticleList(m_inlistname);
@@ -650,7 +650,7 @@ void Leading_Particle::Evaluate(const Blob_List &,double value, double ncount) {
       }
       if (test>crit) { winner=(*pit); crit=test; }
     }
-  }    
+  }
 
   Particle_List * pl_out = new Particle_List;
   if (winner!=NULL) pl_out->push_back(new Particle(*winner));
