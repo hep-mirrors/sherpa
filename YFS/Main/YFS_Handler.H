@@ -55,7 +55,7 @@ public:
     // double m_fixed_smin, m_fixed_smax, m_s;
     double m_spp, m_tchannelcut;
     double m_yfsweight, m_form, m_beta1, m_fsrW, m_isrPhaseSpaceW, m_fsrPhaseSpaceW;
-    bool   m_bornInit, m_born_set, m_setparticles;
+    bool   m_bornInit, m_born_set, m_setparticles, m_asymbeams;
     double m_real, m_virt, m_yfsME, m_corrwgt, m_cms, m_oneloop;
     double m_nbar, m_NbarFSR, m_the, m_phi, m_cth, m_formfactor, m_betatWW, m_coulSub, m_ww_formfact;
     // int m_yfsmode, m_N, m_order, m_nmax, m_betaorder, m_N_FSR, m_fullform, m_formWW;
