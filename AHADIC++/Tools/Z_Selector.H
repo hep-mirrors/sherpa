@@ -1,8 +1,6 @@
 #ifndef AHADIC_Tools_Z_Selector_H
 #define AHADIC_Tools_Z_Selector_H
 
-#include <vector>
-
 namespace AHADIC {
   class Splitter_Base;
 

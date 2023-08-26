@@ -84,9 +84,6 @@ void Flavour_Selector::InitWeights() {
   for (FlavCCMap_Iterator fdit=constituents->CCMap.begin();
        fdit!=constituents->CCMap.end();fdit++) {
     if (!fdit->first.IsAnti()) {
-      // msg_Out()<<"Filling flav: " << fdit->first
-      // 	       << ", massmin = " << constituents->Mass(fdit->first)
-      // 	       << std::endl;
       decspec = new DecaySpecs;
       decspec->popweight  = constituents->TotWeight(fdit->first);
       decspec->massmin    = constituents->Mass(fdit->first);

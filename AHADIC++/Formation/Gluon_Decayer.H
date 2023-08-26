@@ -47,7 +47,6 @@ namespace AHADIC {
       m_splitter.reset_variationweights();
     };
 
-
     bool operator()(Singlet * singlet);
   };
 }

@@ -82,7 +82,6 @@ Constituents::Constituents(bool diquarks) :
     }
   }
 
-  //CCMap = FlavourMaps[0];
   double massoffset(hadpars->Get("minmass2"));
   for (FlavCCMap_Iterator cmit=CCMap.begin(); cmit!=CCMap.end();cmit++) {
     if (cmit->first==Flavour(kf_gluon)) continue;

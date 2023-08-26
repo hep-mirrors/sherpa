@@ -2,7 +2,6 @@
 #define AHADIC_Formation_Gluon_Splitter_H
 
 #include "AHADIC++/Tools/Splitter_Base.H"
-#include "ATOOLS/Org/Message.H"
 
 
 namespace AHADIC {
@@ -40,7 +39,6 @@ namespace AHADIC {
     double WeightFunction(const double & z,
 			  const double & zmin=0.,const double & zmax=1.,
 			  const unsigned int & cnt=0);
-
     inline void GetLast(double & lastmass, bool & isB, bool & isC) {
       lastmass = m_lastmass; isB = m_lastB; isC = m_lastC;
     }

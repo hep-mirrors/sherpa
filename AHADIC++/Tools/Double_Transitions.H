@@ -35,7 +35,6 @@ namespace AHADIC {
     double m_charm_strange_modifier, m_beauty_strange_modifier;
     double m_charm_baryon_modifier, m_beauty_baryon_modifier;
 
-    double ComputeTransitionWeight(ATOOLS::Flavour popped, Flavour_Pair pair);
     void FillMap(Single_Transitions * singles);
     void Normalise();
   public:

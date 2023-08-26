@@ -193,4 +193,3 @@ void Splitter_Base::MakeTransverseMomentum() {
   m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);
 }
 
-

@@ -12,12 +12,6 @@ KT_Selector::~KT_Selector() {}
 
 void KT_Selector::Init(const bool & isgluon) {
   m_sigma = hadpars->GetVec("kT_0");
-  //m_isgluon = isgluon;
-  // m_sigma.push_back(hadpars->Get("kT_0"));
-  // m_sigma.push_back(hadpars->Get("kT_0")*1.5);
-  // m_sigma.push_back(hadpars->Get("kT_0")*0.75);
-  // m_sigma.push_back(hadpars->Get("kT_0"));
-  //m_sigma2  = sqr(m_sigma);
 }
 
 double KT_Selector::operator()(const double & ktmax,const double & M2) {
@@ -46,15 +40,10 @@ double KT_Selector::Gaussian(const double kt, const double s) {
   return 2. / (std::sqrt(2*M_PI*s2)) * std::exp(-0.5 * kt*kt/ s2);
 }
 
-double KT_Selector::Inv_Gaussian(const double kt) {
-  // Inverse gaussian for positive results, mean = 0, sigma = 1;
-  return std::sqrt(std::abs(std::log(kt * std::sqrt(2*M_PI))));
-}
 
 double KT_Selector::Erf(const double kt, const double s) {
   // compute the part of the gaussian we chop of with ktmax
   return std::erf( kt / std::sqrt(2*s*s));
-  //return 0.5 * ( 1.+std::erf( kt / std::sqrt(2) ));
 }
 
 double KT_Selector::WeightFunction(const double & kt) { return 1.; }

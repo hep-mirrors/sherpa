@@ -147,7 +147,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     Reset(blob);
     return Return_Value::Retry_Event;
   }
-
   return Return_Value::Success;
 }
 

@@ -18,7 +18,6 @@ void Gluon_Splitter::Init(const bool & isgluon) {
   // 1: z ~ z^alpha + (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
   m_alpha = hadpars->GetVec("alphaG");
-
   m_analyse = true;
   if (m_analyse) {
     m_histograms[std::string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
@@ -80,8 +79,6 @@ double Gluon_Splitter::FragmentationFunctionProb(double z, double zmin, double z
   auto F = [](double _z, double alpha) -> double {
     return 1./(alpha+1) * (pow(_z,alpha+1) - pow(1.-_z,alpha+1));
   };
-  // const double fmax
-  //   = std::max(std::max(f(zmin,alpha), f(zmax,alpha)), f(0.5,alpha));
   const double integral = (F(zmax,alpha) - F(zmin,alpha));
   return f(z,alpha) / integral;
 }
@@ -150,7 +147,6 @@ void Gluon_Splitter::z_accepted(const double wgt, const double & z,
   for (int i{0}; i<m_alpha.size(); i++) {
     const auto a = m_alpha[i];
     const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax,a);
-    //const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
     variation_weights[i] *= wgt_new / wgt_old;
   }
   return;

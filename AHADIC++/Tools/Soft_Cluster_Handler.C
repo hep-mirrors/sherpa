@@ -259,11 +259,8 @@ bool Soft_Cluster_Handler::FixKinematics() {
 			      Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
 					      (*p_cluster)[1]->KT2_Max()))):p1));
   double pt, pl;
-
   pt = m_ktselector(ktmax,1.);
-  // m_ktselector.accepted();
   pl = sqrt(p1*p1-pt*pt);
-
   double phi   = 2.*M_PI*ran->Get();
   m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
   m_moms[1]    = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);

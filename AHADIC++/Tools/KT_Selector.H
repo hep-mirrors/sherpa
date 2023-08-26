@@ -8,14 +8,11 @@
 namespace AHADIC {
   class KT_Selector {
   private:
-    //bool   m_isgluon;
-    //double m_sigma,m_sigma2,m_sig2,m_offset;
     std::vector<double> m_sigma;
     std::vector<double> variation_weights;
     std::vector<double> tmp_variation_weights;
     double WeightFunction(const double & kt);
     double Gaussian(const double, const double);
-    double Inv_Gaussian(const double);
     double Erf(const double, const double);
   public:
     KT_Selector();

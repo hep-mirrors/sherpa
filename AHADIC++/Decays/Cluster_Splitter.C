@@ -36,18 +36,6 @@ void Cluster_Splitter::Init(const bool & isgluon) {
   m_beta[3]  = hadpars->GetVec("betaB");
   m_gamma[3] = hadpars->GetVec("gammaB");
 
-  // // hack variations for now
-  // for(int i{0}; i<4; ++i) {
-  //   const double a = m_alpha[i][0];
-  //   const double b = m_beta[i][0];
-  //   const double c = m_gamma[i][0];
-  //   for(int ii{0}; ii<3; ++ii) {
-  //     m_alpha[i].push_back(a);
-  //     m_beta[i].push_back(b);
-  //     m_gamma[i].push_back(c);
-  //   }
-  // }
-
   const std::vector<double> _kt0s = hadpars->GetVec("kT_0");
   for (auto _kt0 : _kt0s)
     m_kt02.push_back(sqr(_kt0));
