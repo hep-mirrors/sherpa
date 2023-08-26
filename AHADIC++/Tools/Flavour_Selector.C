@@ -52,6 +52,8 @@ operator()(const double & Emax,const bool & vetodi) {
     // Something really went wrong
     THROW(fatal_error, "No flavour selected.");
 
+  if(norms[0] == 0)
+    return ret;
   const double p0 = opt->second->popweight / norms[0];
   for(int i; i<opt->second->popweights.size(); ++i)
     variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;

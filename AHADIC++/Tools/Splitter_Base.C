@@ -118,7 +118,7 @@ bool Splitter_Base::MakeSplitting() {
 
 void Splitter_Base::PopFlavours() {
   // Here we should set vetodi = false -- but no heavy baryons (yet)
-  // TODO: SHOULD THIS REALLY BE M_EMAX/2???
+
   Flavour flav    = (*p_flavourselector)(m_Emax,false);
   // m_barrd = true  if part1 = AntiQuark or DiQuark
   // m_barrd = false if part1 = Quark or AntiDiQuark
