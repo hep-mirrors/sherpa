@@ -222,6 +222,7 @@ namespace LHEH5 {
   private:
 
     LHEFile *p_file;
+    MPI_Info m_info;
     size_t   m_ievt, m_ifile, m_trials;
 
     Cluster_Amplitude *p_ampl;
@@ -232,6 +233,15 @@ namespace LHEH5 {
       Event_Reader(key), m_ievt(0), m_ifile(0), p_ampl(NULL)
     {
       p_file = OpenFile(m_files[m_ifile]);
+      Data_Reader read(" ",";","#","=");
+      std::vector<std::string> params;
+      read.VectorFromFile(params,"HDF5_MPIIO_PARAMS");
+      MPI_Info_create(&m_info);
+      for (size_t i(0);i+1<params.size();i+=2) {
+	msg_Info()<<METHOD<<"(): Add MPIIO parameters '"
+		  <<params[i]<<"' -> '"<<params[i+1]<<"'\n";
+	MPI_Info_set(m_info,params[i].c_str(),params[i+1].c_str());
+      }
     }
 
     ~HDF5_Reader_v1()
@@ -243,10 +253,8 @@ namespace LHEH5 {
     {
       m_ievt=0;
       int size(mpi->Size()), rank(mpi->Rank());
-      MPI_Info info;
-      MPI_Info_create(&info);
       FileAccessProps fapl;
-      fapl.add(MPIOFileAccess{MPI_COMM_WORLD,info});
+      fapl.add(MPIOFileAccess{MPI_COMM_WORLD,m_info});
       fapl.add(MPIOCollectiveMetadata{});
       File file(fname,File::ReadOnly,fapl);
       LHEFile *e(new LHEFile());
