@@ -33,7 +33,7 @@ void ATOOLS::Smart_Pointer<Class_Type>::PrintForward
 {
   if (all) {
     str<<"("<<this<<")["<<Demangle(typeid(p_this).name())
-       <<"]: p_this = "<<p_this<<" {\n";
+       <<"]: p_this = "<<(void*)p_this<<" {\n";
     FindOwner()->PrintForward(str,false); str<<"}";
     return;
   }
