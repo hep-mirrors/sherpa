@@ -154,10 +154,8 @@ namespace LHEH5 {
     {
       auto xfer_props = DataTransferProps{};
       xfer_props.add(UseCollectiveIO{});
-
-      file.getDataSet("version").read(version, xfer_props);
-      file.getDataSet("procInfo").read(pinfo, xfer_props);
-      DataSet init(file.getDataSet("init"));
+      file.getDataSet("version").read(version,xfer_props);
+      file.getDataSet("procInfo").read(pinfo,xfer_props);
       DataSet events(file.getDataSet("events"));
       auto attr_keys(events.listAttributeNames());
       Attribute a(events.getAttribute(attr_keys[0]));
@@ -168,12 +166,11 @@ namespace LHEH5 {
     {
       auto xfer_props = DataTransferProps{};
       xfer_props.add(UseCollectiveIO{});
-
       DataSet events(file.getDataSet("events"));
       std::vector<size_t> eoffsets{first_event,0};
       std::vector<size_t> ecounts{n_events,9+wgtnames.size()};
       evts.resize(n_events,std::vector<double>(9+wgtnames.size()));
-      events.select(eoffsets,ecounts).read(evts, xfer_props);
+      events.select(eoffsets,ecounts).read(evts,xfer_props);
       DataSet particles(file.getDataSet("particles"));
       std::vector<size_t> poffsets{(size_t)evts.front()[2],0};
       size_t nmax(0);
@@ -181,7 +178,7 @@ namespace LHEH5 {
 	nmax=std::max((size_t)std::max(pinfo[i][1],pinfo[i][2]+1),nmax);
       std::vector<size_t> pcounts{n_events*nmax,13};
       parts.resize(n_events*nmax,std::vector<double>(13));
-      particles.select(poffsets,pcounts).read(parts, xfer_props);
+      particles.select(poffsets,pcounts).read(parts,xfer_props);
       if (file.exist("ctevents")) {
 	DataSet events(file.getDataSet("ctevents"));
 	std::vector<size_t> eoffsets{first_event,0};
@@ -217,6 +214,7 @@ namespace LHEH5 {
   private:
 
     LHEFile *p_file;
+    MPI_Info m_info;
     size_t   m_ievt, m_ifile, m_trials, m_nstart, m_ncache;
 
     Vec4D_Vector m_ctmoms;
@@ -229,6 +227,14 @@ namespace LHEH5 {
     {
       Data_Reader read(" ",";","#","=");
       m_ncache=read.GetValue<int>("HDF5_CACHE_SIZE",10000);
+      std::vector<std::string> params;
+      read.VectorFromFile(params,"HDF5_MPIIO_PARAMS");
+      MPI_Info_create(&m_info);
+      for (size_t i(0);i+1<params.size();i+=2) {
+	msg_Info()<<METHOD<<"(): Add MPIIO parameters '"
+		  <<params[i]<<"' -> '"<<params[i+1]<<"'\n";
+	MPI_Info_set(m_info,params[i].c_str(),params[i+1].c_str());
+      }
       p_file = OpenFile(m_files[m_ifile]);
       p_sub = new NLO_subevt();
       s_objects.push_back(this);
@@ -252,7 +258,7 @@ namespace LHEH5 {
       m_ievt=0;
       int size(mpi->MySize()), rank(mpi->MyRank());
       FileAccessProps fapl;
-      fapl.add(MPIOFileAccess{MPI_COMM_WORLD, MPI_INFO_NULL});
+      fapl.add(MPIOFileAccess{MPI_COMM_WORLD,m_info});
       fapl.add(MPIOCollectiveMetadata{});
       File file(fname,File::ReadOnly,fapl);
       LHEFile *e(new LHEFile());
