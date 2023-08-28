@@ -6,15 +6,19 @@
 using namespace AHADIC;
 using namespace ATOOLS;
 
-KT_Selector::KT_Selector() {}
+KT_Selector::KT_Selector() {
+  std::cout << "Init KT_Selector" << std::endl;
+}
 
 KT_Selector::~KT_Selector() {}
 
-void KT_Selector::Init(const bool & isgluon) {
+void KT_Selector::Init() {
+  DEBUG_VAR("KT_VECTOR");
   m_sigma = hadpars->GetVec("kT_0");
+  DEBUG_VAR(m_sigma);
 }
 
-double KT_Selector::operator()(const double & ktmax,const double & M2) {
+double KT_Selector::operator()(const double & ktmax) {
   double kttest(-1.);
   do {
     kttest = dabs(m_sigma[0] * ran->GetGaussian());
@@ -24,14 +28,18 @@ double KT_Selector::operator()(const double & ktmax,const double & M2) {
   const double norm     = Erf(ktmax, m_sigma[0]);
   const double p0       = gaussian / norm;
 
+  std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
   variation_weights.resize(m_sigma.size());
   tmp_variation_weights.resize(m_sigma.size());
   for(int i{0}; i<m_sigma.size(); ++i) {
     double g = Gaussian(kttest, m_sigma[i]);
     double n = Erf(ktmax, m_sigma[i]);
     double p = g / n;
-    tmp_variation_weights[i] = p / p0;
+    variation_weights[i] *= p / p0;
+    //tmp_variation_weights[i] = p / p0;
   }
+  // TMP needs fixing
+  // accepted();
   return kttest;
 }
 

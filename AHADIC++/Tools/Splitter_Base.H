@@ -19,7 +19,7 @@ namespace AHADIC {
     Double_Transitions   * p_doubletransitions;
     Constituents         * p_constituents;
     Flavour_Selector     * p_flavourselector;
-    KT_Selector            m_ktselector;
+    KT_Selector          * p_ktselector;
     Z_Selector             m_zselector;
 
     bool   m_ktorder;
@@ -64,7 +64,8 @@ namespace AHADIC {
   public:
     Splitter_Base(std::list<Cluster *> * cluster_list,
 		  Soft_Cluster_Handler * softclusters,
-		  Flavour_Selector     * flavourselector
+		  Flavour_Selector     * flavourselector,
+		  KT_Selector          * ktselector
 		  );
     ~Splitter_Base();
     virtual void Init(const bool & isgluon);

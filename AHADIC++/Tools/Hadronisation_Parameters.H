@@ -22,7 +22,7 @@ namespace AHADIC {
 
   class Hadronisation_Parameters {
   private:
-    int                  m_shower;
+    int                  m_shower, m_nvariations;
     double               m_offset;
     Constituents       * p_constituents;
     Single_Transitions * p_stransitions;
@@ -54,6 +54,7 @@ namespace AHADIC {
     Double_Transitions    * GetDoubleTransitions()  { return p_dtransitions; }
 
     bool AdjustMomenta(const int,ATOOLS::Vec4D *,const double *);
+    int NumberOfVariations() { return m_nvariations; }
   };
 
   extern Hadronisation_Parameters * hadpars;

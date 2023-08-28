@@ -10,11 +10,12 @@ using namespace std;
 
 Gluon_Decayer::Gluon_Decayer(list<Cluster *> * cluster_list,
 			     Soft_Cluster_Handler * softclusters,
-			     Flavour_Selector     * flavourselector) :
+			     Flavour_Selector     * flavourselector,
+			     KT_Selector          * ktselector) :
   Singlet_Tools(),
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_splitter(Gluon_Splitter(cluster_list,softclusters,flavourselector)),
-  m_breaker(Trivial_Splitter(flavourselector)),
+  m_splitter(Gluon_Splitter(cluster_list,softclusters,flavourselector,ktselector)),
+  m_breaker(Trivial_Splitter(flavourselector,ktselector)),
   m_analyse(true)
 {
   if (m_analyse) {

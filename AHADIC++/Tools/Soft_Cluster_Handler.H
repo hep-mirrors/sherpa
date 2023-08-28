@@ -13,7 +13,7 @@ namespace AHADIC {
     Constituents                * p_constituents;
     Single_Transitions          * p_singletransitions;
     Double_Transitions          * p_doubletransitions;
-    KT_Selector                   m_ktselector;
+    KT_Selector                 * p_ktselector;
     double m_dec_threshold,m_trans_threshold, m_chi, m_ktmax, m_ktfac, m_zeta;
     double m_piphoton_threshold, m_dipion_threshold, m_open_threshold;
 
@@ -44,7 +44,7 @@ namespace AHADIC {
 				       const Flavour_Pair & two);
     bool   TreatSingletCluster();
  public:
-    Soft_Cluster_Handler(std::list<Proto_Particle *> * hadrons);
+    Soft_Cluster_Handler(std::list<Proto_Particle *> * hadrons, KT_Selector*);
     ~Soft_Cluster_Handler();
 
     void Init();
@@ -70,12 +70,6 @@ namespace AHADIC {
     double MinDoubleMass(const ATOOLS::Flavour & fl1,
 			 const ATOOLS::Flavour & fl2);
     ATOOLS::Flavour GetDecHadron(const size_t & i) { return m_hads[i]; }
-
-    void reset_variationweights() { m_ktselector.reset_variationweights(); };
-
-    std::vector<double>& get_variationweights() {
-      return m_ktselector.get_variationweights();
-    };
 
     std::list<Proto_Particle *> * GetHadrons() const { return p_hadrons; }
   };

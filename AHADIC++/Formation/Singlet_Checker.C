@@ -51,11 +51,12 @@ if multi-particle singlet
 
 Singlet_Checker::Singlet_Checker(list<Singlet *> * singlets,
 				 Soft_Cluster_Handler * softclusters,
-				 Flavour_Selector     * flavourselector) :
+				 Flavour_Selector     * flavourselector,
+				 KT_Selector          * ktselector) :
   Singlet_Tools(),
   p_singlets(singlets), p_softclusters(softclusters),
   p_hadrons(softclusters->GetHadrons()),
-  m_splitter(Trivial_Splitter(flavourselector)),
+  m_splitter(Trivial_Splitter(flavourselector,ktselector)),
   m_direct_transitions(0), m_errors(0)
 {}
 

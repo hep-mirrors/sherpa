@@ -30,6 +30,7 @@ namespace AHADIC {
     Gluon_Decayer          m_gluondecayer;
     Cluster_Decayer        m_clusterdecayer;
     Flavour_Selector       m_flavourselector;
+    KT_Selector            m_ktselector;
 
     ATOOLS::Vec4D m_totmom;
 

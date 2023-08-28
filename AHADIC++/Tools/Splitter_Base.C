@@ -9,9 +9,11 @@ using namespace std;
 
 Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
 			     Soft_Cluster_Handler * softclusters,
-			     Flavour_Selector     * flavourselector) :
+			     Flavour_Selector     * flavourselector,
+			     KT_Selector          * ktselector) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   p_flavourselector(flavourselector),
+  p_ktselector(ktselector),
   m_ktorder(false), m_ktfac(1.),
   m_attempts(100),
   m_analyse(false)
@@ -37,7 +39,6 @@ void Splitter_Base::Init(const bool & isgluon) {
 
   m_ktorder  = (hadpars->Switch("KT_Ordering")>0);
   m_ktmax    = hadpars->Get("kT_max");
-  m_ktselector.Init(isgluon);
   m_zselector.Init(this);
   m_minmass  = p_flavourselector->MinimalMass();
 }
@@ -49,9 +50,15 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
     return false;
   }
   size_t attempts(m_attempts);
-  do { attempts--; } while(attempts>0 && !MakeSplitting());
+
+  do {
+    attempts--;
+    // std::cout << m_attempts << std::endl;
+  } while(attempts>0 && !MakeSplitting());
   // finally the accepted one:
-  m_ktselector.accepted();
+
+  // TODO: reinsert
+  //p_ktselector->accepted();
   return (attempts>0);
 }
 
@@ -187,7 +194,8 @@ void Splitter_Base::MakeTransverseMomentum() {
   }
   m_ktfac = 1.;
   bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
-  m_kt    = m_ktselector(ktmax,m_ktfac);
+  //std::cout << "Splitter_Base\n";
+  m_kt    = (*p_ktselector)(ktmax);
   m_kt2   = m_kt*m_kt;
   m_phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);

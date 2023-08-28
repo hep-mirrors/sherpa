@@ -49,7 +49,8 @@ namespace AHADIC {
  public:
     Singlet_Checker(std::list<Singlet *> * p_singlets,
 		    Soft_Cluster_Handler * softclusters,
-		    Flavour_Selector     * flavourselector);
+		    Flavour_Selector     * flavourselector,
+		    KT_Selector          * ktselector);
     ~Singlet_Checker();
     void Init();
     void Reset();

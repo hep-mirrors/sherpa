@@ -226,6 +226,7 @@ void Hadronisation_Parameters::CheckAndPad() {
     m_parametermap_vecs[string("P_qs_by_P_qq")][i] *= strange;
     m_parametermap_vecs[string("P_ss_by_P_qq")][i] *= sqr(strange);
   }
+  m_nvariations = max_size;
 }
 
 void Hadronisation_Parameters::ReadClusterToMesonPSParameters()

@@ -28,7 +28,8 @@ namespace AHADIC {
       return variation_weights;
     };
 
-    void reset_variationweights() {
+    void reset_variationweights(int nvars) {
+      variation_weights.resize(nvars);
       std::fill(variation_weights.begin(), variation_weights.end(), 1);
     };
 

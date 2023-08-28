@@ -17,8 +17,10 @@ namespace AHADIC {
   public:
     KT_Selector();
     ~KT_Selector();
-    void Init(const bool & isgluon);
-    void reset_variationweights() {
+    void Init();
+    void reset_variationweights(int nvars) {
+      variation_weights.resize(nvars);
+      tmp_variation_weights.resize(nvars);
       std::fill(variation_weights.begin(), variation_weights.end(), 1);
       std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
     };
@@ -30,9 +32,10 @@ namespace AHADIC {
     void accepted() {
       for(int i{0}; i<variation_weights.size(); ++i)
 	variation_weights[i] *= tmp_variation_weights[i];
+      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
     }
 
-    double operator()(const double & ktmax,const double & M2=1.);
+    double operator()(const double & ktmax);
   };
 }
 

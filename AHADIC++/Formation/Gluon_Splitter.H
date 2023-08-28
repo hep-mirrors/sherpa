@@ -29,8 +29,9 @@ namespace AHADIC {
   public:
     Gluon_Splitter(std::list<Cluster *> * cluster_list,
 		   Soft_Cluster_Handler * softclusters,
-		   Flavour_Selector     * flavourselector) :
-      Splitter_Base(cluster_list,softclusters,flavourselector) {}
+		   Flavour_Selector     * flavourselector,
+		   KT_Selector          * ktselector) :
+      Splitter_Base(cluster_list,softclusters,flavourselector,ktselector) {}
     ~Gluon_Splitter();
 
     void   Init(const bool & isgluon=true);
@@ -43,17 +44,13 @@ namespace AHADIC {
       lastmass = m_lastmass; isB = m_lastB; isC = m_lastC;
     }
     std::vector<double>& get_variationweights() {
-      const auto wgts = m_ktselector.get_variationweights();
-      for(int i{0}; i<wgts.size(); i++)
-	variation_weights[i] *= wgts[i];
-
       return variation_weights;
     };
 
-    void reset_variationweights() {
+    void reset_variationweights(int nvars) {
+      variation_weights.resize(nvars);
       // reset weights and Splitter_base weight
       std::fill(variation_weights.begin(), variation_weights.end(), 1);
-      m_ktselector.reset_variationweights();
     };
 
     void z_rejected(const double, const double&, const double&, const double&,

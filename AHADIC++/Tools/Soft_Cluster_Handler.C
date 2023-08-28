@@ -8,8 +8,9 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons) :
-  p_hadrons(hadrons), m_ktfac(1.)
+Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons,
+					   KT_Selector* ktselector) :
+  p_hadrons {hadrons}, p_ktselector {ktselector}, m_ktfac{1.}
 { }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler()
@@ -30,7 +31,6 @@ void Soft_Cluster_Handler::Init() {
   m_ktorder            = (hadpars->Switch("KT_Ordering")>0);
   m_direct_transition  = (hadpars->Switch("direct_transition")>0);
   m_zeta               = hadpars->Get("prompt_decay_exponent");
-  m_ktselector.Init(false);
 }
 
 void Soft_Cluster_Handler::Reset() {
@@ -259,7 +259,8 @@ bool Soft_Cluster_Handler::FixKinematics() {
 			      Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
 					      (*p_cluster)[1]->KT2_Max()))):p1));
   double pt, pl;
-  pt = m_ktselector(ktmax,1.);
+  //std::cout << "Soft_Cluster_Handler\n";
+  pt = (*p_ktselector)(ktmax);
   pl = sqrt(p1*p1-pt*pt);
   double phi   = 2.*M_PI*ran->Get();
   m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);

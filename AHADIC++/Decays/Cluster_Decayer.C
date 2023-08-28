@@ -9,9 +9,10 @@ using namespace std;
 
 Cluster_Decayer::Cluster_Decayer(list<Cluster *> * cluster_list,
 				 Soft_Cluster_Handler * softclusters,
-				 Flavour_Selector     * flavourselector) :
+				 Flavour_Selector     * flavourselector,
+				 KT_Selector          * ktselector) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_splitter(Cluster_Splitter(cluster_list,softclusters,flavourselector))
+  m_splitter(Cluster_Splitter(cluster_list,softclusters,flavourselector,ktselector))
 {}
 
 Cluster_Decayer::~Cluster_Decayer() {}
@@ -38,7 +39,7 @@ bool Cluster_Decayer::Treat(Cluster * cluster) {
   if (!mustdecay && m_splitter((*cluster)[0],(*cluster)[1])) {
     delete cluster;
     return true;
-  } 
+  }
   switch (p_softclusters->Treat(cluster,true)) {
   case -1:
     // cluster cannot decay into anything - return false (triggers new event)

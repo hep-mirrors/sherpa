@@ -15,7 +15,7 @@ namespace AHADIC {
   private:
     Constituents         * p_constituents;
     Flavour_Selector     * p_flavourselector;
-    KT_Selector            m_ktselector;
+    KT_Selector          * p_ktselector;
     Z_Selector             m_zselector;
 
     double m_kt2max, m_minmass;
@@ -43,7 +43,8 @@ namespace AHADIC {
     bool Rescue();
     void ConstructRescueMomenta();
  public:
-    Trivial_Splitter(Flavour_Selector * flavourselector);
+    Trivial_Splitter(Flavour_Selector * flavourselector,
+		     KT_Selector      * ktselector);
     ~Trivial_Splitter() {}
     void Init();
 

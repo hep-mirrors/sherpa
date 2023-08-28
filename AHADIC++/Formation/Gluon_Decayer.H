@@ -30,21 +30,37 @@ namespace AHADIC {
 	      Proto_Particle * part3=NULL);
     bool LastStep();
     void AnalyseClusters();
+    std::vector<double> variation_weights;
+
   public:
     Gluon_Decayer(std::list<Cluster *> * cluster_list,
 		  Soft_Cluster_Handler * softclusters,
-		  Flavour_Selector     * flavourselector);
+		  Flavour_Selector     * flavourselector,
+		  KT_Selector          * ktselector);
     ~Gluon_Decayer();
     void Init();
     void Reset();
     void ResetN() { m_Nclusters = 0; }
     void FillNs(const int & Nhad);
     std::vector<double>& get_variationweights() {
+      // const auto& wgts_breaker  = m_breaker.get_variationweights();
+      // const auto& wgts_splitter = m_splitter.get_variationweights();
+
+      // variation_weights.resize(wgts_breaker.size());
+      // if(wgts_breaker.size() == wgts_splitter.size()) {
+      // 	for(int i{0}; i<wgts_breaker.size(); i++)
+      // 	  variation_weights[i] = wgts_splitter[i] * wgts_breaker[i];
+      // }
+
+      // return variation_weights;
       return m_splitter.get_variationweights();
     };
 
-    void reset_variationweights() {
-      m_splitter.reset_variationweights();
+    void reset_variationweights(int nvars) {
+      // std::fill(variation_weights.begin(), variation_weights.end(), 1);
+      // m_splitter.reset_variationweights();
+      // m_breaker.reset_variationweights();
+      m_splitter.reset_variationweights(nvars);
     };
 
     bool operator()(Singlet * singlet);
