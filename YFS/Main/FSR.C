@@ -282,9 +282,6 @@ bool FSR::MakeFSR() {
       return false;
     }
     RescalePhotons();
-    for(auto k: m_photons){
-      if(k.E() > m_Kmax ) return false;
-    }
     m_sQ = m_dip_sp * m_yy;
     if ( sqrt(m_sQ) < smin ) {
       RejectEvent();
