@@ -70,6 +70,8 @@ namespace SHRIMPS {
     const double          & Phi()      const { return m_phi; }
     const double          & Y(const size_t & beam)    const { return m_y[beam]; }
     const double          & X(const size_t & beam)    const { return m_x[beam]; }
+    const double          & MinX(const size_t & beam)    const { return p_pdf[beam]->XMin(); }
+    const double          & MaxX(const size_t & beam)    const { return p_pdf[beam]->XMax(); }
     const ATOOLS::Flavour & Flav(const size_t & beam) const { return m_flavs[beam]; }
   };
 }

@@ -54,10 +54,12 @@ void Ladder_Generator_QE::FixEmissionsKinematics_elastic() {
     case 2: m_abs_t = p_sigma_d->SelectT(2);
     case 4: m_abs_t = p_sigma_el->SelectT();
   }
+  double xmin = m_partonic.MinX(0);
+  double xmax = m_partonic.MaxX(0);
   double chosen_fraction_0 = ran->Get(), rand = ran->Get()*m_pdf_over_estimate;
+  while(chosen_fraction_0 < xmin || chosen_fraction_0 > xmax) chosen_fraction_0 = ran->Get();
   while(rand > m_partonic.PDF(0,chosen_fraction_0,m_abs_t,ATOOLS::Flavour(kf_gluon))) {
-    msg_Out() << chosen_fraction_0 << "\t" << rand << "\t" << m_partonic.PDF(0,chosen_fraction_0,m_abs_t,ATOOLS::Flavour(kf_gluon)) << std::endl;
-    chosen_fraction_0 = ran->Get();
+    while(chosen_fraction_0 < xmin || chosen_fraction_0 > xmax) chosen_fraction_0 = ran->Get();
     rand = ran->Get()*m_pdf_over_estimate;
   }
   //std::ofstream xfile;
@@ -65,10 +67,10 @@ void Ladder_Generator_QE::FixEmissionsKinematics_elastic() {
   //xfile << chosen_fraction_0 << "\t" << m_abs_t << "\t" << m_partonic.PDF(0,chosen_fraction_0,m_abs_t,ATOOLS::Flavour(kf_gluon)) << std::endl;
   //xfile.close();
   double chosen_fraction_1 = ran->Get();
+  while(chosen_fraction_1 < xmin || chosen_fraction_1 > xmax) chosen_fraction_1 = ran->Get();
   rand = ran->Get()*m_pdf_over_estimate;
   while(rand > m_partonic.PDF(0,chosen_fraction_1,m_abs_t,ATOOLS::Flavour(kf_gluon))) {
-    msg_Out() << chosen_fraction_1 << "\t" << rand << "\t" << m_partonic.PDF(0,chosen_fraction_1,m_abs_t,ATOOLS::Flavour(kf_gluon)) << std::endl;
-    chosen_fraction_1 = ran->Get();
+    while(chosen_fraction_1 < xmin || chosen_fraction_1 > xmax) chosen_fraction_1 = ran->Get();
     rand = ran->Get()*m_pdf_over_estimate;
   }
   //chosen_fraction_0 = 0.1;

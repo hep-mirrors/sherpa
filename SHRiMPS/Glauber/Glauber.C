@@ -131,14 +131,14 @@ void Glauber::SaveXSs(Cross_Sections * xsecs,double bmin, double bmax,int num) {
 }
 
 int Glauber::FixProjectileState() {
-std::vector<std::vector<Omega_ik *> > * p_eikonals(MBpars.GetEikonals());
-double disc = ran->Get();
-for (size_t j=0;j<(*p_eikonals)[0].size();j++) {
- double a0j_sqr = ( (*p_eikonals)[0][j]->Prefactor() ) / sqrt((*p_eikonals)[0][0]->Prefactor());
- disc -= a0j_sqr;
- if (disc <= 1.e-12) return j;
-}
-return -1;
+  std::vector<std::vector<Omega_ik *> > * p_eikonals(MBpars.GetEikonals());
+  double disc = ran->Get();
+  for (size_t j=0;j<(*p_eikonals)[0].size();j++) {
+    double a0j_sqr = ( (*p_eikonals)[0][j]->Prefactor() ) / sqrt((*p_eikonals)[0][0]->Prefactor());
+    disc -= a0j_sqr;
+    if (disc <= 1.e-12) return j;
+  }
+  return -1;
 }
 
 void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos_N1,std::vector<ATOOLS::Vec4D> pos_N2) {
@@ -182,8 +182,8 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
       std::pair<int,int> current_pair;
       current_pair.first = i;
       current_pair.second = j;
-      std::ofstream interactions_file;
-      interactions_file.open("./interactions_500000_screen.dat", std::ios::app);
+      //std::ofstream interactions_file;
+      //interactions_file.open("./interactions_postfix.dat", std::ios::app);
       
       bool inelastic_happened = false;
       bool QE_happened = false;
@@ -193,7 +193,7 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
         interaction1.first = current_pair;
         interaction1.second = m_type_abs; //interaction 1 = inelastic
         interactions.push_back(interaction1);
-        interactions_file << interaction1.second << "\t" << distance << endl;
+        //interactions_file << interaction1.second << "\t" << distance << endl;
       }
       if (rand2 < prob_QE) {
         QE_happened = true;
@@ -205,15 +205,15 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
         else if (rand3 < prob_SD0 + prob_SD1 + prob_DD) interaction2.second = m_type_DD; //interaction 4 = double diff
         else interaction2.second = m_type_elas; //interaction 5 = elastic
         interactions.push_back(interaction2);
-        interactions_file << interaction2.second << "\t" << distance << endl;
+        //interactions_file << interaction2.second << "\t" << distance << endl;
       }
       if (!inelastic_happened && !QE_happened) {
         std::pair<std::pair<int,int>,int> interaction3;
         interaction3.first = current_pair;
         interaction3.second = -1;
-      interactions_file << -1 << "\t" << distance << endl;
+      //interactions_file << -1 << "\t" << distance << endl;
       }
-      interactions_file.close();
+      //interactions_file.close();
     }
   }
 }
