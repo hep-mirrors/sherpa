@@ -195,8 +195,6 @@ void Initialization_Handler::RegisterDefaults()
   s["RESUMMATION_SCALE_FACTOR"].SetDefault(1.0);
   s["USR_WGT_MODE"].SetDefault(true);
 
-  s["OVERRIDE_PDF_INFO"].SetDefault(false);
-
   Scoped_Settings metssettings{ Settings::GetMainSettings()["METS"] };
   metssettings["CLUSTER_MODE"].SetDefault(0);
 

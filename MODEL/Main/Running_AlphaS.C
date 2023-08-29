@@ -45,9 +45,9 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
 
   m_cutas = alphassettings["FREEZE_VALUE"].Get<double>();
   const int pdfas(alphassettings["USE_PDF"].Get<int>());
-  const bool overridepdfinfo(s["OVERRIDE_PDF_INFO"].Get<bool>());
+  const bool overridepdfinfo(pdfas == 0);
 
-  if ((m_as_MZ == 0.0 || m_order == 0.0)
+  if ((m_as_MZ == 0.0 || m_order < 0)
       && (p_pdf == NULL || overridepdfinfo)) {
     THROW(fatal_error, "Cannot determine as(MZ) and/or the order of the running of as.");
   }
@@ -62,7 +62,7 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
       }
     }
   }
-  
+
   // determine number of thresholds and read quark masses
   m_nthresholds = 0;
   vector<double> masses;
@@ -182,7 +182,7 @@ double One_Running_AlphaS::Beta3(const int nf) {
 }
 
 double One_Running_AlphaS::Lambda2(const int nr) {
-  double as  = p_thresh[nr].as_low; 
+  double as  = p_thresh[nr].as_low;
   double mu2 = p_thresh[nr].low_scale;
   if (as==0.) {
     as  = p_thresh[nr].as_high;
@@ -253,7 +253,7 @@ double One_Running_AlphaS::AlphaSLam(const double Q2,const int nr)
   // 3rd order (four loop) to be checked.
   double log3L    = logL*log2L;
   pref           *= 1./(beta0*L);
-  a              += pref*(b[1]*b[1]*b[1]*(-log3L+2.5*log2L+2.*logL-0.5) 
+  a              += pref*(b[1]*b[1]*b[1]*(-log3L+2.5*log2L+2.*logL-0.5)
 			  - 3.*b[1]*b[2] + 0.5*b[3]);
   return M_PI*a;
 }
@@ -265,11 +265,11 @@ double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
   // 0th order
   if (m_order==0) return zeta2g;
 
-  // 1st order (one loop) corresponds to two loop lambda  
+  // 1st order (one loop) corresponds to two loop lambda
   double L      = log(mu2/mass2_os);
   double a      = as/M_PI;
   zeta2g       += - a*1./6.*L;
-  if (m_order==1) return zeta2g; 
+  if (m_order==1) return zeta2g;
 
   // 2nd order
   double L2     = L*L;
@@ -282,8 +282,8 @@ double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
   double a3     = a2*a;
   double zeta2  = M_PI*M_PI/6.;
   double zeta3  = 1.2020569031595942854;
-  zeta2g       += a3 * (-58933./124416. - 2./3.*zeta2*(1.+1./3.* log(2.)) 
-			- 80507./27648.*zeta3 - 8521./1728.*L- 131./576. * L2 
+  zeta2g       += a3 * (-58933./124416. - 2./3.*zeta2*(1.+1./3.* log(2.))
+			- 80507./27648.*zeta3 - 8521./1728.*L- 131./576. * L2
 			- 1./216.*L3 + nl*(2479./31104.+ zeta2/9. + 409./1728. * L ));
   return zeta2g;
 }
@@ -292,7 +292,7 @@ double One_Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
 				      const double mu2,const int nl) {
   // might be simplified considerably when using mu2==mass2
   double zeta2g  = 1.;
-  // 0th order   
+  // 0th order
   if (m_order==0) return zeta2g;
 
   // 1st order (one loop) corresponds to two loop lambda
@@ -301,7 +301,7 @@ double One_Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
   zeta2g       += + a*1./6.*L;
   if (m_order==1) return zeta2g;
 
-  // 2nd order 
+  // 2nd order
   double L2     = L*L;
   double a2     = a*a;
   zeta2g       += a2 *( 1./36.*L2 + 19./24.*L + 7./24.);
@@ -312,8 +312,8 @@ double One_Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
   double a3     = a2*a;
   double zeta2  = M_PI*M_PI/6.;
   double zeta3  = 1.2020569031595942854;
-  zeta2g       += a3 * (58933./124416. + 2./3.*zeta2*(1.+1./3.* log(2.)) 
-			+ 80507./27648.*zeta3 + 8941./1728.*L + 511./576. * L2 
+  zeta2g       += a3 * (58933./124416. + 2./3.*zeta2*(1.+1./3.* log(2.))
+			+ 80507./27648.*zeta3 + 8941./1728.*L + 511./576. * L2
 			+ 1./216.*L3 + nl*(-2479./31104.- zeta2/9. - 409./1728. * L ));
   return zeta2g;
 }
@@ -371,7 +371,7 @@ double One_Running_AlphaS::operator()(double q2)
     for (;!((p_thresh[i].low_scale<q2)&&(q2<=p_thresh[i].high_scale));--i) {
       if (i<=0) break;
     }
-    if (p_thresh[i].nf>=0) 
+    if (p_thresh[i].nf>=0)
       as = AlphaSLam(q2,i);
     else
       as = q2/p_thresh[i].high_scale * p_thresh[i].as_high;
@@ -384,7 +384,7 @@ double One_Running_AlphaS::operator()(double q2)
     as   = AlphaSLam(q2,i);
   }
   return as;
-}  
+}
 
 double  One_Running_AlphaS::AlphaS(const double q2){
   return operator()(q2);

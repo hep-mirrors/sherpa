@@ -469,9 +469,9 @@ Variations::PDFsAndAlphaSList(const std::string &pdf) const
   // members via an appended asterisk
   PDFs_And_AlphaS_List pdfsandalphaslist;
   if (pdf != "None") {
-    if (Settings::GetMainSettings()["OVERRIDE_PDF_INFO"].Get<bool>()) {
+    if (Settings::GetMainSettings()["ALPHAS"]["USE_PDF"].Get<int>() == 0) {
       THROW(fatal_error,
-            "`OVERRIDE_PDF_INFO: true` is incompatible with doing PDF/AlphaS "
+            "`ALPHAS: {USE_PDF: 0}` is incompatible with doing PDF/AlphaS "
             "variations.");
     }
     // translate PDF string parameter into actual AlphaS and PDF objects
