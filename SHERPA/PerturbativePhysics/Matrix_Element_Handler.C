@@ -65,7 +65,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   if (!read.ReadFromFile(m_rsadd,"MEH_RSADD")) m_rsadd=1;
   else msg_Info()<<METHOD<<"(): Set RS add mode "<<m_rsadd<<"."<<std::endl;
   std::string seedfile;
-  if (!read.ReadFromFile(seedfile,"EVENT_SEED_FILE"))
+  if (!read.ReadFromFile(seedfile,"EVENT_SEED_FILE")) 
     seedfile="ran.stat."+rpa->gen.Variable("RANDOM_SEED");
   else msg_Info()<<METHOD<<"(): Set seed file "<<seedfile<<"."<<std::endl;
 #ifdef USING__GZIP
@@ -139,7 +139,7 @@ void Matrix_Element_Handler::InitNLOMC()
   p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&read));
 }
 
-bool Matrix_Element_Handler::CalculateTotalXSecs()
+bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
   int storeresults = Data_Reader(" ",";","!","=").GetValue("GENERATE_RESULT_DIRECTORY", 1);
   if (storeresults<0) return true;
@@ -153,7 +153,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     if (!m_procs[i]->CalculateTotalXSec(m_respath,false)) okay=false;
     m_procs[i]->SetLookUp(false);
     m_procs[i]->Integrator()->SetUpEnhance();
-    m_procs[i]->SetupWeightsCache();
   }
   if (storeresults) My_In_File::CloseDB(m_respath+"/");
   rpa->gen.SetPilotRun(false);
@@ -178,7 +177,7 @@ void Matrix_Element_Handler::SetRandomSeed()
   }
 }
 
-bool Matrix_Element_Handler::GenerateOneEvent()
+bool Matrix_Element_Handler::GenerateOneEvent() 
 {
   DEBUG_FUNC("");
   Return_Value::IncCall(METHOD);
@@ -477,7 +476,7 @@ int Matrix_Element_Handler::InitializeProcesses
 {
   /*
     This is the basis for all CKKW and process interplay.
-    Don't even try to think about modifying
+    Don't even try to think about modifying 
     either this routine or any of its dependencies !!!
   */
   p_beam=beam; p_isr=isr; p_model=model;
@@ -513,7 +512,7 @@ int Matrix_Element_Handler::InitializeProcesses
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
   msg_Debugging()<<METHOD<<"(): Processes {\n";
   msg_Debugging()<<"  m_procs:\n";
-  for (size_t i(0);i<m_procs.size();++i)
+  for (size_t i(0);i<m_procs.size();++i) 
     msg_Debugging()<<"    "<<m_procs[i]->Name()<<" -> "<<m_procs[i]<<"\n";
   msg_Debugging()<<"}\n";
   return res;
@@ -1058,7 +1057,7 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string
   info.m_ps.resize(1);
   info.m_ps.front().m_ps.clear();
   while(true) {
-    while (buffer.length()>0 &&
+    while (buffer.length()>0 && 
 	   (buffer[0]==' ' || buffer[0]=='\t')) buffer.erase(0,1);
     if (buffer.length()==0) break;
     size_t pos(Min(buffer.find(' '),buffer.length()));
@@ -1137,7 +1136,7 @@ namespace SHERPA {
 			  const int nfs,const int &priority)
   {
     if (rstr.length()==0) {
-      if (nfs==0 &&
+      if (nfs==0 && 
 	  (dv.find(lstr)==dv.end() || dv[lstr].first>priority)) {
 	msg_Debugging()<<METHOD<<"(): adding '"<<val
 		       <<"' {"<<lstr<<"}("<<priority<<")\n";
@@ -1180,8 +1179,8 @@ namespace SHERPA {
    const int nfs,const std::string &pnid,Type &rv)
   {
     std::map<std::string,std::pair<int,Type> > cdv(dv);
-    for (typename std::map<std::string,std::pair<int,Type> >::const_iterator
-	   dit(dv.begin());dit!=dv.end();++dit) {
+    for (typename std::map<std::string,std::pair<int,Type> >::const_iterator 
+	   dit(dv.begin());dit!=dv.end();++dit) { 
       AddMPvalue<Type>("",dit->first,dit->second.second,
 		       dv,nfs,dit->second.first);
     }
@@ -1223,7 +1222,7 @@ namespace SHERPA {
       return;
     }
     std::string hstr = str.substr(0,position);
-    for (size_t hl=hstr.length();hl &&
+    for (size_t hl=hstr.length();hl && 
 	   (hstr[hl-1]==' ' || hstr[hl-1]=='\t');
 	 hl=hstr.length()) hstr.erase(hl-1);
     Type value = ExtractMPvalue<Type>(hstr);

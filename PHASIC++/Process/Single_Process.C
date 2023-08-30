@@ -457,7 +457,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
     if (m_lastxs==0.0) return m_last=0.0;
     m_last=m_lastxs;
-    ClusterAmplitude_Vector ampls = scs->Amplitudes().size() ?
+    ClusterAmplitude_Vector ampls = scs->Amplitudes().size() ? 
         scs->Amplitudes() : ClusterAmplitude_Vector();
     const double facscale(scs->Scale(stp::fac));
     ATOOLS::Cluster_Sequence_Info csi(
@@ -650,7 +650,7 @@ double Single_Process::ReweightWithoutSubevents(
   info.m_fl2 = m_mewgtinfo.m_fl2;
   info.m_x1 = p_int->ISR()->X1();
   info.m_x2 = p_int->ISR()->X2();
-  info.m_fallbackresult = m_last;
+  info.m_fallbackresult = m_last; 
 
   if (nometstype==mewgttype::none) { // non-NLO Born
     info.m_wgt = m_mewgtinfo.m_B;
@@ -671,7 +671,7 @@ double Single_Process::ReweightWithoutSubevents(
     if (csi.m_pdfwgt == 0.0) {
       varweights->IncrementOrInitialiseWarningCounter("Single process different PDF cut-off");
       return info.m_fallbackresult;
-    }
+    } 
 
     // calculate AlphaS factors (for Born and non-Born contributions)
     const std::vector<double> alphasratios(AlphaSRatios(varparams, info));
@@ -798,7 +798,7 @@ double Single_Process::ReweightBornLike(
   if (csi.m_pdfwgt == 0.0) {
     p_variationweights->IncrementOrInitialiseWarningCounter("Single process different PDF cut-off");
     return info.m_fallbackresult;
-  }
+  } 
   const std::vector<double> alphasratios(AlphaSRatios(varparams, info));
   double alphasfac(1.0);
   for (std::vector<double>::const_iterator it(alphasratios.begin());
@@ -906,8 +906,8 @@ std::vector<double> Single_Process::AlphaSRatios(
 }
 
 bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
-					const bool create)
-{
+					const bool create) 
+{ 
   p_int->Reset();
   SP(Phase_Space_Handler) psh(p_int->PSHandler());
   if (p_int->ISR()) {
@@ -970,11 +970,6 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::
     GetObject(m_pinfo.m_kfactor=cargs.m_kfac,cargs);
   if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
-}
-
-void Single_Process::SetupWeightsCache()
-{
-  p_int->SetupWeightsCache();
 }
 
 void Single_Process::SetLookUp(const bool lookup)

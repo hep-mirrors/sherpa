@@ -36,7 +36,7 @@ Process_Base::Process_Base():
   p_int(new Process_Integrator(this)), p_selector(NULL),
   p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
-  m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0),
+  m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
   m_tinfo(1), m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true), p_apmap(NULL),
   p_variationweights(NULL), m_variationweightsowned(false),
@@ -46,7 +46,7 @@ Process_Base::Process_Base():
   if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
 }
 
-Process_Base::~Process_Base()
+Process_Base::~Process_Base() 
 {
   if (p_kfactor) delete p_kfactor;
   if (p_scale) delete p_scale;
@@ -57,10 +57,10 @@ Process_Base::~Process_Base()
 }
 
 Process_Base *Process_Base::Selected()
-{
+{ 
   if (!p_selected) return NULL;
   if (p_selected!=this) return p_selected->Selected();
-  return this;
+  return this; 
 }
 
 bool Process_Base::SetSelected(Process_Base *const proc)
@@ -79,9 +79,9 @@ bool Process_Base::SetSelected(Process_Base *const proc)
 }
 
 Process_Base *Process_Base::Parent()
-{
+{ 
   if (p_parent && p_parent!=this) return p_parent->Parent();
-  return this;
+  return this; 
 }
 
 bool Process_Base::GeneratePoint()
@@ -149,7 +149,7 @@ void Process_Base::SetUseBIWeight(bool on)
   m_use_biweight=on;
 }
 
-double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
+double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode) 
 {
   Vec4D_Vector p(ampl.Legs().size());
   for (size_t i(0);i<ampl.NIn();++i) p[i]=-ampl.Leg(i)->Mom();
@@ -176,7 +176,7 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
     SetFixedScale(s);
   }
   if (mode&4) SetUseBIWeight(false);
-  if (mode&128) this->GeneratePoint();
+  if (mode&128) this->GeneratePoint(); 
   double res(this->Differential(p));
   if (mode&32) {
     SP(Phase_Space_Handler) psh(Parent()->Integrator()->PSHandler());
@@ -216,18 +216,18 @@ void Process_Base::UpdateIntegrator
 
 class Order_Flavour {
   FMMap* p_fmm;
-  int Order_SVFT(const Flavour &a,const Flavour &b)
+  int Order_SVFT(const Flavour &a,const Flavour &b) 
   {
     if (a.IsScalar() && !b.IsScalar()) return 1;
-    if (a.IsVector() && !b.IsScalar() &&
+    if (a.IsVector() && !b.IsScalar() && 
 	!b.IsVector()) return 1;
-    if (a.IsFermion() && !b.IsFermion() &&
+    if (a.IsFermion() && !b.IsFermion() && 
 	!b.IsScalar() && !b.IsVector()) return 1;
     return 0;
   }
   int Order_Multi(const Flavour &a,const Flavour &b)
   {
-    if ((*p_fmm)[int(a.Kfcode())]==0 ||
+    if ((*p_fmm)[int(a.Kfcode())]==0 || 
 	(*p_fmm)[int(b.Kfcode())]==0) return 0;
     if ((*p_fmm)[int(a.Kfcode())]>
 	(*p_fmm)[int(b.Kfcode())]) return 1;
@@ -277,7 +277,7 @@ void Process_Base::SortFlavours(Process_Info &pi,const int mode)
   FMMap fmm;
   for (size_t i(0);i<pi.m_fi.m_ps.size();++i) {
     const Flavour *hfl=&pi.m_fi.m_ps[i].m_fl;
-    if (fmm.find(int(hfl->Kfcode()))==fmm.end())
+    if (fmm.find(int(hfl->Kfcode()))==fmm.end()) 
       fmm[int(hfl->Kfcode())]=0;
     if (hfl->IsFermion()) fmm[int(hfl->Kfcode())]++;
   }
@@ -304,7 +304,7 @@ void Process_Base::Init(const Process_Info &pi,
     m_pinfo.m_fi.BuildDecayInfos(m_nin);
     m_decins=m_pinfo.m_fi.GetDecayInfos();
     if (IsGroup()) {
-      if (m_pinfo.m_nminq>0 || m_pinfo.m_nmaxq<m_nin+m_nout)
+      if (m_pinfo.m_nminq>0 || m_pinfo.m_nmaxq<m_nin+m_nout) 
         m_name+="__NQ_"+ToString(m_pinfo.m_nminq)+
 	  "-"+ToString(m_pinfo.m_nmaxq);
     }
@@ -356,17 +356,17 @@ std::string Process_Base::GenerateName(const Subprocess_Info &info)
   if (info.m_fl.Kfcode()==kf_quark && info.m_fl.IsAnti()) name+="b";
   if (info.m_ps.empty()) return name;
   name+="["+GenerateName(info.m_ps.front());
-  for (size_t i(1);i<info.m_ps.size();++i)
+  for (size_t i(1);i<info.m_ps.size();++i) 
     name+="__"+GenerateName(info.m_ps[i]);
-  if (info.m_nloqcdtype!=nlo_type::lo)
+  if (info.m_nloqcdtype!=nlo_type::lo) 
     name+="__QCD("+ToString(info.m_nloqcdtype)+info.m_sv+")";
-  if (info.m_nloewtype!=nlo_type::lo)
+  if (info.m_nloewtype!=nlo_type::lo) 
     name+="__EW("+ToString(info.m_nloewtype)+info.m_sv+")";
   return name+="]";
 }
 
 std::string Process_Base::GenerateName
-(const Subprocess_Info &ii,const Subprocess_Info &fi)
+(const Subprocess_Info &ii,const Subprocess_Info &fi) 
 {
   char nii[3], nfi[3];
   if (sprintf(nii,"%i",(int)ii.NExternal())<=0)
@@ -376,16 +376,16 @@ std::string Process_Base::GenerateName
   std::string name(nii+std::string("_")+nfi);
   for (size_t i(0);i<ii.m_ps.size();++i) name+="__"+GenerateName(ii.m_ps[i]);
   for (size_t i(0);i<fi.m_ps.size();++i) name+="__"+GenerateName(fi.m_ps[i]);
-  if (fi.m_nloqcdtype!=nlo_type::lo)
+  if (fi.m_nloqcdtype!=nlo_type::lo) 
     name+="__QCD("+ToString(fi.m_nloqcdtype)+fi.m_sv+")";
-  if (fi.m_nloewtype!=nlo_type::lo)
+  if (fi.m_nloewtype!=nlo_type::lo) 
     name+="__EW("+ToString(fi.m_nloewtype)+fi.m_sv+")";
   return name;
 }
 
 class Order_NDecay {
 public:
-  int operator()(const Decay_Info *a,const Decay_Info *b)
+  int operator()(const Decay_Info *a,const Decay_Info *b) 
   { return IdCount(a->m_id)>IdCount(b->m_id); }
 };// end of class Order_NDecay
 
@@ -496,7 +496,7 @@ std::string Process_Base::GenerateName(const Cluster_Amplitude *ampl)
   if (sprintf(nfi,"%i",(int)(ampl->Legs().size()-ampl->NIn()))<=0)
     THROW(fatal_error,"Conversion error");
   std::string name(nii+std::string("_")+nfi);
-  for (size_t i(0);i<ampl->NIn();++i)
+  for (size_t i(0);i<ampl->NIn();++i) 
     name+="__"+ampl->Leg(i)->Flav().Bar().IDName();
   DecayInfo_Vector decs(ampl->Decays());
   std::sort(decs.begin(),decs.end(),Order_NDecay());
@@ -525,14 +525,14 @@ std::string Process_Base::GenerateName(const NLO_subevt *sub,const size_t &nin)
   return name;
 }
 
-void Process_Base::SetGenerator(ME_Generator_Base *const gen)
-{
-  p_gen=gen;
+void Process_Base::SetGenerator(ME_Generator_Base *const gen) 
+{ 
+  p_gen=gen; 
 }
 
 void Process_Base::SetShower(PDF::Shower_Base *const ps)
 {
-  p_shower=ps;
+  p_shower=ps; 
 }
 
 bool Process_Base::IsZeroEvent()
@@ -551,7 +551,7 @@ void Process_Base::SetVariationWeights(SHERPA::Variation_Weights *const vw)
     m_variationweightsowned = false;
   }
   p_variationweights=vw;
-  p_int->SetVariationWeights(vw);
+  if (p_int->PSHandler() != NULL) p_int->PSHandler()->SetVariationWeights(vw);
 }
 
 void Process_Base::SetOwnedVariationWeights(SHERPA::Variation_Weights *vw)
@@ -590,7 +590,7 @@ bool Process_Base::Trigger(const Vec4D_Vector &p)
   if (IsMapped() && LookUp()) return Selector()->Result();
   return Selector()->Trigger(p);
 }
-
+ 
 NLO_subevtlist *Process_Base::GetSubevtList()
 {
   return NULL;
@@ -623,7 +623,7 @@ void Process_Base::InitPSHandler
   p_int->PSHandler()->SetVariationWeights(p_variationweights);
   if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
   if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);
-}
+} 
 
 double Process_Base::LastPlus()
 {

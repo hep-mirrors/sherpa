@@ -9,9 +9,9 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
-namespace ATOOLS {
+namespace ATOOLS { 
   class Cluster_Leg;
-  class Cluster_Amplitude;
+  class Cluster_Amplitude; 
   class Histogram;
   struct Decay_Info;
   typedef std::vector<Decay_Info* > DecayInfo_Vector;
@@ -19,7 +19,7 @@ namespace ATOOLS {
 
 namespace BEAM { class Beam_Spectra_Handler; }
 
-namespace PDF {
+namespace PDF { 
   class ISR_Handler;
   class Shower_Base;
 }
@@ -132,7 +132,6 @@ namespace PHASIC {
 
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
     virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;
-    virtual void SetupWeightsCache() = 0;
 
     virtual void SetFixedScale(const std::vector<double> &s);
     virtual void SetSelectorOn(const bool on);
@@ -275,12 +274,12 @@ namespace PHASIC {
     inline Process_Base *Proc() const     { return p_proc;    }
 
     inline Cut_Data          * Cuts() const { return p_cuts; }
-    inline Combined_Selector * Selector() const
+    inline Combined_Selector * Selector() const 
     { return p_mapproc?p_mapproc->p_selector:p_selector; }
 
-    template <class PType> inline PType *Get()
+    template <class PType> inline PType *Get() 
     { return dynamic_cast<PType*>(this); }
-    template <class PType> inline const PType *Get() const
+    template <class PType> inline const PType *Get() const 
     { return dynamic_cast<PType*>(this); }
 
     inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }

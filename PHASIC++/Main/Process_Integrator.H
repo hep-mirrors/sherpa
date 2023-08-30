@@ -5,7 +5,6 @@
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Info_Key.H"
 #include "PHASIC++/Process/Process_Base.H"
-#include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "ATOOLS/Org/Exception.H"
 
 #include <string>
@@ -16,10 +15,6 @@ namespace ATOOLS {
 }
 namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler; }
-
-namespace SHERPA {
-  class Variation_Weights;
-}
 
 namespace PHASIC {
 
@@ -34,7 +29,7 @@ namespace PHASIC {
 
     Process_Base *p_proc;
 
-    SP(PHASIC::Phase_Space_Handler) p_pshandler;
+    SP(PHASIC::Phase_Space_Handler) p_pshandler; 
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
@@ -50,8 +45,6 @@ namespace PHASIC {
     double m_threshold, m_enhancefac, m_maxeps, m_rsfac;
 
     long unsigned int m_n, m_itmin;
-    bool m_isCacheInit;
-    std::vector<std::vector<double> > m_weightsCache;
 
     double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
@@ -76,7 +69,7 @@ namespace PHASIC {
     double TotalSigma2() const;
     double TotalResult() const;
     double TotalVar() const;
-    double RemainTimeFactor(double maxerr);
+    double RemainTimeFactor(double maxerr); 
 
   public:
 
@@ -85,11 +78,11 @@ namespace PHASIC {
 
     // destructor
     ~Process_Integrator();
-
+  
     // member functions
     bool Initialize(BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
 		    PDF::ISR_Handler *const isrhandler=NULL);
-
+  
     void SetMomenta(const ATOOLS::Vec4D_Vector &p);
     void SetMomenta(const ATOOLS::Cluster_Amplitude &ampl);
 
@@ -99,12 +92,12 @@ namespace PHASIC {
     void SetMax(const double max);
     void SetTotal(const int mode=1);
 
-    void ResetMax(int);
+    void ResetMax(int);  
     void OptimizeSubResult(const double &s2);
 
     void SetPSHandler(const SP(Phase_Space_Handler) &pshandler);
     void SetISRThreshold(const double threshold);
-
+    
     void InitWeightHistogram();
     void ReadInHistogram(std::string);
     void WriteOutHistogram(std::string);
@@ -126,7 +119,6 @@ namespace PHASIC {
     void SetMaxEpsilon(const double &maxeps);
     void SetRSEnhanceFactor(const double &rsfac);
 
-    void SetupWeightsCache();
     double SelectionWeight(const int mode) const;
 
     void MPISync(const int mode=0);
@@ -163,24 +155,18 @@ namespace PHASIC {
     inline cls::scheme ColorScheme() const    { return m_colorscheme;    }
     inline hls::scheme HelicityScheme() const { return m_helicityscheme; }
 
-    inline void SetBeam(BEAM::Beam_Spectra_Handler *const beam)
+    inline void SetBeam(BEAM::Beam_Spectra_Handler *const beam) 
     { p_beamhandler=beam; }
-    inline void SetISR(PDF::ISR_Handler *const isr)
+    inline void SetISR(PDF::ISR_Handler *const isr)  
     { p_isrhandler=isr;  }
 
-    inline BEAM::Beam_Spectra_Handler *Beam() const
+    inline BEAM::Beam_Spectra_Handler *Beam() const 
     { return p_beamhandler; }
-    inline PDF::ISR_Handler           *ISR() const
+    inline PDF::ISR_Handler           *ISR() const  
     { return p_isrhandler;  }
 
     inline SP(Phase_Space_Handler) PSHandler() const
     { return p_pshandler; }
-
-    inline void SetVariationWeights(SHERPA::Variation_Weights* const vw) const {
-      if (p_pshandler != nullptr) {
-        p_pshandler->SetVariationWeights(vw);
-      }
-    }
 
     inline void SetColorIntegrator(const SP(Color_Integrator) colint)
     { p_colint=colint; }
@@ -189,7 +175,7 @@ namespace PHASIC {
 
     inline SP(Color_Integrator) ColorIntegrator() const
     { return p_colint; }
-    inline SP(Helicity_Integrator) HelicityIntegrator() const
+    inline SP(Helicity_Integrator) HelicityIntegrator() const 
     { return p_helint; }
 
     inline long unsigned int ItMin() const { return m_itmin; }

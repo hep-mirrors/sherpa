@@ -56,7 +56,7 @@ namespace PHASIC {
      * @param bvi  double Differential XS for BVI
      * @param b    double Differential XS for B
      * @param rs   double Differential XS for RS
-     * @param r    double Differential XS for R
+     * @param r    double Differential XS for R 
      * @param ran  double Random number used to select S/H
      * @param ampl Cluster_Amplitude Amplitude which should be updated with the
      *             local K factor when S is selected
@@ -104,7 +104,6 @@ namespace PHASIC {
     void SetLookUp(const bool lookup);
     void SetScale(const Scale_Setter_Arguments &scale);
     void SetKFactor(const KFactor_Setter_Arguments &args);
-    void SetupWeightsCache();
     void SetFixedScale(const std::vector<double> &s);
     void SetSelector(const Selector_Key &key);
     void SetShower(PDF::Shower_Base *const ps);
