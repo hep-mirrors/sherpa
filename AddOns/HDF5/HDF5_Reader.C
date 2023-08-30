@@ -117,6 +117,13 @@ namespace LHEH5 {
       return xs;
     }
 
+    inline double UnitWeight() const
+    {
+      double wgt(0.);
+      for (int i(0);i<pinfo.size();++i) wgt+=pinfo[i][5];
+      return wgt;
+    }
+
     inline const std::vector<std::string> &
     WeightNames() const { return wgtnames; }
 
@@ -264,6 +271,7 @@ namespace LHEH5 {
       LHEFile *e(new LHEFile());
       e->ReadHeader(file);
       m_totalxs=e->TotalXS();
+      m_unitwgt=e->UnitWeight();
       long int nevts(file.getDataSet("events").getSpace().
 		     getDimensions().front());
       if (mpi->Rank()==0) {

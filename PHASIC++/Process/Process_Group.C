@@ -58,6 +58,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
     Weight_Info *winfo(p_selected->Integrator()->PSHandler()
 		       ->OneEvent(p_selected,mode));
     p_int->PSHandler()->SetPoint(NULL);
+    p_selected->Integrator()->SetMax(p_int->Max());
     p_selected->SetEventReader(winfo?p_read:NULL);
     ampl->Delete();
     return winfo;
@@ -202,7 +203,10 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   p_int->SetTotal(0);
   exh->AddTerminatorObject(p_int);
   psh->InitIncoming();
-  if (p_read) return true;
+  if (p_read) {
+    p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
+    return true;
+  }
   double var(p_int->TotalVar());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
 	    <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;
