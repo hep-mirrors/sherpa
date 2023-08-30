@@ -43,9 +43,6 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
-#include <sys/stat.h>
-#include <time.h>
-
 using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;
@@ -169,6 +166,8 @@ void Initialization_Handler::RegisterDefaults()
   s["PDF_VARIATIONS"].UseNoneReplacements();
   s["QCUT_VARIATIONS"].UseNoneReplacements().SetSynonyms({"CKKW_VARIATIONS"});
   s["PDF_LIBRARY"].UseNoneReplacements();
+  s["MPI_PDF_LIBRARY"].UseNoneReplacements();
+  s["BBR_PDF_LIBRARY"].UseNoneReplacements();
   s["ANALYSIS"].UseNoneReplacements();
 
   s["SHOW_ME_GENERATORS"].SetDefault(0);
@@ -762,21 +761,19 @@ void Initialization_Handler::LoadPDFLibraries() {
     m_defsets[PDF::isr::hard_process][beam] = defset;
     // fix PDFs and default sets for the MPI's / hard_subprocesses here
     // we may have to define defaults here.
-    if (!mpilibs.empty() && !mpilibs[beam].empty()) {
+    if (!mpilibs.empty()) {
       std::string libname = mpilibs[Min(beam,mpilibs.size()-1)];
-      if (m_pdflibs.find(libname)!=m_pdflibs.end()) m_pdflibs.insert(libname);
-      m_defsets[PDF::isr::hard_subprocess][beam] = defset;
+      if (m_pdflibs.find(libname)==m_pdflibs.end()) m_pdflibs.insert(libname);
     }
-    else m_defsets[PDF::isr::hard_subprocess][beam] = defset;
-    // fix PDFs and default sets for the beam reacattering here
-    // this is the only configuration at the moment where we allow additional
+    // fix PDFs and default sets for the beam rescattering here
+    // EPA is the only configuration at the moment where we allow additional
     // scattering/interactions of the incoming beams
     if (m_mode==eventtype::StandardPerturbative &&
 	s["BEAM_RESCATTERING"].Get<string>()!=string("None") &&
 	p_beamspectra->GetBeam(beam)->Beam().IsHadron() &&
 	p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_photon &&
 	p_beamspectra->GetBeam(beam)->Bunch(1)==p_beamspectra->GetBeam(beam)->Beam()) {
-      if (!bbrlibs.empty() && !bbrlibs[beam].empty()) {
+      if (!bbrlibs.empty()) {
 	m_pdflibs.insert(bbrlibs[beam]);
 	m_defsets[PDF::isr::bunch_rescatter][beam] = std::string("None");
       }
@@ -846,6 +843,11 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid) {
     // event generation here - assume central (i.e. version 0 by default)
     std::string set = ( (sets.size()==0 || sets[Min(beam,sets.size()-1)]=="Default") ?
 			m_defsets[pid][beam] : sets[Min(beam,sets.size()-1)] );
+    // set default of PDF sets for MPI and rescattering always to the ones for the
+    // hard process.
+    if (pid == PDF::isr::id::hard_process) {
+        m_defsets[PDF::isr::id::hard_subprocess][beam] = set;
+    }
     int version     = (versions.size()== 0 ? 0 : versions[Min(beam,versions.size()-1)] );
     int order = -1, scheme = -1;
     // special treatment of electron PDF
@@ -917,7 +919,7 @@ void Initialization_Handler::DefineBunchFlavours() {
     THROW(fatal_error, "You can not specify more than two bunches.");
   }
   for (size_t beam=0;beam<2;beam++) {
-    if (bunches.size()==0) m_bunch_particles[beam] = p_beamspectra->GetBeam(beam)->Bunch(0);
+    if (bunches.empty()) m_bunch_particles[beam] = p_beamspectra->GetBeam(beam)->Bunch(0);
     else {
       int flav = bunches[Min(beam,bunches.size()-1)];
       m_bunch_particles[beam] = Flavour((kf_code)abs(flav));
