@@ -70,9 +70,7 @@ Process_Integrator::~Process_Integrator()
 
 double Process_Integrator::SelectionWeight(const int mode) const
 {
-  if (p_proc->EventReader()) {
-    return p_proc->EventReader()->TotalXS()*m_enhancefac;
-  }
+  if (p_proc->EventReader()) return m_max*m_enhancefac;
   if (!p_proc->IsGroup()) {
     if (mode!=0) return m_max*m_enhancefac;
     if (m_n+m_sn==0.0) return -1.0;
@@ -207,6 +205,7 @@ void Process_Integrator::InitWeightHistogram()
 
 bool Process_Integrator::ReadInXSecs(const std::string &path)
 {
+  if (p_proc->EventReader()) return true;
   std::string fname(p_proc->ResultsName());
   size_t vn;
   std::string name, dummy;
@@ -359,6 +358,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
 
 void Process_Integrator::SetUpEnhance(const int omode) 
 {
+  if (p_proc->EventReader()) return;
   if (m_maxeps!=0.0 && !p_proc->IsGroup()) {
     double max(GetMaxEps(m_maxeps));
     if (omode || msg->LevelIsTracking())
@@ -443,6 +443,7 @@ void Process_Integrator::AddPoint(const double value)
 void Process_Integrator::SetMax(const double max) 
 {
   m_max=max;
+  if (p_proc->EventReader()) return;
   if (!p_proc->IsGroup()) return;
   double sum(0.0);
   m_max=0.0;

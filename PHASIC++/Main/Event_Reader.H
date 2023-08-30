@@ -22,7 +22,7 @@ namespace PHASIC {
 
     std::vector<std::string> m_files;
 
-    double m_totalxs;
+    double m_totalxs, m_unitwgt;
     int    m_compute;
     
   public:
@@ -39,6 +39,7 @@ namespace PHASIC {
     virtual ATOOLS::Cluster_Amplitude *ReadEvent() = 0;
 
     inline double TotalXS() const { return m_totalxs; }
+    inline double UnitWeight() const { return m_unitwgt; }
 
     inline int Compute() const { return m_compute; }
 
