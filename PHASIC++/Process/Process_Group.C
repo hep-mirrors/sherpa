@@ -59,6 +59,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,
     p_selected->SetEventReader(p_read);
     Weight_Info *winfo(p_selected->OneEvent(mode));
     p_int->PSHandler()->SetPoint(NULL);
+    p_selected->Integrator()->SetMax(p_int->Max());
     p_selected->SetEventReader(winfo?p_read:NULL);
     ampl->Delete();
     return winfo;
@@ -219,7 +220,10 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   p_int->ReadResults();
   p_int->SetTotal(0);
   exh->AddTerminatorObject(p_int);
-  if (p_read) return true;
+  if (p_read) {
+    p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
+    return true;
+  }
   double var(p_int->TotalVar());
   std::string namestring("");
   if (p_gen) {
