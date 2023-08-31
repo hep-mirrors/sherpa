@@ -4,7 +4,8 @@ set(Main_SOURCES Polarization_Tools.C
                  Spin_Structure.C
                  Partial_Amplitude_Base.C
                  Three_Particle_Amplitudes.C
-                 Four_Particle_Amplitudes.C)
+                 Four_Particle_Amplitudes.C
+                 SpinFuncs.C)
 
 set(Main_HEADERS Polarization_Tools.H
                  XYZFuncs.H
@@ -12,7 +13,8 @@ set(Main_HEADERS Polarization_Tools.H
                  Spin_Structure.H
                  Partial_Amplitude_Base.H
                  Three_Particle_Amplitudes.H
-                 Four_Particle_Amplitudes.H)
+                 Four_Particle_Amplitudes.H
+                 SpinFuncs.H)
 
 sherpa_create_git_info(Main)
  
