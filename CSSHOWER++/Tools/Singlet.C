@@ -238,6 +238,10 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   daughter2->SetFlow(2,0);
   Flavour mo(mother->GetFlavour()), d1(daughter1->GetFlavour()), d2(daughter2->GetFlavour());
   if (mother->GetType()==pst::IS) { mo=mo.Bar(); d1=d1.Bar(); }
+  // if (mother->ForcedDecay()) {
+  //   msg_Out()<<"--- "<<METHOD<<": "<<mo.StrongCharge()<<" --> "
+  // 	     <<d1.StrongCharge()<<" + "<<d2.StrongCharge()<<"\n";
+  // }
   if (mo.StrongCharge()==-3) {
     if (d1.StrongCharge()==-3) {
       if (d2.StrongCharge()==8) {
@@ -353,34 +357,42 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   daughter2->UpdateColours(daughter2->GetFlow(1),daughter2->GetFlow(2));
   for (iterator pit(begin());pit!=end();++pit)
     if (*pit==daughter1) *pit=mother;
+  // if (mother->ForcedDecay()) {
+  //   msg_Out()<<"   * ("<<mother->GetFlow(1)<<", "<<mother->GetFlow(2)<<") --> "
+  // 	     <<"("<<daughter1->GetFlow(1)<<", "<<daughter1->GetFlow(2)<<") + "
+  // 	     <<"("<<daughter2->GetFlow(1)<<", "<<daughter2->GetFlow(2)<<")\n";
+  // }
   return true;
 } 
 
-void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s)
+void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,bool onlyFS)
 {
   if (l->LT().empty()) return;
-    for (PLiter plit(begin());plit!=end();++plit) {
-      Vec4D p(l->LT()*(*plit)->Momentum());
-      if ((*plit)->GetType()==pst::IS &&
-	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
-      if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
-      (*plit)->SetMomentum(p);
-    }
+  for (PLiter plit(begin());plit!=end();++plit) {
+    if (onlyFS && ((*plit)->GetType()!=pst::FS || (*plit)==r)) continue;
+    Vec4D p(l->LT()*(*plit)->Momentum());
+    if ((*plit)->GetType()==pst::IS &&
+	IsZero(p.PPerp2())) p[1]=p[2]=0.0;
+    if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
+    (*plit)->SetMomentum(p);
+  }
 }
 
-void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s)
+
+void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,bool onlyFS)
 {
   if (p_all==NULL) return;
   Poincare_Sequence lt(l->LT());
   if (lt.size()) lt.Invert();
   if (lt.empty()) return;
-    for (PLiter plit(begin());plit!=end();++plit) {
-      Vec4D p(lt*(*plit)->Momentum());
-      if ((*plit)->GetType()==pst::IS &&
-	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
-      if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
-      (*plit)->SetMomentum(p);
-    }
+  for (PLiter plit(begin());plit!=end();++plit) {
+    if (onlyFS && ((*plit)->GetType()!=pst::FS || (*plit)==r)) continue;
+    Vec4D p(lt*(*plit)->Momentum());
+    if ((*plit)->GetType()==pst::IS &&
+	IsZero(p.PPerp2())) p[1]=p[2]=0.0;
+    if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
+    (*plit)->SetMomentum(p);
+  }
 }
 
 void Singlet::Reduce()

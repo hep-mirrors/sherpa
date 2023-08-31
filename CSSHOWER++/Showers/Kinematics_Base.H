@@ -12,6 +12,8 @@ namespace CSSHOWER {
   public:
     const ATOOLS::Mass_Selector *p_ms;
     int m_evolscheme;
+    int MakeForcedDecayKinematics(Parton *const split,Parton *& pnew,
+				  PHASIC::Kin_Args & args,const int mode=0);
   public:
     Kinematics_Base(): m_evolscheme(0), p_ms(NULL) {}
     virtual ~Kinematics_Base() {}

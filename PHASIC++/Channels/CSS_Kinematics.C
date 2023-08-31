@@ -294,10 +294,13 @@ int PHASIC::ConstructIFDipole
     ifp.m_pk=ifp.m_pi-Q-ifp.m_pj;
   }
   else {
-    Vec4D n_perp(0.0,cross(Vec3D(paj),Vec3D(pk)));
-    n_perp*=1.0/n_perp.PSpat();
-    Vec4D l_perp(LT(paj,pk,n_perp));
-    l_perp*=1.0/sqrt(dabs(l_perp.Abs2()));
+    Vec4D n_perp(0.,1.,0.,0.), l_perp(0.,0.,1.,0.);
+    if (cross(Vec3D(paj),Vec3D(pk)).Sqr()>0.) {
+      n_perp = Vec4D(0.0,cross(Vec3D(paj),Vec3D(pk)));
+      n_perp*=1.0/n_perp.PSpat();
+      l_perp = Vec4D(LT(paj,pk,n_perp));
+      l_perp*=1.0/sqrt(dabs(l_perp.Abs2()));
+    }
     Vec4D Q(paj-pk);
     double mk2(ifp.m_mk2>=0.0?ifp.m_mk2:mkt2);
     double Q2(Q.Abs2()), po(sqr(Q2-maj2-mkt2)-4.0*maj2*mkt2);
@@ -324,6 +327,7 @@ int PHASIC::ConstructIFDipole
     ifp.m_pj+=ktt*cos(ifp.m_phi)*n_perp-
       zt*rf/pn*(gam*ifp.m_pi+saj*ifp.m_pk)+
       (mj2*rf*rf+ktt*ktt)/pn/(zt*rf)*(ifp.m_pk+mk2/gam*ifp.m_pi);
+    Vec4D testpj = ifp.m_pj;
     ifp.m_pj[0]=sqrt(mj2*rf*rf+ifp.m_pj.PSpat2());
     ifp.m_pj*=1.0/rf;
     ifp.m_pi=Q+ifp.m_pj+ifp.m_pk;

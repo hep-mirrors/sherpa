@@ -11,6 +11,7 @@ using namespace std;
 namespace CSSHOWER {
   std::ostream& operator<<(std::ostream& str, const Parton &part) {
     str<<"  Parton ["<<ATOOLS::ID(part.m_id)<<"], stat="
+      //    str<<"  Parton ["<<&part<<"], stat="
        <<part.m_stat<<", kin="<<part.m_kin<<", kscheme="<<part.m_kscheme
        <<", col="<<part.m_col<<" : "<<part.m_flav<<" : "<<part.m_mom
        <<" "<<sqrt(dabs(part.m_mom.Abs2()))<<" "<<sqrt(dabs(part.Mass2()))
@@ -20,7 +21,9 @@ namespace CSSHOWER {
     else                     str<<"                           ";
     str<<"  Colour partners ("
        <<(part.p_left?ATOOLS::ID(part.p_left->m_id):vector<int>())<<","
-       <<(part.p_right?ATOOLS::ID(part.p_right->m_id):vector<int>())<<")"<<endl;
+       <<(part.p_right?ATOOLS::ID(part.p_right->m_id):vector<int>())<<"), "
+       <<"spectator = "<<(part.p_spect?to_string(part.p_spect->m_id):"none")<<"\n";
+    //<<part.p_left<<","<<part.p_right<<"), spectator = "<<part.p_spect<<"\n";
     if (part.m_kt_soft[0]<std::numeric_limits<double>::max() ||
 	part.m_kt_soft[1]<std::numeric_limits<double>::max()) {
       str<<"  k_T left : "<<sqrt(part.KtSoft(0))<<", k_T right : "<<sqrt(part.KtSoft(1))<<endl;

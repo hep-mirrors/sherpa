@@ -121,8 +121,6 @@ Vec4D Primordial_KPerp::KT(const Particle * part) {
     m_ktmax = m_SpecKtmax[m_beam]; m_eta   = m_SpecEta[m_beam]; 
   }
   double ktmax = Min(m_ktmax,part->Momentum()[0]), kt = 0.;
-  //msg_Out()<<METHOD<<"("<<part->Flav()<<", "<<part->Info()<<"): "
-  //	   <<"form = "<<m_form[m_beam]<<", mean = "<<m_mean<<", sigma = "<<m_sigma;
   do {
     switch (m_form[m_beam]) {
     case pkform::none:           kt = 0.;                       break;
@@ -133,7 +131,9 @@ Vec4D Primordial_KPerp::KT(const Particle * part) {
     default: THROW(fatal_error,"Unknown KPerp form.");
     }
   } while (kt<0. || kt>ktmax);
-  //msg_Out()<<" --> "<<kt<<"\n";
+  //msg_Out()<<METHOD<<"("<<part->Flav()<<", "<<part->Info()<<"): "
+  //	   <<"form = "<<m_form[m_beam]<<", mean = "<<m_mean<<", sigma = "<<m_sigma
+  //	   <<" --> "<<kt<<"\n";
   // Add angle and construct the vector
   if (kt==0.) return Vec4D(0.,0.,0.,0.);
   const double phi = 2.*M_PI*ran->Get();

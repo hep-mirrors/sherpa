@@ -225,6 +225,8 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_PDF_FAC"].SetDefault(1.0);
   s["CSS_SCALE_FACTOR"].SetDefault(1.);
   s["CSS_MASS_THRESHOLD"].SetDefault(0.0);
+  s["CSS_FORCED_DECAYS"].SetDefault(true);
+  s["CSS_FORCED_GLUON_SCALING"].SetDefault(-3./2.);
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   s["CSS_RECO_CHECK"].SetDefault(0);
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
@@ -704,8 +706,12 @@ bool Initialization_Handler::InitializeThePDFs()
   bool needs_resc = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
   for (size_t pid=1;pid<4;pid++) {
     PDF::isr::id pc;
-    if (pid==1) { msg_Info()<<"    PDFs for hard scattering:              "; pc = PDF::isr::hard_process; }
-    if (pid==2) { msg_Info()<<"    PDFs for multiple parton interactions: "; pc = PDF::isr::hard_subprocess; }
+    if (pid==1) {
+      msg_Info()<<"    PDFs for hard scattering:              "; pc = PDF::isr::hard_process;
+    }
+    if (pid==2) {
+      msg_Info()<<"    PDFs for multiple parton interactions: "; pc = PDF::isr::hard_subprocess;
+    }
     if (pid==3 && needs_resc) {
       msg_Info()<<"    PDFs for beam re-scattering:           "; pc = PDF::isr::bunch_rescatter;
     }

@@ -161,11 +161,10 @@ bool Kinematics_Generator::AdjustFinalStateDIS(const size_t &beam) {
   // 1. adding the shower initiator to the beam blob.
   // 2. copying the particles from the map of particles to shuffled momenta
   //    (the originals are the FS particles of shower and beam blobs)
-  //    and add the cipies with the shuffled momenta as outgoing particles to
+  //    and add the copies with the shuffled momenta as outgoing particles to
   //    the soft blob.
-  // 3. Add the originals, with the original momenta, as inconing particles to
-  // the soft blob.
-  //    Erase them from the specators.
+  // 3. Add the originals, with the original momenta, as incoming particles to
+  //    the soft blob. Erase them from the specators.
   p_remnants[1 - beam]->FillBlob();
   for (ParticleMomMap::iterator pit = m_shuffledmap.begin();
        pit != m_shuffledmap.end(); pit++) {

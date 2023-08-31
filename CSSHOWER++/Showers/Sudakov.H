@@ -28,8 +28,8 @@ namespace CSSHOWER {
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
-    bool m_keeprewinfo;
-    double m_reweightscalecutoff;
+    bool m_keeprewinfo, m_forced_splittings;
+    double m_reweightscalecutoff, m_gluon_xscaling_in_forced_splittings;
     std::pair<double, double> m_pdfmin;
     static bool s_init;
     double ProduceT(double t);
@@ -52,8 +52,12 @@ namespace CSSHOWER {
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
+    void SetForcedHQDecays(double expo=-3./2.,bool on=true) {
+      m_forced_splittings                   = on;
+      m_gluon_xscaling_in_forced_splittings = -expo;
+    }
     bool   Generate(Parton *,double);
-    bool   Generate(Parton *,Parton *,double,double,double&,double&,double&,double&);
+    int    Generate(Parton *,Parton *,double,double,double&,double&,double&,double&);
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1);
 

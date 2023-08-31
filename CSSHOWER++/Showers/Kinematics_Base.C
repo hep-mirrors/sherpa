@@ -226,6 +226,10 @@ int Kinematics_IF::MakeKinematics
 (Parton *const split,const double & ma2,const double & mi2,
  const ATOOLS::Flavour &fli,Parton *&pc,const int mode)
 {
+  if (split->ForcedDecay()) {
+    Kin_Args args(0,split->ZTest(),split->Phi(),split->Kin());
+    return MakeForcedDecayKinematics(split,pc,args,mode);
+  }
   Parton *b(NULL);
   for (PLiter pit(split->GetSing()->begin());pit!=split->GetSing()->end();++pit)
     if ((*pit)->GetType()==pst::IS && *pit!=split) {
@@ -258,7 +262,6 @@ int Kinematics_IF::MakeKinematics
   else {
     pc->SetMomentum(ifp.m_lam*ifp.m_pj);
   }
-  
   return 1;
 }
 
@@ -317,6 +320,10 @@ int Kinematics_II::MakeKinematics
 (Parton *const split,const double & ma2,const double & mi2,
  const ATOOLS::Flavour &newfl,Parton *&pc,const int mode)
 {
+  if (split->ForcedDecay()) {
+    Kin_Args args(0,split->ZTest(),split->Phi(),split->Kin());
+    return MakeForcedDecayKinematics(split,pc,args,mode);
+  }
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
   
@@ -339,6 +346,70 @@ int Kinematics_II::MakeKinematics
   else {
     pc->SetMomentum(ii.m_lam*ii.m_pj);
   }
-
   return 1;
 }
+
+int Kinematics_Base::
+MakeForcedDecayKinematics(Parton *const split,Parton *&pnew,Kin_Args & args,const int mode) {
+  //msg_Out()<<"--- "<<METHOD<<" for z = "<<split->ZTest()<<" for "<<split->Id()<<"\n"<<(*split);
+  Vec4D p1_t      = split->Momentum(), p2_t = Vec4D(0.,0.,0.,0.);
+  for (PLiter plit=split->GetSing()->begin();plit!=split->GetSing()->end();plit++) {
+    if ((*plit)->GetType()==pst::FS) p2_t += (*plit)->Momentum();
+  }
+  double s12_t    = (p1_t+p2_t).Abs2(),    E12 = sqrt(s12_t), z = split->ZTest();
+  Vec4D  pplus    = E12/2. * (p1_t[3]>0. ? Vec4D(1.,0,0,1.) : Vec4D(1.,0,0,-1.)); 
+  Vec4D  pminus   = E12/2. * (p1_t[3]>0. ? Vec4D(1.,0,0,-1.) : Vec4D(1.,0,0,1.));
+  double m12      = Max(0.,p1_t.Abs2()), m22 = Max(0.,p2_t.Abs2());
+  if (m22<1.e-8) m22 = 0.;
+  double alpha1_t = 2.*p1_t*pminus/s12_t, beta1_t = 2.*p1_t*pplus/s12_t;
+  double alpha2_t = 2.*p2_t*pminus/s12_t, beta2_t = 2.*p2_t*pplus/s12_t;
+  Vec4D  P1       = alpha1_t*pplus + beta1_t*pminus;
+  Vec4D  P2       = alpha2_t*pplus + beta2_t*pminus;
+  //msg_Out()<<"   * reconstructed momenta: "<<P1<<" & "<<P2<<"\n";
+  Vec4D  kperp    = p2_t - P2;
+  double kt2      = dabs(kperp.Abs2())>1.e-12 ? dabs(kperp.Abs2()) : 0.;
+  double M2       = dabs(P2.Abs2())   >1.e-12 ? dabs(P2.Abs2())    : 0.;
+  double MT2      = M2+kt2;
+  double At       = alpha1_t*(1.-z)/z + alpha2_t;
+  double c        = MT2 * alpha1_t - m12 * alpha2_t;
+  double d        = m12 * alpha1_t * alpha2_t; 
+  double g        = MT2 * alpha1_t * alpha2_t;
+  double zmax     = alpha1_t * c / ( sqr( sqrt(d)+sqrt(g) ) + (alpha1_t - alpha2_t) * c);
+  if (z>zmax) {
+    split->SetZTest(z = zmax);
+    At = alpha1_t*(1.-z)/z + alpha2_t;
+  }
+  double alphaj   = 1./(2.*c) * (At*c + (d-g) + sqrt( Max(0., sqr(At*c+d-g) - 4.*At*c*d)));
+  double betaj    = m12/(s12_t*alphaj);
+  Vec4D  pj       = alphaj*pplus + betaj*pminus;
+  //msg_Out()<<"   * emitted particle from alpha = "<<alphaj<<", beta = "<<betaj<<" -> "<<pj<<" from "
+  //	   <<( sqr(At*c+d-g) - 4.*At*c*d)<<", z = "<<z<<" > "<<zmax<<"\n";
+  double alpha1   = alpha1_t/z;
+  double beta1    = 0.;
+  Vec4D  p1       = alpha1*pplus + beta1*pminus;
+  double alpha2   = alpha1_t*(1.-z)/z+alpha2_t-alphaj;
+  double beta2    = MT2/(s12_t*alpha2);
+  Vec4D  p2long   = alpha2*pplus + beta2*pminus;
+  Vec4D  p2       = p2long + kperp;
+  Vec4D  bb2      = Vec4D(p2long[0],0.,0.,-p2long[3]);
+  args.m_lam.push_back(Poincare(bb2));
+  args.m_lam.push_back(P2);
+  Vec4D test, tmp;
+  for (PLiter plit=split->GetSing()->begin();plit!=split->GetSing()->end();plit++) {
+    if ((*plit)->GetType()==pst::FS) {
+      tmp   = (*plit)->Momentum();
+      test += args.m_lam*tmp;
+    }
+  }
+  //msg_Out()<<"--- "<<METHOD<<":\n"
+  //	   <<"     *       "<<p1<<" ("<<p1.Abs2()<<") + "<<pj<<" ("<<pj.Abs2()<<") vs. "<<P1<<" ("<<P1.Abs2()<<")\n"
+  //	   <<"     *       "<<p2<<" ("<<p2.Abs2()<<") vs. "<<P2<<" ("<<P2.Abs2()<<")\n"
+  //	   <<"     * test: "<<test<<" ("<<test.Abs2()<<")\n"
+  //	   <<"     *  sum = "<<(p1_t-p2_t)<<" ("<<(p1_t-p2_t).Abs2()<<") vs. "<<(p1-pj-p2)<<" ("<<(p1-pj-p2).Abs2()<<")\n";
+  split->SetMomentum(p1);
+  split->SetLT(args.m_lam);
+  pnew = new Parton(split->GetFlavour().Bar(),pj,pst::FS);
+  pnew->SetMass2(p_ms->Mass2(split->GetFlavour()));
+  return 1;
+}
+    

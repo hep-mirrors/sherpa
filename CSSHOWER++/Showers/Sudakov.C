@@ -271,14 +271,18 @@ bool Sudakov::Generate(Parton* split, double kt2win)
   Splitting_Function_Base *selected(NULL);
   for (size_t i(0);i<slist.size();++i) {
     int success(Generate(split,slist[i],t0,kt2win,t,y,z,phi));
-    if (success) {
+    if (success!=0) {
       msg_IODebugging()<<"shrink evolution window "<<t0<<" -> "<<t<<"\n";
-      m_sy=y;
-      m_sz=z;
-      m_sphi=phi;
-      m_st=t0=t;
-      spect=slist[i];
-      selected=p_selected;
+      m_sy     = y;
+      m_sz     = z;
+      m_sphi   = phi;
+      m_st     = t0 = t;
+      spect    = slist[i];
+      selected = p_selected;
+      //if (split->ForcedDecay()) {
+      //msg_Out()<<"--- "<<METHOD<<"(head) finds winner ("<<split<<"): twin = "<<m_st<<" "
+      //       <<"(forced = "<<split->ForcedDecay()<<").\n";
+      //}
     }
   }
   p_spect=NULL;
@@ -292,10 +296,10 @@ bool Sudakov::Generate(Parton* split, double kt2win)
   }
   ClearSpecs();
   ResetLastInt();
-  return p_spect!=NULL;
+  return (p_spect!=NULL);
 }
 
-bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,double &t,double &y,double &z,double &phi)
+int Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,double &t,double &y,double &z,double &phi)
 {
   ClearSpecs();
   ResetLastInt();
@@ -321,6 +325,7 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,doubl
     if (spect->GetType()==pst::FS) {
       Q2       = -(split->Momentum()-spect->Momentum()).Abs2();
       beam     = split->Beam();
+      if (IsNan(Q2)) msg_Out()<<split->Momentum()<<" - "<<spect->Momentum()<<"\n"<<(*split)<<(*spect);
       if (!DefineIFBoundaries(Q2,split->Xbj(),beam)) return false;
       break;
     }
@@ -362,16 +367,37 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,doubl
     t=split->KtSoft(1);
   }
   double x = 0.0;
-  
-  bool success(false);
+
   while (t>=Max(t0,kt2win)) {
     t=ProduceT(t);
+    p_split->SetForcedDecay(false);
+    if (m_forced_splittings &&
+	p_split->GetType()==pst::IS && 
+	t<sqr(p_split->GetFlavour().HadMass()) && t>Max(t0,kt2win)) {
+      if (FixOne(Flavour(kf_gluon),p_split->GetFlavour(),
+		 p_spect->GetType()==pst::IS ? cstp::II : cstp::IF)) {
+	t     = sqr(p_split->GetFlavour().HadMass());
+	do {
+	  z   = Z();
+	} while (pow(z/m_zmax,m_gluon_xscaling_in_forced_splittings)<ran->Get());
+	phi   = 2.*M_PI*ran->Get();
+	split->SetSpect(p_spect);
+	split->SetForcedDecay(true);
+	//msg_Out()<<"\n"
+	//	 <<"--- "<<METHOD<<" triggers forced decay at "
+	//	 <<"t = "<<t<<" (t0 = "<<t0<<", kt2win = "<<kt2win<<") for z = "<<z<<", "
+	//	 <<"types = "<<p_split->GetType()<<"/"<<p_spect->GetType()<<" "
+	//	 <<"["<<p_spect<<" vs "<<split->GetSpect()<<"].\n";
+	return -1;
+      }
+      //msg_Out()<<"--- "<<METHOD<<" should have found SF for forced decay.\n";
+    }
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
-    m_flspec = p_spect->GetFlavour();
     z = Z();
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
-    if (t<Max(t0,k0sq))  return false;
+    if (t<Max(t0,k0sq))  return 0;
+    m_flspec  = p_spect->GetFlavour();
     double Q2 = 0.;
     m_type=split->GetType()==pst::FS?
       (split->GetSpect()->GetType()==pst::FS?cstp::FF:cstp::FI):
@@ -385,8 +411,8 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,doubl
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       if (Q2<=mi2+mj2+mk2) return false;
       y = p_shower->KinFF()->GetY(Q2,t,z,mi2,mj2,mk2,
-				    (*m_splitter)->GetFlavourA(),
-				    (*m_splitter)->GetFlavourC());
+				  (*m_splitter)->GetFlavourA(),
+				  (*m_splitter)->GetFlavourC());
       x = 0.;
       if (y<0.0 || y>1.0) continue;
     }
@@ -398,8 +424,8 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,doubl
       double mij2= sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
       y = p_shower->KinFI()->GetY(-Q2,t,z,mi2,mj2,ma2,
-				    (*m_splitter)->GetFlavourA(),
-				    (*m_splitter)->GetFlavourC());
+				  (*m_splitter)->GetFlavourA(),
+				  (*m_splitter)->GetFlavourC());
       y = 1.0-y*(-Q2-mij2-ma2)/(-Q2-mi2-mj2-ma2);
       x = split->GetSpect()->Xbj();
       if (y<0.0 || y>1.0-x) continue;
@@ -411,8 +437,8 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,doubl
       double mk2 = sqr(ms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
       y = p_shower->KinIF()->GetY(-Q2,t,z,ma2,mi2,mk2,
-				    (*m_splitter)->GetFlavourB(),
-				    (*m_splitter)->GetFlavourC());
+				  (*m_splitter)->GetFlavourB(),
+				  (*m_splitter)->GetFlavourC());
       x = split->Xbj();
       if (y<0.0 || y>1.0 || z<x) continue;
     }
@@ -423,13 +449,13 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,doubl
       double mb2 = sqr(ms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       y = p_shower->KinII()->GetY(Q2,t,z,ma2,mi2,mb2,
-				    (*m_splitter)->GetFlavourB(),
-				    (*m_splitter)->GetFlavourC());
+				  (*m_splitter)->GetFlavourB(),
+				  (*m_splitter)->GetFlavourC());
       x   = split->Xbj();
       if (y<0.0 || y>1.0-z || z<x) continue;
     }
       break;
-  default:
+    default:
       msg_Error()<<"Error in Sudakov::Generate!"<<std::endl;
       Abort();
     }
@@ -453,14 +479,11 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,doubl
       }
     }
     if (veto) {
-      success = true;
-      break;
+      phi = 2.0*M_PI*ran->Get();
+      return 1;
     }
   }
-  phi = 2.0*M_PI*ran->Get();
-  msg_IODebugging()<<"trial "<<p_spect<<", t = "<<t
-		   <<", y = "<<y<<", z = "<<z<<", phi = "<<phi<<"\n";
-  return success;
+  return 0;
 }
 
 bool Sudakov::DefineFFBoundaries(double Q2,double x)

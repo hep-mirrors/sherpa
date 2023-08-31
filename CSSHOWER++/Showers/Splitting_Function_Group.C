@@ -33,6 +33,22 @@ void Splitting_Function_Group::Add(Splitting_Function_Base * split) {
 }
 
 
+bool Splitting_Function_Group::FixOne(const ATOOLS::Flavour & flavA,const ATOOLS::Flavour & flavB,
+				      const cstp::code & type) {
+  //msg_Out()<<"--- "<<METHOD<<"("<<flavA<<" <-- "<<flavB<<")\n";
+  for (size_t i(0);i<m_splittings.size();++i) {
+    if (type==m_splittings[i]->GetType() &&
+	flavA==m_splittings[i]->GetFlavourA() && flavB==m_splittings[i]->GetFlavourB()) {
+      //msg_Out()<<"    *   look at "<<m_splittings[i]->GetType()<<": "
+      //     <<m_splittings[i]->GetFlavourA()<<" <-- "
+      //     <<m_splittings[i]->GetFlavourB()<<" + "<<m_splittings[i]->GetFlavourC()<<"\n";
+      p_selected = m_splittings[i];
+      return true;
+    }
+  }
+  return false;
+}
+
 void Splitting_Function_Group::SelectOne()
 {
   double disc(ran->Get()*m_lastint);

@@ -29,6 +29,8 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
   double is_pdf_fac{ s["CSS_PDF_FAC"].Get<double>() };
   const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
+  bool   forced_decays{ s["CSS_FORCED_DECAYS"].Get<bool>() };
+  double forced_decays_gluon_scaling{ s["CSS_FORCED_GLUON_SCALING"].Get<double>() };
   m_reweight          = s["CSS_REWEIGHT"].Get<bool>();
   m_maxreweightfactor = s["CSS_MAX_REWEIGHT_FACTOR"].Get<double>();
   m_kscheme           = s["CSS_KIN_SCHEME"].Get<int>();
@@ -61,6 +63,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_sudakov.SetReweightScaleCutoff(
       s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>());
+  m_sudakov.SetForcedHQDecays(forced_decays,forced_decays_gluon_scaling);
   m_kinFF.SetEvolScheme(evol-100*(evol/100));
   m_kinFI.SetEvolScheme(evol-100*(evol/100));
   m_kinIF.SetEvolScheme(evol/100);
@@ -190,6 +193,10 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
     split->GetSing()->GetLeft()->SetPrev(newpB);
     split->GetSing()->GetRight()->SetPrev(newpB);
   }
+  // if (split->ForcedDecay()) {
+  //   msg_Out()<<"--- "<<METHOD<<": kt = "<<split->KtTest()<<", rd = "<<rd<<", mode = "<<mode<<", "
+  // 	     <<"partons = "<<newpB->GetFlavour()<<" & "<<newpC->GetFlavour()<<"\n";
+  // }
   return rd;
 }
 
@@ -247,8 +254,9 @@ int Shower::MakeKinematics
       stat=m_kinII.MakeKinematics(split,mi2,mc2,flc,pj);
     }
   }
+  //  if (split->ForcedDecay()) msg_Out()<<"--- "<<METHOD<<" yields stat = "<<stat<<", stype = "<<stype<<" for "<<fla<<".\n";
   Parton *pi(new Parton((stype&1)?fla:flb,
-                        split->LT()*split->Momentum(),
+                        split->ForcedDecay()?split->Momentum():split->LT()*split->Momentum(),
                         split->GetType()));
   if (stype&1) pi->SetBeam(split->Beam());
   if (stat==1) {
@@ -275,11 +283,13 @@ int Shower::MakeKinematics
   pi->SetLT(split->LT());
   SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->AddParton(pj);
-  if (stype) split->GetSing()->BoostAllFS(pi,pj,spect);
+  if (stype) split->GetSing()->BoostAllFS(pi,pj,spect,split->ForcedDecay());
+  //if (split->ForcedDecay())
+  //  msg_Out()<<"--- "<<METHOD<<" before updating daughters with "<<pi->GetFlavour()<<" & "<<pj->GetFlavour()<<".\n";
   int ustat(UpdateDaughters(split,pi,pj,jcv,mode));
   if (ustat<=0 || (split->GetSing()->GetLeft() &&
 		   !(split->GetSing()->GetSplit()->Stat()&part_status::code::decayed))) {
-    if (stype) split->GetSing()->BoostBackAllFS(pi,pj,spect);
+    if (stype) split->GetSing()->BoostBackAllFS(pi,pj,spect,split->ForcedDecay());
     delete pi;
     pj->DeleteAll();
     split->SetMomentum(peo);
@@ -302,6 +312,7 @@ int Shower::MakeKinematics
   for (PLiter plit(singlet->begin());
        plit!=singlet->end();++plit)
     (*plit)->UpdateDaughters();
+  //if (split->ForcedDecay()) msg_Out()<<"--- "<<METHOD<<" successful.\n";
   return 1;
 }
 
@@ -351,8 +362,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     if (split==NULL) {
       msg_Debugging()<<"No emission\n";
       ResetScales(p_actual->KtNext());
-      for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();
-           ++it) {
+      for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();++it) {
         const double singlet_weight {(*it)->Weight()};
         if (singlet_weight != 1.0)
           msg_Debugging() << "Add wt for " << (**it) << ": " << singlet_weight
@@ -485,8 +495,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
           m_weightsmap["PS_QCUT"] *= skips;
         }
       }
-      if (all_vetoed)
-        return false;
+      if (all_vetoed) return false;
       Singlet *sing(p_actual);
       sing->SetJF(NULL);
       while (sing->GetLeft()) {
@@ -515,8 +524,12 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         }
       }
       ++nem;
-      if (p_actual->NME()+nem>m_maxpart) return true;
-      if (nem >= maxem) return true;
+      //msg_Out()<<"--- "<<METHOD<<"(kt2 = "<<kt2win<<"): nem = "<<nem<<" vs. maxem = "<<maxem<<", "
+      //	       <<"NME = "<<p_actual->NME()<<" and maxpart = "<<m_maxpart<<"\n";
+      if (p_actual->NME()+nem>m_maxpart || nem >= maxem) {
+	//if (split->ForcedDecay()) msg_Out()<<"--- "<<METHOD<<" yields (cond'al) true.\n";
+	return true;
+      }
     }
   }
   return true;
@@ -528,6 +541,7 @@ Parton *Shower::SelectSplitting(double & kt2win) {
        splitter!=p_actual->end();splitter++) {
     if (TrialEmission(kt2win,*splitter)) winner = *splitter;
   }
+  //if (winner && winner->ForcedDecay()) msg_Out()<<"--- "<<METHOD<<" selects forced decay.\n";
   return winner;
 }
 
@@ -548,6 +562,11 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
 	m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
 	split->SetCol(m_sudakov.GetCol());
 	split->SetTest(kt2,z,y,phi);
+	//if (split->ForcedDecay()) {
+	//msg_Out()<<"--- "<<METHOD<<" forcibly splits "<<split<<", "
+	//	   <<"kt2 = "<<kt2<<", z = "<<z<<" for "<<m_flavB<<" <-- "<<m_flavA<<", "
+	//	   <<"kt2win = "<<kt2win<<"\n"; 
+	//}
 	return true;
       }
     }
