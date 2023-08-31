@@ -144,7 +144,7 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
 :option:`nS_bins`
     Number of points to sample in the center-of-mass energy :math:`\sqrt{s}`. This is only used if the energy is not
-    fixed, i.e. in the case of EPA photons. Defaults to ``100``.
+    fixed, i.e. in the case of EPA photons. Defaults to ``10``.
 
 The total cross-section is calculated with
 

@@ -25,7 +25,7 @@ void Over_Estimator::Initialize(MI_Processes * procs) {
   m_pt02      = p_procs->PT02();
   m_ptmin2    = p_procs->PT2Min();
   p_alphaS    = p_procs->AlphaS();
-  m_muR_fac   = (*mipars)("RenScale_Factor"); 
+  m_muR_fac   = (*mipars)("RenScale_Factor");
   m_muF_fac   = (*mipars)("FacScale_Factor");
   m_pt2bins   = size_t((*mipars)("nPT_bins"));
   m_xsnd      = p_procs->GetXSecs()->XSndNorm() * p_procs->GetXSecs()->XSnd();
@@ -56,6 +56,9 @@ void Over_Estimator::FixMaximum() {
   ///////////////////////////////////////////////////////////////////////////////////
   axis sbins = p_procs->GetSudakov()->GetSbins();
   p_prefs    = new OneDim_Table(sbins);
+  if (sbins.m_nbins>1)
+    msg_Out() << "AMISIC: Integrating over " << sbins.m_nbins
+              << " to determine maximum, this might take a while. \n";
   for (size_t sbin=0;sbin<sbins.m_nbins;sbin++) {
     m_s      = sbins.x(sbin);
     m_pt02   = mipars->CalculatePT02(m_s);
@@ -70,7 +73,7 @@ void Over_Estimator::FixMaximum() {
       double pt2    = m_ptmin2*exp(pt2step*bin);
       double xt     = sqrt(4.*pt2/m_s);
       double yvol   = sqr(2.*log(1./xt*(1.+sqrt(1.-xt*xt))));
-      double approx = ApproxME(pt2,xt);    
+      double approx = ApproxME(pt2,xt);
       double exact  = ExactME(pt2,xt);
       // In both the approximate and the exact ME we factor out an appoximated, regularised
       // (with m_pt02) t-channel propagator and the rapidity volume to define a constant
@@ -123,7 +126,7 @@ double Over_Estimator::ApproxME(const double & pt2,const double & xt) {
 
 double Over_Estimator::ExactME(const double & pt2,const double & xt) {
   // For the exact MEs we assume a "minimal" kinematics with smallest values for
-  // s', t' and u' given by multiples of pT^2.  
+  // s', t' and u' given by multiples of pT^2.
   if (xt>m_xmin[0] && xt>m_xmin[1]) return (*p_procs)(4.*pt2,-2.*pt2,-2.*pt2,xt,xt);
   return 0.;
 }
