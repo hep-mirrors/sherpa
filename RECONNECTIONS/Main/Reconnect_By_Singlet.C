@@ -34,7 +34,7 @@ void Reconnect_By_Singlet::Reset() {
 void Reconnect_By_Singlet::SetParameters() {
   // Pmode is the mode for the distance measure in momentum space.
   // 0 - mode is "linear":    dist = log(1+sij/Q0^2)
-  // 1 - mode is "power law": dist = exp[eta * log(1+sij/Q0^2) ] 
+  // 1 - mode is "power law": dist = exp[eta * log(1+sij/Q0^2) ]
   auto  s = Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
   m_Pmode     = s["PMODE"].SetDefault(0).Get<int>();
   m_Q02       = sqr(s["Q_0"].SetDefault(1.00).Get<double>());
@@ -109,10 +109,8 @@ Particle * Reconnect_By_Singlet::FindStart() {
 
 Particle * Reconnect_By_Singlet::FindNext(const size_t & col) {
   std::map<unsigned int, ATOOLS::Particle *>::iterator cpit = m_cols[1].find(col);
-  if (cpit==m_cols[1].end()) {
-    msg_Error()<<"Error in "<<METHOD<<" did not find particle with colour[1] = "<<col<<"\n";
-    exit(1);
-  }
+  if (cpit==m_cols[1].end())
+    THROW(fatal_error,"Reconnect_By_Singlet::FindNext did not find particle with the right colour.");
   Particle * part = cpit->second;
   m_cols[1].erase(cpit);
   return part;
@@ -123,7 +121,7 @@ Particle * Reconnect_By_Singlet::FindNext(const size_t & col) {
 void Reconnect_By_Singlet::ReshuffleSinglets() {
   // Go through the singlets.  Reshuffling makes sense only if you have more than 4
   // particles in the singlet.  Keep in mind: no splitting of singlets into two as
-  // result of reshuffling.  
+  // result of reshuffling.
   for (list<Part_List *>::iterator sit=m_singlets.begin();sit!=m_singlets.end();sit++) {
     if ((*sit)->size()<4) continue;
     bool hit=true;
@@ -138,15 +136,15 @@ bool Reconnect_By_Singlet::ReshuffleSinglet(Part_List * singlet) {
   // <01> * <34> * <45> with <04> * <41> * <35>
   // Similarly, if we insert 1 between 4 and 5, we need to compare
   // <01> * <12> * <45> with <02> * <41> * <15>
-  pit[0] = singlet->begin(); 
-  for (size_t i=1;i<3;i++) { pit[i] = pit[i-1]; pit[i]++; }  
+  pit[0] = singlet->begin();
+  for (size_t i=1;i<3;i++) { pit[i] = pit[i-1]; pit[i]++; }
   do {
     if (pit[2]==singlet->end()) return false;
     pit[3] = pit[1];
     for (size_t i=4;i<6;i++) {
       pit[i] = pit[i-1]; pit[i]++;
       if (pit[i]==singlet->end() || pit[i-1]==singlet->end()) break;
-    }  
+    }
     while (pit[4]!=singlet->end() && pit[5]!=singlet->end()) {
       double dist01345 = (m_weights(*pit[0],*pit[1]) *
 			  m_weights(*pit[3],*pit[4]) *
@@ -185,7 +183,7 @@ bool Reconnect_By_Singlet::ReshuffleSinglet(Part_List * singlet) {
 	return true;
       }
       pit[3]++;
-      for (size_t i=4;i<6;i++) {pit[i] = pit[i-1]; pit[i]++; }  
+      for (size_t i=4;i<6;i++) {pit[i] = pit[i-1]; pit[i]++; }
     }
     for (size_t i=0;i<3;i++) pit[i]++;
   } while (pit[2]!=singlet->end());
@@ -248,7 +246,7 @@ void Reconnect_By_Singlet::SpliceSinglets(Part_List * sing1,Part_List * sing2,
   // msg_Out()<<"--------- Singlet 2 with "<<sing2->size()<<" particles.\n";
   // for (Part_Iterator pit=sing2->begin();pit!=sing2->end();pit++) {
   //   msg_Out()<<"  "<<(*pit)->Number()<<" ["<<(*pit)->GetFlow(1)<<", "<<(*pit)->GetFlow(2)<<"]\n";
-  // }  
+  // }
 }
 
 void Reconnect_By_Singlet::AftermathOfSlicing(Particle * part11,Particle * part12,

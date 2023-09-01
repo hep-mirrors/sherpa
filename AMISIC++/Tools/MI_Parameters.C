@@ -77,11 +77,7 @@ double MI_Parameters::operator()(const string& keyword) const
 {
   map<string,double>::const_iterator piter = m_parameters.find(keyword);
   if (piter!=m_parameters.end()) return piter->second;
-  msg_Error()<<"Error in MI_Parameters("<<keyword<<") "
-	     <<"in "<<m_parameters.size()<<".\n"
-	     <<"   Keyword not found. Return 0 and hope for the best.\n";
-  exit(1);
-  return 0.;
+  THROW(fatal_error,"Keyword not found in MI_Parameters.");
 }
 
 std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form::code& f)

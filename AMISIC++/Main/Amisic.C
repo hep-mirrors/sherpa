@@ -275,5 +275,5 @@ void Amisic::Test() {
   long int n(1000000);
   m_overestimator.Test(Q2start,n);
   m_singlecollision.Test(Q2start,n);
-  exit(1);
+  THROW(normal_exit,"testing complete");
 }

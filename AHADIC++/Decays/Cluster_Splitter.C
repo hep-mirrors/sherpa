@@ -2,6 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -10,7 +11,7 @@ using namespace std;
 Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters) :
   Splitter_Base(cluster_list,softclusters),
-  m_output(false) 
+  m_output(false)
 {
 }
 
@@ -64,10 +65,10 @@ bool Cluster_Splitter::MakeLongitudinalMomenta() {
 }
 
 void Cluster_Splitter::FixCoefficients() {
-  // this is where the magic happens.  
+  // this is where the magic happens.
   m_mode = m_defmode;
   double sum_mass = 0, massfac;
-  double threshold = p_softclusters->DecayThreshold(p_part[0]->Flavour(),p_part[1]->Flavour()); 
+  double threshold = p_softclusters->DecayThreshold(p_part[0]->Flavour(),p_part[1]->Flavour());
   for (size_t i=0;i<2;i++) {
     Proto_Particle * part = p_part[i];
     Flavour flav = part->Flavour();
@@ -158,7 +159,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   double wt = pow(z,m_a[cnt]) * pow(1.-z,m_b[cnt]);
 
   value = wt/norm;
-  
+
   if (m_mode==2) {
     arg   = dabs(m_c[cnt])>1.e-2 ? m_c[cnt]*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
     value *= exp(-arg*((zmax-z)/(z*zmax)));
@@ -173,7 +174,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       <<"a part = "<<pow(z,m_a[cnt])<<"/"<<pow(zmax,m_a[cnt])<<", "
 	       <<"b part = "<<pow(1.-z,m_b[cnt])<<"/"<<pow(1.-zmin,m_b[cnt])<<", "
 	       <<"c part = "<<exp(-arg/z)<<"/"<<exp(-arg/zmax)<<".\n";
-    exit(1);
+    THROW(fatal_error,"wt is larger than assumed wtmax - this should never happen.");
   }
   return value;
 }
@@ -246,7 +247,7 @@ bool Cluster_Splitter::FillParticlesInLists() {
     else p_cluster_list->push_back(p_out[i]);
   }
   /*
-  if (shuffle>0) 
+  if (shuffle>0)
     msg_Out()<<METHOD<<" shuffled momenta:\n"
 	     <<m_cms<<" -> "<<(m_newmom[0]+m_newmom[1])<<"\n = "<<m_newmom[0]<<" + "<<m_newmom[1]<<"\n";
   else {
@@ -275,12 +276,12 @@ size_t Cluster_Splitter::MakeAndCheckClusters() {
   return shuffle;
 }
 
-void Cluster_Splitter::MakeNewMomenta(size_t shuffle) {    
+void Cluster_Splitter::MakeNewMomenta(size_t shuffle) {
   double mt2[2], alpha[2], beta[2];
   for (size_t i=0;i<2;i++) {
     mt2[i]    = (shuffle&(i+1) ? sqr(m_fl[i].Mass()) : m_mass2[i] ) + m_kt2;
   }
-  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0]))/(2.*m_Q2); 
+  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0]))/(2.*m_Q2);
   beta[0]     = mt2[0]/(m_Q2*alpha[0]);
   alpha[1]    = 1.-alpha[0];
   beta[1]     = 1.-beta[0];
@@ -300,7 +301,7 @@ void Cluster_Splitter::UpdateAndFillCluster(size_t i) {
   Poincare BoostOut(m_newmom[i]);
   //Vec4D check(0.,0.,0.,0.);
   for (size_t j=0;j<2;j++) {
-    Vec4D partmom = (*p_out[i])[j]->Momentum(); 
+    Vec4D partmom = (*p_out[i])[j]->Momentum();
     BoostIn.Boost(partmom);
     BoostOut.BoostBack(partmom);
     m_rotat.RotateBack(partmom);

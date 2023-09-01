@@ -1,6 +1,7 @@
 #include "AHADIC++/Tools/Multiplet_Constructor.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Phys/KF_Table.H"
@@ -11,7 +12,7 @@ using namespace ATOOLS;
 using namespace std;
 
 namespace AHADIC {
-  ostream & operator<<(ostream & s,const HadInfo & info) 
+  ostream & operator<<(ostream & s,const HadInfo & info)
   {
     s<<" "<<info.flav<<" ["<<info.multiname<<"]:"
      <<info.iso<<" ex_{r,l} = "<<info.exr<<","<<info.exl<<" [";
@@ -70,7 +71,7 @@ void Multiplet_Constructor::CreateMultiplets() {
 	msg_Error()<<METHOD<<" throws error:\n"
 		   <<"   Could not derieve anti-particle wave function for "
 		   <<m_info.flav<<", will exit the run.\n";
-	exit(1);
+        THROW(fatal_error,"Could not derive anti-particle wave function.");
       }
       string antiname = string("Anti-")+m_info.multiname;
       m_multiplets[antiname].insert(m_info.flav.Bar());
@@ -151,7 +152,7 @@ void Multiplet_Constructor::FillMultipletWeights() {
   m_info.extrawt = 1.;
 }
 
-bool Multiplet_Constructor::ConstructWaveFunction() 
+bool Multiplet_Constructor::ConstructWaveFunction()
 {
   bool constructed = (m_info.fl3==0?
 		      ConstructMesonWaveFunction():
@@ -181,7 +182,7 @@ bool Multiplet_Constructor::ConstructWaveFunction()
   return false;
 }
 
-bool Multiplet_Constructor::ConstructMesonWaveFunction() 
+bool Multiplet_Constructor::ConstructMesonWaveFunction()
 {
   // these are the "funny mesons" ... a0(980) and friends ...
   // no idea (yet) how to deal with them.
@@ -202,18 +203,18 @@ bool Multiplet_Constructor::ConstructMesonWaveFunction()
 	m_wavefunctions[m_info.flav]->GetAnti();
     }
   }
-  else if (m_info.fl1==m_info.fl2 && m_info.fl1==1) 
+  else if (m_info.fl1==m_info.fl2 && m_info.fl1==1)
     m_wavefunctions[m_info.flav] = Pi0WaveFunction();
   else if ((m_info.fl1==m_info.fl2 && m_info.fl1==2 && m_info.spin2==1) ||
 	   (m_info.fl1==m_info.fl2 && m_info.fl1==3 && m_info.spin2!=1)) {
     double theta   = MixingAngle(), costh = cos(theta), sinth = sin(theta);
-    m_info.extrawt = costh*costh+sinth*sinth*m_singletsuppression; 
+    m_info.extrawt = costh*costh+sinth*sinth*m_singletsuppression;
     m_wavefunctions[m_info.flav] = OctetMesonWaveFunction();
   }
   else if ((m_info.fl1==m_info.fl2 && m_info.fl1==3 && m_info.spin2==1) ||
 	   (m_info.fl1==m_info.fl2 && m_info.fl1==2 && m_info.spin2!=1)) {
     double theta   = MixingAngle(), costh = cos(theta), sinth = sin(theta);
-    m_info.extrawt = costh*costh*m_singletsuppression+sinth*sinth; 
+    m_info.extrawt = costh*costh*m_singletsuppression+sinth*sinth;
     m_wavefunctions[m_info.flav] = SingletMesonWaveFunction();
   }
   return (m_wavefunctions.find(m_info.flav)!=m_wavefunctions.end());
@@ -307,12 +308,12 @@ double Multiplet_Constructor::MixingAngle()
   case 5 : return hadpars->Get("Mixing_Angle_2+");
   case 3 : return hadpars->Get("Mixing_Angle_1-");
   case 1 : return hadpars->Get("Mixing_Angle_0+");
-  default: break;  
+  default: break;
   }
   return 0.;
 }
 
-bool Multiplet_Constructor::ConstructBaryonWaveFunction() 
+bool Multiplet_Constructor::ConstructBaryonWaveFunction()
 {
   // SU(3) baryon wave functions according to
   // Lichtenberg, Namgung, Wills & Predazzi
@@ -349,7 +350,7 @@ bool Multiplet_Constructor::ConstructBaryonWaveFunction()
 	  m_wavefunctions[m_info.flav] = LambdaHWaveFunction();
 	}
       }
-      else if (m_info.fl3==m_info.fl2 && m_info.fl2>m_info.fl1) 
+      else if (m_info.fl3==m_info.fl2 && m_info.fl2>m_info.fl1)
 	m_wavefunctions[m_info.flav] = ProtonWaveFunction();
       else if (m_info.fl3==2 && m_info.fl2==1 && m_info.fl1==3)
 	m_wavefunctions[m_info.flav] = Lambda1WaveFunction();
@@ -357,7 +358,7 @@ bool Multiplet_Constructor::ConstructBaryonWaveFunction()
     else if (m_info.fl3>3 && m_info.fl2<4 && m_info.fl1<4) {
       if (m_info.fl2>=m_info.fl1)
 	m_wavefunctions[m_info.flav] = SigmaHWaveFunction();
-      else if (m_info.fl2<m_info.fl1) 
+      else if (m_info.fl2<m_info.fl1)
 	m_wavefunctions[m_info.flav] = LambdaHWaveFunction();
     }
     return true;
@@ -406,11 +407,11 @@ Wave_Function * Multiplet_Constructor::NeutronWaveFunction() {
   wavefunction->AddToWaves(pair,+1./sqrt(3.));
   pair         = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl2));
-  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+3)); 
+  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+3));
   wavefunction->AddToWaves(pair,+1./sqrt(6.));
   pair         = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl2));
-  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+1)); 
+  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+1));
   wavefunction->AddToWaves(pair,+1./sqrt(2.));
   return wavefunction;
 }
@@ -425,11 +426,11 @@ Wave_Function * Multiplet_Constructor::ProtonWaveFunction() {
   wavefunction->AddToWaves(pair,+1./sqrt(3.));
   pair         = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl2));
-  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+3)); 
+  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+3));
   wavefunction->AddToWaves(pair,+1./sqrt(6.));
   pair         = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl2));
-  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+1));  
+  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+1));
   wavefunction->AddToWaves(pair,+1./sqrt(2.));
   return wavefunction;
 }
@@ -449,15 +450,15 @@ Wave_Function * Multiplet_Constructor::SigmaWaveFunction() {
   wavefunction->AddToWaves(pair,+1./sqrt(12.));
   pair         = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl1));
-  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl2*100+1));  
+  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl2*100+1));
   wavefunction->AddToWaves(pair,+1./sqrt(4.));
   pair         = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl2));
-  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+3)); 
+  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+3));
   wavefunction->AddToWaves(pair,+1./sqrt(12.));
   pair         = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl2));
-  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+1)); 
+  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+1));
   wavefunction->AddToWaves(pair,+1./sqrt(4.));
   return wavefunction;
 }
@@ -481,11 +482,11 @@ Wave_Function * Multiplet_Constructor::LambdaWaveFunction() {
   wavefunction->AddToWaves(pair,+1./sqrt(4.));
   pair         = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl2));
-  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+1)); 
+  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+1));
   wavefunction->AddToWaves(pair,+1./sqrt(12.));
   pair         = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl2));
-  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+3)); 
+  pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+3));
   wavefunction->AddToWaves(pair,+1./sqrt(4.));
   m_info.extrawt = m_sbm;
   return wavefunction;
@@ -497,15 +498,15 @@ Wave_Function * Multiplet_Constructor::Lambda1WaveFunction() {
   Wave_Function * wavefunction = new Wave_Function(m_info.flav);
   Flavour_Pair * pair = new Flavour_Pair;
   pair->first  = Flavour(kf_d);
-  pair->second = Flavour(kf_su_0); 
+  pair->second = Flavour(kf_su_0);
   wavefunction->AddToWaves(pair,+1./sqrt(3.));
   pair = new Flavour_Pair;
   pair->first  = Flavour(kf_u);
-  pair->second = Flavour(kf_sd_0); 
+  pair->second = Flavour(kf_sd_0);
   wavefunction->AddToWaves(pair,+1./sqrt(3.));
   pair = new Flavour_Pair;
   pair->first  = Flavour(kf_s);
-  pair->second = Flavour(kf_ud_0); 
+  pair->second = Flavour(kf_ud_0);
   wavefunction->AddToWaves(pair,+1./sqrt(3.));
   m_info.extrawt = m_sbm;
   return wavefunction;
@@ -597,7 +598,7 @@ Wave_Function * Multiplet_Constructor::DecupletSigmaWaveFunction() {
 
 Wave_Function * Multiplet_Constructor::HeavyDecupletWaveFunction() {
   // kfcode = 4114, 4214, 4224, 4314, 4324, 4334, or similar for beauties
-  // [c+ (ud)_1] or [c + (su)_1] or [c + (sd)_1] 
+  // [c+ (ud)_1] or [c + (su)_1] or [c + (sd)_1]
   Wave_Function * wavefunction = new Wave_Function(m_info.flav);
   Flavour_Pair * pair = new Flavour_Pair;
   pair->first  = Flavour((kf_code)(m_info.fl3));
@@ -608,7 +609,7 @@ Wave_Function * Multiplet_Constructor::HeavyDecupletWaveFunction() {
 
 
 
-void Multiplet_Constructor::PrintWaveFunctions(bool checkonly) 
+void Multiplet_Constructor::PrintWaveFunctions(bool checkonly)
 {
   map<Flavour,double> checkit;
   for (map<string,set<Flavour> >::iterator mplet=m_multiplets.begin();
@@ -649,7 +650,7 @@ void Multiplet_Constructor::PrintWaveFunctions(bool checkonly)
 }
 
 
-void Multiplet_Constructor::PrintMultiplets() 
+void Multiplet_Constructor::PrintMultiplets()
 {
   msg_Out()<<"**********************************************************\n";
   for (map<string,set<Flavour> >::iterator multi=m_multiplets.begin();

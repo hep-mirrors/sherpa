@@ -1,6 +1,7 @@
 #include "AHADIC++/Tools/Double_Transitions.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include <cmath>
 
@@ -33,7 +34,7 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
       if (pair2.first!=popped.Bar()) continue;
       Flavour_Pair pair;
       pair.first         = pair1.first;
-      pair.second        = pair2.second; 
+      pair.second        = pair2.second;
       double weight      = constituents->TotWeight(popped.Bar());
       if (weight<1.e-6) continue;
       if (2.*constituents->Mass(popped)+0.1<
@@ -80,7 +81,7 @@ void Double_Transitions::Normalise() {
 	 dtlit!=dtmit->second->end();dtlit++)
       totweight += dtlit->second;
     for (Double_Transition_List::iterator dtlit=dtmit->second->begin();
-	 dtlit!=dtmit->second->end();dtlit++) 
+	 dtlit!=dtmit->second->end();dtlit++)
       dtlit->second /= totweight;
   }
 }
@@ -130,10 +131,10 @@ void Double_Transitions::Print(const bool & full) {
     msg_Out()<<" --> "<<cit->first<<" with total = "<<cit->second<<".\n";
   }
 }
-      
+
 Double_Transitions::~Double_Transitions() {
   while (!m_transitions.empty()) {
-    delete (m_transitions.begin()->second); 
+    delete (m_transitions.begin()->second);
     m_transitions.erase(m_transitions.begin());
   }
   m_transitions.clear();
@@ -143,10 +144,8 @@ Double_Transition_List *
 Double_Transitions::operator[](const Flavour_Pair & flavs) {
   if (m_transitions.find(flavs)==m_transitions.end()) {
     msg_Error()<<"Error in "<<METHOD<<"["<<m_transitions.size()<<"] for "
-	       <<"["<<flavs.first<<", "<<flavs.second<<"]:\n"
-	       <<"   Illegal flavour combination, will return 0.\n";
-    exit(1);
-    return 0;
+	       <<"["<<flavs.first<<", "<<flavs.second<<"]:\n";
+    THROW(fatal_error,"Illegal flavour combination.");
   }
   return m_transitions.find(flavs)->second;
 }

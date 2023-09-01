@@ -114,7 +114,7 @@ void Event_Handler::Reset()
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit)
     (*pit)->CleanUp();
   m_blobs.Clear();
-  if (Particle::Counter()>m_lastparticlecounter || 
+  if (Particle::Counter()>m_lastparticlecounter ||
       Blob::Counter()>m_lastblobcounter) {
     msg_Error()<<METHOD<<"(): "<<Particle::Counter()
                <<" particles and "<<Blob::Counter()
@@ -136,7 +136,7 @@ void Event_Handler::ResetNonPerturbativePhases()
   }
 }
 
-bool Event_Handler::GenerateEvent(eventtype::code mode) 
+bool Event_Handler::GenerateEvent(eventtype::code mode)
 {
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
   ATOOLS::ran->SaveStatus();
@@ -163,7 +163,7 @@ bool Event_Handler::GenerateEvent(eventtype::code mode)
     return GenerateHadronDecayEvent(mode);
   }
   return false;
-} 
+}
 
 void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
 				       ATOOLS::blob_status::code status) {
@@ -183,7 +183,7 @@ bool Event_Handler::AnalyseEvent() {
       switch ((*pit)->Treat(&m_blobs)) {
       case Return_Value::Nothing :
 	break;
-      case Return_Value::Success : 
+      case Return_Value::Success :
         Return_Value::IncCall((*pit)->Name());
 	break;
       case Return_Value::Error :
@@ -244,7 +244,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
                     <<rv<<std::endl;
       msg_Debugging()<<" -> "<<rv<<" ("<<m_blobs.size()<<" blobs)"<<std::endl;
     switch (rv) {
-    case Return_Value::Success : 
+    case Return_Value::Success :
       if (mode==eventtype::StandardPerturbative &&
 	  (*pit)->Name().find("Jet_Evolution")==0 && hardps) {
 	m_sblobs.Clear();
@@ -350,7 +350,7 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
       break;
     case 1:
       m_blobs.Clear(p_signal);
-      p_signal->SetStatus(blob_status::internal_flag | 
+      p_signal->SetStatus(blob_status::internal_flag |
 			  blob_status::needs_signal);
       break;
     case 0:
@@ -402,7 +402,7 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
         (*pit)->CleanUp();
       }
       m_blobs.Clear();
-      if (Particle::Counter()>m_lastparticlecounter || 
+      if (Particle::Counter()>m_lastparticlecounter ||
 	  Blob::Counter()>m_lastblobcounter) {
 	msg_Error()<<METHOD<<"(): "<<Particle::Counter()
 		   <<" particles and "<<Blob::Counter()
@@ -448,7 +448,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
   p_signal->SetStatus(blob_status::needs_hadrondecays);
   p_signal->AddToInParticles(mother_in_part);
   p_signal->AddToOutParticles(mother_part);
-  
+
   do {
     switch (IterateEventPhases(mode)) {
     case 3:
@@ -467,7 +467,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
       break;
     case 1:
       m_blobs.Clear(p_signal);
-      p_signal->SetStatus(blob_status::internal_flag | 
+      p_signal->SetStatus(blob_status::internal_flag |
                           blob_status::needs_minBias);
       break;
     case 0:
@@ -488,7 +488,7 @@ void Event_Handler::Finish() {
   }
   m_blobs.Clear();
   m_sblobs.Clear();
-  if (Particle::Counter()>m_lastparticlecounter || 
+  if (Particle::Counter()>m_lastparticlecounter ||
       Blob::Counter()>m_lastblobcounter) {
     msg_Error()<<"ERROR in "<<METHOD<<":\n"
 	       <<"   After event : "<<Particle::Counter()

@@ -2,6 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -38,7 +39,7 @@ bool Cluster_Decayer::Treat(Cluster * cluster) {
   if (!mustdecay && m_splitter((*cluster)[0],(*cluster)[1])) {
     delete cluster;
     return true;
-  } 
+  }
   switch (p_softclusters->Treat(cluster,true)) {
   case -1:
     // cluster cannot decay into anything - return false (triggers new event)
@@ -121,6 +122,4 @@ void Cluster_Decayer::Test(const double & Q, const Flavour & flav,
     delete histo;
   }
   histos.clear();
-
-  exit(1);
 }

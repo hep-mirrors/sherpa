@@ -16,7 +16,7 @@ using namespace PHASIC;
 using namespace std;
 
 
-/* 
+/*
    In all the differential cross sections the factor 1/16 Pi is cancelled
    by the factor 4 Pi for each alpha. Hence one Pi remains in the game.
 */
@@ -28,7 +28,7 @@ namespace EXTRAXS {
 	      const double & sigmahat) :
       m_Ehat(Ehat), m_rho(rho), m_Ngluons(Ngluons), m_sigmahat(sigmahat) {}
   };
-    
+
   class Data_Table {
   private:
     std::map<double, xsec_data *> m_data;
@@ -85,7 +85,7 @@ namespace EXTRAXS {
     for (const auto xs : allxs) {
       /*
 	read data from file in ASCII format: in each line we have
-	\sqrt{s} (GeV) , 1/\rho (GeV) , \alpha_s(1/rho) ,  number of gluons , 
+	\sqrt{s} (GeV) , 1/\rho (GeV) , \alpha_s(1/rho) ,  number of gluons ,
 	Cross-section (pb)
       */
       if (xs.size()!=5) {
@@ -103,62 +103,62 @@ namespace EXTRAXS {
 
   void Data_Table::ConstructDefaultTable() {
   /*
-    {\sqrt{s} (GeV) , 1 / \rho (GeV) , \alpha_s (at 1/rho) ,  number of gluons , 
-    Cross-section (pb)} where the cross-section allows for N_f=4 plus N_f=5 if 
-    it’s above the threshold (so always 8 to 10 fermions in addition to n_g gluons 
+    {\sqrt{s} (GeV) , 1 / \rho (GeV) , \alpha_s (at 1/rho) ,  number of gluons ,
+    Cross-section (pb)} where the cross-section allows for N_f=4 plus N_f=5 if
+    it’s above the threshold (so always 8 to 10 fermions in addition to n_g gluons
     in the final state).
-    
-    You can see that the largest cross-section is 14.5 milli barn at 10 GeV 
-    (with alpha_s = 0.415 still kind of reasonable) and dropping to 4 pico barns 
+
+    You can see that the largest cross-section is 14.5 milli barn at 10 GeV
+    (with alpha_s = 0.415 still kind of reasonable) and dropping to 4 pico barns
     at 40 GeV
 
     This is the original data from the first version of 1911.09726
-    
-    {{10.6853, 0.989378, 0.415544, 4.58901, 1.45813*10^10}, 
-    {11.3923, 1.03566, 0.40533, 4.67934, 1.05266*10^10}, 
-    {13.3679, 1.16243,  0.38164, 4.90476, 4.51405*10^9}, 
-    {15.6816, 1.3068, 0.360291, 5.12963, 1.85274*10^9}, 
-    {22.9076, 1.76212, 0.315257, 5.43739, 1.76977*10^8}, 
-    {29.6526, 2.11804, 0.292739, 6.02483, 3.55261*10^7}, 
+
+    {{10.6853, 0.989378, 0.415544, 4.58901, 1.45813*10^10},
+    {11.3923, 1.03566, 0.40533, 4.67934, 1.05266*10^10},
+    {13.3679, 1.16243,  0.38164, 4.90476, 4.51405*10^9},
+    {15.6816, 1.3068, 0.360291, 5.12963, 1.85274*10^9},
+    {22.9076, 1.76212, 0.315257, 5.43739, 1.76977*10^8},
+    {29.6526, 2.11804, 0.292739, 6.02483, 3.55261*10^7},
     {40.769, 2.71793, 0.266897, 6.47057, 3.99487*10^6}}
-    {56.0679, 3.50425, 0.244871, 6.91549, 397757.}, 
-    {61.8378, 3.63752, 0.223469, 7.28038, 113207.}, 
-    {89.628, 4.97933, 0.205845, 7.67006, 3876.77}, 
-    {118.028, 6.212, 0.195011, 8.24762, 333.886}, 
-    {174.399, 8.71997, 0.180449, 8.60356, 8.68739}, 
+    {56.0679, 3.50425, 0.244871, 6.91549, 397757.},
+    {61.8378, 3.63752, 0.223469, 7.28038, 113207.},
+    {89.628, 4.97933, 0.205845, 7.67006, 3876.77},
+    {118.028, 6.212, 0.195011, 8.24762, 333.886},
+    {174.399, 8.71997, 0.180449, 8.60356, 8.68739},
     {246.887, 11.7565, 0.169311, 9.04486, 0.348676},
-    {349.853, 15.9024, 0.159366, 9.48648, 0.0140647}, 
+    {349.853, 15.9024, 0.159366, 9.48648, 0.0140647},
     {496.283, 21.5775, 0.150438, 9.9284, 0.000571738}}
-    {704.764, 29.3652, 0.142384, 10.3706, 0.0000232145}, 
-    {1001.82, 40.0727, 0.135088, 10.8133, 9.29353*10^-7}, 
-    {1425.6, 54.8307, 0.128449, 11.2564, 3.61946*10^-8}, 
-    {2030.63, 75.2085, 0.122387, 11.7001, 1.36042*10^-9}, 
-    {2895.48, 103.41, 0.116831, 12.1441, 4.83086*10^-11}, 
-    {4132.81, 142.511, 0.111723, 12.5887, 1.68134*10^-12}}    
+    {704.764, 29.3652, 0.142384, 10.3706, 0.0000232145},
+    {1001.82, 40.0727, 0.135088, 10.8133, 9.29353*10^-7},
+    {1425.6, 54.8307, 0.128449, 11.2564, 3.61946*10^-8},
+    {2030.63, 75.2085, 0.122387, 11.7001, 1.36042*10^-9},
+    {2895.48, 103.41, 0.116831, 12.1441, 4.83086*10^-11},
+    {4132.81, 142.511, 0.111723, 12.5887, 1.68134*10^-12}}
   */
     m_data[10.6853] = new xsec_data(10.6853, 0.989378, 4.58901, 1.45813e10);
-    m_data[11.3932] = new xsec_data(11.3923, 1.035660, 4.67934, 1.05266e10); 
-    m_data[13.3679] = new xsec_data(13.3679, 1.162430, 4.90476, 4.51405e9); 
+    m_data[11.3932] = new xsec_data(11.3923, 1.035660, 4.67934, 1.05266e10);
+    m_data[13.3679] = new xsec_data(13.3679, 1.162430, 4.90476, 4.51405e9);
     m_data[15.6816] = new xsec_data(15.6816, 1.306800, 5.12963, 1.85274e9);
-    m_data[22.9076] = new xsec_data(22.9076, 1.762120, 5.43739, 1.76977e8); 
-    m_data[29.6526] = new xsec_data(29.6526, 2.118040, 6.02483, 3.55261e7); 
+    m_data[22.9076] = new xsec_data(22.9076, 1.762120, 5.43739, 1.76977e8);
+    m_data[29.6526] = new xsec_data(29.6526, 2.118040, 6.02483, 3.55261e7);
     m_data[40.7690] = new xsec_data(40.7690, 2.717930, 6.47057, 3.99487e6);
-    m_data[56.0679] = new xsec_data(56.0679, 3.504250, 6.91549, 397757.); 
-    m_data[61.8378] = new xsec_data(61.8378, 3.637520, 7.28038, 113207.); 
-    m_data[89.6280] = new xsec_data(89.6280, 4.979330, 7.67006, 3876.77); 
-    m_data[118.028] = new xsec_data(118.028, 6.212000, 8.24762, 333.886); 
-    m_data[174.399] = new xsec_data(174.399, 8.719970, 8.60356, 8.68739); 
+    m_data[56.0679] = new xsec_data(56.0679, 3.504250, 6.91549, 397757.);
+    m_data[61.8378] = new xsec_data(61.8378, 3.637520, 7.28038, 113207.);
+    m_data[89.6280] = new xsec_data(89.6280, 4.979330, 7.67006, 3876.77);
+    m_data[118.028] = new xsec_data(118.028, 6.212000, 8.24762, 333.886);
+    m_data[174.399] = new xsec_data(174.399, 8.719970, 8.60356, 8.68739);
     m_data[246.887] = new xsec_data(246.887, 11.75650, 9.04486, 0.348676);
-    m_data[349.853] = new xsec_data(349.853, 15.90240, 9.48648, 0.0140647); 
+    m_data[349.853] = new xsec_data(349.853, 15.90240, 9.48648, 0.0140647);
     m_data[496.283] = new xsec_data(496.283, 21.57750, 9.92840, 0.000571738);
-    m_data[704.764] = new xsec_data(704.764, 29.36520, 10.3706, 0.0000232145); 
-    m_data[1001.82] = new xsec_data(1001.82, 40.07270, 10.8133, 9.29353e-7); 
-    m_data[1425.60] = new xsec_data(1425.60, 54.83070, 11.2564, 3.61946e-8); 
-    m_data[2030.63] = new xsec_data(2030.63, 75.20850, 11.7001, 1.36042e-9); 
-    m_data[2895.48] = new xsec_data(2895.48, 103.4100, 12.1441, 4.83086e-11); 
+    m_data[704.764] = new xsec_data(704.764, 29.36520, 10.3706, 0.0000232145);
+    m_data[1001.82] = new xsec_data(1001.82, 40.07270, 10.8133, 9.29353e-7);
+    m_data[1425.60] = new xsec_data(1425.60, 54.83070, 11.2564, 3.61946e-8);
+    m_data[2030.63] = new xsec_data(2030.63, 75.20850, 11.7001, 1.36042e-9);
+    m_data[2895.48] = new xsec_data(2895.48, 103.4100, 12.1441, 4.83086e-11);
     m_data[4132.81] = new xsec_data(4132.81, 142.5110, 12.5887, 1.68134e-12);
   }
-  
+
   bool Data_Table::Interpolate(const double & E) {
     m_rho = m_sigmahat = m_Ngluons = 0.;
     if (E>m_Ehatmax || E<m_Ehatmin) {
@@ -198,7 +198,6 @@ namespace EXTRAXS {
 	     <<Sigmahat()*rpa->Picobarn()<<" pb, "
 	     <<"1/rho = "<<Rho()<<" GeV, "
 	   <<"<Ngluons> = "<<Ngluons()<<".\n";
-    exit(1);
   }
 
   struct instantonScale {
@@ -208,7 +207,7 @@ namespace EXTRAXS {
       Ehat_by_sqrtN = 3
     };
   };
-  
+
   class XS_instanton : public ME2_Base {
   private:
     Data_Table  m_data;
@@ -241,7 +240,7 @@ XS_instanton::XS_instanton(const External_ME_Args& args)
   : ME2_Base(args),
     m_S(sqr(rpa->gen.Ecms())),
     m_norm(1./36.),
-    m_bthreshold(100.), m_cthreshold(20.), 
+    m_bthreshold(100.), m_cthreshold(20.),
     m_Ngluons_factor(1.), m_sigmahat_factor(1.),
     m_scalechoice(instantonScale::rho)
 {
@@ -319,7 +318,7 @@ bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
   if (m_Ehat<m_Ehatmin || m_Ehat>m_Ehatmax ||
       !m_data.Interpolate(m_Ehat)) return false;
   Poincare boost(mom[2]);
-  m_internalscale = Max(FixScale(), 2.);  
+  m_internalscale = Max(FixScale(), 2.);
   //msg_Out()<<METHOD<<": scale = "<<m_internalscale<<" -> "<<sqr(m_internalscale)<<"\n";
   size_t trials=1000;
   while ((trials--)>0) {
@@ -366,7 +365,7 @@ bool XS_instanton::DefineFlavours() {
       totmass += flav.Mass(true);
     }
   }
-  do { m_ngluons = NumberOfGluons(); } while (m_ngluons>=30-m_nquarks); 
+  do { m_ngluons = NumberOfGluons(); } while (m_ngluons>=30-m_nquarks);
   Flavour flav   = Flavour(kf_gluon);
   for (size_t i=0;i<m_ngluons;i++)  m_flavours.push_back(flav);
   return true;
@@ -419,16 +418,16 @@ bool XS_instanton::MakeColours() {
     for (size_t i=0;i<2;i++) { cols[i].erase(find(cols[i].begin(),cols[i].end(),parts[i])); }
   } while (cols[0].size()>1);
   if (cols[0][0]!=cols[1][0]) {
-    m_colours[cols[0][0]][0] = m_colours[cols[1][0]][1] = colindex++; 
+    m_colours[cols[0][0]][0] = m_colours[cols[1][0]][1] = colindex++;
   }
   else {
     if (m_colours[2][0]!=0) {
       m_colours[cols[0][0]][0] = m_colours[2][0];
-      m_colours[2][0] = m_colours[cols[1][0]][1] = colindex++; 
+      m_colours[2][0] = m_colours[cols[1][0]][1] = colindex++;
     }
     else if (m_colours[2][1]!=0) {
       m_colours[cols[1][0]][1] = m_colours[2][1];
-      m_colours[2][1] = m_colours[cols[0][0]][0] = colindex++; 
+      m_colours[2][1] = m_colours[cols[0][0]][0] = colindex++;
     }
   }
   for (size_t i=0;i<2;i++) {
@@ -450,14 +449,12 @@ void XS_instanton::Test() {
       totn += ngluons = NumberOfGluons();
     }
     msg_Out()<<"Run for E = "<<E<<": <ngluons> = "<<m_mean_Ngluons
-	     <<" --> "<<double(totn)/double(maxtrials)<<" generated.\n";    
+	     <<" --> "<<double(totn)/double(maxtrials)<<" generated.\n";
   }
-  exit(1);
 }
 
 bool XS_instanton::SetColours(const Vec4D_Vector& mom) {
-  msg_Error()<<METHOD<<" shouldn't be called. Will terminate run.\n";
-  exit(1);
+  THROW(fatal_error,"XS_instanton::SetColours should never be called.");
 }
 
 DECLARE_TREEME2_GETTER(XS_instanton,"XS_instanton")
