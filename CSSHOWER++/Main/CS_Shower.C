@@ -50,7 +50,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (m_respectq2!=1) msg_Info()<<METHOD<<"(): Set respect Q2 mode "<<m_respectq2<<"\n";
   int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
-  int ckfmode=_dataread->GetValue<int>("CSS_CKFMODE",1);
+  int ckfmode=_dataread->GetValue<int>("CSS_CKFMODE",0);
   if (ckfmode!=1) msg_Info()<<METHOD<<"(): Set cluster KF mode "<<ckfmode<<"\n";
   int pdfcheck=_dataread->GetValue<int>("CSS_PDFCHECK",1);
   if (pdfcheck!=1) msg_Info()<<METHOD<<"(): Set PDF check mode "<<pdfcheck<<"\n";
