@@ -111,15 +111,18 @@ void Cluster_Splitter::CalculateLimits() {
   // - hadrons:
   //   m_minQ[0,1] is lightest single or double transition (double for di-di pairs)
   //   m_mdec is lightest decay transition
-  for (size_t i=0;i<2;i++) m_m2min[i] = Min(m_minQ2[i],m_mdec2[i]);
-  double lambda  = sqrt(sqr(m_Q2-m_m2min[0]-m_m2min[1])-
-			4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2));
+  for (size_t i=0;i<2;i++)
+    m_m2min[i] = Min(m_minQ2[i],m_mdec2[i]);
+  double lambda = sqrt(sqr(m_Q2-m_m2min[0]-m_m2min[1])-
+		       4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2));
   for (size_t i=0;i<2;i++) {
     double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
-    m_zmin[i]  = (centre-lambda)/(2.*m_Q2);
-    m_zmax[i]  = (centre+lambda)/(2.*m_Q2);
-    m_mean[i]  = sqrt(m_kt02[0]);
-    m_sigma[i] = sqrt(m_kt02[0]);
+    m_zmin[i] = (centre-lambda)/(2.*m_Q2);
+    m_zmax[i] = (centre+lambda)/(2.*m_Q2);
+    // TODO reinsert
+    // Just for the debugging of KT
+    // m_mean[i]  = sqrt(m_kt02[0]);
+    // m_sigma[i] = sqrt(m_kt02[0]);
   }
 }
 
@@ -144,7 +147,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   bool mustrecalc = false;
-  for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
+  for (size_t i=0;i<2;i++) m_z[i] = m_zselector(m_zmin[i],m_zmax[i],i);
   for (size_t i=0;i<2;i++) {
     m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
     //This is a difference w.r.t. master
@@ -163,27 +166,30 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
 					       double gamma, double kt02) {
   double norm = 1., arg;
   double value = 1.;
-  if (alpha>=0.) norm *= pow(zmax,alpha);
-               else norm *= pow(zmin,alpha);
-  if (beta>=0.) norm *= pow(1.-zmin,beta);
-               else norm *= pow(1.-zmax,beta);
+  if (alpha>=0.)
+    norm *= pow(zmax,alpha);
+  else
+    norm *= pow(zmin,alpha);
+
+  if (beta>=0.)
+    norm *= pow(1.-zmin,beta);
+  else
+    norm *= pow(1.-zmax,beta);
+
+  const double zt = alpha / (alpha+beta);
+  norm = pow(zt,alpha) * pow(1.-zt,beta);
+  // there might be a maximut at the boundaries
+
   double wt = pow(z,alpha) * pow(1.-z,beta);
   value = wt/norm;
-
   if (m_mode==2) {
-    arg   = dabs(gamma)>1.e-2 ? gamma*(m_kt2+m_masses*m_masses)/kt02 : 0.;
+    arg    = dabs(gamma)>1.e-2 ? gamma*(m_kt2+m_masses*m_masses)/kt02 : 0.;
     value *= exp(-arg*((zmax-z)/(z*zmax)));
-    norm *= exp(-arg/zmax);
-    wt   *= exp(-arg/z);
+    norm  *= exp(-arg/zmax);
+    wt    *= exp(-arg/z);
   }
 
   if (wt>norm) {
-    // msg_Error()<<"Error in "<<METHOD<<": wt(z) = "<<wt<<"("<<z<<") "
-    // 	       <<"for wtmax = "<<norm<<" "
-    // 	       <<"[a, b, c = "<<m_a[cnt]<<", "<<m_b[cnt]<<", "<<m_c[cnt]<<"] from \n"
-    // 	       <<"a part = "<<pow(z,m_a[cnt])<<"/"<<pow(zmax,m_a[cnt])<<", "
-    // 	       <<"b part = "<<pow(1.-z,m_b[cnt])<<"/"<<pow(1.-zmin,m_b[cnt])<<", "
-    // 	       <<"c part = "<<exp(-arg/z)<<"/"<<exp(-arg/zmax)<<".\n";
     exit(1);
   }
   return value;
@@ -211,12 +217,12 @@ void Cluster_Splitter::z_rejected(const double wgt, const double & z,
   }
 
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto a = m_alpha[m_a[cnt]][i];
-    const auto b = m_beta[m_b[cnt]][i];
-    const auto c = m_gamma[m_c[cnt]][i];
+    const auto a  = m_alpha[m_a[cnt]][i];
+    const auto b  = m_beta [m_b[cnt]][i];
+    const auto c  = m_gamma[m_c[cnt]][i];
     const auto kt = m_kt02[i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
-    variation_weights[i] *= std::min(1.,(1-wgt_new)) / std::min(1.,(1-wgt));
+    tmp_variation_weights[i] *= std::min(1.,(1-wgt_new)) / std::min(1.,(1-wgt));
   }
   return;
 }
@@ -231,12 +237,12 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
   }
 
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto a = m_alpha[m_a[cnt]][i];
-    const auto b = m_beta[m_b[cnt]][i];
-    const auto c = m_gamma[m_c[cnt]][i];
+    const auto a  = m_alpha[m_a[cnt]][i];
+    const auto b  = m_beta [m_b[cnt]][i];
+    const auto c  = m_gamma[m_c[cnt]][i];
     const auto kt = m_kt02[i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
-    variation_weights[i] *= std::min(1.,wgt_new) / std::min(1.,wgt);
+    tmp_variation_weights[i] *= std::min(1.,wgt_new) / std::min(1.,wgt);
   }
   return;
 }

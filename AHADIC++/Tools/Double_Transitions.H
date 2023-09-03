@@ -22,7 +22,7 @@ namespace AHADIC {
     }
   };
 
-  typedef std::map<Flavour_Pair,double,
+  typedef std::map<Flavour_Pair,std::vector<double>,
   		   Flavour_Pair_Sorting_Mass>         Double_Transition_List;
 
   typedef std::map<Flavour_Pair,
@@ -37,6 +37,7 @@ namespace AHADIC {
 
     void FillMap(Single_Transitions * singles);
     void Normalise();
+    int n_variations {0};;
   public:
     Double_Transitions(Single_Transitions * singles);
     ~Double_Transitions();

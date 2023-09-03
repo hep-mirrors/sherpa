@@ -52,11 +52,10 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
   size_t attempts(m_attempts);
 
   do {
+    reset_var_weights();
     attempts--;
-    // std::cout << m_attempts << std::endl;
   } while(attempts>0 && !MakeSplitting());
-  // finally the accepted one:
-
+  accept_splitting();
   // TODO: reinsert
   //p_ktselector->accepted();
   return (attempts>0);
@@ -171,10 +170,14 @@ void Splitter_Base::DetermineMinimalMasses() {
     m_mdec2[i] = sqr(m_mdec[i]);
   }
 }
+void Splitter_Base::reset_var_weights() {};
+void Splitter_Base::accept_splitting() {};
 
 bool Splitter_Base::MakeKinematics() {
   MakeTransverseMomentum();
-  return (MakeLongitudinalMomenta() && CheckKinematics());
+  bool b1 = MakeLongitudinalMomenta();
+  bool b2 = CheckKinematics();
+  return (b1 && b2);
 }
 
 void Splitter_Base::MakeTransverseMomentum() {

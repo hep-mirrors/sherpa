@@ -51,7 +51,8 @@ namespace AHADIC {
     virtual void FillMasses();
     virtual void ConstructLightCone(const double & kt2=0.);
     virtual void ConstructPoincare();
-
+    virtual void accept_splitting();
+    virtual void reset_var_weights();
     virtual bool MakeSplitting();
     virtual void PopFlavours();
     virtual void DetermineMinimalMasses();

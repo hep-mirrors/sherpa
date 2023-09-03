@@ -48,8 +48,8 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
   const int n_vars = hadpars->NumberOfVariations();
   // Always make sure, all weights are unset
-  //m_softclusters.reset_variationweights();
   // m_singletchecker.reset_variationweights();
+  m_softclusters.reset_variationweights(n_vars);
   m_clusterdecayer.reset_variationweights(n_vars);
   m_gluondecayer.reset_variationweights(n_vars);
   m_flavourselector.reset_variationweights(n_vars);
@@ -98,7 +98,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   // TODO: are they copied here? Probably..
   const auto wgts_cluster  = m_clusterdecayer.get_variationweights();
   const auto wgts_gluons   = m_gluondecayer.get_variationweights();
-  //const auto wgts_soft     = m_softclusters.get_variationweights();
+  const auto wgts_soft     = m_softclusters.get_variationweights();
   const auto wgts_flavs    = m_flavourselector.get_variationweights();
   // const auto wgts_singlets = m_singletchecker.get_variationweights();
   const auto wgts_kt       = m_ktselector.get_variationweights();
@@ -110,22 +110,31 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   DEBUG_VAR(wgts_cluster);
   DEBUG_VAR(wgts_gluons);
   DEBUG_VAR(wgts_kt);
-  //DEBUG_VAR(wgts_soft);
+  DEBUG_VAR(wgts_soft);
   DEBUG_VAR(wgts_flavs);
   // DEBUG_VAR(wgts_singlets);
   if(wgts_cluster.size() == wgts_gluons.size() &&
-     wgts_cluster.size() == wgts_flavs.size()
+     wgts_soft.size() == wgts_flavs.size()
      && wgts_cluster.size() == wgts_kt.size()) {
     DEBUG_VAR(wgts_cluster.size());
     for(int i{0}; i<wgts_cluster.size(); i++) {
       DEBUG_VAR(i);
       const std::string name = "v"+std::to_string(i);
-      double wgt = wgts_cluster[i]*wgts_gluons[i]*wgts_flavs[i]*wgts_kt[i];
+      double wgt = 1;
+      wgt*=wgts_cluster[i];
+      wgt*=wgts_gluons[i];
+      wgt*=wgts_flavs[i];
+      wgt*=wgts_kt[i];
+      wgt*=wgts_soft[i];
+
       wgt = std::max(wgt,0.01);
       wgt = std::min(wgt,100.);
+      if(i==0 && wgt != 1.0) {
+	std::cout << "THIS SHOULD NOT HAPPEN " << wgt << std::endl;
+      }
       wgtmap["AHADIC"][name] = wgt;
-      DEBUG_VAR(wgtmap);
     }
+    DEBUG_VAR(wgtmap);
   } else {
     msg_Out()<<"Could not use AHADIC variations.\n";
     msg_Out()<<"Cluster and Gluon have differing number of variations\n";
@@ -138,6 +147,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   m_gluondecayer.reset_variationweights(n_vars);
   m_flavourselector.reset_variationweights(n_vars);
   m_ktselector.reset_variationweights(n_vars);
+  m_softclusters.reset_variationweights(n_vars);
 
   return Return_Value::Success;
 }

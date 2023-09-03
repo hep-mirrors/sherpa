@@ -147,7 +147,7 @@ void Gluon_Splitter::z_accepted(const double wgt, const double & z,
   for (int i{0}; i<m_alpha.size(); i++) {
     const auto a = m_alpha[i];
     const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax,a);
-    variation_weights[i] *= wgt_new / wgt_old;
+    tmp_variation_weights[i] *= wgt_new / wgt_old;
   }
   return;
 }

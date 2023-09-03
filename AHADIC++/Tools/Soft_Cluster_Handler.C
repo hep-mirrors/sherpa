@@ -324,8 +324,8 @@ double Soft_Cluster_Handler::DecayWeight() {
   if (m_hads[0].Mass()+m_hads[1].Mass()>m_mass) return Annihilation();
 
   // everything is fine - get on with your life and just decay.
-  map<Flavour_Pair,double> weights;
-  double totweight(0.), weight;
+  map<Flavour_Pair,std::vector<double> > weights;
+  std::vector<double> totweight;//, weight;
   for (Double_Transition_List::reverse_iterator dit=decays->rbegin();
        dit!=decays->rend();dit++) {
     double m2(dit->first.first.Mass()), m3(dit->first.second.Mass());
@@ -333,22 +333,43 @@ double Soft_Cluster_Handler::DecayWeight() {
     // wave-function overlap * phase-space (units of 1 in total)
     bool heavy = (dit->first.first.IsB_Hadron() || dit->first.first.IsC_Hadron() ||
 		  dit->first.second.IsB_Hadron() || dit->first.second.IsC_Hadron());
-    weight     = dit->second * PhaseSpace(m2,m3,heavy);
-    totweight += weights[dit->first] = weight;
+    const double psfac = PhaseSpace(m2,m3,heavy);
+
+    std::vector<double> _wgts (dit->second.size());
+    totweight.resize(dit->second.size(),0);
+
+    for(int i{0}; i<dit->second.size(); ++i) {
+      double wt = dit->second[i] * psfac;
+      _wgts[i] = wt;
+      totweight[i] += wt;
+    }
+    weights[dit->first] = _wgts;
   }
 
-  double disc = totweight * ran->Get();
-  map<Flavour_Pair,double>::iterator wit=weights.begin();
+  double disc = totweight[0] * ran->Get();
+  map<Flavour_Pair,std::vector<double>>::iterator wit=weights.begin();
   do {
-    disc -= wit->second;
+    disc -= wit->second[0];
     if (disc<=1.e-12) break;
     wit++;
   } while (wit!=weights.end());
+
+  if (wit!=weights.end() && totweight[0] != 0.) {
+    const double p_sel = wit->second[0] / totweight[0];
+    for(int i{0}; i<wit->second.size(); ++i) {
+      // TODO: figure out why this is zero from time to time
+      double fact = (wit->second[i] / totweight[i]) / p_sel;
+      if(!std::isnan(fact))
+	variation_weights[i] *= fact;
+    }
+  }
+
   if (wit!=weights.end()) {
     m_hads[0] = wit->first.first;
     m_hads[1] = wit->first.second;
   }
-  return totweight;
+
+  return totweight[0];
 }
 
 double Soft_Cluster_Handler::Annihilation() {

@@ -9,7 +9,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Double_Transitions::Double_Transitions(Single_Transitions * singles) :
-  m_wtthres(1.e-6),
+  m_wtthres(1.e-12),
   m_charm_strange_modifier(hadpars->Get("CharmStrange_Enhancement")),
   m_beauty_strange_modifier(hadpars->Get("BeautyStrange_Enhancement")),
   m_charm_baryon_modifier(hadpars->Get("CharmBaryon_Enhancement")),
@@ -34,11 +34,19 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
       Flavour_Pair pair;
       pair.first         = pair1.first;
       pair.second        = pair2.second;
-      double weight      = constituents->TotWeight(popped.Bar());
-      if (weight<1.e-6) continue;
+      std::vector<double> weights;
+      n_variations = (*constituents).Weights(popped.Bar()).size();
+      for(const auto wgt : (*constituents).Weights(popped.Bar()))
+	weights.push_back(wgt);
+      double weight = 1.;
+      //double weight      = constituents->TotWeight(popped.Bar());
+      if (weight<m_wtthres) continue;
       if (2.*constituents->Mass(popped)+0.1<
-	  constituents->Mass(pair.first)+constituents->Mass(pair.second))
-	weight = 1.;
+	  constituents->Mass(pair.first)+constituents->Mass(pair.second)) {
+	std::fill(weights.begin(), weights.end(), 1);
+	// // This does happen quite regularly
+	// std::cout << "resetting weight" << std::endl;
+      }
       if (popped.IsDiQuark()) {
 	if (int(pair.first.Kfcode())==4)  weight *= m_charm_baryon_modifier;
 	if (int(pair.second.Kfcode())==4) weight *= m_charm_baryon_modifier;
@@ -55,7 +63,9 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	if (int(pair.second.Kfcode())==5) weight *= m_beauty_strange_modifier;
       }
       if (m_transitions.find(pair)==m_transitions.end())
+	// TODO: what does this do?
 	m_transitions[pair] = new Double_Transition_List;
+
       for (Single_Transition_List::iterator hit1=stmit1->second->begin();
 	   hit1!=stmit1->second->end();hit1++) {
 	for (Single_Transition_List::iterator hit2=stmit2->second->begin();
@@ -64,8 +74,13 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	  hads.first  = hit1->first;
 	  hads.second = hit2->first;
 	  double wt   = weight*hit1->second*hit2->second;
-	  if (wt<m_wtthres) continue;
-	  (*m_transitions[pair])[hads] = wt;
+	  for(int i{0}; i<weights.size(); ++i)
+	    weights[i] *= wt;
+	  // set wtthres to 1e-12
+	  // TODO: reinsert
+	  //if (wt<m_wtthres) continue;
+
+	  (*m_transitions[pair])[hads] = weights;
 	}
       }
     }
@@ -75,13 +90,18 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 void Double_Transitions::Normalise() {
   for (Double_Transition_Map::iterator dtmit=m_transitions.begin();
        dtmit!=m_transitions.end();dtmit++) {
-    double totweight = 0.;
+    std::vector<double> totweights(n_variations,0);
+    //double totweight = 0.;
     for (Double_Transition_List::iterator dtlit=dtmit->second->begin();
-	 dtlit!=dtmit->second->end();dtlit++)
-      totweight += dtlit->second;
+	 dtlit!=dtmit->second->end();dtlit++) {
+      for(int i{0}; i<n_variations; ++i)
+	totweights[i] += dtlit->second[i];
+    }
     for (Double_Transition_List::iterator dtlit=dtmit->second->begin();
-	 dtlit!=dtmit->second->end();dtlit++)
-      dtlit->second /= totweight;
+	 dtlit!=dtmit->second->end();dtlit++){
+      for(int i{0}; i<n_variations; ++i)
+	dtlit->second[i] /= totweights[i];
+    }
   }
 }
 
@@ -89,6 +109,8 @@ void Double_Transitions::Print(const bool & full) {
   map<Flavour,double> checkit;
   double meson(0.), baryon(0.);
   bool   count(false);
+  // TODO: Reinsert print
+#if false
   msg_Out()<<"---------------------------------------------------------\n"
 	   <<METHOD<<":\n";
   for (Double_Transition_Map::iterator dtmit=m_transitions.begin();
@@ -129,6 +151,7 @@ void Double_Transitions::Print(const bool & full) {
        cit!=checkit.end();cit++) {
     msg_Out()<<" --> "<<cit->first<<" with total = "<<cit->second<<".\n";
   }
+#endif
 }
 
 Double_Transitions::~Double_Transitions() {

@@ -15,7 +15,9 @@ namespace AHADIC {
     std::vector<double> m_kt02;
     double threshold_fac;
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
+
     std::vector<double> variation_weights;
+    std::vector<double> tmp_variation_weights;
 
     Cluster *       p_out[2];
     ATOOLS::Vec4D   m_cms, m_mom[2], m_newmom[2];
@@ -53,6 +55,14 @@ namespace AHADIC {
 			  const double & zmin,const double & zmax,
 			  const unsigned int & cnt);
     void   SetOutput(const bool & out) { m_output = out; }
+    void   accept_splitting() {
+      for(int i{0}; i<variation_weights.size(); ++i)
+	variation_weights[i] *= tmp_variation_weights[i];
+    }
+
+    void reset_var_weights() {
+      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
+    }
 
     std::vector<double>& get_variationweights() {
       return variation_weights;
@@ -60,6 +70,7 @@ namespace AHADIC {
 
     void reset_variationweights(int nvars) {
       variation_weights.resize(nvars);
+      tmp_variation_weights.resize(nvars);
       // reset weights and Splitter_base weight
       std::fill(variation_weights.begin(), variation_weights.end(), 1);
     };
