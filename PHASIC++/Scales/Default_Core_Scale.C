@@ -68,11 +68,11 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"jV like\n";
-      muq2=muf2=mur2=campl->Leg(3)->Mom().MPerp2()/4.0;
+      muq2=muf2=mur2=campl->Leg(3)->Mom().MPerp2();
     }
     else if (!fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"Vj like\n";
-      muq2=muf2=mur2=campl->Leg(2)->Mom().MPerp2()/4.0;
+      muq2=muf2=mur2=campl->Leg(2)->Mom().MPerp2();
     }
     else THROW(fatal_error,"Internal error.");
   }
