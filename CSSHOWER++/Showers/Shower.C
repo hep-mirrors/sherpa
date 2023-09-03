@@ -29,7 +29,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
   m_reweight          = dataread->GetValue<int>("CSS_REWEIGHT",0);
   m_maxreweightfactor = dataread->GetValue<int>("CSS_MAX_REWEIGHT_FACTOR",1e3);
-  m_kscheme           = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
+  m_kscheme           = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
   m_noem              = dataread->GetValue<int>("CSS_NOEM",0);
   m_recdec            = dataread->GetValue<int>("CSS_RECO_DECAYS",0);
   if (type) {
