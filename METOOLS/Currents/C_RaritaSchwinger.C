@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Exception.H"
 #include "METOOLS/Main/SpinFuncs.H"
+#include "METOOLS/Currents/C_Vector.H"
 
 using namespace METOOLS;
 
@@ -159,22 +160,71 @@ void CRaritaSchwinger<Scalar>::Delete()
 #endif
 }
 
+template <class Scalar> bool CRaritaSchwinger<Scalar>::SetOn()
+{
+  m_on=0;
+  if (m_x[0]!=ZERO || m_x[1]!=ZERO || m_x[2]!=ZERO || m_x[3]!=ZERO || m_x[4]!=ZERO || m_x[5]!=ZERO || m_x[6]!=ZERO ||
+      m_x[7]!=ZERO) m_on|=1;
+  if (m_x[8]!=ZERO || m_x[9]!=ZERO || m_x[10]!=ZERO || m_x[11]!=ZERO || m_x[12]!=ZERO || m_x[13]!=ZERO ||
+      m_x[14]!=ZERO || m_x[15]!=ZERO) m_on|=2;
+  return m_on&3;
+}
+
+// TODO: Springt er hier wirklich zum richtigen Operator?
 template<class Scalar>
-bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p) {
-  bool passed = true;
-  // Dirac equation (gamma_mu * p_mu -m)^A_B RS^B, mu -> auch +m? für V statt U?
+bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
+  // Dirac equation (gamma_mu * p_mu -m)^A_B RS^B, nu -> auch +m? für V statt U?
   METOOLS::Gamma gammavec = Gamma();
-  ATOOLS::Vec4D<METOOLS::CMatrix> intermediate = gammavec * p - p.Abs2();
+  ATOOLS::CMatrix intermediate = (gammavec * p + Complex(r) * p.Abs2() * ATOOLS::CMatrix(4, 1));
+  std::vector<Scalar> result1(16, ZERO);
+  for(int i(0); i<4; ++i) {
+    result1[0+2*i] = intermediate[0][0] * (*this)[2*i] + intermediate[0][1] * (*this)[1+2*i] + intermediate[0][2] * (*this)[8+2*i] + intermediate[0][3] * (*this)[9+2*i];
+    result1[1+2*i] = intermediate[1][0] * (*this)[2*i] + intermediate[1][1] * (*this)[1+2*i] + intermediate[1][2] * (*this)[8+2*i] + intermediate[1][3] * (*this)[9+2*i];
+    result1[8+2*i] = intermediate[2][0] * (*this)[2*i] + intermediate[2][1] * (*this)[1+2*i] + intermediate[2][2] * (*this)[8+2*i] + intermediate[2][3] * (*this)[9+2*i];
+    result1[9+2*i] = intermediate[3][0] * (*this)[2*i] + intermediate[3][1] * (*this)[1+2*i] + intermediate[3][2] * (*this)[8+2*i] + intermediate[3][3] * (*this)[9+2*i];
+  }
+  /* Implemented for filling when the four Dirac spinors are above each other in the spin-3/2 wave function
+ * for (int i(0); i<4; ++i){
+      for (size_t j(0); j<4; ++j){
+        if (rs.On()!=1){
+          comps[i] += gamma[i][j] * rs[j];
+          comps[i+4] += gamma[i][j] * rs[j+4];
+        }
+        if (rs.On()!=2){
+          comps[i+8] += gamma[i][j] * rs[j+8];
+          comps[i+12] += gamma[i][j] * rs[j+12];
+        }
+      }
+    }*/
+  for (size_t j(0); j<16; ++j){
+    if (result1[j]>s_accu) return false;
+  }
+
   // gamma_mu^A_B times RS^B,mu = 0
-
-
-
+  // ÜBERPRÜFEN!!!
+  //METOOLS::CVec4<Scalar> result2 = CVec4<Scalar>();
+  std::vector<Scalar> result2(4, ZERO);
+  for (int i(0); i<4; ++i){
+    result2[0] += gammavec[i][0][0] * (*this)[2*i] + gammavec[i][0][1] * (*this)[1+2*i] + gammavec[i][0][2] * (*this)[8+2*i] + gammavec[i][0][3] * (*this)[9+2*i];
+    result2[1] += gammavec[i][1][0] * (*this)[2*i] + gammavec[i][1][1] * (*this)[1+2*i] + gammavec[i][1][2] * (*this)[8+2*i] + gammavec[i][1][3] * (*this)[9+2*i];
+    result2[2] += gammavec[i][2][0] * (*this)[2*i] + gammavec[i][2][1] * (*this)[1+2*i] + gammavec[i][2][2] * (*this)[8+2*i] + gammavec[i][2][3] * (*this)[9+2*i];
+    result2[3] += gammavec[i][3][0] * (*this)[2*i] + gammavec[i][3][1] * (*this)[1+2*i] + gammavec[i][3][2] * (*this)[8+2*i] + gammavec[i][3][3] * (*this)[9+2*i];
+    // result2 += gammavec[i] * METOOLS::CVec4<Scalar>((*this)[i+i*4], (*this)[i+i*4+1], (*this)[i+i*4+2], (*this)[i+i*4+3]);
+  }
+  if (!(result2[0]<s_accu && result2[1]<s_accu && result2[2]<s_accu && result2[3]<s_accu)) return false;
+  
   // p_mu times RS = 0 ? aus partielle Ableitung_mu RS=0?
+  std::vector<Scalar> result3(4, ZERO);
+  for (int i(0); i<2; ++i){
+    result3[i] = p[0] * (*this)[i] + p[1] * (*this)[2+i] + p[2] * (*this)[4+i] + p[3] * (*this)[6+i];
+    result3[i+2] = p[0] * (*this)[i+8] + p[1] * (*this)[10+i] + p[2] * (*this)[12+i] + p[3] * (*this)[14+i];
+  }
+  if (!(result3[0]<s_accu && result3[1]<s_accu && result3[2]<s_accu && result3[3]<s_accu)) return false;
 
   // normalizations???
 
   // completeness -> in Stromklasse testen!!!
-  return passed;
+  return true;
 }
 
 // TODO: kompliert nicht :-(
