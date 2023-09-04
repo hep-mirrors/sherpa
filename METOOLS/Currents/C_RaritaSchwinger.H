@@ -5,6 +5,11 @@
 #include "ATOOLS/Math/Vec4.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Matrix.H"
+#include "ATOOLS/Org/Exception.H"
+#include "METOOLS/Currents/C_Spinor.H"
+
+#define ZERO std::complex<Scalar>(0.0,0.0)
 
 #include <vector>
  //TODO: Zum schluss nochmal durchgehen durch Vector und Spinor und schauen, ob wir alle nötigen Funktionen haben...
@@ -27,7 +32,9 @@ namespace METOOLS {
     //  oder negative Energie
     // positive or negative energy vector-spinor
     // bar or non-bar vector-spinor
-    int m_r, m_b;
+    // massless (m_on=1,2) or massive spin-3/2 particle (m_on=3): helper variable to left physically ZERO components
+    // also ZERO numerically
+    int m_r, m_b, m_on;
 
     static double s_accu;
 
@@ -57,13 +64,13 @@ namespace METOOLS {
     // TODO: Parameter anpassen, wenn Bedeutung geklärt!!! Bislang m_c, m_h, m_s, m_r, m_b da nötig (m_r, m_h, m_b) oder
     //       schon in CObject gesetzt
    inline CRaritaSchwinger(const int r=1, const int b=1, const int cr=0,const int ca=0,
-                           const size_t &h=0,const size_t &s=0)
+                           const size_t &h=0,const size_t &s=0, const int &on=3)
     { 
       for (auto entry : m_x){
         entry = 0.0;
       }
       m_c[0]=cr; m_c[1]=ca;
-      m_h=h; m_s=s; m_r=r; m_b=b;
+      m_h=h; m_s=s; m_r=r; m_b=b; m_on=on;
     }
     inline CRaritaSchwinger(const CRaritaSchwinger &v)
     {
@@ -71,28 +78,27 @@ namespace METOOLS {
         m_x[i] = v[i];
       }
       m_c[0]=v(0); m_c[1]=v(1);
-      m_h=v.m_h; m_s=v.m_s; m_r=v.m_r; m_b=v.m_b;
+      m_h=v.m_h; m_s=v.m_s; m_r=v.m_r; m_b=v.m_b; m_on=v.m_on;
     }
+    inline CRaritaSchwinger(const int &r, const int &b, const SComplex &x0, const SComplex &x1, const SComplex &x2,
+                            const SComplex &x3, const SComplex &x4, const SComplex &x5, const SComplex &x6,
+                            const SComplex &x7, const SComplex &x8, const SComplex &x9, const SComplex &x10,
+                            const SComplex &x11, const SComplex &x12, const SComplex &x13, const SComplex &x14,
+                            const SComplex &x15, const int c1=0,const int c2=0, const size_t &h=0,const size_t &s=0,
+                            const int &on=3)
+    {
+      m_x[0]=x0; m_x[1]=x1; m_x[2]=x2; m_x[3]=x3; m_x[4]=x4; m_x[5]=x5; m_x[6]=x6; m_x[7]=x7; m_x[8]=x8; m_x[9]=x9;
+      m_x[10]=x10; m_x[11]=x11; m_x[12]=x12; m_x[13]=x13; m_x[14]=x14; m_x[15]=x15;
+      m_r=r, m_b=b, m_on =on;
+      m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
+    }
+
     /*inline CRaritaSchwinger(const Scalar &x0, const Scalar &x1,
 		 const Scalar &x2, const Scalar &x3,
 		 const int c1=0,const int c2=0,
 		 const size_t &h=0,const size_t &s=0)
-    { 
-      m_x[0]=x0; m_x[1]=x1; m_x[2]=x2; m_x[3]=x3; 
-      m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
-    }
-    inline CRaritaSchwinger(const int c1,const int c2,
-		 const size_t &h=0,const size_t &s=0)
-    { 
-      m_x[0]=m_x[1]=m_x[2]=m_x[3]=0.0; 
-      m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
-    }
-    inline CRaritaSchwinger(const SComplex &x0, const SComplex &x1,
-		 const SComplex &x2, const SComplex &x3,
-		 const int c1=0,const int c2=0,
-		 const size_t &h=0,const size_t &s=0)
-    { 
-      m_x[0]=x0; m_x[1]=x1; m_x[2]=x2; m_x[3]=x3; 
+    {
+      m_x[0]=x0; m_x[1]=x1; m_x[2]=x2; m_x[3]=x3;
       m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
     }
     inline CRaritaSchwinger(const ATOOLS::Vec4<Scalar> &v,
@@ -176,8 +182,10 @@ namespace METOOLS {
 
     inline int R() const { return m_r; }
     inline int B() const { return m_b; }
+    inline int On() const { return m_on; }
     inline void SetR(const int &r) { m_r=r; }
     inline void SetB(const int &b) { m_b=b; }
+    inline bool SetOn();
 
     bool Nan() const;
 
@@ -186,11 +194,12 @@ namespace METOOLS {
     inline static void   SetAccu(const double &accu) { s_accu=accu;   }
     inline static double Accu()                      { return s_accu; }
 
-    bool Test_Properties(const ATOOLS::Vec4D &p);
+    bool Test_Properties(const ATOOLS::Vec4D &p, int r);
 
   };
-// end of class CVec4
+  // end of class CRaritaSchwinger
 // TODO: Brauchen wir Templates und wenn ja, welche?
+
   /*template <class Scalar> inline CVec4<Scalar>
   operator*(const Scalar &c,const CVec4<Scalar> &v)
   { return CVec4<Scalar>(v,c); }
