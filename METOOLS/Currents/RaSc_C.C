@@ -191,12 +191,18 @@ CRS<SType>::CRaScType CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType spi
   RaSc(0) = cr;
   RaSc(1) = ca;
 
+  // TODO: Ist diese Version der Komponentenbefüllung richtig oder z.B. diese:
+  //           for (size_t i(0); i<16; ++i) {
+  //      RaSc[i] = sqrt(SType(2.0)) * spinor[i / 4] * polvector[i % 4];
+  //    }
   // Fill Rarita-Schwinger wave function
   if (IsZero(m2)){
-    for (size_t i(0); i<16; ++i){
-      RaSc[i] = sqrt(SType(2.0)) * spinor[i/4] * polvector[i%4];
+    for (size_t i(0); i<8; ++i){
+      RaSc[i] = spinor[i % 2] * polvector[i / 2];
+      RaSc[i+8] = spinor[i % 2 + 2] * polvector[i / 2];
     }
   }
+  RaSc.SetOn();
   return RaSc;
 }
 
