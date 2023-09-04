@@ -242,7 +242,7 @@ namespace SHERPA {
 #if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       xfer_props.add(UseCollectiveIO{});
 #endif
-      std::vector<int> versionno = {2, 0, 0};
+      std::vector<int> versionno = {2, 0, 1};
       m_dss["version"]=p_file->createDataSet<int>
 	("version",DataSpace::From(versionno));
       m_dss["version"].write(versionno, xfer_props);
@@ -304,7 +304,7 @@ namespace SHERPA {
 	}
 	pdata[i][3]*=rpa->Picobarn();
 	pdata[i][4]*=rpa->Picobarn();
-	pdata[i][5]=procs[i]->Integrator()->Max();
+	pdata[i][5]=procs[i]->Integrator()->Max()*rpa->Picobarn();
 	m_nmax=std::max(m_nmax,int(procs[i]->NIn()+procs[i]->NOut()));
       }
       m_dss["procInfo"]=p_file->createDataSet<double>
