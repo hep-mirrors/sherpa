@@ -1209,7 +1209,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   psh->CreateIntegrators();
   psh->InitCuts();
   p_int->SetResultPath(resultpath);
-  p_int->ReadResults();
+  if (p_read==NULL) p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
   if (p_read) {
     p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
