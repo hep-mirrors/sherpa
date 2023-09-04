@@ -110,6 +110,8 @@ namespace LHEH5 {
 
   public:
 
+    inline const std::vector<int> &Version() const { return version; }
+
     inline double TotalXS() const
     {
       double xs(0.);
@@ -272,6 +274,9 @@ namespace LHEH5 {
       e->ReadHeader(file);
       m_totalxs=e->TotalXS();
       m_unitwgt=e->UnitWeight();
+      if (e->Version()[0]==2 &&
+	  e->Version()[1]==0 &&
+	  e->Version()[2]==0) m_unitwgt*=rpa->Picobarn();
       long int nevts(file.getDataSet("events").getSpace().
 		     getDimensions().front());
       if (mpi->Rank()==0) {
@@ -306,6 +311,9 @@ namespace LHEH5 {
       }
       if (p_ampl==NULL) {
 	Event e(p_file->GetEvent(m_ievt));
+	if (p_file->Version()[0]==2 &&
+	    p_file->Version()[1]==0 &&
+	    p_file->Version()[2]==0) e.pinfo.unitwgt*=rpa->Picobarn();
 	msg_Debugging()<<e<<"\n";
 	if (e.empty()) {
 	  m_trials+=e.trials;
