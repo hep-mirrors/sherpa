@@ -156,7 +156,6 @@ bool AMEGIC::Process_Group::SetUpIntegrator()
 {
   if (p_parent==NULL || (*p_parent)[0]->IsGroup()/* this is fudgy, need mode ... */) {
     for (size_t i(0);i<m_procs.size();i++) {
-      My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
       int res=m_procs[i]->Get<AMEGIC::Process_Base>()->SetUpIntegrator();
       if (s_partcommit)
 	My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
@@ -210,6 +209,7 @@ PHASIC::Single_Channel *LoadChannels(int nin,int nout,ATOOLS::Flavour* fl,
 bool AMEGIC::Process_Group::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
   if (p_channellibnames->empty()) return true;
   Multi_Channel *mc(psh->FSRIntegrator());
