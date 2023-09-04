@@ -1,5 +1,6 @@
 #include "ATOOLS/Math/Matrix.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include <iomanip>
 
 
@@ -369,6 +370,14 @@ CMatrix::CMatrix(int _rank) : m_rank(_rank) {
   }
 }
 
+CMatrix::CMatrix(int _rank, Complex value) : m_rank(_rank) {
+  p_m = new Complex*[m_rank];
+  for (int i=0;i<m_rank;++i) p_m[i] = new Complex[m_rank];
+  for (int i=0;i<m_rank;++i) {
+    for (int j=i;j<m_rank;++j) p_m[i][j] = p_m[j][i] = value;
+  }
+}
+
 CMatrix::CMatrix(Complex** m, int rank) : p_m(m), m_rank(rank) {}
 
 CMatrix::CMatrix(const CMatrix& _in) {
@@ -402,6 +411,28 @@ Vec4C CMatrix::operator* (const Vec4C& cvec) {
     p_m[1][0]*cvec[0] - p_m[1][1]*cvec[1] - p_m[1][2]*cvec[2] - p_m[1][3]*cvec[3],
     p_m[2][0]*cvec[0] - p_m[2][1]*cvec[1] - p_m[2][2]*cvec[2] - p_m[2][3]*cvec[3],
     p_m[3][0]*cvec[0] - p_m[3][1]*cvec[1] - p_m[3][2]*cvec[2] - p_m[3][3]*cvec[3]);
+}
+
+// Add two CMatrices
+CMatrix CMatrix::operator+(const CMatrix &cmatrix) {
+  if (m_rank!=cmatrix.Rank()) THROW(fatal_error, "Rank of matrices is different, can not be totaled!")
+  CMatrix new_cmatrix(m_rank);
+  for (int i(0); i<m_rank; ++i){
+    for (int j(0); j<m_rank; ++j){
+      new_cmatrix[i][j] = (*this)[i][j] + cmatrix[i][j];
+    }
+  }
+  return new_cmatrix;
+}
+
+CMatrix CMatrix::operator*(const Complex scal) {
+  CMatrix new_cmatrix(m_rank);
+  for (int i(0); i<m_rank; ++i){
+    for (int j(0); j<m_rank; ++j){
+      new_cmatrix[i][j] = (*this)[i][j] * scal;
+    }
+  }
+  return new_cmatrix;
 }
 
 

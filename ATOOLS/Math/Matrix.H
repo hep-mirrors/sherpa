@@ -41,6 +41,7 @@ namespace ATOOLS {
   public:
     CMatrix() { m_rank = 0; p_m = NULL; }
     CMatrix(int);
+    CMatrix(int _rank, Complex value);
     CMatrix(Complex**,int);
     CMatrix(const CMatrix&);
     ~CMatrix();
@@ -49,6 +50,8 @@ namespace ATOOLS {
     Complex       * operator[](int i)       { return p_m[i]; }
     const Complex * operator[](int i) const { return p_m[i]; }
     Vec4C operator* (const Vec4C& cvec);
+    CMatrix operator* (const Complex scal);
+    CMatrix operator+ (const CMatrix& cmatrix);
     Complex ** GetMatrix()      const { return p_m; } 
   };
 
