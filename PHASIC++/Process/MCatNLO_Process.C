@@ -527,7 +527,8 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->Weight()<<" )\n";
-  p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
+  bproc->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
+  bproc->Integrator()->SetMax(p_bviproc->Selected()->Integrator()->Max());
   if (m_psmode&2) return 1.0;
   return stat?p_nlomc->Weight():0.0;
 }
@@ -695,9 +696,7 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   p_rsproc->SetEventReader(p_read);
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
   p_rsproc->SetEventReader(NULL);
-  for (size_t i(0);i<p_bviproc->Size();++i)
-    (*p_bproc)[i]->Integrator()->SetMax
-      ((*p_bviproc)[i]->Integrator()->Max());
+  if (p_read) p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
   return res;
 }
 

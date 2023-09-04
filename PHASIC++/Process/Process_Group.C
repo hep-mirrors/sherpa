@@ -199,7 +199,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   }
   psh->CreateIntegrators();
   p_int->SetResultPath(resultpath);
-  p_int->ReadResults();
+  if (p_read==NULL) p_int->ReadResults();
   p_int->SetTotal(0);
   exh->AddTerminatorObject(p_int);
   psh->InitIncoming();

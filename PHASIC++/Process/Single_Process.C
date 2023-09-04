@@ -923,7 +923,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   psh->CreateIntegrators();
   p_int->SetResultPath(resultpath);
-  p_int->ReadResults();
+  if (p_read==NULL) p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
   psh->InitIncoming();
   if (p_read) {
