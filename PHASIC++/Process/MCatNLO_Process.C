@@ -630,7 +630,8 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
 		 <<" ( w = "<<p_nlomc->WeightsMap().Nominal()<<" )\n";
   for (Cluster_Amplitude *campl(p_ampl->Next());campl;
        campl=campl->Next()) msg_Debugging()<<*campl<<"\n";
-  p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
+  bproc->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
+  bproc->Integrator()->SetMax(p_bviproc->Selected()->Integrator()->Max());
   if (m_psmode&2) return Weights_Map{1.0};
   return stat ? p_nlomc->WeightsMap() : Weights_Map{0.0};
 }
@@ -768,9 +769,7 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
 #endif
   p_rsproc->SetEventReader(NULL);
-  for (size_t i(0);i<p_bviproc->Size();++i)
-    (*p_bproc)[i]->Integrator()->SetMax
-      ((*p_bviproc)[i]->Integrator()->Max());
+  if (p_read) p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
   return res;
 }
 
