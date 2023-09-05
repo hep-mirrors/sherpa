@@ -433,6 +433,10 @@ double MCatNLO_Process::OneSEvent(const int wmode)
       p_bproc->SetSelected(bproc=(*p_bproc)[i]);
       break;
     }
+  bproc->Integrator()->SetMax
+    (p_bviproc->Selected()->Integrator()->Max());
+  bproc->Integrator()->SetEnhanceFactor
+    (p_bviproc->Selected()->Integrator()->EnhanceFactor());
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
   bproc->Trigger(p);
   p_ampl = dynamic_cast<Single_Process*>
@@ -463,8 +467,11 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
     p_selected=p_rproc;
     p_rproc->SetSelected(rproc);
-    rproc->Integrator()->PSHandler()->SetEnhance(bproc->Integrator()->PSHandler()->Enhance());
+    rproc->Integrator()->PSHandler()->SetEnhance
+      (bproc->Integrator()->PSHandler()->Enhance());
     rproc->Integrator()->SetMax(bproc->Integrator()->Max());
+    rproc->Integrator()->SetEnhanceFactor
+      (bproc->Selected()->Integrator()->EnhanceFactor());
     if (ampl->Leg(0)->Mom().PPlus()>ampl->Leg(1)->Mom().PPlus())
       std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
     rproc->Integrator()->SetMomenta(*ampl);
@@ -528,7 +535,6 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->Weight()<<" )\n";
   bproc->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
-  bproc->Integrator()->SetMax(p_bviproc->Selected()->Integrator()->Max());
   if (m_psmode&2) return 1.0;
   return stat?p_nlomc->Weight():0.0;
 }
