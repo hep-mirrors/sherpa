@@ -119,10 +119,8 @@ void Cluster_Splitter::CalculateLimits() {
     double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
     m_zmin[i] = (centre-lambda)/(2.*m_Q2);
     m_zmax[i] = (centre+lambda)/(2.*m_Q2);
-    // TODO reinsert
-    // Just for the debugging of KT
-    // m_mean[i]  = sqrt(m_kt02[0]);
-    // m_sigma[i] = sqrt(m_kt02[0]);
+    m_mean[i]  = sqrt(m_kt02[0]);
+    m_sigma[i] = sqrt(m_kt02[0]);
   }
 }
 
@@ -177,7 +175,7 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
     norm *= pow(1.-zmax,beta);
 
   const double zt = alpha / (alpha+beta);
-  norm = pow(zt,alpha) * pow(1.-zt,beta);
+  // norm = pow(zt,alpha) * pow(1.-zt,beta);
   // there might be a maximut at the boundaries
 
   double wt = pow(z,alpha) * pow(1.-z,beta);
@@ -190,10 +188,43 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
   }
 
   if (wt>norm) {
+    std::cout << "Something is wrong in the Cluster Fragmentation function"
+	      << std::endl;
     exit(1);
   }
   return value;
 }
+
+double Cluster_Splitter::analytic_weight(double z, double zmin, double zmax,
+					 double gamma, double kt02) {
+
+  double arg    = dabs(gamma)>1.e-2 ? gamma*(m_kt2+m_masses*m_masses)/kt02 : 0.;
+  double norm_upper = exp(arg / zmax) * (exp(-arg/zmax)*zmax
+					 + arg *std::expint(-arg/zmax));
+  double norm_lower = exp(arg / zmax) * (exp(-arg/zmin)*zmin
+					 + arg *std::expint(-arg/zmin));
+  // if(std::isnan(norm_lower)) {
+  //   std::cout << "norm lower is nan" << std::endl;
+  //   std::cout << "  -> f1 = " << exp(arg / zmin) << std::endl;
+  //   std::cout << "  |  -> " << arg/zmin << std::endl;
+  //   std::cout << "  -> f2 = " << (exp(-arg/zmin))*zmin << std::endl;
+  //   std::cout << "  -> f3 = " << arg *std::expint(-arg/zmin) << std::endl;
+  // }
+  double norm = norm_upper - norm_lower;
+  double value = exp(-arg*((zmax-z)/(z*zmax)));
+  // if(std::isnan(value/norm)) {
+  //   std::cout << "  arg = " << arg << std::endl;
+  //   std::cout << "  norm_upper = " << norm_upper << std::endl;
+  //   std::cout << "  norm_lower = " << norm_lower << std::endl;
+  //   std::cout << "  zmin = " << zmin << std::endl;
+  //   std::cout << "  z = " << z << std::endl;
+  //   std::cout << "  zmax " << zmax << std::endl;
+  //   std::cout << "  value = " << value << std::endl;
+  // }
+  return value / norm;
+}
+
+
 
 double Cluster_Splitter::
 WeightFunction(const double & z,const double & zmin,const double & zmax,
@@ -222,7 +253,7 @@ void Cluster_Splitter::z_rejected(const double wgt, const double & z,
     const auto c  = m_gamma[m_c[cnt]][i];
     const auto kt = m_kt02[i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
-    tmp_variation_weights[i] *= std::min(1.,(1-wgt_new)) / std::min(1.,(1-wgt));
+    tmp_variation_weights[i] *= (1.+ (1.-wgt_new) / (1.-wgt))/2.;
   }
   return;
 }
@@ -236,19 +267,22 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
     variation_weights.resize(m_alpha[0].size());
   }
 
+  double wgt_old = wgt;
   for (int i{0}; i<m_alpha[0].size(); i++) {
     const auto a  = m_alpha[m_a[cnt]][i];
     const auto b  = m_beta [m_b[cnt]][i];
     const auto c  = m_gamma[m_c[cnt]][i];
     const auto kt = m_kt02[i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
-    tmp_variation_weights[i] *= std::min(1.,wgt_new) / std::min(1.,wgt);
+    tmp_variation_weights[i] *= (1 + wgt_new / wgt_old) /2.;
   }
+
   return;
 }
 
 
 bool Cluster_Splitter::RecalculateZs() {
+  return true;
   double e12  = (m_R2[0]+m_kt2)/m_Q2, e21 = (m_R2[1]+m_kt2)/m_Q2;
   double disc = sqr(1-e12-e21)-4.*e12*e21;
   if (disc<0.) return false;

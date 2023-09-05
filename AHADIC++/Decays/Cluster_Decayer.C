@@ -36,9 +36,11 @@ bool Cluster_Decayer::operator()(bool breakit) {
 
 bool Cluster_Decayer::Treat(Cluster * cluster) {
   bool mustdecay = p_softclusters->MustPromptDecay(cluster);
-  if (!mustdecay && m_splitter((*cluster)[0],(*cluster)[1])) {
-    delete cluster;
-    return true;
+  if (!mustdecay) {
+    if(m_splitter((*cluster)[0],(*cluster)[1])) {
+      delete cluster;
+      return true;
+    }
   }
   switch (p_softclusters->Treat(cluster,true)) {
   case -1:

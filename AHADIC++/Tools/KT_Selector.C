@@ -13,7 +13,10 @@ KT_Selector::KT_Selector() {
 KT_Selector::~KT_Selector() {}
 
 void KT_Selector::Init() {
-  m_sigma = hadpars->GetVec("kT_0");
+  const auto _tmp = hadpars->GetVec("kT_0");
+  //m_sigma = hadpars->GetVec("kT_0");
+  for (auto kt : _tmp)
+    m_sigma.push_back(1.0);
 }
 
 double KT_Selector::operator()(const double & ktmax) {

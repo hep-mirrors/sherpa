@@ -152,6 +152,7 @@ bool Soft_Cluster_Handler::Rescue(Cluster * cluster) {
   double  newmass = newhad.Mass();
   double  wratio  = 1., test;
   Vec4D   mom, totmom;
+  bool found {false};
   for (list<Proto_Particle *>::iterator pit=p_hadrons->begin();
        pit!=p_hadrons->end();pit++) {
     mom = (*pit)->Momentum()+cluster->Momentum();
@@ -160,9 +161,15 @@ bool Soft_Cluster_Handler::Rescue(Cluster * cluster) {
       winner = (*pit);
       wratio = test;
       totmom = mom;
+      found = true;
     }
   }
-  double totmass2 = totmom.Abs2(), totmass = sqrt(totmass2), wmass2 = sqr(winner->Flavour().Mass());
+  // TODO: How have I introduced this?
+  if(!found) return false;
+  double totmass2 = totmom.Abs2();
+  double totmass = sqrt(totmass2);
+  double wmass2 = sqr(winner->Flavour().Mass());
+
   Vec4D  wvec     = winner->Momentum();
   Poincare boost  = Poincare(totmom);
   boost.Boost(wvec);

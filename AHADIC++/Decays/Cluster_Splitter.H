@@ -82,6 +82,7 @@ namespace AHADIC {
     void z_accepted(const double wgt, const double & z,
 		    const double & zmin,const double & zmax,
 		    const unsigned int & cnt) override;
+    double analytic_weight(double, double, double, double, double);
   };
 }
 

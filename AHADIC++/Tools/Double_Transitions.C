@@ -9,7 +9,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Double_Transitions::Double_Transitions(Single_Transitions * singles) :
-  m_wtthres(1.e-12),
+  m_wtthres(1.e-6),
   m_charm_strange_modifier(hadpars->Get("CharmStrange_Enhancement")),
   m_beauty_strange_modifier(hadpars->Get("BeautyStrange_Enhancement")),
   m_charm_baryon_modifier(hadpars->Get("CharmBaryon_Enhancement")),
@@ -40,7 +40,7 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	weights.push_back(wgt);
       double weight = 1.;
       //double weight      = constituents->TotWeight(popped.Bar());
-      if (weight<m_wtthres) continue;
+      if (weights[0]<m_wtthres) continue;
       if (2.*constituents->Mass(popped)+0.1<
 	  constituents->Mass(pair.first)+constituents->Mass(pair.second)) {
 	std::fill(weights.begin(), weights.end(), 1);
@@ -76,10 +76,8 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	  double wt   = weight*hit1->second*hit2->second;
 	  for(int i{0}; i<weights.size(); ++i)
 	    weights[i] *= wt;
-	  // set wtthres to 1e-12
-	  // TODO: reinsert
-	  //if (wt<m_wtthres) continue;
 
+	  if (weights[0]<m_wtthres) continue;
 	  (*m_transitions[pair])[hads] = weights;
 	}
       }
