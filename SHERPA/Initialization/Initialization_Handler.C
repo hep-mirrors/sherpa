@@ -342,6 +342,9 @@ Initialization_Handler::~Initialization_Handler()
       PRINT_INFO("Error: Cannot unload PDF library "+*pdflib);
     else ((PDF_Exit_Function)exit)();
   }
+  //delete m_defsets[PDF::isr::hard_process];    //    = new std::string[2];
+  //delete m_defsets[PDF::isr::hard_subprocess]; // = new std::string[2];
+  //delete m_defsets[PDF::isr::bunch_rescatter]; // = new std::string[2];
 }
 
 void Initialization_Handler::CheckVersion()

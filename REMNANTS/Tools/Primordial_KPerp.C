@@ -29,11 +29,11 @@ void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
       m_SpecMean[beam]  = (*rempars)(beamflav,"BEAM_SPECTATOR_MEAN");
       m_SpecSigma[beam] = (*rempars)(beamflav,"BEAM_SPECTATOR_SIGMA");
     }
-    if (m_form[beam]==pkform::dipole || m_form[beam]==pkform::dipole_limited) {
+    else if (m_form[beam]==pkform::dipole || m_form[beam]==pkform::dipole_limited) {
       m_SIQ2[beam]      = (*rempars)(beamflav,"SHOWER_INITIATOR_Q2") * escale;
       m_SpecQ2[beam]    = (*rempars)(beamflav,"BEAM_SPECTATOR_Q2") * escale;
     }
-    if (m_form[beam]==pkform::gauss_limited || m_form[beam]==pkform::dipole_limited) {
+    else {
       m_SIKtmax[beam]    = Max(1.0, (*rempars)(beamflav,"SHOWER_INITIATOR_KTMAX") * escale);
       m_SIEta[beam]      = (*rempars)(beamflav,"SHOWER_INITIATOR_KTEXPO");
       m_SpecKtmax[beam]  = Max(1.0, (*rempars)(beamflav,"BEAM_SPECTATOR_KTMAX") * escale);

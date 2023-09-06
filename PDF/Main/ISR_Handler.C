@@ -68,6 +68,12 @@ ISR_Handler::ISR_Handler(std::array<ISR_Base *, 2> isrbase, const isr::id &id)
   FixType();
 }
 
+ISR_Handler::~ISR_Handler() {
+  for (size_t i=0;i<2;i++) {
+    if (p_isrbase[i]!=NULL) { delete p_isrbase[i]; p_isrbase[i] = NULL; }
+  }
+}
+
 void ISR_Handler::FixType() {
   m_type = isrmode::unknown;
   isrtype::code type[2];

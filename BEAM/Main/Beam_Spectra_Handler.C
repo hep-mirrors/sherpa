@@ -38,6 +38,8 @@ Beam_Spectra_Handler::~Beam_Spectra_Handler() {
       p_BeamBase[i] = nullptr;
     }
   }
+  if (p_weight!=NULL)     { delete p_weight;     p_weight     = NULL; }
+  if (p_kinematics!=NULL) { delete p_kinematics; p_kinematics = NULL; }
 }
 
 bool Beam_Spectra_Handler::InitTheBeams() {
