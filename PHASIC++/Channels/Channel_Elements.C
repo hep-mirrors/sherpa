@@ -50,7 +50,7 @@ double Channel_Elements::MasslessPropWeight
     msg_Error()<<METHOD<<"(): Value out of bounds: "
 	       <<smin<<" .. " <<smax<<" vs. "<<s<< std::endl;
   }
-  double w(PeakedWeight(1.,sexp,smin,smax,s,1,ran)/pow(s,-sexp));
+  double w(PeakedWeight(0.,sexp,smin,smax,s,1,ran)/pow(s,-sexp));
   if (IsBad(w)) msg_Error()<<METHOD<<"(): Weight is "<<w<<std::endl;
   return 1./w;
 }
@@ -58,7 +58,7 @@ double Channel_Elements::MasslessPropWeight
 double Channel_Elements::MasslessPropMomenta
 (double sexp,double smin,double smax, double ran)
 {
-  double s(PeakedDist(1.,sexp,smin,smax,1,ran));
+  double s(PeakedDist(0.,sexp,smin,smax,1,ran));
   if (IsBad(s)) msg_Error()<<METHOD<<"(): Value is "<<s<<std::endl;
   return s;
 }
