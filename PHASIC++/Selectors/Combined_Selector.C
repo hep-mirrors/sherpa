@@ -83,20 +83,16 @@ bool Combined_Selector::Trigger(Selector_List& sl)
 
 bool Combined_Selector::RSTrigger(NLO_subevtlist *const subs)
 {
-  int pass(0);
-  for (size_t n(0);n<subs->size();++n) {
-    p_sub=(*subs)[n];
-    Vec4D_Vector mom(p_sub->p_mom,&p_sub->p_mom[m_n]);
-    for (size_t i(0);i<m_nin;++i)
-      if (mom[i][0]<0.0) mom[i]=-mom[i];
-    Selector_List sl=Selector_List
-      (p_sub->p_fl,p_sub->m_n,mom,m_nin);
-    p_sub->m_trig=Trigger(sl);
-    if (p_sub->m_trig) pass=1;
-    p_sub=NULL;
+  for (size_t i(0);i<subs->size();++i) (*subs)[i]->m_trig=1;
+  m_rsres=1;
+  if (!m_on) return m_rsres;
+  for (size_t i=0; i<m_sels.size(); ++i) {
+    if (!(m_sels[i]->RSTrigger(subs))) {
+      m_rsres=0;
+      return m_rsres;
+    }
   }
-  m_rsres=pass;
-  return pass;
+  return m_rsres;
 }
 
 bool Combined_Selector::Pass() const

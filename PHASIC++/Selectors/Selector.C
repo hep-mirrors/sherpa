@@ -54,8 +54,30 @@ Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
     m_isnlo=true;
 }
 
-Selector_Base::~Selector_Base()
+bool Selector_Base::RSTrigger(NLO_subevtlist *const subs)
 {
+  Flavour_Vector fl(p_fl,&p_fl[m_n]);
+  int pass(0), nout(m_nout), nn(m_n);
+  for (size_t n(0);n<subs->size();++n) {
+    p_sub=(*subs)[n];
+    m_nout=(m_n=p_sub->m_n)-m_nin;
+    Vec4D_Vector mom(p_sub->p_mom,&p_sub->p_mom[m_n]);
+    for (size_t i(0);i<m_nin;++i)
+      if (mom[i][0]<0.0) mom[i]=-mom[i];
+    Selector_List sl=Selector_List
+      (p_sub->p_fl,p_sub->m_n,mom,m_nin);
+    if (!Trigger(sl)) p_sub->m_trig=0;
+    if (p_sub->m_trig) pass=1;
+    p_sub=NULL;
+  }
+  m_n=nn;
+  m_nout=nout;
+  for (size_t i(0);i<m_n;++i) p_fl[i]=fl[i];
+  return pass;
+}
+
+Selector_Base::~Selector_Base()
+{ 
   if (m_sel_log!=NULL) delete m_sel_log;
 }
 

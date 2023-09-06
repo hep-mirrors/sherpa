@@ -87,6 +87,7 @@ namespace PHASIC {
 
     virtual bool Trigger(const ATOOLS::Vec4D_Vector &p,
                          const ATOOLS::Flavour *fl=NULL, size_t n=0);
+    virtual bool RSTrigger(ATOOLS::NLO_subevtlist *const subs);
     virtual bool Trigger(ATOOLS::Selector_List &sl) = 0;
 
     virtual void BuildCuts(Cut_Data *) = 0;
