@@ -46,11 +46,14 @@ double PHASIC::PeakedWeight(double a,double cn,double cxm,double cxp,double res,
 double Channel_Elements::MasslessPropWeight
 (double sexp,double smin,double smax,const double s,double &ran)
 {
+  // this implementation uses a hard-coded regulator of 1. in the distribution.
+  // for a variable regulater, see the second implementation below.
   if (s<smin || s>smax) {
     msg_Error()<<METHOD<<"(): Value out of bounds: "
 	       <<smin<<" .. " <<smax<<" vs. "<<s<< std::endl;
   }
-  double w(PeakedWeight(1.,sexp,smin,smax,s,1,ran)/pow(s,-sexp));
+  double reg=1.;
+  double w(PeakedWeight(reg,sexp,smin,smax,s,1,ran)/pow(reg+s,-sexp));
   if (IsBad(w)) msg_Error()<<METHOD<<"(): Weight is "<<w<<std::endl;
   return 1./w;
 }
