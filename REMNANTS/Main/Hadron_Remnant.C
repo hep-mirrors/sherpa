@@ -288,7 +288,7 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     (*ktmap)[pmit] = Vec4D();
   }
   msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
-            << "\n";
+		  << "\n";
   double remnant_masses = 0.;
   for (Particle  const * pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
@@ -315,7 +315,7 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     else p_beamblob->AddToOutParticles(part);
     (*ktmap)[part] = Vec4D();
   }
-  //msg_Out()<<METHOD<<"("<<m_beam<<"):\n"<<(*p_beamblob)<<"\n";
+  //  msg_Out()<<METHOD<<"("<<m_beam<<"):\n"<<(*p_beamblob)<<"\n";
 }
 
 double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,

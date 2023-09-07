@@ -209,6 +209,10 @@ bool Event_Handler::AnalyseEvent() {
 }
 
 int Event_Handler::IterateEventPhases(eventtype::code & mode) {
+  //msg_Out()<<"\n\n\n"
+  //	   <<"==============================================================\n"
+  //	   <<"==============================================================\n"
+  //	   <<"==============================================================\n";
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;
@@ -232,7 +236,9 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       }
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
+    //msg_Out()<<"* entering "<<(*pit)->Name()<<"\n";
     Return_Value::code rv((*pit)->Treat(&m_blobs));
+    //msg_Out()<<"* leaving "<<(*pit)->Name()<<" with value = "<<rv<<".\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;

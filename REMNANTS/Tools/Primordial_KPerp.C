@@ -33,11 +33,15 @@ void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
       m_SIQ2[beam]      = (*rempars)(beamflav,"SHOWER_INITIATOR_Q2") * escale;
       m_SpecQ2[beam]    = (*rempars)(beamflav,"BEAM_SPECTATOR_Q2") * escale;
     }
-    else {
-      m_SIKtmax[beam]    = Max(1.0, (*rempars)(beamflav,"SHOWER_INITIATOR_KTMAX") * escale);
+    if (m_form[beam]==pkform::gauss_limited || m_form[beam]==pkform::dipole_limited) {
+      m_SIKtmax[beam]    = Max(0.0, (*rempars)(beamflav,"SHOWER_INITIATOR_KTMAX") * escale);
       m_SIEta[beam]      = (*rempars)(beamflav,"SHOWER_INITIATOR_KTEXPO");
-      m_SpecKtmax[beam]  = Max(1.0, (*rempars)(beamflav,"BEAM_SPECTATOR_KTMAX") * escale);
+      m_SpecKtmax[beam]  = Max(0.0, (*rempars)(beamflav,"BEAM_SPECTATOR_KTMAX") * escale);
       m_SpecEta[beam]    = (*rempars)(beamflav,"BEAM_SPECTATOR_KTEXPO");
+    }
+    else {
+      m_SIKtmax[beam]    = m_SpecKtmax[beam] = 1000.;
+      m_SIEta[beam]      = m_SpecEta[beam]   = 0.;
     }
   }
   if (m_analysis) InitAnalysis();
@@ -49,7 +53,6 @@ CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,const double 
   p_ktmap = ktmap;
   Vec4D  kt_Show = Vec4D(0.,0.,0.,0.), kt_Spec = Vec4D(0.,0.,0.,0.);
   double E_Show  = 0., E_Spec = 0.;
-  //msg_Out()<<"\n\n"<<METHOD<<"(scale = "<<scale<<")\n";
   // harvesting particles from the beam blob of beam "beam" and
   for (ParticleMomMap::iterator pmmit=p_ktmap->begin();
        pmmit!=p_ktmap->end();pmmit++) {
@@ -88,19 +91,14 @@ void Primordial_KPerp::BalanceKT(const Vec4D & kt_Show,const double & E_Show,
     }
   }
   else {
-    //msg_Out()<<"\n"<<METHOD<<"["<<m_beam<<"](E = "<<E_Show<<", "<<E_Spec<<" "
-    //	     <<"vs KT = "<<kt_Show<<", "<<kt_Spec<<"\n";
     for (ParticleMomMap::iterator pmmit=p_ktmap->begin();
 	 pmmit!=p_ktmap->end();pmmit++) {
-      //msg_Out()<<"- "<<pmmit->first->Flav()<<" ("<<pmmit->first->Info()<<", "
-      //       <<pmmit->first->Momentum()<<"): "<<pmmit->second;
       if (pmmit->first->Info()=='I') {
 	pmmit->second = pmmit->second - pmmit->first->Momentum()[0]/E_Show * kt_Spec;
       }
       else {
 	pmmit->second = pmmit->second - pmmit->first->Momentum()[0]/E_Spec * kt_Show;
       }
-      //msg_Out()<<" ---> "<<pmmit->second<<"\n";
     }
   }
   if (m_analysis) {
@@ -120,7 +118,9 @@ Vec4D Primordial_KPerp::KT(const Particle * part) {
     m_mean  = m_SpecMean[m_beam];  m_sigma = m_SpecSigma[m_beam]; m_Q2 = m_SpecQ2[m_beam];
     m_ktmax = m_SpecKtmax[m_beam]; m_eta   = m_SpecEta[m_beam]; 
   }
+  if (m_ktmax<=0.) return Vec4D(0.,0.,0.,0.);
   double ktmax = Min(m_ktmax,part->Momentum()[0]), kt = 0.;
+  //msg_Out()<<"  --> "<<METHOD<<" for part = "<<part<<", "<<part->Info()<<": ktmax = "<<ktmax<<"\n";
   do {
     switch (m_form[m_beam]) {
     case pkform::none:           kt = 0.;                       break;
@@ -131,9 +131,6 @@ Vec4D Primordial_KPerp::KT(const Particle * part) {
     default: THROW(fatal_error,"Unknown KPerp form.");
     }
   } while (kt<0. || kt>ktmax);
-  //msg_Out()<<METHOD<<"("<<part->Flav()<<", "<<part->Info()<<"): "
-  //	   <<"form = "<<m_form[m_beam]<<", mean = "<<m_mean<<", sigma = "<<m_sigma
-  //	   <<" --> "<<kt<<"\n";
   // Add angle and construct the vector
   if (kt==0.) return Vec4D(0.,0.,0.,0.);
   const double phi = 2.*M_PI*ran->Get();
