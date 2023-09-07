@@ -110,46 +110,9 @@ Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
   delete ladder;
   m_primaries.GetLadders()->pop_front();
   //return p_collemgen->GenerateEmissions(blobs);
-  //msg_Out()<<"\n";
-  //for (size_t i=0;i<2;i++) msg_Out()<<(*blob->InParticle(i))<<"\n";
   return blob;
 }
 
-/*
-Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
-  if (m_primaries.GetLadders()->empty()) return 0;
-  Ladder * ladder = m_primaries.GetLadders()->front();
-  Blob * blob     = new Blob();
-  blob->SetId();
-  blob->AddData("Weight",new Blob_Data<double>(1.));
-  blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
-  blob->AddData("Factorization_Scale",new Blob_Data<double>(1.));
-  blob->AddData("Resummation_Scale",new Blob_Data<double>(1.));
-  blob->SetPosition(ladder->Position());
-  //blob->SetType(btp::Hard_Collision);
-  blob->SetTypeSpec("MinBias");
-  blob->UnsetStatus(blob_status::needs_minBias);
-  //blob->SetStatus(blob_status::needs_showers);
-  for (size_t i=0;i<2;i++) {
-    blob->AddToInParticles(ladder->InPart(i)->GetParticle());
-    //msg_Out() << "add to in parts. in blob->" << *(ladder->InPart(i)->GetParticle()) << "\n";
-  }
-  for (LadderMap::iterator lmit=ladder->GetEmissions()->begin();
-       lmit!=ladder->GetEmissions()->end();lmit++) {
-    //msg_Out() << "add to out parts. in blob->" << *(lmit->second.GetParticle()) << "\n";
-    Particle * part = lmit->second.GetParticle();
-    blob->AddToOutParticles(part);
-    if (dabs(lmit->first)>m_primaries.Ymax()) part->SetInfo('B');
-  }
-  delete ladder;
-  m_primaries.GetLadders()->pop_front();
-  //blob->AddStatus(blob_status::needs_hadronization);
-  //blob->AddStatus(blob_status::needs_beams);
-  blob->SetType(btp::Elastic_Collision);
-  //return p_collemgen->GenerateEmissions(blobs);
-  return blob;
-}
-*/
 bool Inelastic_Event_Generator::SelectEikonal() {
   p_eikonal = 0;
   while (p_eikonal==NULL) {
