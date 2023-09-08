@@ -110,8 +110,7 @@ void Initialization_Handler::SetFileNames()
   m_processesdat     = p_dataread->GetValue<string>("PROCESSFILE",fname+"|(processes){|}(processes)");
   m_selectordat      = p_dataread->GetValue<string>("SELECTORFILE",fname+"|(selector){|}(selector)");
   m_filterdat        = p_dataread->GetValue<string>("FILTERFILE",fname+"|(filter){|}(filter)");
-  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",FileExists("Analysis.dat")?
-						    "Analysis.dat":fname+"|(analysis){|}(analysis)");
+  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",fname+"|(analysis){|}(analysis)");
   std::string integrationdat = p_dataread->GetValue<string>("INTEGRATION_DATA_FILE",fname+"|(integration){|}(integration)");
   std::string momentadat     = p_dataread->GetValue<string>("MOMENTA_DATA_FILE",fname+"|(momenta){|}(momenta)");
   if (FileExists("Momenta.dat")) momentadat="Momenta.dat";
