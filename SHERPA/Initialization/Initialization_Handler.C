@@ -918,7 +918,7 @@ void Initialization_Handler::SetGlobalVariables()
   sdr.AddWordSeparator("\t");
   sdr.SetInputPath(m_path);
   sdr.SetInputFile(m_showerdat);
-  int evol = sdr.GetValue<int>("CSS_EVOLUTION_SCHEME",1);
+  int evol = sdr.GetValue<int>("CSS_EVOLUTION_SCHEME",20);
   int kfmode = sdr.GetValue<int>("CSS_KFACTOR_SCHEME",1);
   int scs = sdr.GetValue<int>("CSS_SCALE_SCHEME",0);
   int svmode = sdr.GetValue<double>("CSS_SCALE_VARIATION_SCHEME",1);
@@ -926,7 +926,7 @@ void Initialization_Handler::SetGlobalVariables()
   double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",1.0);
   double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",2.00);
   double fs_as_fac = sdr.GetValue<double>("CSS_FS_AS_FAC",1.0);
-  double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.5);
+  double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",1.0);
   double as_var_fac = sdr.GetValue<double>("CSS_SCALE_FACTOR",1.);
   double mth = sdr.GetValue<double>("CSS_MASS_THRESHOLD",0.0);
   rpa->gen.SetVariable("CSS_EVOLUTION_SCHEME",ToString(evol));
