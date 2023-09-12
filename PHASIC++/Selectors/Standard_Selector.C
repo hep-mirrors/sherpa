@@ -729,8 +729,11 @@ bool IMass_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour()) ) ) {
         double massij = sqrt((sl[i].Momentum()+sl[j].Momentum()).Abs2());
-        if (m_sel_log->Hit( ((massij<m_massmin) ||
-                             (massij>m_massmax)) )) return false;
+	// This comparison has a numerical safety net of Accu()
+	// due to an issue with points failing in e+e- with no ISR
+	// when the upper invariant mass limit is E_CMS
+        if (m_sel_log->Hit( ((massij-m_massmin<Accu()) ||
+                             (massij-m_massmax>Accu())) )) return false;
       }
     }
   }
