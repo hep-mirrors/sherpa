@@ -101,6 +101,13 @@ If your Rivet installation is not in a standard location, the bootstrap script
 should have created a :file:`rivetenv.sh` which you have to source before running
 the ``rivet-mkhtml`` script.
 
+The `RIVET:` block can be used with further options especially suitable for detailed
+studies. Adding `JETCONTS: 1` will create separate histograms split by jet multiplicity as
+created by the hard process. `SPLITSH: 1` creates histograms split by soft and
+hard events, and `SPLITPM: 1` creates histograms split by events with positive and
+negative event weights. Finally, `SPLITCOREPROCS: 1` will split by different
+processes if multiple ones are specified in the runcard.
+
 .. _HZTool analyses:
 
 ***************
