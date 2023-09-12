@@ -226,7 +226,7 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     }
   } while (!CheckHH() && scale > 0.);
   if (scale < 1. && scale > 0.) {
-    msg_Info() << "Warning: " << METHOD
+    msg_Tracking() << "Warning: " << METHOD
                << " reduced overall prescale for kt to scale = " << scale
                << "\n";
   }
