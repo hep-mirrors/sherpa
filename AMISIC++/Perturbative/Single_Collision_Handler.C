@@ -119,8 +119,8 @@ bool Single_Collision_Handler::SelectRapidities() {
   if (m_xt>1.) return false;
   m_ymax = log(1./m_xt*(1.+sqrt(1.-m_xt*m_xt)));
   m_yvol = sqr(2.*m_ymax);
-  m_y3   = m_ymax*(2.*ran->Get()-1.);
-  m_y4   = m_ymax*(2.*ran->Get()-1.);
+  m_y3   = m_ymax*(2.*ran->Get()-1.)+m_Ycms;
+  m_y4   = m_ymax*(2.*ran->Get()-1.)+m_Ycms;
   return true;
 }
 
@@ -128,8 +128,8 @@ bool Single_Collision_Handler::CalcXs() {
   // Obtain Bjorken-x from the trial rapidities and make sure they are still smaller
   // than the residual x in the remnants.  Will enter the exact PDF calculation in
   // the exact differential cross section.
-  m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.*exp(-m_Ycms);
-  m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.*exp(m_Ycms);
+  m_x1   = m_xt*(exp(m_y3)+exp(m_y4))/2.;
+  m_x2   = m_xt*(exp(-m_y3)+exp(-m_y4))/2.;
   // TODO: Misses term for incoming masses, we will hope for the best by treating them
   //       as massless - that could be improved in the future.
   msg_Debugging()<<"                x1 = "<<m_x1<<" ("<<m_residualx1<<"), "
