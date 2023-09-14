@@ -17,7 +17,7 @@ namespace AMISIC {
       none            = 99
     };
   };
-  
+
   class Hadronic_XSec_Calculator {
   public:
     static double s_slopes[4], s_X[4][4], s_Y[4][4], s_c[4][4][8], s_d[4][4][9];
@@ -27,16 +27,17 @@ namespace AMISIC {
     std::map<ATOOLS::Flavour, double> m_fVs;
     double m_beta0[4];
     void   FixTables();
-    
-    ATOOLS::Flavour m_flavs[2];
+
+    std::array<ATOOLS::Flavour,2> m_flavs;
     xsec_type::code m_type;
-    double m_mass_proton, m_mass_proton2, m_mass_pi, m_mass2_pi, m_masses[2], m_masses2[2];
+    double m_mass_proton, m_mass_proton2, m_mass_pi;
+    std::array<double, 2> m_masses, m_masses2;
     double m_mres, m_cres, m_s1, m_Ypp, m_c0, m_c1, m_prefElastic, m_prefSD, m_prefDD;
     double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_eta_reggeon;
     double m_alphaQED;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
     size_t m_testmode;
-    
+
     void   FixType();
     void   TestXSecs();
     void   CalculateHHXSecs();
@@ -48,7 +49,7 @@ namespace AMISIC {
     double IntDDXSec(const size_t hadtags[2], const double masses[2]) const;
     double CalculateDoubleDXSec() const;
   public:
-    explicit Hadronic_XSec_Calculator(MODEL::Model_Base *const model,
+    explicit Hadronic_XSec_Calculator(MODEL::Model_Base *model,
 				      const ATOOLS::Flavour & fl1,
 				      const ATOOLS::Flavour & fl2);
     ~Hadronic_XSec_Calculator() = default;
