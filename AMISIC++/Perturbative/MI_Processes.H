@@ -14,7 +14,7 @@ namespace AMISIC {
   private:
     PDF::ISR_Handler             * p_isr;
     std::array<PDF::PDF_Base *, 2> p_pdf;
-    MODEL::Running_AlphaS        * p_alphaS;
+    MODEL::One_Running_AlphaS    * p_alphaS;
     MODEL::Running_AlphaQED      * p_alpha;
     Hadronic_XSec_Calculator     * p_xsecs;
     Sudakov_Argument             * p_sudakov;
@@ -58,7 +58,7 @@ namespace AMISIC {
     inline double XSratio(const double & s)              { return p_sudakov->XSratio(s); }
     inline PDF::PDF_Base * PDF(const size_t beam) const  { return p_pdf[beam]; }
     inline Sudakov_Argument         * GetSudakov() const { return p_sudakov; }
-    inline MODEL::Running_AlphaS    * AlphaS() const     { return p_alphaS; }
+    inline MODEL::One_Running_AlphaS    * AlphaS() const     { return p_alphaS; }
     inline Hadronic_XSec_Calculator * GetXSecs() const   { return p_xsecs; }
     inline void SetMassMode(const int & mode) {
       if (mode==0) abort();

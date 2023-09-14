@@ -56,6 +56,9 @@ void Over_Estimator::FixMaximum() {
   ///////////////////////////////////////////////////////////////////////////////////
   axis sbins = p_procs->GetSudakov()->GetSbins();
   p_prefs    = new OneDim_Table(sbins);
+  if (sbins.m_nbins>1)
+    msg_Out() << "AMISIC: Integrating over " << sbins.m_nbins
+              << " to determine maximum, this might take a while. \n";
   for (size_t sbin=0;sbin<sbins.m_nbins;sbin++) {
     m_s      = sbins.x(sbin);
     m_pt02   = mipars->CalculatePT02(m_s);

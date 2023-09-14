@@ -17,9 +17,9 @@ namespace AMISIC {
     size_t m_pt2bins;
 
     std::array<PDF::PDF_Base *, 2> p_pdf;
-    MODEL::Running_AlphaS * p_alphaS;
-    MI_Processes          * p_procs;
-    OneDim_Table          * p_prefs;
+    MODEL::One_Running_AlphaS * p_alphaS;
+    MI_Processes              * p_procs;
+    OneDim_Table              * p_prefs;
 
     void   FixMaximum();
     double ApproxME(const double & pt2,const double & xt);

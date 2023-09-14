@@ -34,7 +34,7 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
     m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
   }
   p_alphaS    = dynamic_cast<MODEL::Running_AlphaS *>
-    (model->GetScalarFunction("alpha_S"));
+    (model->GetScalarFunction("alpha_S"))->GetAs(PDF::isr::hard_subprocess);
   p_alpha     = dynamic_cast<MODEL::Running_AlphaQED *>
     (model->GetScalarFunction("alpha_QED"));
   // Initialize model parameters:

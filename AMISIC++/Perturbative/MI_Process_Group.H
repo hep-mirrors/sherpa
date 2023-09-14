@@ -17,7 +17,7 @@ namespace AMISIC {
     double             m_muR_fac, m_muF_fac;
     double             m_lastxs, m_pt02, m_scale, m_pref;
 
-    MODEL::Running_AlphaS   * p_alphaS;
+    MODEL::One_Running_AlphaS * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
     std::array<PDF::PDF_Base *, 2> p_pdf;
 
@@ -36,15 +36,15 @@ namespace AMISIC {
     virtual double operator()(const double & shat,const double & that,
 			      const double & uhat);
     virtual MI_Process * SelectProcess();
-   
+
     inline const std::string & Name() const{ return m_name; }
     inline const double & LastXS()   const { return m_lastxs; }
     virtual void Output() const;
-    
+
     inline void SetPDFs(PDF::PDF_Base * pdf0,PDF::PDF_Base * pdf1) {
       p_pdf[0] = pdf0; p_pdf[1] = pdf1;
     }
-    inline void SetAlphaS(MODEL::Running_AlphaS * alpS)  { p_alphaS = alpS; }
+    inline void SetAlphaS(MODEL::One_Running_AlphaS * alpS)  { p_alphaS = alpS; }
     inline void SetAlpha(MODEL::Running_AlphaQED  * alp) { p_alpha  = alp; }
     inline void SetScale(const double & scale)           { m_scale  = scale; }
     inline void SetPT02(const double & pt02)             { m_pt02   = pt02; }
