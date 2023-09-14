@@ -3,6 +3,7 @@
 
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include <array>
 
 namespace MODEL{ class Model_Base; }
 

@@ -8,6 +8,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/ISR_Handler.H"
 #include <list>
+#include <array>
 
 namespace AMISIC {
   class MI_Process_Group {

@@ -5,6 +5,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include <array>
 
 namespace AMISIC {
   class MI_Processes;

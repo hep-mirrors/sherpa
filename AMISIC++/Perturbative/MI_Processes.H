@@ -5,6 +5,7 @@
 #include "AMISIC++/Perturbative/Sudakov_Argument.H"
 #include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include <array>
 
 namespace PDF    { class Remnant_Base; }
 namespace BEAM   { class Beam_Spectra_Handler; }
