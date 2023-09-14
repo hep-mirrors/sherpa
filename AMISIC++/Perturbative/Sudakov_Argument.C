@@ -41,7 +41,7 @@ void Sudakov_Argument::FillPT2Values(const size_t & sbin,const double & norm) {
   /////////////////////////////////////////////////////////////////////////////////
   double pt2last = m_pt2bins.x(m_pt2bins.m_nbins-1);
   double sigma, pt2, dpt2, sigmalast = 0., integral = 0.;
-  for (int pt2bin=m_pt2bins.m_nbins-2;pt2bin>=0;pt2bin--) {
+  for (int pt2bin=m_pt2bins.m_nbins-1;pt2bin>=0;pt2bin--) {
     pt2       = m_pt2bins.x(pt2bin);
     dpt2      = pt2last-pt2;
     sigma     = p_processes->dSigma(pt2);

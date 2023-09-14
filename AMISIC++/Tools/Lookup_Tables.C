@@ -1,6 +1,6 @@
 #include "AMISIC++/Tools/Lookup_Tables.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
 using namespace std;
@@ -9,29 +9,31 @@ axis::axis(const size_t & nbins,const double & xmin,const double & xmax,
 	   const axis_mode::code & mode) :
   m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), m_mode(mode)
 {
-  if (m_mode==axis_mode::linear) {
+  if (m_nbins==1) m_xstep = 0.;
+  else if (m_mode==axis_mode::linear) {
     m_xstep = (m_xmax-m_xmin)/double(m_nbins-1);
   }
   else if (m_mode==axis_mode::log) {
-    m_xstep = log(m_xmax/m_xmin)/double(m_nbins);
+    m_xstep = log(m_xmax/m_xmin)/double(m_nbins-1);
   }
 }
 
-const double axis::x(const size_t & bin) const {
+double axis::x(const size_t & bin) const {
   if (m_nbins==1) return m_mode==axis_mode::linear ? (m_xmin+m_xmax)/2. : sqrt(m_xmin*m_xmax);
-  if (bin<m_nbins) {
-    if (m_mode==axis_mode::linear)   return m_xmin + bin*m_xstep;
-    else if (m_mode==axis_mode::log) return m_xmin * exp(m_xstep*bin);
+  if (bin>=m_nbins) {
+    THROW(normal_exit,"Wrong bin called");
   }
-  return 0.;
+  if (m_mode==axis_mode::linear)   return m_xmin + (double)bin*m_xstep;
+  else if (m_mode==axis_mode::log) return m_xmin * exp(m_xstep*(double)bin);
+  else return 0.;
 }
 
-const size_t axis::bin(const double & x) const {
+size_t axis::bin(const double & x) const {
   if (x>=m_xmin && x<=m_xmax) {
     if (m_mode==axis_mode::linear)   return size_t((x-m_xmin)/m_xstep);
     else if (m_mode==axis_mode::log) return size_t(log(x/m_xmin)/m_xstep);
   }
-  if (x<=m_xmin) return 0;
+  if (x<m_xmin) return 0;
   return m_nbins-1;
 }
 
@@ -45,10 +47,10 @@ OneDim_Table::OneDim_Table(const axis & xbins) :
 }
 
 void OneDim_Table::Fill(const size_t & xbin,const double & value) {
-  if (xbin>=0 && xbin<m_x.m_nbins) m_values[xbin] = value;
+  if (xbin<m_x.m_nbins) m_values[xbin] = value;
 }
 
-const double OneDim_Table::operator()(const double & x) const {
+double OneDim_Table::operator()(const double & x) const {
   if (m_x.m_nbins==1)                 return m_values[0];
   if (x>=m_x.m_xmax || x<=m_x.m_xmin) return 0.;
   size_t bin = m_x.bin(x);
@@ -65,15 +67,15 @@ TwoDim_Table::TwoDim_Table(const axis & xbins,const axis & ybins) :
   m_x(xbins), m_y(ybins)
 {
   m_values.resize(m_x.m_nbins);
-  for (size_t i=0;i<m_values.size();i++) m_values[i].resize(m_y.m_nbins, 0.);
+  for (auto& val : m_values) val.resize(m_y.m_nbins, 0.);
 }
 
 void TwoDim_Table::Fill(const size_t & xbin,const size_t & ybin,const double & value) {
-  if (xbin>=0 && xbin<m_x.m_nbins && ybin>=0 && xbin<m_y.m_nbins)
+  if (xbin<m_x.m_nbins && xbin<m_y.m_nbins)
     m_values[xbin][ybin] = value;
 }
 
-const double TwoDim_Table::operator()(const double & x,const double & y) const {
+double TwoDim_Table::operator()(const double & x,const double & y) const {
   if (m_x.m_nbins==1) {
     if (y<m_y.m_xmin || y>=m_y.m_xmax) return 0.;
     if (m_y.m_nbins==1) return m_values[0][0];
