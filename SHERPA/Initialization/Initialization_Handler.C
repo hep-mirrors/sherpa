@@ -43,9 +43,6 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
-#include <sys/stat.h>
-#include <time.h>
-
 using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;

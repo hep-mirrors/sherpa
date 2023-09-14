@@ -67,7 +67,7 @@ Sherpa::Sherpa(int argc, char* argv[]) :
   exh->AddTerminatorObject(this);
 }
 
-Sherpa::~Sherpa() 
+Sherpa::~Sherpa()
 {
   if (msg_LevelIsInfo()) {
     Return_Value::PrintStatistics(msg->Out());
@@ -114,9 +114,9 @@ bool Sherpa::InitializeTheRun()
   mpi->PrintRankInfo();
 
   DrawLogo(s["PRINT_VERSION_INFO"].Get<bool>());
-
+  int initonly=s["INIT_ONLY"].Get<int>();
+  if (initonly) rpa->gen.SetNumberOfEvents(0);
   if (p_inithandler->InitializeTheFramework()) {
-    int initonly=s["INIT_ONLY"].Get<int>();
     if (initonly==1) THROW(normal_exit,"Initialization complete.");
     if (initonly==2) return true;
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
@@ -160,7 +160,7 @@ void Sherpa::RegisterDefaults()
   s["EVT_OUTPUT_START"].SetDefault(evtoutput != msg->Level() ? 1 : 0);
 }
 
-bool Sherpa::InitializeTheEventHandler() 
+bool Sherpa::InitializeTheEventHandler()
 {
   eventtype::code mode = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
@@ -207,13 +207,13 @@ bool Sherpa::InitializeTheEventHandler()
 }
 
 
-bool Sherpa::GenerateOneEvent(bool reset) 
+bool Sherpa::GenerateOneEvent(bool reset)
 {
   if (m_evt_output_start>0 &&
       m_evt_output_start==rpa->gen.NumberOfGeneratedEvents()+1) {
     msg->SetLevel(m_evt_output);
   }
-  
+
   if(m_debuginterval>0 &&
      rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0 &&
      (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3 ||
@@ -229,9 +229,9 @@ bool Sherpa::GenerateOneEvent(bool reset)
       ran->FastForward(m_debugstep);
     }
   }
-  
+
   if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
-  
+
   if (reset) p_eventhandler->Reset();
   if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
@@ -249,7 +249,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
     }
     rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
     Blob_List *blobs(p_eventhandler->GetBlobs());
-    
+
     /// Increase m_trials --- based on signal blob["Trials"] if existent
     if (blobs->FindFirst(btp::Signal_Process) == nullptr) {
       m_trials+=1;
@@ -258,18 +258,18 @@ bool Sherpa::GenerateOneEvent(bool reset)
     else {
       m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
     }
-    
+
     if (msg_LevelIsEvents()) {
       if (!blobs->empty()) {
 	msg_Out()<<"  -------------------------------------------------\n";
 	for (Blob_List::iterator blit=blobs->begin();
-	     blit!=blobs->end();++blit) 
+	     blit!=blobs->end();++blit)
 	  msg_Out()<<*(*blit)<<std::endl;
 	msg_Out()<<"  -------------------------------------------------\n";
       }
       else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
     }
-    
+
     for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
       double currQ = (*bit)->CheckChargeConservation();
       if (fabs(currQ)>1e-12) {
@@ -278,7 +278,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
 	return 0;
       }
     }
-    
+
     int i=rpa->gen.NumberOfGeneratedEvents();
     int nevt=rpa->gen.NumberOfEvents();
     msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
@@ -365,7 +365,7 @@ void Sherpa::PrepareTerminate()
   exh->RemoveTerminatorObject(this);
 }
 
-bool Sherpa::SummarizeRun() 
+bool Sherpa::SummarizeRun()
 {
   if (p_eventhandler) {
     msg_Info()<<"  Event "<<rpa->gen.NumberOfGeneratedEvents()<<" ( "
@@ -376,7 +376,7 @@ bool Sherpa::SummarizeRun()
               <<" evts/day                    "<<std::endl;
     p_eventhandler->Finish();
   }
-  return true; 
+  return true;
 }
 
 long int Sherpa::NumberOfEvents() const
@@ -396,7 +396,7 @@ double Sherpa::GetMEWeight(const Cluster_Amplitude &ampl,const int mode) const
 }
 
 void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
-{ 
+{
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl;
   if (msg->Level()>0) msg_Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl
