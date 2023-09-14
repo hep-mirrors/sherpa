@@ -8,11 +8,11 @@ using namespace ATOOLS;
 using namespace std;
 
 
-const MI_Parameters * AMISIC::mipars = NULL;
+const MI_Parameters * AMISIC::mipars = nullptr;
 
 MI_Parameters::MI_Parameters() :
-  m_pt02ref(0.), m_ptmin2ref(0.),
-  m_Sref(0.), m_Eref(0.), m_Scms(0.), m_Ecms(0.), m_eta(0.)
+  m_pt02ref(0.), m_ptmin2ref(0.), m_Eref(0.), m_Sref(0.), m_Ecms(0.),
+  m_Scms(0.), m_eta(0.)
 {
   auto s = Settings::GetMainSettings()["AMISIC"];
   m_parameters[string("pt_0(ref)")]

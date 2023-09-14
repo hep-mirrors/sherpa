@@ -8,14 +8,15 @@
 
 namespace AMISIC {
   class MI_Processes;
-  
+
   class Over_Estimator {
   private:
-    double m_muR_fac, m_muF_fac, m_pt02, m_ptmin2, m_xmin[2];
+    double m_muR_fac, m_muF_fac, m_pt02, m_ptmin2;
+    std::array<double, 2> m_xmin;
     double m_s, m_pref, m_bfac, m_xsnd;
     size_t m_pt2bins;
 
-    PDF::PDF_Base         * p_pdf[2];
+    std::array<PDF::PDF_Base *, 2> p_pdf;
     MODEL::Running_AlphaS * p_alphaS;
     MI_Processes          * p_procs;
     OneDim_Table          * p_prefs;
@@ -32,7 +33,7 @@ namespace AMISIC {
 
     double operator()(const double & pt2, const double & yvol);
     double TrialPT2(const double & Q2);
-    
+
     inline void SetBFac(const double & bfac) { m_bfac = bfac; }
     inline void SetXSnd(const double & xsnd) { m_xsnd = xsnd; }
 

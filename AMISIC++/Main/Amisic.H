@@ -27,21 +27,21 @@ namespace ATOOLS {
 namespace AMISIC {
   /*!
     \namespace AMISIC
-    \brief The module for the generation of a perturbative underlying 
+    \brief The module for the generation of a perturbative underlying
     event according to the Sjostrand-van der Zijl model.
-    
-    AMISIC++ is an accronym for <em>A</em> <em>M</em>ultiple 
-    <em>I</em>nteraction <em>S</em>imulation <em>I</em>n
-    <em>C++</em>. 
 
-    The AMISIC namespace contains the module for the generation of a 
-    perturbative underlying event according to the Sjostrand-van der Zijl 
-    model.  The original model is based on perturbative QCD 2->2 scatters 
-    modified through a simple IR regularisation and convoluted with regular 
-    PDFs and and a matter-overlap function between the incident hadronic 
+    AMISIC++ is an accronym for <em>A</em> <em>M</em>ultiple
+    <em>I</em>nteraction <em>S</em>imulation <em>I</em>n
+    <em>C++</em>.
+
+    The AMISIC namespace contains the module for the generation of a
+    perturbative underlying event according to the Sjostrand-van der Zijl
+    model.  The original model is based on perturbative QCD 2->2 scatters
+    modified through a simple IR regularisation and convoluted with regular
+    PDFs and and a matter-overlap function between the incident hadronic
     states which gives rise to an interaction probability.
 
-    In SHERPA we added/plan to add other 2->2 scatters, for example for photon 
+    In SHERPA we added/plan to add other 2->2 scatters, for example for photon
     and quarkonia production.
   */
 
@@ -61,7 +61,7 @@ namespace AMISIC {
     bool         m_isMinBias, m_isFirst, m_ana;
     size_t       m_nscatters;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
-    
+
     void InitParametersAndType(PDF::ISR_Handler *const isr);
     void UpdateForNewS();
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
@@ -73,17 +73,17 @@ namespace AMISIC {
  public:
     Amisic();
     ~Amisic();
-    
+
     bool Initialize(MODEL::Model_Base *const model,
 		    PDF::ISR_Handler *const isr,
                     REMNANTS::Remnant_Handler * remnant_handler);
-    
+
     bool InitMPIs(PDF::ISR_Handler *const isr, const double & scale);
-    bool VetoEvent(const double & scale=-1.);
+    bool VetoEvent(const double & scale=-1.) const;
     int  InitMinBiasEvent();
     int  InitRescatterEvent();
     void SetB(const double & b=-1.);
-    
+
     void Reset();
     void CleanUpMinBias();
     void Test();

@@ -29,21 +29,21 @@ namespace AMISIC {
     bool m_variable_s;
 
     bool InitializeAllProcesses();
-    void SetPDFs(); 
+    void SetPDFs();
     void SetAlphaS();
     void CalcPDFs(const double & x1,const double & x2,const double & scale);
     bool PrepareSudakovFactor();
     void Test();
   public:
-    MI_Processes(const bool & variable_s);
+    explicit MI_Processes(const bool & variable_s);
     ~MI_Processes();
 
     bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
-    const double operator()(const double & shat,const double & that,
+    double operator()(const double & shat,const double & that,
 			    const double & uhat,const double & x1,const double & x2);
-    const double dSigma(const double & pt2);
+    double dSigma(const double & pt2);
     MI_Process * SelectProcess();
     void         UpdateS(const double & s);
 

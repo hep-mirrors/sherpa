@@ -7,7 +7,7 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL),
+Amisic::Amisic() : p_processes(nullptr), m_sigmaND_norm(1.),
                    m_isMinBias(false), m_ana(false)
 {}
 
@@ -25,7 +25,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_S     = P.Abs2();
   m_Y     = P.Y();
   // Calculate hadronic non-diffractive cross sections, the normalization for the
-  // multiple scattering probability. 
+  // multiple scattering probability.
   p_xsecs = new Hadronic_XSec_Calculator(model,isr->Flav(0),isr->Flav(1));
   // Initialize the parton-level processes - currently only 2->2 scatters and use the
   // information to construct a very quick overestimator - this follows closely the
@@ -39,7 +39,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   //   where x_1 and x_2 are identical
   p_processes = new MI_Processes(m_variable_s);
   p_processes->SetXSecCalculator(p_xsecs);
-  p_processes->Initialize(model,NULL,isr);
+  p_processes->Initialize(model,nullptr,isr);
   // Initialize the Over_Estimator - mainly fixing an effective prefactor to allow
   // for a quick'n'dirty fix to create fast estimates of the next scatter's pT^2.
   m_overestimator.Initialize(p_processes);
@@ -63,7 +63,7 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr) {
   // as fixed, for the former, the energies may vary (we have to check the spectrum):
   // - if EPA is used the energies entering the ISR will vary,
   // - otherwise the energy is fixed.
-  // 
+  //
   // TODO: fix things up for pomerons - another interesting case
   m_variable_s = ( isr->Id()!=PDF::isr::bunch_rescatter &&
 		   ( isr->GetBeam(0)->Type() == BEAM::beamspectrum::EPA ||
@@ -164,10 +164,10 @@ Blob * Amisic::GenerateScatter() {
     return blob;
   }
   if (m_ana) Analyse(true);
-  return NULL;
+  return nullptr;
 }
 
-bool Amisic::VetoEvent(const double & scale) {
+bool Amisic::VetoEvent(const double & scale) const {
   if (scale<0.) return true;
   return false;
 }
@@ -233,7 +233,7 @@ void Amisic::InitAnalysis() {
 void Amisic::FinishAnalysis() {
   Histogram * histo;
   string name;
-  for (map<string,Histogram *>::iterator 
+  for (map<string,Histogram *>::iterator
 	 hit=m_histos.begin();hit!=m_histos.end();hit++) {
     histo = hit->second;
     name  = string("MPI_Analysis/")+hit->first+string(".dat");

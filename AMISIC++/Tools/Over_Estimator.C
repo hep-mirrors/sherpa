@@ -8,7 +8,7 @@ using namespace AMISIC;
 using namespace ATOOLS;
 
 Over_Estimator::Over_Estimator() :
-  m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_bfac(1.), p_prefs(NULL)
+  m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_bfac(1.), p_prefs(nullptr)
 {}
 
 Over_Estimator::~Over_Estimator() { if (p_prefs) delete p_prefs; }
@@ -25,7 +25,7 @@ void Over_Estimator::Initialize(MI_Processes * procs) {
   m_pt02      = p_procs->PT02();
   m_ptmin2    = p_procs->PT2Min();
   p_alphaS    = p_procs->AlphaS();
-  m_muR_fac   = (*mipars)("RenScale_Factor"); 
+  m_muR_fac   = (*mipars)("RenScale_Factor");
   m_muF_fac   = (*mipars)("FacScale_Factor");
   m_pt2bins   = size_t((*mipars)("nPT_bins"));
   m_xsnd      = p_procs->GetXSecs()->XSndNorm() * p_procs->GetXSecs()->XSnd();
@@ -67,10 +67,10 @@ void Over_Estimator::FixMaximum() {
       // rapidty distance of the tow outgoing partons, or twice the maximal rapidity of
       // each single parton.  yvol is the very crude and massively overestimated rapidity
       // volume both partons can occupy.
-      double pt2    = m_ptmin2*exp(pt2step*bin);
+      double pt2    = m_ptmin2*exp(pt2step*(double)bin);
       double xt     = sqrt(4.*pt2/m_s);
       double yvol   = sqr(2.*log(1./xt*(1.+sqrt(1.-xt*xt))));
-      double approx = ApproxME(pt2,xt);    
+      double approx = ApproxME(pt2,xt);
       double exact  = ExactME(pt2,xt);
       // In both the approximate and the exact ME we factor out an appoximated, regularised
       // (with m_pt02) t-channel propagator and the rapidity volume to define a constant
@@ -123,7 +123,7 @@ double Over_Estimator::ApproxME(const double & pt2,const double & xt) {
 
 double Over_Estimator::ExactME(const double & pt2,const double & xt) {
   // For the exact MEs we assume a "minimal" kinematics with smallest values for
-  // s', t' and u' given by multiples of pT^2.  
+  // s', t' and u' given by multiples of pT^2.
   if (xt>m_xmin[0] && xt>m_xmin[1]) return (*p_procs)(4.*pt2,-2.*pt2,-2.*pt2,xt,xt);
   return 0.;
 }

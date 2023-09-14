@@ -53,7 +53,7 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   // It is given by int_{pt^2}^{s/4} dpt^2 dsigma/dpt^2, and we tabulate the
   // integral in nbins between s/4 and pt_min^2, resulting in a stepsize of
   // pt^2_step.  In each of the bins we MC integrate over the rapidities of the
-  // two outgoing particles with MC_points points.  
+  // two outgoing particles with MC_points points.
   // 10000 points will yield errors of about 1%.
   m_pt2bins  = size_t((*mipars)("nPT_bins"));
   m_sbins    = size_t((*mipars)("nS_bins"));
@@ -87,7 +87,7 @@ bool MI_Processes::InitializeAllProcesses() {
   // just add them without further ado.
   // - qg-initiated photon production
   // - qqbar-initiated photon production
-  // We are missing di-photon production here: 
+  // We are missing di-photon production here:
   // - gg->gamma gamma and qqbar->gamma gamma
   m_groups.push_back(new MI_QG_QGamma_Processes());
   m_groups.push_back(new MI_QQ_GGamma_Processes());
@@ -125,12 +125,12 @@ void MI_Processes::CalcPDFs(const double & x1,const double & x2,
   p_pdf[1]->Calculate(x2,Min(Max(m_muFfac*scale,p_pdf[1]->Q2Min()),p_pdf[1]->Q2Max()));
 }
 
-const double MI_Processes::
+double MI_Processes::
 operator()(const double & shat,const double & that,const double & uhat,
 	   const double & x1,const double & x2) {
   // Return the total parton-level scattering cross section, summed over all
   // contributing processes.  This implicitly assumes that the PDFs have already
-  // been set.  
+  // been set.
   double pt2 = that*uhat/shat;
   CalcPDFs(x1,x2,pt2);
   m_lastxs   = 0.;
@@ -138,7 +138,7 @@ operator()(const double & shat,const double & that,const double & uhat,
     mig->SetScale(pt2);
     m_lastxs += (*mig)(shat,that,uhat);
   }
-  return m_lastxs;  
+  return m_lastxs;
 }
 
 MI_Process * MI_Processes::SelectProcess() {
@@ -172,7 +172,7 @@ bool MI_Processes::PrepareSudakovFactor() {
   return true;
 }
 
-const double MI_Processes::dSigma(const double & pt2) {
+double MI_Processes::dSigma(const double & pt2) {
   // Estimated differnetial cross setion dsigma/dpt^2 in 1/GeV^4 for a given transverse
   // momentum:
   // 1/(16 pi) int_{-ymax}^{+ymax} dy_1 dy_2  [  x_1 f(x_1, pt^2) x_2 f(x_2, pt^2)
@@ -220,5 +220,5 @@ void MI_Processes::UpdateS(const double & s) {
   (*p_xsecs)(m_S);
   // need to upate pt02 and ptmin2 for new s as well.
   for (list<MI_Process_Group *>::iterator mig = m_groups.begin();
-       mig!=m_groups.end();mig++)  (*mig)->SetPT02(m_pt02); 
+       mig!=m_groups.end();mig++)  (*mig)->SetPT02(m_pt02);
 }

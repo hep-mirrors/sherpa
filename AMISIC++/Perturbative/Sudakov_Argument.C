@@ -7,11 +7,11 @@ using namespace AMISIC;
 using namespace ATOOLS;
 
 Sudakov_Argument::
-Sudakov_Argument(MI_Processes * procs,const axis & sbins,const axis & pt2bins) :
-  p_processes(procs), m_sbins(sbins), m_pt2bins(pt2bins),
-  m_integral(TwoDim_Table(m_sbins,m_pt2bins)),
-  m_function(TwoDim_Table(m_sbins,m_pt2bins)),
-  m_test(false)
+Sudakov_Argument(MI_Processes * procs,const axis & sbins,const axis & pt2bins)
+    : m_sbins(sbins), m_pt2bins(pt2bins),
+      m_integral(TwoDim_Table(m_sbins, m_pt2bins)),
+      m_function(TwoDim_Table(m_sbins, m_pt2bins)), p_processes(procs),
+      m_test(false)
 {
   FillTables();
   if (m_test) OutputTables();
@@ -57,7 +57,7 @@ void Sudakov_Argument::FillPT2Values(const size_t & sbin,const double & norm) {
   }
 }
 
-const double Sudakov_Argument::XSratio(const double & s) {
+double Sudakov_Argument::XSratio(const double & s) {
   return m_integral.Value(m_sbins.bin(s),0);
 }
 
