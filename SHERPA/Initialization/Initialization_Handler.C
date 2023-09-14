@@ -103,8 +103,8 @@ void Initialization_Handler::RegisterDefaults()
   s["BEAM_REMNANTS"].SetDefault(true);
   s["EVENT_GENERATION_MODE"].SetDefault("PartiallyUnweighted");
   s["EVENT_TYPE"].SetDefault("StandardPerturbative");
-  s["SOFT_COLLISIONS"].SetDefault("None");
-  s["BEAM_RESCATTERING"].SetDefault("None");
+  s["SOFT_COLLISIONS"].UseNoneReplacements().SetDefault("None");
+  s["BEAM_RESCATTERING"].UseNoneReplacements().SetDefault("None");
   s["EVT_FILE_PATH"].SetDefault(".");
   s["ANALYSIS_OUTPUT"].SetDefault("Analysis/");
   s["RESULT_DIRECTORY"].SetDefault("Results");
@@ -731,10 +731,10 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   std::vector<std::string> pdflibs = settings["PDF_LIBRARY"].GetVector<std::string>();
   std::vector<std::string> mpilibs = settings["MPI_PDF_LIBRARY"].GetVector<std::string>();
   std::vector<std::string> bbrlibs = settings["BBR_PDF_LIBRARY"].GetVector<std::string>();
-  m_defsets[PDF::isr::hard_process]    = new std::string[2];
-  m_defsets[PDF::isr::hard_subprocess] = new std::string[2];
-  m_defsets[PDF::isr::bunch_rescatter] = new std::string[2];
-  for (size_t beam=0;beam<=1;++beam) {
+  m_defsets[PDF::isr::hard_process]    = std::array<std::string, 2>();
+  m_defsets[PDF::isr::hard_subprocess] = std::array<std::string, 2>();
+  m_defsets[PDF::isr::bunch_rescatter] = std::array<std::string, 2>();
+  for (size_t beam=0;beam<2;++beam) {
     /////////////////////////////////////////////////////////
     // define bunch particle-dependent PDF libraries and sets here
     /////////////////////////////////////////////////////////
@@ -753,12 +753,12 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
       defset = PDF::pdfdefs->DefaultPDFSet(kf_photon);
     }
     // fix PDFs and default sets for the hard_process here
-    if (pdflibs.size()==0) m_pdflibs.insert(deflib);
+    if (pdflibs.empty()) m_pdflibs.insert(deflib);
     else m_pdflibs.insert(pdflibs[Min(beam,pdflibs.size()-1)]);
     m_defsets[PDF::isr::hard_process][beam] = defset;
     // fix PDFs and default sets for the MPI's / hard_subprocesses here
     // we may have to define defaults here.
-    if (mpilibs.size()>0 && mpilibs[beam]!="") {
+    if (!mpilibs.empty() && !mpilibs[beam].empty()) {
       std::string libname = mpilibs[Min(beam,mpilibs.size()-1)];
       if (m_pdflibs.find(libname)!=m_pdflibs.end()) m_pdflibs.insert(libname);
       m_defsets[PDF::isr::hard_subprocess][beam] = defset;
@@ -768,13 +768,13 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     // this is the only configuration at the moment where we allow additional
     // scattering/interactions of the incoming beams
     if (m_mode==eventtype::StandardPerturbative &&
-	settings["BEAM_RESCATTERING"].Get<string>()!=string("None") &&
+        settings["BEAM_RESCATTERING"].Get<string>()!=string("None") &&
 	p_beamspectra->GetBeam(beam)->Beam().IsHadron() &&
 	p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_photon &&
 	p_beamspectra->GetBeam(beam)->Bunch(1)==p_beamspectra->GetBeam(beam)->Beam()) {
-      if (bbrlibs.size()>0 && bbrlibs[beam]!="") {
+      if (!bbrlibs.empty() && !bbrlibs[beam].empty()) {
 	m_pdflibs.insert(bbrlibs[beam]);
-	m_defsets[PDF::isr::bunch_rescatter][beam] = string("None");
+	m_defsets[PDF::isr::bunch_rescatter][beam] = std::string("None");
       }
       else {
 	m_pdflibs.insert(PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus));
@@ -834,7 +834,7 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
   if (versions.size() > 2) {
     THROW(fatal_error, "You can not specify more than two PDF set versions.");
   }
-  ISR_Base ** isrbases = new ISR_Base*[2];
+  std::array<ISR_Base *, 2> isrbases = {};
   for (size_t beam=0;beam<2;beam++) {
     isrbases[beam]  = NULL;
     // fix actual set and version for beam number and part of
@@ -903,7 +903,6 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     vector<size_t> bunchtags; bunchtags.resize(2,pid==isr::bunch_rescatter ? 1 : 0);
     m_bunchtags[pid] = bunchtags;
   }
-  else { for (size_t beam=0;beam<2;beam++) delete isrbases[beam]; }
 }
 
 void Initialization_Handler::DefineBunchFlavours(Settings& settings) {

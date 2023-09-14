@@ -19,7 +19,7 @@
 
 #include <map>
 #include <string>
-#include <iostream> 
+#include <iostream>
 
 namespace ATOOLS {
   class Variations;
@@ -39,12 +39,12 @@ namespace SHERPA {
   class Event_Reader_Base;
   class Analysis_Interface;
   class Filter;
-  
+
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
     std::string m_evtform;
     std::set<std::string> m_pdflibs;
-    std::map<PDF::isr::id, std::string * >       m_defsets;
+    std::map<PDF::isr::id, std::array<std::string, 2> >  m_defsets;
     std::map<PDF::isr::id, std::vector<size_t> > m_bunchtags;
 
     ATOOLS::Flavour m_bunch_particles[2];
@@ -71,7 +71,7 @@ namespace SHERPA {
     Output_Vector                  m_outputs;
     ATOOLS::Variations           * p_variations;
     Filter                       * p_filter;
-    
+
     void ShowParameterSyntax();
     void CheckVersion();
     bool CompareVersions(const size_t& a1,const size_t& b1,const size_t& c1,
@@ -144,17 +144,17 @@ namespace SHERPA {
   };
 
   /*!
-    \file 
+    \file
     \brief Contains the class SHERPA::Initialization_Handler
-  */                                  
+  */
 
   /*!
     \class Initialization_Handler
     \brief It is in charge of initialising and deleting all physics modules used during a run.
-    
+
     This class takes care of the proper initialization of all physics modules to be initialized
     during the set up of the event generator. In particular, these contain
-    - the model which contains all physics parameters (like coupling constants, 
+    - the model which contains all physics parameters (like coupling constants,
       mixing matrices, etc.)
     - beam spectra (which is particularly important for physics processes involving for instance
       laser back scattering of photons off electrons)
@@ -165,7 +165,7 @@ namespace SHERPA {
     - the fragmentation which at the moment is dealt with through an interface to the Lund string
       of Pythia and the subsequent hadron decays by the same program.
 
-    These modules are later on taken by the main steering class, Sherpa, and put into 
+    These modules are later on taken by the main steering class, Sherpa, and put into
     corresponding Event_Phase_Handlers. After termination of the run, they are all deleted.
   */
   /*!
@@ -191,12 +191,12 @@ namespace SHERPA {
   */
   /*!
     \var Initialization_Handler::m_showerhandlers
-    The abstract wrappers around the shower module. It is initialized by the 
+    The abstract wrappers around the shower module. It is initialized by the
     Initialization_Handler.
   */
   /*!
     \var Beam_Remnant_Handler * Initialization_Handler::p_beamremnants
-    A pointer to the beam remnant handling used thoughout the run. 
+    A pointer to the beam remnant handling used thoughout the run.
   */
   /*!
     \var Fragmentation_Handler * Initialization_Handler::p_fragmentation
@@ -213,8 +213,8 @@ namespace SHERPA {
   /*!
     \fn bool Initialization_Handler::InitializeTheFramework()
     This method first reads in all particles, before subsequently the model, the beams and the pdf's
-    are set up. After this has been done, consistency of the bunch particles and the beam 
-    handling is checked for. If successul, the matrix elements, showers, beam remanants, 
+    are set up. After this has been done, consistency of the bunch particles and the beam
+    handling is checked for. If successul, the matrix elements, showers, beam remanants,
     fragmentation and hadron decays are instantiated. If everything worked out, true is returned
     and some first corss section evaluation will start.
   */
@@ -227,7 +227,7 @@ namespace SHERPA {
   /*!
     \fn Initialization_Handler::InitializeTheHadronDecays()
     This method reads the fragmentation settings, especially the desired decay model.
-     
+
     If the model is \c Hadrons it calls the HADRONS constructor for initialisation
     and the Hadron_Decay_Handler::EraseTreated method
     to remove the particles that HADRONS can cope with from the unstable hadron list. If then
@@ -236,7 +236,7 @@ namespace SHERPA {
 
     If, on the other hand, the model is \c Lund, it calls the Pythia for initialisation.
     */
-  
+
 
 }
 

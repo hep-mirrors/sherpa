@@ -33,7 +33,7 @@ namespace PDF {
   };
   std::ostream& operator<<(std::ostream&,isrmode::code mode);
 
-  
+
   class ISR_Handler;
   typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
   typedef std::vector<double> Double_Vector;
@@ -47,7 +47,7 @@ namespace PDF {
     std::string   m_name;
     isrmode::code m_type;
 
-    int m_mode, m_rmode, m_swap; 
+    int m_mode, m_rmode, m_swap;
 
     std::array<double, 2> m_mass2, m_exponent, m_x, m_mu2;
     ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
@@ -70,14 +70,14 @@ namespace PDF {
 				double &x,int beam,bool swaped);
 
   public:
-    ISR_Handler(ISR_Base **isrbase,const isr::id & id=isr::hard_process);
+    ISR_Handler(std::array<ISR_Base *, 2> isrbase,const isr::id & id=isr::hard_process);
     ~ISR_Handler() = default;
 
     void Init();
 
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
     bool CheckConsistency(ATOOLS::Flavour *partons);
-    void SetPartonMasses(const ATOOLS::Flavour_Vector &fl); 
+    void SetPartonMasses(const ATOOLS::Flavour_Vector &fl);
     void SetMasses(const ATOOLS::Flavour_Vector &fl);
     bool CheckMasses();
 
@@ -172,15 +172,15 @@ namespace PDF {
 
     void Output();
   };// end of class ISR_Handler
-  
+
   /*!
     \namespace PDF
     The namespace PDF houses all classes that are employed to generate
     parton spectra. In the framework of both the SHERPA package and of the
     program AMEGIC the following nomenclature is assumed :
-    - There are incoming beams at a certain energy, the nominal energy of the 
-      beam in the collider, which then result in bunches of interacting 
-      particles which have an energy distribution, and, maybe, a \f$k_\perp\f$ 
+    - There are incoming beams at a certain energy, the nominal energy of the
+      beam in the collider, which then result in bunches of interacting
+      particles which have an energy distribution, and, maybe, a \f$k_\perp\f$
       distribution of transverse momenta w.r.t.the beam axis.
     - The bunch particles then can have a substructure, i.e. they might consist of
       partons, which then interact in a hard subprocess.
@@ -194,8 +194,8 @@ namespace PDF {
     \class ISR_Handler
     \brief Manager of all Initial State Radiation that can be identifeid as parton
            distributions.
-    This class manages all initial state radiation (ISR) according to the parton 
-    distribution functions (PDFs) that are handed over. The ISR_Handler is initialized from 
+    This class manages all initial state radiation (ISR) according to the parton
+    distribution functions (PDFs) that are handed over. The ISR_Handler is initialized from
     the SHERPA package or from Amegic. Before coming into full effect during integration
     or event generation, it initalises suitable ISR treatment through ISR_Bases that will
     contain the PDFs for each of the bunches.
@@ -209,11 +209,11 @@ namespace PDF {
   /*!
      \var int ISR_Handler::m_mode
      The m_mode flag indicates what kind of ISR treatment is to be considered:
-     - 0 no ISR for both bunchs 
+     - 0 no ISR for both bunchs
      - 1 only bunch 1 experiences ISR
      - 2 only bunch 2 experiences ISR
-     - 3 both bunches experience ISR.     
-  */  
+     - 3 both bunches experience ISR.
+  */
   /*!
     \var ATOOLS::Poincare ISR_Handler::m_cmsboost
     A boost from the c.m. system of the incoming bunches to the c.m. system of the
@@ -227,12 +227,12 @@ namespace PDF {
     \var double ISR_Handler::m_splimits[3]
     \f$s'\f$-limits and characteristics:
     m_splimits[0,1] = \f$s'_{\rm min, max}\f$
-    and 
+    and
     m_splimits[2] = \f$s_{\rm beams}\f$.
-  */ 
+  */
   /*!
     \var ISR_Handler::m_ylimits[2]
-    The rapidity region covered. It is per default set to the range \f$y \in [-10,10]\f$. In fact 
+    The rapidity region covered. It is per default set to the range \f$y \in [-10,10]\f$. In fact
     this range should be calculated from the range of the BeamBases.
     \todo Rapidity range from BeamBases.
   */
@@ -242,7 +242,7 @@ namespace PDF {
   */
   /*!
     \var double ISR_Handler::m_x
-    The energy fractions each outgoing bunch has w.r.t. the corresponding 
+    The energy fractions each outgoing bunch has w.r.t. the corresponding
     incoming beams.
   */
   /*!
@@ -262,9 +262,9 @@ namespace PDF {
   /*!
     \fn bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *)
     This checks whether the flavours are allowed to be used as outgonig flavours in the
-    two p_isrbases. If this is the case, true is returned. This method is largely similar to 
+    two p_isrbases. If this is the case, true is returned. This method is largely similar to
     the corresponding one in the BEAM::Beam_Spectra_Handler.
-  */  
+  */
   /*!
     \fn void ISR_Handler::SetPartonMasses(ATOOLS::Flavour * _fl)
     This sets the masses squared and the vectors such that they fit to the masses of the
@@ -277,10 +277,10 @@ namespace PDF {
     c.m. system (in) of the incoming bunches are determined with help of the other argument, the
     rapidity \f$y\f$ according to
     \f[
-    \hat E^{(in)}_{1,2} = \exp\left(\pm y\right) 
+    \hat E^{(in)}_{1,2} = \exp\left(\pm y\right)
     \f]
     and the boost linking the two frames, CMBoost is initialized. This boost is then used
-    to bring the c.m. vectors into the correct frame, i.e. the c.m. frame 
+    to bring the c.m. vectors into the correct frame, i.e. the c.m. frame
     of the bunches, i.e.
     \f[
     p^{(out)}_{1,2} \Longrightarrow p^{(in)}_{1,2}\,.
