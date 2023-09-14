@@ -14,7 +14,7 @@ namespace PDF {
   class PDF_Base;
 }
 
-namespace ATOOLS {  
+namespace ATOOLS {
 
   class Run_Parameter {
     std::string m_path, m_file;
@@ -24,7 +24,7 @@ namespace ATOOLS {
     ~Run_Parameter();
     void Init();
     void AnalyseEnvironment();
-    
+
     class Gen {  // general parameters
       //std::string         m_runtime;
       long int            m_nevents, m_ngenevents, m_ntrials;
@@ -76,9 +76,9 @@ namespace ATOOLS {
       inline const std::string &UserName() { return m_username; }
       inline const std::string &HostName() { return m_hostname; }
       std::string Variable(const std::string &key);
-      inline void SetVariable(const std::string &key,const std::string &value) 
+      inline void SetVariable(const std::string &key,const std::string &value)
       { m_variables[key]=value; }
-      inline void AddToVariable(const std::string &key,const std::string &value) 
+      inline void AddToVariable(const std::string &key,const std::string &value)
       { m_variables[key]+=value; }
       inline const std::vector<std::string> &Citations() { return m_cites; }
       void AddCitation(const size_t &level,const std::string &cite);
@@ -93,11 +93,17 @@ namespace ATOOLS {
       friend class Run_Parameter;
     } gen;
 
-    double Picobarn()                       { return 3.89379656e8;}   // pb GeV^2
-    double c()                              { return 299.792458e9;}   // mm/s
-    double hBar()                           { return 6.58211889e-25;} // GeV s
-    std::string GetPath()                   { return m_path;} 
-    std::string SetPath(std::string path)   { return m_path = path;} 
+#if defined(__GNUC__) &&  __GNUC__ < 5
+    double Picobarn()             { return 3.89379656e8;}   // pb GeV^2
+    double c()                    { return 299.792458e9;}   // mm/s
+    double hBar()                 { return 6.58211889e-25;} // GeV s
+#else
+    constexpr double Picobarn()             { return 3.89379656e8;}   // pb GeV^2
+    constexpr double c()                    { return 299.792458e9;}   // mm/s
+    constexpr double hBar()                 { return 6.58211889e-25;} // GeV s
+#endif
+    std::string GetPath()                   { return m_path;}
+    std::string SetPath(std::string path)   { return m_path = path;}
   };
 
   extern Run_Parameter *rpa;
@@ -114,13 +120,13 @@ namespace ATOOLS {
 */
 
 /*!
-  \intern 
+  \intern
   double Picobarn()                       { return 3.89379656e8;} // pb/GeV^2
   double c()                              { return 299792458.e3;} // mm/s
   double hBar()                           { return 6.58211889e-25;} // GeV s
-  
-  std::string GetPath()                   { return path;} 
-  std::string SetPath(std::string _path)  { path = _path;} 
+
+  std::string GetPath()                   { return path;}
+  std::string SetPath(std::string _path)  { path = _path;}
 */
 
 }  // namespace ATOOLS
@@ -156,9 +162,9 @@ namespace ATOOLS {
 /*!
  \namespace ATOOLS
   In the namespace ATOOLS all classes with a pure mathematical meaning are collected.
-  In addition all basic classes needed for physics descriptions are collected here, 
+  In addition all basic classes needed for physics descriptions are collected here,
   e.g. Flavour, Blob, etc.
-  Classes needed for organisational purposes can be found as well, e.g. for reading in and 
+  Classes needed for organisational purposes can be found as well, e.g. for reading in and
   writing out variables (IO_Handler), accessing runtime parameters (Run_Parameter), etc.
 */
 
