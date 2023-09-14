@@ -774,6 +774,36 @@ GenCrossSection entry of the event record, such that no manual intervention is
 required (as long as the correct cross section variation is picked in
 downstream processing steps).
 
+Varying the PDFs of a single beam
+---------------------------------
+
+.. _PDF_VARIATION_BEAMS:
+.. _PDF_VARIATION_ALPHAS_BEAM:
+
+.. index:: PDF_VARIATION_BEAMS
+.. index:: PDF_VARIATION_ALPHAS_BEAM
+
+The ``PDF_VARIATION_BEAMS`` setting can be used to restrict for which beams
+a PDF variation is applied. Its default is ``[1, 2]``, i.e. both beams
+will undergo a given PDF variation. Use ``1`` or ``2`` to only apply it to a
+single beam. This is a global setting for all PDF variations, i.e. it is
+currently not possible to do this on the basis of a single PDF
+variation.
+
+When using ``PDF_VARIATION_BEAMS``,
+there is an ambiguity which beam's PDF
+should be used to evaluate the strong coupling.
+For that, the setting ``PDF_VARIATION_ALPHAS_BEAM``
+can be used.  Its default is ``0``, which means that the first
+available beam's PDF is used. Use ``1`` or ``2`` to select a specific beam's
+PDF instead.
+
+Having different PDFs for each beam will be reflected in the
+:ref:`Variation output`.
+Consider the following example:
+``MUR=1__MUF=1__LHAPDF.BEAM1=93300__LHAPDF.BEAM2=93301``,
+where the beams' LHAPDF IDs are specified individually.
+
 Variations for different event generation modes
 -----------------------------------------------
 
