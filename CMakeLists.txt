@@ -554,7 +554,7 @@ if (SHERPA_ENABLE_PYTHON)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/Python
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/AddOns/ COMPONENT devel
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H"
-                             EXCLUDE  PATTERN "*\.c" EXCLUDE
+                             PATTERN "*\.c" EXCLUDE
                              )
 endif()
 
@@ -563,7 +563,7 @@ if (SHERPA_ENABLE_ANALYSIS)
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/AddOns/ COMPONENT devel
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H"
                              PATTERN "*/Scripts" EXCLUDE
-                             EXCLUDE  PATTERN "*\.c" EXCLUDE
+                             PATTERN "*\.c" EXCLUDE
                              )
 endif()
 
@@ -571,8 +571,8 @@ if (SHERPA_ENABLE_EWSUD)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/EWSud
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/AddOns/ COMPONENT devel
               FILES_MATCHING PATTERN "*.h" PATTERN "*.H"
-                             EXCLUDE  PATTERN "*\.c" EXCLUDE
-                             EXCLUDE  PATTERN "*/Tests" EXCLUDE
+                             PATTERN "*\.c" EXCLUDE
+                             PATTERN "*/Tests" EXCLUDE
                              )
 endif()
 if (SHERPA_ENABLE_PYTHON OR SHERPA_ENABLE_DIHIGGS OR SHERPA_ENABLE_UFO OR (SHERPA_ENABLE_RIVET AND SHERPA_ENABLE_TESTING) )

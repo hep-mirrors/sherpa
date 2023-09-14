@@ -48,11 +48,12 @@ target_include_directories(_Sherpa PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/ ${PROJECT
 install(TARGETS _Sherpa DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.py DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python)
 
-add_library(MEProcess SHARED MEProcess.C)
-target_compile_features(MEProcess PRIVATE cxx_std_11)
-target_include_directories(MEProcess PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/ ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
-install(TARGETS MEProcess DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC COMPONENT libs)
-set_target_properties(MEProcess       PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME MEProcess SOVERSION 0.0.0)
-set_target_properties(MEProcess       PROPERTIES DEFINE_SYMBOL "")
+set(MEProcess_SOURCES MEProcess.C)
+set(MEProcess_HEADERS MEProcess.H)
+
+sherpa_create_git_info(MEProcess)
+
+add_library(MEProcess SHARED ${MEProcess_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_handle_shared_library(MEProcess MEProcess)
 
 target_link_libraries(_Sherpa PRIVATE SHERPA::All MEProcess)
