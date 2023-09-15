@@ -11,9 +11,14 @@ using namespace ATOOLS;
 using namespace std;
 
 Kinematics_Generator::Kinematics_Generator() :
-  m_stretcher(Momenta_Stretcher("REMNANTS")) {}
+  m_stretcher(Momenta_Stretcher("REMNANTS")), m_warns(0), m_errors(0) {}
 
-Kinematics_Generator::~Kinematics_Generator() {}
+Kinematics_Generator::~Kinematics_Generator() {
+  if (m_warns>0 || m_errors>0) {
+    msg_Info()<<"Remnant Kinematics: "<<m_errors<<" errors (no kinematics found) and\n"
+	      <<"                    "<<m_warns<<" warnings (scale kt down by factor of 10).\n";
+  }
+}
 
 void Kinematics_Generator::Initialize(Remnant_Handler *const rhandler) {
   p_rhandler = rhandler;
@@ -215,20 +220,26 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
       scale *= 0.1;
     }
     if (scale < 1.e-3) {
-      msg_Debugging() << "Warning: " << METHOD
-		      << ": Not able to create the breakup kinematics for "
-		      << p_remnants[0]->GetExtracted()[0] << " and "
-		      << p_remnants[1]->GetExtracted()[0]
-		      << " and the corresponding remnants are "
-		      << p_remnants[0]->GetSpectators()[0] << " and "
-		      << p_remnants[1]->GetSpectators()[0] << "\n";
+      if (m_errors<5) {
+      msg_Error() << "Warning: " << METHOD
+		  << ": Not able to create the breakup kinematics for "
+		  << p_remnants[0]->GetExtracted()[0] << " and "
+		  << p_remnants[1]->GetExtracted()[0]
+		  << " and the corresponding remnants are "
+		  << p_remnants[0]->GetSpectators()[0] << " and "
+		  << p_remnants[1]->GetSpectators()[0] << "\n";
+      }
+      m_errors++;
       return false;
     }
   } while (!CheckHH() && scale > 0.);
   if (scale < 1. && scale > 0.) {
-    msg_Tracking() << "Warning: " << METHOD
-               << " reduced overall prescale for kt to scale = " << scale
-               << "\n";
+    if (m_warns<5) {
+      msg_Info() << "Warning: " << METHOD
+		 << " reduced overall prescale for kt to scale = " << scale
+		 << "\n";
+    }
+    m_warns++;
   }
   // Fill particles from remnant break-up into soft blob, unless we have simple
   // collinear kinematics with no momentum shuffling

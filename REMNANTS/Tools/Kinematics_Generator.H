@@ -37,6 +37,8 @@ namespace REMNANTS {
     double                 m_mass_sum;
     ATOOLS::Vec4D          m_inmom[2], m_checkmom[2];
     ATOOLS::ParticleMomMap m_ktmap[2], m_shuffledmap;
+    
+    unsigned long int m_warns, m_errors;
 
     void SetKinType(Remnant_Handler * const rhandler);
     bool CollinearKinematics();
