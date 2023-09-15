@@ -52,7 +52,7 @@ namespace CSSHOWER {
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
-    void SetForcedHQDecays(double expo=-3./2.,bool on=true) {
+    void SetForcedHQDecays(bool on=true,double expo=-3./2.) {
       m_forced_splittings                   = on;
       m_gluon_xscaling_in_forced_splittings = -expo;
     }
@@ -88,7 +88,7 @@ namespace CSSHOWER {
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
   };
-  
+
   void Sudakov::GetSplittingParameters
   (double & kt2,double & z,double & y,double & phi) {
     kt2 = m_st; z = m_sz; y = m_sy; phi = m_sphi;
