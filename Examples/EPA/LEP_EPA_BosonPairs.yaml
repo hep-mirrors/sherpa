@@ -1,0 +1,12 @@
+EVENTS: 100000
+
+BEAMS:             [11, -11]
+BEAM_ENERGIES:     103
+BEAM_SPECTRA:      EPA
+
+ME_GENERATORS: [Internal]
+
+PROCESSES:
+  - 22 22 -> 411 -411:
+      Order: {QCD: 0, EW: 2}
+
