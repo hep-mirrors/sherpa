@@ -5,10 +5,6 @@ BEAM_SPECTRA: EPA
 BUNCHES: 22
 PDF_LIBRARY: None
 
-# general setting
-EVENTS: 50k
-EVENT_OUTPUT: HepMC_Short[a.short]
-
 # model parameters
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 2

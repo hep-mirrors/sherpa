@@ -15,8 +15,10 @@ Remnants_Parameters* REMNANTS::rempars = NULL;
 void pkparams::Output() {
   msg_Out()<<"-------------------------------------------------\n"
 	   <<"Form = "<<m_form<<", Recoil = "<<m_recoil<<"\n";
-  for (map<string, double>::iterator pit=m_params.begin();pit!=m_params.end();pit++) {
-    msg_Out()<<std::left<<std::setw(32)<<pit->first<<": "<<pit->second<<"\n";
+  if (m_form!=pkform::none) { 
+    for (map<string, double>::iterator pit=m_params.begin();pit!=m_params.end();pit++) {
+      msg_Out()<<std::left<<std::setw(32)<<pit->first<<": "<<pit->second<<"\n";
+    }
   }
   msg_Out()<<"-------------------------------------------------\n";
 }

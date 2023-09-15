@@ -21,27 +21,30 @@ void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
     Flavour beamflav    = rhandler->GetRemnant(beam)->Flav();
     m_form[beam]        = rempars->GetForm(beamflav);
     m_recoil[beam]      = rempars->GetRecoil(beamflav);
-    double escale       = pow( (*rempars)(beamflav,"REFERENCE_ENERGY")/rpa->gen.Ecms(),
-			       (*rempars)(beamflav,"ENERGY_SCALING_EXPO") );
-    if (m_form[beam]==pkform::gauss || m_form[beam]==pkform::gauss_limited) {
-      m_SIMean[beam]    = (*rempars)(beamflav,"SHOWER_INITIATOR_MEAN")  * escale;
-      m_SISigma[beam]   = (*rempars)(beamflav,"SHOWER_INITIATOR_SIGMA") * escale;
-      m_SpecMean[beam]  = (*rempars)(beamflav,"BEAM_SPECTATOR_MEAN");
-      m_SpecSigma[beam] = (*rempars)(beamflav,"BEAM_SPECTATOR_SIGMA");
-    }
-    else if (m_form[beam]==pkform::dipole || m_form[beam]==pkform::dipole_limited) {
-      m_SIQ2[beam]      = (*rempars)(beamflav,"SHOWER_INITIATOR_Q2") * escale;
-      m_SpecQ2[beam]    = (*rempars)(beamflav,"BEAM_SPECTATOR_Q2") * escale;
-    }
-    if (m_form[beam]==pkform::gauss_limited || m_form[beam]==pkform::dipole_limited) {
-      m_SIKtmax[beam]    = Max(0.0, (*rempars)(beamflav,"SHOWER_INITIATOR_KTMAX") * escale);
-      m_SIEta[beam]      = (*rempars)(beamflav,"SHOWER_INITIATOR_KTEXPO");
-      m_SpecKtmax[beam]  = Max(0.0, (*rempars)(beamflav,"BEAM_SPECTATOR_KTMAX") * escale);
-      m_SpecEta[beam]    = (*rempars)(beamflav,"BEAM_SPECTATOR_KTEXPO");
-    }
+    if (m_form[beam]==pkform::none) continue;
     else {
-      m_SIKtmax[beam]    = m_SpecKtmax[beam] = 1000.;
-      m_SIEta[beam]      = m_SpecEta[beam]   = 0.;
+      double escale       = pow( (*rempars)(beamflav,"REFERENCE_ENERGY")/rpa->gen.Ecms(),
+				 (*rempars)(beamflav,"ENERGY_SCALING_EXPO") );
+      if (m_form[beam]==pkform::gauss || m_form[beam]==pkform::gauss_limited) {
+	m_SIMean[beam]    = (*rempars)(beamflav,"SHOWER_INITIATOR_MEAN")  * escale;
+	m_SISigma[beam]   = (*rempars)(beamflav,"SHOWER_INITIATOR_SIGMA") * escale;
+	m_SpecMean[beam]  = (*rempars)(beamflav,"BEAM_SPECTATOR_MEAN");
+	m_SpecSigma[beam] = (*rempars)(beamflav,"BEAM_SPECTATOR_SIGMA");
+      }
+      else if (m_form[beam]==pkform::dipole || m_form[beam]==pkform::dipole_limited) {
+	m_SIQ2[beam]      = (*rempars)(beamflav,"SHOWER_INITIATOR_Q2") * escale;
+	m_SpecQ2[beam]    = (*rempars)(beamflav,"BEAM_SPECTATOR_Q2") * escale;
+      }
+      if (m_form[beam]==pkform::gauss_limited || m_form[beam]==pkform::dipole_limited) {
+	m_SIKtmax[beam]    = Max(0.0, (*rempars)(beamflav,"SHOWER_INITIATOR_KTMAX") * escale);
+	m_SIEta[beam]      = (*rempars)(beamflav,"SHOWER_INITIATOR_KTEXPO");
+	m_SpecKtmax[beam]  = Max(0.0, (*rempars)(beamflav,"BEAM_SPECTATOR_KTMAX") * escale);
+	m_SpecEta[beam]    = (*rempars)(beamflav,"BEAM_SPECTATOR_KTEXPO");
+      }
+      else {
+	m_SIKtmax[beam]    = m_SpecKtmax[beam] = 1000.;
+	m_SIEta[beam]      = m_SpecEta[beam]   = 0.;
+      }
     }
   }
   if (m_analysis) InitAnalysis();
@@ -110,6 +113,7 @@ void Primordial_KPerp::BalanceKT(const Vec4D & kt_Show,const double & E_Show,
 }
 
 Vec4D Primordial_KPerp::KT(const Particle * part) {
+  if (m_form[m_beam]==pkform::none) return Vec4D(0.,0.,0.,0.);
   if (part->Info()=='I') {
     m_mean  = m_SIMean[m_beam];  m_sigma = m_SISigma[m_beam]; m_Q2 = m_SIQ2[m_beam];
     m_ktmax = m_SIKtmax[m_beam]; m_eta   = m_SIEta[m_beam]; 
