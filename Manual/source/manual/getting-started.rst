@@ -232,7 +232,7 @@ doing this properly are given in :ref:`Parameters`. In this section,
 the focus is on the main issues for a successful operation of
 Sherpa. This is illustrated by discussing and referring to the
 parameter settings that come in the example steering file
-``./Examples/V_plus_Jets/LHC_ZJets/Sherpa.yaml``,
+``./Examples/V_plus_Jets/LHC_ZJets/Sherpa.LO.yaml``,
 cf. :ref:`LHC_ZJets`.  This is a simple configuration created to show
 the basics of how to operate Sherpa. **It should be stressed
 that this steering file relies on many of Sherpa's default settings,

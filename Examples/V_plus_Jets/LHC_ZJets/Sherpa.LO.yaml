@@ -1,0 +1,19 @@
+# Sherpa configuration for Z[ee]+Jets production
+
+# set up beams for LHC run 2
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# matrix-element calculation
+ME_GENERATORS: [Comix]
+
+## 7-point variations
+SCALE_VARIATIONS: 4.0*
+
+# pp -> Z[ee]
+PROCESSES:
+- 93 93 -> 11 -11:
+    Order: {QCD: 0, EW: 2}
+
+SELECTORS:
+- [Mass, 11, -11, 66, E_CMS]

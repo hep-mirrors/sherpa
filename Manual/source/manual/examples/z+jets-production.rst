@@ -1,5 +1,15 @@
 .. _LHC_ZJets:
 
+Z production
+============
+
+This is a very basic example at Leading Order for Z production at the LHC.
+Most of the settings are kept at their default, please refer to the next section
+for a more sophisticated calculation at higher multiplicity and accuracy.
+
+.. literalinclude:: /../../Examples/V_plus_Jets/LHC_ZJets/Sherpa.LO.yaml
+   :language: yaml
+
 Z+jets production
 =================
 
