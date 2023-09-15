@@ -5,12 +5,10 @@ using namespace BEAM;
 using namespace ATOOLS;
 using namespace std;
 
-DM_Annihilation_Kinematics::DM_Annihilation_Kinematics(Beam_Base ** beams) :
+DM_Annihilation_Kinematics::DM_Annihilation_Kinematics(std::array<Beam_Base *, 2> beams) :
   Kinematics_Base(beams) {
   InitIntegration();
 }
-
-DM_Annihilation_Kinematics::~DM_Annihilation_Kinematics() {}
 
 void DM_Annihilation_Kinematics::InitIntegration() {
   Beam_Parameters parameters;
@@ -82,6 +80,6 @@ bool DM_Annihilation_Kinematics::operator()(Vec4D_Vector& p) {
   p_beams[1]->SetOutMomentum(p[1]);
 
   rpa->gen.SetEcms(Eprime);
-  
+
   return true;
 }

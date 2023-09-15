@@ -7,11 +7,11 @@ namespace BEAM {
   class RelicDensity_Kinematics : public Kinematics_Base {
   private:
     ATOOLS::Info_Key m_sprimekey;
-    
+
     void InitIntegration();
   public:
-    RelicDensity_Kinematics(Beam_Base ** beams);
-    ~RelicDensity_Kinematics();
+    RelicDensity_Kinematics(std::array<Beam_Base *, 2> beams);
+    ~RelicDensity_Kinematics() = default;
 
     void AssignKeys(ATOOLS::Integration_Info *const info);
     void SetLimits();

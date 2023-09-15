@@ -6,7 +6,7 @@ using namespace BEAM;
 using namespace ATOOLS;
 using namespace std;
 
-Collider_Kinematics::Collider_Kinematics(Beam_Base **beams)
+Collider_Kinematics::Collider_Kinematics(std::array<Beam_Base *, 2>beams)
     : Kinematics_Base(beams), m_mode(collidermode::unknown) {
   if (p_beams[0]->Type() == beamspectrum::monochromatic &&
       p_beams[1]->Type() == beamspectrum::monochromatic)
@@ -25,8 +25,6 @@ Collider_Kinematics::Collider_Kinematics(Beam_Base **beams)
   InitSystem();
   InitIntegration();
 }
-
-Collider_Kinematics::~Collider_Kinematics() {}
 
 void Collider_Kinematics::InitSystem() {
   m_Ecms = sqrt(m_S);

@@ -5,7 +5,7 @@
 using namespace BEAM;
 using namespace ATOOLS;
 
-Kinematics_Base::Kinematics_Base(Beam_Base * beams[2]) :
+Kinematics_Base::Kinematics_Base(std::array<Beam_Base *, 2> beams) :
   m_on(false), m_keyid("BEAM::"), m_smin(0.), m_smax(sqr(rpa->gen.Ecms())), m_sminPS(0.), m_smaxPS(sqr(rpa->gen.Ecms())), m_Plab(Vec4D(0.,0.,0.,0.))
 {
   for (size_t i=0;i<2;i++) {

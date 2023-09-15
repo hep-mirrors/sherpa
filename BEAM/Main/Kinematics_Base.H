@@ -6,20 +6,21 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Poincare.H"
 #include <map>
+#include <array>
 
 namespace BEAM {
   class Kinematics_Base {
   protected:
-    Beam_Base * p_beams[2];
+    std::array<Beam_Base *, 2> p_beams;
     bool        m_on;
     std::string m_keyid;
-    double m_m[2], m_m2[2], m_S;
+    std::array<double, 2> m_m, m_m2, m_exponent;
     /*!
       The energy fractions the outgoing bunches have w.r.t. the corresponding
       incoming beams.
     */
-    double m_x[2];
-    double m_smin, m_smax, m_sminPS, m_smaxPS, m_exponent[2];
+    std::array<double, 2> m_x;
+    double m_smin, m_smax, m_sminPS, m_smaxPS, m_S;
 
     ATOOLS::Vec4D    m_Plab;
     /*!
@@ -33,9 +34,9 @@ namespace BEAM {
     ATOOLS::Poincare m_LabBoost;
     virtual void InitIntegration()=0;
   public:
-    Kinematics_Base(Beam_Base * p_beams[2]);
-    ~Kinematics_Base();
-    
+    Kinematics_Base(std::array<Beam_Base *, 2> p_beams);
+    virtual ~Kinematics_Base();
+
     virtual bool operator()(ATOOLS::Vec4D_Vector& moms)           = 0;
     virtual void AssignKeys(ATOOLS::Integration_Info *const info) = 0;
     virtual void SetLimits()                                      = 0;
@@ -45,8 +46,8 @@ namespace BEAM {
     virtual inline const double & SprimeMax() const { return ATOOLS::Min(m_smax, m_smaxPS); }
     virtual inline const double   Sprime()          { return m_S; }
     virtual inline const double   Y()               { return 0.; }
-    
-    virtual inline Beam_Base ** GetBeams() { return p_beams; }
+
+    virtual inline std::array<Beam_Base *, 2> GetBeams() { return p_beams; }
 
     virtual inline const bool     On()                 const { return m_on; }
     virtual inline const std::string & KeyId()         const { return m_keyid; }

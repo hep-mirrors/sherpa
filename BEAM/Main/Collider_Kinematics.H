@@ -19,8 +19,8 @@ private:
   double CalculateTau();
 
 public:
-  Collider_Kinematics(Beam_Base **beams);
-  ~Collider_Kinematics();
+  Collider_Kinematics(std::array<Beam_Base *, 2>  beams);
+  ~Collider_Kinematics() = default;
 
   inline const double Sprime() override { return m_sprimekey[3]; }
   inline const double Y() override { return m_ykey[2]; }
