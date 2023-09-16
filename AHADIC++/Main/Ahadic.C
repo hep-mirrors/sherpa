@@ -132,7 +132,10 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       if(i==0 && wgt != 1.0) {
 	std::cout << "THIS SHOULD NOT HAPPEN " << wgt << std::endl;
       }
-      wgtmap["AHADIC"][name] = wgt;
+      if(std::isnan(wgt))
+	wgtmap["AHADIC"][name] = 1.0;
+      else
+	wgtmap["AHADIC"][name] = wgt;
     }
     DEBUG_VAR(wgtmap);
   } else {

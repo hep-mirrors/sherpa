@@ -63,7 +63,6 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	if (int(pair.second.Kfcode())==5) weight *= m_beauty_strange_modifier;
       }
       if (m_transitions.find(pair)==m_transitions.end())
-	// TODO: what does this do?
 	m_transitions[pair] = new Double_Transition_List;
 
       for (Single_Transition_List::iterator hit1=stmit1->second->begin();
@@ -74,11 +73,11 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	  hads.first  = hit1->first;
 	  hads.second = hit2->first;
 	  double wt   = weight*hit1->second*hit2->second;
+	  std::vector<double> _weights;
 	  for(int i{0}; i<weights.size(); ++i)
-	    weights[i] *= wt;
-
-	  if (weights[0]<m_wtthres) continue;
-	  (*m_transitions[pair])[hads] = weights;
+	    _weights.push_back(weights[i] * wt);
+	  if (_weights[0]<m_wtthres) continue;
+	  (*m_transitions[pair])[hads] = _weights;
 	}
       }
     }
@@ -108,7 +107,6 @@ void Double_Transitions::Print(const bool & full) {
   double meson(0.), baryon(0.);
   bool   count(false);
   // TODO: Reinsert print
-#if false
   msg_Out()<<"---------------------------------------------------------\n"
 	   <<METHOD<<":\n";
   for (Double_Transition_Map::iterator dtmit=m_transitions.begin();
@@ -128,15 +126,15 @@ void Double_Transitions::Print(const bool & full) {
 	checkit[dtlit->first.first] = 0.;
       if (checkit.find(dtlit->first.second)==checkit.end())
 	checkit[dtlit->first.second] = 0.;
-      checkit[dtlit->first.first]  += dtlit->second;
-      checkit[dtlit->first.second] += dtlit->second;
+      checkit[dtlit->first.first]  += dtlit->second[0];
+      checkit[dtlit->first.second] += dtlit->second[0];
       if (full)
 	msg_Out()<<"  -> ["<<dtlit->first.first<<" + "
 		 <<dtlit->first.second<<"], "
 		 <<"weight = "<<dtlit->second<<"\n";
       if (count) {
-	if (dtlit->first.first.IsBaryon()) baryon += dtlit->second;
-	else meson += dtlit->second;
+	if (dtlit->first.first.IsBaryon()) baryon += dtlit->second[0];
+	else meson += dtlit->second[0];
       }
     }
     if (count) msg_Out()<<" --> meson/baryon rate = "
@@ -149,7 +147,6 @@ void Double_Transitions::Print(const bool & full) {
        cit!=checkit.end();cit++) {
     msg_Out()<<" --> "<<cit->first<<" with total = "<<cit->second<<".\n";
   }
-#endif
 }
 
 Double_Transitions::~Double_Transitions() {
