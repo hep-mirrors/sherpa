@@ -148,3 +148,9 @@ if(SHERPA_ENABLE_RIVET)
   declare_variations_test(LO)
   declare_variations_test(NLO)
 endif()
+
+
+if(SHERPA_ENABLE_CATCH2)
+  # Add unit tests
+  add_subdirectory(Unit)
+endif()

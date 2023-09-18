@@ -34,6 +34,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
 option(SHERPA_ENABLE_ANALYSIS                "Enables building of Analyses." OFF)
 option(SHERPA_ENABLE_BINRELOC                "Enables binreloc." OFF)
+option(SHERPA_ENABLE_CATCH2                  "Enables Unit Tests with Catch2 (must be installed separately)" OFF)
 option(SHERPA_ENABLE_CLANG_TIDY              "Enables checks with clang-tidy." OFF)
 option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." OFF)
 option(SHERPA_ENABLE_DIHIGGS                 "Enables building of DIHIGGS." OFF)
@@ -91,7 +92,7 @@ foreach (en IN LISTS alldirenables)
   endif()
 endforeach()
 ###########################Options handeling############################
-set( allenables ANALYSIS BINRELOC BLACKHAT CLANG_TIDY DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
+set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
 INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
  LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)

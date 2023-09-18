@@ -14,6 +14,15 @@ cmake -S <sherpadir> -B <builddir> [+ optional configuration options, see cmake 
 cmake --build <builddir> [other build options, e.g. -j 8]
 cmake --install <builddir>
 ```
+
+You can then run test, if you like, with:
+```
+ctest --test-dir <builddir>
+```
+
+If you used the configuration option `-DSHERPA_ENABLE_CATCH2` (and
+have Catch2 v3) installed, this will also run unit tests.
+
 Required dependencies are LHAPDF and libzip, they can be automaticall installed by adding
 the options
 ```

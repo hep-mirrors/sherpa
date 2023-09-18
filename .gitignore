@@ -5,6 +5,7 @@ Makefile
 CMakeCache.txt
 build/
 outputs/
+/.*
 
 # make targets and intermediate files
 /AMEGIC++/Main/make2scons
@@ -51,6 +52,7 @@ Examples/*/Process
 References.tex
 Results.zip
 Results.zip~
+/Testing/
 
 # (local) make install targets
 
