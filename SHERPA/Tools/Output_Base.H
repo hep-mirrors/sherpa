@@ -13,11 +13,6 @@ namespace SHERPA {
 
   struct Output_Arguments {
     std::string m_outpath, m_outfile;
-    Output_Arguments(const std::string outpath,
-		     const std::string outfile):
-      m_outpath(outpath), m_outfile(outfile)
-    {}
-  };
     Initialization_Handler *p_init;
     Output_Arguments(const std::string outpath,
 		     const std::string outfile,
