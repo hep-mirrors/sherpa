@@ -11,6 +11,7 @@ template <class Scalar>
 double CRaritaSchwinger<Scalar>::s_accu(1.0e-12);
 
 // allows the output of the Rarita-Schwinger vector-spinor with std::cout
+// TODO: Outputfunktion testen
 template <class Scalar> std::ostream &
 METOOLS::operator<<(std::ostream &s,const CRaritaSchwinger<Scalar> &rs)
 {
@@ -22,7 +23,7 @@ METOOLS::operator<<(std::ostream &s,const CRaritaSchwinger<Scalar> &rs)
   else if (rs.H()==-2) helicity = "--";
   else THROW(fatal_error, "The value of the helicity of the Rarita-Schwinger particle is not permitted.")
 
-  return s<<'{'<<(rs.B()>0?(rs.R()>0?"Ubar$"+helicity:"$Vbar$"+helicity):
+  return s<<'{'<<(rs.B()>0?(rs.R()>0?"Ubar"+helicity:"Vbar"+helicity):
   (rs.R()>0?"U"+helicity:"V"+helicity)) <<","<<rs.S()<<";"<<rs(0)<<","<<rs(1)<<'|'
 	  <<rs[0]<<','<<rs[1]<<','<<rs[2]<<','<<rs[3]<<','<<rs[4]<<','<<rs[5]<<','<<rs[6]<<','<<rs[7]<<','<<rs[8]<<','
     <<rs[9]<<','<<rs[10]<<','<<rs[11]<<','<<rs[12]<<','<<rs[13]<<','<<rs[14]<<','<<rs[15]<<'}';
@@ -41,6 +42,23 @@ template <class Scalar>
 void CRaritaSchwinger<Scalar>::ResetAccu()
 { 
   s_accu=Accu(); 
+}
+
+template<class Scalar>
+void CRaritaSchwinger<Scalar>::Add(const CObject *c) {
+
+}
+template<class Scalar>
+void CRaritaSchwinger<Scalar>::Multiply(const Complex &c) {
+
+}
+template<class Scalar>
+void CRaritaSchwinger<Scalar>::Divide(const double &d) {
+
+}
+template<class Scalar>
+void CRaritaSchwinger<Scalar>::Invert() {
+
 }
 
 /*template <class Scalar>
@@ -174,16 +192,59 @@ template <class Scalar> bool CRaritaSchwinger<Scalar>::SetOn()
 template<class Scalar>
 bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
   // Dirac equation (gamma_mu * p_mu -m)^A_B RS^B, nu -> auch +m? für V statt U?
-  METOOLS::Gamma gammavec = Gamma();
-  ATOOLS::CMatrix intermediate = (gammavec * p + Complex(r) * p.Abs2() * ATOOLS::CMatrix(4, 1));
-  std::vector<Scalar> result1(16, ZERO);
-  for(int i(0); i<4; ++i) {
+  std::cout<<METHOD<<": Testing Dirac equation..."<<std::endl;
+  METOOLS::Gamma gammavec = Gamma<Scalar>();
+  bool testresult(true);
+/*  std::cout << "gamma0" << std::endl;
+  for (size_t i(0); i<4; ++i){
+    for (size_t j(0); j<4; ++j){
+      std::cout << i << j << gammavec[0][i][j] << std::endl;
+    }
+  }
+  std::cout << "gamma1" << std::endl;
+  for (size_t i(0); i<4; ++i){
+    for (size_t j(0); j<4; ++j){
+      std::cout << i << j << gammavec[1][i][j] << std::endl;
+    }
+  }
+  std::cout << "gamma2" << std::endl;
+  for (size_t i(0); i<4; ++i){
+    for (size_t j(0); j<4; ++j){
+      std::cout << i << j << gammavec[2][i][j] << std::endl;
+    }
+  }
+  std::cout << "gamma3" << std::endl;
+  for (size_t i(0); i<4; ++i){
+    for (size_t j(0); j<4; ++j){
+      std::cout << i << j << gammavec[3][i][j] << std::endl;
+    }
+  }*/
+  SComplex a(0);
+  CSpinor<Scalar> spinor(1, 1, 1, p);
+  ATOOLS::Spinor<Scalar> pp(1,p);
+  std::vector<SComplex> test_result(4, SComplex(0.0));
+  ATOOLS::TCMatrix<Scalar> intermediate = (ATOOLS::TCMatrix<Scalar>(gammavec * p) + SComplex(-r) * SComplex(sqrt(p.Abs2())) * ATOOLS::TCMatrix<Scalar>(4, true));
+  std::cout << "momentum" << p[0] << p[1] << p[2] << p[3] << sqrt(p.Abs2()) << std::endl;
+  std::vector<SComplex> result1(16);
+  // TODO: Sollte man die exakten ZEROS auch hier explizit implementieren (zwei Komponenten jedes Dirac spinors und damit
+  //       die Hälfte der Komponenten der RaSC sind ja leer im masselosen Fall!)
+  for (int i(0); i<4; ++i){
+    for (size_t j(0); j<4; ++j){
+        test_result[i] += intermediate[i][j] * spinor[j];
+        result1[i] += intermediate[i][j] * (*this)[j];
+        result1[i+4] += intermediate[i][j] * (*this)[j+4];
+        result1[i+8] += intermediate[i][j] * (*this)[j+8];
+        result1[i+12] += intermediate[i][j] * (*this)[j+12];
+    }
+  }
+  std::cout << "Spinor test" << test_result[0] << test_result[1] << test_result[2] << test_result[3] << std::endl;
+  /*for(int i(0); i<4; ++i) {
     result1[0+2*i] = intermediate[0][0] * (*this)[2*i] + intermediate[0][1] * (*this)[1+2*i] + intermediate[0][2] * (*this)[8+2*i] + intermediate[0][3] * (*this)[9+2*i];
     result1[1+2*i] = intermediate[1][0] * (*this)[2*i] + intermediate[1][1] * (*this)[1+2*i] + intermediate[1][2] * (*this)[8+2*i] + intermediate[1][3] * (*this)[9+2*i];
     result1[8+2*i] = intermediate[2][0] * (*this)[2*i] + intermediate[2][1] * (*this)[1+2*i] + intermediate[2][2] * (*this)[8+2*i] + intermediate[2][3] * (*this)[9+2*i];
     result1[9+2*i] = intermediate[3][0] * (*this)[2*i] + intermediate[3][1] * (*this)[1+2*i] + intermediate[3][2] * (*this)[8+2*i] + intermediate[3][3] * (*this)[9+2*i];
-  }
-  /* Implemented for filling when the four Dirac spinors are above each other in the spin-3/2 wave function
+  }*/
+   /*Implemented for filling when the four Dirac spinors are above each other in the spin-3/2 wave function
  * for (int i(0); i<4; ++i){
       for (size_t j(0); j<4; ++j){
         if (rs.On()!=1){
@@ -197,13 +258,19 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
       }
     }*/
   for (size_t j(0); j<16; ++j){
-    if (result1[j]>s_accu) return false;
+    if (std::abs(result1[j].real())>s_accu || std::abs(result1[j].imag())>s_accu) {
+      //msg_Out()<<"Component " << j << " of resulting Rarita-Schwinger wave function is " << result1[j] << " instead of zero!"
+      //<< std::endl;
+      //return false;
+      testresult =false;
+    }
   }
 
   // gamma_mu^A_B times RS^B,mu = 0
   // ÜBERPRÜFEN!!!
   //METOOLS::CVec4<Scalar> result2 = CVec4<Scalar>();
-  std::vector<Scalar> result2(4, ZERO);
+  std::cout<<METHOD<<": Testing gamma_mu Psi^mu = 0..."<<std::endl;
+  std::vector<SComplex> result2(4);
   for (int i(0); i<4; ++i){
     result2[0] += gammavec[i][0][0] * (*this)[2*i] + gammavec[i][0][1] * (*this)[1+2*i] + gammavec[i][0][2] * (*this)[8+2*i] + gammavec[i][0][3] * (*this)[9+2*i];
     result2[1] += gammavec[i][1][0] * (*this)[2*i] + gammavec[i][1][1] * (*this)[1+2*i] + gammavec[i][1][2] * (*this)[8+2*i] + gammavec[i][1][3] * (*this)[9+2*i];
@@ -211,29 +278,51 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
     result2[3] += gammavec[i][3][0] * (*this)[2*i] + gammavec[i][3][1] * (*this)[1+2*i] + gammavec[i][3][2] * (*this)[8+2*i] + gammavec[i][3][3] * (*this)[9+2*i];
     // result2 += gammavec[i] * METOOLS::CVec4<Scalar>((*this)[i+i*4], (*this)[i+i*4+1], (*this)[i+i*4+2], (*this)[i+i*4+3]);
   }
-  if (!(result2[0]<s_accu && result2[1]<s_accu && result2[2]<s_accu && result2[3]<s_accu)) return false;
-  
-  // p_mu times RS = 0 ? aus partielle Ableitung_mu RS=0?
-  std::vector<Scalar> result3(4, ZERO);
-  for (int i(0); i<2; ++i){
-    result3[i] = p[0] * (*this)[i] + p[1] * (*this)[2+i] + p[2] * (*this)[4+i] + p[3] * (*this)[6+i];
-    result3[i+2] = p[0] * (*this)[i+8] + p[1] * (*this)[10+i] + p[2] * (*this)[12+i] + p[3] * (*this)[14+i];
+  std::cout << result2[0] << result2[1] << result2[2] << result2[3] << std::endl;
+  if (!(std::abs(result2[0].real())<s_accu && std::abs(result2[1].real())<s_accu && std::abs(result2[2].real())<s_accu && std::abs(result2[3].real())<s_accu)){
+    //msg_Out() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << std::endl;
+    //return false;
+    testresult = false;
   }
-  if (!(result3[0]<s_accu && result3[1]<s_accu && result3[2]<s_accu && result3[3]<s_accu)) return false;
+  if (!(std::abs(result2[0].imag())<s_accu && std::abs(result2[1].imag())<s_accu && std::abs(result2[2].imag())<s_accu && std::abs(result2[3].imag())<s_accu)){
+    //msg_Out() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << std::endl;
+    //return false;
+    testresult = false;
+  }
+
+  // p_mu times RS = 0 ? aus partielle Ableitung_mu RS=0?
+  std::cout<<METHOD<<": Testing p_mu Psi^mu = 0..."<<std::endl;
+  std::vector<SComplex> result3(4);
+  for (int i(0); i<4; ++i){
+    result3[i] = SComplex(p[0]) * (*this)[i] + SComplex(-p[1]) * (*this)[4+i] + SComplex(-p[2]) * (*this)[8+i] + SComplex(-p[3]) * (*this)[12+i];
+  }
+  /*for (int i(0); i<2; ++i){
+    result3[i] = SComplex(p[0]) * (*this)[i] + SComplex(p[1]) * (*this)[2+i] + SComplex(p[2]) * (*this)[4+i] + SComplex(p[3]) * (*this)[6+i];
+    result3[i+2] = SComplex(p[0]) * (*this)[i+8] + SComplex(p[1]) * (*this)[10+i] + SComplex(p[2]) * (*this)[12+i] + SComplex (p[3]) * (*this)[14+i];
+  }*/
+  if (!(std::abs(result3[0].real())<s_accu && std::abs(result3[1].real())<s_accu && std::abs(result3[2].real())<s_accu && std::abs(result3[3].real())<s_accu)){
+    msg_Out() << "p_mu Psi^mu is " << result3[0] << result3[1] << result3[2] << result3[3] << " not zero!" << std::endl;
+    return false;
+  } ;
+  if (!(std::abs(result3[0].imag())<s_accu && std::abs(result3[1].imag())<s_accu && std::abs(result3[2].imag())<s_accu && std::abs(result3[3].imag())<s_accu)) {
+    msg_Out() << "p_mu Psi^mu is " << result3[0] << result3[1] << result3[2] << result3[3] << " not zero!" << std::endl;
+    return false;
+  }
 
   // normalizations???
 
   // completeness -> in Stromklasse testen!!!
-  return true;
+  return testresult;
+  //return true;
 }
 
 // TODO: kompliert nicht :-(
 namespace METOOLS {
 
-  //template class DCRaritaSchwinger;
-  //template std::ostream &operator<<(std::ostream &ostr,const DCRaritaSchwinger &s);
+  template class DCRaritaSchwinger;
+  template std::ostream &operator<<(std::ostream &ostr,const DCRaritaSchwinger &s);
 
-  //template class QCRaritaSchwinger;
-  //template std::ostream &operator<<(std::ostream &ostr,const QCRaritaSchwinger &s);
+  template class QCRaritaSchwinger;
+  template std::ostream &operator<<(std::ostream &ostr,const QCRaritaSchwinger &s);
 
 }
