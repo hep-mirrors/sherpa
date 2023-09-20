@@ -6,16 +6,29 @@
 #define METOOLS_Main_SpinFuncs_H
 
 namespace METOOLS{
-  class PauliVector: public ATOOLS::Vec4<ATOOLS::CMatrix> {
+  template <class Scalar>
+  class PauliVector{
+    ATOOLS::TCMatrix<Scalar> sigma0;
+    ATOOLS::TCMatrix<Scalar> sigma1;
+    ATOOLS::TCMatrix<Scalar> sigma2;
+    ATOOLS::TCMatrix<Scalar> sigma3;
   public:
+    typedef std::complex<Scalar> SComplex;
     PauliVector();
+    ATOOLS::TCMatrix<Scalar> operator[](int i) const;
   };
 
-
-  class Gamma: public ATOOLS::Vec4<ATOOLS::CMatrix>{
+  template <class Scalar>
+  class Gamma{
+    ATOOLS::TCMatrix<Scalar> gamma0;
+    ATOOLS::TCMatrix<Scalar> gamma1;
+    ATOOLS::TCMatrix<Scalar> gamma2;
+    ATOOLS::TCMatrix<Scalar> gamma3;
   public:
+    typedef std::complex<Scalar> SComplex;
     Gamma();
-    ATOOLS::CMatrix operator*(const ATOOLS::Vec4<double> &p);
+    ATOOLS::TCMatrix<Scalar> operator[](int i) const;
+    ATOOLS::TCMatrix<Scalar> operator*(const ATOOLS::Vec4<double> &p);
   };
 }
 #endif

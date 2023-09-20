@@ -1,44 +1,66 @@
 #include "METOOLS/Main/SpinFuncs.H"
+#include "ATOOLS/Org/Exception.H"
 
-METOOLS::PauliVector::PauliVector(){
-  // sigma_0
-  (*this)[0] = ATOOLS::CMatrix(2);
-  (*this)[0][0][0]=Complex(1);
-  (*this)[0][1][1]=Complex(1);
+template<class Scalar>
+METOOLS::PauliVector<Scalar>::PauliVector() : sigma0(ATOOLS::TCMatrix(2, SComplex(0.0))),
+sigma1(ATOOLS::TCMatrix(2, SComplex(0.0))), sigma2(ATOOLS::TCMatrix(2, SComplex(0.0))),
+sigma3(ATOOLS::TCMatrix(2, SComplex(0.0)))  {
 
-  // sigma_1
-  (*this)[1] = ATOOLS::CMatrix(2);
-  (*this)[1][1][0]=Complex(1);
-  (*this)[1][0][1]=Complex(1);
-
-  // sigma_2
-  (*this)[2] = ATOOLS::CMatrix(2);
-  (*this)[2][0][1]=Complex(0, -1);
-  (*this)[2][1][0]=Complex(0, 1);
-
-  // sigma_3
-  (*this)[3] = ATOOLS::CMatrix(2);
-  (*this)[3][0][0]=Complex(1);
-  (*this)[3][1][1]=Complex(-1);
+  sigma0[0][0] = sigma0[1][1] = sigma1[0][1] = sigma1[1][0] = sigma3[0][0] = SComplex(1);
+  sigma3[1][1]=SComplex(-1);
+  sigma2[0][1]=SComplex(0, -1);
+  sigma2[1][0]=SComplex(0, 1);
 }
 
-METOOLS::Gamma::Gamma() {
+template<class Scalar>
+ATOOLS::TCMatrix<Scalar> METOOLS::PauliVector<Scalar>::operator[](int i) const {
+  if (i>3) THROW(fatal_error, "There are only four Pauli matrices!")
+  if (i==0) return sigma0;
+  if (i==1) return sigma1;
+  if (i==2) return sigma2;
+  if (i==3) return sigma3;
+}
+
+template<class Scalar>
+METOOLS::Gamma<Scalar>::Gamma() : gamma0(ATOOLS::TCMatrix(4, SComplex(0.0))),
+gamma1(ATOOLS::TCMatrix(4, SComplex(0.0))), gamma2(ATOOLS::TCMatrix(4, SComplex(0.0))),
+gamma3(ATOOLS::TCMatrix(4, SComplex(0.0))) {
   // Gamma vector in Weyl basis
-  METOOLS::PauliVector paulivector = PauliVector();
-  for (int i(0); i<4; ++i){
-    (*this)[i] = ATOOLS::CMatrix(4);
-    double prefactor(-1);
-    if (i==0) prefactor=1;
+  METOOLS::PauliVector<Scalar> paulivector = PauliVector<Scalar>();
+  for (int i(0); i<2; ++i){
     for (int j(0); j<2; ++j){
-      for (size_t k(0); k<2; ++k){
-        (*this)[i][j][k+2] = paulivector[i][j][k];
-        (*this)[i][j+2][k] = prefactor*paulivector[i][j][k];
-      }
+        gamma0[i][j+2] = paulivector[0][i][j];
+        gamma0[i+2][j] = paulivector[0][i][j];
+        gamma1[i][j+2] = paulivector[1][i][j];
+        gamma1[i+2][j] = -paulivector[1][i][j];
+        gamma2[i][j+2] = paulivector[2][i][j];
+        gamma2[i+2][j] = -paulivector[2][i][j];
+        gamma3[i][j+2] = paulivector[3][i][j];
+        gamma3[i+2][j] = -paulivector[3][i][j];
     }
   }
 }
 
-// Feynman slash
-ATOOLS::CMatrix METOOLS::Gamma::operator*(const ATOOLS::Vec4<double> &p) {
-  return (*this)[0]*Complex(p[0])+(*this)[1]*Complex(-p[1])+(*this)[2]*Complex(-p[2])+(*this)[3]*Complex(-p[3]);
+template<class Scalar>
+ATOOLS::TCMatrix<Scalar> METOOLS::Gamma<Scalar>::operator[](int i) const{
+  if (i>3) THROW(fatal_error, "There are only four Pauli matrices!")
+  if (i==0) return gamma0;
+  if (i==1) return gamma1;
+  if (i==2) return gamma2;
+  if (i==3) return gamma3;
 }
+
+// Feynman slash
+template <class Scalar>
+ATOOLS::TCMatrix<Scalar> METOOLS::Gamma<Scalar>::operator*(const ATOOLS::Vec4<double> &p) {
+  return (*this)[0]*SComplex(p[0])+(*this)[1]*SComplex(-p[1])+(*this)[2]*SComplex(-p[2])+(*this)[3]*SComplex(-p[3]);
+}
+
+//=============================
+//  Explicit instantiations.
+//=============================
+template class METOOLS::PauliVector<double>;
+template class METOOLS::PauliVector<long double>;
+template class METOOLS::Gamma<double>;
+template class METOOLS::Gamma<long double>;
+
