@@ -166,6 +166,8 @@ void Initialization_Handler::RegisterDefaults()
   s["PDF_VARIATIONS"].UseNoneReplacements();
   s["QCUT_VARIATIONS"].UseNoneReplacements().SetSynonyms({"CKKW_VARIATIONS"});
   s["PDF_LIBRARY"].UseNoneReplacements();
+  s["MPI_PDF_LIBRARY"].UseNoneReplacements();
+  s["BBR_PDF_LIBRARY"].UseNoneReplacements();
   s["ANALYSIS"].UseNoneReplacements();
 
   s["SHOW_ME_GENERATORS"].SetDefault(0);
@@ -758,22 +760,23 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     m_defsets[PDF::isr::hard_process][beam] = defset;
     // fix PDFs and default sets for the MPI's / hard_subprocesses here
     // we may have to define defaults here.
-    if (!mpilibs.empty() && !mpilibs[beam].empty()) {
+    if (!mpilibs.empty()) {
       std::string libname = mpilibs[Min(beam,mpilibs.size()-1)];
-      if (m_pdflibs.find(libname)!=m_pdflibs.end()) m_pdflibs.insert(libname);
+      if (m_pdflibs.find(libname)==m_pdflibs.end()) m_pdflibs.insert(libname);
       m_defsets[PDF::isr::hard_subprocess][beam] = defset;
     }
     else m_defsets[PDF::isr::hard_subprocess][beam] = defset;
-    // fix PDFs and default sets for the beam reacattering here
-    // this is the only configuration at the moment where we allow additional
+    // fix PDFs and default sets for the beam rescattering here
+    // EPA is the only configuration at the moment where we allow additional
     // scattering/interactions of the incoming beams
     if (m_mode==eventtype::StandardPerturbative &&
         settings["BEAM_RESCATTERING"].Get<string>()!=string("None") &&
 	p_beamspectra->GetBeam(beam)->Beam().IsHadron() &&
 	p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_photon &&
 	p_beamspectra->GetBeam(beam)->Bunch(1)==p_beamspectra->GetBeam(beam)->Beam()) {
-      if (!bbrlibs.empty() && !bbrlibs[beam].empty()) {
-	m_pdflibs.insert(bbrlibs[beam]);
+      if (!bbrlibs.empty()) {
+        std::string libname = bbrlibs[Min(beam,bbrlibs.size()-1)];
+	if (m_pdflibs.find(libname)==m_pdflibs.end()) m_pdflibs.insert(libname);
 	m_defsets[PDF::isr::bunch_rescatter][beam] = std::string("None");
       }
       else {
@@ -911,7 +914,7 @@ void Initialization_Handler::DefineBunchFlavours(Settings& settings) {
     THROW(fatal_error, "You can not specify more than two bunches.");
   }
   for (size_t beam=0;beam<2;beam++) {
-    if (bunches.size()==0) m_bunch_particles[beam] = p_beamspectra->GetBeam(beam)->Bunch(0);
+    if (bunches.empty()) m_bunch_particles[beam] = p_beamspectra->GetBeam(beam)->Bunch(0);
     else {
       int flav = bunches[Min(beam,bunches.size()-1)];
       m_bunch_particles[beam] = Flavour((kf_code)abs(flav));
