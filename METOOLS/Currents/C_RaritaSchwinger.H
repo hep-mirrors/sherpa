@@ -30,7 +30,7 @@ namespace METOOLS {
 
     // TODO: was sind m_b, m_on bei C_Spinor; m_s, m_c bei CObject? Ist m_h wirklich die Helicität, m_r, ob positive
     //  oder negative Energie
-    // positive or negative energy vector-spinor
+    // positive or negative energy vector-spinor (particle or anti-particle)
     // bar or non-bar vector-spinor
     // massless (m_on=1,2) or massive spin-3/2 particle (m_on=3): helper variable to left physically ZERO components
     // also ZERO numerically
@@ -120,10 +120,10 @@ namespace METOOLS {
     }*/
 
 // TODO: Funktionen füllen!!!
-/*void Add(const CObject *c);
+   void Add(const CObject *c);
     void Divide(const double &d);
     void Multiply(const Complex &c);
-    void Invert();*/
+    void Invert();
 
 // TODO: Spinorwellenfunktionsklasse hat im Vergleich zur Vektorklasse noch ein Construct, SetOn, CConj -  brauchen wir
 //       das hier???
@@ -185,7 +185,7 @@ namespace METOOLS {
     inline int On() const { return m_on; }
     inline void SetR(const int &r) { m_r=r; }
     inline void SetB(const int &b) { m_b=b; }
-    inline bool SetOn();
+    bool SetOn();
 
     bool Nan() const;
 
@@ -197,25 +197,27 @@ namespace METOOLS {
     bool Test_Properties(const ATOOLS::Vec4D &p, int r);
 
   };
+
   // end of class CRaritaSchwinger
-// TODO: Brauchen wir Templates und wenn ja, welche?
 
-  /*template <class Scalar> inline CVec4<Scalar>
-  operator*(const Scalar &c,const CVec4<Scalar> &v)
-  { return CVec4<Scalar>(v,c); }
-  template <class Scalar> inline CVec4<Scalar> 
-  operator*(const CVec4<Scalar> &v,const Scalar &c)
-  { return CVec4<Scalar>(v,c); }
-  template <class Scalar> inline CVec4<Scalar> 
-  operator*(const std::complex<Scalar> &c,const CVec4<Scalar> &v)
-  { return CVec4<Scalar>(v,c); }
-  template <class Scalar> inline CVec4<Scalar> 
-  operator*(const CVec4<Scalar> &v,const std::complex<Scalar> &c)
-  { return CVec4<Scalar>(v,c); }
-  template <class Scalar> inline CVec4<Scalar> 
-  operator/(const CVec4<Scalar> &v,const std::complex<Scalar> &c)
-  { return CVec4<Scalar>(v,Scalar(1.0)/c); }
-
+  // TODO: Sollten wir noch irgendwelche Templates/Operatoren o.ä. implementieren, die wir bislang noch nicht gebraucht
+  //       haben?
+  template <class Scalar> inline CRaritaSchwinger<Scalar>
+  operator*(const Scalar &c,const CRaritaSchwinger<Scalar> &v)
+  { return CRaritaSchwinger<Scalar>(v,c); }
+  template <class Scalar> inline CRaritaSchwinger<Scalar>
+  operator*(const CRaritaSchwinger<Scalar> &v,const Scalar &c)
+  { return CRaritaSchwinger<Scalar>(v,c); }
+  template <class Scalar> inline CRaritaSchwinger<Scalar>
+  operator*(const std::complex<Scalar> &c,const CRaritaSchwinger<Scalar> &v)
+  { return CRaritaSchwinger<Scalar>(v,c); }
+  template <class Scalar> inline CRaritaSchwinger<Scalar>
+  operator*(const CRaritaSchwinger<Scalar> &v,const std::complex<Scalar> &c)
+  { return CRaritaSchwinger<Scalar>(v,c); }
+  template <class Scalar> inline CRaritaSchwinger<Scalar>
+  operator/(const CRaritaSchwinger<Scalar> &v,const std::complex<Scalar> &c)
+  { return CRaritaSchwinger<Scalar>(v,Scalar(1.0)/c); }
+  /*
   template <class Scalar> inline std::complex<Scalar> 
   operator*(const CVec4<Scalar> &v1,const ATOOLS::Vec4<Scalar> &v2)
   { return v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3]; }
@@ -224,7 +226,7 @@ namespace METOOLS {
   { return v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3]; }
   template <class Scalar> inline std::complex<Scalar>
   operator*(const CVec4<Scalar> &v1,const CVec4<Scalar> &v2)
-  { return v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3]; }*/
+  { return v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3]; } */
 
   template <class Scalar>
   std::ostream &operator<<(std::ostream &s,const CRaritaSchwinger<Scalar> &vec);
