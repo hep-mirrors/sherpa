@@ -118,7 +118,7 @@ namespace PHOTONS {
   */
 
   /*!
-    \var double Weight_Jacobian_Lorentz::m_Q0
+    \var double Weight_Jacobian_Lorentz::m_QC0
     \brief energy of the charged final states in the \f$ Q_C \f$ rest frame before treatment (\f$ K=0 \f$ event)
   */
 
@@ -128,7 +128,7 @@ namespace PHOTONS {
   */
 
   /*!
-    \var double Weight_Jacobian_Lorentz::m_P0
+    \var double Weight_Jacobian_Lorentz::m_PC0
     \brief energy of the charged final states in the \f$ P_C \f$ rest frame after treatment
   */
 
@@ -143,12 +143,12 @@ namespace PHOTONS {
   */
 
   /*!
-    \var double Weight_Jacobian_Lorentz::m_mCMSQ
+    \var double Weight_Jacobian_Lorentz::m_mMQ
     \brief invariant mass of \f$ Q_C \f$
   */
 
   /*!
-    \var double Weight_Jacobian_Lorentz::m_mCMSP
+    \var double Weight_Jacobian_Lorentz::m_mMP
     \brief invariant mass of \f$ P_C \f$
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////

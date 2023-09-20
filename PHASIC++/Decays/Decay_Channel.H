@@ -64,7 +64,7 @@ namespace PHASIC {
 
     /**
      * m_active[n] specifies the status of the decay channel for the decay
-     * of the <n>'th particle of this type in the event.
+     * of the @noop <n>'th particle of this type in the event.
      * It can take the following values: m_active[n]=
      *   0: Disabled decay channel, but contributes to total width
      *   1: Enabled decay channel

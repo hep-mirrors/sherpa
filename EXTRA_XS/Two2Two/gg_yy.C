@@ -100,8 +100,8 @@ namespace EXTRAXS {
   }
 }
 
-DECLARE_TREEME2_GETTER(gg_yy,"gg_yy")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,gg_yy>::
+DECLARE_TREEME2_GETTER(EXTRAXS::gg_yy,"gg_yy")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::gg_yy>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;

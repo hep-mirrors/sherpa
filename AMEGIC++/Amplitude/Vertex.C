@@ -873,7 +873,7 @@ void Vertex::TexOutput()
   */
 }
  
-ostream& AMEGIC::operator<<(ostream& s, const Vertex& v)
+ostream& AMEGIC::operator<<(std::ostream& s, const AMEGIC::Vertex& v)
 {
   s<<"---------------- Vertices --------------------------------"<<endl;
 

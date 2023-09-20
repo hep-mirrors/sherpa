@@ -1,10 +1,11 @@
 #ifndef ATOOLS_Org_Integration_Info_H
 #define ATOOLS_Org_Integration_Info_H
-
+/** @cond ANTI_INCLUDE_GUARD */
 #ifndef ATOOLS_Org_Info_Key_H
 #error The header 'Integration_Info.H' must not be included directly. \
 Please include the header 'Info_Key.H' instead.
 #else
+/** @endcond */
 
 #include "ATOOLS/Org/Info_Key.H"
 #include "ATOOLS/Org/My_Limits.H"
@@ -123,6 +124,8 @@ namespace ATOOLS {
 
 #include "ATOOLS/Org/Integration_Info.inl.H"
 
+/** @cond ANTI_INCLUDE_GUARD */
 #endif
+/** @endcond */
 
 #endif

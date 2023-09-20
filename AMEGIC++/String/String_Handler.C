@@ -209,7 +209,7 @@ void String_Handler::Output(Helicity* hel)
   KillStrings();
 }
 
-void String_Handler::Output(Helicity* hel, string path)
+void String_Handler::Output(Helicity* hel, std::string path)
 {
   if (gen_str<2 || val!=0) return;
   String_Output so(path,maxgraph,maxhel,m_mode);

@@ -16,26 +16,26 @@ namespace ATOOLS {
   typedef Vec4<double> Vec4D;
   typedef std::vector<Vec4D> Vec4D_Vector;
 
-  template<> double Vec4D::CosPhi() const;
-  template<> double Vec4D::SinPhi() const;
-  template<> double Vec4D::Phi() const;
-  template<> double Vec4D::CosTheta() const;
-  template<> double Vec4D::SinTheta() const;
-  template<> double Vec4D::Theta() const;
-  template<> double Vec4D::Eta() const;
-  template<> double Vec4D::CosTheta(const Vec4D& ref) const;
-  template<> double Vec4D::Theta(const Vec4D& ref) const;
-  template<> double Vec4D::Eta(const Vec4D& ref) const;
-  template<> double Vec4D::CosDPhi(const Vec4D& ref) const;
-  template<> double Vec4D::DPhi(const Vec4D& ref) const;
-  template<> double Vec4D::DEta(const Vec4D& ref) const;
-  template<> double Vec4D::DY(const Vec4D& ref) const;
-  template<> double Vec4D::DR(const Vec4D& ref) const;
-  template<> double Vec4D::DR2(const Vec4D& ref) const;
-  template<> double Vec4D::DRy(const Vec4D& ref) const;
-  template<> double Vec4D::DR2y(const Vec4D& ref) const;
-  template<> double Vec4D::SmallOMCT(const Vec4D& ref) const;
-  template<> double Vec4D::SmallMLDP(const Vec4D& ref) const;
+  template<> double Vec4<double>::CosPhi() const;
+  template<> double Vec4<double>::SinPhi() const;
+  template<> double Vec4<double>::Phi() const;
+  template<> double Vec4<double>::CosTheta() const;
+  template<> double Vec4<double>::SinTheta() const;
+  template<> double Vec4<double>::Theta() const;
+  template<> double Vec4<double>::Eta() const;
+  template<> double Vec4<double>::CosTheta(const Vec4D& ref) const;
+  template<> double Vec4<double>::Theta(const Vec4D& ref) const;
+  template<> double Vec4<double>::Eta(const Vec4D& ref) const;
+  template<> double Vec4<double>::CosDPhi(const Vec4D& ref) const;
+  template<> double Vec4<double>::DPhi(const Vec4D& ref) const;
+  template<> double Vec4<double>::DEta(const Vec4D& ref) const;
+  template<> double Vec4<double>::DY(const Vec4D& ref) const;
+  template<> double Vec4<double>::DR(const Vec4D& ref) const;
+  template<> double Vec4<double>::DR2(const Vec4D& ref) const;
+  template<> double Vec4<double>::DRy(const Vec4D& ref) const;
+  template<> double Vec4<double>::DR2y(const Vec4D& ref) const;
+  template<> double Vec4<double>::SmallOMCT(const Vec4D& ref) const;
+  template<> double Vec4<double>::SmallMLDP(const Vec4D& ref) const;
 
   std::istream& operator>>(std::istream& s,Vec4D& vec);
   std::istream& operator>>(std::istream& s,Vec3D& vec);
@@ -67,12 +67,12 @@ namespace ATOOLS {
   }
 
   // static members
-  template<> const Vec4D Vec4D::XVEC;
-  template<> const Vec4D Vec4D::YVEC;
-  template<> const Vec4D Vec4D::ZVEC;
-  template<> const Vec3D Vec3D::XVEC;
-  template<> const Vec3D Vec3D::YVEC;
-  template<> const Vec3D Vec3D::ZVEC;
+  template<> const Vec4D Vec4<double>::XVEC;
+  template<> const Vec4D Vec4<double>::YVEC;
+  template<> const Vec4D Vec4<double>::ZVEC;
+  template<> const Vec3D Vec3<double>::XVEC;
+  template<> const Vec3D Vec3<double>::YVEC;
+  template<> const Vec3D Vec3<double>::ZVEC;
 
 }
 

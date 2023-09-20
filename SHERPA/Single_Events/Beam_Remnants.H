@@ -41,10 +41,6 @@ namespace SHERPA {
     eventually coloured incoming beams (like protons) and a fragmentation handler.
   */
   /*!
-    \var Fragmentation_Handler * Beam_Remnants::p_fragmentationhandler
-    A pointer to the Fragmentation_Handler, filled by the constructor.
-  */
-  /*!
     \fn Beam_Remnants::Beam_Remnants(Fragmentation_Handler *)
     Copies the pointer to the fragmentation handler and sets the
     name and the type of this event phase. The name is given by 

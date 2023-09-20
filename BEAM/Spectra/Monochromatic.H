@@ -24,7 +24,7 @@ namespace BEAM {
     \f[
     {\cal W} = \frac{\lambda_{\rm in}+\lambda_{\rm out}}{2}\,,
     \f]
-    where both \f$\lambda_{\rm in,out}$\f are the polarization degrees of the incoming
+    where both \f$\lambda_{\rm in,out}\f$ are the polarization degrees of the incoming
     and outgoing particle.
     \todo This is still to be implemented !
   */
@@ -38,13 +38,8 @@ namespace BEAM {
     Returns an exact copy of this class.
   */
   /*!
-    \fn
-    bool Monochromatic::CalculateWeight(const double,const double)
+    \fn bool Monochromatic::CalculateWeight(const double,const double)
     No weight is calculated so far.
-  */
-  /*!
-    \fn double Monochromatic::Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none))
-    The weight is returned. It has been initialised in the constructor.
   */
 }
 #endif

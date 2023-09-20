@@ -351,6 +351,14 @@ namespace ATOOLS {
     }
   }
 
+  std::ostream& operator<<(std::ostream& out, const Weights_Map& w);
+  Weights_Map operator+(Weights_Map lhs, const Weights_Map& rhs);
+  Weights_Map operator-(Weights_Map lhs, const Weights_Map& rhs);
+  Weights_Map operator*(Weights_Map lhs, const Weights_Map& rhs);
+  Weights_Map operator*(Weights_Map lhs, double rhs);
+  Weights_Map operator/(Weights_Map lhs, const Weights_Map& rhs);
+  Weights_Map operator/(Weights_Map lhs, double rhs);
+
 } // namespace ATOOLS
 
 #endif

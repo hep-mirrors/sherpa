@@ -193,8 +193,8 @@ double Higgs_Virtual::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
   return 4.*M_PI;
 }
 
-DECLARE_VIRTUALME2_GETTER(Higgs_Virtual,"Higgs_Virtual")
-Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,Higgs_Virtual>::
+DECLARE_VIRTUALME2_GETTER(HIGGS::Higgs_Virtual,"Higgs_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,HIGGS::Higgs_Virtual>::
 operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);

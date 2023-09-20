@@ -267,7 +267,7 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn    double ReIncomplietGamma0(double xx)
+    \fn    double ReIncompleteGamma0(double xx)
     \brief calculates the real part of the incomplete Gammafunction.
   */
 

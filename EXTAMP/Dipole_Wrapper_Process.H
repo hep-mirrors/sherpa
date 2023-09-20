@@ -12,7 +12,7 @@ namespace EXTAMP {
      A wrapper around a EXTAMP::CS_Dipole that basically adds zero
      functionality to it, apart from making it look like a
      PHASIC::Single_Process with a 'Partonic' method that returns the
-     value of the dipole. This is necessary in the MC@NLO
+     value of the dipole. This is necessary in the MC@@NLO
      implementation due to AMEGIC's legacy structure of representing
      dipole terms by processes.
   */

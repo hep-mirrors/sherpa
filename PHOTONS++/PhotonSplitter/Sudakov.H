@@ -82,53 +82,53 @@ namespace PHOTONS {
   // Description of member variables for Photon_Splitter
   /////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \var int m_mode
+    \var Sudakov::m_mode
     \brief encodes which splittings to include. Settings are additive. 
     1 = electrons, 2 = muons, 4 = taus, 8 = hadrons up to mass cutoff.
   */
   /*!
-    \var int m_virtualityOrdering
+    \var Sudakov::m_virtualityOrdering
     \brief stores the ordering scheme to be used. 0 is transverse momentum ordering, 
     1 is virtuality ordering and 2 is mixed (default).
   */
   /*!
-    \var int m_spectatorScheme
+    \var Sudakov::m_spectatorScheme
     \brief stores the spectator scheme to be used: 
     0 = all final-state charged particles that exist prior to this module being called (default), 
     1 = only the final-state charged particle that the soft photon is calculated to be emitted off.
   */
   /*!
-    \var bool m_debug_initProbabilistic
+    \var Sudakov::m_debug_initProbabilistic
     \brief if off, chooses starting scale by winner-takes all. Default is on.
   */
   /*!
-    \var double m_masscutoff
+    \var Sudakov::m_masscutoff
     \brief the mass of the heaviest hadron which can be produced by photon splittings. Note only 
     fermion and scalar splitting functions are currently implemented.
   */
   /*!
-    \var double m_t0
+    \var Sudakov::m_t0
     \brief the IR cutoff of the algorithm. Defaults to 4m^2 where m is the mass of the lightest 
     particle which can be produced in photon splittings. 
   */
   /*!
-    \var Part_List m_remainingphotons
+    \var Sudakov::m_remainingphotons
     \brief stores the photons which have not (yet) split.
   */
   /*!
-    \var Particle_Vector m_addedparticles
+    \var Sudakov::m_addedparticles
     \brief stores the particles which are to be added to the blob. 
   */
   /*!
-    \var bool m_addedanything 
+    \var Sudakov::m_addedanything 
     \brief flags whether anything has changed so the blob can be updated. 
   */
   /*!
-    \var std::vector<size_t> m_splitterIds
+    \var Sudakov::m_splitterIds
     \brief keeps track of the splitter photon associated with each splitting function.
   */
   /*!
-    \var int m_NInP
+    \var Sudakov::m_NInP
     \brief the number of incoming particles in the blob. Used to classify particles as 
     incoming or outgoing by their ID without referring to the blob. 
   */
@@ -137,32 +137,32 @@ namespace PHOTONS {
   // Description of member methods for Photon_Splitter
   /////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \fn void AddSplitter(Particle* photon, const size_t& id)
+    \fn void Sudakov::AddSplitter(ATOOLS::Particle* photon, const size_t& id)
     \brief Creates the splitting functions for this photon.
   */
   /*!
-    \fn void AddChargedParticle(Particle* p, const size_t& id)
+    \fn void Sudakov::AddChargedParticle(ATOOLS::Particle* p, const size_t& id)
     \brief Assesses whether the charged particle can be a spectator and adds it if so.
   */
   /*!
-    \fn bool ClearAll()
+    \fn bool Sudakov::ClearAll()
     \brief resets the Sudakov for the next event.
   */
   /*!
-    \fn void SetCutoff()
+    \fn void Sudakov::SetCutoff()
     \brief sets the IR cutoff for the algorithm as described above. 
   */
   /*!
-    \fn Spectator* DefineInitialConditions(double &t, Vec4D pphoton)
+    \fn Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
     \brief Reconstructs the emission history of the given photon and returns 
     the recontructed spectator and starting scale. 
   */
   /*!
-    \fn bool Run(Blob *)
+    \fn bool Sudakov::Run(ATOOLS::Blob *)
     \brief Runs the algorithm until the scale is below the cutoff. 
   */
   /*!
-    \fn bool Generate (Blob *)
+    \fn bool Sudakov::Generate (ATOOLS::Blob *)
     \brief Generates trial emissions, lets the splitting functions compete and corrects 
     the splitting probability with a veto. 
   */

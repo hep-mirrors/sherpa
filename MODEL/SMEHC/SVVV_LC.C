@@ -10,7 +10,8 @@ using namespace ATOOLS;
 namespace METOOLS {
 
   template <typename SType>
-  class SVVV_Calculator: public Lorentz_Calculator {
+  class SVVV_Calculator
+  /** @cond RECURSIVE_WARNING */: public Lorentz_Calculator/** @endcond */ {
   private:
 
     int m_n[3];

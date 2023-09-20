@@ -173,7 +173,7 @@ namespace PDF {
 #define DECLARE_PDF_GETTER(NAME)					\
   									\
   class NAME: public ATOOLS::Getter_Function				\
-  <PDF_Base,PDF_Arguments,std::less<std::string> > {			\
+  <PDF::PDF_Base,PDF::PDF_Arguments,std::less<std::string> > {			\
   protected:								\
     std::string m_key;							\
     void PrintInfo(std::ostream &str,const size_t width) const;		\

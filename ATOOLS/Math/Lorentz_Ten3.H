@@ -261,18 +261,24 @@ namespace ATOOLS {
 */
 
 /*!
- \fn Lorentz_Ten3::Lorentz_Ten3(Scalar x00, Scalar x10, Scalar x20, Scalar x30, Scalar x01, Scalar x11, Scalar x21, Scalar x31, Scalar x02, Scalar x12, Scalar x22, Scalar x32, Scalar x03, Scalar x13, Scalar x23, Scalar x33){
+ \fn Lorentz_Ten3::Lorentz_Ten3(
+  const Scalar& x000, const Scalar& x100, const Scalar& x200, const Scalar& x300,
+  const Scalar& x010, const Scalar& x110, const Scalar& x210, const Scalar& x310,
+  const Scalar& x020, const Scalar& x120, const Scalar& x220, const Scalar& x320,
+  const Scalar& x030, const Scalar& x130, const Scalar& x230, const Scalar& x330,
+  const Scalar& x001, const Scalar& x101, const Scalar& x201, const Scalar& x301,
+  const Scalar& x011, const Scalar& x111, const Scalar& x211, const Scalar& x311,
+  const Scalar& x021, const Scalar& x121, const Scalar& x221, const Scalar& x321,
+  const Scalar& x031, const Scalar& x131, const Scalar& x231, const Scalar& x331,
+  const Scalar& x002, const Scalar& x102, const Scalar& x202, const Scalar& x302,
+  const Scalar& x012, const Scalar& x112, const Scalar& x212, const Scalar& x312,
+  const Scalar& x022, const Scalar& x122, const Scalar& x222, const Scalar& x322,
+  const Scalar& x032, const Scalar& x132, const Scalar& x232, const Scalar& x332,
+  const Scalar& x003, const Scalar& x103, const Scalar& x203, const Scalar& x303,
+  const Scalar& x013, const Scalar& x113, const Scalar& x213, const Scalar& x313,
+  const Scalar& x023, const Scalar& x123, const Scalar& x223, const Scalar& x323,
+  const Scalar& x033, const Scalar& x133, const Scalar& x233, const Scalar& x333)
  \brief Special Constructor, templated in Scalar, taking 16 single components.
-*/
-
-/*!
- \fn   inline Scalar* Lorentz_Ten3::operator[] (int i)
- \brief returns array \f$x_{ij}\f$, \f$j\in[0,3]\f$. (May be manipulated.)
-*/
-
-/*!
- \fn   inline const Scalar* Lorentz_Ten3::operator[] (int i) const
- \brief returns array \f$x_{ij}\f$, \f$j\in[0,3]\f$.
 */
 
 #endif

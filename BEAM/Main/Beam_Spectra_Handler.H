@@ -125,21 +125,6 @@ namespace BEAM {
     \todo include more types of BeamBases
   */
   /*!
-    \var ATOOLS::Poincare Beam_Spectra_Handler::m_CMSBoost
-    A boost from the c.m. system of the incoming beams to the c.m. system of the
-    outgoing bunches.
-  */
-  /*!
-    \var ATOOLS::Poincare Beam_Spectra_Handler::m_LABBoost
-    A boost from the lab system of the incoming beams to their c.m. system.
-  */
-  /*!
-    \var bool Beam_Spectra_Handler::m_asymmetric
-    This flag indicates wether the incoming beams are in an asymmetric situation, i.e.
-    if the boost from the c.m. system of the incoming beams to their lab system is
-    mandatory.
-  */
-  /*!
     \var int Beam_Spectra_Handler::m_mode
     Indicates the mode of the beam handling, or, better phrased, whether either or both of
     the beams are monochromatic:
@@ -149,60 +134,12 @@ namespace BEAM {
     - 3 both beams are not monochromatic.
   */
   /*!
-    \var double Beam_Spectra_Handler::m_exponent[2]
-    Characteristic exponents used for the integration. This is mainly a service for better
-    performance of the phase space integration. At the moment,
-    \verbatim
-    m_exponent[0] = 0.5
-    \endverbatim
-    and
-    \verbatim
-    m_exponent[1] = 0.98 * ( p_BeamBase[0]->Exponent() + p_BeamBase[1]->Exponent())
-    \endverbatim
-    is given by characteristic exponents of the BeamBases.
-  */
-  /*!
-    \var double Beam_Spectra_Handler::m_splimits[3]
-    \f$s'\f$-limits and characteristics:
-    m_splimits[0,1] = \f$s'_{\rm min, max}\f$
-    and
-    m_splimits[2] = \f$s_{\rm beams}\f$.
-  */
-  /*!
-    \var Beam_Spectra_Handler::m_ylimits[2]
-    The rapidity region covered. It is per default set to the range \f$y \in [-10,10]\f$. In fact
-    this range should be calculated from the range of the BeamBases.
-    \todo Rapidity range from BeamBases.
-  */
-  /*!
-    \var double Beam_Spectra_Handler::m_mass12
-    Square of the mass of the first incoming particle.
-  */
-  /*!
-    \var double Beam_Spectra_Handler::m_mass22
-    Square of the mass of the second incoming particle.
-  */
-  /*!
-    \var double Beam_Spectra_Handler::m_x1
-    The energy fractions \f$x_{1}\f$ the outgoing bunch 1 have w.r.t. the corresponding
-    incoming beams.
-  */
-  /*!
-    \var double Beam_Spectra_Handler::m_x2
-    The energy fractions \f$x_{2}\f$ the outgoing bunch 2 have w.r.t. the corresponding
-    incoming beams.
-  */
-  /*!
     var std::string Beam_Spectra_Handler::m_name
     Name of the Beam_Spectra_Handler.
   */
   /*!
     var std::string Beam_Spectra_Handler::m_type
     Type of the Beam_Spectra_Handler, it consists of the types of the BeamBases.
-  */
-  /*!
-    \var ATOOLS::Vec4D Beam_Spectra_Handler::m_fiXVECs[2]
-    The c.m. momenta of the two incoming beams.
   */
   /*!
     \fn Beam_Spectra_Handler::Beam_Spectra_Handler()
@@ -214,37 +151,6 @@ namespace BEAM {
     of the collision is set in the Run_Paraemeters.
 
     \todo Enable beam geometries, especially for pile-up events etc.
-  */
-  /*!
-    \fn bool Beam_Spectra_Handler::SpecifySpectra();
-    SpecifySpectra reads in the specific spectra of the beams and the corresponding generator
-    and initializes the spectra through appropriate InitializeXXX methods. At the moment, two
-    such methods are available, namely InitializeLaserBackscattering(int)
-    and InitializeMonochromatic(int). For every new spectrum, such
-    a method has to be provided as well and SpecifySpectra has to be modified accordingly.
-    The idea is that in the long run, beam generators might be linked from outside by
-    experimenters aiming at higher precision/better fit to beam data.
-  */
-  /*!
-    \fn bool Beam_Spectra_Handler::InitializeLaserBackscattering(int)
-    Characteristic parameters for laser back scattering are read in and the spectrum is
-    instantiated through a call to
-    Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour,const double,const double,
-                                               const double,const double,const int,
-					       const int,const int,bool &)
-  */
-  /*!
-    \fn bool Beam_Spectra_Handler::InitializeMonochromatic(int);
-    Characteristic parameters for monochromatic beams are read in and the spectrum is
-    instantiated through a call to
-    Monochromatic::Monochromatic(const ATOOLS::Flavour,const double,const double,bool &)
-  */
-  /*!
-    \fn bool Beam_Spectra_Handler::InitKinematics();
-    Here the two lab momenta of the BeamBases are combined to determnie the c.m. energy of
-    the process in their c.m. frame. Furthermore, the two corresponding c.m. momenta of the
-    incoming beams are constructed and it is decided whether additional boosts to the lab frame
-    are mandatory. Also, the characteristic exponents are filled.
   */
   /*!
     \fn bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *)
@@ -259,14 +165,6 @@ namespace BEAM {
   /*!
     \fn void Beam_Spectra_Handler::Output()
     Some control output of the type and name of this Handler and the setup of the BeamBases.
-  */
-  /*!
-    \fn void Beam_Spectra_Handler::BoostInCMS(ATOOLS::Vec4D *,int)
-    Boosts the n vectors into the CMS frame of the beam particles.
-  */
-  /*!
-    \fn void Beam_Spectra_Handler::BoostInLab(ATOOLS::Vec4D *,int)
-    Boosts the n vectors into the lab frame.
   */
   /*!
     \fn bool Beam_Spectra_Handler::MakeBeams(ATOOLS::Vec4D *,double,double);

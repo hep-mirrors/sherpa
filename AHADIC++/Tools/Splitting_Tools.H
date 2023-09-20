@@ -18,8 +18,8 @@ namespace AHADIC {
 
     ConstructLightCone(ATOOLS::Particle * part1,ATOOLS::Particle * part2);
   };
-  
-  inline double Splitting_Tools::
+
+  inline double
   Lambda(const double & ma2,const double & mb2,const double & mc2) {
     return sqrt(ATOOLS::sqr(ma2-mb2-mc2)-4.*mb2*mc2)/(2.*ma2);
   };

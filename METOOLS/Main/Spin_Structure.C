@@ -34,7 +34,7 @@ Spin_Amplitudes::Spin_Amplitudes(const Flavour_Vector& flavs,
 }
 
 Spin_Amplitudes::Spin_Amplitudes(const Flavour_Vector& flavs,
-                                 const vector<int>& indices) :
+                                 const std::vector<int>& indices) :
   Spin_Structure<Complex>(flavs,indices)
 {
 }

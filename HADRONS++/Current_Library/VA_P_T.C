@@ -110,9 +110,9 @@ void VA_P_T::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   }
 }
 
-DEFINE_CURRENT_GETTER(VA_P_T,"VA_P_T")
+DEFINE_CURRENT_GETTER(HADRONS::VA_P_T,"VA_P_T")
 
-void ATOOLS::Getter<Current_Base,ME_Parameters,VA_P_T>::
+void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_P_T>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B \\rightarrow D^* (l \\nu_l) $ \n\n"
     <<"Order: 0 = (Pseudo)Scalar, 1 = Tensor \n\n"

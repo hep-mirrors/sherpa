@@ -24,7 +24,6 @@ namespace SHERPA { class HepMC3_Interface; }
 namespace SHERPA {
   class Initialization_Handler;
   class Event_Handler;
-  class Input_Output_Handler;
 
   class Sherpa: public ATOOLS::Terminator_Object {
   private:
@@ -121,11 +120,6 @@ namespace SHERPA {
     can be found in the subdirectories PerturbativePhysics or SoftPhysics.
   */
   /*!
-    \var long int Sherpa::m_errors
-    The number of errors during event geenration. For each event, up to Sherpa::m_trials
-    trials are done. If none leads to a successful event, this counter is incremented.
-  */
-  /*!
     \var long int Sherpa::m_trials
     The number of trials per single event. At the moment, m_trials = 100.
   */
@@ -141,16 +135,6 @@ namespace SHERPA {
     A pointer to the handler of single event production.
   */
   /*!
-    \var Input_Output_Handler * Sherpa::p_iohandler
-    A pointer to the handler of the global output. This module is not very evolved so far, 
-    actual input by our clients is needed.
-    \todo List all publications that should be cited when running Sherpa.
-  */
-  /*!
-    \var Analysis_Handler * Sherpa::p_analysis
-    A pointer to the internal analysis modules.
-  */
-  /*!
     \fn void Sherpa::DrawLogo()  
     Has to be filled with a nice logo.
   */
@@ -160,7 +144,7 @@ namespace SHERPA {
   */
   /*!
     \fn Sherpa::~Sherpa()
-    Deletes the following objects: Analysis_Handler, Event_Handler, Output_Handler.
+    Deletes this object and various static members of other classes.
   */
   /*!
     \fn bool Sherpa::InitializeTheRun(std::string _path = std::string("./"))

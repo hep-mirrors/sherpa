@@ -353,9 +353,9 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
 
 /**
  * @brief NNPDFDriver::xfx
- * @param x
- * @param Q
- * @param id
+ * @param X
+ * @param Q2_glob
+ * @param ID
  * @return
  */
 double NNPDFDriver::xfx(double const&X, double const& Q2_glob, int const& ID)

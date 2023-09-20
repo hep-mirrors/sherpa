@@ -159,25 +159,9 @@ namespace SHERPA {
     repeated with the phases of type "Hadronization". 
   */ 
   /*!
-    \fn void Event_Handler::CleanUpEvent()
-    Cleans up in all event phases - this might be important if they change some of their
-    internal parameters during an event that have to be resetted - , deletes all internal blobs
-    and empties the blob list.
-  */ 
-  /*!
     \fn void Event_Handler::PrintGenericEventStructure()
     Prints out all Event_Phase_Handlers used for event generation. This might give some
     idea of what to expect.
-  */ 
-  /*!
-    \fn void Event_Handler::PrintEvent(int)
-    Prints out the blobs. A second option should be added printing out some particle-based
-    event record. 
-    \todo Enable to print out partons instead of blobs.
-  */ 
-  /*!
-    \fn void Event_Handler::PrintBlobs()
-    Prints the actual blob list.
   */ 
 }
 #endif

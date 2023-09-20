@@ -20,7 +20,7 @@ namespace PHASIC {
   class ME_Generators;
   class Jet_Finder;
 
-  //! This class manages all processes contributing to an MC@NLO calculation
+  //! This class manages all processes contributing to an MC@@NLO calculation
   class MCatNLO_Process : public Process_Base {
   private:
 
@@ -29,7 +29,7 @@ namespace PHASIC {
 
     //! Pointers to the contributing processes
     Process_Base     *p_bviproc, *p_rsproc, *p_bproc, *p_rproc, *p_ddproc;
-    //! Pointer to the MC@NLO shower
+    //! Pointer to the MC@@NLO shower
     PDF::NLOMC_Base  *p_nlomc;
 
     //! Book-keeping variables for last RS, B, VI contributions
@@ -46,7 +46,7 @@ namespace PHASIC {
     //! Map of differential dipoles
     ATOOLS::StringDDipSet_Map m_dinfo;
 
-    //! Cluster amplitude for interface with MC@NLO shower
+    //! Cluster amplitude for interface with MC@@NLO shower
     ATOOLS::Cluster_Amplitude *p_ampl;
 
     void RegisterDefaults() const;
@@ -65,8 +65,8 @@ namespace PHASIC {
 
     /*!
      * @param ampl Cluster_Amplitude Cluster amplitude for which the process is
-     *                               needed
-     * @param nlotype nlo_type::code NLO type of process needed
+     *   needed
+     * @param type NLO type of process needed
      * @param error bool Exit when not found or not
      * @return Pointer to the initialised process
      *
@@ -89,7 +89,7 @@ namespace PHASIC {
 
     /*!
      * @param wmode int Mode (not used)
-     * @return additional S-Event weights (i.e. weights from the MC@NLO
+     * @return additional S-Event weights (i.e. weights from the MC@@NLO
      * shower), or zero
      *
      * This method generates one S-event
@@ -148,7 +148,7 @@ namespace PHASIC {
      * @param isr ISR_Handler ISR Handler
      * @param mode int Mode (not used)
      *
-     * This method initialises the MC@NLO process and all contributions
+     * This method initialises the MC@@NLO process and all contributions
      */
     void Init(const Process_Info &pi,
               BEAM::Beam_Spectra_Handler *const beam,
@@ -194,8 +194,8 @@ namespace PHASIC {
         const int mode=0) override;
 
     /*!
-     * @param Vec4D_Vector Four momenta
-     * @param Variations_Mode Specifies which weights to calculate (all,
+     * @param p Four momenta
+     * @param varmode Specifies which weights to calculate (all,
      * nominal-only, ...)
      * @return Returns weight of given momentum configuration
      *
@@ -290,9 +290,9 @@ namespace PHASIC {
 		       const std::string efunc) override;
 
     /*!
-     * @param mc NLOMC_Base MC@NLO shower
+     * @param mc NLOMC_Base MC@@NLO shower
      *
-     * This method sets the MC@NLO shower
+     * This method sets the MC@@NLO shower
      */
     inline void SetMCatNLO(PDF::NLOMC_Base *const mc) { p_nlomc=mc; }
 

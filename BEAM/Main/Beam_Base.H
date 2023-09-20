@@ -98,11 +98,11 @@ namespace BEAM {
     The momentum of the incoming beam particle, i.e. before the spectrum becomes effective.
   */
   /*!
-    \var ATOOLS::Vec4D Beam_Base::m_vecout
+    \var ATOOLS::Vec4D Beam_Base::m_vecouts
     The momentum of the outgoing bunch particle, i.e. after the spectrum becomes effective.
   */
   /*!
-    \var int m_dir
+    \var Beam_Base::m_dir
     A direction flag for the construction of the beam momentum.
   */
   /*!

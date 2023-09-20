@@ -394,18 +394,73 @@ namespace ATOOLS {
 */
 
 /*!
- \fn Lorentz_Ten4::Lorentz_Ten4(Scalar x00, Scalar x10, Scalar x20, Scalar x30, Scalar x01, Scalar x11, Scalar x21, Scalar x31, Scalar x02, Scalar x12, Scalar x22, Scalar x32, Scalar x03, Scalar x13, Scalar x23, Scalar x33){
- \brief Special Constructor, templated in Scalar, taking 16 single components.
-*/
-
-/*!
- \fn   inline Scalar* Lorentz_Ten4::operator[] (int i)
- \brief returns array \f$x_{ij}\f$, \f$j\in[0,3]\f$. (May be manipulated.)
-*/
-
-/*!
- \fn   inline const Scalar* Lorentz_Ten4::operator[] (int i) const
- \brief returns array \f$x_{ij}\f$, \f$j\in[0,3]\f$.
+ \fn Lorentz_Ten4::Lorentz_Ten4(
+  const Scalar &x0000, const Scalar &x1000, const Scalar &x2000, const Scalar &x3000,
+  const Scalar &x0100, const Scalar &x1100, const Scalar &x2100, const Scalar &x3100,
+  const Scalar &x0200, const Scalar &x1200, const Scalar &x2200, const Scalar &x3200,
+  const Scalar &x0300, const Scalar &x1300, const Scalar &x2300, const Scalar &x3300,
+  const Scalar &x0010, const Scalar &x1010, const Scalar &x2010, const Scalar &x3010,
+  const Scalar &x0110, const Scalar &x1110, const Scalar &x2110, const Scalar &x3110,
+  const Scalar &x0210, const Scalar &x1210, const Scalar &x2210, const Scalar &x3210,
+  const Scalar &x0310, const Scalar &x1310, const Scalar &x2310, const Scalar &x3310,
+  const Scalar &x0020, const Scalar &x1020, const Scalar &x2020, const Scalar &x3020,
+  const Scalar &x0120, const Scalar &x1120, const Scalar &x2120, const Scalar &x3120,
+  const Scalar &x0220, const Scalar &x1220, const Scalar &x2220, const Scalar &x3220,
+  const Scalar &x0320, const Scalar &x1320, const Scalar &x2320, const Scalar &x3320,
+  const Scalar &x0030, const Scalar &x1030, const Scalar &x2030, const Scalar &x3030,
+  const Scalar &x0130, const Scalar &x1130, const Scalar &x2130, const Scalar &x3130,
+  const Scalar &x0230, const Scalar &x1230, const Scalar &x2230, const Scalar &x3230,
+  const Scalar &x0330, const Scalar &x1330, const Scalar &x2330, const Scalar &x3330,
+  const Scalar &x0001, const Scalar &x1001, const Scalar &x2001, const Scalar &x3001,
+  const Scalar &x0101, const Scalar &x1101, const Scalar &x2101, const Scalar &x3101,
+  const Scalar &x0201, const Scalar &x1201, const Scalar &x2201, const Scalar &x3201,
+  const Scalar &x0301, const Scalar &x1301, const Scalar &x2301, const Scalar &x3301,
+  const Scalar &x0011, const Scalar &x1011, const Scalar &x2011, const Scalar &x3011,
+  const Scalar &x0111, const Scalar &x1111, const Scalar &x2111, const Scalar &x3111,
+  const Scalar &x0211, const Scalar &x1211, const Scalar &x2211, const Scalar &x3211,
+  const Scalar &x0311, const Scalar &x1311, const Scalar &x2311, const Scalar &x3311,
+  const Scalar &x0021, const Scalar &x1021, const Scalar &x2021, const Scalar &x3021,
+  const Scalar &x0121, const Scalar &x1121, const Scalar &x2121, const Scalar &x3121,
+  const Scalar &x0221, const Scalar &x1221, const Scalar &x2221, const Scalar &x3221,
+  const Scalar &x0321, const Scalar &x1321, const Scalar &x2321, const Scalar &x3321,
+  const Scalar &x0031, const Scalar &x1031, const Scalar &x2031, const Scalar &x3031,
+  const Scalar &x0131, const Scalar &x1131, const Scalar &x2131, const Scalar &x3131,
+  const Scalar &x0231, const Scalar &x1231, const Scalar &x2231, const Scalar &x3231,
+  const Scalar &x0331, const Scalar &x1331, const Scalar &x2331, const Scalar &x3331,
+  const Scalar &x0002, const Scalar &x1002, const Scalar &x2002, const Scalar &x3002,
+  const Scalar &x0102, const Scalar &x1102, const Scalar &x2102, const Scalar &x3102,
+  const Scalar &x0202, const Scalar &x1202, const Scalar &x2202, const Scalar &x3202,
+  const Scalar &x0302, const Scalar &x1302, const Scalar &x2302, const Scalar &x3302,
+  const Scalar &x0012, const Scalar &x1012, const Scalar &x2012, const Scalar &x3012,
+  const Scalar &x0112, const Scalar &x1112, const Scalar &x2112, const Scalar &x3112,
+  const Scalar &x0212, const Scalar &x1212, const Scalar &x2212, const Scalar &x3212,
+  const Scalar &x0312, const Scalar &x1312, const Scalar &x2312, const Scalar &x3312,
+  const Scalar &x0022, const Scalar &x1022, const Scalar &x2022, const Scalar &x3022,
+  const Scalar &x0122, const Scalar &x1122, const Scalar &x2122, const Scalar &x3122,
+  const Scalar &x0222, const Scalar &x1222, const Scalar &x2222, const Scalar &x3222,
+  const Scalar &x0322, const Scalar &x1322, const Scalar &x2322, const Scalar &x3322,
+  const Scalar &x0032, const Scalar &x1032, const Scalar &x2032, const Scalar &x3032,
+  const Scalar &x0132, const Scalar &x1132, const Scalar &x2132, const Scalar &x3132,
+  const Scalar &x0232, const Scalar &x1232, const Scalar &x2232, const Scalar &x3232,
+  const Scalar &x0332, const Scalar &x1332, const Scalar &x2332, const Scalar &x3332,
+  const Scalar &x0003, const Scalar &x1003, const Scalar &x2003, const Scalar &x3003,
+  const Scalar &x0103, const Scalar &x1103, const Scalar &x2103, const Scalar &x3103,
+  const Scalar &x0203, const Scalar &x1203, const Scalar &x2203, const Scalar &x3203,
+  const Scalar &x0303, const Scalar &x1303, const Scalar &x2303, const Scalar &x3303,
+  const Scalar &x0013, const Scalar &x1013, const Scalar &x2013, const Scalar &x3013,
+  const Scalar &x0113, const Scalar &x1113, const Scalar &x2113, const Scalar &x3113,
+  const Scalar &x0213, const Scalar &x1213, const Scalar &x2213, const Scalar &x3213,
+  const Scalar &x0313, const Scalar &x1313, const Scalar &x2313, const Scalar &x3313,
+  const Scalar &x0023, const Scalar &x1023, const Scalar &x2023, const Scalar &x3023,
+  const Scalar &x0123, const Scalar &x1123, const Scalar &x2123, const Scalar &x3123,
+  const Scalar &x0223, const Scalar &x1223, const Scalar &x2223, const Scalar &x3223,
+  const Scalar &x0323, const Scalar &x1323, const Scalar &x2323, const Scalar &x3323,
+  const Scalar &x0033, const Scalar &x1033, const Scalar &x2033, const Scalar &x3033,
+  const Scalar &x0133, const Scalar &x1133, const Scalar &x2133, const Scalar &x3133,
+  const Scalar &x0233, const Scalar &x1233, const Scalar &x2233, const Scalar &x3233,
+  const Scalar &x0333, const Scalar &x1333, const Scalar &x2333, const Scalar &x3333
+ ){
+ \brief Special Constructor, templated in Scalar, taking 256 single components.
 */
 
 #endif

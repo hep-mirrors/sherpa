@@ -41,7 +41,7 @@ bool qg_qgamma::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(qg_qgamma,"XS_qg_qgamma")
-XS_Base * Getter<XS_Base,Flavour_Vector,qg_qgamma>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,qg_qgamma>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;
@@ -76,7 +76,7 @@ bool qqbar_ggamma::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(qqbar_ggamma,"XS_qqbar_ggamma")
-XS_Base * Getter<XS_Base,Flavour_Vector,qqbar_ggamma>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,qqbar_ggamma>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;

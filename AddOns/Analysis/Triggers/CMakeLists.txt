@@ -36,33 +36,33 @@ set(Triggers_SOURCES Trigger_Base.C
                      Primitive_Detector.C
                      Primitive_Calorimeter.C)
 
-set(Trigger_HEADERS Trigger_Base.H
-                    Durham_Algorithm.H
-                    Cambridge_Algorithm.H
-                    area.h
-                    circulator.h
-                    defines.h
-                    geom_2d.h
-                    hash.h
-                    momentum.h
-                    protocones.h
-                    quadtree.h
-                    ranlux.h
-                    reference.h
-                    siscone_error.h
-                    siscone.h
-                    split_merge.h
-                    vicinity.h
-                    MySISCone.H
-                    ConeMCFM.H
-                    MCFMCone.H
-                    Kt_Algorithm.H
-                    DIS_Algorithm.H
-                    Final_Selector.H
-                    Midpoint_Cone.H
-                    Calorimeter_Cone.H
-                    Primitive_Detector.H
-                    Primitive_Calorimeter.H)
+set(Triggers_HEADERS Trigger_Base.H
+                     Durham_Algorithm.H
+                     Cambridge_Algorithm.H
+                     area.h
+                     circulator.h
+                     defines.h
+                     geom_2d.h
+                     hash.h
+                     momentum.h
+                     protocones.h
+                     quadtree.h
+                     ranlux.h
+                     reference.h
+                     siscone_error.h
+                     siscone.h
+                     split_merge.h
+                     vicinity.h
+                     MySISCone.H
+                     ConeMCFM.H
+                     MCFMCone.H
+                     Kt_Algorithm.H
+                     DIS_Algorithm.H
+                     Final_Selector.H
+                     Midpoint_Cone.H
+                     Calorimeter_Cone.H
+                     Primitive_Detector.H
+                     Primitive_Calorimeter.H)
 
 sherpa_create_git_info(Triggers)
  

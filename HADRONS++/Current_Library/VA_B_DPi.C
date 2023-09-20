@@ -100,9 +100,9 @@ void VA_B_DPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
                                  a1*pPi+a2*mB*vB+a3*mD*vD) , 0);
 }
 
-DEFINE_CURRENT_GETTER(VA_B_DPi,"VA_B_DPi")
+DEFINE_CURRENT_GETTER(HADRONS::VA_B_DPi,"VA_B_DPi")
 
-void ATOOLS::Getter<Current_Base,ME_Parameters,VA_B_DPi>::
+void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_B_DPi>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"\\paragraph{Parametrization} \n"
     <<"  \\[ \\mathcal{J^{B\\to D \\pi}_\\mu} = V_{cb} \\sqrt{M_B M_D} \\left( \n"

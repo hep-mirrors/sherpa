@@ -215,7 +215,7 @@ namespace PDF {
      - 3 both bunches experience ISR.     
   */  
   /*!
-    \var ATOOLS::Poincare ISR_Handler::m_CMSBoost
+    \var ATOOLS::Poincare ISR_Handler::m_cmsboost
     A boost from the c.m. system of the incoming bunches to the c.m. system of the
     outgoing partons, which form the initial state of the hard interaction.
   */
@@ -237,21 +237,12 @@ namespace PDF {
     \todo Rapidity range from BeamBases.
   */
   /*!
-    \var double ISR_Handler::m_mass12
-    Square of the mass of the first incoming particle.
+    \var double ISR_Handler::m_mass2
+    Squares of the masses of the incoming particles.
   */
   /*!
-    \var double ISR_Handler::m_mass22
-    Square of the mass of the second incoming particle.
-  */
-  /*!
-    \var double ISR_Handler::m_x1
-    The energy fractions \f$x_{1}\f$ the outgoing bunch 1 have w.r.t. the corresponding 
-    incoming beams.
-  */
-  /*!
-    \var double ISR_Handler::m_x2
-    The energy fractions \f$x_{2}\f$ the outgoing bunch 2 have w.r.t. the corresponding 
+    \var double ISR_Handler::m_x
+    The energy fractions each outgoing bunch has w.r.t. the corresponding 
     incoming beams.
   */
   /*!
@@ -261,10 +252,6 @@ namespace PDF {
   /*!
     var std::string ISR_Handler::m_type
     Type of the ISR_Handler, it consists of the types of the BeamBases.
-  */
-  /*!
-    \var ATOOLS::Vec4D ISR_Handler::m_fiXVECs[2]
-    The c.m. momenta of the two incoming bunches.
   */
   /*!
     \fn bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *)
@@ -300,33 +287,6 @@ namespace PDF {
     \f]
     This method is largely similar to the corresponding one in the
     BEAM::Beam_Spectra_Handler.
-  */
-  /*!
-    \fn bool ISR_Handler::CalculateWeight(double)
-    This method calculates the parton densities according to the two pdf's depending
-    on the external x-values and the scale, which is passed as an argument. It should
-    be noted that when calling the calculation of pdf weights, usually all weights for
-    all partons inside a bunch particle are evaluated. In general this translates
-    into eleven weights for a proton, one for each of the five lightest quark
-    flavours, five for their antiflavours, and one for the gluon.
-  */
-  /*!
-    \fn bool ISR_Handler::CalculateWeight2(double)
-    This method calculates the parton densities according to the two pdf's depending
-    on the external x-values and the scale, which is passed as an argument. The main point
-    here is that the x-values are interchanged to allow for parton 1 coming from bunch 2
-    and vice versa.
-  */  
-  /*!
-    \fn double ISR_Handler::Weight(ATOOLS::Flavour * fl)
-    This is the product of the actual values of the pdf's for the specific initial state 
-    partons. It corresponds to the "untwisted" weight.
-  */
-  /*!
-    \fn double ISR_Handler::Weight2(ATOOLS::Flavour * fl)
-    This is the product of the actual values of the pdf's for the specific initial state 
-    partons. It corresponds to the "twisted" weight, i.e. for parton 1 stemming from
-    bunch 2 and vice versa.
   */
 }
 

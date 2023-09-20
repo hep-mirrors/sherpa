@@ -20,24 +20,24 @@ namespace SHRIMPS {
   /*!
     \class Shrimps
     \brief Central class
-    
-    \var m_test
-    Steers the testing (with SHRIMPS::m_test):
-    -  m_test=-2:  Prints values of various Bessel functions from
-                   SHRIMPS::Special_Functions to file.
-		   Test method in SHRIMPS::Form_Factor
-    -  m_test=-1:  Checks the SHRIMPS::Form_Factor, and in particular the
-                   Fourier Transform, some results on screen, some on
-		   file.  Test method in SHRIMPS::Form_Factor.
-    -  m_test=1:   Checks the eikonal evaluation with a Gaussian form
-                   factor and no damping/recombination in the DEqs 
-		   (lambda=0).  Then the results are fully analytic.
-		   Test function in SHRIMPS::Eikonal_Creator.
   */
   class Shrimps {
   private:
     weight_mode::code m_weightmode;
     deqmode::code     m_deq;
+    /*!
+      Steers the testing (with SHRIMPS::m_test):
+      -  m_test=-2:  Prints values of various Bessel functions from
+                     SHRIMPS::Special_Functions to file.
+         Test method in SHRIMPS::Form_Factor
+      -  m_test=-1:  Checks the SHRIMPS::Form_Factor, and in particular the
+                     Fourier Transform, some results on screen, some on
+         file.  Test method in SHRIMPS::Form_Factor.
+      -  m_test=1:   Checks the eikonal evaluation with a Gaussian form
+                     factor and no damping/recombination in the DEqs 
+         (lambda=0).  Then the results are fully analytic.
+         Test function in SHRIMPS::Eikonal_Creator.
+    */
     int               m_test;
     Cross_Sections  * p_xsecs;
     Remnant_Handler * p_remnants;

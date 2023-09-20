@@ -88,9 +88,9 @@ namespace PHASIC {
 }
 
 #define DECLARE_TREEME2_GETTER(NAME,TAG)			   \
-  DECLARE_GETTER(NAME,TAG,Tree_ME2_Base,External_ME_Args);	   \
-  void ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,NAME>::	   \
-  PrintInfo(std::ostream &str,const size_t width) const		   \
+  DECLARE_GETTER(NAME,TAG,PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args);	   \
+  void ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,NAME>::	   \
+  PrintInfo(std::ostream &str,const std::size_t width) const		   \
   {                                                                \
     str<<#TAG;                                                     \
   }

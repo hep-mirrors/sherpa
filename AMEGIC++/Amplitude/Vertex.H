@@ -89,7 +89,7 @@ namespace AMEGIC {
   */
   
   /*!
-    \fn Vertex::Vertex(Interaction_Model_Base*)
+    \fn Vertex::Vertex(MODEL::Model_Base*)
     
     \brief Builds the list of vertices and can produce a LaTeX output file.
     

@@ -1,5 +1,9 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Currents/C_Spinor.H"
+/*!
+  @file F_C.C
+  @brief Implements the class CF.
+*/
 
 namespace METOOLS {
 
@@ -16,29 +20,80 @@ namespace METOOLS {
 
   protected:
 
+    /// @name (Squared) mass of the propagator
+    /// @{
     SComplex m_cmass2, m_cmass;
+    /// @}
 
+    /// @brief returns the label for the graph output
     std::string CLabel() const;
 
   public:
 
+    /// @brief constructor using Current_Key key
     CF(const Current_Key &key);
 
+      /// @brief constructs current
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 		    const int cr,const int ca,const int mode);
+
+    /// @brief sets the gauge vector
     void SetGauge(const ATOOLS::Vec4D &k);
 
+    /// @brief adds the propagator to the current
     void AddPropagator();
 
+    /// @brief contracts a current
     void SContract
     (const Current &c,const Int_Vector &pols,
      SComplex_Vector &ress,const size_t &offset) const;
 
+    /// @brief formats the current into a string
     std::string Format(const CObject *c) const;
 
-    char Type() const;    
+    /// @brief returns the current type
+    char Type() const;
 
   };// end of class CF
+  /*!
+    @class CF
+    @brief This class represents a fermion current.
+
+    @fn std::string CF::CLabel() const
+    This function creates a Latex representation of the current
+    for the graph output.
+
+    @fn void CF::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
+        const int cr,const int ca,const int mode)
+    This function constructs this current from the current's
+    @param p momentum
+    @param ch helicity index
+    @param cr colour index
+    @param ca anticolour index
+    @param mode build mode for Majoranas
+
+    @fn void CF::SetGauge(const ATOOLS::Vec4D &k)
+    This function sets the gauge vector.
+    @param k the gauge vector
+
+    @fn void CF::AddPropagator()
+    This function adds a propagator to the current.
+
+    @fn void CF::SContract(const Current &c,const Int_Vector &pols,
+        SComplex_Vector &ress,const size_t &offset) const
+    This function contracts the current with
+    @param c the Current
+    @param pols vector of polarisation indices (not used)
+    @param ress will be filled with result of contraction
+    @param offset offset=(0,1,2) for subtraction currents
+
+    @fn std::string CF::Format(const CObject *c) const
+    This function formats the passed CObject into a string.
+    @param c CObject to be formatted
+
+    @fn char CF::Type() const;
+    This function returns the type of this current, 'F'.
+  */
 
 }// end of namespace METOOLS
 
@@ -169,7 +224,7 @@ void CF<SType>::AddPropagator()
 }
 
 template <typename SType> void CF<SType>::SContract
-(const Current &c,const Int_Vector &pols,
+    (const Current &c,const Int_Vector &pols,
  SComplex_Vector &ress,const size_t &offset) const
 {
 #ifdef DEBUG__BG

@@ -142,23 +142,25 @@ void EWVirtKFactor_Setter::CalcEWCorrection()
 }
 
 
-DECLARE_GETTER(EWVirtKFactor_Setter,"EWVirt",
-               KFactor_Setter_Base,
-               KFactor_Setter_Arguments);
+DECLARE_GETTER(PHASIC::EWVirtKFactor_Setter,"EWVirt",
+               PHASIC::KFactor_Setter_Base,
+               PHASIC::KFactor_Setter_Arguments);
 
-KFactor_Setter_Base *Getter<KFactor_Setter_Base,
-                            KFactor_Setter_Arguments,
-                            EWVirtKFactor_Setter>::operator()
+KFactor_Setter_Base *ATOOLS::Getter<
+  PHASIC::KFactor_Setter_Base,
+  PHASIC::KFactor_Setter_Arguments,
+  PHASIC::EWVirtKFactor_Setter>::operator()
 (const KFactor_Setter_Arguments &args) const
 {
   msg_Info()<<"Loading EWVirt KFactor for "<<args.p_proc->Name()<<std::endl;
   return new EWVirtKFactor_Setter(args);
 }
 
-void Getter<KFactor_Setter_Base,
-            KFactor_Setter_Arguments,
-            EWVirtKFactor_Setter>::PrintInfo(std::ostream &str,
-                                             const size_t width) const
+void ATOOLS::Getter<
+  PHASIC::KFactor_Setter_Base,
+  PHASIC::KFactor_Setter_Arguments,
+  PHASIC::EWVirtKFactor_Setter>::PrintInfo(std::ostream &str,
+                                           const size_t width) const
 {
   str<<"EWVirt K-Factor\n";
 }

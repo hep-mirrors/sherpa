@@ -139,7 +139,7 @@ namespace PHASIC {
       ATOOLS::ClusterAmplitude_Vector m_ampls;
       double m_fallbackresult;
     };
-    //! Return (wgt * \alpha_S * csi.pdfwgt)
+    //! Return \f$wgt * \alpha_{S} * csi.pdfwgt\f$
     double ReweightBornLike(ATOOLS::QCD_Variation_Params&,
                             BornLikeReweightingInfo&);
     //! Generate cluster sequence info for variation parameters

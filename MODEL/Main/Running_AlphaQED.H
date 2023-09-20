@@ -83,9 +83,5 @@ namespace MODEL {
     \fn double Running_AlphaQED::AqedThomson()
     Returns \f$\alpha_{QED}\f$ in the Thomson limit.
   */
-  /*!
-    \fn double Running_AlphaQED::AqedFixed()
-    Returns the default value for \f$\alpha_{QED}\f$.
-  */
 }
 #endif

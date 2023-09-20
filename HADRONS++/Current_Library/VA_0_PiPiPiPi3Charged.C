@@ -563,9 +563,9 @@ void VA_0_PiPiPiPi3Charged::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   Insert( help*m_global , 0);
 }
 
-DEFINE_CURRENT_GETTER(VA_0_PiPiPiPi3Charged,"VA_0_PiPiPiPi3Charged")
+DEFINE_CURRENT_GETTER(HADRONS::VA_0_PiPiPiPi3Charged,"VA_0_PiPiPiPi3Charged")
 
-void ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_PiPiPiPi3Charged>::
+void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_0_PiPiPiPi3Charged>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ 0 \\rightarrow \\pi^+ \\pi^+ \\pi^- \\pi^0 $ \n\n"
     <<"Order: 0 = $\\pi^\\mp$, 1 = $\\pi^0$, 2 = $\\pi^\\pm$, 3 = $\\pi^\\pm$ "

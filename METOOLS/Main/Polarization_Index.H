@@ -10,6 +10,9 @@ namespace METOOLS {
   class Polarization_Index {
   protected:
 
+    /*!
+      \brief vector containing the number of spin combinations for each particle "node".
+    */
     std::vector<int> m_spins;
     std::string      m_id;
 

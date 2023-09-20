@@ -127,7 +127,7 @@ namespace METOOLS {
   */
 
   /*!
-    \fn XYZFunc::XYZFunc( int n, const Vec4D *p, const Flavour *fl )
+    \fn XYZFunc::XYZFunc( int n, const ATOOLS::Vec4D* p, const ATOOLS::Flavour *fl, bool anti=false, const int *indices=NULL )
     \brief Constructor to set up the calculation
 
     This method saves the momenta and flavours so that they are available throughout the class. Furthermore, it
@@ -153,7 +153,7 @@ namespace METOOLS {
   */
 
   /*!
-    \var XYZFunc::N
+    \var XYZFunc::m_N
     Number of involved particles (in- and out-particles)
   */
   /*!

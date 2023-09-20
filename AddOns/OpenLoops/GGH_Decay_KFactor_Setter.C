@@ -205,21 +205,21 @@ Vec4D_Vector GGH_Decay_KFactor_Setter::MappedMomenta(const Vec4D_Vector& p) cons
 }
  
 
-DECLARE_GETTER(GGH_Decay_KFactor_Setter,
+DECLARE_GETTER(PHASIC::GGH_Decay_KFactor_Setter,
 	       "GGH_Decay",
-	       KFactor_Setter_Base,
-	       KFactor_Setter_Arguments);
+	       PHASIC::KFactor_Setter_Base,
+	       PHASIC::KFactor_Setter_Arguments);
 
-KFactor_Setter_Base *Getter<KFactor_Setter_Base,
-					    KFactor_Setter_Arguments,
-					    GGH_Decay_KFactor_Setter>::
-operator()(const KFactor_Setter_Arguments &args) const
+KFactor_Setter_Base *ATOOLS::Getter<PHASIC::KFactor_Setter_Base,
+					    PHASIC::KFactor_Setter_Arguments,
+					    PHASIC::GGH_Decay_KFactor_Setter>::
+operator()(const PHASIC::KFactor_Setter_Arguments &args) const
 {
   return new GGH_Decay_KFactor_Setter(args);
 }
 
-void Getter<KFactor_Setter_Base,
-		    KFactor_Setter_Arguments,
-		    GGH_Decay_KFactor_Setter>::
+void ATOOLS::Getter<PHASIC::KFactor_Setter_Base,
+		    PHASIC::KFactor_Setter_Arguments,
+		    PHASIC::GGH_Decay_KFactor_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const 
 { str<<"GGH_Decay K-Factor\n"; }

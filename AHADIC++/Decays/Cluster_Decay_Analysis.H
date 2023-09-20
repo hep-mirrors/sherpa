@@ -36,7 +36,7 @@ namespace AHADIC {
     \brief Destructor, writes out the histograms.
   */
   /*!
-    \fn void Cluster_Decay_Analysis::
+    \fn void Cluster_Decay_Analysis::AnalyseThis(ATOOLS::Blob*)
     \brief Fills the histograms.
   */
 }

@@ -13,6 +13,14 @@ set(NNLO_SOURCES polylog.c
                  DIS_KFactor.C
                  DIS_Scale.C)
 
+set(NNLO_HEADERS Tools.H
+                 QT_Selector.H
+                 coeffqt.H
+                 param.H
+                 hard.H
+                 higgsfullsm.H
+                 DISinclu.H)
+
 sherpa_create_git_info(NNLO)
  
 add_library(NNLOqT SHARED ${NNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )

@@ -29,6 +29,7 @@ namespace HADRONS {
      * Sets up the decay table structure, but doesn't fill it yet.
      * 
      * @param decayer The decay particle flavour.
+     * @param ms 
      */
     Hadron_Decay_Table(ATOOLS::Flavour decayer, 
 		       const ATOOLS::Mass_Selector* ms, 
@@ -53,7 +54,7 @@ namespace HADRONS {
      * Adds all decay channels and their branching ratios from the decay table
      * file to the decay table and initialises them with their settings
      * 
-     * @param s Settings block from HADRON_DECAYS:Channels:<pdgid>
+     * @param s Settings block from HADRON_DECAYS:Channels:\<pdgid\>
      */
     void Read(ATOOLS::Scoped_Settings s, GeneralModel& startmd);
 

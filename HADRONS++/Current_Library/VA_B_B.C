@@ -109,9 +109,9 @@ void VA_B_B::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   }
 }
 
-DEFINE_CURRENT_GETTER(VA_B_B,"VA_B_B")
+DEFINE_CURRENT_GETTER(HADRONS::VA_B_B,"VA_B_B")
 
-void ATOOLS::Getter<Current_Base,ME_Parameters,VA_B_B>::
+void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_B_B>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<std::endl;
 }

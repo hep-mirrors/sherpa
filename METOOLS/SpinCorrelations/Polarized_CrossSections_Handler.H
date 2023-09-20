@@ -79,48 +79,48 @@ namespace METOOLS {
       output together with all other events weights.
     */
   /*!
-  \var std::vector<std::string> m_refsystem
+  \var Polarized_CrossSections_Handler::m_refsystem
   \brief Vector containing the strings specifing the several reference frames which should be used for polarization
          definition, default: std::vector<std::string>(1, "Lab")
   */
   /*!
-  \var std::string m_spinbasis
+  \var Polarized_CrossSections_Handler::m_spinbasis
   \brief String characterizes which spinbasis should be used to calculated the polarized matrix elements, currently
          only one spin basis is supported during one simulation run, default: "Helicity"
   */
   /*!
-  \var std::string m_singlepol_channel
+  \var Polarized_CrossSections_Handler::m_singlepol_channel
   \brief String describes the decay channel which characterizes the only hard decaying particle which should be
          polarized in the desired polarized cross sections, form of the string should be the same as under Channels
          in Hard_Decays scoped setting e.g. 24,-11,12 for W+ decaying into a positron and a neutrino,
          default: "no channel"
   */
   /*!
-  \var std::map<std::string, std::string> m_custom_weights
+  \var Polarized_CrossSections_Handler::m_customweights
   \brief Map containing the settings for custom weights specified by the user, default: empty map
   */
   /*!
-  \var int m_trans_mode
+  \var int Polarized_CrossSections_Handler::m_trans_mode
   \brief trans_mode specifies how transverse polarized cross sections should be derived from the "base" polarization
   combinations, 0 = incoherent sum of left and right polarization, 1 = coherent sum of left and right polarization
   including left-right-interference, 2 = cross sections/fractions for both transverse polarization definitions are
   calculated, default: 1
   */
   /*!
-  \var ATOOLS::Vec4D m_old_refmom
+  \var Polarized_CrossSections_Handler::m_old_refmom
   \brief Reference momentum used in matrix element generation, defines spin axes for massive particles
   */
   /*!
-  \var ATOOLS::Vec4D m_new_refmom
+  \var Polarized_CrossSections_Handler::m_new_refmom
   \brief Reference momentum defining the desired spin axis for massive particles, (0.0, 0.0, 0.0, 0.0) if helicity basis
          is chosen
   */
   /*!
-  \var bool m_helicitybasis
+  \var Polarized_CrossSections_Handler::m_helicitybasis
   \brief Boolean specifies whether the helicity basis is chosen to define the spin axis
   */
   /*!
-  \var bool m_pol_checks
+  \var Polarized_CrossSections_Handler::m_pol_checks
   \brief Boolean specifies whether polarization consistency checks should be done (especially unpol=polsum+int and
    checks whether transformation works properly and is unitary)
   */
@@ -131,22 +131,11 @@ namespace METOOLS {
    Constructor of the class, it reads in the polarization settings from the user input and sets the default and the
    desired reference vectors which define the spin axis for massive particles if they are constant; the default
    reference vector is the one used for matrix element calculation with COMIX
-
-  Input:
-    - no input
-      .
   */
   /*!
   \fn Polarized_CrossSections_Handler::InitPolSettings()
   \brief Helper function for constructor to read in all settings important for the polarization calculation from the user
          input
-
-  Input:
-    - no input
-      .
-  Output:
-    - no output
-    .
   */
   /*!
   \fn Polarized_CrossSections_Handler::InitRefMoms()
@@ -155,33 +144,25 @@ namespace METOOLS {
          basis), the reference momenta fix the spin axis for massive particles
          If further spin bases should be supported, they can be added here by introducing a new keyword and the
          corresponding reference momentum.
-  Input:
-    - no input
-      .
-  Output:
-    - no output
-    .
    */
   /*!
   \fn Polarized_CrossSections_Handler::Treat(ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
                                              std::vector<METOOLS::Decay_Matrix> decay_matrices) const
   \brief Method steers the calculation of the polarization fractions with the desired polarization definitions
-         This method needs to be called for the actual calculation, it then will call Beta() and Calculate()
-  Input:
-    - <var>signalblob</var>: (pointer to) the signalblob describing the production of the particles whose polarization
-                             should be investigated
-    - <var>prod_amps</var>: (pointer to) the Amplitude2_Tensor containing the production matrix elements of the particles
-                            of interest, it should contain the amplitudes of all polarization combinations of the matrix
-                            element and its complex conjugate.
-                            Polarization indexes of particles different than the particles of interest should be summed
-                            up.
-    - <var>decay_matrices</var>: Vector containing the decay matrices of all particles of interest in case they are
-                                 unstable, they are calculated during the spin correlation algorithm in the
-                                 Decay_Handler_Base
-     .
-  Output:
-   - vector of pointers to PolWeight_Maps, for each reference system one
-   .
+         This method needs to be called for the actual calculation, it then will call \link Beta Beta() \endlink
+         and \link Calculation Calculation() \endlink
+  \param signalblob (pointer to) the signalblob describing the production of the particles whose polarization
+    should be investigated
+  \param prod_amps (pointer to) the Amplitude2_Tensor containing the production
+    matrix elements of the particles of interest, it should contain the
+    amplitudes of all polarization combinations of the matrix element and its
+    complex conjugate. Polarization indexes of particles different than the
+    particles of interest should be summed up.
+  \param decay_matrices Vector containing the decay matrices of all particles
+    of interest in case they are unstable, they are calculated during the spin
+    correlation algorithm in the \link SHERPA::Decay_Handler_Base
+    Decay_Handler_Base \endlink
+  \return vector of pointers to PolWeight_Maps, for each reference system one
   */
   /*!
   \fn Polarized_CrossSections_Handler::Beta(const ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
@@ -194,20 +175,15 @@ namespace METOOLS {
   Poincare class;
   if new reference frames with the same beta for all particles should be supported by Sherpa, they can be
   implemented here by introducing a new keyword and the corresponding beta.
-  Input:
-    - <var>signalblob</var>: (pointer to) the signalblob describing the production of the particles whose polarization
-                             should be investigated
-    - <var>prod_amps</var>: (pointer to) the Amplitude2_Tensor containing the production matrix elements of the particles
-                            of interest, it should contain the amplitudes of all polarization combinations of the matrix
-                            element and its complex conjugate.
-                            Polarization indexes of particles different than the particles of interest should be summed
-                            up.
-   - <var>refsystem</var>: specifies the desired reference frame
-     .
-  Output:
-   - beta for the Lorentz transformation from the laboratory frame to the desired reference frame refsystem depending on
-     particle momenta
-   .
+  \param signalblob (pointer to) the signalblob describing the production of the particles whose polarization
+    should be investigated
+  \param prod_amps (pointer to) the Amplitude2_Tensor containing the production matrix elements of the particles
+    of interest, it should contain the amplitudes of all polarization combinations of the matrix
+    element and its complex conjugate.
+    Polarization indexes of particles different than the particles of interest should be summed up.
+  \param refsystem specifies the desired reference frame
+  \return beta for the Lorentz transformation from the laboratory frame to the desired reference frame refsystem depending on
+    particle momenta
   */
   /*!
   \fn Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
@@ -221,53 +197,42 @@ namespace METOOLS {
 
   To support particles different than massive intermediate spin 1 particles the according calculation of the polarization
   objects and the corresponding transformations need to be implemented and then called from here
-  Input:
-    - <var>signalblob</var>: (pointer to) the signalblob describing the production of the particles whose polarization
-                             should be investigated
-    - <var>prod_amps</var>: (pointer to) the Amplitude2_Tensor containing the production matrix elements of the particles
-                            of interest, it should contain the amplitudes of all polarization combinations of the matrix
-                            element and its complex conjugate.
-                            Polarization indexes of particles different than the particles of interest should be summed
-                            up.
-    - <var>decay_matrices</var>: Vector containing the decay matrices of all particles of interest in case they are
-                                 unstable, they are calculated during the spin correlation algorithm in the
-                                 Decay_Handler_Base
-   - <var>default_polarization_vectors</var>: Reference of a map containing the polarization vectors calculated in the
-                                              default polarization basis (basis, in which the matrix elements
-                                              were calculated) can be empty, in that case the necessary polarization
-                                              vectors will be calculated; map key = particle number according to
-                                              Sherpa's internal particle numbering
-   - <var>default_spinors</var>: Reference of a map containing the spinors calculated in the default polarization basis,
-                                 (basis, in which the matrix elements were calculated), can be empty, in that
-                                 case, the necessary spinors will be calculated; map key = particle number according to
-                                 Sherpa's internal particle numbering
-   - <var>beta</var>: beta for the Lorentz transformation from the laboratory frame to the desired reference frame
-                      refsystem depending on particle momenta instead of velocities according to the beta required by
-                      the Poincare class
-   - <var>refsystem</var>: specifies the desired reference frame
-     .
-  Output:
-   - (pointer to) PolWeights_Map
-   .
+  \param signalblob (pointer to) the signalblob describing the production of the particles whose polarization
+    should be investigated
+  \param prod_amps (pointer to) the Amplitude2_Tensor containing the production matrix elements of the particles
+    of interest, it should contain the amplitudes of all polarization combinations of the matrix
+    element and its complex conjugate.
+    Polarization indexes of particles different than the particles of interest should be summed up.
+  \param decay_matrices Vector containing the decay matrices of all particles of interest in case they are
+    unstable, they are calculated during the spin correlation algorithm in the
+    Decay_Handler_Base
+  \param default_polarization_vectors Reference of a map containing the polarization vectors calculated in the
+    default polarization basis (basis, in which the matrix elements
+    were calculated) can be empty, in that case the necessary polarization
+    vectors will be calculated; map key = particle number according to
+    Sherpa's internal particle numbering
+  \param default_spinors Reference of a map containing the spinors calculated in the default polarization basis,
+    (basis, in which the matrix elements were calculated), can be empty, in that
+    case, the necessary spinors will be calculated; map key = particle number according to
+    Sherpa's internal particle numbering
+  \param beta beta for the Lorentz transformation from the laboratory frame to the desired reference frame
+    refsystem depending on particle momenta instead of velocities according to the beta required by
+    the Poincare class
+  \param refsystem specifies the desired reference frame
+  \return (pointer to) PolWeight_Map
   */
   /*!
   \fn Polarized_CrossSections_Handler::Tests(const METOOLS::Amplitude2_Tensor* amps,
                                              const METOOLS::Amplitude2_Tensor* trafo_pol_amps) const
   \brief Method to test the transformed results
-  here
-  Input:
-    - <var>amps</var>: (pointer to) the Amplitude2_Tensor after contraction with the decay matrices in the polarization
-                       basis used for matrix element generation
-   - <var>trafo_pol_amps</var>: (pointer to the) Amplitude2_Tensor containing the polarized matrix elements of the
-                                particles whose polarization should be investigated, it should contain the amplitudes of
-                                all polarization combinations of the matrix element and its complex conjugate.
-                                Polarization indexes of particles different than the particles of interest should be
-                                summed up. For intermediate particles, trafo_pol_amps should contain the product of
-                                production and decay matrix elements
-     .
-  Output:
-   - no output
-   .
+  \param amps (pointer to) the Amplitude2_Tensor after contraction with the decay matrices in the polarization
+    basis used for matrix element generation
+  \param trafo_pol_amps (pointer to the) Amplitude2_Tensor containing the polarized matrix elements of the
+    particles whose polarization should be investigated, it should contain the amplitudes of
+    all polarization combinations of the matrix element and its complex conjugate.
+    Polarization indexes of particles different than the particles of interest should be
+    summed up. For intermediate particles, trafo_pol_amps should contain the product of
+    production and decay matrix elements
   */
 }
 

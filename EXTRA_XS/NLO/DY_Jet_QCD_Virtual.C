@@ -504,9 +504,9 @@ namespace EXTRAXS {
 
 using namespace EXTRAXS;
 
-DECLARE_VIRTUALME2_GETTER(QQWG_QCD_Virtual,"W_Jet_QCD_Virtual")
+DECLARE_VIRTUALME2_GETTER(EXTRAXS::QQWG_QCD_Virtual,"W_Jet_QCD_Virtual")
 Virtual_ME2_Base *ATOOLS::Getter
-<Virtual_ME2_Base,Process_Info,QQWG_QCD_Virtual>::
+<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,EXTRAXS::QQWG_QCD_Virtual>::
 operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
@@ -542,9 +542,9 @@ operator()(const Process_Info &pi) const
   return NULL;
 }
 
-DECLARE_VIRTUALME2_GETTER(QQZG_QCD_Virtual,"Z_Jet_QCD_Virtual")
+DECLARE_VIRTUALME2_GETTER(EXTRAXS::QQZG_QCD_Virtual,"Z_Jet_QCD_Virtual")
 Virtual_ME2_Base *ATOOLS::Getter
-<Virtual_ME2_Base,Process_Info,QQZG_QCD_Virtual>::
+<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,EXTRAXS::QQZG_QCD_Virtual>::
 operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);

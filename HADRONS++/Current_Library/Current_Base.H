@@ -12,8 +12,8 @@
 #include "METOOLS/Main/Spin_Structure.H"
 
 #define DEFINE_CURRENT_GETTER(CLASS,TAG)				\
-  DECLARE_GETTER(CLASS,TAG,Current_Base,ME_Parameters);			\
-  Current_Base *ATOOLS::Getter<Current_Base,ME_Parameters,CLASS>::	\
+  DECLARE_GETTER(CLASS,TAG,HADRONS::Current_Base,HADRONS::ME_Parameters);			\
+  Current_Base *ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,CLASS>::	\
   operator()(const ME_Parameters &parameters) const			\
   { return new CLASS(parameters.flavs, parameters.indices, TAG); }
 
@@ -61,7 +61,7 @@ namespace HADRONS {
      * When implementing such a calculation, one can use Spin_Structure::Insert
      * to store the calculated values for all helicities combination.
      * 
-     * @param momenta All momenta in the decay in external order
+     * @param moms All momenta in the decay in external order
      * @param anti Whether to consider the charge conjugated process
      */
     virtual void Calc(const ATOOLS::Vec4D_Vector& moms, bool anti) = 0;

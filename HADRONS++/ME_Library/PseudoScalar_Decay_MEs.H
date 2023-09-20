@@ -205,11 +205,11 @@ namespace HADRONS {
     \bar u_\ell\gamma^\mu(1-\gamma_5)u_{\bar\nu}
     \f]\,,
     where the form factors are given through the expansion
-    \f[
-    f_+(p^2,{p'}^2,q^2) &=& a_+^0 + a_+^1\frac{q^2}{f_{P'}^2}\nonumber
-    f_-(p^2,{p'}^2,q^2) &=& a_-^0 + a_-^1\frac{p^2-{p'}^2}{f_{P'}^2}\,.
-    \f]
-    By default, these values are set to \f$a_+^0 = -1\f$ and $a_-^0=a_-^1=a_+^1=0\f$.
+    \f[\begin{align}
+    f_+(p^2,{p'}^2,q^2) &= a_+^0 + a_+^1\frac{q^2}{f_{P'}^2}\nonumber \\
+    f_-(p^2,{p'}^2,q^2) &= a_-^0 + a_-^1\frac{p^2-{p'}^2}{f_{P'}^2}\,.
+    \end{align}\f]
+    By default, these values are set to \f$a_+^0 = -1\f$ and \f$a_-^0=a_-^1=a_+^1=0\f$.
   */
   /*!
     \class P_FFFF

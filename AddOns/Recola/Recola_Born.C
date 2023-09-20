@@ -69,12 +69,12 @@ namespace Recola {
 
 using namespace Recola;
 
-DECLARE_TREEME2_GETTER(Recola_Born,
+DECLARE_TREEME2_GETTER(Recola::Recola_Born,
 		       "Recola_Born")
 
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,
-			      External_ME_Args,
-			      Recola_Born>::
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,
+			      PHASIC::External_ME_Args,
+			      Recola::Recola_Born>::
 operator()(const External_ME_Args& args) const
 {
   if(args.m_source.length() &&

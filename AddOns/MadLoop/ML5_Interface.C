@@ -533,29 +533,29 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"Interface to the MadLoop loop ME generator"; 
 }
 
-DECLARE_VIRTUALME2_GETTER(ML5_Process,"ML5_Process")
+DECLARE_VIRTUALME2_GETTER(ML5::ML5_Process,"ML5_Process")
 Virtual_ME2_Base *ATOOLS::Getter
-<Virtual_ME2_Base,Process_Info,ML5_Process>::
-operator()(const Process_Info &pi) const
+<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,ML5::ML5_Process>::
+operator()(const PHASIC::Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="ML5") return NULL;
   Flavour_Vector fl(pi.ExtractFlavours());
   return new ML5_Process(pi,fl,0);
 }
 
-DECLARE_VIRTUALME2_GETTER(ML5D_Process,"ML5D_Process")
+DECLARE_VIRTUALME2_GETTER(ML5::ML5D_Process,"ML5D_Process")
 Virtual_ME2_Base *ATOOLS::Getter
-<Virtual_ME2_Base,Process_Info,ML5D_Process>::
-operator()(const Process_Info &pi) const
+<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,ML5::ML5D_Process>::
+operator()(const PHASIC::Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="ML5D") return NULL;
   Flavour_Vector fl(pi.ExtractFlavours());
   return new ML5_Process(pi,fl,1);
 }
 
-DECLARE_TREEME2_GETTER(ML5_LoopSquared,"ML5_Process")
+DECLARE_TREEME2_GETTER(ML5::ML5_LoopSquared,"ML5_Process")
 Tree_ME2_Base *ATOOLS::Getter
-<Tree_ME2_Base,External_ME_Args,ML5_LoopSquared>::
+<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,ML5::ML5_LoopSquared>::
 operator()(const External_ME_Args &args) const
 {
   if (args.m_source!="ML5") return NULL;

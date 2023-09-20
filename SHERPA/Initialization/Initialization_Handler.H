@@ -181,8 +181,8 @@ namespace SHERPA {
     A pointer to the beam spectra that are initialized by the Initialization_Handler.
   */
   /*!
-    \var PDF::ISR_Handler * Initialization_Handler::p_isrhandler
-    A pointer to the ISR handling (the pdf's) that is initialized by the Initialization_Handler.
+    \var Initialization_Handler::m_isrhandlers
+    The ISR handling (the pdf's) that is initialized by the Initialization_Handler.
   */
   /*!
     \var Matrix_Element_Handler * Initialization_Handler::p_mehandler
@@ -190,9 +190,9 @@ namespace SHERPA {
     by the Initialization_Handler.
   */
   /*!
-    \var Shower_Handler * Initialization_Handler::p_showerhandler
-    A pointer to the abstract wrapper around the shower module. It is initialized by the 
-    Initialization_Handler. 
+    \var Initialization_Handler::m_showerhandlers
+    The abstract wrappers around the shower module. It is initialized by the 
+    Initialization_Handler.
   */
   /*!
     \var Beam_Remnant_Handler * Initialization_Handler::p_beamremnants
@@ -203,18 +203,9 @@ namespace SHERPA {
     A pointer to the wrapper around the fragmentation code that will be used during the run.
   */
   /*!
-    \var Hadron_Decay_Handler * Initialization_Handler::p_hadrondecays
+    \var Initialization_Handler::p_hdhandler
     A pointer to the wrapper around the hadron decay code that will be used during the run.
   */
-  /*!
-    \var HDHandlersMap Initialization_Handler::m_hdhandlers
-    This is map with pointers to the corresponding hadron decay handlers
-    <TABLE>
-    <TR> <TD>1st column</TD> <TD>2nd column</TD> </TR>
-    <TR> <TD>Lund</TD> <TD>pointer on Pythia</TD> </TR>
-    <TR> <TD>Hadrons</TD> <TD>pointer on HADRONS</TD> </TR>
-    </TABLE>
-   */
   /*!
     \fn Initialization_Handler::~Initialization_Handler()
     The destructor deletes all physdics modules that have been used during the run.

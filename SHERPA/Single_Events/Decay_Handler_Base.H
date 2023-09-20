@@ -40,6 +40,11 @@ namespace SHERPA {
     ATOOLS::Momenta_Stretcher     m_stretcher;
     std::vector<METOOLS::Decay_Matrix> m_decaymatrices;
     bool m_spincorr, m_decaychainend, m_cluster, m_polcrosssec;
+    /*!
+      \brief Switch to turn mass smearing on and off.
+
+      Can be set by the "SOFT_MASS_SMEARING = [0,1]" variable in Fragmentation.dat
+    */
     int m_mass_smearing;
     size_t m_qedmode;
     unsigned long int m_oserrors;
@@ -48,7 +53,19 @@ namespace SHERPA {
   public:
     Decay_Handler_Base();
     ~Decay_Handler_Base();
+    /*!
+      \brief Uses the appropriate decay handler for each outparticle to
+      generate its destination mass, potentially using the information attached
+      in the \c CreateDecayBlob method. The generated masses are stored in the
+      \c FinalMass() property of each particle.
+      */
     void SetMasses(ATOOLS::Blob* blob, bool usefinalmass);
+    /*!
+      \brief  This method does multiple things with a CMS & on-shell blob:
+      1. set inparticle momentum off-shell to the labmom mass (== FinalMass())
+      2. set the outparticle momenta off-shell to their FinalMass()
+      3. boost the blob into the lab as defined by labmom
+    */
     void BoostAndStretch(ATOOLS::Blob* blob, const ATOOLS::Vec4D& labmom);
 
     // have to reimplement for hadrons, lund:
@@ -61,6 +78,11 @@ namespace SHERPA {
     FillOnshellDecay(ATOOLS::Blob* blob, METOOLS::Spin_Density* sigma);
     virtual METOOLS::Decay_Matrix*
     FillDecayTree(ATOOLS::Blob * blob, METOOLS::Spin_Density* s0);
+    /*!
+      \brief Chooses the appropriate decay handler for <var>inpart</var>
+      to create the decay blob for inpart. The decay blob is only a stub
+      so far without kinematics and without outparticles.
+    */
     virtual void CreateDecayBlob(ATOOLS::Particle* inpart)=0;
     virtual bool AttachExtraQED(ATOOLS::Blob* blob,size_t mode=0);
     virtual bool AttachExtraQEDToProductionBlob(ATOOLS::Blob* blob);

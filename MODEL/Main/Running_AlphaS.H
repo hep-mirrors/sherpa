@@ -161,40 +161,40 @@ namespace MODEL {
     - In order to avoid the Landau Pole, the running is bounded by one or another specified value.
   */
   /*!
-    \var int Running_AlphaS::m_order
+    \var One_Running_AlphaS::m_order
     The order at which running \f$alpha_s\f$ is evaluated, e.g. m_order = 0 refers to one-loop,
     m_order = 3 then signifies four-loop running.
   */
   /*!
-    \var int Running_AlphaS::m_nthresholds
+    \var One_Running_AlphaS::m_nthresholds
     The number of thresholds, i.e. of quarks. Later on, other particles should be implmented as well,
     at least at one-loop order. The only exception is the Z boson which is inserted as well -
     this is due to the fact that in SHERPA \f$\alpha_s\f$ at the Z-pole is used as defining
     parameter.
   */
   /*!
-    \var int Running_AlphaS::m_mzset
+    \var One_Running_AlphaS::m_mzset
     The place of the Z-pole in the list of thresholds.
   */
   /*!
-    \var double Running_AlphaS::m_m2_MZ
+    \var One_Running_AlphaS::m_m2_MZ
     The mass squared of the Z-boson.
   */
   /*!
-    \var double Running_AlphaS::m_as_MZ
+    \var One_Running_AlphaS::m_as_MZ
     \f$\alpha_s\f$ at the Z-pole.
   */
   /*!
-    \var double Running_AlphaS::Running_AlphaS::m_CF
+    \var One_Running_AlphaS::m_CF
     The Casimir operator of QCD in the fundamental representation, \f$C_F=4/3\f$.
   */
   /*!
-    \var double Running_AlphaS::Running_AlphaS::m_CA
+    \var One_Running_AlphaS::m_CA
     The Casimir operator of QCD in the adjoint representation, \f$C_A=3\f$.
   */
   /*!
-    \var AsDataSet * Running_AlphaS::p_thresh
-    Values of $\alpha_s$ and the \f[\beta_i\f] at the various thresholds.
+    \var One_Running_AlphaS::p_thresh
+    Values of \f$\alpha_{s}\f$ and the \f[\beta_i\f] at the various thresholds.
   */
   /*!
     \fn double Running_AlphaS::Beta0(const double)
@@ -220,28 +220,28 @@ namespace MODEL {
 		                (1093/729)n_f^3\right]/256\f] for a given number of active flavours.
   */
   /*!
-    \fn double Running_AlphaS::Lambda2(const int)
+    \fn One_Running_AlphaS::Lambda2(const int)
     Fills in the b-coefficients, \f[b_{1,2,3} = \beta_{1,2,3}/\beta_0\,,\f]
     and caluclates a suitable \f$\Lambda_{\rm QCD}^2\f$ which is then returned.
   */
   /*!
-    \fn double Running_AlphaS::ZetaOS2(const double,const double,const double,const int)
+    \fn One_Running_AlphaS::ZetaOS2(const double,const double,const double,const int)
     \todo Documentation for this method.
   */
   /*!
-    \fn double Running_AlphaS::InvZetaOS2(const double,const double,const double,const int)
+    \fn One_Running_AlphaS::InvZetaOS2(const double,const double,const double,const int)
     \todo Documentation for this method.
   */
   /*!
-    \fn double Running_AlphaS::AlphaSLam(const double,const int)
+    \fn One_Running_AlphaS::AlphaSLam(const double,const int)
     \todo Documentation for this method.
   */
   /*!
-    \fn void Running_AlphaS::ContinueAlphaS(int &)
+    \fn One_Running_AlphaS::ContinueAlphaS(int &)
     \todo Documentation for this method.
   */
   /*!
-    \fn Running_AlphaS::Running_AlphaS(double,double)
+    \fn One_Running_AlphaS::One_Running_AlphaS(double,double)
     The constructor of Running_AlphaS fills in and sorts the thresholds according to their mass.
     \todo Documentation for this method.
   */
@@ -260,10 +260,6 @@ namespace MODEL {
   /*!
     \fn int Running_AlphaS::Nf(const double)
     Returns the number of active flavours at a given scale.
-  */
-  /*!
-    \fn void Running_AlphaS::SelfTest()
-    Prints out the results of a consistency check.
   */
 }
 

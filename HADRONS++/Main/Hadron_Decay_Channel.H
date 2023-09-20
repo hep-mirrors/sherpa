@@ -46,7 +46,7 @@ namespace HADRONS {
     /** 
      * Add (automatic) partonic channels settings
      * 
-     * @param s the channel settings block from HADRON_DECAYS: { <decayer>: {channel: {...}}}
+     * @param s the channel settings block from HADRON_DECAYS: { \<decayer\>: {channel: {...}}}
      */
     void   ProcessPartonic(ATOOLS::Scoped_Settings& s);
 
@@ -57,7 +57,7 @@ namespace HADRONS {
      * @param me_string String containing the (getter-able) name of the matrix
      * element, and in square brackets the mapping of external particle
      * indices in the decay blob to internal indices in the matrix element.
-     * @param s the ME settings block from HADRON_DECAYS: { <decayer>: {channel: { ME: {...}}}}
+     * @param s the ME settings block from HADRON_DECAYS: { \<decayer\>: {channel: { ME: {...}}}}
      * 
      * @return The matrix element it has created from the information. If
      * it can't find a valid matrix element, it will abort.
@@ -79,7 +79,7 @@ namespace HADRONS {
      * elements, phase space mappings etc. from that.
      * 
      * @param startmd Global hadron decay parameters.
-     * @param s the channel settings block from HADRON_DECAYS: { <decayer>: {channel: {...}}}
+     * @param s the channel settings block from HADRON_DECAYS: { \<decayer\>: {channel: {...}}}
      */
     void   Initialise(ATOOLS::Scoped_Settings s, GeneralModel startmd);
 
@@ -112,7 +112,7 @@ namespace HADRONS {
      * then added to the decay channel's PHASIC::Multi_Channel.
      * 
      * @param name String describing the phase space channel
-     * @param s the PS settings block from HADRON_DECAYS: { <decayer>: {channel: { PhaseSpace: {...}}}}
+     * @param s the PS settings block from HADRON_DECAYS: { \<decayer\>: {channel: { PhaseSpace: {...}}}}
      * 
      * @return true if an appropriate channel was found, false if not.
      */

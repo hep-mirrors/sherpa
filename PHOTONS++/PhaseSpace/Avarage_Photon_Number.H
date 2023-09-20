@@ -59,21 +59,6 @@ namespace PHOTONS {
   */
 
   /*!
-    \var int Avarage_Photon_Number::m_number1
-    \brief number of sub-divisions for integration region one
-  */
-
-  /*!
-    \var int Avarage_Photon_Number::m_number2
-    \brief number of sub-divisions for integration region two
-  */
-
-  /*!
-    \var int Avarage_Photon_Number::m_number3
-    \brief number of sub-divisions for integration region three
-  */
-
-  /*!
     \var Particle_Vector Avarage_Photon_Number::m_dipole
     \brief contains all charged particles of the blob forming the multipole
   */
@@ -96,16 +81,7 @@ namespace PHOTONS {
 
     The constructor <tt>Avarage_Photon_Number::Avarage_Photon_Number(Particle_Vector dip, double wmax, double wmin)</tt> has to receive a Particle_Vector 
     containing all charged particles and the upper and lower 
-    limit of the photon energy. The numbers of sub-divisions 
-    for the different regions of the \f$\varphi\f$-integration 
-    are set to
-    - m_number1 = 100
-    - m_number2 = 10000
-    - m_number3 = 100
-    .
-    They are optimised for highly relativistic massive particles, 
-    thus being somewhat over the top for very massive or less 
-    rapid particles.
+    limit of the photon energy.
     Finally, <tt>Avarage_Photon_Number::CalculateAvaragePhotonNumber()</tt> 
     is called to calculate \f$\bar{n}\f$.
   */
@@ -130,52 +106,6 @@ namespace PHOTONS {
   /*!
     \fn double Avarage_Photon_Number::CalculateBeta(Vec4D)
     \brief calculates \f$\beta\f$ of 4-vector
-  */
-
-  /*!
-    \fn double Avarage_Photon_Number::Function(double, double, double, double)
-    \brief calculates the value of the \f$\theta\f$-integrated unit sphere part of \f$\tilde{S}_{ij}\f$ at \f$\varphi\f$
-
-    The Function is
-    \f[
-      missing
-    \f]
-    The passed values for <tt>Avarage_Photon_Number::Function(double bi, double bj, double alpha, double phi)</tt> are
-    - \f$ \beta_i \f$
-    - \f$ \beta_j \f$
-    - \f$ \alpha = \angle(\vec{p}_i,\vec{p_j}) \f$ in the multipole-CMS
-    - \f$ \varphi \f$
-    .
-  */
-
-  /*!
-    \fn double Avarage_Photon_Number::IntegralOne(double, double, double)
-    \brief numerically integrates integration regions one and two (\f$\varphi\in[0,\frac{\pi}{2}]\f$)
-
-    The passed values for <tt>Avarage_Photon_Number::IntegralOne(double bi, double bj, double alpha)</tt> are
-    - \f$ \beta_i \f$
-    - \f$ \beta_j \f$
-    - \f$ \alpha = \angle(\vec{p}_i,\vec{p_j})\f$ in the multipole-CMS
-    .
-    Region one comprises of \f$ \varphi\in[0,a]\f$ and region two of 
-    \f$ \varphi\in[a,\frac{\pi}{2}]\f$ with 
-    \f$ a=1.5 - \frac{1}{50}\ln(\beta_i\beta_j) \f$ determined empirically.
-  */
-
-  /*!
-    \fn double Avarage_Photon_Number::IntegralTwo(double, double, double)
-    \brief numerically integrates integration region three (\f$\varphi\in[\pi,\frac{3\pi}{2}]\f$)
-
-    The passed values for <tt>Avarage_Photon_Number::IntegralTwo(double bi, double bj, double alpha)</tt> are
-    - \f$\beta_i\f$
-    - \f$\beta_j\f$
-    - \f$\alpha = \angle(\vec{p}_i,\vec{p_j})\f$ in the multipole-CMS
-    .
-  */
-
-  /*!
-    \fn double Avarage_Photon_Number::IntegrateInterferenceTerm(double, double, double)
-    \brief integrates the term ~\f$\sin\alpha\f$, thus calls <tt>IntegralOne/Two(double,double,double)</tt>
   */
 
   /*!

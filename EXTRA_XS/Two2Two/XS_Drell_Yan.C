@@ -118,8 +118,8 @@ double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
   return sqr(4.*M_PI*alpha) * CouplingFactor(0,2) * colfac * (term1+term2);
 }
 
-DECLARE_TREEME2_GETTER(XS_ee_ffbar,"XS_ee_ffbar")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_ee_ffbar>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_ee_ffbar,"XS_ee_ffbar")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_ee_ffbar>::
 operator()(const External_ME_Args& args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;

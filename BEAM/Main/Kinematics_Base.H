@@ -13,11 +13,24 @@ namespace BEAM {
     Beam_Base * p_beams[2];
     bool        m_on;
     std::string m_keyid;
-    double m_m[2], m_m2[2], m_x[2], m_S;
+    double m_m[2], m_m2[2], m_S;
+    /*!
+      The energy fractions the outgoing bunches have w.r.t. the corresponding
+      incoming beams.
+    */
+    double m_x[2];
     double m_smin, m_smax, m_sminPS, m_smaxPS, m_exponent[2];
 
     ATOOLS::Vec4D    m_Plab;
-    ATOOLS::Poincare m_CMSBoost, m_LabBoost;
+    /*!
+      A boost from the c.m. system of the incoming beams to the c.m. system of the
+      outgoing bunches.
+    */
+    ATOOLS::Poincare m_CMSBoost;
+    /*!
+      A boost from the lab system of the incoming beams to their c.m. system.
+    */
+    ATOOLS::Poincare m_LabBoost;
     virtual void InitIntegration()=0;
   public:
     Kinematics_Base(Beam_Base * p_beams[2]);
@@ -37,8 +50,22 @@ namespace BEAM {
 
     virtual inline const bool     On()                 const { return m_on; }
     virtual inline const std::string & KeyId()         const { return m_keyid; }
+    /**
+     * @brief Gets the mass of one of the incoming particles.
+     * @param i Which particle to get
+     * @return the mass
+     */
     virtual inline const double & m(const size_t & i)  const { return m_m[i]; }
+    /**
+     * @brief Gets the square of the mass of one of the incoming particles.
+     * @param i Which particle to get
+     * @return the mass
+     */
     virtual inline const double & m2(const size_t & i) const { return m_m2[i]; }
+    /*!
+      Characteristic exponents used for the integration. This is mainly a service for better
+      performance of the phase space integration.
+    */
     virtual inline const double & Exponent(const size_t & i) const {
       return m_exponent[i];
     }

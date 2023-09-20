@@ -224,7 +224,7 @@ namespace AMEGIC {
     \f]
     
     Using a spinor basis, the results reads 
-    <table border>    
+    <table border>
       <tr>
         <td> \f$\lambda_1\lambda_3\f$ </td>
         <td> \f$X(p_1,\lambda_1;p_2;p_3,\lambda_3;c_L,c_R)\f$ </td>
@@ -277,7 +277,7 @@ namespace AMEGIC {
     \f]
     
     Using a spinor basis, the results reads 
-    <table border>    
+    <table border>
       <tr>
         <td> \f$\lambda_1\lambda_2\f$ </td>
         <td> \f$Y(p_1,\lambda_1;p_2,\lambda_2;c_L,c_R)\f$ </td>
@@ -323,7 +323,7 @@ namespace AMEGIC {
     \f]
     
     Using a spinor basis, the results reads 
-    <table border>    
+    <table border>
       <tr>
         <td> \f$\lambda_1\lambda_2\lambda_3\lambda_4\f$ </td>
         <td> \f$Z(p_1,\lambda_1;p_2,\lambda_2;

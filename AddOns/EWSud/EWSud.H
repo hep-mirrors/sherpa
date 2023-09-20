@@ -17,12 +17,12 @@
 namespace EWSud {
 
   enum class EWSudakov_Log_Type {
-    Ls,       ///< correction \propto \log(s/m_mW2)^2
-    lZ,       ///< correction \propto \log(s/m_mW2)
-    lSSC,     ///< correction \propto \log(s/m_mW2) \log(|r_kl|/s)
-    lC,       ///< collinear non-Yukawa corrections \propto \log(s/m_mW2)
-    lYuk,     ///< collinear Yukawa corrections \propto \log(s/m_mW2)
-    lPR,      ///< parameter renormalisation corrections \propto \log(s/m_mW2)
+    Ls,       ///< correction \f$\propto \log(s/m_mW2)^2\f$
+    lZ,       ///< correction \f$\propto \log(s/m_mW2)\f$
+    lSSC,     ///< correction \f$\propto \log(s/m_mW2) \log(|r_kl|/s)\f$
+    lC,       ///< collinear non-Yukawa corrections \f$\propto \log(s/m_mW2)\f$
+    lYuk,     ///< collinear Yukawa corrections \f$\propto \log(s/m_mW2)\f$
+    lPR,      ///< parameter renormalisation corrections \f$\propto \log(s/m_mW2)\f$
     lI,       ///< I operator corresponding to clustered pairs
   };
 

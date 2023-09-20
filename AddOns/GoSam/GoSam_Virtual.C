@@ -82,9 +82,9 @@ bool GoSam_Virtual::IsMappableTo(const PHASIC::Process_Info& pi)
   return m_ismapped;
 }
 
-DECLARE_VIRTUALME2_GETTER(GoSam_Virtual,"GoSam_Virtual")
-Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,GoSam_Virtual>::
-operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(GoSam::GoSam_Virtual,"GoSam_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,GoSam::GoSam_Virtual>::
+operator()(const PHASIC::Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="GoSam") return NULL;

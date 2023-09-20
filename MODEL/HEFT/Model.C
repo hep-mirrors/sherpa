@@ -50,16 +50,16 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(HEFT,"HEFT",Model_Base,Model_Arguments);
+DECLARE_GETTER(MODEL::HEFT,"HEFT",MODEL::Model_Base,MODEL::Model_Arguments);
 
-Model_Base *Getter<Model_Base,Model_Arguments,HEFT>::
+Model_Base *ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::HEFT>::
 operator()(const Model_Arguments &args) const
 {
   return new HEFT();
 }
 
-void Getter<Model_Base,Model_Arguments,HEFT>::
-PrintInfo(ostream &str,const size_t width) const
+void ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::HEFT>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"The Standard Model\n";
   str<<setw(width+4)<<" "<<"{\n"

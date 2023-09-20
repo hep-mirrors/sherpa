@@ -128,19 +128,19 @@ namespace ATOOLS {
     The particles defined here are close to the particles of the HepMC format
     by Matt Dobbs. ( http://cern.ch/HepMC/ )
   */
-  
+
   /*! 
     \var   int Particle::m_number     
     \brief The particle's number (integer >0)
   */
-  
+
   /*!
     \var   bool Particle::m_fromdec
     \brief True, if this particle is emerged from a hard decay. This property is set in the Hard Decay Handler and propagated through the CSS Shower.
   */
 
   /*! 
-    \var   char Particle::info
+    \var   char Particle::m_info
     \brief What the particle really does and where it stems from.
     
     info flag, marks production step: 
@@ -154,7 +154,7 @@ namespace ATOOLS {
     S - soft photons, s - soft photons splitting products
     \endverbatim
   */ 
-  
+
   /*!
     \var   int Particle::m_status;
     \brief The particle status (HepMC 1.01).
@@ -169,22 +169,10 @@ namespace ATOOLS {
     11-200  at disposal of each model builder
     201-... user status
     \endverbatim
-  */
+  */  
   
   /*!
-    \var   int Particle::m_info
-    \brief The particle info, just for jun!
-    
-    info flag, marks production step: 
-    G - IS for hard interaction, H - FS from hard interaction, 
-    
-    I - initial particle, F - final particle, 
-    i - particle from ISR, f - particle from FSR, decayed
-  */
-  
-  
-  /*!
-    \var     Flavour m_fl
+    \var     Flavour Particle::m_fl
     \brief The particle's flavour. 
     
     The particle's flavour. 
@@ -192,22 +180,29 @@ namespace ATOOLS {
     Additional information can be obtained using methods 
     related to the class Flavour.
   */
-  
+
   /*!
-    \var   Vec4D   m_momentum
+    \var   Vec4D   Particle::m_momentum
     \brief The particle's momentum.
   */
   
-  /*! 
-    \var  Blob * Particle::m_startblob, * Particle::m_endblob
-    \brief Pointers to the particle's production and decay vertex.
+  /*!
+    \var  Blob * Particle::p_startblob
+    \brief Pointers to the particle's production vertex.
+    \see Particle::m_endblob
   */
-  
+
+  /*!
+    \var  Blob * Particle::p_endblob
+    \brief Pointers to the particle's decay vertex.
+    \see Particle::m_startblob
+  */
+
   /*!
     \var   double Particle::m_dec_time
     \brief The proper decay time of the particle.
   */
-  
+
   /*!  
     \fn    double Particle::ProperTime()
     \brief Calculate m_dec_time.
@@ -218,7 +213,7 @@ namespace ATOOLS {
     \f]
     Result is given in seconds.
   */
-  
+
   /*!
     \fn    double Particle::LifeTime()
     \brief Calculate lifetime.

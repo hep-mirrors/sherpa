@@ -35,8 +35,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_TREEME2_GETTER(XS_q1q2_q1q2,"1XS_q1q2_q1q2")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1q2_q1q2>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_q1q2_q1q2,"1XS_q1q2_q1q2")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_q1q2_q1q2>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
@@ -141,8 +141,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_TREEME2_GETTER(XS_q1qbar1_q2qbar2,"1XS_q1qbar1_q2qbar2")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1qbar1_q2qbar2>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_q1qbar1_q2qbar2,"1XS_q1qbar1_q2qbar2")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_q1qbar1_q2qbar2>::
 operator()(const External_ME_Args& args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
@@ -223,8 +223,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_TREEME2_GETTER(XS_q1q1_q1q1,"1XS_q1q1_q1q1")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1q1_q1q1>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_q1q1_q1q1,"1XS_q1q1_q1q1")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_q1q1_q1q1>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
@@ -327,8 +327,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_TREEME2_GETTER(XS_q1qbar1_q1qbar1,"1XS_q1qbar1_q1qbar1")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1qbar1_q1qbar1>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_q1qbar1_q1qbar1,"1XS_q1qbar1_q1qbar1")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_q1qbar1_q1qbar1>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
@@ -444,8 +444,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_TREEME2_GETTER(XS_q1qbar1_gg,"1XS_q1qbar1_gg")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1qbar1_gg>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_q1qbar1_gg,"1XS_q1qbar1_gg")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_q1qbar1_gg>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
@@ -559,8 +559,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_TREEME2_GETTER(XS_gg_q1qbar1,"1XS_gg_q1qbar1")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_gg_q1qbar1>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_gg_q1qbar1,"1XS_gg_q1qbar1")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_gg_q1qbar1>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
@@ -673,8 +673,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_TREEME2_GETTER(XS_q1g_q1g,"1XS_q1g_q1g")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1g_q1g>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_q1g_q1g,"1XS_q1g_q1g")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_q1g_q1g>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
@@ -811,8 +811,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_TREEME2_GETTER(XS_gg_gg,"1XS_gg_gg")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_gg_gg>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_gg_gg,"1XS_gg_gg")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_gg_gg>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;

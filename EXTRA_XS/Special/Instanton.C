@@ -457,8 +457,8 @@ bool XS_instanton::SetColours(const Vec4D_Vector& mom) {
   THROW(fatal_error,"XS_instanton::SetColours should never be called.");
 }
 
-DECLARE_TREEME2_GETTER(XS_instanton,"XS_instanton")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_instanton>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_instanton,"XS_instanton")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_instanton>::
 operator()(const External_ME_Args& args) const
 {
   if (MODEL::s_model->Name()!="SM") return NULL;

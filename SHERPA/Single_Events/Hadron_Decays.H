@@ -44,12 +44,6 @@ namespace SHERPA {
     stretches the momenta to the lab CMS and their final masses.
     */
   /*!
-    \var double Hadron_Decays::m_mass_smearing
-    \brief Switch to turn mass smearing on and off.
-
-    Can be set by the "SOFT_MASS_SMEARING = [0,1]" variable in Fragmentation.dat
-  */
-  /*!
     \fn Hadron_Decays::Treat(ATOOLS::Blob_List*)
     \brief Treats all blobs in a blob list which need hadron decays.
 
@@ -72,48 +66,6 @@ namespace SHERPA {
     For that it first has to do the on-shell kinematics, then create the
     daughter decay blobs to know how to smear the daughter masses, and finally
     boost and stretch everything back.
-    */
-  /*!
-    \fn Hadron_Decays::CreateDecayBlob(ATOOLS::Particle* inpart)
-    \brief Chooses the appropriate decay handler for <var>inpart</var>
-    to create the decay blob for inpart. The decay blob is only a stub
-    so far without kinematics and without outparticles.
-    */
-  /*!
-    \fn Hadron_Decays::SetMasses(ATOOLS::Blob*)
-    \brief Uses the appropriate decay handler for each outparticle to
-    generate its destination mass, potentially using the information attached
-    in the CreateDecayBlob method. The generated masses are stored in the
-    FinalMass() property of each particle.
-    */
-  /*!
-    \fn Hadron_Decays::BoostAndStretch(ATOOLS::Blob*)
-    \brief  This method does multiple things with a CMS & on-shell blob:
-    1. set inparticle momentum off-shell to the labmom mass (== FinalMass())
-    2. set the outparticle momenta off-shell to their FinalMass()
-    3. boost the blob into the lab as defined by labmom
-    */
-  /*!
-    \fn Hadron_Decay_Handler* ChooseDecayHandler(ATOOLS::Particle* part)
-    \brief Chooses a hadron decay handler which can deal with the
-    particle according to their priorities.
-    */
-  /*!
-    \fn bool RejectExclusiveChannelsFromFragmentation(ATOOLS::Blob*)
-    \brief If a fragmentation blob is encountered, it is checked whether it stems from a
-    partonic hadron decay. If it does, and it produced an exclusive decay channel
-    of that decaying hadron, it is rejected and redone, as to not spoil that
-    hadron's branching ratio.
-    */
-  /*!
-    \fn PerformMixing(ATOOLS::Particle* inpart, ATOOLS::Blob_List* bloblist)
-    \brief Uses the appropriate hadron decay handler for inpart to add a
-    mixing blob for it in case that is activated and generated.
-    */
-  /*!
-    \fn void SetPosition(ATOOLS::Blob* blob)
-    \brief Calculates the position of the blob in the lab frame according
-    to its inparticle's decay time and momentum.
     */
 
 }

@@ -5,13 +5,13 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 
-using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 #ifdef __GNUC__
 #include <stdio.h>
 #endif
 
+namespace AMEGIC {
 
 ZXlist& ZXlist::operator=(const ZXlist& copy) {
   if (this!=&copy) {
@@ -569,7 +569,7 @@ int String_Generator::Massless(int i)
   return 0;
 }
 
-void String_Generator::SetOn(const string& str)
+void String_Generator::SetOn(const std::string& str)
 {
   if (str==string("0")) return;
 
@@ -745,3 +745,5 @@ void String_Generator::UpdateCouplings(map<string,Complex> & cmap)
     THROW(critical_error,"String_Generator::UpdateCouplings() failed: Coupling constant inconsistency.");    
   }
 }
+
+} // namespace AMEGIC

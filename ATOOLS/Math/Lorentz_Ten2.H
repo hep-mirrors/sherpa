@@ -183,18 +183,12 @@ namespace ATOOLS {
 */
 
 /*!
- \fn Lorentz_Ten2::Lorentz_Ten2(Scalar x00, Scalar x10, Scalar x20, Scalar x30, Scalar x01, Scalar x11, Scalar x21, Scalar x31, Scalar x02, Scalar x12, Scalar x22, Scalar x32, Scalar x03, Scalar x13, Scalar x23, Scalar x33){
+ \fn Lorentz_Ten2::Lorentz_Ten2(
+   const Scalar& x00, const Scalar& x10, const Scalar& x20, const Scalar& x30,
+   const Scalar& x01, const Scalar& x11, const Scalar& x21, const Scalar& x31,
+   const Scalar& x02, const Scalar& x12, const Scalar& x22, const Scalar& x32,
+   const Scalar& x03, const Scalar& x13, const Scalar& x23, const Scalar& x33){
  \brief Special Constructor, templated in Scalar, taking 16 single components.
-*/
-
-/*!
- \fn   inline Scalar* Lorentz_Ten2::operator[] (int i)
- \brief returns array \f$x_{ij}\f$, \f$j\in[0,3]\f$. (May be manipulated.)
-*/
-
-/*!
- \fn   inline const Scalar* Lorentz_Ten2::operator[] (int i) const
- \brief returns array \f$x_{ij}\f$, \f$j\in[0,3]\f$.
 */
 
 #endif

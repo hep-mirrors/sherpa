@@ -245,21 +245,6 @@ namespace MODEL {
     Lorentz_Function called Next, a priori this pointer is initialized as nil.
   */
  
-   /*!
-     \fn Lorentz_Function::Lorentz_Function() 
-    \brief Constructs a Lorentz_Function object of type lf::Unknown and all partarg 
-    initialized as '-1'. The Next pointer (which represents a Lorentz_Functionas well) 
-    is initialized as nil.
-
-  */
-
-  /*!
-     \fn Lorentz_Function::Lorentz_Function(lf::code _type) 
-     \brief Contructs a Lorentz_Function object of type _type. The arguments are initialized 
-     as '-1' and the pointer Next is set to nil.
-  */
-
-
   /*!
     \fn std::string Lorentz_Function::String(int shortversion=0)
     \brief Returns the string expression of the associated Lorentz_Function in terms 

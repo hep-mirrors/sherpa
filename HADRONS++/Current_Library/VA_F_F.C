@@ -51,9 +51,9 @@ void VA_F_F::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   }
 }
 
-DEFINE_CURRENT_GETTER(VA_F_F,"VA_F_F")
+DEFINE_CURRENT_GETTER(HADRONS::VA_F_F,"VA_F_F")
 
-void ATOOLS::Getter<Current_Base,ME_Parameters,VA_F_F>::
+void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_F_F>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ (B) \\rightarrow (D) l \\nu_l $ \n\n"
     <<"Order: 0 = bar'ed spinor, 1 = non-bar'ed spinor \n\n"

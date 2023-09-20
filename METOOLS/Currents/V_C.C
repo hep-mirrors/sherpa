@@ -1,6 +1,10 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Currents/C_Vector.H"
 #include "ATOOLS/Phys/Spinor.H"
+/*!
+  @file V_C.C
+  @brief Implements the class CV.
+*/
 
 namespace METOOLS {
 
@@ -20,43 +24,71 @@ namespace METOOLS {
 
   protected:
 
+    /// @name (Squared) mass of the propagator
+    /// @{
     SComplex m_cmass2, m_cmass;
+    /// @}
 
+    /// @brief returns the label for the graph output
     std::string CLabel() const;
 
   private:
 
+    /// @brief gauge vector
     ATOOLS::Vec4D m_k;
+
+    /// @brief gauge spinors, @brief gauge spinors
     SpinorType    m_kp, m_km;
 
+    /// @brief constructs a vector from two spinors
     CVec4Type VT(const SpinorType &a,const SpinorType &b);
 
+    /// @name massless minus and plus polarisation vectors
+    /// @{
     CVec4Type EM(const ATOOLS::Vec4D &p,const int cr,const int ca);
     CVec4Type EP(const ATOOLS::Vec4D &p,const int cr,const int ca);
+    /// @}
 
+    /// @name massive minus, plus, and longitudinal polarisation vectors
+    /// @{
     CVec4Type EMM(const ATOOLS::Vec4D &p,const int cr,const int ca);
     CVec4Type EMP(const ATOOLS::Vec4D &p,const int cr,const int ca);
     CVec4Type EML(const ATOOLS::Vec4D &p,const int cr,const int ca);
+    /// @}
 
   public:
 
+    /// @brief constructor using Current_Key key
     CV(const Current_Key &key);
 
+    /// @brief constructs current
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 		    const int cr,const int ca,const int mode);
+
+    /// @brief sets the gauge vector
     void SetGauge(const ATOOLS::Vec4D &k);
 
+    /// @brief adds the propagator to the current
     void AddPropagator();
 
+    /// @brief contracts a current
     void SContract
     (const Current &c,const Int_Vector &pols,
      SComplex_Vector &ress,const size_t &offset) const;
 
+    /// @brief formats the current into a string
     std::string Format(const CObject *c) const;
 
+    /// @brief returns the current type
     char Type() const;    
 
   };// end of class CV
+  /*!
+    @class CV
+    @brief This class represents a vector current.
+
+    This class represents a vector current.
+  */
 
 }// end of namespace METOOLS
 

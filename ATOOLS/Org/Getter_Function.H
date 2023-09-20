@@ -91,9 +91,23 @@ namespace ATOOLS {
   }
 
 #define DECLARE_ND_GETTER(NAME,TAG,OBJECT,PARAMETER,DISP)		\
-  DECLARE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER,std::less<std::string>)	\
-  ATOOLS::Getter<OBJECT,PARAMETER,NAME>					\
-  ATOOLS::Getter<OBJECT,PARAMETER,NAME>::s_initializer(DISP)				 
+  									\
+  namespace ATOOLS {							\
+    template <> class Getter<OBJECT,PARAMETER,NAME>/** @cond RECURSIVE_WARNING */:		\
+      public Getter_Function<OBJECT,PARAMETER> /** @endcond */ {			\
+    private:								\
+      static Getter<OBJECT,PARAMETER,NAME> s_initializer;		\
+    protected:								\
+      void PrintInfo(std::ostream &str,const size_t width) const;	\
+      Object_Type *operator()(const Parameter_Type &parameters) const;	\
+    public:								\
+      Getter(const bool &d=true):		\
+	Getter_Function<OBJECT,PARAMETER>(TAG)			\
+	{ SetDisplay(d); }						\
+  }; \
+  Getter<OBJECT,PARAMETER,NAME>					\
+  Getter<OBJECT,PARAMETER,NAME>::s_initializer(DISP); \
+  }
 
 #define DECLARE_GETTER(NAME,TAG,OBJECT,PARAMETER)			\
   DECLARE_ND_GETTER(NAME,TAG,OBJECT,PARAMETER,true)

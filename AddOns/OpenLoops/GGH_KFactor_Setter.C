@@ -219,20 +219,20 @@ bool GGH_KFactor_Setter::ContainsDecays(const Process_Base& proc) const {
   return false;
 }
 
-DECLARE_GETTER(GGH_KFactor_Setter,"GGH",
-	       KFactor_Setter_Base,
-	       KFactor_Setter_Arguments);
+DECLARE_GETTER(PHASIC::GGH_KFactor_Setter,"GGH",
+	       PHASIC::KFactor_Setter_Base,
+	       PHASIC::KFactor_Setter_Arguments);
 
-KFactor_Setter_Base *Getter <KFactor_Setter_Base,
-					     KFactor_Setter_Arguments,
-					     GGH_KFactor_Setter>::
-operator()(const KFactor_Setter_Arguments &args) const
+KFactor_Setter_Base *ATOOLS::Getter <PHASIC::KFactor_Setter_Base,
+					     PHASIC::KFactor_Setter_Arguments,
+					     PHASIC::GGH_KFactor_Setter>::
+operator()(const PHASIC::KFactor_Setter_Arguments &args) const
 {
   return new GGH_KFactor_Setter(args);
 }
 
-void Getter<KFactor_Setter_Base,
-		    KFactor_Setter_Arguments,
-		    GGH_KFactor_Setter>::
+void ATOOLS::Getter<PHASIC::KFactor_Setter_Base,
+		    PHASIC::KFactor_Setter_Arguments,
+		    PHASIC::GGH_KFactor_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const 
 { str<<"GGH K-Factor\n"; }

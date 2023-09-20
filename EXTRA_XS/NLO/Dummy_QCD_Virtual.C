@@ -42,9 +42,9 @@ void Dummy_Virtual::Calc(const Vec4D_Vector& momenta) {
   m_res.Finite()=m_fin*factor;
 }
 
-DECLARE_VIRTUALME2_GETTER(Dummy_Virtual,"Dummy_Virtual")
+DECLARE_VIRTUALME2_GETTER(EXTRAXS::Dummy_Virtual,"Dummy_Virtual")
 Virtual_ME2_Base *ATOOLS::Getter
-<Virtual_ME2_Base,Process_Info,Dummy_Virtual>::
+<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,EXTRAXS::Dummy_Virtual>::
 operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator.find("Dummy")!=0) return NULL;

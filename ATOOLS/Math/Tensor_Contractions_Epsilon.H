@@ -255,5 +255,4 @@ ATOOLS::EpsilonTensorContraction(const Lorentz_Ten4<Scalar>& ten, int i, int j, 
           +t.at(3,2,1,0);
 }
 
-
 #endif

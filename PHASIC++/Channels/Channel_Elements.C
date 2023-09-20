@@ -621,14 +621,15 @@ double Channel_Elements::GenerateYUniform(const double tau,
                                           const double ran,
                                           const int mode) const {
   /*!
-    The boundaries for y are
-    \begin{align}
-    \frac{1}{2}\log\frac{x_{1, min}^2}{\tau} \le y \le
-    \log\frac{1}{2}\frac{x_{1, max}^2}{\tau} \frac{1}{2}\log\frac{\tau}{x_{2,
-    max}^2} \le y \le \log\frac{1}{2}\frac{\tau}{x_{2, min}^2} \end{align} where
-    $x_{1/2, max}$ stem from the corresponding Base or the hard process
-    respectively and x_{1, min} = xinfo[0] x_{1, max} = xinfo[2] x_{2, min} =
-    xinfo[1] x_{2, max} = xinfo[3]
+    The boundaries for y are @f[
+      \begin{align}
+      \frac{1}{2}\log\frac{x_{1, min}^2}{\tau} \le y \le
+      \log\frac{1}{2}\frac{x_{1, max}^2}{\tau} \frac{1}{2}\log\frac{\tau}{x_{2,
+      max}^2} \le y \le \log\frac{1}{2}\frac{\tau}{x_{2, min}^2} \end{align}
+    @f] where
+    @f$x_{1/2, max}@f$ stem from the corresponding Base or the hard process
+    respectively and @f$x_{1, min} = xinfo[0]@f$, @f$x_{1, max} = xinfo[2]@f$,
+    @f$x_{2, min} = xinfo[1]@f$, @f$x_{2, max} = xinfo[3]@f$
   */
   double logtau = 0.5 * log(tau);
   if (mode == 1)

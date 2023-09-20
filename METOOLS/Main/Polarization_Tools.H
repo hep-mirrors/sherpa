@@ -59,18 +59,14 @@ namespace METOOLS
     Calculations according to arxiv: 9601359 eq. (25) or 9805445 eq. (3.19) (+ transformation back to vector
     representation);
     The ordering in the resulting Polarization_Vector is
-        - \f$0 \to \epsilon^+\f$
-        - \f$1 \to \epsilon^-\f$
-        - \f$2 \to \epsilon^0\f$
-        - \f$3 \to \epsilon^s\f$
-        BUT: currently transverse polarizations seems to be exchanged
-    Input: 
-      - <var>p</var>: momentum of particle
-      - <var>ref_mom</var>: arbitrary, light-like reference momentum, defines spin axis for massive particles
-      .
-    Output:
-      - no output
-      .
+    - \f$0 \to \epsilon^+\f$
+    - \f$1 \to \epsilon^-\f$
+    - \f$2 \to \epsilon^0\f$
+    - \f$3 \to \epsilon^s\f$
+    .
+    BUT: currently transverse polarizations seems to be exchanged
+    \param p momentum of particle
+    \param ref_mom arbitrary, light-like reference momentum, defines spin axis for massive particles
     */
   /*!
   \fn Polarization_Vector::BasisTrafo(const Polarization_Vector& old_basis, bool pol_checks) ()
@@ -78,18 +74,13 @@ namespace METOOLS
          Weyl-van-der-Waerden formalism or reference frame for defining the polarisation) for defining polarisation
          vectors to another, if the new polarization vectors can be determined as a linear combination of the ones
          defined in the old basis;
-  Input:
-    - <var>old_basis</var>: Polarization vectors in old basis (in the most cases COMIX default polarization vectors)
-    - <var>pol_checks</var>: Boolean specifies whether polarization consistency checks should be done (especially
-                             unpol=polsum+int and checks whether transformation works properly and is unitary)
-                             default: false
+  \param old_basis Polarization vectors in old basis (in the most cases COMIX default polarization vectors)
+  \param pol_checks Boolean specifies whether polarization consistency checks should be done (especially
+                    unpol=polsum+int and checks whether transformation works properly and is unitary)
   */
   /*!
-    .
-  Output:
-    - vector<vector<Complex>>, which contains the transformation coefficients for each new polarization vector as
+  \return \c vector<vector<Complex>>, which contains the transformation coefficients for each new polarization vector as
       one vector respectively, polarization ordering according to Polarization_Vector
-   .
   */
 }
 

@@ -13,8 +13,7 @@ namespace HADRONS {
     /** 
      * Select a current from a string using the Getter_Function for HD_Current_Base.
      * 
-     * @param current_string String containing the (getter-able) name of the
-     * current, and in square brackets the mapping of external particle
+     * @param s Settings describing the mapping of external particle
      * indices in the decay blob to internal indices in the current.
      * 
      * @return The current it has created from the information. If

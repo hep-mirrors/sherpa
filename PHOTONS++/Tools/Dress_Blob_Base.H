@@ -353,7 +353,7 @@ namespace PHOTONS {
   */
 
   /*!
-    \fn void Dress_Blob_Base::GeneratePhotons(const double, const double)
+    \fn void Dress_Blob_Base::GeneratePhotons(const double&, const double&)
     \brief generates a photon configuration in a dipole
 
     The values to be passed are both \f$ \beta \f$ 's. First calls
@@ -364,7 +364,7 @@ namespace PHOTONS {
   */
 
   /*!
-    \fn void Dress_Blob_Base::GeneratePhotons(std::vector<double>)
+    \fn void Dress_Blob_Base::GeneratePhotons(const IdPairNbarVector&)
     \brief generates a photon configuration in a multipole
 
     The variable passed is a vector containing the avarage photon numbers 

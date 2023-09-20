@@ -672,15 +672,15 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
   return JetVeto(ampl,0);
 }
 
-DECLARE_GETTER(CS_Shower,"CSS",Shower_Base,Shower_Key);
+DECLARE_GETTER(CSSHOWER::CS_Shower,"CSS",PDF::Shower_Base,PDF::Shower_Key);
 
-Shower_Base *Getter<Shower_Base,Shower_Key,CS_Shower>::
+Shower_Base *ATOOLS::Getter<PDF::Shower_Base,PDF::Shower_Key,CSSHOWER::CS_Shower>::
 operator()(const Shower_Key &key) const
 {
   return new CS_Shower(key.p_isr,key.p_model,key.m_type);
 }
 
-void Getter<Shower_Base,Shower_Key,CS_Shower>::
+void ATOOLS::Getter<PDF::Shower_Base,PDF::Shower_Key,CSSHOWER::CS_Shower>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The CSS shower"; 
@@ -705,15 +705,15 @@ namespace CSSHOWER {
 
 }// end of namespace CSSHOWER
 
-DECLARE_GETTER(CSS_Jet_Criterion,"CSS",Jet_Criterion,JetCriterion_Key);
+DECLARE_GETTER(CSSHOWER::CSS_Jet_Criterion,"CSS",PDF::Jet_Criterion,PDF::JetCriterion_Key);
 
-Jet_Criterion *Getter<Jet_Criterion,JetCriterion_Key,CSS_Jet_Criterion>::
+Jet_Criterion *ATOOLS::Getter<PDF::Jet_Criterion,PDF::JetCriterion_Key,CSSHOWER::CSS_Jet_Criterion>::
 operator()(const JetCriterion_Key &args) const
 {
   return new CSS_Jet_Criterion(args.p_shower);
 }
 
-void Getter<Jet_Criterion,JetCriterion_Key,CSS_Jet_Criterion>::
+void ATOOLS::Getter<PDF::Jet_Criterion,PDF::JetCriterion_Key,CSSHOWER::CSS_Jet_Criterion>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The CSS jet criterion";

@@ -2040,15 +2040,15 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Standard_ModelGS,"SMGold",Model_Base,Model_Arguments);
+DECLARE_GETTER(MODEL::Standard_ModelGS,"SMGold",MODEL::Model_Base,MODEL::Model_Arguments);
 
-Model_Base *Getter<Model_Base,Model_Arguments,Standard_ModelGS>::
+Model_Base *ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::Standard_ModelGS>::
 operator()(const Model_Arguments &args) const
 {
   return new Standard_ModelGS();
 }
 
-void Getter<Model_Base,Model_Arguments,Standard_ModelGS>::
+void ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::Standard_ModelGS>::
 PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model\n";

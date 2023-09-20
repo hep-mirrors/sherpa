@@ -2,9 +2,10 @@
 #include "AMEGIC++/Main/Topology.H"
 #include "AMEGIC++/Main/Point.H"
 
-using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
+
+namespace AMEGIC {
 
 Channel_Generator_Base::Channel_Generator_Base(int _nin,int _nout,
 					       Point * _plist) 
@@ -19,7 +20,7 @@ Channel_Generator_Base::Channel_Generator_Base(int _nin,int _nout,
 Channel_Generator_Base::~Channel_Generator_Base() { delete[] plist; }
 
 
-string Channel_Generator_Base::GetMassIndex(string &str)
+std::string Channel_Generator_Base::GetMassIndex(std::string &str)
 {
   char c = str[0];
   c<58 ? c-=48 : c-=55;
@@ -28,7 +29,7 @@ string Channel_Generator_Base::GetMassIndex(string &str)
   return string(hc);
 }
 
-string Channel_Generator_Base::GetMassIndex(char &str)
+std::string Channel_Generator_Base::GetMassIndex(char &str)
 {
   char c = str;
   c<58 ? c-=48 : c-=55;
@@ -37,3 +38,4 @@ string Channel_Generator_Base::GetMassIndex(char &str)
   return string(hc);
 }
 
+} // namespace AMEGIC

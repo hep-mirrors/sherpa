@@ -19,11 +19,17 @@ namespace ATOOLS {
       m_x[1]=vec.m_x[1];
       m_x[2]=vec.m_x[2];
     }
+    /*!
+     \brief Special Constructor taking 3 single components
+    */
     inline Vec3(const Scalar& x, const Scalar& y, const Scalar& z) {
       m_x[0]=x;
       m_x[1]=y;
       m_x[2]=z;
     }
+    /*!
+     \brief Special Constructor extracting the space part of a minkowski vector
+    */
     inline Vec3(const Vec4<Scalar>& v) {
       m_x[0]=v[1];
       m_x[1]=v[2];
@@ -156,12 +162,12 @@ namespace ATOOLS {
 */
 
 /*!
- \fn Vec3::Vec3(double x, double y, double z){
+ \fn Vec3::Vec3(const Scalar &x, const Scalar &y, const Scalar &z){
  \brief Special Constructor taking 3 single components
 */
 
 /*!
- \fn Vec3::Vec3(const Vec4D& v)
+ \fn ATOOLS::Vec3<Scalar>::Vec3(const Vec3<Scalar>& v)
  \brief Special Constructor extracting the space part of a minkowski vector
 */
 

@@ -23,7 +23,7 @@ namespace ATOOLS {
     typedef RecombinationType Recombination_Type;
 
     typedef std::vector<Point_Type> Point_Vector;
-    typedef std::vector<size_t>     Size_Vector;
+    typedef std::vector<std::size_t>     Size_Vector;
     typedef std::vector<int>        Int_Vector;
 
     typedef std::vector<double>        Double_Vector;
@@ -34,7 +34,7 @@ namespace ATOOLS {
     Point_Vector m_p, m_lp, m_sp;
     Size_Vector  m_i;
     Int_Vector   m_j;
-    size_t       m_n, m_imin, m_jmin;
+    std::size_t  m_n, m_imin, m_jmin;
 
     Double_Matrix m_d;
     Double_Vector m_r;
@@ -45,7 +45,7 @@ namespace ATOOLS {
 
     bool m_recalc;
 
-    inline void SetDMin(const size_t &i, const size_t &j,const double &dij) 
+    inline void SetDMin(const std::size_t &i, const std::size_t &j,const double &dij) 
     {
       if (dij<m_dmin) {
 	m_dmin=dij;
@@ -81,8 +81,8 @@ namespace ATOOLS {
     inline const Int_Vector    &Positions() const { return m_j;  }
     inline const Double_Vector &DMins() const     { return m_r;  }
 
-    inline size_t NClusters() const { return m_n;    }
-    inline double DMin() const      { return m_dmin; }
+    inline std::size_t NClusters() const { return m_n;    }
+    inline double DMin() const           { return m_dmin; }
 
     inline const Size_Vector &CPos() const { return m_i; }
 

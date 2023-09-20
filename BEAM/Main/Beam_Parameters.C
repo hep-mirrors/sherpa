@@ -13,7 +13,7 @@ using namespace ATOOLS;
 using namespace BEAM;
 using namespace std;
 
-ostream& BEAM::operator<<(ostream& ostr, const beammode::code bmode) {
+std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode::code bmode) {
   switch (bmode) {
   case beammode::relic_density:
     return ostr<<"Relic Density calculation";
@@ -27,7 +27,7 @@ ostream& BEAM::operator<<(ostream& ostr, const beammode::code bmode) {
   return ostr<<"Undefined";
 }
 
-ostream& BEAM::operator<<(ostream& ostr, const collidermode::code cmode) {
+std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode::code cmode) {
   switch (cmode) {
   case collidermode::monochromatic:
     return ostr<<"no spectra";
@@ -43,7 +43,7 @@ ostream& BEAM::operator<<(ostream& ostr, const collidermode::code cmode) {
   return ostr<<"Undefined";
 }
 
-ostream& BEAM::operator<<(ostream& ostr, const beamspectrum::code spect) {
+std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum::code spect) {
   switch (spect) {
   case beamspectrum::monochromatic:
     return ostr<<"Monochromatic";

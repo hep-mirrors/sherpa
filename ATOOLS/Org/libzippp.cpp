@@ -76,7 +76,7 @@ int ZipEntry::readContent(std::ofstream& ofOutput, ZipArchive::State state, libz
    return zipFile->readEntry(*this, ofOutput, state, chunksize);
 }
 
-ZipArchive::ZipArchive(const string& zipPath, const string& password) : path(zipPath), zipHandle(NULL), mode(NOT_OPEN), password(password) {
+ZipArchive::ZipArchive(const std::string& zipPath, const std::string& password) : path(zipPath), zipHandle(NULL), mode(NOT_OPEN), password(password) {
 }
 
 ZipArchive::~ZipArchive(void) { 
@@ -240,7 +240,7 @@ bool ZipArchive::hasEntry(const string& name, bool excludeDirectories, bool case
     return index>=0;
 }
 
-ZipEntry ZipArchive::getEntry(const string& name, bool excludeDirectories, bool caseSensitive, State state) const {
+ZipEntry ZipArchive::getEntry(const std::string& name, bool excludeDirectories, bool caseSensitive, State state) const {
     if (isOpen()) {
         int flags = ZIP_FL_ENC_GUESS;
         if (excludeDirectories) { flags = flags | ZIP_FL_NODIR; }
@@ -328,7 +328,7 @@ void* ZipArchive::readEntry(const ZipEntry& zipEntry, bool asText, State state, 
     return NULL;
 }
 
-void* ZipArchive::readEntry(const string& zipEntry, bool asText, State state, libzippp_uint64 size) const {
+void* ZipArchive::readEntry(const std::string& zipEntry, bool asText, State state, libzippp_uint64 size) const {
     ZipEntry entry = getEntry(zipEntry);
     if (entry.isNull()) { return NULL; }
     return readEntry(entry, asText, state, size);
@@ -360,13 +360,13 @@ int ZipArchive::deleteEntry(const ZipEntry& entry) const {
     }
 }
 
-int ZipArchive::deleteEntry(const string& e) const {
+int ZipArchive::deleteEntry(const std::string& e) const {
     ZipEntry entry = getEntry(e);
     if (entry.isNull()) { return LIBZIPPP_ERROR_INVALID_PARAMETER; }
     return deleteEntry(entry);
 }
 
-int ZipArchive::renameEntry(const ZipEntry& entry, const string& newName) const {
+int ZipArchive::renameEntry(const ZipEntry& entry, const std::string& newName) const {
     if (!isOpen()) { return LIBZIPPP_ERROR_NOT_OPEN; }
     if (entry.zipFile!=this) { return LIBZIPPP_ERROR_INVALID_ENTRY; }
     if (mode==READ_ONLY) { return LIBZIPPP_ERROR_NOT_ALLOWED; } //renaming not allowed
@@ -434,7 +434,7 @@ int ZipArchive::renameEntry(const ZipEntry& entry, const string& newName) const 
     }
 }
 
-int ZipArchive::renameEntry(const string& e, const string& newName) const {
+int ZipArchive::renameEntry(const std::string& e, const std::string& newName) const {
     ZipEntry entry = getEntry(e);
     if (entry.isNull()) { return LIBZIPPP_ERROR_INVALID_PARAMETER; }
     return renameEntry(entry, newName);

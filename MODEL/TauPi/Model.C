@@ -44,15 +44,15 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Standard_Model_TauPi,"TauPi",Model_Base,Model_Arguments);
+DECLARE_GETTER(MODEL::Standard_Model_TauPi,"TauPi",MODEL::Model_Base,MODEL::Model_Arguments);
 
-Model_Base *Getter<Model_Base,Model_Arguments,Standard_Model_TauPi>::
+Model_Base *ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::Standard_Model_TauPi>::
 operator()(const Model_Arguments &args) const
 {
   return new Standard_Model_TauPi();
 }
 
-void Getter<Model_Base,Model_Arguments,Standard_Model_TauPi>::
+void ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::Standard_Model_TauPi>::
 PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model with \\tau\\pi decays\n";

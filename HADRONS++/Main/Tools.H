@@ -60,6 +60,9 @@ namespace HADRONS
   class Tools {
   public:
     static PHASIC::Decay_Table * partonic_b, * partonic_c;
+    
+    static std::map<kf_code, kf_code> aliases;
+
     /** 
      * Phase space function \f$\lambda = (a-b-c)^2-4bc\f$;
      * 
@@ -69,9 +72,6 @@ namespace HADRONS
      * 
      * @return \f$ \lambda \f$
      */
-    
-    static std::map<kf_code, kf_code> aliases;
-
     static double   Lambda(double a,double b,double c);
     static Complex  BreitWigner( double s, double Mass2, double MassWidth );
     static Complex  BreitWignerFix( double s, double Mass2, double MassWidth );

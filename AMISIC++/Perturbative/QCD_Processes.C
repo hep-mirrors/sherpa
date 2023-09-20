@@ -76,7 +76,7 @@ bool gg_gg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(gg_gg,"XS_gg_gg")
-XS_Base * Getter<XS_Base,Flavour_Vector,gg_gg>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,gg_gg>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;
@@ -139,7 +139,7 @@ bool gg_qqbar::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(gg_qqbar,"XS_gg_qqbar")
-XS_Base * Getter<XS_Base,Flavour_Vector,gg_qqbar>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,gg_qqbar>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;
@@ -205,7 +205,7 @@ bool qqbar_gg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(qqbar_gg,"XS_qqbar_gg")
-XS_Base * Getter<XS_Base,Flavour_Vector,qqbar_gg>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,qqbar_gg>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;
@@ -271,7 +271,7 @@ bool qg_qg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(qg_qg,"XS_qg_qg")
-XS_Base * Getter<XS_Base,Flavour_Vector,qg_qg>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,qg_qg>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;
@@ -337,7 +337,7 @@ bool qq_qq::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(qq_qq,"XS_qq_qq")
-XS_Base * Getter<XS_Base,Flavour_Vector,qq_qq>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,qq_qq>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;
@@ -398,7 +398,7 @@ bool qqbar_qqbar::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(qqbar_qqbar,"XS_qqbar_qqbar")
-XS_Base * Getter<XS_Base,Flavour_Vector,qqbar_qqbar>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,qqbar_qqbar>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;
@@ -442,7 +442,7 @@ bool q1q2_q1q2::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(q1q2_q1q2,"XS_q1q2_q1q2")
-XS_Base * Getter<XS_Base,Flavour_Vector,q1q2_q1q2>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,q1q2_q1q2>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;
@@ -478,7 +478,7 @@ bool q1q1bar_q2q2bar::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 }
 
 DECLARE_XSBASE_GETTER(q1q1bar_q2q2bar,"XS_q1q1bar_q2q2bar")
-XS_Base * Getter<XS_Base,Flavour_Vector,q1q1bar_q2q2bar>::
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,q1q1bar_q2q2bar>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   if (flavs.size()!=4) return NULL;

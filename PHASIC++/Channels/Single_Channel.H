@@ -97,12 +97,6 @@ namespace PHASIC {
   };
 
   // end of class Single_Channel
-
-  /*! 
-    \enum chr::type
-    \brief declares the mode for setting phase space integration channel ranges
-  */
-  
   /*!
     This class is the mother class for all channels that
     are constructed depending on the process.

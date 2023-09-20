@@ -7,20 +7,21 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
-using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 
 #define SQRT_05 0.70710678118654757
 
-std::ostream& AMEGIC::operator<<(std::ostream& os, const Momfunc& mf) {
+namespace AMEGIC {
+
+std::ostream& operator<<(std::ostream& os, const Momfunc& mf) {
   os<<mf.type<<";"<<mf.argnum;
   for (int i=0;i<mf.argnum;i++) os<<","<<mf.arg[i];
   os<<","<<mf.angle<<","<<mf.kfc<<";";
   return os;
 }
 
-std::istream& AMEGIC::operator>>(std::istream& is, Momfunc& mf) {
+std::istream& operator>>(std::istream& is, Momfunc& mf) {
   std::string in;
   is>>in;
   if (in.length()==0) THROW(critical_error,"String to momfunc translation failed.");
@@ -61,7 +62,7 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b)
   Setk0(10);
 }
 
-Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string name,string name2) 
+Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,std::string name,std::string name2) 
   : fl(flav), nmom(_nmom), nvec(_nvec), b(_b)
 {
   _eta=_mu=0;
@@ -1131,3 +1132,5 @@ ATOOLS::Vec4D Basic_Sfuncs::Getk1() {
      default: return ATOOLS::Vec4D(0., 0., 1., 0.);
   }
 }
+
+} // namespace AMEGIC

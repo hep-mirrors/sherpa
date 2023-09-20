@@ -234,9 +234,9 @@ public:
   class const_circulator;
   SearchTree(const std::vector<T> & init);
   SearchTree(const std::vector<T> & init, unsigned int max_size);
-  void remove(unsigned node_index);
-  void remove(typename SearchTree::Node * node);
-  void remove(typename SearchTree::circulator & circ);
+  void remove(unsigned int node_index);
+  void remove(typename SearchTree<T>::Node * node);
+  void remove(typename SearchTree<T>::circulator & circ);
   circulator insert(const T & value);
   const Node & operator[](int i) const {return _nodes[i];};
   unsigned int size() const {return _nodes.size() - _available_nodes.size();}
@@ -293,7 +293,9 @@ template<class T> void SearchTree<T>::Node::reset_parents_link_to_me(typename Se
 }
 template<class T> class SearchTree<T>::circulator{
 public:
+  /** @cond FRIEND_THAT_CONFUSES_DOXYGEN */
   friend class SearchTree<T>::const_circulator;
+  /** @endcond */
   friend class SearchTree<T>;
   circulator() : _node(NULL) {}
   circulator(Node * node) : _node(node) {}
@@ -443,7 +445,7 @@ template<class T> void SearchTree<T>::_do_initial_connections(
 template<class T> void SearchTree<T>::remove(unsigned int node_index) {
   remove(&(_nodes[node_index]));
 }
-template<class T> void SearchTree<T>::remove(circulator & circ) {
+template<class T> void SearchTree<T>::remove(SearchTree<T>::circulator & circ) {
   remove(circ._node);
 }
 template<class T> void SearchTree<T>::remove(typename SearchTree<T>::Node * node) {
@@ -2079,7 +2081,7 @@ vector<PseudoJet> ClusterSequence::constituents (const PseudoJet & jet) const {
   return subjets;
 }
 void ClusterSequence::print_jets_for_root(const std::vector<PseudoJet> & jets_in, 
-                                          ostream & ostr) const {
+                                          std::ostream & ostr) const {
   for (unsigned i = 0; i < jets_in.size(); i++) {
     ostr << i  << " "
          << jets_in[i].px() << " "

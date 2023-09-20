@@ -153,13 +153,13 @@ namespace DIRE {
 
 DECLARE_GETTER(DIRE::Jet_Criterion,"Dire",Jet_Criterion,JetCriterion_Key);
 
-Jet_Criterion *Getter<Jet_Criterion,JetCriterion_Key,DIRE::Jet_Criterion>::
+Jet_Criterion *ATOOLS::Getter<Jet_Criterion,JetCriterion_Key,DIRE::Jet_Criterion>::
 operator()(const JetCriterion_Key &args) const
 {
   return new DIRE::Jet_Criterion(args);
 }
 
-void Getter<Jet_Criterion,JetCriterion_Key,DIRE::Jet_Criterion>::
+void ATOOLS::Getter<Jet_Criterion,JetCriterion_Key,DIRE::Jet_Criterion>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The DIRE jet criterion";

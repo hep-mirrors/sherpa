@@ -129,20 +129,7 @@ namespace SHERPA {
     This method tells Pythia to set the particle <var>kfc</var> stable. Might
     be obsolete, because the hadron decay handler will call the method
     SetAllStable.
-    */
-  /*!
-    \fn Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist, ATOOLS::Particle_List *pl=NULL)
-    \brief Method responsible for the hadronization and filling the Fragmentation Blob
-
-    It's this methods task to deal with the hadronization and fill the Fragmentation Blob such that
-    the outgoing hadrons can be treated by Hadron_Decays::Treat. If there are however incoming tau-leptons 
-    they need to be "pushed through the blob" by calling Lund_Interface::FillPrimaryTauInBlob.
-    */
-  /*!
-    \fn Lund_Interface::FindDecay( ATOOLS::Particle * part )
-    \brief Returns true of Pythia can cope with the decay of the particle
-    */
-
+  */
 
 }// end of namespace SHERPA
 

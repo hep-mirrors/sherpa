@@ -266,7 +266,7 @@ namespace BEAM {
     The range for \f$ x\f$ is \f$ x\in [0,x_{\rm max}]\f$.
   */
   /*!
-    \var double Laser_Backscattering::Polarization(double,double,double,double)
+    \var double Laser_Backscattering::Polarisation(double,double,double,double)
     The polarization piece of the spectrum yielding the degree of polarization for the outgoing
     photon. It is given by
     \f[

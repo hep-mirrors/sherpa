@@ -76,7 +76,7 @@ namespace PHOTONS {
   // Description of member methods for Generate_Dipole_Photon_Angle
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \fn Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle(Vec4D, Vec4D)
+    \fn Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle(ATOOLS::Vec4D, ATOOLS::Vec4D)
     \brief generates dipole angles for two arbitrary timelike 4-vectors \f$ p_1 \f$ and \f$ p_2 \f$
 
     \f$ p_1 \f$ and \f$ p_2 \f$ are boosted in their CMS, there the photon angles are calculated and m_dir is generated. Finally, m_dir is boosted to the original system of \f$ p_1 \f$ and \f$ p_2 \f$ and \f$ \theta \f$ and \f$ \varphi \f$ are recalculated.
@@ -85,7 +85,7 @@ namespace PHOTONS {
   */
 
   /*!
-    \fn Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle(double, double)
+    \fn Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle(const double&, const double&)
     \brief generates dipole angles for two 4-vectors with \f$ \beta_1 \f$ and \f$ \beta_2 \f$ assumed to be in their CMS and aligned along the z-axis
 
     Both angles are calculated via <tt>GenerateDipoleAngle()</tt>. No null vector will be produced.

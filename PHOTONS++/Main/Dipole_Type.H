@@ -79,11 +79,6 @@ namespace PHOTONS {
     \brief builds a vector out of Particle_Vector's
   */
 
-  /*!
-    \typedef std::vector<Particle_Int_Map>   Particle_Int_Map_Vector
-    \brief builds a vector out of Particle_Int_Map's
-  */
-
 }
 
 #endif

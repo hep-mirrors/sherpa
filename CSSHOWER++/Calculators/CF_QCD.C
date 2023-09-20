@@ -293,10 +293,10 @@ void CF_QCD_Getter::PrintInfo
 
 }
 
-DECLARE_GETTER(CF_QCD_Getter,"SF_QCD_Fill",
-	       void,SFC_Filler_Key);
+DECLARE_GETTER(CSSHOWER::CF_QCD_Getter,"SF_QCD_Fill",
+	       void,CSSHOWER::SFC_Filler_Key);
 
-void *ATOOLS::Getter<void,SFC_Filler_Key,CF_QCD_Getter>::
+void *ATOOLS::Getter<void,CSSHOWER::SFC_Filler_Key,CSSHOWER::CF_QCD_Getter>::
 operator()(const SFC_Filler_Key &key) const
 {
   DEBUG_FUNC("model = "<<key.p_md->Name());

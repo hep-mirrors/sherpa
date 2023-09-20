@@ -95,9 +95,9 @@ void BlackHat_Virtual::AddCouplings
   }
 }
 
-DECLARE_VIRTUALME2_GETTER(BlackHat_Virtual,"BlackHat_Virtual")
-Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,BlackHat_Virtual>::
-operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(BLACKHAT::BlackHat_Virtual,"BlackHat_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,BLACKHAT::BlackHat_Virtual>::
+operator()(const PHASIC::Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="BlackHat" &&

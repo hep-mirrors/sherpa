@@ -50,15 +50,15 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(SMDM,"SMDM",Model_Base,Model_Arguments);
+DECLARE_GETTER(MODEL::SMDM,"SMDM",MODEL::Model_Base,MODEL::Model_Arguments);
 
-Model_Base *Getter<Model_Base,Model_Arguments,SMDM>::
-operator()(const Model_Arguments &args) const
+Model_Base *ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::SMDM>::
+operator()(const MODEL::Model_Arguments &args) const
 {
   return new SMDM();
 }
 
-void Getter<Model_Base,Model_Arguments,SMDM>::
+void ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::SMDM>::
 PrintInfo(ostream &str,const size_t width) const
 {
   str<<"The Standard Model with a simple dark matter extension\n";

@@ -44,24 +44,11 @@ namespace MODEL {
     \todo More orders ?
   */
   /*!
-    \var double Running_Fermion_Mass::m_gamma
-    The anomalous dimension, \f$\gamma_m = 1/\pi \f$. 
-  */
-  /*!
-    \var double Running_Fermion_Mass::m_beta
-    The beta function to lowest order at the scale of the quark, 
-    \f$\beta_0 = (33-2n_f)/(12\pi)\f$.
-  */
-  /*!
     \var double Running_Fermion_Mass::m_polemass
     The pole mass of the quark.
   */
   /*!
-    \var double Running_Fermion_Mass::m_alphahat
-    \f$\alpha_s\f$ at the scale of the polemass.
-  */
-  /*!
-    \var Running_AlphaS * Running_Fermion_Mass::Running_Fermion_Mass::p_as
+    \var Running_Fermion_Mass::p_as
     A pointer to the running \f$\alpha_s\f$ used in the code.
   */
   /*!

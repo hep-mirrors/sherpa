@@ -98,10 +98,10 @@ double XS_ee3jet_CSS_approx::LOME2(const Vec4D& p0, const Vec4D& p1,
   return born*split*m_alphasdef*CouplingFactor(1,0);
 }
 
-DECLARE_TREEME2_GETTER(XS_ee3jet_CSS_approx,
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_ee3jet_CSS_approx,
                    "XS_ee3jet_CSS_approx")
 Tree_ME2_Base *ATOOLS::Getter
-<Tree_ME2_Base,External_ME_Args,XS_ee3jet_CSS_approx>::
+<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_ee3jet_CSS_approx>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;

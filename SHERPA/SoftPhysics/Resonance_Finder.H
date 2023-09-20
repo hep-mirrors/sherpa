@@ -22,13 +22,15 @@ namespace PHASIC {
   class Process_Base;
 }
 
+using PHASIC::Subprocess_Info;
+
 namespace MODEL {
   class Single_Vertex;
   typedef std::vector<Single_Vertex *> Vertex_List;
 }
 
 namespace SHERPA {
-  typedef std::vector<const PHASIC::Subprocess_Info *> SubInfoVector;
+  typedef std::vector<const Subprocess_Info *> SubInfoVector;
   class Matrix_Element_Handler;
 
   class Resonance_Finder {

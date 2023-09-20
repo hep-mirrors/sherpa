@@ -310,7 +310,7 @@ namespace AMEGIC {
   */
   /*!
     \fn Zfunc* Zfunc_Group::operator[](const int i)
-    Returns the Zfunc #i from Zfunc_Group::m_zlist.
+    Returns the Zfunc \#i from Zfunc_Group::m_zlist.
   */
   /*!
     \fn void Zfunc_Group::Print()

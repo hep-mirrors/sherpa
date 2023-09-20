@@ -73,9 +73,9 @@ void Current_ME::Calculate(const Vec4D_Vector& p, bool anti)
   }
 }
 
-DEFINE_ME_GETTER(Current_ME,"Current_ME")
+DEFINE_ME_GETTER(HADRONS::Current_ME,"Current_ME")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,Current_ME>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::Current_ME>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Current_ME"<<endl;
 }

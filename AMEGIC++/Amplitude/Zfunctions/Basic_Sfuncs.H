@@ -141,6 +141,11 @@ namespace AMEGIC {
       return _S1[i][j];
     }
     Complex CalcS(ATOOLS::Vec4D& m, ATOOLS::Vec4D& m1);
+    /*!
+      Returns the results of both S-functions S+ and S- of the vectors v and the i-th
+      vector in the momlist. S+ is stored in the first entry of the pair, S- is stored
+      in the second entry.
+    */
     std::pair<Complex, Complex> GetS(ATOOLS::Vec4D v, int i);
 
     double Norm(int,int);//N
@@ -231,14 +236,14 @@ namespace AMEGIC {
   */
 
   /*!
-    \fn int  Basic_Sfuncs::Basic_Sfuncs::InitializeMomlist()
+    \fn int Basic_Sfuncs::InitializeMomlist()
     Initializes momentums of external particles in Basic_Sfuncs::Momlist.
   */
   /*!
     \fn void Basic_Sfuncs::CalcMomlist()
     Calculates all vectors in Basic_Sfuncs::Momlist.
 
-    <table border>    
+    <table border>
       <tr>
         <td> </td>
         <td> <B>type</B> (see class mt)</td>
@@ -397,7 +402,7 @@ namespace AMEGIC {
     This function can be used for internal tests.
   */
   /*!
-    \fn ATOOLS::Vec4D Getk0()
+    \fn ATOOLS::Vec4D Basic_Sfuncs::Getk0()
     Returns the currently set k0 as a 4-vector.
   */
   /*!
@@ -503,12 +508,6 @@ namespace AMEGIC {
   /*!
     \fn inline Complex Basic_Sfuncs::S1d(int i,int j) 
     Returns \f$S(-,p_i,p_j)\f$. Basic_Sfuncs::StartPrecalc must be performed first.
-  */
-  /*!
-    \fn std::pair<Complex, Complex> Basic_Sfunc::GetS(ATOOLS::Vec4D v, int i)
-    Returns the results of both S-functions S+ and S- of the vectors v and the i-th
-    vector in the momlist. S+ is stored in the first entry of the pair, S- is stored
-    in the second entry.
   */
   /*!
     \fn double Basic_Sfuncs::Norm(int,int)

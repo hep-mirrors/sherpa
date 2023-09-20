@@ -10,7 +10,7 @@ namespace PDF {
   public:
 
     // constructor
-    Structure_Function(PDF::PDF_Base *,const ATOOLS::Flavour&);
+    Structure_Function(PDF::PDF_Base *_p_pdf,const ATOOLS::Flavour&);
 
     // meber functions
     bool   CalculateWeight(double,double,double,double,int) override;
@@ -35,9 +35,8 @@ namespace PDF {
     In any case, this treatment is clearly constrained to collinear initial state radiation.
 
     The type related to this ISR_Base is "(SF)".
-  */
-  /*!
-    \var PDF_Base * Structure_Function::pdf
+
+    \param _p_pdf
     The pointer to the pdf for the structure function. It is handed over to the 
     constructor, after having been instantiated by the PDF::PDF_Handler. Note that also 
     structure functions like the one for the electron are handed over as PDF_Base.

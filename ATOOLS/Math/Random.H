@@ -179,7 +179,7 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn Random::Random(int, int)
+    \fn Random::Random(unsigned int i1, unsigned int i2, unsigned int i3, unsigned int i4, unsigned int i5, unsigned int i6)
     \brief A constructor that initializes the Rnd4() routine.
 
     Even though there are two different constructors for Rnd2() and Rnd4(),
@@ -218,7 +218,7 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn void Random::SetSeed(int, int)
+    \fn void Random::SetSeed(unsigned int i1, unsigned int i2, unsigned int i3, unsigned int i4)
     \brief sets a new seed and (re)initializes the random number generator Rnd4()
   */
 
@@ -228,16 +228,16 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn int Random::WriteOutStatus(char* filename)
+    \fn int Random::WriteOutStatus(const char* outfile)
     \brief writes the complete status the random generator in a file
 
     This method can be used to save the status of a random generator in a file
     the number of its entry in this file is return and can be used to read in
-    the status via ReadInStatus().
+    the status via \link ReadInStatus \endlink.
   */
 
   /*!
-    \fn void Random::ReadInStatus(char* filename, long int index=0 )
+    \fn bool Random::ReadInStatus(const char* infile)
     \brief reads in a status from a file
   */
 

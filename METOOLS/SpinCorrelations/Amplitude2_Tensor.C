@@ -33,11 +33,11 @@ Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts
 }
 
 
-Amplitude2_Tensor::Amplitude2_Tensor(const vector<ATOOLS::Particle*>& parts,
+Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
                                      size_t level,
                                      const std::vector<Spin_Amplitudes*>& diagrams,
-                                     vector<int>& spin_i,
-                                     vector<int>& spin_j) :
+                                     std::vector<int>& spin_i,
+                                     std::vector<int>& spin_j) :
   p_next(NULL), m_value(-1.0,0.0), p_part(NULL), m_nhel(0)
 {
   if (level>parts.size()) THROW(fatal_error, "Internal error 1");
@@ -68,11 +68,11 @@ Amplitude2_Tensor::Amplitude2_Tensor(const vector<ATOOLS::Particle*>& parts,
 }
 
 
-Amplitude2_Tensor::Amplitude2_Tensor(const vector<ATOOLS::Particle*>& parts,
-                                     const vector<int>& permutation,
+Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
+                                     const std::vector<int>& permutation,
                                      size_t level,
-                                     const vector<Spin_Amplitudes>& diagrams,
-                                     vector<int>& spin_i, vector<int>& spin_j) :
+                                     const std::vector<Spin_Amplitudes>& diagrams,
+                                     std::vector<int>& spin_i, std::vector<int>& spin_j) :
   p_next(NULL), m_value(-1.0,0.0), p_part(NULL), m_nhel(0)
 {
   if (level>parts.size()) THROW(fatal_error, "Internal error 1");

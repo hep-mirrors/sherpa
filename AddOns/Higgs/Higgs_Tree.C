@@ -437,8 +437,8 @@ std::vector<Tree_ME2_Base::Map_Info> Higgs_Tree::GetFlavourHelicityMap()
   return m_hmap;
 }
 
-DECLARE_TREEME2_GETTER(Higgs_Tree,"Higgs_Tree")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,Higgs_Tree>::
+DECLARE_TREEME2_GETTER(HIGGS::Higgs_Tree,"Higgs_Tree")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,HIGGS::Higgs_Tree>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;

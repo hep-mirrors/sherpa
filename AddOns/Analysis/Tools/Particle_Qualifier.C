@@ -22,6 +22,7 @@ void Particle_Qualifier_Base::Erase(Particle_List *const list)
     else ++pit;
 }
 
+/** @cond TEMPLATE_INSTANTIATIONS */
 template void ATOOLS::copy_if<>(Particle_List::iterator, Particle_List::iterator, 
 			std::back_insert_iterator<Particle_List>,
 			const Is_KF &);
@@ -31,6 +32,7 @@ template void ATOOLS::copy_if<>(Particle_List::iterator, Particle_List::iterator
 template void ATOOLS::copy_if<>(Particle_List::iterator, Particle_List::iterator, 
 			std::back_insert_iterator<Particle_List>,
 			const Is_Charged &);
+/** @endcond */
 
 namespace ATOOLS {
   
@@ -104,19 +106,19 @@ Particle_Qualifier_Base *GetQualifier(const std::string &parameter)
 
 #define DEFINE_GETTER_METHOD(CLASS)				\
   Particle_Qualifier_Base *					\
-  ATOOLS::Getter<Particle_Qualifier_Base,std::string,CLASS>::	\
-  operator()(const std::string &parameter) const		\
+  Getter<ATOOLS::Particle_Qualifier_Base,std::string,CLASS>::	\
+  operator()(const Parameter_Type &parameter) const		\
   { return GetQualifier<CLASS>(parameter); }
 
 #define DEFINE_PRINT_METHOD(NAME,PRINT)					\
-  void ATOOLS::Getter<Particle_Qualifier_Base,std::string,NAME>::	\
-  PrintInfo(std::ostream &str,const size_t width) const			\
+  void Getter<ATOOLS::Particle_Qualifier_Base,std::string,NAME>::	\
+  PrintInfo(std::ostream &str,const std::size_t width) const			\
   { str<<PRINT; }
 
 #define DEFINE_QUALIFIER_GETTER(CLASS,TAG,PRINT,DISP)		\
-  DECLARE_ND_GETTER(CLASS,TAG,Particle_Qualifier_Base,std::string,DISP);	\
-  DEFINE_GETTER_METHOD(CLASS)					\
-  DEFINE_PRINT_METHOD(CLASS,PRINT)
+  DECLARE_ND_GETTER(CLASS,TAG,ATOOLS::Particle_Qualifier_Base,std::string,DISP);	\
+  namespace ATOOLS { DEFINE_GETTER_METHOD(CLASS)					\
+  DEFINE_PRINT_METHOD(CLASS,PRINT)}
 
 #include "ATOOLS/Org/Message.H"
 
@@ -230,12 +232,12 @@ bool Is_BQuark_Decay_Product::operator() (const Particle * p) const {
   return operator()(b->InParticle(0));
 }
 
-DECLARE_GETTER(Is_KF,"KF",Particle_Qualifier_Base,std::string);
-Particle_Qualifier_Base *ATOOLS::Getter<Particle_Qualifier_Base,std::string,Is_KF>::
+DECLARE_GETTER(ATOOLS::Is_KF,"KF",ATOOLS::Particle_Qualifier_Base,std::string);
+Particle_Qualifier_Base *ATOOLS::Getter<ATOOLS::Particle_Qualifier_Base,std::string,ATOOLS::Is_KF>::
 operator()(const std::string &parameter) const  
 { return new Is_KF(parameter); }
-void ATOOLS::Getter<Particle_Qualifier_Base,std::string,Is_KF>::
-PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<ATOOLS::Particle_Qualifier_Base,std::string,ATOOLS::Is_KF>::
+PrintInfo(std::ostream &str,const std::size_t width) const
 { str<<"kf code, usage: KF(<kf code>)"; }
 
 Is_KF::Is_KF(const std::string &kfcode):
@@ -246,12 +248,12 @@ bool Is_KF::operator() (const Particle * p) const {
   return 0;
 }
 
-DECLARE_GETTER(Is_Flav,"Flav",Particle_Qualifier_Base,std::string);
-Particle_Qualifier_Base *ATOOLS::Getter<Particle_Qualifier_Base,std::string,Is_Flav>::
+DECLARE_GETTER(ATOOLS::Is_Flav,"Flav",ATOOLS::Particle_Qualifier_Base,std::string);
+Particle_Qualifier_Base *ATOOLS::Getter<ATOOLS::Particle_Qualifier_Base,std::string,ATOOLS::Is_Flav>::
 operator()(const std::string &parameter) const  
 { return new Is_Flav(parameter); }
-void ATOOLS::Getter<Particle_Qualifier_Base,std::string,Is_Flav>::
-PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<ATOOLS::Particle_Qualifier_Base,std::string,ATOOLS::Is_Flav>::
+PrintInfo(std::ostream &str,const std::size_t width) const
 { str<<"flavour, usage: Flav(<+- kf code>)"; }
 
 Is_Flav::Is_Flav(const std::string &kfcode)

@@ -47,9 +47,9 @@ void VA_0_P::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   Insert(Vec4C((factor*Complex(0.0,1.0))*moms[p_i[0]]),0);
 }
 
-DEFINE_CURRENT_GETTER(VA_0_P,"VA_0_P")
+DEFINE_CURRENT_GETTER(HADRONS::VA_0_P,"VA_0_P")
 
-void ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_P>::
+void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_0_P>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ 0 \\rightarrow \\pi $ \n\n"
     <<"Order: 0 = Pseudoscalar \n\n"

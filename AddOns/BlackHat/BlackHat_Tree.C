@@ -91,9 +91,9 @@ void BlackHat_Tree::AddCouplings
   AddCouplings(args,couplings,cpls,i+1);
 }
 
-DECLARE_TREEME2_GETTER(BlackHat_Tree,"BlackHat_Tree")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,BlackHat_Tree>::
-operator()(const External_ME_Args &args) const
+DECLARE_TREEME2_GETTER(BLACKHAT::BlackHat_Tree,"BlackHat_Tree")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,BLACKHAT::BlackHat_Tree>::
+operator()(const PHASIC::External_ME_Args &args) const
 {
   if (args.m_source!="" && args.m_source!="BlackHat") return NULL;
   const Flavour_Vector fl = args.Flavours();

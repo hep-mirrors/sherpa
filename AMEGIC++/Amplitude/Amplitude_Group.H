@@ -68,17 +68,17 @@ namespace AMEGIC {
   */
 
   /*!
-    \fn Amplitude_Base* GetSingleGraph(std::list<sknot*>&)
+    \fn Amplitude_Base* Amplitude_Group::GetSingleGraph(std::list<sknot*>&)
     \brief
   */
 
   /*!
-    \fn Complex Zvalue(String_Handler * sh,int ihel) 
+    \fn Complex Amplitude_Group::Zvalue(String_Handler * sh,int ihel) 
     \brief
   */
 
   /*!
-    \fn Complex Zvalue(int ihel,int* signlist) 
+    \fn Complex Amplitude_Group::Zvalue(int ihel,int* signlist) 
 
     void    PrintGraph()
     void FillCoupling(String_Handler* shand) 

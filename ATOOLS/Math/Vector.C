@@ -8,37 +8,35 @@ using namespace ATOOLS;
 
 namespace ATOOLS {
 
-  template<> const Vec4D Vec4D::XVEC=Vec4D(1.,1.,0.,0.);
-  template<> const Vec4D Vec4D::YVEC=Vec4D(1.,0.,1.,0.);
-  template<> const Vec4D Vec4D::ZVEC=Vec4D(1.,0.,0.,1.);
+template<> const Vec4D Vec4<double>::XVEC=Vec4D(1.,1.,0.,0.);
+template<> const Vec4D Vec4<double>::YVEC=Vec4D(1.,0.,1.,0.);
+template<> const Vec4D Vec4<double>::ZVEC=Vec4D(1.,0.,0.,1.);
 
-  template<> const Vec3D Vec3D::XVEC=Vec3D(1.,0.,0.);
-  template<> const Vec3D Vec3D::YVEC=Vec3D(0.,1.,0.);
-  template<> const Vec3D Vec3D::ZVEC=Vec3D(0.,0.,1.);
+template<> const Vec3D Vec3<double>::XVEC=Vec3D(1.,0.,0.);
+template<> const Vec3D Vec3<double>::YVEC=Vec3D(0.,1.,0.);
+template<> const Vec3D Vec3<double>::ZVEC=Vec3D(0.,0.,1.);
 
-}
-
-template<> double Vec4D::CosPhi() const {
+template<> double Vec4<double>::CosPhi() const {
   return Max(Min(m_x[1]/PPerp(),1.0),-1.0);
 }
-template<> double Vec4D::SinPhi() const {
+template<> double Vec4<double>::SinPhi() const {
   if (PPerp() == 0.0) return 0.0;
   return Max(Min(m_x[2]/PPerp(),1.0),-1.0);
 }
-template<> double Vec4D::Phi() const {
+template<> double Vec4<double>::Phi() const {
   if(m_x[2]>0.) return acos(CosPhi());
   else return -acos(CosPhi());
 }
-template<> double Vec4D::CosTheta() const {
+template<> double Vec4<double>::CosTheta() const {
   return Max(Min(m_x[3]/PSpat(),1.0),-1.0);
 }
-template<> double Vec4D::SinTheta() const { 
+template<> double Vec4<double>::SinTheta() const { 
   return Max(Min(sqrt(PPerp2()/PSpat2()),1.0),-1.0);
 }
-template<> double Vec4D::Theta() const {
+template<> double Vec4<double>::Theta() const {
   return acos(CosTheta());
 }
-template<> double Vec4D::Eta() const {
+template<> double Vec4<double>::Eta() const {
   double pt2=PPerp2();
   double pp =P();
   double pz =dabs(m_x[3]);
@@ -49,7 +47,7 @@ template<> double Vec4D::Eta() const {
   return sn*0.5*log(sqr(pp+pz)/pt2);
 }
 
-template<> double Vec4D::SmallOMCT(const Vec4& v) const
+template<> double Vec4<double>::SmallOMCT(const Vec4& v) const
 {
   double mag(sqrt(PSpat2()*v.PSpat2()));
   double pq(m_x[1]*v[1]+m_x[2]*v[2]+m_x[3]*v[3]);
@@ -61,49 +59,49 @@ template<> double Vec4D::SmallOMCT(const Vec4& v) const
   return 2.*sqr(st2);
 }
 
-template<> double Vec4D::SmallMLDP(const Vec4& v) const
+template<> double Vec4<double>::SmallMLDP(const Vec4& v) const
 {
   return m_x[0]*v[0]*SmallOMCT(v);
 }
 
-template<> double Vec4D::CosTheta(const Vec4D& ref) const {
+template<> double Vec4<double>::CosTheta(const Vec4D& ref) const {
   Vec3D pref=Vec3D(ref), p=Vec3D(*this);
   return Max(Min(pref*p/(pref.Abs()*p.Abs()),1.0),-1.0);
 }
-template<> double Vec4D::Theta(const Vec4D& ref) const {
+template<> double Vec4<double>::Theta(const Vec4D& ref) const {
   return acos(CosTheta(ref));
 }
-template<> double Vec4D::Eta(const Vec4D& ref) const {
+template<> double Vec4<double>::Eta(const Vec4D& ref) const {
   double cos=CosTheta(ref);
   return 0.5*log(sqr(1.0+cos)/(1.0-cos*cos));
 }
-template<> double Vec4D::CosDPhi(const Vec4D& ref) const {
+template<> double Vec4<double>::CosDPhi(const Vec4D& ref) const {
   Vec3D pref=Vec3D(ref[1],ref[2],0.0), p=Vec3D(m_x[1],m_x[2],0.0);
   return Max(Min(pref*p/(pref.Abs()*p.Abs()),1.0),-1.0);
 }
-template<> double Vec4D::DPhi(const Vec4D& ref) const {
+template<> double Vec4<double>::DPhi(const Vec4D& ref) const {
   return acos(CosDPhi(ref));
 }
-template<> double Vec4D::DEta(const Vec4D& ref) const {
+template<> double Vec4<double>::DEta(const Vec4D& ref) const {
   return Eta()-ref.Eta();
 }
-template<> double Vec4D::DY(const Vec4D& ref) const {
+template<> double Vec4<double>::DY(const Vec4D& ref) const {
   return Y()-ref.Y();
 }
-template<> double Vec4D::DR(const Vec4D& ref) const {
+template<> double Vec4<double>::DR(const Vec4D& ref) const {
   return sqrt(DR2(ref));
 }
-template<> double Vec4D::DR2(const Vec4D& ref) const {
+template<> double Vec4<double>::DR2(const Vec4D& ref) const {
   return sqr(DPhi(ref))+sqr(DEta(ref));
 }
-template<> double Vec4D::DRy(const Vec4D& ref) const {
+template<> double Vec4<double>::DRy(const Vec4D& ref) const {
   return sqrt(DR2y(ref));
 }
-template<> double Vec4D::DR2y(const Vec4D& ref) const {
+template<> double Vec4<double>::DR2y(const Vec4D& ref) const {
   return sqr(DPhi(ref))+sqr(DY(ref));
 }
 
-std::istream& ATOOLS::operator>>(std::istream& s,Vec4D& vec)
+std::istream& operator>>(std::istream& s,Vec4D& vec)
 {
   std::string out;
   s>>out;
@@ -121,7 +119,7 @@ std::istream& ATOOLS::operator>>(std::istream& s,Vec4D& vec)
   return s;
 }
 
-std::istream& ATOOLS::operator>>(std::istream& s,Vec3D& vec)
+std::istream& operator>>(std::istream& s,Vec3D& vec)
 {
   std::string out;
   s>>out;
@@ -139,7 +137,7 @@ std::istream& ATOOLS::operator>>(std::istream& s,Vec3D& vec)
   return s;
 }
 
-bool ATOOLS::IsEqual(const Vec4D& v1, const Vec4D& v2, const double crit)
+bool IsEqual(const Vec4D& v1, const Vec4D& v2, const double crit)
 {
   double maxp=Max(dabs(v1[0]),Max(dabs(v1[1]),Max(dabs(v1[2]),dabs(v1[3])))); 
   double q(IsZero(maxp)?1.0:1.0/maxp);
@@ -150,7 +148,7 @@ bool ATOOLS::IsEqual(const Vec4D& v1, const Vec4D& v2, const double crit)
   return true;
 }
 
-bool ATOOLS::IsEqual(const Vec3D& v1, const Vec3D& v2, const double crit)
+bool IsEqual(const Vec3D& v1, const Vec3D& v2, const double crit)
 {
   double maxp=Max(dabs(v1[1]),Max(dabs(v1[2]),dabs(v1[3]))); 
   double q=1.;
@@ -162,3 +160,5 @@ bool ATOOLS::IsEqual(const Vec3D& v1, const Vec3D& v2, const double crit)
   }
   return true;
 }
+
+} // namespace ATOOLS

@@ -337,8 +337,8 @@ HepMC3_Interface::~HepMC3_Interface()
 }
 
 
-bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
-                                         HepMC::GenEvent& event)
+bool SHERPA::HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
+                                         HepMC3::GenEvent& event)
 {
   const auto weight(blobs->Weight());
   event.set_units(HepMC::Units::GEV,
@@ -502,7 +502,7 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo, std::shared_pt
 }
 
 
-bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs, std::shared_ptr<HepMC::GenRunInfo> run)
+bool SHERPA::HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs, std::shared_ptr<HepMC3::GenRunInfo> run)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -528,7 +528,7 @@ std::shared_ptr<HepMC::GenParticle> HepMC3_Interface::MakeGenParticle(
 
 // HS: Short-hand that takes a blob list, creates a new GenEvent and
 // calls the actual Sherpa2HepMC
-bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs, std::shared_ptr<HepMC::GenRunInfo> run)
+bool SHERPA::HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs, std::shared_ptr<HepMC3::GenRunInfo> run)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -545,8 +545,8 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs, std::shared_
 }
 
 // The actual code --- calls the Blob to GenVertex code
-bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-                                    HepMC::GenEvent& event) {
+bool SHERPA::HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
+                                    HepMC3::GenEvent& event) {
   const auto weight(blobs->Weight());
   DEBUG_FUNC("");
   event.set_units(HepMC::Units::GEV, HepMC::Units::MM);

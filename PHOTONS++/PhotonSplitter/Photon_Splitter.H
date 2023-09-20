@@ -36,11 +36,11 @@ namespace PHOTONS {
   // Description of member variables for Photon_Splitter
   /////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \var static int m_on
+    \var Photon_Splitter::m_on
     \brief whether the photon splitting algorithm is active 
   */
   /*!
-    \var Sudakov m_sudakov
+    \var Photon_Splitter::m_sudakov
     \brief the Sudakov object which implements the veto algorithm 
   */
 
@@ -48,7 +48,7 @@ namespace PHOTONS {
   // Description of member methods for Photon_Splitter
   /////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \fn bool PhotonSplitter::SplitPhotons(Blob *)
+    \fn bool Photon_Splitter::SplitPhotons(ATOOLS::Blob *)
     \brief processes blob and hands the relevant information to the Sudakov to be treated
   */
 }

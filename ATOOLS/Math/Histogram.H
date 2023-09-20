@@ -106,13 +106,14 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn   Histogram::Histogram(int type,double xmin,double xmax, int nbins)
+    \fn   Histogram::Histogram(int type,double xmin,double xmax, int nbins, const std::string &name="")
     \brief Constructor
 
     \param type   type of histogram (see below)
     \param xmin   start of histogram
     \param xmax   end of histogram
     \param nbins  number of bins
+    \param name   the name to give the histogram
 
     Initialise a new Histogram acording to the given parameters
     \verbatim
@@ -123,7 +124,7 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn Histogram::Histogram(Histogram *)
+    \fn Histogram::Histogram(const Histogram *)
     \brief Copy constructor
   */
 
@@ -149,7 +150,7 @@ namespace ATOOLS {
   */
     
   /*!
-    \fn void  Histogram::Insert(double x, double weight)
+    \fn void  Histogram::Insert(double x, double weight, double n=1.0)
     \brief add value (and possibly the maximum) to corresponding bin
   */
     
@@ -164,10 +165,12 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn void  Histogarm::ScaleHistogramWidth(double factor, int mode);
+    \fn void  Histogram::ScaleHistogramWidth(double factor, int mode=0)
     \brief multiply binsize and Xmax with factor ("stretch" the histogram)
-    \default: mode = 0: rescale bin height with factor (don't change integral over bins)
-    \         mode = 1: don't rescale bin height
+    \param factor Factor by which to scale the bin width.
+    \param mode bin height rescaling:
+      - 0: rescale bin height with factor (don't change integral over bins)
+      - 1: don't rescale bin height
   */
 
     
@@ -187,12 +190,12 @@ namespace ATOOLS {
   */
     
   /*!
-    \fn  double *  Histogram::Bin(int)
+    \fn  double Histogram::Bin(int i) const
     \brief return the value array of a specified bin
   */
     
   /*!
-    \fn  double *  Histogram::Bin(double)
+    \fn  double Histogram::Bin(double x) const
     \brief return the value array of the bin where the given x falls in
   */
     

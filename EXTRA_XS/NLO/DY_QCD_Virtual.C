@@ -72,9 +72,9 @@ namespace EXTRAXS {
 
 using namespace EXTRAXS;
 
-DECLARE_VIRTUALME2_GETTER(DY_QCD_Virtual,"DY_QCD_Virtual")
+DECLARE_VIRTUALME2_GETTER(EXTRAXS::DY_QCD_Virtual,"DY_QCD_Virtual")
 Virtual_ME2_Base *ATOOLS::Getter
-<Virtual_ME2_Base,Process_Info,DY_QCD_Virtual>::
+<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,EXTRAXS::DY_QCD_Virtual>::
 operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);

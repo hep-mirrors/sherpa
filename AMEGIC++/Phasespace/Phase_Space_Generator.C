@@ -19,10 +19,11 @@
 #include "MODEL/Main/Running_AlphaQED.H"
 
 
-using namespace AMEGIC;
 using namespace PHASIC;
 using namespace ATOOLS; 
 using namespace std;
+
+namespace AMEGIC {
 
 Phase_Space_Generator::Phase_Space_Generator(int _nin, int _nout) :
   nin(_nin), nout(_nout), m_mode{ 1 }
@@ -333,7 +334,7 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
   return 1;
 }
 
-bool Phase_Space_Generator::IsFile(string &filename)
+bool Phase_Space_Generator::IsFile(std::string &filename)
 {
   ifstream from;
   from.open(filename.c_str());
@@ -341,7 +342,7 @@ bool Phase_Space_Generator::IsFile(string &filename)
   return 0;
 }
 
-bool Phase_Space_Generator::Search(ifstream &from,string search)
+bool Phase_Space_Generator::Search(std::ifstream &from,std::string search)
 {
   char buffer[buffersize];
   for(;from;) {
@@ -351,7 +352,7 @@ bool Phase_Space_Generator::Search(ifstream &from,string search)
   return 0;
 }
 
-bool Phase_Space_Generator::RSearch(ifstream &from,string &search)
+bool Phase_Space_Generator::RSearch(std::ifstream &from,std::string &search)
 {
   char buffer[buffersize];
   for(;from;) {
@@ -364,7 +365,7 @@ bool Phase_Space_Generator::RSearch(ifstream &from,string &search)
   return 0;
 }
 
-int  Phase_Space_Generator::Search(string file,string search)
+int  Phase_Space_Generator::Search(std::string file,std::string search)
 {  
 
   ifstream from;
@@ -384,7 +385,7 @@ int  Phase_Space_Generator::Search(string file,string search)
   return 0;
 }
 
-int  Phase_Space_Generator::RSearchInDB(string file,string &search)
+int  Phase_Space_Generator::RSearchInDB(std::string file,std::string &search)
 {
   My_In_File from(file);
 
@@ -394,7 +395,7 @@ int  Phase_Space_Generator::RSearchInDB(string file,string &search)
   return 0;
 }
 
-void Phase_Space_Generator::Copy(string sfrom,string sto)
+void Phase_Space_Generator::Copy(std::string sfrom,std::string sto)
 {
   ifstream from;
   ofstream to;
@@ -410,5 +411,4 @@ void Phase_Space_Generator::Copy(string sfrom,string sto)
   remove(sfrom.c_str());
 }
 
-
-
+} // namespace AMEGIC

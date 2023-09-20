@@ -299,15 +299,15 @@ void Dire::RecoCheck(Amplitude *const a,int swap) const
   }
 }
 
-DECLARE_GETTER(Dire,"Dire",Shower_Base,Shower_Key);
+DECLARE_GETTER(DIRE::Dire,"Dire",PDF::Shower_Base,PDF::Shower_Key);
 
-Shower_Base *Getter<Shower_Base,Shower_Key,Dire>::
+Shower_Base *ATOOLS::Getter<PDF::Shower_Base,PDF::Shower_Key,DIRE::Dire>::
 operator()(const Shower_Key &key) const
 {
   return new Dire(key);
 }
 
-void Getter<Shower_Base,Shower_Key,Dire>::
+void ATOOLS::Getter<PDF::Shower_Base,PDF::Shower_Key,DIRE::Dire>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Dipole Parton Shower"; 

@@ -48,7 +48,42 @@ set(YAML_HEADERS collectionstack.h
                  streamcharsource.h
                  stringsource.h
                  tag.h
-                 token.h)
+                 token.h
+                 yaml-cpp/anchor.h
+                 yaml-cpp/binary.h
+                 yaml-cpp/depthguard.h
+                 yaml-cpp/dll.h
+                 yaml-cpp/emitfromevents.h
+                 yaml-cpp/emitter.h
+                 yaml-cpp/emitterdef.h
+                 yaml-cpp/emittermanip.h
+                 yaml-cpp/emitterstyle.h
+                 yaml-cpp/eventhandler.h
+                 yaml-cpp/exceptions.h
+                 yaml-cpp/mark.h
+                 yaml-cpp/noexcept.h
+                 yaml-cpp/null.h
+                 yaml-cpp/ostream_wrapper.h
+                 yaml-cpp/parser.h
+                 yaml-cpp/stlemitter.h
+                 yaml-cpp/traits.h
+                 yaml-cpp/yaml.h
+                 yaml-cpp/node/convert.h
+                 yaml-cpp/node/emit.h
+                 yaml-cpp/node/impl.h
+                 yaml-cpp/node/iterator.h
+                 yaml-cpp/node/node.h
+                 yaml-cpp/node/parse.h
+                 yaml-cpp/node/ptr.h
+                 yaml-cpp/node/type.h
+                 yaml-cpp/node/detail/impl.h
+                 yaml-cpp/node/detail/iterator_fwd.h
+                 yaml-cpp/node/detail/iterator.h
+                 yaml-cpp/node/detail/memory.h
+                 yaml-cpp/node/detail/node_data.h
+                 yaml-cpp/node/detail/node_iterator.h
+                 yaml-cpp/node/detail/node_ref.h
+                 yaml-cpp/node/detail/node.h)
 
 sherpa_create_git_info(YAML)
  

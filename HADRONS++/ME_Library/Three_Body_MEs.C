@@ -30,9 +30,9 @@ void B_Bpi_pwave::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_Bpi_pwave,"B_Bpi_pwave")
+DEFINE_ME_GETTER(HADRONS::B_Bpi_pwave,"B_Bpi_pwave")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_Bpi_pwave>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B_Bpi_pwave>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -61,9 +61,9 @@ void B3_Bpi_pwave::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bpi_pwave,"B3_Bpi_pwave")
+DEFINE_ME_GETTER(HADRONS::B3_Bpi_pwave,"B3_Bpi_pwave")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bpi_pwave>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B3_Bpi_pwave>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -92,9 +92,9 @@ void B_Bpi_swave::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_Bpi_swave,"B_Bpi_swave")
+DEFINE_ME_GETTER(HADRONS::B_Bpi_swave,"B_Bpi_swave")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_Bpi_swave>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B_Bpi_swave>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -125,9 +125,9 @@ void B3_Bpi_dwave::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bpi_dwave,"B3_Bpi_dwave")
+DEFINE_ME_GETTER(HADRONS::B3_Bpi_dwave,"B3_Bpi_dwave")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bpi_dwave>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B3_Bpi_dwave>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -162,9 +162,9 @@ void B_Bphoton_M1::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_Bphoton_M1,"B_Bphoton_M1")
+DEFINE_ME_GETTER(HADRONS::B_Bphoton_M1,"B_Bphoton_M1")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_Bphoton_M1>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B_Bphoton_M1>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -199,9 +199,9 @@ void B3_Bphoton_M1::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bphoton_M1,"B3_Bphoton_M1")
+DEFINE_ME_GETTER(HADRONS::B3_Bphoton_M1,"B3_Bphoton_M1")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bphoton_M1>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B3_Bphoton_M1>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -237,9 +237,9 @@ void B3_Bphoton_M1_2::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bphoton_M1_2,"B3_Bphoton_M1_2")
+DEFINE_ME_GETTER(HADRONS::B3_Bphoton_M1_2,"B3_Bphoton_M1_2")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bphoton_M1_2>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B3_Bphoton_M1_2>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -279,9 +279,9 @@ void B_Bphoton_E1::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_Bphoton_E1,"B_Bphoton_E1")
+DEFINE_ME_GETTER(HADRONS::B_Bphoton_E1,"B_Bphoton_E1")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_Bphoton_E1>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B_Bphoton_E1>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -321,9 +321,9 @@ void B3_Bphoton_E1::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bphoton_E1,"B3_Bphoton_E1")
+DEFINE_ME_GETTER(HADRONS::B3_Bphoton_E1,"B3_Bphoton_E1")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bphoton_E1>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B3_Bphoton_E1>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -357,9 +357,9 @@ bool QQ_QVQ_Spectator::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,
   return true;
 }
 
-DEFINE_ME_GETTER(QQ_QVQ_Spectator,"QQ_QVQ_Spectator")
+DEFINE_ME_GETTER(HADRONS::QQ_QVQ_Spectator,"QQ_QVQ_Spectator")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,QQ_QVQ_Spectator>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::QQ_QVQ_Spectator>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B^{+} \\rightarrow d g sbar $ \n\n"
     <<"Order: 0 = Scalar ($B^{+}$), 1 = spectator quark ($u$), "
@@ -386,9 +386,9 @@ void QQ_PGG::Calculate(const Vec4D_Vector& p, bool m_anti)
     CreateTrivial(Complex(1.0,0.0));
 }
 
-DEFINE_ME_GETTER(QQ_PGG,"QQ_PGG")
+DEFINE_ME_GETTER(HADRONS::QQ_PGG,"QQ_PGG")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,QQ_PGG>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::QQ_PGG>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -641,9 +641,9 @@ double P_3P_Dalitz::operator()( const Vec4D * _p )
 //   return 1.;
 // }
 
-DEFINE_ME_GETTER(P_3P_Dalitz,"P_3P_Dalitz")
+DEFINE_ME_GETTER(HADRONS::P_3P_Dalitz,"P_3P_Dalitz")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,P_3P_Dalitz>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::P_3P_Dalitz>::
 PrintInfo(std::ostream &str,const size_t width) const {
   str<<"No Information";
 }

@@ -109,7 +109,7 @@ namespace HADRONS {
     a magnetic transition.
 
     \f[
-    {\cal M} = A_{M1}\bar u_{1/2'}\sigma^{\mu\nu}\bar u_{1/2}F^{\mu\nu}\f]
+    {\cal M} = A_{M1}\bar u_{1/2'}\sigma^{\mu\nu}\bar u_{1/2}F^{\mu\nu}
     \f]
 
     Here, the Gordon-identity can/must be used to rephrase this in terms

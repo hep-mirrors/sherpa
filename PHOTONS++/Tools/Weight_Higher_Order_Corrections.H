@@ -72,15 +72,6 @@ namespace PHOTONS {
     \brief contains the mass of the decaying particle
   */
 
-  /*!
-    \var bool Weight_Higher_Order_Corrections::m_ME
-    \brief specifies whether there is a generic or specific ME to be used
-  */
-
-  /*!
-    \var ME_List::code Weight_Higher_Order_Corrections::m_which
-    \brief specifies which generic or specific ME will be used
-  */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of the member methods for Weight_Higher_Order_Corrections
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,11 +132,6 @@ namespace PHOTONS {
   */
 
   /*!
-    \fn PHOTONS_ME_Base * Weight_Higher_Order_Corrections::MESelector(Particle_Vector_Vector,Particle_Vector_Vector)
-    \brief returns an instatiation of the class of the ME specified by m_which
-  */
-
-  /*!
     \fn double Weight_Higher_Order_Corrections::Dmod(unsigned int, unsigned int, unsigned int)
     \brief calculates the infrared subtracted massive dipole splitting function \f$ \bar{\mathcal{D}}_{ij}(k) \f$
 
@@ -195,11 +181,11 @@ namespace PHOTONS {
   */
 
   /*!
-    \fn void Weight_Higher_Order_Corrections::CalculateWeightAndMax(Particle_Vector_Vector, Particle_Vector_Vector)
+    \fn void Weight_Higher_Order_Corrections::CalculateWeightAndMaxWithME(Particle_Vector_Vector, Particle_Vector_Vector)
     \brief calculates the weight and its contribution to the maximum weight for ME-corrections
 
     Takes the <tt>Particle_Vector_Vector</tt>s of the dressed and undressed 
-    blobs to pass on to <tt>Weight_Higher_Order_Corrections::ME_Selector<tt> 
+    blobs to pass on to <tt>Weight_Higher_Order_Corrections::ME_Selector</tt> 
     and calculates the weight and its contribution to the maximum.
   */
     

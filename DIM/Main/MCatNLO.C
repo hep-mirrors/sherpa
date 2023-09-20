@@ -197,15 +197,15 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
   THROW(fatal_error,"Implement me");
 }
 
-DECLARE_GETTER(MCatNLO,"MC@NLO_Dire",NLOMC_Base,NLOMC_Key);
+DECLARE_GETTER(DIM::MCatNLO,"MC@NLO_Dire",PDF::NLOMC_Base,PDF::NLOMC_Key);
 
-NLOMC_Base *Getter<NLOMC_Base,NLOMC_Key,MCatNLO>::
+NLOMC_Base *ATOOLS::Getter<PDF::NLOMC_Base,PDF::NLOMC_Key,DIM::MCatNLO>::
 operator()(const NLOMC_Key &key) const
 {
   return new MCatNLO(key);
 }
 
-void Getter<NLOMC_Base,NLOMC_Key,MCatNLO>::
+void ATOOLS::Getter<PDF::NLOMC_Base,PDF::NLOMC_Key,DIM::MCatNLO>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Dire MC@NLO generator"; 

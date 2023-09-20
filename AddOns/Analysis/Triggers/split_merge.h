@@ -137,6 +137,7 @@ public:
   /// the split-merge process i.e. the variable we use for
   ///  1. ordering jet candidates;
   ///  2. computing te overlap fraction of two candidates.
+  ///  .
   /// The default value uses pttile (p-scheme pt). Other alternatives are
   /// pt, mt=sqrt(pt^2+m^2)=sqrt(E^2-pz^2) or Et.
   /// NOTE: Modifying the default choice can have nasty effects:
@@ -150,6 +151,7 @@ public:
   /// - using mt solves the IR unsafety issues with the pt variable
   ///   for QCD jets but the IR unsafety remains for nack-to-back
   ///   jets of unstable narrow-width particles (e.g. Higgs).
+  /// .
   /// Therefore, keeping the default value is strongly advised.
   Esplit_merge_scale split_merge_scale;
 };

@@ -133,7 +133,7 @@ namespace ATOOLS {
 */
 
 /*!
-  \mainpage
+  \package ATOOLS
 
   The ATOOLS package is the basis of the simulation of physics within the SHERPA framework.
   It provides a collection of basic classes and function within the namespace ATOOLS.

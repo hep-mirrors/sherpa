@@ -234,9 +234,9 @@ Complex B_KStar_Semileptonic::gSD(double mhat, double shat)
           2./9.*(2.+y)*sqrt(fabs(1.-y))*theta;
 }
 
-DEFINE_ME_GETTER(B_KStar_Semileptonic,"B_KStar_Semileptonic")
+DEFINE_ME_GETTER(HADRONS::B_KStar_Semileptonic,"B_KStar_Semileptonic")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_KStar_Semileptonic>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B_KStar_Semileptonic>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B \\rightarrow K^* \\; l^- \\; l^+ $ \n \n"
     <<"Order: 0 = $B$, 1 = $K^*$, 2 = $l^-$, 3 = $l^+$ \n\n"

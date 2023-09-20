@@ -89,9 +89,9 @@ void VA_0_PP::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   Insert(m_global*FF*(moms[p_i[1]]-moms[p_i[0]]), 0);
 }
 
-DEFINE_CURRENT_GETTER(VA_0_PP,"VA_0_PP")
+DEFINE_CURRENT_GETTER(HADRONS::VA_0_PP,"VA_0_PP")
 
-void ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_PP>::
+void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_0_PP>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ 0 \\rightarrow \\pi \\pi $ \n\n"
     <<"Order: 0 = $\\pi^0$, 1 = $\\pi^\\pm$ \n\n"

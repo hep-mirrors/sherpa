@@ -1,4 +1,9 @@
-set(Higgs_SOURCES dilog.C
+set(Higgs_HEADERS dilog.h
+                  Wrappers.H
+                  Higgs_Tree.H
+                  Higgs_Virtual.H)
+
+                  set(Higgs_SOURCES dilog.C
                   Wrappers.C
                   Higgs_Tree.C
                   Higgs_Virtual.C

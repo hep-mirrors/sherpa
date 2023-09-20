@@ -52,7 +52,7 @@ namespace AMEGIC {
       diagrams with ``clashing arrows'' enter and a proper determination of the 
       Relative Sign of Interfering Feynman graphs (RSIF) is far from being trivial.
       An approach easily applicable for an automated generation of Feynman graphs has 
-      been provided in \cite{Denner:1992vz}. The Feynman rules defined there are close 
+      been provided in \cite Denner1992vza. The Feynman rules defined there are close 
       to the rules for Dirac fermions. Since for Majorana fermions the fermion number 
       flow is violated the authors define a new kind of fermion chain orientation, called 
       fermion flow. This continuous orientation forces the introduction of two analytic 
@@ -61,9 +61,9 @@ namespace AMEGIC {
       Feynman rules ask only for a minimal number of vertices and avoid the explicit 
       occurrence of charge conjugation matrices in the vertices and propagators. In this
       framework the RSIF is determined from the permutation of the external
-      fermions in the usual way. The precise determination of the RSIF according to the 
-      algorithm defined in \cite{Denner:1992vz} is provided by the class 
-      AMEGIC::Amplitude_Manipulator      
+      fermions in the usual way. The precise determination of the RSIF according to the
+      algorithm defined in \cite Denner1992vza  is provided by the class
+      {@link AMEGIC::Amplitude_Manipulator}
   */
   
   /*!

@@ -194,18 +194,6 @@ namespace PHASIC {
     of an Info_Key during its initialization.
   */
 
-  /*!
-    \var ATOOLS::Info_Key Phase_Space_Handler::m_spkey
-    
-    initial key to allow Phase_Space_Handler access to s'
-  */
-
-  /*!
-    \var ATOOLS::Info_Key Phase_Space_Handler::m_ykey
-    
-    initial key to allow Phase_Space_Handler access to y
-  */
-
 }//end of namespace PHASIC
 
 #endif

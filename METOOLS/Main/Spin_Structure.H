@@ -73,7 +73,12 @@ namespace METOOLS
       }
       this->resize(m_n);
     }
-    
+
+    /*!
+      \brief Constructor
+
+      ATOOLS::Particles' flavours determine the number of spin combinations of each node.
+    */
     Spin_Structure(const ATOOLS::Particle_Vector& particles)
     {
       m_spins = std::vector<int>(particles.size());
@@ -93,6 +98,9 @@ namespace METOOLS
 
     inline std::vector<int> GetSpinCombination(size_t number) const { return (*this)(number); }
 
+    /*!
+      \brief Inserts value at the right position determined by GetNumber.
+    */
     void    Insert(Value value, std::vector<std::pair<int,int> >& spins)
     {
       (*this)[GetNumber(spins)]=value;
@@ -107,7 +115,10 @@ namespace METOOLS
     {
       (*this)[GetNumber(spins)]=value;
     }
-    
+
+    /*!
+      \brief Inserts value at the given position.
+    */
     void    Insert(Value value, size_t index)
     {
       (*this)[index]=value;
@@ -172,16 +183,8 @@ namespace METOOLS
     This class provides methods to access and manipulate arbitrary objects, by
     specifying the corresponding spin combination. It inherits from STL vector
     which contains one 'object' for each spin combination.
-  */
 
-  /*!
-    \var std::vector<int> Spin_Structure::m_spins
-    \brief vector containing the number of spin combinations for each particle "node".
-  */
-
-  /*!
-    \var std::vector<Value>
-    \brief storage of objects
+    Objects are stored in the @c std::vector base class as follows:
     
     Objects are ordered as in this example (where the node part1 has
     2 spin combinations, part2 has 1, part3 has 3, part4 has 2):
@@ -208,7 +211,7 @@ namespace METOOLS
   */
 
   /*!
-    \fn size_t Spin_Structure::GetNumber(const vector<int>& spins) const
+    \fn size_t Spin_Structure::GetNumber(const std::vector<int>& spins) const
     \brief Determine number of given combination in the STL vector.
 
     Here, the spins have to be specified in the same order as in m_spins (i.e.
@@ -216,7 +219,7 @@ namespace METOOLS
   */
 
   /*!
-    \fn size_t Spin_Structure::GetNumber(vector<pair<int,int> >& spins) const
+    \fn size_t Spin_Structure::GetNumber(std::vector<std::pair<int,int> >& spins) const
     \brief Determine number of given combination in the STL vector.
 
     Here, the spins (second int in pair) can be in arbitrary order, as long as
@@ -232,46 +235,24 @@ namespace METOOLS
   */
 
   /*!
-    \fn Spin_Structure::Spin_Structure(ATOOLS::Flavour* flavs, size_t size)
-    \brief Constructor
-  */
-
-  /*!
-    \fn Spin_Structure::Spin_Structure(ATOOLS::Particle_Vector particles)
-    \brief Constructor
-
-    ATOOLS::Particles' flavours determine the number of spin combinations of each node.
-  */
-
-  /*!
-    \fn Spin_Structure::~Spin_Structure()
+    \fn METOOLS::Spin_Structure<Value>::~Spin_Structure()
     \brief Destructor
 
     Doesn't do anything, because there are no pointer members.
   */
 
   /*!
-    \fn void Spin_Structure::Insert(Value value, vector<pair<int,int> >& spins)
-    \brief Inserts value at the right position determined by GetNumber.
-  */
-
-  /*!
-    \fn void Spin_Structure::Insert(Complex amp, size_t index)
-    \brief Inserts value at the given position.
-  */
-
-  /*!
-    \fn Value Spin_Structure::Get(const vector<int>& spins) const
+    \fn Value METOOLS::Spin_Structure<Value>::Get(const std::vector<int>& spins) const
     \brief Retrieves the value from the right position determined by GetNumber.
   */
 
   /*!
-    \fn vector<Complex> Spin_Structure::Get(size_t index) const;
+    \fn vector<Complex> METOOLS::Spin_Structure<Value>::Get(size_t index) const;
     \brief Retrieves the value from the given position.
   */
 
   /*!
-    \fn void Spin_Structure::CreateTrivial(Value value)
+    \fn void METOOLS::Spin_Structure<Value>::CreateTrivial(Value value)
     \brief Inserts the given object for all spin combinations.
   */
 

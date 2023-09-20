@@ -44,9 +44,9 @@ void VA_0_V::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   }
 }
 
-DEFINE_CURRENT_GETTER(VA_0_V,"VA_0_V")
+DEFINE_CURRENT_GETTER(HADRONS::VA_0_V,"VA_0_V")
 
-void ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_V>::
+void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_0_V>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ J/\\Psi \\rightarrow 0 $ \n\n"
     <<"Order: 0 = Vector \n\n"

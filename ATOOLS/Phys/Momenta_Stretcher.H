@@ -29,7 +29,7 @@ namespace ATOOLS {
   // Description of member methods for Momenta_Stretcher.
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \fn bool Momenta_Stretcher::MassThem(const int,const int,ATOOLS::Vec4D *,const double *)
+    \fn bool ATOOLS::Momenta_Stretcher::MassThem(const int,const int,Vec4D *,const double *,const double=-1.e-14)
     \brief Puts the momenta on new mass-shells, respecting four-momentum
     conservation of the overall ensemble and the original directions as far as
     possible.
@@ -51,7 +51,7 @@ namespace ATOOLS {
     respecting the original directions. Finally, the systemv is boosted back.
   */
   /*!
-    \fn bool Momenta_Stretcher::ZeroThem(const int,ATOOLS::Vec4D *)
+    \fn bool ATOOLS::Momenta_Stretcher::ZeroThem(const int,const int,ATOOLS::Vec4D *,const double)
     \brief Puts the momenta on zero mass, respecting four-momentum conservation of the overall
     ensemble and the original directions as far as possible. Momenta have to be in CMS!
 
@@ -69,7 +69,7 @@ namespace ATOOLS {
     boosting the momenta into CMS in the beginning and back afterwards.
   */
   /*!
-    \fn bool Momenta_Stretcher::StretchMomenta(
+    \fn bool ATOOLS::Momenta_Stretcher::StretchMomenta(
              const Particle_Vector&,std::vector<Vec4D>& )
     \brief Puts the given momenta on new mass shells given by the FinalMasses
            of the Particle_Vector.

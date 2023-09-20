@@ -76,8 +76,8 @@ bool XS_PP_ffbar::SetColours(const Vec4D_Vector& mom)
   return true;
 }
 
-DECLARE_TREEME2_GETTER(XS_PP_ffbar,"XS_PP_ffbar")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_PP_ffbar>::
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_PP_ffbar,"XS_PP_ffbar")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_PP_ffbar>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;

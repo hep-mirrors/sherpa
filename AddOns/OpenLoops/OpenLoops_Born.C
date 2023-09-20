@@ -45,12 +45,12 @@ double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
   return m_symfac*result;
 }
 
-DECLARE_TREEME2_GETTER(OpenLoops_Born,
+DECLARE_TREEME2_GETTER(OpenLoops::OpenLoops_Born,
 		       "OpenLoops_Born")
 
-Tree_ME2_Base* ATOOLS::Getter<Tree_ME2_Base,
-			      External_ME_Args,
-			      OpenLoops_Born>::
+Tree_ME2_Base* ATOOLS::Getter<PHASIC::Tree_ME2_Base,
+			      PHASIC::External_ME_Args,
+			      OpenLoops::OpenLoops_Born>::
 operator()(const External_ME_Args &args) const
 {
   if (!args.m_source.empty() && args.m_source != "OpenLoops")

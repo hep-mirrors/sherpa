@@ -191,7 +191,7 @@ double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour& infl)
 double PDF_NNPDF::GetXPDF(const kf_code& kf, bool anti)
 {
   // Parton flavour IDs
-  int kfc = (kf == kf_gluon || kf == kf_photon)
+  int kfc = (Flavour(kf) == Flavour(kf_gluon) || Flavour(kf) == Flavour(kf_photon))
             ? kf : (m_bunch.IsAnti()?-1:1)*(anti?-kf:kf);
   // Hopefully efficient lookup --- relate 21 to 0
   int kfc_nn(m_lookup[kfc+6]); // kfc runs from -6 to 6 and also 21

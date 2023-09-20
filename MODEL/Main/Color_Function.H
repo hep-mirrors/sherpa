@@ -213,7 +213,7 @@ namespace MODEL {
   /*!
      \fn Color_Function::Color_Function(cf::code _type, 
 		   int _partarg0 = -1, int _partarg1 = -1, int _partarg2 = -1, 
-		   char _strarg0 = '?', char _strarg1 = '?', char _strarg2 = '?') 
+		   Color_Function *n=NULL) 
     \brief Can be used to contruct a Color_Function with a definite type and definite arguments.
     Again the pointer Next is initialized as nil.
 

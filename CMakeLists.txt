@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 ###########################Package@#####################################
 project(SHERPA-MC LANGUAGES C  CXX)
 #The complicated way to set the version is used to assure the simple
@@ -38,6 +38,7 @@ option(SHERPA_ENABLE_CATCH2                  "Enables Unit Tests with Catch2 (mu
 option(SHERPA_ENABLE_CLANG_TIDY              "Enables checks with clang-tidy." OFF)
 option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." OFF)
 option(SHERPA_ENABLE_DIHIGGS                 "Enables building of DIHIGGS." OFF)
+option(SHERPA_ENABLE_DOXYGEN                 "Enables the 'docs' target for building HTML documentation" OFF)
 option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
 option(SHERPA_ENABLE_EXAMPLES                "Enables installation of EXAMPLES." ON)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." OFF)
@@ -92,8 +93,9 @@ foreach (en IN LISTS alldirenables)
   endif()
 endforeach()
 ###########################Options handeling############################
-set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
-INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
+set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
+ EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
+ INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
  LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
@@ -248,7 +250,11 @@ else()
   set(GITREV "unknownrevision")
 endif()
 
-
+define_property(
+  GLOBAL PROPERTY ALL_SOURCE_FILES
+  BRIEF_DOCS "Collects all the source files from subdirectories"
+  FULL_DOCS "Source files found by the sherpa_create_git_info macro go here"
+)
 macro(sherpa_create_git_info name)
   if (GIT AND EXISTS ".git")
     execute_process(COMMAND ${GIT} status -s --untracked-files=no .
@@ -285,6 +291,8 @@ macro(sherpa_create_git_info name)
   if ( NOT "${newgitinfo}" STREQUAL "${oldgitinfo}")
     file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C "${newgitinfo}")
   endif()
+  list(TRANSFORM allsources PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
+  set_property(GLOBAL APPEND PROPERTY ALL_SOURCE_FILES ${allsources})
 endmacro(sherpa_create_git_info )
 
 if(SHERPA_ENABLE_MPI)
@@ -807,6 +815,76 @@ endif()
 
 IF (SHERPA_ENABLE_ANALYSIS)
   add_subdirectory(AddOns/Analysis)
+endif()
+
+if (SHERPA_ENABLE_DOXYGEN)
+  find_package(Doxygen 1.9.3 REQUIRED)
+  message(STATUS "SHERPA: DOXYGEN_VERSION=${DOXYGEN_VERSION}")
+  set(DOXYGEN_OUTPUT_DIRECTORY docs)
+  set(DOXYGEN_FILE_PATTERNS *.C *.H *.c *.h *.cc *.hh *.cpp *.hpp)
+  set(DOXYGEN_EXCLUDE_PATTERNS */.*)
+  set(DOXYGEN_EXCLUDE
+    # weird stuff that's in the build but duplicated
+    MODEL/HEFT/SVV_LC.C
+    MODEL/HEFT/SVVP_LC.C
+    MODEL/HEFT/SVVV_LC.C
+    MODEL/HEFT/SVVVV_LC.C
+    # headers that can only be included after other stuff
+    ATOOLS/Math/Tensor_Build.H
+    ATOOLS/Math/Tensor_Contractions.H
+    ATOOLS/Math/Tensor_Contractions_Epsilon.H
+  )
+  set(DOXYGEN_MACRO_EXPANSION YES)
+  set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
+  set(DOXYGEN_EXPAND_AS_DEFINED
+    DECLARE_GETTER_BASE
+    DECLARE_ND_GETTER
+    DECLARE_GETTER
+    DECLARE_XSBASE_GETTER
+    DECLARE_CPL_GETTER
+    DECLARE_VIRTUALME2_GETTER
+    DECLARE_TREEME2_GETTER
+    DECLARE_PDF_GETTER
+    DEFINE_CURRENT_GETTER
+    DEFINE_ME_GETTER
+    DEFINE_QUALIFIER_GETTER
+    DEFINE_UNARY_BINARY_OPERATOR
+    DEFINE_FUNCTION
+    DEFINE_GETTER_METHOD
+    DEFINE_QUALIFIER_CLASS
+    PROMOTE
+  )
+  # YES if you want private members in the documentation
+  set(DOXYGEN_EXTRACT_PRIVATE NO)
+  # NO if you want undocumented members to have empty documentation
+  set(DOXYGEN_HIDE_UNDOC_MEMBERS NO)
+  set(DOXYGEN_EXAMPLE_PATH Examples)
+  set(DOXYGEN_EXAMPLE_PATTERNS *.cpp)
+  set(DOXYGEN_EXAMPLE_RECURSIVE YES)
+  set(DOXYGEN_CITE_BIB_FILES Manual/source/manual/references.bib)
+  set(DOXYGEN_CLASS_GRAPH YES)
+  set(DOXYGEN_HAVE_DOT NO)
+  set(DOXYGEN_WARN_IF_INCOMPLETE_DOC NO)
+  set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
+  set(DOXYGEN_WARN_NO_PARAMDOC NO)
+  set(DOXYGEN_QUIET YES)
+  set(DOXYGEN_USE_MATHJAX YES)
+  set(DOXYGEN_INCLUDE_PATH
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${LHAPDF_INCLUDE_DIRS}
+  )
+  set(DOXYGEN_ENABLED_SECTIONS
+    # enable @cond-ed out sections by uncommenting these lines:
+    #DOCUMENT_COMMENTED_OUT_FUNCTION
+    #RECURSIVE_WARNING
+    #ANTI_INCLUDE_GUARD
+    #TEMPLATE_INSTANTIATIONS
+  )
+  set(DOXYGEN_CLANG_ASSISTED_PARSING NO)
+  set(DOXYGEN_CLANG_ADD_INC_PATHS NO)
+  get_property(ALL_SOURCE_FILES GLOBAL PROPERTY ALL_SOURCE_FILES)
+  doxygen_add_docs(docs ${ALL_SOURCE_FILES})
 endif()
 
 ########################################################################

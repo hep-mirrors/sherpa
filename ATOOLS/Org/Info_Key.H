@@ -9,19 +9,19 @@
 
 namespace ATOOLS {
 
-  typedef std::vector<double>        Double_Container;
-  typedef std::vector<ATOOLS::Vec4D> Vector_Container;
+  typedef std::vector<double> Double_Container;
+  typedef std::vector<Vec4D> Vector_Container;
 
   namespace si {
 
-    enum code { 
+    enum code {
       idle      =  0,
       reset     =  1,
       dicing    =  2,
-      generated     =  3,
+      generated =  3,
       weighting =  4,
       weighted  =  5,
-      error     =  6  
+      error     =  6
     };
 
   }// end of namespace si

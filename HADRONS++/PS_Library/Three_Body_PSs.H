@@ -93,16 +93,7 @@ namespace HADRONS {
     Its value is 0 if the propagator mass is small enough, i.e.
     \f$m_p<\frac{1}{10}(m_i+m_j)\f$, which corresponds to a nearly
     massless propagator. Otherwise, it takes value 1.
-  */	
-	
-	
-  /*! 
-    \fn Dalitz::ChID()
-    Returns value in PHASIC::Single_Channel::name containing the keyword 
-    \c "Dalitz"
-    followed by information about propagator.
-  */	
-
+  */
 
 } // end of namespace
 

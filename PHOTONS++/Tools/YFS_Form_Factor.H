@@ -68,16 +68,6 @@ namespace PHOTONS {
   // Description of member variable for YFS_Form_Factor
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \var Particle * YFS_Form_Factor::p_part1
-    \brief particle 1 of the dipole
-  */
-
-  /*!
-    \var Particle * YFS_Form_Factor::p_part2
-    \brief particle 2 of the dipole
-  */
-
-  /*!
     \var Vec4D YFS_Form_Factor::m_p1
     \brief momentum of particle 1
   */
@@ -145,23 +135,29 @@ namespace PHOTONS {
   // Description of member methods for YFS_Form_Factor
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \fn YFS_Form_Factor::YFS_Form_Factor(Particle_Vector, double)
-    \brief multipole constructor
-
-    The arguments to be passed are the multipole and the infrared cut-off (taken to be an isotropic energy cut-off in the same frame as the momenta of the multipole given). Determines the YFS form factor as
-    \f[
-      Y(\omega) = \sum_{i<j}Y_{ij}(\omega)
-    \f]
-    For the calculation of the individual dipole contributions the dipole constructor is used.
+    \fn YFS_Form_Factor::YFS_Form_Factor(const ATOOLS::Particle_Vector& part, const double& ks)
+    \brief Multipole constructor.
+      For the calculation of the individual dipole contributions the
+      dipole constructor is used.
+    \param part The multipole.
+    \param ks The infrared cut-off (taken to be an isotropic energy
+      cut-off in the same frame as the momenta of the multipole given).
+      Determines the YFS form factor as
+      \f[
+        Y(\omega) = \sum_{i<j}Y_{ij}(\omega)
+      \f]
   */
 
   /*!
-    \fn YFS_Form_Factor::YFS_Form_Factor(Particle *, Particle *, double)
-    \brief dipole constructor, implements all variables and initiates the calculations
+    \fn YFS_Form_Factor::YFS_Form_Factor(const ATOOLS::Particle * part1, const ATOOLS::Particle * part2, const double& ks)
+    \brief dipole constructor, implements all variables and initiates the calculations 
 
-    The arguments to be passed are both dipole particles and the infrared cutoff (taken to be an isotropic energy cut-off in the same frame as the momenta of the multipole given). 
-
-    The Particles are ordered such that \f$ E_2 \ge E_1 \f$, possible by the invariance of the form factor under the swapping of the labels of the particles.
+    \param part1 Particle 1 of the dipole.
+    \param part2 Particle 2 of the dipole. The Particles are ordered
+      such that \f$ E_2 \ge E_1 \f$, possible by the invariance of the
+      form factor under the swapping of the labels of the particles.
+    \param ks The infrared cutoff (taken to be an isotropic energy
+      cut-off in the same frame as the momenta of the multipole given).
   */
 
   /*!

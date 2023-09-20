@@ -20,10 +20,16 @@ namespace ATOOLS {
       m_x[0] = vec[0]; m_x[1] = vec[1];
       m_x[2] = vec[2]; m_x[3] = vec[3];
     }
+    /*!
+     \brief Special Constructor, templated in Scalar, taking 4 single components.
+    */
     inline Vec4(const Scalar& x0, const Scalar& x1,
                 const Scalar& x2, const Scalar& x3) {
       m_x[0] = x0; m_x[1] = x1; m_x[2] = x2; m_x[3] = x3;
     }
+    /*!
+     \brief Special Constructor taking the space part and a Energie
+    */
     inline Vec4(const Scalar& E, const Vec3<Scalar>& xn) {
       m_x[0] = E;
       m_x[1] = xn[1];
@@ -262,12 +268,12 @@ namespace ATOOLS {
 */
 
 /*!
- \fn Vec4::Vec4(Scalar x0,Scalar x1, Scalar x2, Scalar x3){
+ \fn Vec4::Vec4(const Scalar &x0, const Scalar &x1, const Scalar &x2, const Scalar &x3){
  \brief Special Constructor, templated in Scalar, taking 4 single components.
 */
 
 /*!
- \fn Vec4::Vec4(const Scalar E, const Vec3D& v)
+ \fn ATOOLS::Vec4<Scalar>::Vec4(const Scalar &E, const Vec3<Scalar>& v)
  \brief Special Constructor taking the space part and a Energie
 */
 

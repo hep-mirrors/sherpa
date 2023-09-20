@@ -39,7 +39,7 @@ Cluster_Algorithm::~Cluster_Algorithm()
   }
 }
 
-int Cluster_Algorithm::ColorConnected(const ColorID &i,const ColorID &j) const
+int Cluster_Algorithm::ColorConnected(const ATOOLS::ColorID &i,const ATOOLS::ColorID &j) const
 {
   return int(i.m_i==j.m_j && i.m_i!=0)+int(i.m_j==j.m_i && i.m_j!=0);
 }
@@ -200,7 +200,7 @@ PTi2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pbeam) const
   return t*Min(pi[0],pbeam[0])/Max(pi[0],pbeam[0]);
 }
 
-bool Cluster_Algorithm::Cluster(Blob *const blob)
+bool Cluster_Algorithm::Cluster(ATOOLS::Blob *const blob)
 {
   std::list<ParticleList * > singlets;
   ProjectOnSinglets(blob,singlets);
@@ -309,7 +309,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   return true;
 }
 
-double Cluster_Algorithm::Mass(const Flavour &fl) const
+double Cluster_Algorithm::Mass(const ATOOLS::Flavour &fl) const
 {
   return fl.Mass(true);
 }

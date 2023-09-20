@@ -44,15 +44,15 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Standard_Model,"SM",Model_Base,Model_Arguments);
+DECLARE_GETTER(MODEL::Standard_Model,"SM",MODEL::Model_Base,MODEL::Model_Arguments);
 
-Model_Base *Getter<Model_Base,Model_Arguments,Standard_Model>::
+Model_Base *ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::Standard_Model>::
 operator()(const Model_Arguments &args) const
 {
   return new Standard_Model();
 }
 
-void Getter<Model_Base,Model_Arguments,Standard_Model>::
+void ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::Standard_Model>::
 PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model\n";

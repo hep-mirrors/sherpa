@@ -17,11 +17,6 @@ public:
   \class GRVph_Fortran_Interface
   \brief An interface to the GRV photon distribution.
 */
-/*!
-  \var std::string GRVph_Fortran_Interface::m_path
-  The path from where the initial pdfs and grids are to be loaded in. This will
-  be handed over to the corresponding Fortran subroutine as a char*.
-*/
 } // namespace PDF
 
 #endif

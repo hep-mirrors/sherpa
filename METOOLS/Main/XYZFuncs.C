@@ -20,7 +20,7 @@ using namespace std;
 
 // constructor
 XYZFunc::XYZFunc(const Vec4D_Vector& p, const Flavour_Vector& fl, 
-                 bool anti, const vector<int>& indices) :
+                 bool anti, const std::vector<int>& indices) :
   m_k0n(GAUGEK0), m_anti(anti)
 {
   m_anti=anti;
@@ -57,7 +57,7 @@ XYZFunc::XYZFunc( int n, const Vec4D* p, const Flavour *fl,
 }
 
 XYZFunc::XYZFunc(const Flavour_Vector& fl,
-                 const vector<int>& indices ) :
+                 const std::vector<int>& indices ) :
   m_k0n(GAUGEK0)
 {
   if (indices.size()==0) {

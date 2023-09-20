@@ -57,23 +57,8 @@ namespace PHOTONS {
   */
 
   /*!
-    \var double Generate_Multipole_Photon_Angle::m_nbar
-    \brief avarage photon number of the multipole
-  */
-
-  /*!
     \var std::vector<double> Generate_Multipole_Photon_Angle::m_nbars
     \brief avarage photon number of all constituent dipoles of the multipole
-  */
-
-  /*!
-    \var unsigned int Generate_Multipole_Photon_Angle::m_i
-    \brief particle label / position in m_dipole
-  */
-
-  /*!
-    \var unsigned int Generate_Multipole_Photon_Angle::m_j
-    \brief particle label / position in m_dipole
   */
 
   /*!
@@ -108,11 +93,6 @@ namespace PHOTONS {
   */
 
   /*!
-    \fn void Generate_Multipole_Photon_Angle::IndexLookup(unsigned int k)
-    \brief looks up the corresponding dipole indices i and j to index k in m_nbars
-  */
-
-  /*!
     \fn double Generate_Multipole_Photon_Angle::GetTheta()
     \brief returns m_theta ( \f$ \theta \f$ )
   */
@@ -121,7 +101,6 @@ namespace PHOTONS {
     \fn double Generate_Multipole_Photon_Angle::GetPhi()
     \brief returns m_phi ( \f$ \varphi \f$ )
   */
-
 
 }
 

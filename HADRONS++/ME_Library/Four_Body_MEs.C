@@ -149,9 +149,9 @@ bool QQ_QQQQ_Spectator::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,
   return true;
 }
 
-DEFINE_ME_GETTER(QQ_QQQQ_Spectator,"QQ_QQQQ_Spectator")
+DEFINE_ME_GETTER(HADRONS::QQ_QQQQ_Spectator,"QQ_QQQQ_Spectator")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,QQ_QQQQ_Spectator>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::QQ_QQQQ_Spectator>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B^{+} \\rightarrow u \\bar{c} u \\bar{d} $ \n\n"
     <<"Order: 0 = Scalar ($B^{+}$), 1 = spectator quark, "
@@ -203,9 +203,9 @@ bool Baryon_Diquark_3Quarks::SetColorFlow(vector<ATOOLS::Particle*> outparts,
   return true;
 }
 
-DEFINE_ME_GETTER(Baryon_Diquark_3Quarks,"Baryon_Diquark_3Quarks")
+DEFINE_ME_GETTER(HADRONS::Baryon_Diquark_3Quarks,"Baryon_Diquark_3Quarks")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,Baryon_Diquark_3Quarks>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::Baryon_Diquark_3Quarks>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
@@ -281,9 +281,9 @@ void B_tautau_pinupinu::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_tautau_pinupinu,"B_tautau_pinupinu")
+DEFINE_ME_GETTER(HADRONS::B_tautau_pinupinu,"B_tautau_pinupinu")
 
-void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_tautau_pinupinu>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B_tautau_pinupinu>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }

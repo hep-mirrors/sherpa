@@ -108,9 +108,9 @@ bool OpenLoops_Virtual::IsMappableTo(const PHASIC::Process_Info& pi)
   return m_ismapped;
 }
 
-DECLARE_VIRTUALME2_GETTER(OpenLoops_Virtual,"OpenLoops_Virtual")
-Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,OpenLoops_Virtual>::
-operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(OpenLoops::OpenLoops_Virtual,"OpenLoops_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,OpenLoops::OpenLoops_Virtual>::
+operator()(const PHASIC::Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="OpenLoops") return NULL;

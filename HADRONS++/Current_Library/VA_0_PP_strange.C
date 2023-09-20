@@ -198,9 +198,9 @@ Complex VA_0_PP_strange::KS::ScalarFormFactor( double s )
   return m_R0.BreitWigner(s);
 }
 
-DEFINE_CURRENT_GETTER(VA_0_PP_strange,"VA_0_PP_strange")
+DEFINE_CURRENT_GETTER(HADRONS::VA_0_PP_strange,"VA_0_PP_strange")
 
-void ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_PP_strange>::
+void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_0_PP_strange>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ 0 \\rightarrow \\pi K $ \n\n"
     <<"Order: 0 = $\\pi$, 1 = K \n\n"

@@ -68,7 +68,7 @@ namespace PDF {
     This is needed for the initial state shower of APACIC.
   */
   /*!
-    \fn void PDF_Electron::Calculate(const double, const double);
+    \fn void PDF_Electron::CalculateSpec(const double&, const double&);
     Here, the following expression is evaluated:
     \f[
     \begin{array}{l}

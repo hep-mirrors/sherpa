@@ -116,12 +116,12 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn Histogram_2D::Histogram_2D(Histogram_2D *)
+    \fn Histogram_2D::Histogram_2D(const Histogram_2D *)
     \brief Copy constructor
   */
 
   /*!
-    \fn Histogram_2D::Histogram_2D(std::string)
+    \fn Histogram_2D::Histogram_2D(const std::string&)
     \brief Constructor reading in values from a file
   */
 
@@ -136,12 +136,12 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn void Histogram_2D::Insert(double x)
+    \fn void Histogram_2D::Insert(double x, double y)
     \brief add one to corresponding bin
   */
 
   /*!
-    \fn void  Histogram_2D::Insert(double x, double weight)
+    \fn void  Histogram_2D::Insert(double x, double y, double weight, double n=1.0)
     \brief add value (and possibly the maximum) to corresponding bin
   */
 
@@ -171,16 +171,16 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn  double *  Histogram_2D::Bin(int)
+    \fn  double Histogram_2D::Bin(int)
     \brief return the value array of a specified bin
   */
 
   /*!
-    \fn  double *  Histogram_2D::Bin(double)
-    \brief return the value array of the bin where the given x falls in
+    \fn  double Histogram_2D::Bin(double x, double y)
+    \brief return the value array of the bin where the given x and y falls in
   */
 
-  /*!
+  /*! \cond DOCUMENT_COMMENTED_OUT_FUNCTION
     \fn void Histogram_2D::Extrapolate(double x ,double * ys ,int mode)
     \brief extrapolate, returns array with value and maximum
 
@@ -196,7 +196,7 @@ namespace ATOOLS {
       +-2  Add all bins apart from the overflow ones to the left (-) or right (+)
 
       Tested is only mode "+1"!!!
-      \endverbatim
+      \endverbatim \endcond
   */
 
   /*!

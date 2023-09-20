@@ -35,7 +35,7 @@ namespace HADRONS {
 
   public: 
     /** 
-     * @param mass selector
+     * @param ms The mass selector
      */
     Hadron_Decay_Map(const ATOOLS::Mass_Selector* ms);
     ~Hadron_Decay_Map();
@@ -83,7 +83,7 @@ namespace HADRONS {
   };
 
   /**
-     \mainpage
+     \package HADRONS
      The HADRONS package is Sherpa's native hadron and tau decay handler.
 
      \section decaydata Decaydata files

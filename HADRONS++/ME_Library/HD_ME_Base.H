@@ -11,9 +11,9 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 #define DEFINE_ME_GETTER(CLASS,TAG)				       \
-  DECLARE_GETTER(CLASS,TAG,HD_ME_Base,ME_Parameters);		       \
-  HD_ME_Base* ATOOLS::Getter<HD_ME_Base,ME_Parameters,CLASS>::	       \
-  operator()(const ME_Parameters &parameters) const		       \
+  DECLARE_GETTER(CLASS,TAG,HADRONS::HD_ME_Base,HADRONS::ME_Parameters);		       \
+  HD_ME_Base* ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,CLASS>::	       \
+  operator()(const HADRONS::ME_Parameters &parameters) const		       \
   { return new CLASS(parameters.flavs, parameters.indices,TAG); }
 
 namespace HADRONS {

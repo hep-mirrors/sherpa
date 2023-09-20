@@ -42,7 +42,8 @@ namespace HADRONS {
     \fn HD_Channel_Selector::GetChannel(int nin, int nout, const ATOOLS::Flavour * flavs, std::string name, GeneralModel & md )
     \brief Returns pointer on a PS generator
 
-    #in <var>nin</var> must be 1 and the #out <var>nout</var>greater equal than 2.
+    Input number <var>nin</var> must be 1 and the output number <var>nout</var>
+    greater than or equal to 2.
     The argument <var>name</var> corresponds to the name of the integrator such as
     - Isotropic (Rambo)
     - Dalitz_<var>prop</var>_<var>ij</var>

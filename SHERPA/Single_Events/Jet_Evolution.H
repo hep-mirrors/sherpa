@@ -80,17 +80,18 @@ namespace SHERPA {
     achieved by a pointer to the actual Matrix_Element_Handler.
   */
   /*!
-    \var Matrix_Element_Handler * Jet_Evolution::p_mehandler
-    The pointer to the Matrix_Element_Handler of choice. This choice is also reflected in the actual
-    realization of the matrix element - parton shower interface (the Perturbative_Interface). At the moment,
-    only two Matrix_Element_Handler's are available, namely Amegic and the internal 2->2 matrix elements which
-    are in fact quite limited in scope.
-  */
-  /*!
-    \var Shower_Handler * Jet_Evolution::p_showerhandler
-    The pointer to the Shower_Handler of choice. rightnow, only a Pythia-type parton shower (i.e. ordering by 
-    virtual mass plus angular ordering imposed "by hand" to ensure coherence) is available, in the near
-    future, however, there will be also a dipole shower available.
+    \var Jet_Evolution::m_pertinterfaces
+    The  map of interfaces between matrix element and parton/dipole showers. This interface basically
+    is responsible for taking the blob stemming from the hard production process or decay and translate the
+    corresponding partons into a parton history suitable for showering (in the actual case of a parton shower
+    this boils down to the fillnig of the partons into a binary tree structure of 1->2 decays of "mothers"
+    into "daughters"). It should be stressed that every combination of matrix element generator and shower
+    needs a specific realization of this due to different information obtainalble from the matrix elements and
+    different shower variables used in the shower. The possible keys for this map are:
+    - \c SignalMEs
+    - \c HadronDecays
+    - \c MPIs
+    - \c SoftCollisions
   */
   /*!
     \fn Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *,Shower_Handler *)

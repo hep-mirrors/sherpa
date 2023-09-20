@@ -246,10 +246,10 @@ operator()(const Process_Info &pi) const
   return NULL;
 }
 
-DECLARE_TREEME2_GETTER(MCFM_Born,"MCFM_Born")
+DECLARE_TREEME2_GETTER(SHERPA::MCFM_Born,"MCFM_Born")
 
 Tree_ME2_Base *ATOOLS::Getter
-<Tree_ME2_Base,External_ME_Args,MCFM_Born>::
+<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,SHERPA::MCFM_Born>::
 operator()(const External_ME_Args &args) const
 {
   if (args.m_source!="MCFM") return NULL;

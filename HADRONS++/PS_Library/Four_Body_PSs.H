@@ -104,15 +104,6 @@ namespace HADRONS {
     \var TwoResonances::m_dir
     This corresponds to \f$l\f$.
   */	
-  
-  
-  /*! 
-    \fn TwoResonances::ChID()
-    Returns value in PHASIC::Single_Channel::name containing the keyword 
-    \c "TwoResonances"
-    followed by information about the propagators.
-  */	
-
 
 } // end of namespace
 

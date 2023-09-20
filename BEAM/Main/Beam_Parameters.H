@@ -61,8 +61,20 @@ namespace BEAM {
     void InitializeFlav(kf_code flav);
     void SetBeamMode();
     Beam_Base * InitializeSimpleCompton(int);
+    /*!
+      Characteristic parameters for laser back scattering are read in and the spectrum is
+      instantiated through a call to
+      Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour,const double,const double,
+                                                 const double,const double,const int,
+                                                 const int,const int,bool &)
+    */
     Beam_Base * InitializeLaserBackscattering(int);
     Beam_Base * InitializeSpectrumReader(int);
+    /*!
+      Characteristic parameters for monochromatic beams are read in and the spectrum is
+      instantiated through a call to
+      Monochromatic::Monochromatic(const ATOOLS::Flavour,const double,const double,bool &)
+    */
     Beam_Base * InitializeMonochromatic(int);
     Beam_Base * InitializeEPA(int);
     Beam_Base * InitializeDM_beam(int);
@@ -71,6 +83,15 @@ namespace BEAM {
     ~Beam_Parameters();
 
     bool SpecifyMode();
+    /*!
+      SpecifySpectra reads in the specific spectra of the beams and the corresponding generator
+      and initializes the spectra through appropriate InitializeXXX methods. At the moment, two
+      such methods are available, namely InitializeLaserBackscattering(int)
+      and InitializeMonochromatic(int). For every new spectrum, such
+      a method has to be provided as well and SpecifySpectra has to be modified accordingly.
+      The idea is that in the long run, beam generators might be linked from outside by
+      experimenters aiming at higher precision/better fit to beam data.
+    */
     bool SpecifySpectra();
     Beam_Base * InitSpectrum(const size_t & num);
 

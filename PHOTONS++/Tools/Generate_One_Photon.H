@@ -95,14 +95,14 @@ namespace PHOTONS {
   // Description of member methods fo Generate_One_Photon
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \fn Generate_One_Photon::Generate_One_Photon(const double, const double, const double, Dipole_Type::code)
+    \fn Generate_One_Photon::Generate_One_Photon(const double&, const double&, const double&, Dipole_Type::code)
     \brief constructor for photon generation in dipoles
 
     The values passed are \f$ \beta_1,\beta_2 \f$, the energy of the photon and the Dipole_Type. For the dipole it is assumed that particle one is aligned along the \f$ +z \f$-axis for final-final dipoles and along the \f$ -z \f$-axis for initial-final dipoles, because in the this case, <tt>Dipole_FF</tt> fills the charged initial state into position 1. The constructor also executes the photon generation process.
   */
 
   /*!
-    \fn Generate_One_Photon::Generate_One_Photon(Particle_Vector, std::vector<double>, double, Dipole_Type::code)
+    \fn Generate_One_Photon::Generate_One_Photon(const ATOOLS::Particle_Vector &, const IdPairNbarVector&, double, Dipole_Type::code)
     \brief constructor for photon generation in multipoles
 
     The values passed are the multipole, all individual dipoles' \f$ \bar{n}_i \f$, the energy of the photon and the Dipole_Type. The constructor also executes the photon generation process wherein for the angular generation <tt>Generate_Multipole_Photon_Angle</tt> is called. It is also able to handle dipoles, but somewhat slower than the built-in generation.

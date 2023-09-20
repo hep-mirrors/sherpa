@@ -50,15 +50,15 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(SMEHC,"SMEHC",Model_Base,Model_Arguments);
+DECLARE_GETTER(MODEL::SMEHC,"SMEHC",MODEL::Model_Base,MODEL::Model_Arguments);
 
-Model_Base *Getter<Model_Base,Model_Arguments,SMEHC>::
+Model_Base *ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::SMEHC>::
 operator()(const Model_Arguments &args) const
 {
   return new SMEHC();
 }
 
-void Getter<Model_Base,Model_Arguments,SMEHC>::
+void ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::SMEHC>::
 PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model\n";

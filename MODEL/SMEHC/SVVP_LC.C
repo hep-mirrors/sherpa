@@ -11,7 +11,8 @@ using namespace ATOOLS;
 namespace METOOLS {
 
   template <typename SType>
-  class SVVP_Calculator: public Lorentz_Calculator {
+  class SVVP_Calculator
+  /** @cond RECURSIVE_WARNING */: public Lorentz_Calculator/** @endcond */ {
   public:
     
     typedef CVec4<SType> CVec4Type;

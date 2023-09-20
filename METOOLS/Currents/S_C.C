@@ -1,5 +1,9 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Currents/C_Scalar.H"
+/*!
+  @file S_C.C
+  @brief Implements the class CS.
+*/
 
 namespace METOOLS {
 
@@ -16,29 +20,45 @@ namespace METOOLS {
 
   protected:
 
+    /// @brief squared mass of the propagator
     SComplex m_cmass2;
 
+    /// @brief returns the label for the graph output
     std::string CLabel() const;
 
   public:
 
+    /// @brief constructor using Current_Key key
     CS(const Current_Key &key);
 
+    /// @brief constructs current
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 		    const int cr,const int ca,const int mode);
+
+    /// @brief sets the gauge vector
     void SetGauge(const ATOOLS::Vec4D &k);
 
+    /// @brief adds the propagator to the current
     void AddPropagator();
 
+    /// @brief contracts a current
     void SContract
     (const Current &c,const Int_Vector &pols,
      SComplex_Vector &ress,const size_t &offset) const;
 
+    /// @brief formats the current into a string
     std::string Format(const CObject *c) const;
 
-    char Type() const;    
+    /// @brief returns the current type
+    char Type() const;
 
   };// end of class CS
+  /*!
+    @class CS
+    @brief This class represents a scalar current.
+
+    This class represents a scalar current.
+  */
 
 }// end of namespace METOOLS
 

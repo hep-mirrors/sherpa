@@ -95,7 +95,7 @@ namespace AHADIC {
     which is its actual core.
   */
   /*!
-    \var double m_minmass
+    \var double Constituents::m_minmass
     \brief The mass of the lightest constituent (no gluon), usually a d or u quark.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,33 +127,12 @@ namespace AHADIC {
     if not, its original mass from the class ATOOLS::Flavour is returned.
   */
   /*!
-    \fn double Constituents::FlWeight(ATOOLS::Flavour & flav)
-    \brief The flavour weight for a given flavour.
-
-    If the flavour is found in the CCMap, its flavour weight is returned; if not the 
-    method yields 0.
-  */
-  /*!
-    \fn double Constituents::SpWeight(ATOOLS::Flavour & flav)
-    \brief The spin weight of a flavour.
-
-    If the flavour is found in the CCMap, its spin weight, i.e. the number of spin degrees of 
-    freedom, is returned; if not the method yields 0.
-  */
-  /*!
     \fn double Constituents::TotWeight(ATOOLS::Flavour & flav)
     \brief The total weight for a given flavour.
 
     If the flavour is found in the CCMap, its total weight (namely the total weight, given in
     AHADIC::ConstituentCharacteristic = flavour weight times spin weight) is returned; if not 
     the method yields 0.
-  */
-  /*!
-    \fn double Constituents::Smearing(ATOOLS::Flavour & flav)
-    \brief The smearing parameter for a given flavour.
-
-    If the flavour is found in the CCMap, its angular smearing parameter is returned; if not 
-    the method yields 0.  This is not in use add the moment.  
   */
   /*!
     \fn double Constituents::ISpin(ATOOLS::Flavour & flav)

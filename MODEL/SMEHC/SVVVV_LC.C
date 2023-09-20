@@ -9,7 +9,8 @@
 namespace METOOLS {
 
   template <typename SType>
-  class HVVVVA_Calculator: public Lorentz_Calculator {
+  class HVVVVA_Calculator
+  /** @cond RECURSIVE_WARNING */: public Lorentz_Calculator/** @endcond */ {
   public:
 
     typedef CVec4<SType> CVec4Type;
@@ -37,7 +38,8 @@ namespace METOOLS {
   template class HVVVVA_Calculator<double>;
 
   template <typename SType>
-  class HVVVVB_Calculator: public Lorentz_Calculator {
+  class HVVVVB_Calculator
+  /** @cond RECURSIVE_WARNING */: public Lorentz_Calculator/** @endcond */ {
   public:
     
     typedef CVec4<SType> CVec4Type;
@@ -65,7 +67,8 @@ namespace METOOLS {
   template class HVVVVB_Calculator<double>;
 
   template <typename SType>
-  class HVVVVC_Calculator: public Lorentz_Calculator {
+  class HVVVVC_Calculator
+  /** @cond RECURSIVE_WARNING */: public Lorentz_Calculator/** @endcond */ {
   public:
     
     typedef CVec4<SType> CVec4Type;

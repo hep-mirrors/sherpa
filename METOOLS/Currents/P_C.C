@@ -1,5 +1,9 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Currents/C_Pseudo.H"
+/*!
+  @file P_C.C
+  @brief Implements the class CP.
+*/
 
 namespace METOOLS {
 
@@ -16,29 +20,45 @@ namespace METOOLS {
 
   protected:
 
+    /// @brief propagator factor
     SComplex m_prop;
 
+    /// @brief returns the label for the graph output
     std::string CLabel() const;
 
   public:
 
+    /// @brief constructor using Current_Key key
     CP(const Current_Key &key);
 
+    /// @brief constructs current
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 		    const int cr,const int ca,const int mode);
+
+    /// @brief sets the gauge vector
     void SetGauge(const ATOOLS::Vec4D &k);
 
+    /// @brief adds the propagator to the current
     void AddPropagator();
 
+    /// @brief contracts a current
     void SContract
     (const Current &c,const Int_Vector &pols,
      SComplex_Vector &ress,const size_t &offset) const;
 
+    /// @brief formats the current into a string
     std::string Format(const CObject *c) const;
 
-    char Type() const;    
+    /// @brief returns the current type
+    char Type() const;
 
-  };// end of class CV
+  };// end of class CP
+  /*!
+    @class CP
+    @brief This class represents a pseudo-scalar current.
+
+    This class represents a pseudo-scalar current.
+  */
 
 }// end of namespace METOOLS
 

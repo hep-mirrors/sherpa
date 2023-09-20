@@ -1,5 +1,6 @@
 
 set(Recola_SOURCES Recola_Interface.C Recola_Born.C  Recola_Virtual.C)
+set(Recola_HEADERS Recola_Interface.H Recola_Born.H  Recola_Virtual.H)
 
 sherpa_create_git_info(Recola)
 

@@ -63,8 +63,9 @@ namespace PHASIC {
 
 #define DEBUG__Variable_Selector
 
-using namespace PHASIC;
 using namespace ATOOLS;
+
+namespace PHASIC {
 
 Variable_Selector::Variable_Selector(Process_Base* const proc,
                                      const int& imode,
@@ -147,7 +148,7 @@ void Variable_Selector::SetRange
 }
 
 bool Variable_Selector::Trigger
-(const Selector_List &sl,size_t &l,size_t &u,std::vector<Vec4D> &moms,
+(const ATOOLS::Selector_List &sl,size_t &l,size_t &u,ATOOLS::Vec4D_Vector &moms,
  const size_t &f,const size_t &n,const size_t &m,const size_t &id) 
 {
   msg_Indent();
@@ -182,7 +183,7 @@ bool Variable_Selector::Trigger
   return true;
 }
 
-bool Variable_Selector::Trigger(Selector_List &sl,const int id)
+bool Variable_Selector::Trigger(ATOOLS::Selector_List &sl,const int id)
 {
 #ifdef DEBUG__Variable_Selector
   msg_Debugging()<<METHOD<<"(id="<<0<<"): {\n";
@@ -203,15 +204,17 @@ bool Variable_Selector::Trigger(Selector_List &sl,const int id)
   return hit;
 }
 
-bool Variable_Selector::Trigger(Selector_List &sl)
+bool Variable_Selector::Trigger(ATOOLS::Selector_List &sl)
 {
   return Trigger(sl,p_sub?(p_sub->IsReal()?0:p_sub->m_idx+1):0);
 }
 
-DECLARE_GETTER(Variable_Selector,"VariableSelector",Selector_Base,Selector_Key);
+}
 
-Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Variable_Selector>::
-operator()(const Selector_Key &key) const
+DECLARE_GETTER(PHASIC::Variable_Selector,"VariableSelector",PHASIC::Selector_Base,PHASIC::Selector_Key);
+
+PHASIC::Selector_Base *ATOOLS::Getter<PHASIC::Selector_Base,PHASIC::Selector_Key,PHASIC::Variable_Selector>::
+operator()(const PHASIC::Selector_Key &key) const
 {
 #ifdef DEBUG__Variable_Selector
   msg_Debugging()<<"Getter<Variable_Selector>::operator(): {\n";
@@ -243,7 +246,7 @@ operator()(const Selector_Key &key) const
   const auto name = s["Variable"].SetDefault("").Get<std::string>();
   const auto orderings = s["Ordering"].GetVector<std::string>();
   const auto imode = s["Mode"].SetDefault(0).Get<int>();
-  Variable_Selector *vs = new Variable_Selector(key.p_proc, imode, name, orderings);
+  PHASIC::Variable_Selector *vs = new PHASIC::Variable_Selector(key.p_proc, imode, name, orderings);
   vs->SetRange(0,key.p_proc->Flavours(),cflavs,cbounds);
   NLO_subevtlist *subs(key.p_proc->GetSubevtList());
   if (subs) {
@@ -259,7 +262,7 @@ operator()(const Selector_Key &key) const
   return vs;
 }
 
-void ATOOLS::Getter<Selector_Base,Selector_Key,Variable_Selector>::
+void ATOOLS::Getter<PHASIC::Selector_Base,PHASIC::Selector_Key,PHASIC::Variable_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"variable selector";

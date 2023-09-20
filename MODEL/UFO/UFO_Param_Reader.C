@@ -155,8 +155,7 @@ UFO_Param_Reader::NotFound(const string &block, const unsigned int& n,
   return def;
 }
 
-namespace UFO
-{
+/** @cond TEMPLATE_INSTANTIATIONS */
 template Complex UFO_Param_Reader::GetEntry(const string& block,
                                            const unsigned int& n,
                                            const unsigned int& m,
@@ -175,13 +174,13 @@ template double UFO_Param_Reader::GetEntry(const string& block,
                                            const unsigned int& n,
                                            const double& def,
                                            const bool& err);
-  template int UFO_Param_Reader::GetEntry(const string& block,
-                                          const unsigned int& n,
-                                          const unsigned int& m,
-                                          const int& def,
-                                          const bool& err);
-  template int UFO_Param_Reader::GetEntry(const string& block,
-                                          const unsigned int& n,
-                                          const int& def,
-                                          const bool& err);
-}
+template int UFO_Param_Reader::GetEntry(const string& block,
+                                        const unsigned int& n,
+                                        const unsigned int& m,
+                                        const int& def,
+                                        const bool& err);
+template int UFO_Param_Reader::GetEntry(const string& block,
+                                        const unsigned int& n,
+                                        const int& def,
+                                        const bool& err);
+/** @endcond */

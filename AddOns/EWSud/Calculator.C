@@ -476,7 +476,7 @@ Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
   for (const auto kcoupling : kcouplings) {
     for (const auto lcoupling : lcouplings) {
       auto contrib = 2.0 * kcoupling.second * lcoupling.second;
-      if (kcoupling.first != flavs[0] || lcoupling.first != flavs[1]) {
+      if (Flavour(kcoupling.first) != flavs[0] || Flavour(lcoupling.first) != flavs[1]) {
         Leg_Kfcode_Map key {{indizes[0], std::abs(kcoupling.first)},
                             {indizes[1], std::abs(lcoupling.first)}};
         const auto goldstone_legs = m_ampls.GoldstoneBosonReplacements(m_current_spincombination);
