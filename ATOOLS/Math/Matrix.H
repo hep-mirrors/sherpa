@@ -7,8 +7,9 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/MyComplex.H"
 
-namespace ATOOLS {
 
+namespace ATOOLS {
+  class CMatrix;
   template<int _rank>
   class Matrix {
   protected:
@@ -34,32 +35,40 @@ namespace ATOOLS {
     //Vec4D operator*(const Vec4D&); 
   };
 
-  class CMatrix {
+template <class Scalar>
+  class TCMatrix {
+  public:
+    typedef std::complex<Scalar> SComplex;
   protected:
-    Complex ** p_m;
+    SComplex ** p_m;
     int        m_rank;
   public:
-    CMatrix() { m_rank = 0; p_m = NULL; }
-    CMatrix(int);
-    CMatrix(int _rank, Complex value);
-    CMatrix(Complex**,int);
-    CMatrix(const CMatrix&);
-    ~CMatrix();
-    CMatrix         Conjugate();
+    TCMatrix() { m_rank = 0; p_m = NULL; }
+    TCMatrix(int _rank, bool unit = false);
+    TCMatrix(int _rank, SComplex value);
+    TCMatrix(SComplex**,int);
+    TCMatrix(const TCMatrix&);
+    TCMatrix(const CMatrix&);
+    ~TCMatrix();
+    TCMatrix         Conjugate();
     int             Rank() const            { return m_rank; }
-    Complex       * operator[](int i)       { return p_m[i]; }
-    const Complex * operator[](int i) const { return p_m[i]; }
+    SComplex       * operator[](int i)       { return p_m[i]; }
+    const SComplex * operator[](int i) const { return p_m[i]; }
     Vec4C operator* (const Vec4C& cvec);
-    CMatrix operator* (const Complex scal);
-    CMatrix operator+ (const CMatrix& cmatrix);
-    Complex ** GetMatrix()      const { return p_m; } 
+
+    TCMatrix operator* (const Scalar scal) const;
+    TCMatrix operator* (const SComplex scal) const;
+    TCMatrix operator+ (const TCMatrix& cmatrix) const;
+    SComplex ** GetMatrix()      const { return p_m; }
   };
 
+//#define DDCMatrix METOOLS::TCMatrix<double>
+//#define QDCMatrix METOOLS::TCMatrix<long double>
 
   //Global functions.
 
   template<int _rank>
-  inline Matrix<_rank> operator*(const double scal, const Matrix<_rank>& in) { 
+  inline Matrix<_rank> operator*(const double scal, const Matrix<_rank>& in) {
     Matrix<_rank> out;
     for(short int i=0; i<_rank; i++) {
       for(short int j=0; j<_rank; j++) {
@@ -67,7 +76,7 @@ namespace ATOOLS {
       }
     }
     return out;
-  }		
+  }
 
   template<int _rank>
   Matrix<_rank> operator*(const Matrix<_rank>& a,const Matrix<_rank>& b) {
@@ -102,8 +111,20 @@ namespace ATOOLS {
     return out;
   }
 
-  CMatrix operator*(const Complex scal, const CMatrix& in);
-  CMatrix operator*(const CMatrix& a,const CMatrix& b);
+  class CMatrix: public TCMatrix<double>{
+  public:
+    CMatrix() { m_rank = 0; p_m = NULL; }
+    CMatrix(int);
+    CMatrix(int _rank, Complex value);
+    CMatrix(Complex**,int);
+    CMatrix(const CMatrix&);
+  };
+
+  template<class Scalar>
+  TCMatrix<Scalar> operator*(const std::complex<Scalar> scal, const TCMatrix<Scalar>& in);
+  template<class Scalar>
+  TCMatrix<Scalar> operator*(const TCMatrix<Scalar>& a,const TCMatrix<Scalar>& b);
+
 
   /*!
     \file 
@@ -227,6 +248,8 @@ namespace ATOOLS {
     \brief multiplication of a 4-vector with a \f$4\times 4\f$ matrix
   */
 }
+#define DDCMatrix ATOOLS::TCMatrix<double>
+#define QDCMatrix ATOOLS::TCMatrix<long double>
 
 #endif
 

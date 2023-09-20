@@ -4,7 +4,7 @@
 #include "METOOLS/Currents/C_Spinor.H"
 #include "ATOOLS/Phys/Spinor.H"
 
-#define ZERO SComplex(0.0,0.0)
+//#define ZERO SComplex(0.0,0.0)
 // TODO: wenn ausreichend angepasst, sodass kompilierbar, zu CMakeLists.txt zufügen, SONST WIRD FILE BEI KOMPILIEREN
 //       NICHT BERÜCKSICHTIGT
 
@@ -57,8 +57,7 @@ namespace METOOLS {
     CRaScType RSP(const ATOOLS::Vec4D &p,const int cr,const int ca);
     CRaScType RSM(const ATOOLS::Vec4D &p,const int cr,const int ca);
 
-    template <class Scalar>
-    CRaScType SpinorVectorProduct(const CSpinorType spinor, const CVec4Type polvector, Scalar m2,
+    CRaScType SpinorVectorProduct(const CSpinorType spinor, const CVec4Type polvector, SType m2,
                                   int cr=0, int ca=0, int s=0);
 
   public:
@@ -79,6 +78,10 @@ namespace METOOLS {
 
     // Tests
     bool Test_WF_Properties();
+    inline CRaScType Get_RSPP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0)
+    { return RSPP(p, r, s, b);};
+    inline CRaScType Get_RSMM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0) const
+    { return RSMM(p, r, s, b);};
 
   };
 
@@ -99,6 +102,16 @@ namespace METOOLS {
 
 using namespace METOOLS;
 using namespace ATOOLS;
+
+// TODO: Bislang identisch zu Fermion- und Bosonkonstruktor: ist das richtig?
+template <typename SType>
+CRS<SType>::CRS(const Current_Key &key):
+  Current(key), m_cmass2(0.0), m_cmass(0.0)
+{
+  m_cmass=sqrt(m_cmass2=SComplex(sqr(this->m_mass),-this->m_mass*this->m_width));
+  if (key.m_n==1 && key.p_model->ScalarNumber("WidthScheme")!=1)
+    m_cmass=sqrt(m_cmass2=Complex(sqr(this->m_mass),0.0));
+}
 
 // FUNKTIONS TO CALCULATE THE RARITA-SCHWINGER-WAVEFUNKTION
 template <typename SType> CVec4<SType>
@@ -174,9 +187,9 @@ CRS<SType>::RSMM(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
                                                   EMP(p, cr, ca), p.Abs2(), cr, ca, s);
 }
 
-template<typename SType> template <class Scalar>
-CRS<SType>::CRaScType CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType spinor, const CRS::CVec4Type polvector,
-                                                      const Scalar m2, const int cr, const int ca, const int s) {
+template<typename SType>
+CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType spinor, const CRS::CVec4Type polvector,
+                                                      const SType m2, const int cr, const int ca, const int s) {
   // set properties of new Rarita-Schwinger particle
   int vector_h = polvector.H();
   // convert in more approriate numbering, h=0 : longitudial, h=1: right, h=-1: left
@@ -192,17 +205,23 @@ CRS<SType>::CRaScType CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType spi
   RaSc(1) = ca;
 
   // TODO: Ist diese Version der Komponentenbefüllung richtig oder z.B. diese:
-  //           for (size_t i(0); i<16; ++i) {
-  //      RaSc[i] = sqrt(SType(2.0)) * spinor[i / 4] * polvector[i % 4];
-  //    }
-  // Fill Rarita-Schwinger wave function
+//  for (size_t i(0); i<8; ++i){
+//    std::cout << "Fill components" << i << i/2 << std::endl;
+//    RaSc[i] = spinor[i % 2] * polvector[i / 2];
+//    RaSc[i+8] = spinor[i % 2 + 2] * polvector[i / 2];
+// oder:     for (size_t i(0); i<16; ++i) {
+//      RaSc[i] = spinor[i / 4] * polvector[i % 4];
+//    }
+
+  // Fill Rarita-Schwinger wave function; "ordering" of components according to HELAS subroutines for spin-3/2 particles
+  // in 1010.4255 (four vector with Dirac spinors as components, i.e. first four components have Lorentz index 0 and
+  // spinor indexes from 0 to 3, the second four components Lorentz index 1 ...), but using Dirac-spinors and
+  // polarization vectors as already implemented in SHERPA
   if (IsZero(m2)){
-    for (size_t i(0); i<8; ++i){
-      RaSc[i] = spinor[i % 2] * polvector[i / 2];
-      RaSc[i+8] = spinor[i % 2 + 2] * polvector[i / 2];
-    }
+    for (size_t i(0); i<16; ++i)
+      RaSc[i] = spinor[i % 4] * polvector[i / 4];
   }
-  RaSc.SetOn();
+  bool on = RaSc.SetOn();
   return RaSc;
 }
 
