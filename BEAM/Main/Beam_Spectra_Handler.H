@@ -65,7 +65,7 @@ namespace BEAM {
     inline bool CalculateWeight(const double & scale) const {
       return p_weight->Calculate(scale);
     }
-    inline const double Weight() const {
+    inline double Weight() const {
       return (*p_weight)();
     }
 
@@ -155,12 +155,12 @@ namespace BEAM {
     \todo Enable beam geometries, especially for pile-up events etc.
   */
   /*!
-    \fn bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *)
+    \fn bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *,const ATOOLS::Flavour *)
     This checks whether the two sets of flavours match the flaovurs inherent to the
     two BeamBases. If this is the case, true is returned.
   */
   /*!
-    \fn bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *)
+    \fn bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *)
     This checks whether the flavours match the bunches of the two BeamBases. If this is the case,
     true is returned.
   */
@@ -189,11 +189,10 @@ namespace BEAM {
     where the energy fractions and the scale are passed as arguments.
   */
   /*!
-    \fn double Beam_Spectra_Handler::Weight(ATOOLS::Flavour * flin = NULL)
+    \fn double Beam_Spectra_Handler::Weight()
     The weight corresponding to CalculateWeight(double), basically the product of the two
-    individual weights. This clearly depends on the flavours of the bunch particles here
-    and might therefore allow to have, e.g., a spectrum of the outgoing electrons in
-    laser backscattering. Such an option, however, has not been implemented yet.
+    individual weights. Unlike in the ISR handling this does not depend on the
+    particle flavours for the implemented spectra, i.e. EPA and Pomeron.
   */
 }
 
