@@ -165,7 +165,7 @@ bool MI_Processes::PrepareSudakovFactor() {
   // N.B.: Note that we count the bins "down", i.e. bin 0 is at pt_nmax^2.
   // N.B.: Using left steps, thereby somewhat overestimating the integral.
   axis sbins    = (m_variable_s ?
-		   axis(m_sbins, 4.*m_ptmin2, m_S, axis_mode::log) :
+		   axis(m_sbins, 4.*m_ptmin2, m_S, axis_mode::linear) :
 		   axis(1, m_S , m_S, axis_mode::linear) );
   axis pt2bins  = axis(m_pt2bins,m_ptmin2,m_ptmax2,axis_mode::log);
   p_sudakov     = new Sudakov_Argument(this,sbins,pt2bins);
