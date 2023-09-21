@@ -287,32 +287,34 @@ double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
   double mj2(sqr(sub.p_real->p_fl[sub.m_j].Mass()));
   double mk2(sqr(sub.p_real->p_fl[sub.m_k].Mass()));
   double mij2(sqr(sub.p_fl[sub.m_ijt].Mass()));
+  double kt2;
   if (sub.m_ijt>=2) {
-    int evol(p_mcatnlo->KinFF()->EvolScheme());
-    double kt2=(Q2-mi2-mj2-mk2)*y;
-    if (sub.m_kt<2) kt2=(-Q2+mij2+mk2)*(1.0-y)/y;
-    if (evol==0) kt2=kt2*x*(1.0-x)-x*x*mj2-sqr(1.0-x)*mi2;
+    // final-state emitter
+    if (sub.m_k>=2) {
+      // final-state spectator
+      kt2 = p_mcatnlo->KinFF()->GetKT2(Q2,y,x,mi2,mj2,mk2,
+            sub.p_real->p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
+    }
     else {
-      if (sub.p_real->p_fl[sub.m_i].IsQuark()) {
-	if (sub.p_real->p_fl[sub.m_j].IsGluon()) kt2*=(1.0-x);
-      }
-      else {
-	if (sub.p_real->p_fl[sub.m_j].IsQuark()) kt2*=x;
-	else kt2*=x*(1.0-x);
-      }
+      // initial-state spectator
+      kt2 = p_mcatnlo->KinFI()->GetKT2(Q2,y,x,mi2,mj2,mk2,
+            sub.p_real->p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
     }
     return kt2;
   }
   else {
-    int evol(p_mcatnlo->KinFF()->EvolScheme());
-    double kt2=-Q2*y/x;
-    if (sub.m_kt<2) kt2=Q2*y/x;
-    if (evol==0) kt2=kt2*(1.0-x);
-    else {
-      if (sub.p_real->p_fl[sub.m_j].IsGluon()) {
-	kt2*=(1.0-x);
-      }
+    // initial-state emitter
+    if (sub.m_k>=2) {
+      // final-state spectator
+      kt2 = p_mcatnlo->KinIF()->GetKT2(Q2,y,x,mk2,mi2,mj2,
+            sub.p_real->p_fl[sub.m_i],sub.p_real->p_fl[sub.m_j]);
     }
+    else {
+      // initial-state spectator
+      kt2 = p_mcatnlo->KinII()->GetKT2(Q2,y,x,mk2,mi2,mj2,
+            sub.p_real->p_fl[sub.m_i],sub.p_real->p_fl[sub.m_j]);
+    }
+    
     return kt2;
   }
   THROW(fatal_error,"Implement me");
