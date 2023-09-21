@@ -1,11 +1,15 @@
 #include "METOOLS/Main/SpinFuncs.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 template<class Scalar>
 METOOLS::PauliVector<Scalar>::PauliVector() : sigma0(ATOOLS::TCMatrix(2, SComplex(0.0))),
 sigma1(ATOOLS::TCMatrix(2, SComplex(0.0))), sigma2(ATOOLS::TCMatrix(2, SComplex(0.0))),
 sigma3(ATOOLS::TCMatrix(2, SComplex(0.0)))  {
-
+  ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
+  int gauge = s["COMIX_DEFAULT_GAUGE"].Get<int>();
+  if ( gauge != 0)
+    THROW(not_implemented, "Basis for gamma matrices for the chosen COMIX_DEFAULT_GAUGE is not implemented")
   sigma0[0][0] = sigma0[1][1] = sigma1[0][1] = sigma1[1][0] = sigma3[0][0] = SComplex(1);
   sigma3[1][1]=SComplex(-1);
   sigma2[0][1]=SComplex(0, -1);
@@ -25,6 +29,12 @@ template<class Scalar>
 METOOLS::Gamma<Scalar>::Gamma() : gamma0(ATOOLS::TCMatrix(4, SComplex(0.0))),
 gamma1(ATOOLS::TCMatrix(4, SComplex(0.0))), gamma2(ATOOLS::TCMatrix(4, SComplex(0.0))),
 gamma3(ATOOLS::TCMatrix(4, SComplex(0.0))) {
+
+  ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
+  int gauge = s["COMIX_DEFAULT_GAUGE"].Get<int>();
+  if ( gauge != 0)
+    THROW(not_implemented, "Basis for gamma matrices for the chosen COMIX_DEFAULT_GAUGE is not implemented")
+
   // Gamma vector in Weyl basis
   METOOLS::PauliVector<Scalar> paulivector = PauliVector<Scalar>();
   for (int i(0); i<2; ++i){
