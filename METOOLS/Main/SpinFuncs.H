@@ -5,6 +5,8 @@
 #ifndef METOOLS_Main_SpinFuncs_H
 #define METOOLS_Main_SpinFuncs_H
 
+// Implement gamma-matrices corresponding to COMIX_DEFAULT_GAUGE: 0 for the calculation of the Weyl spinors
+// For the other gauges different bases for the gamma matrices need to be added here
 namespace METOOLS{
   template <class Scalar>
   class PauliVector{
