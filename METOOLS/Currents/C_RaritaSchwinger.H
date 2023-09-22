@@ -132,6 +132,7 @@ namespace METOOLS {
 
    inline SComplex &operator[](const int i) { return m_x[i]; }
    inline const SComplex &operator[](const int i) const { return m_x[i]; }
+   ATOOLS::TCMatrix<Scalar> operator*(const CRaritaSchwinger<Scalar> &rs) const;
 
 /*     inline CVec4 operator+(const CVec4 &v) const
     { 
@@ -207,6 +208,7 @@ namespace METOOLS {
     bool Test_Properties(const ATOOLS::Vec4D &p, int r);
 
   };
+
 
   // end of class CRaritaSchwinger
 
