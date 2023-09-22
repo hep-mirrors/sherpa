@@ -3,7 +3,7 @@
 #include "METOOLS/Currents/C_Vector.H"
 #include "METOOLS/Currents/C_Spinor.H"
 #include "ATOOLS/Phys/Spinor.H"
-
+#include "METOOLS/Main/SpinFuncs.H"
 //#define ZERO SComplex(0.0,0.0)
 // TODO: wenn ausreichend angepasst, sodass kompilierbar, zu CMakeLists.txt zufügen, SONST WIRD FILE BEI KOMPILIEREN
 //       NICHT BERÜCKSICHTIGT
@@ -77,7 +77,9 @@ namespace METOOLS {
     char Type() const;
 
     // Tests
-    bool Test_WF_Properties();
+    bool Test_WF_Properties(const ATOOLS::Vec4D &p);
+
+    // TODO: Necessary or only for test purpose?
     inline CRaScType Get_RSPP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0)
     { return RSPP(p, r, s, b);};
     inline CRaScType Get_RSMM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0) const
@@ -173,18 +175,31 @@ CRS<SType>::EML(const Vec4D &p,const int cr,const int ca)
 }
 
 // TODO: PLUS AND MINUS EXCHANGED
+// TODO: GENAUE DEFINITION BESCHREIBEN!!!
+// - Füllungsreihenfolge wie in MadGraph /HELAS paper arXiv: 1010.4255
+// - Form wie in S.F.Novaes & D.Spehler Nuclear Physics B 371 (1992), 618-636 Eq.(13) mit Phase theta = 0
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, const int cr, const int ca,
                  const int hh, const int ms) {
-  return METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, 1, p, cr, ca, hh, s, p.Abs2(), ms),
-                                                  EMM(p, cr, ca), p.Abs2(), cr, ca, s);
+  return
+  b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, 1, p, cr, ca, hh, s, p.Abs2(), ms),
+                                                  EMM(p, cr, ca), p.Abs2(), cr, ca, s):METOOLS::CRS<SType>::
+                                                  Bar(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, 1, p, cr,
+                                                                                                       ca, hh, s,
+                                                                                                       p.Abs2(), ms),
+                                                                                               EMM(p, cr, ca), p.Abs2(),
+                                                                                               cr, ca, s));
 }
 
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSMM(const ATOOLS::Vec4D &p, const int r, const int s, const int b, const int cr, const int ca,
                  const int hh, const int ms) {
-  return METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, -1, p, cr, ca, hh, s, p.Abs2(), ms),
-                                                  EMP(p, cr, ca), p.Abs2(), cr, ca, s);
+  return b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, -1, p, cr, ca, hh, s, p.Abs2(), ms),
+                                                  EMP(p, cr, ca), p.Abs2(), cr, ca, s):METOOLS::CRS<SType>::Bar(
+                                                  METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, -1, p, cr, ca,
+                                                                                                   hh, s, p.Abs2(), ms),
+                                                                                           EMP(p, cr, ca), p.Abs2(), cr,
+                                                                                           ca, s));
 }
 
 template<typename SType>
@@ -192,11 +207,11 @@ CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType s
                                                       const SType m2, const int cr, const int ca, const int s) {
   // set properties of new Rarita-Schwinger particle
   int vector_h = polvector.H();
-  // convert in more approriate numbering, h=0 : longitudial, h=1: right, h=-1: left
+  // convert in more approriate numbering, h=0 : longitudial, h=2: right, h=-2: left
   // TODO: ADJUST IF +- AND -SWITCH IS SOLVED!!!
   if (vector_h==2) vector_h=0;  // long
-  else if (vector_h==1) vector_h=1; // right
-  else if (vector_h==0) vector_h=-1; // left
+  else if (vector_h==1) vector_h=2; // right
+  else if (vector_h==0) vector_h=-2; // left
 
   METOOLS::CRS<SType>::CRaScType RaSc(spinor.R(), spinor.B(), cr, ca, vector_h+spinor.H(), s);
 
@@ -443,4 +458,32 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"vector current (double)";
 }*/
 
+// TODO: Wieso failt Normierungstest bei den einlaufenden Teilchen des Prozesses? (also mit deren Impulsen)
+template<typename SType>
+bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p) {
+  CRaritaSchwinger<SType> rspp = RSPP(p, 1, 1, 1, 0, 0, 1);
+  CRaritaSchwinger<SType> rsmm = RSMM(p, 1, 1, 1, 0, 0, -1);
+  METOOLS::Gamma<SType> gammavec = Gamma<SType>();
+  if (ATOOLS::IsZero(p.Abs2())){
+    // normalization
+    std::cout<<METHOD<<": Testing normalization of Rarita-Schwinger wave function..."<<std::endl;
+    TCMatrix<SType> result1 = rspp * rspp.Bar() + rsmm * rsmm.Bar() + gammavec * p;
 
+    for (size_t i(0); i<4; ++i){
+      for (size_t j(0); j<4; ++j){
+        if (std::abs(result1[i][j].real())> rspp.Accu()|| std::abs(result1[i][j].imag())>rspp.Accu()) {
+          msg_Out()<<"Component " << i << j << " of resulting 4x4 matrix is " << result1[i][j] << ", instead of zero!"
+          << std::endl;
+          return false;
+        }
+      }
+    }
+
+    // equality between U++ and V-- / U-- and V++ for bar and non-bar
+
+  }
+  // normalization
+
+  // completness relation
+  return true;
+}
