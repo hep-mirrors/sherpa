@@ -48,16 +48,16 @@ namespace EXTRAXS {
     double vboson  = sqrt(1.-4.*mhat2);
     double logterm = log((sqrt(1./mhat2) + sqrt(1./mhat2-4.))/2.);
     // Calculation according to the paper
-    double xs_perp = ( vboson * (1.+2.*mhat2) - 
+    double xs_perp = ( vboson * (1.+2.*mhat2) -
 		       8.*mhat2 * (1. - mhat2) * logterm);
-    double xs_para = ( vboson * (1.+6.*mhat2) - 
+    double xs_para = ( vboson * (1.+6.*mhat2) -
 		       8.*mhat2 * (1. - 3.*mhat2) * logterm);
     return m_pref/shat * (xs_perp + xs_para);
   }
 }
 
-DECLARE_TREEME2_GETTER(yy_bobo,"yy_bobo")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,yy_bobo>::
+DECLARE_TREEME2_GETTER(EXTRAXS::yy_bobo,"yy_bobo")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::yy_bobo>::
 operator()(const External_ME_Args &args) const
 {
   const Flavour_Vector fl = args.Flavours();
@@ -66,8 +66,8 @@ operator()(const External_ME_Args &args) const
   if (fl[0]==Flavour(kf_photon) && fl[1]==Flavour(kf_photon) &&
       fl[2]==fl[3].Bar() && fl[2].IntSpin()==0 &&
       fl[2].Charge()!=0) {
-    if (args.m_orders[0]==0 && args.m_orders[1]==2) 
-      return new yy_bobo(args);
+    //    if (args.m_orders[0]==0 && args.m_orders[1]==2)
+    //return new yy_bobo(args);
   }
   return NULL;
 }
