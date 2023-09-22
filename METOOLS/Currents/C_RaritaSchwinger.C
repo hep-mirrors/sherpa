@@ -17,13 +17,14 @@ METOOLS::operator<<(std::ostream &s,const CRaritaSchwinger<Scalar> &rs)
 {
   //encoding m_h
   std::string helicity;
+  std::cout << rs.H() << std::endl;
   if (rs.H()==3) helicity = "++";
   else if (rs.H()==1) helicity = "+";
   else if (rs.H()==-1) helicity = "-";
   else if (rs.H()==-3) helicity = "--";
   else THROW(fatal_error, "The value of the helicity of the Rarita-Schwinger particle is not permitted.")
 
-  return s<<'{'<<(rs.B()>0?(rs.R()>0?"Ubar"+helicity:"Vbar"+helicity):
+  return s<<'{'<<(rs.B()<0?(rs.R()>0?"Ubar"+helicity:"Vbar"+helicity):
   (rs.R()>0?"U"+helicity:"V"+helicity)) <<","<<rs.S()<<";"<<rs(0)<<","<<rs(1)<<'|'
 	  <<rs[0]<<','<<rs[1]<<','<<rs[2]<<','<<rs[3]<<','<<rs[4]<<','<<rs[5]<<','<<rs[6]<<','<<rs[7]<<','<<rs[8]<<','
     <<rs[9]<<','<<rs[10]<<','<<rs[11]<<','<<rs[12]<<','<<rs[13]<<','<<rs[14]<<','<<rs[15]<<'}';
@@ -61,6 +62,18 @@ void CRaritaSchwinger<Scalar>::Invert() {
 
 }
 
+// TODO: WANN LÖSCHE ICH DAS ZEUG HIER WIEDER?
+template<class Scalar>
+ATOOLS::TCMatrix<Scalar> CRaritaSchwinger<Scalar>::operator*(const CRaritaSchwinger<Scalar> &rs) const {
+  SComplex** intermediate = new SComplex*[4];
+  for (int i=0;i<4;++i) intermediate[i] = new SComplex[4];
+  for (size_t i(0); i<4; ++i){
+    for (size_t j(0); j<4; ++j){
+      intermediate[i][j] = (*this)[i] * rs[j] - (*this)[i+4] * rs[j+4] - (*this)[i+8] * rs[j+8] - (*this)[i+12] * rs[j+12];
+    }
+  }
+  return ATOOLS::TCMatrix<Scalar>(intermediate, 4);
+}
 /*template <class Scalar>
 void CRaritaSchwinger<Scalar>::Add(const CObject *c)
 {
@@ -195,30 +208,6 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
   std::cout<<METHOD<<": Testing Dirac equation..."<<std::endl;
   METOOLS::Gamma gammavec = Gamma<Scalar>();
   bool testresult(true);
-/*  std::cout << "gamma0" << std::endl;
-  for (size_t i(0); i<4; ++i){
-    for (size_t j(0); j<4; ++j){
-      std::cout << i << j << gammavec[0][i][j] << std::endl;
-    }
-  }
-  std::cout << "gamma1" << std::endl;
-  for (size_t i(0); i<4; ++i){
-    for (size_t j(0); j<4; ++j){
-      std::cout << i << j << gammavec[1][i][j] << std::endl;
-    }
-  }
-  std::cout << "gamma2" << std::endl;
-  for (size_t i(0); i<4; ++i){
-    for (size_t j(0); j<4; ++j){
-      std::cout << i << j << gammavec[2][i][j] << std::endl;
-    }
-  }
-  std::cout << "gamma3" << std::endl;
-  for (size_t i(0); i<4; ++i){
-    for (size_t j(0); j<4; ++j){
-      std::cout << i << j << gammavec[3][i][j] << std::endl;
-    }
-  }*/
   ATOOLS::TCMatrix<Scalar> intermediate = (ATOOLS::TCMatrix<Scalar>(gammavec * p) + SComplex(-r) * SComplex(sqrt(p.Abs2())) * ATOOLS::TCMatrix<Scalar>(4, true));
   std::vector<SComplex> result1(16);
   // TODO: Sollte man die exakten ZEROS auch hier explizit implementieren (zwei Komponenten jedes Dirac spinors und damit
@@ -276,7 +265,6 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
     result2[3] += gammavec[i][3][0] * (*this)[2*i] + gammavec[i][3][1] * (*this)[1+2*i] + gammavec[i][3][2] * (*this)[8+2*i] + gammavec[i][3][3] * (*this)[9+2*i];
     // result2 += gammavec[i] * METOOLS::CVec4<Scalar>((*this)[i+i*4], (*this)[i+i*4+1], (*this)[i+i*4+2], (*this)[i+i*4+3]);
   }*/
-  std::cout << result2[0] << result2[1] << result2[2] << result2[3] << std::endl;
   if (!(std::abs(result2[0].real())<s_accu && std::abs(result2[1].real())<s_accu && std::abs(result2[2].real())<s_accu && std::abs(result2[3].real())<s_accu)){
     msg_Out() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << std::endl;
     //return false;
