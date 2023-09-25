@@ -73,12 +73,12 @@ namespace ANALYSIS {
 	std::string libname(outputs[i]);
 	if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
 	Output_Base* out=Output_Base::Getter_Function::GetObject
-	  (outputs[i],Output_Arguments(outpath,outfile));
+	  (outputs[i],Output_Arguments(outpath,outfile, nullptr));
 	if (out==NULL) {
 	  if (!s_loader->LoadLibrary("Sherpa"+libname+"Output")) 
 	    THROW(missing_module,"Cannot load output library Sherpa"+libname+"Output.");
 	  out=Output_Base::Getter_Function::GetObject
-	    (outputs[i],Output_Arguments(outpath,outfile));
+	    (outputs[i],Output_Arguments(outpath,outfile, nullptr));
 	}
 	if (out==NULL) THROW(fatal_error,"Cannot initialize "+outputs[i]+" output");
 	m_outputs.push_back(out);
