@@ -30,8 +30,8 @@ PDF_Defaults::PDF_Defaults()
   m_deflib[kf_e] = "PDFESherpa";
   m_defset[kf_e] = "PDFe";
 
-  m_deflib[kf_photon] = "GRVSherpa";
-  m_defset[kf_photon] = "GRV";
+  m_deflib[kf_photon] = "SASGSherpa";
+  m_defset[kf_photon] = "SAS1M";
 }
 
 std::ostream &PDF::operator<<(std::ostream &ostr,const PDF::PDF_AS_Info &asi)
@@ -40,12 +40,10 @@ std::ostream &PDF::operator<<(std::ostream &ostr,const PDF::PDF_AS_Info &asi)
              <<" with \\alpha_s(\\mu="<<sqrt(asi.m_mz2)<<")="<<asi.m_asmz;
 }
 
-PDF_Base::PDF_Base():
-  m_type("none"), m_member(0), m_lhef_number(-1), m_exponent(1.),
-  m_rescale(1.), m_rescX(false),
-  m_xmin(1.), m_xmax(0.), m_q2min(1.e12), m_q2max(0.),
-  m_nf(-1)
-{
+PDF_Base::PDF_Base() :
+  m_type("none"), m_member(0), m_lhef_number(-1), m_nf(-1), m_exponent(1.),
+  m_rescale(1.),m_xmin(1.), m_xmax(0.), m_q2min(1.e12), m_q2max(0.),
+  m_rescX(false) {
   RegisterDefaults();
   Settings& s = Settings::GetMainSettings();
   m_lhef_number = s["LHEF_PDF_NUMBER"].Get<int>();
@@ -82,11 +80,10 @@ int PDF_Base::GetFlavourScheme()
 
 double PDF_Base::AlphaSPDF(const double &q2)
 {
-  THROW(not_implemented, "PDF doesn't implement alpha_s running.");
-  return -1.0;
+  THROW(not_implemented, "PDF doesn't implement alpha_s running.")
 }
 
-PDF_Base *PDF_Base::GetBasicPDF() 
+PDF_Base *PDF_Base::GetBasicPDF()
 {
   return this;
 }
