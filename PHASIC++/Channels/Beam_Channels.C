@@ -116,14 +116,6 @@ bool Beam_Channels::DefineColliderChannels() {
     CheckForStructuresFromME();
     return true;
   }
-  if (m_beamtype[0] == beamspectrum::spectrum_reader ||
-      m_beamtype[1] == beamspectrum::spectrum_reader) {
-    msg_Error() << "Warning in " << METHOD << ":\n"
-                << "   Beam spectra from spectrum reader - "
-                << "will have to find a way to parse relevant information.\n"
-                << "   Will pretend  a simple pole is good enough.\n";
-    m_beamparams.push_back(Channel_Info(channel_type::simple, 0.5));
-  }
   return true;
 }
 

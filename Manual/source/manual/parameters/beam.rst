@@ -84,12 +84,6 @@ If desired, you can also specify spectra for beamstrahlung through
 :option:`Pomeron`
   This enables the Proton--Pomeron flux, see details below.
 
-:option:`Spectrum_Reader`
-  A user defined spectrum is used to describe the energy spectrum
-  of the assumed new beam particles. The name of the corresponding
-  spectrum file needs to be given through the keywords
-  ``SPECTRUM_FILES``.
-
 The ``BEAM_SMIN`` and ``BEAM_SMAX`` parameters may be used to specify
 the minimum/maximum fraction of cms energy squared after
 Beamstrahlung. The reference value is the total centre of mass energy
