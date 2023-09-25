@@ -25,7 +25,6 @@ namespace BEAM {
     EPA                  = 4,
     Pomeron              = 5,
     DM                   = 10,
-    spectrum_reader      = 20,
     unknown              = 99
   };
   std::ostream& operator<<(std::ostream&,const beamspectrum spect);
