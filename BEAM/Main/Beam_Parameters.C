@@ -3,6 +3,7 @@
 #include "BEAM/Spectra/Monochromatic.H"
 #include "BEAM/Spectra/Laser_Backscattering.H"
 #include "BEAM/Spectra/EPA.H"
+#include "BEAM/Spectra/Pomeron.H"
 #include "BEAM/Spectra/DM_beam.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Exception.H"
@@ -49,6 +50,8 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect) {
     return ostr<<"Monochromatic";
   case beamspectrum::EPA:
     return ostr<<"Equivalent Photons";
+  case beamspectrum::Pomeron:
+    return ostr<<"Pomeron";
   case beamspectrum::laser_backscattering:
     return ostr<<"Laser Backscattering";
   case beamspectrum::DM:
@@ -73,6 +76,7 @@ void Beam_Parameters::RegisterDefaults()
   RegisterDarkMatterDefaults();
   RegisterLaserDefaults();
   RegisterEPADefaults();
+  RegisterPomeronDefaults();
 }
 
 Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
@@ -87,6 +91,8 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
     return InitializeSimpleCompton(num);
   case beamspectrum::EPA :
     return InitializeEPA(num);
+  case beamspectrum::Pomeron :
+    return InitializePomeron(num);
   case beamspectrum::DM :
     return InitializeDM_beam(num);
   default :
@@ -162,6 +168,19 @@ Beam_Base * Beam_Parameters::InitializeEPA(int num)
   if (beam_particle.IsIon()) beam_energy *= beam_particle.GetAtomicNumber();
   double beam_polarization = (*this)("BEAM_POLARIZATIONS",num);
   return new EPA(beam_particle,beam_energy,beam_polarization,1-2*num);
+}
+
+Beam_Base * Beam_Parameters::InitializePomeron(int num)
+{
+  Flavour beam_particle     = GetFlavour("BEAMS",num);
+  if (beam_particle.Kfcode()!=kf_p_plus) {
+    msg_Error()<<"Error in Beam_Initialization::SpecifySpectra:\n"<<endl
+                <<"   Tried to initialize Pomeron for "<<beam_particle<<".\n"
+                <<"   This option is not available.\n";
+    return nullptr;
+  }
+  double beam_energy = (*this)("BEAM_ENERGIES",num);
+  return new Pomeron(beam_particle,beam_energy,0.,1-2*num);
 }
 
 Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
@@ -261,6 +280,13 @@ void Beam_Parameters::RegisterEPADefaults() {
   // beam-flavour dependent.
 }
 
+void Beam_Parameters::RegisterPomeronDefaults() {
+  m_settings["Pomeron"]["A"].SetDefault(1.0);
+  m_settings["Pomeron"]["B"].SetDefault(7.0);
+  m_settings["Pomeron"]["Alpha_intercept"].SetDefault(1.0938);
+  m_settings["Pomeron"]["Alpha_slope"].SetDefault(0.);
+}
+
 void Beam_Parameters::RegisterLaserDefaults() {
   m_settings["E_LASER"].SetDefault(0.0);
   m_settings["P_LASER"].SetDefault(0.0);
@@ -298,6 +324,8 @@ bool Beam_Parameters::SpecifySpectra() {
       m_beamspec[num] = beamspectrum::simple_Compton;
     else if (bs == "EPA")
       m_beamspec[num] = beamspectrum::EPA;
+    else if (bs == "Pomeron")
+      m_beamspec[num] = beamspectrum::Pomeron;
     else if (bs == "DM_beam")
       m_beamspec[num] = beamspectrum::DM;
     else
