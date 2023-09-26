@@ -299,7 +299,8 @@ bool Sudakov::Generate(Parton* split, double kt2win)
   return (p_spect!=NULL);
 }
 
-int Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,double &t,double &y,double &z,double &phi)
+int Sudakov::Generate(Parton *split,Parton *spect,
+		      double t0,double kt2win,double &t,double &y,double &z,double &phi)
 {
   ClearSpecs();
   ResetLastInt();
@@ -325,7 +326,12 @@ int Sudakov::Generate(Parton *split,Parton *spect,double t0,double kt2win,double
     if (spect->GetType()==pst::FS) {
       Q2       = -(split->Momentum()-spect->Momentum()).Abs2();
       beam     = split->Beam();
-      if (IsNan(Q2)) msg_Out()<<split->Momentum()<<" - "<<spect->Momentum()<<"\n"<<(*split)<<(*spect);
+      if (IsNan(Q2)) {
+	msg_Error()<<METHOD<<" has no meaningful Q2 from:\n"
+		   <<"   "<<split->Momentum()<<" - "<<spect->Momentum()<<"\n"<<(*split)<<(*spect)
+		   <<"   will return false and hope for the best.\n";
+	return false;
+      }
       if (!DefineIFBoundaries(Q2,split->Xbj(),beam)) return false;
       break;
     }

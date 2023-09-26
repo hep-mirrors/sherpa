@@ -39,7 +39,7 @@ namespace CSSHOWER {
     ATOOLS::Flow    m_flow;
     pst::code       m_pst;
     bool            m_forceddecay;
-    int             m_beam,m_stat,m_kin,m_kscheme,m_col;
+    int             m_beam,m_stat,m_kin,m_kscheme,m_col,m_nforced;
     double          m_kt_start, m_kt_veto, m_kt_test;
     double          m_z_test, m_y_test, m_phi, m_weight, m_xBj, m_t;
     double          m_kt_soft[2];
@@ -75,27 +75,28 @@ namespace CSSHOWER {
 
     double Weight(const double &scale);
 
-    inline ATOOLS::Flavour   const GetFlavour()  const;
-    inline ATOOLS::Vec4D     const Momentum()    const;
+    inline ATOOLS::Flavour   const GetFlavour()   const;
+    inline ATOOLS::Vec4D     const Momentum()     const;
     inline ATOOLS::Vec4D           Momentum();
-    inline pst::code               GetType()     const;
+    inline pst::code               GetType()      const;
     inline int                     GetFlow(const int) const;
-    inline int                     Beam()        const;
-    inline int                     Stat()        const;
-    inline int                     Kin()         const { return m_kin; }
-    inline int                     Col()         const { return m_col; }
-    inline size_t                  Id()          const;
-    inline double                  KtStart()     const;
-    inline double                  KtSoft(int i) const;
-    inline double                  KtVeto()      const;
-    inline double                  KtTest()      const;
-    inline double                  ZTest()       const;
-    inline double                  YTest()       const;
-    inline double                  Weight()        const;
-    inline double                  Xbj()         const;
-    inline double                  Mass2()       const { return m_t; }
-    inline double                  Phi()         const;
-    inline bool                    ForcedDecay() const;
+    inline int                     Beam()         const;
+    inline int                     Stat()         const;
+    inline int                     Kin()          const { return m_kin; }
+    inline int                     Col()          const { return m_col; }
+    inline size_t                  Id()           const;
+    inline double                  KtStart()      const;
+    inline double                  KtSoft(int i)  const;
+    inline double                  KtVeto()       const;
+    inline double                  KtTest()       const;
+    inline double                  ZTest()        const;
+    inline double                  YTest()        const;
+    inline double                  Weight()       const;
+    inline double                  Xbj()          const;
+    inline double                  Mass2()        const { return m_t; }
+    inline double                  Phi()          const;
+    inline bool                    ForcedDecay()  const;
+    inline size_t                  ForcedTrials() const { return m_nforced; }
     inline Parton *                GetLeft();
     inline Parton *                GetRight();
     inline Parton *                GetSpect();
@@ -109,6 +110,7 @@ namespace CSSHOWER {
     inline void SetSoft(int i,const double);
     inline void SetVeto(const double);
     inline void SetKtTest(const double);
+    inline void SetKtStart(const double);
     inline void SetZTest(const double);
     inline void SetYTest(const double);
     inline void SetWeight(const double);
@@ -117,6 +119,7 @@ namespace CSSHOWER {
     inline void SetMass2(const double t) { m_t=t; }
     inline void SetPhi(const double);
     inline void SetForcedDecay(const bool fd);
+    inline void IncForcedTrials() { m_nforced++; }
     void SetLeftOf(Parton *);
     void SetRightOf(Parton *);
     inline void SetLeft(Parton *);
@@ -140,7 +143,7 @@ namespace CSSHOWER {
     m_flav(ATOOLS::Flavour(kf_none)),
     m_mom(ATOOLS::Vec4D(0.,0.,0.,0.)), 
     m_pst(pst::none), m_forceddecay(false),
-    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
+    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
@@ -153,7 +156,7 @@ namespace CSSHOWER {
 
   Parton::Parton(const ATOOLS::Flavour & flav,const ATOOLS::Vec4D & mom,pst::code pst) : 
     m_flav(flav), m_mom(mom), m_pst(pst), m_forceddecay(false),
-    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
+    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
@@ -167,7 +170,7 @@ namespace CSSHOWER {
   Parton::Parton(const ATOOLS::Particle * part,pst::code pst) : 
     m_flav(part->Flav()), m_mom(part->Momentum()), 
     m_pst(pst), m_forceddecay(false),
-    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
+    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
@@ -215,6 +218,7 @@ namespace CSSHOWER {
   void Parton::SetSoft(int i,const double kt)         { m_kt_soft[i] = kt; }
   void Parton::SetVeto(const double kt)               { m_kt_veto  = kt; }
   void Parton::SetKtTest(const double kt)             { m_kt_test  = kt; }
+  void Parton::SetKtStart(const double kt)            { m_kt_start = kt; }
   void Parton::SetZTest(const double z)               { m_z_test   = z; }
   void Parton::SetYTest(const double y)               { m_y_test   = y; }  
   void Parton::SetWeight(const double weight)         { m_weight   = weight; }  
