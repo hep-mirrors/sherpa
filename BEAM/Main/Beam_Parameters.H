@@ -24,6 +24,7 @@ namespace BEAM {
     laser_backscattering = 2,
     simple_Compton       = 3,
     EPA                  = 4,
+    Pomeron              = 5,
     DM                   = 10,
     Fixed_Target         = 12,
     spectrum_reader      = 20,
@@ -53,9 +54,9 @@ namespace BEAM {
     void RegisterDefaultBeams();
     void RegisterLaserDefaults();
     void RegisterEPADefaults();
+    void RegisterPomeronDefaults();
     void RegisterDarkMatterDefaults();
     void InitializeFlav(kf_code flav);
-    void SetBeamMode();
     Beam_Base * InitializeSimpleCompton(int);
     /*!
       Characteristic parameters for laser back scattering are read in and the spectrum is
@@ -73,6 +74,7 @@ namespace BEAM {
     */
     Beam_Base * InitializeMonochromatic(int);
     Beam_Base * InitializeEPA(int);
+    Beam_Base * InitializePomeron(int);
     Beam_Base * InitializeDM_beam(int);
     Beam_Base * InitializeFixed_Target(int);
   public:
