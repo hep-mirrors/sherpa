@@ -119,7 +119,7 @@ void SMDM::ParticleInit()
   s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,.0,-1,3,1,0,1,1,0,"s","sb", "s", "\\bar{s}");
   s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,.0,.0,2,3,1,0,1,1,0,"c","cb", "c", "\\bar{c}");
   s_kftable[kf_b]      = new Particle_Info(kf_b,4.92,.0,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
-  s_kftable[kf_t]      = new Particle_Info(kf_t,173.21,.0,1.5,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
+  s_kftable[kf_t]      = new Particle_Info(kf_t,172.5,.0,1.32,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
   s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,.0,.0,-3,0,1,0,1,1,0,"e-","e+", "e^{-}", "e^{+}");
   s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,.0,0,0,1,0,1,1,0,"ve","veb", "\\nu_{e}", "\\bar{\\nu}_{e}");
   s_kftable[kf_mu]     = new Particle_Info(kf_mu,.105,.0,.0,-3,0,1,0,1,1,0,"mu-","mu+", "\\mu^{-}", "\\mu^{+}");
@@ -129,8 +129,8 @@ void SMDM::ParticleInit()
   s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,.0,0,8,2,-1,1,1,0,"G","G", "G", "G");
   s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,.0,0,0,2,-1,1,1,0,"P","P","\\gamma","\\gamma");
   s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.1876,.0,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
-  s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.385,.0,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
-  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,.0,0.00407,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
+  s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.379,.0,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
+  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.09,.0,0.0041,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
   s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
   s_kftable[kf_DM_fermion] = new Particle_Info(kf_DM_fermion,m_DM,0.0,0.0,0,0,0,1,1,1,1,"DM","DMb","\\chi","\\bar{\\chi}");
   s_kftable[kf_DM_scalar] = new Particle_Info(kf_DM_scalar,m_DM,0.0,0.0,0,0,0,0,1,1,1,"DMs","DMsb","\\chi_s","\\bar{\\chi_s}");

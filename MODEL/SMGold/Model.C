@@ -25,7 +25,7 @@ using namespace std;
 
 namespace MODEL{
   using complex = std::complex<double>;
-  
+
   class Standard_ModelGS : public Model_Base
   {
   private:
@@ -59,7 +59,7 @@ namespace MODEL{
       s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,.0,-1,3,1,0,1,1,0,"s","sb", "s", "\\bar{s}");
       s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,.0,.0,2,3,1,0,1,1,0,"c","cb", "c", "\\bar{c}");
       s_kftable[kf_b]      = new Particle_Info(kf_b,4.92,.0,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
-      s_kftable[kf_t]      = new Particle_Info(kf_t,173.21,.0,1.5,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
+      s_kftable[kf_t]      = new Particle_Info(kf_t,172.5,.0,1.32,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
       s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,.0,.0,-3,0,1,0,1,1,0,"e-","e+", "e^{-}", "e^{+}");
       s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,.0,0,0,1,0,1,1,0,"ve","veb", "\\nu_{e}", "\\bar{\\nu}_{e}");
       s_kftable[kf_mu]     = new Particle_Info(kf_mu,.105,.0,.0,-3,0,1,0,1,1,0,"mu-","mu+", "\\mu^{-}", "\\mu^{+}");
@@ -69,17 +69,17 @@ namespace MODEL{
       s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,.0,0,8,2,-1,1,1,0,"G","G", "G", "G");
       s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,.0,0,0,2,-1,1,1,0,"P","P","\\gamma","\\gamma");
       s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.1876,.0,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
-      s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.385,.0,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
-      s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,.0,0.00407,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
+      s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.379,.0,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
+      s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.09,.0,0.0041,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
       s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
-  
+
       s_kftable[kf_phiplus]   = new Particle_Info(kf_phiplus,80.385,0.0,2.085,3,0,0,0,1,0,1,"phi+","phi-","\\phi^{+}","\\phi^{-}");
       s_kftable[kf_chi]       = new Particle_Info(kf_chi,91.1876,0.0,2.4952,0,0,0,-1,1,0,1,"chi","chi","\\chi","\\chi");
       ReadParticleData();
     }
     bool ModelInit()
     {
-      FixEWParameters();  
+      FixEWParameters();
       FixCKM();
       Settings& s = Settings::GetMainSettings();
       SetAlphaQCD(*p_isrhandlermap, s["ALPHAS(MZ)"].Get<double>());
@@ -484,7 +484,7 @@ namespace MODEL{
       DEBUG_VAR(I3a33);
       Complex I4a33 = yb;
       DEBUG_VAR(I4a33);
-      
+
       m_local_complex_constants.insert(make_pair(string("GC_22"),((-6.0*complex(0.0,1.0))*lam)));
       DEBUG_VAR((m_local_complex_constants)["GC_22"]);
       m_local_complex_constants.insert(make_pair(string("GC_20"),((-2.0*complex(0.0,1.0))*lam)));
@@ -851,7 +851,7 @@ namespace MODEL{
       DEBUG_VAR((m_local_complex_constants)["GC_51"]);
       msg_Debugging() << setprecision(6);
     }
-    
+
     void vertices_0 () {
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)15,1) );
@@ -1986,7 +1986,7 @@ namespace MODEL{
     }
     void InitVertices()
     {
-      ParamInit(); 
+      ParamInit();
       vertices_0();
       vertices_1();
       vertices_2();
@@ -2031,9 +2031,9 @@ namespace MODEL{
       else return Model_Base::IndexOfOrderKey(key);
     }
 
-    
+
   };
-  
+
 }
 
 using namespace MODEL;
@@ -2050,7 +2050,7 @@ operator()(const Model_Arguments &args) const
 
 void ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::Standard_ModelGS>::
 PrintInfo(ostream &str,const size_t width) const
-{ 
+{
   str<<"The Standard Model\n";
   str<<setw(width+4)<<" "<<"{\n"
      <<setw(width+7)<<" "<<"# possible parameters in yaml configuration [usage: \"keyword: value\"]\n"
