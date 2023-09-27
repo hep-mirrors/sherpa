@@ -68,7 +68,6 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
         ReadIn(db,"Renormalization_Scale",false);
         if (db) m_mur2=db->Get<double>();
         else m_mur2=1.;
-        PRINT_VAR(m_mur2);
         SetAlphaS();
         SetAlpha();
     }
@@ -80,7 +79,6 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       }
       ReadIn(db,"Renormalization_Scale",false);
       if (db) m_mur2=db->Get<double>();
-      PRINT_VAR(m_mur2);
       SetAlphaS();
       SetAlpha();
     }
@@ -289,7 +287,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
   }
   evt.set_alphaQCD(m_alphas);
   evt.set_alphaQED(m_alpha);
-  evt.set_event_scale(m_mur2); 
+  evt.set_event_scale(m_mur2);
   return true;
 }
 
@@ -336,7 +334,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                   HepMC::Units::MM);
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
-  Blob *mp(blobs->FindFirst(btp::Hard_Collision));  
+  Blob *mp(blobs->FindFirst(btp::Hard_Collision));
   if (!mp) event.set_mpi(-1);
   EventInfo evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
@@ -550,9 +548,9 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
         event.set_signal_process_vertex(vertex);
       }
       // Find beam particles
-      else if ((*blit)->Type()==ATOOLS::btp::Beam || 
+      else if ((*blit)->Type()==ATOOLS::btp::Beam ||
 	       (*blit)->Type()==ATOOLS::btp::Bunch) {
-        for (HepMC::GenVertex::particles_in_const_iterator 
+        for (HepMC::GenVertex::particles_in_const_iterator
 	       pit=vertex->particles_in_const_begin();
              pit!=vertex->particles_in_const_end(); ++pit) {
           if ((*pit)->production_vertex()==NULL) {
@@ -581,7 +579,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   // Can't use ->set_production_vertex/set_end_vertex as they are private
   // Need to use GenVertex::remove_particle(Pointer to particle)
   // But: iterator loses validity when calling GenVertex::remove_particle in the particle loop
-  // Hence: fill vector with pointers and call GenVertex::remove_particle 
+  // Hence: fill vector with pointers and call GenVertex::remove_particle
   if (m_hepmctree) {
     DEBUG_INFO("HEPMC_TREE_LIKE true --- straighten to "
                <<"tree enabled (disconnect 1,2,3 vertices)");
@@ -624,7 +622,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
 }
 
 // HS: this converts a Blob to GenVertex
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, 
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
 				    HepMC::GenVertex *& vertex)
 {
   if (m_ignoreblobs.count(blob->Type())) return false;
@@ -641,11 +639,11 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
     if (blob->Type()==btp::Signal_Process)      vertex->set_id(1); // signal
     else if (blob->Type()==btp::Hard_Collision) vertex->set_id(2); // mpi
     else if (blob->Type()==btp::Hard_Decay)     vertex->set_id(3); // hard-decay
-    else if (blob->Type()==btp::Shower || 
+    else if (blob->Type()==btp::Shower ||
              blob->Type()==btp::QED_Radiation)  vertex->set_id(4); // PS/QED
     else if (blob->Type()==btp::Fragmentation)  vertex->set_id(5); // frag
     else if (blob->Type()==btp::Hadron_Decay)   vertex->set_id(6); // had-decay
-      //{  
+      //{
       //if ((*blob)["Partonic"]!=NULL) vertex->set_id(-6);
       //else vertex->set_id(6);
       //}
@@ -694,7 +692,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
                                     HepMC::GenParticle *& particle)
 {
-  // HS: do nothing if parton has already been converted  
+  // HS: do nothing if parton has already been converted
   int count = m_particle2genparticle.count(parton);
   if (count>0) {
     particle = m_particle2genparticle[parton];
