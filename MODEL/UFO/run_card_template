@@ -36,7 +36,7 @@ BEAM_ENERGIES: 6500
 PROCESSES:
 # The statement below generates all 2->2
 # scattering processes PP initial states
-- "93 93 -> (${all_particles}) (${all_particles})":
+- 93 93 -> (${all_particles}) (${all_particles}):
     ${order_statement}
 
     # Generate feynman diagrans in directory 'diagrams'.

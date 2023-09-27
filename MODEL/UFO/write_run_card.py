@@ -46,7 +46,7 @@ def write_run_card(model, model_name, run_card_path):
             ufo_params += table_format(nci, param.lha_indices(), ncv, param.raw_value(), param.name())
 
     # generate a helpful template for a user specification of coupling orders 
-    order_statement = 'Order: {' + ','.join([order.name + ': Any' for order in model.all_orders]) + '}'
+    order_statement = 'Order: {' + ', '.join([order.name + ': Any' for order in model.all_orders]) + '}'
 
     # collect all particles of the model for an example process section
     all_particles = [s_particle(p) for p in model.all_particles]

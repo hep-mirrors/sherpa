@@ -1,30 +1,26 @@
 #include "MODEL/Main/Model_Base.H"
-
-// define a kf_code for the Zprime
-#define kf_Zp 32
+#include "ATOOLS/Org/Run_Parameter.H"
 
 namespace MODEL {
 
-  class Standard_Model_Zprime: public Model_Base {
+  class SM_GGV: public Model_Base {
   private:
 
     int  m_ckmorder, m_dec_g4;
 
     void FixEWParameters();
     void FixCKM();
-    void FixZprimeParameters();  // <-- new: sets Zprime couplings
 
     void ParticleInit();
-    void ParticleZprimeInit();   // <-- new: sets Zprime particle properties
 
     void InitQEDVertices();
     void InitQCDVertices();
     void InitEWVertices();
-    void InitZprimeVertices();   // <-- new: initialises model vertices
+    void InitGGVVertices();
 
   public :
 
-    Standard_Model_Zprime();
+    SM_GGV();
     bool ModelInit();
     void InitVertices();
 
@@ -40,8 +36,8 @@ namespace MODEL {
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/KF_Table.H"
 
@@ -49,15 +45,15 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Standard_Model_Zprime,"SMZprime",Model_Base,Model_Arguments);
+DECLARE_GETTER(SM_GGV,"SMGGV",Model_Base,Model_Arguments);
 
-Model_Base *Getter<Model_Base,Model_Arguments,Standard_Model_Zprime>::
+Model_Base *Getter<Model_Base,Model_Arguments,SM_GGV>::
 operator()(const Model_Arguments &args) const
 {
-  return new Standard_Model_Zprime();
+  return new SM_GGV();
 }
 
-void Getter<Model_Base,Model_Arguments,Standard_Model_Zprime>::
+void Getter<Model_Base,Model_Arguments,SM_GGV>::
 PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model\n";
@@ -72,15 +68,11 @@ PrintInfo(ostream &str,const size_t width) const
      <<setw(width+7)<<" "<<"- ALPHAQED_DEFAULT_SCALE (scale for alpha_QED default)\n"
      <<setw(width+7)<<" "<<"- SIN2THETAW (weak mixing angle)\n"
      <<setw(width+7)<<" "<<"- VEV (Higgs vev)\n"
-     <<setw(width+7)<<" "<<"- CKM_ORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
-     <<setw(width+7)<<" "<<"- CKM_CABIBBO (Cabibbo angle in Wolfenstein parameterization)\n"
-     <<setw(width+7)<<" "<<"- CKM_A (Wolfenstein A)\n"
-     <<setw(width+7)<<" "<<"- CKM_RHO (Wolfenstein Rho)\n"
-     <<setw(width+7)<<" "<<"- CKM_ETA (Wolfenstein Eta)\n"
-     <<setw(width+7)<<" "<<"- CKM_ELEMENT[<i>][<j>] (explicit value for element, supersedes parametrisation)\n"
-     <<setw(width+7)<<" "<<"- Zprime mass/width via MASS[32] & WIDTH[32]\n"
-     <<setw(width+7)<<" "<<"- multiplicative coupling parameter Zp_cpl_L\n"
-     <<setw(width+7)<<" "<<"- multiplicative coupling parameter Zp_cpl_R\n"
+     <<setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
+     <<setw(width+7)<<" "<<"- CABIBBO (Cabibbo angle in Wolfenstein parameterization)\n"
+     <<setw(width+7)<<" "<<"- A (Wolfenstein A)\n"
+     <<setw(width+7)<<" "<<"- RHO (Wolfenstein Rho)\n"
+     <<setw(width+7)<<" "<<"- ETA (Wolfenstein Eta)\n"
      <<setw(width+4)<<" "<<"}";
   str<<"Infrared continuation of alphaS:\n";
   str<<setw(width+4)<<" "<<"{\n"
@@ -89,23 +81,21 @@ PrintInfo(ostream &str,const size_t width) const
      <<setw(width+4)<<" "<<"}";
 }
 
-Standard_Model_Zprime::Standard_Model_Zprime() :
+SM_GGV::SM_GGV() :
   Model_Base(true)
 {
-  m_name="SM";
+  m_name="SM+GGV";
   ParticleInit();
-  ParticleZprimeInit();
-  ReadParticleData();
   RegisterDefaults();
   AddStandardContainers();
   CustomContainerInit();
 }
 
-void Standard_Model_Zprime::ParticleInit()
+void SM_GGV::ParticleInit()
 {
   s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle", "no_particle", 1,1);
-  // add SM particles
-  // kf_code,mass,width,charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
+  //add SM particles
+  //kf_code,mass,width,charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
   s_kftable[kf_d]      = new Particle_Info(kf_d,0.01,.0,-1,3,1,0,1,1,0,"d","db", "d", "\\bar{d}");
   s_kftable[kf_u]      = new Particle_Info(kf_u,0.005,.0,2,3,1,0,1,1,0,"u","ub", "u", "\\bar{u}");
   s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,-1,3,1,0,1,1,0,"s","sb", "s", "\\bar{s}");
@@ -118,24 +108,17 @@ void Standard_Model_Zprime::ParticleInit()
   s_kftable[kf_numu]   = new Particle_Info(kf_numu,.0,.0,0,0,1,0,1,1,0,"vmu","vmub", "\\nu_{\\mu}", "\\bar{\\nu}_{\\mu}");
   s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,2.26735e-12,-3,0,1,0,1,0,0,"tau-","tau+", "\\tau^{-}", "\\tau^{+}");
   s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,.0,0,0,1,0,1,1,0,"vtau","vtaub", "\\nu_{\\tau}", "\\bar{\\nu}_{\\tau}");
-  s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,8,2,-1,1,1,0,"G","G", "g", "g");
+  s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,8,2,-1,1,1,0,"G","G", "G", "G");
   s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,2,-1,1,1,0,"P","P","\\gamma","\\gamma");
   s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.1876,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
   s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.385,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
   s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
-  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","g_{4}","g_{4}",1);
+  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
+  ReadParticleData();
 }
 
-void Standard_Model_Zprime::ParticleZprimeInit()
+bool SM_GGV::ModelInit()
 {
-  // add Zprime
-  // kf_code,mass,width,3*charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
-  s_kftable[kf_Zp] = new Particle_Info(kf_Zp,1000.,10.,0,0,2,-1,1,0,1,"Zprime","Zprime","Z^{\\prime}","Z^{\\prime}");
-}
-
-bool Standard_Model_Zprime::ModelInit()
-{
-  FixZprimeParameters();
   FixEWParameters();
   FixCKM();
   Settings& s = Settings::GetMainSettings();
@@ -153,7 +136,7 @@ bool Standard_Model_Zprime::ModelInit()
   return true;
 }
 
-void Standard_Model_Zprime::FixEWParameters()
+void SM_GGV::FixEWParameters()
 {
   Settings& s = Settings::GetMainSettings();
   Complex csin2thetaW, ccos2thetaW, cvev, I(0.,1.);
@@ -449,7 +432,7 @@ void Standard_Model_Zprime::FixEWParameters()
   rpa->gen.SetVariable("EW_REN_SCHEME",ToString(ewrenscheme));
 }
 
-void Standard_Model_Zprime::FixCKM()
+void SM_GGV::FixCKM()
 {
   auto s = Settings::GetMainSettings()["CKM"];
   CMatrix CKM(3);
@@ -484,22 +467,22 @@ void Standard_Model_Zprime::FixCKM()
   for (size_t i(0);i<3;++i)
     for (size_t j(0);j<3;++j)
       p_complexconstants->insert
-        (make_pair("CKM_"+ToString(i)+"_"+ToString(j),CKM[i][j]));
+	(make_pair("CKM_"+ToString(i)+"_"+ToString(j),CKM[i][j]));
   for (size_t i(0);i<3;++i)
     for (size_t j(0);j<3;++j)
       p_complexconstants->insert
-        (make_pair("L_CKM_"+ToString(i)+"_"+ToString(j),i==j?1.0:0.0));
+	(make_pair("L_CKM_"+ToString(i)+"_"+ToString(j),i==j?1.0:0.0));
 }
 
-void Standard_Model_Zprime::InitVertices()
+void SM_GGV::InitVertices()
 {
   InitQEDVertices();
   InitQCDVertices();
   InitEWVertices();
-  InitZprimeVertices();
+  InitGGVVertices();
 }
 
-void Standard_Model_Zprime::InitQEDVertices()
+void SM_GGV::InitQEDVertices()
 {
   if (!Flavour(kf_photon).IsOn()) return;
   Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
@@ -514,7 +497,7 @@ void Standard_Model_Zprime::InitQEDVertices()
       m_v.back().AddParticle(flav);
       m_v.back().AddParticle(Flavour(kf_photon));
       m_v.back().Color.push_back
-        (i>10?Color_Function(cf::None):
+	(i>6?Color_Function(cf::None):
 	 Color_Function(cf::D,1,2));
       m_v.back().Lorentz.push_back("FFV");
       m_v.back().cpl.push_back(cpl*Q);
@@ -523,7 +506,7 @@ void Standard_Model_Zprime::InitQEDVertices()
   }
 }
 
-void Standard_Model_Zprime::InitQCDVertices()
+void SM_GGV::InitQCDVertices()
 {
   if (!Flavour(kf_gluon).IsOn()) return;
   Settings& s = Settings::GetMainSettings();
@@ -576,7 +559,7 @@ void Standard_Model_Zprime::InitQCDVertices()
   if (m_dec_g4) m_v.back().dec=-1;
 }
 
-void Standard_Model_Zprime::InitEWVertices()
+void SM_GGV::InitEWVertices()
 {
   Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0));
   Kabbala I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0));
@@ -604,7 +587,7 @@ void Standard_Model_Zprime::InitEWVertices()
 	m_v.back().AddParticle(flav2);
 	m_v.back().AddParticle(Flavour(kf_Wplus).Bar());
 	m_v.back().Color.push_back
-	  (i>10?Color_Function(cf::None):
+	  (i>6?Color_Function(cf::None):
 	   Color_Function(cf::D,1,2));
 	m_v.back().Lorentz.push_back("FFVL");
 	m_v.back().cpl.push_back(cpl*ckm);
@@ -614,7 +597,7 @@ void Standard_Model_Zprime::InitEWVertices()
 	m_v.back().AddParticle(flav1);
 	m_v.back().AddParticle(Flavour(kf_Wplus));
 	m_v.back().Color.push_back
-	  (i>10?Color_Function(cf::None):
+	  (i>6?Color_Function(cf::None):
 	   Color_Function(cf::D,1,2));
 	m_v.back().Lorentz.push_back("FFVL");
 	m_v.back().cpl.push_back(cpl*ckm);
@@ -634,10 +617,10 @@ void Standard_Model_Zprime::InitEWVertices()
       m_v.back().AddParticle(flav);
       m_v.back().AddParticle(Flavour(kf_Z));
       m_v.back().Color.push_back
-        (i>10?Color_Function(cf::None):
+	(i>6?Color_Function(cf::None):
 	 Color_Function(cf::D,1,2));
       m_v.back().Color.push_back
-        (i>10?Color_Function(cf::None):
+	(i>6?Color_Function(cf::None):
 	 Color_Function(cf::D,1,2));
       m_v.back().Lorentz.push_back("FFVL");
       m_v.back().Lorentz.push_back("FFVR");
@@ -653,7 +636,7 @@ void Standard_Model_Zprime::InitEWVertices()
       Flavour flav((kf_code)i);
       if (!flav.IsOn() || flav.Yuk()==0.0) continue;
       double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
-        ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));
+	ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));
       Kabbala M;
       if (ScalarNumber("WidthScheme")!=0)
         M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",
@@ -664,7 +647,7 @@ void Standard_Model_Zprime::InitEWVertices()
       m_v.back().AddParticle(flav);
       m_v.back().AddParticle(Flavour(kf_h0));
       m_v.back().Color.push_back
-        (i>10?Color_Function(cf::None):
+	(i>6?Color_Function(cf::None):
 	 Color_Function(cf::D,1,2));
       m_v.back().Lorentz.push_back("FFS");
       m_v.back().cpl.push_back(cpl*M);
@@ -803,60 +786,111 @@ void Standard_Model_Zprime::InitEWVertices()
   }
 }
 
-void Standard_Model_Zprime::InitZprimeVertices()
+void SM_GGV::InitGGVVertices()
 {
-  // set up constants for the model
-  Kabbala I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0));
-  Kabbala sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW")));
-  Kabbala costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW")));
-  // coupling constants
-  Kabbala g1("g_1",sqrt(4.*M_PI*ScalarFunction("alpha_QED",
-                                               sqr(rpa->gen.Ecms()))));
-  Kabbala g2("g_1/\\cos\\theta_W", g1.Value()/costW.Value());
-
-  // the parameter specifying the LR model
-  // - sqrt(2.) will describe a totally LR-symm model
-  // - sqrt(2./3.) describes an E6-inspired model
-  Kabbala alphaLR("\\alpha_{LR}",sqrt(2./3.));
-
-  // create FFV vertices with Z' if it's on
-  if (Flavour(kf_Zp).IsOn()) {
-    for (short int i=1;i<17;++i) {
-      // parse through all fermions that couple to Z' and create vertices
-      if (i==7) i=11;
-      Flavour flav((kf_code)i);
-      if (!flav.IsOn()) continue;
-      Kabbala B = Kabbala(string("B_{")+flav.TexName()+string("}"),
-                          flav.IsQuark()?(flav.IsAnti()?-1./3.:1./3.):0.);
-      Kabbala L = Kabbala(string("L_{")+ flav.TexName()+string("}"),
-                          flav.IsLepton()?(flav.IsAnti()?-1:1):0.);
-      Kabbala Y3R = Kabbala(string("YR_{")+flav.TexName()+string("}"),
-                            flav.IsoWeak());
-
-      // create the vertex for that particular fermion and a Z'.
-      // Right-handed neutrinos will not take part in any interaction.
-      Kabbala kcpl0;
-      if (flav.Kfcode()==kf_nue || flav.Kfcode()==kf_numu ||
-          flav.Kfcode()==kf_nutau)
-        kcpl0 = Kabbala("0.0", 0.);
-      else
-        kcpl0 = -I * g2 * (Y3R * alphaLR + (L-B)/(alphaLR*2));
-      Kabbala kcpl1 = -I * g2 * (L-B) / (alphaLR*2);
+  DEBUG_FUNC("");
+  Kabbala I("i",Complex(0.,1.));
+  Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
+  Kabbala g2(g1/Kabbala("sint",sqrt(ComplexConstant("csin2_thetaW"))));
+  Kabbala g3("g_3",sqrt(4.*M_PI*ScalarConstant("alpha_S")));
+  double m=(ScalarNumber("YukawaScheme")==0)?Flavour(kf_t).Yuk():
+    ScalarFunction("m"+Flavour(kf_t).IDName(),sqr(Flavour(kf_h0).Mass(true)));
+  Kabbala yt, vev("v_{EW}",ComplexConstant("cvev"));
+  if (ScalarNumber("WidthScheme")!=0)
+    yt=Kabbala("M_{"+Flavour(kf_t).TexName()+"}(m_h^2)",
+              sqrt(m*m-Complex(0.0,m*Flavour(kf_t).Width())));
+  else yt=Kabbala("M_{"+Flavour(kf_t).TexName()+"}(m_h^2)",m);
+  if (Flavour(kf_gluon).IsOn()) {
+    // ggV and ggh vertices
+    if (Flavour(kf_Z).IsOn()) {
       m_v.push_back(Single_Vertex());
-      m_v.back().AddParticle(flav.Bar());
-      m_v.back().AddParticle(flav);
-      m_v.back().AddParticle(Flavour(kf_Zp));
-      m_v.back().Color.push_back
-        (i>10?Color_Function(cf::None):
-         Color_Function(cf::D,1,2));
-      m_v.back().Color.push_back
-        (i>10?Color_Function(cf::None):
-         Color_Function(cf::D,1,2));
-      m_v.back().Lorentz.push_back("FFVL");
-      m_v.back().Lorentz.push_back("FFVR");
-      m_v.back().cpl.push_back(kcpl0);
-      m_v.back().cpl.push_back(kcpl1);
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_Z));
+      m_v.back().Color.push_back(Color_Function(cf::G,1,2));
+      m_v.back().Lorentz.push_back("VVV");
+      m_v.back().cpl.push_back(I*g2*g3*g3);
+      m_v.back().order[0]=2;
       m_v.back().order[1]=1;
+      msg_Debugging()<<m_v.back()<<std::endl;
+    }
+    if (Flavour(kf_photon).IsOn()) {
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_photon));
+      m_v.back().Color.push_back(Color_Function(cf::G,1,2));
+      m_v.back().Lorentz.push_back("VVV");
+      m_v.back().cpl.push_back(I*g1*g3*g3);
+      m_v.back().order[0]=2;
+      m_v.back().order[1]=1;
+      msg_Debugging()<<m_v.back()<<std::endl;
+    }
+    if (Flavour(kf_h0).IsOn()) {
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(Flavour(kf_h0));
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().Color.push_back(Color_Function(cf::G,2,3));
+      m_v.back().Lorentz.push_back("HVV");
+      m_v.back().cpl.push_back(I*(yt/vev)*g3*g3);
+      m_v.back().order[0]=2;
+      m_v.back().order[1]=1;
+      msg_Debugging()<<m_v.back()<<std::endl;
+    }
+    // ggVV vertices
+    if (Flavour(kf_Wplus).IsOn()) {
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_Wplus));
+      m_v.back().AddParticle(Flavour(kf_Wplus).Bar());
+      m_v.back().cpl.push_back(I*g2*g2*g3*g3);
+      m_v.back().Color.push_back(Color_Function(cf::G,1,2));
+      m_v.back().Lorentz.push_back("VVVV");
+      m_v.back().order[0]=2;
+      m_v.back().order[1]=2;
+      msg_Debugging()<<m_v.back()<<std::endl;
+    }
+    if (Flavour(kf_Z).IsOn()) {
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_Z));
+      m_v.back().AddParticle(Flavour(kf_Z));
+      m_v.back().cpl.push_back(I*g2*g2*g3*g3);
+      m_v.back().Color.push_back(Color_Function(cf::G,1,2));
+      m_v.back().Lorentz.push_back("VVVV");
+      m_v.back().order[0]=2;
+      m_v.back().order[1]=2;
+      msg_Debugging()<<m_v.back()<<std::endl;
+    }
+    if (Flavour(kf_photon).IsOn()) {
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_photon));
+      m_v.back().AddParticle(Flavour(kf_photon));
+      m_v.back().cpl.push_back(I*g1*g1*g3*g3);
+      m_v.back().Color.push_back(Color_Function(cf::G,1,2));
+      m_v.back().Lorentz.push_back("VVVV");
+      m_v.back().order[0]=2;
+      m_v.back().order[1]=2;
+      msg_Debugging()<<m_v.back()<<std::endl;
+    }
+    // gghh vertices
+    if (Flavour(kf_h0).IsOn()) {
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_gluon));
+      m_v.back().AddParticle(Flavour(kf_h0));
+      m_v.back().AddParticle(Flavour(kf_h0));
+      m_v.back().cpl.push_back(I*(yt/vev)*(yt/vev)*g3*g3);
+      m_v.back().Color.push_back(Color_Function(cf::G,1,2));
+      m_v.back().Lorentz.push_back("VVSS");
+      m_v.back().order[0]=2;
+      m_v.back().order[1]=2;
+      msg_Debugging()<<m_v.back()<<std::endl;
     }
   }
 }

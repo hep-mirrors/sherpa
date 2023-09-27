@@ -58,8 +58,8 @@ The list of physics processes that can be simulated with Sherpa covers
 all reactions in the Standard Model. Other models can be implemented
 either using Sherpa's own model syntax, or by using the generic
 interface :cite:`Hoeche2014kca` to the UFO output
-:cite:`Degrande2011ua` of `FeynRules`_
-:cite:`Christensen2008py`,:cite:`Christensen2009jx`.  The Sherpa
+:cite:`Degrande2011ua` :cite:`Darme:2023jdn` of `FeynRules`_
+:cite:`Christensen2008py`, :cite:`Christensen2009jx`.  The Sherpa
 program owes this versatility to the two inbuilt matrix-element
 generators, AMEGIC++ and `Comix <http://comix.freacafe.de>`_, and to
 it's phase-space generator Phasic :cite:`Krauss2001iv`, which

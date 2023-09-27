@@ -21,7 +21,7 @@ else
 endif
 
 all: $(SOURCES) $(OBJECTS) 
-	$(CC) -shared -o libSherpaSMZprime.$(LIB_SUFFIX) $(OBJECTS) $(LDFLAGS)
+	$(CC) -shared -o libSherpaSMZprime.$(LIB_SUFFIX) $(OBJECTS) $(LDFLAGS) -lSherpaSM
 
 .C.o:
 	$(CC) $(CXXFLAGS) -c $< -o $@

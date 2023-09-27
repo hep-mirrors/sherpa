@@ -3,7 +3,7 @@
 # Date: Tue 11 Nov 2014 15:33:22
 
 
-from object_library import all_orders, CouplingOrder
+from .object_library import all_orders, CouplingOrder
 
 
 NP = CouplingOrder(name = 'NP',

@@ -1,34 +1,6 @@
-#include "MODEL/Main/Model_Base.H"
-
+#include "MODEL/SM/Model.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
-
-namespace MODEL {
-
-  class Standard_Model: public Model_Base {
-  private:
-
-    int  m_ckmorder, m_dec_g4;
-
-    void FixEWParameters();
-    void FixCKM();
-
-    void ParticleInit();
-
-    void InitQEDVertices();
-    void InitQCDVertices();
-    void InitEWVertices();
-
-  public :
-
-    Standard_Model();
-    bool ModelInit();
-    void InitVertices();
-
-  };
-
-}
-
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Strong_Coupling.H"

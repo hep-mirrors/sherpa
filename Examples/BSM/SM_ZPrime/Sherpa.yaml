@@ -1,0 +1,20 @@
+BEAMS: 2212
+BEAM_ENERGIES: 7000
+
+SHERPA_LDADD: SherpaSMZprime
+MODEL: SMZprime
+
+PARTICLE_DATA:
+  32: {Mass: 1000, Width: 0}
+
+Zprime:
+  Zp_cpl_L: 0.3
+  Zp_cpl_R: 0.6
+
+
+PROCESSES:
+- 93 93 -> 11 -11:
+    Order: {QCD: 0, EW: 2}
+
+SELECTORS:
+  - [Mass, 11, -11, 500, 1500]

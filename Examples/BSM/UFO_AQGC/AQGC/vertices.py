@@ -3,10 +3,10 @@
 # Date: Tue 11 Nov 2014 15:33:22
 
 
-from object_library import all_vertices, Vertex
-import particles as P
-import couplings as C
-import lorentz as L
+from .object_library import all_vertices, Vertex
+from . import particles as P
+from . import couplings as C
+from . import lorentz as L
 
 
 V_1 = Vertex(name = 'V_1',

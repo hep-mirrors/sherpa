@@ -3,9 +3,9 @@
 # Date: Tue 11 Nov 2014 15:33:22
 
 
-from object_library import all_lorentz, Lorentz
+from .object_library import all_lorentz, Lorentz
 
-from function_library import complexconjugate, re, im, csc, sec, acsc, asec, cot
+from .function_library import complexconjugate, re, im, csc, sec, acsc, asec, cot
 
 
 VVV1 = Lorentz(name = 'VVV1',

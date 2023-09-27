@@ -3,9 +3,9 @@
 # Date: Mon 23 Jan 2012 11:06:17
 
 
-from __future__ import division
-from object_library import all_particles, Particle
-import parameters as Param
+
+from .object_library import all_particles, Particle
+from . import parameters as Param
 
 ve0 = Particle(pdg_code = 12,
                name = 've0',

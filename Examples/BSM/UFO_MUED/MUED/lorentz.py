@@ -3,9 +3,9 @@
 # Date: Mon 23 Jan 2012 11:06:17
 
 
-from object_library import all_lorentz, Lorentz
+from .object_library import all_lorentz, Lorentz
 
-from function_library import complexconjugate, re, im, csc, sec, acsc, asec
+from .function_library import complexconjugate, re, im, csc, sec, acsc, asec
 
 
 
