@@ -312,11 +312,11 @@ are:
       ``EVENT_DISPLAY_INTERVAL``.
 
 :samp:`{8}`
-      Sherpa prints the name of the hard process for the 
+      Sherpa prints the name of the hard process for the
       last event at each print out.
 
 :samp:`{16}`
-      Sherpa prints the elapsed time and time left in 
+      Sherpa prints the elapsed time and time left in
       seconds only.
 
 The settings are additive such that multiple settings can be employed
@@ -374,7 +374,6 @@ Event output formats
 
 .. index:: HepMC_GenEvent
 .. index:: HepMC_Short
-.. index:: HEPEVT
 .. index:: LHEF
 .. index:: Root
 .. index:: FILE_SIZE
@@ -384,7 +383,7 @@ Event output formats
 .. index:: EVENT_INPUT
 
 Sherpa provides the possibility to output events in various formats,
-e.g. the HepEVT common block structure or the HepMC format.  The
+e.g. the HepMC format.  The
 authors of Sherpa assume that the user is sufficiently acquainted with
 these formats when selecting them.
 
@@ -468,9 +467,6 @@ The following formats are currently available:
   (or ``-DSHERPA_ENABLE_HEPMC3=ON``, if HepMC3 is installed in a
   standard location).
 
-:option:`HEPEVT`
-  Generates output in HepEvt format.
-
 :option:`LHEF`
   Generates output in Les Houches Event File format. This output
   format is intended for output of **matrix element configurations
@@ -496,7 +492,7 @@ The following formats are currently available:
   Requires ``-DROOT_DIR=/path/to/root``
   (or ``-DSHERPA_ENABLE_ROOT=ON``, if ROOT is installed in a
   standard location).
-  
+
 The output can be further customized using the following options:
 
 :option:`FILE_SIZE`

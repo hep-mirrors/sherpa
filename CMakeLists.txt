@@ -57,7 +57,6 @@ option(SHERPA_ENABLE_MANUAL                  "Enables building of manual." OFF)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." OFF)
 option(SHERPA_ENABLE_MPI                     "Enables building with MPI." OFF)
 option(SHERPA_ENABLE_OPENLOOPS               "Enables building with OpenLoops." OFF)
-option(SHERPA_ENABLE_PYTHIA6                 "Enables building with Pythia6 (embedded)." OFF)
 option(SHERPA_ENABLE_PYTHIA8                 "Enables building with Pythia8." OFF)
 option(SHERPA_ENABLE_PYTHON                  "Enables building of Python interface." OFF)
 option(SHERPA_ENABLE_RECOLA                  "Enables building with Recola." OFF)
@@ -84,7 +83,7 @@ endif()
 unset(HEPMC3_DIR CACHE)
 ########################################################################
 ### enable option when path was provided explicitly via cmake
-set(alldirenables BLACKHAT GOSAM HEPMC2 HepMC3 HZTOOL LHAPDF MCFM OPENLOOPS PYTHIA6 PYTHIA8 RECOLA RIVET)
+set(alldirenables BLACKHAT GOSAM HEPMC2 HepMC3 HZTOOL LHAPDF MCFM OPENLOOPS PYTHIA8 RECOLA RIVET)
 foreach (en IN LISTS alldirenables)
   if (${en}_DIR)
      string(TOUPPER "${en}" ENUP)
@@ -96,11 +95,11 @@ endforeach()
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
  EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
- LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA6 PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
+ LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
-if (SHERPA_ENABLE_PYTHIA6 OR SHERPA_ENABLE_INTERNAL_PDFS)
+if (SHERPA_ENABLE_INTERNAL_PDFS)
  set(SHERPA_ENABLE_FORTRAN ON)
  enable_language(Fortran)
  message(STATUS "SHERPA: SHERPA_ENABLE_FORTRAN=${SHERPA_ENABLE_FORTRAN}")
@@ -632,8 +631,6 @@ endforeach (  IDIR ${IDIRS}  )
 # workaround for macOS
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Org/Node.C  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/ATOOLS/Org/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Org/Getter_Function.C  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/ATOOLS/Org/)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/Dummy.C      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/LundTools/)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/Lund_Interface.C      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/LundTools/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Cluster_Algorithm.C      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/ATOOLS/Math/)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ATOOLS/Math/Sobol/21201 ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201)
@@ -655,7 +652,6 @@ if (SHERPA_ENABLE_INTERNAL_PDFS)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CJK/CJK1Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CJK/CJK2Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
 endif()
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/HEPEVT DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201${SOBOL_EXT} DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/Sobol COMPONENT doc  )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/COMIX/Main/init_nlo.sh DESTINATION ${CMAKE_INSTALL_BINDIR} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/get_bibtex DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
@@ -682,7 +678,7 @@ add_library(SHERPAAll INTERFACE)
 add_library(SHERPA::All ALIAS SHERPAAll)
 set_target_properties(SHERPAAll PROPERTIES EXPORT_NAME SHERPA::All)
 target_link_libraries(SHERPAAll INTERFACE
-SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics LundTools SherpaTools
+SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
 ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
 HadronsMain HadronsMEs HadronsCurrents HadronsPSs
 Reconnections
@@ -900,9 +896,6 @@ if (SHERPA_ENABLE_FORTRAN)
   get_filename_component (FC "${CMAKE_Fortran_COMPILER}" NAME)
 endif()
 
-if (NOT HEPEVT_CB_SIZE)
-  set(HEPEVT_CB_SIZE  4000)
-endif()
 set( LD_LIBRARY_PATH "LD_LIBRARY_PATH")
 if (CMAKE_SYSTEM_NAME MATCHES Darwin)
   set( LD_LIBRARY_PATH "DYLD_LIBRARY_PATH")
@@ -978,7 +971,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_EWSUD}>,#define USING__EWSud \"1\",/* #undef USING__
 #endif")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H CONTENT "${CXXFLAGS_PACKAGES_H_CONTENT}")
 ########################################################################
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/LundTools/pythia-6.4.18.f.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/LundTools/pythia-6.4.18.f @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa-config @ONLY)
@@ -1054,10 +1046,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 #define SHERPA_NAME \"Dhaulagiri\"\n\n\
 /* Sherpa version code */\n\
 #define SHERPA_VERSION_CODE ${SHERPA_VERSION_CODE}\n\n\
-/* using Pythia */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_PYTHIA6}>,#define USING__PYTHIA \"1\",/* #undef USING__PYTHIA */>\n\n\
-/* HEPEVT common block size */\n\
-#define HEPEVT_CB_SIZE ${HEPEVT_CB_SIZE} \n\n\
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\n\
 #define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n\n\

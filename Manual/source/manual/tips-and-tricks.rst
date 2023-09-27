@@ -130,8 +130,7 @@ Sherpa compilation has to be configured with the following options:
 .. code-block:: shell-session
 
    $ cmake -DHZTOOL_DIR=/path/to/hztool \
-           -DCERNLIB_DIR=/path/to/cernlib \
-           -DHEPEVT_CB_SIZE=4000
+           -DCERNLIB_DIR=/path/to/cernlib
 
 In the case that the packages are installed in standard locations,
 you can instead use ``-DSHERPA_ENABLE_HZTOOL=ON``

@@ -1,8 +1,5 @@
 set(Tools_SOURCES Output_Base.C
                   Event_Reader_Base.C
-                  HepEvt_Interface.C
-                  Pythia_HepEvt_Translator.C
-                  Output_HepEvt.C
                   Output_LHEF.C
                   Userhook_Base.C
                   Analysis_Interface.C)
@@ -16,17 +13,14 @@ endif()
 set(Tools_HEADERS Definitions.H
                   Output_Base.H
                   Event_Reader_Base.H
-                  HepEvt_Interface.H
                   HepMC2_Interface.H
                   HepMC3_Interface.H
-                  Pythia_HepEvt_Translator.H
-                  Output_HepEvt.H
                   Output_LHEF.H
                   Userhook_Base.H
                   Analysis_Interface.H)
 
-set(foo_SOURCES  Output_Base.C Event_Reader_Base.C HepEvt_Interface.C HepMC2_Interface.C HepMC3_Interface.C Pythia_HepEvt_Translator.C Output_HepEvt.C Output_LHEF.C Userhook_Base.C Analysis_Interface.C)
-set(foo_HEADERS Definitions.H Output_Base.H Event_Reader_Base.H HepEvt_Interface.H HepMC2_Interface.H HepMC3_Interface.H Pythia_HepEvt_Translator.H Output_HepEvt.H Output_LHEF.H Userhook_Base.H Analysis_Interface.H)
+set(foo_SOURCES  Output_Base.C Event_Reader_Base.C HepMC2_Interface.C HepMC3_Interface.C Output_LHEF.C Userhook_Base.C Analysis_Interface.C)
+set(foo_HEADERS Definitions.H Output_Base.H Event_Reader_Base.H HepMC2_Interface.H HepMC3_Interface.H Output_LHEF.H Userhook_Base.H Analysis_Interface.H)
 
 sherpa_create_git_info(foo)
  

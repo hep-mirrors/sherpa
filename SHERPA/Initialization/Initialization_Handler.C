@@ -6,11 +6,9 @@
 #include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Init.H"
-#include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
-#include "SHERPA/LundTools/Lund_Interface.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "SHERPA/Main/Filter.H"
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
@@ -119,9 +117,7 @@ void Initialization_Handler::RegisterDefaults()
   s["N_COLOR"].SetDefault(3.0);
 
   std::string frag{ s["FRAGMENTATION"].Get<std::string>() };
-  s["HADRON_DECAYS"]["Model"]
-    .SetDefault((frag == "Lund") ? "Lund" : "HADRONS++")
-    .UseNoneReplacements();
+  s["HADRON_DECAYS"]["Model"].SetDefault("HADRONS++").UseNoneReplacements();
   s["HADRON_DECAYS"]["Max_Proper_Lifetime"].SetDefault(10.0);
 
   s["HADRON_DECAYS"]["Spin_Correlations"].SetDefault(0);
@@ -1128,22 +1124,6 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     Hadron_Decay_Handler* hd=new Hadron_Decay_Handler();
     as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
-  }
-  else if ((decmodel==string("Lund")) ) {
-#ifdef USING__PYTHIA
-    as->SetActiveAs(isr::hard_subprocess);
-    Lund_Interface * lund(NULL);
-    if (p_fragmentation==NULL) {
-      lund = new Lund_Interface();
-    }
-    else lund = dynamic_cast<Lund_Interface*>(p_fragmentation);
-    Lund_Decay_Handler* hd=new Lund_Decay_Handler(lund);
-    as->SetActiveAs(isr::hard_process);
-    p_hdhandler=hd;
-#else
-    THROW(fatal_error, string("Pythia not enabled during compilation. ")+
-          "Use the cmake option -DSHERPA_ENABLE_PYTHIA6=ON to enable it.");
-#endif
   }
   else {
     THROW(fatal_error,"Hadron decay model '"+decmodel+"' not implemented.");

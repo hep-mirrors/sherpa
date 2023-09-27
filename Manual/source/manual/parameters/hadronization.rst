@@ -66,25 +66,6 @@ employed during event generation.
      DECAYS: true
      SHERPA_MASSES: false
 
-* Alternatively, Sherpa  also provides an interface to
-  Pythia 6.4 :cite:`Sjostrand2006za` by using the setting
-  :option:`Lund`.  In this case, the standard Pythia switches
-  :option:`MSTJ`, :option:`MSTP`, :option:`MSTU`, :option:`PARP`,
-  :option:`PARJ` and :option:`PARU` can be used to steer the behaviour
-  of the Lund string, see :cite:`Sjostrand2006za`. They can be
-  specified as a 2xN matrix:
-
-.. code-block:: yaml
-
-   FRAGMENTATION: Lund
-   MSTJ:
-   - [<number1>, <value1>]
-   - [<number2>, <value2>]
-     ...
-   MSTP:
-   - [<number1>, <value1>]
-     ...
-
 Hadron constituents
 -------------------
 
@@ -335,7 +316,7 @@ named ``HADRON_DECAYS``, e.g.
      Model: HADRONS++
      Max_Proper_Lifetime: 10.0
      QED_Corrections: 1
-     
+
 * Hadron properties like mass, width, and active can
   be set in full analogy to the settings for fundamental particles
   using :option:`PARTICLE_DATA`, cf. :ref:`Models`.
@@ -351,11 +332,9 @@ named ``HADRON_DECAYS``, e.g.
   with QED corrections.
 
 
-* ``Model: [HADRONS++, Lund, Off]`` (default: :option:`HADRONS++`)
+* ``Model: [HADRONS++, Off]`` (default: :option:`HADRONS++`)
   It defaults to :option:`Hadrons` to employ Sherpa's built-in hadron
   decay module HADRONS++ described below.
-  Alternatively one can select :option:`Lund` (the default if ``FRAGMENTATION: Lund``)
-  to use the interface to Pythia6.
   Another option is to use the hadron decays from Pythia8 directly in the
   corresponding hadronisation interface, cf. :ref:`Fragmentation` above.
   To disable hadron decays completely, it can be disabled with the option :option:`Off`.
@@ -379,7 +358,7 @@ Its settings are also steered within the ``HADRON_DECAYS`` block as follows:
   unstable (decayed) particles off-shell, but leave stable particles
   on-shell.
 
-* ``Spin_Correlations: [0,1]`` (default: 0) 
+* ``Spin_Correlations: [0,1]`` (default: 0)
   A spin correlation algorithm is implemented and can be switched on with
   this setting. This might slow down event generation slightly.
 
@@ -406,11 +385,11 @@ Its settings are also steered within the ``HADRON_DECAYS`` block as follows:
   products. For each decay channel the following settings are available:
 
   * ``BR: [<br>, <deltabr>]`` branching ratio and its uncertainty
-    
+
   * ``Origin: <...>`` origin of BR for documentation purposes
 
   * ``Status:`` TODO
-     
+
   * ``ME:`` lists the matrix elements used for the decay kinematics
     and the permutation that maps the external momenta of the decay into the
     internal convention in the ME implementation.
@@ -467,7 +446,7 @@ Its settings are also steered within the ``HADRON_DECAYS`` block as follows:
                        Type: VA_P_V
                        Indices: [0,1]
                        FORM_FACTOR: 3
-         
+
              -411,211,12,-11:
                BR: [0.0002, 0.0002]
                Origin: FS
@@ -480,13 +459,13 @@ Its settings are also steered within the ``HADRON_DECAYS`` block as follows:
                        Type: VA_B_DPi
                        Indices: [0,1,2]
                        Vxx: 0.04
-  
+
   * ``PhaseSpace`` lists the phase-space mappings and optionally their (relative) weights.
     Example:
-     
+
     .. code-block:: yaml
-                     
-       PhaseSpace:                                                                                                                                           
+
+       PhaseSpace:
          - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
              Weight: 0.5
          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
@@ -513,7 +492,7 @@ Its settings are also steered within the ``HADRON_DECAYS`` block as follows:
      HADRON_DECAYS:
        Aliases:
          999521: 521
-     
+
        Channels:
          300553:
            999521,-999521:
@@ -522,7 +501,7 @@ Its settings are also steered within the ``HADRON_DECAYS`` block as follows:
            511,-511:
              BR: 0.5
              [...]
-       
+
          999521:
            -423,12,-11:
              BR: [0.0558, 0.0022]
@@ -546,13 +525,13 @@ Its settings are also steered within the ``HADRON_DECAYS`` block as follows:
          x_D: 0.0032
          y_D: 0.0069
          qoverp2_D: 1.0
-         
+
          Mixing_B: 1
          Interference_B: 0
          x_B: 0.770
          y_B: 0.0
          qoverp2_B: 1.0
-         
+
          Mixing_B(s): 1
          Interference_B(s): 0
          x_B(s): 26.72
@@ -575,4 +554,4 @@ Its settings are also steered within the ``HADRON_DECAYS`` block as follows:
        Spectators: [ 2: { Weight: 1.0 } ]
 
 * ``CreateBooklet: true`` to create a Latex booklet of all decay channels read in.
-  
+

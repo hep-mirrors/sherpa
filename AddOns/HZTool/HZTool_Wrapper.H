@@ -7,9 +7,9 @@
 inline void MakeFortranString
 (char *output,std::string input,unsigned int length)
 {
-  for (unsigned int i=0;i<length;++i) 
+  for (unsigned int i=0;i<length;++i)
     output[i]=(char)32;
-  for (size_t j=0;j<input.length();++j) 
+  for (size_t j=0;j<input.length();++j)
     output[j]=(char)input[j];
 }
 
@@ -19,27 +19,22 @@ extern "C" {
   void hzfinl_();
 }
 
-void hzinit(double xslo,double nchavg) 
-{ 
-  hzinit_(&xslo,&nchavg); 
-}
-
-void hzevnt(double wgt) 
+void hzinit(double xslo,double nchavg)
 {
-  hzevnt_(&wgt); 
+  hzinit_(&xslo,&nchavg);
 }
 
-void hzfinl() 
+void hzevnt(double wgt)
 {
-  hzfinl_(); 
+  hzevnt_(&wgt);
 }
 
-#if HEPEVT_CB_SIZE != 4000
-#error Wrong HepEvt common block size. Must be 4000 when using HZTool.
-#error Use 'cmake -DHEPEVT_CB_SIZE=4000' to reconfigure.
-#endif
+void hzfinl()
+{
+  hzfinl_();
+}
 
-const int nmxhep = HEPEVT_CB_SIZE;
+constexpr int nmxhep = 4000;
 
 extern "C" {
 

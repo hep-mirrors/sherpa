@@ -10,9 +10,6 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/RUsage.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
-#ifdef USING__PYTHIA
-#include "SHERPA/LundTools/Lund_Interface.H"
-#endif
 
 #include <signal.h>
 #include <unistd.h>
@@ -142,9 +139,6 @@ bool Event_Handler::GenerateEvent(eventtype::code mode)
   ATOOLS::ran->SaveStatus();
   if (m_checkweight&4 && rpa->gen.NumberOfGeneratedEvents()==0)
     WriteRNGStatus("random","");
-#ifdef USING__PYTHIA
-  Lund_Interface::SaveStatus();
-#endif
   if (!rpa->gen.CheckTime()) {
     msg_Error()<<ATOOLS::om::bold
                      <<"\n\nEvent_Handler::GenerateEvent("<<mode<<"): "

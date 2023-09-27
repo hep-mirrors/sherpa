@@ -44,7 +44,7 @@ namespace SHERPA {
     \fn Beam_Remnants::Beam_Remnants(Fragmentation_Handler *)
     Copies the pointer to the fragmentation handler and sets the
     name and the type of this event phase. The name is given by 
-    "Beam_Remnants : " plus the name of the fragmentation model (e.g. "Lund"), the type
+    "Beam_Remnants : " plus the name of the fragmentation model, the type
     is "Beam_Remnants".
   */
   /*!

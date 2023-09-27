@@ -9,7 +9,7 @@ sherpa_handle_executable(Combine_Analysis)
 install(TARGETS Combine_Analysis DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 set_target_properties(Combine_Analysis        PROPERTIES DEFINE_SYMBOL "")
 target_link_libraries(Combine_Analysis PRIVATE 
-SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics LundTools SherpaTools 
+SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools 
 ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools 
 HadronsMain HadronsMEs HadronsCurrents HadronsPSs 
 Reconnections 

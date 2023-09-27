@@ -35,7 +35,6 @@ namespace SHERPA {
   class Colour_Reconnection_Handler;
   class Decay_Handler_Base;
   class Soft_Photon_Handler;
-  class Lund_Interface;
   class Event_Reader_Base;
   class Analysis_Interface;
   class Filter;
@@ -162,9 +161,8 @@ namespace SHERPA {
     - the matrix elements, if needed they are also evaluated to yield total cross sections,
     - the parton shower in the initial and final state,
     - the handling of the beam remnants,
-    - the fragmentation which at the moment is dealt with through an interface to the Lund string
-      of Pythia and the subsequent hadron decays by the same program.
-
+    - the fragmentation
+    
     These modules are later on taken by the main steering class, Sherpa, and put into
     corresponding Event_Phase_Handlers. After termination of the run, they are all deleted.
   */
@@ -233,8 +231,6 @@ namespace SHERPA {
     to remove the particles that HADRONS can cope with from the unstable hadron list. If then
     there are still some particles in the list, i.e. those that HADRONS can't deal with, it needs to
     initialise Pythia as well.
-
-    If, on the other hand, the model is \c Lund, it calls the Pythia for initialisation.
     */
 
 

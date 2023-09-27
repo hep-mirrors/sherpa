@@ -45,8 +45,7 @@ namespace SHERPA {
     \fn Hadronization::Hadronization(Fragmentation_Handler *)
     Copies the pointer to the fragmentation handler and sets the
     name and the type of this event phase. The name is given by 
-    "Hadronization : " plus the name of the fragmentation model (e.g. "Lund"), the type
-    is "Hadronization".
+    "Hadronization : " plus the name of the fragmentation model, the type is "Hadronization".
   */
   /*!
     \fn Hadronization::~Hadronization()
