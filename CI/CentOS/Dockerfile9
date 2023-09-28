@@ -10,7 +10,7 @@ RUN  yum -y  install  bc make ninja-build cmake binutils git wget diffutils file
                       python3 python3-devel swig  &&  yum -y  clean all
 #Packages coming from HEPrpms ->
 RUN  dnf -y copr enable averbyts/HEPrpms && yum -y  install  gosam  fastjet fastjet-devel  YODA-devel Rivet-devel Rivet Rivet-devel qd qd-devel \
-                      blackhat-devel blackhat recola cernlib cernlib-devel cernlib-static MCFM MG5_aMC openloops lhapdf \
+                      blackhat-devel blackhat recola MCFM MG5_aMC openloops lhapdf \
                       f90cache  &&  yum -y  clean all
 #Packages coming from HEPrpms <-
 # sphinx

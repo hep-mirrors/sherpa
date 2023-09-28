@@ -925,8 +925,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_HEPMC3_ROOT}>,#define USING__HEPMC3__ROOT \"1\",/* #
 $<IF:$<BOOL:${HEPMC2_REQUIRED}>,#define USING__HEPMC2 \"1\",/* #undef USING__HEPMC2 */>\n\n\
 /* using gzip */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_GZIP}>,#define USING__GZIP \"1\",/* #undef USING__GZIP */>\n\n\
-/* cernlib found */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_CERNLIB}>,#define USING__CERNLIB \"1\",/* #undef USING__CERNLIB */>\n\n\
 /* using LHAPDF */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_LHAPDF}>,#define USING__LHAPDF \"1\",/* #undef USING__LHAPDF */>\n\n\
 /* LHAPDF PATH */\n\

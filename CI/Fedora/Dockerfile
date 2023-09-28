@@ -10,7 +10,7 @@ RUN  yum -y  install  dnf-plugins-core \
                       python3 python3-devel swig python3-matplotlib && yum -y clean all
 # Packages coming from HEPrpms ->
 RUN  dnf -y copr enable averbyts/HEPrpms &&  yum -y  install  gosam  fastjet fastjet-devel  YODA-devel Rivet-devel Rivet Rivet-devel qd qd-devel \
-                      blackhat-devel blackhat recola cernlib cernlib-devel cernlib-static MCFM MG5_aMC openloops \
+                      blackhat-devel blackhat recola MCFM MG5_aMC openloops \
                       f90cache  && yum -y update lhapdf && yum -y clean all
 # Packages coming from HEPrpms <-
 RUN  yum -y  install  sphinx python3-sphinx python3-sphinxcontrib-bibtex python3-sphinx* \
