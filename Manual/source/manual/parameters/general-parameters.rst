@@ -211,12 +211,6 @@ The following analysis handlers are currently available
   | To enable it, Rivet and HepMC have to be installed and Sherpa must be configured
   | as described in :ref:`Rivet analyses`.
 
-:option:`HZTool`
-  | The HZTool package, see `HZTool Website <http://hztool.hepforge.org/>`_.
-  | To enable it, HZTool and CERNLIB have to be installed and Sherpa must be configured
-  | as described in :ref:`HZTool analyses`.
-
-
 Multiple options can also be specified, e.g. ``ANALYSIS: [Internal,
 Rivet]``.
 

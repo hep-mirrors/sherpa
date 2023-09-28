@@ -46,7 +46,6 @@ option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." OFF)
 option(SHERPA_ENABLE_HEPMC2                  "Enables building with HepMC2 interface." OFF)
 option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3 interface." OFF)
 option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT interface ." OFF)
-option(SHERPA_ENABLE_HZTOOL                  "Enables building with HZTool." OFF)
 option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
 option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." OFF)
 option(SHERPA_ENABLE_LHAPDF                  "Enables LHAPDF." ON)
@@ -83,7 +82,7 @@ endif()
 unset(HEPMC3_DIR CACHE)
 ########################################################################
 ### enable option when path was provided explicitly via cmake
-set(alldirenables BLACKHAT GOSAM HEPMC2 HepMC3 HZTOOL LHAPDF MCFM OPENLOOPS PYTHIA8 RECOLA RIVET)
+set(alldirenables BLACKHAT GOSAM HEPMC2 HepMC3 LHAPDF MCFM OPENLOOPS PYTHIA8 RECOLA RIVET)
 foreach (en IN LISTS alldirenables)
   if (${en}_DIR)
      string(TOUPPER "${en}" ENUP)
@@ -93,7 +92,7 @@ foreach (en IN LISTS alldirenables)
 endforeach()
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
- EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT HZTOOL
+ EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
  LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
@@ -793,16 +792,6 @@ if (SHERPA_ENABLE_RECOLA)
   add_subdirectory(AddOns/Recola)
 endif()
 
-if (SHERPA_ENABLE_HZTOOL)
-  find_package(HZTool REQUIRED)
-  message(STATUS "SHERPA: HZTOOL_LIBRARY=${HZTOOL_LIBRARY} HZTOOL_INCLUDE_DIR=${HZTOOL_INCLUDE_DIR}")
-  find_package(CERNLIB REQUIRED)
-  message(STATUS "SHERPA: CERN_kernlib_DYNAMIC_LIBRARY=${CERN_kernlib_DYNAMIC_LIBRARY} CERN_mathlib_DYNAMIC_LIBRARY=${CERN_mathlib_DYNAMIC_LIBRARY} CERN_packlib_DYNAMIC_LIBRARY=${CERN_packlib_DYNAMIC_LIBRARY}")
-  find_package(Motif REQUIRED)
-  message(STATUS "SHERPA: MOTIF_INCLUDE_DIR=${MOTIF_INCLUDE_DIR} MOTIF_LIBRARIES=${MOTIF_LIBRARIES}")
-  add_subdirectory(AddOns/HZTool)
-endif()
-
 if (SHERPA_ENABLE_GOSAM)
   find_package(GoSam REQUIRED)
   message(STATUS "SHERPA: GOSAM_VERSION=${GOSAM_VERSION} GOSAM_PATH=${GOSAM_PREFIX}")
@@ -936,8 +925,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_HEPMC3_ROOT}>,#define USING__HEPMC3__ROOT \"1\",/* #
 $<IF:$<BOOL:${HEPMC2_REQUIRED}>,#define USING__HEPMC2 \"1\",/* #undef USING__HEPMC2 */>\n\n\
 /* using gzip */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_GZIP}>,#define USING__GZIP \"1\",/* #undef USING__GZIP */>\n\n\
-/* hztool found */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_HZTOOL}>,#define USING__HZTOOL \"1\",/* #undef USING__HZTOOL */>\n\n\
 /* cernlib found */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_CERNLIB}>,#define USING__CERNLIB \"1\",/* #undef USING__CERNLIB */>\n\n\
 /* using LHAPDF */\n\

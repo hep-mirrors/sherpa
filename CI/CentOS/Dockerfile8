@@ -7,22 +7,22 @@ RUN  yum -y  install  dnf-plugins-core --exclude=*uploa* --exclude=*product* --e
                       root-core root root-physics HepMC3-rootIO-devel HepMC3-devel HepMC3-search HepMC3-search-devel  HepMC3-rootIO HepMC3  HepMC HepMC-devel \
                       texinfo latexmk 'tex(latex)' ghostscript 'tex(sectsty.sty)' \
                       openmpi environment-modules  openmpi-devel \
-                      catch-devel doxygen \                      
-                      python3 python3-devel swig &&  yum -y  clean all  
+                      catch-devel doxygen \
+                      python3 python3-devel swig &&  yum -y  clean all
 #Packages coming from HEPrpms ->
-RUN  dnf -y copr enable averbyts/HEPrpms && yum -y  install  gosam  fastjet fastjet-devel  YODA-devel Rivet-devel Rivet Rivet-devel hztool  qd qd-devel \
+RUN  dnf -y copr enable averbyts/HEPrpms && yum -y  install  gosam  fastjet fastjet-devel  YODA-devel Rivet-devel Rivet Rivet-devel qd qd-devel \
                       blackhat-devel blackhat recola cernlib cernlib-devel cernlib-static MCFM MG5_aMC openloops lhapdf \
-                      f90cache  &&  yum -y  clean all  
+                      f90cache  &&  yum -y  clean all
 #Packages coming from HEPrpms <-
-#python3-sphinx python3-sphinxcontrib-bibtex 
-#RUN  yum -y  install  'tex(atbegshi.sty)' 'tex(babel.sty)' 'tex(bigintcalc.sty)' 'tex(bitset.sty)' 'tex(etexcmds.sty)' 'tex(gettitlestring.sty)'  
-#RUN  yum -y  install  'tex(iftex.sty)' 'tex(ifvtex.sty)' 'tex(infwarerr.sty)' 'tex(intcalc.sty)' 'tex(kvdefinekeys.sty)' 'tex(kvsetkeys.sty)' 
-#RUN  yum -y  install  'tex(ltxcmds.sty)' 'tex(pdfescape.sty)' 'tex(pdftexcmds.sty)' 'tex(uniquecounter.sty)' 'tex(amsfonts.sty)' 'tex(amssymb.sty)'  
-#RUN  yum -y  install  'tex(amsbsy.sty)' 'tex(amsgen.sty)' 'tex(amsmath.sty)' 'tex(amsopn.sty)' 'tex(amstext.sty)' 'tex(atveryend.sty)' 'tex(auxhook.sty)' 'tex(alltt.sty)'  
-#RUN  yum -y  install  'tex(atbegshi-ltx.sty)' 'tex(atveryend-ltx.sty)' 'tex(fontenc.sty)' 'tex(inputenc.sty)' 'tex(makeidx.sty)' 'tex(textcomp.sty)' 'tex(capt-of.sty)'  
-#RUN  yum -y  install  'tex(cmap.sty)' 'tex(epstopdf-base.sty)' 'tex(fancyhdr.sty)' 'tex(fancyvrb.sty)' 'tex(float.sty)' 'tex(fncychap.sty)' 'tex(framed.sty)'  
-#RUN  yum -y  install  'tex(geometry.sty)' 'tex(color.sty)' 'tex(graphics.sty)' 'tex(graphicx.sty)' 'tex(keyval.sty)' 'tex(trig.sty)' 'tex(hycolor.sty)' 'tex(hyperref.sty)'  
-#RUN  yum -y  install  'tex(nameref.sty)' 'tex(kvoptions.sty)' 'tex(letltxmacro.sty)' 'tex(needspace.sty)' 'tex(hypcap.sty)' 'tex(parskip-2001-04-09.sty)' 'tex(parskip.sty)' 
-#RUN  yum -y  install  'tex(refcount.sty)' 'tex(rerunfilecheck.sty)' 'tex(tabulary.sty)' 'tex(tgheros.sty)' 'tex(tgtermes.sty)' 'tex(titlesec.sty)' 'tex(array.sty)'  
-#RUN  yum -y  install  'tex(longtable.sty)' 'tex(multicol.sty)' 'tex(upquote.sty)' 'tex(url.sty)' 'tex(varwidth.sty)' 'tex(wrapfig.sty)' 'tex(xcolor.sty)' 
+#python3-sphinx python3-sphinxcontrib-bibtex
+#RUN  yum -y  install  'tex(atbegshi.sty)' 'tex(babel.sty)' 'tex(bigintcalc.sty)' 'tex(bitset.sty)' 'tex(etexcmds.sty)' 'tex(gettitlestring.sty)'
+#RUN  yum -y  install  'tex(iftex.sty)' 'tex(ifvtex.sty)' 'tex(infwarerr.sty)' 'tex(intcalc.sty)' 'tex(kvdefinekeys.sty)' 'tex(kvsetkeys.sty)'
+#RUN  yum -y  install  'tex(ltxcmds.sty)' 'tex(pdfescape.sty)' 'tex(pdftexcmds.sty)' 'tex(uniquecounter.sty)' 'tex(amsfonts.sty)' 'tex(amssymb.sty)'
+#RUN  yum -y  install  'tex(amsbsy.sty)' 'tex(amsgen.sty)' 'tex(amsmath.sty)' 'tex(amsopn.sty)' 'tex(amstext.sty)' 'tex(atveryend.sty)' 'tex(auxhook.sty)' 'tex(alltt.sty)'
+#RUN  yum -y  install  'tex(atbegshi-ltx.sty)' 'tex(atveryend-ltx.sty)' 'tex(fontenc.sty)' 'tex(inputenc.sty)' 'tex(makeidx.sty)' 'tex(textcomp.sty)' 'tex(capt-of.sty)'
+#RUN  yum -y  install  'tex(cmap.sty)' 'tex(epstopdf-base.sty)' 'tex(fancyhdr.sty)' 'tex(fancyvrb.sty)' 'tex(float.sty)' 'tex(fncychap.sty)' 'tex(framed.sty)'
+#RUN  yum -y  install  'tex(geometry.sty)' 'tex(color.sty)' 'tex(graphics.sty)' 'tex(graphicx.sty)' 'tex(keyval.sty)' 'tex(trig.sty)' 'tex(hycolor.sty)' 'tex(hyperref.sty)'
+#RUN  yum -y  install  'tex(nameref.sty)' 'tex(kvoptions.sty)' 'tex(letltxmacro.sty)' 'tex(needspace.sty)' 'tex(hypcap.sty)' 'tex(parskip-2001-04-09.sty)' 'tex(parskip.sty)'
+#RUN  yum -y  install  'tex(refcount.sty)' 'tex(rerunfilecheck.sty)' 'tex(tabulary.sty)' 'tex(tgheros.sty)' 'tex(tgtermes.sty)' 'tex(titlesec.sty)' 'tex(array.sty)'
+#RUN  yum -y  install  'tex(longtable.sty)' 'tex(multicol.sty)' 'tex(upquote.sty)' 'tex(url.sty)' 'tex(varwidth.sty)' 'tex(wrapfig.sty)' 'tex(xcolor.sty)'
 RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas

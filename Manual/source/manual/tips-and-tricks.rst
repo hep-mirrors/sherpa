@@ -114,52 +114,6 @@ hard events, and `SPLITPM: 1` creates histograms split by events with positive a
 negative event weights. Finally, `SPLITCOREPROCS: 1` will split by different
 processes if multiple ones are specified in the runcard.
 
-.. _HZTool analyses:
-
-***************
-HZTool analyses
-***************
-
-.. index:: ANALYSIS_OUTPUT
-
-Sherpa is equipped with an interface to the analysis tool `HZTool
-<http://projects.hepforge.org/hztool/>`_. To enable it, HZTool and
-`CERNLIB <http://cernlib.web.cern.ch/>`_ have to be installed and your
-Sherpa compilation has to be configured with the following options:
-
-.. code-block:: shell-session
-
-   $ cmake -DHZTOOL_DIR=/path/to/hztool \
-           -DCERNLIB_DIR=/path/to/cernlib
-
-In the case that the packages are installed in standard locations,
-you can instead use ``-DSHERPA_ENABLE_HZTOOL=ON``
-and ``-DSHERPA_ENABLE_CERNLIB=ON``, respectively.
-
-Note that an example CERNLIB installation bootstrap script is provided
-in ``AddOns/HZTool/start_cern_64bit``. Note that this script is only
-provided for convenience, we will not provide support if it is not
-working as expected.
-
-To use the interface, enable it using the :option:`ANALYSIS` and
-configure it using the :option:`HZTool` settings group:
-
-.. code-block:: yaml
-
-   ANALYSIS: HZTool
-   HZTOOL:
-     HISTO_NAME: output.hbook
-     HZ_ENABLE:
-     - hz00145
-     - hz01073
-     - hz02079
-     - hz03160
-
-The ``HZ_ENABLE`` list specifies which HZTool analyses to run.  The
-histogram output directory can be changed using the
-``ANALYSIS_OUTPUT`` switch, while ``HZTOOL:HISTO_NAME`` specifies the
-hbook output file.
-
 .. _MCFM interface:
 
 **************
