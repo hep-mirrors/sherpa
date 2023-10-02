@@ -33,7 +33,7 @@ GRSph_Fortran_Interface::GRSph_Fortran_Interface(const ATOOLS::Flavour _bunch,
     m_iset = 1;
   else if (m_set == std::string("GRSMSbar"))
     m_iset = 2;
-  else if (m_set == std::string("GRSMSbar"))
+  else if (m_set == std::string("GRSDISg"))
     m_iset = 3;
   else {
     msg_Out() << METHOD
