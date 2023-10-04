@@ -24,5 +24,5 @@ RUN  yum -y  install  sphinx python3-sphinx python3-sphinxcontrib-bibtex python3
                       'tex(nameref.sty)' 'tex(kvoptions.sty)' 'tex(letltxmacro.sty)' 'tex(needspace.sty)' 'tex(hypcap.sty)' 'tex(parskip-2001-04-09.sty)' 'tex(parskip.sty)'  \
                       'tex(refcount.sty)' 'tex(rerunfilecheck.sty)' 'tex(tabulary.sty)' 'tex(tgheros.sty)' 'tex(tgtermes.sty)' 'tex(titlesec.sty)' 'tex(array.sty)'   \
                       'tex(longtable.sty)' 'tex(multicol.sty)' 'tex(upquote.sty)' 'tex(url.sty)' 'tex(varwidth.sty)' 'tex(wrapfig.sty)' 'tex(xcolor.sty)' \
-                       rsync --exclude=python3-mistune08 --exclude=python3-sphinxcontrib-openapi && yum -y  clean all
+                       rsync --exclude=python3-mistune08 --exclude=python3-sphinxcontrib-openapi --exclude=python3-sphinx-reredirects && yum -y  clean all
 RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas
