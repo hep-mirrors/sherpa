@@ -1,0 +1,34 @@
+This software is released under Version 3 of the GNU Lesser General Public Licence (see ./COPYING) or any later version.
+
+
+The third party codes are distributed under their own licenses.
+yaml-cpp:
+  https://github.com/jbeder/yaml-cpp
+  ./ATOOLS/YAML
+  ./ATOOLS/YAML/LICENSE
+
+fjcore:
+  http://fastjet.fr
+  ./ATOOLS/Phys/fjcore.cc,./ATOOLS/Phys/fjcore.hh
+  GPLv2
+  
+libzipp:
+  https://github.com/ctabin/libzippp
+  ./ATOOLS/Org/libzippp.cpp, ./ATOOLS/Org/libzippp.h
+  https://github.com/ctabin/libzippp/blob/master/LICENCE
+
+pythia6:
+  https://pythia.org/pythia6/
+  SHERPA/LundTools/pythia-6.4.18.f.in,./SHERPA/LundTools/pyplst.f
+  GPLv2??
+  
+binreloc:
+  http://autopackage.org/docs/binreloc/
+  ./ATOOLS/Org/binreloc.c,./ATOOLS/Org/binreloc.h
+  Public domain
+  
+Sobol:
+   https://web.maths.unsw.edu.au/~fkuo/sobol/
+ ./ATOOLS/Math/Sobol.C,./ATOOLS/Math/Sobol.H
+ https://web.maths.unsw.edu.au/~fkuo/sobol/
+  

@@ -123,6 +123,8 @@
      %          glh(4,4),dnh(4,4),uph(4,4),sth(4,4),
      %          chh(4,4),bth(4,4),Imaxc(NQ2H),Imaxb(NQ2H),
      %          xdata(0:NX+1),q2data(0:NQ2+1),q2hdata(0:NQ2H+1)
+      common /IREADVH2/ IREAD
+      common /PARTVH2/ gl,dn,up,st,ch,bt,chx,btx
       data xdata/0d0,1d-5,2d-5,4d-5,6d-5,8d-5,
      %	         1d-4,2d-4,4d-4,6d-4,8d-4,
      %	         1d-3,2d-3,4d-3,6d-3,8d-3,
@@ -147,8 +149,6 @@
       data Imaxb/14,15,16,17,17,18,18,18,19,19,19,20,20,20,20,21,21,21,
      %           22,22,23,24,25,26,27,28,30,32,34,36,37,38,40,42,43,44,
      %           45,46,47,48,48,49,49,49,49,49,49,49/
-      common /IREADVH2/ IREAD
-      common /PARTVH2/ gl,dn,up,st,ch,bt,chx,btx
 
       XX = XIN
       QQ2 = Q2IN
@@ -389,7 +389,8 @@
       INTEGER I,J,K,L,M,N,il,iu,Imax,bord,NX,NQ2
       parameter (NX=52,NQ2=48)
       dimension xdata(0:NX+1),hq(0:NQ2+1,0:NX+1),
-     % hqx(0:NQ2+1,24),hqh(4,4),x(4),per(7),xdatah(0:Imax+7)
+     % hqx(0:NQ2+1,24),hqh(4,4),x(4),per(7),
+     % xdatah(0:107)
       data per/0.93d0,0.95d0,0.96d0,0.97d0,0.99d0,0.999d0,0d0/
 
       do 1 I=0,Imax

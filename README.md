@@ -33,3 +33,6 @@ into Sherpa, please read the info page (`info Manual/Sherpa.info`)
 or run `cmake -LAH` to find out more about the available options.
 
 Check out our [Getting started section](Manual/source/manual/getting-started.rst) for additional guidance.
+
+
+

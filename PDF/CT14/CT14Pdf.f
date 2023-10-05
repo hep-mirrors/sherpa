@@ -149,7 +149,8 @@ C                             ********************
       Open(IU, File=Tablefile, Status='OLD', Err=100)
       Call Readpds0 (IU)
       Close (IU)
-      Isetch=1; ipdsset=1
+      Isetch=1 
+      ipdsset=1
       Return
 
  100  Print *, ' Data file ', Tablefile, ' cannot be opened '
@@ -173,8 +174,11 @@ c         Nfl   is the maximal number of quark flavors
       common / XQrange / Qini0, Qmax0, Xmin0
       common / QCDtbl /  AlfaQ, Qalfa, Ipk, Iorder, Nfl0
      
-      Qini=Qini0; Qmax=Qmax0; Xmin=Xmin0
-      Nloops=Iorder-1; Nfl=Nfl0
+      Qini=Qini0
+      Qmax=Qmax0
+      Xmin=Xmin0
+      Nloops=Iorder-1
+      Nfl=Nfl0
       
       return 
       end
@@ -308,7 +312,8 @@ c Set alphas(MZ) at scale Zm, quark masses, and evolution type
       else                        !old .pds format;      
         ipdsformat = 6            !CTEQ6.6 .pds format; alpha_s  is not specified        
         Read (Nu, *) Dr, fl, Alambda, (amass(i),i=1,6)  !set Lambda_QCD
-        Iorder = Nint(Dr); Nfl = Nint(fl)
+        Iorder = Nint(Dr)
+        Nfl = Nint(fl)
 
         Read  (Nu, '(A)') Line
         Read  (Nu, *) dummy,dummy,dummy, NfMx, MxVal, N0
