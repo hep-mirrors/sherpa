@@ -51,6 +51,7 @@ namespace AMISIC {
     Hadronic_XSec_Calculator * p_xsecs;
     Over_Estimator             m_overestimator;
     Impact_Parameter           m_impact;
+    NonPerturbative_XSecs    * p_soft;
     Single_Collision_Handler   m_singlecollision;
 
     mitype m_type;
@@ -58,7 +59,7 @@ namespace AMISIC {
     double       m_sigmaND_norm;
     double       m_b, m_bfac, m_S, m_Y, m_pt2;
 
-    bool         m_isMinBias, m_isFirst, m_ana;
+    bool         m_isMinBias, m_isFirst, m_producedSoft, m_ana;
     size_t       m_nscatters;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
 
@@ -69,7 +70,7 @@ namespace AMISIC {
     void FillAmplitudeSettings(ATOOLS::Cluster_Amplitude * ampl);
     void InitAnalysis();
     void FinishAnalysis();
-    void Analyse(const bool & last);
+    void AnalysePerturbative(const bool & last);
  public:
     Amisic();
     ~Amisic();
@@ -100,10 +101,11 @@ namespace AMISIC {
       m_singlecollision.SetLastPT2(m_pt2);
     }
     inline void SetMassMode(const int & mode) {
-      p_processes->SetMassMode(mode);
+      if (p_processes) p_processes->SetMassMode(mode);
     }
     inline int ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) {
-        return p_processes->ShiftMasses(ampl);
+      if (p_processes) return p_processes->ShiftMasses(ampl);
+      return 1;
     }
     inline void SetPosition(const size_t & beam,const ATOOLS::Vec4D & pos) {
       m_singlecollision.SetPosition(beam,pos);
@@ -121,11 +123,13 @@ namespace AMISIC {
     inline const double ScaleMin()    const { return (*mipars)("pt_min"); }
     inline const double ScaleMax()    const { return sqrt(m_pt2); }
     inline const bool   & IsMinBias() const { return m_isMinBias; }
+    inline const bool   & IsSoft()    const { return m_producedSoft; }
     inline const double & B()         const { return m_b; }
     inline double Mass(const ATOOLS::Flavour &fl) const {
-      return p_processes->Mass(fl);
+      if (p_processes) return p_processes->Mass(fl);
+      return fl.Mass();
     }
-    inline void CleanUp()                   { m_isFirst = true; }
+    inline void CleanUp() { m_isFirst = true; }
   };
 
 }

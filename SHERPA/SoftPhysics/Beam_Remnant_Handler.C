@@ -49,6 +49,37 @@ Beam_Remnant_Handler::FillRescatterBeamBlobs(Blob_List *const bloblist) {
 }
 
 Return_Value::code
+Beam_Remnant_Handler::FillBunchBlobsFromShower(Blob_List *bloblist) {
+  msg_Out()<<METHOD<<"\n";
+  Return_Value::code fbc = Return_Value::Nothing;
+  Blob * shower = bloblist->FindFirst(btp::Shower);
+  if (shower && shower->Has(blob_status::needs_beams)) {
+    size_t bunches = 0;
+    for (size_t i=0;i<shower->NInP();i++) {
+      Particle * part = shower->InParticle(i);
+      REMNANTS::Remnant_Base * remnant = GetRemnants()->GetRemnant(part->Beam());
+      if (part->Info()=='I' && part->Beam()>-1) {
+	//msg_Out()<<"* "<<part->Flav()<<" vs "<<remnant->InFlav()<<" & "
+	//	 <<part->Momentum()<<" vs "<<remnant->InMomentum()<<"\n";
+	if (part->Flav()==remnant->InFlav() &&
+	    part->Momentum()==remnant->InMomentum()) {
+	  bloblist->push_front(FillBunchBlob(part->Beam(),part));
+	  bunches++;
+	}
+      }
+    }
+    if (bunches==2) {
+      shower->UnsetStatus(blob_status::needs_beams);
+      shower->UnsetStatus(blob_status::internal_flag);
+      msg_Out()<<"Success!\n"<<(*bloblist)<<"\n";
+      fbc = Return_Value::Success;
+    }
+    else fbc = Return_Value::New_Event;
+  }
+  return fbc;
+}
+
+Return_Value::code
 Beam_Remnant_Handler::TreatNoFill(Blob_List *const bloblist)
 {
   bool set(false);

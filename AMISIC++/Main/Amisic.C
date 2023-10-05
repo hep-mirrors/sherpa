@@ -7,12 +7,14 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amisic::Amisic() : p_processes(nullptr), m_sigmaND_norm(1.),
-                   m_isMinBias(false), m_ana(false)
+Amisic::Amisic() :
+  p_processes(nullptr), p_soft(nullptr), m_sigmaND_norm(1.),
+  m_isMinBias(false), m_ana(false)
 {}
 
 Amisic::~Amisic() {
   if (p_processes) delete p_processes;
+  if (p_soft)      delete p_soft;
   if (m_ana) FinishAnalysis();
 }
 
@@ -27,28 +29,38 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_Y     = P.Y();
   // Calculate hadronic non-diffractive cross sections, the normalization for the
   // multiple scattering probability.
-  p_xsecs = new Hadronic_XSec_Calculator(model,isr->Flav(0),isr->Flav(1));
-  // Initialize the parton-level processes - currently only 2->2 scatters and use the
-  // information to construct a very quick overestimator - this follows closely the
-  // algorithm in the original Sjostrand - van Zijl publication.
-  // The logic for the overestimator is based on
-  // - t-channel dominance allowing to approximate differential cross sections as
-  //   dsigma ~ dp_T dy f(x_1) f_(x_2) C_1 C_2 as(t)^2/(t+t_0)^2
-  //   where C_1/2 are the colour factors of the incoming partons, x_1/2 are the
-  //   Bjorken-x.
-  // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
-  //   where x_1 and x_2 are identical
+  p_xsecs     = new Hadronic_XSec_Calculator(model,isr->Flav(0),isr->Flav(1));
+  // Initialize the parton-level processes - currently only 2->2 scatters.  Even for
+  // soft processes we need the Mass_Selector for the construction of the amplitudes
+  // in the parton shower.
   p_processes = new MI_Processes(m_variable_s);
   p_processes->SetXSecCalculator(p_xsecs);
-  p_processes->Initialize(model,nullptr,isr,yfs);
-  // Initialize the Over_Estimator - mainly fixing an effective prefactor to allow
-  // for a quick'n'dirty fix to create fast estimates of the next scatter's pT^2.
-  m_overestimator.Initialize(p_processes);
-  // Initializing the Single_Collision_Handler which creates the next scatter: it needs
-  // the remnants, processes, and the overestimator
-  m_singlecollision.Init(remnant_handler,p_processes,&m_overestimator);
-  // Initialize everything to do with the inpact parameter dependence.
-  m_impact.Initialize(remnant_handler,p_processes);
+  if (mipars->GetEvtType()==evt_type::Perturbative) {
+    // Initialize the hard processes (i.e. the 2->2 scatters)
+    p_processes->Initialize(model,nullptr,isr,yfs);
+    // Initialize the Over_Estimator - mainly fixing an effective prefactor to allow
+    // for a quick'n'dirty fix to create fast estimates of the next scatter's pT^2.
+    // This follows closely the algorithm in the original Sjostrand - van Zijl
+    // publication.  The logic for the overestimator is based on
+    // - t-channel dominance allowing to approximate differential cross sections as
+    //   dsigma ~ dp_T dy f(x_1) f_(x_2) C_1 C_2 as(t)^2/(t+t_0)^2
+    //   where C_1/2 are the colour factors of the incoming partons, x_1/2 are the
+    //   Bjorken-x.
+    // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
+    //   where x_1 and x_2 are identical
+    m_overestimator.Initialize(p_processes);
+    // Initializing the Single_Collision_Handler which creates the next scatter: it needs
+    // the remnants, processes, and the overestimator
+    m_singlecollision.Init(remnant_handler,p_processes,&m_overestimator);
+    // Initialize everything to do with the inpact parameter dependence.
+    m_impact.Initialize(remnant_handler,p_processes);
+  }
+  else {
+    p_soft = new NonPerturbative_XSecs(p_xsecs);
+    // Initializing the Single_Collision_Handler which creates the next scatter: it needs
+    // the remnants, processes, and the overestimator
+    m_singlecollision.Init(remnant_handler,p_soft);
+  }
 
   if (m_ana) InitAnalysis();
   m_isFirst   = true;
@@ -128,9 +140,10 @@ void Amisic::SetB(const double & b) {
 
 int Amisic::InitMinBiasEvent() {
   if (m_isFirst) {
-    m_isFirst   = false;
-    m_isMinBias = true;
-    SetB();
+    m_isFirst      = false;
+    m_producedSoft = false;
+    m_isMinBias    = true;
+    if (!p_soft) SetB();
     return 1;
   }
   return 0;
@@ -153,15 +166,22 @@ Blob * Amisic::GenerateScatter() {
   // blob is returned.
   // TODO: we may want to think about something for rescatter events - but this is for
   //       future work.
+  msg_Out()<<"**** "<<METHOD<<": "<<mipars->GetEvtType()<<"\n";
   Blob * blob = m_singlecollision.NextScatter();
   if (blob) {
-    m_pt2 = m_singlecollision.LastPT2();
-    blob->SetPosition(m_impact.SelectPositionForScatter(m_b));
+    if (mipars->GetEvtType()==evt_type::Perturbative) {
+      m_pt2 = m_singlecollision.LastPT2();
+      blob->SetPosition(m_impact.SelectPositionForScatter(m_b));
+      if (m_ana) AnalysePerturbative(false);
+      m_producedSoft = false;
+    }
+    else {
+      m_producedSoft = true;
+    }
     blob->SetTypeSpec("AMISIC++ 1.1");
-    if (m_ana) Analyse(false);
     return blob;
   }
-  if (m_ana) Analyse(true);
+  if (m_ana && mipars->GetEvtType()==evt_type::Perturbative) AnalysePerturbative(true);
   return nullptr;
 }
 
@@ -242,7 +262,7 @@ void Amisic::FinishAnalysis() {
   m_histos.clear();
 }
 
-void Amisic::Analyse(const bool & last) {
+void Amisic::AnalysePerturbative(const bool & last) {
   if (!last) {
     if (m_nscatters==0) {
       m_histos[string("P_T(1)")]->Insert(sqrt(m_singlecollision.PT2()));

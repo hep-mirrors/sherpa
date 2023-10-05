@@ -2,6 +2,7 @@ set(Tools_SOURCES MI_Parameters.C
                   MPI_Scale_Setter.C
                   MPI_KFactor_Setter.C
                   Hadronic_XSec_Calculator.C
+                  NonPerturbative_XSecs.C
                   Impact_Parameter.C
                   Matter_Overlap.C
                   Interaction_Probability.C
@@ -12,6 +13,7 @@ set(Tools_HEADERS MI_Parameters.H
                   MPI_Scale_Setter.H
                   MPI_KFactor_Setter.H
                   Hadronic_XSec_Calculator.H
+                  NonPerturbative_XSecs.H
                   Impact_Parameter.H
                   Matter_Overlap.H
                   Interaction_Probability.H

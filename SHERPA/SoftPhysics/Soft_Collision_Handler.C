@@ -85,8 +85,8 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   case 0:  return Return_Value::Nothing;
   default: break;
   }
-  msg_Tracking()<<"Error in "<<METHOD<<":\n"
-		<<"   Did not manage to produce a Minimum Bias event with "<<m_scmodel<<".\n";
+  msg_Error()<<"Error in "<<METHOD<<":\n"
+	     <<"   Did not manage to produce a Minimum Bias event with "<<m_scmodel<<".\n";
   return Return_Value::New_Event;
 }
 

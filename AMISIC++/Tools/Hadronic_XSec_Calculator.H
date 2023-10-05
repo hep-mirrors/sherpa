@@ -35,6 +35,7 @@ namespace AMISIC {
     double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_eta_reggeon;
     double m_alphaQED;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
+    double m_sigmaEl[4][4], m_sigmaSDA[4][4], m_sigmaSDB[4][4], m_sigmaDD[4][4];
     size_t m_testmode;
 
     void   FixType();
@@ -59,7 +60,18 @@ namespace AMISIC {
       if (s>0.) (*this)(s);
       return m_xsnd;
     }
-    inline const double & XSndNorm() const { return m_xsnd_norm; }
+    inline const double & XSndNorm()      const { return m_xsnd_norm; }
+    inline const double & EpsPomeron()    const { return m_eps_pomeron; } 
+    inline const double & AlphaPPomeron() const { return m_alphaP_pomeron; } 
+    inline const double & TriplePomeron() const { return m_triple_pomeron; } 
+    inline const double & AlphaQED()      const { return m_alphaQED; }
+
+    inline const double & SigmaEl(std::array<size_t,2> hads)  const { return m_sigmaEl[hads[0]][hads[1]]; }
+    inline const double & SigmaSDA(std::array<size_t,2> hads) const { return m_sigmaSDA[hads[0]][hads[1]]; }
+    inline const double & SigmaSDB(std::array<size_t,2> hads) const { return m_sigmaSDB[hads[0]][hads[1]]; }
+    inline const double & SigmaDD(std::array<size_t,2> hads)  const { return m_sigmaDD[hads[0]][hads[1]]; }
+
+    inline const std::array<ATOOLS::Flavour,2> GetFlavs() const { return m_flavs; }
   };
 }
 

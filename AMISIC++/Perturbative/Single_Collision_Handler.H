@@ -3,6 +3,7 @@
 
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Over_Estimator.H"
+#include "AMISIC++/Tools/NonPerturbative_XSecs.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
@@ -13,15 +14,16 @@ namespace AMISIC {
   class Single_Collision_Handler {
   private:
     REMNANTS::Remnant_Handler * p_remnants;
-    MI_Processes   * p_processes;
-    Over_Estimator * p_overestimator;
-    double           m_pt2, m_pt2min;
-    double           m_S, m_lastpt2, m_residualx1, m_residualx2, m_Ycms;
+    MI_Processes              * p_processes;
+    Over_Estimator            * p_overestimator;
+    NonPerturbative_XSecs     * p_soft;
+    double       m_pt2, m_pt2min;
+    double       m_S, m_lastpt2, m_residualx1, m_residualx2, m_Ycms;
 
-    MI_Process     * p_proc;
-    double           m_xt, m_ymax, m_yvol, m_y3, m_y4, m_x1, m_x2;
-    double           m_shat, m_that, m_uhat;
-    double           m_muf2, m_mur2;
+    MI_Process * p_proc;
+    double       m_xt, m_ymax, m_yvol, m_y3, m_y4, m_x1, m_x2;
+    double       m_shat, m_that, m_uhat;
+    double       m_muf2, m_mur2;
 
     bool m_ana;
     std::map<std::string, ATOOLS::Histogram*> m_histos;
@@ -40,7 +42,9 @@ namespace AMISIC {
     ~Single_Collision_Handler();
 
     void Init(REMNANTS::Remnant_Handler * remnant_handler,
-			MI_Processes * processes, Over_Estimator * overestimator);
+	      MI_Processes * processes, Over_Estimator * overestimator);
+    void Init(REMNANTS::Remnant_Handler * remnant_handler,
+	      NonPerturbative_XSecs * soft);
     void UpdateSandY(double s, double y);
     ATOOLS::Blob * NextScatter();
     bool TestRemnants() const;

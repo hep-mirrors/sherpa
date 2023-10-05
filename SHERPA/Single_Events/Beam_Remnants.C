@@ -30,6 +30,7 @@ Return_Value::code Beam_Remnants::Treat(Blob_List* bloblist)
 {
   switch (EstablishNeed(bloblist)) {
   case 10: return DealWithRescattering(bloblist);
+  case 3:  return DealWithShowerFromBeams(bloblist);
   case 2:  return StandardTreatment(bloblist,false);
   case 1:  return StandardTreatment(bloblist,true);
   default:
@@ -44,6 +45,17 @@ Return_Value::code Beam_Remnants::StandardTreatment(Blob_List*  bloblist,
   Return_Value::code rv =
           p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist, onlyBunch);
   if (m_ana) Analyse(bloblist);
+  return rv;
+}
+
+Return_Value::code Beam_Remnants::DealWithShowerFromBeams(Blob_List* bloblist)
+{
+  msg_Out()<<"**** "<<METHOD<<"\n";
+  Return_Value::code rv = p_beamremnanthandler->FillBunchBlobsFromShower(bloblist);
+  if (m_ana) Analyse(bloblist);
+  //msg_Out()<<"-----------------------------------------------------\n"
+  //	   <<METHOD<<"\n"<<(*bloblist)<<"\n"
+  //	   <<"-----------------------------------------------------\n";
   return rv;
 }
 
@@ -97,6 +109,7 @@ int Beam_Remnants::EstablishNeed(Blob_List * bloblist) {
     if (!qelas) qelas = bloblist->FindFirst(btp::Quasi_Elastic_Collision);
     if (!hard && !qelas) return 0;
     if (qelas)           return 1;
+    if (CountBunchCandidates(bloblist->FindFirst(btp::Shower))==3) return 3;
   }
   else {
     btp::code signal_type = signal->Type();
@@ -107,6 +120,25 @@ int Beam_Remnants::EstablishNeed(Blob_List * bloblist) {
   }
   // Standard case, fill beam blobs in full beam remnant treatment
   return 2;
+}
+
+size_t Beam_Remnants::CountBunchCandidates(Blob * blob) {
+  // Counting the number of bunch particles that are entering a shower blob.
+  // This should only happen for diffractive events where we have hadron
+  // splitting into their constituents and showering.
+  size_t bunch_candidates = 0;
+  if (blob) {
+    for (size_t i=0;i<blob->NInP();i++) {
+      Particle * part = blob->InParticle(i);
+      if (part->Info()=='I' && part->Beam()>-1) {
+	REMNANTS::Remnant_Base * remnant =
+	  p_beamremnanthandler->GetRemnants()->GetRemnant(part->Beam());
+	if (part->Flav()==remnant->InFlav() &&
+	    part->Momentum()==remnant->InMomentum()) bunch_candidates+=part->Beam()+1;
+      }
+    }
+  }
+  return bunch_candidates;
 }
 
 void Beam_Remnants::CleanUp(const size_t& mode)

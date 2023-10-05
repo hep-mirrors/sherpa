@@ -222,8 +222,7 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
     msg_Debugging() << METHOD << "(): Setting scale for MI {\n";
     double scale(0.0);
     Cluster_Amplitude *ampl(pertinterface->Amplitude());
-    while (ampl->Next())
-      ampl = ampl->Next();
+    while (ampl->Next()) ampl = ampl->Next();
     msg_Debugging() << *ampl << "\n";
     scale = sqrt(ampl->MuQ2());
     blob->AddData("MI_Scale", new Blob_Data<double>(scale));
@@ -321,9 +320,11 @@ bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
     blob->InParticle(0)->SetInfo('h');
   pertinterface->FillBlobs();
   blob->UnsetStatus(blob_status::needs_showers);
+  blob->UnsetStatus(blob_status::needs_beams);
   Blob *showerblob =
-      (!pertinterface->Shower()->On() ? CreateMockShowerBlobs(blob, bloblist)
-                                  : bloblist->FindLast(btp::Shower));
+    (!pertinterface->Shower()->On() ?
+     CreateMockShowerBlobs(blob, bloblist) :
+     bloblist->FindLast(btp::Shower));
   if (showerblob==NULL || blob->Type()== btp::Hadron_Decay) return true;
   showerblob->AddStatus(blob_status::needs_reconnections);
   return p_remnants->ExtractShowerInitiators(showerblob);

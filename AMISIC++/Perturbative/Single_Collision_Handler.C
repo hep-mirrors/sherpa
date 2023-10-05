@@ -7,7 +7,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Single_Collision_Handler::Single_Collision_Handler() :
-  p_processes(NULL), p_overestimator(NULL),
+  p_processes(NULL), p_overestimator(NULL), p_soft(NULL),
   m_pt2(0.), m_pt2min(0.),  
   m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
   m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
@@ -31,7 +31,17 @@ Init(REMNANTS::Remnant_Handler * remnant_handler,
   if (m_ana) InitAnalysis();
 }
 
+void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler,
+				    NonPerturbative_XSecs * soft) {
+  p_remnants = remnant_handler;
+  p_soft     = soft;
+  if (m_ana) InitAnalysis();
+}
+
 Blob * Single_Collision_Handler::NextScatter() {
+  // If AMISIC only produces (semi-inclusive) soft interactions use the
+  // NonPerturbative_XSecs to generate a blob.
+  if (p_soft) return p_soft->MakeScatter(p_remnants);
   // Simple logic - bfac is provided from outside, now
   // - produce a trial kinematics (new transverse momentum smaller than the last one,
   //   supplemented with rapidities, Mandelstams ...)

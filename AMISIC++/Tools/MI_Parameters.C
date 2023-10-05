@@ -15,6 +15,8 @@ MI_Parameters::MI_Parameters() :
   m_Scms(0.), m_eta(0.)
 {
   auto s = Settings::GetMainSettings()["AMISIC"];
+  m_evttype =
+    s["EVENT_TYPE"].SetDefault(evt_type::Perturbative).Get<evt_type::code>();
   m_parameters[string("pt_0(ref)")]
     = s["PT_0(ref)"].SetDefault(2.05).Get<double>();
   m_parameters[string("pt_0(IR)")]
@@ -69,6 +71,41 @@ double MI_Parameters::operator()(const string& keyword) const
   map<string,double>::const_iterator piter = m_parameters.find(keyword);
   if (piter!=m_parameters.end()) return piter->second;
   THROW(fatal_error,"Keyword not found in MI_Parameters.");
+}
+
+std::ostream& AMISIC::operator<<(std::ostream& s, const evt_type::code& f)
+{
+  switch (f) {
+  case evt_type::code::Perturbative:  return s << "Perturbative";
+  case evt_type::code::Elastic:       return s << "Elastic";
+  case evt_type::code::DiffractiveA:  return s << "DiffractiveA";
+  case evt_type::code::DiffractiveB:  return s << "DiffractiveB";
+  case evt_type::code::DiffractiveAB: return s << "DiffractiveAB";
+  case evt_type::code::QuasiElastic:  return s << "QuasiElastic";
+  }
+  return s;
+}
+
+std::istream& AMISIC::operator>>(std::istream& s, evt_type::code& f)
+{
+  std::string tag;
+  s >> tag;
+  if (tag == "Perturbative")
+    f = evt_type::code::Perturbative;
+  else if (tag == "Elastic")
+    f = evt_type::code::Elastic;
+  else if (tag == "DiffractiveA")
+    f = evt_type::code::DiffractiveA;
+  else if (tag == "DiffractiveB")
+    f = evt_type::code::DiffractiveB;
+  else if (tag == "DiffractiveAB")
+    f = evt_type::code::DiffractiveAB;
+  else if (tag == "QuasiElastic")
+    f = evt_type::code::QuasiElastic;
+  else
+    THROW(fatal_error, "Unknown overlap form \"" + tag + "\"");
+  msg_Out()<<METHOD<<": tag = "<<tag<<" --> "<<f<<"\n";
+  return s;
 }
 
 std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form& f)

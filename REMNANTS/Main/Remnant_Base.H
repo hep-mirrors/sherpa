@@ -78,6 +78,7 @@ namespace REMNANTS {
     inline Form_Factor              * GetFF() const      { return p_ff; }
     inline ATOOLS::Blob             * GetBlob()          { return p_beamblob; }
     inline const ATOOLS::Vec4D      & InMomentum() const { return p_beam->OutMomentum(m_tag); }
+    inline const ATOOLS::Flavour    & InFlav() const     { return m_beamflav; }
     inline ATOOLS::Part_List        * GetExtracted()     { return &m_extracted; }
     inline ATOOLS::Part_List        * GetSpectators()    { return &m_spectators; }
     inline virtual ATOOLS::Particle * GetRecoiler()      { return nullptr; }

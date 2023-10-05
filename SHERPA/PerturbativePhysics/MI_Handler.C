@@ -98,7 +98,8 @@ Blob * MI_Handler::GenerateHardProcess()
   Blob * blob = NULL;
   if (m_type==typeID::amisic)  blob = p_amisic->GenerateScatter();
   if (m_type==typeID::shrimps) blob = p_shrimps->GenerateEvent();
-  if (blob==NULL) m_stop = true;
+  if ( blob==NULL || blob->Type()==btp::Soft_Collision ||
+       (blob && m_type==typeID::amisic && p_amisic->IsSoft()) ) m_stop = true;
   m_firstrescatter = false;
   return blob;
 }

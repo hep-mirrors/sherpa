@@ -58,11 +58,11 @@ namespace AMISIC {
     inline const size_t    Size()      const { return m_groups.size(); }
     inline const bool    & VariableS() const { return m_variable_s; }
     inline const double  & PDFXmin(const size_t beam) const { return m_xmin[beam]; }
-    inline double XSratio(const double & s)              { return p_sudakov->XSratio(s); }
-    inline PDF::PDF_Base * PDF(const size_t beam) const  { return p_pdf[beam]; }
-    inline Sudakov_Argument         * GetSudakov() const { return p_sudakov; }
-    inline MODEL::One_Running_AlphaS    * AlphaS() const     { return p_alphaS; }
-    inline Hadronic_XSec_Calculator * GetXSecs() const   { return p_xsecs; }
+    inline double XSratio(const double & s)               { return p_sudakov->XSratio(s); }
+    inline PDF::PDF_Base * PDF(const size_t beam)   const { return p_pdf[beam]; }
+    inline Sudakov_Argument          * GetSudakov() const { return p_sudakov; }
+    inline MODEL::One_Running_AlphaS * AlphaS()     const { return p_alphaS; }
+    inline Hadronic_XSec_Calculator  * GetXSecs()   const { return p_xsecs; }
     inline void SetMassMode(const int & mode) {
       if (mode==0) abort();
       m_massmode = 1;
