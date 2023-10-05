@@ -13,13 +13,15 @@ using namespace ATOOLS;
 // All equations in this file refer to
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019.
 
-Interaction_Probability::Interaction_Probability() : m_test(false) {}
+Interaction_Probability::Interaction_Probability() :
+  p_k(NULL), p_integral(NULL), p_expO(NULL), p_fc(NULL), 
+  m_test(false) {}
 
 Interaction_Probability::~Interaction_Probability() {
-  delete p_k;
-  delete p_integral;
-  delete p_expO;
-  delete p_fc;
+  if (p_k)        delete p_k;
+  if (p_integral) delete p_integral;
+  if (p_expO)     delete p_expO;
+  if (p_fc)       delete p_fc;
 }
 
 void Interaction_Probability::Initialize(REMNANTS::Remnant_Handler * remnant_handler,

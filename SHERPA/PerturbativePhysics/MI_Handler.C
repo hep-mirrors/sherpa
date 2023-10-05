@@ -41,7 +41,6 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
     if ((scm==string("Shrimps") && p_amisic==NULL) ||
 	m_name==string("Shrimps")) InitShrimps(model);
   }
-  msg_Out()<<METHOD<<"(id = "<<m_id<<", name = "<<m_name<<", type = "<<m_type<<")\n";
 }
 
 MI_Handler::~MI_Handler() 
@@ -93,7 +92,8 @@ Blob * MI_Handler::GenerateHardProcess()
   Blob * blob = NULL;
   if (m_type==typeID::amisic)  blob = p_amisic->GenerateScatter();
   if (m_type==typeID::shrimps) blob = p_shrimps->GenerateEvent();
-  if (blob==NULL) m_stop = true;
+  if ( blob==NULL || blob->Type()==btp::Soft_Collision ||
+       (blob && m_type==typeID::amisic && p_amisic->IsSoft()) ) m_stop = true;
   m_firstrescatter = false;
   return blob;
 }

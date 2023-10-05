@@ -5,6 +5,20 @@
 #include <string>
 
 namespace AMISIC {
+  struct evt_type {
+    enum code {
+      Perturbative    = 0,
+      Elastic         = 1,
+      DiffractiveA    = 2,
+      DiffractiveB    = 3,
+      DiffractiveAB   = 4,
+      QuasiElastic    = 5,
+      AllMinimumBias  = 10
+    };
+  };
+  std::ostream &operator<<(std::ostream&, const evt_type::code&);
+  std::istream &operator>>(std::istream&, evt_type::code&);
+  
   struct mitype {
     enum code {
       none           = 0,
@@ -35,6 +49,7 @@ namespace AMISIC {
   private:
     double m_pt02ref, m_pt02IR, m_ptmin2ref, m_ptmin2IR;
     double m_Eref, m_Sref, m_Ecms, m_Scms, m_eta;
+    evt_type::code     m_evttype;
     overlap_form::code m_overlapform;
     scale_scheme::code m_scalescheme;
     std::map<std::string,double> m_parameters;
@@ -46,6 +61,7 @@ namespace AMISIC {
     double operator()(const std::string& keyword) const;
     double CalculatePT02(const double & s=-1) const;
 
+    const evt_type::code     & GetEvtType()     const { return m_evttype; }
     const overlap_form::code & GetOverlapForm() const { return m_overlapform; }
     const scale_scheme::code & GetScaleScheme() const { return m_scalescheme; }
   };

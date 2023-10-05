@@ -46,8 +46,10 @@ Hadronic_XSec_Calculator(MODEL::Model_Base * model,
   //////////////////////////////////////////////////////////////////////////////////////////
   for (size_t i=0;i<4;i++) m_beta0[i] = sqrt(s_X[i][i]);
   m_prefElastic    = 1.e9/(rpa->Picobarn()*16.*M_PI);
-  m_prefSD         = m_triple_pomeron * pow(m_s1,3.*m_eps_pomeron/2.)/(16.*M_PI) / (rpa->Picobarn()/1e9);
-  m_prefDD         = sqr(m_triple_pomeron) * pow(m_s1,m_eps_pomeron)/(16.*M_PI) / (rpa->Picobarn()/1e9);
+  m_prefSD         = ( m_triple_pomeron * pow(m_s1,3.*m_eps_pomeron/2.)/(16.*M_PI) /
+		       (rpa->Picobarn()/1e9) );
+  m_prefDD         = ( sqr(m_triple_pomeron) * pow(m_s1,m_eps_pomeron)/(16.*M_PI) /
+		       (rpa->Picobarn()/1e9) );
   FixType();
   FixTables();
   if (m_testmode>0) TestXSecs();
@@ -119,10 +121,10 @@ void Hadronic_XSec_Calculator::CalculateHHXSecs() {
   double masses[2];
   masses[0] = m_masses[0];masses[1] = m_masses[1];
   m_xstot   = TotalXSec(hadtags);
-  m_xsel    = IntElXSec(hadtags,m_xstot);
-  m_xssdA   = IntSDXSec(hadtags,0,masses);
-  m_xssdB   = IntSDXSec(hadtags,1,masses);
-  m_xsdd    = IntDDXSec(hadtags,masses);
+  m_xsel    = m_sigmaEl[0][0]  = IntElXSec(hadtags,m_xstot);
+  m_xssdA   = m_sigmaSDA[0][0] = IntSDXSec(hadtags,0,masses);
+  m_xssdB   = m_sigmaSDB[0][0] = IntSDXSec(hadtags,1,masses);
+  m_xsdd    = m_sigmaDD[0][0]  = IntDDXSec(hadtags,masses);
 }
 
 void Hadronic_XSec_Calculator::CalculateHGammaXSecs(const size_t photon) {
@@ -197,10 +199,12 @@ double Hadronic_XSec_Calculator::IntSDXSec(const size_t hadtags[2],const size_t 
   size_t nodiff = 1-diff;
   double mmin2  = sqr(masses[diff]+2.*m_mass_pi),      mmin  = sqrt(mmin2);
   double mres   = masses[nodiff]-m_mass_proton+m_mres, mres2 = sqr(mres);
-  double mmax2  = s_c[hadtags[0]][hadtags[1]][0+4*diff]*m_s + s_c[hadtags[0]][hadtags[1]][1+4*diff];
+  double mmax2  = ( s_c[hadtags[0]][hadtags[1]][0+4*diff]*m_s +
+		    s_c[hadtags[0]][hadtags[1]][1+4*diff] );
   if (m_s<=mmin2 || m_s<=mmin*mres) return 0.;
   double bA     = s_slopes[hadtags[nodiff]];
-  double B_AX   = s_c[hadtags[0]][hadtags[1]][2+4*diff]     + s_c[hadtags[0]][hadtags[1]][3+4*diff]/m_s;
+  double B_AX   = ( s_c[hadtags[0]][hadtags[1]][2+4*diff]     +
+		    s_c[hadtags[0]][hadtags[1]][3+4*diff]/m_s );
   double J_AX   = Max(0., ( 1./(2.*m_alphaP_pomeron) *
 			    log((bA+m_alphaP_pomeron*log(m_s/mmin2))/
 				(bA+m_alphaP_pomeron*log(m_s/mmax2))) +
@@ -231,8 +235,10 @@ double Hadronic_XSec_Calculator::IntDDXSec(const size_t hadtags[2],
       ss0    <= mmax2*m1res*m1min  || ss0 <= mmax2*m2res*m2min  ||
       ss0    <= m1res*m1min*m2res*m2min ||
       m_s    <= (m1min2*m2min2)/m_mass_proton2) return 0.;
-  double arg11  = Max(1.001, ss0/(m1min2*m2res*m2min)), arg12 = Max(1.001, ss0/(mmax2*m2res*m2min));
-  double arg21  = Max(1.001, ss0/(m2min2*m1res*m1min)), arg22 = Max(1.001, ss0/(mmax2*m1res*m1min));
+  double arg11  = Max(1.001, ss0/(m1min2*m2res*m2min));
+  double arg12  = Max(1.001, ss0/(mmax2*m2res*m2min));
+  double arg21  = Max(1.001, ss0/(m2min2*m1res*m1min));
+  double arg22  = Max(1.001, ss0/(mmax2*m1res*m1min));
   double Delta0 = ( s_d[hadtags[0]][hadtags[1]][0] +
 		    s_d[hadtags[0]][hadtags[1]][1]/logs +
 		    s_d[hadtags[0]][hadtags[1]][2]/log2s );

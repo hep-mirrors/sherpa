@@ -11,10 +11,13 @@ namespace SHERPA {
     bool m_ana;
     Beam_Remnant_Handler  * p_beamremnanthandler;
     std::map<std::string, ATOOLS::Histogram *> m_histos;
-    void InitHistos();
-    void Analyse(ATOOLS::Blob_List*);
-    int  EstablishNeed(ATOOLS::Blob_List*);
+    void   InitHistos();
+    void   Analyse(ATOOLS::Blob_List*);
+    size_t CountBunchCandidates(ATOOLS::Blob * blob);
+    int    EstablishNeed(ATOOLS::Blob_List*);
     ATOOLS::Return_Value::code DealWithRescattering(ATOOLS::Blob_List* bloblist);
+    ATOOLS::Return_Value::code DealWithShowerFromBeams(ATOOLS::Blob_List* bloblist);
+
     ATOOLS::Return_Value::code StandardTreatment(ATOOLS::Blob_List* bloblist,
 						 const bool & onlyBunch=false);
   public :
