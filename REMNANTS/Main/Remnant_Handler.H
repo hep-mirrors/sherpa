@@ -41,18 +41,22 @@ namespace REMNANTS {
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
-    bool m_check, m_output;
+    double   m_invGeV2fm;
+    bool     m_check, m_output;
     long int m_fails;
 
-    void InitializeRemnants(PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler* beam);
+    void InitializeRemnants(PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs,
+                            BEAM::Beam_Spectra_Handler* beam);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup();
     void InitBeamAndSoftBlobs(ATOOLS::Blob_List* const blobs, const bool& isrescatter);
-    int  FindInsertPositionForRescatter(ATOOLS::Blob_List* const bloblist, const bool& isrescatter);
+    int  FindInsertPositionForRescatter(ATOOLS::Blob_List* const bloblist,
+					const bool& isrescatter);
 
   public:
-    Remnant_Handler(PDF::ISR_Handler * isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler * beam_handler,
+    Remnant_Handler(PDF::ISR_Handler * isr, YFS::YFS_Handler *yfs,
+		    BEAM::Beam_Spectra_Handler * beam_handler,
                     const std::array<size_t, 2>& tags);
     Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
                     PDF::ISR_Handler*                            isr,
@@ -63,7 +67,7 @@ namespace REMNANTS {
 
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
     bool Extract(ATOOLS::Particle * part,const unsigned int beam);
-    void ConnectColours(ATOOLS::Blob *const showerblob);
+    bool ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
 
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List* const blobs,
@@ -74,6 +78,10 @@ namespace REMNANTS {
     inline bool NeedsToMakeBeamBlobs() const
     {
       return (m_colours.HasColours(0) || m_colours.HasColours(1));
+    }
+    inline void SetType(const strat::code & type) {
+      m_type = type;
+      if (m_type==strat::simple) m_kinematics.SetKinType(kin_type::intact);
     }
     inline void SetScale2(const double & scale2) {
       for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
@@ -89,6 +97,9 @@ namespace REMNANTS {
             const unsigned short int& beam) const
     {
       return (beam<2)?p_remnants[beam]:nullptr;
+    }
+    inline Form_Factor * GetFormFactor(const unsigned short int & beam) const {
+      return (beam<2)?p_remnants[beam]->GetFF():nullptr;
     }
     inline Primordial_KPerp* GetKPerp() { return m_kinematics.GetKPerp(); }
     inline Colour_Generator* GetColourGen() { return &m_colours; }

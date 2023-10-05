@@ -67,6 +67,10 @@ void Remnant_Base::CompensateColours(Colour_Generator* colours)
 
 bool Remnant_Base::Extract(ATOOLS::Particle* parton, Colour_Generator* colours)
 {
+  // If the parton equals the beam we can extract it - there may be knock-on effects down
+  // the line in EPA etc., which we have to monitor.
+  if (parton->Flav()==m_beamflav &&
+      IsEqual(parton->Momentum(),IncomingMomentum(),1e-8)) return true;
   // Extracting a parton from a remnant (usually stemming from a shower blob)
   // and, if necessary, create a spectator to compensate flavour.
   if (TestExtract(parton->Flav(), parton->Momentum())) {
@@ -122,4 +126,15 @@ Vec4D Remnant_Base::IncomingMomentum() { return p_beam->OutMomentum(m_tag); }
 void Remnant_Base::Reset(const bool & resc,const bool &DIS) {
   m_extracted.clear();
   p_beamblob = nullptr;
+}
+
+void Remnant_Base::Output() {
+  msg_Out()<<"------------------------------------------------------------\n"
+	   <<METHOD<<"("<<m_beam<<"): extracted :\n";
+  for (Part_List::iterator pit=m_extracted.begin();pit!=m_extracted.end();pit++)
+    msg_Out()<<(**pit);
+  msg_Out()<<METHOD<<"("<<m_beam<<"): spectators :\n";
+  for (Part_List::iterator pit=m_spectators.begin();pit!=m_spectators.end();pit++)
+    msg_Out()<<(**pit);
+  msg_Out()<<"------------------------------------------------------------\n";
 }

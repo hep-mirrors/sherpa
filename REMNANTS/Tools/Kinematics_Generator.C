@@ -69,20 +69,38 @@ bool Kinematics_Generator::FillBlobs(Blob_List *blobs) {
   // Collinear kinematics only - the remnants will only fill extracted particles
   // and possible remnant particles without any need of kinematic reshuffling
   if ((m_kintype == kin_type::intact || m_kintype == kin_type::coll)) {
-    return CollinearKinematics();
+    return CollinearKinematics(blobs);
   }
   // Full kinematics including transverse degrees of freedom - as a consequence
   // this is more involved.
   return TransverseKinematics();
 }
 
-bool Kinematics_Generator::CollinearKinematics() {
+bool Kinematics_Generator::CollinearKinematics(Blob_List *blobs) {
+  // First a trivial check whether particles entering the shower are the beam particles
+  // (for example in elastic/diffractive scattering or some such).  In gthis case
+  // we just fill them into the beam blobs.
+  size_t trivial=0;
+  if (m_kintype==kin_type::intact &&
+      p_remnants[0]->Type()==rtp::intact && p_remnants[1]->Type()==rtp::intact) {
+    for (auto &bit : *blobs) {
+      if (bit->Type()==btp::Shower) {
+	for (size_t i=0;i<bit->NInP();i++) {
+	  if (bit->InParticle(i)->Beam()>-1) {
+	    p_remnants[bit->InParticle(i)->Beam()]->GetBlob()->
+	      AddToOutParticles(bit->InParticle(i));
+	    trivial += bit->InParticle(i)->Beam()+1;
+	  }
+	}
+      }
+    }
+  }
   for (size_t beam = 0; beam < 2; beam++) {
-    // if beam blobs cannot be filled return false and trigger retrial
+    // If non-intact beam blobs cannot be filled return false and trigger retrial
     // By far and large here we have a fixed spectator, if necessary, and assign
     // the four-momentum difference between incoming beam particle and outgoing
     // shower initiator to it.
-    if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen())) return false;
+    if (trivial!=3 && !p_remnants[beam]->FillBlob(p_rhandler->GetColourGen())) return false;
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }
   return true;
