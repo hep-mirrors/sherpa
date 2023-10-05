@@ -75,8 +75,8 @@ bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, 
 {
   // Add remnants, diquark and quark, if necessary.
   if (!p_valence || !p_remnant) MakeRemnants(colours);
-  // Possibly adjust final pending colours with extra gluons - in prinicple one may have
-  // to check that they are not singlets ....
+  // Possibly adjust final pending colours with extra gluons - in prinicple
+  // one may have to check that they are not singlets ....
   CompensateColours(colours);
   msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
                   << m_extracted << ", \n and spectators = " << m_spectators
@@ -365,12 +365,14 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav)==p_partons->end()) {
     msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
+    abort();
     return false;
   }
   // Still enough energy?  And in range?
   double x = mom[0]/m_residualE;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
-    msg_Tracking() << METHOD << ": out of limits, x = " << x << ".\n";
+    msg_Tracking() << METHOD << ": out of limits, x = " << x << " = "
+	       <<mom[0]<<"/"<<m_residualE<<".\n";
     return false;
   }
   msg_Debugging()<<flav<<" with mom = "<<mom<<" can be extracted.\n";

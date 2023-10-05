@@ -12,9 +12,9 @@ SHOWER:
   FS_PT2MIN: 1.00
 
 PROCESSES:
-- 22 22 -> 15 -15:
-    Order: {QCD: 0, EW: 2}
+- 93 93 -> 93 93:
+    Order: {QCD: 2, EW: 0}
 
 SELECTORS:
-- [Mass, 15, -15, 10.0, E_CMS]
-- [PT, 15, 5.0, E_CMS]
+- [Mass, 93, 93, 10.0, E_CMS]
+- [PT, 93, 5.0, E_CMS]

@@ -1,5 +1,6 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -38,6 +39,16 @@ namespace EXTRAXS {
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
   };
+
+  class XS_PP_S : public ME2_Base {
+  private:
+    double  m_mass, m_BR, m_ME2;
+  public:
+    XS_PP_S(const External_ME_Args& args);
+
+    double operator()(const Vec4D_Vector& mom);
+    bool SetColours(const Vec4D_Vector& mom);
+  };
 }
 
 XS_PP_ffbar::XS_PP_ffbar(const External_ME_Args& args) :
@@ -64,6 +75,7 @@ XS_PP_ffbar::XS_PP_ffbar(const External_ME_Args& args) :
 
 double XS_PP_ffbar::operator()(const Vec4D_Vector& mom)
 {
+  // checked with Budnev, Ginzburg, Meledin, Serbo, (E.5)
   double s=(mom[0]+mom[1]).Abs2();
   double t=(mom[0]-mom[2+m_r]).Abs2();
   double u=(mom[0]-mom[3-m_r]).Abs2();
@@ -123,11 +135,13 @@ XS_PP_SSbar::XS_PP_SSbar(const External_ME_Args& args) :
 
 double XS_PP_SSbar::operator()(const Vec4D_Vector& mom)
 {
+  // from Budnev, Ginzburg, Meledin, Serbo, (E.6)
   double s   = (mom[0]+mom[1]).Abs2();
   if (s<4.*m_m2) return 0.;
-  double t   = (mom[0]-mom[2+m_r]).Abs2();
-  double u   = (mom[0]-mom[3-m_r]).Abs2();
-  double ME2 = 1.+sqr((1.-2.*s*m_m2)/((t-m_m2)*(u-m_m2)) );
+  double tp  = (mom[0]-mom[2+m_r]).Abs2()-m_m2;
+  double up  = (mom[0]-mom[3-m_r]).Abs2()-m_m2;
+  double r2  = tp*up/s-m_m2;
+  double ME2 = 2.*(sqr(m_m2)+sqr(r2))/(tp*up);
   return m_cpl*CouplingFactor(0,2)*ME2;
 }
 
@@ -150,6 +164,51 @@ operator()(const External_ME_Args &args) const
       fl[2].Charge() &&	fl[3]==fl[2].Bar() &&
       args.m_orders[0]==0 && args.m_orders[1]==2) {
     if (fl[2].IsScalar())  return new XS_PP_SSbar(args);
+  }
+  return NULL;
+}
+
+
+
+
+XS_PP_S::XS_PP_S(const External_ME_Args& args) : ME2_Base(args)
+{
+  m_mass  = m_flavs[2].Mass();
+  m_BR    = 0.;
+  switch (m_flavs[2].Kfcode()) {
+  case kf_h0:            m_BR = 0.0025;   break;
+  case kf_pi:            m_BR = 0.98823;  break;
+  case kf_eta:           m_BR = 0.3936;   break;
+  case kf_eta_prime_958: m_BR = 0.02307;  break; 
+  case kf_eta_c_1S:      m_BR = 0.000166; break; 
+  case kf_eta_b:         m_BR = 0.000;    break; 
+  default:
+    THROW(fatal_error,"Scalar particle not found in list of photonic BRs: "+m_flavs[2].IDName());
+  }
+  m_ME2   = 8.*M_PI/m_mass*m_BR; 
+  for (short int i=0;i<3;i++) m_colours[i][0] = m_colours[i][1] = 0;
+  m_oew=2; m_oqcd=0;
+}
+
+double XS_PP_S::operator()(const Vec4D_Vector& mom) { return m_ME2; }
+
+bool XS_PP_S::SetColours(const Vec4D_Vector& mom) { return true; }
+
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_PP_S,"XS_PP_S")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_PP_S>::
+operator()(const External_ME_Args &args) const
+{
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+
+  const Flavour_Vector fl=args.Flavours();
+  if (fl.size()!=3) return NULL;
+  if (fl[0].IsPhoton() && fl[1].IsPhoton() && fl[2].Charge()==0 &&
+      fl[2].IsScalar() &&
+      args.m_orders[0]==0 && args.m_orders[1]==2) {
+    if (fl[2]==Flavour(kf_h0) ||
+	fl[2]==Flavour(kf_pi) || fl[2]==Flavour(kf_eta) || fl[2]==Flavour(kf_eta_prime_958) ||
+	fl[2]==Flavour(kf_eta_c_1S) || fl[2]==Flavour(kf_eta_b) )
+      return new XS_PP_S(args);
   }
   return NULL;
 }
