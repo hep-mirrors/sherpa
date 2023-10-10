@@ -446,8 +446,8 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
         
         // remove photon as splitter
         Part_Iterator PLIt = std::find(m_remainingphotons.begin(),m_remainingphotons.end(),m_splitters[ind]->GetSplitter());
+        delete *PLIt;
         m_remainingphotons.erase(PLIt);
-        delete *PLIt; // since it will not be added back
 
         // turn off future splittings of this photon
         for (size_t i=0; i<m_splitters.size(); i++) {
