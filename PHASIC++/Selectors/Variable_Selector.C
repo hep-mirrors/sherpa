@@ -224,7 +224,7 @@ operator()(const PHASIC::Selector_Key &key) const
   s.DeclareVectorSettingsWithEmptyDefault({ "Flavs", "Ordering" });
   s.DeclareMatrixSettingsWithEmptyDefault({ "Ranges" });
 
-  const auto flavs = s["Flavs"].GetVector<int>();
+  const auto flavs = s["Flavs"].SetSynonyms({"Flavours","Flavors"}).GetVector<int>();
   if (flavs.empty())
     THROW(critical_error,"Missing \"Flav\" specification in variable selector");
   Flavour_Vector cflavs(flavs.size());
