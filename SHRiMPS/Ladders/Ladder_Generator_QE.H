@@ -10,6 +10,7 @@
 #include "ATOOLS/Math/Histogram.H"
 //#include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
 //#include "SHRiMPS/Cross_Sections/Sigma_D.H"
+#include "SHRiMPS/Cross_Sections/Cross_Sections.H"
 
 
 namespace SHRIMPS {
@@ -20,6 +21,7 @@ namespace SHRIMPS {
     void   SelectPropagatorColours();
     void   CalculateWeight();
     void   FixEmissionsKinematics_elastic();
+    Cross_Sections  * p_xsecs;
     Sigma_Elastic * p_sigma_el;
     Sigma_D * p_sigma_d;
     double m_abs_t;
@@ -37,7 +39,7 @@ namespace SHRIMPS {
   public:
     Ladder_Generator_QE();
     ~Ladder_Generator_QE() {}
-    int GetIntType() {return 2;};
+    int GetIntType();
     void FixEmissionsKinematics_SD(int mode);
     
     Ladder * operator()(const ATOOLS::Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_D * sigma_d);  

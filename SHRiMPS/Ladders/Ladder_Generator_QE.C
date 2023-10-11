@@ -6,6 +6,8 @@
 #include <list>
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
+#include "SHRiMPS/Cross_Sections/Cross_Sections.H"
+#include "SHRiMPS/Glauber/Glauber.H"
 
 using namespace SHRIMPS;
 using namespace MODEL;
@@ -16,8 +18,11 @@ Ladder_Generator_QE::Ladder_Generator_QE() :
   Ladder_Generator_Base(),
   m_beam1(ATOOLS::rpa->gen.Beam1()), m_beam2(ATOOLS::rpa->gen.Beam2()),
   m_Pbeam1((ATOOLS::rpa->gen.PBeam(0))), m_Pbeam2(ATOOLS::rpa->gen.PBeam(1)),
-  m_sign1(-1+2*int(m_Pbeam1[3]>0)), m_fraction(.1), m_pdf_over_estimate(2.5)
-  {}
+  m_sign1(-1+2*int(m_Pbeam1[3]>0)), m_fraction(.1), m_pdf_over_estimate(2.5),
+  p_xsecs(new Cross_Sections())
+  {
+    p_xsecs->CalculateCrossSections();
+  }
   
 //Ladder_Generator_QE::~Ladder_Generator_QE() {}
 
@@ -40,6 +45,26 @@ Ladder * Ladder_Generator_QE::operator()(const Vec4D & pos,Sigma_Elastic * sigma
   //msg_Out() << *p_ladder << endl;
   return p_ladder;
 }
+
+int Ladder_Generator_QE::GetIntType() {
+  int type_selected;
+  std::map<int,double> partial_xss;
+  partial_xss[2] = p_xsecs->SigmaDD();
+  partial_xss[0] = p_xsecs->SigmaSD(0);
+  partial_xss[1] = p_xsecs->SigmaSD(1);
+  partial_xss[4] = p_xsecs->SigmaEl();
+  double sigQE(0.);
+  for(std::map<int,double>::iterator pair = partial_xss.begin(); pair != partial_xss.end(); ++pair) sigQE += pair->second;
+  double disc = ran->Get();
+  for(std::map<int,double>::iterator pair = partial_xss.begin(); pair != partial_xss.end(); ++pair) {
+    disc -= (pair->second)/sigQE;
+    if (disc<=1.e-12) {
+      type_selected = pair->first;
+      break;
+    }
+  }
+  return type_selected;
+};
 
 void Ladder_Generator_QE::FixEmissionsKinematics_SD(int mode) {
   m_p1 = m_Pbeam1*m_fraction;
@@ -65,7 +90,6 @@ void Ladder_Generator_QE::FixEmissionsKinematics_elastic() {
   }
   m_p1 = m_Pbeam1*m_x[0];
   m_p2 = m_Pbeam2*m_x[1];
-
   //Boost to rest frame of the incoming gluons
   Poincare rest    = Poincare(m_p1 + m_p2);
   rest.Boost(m_p1);

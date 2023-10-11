@@ -142,7 +142,7 @@ int Glauber::FixProjectileState() {
 }
 
 void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos_N1,std::vector<ATOOLS::Vec4D> pos_N2) {
-  std::vector<std::pair<std::pair<int,int>,int>> interactions;
+  //std::vector<std::pair<std::pair<int,int>,int>> interactions;
   for(int i = 0; i < m_numNucleons1; i++) {
     for(int j = 0; j < m_numNucleons2; j++) {
       double distance = sqrt(sqr(pos_N1.at(i)[1] - pos_N2.at(j)[1]) + sqr(pos_N1.at(i)[2] - pos_N2.at(j)[2])); // fm
@@ -192,7 +192,7 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
         std::pair<std::pair<int,int>,int> interaction1;
         interaction1.first = current_pair;
         interaction1.second = m_type_abs; //interaction 1 = inelastic
-        interactions.push_back(interaction1);
+        m_list_of_interactions.push_back(interaction1);
         //interactions_file << interaction1.second << "\t" << distance << endl;
       }
       if (rand2 < prob_QE) {
@@ -204,7 +204,7 @@ void Glauber::DoCollision(Cross_Sections * xsecs, std::vector<ATOOLS::Vec4D> pos
         else if (rand3 < prob_SD0 + prob_SD1) interaction2.second = m_type_SD2; //interaction 3 = single diff in 1
         else if (rand3 < prob_SD0 + prob_SD1 + prob_DD) interaction2.second = m_type_DD; //interaction 4 = double diff
         else interaction2.second = m_type_elas; //interaction 5 = elastic
-        interactions.push_back(interaction2);
+        m_list_of_interactions.push_back(interaction2);
         //interactions_file << interaction2.second << "\t" << distance << endl;
       }
       if (!inelastic_happened && !QE_happened) {
