@@ -56,7 +56,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     m_impact.Initialize(remnant_handler,p_processes);
   }
   else {
-    p_soft = new NonPerturbative_XSecs(p_xsecs);
+    p_soft = new NonPerturbative_XSecs(remnant_handler,p_xsecs);
     // Initializing the Single_Collision_Handler which creates the next scatter: it needs
     // the remnants, processes, and the overestimator
     m_singlecollision.Init(remnant_handler,p_soft);

@@ -356,6 +356,7 @@ bool Beam_Parameters::SpecifyMode() {
     m_beammode = beammode::Fixed_Target;
   else
     m_beammode = beammode::unknown;
+  msg_Out()<<METHOD<<": "<<mode<<" --> "<<m_beammode<<"\n";
   return (m_beammode!=beammode::unknown);
 }
 
@@ -386,6 +387,7 @@ bool Beam_Parameters::SpecifySpectra() {
       m_beamspec[num] = beamspectrum::Fixed_Target;
     else
       m_beamspec[num] = beamspectrum::unknown;
+    msg_Out()<<METHOD<<"["<<num<<"]: "<<bs<<" --> "<<m_beamspec[num]<<"\n";
   }
   return (m_beamspec[0]!=beamspectrum::unknown && m_beamspec[1]!=beamspectrum::unknown);
 }
