@@ -59,6 +59,7 @@ ISR_Handler::ISR_Handler(std::array<ISR_Base *, 2> isrbase, const isr::id &id)
   p_remnants[1] = p_remnants[0] = nullptr;
   m_mode = 0;
   for (short int i = 0; i < 2; i++) {
+    msg_Out()<<METHOD<<"(i = "<<i<<", "<<p_isrbase[i]<<", on = "<<p_isrbase[i]->On()<<").\n";
     if (p_isrbase[i]->On())
       m_mode += i + 1;
     m_mass2[i] = sqr(p_isrbase[i]->Flavour().Mass());
@@ -66,6 +67,7 @@ ISR_Handler::ISR_Handler(std::array<ISR_Base *, 2> isrbase, const isr::id &id)
     m_mu2[i] = 0.;
   }
   FixType();
+  msg_Out()<<METHOD<<" yields type = "<<m_type<<"\n";
 }
 
 void ISR_Handler::FixType() {

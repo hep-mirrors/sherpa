@@ -35,6 +35,7 @@ Hadronic_XSec_Calculator(MODEL::Model_Base * model,
   m_triple_pomeron = (*mipars)("TriplePomeronCoupling");
   m_eta_reggeon    = (*mipars)("ReggeonIntercept");
   m_xsnd_norm      = (*mipars)("SigmaND_Norm");
+  m_s0             = 1./m_alphaP_pomeron;
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Prefactors, converted to mb, 1/{mb^1/2 GeV^2}, 1/mb for elastic, SD, and DD
@@ -133,7 +134,7 @@ void Hadronic_XSec_Calculator::CalculateHGammaXSecs(const size_t photon) {
   double xstot, prefV, masses[2];
   masses[1-photon] = m_masses[1-photon];
   // Iterate over VMD hadrons and add cross sections
-  for (std::map<Flavour, double>::const_iterator flit=m_fVs.begin();
+  for (map<Flavour, double>::const_iterator flit=m_fVs.begin();
        flit!=m_fVs.end();flit++) {
     hadtags[photon] = m_indexmap[flit->first];
     masses[photon]  = flit->first.Mass();
@@ -152,11 +153,11 @@ void Hadronic_XSec_Calculator::CalculatePhotonPhotonXSecs() {
   ////////////////////////////////////////////////////////////////////////////////////////////
   // Iterate over VMD hadrons and add cross sections
   ////////////////////////////////////////////////////////////////////////////////////////////
-  for (std::map<Flavour, double>::const_iterator flit0=m_fVs.begin();
+  for (map<Flavour, double>::const_iterator flit0=m_fVs.begin();
        flit0!=m_fVs.end();flit0++) {
     hadtags[0] = m_indexmap[flit0->first];
     masses[0]  = flit0->first.Mass();
-    for (std::map<Flavour, double>::const_iterator flit1=m_fVs.begin();
+    for (map<Flavour, double>::const_iterator flit1=m_fVs.begin();
 	 flit1!=m_fVs.end();flit1++) {
       hadtags[1] = m_indexmap[flit1->first];
       masses[1]  = flit0->first.Mass();
@@ -184,7 +185,7 @@ double Hadronic_XSec_Calculator::IntElXSec(const size_t hadtags[2],const double 
   // from Eq.(11) ibidem.
   ////////////////////////////////////////////////////////////////////////////////////////////
   double b_elastic =  2.*(s_slopes[hadtags[0]] + s_slopes[hadtags[1]] +
-			  m_c0*pow(m_s/4.,m_eps_pomeron)-m_c1);
+			  m_c0*pow(m_s/m_s0,m_eps_pomeron)-m_c1);
   return m_prefElastic * sqr(xstot) / b_elastic;
 }
 
@@ -267,11 +268,17 @@ void Hadronic_XSec_Calculator::Output() const {
 	   <<"   \\sigma_{sd}(B) = "<<m_xssdB<<" mb\n"
 	   <<"   \\sigma_{dd}    = "<<m_xsdd<<" mb\n"
 	   <<"   \\sigma_{nd}    = "<<m_xsnd/1.e9*rpa->Picobarn()<<" mb = "
-	   <<m_xsnd<<" GeV^-2\n}"<<std::endl;
+	   <<m_xsnd<<" GeV^-2\n}"<<endl;
 }
 
 
 void Hadronic_XSec_Calculator::FixTables() {
+  m_hadroncomponents = {
+    { Flavour(kf_p_plus),       { Flavour(kf_p_plus) }                          },
+    { Flavour(kf_n),            { Flavour(kf_n) }                               },
+    { Flavour(kf_photon),       { Flavour(kf_rho_770), Flavour(kf_omega_782),
+				  Flavour(kf_phi_1020), Flavour(kf_J_psi_1S) }  }
+  };
   ////////////////////////////////////////////////////////////////////////////////////////////
   // Cross section parametrisation taken from Donnachie and Landshoff,
   // and from Schuler and Sjöstrand, Z Phys C 73 677-688 (1997).

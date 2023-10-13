@@ -520,8 +520,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   Hadron_Init().Init();
   okay = okay && InitializeTheModel();
 
+  msg_Out()<<METHOD<<": mode = "<<m_mode<<"\n";
   if (m_mode==eventtype::StandardPerturbative) {
     std::string eventtype{ s["EVENT_TYPE"].Get<std::string>() };
+    msg_Out()<<METHOD<<": type = "<<eventtype<<"\n";
     if (eventtype=="StandardPerturbative")
       m_mode=eventtype::StandardPerturbative;
     else if (eventtype=="MinimumBias") {
@@ -531,6 +533,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       else if (s["SOFT_COLLISIONS"].Get<string>()==string("Shrimps"))
         s["MI_HANDLER"].OverrideScalar<std::string>("None");
       s["ME_GENERATORS"].OverrideScalar<std::string>("None");
+      msg_Out()<<METHOD<<": MI = "<<s["SOFT_COLLISIONS"].Get<string>()<<"\n";
     }
     else if (eventtype=="HadronDecay") {
       m_mode=eventtype::HadronDecay;
@@ -703,14 +706,21 @@ bool Initialization_Handler::InitializeThePDFs()
   DefineBunchFlavours(settings);
   // Initialisation of PDF sets
   for (size_t i=1;i<4;++i) InitISRHandler((isr::id)(i),settings);
-  msg_Info()<<"ISR handling:"<<endl;
+  msg_Info()<<METHOD<<" starts ISR initialization:"<<endl;
   bool needs_resc = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
   for (size_t pid=1;pid<4;pid++) {
     PDF::isr::id pc;
-    if (pid==1) { msg_Info()<<"    PDFs for hard scattering:              "; pc = PDF::isr::hard_process; }
-    if (pid==2) { msg_Info()<<"    PDFs for multiple parton interactions: "; pc = PDF::isr::hard_subprocess; }
+    if (pid==1) {
+      msg_Info()<<"    PDFs for hard scattering:              ";
+      pc = PDF::isr::hard_process;
+    }
+    if (pid==2) {
+      msg_Info()<<"    PDFs for multiple parton interactions: ";
+      pc = PDF::isr::hard_subprocess;
+    }
     if (pid==3 && needs_resc) {
-      msg_Info()<<"    PDFs for beam re-scattering:           "; pc = PDF::isr::bunch_rescatter;
+      msg_Info()<<"    PDFs for beam re-scattering:           ";
+      pc = PDF::isr::bunch_rescatter;
     }
     if (pid!=3 || (pid==3 && needs_resc)) {
       for (size_t beam=0;beam<2;beam++) {
@@ -718,7 +728,7 @@ bool Initialization_Handler::InitializeThePDFs()
             m_isrhandlers[pc]->Type(beam)==PDF::isrtype::hadron) {
           msg_Info() << m_isrhandlers[pc]->PDF(beam)->Set();
         } else {
-          msg_Info() << "None";
+          msg_Info() << "None ("<<m_isrhandlers[pc]->Type(beam)<<") ";
         }
         if (beam==0 && (m_isrhandlers[pc]->Type(1)==PDF::isrtype::lepton ||
 			m_isrhandlers[pc]->Type(1)==PDF::isrtype::hadron)) msg_Info()<<" + ";
@@ -736,6 +746,9 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   m_defsets[PDF::isr::hard_process]    = std::array<std::string, 2>();
   m_defsets[PDF::isr::hard_subprocess] = std::array<std::string, 2>();
   m_defsets[PDF::isr::bunch_rescatter] = std::array<std::string, 2>();
+  msg_Out()<<METHOD<<": "
+	   <<"bunch(0) = "<<p_beamspectra->GetBeam(0)->Bunch(0)<<" & "
+	   <<"bunch(0) = "<<p_beamspectra->GetBeam(1)->Bunch(0)<<".\n";
   for (size_t beam=0;beam<2;++beam) {
     /////////////////////////////////////////////////////////
     // define bunch particle-dependent PDF libraries and sets here
@@ -753,6 +766,7 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     else if (p_beamspectra->GetBeam(beam)->Bunch(0).IsPhoton()) {
       deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_photon);
       defset = PDF::pdfdefs->DefaultPDFSet(kf_photon);
+      msg_Out()<<METHOD<<"(beam = "<<beam<<"): "<<deflib<<" + "<<defset<<"\n";
     }
     // fix PDFs and default sets for the hard_process here
     if (pdflibs.empty()) m_pdflibs.insert(deflib);
@@ -785,6 +799,9 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
       }
     }
     else m_defsets[PDF::isr::bunch_rescatter][beam] = string("");
+    msg_Out()<<METHOD<<"(mode = "<<m_mode<<"): "
+	     <<m_defsets[PDF::isr::hard_process][beam]<<" & "
+	     <<m_defsets[PDF::isr::hard_subprocess][beam]<<"\n";
   }
   // add LHAPDF if necessary and load the relevant libraries
   if (Variations::NeedsLHAPDF6Interface()) {
@@ -858,11 +875,16 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
 			   p_beamspectra->GetBeam(beam)->Beam() );
     PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
     if (pid!=PDF::isr::bunch_rescatter) {
+      msg_Out()<<METHOD<<"("<<pid<<"): before getter.\n";
       PDF_Base * pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set,args);
       if (m_bunch_particles[beam].IsHadron() && pdfbase==NULL)
 	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
 	      +" libraries for "+ToString(m_bunch_particles[beam])+" bunch.");
       if (pid==PDF::isr::hard_process) rpa->gen.SetPDF(beam,pdfbase);
+      msg_Out()<<METHOD<<"[beam = "<<beam<<", "<<pid<<"]: "<<m_bunch_particles[beam]
+	       <<" --> "<<pdfbase<<"\n"
+	       <<"   from flav = "<<flav<<", set = "<<set<<", version = "<<version<<", "
+	       <<"order = "<<order<<", scheme = "<<scheme<<"\n";
       if (pdfbase==NULL) {
 	isrbases[beam]  = new Intact(flav);
 	needs_resc      = false;
@@ -883,6 +905,9 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     }
   }
   if ((pid==PDF::isr::bunch_rescatter && needs_resc) || pid!=isr::bunch_rescatter) {
+    msg_Out()<<METHOD<<"["<<pid<<"]: "
+	     <<m_bunch_particles[0]<<" ("<<isrbases[0]<<") & "
+	     <<m_bunch_particles[1]<<" ("<<isrbases[1]<<").\n";
     ISR_Handler * isr = new ISR_Handler(isrbases,pid);
     for (size_t beam=0;beam<2;beam++) isr->SetBeam(p_beamspectra->GetBeam(beam),beam);
     isr->Init();
@@ -1025,6 +1050,7 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   for (size_t i=0; i<isrtypes.size(); ++i) {
     isr::id id = isrtypes[i];
     as->SetActiveAs(isr::hard_subprocess);
+    msg_Out()<<METHOD<<"["<<isrtypes[i]<<"]:\n";
     MI_Handler * mih = new MI_Handler(p_model,m_isrhandlers[id],m_remnanthandlers[id]);
     mih->SetShowerHandler(m_showerhandlers[id]);
     as->SetActiveAs(isr::hard_process);
