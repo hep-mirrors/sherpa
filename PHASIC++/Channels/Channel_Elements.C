@@ -223,8 +223,8 @@ double Channel_Elements::TChannelWeight
   double pa1(pow(a-ctmax,1.-ctexp));
   double ct(p1outh[3]/p1outh.PSpat());
   if (ct<ctmin || ct>ctmax) {
-    msg_Error()<<METHOD<<"(): \\cos\\theta range violation: "
-	       <<ctmin<<" < "<<ct<<" < "<<ctmax<<std::endl;
+    //msg_Error()<<METHOD<<"(): \\cos\\theta range violation: "
+	  //     <<ctmin<<" < "<<ct<<" < "<<ctmax<<std::endl;
     ran1=ran2=-1.;
     return 0.;
   }

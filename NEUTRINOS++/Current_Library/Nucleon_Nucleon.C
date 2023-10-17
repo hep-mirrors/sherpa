@@ -120,7 +120,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     ///////////////////////////////////////////////////////////////////////////
     // Weak Charged (left-handed) coupling: -i g_W gamma^{mu} / (sqrt(2)) * (cL P^{L}) 
     ///////////////////////////////////////////////////////////////////////////
-    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * Vckm ) / (sqrt(2.));
+    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * Vckm ) / (2.0 * sqrt(2.));
     Weak_CC_cR = Complex( 0., 0.);
     Weak_CC_cL = Complex( 1., 0.);
   }

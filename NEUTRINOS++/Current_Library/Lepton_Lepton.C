@@ -19,8 +19,8 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
   // Relevant parameters here.
   /////////////////////////////////////////////////////////////////////////////
 
-  double alphaQED   = 1./137.;
-  double sin2thetaW = 0.22290, cos2thetaW = 1. - sin2thetaW;
+  double alphaQED   = 1.0/137.;
+  double sin2thetaW = 0.22290, cos2thetaW = 1.0 - sin2thetaW;
 
   double e_coupling = sqrt(4.*M_PI*alphaQED);
   double gz_coupling = e_coupling/(sqrt(sin2thetaW*cos2thetaW));
@@ -107,8 +107,7 @@ Lepton_Lepton::Lepton_Lepton(const ATOOLS::Flavour_Vector& flavs,
     ///////////////////////////////////////////////////////////////////////////
     // Weak Charged (left-handed) coupling: -i g_W gamma^{mu} / (sqrt(2)) * (cL P^{L}) 
     ///////////////////////////////////////////////////////////////////////////
-    double Fudge = 1;//sqrt(sqrt(sqrt(sin2thetaW)));
-    Weak_CC_coupling = (-Complex( 1., 0.) * gw_coupling ) / (sqrt(2.) * Fudge);
+    Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling ) / ( sqrt(2.));
     Weak_CC_cR = Complex(0.,0.);
     Weak_CC_cL = Complex(1.,0.);
   }
@@ -134,8 +133,8 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
   if (m_anti) F->Set_m_Anti(true);
   else        F->Set_m_Anti(false);
 
-  Complex Zero = Complex(0.,0.);
-  Complex One = Complex(1.,0.);
+  Complex Zero = Complex(0.0,0.0);
+  Complex One = Complex(1.0,0.0);
 
   /////////////////////////////////////////////////////////////////////////
   // J^mu = ubar(0) gamma^mu (P_L c_L + P_R c_R) u(1) 
@@ -150,25 +149,19 @@ void Lepton_Lepton::Calc(const ATOOLS::Vec4D_Vector& moms, METOOLS::XYZFunc * F)
       Weak_NC_amp *= 0.0;
       Weak_CC_amp *= 0.0;
 
-      if ( fabs(QED_coupling) > 0.0 ) {
-        QED_amp = F->L(pi,hi, pf,hf, QED_cR, QED_cL);
+      QED_amp = F->L(pf,hf, pi,hi, QED_cR, QED_cL);
+      if (!m_anti) QED_amp = QED_amp * QED_coupling;
+      else         QED_amp = QED_amp * conj(QED_coupling);
+      
+      Weak_NC_amp = F->L(pf,hf, pi,hi, Weak_NC_cR, Weak_NC_cL);
+      if (!m_anti) Weak_NC_amp = Weak_NC_amp * Weak_NC_coupling;
+      else         Weak_NC_amp = Weak_NC_amp * conj(Weak_NC_coupling);
+    
 
-        if (!m_anti) QED_amp = QED_amp * QED_coupling;
-        else         QED_amp = QED_amp * (QED_coupling);
-        
-      }
-      else if ( fabs(Weak_NC_coupling) > 0.0 ) {
-        Weak_NC_amp = F->L(pi,hi, pf,hf, Weak_NC_cR, Weak_NC_cL);
-
-        if (!m_anti) Weak_NC_amp = Weak_NC_amp * Weak_NC_coupling;
-        else         Weak_NC_amp = Weak_NC_amp * (Weak_NC_coupling);
-      }
-      else if ( fabs(Weak_CC_coupling) > 0.0 ) {
-        Weak_CC_amp = F->L(pi,hi, pf,hf, Weak_CC_cR, Weak_CC_cL);
-
-        if (!m_anti) Weak_CC_amp = Weak_CC_amp * Weak_CC_coupling;
-        else         Weak_CC_amp = Weak_CC_amp * (Weak_CC_coupling);
-      }
+      Weak_CC_amp = F->L(pf,hf, pi,hi, Weak_CC_cR, Weak_CC_cL);
+      if (!m_anti) Weak_CC_amp = Weak_CC_amp * Weak_CC_coupling;
+      else         Weak_CC_amp = Weak_CC_amp * conj(Weak_CC_coupling);
+    
 
       // Factor of two to undo spin averaging.
       QED_amp = QED_amp / 2.0;

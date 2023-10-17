@@ -67,7 +67,7 @@ XS_lepton_nucleon::XS_lepton_nucleon(const External_ME_Args& args)
   m_indices.resize(2);
   m_indices[0] = 3;
   m_indices[1] = 1;
-  //if (Bool_GMsGEs) p_JNN  = new Nucleon_Nucleon(m_flavs,m_indices,"NN");
+  //if (Bool_GMsGEs) p_JNN  = new Nucleon_Nucleon(m_flavs,m_indices,"NN"); //JW: This is the old version. Maybe able to delete soon...
   if (Bool_GMsGEs) p_JNN  = new Nucleon_Baryon(m_flavs,m_indices,"NY");
   if (Bool_fsgs) p_JNN  = new Nucleon_Baryon_FFS(m_flavs,m_indices,"NY");
   m_indices.resize(4);

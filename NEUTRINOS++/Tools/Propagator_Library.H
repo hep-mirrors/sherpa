@@ -18,7 +18,8 @@ namespace NEUTRINOS {
       none             = 0,
       massless         = 1,
       massive          = 2,
-      unstable         = 3, 
+      verymassive      = 3,
+      unstable         = 4, 
       unknown          = 99
     };
   };
@@ -68,6 +69,15 @@ namespace NEUTRINOS {
   public:
     Massive_Prop(const prop_info & info);
     ~Massive_Prop() {}
+    Complex Calc(const double & p2);
+  };
+
+  class VeryMassive_Prop : public Propagator_Base {
+  private:
+    double mass;
+  public:
+    VeryMassive_Prop(const prop_info & info);
+    ~VeryMassive_Prop() {}
     Complex Calc(const double & p2);
   };
 

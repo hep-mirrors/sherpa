@@ -27,6 +27,8 @@ Propagator_Maps::GetProp(kf_code & prop,prop_type::code & prop_type) {
     return new Massless_Prop(info);
   case prop_type::massive:
     return new Massive_Prop(info);
+  case prop_type::verymassive:
+    return new VeryMassive_Prop(info);
   case prop_type::unstable:
     return new Unstable_Prop(info);
 

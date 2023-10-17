@@ -23,6 +23,7 @@ namespace NEUTRINOS {
       if (form=="none")             return prop_type::none;
       if (form=="massless")         return prop_type::massless;
       if (form=="massive")          return prop_type::massive;
+      if (form=="verymassive")      return prop_type::verymassive;
       if (form=="unstable")         return prop_type::unstable;
       if (form=="unknown")          return prop_type::unknown;
 

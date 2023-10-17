@@ -35,7 +35,7 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
   kf_code OUT = m_flavs[m_indices[0]].Kfcode();
 
   //Read in model parameters
-  std::string Vckm_string = compareQuarkContent(getQuarkContent(IN), getQuarkContent(OUT)); 
+  std::string Vckm_string = compareQuarkContent(getQuarkContent(IN), getQuarkContent(OUT));
   double Vckm = ffs->GetModelParms("CKM", Vckm_string);
 
   //Turn contributions from currents on or off...
@@ -59,15 +59,13 @@ Nucleon_Baryon::Nucleon_Baryon(const ATOOLS::Flavour_Vector& flavs,
   // Propagator info
   // We define all propagators here by QED (Photon), NC (Z boson), CC (W boson)
   /////////////////////////////////////////////////////////////////////////////
-  prop_type::code prop_type = prop_type::massive;
+  prop_type::code prop_type = prop_type::verymassive; //Neglect qsq if mass > 0.0
   kf_code prop_kf_P   = kf_photon;
   kf_code prop_kf_Z   = kf_Z;
   kf_code prop_kf_W   = kf_Wplus;
 
   kf_code proton_pid  = kf_p_plus;
   kf_code neutron_pid = kf_n;
-
-  kf_code null_pid = kf_none; 
 
   //Using the EM form factors...
   m_ffs["GE_proton"]  = ffs->GetFF(proton_pid,proton_pid,prop_kf_P,GE); 
@@ -166,12 +164,12 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   const int pf_bar = pf+N; 
   const int pi_bar = pi+N;
 
-  Complex Zero = Complex(0.,0.);
-  Complex One = Complex(1.,0.); 
+  Complex Zero = Complex(0.0,0.0);
+  Complex One = Complex(1.0,0.0); 
 
   const ATOOLS::Vec4<Complex> qmom = (F->P(pf)-F->P(pi));
   const double q2  = qmom.Abs2().real();
-  const double tau = -q2/(4.*m_massin*m_massout); 
+  const double tau = -q2/(4.0*m_massin*m_massout); 
 
   const complex QED_prop_factor = m_ffprops["QED"]->Calc(q2);
   const complex Weak_NC_prop_factor = m_ffprops["NC"]->Calc(q2);
@@ -204,7 +202,7 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   //Axial using g1, g2
   double x1_np = 0.364, x2_np = x1_np;
   double F1A = g1_pn * x1_np, F2A = g2_pn * x2_np;
-  double D1A = g1_pn * (1-x1_np), D2A = g2_pn * (1-x2_np);
+  double D1A = g1_pn * (1.0-x1_np), D2A = g2_pn * (1.0-x2_np);
 
   /////////////////////////////////////////////////////////////////////////
   // Now using Clebsch-Gordan coefficients get relevant form factors for N -> Y.
@@ -215,7 +213,7 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   double g1_NY = a_CG*F1A  + b_CG*D1A, g2_NY = a_CG*F2A  + b_CG*D2A;
 
   double masskaon = .497648; //TODO Check this
-  double g3_NY = g1_NY*sqr(m_massin+m_massout)/(2*(sqr(masskaon)-q2)); //Nambu...
+  double g3_NY = g1_NY*sqr(m_massin+m_massout)/((sqr(masskaon)-q2)); //Nambu...
 
   /////////////////////////////////////////////////////////////////////////////
   // J^mu =  
@@ -225,8 +223,46 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
   //  ] u(1) 
   /////////////////////////////////////////////////////////////////////////////
 
-  //Remove Z boson...
-  Weak_NC_coupling = 0.0;
+  double mass_term_2 = m_massout; //Me
+  //double mass_term_2 = (m_massin+m_massout)*0.5; //Paper
+
+  double mass_term_3 = m_massout; //Me
+  //double mass_term_3 = (m_massin+m_massout); //Paper
+
+
+  // msg_Out() << "Nucleon_Baryon\n";
+  // msg_Out() 
+  //   << "Anti?: " << m_anti << "\n"
+  //   << "a: " << a_CG << " b: " << b_CG << "\n"
+  //   << "QED: \n     " 
+  //   << "Coupling: " << QED_coupling << " \n     "
+  //   << "Left: " << QED_cL << " \n     "
+  //   << "Right: " << QED_cR << " \n"
+  //   << "Weak_NC: \n     " 
+  //   << "Coupling: " << Weak_NC_coupling << " \n     "
+  //   << "Left: " << Weak_NC_cL << " \n     "
+  //   << "Right: " << Weak_NC_cR << " \n"
+  //   << "Weak_CC: \n     " 
+  //   << "Coupling: " << Weak_CC_coupling << " \n     "
+  //   << "Left: " << Weak_CC_cL << " \n     "
+  //   << "Right: " << Weak_CC_cR << " \n"
+  //   << "Form factors: \n     " 
+  //   << "f1_p: " << f1_p << " \n     "
+  //   << "f2_p: " << f2_p << " \n     "
+  //   << "f3_p: " << f3_p << " \n\n     "
+  //   << "f1_n: " << f1_n << " \n     "
+  //   << "f2_n: " << f2_n << " \n     "
+  //   << "f3_n: " << f3_n << " \n     "
+  //   << "g1_pn: " << g1_pn << " \n     "
+  //   << "g2_pn: " << g2_pn << " \n     "
+  //   << "g3_pn: " << g3_pn << " \n\n     "
+  //   << "f1_NY: " << f1_NY << " \n     "
+  //   << "f2_NY: " << f2_NY << " \n     "
+  //   << "f3_NY: " << f3_NY << " \n     "
+  //   << "g1_NY: " << g1_NY << " \n     "
+  //   << "g2_NY: " << g2_NY << " \n     "
+  //   << "g3_NY: " << g3_NY << " \n\n\n";
+  // exit(1);
 
 
   Vec4C Gen_amp, QED_amp, Weak_NC_amp, Weak_CC_amp;
@@ -245,7 +281,7 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
       g3_term *= 0.0;
 
       f1_term = F->L(pf,hf, pi,hi, One,One);
-      g1_term = -F->L(pf,hf, pi,hi, One,-One);
+      g1_term = F->L(pf,hf, pi,hi, One,-One);
 
       for (int hq=0;hq<2;hq++) {
           f2_term += (
@@ -261,65 +297,26 @@ void Nucleon_Baryon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
                 F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,-One)
           );
         }
-      f2_term *=  (1/(4.*m_massout));
-      g2_term *= -(1/(4.*m_massout));
+      f2_term *= (1.0/(4.0*mass_term_2));
+      g2_term *= (1.0/(4.0*mass_term_2));
 
-      f3_term = qmom * F->Y(pf,hf, pi,hi, One,One) / m_massout;
-      g3_term = -qmom * F->Y(pf,hf, pi,hi, One,-One) / m_massout;
+      f3_term = qmom * F->Y(pf,hf, pi,hi, One,One) / mass_term_3;
+      g3_term = qmom * F->Y(pf,hf, pi,hi, One,-One) / mass_term_3;
 
       //Propagator on Nucleon Current side
-      Gen_amp = f1_term*f1_NY + f2_term*f2_NY + f3_term*f3_NY - g1_term*g1_NY - g2_term*g2_NY - g3_term*g3_NY;
-      //QED TERM
-      if ( fabs(QED_coupling) > 0.0 ) {
-        if (!m_anti) QED_amp = Gen_amp * QED_coupling * QED_prop_factor;
-        else         QED_amp = Gen_amp * conj(QED_coupling) * QED_prop_factor;
-      } 
-      //NC TERM
-      else if ( fabs(Weak_NC_coupling) > 0.0 ) {
-        if (!m_anti) Weak_NC_amp = Gen_amp * Weak_NC_coupling * Weak_NC_prop_factor;
-        else         Weak_NC_amp = Gen_amp * conj(Weak_NC_coupling) * Weak_NC_prop_factor;
-      }
-      //CC TERM
-      else if ( fabs(Weak_CC_coupling) > 0.0 ) {
-        if (!m_anti) Weak_CC_amp = Gen_amp * Weak_CC_coupling * Weak_CC_prop_factor;
-        else         Weak_CC_amp = Gen_amp * conj(Weak_CC_coupling) * Weak_CC_prop_factor;
-      }
+      Gen_amp = f1_term*f1_NY + f2_term*f2_NY + f3_term*f3_NY - (g1_term*g1_NY + g2_term*g2_NY + g3_term*g3_NY);
 
-      // msg_Out() << "Nucleon_Baryon\n";
-      // msg_Out() 
-      //   << "Anti?: " << m_anti << "\n"
-      //   << "QED: \n     " 
-      //   << "Coupling: " << QED_coupling << " \n     "
-      //   << "Left: " << QED_cL << " \n     "
-      //   << "Right: " << QED_cR << " \n"
-      //   << "Weak_NC: \n     " 
-      //   << "Coupling: " << Weak_NC_coupling << " \n     "
-      //   << "Left: " << Weak_NC_cL << " \n     "
-      //   << "Right: " << Weak_NC_cR << " \n"
-      //   << "Weak_CC: \n     " 
-      //   << "Coupling: " << Weak_CC_coupling << " \n     "
-      //   << "Left: " << Weak_CC_cL << " \n     "
-      //   << "Right: " << Weak_CC_cR << " \n"
-      //   << "Form factors: \n     " 
-      //   << "f1_p: " << f1_p << " \n     "
-      //   << "f2_p: " << f2_p << " \n     "
-      //   << "f3_p: " << f3_p << " \n     "
-      //   << "g1_p: " << g1_p << " \n     "
-      //   << "g2_p: " << g2_p << " \n     "
-      //   << "g3_p: " << g3_p << " \n\n     "
-      //   << "f1_n: " << f1_n << " \n     "
-      //   << "f2_n: " << f2_n << " \n     "
-      //   << "f3_n: " << f3_n << " \n     "
-      //   << "g1_n: " << g1_n << " \n     "
-      //   << "g2_n: " << g2_n << " \n     "
-      //   << "g3_n: " << g3_n << " \n\n     "
-      //   << "f1_NY: " << f1_NY << " \n     "
-      //   << "f2_NY: " << f2_NY << " \n     "
-      //   << "f3_NY: " << f3_NY << " \n     "
-      //   << "g1_NY: " << g1_NY << " \n     "
-      //   << "g2_NY: " << g2_NY << " \n     "
-      //   << "g3_NY: " << g3_NY << " \n\n\n";
-      // exit(1);
+      //QED TERM
+      if (!m_anti) QED_amp = Gen_amp * QED_coupling * QED_prop_factor;
+      else         QED_amp = Gen_amp * conj(QED_coupling) * QED_prop_factor;
+      
+      //NC TERM
+      if (!m_anti) Weak_NC_amp = Gen_amp * Weak_NC_coupling * Weak_NC_prop_factor;
+      else         Weak_NC_amp = Gen_amp * conj(Weak_NC_coupling) * Weak_NC_prop_factor;
+      
+      //CC TERM
+      if (!m_anti) Weak_CC_amp = Gen_amp * Weak_CC_coupling * Weak_CC_prop_factor;
+      else         Weak_CC_amp = Gen_amp * conj(Weak_CC_coupling) * Weak_CC_prop_factor;
       
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));
