@@ -39,10 +39,10 @@ FSR::FSR()
   s["FSR_CRU"].SetDefault(1);
   s["FSR_NGAMMA"].SetDefault(-1);
   p_yfsFormFact = new YFS::YFS_Form_Factor();
-  s["FSR_CUT"].SetDefault(1e-3);
+  s["FSR_CUT"].SetDefault(1e-9);
   m_Edelta = s["FSR_EMIN"].Get<double>();
   m_kkmcAngles = s["KKMC_ANG"].Get<bool>();
-  m_fsrcut = s["FSR_CUT"].Get<double>() * m_vmin;
+  m_fsrcut = s["FSR_CUT"].Get<double>();
   m_fsrcutF = s["FSR_FCUT"].Get<double>();
   m_nbar = s["FSR_NBAR"].Get<double>();
   m_use_massive_nbar = s["MASSIVE_NBAR"].Get<bool>();
@@ -78,10 +78,10 @@ bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
   m_Q2 = p_dipole->m_charges[1];
   m_QF2 = m_Q1 * m_Q2;
   m_dip_sp = p_dipole->Sprime();
-  if(IsBad(m_dip_sp)) return false;
+  // if(IsBad(m_dip_sp)) return false;
   MakePair(sqrt(m_dip_sp), m_bornQ1, m_bornQ2);
   m_EQ = sqrt(m_dip_sp) / 2.;
-  m_Emin = 0.5 * sqrt(m_s) * m_vmin;
+  m_Emin = 0.5 * sqrt(m_s) * m_fsrcut;
   m_Kmin = 0.5 * m_fsrcut * sqrt(m_dip_sp);
   m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
