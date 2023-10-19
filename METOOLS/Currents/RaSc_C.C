@@ -5,8 +5,6 @@
 #include "ATOOLS/Phys/Spinor.H"
 #include "METOOLS/Main/SpinFuncs.H"
 //#define ZERO SComplex(0.0,0.0)
-// TODO: wenn ausreichend angepasst, sodass kompilierbar, zu CMakeLists.txt zufügen, SONST WIRD FILE BEI KOMPILIEREN
-//       NICHT BERÜCKSICHTIGT
 
 namespace METOOLS {
 
@@ -34,7 +32,7 @@ namespace METOOLS {
 
     SComplex m_cmass2, m_cmass;
 
-    std::string CLabel() const;
+    //std::string CLabel() const;
 
   private:
 
@@ -176,30 +174,33 @@ CRS<SType>::EML(const Vec4D &p,const int cr,const int ca)
 
 // TODO: PLUS AND MINUS EXCHANGED
 // TODO: GENAUE DEFINITION BESCHREIBEN!!!
+// TODO: Nach HELAS paper brauchen wir s, cr, ca, hh, ms nicht...
+// TODO: Im HELAS-Paper hat die Wellenfunktion 18 Komponenten, wobei die letzten bei den Komponenten den Viererimpuls
+//       entlang des Fermionzahlflusses enthalten -> brauchen wir das auch?
 // - Füllungsreihenfolge wie in MadGraph /HELAS paper arXiv: 1010.4255
 // - Form wie in S.F.Novaes & D.Spehler Nuclear Physics B 371 (1992), 618-636 Eq.(13) mit Phase theta = 0
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, const int cr, const int ca,
                  const int hh, const int ms) {
   return
-  b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, 1, p, cr, ca, hh, s, p.Abs2(), ms),
-                                                  EMM(p, cr, ca), p.Abs2(), cr, ca, s):METOOLS::CRS<SType>::
-                                                  Bar(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, 1, p, cr,
+  b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(), ms),
+                                                  EMM(p, cr, ca), p.Abs2(), cr, ca, s):
+                                                  METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr,
                                                                                                        ca, hh, s,
                                                                                                        p.Abs2(), ms),
                                                                                                EMM(p, cr, ca), p.Abs2(),
-                                                                                               cr, ca, s));
+                                                                                               cr, ca, s).Bar();
 }
 
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSMM(const ATOOLS::Vec4D &p, const int r, const int s, const int b, const int cr, const int ca,
                  const int hh, const int ms) {
-  return b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, -1, p, cr, ca, hh, s, p.Abs2(), ms),
-                                                  EMP(p, cr, ca), p.Abs2(), cr, ca, s):METOOLS::CRS<SType>::Bar(
-                                                  METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, b, -1, p, cr, ca,
+  return b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(), ms),
+                                                  EMP(p, cr, ca), p.Abs2(), cr, ca, s):
+                                                  METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca,
                                                                                                    hh, s, p.Abs2(), ms),
                                                                                            EMP(p, cr, ca), p.Abs2(), cr,
-                                                                                           ca, s));
+                                                                                           ca, s).Bar();
 }
 
 template<typename SType>
@@ -267,63 +268,57 @@ CRS<SType>::RSL(const Vec4D &p,const int cr,const int ca)
   e(0)=cr; e(1)=ca;
   e.SetH(2);
   return e/sqrt(SComplex(4.0*p2));
-}
+}*/
 
 template <typename SType>
 void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
+
+  //TODO: Brauchen wir das alles?
+  // TODO: Wozu ist das, sollte das nicht grundsätzlich gelten?
   if (this->m_fl.Mass()==0.0 && p[1]==0.0 && p[2]==0.0)
     this->m_p[0]=this->m_p[0]<0.0?
       -std::abs(this->m_p[3]):std::abs(this->m_p[3]);
+  // TODO: Sollten wir Majorana-Spin-3/2 Teilchen unterstützen?
+  bool anti(this->m_fl.IsAnti());
+  if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
   this->ResetJ();
+  //TODO: Was bedeutet ch? Was für Werte kann ch für RaSc annehmen?
+  // TODO: Wie wird dann am Ende h gesetzt bei Fermionen?
+  // TODO: Brauchen wir noch Vec-Parameter?
+  // TODO: Stimmt RSPP /RSMM? Haben die dann die richtigen helizitäten/Bars?
   if (ch>=0) {
-    if (this->m_msv && (ch==0 || ch==3)) {
-      CVec4Type j(EML(this->m_p,cr,ca));
-      j=this->m_dir>0?-j:j.Conj();
-      AddJ(CVec4Type::New(j));
+    CRaScType j(anti^(this->m_dir>0)? RSPP(p, -1, 0, -this->m_dir, cr, ca): RSMM(p, 1, 0, this->m_dir, cr, ca));
+    j.SetH(anti^(this->m_dir>0)?1:0);
 #ifdef DEBUG__BG
-      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
-		     <<"0 "<<this->m_id<<" "<<j
-		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
+    msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"+ "<<this->m_id
+		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
+		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
 #endif
-    }
-    if (ch!=3) {
-      CVec4Type j(this->m_msv?this->m_dir>0?
-		  EMM(this->m_p,cr,ca):EMP(this->m_p,cr,ca):
-		  this->m_dir>0?EM(this->m_p,cr,ca):EP(this->m_p,cr,ca));
-      j=this->m_dir>0?j:j.Conj();
-      CVec4Type *c(CVec4Type::New(j));
-      AddJ(c);
-#ifdef DEBUG__BG
-      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
-		     <<"+ "<<this->m_id<<" "<<j
-		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
-#endif
-      if (p_sub) static_cast<Dipole_Color*>
-	(p_sub->In().front()->Color().front())->AddJJK(c);
-    }
+    CRaScType *c(CRaScType::New(j));
+    AddJ(c);
+    if (p_sub) static_cast<Dipole_Color*>
+      (p_sub->In().front()->Color().front())->AddJJK(c);
   }
   if (ch<=0) {
-    CVec4Type j(this->m_msv?this->m_dir>0?
-		EMP(this->m_p,cr,ca):EMM(this->m_p,cr,ca):
-		this->m_dir>0?EP(this->m_p,cr,ca):EM(this->m_p,cr,ca));
-    j=this->m_dir>0?j:j.Conj();
-    CVec4Type *c(CVec4Type::New(j));
-    AddJ(c);
+    CRaScType j(anti^(this->m_dir>0) ? RSPP(p, -1, 0, -this->m_dir, cr, ca) : RSMM(p, 1, 0, this->m_dir, cr, ca));
+    j.SetH(anti^(this->m_dir>0)?0:1);
 #ifdef DEBUG__BG
-    msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
-		   <<"- "<<this->m_id<<" "<<j
-		   <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
+    msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"- "<<this->m_id
+		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
+		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
 #endif
+    CRaScType *c(CRaScType::New(j));
+    AddJ(c);
     if (p_sub) static_cast<Dipole_Color*>
       (p_sub->In().front()->Color().front())->AddJJK(c);
   }
 #ifdef DEBUG__BG
   if (p_sub) Print();
 #endif
-}*/
+}
 
 template <typename SType>
 void CRS<SType>::SetGauge(const ATOOLS::Vec4D &k)
@@ -333,9 +328,10 @@ void CRS<SType>::SetGauge(const ATOOLS::Vec4D &k)
   m_km=SpinorType(-1,m_k);
 }
 
-/*template <typename SType>
+template <typename SType>
 void CRS<SType>::AddPropagator()
-{
+{}
+/*
   // add propagator for off-shell leg
   SComplex p2(SType(this->m_p.Abs2())), prop(-M_I/(p2-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
@@ -357,12 +353,13 @@ void CRS<SType>::AddPropagator()
   for (typename CVec4Type_Vector::iterator 
 	 jit(j->begin());jit!=j->end();++jit) **jit*=prop;
   }
-}
+}*/
 
-template <typename SType> void CV<SType>::SContract
+template <typename SType> void CRS<SType>::SContract
 (const Current &c,const Int_Vector &pols,
  SComplex_Vector &ress,const size_t &offset) const
-{
+{}
+  /*
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
@@ -413,18 +410,6 @@ template <typename SType> void CV<SType>::SContract
 }
 
 template <typename SType>
-std::string CRS<SType>::Format(const CObject *c) const
-{
-  return ToString(*(CVec4Type*)c,6);
-}
-
-template <typename SType>
-char CRS<SType>::Type() const
-{
-  return 'V';
-}
-
-template <typename SType>
 std::string CRS<SType>::CLabel() const
 {
   switch (this->m_fl.Kfcode()) {
@@ -442,21 +427,19 @@ std::string CRS<SType>::CLabel() const
   return "wiggly,label.side=right,label.dist=1wiggly_len,label=$"
     +(this->m_out.empty()?this->m_fl.Bar():this->m_fl).TexName()+"$";
 }
+*/
 
-DECLARE_GETTER(CV<double>,"DV",Current,Current_Key);
-
-Current *ATOOLS::Getter<Current,Current_Key,CV<double> >::
-operator()(const Current_Key &key) const
+template <typename SType>
+std::string CRS<SType>::Format(const CObject *c) const
 {
-  if (key.m_fl.IsVector()) return new CV<double>(key);
-  return NULL;
+  return ToString(*(CRaScType *)c,6);
 }
 
-void ATOOLS::Getter<Current,Current_Key,CV<double> >::
-PrintInfo(std::ostream &str,const size_t width) const
+template <typename SType>
+char CRS<SType>::Type() const
 {
-  str<<"vector current (double)";
-}*/
+  return 'R';
+}
 
 // TODO: Wieso failt Normierungstest bei den einlaufenden Teilchen des Prozesses? (also mit deren Impulsen)
 template<typename SType>
@@ -486,4 +469,19 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p) {
 
   // completness relation
   return true;
+}
+
+DECLARE_GETTER(CRS<double>,"DR",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CRS<double> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsRaritaSchwinger()) return new CRS<double>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CRS<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"rarita-schwinger current (double)";
 }
