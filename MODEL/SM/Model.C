@@ -419,6 +419,7 @@ void Standard_Model::FixCKM()
 {
   auto s = Settings::GetMainSettings()["CKM"];
   CMatrix CKM(3);
+  std::cout << CKM[0][0] << CKM[1][0] << CKM[2][1] << std::endl;
   for (int i=0;i<3;i++) {
     for (int j=i;j<3;j++) CKM[i][j] = CKM[j][i] = Complex(0.,0.);
     CKM[i][i] = Complex(1.,0.);
