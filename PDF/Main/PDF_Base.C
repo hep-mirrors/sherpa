@@ -31,7 +31,7 @@ PDF_Defaults::PDF_Defaults()
   m_defset[kf_e] = "PDFe";
 
   m_deflib[kf_photon] = "GRVSherpa";
-  m_defset[kf_photon] = "GRV";
+  m_defset[kf_photon] = "GRVLO";
 }
 
 std::ostream &PDF::operator<<(std::ostream &ostr,const PDF::PDF_AS_Info &asi)

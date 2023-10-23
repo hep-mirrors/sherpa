@@ -34,7 +34,7 @@ namespace AMISIC {
     std::array<ATOOLS::Flavour,4> m_outflav;
     std::array<double,4>          m_outmasses, m_outmasses2;
     std::array<size_t,2>          m_hadtags;
-    double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_alphaQED;
+    double m_smin, m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_alphaQED;
     double m_s, m_s0, m_mpi, m_deltaMres, m_cres;
     double m_weight;
     ATOOLS::Vec4D m_inmom[2];
@@ -87,11 +87,21 @@ namespace AMISIC {
       if (expo==-1.) return log(smax/smin);
       return (pow(smax,expo+1.)-pow(smin,expo+1.))/(expo+1.);
     }
+    inline bool FixFS(std::array<ATOOLS::Flavour, 2> & flavs) {
+      for (size_t i=0;i<2;i++) {
+	m_outflav[2*i]    = flavs[i];
+	m_outmasses[2*i]  = m_outflav[i].Mass();
+	m_outmasses2[2*i] = ATOOLS::sqr(m_outmasses[2*i]);
+	m_hadtags[i]      = p_xsecs->Index(flavs[i],i);
+	if (m_hadtags[i]>99) return false;
+      }
+      return true;
+    }
     
     const event_mode::code SelectMode();
     bool   FixOutMomenta(const double & t);
     bool   SplitDiffractiveState(const size_t & pos);
-    bool   SelectFlavoursOfDiffraction(const size_t & pos);
+    bool   SelectFlavoursOfDiffraction(const size_t & pos,const double & M2);
     ATOOLS::Blob * ElasticScatter();
     ATOOLS::Blob * SingleDiffractiveScatter(const size_t & pos);
     ATOOLS::Blob * DoubleDiffractiveScatter();
@@ -114,7 +124,8 @@ namespace AMISIC {
     ATOOLS::Blob * MakeScatter();
 
     inline const double & Weight() const { return m_weight; }
-
+    inline const double & Smin()   const { return m_smin; }
+    
     inline void SetHadTags(const std::array<size_t,2> tags) {
       for (size_t i=0;i<2;i++) m_hadtags[i] = tags[i];
     }
