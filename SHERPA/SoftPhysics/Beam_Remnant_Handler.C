@@ -50,7 +50,7 @@ Beam_Remnant_Handler::FillRescatterBeamBlobs(Blob_List *const bloblist) {
 
 Return_Value::code
 Beam_Remnant_Handler::FillBunchBlobsFromShower(Blob_List *bloblist) {
-  msg_Out()<<METHOD<<"\n";
+  //msg_Out()<<METHOD<<"\n";
   Return_Value::code fbc = Return_Value::Nothing;
   Blob * shower = bloblist->FindFirst(btp::Shower);
   if (shower && shower->Has(blob_status::needs_beams)) {
@@ -71,7 +71,7 @@ Beam_Remnant_Handler::FillBunchBlobsFromShower(Blob_List *bloblist) {
     if (bunches==2) {
       shower->UnsetStatus(blob_status::needs_beams);
       shower->UnsetStatus(blob_status::internal_flag);
-      msg_Out()<<"Success!\n"<<(*bloblist)<<"\n";
+      //msg_Out()<<"Success!\n"<<(*bloblist)<<"\n";
       fbc = Return_Value::Success;
     }
     else fbc = Return_Value::New_Event;

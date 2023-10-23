@@ -530,10 +530,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   Hadron_Init().Init();
   okay = okay && InitializeTheModel();
 
-  msg_Out()<<METHOD<<": mode = "<<m_mode<<"\n";
   if (m_mode==eventtype::StandardPerturbative) {
     std::string eventtype{ s["EVENT_TYPE"].Get<std::string>() };
-    msg_Out()<<METHOD<<": type = "<<eventtype<<"\n";
     if (eventtype=="StandardPerturbative")
       m_mode=eventtype::StandardPerturbative;
     else if (eventtype=="MinimumBias") {
@@ -543,7 +541,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       else if (s["SOFT_COLLISIONS"].Get<string>()==string("Shrimps"))
         s["MI_HANDLER"].OverrideScalar<std::string>("None");
       s["ME_GENERATORS"].OverrideScalar<std::string>("None");
-      msg_Out()<<METHOD<<": MI = "<<s["SOFT_COLLISIONS"].Get<string>()<<"\n";
     }
     else if (eventtype=="HadronDecay") {
       m_mode=eventtype::HadronDecay;
@@ -553,6 +550,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
     }
+    msg_Out()<<METHOD<<": mode = "<<m_mode<<", type = "<<eventtype<<": "
+      //<<"ME = "<<s["ME_GENERATORS"].Get<string>()<<", "
+	     <<"MI = "<<s["SOFT_COLLISIONS"].Get<string>()<<"\n";
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
@@ -764,7 +764,7 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   m_defsets[PDF::isr::bunch_rescatter] = std::array<std::string, 2>();
   msg_Out()<<METHOD<<": "
 	   <<"bunch(0) = "<<p_beamspectra->GetBeam(0)->Bunch(0)<<" & "
-	   <<"bunch(0) = "<<p_beamspectra->GetBeam(1)->Bunch(0)<<".\n";
+	   <<"bunch(1) = "<<p_beamspectra->GetBeam(1)->Bunch(0)<<".\n";
   for (size_t beam=0;beam<2;++beam) {
     /////////////////////////////////////////////////////////
     // define bunch particle-dependent PDF libraries and sets here
@@ -818,10 +818,12 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
       defset = PDF::pdfdefs->DefaultPDFSet(kfbeam);
     }
     m_defsets[PDF::isr::bunch_rescatter][beam] = defset;
-    msg_Out()<<METHOD<<"(mode = "<<m_mode<<"): "
-	     <<m_defsets[PDF::isr::hard_process][beam]<<" & "
-	     <<m_defsets[PDF::isr::hard_subprocess][beam]<<"\n";
   }
+  msg_Out()<<"   * (mode = "<<m_mode<<"): "
+	   <<"beam 0 = "<<m_defsets[PDF::isr::hard_process][0]<<" + "
+	   <<m_defsets[PDF::isr::hard_subprocess][0]<<", "
+	   <<"beam 0 = "<<m_defsets[PDF::isr::hard_process][1]<<" + "
+	   <<m_defsets[PDF::isr::hard_subprocess][1]<<"\n";
   // add LHAPDF if necessary and load the relevant libraries
   if (Variations::NeedsLHAPDF6Interface()) {
     m_pdflibs.insert("LHAPDFSherpa");
@@ -913,7 +915,7 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     }
     PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
     if (pid != PDF::isr::bunch_rescatter) {
-      msg_Out()<<METHOD<<"("<<pid<<"): before getter.\n";
+      msg_Out()<<METHOD<<"("<<pid<<"): before getter for set = "<<set<<".\n";
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
       if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
         THROW(critical_error,

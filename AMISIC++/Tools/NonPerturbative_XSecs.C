@@ -12,6 +12,7 @@ NonPerturbative_XSecs::
 NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,Hadronic_XSec_Calculator * xsecs) :
   p_remnants(remnants), p_xsecs(xsecs),
   m_evttype(mipars->GetEvtType()),
+  m_smin(p_xsecs->Smin()), 
   m_eps_pomeron(p_xsecs->EpsPomeron()), m_alphaP_pomeron(p_xsecs->AlphaPPomeron()),
   m_triple_pomeron(p_xsecs->TriplePomeron()), m_alphaQED(p_xsecs->AlphaQED()),
   m_s0(1./m_alphaP_pomeron),
@@ -29,12 +30,22 @@ Blob * NonPerturbative_XSecs::MakeScatter() {
   m_inmom[0] = p_remnants->GetRemnant(0)->InMomentum();
   m_inmom[1] = p_remnants->GetRemnant(1)->InMomentum();
   m_s        = (m_inmom[0]+m_inmom[1]).Abs2();
+  if (m_s<m_smin) THROW(fatal_error,"Insufficient s in Non-Perturbative Events in AMISIC++");
   (*p_xsecs)(m_s);
+  array<Flavour, 2> flavs;
   switch(SelectMode()) {
-  case event_mode::elastic: return ElasticScatter();       
-  case event_mode::SDA:     return SingleDiffractiveScatter(0);
-  case event_mode::SDB:     return SingleDiffractiveScatter(1);
-  case event_mode::DD:      return DoubleDiffractiveScatter();
+  case event_mode::elastic:
+    if (!p_xsecs->SelectEl(flavs) || !FixFS(flavs))  THROW(fatal_error,"Could not define elastic FS");
+    return ElasticScatter();       
+  case event_mode::SDA:
+    if (!p_xsecs->SelectSDA(flavs) || !FixFS(flavs)) THROW(fatal_error,"Could not define SD(A) FS");
+    return SingleDiffractiveScatter(0);
+  case event_mode::SDB:
+    if (!p_xsecs->SelectSDB(flavs) || !FixFS(flavs)) THROW(fatal_error,"Could not define SD(B) FS");
+    return SingleDiffractiveScatter(1);
+  case event_mode::DD:
+    if (!p_xsecs->SelectDD(flavs) || !FixFS(flavs))  THROW(fatal_error,"Could not define DD FS");
+    return DoubleDiffractiveScatter();
   case event_mode::unknown:
   default:                  break;
   }
@@ -51,15 +62,15 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
     m_outmasses2[2*i] = m_masses2[i];
   }
   double xsecs[4]; for (size_t i=0;i<3;i++) xsecs[i] = 0.;
-  m_hadtags[0] = m_hadtags[1] = 0;
+
   if (m_evttype==evt_type::Elastic || m_evttype==evt_type::QuasiElastic)
-    m_weight += xsecs[0] = p_xsecs->SigmaEl(m_hadtags);
+    m_weight += xsecs[0] = p_xsecs->SigmaEl();
   if (m_evttype==evt_type::DiffractiveA || m_evttype==evt_type::QuasiElastic)
-    m_weight += xsecs[1] = p_xsecs->SigmaSDA(m_hadtags);
+    m_weight += xsecs[1] = p_xsecs->SigmaSDA();
   if (m_evttype==evt_type::DiffractiveB || m_evttype==evt_type::QuasiElastic)
-    m_weight += xsecs[2] = p_xsecs->SigmaSDB(m_hadtags);
+    m_weight += xsecs[2] = p_xsecs->SigmaSDB();
   if (m_evttype==evt_type::DiffractiveAB || m_evttype==evt_type::QuasiElastic)
-    m_weight += xsecs[3] = p_xsecs->SigmaDD(m_hadtags);
+    m_weight += xsecs[3] = p_xsecs->SigmaDD();
   double total = m_weight * ran->Get();
   size_t i = 0;
   for (i=3;i>0;i--) {
@@ -70,11 +81,11 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
   case 3: return event_mode::DD;
   case 2: return event_mode::SDB;
   case 1: return event_mode::SDA;
-  case 0:
+  case 0: return event_mode::elastic;
   default:
     break;
   }
-  return event_mode::elastic;
+  THROW(fatal_error,"Could not define event_mode and/or outgoing flavours.")
 }
 
 double NonPerturbative_XSecs::DiffElXSec(const double & s,const double & t) const
@@ -123,15 +134,15 @@ ATOOLS::Blob * NonPerturbative_XSecs::SingleDiffractiveScatter(const size_t & po
 	       exp(2.*(p_xsecs->s_slopes[m_hadtags[1-pos]]+m_alphaP_pomeron*log(m_s/M2))*t) /
 	       exp(argt * t) );
   } while (value/maxval<ran->Get());
-  Blob * blob = NULL;
   m_outmasses2[2*pos]     = M2;
   m_outmasses2[2*(1-pos)] = m_masses2[1-pos];
   if (FixOutMomenta(t) && SplitDiffractiveState(pos)) {
-    Blob * blob   = InitBlob(M2,M2);
+    Blob * blob = InitBlob(M2,M2);
     blob->SetType(btp::Hard_Collision);
     blob->SetStatus(blob_status::needs_showers);
+    return blob;
   }
-  return blob;
+  return NULL;
 }
 
 double NonPerturbative_XSecs::DiffDDXSec(const double & s,const double & t,
@@ -167,18 +178,18 @@ ATOOLS::Blob * NonPerturbative_XSecs::DoubleDiffractiveScatter() {
 		exp(2.*m_alphaP_pomeron * log((m_s*m_s0)/(M2[0]*M2[1])) * t) /
 		exp(argt*t) );
   } while (value/maxval<ran->Get());
-  Blob * blob = NULL;
   for (size_t i=0;i<2;i++) m_outmasses2[2*i] = M2[i];
   if (FixOutMomenta(t) && SplitDiffractiveState(0) &&  SplitDiffractiveState(1)) {
-    blob = InitBlob(max(M2[0],M2[1]),max(M2[0],M2[1]));
+    Blob * blob = InitBlob(max(M2[0],M2[1]),max(M2[0],M2[1]));
     blob->SetType(btp::Hard_Collision);
     blob->SetStatus(blob_status::needs_showers);
+    return blob;
   }
-  return blob;
+  return NULL;
 }
 
 bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
-  double p22  = ( (sqr(m_s-m_outmasses2[0]-m_outmasses2[0]) - 4.*m_outmasses2[0]*m_outmasses2[0] )/
+  double p22  = ( (sqr(m_s-m_outmasses2[0]-m_outmasses2[2]) - 4.*m_outmasses2[0]*m_outmasses2[2] )/
 		  (4.*m_s) );
   double p2   = sqrt(p22), E[4];
   for (size_t i=0;i<2;i++) E[2*i] = sqrt(p22+m_outmasses2[2*i]);
@@ -188,13 +199,16 @@ bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
   double phi  = 2.*M_PI*ran->Get();
   m_outmom[0] = Vec4D(E[0],  p2*sint*cos(phi),  p2*sint*sin(phi),  p2*cost);
   m_outmom[2] = Vec4D(E[2], -p2*sint*cos(phi), -p2*sint*sin(phi), -p2*cost);
+  //msg_Out()<<METHOD<<": "
+  //	   <<E[0]<<" from "<<m_outmasses2[0]<<" & "
+  //	   <<E[2]<<" from "<<m_outmasses2[2]<<"\n";
   return true;
 }
 
 bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
-  Vec4D   diffmom  = m_outmom[2*pos];
-  if (!SelectFlavoursOfDiffraction(pos)) return false;
-  double M2 = diffmom.Abs2();
+  Vec4D  diffmom  = m_outmom[2*pos];
+  double M2       = diffmom.Abs2();
+  if (!SelectFlavoursOfDiffraction(pos,M2)) return false;
   if (M2<sqr(m_outmasses[2*pos]+m_outmasses[2*pos+1])) return false;
   double p2   = ( (sqr(M2-m_outmasses2[2*pos]-m_outmasses2[2*pos+1]) -
 		   4.*m_outmasses2[2*pos]*m_outmasses2[2*pos+1]) / (4.*M2) ), p = sqrt(p2);
@@ -205,17 +219,29 @@ bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
   m_outmom[2*pos+1] = Vec4D(E[1],-Vec3D(m_outmom[2*pos]));
   Poincare boost(diffmom);
   boost.BoostBack(m_outmom[2*pos]);   
-  boost.BoostBack(m_outmom[2*pos+1]); 
+  boost.BoostBack(m_outmom[2*pos+1]);
+  //msg_Out()<<METHOD<<"[pos = "<<pos<<"] check: "<<(diffmom-m_outmom[2*pos]-m_outmom[2*pos+1])<<"\n"
+  //	   <<"   from "<<m_outmom[2*pos]<<" + "<<m_outmom[2*pos+1]<<"\n";
   return true;
 }
 
-bool NonPerturbative_XSecs::SelectFlavoursOfDiffraction(const size_t & pos) {
+bool NonPerturbative_XSecs::SelectFlavoursOfDiffraction(const size_t & pos,const double & M2) {
   Flavour diff = m_outflav[2*pos];
   if (diff==Flavour(kf_p_plus) || diff==Flavour(kf_p_plus).Bar()) {
     double random = ran->Get();
-    if (random<1./2.)            { m_outflav[2*pos]=Flavour(kf_u); m_outflav[2*pos+1]=Flavour(kf_ud_0);}
-    else if (random<1./2.+1./6.) { m_outflav[2*pos]=Flavour(kf_u); m_outflav[2*pos+1]=Flavour(kf_ud_1);}
-    else                         { m_outflav[2*pos]=Flavour(kf_d); m_outflav[2*pos+1]=Flavour(kf_uu_1);}
+    if (random<1./3. && M2>sqr(Flavour(kf_d).Mass()+Flavour(kf_uu_1).Mass())) {
+      m_outflav[2*pos]=Flavour(kf_d); m_outflav[2*pos+1]=Flavour(kf_uu_1);
+    }
+    else if (random<1./2. && M2>sqr(Flavour(kf_u).Mass()+Flavour(kf_ud_1).Mass())) {
+      m_outflav[2*pos]=Flavour(kf_u); m_outflav[2*pos+1]=Flavour(kf_ud_1);
+    }
+    else if (M2>sqr(Flavour(kf_d).Mass()+Flavour(kf_uu_1).Mass())) {
+      m_outflav[2*pos]=Flavour(kf_d); m_outflav[2*pos+1]=Flavour(kf_uu_1);
+    }
+    else {
+      msg_Error()<<METHOD<<" couldn't split diffractive state of mass = "<<sqrt(M2)<<".\n";
+      return false;
+    }
   }
   else if (diff==Flavour(kf_photon)) {
     switch (m_hadtags[pos]) {
@@ -257,6 +283,7 @@ Blob * NonPerturbative_XSecs::InitBlob(const double & muR,const double & muQ) {
     part->SetNumber();
     blob->AddToOutParticles(part);
   }
+  msg_Out()<<(*blob)<<"\n";
   return blob;
 }
 
@@ -285,7 +312,7 @@ void NonPerturbative_XSecs::Tests() {
 void NonPerturbative_XSecs::TestElastic() {
   double t, dsigmaEl;
   double conv     = 1.e9/rpa->Picobarn(), sigmaEl = 0.;
-  m_weight        = p_xsecs->SigmaEl(m_hadtags);
+  m_weight        = p_xsecs->SigmaEl();
   double binwidth = m_maxT/double(m_Nsteps);
   for (size_t i=0;i<m_Nsteps;i++) {
     t        = (double(i)+0.5) * m_maxT/double(m_Nsteps);
@@ -307,7 +334,7 @@ void NonPerturbative_XSecs::TestElastic() {
 void NonPerturbative_XSecs::TestSingleD() {
   double t, M, dsigmaSD, prev, act, conv = 1.e9/rpa->Picobarn();
   unsigned long int intsteps = 1000.;
-  m_weight       = p_xsecs->SigmaSDA(m_hadtags);
+  m_weight       = p_xsecs->SigmaSDA();
   double Mmin    = sqr(m_masses2[0]+2.*m_mpi), Mmax = 20.+Mmin;
 
   double sigmaSD = 0.;
@@ -358,7 +385,7 @@ void NonPerturbative_XSecs::TestSingleD() {
 void NonPerturbative_XSecs::TestDoubleD() {
   double t, m1, m2, dsigmaDD, prev, act, conv = 1.e9/rpa->Picobarn();
   unsigned long int intsteps = 1000.;
-  m_weight       = p_xsecs->SigmaSDA(m_hadtags);
+  m_weight       = p_xsecs->SigmaDD();
   double Mmin    = sqr(m_masses2[0]+2.*m_mpi), Mmax = 20.+Mmin;
 
   double sigmaDD = 0.;

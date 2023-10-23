@@ -5,6 +5,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include <array>
 #include <list>
+#include <algorithm>
 
 namespace MODEL{ class Model_Base; }
 
@@ -31,20 +32,18 @@ namespace AMISIC {
 
     std::array<ATOOLS::Flavour,2> m_flavs;
     xsec_type                      m_type;
-    double m_mass_proton, m_mass_proton2, m_mass_pi;
+    double m_mmin, m_smin, m_mass_proton, m_mass_proton2, m_mass_pi;
     std::array<double, 2> m_masses, m_masses2;
     double m_mres, m_cres, m_s0, m_s1, m_Ypp, m_c0, m_c1, m_prefElastic, m_prefSD, m_prefDD;
     double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_eta_reggeon;
     double m_alphaQED;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
-    double m_sigmaEl[4][4], m_sigmaSDA[4][4], m_sigmaSDB[4][4], m_sigmaDD[4][4];
+    std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaEl, m_sigmaSDA, m_sigmaSDB, m_sigmaDD;
     size_t m_testmode;
 
     void   FixType();
     void   TestXSecs();
-    void   CalculateHHXSecs();
-    void   CalculateHGammaXSecs(const size_t photon);
-    void   CalculatePhotonPhotonXSecs();
+    void   CalculateXSecs();
     double TotalXSec(const size_t hadtags[2]) const;
     double IntElXSec(const size_t hadtags[2], const double & xstot) const;
     double IntSDXSec(const size_t hadtags[2], const size_t & diff,const double masses[2]) const;
@@ -58,6 +57,7 @@ namespace AMISIC {
 
     void operator()(double s);
     void Output() const;
+    inline const double & Smin()   const { return m_smin; }
     inline double XSnd(const double & s=-1.) {
       if (s>0.) (*this)(s);
       return m_xsnd;
@@ -68,12 +68,25 @@ namespace AMISIC {
     inline const double & TriplePomeron() const { return m_triple_pomeron; }
     inline const double & AlphaQED()      const { return m_alphaQED; }
 
-    inline const double & SigmaEl(std::array<size_t,2> hads)  const { return m_sigmaEl[hads[0]][hads[1]]; }
-    inline const double & SigmaSDA(std::array<size_t,2> hads) const { return m_sigmaSDA[hads[0]][hads[1]]; }
-    inline const double & SigmaSDB(std::array<size_t,2> hads) const { return m_sigmaSDB[hads[0]][hads[1]]; }
-    inline const double & SigmaDD(std::array<size_t,2> hads)  const { return m_sigmaDD[hads[0]][hads[1]]; }
+    inline const double & SigmaEl()  const { return m_xsel; }
+    inline const double & SigmaSDA() const { return m_xssdA; }
+    inline const double & SigmaSDB() const { return m_xssdB; }
+    inline const double & SigmaDD()  const { return m_xsdd; }
+
+    bool SelectEl(std::array<ATOOLS::Flavour, 2> & flavs);
+    bool SelectSDA(std::array<ATOOLS::Flavour, 2> & flavs);
+    bool SelectSDB(std::array<ATOOLS::Flavour, 2> & flavs);
+    bool SelectDD(std::array<ATOOLS::Flavour, 2> & flavs);
 
     inline const std::array<ATOOLS::Flavour,2> GetFlavs() const { return m_flavs; }
+
+    inline size_t Index(ATOOLS::Flavour & flav,size_t & beam) {
+      if (std::find(m_hadroncomponents[m_flavs[beam]].begin(),
+		    m_hadroncomponents[m_flavs[beam]].end(), flav) !=
+	  m_hadroncomponents[m_flavs[beam]].end() &&
+	  m_indexmap.find(flav)!=m_indexmap.end()) return m_indexmap[flav];
+      return 0;
+    }
   };
 }
 

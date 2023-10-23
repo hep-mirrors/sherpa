@@ -104,7 +104,6 @@ std::istream& AMISIC::operator>>(std::istream& s, evt_type::code& f)
     f = evt_type::code::QuasiElastic;
   else
     THROW(fatal_error, "Unknown overlap form \"" + tag + "\"");
-  msg_Out()<<METHOD<<": tag = "<<tag<<" --> "<<f<<"\n";
   return s;
 }
 

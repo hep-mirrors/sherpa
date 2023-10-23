@@ -50,7 +50,7 @@ Return_Value::code Beam_Remnants::StandardTreatment(Blob_List*  bloblist,
 
 Return_Value::code Beam_Remnants::DealWithShowerFromBeams(Blob_List* bloblist)
 {
-  msg_Out()<<"**** "<<METHOD<<"\n";
+  //msg_Out()<<"**** "<<METHOD<<"\n";
   Return_Value::code rv = p_beamremnanthandler->FillBunchBlobsFromShower(bloblist);
   if (m_ana) Analyse(bloblist);
   //msg_Out()<<"-----------------------------------------------------\n"

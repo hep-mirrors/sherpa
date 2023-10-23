@@ -29,6 +29,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_Y     = P.Y();
   // Calculate hadronic non-diffractive cross sections, the normalization for the
   // multiple scattering probability.
+  //msg_Out()<<METHOD<<": "<<mipars->GetEvtType()<<"\n";
   p_xsecs     = new Hadronic_XSec_Calculator(model,isr->Flav(0),isr->Flav(1));
   // Initialize the parton-level processes - currently only 2->2 scatters.  Even for
   // soft processes we need the Mass_Selector for the construction of the amplitudes
@@ -56,6 +57,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     m_impact.Initialize(remnant_handler,p_processes);
   }
   else {
+    msg_Out()<<METHOD<<": remnant type = "<<remnant_handler->Type()<<"\n";
     p_soft = new NonPerturbative_XSecs(remnant_handler,p_xsecs);
     // Initializing the Single_Collision_Handler which creates the next scatter: it needs
     // the remnants, processes, and the overestimator
@@ -114,7 +116,7 @@ bool Amisic::InitMPIs(PDF::ISR_Handler *const isr, const double & scale) {
 }
 
 void Amisic::UpdateForNewS() {
-  // Update if first scatter with variable c.m. energy (e.g. collisions with pomoerons
+  // Update if first scatter with variable c.m. energy (e.g. collisions with pomerons
   // or resolved photons): update c.m. energy in processes, re-calculate non-diffractive
   // cross sections for normalisation, adjust prefactors for overestimators, etc..
   // TODO: will have to check if we need another longitudinal boost (hence the Y)
@@ -125,6 +127,7 @@ void Amisic::UpdateForNewS() {
   m_S = P.Abs2();
   m_Y = P.Y();
   m_singlecollision.UpdateSandY(m_S, m_Y);
+  //msg_Out()<<METHOD<<": update cross sections.\n";
 }
 
 void Amisic::SetB(const double & b) {
@@ -166,7 +169,7 @@ Blob * Amisic::GenerateScatter() {
   // blob is returned.
   // TODO: we may want to think about something for rescatter events - but this is for
   //       future work.
-  msg_Out()<<"**** "<<METHOD<<": "<<mipars->GetEvtType()<<"\n";
+  //msg_Out()<<"**** "<<METHOD<<": "<<mipars->GetEvtType()<<"\n";
   Blob * blob = m_singlecollision.NextScatter();
   if (blob) {
     if (mipars->GetEvtType()==evt_type::Perturbative) {
