@@ -93,7 +93,7 @@ double Singlet::JetVeto(Sudakov *const sud) const
   return jcv;
 }
 
-int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2) 
+int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2)
 {
   iterator plit(begin());
   for (;plit!=end();++plit) if (*plit==mother) break;
@@ -120,16 +120,16 @@ int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2)
 
   plit++;
   if (mother==p_split) p_split=part1;
-  delete mother; 
+  delete mother;
   plit = erase(plit);
-  if (flav.StrongCharge()==8 && 
-      abs(flav1.StrongCharge())==3 && 
+  if (flav.StrongCharge()==8 &&
+      abs(flav1.StrongCharge())==3 &&
       abs(flav2.StrongCharge())==3) { return 1; }
   return 0;
 }
 
 void Singlet::ExtractPartons
-(ATOOLS::Blob * blob,ATOOLS::Mass_Selector *const ms) 
+(ATOOLS::Blob * blob,ATOOLS::Mass_Selector *const ms)
 {
   Particle * part;
   for (PLiter plit=begin();plit!=end();plit++) {
@@ -142,7 +142,7 @@ void Singlet::ExtractPartons
       part->SetBeam((*plit)->Beam());
       part->SetInfo('I');
       blob->AddToInParticles(part);
-    } 
+    }
     else {
       blob->AddToOutParticles(part);
       if (rpa->gen.SoftSC()) {
@@ -238,10 +238,6 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   daughter2->SetFlow(2,0);
   Flavour mo(mother->GetFlavour()), d1(daughter1->GetFlavour()), d2(daughter2->GetFlavour());
   if (mother->GetType()==pst::IS) { mo=mo.Bar(); d1=d1.Bar(); }
-  // if (mother->ForcedDecay()) {
-  //   msg_Out()<<"--- "<<METHOD<<": "<<mo.StrongCharge()<<" --> "
-  // 	     <<d1.StrongCharge()<<" + "<<d2.StrongCharge()<<"\n";
-  // }
   if (mo.StrongCharge()==-3) {
     if (d1.StrongCharge()==-3) {
       if (d2.StrongCharge()==8) {
@@ -287,19 +283,19 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
     }
   }
   else if (mo.StrongCharge()==8) {
-    if (d1.StrongCharge()==3 && 
-	d2.StrongCharge()==-3) {  
+    if (d1.StrongCharge()==3 &&
+	d2.StrongCharge()==-3) {
       daughter1->SetFlow(1,mother->GetFlow(1));
       daughter1->SetFlow(2,0);
       daughter2->SetFlow(2,mother->GetFlow(2));
     }
-    else if (d1.StrongCharge()==-3 && 
-	     d2.StrongCharge()==3) {  
+    else if (d1.StrongCharge()==-3 &&
+	     d2.StrongCharge()==3) {
       daughter2->SetFlow(1,mother->GetFlow(1));
       daughter1->SetFlow(1,0);
       daughter1->SetFlow(2,mother->GetFlow(2));
     }
-    else if (d1.StrongCharge()==8 && 
+    else if (d1.StrongCharge()==8 &&
 	     d2.StrongCharge()==8) {
       if (mother->Col()<0) {
 	if (mother->GetRight()==mother->GetSpect()) {
@@ -344,7 +340,7 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
       daughter1->SetFlow(1,0);
       daughter1->SetFlow(2,daughter2->GetFlow(1));
     }
-    else if (d1.StrongCharge()==0 && 
+    else if (d1.StrongCharge()==0 &&
 	     d2.StrongCharge()==0) {
       daughter1->SetFlow(1,0);
       daughter1->SetFlow(2,0);
@@ -357,13 +353,8 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   daughter2->UpdateColours(daughter2->GetFlow(1),daughter2->GetFlow(2));
   for (iterator pit(begin());pit!=end();++pit)
     if (*pit==daughter1) *pit=mother;
-  // if (mother->ForcedDecay()) {
-  //   msg_Out()<<"   * ("<<mother->GetFlow(1)<<", "<<mother->GetFlow(2)<<") --> "
-  // 	     <<"("<<daughter1->GetFlow(1)<<", "<<daughter1->GetFlow(2)<<") + "
-  // 	     <<"("<<daughter2->GetFlow(1)<<", "<<daughter2->GetFlow(2)<<")\n";
-  // }
   return true;
-} 
+}
 
 void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,bool onlyFS)
 {

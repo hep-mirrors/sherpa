@@ -22,7 +22,7 @@ Initialize(Remnant_Handler * const rhandler) {
     auto s = Settings::GetMainSettings()["REMNANTS"];
     m_expo    = s["SOFT_X_EXPONENT"].SetDefault(-2.0).Get<double>();
     m_xiP     = m_expo+1;
-    m_invxiP  = 1./m_xiP; 
+    m_invxiP  = 1./m_xiP;
     m_maxeta  = dabs(s["SOFT_ETA_RANGE"].SetDefault(7.5).Get<double>());
     m_mass2   = sqr(s["SOFT_MASS"].SetDefault(5.0).Get<double>());
     m_deltaM  = s["DELTA_MASS"].SetDefault(1.5).Get<double>();
@@ -63,7 +63,6 @@ bool Beam_Decorrelator::MustEmit(Particle * pi, Particle * pj) {
   // Ignore parton pairs that are not colour-correlated
   if (!((pi->GetFlow(1)==pj->GetFlow(2) && pi->GetFlow(1)!=0) ||
 	(pi->GetFlow(2)==pj->GetFlow(1) && pi->GetFlow(2)!=0))) return false;
-  //msg_Out()<<"* testing pair ("<<pi->Number()<<", "<<pj->Number()<<")\n";
   if (pi->Beam()>0 &&
       ((pj->Beam()>0 && pi->Momentum()[0]>pj->Momentum()[0]) || pj->Beam()<=0)) {
     p_beam = pi; p_spect = pj;
@@ -89,8 +88,8 @@ void Beam_Decorrelator::InitSoftEmission() {
   m_mbeam   = p_beam->Flav().HadMass();  m_mbeam2  = sqr(m_mbeam);
   m_mspect  = p_spect->Flav().HadMass(); m_mspect2 = sqr(m_mspect);
   m_boost   = Poincare(m_pbeam+m_pspect);
-  m_boost.Boost(m_pbeam); 
-  m_boost.Boost(m_pspect); 
+  m_boost.Boost(m_pbeam);
+  m_boost.Boost(m_pspect);
   m_rotat   = Poincare(m_pspect, m_Q*s_AxisM);
   m_rotat.Rotate(m_pbeam);
   m_rotat.Rotate(m_pspect);
@@ -105,24 +104,23 @@ bool Beam_Decorrelator::DefineKinematics() {
   m_minMspect2  = sqr(m_minMspect);
   double eps    = m_minMbeam2/m_Q2;
   double poweps = pow(eps,m_xiP);
-  //msg_Out()<<METHOD<<": Q^2 = "<<m_Q2<<", xi = "<<m_xiP<<" -> eps = "<<poweps<<"\n";
   int    trials = 1000;
   do {
     m_x     = pow(ran->Get()*(1-poweps)+poweps,m_invxiP);
     m_ktvec = p_kperpGenerator->KT(p_beam);
   } while (!MakeKinematics() && (trials--)>0);
-  if (trials<=0) msg_Out()<<"   ---> couldn't construct kinematics.\n";
-  else msg_Out()<<"   ---> ok with kinematics: x = "<<m_x<<", kt = "<<m_ktvec<<".\n";
+  if (trials<=0)
+    msg_Tracking()<<METHOD<<": couldn't construct Primordial_KPerp kinematics.\n";
   return (trials>0);
 }
-  
+
 bool Beam_Decorrelator::MakeKinematics() {
   // Constructing a kinematics in the c.m. frame
   m_kt2    = dabs(m_ktvec.Abs2());
   double x = m_x;
   double y = m_kt2/(m_Q2*x);
   double alpha, beta;
-  if (m_mspect2<1.e-12) { 
+  if (m_mspect2<1.e-12) {
     beta  = 1.-y-(m_mbeam2+m_kt2)/((1.-x)*m_Q2);
     alpha = 1.;
   }
@@ -151,20 +149,20 @@ bool Beam_Decorrelator::MakeKinematics() {
       (pi+pj).Abs2()<m_minMbeam2 || (pj+pk).Abs2()<m_minMspect2) {
     return false;
   }
-  m_rotat.RotateBack(pi); 
-  m_rotat.RotateBack(pj); 
-  m_rotat.RotateBack(pk); 
-  m_boost.BoostBack(pi); 
-  m_boost.BoostBack(pj); 
-  m_boost.BoostBack(pk); 
-  // Updating the momenta of beam parton (the emitter) and spectator, adding a soft gluon 
+  m_rotat.RotateBack(pi);
+  m_rotat.RotateBack(pj);
+  m_rotat.RotateBack(pk);
+  m_boost.BoostBack(pi);
+  m_boost.BoostBack(pj);
+  m_boost.BoostBack(pk);
+  // Updating the momenta of beam parton (the emitter) and spectator, adding a soft gluon
   p_beam->SetMomentum(pi);
   p_spect->SetMomentum(pk);
   Particle * gluon = new Particle(-1,Flavour(kf_gluon),pj,'B');
   m_softgluons.push_back(gluon);
   return true;
 }
-  
+
 void Beam_Decorrelator::Reset() {
   m_softgluons.clear();
 }

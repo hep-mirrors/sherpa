@@ -79,8 +79,8 @@ Shower::~Shower()
   p_old[1]->Delete();
 }
 
-double Shower::EFac(const std::string &sfk) const 
-{ 
+double Shower::EFac(const std::string &sfk) const
+{
   for (std::map<std::string,double,ATOOLS::String_Sort>::const_reverse_iterator
 	 eit=m_efac.rbegin();eit!=m_efac.rend();++eit)
     if (sfk.find(eit->first)!=std::string::npos) return eit->second;
@@ -154,7 +154,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   if (split==split->GetSing()->GetSplit()) {
     split->GetSing()->SetSplit(newpB);
   }
-  if (split->GetSing()->GetSplit()==NULL || 
+  if (split->GetSing()->GetSplit()==NULL ||
       (split->GetSing()->GetSplit()->Stat()&part_status::code::decayed)) {
     split->GetSing()->ArrangeColours(split,newpB,newpC);
   }
@@ -193,10 +193,6 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
     split->GetSing()->GetLeft()->SetPrev(newpB);
     split->GetSing()->GetRight()->SetPrev(newpB);
   }
-  // if (split->ForcedDecay()) {
-  //   msg_Out()<<"--- "<<METHOD<<": kt = "<<split->KtTest()<<", rd = "<<rd<<", mode = "<<mode<<", "
-  // 	     <<"partons = "<<newpB->GetFlavour()<<" & "<<newpC->GetFlavour()<<"\n";
-  // }
   return rd;
 }
 
@@ -254,15 +250,9 @@ int Shower::MakeKinematics
       stat=m_kinII.MakeKinematics(split,mi2,mc2,flc,pj);
     }
   }
-  //if (split->ForcedDecay())
-  //msg_Out()<<"--- "<<METHOD<<" yields stat = "<<stat<<", stype = "<<stype<<" for "
-  //	     <<fla<<", mom = "<<split->Momentum()<<" from "<<split<<"\n";
   Parton *pi(new Parton((stype&1)?fla:flb,
                         split->ForcedDecay()?split->Momentum():split->LT()*split->Momentum(),
                         split->GetType()));
-  //if (split->ForcedDecay())
-  //msg_Out()<<"--- "<<METHOD<<" with new momentum = "
-  //	     <<pi->Momentum()<<" for spec = "<<split->GetSpect()->GetType()<<"\n";
   if (stype&1) pi->SetBeam(split->Beam());
   if (stat==1) {
     if (split->GetType()==pst::IS &&
@@ -289,9 +279,6 @@ int Shower::MakeKinematics
   SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->AddParton(pj);
   if (stype) split->GetSing()->BoostAllFS(pi,pj,spect,split->ForcedDecay());
-  //if (split->ForcedDecay())
-  //msg_Out()<<"--- "<<METHOD<<" before updating daughters with "
-  //	     <<pi->GetFlavour()<<" & "<<pj->GetFlavour()<<".\n";
   int ustat(UpdateDaughters(split,pi,pj,jcv,mode));
   if (ustat<=0 || (split->GetSing()->GetLeft() &&
 		   !(split->GetSing()->GetSplit()->Stat()&part_status::code::decayed))) {
@@ -318,13 +305,11 @@ int Shower::MakeKinematics
   for (PLiter plit(singlet->begin());
        plit!=singlet->end();++plit)
     (*plit)->UpdateDaughters();
-  //if (split->ForcedDecay()) msg_Out()<<"--- "<<METHOD<<" successful.\n";
   return 1;
 }
 
 bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 {
-  //msg_Out()<<"\n\n--- "<<METHOD<<" for singlet = "<<act<<", nem = "<<nem<<"\n";
   p_actual=act;
   Vec4D mom;
   double kt2win;
@@ -365,7 +350,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       if ((*it)->GetType()==pst::IS) SetXBj(*it);
     kt2win = 0.;
     Parton *split=SelectSplitting(kt2win);
-    //no shower anymore 
+    //no shower anymore
     if (split==NULL) {
       msg_Debugging()<<"No emission\n";
       ResetScales(p_actual->KtNext());
@@ -531,10 +516,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         }
       }
       ++nem;
-      //msg_Out()<<"--- "<<METHOD<<"(kt2 = "<<kt2win<<"): nem = "<<nem<<" vs. maxem = "<<maxem<<", "
-      //       <<"NME = "<<p_actual->NME()<<" and maxpart = "<<m_maxpart<<"\n";
       if (p_actual->NME()+nem>m_maxpart || nem >= maxem) {
-	//if (split->ForcedDecay()) msg_Out()<<"--- "<<METHOD<<" yields (cond'al) true.\n";
 	return true;
       }
     }
@@ -544,28 +526,18 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 
 Parton *Shower::SelectSplitting(double & kt2win) {
   Parton *winner(NULL);
-  //msg_Out()<<"--- "<<METHOD<<" starts looking for kt2win = "<<kt2win<<"\n";
-  for (PLiter splitter = p_actual->begin(); 
+  for (PLiter splitter = p_actual->begin();
        splitter!=p_actual->end();splitter++) {
     if (TrialEmission(kt2win,*splitter)) winner = *splitter;
   }
-  //if (winner) {
-  //if  (winner->ForcedDecay()) {
-  //  msg_Out()<<"--- "<<METHOD<<" selects forced decay: "<<winner<<"\n";
-  //}
-  //else
-  //  msg_Out()<<"--- "<<METHOD<<" selects normal decay: "<<winner<<"\n";
-  //}
   return winner;
 }
 
-bool Shower::TrialEmission(double & kt2win,Parton * split) 
+bool Shower::TrialEmission(double & kt2win,Parton * split)
 {
   if (split->KtStart()==0.0 ||
       split->KtStart()<split->GetSing()->KtNext()) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
-  //msg_Out()<<"--- "<<METHOD<<": "<<split<<" ("<<split->GetFlavour()<<") "
-  //	   <<split->Momentum()<<" and "<<split->KtStart()<<"\n";
   while (true) {
     if (m_sudakov.Generate(split,kt2win)) {
       m_sudakov.GetSplittingParameters(kt2,z,y,phi);
@@ -579,9 +551,6 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
 	split->SetCol(m_sudakov.GetCol());
 	split->SetTest(kt2,z,y,phi);
 	if (split->ForcedDecay()) {
-	  //msg_Out()<<"--- "<<METHOD<<" forcibly splits "<<split<<", "
-	  //	   <<"kt2 = "<<kt2<<", z = "<<z<<" for "<<m_flavB<<" <-- "<<m_flavA<<", "
-	  //	   <<"kt2win = "<<kt2win<<"\n";
 	  split->IncForcedTrials();
 	  if (split->ForcedTrials()>10) {
 	    split->SetKtStart(0.0);

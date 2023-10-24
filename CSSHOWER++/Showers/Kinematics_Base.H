@@ -13,7 +13,7 @@ namespace CSSHOWER {
     const ATOOLS::Mass_Selector *p_ms;
     int m_evolscheme;
     int MakeForcedDecayKinematics(Parton *const split,Parton *& pnew,
-				  PHASIC::Kin_Args & args,const int mode=0);
+				  PHASIC::Kin_Args & args,const int mode=0) const;
   public:
     Kinematics_Base(): m_evolscheme(0), p_ms(NULL) {}
     virtual ~Kinematics_Base() {}
@@ -40,7 +40,7 @@ namespace CSSHOWER {
 		  const double &mi2,const double &mj2,const double &mk2,
 		  const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc) const;
   };
-  
+
   class Kinematics_FI : public Kinematics_Base {
   public:
     Kinematics_FI() {}

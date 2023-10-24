@@ -11,7 +11,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Primordial_KPerp::Primordial_KPerp() : m_analysis(false) { }
-    
+
 Primordial_KPerp::~Primordial_KPerp() {
   if (m_analysis) FinishAnalysis();
 }
@@ -73,7 +73,7 @@ CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,const double 
   }
   if (m_analysis) {
     for (ParticleMomMap::iterator pmmit=p_ktmap->begin();
-	 pmmit!=p_ktmap->end();pmmit++) 
+	 pmmit!=p_ktmap->end();pmmit++)
       m_histos[string("KT_before")]->Insert(sqrt(dabs(pmmit->second.Abs2())));
   }
   // making sure the transverse momenta add up to 0.
@@ -116,15 +116,14 @@ Vec4D Primordial_KPerp::KT(const Particle * part) {
   if (m_form[m_beam]==pkform::none) return Vec4D(0.,0.,0.,0.);
   if (part->Info()=='I') {
     m_mean  = m_SIMean[m_beam];  m_sigma = m_SISigma[m_beam]; m_Q2 = m_SIQ2[m_beam];
-    m_ktmax = m_SIKtmax[m_beam]; m_eta   = m_SIEta[m_beam]; 
+    m_ktmax = m_SIKtmax[m_beam]; m_eta   = m_SIEta[m_beam];
   }
   else {
     m_mean  = m_SpecMean[m_beam];  m_sigma = m_SpecSigma[m_beam]; m_Q2 = m_SpecQ2[m_beam];
-    m_ktmax = m_SpecKtmax[m_beam]; m_eta   = m_SpecEta[m_beam]; 
+    m_ktmax = m_SpecKtmax[m_beam]; m_eta   = m_SpecEta[m_beam];
   }
   if (m_ktmax<=0.) return Vec4D(0.,0.,0.,0.);
   double ktmax = Min(m_ktmax,part->Momentum()[0]), kt = 0.;
-  //msg_Out()<<"  --> "<<METHOD<<" for part = "<<part<<", "<<part->Info()<<": ktmax = "<<ktmax<<"\n";
   do {
     switch (m_form[m_beam]) {
     case pkform::none:           kt = 0.;                       break;
@@ -198,7 +197,7 @@ void Primordial_KPerp::InitAnalysis() {
 void Primordial_KPerp::FinishAnalysis() {
   Histogram * histo;
   string name;
-  for (map<string,Histogram *>::iterator 
+  for (map<string,Histogram *>::iterator
 	 hit=m_histos.begin();hit!=m_histos.end();hit++) {
     histo = hit->second;
     name  = string("Remnant_Analysis/")+hit->first+string(".dat");

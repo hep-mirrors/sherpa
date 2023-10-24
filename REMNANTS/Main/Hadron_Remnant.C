@@ -188,7 +188,7 @@ bool Hadron_Remnant::ReplaceInBlob(ATOOLS::Blob * shower,const bool & check,
   }
   return true;
 }
-  
+
 void Hadron_Remnant::SquashFlavourSinglets() {
   // Iterating over the spectators and replacing flavour singlets (i.e. same-flavour
   // colour-octet quark pairs) with gluons which inherit the colours of the two quarks.
@@ -315,7 +315,6 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     else p_beamblob->AddToOutParticles(part);
     (*ktmap)[part] = Vec4D();
   }
-  //  msg_Out()<<METHOD<<"("<<m_beam<<"):\n"<<(*p_beamblob)<<"\n";
 }
 
 double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,
@@ -332,7 +331,7 @@ double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,
   if (!flav.IsDiQuark()) {
     // Assume functional from of z^beta with beta = -1.5 (default)
     // Maybe beta_gluon != beta_quark, but leave it for the time being
-    if (m_beta!=-1) { 
+    if (m_beta!=-1) {
       double rand = ran->Get();
       z = pow(rand*pow(zmax,m_beta+1.)+(1.-rand)*pow(zmin,m_beta+1.),m_invb);
     }
@@ -367,7 +366,7 @@ void Hadron_Remnant::Reset(const bool & resc,const bool & DIS) {
   m_spectators.clear();
   m_residualE = p_beam->OutMomentum(m_tag)[0];
   m_valence   = false;
-  p_valence   = p_remnant = p_recoiler = nullptr; 
+  p_valence   = p_remnant = p_recoiler = nullptr;
 }
 
 bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {

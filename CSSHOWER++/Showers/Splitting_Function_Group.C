@@ -35,13 +35,9 @@ void Splitting_Function_Group::Add(Splitting_Function_Base * split) {
 
 bool Splitting_Function_Group::FixOne(const ATOOLS::Flavour & flavA,const ATOOLS::Flavour & flavB,
 				      const cstp::code & type) {
-  //msg_Out()<<"--- "<<METHOD<<"("<<flavA<<" <-- "<<flavB<<")\n";
   for (size_t i(0);i<m_splittings.size();++i) {
     if (type==m_splittings[i]->GetType() &&
 	flavA==m_splittings[i]->GetFlavourA() && flavB==m_splittings[i]->GetFlavourB()) {
-      //msg_Out()<<"    *   look at "<<m_splittings[i]->GetType()<<": "
-      //     <<m_splittings[i]->GetFlavourA()<<" <-- "
-      //     <<m_splittings[i]->GetFlavourB()<<" + "<<m_splittings[i]->GetFlavourC()<<"\n";
       p_selected = m_splittings[i];
       return true;
     }
@@ -70,46 +66,46 @@ void Splitting_Function_Group::SelectOne()
 double Splitting_Function_Group::OverIntegrated(const double zmin,const double zmax,
 						const double scale,const double xbj) {
   for (size_t i(0);i<m_splittings.size();++i)
-    m_partint[i] = m_lastint += m_splittings[i]->OverIntegrated(zmin,zmax,scale,xbj); 
+    m_partint[i] = m_lastint += m_splittings[i]->OverIntegrated(zmin,zmax,scale,xbj);
   return m_lastint;
 }
 
 
 double Splitting_Function_Group::operator() (const double z,const double y,
 					     const double eta,const double scale,
-					     const double Q2) { 
-  return (*p_selected)(z,y,eta,scale,Q2); 
+					     const double Q2) {
+  return (*p_selected)(z,y,eta,scale,Q2);
 }
 
-double Splitting_Function_Group::Overestimated(const double z,const double y) { 
-  return p_selected->Overestimated(z,y); 
+double Splitting_Function_Group::Overestimated(const double z,const double y) {
+  return p_selected->Overestimated(z,y);
 }
 
 double Splitting_Function_Group::RejectionWeight(const double z,const double y,
-						 const double eta,const double scale,const double Q2) { 
-  return p_selected->RejectionWeight(z,y,eta,scale,Q2); 
+						 const double eta,const double scale,const double Q2) {
+  return p_selected->RejectionWeight(z,y,eta,scale,Q2);
 }
 
-double Splitting_Function_Group::Z() { 
-  return p_selected->Z(); 
-}         
+double Splitting_Function_Group::Z() {
+  return p_selected->Z();
+}
 
 void Splitting_Function_Group::ClearSpecs()
 {
   m_specs.clear();
-  for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) 
+  for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++)
     (*m_splitter)->ClearSpecs();
 }
 
 void Splitting_Function_Group::ResetLastInt()
 {
   m_lastint=0.0;
-  for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) 
+  for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++)
     (*m_splitter)->ResetLastInt();
 }
 
 void Splitting_Function_Group::SetMS(const ATOOLS::Mass_Selector *const ms)
 {
-  for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) 
+  for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++)
     (*m_splitter)->SetMS(ms);
 }
