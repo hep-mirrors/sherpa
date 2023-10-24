@@ -484,7 +484,8 @@ Archlinux0-make-ccache-GNU:
     OS: Archlinux
     FREL: 0
     TOOLSET: GNU
-    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
+    BUILDDOCS: 1
   extends: .any-cmake-ccache
   needs:
     - job: build_image_Archlinux0
