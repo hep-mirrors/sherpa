@@ -52,7 +52,7 @@ namespace YFS {
       ATOOLS::Vec4D_Vector m_dipoleMom;
       void AddRadiation();
       void MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born);
-      void MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born);
+      void MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born);
       void MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom,  ATOOLS::Vec4D_Vector const &born);
       void MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom,ATOOLS::Vec4D_Vector const &born);
       void Dipole_II(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom);
@@ -65,12 +65,16 @@ namespace YFS {
       bool CheckMasses();
       void IsResonant(YFS::Dipole &D);
       double CalculateRealSub(const Vec4D &k);
+      double CalculateRealSubIF(const Vec4D &k);
       double CalculateRealSubEEX(const Vec4D &k);
       double CalculateVirtualSub();
       double CalculateRealVirtualSub(const Vec4D & k);
       double CalculateEEXReal(const Vec4D & k);
       double CalculateEEXVirtual();
       double CalculateEEX(const Vec4D & k1, const Vec4D & k2);
+      double CalculateFlux(const Vec4D &k);
+      double CalculateFlux(const Vec4D &k, const Vec4D &kk);
+      double Propagator(const double &s, int width=1);
       void generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums);
       // inline void SetOldMomentum(int i, ATOOLS::Vec4D mom) { m_olddipoles.m_momenta[i] = mom;}
       // inline void SetNewMomentum(int i, ATOOLS::Vec4D mom) { m_newdipoles.m_momenta[i] = mom;}

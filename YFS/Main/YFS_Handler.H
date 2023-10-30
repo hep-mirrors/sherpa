@@ -95,7 +95,7 @@ public:
     // YFS::Weight *p_yfsweight;
     YFS::Define_Dipoles *p_dipole;
     Vec4D m_photonSumISR, m_photonSumFSR, m_kboostVec, m_K, m_QN, m_beamP, m_beamM;
-    Vec4D_Vector m_finalFSRPhotons, m_FSRMomentaME, m_fsrphotonsforME;
+    Vec4D_Vector m_finalFSRPhotons, m_FSRMomentaME, m_fsrphotonsforME, m_isrphotonsforME;
     Flavour_Vector m_inflav;
     Flavour_Vector m_outflav;
     EXTRAXS::ME2_Base *p_me;

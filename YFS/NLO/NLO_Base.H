@@ -54,20 +54,26 @@ public:
   void InitializeRealVirtual(const PHASIC::Process_Info& pi);
   double CalculateVirtual();
   double CalculateReal();
-  double CalculateReal(Vec4D k);
+  double CalculateReal(Vec4D k, int submode=0);
   double CalculateRealVirtual();
   double CalculateRealReal();
   void MakeHardMomenta();
-  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k, int mode=0);
+  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
+  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k, ATOOLS::Vec4D &kk);
   void MapInitial(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   void MapFinal(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
+  void CheckMassReg();
+  void CheckMassRegRV(const ATOOLS::Vec4D_Vector &p);
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
+  bool CheckPhotonCollinear(const Vec4D_Vector &p, const Vec4D &k);
   void CheckMasses(Vec4D_Vector &p);
+  bool CheckMomentumConservation(Vec4D_Vector p);
 
   inline void SetBorn(double b) { m_born = b;}
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
   inline void SetBornProc(PHASIC::Single_Process *p) {p_born = p;}
+  inline void SetResonanceMode(int &mode) {m_resonance_mode = mode;}
 
 };
 

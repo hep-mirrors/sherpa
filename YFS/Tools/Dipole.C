@@ -287,18 +287,11 @@ bool Dipole::IsDecayAllowed(){
 
 
 double Dipole::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
-  Vec4D eik;
-  // eik+=m_Qi*p1/(p1*k);
-  // eik+=m_Qj*p2/(p2*k);
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
-  // return m_thetm_alp / (4 * M_PI * M_PI) * (eik).Abs2();
-  // if(Type()!=dipoletype::ifi) return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
-  // else{
-  //   // if(m_Qi==m_Qj) return 0;
-  //   // return m_alp / (4 * M_PI * M_PI) *eik.Abs2();
-  //   if(m_Qi!=m_Qj)  return m_QiQj*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
-  //   else return m_QiQj*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) + p2 / (p2 * k)).Abs2();; 
-  // }
+}
+
+double Dipole::EikonalMassless(Vec4D k, Vec4D p1, Vec4D p2) {
+  return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (-2.*p1*p2 / ((p1 * k)*(p2 * k)));
 }
 
 
