@@ -73,6 +73,7 @@ void YFS_Base::RegisterDefaults(){
   s["CEEX"].SetDefault(0);
   s["Resonance_Max"].SetDefault(10);
   s["N_Photons"].SetDefault(-1);
+  s["TChannel"].SetDefault(0);
   //fcc defaults
   s["BES"].SetDefault(0);
   s["BES_SIG_X"].SetDefault(0.132e-2);
@@ -133,6 +134,7 @@ void YFS_Base::RegisterSettings(){
   m_beam_sigy = s["BES_SIG_Y"].Get<double>();
   m_no_born = s["No_Born"].Get<int>();
   m_no_subtraction = s["No_Sub"].Get<int>();
+  m_tchannel = s["TChannel"].Get<int>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
