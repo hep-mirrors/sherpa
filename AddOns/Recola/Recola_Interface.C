@@ -168,7 +168,7 @@ namespace Recola {
     s["VMODE"].SetDefault(0);
     s["AMPTYPE"].SetDefault(1);
     s["PHOTON_MASS"].SetDefault(0.1);
-    s["USE_DECAY"].SetDefault(1);
+    s["USE_DECAY"].SetDefault(0);
     s["MASS_REG"].SetDefault(false);
     s["NO_SELF_ENERGY"].SetDefault(false);
     s["COMPLEX_MASS_SCHEME"].SetDefault(true);
@@ -214,7 +214,6 @@ namespace Recola {
     s_amptype           = s["AMPTYPE"].Get<int>();
     set_output_file_rcl(recolaOutput.c_str());
     s_vmode = s["VMODE"].Get<int>();
-    PRINT_INFO(s_vmode);
     msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
     s_photon_mass = s["PHOTON_MASS"].Get<double>();
     s_use_decay   = s["USE_DECAY"].Get<bool>();
@@ -371,6 +370,28 @@ namespace Recola {
           int amptype)
   {
     DEBUG_FUNC("");
+    std::string decayprocess, myprocess;
+    if(s_use_decay) {
+      std::string decayprocess = particle2Recola(pi.m_ii.m_ps[0].m_fl.IDName())
+                    + " " + particle2Recola(pi.m_ii.m_ps[1].m_fl.IDName()) + " -> ";
+      for(auto dec: pi.m_fi.m_ps ){
+        PRINT_VAR(dec.m_ps.size());
+        if(dec.m_ps.size() != 0){
+          decayprocess+= particle2Recola(dec.m_fl.IDName());
+          decayprocess+="(";
+          for (int i = 0; i < dec.m_ps.size(); ++i)
+          {
+            decayprocess+= particle2Recola(dec.m_ps[i].m_fl);
+            if(i==0) decayprocess+=" ";
+          }
+          decayprocess+=")";
+        }
+        else{
+          decayprocess+= particle2Recola(dec.m_fl.IDName())+" ";
+        }
+        myprocess=decayprocess;
+      }
+    }
     increaseProcIndex();
     msg_Debugging()<<"Recola_Interface::RegisterProcess called\n";
     int procIndex(getProcIndex());
@@ -385,9 +406,16 @@ namespace Recola {
     }
 
     // define process in Recola, at this stage always 'NLO'
-    if(amptype==-1) define_process_rcl(procIndex, process2Recola(pi).c_str(), "LO");
-    else define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
-    
+    // if(s_use_decay) define_process_rcl(procIndex,myprocess.c_str(),"NLO");
+    // else define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
+    if(s_use_decay){
+      if(amptype==-1) define_process_rcl(procIndex, myprocess.c_str(), "LO");
+      else define_process_rcl(procIndex,myprocess.c_str(),"NLO");
+    }
+    else{
+      if(s_use_decay) define_process_rcl(procIndex,myprocess.c_str(),"NLO");
+      else define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
+    }
     s_interference[procIndex]=false;
     Scoped_Settings s{ Settings::GetMainSettings()["Recola"] };
     
