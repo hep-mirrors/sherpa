@@ -81,7 +81,7 @@ bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
   // if(IsBad(m_dip_sp)) return false;
   MakePair(sqrt(m_dip_sp), m_bornQ1, m_bornQ2);
   m_EQ = sqrt(m_dip_sp) / 2.;
-  m_Emin = 0.5 * sqrt(m_s) * m_fsrcut;
+  m_Emin = 0.5 * sqrt(m_s) * m_vmin;
   m_Kmin = 0.5 * m_fsrcut * sqrt(m_dip_sp);
   m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
@@ -141,37 +141,37 @@ void FSR::CalculateBetaBar() {
 void FSR::GenerateAngles() {
 // Generation of theta for two massive particles
   double del1, del2;
-  double am2 = 4.*sqr((m_mass[0])) / m_dip_sp;
+  double am2 = sqr((m_mass[0]+m_mass[1])) / m_dip_sp;
 
-  double P  = log((1. + m_beta1) / (1. - m_beta1))
-              / (log((1. + m_beta1) / (1. - m_beta1)) + log((1. + m_beta2) / (1. - m_beta2)));
+  // double P  = log((1. + m_beta1) / (1. - m_beta1))
+  //             / (log((1. + m_beta1) / (1. - m_beta1)) + log((1. + m_beta2) / (1. - m_beta2)));
   if (!m_kkmcAngles) {
+ double P = log((1.+m_beta1)/(1.-m_beta1))
+                /(log((1.+m_beta1)/(1.-m_beta1))+log((1.+m_beta2)/(1.-m_beta2)));
     while (true) {
       m_c = 0.;
       if (ran->Get() < P) {
         double rnd = ran->Get();
-        double a   = log((1. + m_beta1) / (1. - m_beta1));
-        m_c        = 1. / m_beta1 * (1. - (1. + m_beta1) * exp(-a * rnd));
+        double a   = 1./m_beta1*log((1.+m_beta1)/(1.-m_beta1));;
+        m_c        = 1./m_beta1*(1.-(1.+m_beta1)*exp(-a*m_beta1*rnd));
       }
       else {
         double rnd = ran->Get();
-        double a   = log((1. - m_beta2) / (1. + m_beta2));
-        m_c        = -1. / m_beta2 * (1. - (1. - m_beta2) * exp(-a * rnd));
+        double a   = 1./m_beta2*log((1.+m_beta2)/(1.-m_beta2));
+        m_c        = 1./m_beta2*((1.-m_beta2)*exp(a*m_beta2*rnd)-1.);
       }
-      double weight = 1. - ((1. - m_beta1 * m_beta1) / sqr(1. - m_beta1 * m_c)
-                            + (1. - m_beta2 * m_beta2) / sqr(1. + m_beta2 * m_c))
-                      / (2.*(1. + m_beta1 * m_beta2) / ((1. - m_beta1 * m_c) * (1. + m_beta2 * m_c)));
+      double weight = 1.-((1.-m_beta1*m_beta1)/((1.-m_beta1*m_c)*(1.-m_beta1*m_c))
+                        +(1.-m_beta2*m_beta2)/((1.+m_beta2*m_c)*(1.+m_beta2*m_c)))
+                       /(2.*(1.+m_beta1*m_beta2)/((1.-m_beta1*m_c)*(1.+m_beta2*m_c)));
       if (ran->Get() < weight) break;
-      if (weight < 0) {
-        msg_Error() << "FSR angle acceptance weight is < 0.\n Accepting Cos(theta) as " << m_c << std::endl;
-        break;
-      }
     }
     m_theta = acos(m_c);
+    m_st = 1. - m_c * m_c;
+    m_sin.push_back(m_st);
     m_phi   = 2.*M_PI * ran->Get();
-    m_st = 1. - sqr(m_c);
-    del1 = 1 - m_beta1 * m_c;
-    del2 = 1 + m_beta2 * m_c;
+    m_del1.push_back(1-m_beta1*m_c);
+    m_del2.push_back(1+m_beta2*m_c);
+    m_cos.push_back(m_c);
   }
   else {
     double beta  = sqrt(1. - am2);
@@ -435,11 +435,15 @@ void FSR::YFS_FORM() {
   m_A = p_fsrFormFact->A(m_r1 * m_r2, m_r1.Mass(), m_r2.Mass());
   m_DelYFS = m_btilStar - m_btil;
   m_delvol = m_BtiXcru  - m_BtiQcru;
-  double amc = 4 * sqr(m_mass[0]) / m_sX;
+  double amc = sqr((m_mass[0]+m_mass[1]))/ m_sX;
   double bb = sqrt(1 - amc);
   double L = 2 * m_alpha / M_PI * (1 + bb * bb) / (2 * bb) * log(sqr(1 + bb) / amc);
   m_volmc = m_gpBar * log(1. / m_fsrcut) - m_delvol;
-  m_hideW = exp(YFS_IR + m_DelYFS + m_volmc);
+  // m_hideW = exp(YFS_IR + m_DelYFS + m_volmc);
+  if(m_hidephotons){
+    m_hideW = exp(YFS_IR + m_DelYFS + m_volmc);
+  }
+  else m_hideW=1;
   m_YFS_IR = exp(YFS_IR + m_DelYFS);
 }
 
@@ -560,6 +564,7 @@ void FSR::Weight() {
   m_gBar  = -m_QF2 * m_alpi * t1 * (log(logarg / 2.) - 2.); // See Mareks phd thesis A.2.1
   m_gpBar = -m_QF2 * m_alpi * t1 * (log(logarg / 2.));
   m_fsrform = exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
+  // m_fsrWeight = m_massW * m_hideW * m_wt2 * exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
   m_fsrWeight = m_massW * m_hideW * m_wt2 * exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
   if (IsBad(m_fsrWeight)) {
     msg_Error() << METHOD << "\n FSR weight is NaN\n"

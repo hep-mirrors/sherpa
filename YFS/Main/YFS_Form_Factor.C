@@ -511,7 +511,8 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
 }
 
 double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
-  return exp(R2(p1,p2) + BVR_full(p1,p2,p1.E()*p2.E(), m_photonMass, 0));
+  return exp(R2(p1,p2) + m_alpi*M_PI*M_PI/2.+ BVR_full(p1,p2,p1.E()*p2.E(), m_photonMass, 0));
+  // return BVV_full(p1,p2,m_photonMass, sqrt(m_s)/2, 1);
 }
 
 
@@ -521,10 +522,10 @@ double YFS_Form_Factor::R2(const Vec4D &p1, const Vec4D &p2){
   double logarg =  (1+beta1)*(1+beta2);
   logarg /= (1-beta2)*(1-beta1);
 
-  double biglog = 0.5*(1+beta1*beta2)/(beta1+beta2);
+  double biglog =  (1+beta1*beta2)/(beta1+beta2);
   biglog *= (log(logarg)-2);
 
-  double logp = 0.5*(1+beta1*beta2)/(beta1+beta2);
+  double logp = (1+beta1*beta2)/(beta1+beta2);
   logp *= logp;
 
   double t1 = biglog*2*log(m_photonMass/(p1.E()*p2.E()))+0.25*logp;

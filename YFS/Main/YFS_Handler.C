@@ -34,6 +34,7 @@ YFS_Handler::YFS_Handler():
   m_setparticles = false;
   p_isr = new YFS::ISR();
   p_nlo = new YFS::NLO_Base;
+  m_formfactor = 1;
 }
 
 YFS_Handler::~YFS_Handler()
@@ -286,14 +287,14 @@ void YFS_Handler::AddFormFactor() {
     // m_CalForm = true;
   }
   if(m_tchannel){
-    m_formfactor  = p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[1]);
-    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[2], m_bornMomenta[3]);
+    // m_formfactor  = p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[1]);
+    // m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[2], m_bornMomenta[3]);
 
-    m_formfactor *= -p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[3]);
+    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[3]);
     m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[2]);
    
     m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[2]);
-    m_formfactor *= -p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[3]);
+    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[3]);
 
     // m_formfactor *= p_yfsFormFact->BVirtT(m_plab[1], m_plab[3]);
   }
@@ -342,46 +343,47 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     }
     for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
-      if(!Dip->IsResonance() && m_flavs.size()!=4) continue;
-      p_fsr->Reset();
-      Dip->BoostToQFM(0);
-      p_fsr->SetV(m_v);
-      if (!p_fsr->Initialize(Dip)) {
-        Reset();
-        return false;
-      }
-      if (!p_fsr->MakeFSR()) {
-        Reset();
-        if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
-        return false;
-      }
-      m_photonSumFSR = p_fsr->GetPhotonSum();
-      m_FSRPhotons   = p_fsr->GetPhotons();
-      m_fsrphotonsforME = m_FSRPhotons;
-      if (!p_fsr->F(m_FSRPhotons)) {
-        m_fsrWeight = 0;
-        if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
-        return false;
-      } 
+      if(Dip->IsResonance() || m_flavs.size()!=4){
+        p_fsr->Reset();
+        Dip->BoostToQFM(0);
+        p_fsr->SetV(m_v);
+        if (!p_fsr->Initialize(Dip)) {
+          Reset();
+          return false;
+        }
+        if (!p_fsr->MakeFSR()) {
+          Reset();
+          if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
+          return false;
+        }
+        m_photonSumFSR = p_fsr->GetPhotonSum();
+        m_FSRPhotons   = p_fsr->GetPhotons();
+        m_fsrphotonsforME = m_FSRPhotons;
+        if (!p_fsr->F(m_FSRPhotons)) {
+          m_fsrWeight = 0;
+          if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
+          return false;
+        } 
 
-      if (m_hidephotons) p_fsr->HidePhotons();
-      m_FSRPhotons   = p_fsr->GetPhotons();
-      Dip->AddPhotonsToDipole(m_FSRPhotons);
-      p_fsr->YFS_FORM();
-      Dip->Boost();
-      m_FSRPhotons  = Dip->GetPhotons();
-      m_photonSumFSR = Dip->GetPhotonSum();
-      // if(m_photonSumFSR.E() > sqrt(m_s)/2) {
-      //   // PRINT_VAR(m_photonSumFSR);
-      //   m_fsrWeight = 0;
-      //   return false;
-      // }
-      p_fsr->Weight();
-      m_fsrWeight = p_fsr->GetWeight();
-      int i(0);
-      for (auto f : Dip->m_flavs) {
-        m_plab[p_dipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
-        i++;
+        if (m_hidephotons) p_fsr->HidePhotons();
+        m_FSRPhotons   = p_fsr->GetPhotons();
+        Dip->AddPhotonsToDipole(m_FSRPhotons);
+        p_fsr->YFS_FORM();
+        Dip->Boost();
+        m_FSRPhotons  = Dip->GetPhotons();
+        m_photonSumFSR = Dip->GetPhotonSum();
+        // if(m_photonSumFSR.E() > sqrt(m_s)/2) {
+        //   // PRINT_VAR(m_photonSumFSR);
+        //   m_fsrWeight = 0;
+        //   return false;
+        // }
+        p_fsr->Weight();
+        m_fsrWeight = p_fsr->GetWeight();
+        int i(0);
+        for (auto f : Dip->m_flavs) {
+          m_plab[p_dipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
+          i++;
+        }
       }
     }
     Vec4D_Vector oldplab = m_plab;
