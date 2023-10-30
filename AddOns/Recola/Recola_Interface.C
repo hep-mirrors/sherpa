@@ -166,6 +166,7 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_MASS_REG"].SetDefault(false);
   s["RECOLA_NO_SELF_ENERGY"].SetDefault(false);
   s["RECOLA_CMS"].SetDefault(true);
+  s["RECOLA_USE_DECAY"].SetDefault(false);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -331,7 +332,6 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   msg_Debugging()<<"ProcIndex = " <<procIndex <<"\n"; 
   msg_Debugging()<<"process string = "<<process2Recola(args.Flavours())<<"\n";
   
-    
   string procstring(process2Recola(args.Flavours()));
   define_process_rcl(procIndex, procstring.c_str(), "NLO");
   
@@ -358,6 +358,26 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
         int amptype)
 {
   DEBUG_FUNC("");
+  std::string decayprocess;
+    if(s_use_decay) {
+      std::string decayprocess = particle2Recola(pi.m_ii.m_ps[0].m_fl.IDName())
+                    + " " + particle2Recola(pi.m_ii.m_ps[1].m_fl.IDName()) + " -> ";
+      for(auto dec: pi.m_fi.m_ps ){
+        if(dec.m_ps.size() != 0){
+          decayprocess+= particle2Recola(dec.m_fl.IDName());
+          decayprocess+="(";
+          for (int i = 0; i < dec.m_ps.size(); ++i)
+          {
+            decayprocess+= particle2Recola(dec.m_ps[i].m_fl);
+            if(i==0) decayprocess+=" ";
+          }
+          decayprocess+=")";
+        }
+        else{
+          decayprocess+= particle2Recola(dec.m_fl.IDName())+" ";
+        }
+      }
+    }
   increaseProcIndex();
   msg_Debugging()<<"Recola_Interface::RegisterProcess called\n";
   int procIndex(getProcIndex());
@@ -372,8 +392,8 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
   }
 
   // define process in Recola, at this stage always 'NLO'
-  define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
-  
+  if(s_use_decay) define_process_rcl(procIndex,decayprocess.c_str(),"NLO");
+  else define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
   
   s_interference[procIndex]=false;
   Settings& s = Settings::GetMainSettings();
