@@ -58,6 +58,8 @@ public:
   void WeightFSR();
   double EikonalWeight(const Vec4D_Vector, const Vec4D_Vector, double a);
   double Eikonal(Vec4D);
+  double Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
+  double EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
   void NPhotons();
   void MakeYFS();
   void Beta1();
