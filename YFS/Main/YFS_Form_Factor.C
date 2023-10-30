@@ -484,13 +484,15 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
 }
 
 
+
 double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
   double m1 = p1.Mass();
   double m2 = p2.Mass();
   double p1p2 = p1*p2;
-  double t  = m1*m1 +m2*m2 -2.0*p1p2;
+  double t  = (p1-p2).Abs2();
   double ta = abs(t);
   double zeta = 1+ m2*m2/ta;
+  if(ta==0) zeta = 1;
   double TBvirt, Bv;
   TBvirt = m_alpi*(
        (log(2.0*p1p2/(m1*m2)) -1.0)*log(m_photonMass*m_photonMass/(m1*m2))
@@ -503,4 +505,40 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
   Bv = BVR_full(p1,p2, sqrt(m_s)/2, m_photonMass, 0);
   return exp(TBvirt+Bv);
 }
+
+double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
+  return exp(R2(p1,p2) + BVR_full(p1,p2,p1.E()*p2.E(), m_photonMass, 0));
+}
+
+
+double YFS_Form_Factor::R2(const Vec4D &p1, const Vec4D &p2){
+  double beta1 = (Vec3D(p1).Abs() / p1.E());
+  double beta2 = (Vec3D(p2).Abs() / p2.E());
+  double logarg =  (1+beta1)*(1+beta2);
+  logarg /= (1-beta2)*(1-beta1);
+
+  double biglog = 0.5*(1+beta1*beta2)/(beta1+beta2);
+  biglog *= (log(logarg)-2);
+
+  double logp = 0.5*(1+beta1*beta2)/(beta1+beta2);
+  logp *= logp;
+
+  double t1 = biglog*2*log(m_photonMass/(p1.E()*p2.E()))+0.25*logp;
+  // double t1 = biglog+0.25*logp;
+  t1+= -0.5*sqr(log(p1.E()/p2.E()));
+
+  double del = p1.E()-p2.E(); 
+  double Delta = sqrt(2*p1*p2-del*del);
+  double omega = p1.E()+p2.E();
+
+  double t2 = -0.25*sqr(log(sqr(del+Delta)/(4*p1.E()*p2.E())));
+  t2 += -0.25*sqr(log(sqr(del-Delta)/(4*p1.E()*p2.E())));
+
+  t2 += -DiLog((Delta+omega)/(Delta+del)) - DiLog((Delta+omega)/(Delta-del));
+  t2 += -DiLog((Delta-omega)/(Delta+del)) - DiLog((Delta-omega)/(Delta-del));
+  t2 += M_PI*M_PI/3. - 1.;
+  // if(IsNan(t2)) t2 = 0;
+  return m_alpi*(t1+t2);
+}
+
 

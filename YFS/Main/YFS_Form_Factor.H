@@ -32,6 +32,8 @@ public:
     double WW_t(double t, double m, double M, double k);
     double WW_s(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
     double BVirtT(const Vec4D &p1, const Vec4D &p2 );
+    double R1(const Vec4D &p1, const Vec4D &p2);
+    double R2(const Vec4D &p1, const Vec4D &p2);
     void WW_u();
     double  m_ww_s, m_ww_u, m_ww_t;
     double m_kmax, m_t1, m_t2, m_u1, m_u2;
