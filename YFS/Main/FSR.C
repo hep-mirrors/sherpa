@@ -81,7 +81,7 @@ bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
   // if(IsBad(m_dip_sp)) return false;
   MakePair(sqrt(m_dip_sp), m_bornQ1, m_bornQ2);
   m_EQ = sqrt(m_dip_sp) / 2.;
-  m_Emin = 0.5 * sqrt(m_s) * m_fsrcut;
+  m_Emin = 0.5 * sqrt(m_s) * m_vmin;
   m_Kmin = 0.5 * m_fsrcut * sqrt(m_dip_sp);
   m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
@@ -454,7 +454,7 @@ void FSR::HidePhotons() {
   m_photonSum *= 0;
   // mark photons for removal
   for (size_t i = 0; i < m_photons.size(); ++i) {
-    if (m_photons[i].E() < m_Emin) {
+    if (m_photons[i].E() <= m_Emin) {
       msg_Debugging()<<"Photon has been removed with four mom = "<<m_photons[i]<<std::endl;
       m_NRemoved++;
       mark.push_back(i);
@@ -475,6 +475,15 @@ void FSR::HidePhotons() {
   }
   p_dipole->SetNPhoton(ph.size());
   m_photons = ph;
+}
+
+void FSR::HidePhotons(Vec4D_Vector &k){
+  Vec4D_Vector ph=k;
+  k.clear();
+  for (int i = 0; i < ph.size(); ++i)
+  {
+    if(ph[i].E() > m_Emin) k.push_back(ph[i]);
+  }
 }
 
 

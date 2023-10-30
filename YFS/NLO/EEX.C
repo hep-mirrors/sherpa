@@ -179,10 +179,10 @@ void Real_ff::SetIncoming(YFS::Dipole_Vector::iterator dipole, Vec4D_Vector &bor
   m_beta12f.clear();
   m_beta21f.clear();
   m_alpi = m_alpha / M_PI;
-  m_q1 = D.GetNewMomenta(0);
-  m_q2 = D.GetNewMomenta(1);
-  m_beam1 = D.GetNewMomenta(0); // called beam not to break for now. Is actually born final state momentum
-  m_beam2 = D.GetNewMomenta(1);
+  m_q1 = D.GetBornMomenta(0);
+  m_q2 = D.GetBornMomenta(1);
+  m_beam1 = D.GetBornMomenta(0); // called beam not to break for now. Is actually born final state momentum
+  m_beam2 = D.GetBornMomenta(1);
   m_p1p2 = m_beam1 * m_beam2;
   Vec4D sumk;
   for (auto kk : k) sumk += kk;

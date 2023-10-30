@@ -48,6 +48,7 @@ void YFS_Base::RegisterDefaults(){
   s["ISR_DEBUG"].SetDefault(false);
   s["DEBUG_DIR_ISR"].SetDefault("ISR_DEBUG");
   s["DEBUG_DIR_FSR"].SetDefault("FSR_DEBUG");
+  s["DEBUG_DIR_NLO"].SetDefault("YFS_NLO_Hist");
   s["TChannel-Cut"].SetDefault(0);
   s["COULOMB"].SetDefault(false);
   s["FSR_CONST_WEIGHT"].SetDefault(false);
@@ -60,6 +61,7 @@ void YFS_Base::RegisterDefaults(){
   s["CHECK_POLES"].SetDefault(0);
   s["CHECK_REAL"].SetDefault(0);
   s["CHECK_REAL_REAL"].SetDefault(0);
+  s["CHECK_VIRT_BORN"].SetDefault(1);
   s["VIRTUAL_ONLY"].SetDefault(0);
   s["REAL_ONLY"].SetDefault(0);
   s["USE_MODEL_ALPHA"].SetDefault(0);
@@ -80,6 +82,7 @@ void YFS_Base::RegisterDefaults(){
   s["BES_rho"].SetDefault(-0.745e0);
   s["No_Born"].SetDefault(0);
   s["No_Sub"].SetDefault(0);
+  s["Resonance_Mode"].SetDefault(0);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -101,6 +104,7 @@ void YFS_Base::RegisterSettings(){
   m_fsrmode  = s["FSR"].Get<int>();
   m_debugDIR_ISR = s["DEBUG_DIR_ISR"].Get<std::string>();
   m_debugDIR_FSR = s["DEBUG_DIR_FSR"].Get<std::string>();
+  m_debugDIR_NLO = s["DEBUG_DIR_NLO"].Get<std::string>();
   m_fsr_debug = s["FSR_DEBUG"].Get<bool>();
   m_isr_debug = s["ISR_DEBUG"].Get<bool>();
   m_deltacut = s["DELTA"].Get<double>();
@@ -115,6 +119,7 @@ void YFS_Base::RegisterSettings(){
   m_check_poles = s["CHECK_POLES"].Get<int>();
   m_check_real = s["CHECK_REAL"].Get<int>();
   m_check_rr = s["CHECK_REAL_REAL"].Get<int>();
+  m_check_virt_born = s["CHECK_VIRT_BORN"].Get<int>();
   m_virtual_only = s["VIRTUAL_ONLY"].Get<bool>();
   m_real_only = s["REAL_ONLY"].Get<bool>();
   m_use_model_alpha = s["USE_MODEL_ALPHA"].Get<bool>();
@@ -133,6 +138,7 @@ void YFS_Base::RegisterSettings(){
   m_beam_sigy = s["BES_SIG_Y"].Get<double>();
   m_no_born = s["No_Born"].Get<int>();
   m_no_subtraction = s["No_Sub"].Get<int>();
+  m_resonance_mode = s["Resonance_Mode"].Get<int>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added

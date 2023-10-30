@@ -34,10 +34,13 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
                                  real_pi.m_fi.GetExternal(),
                                  real_pi.m_maxcpl);
    p_real_me->SetCouplings(m_cpls);
+   for(auto f: args.m_inflavs) m_flavs.push_back(f);
+   for(auto f: args.m_outflavs) m_flavs.push_back(f);
    // p_real_me->SetSubType(sbt::qed);
    m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
    m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
    // m_factor = p_real_me->AlphaQED()/m_sym;
+   // PRINT_VAR(m_sym);
    m_factor = m_rescale_alpha/m_sym;
    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
    if(m_check_rr){
@@ -55,18 +58,13 @@ RealReal::~RealReal() {
 
 double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p)
   {
-    double R = p_real_me->Calc(p);
     if(m_check_rr){
-      out_ps_rr<<std::setprecision(16)<<"  - ["<<std::endl;
+      out_ps_rr<<std::setprecision(15)<<"  - ["<<std::endl;
       int j=0;
       for(auto k: p){
         out_ps_rr<<"      [";
-        if(j==0) out_ps_rr<<"11, ";
-        if(j==1) out_ps_rr<<"-11, ";
-        if(j==2) out_ps_rr<<"13, ";
-        if(j==3) out_ps_rr<<"-13, ";
-        if(j==4) out_ps_rr<<"22, ";
-        if(j==5) out_ps_rr<<"22, ";
+        if(m_flavs[j].IsAnti()) out_ps_rr<<"-"<<m_flavs[j].Kfcode()<<", ";
+        else out_ps_rr<<m_flavs[j].Kfcode()<<", ";
         for(int i=0; i<4; i++){
           if(i!=3) out_ps_rr<<k[i]<<",";
           else out_ps_rr<<k[i];
@@ -75,9 +73,9 @@ double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p)
         j++;
       }
       out_ps_rr<<"    ]"<<std::endl;
-      rr_out<<std::setprecision(28)<<R/m_sym<<std::endl;
-
   }
     // double R = p_real_me->ME_Finite();
+    double R = p_real_me->Calc(p);
+    if(m_check_rr) rr_out<<std::setprecision(15)<<R/m_sym<<std::endl;
     return R*m_factor;
   }

@@ -50,6 +50,7 @@ namespace YFS{
         void SetBornMomentum(Vec4D_Vector k);
         double Mass();
         double Eikonal(Vec4D k, Vec4D p1, Vec4D p2);
+        double EikonalMassless(Vec4D k, Vec4D p1, Vec4D p2);
         double Eikonal(Vec4D k);
         double EEX(const Vec4D & k);
         void Boost();

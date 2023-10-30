@@ -491,14 +491,16 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
   double t  = m1*m1 +m2*m2 -2.0*p1p2;
   double ta = abs(t);
   double zeta = 1+ m2*m2/ta;
-  double TBvirt = m_alpi*(
-       (log(2.0*p1p2/(m1*m2)) -1.0)*log(1./(m1*m2))
+  double TBvirt, Bv;
+  TBvirt = m_alpi*(
+       (log(2.0*p1p2/(m1*m2)) -1.0)*log(m_photonMass*m_photonMass/(m1*m2))
        +0.5*zeta*log(ta*zeta/(m1*m2))
        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
        +DiLog(1/zeta) -1.0
        +0.5*(zeta -1.0)*log(m1/m2)
        -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
        );
-  return TBvirt;
+  Bv = BVR_full(p1,p2, sqrt(m_s)/2, m_photonMass, 0);
+  return exp(TBvirt+Bv);
 }
 
