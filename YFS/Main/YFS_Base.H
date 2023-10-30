@@ -45,6 +45,7 @@ namespace YFS {
     void RegisterSettings();
     void RegisterDefaults();
     double Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
+    double EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
     // YFS::Coulomb *p_coulomb;
     // PHASIC::Process_Base *proc;
     // ATOOLS::Particle_Vector m_particles,  dipoleISR, dipoleFSR;

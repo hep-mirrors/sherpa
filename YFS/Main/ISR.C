@@ -49,7 +49,7 @@ void ISR::SetIncoming(YFS::Dipole *p_dipole) {
   m_b2 = p_dipole->m_b2;
   m_mass = p_dipole->Mass();
   m_mass2 = m_mass * m_mass;
-  m_am2 = 4.*m_mass2 / m_s;
+  m_am2 = sqr(m_beam1.Mass()+m_beam2.Mass()) / m_s;
   m_g  = p_dipole->m_gamma;
   m_gp = p_dipole->m_gammap;
 
@@ -86,28 +86,31 @@ void ISR::GenerateAngles()
 {
   // Generation of theta for two massive particles
   if (m_kkmcAngles == 0) {
-    double P  = log((1. + m_b1) / (1. - m_b1))
-                / (log((1. + m_b1) / (1. - m_b1)) + log((1. + m_b2) / (1. - m_b2)));
+    double P = log((1.+m_b1)/(1.-m_b1))
+                /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
     while (true) {
       m_c = 0.;
       if (ran->Get() < P) {
         double rnd = ran->Get();
-        double a   = log((1. + m_b1) / (1. - m_b1));
-        m_c        = 1. / m_b1 * (1. - (1. + m_b1) * exp(-a * rnd));
+        double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));;
+        m_c        = 1./m_b1*(1.-(1.+m_b1)*exp(-a*m_b1*rnd));
       }
       else {
         double rnd = ran->Get();
-        double a   = log((1. - m_b2) / (1. + m_b2));
-        m_c        = -1. / m_b2 * (1. - (1. - m_b2) * exp(-a * rnd));
+        double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
+        m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
       }
-      double weight = 1. - ((1. - m_b1 * m_b1) / sqr(1. - m_b1 * m_c)
-                            + (1. - m_b2 * m_b2) / sqr(1. + m_b2 * m_c))
-                      / (2.*(1. + m_b1 * m_b2) / ((1. - m_b1 * m_c) * (1. + m_b2 * m_c)));
+      double weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
+                        +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
+                       /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
       if (ran->Get() < weight) break;
     }
     m_theta = acos(m_c);
     m_sin = 1. - m_c * m_c;
     m_phi   = 2.*M_PI * ran->Get();
+    m_del1.push_back(1-m_b1*m_c);
+    m_del2.push_back(1+m_b2*m_c);
+    m_cos.push_back(m_c);
   }
   else {
     m_beta  = sqrt(1. - m_am2);
@@ -158,8 +161,10 @@ void ISR::GeneratePhotonMomentum() {
     m_photons.push_back(m_photon);
     double del1 = 1. - m_b1 * m_c;
     double del2 = 1. + m_b2 * m_c;
-    m_f    = m_alpi * (1 / ((del1) * (del2)) - ms / (del2 * del2) - ms / (del1 * del1));
-    m_fbar = m_alpi * (1. / ((del1) * (del2)));
+    // m_f    = m_alpi * (1 / ((del1) * (del2)) - ms / (del2 * del2) - ms / (del1 * del1));
+    // m_fbar = m_alpi * (1. / ((del1) * (del2)));
+    m_f = Eikonal(m_photon,m_beam1,m_beam2);
+    m_fbar = EikonalMassless(m_photon,m_beam1,m_beam2);
     m_massW *= m_f / m_fbar;
     m_yini.push_back(m_w * del1 / 2);
     m_zini.push_back(m_w * del2 / 2);
@@ -178,8 +183,10 @@ void ISR::GeneratePhotonMomentum() {
                  };
       m_photonSum += m_photon;
       m_photons.push_back(m_photon);
-      m_f    = m_alpi * (1. / ((del1) * (del2)) - ms / (del2 * del2) - ms / (del1 * del1));
-      m_fbar = m_alpi * (1. / ((del1) * (del2)));
+      // m_f    = m_alpi * (1. / ((del1) * (del2)) - ms / (del2 * del2) - ms / (del1 * del1));
+      // m_fbar = m_alpi * (1. / ((del1) * (del2)));
+      m_f = Eikonal(m_photon,m_beam1,m_beam2);
+      m_fbar = EikonalMassless(m_photon,m_beam1,m_beam2);
       m_massW *= m_f / m_fbar;
       m_yini.push_back(m_w * del1 / 2);
       m_zini.push_back(m_w * del2 / 2);
@@ -343,4 +350,13 @@ void ISR::Sort(std::vector<double> &p) {
   } cmp;
 
   std::sort(p.begin(), p.end(), cmp);
+}
+
+double ISR::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {
+  return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
+}
+
+double ISR::EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {
+  // return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
+  return m_alpha/(4*M_PI*M_PI)*(2*p1*p2/((p1*k)*(p2*k)));
 }

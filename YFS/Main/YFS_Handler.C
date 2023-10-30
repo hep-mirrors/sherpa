@@ -293,14 +293,14 @@ void YFS_Handler::AddFormFactor() {
     // m_CalForm = true;
   }
   if(m_tchannel){
-    m_formfactor  = p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[1]);
-    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[2], m_bornMomenta[3]);
+    // m_formfactor  = p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[1]);
+    // m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[2], m_bornMomenta[3]);
 
-    m_formfactor *= -p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[3]);
+    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[3]);
     m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[2]);
    
     m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[2]);
-    m_formfactor *= -p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[3]);
+    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[3]);
 
     // m_formfactor *= p_yfsFormFact->BVirtT(m_plab[1], m_plab[3]);
   }
@@ -359,6 +359,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     }
     for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
+<<<<<<< HEAD
       if(!Dip->IsResonance()) continue;
       p_fsr->Reset();
       Dip->BoostToQFM(0);
