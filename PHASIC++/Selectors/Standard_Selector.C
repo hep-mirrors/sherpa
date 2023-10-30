@@ -185,7 +185,16 @@ namespace PHASIC {
     bool     Trigger(ATOOLS::Selector_List &);
     void     BuildCuts(Cut_Data *);
   };
-
+  class T_Selector : public Selector_Base {
+    double  m_tmin, m_tmax;
+    ATOOLS::Flavour m_flav1,m_flav2;
+  public:
+    T_Selector(Process_Base *const);
+    ~T_Selector();
+    void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
+    bool     Trigger(ATOOLS::Selector_List &);
+    void     BuildCuts(Cut_Data *);
+  };
   // -----------------------------
   // inclusive selectors
   // -----------------------------
@@ -2135,3 +2144,77 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 
 
+
+/*--------------------------------------------------------------------
+
+ PTMIS Selector
+
+ --------------------------------------------------------------------*/
+
+T_Selector::T_Selector(Process_Base *const proc):
+ Selector_Base("T_Channel_Selector",proc), m_tmin(0.), m_tmax(0.),
+   m_flav1(Flavour(kf_none)), m_flav2(Flavour(kf_none))
+{
+
+}
+
+T_Selector::~T_Selector() {
+}
+
+bool T_Selector::Trigger(Selector_List &sl)
+{
+  DEBUG_FUNC(m_on);
+  if (!m_on) return true;
+  // if(m_flavs.size()!=4) msg_Error()<<"T Channel selectors is only for 2->2";
+  // for (size_t k=0;k<m_flavs.size();k++) {
+  //   for (size_t i=m_nin;i<sl.size();i++) {
+  //     if (m_flavs[k].Includes(sl[i].Flavour())) {
+  //       mismom+=sl[i].Momentum();
+  //     }
+  //   }
+  // }
+  double t = (sl[0].Momentum()-sl[2].Momentum()).Abs2();
+  if (m_sel_log->Hit( ((t<m_tmin) || (t>m_tmax)) ))
+    return false;
+  return true;
+}
+
+void T_Selector::BuildCuts(Cut_Data * cuts)
+{
+}
+
+void T_Selector::SetRange(Flavour f1, Flavour f2, double min,double max)
+{
+  m_tmin=min;
+  m_tmax=max;
+  m_flav1 = f1;
+  m_flav2 = f2;
+  m_on=true;
+}
+
+DECLARE_GETTER(T_Selector,"T_Channel",Selector_Base,Selector_Key);
+
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,T_Selector>::
+operator()(const Selector_Key &key) const
+{
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "T_Channel");
+ if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
+  Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
+  Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
+  T_Selector *sel = new T_Selector(key.p_proc);
+  sel->SetRange(flav1,flav2,min,max);
+  return sel;
+}
+
+void ATOOLS::Getter<Selector_Base,Selector_Key,T_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"T Channel selector";
+}
