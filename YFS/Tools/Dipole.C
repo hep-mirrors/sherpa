@@ -55,13 +55,17 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   }
   for (auto &v : born) m_bornmomenta.push_back(v);
   if (ty == dipoletype::code::initial) {
-    m_thetai = 1;
-    m_thetaj = 1;
+    if(fl[0].IsAnti()) m_thetai = -1;
+    else m_thetai = 1;
+    if(fl[1].IsAnti()) m_thetaj = 1;
+      else m_thetaj = -1;
     for (int i = 0; i < 2; ++i) m_beams.push_back(m_bornmomenta[i]);
   }
   else if (ty == dipoletype::code::final) {
-    m_thetai = -1;
-    m_thetaj = -1;
+    if(fl[0].IsAnti()) m_thetai = 1;
+    else m_thetai = -1;
+    if(fl[1].IsAnti()) m_thetaj = -1;
+      else m_thetaj = 1;
   }
   else if (ty == dipoletype::code::ifi) {
     m_thetai = -1;
@@ -75,8 +79,8 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
     // p_boost  = new Poincare(m_bornmomenta[0] + m_bornmomenta[1]);
     // p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 0., 1.));
   }
-  CalculateBeta();
   m_thetaij = m_thetai*m_thetaj;
+  CalculateBeta();
 }
 
 
@@ -191,13 +195,12 @@ void Dipole::CalculateBeta(){
   m_b2 = (Vec3D(m_momenta[1]).Abs() / m_momenta[1].E());
   double logarg = (1+m_b1)*(1+m_b2);
   logarg /= (1-m_b1)*(1-m_b2);
-  
+  // PRINT_VAR(m_momenta);
   m_gamma  = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg)-2);
   m_gammap = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg));
 
-  m_gamma  *= -m_alpi*m_QiQj;
-  m_gammap *= -m_alpi*m_QiQj;
-
+  m_gamma  *= -m_alpi*m_QiQj*m_thetaij;
+  m_gammap *= -m_alpi*m_QiQj*m_thetaij;
 }
 
 void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D_Vector &Photons) {
