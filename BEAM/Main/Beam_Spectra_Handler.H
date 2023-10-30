@@ -76,6 +76,8 @@ namespace BEAM {
     int             Polarisation()        { return m_polarisation; }
     bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
     bool   CheckConsistency(ATOOLS::Flavour *);
+    void   BoostFixedTarget();
+    double SqLam(double s,double s1,double s2);
   };
 
   /*!
