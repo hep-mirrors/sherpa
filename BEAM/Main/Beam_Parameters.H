@@ -14,7 +14,8 @@ namespace BEAM {
       unknown              = 0,
       relic_density        = 1,
       collider             = 2,
-      DM_annihilation      = 10
+      DM_annihilation      = 10,
+      Fixed_Target         = 12
     };
   };
   std::ostream& operator<<(std::ostream&,const beammode::code mode);
@@ -27,6 +28,7 @@ namespace BEAM {
       simple_Compton       = 3,
       EPA                  = 4,
       DM                   = 10,
+      Fixed_Target         = 12,
       spectrum_reader      = 20,
       unknown              = 99
     };
@@ -67,6 +69,7 @@ namespace BEAM {
     Beam_Base * InitializeMonochromatic(int);
     Beam_Base * InitializeEPA(int);
     Beam_Base * InitializeDM_beam(int);
+    Beam_Base * InitializeFixed_Target(int);
   public:
     Beam_Parameters();
     ~Beam_Parameters();

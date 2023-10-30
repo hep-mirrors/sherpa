@@ -277,20 +277,32 @@ void YFS_Handler::AddFormFactor() {
   if(m_fsrmode==2) return; // Calculated in FSR.C for fsr dipoles
   if (m_fullform == 1) {
     m_formfactor = p_yfsFormFact->BVV_full(m_bornMomenta[0], m_bornMomenta[1], m_photonMass, sqrt(m_s) / 2., 0);
-    m_CalForm = true;
+    // m_CalForm = true;
   }
   else if (m_fullform == 2) {
     m_formfactor = exp(m_g / 4.);//-m_alpha*M_PI);
-    m_CalForm = true;
+    // m_CalForm = true;
   }
   else if (m_fullform == -1) {
     m_formfactor = 1;
-    m_CalForm = true;
+    // m_CalForm = true;
   }
   else {
     // high energy limit
     m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
-    m_CalForm = true;
+    // m_CalForm = true;
+  }
+  if(m_tchannel){
+    m_formfactor  = p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[1]);
+    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[2], m_bornMomenta[3]);
+
+    m_formfactor *= -p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[3]);
+    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[2]);
+   
+    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[2]);
+    m_formfactor *= -p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[3]);
+
+    // m_formfactor *= p_yfsFormFact->BVirtT(m_plab[1], m_plab[3]);
   }
   if(m_fsrmode==1 && m_nlotype!=nlo_type::real){
     double yfsint = 1.;
@@ -547,7 +559,7 @@ void YFS_Handler::GenerateWeight() {
   if (m_formWW) m_yfsweight *= m_ww_formfact; //*exp(m_coulSub);
   CalculateBeta();
   m_yfsweight*=m_real;
-  m_yfsweight*=m_formfactor;
+  m_yfsweight *= m_formfactor;
   // PRINT_VAR(m_ww_formfact);
   // m_yfsweight = 1.;
   // m_yfsweight*=m_rescale_alpha; 
@@ -557,6 +569,12 @@ void YFS_Handler::GenerateWeight() {
              "  Coulomb Weight = " << p_coulomb->GetWeight() << "\n" <<
              " Coulomb Subtraction Weight = " << exp(m_coulSub) << "\n" <<
              "Total Weight = " << m_yfsweight << "\n");
+  if(IsBad(m_yfsweight)){
+    msg_Error()<<"\nISR Weight = " << m_isrWeight << "\n" <<
+             "  FSR Weight = " << m_fsrWeight << "\n" <<
+             "  Form Factor = " << m_formfactor << "\n" <<
+             "Total Weight = " << m_yfsweight << "\n";
+  }
 }
 
 
