@@ -86,6 +86,23 @@ void Reconnection_Base::HarvestParticleInfo(ATOOLS::Particle * part) {
   //	   <<" ["<<copy->ProductionBlob()<<"]\n";
 }
 
+double Reconnection_Base::get_total_hadMass(std::map<unsigned int, ATOOLS::Particle*> m_cols[2])
+{
+	double total_hadMass = 0;
+	for(std::map<unsigned int, ATOOLS::Particle*>::iterator cit = m_cols[0].begin(); cit != m_cols[0].end(); cit++)
+	{
+		double m1 = cit->second->Flav().HadMass();
+		double m2 = m_cols[1].find(cit->first)->second->Flav().HadMass();
+		total_hadMass += (m1*m2);
+	}
 
-void Reconnection_Base::FillMassesInHistogram(Histogram * histo) {
+	return total_hadMass;
 }
+
+///     histo->Insert(/*what should i be?*/, this.get_total_hadMass(m_cols),/*what should ncounts be?*/);
+
+/*void Reconnection_Base::FillMassesInHistogram(Histogram * histo, std::map<unsigned int, ATOOLS::Particle*> m_cols[2])
+{
+
+}
+*/

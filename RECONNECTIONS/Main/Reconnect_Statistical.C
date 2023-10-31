@@ -2,15 +2,26 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Histogram.H"
 
 using namespace RECONNECTIONS;
 using namespace ATOOLS;
 using namespace std;
 
-Reconnect_Statistical::Reconnect_Statistical() : Reconnection_Base() {}
+Reconnect_Statistical::Reconnect_Statistical() : Reconnection_Base() 
+{
+	// define histogram for the total stringlength and add to histogram map
+	// (no idea what appropriate maximum / binning is yet)
+	m_histomap[string("total_stringlength")] = new Histogram(0, 100.0, 10.0e18, 200.);
+	this->m_stringlength_totals.clear();
+}
 
 Reconnect_Statistical::~Reconnect_Statistical() {
+  //PlotTotalLength(TotalLength());
   m_collist.clear();
+  //msg_Info() << std::endl << "Min. total stringlength: " << this->find_min_totalLength(this->m_stringlength_totals) << std::endl;
+  //msg_Info() << std::endl << "Max. total stringlength: " << this->find_max_totalLength(this->m_stringlength_totals) << std::endl;
+  write_stringLengths_to_file(this->m_stringlength_totals);
 }
 
 void Reconnect_Statistical::SetParameters() {
@@ -41,8 +52,9 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
   if (!HarvestParticles(blobs))               return -1;
   if (m_cols[0].empty() && m_cols[1].empty()) return 0;
   m_norm = TotalLength();
+  PlotTotalLength(TotalLength()); // don't call twice, put in var ...
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
-       cit!=m_cols[0].end();cit++) m_collist.push_back(cit->first);
+       cit!=m_cols[0].end();cit++) { m_collist.push_back(cit->first); msg_Info() << std::endl << "Particle->Number(): " << cit->second->Number() << std::endl; }
   size_t N = m_collist.size();
   unsigned int col[2];
   for (size_t i=0;i<sqr(N);i++) {
@@ -127,7 +139,46 @@ double Reconnect_Statistical::TotalLength() {
     part1  = cit->second;
     part2  = m_cols[1].find(cit->first)->second;
     total *= Distance(part1,part2);
+    msg_Info() << "Distance: " << Distance(part1, part2) << std::endl;
+    msg_Info() << "Total" << total << std::endl;
   }
   return total/pow(m_parts[0].size(),m_kappa);
+  //const double norm_total = total/pow(m_parts[0].size(),m_kappa);
+  //this.m_stringlength_totals.push_back(norm_total);
+  //return norm_total;
+}
+
+
+void Reconnect_Statistical::PlotTotalLength(double total_length)
+{
+	// define and fill histogram of total string length ...
+	//std::cout << std::endl << "total string length: " << total_length << std::endl;
+	msg_Info() << std::endl << "total string length: " << total_length << std::endl;
+	m_histomap[string("total_stringlength")]->Insert(total_length);
+	this->m_stringlength_totals.push_back(total_length);
+}
+
+/*double Reconnect_Statistical::find_min_totalLength(std::vector<double> total_vec)
+{
+	double min_value = total_vec[0];
+	for(std::vector<double>::iterator it = total_vec.begin()+1; it != total_vec.end(); it++)
+		// check that total_vec.begin()+1 adds 1 to index, not to value at index=0
+		if(*it < min_value) min_value = *it;
+	return min_value;
+}
+
+double Reconnect_Statistical::find_max_totalLength(std::vector<double> total_vec)
+{
+	double max_value = total_vec[0];
+	for(std::vector<double>::iterator it = total_vec.begin()+1; it != total_vec.end(); it++)
+		if(*it > max_value) max_value = *it;
+	return max_value;
+}*/
+
+void Reconnect_Statistical::write_stringLengths_to_file(std::vector<double> total_vec)
+{
+	std::ofstream output_file("./Reconnection_Analysis/stringlength_vec.txt");
+	std::ostream_iterator<double> output_iterator(output_file, "\n");
+	std::copy(total_vec.begin(), total_vec.end(), output_iterator);
 }
 

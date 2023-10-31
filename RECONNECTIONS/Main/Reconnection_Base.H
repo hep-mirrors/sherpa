@@ -21,7 +21,8 @@ namespace RECONNECTIONS {
     virtual void SetParameters() = 0;
     bool HarvestParticles(ATOOLS::Blob_List * blobs);
     void HarvestParticleInfo(ATOOLS::Particle * part);
-    void FillMassesInHistogram(ATOOLS::Histogram * histo);
+    double get_total_hadMass(std::map<unsigned int, ATOOLS::Particle*> m_cols[2]);
+//    void FillMassesInHistogram(ATOOLS::Histogram * histo);
   public:
     Reconnection_Base();
     virtual ~Reconnection_Base();

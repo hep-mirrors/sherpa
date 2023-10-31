@@ -1,6 +1,7 @@
 #include "RECONNECTIONS/Main/Reconnection_Handler.H"
 #include "RECONNECTIONS/Main/Reconnect_By_Singlet.H"
 #include "RECONNECTIONS/Main/Reconnect_Statistical.H"
+#include "RECONNECTIONS/Main/Reconnect_Gluon.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
