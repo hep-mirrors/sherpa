@@ -21,6 +21,7 @@ char METOOLS::ParticleType(const Flavour &fl)
   case 0: return 'S';
   case 1: return 'F';
   case 2: return 'V';
+  case 3: return 'R';
   case 4: return fl.IsDummy()?'P':'T';
   }
   msg_Error()<<METHOD<<"(): "<<fl<<std::endl;
