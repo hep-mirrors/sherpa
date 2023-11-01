@@ -64,7 +64,7 @@ void CRaritaSchwinger<Scalar>::Invert() {
 
 // TODO: WANN LÖSCHE ICH DAS ZEUG HIER WIEDER?
 template<class Scalar>
-ATOOLS::TCMatrix<Scalar> CRaritaSchwinger<Scalar>::operator*(const CRaritaSchwinger<Scalar> &rs) const {
+ATOOLS::TCMatrix<Scalar> CRaritaSchwinger<Scalar>::Contract4Index(const CRaritaSchwinger<Scalar> &rs) const {
   SComplex** intermediate = new SComplex*[4];
   for (int i=0;i<4;++i) intermediate[i] = new SComplex[4];
   for (size_t i(0); i<4; ++i){
@@ -74,6 +74,20 @@ ATOOLS::TCMatrix<Scalar> CRaritaSchwinger<Scalar>::operator*(const CRaritaSchwin
   }
   return ATOOLS::TCMatrix<Scalar>(intermediate, 4);
 }
+
+template <class Scalar> std::complex<Scalar>
+CRaritaSchwinger<Scalar>::operator*(const CRaritaSchwinger<Scalar> &rs) const
+{
+  if (rs.m_b==m_b) return (*this)*rs.CConj();
+  std::complex<Scalar> result(0.0, 0.0);
+  std::complex<Scalar> sign(1);
+  for (size_t i(0); i<16; ++i){
+    if (i>=4) sign=-1;
+    result+=sign*m_x[i]*rs.m_x[i];
+  }
+  return result;
+}
+
 /*template <class Scalar>
 void CRaritaSchwinger<Scalar>::Add(const CObject *c)
 {
