@@ -9,7 +9,8 @@ set(Vertices_SOURCES FFV_DLC.C
                      VVP_LC.C
                      SSSS_LC.C
                      SSVV_LC.C
-                     VVVV_LC.C)
+                     VVVV_LC.C
+                     RRV_LC.C)
 
 sherpa_create_git_info(Vertices)
  
