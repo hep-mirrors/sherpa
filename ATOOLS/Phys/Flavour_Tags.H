@@ -436,4 +436,7 @@
 #define      kf_lead207                 1000822070
 #define      kf_lead208                 1000822080
 #define      kf_uranium238              1000922380
+
+// spin 3/2
+#define kf_F  9901
 #endif
