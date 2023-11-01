@@ -65,7 +65,7 @@ namespace METOOLS {
     //       schon in CObject gesetzt
    inline CRaritaSchwinger(const int r=1, const int b=1, const int cr=0,const int ca=0,
                            const size_t &h=0,const size_t &s=0, const int &on=3)
-    { 
+    {
       for (auto entry : m_x){
         entry = 0.0;
       }
@@ -104,8 +104,8 @@ namespace METOOLS {
     inline CRaritaSchwinger(const ATOOLS::Vec4<Scalar> &v,
 		 const int c1=0,const int c2=0,
 		 const size_t &h=0,const size_t &s=0)
-    { 
-      m_x[0]=v[0]; m_x[1]=v[1]; m_x[2]=v[2]; m_x[3]=v[3]; 
+    {
+      m_x[0]=v[0]; m_x[1]=v[1]; m_x[2]=v[2]; m_x[3]=v[3];
       m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
     }
     inline CRaritaSchwinger(const CRaritaSchwinger &v,const Scalar &c)
@@ -125,15 +125,15 @@ namespace METOOLS {
     void Multiply(const Complex &c);
     void Invert();
 
-// TODO: Spinorwellenfunktionsklasse hat im Vergleich zur Vektorklasse noch ein Construct, SetOn, CConj -  brauchen wir
+// TODO: Spinorwellenfunktionsklasse hat im Vergleich zur Vektorklasse noch ein Construct, SetOn, CConj - brauchen wir
 //       das hier???
 // TODO: Welche Operationen brauchen wir für Rarita-Schwinger-Teilchen? Gern auch mit anderen Wellenfunktionen C_...
 //       vergleichen!!!
 
    inline SComplex &operator[](const int i) { return m_x[i]; }
    inline const SComplex &operator[](const int i) const { return m_x[i]; }
-   ATOOLS::TCMatrix<Scalar> operator*(const CRaritaSchwinger<Scalar> &rs) const;
-
+   ATOOLS::TCMatrix<Scalar> Contract4Index(const CRaritaSchwinger<Scalar> &rs) const;
+   SComplex operator*(const CRaritaSchwinger<Scalar> &rs) const;
 /*     inline CVec4 operator+(const CVec4 &v) const
     { 
       return CVec4(m_x[0]+v[0],m_x[1]+v[1],m_x[2]+v[2],m_x[3]+v[3],
@@ -149,13 +149,15 @@ namespace METOOLS {
       return CVec4(-m_x[0],-m_x[1],-m_x[2],-m_x[3],
 		   m_c[0],m_c[1],m_h,m_s); 
     }
-
-    inline CVec4& operator+=(const CVec4 &v) 
+*/
+    inline CRaritaSchwinger& operator+=(const CRaritaSchwinger &r)
     {
-      m_x[0]+=v[0]; m_x[1]+=v[1]; m_x[2]+=v[2]; m_x[3]+=v[3];
+      for (size_t i(0); i<16; ++i) m_x[i] += r[i];
+      m_on|=r.m_on;
       return *this;
     }
-    inline CVec4& operator-=(const CVec4 &v) 
+  /*
+    inline CVec4& operator-=(const CVec4 &v)
     {
       m_x[0]-=v[0]; m_x[1]-=v[1]; m_x[2]-=v[2]; m_x[3]-=v[3];
       return *this;
@@ -164,15 +166,18 @@ namespace METOOLS {
     {
       m_x[0]*=c; m_x[1]*=c; m_x[2]*=c; m_x[3]*=c;
       return *this;
-    }
-  
-    inline CVec4 Conj() const 
+    }*/
+  // TODO: Je nach dem, was m_c, m_h und m_s sind - ändern sie sich hier wirklich nicht?
+    inline CRaritaSchwinger CConj() const
     {
-      return CVec4(std::conj(m_x[0]),std::conj(m_x[1]),
-		   std::conj(m_x[2]),std::conj(m_x[3]),
-		   m_c[0],m_c[1],m_h,m_s);
+      return CRaritaSchwinger(-m_r, -m_b, std::conj(m_x[0]),std::conj(m_x[1]), std::conj(m_x[2]),std::conj(m_x[3]),
+                              std::conj(m_x[4]),std::conj(m_x[5]), std::conj(m_x[6]),std::conj(m_x[7]),
+                              std::conj(m_x[8]),std::conj(m_x[9]), std::conj(m_x[10]),std::conj(m_x[10]),
+                              std::conj(m_x[11]),std::conj(m_x[12]), std::conj(m_x[13]),std::conj(m_x[14]),
+		                          m_c[0], m_c[1], m_h, m_s, m_on);
     }
-    inline SComplex Abs2() const 
+    /*
+    inline SComplex Abs2() const
     {
       return m_x[0]*m_x[0]-m_x[1]*m_x[1]-m_x[2]*m_x[2]-m_x[3]*m_x[3];
     }

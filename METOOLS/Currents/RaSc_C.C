@@ -355,15 +355,15 @@ void CRS<SType>::AddPropagator()
   }
 }*/
 
+// For contracting the matrix element with its complex conjugate
 template <typename SType> void CRS<SType>::SContract
 (const Current &c,const Int_Vector &pols,
  SComplex_Vector &ress,const size_t &offset) const
-{}
-  /*
-#ifdef DEBUG__BG
+{
+ #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
-#endif
+ #endif
   double phase(0.0);
   const std::vector<size_t> *pm(NULL);
   if (p_sub) {
@@ -373,18 +373,18 @@ template <typename SType> void CRS<SType>::SContract
       pm=&v->Kin()->PM();
     }
   }
-  if (c.Type()!='V') THROW(fatal_error,"Invalid current type.");
+  if (c.Type()!='R') THROW(fatal_error,"Invalid current type.");
   size_t i(0);
   for (typename CObject_Matrix::const_iterator 
 	 ajit1(m_j.begin());ajit1!=m_j.end();++ajit1) {	
-    const CVec4Type_Vector *j(ajit1->Get<CVec4Type>());
+    const CRaScType_Vector *j(ajit1->Get<CRaScType>());
     for (typename CObject_Matrix::const_iterator 
 	   ajit2(c.J().begin());ajit2!=c.J().end();++ajit2,++i) {
       // if (!pols[i]) continue;
-      const CVec4Type_Vector *cj(ajit2->Get<CVec4Type>());
-      for (typename CVec4Type_Vector::const_iterator 
+      const CRaScType_Vector *cj(ajit2->Get<CRaScType>());
+      for (typename CRaScType_Vector::const_iterator
 	     jit2(cj->begin());jit2!=cj->end();++jit2) 
-	for (typename CVec4Type_Vector::const_iterator 
+	for (typename CRaScType_Vector::const_iterator
 	       jit1(j->begin());jit1!=j->end();++jit1)
 	  if ((**jit1)(0)==(**jit2)(1) && (**jit1)(1)==(**jit2)(0) &&
 	      (*jit1)->S()==offset && (*jit2)->S()==offset) {
@@ -408,7 +408,7 @@ template <typename SType> void CRS<SType>::SContract
   msg_Debugging()<<"}\n";
 #endif
 }
-
+/*
 template <typename SType>
 std::string CRS<SType>::CLabel() const
 {
@@ -450,7 +450,7 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p) {
   if (ATOOLS::IsZero(p.Abs2())){
     // normalization
     std::cout<<METHOD<<": Testing normalization of Rarita-Schwinger wave function..."<<std::endl;
-    TCMatrix<SType> result1 = rspp * rspp.Bar() + rsmm * rsmm.Bar() + gammavec * p;
+    TCMatrix<SType> result1 = rspp.Contract4Index(rspp.Bar()) + rsmm.Contract4Index(rsmm.Bar()) + gammavec * p;
 
     for (size_t i(0); i<4; ++i){
       for (size_t j(0); j<4; ++j){
