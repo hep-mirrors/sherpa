@@ -181,7 +181,7 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector &p,
                           const Flavour_Vector &flavs) {
   if ((p_isrbase[0]->PDF() != nullptr &&
        !p_isrbase[0]->PDF()->Contains(flavs[0])) ||
-      (p_isrbase[0]->PDF() != nullptr &&
+      (p_isrbase[1]->PDF() != nullptr &&
        !p_isrbase[1]->PDF()->Contains(flavs[1])))
     return false;
   if (m_mode == 0) {
