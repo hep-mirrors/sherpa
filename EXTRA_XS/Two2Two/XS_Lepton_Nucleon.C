@@ -46,17 +46,17 @@ XS_lepton_nucleon::XS_lepton_nucleon(const External_ME_Args& args)
 
   //Check for GE, GM form factors
   cpl_info::code GE = cpl_info::GE;
-  bool Bool_GMsGEs = ffs->ContainsFormFactorType(GE);
+  bool Bool_GMsGEs = NEUTRINOS::ffs->ContainsFormFactorType(GE);
 
   //Check for fs, gs form factors
   cpl_info::code f1 = cpl_info::f1;
-  bool Bool_fsgs = ffs->ContainsFormFactorType(f1);
+  bool Bool_fsgs = NEUTRINOS::ffs->ContainsFormFactorType(f1);
 
   kf_code proton  = kf_p_plus;
   kf_code neutron = kf_n;
-  bool Bool_pn = ffs->ContainsFormFactorTransition(proton, neutron);
+  bool Bool_pn = NEUTRINOS::ffs->ContainsFormFactorTransition(proton, neutron);
 
-  
+
   if (Bool_GMsGEs && Bool_fsgs) exit(1); //Can't mix declaration types TODO JW: Add exit statement
   if (!Bool_GMsGEs && !Bool_fsgs) exit(1); //Need some form factors! TODO JW: Add exit statement
 
@@ -95,7 +95,7 @@ double XS_lepton_nucleon::operator()(const ATOOLS::Vec4D_Vector& momenta) {
   double result = (*p_ME)(momenta);
 
   if (printout) {
-    double t = (momenta[0]-momenta[2]).Abs2(); 
+    double t = (momenta[0]-momenta[2]).Abs2();
     msg_Out()<<METHOD<<" |M|^2("<<sqrt(-t)<<" vs "<<momenta[2].PPerp()<<"), t = "<<t<<", "<<"result/t^2 = "<<(result/(t*t))<<".\n\n\n";
 
     for (size_t i=0;i<4;i++)msg_Out()<<"   "<<i<<"     "<<m_flavs[i]<<": " <<momenta[i]<<", "<<"m = "<<sqrt(Max(0.,momenta[i].Abs2()))<<".\n";

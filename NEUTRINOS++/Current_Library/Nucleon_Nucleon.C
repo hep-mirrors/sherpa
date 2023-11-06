@@ -36,7 +36,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   kf_code OUT = m_flavs[m_indices[0]].Kfcode();
 
   //Read in model parameters
-  std::string Vckm_string = compareQuarkContent(getQuarkContent(IN), getQuarkContent(OUT)); 
+  std::string Vckm_string = compareQuarkContent(getQuarkContent(IN), getQuarkContent(OUT));
   double Vckm = ffs->GetModelParms("CKM", Vckm_string);
 
   //Turn contributions from currents on or off...
@@ -47,7 +47,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   /////////////////////////////////////////////////////////////////////////////
   // Form factor info
   /////////////////////////////////////////////////////////////////////////////
-  
+
   cpl_info::code GE = cpl_info::GE, GM = cpl_info::GM;
   cpl_info::code A  = cpl_info::axialvector, P = cpl_info::pseudoscalar;
 
@@ -60,20 +60,20 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
   kf_code prop_kf_Z   = kf_Z;
   kf_code prop_kf_W   = kf_Wplus;
 
-  m_ffs["QED_GE"]  = ffs->GetFF(IN,OUT,prop_kf_P,GE); 
-  m_ffs["QED_GM"]  = ffs->GetFF(IN,OUT,prop_kf_P,GM); 
+  m_ffs["QED_GE"]  = ffs->GetFF(IN,OUT,prop_kf_P,GE);
+  m_ffs["QED_GM"]  = ffs->GetFF(IN,OUT,prop_kf_P,GM);
   m_ffs["QED_A"]   = ffs->GetFF(IN,OUT,prop_kf_P,A);
   m_ffs["QED_P"]   = ffs->GetFF(IN,OUT,prop_kf_P,P);
   m_ffprops["QED"] = ffprops->GetProp(prop_kf_P, prop_type);
 
-  m_ffs["NC_GE"]  = ffs->GetFF(IN,OUT,prop_kf_Z,GE); 
-  m_ffs["NC_GM"]  = ffs->GetFF(IN,OUT,prop_kf_Z,GM); 
+  m_ffs["NC_GE"]  = ffs->GetFF(IN,OUT,prop_kf_Z,GE);
+  m_ffs["NC_GM"]  = ffs->GetFF(IN,OUT,prop_kf_Z,GM);
   m_ffs["NC_A"]   = ffs->GetFF(IN,OUT,prop_kf_Z,A);
   m_ffs["NC_P"]   = ffs->GetFF(IN,OUT,prop_kf_Z,P);
   m_ffprops["NC"] = ffprops->GetProp(prop_kf_Z, prop_type);
 
-  m_ffs["CC_GE"]  = ffs->GetFF(IN,OUT,prop_kf_W,GE); 
-  m_ffs["CC_GM"]  = ffs->GetFF(IN,OUT,prop_kf_W,GM); 
+  m_ffs["CC_GE"]  = ffs->GetFF(IN,OUT,prop_kf_W,GE);
+  m_ffs["CC_GM"]  = ffs->GetFF(IN,OUT,prop_kf_W,GM);
   m_ffs["CC_A"]   = ffs->GetFF(IN,OUT,prop_kf_W,A);
   m_ffs["CC_P"]   = ffs->GetFF(IN,OUT,prop_kf_W,P);
   m_ffprops["CC"] = ffprops->GetProp(prop_kf_W, prop_type);
@@ -109,7 +109,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 
     /////////////////////////////////////////////////////////////////////////
     // QED coupling: 0
-    /////////////////////////////////////////////////////////////////////////    
+    /////////////////////////////////////////////////////////////////////////
     QED_coupling = QED_cR = QED_cL = Complex( 0., 0.);
 
     /////////////////////////////////////////////////////////////////////////
@@ -118,7 +118,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
     Weak_NC_coupling = Weak_NC_cR = Weak_NC_cL = Complex(0.,0.);
 
     ///////////////////////////////////////////////////////////////////////////
-    // Weak Charged (left-handed) coupling: -i g_W gamma^{mu} / (sqrt(2)) * (cL P^{L}) 
+    // Weak Charged (left-handed) coupling: -i g_W gamma^{mu} / (sqrt(2)) * (cL P^{L})
     ///////////////////////////////////////////////////////////////////////////
     Weak_CC_coupling = (-Complex( 0., 1.) * gw_coupling * Vckm ) / (2.0 * sqrt(2.));
     Weak_CC_cR = Complex( 0., 0.);
@@ -132,7 +132,7 @@ Nucleon_Nucleon::Nucleon_Nucleon(const ATOOLS::Flavour_Vector& flavs,
 void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F)
 {
   /////////////////////////////////////////////////////////////////////////////
-  // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2) / m + q^{mu} F_3(q^2) / m] u(1) 
+  // J^mu = ubar(0) [ gamma^mu F_1(q^2) + i/2 sigma^{mu nu} q_nu F_2(q^2) / m + q^{mu} F_3(q^2) / m] u(1)
   /////////////////////////////////////////////////////////////////////////////
 
   /////////////////////////////////////////////////////////////////////////
@@ -146,17 +146,17 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
   /////////////////////////////////////////////////////////////////////////
 
   const int N  = m_flavs.size();
-  int pf = 2; 
-  int pi = 3; 
+  int pf = 2;
+  int pi = 3;
 
   if (m_anti) F->Set_m_Anti(true);
   else        F->Set_m_Anti(false);
-  
-  const int pf_bar = pf+N; 
+
+  const int pf_bar = pf+N;
   const int pi_bar = pi+N;
 
   Complex Zero = Complex(0.,0.);
-  Complex One = Complex(1.,0.); 
+  Complex One = Complex(1.,0.);
 
   const ATOOLS::Vec4<Complex> qmom = (F->P(pf)-F->P(pi));
   const double q2  = qmom.Abs2().real();
@@ -167,32 +167,32 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
 
   const double G_E = m_ffs["QED_GE"]->Calc(-q2), G_M = m_ffs["QED_GM"]->Calc(-q2);
   const double F_A = m_ffs["QED_A"]->Calc(-q2),  F_P = m_ffs["QED_P"]->Calc(-q2);
-  const double tau = -q2/(4.*m_massin*m_massout); 
- 
+  const double tau = -q2/(4.*m_massin*m_massout);
+
   double ff1  = (G_E+tau*G_M)/(1.+tau), ff2 = (G_M-G_E)/(1.+tau);
   double ff3  = F_A, ff4 = F_P;
 
   // double mass_gordon = sqrt((m_massin*m_massin + m_massout*m_massout) / 2.0);
-  
+
   Vec4C QED_amp, Weak_NC_amp, Weak_CC_amp;
   for(int hf=0; hf<2; hf++) {
     for(int hi=0; hi<2; hi++) {
       QED_amp *= 0.0;
       Weak_NC_amp *= 0.0;
       Weak_CC_amp *= 0.0;
-      
+
       if ( ff1 != 0.0 ) {
         QED_amp += ff1 * F->L(pf,hf, pi,hi, One,One);
-      } 
-      
+      }
+
       if ( ff2 != 0.0 ) {
         for (int hq=0;hq<2;hq++) {
           QED_amp += (ff2/(4.*m_massin)) *
             (
                 F->L(pf,hq,pi,hi,One,One) * F->Y(pf,hf,pf,hq,One,One) -
-                F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) - 
+                F->L(pi,hq,pi,hi,One,One) * F->Y(pf,hf,pi,hq,One,One) -
                 F->L(pf,hf,pf,hq,One,One) * F->Y(pf,hq,pi,hi,One,One) +
-                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One) 
+                F->L(pf,hf,pi,hq,One,One) * F->Y(pi,hq,pi,hi,One,One)
           );
         }
       }
@@ -203,16 +203,16 @@ void Nucleon_Nucleon::Calc(const ATOOLS::Vec4D_Vector& moms,METOOLS::XYZFunc * F
       //TODO: Add ff4?
 
       //Propagator on Nucleon Current side
-      if ( fabs(QED_coupling) > 0.0 ) {
+      if ( std::abs(QED_coupling) > 0.0 ) {
         QED_amp = QED_amp * QED_coupling * QED_prop_factor;
-      } 
-      else if ( fabs(Weak_NC_coupling) > 0.0 ) {
+      }
+      else if ( std::abs(Weak_NC_coupling) > 0.0 ) {
         Weak_NC_amp = Weak_NC_amp * Weak_NC_coupling * Weak_NC_prop_factor;
       }
-      else if ( fabs(Weak_CC_coupling) > 0.0 ) {
+      else if ( std::abs(Weak_CC_coupling) > 0.0 ) {
         Weak_CC_amp = Weak_CC_amp * Weak_CC_coupling * Weak_CC_prop_factor;
       }
-      
+
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(pf,hf));
       spins.push_back(make_pair(pi,hi));
