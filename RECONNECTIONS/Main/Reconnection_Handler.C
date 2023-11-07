@@ -2,6 +2,7 @@
 #include "RECONNECTIONS/Main/Reconnect_By_Singlet.H"
 #include "RECONNECTIONS/Main/Reconnect_Statistical.H"
 #include "RECONNECTIONS/Main/Reconnect_Gluon.H"
+#include "RECONNECTIONS/Main/Reconnect_Gluon_Debug.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -12,7 +13,7 @@ using namespace std;
 
 Reconnection_Handler::Reconnection_Handler(const bool & on) :
   m_on(on),
-  p_reconnector(new Reconnect_Gluon()),
+  p_reconnector(new Reconnect_Statistical()),
   m_nfails(0)
 {}
 

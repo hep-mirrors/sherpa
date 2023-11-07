@@ -1,4 +1,4 @@
-#include "RECONNECTIONS/Main/Reconnect_Statistical.H"
+#include "RECONNECTIONS/Main/Reconnect_Gluon_Debug.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
@@ -8,7 +8,7 @@ using namespace RECONNECTIONS;
 using namespace ATOOLS;
 using namespace std;
 
-Reconnect_Statistical::Reconnect_Statistical() : Reconnection_Base() 
+Reconnect_Gluon_Debug::Reconnect_Gluon_Debug() : Reconnection_Base() 
 {
 	// define histogram for the total stringlength and add to histogram map
 	// (no idea what appropriate maximum / binning is yet)
@@ -16,7 +16,7 @@ Reconnect_Statistical::Reconnect_Statistical() : Reconnection_Base()
 	this->m_stringlength_totals.clear();
 }
 
-Reconnect_Statistical::~Reconnect_Statistical() {
+Reconnect_Gluon_Debug::~Reconnect_Gluon_Debug() {
   //PlotTotalLength(TotalLength());
   m_collist.clear();
   //msg_Info() << std::endl << "Min. total stringlength: " << this->find_min_totalLength(this->m_stringlength_totals) << std::endl;
@@ -24,7 +24,7 @@ Reconnect_Statistical::~Reconnect_Statistical() {
   write_stringLengths_to_file(this->m_stringlength_totals);
 }
 
-void Reconnect_Statistical::SetParameters() {
+void Reconnect_Gluon_Debug::SetParameters() {
   // Pmode is the mode for the distance measure in momentum space,
   // based on the notion of the string are law, cf. hep-ph/9812423, where the
   // area of a "string" made up of two coloured particles i and j is given by
@@ -41,38 +41,20 @@ void Reconnect_Statistical::SetParameters() {
   m_etaR      = sqr(s["etaR"].SetDefault(0.16).Get<double>());
   m_reshuffle = s["Reshuffle"].SetDefault(1./9.).Get<double>();
   m_kappa     = s["kappa"].SetDefault(2.).Get<double>();
-  m_gOnly     = s["g_only"].SetDefault(false).Get<bool>();
 }
 
-void Reconnect_Statistical::Reset() {
+void Reconnect_Gluon_Debug::Reset() {
   m_collist.clear();
   Reconnection_Base::Reset();
 }
 
-int Reconnect_Statistical::operator()(Blob_List *const blobs) {
+int Reconnect_Gluon_Debug::operator()(Blob_List *const blobs) {
   if (!HarvestParticles(blobs))               return -1;
   if (m_cols[0].empty() && m_cols[1].empty()) return 0;
   m_norm = TotalLength();
   PlotTotalLength(TotalLength()); // don't call twice, put in var ...
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
-       cit!=m_cols[0].end();cit++) 
-  {
-  	if(m_gOnly)
-  	{
-           msg_Info() << "\nGluon-only mode...\n";
-  	   if(cit->second->Flav().IsGluon())
-	   {
-  		m_collist.push_back(cit->first); 
-  		msg_Info() << std::endl << "Particle->Number(): " << cit->second->Number() << std::endl; 
-  	   }
-
-	}
-	else 
-	{
-		m_collist.push_back(cit->first);
-		msg_Info() << std::endl << "Particle->Number(): " << cit->second->Number() << std::endl;
-	}
-  }
+       cit!=m_cols[0].end();cit++) { m_collist.push_back(cit->first); msg_Info() << std::endl << "Particle->Number(): " << cit->second->Number() << std::endl; }
   size_t N = m_collist.size();
   unsigned int col[2];
   for (size_t i=0;i<sqr(N);i++) {
@@ -84,8 +66,7 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
   return true;
 }
 
-bool Reconnect_Statistical::
-SelectColourPair(const size_t & N,unsigned int & col1, unsigned int & col2) {
+bool Reconnect_Gluon_Debug::SelectColourPair(const size_t & N,unsigned int & col1, unsigned int & col2) {
   unsigned int trials=0;
   do {
     col1 = m_collist[int(ran->Get()*N)];
@@ -97,7 +78,7 @@ SelectColourPair(const size_t & N,unsigned int & col1, unsigned int & col2) {
   return true;
 }
 
-bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
+bool Reconnect_Gluon_Debug::AttemptSwap(const unsigned int col[2]) {
   if (m_cols[0].find(col[0])==m_cols[0].end() ||
       m_cols[0].find(col[1])==m_cols[0].end() ||
       m_cols[1].find(col[0])==m_cols[1].end() ||
@@ -119,7 +100,7 @@ bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
   return true;
 }
 
-void Reconnect_Statistical::UpdateColours() {
+void Reconnect_Gluon_Debug::UpdateColours() {
   for (size_t i=0;i<2;i++) {
     for (map<unsigned int,Particle *>::iterator cit=m_cols[i].begin();
 	 cit!=m_cols[i].end();cit++) {
@@ -128,11 +109,11 @@ void Reconnect_Statistical::UpdateColours() {
   }
 }
 
-double Reconnect_Statistical::Distance(Particle * trip,Particle * anti) {
+double Reconnect_Gluon_Debug::Distance(Particle * trip,Particle * anti) {
   return MomDistance(trip,anti);
 }
 
-double Reconnect_Statistical::MomDistance(Particle * trip,Particle * anti) {
+double Reconnect_Gluon_Debug::MomDistance(Particle * trip,Particle * anti) {
   double p1p2 = trip->Momentum() * anti->Momentum();
   if (trip->Flav().IsGluon()) p1p2 /= 2.;
   if (anti->Flav().IsGluon()) p1p2 /= 2.;
@@ -140,16 +121,16 @@ double Reconnect_Statistical::MomDistance(Particle * trip,Particle * anti) {
   return p1p2-m1m2;
 }
 
-double Reconnect_Statistical::PosDistance(Particle * trip,Particle * anti) {
+double Reconnect_Gluon_Debug::PosDistance(Particle * trip,Particle * anti) {
   double xdist2 = dabs((trip->XProd()-anti->XProd()).Abs2());
   return xdist2<m_R02 ? 1. : pow(xdist2/m_R02, m_etaR);
 }
 
-double Reconnect_Statistical::ColDistance(Particle * trip,Particle * anti) {
+double Reconnect_Gluon_Debug::ColDistance(Particle * trip,Particle * anti) {
   return trip->GetFlow(1)==anti->GetFlow(2) ? 1. : m_reshuffle;
 }
 
-double Reconnect_Statistical::TotalLength() {
+double Reconnect_Gluon_Debug::TotalLength() {
   double total = 1.;
   Particle * part1, * part2;
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
@@ -167,7 +148,7 @@ double Reconnect_Statistical::TotalLength() {
 }
 
 
-void Reconnect_Statistical::PlotTotalLength(double total_length)
+void Reconnect_Gluon_Deubg::PlotTotalLength(double total_length)
 {
 	// define and fill histogram of total string length ...
 	//std::cout << std::endl << "total string length: " << total_length << std::endl;
@@ -193,10 +174,11 @@ double Reconnect_Statistical::find_max_totalLength(std::vector<double> total_vec
 	return max_value;
 }*/
 
-void Reconnect_Statistical::write_stringLengths_to_file(std::vector<double> total_vec)
+void Reconnect_Gluon_Debug::write_stringLengths_to_file(std::vector<double> total_vec)
 {
-	std::ofstream output_file("./Reconnection_Analysis/stringlength_vec.txt");
+	/*std::ofstream output_file("./Reconnection_Analysis/stringlength_vec.txt");
 	std::ostream_iterator<double> output_iterator(output_file, "\n");
-	std::copy(total_vec.begin(), total_vec.end(), output_iterator);
+	std::copy(total_vec.begin(), total_vec.end(), output_iterator);*/
 }
+
 

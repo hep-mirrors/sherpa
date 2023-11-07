@@ -10,6 +10,7 @@ MI_HANDLER: None
 
 COLOUR_RECONNECTIONS:
     MODE: true
+    g_only: true
 
 # scales, tags for scale variations
 CORE_SCALE: VAR{Abs2(p[2]+p[3])}

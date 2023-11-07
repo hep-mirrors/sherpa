@@ -1,6 +1,6 @@
 ---
 title: Sherpa run-time settings
-date: Mon Oct 30 14:31:34 2023
+date: Mon Nov  6 15:53:24 2023
 ...
 
 Unused settings
@@ -24,6 +24,7 @@ Note that parameters that can take on different values because they are set with
 BEAMS| 0, 0 |  |  | 2212 |  | 2212 |  |
 BEAM\_ENERGIES| 0, 0 |  |  | 6500 |  | 6500 |  |
 COLOUR\_RECONNECTIONS:MODE| 0 |  |  | true |  | 1 |  |
+COLOUR\_RECONNECTIONS:g\_only| 0 |  |  | true |  | 1 |  |
 ERROR| 0\.01 |  |  | 0\.99 |  | 0\.99 |  |
 EVENTS| 100 |  |  | 1000 |  | 1000 |  |
 EVENT\_GENERATION\_MODE| PartiallyUnweighted |  |  | Weighted |  | Weighted |  |
