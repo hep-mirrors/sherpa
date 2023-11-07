@@ -125,7 +125,7 @@ void Hadronisation_Parameters::ReadSplittingParameters()
 
   // generic parameter for non-perturbative transverse momentum
   m_parametermap_vecs[string("kT_0")] =
-    s["KT_0"].SetDefault<double>({1.34}).GetVector<double>();
+    s["KT_0"].SetDefault<double>({1.00}).GetVector<double>();
 
   // gluon fragmentation
   m_parametermap_vecs[string("alphaG")] =

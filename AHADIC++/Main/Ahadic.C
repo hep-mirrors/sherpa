@@ -47,6 +47,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   Return_Value::IncCall(mname);
 
   const int n_vars = hadpars->NumberOfVariations();
+
   // Always make sure, all weights are unset
   // m_singletchecker.reset_variationweights();
   m_softclusters.reset_variationweights(n_vars);
@@ -104,14 +105,17 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   const auto wgts_kt       = m_ktselector.get_variationweights();
 
   // get signal blob
-  Blob *blob(blobs->FindFirst(btp::Signal_Process));
-  auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
   DEBUG_VAR("DEBUG_AHADIC_WEIGHTS\n");
   DEBUG_VAR(wgts_cluster);
   DEBUG_VAR(wgts_gluons);
   DEBUG_VAR(wgts_kt);
   DEBUG_VAR(wgts_soft);
   DEBUG_VAR(wgts_flavs);
+
+  Blob *blob(blobs->FindFirst(btp::Signal_Process));
+  auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
+  const auto found {wgtmap.find("AHADIC") == wgtmap.end() ? false : true};
+
   // DEBUG_VAR(wgts_singlets);
   if(wgts_cluster.size() == wgts_gluons.size() &&
      wgts_soft.size() == wgts_flavs.size()
@@ -132,10 +136,14 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       if(i==0 && wgt != 1.0) {
 	std::cout << "THIS SHOULD NOT HAPPEN " << wgt << std::endl;
       }
-      if(std::isnan(wgt))
+      if(std::isnan(wgt)) {
 	wgtmap["AHADIC"][name] = 1.0;
-      else
-	wgtmap["AHADIC"][name] = wgt;
+      } else {
+	if(found)
+	  wgtmap["AHADIC"][name] *= wgt;
+	else
+	  wgtmap["AHADIC"][name] = wgt;
+      }
     }
     DEBUG_VAR(wgtmap);
   } else {
