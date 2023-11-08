@@ -67,7 +67,7 @@ public:
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
   bool CheckPhotonCollinear(const Vec4D_Vector &p, const Vec4D &k);
-  void CheckMasses(Vec4D_Vector &p);
+  void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
 
   inline void SetBorn(double b) { m_born = b;}

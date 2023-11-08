@@ -109,6 +109,7 @@ double NLO_Base::CalculateVirtual() {
 	if (!m_looptool && !m_realvirt) return 0;
 	double virt;
 	double sub;
+	CheckMasses(m_plab);
 	CheckMassReg();
 	if(m_fsrmode==2) virt = p_virt->Calc(m_bornMomenta, m_born);
 	else virt = p_virt->Calc(m_plab, m_born);
@@ -141,7 +142,6 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
 	Vec4D kk = k;
 	MapMomenta(p, k);
-	CheckMasses(p);
 	m_evts+=1;
 	double subflux = 0;
 	double totflux = 1;
@@ -186,6 +186,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 			if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	}
 	p.push_back(k);
+	CheckMasses(p,1);
 	double r = p_real->Calc_R(p) / norm * flux;///p_yfsFormFact->BVirtT(p[0],p[2]);;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
@@ -323,7 +324,7 @@ void NLO_Base::MapInitial(Vec4D_Vector &p, Vec4D &k){
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Vec4D Q;
 	Vec4D QQ, PP;
-	Poincare boostLab(m_plab[0] + m_plab[1]);
+	Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
 	// Poincare boostLab(p[0] + p[1]);
 	for (int i = 2; i < p.size(); ++i)
 	{
@@ -443,15 +444,17 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {
 }
 
 
-void NLO_Base::CheckMasses(Vec4D_Vector &p){
+void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode){
 	bool allonshell=true;
 	std::vector<double> masses;
+	Flavour_Vector flavs = m_flavs;
+	if(realmode) flavs.push_back(Flavour(kf_photon));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		masses.push_back(m_flavs[i].Mass());
-		if(!IsEqual(p[i].Mass(),m_flavs[i].Mass(),1e-6)){
+		masses.push_back(flavs[i].Mass());
+		if(!IsEqual(p[i].Mass(),flavs[i].Mass(),1e-6)){
 			msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
-								 <<"Flavour = "<<m_flavs[i]<<", with mass = "<<m_flavs[i].Mass()<<std::endl
+								 <<"Flavour = "<<flavs[i]<<", with mass = "<<flavs[i].Mass()<<std::endl
 								 <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
 			allonshell = false;
 
