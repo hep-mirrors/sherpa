@@ -1,13 +1,16 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
+#include "ATOOLS/Org/Message.H"
 
 #define USING_DIS_MEC 
+
+using namespace ATOOLS;
 
 namespace CSSHOWER {
   
   class LF_SSV_FF: public SF_Lorentz {
   public:
 
-    inline LF_SSV_FF(const SF_Key &key): SF_Lorentz(key) {}
+    inline LF_SSV_FF(const SF_Key &key): SF_Lorentz(key) { }
 
     double operator()(const double,const double,const double,
 		      const double,const double);
@@ -710,34 +713,18 @@ operator()(const Parameter_Type &args) const
 {
   if (args.m_col<0) return NULL;
   if ((args.m_mode==0 &&
-       args.p_v->in[0].IntSpin()==0 &&
-       args.p_v->in[1].IntSpin()==0 &&
+       (args.p_v->in[0].IntSpin()==0 || args.p_v->in[0].IsDiQuark()) &&
+       (args.p_v->in[1].IntSpin()==0 || args.p_v->in[1].IsDiQuark()) &&
        args.p_v->in[2].IntSpin()==2) ||
       (args.m_mode==1 &&
-       args.p_v->in[0].IntSpin()==0 &&
-       args.p_v->in[2].IntSpin()==0 &&
+       (args.p_v->in[0].IntSpin()==0 || args.p_v->in[0].IsDiQuark()) &&
+       (args.p_v->in[2].IntSpin()==0 || args.p_v->in[2].IsDiQuark()) &&
        args.p_v->in[1].IntSpin()==2)) {
     switch (args.m_type) {
     case cstp::FF: return new LF_SSV_FF(args);
     case cstp::FI: return new LF_SSV_FI(args);
     case cstp::IF: return new LF_SSV_IF(args);
     case cstp::II: return new LF_SSV_II(args);
-    case cstp::none: break;
-    }
-  }
-  if ((args.m_mode==0 &&
-       args.p_v->in[0].IntSpin()==0 &&
-       args.p_v->in[1].IntSpin()==2 &&
-       args.p_v->in[2].IntSpin()==0) ||
-      (args.m_mode==1 &&
-       args.p_v->in[0].IntSpin()==0 &&
-       args.p_v->in[2].IntSpin()==2 &&
-       args.p_v->in[1].IntSpin()==0)) {
-    switch (args.m_type) {
-    case cstp::FF: return new LF_SVS_FF(args);
-    case cstp::FI: return new LF_SVS_FI(args);
-    case cstp::IF: return new LF_SVS_IF(args);
-    case cstp::II: return new LF_SVS_II(args);
     case cstp::none: break;
     }
   }

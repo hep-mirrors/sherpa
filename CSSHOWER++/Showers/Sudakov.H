@@ -39,6 +39,7 @@ namespace CSSHOWER {
     bool DefineFIBoundaries(double,double,int);
     bool DefineIFBoundaries(double,double,int);
     bool DefineIIBoundaries(double,double,int);
+    void AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
   public:
