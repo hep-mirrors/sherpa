@@ -665,14 +665,14 @@ void Real_ff::D2(int i, int j)
   double p0, p1;
 
   if (m_fsrmode != 0) {
-    double aa1 = m_y[i];
-    double bb1 = m_z[i];
-    double aa2 = m_y[j];
-    double bb2 = m_z[j];
-    // double aa1 = k1 * m_beam1 / m_p1p2;
-    // double bb1 = k1 * m_beam2 / m_p1p2;
-    // double aa2 = k2 * m_beam1 / m_p1p2;
-    // double bb2 = k2 * m_beam2 / m_p1p2;
+    // double aa1 = m_y[i];
+    // double bb1 = m_z[i];
+    // double aa2 = m_y[j];
+    // double bb2 = m_z[j];
+    double aa1 = k1 * m_beam1 / m_p1p2;
+    double bb1 = k1 * m_beam2 / m_p1p2;
+    double aa2 = k2 * m_beam1 / m_p1p2;
+    double bb2 = k2 * m_beam2 / m_p1p2;
     a1 = aa1 / (1 + aa1 + bb1);
     b1 = bb1 / (1 + aa1 + bb1);
     a2 = aa2 / (1 + aa2 + bb2);
