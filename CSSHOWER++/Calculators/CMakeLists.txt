@@ -8,6 +8,8 @@ set(Calculators_SOURCES CF_QCD.C
                         LF_VVV.C
                         LF_Triangle.C)
 
+set(Calculators_HEADERS CF_QCD.H)
+		      
 sherpa_create_git_info(Calculators)
  
 add_library(CSCalculators SHARED ${Calculators_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )

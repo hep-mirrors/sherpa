@@ -1,8 +1,7 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
+#include "CSSHOWER++/Calculators/CF_QCD.H"
 
 #include "MODEL/Main/Single_Vertex.H"
-#include "MODEL/Main/Model_Base.H"
-#include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -10,105 +9,34 @@
 #include <algorithm>
 #include <cassert>
 
-using namespace ATOOLS;
-
-namespace CSSHOWER {
-  
-  const double s_Nc = 3.;
-  const double s_CF = (s_Nc*s_Nc-1.)/(2.*s_Nc);
-  const double s_CA = s_Nc;
-  const double s_TR = 1./2.;
-
-  class CF_QCD: public SF_Coupling {
-  protected:
-
-    class QCD_Coupling_Info {
-
-    public:
-
-      QCD_Coupling_Info():
-      p_cpl(NULL), m_rsf(1.0), p_cplmax(NULL)
-      {};
-      QCD_Coupling_Info(MODEL::Running_AlphaS * cpl, double rsf, std::vector<double> * cplmax=NULL):
-      p_cpl(cpl), m_rsf(rsf), p_cplmax(cplmax)
-      {};
-
-      MODEL::Running_AlphaS * const Coupling() const { return p_cpl; }
-      double RSF() const { return m_rsf; }
-      std::vector<double> * const MaxCoupling() const { return p_cplmax; }
-      void SetMaxCoupling(std::vector<double> * const cplmax) { p_cplmax = cplmax; }
-      bool IsValid() const { return (p_cpl != NULL); }
-
-    private:
-
-      MODEL::Running_AlphaS * p_cpl;
-      double m_rsf;
-      std::vector<double> * p_cplmax;
-    };
-
-    /*!
-     * Underlying couplings set by SetCoupling and SetAlternativeUnderlyingCoupling, respectively
-     *
-     * If the alternative coupling is set, it takes precedence. This can be used for reweighting purposes.
-     */
-    QCD_Coupling_Info m_maincplinfo, m_altcplinfo;
-    const QCD_Coupling_Info & CurrentCouplingInfo() const
-    { return (m_altcplinfo.IsValid() ? m_altcplinfo : m_maincplinfo); }
-
-    //! Buffer of max alphas values to avoid re-calculations
-    std::map<MODEL::Running_AlphaS *, std::vector<double> > m_altcplmax;
-
-    double m_q, m_k0sq, m_kfac[7];
-    int m_scvmode;
-
-  public:
-
-    CF_QCD(const SF_Key &key):
-      SF_Coupling(key),
-      m_maincplinfo(QCD_Coupling_Info()), m_altcplinfo(QCD_Coupling_Info()),
-      m_altcplmax(),
-      m_q(0.), m_k0sq(0.0), m_scvmode(0)
-    {
-      if (key.p_v->in[0].StrongCharge()==8 &&
-	  key.p_v->in[1].StrongCharge()==8 &&
-	  key.p_v->in[2].StrongCharge()==8) m_q=s_CA;
-      else m_q=(key.p_v->in[0].StrongCharge()==8)?s_TR:s_CF;
-      if (key.m_type==cstp::FF || key.m_type==cstp::FI) {
-	if (key.p_v->in[0].StrongCharge()==8) m_q/=2.0;
-      }
-      else {
-	if (key.m_mode==0) {
-	  if (key.p_v->in[1].StrongCharge()==8) m_q/=2.0;
-	}
-	else {
-	  if (key.p_v->in[2].StrongCharge()==8) m_q/=2.0;
-	}
-      }
-      for (size_t nf(0);nf<7;++nf)
-        m_kfac[nf]=exp(-(67.0-3.0*ATOOLS::sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));
-    }
-
-    double B0(const double &nf) const
-    {
-      return 11.0/6.0*s_CA-2.0/3.0*s_TR*nf;
-    }
-
-    bool SetCoupling(MODEL::Model_Base *md,
-		     const double &k0sqi,const double &k0sqf,
-		     const double &isfac,const double &fsfac);
-    double CplMax(MODEL::Running_AlphaS * as, double rsf) const;
-    double Coupling(const double &scale,const int pol);
-    bool AllowSpec(const ATOOLS::Flavour &fl,const int mode);
-    double CplFac(const double &scale) const;
-
-    bool AllowsAlternativeCouplingUsage() const { return true; }
-    void SetAlternativeUnderlyingCoupling(void *, double sf);
-  };
-
-}
-
 using namespace CSSHOWER;
 using namespace MODEL;
+using namespace ATOOLS;
+
+CF_QCD::CF_QCD(const SF_Key &key):
+  SF_Coupling(key),
+  m_maincplinfo(QCD_Coupling_Info()), m_altcplinfo(QCD_Coupling_Info()),
+  m_altcplmax(),
+  m_q(0.), m_k0sq(0.0), m_scvmode(0)
+{
+  if (key.p_v->in[0].StrongCharge()==8 &&
+      key.p_v->in[1].StrongCharge()==8 &&
+      key.p_v->in[2].StrongCharge()==8) m_q=s_CA;
+  else m_q=(key.p_v->in[0].StrongCharge()==8)?s_TR:s_CF;
+  if (key.m_type==cstp::FF || key.m_type==cstp::FI) {
+    if (key.p_v->in[0].StrongCharge()==8) m_q/=2.0;
+  }
+  else {
+    if (key.m_mode==0) {
+      if (key.p_v->in[1].StrongCharge()==8) m_q/=2.0;
+    }
+    else {
+      if (key.p_v->in[2].StrongCharge()==8) m_q/=2.0;
+    }
+  }
+  for (size_t nf(0);nf<7;++nf)
+    m_kfac[nf]=exp(-(67.0-3.0*ATOOLS::sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));
+}
 
 bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 			 const double &k0sqi,const double &k0sqf,
@@ -301,6 +229,7 @@ operator()(const SFC_Filler_Key &key) const
 {
   DEBUG_FUNC("model = "<<key.p_md->Name());
   const Vertex_Table *vtab(key.p_md->VertexTable());
+  bool found = false;
   for (Vertex_Table::const_iterator
 	 vlit=vtab->begin();vlit!=vtab->end();++vlit) {
     for (Vertex_List::const_iterator 
@@ -323,4 +252,3 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"qcd coupling filler";
 }
-

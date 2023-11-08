@@ -1,5 +1,6 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 
+#include "CSSHOWER++/Calculators/CF_QCD.H"
 #include "CSSHOWER++/Tools/Parton.H"
 #include "MODEL/Main/Color_Function.H"
 #include "MODEL/Main/Single_Vertex.H"
@@ -39,15 +40,21 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
   std::sort(spins.begin(),spins.end());
 
   SF_Lorentz* lf(NULL);
-  if(spins[0]==0 && spins[1]==0 && spins[2]==2)
+  if( (spins[0]==0 || vertex.in[0].IsDiQuark()) &&
+      (spins[1]==0 || vertex.in[1].IsDiQuark()) &&
+      spins[2]==2) {
     lf = SFL_Getter::GetObject("SSV",sf_key);
+  }
   else if(spins[0]==0 && spins[1]==2 && spins[2]==2)
     lf = SFL_Getter::GetObject("HVV",sf_key);
-  else if(spins[0]==1 && spins[1]==1 && spins[2]==2)
+  else if(spins[0]==1 && spins[1]==1 && spins[2]==2) {
     lf = SFL_Getter::GetObject("FFV1",sf_key);
-  else if(spins[0]==2 && spins[1]==2 && spins[2]==2)
+  }
+  else if( spins[0]==2 && !vertex.in[0].IsDiQuark() &&
+	   spins[1]==2 && !vertex.in[1].IsDiQuark() &&
+	   spins[2]==2 && !vertex.in[2].IsDiQuark() ) {
     lf = SFL_Getter::GetObject("VVV",sf_key);
-
+  }
   return lf;
 }
 
@@ -57,12 +64,19 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   m_on(1), m_qcd(-1), m_facscalefactor(1.0)
 {
   SF_Key ckey(key);
-  ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(0),ckey);
+  ckey.p_cf = p_cf = SFC_Getter::GetObject(ckey.ID(0),ckey);
   if (p_cf==NULL) {
-    ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(1),ckey);
+    ckey.p_cf = p_cf = SFC_Getter::GetObject(ckey.ID(1),ckey);
     if (p_cf==NULL) {
-      m_on=-1;
-      return;
+      if (ckey.p_v->in[0].IsDiQuark() &&
+	  ckey.p_v->in[1].IsDiQuark() &&
+	  ckey.p_v->in[2].IsGluon()) {
+	ckey.p_cf = p_cf = new CF_QCD(ckey);
+      }
+      else {
+	m_on=-1;
+	return;
+      }
     }
   }
   p_lf = InitLorentzCalc(*ckey.p_v, ckey);
@@ -72,7 +86,9 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   }
   p_cf->SetLF(p_lf);
   p_lf->SetSF(this);
-  m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
+  m_qcd = ( (p_lf->FlA().Strong()!=0 || p_lf->FlA().IsDiQuark()) &&
+	    (p_lf->FlB().Strong()!=0 || p_lf->FlB().IsDiQuark()) &&
+	    (p_lf->FlC().Strong()!=0 || p_lf->FlC().IsDiQuark()) );
   m_on=PureQCD()&&(ckey.m_qcdmode&1);// so far only qcd evolution
   if (!m_on && (ckey.m_ewmode&1) &&
       (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
