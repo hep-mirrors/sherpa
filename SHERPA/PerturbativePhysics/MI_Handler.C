@@ -28,7 +28,6 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   Settings& s = Settings::GetMainSettings();
   m_name      = s["MI_HANDLER"].SetDefault("Amisic").UseNoneReplacements().Get<string>();
   string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
-  msg_Out()<<METHOD<<": name = "<<m_name<<", soft = "<<scm<<", id = "<<m_id<<"\n";
   if (m_id==PDF::isr::bunch_rescatter) {
     string resc = s["BEAM_RESCATTERING"].Get<string>();
     scm = m_name = resc;

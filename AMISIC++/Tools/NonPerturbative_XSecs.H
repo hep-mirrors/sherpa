@@ -1,8 +1,7 @@
 #ifndef AMISIC_Tools_NonPerturbative_XSecs_H
 #define AMISIC_Tools_NonPerturbative_XSecs_H
 
-#include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
-#include "AMISIC++/Tools/MI_Parameters.H"
+#include "AMISIC++/Tools/Beam_Integrator.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Random.H"
@@ -10,6 +9,10 @@
 
 namespace REMNANTS {
   class Remnant_Handler;
+}
+
+namespace BEAM {
+  class Beam_Base;
 }
 
 namespace AMISIC {
@@ -28,6 +31,11 @@ namespace AMISIC {
   private:
     REMNANTS::Remnant_Handler   * p_remnants;
     Hadronic_XSec_Calculator    * p_xsecs;
+    BEAM::Beam_Base             * p_beams[2];
+    bool                          m_variableS;
+    Beam_Integrator               m_integrator;
+    ATOOLS::Poincare              m_boost;
+    
     evt_type::code                m_evttype;
     std::array<ATOOLS::Flavour,2> m_inflav;
     std::array<double,2>          m_masses, m_masses2; 
@@ -36,7 +44,7 @@ namespace AMISIC {
     std::array<size_t,2>          m_hadtags;
     double m_smin, m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_alphaQED;
     double m_s, m_s0, m_mpi, m_deltaMres, m_cres;
-    double m_weight;
+    double m_weight, m_muf2, m_mur2;
     ATOOLS::Vec4D m_inmom[2];
     ATOOLS::Vec4D m_outmom[4];
 
@@ -87,25 +95,16 @@ namespace AMISIC {
       if (expo==-1.) return log(smax/smin);
       return (pow(smax,expo+1.)-pow(smin,expo+1.))/(expo+1.);
     }
-    inline bool FixFS(std::array<ATOOLS::Flavour, 2> & flavs) {
-      for (size_t i=0;i<2;i++) {
-	m_outflav[2*i]    = flavs[i];
-	m_outmasses[2*i]  = m_outflav[i].Mass();
-	m_outmasses2[2*i] = ATOOLS::sqr(m_outmasses[2*i]);
-	m_hadtags[i]      = p_xsecs->Index(flavs[i],i);
-	if (m_hadtags[i]>99) return false;
-      }
-      return true;
-    }
     
     const event_mode::code SelectMode();
+    bool   FixFS(std::array<ATOOLS::Flavour, 2> & flavs);
     bool   FixOutMomenta(const double & t);
     bool   SplitDiffractiveState(const size_t & pos);
     bool   SelectFlavoursOfDiffraction(const size_t & pos,const double & M2);
     ATOOLS::Blob * ElasticScatter();
     ATOOLS::Blob * SingleDiffractiveScatter(const size_t & pos);
     ATOOLS::Blob * DoubleDiffractiveScatter();
-    ATOOLS::Blob * InitBlob(const double & muR=0.,const double & muQ=0.);
+    ATOOLS::Blob * InitBlob(const double & muR2=0.,const double & muQ2=0.);
 
     bool   m_ana;
     size_t m_Nsteps, m_Nevents;
@@ -120,11 +119,15 @@ namespace AMISIC {
     void TestDoubleD();
   public:
     NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants, Hadronic_XSec_Calculator * xsecs);
-
+    void SetBeams(BEAM::Beam_Base * beam1,BEAM::Beam_Base * beam2);
+    void CalculateSDependentCrossSections();
+    
     ATOOLS::Blob * MakeScatter();
 
     inline const double & Weight() const { return m_weight; }
     inline const double & Smin()   const { return m_smin; }
+    inline const double & MuF2()   const { return m_muf2; }
+    inline const double & MuR2()   const { return m_mur2; }
     
     inline void SetHadTags(const std::array<size_t,2> tags) {
       for (size_t i=0;i<2;i++) m_hadtags[i] = tags[i];

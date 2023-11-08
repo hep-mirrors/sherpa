@@ -109,7 +109,7 @@ void Hadronic_XSec_Calculator::operator()(double s)
   // convert non-diffractive cross section from millibarn to 1/GeV^2
   ////////////////////////////////////////////////////////////////////////////////////////////
   CalculateXSecs(); 
-  m_xsnd   *= 1.e9/rpa->Picobarn();
+  m_xsnd *= 1.e9/rpa->Picobarn();
 }
 
 void Hadronic_XSec_Calculator::CalculateXSecs() {

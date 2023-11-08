@@ -45,7 +45,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
   // If the parton equals the beam we can extract it - there may be knock-on effects down
   // the line in EPA etc., which we have to monitor.
   if (parton->Flav()==m_beamflav &&
-      parton->Momentum()==IncomingMomentum()) return true;
+      IsEqual(parton->Momentum(),IncomingMomentum(),1e-8)) return true;
   // Extracting a parton from a remnant (usually stemming from a shower blob)
   // and, if necessary, create a spectator to compensate flavour.
   if (TestExtract(parton->Flav(), parton->Momentum())) {
@@ -60,6 +60,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
   msg_Error() << METHOD << ": Cannot extract particle:\n"
               << (*parton) << "\n  from: " << p_beam->Bunch()
               << " with momentum " << p_beam->OutMomentum() << "\n";
+  abort();
   return false;
 }
 

@@ -41,7 +41,12 @@ void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler,
 Blob * Single_Collision_Handler::NextScatter() {
   // If AMISIC only produces (semi-inclusive) soft interactions use the
   // NonPerturbative_XSecs to generate a blob.
-  if (p_soft) return p_soft->MakeScatter();
+  if (p_soft) {
+    Blob * blob = p_soft->MakeScatter();
+    m_muf2 = p_soft->MuF2(); 
+    m_mur2 = p_soft->MuR2();
+    return blob;
+  }
   // Simple logic - bfac is provided from outside, now
   // - produce a trial kinematics (new transverse momentum smaller than the last one,
   //   supplemented with rapidities, Mandelstams ...)
