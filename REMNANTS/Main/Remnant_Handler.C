@@ -186,7 +186,7 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
     Particle *part = showerblob->InParticle(i);
     if (part->ProductionBlob() != nullptr) continue;
     // Make sure extraction works out - mainly subject to energy conservation
-    if (!Extract(part, part->Beam()))      return false;
+    if (!Extract(part, part->Beam())) { m_fails++; return false; }
   }
   m_treatedshowerblobs.insert(showerblob);
   return true;

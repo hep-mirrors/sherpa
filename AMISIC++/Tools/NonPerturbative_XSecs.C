@@ -1,4 +1,5 @@
 #include "AMISIC++/Tools/NonPerturbative_XSecs.H"
+#include "BEAM/Main/Beam_Base.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Math/Random.H"
@@ -10,7 +11,7 @@ using namespace std;
 
 NonPerturbative_XSecs::
 NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,Hadronic_XSec_Calculator * xsecs) :
-  p_remnants(remnants), p_xsecs(xsecs),
+  p_remnants(remnants), p_xsecs(xsecs), m_variableS(false),
   m_evttype(mipars->GetEvtType()),
   m_smin(p_xsecs->Smin()), 
   m_eps_pomeron(p_xsecs->EpsPomeron()), m_alphaP_pomeron(p_xsecs->AlphaPPomeron()),
@@ -20,17 +21,41 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,Hadronic_XSec_Calcula
   m_inflav(p_xsecs->GetFlavs()),
   m_ana(false)
 {
+  for (size_t i=0;i<2;i++) p_beams[i] = NULL;
   for (size_t i=0;i<2;i++) {
     m_masses[i] = m_inflav[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
   }
   if (m_ana) { Tests(); exit(0); }
 }
 
+void NonPerturbative_XSecs::SetBeams(BEAM::Beam_Base * beam1,BEAM::Beam_Base * beam2) {
+  p_beams[0] = beam1; p_beams[1] = beam2;
+  for (size_t i=0;i<2;i++) {
+    if (p_beams[i]!=NULL && p_beams[i]->Type()==BEAM::beamspectrum::EPA) {
+      m_variableS = true;
+      break;
+    }
+  }
+}
+
+void NonPerturbative_XSecs::CalculateSDependentCrossSections() {
+  if (!m_variableS) return;	
+  m_integrator.Init(p_xsecs,p_beams[0],p_beams[1],m_evttype);
+}
+
 Blob * NonPerturbative_XSecs::MakeScatter() {
-  m_inmom[0] = p_remnants->GetRemnant(0)->InMomentum();
-  m_inmom[1] = p_remnants->GetRemnant(1)->InMomentum();
-  m_s        = (m_inmom[0]+m_inmom[1]).Abs2();
-  if (m_s<m_smin) THROW(fatal_error,"Insufficient s in Non-Perturbative Events in AMISIC++");
+  if (m_variableS) {
+    if (!m_integrator()) {
+      msg_Error()<<"Error in "<<METHOD<<": could not create initial-state phase-space.\n";
+      return NULL;
+    }
+  }
+  for (size_t beam=0;beam<2;beam++) m_inmom[beam] = p_remnants->GetRemnant(beam)->InMomentum();
+  m_s     = (m_inmom[0]+m_inmom[1]).Abs2();
+  m_boost = Poincare(m_inmom[0]+m_inmom[1]);
+  for (size_t beam=0;beam<2;beam++) m_boost.Boost(m_inmom[beam]);
+  if (m_s<m_smin) THROW(fatal_error,"Insufficient s = "+ToString(m_s)+" vs "+ToString(m_smin)+
+			" in Non-Perturbative Events in AMISIC++");
   (*p_xsecs)(m_s);
   array<Flavour, 2> flavs;
   switch(SelectMode()) {
@@ -56,10 +81,11 @@ Blob * NonPerturbative_XSecs::MakeScatter() {
 const event_mode::code NonPerturbative_XSecs::SelectMode() {
   m_weight = 0.;
   for (size_t i=0;i<2;i++) {
-    m_outflav[2*i]    = m_inflav[i];
-    m_outflav[2*i+1]  = Flavour(kf_none);
-    m_outmasses[2*i]  = m_masses[i];
-    m_outmasses2[2*i] = m_masses2[i];
+    m_outflav[2*i]     = m_inflav[i];
+    m_outflav[2*i+1]   = Flavour(kf_none);
+    m_outmasses[2*i]   = m_masses[i];
+    m_outmasses2[2*i]  = m_masses2[i];
+    m_outmasses[2*i+1] = m_outmasses2[2*i+1] = 0.;
   }
   double xsecs[4]; for (size_t i=0;i<3;i++) xsecs[i] = 0.;
 
@@ -71,11 +97,11 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
     m_weight += xsecs[2] = p_xsecs->SigmaSDB();
   if (m_evttype==evt_type::DiffractiveAB || m_evttype==evt_type::QuasiElastic)
     m_weight += xsecs[3] = p_xsecs->SigmaDD();
-  double total = m_weight * ran->Get();
+  double total = m_weight * ran->Get() * 0.999999999;
   size_t i = 0;
   for (i=3;i>0;i--) {
     total -= xsecs[i];
-    if (total<0.) break;
+    if (total<=0.) break;
   }
   switch (i) {
   case 3: return event_mode::DD;
@@ -86,6 +112,17 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
     break;
   }
   THROW(fatal_error,"Could not define event_mode and/or outgoing flavours.")
+}
+
+bool NonPerturbative_XSecs::FixFS(array<ATOOLS::Flavour, 2> & flavs) {
+  for (size_t i=0;i<2;i++) {
+    m_outflav[2*i]    = flavs[i];
+    m_outmasses[2*i]  = m_outflav[2*i].Mass();
+    m_outmasses2[2*i] = ATOOLS::sqr(m_outmasses[2*i]);
+    m_hadtags[i]      = p_xsecs->Index(flavs[i],i);
+    if (m_hadtags[i]>99) return false;
+  }
+  return true;
 }
 
 double NonPerturbative_XSecs::DiffElXSec(const double & s,const double & t) const
@@ -122,27 +159,28 @@ double NonPerturbative_XSecs::DiffSDXSec(const double & s, const double & t,
 }
 
 ATOOLS::Blob * NonPerturbative_XSecs::SingleDiffractiveScatter(const size_t & pos) {
-  double M2min  = sqr(m_masses2[pos]+2.*m_mpi), M2res = sqr(m_masses2[pos]+m_deltaMres);
+  double M2min  = sqr(m_outmasses2[2*pos]+2.*m_mpi), M2res = sqr(m_outmasses2[2*pos]+m_deltaMres);
   double argt   = 2.*(p_xsecs->s_slopes[m_hadtags[1-pos]] + m_alphaP_pomeron*log(m_s/M2min));
   double argM   = -(1. + 2.*m_eps_pomeron);
   double maxval = F_SD(M2min,M2res);
   double t, M2, value;
+  size_t attempts = 0;
   do {
-    t      = ExponentialDist(-m_s,0,argt);
-    M2     = PowerDist(M2min,m_s,argM);
-    value  = ( F_SD(M2,M2res) *
-	       exp(2.*(p_xsecs->s_slopes[m_hadtags[1-pos]]+m_alphaP_pomeron*log(m_s/M2))*t) /
-	       exp(argt * t) );
-  } while (value/maxval<ran->Get());
-  m_outmasses2[2*pos]     = M2;
-  m_outmasses2[2*(1-pos)] = m_masses2[1-pos];
-  if (FixOutMomenta(t) && SplitDiffractiveState(pos)) {
-    Blob * blob = InitBlob(M2,M2);
-    blob->SetType(btp::Hard_Collision);
-    blob->SetStatus(blob_status::needs_showers);
-    return blob;
-  }
-  return NULL;
+    if (attempts++>10000) return NULL;
+    do {
+      t      = ExponentialDist(-m_s,0,argt);
+      M2     = PowerDist(M2min,m_s/4.,argM);
+      value  = ( F_SD(M2,M2res) *
+		 exp(2.*(p_xsecs->s_slopes[m_hadtags[1-pos]]+m_alphaP_pomeron*log(m_s/M2))*t) /
+		 exp(argt * t) );
+    } while (value/maxval<ran->Get());
+    m_outmasses2[2*pos]     = M2;
+  } while (!FixOutMomenta(t));
+  SplitDiffractiveState(pos);
+  Blob * blob = InitBlob(M2,M2);
+  blob->SetType(btp::Hard_Collision);
+  blob->SetStatus(blob_status::needs_showers);
+  return blob;
 }
 
 double NonPerturbative_XSecs::DiffDDXSec(const double & s,const double & t,
@@ -164,31 +202,34 @@ double NonPerturbative_XSecs::DiffDDXSec(const double & s,const double & t,
 ATOOLS::Blob * NonPerturbative_XSecs::DoubleDiffractiveScatter() {
   array<double, 2> M2min, M2res, M2;
   for (size_t i=0;i<2;i++) {
-    M2min[i] = sqr(m_masses2[i]+2.*m_mpi);
-    M2res[i] = sqr(m_masses2[i]+m_deltaMres);
+    M2min[i] = sqr(m_outmasses2[2*i]+2.*m_mpi);
+    M2res[i] = sqr(m_outmasses2[2*i]+m_deltaMres);
   }
   double argt   = 2.*m_alphaP_pomeron * log((m_s*m_s0)/(M2min[0]*M2min[1]));
   double argM   = -(1. + 2.*m_eps_pomeron);
   double maxval = F_DD(M2min,M2res);
   double t, value;
+  size_t attempts = 0;
   do {
-    t       = ExponentialDist(-m_s,0,argt);
-    for (size_t i=0;i<2;i++) M2[i] = PowerDist(M2min[i],m_s,argM);
-    value   = ( F_DD(M2, M2res) *
-		exp(2.*m_alphaP_pomeron * log((m_s*m_s0)/(M2[0]*M2[1])) * t) /
-		exp(argt*t) );
-  } while (value/maxval<ran->Get());
-  for (size_t i=0;i<2;i++) m_outmasses2[2*i] = M2[i];
-  if (FixOutMomenta(t) && SplitDiffractiveState(0) &&  SplitDiffractiveState(1)) {
-    Blob * blob = InitBlob(max(M2[0],M2[1]),max(M2[0],M2[1]));
-    blob->SetType(btp::Hard_Collision);
-    blob->SetStatus(blob_status::needs_showers);
-    return blob;
-  }
-  return NULL;
+    if (attempts++>10000) return NULL;
+    do {
+      t       = ExponentialDist(-m_s,0,argt);
+      for (size_t i=0;i<2;i++) M2[i] = PowerDist(M2min[i],m_s,argM);
+      value   = ( F_DD(M2, M2res) *
+		  exp(2.*m_alphaP_pomeron * log((m_s*m_s0)/(M2[0]*M2[1])) * t) /
+		  exp(argt*t) );
+    } while (value/maxval<ran->Get());
+    for (size_t i=0;i<2;i++) m_outmasses2[2*i] = M2[i];
+  } while (!FixOutMomenta(t));
+  for (size_t i=0;i<2;i++) SplitDiffractiveState(i);
+  Blob * blob = InitBlob(max(M2[0],M2[1]),max(M2[0],M2[1]));
+  blob->SetType(btp::Hard_Collision);
+  blob->SetStatus(blob_status::needs_showers);
+  return blob;
 }
 
 bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
+  if (m_s<sqr(sqrt(m_outmasses2[0])+sqrt(m_outmasses2[2]))) return false;
   double p22  = ( (sqr(m_s-m_outmasses2[0]-m_outmasses2[2]) - 4.*m_outmasses2[0]*m_outmasses2[2] )/
 		  (4.*m_s) );
   double p2   = sqrt(p22), E[4];
@@ -199,9 +240,10 @@ bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
   double phi  = 2.*M_PI*ran->Get();
   m_outmom[0] = Vec4D(E[0],  p2*sint*cos(phi),  p2*sint*sin(phi),  p2*cost);
   m_outmom[2] = Vec4D(E[2], -p2*sint*cos(phi), -p2*sint*sin(phi), -p2*cost);
-  //msg_Out()<<METHOD<<": "
-  //	   <<E[0]<<" from "<<m_outmasses2[0]<<" & "
-  //	   <<E[2]<<" from "<<m_outmasses2[2]<<"\n";
+  for (size_t beam=0;beam<2;beam++) {
+    m_boost.BoostBack(m_inmom[beam]);
+    m_boost.BoostBack(m_outmom[2*beam]);
+  }
   return true;
 }
 
@@ -220,14 +262,13 @@ bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
   Poincare boost(diffmom);
   boost.BoostBack(m_outmom[2*pos]);   
   boost.BoostBack(m_outmom[2*pos+1]);
-  //msg_Out()<<METHOD<<"[pos = "<<pos<<"] check: "<<(diffmom-m_outmom[2*pos]-m_outmom[2*pos+1])<<"\n"
-  //	   <<"   from "<<m_outmom[2*pos]<<" + "<<m_outmom[2*pos+1]<<"\n";
   return true;
 }
 
 bool NonPerturbative_XSecs::SelectFlavoursOfDiffraction(const size_t & pos,const double & M2) {
-  Flavour diff = m_outflav[2*pos];
-  if (diff==Flavour(kf_p_plus) || diff==Flavour(kf_p_plus).Bar()) {
+  kf_code diff = m_outflav[2*pos].Kfcode();
+  bool    anti = m_outflav[2*pos].IsAnti();
+  if (diff==2212) {
     double random = ran->Get();
     if (random<1./3. && M2>sqr(Flavour(kf_d).Mass()+Flavour(kf_uu_1).Mass())) {
       m_outflav[2*pos]=Flavour(kf_d); m_outflav[2*pos+1]=Flavour(kf_uu_1);
@@ -243,18 +284,20 @@ bool NonPerturbative_XSecs::SelectFlavoursOfDiffraction(const size_t & pos,const
       return false;
     }
   }
-  else if (diff==Flavour(kf_photon)) {
-    switch (m_hadtags[pos]) {
-    case 0: 
-    case 1: m_outflav[2*pos]= ran->Get()>0.5 ? Flavour(kf_u) : Flavour(kf_d); break;
-    case 2: m_outflav[2*pos]=Flavour(kf_s); break;
-    case 3: m_outflav[2*pos]=Flavour(kf_c); break;
-    default:
-      THROW(fatal_error,"No meaningful hadronic state for a photon")
-    }
-    m_outflav[2*pos+1]=m_outflav[2*pos].Bar();
+  else if (diff==113 || diff==223) {
+    m_outflav[2*pos]   = ran->Get()>0.5 ? Flavour(kf_u) : Flavour(kf_d);
+    m_outflav[2*pos+1] = m_outflav[2*pos].Bar();
   }
-  if (diff.IsAnti()) { for (size_t i=0;i<2;i++) m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar(); }
+  else if (diff==333) {
+    m_outflav[2*pos]   = Flavour(kf_s);
+    m_outflav[2*pos+1] = m_outflav[2*pos].Bar();
+  }
+  else if (diff==433) {
+    m_outflav[2*pos]   = Flavour(kf_c);
+    m_outflav[2*pos+1] = m_outflav[2*pos].Bar();
+  }
+  else THROW(fatal_error,"No meaningful hadronic state for "+m_outflav[2*pos].IDName());
+  if (anti) { for (size_t i=0;i<2;i++) m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar(); }
   for (size_t i=0;i<2;i++) {
     m_outmasses[2*pos+i]  = m_outflav[2*pos+i].Mass();
     m_outmasses2[2*pos+i] = sqr(m_outmasses[2*pos+i]); 
@@ -262,13 +305,13 @@ bool NonPerturbative_XSecs::SelectFlavoursOfDiffraction(const size_t & pos,const
   return true;
 }
 
-Blob * NonPerturbative_XSecs::InitBlob(const double & muR,const double & muQ) {
+Blob * NonPerturbative_XSecs::InitBlob(const double & muR2,const double & muQ2) {
   Blob * blob = new Blob();
   blob->SetId();
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
-  blob->AddData("Renormalization_Scale",new Blob_Data<double>(muR));
-  blob->AddData("Factorization_Scale",new Blob_Data<double>(0.));
-  blob->AddData("Resummation_Scale",new Blob_Data<double>(muQ));
+  blob->AddData("Renormalization_Scale",new Blob_Data<double>(sqrt(muR2)));
+  blob->AddData("Factorization_Scale",new Blob_Data<double>(sqrt(muQ2)));
+  blob->AddData("Resummation_Scale",new Blob_Data<double>(sqrt(muQ2)));
   for (size_t i=0;i<2;i++) {
     Particle * part = new Particle(-1,m_inflav[i],m_inmom[i],'I');
     part->SetNumber();
@@ -283,7 +326,8 @@ Blob * NonPerturbative_XSecs::InitBlob(const double & muR,const double & muQ) {
     part->SetNumber();
     blob->AddToOutParticles(part);
   }
-  msg_Out()<<(*blob)<<"\n";
+  m_muf2 = muQ2;
+  m_mur2 = muR2;
   return blob;
 }
 
@@ -324,11 +368,6 @@ void NonPerturbative_XSecs::TestElastic() {
     t = dabs((m_inmom[0] - m_outmom[0]).Abs2());
     m_histos[string("dsigmaEl_by_dt(MC)")]->Insert(t,m_weight);
   }
-  //msg_Out()<<METHOD<<": compare "
-  //	   <<(conv*sigmaEl*binwidth)<<" "
-  //	   <<"("<<m_histos[string("dsigmaEl_by_dt(Ex)")]->Integral()<<") with "
-  //	   <<p_xsecs->SigmaEl(m_hadtags)<<" "
-  //	   <<"("<<m_histos[string("dsigmaEl_by_dt(MC)")]->Integral()<<")\n";
 }
 
 void NonPerturbative_XSecs::TestSingleD() {

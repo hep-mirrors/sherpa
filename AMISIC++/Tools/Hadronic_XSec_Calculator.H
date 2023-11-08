@@ -48,7 +48,6 @@ namespace AMISIC {
     double IntElXSec(const size_t hadtags[2], const double & xstot) const;
     double IntSDXSec(const size_t hadtags[2], const size_t & diff,const double masses[2]) const;
     double IntDDXSec(const size_t hadtags[2], const double masses[2]) const;
-    double CalculateDoubleDXSec() const;
   public:
     explicit Hadronic_XSec_Calculator(MODEL::Model_Base *model,
 				      const ATOOLS::Flavour & fl1,
