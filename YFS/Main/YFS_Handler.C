@@ -359,7 +359,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     }
     for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
-<<<<<<< HEAD
       if(!Dip->IsResonance()) continue;
       p_fsr->Reset();
       Dip->BoostToQFM(0);
