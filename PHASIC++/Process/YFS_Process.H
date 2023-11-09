@@ -61,7 +61,7 @@ namespace PHASIC {
     void Init(const Process_Info &pi,
               BEAM::Beam_Spectra_Handler *const beam,
               PDF::ISR_Handler *const isr,
-              YFS::YFS_Handler *const yfs, const int mode=0);
+              YFS::YFS_Handler *const yfs, const int mode=0) override;
 
     ~YFS_Process();
     void RegisterDefaults();
@@ -78,7 +78,7 @@ namespace PHASIC {
     void FindProcessPossibleResonances(const Flavour_Vector& fv, MODEL::Vertex_List& vlist);
     void InitPSHandler(const double &maxerror,
                const std::string eobs,
-               const std::string efunc);
+               const std::string efunc) override;
     void OneRealEvent();
     inline Process_Base* GetBornProcess() {return p_bornproc;}
     inline Process_Base* GetRealProcess() {return p_realproc;}
@@ -88,20 +88,20 @@ namespace PHASIC {
      *
      * Inherited from Process_Base, returns whether this process has subprocesses
      */
-    bool IsGroup() const;
+    bool IsGroup() const override;
     /*!
      * @return Returns 2
      *
      * Inherited from Process_Base, returns the number of subprocesses
      */
-    size_t Size() const;
+    size_t Size() const override;
     /*!
      * @param i size_t Index
      * @return Returns true
      *
      * Inherited from Process_Base, returns p_bviproc (i=0) or p_rsproc (i=1)
      */
-    Process_Base *operator[](const size_t &i);
+    Process_Base *operator[](const size_t &i) override;
 
     /*!
      * @param wmode int Passed on to methods called
@@ -110,7 +110,7 @@ namespace PHASIC {
      *
      * Inherited from Process_Base, generates one event
      */
-    ATOOLS::Weight_Info *OneEvent(const int wmode, ATOOLS::Variations_Mode varmode, const int mode=0);
+    ATOOLS::Weight_Info *OneEvent(const int wmode, ATOOLS::Variations_Mode varmode, const int mode=0) override;
 
     /*!
      * @param p Vec4D_Vector Four momenta
@@ -131,52 +131,52 @@ namespace PHASIC {
      * Inherited from Process_Base, asks subprocesses to integrate themselves
      */
     bool CalculateTotalXSec(const std::string &resultpath,
-                            const bool create=false);
+                            const bool create=false) override;
     /*!
      * @param lookup bool Whether results can be looked up
      *
      * Inherited from Process_Base, set whether mapped processes lookup their
      * result or calculate anew, sets it for all subprocesses
      */
-    void SetLookUp(const bool lookup);
+    void SetLookUp(const bool lookup) override;
     /*!
      * Inherited from Process_Base, calls InitScale for all subprocesses
      */
-    bool InitScale();
+    bool InitScale() override;
     /*!
      * @param scale Scale_Setter_Arguments Scale setter arguments
      *
      * Inherited from Process_Base, calls SetScale for all subprocesses
      */
-    void SetScale(const Scale_Setter_Arguments &scale);
+    void SetScale(const Scale_Setter_Arguments &scale) override;
     /*!
      * @param args KFactor_Setter_Arguments KFactor setter arguments
      *
      * Inherited from Process_Base, calls SetKFactor for all subprocesses
      */
-    void SetKFactor(const KFactor_Setter_Arguments &args);
+    void SetKFactor(const KFactor_Setter_Arguments &args) override;
     /*!
      * @param s vector<double> Fixed scales
      *
      * Inherited from Process_Base, calls SetFixedScale for all subprocesses
      */
-    void SetFixedScale(const std::vector<double> &s);
+    void SetFixedScale(const std::vector<double> &s) override;
     /*!
      * @param key Selector_Key Selector key
      *
      * Inherited from Process_Base, calls SetSelector for all subprocesses
      */
-    void SetSelector(const Selector_Key &key);
+    void SetSelector(const Selector_Key &key) override;
     /*!
      * @param ps Shower_Base Parton shower
      *
      * Inherited from Process_Base, calls SetShower for all subprocesses
      */
-    void SetShower(PDF::Shower_Base *const ps);
-    void SetNLOMC(PDF::NLOMC_Base *const mc);
-    void SetGenerator(ME_Generator_Base *const gen);
+    void SetShower(PDF::Shower_Base *const ps) override;
+    void SetNLOMC(PDF::NLOMC_Base *const mc) override;
+    void SetGenerator(ME_Generator_Base *const gen) override;
     inline ME_Generator_Base * Generator() { PRINT_INFO("HERE"); return p_gen;}
-    void InitializeTheReweighting(ATOOLS::Variations_Mode mode);
+    void InitializeTheReweighting(ATOOLS::Variations_Mode mode) override;
     std::vector<ATOOLS::Hard_Process_Variation_Generator_Base*>
       m_hard_process_variation_generators;
     // double Partonic(const ATOOLS::Vec4D_Vector &p, int);
