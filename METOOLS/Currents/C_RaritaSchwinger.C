@@ -12,12 +12,12 @@ double CRaritaSchwinger<Scalar>::s_accu(1.0e-12);
 
 // allows the output of the Rarita-Schwinger vector-spinor with std::cout
 // TODO: Outputfunktion testen
+// TODO: Wie sind die Hs nun eigentlich zu setzen? Nur positiv oder ganzzahlige Spinorwerte?
 template <class Scalar> std::ostream &
 METOOLS::operator<<(std::ostream &s,const CRaritaSchwinger<Scalar> &rs)
 {
   //encoding m_h
   std::string helicity;
-  std::cout << rs.H() << std::endl;
   if (rs.H()==3) helicity = "++";
   else if (rs.H()==1) helicity = "+";
   else if (rs.H()==-1) helicity = "-";
@@ -205,7 +205,8 @@ void CRaritaSchwinger<Scalar>::Delete()
 #endif
 }
 
-template <class Scalar> bool CRaritaSchwinger<Scalar>::SetOn()
+// Für Novaes Füllung
+/*template <class Scalar> bool CRaritaSchwinger<Scalar>::SetOn()
 {
   m_on=0;
   if (m_x[0]!=ZERO || m_x[1]!=ZERO || m_x[2]!=ZERO || m_x[3]!=ZERO || m_x[4]!=ZERO || m_x[5]!=ZERO || m_x[6]!=ZERO ||
@@ -213,25 +214,46 @@ template <class Scalar> bool CRaritaSchwinger<Scalar>::SetOn()
   if (m_x[8]!=ZERO || m_x[9]!=ZERO || m_x[10]!=ZERO || m_x[11]!=ZERO || m_x[12]!=ZERO || m_x[13]!=ZERO ||
       m_x[14]!=ZERO || m_x[15]!=ZERO) m_on|=2;
   return m_on&3;
+}*/
+
+template <class Scalar> bool CRaritaSchwinger<Scalar>::SetOn()
+{
+  m_on=0;
+  if (m_x[0]!=ZERO || m_x[1]!=ZERO || m_x[4]!=ZERO || m_x[5]!=ZERO || m_x[8]!=ZERO || m_x[9]!=ZERO || m_x[12]!=ZERO ||
+      m_x[13]!=ZERO) m_on|=1;
+  if (m_x[2]!=ZERO || m_x[3]!=ZERO || m_x[6]!=ZERO || m_x[7]!=ZERO || m_x[10]!=ZERO || m_x[11]!=ZERO ||
+      m_x[14]!=ZERO || m_x[15]!=ZERO) m_on|=2;
+  return m_on&3;
 }
 
 // TODO: Springt er hier wirklich zum richtigen Operator? UNBEDINGT BEI ALLEN OPERATOREN TESTEN IM DEBUG-MODE
 template<class Scalar>
-bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
+bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r, int b) {
   // Dirac equation (gamma_mu * p_mu -m)^A_B RS^B, nu -> auch +m? für V statt U?
   std::cout<<METHOD<<": Testing Dirac equation..."<<std::endl;
   METOOLS::Gamma gammavec = Gamma<Scalar>();
   bool testresult(true);
-  ATOOLS::TCMatrix<Scalar> intermediate = (ATOOLS::TCMatrix<Scalar>(gammavec * p) + SComplex(-r) * SComplex(sqrt(p.Abs2())) * ATOOLS::TCMatrix<Scalar>(4, true));
+  // SComplex(-r) for distinguishing between particle and anti-particle Dirac equation
+  ATOOLS::TCMatrix<Scalar> intermediate = ATOOLS::TCMatrix<Scalar>(gammavec * p);
+  if (sqrt(p.Abs2())>1e-6)
+    intermediate += ATOOLS::TCMatrix<Scalar>(SComplex(-r) * SComplex(sqrt(p.Abs2())) * ATOOLS::TCMatrix<Scalar>(4, true));
   std::vector<SComplex> result1(16);
   // TODO: Sollte man die exakten ZEROS auch hier explizit implementieren (zwei Komponenten jedes Dirac spinors und damit
   //       die Hälfte der Komponenten der RaSC sind ja leer im masselosen Fall!)
   for (int i(0); i<4; ++i){
     for (size_t j(0); j<4; ++j){
-        result1[i] += intermediate[i][j] * (*this)[j];
-        result1[i+4] += intermediate[i][j] * (*this)[j+4];
-        result1[i+8] += intermediate[i][j] * (*this)[j+8];
-        result1[i+12] += intermediate[i][j] * (*this)[j+12];
+        if (b>0){
+          result1[i] += intermediate[i][j] * (*this)[j];
+          result1[i+4] += intermediate[i][j] * (*this)[j+4];
+          result1[i+8] += intermediate[i][j] * (*this)[j+8];
+          result1[i+12] += intermediate[i][j] * (*this)[j+12];
+        }
+        else{
+          result1[j] += (*this)[i] * intermediate[i][j];
+          result1[j+4] += (*this)[i+4] * intermediate[i][j];
+          result1[j+8] += (*this)[i+8] * intermediate[i][j];
+          result1[j+12] += (*this)[i+12] * intermediate[i][j];
+        }
     }
   }
   /*for(int i(0); i<4; ++i) {
@@ -261,6 +283,7 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
       testresult =false;
     }
   }
+  if (testresult) msg_Out()<< "passed" << std::endl;
 
   // gamma_mu^A_B times RS^B,mu = 0
   // ÜBERPRÜFEN!!!
@@ -269,7 +292,16 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
   std::vector<SComplex> result2(4);
   for (size_t i(0); i<4; ++i){
     for (size_t j(0); j<4; ++j){
-      result2[i] += gammavec[0][i][j] * (*this)[j] - gammavec[1][i][j] * (*this)[j+4] - gammavec[2][i][j] * (*this)[j+8] - gammavec[3][i][j] * (*this)[j+12];
+      if (b>0) result2[i] += gammavec[0][i][j] * (*this)[j] - gammavec[1][i][j] * (*this)[j+4] -
+                             gammavec[2][i][j] * (*this)[j+8] - gammavec[3][i][j] * (*this)[j+12];
+      else{
+        for (size_t k(0); k<4; ++k){
+          result2[k] += (*this)[i] * gammavec[0][i][j] * gammavec[0][j][k] -
+                        (*this)[i+4] * gammavec[1][i][j] * gammavec[0][j][k] -
+                        (*this)[i+8] * gammavec[2][i][j] * gammavec[0][j][k] -
+                        (*this)[i+12] * gammavec[3][i][j] * gammavec[0][j][k];
+        }
+      }
     }
   }
   /*for (int i(0); i<4; ++i){
@@ -281,6 +313,8 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
   }*/
   if (!(std::abs(result2[0].real())<s_accu && std::abs(result2[1].real())<s_accu && std::abs(result2[2].real())<s_accu && std::abs(result2[3].real())<s_accu)){
     msg_Out() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << std::endl;
+    // explizit berechnet für ubar++ und Gamma-Matrizen laut Weyl-Basis Deutsches Dirac-Matrizen Wiki
+    msg_Out() << "TEST: gamma_mu Psi^mu is " << SComplex(0,-1)*(*this)[9]-(*this)[12] << SComplex(0,1)*(*this)[8]+(*this)[13] << SComplex(0,1)*(*this)[11]+(*this)[14] << SComplex(0,-1)*(*this)[10]-(*this)[15] << " not zero!" << std::endl;
     //return false;
     testresult = false;
   }
@@ -289,6 +323,7 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
     //return false;
     testresult = false;
   }
+  if (testresult) msg_Out()<< "passed" << std::endl;
 
   // p_mu times RS = 0 ? aus partielle Ableitung_mu RS=0?
   std::cout<<METHOD<<": Testing p_mu Psi^mu = 0..."<<std::endl;
@@ -308,10 +343,9 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r) {
     msg_Out() << "p_mu Psi^mu is " << result3[0] << result3[1] << result3[2] << result3[3] << " not zero!" << std::endl;
     return false;
   }
+  if (testresult) msg_Out()<< "passed" << std::endl;
 
   // gauge independence
-
-  // normalizations???
 
   // completeness -> in Stromklasse testen!!!
   return testresult;
