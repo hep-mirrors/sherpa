@@ -34,6 +34,10 @@ public:
     double BVirtT(const Vec4D &p1, const Vec4D &p2 );
     double R1(const Vec4D &p1, const Vec4D &p2);
     double R2(const Vec4D &p1, const Vec4D &p2);
+    double C0(const double p1, const double p2, const double p3,
+              const double m1, const double m2,const double m3);
+    double B0(double s, double m1, double m2);
+    double tsub(const Vec4D &p1, const Vec4D &p2, int mode);
     void WW_u();
     double  m_ww_s, m_ww_u, m_ww_t;
     double m_kmax, m_t1, m_t2, m_u1, m_u2;

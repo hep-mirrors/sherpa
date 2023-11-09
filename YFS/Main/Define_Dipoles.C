@@ -383,6 +383,7 @@ double Define_Dipoles::CalculateRealSubIF(const Vec4D &k) {
 
 double Define_Dipoles::CalculateVirtualSub() {
   double sub(0);
+  if(m_tchannel) return CalculateVirtualSubTchannel();
   for (auto &D : m_dipolesII) {
     sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
@@ -401,6 +402,21 @@ double Define_Dipoles::CalculateVirtualSub() {
   return sub;
 }
 
+
+double Define_Dipoles::CalculateVirtualSubTchannel(){
+  double sub(0);
+  for (auto &D : m_dipolesII){
+    sub += p_yfsFormFact->tsub(D.GetNewMomenta(0), D.GetNewMomenta(1), 1);
+  }
+  for (auto &D : m_dipolesFF){
+    sub += p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), 1);
+  }
+  for (auto &D : m_dipolesIF){
+    int mode = (D.GetFlav(0)==D.GetFlav(1)) ? 0 : 1;
+    sub += p_yfsFormFact->tsub(D.GetNewMomenta(0), D.GetNewMomenta(1), mode);
+  }
+  
+}
 
 double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
   double sub(0);

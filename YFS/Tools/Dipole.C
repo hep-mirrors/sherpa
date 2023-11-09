@@ -277,7 +277,7 @@ void Dipole::Clean(){
 
 bool Dipole::IsDecayAllowed(){
   if(m_flavs[0].IsNeutrino() || m_flavs[1].IsNeutrino()){
-    int diff = abs(m_flavs[0].Kfcode() -m_flavs[1].Kfcode());
+    int diff = fabs(m_flavs[0].Kfcode() -m_flavs[1].Kfcode());
     if(diff==1) return true;
     else return false;
     // if(m_flavs[1])
