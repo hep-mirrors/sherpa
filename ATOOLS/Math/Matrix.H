@@ -59,6 +59,7 @@ template <class Scalar>
     TCMatrix operator* (const Scalar scal) const;
     TCMatrix operator* (const SComplex scal) const;
     TCMatrix operator+ (const TCMatrix& cmatrix) const;
+    TCMatrix operator+= (const TCMatrix& cmatrix);
     SComplex ** GetMatrix()      const { return p_m; }
   };
 
