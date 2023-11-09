@@ -198,19 +198,20 @@ namespace METOOLS {
     //TODO: Das ist jetzt Spinbasisabhängig, wir könnten das Ganze alternativ mithilfe der SpinFuncs implementieren,
     // dann könnte man einfacher die Eichung wechseln, NACHTEILE: recht viele (triviale) Multiplikationen nötig + evtl.
     // sind dann die Komponenten nicht mehr exakt die gleichen wegen einer zusätzlichen numerischen Rechnung?
+    // TODO: sollten wir das m_b hier noch verallgemeinern (s. Bar bei CSpinor)?
     inline CRaritaSchwinger<Scalar> Bar(){
       return CRaritaSchwinger<Scalar>(1, -1, std::conj(m_x[2]), std::conj(m_x[3]),
                                       std::conj(m_x[0]), std::conj(m_x[1]), std::conj(m_x[6]), std::conj(m_x[7]),
                                       std::conj(m_x[4]), std::conj(m_x[5]), std::conj(m_x[10]), std::conj(m_x[11]),
                                       std::conj(m_x[8]), std::conj(m_x[9]), std::conj(m_x[14]), std::conj(m_x[15]),
-                                      std::conj(m_x[12]), std::conj(m_x[13]), m_c[0], m_c[1], m_h, m_s, m_on); }
+                                      std::conj(m_x[12]), std::conj(m_x[13]), m_c[0], m_c[1], m_h, m_s, (m_on&1)<<1|(m_on&2)>>1); }
 
     static void ResetAccu();
 
     inline static void   SetAccu(const double &accu) { s_accu=accu;   }
     inline static double Accu()                      { return s_accu; }
 
-    bool Test_Properties(const ATOOLS::Vec4D &p, int r);
+    bool Test_Properties(const ATOOLS::Vec4D &p, int r, int b);
 
   };
 
