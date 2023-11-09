@@ -543,3 +543,54 @@ double YFS_Form_Factor::R2(const Vec4D &p1, const Vec4D &p2){
 }
 
 
+double YFS_Form_Factor::C0(const double p1, const double p2, const double s,
+              const double m1, const double m2,const double m3){
+  // Eq B1 in https://arxiv.org/pdf/hep-ph/0308246.pdf
+  // m1 should be photon mass
+  double m23 = m2*m3;
+  // double s=(p1-p2).Abs2();
+  double xnum = sqrt(1-4*m1*m2/(s-sqr(m1-m2)))-1;
+  double xden = sqrt(1-4*m1*m2/(s-sqr(m1-m2)))+1;
+  double xs = xnum/xden;
+  double t1 = -log(m1*m1/m23)*log(xs)-0.5*log(xs)*log(xs)+0.5*log(m2/m3);
+  t1+=2*log(xs)*log(1-xs*xs)-M_PI*M_PI/6+DiLog(xs*xs);
+  t1+=DiLog(1-xs*m2/m3)+DiLog(1-xs*m3/m2);
+
+  t1*=xs/(m23*(1-xs*xs));
+  return t1;
+}
+
+double YFS_Form_Factor::B0(double s, double m1, double m2){
+  if(IsZero(s)){
+    if(IsEqual(m1,m2)){
+      return 2*log(m_photonMass/m1);
+    }
+    return 1+(m1*m1)/(m1*m1-m2*m2)*2*log(m_photonMass/m1)
+            -(m2*m2)/(m1*m1-m2*m2)*2*log(m_photonMass/m2);
+  }
+  else{
+    double r = m1*m1+m2*m2-s+sqrt(sqr(m1*m1+m2*m2-s)-sqr(2*m1*m2));
+    r /= 2*m1*m2;
+    if(IsEqual(m1,m2)){
+      return 2*log(m_photonMass/m1)-m1*m1/s*(1/r-r)*log(r);
+    }
+    else{
+      return log(m_photonMass*m_photonMass/(m1*m2))+(m1*m1-m2*m2)/s*log(m2/m1)
+              -m1*m2/s*(1./r-r)*log(r);
+    }
+  }
+}
+
+
+double YFS_Form_Factor::tsub(const Vec4D &p1, const Vec4D &p2, int mode){
+  double m1 = p1.Mass();
+  double m2 = p2.Mass();
+  if(mode==0){
+    //same flavour
+    return 0.125*m_alpi*(B0(0.,m1,m2)-4*m1*m1*C0(p1*p1,0.,p2*p2,sqr(m_photonMass),m1*m1,m1*m1));
+  }
+  else{
+    return m_alpi*(p1*p2)*C0(m1*m1,(p1+p2).Abs2(),m2*m2,m_photonMass*m_photonMass,m1*m1,m2*m2)
+                   + 0.25*B0((p1+p2).Abs2(),m1*m1,m2*m2);
+  }
+}

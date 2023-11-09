@@ -75,6 +75,7 @@ namespace YFS {
       double CalculateFlux(const Vec4D &k);
       double CalculateFlux(const Vec4D &k, const Vec4D &kk);
       double Propagator(const double &s, int width=1);
+      double CalculateVirtualSubTchannel();
       void generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums);
       // inline void SetOldMomentum(int i, ATOOLS::Vec4D mom) { m_olddipoles.m_momenta[i] = mom;}
       // inline void SetNewMomentum(int i, ATOOLS::Vec4D mom) { m_newdipoles.m_momenta[i] = mom;}
