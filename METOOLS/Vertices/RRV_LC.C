@@ -31,14 +31,55 @@ namespace METOOLS {
       CRaritaSchwingerType *b(jj[0]->Get<CRaritaSchwingerType>());
       Gamma<SType> gamma = Gamma<SType>();
       CVec4Type *j(CVec4Type::New(0.0,0.0,0.0,0.0,0,0,0,a->S()|b->S()));
-      for (size_t i(0); i<4; ++i){
+      /*for (size_t i(0); i<4; ++i){
         for (size_t k(0); k<16; ++k){
           for (size_t l(0); l<16; ++l){
-            std::vector<std::complex<SType>> intermediate(16);
-            (*j)[i] += (*a)[l] * std::complex<SType>(gamma[i][k%4][l%4]) * (*b)[l];
+            std::complex<SType> fac(std::complex<SType>(1,0));
+            if (k>3) fac = std::complex<SType>(-1,0);
+            (*j)[i] += fac * (*a)[k] * std::complex<SType>(gamma[i][k%4][l%4]) * (*b)[l];
           }
         }
       }
+      std::cout << "simulated j[0]" << (*j)[0] << std::endl;
+      std::cout << "calculated j[0]" << (*a)[0]*(*b)[2]+(*a)[1]*(*b)[3]+(*a)[2]*(*b)[0]+(*a)[3]*(*b)[1]-(*a)[4]*(*b)[6]
+      -(*a)[5]*(*b)[7]-(*a)[6]*(*b)[4]-(*a)[7]*(*b)[5]-(*a)[8]*(*b)[10]-(*a)[9]*(*b)[11]-(*a)[10]*(*b)[8]
+      -(*a)[11]*(*b)[9]-(*a)[12]*(*b)[14]-(*a)[13]*(*b)[15]-(*a)[14]*(*b)[12]-(*a)[15]*(*b)[13]<< std::endl;
+      std::cout << "simulated j[1]" << (*j)[1] << std::endl;
+      std::cout << "calculated j[1]" << (*a)[0]*(*b)[3]+(*a)[1]*(*b)[2]-(*a)[2]*(*b)[1]-(*a)[3]*(*b)[0]-(*a)[4]*(*b)[7]
+                                        -(*a)[5]*(*b)[6]+(*a)[6]*(*b)[5]+(*a)[7]*(*b)[4]-(*a)[8]*(*b)[11]-(*a)[9]*(*b)[10]+(*a)[10]*(*b)[9]
+                                        +(*a)[11]*(*b)[8]-(*a)[12]*(*b)[15]-(*a)[13]*(*b)[14]+(*a)[14]*(*b)[13]+(*a)[15]*(*b)[12]<< std::endl;
+      std::cout << "simulated j[2]" << (*j)[2] << std::endl;
+      std::cout << "calculated j[2]" << std::complex<SType>(0,1)*(std::complex<SType>(-1,0)*(*a)[0]*(*b)[3]+(*a)[1]*(*b)[2]+(*a)[2]*(*b)[1]-(*a)[3]*(*b)[0]+(*a)[4]*(*b)[7]
+                                        -(*a)[5]*(*b)[6]-(*a)[6]*(*b)[5]+(*a)[7]*(*b)[4]+(*a)[8]*(*b)[11]-(*a)[9]*(*b)[10]-(*a)[10]*(*b)[9]
+                                        +(*a)[11]*(*b)[8]+(*a)[12]*(*b)[15]-(*a)[13]*(*b)[14]-(*a)[14]*(*b)[13]+(*a)[15]*(*b)[12])<< std::endl;
+      std::cout << "simulated j[3]" << (*j)[3] << std::endl;
+      std::cout << "calculated j[3]" << (*a)[0]*(*b)[2]-(*a)[1]*(*b)[3]-(*a)[2]*(*b)[0]+(*a)[3]*(*b)[1]-(*a)[4]*(*b)[6]
+                                        +(*a)[5]*(*b)[7]+(*a)[6]*(*b)[4]-(*a)[7]*(*b)[5]-(*a)[8]*(*b)[10]+(*a)[9]*(*b)[11]+(*a)[10]*(*b)[8]
+                                        -(*a)[11]*(*b)[9]-(*a)[12]*(*b)[14]+(*a)[13]*(*b)[15]+(*a)[14]*(*b)[12]-(*a)[15]*(*b)[13]<< std::endl;*/
+      // Explicit expressions for psinbar gamma_mu psi'
+      (*j)[0] = (*a)[0]*(*b)[2]+(*a)[1]*(*b)[3]+(*a)[2]*(*b)[0]+(*a)[3]*(*b)[1]-(*a)[4]*(*b)[6]
+                -(*a)[5]*(*b)[7]-(*a)[6]*(*b)[4]-(*a)[7]*(*b)[5]-(*a)[8]*(*b)[10]-(*a)[9]*(*b)[11]-(*a)[10]*(*b)[8]
+                -(*a)[11]*(*b)[9]-(*a)[12]*(*b)[14]-(*a)[13]*(*b)[15]-(*a)[14]*(*b)[12]-(*a)[15]*(*b)[13];
+      (*j)[1] = (*a)[0]*(*b)[3]+(*a)[1]*(*b)[2]-(*a)[2]*(*b)[1]-(*a)[3]*(*b)[0]-(*a)[4]*(*b)[7]
+                -(*a)[5]*(*b)[6]+(*a)[6]*(*b)[5]+(*a)[7]*(*b)[4]-(*a)[8]*(*b)[11]-(*a)[9]*(*b)[10]+(*a)[10]*(*b)[9]
+                +(*a)[11]*(*b)[8]-(*a)[12]*(*b)[15]-(*a)[13]*(*b)[14]+(*a)[14]*(*b)[13]+(*a)[15]*(*b)[12];
+      (*j)[2] = std::complex<SType>(0,1)*(std::complex<SType>(-1,0)*(*a)[0]*(*b)[3]+(*a)[1]*(*b)[2]+(*a)[2]*(*b)[1]-(*a)[3]*(*b)[0]+(*a)[4]*(*b)[7]
+                                          -(*a)[5]*(*b)[6]-(*a)[6]*(*b)[5]+(*a)[7]*(*b)[4]+(*a)[8]*(*b)[11]-(*a)[9]*(*b)[10]-(*a)[10]*(*b)[9]
+                                          +(*a)[11]*(*b)[8]+(*a)[12]*(*b)[15]-(*a)[13]*(*b)[14]-(*a)[14]*(*b)[13]+(*a)[15]*(*b)[12]);
+      (*j)[3] =(*a)[0]*(*b)[2]-(*a)[1]*(*b)[3]-(*a)[2]*(*b)[0]+(*a)[3]*(*b)[1]-(*a)[4]*(*b)[6]
+               +(*a)[5]*(*b)[7]+(*a)[6]*(*b)[4]-(*a)[7]*(*b)[5]-(*a)[8]*(*b)[10]+(*a)[9]*(*b)[11]+(*a)[10]*(*b)[8]
+               -(*a)[11]*(*b)[9]-(*a)[12]*(*b)[14]+(*a)[13]*(*b)[15]+(*a)[14]*(*b)[12]-(*a)[15]*(*b)[13];
+/*      for (size_t i(0); i<4; ++i) {
+        std::vector<std::complex<double>> intermediate(16);
+        for (size_t k(0); k < 16; ++k) {
+          for (size_t l(0); l < 16; ++l) {
+            std::complex<SType> fac(std::complex<SType>(1, 0));
+            if (k > 3) fac = std::complex<SType>(-1, 0);
+            intermediate[k] += std::complex<SType>(gamma[i][k % 4][l % 4]) * (*b)[l];
+          }
+        }
+        for (size_t m(0); m<16; ++m) (*j)[i] += (m>3?std::complex<SType>(-1, 0):std::complex<SType>(1,0)) * intermediate[m] * (*a)[m];
+      }*/
       return j;
     }
   };// end of class RRV_Calculator
