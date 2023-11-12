@@ -680,7 +680,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
                  <<vertex->check_momentum_conservation()
                  <<" <- "<<test<<" "<<check
                  <<std::endl<<(*blob)<<std::endl;
-      vertex->print(msg_Error());
+      vertex->print(ATOOLS::msg->Error());
       msg_Error()<<"-----------------------------------------------"<<std::endl;
     }
   }
