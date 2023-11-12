@@ -280,7 +280,7 @@ bool Message::CheckRate(const std::string& cmethod) {
   const auto res = m_log_stats.find(cmethod);
   if (res == m_log_stats.end()) {
     m_log_stats.insert({cmethod, 1});
-    return true;
+    return (bool)m_limit;
   }
   else if (res->second + 1 == m_limit) {
     msg_Info() << ATOOLS::om::red
