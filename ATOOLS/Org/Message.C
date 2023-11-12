@@ -254,7 +254,7 @@ std::ostream &Message::IODebugging()
   return m_devnull;
 }
 
-std::string Message::ExtractMethodName(std::string cmethod) const   
+std::string Message::ExtractMethodName(std::string cmethod) const
 { 
   for (size_t pos(cmethod.find(", "));
        pos!=std::string::npos;pos=cmethod.find(", ")) cmethod.erase(pos+1,1);
@@ -274,6 +274,15 @@ std::string Message::ExtractMethodName(std::string cmethod) const
   }
   if (cclass=="<no class>") return cmethod;
   return cclass+"::"+cmethod;
+}
+
+bool Message::CheckRate(const std::string& cmethod) {
+  const auto res = m_log_stats.find(cmethod);
+  if (res == m_log_stats.end()) {
+    m_log_stats.insert({cmethod, 1});
+    return true;
+  }
+  return (res->second)++ < m_threshold;
 }
 
 bool Message::LevelIsEvents(const std::string& context) const
@@ -319,4 +328,13 @@ bool Message::LevelIsIODebugging(const std::string& context) const
     if (context.find(*rit)!=std::string::npos) return true;
   }
   return false;
+}
+
+void Message::PrintRates() const {
+  for (const auto& item : m_log_stats) {
+    if (item.second <= m_threshold)  continue;
+    msg_Error() << ATOOLS::om::red << "Error messages from '" << item.first \
+                << "' were above threshold: " << item.second \
+                << "/" << m_threshold << "\n" << ATOOLS::om::reset;
+  }
 }

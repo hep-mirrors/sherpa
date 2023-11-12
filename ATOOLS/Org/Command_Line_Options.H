@@ -32,6 +32,7 @@ enum optionIndex {
   ANALYSIS_OUTPUT,
   OUTPUT,
   EVT_OUTPUT,
+  MSG_THRESHOLD,
   LOG_FILE,
 
   // options used to enable/disable features
@@ -280,6 +281,7 @@ String_Option_Map create_parameter_index_map() {
     map["ANALYSIS_OUTPUT"]           = ANALYSIS_OUTPUT;
     map["OUTPUT"]                    = OUTPUT;
     map["EVT_OUTPUT"]                = EVT_OUTPUT;
+    map["MSG_THRESHOLD"]             = MSG_THRESHOLD;
     map["LOG_FILE"]                  = LOG_FILE;
     map["BATCH_MODE"]                = BATCH_MODE;
     map["INIT_ONLY"]                 = INIT_ONLY;

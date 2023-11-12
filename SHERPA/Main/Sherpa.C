@@ -76,6 +76,7 @@ Sherpa::~Sherpa()
     }
   }
   Blob_List::PrintMomFailStatistics(msg->Out());
+  msg->PrintRates();
   PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
@@ -155,6 +156,8 @@ void Sherpa::RegisterDefaults()
   s["DEBUG_STEP"].SetDefault(-1);
   s["EVENT_DISPLAY_INTERVAL"].SetDefault(100);
   s["EVT_OUTPUT"].SetDefault(msg->Level());
+  s["MSG_THRESHOLD"].SetDefault(20);
+  msg->SetThreshold(s["MSG_THRESHOLD"].Get<int>());
 
   const int evtoutput{ s["EVT_OUTPUT"].Get<int>() };
   s["EVT_OUTPUT_START"].SetDefault(evtoutput != msg->Level() ? 1 : 0);
