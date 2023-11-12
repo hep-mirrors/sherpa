@@ -282,7 +282,12 @@ bool Message::CheckRate(const std::string& cmethod) {
     m_log_stats.insert({cmethod, 1});
     return true;
   }
-  return (res->second)++ < m_threshold;
+  else if (res->second + 1 == m_limit) {
+    msg_Info() << ATOOLS::om::red
+               << "WARNING: last allowed error message from '"
+               << cmethod << "'\n" << ATOOLS::om::reset;
+  }
+  return (res->second)++ < m_limit;
 }
 
 bool Message::LevelIsEvents(const std::string& context) const
@@ -332,9 +337,9 @@ bool Message::LevelIsIODebugging(const std::string& context) const
 
 void Message::PrintRates() const {
   for (const auto& item : m_log_stats) {
-    if (item.second <= m_threshold)  continue;
+    if (item.second <= m_limit)  continue;
     msg_Error() << ATOOLS::om::red << "Error messages from '" << item.first \
-                << "' were above threshold: " << item.second \
-                << "/" << m_threshold << "\n" << ATOOLS::om::reset;
+                << "' exceeded frequency limit: " << item.second \
+                << "/" << m_limit << "\n" << ATOOLS::om::reset;
   }
 }

@@ -156,8 +156,8 @@ void Sherpa::RegisterDefaults()
   s["DEBUG_STEP"].SetDefault(-1);
   s["EVENT_DISPLAY_INTERVAL"].SetDefault(100);
   s["EVT_OUTPUT"].SetDefault(msg->Level());
-  s["MSG_THRESHOLD"].SetDefault(20);
-  msg->SetThreshold(s["MSG_THRESHOLD"].Get<int>());
+  s["MSG_LIMIT"].SetDefault(20);
+  msg->SetLimit(s["MSG_LIMIT"].Get<int>());
 
   const int evtoutput{ s["EVT_OUTPUT"].Get<int>() };
   s["EVT_OUTPUT_START"].SetDefault(evtoutput != msg->Level() ? 1 : 0);

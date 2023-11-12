@@ -124,7 +124,7 @@ namespace ATOOLS {
 
     std::map<std::string,unsigned int> m_log_stats;
 
-    int m_modifiable, m_mpimode, m_threshold;
+    int m_modifiable, m_mpimode, m_limit;
 
   public:
 
@@ -137,7 +137,7 @@ namespace ATOOLS {
     // member functions
     void Init();
     void SetStandard();
-    void SetThreshold(int threshold) { m_threshold = threshold; }
+    void SetLimit(int limit) { m_limit = limit; }
     void PrintRates() const;
 
     std::ostream &Out();
