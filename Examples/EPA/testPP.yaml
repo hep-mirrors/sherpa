@@ -3,6 +3,7 @@
 BEAMS:             2212
 BEAM_ENERGIES:     3500
 BEAM_SPECTRA:      EPA
+PDF_SET:           None
 BEAM_RESCATTERING: Amisic
 MI_HANDLER:        None
 

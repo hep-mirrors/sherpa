@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -17,7 +18,7 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
          const int _dir) :
   Beam_Base(beamspectrum::EPA, _beam, _energy, _pol, _dir),
   m_mass(_beam.Mass(true)), m_gamma(_energy/m_mass), m_charge(_beam.Charge()),
-  m_minR(Max(1.e-6,_beam.Radius())), m_maxR(10.*m_minR)
+  m_minR(Max(1.e-6,_beam.Radius())), m_maxR(1.e6)
 {
   Settings &s = Settings::GetMainSettings();
   RegisterDefaults();
@@ -25,6 +26,11 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
   m_bunches.resize(m_Nbunches);
   m_bunches[0] = Flavour(kf_photon);
   m_bunches[1] = m_beam;
+  // for point-like particles (i.e. leptons) we use the "classical"
+  // lepton radius given by 1/alpha lambda_l/(2 pi)
+  // with the Compton wavelength lambda_l
+  if (m_bunches[1].IsLepton())
+    m_minR = ( rpa->hBar_c()/m_bunches[1].Mass(true) / (2.*M_PI/137.) );
   m_vecouts.resize(m_Nbunches);
   m_vecouts[0] = Vec4D(m_energy, 0., 0., m_dir * m_energy);
   m_vecouts[1] = Vec4D(0.,0.,0.,0.);
@@ -86,16 +92,35 @@ void EPA::RegisterDefaults() {
 
 void EPA::FixPosition() {
   // This is a bit of a poor-man's choice for a point-like source,
-  // with a minmimal distance m_minR ... we would need some notion of
-  // off'shellness here ...
-  double ratio = m_maxR/m_minR, logratio = log(ratio), R, phi;
-  if (ran->Get()< logratio/(0.5+logratio)) {
-    R = m_minR * pow(ratio,ran->Get());
-  }
-  else {
-    R = m_minR * sqrt(ran->Get());
-  }
-  phi = 2.*M_PI*ran->Get();
+  // with a minmimal distance m_minR, either given by the actual physical radius
+  // or the classical charge radius of a point-like particle
+  // n(omega,b) = alpha/pi^2 omega/gamma [K1(omega b/gamma)]^2,
+  // where omega = x E with E the energy of the source and gamma its Lorentz-boost E/m.
+  //
+  // All distances here given in fm and masses in GeV
+  double ratio = m_maxR/m_minR, logratio = log(ratio), R, weight, k1, k10;
+  do {
+    if (ran->Get()< logratio/(0.5+logratio)) {
+      R      = m_minR * pow(ratio,ran->Get());
+      weight = (m_vecouts[0][0]*R/rpa->hBar_c());
+    }
+    else {
+      R      = m_minR * sqrt(ran->Get());
+      weight = m_vecouts[0][0] * sqr(m_minR)/R / rpa->hBar_c();
+    }
+    weight *= ( sqr(bessel_k1(R*m_vecouts[0][0]/m_gamma/rpa->hBar_c()) /
+		    bessel_k1(Min(m_minR,R)*Min(1.,m_vecouts[0][0])/
+			      m_gamma/rpa->hBar_c())) );
+    if (weight>1.) {
+      msg_Out()<<METHOD<<"(omega = "<<m_vecouts[0][0]<<", "
+	       <<"R = "<<R<<" vs Rmin = "<<m_minR<<"):\n"
+	       <<"*   K1("<<(R*m_vecouts[0][0]/m_gamma/rpa->hBar_c())<<") = "
+	       <<(k1=bessel_k1(R*m_vecouts[0][0]/m_gamma/rpa->hBar_c()))<<" / "
+	       <<(k10=bessel_k1(Min(m_minR,R)*Min(1.,m_vecouts[0][0])/m_gamma/rpa->hBar_c()))
+	       <<" = "<<(k1/k10)<<" --> weight = "<<weight<<"\n\n";
+    }
+  } while (weight<ran->Get());
+  double phi = 2.*M_PI*ran->Get();
   m_position = R * Vec4D(0., cos(phi), sin(phi), 0.);
 }
 
@@ -237,40 +262,30 @@ bool EPA::CalculateWeight(double x, double q2) {
   // x = omega/E = (E-E')/E  ; E,E' - incoming and outgoing protons energy
   //                           omega = E-E' - energy of emitted photon
   const double alpha = m_aqed;
-  m_x = x;
+  m_x  = x;
   m_Q2 = q2;
   if (x > 1. - m_mass / 2. / m_energy) {
     m_weight = 0.0;
     return true;
   }
-  if (m_beam.Kfcode() == kf_e && !m_lo_epa) {
-    // Maximal angle for the scattered electron
-    // compare hep-ph/9610406 and hep-ph/9310350
-    double q2min = sqr(m_mass * m_x) / (1 - m_x);
-    double q2max = Min(q2min + sqr(m_energy) * (1 - m_x) * sqr(m_theta_max),m_q2Max);
-    double f = alpha / M_PI / 2 / m_x *
-               ((1 + sqr(1 - m_x)) * log(q2max / q2min) -
-                2 * sqr(m_mass * m_x) * (1 / q2min - 1 / q2max));
-    if (f < 0)
-      f = 0.;
-    m_weight = f;
+  if (m_beam.IsLepton()) {
+    double f = alpha/(M_PI * m_x);
+    if (m_lo_epa)
+      f     *= (1.+sqr(1.-m_x)) * log(2.*m_energy/m_mass);
+    else {
+      double q2min = sqr(m_mass * m_x) / (1. - m_x);
+      double q2max = Min(q2min + sqr(m_energy)*(1. - m_x) * sqr(m_theta_max),m_q2Max);
+      f     *= ( (1.+sqr(1.-m_x))/2. * log(q2max / q2min) -
+		 sqr(m_mass*m_x) * (1./q2min - 1./q2max));
+    }
+    m_weight = Max(0.,f);
     msg_Debugging() << METHOD << "(x = " << m_x << ", q^2 = " << q2
                     << ") = " << f << ", "
                     << "energy = " << m_energy << ", "
                     << "mass = " << m_mass << ".\n";
     return true;
-  } else if (m_beam.Kfcode() == kf_e && m_lo_epa) {
-    double f =
-        alpha / M_PI * (1 + sqr(1 - m_x)) / m_x * log(2. * m_energy / m_mass);
-    if (f < 0)
-      f = 0.;
-    m_weight = f;
-    msg_Debugging() << METHOD << "(x = " << m_x << ", q^2 = " << q2
-                    << ") = " << f << ", "
-                    << "energy = " << m_energy << ", "
-                    << "mass = " << m_mass << ".\n";
-    return 1;
-  } else if (m_beam.Kfcode() == kf_p_plus) {
+  }
+  else if (m_beam.Kfcode() == kf_p_plus) {
     const double qz = 0.71;
     double f, qmi, qma;
     qma = m_q2Max / qz;
