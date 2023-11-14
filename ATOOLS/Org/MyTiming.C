@@ -122,6 +122,6 @@ std::string MyTiming::StrFTime
     return "";
   }
   while (rv[0]==' ') rv.erase(0,1);
-  while (!rv.empty() && rvback()==' ') rv.pop_back();
+  while (!rv.empty() && rv.back()==' ') rv.pop_back();
   return rv;
 }
