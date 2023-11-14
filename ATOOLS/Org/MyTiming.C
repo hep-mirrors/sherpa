@@ -19,7 +19,7 @@ std::string FormatTime(const int &intime,const int mode)
   if (hrs) out+=ToString(hrs)+"h ";
   if (mins) out+=ToString(mins)+"m ";
   if (secs) out+=ToString(secs)+"s ";
-  if (out.length()) out.erase(out.length()-1,1);
+  if (out.length()) out.pop_back();
   else out="0s";
   return out;
 }

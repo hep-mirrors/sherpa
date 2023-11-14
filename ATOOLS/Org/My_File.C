@@ -89,8 +89,8 @@ bool My_File<FileType>::OpenDB(std::string file)
     return true;
   }
 #endif
-  while (file.length() && file[file.length()-1]=='/')
-    file.erase(file.length()-1,1);
+  while (file.length() && file.back()=='/')
+    file.pop_back();
   file+=".zip";
   ZipArchive *zf(new ZipArchive(file));
   s_ziparchives[path]=ZipArchive_Ref(zf,std::vector<std::string>());

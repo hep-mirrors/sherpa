@@ -169,7 +169,7 @@ ATOOLS::EnvironmentVariable(const std::string &name,std::string entry)
   }
   size_t pos=std::string::npos;
   std::vector<std::string> entries;
-  if (entry.length()>0 && entry.back()!=':') entry+=":";
+  if (!entry.empty() && entry.back() != ':') entry += ":";
   while ((pos=entry.find(":"))!=std::string::npos) {
     if (pos>0) entries.push_back(entry.substr(0,pos));
     entry=entry.substr(pos+1);
@@ -301,7 +301,7 @@ std::vector<std::string> ATOOLS::RegExMatch
 
 std::string ATOOLS::ShortenPathName(std::string path)
 {
-  while (path.length() && path.back()=='/')
+  while (path.length() && path.back() == '/')
     path.pop_back();
   for (size_t pos=path.find("//");pos!=std::string::npos;
        pos=path.find("//")) path.erase(pos,1);
