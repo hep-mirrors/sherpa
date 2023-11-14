@@ -23,7 +23,7 @@ Output_Phase::Output_Phase(Output_Vector *const outputs,
     (*it)->Header();
     m_name+=(*it)->Name()+"+";
   }
-  if (m_name.length()>0) m_name.erase(m_name.length()-1);
+  if (m_name.length()>0) m_name.pop_back();
 
   const double wit{ Settings::GetMainSettings()["FILE_SIZE"].Get<double>() };
   if (wit<1.0) {

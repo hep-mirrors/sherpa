@@ -214,8 +214,8 @@ void Run_Parameter::Init()
   std::string path=s.GetPath();
   if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
   while (path.length()>0
-         && (path[path.length()-1]=='/' || path[path.length()-1]=='.')) {
-    path=path.substr(0,path.length()-1);
+         && (path.back()=='/' || path.back()=='.')) {
+    path.pop_back();
   }
 
   gen.m_timer.Start();

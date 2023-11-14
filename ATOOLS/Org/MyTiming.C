@@ -103,7 +103,7 @@ std::string MyTiming::TimeString(const int format)
 {
   time_t t(time(NULL));
   std::string tstring(ctime(&t));
-  tstring.erase(tstring.length()-1,1);
+  tstring.pop_back();
   for (size_t i(0);i<tstring.length();++i) {
     if ((format&1) && (tstring[i]==' ')) tstring[i]='_';
     if ((format&2) && (tstring[i]==':')) tstring[i]='-';
@@ -122,6 +122,6 @@ std::string MyTiming::StrFTime
     return "";
   }
   while (rv[0]==' ') rv.erase(0,1);
-  while (rv[rv.length()-1]==' ') rv.erase(rv.length()-1,1);
+  while (!rv.empty() && rvback()==' ') rv.pop_back();
   return rv;
 }

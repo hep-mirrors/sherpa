@@ -157,18 +157,18 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
     }
     bool bar(false);
     if (fl.length()>1) {
-      if (fl[fl.length()-1]=='b') {
-        fl.erase(fl.length()-1,1);
+      if (fl.back()=='b') {
+        fl.pop_back();
         bar=true;
       }
       else if ((fl[0]=='W' || fl[0]=='H')) {
-        if (fl[fl.length()-1]=='-') {
-          fl[fl.length()-1]='+';
+        if (fl.back()=='-') {
+          fl.back()='+';
           bar=true;
         }
       }
-      else if (fl[fl.length()-1]=='+') {
-        fl[fl.length()-1]='-';
+      else if (fl.back()=='+') {
+        fl.back()='-';
         bar=true;
       }
     }
@@ -217,8 +217,8 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
     ret+=finalflavs[i].IDName();
     ret+="__";
   }
-  while (ret[ret.length()-1]=='_') {
-    ret.erase(ret.length()-1, 1);
+  while (!ret.empty() && ret.back()=='_') {
+    ret.pop_back();
   }
 
   DEBUG_VAR(ret);
@@ -371,8 +371,8 @@ Analysis_Interface *ATOOLS::Getter
 operator()(const Analysis_Arguments &args) const
 {
   std::string outpath=args.m_outpath;
-  if (outpath[outpath.length()-1]=='/') {
-    outpath.erase(outpath.length()-1, 1);
+  if (outpath.back()=='/') {
+    outpath.pop_back();
   }
   std::vector<btp::code> ignoreblobs;
   ignoreblobs.push_back(btp::Unspecified);
@@ -396,8 +396,8 @@ Analysis_Interface *ATOOLS::Getter
 operator()(const Analysis_Arguments &args) const
 {
   std::string outpath=args.m_outpath;
-  if (outpath[outpath.length()-1]=='/') {
-    outpath.erase(outpath.length()-1, 1);
+  if (outpath.back()=='/') {
+    outpath.pop_back();
   }
   std::vector<btp::code> ignoreblobs;
   ignoreblobs.push_back(btp::Unspecified);
@@ -424,8 +424,8 @@ Analysis_Interface *ATOOLS::Getter
 operator()(const Analysis_Arguments &args) const
 {
   std::string outpath=args.m_outpath;
-  if (outpath[outpath.length()-1]=='/') {
-    outpath.erase(outpath.length()-1, 1);
+  if (outpath.back()=='/') {
+    outpath.pop_back();
   }
   std::vector<btp::code> ignoreblobs;
   ignoreblobs.push_back(btp::Unspecified);
@@ -777,18 +777,18 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
     }
     bool bar(false);
     if (fl.length()>1) {
-      if (fl[fl.length()-1]=='b') {
-        fl.erase(fl.length()-1,1);
+      if (fl.back()=='b') {
+        fl.pop_back();
         bar=true;
       }
       else if ((fl[0]=='W' || fl[0]=='H')) {
-        if (fl[fl.length()-1]=='-') {
-          fl[fl.length()-1]='+';
+        if (fl.back()=='-') {
+          fl.back()='+';
           bar=true;
         }
       }
-      else if (fl[fl.length()-1]=='+') {
-        fl[fl.length()-1]='-';
+      else if (fl.back()=='+') {
+        fl.back()='-';
         bar=true;
       }
     }
@@ -837,8 +837,8 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
     ret+=finalflavs[i].IDName();
     ret+="__";
   }
-  while (ret[ret.length()-1]=='_') {
-    ret.erase(ret.length()-1, 1);
+  while (!ret.empty() && ret.back()=='_') {
+    ret.pop_back();
   }
 
   DEBUG_VAR(ret);
@@ -1058,8 +1058,8 @@ Analysis_Interface *ATOOLS::Getter
 operator()(const Analysis_Arguments &args) const
 {
   std::string outpath=args.m_outpath;
-  if (outpath[outpath.length()-1]=='/') {
-    outpath.erase(outpath.length()-1, 1);
+  if (outpath.back()=='/') {
+    outpath.pop_back();
   }
   std::vector<btp::code> ignoreblobs;
   ignoreblobs.push_back(btp::Unspecified);
@@ -1083,8 +1083,8 @@ Analysis_Interface *ATOOLS::Getter
 operator()(const Analysis_Arguments &args) const
 {
   std::string outpath=args.m_outpath;
-  if (outpath[outpath.length()-1]=='/') {
-    outpath.erase(outpath.length()-1, 1);
+  if (outpath.back()=='/') {
+    outpath.pop_back();
   }
   std::vector<btp::code> ignoreblobs;
   ignoreblobs.push_back(btp::Unspecified);
@@ -1111,8 +1111,8 @@ Analysis_Interface *ATOOLS::Getter
 operator()(const Analysis_Arguments &args) const
 {
   std::string outpath=args.m_outpath;
-  if (outpath[outpath.length()-1]=='/') {
-    outpath.erase(outpath.length()-1, 1);
+  if (outpath.back()=='/') {
+    outpath.pop_back();
   }
   std::vector<btp::code> ignoreblobs;
   ignoreblobs.push_back(btp::Unspecified);

@@ -286,8 +286,8 @@ std::string Read_Write_Base::StripEscapes(const std::string &buffer) const
 std::string &Read_Write_Base::KillBlanks(std::string &buffer) const
 {
   while (buffer.length()>0 && IsBlank(buffer[0])) buffer.erase(0,1); 
-  while (buffer.length()>0 && IsBlank(buffer[buffer.length()-1]))
-    buffer.erase(buffer.length()-1,1);
+  while (buffer.length()>0 && IsBlank(buffer.back()))
+    buffer.pop_back();
   return buffer;
 }
 

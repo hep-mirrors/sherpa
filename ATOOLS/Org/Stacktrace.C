@@ -57,7 +57,7 @@ void ATOOLS::GenerateStackTrace(std::ostream &ostr,
 	  char buf[2048];
 	  if (fgets(buf,2048,pf)) {
 	    linfo=buf;
-	    linfo=linfo.substr(0,linfo.length()-1);
+	    linfo.pop_back()
 	  }
 	  if (linfo=="??:0") {
 	    pclose(pf);
@@ -66,7 +66,7 @@ void ATOOLS::GenerateStackTrace(std::ostream &ostr,
 	    pf=popen(cmd,"r");
 	    if (fgets(buf,2048,pf)) {
 	      linfo=buf;
-	      linfo=linfo.substr(0,linfo.length()-1);
+	      linfo.pop_back();
 	    }
 	    if (linfo=="??:0") linfo="";
 	  }

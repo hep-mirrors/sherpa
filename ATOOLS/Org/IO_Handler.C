@@ -323,9 +323,9 @@ void IO_Handler::Shorten(std::string& str) {
     else break;
   }
   for (;;) {    
-    if (int(str[str.length()-1])==32 ||
+    if (int(str.back())==32 ||
 	//Tabulator
-	int(str[str.length()-1])==9) str = str.substr(0,str.length()-1);
+	int(str.back())==9) str.pop_back();
     else break;
   }
 }
