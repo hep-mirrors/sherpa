@@ -22,7 +22,7 @@ Output_Phase::Output_Phase(Output_Vector *const outputs,Event_Handler *const h):
     (*it)->Header();
     m_name+=(*it)->Name()+"+";
   }
-  if (m_name.length()>0) m_name.erase(m_name.length()-1);
+  if (m_name.length()>0) m_name.pop_back();
   Data_Reader read(" ",";","!","=");
   read.SetAllowUnits(true);
   double wit;

@@ -89,8 +89,8 @@ bool My_File<FileType>::OpenDB(std::string file)
     return true;
   }
 #endif
-  while (file.length() && file[file.length()-1]=='/')
-    file.erase(file.length()-1,1);
+  while (file.length() && file.back()=='/')
+    file.pop_back();
   file+=".zip";
   ZipArchive *zf(new ZipArchive(file));
   s_ziparchives[path]=ZipArchive_Ref(zf,std::vector<std::string>());
@@ -120,8 +120,8 @@ template <class FileType>
 bool My_File<FileType>::CloseDB(std::string file,int mode)
 {
   std::string path(file);
-  while (file.length() && file[file.length()-1]=='/')
-    file.erase(file.length()-1,1);
+  while (file.length() && file.back()=='/')
+    file.pop_back();
   file+=".zip";
   ZipArchive_Map::iterator ait(s_ziparchives.find(path));
   if (ait==s_ziparchives.end()) return false;

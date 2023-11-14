@@ -174,18 +174,18 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
     }
     bool bar(false);
     if (fl.length()>1) {
-      if (fl[fl.length()-1]=='b') {
-        fl.erase(fl.length()-1,1);
+      if (fl.back()=='b') {
+        fl.pop_back();
         bar=true;
       }
       else if ((fl[0]=='W' || fl[0]=='H')) {
-        if (fl[fl.length()-1]=='-') {
-          fl[fl.length()-1]='+';
+        if (fl.back()=='-') {
+          fl.back()='+';
           bar=true;
         }
       }
-      else if (fl[fl.length()-1]=='+') {
-        fl[fl.length()-1]='-';
+      else if (fl.back()=='+') {
+        fl.back()='-';
         bar=true;
       }
     }

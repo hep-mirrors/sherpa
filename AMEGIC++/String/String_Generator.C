@@ -575,7 +575,7 @@ void String_Generator::SetOn(const string& str)
   if (str==string("1") || str==string("1.") || str==string("0.5") || str==string("2") || str==string("2.")) return;
 
   string tststring = str.substr(2);
-  tststring = tststring.substr(0,tststring.length()-1);
+  if (!tststring.empty()) tststring.pop_back();
   MyStrStream   msstr;
   //  std::strstream msstr;  
   msstr<<tststring;
@@ -596,7 +596,7 @@ Kabbala* String_Generator::GetKabbala(const string& str)
 
   if (str!=string("1") && str!=string("1.") && str!=string("0.5") && str!=string("2") && str!=string("2.")) {
     string tststring = str.substr(2);
-    tststring = tststring.substr(0,tststring.length()-1);
+    if (!tststring.empty()) tststring.pop_back();
     MyStrStream msstr;
     msstr<<tststring;
     int number;

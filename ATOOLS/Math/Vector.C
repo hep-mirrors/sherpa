@@ -79,7 +79,7 @@ std::istream& ATOOLS::operator>>(std::istream& s,Vec4D& vec)
 {
   std::string out;
   s>>out;
-  if (out.length()==0 || out[0]!='(' || out[out.length()-1]!=')')
+  if (out.length()==0 || out[0]!='(' || out.back()!=')')
     THROW(critical_error,"String to vector translation failed.");
   out=out.substr(0,out.length()-1).substr(1);
   for (short unsigned int i=0;i<4;++i) {
@@ -97,7 +97,7 @@ std::istream& ATOOLS::operator>>(std::istream& s,Vec3D& vec)
 {
   std::string out;
   s>>out;
-  if (out.length()==0 || out[0]!='(' || out[out.length()-1]!=')')
+  if (out.length()==0 || out[0]!='(' || out.back()!=')')
     THROW(critical_error,"String to vector translation failed.");
   out=out.substr(0,out.length()-1).substr(1);
   for (short unsigned int i=0;i<3;++i) {

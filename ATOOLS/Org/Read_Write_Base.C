@@ -326,10 +326,10 @@ std::string &Read_Write_Base::KillBlanks(std::string &buffer) const
   }
   hit=true;
   while (hit && buffer.length()>0) { 
-    if (buffer.length()>1 && buffer[buffer.length()-1]==Escape()) break;
+    if (buffer.length()>1 && buffer.back()==Escape()) break;
     hit=false;
-    if (IsBlank(buffer[buffer.length()-1])) {
-      buffer.erase(buffer.length()-1,1);
+    if (IsBlank(buffer.back())) {
+      buffer.pop_back();
       hit=true;
       break;
     }
