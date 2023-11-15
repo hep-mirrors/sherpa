@@ -42,12 +42,12 @@ namespace METOOLS {
     // construction of polarization vector
     CVec4Type VT(const SpinorType &a, const SpinorType &b);
 
-    CVec4Type EM(const ATOOLS::Vec4D &p, int cr, int ca);
-    CVec4Type EP(const ATOOLS::Vec4D &p, int cr, int ca);
+    CVec4Type EM(const ATOOLS::Vec4D &p, const int cr, const int ca, const ATOOLS::Vec4D m_k_mod);
+    CVec4Type EP(const ATOOLS::Vec4D &p, int cr, int ca, const ATOOLS::Vec4D m_k_mod);
 
-    CVec4Type EMM(const ATOOLS::Vec4D &p,const int cr,const int ca);
-    CVec4Type EMP(const ATOOLS::Vec4D &p,const int cr,const int ca);
-    CVec4Type EML(const ATOOLS::Vec4D &p,const int cr,const int ca);
+    CVec4Type EMM(const ATOOLS::Vec4D &p,const int cr,const int ca, const bool hel= true);
+    CVec4Type EMP(const ATOOLS::Vec4D &p,const int cr,const int ca, const bool hel= true);
+    CVec4Type EML(const ATOOLS::Vec4D &p,const int cr,const int ca, const bool hel= true);
 
     // different polarization states
     CRaScType RSMM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
@@ -126,46 +126,59 @@ CRS<SType>::VT(const SpinorType &a,const SpinorType &b)
 }
 // TODO: PLUS AND MINUS EXCHANGED
 template <typename SType> CVec4<SType>
-CRS<SType>::EM(const Vec4D &p,const int cr,const int ca)
+CRS<SType>::EM(const Vec4D &p, const int cr,const int ca, ATOOLS::Vec4D m_k_mod)
 {
+  SpinorType m_kp_mod=SpinorType(1,m_k_mod);
+  SpinorType m_km_mod=SpinorType(-1,m_k_mod);
   SpinorType pp(1,p);
-  CVec4Type e(VT(pp,m_km));
+  CVec4Type e(VT(pp,m_km_mod));
   e(0)=cr; e(1)=ca;
   e.SetH(1);
   static SType sqrttwo(sqrt(SType(2.0)));
-  return e/(sqrttwo*std::conj(m_kp*pp));
+  return e/(sqrttwo*std::conj(m_kp_mod*pp));
 }
 
 template <typename SType> CVec4<SType>
-CRS<SType>::EP(const Vec4D &p,const int cr,const int ca)
+CRS<SType>::EP(const Vec4D &p,const int cr,const int ca, ATOOLS::Vec4D m_k_mod)
 {
+  SpinorType m_kp_mod=SpinorType(1,m_k_mod);
+  SpinorType m_km_mod=SpinorType(-1,m_k_mod);
   SpinorType pm(-1,p);
-  CVec4Type e(VT(m_kp,pm));
+  CVec4Type e(VT(m_kp_mod,pm));
   e(0)=cr; e(1)=ca;
   e.SetH(0);
   static SType sqrttwo(sqrt(SType(2.0)));
-  return e/(sqrttwo*std::conj(m_km*pm));
+  return e/(sqrttwo*std::conj(m_km_mod*pm));
 }
 // TODO: p.Abs2() wirklich immer null, wenn wir masselose Teilchen wollen? Propagator sind extra, d.h. hier werden nur
 //       onshell Teilchen erzeugt?
 template <typename SType> CVec4<SType>
-CRS<SType>::EMM(const Vec4D &p,const int cr,const int ca)
+CRS<SType>::EMM(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
-  return EM(p-p.Abs2()/(2.0*m_k*p)*m_k,cr,ca);
+  Vec4D m_k_mod;
+  if (hel) m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
+  else m_k_mod = m_k;
+  return EM(p-p.Abs2()/(2.0*m_k_mod*p)*m_k_mod,cr,ca,m_k_mod);
 }
 
 template <typename SType> CVec4<SType>
-CRS<SType>::EMP(const Vec4D &p,const int cr,const int ca)
+CRS<SType>::EMP(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
-  return EP(p-p.Abs2()/(2.0*m_k*p)*m_k,cr,ca);
+  Vec4D m_k_mod;
+  if (hel) m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
+  else m_k_mod = m_k;
+  return EP(p-p.Abs2()/(2.0*m_k_mod*p)*m_k_mod,cr,ca,m_k_mod);
 }
 
 template <typename SType> CVec4<SType>
-CRS<SType>::EML(const Vec4D &p,const int cr,const int ca)
+CRS<SType>::EML(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
-  double p2(p.Abs2()), a(p2/(2.0*m_k*p));
-  Vec4D b(p-a*m_k);
-  SpinorType bm(-1,b), bp(1,b), am(-1,m_k), ap(1,m_k);
+  Vec4D m_k_mod;
+  if (hel) m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
+  else m_k_mod = m_k;
+  double p2(p.Abs2()), a(p2/(2.0*m_k_mod*p));
+  Vec4D b(p-a*m_k_mod);
+  SpinorType bm(-1,b), bp(1,b), am(-1,m_k_mod), ap(1,m_k_mod);
   CVec4Type e(VT(bp,bm)-SType(a)*VT(ap,am));
   e(0)=cr; e(1)=ca;
   e.SetH(2);
@@ -184,11 +197,11 @@ CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
                  const int hh, const int ms) {
   CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
-                                                                          this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca),
+                                                                          this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca, m_k),
                                                                           this->m_msv?p.Abs2():0, 1, cr, ca, s):
                                  METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
-                                                                          this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca),
+                                                                          this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca, m_k),
                                                                           this->m_msv?p.Abs2():0, 1, cr, ca, s).Bar());
   std::cout<< wf << std::endl;
   wf.Test_Properties(p, r, b);
@@ -238,10 +251,10 @@ CRS<SType>::RSMM(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
   else if (p[1]<0 || p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));*/
   CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
-                                                                          this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca), this->m_msv?p.Abs2():0, -1, cr, ca, s):
+                                                                          this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), this->m_msv?p.Abs2():0, -1, cr, ca, s):
                              METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, this->m_msv?p.Abs2():0,
                                                                               ms),
-                                                                      this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca), this->m_msv?p.Abs2():0, -1, cr,
+                                                                      this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), this->m_msv?p.Abs2():0, -1, cr,
                                                                       ca, s).Bar());
   std::cout<< wf << std::endl;
   wf.Test_Properties(p, r, b);
@@ -254,6 +267,8 @@ CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType s
                                                         const int s) {
   // set properties of new Rarita-Schwinger particle
   int vector_h = polvector.H();
+  std::cout << "Spinor" << spinor << std::endl;
+  std::cout << "Polvector" << polvector << std::endl;
   // convert in more approriate numbering, h=0 : longitudial, h=2: right, h=-2: left
   // TODO: ADJUST IF +- AND -SWITCH IS SOLVED!!!
   if (vector_h==2) vector_h=0;  // long
