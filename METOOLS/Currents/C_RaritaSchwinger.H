@@ -101,23 +101,54 @@ namespace METOOLS {
       m_x[0]=x0; m_x[1]=x1; m_x[2]=x2; m_x[3]=x3;
       m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
     }
-    inline CRaritaSchwinger(const ATOOLS::Vec4<Scalar> &v,
+    inline CRaritaSchwinger(const ATOOLS::Vec4<Scalar> &rs,
 		 const int c1=0,const int c2=0,
 		 const size_t &h=0,const size_t &s=0)
     {
-      m_x[0]=v[0]; m_x[1]=v[1]; m_x[2]=v[2]; m_x[3]=v[3];
+      m_x[0]=rs[0]; m_x[1]=rs[1]; m_x[2]=rs[2]; m_x[3]=rs[3];
       m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
-    }
-    inline CRaritaSchwinger(const CRaritaSchwinger &v,const Scalar &c)
-    {
-      m_x[0]=v[0]*c; m_x[1]=v[1]*c; m_x[2]=v[2]*c; m_x[3]=v[3]*c;
-      m_c[0]=v(0); m_c[1]=v(1); m_h=v.m_h; m_s=v.m_s;
-    }
-    inline CRaritaSchwinger(const CRaritaSchwinger &v,const SComplex &c)
-    {
-      m_x[0]=v[0]*c; m_x[1]=v[1]*c; m_x[2]=v[2]*c; m_x[3]=v[3]*c;
-      m_c[0]=v(0); m_c[1]=v(1); m_h=v.m_h; m_s=v.m_s;
     }*/
+    inline CRaritaSchwinger(const CRaritaSchwinger &rs, const Scalar &c)
+    {
+      if (m_on==1){
+        m_x[0]= rs[0] * c; m_x[1]= rs[1] * c; m_x[2]= ZERO; m_x[3]= ZERO; m_x[4]= rs[4] * c; m_x[5]= rs[5] * c;
+        m_x[6]= ZERO; m_x[7]= ZERO; m_x[8]= rs[8] * c; m_x[9]= rs[9] * c; m_x[10]= ZERO; m_x[11]= ZERO;
+        m_x[12]= rs[12] * c; m_x[13]= rs[13] * c; m_x[14]= ZERO; m_x[15]= ZERO;
+      }
+      else if (m_on==2){
+        m_x[0]= ZERO; m_x[1]= ZERO; m_x[2]= rs[2] * c; m_x[3]= rs[3] * c; m_x[4]= ZERO; m_x[5]= ZERO; m_x[6]= rs[6] * c;
+        m_x[7]= rs[7] * c; m_x[8]= ZERO; m_x[9]= ZERO; m_x[10]= rs[10] * c; m_x[11]= rs[11] * c; m_x[12]= ZERO;
+        m_x[13]= ZERO; m_x[14]= rs[14] * c; m_x[15]= rs[15] * c;
+      }
+      else{
+        m_x[0]= rs[0] * c; m_x[1]= rs[1] * c; m_x[2]= rs[2] * c; m_x[3]= rs[3] * c; m_x[4]= rs[4] * c;
+        m_x[5]= rs[5] * c; m_x[6]= rs[6] * c; m_x[7]= rs[7] * c; m_x[8]= rs[8] * c; m_x[9]= rs[9] * c;
+        m_x[10]= rs[10] * c; m_x[11]= rs[11] * c; m_x[12]= rs[12] * c; m_x[13]= rs[13] * c; m_x[14]= rs[14] * c;
+        m_x[15]= rs[15] * c;
+      }
+      m_c[0]=rs(0); m_c[1]=rs(1); m_h=rs.m_h; m_s=rs.m_s; m_on=rs.m_on; m_r=rs.m_r; m_b=rs.m_b;
+    }
+
+    inline CRaritaSchwinger(const CRaritaSchwinger &rs, const SComplex &c)
+    {
+      if (m_on==1){
+        m_x[0]= rs[0] * c; m_x[1]= rs[1] * c; m_x[2]= ZERO; m_x[3]= ZERO; m_x[4]= rs[4] * c; m_x[5]= rs[5] * c;
+        m_x[6]= ZERO; m_x[7]= ZERO; m_x[8]= rs[8] * c; m_x[9]= rs[9] * c; m_x[10]= ZERO; m_x[11]= ZERO;
+        m_x[12]= rs[12] * c; m_x[13]= rs[13] * c; m_x[14]= ZERO; m_x[15]= ZERO;
+      }
+      else if (m_on==2){
+        m_x[0]= ZERO; m_x[1]= ZERO; m_x[2]= rs[2] * c; m_x[3]= rs[3] * c; m_x[4]= ZERO; m_x[5]= ZERO; m_x[6]= rs[6] * c;
+        m_x[7]= rs[7] * c; m_x[8]= ZERO; m_x[9]= ZERO; m_x[10]= rs[10] * c; m_x[11]= rs[11] * c; m_x[12]= ZERO;
+        m_x[13]= ZERO; m_x[14]= rs[14] * c; m_x[15]= rs[15] * c;
+      }
+      else{
+        m_x[0]= rs[0] * c; m_x[1]= rs[1] * c; m_x[2]= rs[2] * c; m_x[3]= rs[3] * c; m_x[4]= rs[4] * c;
+        m_x[5]= rs[5] * c; m_x[6]= rs[6] * c; m_x[7]= rs[7] * c; m_x[8]= rs[8] * c; m_x[9]= rs[9] * c;
+        m_x[10]= rs[10] * c; m_x[11]= rs[11] * c; m_x[12]= rs[12] * c; m_x[13]= rs[13] * c; m_x[14]= rs[14] * c;
+        m_x[15]= rs[15] * c;
+      }
+      m_c[0]=rs(0); m_c[1]=rs(1); m_h=rs.m_h; m_s=rs.m_s; m_on=rs.m_on; m_r=rs.m_r; m_b=rs.m_b;
+    }
 
 // TODO: Funktionen füllen!!!
     void Add(const CObject *c);
@@ -134,40 +165,59 @@ namespace METOOLS {
    inline const SComplex &operator[](const int i) const { return m_x[i]; }
    ATOOLS::TCMatrix<Scalar> Contract4Index(const CRaritaSchwinger<Scalar> &rs) const;
    SComplex operator*(const CRaritaSchwinger<Scalar> &rs) const;
-/*     inline CVec4 operator+(const CVec4 &v) const
-    { 
-      return CVec4(m_x[0]+v[0],m_x[1]+v[1],m_x[2]+v[2],m_x[3]+v[3],
-		   m_c[0],m_c[1],m_h,m_s); 
-    }
-    inline CVec4 operator-(const CVec4 &v) const
-    { 
-      return CVec4(m_x[0]-v[0],m_x[1]-v[1],m_x[2]-v[2],m_x[3]-v[3],
-		   m_c[0],m_c[1],m_h,m_s); 
-    }
-    inline CVec4 operator-() const
-    { 
-      return CVec4(-m_x[0],-m_x[1],-m_x[2],-m_x[3],
-		   m_c[0],m_c[1],m_h,m_s); 
-    }
-*/
-    inline CRaritaSchwinger& operator+=(const CRaritaSchwinger &r)
+   inline CRaritaSchwinger operator+(const CRaritaSchwinger &rs) const
     {
-      for (size_t i(0); i<16; ++i) m_x[i] += r[i];
-      m_on|=r.m_on;
+      std::cout << "Hier!11" << std::endl;
+      std::cout << rs.m_r << m_r << std::endl;
+      std::cout << rs.m_b << m_b << std::endl;
+      if (rs.m_b!=m_b || rs.m_r!=m_r) THROW(fatal_error, "Summing particle and anti-particle wave functions / bar "
+                                                           "and non-bar wave functions is not allowed!")
+      std::cout << "Hier!12" << std::endl;
+      return CRaritaSchwinger(m_r, m_b, m_x[0]+rs[0], m_x[1]+rs[1], m_x[2]+rs[2], m_x[3]+rs[3], m_x[4]+rs[4],
+                              m_x[5]+rs[5], m_x[6]+rs[6], m_x[7]+rs[7], m_x[8]+rs[8], m_x[9]+rs[9], m_x[10]+rs[10],
+                              m_x[11]+rs[11], m_x[12]+rs[12], m_x[13]+rs[13], m_x[14]+rs[14], m_x[15]+rs[15],
+                              m_c[0], m_c[1], m_h, m_s, m_on|rs.m_on);
+    }
+    inline CRaritaSchwinger operator-(const CRaritaSchwinger &rs) const
+    {
+      if (rs.m_b!=m_b || rs.m_r!=m_r) THROW(fatal_error, "Summing particle and anti-particle wave functions / bar "
+                                                           "and non-bar wave functions is not allowed!")
+      return CRaritaSchwinger(m_r, m_b, m_x[0]-rs[0], m_x[1]-rs[1], m_x[2]-rs[2], m_x[3]-rs[3], m_x[4]-rs[4],
+                              m_x[5]-rs[5], m_x[6]-rs[6], m_x[7]-rs[7], m_x[8]-rs[8], m_x[9]-rs[9], m_x[10]-rs[10],
+                              m_x[11]-rs[11], m_x[12]-rs[12], m_x[13]-rs[13], m_x[14]-rs[14], m_x[15]-rs[15],
+                              m_c[0], m_c[1], m_h, m_s, m_on|rs.m_on);
+    }
+    inline CRaritaSchwinger operator-() const
+    {
+      return CRaritaSchwinger(m_r, m_b, -m_x[0], -m_x[1], -m_x[2], -m_x[3], -m_x[4], -m_x[5], -m_x[6], -m_x[7],
+                              -m_x[8], -m_x[9], -m_x[10],-m_x[11], -m_x[12], -m_x[13], -m_x[14], -m_x[15],
+                              m_c[0], m_c[1], m_h, m_s);
+    }
+
+    inline CRaritaSchwinger& operator+=(const CRaritaSchwinger &rs)
+    {
+      if (rs.m_b!=m_b || rs.m_r!=m_r) THROW(fatal_error, "Summing particle and anti-particle wave functions / bar "
+                                                           "and non-bar wave functions is not allowed!")
+      for (size_t i(0); i<16; ++i) m_x[i] += rs[i];
+      m_on|=rs.m_on;
       return *this;
     }
-  /*
-    inline CVec4& operator-=(const CVec4 &v)
+    inline CRaritaSchwinger& operator-=(const CRaritaSchwinger &rs)
     {
-      m_x[0]-=v[0]; m_x[1]-=v[1]; m_x[2]-=v[2]; m_x[3]-=v[3];
+      if (rs.m_b!=m_b || rs.m_r!=m_r) THROW(fatal_error, "Summing particle and anti-particle wave functions / bar "
+                                                           "and non-bar wave functions is not allowed!")
+      for (size_t i(0); i<16; ++i) m_x[i] -= rs[i];
+      m_on|=rs.m_on;
       return *this;
     }
-    inline CVec4& operator*=(const SComplex &c) 
+    /*inline CVec4& operator*=(const SComplex &c)
     {
       m_x[0]*=c; m_x[1]*=c; m_x[2]*=c; m_x[3]*=c;
       return *this;
     }*/
   // TODO: Je nach dem, was m_c, m_h und m_s sind - ändern sie sich hier wirklich nicht?
+  // TODO: Stimmt das, dass sich m_r und m_b hier so ändern? Was soll CConj eigentlich machen? Bei Spinoren werden auch
+  //       noch Komponenten paarweise vertauscht!!!
     inline CRaritaSchwinger CConj() const
     {
       return CRaritaSchwinger(-m_r, -m_b, std::conj(m_x[0]),std::conj(m_x[1]), std::conj(m_x[2]),std::conj(m_x[3]),
@@ -176,15 +226,6 @@ namespace METOOLS {
                               std::conj(m_x[11]),std::conj(m_x[12]), std::conj(m_x[13]),std::conj(m_x[14]),
 		                          m_c[0], m_c[1], m_h, m_s, m_on);
     }
-    /*
-    inline SComplex Abs2() const
-    {
-      return m_x[0]*m_x[0]-m_x[1]*m_x[1]-m_x[2]*m_x[2]-m_x[3]*m_x[3];
-    }
-    inline SComplex Abs() const 
-    { 
-      return sqrt(Abs2()); 
-    }*/
 
     inline int R() const { return m_r; }
     inline int B() const { return m_b; }
@@ -204,7 +245,8 @@ namespace METOOLS {
                                       std::conj(m_x[0]), std::conj(m_x[1]), std::conj(m_x[6]), std::conj(m_x[7]),
                                       std::conj(m_x[4]), std::conj(m_x[5]), std::conj(m_x[10]), std::conj(m_x[11]),
                                       std::conj(m_x[8]), std::conj(m_x[9]), std::conj(m_x[14]), std::conj(m_x[15]),
-                                      std::conj(m_x[12]), std::conj(m_x[13]), m_c[0], m_c[1], m_h, m_s, (m_on&1)<<1|(m_on&2)>>1); }
+                                      std::conj(m_x[12]), std::conj(m_x[13]), m_c[0], m_c[1], m_h, m_s,
+                                      (m_on&1)<<1|(m_on&2)>>1); }
 
     static void ResetAccu();
 
