@@ -52,8 +52,8 @@ namespace METOOLS {
     // different polarization states
     CRaScType RSMM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
     CRaScType RSPP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
-    CRaScType RSP(const ATOOLS::Vec4D &p,const int cr,const int ca);
-    CRaScType RSM(const ATOOLS::Vec4D &p,const int cr,const int ca);
+    CRaScType RSP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
+    CRaScType RSM(const ATOOLS::Vec4D &p,int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
 
     CRaScType SpinorVectorProduct(const CSpinorType spinor, const CVec4Type polvector, SType m2, int spinor_h,
                                   int cr=0, int ca=0, int s=0);
@@ -190,7 +190,41 @@ CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca),
                                                                           this->m_msv?p.Abs2():0, 1, cr, ca, s).Bar());
-  std::cout << wf << std::endl;
+  std::cout<< wf << std::endl;
+  wf.Test_Properties(p, r, b);
+  return wf;
+}
+
+template<typename SType> CRaritaSchwinger<SType>
+CRS<SType>::RSP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int hh, int ms){
+  std::cout << "Hier!00" << std::endl;
+  if (!this->m_msv) THROW(fatal_error, "There is no massless Rarita-Schwinger-particle with Sz=1/2!")
+  CRaritaSchwinger<SType> wf_p0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
+                                                                              ms), EML(p, cr, ca), p.Abs2(), 1, cr,
+                                                                      ca, s));
+  CRaritaSchwinger<SType> wf_mp(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
+                                                                                 ms), EMM(p, cr, ca), p.Abs2(), 1, cr,
+                                                                         ca, s));
+  CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_p0 + sqrt(1.0/3.0) * wf_mp) :
+                                   (sqrt(2.0/3.0) * wf_p0 + sqrt(1.0/3.0) * wf_mp).Bar();
+  std::cout<< wf << std::endl;
+  wf.Test_Properties(p, r, b);
+  return wf;
+}
+
+template<typename SType> CRaritaSchwinger<SType>
+CRS<SType>::RSM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int hh, int ms){
+  if (!this->m_msv) THROW(fatal_error, "There is no massless Rarita-Schwinger-particle with Sz=1/2!")
+  std::cout << "Hier!10" << std::endl;
+  CRaritaSchwinger<SType> wf_pm(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
+                                                                                 ms), EMP(p, cr, ca), p.Abs2(), 1, cr,
+                                                                         ca, s));
+  CRaritaSchwinger<SType> wf_m0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
+                                                                                 ms), EML(p, cr, ca), p.Abs2(), 1, cr,
+                                                                         ca, s));
+  CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm) :
+                               (sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm).Bar();
+  std::cout<< wf << std::endl;
   wf.Test_Properties(p, r, b);
   return wf;
 }
@@ -209,7 +243,7 @@ CRS<SType>::RSMM(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
                                                                               ms),
                                                                       this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca), this->m_msv?p.Abs2():0, -1, cr,
                                                                       ca, s).Bar());
-  std::cout << wf << std::endl;
+  std::cout<< wf << std::endl;
   wf.Test_Properties(p, r, b);
   return wf;
 }
@@ -248,9 +282,7 @@ CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType s
   //       obwohl von einem masselosen Teilchen im Modell ausgegangen wird?
   // TODO: Stimmt das, dass wir für Antiteilchen den komplexkonjugierten Polarisationsvektor nehmen müssen, obwohl wir
   //       das bei Vektorbosonen nicht so machen?
-  //if (IsZero(m2)){
-  if (m2<1e-7){
-    for (size_t i(0); i<16; ++i) {
+  for (size_t i(0); i<16; ++i) {
       // Novaes Füllung
       /*if ((vector_h+spinor_h == 3 && i < 8) || ((vector_h + spinor_h == -3) && i >= 8)) {
         RaSc[i] = std::complex<SType>(0.0, 0.0);
@@ -261,8 +293,7 @@ CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType s
         RaSc[i] = std::complex<SType>(0.0, 0.0);
         continue;
       }*/
-      RaSc[i] = spinor[i % 4] * (spinor.R()>0?polvector[i / 4]:conj(polvector[i / 4]));
-    }
+    RaSc[i] = spinor[i % 4] * (spinor.R()>0?polvector[i / 4]:conj(polvector[i / 4]));
   }
   bool on = RaSc.SetOn();
   return RaSc;
@@ -302,7 +333,7 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
-
+  // TODO: Tests in RSPP, RSMM, und hier in DEBUG-Options sinnvoll einbauen
   //TODO: Brauchen wir das alles?
   // TODO: Wozu ist das, sollte das nicht grundsätzlich gelten?
   if (this->m_fl.Mass()==0.0 && p[1]==0.0 && p[2]==0.0)
@@ -316,33 +347,56 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   // TODO: Wie wird dann am Ende h gesetzt bei Fermionen?
   // TODO: Brauchen wir noch Vec-Parameter?
   // TODO: Stimmt RSPP /RSMM? Haben die dann die richtigen helizitäten/Bars?
+  // TODO: !!!Was ist nun der richtige Wert für SetH() 0 und 1 im masselosen Fall oder ganzzahlige Spinwerte (+-1, +-3)!!!
   if (ch>=0) {
-    CRaScType j(anti^(this->m_dir>0)? RSPP(p, -1, 0, -this->m_dir, cr, ca): RSPP(p, 1, 0, this->m_dir, cr, ca));
-    j.SetH(anti^(this->m_dir>0)?1:0);
+    if (this->m_msv && (ch==0 || ch==3)) {
+      CRaScType j(anti^(this->m_dir>0)? RSP(p, -1, 0, -this->m_dir, cr, ca): RSP(p, 1, 0, this->m_dir, cr, ca));
+      AddJ(CRaScType::New(j));
 #ifdef DEBUG__BG
-    msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"+ "<<this->m_id
+      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
+		     <<"0 "<<this->m_id<<" "<<j
+		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
+#endif
+    }
+    if (ch!=3){
+      CRaScType j(anti^(this->m_dir>0)? RSPP(p, -1, 0, -this->m_dir, cr, ca): RSPP(p, 1, 0, this->m_dir, cr, ca));
+      j.SetH(anti^(this->m_dir>0)?1:0);
+#ifdef DEBUG__BG
+      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"+ "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
 #endif
-    CRaScType *c(CRaScType::New(j));
-    AddJ(c);
+      CRaScType *c(CRaScType::New(j));
+      AddJ(c);
 /*    if (p_sub) static_cast<Dipole_Color*>
       (p_sub->In().front()->Color().front())->AddJJK(c);*/
+    }
   }
   if (ch<=0) {
-    CRaScType j(anti^(this->m_dir>0) ? RSMM(p, -1, 0, -this->m_dir, cr, ca) : RSMM(p, 1, 0, this->m_dir, cr, ca));
-    j.SetH(anti^(this->m_dir>0)?0:1);
+    if (this->m_msv && (ch==0 || ch==-3)) {
+      CRaScType j(anti^(this->m_dir>0)? RSM(p, -1, 0, -this->m_dir, cr, ca): RSM(p, 1, 0, this->m_dir, cr, ca));
+      AddJ(CRaScType::New(j));
 #ifdef DEBUG__BG
-    msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"- "<<this->m_id
+      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
+		     <<"0 "<<this->m_id<<" "<<j
+		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
+#endif
+    }
+    if (ch!=-3){
+      CRaScType j(anti^(this->m_dir>0) ? RSMM(p, -1, 0, -this->m_dir, cr, ca) : RSMM(p, 1, 0, this->m_dir, cr, ca));
+      j.SetH(anti^(this->m_dir>0)?0:1);
+#ifdef DEBUG__BG
+      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"- "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
 #endif
-    CRaScType *c(CRaScType::New(j));
-    AddJ(c);
+      CRaScType *c(CRaScType::New(j));
+      AddJ(c);
 /*    if (p_sub) static_cast<Dipole_Color*>
       (p_sub->In().front()->Color().front())->AddJJK(c);*/
+    }
   }
-  Test_WF_Properties(p, anti);
+  //Test_WF_Properties(p, anti);
 #ifdef DEBUG__BG
   if (p_sub) Print();
 #endif
