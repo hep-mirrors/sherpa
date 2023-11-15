@@ -37,7 +37,7 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
     m_on   = false;
   }
   // Pomerons are hadrons, but don't have Multiple Interactions
-  else if (isr->Flav(0).Kfcode() == kf_instanton || isr->Flav(1).Kfcode() == kf_instanton)
+  else if (isr->Flav(0).Kfcode() == kf_pomeron || isr->Flav(1).Kfcode() == kf_pomeron)
     m_name = "None";
   else {
     if (m_name==string("Amisic"))  InitAmisic(model);

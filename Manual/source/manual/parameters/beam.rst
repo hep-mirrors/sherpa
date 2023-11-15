@@ -192,7 +192,10 @@ The Pomeron flux is implemented as used in :cite`H1:2006zyl` :cite:`Goharipour:2
 
 .. math::
 
-    f_{\mathbb{P}} = A_\mathbb{P} \frac{e^{B_\mathbb{P} t}}{{x}_\mathbb{P}^{2 \alpha_\mathbb{P}\left(t\right) -1}}
+    f_{\mathbb{P}}(x) = \int_0^{t_\mathrm{max}} A_\mathbb{P} \frac{e^{B_\mathbb{P} t}}{{x}_\mathbb{P}^{2 \alpha_\mathbb{P}\left(t\right) -1}}
+    = A_\mathbb{P} x^{1 - 2 \alpha\left(0\right)}
+    \frac{\mathrm{e}^{B_\mathbb{P} t_\mathrm{max}} x^{-2 \alpha^\prime t_\mathrm{max}} - 1}
+         {B_\mathbb{P} - 2 \alpha^\prime \mathrm{log}(x)}
 
 where :math:`t` is the squared transferred four-momentum and :math:`\alpha` is assumed to be
 linear, :math:`\alpha_\mathbb{P}\left(t\right) = \alpha\left(0\right) + \alpha^\prime t`. The default values are set
@@ -201,6 +204,7 @@ to the ones obtained in Fit A in :cite:`Goharipour:2018yov` and can each be chan
 .. code-block:: yaml
 
     Pomeron:
+      tMax: -1.e12
       A: 1.0
       B: 7.0
       Alpha_intercept: 1.0938

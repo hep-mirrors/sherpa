@@ -296,6 +296,7 @@ void Beam_Parameters::RegisterEPADefaults() {
 }
 
 void Beam_Parameters::RegisterPomeronDefaults() {
+  m_settings["Pomeron"]["tMax"].SetDefault(-1.e12);
   // taken from Goharipour:2018yov
   m_settings["Pomeron"]["A"].SetDefault(1.0);
   m_settings["Pomeron"]["B"].SetDefault(7.0);
