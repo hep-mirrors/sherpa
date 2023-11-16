@@ -93,10 +93,7 @@ void Cluster_Splitter::FixCoefficients() {
       flcnt  = 3;
       m_mode = m_beammode;
     }
-    // TODO: only need one of these
-    m_a[i] = flcnt;
-    m_b[i] = flcnt;
-    m_c[i] = flcnt;
+    m_type[i] = flcnt;
     sum_mass += massfac * p_constituents->Mass(flav);
   }
   m_masses = Max(1.,sum_mass);
@@ -143,10 +140,10 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
-
-#ifdef TEST_AHADIC
-  //#ifdef TEST_AHADIC
   bool mustrecalc = false;
+
+#ifdef AHADIC_OLD_CLUSTER_SPLITTER
+
   for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
   for (size_t i=0;i<2;i++) {
     m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
@@ -158,54 +155,48 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   bool ok = (m_R2[0]>m_mdec2[0]+m_kt2) && (m_R2[1]>m_mdec2[1]+m_kt2);
   return (ok && (mustrecalc?RecalculateZs():true));
 
-  //#ifdef TEST_AHADIC
 #else
-
-  const double alpha = m_alpha[1][0];
-  const double beta  = m_beta [1][0];
-  const double gamma = m_gamma[1][0];
-  const double kt02  = m_kt02[0];
-
-  bool mustrecalc = false;
 
   // order : lead > beam > rest
   //     -> 3 > 1 > rest
   //     -> stored in m_a[i] = flcnt;
-  const int p0 = m_a[0];
-  const int p1 = m_a[1];
+  const int p0 = m_type[0];
+  const int p1 = m_type[1];
   int i1{0}, i2{1};
-  if(p0 == p1) {
-    if(ran->Get() < 0.5) {
+
+  if(false) {
+    // needs to be implemented more careful
+    if(p0 == p1) {
+      if(ran->Get() < 0.5) {
+	i1 = 0;
+	i2 = 1;
+      } else {
+	i1 = 1;
+	i2 = 0;
+      }
+    } else if (p0 == 3) {
       i1 = 0;
       i2 = 1;
-    } else {
+    } else if (p1 == 3) {
       i1 = 1;
       i2 = 0;
-    }
-  } else if (p0 == 3) {
-    i1 = 0;
-    i2 = 1;
-  } else if (p1 == 3) {
-    i1 = 1;
-    i2 = 0;
-  } else if (p0 == 1) {
-    i1 = 0;
-    i2 = 1;
-  } else if (p1 == 1) {
-    i1 = 1;
-    i2 = 0;
-  } else {
-    if(ran->Get() < 0.5) {
+    } else if (p0 == 1) {
       i1 = 0;
       i2 = 1;
-    } else {
+    } else if (p1 == 1) {
       i1 = 1;
       i2 = 0;
+    } else {
+      if(ran->Get() < 0.5) {
+	i1 = 0;
+	i2 = 1;
+      } else {
+	i1 = 1;
+	i2 = 0;
+      }
     }
   }
 
-  i1 = 0;
-  i2 = 1;
   const double a0 = (m_mdec2[0]+2*m_kt2) / m_Q2;
   const double a1 = (m_mdec2[1]+2*m_kt2) / m_Q2;
 
@@ -242,14 +233,13 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
 
   for (size_t i=0;i<2;i++) {
     m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
-    //This is a difference w.r.t. master
     if (m_R2[i]<m_mdec2[i]+m_kt2) {
-      //std::cout << "mustrecalc -- why?" << std::endl;
       m_R2[i] = m_mdec2[i]+m_kt2;
       mustrecalc = true;
     }
   }
   if(mustrecalc)
+    // Should never happen!
     RecalculateZs();
   return true;
 #endif
@@ -296,47 +286,11 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
   return value;
 }
 
-double Cluster_Splitter::FragmentationFunction_normed(double z, double zmin,
-						      double zmax,
-						      double alpha, double beta,
-						      double gamma, double kt02) {
-  double norm = 1., arg;
-  double value = 1.;
-  alpha = 1.;
-  beta  = 1.;
-
-  //double wt = pow(z,alpha) * pow(1.-z,beta);
-  double wt = z*(1-z);
-  value *= wt;
-
-  arg    = dabs(gamma)>1.e-2 ? gamma*(m_kt2+m_masses*m_masses)/kt02 : 0.;
-  value *= exp(-arg*((zmax-z)/(z*zmax)));
-
-  auto F = [](double g, double x) {
-    return 1./6. * (-std::exp(-g/x)* x * (g*g - g*(-3+x) + x*(-3+2*x))
-		    - g*g*(3+g)* std::expint(-g/x));
-  };
-
-  norm *= F(arg,zmax) / std::exp(-arg/zmax) - F(arg,zmin) / std::exp(-arg/zmax);
-  //norm *= std::exp(-arg/zmax);
-
-  if(std::isinf(value/norm)) {
-    std::cout << "ohoh " << value << " " << norm << std::endl;
-    std::cout << arg << " " << zmin << " " << zmax << std::endl;
-    std::cout << F(arg,zmax) << " " << F(arg,zmin) << std::endl;
-    std::cout << F(arg,zmax) - F(arg,zmin) << std::endl;
-    std::cout << std::exp(-arg/zmax) << std::endl;
-  }
-  return value / norm;
-}
-
-
-
 double Cluster_Splitter::
 WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {
   // identical, just have to check the m_a, m_b, m_c
-  const double alpha = m_alpha[m_a[cnt]][0];
+  const double alpha = m_alpha[m_type[cnt]][0];
   const double beta  = m_beta [m_b[cnt]][0];
   const double gamma = m_gamma[m_c[cnt]][0];
   const double kt02  = m_kt02[0];
@@ -347,7 +301,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 void Cluster_Splitter::z_rejected(const double wgt, const double & z,
 				  const double & zmin,const double & zmax,
 				  const unsigned int & cnt) {
-  // return;
+
   // sanity checks, should probably be done somewhere else
   if(variation_weights.size() != m_alpha[0].size()) {
     // should in principle always be the case
@@ -355,10 +309,11 @@ void Cluster_Splitter::z_rejected(const double wgt, const double & z,
   }
 
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto a  = m_alpha[m_a[cnt]][i];
-    const auto b  = m_beta [m_b[cnt]][i];
-    const auto c  = m_gamma[m_c[cnt]][i];
-    const auto kt = m_kt02[i];
+    const auto type = m_type[cnt];
+    const auto a    = m_alpha[type][i];
+    const auto b    = m_beta [type][i];
+    const auto c    = m_gamma[type][i];
+    const auto kt   = m_kt02[i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
     tmp_variation_weights[i] *= (1.-wgt_new) / (1.-wgt);
   }
@@ -374,22 +329,14 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
     variation_weights.resize(m_alpha[0].size());
   }
 
-  double wgt_old = wgt;
-  // const auto a_default  = m_alpha[m_a[cnt]][0];
-  // const auto a0  = m_alpha[m_a[cnt]][0];
-  // const auto b0  = m_beta [m_b[cnt]][0];
-  // const auto c0  = m_gamma[m_c[cnt]][0];
-  // const auto kt0 = m_kt02[0];
-  // wgt_old = FragmentationFunction_normed(z,zmin,zmax,a0,b0,c0,kt0);
-
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto a  = m_alpha[m_a[cnt]][i];
-    const auto b  = m_beta [m_b[cnt]][i];
-    const auto c  = m_gamma[m_c[cnt]][i];
-    const auto kt = m_kt02[i];
+    const auto type = m_type[cnt];
+    const auto a    = m_alpha[type][i];
+    const auto b    = m_beta [type][i];
+    const auto c    = m_gamma[type][i];
+    const auto kt   = m_kt02[i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
-    // const auto wgt_new = FragmentationFunction_normed(z,zmin,zmax,a,b,c,kt);
-    tmp_variation_weights[i] *= wgt_new / wgt_old;
+    tmp_variation_weights[i] *= wgt_new / wgt;
   }
 
   return;

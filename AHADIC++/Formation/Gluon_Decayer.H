@@ -43,23 +43,10 @@ namespace AHADIC {
     void ResetN() { m_Nclusters = 0; }
     void FillNs(const int & Nhad);
     std::vector<double>& get_variationweights() {
-      // const auto& wgts_breaker  = m_breaker.get_variationweights();
-      // const auto& wgts_splitter = m_splitter.get_variationweights();
-
-      // variation_weights.resize(wgts_breaker.size());
-      // if(wgts_breaker.size() == wgts_splitter.size()) {
-      // 	for(int i{0}; i<wgts_breaker.size(); i++)
-      // 	  variation_weights[i] = wgts_splitter[i] * wgts_breaker[i];
-      // }
-
-      // return variation_weights;
       return m_splitter.get_variationweights();
     };
 
     void reset_variationweights(int nvars) {
-      // std::fill(variation_weights.begin(), variation_weights.end(), 1);
-      // m_splitter.reset_variationweights();
-      // m_breaker.reset_variationweights();
       m_splitter.reset_variationweights(nvars);
     };
 

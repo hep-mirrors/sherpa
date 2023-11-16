@@ -11,7 +11,7 @@ namespace AHADIC {
     // we have four cluster types, L, H, D, B each is getting a std::vector of
     // alpha/beta/gamme values
     std::vector<double> m_alpha[4], m_beta[4], m_gamma[4];
-    int m_a[2], m_b[2], m_c[2];
+    int m_type[2];
     std::vector<double> m_kt02;
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
 
@@ -44,9 +44,6 @@ namespace AHADIC {
     double FragmentationFunction(double z, double zmin, double zmax,
 				 double alpha, double beta, double gamma,
 				 double kt02);
-    double FragmentationFunction_normed(double z, double zmin, double zmax,
-				      double alpha, double beta, double gamma,
-				      double kt02);
 
   public:
     Cluster_Splitter(std::list<Cluster *> * cluster_list,
