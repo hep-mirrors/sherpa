@@ -72,7 +72,7 @@ void Flavour_Selector::Norm(const double & mmax,const bool & vetodi)
   }
 }
 
-void Flavour_Selector::InitWeights() {
+void Flavour_Selector::Init() {
   Constituents * constituents(hadpars->GetConstituents());
   m_mmin = constituents->MinMass();
   m_mmax = constituents->MaxMass();

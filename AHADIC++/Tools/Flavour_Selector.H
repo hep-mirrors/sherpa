@@ -23,7 +23,7 @@ namespace AHADIC {
     Flavour_Selector();
     ~Flavour_Selector();
 
-    void   InitWeights();
+    void   Init();
     std::vector<double>& get_variationweights() {
       return variation_weights;
     };

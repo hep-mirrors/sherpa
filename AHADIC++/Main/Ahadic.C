@@ -25,8 +25,8 @@ Ahadic::Ahadic(string shower) :
   ReadMassParameters();
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
-  // TODO: rename!
-  m_flavourselector.InitWeights();
+
+  m_flavourselector.Init();
   m_sformer.Init();
   m_beamparticles.Init();
   m_softclusters.Init();
@@ -140,7 +140,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	wgtmap["AHADIC"][name] = 1.0;
       } else {
 	if(found)
-	  wgtmap["AHADIC"][name] *= wgt;
+	  continue;
 	else
 	  wgtmap["AHADIC"][name] = wgt;
       }
@@ -152,7 +152,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   }
 
   // Can probably be removed since already reset at the beginning
-  //m_softclusters.reset_variationweights();
+  // m_softclusters.reset_variationweights();
   // m_singletchecker.reset_variationweights();
   m_clusterdecayer.reset_variationweights(n_vars);
   m_gluondecayer.reset_variationweights(n_vars);
