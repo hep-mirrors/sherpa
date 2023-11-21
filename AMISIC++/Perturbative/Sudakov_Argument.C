@@ -27,11 +27,15 @@ void Sudakov_Argument::FillTables() {
   // be the correct way of doing this.
   // These table will be used in the Impact_Parameter class.
   /////////////////////////////////////////////////////////////////////////////////
+  if (m_sbins.m_nbins>1)
+    msg_Info()<<METHOD<<": Integrating over "<<m_sbins.m_nbins<<" bins "
+	      <<"to determine maximum, this might take a while. \n";
   for (size_t sbin=0;sbin<m_sbins.m_nbins;sbin++) {
     double s = m_sbins.x(sbin);
     (*p_processes->GetXSecs())(s);
     p_processes->UpdateS(s);
-    FillPT2Values(sbin,p_processes->GetXSecs()->XSndNorm() * p_processes->GetXSecs()->XSnd());
+    FillPT2Values(sbin,(p_processes->GetXSecs()->XSndNorm() *
+			p_processes->GetXSecs()->XSnd()));
   }
 }
 

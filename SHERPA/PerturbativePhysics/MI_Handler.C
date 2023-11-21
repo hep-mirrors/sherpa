@@ -32,6 +32,8 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
     string resc = s["BEAM_RESCATTERING"].Get<string>();
     scm = m_name = resc;
   }
+  msg_Out()<<METHOD<<": mode = "<<isr->Mode()<<" and name = "<<m_name<<" for "
+	   <<"types = "<<isr->Type(0)<<" & "<<isr->Type(1)<<"\n";
   if (isr->Mode()!=PDF::isrmode::hadron_hadron || m_name=="None") {
     m_name = "None";
     m_on   = false;

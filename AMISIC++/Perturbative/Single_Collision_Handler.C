@@ -54,11 +54,12 @@ Blob * Single_Collision_Handler::NextScatter() {
   // - construct its full kinematics and set the colours
   // - return a filled (at the moment 2->2 only) scattering blob
   do {
-    if (!SelectPT2(m_lastpt2)) return NULL;
+    if (!SelectPT2(m_lastpt2)) {
+      return NULL;
+    }
     p_proc = p_processes->SelectProcess();
-  }
-  while (!p_proc || !p_proc->MakeKinematics(m_pt2,m_y3,m_y4,sqrt(m_shat)) ||
-	 !p_proc->SetColours() || !TestRemnants());
+  } while (!p_proc || !p_proc->MakeKinematics(m_pt2,m_y3,m_y4,sqrt(m_shat)) ||
+	   !p_proc->SetColours() || !TestRemnants());
   return MakeBlob();
 }
 
@@ -78,7 +79,7 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
   // - calculate the cross section summed over all parton-level processes
   // - accept or reject the kinematics with a hit-or-miss of true over overestimated
   //   differential cross section dsigma/dpt2
-  if (p_processes->GetSudakov()->XSratio(m_S)<1.) return false;
+  if (p_processes->XSratio(m_S)<1.) return false;
   m_pt2 = pt2;
   double dsigmatrue, dsigmaapprox, weight;
   bool success(false), output(false);
