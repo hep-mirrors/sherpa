@@ -55,8 +55,8 @@ namespace METOOLS {
     CRaScType RSP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
     CRaScType RSM(const ATOOLS::Vec4D &p,int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
 
-    CRaScType SpinorVectorProduct(const CSpinorType spinor, const CVec4Type polvector, SType m2, int spinor_h,
-                                  int cr=0, int ca=0, int s=0);
+    CRaScType SpinorVectorProduct(const CSpinorType spinor, const CVec4Type polvector, int spinor_h, int cr=0, int ca=0,
+                                  int s=0);
 
   public:
     CRS(const Current_Key &key);
@@ -198,47 +198,67 @@ CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
   CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca, m_k),
-                                                                          this->m_msv?p.Abs2():0, 1, cr, ca, s):
+                                                                          1, cr, ca, s):
                                  METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca, m_k),
-                                                                          this->m_msv?p.Abs2():0, 1, cr, ca, s).Bar());
-  std::cout<< wf << std::endl;
-  wf.Test_Properties(p, r, b);
+                                                                          1, cr, ca, s).Bar());
+  CRaritaSchwinger<SType> wf1 = METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(1, abs(b), 1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s,
+                                                                                 this->m_msv?p.Abs2():0, ms),
+                                                                         this->m_msv? EMM(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca) : EM(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, m_k),
+  1, cr, ca, s);
   return wf;
 }
 
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int hh, int ms){
-  std::cout << "Hier!00" << std::endl;
+  //SComplex exp_phi(SComplex(0, 0));
+  /*if (p[1]>0) exp_phi = std::exp(SComplex(0, 1)*std::atan(p[2]/p[1]));
+  else if (p[1]==0) exp_phi = std::exp(SComplex(0, 1)*(M_PI/2)*((p[2]>0)?SComplex(1,0):((p[2]==0)?0.0:SComplex(-1,0))));
+  else if (p[1]<0 && p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));
+  else if (p[1]<0 && p[2]>0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])-M_PI));*/
   if (!this->m_msv) THROW(fatal_error, "There is no massless Rarita-Schwinger-particle with Sz=1/2!")
   CRaritaSchwinger<SType> wf_p0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
-                                                                              ms), EML(p, cr, ca), p.Abs2(), 1, cr,
-                                                                      ca, s));
+                                                                              ms), EML(p, cr, ca), 1, cr, ca, s));
   CRaritaSchwinger<SType> wf_mp(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
-                                                                                 ms), EMM(p, cr, ca), p.Abs2(), 1, cr,
-                                                                         ca, s));
-  CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_p0 + sqrt(1.0/3.0) * wf_mp) :
-                                   (sqrt(2.0/3.0) * wf_p0 + sqrt(1.0/3.0) * wf_mp).Bar();
-  std::cout<< wf << std::endl;
-  wf.Test_Properties(p, r, b);
+                                                                                 ms), EMM(p, cr, ca), 1, cr, ca, s));
+  CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_p0 - sqrt(1.0/3.0) * wf_mp) :
+                                   (sqrt(2.0/3.0) * wf_p0 - sqrt(1.0/3.0) * wf_mp).Bar();
+  /*CRaritaSchwinger<SType> wf_p01(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(1, abs(b), 1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s, p.Abs2(),
+                                                                                 ms), EML(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0) , cr, ca), 1, cr, ca, s));
+  CRaritaSchwinger<SType> wf_mp1(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(1, abs(b), -1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s, p.Abs2(),
+                                                                                 ms), EMM(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca), 1, cr, ca, s));
+  SComplex exp_phi1(SComplex(0, 0));
+  Vec4D p1 = Vec4D(sqrt(2), 0, 0, 1);
+  if (p1[1]>0) exp_phi1 = std::exp(SComplex(0, 1)*std::atan(p1[2]/p1[1]));
+  else if (p1[1]==0) exp_phi1 = std::exp(SComplex(0, 1)*(M_PI/2)*((p1[2]>0)?SComplex(1,0):((p1[2]==0)?0.0:SComplex(-1,0))));
+  else if (p1[1]<0 && p1[2]>=0) exp_phi1 = std::exp(SComplex(0, 1)*(std::atan(p1[2]/p1[1])+M_PI));
+  else if (p1[1]<0 && p1[2]>0) exp_phi1 = std::exp(SComplex(0, 1)*(std::atan(p1[2]/p1[1])-M_PI));
+  std::cout << exp_phi1 << std::endl;
+  CRaritaSchwinger<SType> wf1 = sqrt(2.0/3.0) * wf_p01 - sqrt(1.0/3.0) * wf_mp1;
+  CRaritaSchwinger<SType> wf2 = sqrt(2.0/3.0) * wf_p01 + sqrt(1.0/3.0) * wf_mp1;
+  CRaritaSchwinger<SType> wf3 = sqrt(2.0/3.0) * wf_p01 + exp_phi1*sqrt(1.0/3.0) * wf_mp1;
+  std::cout << "Test-wf" << wf1 << std::endl;
+  std::cout << "Test-wf" << wf2 << std::endl;
+  std::cout << "Test-wf" << wf3 << std::endl;
+  std::cout << "+" << wf << std::endl;*/
   return wf;
 }
 
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int hh, int ms){
   if (!this->m_msv) THROW(fatal_error, "There is no massless Rarita-Schwinger-particle with Sz=1/2!")
-  std::cout << "Hier!10" << std::endl;
+  /*SComplex exp_phi(SComplex(0, 0));
+  if (p[1]>0) exp_phi = std::exp(SComplex(0, 1)*std::atan(p[2]/p[1]));
+  else if (p[1]==0) exp_phi = std::exp(SComplex(0, 1)*(M_PI/2)*((p[2]>0)?SComplex(1,0):((p[2]==0)?0.0:SComplex(-1,0))));
+  else if (p[1]<0 && p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));
+  else if (p[1]<0 && p[2]>0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])-M_PI));*/
   CRaritaSchwinger<SType> wf_pm(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
-                                                                                 ms), EMP(p, cr, ca), p.Abs2(), 1, cr,
-                                                                         ca, s));
+                                                                                 ms), EMP(p, cr, ca), 1, cr, ca, s));
   CRaritaSchwinger<SType> wf_m0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
-                                                                                 ms), EML(p, cr, ca), p.Abs2(), 1, cr,
-                                                                         ca, s));
+                                                                                 ms), EML(p, cr, ca), 1, cr, ca, s));
   CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm) :
                                (sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm).Bar();
-  std::cout<< wf << std::endl;
-  wf.Test_Properties(p, r, b);
   return wf;
 }
 
@@ -247,28 +267,26 @@ CRS<SType>::RSMM(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
                  const int hh, const int ms) {
   /*SComplex exp_phi(SComplex(0, 0));
   if (p[1]>0) exp_phi = std::exp(SComplex(0, 1)*std::atan(p[2]/p[1]));
-  else if (p[1]==0) exp_phi = std::exp(SComplex(0, 1)*(M_PI/2)*((p[2]>0)?SComplex(1,0):SComplex(-1,0)));
-  else if (p[1]<0 || p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));*/
+  else if (p[1]==0) exp_phi = std::exp(SComplex(0, 1)*(M_PI/2)*((p[2]>0)?SComplex(1,0):((p[2]==0)?0.0:SComplex(-1,0))));
+  else if (p[1]<0 && p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));
+  else if (p[1]<0 && p[2]>0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])-M_PI));*/
   CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
-                                                                          this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), this->m_msv?p.Abs2():0, -1, cr, ca, s):
+                                                                          this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), -1, cr, ca, s):
                              METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, this->m_msv?p.Abs2():0,
                                                                               ms),
-                                                                      this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), this->m_msv?p.Abs2():0, -1, cr,
+                                                                      this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), -1, cr,
                                                                       ca, s).Bar());
-  std::cout<< wf << std::endl;
-  wf.Test_Properties(p, r, b);
   return wf;
 }
 
 template<typename SType>
 CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType spinor, const CRS::CVec4Type polvector,
-                                                        const SType m2, int spinor_h, const int cr, const int ca,
-                                                        const int s) {
+                                                        int spinor_h, const int cr, const int ca, const int s) {
   // set properties of new Rarita-Schwinger particle
   int vector_h = polvector.H();
-  std::cout << "Spinor" << spinor << std::endl;
-  std::cout << "Polvector" << polvector << std::endl;
+  //std::cout << "spinor" << spinor << std::endl;
+  //std::cout << "polvector" << polvector << std::endl;
   // convert in more approriate numbering, h=0 : longitudial, h=2: right, h=-2: left
   // TODO: ADJUST IF +- AND -SWITCH IS SOLVED!!!
   if (vector_h==2) vector_h=0;  // long
@@ -314,35 +332,6 @@ CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType s
   return RaSc;
 }
 
-
-/*template <typename SType> CRaritaSchwinger<SType>
-CRS<SType>::RSM(const Vec4D &p, const int r, const int cr,const int ca)
-{p-p.Abs2()/(2.0*m_k*p)*m_k,cr,ca
-  return SpinorVectorProduct(METOOLS::CSpinor(-1,1,const int &h,
-  const ATOOLS::Vec4<Scalar> &p,
-  const int cr=0,const int ca=0,
-  const size_t &hh=0,const size_t &s=0,
-  const Scalar &m2=-1.0,const int ms=1));
-}
-
-template <typename SType> CRaritaSchwinger<SType>
-CRS<SType>::RSP(const Vec4D &p,const int cr,const int ca)
-{
-  return EP(p-p.Abs2()/(2.0*m_k*p)*m_k,cr,ca);
-}
-
-template <typename SType> CRaritaSchwinger<SType>
-CRS<SType>::RSL(const Vec4D &p,const int cr,const int ca)
-{
-  double p2(p.Abs2()), a(p2/(2.0*m_k*p));
-  Vec4D b(p-a*m_k);
-  SpinorType bm(-1,b), bp(1,b), am(-1,m_k), ap(1,m_k);
-  CVec4Type e(VT(bp,bm)-SType(a)*VT(ap,am));
-  e(0)=cr; e(1)=ca;
-  e.SetH(2);
-  return e/sqrt(SComplex(4.0*p2));
-}*/
-
 template <typename SType>
 void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
@@ -367,6 +356,9 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     if (this->m_msv && (ch==0 || ch==3)) {
       CRaScType j(anti^(this->m_dir>0)? RSP(p, -1, 0, -this->m_dir, cr, ca): RSP(p, 1, 0, this->m_dir, cr, ca));
       AddJ(CRaScType::New(j));
+      j.SetH(anti^(this->m_dir>0)?3:2);
+      std::cout << j << std::endl;
+      j.Test_Properties(p, j.R(), j.B());
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"0 "<<this->m_id<<" "<<j
@@ -376,6 +368,9 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     if (ch!=3){
       CRaScType j(anti^(this->m_dir>0)? RSPP(p, -1, 0, -this->m_dir, cr, ca): RSPP(p, 1, 0, this->m_dir, cr, ca));
       j.SetH(anti^(this->m_dir>0)?1:0);
+      std::cout << j << std::endl;
+      j.Test_Properties(p, j.R(), j.B());
+      //j.SetH(1);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"+ "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
@@ -391,6 +386,9 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     if (this->m_msv && (ch==0 || ch==-3)) {
       CRaScType j(anti^(this->m_dir>0)? RSM(p, -1, 0, -this->m_dir, cr, ca): RSM(p, 1, 0, this->m_dir, cr, ca));
       AddJ(CRaScType::New(j));
+      j.SetH(anti^(this->m_dir>0)?2:3);
+      std::cout << j << std::endl;
+      j.Test_Properties(p, j.R(), j.B());
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"0 "<<this->m_id<<" "<<j
@@ -400,6 +398,9 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     if (ch!=-3){
       CRaScType j(anti^(this->m_dir>0) ? RSMM(p, -1, 0, -this->m_dir, cr, ca) : RSMM(p, 1, 0, this->m_dir, cr, ca));
       j.SetH(anti^(this->m_dir>0)?0:1);
+      std::cout << j << std::endl;
+      j.Test_Properties(p, j.R(), j.B());
+      //j.SetH(0);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"- "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
@@ -411,7 +412,7 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       (p_sub->In().front()->Color().front())->AddJJK(c);*/
     }
   }
-  //Test_WF_Properties(p, anti);
+  Test_WF_Properties(p, anti);
 #ifdef DEBUG__BG
   if (p_sub) Print();
 #endif
@@ -539,17 +540,19 @@ char CRS<SType>::Type() const
 }
 
 // TODO: Wieso failt Normierungstest bei den einlaufenden Teilchen des Prozesses? (also mit deren Impulsen)
+// properties tested according to S.F.Novaes and D. Spehler, Nuclear Physics B 371 (1992) 618-636
 template<typename SType>
 bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
   CRaritaSchwinger<SType> rspp = anti?RSPP(p, -1, 1, 1, 0, 0, 1):RSPP(p, 1, 1, 1, 0, 0, 1);
   CRaritaSchwinger<SType> rsmm = anti?RSMM(p, -1, 1, 1, 0, 0, -1):RSMM(p, 1, 1, 1, 0, 0, -1);
   METOOLS::Gamma<SType> gammavec = Gamma<SType>();
   bool testresult(true);
+
+  // properties of massless RS wave functions
   if (!this->m_msv){
     // normalization
     std::cout<<METHOD<<": Testing normalization of Rarita-Schwinger wave function..."<<std::endl;
     TCMatrix<SType> result1 = rspp.Contract4Index(rspp.Bar()) + rsmm.Contract4Index(rsmm.Bar()) + gammavec * p;
-
     for (size_t i(0); i<4; ++i){
       for (size_t j(0); j<4; ++j){
         if (std::abs(result1[i][j].real())> rspp.Accu()|| std::abs(result1[i][j].imag())>rspp.Accu()) {
@@ -560,6 +563,7 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
       }
     }
     if (testresult) msg_Out()<< "passed" << std::endl;
+
     // equality between U++ and V-- / U-- and V++ for bar and non-bar
     std::cout<<METHOD<<": Testing equality of U++ and V-- / U-- and V++ Rarita-Schwinger wave functions..."<<std::endl;
     CRaritaSchwinger<SType> rspp1 = anti?RSPP(p, 1, 1, 1, 0, 0, 1):RSPP(p, -1, 1, 1, 0, 0, 1);
@@ -580,11 +584,102 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
     }
     if (testresult) msg_Out()<< "passed" << std::endl;
   }
-  // normalization
+  else{
+    // properties of massive RS wave functions
+    // normalization
+    std::cout<<METHOD<<": Testing normalization of Rarita-Schwinger wave function..."<<std::endl;
+    CRaritaSchwinger<SType> rsp = anti?RSP(p, -1, 1, 1, 0, 0, 1):RSP(p, 1, 1, 1, 0, 0, 1);
+    CRaritaSchwinger<SType> rsm = anti?RSM(p, -1, 1, 1, 0, 0, -1):RSM(p, 1, 1, 1, 0, 0, -1);
+    std::vector<std::complex<SType>> result1(16);
+    // result1 contains the result of contracting a bar wave function with a non-bar wave function, each entry is
+    // another helicity combination of bar- and non-bar wave functions
+    result1[0] = rspp.Bar()*rspp+2*rspp.R()*p.Mass();
+    result1[1] = rspp.Bar()*rsp;
+    result1[2] = rspp.Bar()*rsm;
+    result1[3] = rspp.Bar()*rsmm;
+    result1[4] = rsp.Bar()*rspp;
+    result1[5] = rsp.Bar()*rsp+2*rspp.R()*p.Mass();
+    result1[6] = rsp.Bar()*rsm;
+    result1[7] = rsp.Bar()*rsmm;
+    result1[8] = rsm.Bar()*rspp;
+    result1[9] = rsm.Bar()*rsp;
+    result1[10] = rsm.Bar()*rsm+2*rspp.R()*p.Mass();
+    result1[11] = rsm.Bar()*rsmm;
+    result1[12] = rsmm.Bar()*rspp;
+    result1[13] = rsmm.Bar()*rsp;
+    result1[14] = rsmm.Bar()*rsm;
+    result1[15] = rsmm.Bar()*rsmm+2*rspp.R()*p.Mass();
+    for (size_t i(0); i<16; ++i){
+      if (std::abs(result1[i].real()) > rspp.Accu()|| std::abs(result1[i].imag()) > rspp.Accu()) {
+        msg_Out()<<"Normalization of the Rarita-Schwinger wave functions" << i <<
+        "do not fit! 0=++bar*++, 1=++bar*+, 2=++bar*-, 3=++bar*--, 4=+bar*++ ..." << std::endl;
+        testresult = false;
+      }
+    }
+    if (testresult) msg_Out()<< "passed" << std::endl;
 
-  // completeness relation
+    // completeness relation according to Hagiwara et al. Eur. Phys. J. C (2011) 71: 1529
+    SComplex propagator[4][4][4][4];
+    ATOOLS::TCMatrix<SType> p_slash = gammavec*p;
+    SComplex left_sum[4][4][4][4];
+
+    // TODO: Is there a difference in the signs for anti-particles?
+    ATOOLS::TCMatrix<SType> spropagator = ATOOLS::TCMatrix<SType>(p_slash + SComplex(sqrt(p.Abs2())) *
+                                                                                      ATOOLS::TCMatrix<SType>(4, true));
+    SComplex** lorentz_tensor = new SComplex*[4];
+    for (int i=0;i<4;++i) lorentz_tensor[i] = new SComplex[4];
+    //intermediate[0][0] = (*this)[0] * rs[0] + (*this)[1] * rs[1] + (*this)[2] * rs[2] + (*this)[3] * rs[3];
+    //intermediate[0][1] = (*this)[0] * rs[4] + (*this)[1] * rs[5] + (*this)[2] * rs[6] + (*this)[3] * rs[7];
+    for (size_t i(0); i<4; ++i){
+      for (size_t j(0); j<4; ++j){
+        for (size_t k(0); k<4; ++k){
+          for (size_t l(0); l<4; ++l){
+            lorentz_tensor[i][j] += (1.0 / 3.0)*gammavec[i][k][l]*gammavec[j][k][l];
+            lorentz_tensor[i][j] -= (1.0 / (3.0*p.Abs2()))*(gammavec[i][k][l]*p[j]*p_slash[k][l]+p[i]*p_slash[k][l]*gammavec[j][k][l]);
+            lorentz_tensor[i][j] += (1.0 / (3.0*p.Abs2()*p.Abs2()))*p[i]*p_slash[k][l]*p[j]*p_slash[k][l];
+          }
+        }
+        // first summand: - metric tensor; second summand: momentum term
+        lorentz_tensor[i][j] += (i == j ? (i > 0 ? 1.0 : -1.0) : 0.0) + (p[i] * p[j]) / p.Abs2();
+      }
+    }
+    /*for (size_t i(0); i<4; ++i){
+      for (size_t j(0); j<4; ++j){
+        for (size_t k(0); k<4; ++k){
+          for (size_t l(0); l<4; ++l){
+            propagator[i][j][k][l]=spropagator[i][j]*lorentz_tensor[k][l];
+            left_sum[i][j][k][l]=rspp[i][k]*rspp.Bar()[j][l] + rsp[i][k]*rsp.Bar()[j][l] + rsm[i][k]*rsm.Bar()[j][l]
+                                 + rsmm[i][k]*rsmm.Bar()[j][l];
+            if (std::abs((left_sum[i][j][k][l]-propagator[i][j][k][l]).real()) > rspp.Accu() ||
+                std::abs((left_sum[i][j][k][l]-propagator[i][j][k][l]).imag()) > rspp.Accu()) {
+              msg_Out() << "Completeness relation of the Rarita-Schwinger wave functions is not hold: "
+                           "component " << i+k << j+l << "of the resulting 16 dimensional tensor is " <<
+                           left_sum[i][j][k][l]-propagator[i][j][k][l] << " instead of zero!" << std::endl;
+              testresult = false;
+
+          }}
+        }
+      }
+    }*/
+    for (size_t i(0); i<4; ++i){
+      for (size_t j(0); j<4; ++j){
+        for (size_t k(0); k<4; ++k){
+          for (size_t l(0); l<4; ++l){
+            /*if (std::abs((left_sum[i+j][k]-spropagator[0][j]*lorentz_tensor[0][k]).real()) > rspp.Accu() ||
+                std::abs((left_sum[i][j]-spropagator[k][l]*lorentz_tensor[i][j]).imag()) > rspp.Accu()) {
+              msg_Out() << "Completeness relation of the Rarita-Schwinger wave functions is not hold: "
+                           "component " << i+k << j+l << "of the resulting 16 dimensional tensor is " <<
+                        left_sum[i+k][j+l]-spropagator[k][l]*lorentz_tensor[i][j] << " instead of zero!" << std::endl;
+              testresult = false;
+            }*/
+          }
+        }
+      }
+    }
+  }
+
   // gauge invariance
-  return true;
+  return testresult;
 }
 
 DECLARE_GETTER(CRS<double>,"DR",Current,Current_Key);
