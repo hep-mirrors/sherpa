@@ -30,15 +30,16 @@ void Sudakov_Argument::FillTables() {
   bool many_bins = m_sbins.m_nbins>1;
   if (many_bins)
     msg_Out() << "AMISIC: Integrating over " << m_sbins.m_nbins
-              << " bins in the cms energy to determine maximum, this might "
-                 "take a while. \n";
+              << " bins in the cms energy to determine maximum, this might take a while. \n";
   for (size_t sbin=0;sbin<m_sbins.m_nbins;sbin++) {
     if (many_bins) msg_Out() << "AMISIC: Integrating bin " << sbin+1 << " of "
                              << m_sbins.m_nbins << " bins.\r" << std::flush;
     double s = m_sbins.x(sbin);
     (*p_processes->GetXSecs())(s);
     p_processes->UpdateS(s);
-    FillPT2Values(sbin,p_processes->GetXSecs()->XSndNorm() * p_processes->GetXSecs()->XSnd());
+    FillPT2Values(sbin,
+                  p_processes->GetXSecs()->XSndNorm()
+                          * p_processes->GetXSecs()->XSnd());
   }
   if (many_bins) msg_Out() << "\n";
 }

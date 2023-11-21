@@ -822,7 +822,7 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   msg_Out()<<"   * (mode = "<<m_mode<<"): "
 	   <<"beam 0 = "<<m_defsets[PDF::isr::hard_process][0]<<" + "
 	   <<m_defsets[PDF::isr::hard_subprocess][0]<<", "
-	   <<"beam 0 = "<<m_defsets[PDF::isr::hard_process][1]<<" + "
+	   <<"beam 1 = "<<m_defsets[PDF::isr::hard_process][1]<<" + "
 	   <<m_defsets[PDF::isr::hard_subprocess][1]<<"\n";
   // add LHAPDF if necessary and load the relevant libraries
   if (Variations::NeedsLHAPDF6Interface()) {

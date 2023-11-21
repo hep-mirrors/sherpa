@@ -73,7 +73,7 @@ TwoDim_Table::TwoDim_Table(const axis & xbins,const axis & ybins) :
 }
 
 void TwoDim_Table::Fill(const size_t & xbin,const size_t & ybin,const double & value) {
-  if (xbin<m_x.m_nbins && xbin<m_y.m_nbins)
+  if (xbin<m_x.m_nbins && ybin<m_y.m_nbins)
     m_values[xbin][ybin] = value;
 }
 

@@ -45,7 +45,7 @@ namespace AMISIC {
 		    PDF::ISR_Handler *const isr,
             YFS::YFS_Handler *const yfs);
     double operator()(const double & shat,const double & that,
-			    const double & uhat,const double & x1,const double & x2);
+		      const double & uhat,const double & x1,const double & x2);
     double dSigma(const double & pt2);
     MI_Process * SelectProcess();
     void         UpdateS(const double & s);
@@ -58,7 +58,7 @@ namespace AMISIC {
     inline const size_t    Size()      const { return m_groups.size(); }
     inline const bool    & VariableS() const { return m_variable_s; }
     inline const double  & PDFXmin(const size_t beam) const { return m_xmin[beam]; }
-    inline double XSratio(const double & s)               { return p_sudakov->XSratio(s); }
+    inline double XSratio(const double & s) { return p_sudakov->XSratio(s); }
     inline PDF::PDF_Base * PDF(const size_t beam)   const { return p_pdf[beam]; }
     inline Sudakov_Argument          * GetSudakov() const { return p_sudakov; }
     inline MODEL::One_Running_AlphaS * AlphaS()     const { return p_alphaS; }

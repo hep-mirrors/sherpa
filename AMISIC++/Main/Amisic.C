@@ -67,7 +67,6 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   if (m_ana) InitAnalysis();
   m_isFirst   = true;
   m_isMinBias = false;
-
   return true;
 }
 
@@ -145,6 +144,7 @@ int Amisic::InitMinBiasEvent() {
     m_isFirst      = false;
     m_producedSoft = false;
     m_isMinBias    = true;
+    if (m_variable_s) UpdateForNewS();
     if (!p_soft) SetB();
     return 1;
   }

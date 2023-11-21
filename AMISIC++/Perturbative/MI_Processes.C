@@ -175,7 +175,7 @@ bool MI_Processes::PrepareSudakovFactor() {
 }
 
 double MI_Processes::dSigma(const double & pt2) {
-  // Estimated differnetial cross setion dsigma/dpt^2 in 1/GeV^4 for a given transverse
+  // Estimated differential cross setion dsigma/dpt^2 in 1/GeV^4 for a given transverse
   // momentum:
   // 1/(16 pi) int_{-ymax}^{+ymax} dy_1 dy_2  [  x_1 f(x_1, pt^2) x_2 f(x_2, pt^2)
   //                                             |M(shat,that,uhat)|^2 / shat^2    ]

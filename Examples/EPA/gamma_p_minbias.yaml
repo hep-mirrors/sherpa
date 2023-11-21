@@ -1,0 +1,23 @@
+EVENTS:          1M
+EVENT_TYPE:      MinimumBias
+ME_GENERATORS:   None
+MI_HANDLER:      Amisic
+SOFT_COLLISIONS: Amisic
+
+BEAMS:           [2212, -11]
+BEAM_ENERGIES:   [820, 27.5]
+BEAM_SPECTRA:    [Monochromatic, EPA]
+PDF_LIBRARY:     [LHAPDFSherpa, SASGSherpa]
+PDF_SET:         [PDF4LHC21_40_pdfas, SAS1M]
+MPI_PDF_LIBRARY: [LHAPDFSherpa, SASGSherpa]
+MPI_PDF_SET:     [PDF4LHC21_40_pdfas, SAS1M]
+
+AMISIC:
+  PT_0:     1.0
+  PT_Min:   0.5
+  nPT_bins: 20
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses: [ZEUS_2021_I1869927, H1_1998_I477556]
+  --ignore-beams: 1
