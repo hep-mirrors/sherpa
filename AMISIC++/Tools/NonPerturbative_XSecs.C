@@ -46,30 +46,37 @@ void NonPerturbative_XSecs::CalculateSDependentCrossSections() {
 Blob * NonPerturbative_XSecs::MakeScatter() {
   if (m_variableS) {
     if (!m_integrator()) {
-      msg_Error()<<"Error in "<<METHOD<<": could not create initial-state phase-space.\n";
+      msg_Error()<<"Error in "<<METHOD<<": "
+		 <<"could not create initial-state phase-space.\n";
       return NULL;
     }
   }
-  for (size_t beam=0;beam<2;beam++) m_inmom[beam] = p_remnants->GetRemnant(beam)->InMomentum();
+  for (size_t beam=0;beam<2;beam++)
+    m_inmom[beam] = p_remnants->GetRemnant(beam)->InMomentum();
   m_s     = (m_inmom[0]+m_inmom[1]).Abs2();
   m_boost = Poincare(m_inmom[0]+m_inmom[1]);
   for (size_t beam=0;beam<2;beam++) m_boost.Boost(m_inmom[beam]);
-  if (m_s<m_smin) THROW(fatal_error,"Insufficient s = "+ToString(m_s)+" vs "+ToString(m_smin)+
+  if (m_s<m_smin) THROW(fatal_error,"Insufficient s = "+ToString(m_s)+
+			" vs "+ToString(m_smin)+
 			" in Non-Perturbative Events in AMISIC++");
   (*p_xsecs)(m_s);
   array<Flavour, 2> flavs;
   switch(SelectMode()) {
   case event_mode::elastic:
-    if (!p_xsecs->SelectEl(flavs) || !FixFS(flavs))  THROW(fatal_error,"Could not define elastic FS");
+    if (!p_xsecs->SelectEl(flavs) || !FixFS(flavs))
+      THROW(fatal_error,"Could not define elastic FS");
     return ElasticScatter();       
   case event_mode::SDA:
-    if (!p_xsecs->SelectSDA(flavs) || !FixFS(flavs)) THROW(fatal_error,"Could not define SD(A) FS");
+    if (!p_xsecs->SelectSDA(flavs) || !FixFS(flavs))
+      THROW(fatal_error,"Could not define SD(A) FS");
     return SingleDiffractiveScatter(0);
   case event_mode::SDB:
-    if (!p_xsecs->SelectSDB(flavs) || !FixFS(flavs)) THROW(fatal_error,"Could not define SD(B) FS");
+    if (!p_xsecs->SelectSDB(flavs) || !FixFS(flavs))
+      THROW(fatal_error,"Could not define SD(B) FS");
     return SingleDiffractiveScatter(1);
   case event_mode::DD:
-    if (!p_xsecs->SelectDD(flavs) || !FixFS(flavs))  THROW(fatal_error,"Could not define DD FS");
+    if (!p_xsecs->SelectDD(flavs) || !FixFS(flavs))
+      THROW(fatal_error,"Could not define DD FS");
     return DoubleDiffractiveScatter();
   case event_mode::unknown:
   default:                  break;
@@ -142,7 +149,7 @@ Blob * NonPerturbative_XSecs::ElasticScatter() {
     return NULL;
   }
   Blob * blob   = InitBlob();
-  blob->SetType(btp::Soft_Collision);
+  blob->SetType(btp::Elastic_Collision);
   blob->SetStatus(blob_status::needs_beams);
   return blob;
 }

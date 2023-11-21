@@ -7,6 +7,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Single_Collision_Handler::Single_Collision_Handler() :
+  m_evttype(evt_type::Perturbative),
   p_processes(NULL), p_overestimator(NULL), p_soft(NULL),
   m_pt2(0.), m_pt2min(0.),  
   m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
@@ -33,6 +34,7 @@ Init(REMNANTS::Remnant_Handler * remnant_handler,
 
 void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler,
 				    NonPerturbative_XSecs * soft) {
+  m_evttype  = evt_type::NonPerturbative;
   p_remnants = remnant_handler;
   p_soft     = soft;
   if (m_ana) InitAnalysis();
@@ -123,8 +125,10 @@ void Single_Collision_Handler::UpdateSandY(double s, double y) {
   // Setting the last pT^2 on s, as a default.
   m_lastpt2 = m_S = s;
   m_Ycms = y;
-  p_processes->UpdateS(m_S);
-  p_overestimator->UpdateS();
+  if (m_evttype==evt_type::Perturbative) {
+    p_processes->UpdateS(m_S);
+    p_overestimator->UpdateS();
+  }
 }
 
 bool Single_Collision_Handler::SelectRapidities() {

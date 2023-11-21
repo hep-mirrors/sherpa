@@ -8,12 +8,13 @@ namespace AMISIC {
   struct evt_type {
     enum code {
       Perturbative    = 0,
-      Elastic         = 1,
-      DiffractiveA    = 2,
-      DiffractiveB    = 3,
-      DiffractiveAB   = 4,
-      QuasiElastic    = 5,
-      AllMinimumBias  = 10
+      NonPerturbative = 1,
+      Elastic         = 11,
+      DiffractiveA    = 12,
+      DiffractiveB    = 13,
+      DiffractiveAB   = 14,
+      QuasiElastic    = 15,
+      AllMinimumBias  = 20
     };
   };
   std::ostream &operator<<(std::ostream&, const evt_type::code&);
