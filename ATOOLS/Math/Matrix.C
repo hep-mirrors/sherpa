@@ -442,7 +442,7 @@ template<class Scalar>
 TCMatrix<Scalar> TCMatrix<Scalar>::operator+(const TCMatrix &cmatrix) const {
   if (m_rank!=cmatrix.Rank()) THROW(fatal_error, "Rank of matrices is different, can not be totaled!")
   SComplex** new_cmatrix = new SComplex*[m_rank];
-  for (int i=0;i<4;++i) new_cmatrix[i] = new SComplex[m_rank];
+  for (int i=0;i<m_rank;++i) new_cmatrix[i] = new SComplex[m_rank];
   for (int i(0); i<m_rank; ++i){
     for (int j(0); j<m_rank; ++j){
       new_cmatrix[i][j] = (*this)[i][j] + cmatrix[i][j];
