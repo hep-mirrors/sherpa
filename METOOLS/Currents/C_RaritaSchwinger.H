@@ -12,8 +12,6 @@
 #define ZERO std::complex<Scalar>(0.0,0.0)
 
 #include <vector>
- //TODO: Zum schluss nochmal durchgehen durch Vector und Spinor und schauen, ob wir alle nötigen Funktionen haben...
- // TODO: Bar() und CConj() Funktionen implementieren analog zu Spin 1/2
  // TODO: Majorana-3/2 Teilchen?
 
 namespace METOOLS {
@@ -28,8 +26,6 @@ namespace METOOLS {
 
     SComplex m_x[16];
 
-    // TODO: was sind m_b, m_on bei C_Spinor; m_s, m_c bei CObject? Ist m_h wirklich die Helicität, m_r, ob positive
-    //  oder negative Energie
     // positive or negative energy vector-spinor (particle or anti-particle)
     // bar or non-bar vector-spinor
     // massless (m_on=1,2) or massive spin-3/2 particle (m_on=3): helper variable to left physically ZERO components
@@ -60,9 +56,8 @@ namespace METOOLS {
 
     bool IsZero() const;
 
-    // TODO: Sinnvolle inlines ausdenken entsprechend der für RS nötigen Parameter!!!
-    // TODO: Parameter anpassen, wenn Bedeutung geklärt!!! Bislang m_c, m_h, m_s, m_r, m_b da nötig (m_r, m_h, m_b) oder
-    //       schon in CObject gesetzt
+   // TODO: Parameter anpassen, wenn Bedeutung geklärt!!! Bislang m_c, m_h, m_s, m_r, m_b da nötig (m_r, m_h, m_b) oder
+   //       schon in CObject gesetzt
    inline CRaritaSchwinger(const int r=1, const int b=1, const int cr=0,const int ca=0,
                            const size_t &h=0,const size_t &s=0, const int &on=3)
     {
@@ -93,21 +88,6 @@ namespace METOOLS {
       m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
     }
 
-    /*inline CRaritaSchwinger(const Scalar &x0, const Scalar &x1,
-		 const Scalar &x2, const Scalar &x3,
-		 const int c1=0,const int c2=0,
-		 const size_t &h=0,const size_t &s=0)
-    {
-      m_x[0]=x0; m_x[1]=x1; m_x[2]=x2; m_x[3]=x3;
-      m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
-    }
-    inline CRaritaSchwinger(const ATOOLS::Vec4<Scalar> &rs,
-		 const int c1=0,const int c2=0,
-		 const size_t &h=0,const size_t &s=0)
-    {
-      m_x[0]=rs[0]; m_x[1]=rs[1]; m_x[2]=rs[2]; m_x[3]=rs[3];
-      m_c[0]=c1; m_c[1]=c2; m_h=h; m_s=s;
-    }*/
     inline CRaritaSchwinger(const CRaritaSchwinger &rs, const Scalar &c)
     {
       if (m_on==1){
@@ -150,29 +130,21 @@ namespace METOOLS {
       m_c[0]=rs(0); m_c[1]=rs(1); m_h=rs.m_h; m_s=rs.m_s; m_on=rs.m_on; m_r=rs.m_r; m_b=rs.m_b;
     }
 
-// TODO: Funktionen füllen!!!
     void Add(const CObject *c);
     void Divide(const double &d);
     void Multiply(const Complex &c);
     void Invert();
 
-// TODO: Spinorwellenfunktionsklasse hat im Vergleich zur Vektorklasse noch ein Construct, SetOn, CConj - brauchen wir
-//       das hier???
-// TODO: Welche Operationen brauchen wir für Rarita-Schwinger-Teilchen? Gern auch mit anderen Wellenfunktionen C_...
-//       vergleichen!!!
-
    inline SComplex &operator[](const int i) { return m_x[i]; }
    inline const SComplex &operator[](const int i) const { return m_x[i]; }
    ATOOLS::TCMatrix<Scalar> Contract4Index(const CRaritaSchwinger<Scalar> &rs) const;
+   ATOOLS::TCMatrix<Scalar> ContractSpinorIndex(const CRaritaSchwinger<Scalar> &rs) const;
+
    SComplex operator*(const CRaritaSchwinger<Scalar> &rs) const;
    inline CRaritaSchwinger operator+(const CRaritaSchwinger &rs) const
     {
-      std::cout << "Hier!11" << std::endl;
-      std::cout << rs.m_r << m_r << std::endl;
-      std::cout << rs.m_b << m_b << std::endl;
       if (rs.m_b!=m_b || rs.m_r!=m_r) THROW(fatal_error, "Summing particle and anti-particle wave functions / bar "
                                                            "and non-bar wave functions is not allowed!")
-      std::cout << "Hier!12" << std::endl;
       return CRaritaSchwinger(m_r, m_b, m_x[0]+rs[0], m_x[1]+rs[1], m_x[2]+rs[2], m_x[3]+rs[3], m_x[4]+rs[4],
                               m_x[5]+rs[5], m_x[6]+rs[6], m_x[7]+rs[7], m_x[8]+rs[8], m_x[9]+rs[9], m_x[10]+rs[10],
                               m_x[11]+rs[11], m_x[12]+rs[12], m_x[13]+rs[13], m_x[14]+rs[14], m_x[15]+rs[15],
@@ -215,7 +187,6 @@ namespace METOOLS {
       m_x[0]*=c; m_x[1]*=c; m_x[2]*=c; m_x[3]*=c;
       return *this;
     }*/
-  // TODO: Je nach dem, was m_c, m_h und m_s sind - ändern sie sich hier wirklich nicht?
   // TODO: Stimmt das, dass sich m_r und m_b hier so ändern? Was soll CConj eigentlich machen? Bei Spinoren werden auch
   //       noch Komponenten paarweise vertauscht!!!
     inline CRaritaSchwinger CConj() const
@@ -236,12 +207,8 @@ namespace METOOLS {
 
     bool Nan() const;
 
-    //TODO: Das ist jetzt Spinbasisabhängig, wir könnten das Ganze alternativ mithilfe der SpinFuncs implementieren,
-    // dann könnte man einfacher die Eichung wechseln, NACHTEILE: recht viele (triviale) Multiplikationen nötig + evtl.
-    // sind dann die Komponenten nicht mehr exakt die gleichen wegen einer zusätzlichen numerischen Rechnung?
-    // TODO: sollten wir das m_b hier noch verallgemeinern (s. Bar bei CSpinor)?
-    inline CRaritaSchwinger<Scalar> Bar(){
-      return CRaritaSchwinger<Scalar>(1, -1, std::conj(m_x[2]), std::conj(m_x[3]),
+    inline CRaritaSchwinger<Scalar> Bar() const {
+      return CRaritaSchwinger<Scalar>(m_r, -m_b, std::conj(m_x[2]), std::conj(m_x[3]),
                                       std::conj(m_x[0]), std::conj(m_x[1]), std::conj(m_x[6]), std::conj(m_x[7]),
                                       std::conj(m_x[4]), std::conj(m_x[5]), std::conj(m_x[10]), std::conj(m_x[11]),
                                       std::conj(m_x[8]), std::conj(m_x[9]), std::conj(m_x[14]), std::conj(m_x[15]),
@@ -257,11 +224,8 @@ namespace METOOLS {
 
   };
 
-
   // end of class CRaritaSchwinger
 
-  // TODO: Sollten wir noch irgendwelche Templates/Operatoren o.ä. implementieren, die wir bislang noch nicht gebraucht
-  //       haben?
   template <class Scalar> inline CRaritaSchwinger<Scalar>
   operator*(const Scalar &c,const CRaritaSchwinger<Scalar> &v)
   { return CRaritaSchwinger<Scalar>(v,c); }
@@ -277,16 +241,6 @@ namespace METOOLS {
   template <class Scalar> inline CRaritaSchwinger<Scalar>
   operator/(const CRaritaSchwinger<Scalar> &v,const std::complex<Scalar> &c)
   { return CRaritaSchwinger<Scalar>(v,Scalar(1.0)/c); }
-  /*
-  template <class Scalar> inline std::complex<Scalar> 
-  operator*(const CVec4<Scalar> &v1,const ATOOLS::Vec4<Scalar> &v2)
-  { return v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3]; }
-  template <class Scalar> inline std::complex<Scalar>
-  operator*(const ATOOLS::Vec4<Scalar> &v1,const CVec4<Scalar> &v2)
-  { return v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3]; }
-  template <class Scalar> inline std::complex<Scalar>
-  operator*(const CVec4<Scalar> &v1,const CVec4<Scalar> &v2)
-  { return v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3]; } */
 
   template <class Scalar>
   std::ostream &operator<<(std::ostream &s,const CRaritaSchwinger<Scalar> &vec);

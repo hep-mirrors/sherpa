@@ -103,7 +103,6 @@ namespace METOOLS {
 using namespace METOOLS;
 using namespace ATOOLS;
 
-// TODO: Bislang identisch zu Fermion- und Bosonkonstruktor: ist das richtig?
 template <typename SType>
 CRS<SType>::CRS(const Current_Key &key):
   Current(key), m_cmass2(0.0), m_cmass(0.0)
@@ -150,8 +149,7 @@ CRS<SType>::EP(const Vec4D &p,const int cr,const int ca, ATOOLS::Vec4D m_k_mod)
   static SType sqrttwo(sqrt(SType(2.0)));
   return e/(sqrttwo*std::conj(m_km_mod*pm));
 }
-// TODO: p.Abs2() wirklich immer null, wenn wir masselose Teilchen wollen? Propagator sind extra, d.h. hier werden nur
-//       onshell Teilchen erzeugt?
+
 template <typename SType> CVec4<SType>
 CRS<SType>::EMM(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
@@ -294,38 +292,15 @@ CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType s
   else if (vector_h==0) vector_h=-2; // left
   METOOLS::CRS<SType>::CRaScType RaSc(spinor.R(), spinor.B(), cr, ca, vector_h+spinor_h, s);
 
-  // TODO: Evtl. auch aus Spinor und Polarisationsvektor ablesbar -> Bedeutung herausfinden!!!!
+  // TODO: Bedeutung???
   RaSc(0) = cr;
   RaSc(1) = ca;
-
-  // TODO: Ist diese Version der Komponentenbefüllung richtig oder z.B. diese:
-//  for (size_t i(0); i<8; ++i){
-//    std::cout << "Fill components" << i << i/2 << std::endl;
-//    RaSc[i] = spinor[i % 2] * polvector[i / 2];
-//    RaSc[i+8] = spinor[i % 2 + 2] * polvector[i / 2];
-// oder:     for (size_t i(0); i<16; ++i) {
-//      RaSc[i] = spinor[i / 4] * polvector[i % 4];
-//    }
 
   // Fill Rarita-Schwinger wave function; "ordering" of components according to HELAS subroutines for spin-3/2 particles
   // in 1010.4255 (four vector with Dirac spinors as components, i.e. first four components have Lorentz index 0 and
   // spinor indexes from 0 to 3, the second four components Lorentz index 1 ...), but using Dirac-spinors and
   // polarization vectors as already implemented in SHERPA
-  // TODO: Bei anderen Wellenfunktionen wird IsZero benutzt? Was kann falsch sein, wenn die Masse hier nicht genau 0 ist,
-  //       obwohl von einem masselosen Teilchen im Modell ausgegangen wird?
-  // TODO: Stimmt das, dass wir für Antiteilchen den komplexkonjugierten Polarisationsvektor nehmen müssen, obwohl wir
-  //       das bei Vektorbosonen nicht so machen?
   for (size_t i(0); i<16; ++i) {
-      // Novaes Füllung
-      /*if ((vector_h+spinor_h == 3 && i < 8) || ((vector_h + spinor_h == -3) && i >= 8)) {
-        RaSc[i] = std::complex<SType>(0.0, 0.0);
-        continue;
-      }*/
-      // in the massless case, the first two components for the u+/v- and the last two components for the u-/v+ are zero
-      /*if ((vector_h+spinor_h == 3 && i%4 < 2) || ((vector_h + spinor_h == -3) && i%4 >= 2)) {
-        RaSc[i] = std::complex<SType>(0.0, 0.0);
-        continue;
-      }*/
     RaSc[i] = spinor[i % 4] * (spinor.R()>0?polvector[i / 4]:conj(polvector[i / 4]));
   }
   bool on = RaSc.SetOn();
@@ -338,19 +313,13 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 {
   this->m_p=p;
   // TODO: Tests in RSPP, RSMM, und hier in DEBUG-Options sinnvoll einbauen
-  //TODO: Brauchen wir das alles?
-  // TODO: Wozu ist das, sollte das nicht grundsätzlich gelten?
   if (this->m_fl.Mass()==0.0 && p[1]==0.0 && p[2]==0.0)
     this->m_p[0]=this->m_p[0]<0.0?
       -std::abs(this->m_p[3]):std::abs(this->m_p[3]);
-  // TODO: Sollten wir Majorana-Spin-3/2 Teilchen unterstützen?
   bool anti(this->m_fl.IsAnti());
   if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
   this->ResetJ();
   //TODO: Was bedeutet ch? Was für Werte kann ch für RaSc annehmen?
-  // TODO: Wie wird dann am Ende h gesetzt bei Fermionen?
-  // TODO: Brauchen wir noch Vec-Parameter?
-  // TODO: Stimmt RSPP /RSMM? Haben die dann die richtigen helizitäten/Bars?
   // TODO: !!!Was ist nun der richtige Wert für SetH() 0 und 1 im masselosen Fall oder ganzzahlige Spinwerte (+-1, +-3)!!!
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
@@ -428,7 +397,12 @@ void CRS<SType>::SetGauge(const ATOOLS::Vec4D &k)
 
 template <typename SType>
 void CRS<SType>::AddPropagator()
-{}
+{
+  for (size_t i(0);i<m_j.size();++i) {
+    CRaScType_Vector *j(m_j[i].template Get<CRaScType>());
+  }
+
+}
 /*
   // add propagator for off-shell leg
   SComplex p2(SType(this->m_p.Abs2())), prop(-M_I/(p2-m_cmass2));
@@ -453,7 +427,7 @@ void CRS<SType>::AddPropagator()
   }
 }*/
 
-// TODO: Wofür ist das da & validieren!!! Kommen da scheinbar nicht vorbei
+// TODO: Not yet validated
 template <typename SType> void CRS<SType>::SContract
 (const Current &c,const Int_Vector &pols,
  SComplex_Vector &ress,const size_t &offset) const
@@ -539,7 +513,6 @@ char CRS<SType>::Type() const
   return 'R';
 }
 
-// TODO: Wieso failt Normierungstest bei den einlaufenden Teilchen des Prozesses? (also mit deren Impulsen)
 // properties tested according to S.F.Novaes and D. Spehler, Nuclear Physics B 371 (1992) 618-636
 template<typename SType>
 bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
@@ -617,7 +590,7 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
       }
     }
     if (testresult) msg_Out()<< "passed" << std::endl;
-
+    // TODO: WIP!
     // completeness relation according to Hagiwara et al. Eur. Phys. J. C (2011) 71: 1529
     SComplex propagator[4][4][4][4];
     ATOOLS::TCMatrix<SType> p_slash = gammavec*p;
