@@ -13,6 +13,7 @@
 namespace AMISIC {
   class Single_Collision_Handler {
   private:
+    evt_type::code m_evttype;
     REMNANTS::Remnant_Handler * p_remnants;
     MI_Processes              * p_processes;
     Over_Estimator            * p_overestimator;
