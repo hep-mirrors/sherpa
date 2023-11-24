@@ -208,6 +208,14 @@ const ATOOLS::Option_Parser::Descriptor usage[] = {
     "  --event-output, -o <level>  \tSet the event output <level>."
   },
   {
+    MSG_LIMIT,
+    REGULAR,
+    "W",
+    "msg-limit",
+    ATOOLS::Option_Parser::Arg::Required,
+    "  --msg-limit, -W <n>  \tSet number of warnings emitted before silencing them."
+  },
+  {
     LOG_FILE,
     REGULAR,
     "l",
