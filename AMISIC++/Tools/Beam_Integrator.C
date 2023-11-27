@@ -34,13 +34,13 @@ bool Beam_Integrator::operator()() {
 }
 
 double Beam_Integrator::TrialEvent() {
-  double wt = MakePoint();
+  m_weight = MakePoint();
   for (size_t beam=0;beam<2;beam++)
     p_beams[beam]->CalculateWeight(m_inmoms[beam][0]/m_beammoms[beam][0],0.);
-  wt *= p_beams[0]->Weight()*p_beams[1]->Weight();
+  m_weight *= p_beams[0]->Weight()*p_beams[1]->Weight();
   (*p_xsecs)(m_sprime);
-  wt *= MEweight();
-  return wt;
+  m_weight *= MEweight();
+  return m_weight;
 }
 
 void Beam_Integrator::CalculateXSecs() {
