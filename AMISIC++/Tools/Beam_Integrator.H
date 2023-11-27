@@ -17,7 +17,7 @@ namespace AMISIC {
     
     size_t         m_Npoints, m_variable;
     int            m_sign;
-    double         m_smin, m_smax, m_swt;
+    double         m_smin, m_smax, m_swt, m_weight;
     double         m_sprime, m_yprime, m_total, m_error, m_max;
     evt_type::code m_evttype;
 
@@ -45,6 +45,7 @@ namespace AMISIC {
     bool operator()();
     inline const double        & Sprime()                    const { return m_sprime; }
     inline const double        & Yprime()                    const { return m_yprime; }
+    inline const double        & BeamWeight()                const { return m_weight; }
     inline const ATOOLS::Vec4D & Momentum(const size_t beam) const { return m_inmoms[beam]; }
   };
 }
