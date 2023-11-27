@@ -114,6 +114,7 @@ Current *Amplitude::CopyCurrent(Current *const c)
     case 0: pols[i]=1; break;
     case 1: pols[i]=2; break;
     case 2: pols[i]=m_fl[ids[i]].IsMassive()?3:2; break;
+    case 3: pols[i]=m_fl[ids[i]].IsMassive()?4:2; break;
     default:
       THROW(not_implemented,"Cannot handle spin "+
 	    ToString(m_fl[i].Spin())+" particles");
@@ -535,7 +536,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
     case 0: pols[i]=1; break;
     case 1: pols[i]=2; break;
     case 2: pols[i]=m_fl[ids[i]].IsMassive()?3:2; break;
-    case 3: pols[i]=m_fl[ids[i]].IsMassive()?5:2; break;
+    case 3: pols[i]=m_fl[ids[i]].IsMassive()?4:2; break;
     default:
       THROW(not_implemented,"Cannot handle spin "+
 	    ToString(m_fl[i].Spin())+" particles");

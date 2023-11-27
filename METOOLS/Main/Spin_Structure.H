@@ -53,6 +53,7 @@ namespace METOOLS
       m_n=1;
       for(size_t i=0;i<flavs.size();i++) {
         if(flavs[i].IsVector() && flavs[i].IsMassive()==0) m_spins[i] = 2;
+        else if (flavs[i].IntSpin()==3) m_spins[i] = flavs[i].IsMassive()? 4:2;
         else m_spins[i] = flavs[i].IntSpin()+1;
 	m_n*=m_spins[i];
       }
@@ -68,6 +69,7 @@ namespace METOOLS
       for(size_t i=0;i<indices.size();i++) {
         if(flavs[indices[i]].IsVector() && flavs[indices[i]].IsMassive()==0)
           m_spins[i] = 2;
+        else if (flavs[indices[i]].IntSpin()==3) m_spins[i] = flavs[indices[i]].IsMassive()? 4:2;
         else m_spins[i] = flavs[indices[i]].IntSpin()+1;
 	m_n*=m_spins[i];
       }
@@ -81,6 +83,7 @@ namespace METOOLS
       m_n=1;
       for(size_t i=0;i<particles.size();i++) {
         if(particles[i]->Flav().IsVector() && particles[i]->Flav().IsMassive()==0) m_spins[i] = 2;
+        else if (particles[i]->Flav().IntSpin()==3) m_spins[i] = particles[i]->Flav().IsMassive()? 4:2;
         else m_spins[i] = particles[i]->Flav().IntSpin()+1;
 	m_n*=m_spins[i];
       }
