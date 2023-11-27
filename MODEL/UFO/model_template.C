@@ -40,7 +40,7 @@ namespace MODEL{
   protected:
     void ParticleInit() override
     {
-      ATOOLS::s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle","no_particle",1,1);
+      ATOOLS::s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle","no_particle",1,1);
       ${particle_init}
     }
     void ParamInit() override
