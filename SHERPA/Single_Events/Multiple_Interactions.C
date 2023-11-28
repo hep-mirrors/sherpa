@@ -105,6 +105,8 @@ Return_Value::code Multiple_Interactions::InitMinBias() {
     signal->SetType(p_lastblob->Type());
     signal->SetTypeSpec(p_lastblob->TypeSpec());
     signal->SetPosition(p_lastblob->Position());
+    signal->AddData("WeightsMap",
+                    new Blob_Data<Weights_Map>((*p_lastblob)["WeightsMap"]->Get<Weights_Map>()));
     signal->AddData("Renormalization_Scale",
 		    new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]->Get<double>()));
     signal->AddData("Factorization_Scale",
