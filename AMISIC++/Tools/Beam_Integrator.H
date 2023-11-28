@@ -45,7 +45,8 @@ namespace AMISIC {
     bool operator()();
     inline const double        & Sprime()                    const { return m_sprime; }
     inline const double        & Yprime()                    const { return m_yprime; }
-    inline const double        & BeamWeight()                const { return m_weight; }
+    inline const double        & XSec()                      const { return m_weight; }
+    inline const double        & TotalXSec()                 const { return m_total; }
     inline const ATOOLS::Vec4D & Momentum(const size_t beam) const { return m_inmoms[beam]; }
   };
 }

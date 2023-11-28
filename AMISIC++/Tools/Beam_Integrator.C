@@ -30,21 +30,21 @@ bool Beam_Integrator::operator()() {
     }
   } while (TrialEvent() < ran->Get()*m_max);
   for (size_t beam=0;beam<2;beam++) p_beams[beam]->SetOutMomentum(m_inmoms[beam]);
+  //msg_Out()<<METHOD<<"(s' = "<<m_sprime<<"): "<<m_weight<<" vs. "<<p_xsecs->SigmaEl()<<"\n";
   return true;
 }
 
 double Beam_Integrator::TrialEvent() {
-  double weight = MakePoint(), meweight;
+  double PSweight = MakePoint();
   double x[2];
   for (size_t beam=0;beam<2;beam++) {
-    x[beam] = m_inmoms[beam][0]/m_beammoms[beam][0]; 
+    x[beam]   = m_inmoms[beam][0]/m_beammoms[beam][0]; 
     p_beams[beam]->CalculateWeight(x[beam],0.);
+    PSweight *= x[beam] * p_beams[beam]->Weight();
   }
-  weight *= ( m_weight = (x[0]*x[1]*p_beams[0]->Weight()*p_beams[1]->Weight() ));
   (*p_xsecs)(m_sprime);
-  weight   *= meweight = MEweight();
-  m_weight *= meweight;
-  return weight;
+  m_weight = MEweight(); 
+  return PSweight * m_weight;
 }
 
 void Beam_Integrator::CalculateXSecs() {
@@ -94,5 +94,5 @@ double Beam_Integrator::MakePoint() {
     msg_Error()<<METHOD<<" should not arrive here!\n";
     exit(1);
   }
-  return m_swt*ywt;
+  return m_swt*ywt/m_sprime;
 }

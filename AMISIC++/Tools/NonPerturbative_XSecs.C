@@ -110,6 +110,7 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
     total -= xsecs[i];
     if (total<=0.) break;
   }
+  //msg_Out()<<METHOD<<"(s' = "<<m_s<<"): "<<m_weight<<" vs. "<<p_xsecs->SigmaEl()<<"\n";
   switch (i) {
   case 3: return event_mode::DD;
   case 2: return event_mode::SDB;
@@ -315,7 +316,7 @@ bool NonPerturbative_XSecs::SelectFlavoursOfDiffraction(const size_t & pos,const
 Blob * NonPerturbative_XSecs::InitBlob(const double & muR2,const double & muQ2) {
   Blob * blob = new Blob();
   blob->SetId();
-  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>( m_weight ));
   blob->AddData("Renormalization_Scale",new Blob_Data<double>(sqrt(muR2)));
   blob->AddData("Factorization_Scale",new Blob_Data<double>(sqrt(muQ2)));
   blob->AddData("Resummation_Scale",new Blob_Data<double>(sqrt(muQ2)));
