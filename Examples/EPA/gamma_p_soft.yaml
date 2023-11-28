@@ -1,0 +1,12 @@
+BEAMS:           [2212, -11]
+BEAM_ENERGIES:   [820, 27.5]
+BEAM_SPECTRA:    [Monochromatic, EPA]
+BUNCHES:         [2212, 22]
+
+EVENT_TYPE:          MinimumBias
+ME_GENERATORS:       None
+SOFT_COLLISIONS:     Amisic
+AMISIC:
+  EVENT_TYPE:        Elastic
+YFS:
+  MODE:              None
