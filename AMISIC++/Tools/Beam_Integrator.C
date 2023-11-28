@@ -36,14 +36,13 @@ bool Beam_Integrator::operator()() {
 
 double Beam_Integrator::TrialEvent() {
   double PSweight = MakePoint();
-  double x[2];
   for (size_t beam=0;beam<2;beam++) {
-    x[beam]   = m_inmoms[beam][0]/m_beammoms[beam][0]; 
-    p_beams[beam]->CalculateWeight(x[beam],0.);
-    PSweight *= x[beam] * p_beams[beam]->Weight();
+    double x  = m_inmoms[beam][0]/m_beammoms[beam][0];
+    p_beams[beam]->CalculateWeight(x,0.);
+    PSweight *= x * p_beams[beam]->Weight();
   }
   (*p_xsecs)(m_sprime);
-  m_weight = MEweight(); 
+  m_weight = MEweight();
   return PSweight * m_weight;
 }
 
@@ -94,5 +93,5 @@ double Beam_Integrator::MakePoint() {
     msg_Error()<<METHOD<<" should not arrive here!\n";
     exit(1);
   }
-  return m_swt*ywt/m_sprime;
+  return m_swt*ywt;
 }
