@@ -151,7 +151,7 @@ Blob * NonPerturbative_XSecs::ElasticScatter() {
   }
   Blob * blob   = InitBlob();
   blob->SetType(btp::Elastic_Collision);
-  blob->SetStatus(blob_status::needs_beams);
+  blob->SetStatus(blob_status::needs_beams | blob_status::needs_hadrondecays);
   return blob;
 }
 
@@ -316,7 +316,7 @@ bool NonPerturbative_XSecs::SelectFlavoursOfDiffraction(const size_t & pos,const
 Blob * NonPerturbative_XSecs::InitBlob(const double & muR2,const double & muQ2) {
   Blob * blob = new Blob();
   blob->SetId();
-  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>( m_weight ));
+  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>( m_integrator.TotalXSec()*1e9 ));
   blob->AddData("Renormalization_Scale",new Blob_Data<double>(sqrt(muR2)));
   blob->AddData("Factorization_Scale",new Blob_Data<double>(sqrt(muQ2)));
   blob->AddData("Resummation_Scale",new Blob_Data<double>(sqrt(muQ2)));
