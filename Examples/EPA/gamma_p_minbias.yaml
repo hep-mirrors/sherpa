@@ -7,15 +7,9 @@ SOFT_COLLISIONS: Amisic
 BEAMS:           [2212, -11]
 BEAM_ENERGIES:   [820, 27.5]
 BEAM_SPECTRA:    [Monochromatic, EPA]
-PDF_LIBRARY:     [LHAPDFSherpa, SASGSherpa]
-PDF_SET:         [PDF4LHC21_40_pdfas, SAS1M]
-MPI_PDF_LIBRARY: [LHAPDFSherpa, SASGSherpa]
-MPI_PDF_SET:     [PDF4LHC21_40_pdfas, SAS1M]
 
 AMISIC:
-  PT_0:     1.0
-  PT_Min:   0.5
-  nPT_bins: 20
+  EVENT_TYPE:  DiffractiveAB
 
 ANALYSIS: Rivet
 RIVET:
