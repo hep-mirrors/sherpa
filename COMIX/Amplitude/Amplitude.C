@@ -1453,7 +1453,7 @@ bool Amplitude::EvaluateAll(const bool& mode)
 		       <<(m_ress[i][k]*std::conj(m_ress[j][k])).real()<<"\n";
 #endif
 	csum+=(m_ress[i][k]*std::conj(m_ress[j][k])).real();
-        std::cout << "Component " << k << " is non-zero: " << m_ress[i][k] << std::endl;
+        //std::cout << "Component " << k << " is non-zero: " << m_ress[i][k] << std::endl;
         total += m_ress[i][k] * conj(m_ress[i][k]);
       }
 #ifdef DEBUG__BG
@@ -1668,7 +1668,6 @@ double Amplitude::Differential
   //std::cout << m_res << std::endl;
   std::cout << METHOD << "Compare literature and Comix result: " << std::endl;
   if (m_p[2].Mass()<1e-6){
-    std::cout << "hier komme ich hin" << std::endl;
     Complex m_ppmm = ((2.0*Complex(0, 1)*Complex(0.30827124008247381, 0)*Complex(0.30827124008247381, 0))/((m_p[0]+m_p[1])*(m_p[0]+m_p[1])) * (conj(k_up*p)*(l_up*q)*conj(h_up*k)*(l_up*g)) / (conj(h_up*k)*(l_up*g)));
     Complex m_mmpp = ((2.0*Complex(0, 1)*Complex(0.30827124008247381, 0)*Complex(0.30827124008247381, 0))/((m_p[0]+m_p[1])*(m_p[0]+m_p[1]))) * ((k_up*q)*conj(l_up*p)*(h_up*k)*conj(l_up*g)) / ((h_up*k)*conj(l_up*g));
     if ((m_res - (std::complex<double>(0.5,0)*(m_ppmm*conj(m_ppmm)+m_mmpp*conj(m_mmpp)))).real() > 1e-12 ||
