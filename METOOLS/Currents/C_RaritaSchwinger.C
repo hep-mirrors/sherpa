@@ -15,17 +15,8 @@ double CRaritaSchwinger<Scalar>::s_accu(1.0e-12);
 template <class Scalar> std::ostream &
 METOOLS::operator<<(std::ostream &s,const CRaritaSchwinger<Scalar> &rs)
 {
-  //encoding m_h
-  std::string helicity;
-  if (rs.H()==1) helicity = "++";
-  else if (rs.H()==3) helicity = "+";
-  else if (rs.H()==2) helicity = "-";
-  else if (rs.H()==0) helicity = "--";
-  // TODO: Wieder reinnehmen, wenn geklärt ist, wie H() nun aussehen soll!!!
-  //else THROW(fatal_error, "The value of the helicity of the Rarita-Schwinger particle is not permitted.")
-
-  return s<<'{'<<(rs.B()<0?(rs.R()>0?"Ubar"+helicity:"Vbar"+helicity):
-  (rs.R()>0?"U"+helicity:"V"+helicity)) <<","<<rs.S()<<";"<<rs(0)<<","<<rs(1)<<'|'
+   return s<<'{'<<(rs.B()<0?(rs.R()>0?"Ubar(":"Vbar("):
+  (rs.R()>0?"U(":"V(")) << rs.On() << "),"<< rs.H() << "," << rs.S()<<";"<<rs(0)<<","<<rs(1)<<'|'
 	  <<rs[0]<<','<<rs[1]<<','<<rs[2]<<','<<rs[3]<<','<<rs[4]<<','<<rs[5]<<','<<rs[6]<<','<<rs[7]<<','<<rs[8]<<','
     <<rs[9]<<','<<rs[10]<<','<<rs[11]<<','<<rs[12]<<','<<rs[13]<<','<<rs[14]<<','<<rs[15]<<'}';
 }

@@ -283,16 +283,14 @@ CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType s
                                                         int spinor_h, const int cr, const int ca, const int s) {
   // set properties of new Rarita-Schwinger particle
   int vector_h = polvector.H();
-  //std::cout << "spinor" << spinor << std::endl;
-  //std::cout << "polvector" << polvector << std::endl;
+  DEBUG_VAR(spinor);
+  DEBUG_VAR(polvector);
   // convert in more approriate numbering, h=0 : longitudial, h=2: right, h=-2: left
   // TODO: ADJUST IF +- AND -SWITCH IS SOLVED!!!
-  if (vector_h==2) vector_h=0;  // long
+  /*if (vector_h==2) vector_h=0;  // long
   else if (vector_h==1) vector_h=2; // right
-  else if (vector_h==0) vector_h=-2; // left
-  METOOLS::CRS<SType>::CRaScType RaSc(spinor.R(), spinor.B(), cr, ca, vector_h+spinor_h, s);
-
-  // TODO: Bedeutung???
+  else if (vector_h==0) vector_h=-2; // left*/
+  METOOLS::CRS<SType>::CRaScType RaSc(spinor.R(), spinor.B(), cr, ca, 0, s);
   RaSc(0) = cr;
   RaSc(1) = ca;
 
@@ -319,32 +317,38 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   bool anti(this->m_fl.IsAnti());
   if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
   this->ResetJ();
+  int r(anti?-1:1);
+  int b((anti^(this->m_dir>0))?1:-1);
   //TODO: Was bedeutet ch? Was für Werte kann ch für RaSc annehmen?
   // TODO: !!!Was ist nun der richtige Wert für SetH() 0 und 1 im masselosen Fall oder ganzzahlige Spinwerte (+-1, +-3)!!!
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
-      CRaScType j(anti^(this->m_dir>0)? RSP(p, -1, 0, -this->m_dir, cr, ca): RSP(p, 1, 0, this->m_dir, cr, ca));
+      //CRaScType j(anti^(this->m_dir>0)? RSP(p, -1, 0, -this->m_dir, cr, ca): RSP(p, 1, 0, this->m_dir, cr, ca));
+      CRaScType j(RSP(p, r, 0, b, cr, ca));
       AddJ(CRaScType::New(j));
-      j.SetH(anti^(this->m_dir>0)?3:2);
-      std::cout << j << std::endl;
-      j.Test_Properties(p, j.R(), j.B());
+      // h=3 for bar vector-spinor
+      //j.SetH(anti^(this->m_dir>0)?2:3);
+      j.SetH(2);
+      CRaScType *c(CRaScType::New(j));
+      AddJ(c);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"0 "<<this->m_id<<" "<<j
 		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
 #endif
+      j.Test_Properties(p, j.R(), j.B());
     }
     if (ch!=3){
-      CRaScType j(anti^(this->m_dir>0)? RSPP(p, -1, 0, -this->m_dir, cr, ca): RSPP(p, 1, 0, this->m_dir, cr, ca));
-      j.SetH(anti^(this->m_dir>0)?1:0);
-      std::cout << j << std::endl;
-      j.Test_Properties(p, j.R(), j.B());
-      //j.SetH(1);
+      //CRaScType j(anti^(this->m_dir>0)? RSPP(p, -1, 0, -this->m_dir, cr, ca): RSPP(p, 1, 0, this->m_dir, cr, ca));
+      CRaScType j(RSPP(p, r, 0, b, cr, ca));
+      //j.SetH(anti^(this->m_dir>0)?0:1);
+      j.SetH(0);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"+ "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
 #endif
+      j.Test_Properties(p, j.R(), j.B());
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
 /*    if (p_sub) static_cast<Dipole_Color*>
@@ -353,28 +357,31 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   }
   if (ch<=0) {
     if (this->m_msv && (ch==0 || ch==-3)) {
-      CRaScType j(anti^(this->m_dir>0)? RSM(p, -1, 0, -this->m_dir, cr, ca): RSM(p, 1, 0, this->m_dir, cr, ca));
+      //CRaScType j(anti^(this->m_dir>0)? RSM(p, -1, 0, -this->m_dir, cr, ca): RSM(p, 1, 0, this->m_dir, cr, ca));
+      CRaScType j(RSM(p, r, 0, b, cr, ca));
       AddJ(CRaScType::New(j));
-      j.SetH(anti^(this->m_dir>0)?2:3);
-      std::cout << j << std::endl;
-      j.Test_Properties(p, j.R(), j.B());
+      //j.SetH(anti^(this->m_dir>0)?3:2);
+      j.SetH(3);
+      CRaScType *c(CRaScType::New(j));
+      AddJ(c);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"0 "<<this->m_id<<" "<<j
 		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
 #endif
+      j.Test_Properties(p, j.R(), j.B());
     }
     if (ch!=-3){
-      CRaScType j(anti^(this->m_dir>0) ? RSMM(p, -1, 0, -this->m_dir, cr, ca) : RSMM(p, 1, 0, this->m_dir, cr, ca));
-      j.SetH(anti^(this->m_dir>0)?0:1);
-      std::cout << j << std::endl;
-      j.Test_Properties(p, j.R(), j.B());
-      //j.SetH(0);
+      //CRaScType j(anti^(this->m_dir>0) ? RSMM(p, -1, 0, -this->m_dir, cr, ca) : RSMM(p, 1, 0, this->m_dir, cr, ca));
+      CRaScType j(RSMM(p, r, 0, b, cr, ca));
+      //j.SetH(anti^(this->m_dir>0)?1:0);
+      j.SetH(1);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"- "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
 #endif
+      j.Test_Properties(p, j.R(), j.B());
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
 /*    if (p_sub) static_cast<Dipole_Color*>
