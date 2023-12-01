@@ -4,6 +4,7 @@
 #include "BEAM/Main/Beam_Parameters.H"
 #include "BEAM/Main/Kinematics_Base.H"
 #include "BEAM/Main/Weight_Base.H"
+#include "ATOOLS/Math/Poincare.H"
 
 namespace BEAM {
   class Beam_Spectra_Handler {
@@ -42,6 +43,7 @@ namespace BEAM {
     inline void SetLimits() { p_kinematics->SetLimits(); }
     inline void BoostInCMS(ATOOLS::Vec4D & p) { p_kinematics->BoostInCMS(p); }
     inline void BoostInLab(ATOOLS::Vec4D & p) { p_kinematics->BoostInLab(p); }
+    inline void BoostBackLab(ATOOLS::Vec4D & p) { p_kinematics->BoostBackLab(p); }
     inline void BoostInCMS(ATOOLS::Vec4D_Vector& p) {
       p_kinematics->BoostInCMS(p);
     }
