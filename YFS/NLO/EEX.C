@@ -179,10 +179,10 @@ void Real_ff::SetIncoming(YFS::Dipole_Vector::iterator dipole, Vec4D_Vector &bor
   m_beta12f.clear();
   m_beta21f.clear();
   m_alpi = m_alpha / M_PI;
-  m_q1 = D.GetBornMomenta(0);
-  m_q2 = D.GetBornMomenta(1);
-  m_beam1 = D.GetBornMomenta(0); // called beam not to break for now. Is actually born final state momentum
-  m_beam2 = D.GetBornMomenta(1);
+  m_q1 = D.GetMomenta(0);
+  m_q2 = D.GetMomenta(1);
+  m_beam1 = D.GetMomenta(0); // called beam not to break for now. Is actually born final state momentum
+  m_beam2 = D.GetMomenta(1);
   m_p1p2 = m_beam1 * m_beam2;
   Vec4D sumk;
   for (auto kk : k) sumk += kk;
@@ -195,7 +195,7 @@ void Real_ff::SetIncoming(YFS::Dipole_Vector::iterator dipole, Vec4D_Vector &bor
   double logarg =  (1. + beta1) * (1. + beta2) / ((1. - beta1) * (1. - beta2));
   double QF2 = D.m_QiQj;
   // logarg = (D.m_newmomenta[0]*D.m_newmomenta[1]) / sqr(m_beam1.Mass());
-  m_gamma  =  m_alpi *  (t1*log(logarg) - 2.); // See Mareks phd thesis A.2.1
+  m_gamma  =  m_alpi  * (t1*log(logarg) - 2.); // See Mareks phd thesis A.2.1
   m_gammap =  m_alpi  * (t1*log(logarg));
   m_gammaF = m_gamma;
   m_mass = (m_q1.Mass() + m_q2.Mass()) / 2.;
@@ -462,7 +462,7 @@ void Real_ff::D1(Vec4D k, double a, double b, double wm, int order) {
   // else{
   //   del1 = m_gammaF/2.+m_gammaF/4.;
   // }
-  if (m_fsrmode >= 1) del2  = 0 ;
+  // if (m_fsrmode >= 1) del2  = 0 ;
   m_D10 = t1;//*(1+0.5*m_gamma);//*(1.+0.5*log(1-a-b)));
   m_D11 = m_D10 * (1. + del1);
   m_D12 = m_D10 * (1. + del1 + del2);
@@ -577,11 +577,11 @@ double Real_ff::Beta11(Vec4D k, int i) {
     bt = b / (1. + a + b);
     D1(k, at, bt, wm, m_order);
     m_D10 *= S;// * wmd(a, b); //*(1+m_gammaI/2);
-    m_D11 *= S * (1 + m_gammaI / 2);
+    m_D11 *= S;//* (1 + m_gammaI / 2);
     m_D12 *= S;
     m_d10vec.push_back(m_D10);
     if (m_use_fac) virtfac = 1 + m_gammaI / 2;
-    double beta11 = (m_D11 - S * m_beta01);
+    double beta11 = (m_D11 - S * m_beta01)*virtfac;
     // if(m_formfactor == 2 ) beta11 = (m_D11 - S*m_beta00);
     return beta11 / S;
     // return m_D11/1e12;
@@ -868,7 +868,7 @@ double Real_ff::Beta20(Vec4D k1, Vec4D k2, int i, int k) {
   if (m_use_fac && m_fsrmode != 0 ) virtfac = 1 + m_gammaI / 2;
   // Beta10 is divided by S so need to multiply by extra s
   b20 = (m_D20 - m_beta00 * s1 * s2
-         - Beta11(k1,i) * s2 * s1/virtfac - Beta11(k2,k) * s1 * s2/virtfac);
+         - Beta11(k1,i) * s2 * s1 - Beta11(k2,k) * s1 * s2);
   return b20 / (s1 * s2);
 }
 
