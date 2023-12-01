@@ -70,7 +70,7 @@ void YFS_Base::RegisterDefaults(){
   s["FIXED_WEIGHT"].SetDefault(0);
   s["GRIFFIN_MODE"].SetDefault(0);
   s["GRIFFIN_ORDER"].SetDefault(2);
-  s["HARD_MIN"].SetDefault(0.1);
+  s["HARD_MIN"].SetDefault(0.);
   s["PHOTON_MASS"].SetDefault(0.1);
   s["CEEX"].SetDefault(0);
   s["Resonance_Max"].SetDefault(10);
@@ -84,6 +84,13 @@ void YFS_Base::RegisterDefaults(){
   s["No_Born"].SetDefault(0);
   s["No_Sub"].SetDefault(0);
   s["Resonance_Mode"].SetDefault(0);
+  s["No_Flux"].SetDefault(0);
+  s["Flux_Mode"].SetDefault(1);
+  s["Pole_Flux"].SetDefault(10);
+  s["IFI_Sub"].SetDefault(0);
+  s["Massless_Sub"].SetDefault(0);
+  s["Check_Real_Sub"].SetDefault(0);
+  s["Check_RR_Sub"].SetDefault(0);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -141,6 +148,14 @@ void YFS_Base::RegisterSettings(){
   m_no_subtraction = s["No_Sub"].Get<int>();
   m_resonance_mode = s["Resonance_Mode"].Get<int>();
   m_tchannel = s["TChannel"].Get<int>();
+  m_noflux = s["No_Flux"].Get<int>();
+  m_flux_mode=s["Flux_Mode"].Get<int>();
+  m_pole_fac = s["Pole_Flux"].Get<double>();
+
+  m_ifisub = s["IFI_Sub"].Get<int>();
+  m_massless_sub = s["Massless_Sub"].Get<int>();
+  m_check_real_sub = s["Check_Real_Sub"].Get<bool>();
+  m_check_rr_sub = s["Check_RR_Sub"].Get<bool>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
