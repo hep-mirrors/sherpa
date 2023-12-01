@@ -85,6 +85,7 @@ void ISR::NPhotons() {
 void ISR::GenerateAngles()
 {
   // Generation of theta for two massive particles
+  double weight = 1;
   if (m_kkmcAngles == 0) {
     double P = log((1.+m_b1)/(1.-m_b1))
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
@@ -100,14 +101,15 @@ void ISR::GenerateAngles()
         double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
         m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
       }
-      double weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
+      weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
                         +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
                        /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
       if (ran->Get() < weight) break;
     }
+    m_weight *= weight;
     m_theta = acos(m_c);
-    m_sin = 1. - m_c * m_c;
-    m_phi   = 2.*M_PI * ran->Get();
+    m_sin = sin(m_theta);
+    m_phi = 2.*M_PI * ran->Get();
     m_del1.push_back(1-m_b1*m_c);
     m_del2.push_back(1+m_b2*m_c);
     m_cos.push_back(m_c);
@@ -151,7 +153,6 @@ void ISR::GeneratePhotonMomentum() {
     GenerateAngles();
     double ms = m_mass2 / m_s;
     m_w = m_v;
-    m_phi = 2.*M_PI * ran->Get();
     m_photon = {m_w,
                 m_w * m_sin * cos(m_phi) ,
                 m_w * m_sin * sin(m_phi) ,
@@ -159,6 +160,7 @@ void ISR::GeneratePhotonMomentum() {
                };
     m_photonSum += m_photon;
     m_photons.push_back(m_photon);
+
     double del1 = 1. - m_b1 * m_c;
     double del2 = 1. + m_b2 * m_c;
     // m_f    = m_alpi * (1 / ((del1) * (del2)) - ms / (del2 * del2) - ms / (del1 * del1));
@@ -175,7 +177,7 @@ void ISR::GeneratePhotonMomentum() {
       m_w       = m_isrcut * pow(m_v / m_isrcut, r1);
       del1 = 1. - m_b1 * m_c;
       del2 = 1. + m_b2 * m_c;
-      m_phi = 2.*M_PI * ran->Get();
+      // m_phi = 2.*M_PI * ran->Get();
       m_photon = { m_w,
                    m_w * m_sin * cos(m_phi) ,
                    m_w * m_sin * sin(m_phi) ,
@@ -239,14 +241,14 @@ void ISR::Weight() {
   m_ntotal += 1;
   double corrW = 1;
   if (m_v > m_isrcut && m_n != 0 ) {
-    m_weight = m_gp * pow(m_v, m_gp - 1) * m_diljac0 * pow(m_isrcut, m_g - m_gp);
+    m_weight *= m_gp * pow(m_v, m_gp - 1) * m_diljac0 * pow(m_isrcut, m_g - m_gp);
   }
   else {
     m_massW = 1.0;
     m_jacW = 1.0;
     m_photonSum *= 0;
     m_photons.clear();
-    m_weight = m_g * pow(m_v, m_g - 1);
+    m_weight *= m_g * pow(m_v, m_g - 1);
     double B = pow(m_isrcut, m_g) * (-m_g * m_isrcut + m_g + 1.) / (m_g + 1.);
     double D = pow(m_deltacut, m_g) * (-m_g * m_deltacut + m_g + 1.) / (m_g + 1.);
     corrW = 1. / (1. - D / B);
