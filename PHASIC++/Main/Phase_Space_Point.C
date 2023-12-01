@@ -85,7 +85,7 @@ void Phase_Space_Point::InitFixedIncomings() {
     if (p_beamhandler->On() || p_isrhandler->On() != 0)
       return;
     for (int i = 0; i < 2; ++i) {
-      m_ISmoms[i] = p_beamhandler->GetBeam(i)->InMomentum();
+      m_ISmoms[i] = p_beamhandler->GetBeam(i)->OutMomentum();
     }
     m_sprime = m_fixedsprime = (m_ISmoms[0] + m_ISmoms[1]).Abs2();
     m_Eprime = sqrt(m_sprime);
@@ -195,7 +195,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
                              : 1.0;
   }
   if(p_yfshandler->GetMode() && p_yfshandler->GetFSRMode()!=2){
-    p_yfshandler->SetSprimeMin(m_smin);
+    p_yfshandler->SetSprimeMin(sqr(process->ISRThreshold()));
     p_isrchannels->GeneratePoint();
     p_yfshandler->SetSprimeLimits(m_isrspkey.Doubles());
     DefineFSRKinematics();

@@ -165,6 +165,9 @@ void Beam_Spectra_Handler::BoostFixedTarget(){
   // p_BeamBase[1] is the fixed target
   Vec4D pmu_lab = p_BeamBase[0]->InMomentum();
   Vec4D pe_lab  = p_BeamBase[1]->InMomentum();
+  p_BeamBase[0]->SetInMomentum(pmu_lab);
+  p_BeamBase[1]->SetInMomentum(pe_lab);
+  
   double slab = (pmu_lab+pe_lab).Abs2();
   double m1 = p_BeamBase[0]->Beam().Mass();
   double m2 = p_BeamBase[1]->Beam().Mass();
@@ -177,10 +180,7 @@ void Beam_Spectra_Handler::BoostFixedTarget(){
   Vec4D pmu = {E1, 0, 0, lamCM};
   Vec4D pe  = {E2, 0, 0, -lamCM};
 
-  p_BeamBase[0]->SetInMomentum(pmu);
   p_BeamBase[0]->SetOutMomentum(pmu);
-
-  p_BeamBase[1]->SetInMomentum(pe);
   p_BeamBase[1]->SetOutMomentum(pe);
 
   rpa->gen.SetBeam1(p_BeamBase[0]->Beam());

@@ -44,6 +44,7 @@ namespace BEAM {
     inline void SetLimits() { p_kinematics->SetLimits(); }
     inline void BoostInCMS(ATOOLS::Vec4D & p) { p_kinematics->BoostInCMS(p); }
     inline void BoostInLab(ATOOLS::Vec4D & p) { p_kinematics->BoostInLab(p); }
+    inline void BoostBackLab(ATOOLS::Vec4D & p) { p_kinematics->BoostBackLab(p); }
     inline void BoostInCMS(ATOOLS::Vec4D_Vector& p) {
       p_kinematics->BoostInCMS(p);
     }
