@@ -58,7 +58,6 @@ namespace PHASIC {
 #include "ATOOLS/Phys/Ordering.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include <algorithm>
 
 #define DEBUG__Variable_Selector
