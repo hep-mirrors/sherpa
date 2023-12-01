@@ -28,6 +28,13 @@ using namespace PHASIC;
 
 ofstream myfile;
 
+double MySqLam(double x,double y,double z)
+{
+  return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
+}
+
+
+
 FSR::FSR()
 {
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
@@ -61,7 +68,7 @@ FSR::~FSR() {
 
 bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
   p_dipole = &dipole[0];
-  m_fsrWeight = 0.;
+  m_fsrWeight = 1.;
   m_mass.clear();
   m_dipole.clear();
   m_dipoleFl.clear();
@@ -78,7 +85,7 @@ bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
   m_Q2 = p_dipole->m_charges[1];
   m_QF2 = m_Q1 * m_Q2;
   m_dip_sp = p_dipole->Sprime();
-  // if(IsBad(m_dip_sp)) return false;
+  if(IsBad(m_dip_sp)) return false;
   MakePair(sqrt(m_dip_sp), m_bornQ1, m_bornQ2);
   m_EQ = sqrt(m_dip_sp) / 2.;
   m_Emin = 0.5 * sqrt(m_s) * m_vmin;
@@ -142,7 +149,7 @@ void FSR::GenerateAngles() {
 // Generation of theta for two massive particles
   double del1, del2;
   double am2 = sqr((m_mass[0]+m_mass[1])) / m_dip_sp;
-
+  double weight = 1;
   // double P  = log((1. + m_beta1) / (1. - m_beta1))
   //             / (log((1. + m_beta1) / (1. - m_beta1)) + log((1. + m_beta2) / (1. - m_beta2)));
   if (!m_kkmcAngles) {
@@ -160,13 +167,14 @@ void FSR::GenerateAngles() {
         double a   = 1./m_beta2*log((1.+m_beta2)/(1.-m_beta2));
         m_c        = 1./m_beta2*((1.-m_beta2)*exp(a*m_beta2*rnd)-1.);
       }
-      double weight = 1.-((1.-m_beta1*m_beta1)/((1.-m_beta1*m_c)*(1.-m_beta1*m_c))
+      weight = 1.-((1.-m_beta1*m_beta1)/((1.-m_beta1*m_c)*(1.-m_beta1*m_c))
                         +(1.-m_beta2*m_beta2)/((1.+m_beta2*m_c)*(1.+m_beta2*m_c)))
                        /(2.*(1.+m_beta1*m_beta2)/((1.-m_beta1*m_c)*(1.+m_beta2*m_c)));
-      if (ran->Get() < weight) break;
+      if (ran->Get() <= weight) break;
     }
+    m_fsrWeight*=weight;
     m_theta = acos(m_c);
-    m_st = 1. - m_c * m_c;
+    m_st = sin(m_theta);
     m_sin.push_back(m_st);
     m_phi   = 2.*M_PI * ran->Get();
     m_del1.push_back(1-m_beta1*m_c);
@@ -396,6 +404,7 @@ void FSR::YFS_FORM() {
   // r1, r2 are the corresponding q* vectors defined pg 46 arxiv  9912214
   // they are created such that sqr(r_i) = sqr(m_i)sQ/sX
   // create back to back
+  if(!m_hidephotons) return;
   for (int i = 0; i < 2; ++i) m_dipole[i] = p_dipole->GetMomenta(i);
   m_photons = p_dipole->GetPhotons();
   m_photonSum = p_dipole->GetPhotonSum();
@@ -422,14 +431,24 @@ void FSR::YFS_FORM() {
 
   m_btilStar = p_fsrFormFact->BVR_full(m_q1q2, m_dipole[0][0], m_dipole[1][0], m_mass[0], m_mass[1], m_Emin, m_photonMass, 0);
   m_btil     = p_fsrFormFact->BVR_full(m_q1q2, Eq1, Eq2, m_mass[0], m_mass[1], m_EminQ, m_photonMass, 0);
+  if(m_tchannel){
+    m_btilStar = p_fsrFormFact->BVirtT(m_dipole[0], m_dipole[1]);
+    m_btil = p_fsrFormFact->BVirtT(m_dipole[0], m_dipole[1]);
 
+  }
   if (m_use_crude) {
     m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass);
     m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass);
   }
   else {
-    m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
-    m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
+     if(m_tchannel){
+      m_BtiXcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
+      m_BtiQcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
+    }
+    else{
+      m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
+      m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
+    }
   }
   m_A4 = p_fsrFormFact->A4(m_r1 * m_r2, m_r1.E(), m_r2.E(), m_r1.Mass(), m_r2.Mass());
   m_A = p_fsrFormFact->A(m_r1 * m_r2, m_r1.Mass(), m_r2.Mass());
@@ -500,8 +519,13 @@ void FSR::MakePair(double cms, Vec4D &p1, Vec4D &p2, double mass1, double mass2,
   double beta =  sqrt(beta2);
   eta1 = (s + sqr(mass1) - sqr(mass2)) / (s);
   eta2 = (s - sqr(mass1) + sqr(mass2)) / (s);
-  p1 = {eta1 * E, 0, 0, beta * E};
-  p2 = {eta2 * E, 0, 0, -beta * E};
+  // p1 = {eta1 * E, 0, 0, beta * E};
+  // p2 = {eta2 * E, 0, 0, -beta * E};
+  double lamCM = 0.5*sqrt(MySqLam(s,mass1*mass1,mass2*mass2)/s);
+  double E1 = lamCM*sqrt(1+mass1*mass1/sqr(lamCM));
+  double E2 = lamCM*sqrt(1+mass2*mass2/sqr(lamCM));
+  p1 = {E1, 0, 0, lamCM};
+  p2=  {E2, 0, 0, -lamCM};
   if (!IsEqual(p1.Mass(), mass1, 1e-3) || !IsEqual(p2.Mass(), mass2, 1e-3)) {
     msg_Error() << METHOD << "Error in masses for energy = " << cms << std::endl
                 << "s = " << s << std::endl
@@ -522,15 +546,20 @@ void FSR::MakePair(double cms, Vec4D &p1, Vec4D &p2, double mass1, double mass2,
 void FSR::MakePair(double cms, Vec4D &p1, Vec4D &p2) {
   double E = cms / 2.;
   double s = sqr(cms);
-  double mass1 = p1.Mass();
-  double mass2 = p2.Mass();
+  double mass1 = m_mass[0];
+  double mass2 = m_mass[1];
   double beta2 = (s - sqr(mass1 - mass2)) * (s - sqr(mass1 + mass2)) / (s * s);
   double beta =  sqrt(beta2);
   double eta1 = (s + sqr(mass1) - sqr(mass2)) / s;
   double eta2 = (s - sqr(mass1) + sqr(mass2)) / s;
-  p1 = {E * eta1, 0, 0, beta * E};
-  p2 = {E * eta2, 0, 0, -beta * E};
-  if (!IsEqual(p1.Mass(), mass1, 1e-3) || !IsEqual(p2.Mass(), mass2, 1e-3)) {
+  // p1 = {E * eta1, 0, 0, beta * E};
+  // p2 = {E * eta2, 0, 0, -beta * E};
+  double lamCM = 0.5*sqrt(MySqLam(s,mass1*mass1,mass2*mass2)/s);
+  double E1 = lamCM*sqrt(1+mass1*mass1/sqr(lamCM));
+  double E2 = lamCM*sqrt(1+mass2*mass2/sqr(lamCM));
+  p1 = {E1, 0, 0, lamCM};
+  p2=  {E2, 0, 0, -lamCM};
+  if (!IsEqual(p1.Mass(), mass1, 1e-6) || !IsEqual(p2.Mass(), mass2, 1e-6)) {
     msg_Error() << METHOD << "Error in masses for energy = " << cms << std::endl
                 << "s = " << s << std::endl
                 << "beta2 = " << beta2 << std::endl
@@ -574,7 +603,7 @@ void FSR::Weight() {
   m_gpBar = -m_QF2 * m_alpi * t1 * (log(logarg / 2.));
   m_fsrform = exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
   // m_fsrWeight = m_massW * m_hideW * m_wt2 * exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
-  m_fsrWeight = m_massW * m_hideW * m_wt2 * exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
+  m_fsrWeight *= m_massW * m_hideW * m_wt2 * exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
   if (IsBad(m_fsrWeight)) {
     msg_Error() << METHOD << "\n FSR weight is NaN\n"
                 << "\n Eprime = " << sqrt(m_dip_sp)
@@ -722,4 +751,11 @@ double FSR::Eikonal(Vec4D k) {
 
 double FSR::EikonalInterferance(Vec4D k) {
   return m_alpi / (4.*M_PI) * 2.*m_dipole[0] * m_dipole[1] / ((k * m_dipole[0]) * (k * m_dipole[1]));
+}
+double SqLam(double x,double y,double z)
+{
+  return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
+  // double arg(sqr(s-s1-s2)-4.*s1*s2);
+  // if (arg>0.) return sqrt(arg)/s;
+  // return 0.;
 }
