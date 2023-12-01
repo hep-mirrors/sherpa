@@ -14,6 +14,15 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace YFS;
 
+double SqLam(double x,double y,double z)
+{
+  return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
+  // double arg(sqr(s-s1-s2)-4.*s1*s2);
+  // if (arg>0.) return sqrt(arg)/s;
+  // return 0.;
+}
+
+
 Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born, dipoletype::code ty):
   m_type(ty)
 {
@@ -38,6 +47,8 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_Qi = fl[0].Charge();
   m_Qj = fl[1].Charge();
   m_QiQj = m_Qi*m_Qj;
+  if(IsEqual(fl[0],fl[1])) m_sameflav = 1;
+  else m_sameflav = 0;
   for (auto &v : fl)
   {
     m_masses.push_back(v.Mass());
@@ -117,10 +128,15 @@ void Dipole::Boost() {
     double sp = Q * Q;
     double zz = sqrt(sp) / 2.;
     double z = zz * sqrt((sp - sqr(m_masses[0] - m_masses[1])) * (sp - sqr(m_masses[0] + m_masses[1]))) / sp;
-    m_newmomenta[0] = {zz, 0, 0, z};
-    m_newmomenta[1] = {zz, 0, 0, -z};
+    double m1 = m_masses[0];
+    double m2 = m_masses[1];
+    double lamCM = 0.5*sqrt(SqLam(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
+    double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
+    double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
+    m_newmomenta[0] = {E1, 0, 0, lamCM};
+    m_newmomenta[1] = {E2, 0, 0, -lamCM};
     ATOOLS::Poincare poin(Q);
-    Poincare pRot(m_newmomenta[0], Vec4D(0., 0., 0., 1.));
+    Poincare pRot(m_bornmomenta[0], Vec4D(0., 0., 0., 1.));
     for (int i = 0; i < 2; ++i) {
       pRot.Rotate(m_newmomenta[i]);
       poin.BoostBack(m_newmomenta[i]);
@@ -146,7 +162,7 @@ void Dipole::Boost() {
 
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
-    p_boost  = new Poincare(m_oldmomenta[0] + m_oldmomenta[1]);
+    p_boost  = new Poincare(m_beams[0] + m_beams[1]);
 
     p_rotate = new Poincare(m_beams[0], Vec4D(0., 0., 0., 1.));
     // p_rotate = new Poincare(Vec4D(125., 0., 0., 125.), Vec4D(0., 0., 0., 1.));
