@@ -63,7 +63,7 @@ bool YFS_Handler::On()
 void YFS_Handler::SetBeam(BEAM::Beam_Spectra_Handler *beam)
 {
   m_beams.clear();
-  for (int i = 0; i < 2; ++i) m_beams.push_back(beam->GetBeam(i)->InMomentum());
+  for (int i = 0; i < 2; ++i) m_beams.push_back(beam->GetBeam(i)->OutMomentum());
   m_beam1 = m_beams[0];
   m_beam2 = m_beams[1];
   if(m_beam1 != -m_beam2) m_asymbeams = true;
@@ -125,6 +125,8 @@ void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
     m_momeikonal.push_back(p[i]);
   }
   if (m_formWW) MakeWWVecs(m_bornMomenta);
+  if(m_bornMomenta[0] != -m_bornMomenta[1]) m_asymbeams = true;
+    else m_asymbeams = false;
   // AddFormFactor();
 }
 
@@ -264,6 +266,7 @@ bool YFS_Handler::CalculateISR() {
   }
   if (m_isr_debug && !m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
   m_isrinital = false;
+  // CheckMomentumConservation();
   // CheckMasses();
   // m_reallab = m_plab;
   return true;
@@ -292,38 +295,12 @@ void YFS_Handler::AddFormFactor() {
     m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
     // m_CalForm = true;
   }
-  if(m_tchannel){
-    // m_formfactor  = p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[1]);
-    // m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[2], m_bornMomenta[3]);
-
-    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[3]);
-    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[2]);
-   
-    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[0], m_bornMomenta[2]);
-    m_formfactor *= p_yfsFormFact->R1(m_bornMomenta[1], m_bornMomenta[3]);
-
-    // m_formfactor *= p_yfsFormFact->BVirtT(m_plab[1], m_plab[3]);
-  }
-  if(m_fsrmode==1 && m_nlotype!=nlo_type::real){
-    double yfsint = 1.;
-    double v,t;
-    // for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleIF()->begin();
-    //      Dip != p_dipoles->GetDipoleIF()->end(); ++Dip) {
-    //     v = p_yfsFormFact->BVR_full(Dip->GetMomenta(0), Dip->GetMomenta(1),  sqrt(m_s) / 2., m_photonMass, 0);
-        // t =  p_yfsFormFact->BVirtT(Dip->GetMomenta(0), Dip->GetMomenta(1));
-    //     yfsint*=exp(v+t);
-    // }
-    yfsint *= p_yfsFormFact->BVirtT(m_bornMomenta[0],m_bornMomenta[2]);
-    yfsint *= p_yfsFormFact->BVirtT(m_bornMomenta[1],m_bornMomenta[3]);
-
-    yfsint *= p_yfsFormFact->BVirtT(m_bornMomenta[0],m_bornMomenta[3]);
-    yfsint *= p_yfsFormFact->BVirtT(m_bornMomenta[1],m_bornMomenta[2]);
-    // m_formfactor*=(yfsint);
-    // PRINT_VAR(yfsint);
-  }
+  if(m_tchannel) m_formfactor *= p_dipoles->TFormFactor();//*exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
 }
 
 bool YFS_Handler::CalculateFSR(){
+  // CheckMasses();
+  CheckMomentumConservation();
   return CalculateFSR(m_plab);
 }
 
@@ -420,7 +397,8 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   }
   if(m_fsrmode==1)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, oldplab);
   // if(m_fsrmode==0){
-  CheckMasses();
+  // CheckMasses();
+  // CheckMomentumConservation();
   return true;
 }
 
@@ -524,7 +502,7 @@ void YFS_Handler::CalculateBeta() {
 double YFS_Handler::CalculateNLO(){
   p_nlo->Init(m_flavs,m_reallab,m_bornMomenta);
   p_nlo->p_dipoles = p_dipoles;
-  p_nlo->m_eikmom = m_plab;
+  // p_nlo->m_eikmom = m_plab;
   p_nlo->SetBorn(m_born);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
   p_nlo->m_FSRPhotons = m_fsrphotonsforME;
@@ -566,6 +544,7 @@ void YFS_Handler::GenerateWeight() {
   DEBUG_FUNC("\nISR Weight = " << m_isrWeight << "\n" <<
              "  FSR Weight = " << m_fsrWeight << "\n" <<
              "  WW form Weight = " << m_ww_formfact << "\n" <<
+             "  Total form Weight = " << m_formfactor << "\n" <<
              "  Coulomb Weight = " << p_coulomb->GetWeight() << "\n" <<
              " Coulomb Subtraction Weight = " << exp(m_coulSub) << "\n" <<
              "Total Weight = " << m_yfsweight << "\n");
@@ -573,6 +552,7 @@ void YFS_Handler::GenerateWeight() {
     msg_Error()<<"\nISR Weight = " << m_isrWeight << "\n" <<
              "  FSR Weight = " << m_fsrWeight << "\n" <<
              "  Form Factor = " << m_formfactor << "\n" <<
+             "  NLO  Correction = " << m_real << "\n" <<
              "Total Weight = " << m_yfsweight << "\n";
   }
 }
@@ -611,6 +591,7 @@ bool YFS_Handler::CheckMomentumConservation(){
                <<"Incoming momentum = "<<incoming<<std::endl
                <<"Outgoing momentum = "<<outgoing<<std::endl
                <<"Difference = "<<diff<<std::endl
+               <<"Photons = "<<m_photonSumISR<<std::endl
                <<"Vetoing Event "<<std::endl;
   }
   return true;
@@ -619,17 +600,71 @@ bool YFS_Handler::CheckMomentumConservation(){
 
 void YFS_Handler::CheckMasses(){
   bool allonshell=true;
-  for (int i = 0; i < m_plab.size(); ++i)
-  {
-    if(!IsEqual(m_plab[i].Mass(),m_flavs[i].Mass(),1e-5)){
-      msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
-                     <<"Flavour = "<<m_flavs[i]<<", with mass = "<<m_flavs[i].Mass()<<std::endl
-                     <<"Four momentum = "<<m_plab[i]<<", with mass = "<<m_plab[i].Mass()<<std::endl;
-      allonshell = false;
+  std::vector<double> mass;
+  Vec4D_Vector p = m_plab;
+  for(auto k: m_ISRPhotons) p.push_back(k);
+  for(auto kk: m_FSRPhotons) p.push_back(kk);
 
+  for (int i = 0; i < p.size(); ++i)
+  {
+    if(i<m_plab.size()){
+      mass.push_back(m_flavs[i].Mass());
+      if(!IsEqual(p[i].Mass(),m_flavs[i].Mass(),1e-5)){
+        msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
+                       <<"Flavour = "<<m_flavs[i]<<", with mass = "<<m_flavs[i].Mass()<<std::endl
+                       <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
+        allonshell = false;
+
+      }
+    }
+    else{
+      mass.push_back(0);
+      if(!IsEqual(p[i].Mass(),0,1e-5)){
+        msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
+                       <<"Flavour = "<<p[i]<<", with mass = "<<0<<std::endl
+                       <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
+        allonshell = false;
+      }
     }
   }
-  if(!allonshell) m_stretcher.StretchMomenta(m_plab, m_mass);
+  if(!allonshell) m_stretcher.StretchMomenta(p, mass);
+  for (int i = 0; i < m_plab.size(); ++i)
+  {
+    m_plab[i] = p[i];
+  }
+  // std::vector<double> kmass;
+  // allonshell=true;
+
+  // for (int i = 0; i < m_ISRPhotons.size(); ++i)
+  // {
+  //   // PRINT_VAR(i);
+  //   // PRINT_VAR(m_ISRPhotons[i].Abs2());
+  //   kmass.push_back(0);
+  //   if(!IsEqual(m_ISRPhotons[i].Abs2(),kmass[i],1e-5)){
+  //     msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
+  //                    <<"Flavour = "<<" Photon "<<", with mass = "<<m_ISRPhotons[i].Mass()<<std::endl
+  //                    <<"Four momentum = "<<m_ISRPhotons[i]<<", with mass = "<<m_ISRPhotons[i].Mass()<<std::endl;
+  //     allonshell = false;
+
+  //   } 
+  // }
+  // if(!allonshell) m_stretcher.StretchMomenta(m_ISRPhotons, kmass);
+  // allonshell=true;
+
+  // for (int i = 0; i < m_FSRPhotons.size(); ++i)
+  // {
+  //   // PRINT_VAR(i);
+  //   // PRINT_VAR(m_FSRPhotons[i].Abs2());
+  //   kmass.push_back(0);
+  //   if(!IsEqual(m_FSRPhotons[i].Abs2(),kmass[i],1e-5)){
+  //     msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
+  //                    <<"Flavour = "<<" Photon "<<", with mass = "<<m_FSRPhotons[i].Mass()<<std::endl
+  //                    <<"Four momentum = "<<m_FSRPhotons[i]<<", with mass = "<<m_FSRPhotons[i].Mass()<<std::endl;
+  //     allonshell = false;
+
+  //   } 
+  // }
+  // if(!allonshell) m_stretcher.StretchMomenta(m_FSRPhotons, kmass);
   // return true;
 }
 
