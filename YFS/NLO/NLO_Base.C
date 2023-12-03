@@ -1,4 +1,4 @@
-#include "PHASIC++/Channels/Channel_Elements.H"
+// #include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/NLO_Base.H"
 
@@ -7,6 +7,11 @@ using namespace YFS;
 
 std::ofstream out_recola;
 std::ofstream out_sub, out_real, out_finite;
+
+double SqLam(double x,double y,double z)
+{
+  return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
+}
 
 NLO_Base::NLO_Base() {
   p_yfsFormFact = new YFS::YFS_Form_Factor();
@@ -18,8 +23,13 @@ NLO_Base::NLO_Base() {
   m_realtool = 0;
   m_looptool = 0;
   m_realvirt = 0;
+  // if(m_check_real_sub) {
+  // 	m_histograms2d["Real_me_sub"] = new Histogram_2D(110, 1e-6, sqrt(m_s)/2., 50, 1e-6, 100, 50);
+  // 	if (!ATOOLS::DirectoryExists(m_debugDIR_NLO)) {
+	// 		ATOOLS::MakeDir(m_debugDIR_NLO);
+  // 	}
+ 	// }
   if(m_isr_debug || m_fsr_debug){
-  		m_histograms2d["Real_me"] = new Histogram_2D(0, -1., 1., 20, 0, 20, 20 );
   	m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20 );
   	m_histograms1d["Real_diff"] = new Histogram(0, -1, 1, 100);
   	if (!ATOOLS::DirectoryExists(m_debugDIR_NLO)) {
@@ -30,7 +40,7 @@ NLO_Base::NLO_Base() {
 
 
 NLO_Base::~NLO_Base() {
-  if(m_isr_debug || m_fsr_debug){
+  if(m_isr_debug || m_fsr_debug || m_check_real_sub){
 		Histogram_2D * histo2d;
 		string name;
 		for (map<string, Histogram_2D *>::iterator hit = m_histograms2d.begin();
@@ -53,7 +63,7 @@ NLO_Base::~NLO_Base() {
 			delete histo1d;
 		}
 	}
-	msg_Debugging()<<"Percentage of Recola events = "<<m_recola_evts/m_evts*100.<<"% "<<std::endl;
+	msg_Out()<<"Percentage of Recola events = "<<m_recola_evts/m_evts*100.<<"% "<<std::endl;
 }
 
 
@@ -102,19 +112,20 @@ double NLO_Base::CalculateNLO() {
 
 
 double NLO_Base::CalculateVirtual() {
-	if (m_griff != 0) {
-		double v =   p_griffin->EvaluateLoop(m_plab);
-		return v;
-	}
 	if (!m_looptool && !m_realvirt) return 0;
+	if (m_griff != 0) {
+		return p_griffin->EvaluateLoop(m_plab)*m_born;
+	}
 	double virt;
 	double sub;
-	CheckMasses(m_plab);
+	Vec4D_Vector p = m_plab;
+	// CheckMasses(p);
 	CheckMassReg();
+	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
 	if(m_fsrmode==2) virt = p_virt->Calc(m_bornMomenta, m_born);
 	else virt = p_virt->Calc(m_plab, m_born);
 	if(m_check_virt_born) {
-			if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-8)) {
+			if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
 			msg_Error() << METHOD << "\n Warning! Loop provider's born is different! YFS Subtraction likely fails\n"
 									<< "Loop Provider " << ":  "<<p_virt->p_loop_me->ME_Born()
 									<< "\nSherpa" << ":  "<<m_born<<std::endl
@@ -131,7 +142,13 @@ double NLO_Base::CalculateVirtual() {
 double NLO_Base::CalculateReal() {
 	if (!m_realtool) return 0;
 	double real(0), sub(0);
-	for (auto k : m_ISRPhotons) real+=CalculateReal(k);
+	for (auto k : m_ISRPhotons) {
+		if(m_check_real_sub) {
+			if(k.E() < 0.2*sqrt(m_s)) continue;
+				CheckRealSub(k);
+		}
+		real+=CalculateReal(k);
+	}
 	for (auto k : m_FSRPhotons) real+=CalculateReal(k);
  	return real;
 }
@@ -141,28 +158,33 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	double norm = 2.*pow(2 * M_PI, 3);
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
 	Vec4D kk = k;
+	// CheckMasses(p);
 	MapMomenta(p, k);
+	// if(p[0].E()<20 || p[1].E()<20) return 0;
 	m_evts+=1;
 	double subflux = 0;
 	double totflux = 1;
 	double sx = (m_bornMomenta[0]+m_bornMomenta[1]-kk).Abs2();
-	double sq = (m_bornMomenta[0]+m_bornMomenta[1]).Abs2();
-	double sp = (m_plab[2]+m_plab[3]).Abs2();
+	double sq = (m_bornMomenta[2]+m_bornMomenta[3]).Abs2();
+	double sp = (p[0]+p[1]-kk).Abs2();
 	double spp = (p[0]+p[1]).Abs2();
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
-	p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
+	p_nlodipoles->MakeDipolesII(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
 	p_global_dipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
 	p_global_dipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
 	p_global_dipoles->MakeDipoles(m_flavs,m_plab,m_bornMomenta);
 	double flux;
-	flux = p_nlodipoles->CalculateFlux(k);
-	Vec4D Q = m_plab[2]+m_plab[3];
+	if(m_flux_mode==1) flux = p_dipoles->CalculateFlux(kk);
+	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
+	else flux = p_nlodipoles->CalculateFlux(k);
+	Vec4D Q = p[0]+p[1];
+	// flux = sp/sq;
 	double tot,colltot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_dipoles->CalculateRealSubEEX(kk);
-	rcoll = p_dipoles->CalculateEEXReal(kk)*m_born;
-	if (!CheckPhotonForReal(kk)) { 
+	double subb   = p_nlodipoles->CalculateRealSubEEX(k);
+	rcoll = p_nlodipoles->CalculateEEXReal(k)*m_born;
+	if (!CheckPhotonForReal(k)) { 
 		if(m_no_subtraction) return rcoll/subb;
 		return ( rcoll/subb - m_born);
 	}
@@ -170,8 +192,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	Complex MBar = (91.1876*91.1876, 2.4952*91.1876);
 	double mz = Flavour(kf_Z).Mass();
 	double gz = Flavour(kf_Z).Width();
-	double shifdiff = abs((p[2]+p[3]).Mass()-mz);
-	if(m_fsrmode==1){
+	if(m_fsrmode==1 || m_noflux!=0){
 			Q*=0;
 			for (int i = 2; i < m_plab.size(); ++i)
 			{
@@ -179,10 +200,17 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 			}
 			sq = (Q).Abs2();
 			sx = (Q+k).Abs2();
-			double sqq = (m_plab[0]+m_plab[1]).Abs2();
-			double sxx = (m_plab[0]+m_plab[1]+kk).Abs2();	
-			subflux = (sqq*sqq-(MBar*conj(MBar)).real())/(sxx*sxx-(MBar*conj(MBar)).real())-1;
-			// subloc+=p_nlodipoles->CalculateRealSubIF(k);//*subflux;
+			double shifdiff = fabs(Q.Mass()-mz);
+			double sqq = (p[2]+p[3]).Abs2();
+			double sxx = (p[2]+p[3]+k).Abs2();	
+			subflux = (sq*sq)/(sx*sx)-1;
+			if(m_noflux==3) {
+				flux=sq/sx;
+     	  // if(shifdiff < m_pole_fac*gz) flux = 1;
+			}
+			// flux=(sqr(sq-mz*mz)+sqr(mz*gz))/((sx-mz*mz)+sqr(mz*gz));
+			if(m_ifisub==1 && shifdiff > m_pole_fac*gz) subloc+=p_nlodipoles->CalculateRealSubIF(k);
+			if(m_ifisub==2 && shifdiff > m_pole_fac*gz) subloc+=p_nlodipoles->CalculateRealSubIF(k)*subflux;
 			if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	}
 	p.push_back(k);
@@ -199,7 +227,6 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	else tot =  (r-subloc*m_born)/subloc;
   if(m_isr_debug || m_fsr_debug){
 		double diff = ((r/subloc - m_born)-( rcoll/subb - m_born))/((r/subloc - m_born)+( rcoll/subb - m_born));
-		m_histograms2d["Real_me"]->Insert(k.CosTheta(Vec4D(1.,0.,0.,1.)), k.E(), diff);
 		m_histograms1d["Real_diff"]->Insert(diff);
   }
   if(m_no_subtraction) return r/subloc;
@@ -221,7 +248,7 @@ double NLO_Base::CalculateRealVirtual() {
 		Vec4D_Vector p(m_plab);
 		MapMomenta(p, k);
 		if(CheckPhotonCollinear(p,k)){
-			// if(k.PPerp()<1e-2) return 0;
+			// if(k.PPerp()<1e-1) return 0;
 			flux  = p_nlodipoles->CalculateFlux(k);
 			p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
 			p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
@@ -229,8 +256,9 @@ double NLO_Base::CalculateRealVirtual() {
 			double subb   = p_dipoles->CalculateRealSub(k);
 			double subloc = p_nlodipoles->CalculateRealSub(k);
 			p.push_back(k);
+			CheckMasses(p,1);
 			CheckMassRegRV(p);
-			double r = p_realvirt->Calc(p, m_born) / norm;
+			double r = p_realvirt->Calc(p, m_born) / norm*flux;
 			if (r == 0 || IsBad(r)) continue;
 			double aB = subloc*CalculateVirtual();
 			double tot = (r-aB) / subloc;
@@ -243,7 +271,7 @@ double NLO_Base::CalculateRealVirtual() {
 
 double NLO_Base::CalculateRealReal() {
 	if (!m_realrealtool) return 0;
-	double real(0), sub(0);
+	double real(0), sub(0), subflux1, subflux2;
 	Vec4D_Vector photons, p(m_plab);
 	for (auto k : m_ISRPhotons) photons.push_back(k);
 	for (auto k : m_FSRPhotons) photons.push_back(k);
@@ -259,9 +287,25 @@ double NLO_Base::CalculateRealReal() {
 			p = m_plab;
 			Vec4D k  = photons[i];
 			Vec4D kk = photons[j];
+			// if(m_check_rr){
+			// 	CheckReaReallSub(k,kk);
+			// }
 			MapMomenta(p, k, kk);
 			CheckMasses(p);
-			flux  = (Q-kk-k).Abs2()/(Q).Abs2();
+			// flux  = (Q-kk-k).Abs2()/(Q).Abs2();
+			double flux1,flux2;
+			if(m_flux_mode==1) {
+				flux1 = p_dipoles->CalculateFlux(k);
+				flux2 = p_dipoles->CalculateFlux(kk);
+			}
+			// else if(m_flux_mode==2) {
+			// 	flux1 = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
+			// 	flux 2= 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
+			// }
+			else {
+				flux1 = p_nlodipoles->CalculateFlux(k);
+				flux2 = p_nlodipoles->CalculateFlux(kk);
+			}
 			// if(k.PPerp()<0.1 || kk.PPerp()<0.1) return 0;
 			if(!CheckPhotonForReal(k)||!CheckPhotonForReal(kk)) return 0;
 
@@ -273,27 +317,35 @@ double NLO_Base::CalculateRealReal() {
 			double subloc2 = p_nlodipoles->CalculateRealSub(kk);
 			double subb1   = p_dipoles->CalculateRealSub(k);
 			double subb2   = p_dipoles->CalculateRealSub(kk);	
-			double subb = subloc1*CalculateReal(kk,1);
-			subb += subloc2*CalculateReal(k,1);
-			subb += subloc1*subloc2*m_born;
 			p.push_back(k);
 			p.push_back(kk);
 			CheckMomentumConservation(p);
-			if(m_fsrmode==1){
-			for (int i = 2; i < m_plab.size(); ++i)
-			{
-				Q += m_plab[i];
+			if(m_fsrmode==1 || m_noflux!=0){
+				Q*=0;
+				for (int i = 2; i < m_plab.size(); ++i)
+				{
+					Q += m_plab[i];
+				}
+				double sq = (Q).Abs2();
+				double sx = (Q+k).Abs2();
+				subflux1 = (sq*sq)/(sx*sx)-1;
+				sx = (Q+kk).Abs2();
+				subflux2 = (sq*sq)/(sx*sx)-1;
+				// if(m_ifisub==1 && shifdiff > m_pole_fac*gz) subloc+=p_nlodipoles->CalculateRealSubIF(k);
+				if(m_ifisub==1) {
+					subloc1+=p_nlodipoles->CalculateRealSubIF(k);
+					subloc2+=p_nlodipoles->CalculateRealSubIF(kk);
+				}
+				if(m_ifisub==2) {
+					subloc1+=p_nlodipoles->CalculateRealSubIF(k)*subflux1;
+					subloc2+=p_nlodipoles->CalculateRealSubIF(kk)*subflux2;
+				}
+				if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 			}
-			double sq = (Q).Abs2();
-			double sx = (Q+k+kk).Abs2();
-			double sqq = (m_plab[2]+m_plab[3]).Abs2();
-			double sxx = (m_plab[2]+m_plab[3]+k+kk).Abs2();	
-			 	// subflux = (sq*sq-(MBar*conj(MBar)).real())/(sx*sx-(MBar*conj(MBar)).real())-1;
-			// flux = (sqr(sq-mz*mz)+sqr(gz)*sqr(sq)/sqr(mz))/(sqr(sx-mz*mz)+sqr(gz)*sqr(sx)/sqr(mz));
-			p_nlodipoles->CalculateFlux(k,kk);
-			if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
-	}
-			double r = p_realreal->Calc_R(p) / norm / norm *flux;
+			double subb = subloc1*CalculateReal(kk,1);
+			subb += subloc2*CalculateReal(k,1);
+			subb += subloc1*subloc2*m_born;
+			double r = p_realreal->Calc_R(p) / norm / norm *flux1*flux2;
 			if(IsNan(r)) r=0;
 			if (r == 0) continue;
 			real += (r - subb)/subb1/subb2;
@@ -318,7 +370,7 @@ void NLO_Base::MapInitial(Vec4D_Vector &p, Vec4D &k){
     pRot.Rotate(p[i]);
     poin.BoostBack(p[i]);
   }
-	PHASIC::CE.Isotropic2Momenta(p[0]+p[1]-k, sqr(p[2].Mass()), sqr(p[3].Mass()), p[2], p[3], ran->Get(), ran->Get(), -1, 1);
+	// PHASIC::CE.Isotropic2Momenta(p[0]+p[1]-k, sqr(p[2].Mass()), sqr(p[3].Mass()), p[2], p[3], ran->Get(), ran->Get(), -1, 1);
 }
 
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
@@ -366,26 +418,33 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD << std::endl;
 	}
 	// if(m_is_isr) QQ = p[0]+p[1];
-  double zz = sqrt(sqq) / 2.;
-	double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) * (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
+  // double zz = sqrt(sqq) / 2.;
+	// double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) * (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
 	// double sign_z = (p[0][3] < 0 ? -1 : 1);
-	p[0] = {zz, 0, 0, z};
-	p[1] = {zz, 0, 0, -z};
-  Poincare pRot2(p[0], Vec4D(0., 	0., 0., 1.));
+	// p[0] = {zz, 0, 0, z};
+	// p[1] = {zz, 0, 0, -z};
+  double m1 = m_flavs[0].Mass();
+  double m2 = m_flavs[1].Mass();
+  double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
+  double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
+  double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
+ 	p[0] = {E1, 0, 0, lamCM};
+  p[1] = {E2, 0, 0, -lamCM};
+  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		pRot2.Rotate(p[i]);
+		// pRot2.Rotate(p[i]);
 		boostLab.BoostBack(p[i]);
 	}
-	pRot2.Rotate(k);
-	boostLab.BoostBack(k);
+	// pRot2.Rotate(k);
+	// boostLab.BoostBack(k);
 }
 
 
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {
 	Vec4D Q;
 	Vec4D QQ, PP;
-	Poincare boostLab(m_plab[0] + m_plab[1]);
+	Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
 	// Poincare boostLab(p[0] + p[1]);
 	for (int i = 2; i < p.size(); ++i)
 	{
@@ -430,10 +489,13 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {
 		msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD << std::endl;
 	}
 	// if(m_is_isr) QQ = p[0]+p[1];
-  double zz = sqrt(sqq) / 2.;
-	double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) * (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
-	p[0] = {zz, 0, 0, z};
-	p[1] = {zz, 0, 0, -z};
+ 	double m1 = m_flavs[0].Mass();
+  double m2 = m_flavs[1].Mass();
+  double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
+  double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
+  double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
+ 	p[0] = {E1, 0, 0, lamCM};
+  p[1] = {E2, 0, 0, -lamCM};
   Poincare pRot2(p[0], Vec4D(0., 	0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
@@ -558,3 +620,93 @@ void NLO_Base::CheckMassRegRV(const ATOOLS::Vec4D_Vector &p){
 		}
 
 }
+
+void NLO_Base::CheckRealSub(Vec4D k){
+		// if(k.E() < 20) return;
+		// k*=100;
+		double real;
+		std::string filename="Real_subtracted_";
+		for(auto f: m_flavs) {
+			filename+=f.IDName();
+			filename+="_";
+		}
+		filename+=".txt";
+		if(ATOOLS::FileExists(filename))  ATOOLS::Remove(filename);
+		out_sub.open(filename, std::ios_base::app);
+		if(k.E() < 0.8*sqrt(m_s)/2.) return;
+		for (double i = 1; i < 20 ; i+=0.25)
+		{
+			k=k/i;
+			real=CalculateReal(k);
+			out_sub<<k.E()<<","<<fabs(real)<<std::endl;
+			if(k.E() < 1e-10 || real==0) break;
+			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+		}
+		out_sub.close();
+		exit(0);
+}
+
+void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2){
+		// if(k.E() < 20) return;
+		// // k*=100;
+		// Vec4D _k1 = k1;
+		// Vec4D _k2 = k2;
+		// double real;
+		// std::string filename1="Real_Real_subtracted_k1_fx";
+		// std::string filename2="Real_Real_subtracted_k2_fx";
+		// std::string filename3="Real_Real_subtracted_";
+		// for(auto f: m_flavs) {
+		// 	filename1+=f.IDName();
+		// 	filename2+=f.IDName();
+		// 	filename3+=f.IDName();
+		// 	filename1+="_";
+		// 	filename2+="_";
+		// 	filename3+="_";
+		// }
+		// filename1+=".txt";
+		// filename2+=".txt";
+		// filename3+=".txt";
+		// if(ATOOLS::FileExists(filename1))  ATOOLS::Remove(filename1);
+		// if(ATOOLS::FileExists(filename2))  ATOOLS::Remove(filename2);
+		// if(ATOOLS::FileExists(filename3))  ATOOLS::Remove(filename3);
+
+		// out_sub.open(filename1, std::ios_base::app);
+		// if(k1.E() < 0.8*sqrt(m_s)/2.) return;
+		// for (double i = 1; i < 20 ; i+=0.25)
+		// {
+		// 	k1=k1/i;
+		// 	real=CalculateRealReal(k1,k2);
+		// 	out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
+		// 	if(k1.E() < 1e-10 || real==0) break;
+		// 	// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+		// }
+		// out_sub.close();
+		// k1 = _k1;
+		// out_sub.open(filename2, std::ios_base::app);
+		// if(k2.E() < 0.8*sqrt(m_s)/2.) return;
+		// for (double i = 1; i < 20 ; i+=0.25)
+		// {
+		// 	k2=k2/i;
+		// 	real=CalculateRealReal(k1,k2);
+		// 	out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
+		// 	if(k2.E() < 1e-10 || real==0) break;
+		// 	// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+		// }
+		// out_sub.close();
+		// k1 = _k1;
+		// k2 = _k2;
+		// out_sub.open(filename3, std::ios_base::app);
+		// if(k2.E() < 0.8*sqrt(m_s)/2.) return;
+		// for (double i = 1; i < 20 ; i+=0.25)
+		// {
+		// 	k2=k2/i;
+		// 	k1=k1/i;
+		// 	real=CalculateRealReal(k1,k2);
+		// 	out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
+		// 	if(k2.E() < 1e-10 || real==0) break;
+		// 	if(k1.E() < 1e-10 || real==0) break;
+		// 	// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+		// }
+		exit(0);
+}
+

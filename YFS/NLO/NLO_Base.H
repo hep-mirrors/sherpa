@@ -57,6 +57,7 @@ public:
   double CalculateReal(Vec4D k, int submode=0);
   double CalculateRealVirtual();
   double CalculateRealReal();
+  // double CalculateRealReal(Vec4D k,Vec4D kk);
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k, ATOOLS::Vec4D &kk);
@@ -69,6 +70,8 @@ public:
   bool CheckPhotonCollinear(const Vec4D_Vector &p, const Vec4D &k);
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
+  void CheckRealSub(Vec4D k);
+  void CheckRealRealSub(Vec4D k,Vec4D kk);
 
   inline void SetBorn(double b) { m_born = b;}
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
