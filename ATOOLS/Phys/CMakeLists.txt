@@ -12,6 +12,7 @@ set(Phys_SOURCES Fragmentation_Base.C
                  Decay_Info.C
                  Cluster_Leg.C
                  Cluster_Amplitude.C
+		 Recoil_Definition.C
                  Blob.C
                  Blob_List.C
                  Parton_Finder.C
@@ -43,6 +44,7 @@ set(Phys_HEADERS fjcore.hh
                  Decay_Info.H
                  Cluster_Leg.H
                  Cluster_Amplitude.H
+		 Recoil_Definition.H
                  Flow.H
                  Blob.H
                  Blob_List.H

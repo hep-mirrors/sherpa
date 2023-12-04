@@ -53,6 +53,9 @@ void ATOOLS::GenerateStackTrace(std::ostream &ostr,
 	char cmd[4096];
 	snprintf(cmd,4096,"addr2line -se %s 0x%016lx 2>/dev/null",
 		 info.dli_fname,offset);
+#ifndef USE__ADDR2LINE
+	linfo=cmd;
+#else
 	if (FILE *pf=popen(cmd,"r")) {
 	  char buf[2048];
 	  if (fgets(buf,2048,pf)) {
@@ -72,6 +75,7 @@ void ATOOLS::GenerateStackTrace(std::ostream &ostr,
 	  }
 	  pclose(pf);
 	}
+#endif
 	ostr<<comment<<"  "<<std::setiosflags(std::ios::left)
 	    <<std::setw(15)<<trace[n]<<std::dec
 	    <<" in '"<<om::red<<Demangle(symname)<<om::reset<<"' ";

@@ -643,9 +643,9 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     q2list.erase(q2list.begin());
     Cluster_Param cp=p_cluster->Cluster
       (Cluster_Config(ampl,imin,jmin,kmin,mofl,ampl->MS(),NULL,1));
-    if (cp.m_pijt==Vec4D())
+    if (cp.m_p.empty())
       cp=p_cluster->Cluster(Cluster_Config(ampl,jmin,imin,kmin,mofl,ampl->MS(),NULL,1));
-    if (cp.m_pijt==Vec4D()) continue;
+    if (cp.m_p.empty()) continue;
     Cluster_Amplitude *bampl(Cluster_Amplitude::New());
     bampl->SetProc(ampl->Proc<void>());
     bampl->SetNIn(ampl->NIn());
@@ -653,13 +653,12 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     for (int i(0), j(0);i<ampl->Legs().size();++i) {
       if (i==jmin) continue;
       if (i==imin) {
-	bampl->CreateLeg(cp.m_pijt,mofl,ampl->Leg(i)->Col());
+	bampl->CreateLeg(cp.m_p[imin],mofl,ampl->Leg(i)->Col());
 	bampl->Legs().back()->SetId(ampl->Leg(imin)->Id()|ampl->Leg(jmin)->Id());
 	bampl->Legs().back()->SetK(ampl->Leg(kmin)->Id());	
       }
       else {
-	bampl->CreateLeg(i==kmin?cp.m_pkt:cp.m_lam*ampl->Leg(i)->Mom(),
-			 ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
+	bampl->CreateLeg(cp.m_p[i],ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
       }
       ++j;
     }

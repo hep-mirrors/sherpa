@@ -1,6 +1,6 @@
 #include "PHASIC++/Channels/Channel_Elements.H"
 
-#include "PHASIC++/Channels/CSS_Kinematics.H"
+#include "PHASIC++/Channels/Transverse_Kinematics.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Run_Parameter.H"

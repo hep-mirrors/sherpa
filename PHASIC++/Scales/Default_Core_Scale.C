@@ -55,21 +55,19 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   if (fl[0].Strong() && fl[1].Strong()) {// hh collision
     if (fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"pure QCD like\n";
-      double s(2.0*campl->Leg(0)->Mom()*campl->Leg(1)->Mom());
-      double t1(2.0*campl->Leg(0)->Mom()*campl->Leg(2)->Mom());
-      double u1(2.0*campl->Leg(0)->Mom()*campl->Leg(3)->Mom());
-      double t2(2.0*campl->Leg(1)->Mom()*campl->Leg(3)->Mom());
-      double u2(2.0*campl->Leg(1)->Mom()*campl->Leg(2)->Mom());
-      muq2=muf2=mur2=-1.0/(1.0/s+2.0/(t1+t2)+2.0/(u1+u2))/sqrt(2.0);
+      muq2=muf2=mur2=(campl->Leg(2)->Mom().PPerp2()+
+		      campl->Leg(3)->Mom().PPerp2())/4.;
     }
     else if (!fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"DY like\n";
-      muq2=muf2=mur2=(campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2();
+      muq2=muf2=mur2=(campl->Leg(2)->Mom()+
+		      campl->Leg(3)->Mom()).Abs2();
     }
     else if (fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"jV like\n";
-      muq2=muf2=mur2=Max(campl->Leg(3)->Mom().Abs2(),
-			 campl->Leg(2)->Mom().PPerp2());
+      muq2=muf2=Max(campl->Leg(3)->Mom().Abs2(),
+		    campl->Leg(2)->Mom().PPerp2());
+      mur2=campl->Leg(2)->Mom().PPerp2();
       if (fl[3].Kfcode()==25) {
 	msg_Debugging()<<"H special\n";
 	mur2=pow(mur2*pow(fl[3].Mass(),4.),1./3.); 
@@ -77,8 +75,9 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (!fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"Vj like\n";
-      muq2=muf2=mur2=Max(campl->Leg(2)->Mom().Abs2(),
-			 campl->Leg(3)->Mom().PPerp2());
+      muq2=muf2=Max(campl->Leg(2)->Mom().Abs2(),
+		    campl->Leg(3)->Mom().PPerp2());
+      mur2=campl->Leg(3)->Mom().PPerp2();
       if (fl[2].Kfcode()==25) {
 	msg_Debugging()<<"H special\n";
 	mur2=pow(mur2*pow(fl[2].Mass(),4.),1./3.); 

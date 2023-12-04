@@ -106,6 +106,9 @@ namespace ATOOLS {
                            Cluster_Leg *const li,
                            Cluster_Leg *const lj);
 
+    Vec4D_Vector Momenta() const;
+    void SetMomenta(const Vec4D_Vector &p);
+
     // inline functions
     inline const ClusterLeg_Vector &Legs() const { return m_legs; }
     inline ClusterLeg_Vector       &Legs()       { return m_legs; }

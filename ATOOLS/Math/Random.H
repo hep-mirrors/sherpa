@@ -59,6 +59,7 @@ namespace ATOOLS {
     int  WriteOutStatus4(const char *outfile);
     int  WriteOutStatus4(std::ostream &os,const size_t &idx);
     int  WriteOutSavedStatus4(const char *outfile);
+    int  WriteOutSavedStatus4(std::ostream &os,const size_t &idx);
     void ReadInStatus4(const char * filename);
     size_t ReadInStatus4(std::istream &is,const size_t &idx);
     void SaveStatus4();
@@ -84,6 +85,7 @@ namespace ATOOLS {
     int  WriteOutStatus(const char *outfile);
     int  WriteOutStatus(std::ostream &os,const size_t &idx);
     int  WriteOutSavedStatus(const char *outfile);
+    int  WriteOutSavedStatus(std::ostream &os,const size_t &idx);
     void ReadInStatus(const char *infile);
     size_t ReadInStatus(std::istream &is,const size_t &idx);
     bool CanRestoreStatus() const;
