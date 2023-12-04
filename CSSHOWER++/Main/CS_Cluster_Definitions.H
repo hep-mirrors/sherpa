@@ -13,7 +13,7 @@ namespace CSSHOWER {
     double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_q2, m_mu2;
     int m_mode, m_cpl, m_kin, m_col, m_kmode;
     Splitting_Function_Base *p_sf;
-    ATOOLS::Vec4D m_pk, m_pijt, m_pkt;
+    ATOOLS::Vec4D_Vector m_p;
     ATOOLS::Poincare_Sequence m_lt;
     CS_Parameters(const double &kt2,const double &z,
 		  const double &y,const double &phi,

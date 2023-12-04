@@ -1,4 +1,6 @@
-set(Channels_SOURCES CSS_Kinematics.C
+set(Channels_SOURCES Transverse_Kinematics.C
+                     CSS_Kinematics.C
+                     Antenna_Kinematics.C
                      Channel_Elements.C
                      Channel_Elements_KK.C
                      Single_Channel.C
@@ -28,7 +30,9 @@ set(Channels_SOURCES CSS_Kinematics.C
                      BBar_Emission_Generator.C
                      Exponential_Channels.C)
 
-set(Channels_HEADERS CSS_Kinematics.H
+set(Channels_HEADERS Transverse_Kinematics.H
+                     CSS_Kinematics.H
+                     Antenna_Kinematics.H
                      Channel_Elements.H
                      Channel_Elements_KK.H
                      Single_Channel.H

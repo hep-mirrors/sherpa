@@ -20,7 +20,7 @@ std::ostream &PDF::operator<<(std::ostream &str,const Cluster_Config &cc)
 {
   return str<<"CC{ampl="<<cc.p_ampl<<",ms="<<cc.p_ms
 	    <<",i="<<cc.m_i<<",j="<<cc.m_j<<",k="<<cc.m_k<<",mo="<<cc.m_mo
-	    <<",kin="<<cc.m_kin<<",mode="<<ID(cc.m_mode)<<"}";
+	    <<",n="<<cc.m_n<<",kin="<<cc.m_kin<<",mode="<<ID(cc.m_mode)<<"}";
 }
 
 std::ostream &PDF::operator<<(std::ostream &str,const Cluster_Param &cp)
@@ -85,19 +85,14 @@ int Cluster_Definitions_Base::ReCluster
 	(Cluster_Config(campl->Prev(),i,j,k,lij->Flav(),campl->MS(),
 			NULL,campl->Kin(),((lij->Stat()&4)?1:0)|
 			(campl->NLO()?16:0)));
-      if (cp.m_pijt==Vec4D()) {
+      if (cp.m_p.empty()) {
 	cp=campl->CA<Cluster_Definitions_Base>()->Cluster
 	  (Cluster_Config(campl->Prev(),j,i,k,lij->Flav(),campl->MS(),
 			  NULL,campl->Kin(),((lij->Stat()&4)?1:0)|
 			  (campl->NLO()?16:0)));
-	if (cp.m_pijt==Vec4D()) return -1;
+	if (cp.m_p.empty()) return -1;
       }
-      for (size_t n(0);n<campl->Legs().size();++n) {
-	Cluster_Leg *c(campl->Leg(n));
-	if (c->Id()&campl->Prev()->Leg(i)->Id()) c->SetMom(cp.m_pijt);
-	else if (c->Id()&campl->Prev()->Leg(k)->Id()) c->SetMom(cp.m_pkt);
-	else c->SetMom(cp.m_lam*campl->Prev()->IdLeg(c->Id())->Mom());
-      }
+      campl->SetMomenta(cp.m_p);
     }
     msg_Debugging()<<*campl<<"\n";
   }

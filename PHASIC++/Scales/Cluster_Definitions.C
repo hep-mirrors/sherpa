@@ -13,7 +13,8 @@ using namespace ATOOLS;
 
 Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
 {
-  Cluster_Param cp(this,0.0);
+  Cluster_Param cp(this,0.0,-1.0);
+  if (cc.m_n>0) return cp;
   const Cluster_Leg *lk(cc.p_ampl->Leg(cc.m_k));
   const Cluster_Leg *li(cc.p_ampl->Leg(cc.m_i)), *lj(cc.p_ampl->Leg(cc.m_j));
   int cpl((li->Flav().Strong()&&lj->Flav().Strong()&&cc.m_mo.Strong())?0:1);
@@ -49,7 +50,11 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
 	  }
 	}
 	if (ffp.m_stat<0) t=-1.0;
-	cp=Cluster_Param(this,0.0,t,t,cpl,kin,0,ffp.m_pi,ffp.m_pk,ffp.m_lam);
+	Vec4D_Vector p(cc.p_ampl->Momenta());
+	p[cc.m_i]=ffp.m_pi;
+	p[cc.m_k]=ffp.m_pk;
+	p.erase(p.begin()+cc.m_j);
+	cp=Cluster_Param(this,0.0,t,t,cpl,kin,0,p);
       }
       else {
 	Kin_Args fip(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,3));
@@ -65,7 +70,11 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
 	}
 	if (fip.m_pk[0]<0.0 || fip.m_stat<0 ||
 	    fip.m_pk[0]>rpa->gen.PBunch(cc.m_k)[0]) t=-1.0;
-	cp=Cluster_Param(this,0.0,t,t,cpl,kin,0,fip.m_pi,-fip.m_pk,fip.m_lam);
+	Vec4D_Vector p(cc.p_ampl->Momenta());
+	p[cc.m_i]=fip.m_pi;
+	p[cc.m_k]=-fip.m_pk;
+	p.erase(p.begin()+cc.m_j);
+	cp=Cluster_Param(this,0.0,t,t,cpl,kin,0,p);
       }
     }
   }
@@ -86,7 +95,12 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
 	}
 	if (ifp.m_pi[0]<0.0 || ifp.m_stat<0 ||
 	    ifp.m_pi[0]>rpa->gen.PBunch(ib)[0]) t=-1.0;
-	cp=Cluster_Param(this,0.0,t,mu,cpl,kin,0,-ifp.m_pi,ifp.m_pk,ifp.m_lam);
+	Vec4D_Vector p(cc.p_ampl->Momenta());
+	for (size_t i(0);i<p.size();++i) p[i]=ifp.m_lam*p[i];
+	p[cc.m_i]=-ifp.m_pi;
+	p[cc.m_k]=ifp.m_pk;
+	p.erase(p.begin()+cc.m_j);
+	cp=Cluster_Param(this,0.0,t,mu,cpl,kin,0,p);
       }
       else {
 	Kin_Args iip(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3|(kin?4:0)));
@@ -102,7 +116,12 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
 	}
 	if (iip.m_pi[0]<0.0 || iip.m_stat<0 ||
 	    iip.m_pi[0]>rpa->gen.PBunch(ib)[0]) t=-1.0;
-	cp=Cluster_Param(this,0.0,t,mu,cpl,kin,0,-iip.m_pi,-iip.m_pk,iip.m_lam);
+	Vec4D_Vector p(cc.p_ampl->Momenta());
+	for (size_t i(0);i<p.size();++i) p[i]=iip.m_lam*p[i];
+	p[cc.m_i]=-iip.m_pi;
+	p[cc.m_k]=-iip.m_pk;
+	p.erase(p.begin()+cc.m_j);
+	cp=Cluster_Param(this,0.0,t,mu,cpl,kin,0,p);
       }
     }
   }

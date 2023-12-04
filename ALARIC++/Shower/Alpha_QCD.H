@@ -1,0 +1,55 @@
+#ifndef ALARIC__Shower__Alpha_QCD_H
+#define ALARIC__Shower__Alpha_QCD_H
+
+#include "ALARIC++/Shower/Gauge.H"
+
+namespace MODEL {
+  class Running_AlphaS;
+}
+
+namespace ALARIC {
+  
+  class Alpha_QCD: public Gauge {
+  protected:
+    
+    MODEL::Running_AlphaS *const &p_cpl;
+
+    double m_fac, m_max;
+    double m_Nc, m_CF, m_CA, m_TR;
+
+    int m_lc;
+
+    mutable int m_override;
+
+    double B0(const double &nf) const;
+    double B1(const double &nf) const;
+
+    double G2(const double &nf) const;
+    double G3(const double &nf) const;
+
+    double CplFac(const double &scale) const;
+
+  public:
+
+    Alpha_QCD(const Kernel_Key &key);
+
+    double TrueScale(const Splitting &s) const;
+
+    double Coupling(const Splitting &s) const;
+    double RenCT(const Splitting &s) const;
+    double CplMax(const Splitting &s) const;
+
+    double K(const Splitting &s) const;
+    double KMax(const Splitting &s) const;
+
+    double Nf(const Splitting &s) const;
+
+    void SetLimits();
+
+    double Solve(const double &cpl) const;
+
+  };// end of class Alpha_QCD
+
+}// end of namespace ALARIC
+
+#endif

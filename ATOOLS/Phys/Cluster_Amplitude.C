@@ -546,6 +546,17 @@ void Cluster_Amplitude::SetColours
   lj->SetCol(colj);
 }
 
+Vec4D_Vector Cluster_Amplitude::Momenta() const
+{
+  Vec4D_Vector p(m_legs.size());
+  for (size_t i(0);i<m_legs.size();++i) p[i]=m_legs[i]->Mom();
+  return p;
+}
+
+void Cluster_Amplitude::SetMomenta(const Vec4D_Vector &p)
+{
+  for (size_t i(0);i<m_legs.size();++i) m_legs[i]->SetMom(p[i]);
+}
 
 size_t Cluster_Amplitude::IdIndex(const size_t &id) const
 {

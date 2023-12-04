@@ -19,6 +19,7 @@ CS_Cluster_Definitions::CS_Cluster_Definitions
 
 Cluster_Param CS_Cluster_Definitions::Cluster(const Cluster_Config &ca)
 {
+  if (ca.m_n>0) return Cluster_Param(this,0.0,-1.0);
   DEBUG_FUNC(ca);
   CS_Parameters cs(KT2(ca.p_ampl,
 		       ca.p_ampl->Leg(ca.m_i),
@@ -26,7 +27,7 @@ Cluster_Param CS_Cluster_Definitions::Cluster(const Cluster_Config &ca)
 		       ca.p_ampl->Leg(ca.m_k),
 		       ca.m_mo,ca.p_ms,ca.m_kin,ca.m_mode|m_kmode));
   return Cluster_Param(this,cs.m_wk,cs.m_kt2,cs.m_mu2,cs.m_cpl,
-		       cs.m_kin,cs.m_kmode,cs.m_pijt,cs.m_pkt,cs.m_lt);
+		       cs.m_kin,cs.m_kmode,cs.m_p);
 }
 
 Splitting_Function_Base *CS_Cluster_Definitions::GetSF
@@ -90,6 +91,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),
 		   1.0,1.0,0.0,0.0,0.0,
 		   ((i->Id()&3)?1:0)|((k->Id()&3)?2:0),kin,kmode&1);
+  cs.m_p=ampl->Momenta();
   cs.m_kt2=-1.0;
   cs.m_wk=0.0;
   cs.m_col=col;
@@ -100,8 +102,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	if (lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinFF()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0,Q2,0,kin,kmode&1);
-	cs.m_pkt=cs.m_pk=lt.m_pk;
-	cs.m_pijt=lt.m_pi;
+	cs.m_p[i->Id()]=lt.m_pi;
+	cs.m_p[k->Id()]=lt.m_pk;
+	cs.m_p.erase(cs.m_p.begin()+j->Id());
       }
       else {
 	lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|8|(kin?4:0));
@@ -109,8 +112,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	    lt.m_pk[0]<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinFI()->GetKT2(Q2,1.0-lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0-lt.m_y,Q2,2,kin,kmode&1);
-	cs.m_pkt=-(cs.m_pk=lt.m_pk);
-	cs.m_pijt=lt.m_pi;
+	cs.m_p[i->Id()]=lt.m_pi;
+	cs.m_p[k->Id()]=-lt.m_pk;
+	cs.m_p.erase(cs.m_p.begin()+j->Id());
       }
     }
   }
@@ -123,9 +127,10 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinIF()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,1,lt.m_mode,kmode&1);
-	cs.m_pkt=cs.m_pk=lt.m_pk;
-	cs.m_pijt=-lt.m_pi;
-	cs.m_lt=lt.m_lam;
+	for (size_t i(0);i<cs.m_p.size();++i) cs.m_p[i]=lt.m_lam*cs.m_p[i];
+	cs.m_p[i->Id()]=-lt.m_pi;
+	cs.m_p[k->Id()]=lt.m_pk;
+	cs.m_p.erase(cs.m_p.begin()+j->Id());
       }
       else {
 	lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3|(kin?4:0));
@@ -133,9 +138,10 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinII()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,3,kin,kmode&1);
-	cs.m_pkt=-(cs.m_pk=lt.m_pk);
-	cs.m_pijt=-lt.m_pi;
-	cs.m_lt=lt.m_lam;
+	for (size_t i(0);i<cs.m_p.size();++i) cs.m_p[i]=lt.m_lam*cs.m_p[i];
+	cs.m_p[i->Id()]=-lt.m_pi;
+	cs.m_p[k->Id()]=-lt.m_pk;
+	cs.m_p.erase(cs.m_p.begin()+j->Id());
       }
     }
   }
