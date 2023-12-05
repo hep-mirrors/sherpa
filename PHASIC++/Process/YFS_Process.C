@@ -98,17 +98,10 @@ void YFS_Process::Init(const Process_Info &pi,
   if (pi.Has(nlo_type::loop)) {
     vpi.m_fi.SetNLOType(nlo_type::born);
     Process_Base::Init(vpi, beam, isr, yfs);
-    for (size_t i = 0; i < pi.m_fi.m_nlocpl.size(); ++i)
-    {
-      // vpi.m_maxcpl[i]+=vpi.m_fi.m_nlocpl[i];
-      // vpi.m_mincpl[i]+=vpi.m_fi.m_nlocpl[i];
-    }
-    // vpi.m_megenerator = vpi.m_loopgenerator;
     p_virtproc = InitProcess(vpi, nlo_type::born, false);
     p_virtproc->FillProcessMap(p_apmap);
     p_yfs->p_nlo->InitializeVirtual(vpi);
     p_yfs->SetNLOType(nlo_type::loop);
-
   }
   if (pi.Has(nlo_type::rvirt)) {
     Process_Info rvpi(pi);
@@ -163,7 +156,7 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
   double var(p_int->TotalVar());
-  if (create) {
+  // if (create) {
     msg_Info() << METHOD << "(): Calculate xs for '"
                << m_name << "' (" << (p_gen ? p_gen->Name() : "") << ")" << std::endl;
     double totalxsborn(psh->Integrate() / rpa->Picobarn());
@@ -184,8 +177,6 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
     }
     exh->RemoveTerminatorObject(p_int);
     return 0;
-  }
-  // return 1;
 }
 
 
