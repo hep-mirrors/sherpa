@@ -14,13 +14,17 @@
 #include "ATOOLS/Phys/KF_Table.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
 
+// TODO:
+// to be done properly
+#define RIVET_ENABLE_HEPMC_3
+
 #ifdef USING__RIVET3
 #include "Rivet/Config/RivetConfig.hh"
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
 #include "YODA/Config/BuildConfig.h"
 #include "YODA/AnalysisObject.h"
-#ifdef RIVET_ENABLE_HEPMC_3
+#if defined(RIVET_ENABLE_HEPMC_3) || (RIVET_VERSION_CODE >= 30200)
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "HepMC3/GenEvent.h"
 #include "HepMC3/GenCrossSection.h"
@@ -143,10 +147,16 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
     Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
     m_rivet[key]->addAnalyses(s["ANALYSES"].SetSynonyms({"ANALYSIS", "-a", "--analyses"})
                        .SetDefault<std::vector<std::string>>({}).GetVector<std::string>());
+#if RIVET_VERSION_CODE >= 30200
+    m_rivet[key]->setCheckBeams(!s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>());
+    m_rivet[key]->matchWeightNames(s["MATCH_WEIGHTS"].SetSynonyms({"--match-weights"}).SetDefault("").Get<std::string>());
+    m_rivet[key]->unmatchWeightNames(s["UNMATCH_WEIGHTS"].SetSynonyms({"--unmatch-weights"}).SetDefault("^EXTRA__.*,^IRREG__.*").Get<std::string>());
+#else
     m_rivet[key]->setIgnoreBeams(s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>());
-    m_rivet[key]->skipMultiWeights(s["SKIP_WEIGHTS"].SetSynonyms({"SKIPWEIGHTS", "--skip-weights"}).SetDefault(0).Get<int>());
     m_rivet[key]->selectMultiWeights(s["MATCH_WEIGHTS"].SetSynonyms({"--match-weights"}).SetDefault("").Get<std::string>());
     m_rivet[key]->deselectMultiWeights(s["UNMATCH_WEIGHTS"].SetSynonyms({"--unmatch-weights"}).SetDefault("^EXTRA__.*,^IRREG__.*").Get<std::string>());
+#endif
+    m_rivet[key]->skipMultiWeights(s["SKIP_WEIGHTS"].SetSynonyms({"SKIPWEIGHTS", "--skip-weights"}).SetDefault(0).Get<int>());
     m_rivet[key]->setNominalWeightName(s["NOMINAL_WEIGHT"].SetSynonyms({"--nominal-weight"}).SetDefault("").Get<std::string>());
     m_rivet[key]->setWeightCap(s["WEIGHT_CAP"].SetSynonyms({"--weight-cap"}).SetDefault(0.0).Get<double>());
     m_rivet[key]->setNLOSmearing(s["NLO_SMEARING"].SetSynonyms({"--nlo-smearing"}).SetDefault(0.0).Get<double>());
