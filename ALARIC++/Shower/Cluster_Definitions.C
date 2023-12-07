@@ -80,13 +80,14 @@ Splitting Cluster_Definitions::KT2
     sp.m_t=-1.0;
     return sp;
   }
-  msg_Debugging()<<"c/s mom: "<<sp.m_p[i]<<" "<<sp.m_p[j<k?k-1:k]<<"\n";
+  msg_Debugging()<<"c/s mom: "<<sp.m_p[i<j?i:j]
+		 <<" "<<sp.m_p[(i<j?j:i)<k?k-1:k]<<"\n";
   msg_Debugging()<<"Mom sum: "<<std::accumulate
     (sp.m_p.begin(),sp.m_p.end(),Vec4D())<<"\n";
   msg_Debugging()<<"Splitting: t = "<<sp.m_t<<" = "<<sqrt(sp.m_t)
 		 <<" ^ 2, z = "<<sp.m_z<<", phi = "<<sp.m_phi<<"\n";
-  c.SetMom(sp.m_p[i]);
-  s.SetMom(sp.m_p[j<k?k-1:k]);
+  c.SetMom(sp.m_p[i<j?i:j]);
+  s.SetMom(sp.m_p[(i<j?j:i)<k?k-1:k]);
   ws=sk->Value(sp);
   mu2=sk->GF()->TrueScale(sp);
   msg_Debugging()<<"Scale: "<<sqrt(mu2)<<" <- "
