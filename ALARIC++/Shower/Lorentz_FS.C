@@ -78,7 +78,7 @@ bool Lorentz_FS_Rad::Cluster
   s.m_x=s.m_z=ff.m_z;
   s.m_phi=ff.m_phi;
   s.m_kap=K.Abs2()/gam;
-  s.m_kt2=gam*ff.m_y*((1.0-ff.m_z)*(1.0-ff.m_y)-ff.m_y*s.m_kap);
+  s.m_kt2=dabs(gam)*ff.m_y*((1.0-ff.m_z)*(1.0-ff.m_y)-ff.m_y*s.m_kap);
   s.m_p=ff.m_p;
   s.m_Kt=ff.m_Kt;
   return true;
@@ -157,7 +157,7 @@ bool Lorentz_FS_Split::Cluster
      s.p_c->Mom(),s.p_n->Mom(),K,mode);
   if (ff.m_stat<0) return false;
   SetParams(s);
-  s.m_t=Q2*s.m_y*s.m_x*(1.0-s.m_x);
+  s.m_t=Q2*s.m_y;
   s.m_z=s.m_x;
   s.m_y=ff.m_y;
   s.m_phi=ff.m_phi;
@@ -170,6 +170,7 @@ bool Lorentz_FS_Split::Cluster
     for (size_t l(a->NIn());l<s.m_p.size();++l)
       s.m_p[l]=newcms*(oldcms*s.m_p[l]);
   }
+  s.m_kt2=s.m_t;
   s.m_p.erase(s.m_p.begin()+j);
   return true;
 }

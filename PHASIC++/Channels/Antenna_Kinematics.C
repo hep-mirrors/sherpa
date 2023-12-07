@@ -20,7 +20,7 @@ int PHASIC::ClusterAntenna
       if (l==i) ffp.m_mode|=2;
       if (l==k) ffp.m_mode|=4;
     }
-  if (ffp.m_mode&2) { K=-K; }
+  if (ffp.m_mode&2) { K+=pj; K=-K; }
   Vec4D n(K+pj);
   double z((pi*n)/((pi+pj)*n));
   ffp.m_pijt=pi/z;
