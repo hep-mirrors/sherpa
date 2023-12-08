@@ -31,8 +31,8 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &ca)
   Splitting s(KT2(*ca.p_ampl,i,j,ca.m_k,ca.m_mo,ca.m_n,
 		  type,(swap?2:0)|(ca.m_mode<<2),ws,mu2));
   bool iss=i<ca.p_ampl->NIn() || j<ca.p_ampl->NIn();
-  if (s.m_t>0.0) return Cluster_Param
-    (this,ws,s.m_t,mu2,ca.m_n,ca.m_n,0,s.m_p);
+  if (s.m_t>0.0 && s.m_t<sqr(rpa->gen.Ecms()))
+    return Cluster_Param(this,ws,s.m_t,mu2,ca.m_n,ca.m_n,0,s.m_p);
   return Cluster_Param(this,0.0,-1.0);
 }
 
