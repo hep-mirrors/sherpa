@@ -275,7 +275,7 @@ void Alaric::RecoCheck(Amplitude *const a,int swap) const
   Cluster_Amplitude *ampl(next->GetAmplitude());
   double ws, mu2;
   Splitting s=p_clus->KT2
-    (*ampl,ic,jc,kc,a->Split().p_c->Flav(),0,
+    (*ampl,ic,jc,kc,a->Split().p_c->Flav(),a->ClusterAmplitude()->Kin(),
      a->Split().m_type,1|(swap?2:0)|(ampl->NLO()?16<<2:0),ws,mu2);
   ampl->Delete();
   msg_Debugging()<<"New reco params: t = "<<s.m_t
