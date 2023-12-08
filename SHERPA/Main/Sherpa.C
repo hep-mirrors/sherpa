@@ -273,15 +273,6 @@ bool Sherpa::GenerateOneEvent(bool reset)
       else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
     }
 
-    for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
-      double currQ = (*bit)->CheckChargeConservation();
-      if (fabs(currQ)>1e-12) {
-	msg_Error()<<"Charge conservation failed for "<<(*bit)->Type()<<": "<<currQ<<".\n"
-		   <<"Will ignore event.\n";
-	return 0;
-      }
-    }
-
     int i=rpa->gen.NumberOfGeneratedEvents();
     int nevt=rpa->gen.NumberOfEvents();
     msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;

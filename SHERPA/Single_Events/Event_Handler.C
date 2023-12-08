@@ -363,6 +363,13 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
 		 <<"Four momentum not conserved. Rejecting event.\n";
       return false;
     }
+    for (auto bit=m_blobs.begin(); bit!=m_blobs.end();++bit) {
+      if (fabs((*bit)->CheckChargeConservation())>1e-12) {
+	msg_Error()<<"Charge conservation failed for "<<(*bit)->Type()<<": "
+                   <<(*bit)->CheckChargeConservation()<<". Rejecting event.\n";
+	return false;
+      }
+    }
   }
 
   double trials((*p_signal)["Trials"]->Get<double>());
