@@ -23,6 +23,17 @@ namespace CSSHOWER {
     inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
     inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
     inline void SetEvolScheme(int evol) { m_evolscheme=evol; }
+    inline bool ValidateDipoleKinematics(const double & mi2, const double & mj2,
+					 const double & mk2, const PHASIC::Kin_Args& args)
+    {
+      if (ATOOLS::sqr(args.m_pi[0]) < mi2
+	  || ATOOLS::sqr(args.m_pj[0]) < mj2
+	  || ATOOLS::sqr(args.m_pk[0]) < mk2) {
+	msg_IODebugging() << METHOD << "(): Less energy than mass found\n";
+	return false;
+      }
+      return true;
+    }
   };
 
   class Kinematics_FF : public Kinematics_Base {
