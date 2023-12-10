@@ -399,18 +399,30 @@ bool Rivet_Interface::Finish()
   const double nomxsec = p_eventhandler->TotalNominalXS().value;
   const double nomxerr = 0.0;
   #endif
-  // first call finalize to collapse the event group,
-  // then scale the cross-section before re-finalizing
+
+  // additional Rivet instances are used e.g. for splits
+  // into H+S events or jet multiplicities -> these only
+  // get to see a subset of the events and need to be
+  // re-scaled to cross-section of the complete run
+  const bool needs_rescaling = m_rivet.size() > 1;
   for (auto& it : m_rivet) {
-    #if RIVET_VERSION_CODE >= 30200
-    it.second->pushToPersistent();
-    #else
-    it.second->finalize();
-    #endif
-    const double wgtfrac = it.second->sumW()/nomsumw;
-    const double thisxs  = nomxsec*wgtfrac;
-    const double thiserr = nomxerr*wgtfrac;
-    it.second->setCrossSection(thisxs, thiserr, true);
+    if (needs_rescaling) {
+      // first collapse the event group,
+      // then scale the cross-section
+      // before finalizing
+      #if RIVET_VERSION_CODE >= 30200
+      it.second->pushToPersistent();
+      #else
+      it.second->finalize();
+      #endif
+
+      // determine the weight fraction seen by this Rivet run
+      const double wgtfrac = it.second->sumW()/nomsumw;
+      // rescale nominal cross-section
+      const double thisxs  = nomxsec*wgtfrac;
+      const double thiserr = nomxerr*wgtfrac;
+      it.second->setCrossSection(thisxs, thiserr);
+    }
     it.second->finalize();
     it.second->writeData(OutputPath(it.first));
   }
