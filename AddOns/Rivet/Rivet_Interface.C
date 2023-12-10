@@ -386,11 +386,31 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
 bool Rivet_Interface::Finish()
 {
   PRINT_FUNC(m_outpath);
+  #if RIVET_VERSION_CODE >= 30200
+  GetRivet("",0)->pushToPersistent();
+  #else
+  GetRivet("",0)->finalize();
+  #endif
+  const double nomsumw = GetRivet("",0)->sumW();
+  #ifdef  RIVET_ENABLE_HEPMC_3
+  const double nomxsec = p_eventhandler->TotalXS().Nominal();
+  const double nomxerr = p_eventhandler->TotalErr().Nominal();
+  #else
+  const double nomxsec = p_eventhandler->TotalNominalXS().value;
+  const double nomxerr = 0.0;
+  #endif
+  // first call finalize to collapse the event group,
+  // then scale the cross-section before re-finalizing
   for (auto& it : m_rivet) {
-    const double wgtfrac = it.second->sumW()/GetRivet("",0)->sumW();
-    const double totalxs = it.second->nominalCrossSection();
-    const double thisxs  = totalxs*wgtfrac;
-    it.second->setCrossSection(thisxs, 0.0, true);
+    #if RIVET_VERSION_CODE >= 30200
+    it.second->pushToPersistent();
+    #else
+    it.second->finalize();
+    #endif
+    const double wgtfrac = it.second->sumW()/nomsumw;
+    const double thisxs  = nomxsec*wgtfrac;
+    const double thiserr = nomxerr*wgtfrac;
+    it.second->setCrossSection(thisxs, thiserr, true);
     it.second->finalize();
     it.second->writeData(OutputPath(it.first));
   }
