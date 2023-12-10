@@ -57,18 +57,6 @@ namespace PHASIC {
 			const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			Kin_Args &iip);
 
-  inline bool ValidateDipoleKinematics(const double & mi2, const double & mj2,
-				       const double & mk2, const Kin_Args& args)
-  {
-    if (args.m_pi[0] < sqrt(mi2)
-	|| args.m_pj[0] < sqrt(mj2)
-	|| args.m_pk[0] < sqrt(mk2)) {
-      msg_Debugging() << METHOD << "(): Less energy than mass found\n";
-      return false;
-    }
-    return true;
-  }
-
 }// end of namespace PHASIC
 
 #endif

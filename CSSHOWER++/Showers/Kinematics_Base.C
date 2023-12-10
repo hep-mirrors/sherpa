@@ -255,9 +255,7 @@ int Kinematics_IF::MakeKinematics
   ifp.m_lam.Invert();
   split->SetMomentum(ifp.m_lam*ifp.m_pi);
   spect->SetMomentum(ifp.m_lam*ifp.m_pk);
-  if (p1[3]*split->Momentum()[3]<0.) {
-    return -1;
-  }
+  if (p1[3]*ifp.m_pi[3]<0.) return -1;
   if (pc==NULL) {
     pc = new Parton(fli,ifp.m_lam*ifp.m_pj,pst::FS);
     pc->SetMass2(p_ms->Mass2(fli));
@@ -342,9 +340,7 @@ int Kinematics_II::MakeKinematics
   ii.m_lam.Invert();
   split->SetMomentum(ii.m_lam*ii.m_pi);
   spect->SetMomentum(ii.m_lam*ii.m_pk);
-  if (p1[3]*split->Momentum()[3]<0.) {
-    return -1;
-  }
+  if (p1[3]*ii.m_pi[3]<0.) return -1;
   if (pc==NULL) {
     pc = new Parton(newfl,ii.m_lam*ii.m_pj,pst::FS);
     pc->SetMass2(p_ms->Mass2(newfl));

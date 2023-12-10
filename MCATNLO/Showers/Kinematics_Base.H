@@ -3,6 +3,7 @@
 
 #include "MCATNLO/Tools/Parton.H"
 #include "ATOOLS/Math/Vector.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 
 namespace PHASIC { class Jet_Finder; }
 
@@ -33,6 +34,17 @@ namespace MCATNLO {
     inline void SetSudakov(Sudakov *const sud) { p_sud=sud; }
     inline void SetEvolScheme(int evol) { m_evolscheme=evol; }
     inline int EvolScheme() const { return m_evolscheme; }
+    inline bool ValidateDipoleKinematics(const double & mi2, const double & mj2,
+					 const double & mk2, const PHASIC::Kin_Args& args)
+    {
+      if (ATOOLS::sqr(args.m_pi[0]) < mi2
+	  || ATOOLS::sqr(args.m_pj[0]) < mj2
+	  || ATOOLS::sqr(args.m_pk[0]) < mk2) {
+	msg_IODebugging() << METHOD << "(): Less energy than mass found\n";
+	return false;
+      }
+      return true;
+    }
   };
 
   class Kinematics_FF : public Kinematics_Base {
