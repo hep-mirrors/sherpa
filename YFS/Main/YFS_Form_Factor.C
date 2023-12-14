@@ -76,6 +76,13 @@ double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2,  double Kmax, double MasPho
   return BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), Kmax, MasPhot, mode);
 }
 
+
+double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2, double omega) {
+  double R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
+  double V =  BVV_full(p1, p2, m_photonMass, omega, 0);
+  return exp(R+V);
+}
+
 double YFS_Form_Factor::BVR_cru(double p1p2, double E1, double E2,
                                 double Mas1, double Mas2, double Kmax, double MasPhot) {
   // m_btilcru = m_alpi*(p1p2*BVR_A(p1p2,Mas1,Mas2))
@@ -95,6 +102,21 @@ double YFS_Form_Factor::BVR_cru(double p1p2, double E1, double E2,
 }
 
 
+double YFS_Form_Factor::BVR_cru(Vec4D p1, Vec4D p2, double Kmax) {
+  // m_btilcru = m_alpi*(p1p2*BVR_A(p1p2,Mas1,Mas2))
+  double t1 = (p1*p2 * A(p1,p2)) * log(4.*sqr(Kmax / m_photonMass));
+  double t2 = p1*p2 * A4(p1*p2, p1.E(), p2.E(), p1.Mass(), p2.Mass());
+  if (IsBad(t1) || IsBad(t2)) {
+    msg_Error() << METHOD << "\n" << "YFS Form Factor is NaN"
+                << "\n T1    = " << t1
+                << "\n T2    = " << t2
+                << "\n p1  = " << p1
+                << "\n p2  = " << p2 << std::endl;
+  }
+  return m_alpi * (t1 + t2);
+}
+
+
 double YFS_Form_Factor::A(double p1p2, double m1, double m2) {
   double m12 = m1 * m2;
   if ((p1p2 - m12) < 1e-10) return 0;
@@ -102,6 +124,17 @@ double YFS_Form_Factor::A(double p1p2, double m1, double m2) {
   double BVR_A = 1. / xlam * log((p1p2 + xlam) / m12);
   return BVR_A;
 }
+
+
+double YFS_Form_Factor::A(Vec4D p1, Vec4D p2) {
+  double m12 = p1.Mass() * p2.Mass();
+  double p12 = p1*p2;
+  if ((p1*p2 - m12) < 1e-10) return 0;
+  double xlam = sqrt((p1*p2 - m12) * (p1*p2 + m12));
+  double BVR_A = 1. / xlam * log((p1*p2 + xlam) / m12);
+  return BVR_A;
+}
+
 
 double YFS_Form_Factor::YijEta(double eta, double y1, double y2, double y3, double y4) {
   double t1 = Zij(eta, y1, y4) + Zij(eta, y2, y1);
@@ -162,10 +195,11 @@ double YFS_Form_Factor::A4(double p1p2, double En1, double En2,
   double xq = sqrt(Q2 + Em * Em);
   double qp = xq + Em;
   double qm = xq - Em;
-
-  double eta0 = sqrt(En2 * En2 - mass2 * mass2);
+  // PRINT_VAR(xl);
+  // PRINT_VAR(xq);
+  double eta0 = sqrt((En2 * En2 - mass2 * mass2));
   if (p1p2 > En1 * En2) eta0 = -eta0;
-  double eta1 = sqrt(En1 * En1 - mass1 * mass1) + xq;
+  double eta1 = sqrt((En1 * En1 - mass1 * mass1)) + xq;
   double y1  = 0.5 * ((xq - Ep) + (sm * dm + xl) / qp);
   double y2  = y1 - xl / qp;
   double y3  = 0.5 * ((xq + Ep) + (sm * dm + xl) / qm );
@@ -222,6 +256,11 @@ double YFS_Form_Factor::A4_eq(double E, double M) {
   double bet = sqrt(1 - sqr(M / E));
   double b1ln = 2 * log((1. + bet) * E / M);
   return 1 / sqr(M) * b1ln / bet;
+}
+
+
+double YFS_Form_Factor::Full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode){
+  return BVV_full(p1, p2, MasPhot, Kmax, mode) + BVR_full(p1, p2, MasPhot, Kmax, mode);
 }
 
 double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode) {
@@ -284,7 +323,7 @@ double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2,
                 << "virt = " << virt << "\n"
                 << "Mass Photon = " << m_photonMass << "\n";
   }
-  return exp(real + virt);
+  return virt;
 }
 
 
@@ -494,28 +533,39 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
 double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
   double m1 = p1.Mass();
   double m2 = p2.Mass();
+  double M = m1>m2 ? m1 : m2;
+  double m = m1>m2 ? m2 : m1;
   double p1p2 = p1*p2;
   double t  = (p1-p2).Abs2();
   double ta = fabs(t);
-  double zeta = 1+ m1*m2/ta;
+  double zeta = 1 + M*M/ta;
   double TBvirt, Bv;
   double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
+  double m12 = m1*m2;
+  double s=(p1-p2).Abs2();
+  double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;
+  double xden = sqrt(1-4*m12/(s-sqr(m1-m2)))+1;
+  double xs = (xnum/xden);
+  // if(xs < 0 || xs==1 || IsBad(xs)) return 0;   
+  // double test = log(xs)*xs/(m1*m2*(1-xs*xs))*(log(m_photonMass*m_photonMass/(m1*m2)));
+  // PRINT_VAR(log(1./xs)*xs/(m1*m2*(1-xs*xs)));
+  // PRINT_VAR( (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1));
+  // test = (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)); 
   TBvirt = m_alpi*(
-    // (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)) 
-       (log(ta/(m1*m2))  -1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-       +0.5*zeta*log(ta*zeta/(m1*m2))
-       -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-       +DiLog(1/zeta) -1.0
-       +0.5*(zeta -1.0)*log(m1/m2)
-       -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)) 
+       // (log(ta/(m1*m2)) + log(zeta)-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
+       // +0.5*zeta*log(ta*zeta/(m*M))
+       // -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+       // -log(M/m)*(log(ta/m/M)+log(zeta)+0.5*(zeta-3))
+       // -log(zeta)*(log(ta/m/M)+0.5*log(zeta))+DiLog(1/zeta) -1.0
        );
-  // Bv = BVR_full(p1,p2, sqrt(m_s)/2, m_photonMass, 0);
-  return TBvirt+Bv;
+  return TBvirt;
 }
 
 double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
-  return exp(R2(p1,p2) + BVirtT(p1,p2));
-  // return BVV_full(p1,p2,m_photonMass, sqrt(m_s)/2, 1);
+  double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,0);
+  double V = BVirtT(p1, p2);
+  return exp(R+V);
 }
 
 
@@ -548,27 +598,38 @@ double YFS_Form_Factor::R2(const Vec4D &p1, const Vec4D &p2){
   // PRINT_VAR(t2);
   // PRINT_VAR(del);
   // PRINT_VAR(Delta);
-  // t2 += -DiLog((Delta+omega)/(Delta+del)) - DiLog((Delta+omega)/fabs(Delta-del));
-  // t2 += -DiLog(fabs(Delta-omega)/(Delta+del)) - DiLog(fabs(Delta-omega)/fabs(Delta-del));
+  t2 += -DiLog((Delta+omega)/(Delta+del)) - DiLog((Delta+omega)/fabs(Delta-del));
+  t2 += -DiLog(fabs(Delta-omega)/(Delta+del)) - DiLog(fabs(Delta-omega)/fabs(Delta-del));
   t2 += M_PI*M_PI/3.;
   // if(IsNan(t2)) t2 = 0;
   return m_alpi*(t1+t2);
 }
 
 
-double YFS_Form_Factor::C0(double s, double m1, double m2){
+double YFS_Form_Factor::C0(double p12, double p22, double p23,
+                          double m1, double m2, double m3){
+
   // Eq B5 in https://arxiv.org/pdf/hep-ph/0308246.pdf
-  double m12 = m1*m2;
-  // double s=(p1-p2).Abs2();
-  double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;
-  double xden = sqrt(1-4*m12/(s-sqr(m1-m2)))+1;
-  double xs = xnum/xden;  
-  double t1 = -log(m_photonMass*m_photonMass/m12)*log(xs)-0.5*log(xs)*log(xs)+0.5*log(m1/m2);
-  t1+=2*log(xs)*log(1-xs*xs)-M_PI*M_PI/6+DiLog(xs*xs);
-  t1+=DiLog(1-xs*m1/m2)+DiLog(1-xs*m2/m1);
-  t1*=xs/(m12*(1-xs*xs));
-  // DivArrC t2 = Master_Triangle(p1,p2,s,m1,m2,m3,0);
-  return t1;
+  PRINT_VAR(m1);
+  DivArrC t2 = Master_Triangle(p12,p22,p23,m1,m2,m3,0);
+  PRINT_VAR(t2);
+  // double m12 = m1*m2;
+  // // double s=(p1-p2).Abs2();
+  // double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;
+  // double xden = sqrt(1-4*m12/(s-sqr(m1-m2)))+1;
+  // double xs = fabs(xnum/xden);  
+  // if(4*m12/(s-sqr(m1-m2)) > 1 ) xs=1;
+  // double t1 = -log(m_photonMass*m_photonMass/m12)*log(xs)-0.5*log(xs)*log(xs)+0.5*log(m1/m2);
+  // t1+=2*log(xs)*log(1-xs*xs)-M_PI*M_PI/6+DiLog(xs*xs);
+  // t1+=DiLog(1-xs*m1/m2)+DiLog(1-xs*m2/m1);
+  // t1*=xs/(m12*(1-xs*xs));
+  // if(IsBad(t1)){
+  //   PRINT_VAR(xs);
+  //   PRINT_VAR(xs*xs);
+  //   PRINT_VAR(1-xs*m1/m2);
+  //   PRINT_VAR(1-xs*m2/m1);
+  // }
+  return t2.Finite().real();
 }
 
 double YFS_Form_Factor::B0(double s, double m1, double m2){
@@ -576,7 +637,7 @@ double YFS_Form_Factor::B0(double s, double m1, double m2){
   Complex m12 = m2*m2;
   if(IsZero(s)){
     if(IsEqual(m1,m2)){
-      return 2*log(1/m1);
+      return 0;
     }
     return 1+(m1*m1)/(m1*m1-m2*m2)*2*log(m_photonMass/m1)
             -(m2*m2)/(m1*m1-m2*m2)*2*log(m_photonMass/m2);
@@ -591,7 +652,7 @@ double YFS_Form_Factor::B0(double s, double m1, double m2){
     Complex l2 = (-s-m12+m02-sqrt(csqr(-s-m12+m02)+4.*s*m02))
                     /(-2.*s);
     Complex box = l1*log((l1-1.)/l1) + l2*log((l2-1.)/l2) - log(l1-1.) - log(l2-1.) + 2.;
-    // box += log(m_photonMass*m_photonMass)-log(s);
+    box += log(m_photonMass*m_photonMass)-log(s);
     // return (box*conj(box)).real();
     return 2.*((box)).real();
     if(IsEqual(m1,m2)){
@@ -619,7 +680,7 @@ Complex YFS_Form_Factor::tsub(const Vec4D &p1, const Vec4D &p2, int mode, double
     double v = (cc.Finite()*conj(cc.Finite())).real();
     // return QiQj*0.125*m_alpi*cc.Finite();
     // return exp(QiQj*0.125*m_alpi*2*v);
-    return exp(QiQj*0.125*m_alpi*(-4*m1*m2*C0((p1-p2).Abs2(),m1,m2)));
+    // return exp(QiQj*0.125*m_alpi*(-4*m1*m2*C0((p1-p2).Abs2(),m1,m2)));
     // return exp(QiQj*0.125*m_alpi*(B0(0.,m1,m2)-4*m1*m1*C0((p1-p2).Abs2(),m1,m2)));
   }
   else{
@@ -628,9 +689,10 @@ Complex YFS_Form_Factor::tsub(const Vec4D &p1, const Vec4D &p2, int mode, double
     // return QiQj*theta1*theta2*m_alpi*cc.Finite();
     // return exp(QiQj*theta1*theta2*m_alpi*2*v);
     
-    return exp(QiQj*theta1*theta2*m_alpi*(p1*p2*C0((theta1*p1+theta2*p2).Abs2(),m1,m2)));
+    // return exp(QiQj*theta1*theta2*m_alpi*(p1*p2*C0((theta1*p1+theta2*p2).Abs2(),m1,m2)));
                    // + 0.25*B0((theta1*p1+theta2*p2).Abs2(),m1*m1,m2*m2)));
     // return exp(QiQj*theta1*theta2*m_alpi*(p1*p2*C0((p1-p2).Abs2(),m1,m2)
     //                + 0.25*B0((theta1*p1+theta2*p2).Abs2(),m1*m1,m2*m2)));
   }
+  return 0;
 }

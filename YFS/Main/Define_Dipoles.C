@@ -7,9 +7,13 @@
 #include "MODEL/Main/Single_Vertex.H"
 
 
+
 using namespace YFS;
 using namespace ATOOLS;
 using namespace std;
+
+// #define C0(A,B,C,D,E,F) Master_Triangle(A,B,C,D,E,F)
+
 
 Define_Dipoles::Define_Dipoles() {
   m_in = 2; // This is fine in YFS. It will not work for any other inital state multiplicity
@@ -359,7 +363,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   for (auto &D : m_dipolesFF) {
     if(m_fsrmode==2) {
       if(m_massless_sub) sub += D.EikonalMassless(k,  D.GetBornMomenta(0), D.GetBornMomenta(1));
-      else sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+      else sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
     }
     else {
       if(m_massless_sub) sub += D.EikonalMassless(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
@@ -403,22 +407,35 @@ double Define_Dipoles::CalculateVirtualSub() {
 }
 
 
-double Define_Dipoles::TFormFactor(){
-  Complex form = 0;
+double Define_Dipoles::FormFactor(){
+  double form = 1;
 
   for(auto &D: m_dipolesII){
-    // form+=p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), D.IsSame(), D.m_QiQj, D.m_thetai, D.m_thetai);
-    form*=p_yfsFormFact->R2(D.GetBornMomenta(0), D.GetBornMomenta(1));
+    form*=p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
   }
   for(auto &D: m_dipolesFF){
-    // form+=p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), D.IsSame(), D.m_QiQj, D.m_thetai, D.m_thetai);
-    form*=p_yfsFormFact->R2(D.GetBornMomenta(0), D.GetBornMomenta(1));
+    form*=D.m_QiQj*p_yfsFormFact->Full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 0);
   }
-  for(auto &D: m_dipolesIF){
-    // form+=p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), D.IsSame(), D.m_QiQj, D.m_thetai, D.m_thetai);
-    form*=p_yfsFormFact->R2(D.GetBornMomenta(0), D.GetBornMomenta(1));
+  return form; 
+}
+
+
+double Define_Dipoles::TFormFactor(){
+  double form = 1;
+
+  for(auto &D: m_dipolesII){
+  //   // form+=p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), D.IsSame(), D.m_QiQj, D.m_thetai, D.m_thetai);
+    form*=D.m_QiQj*D.m_thetaij*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
-  return exp(form.real()); 
+  for(auto &D: m_dipolesFF){
+  //   // form+=p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), D.IsSame(), D.m_QiQj, D.m_thetai, D.m_thetai);
+    form*=D.m_QiQj*D.m_thetaij*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+  }
+  // for(auto &D: m_dipolesIF){
+  // //   // form+=p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), D.IsSame(), D.m_QiQj, D.m_thetai, D.m_thetai);
+  //   form*=D.m_QiQj*D.m_thetaij*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+  // }
+  return form; 
 }
 
 double Define_Dipoles::CalculateVirtualSubTchannel(){
@@ -452,37 +469,39 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
   //     double YFSij = 0.;
   //     double mi = pvirt[i].Mass();
   //     double mj = pvirt[j].Mass();
-  //     double s = (th[i]*pvirt[i]+th[j]*pvirt[j]).Abs2();
+  //     double s = (pvirt[i]-pvirt[j]).Abs2();
 
   //     double bii = p_yfsFormFact->B0(0,mi*mi,mi*mi);
   //     double bjj = p_yfsFormFact->B0(0,mj*mj,mj*mj);
   //     double bij = p_yfsFormFact->B0(s,mi*mi,mj*mj);
-  //     double cij = p_yfsFormFact->C0(mi*mi,mj*mj,s,m_photonMass,mi,mj);
+  //     double cij = p_yfsFormFact->C0(mi*mi,mj*mj,mi*mi,
+  //                                   (th[i]*pvirt[i]+th[j]*pvirt[j]).Abs2(),
+  //                                    mi*mi, mj*mj);
   //     // PRINT_VAR(s);
   //     // PRINT_VAR(bii);
   //     // PRINT_VAR(bjj);
   //     // PRINT_VAR(cij);
   //     // YFSij = 8*pvirt[i]*pvirt[j]*cij;
-  //     YFSij = 4*bij -bii-bjj
-  //             +4*mi*mi*0.5/(mi*mi)*2*log(m_photonMass/mi)
-  //             +4*mj*mj*0.5/(mj*mj)*2*log(m_photonMass/mj);
-  //             +8*pvirt[i]*pvirt[j]*cij;
+  //     // YFSij = 4*bij -bii-bjj
+  //     //         +4*mi*mi*0.5/(mi*mi)*2*log(m_photonMass/mi)
+  //     //         +4*mj*mj*0.5/(mj*mj)*2*log(m_photonMass/mj);
+  //             YFSij=8*pvirt[i]*pvirt[j]*cij;
   //     sub+=etaij*YFSij;
   //     // PRINT_VAR(etaij*YFSij);
   //   }
   // }
   // PRINT_VAR(count);
   for (auto &D : m_dipolesII){
-    sub +=  -D.m_QiQj*p_yfsFormFact->BVirtT(D.GetNewMomenta(0), D.GetNewMomenta(1));
+    sub += -D.m_QiQj*p_yfsFormFact->BVirtT(D.GetNewMomenta(0), D.GetNewMomenta(1));
   }
   for (auto &D : m_dipolesFF){
-    sub +=  -D.m_QiQj*p_yfsFormFact->BVirtT(D.GetBornMomenta(0), D.GetBornMomenta(1));
+    sub +=-D.m_QiQj*p_yfsFormFact->BVirtT(D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   for (auto &D : m_dipolesIF){
     int mode = (D.GetFlav(0)==D.GetFlav(1)) ? 0 : 1;
-    sub +=  D.m_QiQj*p_yfsFormFact->BVirtT(D.GetNewMomenta(0), D.GetBornMomenta(1));
+    sub +=D.m_QiQj*p_yfsFormFact->BVirtT(D.GetNewMomenta(0), D.GetBornMomenta(1));
   }
-  // return sub*m_alpha/4/M_PI;
+  // return sub*m_alpha/16/M_PI;
   return sub;
 }
 

@@ -249,7 +249,11 @@ bool YFS_Handler::CalculateISR() {
   m_ISRPhotons   = p_isr->GetPhotons();
   m_isrphotonsforME = m_ISRPhotons; 
   m_isrWeight = p_isr->GetWeight();
+  if(m_isrWeight==0) return 0;
   // if(m_v < m_vmin) return true;
+  // for(auto &k : m_ISRPhotons){
+  //   if(k.E() < m_min_photon_E) return 0;
+  // }
   p_dipoles->GetDipoleII()->AddPhotonsToDipole(m_ISRPhotons);
   p_dipoles->GetDipoleII()->Boost();
   for (int i = 0; i < 2; ++i) m_plab[i] = p_dipoles->GetDipoleII()->GetNewMomenta(i);
@@ -279,23 +283,22 @@ void YFS_Handler::AddFormFactor() {
   if (m_CalForm) return;
   if(m_fsrmode==2) return; // Calculated in FSR.C for fsr dipoles
   if (m_fullform == 1) {
-    m_formfactor = p_yfsFormFact->BVV_full(m_bornMomenta[0], m_bornMomenta[1], m_photonMass, sqrt(m_s) / 2., 0);
-    // m_CalForm = true;
+    // m_formfactor = p_yfsFormFact->BVV_full(m_bornMomenta[0], m_bornMomenta[1], m_photonMass, sqrt(m_s) / 2., 0);
+    m_formfactor = p_dipoles->FormFactor();
   }
   else if (m_fullform == 2) {
     m_formfactor = exp(m_g / 4.);//-m_alpha*M_PI);
-    // m_CalForm = true;
   }
   else if (m_fullform == -1) {
     m_formfactor = 1;
-    // m_CalForm = true;
   }
   else {
     // high energy limit
     m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
     // m_CalForm = true;
   }
-  if(m_tchannel) m_formfactor *= p_dipoles->TFormFactor();//*exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
+  if(m_tchannel) m_formfactor = p_dipoles->TFormFactor();
+  // PRINT_VAR(m_formfactor);
 }
 
 bool YFS_Handler::CalculateFSR(){
@@ -395,6 +398,9 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     for(auto k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
   }
+  // for(auto &k : m_FSRPhotons){
+  //   if(k.E() < m_min_photon_E) return 0;
+  // }
   if(m_fsrmode==1)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, oldplab);
   // if(m_fsrmode==0){
   // CheckMasses();
