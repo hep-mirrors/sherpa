@@ -39,6 +39,8 @@ bool           Recola::Recola_Interface::s_mass_reg = 0;
 double         Recola::Recola_Interface::s_photon_mass = 0.1;
 bool           Recola::Recola_Interface::s_check_mass = 0;
 bool           Recola::Recola_Interface::s_use_decay = 0;
+bool           Recola::Recola_Interface::s_qed_only = 0;
+bool           Recola::Recola_Interface::s_ew_only = 0;
 
   
 std::map<size_t,PHASIC::Process_Info> Recola::Recola_Interface::s_procmap;
@@ -167,6 +169,8 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_NO_SELF_ENERGY"].SetDefault(false);
   s["RECOLA_CMS"].SetDefault(true);
   s["RECOLA_USE_DECAY"].SetDefault(false);
+  s["RECOLA_QED_ONLY"].SetDefault(false);
+  s["RECOLA_EW_ONLY"].SetDefault(false);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -213,6 +217,10 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   s_use_decay   = s["RECOLA_USE_DECAY"].Get<bool>();
   s_mass_reg = s["RECOLA_MASS_REG"].Get<bool>();
   s_check_mass = s["RECOLA_MASS_REG"].Get<bool>();
+  s_qed_only    = s["RECOLA_QED_ONLY"].Get<bool>();
+  s_ew_only     = s["RECOLA_EW_ONLY"].Get<bool>();
+  if(s_qed_only==1 && s_ew_only==1) THROW(fatal_error, "Only one of 'RECOLA_QED_ONLY' and 'RECOLA_EW_ONLY' can be enabled at a time");
+
   if(s_mass_reg){
     s_photon_mass = s["RECOLA_PHOTON_MASS"].Get<double>();
     if(s_photon_mass != yfs->m_photonMass){

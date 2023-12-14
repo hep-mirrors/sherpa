@@ -34,6 +34,8 @@ namespace Recola {
     static bool         s_check_mass;
     static bool         s_self_energy_off;
     static bool         s_use_decay;
+    static bool         s_qed_only;
+    static bool         s_ew_only;
     static size_t       s_getPDF_default;
 
     static std::vector<double> s_pdfmass;

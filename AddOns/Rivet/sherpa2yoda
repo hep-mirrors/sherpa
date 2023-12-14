@@ -43,7 +43,7 @@ class SherpaHistogram:
                                   'Content': float(linearray[1]),
                                   'Error':   float(linearray[2])})
             else:
-                print "Can't handle 1D histo with line of length %s:\n %s" % (len(linearray), linearray)
+                print("Can't handle 1D histo with line of length %s:\n %s" % (len(linearray), linearray))
         if not self.is2D:
             self.data.pop() # removes overflow bin
         f.close()
@@ -98,7 +98,9 @@ class SherpaHistogram2D:
 
     def read_input(self):
         f = open(os.path.join(self.path, self.filename), "r")
+        lnum = 0
         for line in f:
+            lnum+=1
             linearray = line.split()
             if len(linearray)>10:
                 self.xbinwidth=(float(linearray[4])-float(linearray[3]))/(int(linearray[2]))
@@ -114,7 +116,8 @@ class SherpaHistogram2D:
                                   'Content': float(linearray[2]),
                                   'Error':   float(linearray[3])})
             else:
-                print "Can't handle 2D histo with line of length %s:\n %s" % (len(linearray), linearray)
+                print( "Can't handle 2D histo with line of length %s:\n %s" % (len(linearray), linearray))
+                print("Error on Line number %s" %lnum)
         f.close()
 
     def write_datapoint(self, f, xval, xerr, yval, yerr, zval, zerr):
@@ -154,6 +157,10 @@ class SherpaHistogram2D:
             xerr = 0.5*float(self.xbinwidth)
             yval = bindata['LowEdgeY'] + 0.5*float(self.ybinwidth)
             yerr = 0.5*float(self.ybinwidth)
+            if opts.LOGY:
+                yval = pow(10, yval)
+            if opts.LOGX:
+                xval = pow(10,xval)
             zval = bindata['Content']
             zerr = bindata['Error']
             self.write_datapoint(f, xval, xerr, yval, yerr, zval, zerr)
@@ -177,7 +184,10 @@ parser.add_option("-n", "--no-jX-dirs", dest="NO_JX_DIRS", action="store_true", 
                   help="omit jX subdirectories")
 parser.add_option("-r", "--replace-nans", dest="REPLACE_NANS", action="store_true", default=False, metavar="REPLACE_NANS",
                   help="replace nan's with zeros")
-
+parser.add_option("-y", "--log-y", dest="LOGY", action="store_true", default=False, metavar="LOGY",
+                  help="Use log scale for y-axsis")
+parser.add_option("-x", "--log-x", dest="LOGX", action="store_true", default=False, metavar="LOGX",
+                  help="Use log scale for x-axsis")
 opts, args = parser.parse_args()
 
 if len(args) < 1:
@@ -191,7 +201,7 @@ for dir in args:
         dir = dir[0:-1]
     if dir[0:2]=="./":
         dir = dir[2:]
-    print "Processing", dir
+    print ("Processing", dir)
     f = open(dir+'.yoda', 'w')
 
     for path, dirs, files in os.walk(dir):
@@ -199,11 +209,11 @@ for dir in args:
             for testdir in dirs:
                 if (len(testdir)<=3 and testdir[:1]=="j") or ("j[" in testdir):
                     dirs.remove(testdir)
-                    print "Skipping %s/%s" %(path,testdir)
+                    print("Skipping %s/%s" %(path,testdir))
         for file in files:
             if not file[-4:]==".dat":
                 continue
-            print "Converting %s in %s" %(file, path)
+            print ("Converting %s in %s" %(file, path))
             histo = SherpaHistogram(path, file)
             histo.write_datapointset(f, opts.ANA_NAME)
     f.close
