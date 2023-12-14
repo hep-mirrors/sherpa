@@ -44,6 +44,8 @@ namespace Recola {
   bool           Recola_Interface::s_check_mass = 0;
   bool           Recola_Interface::s_self_energy_off = 0;
   bool           Recola_Interface::s_use_decay = 0;
+  bool           Recola_Interface::s_qed_only = 0;
+  bool           Recola_Interface::s_ew_only = 0;
 
   
   std::map<size_t,PHASIC::Process_Info> Recola_Interface::s_procmap;
@@ -172,6 +174,8 @@ namespace Recola {
     s["MASS_REG"].SetDefault(false);
     s["NO_SELF_ENERGY"].SetDefault(false);
     s["COMPLEX_MASS_SCHEME"].SetDefault(true);
+    s["QED_ONLY"].SetDefault(false);
+    s["EW_ONLY"].SetDefault(false);
     // find RECOLA installation prefix with several overwrite options
     char *var=NULL;
     s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -217,7 +221,12 @@ namespace Recola {
     msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
     s_photon_mass = s["PHOTON_MASS"].Get<double>();
     s_use_decay   = s["USE_DECAY"].Get<bool>();
-    
+    s_qed_only    = s["QED_ONLY"].Get<bool>();
+    s_ew_only     = s["EW_ONLY"].Get<bool>();
+
+    if(s_qed_only) set_qed_only_rcl();
+    if(s_ew_only) set_ew_only_rcl();
+    if(s_qed_only==1 && s_ew_only==1) THROW(fatal_error, "Only one of 'QED_ONLY' and 'EW_ONLY' can be enabled at a time");
     if (s_vmode&2) THROW(fatal_error,"Inclusion of I operator not implemented.");
 
     // Compute poles
