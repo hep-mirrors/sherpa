@@ -72,7 +72,7 @@ int PHASIC::ConstructAntenna
   if (ffp.m_mode&2) { Kt=-Kt; }
   ffp.m_Kt=Kt;
   ffp.m_pijt=pij;
-  double v(Kt[0]>0.0?ffp.m_y:-ffp.m_y);
+  double v(ffp.m_y);
   double z((ffp.m_mode&1)?1.0/ffp.m_z:ffp.m_z);
   double Q2(2.*pij*Kt), Kt2(Kt.Abs2());
   double kap(Kt.Abs2()/Q2), mit2(pij.Abs2());
@@ -226,37 +226,31 @@ int PHASIC::ConstructAntenna
   }
 #endif
   Vec4D K(Kt+pij-ffp.m_pi-ffp.m_pj);
+  Poincare oldcm, newcm;
   if (ffp.m_mode&2) {
-    Poincare oldcm(-Kt), newcm(-K);
-    for (size_t i(0);i<ffp.m_p.size();++i)
-      if (ffp.m_b[i]&1) {
-	newcm.Boost(ffp.m_p[i]);
-	oldcm.BoostBack(ffp.m_p[i]);
-      }
-    newcm.Boost(ffp.m_pi);
-    oldcm.BoostBack(ffp.m_pi);
-    newcm.Boost(ffp.m_pj);
-    oldcm.BoostBack(ffp.m_pj);
-    if (ffp.m_mode&4) {
-      newcm.Boost(ffp.m_pk);
-      oldcm.BoostBack(ffp.m_pk);
-    }
-    newcm.Boost(ffp.m_Kt);
-    oldcm.BoostBack(ffp.m_Kt);
-    newcm.Boost(ffp.m_pijt);
-    oldcm.BoostBack(ffp.m_pijt);
+    oldcm=Poincare(-K);
+    newcm=Poincare(-Kt);
+    oldcm.Boost(ffp.m_pi);
+    newcm.BoostBack(ffp.m_pi);
+    oldcm.Boost(ffp.m_pj);
+    newcm.BoostBack(ffp.m_pj);
+    oldcm.Boost(ffp.m_Kt);
+    newcm.BoostBack(ffp.m_Kt);
+    oldcm.Boost(ffp.m_pijt);
+    newcm.BoostBack(ffp.m_pijt);
   }
   else {
-    Poincare oldcm(Kt), newcm(K);
-    for (size_t i(0);i<ffp.m_p.size();++i)
-      if (ffp.m_b[i]&1) {
-	oldcm.Boost(ffp.m_p[i]);
-	newcm.BoostBack(ffp.m_p[i]);
-      }
-    if (ffp.m_mode&4) {
-      oldcm.Boost(ffp.m_pk);
-      newcm.BoostBack(ffp.m_pk);
+    oldcm=Poincare(Kt);
+    newcm=Poincare(K);
+  }
+  for (size_t i(0);i<ffp.m_p.size();++i)
+    if (ffp.m_b[i]&1) {
+      oldcm.Boost(ffp.m_p[i]);
+      newcm.BoostBack(ffp.m_p[i]);
     }
+  if (ffp.m_mode&4) {
+    oldcm.Boost(ffp.m_pk);
+    newcm.BoostBack(ffp.m_pk);
   }
 #ifdef DEBUG__Kinematics
   {

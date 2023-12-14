@@ -21,14 +21,18 @@ double Lorentz_FS_Rad::Jacobian(const Splitting &s) const
 int Lorentz_FS_Rad::Construct(Splitting &s,const int mode) const
 {
   if (mode&1) return Update(s,mode);
-  size_t ij, k;
+  size_t ij, k, iinK(0);
   Vec4D qa(s.p_c->Mom()), Kt;
   const Amplitude &a(*s.p_c->Ampl());
   for (size_t i(0);i<a.size();++i) {
-    if (s.m_rcl[i]&2) Kt+=a[i]->Mom();
+    if (s.m_rcl[i]&2) {
+      Kt+=a[i]->Mom();
+      if (a[i]==s.p_c) iinK=1;
+    }
     if (a[i]==s.p_c) ij=i;
     if (a[i]==s.p_s) k=i;
   }
+  if (iinK) { Kt=-Kt; }
   double gam(2.*qa*Kt), t(s.m_t/gam);
   s.m_y=t/(1.-s.m_z+t);
   s.m_J=(1.-s.m_z)/(1.-s.m_z+t);
@@ -53,7 +57,7 @@ int Lorentz_FS_Rad::Construct(Splitting &s,const int mode) const
   s.m_pk=ff.m_pk;
   s.m_kap=Kt.Abs2()/gam;
   s.m_p=ff.m_p;
-  s.m_kt2=gam*s.m_y*((1.0-s.m_x)*(1.0-s.m_y)-s.m_y*s.m_kap);
+  s.m_kt2=s.m_t;
   if (s.m_kt2<s.m_t0) return -1;
   return 1;
 }
@@ -76,9 +80,10 @@ bool Lorentz_FS_Rad::Cluster
   double gam(2.*ff.m_pijt*ff.m_Kt);
   s.m_t=2.*(s.m_pi*s.m_pj)*(s.m_pj*K)/(s.m_pi*K);
   s.m_x=s.m_z=ff.m_z;
+  s.m_J=(1.-s.m_z)/(1.-s.m_z+s.m_t/gam);
   s.m_phi=ff.m_phi;
   s.m_kap=K.Abs2()/gam;
-  s.m_kt2=dabs(gam)*ff.m_y*((1.0-ff.m_z)*(1.0-ff.m_y)-ff.m_y*s.m_kap);
+  s.m_kt2=s.m_t;
   s.m_p=ff.m_p;
   s.m_Kt=ff.m_Kt;
   return true;
@@ -159,6 +164,7 @@ bool Lorentz_FS_Split::Cluster
   SetParams(s);
   s.m_t=Q2*s.m_y;
   s.m_z=s.m_x;
+  s.m_J=1.0;
   s.m_y=ff.m_y;
   s.m_phi=ff.m_phi;
   s.m_p=a->Momenta();
