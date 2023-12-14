@@ -753,7 +753,7 @@ PrintInfo(std::ostream &str,const size_t width) const
   --------------------------------------------------------------------*/
 
 Polar_Angle_Selector::Polar_Angle_Selector(Process_Base *const proc):
-  Selector_Base("E_Lab_Selector",proc), m_angmin(0.), m_angmax(0.),
+  Selector_Base("Polar_Angle_Selector",proc), m_angmin(0.), m_angmax(0.),
   m_flav(Flavour(kf_none))
 {
 }
