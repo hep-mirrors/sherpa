@@ -73,7 +73,7 @@ int Lorentz_IS::Construct(Splitting &s,const int mode) const
   s.m_pj=ff.m_pj;
   s.m_pk=ff.m_pk;
   s.m_kap=Kt.Abs2()/gam;
-  s.m_kt2=gam*s.m_y*((1.0-1.0/s.m_x)*(1.0-s.m_y)-s.m_y*s.m_kap);
+  s.m_kt2=s.m_t;
   if (s.m_kt2<s.m_t0) return -1;
   s.m_p=ff.m_p;
   return 1;
@@ -98,9 +98,10 @@ bool Lorentz_IS::Cluster
   double gam(2.*ff.m_pijt*ff.m_Kt);
   s.m_t=2.*(s.m_pi*s.m_pj)*(s.m_pj*K)/(s.m_pi*K);
   s.m_x=s.m_z=ff.m_z;
+  s.m_J=(1.-1./s.m_z)/(1.-1./s.m_z+s.m_t/gam);
   s.m_phi=ff.m_phi;
   s.m_kap=K.Abs2()/gam;
-  s.m_kt2=gam*ff.m_y*((1.0-1.0/s.m_x)*(1.0-ff.m_y)-ff.m_y*s.m_kap);
+  s.m_kt2=s.m_t;
   s.m_p=ff.m_p;
   s.m_Kt=ff.m_Kt;
   return true;

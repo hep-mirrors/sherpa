@@ -104,7 +104,7 @@ Splitting Cluster_Definitions::KT2
       mu2=sk->GF()->Solve(K*sk->GF()->Coupling(sp));
     }
   }
-  if (ws) ws=ws*sp.m_Q2/sp.m_t;
+  if (ws) ws/=sp.m_t;
   return sp;
 }
 
