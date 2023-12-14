@@ -45,8 +45,8 @@ double ISR::CalculateBeta(const Vec4D& p) {
 void ISR::SetIncoming(YFS::Dipole *p_dipole) {
   m_beam1 = p_dipole->GetBornMomenta(0);
   m_beam2 = p_dipole->GetBornMomenta(1);
-  m_b1 = p_dipole->m_b1;
-  m_b2 = p_dipole->m_b2;
+  m_b1 = CalculateBeta(m_beam1);
+  m_b2 = CalculateBeta(m_beam1);
   m_mass = p_dipole->Mass();
   m_mass2 = m_mass * m_mass;
   m_am2 = sqr(m_beam1.Mass()+m_beam2.Mass()) / m_s;
@@ -90,23 +90,25 @@ void ISR::GenerateAngles()
     double P = log((1.+m_b1)/(1.-m_b1))
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
     while (true) {
-      m_c = 0.;
       if (ran->Get() < P) {
         double rnd = ran->Get();
-        double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));;
+        double a   = log((1.+m_b1)/(1.-m_b1));
         m_c        = 1./m_b1*(1.-(1.+m_b1)*exp(-a*m_b1*rnd));
+        // m_c        = 1./m_b1*(pow(1+m_b1,rnd)/pow(1-m_b1,rnd-1)-1);
       }
       else {
         double rnd = ran->Get();
-        double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
-        m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
+        double a   = log((1.-m_b2)/(1.+m_b2));
+        m_c        = 1./m_b2*((1.-m_b2)*exp(-a*m_b2*rnd)-1.);
+        // m_c        = 1./m_b1*(pow(1-m_b2,rnd)/pow(1+m_b2,rnd-1)-1);
       }
       weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
                         +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
                        /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
       if (ran->Get() < weight) break;
     }
-    m_weight *= weight;
+    // m_weight *= weight;
+    // PRINT_VAR(m_c);
     m_theta = acos(m_c);
     m_sin = sin(m_theta);
     m_phi = 2.*M_PI * ran->Get();

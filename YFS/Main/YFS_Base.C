@@ -52,7 +52,7 @@ void YFS_Base::RegisterDefaults(){
   s["TChannel-Cut"].SetDefault(0);
   s["COULOMB"].SetDefault(false);
   s["FSR_CONST_WEIGHT"].SetDefault(false);
-  s["HIDE_PHOTONS"].SetDefault(true);
+  s["HIDE_PHOTONS"].SetDefault(1);
   s["FULL_FORM"].SetDefault(1);
   s["WW_FORM"].SetDefault(0);
   s["WW_BETAT"].SetDefault(0.382);
@@ -91,6 +91,7 @@ void YFS_Base::RegisterDefaults(){
   s["Massless_Sub"].SetDefault(0);
   s["Check_Real_Sub"].SetDefault(0);
   s["Check_RR_Sub"].SetDefault(0);
+  s["Min_Photon_Energy"].SetDefault(0);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -98,7 +99,7 @@ void YFS_Base::RegisterSettings(){
   m_betaorder = s["BETA"].Get<int>();
   m_mode = s["ISR_MODE"].Get<int>();
   m_isrcut   = s["ISR_CUT"].Get<double>();
-  s["DELTA"].SetDefault(1e-2*m_isrcut);
+  s["DELTA"].SetDefault(1e-2);
   m_vmin1 = s["VMIN1"].Get<double>();
   m_vmin = s["VMIN"].Get<double>();
   m_vmax = s["VMAX"].Get<double>();
@@ -115,10 +116,10 @@ void YFS_Base::RegisterSettings(){
   m_debugDIR_NLO = s["DEBUG_DIR_NLO"].Get<std::string>();
   m_fsr_debug = s["FSR_DEBUG"].Get<bool>();
   m_isr_debug = s["ISR_DEBUG"].Get<bool>();
-  m_deltacut = s["DELTA"].Get<double>();
+  m_deltacut = s["DELTA"].Get<double>()*m_isrcut;
   m_coulomb = s["COULOMB"].Get<bool>();
   m_constfsrW = s["FSR_CONST_WEIGHT"].Get<bool>();
-  m_hidephotons=s["HIDE_PHOTONS"].Get<bool>();
+  m_hidephotons=s["HIDE_PHOTONS"].Get<int>();
   m_fullform = s["FULL_FORM"].Get<int>();
   m_formWW = s["WW_FORM"].Get<int>();
   m_betatWW = s["WW_BETAT"].Get<double>();
@@ -151,7 +152,7 @@ void YFS_Base::RegisterSettings(){
   m_noflux = s["No_Flux"].Get<int>();
   m_flux_mode=s["Flux_Mode"].Get<int>();
   m_pole_fac = s["Pole_Flux"].Get<double>();
-
+  m_min_photon_E = s["Min_Photon_Energy"].Get<double>();
   m_ifisub = s["IFI_Sub"].Get<int>();
   m_massless_sub = s["Massless_Sub"].Get<int>();
   m_check_real_sub = s["Check_Real_Sub"].Get<bool>();

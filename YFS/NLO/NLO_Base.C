@@ -169,21 +169,21 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	double sp = (p[0]+p[1]-kk).Abs2();
 	double spp = (p[0]+p[1]).Abs2();
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
-	p_nlodipoles->MakeDipolesII(m_flavs,p,m_plab);
+	p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
 	p_global_dipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
 	p_global_dipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
 	p_global_dipoles->MakeDipoles(m_flavs,m_plab,m_bornMomenta);
 	double flux;
-	if(m_flux_mode==1) flux = p_dipoles->CalculateFlux(kk);
+	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
-	else flux = p_nlodipoles->CalculateFlux(k);
+	else flux = p_dipoles->CalculateFlux(kk);
 	Vec4D Q = p[0]+p[1];
 	// flux = sp/sq;
 	double tot,colltot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_nlodipoles->CalculateRealSubEEX(k);
-	rcoll = p_nlodipoles->CalculateEEXReal(k)*m_born;
+	double subb   = p_dipoles->CalculateRealSubEEX(kk);
+	rcoll = p_dipoles->CalculateEEXReal(kk)*m_born;
 	if (!CheckPhotonForReal(k)) { 
 		if(m_no_subtraction) return rcoll/subb;
 		return ( rcoll/subb - m_born);
@@ -215,6 +215,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	}
 	p.push_back(k);
 	CheckMasses(p,1);
+	CheckMomentumConservation(p);
 	double r = p_real->Calc_R(p) / norm * flux;///p_yfsFormFact->BVirtT(p[0],p[2]);;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
@@ -387,10 +388,10 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i) {
-		pRot.Rotate(p[i]);
+		// pRot.Rotate(p[i]);
 		boostQ.Boost(p[i]);
 	}
-	pRot.Rotate(k);
+	// pRot.Rotate(k);
 	boostQ.Boost(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
@@ -437,7 +438,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		boostLab.BoostBack(p[i]);
 	}
 	// pRot2.Rotate(k);
-	// boostLab.BoostBack(k);
+	boostLab.BoostBack(k);
 }
 
 
@@ -580,7 +581,7 @@ bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p){
 
 void NLO_Base::CheckMassReg(){
 	double virt;
-	if (m_check_mass_reg && !m_realvirt) {
+	if (m_check_mass_reg==1 && !m_realvirt) {
 		out_sub.open("yfs-sub.txt", std::ios_base::app);
 		out_recola.open("recola-res.txt", std::ios_base::app); // append instead of overwrite
 		out_finite.open("yfs-finite.txt", std::ios_base::app);
@@ -633,7 +634,7 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		filename+=".txt";
 		if(ATOOLS::FileExists(filename))  ATOOLS::Remove(filename);
 		out_sub.open(filename, std::ios_base::app);
-		if(k.E() < 0.8*sqrt(m_s)/2.) return;
+		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
 		for (double i = 1; i < 20 ; i+=0.25)
 		{
 			k=k/i;
