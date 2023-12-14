@@ -25,7 +25,7 @@ namespace ALARIC {
       double xi=s.m_x+s.m_y-s.m_x*s.m_y*(1.0+s.m_kap);
       double B=(1.0-xi)/s.m_x;
       if (m_mode) B+=2.0*s.m_x*(1.0-s.m_x);
-      return B;
+      return B*(1.0+p_sk->GF()->K(s));
     }
 
     double Integral(const Splitting &s) const

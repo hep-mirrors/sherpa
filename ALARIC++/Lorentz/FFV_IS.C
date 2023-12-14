@@ -21,7 +21,7 @@ namespace ALARIC {
     double Value(const Splitting &s) const
     {
       double B=1.0-s.m_x;
-      return B;
+      return B*(1.0+p_sk->GF()->K(s));
     }
 
     double Integral(const Splitting &s) const

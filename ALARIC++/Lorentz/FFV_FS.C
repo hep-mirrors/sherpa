@@ -21,6 +21,7 @@ namespace ALARIC {
     double Value(const Splitting &s) const
     {
       double B(1.0-s.m_z);
+      B*=1.0+p_sk->GF()->K(s);
       return (s.m_clu?1.0:(m_swap?1.0-s.m_z:s.m_z))*B;
     }
 

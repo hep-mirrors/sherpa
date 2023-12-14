@@ -19,7 +19,7 @@ namespace ALARIC {
       double B(s.m_z*(1.0-s.m_z));
       double sf(1.0);
       if (!s.m_clu) sf=p_sk->Mode()?1.0-s.m_z:s.m_z;
-      return sf*B;
+      return sf*B*(1.0+p_sk->GF()->K(s));
     }
 
     double Integral(const Splitting &s) const
