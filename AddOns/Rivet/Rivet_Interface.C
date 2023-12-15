@@ -387,7 +387,7 @@ bool Rivet_Interface::Finish()
 {
   PRINT_FUNC(m_outpath);
   #if RIVET_VERSION_CODE >= 30200
-  GetRivet("",0)->pushToPersistent();
+  GetRivet("",0)->collapseEventGroup();
   #else
   GetRivet("",0)->finalize();
   #endif
@@ -411,7 +411,7 @@ bool Rivet_Interface::Finish()
       // then scale the cross-section
       // before finalizing
       #if RIVET_VERSION_CODE >= 30200
-      it.second->pushToPersistent();
+      it.second->collapseEventGroup();
       #else
       it.second->finalize();
       #endif
