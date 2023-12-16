@@ -101,9 +101,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	double kt2=p_shower->KinFF()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0,Q2,0,kin,kmode&1);
 	cs.m_p=ampl->Momenta();
-	cs.m_p[ii]=lt.m_pi;
+	cs.m_p[Min(ii,ij)]=lt.m_pi;
 	cs.m_p[ik]=lt.m_pk;
-	cs.m_p.erase(cs.m_p.begin()+ij);
+	cs.m_p.erase(cs.m_p.begin()+Max(ii,ij));
       }
       else {
 	lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|8|(kin?4:0));
@@ -112,9 +112,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	double kt2=p_shower->KinFI()->GetKT2(Q2,1.0-lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0-lt.m_y,Q2,2,kin,kmode&1);
 	cs.m_p=ampl->Momenta();
-	cs.m_p[ii]=lt.m_pi;
+	cs.m_p[Min(ii,ij)]=lt.m_pi;
 	cs.m_p[ik]=-lt.m_pk;
-	cs.m_p.erase(cs.m_p.begin()+ij);
+	cs.m_p.erase(cs.m_p.begin()+Max(ii,ij));
       }
     }
   }
@@ -129,9 +129,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,1,lt.m_mode,kmode&1);
 	cs.m_p=ampl->Momenta();
 	for (size_t i(0);i<cs.m_p.size();++i) cs.m_p[i]=lt.m_lam*cs.m_p[i];
-	cs.m_p[ii]=-lt.m_pi;
+	cs.m_p[Min(ii,ij)]=-lt.m_pi;
 	cs.m_p[ik]=lt.m_pk;
-	cs.m_p.erase(cs.m_p.begin()+ij);
+	cs.m_p.erase(cs.m_p.begin()+Max(ii,ij));
       }
       else {
 	lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3|(kin?4:0));
@@ -141,9 +141,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,3,kin,kmode&1);
 	cs.m_p=ampl->Momenta();
 	for (size_t i(0);i<cs.m_p.size();++i) cs.m_p[i]=lt.m_lam*cs.m_p[i];
-	cs.m_p[ii]=-lt.m_pi;
+	cs.m_p[Min(ii,ij)]=-lt.m_pi;
 	cs.m_p[ik]=-lt.m_pk;
-	cs.m_p.erase(cs.m_p.begin()+ij);
+	cs.m_p.erase(cs.m_p.begin()+Max(ii,ij));
       }
     }
   }
