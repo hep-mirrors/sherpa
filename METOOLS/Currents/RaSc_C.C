@@ -526,7 +526,8 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
   CRaritaSchwinger<SType> rspp = anti?RSPP(p, -1, 1, 1, 0, 0, 1):RSPP(p, 1, 1, 1, 0, 0, 1);
   CRaritaSchwinger<SType> rsmm = anti?RSMM(p, -1, 1, 1, 0, 0, -1):RSMM(p, 1, 1, 1, 0, 0, -1);
   METOOLS::Gamma<SType> gammavec = Gamma<SType>();
-  bool testresult(true);
+  bool global_testresult(true);
+  bool local_testresult(true);
 
   // properties of massless RS wave functions
   if (!this->m_msv){
@@ -538,11 +539,11 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
         if (std::abs(result1[i][j].real())> rspp.Accu()|| std::abs(result1[i][j].imag())>rspp.Accu()) {
           msg_Out()<<"Component " << i << j << " of resulting 4x4 matrix is " << result1[i][j] << ", instead of zero!"
           << std::endl;
-          testresult = false;
+          global_testresult = false;
         }
       }
     }
-    if (testresult) msg_Out()<< "passed" << std::endl;
+    if (global_testresult) msg_Out() << "passed" << std::endl;
 
     // equality between U++ and V-- / U-- and V++ for bar and non-bar
     std::cout<<METHOD<<": Testing equality of U++ and V-- / U-- and V++ Rarita-Schwinger wave functions..."<<std::endl;
@@ -553,16 +554,16 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
         msg_Out()<<"Components " << i << " of the Rarita-Schwinger wave functions ";
         anti?(msg_Out()<<"U++ / V--" << rspp1[i] << "/" << rsmm[i]):
         (msg_Out()<<"U-- / V++" << rsmm[i] << "/" << rspp1[i]) << " are not equal!" << std::endl;
-        testresult = false;
+        global_testresult = false; local_testresult = false;
       }
       if (std::abs((rsmm1[i]-rspp[i]).real()) > rspp.Accu()|| std::abs((rsmm1[i]-rspp[i]).imag()) > rspp.Accu()) {
         msg_Out()<<"Components " << i << " of the Rarita-Schwinger wave functions ";
         anti?(msg_Out()<<"U-- / V++" << rsmm1[i] << "/" << rspp[i]):
         (msg_Out()<<"U++ / V--" << rspp[i] << "/" << rsmm1[i]) << " are not equal!" << std::endl;
-        testresult = false;
+        global_testresult = false; local_testresult = false;
       }
     }
-    if (testresult) msg_Out()<< "passed" << std::endl;
+    if (local_testresult) msg_Out() << "passed" << std::endl;
   }
   else{
     // properties of massive RS wave functions
@@ -593,73 +594,66 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
       if (std::abs(result1[i].real()) > rspp.Accu()|| std::abs(result1[i].imag()) > rspp.Accu()) {
         msg_Out()<<"Normalization of the Rarita-Schwinger wave functions" << i <<
         "do not fit! 0=++bar*++, 1=++bar*+, 2=++bar*-, 3=++bar*--, 4=+bar*++ ..." << std::endl;
-        testresult = false;
+        global_testresult = false;
       }
     }
-    if (testresult) msg_Out()<< "passed" << std::endl;
-    // TODO: WIP!
+    if (global_testresult) msg_Out() << "passed" << std::endl;
+
     // completeness relation according to Hagiwara et al. Eur. Phys. J. C (2011) 71: 1529
-    SComplex propagator[4][4][4][4];
+    std::cout<<METHOD<<": Testing completeness of Rarita-Schwinger wave functions..."<<std::endl;
     ATOOLS::TCMatrix<SType> p_slash = gammavec*p;
-    SComplex left_sum[4][4][4][4];
-
-    // TODO: Is there a difference in the signs for anti-particles?
-    ATOOLS::TCMatrix<SType> spropagator = ATOOLS::TCMatrix<SType>(p_slash + SComplex(sqrt(p.Abs2())) *
+    ATOOLS::TCMatrix<SType> spropagator = ATOOLS::TCMatrix<SType>(p_slash + (anti?-1.0:1.0) * SComplex(p.Mass()) *
                                                                                       ATOOLS::TCMatrix<SType>(4, true));
-    SComplex** lorentz_tensor = new SComplex*[4];
-    for (int i=0;i<4;++i) lorentz_tensor[i] = new SComplex[4];
-    //intermediate[0][0] = (*this)[0] * rs[0] + (*this)[1] * rs[1] + (*this)[2] * rs[2] + (*this)[3] * rs[3];
-    //intermediate[0][1] = (*this)[0] * rs[4] + (*this)[1] * rs[5] + (*this)[2] * rs[6] + (*this)[3] * rs[7];
-    for (size_t i(0); i<4; ++i){
-      for (size_t j(0); j<4; ++j){
-        for (size_t k(0); k<4; ++k){
-          for (size_t l(0); l<4; ++l){
-            lorentz_tensor[i][j] += (1.0 / 3.0)*gammavec[i][k][l]*gammavec[j][k][l];
-            lorentz_tensor[i][j] -= (1.0 / (3.0*p.Abs2()))*(gammavec[i][k][l]*p[j]*p_slash[k][l]+p[i]*p_slash[k][l]*gammavec[j][k][l]);
-            lorentz_tensor[i][j] += (1.0 / (3.0*p.Abs2()*p.Abs2()))*p[i]*p_slash[k][l]*p[j]*p_slash[k][l];
-          }
-        }
-        // first summand: - metric tensor; second summand: momentum term
-        lorentz_tensor[i][j] += (i == j ? (i > 0 ? 1.0 : -1.0) : 0.0) + (p[i] * p[j]) / p.Abs2();
-      }
-    }
-    /*for (size_t i(0); i<4; ++i){
-      for (size_t j(0); j<4; ++j){
-        for (size_t k(0); k<4; ++k){
-          for (size_t l(0); l<4; ++l){
-            propagator[i][j][k][l]=spropagator[i][j]*lorentz_tensor[k][l];
-            left_sum[i][j][k][l]=rspp[i][k]*rspp.Bar()[j][l] + rsp[i][k]*rsp.Bar()[j][l] + rsm[i][k]*rsm.Bar()[j][l]
-                                 + rsmm[i][k]*rsmm.Bar()[j][l];
-            if (std::abs((left_sum[i][j][k][l]-propagator[i][j][k][l]).real()) > rspp.Accu() ||
-                std::abs((left_sum[i][j][k][l]-propagator[i][j][k][l]).imag()) > rspp.Accu()) {
-              msg_Out() << "Completeness relation of the Rarita-Schwinger wave functions is not hold: "
-                           "component " << i+k << j+l << "of the resulting 16 dimensional tensor is " <<
-                           left_sum[i][j][k][l]-propagator[i][j][k][l] << " instead of zero!" << std::endl;
-              testresult = false;
-
-          }}
-        }
-      }
-    }*/
-    for (size_t i(0); i<4; ++i){
-      for (size_t j(0); j<4; ++j){
-        for (size_t k(0); k<4; ++k){
-          for (size_t l(0); l<4; ++l){
-            /*if (std::abs((left_sum[i+j][k]-spropagator[0][j]*lorentz_tensor[0][k]).real()) > rspp.Accu() ||
-                std::abs((left_sum[i][j]-spropagator[k][l]*lorentz_tensor[i][j]).imag()) > rspp.Accu()) {
-              msg_Out() << "Completeness relation of the Rarita-Schwinger wave functions is not hold: "
-                           "component " << i+k << j+l << "of the resulting 16 dimensional tensor is " <<
-                        left_sum[i+k][j+l]-spropagator[k][l]*lorentz_tensor[i][j] << " instead of zero!" << std::endl;
-              testresult = false;
-            }*/
+    // --------------------------------------------------------------------------------------------------------------
+    // Sum over Lorentz index
+    /*TCMatrix<SType> left_sum_red =  rspp.Contract4Index(rspp.Bar()) + rsp.Contract4Index(rsp.Bar()) + rsm.Contract4Index(rsm.Bar())
+    + rsmm.Contract4Index(rsmm.Bar());
+    for (size_t k(0); k<4; ++k){
+      for (size_t l(0); l<4; ++l){
+        std::cout << left_sum_red[k][l] << "  " << (spropagator*TCMatrix<SType>(4, true)*2.)[k][l] << std::endl;
+        if (std::abs((left_sum_red[k][l]+(spropagator*TCMatrix<SType>(4, true)*2.)[k][l]).real()) > rspp.Accu() ||
+          std::abs((left_sum_red[k][l]+(spropagator*TCMatrix<SType>(4, true)*2.)[k][l]).imag()) > rspp.Accu()) {
+          msg_Out() << "Completeness relation of the Rarita-Schwinger wave functions is not hold: "
+                       "component " << k << " " << l << "of the resulting 16 dimensional tensor is " <<
+                    left_sum_red[k][l]+(spropagator*TCMatrix<SType>(4, true)*2.)[k][l] << " instead of zero!" << std::endl;}}}*/
+      // --------------------------------------------------------------------------------------------------------------
+    // Full completeness relation
+    for (size_t mu(0); mu < 4; ++mu){
+      for (size_t nu(0); nu < 4; ++nu){
+        for (size_t A(0); A < 4; ++A){
+          for (size_t B(0); B < 4; ++B){
+            // A,B spinor indexes; mu,nu lorentz indexes
+            // helicity sum
+            SComplex left_sum = rspp[A + 4 * mu] * rspp.Bar()[B + 4 * nu] + rsp[A + 4 * mu] * rsp.Bar()[B + 4 * nu]
+              + rsm[A + 4 * mu] * rsm.Bar()[B + 4 * nu] + rsmm[A + 4 * mu] * rsmm.Bar()[B + 4 * nu];
+            SComplex propagator(0., 0.);
+            // components of the lorentz tensor part
+            for (size_t C(0); C < 4; ++C){
+              SComplex comp_lt_ten(0., 0.);
+              comp_lt_ten += (mu == nu ? (mu > 0 ? 1. : -1.) : 0.) * (C == B ? 1.0 : 0.0); // metrischer Tensor -g_{\mu \nu} * 1_{CB}
+              comp_lt_ten += (4. / (3. * p.Abs2())) * p[mu] * p[nu] * (C == B ? 1.0 : 0.0); // (4/(3 C^2))* p_{\mu} * p_{\D u} * 1_{CB}
+              comp_lt_ten += (1. / 3.) * (gammavec[mu] * gammavec[nu])[C][B];  // (4/3) \gamma_{\mu, CE} \gamma_{\nu, EB}
+              comp_lt_ten -= (1. / 3.) * (p[nu] / p.Abs2()) * (gammavec[mu] * p_slash)[C][B];
+              comp_lt_ten -= (1. / 3.) * (p[mu] / p.Abs2()) * (p_slash * gammavec[nu])[C][B];
+              // propagator is spinor propagator[A][C] * lorentz tensor[C][B] for fixed lorentz indizes mu, nu
+              propagator += spropagator[A][C]*comp_lt_ten;
+            }
+            if (std::abs((left_sum - propagator).real()) > rspp.Accu() ||
+            std::abs((left_sum - propagator).imag()) > rspp.Accu()) {
+              msg_Out() << "Completeness relation of the Rarita-Schwinger wave functions is not fulfilled: "
+                           "component " << A << " " << B << " " << mu << " " << nu << " of the resulting 16 dimensional tensor is " <<
+                        left_sum - propagator << " instead of zero!" << std::endl;
+              global_testresult = false; local_testresult = false;
+            }
           }
         }
       }
     }
+    if (local_testresult) msg_Out() << "passed" << std::endl;
   }
 
   // gauge invariance
-  return testresult;
+  return global_testresult;
 }
 
 DECLARE_GETTER(CRS<double>,"DR",Current,Current_Key);
