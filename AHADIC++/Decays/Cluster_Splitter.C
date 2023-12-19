@@ -291,8 +291,8 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {
   // identical, just have to check the m_a, m_b, m_c
   const double alpha = m_alpha[m_type[cnt]][0];
-  const double beta  = m_beta [m_b[cnt]][0];
-  const double gamma = m_gamma[m_c[cnt]][0];
+  const double beta  = m_beta [m_type[cnt]][0];
+  const double gamma = m_gamma[m_type[cnt]][0];
   const double kt02  = m_kt02[0];
   auto value = FragmentationFunction(z,zmin,zmax,alpha, beta, gamma, kt02);
   return value;
@@ -391,7 +391,7 @@ double Cluster_Splitter::DeltaM(const size_t & cl) {
   msg_Out() << "Got to a non-ported place" << std::endl;
   msg_Out() << "Cluster_Splitter::DeltaM\n";
   double deltaM, deltaMmax = m_Q-sqrt(m_m2min[0])-sqrt(m_m2min[1]);
-  double mean =  m_mean[cl], sigma = 1./(m_c[cl] * sqrt(m_kt02[0]));
+  double mean =  m_mean[cl], sigma = 1./(m_type[cl] * sqrt(m_kt02[0]));
   double arg  =  1.-exp(-sigma * deltaMmax);
   size_t trials = 1000;
   do {
