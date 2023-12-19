@@ -206,8 +206,8 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
 }
 
 Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
-                                                  const bool& isrescatter)
-{
+
+			       const bool & isrescatter) {
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   InitBeamAndSoftBlobs(bloblist,isrescatter);

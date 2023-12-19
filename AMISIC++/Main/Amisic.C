@@ -62,6 +62,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     // Initializing the Single_Collision_Handler which creates the next scatter: it needs
     // the remnants, processes, and the overestimator
     m_singlecollision.Init(remnant_handler,p_soft);
+    remnant_handler->SetType(REMNANTS::strat::simple);
   }
 
   if (m_ana) InitAnalysis();

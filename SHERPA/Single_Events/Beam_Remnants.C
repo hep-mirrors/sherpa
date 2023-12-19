@@ -131,10 +131,11 @@ size_t Beam_Remnants::CountBunchCandidates(Blob * blob) {
     for (size_t i=0;i<blob->NInP();i++) {
       Particle * part = blob->InParticle(i);
       if (part->Info()=='I' && part->Beam()>-1) {
-	REMNANTS::Remnant_Base * remnant =
-	  p_beamremnanthandler->GetRemnants()->GetRemnant(part->Beam());
-	if (part->Flav()==remnant->InFlav() &&
-	    part->Momentum()==remnant->InMomentum()) bunch_candidates+=part->Beam()+1;
+        std::shared_ptr<REMNANTS::Remnant_Base> remnant =
+                p_beamremnanthandler->GetRemnants()->GetRemnant(part->Beam());
+        if (part->Flav() == remnant->InFlav() &&
+            part->Momentum() == remnant->InMomentum())
+          bunch_candidates += part->Beam() + 1;
       }
     }
   }

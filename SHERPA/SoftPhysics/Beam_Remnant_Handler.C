@@ -57,7 +57,7 @@ Beam_Remnant_Handler::FillBunchBlobsFromShower(Blob_List *bloblist) {
     size_t bunches = 0;
     for (size_t i=0;i<shower->NInP();i++) {
       Particle * part = shower->InParticle(i);
-      REMNANTS::Remnant_Base * remnant = GetRemnants()->GetRemnant(part->Beam());
+      std::shared_ptr<REMNANTS::Remnant_Base> remnant = GetRemnants()->GetRemnant(part->Beam());
       if (part->Info()=='I' && part->Beam()>-1) {
 	//msg_Out()<<"* "<<part->Flav()<<" vs "<<remnant->InFlav()<<" & "
 	//	 <<part->Momentum()<<" vs "<<remnant->InMomentum()<<"\n";

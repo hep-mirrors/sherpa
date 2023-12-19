@@ -44,7 +44,8 @@ namespace REMNANTS {
     bool m_check, m_output;
     long int m_fails;
 
-    void InitializeRemnants(PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler* beam);
+    void InitializeRemnants(PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs,
+                            BEAM::Beam_Spectra_Handler* beam);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup();
@@ -74,6 +75,10 @@ namespace REMNANTS {
     inline bool NeedsToMakeBeamBlobs() const
     {
       return (m_colours.HasColours(0) || m_colours.HasColours(1));
+    }
+    inline void SetType(const strat::code & type) {
+      m_type = type;
+      if (m_type==strat::simple) m_kinematics.SetKinType(kin_type::intact);
     }
     inline void SetScale2(const double & scale2) {
       for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);

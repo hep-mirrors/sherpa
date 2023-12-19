@@ -104,10 +104,11 @@ void EPA::RegisterDefaults() const {
 
 void EPA::FixPosition() {
   // This is a bit of a poor-man's choice for a point-like source,
-  // with a minmimal distance m_minR, either given by the actual physical radius
-  // or the classical charge radius of a point-like particle
+  // with a minmimal distance m_minR, either given by the actual physical
+  // radius or the classical charge radius of a point-like particle
   // n(omega,b) = alpha/pi^2 omega/gamma [K1(omega b/gamma)]^2,
-  // where omega = x E with E the energy of the source and gamma its Lorentz-boost E/m.
+  // where omega = x E with E the energy of the source and gamma its
+  // Lorentz-boost E/m.
   //
   // All distances here given in fm and masses in GeV
   double ratio = m_maxR/m_minR, logratio = log(ratio), R, weight, k1, k10;
@@ -123,12 +124,13 @@ void EPA::FixPosition() {
     weight *= ( sqr(bessel_k1(R*m_vecouts[0][0]/m_gamma/rpa->hBar_c()) /
 		    bessel_k1(Min(m_minR,R)*Min(1.,m_vecouts[0][0])/
 			      m_gamma/rpa->hBar_c())) );
-    if (weight>1.) {
+    if (false && weight>1.) {
       msg_Out()<<METHOD<<"(omega = "<<m_vecouts[0][0]<<", "
 	       <<"R = "<<R<<" vs Rmin = "<<m_minR<<"):\n"
 	       <<"*   K1("<<(R*m_vecouts[0][0]/m_gamma/rpa->hBar_c())<<") = "
 	       <<(k1=bessel_k1(R*m_vecouts[0][0]/m_gamma/rpa->hBar_c()))<<" / "
-	       <<(k10=bessel_k1(Min(m_minR,R)*Min(1.,m_vecouts[0][0])/m_gamma/rpa->hBar_c()))
+	       <<(k10=bessel_k1(Min(m_minR,R)*Min(1.,m_vecouts[0][0])/
+				m_gamma/rpa->hBar_c()))
 	       <<" = "<<(k1/k10)<<" --> weight = "<<weight<<"\n\n";
     }
   } while (weight<ran->Get());

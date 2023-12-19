@@ -983,10 +983,12 @@ void Initialization_Handler::DefineBunchFlavours(Settings& settings) {
 
 bool Initialization_Handler::InitializeTheRemnants() {
   ///////////////////////////////////////////////////////////
-  // define two sets of remnants, if necessary (i.e. if we have bunch rescattering).
-  // we will have to make sure that the remnants for hard process and hard subprocess -
-  // the MPI related to the hard process - are the same.
-  // I have the feeling we will have to communicate the mode to the Remnant_Handler in question
+  // define two sets of remnants, if necessary (i.e. if we have bunch
+  // rescattering).  We will have to make sure that the remnants for hard
+  // process and hard subprocess - the MPI related to the hard process - are
+  // the same.
+  // I have the feeling we will have to communicate the mode to the
+  // Remnant_Handler in question
   ///////////////////////////////////////////////////////////
   REMNANTS::Remnants_Parameters();
   m_remnanthandlers[isr::hard_process] =
@@ -1094,7 +1096,7 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     isrtypes.push_back(isr::bunch_rescatter);
   for (isr::id id : isrtypes) {
     as->SetActiveAs(isr::hard_subprocess);
-    msg_Out()<<METHOD<<"["<<isrtypes[i]<<"]:\n";
+    msg_Out()<<METHOD<<"["<<id<<"]:\n";
     MI_Handler * mih = new MI_Handler(p_model,m_isrhandlers[id], p_yfshandler, m_remnanthandlers[id]);
     mih->SetShowerHandler(m_showerhandlers[id]);
     as->SetActiveAs(isr::hard_process);// really needed?

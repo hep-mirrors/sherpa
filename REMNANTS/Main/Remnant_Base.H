@@ -83,6 +83,7 @@ namespace REMNANTS {
     inline ATOOLS::Part_List        * GetSpectators()    { return &m_spectators; }
     inline virtual ATOOLS::Particle * GetRecoiler()      { return nullptr; }
     inline virtual ATOOLS::Particle * GetSpectator()     { return nullptr; }
+    inline void SetType(const rtp::code & type)          { m_type = type; }
     inline void SetBeam(BEAM::Beam_Base * beam)          { p_beam = beam; }
     inline void SetScale2(const double & scale2)         { m_scale2 = scale2; }
     inline void SetPosition(const ATOOLS::Vec4D & pos)   { m_position = pos; }
