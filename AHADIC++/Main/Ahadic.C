@@ -114,7 +114,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
   Blob *blob(blobs->FindFirst(btp::Signal_Process));
   auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
-  const auto found {wgtmap.find("AHADIC") == wgtmap.end() ? false : true};
+  const bool found {wgtmap.find("AHADIC") == wgtmap.end() ? false : true};
 
   // DEBUG_VAR(wgts_singlets);
   if(wgts_cluster.size() == wgts_gluons.size() &&
