@@ -921,15 +921,17 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     isr->Output();
     m_isrhandlers[pid] = isr;
     ///////////////////////////////////////////////////////////
-    // This is a bit of an ad-hoc fix for bunch rescattering in EPA configurations only.
-    // The tags we fill here will by default be bunchtags = {0,0}, i.e. look at the
-    // first pair of bunches coming out of the beam bases.
+    // This is a bit of an ad-hoc fix for bunch rescattering in EPA
+    // configurations only.  The tags we fill here will by default be
+    // bunchtags = {0,0}, i.e. look at the first pair of bunches coming out
+    // of the beam bases.
     // For EPA we will add {1,1} - effectively then also adding the hadrons.
     // These tags will be handed over to the remnants, making sure we have
     // one remnant per state that has a PDF.
     // TODO: Extend this for ions - this will need even more restructuring
     ///////////////////////////////////////////////////////////
-    vector<size_t> bunchtags; bunchtags.resize(2,pid==isr::bunch_rescatter ? 1 : 0);
+    vector<size_t> bunchtags;
+    bunchtags.resize(2,pid==isr::bunch_rescatter ? 1 : 0);
     m_bunchtags[pid] = bunchtags;
   }
 }
@@ -951,10 +953,12 @@ void Initialization_Handler::DefineBunchFlavours(Settings& settings) {
 
 bool Initialization_Handler::InitializeTheRemnants() {
   ///////////////////////////////////////////////////////////
-  // define two sets of remnants, if necessary (i.e. if we have bunch rescattering).
-  // we will have to make sure that the remnants for hard process and hard subprocess -
-  // the MPI related to the hard process - are the same.
-  // I have the feeling we will have to communicate the mode to the Remnant_Handler in question
+  // define two sets of remnants, if necessary (i.e. if we have bunch
+  // rescattering).  We will have to make sure that the remnants for hard
+  // process and hard subprocess - the MPI related to the hard process - are
+  // the same.
+  // I have the feeling we will have to communicate the mode to the
+  // Remnant_Handler in question
   ///////////////////////////////////////////////////////////
   m_remnanthandlers[isr::hard_process] =
     new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra,

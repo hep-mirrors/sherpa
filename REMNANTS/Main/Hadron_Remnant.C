@@ -81,8 +81,8 @@ Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
 bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   // Add remnants, diquark and quark, if necessary.
   if (!p_valence || !p_remnant) MakeRemnants();
-  // Possibly adjust final pending colours with extra gluons - in prinicple one may have
-  // to check that they are not singlets ....
+  // Possibly adjust final pending colours with extra gluons - in prinicple
+  // one may have to check that they are not singlets ....
   CompensateColours();
   msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
                   << m_extracted << ", \n and spectators = " << m_spectators

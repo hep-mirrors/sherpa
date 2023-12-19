@@ -39,8 +39,8 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
                   << m_extracted << ", \n and spectators = " << m_spectators
                   << "\n";
   FindRecoiler();
-  // Possibly adjust final pending colours with extra gluons - in prinicple one may have
-  // to check that they are not singlets ....
+  // Possibly adjust final pending colours with extra gluons -
+  // in prinicple one may have to check that they are not singlets ....
   CompensateColours();
   // Assume all remnant bases already produced a beam blob = p_beamblob
   MakeLongitudinalMomenta(ktmap, copy);
@@ -90,14 +90,16 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
                     << " and energy = " << mom[0] << "\n";
     return false;
   }
-  // This respects the masses of all current remnants in m_spectator,
-  // the energy of the extracted parton and potentially the mass of its antiflavour.
-  // For the case of gluons, this is not necessary, but its HadMass() is zero anyway.
+  // This respects the masses of all current remnants in m_spectator, the
+  // energy of the extracted parton and potentially the mass of its
+  // antiflavour.  For the case of gluons, this is not necessary, but its
+  // HadMass() is zero anyway.
   double required_energy =
       EstimateRequiredEnergy(!flav.IsQuark() && !m_valence)
       + mom[0] + Max(flav.HadMass(), m_LambdaQCD);
   if (m_residualE < required_energy) {
-    msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
+    msg_Debugging()<<METHOD<<": "
+		   <<"not enough energy to accomodate particle mass. \n";
     return false;
   }
   // Still in range?
@@ -127,7 +129,8 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       p_beamblob->AddToOutParticles(pmit);
     (*ktmap)[pmit] = Vec4D();
   }
-  msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
+  msg_Debugging() << METHOD << ": "
+		  <<"Longitudinal momentum left for remnants = " << availMom
                   << "\n";
   /* The momentum that remains needs to be distributed over the remnants.
    * Each parton should have an energy greater than its (hadron) mass, additionally energy must be conserved.
@@ -143,14 +146,16 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   }
   if (remnant_masses > m_residualE)
     msg_Error() << METHOD << ": Warning, HadMasses of remnants = "
-                    << remnant_masses << " vs. residual energy = " << m_residualE << "\n";
+		<< remnant_masses << " vs. residual energy = "
+		<< m_residualE << "\n";
   for (auto part : m_spectators) {
     if (availMom[0] < 0)
       msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
     if (part == m_spectators.back()) {
       part->SetMomentum(availMom);
     } else {
-      part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses) * availMom);
+      part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses) *
+			availMom);
       availMom -= part->Momentum();
       remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
     }
@@ -175,7 +180,8 @@ double Photon_Remnant::SelectZ(const Flavour &flav, double restmom,
   double zmax = zmin + (restmom - remnant_masses) / restmom;
   // Taken from Hadron_Remnant, adapted the exponents for photon PDFs
   if (zmax < zmin) {
-    msg_Debugging() << METHOD << ": Error, zmin, zmax = " << zmin <<", "<<zmax << "\n";
+    msg_Debugging() << METHOD << ": Error, zmin, zmax = "
+		    << zmin <<", "<<zmax << "\n";
     return 0;
   }
   double z;
@@ -252,7 +258,8 @@ double Photon_Remnant::EstimateRequiredEnergy(bool needs_valence_quarks) const
   if (needs_valence_quarks) {
     masses += 2 * Flavour(kf_s).HadMass();
   }
-  // Adding lambda_QCD for the gluon that might be added later in CompensateColours()
+  // Adding lambda_QCD for the gluon that might be added later in
+  // CompensateColours()
   return masses + m_LambdaQCD;
 }
 

@@ -37,6 +37,7 @@ InitializeRemnants(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,
     m_tags[i]     = tags[i];
     p_remnants[i] = nullptr;
     Flavour flav = isr->Flav(i);
+    msg_Out()<<METHOD<<"("<<i<<"): "<<flav<<" --> "<<isr->PDF(i)<<"\n";
     if (isr->PDF(i) != nullptr && Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
       if (flav.IsHadron())
         p_remnants[i] = new Hadron_Remnant(isr->PDF(i), i, m_tags[i]);
@@ -157,7 +158,8 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
 
 Return_Value::code
 Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
-                               Particle_List *const particlelist,const bool & isrescatter) {
+                               Particle_List *const particlelist,
+			       const bool & isrescatter) {
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   InitBeamAndSoftBlobs(bloblist,isrescatter);
@@ -170,9 +172,9 @@ Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
     Reset();
     m_fails++;
     if (m_output)
-      msg_Out()<< "Warning in " << METHOD
-	       << ": FillBlobs or CheckBeamBreakup failed. Will return new event\n"
-	       <<(*bloblist)<<"\n";
+      msg_Out()<<"Warning in "<<METHOD<<": "
+	       <<"FillBlobs or CheckBeamBreakup failed. "
+	       <<"Will return new event\n"<<(*bloblist)<<"\n";
     return Return_Value::New_Event;
   }
   Reset();
