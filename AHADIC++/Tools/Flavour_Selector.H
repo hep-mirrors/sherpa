@@ -29,6 +29,7 @@ namespace AHADIC {
     void   accept_splitting() {
       for(int i{0}; i<variation_weights.size(); ++i)
 	variation_weights[i] *= tmp_variation_weights[i];
+      reset_var_weights();
     }
 
     std::vector<double>& get_variationweights() {
@@ -43,6 +44,7 @@ namespace AHADIC {
       tmp_variation_weights.resize(nvars);
       variation_weights.resize(nvars);
       std::fill(variation_weights.begin(), variation_weights.end(), 1);
+      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
     };
 
     ATOOLS::Flavour operator()(const double & Emax,const bool & vetodi);

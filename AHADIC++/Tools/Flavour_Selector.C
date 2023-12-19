@@ -56,7 +56,7 @@ operator()(const double & Emax,const bool & vetodi) {
     return ret;
   const double p0 = opt->second->popweight / norms[0];
   for(int i; i<opt->second->popweights.size(); ++i)
-    variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;
+    tmp_variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;
   return ret;
 }
 
