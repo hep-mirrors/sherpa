@@ -16,8 +16,9 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,Hadronic_XSec_Calcula
   m_smin(p_xsecs->Smin()), 
   m_eps_pomeron(p_xsecs->EpsPomeron()), m_alphaP_pomeron(p_xsecs->AlphaPPomeron()),
   m_triple_pomeron(p_xsecs->TriplePomeron()), m_alphaQED(p_xsecs->AlphaQED()),
-  m_s0(1./m_alphaP_pomeron),
-  m_mpi(Flavour(kf_pi).HadMass()), m_deltaMres(1.), m_cres(2.),
+  m_s0(1./m_alphaP_pomeron), 
+  m_mpi(Flavour(kf_pi).HadMass()),
+  m_deltaMres(p_xsecs->Diffractive_Mres()), m_cres(p_xsecs->Diffractive_cres()), 
   m_inflav(p_xsecs->GetFlavs()),
   m_ana(false)
 {

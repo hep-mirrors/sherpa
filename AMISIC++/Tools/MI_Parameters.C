@@ -59,6 +59,16 @@ MI_Parameters::MI_Parameters() :
     = s["TriplePomeronCoupling"].SetDefault(0.318).Get<double>();
   m_parameters[string("ReggeonIntercept")]
     = s["ReggeonIntercept"].SetDefault(-0.4525).Get<double>();
+  m_parameters[string("Diffractive_cres")]
+    = s["Diffractive_cres"].SetDefault(2.).Get<double>();
+  m_parameters[string("Diffractive_Mres")]
+    = s["Diffractive_Mres"].SetDefault(2.).Get<double>();
+  m_parameters[string("Diffractive_s1")]
+    = s["Diffractive_s1"].SetDefault(20.).Get<double>();
+  m_parameters[string("ElasticSlope_c0")]
+    = s["ElasticSlope_c0"].SetDefault(2.24).Get<double>();
+  m_parameters[string("ElasticSlope_c1")]
+    = s["ElasticSlope_c1"].SetDefault(2.1).Get<double>();
 }
 
 double MI_Parameters::CalculatePT02(const double & s) const {

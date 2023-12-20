@@ -38,7 +38,9 @@ namespace AMISIC {
     double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_eta_reggeon;
     double m_alphaQED;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
-    std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaEl, m_sigmaSDA, m_sigmaSDB, m_sigmaDD;
+    std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaEl;
+    std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaSDA, m_sigmaSDB;
+    std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaDD;
     size_t m_testmode;
 
     void   FixType();
@@ -61,11 +63,14 @@ namespace AMISIC {
       if (s>0.) (*this)(s);
       return m_xsnd;
     }
-    inline const double & XSndNorm()      const { return m_xsnd_norm; }
-    inline const double & EpsPomeron()    const { return m_eps_pomeron; }
-    inline const double & AlphaPPomeron() const { return m_alphaP_pomeron; }
-    inline const double & TriplePomeron() const { return m_triple_pomeron; }
-    inline const double & AlphaQED()      const { return m_alphaQED; }
+    inline const double & XSndNorm()         const { return m_xsnd_norm; }
+    inline const double & EpsPomeron()       const { return m_eps_pomeron; }
+    inline const double & AlphaPPomeron()    const { return m_alphaP_pomeron; }
+    inline const double & TriplePomeron()    const { return m_triple_pomeron; }
+    inline const double & AlphaQED()         const { return m_alphaQED; }
+    inline const double & Diffractive_cres() const { return m_cres; }
+    inline const double & Diffractive_Mres() const { return m_mres; }
+    inline const double & Diffractive_s1()   const { return m_s1; }
 
     inline const double & SigmaEl()  const { return m_xsel; }
     inline const double & SigmaSDA() const { return m_xssdA; }
