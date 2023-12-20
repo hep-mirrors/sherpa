@@ -5,7 +5,7 @@
 using namespace AHADIC;
 using namespace ATOOLS;
 
-Constituents::Constituents(bool diquarks) :
+Constituents::Constituents(bool diquarks, bool debug) :
   m_minmass(100.),m_maxmass(0.)
 {
   // Light quarks and diquarks
