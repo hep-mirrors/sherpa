@@ -37,7 +37,7 @@ namespace AHADIC {
 
     void FillMap(Single_Transitions * singles);
     void Normalise();
-    int n_variations {0};;
+    int n_variations {0};
   public:
     Double_Transitions(Single_Transitions * singles);
     ~Double_Transitions();
@@ -46,7 +46,6 @@ namespace AHADIC {
     Flavour_Pair             GetHeaviestTransition(const Flavour_Pair & flavs);
     double                   GetLightestMass(const Flavour_Pair & flavs);
     double                   GetHeaviestMass(const Flavour_Pair & flavs);
-    Double_Transition_Map  * GetTransitions() { return &m_transitions; }
     Double_Transition_List * operator[](const Flavour_Pair & flavs);
     void                     Print(const bool& full=false);
   };

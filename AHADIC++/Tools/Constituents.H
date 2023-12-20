@@ -33,7 +33,7 @@ namespace AHADIC {
   public:
     FlavCCMap CCMap;
     int    m_nvars;
-    Constituents(bool=true);
+    Constituents(bool=true, bool=false);
     ~Constituents();
 
     double Mass(const ATOOLS::Flavour & flav);

@@ -231,7 +231,7 @@ bool Ahadic::DecayGluons() {
 
 bool Ahadic::DecayClusters() {
   bool success = m_clusterdecayer();
-  //if (!success) msg_Error()<<METHOD<<" could not decay all clusters.\n";
+  if (!success) msg_Error()<<METHOD<<" could not decay all clusters.\n";
   return success;
 }
 

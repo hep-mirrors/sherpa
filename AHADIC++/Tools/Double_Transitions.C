@@ -21,7 +21,8 @@ Double_Transitions::Double_Transitions(Single_Transitions * singles) :
 
 void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 {
-  Constituents * constituents     = hadpars->GetConstituents();
+  //Constituents * constituents     = hadpars->GetConstituents();
+  Constituents * constituents = new Constituents(true, true);
   Single_Transition_Map * singles = singletransitions->GetMap();
   for (Single_Transition_Map::iterator stmit1=singles->begin();
        stmit1!=singles->end();stmit1++) {

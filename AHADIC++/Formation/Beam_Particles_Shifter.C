@@ -25,7 +25,7 @@ void Beam_Particles_Shifter::Reset() {
 bool Beam_Particles_Shifter::operator()() {
   RescueLightClusters();
   ExtractBeamParticles();
-  return ShiftBeamParticles(); 
+  return ShiftBeamParticles();
 }
 
 void Beam_Particles_Shifter::ExtractBeamParticles() {

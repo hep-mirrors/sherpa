@@ -50,11 +50,16 @@ Constituents::Constituents(bool diquarks) :
   double total(0.),udfrac(1.), ud0(1.), norm;
   m_nvars = v_sfrac.size();
   for(int i{0}; i<v_sfrac.size(); ++i) {
-    const double sfrac  = v_sfrac[i];
-    const double bfrac  = v_bfrac[i];
+    double sfrac  = v_sfrac[i];
+    double bfrac  = v_bfrac[i];
     const double qssup  = v_qssup[i];
     const double sssup  = v_sssup[i];
     const double sp1sup = v_sp1sup[i];
+
+    if(debug) {
+      sfrac = 0.2;
+      bfrac = 0.1;
+    }
 
     total  = 2.*(2.*udfrac+sfrac);
     total += bfrac*ud0*(1.+2.*qssup+3.*sp1sup*(3.+2.*qssup+sssup));
