@@ -23,8 +23,7 @@ Hadronic_XSec_Calculator(MODEL::Model_Base * model,
 			 const Flavour & fl1,const Flavour & fl2) :
   m_mmin(0.), m_smin(0.),
   m_mass_proton(Flavour(kf_p_plus).Mass()),m_mass_proton2(sqr(m_mass_proton)),
-  m_mass_pi(Flavour(kf_pi).Mass()), m_mres(2.), m_cres(2.), m_s1(sqr(20.)),
-  m_Ypp(-1.), m_c0(2.24), m_c1(2.1), m_testmode(0)
+  m_mass_pi(Flavour(kf_pi).Mass()), m_Ypp(-1.), m_testmode(0)
 {
   m_flavs[0] = fl1; m_flavs[1] = fl2;
   for (size_t i=0;i<2;i++) {
@@ -41,7 +40,12 @@ Hadronic_XSec_Calculator(MODEL::Model_Base * model,
   m_eta_reggeon    = (*mipars)("ReggeonIntercept");
   m_xsnd_norm      = (*mipars)("SigmaND_Norm");
   m_s0             = 1./m_alphaP_pomeron;
-
+  m_cres           = (*mipars)("Diffractive_cres");
+  m_mres           = (*mipars)("Diffractive_Mres");
+  m_s1             = (*mipars)("Diffractive_s1");
+  m_c0             = (*mipars)("ElasticSlope_c0");
+  m_c1             = (*mipars)("ElasticSlope_c1");
+  
   //////////////////////////////////////////////////////////////////////////////////////////
   // Prefactors, converted to mb, 1/{mb^1/2 GeV^2}, 1/mb for elastic, SD, and DD
   // elastic:            1. / (16 pi)
