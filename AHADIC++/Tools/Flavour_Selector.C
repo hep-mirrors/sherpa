@@ -19,42 +19,32 @@ Flavour_Selector::~Flavour_Selector() {
 ATOOLS::Flavour Flavour_Selector::
 operator()(const double & Emax,const bool & vetodi) {
   ATOOLS::Flavour ret;
-  bool found{false};
 
   // update norms
   Norm(Emax,vetodi);
-  double disc = norms[0] * ran->Get();
 
+  double disc {norms[0] * ran->Get()};
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi && fdit->first.IsDiQuark()) continue;
-    if (fdit->second->popweight>0. && fdit->second->massmin<Emax/2.) {
+    if (fdit->second->popweight>0. && fdit->second->massmin<Emax/2.)
       disc -= fdit->second->popweight;
-    }
     if (disc<=0.) {
       // have to bar flavours for diquarks
       ret = fdit->first.IsDiQuark()?fdit->first.Bar():fdit->first;
-      found = true;
       break;
     }
   }
 
-  // TODO: this is rather pointless. Since even for Norm=0, there will be a
-  // flavour found. Namely kf_d (the first in the list)
-  if(! found)
-    THROW(fatal_error, "No flavour selected.");
-
   // compute probabilities for different flavours here
   // will include different norms and popweights
-  auto opt = m_options.find(ret);
+  auto opt {m_options.find(ret)};
   if(opt == m_options.end())
     opt = m_options.find(ret.Bar());
   if(opt == m_options.end())
-    // Something really went wrong
     THROW(fatal_error, "No flavour selected.");
+  if(norms[0] == 0) return ret;
 
-  if(norms[0] == 0)
-    return ret;
-  const double p0 = opt->second->popweight / norms[0];
+  const double p0 {opt->second->popweights[0] / norms[0]};
   for(int i; i<opt->second->popweights.size(); ++i)
     tmp_variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;
   return ret;

@@ -335,7 +335,7 @@ double Soft_Cluster_Handler::DecayWeight() {
   std::vector<double> totweight;//, weight;
   for (Double_Transition_List::reverse_iterator dit=decays->rbegin();
        dit!=decays->rend();dit++) {
-    double m2(dit->first.first.Mass()), m3(dit->first.second.Mass());
+    const double m2(dit->first.first.Mass()), m3(dit->first.second.Mass());
     if (m2+m3>m_mass) break;
     // wave-function overlap * phase-space (units of 1 in total)
     bool heavy = (dit->first.first.IsB_Hadron() || dit->first.first.IsC_Hadron() ||

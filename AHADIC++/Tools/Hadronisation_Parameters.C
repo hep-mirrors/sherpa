@@ -222,7 +222,8 @@ void Hadronisation_Parameters::CheckAndPad() {
   // modify the parameter maps
   // this can only be done *after* all of the padding etc has been taken place
   for (int i{0}; i<m_parametermap_vecs[string("Strange_fraction")].size(); ++i) {
-    const double strange = m_parametermap_vecs[string("Strange_fraction")][i];
+    double strange = m_parametermap_vecs[string("Strange_fraction")][i];
+    strange = 0.2;
     m_parametermap_vecs[string("P_qs_by_P_qq")][i] *= strange;
     m_parametermap_vecs[string("P_ss_by_P_qq")][i] *= sqr(strange);
   }
