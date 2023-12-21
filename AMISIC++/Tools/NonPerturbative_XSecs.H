@@ -48,6 +48,8 @@ namespace AMISIC {
     ATOOLS::Vec4D m_inmom[2];
     ATOOLS::Vec4D m_outmom[4];
 
+    unsigned long int m_calls, m_fails;
+    
     inline const double beta(const size_t hadtag,const double & t) const {
       return sqrt(p_xsecs->s_X[hadtag][hadtag]) * exp(p_xsecs->s_slopes[hadtag]*t);
     }
@@ -83,7 +85,8 @@ namespace AMISIC {
       double ran = ATOOLS::ran->Get(); 
       return log(ran*exp(pref*smax) + (1.-ran)*exp(pref*smin))/pref;
     }
-    inline const double ExponentialWeight(const double & smin,const double & smax,const double & pref) {
+    inline const double ExponentialWeight(const double & smin,const double & smax,
+					  const double & pref) {
       return (exp(pref*smax) - exp(pref*smin)) / pref;
     }
     inline const double PowerDist(const double & smin,const double & smax,
@@ -101,6 +104,7 @@ namespace AMISIC {
     bool   FixFS(std::array<ATOOLS::Flavour, 2> & flavs);
     bool   FixOutMomenta(const double & t);
     bool   SplitDiffractiveState(const size_t & pos);
+    bool   SplitDiffractiveStateIntoHadrons(const size_t & pos,const double & M2);
     bool   SelectFlavoursOfDiffraction(const size_t & pos,const double & M2);
     ATOOLS::Blob * ElasticScatter();
     ATOOLS::Blob * SingleDiffractiveScatter(const size_t & pos);
@@ -120,6 +124,7 @@ namespace AMISIC {
     void TestDoubleD();
   public:
     NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants, Hadronic_XSec_Calculator * xsecs);
+    ~NonPerturbative_XSecs();
     void SetBeams(BEAM::Beam_Base * beam1,BEAM::Beam_Base * beam2);
     void CalculateSDependentCrossSections();
     
