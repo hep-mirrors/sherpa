@@ -19,7 +19,7 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,Hadronic_XSec_Calcula
   m_s0(1./m_alphaP_pomeron), 
   m_mpi(Flavour(kf_pi).HadMass()),
   m_deltaMres(p_xsecs->Diffractive_Mres()), m_cres(p_xsecs->Diffractive_cres()), 
-  m_inflav(p_xsecs->GetFlavs()),
+  m_inflav(p_xsecs->GetFlavs()), m_calls(0), m_fails(0),
   m_ana(false)
 {
   for (size_t i=0;i<2;i++) p_beams[i] = NULL;
@@ -27,6 +27,11 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,Hadronic_XSec_Calcula
     m_masses[i] = m_inflav[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
   }
   if (m_ana) { Tests(); exit(0); }
+}
+
+NonPerturbative_XSecs::~NonPerturbative_XSecs() {
+  if (m_fails>0)
+    msg_Out()<<METHOD<<" with "<<m_fails<<" fails in "<<m_calls<<" calls.\n";
 }
 
 void NonPerturbative_XSecs::SetBeams(BEAM::Beam_Base * beam1,BEAM::Beam_Base * beam2) {
@@ -45,6 +50,7 @@ void NonPerturbative_XSecs::CalculateSDependentCrossSections() {
 }
 
 Blob * NonPerturbative_XSecs::MakeScatter() {
+  m_calls++;
   if (m_variableS) {
     if (!m_integrator()) {
       msg_Error()<<"Error in "<<METHOD<<": "
@@ -111,7 +117,6 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
     total -= xsecs[i];
     if (total<=0.) break;
   }
-  //msg_Out()<<METHOD<<"(s' = "<<m_s<<"): "<<m_weight<<" vs. "<<p_xsecs->SigmaEl()<<"\n";
   switch (i) {
   case 3: return event_mode::DD;
   case 2: return event_mode::SDB;
@@ -145,14 +150,13 @@ Blob * NonPerturbative_XSecs::ElasticScatter() {
 		    p_xsecs->s_slopes[m_hadtags[0]] + p_xsecs->s_slopes[m_hadtags[1]]);
   double t;
   size_t trials=0;
-  do { t = ExponentialDist(-m_s,0.,arg); trials++; } while (!FixOutMomenta(t) && trials<100);
-  if (trials>=100) {
-    msg_Error()<<METHOD<<" fails: t = "<<t<<" yields no momenta.\n";
+  do { t = ExponentialDist(-m_s,0.,arg); trials++; } while (!FixOutMomenta(t) && trials<1000);
+  if (trials>=1000) {
+    if (m_fails<5) msg_Error()<<METHOD<<" fails: t = "<<t<<" yields no momenta.\n";
+    m_fails++;
     return NULL;
   }
   Blob * blob   = InitBlob();
-  blob->SetType(btp::Elastic_Collision);
-  blob->SetStatus(blob_status::needs_beams | blob_status::needs_hadrondecays);
   return blob;
 }
 
@@ -174,7 +178,7 @@ ATOOLS::Blob * NonPerturbative_XSecs::SingleDiffractiveScatter(const size_t & po
   double maxval = F_SD(M2min,M2res);
   double t, M2, value;
   size_t attempts = 0;
-  do {
+   do {
     if (attempts++>10000) return NULL;
     do {
       t      = ExponentialDist(-m_s,0,argt);
@@ -187,8 +191,6 @@ ATOOLS::Blob * NonPerturbative_XSecs::SingleDiffractiveScatter(const size_t & po
   } while (!FixOutMomenta(t));
   SplitDiffractiveState(pos);
   Blob * blob = InitBlob(M2,M2);
-  blob->SetType(btp::Hard_Collision);
-  blob->SetStatus(blob_status::needs_showers);
   return blob;
 }
 
@@ -232,8 +234,6 @@ ATOOLS::Blob * NonPerturbative_XSecs::DoubleDiffractiveScatter() {
   } while (!FixOutMomenta(t));
   for (size_t i=0;i<2;i++) SplitDiffractiveState(i);
   Blob * blob = InitBlob(max(M2[0],M2[1]),max(M2[0],M2[1]));
-  blob->SetType(btp::Hard_Collision);
-  blob->SetStatus(blob_status::needs_showers);
   return blob;
 }
 
@@ -259,8 +259,13 @@ bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
 bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
   Vec4D  diffmom  = m_outmom[2*pos];
   double M2       = diffmom.Abs2();
-  if (!SelectFlavoursOfDiffraction(pos,M2)) return false;
-  if (M2<sqr(m_outmasses[2*pos]+m_outmasses[2*pos+1])) return false;
+  if (!SelectFlavoursOfDiffraction(pos,M2)) {
+    if (!SplitDiffractiveStateIntoHadrons(pos,M2)) exit(1);
+  }
+  for (size_t i=0;i<2;i++) {
+    m_outmasses[2*pos+i]  = m_outflav[2*pos+i].HadMass();
+    m_outmasses2[2*pos+i] = sqr(m_outmasses[2*pos+i]); 
+  }
   double p2   = ( (sqr(M2-m_outmasses2[2*pos]-m_outmasses2[2*pos+1]) -
 		   4.*m_outmasses2[2*pos]*m_outmasses2[2*pos+1]) / (4.*M2) ), p = sqrt(p2);
   double E[2];
@@ -274,43 +279,60 @@ bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
   return true;
 }
 
-bool NonPerturbative_XSecs::SelectFlavoursOfDiffraction(const size_t & pos,const double & M2) {
+bool NonPerturbative_XSecs::
+SplitDiffractiveStateIntoHadrons(const size_t & pos,const double & M2) {
+  Flavour split = m_inflav[pos];
   kf_code diff = m_outflav[2*pos].Kfcode();
-  bool    anti = m_outflav[2*pos].IsAnti();
   if (diff==2212) {
-    double random = ran->Get();
-    if (random<1./3. && M2>sqr(Flavour(kf_d).Mass()+Flavour(kf_uu_1).Mass())) {
-      m_outflav[2*pos]=Flavour(kf_d); m_outflav[2*pos+1]=Flavour(kf_uu_1);
-    }
-    else if (random<1./2. && M2>sqr(Flavour(kf_u).Mass()+Flavour(kf_ud_1).Mass())) {
-      m_outflav[2*pos]=Flavour(kf_u); m_outflav[2*pos+1]=Flavour(kf_ud_1);
-    }
-    else if (M2>sqr(Flavour(kf_d).Mass()+Flavour(kf_uu_1).Mass())) {
-      m_outflav[2*pos]=Flavour(kf_d); m_outflav[2*pos+1]=Flavour(kf_uu_1);
+    if (ran->Get()<0.5) {
+      m_outflav[2*pos]=Flavour(kf_p_plus); m_outflav[2*pos+1]=Flavour(kf_pi);
     }
     else {
-      msg_Error()<<METHOD<<" couldn't split diffractive state of mass = "<<sqrt(M2)<<".\n";
-      return false;
+      m_outflav[2*pos]=Flavour(kf_n); m_outflav[2*pos+1]=Flavour(kf_pi_plus);
     }
   }
-  else if (diff==113 || diff==223) {
+  if (split.IsAnti()) for (size_t i=0;i<2;i++) m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar(); 
+  return (m_outflav[2*pos].HadMass()+m_outflav[2*pos+1].HadMass()<sqrt(M2));
+}
+
+bool NonPerturbative_XSecs::
+SelectFlavoursOfDiffraction(const size_t & pos,const double & M2) {
+  bool    anti = m_outflav[2*pos].IsAnti();
+  kf_code diff = m_outflav[2*pos].Kfcode();
+  if (diff==2212) {
+    double random = ran->Get();
+    if (random<1./3. && M2>sqr(Flavour(kf_d).HadMass()+Flavour(kf_uu_1).HadMass())) {
+      m_outflav[2*pos]=Flavour(kf_d); m_outflav[2*pos+1]=Flavour(kf_uu_1);
+    }
+    else if (random<1./2. && M2>sqr(Flavour(kf_u).HadMass()+Flavour(kf_ud_1).HadMass())) {
+      m_outflav[2*pos]=Flavour(kf_u); m_outflav[2*pos+1]=Flavour(kf_ud_1);
+    }
+    else if (M2>sqr(Flavour(kf_d).HadMass()+Flavour(kf_uu_1).HadMass())) {
+      m_outflav[2*pos]=Flavour(kf_d); m_outflav[2*pos+1]=Flavour(kf_uu_1);
+    }
+    else return false;
+  }
+  else if ((diff==113 || diff==223) &&
+	   M2>sqr(2.*Max(Flavour(kf_u).HadMass(),Flavour(kf_u).HadMass())) ) {
     m_outflav[2*pos]   = ran->Get()>0.5 ? Flavour(kf_u) : Flavour(kf_d);
     m_outflav[2*pos+1] = m_outflav[2*pos].Bar();
   }
-  else if (diff==333) {
+  else if (diff==333 && M2>sqr(2.*Flavour(kf_s).HadMass())) {
     m_outflav[2*pos]   = Flavour(kf_s);
     m_outflav[2*pos+1] = m_outflav[2*pos].Bar();
   }
-  else if (diff==433) {
+  else if (diff==433 && M2>sqr(2.*Flavour(kf_c).HadMass())) {
     m_outflav[2*pos]   = Flavour(kf_c);
     m_outflav[2*pos+1] = m_outflav[2*pos].Bar();
   }
-  else THROW(fatal_error,"No meaningful hadronic state for "+m_outflav[2*pos].IDName());
-  if (anti) { for (size_t i=0;i<2;i++) m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar(); }
-  for (size_t i=0;i<2;i++) {
-    m_outmasses[2*pos+i]  = m_outflav[2*pos+i].Mass();
-    m_outmasses2[2*pos+i] = sqr(m_outmasses[2*pos+i]); 
+  else {
+    if (m_fails<5)
+      msg_Error()<<METHOD<<" couldn't split diffractive state ["<<diff<<"] "
+		 <<"with mass = "<<sqrt(M2)<<".\n";
+    m_fails++;
+    return false;
   }
+  if (anti) for (size_t i=0;i<2;i++) m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar(); 
   return true;
 }
 
@@ -327,13 +349,23 @@ Blob * NonPerturbative_XSecs::InitBlob(const double & muR2,const double & muQ2) 
     part->SetBeam(p_remnants->GetRemnant(i)->Beam());
     blob->AddToInParticles(part);
   }
+  bool needs_showers = false;
   for (size_t i=0;i<4;i++) {
     if (m_outflav[i]==Flavour(kf_none)) continue;
     Particle * part = new Particle(-1,m_outflav[i],m_outmom[i],'F');
     if (part->Flav().IsQuark())        part->SetFlow(part->Flav().IsAnti()?2:1,500+i/2);
     else if (part->Flav().IsDiQuark()) part->SetFlow(part->Flav().IsAnti()?1:2,500+i/2);
+    if (part->Flav().IsQuark() || part->Flav().IsDiQuark()) needs_showers = true;
     part->SetNumber();
     blob->AddToOutParticles(part);
+  }
+  if (needs_showers) {
+    blob->SetType(btp::Hard_Collision);
+    blob->SetStatus(blob_status::needs_showers);
+  }
+  else {
+    blob->SetType(btp::Elastic_Collision);
+    blob->SetStatus(blob_status::needs_beams | blob_status::needs_hadrondecays);
   }
   m_muf2 = muQ2;
   m_mur2 = muR2;

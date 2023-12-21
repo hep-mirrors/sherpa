@@ -16,6 +16,7 @@ namespace SHERPA {
     ATOOLS::Part_List             * p_partlist;
     std::list<ATOOLS::Part_List * > m_partlists;
     ATOOLS:: Momenta_Stretcher      m_stretcher;
+    long unsigned int               m_calls, m_fails;
 
     bool HarvestParticles(ATOOLS::Blob_List *);
     bool FillParticleLists(ATOOLS::Blob * blob);
