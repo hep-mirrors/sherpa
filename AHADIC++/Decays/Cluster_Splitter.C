@@ -158,14 +158,13 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
 #else
 
   // order : lead > beam > rest
-  //     -> 3 > 1 > rest
+  //     -> 1 > 3 > rest
   //     -> stored in m_a[i] = flcnt;
   const int p0 = m_type[0];
   const int p1 = m_type[1];
   int i1{0}, i2{1};
 
-  if(false) {
-    // needs to be implemented more careful
+  if(true) {
     if(p0 == p1) {
       if(ran->Get() < 0.5) {
 	i1 = 0;
@@ -174,16 +173,16 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
 	i1 = 1;
 	i2 = 0;
       }
-    } else if (p0 == 3) {
-      i1 = 0;
-      i2 = 1;
-    } else if (p1 == 3) {
-      i1 = 1;
-      i2 = 0;
     } else if (p0 == 1) {
       i1 = 0;
       i2 = 1;
     } else if (p1 == 1) {
+      i1 = 1;
+      i2 = 0;
+    } else if (p0 == 3) {
+      i1 = 0;
+      i2 = 1;
+    } else if (p1 == 3) {
       i1 = 1;
       i2 = 0;
     } else {
@@ -248,8 +247,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
 double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
 					       double alpha, double beta,
 					       double gamma, double kt02) {
-  double norm = 1., arg;
-  double value = 1.;
+  double arg, norm {1.}, value {1.};
   if (alpha>=0.)
     norm *= pow(zmax,alpha);
   else
@@ -265,7 +263,6 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
   // there might be a maximum at the boundaries
   double wt = pow(z,alpha) * pow(1.-z,beta);
   value = wt/norm;
-
 
   if (m_mode==2) {
     arg    = dabs(gamma)>1.e-2 ? gamma*(m_kt2+m_masses*m_masses)/kt02 : 0.;
@@ -301,15 +298,8 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 void Cluster_Splitter::z_rejected(const double wgt, const double & z,
 				  const double & zmin,const double & zmax,
 				  const unsigned int & cnt) {
-
-  // sanity checks, should probably be done somewhere else
-  if(variation_weights.size() != m_alpha[0].size()) {
-    // should in principle always be the case
-    variation_weights.resize(m_alpha[0].size());
-  }
-
+  const auto type = m_type[cnt];
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto type = m_type[cnt];
     const auto a    = m_alpha[type][i];
     const auto b    = m_beta [type][i];
     const auto c    = m_gamma[type][i];
@@ -317,20 +307,13 @@ void Cluster_Splitter::z_rejected(const double wgt, const double & z,
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
     tmp_variation_weights[i] *= (1.-wgt_new) / (1.-wgt);
   }
-  return;
 }
 
 void Cluster_Splitter::z_accepted(const double wgt, const double & z,
 				  const double & zmin,const double & zmax,
 				  const unsigned int & cnt) {
-  // sanity checks, should probably be done somewhere else
-  if(variation_weights.size() != m_alpha[0].size()) {
-    // should in principle always be the case
-    variation_weights.resize(m_alpha[0].size());
-  }
-
+  const auto type = m_type[cnt];
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto type = m_type[cnt];
     const auto a    = m_alpha[type][i];
     const auto b    = m_beta [type][i];
     const auto c    = m_gamma[type][i];
@@ -338,8 +321,6 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
     tmp_variation_weights[i] *= wgt_new / wgt;
   }
-
-  return;
 }
 
 

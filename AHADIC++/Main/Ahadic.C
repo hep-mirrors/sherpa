@@ -130,13 +130,14 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       wgt*=wgts_flavs[i];
       wgt*=wgts_kt[i];
       wgt*=wgts_soft[i];
-
+      DEBUG_VAR(wgt);
       wgt = std::max(wgt,0.01);
       wgt = std::min(wgt,100.);
       if(i==0 && wgt != 1.0) {
 	std::cout << "THIS SHOULD NOT HAPPEN " << wgt << std::endl;
       }
       if(std::isnan(wgt)) {
+	std::cout << "THIS SHOULD NOT HAPPEN " << wgt << std::endl;
 	wgtmap["AHADIC"][name] = 1.0;
       } else {
 	if(found)

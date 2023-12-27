@@ -58,6 +58,7 @@ namespace AHADIC {
     void   accept_splitting() {
       for(int i{0}; i<variation_weights.size(); ++i)
 	variation_weights[i] *= tmp_variation_weights[i];
+      reset_var_weights();
     }
 
     void reset_var_weights() {
@@ -71,8 +72,8 @@ namespace AHADIC {
     void reset_variationweights(int nvars) {
       variation_weights.resize(nvars);
       tmp_variation_weights.resize(nvars);
-      // reset weights and Splitter_base weight
       std::fill(variation_weights.begin(), variation_weights.end(), 1);
+      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
     };
 
     void z_rejected(const double wgt, const double & z,

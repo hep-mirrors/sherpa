@@ -173,14 +173,13 @@ void Splitter_Base::DetermineMinimalMasses() {
     m_mdec2[i] = sqr(m_mdec[i]);
   }
 }
+
 void Splitter_Base::reset_var_weights() {};
 void Splitter_Base::accept_splitting() {};
 
 bool Splitter_Base::MakeKinematics() {
   MakeTransverseMomentum();
-  bool b1 = MakeLongitudinalMomenta();
-  bool b2 = CheckKinematics();
-  return (b1 && b2);
+  return (MakeLongitudinalMomenta() && CheckKinematics());
 }
 
 void Splitter_Base::MakeTransverseMomentum() {
