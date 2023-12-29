@@ -81,6 +81,7 @@ bool Trivial_Splitter::InitKinematics(bool rescue) {
 
 void Trivial_Splitter::SelectFlavour() {
   m_newflav      = (*p_flavourselector)(m_E,true);
+  p_flavourselector->accept_splitting();
   m_popped_mass  = p_constituents->Mass(m_newflav);
   m_popped_mass2 = sqr(m_popped_mass);
 }
