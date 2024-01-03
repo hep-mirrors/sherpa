@@ -144,7 +144,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	DEBUG_VAR(wgt);
 	for(int e{1}; e<6; ++e) {
 	  const std::string name = base_name + "." + std::to_string(e);
-	  const auto clipped_wgt {std::min(std::max(wgt,pow(10,e)),pow(10,-e))};
+	  const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
 	  DEBUG_VAR(clipped_wgt);
 	  wgtmap["AHADIC"][name] = clipped_wgt;
 	}
