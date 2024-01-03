@@ -46,22 +46,19 @@ void Splitter_Base::Init() {
 bool Splitter_Base::
 operator()(Proto_Particle * part1,Proto_Particle * part2,
 	   Proto_Particle * part3) {
-  if (!InitSplitting(part1,part2,part3)) {
+  if (!InitSplitting(part1,part2,part3))
     return false;
-  }
-  size_t attempts(m_attempts);
 
-  do {
+  for(size_t attempts(0); attempts<m_attempts; ++attempts) {
     reset_var_weights();
     p_flavourselector->reset_var_weights();
-    attempts--;
-  } while(attempts>0 && !MakeSplitting());
-  accept_splitting();
-  p_flavourselector->accept_splitting();
-
-  // TODO: reinsert
-  //p_ktselector->accepted();
-  return (attempts>0);
+    if(MakeSplitting()) {
+      accept_splitting();
+      p_flavourselector->accept_splitting();
+      return true;
+    }
+  }
+  return false;
 }
 
 bool Splitter_Base::
