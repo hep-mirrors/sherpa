@@ -36,7 +36,7 @@ namespace AHADIC {
       Splitter_Base(cluster_list,softclusters,flavourselector,ktselector) {}
     ~Gluon_Splitter();
 
-    void   Init(const bool & isgluon=true);
+    void   Init();
     double FragmentationFunction(double z, double zmin, double zmax, double a);
     double FragmentationFunctionProb(double z, double zmin, double zmax, double a);
     double WeightFunction(const double & z,

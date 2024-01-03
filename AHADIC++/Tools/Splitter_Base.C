@@ -32,7 +32,7 @@ Splitter_Base::~Splitter_Base() {
   m_histograms.clear();
 }
 
-void Splitter_Base::Init(const bool & isgluon) {
+void Splitter_Base::Init() {
   p_singletransitions = hadpars->GetSingleTransitions();
   p_doubletransitions = hadpars->GetDoubleTransitions();
   p_constituents      = hadpars->GetConstituents();

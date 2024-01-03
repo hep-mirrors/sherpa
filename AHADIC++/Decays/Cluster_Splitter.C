@@ -16,8 +16,8 @@ Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 {
 }
 
-void Cluster_Splitter::Init(const bool & isgluon) {
-  Splitter_Base::Init(false);
+void Cluster_Splitter::Init() {
+  Splitter_Base::Init();
   m_defmode  = hadpars->Switch("ClusterSplittingForm");
   m_beammode = hadpars->Switch("RemnantSplittingForm");
 

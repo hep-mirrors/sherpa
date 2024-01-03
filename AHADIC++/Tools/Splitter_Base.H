@@ -69,7 +69,7 @@ namespace AHADIC {
 		  KT_Selector          * ktselector
 		  );
     ~Splitter_Base();
-    virtual void Init(const bool & isgluon);
+    virtual void Init();
 
     virtual bool operator()(Proto_Particle * part1,Proto_Particle * part2,
 			    Proto_Particle * part3=0);

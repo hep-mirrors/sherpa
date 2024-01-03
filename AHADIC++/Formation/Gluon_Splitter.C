@@ -11,8 +11,8 @@ Gluon_Splitter::~Gluon_Splitter() {
 }
 
 
-void Gluon_Splitter::Init(const bool & isgluon) {
-  Splitter_Base::Init(true);
+void Gluon_Splitter::Init() {
+  Splitter_Base::Init();
   // Gluon Decay Form: 1 = default
   // 0: z ~ z^alpha * (1-z)^alpha
   // 1: z ~ z^alpha + (1-z)^alpha
