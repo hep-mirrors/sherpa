@@ -44,11 +44,12 @@ namespace METOOLS {
     static CRaritaSchwinger *New();
     static CRaritaSchwinger *New(const CRaritaSchwinger &s);
     // TODO: notwendige Parameter RS anpassen!!!
-    static CRaritaSchwinger *New(const Scalar &x0, const Scalar &x1,
-		      const Scalar &x2, const Scalar &x3,
-		      const int c1=0,const int c2=0,
-		      const size_t &hm=0,
-		      const size_t &hp=0);
+    static CRaritaSchwinger *New(const int r, const int b, const Scalar &x0, const Scalar &x1, const Scalar &x2,
+                                 const Scalar &x3, const Scalar &x4, const Scalar &x5, const Scalar &x6,
+                                 const Scalar &x7, const Scalar &x8, const Scalar &x9, const Scalar &x10,
+                                 const Scalar &x11, const Scalar &x12, const Scalar &x13, const Scalar &x14,
+                                 const Scalar &x15, const int c1=0,const int c2=0, const size_t &h=0,
+                                 const size_t &s=0, const int on=3);
 
     CObject* Copy() const;
 
@@ -90,12 +91,12 @@ namespace METOOLS {
 
     inline CRaritaSchwinger(const CRaritaSchwinger &rs, const Scalar &c)
     {
-      if (m_on==1){
+      if (rs.m_on==1){
         m_x[0]= rs[0] * c; m_x[1]= rs[1] * c; m_x[2]= ZERO; m_x[3]= ZERO; m_x[4]= rs[4] * c; m_x[5]= rs[5] * c;
         m_x[6]= ZERO; m_x[7]= ZERO; m_x[8]= rs[8] * c; m_x[9]= rs[9] * c; m_x[10]= ZERO; m_x[11]= ZERO;
         m_x[12]= rs[12] * c; m_x[13]= rs[13] * c; m_x[14]= ZERO; m_x[15]= ZERO;
       }
-      else if (m_on==2){
+      else if (rs.m_on==2){
         m_x[0]= ZERO; m_x[1]= ZERO; m_x[2]= rs[2] * c; m_x[3]= rs[3] * c; m_x[4]= ZERO; m_x[5]= ZERO; m_x[6]= rs[6] * c;
         m_x[7]= rs[7] * c; m_x[8]= ZERO; m_x[9]= ZERO; m_x[10]= rs[10] * c; m_x[11]= rs[11] * c; m_x[12]= ZERO;
         m_x[13]= ZERO; m_x[14]= rs[14] * c; m_x[15]= rs[15] * c;
@@ -220,7 +221,7 @@ namespace METOOLS {
     inline static void   SetAccu(const double &accu) { s_accu=accu;   }
     inline static double Accu()                      { return s_accu; }
 
-    bool Test_Properties(const ATOOLS::Vec4D &p, int r, int b);
+    bool Test_Properties(const ATOOLS::Vec4D &p, int r, int b, int dir);
 
   };
 

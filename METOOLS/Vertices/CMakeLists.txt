@@ -10,7 +10,8 @@ set(Vertices_SOURCES FFV_DLC.C
                      SSSS_LC.C
                      SSVV_LC.C
                      VVVV_LC.C
-                     RRV_LC.C)
+                     RRV_LC.C
+                     RFS_LC.C)
 
 sherpa_create_git_info(Vertices ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
