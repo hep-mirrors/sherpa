@@ -2,6 +2,8 @@
 
 // define a kf_code for the RaSc
 #define kf_RaSc 9901
+#define kf_N 9902
+#define kf_pi_p 9903
 
 namespace MODEL {
 
@@ -126,7 +128,9 @@ void Standard_Model_RaSc::ParticleInit()
   s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,.0,0.0,0,8,4,-1,1,1,0,"G4","G4","g_{4}","g_{4}",1);
   // add RaSc
   // kf_code,mass,radius,width,3*charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
-  s_kftable[kf_RaSc] = new Particle_Info(kf_RaSc,1.,0.,0.,3,0,3,0,1,1,1,"RaSc","dRaSc","R","\\bar{R}");
+  s_kftable[kf_RaSc] = new Particle_Info(kf_RaSc,1.232,0.,0.117,6,0,3,0,1,0,1,"RaSc","dRaSc","R","\\bar{R}");
+  s_kftable[kf_pi_p] = new Particle_Info(kf_pi_p,0.139570,0.,0.,3,0,0,0,1,1,1,"Pion","dPion","\\pi^{+}","\\pi^{-}");
+  s_kftable[kf_N] = new Particle_Info(kf_N,0.938272088,0.,0.,3,0,1,0,1,1,1,"N","dN","N","\\bar{N}");
 }
 
 bool Standard_Model_RaSc::ModelInit()
@@ -804,24 +808,48 @@ void Standard_Model_RaSc::InitEWVertices()
 
 void Standard_Model_RaSc::InitRaScVertices()
 {
-  if (!Flavour(kf_photon).IsOn()) return;
   // QED coupling
-  Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
+  Kabbala g1("g_1", sqrt(4. * M_PI * ScalarConstant("alpha_QED")));
   // complex QED coupling
-  Kabbala cpl=g1*Kabbala("i",Complex(0.,1.));
-  Flavour flav(kf_RaSc);
-  if (flav.IsOn() && flav.Charge()) {
-    Kabbala Q("Q_{"+flav.TexName()+"}",flav.Charge());
-    m_v.push_back(Single_Vertex());
-    m_v.back().AddParticle(flav.Bar());
-    m_v.back().AddParticle(flav);
-    m_v.back().AddParticle(Flavour(kf_photon));
-    m_v.back().Color.push_back(Color_Function(cf::None));
+  Kabbala cpl = g1 * Kabbala("i", Complex(0., 1.));
+  if (Flavour(kf_photon).IsOn()) {
+    Flavour flav(kf_RaSc);
+    if (flav.IsOn() && flav.Charge()) {
+      Kabbala Q("Q_{" + flav.TexName() + "}", flav.Charge());
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(flav.Bar());
+      m_v.back().AddParticle(flav);
+      m_v.back().AddParticle(Flavour(kf_photon));
+      m_v.back().Color.push_back(Color_Function(cf::None));
       //(i>10?Color_Function(cf::None):
-       //Color_Function(cf::D,1,2));
-    m_v.back().Lorentz.push_back("RRV");
-    m_v.back().cpl.push_back(cpl*Q);
-    m_v.back().order[1]=1;
+      //Color_Function(cf::D,1,2));
+      m_v.back().Lorentz.push_back("RRV");
+      m_v.back().cpl.push_back(cpl * Q);
+      m_v.back().order[1] = 1;
+    }
   }
+  if (Flavour(kf_N).IsOn() && Flavour(kf_pi_p).IsOn() && Flavour(kf_RaSc).IsOn()) {
+      // TODO: Brauchen wir das YukawaScheme?
+       /*double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
+                 ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));*/
+        Kabbala M;
+        double m = Flavour(kf_pi_p).Mass(true);
+        // TODO: Was ist hier richtig?
+       /* if (ScalarNumber("WidthScheme")!=0)
+          M=Kabbala("M_{"+Flavour(kf_pi_p).TexName()+"}(m_pi^2)",
+                    sqrt(m*m-Complex(0.0,m*Flavour(kf_pi_p).Width())));
+        else M=Kabbala("M_{"+Flavour(kf_pi_p).TexName()+"}(m_pi^2)",m);*/
+        M=Kabbala("M_{"+Flavour(kf_pi_p).TexName()+"}(m_pi^2)",m);
+        m_v.push_back(Single_Vertex());
+        m_v.back().AddParticle(Flavour(kf_N));
+        m_v.back().AddParticle(Flavour(kf_pi_p));
+          m_v.back().AddParticle(Flavour(kf_RaSc).Bar());
+        m_v.back().Color.push_back(Color_Function(cf::None));
+        m_v.back().Lorentz.push_back("RFS");
+        // TODO: Was ist hier der richtige Faktor? Wie kann es unterschiedliche Isospinfaktoren für die einzelen
+        //       RS Teilchen im Vertex geben aber die gleiche Zerfallsbreite
+        m_v.back().cpl.push_back(sqrt(1./3.)*cpl/M);
+        m_v.back().order[1]=1;
+      }
 }
 

@@ -54,7 +54,7 @@ void CRaritaSchwinger<Scalar>::Add(const CObject *c) {
 }
 template<class Scalar>
 void CRaritaSchwinger<Scalar>::Multiply(const Complex &c) {
-  if (m_on&1) {
+  /*if (m_on&1) {
     m_x[0]*=SComplex(c) ; m_x[1]*=SComplex(c); m_x[4]*=SComplex(c); m_x[5]*=SComplex(c); m_x[8]*=SComplex(c);
     m_x[9]*=SComplex(c); m_x[12]*=SComplex(c); m_x[13]*=SComplex(c);
   }
@@ -62,6 +62,12 @@ void CRaritaSchwinger<Scalar>::Multiply(const Complex &c) {
     m_x[2]*=SComplex(c); m_x[3]*=SComplex(c); m_x[6]*=SComplex(c); m_x[7]*=SComplex(c); m_x[10]*=SComplex(c);
     m_x[11]*=SComplex(c); m_x[14]*=SComplex(c); m_x[15]*=SComplex(c);
   }
+  else{*/
+    m_x[0]*=SComplex(c) ; m_x[1]*=SComplex(c);  m_x[2]*=SComplex(c); m_x[3]*=SComplex(c); m_x[4]*=SComplex(c);
+    m_x[5]*=SComplex(c); m_x[6]*=SComplex(c); m_x[7]*=SComplex(c); m_x[8]*=SComplex(c);
+    m_x[9]*=SComplex(c); m_x[10]*=SComplex(c); m_x[11]*=SComplex(c); m_x[12]*=SComplex(c); m_x[13]*=SComplex(c);
+    m_x[14]*=SComplex(c); m_x[15]*=SComplex(c);
+  //}
 }
 
 template<class Scalar>
@@ -111,7 +117,7 @@ template <class Scalar> std::complex<Scalar>
 CRaritaSchwinger<Scalar>::operator*(const CRaritaSchwinger<Scalar> &rs) const
 {
   //if (rs.m_b==m_b) return (*this)*rs.CConj();
-  if (rs.m_r!=m_r) THROW(fatal_error, "Multiplying particle and anti-particle wave functions is not allowed!")
+  //if (rs.m_r!=m_r) THROW(fatal_error, "Multiplying particle and anti-particle wave functions is not allowed!")
   std::complex<Scalar> result(0.0, 0.0);
   std::complex<Scalar> sign(1);
   for (size_t i(0); i<16; ++i){
@@ -160,29 +166,45 @@ CRaritaSchwinger<Scalar> *CRaritaSchwinger<Scalar>::New(const CRaritaSchwinger &
 }
 
 // TODO: dieses new anpassen, wenn wir verstehen, was die einzelnen Parameter bedeuten...
-/*template <class Scalar>
-CVec4<Scalar> *CVec4<Scalar>::New
-(const Scalar &x0, const Scalar &x1, 
- const Scalar &x2, const Scalar &x3,
- const int c1,const int c2,
- const size_t &h,const size_t &s)
+template<class Scalar>
+CRaritaSchwinger<Scalar> *CRaritaSchwinger<Scalar>::New(const int r, const int b, const Scalar &x0, const Scalar &x1,
+                                                        const Scalar &x2, const Scalar &x3, const Scalar &x4,
+                                                        const Scalar &x5, const Scalar &x6, const Scalar &x7,
+                                                        const Scalar &x8, const Scalar &x9, const Scalar &x10,
+                                                        const Scalar &x11, const Scalar &x12, const Scalar &x13,
+                                                        const Scalar &x14, const Scalar &x15, const int c1,
+                                                        const int c2, const size_t &h, const size_t &s, const int on)
 {
 #ifndef USING__Threading
   if (s_objects.empty())
 #endif
-    return new CVec4(x0,x1,x2,x3,c1,c2,h,s);
-  CVec4 *v(s_objects.back());
+    return new CRaritaSchwinger<Scalar>(r, b, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, c1,
+                                        c2, h, s, on);
+  CRaritaSchwinger *v(s_objects.back());
   s_objects.pop_back();
   v->m_x[0]=x0;
   v->m_x[1]=x1;
   v->m_x[2]=x2;
-  v->m_x[3]=x3; 
+  v->m_x[3]=x3;
+  v->m_x[4]=x4;
+  v->m_x[5]=x5;
+  v->m_x[6]=x6;
+  v->m_x[7]=x7;
+  v->m_x[8]=x8;
+  v->m_x[9]=x9;
+  v->m_x[10]=x10;
+  v->m_x[11]=x11;
+  v->m_x[12]=x12;
+  v->m_x[13]=x13;
+  v->m_x[14]=x14;
+  v->m_x[15]=x15;
   v->m_c[0]=c1;
   v->m_c[1]=c2;
   v->m_h=h;
   v->m_s=s;
+  v->m_on=on;
   return v;
-}*/
+}
 
 template <class Scalar>
 CObject *CRaritaSchwinger<Scalar>::Copy() const
@@ -211,16 +233,18 @@ template <class Scalar> bool CRaritaSchwinger<Scalar>::SetOn()
 }
 
 template<class Scalar>
-bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r, int b) {
+bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r, int b, int dir) {
   // Dirac equation (gamma_mu * p_mu -m)^A_B RS^B, nu -> auch +m? für V statt U?
-  std::cout<<METHOD<<": Testing Dirac equation..."<<std::endl;
+  msg_Debugging()<<METHOD<<": Testing Dirac equation..."<<"\n";
   METOOLS::Gamma gammavec = Gamma<Scalar>();
   bool testresult(true);
   bool single_testresult(true);
   // SComplex(-r) for distinguishing between particle and anti-particle Dirac equation
   ATOOLS::TCMatrix<Scalar> intermediate = ATOOLS::TCMatrix<Scalar>(gammavec * p);
-  if (sqrt(p.Abs2())>1e-6)
-    intermediate += ATOOLS::TCMatrix<Scalar>(SComplex(-r) * SComplex(sqrt(p.Abs2())) * ATOOLS::TCMatrix<Scalar>(4, true));
+  // TODO: Stimmt das mit dem dir hier?
+  if (p.Mass()>1e-6) {
+    intermediate += ATOOLS::TCMatrix<Scalar>(SComplex(-r) * SComplex(-dir) * SComplex(p.Mass()) * ATOOLS::TCMatrix<Scalar>(4, true));
+  }
   std::vector<SComplex> result1(16);
   // TODO: Sollte man die exakten ZEROS auch hier explizit implementieren?
   for (int i(0); i<4; ++i){
@@ -241,17 +265,18 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r, in
   }
 
   for (size_t j(0); j<16; ++j){
-    if (std::abs(result1[j].real())>s_accu || std::abs(result1[j].imag())>s_accu) {
-      msg_Out()<<"Component " << j << " of resulting Rarita-Schwinger wave function is " << result1[j] << " instead of zero!"
-      << std::endl;
+    if (std::abs(result1[j].real())>1e-8 || std::abs(result1[j].imag())>1e-8) {
+      msg_Debugging()<<"Component " << j << " of resulting Rarita-Schwinger wave function is " << result1[j] << " instead of zero!"
+      << "\n";
+      //exit(1);
       testresult =false;
       single_testresult=false;
     }
   }
-  if (single_testresult) msg_Out()<< "passed" << std::endl;
+  if (single_testresult) msg_Debugging()<< "passed" << "\n";
 
   // gamma_mu^A_B times RS^B,mu = 0
-  std::cout<<METHOD<<": Testing gamma_mu Psi^mu = 0..."<<std::endl;
+  msg_Debugging()<<METHOD<<": Testing gamma_mu Psi^mu = 0..."<<"\n";
   single_testresult = true;
   std::vector<SComplex> result2(4);
   for (size_t i(0); i<4; ++i){
@@ -270,31 +295,31 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r, in
   }
 
   if (!(std::abs(result2[0].real())<s_accu && std::abs(result2[1].real())<s_accu && std::abs(result2[2].real())<s_accu && std::abs(result2[3].real())<s_accu)){
-    msg_Out() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << std::endl;
+    msg_Debugging() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << "\n";
     testresult = false; single_testresult = false;
   }
   if (!(std::abs(result2[0].imag())<s_accu && std::abs(result2[1].imag())<s_accu && std::abs(result2[2].imag())<s_accu && std::abs(result2[3].imag())<s_accu)){
-    msg_Out() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << std::endl;
+    msg_Debugging() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << "\n";
     testresult = false; single_testresult = false;
   }
-  if (single_testresult) msg_Out()<< "passed" << std::endl;
+  if (single_testresult) msg_Debugging()<< "passed" << "\n";
 
   // p_mu times RS = 0
-  std::cout<<METHOD<<": Testing p_mu Psi^mu = 0..."<<std::endl;
+  msg_Debugging()<<METHOD<<": Testing p_mu Psi^mu = 0..."<<"\n";
   single_testresult = true;
   std::vector<SComplex> result3(4);
   for (int i(0); i<4; ++i){
     result3[i] = SComplex(p[0]) * (*this)[i] + SComplex(-p[1]) * (*this)[4+i] + SComplex(-p[2]) * (*this)[8+i] + SComplex(-p[3]) * (*this)[12+i];
   }
   if (!(std::abs(result3[0].real())<s_accu && std::abs(result3[1].real())<s_accu && std::abs(result3[2].real())<s_accu && std::abs(result3[3].real())<s_accu)){
-    msg_Out() << "p_mu Psi^mu is " << result3[0] << result3[1] << result3[2] << result3[3] << " not zero!" << std::endl;
+    msg_Debugging() << "p_mu Psi^mu is " << result3[0] << result3[1] << result3[2] << result3[3] << " not zero!" << "\n";
     testresult = false; single_testresult = false;
   }
   if (!(std::abs(result3[0].imag())<s_accu && std::abs(result3[1].imag())<s_accu && std::abs(result3[2].imag())<s_accu && std::abs(result3[3].imag())<s_accu)) {
-    msg_Out() << "p_mu Psi^mu is " << result3[0] << result3[1] << result3[2] << result3[3] << " not zero!" << std::endl;
+    msg_Debugging() << "p_mu Psi^mu is " << result3[0] << result3[1] << result3[2] << result3[3] << " not zero!" << "\n";
     testresult = false; single_testresult = false;
   }
-  if (single_testresult) msg_Out()<< "passed" << std::endl;
+  if (single_testresult) msg_Debugging()<< "passed" << "\n";
   return testresult;
 }
 

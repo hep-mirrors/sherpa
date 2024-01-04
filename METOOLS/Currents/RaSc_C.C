@@ -5,7 +5,7 @@
 #include "ATOOLS/Phys/Spinor.H"
 #include "METOOLS/Main/SpinFuncs.H"
 //#define ZERO SComplex(0.0,0.0)
-
+#define M_I SComplex(0.0,1.0)
 namespace METOOLS {
 
   template <typename SType>
@@ -75,7 +75,7 @@ namespace METOOLS {
     char Type() const;
 
     // Tests
-    bool Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti);
+    bool Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti, const int &dir);
 
     // TODO: Necessary or only for test purpose?
     inline CRaScType Get_RSPP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0)
@@ -134,6 +134,7 @@ CRS<SType>::EM(const Vec4D &p, const int cr,const int ca, ATOOLS::Vec4D m_k_mod)
   e(0)=cr; e(1)=ca;
   e.SetH(1);
   static SType sqrttwo(sqrt(SType(2.0)));
+  DEBUG_VAR(e/(sqrttwo*std::conj(m_kp_mod*pp)));
   return e/(sqrttwo*std::conj(m_kp_mod*pp));
 }
 
@@ -147,6 +148,7 @@ CRS<SType>::EP(const Vec4D &p,const int cr,const int ca, ATOOLS::Vec4D m_k_mod)
   e(0)=cr; e(1)=ca;
   e.SetH(0);
   static SType sqrttwo(sqrt(SType(2.0)));
+  DEBUG_VAR(e/(sqrttwo*std::conj(m_km_mod*pm)));
   return e/(sqrttwo*std::conj(m_km_mod*pm));
 }
 
@@ -154,7 +156,9 @@ template <typename SType> CVec4<SType>
 CRS<SType>::EMM(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
   Vec4D m_k_mod;
-  if (hel) m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
+  if (hel)
+    if (p.PSpat()==0) return CVec4Type(0., 1./ sqrt(2.), -std::complex<SType>(0., -1.)/ sqrt(2.), 0., cr, ca, 0);
+    else m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
   else m_k_mod = m_k;
   return EM(p-p.Abs2()/(2.0*m_k_mod*p)*m_k_mod,cr,ca,m_k_mod);
 }
@@ -163,7 +167,9 @@ template <typename SType> CVec4<SType>
 CRS<SType>::EMP(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
   Vec4D m_k_mod;
-  if (hel) m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
+  if (hel)
+    if (p.PSpat()==0) return CVec4Type(0., 1./ sqrt(2.), -std::complex<SType>(0., 1.)/ sqrt(2.), 0., cr, ca, 0);
+    else m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
   else m_k_mod = m_k;
   return EP(p-p.Abs2()/(2.0*m_k_mod*p)*m_k_mod,cr,ca,m_k_mod);
 }
@@ -172,14 +178,15 @@ template <typename SType> CVec4<SType>
 CRS<SType>::EML(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
   Vec4D m_k_mod;
-  if (hel) m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
+  if (hel && p.PSpat()!=0) m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
   else m_k_mod = m_k;
   double p2(p.Abs2()), a(p2/(2.0*m_k_mod*p));
   Vec4D b(p-a*m_k_mod);
   SpinorType bm(-1,b), bp(1,b), am(-1,m_k_mod), ap(1,m_k_mod);
-  CVec4Type e(VT(bp,bm)-SType(a)*VT(ap,am));
+  CVec4Type e((hel && p.PSpat()==0.)?CVec4Type(0., 0., 0., (p[0]/fabs(p[0]))*sqrt(SComplex(4.0*p2))):VT(bp,bm)-SType(a)*VT(ap,am));
   e(0)=cr; e(1)=ca;
   e.SetH(2);
+  DEBUG_VAR(e/sqrt(SComplex(4.0*p2)));
   return e/sqrt(SComplex(4.0*p2));
 }
 
@@ -201,10 +208,6 @@ CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca, m_k),
                                                                           1, cr, ca, s).Bar());
-  CRaritaSchwinger<SType> wf1 = METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(1, abs(b), 1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s,
-                                                                                 this->m_msv?p.Abs2():0, ms),
-                                                                         this->m_msv? EMM(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca) : EM(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, m_k),
-  1, cr, ca, s);
   return wf;
 }
 
@@ -309,7 +312,7 @@ template <typename SType>
 void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
-  this->m_p=p;
+            this->m_p=p;
   // TODO: Tests in RSPP, RSMM, und hier in DEBUG-Options sinnvoll einbauen
   if (this->m_fl.Mass()==0.0 && p[1]==0.0 && p[2]==0.0)
     this->m_p[0]=this->m_p[0]<0.0?
@@ -317,7 +320,9 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   bool anti(this->m_fl.IsAnti());
   if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
   this->ResetJ();
+  //TODO: Stimmit das hier?
   int r(anti?-1:1);
+  // m_dir>0: originally incoming, m_dir<0: outgoing; for calculation all particles are handled as outcoming
   int b((anti^(this->m_dir>0))?1:-1);
   //TODO: Was bedeutet ch? Was für Werte kann ch für RaSc annehmen?
   // TODO: !!!Was ist nun der richtige Wert für SetH() 0 und 1 im masselosen Fall oder ganzzahlige Spinwerte (+-1, +-3)!!!
@@ -333,10 +338,10 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       AddJ(c);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
-		     <<"0 "<<this->m_id<<" "<<j
+		     <<"+ "<<this->m_id<<" "<<j
 		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
+      j.Test_Properties(p, j.R(), j.B(), this->m_dir);
 #endif
-      j.Test_Properties(p, j.R(), j.B());
     }
     if (ch!=3){
       //CRaScType j(anti^(this->m_dir>0)? RSPP(p, -1, 0, -this->m_dir, cr, ca): RSPP(p, 1, 0, this->m_dir, cr, ca));
@@ -344,11 +349,11 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       //j.SetH(anti^(this->m_dir>0)?0:1);
       j.SetH(0);
 #ifdef DEBUG__BG
-      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"+ "<<this->m_id
+      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"++ "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
+      j.Test_Properties(p, j.R(), j.B(), this->m_dir);
 #endif
-      j.Test_Properties(p, j.R(), j.B());
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
 /*    if (p_sub) static_cast<Dipole_Color*>
@@ -366,10 +371,10 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       AddJ(c);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
-		     <<"0 "<<this->m_id<<" "<<j
+		     <<"- "<<this->m_id<<" "<<j
 		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
+      j.Test_Properties(p, j.R(), j.B(), this->m_dir);
 #endif
-      j.Test_Properties(p, j.R(), j.B());
     }
     if (ch!=-3){
       //CRaScType j(anti^(this->m_dir>0) ? RSMM(p, -1, 0, -this->m_dir, cr, ca) : RSMM(p, 1, 0, this->m_dir, cr, ca));
@@ -377,19 +382,19 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       //j.SetH(anti^(this->m_dir>0)?1:0);
       j.SetH(1);
 #ifdef DEBUG__BG
-      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"- "<<this->m_id
+      msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"-- "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
+      j.Test_Properties(p, j.R(), j.B(), this->m_dir);
 #endif
-      j.Test_Properties(p, j.R(), j.B());
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
 /*    if (p_sub) static_cast<Dipole_Color*>
       (p_sub->In().front()->Color().front())->AddJJK(c);*/
     }
   }
-  Test_WF_Properties(p, anti);
 #ifdef DEBUG__BG
+  Test_WF_Properties(p, anti, this->m_dir);
   if (p_sub) Print();
 #endif
 }
@@ -467,6 +472,8 @@ template <typename SType> void CRS<SType>::SContract
 	       jit1(j->begin());jit1!=j->end();++jit1)
 	  if ((**jit1)(0)==(**jit2)(1) && (**jit1)(1)==(**jit2)(0) &&
 	      (*jit1)->S()==offset && (*jit2)->S()==offset) {
+      DEBUG_VAR(**jit1);
+      DEBUG_VAR(**jit2);
 #ifdef DEBUG__BG
 	    msg_Debugging()<<"Add ("<<m_hm[i]<<")"
 			   <<**jit1***jit2<<"["<<offset<<"]\n";
@@ -522,7 +529,7 @@ char CRS<SType>::Type() const
 
 // properties tested according to S.F.Novaes and D. Spehler, Nuclear Physics B 371 (1992) 618-636
 template<typename SType>
-bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
+bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti, const int &dir) {
   CRaritaSchwinger<SType> rspp = anti?RSPP(p, -1, 1, 1, 0, 0, 1):RSPP(p, 1, 1, 1, 0, 0, 1);
   CRaritaSchwinger<SType> rsmm = anti?RSMM(p, -1, 1, 1, 0, 0, -1):RSMM(p, 1, 1, 1, 0, 0, -1);
   METOOLS::Gamma<SType> gammavec = Gamma<SType>();
@@ -532,43 +539,51 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
   // properties of massless RS wave functions
   if (!this->m_msv){
     // normalization
-    std::cout<<METHOD<<": Testing normalization of Rarita-Schwinger wave function..."<<std::endl;
+    msg_Debugging()<<METHOD<<": Testing normalization of Rarita-Schwinger wave function..."<<"\n";
     TCMatrix<SType> result1 = rspp.Contract4Index(rspp.Bar()) + rsmm.Contract4Index(rsmm.Bar()) + gammavec * p;
     for (size_t i(0); i<4; ++i){
       for (size_t j(0); j<4; ++j){
         if (std::abs(result1[i][j].real())> rspp.Accu()|| std::abs(result1[i][j].imag())>rspp.Accu()) {
-          msg_Out()<<"Component " << i << j << " of resulting 4x4 matrix is " << result1[i][j] << ", instead of zero!"
-          << std::endl;
+          msg_Debugging()<<"Component " << i << j << " of resulting 4x4 matrix is " << result1[i][j] << ", instead of zero!"
+          << "\n";
           global_testresult = false;
         }
       }
     }
-    if (global_testresult) msg_Out() << "passed" << std::endl;
+    if (global_testresult) msg_Debugging() << "passed" << "\n";
 
     // equality between U++ and V-- / U-- and V++ for bar and non-bar
-    std::cout<<METHOD<<": Testing equality of U++ and V-- / U-- and V++ Rarita-Schwinger wave functions..."<<std::endl;
+    msg_Debugging()<<METHOD<<": Testing equality of U++ and V-- / U-- and V++ Rarita-Schwinger wave functions..."<<"\n";
     CRaritaSchwinger<SType> rspp1 = anti?RSPP(p, 1, 1, 1, 0, 0, 1):RSPP(p, -1, 1, 1, 0, 0, 1);
     CRaritaSchwinger<SType> rsmm1 = anti?RSMM(p, 1, 1, 1, 0, 0, -1):RSMM(p, -1, 1, 1, 0, 0, -1);
     for (size_t i(0); i<16; ++i){
       if (std::abs((rspp1[i]-rsmm[i]).real()) > rsmm.Accu()|| std::abs((rspp1[i]-rsmm[i]).imag()) > rsmm.Accu()) {
-        msg_Out()<<"Components " << i << " of the Rarita-Schwinger wave functions ";
-        anti?(msg_Out()<<"U++ / V--" << rspp1[i] << "/" << rsmm[i]):
-        (msg_Out()<<"U-- / V++" << rsmm[i] << "/" << rspp1[i]) << " are not equal!" << std::endl;
+        if (anti){
+          msg_Debugging()<<"Components " << i << " of the Rarita-Schwinger wave functions " << "U++ / V--" << rspp1[i] <<
+                         "/" << rsmm[i] << " are not equal!" << "\n";}
+        else{
+          msg_Debugging()<<"Components " << i << " of the Rarita-Schwinger wave functions " << "U-- / V++" << rsmm[i] <<
+          "/" << rspp1[i] << " are not equal!" << "\n";}
         global_testresult = false; local_testresult = false;
       }
       if (std::abs((rsmm1[i]-rspp[i]).real()) > rspp.Accu()|| std::abs((rsmm1[i]-rspp[i]).imag()) > rspp.Accu()) {
-        msg_Out()<<"Components " << i << " of the Rarita-Schwinger wave functions ";
-        anti?(msg_Out()<<"U-- / V++" << rsmm1[i] << "/" << rspp[i]):
-        (msg_Out()<<"U++ / V--" << rspp[i] << "/" << rsmm1[i]) << " are not equal!" << std::endl;
+        if (anti){
+          msg_Debugging()<<"Components " << i << " of the Rarita-Schwinger wave functions " << "U-- / V++" << rsmm1[i]
+                         << "/" << rspp[i] << " are not equal!" << "\n";
+        }
+        else{
+          msg_Debugging()<<"Components " << i << " of the Rarita-Schwinger wave functions " <<
+                         "U++ / V--" << rspp[i] << "/" << rsmm1[i] << " are not equal!" << "\n";
+        }
         global_testresult = false; local_testresult = false;
       }
     }
-    if (local_testresult) msg_Out() << "passed" << std::endl;
+    if (local_testresult) msg_Debugging() << "passed" << "\n";
   }
   else{
     // properties of massive RS wave functions
     // normalization
-    std::cout<<METHOD<<": Testing normalization of Rarita-Schwinger wave function..."<<std::endl;
+    msg_Debugging()<<METHOD<<": Testing normalization of Rarita-Schwinger wave function..."<<"\n";
     CRaritaSchwinger<SType> rsp = anti?RSP(p, -1, 1, 1, 0, 0, 1):RSP(p, 1, 1, 1, 0, 0, 1);
     CRaritaSchwinger<SType> rsm = anti?RSM(p, -1, 1, 1, 0, 0, -1):RSM(p, 1, 1, 1, 0, 0, -1);
     std::vector<std::complex<SType>> result1(16);
@@ -592,17 +607,18 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
     result1[15] = rsmm.Bar()*rsmm+2*rspp.R()*p.Mass();
     for (size_t i(0); i<16; ++i){
       if (std::abs(result1[i].real()) > rspp.Accu()|| std::abs(result1[i].imag()) > rspp.Accu()) {
-        msg_Out()<<"Normalization of the Rarita-Schwinger wave functions" << i <<
-        "do not fit! 0=++bar*++, 1=++bar*+, 2=++bar*-, 3=++bar*--, 4=+bar*++ ..." << std::endl;
+        msg_Debugging()<<"Normalization of the Rarita-Schwinger wave functions" << i <<
+        "do not fit! 0=++bar*++, 1=++bar*+, 2=++bar*-, 3=++bar*--, 4=+bar*++ ..." << "\n";
         global_testresult = false;
       }
     }
-    if (global_testresult) msg_Out() << "passed" << std::endl;
+    if (global_testresult) msg_Debugging() << "passed" << "\n";
 
     // completeness relation according to Hagiwara et al. Eur. Phys. J. C (2011) 71: 1529
-    std::cout<<METHOD<<": Testing completeness of Rarita-Schwinger wave functions..."<<std::endl;
+    msg_Debugging()<<METHOD<<": Testing completeness of Rarita-Schwinger wave functions..."<<"\n";
     ATOOLS::TCMatrix<SType> p_slash = gammavec*p;
-    ATOOLS::TCMatrix<SType> spropagator = ATOOLS::TCMatrix<SType>(p_slash + (anti?-1.0:1.0) * SComplex(p.Mass()) *
+    //TODO: Stimmt das dir an dieser Stelle???
+    ATOOLS::TCMatrix<SType> spropagator = ATOOLS::TCMatrix<SType>(p_slash + (-dir) * (anti?-1.0:1.0) * SComplex(p.Mass()) *
                                                                                       ATOOLS::TCMatrix<SType>(4, true));
     // --------------------------------------------------------------------------------------------------------------
     // Sum over Lorentz index
@@ -610,12 +626,12 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
     + rsmm.Contract4Index(rsmm.Bar());
     for (size_t k(0); k<4; ++k){
       for (size_t l(0); l<4; ++l){
-        std::cout << left_sum_red[k][l] << "  " << (spropagator*TCMatrix<SType>(4, true)*2.)[k][l] << std::endl;
+        std::cout << left_sum_red[k][l] << "  " << (spropagator*TCMatrix<SType>(4, true)*2.)[k][l] << "\n";
         if (std::abs((left_sum_red[k][l]+(spropagator*TCMatrix<SType>(4, true)*2.)[k][l]).real()) > rspp.Accu() ||
           std::abs((left_sum_red[k][l]+(spropagator*TCMatrix<SType>(4, true)*2.)[k][l]).imag()) > rspp.Accu()) {
-          msg_Out() << "Completeness relation of the Rarita-Schwinger wave functions is not hold: "
+          msg_Debugging() << "Completeness relation of the Rarita-Schwinger wave functions is not hold: "
                        "component " << k << " " << l << "of the resulting 16 dimensional tensor is " <<
-                    left_sum_red[k][l]+(spropagator*TCMatrix<SType>(4, true)*2.)[k][l] << " instead of zero!" << std::endl;}}}*/
+                    left_sum_red[k][l]+(spropagator*TCMatrix<SType>(4, true)*2.)[k][l] << " instead of zero!" << "\n";}}}*/
       // --------------------------------------------------------------------------------------------------------------
     // Full completeness relation
     for (size_t mu(0); mu < 4; ++mu){
@@ -638,18 +654,19 @@ bool CRS<SType>::Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti) {
               // propagator is spinor propagator[A][C] * lorentz tensor[C][B] for fixed lorentz indizes mu, nu
               propagator += spropagator[A][C]*comp_lt_ten;
             }
-            if (std::abs((left_sum - propagator).real()) > rspp.Accu() ||
-            std::abs((left_sum - propagator).imag()) > rspp.Accu()) {
-              msg_Out() << "Completeness relation of the Rarita-Schwinger wave functions is not fulfilled: "
+            // TODO: Stimmt das mit dem dir hier?
+            if (std::abs((left_sum - SComplex(-dir)*propagator).real()) > rspp.Accu() ||
+            std::abs((left_sum - SComplex(-dir)*propagator).imag()) > rspp.Accu()) {
+              msg_Debugging() << "Completeness relation of the Rarita-Schwinger wave functions is not fulfilled: "
                            "component " << A << " " << B << " " << mu << " " << nu << " of the resulting 16 dimensional tensor is " <<
-                        left_sum - propagator << " instead of zero!" << std::endl;
+                        left_sum - SComplex(-dir)*propagator << " instead of zero!" << "\n";
               global_testresult = false; local_testresult = false;
             }
           }
         }
       }
     }
-    if (local_testresult) msg_Out() << "passed" << std::endl;
+    if (local_testresult) msg_Debugging() << "passed" << "\n";
   }
 
   // gauge invariance
