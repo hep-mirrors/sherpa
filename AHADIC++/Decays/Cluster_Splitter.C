@@ -113,8 +113,11 @@ void Cluster_Splitter::CalculateLimits() {
 		       4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2));
   for (size_t i=0;i<2;i++) {
     double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
-    m_zmin[i] = (centre-lambda)/(2.*m_Q2);
-    m_zmax[i] = (centre+lambda)/(2.*m_Q2);
+    // m_zmin[i] = (centre-lambda)/(2.*m_Q2);
+    // m_zmax[i] = (centre+lambda)/(2.*m_Q2);
+    m_zmin[i] = 0.;
+    m_zmax[i] = 1.;
+
     m_mean[i]  = sqrt(m_kt02[0]);
     m_sigma[i] = sqrt(m_kt02[0]);
   }

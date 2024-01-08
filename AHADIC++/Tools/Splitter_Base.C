@@ -14,7 +14,7 @@ Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   p_flavourselector(flavourselector),
   p_ktselector(ktselector),
-  m_ktorder(false), m_ktfac(1.),
+  m_ktorder(false),
   m_attempts(100),
   m_analyse(false)
 { }
@@ -117,9 +117,27 @@ void Splitter_Base::ConstructPoincare() {
 }
 
 bool Splitter_Base::MakeSplitting() {
-  PopFlavours();
-  DetermineMinimalMasses();
-  return (MakeKinematics() && FillParticlesInLists());
+  // insert do while loop
+  int n_tries {0};
+  do {
+    reset_var_weights();
+    p_flavourselector->reset_var_weights();
+
+    n_tries++;
+    PopFlavours();
+    DetermineMinimalMasses();
+    MakeTransverseMomentum();
+    MakeLongitudinalMomenta();
+    // // once one of them returns false, the others should execute
+    // if(!MakeLongitudinalMomenta())
+    //   return false;
+  } while ( (!CheckKinematics() || !FillParticlesInLists()) && (n_tries < 100) );
+
+  // if(!CheckKinematics())
+  //   return false;
+  // if(!FillParticlesInLists())
+  //   return false;
+  return true;
 }
 
 void Splitter_Base::PopFlavours() {
@@ -171,16 +189,7 @@ void Splitter_Base::DetermineMinimalMasses() {
   }
 }
 
-void Splitter_Base::reset_var_weights() {};
-void Splitter_Base::accept_splitting() {};
-
-bool Splitter_Base::MakeKinematics() {
-  MakeTransverseMomentum();
-  return (MakeLongitudinalMomenta() && CheckKinematics());
-}
-
 void Splitter_Base::MakeTransverseMomentum() {
-  m_ktfac  = Max(1.,m_Q2/(4.*m_minQ[0]*m_minQ[1]));
   m_kt2max = Min(p_part[0]->KT2_Max(),p_part[1]->KT2_Max());
   double ktmax  = Min(m_ktmax,
 		      (m_ktorder?
@@ -194,12 +203,16 @@ void Splitter_Base::MakeTransverseMomentum() {
 	       <<" min = "<<m_minmass<<".\n";
     abort();
   }
-  m_ktfac = 1.;
   bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
-  //std::cout << "Splitter_Base\n";
   m_kt    = (*p_ktselector)(ktmax);
   m_kt2   = m_kt*m_kt;
-  m_phi   = 2.*M_PI*ran->Get();
-  m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);
+  const double phi   = 2.*M_PI*ran->Get();
+  m_ktvec = m_kt * Vec4D(0.,cos(phi),sin(phi),0.);
 }
 
+void Splitter_Base::reset_var_weights() {};
+void Splitter_Base::accept_splitting() {};
+bool Splitter_Base::MakeKinematics() {
+  MakeTransverseMomentum();
+  return (MakeLongitudinalMomenta() && CheckKinematics());
+}

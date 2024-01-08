@@ -38,7 +38,7 @@ namespace AHADIC {
     double          m_minQ[2], m_minQ2[2], m_mdec[2], m_mdec2[2];
 
     double          m_zmin[2], m_zmax[2], m_z[2];
-    double          m_ktmax, m_kt2max, m_ktfac, m_kt, m_kt2, m_phi;
+    double          m_ktmax, m_kt2max, m_kt, m_kt2;
     ATOOLS::Vec4D   m_ktvec;
 
     ATOOLS::Poincare m_boost, m_rotat;
