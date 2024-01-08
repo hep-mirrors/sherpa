@@ -45,6 +45,15 @@ namespace AMISIC {
   };
   std::ostream &operator<<(std::ostream&, const scale_scheme::code&);
   std::istream &operator>>(std::istream&, scale_scheme::code&);
+  struct two_pions {
+    enum code {
+      none            = 0,
+      rho_only        = 1,
+      rho_omega       = 2,
+      rho_omega_cont  = 3,
+      cont_only       = 4
+    };
+  };
 
   class MI_Parameters {
   private:
@@ -53,6 +62,7 @@ namespace AMISIC {
     evt_type::code     m_evttype;
     overlap_form::code m_overlapform;
     scale_scheme::code m_scalescheme;
+    two_pions::code    m_twopions;
     std::map<std::string,double> m_parameters;
 
   public:
@@ -62,9 +72,10 @@ namespace AMISIC {
     double operator()(const std::string& keyword) const;
     double CalculatePT02(const double & s=-1) const;
 
-    const evt_type::code     & GetEvtType()     const { return m_evttype; }
-    const overlap_form::code & GetOverlapForm() const { return m_overlapform; }
-    const scale_scheme::code & GetScaleScheme() const { return m_scalescheme; }
+    const evt_type::code     & GetEvtType()          const { return m_evttype; }
+    const overlap_form::code & GetOverlapForm()      const { return m_overlapform; }
+    const scale_scheme::code & GetScaleScheme()      const { return m_scalescheme; }
+    const two_pions::code    & GetTwoPionTreatment() const { return m_twopions; }
   };
   
   extern const MI_Parameters * mipars;
