@@ -69,6 +69,26 @@ MI_Parameters::MI_Parameters() :
     = s["ElasticSlope_c0"].SetDefault(2.24).Get<double>();
   m_parameters[string("ElasticSlope_c1")]
     = s["ElasticSlope_c1"].SetDefault(2.1).Get<double>();
+  m_parameters[string("f_omega")]
+    = s["f_omega"].SetDefault(0.15).Get<double>();
+  m_parameters[string("phi_omega")]
+    = s["phi_omega"].SetDefault(-0.25).Get<double>();
+  m_parameters[string("f_nr")]
+    = s["f_nr"].SetDefault(0.1675).Get<double>();
+  m_parameters[string("Lambda_nr")]
+    = s["Lambda_nr"].SetDefault(0.15).Get<double>();
+  m_parameters[string("delta_nr")]
+    = s["delta_nr"].SetDefault(0.75).Get<double>();
+  size_t twopions = s["TwoPionInterference"].SetDefault(1).Get<size_t>();
+  switch (twopions) {
+  case 4:  m_twopions = two_pions::cont_only;      break;
+  case 3:  m_twopions = two_pions::rho_omega_cont; break;
+  case 2:  m_twopions = two_pions::rho_omega;      break;
+  case 1:  m_twopions = two_pions::rho_only;       break;  
+  case 0:  
+  default: m_twopions = two_pions::none;           break;
+  }
+  //msg_Out()<<twopions<<" --> "<<m_twopions<<"\n";
 }
 
 double MI_Parameters::CalculatePT02(const double & s) const {

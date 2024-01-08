@@ -42,11 +42,13 @@ namespace AMISIC {
     std::array<ATOOLS::Flavour,4> m_outflav;
     std::array<double,4>          m_outmasses, m_outmasses2;
     std::array<size_t,2>          m_hadtags;
+    ATOOLS::Vec4D                 m_inmom[2], m_outmom[4];
     double m_smin, m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_alphaQED;
-    double m_s, m_s0, m_mpi, m_deltaMres, m_cres;
+    double m_s, m_s0, m_mpi, m_mpi2, m_deltaMres, m_cres;
+    double m_mrho, m_mrho2, m_mrho_min, m_momega, m_momega2, m_Grho, m_Grho2, m_Gomega, m_Gomega2;
+    double m_q_rho, m_q_omega, m_f_omega, m_phi_omega, m_f_nr, m_Lambda2_nr, m_delta_nr, m_A2max;
     double m_weight, m_muf2, m_mur2;
-    ATOOLS::Vec4D m_inmom[2];
-    ATOOLS::Vec4D m_outmom[4];
+    two_pions::code m_twopions;
 
     unsigned long int m_calls, m_fails;
     
@@ -106,6 +108,9 @@ namespace AMISIC {
     bool   SplitDiffractiveState(const size_t & pos);
     bool   SplitDiffractiveStateIntoHadrons(const size_t & pos,const double & M2);
     bool   SelectFlavoursOfDiffraction(const size_t & pos,const double & M2);
+    bool   SetRhoMasses2();
+    double RhoMassModifier(const double & M2);
+    void   SplitRhoIntoPions(const size_t & pos);
     ATOOLS::Blob * ElasticScatter();
     ATOOLS::Blob * SingleDiffractiveScatter(const size_t & pos);
     ATOOLS::Blob * DoubleDiffractiveScatter();

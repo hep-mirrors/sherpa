@@ -26,7 +26,7 @@ using namespace std;
 Resonance_Finder::Resonance_Finder(Matrix_Element_Handler* meh) :
   p_mehandler(meh), m_on(false)
 {
-  if (meh) {
+  if (meh && meh->Generators()->size()>0) {
     Scoped_Settings meqedsettings{Settings::GetMainSettings()["ME_QED"] };
     m_on = meqedsettings["CLUSTERING_ENABLED"].SetDefault(true).Get<bool>();
     m_resdist =
@@ -165,7 +165,7 @@ void Resonance_Finder::FindSubProcessInfosContainingLeptons
 void Resonance_Finder::BuildResonantBlobs
 (Particle_Vector& pv, Blob_Vector& blobs)
 {
-  BuildResonantBlobs(pv, blobs, p_mehandler->Process());
+  if (m_on) BuildResonantBlobs(pv, blobs, p_mehandler->Process());
 }
 
 void Resonance_Finder::BuildResonantBlobs

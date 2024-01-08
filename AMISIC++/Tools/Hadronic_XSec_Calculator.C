@@ -9,15 +9,20 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-// will have to make sure that pions are initialised below.
-//
+/////////////////////////////////////////////////////////////////////////////////////////
+// Non-perturbative cross section calculator, with cross sections as given in
+// Schuler-Sjostrand PRD 49 (1994) 2257.
 // All cross sections here are returned in GeV^{-2}, with s in GeV^2
 //
-// sigma(s) = X_pomeron s^{0.0808} + X_reggeon s^{-0.4525}
-//
-// The X_{pomeron/reggeon} (m_xsecpom and m_xsecregge) are given in units of mb,
+// The total cross section will be given as
+// sigma(s) = X_pomeron s^{0.0808} + X_reggeon s^{-0.4525},
+// where the he X_{pomeron/reggeon} (m_xsecpom and m_xsecregge) are given in units of mb,
 // to make comparison with literature simpler.
-// We use units of mb^{1/2} for the (constant) triple pomeron vertex.
+// We also use units of mb^{1/2} for the (constant) triple pomeron vertex.
+//
+// When invoking this class, we will have to make sure that nucleons, pions, etc. are
+// initialised.
+/////////////////////////////////////////////////////////////////////////////////////////
 Hadronic_XSec_Calculator::
 Hadronic_XSec_Calculator(MODEL::Model_Base * model,
 			 const Flavour & fl1,const Flavour & fl2) :

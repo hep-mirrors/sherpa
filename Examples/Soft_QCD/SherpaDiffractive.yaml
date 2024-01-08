@@ -9,21 +9,26 @@ EVENT_TYPE:          MinimumBias
 ME_GENERATORS:       None
 SOFT_COLLISIONS:     Amisic
 AMISIC:
-  EVENT_TYPE:             Elastic  # DiffractiveB # 
+  EVENT_TYPE:             Elastic # DiffractiveB # 
   PomeronIntercept:       0.0808
   PomeronSlope:           0.25
   TriplePomeronCoupling:  0.318
   ReggeonIntercept:      -0.4525
+  TwoPionInterference:    3
   Diffractive_cres:       1.5    # tunable for diffractive xsecs, default: 2
-  Diffractive_Mres:       2.    # tunable for diffractive xsecs, default: 2
-  Diffractive_s1:        20.    # only for cross section calculation: 20.
-  ElasticSlope_c0:        2.28  # only for cross section calculation: 2.24
-  ElasticSlope_c1:        2.1   # only for cross section calculation: 2.1
-
+  Diffractive_Mres:       2.     # tunable for diffractive xsecs, default: 2
+  Diffractive_s1:         20.    # only for cross section calculation: 20.
+  ElasticSlope_c0:        2.28   # only for cross section calculation: 2.24
+  ElasticSlope_c1:        2.1    # only for cross section calculation: 2.1
+  f_omega:                0.15
+  phi_omega:             -0.25
+  f_nr:                   0.19
+  Lambda_nr:              0.1
+  delta_nr:               3.    #0.75
 YFS:
   MODE:              None
 
-ANALYSIS_OUTPUT: Elastic3 # Diffractive2 # 
+ANALYSIS_OUTPUT: Elastic3_3 # Diffractive2 # 
 
 ANALYSIS: Rivet
 RIVET:
