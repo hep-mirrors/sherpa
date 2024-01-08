@@ -1,4 +1,4 @@
-find_package(Catch2 2.13.0...<3 REQUIRED)
+find_package(Catch2 3 REQUIRED)
 
 # find all .C files in the unit tests directory (and subdirectories)
 file(GLOB_RECURSE UNIT_TEST_SRC "${CMAKE_SOURCE_DIR}/Tests/Unit/test_*.C")
@@ -14,8 +14,8 @@ if(NOT (CMAKE_SYSTEM_NAME MATCHES Darwin))
   target_link_options(sherpa_tests PRIVATE "LINKER:-no-as-needed")
 endif()
 
-# for Catch2 v3 change Catch2::Catch2 to Catch2::Catch2WithMain
-target_link_libraries(sherpa_tests PRIVATE Catch2::Catch2 SHERPAAll)
+# for Catch2 v2 change Catch2::Catch2WithMain to Catch2::Catch2
+target_link_libraries(sherpa_tests PRIVATE Catch2::Catch2WithMain SHERPAAll)
 
 #add_test(unit_tests sherpa_tests)
 include(CTest)
