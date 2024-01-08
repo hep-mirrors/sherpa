@@ -22,11 +22,11 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,Hadronic_XSec_Calcula
   m_eps_pomeron(p_xsecs->EpsPomeron()), m_alphaP_pomeron(p_xsecs->AlphaPPomeron()),
   m_triple_pomeron(p_xsecs->TriplePomeron()), m_alphaQED(p_xsecs->AlphaQED()),
   m_s0(1./m_alphaP_pomeron), 
-  m_mpi(Flavour(kf_pi).HadMass()), m_mpi2(m_mpi*m_mpi),
+  m_mpi(Flavour(kf_pi).Mass()), m_mpi2(m_mpi*m_mpi),
   m_deltaMres(p_xsecs->Diffractive_Mres()), m_cres(p_xsecs->Diffractive_cres()),
-  m_mrho(Flavour(kf_rho_770).HadMass()), m_mrho2(sqr(m_mrho)),
+  m_mrho(Flavour(kf_rho_770).Mass()), m_mrho2(sqr(m_mrho)),
   m_mrho_min(0.3), m_q_rho(sqrt(m_mrho2-4.*m_mpi2)), 
-  m_momega(Flavour(kf_omega_782).HadMass()), m_momega2(sqr(m_momega)),
+  m_momega(Flavour(kf_omega_782).Mass()), m_momega2(sqr(m_momega)),
   m_q_omega(sqrt(m_momega2-4.*m_mpi2)), 
   m_Grho(Flavour(kf_rho_770).Width()), m_Grho2(sqr(m_Grho)),
   m_Gomega(Flavour(kf_omega_782).Width()), m_Gomega2(sqr(m_Gomega)), m_A2max(0.), 
@@ -49,7 +49,8 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,Hadronic_XSec_Calcula
     m_masses[i] = m_inflav[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
   }
   if (m_ana) { Tests(); exit(0); }
-  //msg_Out()<<METHOD<<": "<<m_f_nr<<", "<<m_Lambda2_nr<<", "<<m_delta_nr<<"\n"; exit(1);
+  //msg_Out()<<METHOD<<": f = "<<m_f_nr<<", Lambda^2 = "<<m_Lambda2_nr<<", delta = "<<m_delta_nr<<", "
+  //	   <<"m(pi)^2 = "<<m_mpi2<<", Gamma(omega) = "<<m_Gomega<<".\n"; exit(1);
 }
 
 NonPerturbative_XSecs::~NonPerturbative_XSecs() {
@@ -219,7 +220,8 @@ Blob * NonPerturbative_XSecs::ElasticScatter() {
   size_t trials=0;
   do { t = ExponentialDist(-m_s,0.,arg); } while (!FixOutMomenta(t) && (trials++)<1000);
   if (trials>=1000) {
-    if (m_fails<5) msg_Error()<<METHOD<<" fails: t = "<<t<<" yields no momenta.\n";
+    if (m_fails<5)
+      msg_Error()<<METHOD<<" fails: t = "<<t<<" yields no momenta, s = "<<m_s<<".\n";
     m_fails++;
     return NULL;
   }
@@ -403,9 +405,9 @@ bool NonPerturbative_XSecs::SetRhoMasses2() {
 	m_outmasses2[2*i] = sqr(m_mrho_min + (5.-m_mrho_min)*ran->Get());
       } while(RhoMassModifier(m_outmasses2[2*i]) < m_A2max*ran->Get());
     }
-  } while (trials++<10000 &&
+  } while (trials++ < int(m_A2max)*10000 &&
 	   m_s<sqr(sqrt(m_outmasses2[0])+sqrt(m_outmasses2[2])));
-  return (trials<10000);
+  return (trials<int(m_A2max)*10000);
 }
 
 double NonPerturbative_XSecs::RhoMassModifier(const double & M2) {
@@ -436,7 +438,7 @@ double NonPerturbative_XSecs::RhoMassModifier(const double & M2) {
     double  GomegaM2    = m_Gomega*qomegaratio*m_momega/sqrt(M2), Gomega2M2 = GomegaM2*GomegaM2;
     Complex BWomega     = ( m_momega*m_Gomega/(sqr(M2-m_momega2)+m_momega2*Gomega2M2) *
 			    Complex(M2-m_momega2, -m_momega*GomegaM2) );
-    A += m_f_omega * Complex(cos(m_phi_omega),sin(m_phi_omega)) * BWomega;
+    A += m_f_omega * M2/m_momega2 * Complex(cos(m_phi_omega),sin(m_phi_omega)) * BWomega;
   }
   /////////////////////////////////////////////////////////////////////////////////////////
   // Correct for the initial fixed-width Breit-Wigner when only using the rho:
@@ -445,11 +447,8 @@ double NonPerturbative_XSecs::RhoMassModifier(const double & M2) {
   /////////////////////////////////////////////////////////////////////////////////////////
   double rel = (sqr(std::abs(BWrho * A + Complex(A_nr,0.)))/sqr(std::abs(BWrho * A)));
   if (rel<1.) 
-    msg_Out()<<"Gotcha! "<<METHOD<<"(M = "<<sqrt(M2)<<", Gratio = "<<(GrhoM2/m_Grho)<<", "
-  	   <<"BW(rho) = "<<BWrho<<"\n"
-	   <<"   A = "<<A<<", "<<A_nr
-  	   <<" --> wt = "<<sqr(std::abs(BWrho * A + Complex(A_nr, 0.)))<<" "
-	   <<"vs. "<<rel<<"\n";
+    msg_Out()<<"Gotcha! "<<METHOD<<"(M = "<<sqrt(M2)<<", A = "<<(BWrho*A)<<", "<<A_nr
+	     <<" --> wt = "<<sqr(std::abs(BWrho * A + Complex(A_nr, 0.)))<<" ["<<rel<<"].\n";
   // *
   //			      (sqr(M2-m_mrho2) + m_mrho2*m_Grho2)/(m_mrho2*m_Grho2))<<"\n";
   return sqr(std::abs(BWrho * A + Complex(A_nr, 0.) ));
@@ -579,9 +578,6 @@ Blob * NonPerturbative_XSecs::InitBlob(const double & muR2,const double & muQ2) 
   Blob * blob = new Blob();
   blob->SetId();
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>( m_integrator.TotalXSec()*1e9 ));
-  blob->AddData("Renormalization_Scale",new Blob_Data<double>(sqrt(muR2)));
-  blob->AddData("Factorization_Scale",new Blob_Data<double>(sqrt(muQ2)));
-  blob->AddData("Resummation_Scale",new Blob_Data<double>(sqrt(muQ2)));
   for (size_t i=0;i<2;i++) {
     Particle * part = new Particle(-1,m_inflav[i],m_inmom[i],'I');
     part->SetNumber();
@@ -600,15 +596,23 @@ Blob * NonPerturbative_XSecs::InitBlob(const double & muR2,const double & muQ2) 
     blob->AddToOutParticles(part);
   }
   if (needs_showers) {
+    blob->AddData("Renormalization_Scale",new Blob_Data<double>(sqrt(muR2)));
+    blob->AddData("Factorization_Scale",new Blob_Data<double>(sqrt(muQ2)));
+    blob->AddData("Resummation_Scale",new Blob_Data<double>(sqrt(muQ2)));
     blob->SetType(btp::Hard_Collision);
     blob->SetStatus(blob_status::needs_showers);
+    m_muf2 = muQ2;
+    m_mur2 = muR2;
   }
   else {
+    blob->AddData("Renormalization_Scale",new Blob_Data<double>(sqrt(0.)));
+    blob->AddData("Factorization_Scale",new Blob_Data<double>(sqrt(0.)));
+    blob->AddData("Resummation_Scale",new Blob_Data<double>(sqrt(0.)));
     blob->SetType(btp::Elastic_Collision);
     blob->SetStatus(blob_status::needs_beams | blob_status::needs_hadrondecays);
+    m_muf2 = 0.;
+    m_mur2 = 0.;
   }
-  m_muf2 = muQ2;
-  m_mur2 = muR2;
   return blob;
 }
 
