@@ -49,14 +49,23 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
   if (!InitSplitting(part1,part2,part3))
     return false;
 
-  for(size_t attempts(0); attempts<1; ++attempts) {
+  for(size_t attempts(0); attempts<m_attempts; ++attempts) {
     reset_var_weights();
     p_flavourselector->reset_var_weights();
-    if(MakeSplitting()) {
-      accept_splitting();
-      p_flavourselector->accept_splitting();
-      return true;
-    }
+
+    PopFlavours();
+    DetermineMinimalMasses();
+    MakeTransverseMomentum();
+    if(!MakeLongitudinalMomenta())
+      continue;
+    if(!CheckKinematics())
+      continue;
+    if(!FillParticlesInLists())
+      continue;
+
+    accept_splitting();
+    p_flavourselector->accept_splitting();
+    return true;
   }
   return false;
 }
