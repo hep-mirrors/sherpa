@@ -49,7 +49,7 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
   if (!InitSplitting(part1,part2,part3))
     return false;
 
-  for(size_t attempts(0); attempts<m_attempts; ++attempts) {
+  for(size_t attempts(0); attempts<1; ++attempts) {
     reset_var_weights();
     p_flavourselector->reset_var_weights();
     if(MakeSplitting()) {
@@ -119,33 +119,35 @@ void Splitter_Base::ConstructPoincare() {
 bool Splitter_Base::MakeSplitting() {
   // insert do while loop
   int n_tries {0};
+  bool succ {false};
   do {
-    reset_var_weights();
-    p_flavourselector->reset_var_weights();
-
     n_tries++;
     PopFlavours();
     DetermineMinimalMasses();
     MakeTransverseMomentum();
-    MakeLongitudinalMomenta();
+    if(!MakeLongitudinalMomenta())
+      continue;
+    if(!CheckKinematics())
+      continue;
+    if(!FillParticlesInLists())
+      continue;
+    succ = true;
+    break;
     // // once one of them returns false, the others should execute
     // if(!MakeLongitudinalMomenta())
     //   return false;
-  } while ( (!CheckKinematics() || !FillParticlesInLists()) && (n_tries < 100) );
-
+  } while ( (n_tries < 200) );
   // if(!CheckKinematics())
   //   return false;
   // if(!FillParticlesInLists())
   //   return false;
-  return true;
+  return succ;
 }
 
 void Splitter_Base::PopFlavours() {
   // Here we should set vetodi = false -- but no heavy baryons (yet)
 
   Flavour flav    = (*p_flavourselector)(m_Emax,false);
-  // m_barrd = true  if part1 = AntiQuark or DiQuark
-  // m_barrd = false if part1 = Quark or AntiDiQuark
   m_newflav[0]    = m_barrd?flav:flav.Bar();
   m_newflav[1]    = m_newflav[0].Bar();
   m_popped_mass   = p_constituents->Mass(flav);

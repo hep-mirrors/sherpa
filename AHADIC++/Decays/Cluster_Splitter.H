@@ -39,7 +39,7 @@ namespace AHADIC {
     void   FillHadronAndDeleteCluster(size_t i);
     void   UpdateAndFillCluster(size_t i);
     bool   RecalculateZs();
-    bool   CheckKinematics() { return true; }
+    bool   CheckKinematics();
     Cluster * MakeCluster(size_t i);
     double FragmentationFunction(double z, double zmin, double zmax,
 				 double alpha, double beta, double gamma,

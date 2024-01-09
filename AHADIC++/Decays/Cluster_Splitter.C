@@ -113,10 +113,10 @@ void Cluster_Splitter::CalculateLimits() {
 		       4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2));
   for (size_t i=0;i<2;i++) {
     double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
-    // m_zmin[i] = (centre-lambda)/(2.*m_Q2);
-    // m_zmax[i] = (centre+lambda)/(2.*m_Q2);
-    m_zmin[i] = 0.;
-    m_zmax[i] = 1.;
+    m_zmin[i] = (centre-lambda)/(2.*m_Q2);
+    m_zmax[i] = (centre+lambda)/(2.*m_Q2);
+    // m_zmin[i] = 0.;
+    // m_zmax[i] = 1.;
 
     m_mean[i]  = sqrt(m_kt02[0]);
     m_sigma[i] = sqrt(m_kt02[0]);
@@ -143,6 +143,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
+  // todo: remove old cluster mode, and m_R2
   bool mustrecalc = false;
 
 #ifdef AHADIC_OLD_CLUSTER_SPLITTER
@@ -217,9 +218,12 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   if(lower > upper)
     std::cout << "Needs fixing" << std::endl;
 
-  m_z[i1]  = m_zselector(std::max(m_zmin[i1],lower),
-			 std::min(m_zmax[i1],upper),
-			 i1);
+  // m_z[i1]  = m_zselector(std::max(m_zmin[i1],lower),
+  // 			 std::min(m_zmax[i1],upper),
+  // 			 i1);
+
+  // FOR TESTING PURPOSES!
+  m_z[i1]  = m_zselector(0.,1.,i1);
 
   if(i1 == 0) {
     lower = a1/(1-m_z[i1]);
@@ -229,22 +233,35 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
     upper = 1-a1/m_z[i1];
   }
 
-  m_z[i2]  = m_zselector(std::max(m_zmin[i2],lower),
-			std::min(m_zmax[i2],upper),
-			i2);
+  // m_z[i2]  = m_zselector(std::max(m_zmin[i2],lower),
+  // 			std::min(m_zmax[i2],upper),
+  // 			i2);
 
-  for (size_t i=0;i<2;i++) {
-    m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
-    if (m_R2[i]<m_mdec2[i]+m_kt2) {
-      m_R2[i] = m_mdec2[i]+m_kt2;
-      mustrecalc = true;
-    }
-  }
-  if(mustrecalc)
-    // Should never happen!
-    RecalculateZs();
+  // FOR TESTING
+  m_z[i2]  = m_zselector(0.,1.,i2);
+  // for (size_t i=0;i<2;i++) {
+  //   m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
+  //   if (m_R2[i]<m_mdec2[i]+m_kt2) {
+  //     m_R2[i] = m_mdec2[i]+m_kt2;
+  //     mustrecalc = true;
+  //   }
+  // }
+  // if(mustrecalc)
+  //   // Should never happen!
+  //   RecalculateZs();
   return true;
 #endif
+}
+
+bool Cluster_Splitter::CheckKinematics() {
+  for (size_t i=0;i<2;i++) {
+    if(m_z[i] < m_zmin[i] || m_zmax[i] < m_z[i])
+      return false;
+    const double R2 = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
+    if (R2<m_mdec2[i]+m_kt2)
+      return false;
+  }
+  return true;
 }
 
 double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
