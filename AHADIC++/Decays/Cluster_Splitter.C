@@ -257,8 +257,8 @@ bool Cluster_Splitter::CheckKinematics() {
   for (size_t i=0;i<2;i++) {
     if(m_z[i] < m_zmin[i] || m_zmax[i] < m_z[i])
       return false;
-    const double R2 = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
-    if (R2<m_mdec2[i]+m_kt2)
+    m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
+    if (m_R2[i]<m_mdec2[i]+m_kt2)
       return false;
   }
   return true;
