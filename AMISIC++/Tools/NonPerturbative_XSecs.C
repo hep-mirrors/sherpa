@@ -594,6 +594,8 @@ Blob * NonPerturbative_XSecs::InitBlob(const double & muR2,const double & muQ2) 
     part->SetFinalMass(m_outmasses[i]);
     part->SetNumber();
     blob->AddToOutParticles(part);
+    //msg_Out()<<"["<<blob->Id()<<"] adds "
+    //	     <<part->Number()<<": "<<part->Flav()<<", "<<part->Momentum()<<"\n";
   }
   if (needs_showers) {
     blob->AddData("Renormalization_Scale",new Blob_Data<double>(sqrt(muR2)));
