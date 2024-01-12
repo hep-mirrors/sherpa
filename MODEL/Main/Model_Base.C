@@ -451,7 +451,7 @@ void Model_Base::CustomContainerInit()
       = cs["Priority"].SetDefault(0).Get<int>();
     s_kftable[containerid]->Clear();
     const auto flavs
-      = cs["Flavours"].SetDefault<long int>({}).GetVector<long int>();
+      = cs["Flavs"].SetSynonyms({"Flavours","Flavors"}).SetDefault<long int>({}).GetVector<long int>();
     for (const auto flav : flavs) {
       s_kftable[containerid]->Add(Flavour((kf_code)std::abs(flav), flav < 0));
       if (s_kftable[std::abs(flav)]->m_priority) {

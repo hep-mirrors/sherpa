@@ -32,6 +32,7 @@ enum optionIndex {
   ANALYSIS_OUTPUT,
   OUTPUT,
   EVT_OUTPUT,
+  MSG_LIMIT,
   LOG_FILE,
 
   // options used to enable/disable features
@@ -207,6 +208,14 @@ const ATOOLS::Option_Parser::Descriptor usage[] = {
     "  --event-output, -o <level>  \tSet the event output <level>."
   },
   {
+    MSG_LIMIT,
+    REGULAR,
+    "W",
+    "msg-limit",
+    ATOOLS::Option_Parser::Arg::Required,
+    "  --msg-limit, -W <n>  \tSet number of warnings emitted before silencing them."
+  },
+  {
     LOG_FILE,
     REGULAR,
     "l",
@@ -280,6 +289,7 @@ String_Option_Map create_parameter_index_map() {
     map["ANALYSIS_OUTPUT"]           = ANALYSIS_OUTPUT;
     map["OUTPUT"]                    = OUTPUT;
     map["EVT_OUTPUT"]                = EVT_OUTPUT;
+    map["MSG_LIMIT"]                 = MSG_LIMIT;
     map["LOG_FILE"]                  = LOG_FILE;
     map["BATCH_MODE"]                = BATCH_MODE;
     map["INIT_ONLY"]                 = INIT_ONLY;

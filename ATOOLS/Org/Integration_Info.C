@@ -46,8 +46,8 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
     if (key.p_info!=this) 
       msg_Error()<<METHOD<<"(): Key '"<<&key<<"' assigned to '"
 		 <<key.p_info<<"'."<<std::endl;
-    else
 #ifdef DEBUG__Integration_Info
+    else
       msg_Debugging()<<METHOD<<"(): Key '"<<&key
 		     <<"' already assigned."<<std::endl;
 #endif

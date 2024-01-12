@@ -23,6 +23,10 @@ namespace REMNANTS {
     bool IsValence(ATOOLS::Particle * part);
     void MakeSpectator(ATOOLS::Particle * parton);
     void CompensateColours();
+    void SquashFlavourSinglets();
+    void SquashColourSinglets();
+    bool ReplaceInBlob(ATOOLS::Blob * shower,const bool & check,
+		       const size_t & pos,size_t col[2]);
     bool MakeRemnants();
     void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap,
 				 const bool & copy=true);

@@ -1,0 +1,53 @@
+# Sherpa configuration for Z[ee]+Jets production
+
+# set up beams for LHC run 1
+BEAMS:            2212
+BEAM_ENERGIES:    3500
+MI_HANDLER:       Amisic
+SHOWER_GENERATOR: CSS
+FRAGMENTATION:    None
+
+# matrix-element calculation
+ME_GENERATORS:
+  - Comix
+  - Amegic
+
+
+INTRINSIC_KPERP:
+  2212:
+    FORM:   gauss_limited     # gauss_limited none
+    RECOIL: beam_vs_shower    # democratic 
+    REFERENCE_ENERGY:         7000.0; 
+    ENERGY_SCALING_EXPO:      0.08; 
+    SHOWER_INITIATOR_MEAN:    1.0; 
+    SHOWER_INITIATOR_SIGMA:   1.0; 
+    SHOWER_INITIATOR_Q2:      0.77; 
+    SHOWER_INITIATOR_KTMAX:   5.0; 
+    SHOWER_INITIATOR_KTEXPO:  5.0; 
+    BEAM_SPECTATOR_MEAN:      0.250; 
+    BEAM_SPECTATOR_SIGMA:     0.250;
+    BEAM_SPECTATOR_Q2:        0.77; 
+    BEAM_SPECTATOR_KTMAX:     1.0;
+    BEAM_SPECTATOR_KTEXPO:    5.0;
+
+
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+ALPHAS: {USE_PDF: 0}
+SCALES: METS{H_T2}{H_T2}     
+
+CSS_FORCED_DECAYS:         1
+CSS_FORCED_GLUON_SCALING: -1.
+
+# pp -> Z[ee]+jets
+PROCESSES:
+- 93 93 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+
+SELECTORS:
+- [Mass, 13, -13, 66, E_CMS]
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses: [ATLAS_2011_S9131140]
+ANALYSIS_OUTPUT: test

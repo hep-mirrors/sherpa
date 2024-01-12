@@ -55,7 +55,7 @@ operator()(const Model_Arguments &args) const
 
 void Getter<Model_Base,Model_Arguments,SM_GGV>::
 PrintInfo(ostream &str,const size_t width) const
-{ 
+{
   str<<"The Standard Model\n";
   str<<setw(width+4)<<" "<<"{\n"
      <<setw(width+7)<<" "<<"# possible parameters in yaml configuration [usage: \"keyword: value\"]\n"
@@ -93,27 +93,27 @@ SM_GGV::SM_GGV() :
 
 void SM_GGV::ParticleInit()
 {
-  s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle", "no_particle", 1,1);
+  s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle", "no_particle", 1,1);
   //add SM particles
-  //kf_code,mass,width,charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
-  s_kftable[kf_d]      = new Particle_Info(kf_d,0.01,.0,-1,3,1,0,1,1,0,"d","db", "d", "\\bar{d}");
-  s_kftable[kf_u]      = new Particle_Info(kf_u,0.005,.0,2,3,1,0,1,1,0,"u","ub", "u", "\\bar{u}");
-  s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,-1,3,1,0,1,1,0,"s","sb", "s", "\\bar{s}");
-  s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,.0,2,3,1,0,1,1,0,"c","cb", "c", "\\bar{c}");
-  s_kftable[kf_b]      = new Particle_Info(kf_b,4.92,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
-  s_kftable[kf_t]      = new Particle_Info(kf_t,173.21,2.0,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
-  s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,.0,-3,0,1,0,1,1,0,"e-","e+", "e^{-}", "e^{+}");
-  s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,0,0,1,0,1,1,0,"ve","veb", "\\nu_{e}", "\\bar{\\nu}_{e}");
-  s_kftable[kf_mu]     = new Particle_Info(kf_mu,.105,.0,-3,0,1,0,1,1,0,"mu-","mu+", "\\mu^{-}", "\\mu^{+}");
-  s_kftable[kf_numu]   = new Particle_Info(kf_numu,.0,.0,0,0,1,0,1,1,0,"vmu","vmub", "\\nu_{\\mu}", "\\bar{\\nu}_{\\mu}");
-  s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,2.26735e-12,-3,0,1,0,1,0,0,"tau-","tau+", "\\tau^{-}", "\\tau^{+}");
-  s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,.0,0,0,1,0,1,1,0,"vtau","vtaub", "\\nu_{\\tau}", "\\bar{\\nu}_{\\tau}");
-  s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,8,2,-1,1,1,0,"G","G", "G", "G");
-  s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,2,-1,1,1,0,"P","P","\\gamma","\\gamma");
-  s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.1876,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
-  s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.385,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
-  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
-  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
+  //kf_code,mass,radius,width,charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
+  s_kftable[kf_d]      = new Particle_Info(kf_d,0.01,0,.0,-1,3,1,0,1,1,0,"d","db", "d", "\\bar{d}");
+  s_kftable[kf_u]      = new Particle_Info(kf_u,0.005,0,.0,2,3,1,0,1,1,0,"u","ub", "u", "\\bar{u}");
+  s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,0,.0,-1,3,1,0,1,1,0,"s","sb", "s", "\\bar{s}");
+  s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,0,.0,2,3,1,0,1,1,0,"c","cb", "c", "\\bar{c}");
+  s_kftable[kf_b]      = new Particle_Info(kf_b,4.92,0,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
+  s_kftable[kf_t]      = new Particle_Info(kf_t,173.21,0,2.0,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
+  s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,0,.0,-3,0,1,0,1,1,0,"e-","e+", "e^{-}", "e^{+}");
+  s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,0,.0,0,0,1,0,1,1,0,"ve","veb", "\\nu_{e}", "\\bar{\\nu}_{e}");
+  s_kftable[kf_mu]     = new Particle_Info(kf_mu,.105,0,.0,-3,0,1,0,1,1,0,"mu-","mu+", "\\mu^{-}", "\\mu^{+}");
+  s_kftable[kf_numu]   = new Particle_Info(kf_numu,.0,0,.0,0,0,1,0,1,1,0,"vmu","vmub", "\\nu_{\\mu}", "\\bar{\\nu}_{\\mu}");
+  s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,0,2.26735e-12,-3,0,1,0,1,0,0,"tau-","tau+", "\\tau^{-}", "\\tau^{+}");
+  s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,0,.0,0,0,1,0,1,1,0,"vtau","vtaub", "\\nu_{\\tau}", "\\bar{\\nu}_{\\tau}");
+  s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,0,.0,0,8,2,-1,1,1,0,"G","G", "G", "G");
+  s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,0,.0,0,0,2,-1,1,1,0,"P","P","\\gamma","\\gamma");
+  s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.1876,0,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
+  s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.385,0,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
+  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0,0.00407,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
+  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
   ReadParticleData();
 }
 
@@ -502,7 +502,7 @@ void SM_GGV::InitQEDVertices()
       m_v.back().Lorentz.push_back("FFV");
       m_v.back().cpl.push_back(cpl*Q);
       m_v.back().order[1]=1;
-    } 
+    }
   }
 }
 
@@ -515,7 +515,7 @@ void SM_GGV::InitQCDVertices()
   Kabbala cpl0=g3*Kabbala("i",Complex(0.,1.));
   for (short int i=1;i<=6;++i) {
     Flavour flav((kf_code)i);
-    if (!flav.IsOn()) continue; 
+    if (!flav.IsOn()) continue;
     m_v.push_back(Single_Vertex());
     m_v.back().AddParticle(flav.Bar());
     m_v.back().AddParticle(flav);
@@ -542,7 +542,7 @@ void SM_GGV::InitQCDVertices()
     m_v.back().order[0]=1;
     m_v.back().dec=1;
   }
-  Kabbala cpl2=g3*g3*Kabbala("i",Complex(0.,1.)); 
+  Kabbala cpl2=g3*g3*Kabbala("i",Complex(0.,1.));
   m_v.push_back(Single_Vertex());
   for (size_t i(0);i<4;++i) m_v.back().AddParticle(Flavour(kf_gluon));
   for (size_t i(0);i<3;++i) m_v.back().cpl.push_back(cpl2);
@@ -602,7 +602,7 @@ void SM_GGV::InitEWVertices()
 	m_v.back().Lorentz.push_back("FFVL");
 	m_v.back().cpl.push_back(cpl*ckm);
 	m_v.back().order[1]=1;
-      } 
+      }
     }
   }
   if (Flavour(kf_Z).IsOn()) {
@@ -627,7 +627,7 @@ void SM_GGV::InitEWVertices()
       m_v.back().cpl.push_back(I/costW*(-Q*sintW+W/sintW)*g1);
       m_v.back().cpl.push_back(-I/costW*Q*sintW*g1);
       m_v.back().order[1]=1;
-    } 
+    }
   }
   if (Flavour(kf_h0).IsOn()) {
     Kabbala cpl(-I/vev);
@@ -652,7 +652,7 @@ void SM_GGV::InitEWVertices()
       m_v.back().Lorentz.push_back("FFS");
       m_v.back().cpl.push_back(cpl*M);
       m_v.back().order[1]=1;
-    } 
+    }
   }
   if (Flavour(kf_Wplus).IsOn()) {
     if (Flavour(kf_photon).IsOn()) {
@@ -664,7 +664,7 @@ void SM_GGV::InitEWVertices()
       m_v.back().Lorentz.push_back("VVV");
       m_v.back().cpl.push_back(I*g1);
       m_v.back().order[1]=1;
-    }      
+    }
     if (Flavour(kf_Z).IsOn()) {
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle(Flavour(kf_Wplus).Bar());

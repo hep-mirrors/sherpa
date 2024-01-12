@@ -30,7 +30,7 @@ PARTICLE_DATA: { 6: {Width: 0} }
 
 # there is no bottom in the initial-state in s-channel production
 PARTICLE_CONTAINERS:
-  900: {Name: lj, Flavours: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
+  900: {Name: lj, Flavs: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
 
 PROCESSES:
 - 900 900 -> 6 93:

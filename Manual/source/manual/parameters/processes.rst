@@ -128,7 +128,7 @@ could be declared as
    PARTICLE_CONTAINERS:
      98:
        Name: downs
-       Flavours: [1, -1, 3, -3, 5, -5]
+       Flavs: [1, -1, 3, -3, 5, -5]
 
 Note that, if wanted, you have to add both particles and
 anti-particles.

@@ -58,7 +58,6 @@ namespace PHASIC {
 #include "ATOOLS/Phys/Ordering.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include <algorithm>
 
 #define DEBUG__Variable_Selector
@@ -224,7 +223,7 @@ operator()(const PHASIC::Selector_Key &key) const
   s.DeclareVectorSettingsWithEmptyDefault({ "Flavs", "Ordering" });
   s.DeclareMatrixSettingsWithEmptyDefault({ "Ranges" });
 
-  const auto flavs = s["Flavs"].GetVector<int>();
+  const auto flavs = s["Flavs"].SetSynonyms({"Flavours","Flavors"}).GetVector<int>();
   if (flavs.empty())
     THROW(critical_error,"Missing \"Flav\" specification in variable selector");
   Flavour_Vector cflavs(flavs.size());

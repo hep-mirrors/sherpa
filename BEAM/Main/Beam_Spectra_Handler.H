@@ -4,11 +4,12 @@
 #include "BEAM/Main/Beam_Parameters.H"
 #include "BEAM/Main/Kinematics_Base.H"
 #include "BEAM/Main/Weight_Base.H"
+#include <array>
 
 namespace BEAM {
   class Beam_Spectra_Handler {
   private:
-    Beam_Base        * p_BeamBase[2];
+    std::array<Beam_Base *, 2> p_BeamBase;
     Kinematics_Base  * p_kinematics;
     Weight_Base      * p_weight;
     Beam_Parameters    m_parameters;
@@ -111,7 +112,7 @@ namespace BEAM {
     \todo Allow for non-collinear bunches
   */
   /*!
-    \var Beam_Base ** Beam_Spectra_Handler::p_BeamBase
+    \var std::array<Beam_Base *, 2> Beam_Spectra_Handler::p_BeamBase
     Pointers to the two beam bases, one for each beam. They are initialized (through the method
     SpecifiySpectra) and owned by the Beam_Spectra_Handler which in turn has to delete them after
     the run. At the moment two types are supported, namely

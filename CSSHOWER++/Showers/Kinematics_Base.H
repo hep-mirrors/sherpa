@@ -12,6 +12,8 @@ namespace CSSHOWER {
   public:
     const ATOOLS::Mass_Selector *p_ms;
     int m_evolscheme;
+    int MakeForcedDecayKinematics(Parton *const split,Parton *& pnew,
+				  PHASIC::Kin_Args & args,const int mode=0) const;
   public:
     Kinematics_Base(): m_evolscheme(0), p_ms(NULL) {}
     virtual ~Kinematics_Base() {}
@@ -21,6 +23,17 @@ namespace CSSHOWER {
     inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
     inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
     inline void SetEvolScheme(int evol) { m_evolscheme=evol; }
+    inline bool ValidateDipoleKinematics(const double & mi2, const double & mj2,
+					 const double & mk2, const PHASIC::Kin_Args& args)
+    {
+      if (ATOOLS::sqr(args.m_pi[0]) < mi2
+	  || ATOOLS::sqr(args.m_pj[0]) < mj2
+	  || ATOOLS::sqr(args.m_pk[0]) < mk2) {
+	msg_IODebugging() << METHOD << "(): Less energy than mass found\n";
+	return false;
+      }
+      return true;
+    }
   };
 
   class Kinematics_FF : public Kinematics_Base {
@@ -38,7 +51,7 @@ namespace CSSHOWER {
 		  const double &mi2,const double &mj2,const double &mk2,
 		  const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc) const;
   };
-  
+
   class Kinematics_FI : public Kinematics_Base {
   public:
     Kinematics_FI() {}

@@ -270,7 +270,7 @@ std::string Flavour::TexName() const
     name=StringReplace(name, "Omega", "\\Omega ");
     name=StringReplace(name, "U\\psi lon", "\\Upsilon ");
     name=StringReplace(name, " _", "_");
-    if (IsAnti() && name[name.length()-1]=='b') name.erase(name.length()-1);
+    if (IsAnti() && name.back()=='b') name.pop_back();
     break;
   }
   return name;

@@ -17,7 +17,8 @@ namespace CSSHOWER {
     virtual ~Splitting_Function_Group();
     virtual void Add(Splitting_Function_Base *);
     virtual void SelectOne();
-
+    virtual bool FixOne(const ATOOLS::Flavour & flavA,const ATOOLS::Flavour & flavB,
+			const cstp::code & type);
     virtual double operator() (const double,const double,const double,
 			       const double,const double);
     virtual double OverIntegrated(const double,const double,const double,const double);

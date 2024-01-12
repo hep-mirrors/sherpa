@@ -97,7 +97,7 @@ Decay_Selector::Decay_Selector(const Selector_Key &key):
   if (parameters[0].size() < 7 || parameters.size() != 4)
     THROW(critical_error, "Invalid syntax");
   std::string tag(parameters[0].substr(6));
-  tag.erase(tag.length()-1,1);
+  tag.pop_back();
   DEBUG_FUNC(tag);
   const auto kf = s.Interprete<long int>(parameters[1]);
   Flavour fl = Flavour((kf_code)std::abs(kf),kf<0);
@@ -178,7 +178,7 @@ Decay2_Selector::Decay2_Selector(const Selector_Key &key):
   if (parameters[0].size() < 7 || parameters.size() != 5)
     THROW(critical_error, "Invalid syntax");
   std::string tag(parameters[0].substr(7));
-  tag.erase(tag.length()-1,1);
+  tag.pop_back();
   DEBUG_FUNC(tag);
   const auto kf1 = s.Interprete<long int>(parameters[1]);
   const auto kf2 = s.Interprete<long int>(parameters[2]);

@@ -146,12 +146,12 @@ double Kinematics_FI::GetY(const double &Q2,const double &_kt2,const double &z,
 int Kinematics_FI::MakeKinematics
 (Parton *const split,const double & mi2,const double & mj2,
  const ATOOLS::Flavour &flj,Parton *&pc,const int mode)
-{ 
+{
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1 = p1;
 
-  double ma2 = spect->Mass2(), mij2 = split->Mass2(); 
-  
+  double ma2 = spect->Mass2(), mij2 = split->Mass2();
+
   double Q2((p1-p2).Abs2());
   double y=GetY(Q2,split->KtTest(),split->ZTest(),mi2,mj2,ma2,
 		split->GetFlavour(),flj,1);
@@ -168,7 +168,7 @@ int Kinematics_FI::MakeKinematics
   else {
     pc->SetMomentum(fi.m_pj);
   }
-  
+
   return 1;
 }
 
@@ -226,6 +226,10 @@ int Kinematics_IF::MakeKinematics
 (Parton *const split,const double & ma2,const double & mi2,
  const ATOOLS::Flavour &fli,Parton *&pc,const int mode)
 {
+  if (split->ForcedDecay()) {
+    Kin_Args args(0,split->ZTest(),split->Phi(),split->Kin());
+    return MakeForcedDecayKinematics(split,pc,args,mode);
+  }
   Parton *b(NULL);
   for (PLiter pit(split->GetSing()->begin());pit!=split->GetSing()->end();++pit)
     if ((*pit)->GetType()==pst::IS && *pit!=split) {
@@ -238,7 +242,7 @@ int Kinematics_IF::MakeKinematics
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
 
-  double mk2 = spect->Mass2(), mai2 = split->Mass2(); 
+  double mk2 = spect->Mass2(), mai2 = split->Mass2();
 
   double y=GetY((p2-p1).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mk2,
 		split->GetFlavour(),fli,1);
@@ -251,6 +255,7 @@ int Kinematics_IF::MakeKinematics
   ifp.m_lam.Invert();
   split->SetMomentum(ifp.m_lam*ifp.m_pi);
   spect->SetMomentum(ifp.m_lam*ifp.m_pk);
+  if (p1[3]*ifp.m_pi[3]<0.) return -1;
   if (pc==NULL) {
     pc = new Parton(fli,ifp.m_lam*ifp.m_pj,pst::FS);
     pc->SetMass2(p_ms->Mass2(fli));
@@ -258,7 +263,6 @@ int Kinematics_IF::MakeKinematics
   else {
     pc->SetMomentum(ifp.m_lam*ifp.m_pj);
   }
-  
   return 1;
 }
 
@@ -317,9 +321,13 @@ int Kinematics_II::MakeKinematics
 (Parton *const split,const double & ma2,const double & mi2,
  const ATOOLS::Flavour &newfl,Parton *&pc,const int mode)
 {
+  if (split->ForcedDecay()) {
+    Kin_Args args(0,split->ZTest(),split->Phi(),split->Kin());
+    return MakeForcedDecayKinematics(split,pc,args,mode);
+  }
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
-  
+
   double mai2 = split->Mass2(), mb2 = spect->Mass2();
 
   double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mb2,
@@ -332,6 +340,7 @@ int Kinematics_II::MakeKinematics
   ii.m_lam.Invert();
   split->SetMomentum(ii.m_lam*ii.m_pi);
   spect->SetMomentum(ii.m_lam*ii.m_pk);
+  if (p1[3]*ii.m_pi[3]<0.) return -1;
   if (pc==NULL) {
     pc = new Parton(newfl,ii.m_lam*ii.m_pj,pst::FS);
     pc->SetMass2(p_ms->Mass2(newfl));
@@ -339,6 +348,61 @@ int Kinematics_II::MakeKinematics
   else {
     pc->SetMomentum(ii.m_lam*ii.m_pj);
   }
-
   return 1;
 }
+
+int Kinematics_Base::
+MakeForcedDecayKinematics(Parton *const split,Parton *&pnew,Kin_Args & args,const int mode) const {
+  Vec4D p1_t      = split->Momentum(), p2_t = Vec4D(0.,0.,0.,0.);
+  for (PLiter plit=split->GetSing()->begin();plit!=split->GetSing()->end();plit++) {
+    if ((*plit)->GetType()==pst::FS) p2_t += (*plit)->Momentum();
+  }
+  double s12_t    = (p1_t+p2_t).Abs2(),    E12 = sqrt(s12_t), z = split->ZTest();
+  Vec4D  pplus    = E12/2. * (p1_t[3]>0. ? Vec4D(1.,0,0,1.) : Vec4D(1.,0,0,-1.));
+  Vec4D  pminus   = E12/2. * (p1_t[3]>0. ? Vec4D(1.,0,0,-1.) : Vec4D(1.,0,0,1.));
+  double m12      = Max(0.,p1_t.Abs2()), m22 = Max(0.,p2_t.Abs2());
+  if (m22<1.e-8) m22 = 0.;
+  double alpha1_t = 2.*p1_t*pminus/s12_t, beta1_t = 2.*p1_t*pplus/s12_t;
+  double alpha2_t = 2.*p2_t*pminus/s12_t, beta2_t = 2.*p2_t*pplus/s12_t;
+  Vec4D  P1       = alpha1_t*pplus + beta1_t*pminus;
+  Vec4D  P2       = alpha2_t*pplus + beta2_t*pminus;
+  Vec4D  kperp    = p2_t - P2;
+  double kt2      = dabs(kperp.Abs2())>1.e-12 ? dabs(kperp.Abs2()) : 0.;
+  double M2       = dabs(P2.Abs2())   >1.e-12 ? dabs(P2.Abs2())    : 0.;
+  double MT2      = M2+kt2;
+  double At       = alpha1_t*(1.-z)/z + alpha2_t;
+  double c        = MT2 * alpha1_t - m12 * alpha2_t;
+  double d        = m12 * alpha1_t * alpha2_t;
+  double g        = MT2 * alpha1_t * alpha2_t;
+  double zmax     = alpha1_t * c / ( sqr( sqrt(d)+sqrt(g) ) + (alpha1_t - alpha2_t) * c);
+  if (z>zmax) {
+    split->SetZTest(z = zmax);
+    At = alpha1_t*(1.-z)/z + alpha2_t;
+  }
+  double alphaj   = 1./(2.*c) * (At*c + (d-g) + sqrt( Max(0., sqr(At*c+d-g) - 4.*At*c*d)));
+  double betaj    = m12/(s12_t*alphaj);
+  Vec4D  pj       = alphaj*pplus + betaj*pminus;
+  double alpha1   = alpha1_t/z;
+  double beta1    = 0.;
+  Vec4D  p1       = alpha1*pplus + beta1*pminus;
+  double alpha2   = alpha1_t*(1.-z)/z+alpha2_t-alphaj;
+  double beta2    = MT2/(s12_t*alpha2);
+  Vec4D  p2long   = alpha2*pplus + beta2*pminus;
+  Vec4D  p2       = p2long + kperp;
+  Vec4D  bb2      = Vec4D(p2long[0],0.,0.,-p2long[3]);
+  args.m_lam.push_back(Poincare(bb2));
+  args.m_lam.push_back(P2);
+  Vec4D test, tmp;
+  for (PLiter plit=split->GetSing()->begin();plit!=split->GetSing()->end();plit++) {
+    if ((*plit)->GetType()==pst::FS) {
+      tmp   = (*plit)->Momentum();
+      test += args.m_lam*tmp;
+    }
+  }
+  split->SetMomentum(p1);
+  split->SetLT(args.m_lam);
+  pnew = new Parton(split->GetFlavour().Bar(),pj,pst::FS);
+  pnew->SetMass2(p_ms->Mass2(split->GetFlavour()));
+  return 1;
+}
+

@@ -127,8 +127,8 @@ bool My_File<FileType>::CloseDB(std::string file,int mode)
   }
 #endif
   std::string path(file);
-  while (file.length() && file[file.length()-1]=='/')
-    file.erase(file.length()-1,1);
+  while (file.length() && file.back()=='/')
+    file.pop_back();
   file+=".zip";
   ZipArchive_Map::iterator ait(s_ziparchives.find(path));
   if (ait==s_ziparchives.end()) {

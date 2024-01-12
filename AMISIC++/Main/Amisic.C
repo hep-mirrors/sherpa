@@ -121,9 +121,9 @@ void Amisic::UpdateForNewS() {
 void Amisic::SetB(const double & b) {
   // Generation of the next sctter in the Single_Collision_Handler depends on the
   // impact-parameter enhancement, f(b), Eq. (28), here named m_bfac.
-  // It is obtained by intpolation from a look-up table in the Interaction_Probability,
-  // accessed through the Impact_Paramter class.
-  m_b = (b<0.) ? m_impact.CalculateB(m_S,m_pt2) : b;
+  // It is obtained by interpolation from a look-up table in the Interaction_Probability,
+  // accessed through the Impact_Parameter class.
+  m_b    = (b<0.) ? m_impact.CalculateB(m_S,m_pt2) : b;
   m_bfac = ATOOLS::Max(0.,m_impact(m_S,m_b));
   m_overestimator.SetBFac(m_bfac);
 }

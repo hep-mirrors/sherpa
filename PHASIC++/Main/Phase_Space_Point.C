@@ -276,7 +276,7 @@ bool Phase_Space_Point::Check4Momentum() {
   double sin = pin.Abs2(), sout = pout.Abs2();
   static double accu(sqrt(Accu()));
   if (!IsEqual(pin, pout, accu) || !IsEqual(sin, sout, accu)) {
-    int prec(msg_Error().precision());
+    int prec(ATOOLS::msg->Error().precision());
     msg_Error().precision(12);
     msg_Error() << "ERROR in " << METHOD << ": [accu = " << accu << "] {\n";
     for (int i = 0; i < m_nin + m_nout; ++i)

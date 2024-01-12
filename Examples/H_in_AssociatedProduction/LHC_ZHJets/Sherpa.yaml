@@ -6,7 +6,7 @@ ME_GENERATORS: [Comix, Amegic, OpenLoops]
 
 # define custom particle container for easy process declaration
 PARTICLE_CONTAINERS:
-  901: {Name: lightflavs, Flavours: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
+  901: {Name: lightflavs, Flavs: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
 NLO_CSS_DISALLOW_FLAVOUR: 5
 
 # particle properties (ME widths need to be zero if external)

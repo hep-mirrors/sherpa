@@ -7,12 +7,12 @@ namespace BEAM {
   class DM_Annihilation_Kinematics : public Kinematics_Base {
   private:
     ATOOLS::Info_Key m_sprimekey, m_xkey, m_cosxikey;
-    double           m_cosxi; 
+    double           m_cosxi;
 
     void InitIntegration();
   public:
-    DM_Annihilation_Kinematics(Beam_Base ** beams);
-    ~DM_Annihilation_Kinematics();
+    DM_Annihilation_Kinematics(std::array<Beam_Base *, 2> beams);
+    ~DM_Annihilation_Kinematics() = default;
 
     void AssignKeys(ATOOLS::Integration_Info *const info);
     void SetLimits();

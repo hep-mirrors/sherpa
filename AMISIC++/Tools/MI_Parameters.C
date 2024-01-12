@@ -57,7 +57,7 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("nMC_points")]
     = s["nMC_points"].SetDefault(1000).Get<size_t>();
   m_parameters[string("nS_bins")]
-    = s["nS_bins"].SetDefault(100).Get<size_t>();
+    = s["nS_bins"].SetDefault(40).Get<size_t>();
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]

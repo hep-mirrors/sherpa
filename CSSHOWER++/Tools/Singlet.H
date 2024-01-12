@@ -44,8 +44,8 @@ namespace CSSHOWER {
 
     void      ExtractPartons(ATOOLS::Blob *,ATOOLS::Mass_Selector *const ms);
 
-    void        BoostAllFS(Parton *l,Parton *r,Parton *s);
-    void        BoostBackAllFS(Parton *l,Parton *r,Parton *s);
+    void        BoostAllFS(Parton *l,Parton *r,Parton *s,bool onlyFS=false);
+    void        BoostBackAllFS(Parton *l,Parton *r,Parton *s,bool onlyFS=false);
 
     Parton *IdParton(const size_t &id) const;
 

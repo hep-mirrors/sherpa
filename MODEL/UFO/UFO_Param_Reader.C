@@ -40,6 +40,9 @@ UFO_Param_Reader::UFO_Param_Reader(const string& filepath)
     reader.SetInputPath(path);
     reader.SetInputFile(filename);
     reader.MatrixFromFile(m_lines);
+    for (auto& line : m_lines)
+      for (auto& word : line)
+        Settings::GetMainSettings().ReplaceTags(word);
   } else {
     Settings& s = Settings::GetMainSettings();
     reader.SetString(s["UFO_PARAMS"].SetDefault("").Get<std::string>(), true);

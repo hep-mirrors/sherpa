@@ -49,7 +49,7 @@ operator()(const Model_Arguments &args) const
 
 void Getter<Model_Base,Model_Arguments,Standard_Model_Zprime>::
 PrintInfo(ostream &str,const size_t width) const
-{ 
+{
   str<<"The Standard Model\n";
   str<<setw(width+4)<<" "<<"{\n"
      <<setw(width+7)<<" "<<"# possible parameters in yaml configuration [usage: \"keyword: value\"]\n"
@@ -112,8 +112,8 @@ void Standard_Model_Zprime::FixZprimeParameters() {
 void Standard_Model_Zprime::ParticleZprimeInit()
 {
   // add Zprime
-  // kf_code,mass,width,3*charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
-  s_kftable[kf_Zp] = new Particle_Info(kf_Zp,1000.,10.,0,0,2,-1,1,0,1,"Zprime","Zprime","Z^{\\prime}","Z^{\\prime}");
+  // kf_code,mass,radius,width,3*charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
+  s_kftable[kf_Zp] = new Particle_Info(kf_Zp,1000.,0,10.,0,0,2,-1,1,0,1,"Zprime","Zprime","Z^{\\prime}","Z^{\\prime}");
 }
 
 

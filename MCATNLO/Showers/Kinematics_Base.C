@@ -252,6 +252,7 @@ int Kinematics_IF::MakeKinematics
   split->SetLT(ifp.m_lam);
   split->SetMomentum(ifp.m_pi);
   spect->SetMomentum(ifp.m_pk);
+  if (p1[3]*ifp.m_pi[3]<0.) return -1;
   if (pc==NULL) {
     pc = new Parton(fli,ifp.m_pj,pst::FS);
   }
@@ -332,6 +333,7 @@ int Kinematics_II::MakeKinematics
   split->SetLT(ii.m_lam);
   split->SetMomentum(ii.m_pi);
   spect->SetMomentum(ii.m_pk);
+  if (p1[3]*ii.m_pi[3]<0.) return -1;
   if (pc==NULL) {
     pc = new Parton(newfl,ii.m_pj,pst::FS);
   }

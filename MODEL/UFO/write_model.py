@@ -47,6 +47,7 @@ def write_model(model, lorentzes, model_name, model_file_name):
         part_init += ("\n    ATOOLS::s_kftable["+str(s_part.kf_code())+"] = new ATOOLS::Particle_Info("+
                       str(s_part.kf_code())+", "+                                 # kf_code
                       str(1000.0)+", "+                                           # mass
+                      str(0.0)+", "+                                              # radius
                       str(0.0)+", "+                                              # width
                       str(s_part.charge_times_three())+", "+                      # 3*(electrical_charge)
                       str(s_part.color())+", "+                                   # strong charge

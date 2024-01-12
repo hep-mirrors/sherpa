@@ -158,10 +158,9 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
                <<"  Trying new event.\n"
                <<"  The event contained a ";
     for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
-       msg_Error()<<(*it)->Flav().ShellName()<<"-";
-    if (mfslep.size()==2) msg_Error()<<"pair";
-    else                  msg_Error()<<"set";
-    msg_Error()<<" of too little invariant mass to be put\n"
+       msg_Error()<<(*it)->Flav().ShellName()<<"-"
+	       << (mfslep.size()==2? "pair" : "set")
+	       <<" of too little invariant mass to be put\n"
 	       <<"  on their mass shell. If you are sensitive to this specific"
 	       <<" signature consider\n  to set the respective particles"
 	       <<" massive in the perturbative calculation using\n"

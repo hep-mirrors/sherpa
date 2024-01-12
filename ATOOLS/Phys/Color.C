@@ -463,7 +463,7 @@ Expression::Expression(const std::string &expression):
       expr=expr.substr(mpos+1);
     }
     if  (factor.length()==0) THROW(fatal_error,"Missing factor");
-    if (factor.find("F[")==0 && factor[factor.length()-1]==']') {
+    if (factor.find("F[")==0 && factor.back()==']') {
       size_t c1pos(factor.find(','));
       if (c1pos==std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
@@ -477,7 +477,7 @@ Expression::Expression(const std::string &expression):
       back() = Adjoint::New(a,b,c);
       m_aindex=Max(m_aindex,Max(a,Max(b,c)));
     }
-    else if (factor.find("T[")==0 && factor[factor.length()-1]==']') {
+    else if (factor.find("T[")==0 && factor.back()==']') {
       size_t c1pos(factor.find(','));
       if (c1pos==std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
@@ -492,7 +492,7 @@ Expression::Expression(const std::string &expression):
       m_findex=Max(m_findex,Max(i,j));
       m_aindex=Max(m_aindex,a);
     }
-    else if (factor.find("D[")==0 && factor[factor.length()-1]==']') {
+    else if (factor.find("D[")==0 && factor.back()==']') {
       size_t cpos(factor.find(','));
       if (cpos==std::string::npos || 
 	  factor.find(',',cpos+1)!=std::string::npos)

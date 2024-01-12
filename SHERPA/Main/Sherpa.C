@@ -76,6 +76,7 @@ Sherpa::~Sherpa()
     }
   }
   Blob_List::PrintMomFailStatistics(msg->Out());
+  msg->PrintRates();
   PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
@@ -155,6 +156,8 @@ void Sherpa::RegisterDefaults()
   s["DEBUG_STEP"].SetDefault(-1);
   s["EVENT_DISPLAY_INTERVAL"].SetDefault(100);
   s["EVT_OUTPUT"].SetDefault(msg->Level());
+  s["MSG_LIMIT"].SetDefault(20);
+  msg->SetLimit(s["MSG_LIMIT"].Get<int>());
 
   const int evtoutput{ s["EVT_OUTPUT"].Get<int>() };
   s["EVT_OUTPUT_START"].SetDefault(evtoutput != msg->Level() ? 1 : 0);
@@ -268,15 +271,6 @@ bool Sherpa::GenerateOneEvent(bool reset)
 	msg_Out()<<"  -------------------------------------------------\n";
       }
       else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
-    }
-
-    for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
-      double currQ = (*bit)->CheckChargeConservation();
-      if (fabs(currQ)>1e-12) {
-	msg_Error()<<"Charge conservation failed for "<<(*bit)->Type()<<": "<<currQ<<".\n"
-		   <<"Will ignore event.\n";
-	return 0;
-      }
     }
 
     int i=rpa->gen.NumberOfGeneratedEvents();

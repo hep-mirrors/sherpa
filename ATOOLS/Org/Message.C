@@ -254,7 +254,7 @@ std::ostream &Message::IODebugging()
   return m_devnull;
 }
 
-std::string Message::ExtractMethodName(std::string cmethod) const   
+std::string Message::ExtractMethodName(std::string cmethod) const
 { 
   for (size_t pos(cmethod.find(", "));
        pos!=std::string::npos;pos=cmethod.find(", ")) cmethod.erase(pos+1,1);
@@ -274,6 +274,20 @@ std::string Message::ExtractMethodName(std::string cmethod) const
   }
   if (cclass=="<no class>") return cmethod;
   return cclass+"::"+cmethod;
+}
+
+bool Message::CheckRate(const std::string& cmethod) {
+  const auto res = m_log_stats.find(cmethod);
+  if (res == m_log_stats.end()) {
+    m_log_stats.insert({cmethod, 1});
+    return (bool)m_limit;
+  }
+  else if (res->second + 1 == m_limit) {
+    msg_Info() << ATOOLS::om::red
+               << "WARNING: last allowed error message from '"
+               << cmethod << "'\n" << ATOOLS::om::reset;
+  }
+  return (res->second)++ < m_limit;
 }
 
 bool Message::LevelIsEvents(const std::string& context) const
@@ -319,4 +333,13 @@ bool Message::LevelIsIODebugging(const std::string& context) const
     if (context.find(*rit)!=std::string::npos) return true;
   }
   return false;
+}
+
+void Message::PrintRates() const {
+  for (const auto& item : m_log_stats) {
+    if (item.second <= m_limit)  continue;
+    msg_Error() << ATOOLS::om::red << "Error messages from '" << item.first \
+                << "' exceeded frequency limit: " << item.second \
+                << "/" << m_limit << "\n" << ATOOLS::om::reset;
+  }
 }

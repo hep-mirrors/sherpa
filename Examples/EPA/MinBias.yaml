@@ -9,13 +9,31 @@ BEAM_ENERGIES:   3500
 MI_HANDLER:      Amisic
 SOFT_COLLISIONS: Amisic
 
-
-REMNANTS:
+INTRINSIC_KPERP:
   2212:
-    FORM:      Double_Gaussian
-    FRACTION1: 0.5
-    RADIUS1:   0.75
-    RADIUS2:   0.5
+    FORM:   gauss_limited     # none
+    RECOIL: beam_vs_shower    # democratic 
+    REFERENCE_ENERGY:         7000.0; 
+    ENERGY_SCALING_EXPO:      0.08; 
+    SHOWER_INITIATOR_MEAN:    0.0; 
+    SHOWER_INITIATOR_SIGMA:   0.250; 
+    SHOWER_INITIATOR_Q2:      0.77; 
+    SHOWER_INITIATOR_KTMAX:   0.5; 
+    SHOWER_INITIATOR_KTEXPO:  5.0; 
+    BEAM_SPECTATOR_MEAN:      0.0; 
+    BEAM_SPECTATOR_SIGMA:     0.250;
+    BEAM_SPECTATOR_Q2:        0.77; 
+    BEAM_SPECTATOR_KTMAX:     0.5;
+    BEAM_SPECTATOR_KTEXPO:    5.0;
+
+
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+ALPHAS: {USE_PDF: 0}
+SCALES: METS{H_T2}{H_T2}     
+
+CSS_FORCED_DECAYS:        1
+CSS_FORCED_GLUON_SCALING: -1.
 
 AMISIC:
   nS_bins: 10

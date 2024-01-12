@@ -48,8 +48,6 @@
 #define      kf_fermion                   92
 #define      kf_jet                       93
 #define      kf_quark                     94
-#define      kf_string                    95
-#define      kf_cluster                   96
 #define      kf_bjet                      97
 #define      kf_ewjet                     98
 #define      kf_gluon_qgc                 921
@@ -173,7 +171,7 @@
 #define      kf_bs_1                      5303
 #define      kf_bc_0                      5401
 #define      kf_bc_1                      5403
-#define      kf_bb_1                      5503   
+#define      kf_bb_1                      5503
 // hadrons
 #define      kf_pi                        111
 #define      kf_K_L                       130
@@ -429,9 +427,9 @@
 #define      kf_deuterium               1000010020
 #define      kf_helium4                 1000020040
 #define      kf_carbon12                1000060120
-#define      kf_calcium40               1000200400 
+#define      kf_calcium40               1000200400
 #define      kf_silver107               1000471070
-#define      kf_gold197                 1000791970  
+#define      kf_gold197                 1000791970
 #define      kf_lead206                 1000822060
 #define      kf_lead207                 1000822070
 #define      kf_lead208                 1000822080

@@ -71,7 +71,7 @@ namespace PDF {
 
   public:
     ISR_Handler(std::array<ISR_Base *, 2> isrbase,const isr::id & id=isr::hard_process);
-    ~ISR_Handler() = default;
+    ~ISR_Handler();
 
     void Init();
 

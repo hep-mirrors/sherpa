@@ -54,13 +54,13 @@ void SALph_CPP_Interface::CalculateSpec(const double &_x, const double &_Q2) {
     f[i] *= x * alphaem;
   }
 
-  m_g = x * f[0];
-  m_d = x * f[1];
-  m_u = x * f[2];
-  m_s = x * f[3];
-  m_c = x * f[4];
-  m_b = x * f[5];
-  m_t = x * f[6];
+  m_g = f[0];
+  m_d = f[1];
+  m_u = f[2];
+  m_s = f[3];
+  m_c = f[4];
+  m_b = f[5];
+  m_t = f[6];
 }
 
 DECLARE_PDF_GETTER(SALph_Getter);

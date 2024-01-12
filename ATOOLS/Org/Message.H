@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <map>
 #include <set>
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -121,7 +122,9 @@ namespace ATOOLS {
     std::set<std::string,String_Sort> m_contextdebugging;
     std::set<std::string,String_Sort> m_contextiodebugging;
 
-    int m_modifiable, m_mpimode;
+    std::map<std::string,unsigned int> m_log_stats;
+
+    int m_modifiable, m_mpimode, m_limit;
 
   public:
 
@@ -134,6 +137,8 @@ namespace ATOOLS {
     // member functions
     void Init();
     void SetStandard();
+    void SetLimit(int limit) { m_limit = limit; }
+    void PrintRates() const;
 
     std::ostream &Out();
     std::ostream &Error();
@@ -144,6 +149,8 @@ namespace ATOOLS {
     std::ostream &IODebugging();
 
     std::string ExtractMethodName(std::string cmethod) const;
+
+    bool CheckRate(const std::string& cmethod);
 
     // inline functions
     inline void SetLevel(const int level)     { m_level = level;    }
@@ -245,7 +252,7 @@ namespace ATOOLS {
     \class Message
     \brief This is the main output class.
 
-    It is defined to easy manipulate the amount of produced output.
+    It is defined to easily manipulate the amount of output produced.
     There are four pipes that can be used.
      - Out()      Important run information 
           (e.g. start/end of an integration) and warnings 
@@ -259,6 +266,8 @@ namespace ATOOLS {
   */
 }
 
+#define msg_CheckRate() \
+  (ATOOLS::msg->CheckRate(__func__))
 #define msg_LevelIsEvents() \
   (ATOOLS::msg->LevelIsEvents() || \
    (!ATOOLS::msg->ContextEvents().empty() && ATOOLS::msg->LevelIsEvents(__PRETTY_FUNCTION__)))
@@ -275,7 +284,7 @@ namespace ATOOLS {
   (ATOOLS::msg->LevelIsIODebugging() || \
    (!ATOOLS::msg->ContextIODebugging().empty() && ATOOLS::msg->LevelIsIODebugging(__PRETTY_FUNCTION__)))
 
-#define msg_Error() ATOOLS::msg->Error()
+#define msg_Error() if (msg_CheckRate()) ATOOLS::msg->Error()
 #define msg_Out() ATOOLS::msg->Out()
 #define msg_Events() if (msg_LevelIsEvents()) ATOOLS::msg->Out()
 #define msg_Info() if (msg_LevelIsInfo()) ATOOLS::msg->Out()

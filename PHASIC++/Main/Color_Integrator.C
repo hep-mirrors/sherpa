@@ -9,7 +9,6 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include <iomanip>
 #include <limits>
 

@@ -18,6 +18,7 @@
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
 #include "PDF/Main/PDF_Base.H"
+#include "REMNANTS/Tools/Remnants_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Math/Scaling.H"
@@ -224,6 +225,8 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_PDF_FAC"].SetDefault(1.0);
   s["CSS_SCALE_FACTOR"].SetDefault(1.);
   s["CSS_MASS_THRESHOLD"].SetDefault(0.0);
+  s["CSS_FORCED_DECAYS"].SetDefault(true);
+  s["CSS_FORCED_GLUON_SCALING"].SetDefault(-3./2.);
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   s["CSS_RECO_CHECK"].SetDefault(0);
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
@@ -339,6 +342,9 @@ Initialization_Handler::~Initialization_Handler()
       PRINT_INFO("Error: Cannot unload PDF library "+*pdflib);
     else ((PDF_Exit_Function)exit)();
   }
+  //delete m_defsets[PDF::isr::hard_process];    //    = new std::string[2];
+  //delete m_defsets[PDF::isr::hard_subprocess]; // = new std::string[2];
+  //delete m_defsets[PDF::isr::bunch_rescatter]; // = new std::string[2];
 }
 
 void Initialization_Handler::CheckVersion()
@@ -703,8 +709,12 @@ bool Initialization_Handler::InitializeThePDFs()
   bool needs_resc = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
   for (size_t pid=1;pid<4;pid++) {
     PDF::isr::id pc;
-    if (pid==1) { msg_Info()<<"    PDFs for hard scattering:              "; pc = PDF::isr::hard_process; }
-    if (pid==2) { msg_Info()<<"    PDFs for multiple parton interactions: "; pc = PDF::isr::hard_subprocess; }
+    if (pid==1) {
+      msg_Info()<<"    PDFs for hard scattering:              "; pc = PDF::isr::hard_process;
+    }
+    if (pid==2) {
+      msg_Info()<<"    PDFs for multiple parton interactions: "; pc = PDF::isr::hard_subprocess;
+    }
     if (pid==3 && needs_resc) {
       msg_Info()<<"    PDFs for beam re-scattering:           "; pc = PDF::isr::bunch_rescatter;
     }
@@ -926,6 +936,8 @@ bool Initialization_Handler::InitializeTheRemnants() {
   // the MPI related to the hard process - are the same.
   // I have the feeling we will have to communicate the mode to the Remnant_Handler in question
   ///////////////////////////////////////////////////////////
+  REMNANTS::rempars = new REMNANTS::Remnants_Parameters();
+  REMNANTS::rempars->ReadParameters();
   m_remnanthandlers[isr::hard_process] =
     new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra,
 			m_bunchtags[isr::hard_process]);

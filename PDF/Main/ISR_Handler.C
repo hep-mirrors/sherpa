@@ -68,6 +68,12 @@ ISR_Handler::ISR_Handler(std::array<ISR_Base *, 2> isrbase, const isr::id &id)
   FixType();
 }
 
+ISR_Handler::~ISR_Handler() {
+  for (size_t i=0;i<2;i++) {
+    if (p_isrbase[i]!=NULL) { delete p_isrbase[i]; p_isrbase[i] = NULL; }
+  }
+}
+
 void ISR_Handler::FixType() {
   m_type = isrmode::unknown;
   isrtype::code type[2];
@@ -175,7 +181,7 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector &p,
                           const Flavour_Vector &flavs) {
   if ((p_isrbase[0]->PDF() != nullptr &&
        !p_isrbase[0]->PDF()->Contains(flavs[0])) ||
-      (p_isrbase[0]->PDF() != nullptr &&
+      (p_isrbase[1]->PDF() != nullptr &&
        !p_isrbase[1]->PDF()->Contains(flavs[1])))
     return false;
   if (m_mode == 0) {

@@ -20,7 +20,7 @@ using namespace ATOOLS;
 std::string PHOTONS::Sudakov::s_histo_base_name;
 Histogram PHOTONS::Sudakov::s_histo_dipole = Histogram(10,1e-18,1e3,200,"");
 Histogram_2D PHOTONS::Sudakov::s_histo_tdR = Histogram_2D(1,-6.,2.,100,-5,log10(0.5),100);
-#endif 
+#endif
 
 Sudakov::Sudakov() : m_mode(0), m_addedanything(false), p_kinematics(), p_FIkinematics(), m_NInP(0) {}
 
@@ -32,13 +32,13 @@ Sudakov::Sudakov(int mode) : m_mode(mode), m_addedanything(false), p_kinematics(
   m_masscutoff = s["PHOTON_SPLITTER_MAX_HADMASS"].Get<double>();
 
   // YFS_PHOTON_SPLITTER_ORDERING_SCHEME:
-  // 0 = transverse momentum ordering 
-  // 1 = virtuality ordering 
+  // 0 = transverse momentum ordering
+  // 1 = virtuality ordering
   // 2 = mixed ordering - kT for initial conditions, virt for photon splitting (default)
   m_virtualityOrdering = s["PHOTON_SPLITTER_ORDERING_SCHEME"].Get<int>();
   // YFS_PHOTON_SPLITTER_SPECTATOR_SCHEME:
   // 0 = all final-state charged particles that exist prior to this module being called (default)
-  // 1 = only the final-state charged particle that the soft photon is calculated to be emitted off 
+  // 1 = only the final-state charged particle that the soft photon is calculated to be emitted off
   m_spectatorScheme = s["PHOTON_SPLITTER_SPECTATOR_SCHEME"].Get<int>();
 
   m_debug_initProbabilistic = s["PHOTON_SPLITTER_STARTING_SCALE_SCHEME"].Get<int>();
@@ -136,7 +136,7 @@ bool Sudakov::ClearAll()
   m_splitters.clear();
   m_addedparticles.clear();
   m_remainingphotons.clear();
-  if (m_splitters.size() != 0 || m_spectators.size() != 0 
+  if (m_splitters.size() != 0 || m_spectators.size() != 0
       || m_addedparticles.size() != 0 || m_remainingphotons.size() != 0) return false;
   return true;
 }
@@ -153,7 +153,7 @@ void Sudakov::SetCutoff()
 
 Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
 {
-  // choose starting t based on photon and lepton momenta 
+  // choose starting t based on photon and lepton momenta
 
   std::vector<Vec4D> pis, pks;
   Spec_Vector initial_splitters = {};
@@ -161,14 +161,14 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
   std::vector<double> Kp, Kcumu, ts;
   Kcumu = {0.};
   Vec4D ptotal = Vec4D(0.,0.,0.,0.);
-  
+
   // build momentum vectors
   for (int i = 0; i < m_spectators.size(); ++i) {
     // incoming particles cannot be emitters
     if (m_spectators[i]->Id() < m_NInP) continue;
-    
+
     ptotal += m_spectators[i]->Momentum();
-    // choose spectator for splitter i 
+    // choose spectator for splitter i
     bool selected = false;
     for (int k = 0; k < m_spectators.size(); ++k) {
       if (!selected && i != k) {
@@ -200,8 +200,8 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
     return NULL;
   }
 
-  // build splitting functions 
-  for (int i = 0; i < pis.size(); ++i) 
+  // build splitting functions
+  for (int i = 0; i < pis.size(); ++i)
   {
     double Q2, s12, s13, s23, z, y, mi2, mij2, mk2, vtijk, vijk, pipj;
 
@@ -213,8 +213,8 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
     mi2 = mij2 = pis[i].Abs2();
     mk2 = pks[i].Abs2();
 
-    // calculate invariants 
-    if (dipoleFI[i]) { 
+    // calculate invariants
+    if (dipoleFI[i]) {
       Q2 = (pis[i] - pks[i] + pphoton).Abs2();
 
       y = s13/(s12+s23-s13-2.*mi2);
@@ -223,14 +223,14 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
       pipj  = (mk2-mi2-Q2)*y/2.0;
 
       // splitting functions for photon emission off fermion
-      // no need for coupling and other constants 
-      double sf = 1./y * (2./(1.-z+z*y) * (1. + 2.*mi2/(mk2-mi2-Q2)) 
-                    - (1.+z) - mi2/pipj 
+      // no need for coupling and other constants
+      double sf = 1./y * (2./(1.-z+z*y) * (1. + 2.*mi2/(mk2-mi2-Q2))
+                    - (1.+z) - mi2/pipj
                     -pipj*mk2/sqr(mk2-mi2-Q2) * 4./sqr(1.-z+z*y) );
       if (IsBad(sf)) { sf = 0; }
       Kp.push_back(sf);
     }
-    else { 
+    else {
       Q2 = (pis[i] + pks[i] + pphoton).Abs2();
 
       y = s13/(s12+s13+s23);
@@ -242,24 +242,24 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
       pipj  = (Q2-mi2-mk2)*y/2.0;
 
       // splitting functions for photon emission off fermion
-      // no need for coupling and other constants 
+      // no need for coupling and other constants
       double sf = 1./y * ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
       if (IsBad(sf)) { sf = 0; }
       Kp.push_back(sf);
     }
 
-    if (i==0) Kcumu[0] = Kp[0]; // first time 
-    else Kcumu.push_back(Kcumu[i-1] + Kp[i]); // every other time 
+    if (i==0) Kcumu[0] = Kp[0]; // first time
+    else Kcumu.push_back(Kcumu[i-1] + Kp[i]); // every other time
 
     if (m_virtualityOrdering%2==1) {
-      // this t is q2-mij2 = virtuality 
+      // this t is q2-mij2 = virtuality
       double q2;
       if (dipoleFI[i]) q2 = p_FIkinematics->GetVirt(Q2,y,z,mi2,0,mk2);
       else q2 = p_kinematics->GetVirt(Q2,y,z,mi2,0,mk2);
       ts.push_back(q2-mij2);
     }
     else {
-      // mixed or kT scheme 
+      // mixed or kT scheme
       // this t is kT2, Krauss & Schumann 07 eq.27, mj2 = 0
       double kT2;
       if (dipoleFI[i]) kT2 = p_FIkinematics->GetKT2(Q2,y,z,mi2,0,mk2);
@@ -268,10 +268,10 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
     }
   }
 
-  // select emitter particle and starting scale 
+  // select emitter particle and starting scale
   int winnerIndex(-1);
   if (!m_debug_initProbabilistic) {
-    // select winner 
+    // select winner
     winnerIndex = std::max_element(Kp.begin(),Kp.end()) - Kp.begin();
   }
   else {
@@ -286,8 +286,8 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
       }
     }
   }
-  
-  if (winnerIndex < 0 || winnerIndex >= ts.size()) { 
+
+  if (winnerIndex < 0 || winnerIndex >= ts.size()) {
     msg_Tracking() << "No splitting function selected, skipping blob\n";
     return NULL;
   }
@@ -299,7 +299,7 @@ Spectator* Sudakov::DefineInitialConditions(double &t, Vec4D pphoton)
 
 bool Sudakov::Run(ATOOLS::Blob *blob)
 {
-  // set initial conditions 
+  // set initial conditions
   double tstart;
   m_t = 0.;
   for (size_t i : m_splitterIds)
@@ -307,14 +307,14 @@ bool Sudakov::Run(ATOOLS::Blob *blob)
     Spectator* initial_emitter = DefineInitialConditions(tstart,blob->GetParticle(i)->Momentum());
 
     if (!initial_emitter) return true; // PhotonSplitter cannot act here
-    
+
     for (size_t j=0; j<m_splitters.size(); ++j) {
       if (m_splitters[j]->Id() == i) {
         m_splitters[j]->SetStartScale(tstart);
         if (m_spectatorScheme == 1) { m_splitters[j]->AddSpec(initial_emitter); }
         else {
           for (Spectator* s : m_spectators) {
-            if (s->Id() >= m_NInP) { // for now, no W spectator for photon splittings 
+            if (s->Id() >= m_NInP) { // for now, no W spectator for photon splittings
               m_splitters[j]->AddSpec(s);
             }
           }
@@ -326,10 +326,10 @@ bool Sudakov::Run(ATOOLS::Blob *blob)
     }
     #ifdef PHOTONSPLITTER_DEBUG
     s_histo_dipole.Insert(tstart);
-    #endif 
+    #endif
   }
   // run
-  while (m_t > m_t0) 
+  while (m_t > m_t0)
   {
     if (!Generate(blob)) return false;
   }
@@ -395,11 +395,11 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
       }
     }
     m_t = t;
-    // if winner found 
+    // if winner found
     if (t > m_t0) {
       z = m_splitters[ind]->Z();
       if (m_virtualityOrdering) {
-        // virtuality or mixed scheme 
+        // virtuality or mixed scheme
         // what is passed in the second argument is q2, not t. t = q2 - m2 so we add the mass here. For photon splittings m2=0.
         y = p_kinematics->GetYVirt(Q2,t+m_splitters[ind]->Mass2A(),m_splitters[ind]->Mass2B(),m_splitters[ind]->Mass2C(),
                             m_splitters[ind]->Mass2Spec());
@@ -412,7 +412,7 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
       if (y >= 1) break;
       if (y <= 0) break;
 
-      f = (*m_splitters[ind])(t,z,y,Q2); // this t is only used for cutoff 
+      f = (*m_splitters[ind])(t,z,y,Q2); // this t is only used for cutoff
       g = m_splitters[ind]->OverEstimated();
 
       if (f/g > 1.) {
@@ -421,7 +421,7 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
         return false;
       }
 
-      // veto 
+      // veto
       if (f/g > ran->Get()) {
         msg_Debugging() << "A photon split!\n";
         msg_Debugging() << "Spectator flavour is " << m_splitters[ind]->GetSpectator()->GetFlavour() << "\n";
@@ -442,12 +442,12 @@ bool Sudakov::Generate(ATOOLS::Blob *blob)
         m_addedparticles.push_back(newparticle);
         m_addedparticles.push_back(newantiparticle);
 
-        m_splitters[ind]->GetSpectator()->SetMomentum(pk); 
-        
+        m_splitters[ind]->GetSpectator()->SetMomentum(pk);
+
         // remove photon as splitter
         Part_Iterator PLIt = std::find(m_remainingphotons.begin(),m_remainingphotons.end(),m_splitters[ind]->GetSplitter());
+        delete *PLIt;
         m_remainingphotons.erase(PLIt);
-        delete *PLIt; // since it will not be added back
 
         // turn off future splittings of this photon
         for (size_t i=0; i<m_splitters.size(); i++) {

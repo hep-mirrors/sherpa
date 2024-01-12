@@ -9,7 +9,7 @@ METS: { CLUSTER_MODE: 16 }
 # define parton container without b-quarks to
 # remove 0 processes with top contributions
 PARTICLE_CONTAINERS:
-  901: {Name: lightflavs, Flavours: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
+  901: {Name: lightflavs, Flavs: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
 NLO_CSS_DISALLOW_FLAVOUR: 5
 
 PROCESSES:

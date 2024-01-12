@@ -6,7 +6,6 @@ BEAM_ENERGIES: 6500
 EVENTS: 100000
 ERROR: 0.99
 FRAGMENTATION: Ahadic
-MI_HANDLER: None
 
 # scales, tags for scale variations
 CORE_SCALE: VAR{Abs2(p[2]+p[3])}

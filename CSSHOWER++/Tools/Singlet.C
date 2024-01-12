@@ -93,7 +93,7 @@ double Singlet::JetVeto(Sudakov *const sud) const
   return jcv;
 }
 
-int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2) 
+int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2)
 {
   iterator plit(begin());
   for (;plit!=end();++plit) if (*plit==mother) break;
@@ -120,16 +120,16 @@ int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2)
 
   plit++;
   if (mother==p_split) p_split=part1;
-  delete mother; 
+  delete mother;
   plit = erase(plit);
-  if (flav.StrongCharge()==8 && 
-      abs(flav1.StrongCharge())==3 && 
+  if (flav.StrongCharge()==8 &&
+      abs(flav1.StrongCharge())==3 &&
       abs(flav2.StrongCharge())==3) { return 1; }
   return 0;
 }
 
 void Singlet::ExtractPartons
-(ATOOLS::Blob * blob,ATOOLS::Mass_Selector *const ms) 
+(ATOOLS::Blob * blob,ATOOLS::Mass_Selector *const ms)
 {
   Particle * part;
   for (PLiter plit=begin();plit!=end();plit++) {
@@ -142,7 +142,7 @@ void Singlet::ExtractPartons
       part->SetBeam((*plit)->Beam());
       part->SetInfo('I');
       blob->AddToInParticles(part);
-    } 
+    }
     else {
       blob->AddToOutParticles(part);
       if (rpa->gen.SoftSC()) {
@@ -283,19 +283,19 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
     }
   }
   else if (mo.StrongCharge()==8) {
-    if (d1.StrongCharge()==3 && 
-	d2.StrongCharge()==-3) {  
+    if (d1.StrongCharge()==3 &&
+	d2.StrongCharge()==-3) {
       daughter1->SetFlow(1,mother->GetFlow(1));
       daughter1->SetFlow(2,0);
       daughter2->SetFlow(2,mother->GetFlow(2));
     }
-    else if (d1.StrongCharge()==-3 && 
-	     d2.StrongCharge()==3) {  
+    else if (d1.StrongCharge()==-3 &&
+	     d2.StrongCharge()==3) {
       daughter2->SetFlow(1,mother->GetFlow(1));
       daughter1->SetFlow(1,0);
       daughter1->SetFlow(2,mother->GetFlow(2));
     }
-    else if (d1.StrongCharge()==8 && 
+    else if (d1.StrongCharge()==8 &&
 	     d2.StrongCharge()==8) {
       if (mother->Col()<0) {
 	if (mother->GetRight()==mother->GetSpect()) {
@@ -340,7 +340,7 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
       daughter1->SetFlow(1,0);
       daughter1->SetFlow(2,daughter2->GetFlow(1));
     }
-    else if (d1.StrongCharge()==0 && 
+    else if (d1.StrongCharge()==0 &&
 	     d2.StrongCharge()==0) {
       daughter1->SetFlow(1,0);
       daughter1->SetFlow(2,0);
@@ -354,33 +354,36 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   for (iterator pit(begin());pit!=end();++pit)
     if (*pit==daughter1) *pit=mother;
   return true;
-} 
-
-void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s)
-{
-  if (l->LT().empty()) return;
-    for (PLiter plit(begin());plit!=end();++plit) {
-      Vec4D p(l->LT()*(*plit)->Momentum());
-      if ((*plit)->GetType()==pst::IS &&
-	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
-      if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
-      (*plit)->SetMomentum(p);
-    }
 }
 
-void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s)
+void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,bool onlyFS)
+{
+  if (l->LT().empty()) return;
+  for (PLiter plit(begin());plit!=end();++plit) {
+    if (onlyFS && ((*plit)->GetType()!=pst::FS || (*plit)==r)) continue;
+    Vec4D p(l->LT()*(*plit)->Momentum());
+    if ((*plit)->GetType()==pst::IS &&
+	IsZero(p.PPerp2())) p[1]=p[2]=0.0;
+    if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
+    (*plit)->SetMomentum(p);
+  }
+}
+
+
+void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,bool onlyFS)
 {
   if (p_all==NULL) return;
   Poincare_Sequence lt(l->LT());
   if (lt.size()) lt.Invert();
   if (lt.empty()) return;
-    for (PLiter plit(begin());plit!=end();++plit) {
-      Vec4D p(lt*(*plit)->Momentum());
-      if ((*plit)->GetType()==pst::IS &&
-	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
-      if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
-      (*plit)->SetMomentum(p);
-    }
+  for (PLiter plit(begin());plit!=end();++plit) {
+    if (onlyFS && ((*plit)->GetType()!=pst::FS || (*plit)==r)) continue;
+    Vec4D p(lt*(*plit)->Momentum());
+    if ((*plit)->GetType()==pst::IS &&
+	IsZero(p.PPerp2())) p[1]=p[2]=0.0;
+    if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
+    (*plit)->SetMomentum(p);
+  }
 }
 
 void Singlet::Reduce()

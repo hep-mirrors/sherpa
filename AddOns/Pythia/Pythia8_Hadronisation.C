@@ -318,7 +318,7 @@ private:
       Also possible to only adjust the settings for some particles.
      */
     bool SherpaValues;
-    SherpaValues = m_settings["PYTHIA8"]["SHERPA_MASSES"].SetDefault((m_pythiadecays) ? false : true).Get<bool>();
+    SherpaValues = m_settings["PYTHIA8"]["SHERPA_MASSES"].SetDefault(true).Get<bool>();
     bool MatchQuarks = m_settings["PYTHIA8"]["MATCH_QUARKS"].SetDefault(true).Get<bool>();
     bool MatchDiQuarks = m_settings["PYTHIA8"]["MATCH_DIQUARKS"].SetDefault(true).Get<bool>();
     bool MatchHadrons = m_settings["PYTHIA8"]["MATCH_HADRONS"].SetDefault(true).Get<bool>();
