@@ -271,6 +271,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                   new Blob_Data<METOOLS::Amplitude2_Tensor_SP>(atensor));
   }
   if(p_yfshandler->GetMode()!=0){
+    p_yfshandler->YFSDebug(p_mehandler->Sum()*rpa->Picobarn());
     blob->SetStatus(blob_status::needs_yfs);
     ATOOLS::Vec4D_Vector isrphotons = p_yfshandler->GetISRPhotons();
     ATOOLS::Vec4D_Vector fsrphotons;
