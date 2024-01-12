@@ -98,6 +98,9 @@ void Real_ff::CalculateVirt() {
   // m_delI2 = sqr(m_alpi*log(logargI))/2;
   // if(m_fsrmode==0) m_gammaF = m_delF2 = 0;
   // if(m_fsrmode==2) m_gammaI = m_delI2 = 0;
+  if(m_use_fsr_beta==0){
+    m_gammaF = m_delF2 = 0;
+  }
   m_beta00 = m_born;//everything is divided by born
   m_beta01f = m_born * (1. + m_gammaF / 2.);
   m_beta01i = m_born * (1. + m_gammaI / 2.);

@@ -143,7 +143,6 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
   }
   map<ATOOLS::Flavour, ATOOLS::Vec4D>::iterator itr;
   int  j(2); // start at 2 to ignore inital states
-  // PRINT_VAR(m_dip);
   if (m_dip.size() != 0) {
     for (auto a : m_dip) {
       Get4Mom(fl, mom, a); // makes map for flavour momentum
@@ -599,12 +598,19 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
 
-      sq = (QX).Abs2(); 
-      sx = (QX-k).Abs2();
-      double mshiff = ((QX).Mass()-mz);
+      sq = (Q).Abs2(); 
+      sx = (Q-k).Abs2();
+      // PRINT_VAR(sq);
+      // PRINT_VAR(sx);
+      // PRINT_VAR(sx/sq);
+      double mshiff = ((QX-k).Mass()-mz);
       flux = sx/sq;
+      // if(mshiff > 0) flux = 1;
+      // if(flux < 0.04 ) flux*=Propagator(sx)/Propagator(sq);
       // return flux;
-      // if(m_noflux==2) flux = sqr(sx/sq)*Propagator(sq)/Propagator(sx);
+      if(m_noflux==2 ) {
+        flux = Propagator(sq,1)/Propagator(sx,1);
+      }
       // if(mshiff > 10) flux = Propagator(sx)/Propagator(sq);
       // if(mshiff < m_pole_fac*gz) flux = 1;
     }
@@ -621,7 +627,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
     sq = (QX).Abs2();
     sx = (QX+k).Abs2();
     flux = sq/sx;
-    if(m_noflux==2) flux = sqr(sq/sx)*Propagator(sx)/Propagator(sq);
+    // if(m_noflux==2) flux = Propagator(sx)/Propagator(sq);///(Propagator(sx)+Propagator(sq));
 
     // }
   }
@@ -687,8 +693,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
 double Define_Dipoles::Propagator(const double &s, int width){
   double mz = Flavour(kf_Z).Mass();
   double gz = Flavour(kf_Z).Width();
-  if(width) return sqr(s-mz*mz)+sqr(gz)*sqr(s)/sqr(mz);
-  else return sqr(s-mz*mz)+sqr(gz)*sqr(mz);
+  if(width) return 1./(sqr(s-mz*mz)+sqr(gz)*sqr(s)/sqr(mz));
+  else return s*s/(sqr(s-mz*mz)+sqr(gz)*sqr(mz));
 }
 
 void Define_Dipoles::IsResonant(YFS::Dipole &D) {

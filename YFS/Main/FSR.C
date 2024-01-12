@@ -155,7 +155,7 @@ void FSR::GenerateAngles() {
   if (!m_kkmcAngles) {
  double P = log((1.+m_beta1)/(1.-m_beta1))
                 /(log((1.+m_beta1)/(1.-m_beta1))+log((1.+m_beta2)/(1.-m_beta2)));
-    while (true) {
+    // while (true) {
       if (ran->Get() < P) {
         double rnd = ran->Get();
         double a   = log((1.+m_beta1)/(1.-m_beta1));;
@@ -173,8 +173,8 @@ void FSR::GenerateAngles() {
       weight = 1.-((1.-m_beta1*m_beta1)/((1.-m_beta1*m_c)*(1.-m_beta1*m_c))
                         +(1.-m_beta2*m_beta2)/((1.+m_beta2*m_c)*(1.+m_beta2*m_c)))
                        /(2.*(1.+m_beta1*m_beta2)/((1.-m_beta1*m_c)*(1.+m_beta2*m_c)));
-      if (ran->Get() <= weight) break;
-    }
+    //   if (ran->Get() <= weight) break;
+    // }
     // m_fsrWeight*=weight;
     m_theta = acos(m_c);
     m_st = sin(m_theta);

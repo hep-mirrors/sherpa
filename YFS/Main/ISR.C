@@ -89,7 +89,7 @@ void ISR::GenerateAngles()
   if (m_kkmcAngles == 0) {
     double P = log((1.+m_b1)/(1.-m_b1))
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
-    while (true) {
+    // while (true) {
       if (ran->Get() < P) {
         double rnd = ran->Get();
         double a   = log((1.+m_b1)/(1.-m_b1));
@@ -105,8 +105,8 @@ void ISR::GenerateAngles()
       weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
                         +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
                        /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
-      if (ran->Get() < weight) break;
-    }
+    //   if (ran->Get() < weight) break;
+    // }
     // m_weight *= weight;
     // PRINT_VAR(m_c);
     m_theta = acos(m_c);
