@@ -446,12 +446,12 @@ double NonPerturbative_XSecs::RhoMassModifier(const double & M2) {
   // the selection and therefore the weight must be divided out.
   /////////////////////////////////////////////////////////////////////////////////////////
   double rel = (sqr(std::abs(BWrho * A + Complex(A_nr,0.)))/sqr(std::abs(BWrho * A)));
-  if (rel<1.) 
-    msg_Out()<<"Gotcha! "<<METHOD<<"(M = "<<sqrt(M2)<<", A = "<<(BWrho*A)<<", "<<A_nr
-	     <<" --> wt = "<<sqr(std::abs(BWrho * A + Complex(A_nr, 0.)))<<" ["<<rel<<"].\n";
+  //if (rel<1.) 
+  msg_Out()<<"Gotcha! "<<METHOD<<"(M = "<<sqrt(M2)<<", A = "<<(BWrho*A)<<", "<<A_nr
+	   <<" --> wt = "<<(BWrho * A + Complex(A_nr, 0.))<<" ["<<rel<<"].\n";
   // *
   //			      (sqr(M2-m_mrho2) + m_mrho2*m_Grho2)/(m_mrho2*m_Grho2))<<"\n";
-  return sqr(std::abs(BWrho * A + Complex(A_nr, 0.) ));
+  return sqr(std::abs(BWrho * A + Complex(A_nr, 0.) )); // - sqr(A_nr);
   // * (sqr(M2-m_mrho2) + m_mrho2*m_Grho2)/(m_mrho2*m_Grho2);
 }
 

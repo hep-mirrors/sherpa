@@ -9,7 +9,7 @@ EVENT_TYPE:          MinimumBias
 ME_GENERATORS:       None
 SOFT_COLLISIONS:     Amisic
 AMISIC:
-  EVENT_TYPE:             DiffractiveB # 
+  EVENT_TYPE:             Elastic # DiffractiveB # DiffractiveA
   PomeronIntercept:       0.0808
   PomeronSlope:           0.25
   TriplePomeronCoupling:  0.318
@@ -22,19 +22,19 @@ AMISIC:
   # Avaliable TwoPionInterference modes:
   # 0 = on-shell rho + BW smearing with fixed width in Hadron_Decays
   # 1 = off-shell rho with running width
-  # 2 = off-shell rho + rho/omega interference
-  # 3 = off-shell rho + rho/omega + continuum, all interfering
+  # 2 = off-shell rho with running width + rho/omega interference
+  # 3 = off-shell rho with running width + rho/omega + continuum, all interfering
   # 4 = continuum only
-  TwoPionInterference:    2
+  TwoPionInterference:    3
   f_omega:                0.166
   phi_omega:             -0.53
   f_nr:                   0.189
   Lambda_nr:              0.18
-  delta_nr:               0.76
+  delta_nr:               0.8   # 0.76
 YFS:
   MODE:              None
 
-ANALYSIS_OUTPUT: Diffractive2 # 
+ANALYSIS_OUTPUT: Elastic31 # 
 
 ANALYSIS: Rivet
 RIVET:
