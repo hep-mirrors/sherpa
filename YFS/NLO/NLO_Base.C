@@ -32,6 +32,7 @@ NLO_Base::NLO_Base() {
   if(m_isr_debug || m_fsr_debug){
   	m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20 );
   	m_histograms1d["Real_diff"] = new Histogram(0, -1, 1, 100);
+  	m_histograms1d["Real_Flux"] = new Histogram(0, 0, 1, 100);
   	if (!ATOOLS::DirectoryExists(m_debugDIR_NLO)) {
 			ATOOLS::MakeDir(m_debugDIR_NLO);
 		}
@@ -160,7 +161,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	Vec4D kk = k;
 	// CheckMasses(p);
 	MapMomenta(p, k);
-	// if(p[0].E()<20 || p[1].E()<20) return 0;
+	// if( k.E() > 10 ) return 0;
 	m_evts+=1;
 	double subflux = 0;
 	double totflux = 1;
@@ -209,8 +210,8 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
      	  // if(shifdiff < m_pole_fac*gz) flux = 1;
 			}
 			// flux=(sqr(sq-mz*mz)+sqr(mz*gz))/((sx-mz*mz)+sqr(mz*gz));
-			if(m_ifisub==1 && shifdiff > m_pole_fac*gz) subloc+=p_nlodipoles->CalculateRealSubIF(k);
-			if(m_ifisub==2 && shifdiff > m_pole_fac*gz) subloc+=p_nlodipoles->CalculateRealSubIF(k)*subflux;
+			if(m_ifisub==1 && shifdiff > m_pole_fac) subloc+=p_nlodipoles->CalculateRealSubIF(k);
+			if(m_ifisub==2 && shifdiff > m_pole_fac) subloc+=p_nlodipoles->CalculateRealSubIF(k)*subflux;
 			if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	}
 	p.push_back(k);
@@ -229,6 +230,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
   if(m_isr_debug || m_fsr_debug){
 		double diff = ((r/subloc - m_born)-( rcoll/subb - m_born))/((r/subloc - m_born)+( rcoll/subb - m_born));
 		m_histograms1d["Real_diff"]->Insert(diff);
+		m_histograms1d["Real_Flux"]->Insert(flux);
   }
   if(m_no_subtraction) return r/subloc;
 	return tot;//*exp(-2*intcorr);///m_rescale_alpha;
@@ -388,10 +390,10 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i) {
-		// pRot.Rotate(p[i]);
+		pRot.Rotate(p[i]);
 		boostQ.Boost(p[i]);
 	}
-	// pRot.Rotate(k);
+	pRot.Rotate(k);
 	boostQ.Boost(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
@@ -429,15 +431,15 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
   double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
- 	p[0] = {E1, 0, 0, lamCM};
-  p[1] = {E2, 0, 0, -lamCM};
+ 	p[0] = {E1, 0, 0, -lamCM};
+  p[1] = {E2, 0, 0, lamCM};
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		// pRot2.Rotate(p[i]);
+		pRot2.Rotate(p[i]);
 		boostLab.BoostBack(p[i]);
 	}
-	// pRot2.Rotate(k);
+	pRot2.Rotate(k);
 	boostLab.BoostBack(k);
 }
 

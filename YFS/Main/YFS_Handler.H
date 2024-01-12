@@ -210,6 +210,7 @@ public:
     void MakeWWVecs(ATOOLS::Vec4D_Vector p);
     void CalculateCoulomb();
     void CalculateWWForm();
+    void YFSDebug(double W);
 };// end of class YFS_Handler
 
 

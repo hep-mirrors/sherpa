@@ -74,7 +74,7 @@ namespace YFS {
       double CalculateEEX(const Vec4D & k1, const Vec4D & k2);
       double CalculateFlux(const Vec4D &k);
       double CalculateFlux(const Vec4D &k, const Vec4D &kk);
-      double Propagator(const double &s, int width=1);
+      double Propagator(const double &s, int width=0);
       double CalculateVirtualSubTchannel();
       double FormFactor();
       double TFormFactor();

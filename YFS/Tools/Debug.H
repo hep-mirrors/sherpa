@@ -23,7 +23,7 @@ typedef std::map<std::string, ATOOLS::Histogram *> histograms;
     histograms m_histograms_ISR, m_histograms_FSR;
 
     void InitializeHist();
-    void FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr);
+    void FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr, double weight=1);
     void WriteHistograms();
 
   };

@@ -105,16 +105,20 @@ Dipole::~Dipole() {
 
 
 void Dipole::PrintInfo() {
-  std::cout << "Dipole components are (";
-
-  for (size_t i = 0; i < m_masses.size(); ++i)
+   std::cout << " Dipole Type is "<<m_type
+      << "\n Dipole components are "
+      << m_names[0] << " " << m_names[1] << std::endl;
+  for (int i = 0; i < 2; ++i)
   {
     std::cout << "Mass of " << m_names[i] << " = " << m_masses[i] << std::endl
-              << "Charge of " << m_names[i] << " = " << m_charges[i] << std::endl
-              << "Momentum of " << m_names[i] << " = " << m_momenta[i] << std::endl;
+        << "Charge of " << m_names[i] << " = " << m_charges[i] << std::endl
+        << "Momentum of " << m_names[i] << " = " << m_momenta[i] << std::endl;
   }
-
-  // std::cout<<out;
+  std::cout << "Invarinat mass " << " = " << (m_momenta[0]+m_momenta[1]).Mass() << std::endl;
+  if(m_type==dipoletype::final){
+    std::string isres = (m_resonance)?"Yes":"No";
+    std::cout << "Is Resonance: "<< isres << std::endl;
+  }
 }
 
 
@@ -261,7 +265,7 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
 }
 
 double Dipole::EEX(const Vec4D &k){
-  double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
+  double p1p2 = m_momenta[0]*m_bornmomenta[1];
   double a = k*m_bornmomenta[0]/p1p2;
   double b = k*m_bornmomenta[1]/p1p2;
   double ap = a/(1.+a+b);

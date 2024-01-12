@@ -268,7 +268,7 @@ bool YFS_Handler::CalculateISR() {
                 << " Vmin = " << m_vmin << std::endl
                 << "ISR NPHotons = " << p_isr->m_N << std::endl;
   }
-  if (m_isr_debug && !m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
+  // if (m_isr_debug && !m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
   m_isrinital = false;
   // CheckMomentumConservation();
   // CheckMasses();
@@ -360,9 +360,9 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
         return false;
       } 
 
+      m_fsrphotonsforME = m_FSRPhotons;
       if (m_hidephotons) p_fsr->HidePhotons();
       m_FSRPhotons   = p_fsr->GetPhotons();
-      m_fsrphotonsforME = m_FSRPhotons;
       // p_fsr->HidePhotons(m_fsrphotonsforME);
       Dip->AddPhotonsToDipole(m_FSRPhotons);
       p_fsr->YFS_FORM();
@@ -388,7 +388,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       m_outparticles[m_particles[i]] = m_plab[i];
     }
   }
-  if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
+  // if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
   // if (m_looptool) {
   //   CalculateVirtual(m_bornMomenta, m_born);
   // }
@@ -544,6 +544,8 @@ void YFS_Handler::GenerateWeight() {
   CalculateBeta();
   m_yfsweight*=m_real;
   m_yfsweight *= m_formfactor;
+  // if(m_yfsweight!=0) p_debug->FillHist(m_plab, p_isr, p_fsr, m_yfsweight);
+
   // PRINT_VAR(m_ww_formfact);
   // m_yfsweight = 1.;
   // m_yfsweight*=m_rescale_alpha; 
@@ -563,6 +565,9 @@ void YFS_Handler::GenerateWeight() {
   }
 }
 
+void YFS_Handler::YFSDebug(double W){
+  p_debug->FillHist(m_plab, p_isr, p_fsr, W);
+}
 
 int YFS_Handler::NHardPhotons(const Vec4D_Vector &k) {
   int N = 0;
