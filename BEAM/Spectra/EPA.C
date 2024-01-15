@@ -260,8 +260,10 @@ bool EPA::CalculateWeight(double x, double q2) {
                     << "mass = " << m_mass << ".\n";
     return true;
   } else if (m_beam.Kfcode() == kf_e && m_lo_epa) {
+    // V.M. Budnev et al., Phys. Rep. C15(1974)181, first term in eq. 6.17b
+    double q2min = sqr(m_mass * m_x) / (1 - m_x);
     double f =
-        alpha / M_PI * (1 + sqr(1 - m_x)) / m_x * log(2. * m_energy / m_mass);
+        alpha / M_PI / 2 * (1 + sqr(1 - m_x)) / m_x * log(m_q2Max / q2min);
     if (f < 0)
       f = 0.;
     m_weight = f;
