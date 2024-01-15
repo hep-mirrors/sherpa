@@ -327,10 +327,10 @@ check_commit_Fedora38:
     FREL: 38
   extends: .check_commit_Fedora
 
-check_commit_Fedora37:
+check_commit_Fedora39:
   variables:
     OS: Fedora
-    FREL: 37
+    FREL: 39
   extends: .check_commit_Fedora
 
 check_commit_CentOS7:
@@ -369,13 +369,13 @@ build_image_Fedora38:
   needs:
     - job: check_commit_Fedora38
 
-build_image_Fedora37:
+build_image_Fedora39:
   variables:
     OS: Fedora
-    FREL: 37
+    FREL: 39
   extends: .build_image_Fedora
   needs:
-    - job: check_commit_Fedora37
+    - job: check_commit_Fedora39
 
 build_image_CentOS7:
   variables:
@@ -412,16 +412,16 @@ build_image_Archlinux0:
 
 ###########################################################################
 
-Fedora37-make-ccache-GNU:
+Fedora39-make-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 37
+    FREL: 39
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora37
+    - job: build_image_Fedora39
 
 
 Fedora38-make-ccache-GNU:
