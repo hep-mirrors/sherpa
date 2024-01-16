@@ -3,6 +3,7 @@
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 //#include <iostream>
 
 
@@ -22,7 +23,7 @@ PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _ord
 
   m_q2min=0.25;
   m_q2max=1.e14;
-
+  m_xmax = 1.-m_eps;
   m_set    = "PDFE";
   m_bunch  = _bunch;
   m_partons.insert(m_bunch);
@@ -58,7 +59,7 @@ void PDF_Electron::CalculateSpec(const double& x, const double& Q2)
 
   m_xpdf  = 0.;
   m_alpha = (*aqed)(Q2);
-  if (x>=m_xmax) return;
+  if (x>=1-m_eps) return;
 
   double L       = 2.*log(sqrt(Q2)/m_mass);
   double beta_e  = 2.*m_alpha/M_PI*(L-1.);
@@ -102,7 +103,7 @@ void PDF_Electron::CalculateSpec(const double& x, const double& Q2)
       ((1.+x)*(6.*Li+12.*sqr(log(1.-x))-3.*M_PI*M_PI)+
        1./(1.-x)*(1.5*(1.+8.*x+3.*x*x)*log(x)+6.*(x+5.)*(1.-x)*log(1.-x)+
        12.*(1.+x*x)*log(x)*log(1.-x)-(.5+3.5*x*x)*sqr(log(x))+
-		  .25*(39.-24.*x-15.*x*x)));                
+      .25*(39.-24.*x-15.*x*x)));                
   } 
 
   m_xpdf = x * (S*pow(1.-x,m_beta/2.-1.)+(h0+h1+h2));  
