@@ -224,8 +224,8 @@ namespace Recola {
     s_qed_only    = s["QED_ONLY"].Get<bool>();
     s_ew_only     = s["EW_ONLY"].Get<bool>();
 
-    if(s_qed_only) set_qed_only_rcl();
-    if(s_ew_only) set_ew_only_rcl();
+    // if(s_qed_only) set_qed_only_rcl();
+    // if(s_ew_only) set_ew_only_rcl();
     if(s_qed_only==1 && s_ew_only==1) THROW(fatal_error, "Only one of 'QED_ONLY' and 'EW_ONLY' can be enabled at a time");
     if (s_vmode&2) THROW(fatal_error,"Inclusion of I operator not implemented.");
 
