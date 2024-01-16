@@ -7,6 +7,17 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
+
+// mode 0: old mode
+// mode 1: new mode, equivalent functionality to mode 0
+// mode 2: new mode, not using z boundaries computed before
+#define AHADIC_CLUSTER_SPLITTER_MODE 1
+
+// mode 0: usual fragmentation function
+// mode 1: simplified fragmentation function, that can be integrated
+// mode 2: ...
+#define AHADIC_FRAGMENTATION_FUNCTION 1
+
 Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters,
 				   Flavour_Selector     * flavourselector,
@@ -146,8 +157,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   // todo: remove old cluster mode, and m_R2
   bool mustrecalc = false;
 
-#ifdef AHADIC_OLD_CLUSTER_SPLITTER
-
+#if AHADIC_CLUSTER_SPLITTER_MODE == 0
   for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
   for (size_t i=0;i<2;i++) {
     m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
@@ -158,8 +168,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   }
   bool ok = (m_R2[0]>m_mdec2[0]+m_kt2) && (m_R2[1]>m_mdec2[1]+m_kt2);
   return (ok && (mustrecalc?RecalculateZs():true));
-
-#else
+#endif
 
   // order : lead > beam > rest
   //     -> 1 > 3 > rest
@@ -218,12 +227,14 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   if(lower > upper)
     std::cout << "Needs fixing" << std::endl;
 
-  // m_z[i1]  = m_zselector(std::max(m_zmin[i1],lower),
-  // 			 std::min(m_zmax[i1],upper),
-  // 			 i1);
-
-  // FOR TESTING PURPOSES!
+#if AHADIC_CLUSTER_SPLITTER_MODE == 1
+  m_z[i1]  = m_zselector(std::max(m_zmin[i1],lower),
+			 std::min(m_zmax[i1],upper),
+			 i1);
+#endif
+#if AHADIC_CLUSTER_SPLITTER_MODE == 2
   m_z[i1]  = m_zselector(0.,1.,i1);
+#endif
 
   if(i1 == 0) {
     lower = a1/(1-m_z[i1]);
@@ -233,24 +244,16 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
     upper = 1-a1/m_z[i1];
   }
 
-  // m_z[i2]  = m_zselector(std::max(m_zmin[i2],lower),
-  // 			std::min(m_zmax[i2],upper),
-  // 			i2);
-
-  // FOR TESTING
-  m_z[i2]  = m_zselector(0.,1.,i2);
-  // for (size_t i=0;i<2;i++) {
-  //   m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
-  //   if (m_R2[i]<m_mdec2[i]+m_kt2) {
-  //     m_R2[i] = m_mdec2[i]+m_kt2;
-  //     mustrecalc = true;
-  //   }
-  // }
-  // if(mustrecalc)
-  //   // Should never happen!
-  //   RecalculateZs();
-  return true;
+#if AHADIC_CLUSTER_SPLITTER_MODE == 1
+  m_z[i2]  = m_zselector(std::max(m_zmin[i2],lower),
+			std::min(m_zmax[i2],upper),
+			i2);
 #endif
+#if AHADIC_CLUSTER_SPLITTER_MODE == 2
+  m_z[i2]  = m_zselector(0.,1.,i2);
+#endif
+
+  return true;
 }
 
 bool Cluster_Splitter::CheckKinematics() {
@@ -264,9 +267,30 @@ bool Cluster_Splitter::CheckKinematics() {
   return true;
 }
 
+double Cluster_Splitter::FragmentationFunctionProb(double z, double zmin, double zmax,
+						   double gamma, double kt02) {
+  // We just need to reweight the Fragmentation-Function witht the corresponding
+  // integral
+  auto f = [](double _z, double arg, double zmax) -> double {
+    return (1-_z) * exp(-arg*((zmax-_z)/(_z*zmax)));
+  };
+  auto F = [](double _z, double arg) -> double {
+    return 0.5*(-exp(-arg/_z)*_z*(-2-arg+_z) + arg*(2+arg)*std::expint(-arg/_z));
+  };
+
+  double arg    = gamma*(m_kt2+m_masses*m_masses)/kt02;
+  const double integral = (F(zmax,arg) - F(zmin,arg));
+  const auto ret {f(z,arg,zmax) / integral};
+  if(!std::isnan(ret))
+    return ret;
+  else
+    return -1.0;
+}
+
 double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
 					       double alpha, double beta,
 					       double gamma, double kt02) {
+#if AHADIC_FRAGMENTATION_FUNCTION == 0
   double arg, norm {1.}, value {1.};
   if (alpha>=0.)
     norm *= pow(zmax,alpha);
@@ -299,8 +323,21 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
 	      << std::endl;
     exit(1);
   }
-  value /= 10;
+  value /= 10.;
   return value;
+# endif
+#if AHADIC_FRAGMENTATION_FUNCTION == 1
+  auto f = [](double _z, double arg, double zmax) -> double {
+    return (1-_z) * exp(-arg*((zmax-_z)/(_z*zmax)));
+  };
+
+  double arg    = gamma*(m_kt2+m_masses*m_masses)/kt02;
+
+  // compute max
+  double norm {1};
+  norm *= (1-zmin);
+  return f(z, arg,zmax) / norm;
+#endif
 }
 
 double Cluster_Splitter::
@@ -318,6 +355,9 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 void Cluster_Splitter::z_rejected(const double wgt, const double & z,
 				  const double & zmin,const double & zmax,
 				  const unsigned int & cnt) {
+#if AHADIC_FRAGMENTATION_FUNCTION == 1
+  return;
+#endif
   const auto type = m_type[cnt];
   for (int i{0}; i<m_alpha[0].size(); i++) {
     const auto a    = m_alpha[type][i];
@@ -333,13 +373,26 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
 				  const double & zmin,const double & zmax,
 				  const unsigned int & cnt) {
   const auto type = m_type[cnt];
+#if AHADIC_FRAGMENTATION_FUNCTION == 1
+  const double wgt_old = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][0],m_kt02[0]);
+#else
+  const double wgt_old = wgt;
+#endif
   for (int i{0}; i<m_alpha[0].size(); i++) {
     const auto a    = m_alpha[type][i];
     const auto b    = m_beta [type][i];
     const auto c    = m_gamma[type][i];
     const auto kt   = m_kt02[i];
+#if AHADIC_FRAGMENTATION_FUNCTION == 1
+    const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax, c,kt);
+#else
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,a,b,c,kt);
-    tmp_variation_weights[i] *= wgt_new / wgt;
+#endif
+
+    // TODO: find out why this becomes non from time to time
+    const auto frac = wgt_new / wgt_old;
+    if(!std::isnan(frac))
+      tmp_variation_weights[i] *= frac;
   }
 }
 

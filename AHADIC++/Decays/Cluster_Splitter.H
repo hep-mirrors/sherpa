@@ -84,6 +84,7 @@ namespace AHADIC {
 		    const double & zmin,const double & zmax,
 		    const unsigned int & cnt) override;
     double analytic_weight(double, double, double, double, double);
+    double FragmentationFunctionProb(double, double, double, double, double);
   };
 }
 

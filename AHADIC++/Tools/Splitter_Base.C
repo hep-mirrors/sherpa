@@ -53,6 +53,7 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
     reset_var_weights();
     p_flavourselector->reset_var_weights();
 
+    // perform cluster splitting
     PopFlavours();
     DetermineMinimalMasses();
     MakeTransverseMomentum();
@@ -63,6 +64,7 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
     if(!FillParticlesInLists())
       continue;
 
+    // if everything was successful, accept weights and go on
     accept_splitting();
     p_flavourselector->accept_splitting();
     return true;
