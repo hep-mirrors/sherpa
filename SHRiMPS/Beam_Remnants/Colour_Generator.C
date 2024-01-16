@@ -7,8 +7,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 using namespace std;
 
-Colour_Generator::Colour_Generator() : m_dir(2*int(rpa->gen.PBeam(0)[3]>0)-1)
-{}
+Colour_Generator::Colour_Generator() {}
 
 Colour_Generator::~Colour_Generator() {}
 
@@ -33,27 +32,31 @@ size_t Colour_Generator::CountSingletProps() {
 */
 
 void Colour_Generator::PickStartColours() {
-  //msg_Out()<<METHOD<<" =========================================\n";
+  //msg_Out()<<"\n"<<METHOD<<" =========================================\n"<<(*p_ladder)<<"\n";
   //OutputStack();
   Ladder_Particle * inpart = p_ladder->InPart(0);
   if (!m_colours[0][0].empty()) {
     inpart->SetFlow(1,*m_colours[0][0].begin());
     m_colours[0][0].erase(inpart->GetFlow(1));
+    //msg_Out()<<"  Set   "<<inpart->GetFlow(1)<<" at (1) and erase from [0][0].\n";
   }
   else {
     inpart->SetFlow(1,-1);
     m_colours[0][1].insert(inpart->GetFlow(1));
+    //msg_Out()<<"  Set   "<<inpart->GetFlow(1)<<" at (1) and add it to [0][1].\n";
   }
   if (!m_colours[1][0].empty()) {
     inpart->SetFlow(2,*m_colours[1][0].begin());
+    //msg_Out()<<"  Take  "<<inpart->GetFlow(2)<<" at (2) from [1][0] and add it to [0][0].\n";
   }
   else {
     inpart->SetFlow(2,-1);
+    //msg_Out()<<"  Set   "<<inpart->GetFlow(2)<<" at (2) and add it to [0][0].\n";
   }
   m_colours[0][0].insert(inpart->GetFlow(2));
   m_propcolours[0] = inpart->GetFlow(1);
   m_propcolours[1] = inpart->GetFlow(2);
-  //msg_Out()<<"---------------------------------------------\n"
+  //msg_Out()<<"---------------------------------------------\n";
   //	   <<METHOD<<" ("<<m_propcolours[0]<<", "<<m_propcolours[1]<<") for:\n"
   //<<(*inpart)<<"\n";
 }
@@ -109,7 +112,7 @@ void Colour_Generator::PickEndColours() {
     outpart->SetFlow(1,m_propcolours[0]);
     inpart->SetFlow(1,m_propcolours[1]);
     if (m_colours[1][0].find(inpart->GetFlow(1))!=m_colours[1][0].end()) {
-      //msg_Out()<<"   erase old "<<inpart->GetFlow(1)<<" from stack.\n";
+      //msg_Out()<<"  Found "<<inpart->GetFlow(1)<<" at (1) and erase it from [1][0].\n";
       m_colours[1][0].erase(inpart->GetFlow(1));
     }
     else if (!m_colours[1][0].empty() &&
@@ -122,14 +125,18 @@ void Colour_Generator::PickEndColours() {
       //msg_Out()<<"   need to replace final state colours "
       //	       <<m_propcolours[1]<<" --> "<<inpart->GetFlow(1)<<"\n";
       ReplaceFSColour(1,m_propcolours[1],inpart->GetFlow(1));
+      //msg_Out()<<"  Take  "<<inpart->GetFlow(1)<<" at (1) from [1][0] and erase it.  "
+      //       <<"Replace "<<m_propcolours[1]<<" with it\n";
     }
     else {
       //msg_Out()<<"   insert new "<<inpart->GetFlow(1)<<" into stack.\n";
       m_colours[1][1].insert(inpart->GetFlow(1));
+      //msg_Out()<<"  Add   "<<inpart->GetFlow(1)<<" at (1) to [1][1].\n";
     }
     inpart->SetFlow(2,-1);
     outpart->SetFlow(2,inpart->GetFlow(2));
     m_colours[1][0].insert(inpart->GetFlow(2));
+    //msg_Out()<<"  Set   "<<inpart->GetFlow(2)<<" at (2) and add it to [1][0].\n";
   }
   else {
     //msg_Out()<<METHOD<<" with a singlet as last propagator\n";
@@ -150,6 +157,7 @@ void Colour_Generator::PickEndColours() {
   //	   <<((m_colours[1][0].size()>0)?(*m_colours[1][0].begin()):0)<<"):\n"
   //	   <<(*inpart)<<"\n"<<(*outpart)<<"\n";
   //OutputStack();
+  //msg_Out()<<METHOD<<" =========================================\n";
 }
 
 bool Colour_Generator::
@@ -176,14 +184,16 @@ void Colour_Generator::Reset() {
 }
 
 void Colour_Generator::OutputStack() {
+  msg_Out()<<"Colours in stack";
   for (int beam=0;beam<2;beam++) {
     for (int pos=0;pos<2;pos++) {
-      msg_Out()<<"Colours in stack["<<beam<<"]["<<pos<<"] : {";
+      msg_Out()<<"["<<beam<<"]["<<pos<<"] : {";
       for (set<int>::iterator col=m_colours[beam][pos].begin();
 	   col!=m_colours[beam][pos].end();col++) {
 	msg_Out()<<" "<<(*col);
       }
-      msg_Out()<<" }\n";
+      msg_Out()<<" } ";
     }
   }
+  msg_Out()<<"\n";
 }

@@ -65,7 +65,7 @@ void MinBias_Parameters::Init() {
 void MinBias_Parameters::RegisterDefaults() const
 {
   const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
-  s["MODE"].SetDefault("Inelastic");
+  s["Mode"].SetDefault("Inelastic");
   s["MB_Weight_Mode"].SetDefault("Unweighted");
   s["bmax"].SetDefault(10.0);
   s["accu"].SetDefault(5e-4);
@@ -89,7 +89,7 @@ void MinBias_Parameters::RegisterDefaults() const
 
 void MinBias_Parameters::FillRunParameters() {
   const Scoped_Settings & s = Settings::GetMainSettings()["SHRIMPS"];
-  std::string runmode = s["MODE"].Get<std::string>();
+  std::string runmode = s["Mode"].Get<std::string>();
   if (runmode==std::string("TestShrimps") || runmode==std::string("Test")) 
     m_runmode = m_run_params.runmode = run_mode::test;
   else if (runmode==std::string("Xsecs") || runmode==std::string("XSecs")) 
@@ -102,6 +102,10 @@ void MinBias_Parameters::FillRunParameters() {
     m_runmode = m_run_params.runmode = run_mode::quasi_elastic_events;
   else if (runmode==std::string("Inelastic")) 
     m_runmode = m_run_params.runmode = run_mode::inelastic_events;
+  else if (runmode==std::string("DD")) 
+    m_runmode = m_run_params.runmode = run_mode::double_diffractive_events;
+  else if (runmode==std::string("SD")) 
+    m_runmode = m_run_params.runmode = run_mode::single_diffractive_events;
   else if (runmode==std::string("All")) 
     m_runmode = m_run_params.runmode = run_mode::all_min_bias;
   else if (runmode==std::string("Underlying")) 

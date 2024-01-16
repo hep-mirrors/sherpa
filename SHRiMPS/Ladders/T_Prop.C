@@ -18,9 +18,8 @@ operator<<(std::ostream & s, const colour_type::code & colour) {
   return s;
 }
 
-namespace SHRIMPS {
 
-std::ostream & operator<<(std::ostream & s, const T_Prop & tprop) {
+std::ostream & SHRIMPS::operator<<(std::ostream & s, const T_Prop & tprop) {
   s<<"    | ["<<tprop.Col()<<"]         "
    <<"q = "<<tprop.Q()<<" (qt = "<<sqrt(tprop.QT2())<<", q = "
    <<sqrt(dabs(tprop.Q().Abs2()))<<")"
@@ -28,7 +27,7 @@ std::ostream & operator<<(std::ostream & s, const T_Prop & tprop) {
   return s;
 }
 
-std::ostream & operator<<(std::ostream & s, const TPropList & props) {
+std::ostream & SHRIMPS::operator<<(std::ostream & s, const TPropList & props) {
   s<<"T propagator list ("<<props.size()<<", "<<(&props)<<"): \n";
   if (props.size()>0) {
     for (TPropList::const_iterator piter=props.begin();
@@ -36,6 +35,4 @@ std::ostream & operator<<(std::ostream & s, const TPropList & props) {
   }
   s<<"\n";
   return s;
-}
-
 }

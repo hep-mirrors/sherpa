@@ -12,6 +12,7 @@ namespace SHRIMPS {
 
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
+    double GetValuePerChannel(const int i, const int j, const double & B);
     double XSec() { return m_sigma; }
 
     std::vector<double> * FillBGrid(Omega_ik * eikonal);    

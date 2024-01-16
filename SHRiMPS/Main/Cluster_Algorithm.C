@@ -12,7 +12,7 @@
 using namespace SHRIMPS;
 using namespace ATOOLS;
 
-SHRIMPS::Cluster_Algorithm::Cluster_Algorithm(const double & Ymax,const double & minkt2):
+Cluster_Algorithm::Cluster_Algorithm(const double & Ymax,const double & minkt2):
   p_ampl(NULL), p_clus(NULL),
   p_jf(new JF()), p_jets(new Soft_Jet_Criterion()),
   m_Ymax(Ymax), m_minkt2(minkt2)
@@ -30,12 +30,12 @@ Cluster_Algorithm::~Cluster_Algorithm()
   WriteOutAndDeleteHistograms();
 }
 
-int Cluster_Algorithm::ColorConnected(const ATOOLS::ColorID &i,const ATOOLS::ColorID &j) const
+int Cluster_Algorithm::ColorConnected(const ColorID &i,const ColorID &j) const
 {
   return int(i.m_i==j.m_j && i.m_i!=0)+int(i.m_j==j.m_i && i.m_j!=0);
 }
 
-double Cluster_Algorithm::Mass(const ATOOLS::Flavour &fl) const
+double Cluster_Algorithm::Mass(const Flavour &fl) const
 {
   return fl.Mass(true);
 }
@@ -121,7 +121,7 @@ double Cluster_Algorithm::SetShowerScales() {
   return kt2max; //Max(4.*m_minkt2,sijmax);
 }
 
-bool Cluster_Algorithm::Cluster(ATOOLS::Blob *const blob)
+bool Cluster_Algorithm::Cluster(Blob *const blob)
 {
   p_ampl = Cluster_Amplitude::New(NULL);
   p_jets->Reset();

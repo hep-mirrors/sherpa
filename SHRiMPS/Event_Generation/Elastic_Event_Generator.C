@@ -72,8 +72,10 @@ void Elastic_Event_Generator::FillBlob() {
   part2in->SetNumber();
   part2in->SetBeam(1);
   Particle * part1out(new Particle(-1,m_beam1,m_p1out));
+  //msg_Out() << m_p1out << "\t" << m_p1out.Abs2() << "\n";
   part1out->SetNumber();
   Particle * part2out(new Particle(-1,m_beam2,m_p2out));
+  //msg_Out() << m_p2out << "\t" << m_p2out.Abs2() << "\n";
   part2out->SetNumber();
   
   p_blob->AddToInParticles(part1in);

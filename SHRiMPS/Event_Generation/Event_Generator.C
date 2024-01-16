@@ -24,38 +24,36 @@ Event_Generator::~Event_Generator()
 }
 
 void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
-  msg_Out()<<METHOD<<"(runmode = "<<int(m_runmode)<<")\n";
+  //msg_Out()<<METHOD<<"(runmode = "<<int(m_runmode)<<")\n";
   switch (m_runmode) {
   case run_mode::inelastic_events:
-    p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
+    p_inelastic        = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),
+						       xsecs->GetSigmaElastic(),
+						       xsecs->GetSigmaD(),test);
     break; 
+  case run_mode::double_diffractive_events:
+    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
+    break; 
+  case run_mode::single_diffractive_events:
+    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
+    break;
   case run_mode::elastic_events:
-    p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
+    p_elastic          = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
     break;
   case run_mode::soft_diffractive_events:
-    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),test);
+    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
     break;
   case run_mode::all_min_bias:
-    p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
-    p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
-    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),test);
+    p_inelastic        = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),
+						       xsecs->GetSigmaElastic(),
+						       xsecs->GetSigmaD(), test);
+    p_elastic          = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
+    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaD(),test);
     break;
-  case run_mode::test:
-    break;
-  case run_mode::xsecs_only:
-    break;
-  case run_mode::single_diffractive_events:
-    break;
-  case run_mode::double_diffractive_events:
-    break;
-  case run_mode::quasi_elastic_events:
-    break;
-  case run_mode::underlying_event:
-    break;
-  case run_mode::unknown:
+  default:
     break;
   }
-} 
+}
 
 void Event_Generator::
 Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
@@ -88,7 +86,7 @@ bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
     msg_Error()<<"Error in "<<METHOD<<" for run mode = "<<m_runmode<<".\n";
     return false;
   }
-  msg_Out()<<METHOD<<" for run mode = "<<m_runmode<<".\n";
+  //msg_Out()<<METHOD<<" for run mode = "<<m_runmode<<".\n";
   return false; 
 }
 
@@ -103,32 +101,23 @@ int Event_Generator::InitMinimumBiasEvent(ATOOLS::Blob_List * blobs) {
   case run_mode::inelastic_events:
     p_active = p_inelastic;
     break;
+  case run_mode::double_diffractive_events:
+    p_active = p_soft_diffractive;
+    break;
+  case run_mode::single_diffractive_events:
+    p_active = p_soft_diffractive;
+    break;
   case run_mode::elastic_events:
     p_active = p_elastic;
     break;
   case run_mode::soft_diffractive_events:
     p_active = p_soft_diffractive;
     break;
-  case run_mode::all_min_bias: {
+  case run_mode::all_min_bias:
     double R(ran->Get());
     if (R < m_xsec_inel/m_xsec)                    p_active = p_inelastic;
     else if (R < (m_xsec_inel+m_xsec_elas)/m_xsec) p_active = p_elastic;
     else                                           p_active = p_soft_diffractive;
-    break;
-  }
-  case run_mode::test:
-    break;
-  case run_mode::xsecs_only:
-    break;
-  case run_mode::single_diffractive_events:
-    break;
-  case run_mode::double_diffractive_events:
-    break;
-  case run_mode::quasi_elastic_events:
-    break;
-  case run_mode::underlying_event:
-    break;
-  case run_mode::unknown:
     break;
   }
   m_mustinit = 0;

@@ -12,9 +12,9 @@ using namespace ATOOLS;
 using namespace std;
 
 Inelastic_Event_Generator::
-Inelastic_Event_Generator(Sigma_Inelastic * sigma,const int & test) :
-  Event_Generator_Base(sigma), p_sigma(sigma), 
-  m_primaries(Primary_Ladders()),
+Inelastic_Event_Generator(Sigma_Inelastic * sigma,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd,const int & test) :
+  Event_Generator_Base(sigma), p_sigma(sigma), p_sigma_el(sigma_el),
+  p_sigma_sd(sigma_sd), m_primaries(Primary_Ladders(p_sigma_el,p_sigma_sd)),
   m_mustinit(true),
   p_collemgen(new Collinear_Emission_Generator())
 {}
@@ -54,7 +54,10 @@ void Inelastic_Event_Generator::Reset() {
 }
 
 int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
-  msg_Out()<<"   - "<<METHOD<<"\n";
+  //msg_Out()<<"\n\n\n\n\n\n"
+	//   <<"   ---------------------------------------------------------------------\n"
+	//   <<"   ---------------------------------------------------------------------\n"
+	//   <<"   - "<<METHOD<<"\n";
   Blob * blob = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
   if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return -1;
   if (blob->NInP()>0)  {
@@ -69,7 +72,7 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   p_eikonal  = 0; m_B = -1;
   for (size_t trials=0;trials<1000;trials++) {
     if (SelectEikonal() && SelectB()) {
-      m_Nladders = 1+int(ran->Poissonian((*p_eikonal)(m_B)));
+      m_Nladders = 1;//+int(ran->Poissonian((*p_eikonal)(m_B)));
       if (m_Nladders>0) {
 	do { } while (!m_primaries(p_eikonal,m_B,m_Nladders));
 	return 0;
@@ -80,7 +83,6 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
 }
 
 Blob * Inelastic_Event_Generator::GenerateEvent() {
-  msg_Out()<<"   - "<<METHOD<<"\n";
   return MakePrimaryScatterBlob();
 }
 

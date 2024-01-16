@@ -14,30 +14,31 @@
 #include <list>
 
 namespace PDF    { class ISR_Handler; }
+namespace BEAM   { class Beam_Spectra_Handler; }
 namespace ATOOLS { class Cluster_Amplitude; }
 
 namespace SHRIMPS {
   /*!
     \class Shrimps
     \brief Central class
+    
+    \var m_test
+    Steers the testing (with SHRIMPS::m_test):
+    -  m_test=-2:  Prints values of various Bessel functions from
+                   SHRIMPS::Special_Functions to file.
+		   Test method in SHRIMPS::Form_Factor
+    -  m_test=-1:  Checks the SHRIMPS::Form_Factor, and in particular the
+                   Fourier Transform, some results on screen, some on
+		   file.  Test method in SHRIMPS::Form_Factor.
+    -  m_test=1:   Checks the eikonal evaluation with a Gaussian form
+                   factor and no damping/recombination in the DEqs 
+		   (lambda=0).  Then the results are fully analytic.
+		   Test function in SHRIMPS::Eikonal_Creator.
   */
   class Shrimps {
   private:
     weight_mode::code m_weightmode;
     deqmode::code     m_deq;
-    /*!
-      Steers the testing (with SHRIMPS::m_test):
-      -  m_test=-2:  Prints values of various Bessel functions from
-                     SHRIMPS::Special_Functions to file.
-         Test method in SHRIMPS::Form_Factor
-      -  m_test=-1:  Checks the SHRIMPS::Form_Factor, and in particular the
-                     Fourier Transform, some results on screen, some on
-         file.  Test method in SHRIMPS::Form_Factor.
-      -  m_test=1:   Checks the eikonal evaluation with a Gaussian form
-                     factor and no damping/recombination in the DEqs 
-         (lambda=0).  Then the results are fully analytic.
-         Test function in SHRIMPS::Eikonal_Creator.
-    */
     int               m_test;
     Cross_Sections  * p_xsecs;
     Remnant_Handler * p_remnants;
@@ -52,6 +53,7 @@ namespace SHRIMPS {
     void ReadEnergiesFromFile(std::set<double> & energies,
 			      std::string infile);
     void WriteOutElasticsYodaFile(const double & energy,std::string dirname);
+    void WriteOutDiffXSecs(double energy,std::string dirname);
     void WriteOutXSecsYodaFile(const std::set<double> & energies_tot,
 			       const std::set<double> & energies_inel,
 			       const std::set<double> & energies_el,
@@ -64,13 +66,13 @@ namespace SHRIMPS {
 			       const std::vector<double> & xsecdd,
 			       std::string dirname);
     
-    void InitialiseTheRun(PDF::ISR_Handler *const isr);
+    void InitialiseTheRun(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
     void InitialiseFormFactors();
     void InitialiseSingleChannelEikonals();
-    void InitialiseRemnants(PDF::ISR_Handler *const isr);
+    void InitialiseRemnants(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
     void InitialiseTheEventGenerator();
     
-    void TestShrimps(PDF::ISR_Handler *const isr);
+    void TestShrimps(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
     void PrintAlphaS(const std::string & dirname);
     void PrintPDFs(const std::string & dirname);
     void TestEikonalGrids(const std::string & dirname);
@@ -79,7 +81,7 @@ namespace SHRIMPS {
     void Analyse(ATOOLS::Blob_List * blobs);
     void Analyse(ATOOLS::Blob * blob,std::string tag);
   public:
-    Shrimps(PDF::ISR_Handler *const);
+    Shrimps(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
     ~Shrimps();
 
     int  InitMinBiasEvent(ATOOLS::Blob_List * blobs);

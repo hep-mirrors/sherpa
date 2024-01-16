@@ -81,6 +81,9 @@ void Ladder::FixType(const double & ymin, const double & ymax) {
   if (m_tprops.size()==1 && m_tprops.begin()->Col()==colour_type::singlet) {
     m_type = ladder_type::elastic;
   }
+  else if (m_tprops.size()==1 && m_tprops.begin()->Col()==colour_type::octet) {
+      m_type = ladder_type::inelastic;
+  }
   else {
     //double maxSDmass2 = 2.5; // 62 GeV - ~20% mass cut
     //double maxSDmass2 = 282; // 7 TeV - 20% mass cut

@@ -9,7 +9,6 @@
 namespace SHRIMPS {
   class Colour_Generator {
   private:
-    int           m_dir;
     Ladder      * p_ladder;
     LadderMap   * p_emissions;
     TPropList   * p_props;

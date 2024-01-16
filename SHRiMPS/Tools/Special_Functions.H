@@ -9,8 +9,7 @@ using namespace ATOOLS;
 
 namespace SHRIMPS {
   /*!
-    \file
-    This file contains an assortment of special functions
+    \file This file contains an assortment of special functions
     neccessary for the SHRIMPS::Form_Factor.  
     
     \todo Further expand and move to ATOOLS::MathTools

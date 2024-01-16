@@ -3,8 +3,7 @@
 
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
-#include "SHRiMPS/Cross_Sections/Sigma_SD.H"
-//#include "SHRiMPS/Cross_Sections/Sigma_DD.H"
+#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 #include "SHRiMPS/Eikonals/Omega_ik.H"
 #include <list>
 #include <map>
@@ -16,7 +15,7 @@ namespace SHRIMPS {
     double          m_xstot, m_slope, m_xsinel, m_xsel, m_xsSD[2], m_xsDD;
     Sigma_Inelastic m_sigma_inelastic;
     Sigma_Elastic   m_sigma_elastic;
-    Sigma_SD        m_sigma_SD;
+    Sigma_D         m_sigma_D;
     std::map<run_mode::code,double> m_modemap;
   public:
     Cross_Sections();
@@ -30,7 +29,7 @@ namespace SHRIMPS {
 
     Sigma_Inelastic * GetSigmaInelastic() { return (&m_sigma_inelastic); }
     Sigma_Elastic   * GetSigmaElastic()   { return (&m_sigma_elastic); }
-    Sigma_SD        * GetSigmaSD()        { return (&m_sigma_SD); }
+    Sigma_D         * GetSigmaD()        { return (&m_sigma_D); }
 
     const double & SigmaTot()        const { return m_xstot; }
     const double & SigmaSD(size_t i) const { return m_xsSD[i]; }

@@ -9,13 +9,10 @@ using namespace BEAM;
 using namespace ATOOLS;
 
 Hadron_Dissociation::
-Hadron_Dissociation(const int & beam,
-		    const ATOOLS::Vec4D & inmom,const ATOOLS::Flavour & inflav,
-		    Continued_PDF * pdf) :
-  m_beam(beam),p_pdf(pdf),
-  m_beamvec(inmom), m_outmom(Vec4D(0.,0.,0.,0.)),m_beamflav(inflav),
-  m_dir(m_beamvec[3]>0.?1:-1), m_xmin(2./m_beamvec[0]), m_QT2max(4.), m_expo(2.),
-  p_blob(NULL)
+Hadron_Dissociation(PDF::PDF_Base * pdf,const unsigned int beam) :
+  Basic_Remnant_Base(beam), p_pdf(new Continued_PDF(pdf)),
+  m_outmom(Vec4D(0.,0.,0.,0.)), m_beamflav(pdf->Bunch()),
+  m_QT2max(4.), m_expo(2.)
 { }
 
 Hadron_Dissociation::~Hadron_Dissociation() {
@@ -23,11 +20,12 @@ Hadron_Dissociation::~Hadron_Dissociation() {
 }
 
 void Hadron_Dissociation::Reset() {
-  m_outmom = m_beamvec;
+  m_outmom = m_pbeam = p_beam->OutMomentum();
+  m_xmin   = 2./m_pbeam[0]; 
   for (size_t i=0;i<2;i++) m_beamcols[i].clear();
   m_beamflavs.clear();
   m_qtmap.clear();
-  p_blob = NULL;
+  p_beamblob = NULL;
 }
 
 bool Hadron_Dissociation::FillBeamBlob(Blob_List * blobs, const double & B) {
@@ -53,17 +51,17 @@ bool Hadron_Dissociation::FillBeamBlob(Blob_List * blobs, const double & B) {
 }
 
 void Hadron_Dissociation::AddBeamBlob(Blob_List * blobs,const double & B) {
-  if (!p_blob) p_blob = new Blob();
-  p_blob->SetType(btp::Beam);
-  p_blob->SetTypeSpec("Shrimps");
-  p_blob->SetStatus(blob_status::inactive);
-  p_blob->SetId();
-  Particle * inpart = new Particle(-1,m_beamflav,m_beamvec);
+  if (!p_beamblob) p_beamblob = new Blob();
+  p_beamblob->SetType(btp::Beam);
+  p_beamblob->SetTypeSpec("Shrimps");
+  p_beamblob->SetStatus(blob_status::inactive);
+  p_beamblob->SetId();
+  Particle * inpart = new Particle(-1,m_beamflav,m_pbeam);
   inpart->SetNumber();
   inpart->SetBeam(m_beam);
-  p_blob->AddToInParticles(inpart);
-  blobs->push_front(p_blob);
-  if (m_beam==1) p_blob->SetPosition(Vec4D(0.,B,0.,0.));
+  p_beamblob->AddToInParticles(inpart);
+  blobs->push_front(p_beamblob);
+  if (m_beam==1) p_beamblob->SetPosition(Vec4D(0.,B,0.,0.));
 }
   
 void Hadron_Dissociation::HarvestCollision(Blob_List * blobs) {
@@ -72,8 +70,8 @@ void Hadron_Dissociation::HarvestCollision(Blob_List * blobs) {
     if (blob->Has(blob_status::needs_beams)) {
       for (size_t in=0;in<blob->NInP();in++) {
 	Particle * part(blob->InParticle(in));
-	if (!part->ProductionBlob() && m_dir*part->Momentum()[3]>0) {
-	  p_blob->AddToOutParticles(part);
+	if (!part->ProductionBlob() && p_beam->Dir()*part->Momentum()[3]>0) {
+	  p_beamblob->AddToOutParticles(part);
 	  m_outmom -= part->Momentum();
 	  //msg_Out()<<m_beam<<" subtracts: "<<part->Momentum()<<" --> "<<m_outmom[0]<<"\n";
 	  if (!part->Flav().IsGluon()) m_beamflavs.push_back(part->Flav());
@@ -116,17 +114,16 @@ bool Hadron_Dissociation::CompensateColours() {
     compensator->SetNumber();
     compensator->SetBeam(m_beam);
     compensator->SetInfo('B');
-    compensator->SetPosition(p_blob->Position());
-    p_blob->AddToOutParticles(compensator);
+    compensator->SetPosition(p_beamblob->Position());
+    p_beamblob->AddToOutParticles(compensator);
     p_softblob->AddToInParticles(compensator);
     //msg_Out()<<"Added compensator to blob:\n"<<(*compensator)<<"\n";
     
     Particle * out = new Particle(*compensator);
-    out->SetPosition(p_blob->Position());
+    out->SetPosition(p_beamblob->Position());
     p_softblob->AddToOutParticles(out);
     m_qtmap[out] = Vec4D(0.,0.,0.,0.);
   }
-  return true;
 }
 
 void Hadron_Dissociation::CleanColours() {
@@ -158,7 +155,7 @@ bool Hadron_Dissociation::AddFlavourCompensator(const Flavour & flav) {
   compensator->SetNumber();
   compensator->SetBeam(m_beam);
   compensator->SetInfo('B');
-  p_blob->AddToOutParticles(compensator);
+  p_beamblob->AddToOutParticles(compensator);
   p_softblob->AddToInParticles(compensator);
   //msg_Out()<<"Added compensator to blob:\n"<<(*compensator)<<"\n";
 
@@ -169,12 +166,12 @@ bool Hadron_Dissociation::AddFlavourCompensator(const Flavour & flav) {
 }
 
 bool Hadron_Dissociation::SelectCompensatorMomentum(Particle * part) {
-  double xmax = m_outmom[0]/m_beamvec[0] - 2.*m_xmin;
+  double xmax = m_outmom[0]/m_pbeam[0] - 2.*m_xmin;
   if (xmax<m_xmin) return false;
   double rand = ran->Get();
   double x    = pow(1./rand * (pow(xmax,1.-m_expo) + (1.-rand) * pow(m_xmin,1.-m_expo)),
 		    1./(1.-m_expo));
-  part->SetMomentum(x * m_beamvec);
+  part->SetMomentum(x * m_pbeam);
   m_outmom -= part->Momentum();
   //msg_Out()<<METHOD<<" selected x = "<<x<<" in ["<<m_xmin<<", "<<xmax<<"]: "
   //	   <<"residual momentum = "<<m_outmom<<"\n";
@@ -207,28 +204,28 @@ void Hadron_Dissociation::AddSpectatorPartons() {
   quark->SetNumber();
   quark->SetBeam(m_beam);
   quark->SetFlow(1,(*m_beamcols[0].begin()));
-  quark->SetPosition(p_blob->Position());
-  p_blob->AddToOutParticles(quark);
+  quark->SetPosition(p_beamblob->Position());
+  p_beamblob->AddToOutParticles(quark);
   p_softblob->AddToInParticles(quark);
   Particle * diquark(new Particle(0,m_diquark,dimom,'B'));
   diquark->SetNumber();
   diquark->SetFlow(2,(*m_beamcols[1].begin()));
   diquark->SetBeam(m_beam);
-  diquark->SetPosition(p_blob->Position());
-  p_blob->AddToOutParticles(diquark);
+  diquark->SetPosition(p_beamblob->Position());
+  p_beamblob->AddToOutParticles(diquark);
   p_softblob->AddToInParticles(diquark);
 
   Particle * outquark(new Particle(*quark));
   outquark->SetNumber();
   outquark->SetInfo('B');
   outquark->SetBeam(m_beam);
-  outquark->SetPosition(p_blob->Position());
+  outquark->SetPosition(p_beamblob->Position());
   p_softblob->AddToOutParticles(outquark);
   Particle * outdiquark(new Particle(*diquark));
   outdiquark->SetNumber();
   outdiquark->SetInfo('B');
   outdiquark->SetBeam(m_beam);
-  outdiquark->SetPosition(p_blob->Position());
+  outdiquark->SetPosition(p_beamblob->Position());
   p_softblob->AddToOutParticles(outdiquark);
 
   m_qtmap[outquark]   = Vec4D(0.,0.,0.,0.);
@@ -239,15 +236,14 @@ void Hadron_Dissociation::AddSpectatorPartons() {
 void Hadron_Dissociation::
 CalculateParallelMomenta(Vec4D & qmom,Vec4D & dimom) {
   // assume that diquark has at least 2 GeV energy
-  double xmax((m_outmom[0]-2.)/m_beamvec[0]),x(-1.);
+  double xmax((m_outmom[0]-2.)/m_pbeam[0]),x(-1.);
   int trials(0);
   while (trials<1000) {
     x = m_xmin+ran->Get()*(xmax-m_xmin);
     p_pdf->Calculate(x,0.);
     if (p_pdf->XPDF(m_quark)/p_pdf->XPDFMax(m_quark)>ran->Get()) break;
-    trials++;
   }
-  qmom  = x*m_beamvec;
+  qmom  = x*m_pbeam;
   dimom = m_outmom-qmom;
 }
 

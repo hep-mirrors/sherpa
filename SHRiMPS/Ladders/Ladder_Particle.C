@@ -31,8 +31,7 @@ Particle * Ladder_Particle::GetParticle() {
   return part;
 }
 
-namespace SHRIMPS {
-std::ostream &
+std::ostream & SHRIMPS::
 operator<<(std::ostream & s, const Ladder_Particle & part) {
   s<<"   "<<part.Flavour()<<"  "<<part.Momentum()<<" "
    <<"(y="<<part.Momentum().Y()<<", kt^2="<<part.Momentum().PPerp2()<<") "
@@ -41,7 +40,7 @@ operator<<(std::ostream & s, const Ladder_Particle & part) {
   return s;
 }
 
-std::ostream & operator<<(std::ostream & s, const LadderMap & lmap) {
+std::ostream & SHRIMPS::operator<<(std::ostream & s, const LadderMap & lmap) {
   size_t i(0);
   s<<"In total "<<lmap.size()<<" emissions:\n";
   for (LadderMap::const_iterator yiter=lmap.begin();yiter!=lmap.end();yiter++) {
@@ -49,4 +48,4 @@ std::ostream & operator<<(std::ostream & s, const LadderMap & lmap) {
   }
   return s;
 }
-}
+

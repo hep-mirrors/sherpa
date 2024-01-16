@@ -57,6 +57,8 @@ set(Phys_HEADERS fjcore.hh
                  Weight_Info.H
                  Variations.H
                  Weights.H
+		 Remnant_Base.H
+		 Remnant_Handler_Base.H
                  Hard_Process_Variation_Generator.H)
 
 sherpa_create_git_info(Phys)

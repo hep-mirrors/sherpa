@@ -10,11 +10,12 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Soft_Diffractive_Event_Generator::
-Soft_Diffractive_Event_Generator(Sigma_SD * sigma,const int & test) :
+Soft_Diffractive_Event_Generator(Sigma_D * sigma,const int & test) :
   Event_Generator_Base(sigma),
   p_sigma(sigma), m_sigma(0.),
-  m_massexp(0.5), m_Prob1440(.4),  m_Prob1710(0.2)
+  m_massexp(0.5), m_Prob1440(.4),  m_Prob1710(0.2), m_runmode(MBpars.RunMode())
 {
+  //msg_Out() << "RUN MODE: " << m_runmode << "\n";
   for (size_t i=0;i<3;i++) m_sigma   += m_rate[i] = p_sigma->GetXSec(i);
   for (size_t i=0;i<3;i++) {
     m_rate[i] /= m_sigma;
@@ -117,6 +118,7 @@ int Soft_Diffractive_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   }
   for (size_t i=0;i<2;i++) m_contMassRange[i] = false;
   SelectMode();
+  //msg_Out() << "MODE PICKED = " << m_mode << "  " << int(m_runmode) << std::endl;
   SelectFS();
   FixKinematics();
   FillBlob();
@@ -125,9 +127,18 @@ int Soft_Diffractive_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
 
 void Soft_Diffractive_Event_Generator::SelectMode() {
   double disc = ran->Get();
-  for (m_mode=0;m_mode<3;++m_mode) {
-    disc -= m_rate[m_mode];
-    if (disc<=0.) break;
+  switch(m_runmode) {
+    case run_mode::soft_diffractive_events:
+      for (m_mode=0;m_mode<3;++m_mode) {
+        disc -= m_rate[m_mode];
+        if (disc<=0.) break;
+      }
+    case run_mode::single_diffractive_events:
+      m_mode = 1;
+      break;
+    case run_mode::double_diffractive_events:
+      m_mode = 2;
+      break;
   }
 }
 
@@ -223,22 +234,25 @@ void Soft_Diffractive_Event_Generator::FillBlob() {
     part->SetInfo('I');
     p_blob->AddToInParticles(part);
   }
+  Vec4D Pfrombeams[2];
   for (size_t beam=0;beam<2;beam++) {
     if (m_contMassRange[beam]) {
-      msg_Out()<<"  - "<<METHOD<<"(beam = "<<beam<<") selected continuous mass range.\n";
+      //msg_Out()<<"  - "<<METHOD<<"(beam = "<<beam<<") selected continuous mass range.\n";
       p_blob->AddStatus(blob_status::needs_hadronization);
       for (size_t j=0;j<2;j++) {
-	part = new Particle(-1,m_out[2*beam+j],m_pout[2*beam+j]);
-	part->SetNumber();
-	part->SetBeam(beam);
-	part->SetInfo('F');
-	if ((m_out[2*beam+j].IsQuark() && !m_out[2*beam+j].IsAnti()) ||
-	    (m_out[2*beam+j].IsDiQuark() && m_out[2*beam+j].IsAnti()))
-	  part->SetFlow(1,500+beam);
-	else if ((m_out[2*beam+j].IsQuark() && m_out[2*beam+j].IsAnti()) ||
-		 (m_out[2*beam+j].IsDiQuark() && !m_out[2*beam+j].IsAnti()))
-	  part->SetFlow(2,500+beam);
-	p_blob->AddToOutParticles(part);
+	      part = new Particle(-1,m_out[2*beam+j],m_pout[2*beam+j]);
+	      part->SetNumber();
+	      part->SetBeam(beam);
+	      part->SetInfo('F');
+	    if ((m_out[2*beam+j].IsQuark() && !m_out[2*beam+j].IsAnti()) ||
+	        (m_out[2*beam+j].IsDiQuark() && m_out[2*beam+j].IsAnti()))
+	      part->SetFlow(1,500+beam);
+	    else if ((m_out[2*beam+j].IsQuark() && m_out[2*beam+j].IsAnti()) ||
+		          (m_out[2*beam+j].IsDiQuark() && !m_out[2*beam+j].IsAnti()))
+	      part->SetFlow(2,500+beam);
+	    p_blob->AddToOutParticles(part);
+      Pfrombeams[beam]+=part->Momentum();
+      //msg_Out() << part->Momentum() << "\t" << (part->Momentum() ).Abs2() << "\n";
       }
     }
     else {
@@ -246,8 +260,11 @@ void Soft_Diffractive_Event_Generator::FillBlob() {
       part->SetNumber();
       part->SetBeam(beam);
       part->SetInfo('F');
+      Pfrombeams[beam]+=part->Momentum();
+      //msg_Out() << part->Momentum() << "\t" << (part->Momentum() ).Abs2() << "\n";
       p_blob->AddToOutParticles(part);
     }
+    //msg_Out() << "beam " << beam << "\t" << Pfrombeams[beam] << "\t" << Pfrombeams[beam].Abs2() << "\n";
   }
   p_blob->UnsetStatus(blob_status::needs_minBias);
   if (!p_blob->Has(blob_status::needs_hadronization))

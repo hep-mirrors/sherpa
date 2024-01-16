@@ -34,12 +34,12 @@ namespace BEAM {
     virtual inline const ATOOLS::Flavour    & Beam()                      const { return m_beam; }
     virtual inline const ATOOLS::Flavour    & Bunch(const size_t & i=0)   const { return m_bunches[i]; }
     virtual inline const ATOOLS::Flavour    & Remnant()                   const { return m_beam; }
+    virtual inline const int                & Dir()                       const { return m_dir; }
     virtual inline const ATOOLS::Vec4D & OutMomentum(const size_t & i=0)  const { return m_vecouts[i]; }
     virtual inline const ATOOLS::Vec4D & InMomentum()                     const { return m_lab; }
     virtual inline const ATOOLS::Vec4D & Position()                       const { return m_position; }
     virtual inline const std::vector<ATOOLS::Flavour> & Bunches()         const { return m_bunches; }
     virtual inline const std::vector<ATOOLS::Vec4D> & OutMomenta()        const { return m_vecouts; }
-    
     virtual inline const double & Energy()       const { return m_energy; }
     virtual inline const double & Polarisation() const { return m_polarisation; }
     virtual inline double Weight(ATOOLS::Flavour fl=kf_none) { return m_weight; }

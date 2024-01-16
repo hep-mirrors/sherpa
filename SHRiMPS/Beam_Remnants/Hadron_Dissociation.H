@@ -3,6 +3,8 @@
 
 #include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
 #include "SHRiMPS/Eikonals/Form_Factors.H"
+#include "PDF/Main/PDF_Base.H"
+#include "ATOOLS/Phys/Remnant_Base.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -11,19 +13,18 @@
 
 namespace SHRIMPS {
 
-  class Hadron_Dissociation {
+  class Hadron_Dissociation : public ATOOLS::Basic_Remnant_Base {
   private:
     Continued_PDF * p_pdf;
     Form_Factor   * p_ff;
     ATOOLS::Flavour m_beamflav;
-    ATOOLS::Vec4D   m_beamvec, m_outmom;
-    int             m_beam, m_dir;
+    ATOOLS::Vec4D   m_outmom;
     double          m_xmin, m_QT2max, m_expo;
 
-    ATOOLS::Blob                             * p_blob, * p_softblob;
-    std::list<ATOOLS::Flavour>                 m_beamflavs;
-    std::set<int>                              m_beamcols[2];
-    ATOOLS::Flavour                            m_quark, m_diquark;
+    ATOOLS::Blob             * p_softblob;
+    std::list<ATOOLS::Flavour> m_beamflavs;
+    std::set<int>              m_beamcols[2];
+    ATOOLS::Flavour            m_quark, m_diquark;
     std::map<ATOOLS::Particle *,ATOOLS::Vec4D> m_qtmap;
 
     bool CheckResiduals();
@@ -41,10 +42,7 @@ namespace SHRIMPS {
     void CalculateParallelMomenta(ATOOLS::Vec4D & qmom,ATOOLS::Vec4D & dimom);
     void SelectTrialTransverseMomenta();
   public:
-    Hadron_Dissociation() {};
-    Hadron_Dissociation(const int & beam,
-			const ATOOLS::Vec4D & inmom,const ATOOLS::Flavour & flav,
-			Continued_PDF * pdf);
+    Hadron_Dissociation(PDF::PDF_Base * pdf,const unsigned int beam);
     ~Hadron_Dissociation();
 
     void Reset();
