@@ -16,10 +16,11 @@ PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _ord
 {
   Scoped_Settings s{ Settings::GetMainSettings()["PDFE"] };
 
-  m_xmin=s["XMIN"].SetDefault(1.e-6).Get<double>();
-  m_xmax=s["XMAX"].SetDefault(.999999).Get<double>();
+  m_xmin  = s["XMIN"].SetDefault(1.e-6).Get<double>();
   m_eps   = s["EPS"].SetDefault(1e-6).Get<double>();
-  m_delta = s["DELTA"].SetDefault(1e-4).Get<double>();
+  m_delta = s["DELTA"].SetDefault(1e2*m_eps).Get<double>();
+  m_xmax = 1-m_eps;
+
   m_q2min=0.25;
   m_q2max=1.e14;
   m_xmax = 1.-m_eps;
