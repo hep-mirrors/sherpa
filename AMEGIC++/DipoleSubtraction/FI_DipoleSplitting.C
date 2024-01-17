@@ -149,10 +149,12 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
   switch (m_ft) {
   case 1:
     m_sff = 2./(2.-m_zi-m_xijk)-(1.+m_zi)-m_mij/(m_pi*m_pj);
+    if (m_subtype==2) m_sff = 2.*m_zi/(1.-m_zi+(1.-m_xijk))+(1.-m_zi)-m_mij/(m_pi*m_pj);
     m_av  = m_sff;
     break;
   case 2:
     m_sff = 2./(2.-m_zj-m_xijk)-(1.+m_zj)-m_mij/(m_pi*m_pj);
+    if (m_subtype==2) m_sff = 2.*m_zj/(1.-m_zj+(1.-m_xijk))+(1.-m_zj)-m_mij/(m_pi*m_pj);
     m_av  = m_sff;
     break;
   case 3: {
@@ -164,6 +166,7 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
   }
   case 4:
     m_sff = 1./(1.-m_zi+(1.-m_xijk))+1./(1.-m_zj+(1.-m_xijk))-2.;
+    if (m_subtype==2) m_sff = m_zi/(1.-m_zi+(1.-m_xijk))+m_zj/(1.-m_zj+(1.-m_xijk));
     m_av  = m_sff + m_zi*m_zj;
     break;
   case 5:

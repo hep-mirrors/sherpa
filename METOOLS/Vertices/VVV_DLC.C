@@ -133,8 +133,7 @@ void VVV_SCalculator<SType>::ConstructSDipole()
     Vec4D pi(p_v->Kin()->PJ()), pk(p_v->Kin()->PK());
     Ai=2.0*(x-ui)/(1.0-x+ui);
     Aj=2.0*x*(1.0-x);
-    if (p_v->Info()->SubType()==2 &&
-	!p_v->Kin()->Massive()) {
+    if (p_v->Info()->SubType()==2) {
       Ai=2.0*x/(1.0-x+ui);
     }
     if (p_v->Kin()->Swap()) std::swap<double>(Ai,Aj);

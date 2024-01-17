@@ -8,7 +8,7 @@ namespace PHASIC {
 
   class Massive_Kernels {
   protected:
-    size_t m_nf,m_nmf;
+    size_t m_nf,m_nmf,m_subtype;
     double m_NC,m_CA,m_CF,m_TR,m_g1,m_g2,m_g3,m_K1,m_K2,m_K3, m_aterm;
     double m_alpha_ff,m_alpha_ii,m_alpha_if,m_alpha_fi,m_loga,m_kappa;
     double p_VS[3];
@@ -37,6 +37,7 @@ namespace PHASIC {
     double I_Fin();
     double I_E1();
     double I_E2();
+    double Kbc3(int type,double muq2,double x);
     double Kt1(int type,double x);
     double Kt2(int type);
     double Kt3(int type,double x);
