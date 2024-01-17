@@ -307,10 +307,9 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
     double mt2(m_mij?m_mij2/pipj:0.0);
     if (iisf) A=2.0/(1.0-zi+y)-(1.0+zi+mt2);
     else A=2.0/(1.0-(1.0-zi)+y)-(2.0-zi+mt2);
-    if (p_v->Info()->SubType()==2 &&
-	!p_v->Kin()->Massive()) {
-      if (iisf) A=2.0*zi/(1.0-zi+y)+(1.0-zi);
-      else A=2.0*(1.0-zi)/(1.0-(1.0-zi)+y)+zi;
+    if (p_v->Info()->SubType()==2) {
+      if (iisf) A=2.0*zi/(1.0-zi+y)+(1.0-zi)-mt2;
+      else A=2.0*(1.0-zi)/(1.0-(1.0-zi)+y)+zi-mt2;
     }
     t=2.0*pipj*(1.0-y);
     p_v->Kin()->SetA(A);
@@ -319,8 +318,7 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
     double x(p_v->Kin()->Z()), ui(p_v->Kin()->Y());
     if (iisf) A=2.0/(1.0-x+ui)-(1.0+x);
     else A=1.0-2.0*x*(1.0-x);
-    if (p_v->Info()->SubType()==2 &&
-	!p_v->Kin()->Massive()) {
+    if (p_v->Info()->SubType()==2) {
       if (iisf) A=2.0*x/(1.0-x+ui)+(1.0-x);
     }
     t=-2.0*(p_v->Kin()->PI()*p_v->Kin()->PJ())*x;

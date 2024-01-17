@@ -46,6 +46,7 @@ Massive_Kernels::Massive_Kernels()
     m_kappa = helpd;
     msg_Tracking()<<"Set massive dipole kappa="<<m_kappa<<"."<<std::endl;
   }
+  m_subtype=ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
 }
 
 void Massive_Kernels::SetNC(const double &nc)
@@ -707,6 +708,20 @@ double Massive_Kernels::at4(int type,int spin,double muq2,double x)
 
 
 
+double Massive_Kernels::Kbc3(int type,double muq2,double x)
+{
+  double me(0.0);
+  // factor 2 due to sum over IF & FI dipoles
+  if (m_subtype==2) me=2.*log((2.-x+muq2)/(1.-x+muq2))-2.*log((2.-x)/(1.-x));
+  switch(type) {
+  case 1:
+    return 2.*me;
+  case 4:
+    return 2.*me;
+  }
+  return 0.;
+}
+
 double Massive_Kernels::Kt1(int type,double x)
 {
   switch(type) {
@@ -731,15 +746,19 @@ double Massive_Kernels::Kt3(int type,double x)
   switch(type) {
   case 1:
     ax*=(1.+x*x)/(1.-x);
+    if (m_subtype==2) ax+=2.-(1.-x)-4.*log((2.-x)/(1.-x));
     return -(1.+x)*(log(1.-x))+at+ax;
   case 2:
     ax*=(1.+sqr(1.-x))/x;
+    if (m_subtype==2) ax+=(1.-x)+2.*log(x)/x;
     return m_CF/m_CA*((1.+sqr(1.-x))/x*(log(1.-x))+ax);
   case 3:
     ax*=(1.-2.*x*(1.-x));
+    if (m_subtype==2) ax+=-(1.-x)*(1.-3.*x);
     return m_TR/m_CF*((x*x+sqr(1.-x))*(log(1.-x))+ax);
   case 4:
     ax*=x/(1.-x)+(1.-x)/x+x*(1.-x);
+    if (m_subtype==2) ax+=0.5*(3.-x*(4.-3.*x)+2.*log(x)/x-4.*log((2.-x)/(1.-x)));
     return 2.*((1.-x)/x-1.+x*(1.-x))*(log(1.-x))+at+2.*ax;
   }
   return 0.;

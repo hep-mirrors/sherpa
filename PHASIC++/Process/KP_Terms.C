@@ -147,6 +147,10 @@ void KP_Terms::Calculate
 	  +p_masskern->t2(type+2,spin,muq2)-p_masskern->t4(type+2,spin,muq2,eta0));
 	m_kpca[3]+=m_dsij[0][i]*
 	  (w*(p_masskern->t1(type+2,spin,muq2x,x0)+p_masskern->t1p(type+2,spin,muq2,x0)+p_masskern->t3(type+2,spin,muq2x,x0)));	
+	if (spin!=2) {
+	  m_kpca[1]-=m_dsij[0][i]*w*p_masskern->Kbc3(type,muq2x,x0);
+	  m_kpca[3]-=m_dsij[0][i]*w*p_masskern->Kbc3(type+2,muq2x,x0);
+	}
 	if (spin==2) {
           for (size_t j=0;j<p_masskern->Nmf();j++) {
 	    m_xpa[xpcnt].xp=1.-4.*sqr(p_masskern->FMass(j))/saj;
@@ -254,6 +258,10 @@ void KP_Terms::Calculate
 	  +p_masskern->t2(type+2,spin,muq2)-p_masskern->t4(type+2,spin,muq2,eta1));
 	m_kpcb[3]+=m_dsij[pls-1][i]*
 	  (w*(p_masskern->t1(type+2,spin,muq2x,x1)+p_masskern->t1p(type+2,spin,muq2,x1)+p_masskern->t3(type+2,spin,muq2x,x1)));
+	if (spin!=2) {
+	  m_kpcb[1]-=m_dsij[pls-1][i]*w*p_masskern->Kbc3(type,muq2x,x1);
+	  m_kpcb[3]-=m_dsij[pls-1][i]*w*p_masskern->Kbc3(type+2,muq2x,x1);
+	}
 	if (spin==2) {
           for (size_t j=0;j<p_masskern->Nmf();j++) {
 	    m_xpb[xpcnt].xp=1.-4.*sqr(p_masskern->FMass(j))/saj;
