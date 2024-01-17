@@ -289,6 +289,10 @@ void KP_Terms::Calculate
                                     +p_kernel->t3(m_typea+2,spin,muq2x,x0)));
 	  m_kpca[m_typea*2-2]+=dsij[0][i]*p_kernel->t2c
 	    (m_typea,spin,sqr(m_flavs[m_plist[i]].Mass())/saj,saj);
+	  if (spin!=2) {
+	    m_kpca[1]-=dsij[0][i]*w*p_kernel->Kbc3(m_typea,muq2x,x0);
+	    m_kpca[3]-=dsij[0][i]*w*p_kernel->Kbc3(m_typea+2,muq2x,x0);
+	  }
           if (spin==2) {
             for (size_t j=0;j<p_kernel->Nmf();j++) {
               m_xpa[xpcnt].xp=1.-4.*sqr(p_kernel->FMass(j))/saj;
@@ -433,6 +437,10 @@ void KP_Terms::Calculate
                                         +p_kernel->t3(m_typeb+2,spin,muq2x,x1)));
 	  m_kpcb[m_typeb*2-2]+=dsij[pls-1][i]*p_kernel->t2c
 	    (m_typeb,spin,sqr(m_flavs[m_plist[i]].Mass())/saj,saj);
+	  if (spin!=2) {
+	    m_kpcb[1]-=dsij[pls-1][i]*w*p_kernel->Kbc3(m_typeb,muq2x,x1);
+	    m_kpcb[3]-=dsij[pls-1][i]*w*p_kernel->Kbc3(m_typeb+2,muq2x,x1);
+	  }
           if (spin==2) {
             for (size_t j=0;j<p_kernel->Nmf();j++) {
               m_xpb[xpcnt].xp=1.-4.*sqr(p_kernel->FMass(j))/saj;

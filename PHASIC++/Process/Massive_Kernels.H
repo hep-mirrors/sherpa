@@ -91,6 +91,7 @@ namespace PHASIC {
     double Kb1(int type,double x);
     double Kb2(int type);
     double Kb3(int type,double x);
+    double Kbc3(int type,double muq2,double x);
     double Kb4(int type,double x);
 
     // K_FS
