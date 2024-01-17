@@ -50,8 +50,8 @@ void Hadron_Init::Init() {
   // Pomerons and Reggeons - not exactly particles but we may need them #######
   // ##########################################################################
   // ##########################################################################
-  InitHadron(kf_pomeron,0.,0.,0.,0,0,false,0,0,"pomeron","pomeron"));
-  InitHadron(kf_reggeon,0.,0.,0.,0,0,false,0,0,"reggeon","reggeon"));
+  InitHadron(kf_pomeron,true,0.,0.,0.,0,0,false,0,0,"pomeron","pomeron");
+  InitHadron(kf_reggeon,true, 0.,0.,0.,0,0,false,0,0,"reggeon","reggeon");
   // ##################################################################################################
   // MESON MULTIPLETS:
   //   - will uniformly assume a radius of 0.65 fm
