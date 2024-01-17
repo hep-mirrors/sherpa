@@ -258,3 +258,20 @@ If the option :option:`BEAM_REMNANTS: false` is specified, pure
 parton-level events are simulated, i.e. no beam remnants are
 generated. Accordingly, partons entering the hard scattering process
 do not acquire primordial transverse momentum.
+
+
+.. _Beam Polarization:
+
+Beam Polarization
+=============================
+
+Sherpa can also provide cross-sections for polarized beams.
+These calculations can only be provided using the  ``AMEGIC`` ME generator.
+The value for the beam polarization can be given as a percenatage e.g. 80 or in decimal form e.g. 0.8 .
+The flavour of :option:`BEAM_1/BEAM_2` follows the definition given to  :option:`BEAMS`.
+
+.. code-block:: yaml
+
+   POLARIZATION:
+     BEAM_1: 0.8
+     BEAM_2: -0.3

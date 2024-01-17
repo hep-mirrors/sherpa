@@ -82,6 +82,9 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) :
      
     } 
   }
+  for (size_t i=0;i<m_nsign;i++) {
+      p_slist[i].polfactor = (1.+*p_slist[i].s*(pl[0].m_pol1))*(1.-*p_slist[i].s*(pl[1].m_pol2));
+  }
 }
 
 Helicity::~Helicity() 
