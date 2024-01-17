@@ -76,6 +76,7 @@ namespace AMEGIC {
     int      num;
     int    * type;
     double * factor;
+    double m_pol1, m_pol2;
     void Init(int);
     friend std::ostream & operator<<(std::ostream &, Pol_Info &);
   public:
