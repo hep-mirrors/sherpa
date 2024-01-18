@@ -119,7 +119,7 @@ void YFS_Process::Init(const Process_Info &pi,
     // p_yfs->InitializeVirtual(vpi);
   }
 
-  p_bornproc->FillProcessMap(p_apmap);
+  // p_bornproc->FillProcessMap(p_apmap);
   p_bornproc->SetLookUp(false);
   p_bornproc->SetParent(this);
   p_bornproc->SetSelected(this);
@@ -150,6 +150,7 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int = p_bornproc->Integrator();
   p_int->Reset();
   auto psh = p_int->PSHandler();
+  p_yfs->SetFlavours(psh->Flavs());
   psh->InitCuts();
   psh->CreateIntegrators();
   p_int->SetResultPath(resultpath);
@@ -158,7 +159,8 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
   double var(p_int->TotalVar());
   // if (create) {
     msg_Info() << METHOD << "(): Calculate xs for '"
-               << m_name << "' (" << (p_gen ? p_gen->Name() : "") << ")" << std::endl;
+               // << m_name << "' (" << (p_gen ? p_gen->Name() : "") << ")" << std::endl;
+               << m_name <<  std::endl;
     double totalxsborn(psh->Integrate() / rpa->Picobarn());
     if (!IsEqual(totalxsborn, p_int->TotalResult())) {
       msg_Error() << "Result of PS-Integrator and summation do not coincide!\n"
@@ -224,6 +226,8 @@ Cluster_Amplitude *YFS_Process::CreateAmplitude(const NLO_subevt *sub) const
 Weight_Info *YFS_Process::OneEvent(const int wmode,ATOOLS::Variations_Mode varmode,
                                    const int mode)
 {
+  auto psh = p_int->PSHandler();
+  p_yfs->SetFlavours(psh->Flavs());
   p_selected = p_bornproc;
   Weight_Info *winfo(NULL);
   // if(p_int->YFS()->GetWeight()!=0.) p_yfs->CalculateBeta();
