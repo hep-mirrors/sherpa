@@ -1184,6 +1184,9 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
       }
     }
   }
+  if(p_int->YFS()->GetMode() != 0){
+    p_int->YFS()->SetFlavours(m_flavs);
+  }
   psh->CreateIntegrators();
   psh->InitCuts();
   p_int->SetResultPath(resultpath);

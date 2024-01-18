@@ -304,7 +304,6 @@ void Process_Base::Init(const Process_Info &pi,
   if (!widthcheck)
     msg_Error()<<"Non-zero width for external particle in process "
                 << m_name << std::endl;
-  if(yfshandler->GetMode()==1) yfshandler->SetFlavours(m_flavs);
   p_int->SetISRThreshold(Max(massin,massout));
   p_int->Initialize(beamhandler,isrhandler,yfshandler);
   m_issymfac=1.0;
