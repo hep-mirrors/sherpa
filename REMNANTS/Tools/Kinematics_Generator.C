@@ -135,7 +135,8 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
   double scale = 1.;
   do {
     if (p_remnants[beam]->Type() == rtp::hadron ||
-        p_remnants[beam]->Type() == rtp::photon) {
+        p_remnants[beam]->Type() == rtp::photon ||
+        p_remnants[beam]->Type() == rtp::pomeron) {
       m_kperpGenerator.CreateBreakupKinematics(beam, &m_ktmap[beam], scale);
     }
     maxnum--;
@@ -209,7 +210,8 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
   do {
     for (short unsigned int beam = 0; beam < 2; ++beam) {
       if (p_remnants[beam]->Type() == rtp::hadron ||
-          p_remnants[beam]->Type() == rtp::photon) {
+          p_remnants[beam]->Type() == rtp::photon ||
+          p_remnants[beam]->Type() == rtp::pomeron) {
         m_kperpGenerator.CreateBreakupKinematics(beam, &m_ktmap[beam], scale);
       }
     }

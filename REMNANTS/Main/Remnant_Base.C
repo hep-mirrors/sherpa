@@ -30,10 +30,10 @@ Remnant_Base(const ATOOLS::Flavour & flav, const size_t & beam, const size_t & t
   m_beamflav(flav), m_type(FixType(m_beamflav)),
   m_beam(beam), m_tag(tag), p_beam(nullptr), p_ff(nullptr),
   p_beamblob(nullptr), m_position(Vec4D(0.,0.,0.,0.)),
-  p_colours(nullptr), m_scale2(-1.) {}
+  p_colours(nullptr), m_residualE(0.), m_scale2(-1.) {}
 
 Remnant_Base::~Remnant_Base() {
-  if (p_ff!=nullptr) { delete p_ff; p_ff = NULL; }
+  if (p_ff!=nullptr) { delete p_ff; p_ff = nullptr; }
 }
 
 rtp::code Remnant_Base::FixType(ATOOLS::Flavour & flav) {
@@ -58,7 +58,9 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
   }
   msg_Error() << METHOD << ": Cannot extract particle:\n"
               << (*parton) << "\n  from: " << p_beam->Bunch()
-              << " with momentum " << p_beam->OutMomentum() << "\n";
+              << " with momentum " << p_beam->OutMomentum()
+              << ", difference = " << parton->Momentum()-p_beam->OutMomentum()
+              << "\n";
   return false;
 }
 

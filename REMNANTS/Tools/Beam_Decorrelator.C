@@ -44,17 +44,14 @@ bool Beam_Decorrelator::operator()(Blob * softblob) {
     }
   }
   // Add the produced soft gluons to the blob.
-  bool out=!m_softgluons.empty();
   while (!m_softgluons.empty()) {
     p_softblob->AddToOutParticles(m_softgluons.back());
     m_softgluons.pop_back();
   }
-  //if (out) msg_Out()<<(*p_softblob)<<"\n";
   return true;
 }
 
 bool Beam_Decorrelator::MustEmit(Particle * pi, Particle * pj) {
-  //return false;
   // Checks if the partons must emit a soft gluon, for conditions see above.
   // Ignore parton pairs from shower or from the same beam breakup
   if (pi->Info()=='I' || pj->Info()=='I' ||
