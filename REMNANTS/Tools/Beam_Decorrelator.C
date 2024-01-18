@@ -40,7 +40,7 @@ bool Beam_Decorrelator::operator()(Blob * softblob) {
   //	   <<METHOD<<" for "<<softblob->NOutP()<<" particles.\n"
   //	   <<(*p_softblob)<<"\n";
   // Check for pairs of partons; if they are colour-correlated and involve
-  // * one beam and one FS parton, with |eta| < maxeta (TODO: not sure here?) 
+  // * one beam and one FS parton, with |eta| < maxeta (TODO: not sure here?)
   // * two beam partons from different beams
   // and if their mass is larger than the minimal mass m_mass2, they
   // will emit a soft gluon to be decorrelated in colour.
@@ -51,12 +51,10 @@ bool Beam_Decorrelator::operator()(Blob * softblob) {
     }
   }
   // Add the produced soft gluons to the blob.
-  bool out=!m_softgluons.empty();
   while (!m_softgluons.empty()) {
     p_softblob->AddToOutParticles(m_softgluons.back());
     m_softgluons.pop_back();
   }
-  //msg_Out()<<"going out with "<<p_softblob->NOutP()<<"\n"<<(*p_softblob)<<"\n";
   return true;
 }
 
@@ -68,7 +66,7 @@ bool Beam_Decorrelator::MustEmit(Particle * pi, Particle * pj) {
   // Ignore parton pairs that are not colour-correlated
   if (!((pi->GetFlow(1)==pj->GetFlow(2) && pi->GetFlow(1)!=0) ||
 	(pi->GetFlow(2)==pj->GetFlow(1) && pi->GetFlow(2)!=0))) return false;
-  if (pi->Info()=='B' || pj->Info()=='F' ||      
+  if (pi->Info()=='B' || pj->Info()=='F' ||
       pi->Momentum()[0]>pj->Momentum()[0]) { p_beam = pi; p_spect = pj; }
   else {p_beam = pj; p_spect = pi; }
   m_pbeam  = p_beam->Momentum();

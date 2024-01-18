@@ -20,8 +20,13 @@ Pomeron::Pomeron(const Flavour _beam, const double _energy, const double _pol,
 
   std::vector<double> tMax{s["Pomeron"]["tMax"].GetVector<double>()};
   if (tMax.size() != 1 && tMax.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `EPA:Q2Max'.");
+    THROW(fatal_error, "Specify either one or two values for `Pomeron:tMax'.");
   m_tMax = (_dir > 0) ? tMax.front() : tMax.back();
+
+  std::vector<double> xMax{s["Pomeron"]["xMax"].GetVector<double>()};
+  if (xMax.size() != 1 && xMax.size() != 2)
+    THROW(fatal_error, "Specify either one or two values for `Pomeron:xMax'.");
+  m_xMax = (_dir > 0) ? xMax.front() : xMax.back();
 
   std::vector<double> A{s["Pomeron"]["A"].GetVector<double>()};
   if (A.size() != 1 && A.size() != 2)
@@ -48,17 +53,17 @@ bool Pomeron::CalculateWeight(double x, double q2)
 {
   m_x = x;
   m_Q2 = q2;
-  if (x > 1. - m_proton_mass / 2. / m_energy) {
+  if (x > 1. - m_proton_mass / 2. / m_energy || x > m_xMax) {
     m_weight = 0.;
     return true;
   }
-  double tmax = Min(-2. * m_energy * (m_energy - m_proton_mass), m_tMax);
+  double tmax = Min(2. * m_energy * (m_energy - m_proton_mass), m_tMax);
   /*
    * In analogy to the EPA spectrum, we integrated the original weight from
-   * Goharipour:2018yov over t \in [0, t_max] where t_max is given by kinematics
+   * Goharipour:2018yov over t \in [-t_max, 0]; note that tmax is positive
    */
   m_weight = (m_A*std::pow(x,1. - 2.*m_alpha_intercept)*
-              (std::exp(m_B*tmax)/std::pow(x,2.*m_alpha_slope*tmax) - 1.))/
+              (1. - std::exp(-m_B*tmax)*std::pow(x,2.*m_alpha_slope*tmax)))/
              (m_B - 2.*m_alpha_slope*std::log(x));
   if (m_weight < 0.) m_weight = 0.;
   return true;

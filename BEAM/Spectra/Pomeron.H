@@ -7,7 +7,7 @@ namespace BEAM {
 
 class Pomeron final : public Beam_Base {
 private:
-  double m_tMax, m_proton_mass;
+  double m_tMax, m_xMax, m_proton_mass;
   double m_A, m_B, m_alpha_intercept, m_alpha_slope;
 public:
   Pomeron(const ATOOLS::Flavour beam,const double energy,const double pol,
