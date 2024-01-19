@@ -17,7 +17,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Remnant_Handler::
-Remnant_Handler(PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler *beam,const vector<size_t> & tags) :
+Remnant_Handler(PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler *beam,const array<size_t, 2> & tags) :
   p_softblob(nullptr), m_check(true), m_output(false), m_fails(0) {
   rempars = new Remnants_Parameters();
   rempars->Init();
@@ -36,7 +36,7 @@ Remnant_Handler::~Remnant_Handler() {
 
 void Remnant_Handler::
 InitializeRemnants(PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler *beam,
-		   const vector<size_t> & tags) {
+		   const array<size_t, 2> & tags) {
   for (size_t i = 0; i < 2; ++i) {
     m_tags[i]     = tags[i];
     p_remnants[i] = nullptr;

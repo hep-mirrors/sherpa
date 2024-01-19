@@ -45,7 +45,7 @@ namespace SHERPA {
     std::string m_evtform;
     std::set<std::string> m_pdflibs;
     std::map<PDF::isr::id, std::array<std::string, 2> >  m_defsets;
-    std::map<PDF::isr::id, std::vector<size_t> > m_bunchtags;
+    std::map<PDF::isr::id, std::array<size_t, 2> > m_bunchtags;
 
     ATOOLS::Flavour m_bunch_particles[2];
 
@@ -166,7 +166,7 @@ namespace SHERPA {
     - the parton shower in the initial and final state,
     - the handling of the beam remnants,
     - the fragmentation
-    
+
     These modules are later on taken by the main steering class, Sherpa, and put into
     corresponding Event_Phase_Handlers. After termination of the run, they are all deleted.
   */

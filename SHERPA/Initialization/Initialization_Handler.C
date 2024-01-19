@@ -881,34 +881,41 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
       scheme = settings["ISR_E_SCHEME"].Get<int>();
     }
     // Initialise the actual PDF and make sure it arrives at the right place.
-    // Here we need to be careful about flavours .... (I think I have it ...)
-    Flavour flav       = ( (pid != PDF::isr::bunch_rescatter) ?
-			   m_bunch_particles[beam] :
-			   p_beamspectra->GetBeam(beam)->Beam() );
+    Flavour flav;
+    m_bunchtags[pid] = {0, 0};
+    if (pid != PDF::isr::bunch_rescatter) flav = m_bunch_particles[beam];
+    else {
+      // use a mode to select which beam/bunch combination is used for rescattering
+      // defaults to 0, i.e. beam-beam rescattering
+      int bbrmode = settings["BBR_MODE"].SetDefault(0).Get<int>();
+      flav = bbrmode&(beam+1) ? m_bunch_particles[beam]
+                                  : p_beamspectra->GetBeam(beam)->Beam();
+      m_bunchtags[pid][beam] = bbrmode&(beam+1) ? 0 : 1;
+    }
     PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
     if (pid!=PDF::isr::bunch_rescatter) {
       PDF_Base * pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set,args);
       // Pomerons do not have MPIs, hence must be excluded from the check below
       if (m_bunch_particles[beam].IsHadron() && pdfbase==NULL &&
           !(pid==PDF::isr::hard_subprocess && flav==Flavour(kf_pomeron)))
-	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
-	      +" libraries for "+ToString(m_bunch_particles[beam])+" bunch.");
+        THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
+                +" libraries for "+ToString(m_bunch_particles[beam])+" bunch.");
       if (pid==PDF::isr::hard_process) rpa->gen.SetPDF(beam,pdfbase);
       if (pdfbase==NULL) {
-	isrbases[beam]  = new Intact(flav);
-	needs_resc      = false;
+        isrbases[beam]  = new Intact(flav);
+        needs_resc      = false;
       }
       else {
-	pdfbase->SetBounds();
-	isrbases[beam] = new Structure_Function(pdfbase,flav);
+        pdfbase->SetBounds();
+        isrbases[beam] = new Structure_Function(pdfbase,flav);
       }
       ATOOLS::rpa->gen.SetBunch(m_bunch_particles[beam],beam);
     }
     else if (pid==PDF::isr::bunch_rescatter && needs_resc) {
       PDF_Base * pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set,args);
       if (pdfbase==NULL)
-	THROW(critical_error,"PDF '"+set+"' for rescattering does not exist in any of the loaded"
-	      +" libraries for "+ToString(m_bunch_particles[beam])+" bunch.");
+        THROW(critical_error,"PDF '"+set+"' for rescattering does not exist in any of the loaded"
+                +" libraries for "+ToString(m_bunch_particles[beam])+" bunch.");
       pdfbase->SetBounds();
       isrbases[beam] = new Structure_Function(pdfbase,flav);
     }
@@ -925,17 +932,6 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     }
     isr->Output();
     m_isrhandlers[pid] = isr;
-    ///////////////////////////////////////////////////////////
-    // This is a bit of an ad-hoc fix for bunch rescattering in EPA configurations only.
-    // The tags we fill here will by default be bunchtags = {0,0}, i.e. look at the
-    // first pair of bunches coming out of the beam bases.
-    // For EPA we will add {1,1} - effectively then also adding the hadrons.
-    // These tags will be handed over to the remnants, making sure we have
-    // one remnant per state that has a PDF.
-    // TODO: Extend this for ions - this will need even more restructuring
-    ///////////////////////////////////////////////////////////
-    vector<size_t> bunchtags; bunchtags.resize(2,pid==isr::bunch_rescatter ? 1 : 0);
-    m_bunchtags[pid] = bunchtags;
   }
 }
 
@@ -979,9 +975,9 @@ bool Initialization_Handler::InitializeTheRemnants() {
 	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(1)->Type()<<")\n";
   if (m_remnanthandlers.find(isr::bunch_rescatter)!=m_remnanthandlers.end())
     msg_Info()<<"  Rescattering: "
-	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->GetBeam()->Bunch(1)<<" ("
+	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->GetBeam()->Bunch(m_bunchtags[isr::bunch_rescatter][0])<<" ("
 	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->Type()<<") + "
-	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->GetBeam()->Bunch(1)<<" ("
+	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->GetBeam()->Bunch(m_bunchtags[isr::bunch_rescatter][1])<<" ("
 	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->Type()<<")\n";
   return true;
 }
