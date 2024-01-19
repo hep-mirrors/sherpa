@@ -42,10 +42,10 @@ namespace REMNANTS {
 
     bool m_check, m_output;
     long int m_fails;
-    
+
     void InitializeRemnants(PDF::ISR_Handler * isr,
 			    BEAM::Beam_Spectra_Handler * beam,
-			    const std::vector<size_t> & tags);
+			    const std::array<size_t, 2> & tags);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup(ATOOLS::Blob_List * bloblist);
@@ -55,20 +55,20 @@ namespace REMNANTS {
 							       const bool & isrescatter);
  public:
     Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
-		    const std::vector<size_t> & tags);
+		    const std::array<size_t, 2> & tags);
     ~Remnant_Handler();
-    
+
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
     bool Extract(ATOOLS::Particle * part,const unsigned int beam);
     void ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
-    
+
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List *const blobs,
 					     ATOOLS::Particle_List *const=nullptr,
 					     const bool & isrescatter=false);
 
     void SetImpactParameter(const double & b);
-    
+
     inline bool NeedsToMakeBeamBlobs() {
       return (m_colours.HasColours(0) || m_colours.HasColours(0));
     }
@@ -77,13 +77,13 @@ namespace REMNANTS {
     }
     inline const PDF::isr::id Id()  const { return m_id; }
     inline const strat::code Type() const { return m_type; }
-    
+
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
       return (beam<2)?p_remnants[beam]:nullptr;
     }
     inline Primordial_KPerp * GetKPerp() { return m_kinematics.GetKPerp(); }
   };
-  
+
   typedef std::map<PDF::isr::id, Remnant_Handler*> Remnant_Handler_Map;
 }
 
