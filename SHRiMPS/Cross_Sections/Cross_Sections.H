@@ -31,6 +31,8 @@ namespace SHRIMPS {
     Sigma_Elastic   * GetSigmaElastic()   { return (&m_sigma_elastic); }
     Sigma_D         * GetSigmaD()        { return (&m_sigma_D); }
 
+    void SaveXS();
+
     const double & SigmaTot()        const { return m_xstot; }
     const double & SigmaSD(size_t i) const { return m_xsSD[i]; }
     const double & SigmaDD()         const { return m_xsDD; }

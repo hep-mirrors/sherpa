@@ -36,6 +36,8 @@ namespace SHRIMPS {
     const size_t & Steps()  const { return m_steps; }
     const std::vector<double> & GetDiffGrid() const { return m_diffgrid; }
     double Test();
+    double GetXSvsT(double t);
+
   };  
 }
 #endif

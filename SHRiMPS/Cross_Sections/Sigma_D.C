@@ -124,6 +124,7 @@ void Sigma_D::FillGrids(Sigma_Elastic * sigma_el) {
     CombineTGrids(diff);
     CreateIntGrids(diff,sigma_el);
   }
+
 }
 
 void Sigma_D::FillTGrids() {
@@ -135,13 +136,40 @@ void Sigma_D::FillTGrids() {
     term.SetQ(sqrt(t));
     for (size_t i=0;i<p_eikonals->size();i++) {
       for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
-	term.SetEikonal((*p_eikonals)[i][j]);
-	value = integrator.Integrate(0.,MBpars.GetEikonalParameters().bmax,
+	      term.SetEikonal((*p_eikonals)[i][j]);
+      	value = integrator.Integrate(0.,MBpars.GetEikonalParameters().bmax,
 				     MBpars.GetEikonalParameters().accu,1.);
-    //if (dabs(value<0.)) value = 0.;
-	m_tgrids[i][j].push_back(value);
+        //if (dabs(value<0.)) value = 0.;
+      	m_tgrids[i][j].push_back(value);
       }
     }
+  }
+}
+
+double Sigma_D::GetXSvsT(const size_t diff, double t) {
+  size_t i = 0;
+  size_t l_ind(i), r_ind;
+  double t_current(m_tmin + m_delta*i);
+  double l_dist;
+  double r_dist;
+  if (t >= m_tmin && t <= m_tmax) {
+    while (t_current <= t) {
+      l_dist = dabs(t_current - t);
+      l_ind = i;
+      i++;
+      t_current = m_tmin + m_delta*i;
+    }
+    r_dist = dabs(t_current - t);
+    r_ind = i;
+    double value;
+    if (r_dist < l_dist) value = m_diffgrids[diff][l_ind];
+    else if (l_dist < r_dist) value = m_diffgrids[diff][r_ind];
+    else value = (m_diffgrids[diff][l_ind] + m_diffgrids[diff][r_ind])/2.;
+    return value;
+  }
+  else {
+    msg_Error() << "Error in " << METHOD << " t value out of range";
+    return 0.;
   }
 }
 

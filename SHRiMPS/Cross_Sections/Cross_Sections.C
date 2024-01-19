@@ -30,6 +30,7 @@ void Cross_Sections::CalculateCrossSections()
   m_xsel   = m_sigma_elastic.Calculate();
   m_sigma_elastic.FillGrids();
   m_sigma_D.FillGrids(&m_sigma_elastic);
+  //SaveXS();
   for (size_t i=0;i<2;i++) m_xsSD[i] = m_sigma_D.GetXSec(i);
   m_xsDD = m_sigma_D.GetXSec(2);
   double sigma_qe = m_sigma_D.Calculate();
@@ -51,6 +52,63 @@ void Cross_Sections::CalculateCrossSections()
   m_sigma_inelastic.SetSigma(m_xsinel);
   m_sigma_elastic.SetSigma(m_xsel);
   m_sigma_D.SetSigma(m_xsSD[0]+m_xsSD[1]+m_xsDD);
+  
+}
+
+void Cross_Sections::SaveXS() {
+  std::ofstream XSfile, ELASfile, QEfile;
+  XSfile.open("./cross_section_273.txt");
+  double tmin = m_sigma_elastic.Tmin();
+  double tmax = m_sigma_elastic.Tmax();
+  size_t steps = m_sigma_elastic.Steps();
+  double deltaT = (tmax - tmin) / steps;
+  for (int diff = 0; diff < 3; diff++) {
+    for (int i = 0; i < steps; i++) {
+      double t = tmin + i*deltaT;
+      XSfile << diff << "\t" << t << "\t" << m_sigma_D.GetXSvsT(diff,t) << std::endl;
+    }
+  }
+  XSfile.close();
+  ELASfile.open("./sig_elas_273.txt");
+  for (int i = 0; i < steps; i++) {
+    double t = tmin + i*deltaT;
+    ELASfile << m_sigma_elastic.GetXSvsT(t) << std::endl;
+  }
+  ELASfile.close();
+  QEfile.open("./sig_QE_273.txt");
+  for (int i = 0; i < steps; i++) {
+    double t = tmin + i*deltaT;
+    double qevalue = 0.;
+    for (int diff = 0; diff < 3; diff++) qevalue+=m_sigma_D.GetXSvsT(diff,t);
+    qevalue += m_sigma_elastic.GetXSvsT(t);
+    QEfile << qevalue << std::endl;
+  }
+  QEfile.close();
+  std::ofstream XSfileB, ELASfileB, QEfileB;
+  double bmin = 0.1;
+  double bmax = 20.;//m_sigma_elastic.Bmax();
+  double delta_b = 0.01;// m_sigma_elastic.deltaB();
+  XSfileB.open("./crosssection_273_B.txt");
+  ELASfileB.open("./sig_elas_273_B.txt");
+  QEfileB.open("./sig_QE_273_B.txt");
+  double qe, elastic, diffractives[3];
+  for (double b = bmin; b <= bmax; b = b + delta_b) {
+    qe = 0.;
+    elastic = m_sigma_D.GetCombinedValueEL(b);
+    diffractives[0] = m_sigma_D.GetCombinedValueSD0(b);
+    diffractives[1] = m_sigma_D.GetCombinedValueSD1(b);
+    diffractives[2] = m_sigma_D.GetCombinedValueDD(b);
+    qe += elastic;
+    for(int diff = 0; diff < 3; diff++) qe += diffractives[diff];
+    ELASfileB << elastic << std::endl;
+    QEfileB << qe << std::endl;
+    for (int diff = 0; diff < 3; diff++){
+      XSfileB << diff << "\t" << b << "\t" << diffractives[diff] << std::endl;
+    }
+  }
+  XSfileB.close();
+  ELASfileB.close();
+  QEfileB.close();
 }
 
 void Cross_Sections::Test(const std::string & dirname)

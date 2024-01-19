@@ -62,7 +62,7 @@ namespace SHRIMPS {
     inline Form_Factor * FF1()        const { return p_Omegaik->FF1(); }
     inline Form_Factor * FF2()        const { return p_Omegaki->FF2(); }
     inline const double & Prefactor() const { return m_prefactor; }
-    inline const double & DeltaB()    const { return m_deltaB; }    
+    inline const double & DeltaB()    const { return m_deltaB; }
     inline std::vector<double> * GetImpactParameterGrid()        { return &m_gridB; }
     inline std::vector<double> * GetImpactParameterMaximumGrid() { return &m_gridBmax; }
     

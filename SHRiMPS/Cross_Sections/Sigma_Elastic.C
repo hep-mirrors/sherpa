@@ -67,6 +67,33 @@ void Sigma_Elastic::FillDiffQGrid() {
   }
 }
 
+double Sigma_Elastic::GetXSvsT(double t) {
+  size_t i = 0;
+  size_t l_ind(i), r_ind;
+  double t_current(m_tmin + m_delta*i);
+  double l_dist;
+  double r_dist;
+  if (t >= m_tmin && t <= m_tmax) {
+    while (t_current <= t) {
+      l_dist = dabs(t_current - t);
+      l_ind = i;
+      i++;
+      t_current = m_tmin + m_delta*i;
+    }
+    r_dist = dabs(t_current - t);
+    r_ind = i;
+    double value;
+    if (r_dist < l_dist) value = m_diffgrid[l_ind];
+    else if (l_dist < r_dist) value = m_diffgrid[r_ind];
+    else value = (m_diffgrid[l_ind] + m_diffgrid[r_ind])/2.;
+    return value;
+  }
+  else {
+    msg_Error() << "Error in " << METHOD << " t value out of range";
+    return 0.;
+  }
+}
+
 void Sigma_Elastic::FillIntQGridAndNormalize() {
   m_intgrid.push_back(0.);
   m_summed = 0.;
