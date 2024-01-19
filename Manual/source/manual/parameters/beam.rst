@@ -188,13 +188,13 @@ values, for the respective beams.
 Pomeron
 -------
 
-The Pomeron flux is implemented as used in :cite`H1:2006zyl` :cite:`Goharipour:2018yov` :cite:`H1:2006uea`, given by
+The Pomeron flux is implemented as used in :cite`H1:2006zyl` :cite:`Goharipour:2018yov` :cite:`H1:2006uea` and, integrating out the momentum transfer, is given by
 
 .. math::
 
-    f_{\mathbb{P}}(x) = \int_0^{t_\mathrm{max}} A_\mathbb{P} \frac{e^{B_\mathbb{P} t}}{{x}_\mathbb{P}^{2 \alpha_\mathbb{P}\left(t\right) -1}}
+    f_{\mathbb{P}}(x) = \int^0_{-t_\mathrm{max}} A_\mathbb{P} \frac{e^{B_\mathbb{P} t}}{{x}_\mathbb{P}^{2 \alpha_\mathbb{P}\left(t\right) -1}}
     = A_\mathbb{P} x^{1 - 2 \alpha\left(0\right)}
-    \frac{\mathrm{e}^{B_\mathbb{P} t_\mathrm{max}} x^{-2 \alpha^\prime t_\mathrm{max}} - 1}
+    \frac{1-\mathrm{e}^{-B_\mathbb{P} t_\mathrm{max}} x^{2 \alpha^\prime t_\mathrm{max}}}
          {B_\mathbb{P} - 2 \alpha^\prime \mathrm{log}(x)}
 
 where :math:`t` is the squared transferred four-momentum and :math:`\alpha` is assumed to be
@@ -204,13 +204,16 @@ to the ones obtained in Fit A in :cite:`Goharipour:2018yov` and can each be chan
 .. code-block:: yaml
 
     Pomeron:
-      tMax: -1.e12
+      tMax: 1.e12
+      xMax: 1.
       A: 1.0
       B: 7.0
       Alpha_intercept: 1.0938
       Alpha_slope: 0.0
 
 where ``Alpha_intercept`` and ``Alpha_slope`` are :math:`\alpha\left(0\right)` and :math:`\alpha^\prime`, respectively.
+Please note that ``tMax`` is the absolute value, i.e. a positive number.
+``xMax`` denotes the fraction of the proton momentum taken by the Pomeron.
 
 Other fluxes can be implemented upon request.
 
