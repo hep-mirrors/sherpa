@@ -8,7 +8,6 @@
 
 using namespace REMNANTS;
 using namespace ATOOLS;
-using namespace std;
 
 Remnants_Parameters* REMNANTS::rempars = NULL;
 
@@ -16,7 +15,7 @@ void pkparams::Output() {
   msg_Debugging()<<"-------------------------------------------------\n"
 	   <<"Form = "<<m_form<<", Recoil = "<<m_recoil<<"\n";
   if (m_form!=pkform::none) {
-    for (map<string, double>::iterator pit=m_params.begin();pit!=m_params.end();pit++) {
+    for (std::map<std::string, double>::iterator pit=m_params.begin();pit!=m_params.end();pit++) {
       msg_Debugging()<<std::left<<std::setw(32)<<pit->first<<": "<<pit->second<<"\n";
     }
   }
@@ -29,7 +28,7 @@ Remnants_Parameters::Remnants_Parameters() {
 }
 
 Remnants_Parameters::~Remnants_Parameters() {
-  for (map<kf_code,pkparams *>::iterator it=m_params.begin();it!=m_params.end();it++) {
+  for (std::map<kf_code,pkparams *>::iterator it=m_params.begin();it!=m_params.end();it++) {
     delete it->second;
   }
   m_params.clear();
@@ -83,7 +82,7 @@ void Remnants_Parameters::ReadParameters() {
   }
   msg_Debugging()<<"============================================================\n"
 	   <<METHOD<<" results in final parameters:\n";
-  for (map<long unsigned int, pkparams * >::iterator pit=m_params.begin();
+  for (std::map<long unsigned int, pkparams * >::iterator pit=m_params.begin();
        pit!=m_params.end();pit++) {
     msg_Debugging()<<"* "<<pit->first<<"\n";
     pit->second->Output();
@@ -112,19 +111,19 @@ pkrecoil::code Remnants_Parameters::SelectRecoil(const std::string & form) {
 
 
 const pkform::code & Remnants_Parameters::GetForm(const Flavour & beamflav) {
-  map<long unsigned int,pkparams *>::iterator fit = m_params.find(beamflav.Kfcode());
+  std::map<long unsigned int,pkparams *>::iterator fit = m_params.find(beamflav.Kfcode());
   return (fit!=m_params.end() ? fit->second->m_form : m_params[0]->m_form);
 }
 
 const pkrecoil::code & Remnants_Parameters::GetRecoil(const Flavour & beamflav) {
-  map<long unsigned int,pkparams *>::iterator fit = m_params.find(beamflav.Kfcode());
+  std::map<long unsigned int,pkparams *>::iterator fit = m_params.find(beamflav.Kfcode());
   return (fit!=m_params.end() ? fit->second->m_recoil : m_params[0]->m_recoil);
 }
 
-const double & Remnants_Parameters::operator()(const Flavour & beamflav,const string & tag) {
-  map<long unsigned int,pkparams *>::iterator fit = m_params.find(beamflav.Kfcode());
+const double & Remnants_Parameters::operator()(const Flavour & beamflav,const std::string & tag) {
+  std::map<long unsigned int,pkparams *>::iterator fit = m_params.find(beamflav.Kfcode());
   pkparams * pkparams = (fit!=m_params.end() ? fit->second : m_params[0]);
-  map<string, double>::iterator tit = pkparams->m_params.find(tag);
+  std::map<std::string, double>::iterator tit = pkparams->m_params.find(tag);
   if (tit==pkparams->m_params.end()) THROW(fatal_error,tag+" not found in remnants parameters.")
   return tit->second;
 }

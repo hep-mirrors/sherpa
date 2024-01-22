@@ -7,7 +7,6 @@
 
 using namespace REMNANTS;
 using namespace ATOOLS;
-using namespace std;
 
 
 Beam_Decorrelator::Beam_Decorrelator() : m_on(false) {}

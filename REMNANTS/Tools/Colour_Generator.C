@@ -7,9 +7,7 @@
 
 using namespace REMNANTS;
 using namespace ATOOLS;
-using namespace std;
 
-    
 Colour_Generator::Colour_Generator() {
   for(size_t beam=0;beam<2;beam++) p_remnants[beam] = NULL;
 }
@@ -100,14 +98,14 @@ bool Colour_Generator::TChannelColourFlows() {
 int Colour_Generator::DefineColourDonor(const size_t & tbeam) {
   // Define the stack to take the new t-channel colour from, according to availability.
   bool tripcol(false), anticol(false);
-  for (list<int>::iterator cit=m_cols[tbeam][0].begin();
+  for (std::list<int>::iterator cit=m_cols[tbeam][0].begin();
        cit!=m_cols[tbeam][0].end();cit++) {
     if (m_vetoed[tbeam][0].find(*cit)==m_vetoed[tbeam][0].end()) {
       tripcol = true;
       break;
     }
   }
-  for (list<int>::iterator cit=m_cols[1-tbeam][1].begin();
+  for (std::list<int>::iterator cit=m_cols[1-tbeam][1].begin();
        cit!=m_cols[1-tbeam][1].end();cit++) {
     if (m_vetoed[1-tbeam][1].find(*cit)==m_vetoed[1-tbeam][1].end()) {
       anticol = true;
@@ -128,7 +126,7 @@ int Colour_Generator::DefineColourDonor(const size_t & tbeam) {
       anticol = false;
     }
   }
-  
+
   if (tripcol && anticol) return (ran->Get()>0.5?tbeam:1-tbeam);
   if (tripcol)            return tbeam;
   if (anticol)            return 1-tbeam;
@@ -217,7 +215,7 @@ bool Colour_Generator::ConstrainedGGFlows(const size_t & tbeam) {
     Replace(tbeam,0,p_inparts[tbeam]);
     newcolt = p_inparts[tbeam]->GetFlow(1);
     newcola = p_inparts[1-tbeam]->GetFlow(2);
-    break;    
+    break;
   }
   return true;
 }
@@ -487,7 +485,7 @@ size_t Colour_Generator::AvailableColours(const size_t & beam) {
   // replacements, as encoded in the m_vetoed sets.
   size_t ncolours = 0;
   for (size_t index=0;index<2;index++) {
-    for (list<int>::iterator cit=m_cols[beam][index].begin();
+    for (std::list<int>::iterator cit=m_cols[beam][index].begin();
 	 cit!=m_cols[beam][index].end();cit++) {
       if (m_vetoed[beam][index].find(*cit)==m_vetoed[beam][index].end()) {
 	ncolours += (index+1);
@@ -594,7 +592,7 @@ int Colour_Generator::NextColour(const size_t & beam,const size_t & index) {
   // Return -1 if there is no allowed colour - disallowed colours are stored in the
   // m_vetoed sets.
   int col = -1;
-  for (list<int>::iterator cit=m_cols[beam][index].begin();
+  for (std::list<int>::iterator cit=m_cols[beam][index].begin();
        cit!=m_cols[beam][index].end();cit++) {
     if (m_vetoed[beam][index].find(*cit)==m_vetoed[beam][index].end()) {
       col = (*cit);
@@ -620,10 +618,10 @@ void Colour_Generator::Output() {
   for (size_t beam=0;beam<2;beam++) {
     for (size_t pos=0;pos<2;pos++) {
       msg_Out()<<"   ["<<beam<<pos<<"]: ";
-      for (list<int>::iterator cit=m_cols[beam][pos].begin();
+      for (std::list<int>::iterator cit=m_cols[beam][pos].begin();
 	   cit!=m_cols[beam][pos].end();cit++) msg_Out()<<" "<<(*cit);
       msg_Out()<<"--- vetoed: ";
-      for (set<int>::iterator cit=m_vetoed[beam][pos].begin();
+      for (std::set<int>::iterator cit=m_vetoed[beam][pos].begin();
 	   cit!=m_vetoed[beam][pos].end();cit++) msg_Out()<<" "<<(*cit);
       msg_Out()<<"\n";
     }
