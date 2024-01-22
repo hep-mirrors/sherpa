@@ -17,6 +17,7 @@ public:
   Beam_Base *Copy() override;
   bool CalculateWeight(double, double) override;
   void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0) override;
+  void FixPosition() override;
 };// end of class Pomeron
 }// end of namespace BEAM
 #endif
