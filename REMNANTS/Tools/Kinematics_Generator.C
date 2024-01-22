@@ -8,7 +8,6 @@
 
 using namespace REMNANTS;
 using namespace ATOOLS;
-using namespace std;
 
 Kinematics_Generator::Kinematics_Generator() :
   m_stretcher(Momenta_Stretcher("REMNANTS")), m_warns(0), m_errors(0) {}
@@ -286,8 +285,8 @@ void Kinematics_Generator::InitKTMaps() {
 }
 
 const Vec4D Kinematics_Generator::ExtractColourfulFS(
-    const size_t &beam, vector<Vec4D> &moms, vector<double> &masses,
-    vector<Particle *> &parts) {
+    const size_t &beam, std::vector<Vec4D> &moms, std::vector<double> &masses,
+    std::vector<Particle *> &parts) {
   // Extract momenta, masses, and particle pointers of colourful FS objects in
   // the showerblob (the decayblob of the ** only ** extracted particle) for
   // beam.
@@ -319,9 +318,9 @@ const Vec4D Kinematics_Generator::ExtractColourfulFS(
 }
 
 const Vec4D Kinematics_Generator::ExtractSpectators(const size_t &beam,
-                                                    vector<Vec4D> &moms,
-                                                    vector<double> &masses,
-                                                    vector<Particle *> &parts) {
+                                        std::vector<Vec4D> &moms,
+                                        std::vector<double> &masses,
+                                        std::vector<Particle *> &parts) {
   // Extract momenta, masses, and particle pointers of spectators for beam.
   Vec4D tot(0., 0., 0., 0.), help;
   for (Part_List::iterator spit = p_spectators[beam]->begin();
@@ -336,9 +335,9 @@ const Vec4D Kinematics_Generator::ExtractSpectators(const size_t &beam,
 }
 
 bool Kinematics_Generator::CheckDIS(const size_t &beam) {
-  vector<Vec4D> moms;
-  vector<Particle *> parts;
-  vector<double> masses;
+  std::vector<Vec4D> moms;
+  std::vector<Particle *> parts;
+  std::vector<double> masses;
   Vec4D tot = (ExtractColourfulFS(beam, moms, masses, parts) +
                ExtractSpectators(beam, moms, masses, parts));
   // If there is no solution, do not even try
@@ -446,9 +445,9 @@ bool Kinematics_Generator::CheckRemnants() {
   //   ensures longitudinal momentum conservation (the transverse one is taken
   //   care of in the KPerp_Generator through its internal compensation,
   //   remnant-by-remnant)
-  vector<Vec4D> moms;
-  vector<double> masses;
-  vector<Particle *> parts;
+  std::vector<Vec4D> moms;
+  std::vector<double> masses;
+  std::vector<Particle *> parts;
   Vec4D tot(0., 0., 0., 0.), mom;
   double totmass(0.);
   for (size_t beam = 0; beam < 2; beam++) {
