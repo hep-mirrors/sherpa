@@ -1,4 +1,5 @@
 #include "BEAM/Spectra/Pomeron.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace BEAM;
 using namespace ATOOLS;
@@ -74,6 +75,13 @@ void Pomeron::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {
     m_vecouts[0] = out;
     m_vecouts[1] = m_lab-out;
   }
+}
+
+void Pomeron::FixPosition() {
+  // Sample the position of the pomeron uniformly across the proton
+  double radius = Flavour(kf_p_plus).Radius() * ran->Get();
+  double phi = 2*M_PI*ran->Get();
+  m_position = Vec4D(0., radius*std::cos(phi), radius*std::sin(phi), 0.);
 }
 
 Beam_Base *Pomeron::Copy() { return new Pomeron(*this); }
