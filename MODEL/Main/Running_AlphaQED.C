@@ -1,14 +1,20 @@
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+
 
 #include <iostream>
 
 
 using namespace MODEL;
 using namespace ATOOLS;
+using namespace std;
+
 
 
 namespace MODEL {
@@ -17,7 +23,17 @@ namespace MODEL {
   const double Running_AlphaQED::m_A[4]={0.0,0.0,0.00165,0.00221};
   const double Running_AlphaQED::m_B[4]={0.00835,0.00238,0.00299,0.00293};
   const double Running_AlphaQED::m_C[4]={1.0,3.927,1.0,1.0};
+ #ifdef USING__HADALPHAQED
+    extern "C"{
+      void hadr5x_(double *e, double *st2,
+                  double *der, double *errdersta,
+                  double *errdersys, double *deg,
+                  double *errdegsta, double *errdegsys);
+    }
+    #endif
+
 }
+
 
 
 Running_AlphaQED::Running_AlphaQED(const double _alpha0) :
@@ -26,6 +42,8 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha0) :
   m_type = std::string("Running Coupling");
   m_name  = "Alpha_QED";
   m_defval = _alpha0;
+  Scoped_Settings s{ Settings::GetMainSettings()[m_name] };
+  m_mode     = s["VPMODE"].SetDefault(vpmode::off).Get<vpmode::code>();
 }
 
 
@@ -38,7 +56,9 @@ double Running_AlphaQED::operator()(double t)
   if (Q2<0.3)        i=0;
   else if (Q2<3.0)   i=1;
   else if (Q2<100.0) i=2;
-    
+
+  if(IsZero(t) || m_mode==vpmode::off) return m_alpha0;
+
   double sig_lep_gg = m_alpha0/(3.*M_PI) * 
     (PiGamma(Flavour(kf_e),Q2)+PiGamma(Flavour(kf_mu),Q2)+PiGamma(Flavour(kf_tau),Q2));
   double sig_ha_gg  = m_A[i] + m_B[i]*log(1+m_C[i]*Q2);
@@ -92,4 +112,19 @@ void Running_AlphaQED::PrintSummary()
   msg_Info()<<"Set \\alpha according to EW scheme"
             <<"\n  1/\\alpha(0)   = "<<1./m_alpha0
             <<"\n  1/\\alpha(def) = "<<1./m_defval<<"\n";
+}
+
+std::istream &MODEL::operator>>(std::istream &str,vpmode::code &vp)
+{
+  std::string tag;
+  str>>tag;
+  vp=vpmode::off;
+  if      (tag.find("None")!=std::string::npos) vp=vpmode::off;
+  else if (tag.find("Full")!=std::string::npos) vp=vpmode::full;
+  else if (tag.find("1")!=std::string::npos)    vp=vpmode::full;
+  else if (tag.find("HP")!=std::string::npos)   vp=vpmode::hp;
+  else if (tag.find("2")!=std::string::npos)    vp=vpmode::hp;
+  else if (tag.find("LP")!=std::string::npos)   vp=vpmode::lp;
+  else if (tag.find("3")!=std::string::npos)    vp=vpmode::lp;
+  return str;
 }

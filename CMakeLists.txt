@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+CMakeLists.txtcmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 ###########################Package@#####################################
 project(SHERPA-MC LANGUAGES C  CXX)
 #The complicated way to set the version is used to assure the simple
@@ -67,6 +67,7 @@ option(SHERPA_ENABLE_THREADING               "Enables building with threading." 
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
+option(SHERPA_ENABLE_ALPHAQEDHAD             "Enables hadronic contribution to alphaqed." OFF)
 
 set(HEPMC_MIN_VERSION "3.0.0")
 set(RIVET_MIN_VERSION "3.0.0")
@@ -474,8 +475,20 @@ if (SHERPA_ENABLE_LHAPDF)
 else()
   set(SHERPA_ENABLE_INSTALL_LHAPDF OFF)
 endif()
-
 message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
+
+if (SHERPA_ENABLE_ALPHAQEDHAD)
+  execute_process(
+  COMMAND wget --no-check-certificate -O ${PROJECT_SOURCE_DIR}/MODEL/Main/hadr5x19.f https://people.physik.hu-berlin.de/~fjeger/hadr5x19.f 
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  RESULT_VARIABLE download_result
+  )
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fdefault-real-8 -fdefault-double-8")
+  if(NOT download_result EQUAL 0)
+    message(FATAL_ERROR "Failed to download the file.")
+  endif()
+  
+endif()
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
@@ -952,6 +965,8 @@ $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MC
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define MCFM_PATH \"${MCFM_PATH}\",/* #undef MCFM_PATH */>\n\n\
 /* using EWSud */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_EWSUD}>,#define USING__EWSud \"1\",/* #undef USING__EWSud */>\n\n\
+/* using  hadronic contribution to alphaqed */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_ALPHAQEDHAD}>,#define USING__HADALPHAQED \"1\",/* #undef USING__HADALPHAQED */>\n\n\
 #endif")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H CONTENT "${CXXFLAGS_PACKAGES_H_CONTENT}")
 ########################################################################
