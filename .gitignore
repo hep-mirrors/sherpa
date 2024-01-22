@@ -45,6 +45,7 @@ doc/.buildinfo
 doc/sherpa-completion
 doc/sherpamanual.fls
 doc/_extensions/__pycache__/
+/MODEL/Main/hadr5x19.f
 /SHERPA/Run/Sherpa
 NNPDF31_nnlo_as_0118_mc/
 SHERPA/Run/Sherpa-config
