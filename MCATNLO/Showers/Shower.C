@@ -25,6 +25,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
   const int scs{ s["CSS_SCALE_SCHEME"].Get<int>() };
   const double k0sqf{ s["CSS_FS_PT2MIN"].Get<double>() };
   const double k0sqi{ s["CSS_IS_PT2MIN"].Get<double>() };
+  const double gsplit_fac{ s["CSS_PT2MIN_GSPLIT_FACTOR"].Get<double>() };
   const double fs_as_fac{ s["CSS_FS_AS_FAC"].Get<double>() };
   const double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
   const double is_pdf_fac{ s["CSS_PDF_FAC"].Get<double>() };
@@ -44,7 +45,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
   m_sudakov.SetPDFMin(pdfmin);
   m_sudakov.SetDisallowFlavour(disallowflavs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
-  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
+  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac,gsplit_fac);
   m_sudakov.SetReweightScaleCutoff(
       s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>());
   m_kinFF.SetSudakov(&m_sudakov);
