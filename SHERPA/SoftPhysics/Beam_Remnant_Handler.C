@@ -35,8 +35,9 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist,
     if ((*bit)->Type()==btp::Beam) return fbc;
   }
   if (!onlyBunch) {
-    if (p_shrimps) fbc = p_shrimps->MakeBeamBlobs(bloblist);
-    else           fbc = p_remnants->MakeBeamBlobs(bloblist);
+    //if (p_shrimps) fbc = p_shrimps->MakeBeamBlobs(bloblist);
+    //else
+    fbc = p_remnants->MakeBeamBlobs(bloblist);
     if (fbc==Return_Value::New_Event && m_vmode)
       THROW(fatal_error,"Four Momentum not conserved.");
     if (fbc!=Return_Value::Success) return fbc;

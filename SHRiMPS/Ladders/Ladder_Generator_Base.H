@@ -5,16 +5,18 @@
 #include "SHRiMPS/Eikonals/Rapidity_Density.H"
 #include "SHRiMPS/Ladders/MEs.H"
 #include "SHRiMPS/Ladders/Ladder.H"
-#include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
+#include "SHRiMPS/Ladders/Colour_Generator.H"
 #include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
 #include "SHRiMPS/Cross_Sections/Sigma_D.H"
 
+namespace PDF { class ISR_Handler; }
 
 namespace SHRIMPS {
   class Ladder_Generator_Base {
   protected:
+    Colour_Generator         m_colourgenerator;
     Sigma_Partonic           m_partonic;
     double                   m_Ymax, m_deltaY, m_beamY, m_Yrange;
     double                   m_qt2min, m_qt2minFF, m_kt2min, m_kt2minShower;
@@ -57,16 +59,13 @@ namespace SHRIMPS {
     Ladder_Generator_Base();
     virtual ~Ladder_Generator_Base();
 
-    virtual void Initialise(Remnant_Handler * remnants);
+    virtual void Initialise(PDF::ISR_Handler * isr);
     virtual void Test();
-    virtual Ladder * operator()(const ATOOLS::Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) = 0;
+    virtual Ladder * operator()(const ATOOLS::Vec4D & pos,Sigma_Elastic * sigma_el,
+				Sigma_D * sigma_sd) = 0;
     virtual void QuarkReplace();
     inline virtual void FixLadderType() {
-      //p_ladder->FixType(-m_Ymax + m_deltaY, m_Ymax - m_deltaY);
       m_Yrange = 1.;
-      //m_Yrange = 0.1*m_beamY;
-      //m_Yrange = 0.01*m_beamY;
-      //msg_Out() << "----> in Ladders, m_beamY = " << m_beamY << " and m_Yrange = " << m_Yrange << std::endl;
       p_ladder->FixType(-m_beamY+m_Yrange, m_beamY-m_Yrange);
     }
     inline virtual void InitCollision(Omega_ik * eikonal,const double & B) {

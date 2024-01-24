@@ -32,7 +32,7 @@ namespace SHRIMPS {
     inline Hadron_Dissociation * GetHadronDissociation(const size_t & beam) {
       return m_hadrons[beam];
     }
-    inline Continued_PDF * GetPDF(const size_t & beam) {
+    inline PDF::Continued_PDF * GetPDF(const size_t & beam) {
       return m_hadrons[beam]->GetPDF();
     }
   };

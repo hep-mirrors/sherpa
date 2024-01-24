@@ -1,6 +1,6 @@
 #include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
-#include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -40,15 +40,9 @@ Sigma_Partonic::~Sigma_Partonic() {
   }
 }
 
-void Sigma_Partonic::Initialise(Remnant_Handler * remnants) {
-  for (size_t beam=0;beam<2;beam++) p_pdf[beam]=remnants->GetPDF(beam);
+void Sigma_Partonic::Initialise() {
   m_smin = Max(m_smin, m_S*p_pdf[0]->XMin()*p_pdf[1]->XMin());
-  if (!Calculate()) {
-    msg_Error()<<METHOD<<" fails: integration did not converge.  "
-	       <<"Will exit the run.\n"
-	       <<"   Encountered "<<m_kinX_fails<<" fails in creating good kinematics.\n";
-    exit(1);
-  }
+  if (!Calculate()) THROW(fatal_error,"integration did not converge.");
 }
 
 const double Sigma_Partonic::MakeEvent() {

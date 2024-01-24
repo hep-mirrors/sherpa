@@ -8,7 +8,8 @@ set(Ladders_SOURCES Ladder_Particle.C
                     Ladder_Generator_Seeded.C
                     MEs.C
                     Primary_Ladders.C
-		    Ladder_Generator_QE.C)
+		    Ladder_Generator_QE.C
+		    Colour_Generator.C)
 
 set(Ladders_HEADERS Ladder_Particle.H
                     T_Prop.H
@@ -20,7 +21,8 @@ set(Ladders_HEADERS Ladder_Particle.H
                     Ladder_Generator_Seeded.H
                     MEs.H
                     Primary_Ladders.H
-		    Ladder_Generator_QE.H)
+		    Ladder_Generator_QE.H
+		    Colour_Generator.H)
 
 sherpa_create_git_info(Ladders)
  

@@ -2,7 +2,7 @@
 #define SHRIMPS_Ladders_Primary_Ladders_H
 
 #include "SHRiMPS/Ladders/Ladder_Generator_Base.H"
-#include "SHRiMPS/Beam_Remnants/Colour_Generator.H"
+#include "SHRiMPS/Ladders/Colour_Generator.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
 #include "SHRiMPS/Cross_Sections/Sigma_D.H"
@@ -30,7 +30,7 @@ namespace SHRIMPS {
     ~Primary_Ladders();
     
     bool operator()(Omega_ik * eikonal,const double & B,const size_t & N);
-    void Initialise(Remnant_Handler * remnants);
+    void Initialise(PDF::ISR_Handler * isr);
     void Test();
     void Reset();
 

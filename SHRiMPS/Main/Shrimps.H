@@ -5,7 +5,6 @@
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
 #include "SHRiMPS/Event_Generation/Event_Generator.H"
-#include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -14,7 +13,6 @@
 #include <list>
 
 namespace PDF    { class ISR_Handler; }
-namespace BEAM   { class Beam_Spectra_Handler; }
 namespace ATOOLS { class Cluster_Amplitude; }
 
 namespace SHRIMPS {
@@ -41,7 +39,6 @@ namespace SHRIMPS {
     deqmode::code     m_deq;
     int               m_test;
     Cross_Sections  * p_xsecs;
-    Remnant_Handler * p_remnants;
     Event_Generator * p_generator;
     Cluster_Algorithm m_cluster;
 
@@ -66,13 +63,12 @@ namespace SHRIMPS {
 			       const std::vector<double> & xsecdd,
 			       std::string dirname);
     
-    void InitialiseTheRun(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
+    void InitialiseTheRun(PDF::ISR_Handler *const isr);
     void InitialiseFormFactors();
     void InitialiseSingleChannelEikonals();
-    void InitialiseRemnants(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
-    void InitialiseTheEventGenerator();
+    void InitialiseTheEventGenerator(PDF::ISR_Handler *const isr);
     
-    void TestShrimps(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
+    void TestShrimps(PDF::ISR_Handler *const isr);
     void PrintAlphaS(const std::string & dirname);
     void PrintPDFs(const std::string & dirname);
     void TestEikonalGrids(const std::string & dirname);
@@ -81,15 +77,13 @@ namespace SHRIMPS {
     void Analyse(ATOOLS::Blob_List * blobs);
     void Analyse(ATOOLS::Blob * blob,std::string tag);
   public:
-    Shrimps(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler * beam);
+    Shrimps(PDF::ISR_Handler *const isr);
     ~Shrimps();
 
     int  InitMinBiasEvent(ATOOLS::Blob_List * blobs);
     ATOOLS::Blob * GenerateEvent();
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob *const blob);
     void CleanUp(const size_t & mode=0);
-
-    ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List * blobs);
     
     inline void SetMaxEnergies(const double & E1,const double & E2) {
       p_generator->SetMaxEnergies(E1,E2);

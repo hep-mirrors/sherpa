@@ -5,7 +5,6 @@
 #include "SHRiMPS/Cross_Sections/Sigma_D.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
 #include "SHRiMPS/Ladders/Primary_Ladders.H"
-#include "SHRiMPS/Beam_Remnants/Colour_Generator.H"
 #include "SHRiMPS/Event_Generation/Collinear_Emission_Generator.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -38,11 +37,12 @@ namespace SHRIMPS {
     bool SelectB();
     ATOOLS::Blob * MakePrimaryScatterBlob();
   public:
-    Inelastic_Event_Generator(Sigma_Inelastic * sigma,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd,const int & test);
+    Inelastic_Event_Generator(Sigma_Inelastic * sigma,Sigma_Elastic * sigma_el,
+			      Sigma_D * sigma_sd,const int & test);
     ~Inelastic_Event_Generator();
 
     void Reset();
-    void Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster);
+    void Initialise(PDF::ISR_Handler * isr,Cluster_Algorithm * cluster);
     int InitEvent(ATOOLS::Blob_List * blobs);
     ATOOLS::Blob * GenerateEvent();
 

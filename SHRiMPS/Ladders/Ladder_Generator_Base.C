@@ -1,5 +1,6 @@
 #include "SHRiMPS/Ladders/Ladder_Generator_Base.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -12,6 +13,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Ladder_Generator_Base::Ladder_Generator_Base() :
+  m_colourgenerator(Colour_Generator()),
   m_partonic(Sigma_Partonic(xs_mode::perturbative)),
   m_Ymax(MBpars.GetEikonalParameters().Ymax),
   m_deltaY(MBpars.GetEikonalParameters().cutoffY),
@@ -36,8 +38,11 @@ Ladder_Generator_Base::~Ladder_Generator_Base() {
 }
 
 
-void Ladder_Generator_Base::Initialise(Remnant_Handler * remnants) {
-  m_partonic.Initialise(remnants);
+void Ladder_Generator_Base::Initialise(PDF::ISR_Handler * isr) {
+  for (size_t beam=0;beam<2;beam++) {
+    m_partonic.SetPDF(beam,new PDF::Continued_PDF(isr->PDF(beam)));
+  }
+  m_partonic.Initialise();
 }
 
 void Ladder_Generator_Base::InitLadder(const Vec4D & pos) {

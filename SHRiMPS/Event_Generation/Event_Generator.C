@@ -55,10 +55,9 @@ void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
   }
 }
 
-void Event_Generator::
-Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
+void Event_Generator::Initialise(PDF::ISR_Handler * isr,Cluster_Algorithm * cluster) {
   if (p_inelastic) {
-    p_inelastic->Initialise(remnants,cluster);
+    p_inelastic->Initialise(isr,cluster);
     m_xsec += p_inelastic->XSec();
     m_xsec_inel += p_inelastic->XSec();
   }

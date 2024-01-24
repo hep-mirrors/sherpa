@@ -10,7 +10,7 @@ using namespace ATOOLS;
 
 Hadron_Dissociation::
 Hadron_Dissociation(PDF::PDF_Base * pdf,const unsigned int beam) :
-  Basic_Remnant_Base(beam), p_pdf(new Continued_PDF(pdf)),
+  Basic_Remnant_Base(beam), p_pdf(new PDF::Continued_PDF(pdf)),
   m_outmom(Vec4D(0.,0.,0.,0.)), m_beamflav(pdf->Bunch()),
   m_QT2max(4.), m_expo(2.)
 { }
@@ -124,6 +124,7 @@ bool Hadron_Dissociation::CompensateColours() {
     p_softblob->AddToOutParticles(out);
     m_qtmap[out] = Vec4D(0.,0.,0.,0.);
   }
+  return true;
 }
 
 void Hadron_Dissociation::CleanColours() {

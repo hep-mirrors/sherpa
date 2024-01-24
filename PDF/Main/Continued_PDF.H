@@ -1,5 +1,5 @@
-#ifndef SHRIMPS_Beam_Remnants_Continued_PDF_H
-#define SHRIMPS_Beam_Remnants_Continued_PDF_H
+#ifndef PDF_Main_Continued_PDF_H
+#define PDF_Main_Continued_PDF_H
 
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Flavour.H"
@@ -7,15 +7,15 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <list>
 
-namespace SHRIMPS {
+namespace PDF {
   class PDF_Kernel_Base : public ATOOLS::Function_Base {
   protected:
-    PDF::PDF_Base              * p_pdf;
+    PDF_Base                   * p_pdf;
     ATOOLS::Flavour              m_bunch;
     std::list<ATOOLS::Flavour> * p_pdfpartons;
     double                       m_xmin,m_xmax,m_Q02;
   public:
-    PDF_Kernel_Base(PDF::PDF_Base * pdf,
+    PDF_Kernel_Base(PDF_Base * pdf,
 		    const ATOOLS::Flavour & bunch,
 		    std::list<ATOOLS::Flavour> * pdfpartons,
 		    const double & Q02=-1.) :
@@ -29,8 +29,7 @@ namespace SHRIMPS {
   class Continued_PDF {
     class Sea_Kernel : public PDF_Kernel_Base {
     public:
-      Sea_Kernel(PDF::PDF_Base * pdf,
-		 const ATOOLS::Flavour & bunch,
+      Sea_Kernel(PDF_Base * pdf,const ATOOLS::Flavour & bunch,
 		 std::list<ATOOLS::Flavour> * pdfpartons,
 		 const double & Q02=-1.) :
 	PDF_Kernel_Base(pdf,bunch,pdfpartons,Q02) {}
@@ -38,8 +37,7 @@ namespace SHRIMPS {
     };
     class Valence_Kernel : public PDF_Kernel_Base {
     public:
-      Valence_Kernel(PDF::PDF_Base * pdf,
-		     const ATOOLS::Flavour & bunch,
+      Valence_Kernel(PDF_Base * pdf,const ATOOLS::Flavour & bunch,
 		     std::list<ATOOLS::Flavour> * pdfpartons,
 		     const double & Q02=-1.) :
 	PDF_Kernel_Base(pdf,bunch,pdfpartons,Q02) {}
@@ -47,7 +45,7 @@ namespace SHRIMPS {
     };
 
   private:
-    PDF::PDF_Base                  * p_pdf;
+    PDF_Base                       * p_pdf;
     std::list<ATOOLS::Flavour>       m_pdfpartons;
     ATOOLS::Flavour                  m_bunch;
     double                           m_x0,m_xmin,m_xmax,m_Q02,m_geta,m_glambda;
@@ -61,7 +59,7 @@ namespace SHRIMPS {
     void   Test();
     double GluonAtZero(const double & x);
   public:
-    Continued_PDF(PDF::PDF_Base * pdf);
+    Continued_PDF(PDF_Base * pdf);
     ~Continued_PDF();
 
     void   Calculate(const double & x,const double & Q2);

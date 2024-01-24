@@ -1,13 +1,13 @@
-#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
+#include "PDF/Main/Continued_PDF.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
-using namespace SHRIMPS;
+using namespace PDF;
 using namespace ATOOLS;
 
-Continued_PDF::Continued_PDF(PDF::PDF_Base * pdf) :
+Continued_PDF::Continued_PDF(PDF_Base * pdf) :
   p_pdf(pdf), m_bunch(p_pdf->Bunch()), 
   m_xmin(p_pdf->XMin()), m_xmax(p_pdf->XMax()), m_Q02(p_pdf->Q2Min()),
   m_geta(1.), m_glambda(0.25)

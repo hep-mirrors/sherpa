@@ -6,7 +6,6 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 namespace ATOOLS   { class Cluster_Amplitude; }
-namespace BEAM     { class Beam_Spectra_Handler; }
 namespace REMNANTS { class Remnant_Handler; }
 namespace PHASIC   { class Process_Base; }
 namespace MODEL    { class Model_Base; }
@@ -28,14 +27,14 @@ namespace SHERPA {
     };
 
   private:
-    PDF::ISR_Handler          * p_isr;
-    PDF::isr::id                m_id;   
-    REMNANTS::Remnant_Handler * p_remnants;
-    AMISIC::Amisic            * p_amisic;
-    SHRIMPS::Shrimps          * p_shrimps;
-    ATOOLS::Cluster_Amplitude * p_ampl;
-    PHASIC::Process_Base      * p_proc;
-    Shower_Handler            * p_shower;
+    PDF::ISR_Handler           * p_isr;
+    PDF::isr::id                 m_id;   
+    REMNANTS::Remnant_Handler  * p_remnants;
+    AMISIC::Amisic             * p_amisic;
+    SHRIMPS::Shrimps           * p_shrimps;
+    ATOOLS::Cluster_Amplitude  * p_ampl;
+    PHASIC::Process_Base       * p_proc;
+    Shower_Handler             * p_shower;
 
     bool         m_on, m_stop, m_firstrescatter;
     typeID       m_type;

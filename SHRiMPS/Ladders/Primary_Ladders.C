@@ -15,7 +15,7 @@ using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders(Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) :
   p_sigma_el(sigma_el), p_sigma_sd(sigma_sd),
-  p_laddergenerator(new Ladder_Generator_QE()),
+  p_laddergenerator(new Ladder_Generator_Eik()),
   m_Ecms(rpa->gen.Ecms()/2.),
   m_test(true),
   n_calls(0), n_start(0), n_gen(0)
@@ -49,39 +49,30 @@ Primary_Ladders::~Primary_Ladders() {
       hit->second->Output(name+hit->first);
       delete hit->second;
     }
-    //msg_Out()<<METHOD<<" produced "<<n_gen<<" ladders (start = "<<n_start<<") in "
-    //	     <<n_calls<<" events.\n";
   }
 }
 
-void Primary_Ladders::Initialise(Remnant_Handler * remnants) {
-  p_laddergenerator->Initialise(remnants);
+void Primary_Ladders::Initialise(PDF::ISR_Handler * isr) {
+  p_laddergenerator->Initialise(isr);
 }
 
 void Primary_Ladders::Test() { return; if (m_test) p_laddergenerator->Test(); }
 
 bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_t & N) {
+  msg_Out()<<"--- "<<METHOD<<": "<<N<<" new ladders at B = "<<B<<"\n";
   Reset();
-  //msg_Out()<<"\n\n\n"
-	//   <<"---------------------------------------------------------------------\n"
-	//   <<"---------------------------------------------------------------------\n"
-  //	   <<"--- "<<METHOD<<": "<<N<<" new ladders at B = "<<B<<"\n";
   p_laddergenerator->InitCollision(eikonal,B);
   size_t Ngen = 0, trials = 0;
   double b1, b2;
   bool   contains_one_inelastic = false;
-  //msg_Out()<<"--------------------------------------------------------------\n";
+  msg_Out()<<"--------------------------------------------------------------\n";
   while (Ngen<N) {
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
     p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
-    //msg_Out()<<"   - "<<METHOD<<" generates new ladder with energy limits = "
-    //	     <<m_E[0]<<" and "<<m_E[1]<<"\t"<<trials<<"\t"<<Ngen<<"\n";
     Ladder * ladder = (*p_laddergenerator)(position,p_sigma_el,p_sigma_sd);
     if (m_test && ladder) FillAnalysis(ladder,"trial");
-    //msg_Out() << IsAllowed(ladder) << "\t" << m_colourgenerator(ladder) << "\n";
-    if (IsAllowed(ladder) && m_colourgenerator(ladder)) {	
-      //p_laddergenerator->QuarkReplace();
+    if (IsAllowed(ladder)) {
       p_laddergenerator->FixLadderType();
       if (ladder->Type()==ladder_type::inelastic) contains_one_inelastic = true;
       Add(ladder);
@@ -99,9 +90,7 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     m_histos[std::string("N_start")]->Insert(N);
     m_histos[std::string("N_gen")]->Insert(Ngen);
   }
-  //msg_Out()<<"contains one inelastic ladder = "<<contains_one_inelastic<<"\n"
-  //	   <<"--------------------------------------------------------------\n";
-  return true;//contains_one_inelastic; // 
+  return true;
 }
  
 void Primary_Ladders::Reset() {
@@ -111,7 +100,6 @@ void Primary_Ladders::Reset() {
     m_ladders.pop_back();
   }
   m_ladders.clear();
-  m_colourgenerator.Reset();
 }
 
 bool Primary_Ladders::IsAllowed(Ladder * ladder) {

@@ -56,7 +56,8 @@ void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
     }
     Soft_Collision_Handler_Map::const_iterator schandler = scs->find(isr::hard_subprocess);
     if (schandler!=scs->end()) {
-      m_pertinterfaces["SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
+      m_pertinterfaces["SoftCollisions"] = new Perturbative_Interface(schandler->second,
+								      shower->second);
       m_pertinterfaces["SoftCollisions"]->SetRemnantHandler(remnants);
     }
   }
@@ -69,15 +70,20 @@ void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
 		    <<"  Continue and hope for the best.\n";
     MI_Handler_Map::const_iterator mihandler = mis->find(isr::bunch_rescatter);
     if (mihandler!=mis->end()) {
-      m_pertinterfaces["BR_MPIs"] = new Perturbative_Interface(mihandler->second, shower->second);
+      m_pertinterfaces["BR_MPIs"] = new Perturbative_Interface(mihandler->second,
+							       shower->second);
       m_pertinterfaces["BR_MPIs"]->SetRemnantHandler(remnants);
     }
     Soft_Collision_Handler_Map::const_iterator schandler = scs->find(isr::bunch_rescatter);
     if (schandler!=scs->end()) {
-      m_pertinterfaces["BR_SoftCollisions"] = new Perturbative_Interface(schandler->second, shower->second);
+      m_pertinterfaces["BR_SoftCollisions"] = new Perturbative_Interface(schandler->second,
+									 shower->second);
       m_pertinterfaces["BR_SoftCollisions"]->SetRemnantHandler(remnants);
     }
   }
+  for (PertInterfaceMap::iterator pimit=m_pertinterfaces.begin();
+       pimit!=m_pertinterfaces.end();pimit++)
+    msg_Out()<<"* ["<<pimit->first<<"]: "<<pimit->second<<"\n";
 }
 
 Jet_Evolution::~Jet_Evolution() {
@@ -167,7 +173,7 @@ PertInterfaceIter Jet_Evolution::SelectInterface(Blob * blob) {
     if (blob->Has(blob_status::needs_beamRescatter)) tag = string("BR_");
     tag += string("MPIs");
     if (blob->TypeSpec() == "MinBias" || blob->TypeSpec()=="Shrimps")
-      tag += string("SoftCollisions");
+      tag = string("SoftCollisions"); //+= cannot be correct.
     MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
     break;
   case (int(btp::Hadron_Decay)):

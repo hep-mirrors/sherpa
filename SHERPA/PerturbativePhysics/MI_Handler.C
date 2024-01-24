@@ -19,7 +19,7 @@ using namespace std;
 MI_Handler::MI_Handler(MODEL::Model_Base *model,
 		       PDF::ISR_Handler *isr,
                        REMNANTS::Remnant_Handler * remnant_handler) :
-  p_isr(isr), m_id(p_isr->Id()), p_remnants(remnant_handler),
+  p_isr(isr), m_id(p_isr->Id()), p_remnants(remnant_handler), 
   p_amisic(NULL), p_shrimps(NULL), p_ampl(NULL),
   p_proc(NULL), p_shower(NULL), m_on(true), m_stop(false),
   m_firstrescatter((m_id==PDF::isr::bunch_rescatter) ? true : false),
@@ -28,15 +28,18 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   Settings& s = Settings::GetMainSettings();
   m_name      = s["MI_HANDLER"].SetDefault("Amisic").UseNoneReplacements().Get<string>();
   string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
+  msg_Out()<<METHOD<<": name = "<<m_name<<", scm = "<<scm<<" (mode = "<<isr->Mode()<<")\n";
   if (m_id==PDF::isr::bunch_rescatter) {
     string resc = s["BEAM_RESCATTERING"].Get<string>();
     scm = m_name = resc;
   }
-  if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name=="None") {
+  else if (isr->Mode()!=PDF::isrmode::hadron_hadron) {
+    // commented out  ' || m_name=="None" ' -- will need to check impact
     m_name = "None";
     m_on   = false;
   }
   else {
+    msg_Out()<<"Else!\n";
     if (m_name==string("Amisic"))  InitAmisic(model);
     if ((scm==string("Shrimps") && p_amisic==NULL) ||
 	m_name==string("Shrimps")) InitShrimps(model);

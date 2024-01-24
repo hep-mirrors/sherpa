@@ -4,7 +4,6 @@
 #include "SHRiMPS/Ladders/Ladder_Generator_Base.H"
 #include "SHRiMPS/Ladders/Ladder.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
-#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
 #include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"

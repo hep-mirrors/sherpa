@@ -15,7 +15,8 @@ Ladder_Generator_Eik::Ladder_Generator_Eik() : Ladder_Generator_Base() {}
 
 Ladder_Generator_Eik::~Ladder_Generator_Eik() {}
 
-Ladder * Ladder_Generator_Eik::operator()(const Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) {
+Ladder * Ladder_Generator_Eik::
+operator()(const Vec4D & pos,Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) {
   InitLadder(pos);
   FillGluons();
   SelectPropagatorColours();
@@ -34,6 +35,7 @@ Ladder * Ladder_Generator_Eik::operator()(const Vec4D & pos,Sigma_Elastic * sigm
       else m_weight = 0.;
     } while (m_weight<ran->Get());
   }
+  m_colourgenerator(p_ladder);
   return p_ladder;
 }
 
@@ -42,7 +44,6 @@ void Ladder_Generator_Eik::FillGluons() {
     m_ylimits[beam] = (beam==0? 1. : -1.) * (m_Ymax + ran->Get()*m_deltaY);
     p_ladder->AddRapidity(m_ylimits[beam]);
   }
-  //size_t N = 0; //m_density.NGluons(m_ylimits[1], m_ylimits[0]);
   size_t N = m_density.NGluons(m_ylimits[1], m_ylimits[0]);
   for (size_t i=0;i<N;i++) {
     p_ladder->AddRapidity(m_density.SelectRapidity(m_ylimits[1], m_ylimits[0]));
@@ -51,9 +52,7 @@ void Ladder_Generator_Eik::FillGluons() {
 
 void Ladder_Generator_Eik::SelectPropagatorColours() {
   for (size_t i=0;i<p_emissions->size()-1;i++)
-        p_props->push_back(T_Prop(colour_type::octet,Vec4D(0.,0.,0.,0.),m_qt2min));
-    //p_props->push_back(T_Prop(colour_type::singlet,Vec4D(0.,0.,0.,0.),m_qt2min));
-
+    p_props->push_back(T_Prop(colour_type::octet,Vec4D(0.,0.,0.,0.),m_qt2min));
   // -> comment out rest for ladder tests
   LadderMap::iterator lit1=p_emissions->begin();
   LadderMap::iterator lit2=p_emissions->end();  lit2--;
@@ -150,11 +149,10 @@ bool Ladder_Generator_Eik::SelectPropagatorQT(const size_t dir,T_Prop & prop) {
     }
     else {
       m_qt2  = (prop.Col()==colour_type::octet ?
-        qt2min * pow(qt2max/qt2min,ran->Get()) : //p(qt2) = 1/qt2
-        //qt2min * pow((qt2max+qt2min)/qt2min,ran->Get()) - qt2min : //p(qt2) = 1/(qt2+qt2min)
-        qt2min*qt2max / (qt2max - ran->Get()*(qt2max-qt2min)) ); //p(qt2) = ln(qt2)
+		qt2min * (pow(1.+qt2max/qt2min,ran->Get()) -1) ://p(qt2) = 1/(qt2+qt2min)
+		qt2min*qt2max / (qt2max - ran->Get()*(qt2max-qt2min)) ); //p(qt2) = ln(qt2)
       weight = ( AlphaSWeight((m_qtprev[dir]-sqrt(m_qt2)*m_eqt).PPerp2()) *
-         LDCWeight(m_qt2,m_qtprev[dir].PPerp2()) );
+		 LDCWeight(m_qt2,m_qtprev[dir].PPerp2()) );
     }
     weight *= (prop.Col()==colour_type::octet ?
 	       ReggeWeight(m_qt2,m_y[dir][0],m_y[1-dir][1]) :

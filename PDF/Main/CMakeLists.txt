@@ -7,7 +7,8 @@ set(Main_SOURCES PDF_Base.C
                  Cluster_Definitions_Base.C
                  NLOMC_Base.C
                  Shower_Base.C
-                 Photon_PDF_Base.C)
+                 Photon_PDF_Base.C
+	         Continued_PDF.C)
 
 set(Main_HEADERS PDF_Base.H
                  ISR_Base.H
@@ -18,7 +19,8 @@ set(Main_HEADERS PDF_Base.H
                  Cluster_Definitions_Base.H
                  NLOMC_Base.H
                  Shower_Base.H
-                 Photon_PDF_Base.H)
+                 Photon_PDF_Base.H
+	         Continued_PDF.H)
 
 sherpa_create_git_info(Main)
  

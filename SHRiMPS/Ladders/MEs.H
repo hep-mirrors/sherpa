@@ -3,7 +3,6 @@
 
 #include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
 #include "SHRiMPS/Ladders/Ladder.H"
-#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
 
 namespace SHRIMPS {
   class MEs {

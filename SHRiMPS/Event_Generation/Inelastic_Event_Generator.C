@@ -29,8 +29,7 @@ Inelastic_Event_Generator::~Inelastic_Event_Generator() {
   delete p_collemgen;
 }
 
-void Inelastic_Event_Generator::
-Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
+void Inelastic_Event_Generator::Initialise(PDF::ISR_Handler * isr,Cluster_Algorithm * cluster) {
   m_sigma = 0.;
   Sigma_Inelastic sigma;
   vector<vector<Omega_ik *> > * eikonals(MBpars.GetEikonals());
@@ -44,7 +43,7 @@ Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
   msg_Info()<<METHOD<<" yields effective inelastic cross section "
 	    <<"sigma = "<<m_sigma/1.e9<<" mbarn.\n";
   p_cluster  = cluster;
-  m_primaries.Initialise(remnants);
+  m_primaries.Initialise(isr);
   Reset();
 }
 
@@ -54,11 +53,12 @@ void Inelastic_Event_Generator::Reset() {
 }
 
 int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
-  //msg_Out()<<"\n\n\n\n\n\n"
-	//   <<"   ---------------------------------------------------------------------\n"
-	//   <<"   ---------------------------------------------------------------------\n"
-	//   <<"   - "<<METHOD<<"\n";
+  msg_Out()<<"\n\n\n\n\n\n"
+	   <<"   ---------------------------------------------------------------------\n"
+	   <<"   ---------------------------------------------------------------------\n"
+	   <<"   - "<<METHOD<<"\n";
   Blob * blob = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
+  msg_Out()<<"   found soft blob: "<<*blob<<"\n";
   if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return -1;
   if (blob->NInP()>0)  {
     msg_Error()<<"Error in "<<METHOD<<": blob has particles.\n"<<(*blob)<<"\n";
@@ -71,8 +71,9 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   blob->AddData("Weight",new Blob_Data<double>(m_sigma));
   p_eikonal  = 0; m_B = -1;
   for (size_t trials=0;trials<1000;trials++) {
+    msg_Out()<<"... "<<trials<<"\n";
     if (SelectEikonal() && SelectB()) {
-      m_Nladders = 1;//+int(ran->Poissonian((*p_eikonal)(m_B)));
+      m_Nladders = 1+int(ran->Poissonian((*p_eikonal)(m_B)));
       if (m_Nladders>0) {
 	do { } while (!m_primaries(p_eikonal,m_B,m_Nladders));
 	return 0;
@@ -115,11 +116,13 @@ Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
 
 bool Inelastic_Event_Generator::SelectEikonal() {
   p_eikonal = 0;
+  msg_Out()<<METHOD<<": eik = "<<p_eikonal<<", sigma = "<<m_sigma<<" ("<<m_xsecs.size()<<").\n"; 
   while (p_eikonal==NULL) {
     double disc = ran->Get()*m_sigma;
     for (std::map<Omega_ik *,double>::iterator eikiter=m_xsecs.begin();
 	 eikiter!=m_xsecs.end();eikiter++) {
       disc-=eikiter->second;
+      msg_Out()<<METHOD<<": sigma = "<<m_sigma<<" --> "<<disc<<".\n"; 
       if (disc<=1.e-12) { p_eikonal = eikiter->first; break; }
     }
   }

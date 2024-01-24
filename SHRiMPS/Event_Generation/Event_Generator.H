@@ -32,7 +32,7 @@ namespace SHRIMPS {
     Event_Generator(Cross_Sections * xsecs,const bool & test);
     ~Event_Generator();
 
-    void Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster);
+    void Initialise(PDF::ISR_Handler * isr,Cluster_Algorithm * cluster);
     void Reset();
     bool DressShowerBlob(ATOOLS::Blob * blob);
     int  InitMinimumBiasEvent(ATOOLS::Blob_List * blobs);

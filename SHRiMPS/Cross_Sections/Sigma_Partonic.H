@@ -1,7 +1,7 @@
 #ifndef SHRIMPS_Cross_Sections_Sigma_Partonic_H
 #define SHRIMPS_Cross_Sections_Sigma_Partonic_H
-#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
+#include "PDF/Main/Continued_PDF.H"
 #include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -9,8 +9,6 @@
 #include <list>
 
 namespace SHRIMPS {
-  class Remnant_Handler;
-  
   struct xs_mode {
     enum code {
       perturbative = 2,
@@ -20,7 +18,7 @@ namespace SHRIMPS {
   };
   
   class Sigma_Partonic {
-    Continued_PDF          * p_pdf[2];
+    PDF::Continued_PDF     * p_pdf[2];
     MODEL::Strong_Coupling * p_alphaS;
     xs_mode::code            m_mode;
     bool                     m_fixflavour;
@@ -49,14 +47,14 @@ namespace SHRIMPS {
     Sigma_Partonic(const xs_mode::code & mode=xs_mode::Regge);
     ~Sigma_Partonic();
 
-    void Initialise(Remnant_Handler * remnants); 
+    void Initialise();
     const double MakeEvent();
     const double dSigma();
     const double dSigma(const double & shat,const double & yhat);
     const double PDF(const size_t beam,const double & x,const double & Q2,
 		     const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_gluon));
-    void SetAlphaS(MODEL::Strong_Coupling * as)          { p_alphaS = as; }
-    void SetPDF(const size_t & beam,Continued_PDF * pdf) { p_pdf[beam] = pdf; }
+    void SetAlphaS(MODEL::Strong_Coupling * as)               { p_alphaS = as; }
+    void SetPDF(const size_t & beam,PDF::Continued_PDF * pdf) { p_pdf[beam] = pdf; }
     void SetEta(const double & eta=0.)   { m_eta  = eta; }
     void SetTmin(const double & tmin=1.) { m_tmin = tmin; }
     void SetSmin(const double & smin=1.) { m_smin = smin; }
