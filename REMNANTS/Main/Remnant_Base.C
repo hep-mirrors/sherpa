@@ -53,16 +53,14 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton) {
     }
     return true;
   }
-  msg_Error() << METHOD << ": Cannot extract particle:\n"
-              << (*parton) << "\n  from: " << p_beam->Bunch()
-              << " with momentum " << p_beam->OutMomentum() << "\n";
+  msg_Error()<<METHOD << ": Cannot extract particle:\n"<<(*parton)<<"\n"
+	     <<"   from: "<<p_beam->Bunch()<<" with momentum "<<p_beam->OutMomentum()<<".\n";
   return false;
 }
 
 bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
   if (parton == nullptr) {
-    msg_Error() << "Error in " << METHOD << "():\n"
-                << "   Called with NULL pointer.\n";
+    msg_Error()<<"Error in "<<METHOD<<"(): Called with NULL pointer.\n";
     return false;
   }
   // TODO: In Multiple_Interactions.C, TestExtract is called for the hard-interacting
