@@ -8,6 +8,8 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "EXTAMP/External_ME_Interface.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "PHASIC++/Scales/Scale_Setter_Base.H"
+
 
 using namespace MODEL;
 using namespace YFS;
@@ -57,7 +59,11 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double B,
            const double mur)
   {
-    double V(0.0);
+    double V(0.0), tfac(1.0);
+    if(m_tchannel) {
+     double t = (p[0]-p[2]).Abs2();  
+     tfac=(*aqed)(-t)/(*aqed)(0);
+    }
     p_loop_me->Calc(p,B);
     V = p_loop_me->ME_Finite();
     return V*m_rescale_alpha*m_factor*p_loop_me->ME_Born();
