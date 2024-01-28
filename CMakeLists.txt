@@ -46,7 +46,6 @@ option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
 option(SHERPA_ENABLE_EXAMPLES                "Enables installation of EXAMPLES." ON)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." OFF)
 option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." OFF)
-option(SHERPA_ENABLE_HEPMC2                  "Enables building with HepMC2 interface." OFF)
 option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3 interface." OFF)
 option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT interface ." OFF)
 option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
@@ -85,7 +84,7 @@ endif()
 unset(HEPMC3_DIR CACHE)
 ########################################################################
 ### enable option when path was provided explicitly via cmake
-set(alldirenables BLACKHAT GOSAM HEPMC2 HepMC3 LHAPDF MCFM OPENLOOPS PYTHIA8 RECOLA RIVET)
+set(alldirenables BLACKHAT GOSAM HepMC3 LHAPDF MCFM OPENLOOPS PYTHIA8 RECOLA RIVET)
 foreach (en IN LISTS alldirenables)
   if (${en}_DIR)
      string(TOUPPER "${en}" ENUP)
@@ -95,7 +94,7 @@ foreach (en IN LISTS alldirenables)
 endforeach()
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
- EWSUD EXAMPLES GOSAM GZIP HEPMC2 HEPMC3 HEPMC3_ROOT
+ EWSUD EXAMPLES GOSAM GZIP HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
  LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
@@ -511,7 +510,7 @@ if (SHERPA_ENABLE_RIVET)
   find_package(Rivet REQUIRED)
   message(STATUS "SHERPA: RIVET_VERSION=${RIVET_VERSION} RIVET_FOUND=${RIVET_FOUND}  RIVET_LIBRARIES=${RIVET_LIBRARIES} \
   RIVET_INCLUDE_DIRS=${RIVET_INCLUDE_DIRS} RIVET_DATA_PATH=${RIVET_DATA_PATH} RIVET_ANALYSIS_PATH=${RIVET_ANALYSIS_PATH} \
-  Rivet_HEPMC2_FOUND=${Rivet_HEPMC2_FOUND}  Rivet_HEPMC3_FOUND=${Rivet_HEPMC3_FOUND} \
+  Rivet_HEPMC3_FOUND=${Rivet_HEPMC3_FOUND} \
   RIVET_CONFIG_LIBS_STRING=${RIVET_CONFIG_LIBS_STRING}  RIVET_CONFIG_LIBS=${RIVET_CONFIG_LIBS}  RIVET_CONFIG_LIB_DIRS=${RIVET_CONFIG_LIB_DIRS} \
   RIVET_CONFIG_CPPFLAGS_STRING=${RIVET_CONFIG_CPPFLAGS_STRING}  RIVET_CONFIG_CPPFLAGS_DIRS=${RIVET_CONFIG_CPPFLAGS_DIRS} ")
   add_subdirectory(AddOns/Rivet)
@@ -521,15 +520,9 @@ if (SHERPA_ENABLE_RIVET)
   endif()
 endif()
 set(HEPMC3_REQUIRED FALSE)
-set(HEPMC2_REQUIRED FALSE)
 #The HepMC is needed if it is requested explicitly or for Rivet.
 #For Rivet one should guess which verson is required
-if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_HEPMC2 OR SHERPA_ENABLE_RIVET)
-  if (SHERPA_ENABLE_HEPMC2 OR ( SHERPA_ENABLE_RIVET  AND Rivet_HEPMC2_FOUND) )
-     find_package(HepMC2 2.06.10...<2.07.00 REQUIRED)
-     message(STATUS "SHERPA: HEPMC2_VERSION=${HEPMC2_VERSION} HEPMC2_LIBRARIES=${HEPMC2_LIBRARIES} HEPMC2_FIO_LIBRARIES=${HEPMC2_FIO_LIBRARIES} HEPMC2_INCLUDE_DIRS=${HEPMC2_INCLUDE_DIRS}")
-     set(HEPMC2_REQUIRED TRUE)
-  endif()
+if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_RIVET)
   if (SHERPA_ENABLE_HEPMC3 OR ( SHERPA_ENABLE_RIVET  AND Rivet_HEPMC3_FOUND) )
     find_package(HepMC3 REQUIRED CONFIG HINTS ${HepMC3_DIR})
     set(HEPMC3_REQUIRED TRUE)
@@ -718,9 +711,6 @@ if (SHERPA_ENABLE_HEPMC3)
     target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_ROOTIO_LIB} )
   endif()
 endif()
-if (SHERPA_ENABLE_HEPMC2)
-  target_link_libraries(Sherpa PRIVATE SherpaHepMCOutput  ${HEPMC2_LIBRARIES} )
-endif()
 
 install(TARGETS Sherpa DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 
@@ -893,11 +883,6 @@ if (CMAKE_SYSTEM_NAME MATCHES Darwin)
   set( LD_LIBRARY_PATH "DYLD_LIBRARY_PATH")
 endif()
 
-if (SHERPA_ENABLE_HEPMC2)
-  set(CONDITIONAL_HEPMC2LIBS "-L${HEPMC2_LIBRARY_DIR} -lHepMC")
-  set(CONDITIONAL_HEPMC2INCS "-I${HEPMC2_INCLUDE_DIRS}")
-endif()
-
 if (SHERPA_ENABLE_HEPMC3)
   set(CONDITIONAL_HEPMC3INCS "-I${HEPMC3_INCLUDE_DIR}")
   get_filename_component (HEPMC3_LIBRARY_DIR ${HEPMC3_LIB} DIRECTORY)
@@ -910,9 +895,6 @@ if (SHERPA_ENABLE_HEPMC3)
 endif()
 
 ########################################################################
-if (SHERPA_ENABLE_RIVET AND RIVET_VERSION VERSION_LESS 3.0.0)
-  set(RIVET2 1)
-endif()
 if (SHERPA_ENABLE_RIVET AND RIVET_VERSION VERSION_GREATER 2.99.99)
   set(RIVET3 1)
 endif()
@@ -924,8 +906,6 @@ set(CXXFLAGS_PACKAGES_H_CONTENT
 $<IF:$<BOOL:${HEPMC3_REQUIRED}>,#define USING__HEPMC3 \"1\",/* #undef USING__HEPMC3 */>\n\n\
 /* HepMC3 with ROOT support */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_HEPMC3_ROOT}>,#define USING__HEPMC3__ROOT \"1\",/* #undef USING__HEPMC3__ROOT */>\n\n\
-/* Using HEPMC2 */\n\
-$<IF:$<BOOL:${HEPMC2_REQUIRED}>,#define USING__HEPMC2 \"1\",/* #undef USING__HEPMC2 */>\n\n\
 /* using gzip */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_GZIP}>,#define USING__GZIP \"1\",/* #undef USING__GZIP */>\n\n\
 /* using LHAPDF */\n\
@@ -934,8 +914,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_LHAPDF}>,#define USING__LHAPDF \"1\",/* #undef USING
 $<IF:$<BOOL:${SHERPA_ENABLE_LHAPDF}>,#define LHAPDF_PATH \"${LHAPDF_PATH}\",/* #undef LHAPDF_PATH */>\n\n\
 /* using ROOT */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_ROOT}>,#define USING__ROOT \"1\",/* #undef USING__ROOT */>\n\n\
-/* using Rivet2 */\n\
-$<IF:$<BOOL:${RIVET2}>,#define USING__RIVET2 \"1\",/* #undef USING__RIVET2 */>\n\n\
 /* using Rivet3 */\n\
 $<IF:$<BOOL:${RIVET3}>,#define USING__RIVET3 \"1\",/* #undef USING__RIVET3 */>\n\n\
 /* using BLACKHAT */\n\

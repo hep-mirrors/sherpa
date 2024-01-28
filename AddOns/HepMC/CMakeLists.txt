@@ -1,16 +1,6 @@
- set(foo_SOURCES  Output_HepMC2_Genevent.C Output_HepMC2_Short.C Output_HepMC3_Genevent.C Output_HepMC3_Short.C)
- set(foo_HEADERS  Output_HepMC2_Genevent.H Output_HepMC2_Short.H Output_HepMC3_Genevent.H Output_HepMC3_Short.H)
+ set(foo_SOURCES  Output_HepMC3_Genevent.C Output_HepMC3_Short.C)
+ set(foo_HEADERS  Output_HepMC3_Genevent.H Output_HepMC3_Short.H)
  sherpa_create_git_info(foo)
-
-if (HEPMC2_REQUIRED)
-  set(SherpaHepMCOutput_SOURCES  Output_HepMC2_Genevent.C Output_HepMC2_Short.C)
-  list(TRANSFORM SherpaHepMCOutput_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../HepMC/")
-  list(APPEND SherpaHepMCOutput_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
-  add_library(SherpaHepMCOutput SHARED ${SherpaHepMCOutput_SOURCES})
-  target_link_libraries(SherpaHepMCOutput PRIVATE ${HEPMC2_LIBRARIES})
-  target_include_directories(SherpaHepMCOutput PRIVATE ${HEPMC2_INCLUDE_DIRS})
-  sherpa_handle_shared_library(SherpaHepMCOutput SherpaHepMCOutput)
-endif()
 
 if (HEPMC3_REQUIRED)
   set(SherpaHepMC3Output_SOURCES  Output_HepMC3_Genevent.C Output_HepMC3_Short.C)
