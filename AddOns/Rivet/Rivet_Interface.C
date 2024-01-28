@@ -14,24 +14,16 @@
 #include "ATOOLS/Phys/KF_Table.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
 
-// TODO:
-// to be done properly
-#define RIVET_ENABLE_HEPMC_3
-
-#ifdef USING__RIVET3
+#ifdef USING__RIVET
 #include "Rivet/Config/RivetConfig.hh"
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
 #include "YODA/Config/BuildConfig.h"
 #include "YODA/AnalysisObject.h"
-#if defined(RIVET_ENABLE_HEPMC_3) || (RIVET_VERSION_CODE >= 30200)
+
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "HepMC3/GenEvent.h"
 #include "HepMC3/GenCrossSection.h"
-#define SHERPA__HepMC_Interface SHERPA::HepMC3_Interface
-#define HEPMCNS HepMC3
-#define HEPMC_HAS_CROSS_SECTION
-#endif
 
 #define USING__Rivet_MPI_Merge
 
@@ -49,7 +41,7 @@ namespace SHERPARIVET {
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
 
     Rivet_Map         m_rivet;
-    SHERPA__HepMC_Interface       m_hepmc2;
+    SHERPA::HepMC3_Interface      m_hepmc;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
 #if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
@@ -255,13 +247,13 @@ bool Rivet_Interface::Init()
 
     // configure HepMC interface
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
-      m_hepmc2.Ignore(m_ignoreblobs[i]);
+      m_hepmc.Ignore(m_ignoreblobs[i]);
     }
-    m_hepmc2.SetHepMCNamedWeights(
+    m_hepmc.SetHepMCNamedWeights(
         s["USE_HEPMC_NAMED_WEIGHTS"].SetDefault(true).Get<bool>());
-    m_hepmc2.SetHepMCExtendedWeights(
+    m_hepmc.SetHepMCExtendedWeights(
         s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>());
-    m_hepmc2.SetHepMCTreeLike(
+    m_hepmc.SetHepMCTreeLike(
         s["USE_HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>());
   }
   return true;
@@ -280,16 +272,16 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   }
 
   HepMC3::GenEvent event;
-  if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event);
-  else                  m_hepmc2.Sherpa2HepMC(bl, event);
-  std::vector<HEPMCNS::GenEvent*> subevents(m_hepmc2.GenSubEventList());
-  m_hepmc2.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+  if (m_usehepmcshort)  m_hepmc.Sherpa2ShortHepMC(bl, event);
+  else                  m_hepmc.Sherpa2HepMC(bl, event);
+  std::vector<HepMC3::GenEvent*> subevents(m_hepmc.GenSubEventList());
+  m_hepmc.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
 #if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
   if (m_lastevent.vertices().empty()) {
     m_lastevent=event;
     for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
   }
-  m_hepmc2.AddCrossSection(m_lastevent, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+  m_hepmc.AddCrossSection(m_lastevent, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
   PRINT_VAR(m_lastevent.cross_section());
 #endif
 
@@ -297,7 +289,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     for (size_t i(0);i<subevents.size();++i) {
       GetRivet("",0)->analyze(*subevents[i]);
     }
-    m_hepmc2.DeleteGenSubEventList();
+    m_hepmc.DeleteGenSubEventList();
   }
   else {
     GetRivet("",0)->analyze(event);

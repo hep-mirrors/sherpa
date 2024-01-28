@@ -68,6 +68,9 @@ option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 
+set(HEPMC_MIN_VERSION "3.0.0")
+set(RIVET_MIN_VERSION "3.0.0")
+
 ########################################################################
 ### allow the user to be sloppy and use HEPMC3_DIR instead of the correct
 ### capitalisation, HepMC3_DIR. Note that the capitalisation is defined
@@ -507,7 +510,7 @@ IF (SHERPA_ENABLE_MCFM)
 endif()
 
 if (SHERPA_ENABLE_RIVET)
-  find_package(Rivet REQUIRED)
+  find_package(Rivet ${RIVET_MIN_VERSION} REQUIRED)
   message(STATUS "SHERPA: RIVET_VERSION=${RIVET_VERSION} RIVET_FOUND=${RIVET_FOUND}  RIVET_LIBRARIES=${RIVET_LIBRARIES} \
   RIVET_INCLUDE_DIRS=${RIVET_INCLUDE_DIRS} RIVET_DATA_PATH=${RIVET_DATA_PATH} RIVET_ANALYSIS_PATH=${RIVET_ANALYSIS_PATH} \
   Rivet_HEPMC3_FOUND=${Rivet_HEPMC3_FOUND} \
@@ -518,13 +521,18 @@ if (SHERPA_ENABLE_RIVET)
      find_package(YODA REQUIRED)
      message(STATUS "SHERPA: YODA_VERSION=${YODA_VERSION} YODA_LIBRARIES=${YODA_LIBRARIES} YODA_INCLUDE_DIRS=${YODA_INCLUDE_DIRS} YODA_CONFIG_PYTHONPATH_STRING=${YODA_CONFIG_PYTHONPATH_STRING}")
   endif()
+  if (RIVET_VERSION VERSION_GREATER_EQUAL 3.2.0)
+    set(YODA2 1)
+  else()
+    set(YODA2 0)
+  endif()
 endif()
 set(HEPMC3_REQUIRED FALSE)
 #The HepMC is needed if it is requested explicitly or for Rivet.
 #For Rivet one should guess which verson is required
 if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_RIVET)
   if (SHERPA_ENABLE_HEPMC3 OR ( SHERPA_ENABLE_RIVET  AND Rivet_HEPMC3_FOUND) )
-    find_package(HepMC3 REQUIRED CONFIG HINTS ${HepMC3_DIR})
+    find_package(HepMC3 ${HEPMC_MIN_VERSION} REQUIRED CONFIG HINTS ${HepMC3_DIR})
     set(HEPMC3_REQUIRED TRUE)
     message(STATUS "SHERPA: HEPMC3_VERSION=${HEPMC3_VERSION} HEPMC3_LIBRARIES=${HEPMC3_LIBRARIES}  HEPMC3_INCLUDE_DIR=${HEPMC3_INCLUDE_DIR}")
     if (SHERPA_ENABLE_HEPMC3_ROOT)
@@ -895,9 +903,6 @@ if (SHERPA_ENABLE_HEPMC3)
 endif()
 
 ########################################################################
-if (SHERPA_ENABLE_RIVET AND RIVET_VERSION VERSION_GREATER 2.99.99)
-  set(RIVET3 1)
-endif()
 set(CXXFLAGS_PACKAGES_H_CONTENT
 "/* ATOOLS/Org/CXXFLAGS_PACKAGES.H.  Generated from CXXFLAGS_PACKAGES.H.in by configure.  */\n\
 #ifndef CXXFLAGS_PACKAGES_H\n\
@@ -914,8 +919,10 @@ $<IF:$<BOOL:${SHERPA_ENABLE_LHAPDF}>,#define USING__LHAPDF \"1\",/* #undef USING
 $<IF:$<BOOL:${SHERPA_ENABLE_LHAPDF}>,#define LHAPDF_PATH \"${LHAPDF_PATH}\",/* #undef LHAPDF_PATH */>\n\n\
 /* using ROOT */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_ROOT}>,#define USING__ROOT \"1\",/* #undef USING__ROOT */>\n\n\
-/* using Rivet3 */\n\
-$<IF:$<BOOL:${RIVET3}>,#define USING__RIVET3 \"1\",/* #undef USING__RIVET3 */>\n\n\
+/* using Rivet */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_RIVET}>,#define USING__RIVET \"1\",/* #undef USING__RIVET */>\n\n\
+/* using YODA2 */\n\
+$<IF:$<BOOL:${YODA2}>,#define USING__YODA2 \"1\",/* #undef USING__YODA2 */>\n\n\
 /* using BLACKHAT */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_BLACKHAT}>,#define USING__BLACKHAT \"1\",/* #undef USING__BLACKHAT */>\n\n\
 /* BLACKHAT directory */\n\
