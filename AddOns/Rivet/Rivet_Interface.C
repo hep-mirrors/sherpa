@@ -36,9 +36,14 @@ namespace SHERPARIVET {
 
     std::string m_outpath, m_tag;
 
-    size_t m_nevt;
+    size_t m_nevt, m_histointerval;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
+
+    int m_loglevel, m_ignorebeams, m_skipweights;
+    double m_weightcap, m_nlosmearing;
+    std::string m_matchweights, m_unmatchweights, m_nomweight;
+    std::vector<std::string> m_analyses;
 
     Rivet_Map         m_rivet;
     SHERPA::HepMC3_Interface      m_hepmc;
@@ -84,8 +89,7 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   m_outpath(outpath), m_tag(tag),
   m_nevt(0), m_finished(false),
   m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
-  m_splitcoreprocs(false),
-  m_ignoreblobs(ignoreblobs)
+  m_splitcoreprocs(false), m_ignoreblobs(ignoreblobs)
 {
   if (m_outpath[m_outpath.size()-1]=='/')
     m_outpath=m_outpath.substr(0,m_outpath.size()-1);
@@ -124,25 +128,23 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
   if (it==m_rivet.end()) {
     msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
     m_rivet[key] = new AnalysisHandler();
-    Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
-    m_rivet[key]->addAnalyses(s["ANALYSES"].SetSynonyms({"ANALYSIS", "-a", "--analyses"})
-                       .SetDefault<std::vector<std::string>>({}).GetVector<std::string>());
+    m_rivet[key]->addAnalyses(m_analyses);
 #if RIVET_VERSION_CODE >= 30200
-    m_rivet[key]->setCheckBeams(!s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>());
-    m_rivet[key]->matchWeightNames(s["MATCH_WEIGHTS"].SetSynonyms({"--match-weights"}).SetDefault("").Get<std::string>());
-    m_rivet[key]->unmatchWeightNames(s["UNMATCH_WEIGHTS"].SetSynonyms({"--unmatch-weights"}).SetDefault("^EXTRA__.*,^IRREG__.*").Get<std::string>());
-    m_rivet[key]->setFinalizePeriod(OutputPath(key), s["HISTO_INTERVAL"].SetSynonyms({"--histo-interval"}).SetDefault(0).Get<size_t>());
+    m_rivet[key]->setCheckBeams(!m_ignorebeams);
+    m_rivet[key]->matchWeightNames(m_matchweights);
+    m_rivet[key]->unmatchWeightNames(m_unmatchweights);
+    m_rivet[key]->setFinalizePeriod(OutputPath(key), m_histointerval);
 #else
-    m_rivet[key]->setIgnoreBeams(s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>());
-    m_rivet[key]->selectMultiWeights(s["MATCH_WEIGHTS"].SetSynonyms({"--match-weights"}).SetDefault("").Get<std::string>());
-    m_rivet[key]->deselectMultiWeights(s["UNMATCH_WEIGHTS"].SetSynonyms({"--unmatch-weights"}).SetDefault("^EXTRA__.*,^IRREG__.*").Get<std::string>());
-    m_rivet[key]->setAODump(OutputPath(key), s["HISTO_INTERVAL"].SetSynonyms({"--histo-interval"}).SetDefault(0).Get<size_t>());
+    m_rivet[key]->setIgnoreBeams(m_ignorebeams);
+    m_rivet[key]->selectMultiWeights(m_matchweights);
+    m_rivet[key]->deselectMultiWeights(m_unmatchweights);
+    m_rivet[key]->setAODump(OutputPath(key), m_histointerval);
 #endif
-    m_rivet[key]->skipMultiWeights(s["SKIP_WEIGHTS"].SetSynonyms({"SKIPWEIGHTS", "--skip-weights"}).SetDefault(0).Get<int>());
-    m_rivet[key]->setNominalWeightName(s["NOMINAL_WEIGHT"].SetSynonyms({"--nominal-weight"}).SetDefault("").Get<std::string>());
-    m_rivet[key]->setWeightCap(s["WEIGHT_CAP"].SetSynonyms({"--weight-cap"}).SetDefault(0.0).Get<double>());
-    m_rivet[key]->setNLOSmearing(s["NLO_SMEARING"].SetSynonyms({"--nlo-smearing"}).SetDefault(0.0).Get<double>());
-    Log::setLevel("Rivet", s["-l"].SetDefault(20).Get<int>());
+    m_rivet[key]->skipMultiWeights(m_skipweights);
+    m_rivet[key]->setNominalWeightName(m_nomweight);
+    m_rivet[key]->setWeightCap(m_weightcap);
+    m_rivet[key]->setNLOSmearing(m_nlosmearing);
+    Log::setLevel("Rivet", m_loglevel);
   }
   return m_rivet[key];
 }
@@ -244,6 +246,17 @@ bool Rivet_Interface::Init()
     if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
       THROW(fatal_error, "Internal error.");
     }
+    m_loglevel = s["-l"].SetDefault(20).Get<int>();
+    m_histointerval = s["HISTO_INTERVAL"].SetSynonyms({"--histo-interval"}).SetDefault(0).Get<size_t>();
+    m_ignorebeams = s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>();
+    m_skipweights = s["SKIP_WEIGHTS"].SetSynonyms({"SKIPWEIGHTS", "--skip-weights"}).SetDefault(0).Get<int>();
+    m_weightcap = s["WEIGHT_CAP"].SetSynonyms({"--weight-cap"}).SetDefault(0.0).Get<double>();
+    m_nlosmearing = s["NLO_SMEARING"].SetSynonyms({"--nlo-smearing"}).SetDefault(0.0).Get<double>();
+    m_matchweights = s["MATCH_WEIGHTS"].SetSynonyms({"--match-weights"}).SetDefault("").Get<std::string>();
+    m_unmatchweights = s["UNMATCH_WEIGHTS"].SetSynonyms({"--unmatch-weights"}).SetDefault("").Get<std::string>();
+    m_nomweight = s["NOMINAL_WEIGHT"].SetSynonyms({"--nominal-weight"}).SetDefault("").Get<std::string>();
+    m_analyses = s["ANALYSES"].SetSynonyms({"ANALYSIS", "-a", "--analyses"})
+                              .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
 
     // configure HepMC interface
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
@@ -381,7 +394,7 @@ bool Rivet_Interface::Finish()
     mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
     char *catname = new char[len+1];
     for (size_t i(0);i<mpi->Size();++i) {
-      sprintf(catname,"%s",&allnames[len*i]);
+      snprintf(catname, sizeof(catname),"%s",&allnames[len*i]);
       std::string curname(catname);
       for (size_t epos(curname.find('|'));
 	   epos<curname.length();epos=curname.find('|')) {
@@ -410,7 +423,11 @@ bool Rivet_Interface::Finish()
 	RivetMapKey key = std::make_pair(proc,ToType<int>(jets));
 	if (m_rivet.find(key)==m_rivet.end()) {
 	  AnalysisHandler* rivet(new AnalysisHandler());
+#if RIVET_VERSION_CODE >= 30200
+	  rivet->setCheckBeams(!m_ignorebeams);
+#else
 	  rivet->setIgnoreBeams(m_ignorebeams);
+#endif
 	  rivet->skipMultiWeights(m_skipweights);
 	  rivet->addAnalyses(m_analyses);
 	  rivet->init(m_lastevent);
@@ -421,10 +438,10 @@ bool Rivet_Interface::Finish()
     delete [] catname;
 #endif
 
-  // additional Rivet instances are used e.g. for splits
-  // into H+S events or jet multiplicities -> these only
-  // get to see a subset of the events and need to be
-  // re-scaled to cross-section of the complete run
+  // in case additional Rivet instances are used,
+  // e.g. for splitting into H+S events/jet multis,
+  // these only get to "see" a subset of the events
+  // and need to be re-scaled to full cross-section
   const bool needs_rescaling = m_rivet.size() > 1;
   for (auto& it : m_rivet) {
     if (needs_rescaling) {
@@ -446,11 +463,19 @@ bool Rivet_Interface::Finish()
     }
     it.second->finalize();
 #if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+#if RIVET_VERSION_CODE >= 30200
+      std::vector<double> data = it.second->serializeContent();
+#else
       std::vector<double> data;
       it.second->serialize(data);
+#endif
       mpi->Allreduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
       size_t i(0);
+#if RIVET_VERSION_CODE >= 30200
+      it.second->deserializeContent(data);
+#else
       it.second->deserialize(data,i);
+#endif
       if (i!=data.size()) THROW(fatal_error,"serialization error");
       if (mpi->Rank()==0)
 #endif
