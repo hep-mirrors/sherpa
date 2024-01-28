@@ -360,24 +360,51 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
 
 bool Rivet_Interface::Finish()
 {
+
+#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+  // merge Rivet::AnalysisHandlers before finalising
+  for (auto& it : m_rivet) {
+#if RIVET_VERSION_CODE >= 30200
+    std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
+#else
+    // FIXME
+    std::vector<double> data;
+    it.second->serialize(data);
+#endif
+    mpi->Allreduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
+#if RIVET_VERSION_CODE >= 30200
+    if (mpi->Rank()==0)
+      it.second->deserializeContent(data);
+#else
+    // FIXME
+    size_t i(0);
+    it.second->deserialize(data,i);
+    if (i!=data.size()) THROW(fatal_error,"serialization error");
+#endif
+  }
+  if (mpi->Rank()==0) {
+#endif
+
   PRINT_FUNC(m_outpath);
 #if RIVET_VERSION_CODE >= 30200
   GetRivet("",0)->pushToPersistent();
 #else
   GetRivet("",0)->finalize();
 #endif
+
   const double nomsumw = GetRivet("",0)->sumW();
 #if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
-  // to be done properly
+  // FIXME?
   const double nomxsec = p_eventhandler->TotalXSMPI().Nominal();
   const double nomxerr = p_eventhandler->TotalErrMPI().Nominal();
 #else
-  // to be done properly
+  // FIXME?
   const double nomxsec = p_eventhandler->TotalXS().Nominal();
   const double nomxerr = p_eventhandler->TotalErr().Nominal();
 #endif
 
-#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+  // What is this block doing...?
+/*#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
     // synchronize analyses among MPI processes
     std::string mynames;
     for (auto& it : m_rivet) {
@@ -436,7 +463,7 @@ bool Rivet_Interface::Finish()
       }
     }
     delete [] catname;
-#endif
+#endif*/
 
   // in case additional Rivet instances are used,
   // e.g. for splitting into H+S events/jet multis,
@@ -462,25 +489,12 @@ bool Rivet_Interface::Finish()
       it.second->setCrossSection(thisxs, thiserr);
     }
     it.second->finalize();
-#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
-#if RIVET_VERSION_CODE >= 30200
-      std::vector<double> data = it.second->serializeContent();
-#else
-      std::vector<double> data;
-      it.second->serialize(data);
-#endif
-      mpi->Allreduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
-      size_t i(0);
-#if RIVET_VERSION_CODE >= 30200
-      it.second->deserializeContent(data);
-#else
-      it.second->deserialize(data,i);
-#endif
-      if (i!=data.size()) THROW(fatal_error,"serialization error");
-      if (mpi->Rank()==0)
-#endif
+
     it.second->writeData(OutputPath(it.first));
   }
+#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+  } // end of if mpi_rank = 0
+#endif
   m_finished=true;
   return true;
 }
