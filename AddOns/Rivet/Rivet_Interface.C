@@ -25,7 +25,6 @@
 #include "HepMC3/GenEvent.h"
 #include "HepMC3/GenCrossSection.h"
 
-#define USING__Rivet_MPI_Merge
 
 namespace SHERPARIVET {
   typedef std::pair<std::string, int> RivetMapKey;
@@ -49,9 +48,9 @@ namespace SHERPARIVET {
     SHERPA::HepMC3_Interface      m_hepmc;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
-#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
-    HepMC3::GenEvent m_lastevent;
-#endif
+//#if defined(USING__MPI) && defined(USING__YODA2)
+//    HepMC3::GenEvent m_lastevent;
+//#endif
 
     Rivet::AnalysisHandler* GetRivet(std::string proc,
                                      int jetcont);
@@ -98,11 +97,12 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
 #ifdef USING__MPI
   if (mpi->Rank()==0) {
 #endif
-    if (m_outpath.rfind('/')!=std::string::npos)
+    if (m_outpath.rfind('/')!=std::string::npos) {
       MakeDir(m_outpath.substr(0,m_outpath.rfind('/')));
+    }
 #ifdef USING__MPI
   }
-#if ! ( defined(USING__MPI) && defined(USING__Rivet_MPI_Merge) )
+#if ! defined(USING__YODA2)
   if (mpi->Size()>1)
     m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
 #endif
@@ -129,7 +129,7 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
     msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
     m_rivet[key] = new AnalysisHandler();
     m_rivet[key]->addAnalyses(m_analyses);
-#if RIVET_VERSION_CODE >= 30200
+#ifdef USING__YODA2
     m_rivet[key]->setCheckBeams(!m_ignorebeams);
     m_rivet[key]->matchWeightNames(m_matchweights);
     m_rivet[key]->unmatchWeightNames(m_unmatchweights);
@@ -289,14 +289,14 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   else                  m_hepmc.Sherpa2HepMC(bl, event);
   std::vector<HepMC3::GenEvent*> subevents(m_hepmc.GenSubEventList());
   m_hepmc.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
-#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+/*#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
   if (m_lastevent.vertices().empty()) {
     m_lastevent=event;
     for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
   }
   m_hepmc.AddCrossSection(m_lastevent, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
   PRINT_VAR(m_lastevent.cross_section());
-#endif
+#endif*/
 
   if (subevents.size()) {
     for (size_t i(0);i<subevents.size();++i) {
@@ -361,44 +361,29 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
 bool Rivet_Interface::Finish()
 {
 
-#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+#if defined(USING__MPI) && defined(USING__YODA2)
   // merge Rivet::AnalysisHandlers before finalising
   for (auto& it : m_rivet) {
-#if RIVET_VERSION_CODE >= 30200
     std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
-#else
-    // FIXME
-    std::vector<double> data;
-    it.second->serialize(data);
-#endif
     mpi->Allreduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
-#if RIVET_VERSION_CODE >= 30200
     if (mpi->Rank()==0)
       it.second->deserializeContent(data,(size_t)mpi->Size());
-#else
-    // FIXME
-    size_t i(0);
-    it.second->deserialize(data,i);
-    if (i!=data.size()) THROW(fatal_error,"serialization error");
-#endif
   }
   if (mpi->Rank()==0) {
 #endif
 
   PRINT_FUNC(m_outpath);
-#if RIVET_VERSION_CODE >= 30200
-  GetRivet("",0)->pushToPersistent();
+#ifdef USING__YODA2
+  GetRivet("",0)->collapseEventGroup();
 #else
   GetRivet("",0)->finalize();
 #endif
 
   const double nomsumw = GetRivet("",0)->sumW();
-#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
-  // FIXME?
+#if defined(USING__MPI)
   const double nomxsec = p_eventhandler->TotalXSMPI().Nominal();
   const double nomxerr = p_eventhandler->TotalErrMPI().Nominal();
 #else
-  // FIXME?
   const double nomxsec = p_eventhandler->TotalXS().Nominal();
   const double nomxerr = p_eventhandler->TotalErr().Nominal();
 #endif
@@ -475,7 +460,7 @@ bool Rivet_Interface::Finish()
       // first collapse the event group,
       // then scale the cross-section
       // before finalizing
-      #if RIVET_VERSION_CODE >= 30200
+      #ifdef USING__YODA2
       it.second->collapseEventGroup();
       #else
       it.second->finalize();
@@ -492,7 +477,7 @@ bool Rivet_Interface::Finish()
 
     it.second->writeData(OutputPath(it.first));
   }
-#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+#if defined(USING__MPI) && defined(USING__YODA2)
   } // end of if mpi_rank = 0
 #endif
   m_finished=true;
