@@ -27,7 +27,6 @@ namespace PHASIC {
     //! Reference to the matrix element generators
     ME_Generators &m_gens;
 
-    YFS::YFS_Handler  *p_yfs;
 
     //! Book-keeping variables for last RS, B, VI contributions
     double m_lastrs, m_lastb, m_lastvi;
@@ -57,6 +56,7 @@ namespace PHASIC {
         const ATOOLS::Cluster_Sequence_Info * const nominalcsi=NULL);
  
     public:
+    YFS::YFS_Handler  *p_yfs;
     YFS_Process(ME_Generators &gens,NLOTypeStringProcessMap_Map *pmap);
     void Init(const Process_Info &pi,
               BEAM::Beam_Spectra_Handler *const beam,

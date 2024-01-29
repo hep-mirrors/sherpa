@@ -50,13 +50,13 @@ YFS_Process::YFS_Process
 }
 
 YFS_Process::~YFS_Process() {
-  PRINT_VAR(METHOD);
   if (p_bornproc) delete p_bornproc;
   if (p_realproc) delete p_realproc;
   if (p_virtproc) delete p_virtproc;
   if (p_realvirtproc) delete p_realvirtproc;
   if (p_realrealproc) delete p_realrealproc;
   if (p_int) delete p_int;
+  if (p_yfs) delete p_yfs;
 }
 
 void YFS_Process::Init(const Process_Info &pi,
@@ -65,6 +65,7 @@ void YFS_Process::Init(const Process_Info &pi,
                        YFS::YFS_Handler *const yfs, const int mode)
 {
   p_yfs = yfs;
+  p_yfs->SetFlavours(pi.ExtractFlavours());
   Process_Info ypi(pi), vpi(pi);
   if (pi.m_fi.m_nlocpl[0] != 0) THROW(not_implemented, "YFS cannot do NLO QCD.");
   if (pi.Has(nlo_type::rsub) || pi.Has(nlo_type::vsub)) {
@@ -230,7 +231,6 @@ Weight_Info *YFS_Process::OneEvent(const int wmode,ATOOLS::Variations_Mode varmo
   p_yfs->SetFlavours(psh->Flavs());
   p_selected = p_bornproc;
   Weight_Info *winfo(NULL);
-  // if(p_int->YFS()->GetWeight()!=0.) p_yfs->CalculateBeta();
   winfo = p_int->PSHandler()->OneEvent(this, varmode, mode);
   // if(p_realproc) OneRealEvent();
   return winfo;
