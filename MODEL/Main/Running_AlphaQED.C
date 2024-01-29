@@ -45,6 +45,30 @@ double Running_AlphaQED::operator()(double t)
   double sig_top_gg = m_alpha0/(3.*M_PI) * 3. * (PiGamma(Flavour(kf_t),Q2));
   double sigma_gg   = sig_lep_gg+sig_ha_gg+sig_top_gg;
 
+  #ifdef USING__HADALPHAQED
+    t=-t;
+    double delta_r,errdersta, errdersys,deg,errdegsta,errdegsys;
+    double sin2 = 0.23153;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
+    if(m_mode!=vpmode::off){
+      if(m_mode !=vpmode::lp){
+        hadr5x_(&t, &sin2, &delta_r, &errdersta, 
+          &errdersys, &deg, &errdegsta, &errdegsys); 
+     }
+    switch(m_mode){
+      case vpmode::full:
+        sigma_gg = sig_lep_gg+delta_r+sig_top_gg;
+        break;
+      case vpmode::lp:
+        sigma_gg = sig_lep_gg;
+        break;
+      case vpmode::hp:
+        sigma_gg = delta_r;
+        break;
+      default:
+        sigma_gg = sig_lep_gg+sig_ha_gg+sig_top_gg;
+      }
+    }
+  #endif
   return m_alpha0/(1.-sigma_gg);
 }  
 
