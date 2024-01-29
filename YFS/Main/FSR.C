@@ -290,7 +290,7 @@ bool FSR::MakeFSR() {
     m_sQ = m_sprim;
   }
   else {
-    if (m_photonSum.E() > 1) {
+    if (m_photonSum.E() >= 1) {
       RejectEvent();
       m_cut = 2;
       return false;
