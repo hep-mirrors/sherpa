@@ -228,9 +228,14 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
                  <<"\n mass in YFS = "<<yfs->m_photonMass
                  <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
       THROW(fatal_error,"Mismatch in photon mass regulator");
+        msg_Error()<<"Mismatch between YFS and Recola photon mass"
+                   <<"\n mass in YFS = "<<yfs->m_photonMass
+                   <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
+        THROW(fatal_error,"Mismatch in photon mass regulator");
     }
+    
     set_dynamic_settings_rcl(1);
-    use_mass_reg_soft_rcl((s_photon_mass));
+    use_mass_reg_soft_rcl(s_photon_mass);
   }
   
   if (s_vmode&2) THROW(fatal_error,"Inclusion of I operator not implemented.");
