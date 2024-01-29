@@ -374,7 +374,7 @@ bool Rivet_Interface::Finish()
     mpi->Allreduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
 #if RIVET_VERSION_CODE >= 30200
     if (mpi->Rank()==0)
-      it.second->deserializeContent(data);
+      it.second->deserializeContent(data,(size_t)mpi->Size());
 #else
     // FIXME
     size_t i(0);
