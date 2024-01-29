@@ -53,12 +53,12 @@ void Inelastic_Event_Generator::Reset() {
 }
 
 int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
-  msg_Out()<<"\n\n\n\n\n\n"
-	   <<"   ---------------------------------------------------------------------\n"
-	   <<"   ---------------------------------------------------------------------\n"
-	   <<"   - "<<METHOD<<"\n";
+  //msg_Out()<<"\n\n\n\n\n\n"
+  //	   <<"   ---------------------------------------------------------------------\n"
+  //	   <<"   ---------------------------------------------------------------------\n"
+  //	   <<"   - "<<METHOD<<"\n";
   Blob * blob = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
-  msg_Out()<<"   found soft blob: "<<*blob<<"\n";
+  //msg_Out()<<"   found soft blob: "<<*blob<<"\n";
   if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return -1;
   if (blob->NInP()>0)  {
     msg_Error()<<"Error in "<<METHOD<<": blob has particles.\n"<<(*blob)<<"\n";
@@ -71,7 +71,7 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   blob->AddData("Weight",new Blob_Data<double>(m_sigma));
   p_eikonal  = 0; m_B = -1;
   for (size_t trials=0;trials<1000;trials++) {
-    msg_Out()<<"... "<<trials<<"\n";
+    //msg_Out()<<"... "<<trials<<"\n";
     if (SelectEikonal() && SelectB()) {
       m_Nladders = 1+int(ran->Poissonian((*p_eikonal)(m_B)));
       if (m_Nladders>0) {
@@ -116,13 +116,14 @@ Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
 
 bool Inelastic_Event_Generator::SelectEikonal() {
   p_eikonal = 0;
-  msg_Out()<<METHOD<<": eik = "<<p_eikonal<<", sigma = "<<m_sigma<<" ("<<m_xsecs.size()<<").\n"; 
+  //msg_Out()<<METHOD<<": eik = "<<p_eikonal<<", sigma = "<<m_sigma
+  //<<" ("<<m_xsecs.size()<<").\n"; 
   while (p_eikonal==NULL) {
     double disc = ran->Get()*m_sigma;
     for (std::map<Omega_ik *,double>::iterator eikiter=m_xsecs.begin();
 	 eikiter!=m_xsecs.end();eikiter++) {
       disc-=eikiter->second;
-      msg_Out()<<METHOD<<": sigma = "<<m_sigma<<" --> "<<disc<<".\n"; 
+      //msg_Out()<<METHOD<<": sigma = "<<m_sigma<<" --> "<<disc<<".\n"; 
       if (disc<=1.e-12) { p_eikonal = eikiter->first; break; }
     }
   }

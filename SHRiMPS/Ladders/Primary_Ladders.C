@@ -59,13 +59,13 @@ void Primary_Ladders::Initialise(PDF::ISR_Handler * isr) {
 void Primary_Ladders::Test() { return; if (m_test) p_laddergenerator->Test(); }
 
 bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_t & N) {
-  msg_Out()<<"--- "<<METHOD<<": "<<N<<" new ladders at B = "<<B<<"\n";
+  //msg_Out()<<"--- "<<METHOD<<": "<<N<<" new ladders at B = "<<B<<"\n";
   Reset();
   p_laddergenerator->InitCollision(eikonal,B);
   size_t Ngen = 0, trials = 0;
   double b1, b2;
   bool   contains_one_inelastic = false;
-  msg_Out()<<"--------------------------------------------------------------\n";
+  //msg_Out()<<"--------------------------------------------------------------\n";
   while (Ngen<N) {
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
