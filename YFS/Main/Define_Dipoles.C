@@ -362,7 +362,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   for (auto &D : m_dipolesFF) {
     if(m_fsrmode==2) {
       if(m_massless_sub) sub += D.EikonalMassless(k,  D.GetBornMomenta(0), D.GetBornMomenta(1));
-      else sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+      else sub = D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
     }
     else {
       if(m_massless_sub) sub += D.EikonalMassless(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
@@ -626,7 +626,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
     // if(k.E()<5){
     sq = (QX).Abs2();
     sx = (QX+k).Abs2();
-    flux = sq/sx;
+    flux = sqr(sq/sx);
     // if(m_noflux==2) flux = Propagator(sx)/Propagator(sq);///(Propagator(sx)+Propagator(sq));
 
     // }
@@ -636,9 +636,22 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
     }
-    sq = (Q).Abs2();
+    double mshiff = fabs(QX.Mass()-91.2);
+    sq = (m_s);
     sx = (Q+k).Abs2();
-    flux = sqr(sq/sx)*Propagator(sx,0)/Propagator(sq,1);
+    // PRINT_VAR(sq);
+    // PRINT_VAR(sx);
+    // flux=sqr(sq/sx);
+    if(flux < 0){
+      PRINT_VAR(flux);
+      PRINT_VAR(sq);
+      PRINT_VAR(sx);
+    } 
+    // if(mshiff > 10) flux = 1;
+    flux = sqr(sq/sx)*Propagator(sq,1)/Propagator(sx,1);
+    // flux = Propagator(sq,1)*Propagator(sx,1);
+    // flux /= Propagator(sq,1)+Propagator(sx,1);
+    // flux = Propagator(sx,1)/Propagator(sq,1);
   }
   return flux;
 }
@@ -693,8 +706,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
 double Define_Dipoles::Propagator(const double &s, int width){
   double mz = Flavour(kf_Z).Mass();
   double gz = Flavour(kf_Z).Width();
-  if(width) return 1./(sqr(s-mz*mz)+sqr(gz)*sqr(s)/sqr(mz));
-  else return s*s/(sqr(s-mz*mz)+sqr(gz)*sqr(mz));
+  if(width) return s*sqr(gz)/(sqr(s-mz*mz)+sqr(gz*s/mz));
+  else return s*sqr(gz)/(sqr(s-mz*mz)+sqr(gz)*sqr(mz));
 }
 
 void Define_Dipoles::IsResonant(YFS::Dipole &D) {
