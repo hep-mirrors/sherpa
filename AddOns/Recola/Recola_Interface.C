@@ -323,6 +323,7 @@ namespace Recola {
     s_check_mass = s["MASS_REG"].Get<bool>();
     s_self_energy_off = s["NO_SELF_ENERGY"].Get<bool>();
     if(s_self_energy_off) switchon_resonant_selfenergies_rcl();
+    
     if(s_mass_reg){
       s_photon_mass = s["PHOTON_MASS"].Get<double>();
       if(s_photon_mass != yfs->m_photonMass){
@@ -331,8 +332,9 @@ namespace Recola {
                    <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
         THROW(fatal_error,"Mismatch in photon mass regulator");
     }
+    
     set_dynamic_settings_rcl(1);
-    use_mass_reg_soft_rcl((s_photon_mass));
+    use_mass_reg_soft_rcl(s_photon_mass);
   }
     return true;
   }
