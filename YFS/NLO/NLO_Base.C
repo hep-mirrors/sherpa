@@ -1,9 +1,11 @@
 // #include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/NLO_Base.H"
+#include "MODEL/Main/Running_AlphaQED.H"
 
 
 using namespace YFS;
+using namespace MODEL;
 
 std::ofstream out_recola;
 std::ofstream out_sub, out_real, out_finite;
@@ -64,7 +66,8 @@ NLO_Base::~NLO_Base() {
 			delete histo1d;
 		}
 	}
-	msg_Out()<<"Percentage of Recola events = "<<m_recola_evts/m_evts*100.<<"% "<<std::endl;
+	// msg_Out()<<"Percentage of Recola events = "<<m_recola_evts/m_evts*100.<<"% "<<std::endl;
+	// if(p_nlodipoles) delete p_nlodipoles;
 }
 
 
@@ -150,7 +153,13 @@ double NLO_Base::CalculateReal() {
 		}
 		real+=CalculateReal(k);
 	}
-	for (auto k : m_FSRPhotons) real+=CalculateReal(k);
+	for (auto k : m_FSRPhotons) {
+		if(m_check_real_sub) {
+			if(k.E() < 0.2*sqrt(m_s)) continue;
+				CheckRealSub(k);
+		}
+		real+=CalculateReal(k);
+	}
  	return real;
 }
 
@@ -202,20 +211,23 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 			sq = (Q).Abs2();
 			sx = (Q+k).Abs2();
 			double shifdiff = fabs(Q.Mass()-mz);
-			double sqq = (p[2]+p[3]).Abs2();
-			double sxx = (p[2]+p[3]+k).Abs2();	
+			double sqq = (m_plab[0]+m_plab[1]).Abs2();
+			double sxx = (m_plab[2]+m_plab[3]+k).Abs2();	
 			subflux = (sq*sq)/(sx*sx)-1;
 			if(m_noflux==3) {
-				flux=sq/sx;
+				// flux=sqq/sxx;
+				// PRINT_VAR(flux);
+				// flux=(sqr(sq-mz*mz)+sq*sqr(gz)/sqr(mz))/(sqr(sx-mz*mz)+sx*sqr(gz)/sqr(mz));
+				flux=sqr(sq/sx)*(sqr(sq-mz*mz)+sqr(gz)*sqr(mz))/(sqr(sx-mz*mz)+sqr(gz)*sqr(mz));
+				// flux = (sqq/sxx)*(sqr(sqq-91.1876*91.1876)+sqr(2.4952*sqq)/sqr(91.1876))/(sqr(sxx-91.1876*91.1876)+sqr(2.4952*sxx)/sqr(91.1876));
      	  // if(shifdiff < m_pole_fac*gz) flux = 1;
 			}
-			// flux=(sqr(sq-mz*mz)+sqr(mz*gz))/((sx-mz*mz)+sqr(mz*gz));
 			if(m_ifisub==1 && shifdiff > m_pole_fac) subloc+=p_nlodipoles->CalculateRealSubIF(k);
 			if(m_ifisub==2 && shifdiff > m_pole_fac) subloc+=p_nlodipoles->CalculateRealSubIF(k)*subflux;
 			if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	}
 	p.push_back(k);
-	CheckMasses(p,1);
+	// CheckMasses(p,1);
 	CheckMomentumConservation(p);
 	double r = p_real->Calc_R(p) / norm * flux;///p_yfsFormFact->BVirtT(p[0],p[2]);;
 	if(IsBad(r) || IsBad(flux)) {
@@ -431,16 +443,16 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
   double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
- 	p[0] = {E1, 0, 0, -lamCM};
-  p[1] = {E2, 0, 0, lamCM};
+ 	p[0] = {E1, 0, 0, lamCM};
+  p[1] = {E2, 0, 0, -lamCM};
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		pRot2.Rotate(p[i]);
-		boostLab.BoostBack(p[i]);
+		// pRot2.Rotate(p[i]);
+		boostLab.Boost(p[i]);
 	}
-	pRot2.Rotate(k);
-	boostLab.BoostBack(k);
+	// pRot2.Rotate(k);
+	boostLab.Boost(k);
 }
 
 
