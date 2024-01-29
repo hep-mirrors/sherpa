@@ -103,6 +103,7 @@ void ISR_Channels::CheckForStructuresFromME() {
     case channel_type::resonance:
       if (ATOOLS::IsZero(masses[i])) continue;
       if (ATOOLS::IsZero(widths[i])) continue;
+      if(masses[i] > 10*rpa->gen.Ecms()) continue;
       if (types[i]==-1) {
 	p_psh->SetOSMass(masses[i]);
 	onshellresonance = true;
