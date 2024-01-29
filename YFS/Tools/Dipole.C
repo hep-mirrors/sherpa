@@ -265,7 +265,7 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
 }
 
 double Dipole::EEX(const Vec4D &k){
-  double p1p2 = m_momenta[0]*m_bornmomenta[1];
+  double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
   double a = k*m_bornmomenta[0]/p1p2;
   double b = k*m_bornmomenta[1]/p1p2;
   double ap = a/(1.+a+b);
