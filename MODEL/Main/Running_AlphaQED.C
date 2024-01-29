@@ -1,3 +1,4 @@
+
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
@@ -66,8 +67,6 @@ double Running_AlphaQED::operator()(double t)
   double sigma_gg   = sig_lep_gg+sig_ha_gg+sig_top_gg;
 
   #ifdef USING__HADALPHAQED
-    // t=sqrt;
-    // double e = t;
     t=-t;
     double delta_r,errdersta, errdersys,deg,errdegsta,errdegsys;
     double sin2 = 0.23153;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
@@ -78,7 +77,7 @@ double Running_AlphaQED::operator()(double t)
      }
     switch(m_mode){
       case vpmode::full:
-        sigma_gg = delta_r;
+        sigma_gg = sig_lep_gg+delta_r+sig_top_gg;
         break;
       case vpmode::lp:
         sigma_gg = sig_lep_gg;
@@ -87,11 +86,10 @@ double Running_AlphaQED::operator()(double t)
         sigma_gg = delta_r;
         break;
       default:
-        sigma_gg = sig_lep_gg+delta_r;
+        sigma_gg = sig_lep_gg+sig_ha_gg+sig_top_gg;
       }
     }
   #endif
-
   return m_alpha0/(1.-sigma_gg);
 }  
 
