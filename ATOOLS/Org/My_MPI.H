@@ -55,6 +55,13 @@ namespace ATOOLS {
       MPI_Bcast(buffer, count, type, 0, m_comm);
     }
 
+    void Reduce(void* buffer, int count, MPI_Datatype type, MPI_Op op) {
+      if (Rank()==0)
+        MPI_Reduce(MPI_IN_PLACE, buffer, count, type, op, 0, m_comm);
+      else
+        MPI_Reduce(buffer, buffer, count, type, op, 0, m_comm);
+    }
+
     void Allreduce(void* buffer, int count, MPI_Datatype type, MPI_Op op) {
       MPI_Allreduce(MPI_IN_PLACE, buffer, count, type, op, m_comm);
     }

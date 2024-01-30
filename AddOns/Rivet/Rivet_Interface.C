@@ -370,7 +370,7 @@ bool Rivet_Interface::Finish()
   // merge Rivet::AnalysisHandlers before finalising
   for (auto& it : m_rivet) {
     std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
-    mpi->Allreduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
+    mpi->Reduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
     if (mpi->Rank()==0)
       it.second->deserializeContent(data,(size_t)mpi->Size());
   }
