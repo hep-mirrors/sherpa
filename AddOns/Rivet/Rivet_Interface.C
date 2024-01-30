@@ -90,22 +90,18 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
   m_splitcoreprocs(false), m_ignoreblobs(ignoreblobs)
 {
+  // remove trailing slash from output path
   if (m_outpath[m_outpath.size()-1]=='/')
     m_outpath=m_outpath.substr(0,m_outpath.size()-1);
+
+  // create output path if necessary
   if (m_outpath.rfind('/')!=std::string::npos)
     MakeDir(m_outpath.substr(0,m_outpath.rfind('/')), true);
-#ifdef USING__MPI
-  if (mpi->Rank()==0) {
-#endif
-    if (m_outpath.rfind('/')!=std::string::npos) {
-      MakeDir(m_outpath.substr(0,m_outpath.rfind('/')));
-    }
-#ifdef USING__MPI
-  }
-#if ! defined(USING__YODA2)
+
+  // add a MPI rank specific suffix if necessary
+#if defined(USING__MPI) && !defined(USING__YODA2)
   if (mpi->Size()>1)
     m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
-#endif
 #endif
 }
 
