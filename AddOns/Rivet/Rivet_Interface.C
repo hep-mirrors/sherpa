@@ -48,6 +48,7 @@ namespace SHERPARIVET {
     SHERPA::HepMC3_Interface      m_hepmc;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
+    // TODO: Do we need this?
 //#if defined(USING__MPI) && defined(USING__YODA2)
 //    HepMC3::GenEvent m_lastevent;
 //#endif
@@ -90,10 +91,6 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
   m_splitcoreprocs(false), m_ignoreblobs(ignoreblobs)
 {
-  // remove trailing slash from output path
-  if (m_outpath[m_outpath.size()-1]=='/')
-    m_outpath=m_outpath.substr(0,m_outpath.size()-1);
-
   // create output path if necessary
   if (m_outpath.rfind('/')!=std::string::npos)
     MakeDir(m_outpath.substr(0,m_outpath.rfind('/')), true);
@@ -271,7 +268,9 @@ bool Rivet_Interface::Init()
 bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 {
   DEBUG_FUNC("");
-  Particle_List pl=bl->ExtractParticles(1);
+
+  // get particles and validate momenta
+  Particle_List pl=bl->ExtractParticles(part_status::active);
   for (Particle_List::iterator it=pl.begin(); it!=pl.end(); ++it) {
     if ((*it)->Momentum().Nan()) {
       msg_Error()<<METHOD<<" encountered NaN in momentum. Ignoring event:"
@@ -280,11 +279,14 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     }
   }
 
+  // create HepMC (sub)events and add cross section to all of them
   HepMC3::GenEvent event;
   if (m_usehepmcshort)  m_hepmc.Sherpa2ShortHepMC(bl, event);
   else                  m_hepmc.Sherpa2HepMC(bl, event);
   std::vector<HepMC3::GenEvent*> subevents(m_hepmc.GenSubEventList());
   m_hepmc.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+
+  // TODO: Do we need this?
 /*#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
   if (m_lastevent.vertices().empty()) {
     m_lastevent=event;
@@ -294,14 +296,20 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   PRINT_VAR(m_lastevent.cross_section());
 #endif*/
 
+  // dispatch the events to the main & partial (= split) analysis handlers
   if (subevents.size()) {
+    // dispatch subevents to the main analysis handler, then delete them
     for (size_t i(0);i<subevents.size();++i) {
       GetRivet("",0)->analyze(*subevents[i]);
     }
     m_hepmc.DeleteGenSubEventList();
   }
   else {
+    // dispatch event to the main analysis handler
     GetRivet("",0)->analyze(event);
+
+    // find the final-state multiplicity used below to bin events into the right
+    // partial analysis handlers
     Blob *sp(bl->FindFirst(btp::Signal_Process));
     size_t parts=0;
     if (sp) {
@@ -310,6 +318,8 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
       else multi=multi.substr(2,2);
       parts=ToType<size_t>(multi);
     }
+
+    // now bin the events into the right partial analysis handlers
     if (m_splitjetconts && sp) {
       GetRivet("",parts)->analyze(event);
     }
@@ -325,7 +335,6 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
       std::string type="";
       if (typespec=="+S") type="S";
       else if (typespec=="+H") type="H";
-
       if (type!="") {
         GetRivet(type,0)->analyze(event);
         if (m_splitjetconts) {
@@ -490,6 +499,7 @@ void Rivet_Interface::ShowSyntax(const int i)
     <<"}"<<std::endl;
 }
 
+
 DECLARE_GETTER(Rivet_Interface,"Rivet",
 	       Analysis_Interface,Analysis_Arguments);
 
@@ -539,7 +549,7 @@ operator()(const Analysis_Arguments &args) const
 void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,RivetShower_Interface>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"Rivet interface on top of shower level events.";
+  str<<"Rivet interface on top of shower level events";
 }
 
 
@@ -572,7 +582,7 @@ operator()(const Analysis_Arguments &args) const
 void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,RivetME_Interface>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"Rivet interface on top of ME level events.";
+  str<<"Rivet interface on top of ME level events";
 }
 
 #endif
