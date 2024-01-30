@@ -63,11 +63,11 @@ namespace SHERPARIVET {
                     const std::string &tag);
     ~Rivet_Interface();
 
-    bool Init();
-    bool Run(ATOOLS::Blob_List *const bl);
-    bool Finish();
+    bool Init() override;
+    bool Run(ATOOLS::Blob_List *const bl) override;
+    bool Finish() override;
 
-    void ShowSyntax(const int i);
+    void ShowSyntax(const int i) override;
   };
 
   class RivetShower_Interface: public Rivet_Interface {};
