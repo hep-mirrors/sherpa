@@ -6,7 +6,7 @@ using namespace ATOOLS;
 
 Pomeron::Pomeron(const Flavour _beam, const double _energy, const double _pol,
          const int _dir)
-    : Beam_Base(beamspectrum::Pomeron, _beam, _energy, _pol, _dir)
+    : Beam_Base(beamspectrum::Pomeron, _beam, _energy, _pol, _dir), m_A(0.)
 {
   Settings &s = Settings::GetMainSettings();
   m_proton_mass = Flavour(kf_p_plus).Mass();
@@ -29,11 +29,6 @@ Pomeron::Pomeron(const Flavour _beam, const double _energy, const double _pol,
     THROW(fatal_error, "Specify either one or two values for `Pomeron:xMax'.");
   m_xMax = (_dir > 0) ? xMax.front() : xMax.back();
 
-  std::vector<double> A{s["Pomeron"]["A"].GetVector<double>()};
-  if (A.size() != 1 && A.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `Pomeron:A'.");
-  m_A = (_dir > 0) ? A.front() : A.back();
-
   std::vector<double> B{s["Pomeron"]["B"].GetVector<double>()};
   if (B.size() != 1 && B.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `Pomeron:B'.");
@@ -48,6 +43,8 @@ Pomeron::Pomeron(const Flavour _beam, const double _energy, const double _pol,
   if (alpha_s.size() != 1 && alpha_s.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `Pomeron:Alpha_slope'.");
   m_alpha_slope = (_dir > 0) ? alpha_s.front() : alpha_s.back();
+
+  FixNormalisation();
 }
 
 bool Pomeron::CalculateWeight(double x, double q2)
@@ -59,13 +56,16 @@ bool Pomeron::CalculateWeight(double x, double q2)
     return true;
   }
   double tmax = Min(2. * m_energy * (m_energy - m_proton_mass), m_tMax);
+  double tmin = sqr(m_proton_mass * x) / (1 - x);
   /*
    * In analogy to the EPA spectrum, we integrated the original weight from
-   * Goharipour:2018yov over t \in [-t_max, 0]; note that tmax is positive
+   * Goharipour:2018yov over t \in [-t_max, -tmin]; note that tmax is positive
    */
-  m_weight = (m_A*std::pow(x,1. - 2.*m_alpha_intercept)*
-              (1. - std::exp(-m_B*tmax)*std::pow(x,2.*m_alpha_slope*tmax)))/
-             (m_B - 2.*m_alpha_slope*std::log(x));
+  m_weight =
+          (m_A * std::pow(x, 1. - 2. * m_alpha_intercept) *
+           (std::exp(-m_B * tmin) * std::pow(x, 2. * m_alpha_slope * tmin) -
+            std::exp(-m_B * tmax) * std::pow(x, 2. * m_alpha_slope * tmax))) /
+          (m_B - 2. * m_alpha_slope * std::log(x));
   if (m_weight < 0.) m_weight = 0.;
   return true;
 }
@@ -82,6 +82,19 @@ void Pomeron::FixPosition() {
   double radius = Flavour(kf_p_plus).Radius() * ran->Get();
   double phi = 2*M_PI*ran->Get();
   m_position = Vec4D(0., radius*std::cos(phi), radius*std::sin(phi), 0.);
+}
+
+void Pomeron::FixNormalisation()
+{
+  // according to Vadim Guzey, in Goharipour:2018yov they normalized the flux as
+  // in hep-ex/0606004, after eq. 14
+  double x    = 0.003;
+  double tmax = Min(2. * m_energy * (m_energy - m_proton_mass), m_tMax);
+  double tmin = sqr(m_proton_mass * x) / (1 - x);
+  m_A         = (m_B - 2. * m_alpha_slope * std::log(x)) /
+        (std::pow(x, 2. - 2. * m_alpha_intercept) *
+         (std::exp(-m_B * tmin) * std::pow(x, 2. * m_alpha_slope * tmin) -
+          std::exp(-m_B * tmax) * std::pow(x, 2. * m_alpha_slope * tmax)));
 }
 
 Beam_Base *Pomeron::Copy() { return new Pomeron(*this); }

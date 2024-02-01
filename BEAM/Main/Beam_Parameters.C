@@ -8,7 +8,6 @@
 #include "BEAM/Spectra/DM_beam.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
@@ -299,7 +298,6 @@ void Beam_Parameters::RegisterPomeronDefaults() {
   m_settings["Pomeron"]["tMax"].SetDefault(1.e12);
   m_settings["Pomeron"]["xMax"].SetDefault(1.);
   // taken from Goharipour:2018yov
-  m_settings["Pomeron"]["A"].SetDefault(1.0);
   m_settings["Pomeron"]["B"].SetDefault(7.0);
   m_settings["Pomeron"]["Alpha_intercept"].SetDefault(1.0938);
   m_settings["Pomeron"]["Alpha_slope"].SetDefault(0.);
