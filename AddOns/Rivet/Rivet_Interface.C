@@ -48,10 +48,9 @@ namespace SHERPARIVET {
     SHERPA::HepMC3_Interface      m_hepmc;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
-    // TODO: Do we need this?
-//#if defined(USING__MPI) && defined(USING__YODA2)
-//    HepMC3::GenEvent m_lastevent;
-//#endif
+#if defined(USING__MPI) && defined(USING__YODA2)
+    HepMC3::GenEvent m_lastevent;
+#endif
 
     Rivet::AnalysisHandler* GetRivet(std::string proc,
                                      int jetcont);
@@ -239,7 +238,7 @@ bool Rivet_Interface::Init()
     if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
       THROW(fatal_error, "Internal error.");
     }
-    m_loglevel = s["-l"].SetDefault(20).Get<int>();
+    m_loglevel = s["-l"].SetDefault(1000000).Get<int>();
     m_histointerval = s["HISTO_INTERVAL"].SetSynonyms({"--histo-interval"}).SetDefault(0).Get<size_t>();
     m_ignorebeams = s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>();
     m_skipweights = s["SKIP_WEIGHTS"].SetSynonyms({"SKIPWEIGHTS", "--skip-weights"}).SetDefault(0).Get<int>();
@@ -286,15 +285,13 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   std::vector<HepMC3::GenEvent*> subevents(m_hepmc.GenSubEventList());
   m_hepmc.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
 
-  // TODO: Do we need this?
-/*#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
+#if defined(USING__MPI) && defined(USING__YODA2)
   if (m_lastevent.vertices().empty()) {
     m_lastevent=event;
     for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
   }
   m_hepmc.AddCrossSection(m_lastevent, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
-  PRINT_VAR(m_lastevent.cross_section());
-#endif*/
+#endif
 
   // dispatch the events to the main & partial (= split) analysis handlers
   if (subevents.size()) {
@@ -365,8 +362,66 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
 
 bool Rivet_Interface::Finish()
 {
-
 #if defined(USING__MPI) && defined(USING__YODA2)
+  // synchronize analyses among MPI processes to ensure that all processes
+  // have the same analyses set; this is otherwise not guaranteed since we create
+  // analyses lazily
+  std::string mynames;
+  for (auto& it : m_rivet) {
+    std::string out;
+    if (it.first.first!="") out+="."+it.first.first;
+    if (it.first.second!=0) out+=".j"+ToString(it.first.second);
+    mynames+=out+"|";
+  }
+  int len(mynames.length()+1);
+  mpi->Allreduce(&len,1,MPI_INT,MPI_MAX);
+  std::string allnames;
+  mynames.reserve(len);
+  allnames.reserve(len*mpi->Size()+1);
+  mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
+  char *catname = new char[len+1];
+  for (size_t i(0);i<mpi->Size();++i) {
+    snprintf(catname, sizeof(catname),"%s",&allnames[len*i]);
+    std::string curname(catname);
+    for (size_t epos(curname.find('|'));
+         epos<curname.length();epos=curname.find('|')) {
+      std::string cur(curname.substr(0,epos)), proc, jets;
+      curname=curname.substr(epos+1,curname.length()-epos-1);
+      size_t dpos(cur.find('.'));
+      if (dpos<cur.length()) {
+        proc=cur.substr(dpos+1,cur.length()-dpos-1);
+        cur=cur.substr(0,dpos);
+        size_t jpos(proc.find(".j"));
+        if (jpos<proc.length()) {
+          jets=proc.substr(jpos+2,proc.length()-jpos-1);
+          proc=proc.substr(0,jpos);
+        }
+        else if (proc[0]=='j' && proc.length()>1) {
+          bool isnumber(true);
+          for (size_t j(1);j<proc.length();++j)
+            if (!isdigit(proc[j])) isnumber=false;
+          if (isnumber) {
+            jets=proc.substr(1,proc.length()-1);
+            proc="";
+          }
+        }
+      }
+      if (jets=="") jets="0";
+      AnalysisHandler* rivet {GetRivet(proc,ToType<int>(jets))};
+      RivetMapKey key = std::make_pair(proc,ToType<int>(jets));
+      Rivet_Map::iterator it=m_rivet.find(key);
+      if (it==m_rivet.end()) {
+        AnalysisHandler* rivet(new AnalysisHandler());
+        rivet->addAnalyses(m_analyses);
+        rivet->setCheckBeams(!m_ignorebeams);
+        rivet->skipMultiWeights(m_skipweights);
+        rivet->init(m_lastevent);
+        m_rivet.insert(std::make_pair(key, rivet));
+      }
+    }
+  }
+  delete [] catname;
+
   // merge Rivet::AnalysisHandlers before finalising
   for (auto& it : m_rivet) {
     std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
@@ -391,68 +446,6 @@ bool Rivet_Interface::Finish()
   const double nomxsec = p_eventhandler->TotalXS().Nominal();
   const double nomxerr = p_eventhandler->TotalErr().Nominal();
 #endif
-
-  // What is this block doing...?
-/*#if defined(USING__MPI) && defined(USING__Rivet_MPI_Merge)
-    // synchronize analyses among MPI processes
-    std::string mynames;
-    for (auto& it : m_rivet) {
-      std::string out;
-      if (it.first.first!="") out+="."+it.first.first;
-      if (it.first.second!=0) out+=".j"+ToString(it.first.second);
-      mynames+=out+"|";
-    }
-    int len(mynames.length()+1);
-    mpi->Allreduce(&len,1,MPI_INT,MPI_MAX);
-    std::string allnames;
-    mynames.reserve(len);
-    allnames.reserve(len*mpi->Size()+1);
-    mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
-    char *catname = new char[len+1];
-    for (size_t i(0);i<mpi->Size();++i) {
-      snprintf(catname, sizeof(catname),"%s",&allnames[len*i]);
-      std::string curname(catname);
-      for (size_t epos(curname.find('|'));
-	   epos<curname.length();epos=curname.find('|')) {
-	std::string cur(curname.substr(0,epos)), proc, jets;
-	curname=curname.substr(epos+1,curname.length()-epos-1);
-	size_t dpos(cur.find('.'));
-	if (dpos<cur.length()) {
-	  proc=cur.substr(dpos+1,cur.length()-dpos-1);
-	  cur=cur.substr(0,dpos);
-	  size_t jpos(proc.find(".j"));
-	  if (jpos<proc.length()) {
-	    jets=proc.substr(jpos+2,proc.length()-jpos-1);
-	    proc=proc.substr(0,jpos);
-	  }
-	  else if (proc[0]=='j' && proc.length()>1) {
-	    bool isnumber(true);
-	    for (size_t j(1);j<proc.length();++j)
-	      if (!isdigit(proc[j])) isnumber=false;
-	    if (isnumber) {
-	      jets=proc.substr(1,proc.length()-1);
-	      proc="";
-	    }
-	  }
-	}
-	if (jets=="") jets="0";
-	RivetMapKey key = std::make_pair(proc,ToType<int>(jets));
-	if (m_rivet.find(key)==m_rivet.end()) {
-	  AnalysisHandler* rivet(new AnalysisHandler());
-#if RIVET_VERSION_CODE >= 30200
-	  rivet->setCheckBeams(!m_ignorebeams);
-#else
-	  rivet->setIgnoreBeams(m_ignorebeams);
-#endif
-	  rivet->skipMultiWeights(m_skipweights);
-	  rivet->addAnalyses(m_analyses);
-	  rivet->init(m_lastevent);
-	  m_rivet.insert(std::make_pair(key, rivet));
-	}
-      }
-    }
-    delete [] catname;
-#endif*/
 
   // in case additional Rivet instances are used,
   // e.g. for splitting into H+S events/jet multis,
