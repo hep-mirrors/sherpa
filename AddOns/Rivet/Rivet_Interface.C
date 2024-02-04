@@ -377,7 +377,6 @@ bool Rivet_Interface::Finish()
   if (mpi->Rank()==0) {
 #endif
 
-  PRINT_FUNC(m_outpath);
 #ifdef USING__YODA2
   GetRivet("",0)->collapseEventGroup();
 #else
