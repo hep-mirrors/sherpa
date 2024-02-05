@@ -13,7 +13,6 @@
 
 using namespace ATOOLS;
 using namespace BEAM;
-using namespace std;
 
 Beam_Spectra_Handler::Beam_Spectra_Handler()
     : p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
@@ -31,13 +30,13 @@ Beam_Spectra_Handler::Beam_Spectra_Handler()
     THROW(fatal_error, "Bad spectra in BEAM_SPECTRA_HANDLER.");
   m_on = p_kinematics->On();
 
-  msg_Info() << "  Type: " << m_type << endl
+  msg_Info() << "  Type: " << m_type << std::endl
              << "  Beam 1: " << p_BeamBase[0]->Beam()
              << " (enabled = " << p_BeamBase[0]->On() << ", "
-             << "momentum = " << p_BeamBase[0]->InMomentum() << ")" << endl
+             << "momentum = " << p_BeamBase[0]->InMomentum() << ")" << std::endl
              << "  Beam 2: " << p_BeamBase[1]->Beam()
              << " (enabled = " << p_BeamBase[0]->On() << ", "
-             << "momentum = " << p_BeamBase[1]->InMomentum() << ")" << endl;
+             << "momentum = " << p_BeamBase[1]->InMomentum() << ")" << std::endl;
 }
 
 Beam_Spectra_Handler::~Beam_Spectra_Handler() {
@@ -93,19 +92,19 @@ bool Beam_Spectra_Handler::InitTheBeams() {
 bool Beam_Spectra_Handler::InitTheKinematics() {
   switch (m_beammode) {
   case beammode::relic_density:
-    m_type = string("Relic Density");
-    p_kinematics = new RelicDensity_Kinematics(p_BeamBase);
-    break;
+      m_type       = std::string("Relic Density");
+      p_kinematics = new RelicDensity_Kinematics(p_BeamBase);
+      break;
   case beammode::collider:
-    m_type = string("Collider Setup");
+    m_type       = std::string("Collider Setup");
     p_kinematics = new Collider_Kinematics(p_BeamBase);
     break;
   case beammode::DM_annihilation:
-    m_type = string("DM Annihilation");
+    m_type       = std::string("DM Annihilation");
     p_kinematics = new DM_Annihilation_Kinematics(p_BeamBase);
     break;
   case beammode::Fixed_Target:
-    m_type = string("Collider Setup");
+    m_type       = std::string("Collider Setup");
     p_kinematics = new Collider_Kinematics(p_BeamBase);
     break;
   case beammode::unknown:
@@ -166,7 +165,7 @@ void Beam_Spectra_Handler::BoostFixedTarget(){
   Vec4D pe_lab  = p_BeamBase[1]->InMomentum();
   p_BeamBase[0]->SetInMomentum(pmu_lab);
   p_BeamBase[1]->SetInMomentum(pe_lab);
-  
+
   double slab = (pmu_lab+pe_lab).Abs2();
   double m1 = p_BeamBase[0]->Beam().Mass();
   double m2 = p_BeamBase[1]->Beam().Mass();
