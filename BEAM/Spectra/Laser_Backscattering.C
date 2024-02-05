@@ -7,7 +7,6 @@
 
 using namespace BEAM;
 using namespace ATOOLS;
-using namespace std;
 
 Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
 					   const double _energy,const double _polarisation,
@@ -30,14 +29,15 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   m_on         = true;
 
   if (m_energy>500. && m_mode!=-1 ) {
-    msg_Out()<<" WARNING: The CompAZ spectrum is only valid for electron energies "<<endl
-	     <<"          between 100 GeV and 400 GeV! "<<endl;
-
+    msg_Out() << " WARNING: The CompAZ spectrum is only valid for electron "
+                 "energies\n"
+              << "          between 100 GeV and 400 GeV!\n";
   }
 
   if (m_angles!=0) {
-    msg_Out()<<"WARNING:  Laser_Backscattering::Laser_Backscattering."<<endl
-	     <<"   Angular distribution not implemented yet. Assume collinear beam."<<endl;
+    msg_Out() << "WARNING:  Laser_Backscattering::Laser_Backscattering.\n"
+              << "   Angular distribution not implemented yet. Assume "
+                 "collinear beam.\n";
     m_angles     = 0;
   }
   //if (m_angles==0) m_lab = Vec4D(m_energy,0.,0.,_dir*m_energy);
@@ -94,8 +94,8 @@ void Laser_Backscattering::PrintSpectra(std::string filename,int mode) {
   if (mode==0) {
 
     bool flag = 0;
-    ofstream ofile;
-    if (filename != string("")) {
+    std::ofstream ofile;
+    if (filename != std::string("")) {
       ofile.open(filename.c_str());
       flag = 1;
     }
@@ -111,16 +111,17 @@ void Laser_Backscattering::PrintSpectra(std::string filename,int mode) {
       if (flag) ofile<<" "<<z<<"  "<<res1<<"  "<<res1+res2<<"  "<<res1+res2+res3;
       else  msg_Out()<<" "<<z<<"  "<<res1<<"  "<<res1+res2<<"  "<<res1+res2+res3;
       if (IsZero(restot)) {deg = 0.;restot = 1.e-17;}
-      if (flag) ofile<<"  "<<deg/restot<<endl;
-      else  msg_Out()<<"  "<<deg/restot<<endl;
+      if (flag) ofile << "  " << deg / restot << std::endl;
+      else
+        msg_Out() << "  " << deg / restot << std::endl;
     }
 
     if (flag) ofile.close();
   }
   if (mode==1) {
-    ofstream  bsp(filename.c_str());
-    bsp.setf(ios::scientific);
-    bsp.setf(ios::right,ios::adjustfield);
+    std::ofstream bsp(filename.c_str());
+    bsp.setf(std::ios::scientific);
+    bsp.setf(std::ios::right, std::ios::adjustfield);
     double xmin=0;
     double xmax=1;
     int steps=50;
@@ -139,8 +140,8 @@ void Laser_Backscattering::PrintSpectra(std::string filename,int mode) {
       if (r3==0.) p3=0.; else p3=p3/r3;
       if (rt==0.) pt=0.; else pt=pt/rt;
 
-      bsp<<z<<"  "<<r1<<"  "<<p1<<"  "<<r2<<"  "<<p2<<"  "
-	 <<r3<<"  "<<p3<<"  "<<rt<<"  "<<pt<<endl;
+      bsp << z << "  " << r1 << "  " << p1 << "  " << r2 << "  " << p2 << "  "
+          << r3 << "  " << p3 << "  " << rt << "  " << pt << std::endl;
     }
   }
 }

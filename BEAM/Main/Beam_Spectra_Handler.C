@@ -13,7 +13,6 @@
 
 using namespace ATOOLS;
 using namespace BEAM;
-using namespace std;
 
 Beam_Spectra_Handler::Beam_Spectra_Handler()
     : p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
@@ -80,15 +79,15 @@ bool Beam_Spectra_Handler::InitTheBeams() {
 bool Beam_Spectra_Handler::InitTheKinematics() {
   switch (m_beammode) {
   case beammode::relic_density:
-    m_type = string("Relic Density");
-    p_kinematics = new RelicDensity_Kinematics(p_BeamBase);
-    break;
+      m_type       = std::string("Relic Density");
+      p_kinematics = new RelicDensity_Kinematics(p_BeamBase);
+      break;
   case beammode::collider:
-    m_type = string("Collider Setup");
+    m_type       = std::string("Collider Setup");
     p_kinematics = new Collider_Kinematics(p_BeamBase);
     break;
   case beammode::DM_annihilation:
-    m_type = string("DM Annihilation");
+    m_type       = std::string("DM Annihilation");
     p_kinematics = new DM_Annihilation_Kinematics(p_BeamBase);
     break;
   case beammode::unknown:
@@ -123,13 +122,13 @@ void Beam_Spectra_Handler::FixPositions() {
 }
 
 void Beam_Spectra_Handler::Output() {
-  msg_Info() << "Beam_Spectra_Handler: type = " << m_type << endl
+  msg_Info() << "Beam_Spectra_Handler: type = " << m_type << std::endl
              << "    for " << p_BeamBase[0]->Beam()
              << " (on = " << p_BeamBase[0]->On() << ", "
-             << "p = " << p_BeamBase[0]->InMomentum() << ")" << endl
+             << "p = " << p_BeamBase[0]->InMomentum() << ")" << std::endl
              << "    and " << p_BeamBase[1]->Beam()
              << " (on = " << p_BeamBase[0]->On() << ", "
-             << "p = " << p_BeamBase[1]->InMomentum() << ")." << endl;
+             << "p = " << p_BeamBase[1]->InMomentum() << ")." << std::endl;
 }
 
 

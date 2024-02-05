@@ -11,7 +11,8 @@
 
 using namespace ATOOLS;
 using namespace BEAM;
-using namespace std;
+
+using string = std::string;
 
 std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode) {
   switch (bmode) {
@@ -97,9 +98,9 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
   default :
     break;
   }
-  msg_Error()<<"Warning in Beam_Initialization::SpecifySpectra :"<<endl
-	     <<"   No beam spectrum specified for beam "<<num+1<<endl
-	     <<"   Will initialize monochromatic beam."<<endl;
+  msg_Error() << "Warning in Beam_Initialization::SpecifySpectra :\n"
+              << "   No beam spectrum specified for beam " << num + 1
+              << "\n   Will initialize monochromatic beam.\n";
   return InitializeMonochromatic(num);
 }
 
@@ -158,9 +159,9 @@ Beam_Base * Beam_Parameters::InitializeEPA(int num)
   if (beam_particle.Kfcode()!=kf_p_plus &&
       beam_particle.Kfcode()!=kf_e &&
       !beam_particle.IsIon()) {
-    msg_Error()<<"Error in Beam_Initialization::SpecifySpectra:\n"<<endl
-               <<"   Tried to initialize EPA for "<<beam_particle<<".\n"
-	       <<"   This option is not available (yet).\n";
+    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
+                << "   Tried to initialize EPA for " << beam_particle << ".\n"
+                << "   This option is not available (yet).\n";
     return nullptr;
   }
   double beam_energy = (*this)("BEAM_ENERGIES",num);
@@ -173,7 +174,7 @@ Beam_Base * Beam_Parameters::InitializePomeron(int num)
 {
   Flavour beam_particle     = GetFlavour("BEAMS",num);
   if (beam_particle.Kfcode()!=kf_p_plus) {
-    msg_Error()<<"Error in Beam_Initialization::SpecifySpectra:\n"<<endl
+    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
                 <<"   Tried to initialize Pomeron for "<<beam_particle<<".\n"
                 <<"   This option is not available.\n";
     return nullptr;
@@ -193,7 +194,7 @@ Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
 }
 
 const Flavour Beam_Parameters::GetFlavour(const std::string & tag,const size_t & pos) {
-  vector<int> beam{ m_settings[tag].GetVector<int>() };
+  std::vector<int> beam{m_settings[tag].GetVector<int>()};
   if (beam.size() != 1 && beam.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `BEAMS'.");
   int flav{ (pos == 0) ? beam.front() : beam.back() };
@@ -205,7 +206,7 @@ const Flavour Beam_Parameters::GetFlavour(const std::string & tag,const size_t &
 
 const std::string Beam_Parameters::String(const string & tag,const int & pos) const {
   if (pos<0) return m_settings[tag].Get<string>();
-  vector<string> params{ m_settings[tag].GetVector<string>() };
+  std::vector<string> params{m_settings[tag].GetVector<string>()};
   if (pos>1 || pos>params.size()-1) {
     string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
     THROW(fatal_error, message);
@@ -215,7 +216,7 @@ const std::string Beam_Parameters::String(const string & tag,const int & pos) co
 
 const double Beam_Parameters::operator()(const string & tag,const int & pos) const {
   if (pos<0) return m_settings[tag].Get<double>();
-  vector<double> params{ m_settings[tag].GetVector<double>() };
+  std::vector<double> params{m_settings[tag].GetVector<double>()};
   if (!(tag=="BEAM_ENERGIES" || tag=="BEAM_POLARIZATIONS") &&
       (pos>1 || pos>params.size()-1)) {
     string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
@@ -226,7 +227,7 @@ const double Beam_Parameters::operator()(const string & tag,const int & pos) con
 
 const int Beam_Parameters::Switch(const string & tag,const int & pos) const {
   if (pos<0) return m_settings[tag].Get<int>();
-  vector<int> params{ m_settings[tag].GetVector<int>() };
+  std::vector<int> params{m_settings[tag].GetVector<int>()};
   if (pos>1 || pos>params.size()-1)  {
     string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
     THROW(fatal_error, message);
@@ -310,7 +311,8 @@ bool Beam_Parameters::SpecifyMode() {
 }
 
 bool Beam_Parameters::SpecifySpectra() {
-  vector<string> beam_spectra{ m_settings["BEAM_SPECTRA"].GetVector<string>() };
+  std::vector<string> beam_spectra{
+          m_settings["BEAM_SPECTRA"].GetVector<string>()};
   if (beam_spectra.empty() || beam_spectra.size() > 2)
     THROW(fatal_error, "Specify either one or two values for `BEAM_SPECTRA'.");
   for (short int num=0;num<2;num++) {
