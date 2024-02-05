@@ -10,7 +10,7 @@ private:
 
   ATOOLS::Vec4D m_p_plus, m_p_minus;
   double m_Ecms;
-  double m_ymin, m_ymax, m_xmin, m_xmax;
+  double m_ymin, m_ymax;
   ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
   double m_sprime;
 
