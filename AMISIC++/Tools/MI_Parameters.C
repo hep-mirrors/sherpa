@@ -16,15 +16,15 @@ MI_Parameters::MI_Parameters() :
 {
   auto s = Settings::GetMainSettings()["AMISIC"];
   m_parameters[string("pt_0(ref)")]
-    = s["PT_0(ref)"].SetDefault(2.2).Get<double>();
+    = s["PT_0(ref)"].SetDefault(0.716).Get<double>();
   m_parameters[string("pt_0(IR)")]
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault(2.5).Get<double>();
+    = s["PT_Min(ref)"].SetDefault(4.260).Get<double>();
   m_parameters[string("Ecms(ref)")]
     = s["E(ref)"].SetDefault(7000.).Get<double>();
   m_parameters[string("eta")]
-    = s["Eta"].SetDefault(0.08).Get<double>();
+    = s["Eta"].SetDefault(0.16).Get<double>();
   m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
   m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
   m_ptmin2ref = sqr(m_parameters[string("pt_min(ref)")]);
@@ -42,13 +42,13 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("FacScale_Factor")]
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("SigmaND_Norm")]
-    = s["SIGMA_ND_NORM"].SetDefault(1.0).Get<double>();
+    = s["SIGMA_ND_NORM"].SetDefault(0.458).Get<double>();
   m_parameters[string("Matter_Fraction1")]
-    = s["MATTER_FRACTION1"].SetDefault(0.5).Get<double>();
+    = s["MATTER_FRACTION1"].SetDefault(0.187).Get<double>();
   m_parameters[string("Matter_Radius1")]
-    = s["MATTER_RADIUS1"].SetDefault(1.0).Get<double>();
+    = s["MATTER_RADIUS1"].SetDefault(0.157).Get<double>();
   m_parameters[string("Matter_Radius2")]
-    = s["MATTER_RADIUS2"].SetDefault(2.0).Get<double>();
+    = s["MATTER_RADIUS2"].SetDefault(0.890).Get<double>();
   m_overlapform = s["MATTER_FORM"]
 	  .SetDefault(overlap_form::code::Single_Gaussian)
 	  .Get<overlap_form::code>();
