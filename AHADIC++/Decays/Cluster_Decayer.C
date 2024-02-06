@@ -36,12 +36,34 @@ bool Cluster_Decayer::operator()(bool breakit) {
 
 bool Cluster_Decayer::Treat(Cluster * cluster) {
   bool mustdecay = p_softclusters->MustPromptDecay(cluster);
+
+  // std::cout << "DEBUG: CLUSTER_MASS: " << cluster->m_nsplit << " "
+  // 	    << cluster->Momentum().Abs2() << std::endl;
+
+  // const auto sij {sqrt(cluster->Momentum().Abs2())};
+  // if(sij < 10)
+  //   mustdecay = true;
+
+  // if(cluster->m_nsplit > 1)
+  //   mustdecay = true;
+  // else
+  //   mustdecay = false;
+
   if (!mustdecay) {
+    m_splitter.m_nsplit = cluster->m_nsplit;
     if(m_splitter((*cluster)[0],(*cluster)[1])) {
+      // const auto& wgts = m_splitter.get_tmp_variationweights();
+      // std::cout << "DEBUG: post-splitter "
+      // 		<< cluster->m_nsplit << " "
+      // 		<< cluster->Momentum().Abs2() << " ";
+      // for (auto wgt : wgts)
+      // 	std::cout << wgt << " ";
+      // std::cout << std::endl;
       delete cluster;
       return true;
     }
   }
+
   switch (p_softclusters->Treat(cluster,true)) {
   case -1:
     // cluster cannot decay into anything - return false (triggers new event)

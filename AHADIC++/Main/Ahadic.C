@@ -116,6 +116,9 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
   const bool found {wgtmap.find("AHADIC") == wgtmap.end() ? false : true};
 
+  // std::cout << "DEBUG: TOTAL_WEIGHT "
+  // 	    << wgts_cluster << std::endl;
+
   if(wgts_cluster.size() == wgts_gluons.size() &&
      wgts_soft.size() == wgts_flavs.size()
      && wgts_cluster.size() == wgts_kt.size()) {
@@ -138,11 +141,20 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	// for some events the hadronization is called twice, this happens
 	// mostly when the following hadron-decays choose splittings that
 	// are not in the pre-integrated tables
-	continue;
+	// continue;
+	const std::string base_name {"v"+std::to_string(i)};
+	DEBUG_VAR(wgt);
+	for(int e{2}; e<3; ++e) {
+	  const std::string name = base_name + "." + std::to_string(e);
+	  const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
+	  DEBUG_VAR(clipped_wgt);
+	  wgtmap["AHADIC"][name] *= clipped_wgt;
+	}
+
       } else {
 	const std::string base_name {"v"+std::to_string(i)};
 	DEBUG_VAR(wgt);
-	for(int e{1}; e<6; ++e) {
+	for(int e{2}; e<3; ++e) {
 	  const std::string name = base_name + "." + std::to_string(e);
 	  const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
 	  DEBUG_VAR(clipped_wgt);

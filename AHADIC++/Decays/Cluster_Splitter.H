@@ -22,7 +22,7 @@ namespace AHADIC {
     ATOOLS::Vec4D   m_cms, m_mom[2], m_newmom[2];
     ATOOLS::Flavour m_fl[2];
     double          m_mass2[2];
-
+    int m_accepted {0}, m_rejected {0};
     bool   m_output;
 
     bool   MakeLongitudinalMomenta();
@@ -46,6 +46,7 @@ namespace AHADIC {
 				 double kt02);
 
   public:
+    int m_nsplit {0};
     Cluster_Splitter(std::list<Cluster *> * cluster_list,
 		     Soft_Cluster_Handler * softclusters,
 		     Flavour_Selector     * flavourselector,
@@ -56,8 +57,27 @@ namespace AHADIC {
 			  const unsigned int & cnt);
     void   SetOutput(const bool & out) { m_output = out; }
     void   accept_splitting() {
-      for(int i{0}; i<variation_weights.size(); ++i)
-	variation_weights[i] *= tmp_variation_weights[i];
+
+      if(m_nsplit <= 6) {
+	for(int i{0}; i<variation_weights.size(); ++i) {
+	  variation_weights[i] *= tmp_variation_weights[i];
+	}
+      }
+
+      // std::cout << "DEBUG: PROB: " << m_type[0] << " "
+      // 		<< m_nsplit << " "
+      // 		<< m_z[0] << " "
+      // 		<< tmp_variation_weights << " "
+      // 		<< variation_weights
+      // 		<< std::endl;
+
+      // std::cout << "DEBUG: PROB: " << m_type[1] << " "
+      // 		<< m_nsplit << " "
+      // 		<< m_z[1] << " "
+      // 		<< tmp_variation_weights << " "
+      // 		<< variation_weights
+      // 		<< std::endl;
+
       reset_var_weights();
     }
 
@@ -67,6 +87,10 @@ namespace AHADIC {
 
     std::vector<double>& get_variationweights() {
       return variation_weights;
+    };
+
+    std::vector<double>& get_tmp_variationweights() {
+      return tmp_variation_weights;
     };
 
     void reset_variationweights(int nvars) {
