@@ -84,7 +84,7 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
     .. math::
 
-        p_\text{T,min} = p_\text{T,min}^\text{(ref)} \left( \frac{E_\text{cms}}{E_\text{cms}^\text{(ref)}} \right)^\eta
+        p_\text{T,min} = p_\text{T,min}^\text{(ref)} \left( \frac{E_\text{cms}}{E_\text{cms}^\text{(ref)}} \right)^{2\eta}
 
     but can also be set explicitly.
 
@@ -93,7 +93,7 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
     .. math::
 
-        p_\text{T,0} = p_\text{T,0}^\text{(ref)} \left( \frac{E_\text{cms}}{E_\text{cms}^\text{(ref)}} \right)^\eta
+        p_\text{T,0} = p_\text{T,0}^\text{(ref)} \left( \frac{E_\text{cms}}{E_\text{cms}^\text{(ref)}} \right)^{2\eta}
 
     but can also be set explicitly.
 
