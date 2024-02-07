@@ -23,7 +23,7 @@ void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
     m_recoil[beam]      = rempars->GetRecoil(beamflav);
     if (m_form[beam]==pkform::none) continue;
     else {
-      double escale       = pow( (*rempars)(beamflav,"REFERENCE_ENERGY")/rpa->gen.Ecms(),
+      double escale       = pow( rpa->gen.Ecms() / (*rempars)(beamflav,"REFERENCE_ENERGY"),
 				 (*rempars)(beamflav,"ENERGY_SCALING_EXPO") );
       if (m_form[beam]==pkform::gauss || m_form[beam]==pkform::gauss_limited) {
 	m_SIMean[beam]    = (*rempars)(beamflav,"SHOWER_INITIATOR_MEAN")  * escale;
