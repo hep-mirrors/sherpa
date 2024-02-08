@@ -11,6 +11,9 @@ namespace AHADIC {
     // we have four cluster types, L, H, D, B each is getting a std::vector of
     // alpha/beta/gamme values
     std::vector<double> m_alpha[4], m_beta[4], m_gamma[4];
+    double m_alpha_max[4], m_beta_max[4], m_gamma_max[4];
+    double m_alpha_min[4], m_beta_min[4], m_gamma_min[4];
+
     int m_type[2];
     std::vector<double> m_kt02;
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
@@ -58,7 +61,7 @@ namespace AHADIC {
     void   SetOutput(const bool & out) { m_output = out; }
     void   accept_splitting() {
 
-      if(m_nsplit <= 6) {
+      if(m_nsplit <= 100) {
 	for(int i{0}; i<variation_weights.size(); ++i) {
 	  variation_weights[i] *= tmp_variation_weights[i];
 	}

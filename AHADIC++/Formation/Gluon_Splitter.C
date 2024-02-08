@@ -29,7 +29,7 @@ bool Gluon_Splitter::MakeLongitudinalMomenta() {
 	   4.*(m_Q2*m_kt2 + m_minQ2[0]*m_popped_mass2));
   if (m_arg<0.) return false;
   CalculateLimits();
-  do { m_z[1] = m_zselector(m_zmin[1],m_zmax[1]); } while (!CalculateXY());
+  do { m_z[1] = select_z(m_zmin[1],m_zmax[1],0); } while (!CalculateXY());
   return true;
 }
 

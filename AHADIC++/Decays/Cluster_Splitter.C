@@ -52,6 +52,20 @@ void Cluster_Splitter::Init() {
   for (auto _kt0 : _kt0s)
     m_kt02.push_back(sqr(_kt0));
 
+  // for the reweighting we need to find the min/max values of each
+  // of the parameters
+  for(int i{0}; i<4; ++i) {
+    m_alpha_max[i] = *std::max_element(m_alpha[i].begin(), m_alpha[i].end());
+    m_alpha_min[i] = *std::min_element(m_alpha[i].begin(), m_alpha[i].end());
+
+    m_beta_max[i] = *std::max_element(m_beta[i].begin(), m_beta[i].end());
+    m_beta_min[i] = *std::min_element(m_beta[i].begin(), m_beta[i].end());
+
+    m_gamma_max[i] = *std::max_element(m_gamma[i].begin(), m_gamma[i].end());
+    m_gamma_min[i] = *std::min_element(m_gamma[i].begin(), m_gamma[i].end());
+  }
+
+
   m_analyse  = false; //hadpars->Switch("Analysis");
   if (m_analyse) {
     m_histograms[string("kt")]      = new Histogram(0,0.,5.,100);
@@ -120,15 +134,12 @@ void Cluster_Splitter::CalculateLimits() {
   //   m_mdec is lightest decay transition
   for (size_t i=0;i<2;i++)
     m_m2min[i] = Min(m_minQ2[i],m_mdec2[i]);
-  double lambda = sqrt(sqr(m_Q2-m_m2min[0]-m_m2min[1])-
+  const double lambda = sqrt(sqr(m_Q2-m_m2min[0]-m_m2min[1])-
 		       4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2));
   for (size_t i=0;i<2;i++) {
-    double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
+    const double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
     m_zmin[i] = (centre-lambda)/(2.*m_Q2);
     m_zmax[i] = (centre+lambda)/(2.*m_Q2);
-    // m_zmin[i] = 0.;
-    // m_zmax[i] = 1.;
-
     m_mean[i]  = sqrt(m_kt02[0]);
     m_sigma[i] = sqrt(m_kt02[0]);
   }
@@ -158,7 +169,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   bool mustrecalc = false;
 
 #if AHADIC_CLUSTER_SPLITTER_MODE == 0
-  for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
+  for (size_t i=0;i<2;i++) m_z[i]  = select_z(m_zmin[i],m_zmax[i],i);
   for (size_t i=0;i<2;i++) {
     m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
     if (m_R2[i]<m_mdec2[i]+m_kt2) {
@@ -177,7 +188,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   const int p1 = m_type[1];
   int i1{0}, i2{1};
 
-  if(false) {
+  if(true) {
     if(p0 == p1) {
       if(ran->Get() < 0.5) {
 	i1 = 0;
@@ -211,7 +222,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
 
   const double a0 = (m_mdec2[0]+2*m_kt2) / m_Q2;
   const double a1 = (m_mdec2[1]+2*m_kt2) / m_Q2;
-  //std::cout << "DEBUG: PLOTTING: [" << m_Q2 << ", " << m_kt2 << ", " << m_mdec2[0] << ", " << m_mdec2[1] << ", " << a0 << ", " << a1 << "]" << std::endl;
+
   double p,q;
   if (i1 == 0) {
     p = (a1-a0-1);
@@ -230,7 +241,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
     std::cout << "Needs fixing" << std::endl;
 
 #if AHADIC_CLUSTER_SPLITTER_MODE == 1
-  m_z[i1]  = m_zselector(std::max(m_zmin[i1],lower),
+  m_z[i1]  = select_z(std::max(m_zmin[i1],lower),
 			 std::min(m_zmax[i1],upper),
 			 i1);
   // std::cout << "DEBUG: ARGS: "
@@ -244,7 +255,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   // 	    << std::endl;
 #endif
 #if AHADIC_CLUSTER_SPLITTER_MODE == 2
-  m_z[i1]  = m_zselector(0.,1.,i1);
+  m_z[i1]  = select_z(0.,1.,i1);
 #endif
 
   if(i1 == 0) {
@@ -256,7 +267,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   }
 
 #if AHADIC_CLUSTER_SPLITTER_MODE == 1
-  m_z[i2]  = m_zselector(std::max(m_zmin[i2],lower),
+  m_z[i2]  = select_z(std::max(m_zmin[i2],lower),
 			std::min(m_zmax[i2],upper),
 			i2);
   // std::cout << "DEBUG: ARGS: "
@@ -269,7 +280,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   // 	    << std::endl;
 #endif
 #if AHADIC_CLUSTER_SPLITTER_MODE == 2
-  m_z[i2]  = m_zselector(0.,1.,i2);
+  m_z[i2]  = select_z(0.,1.,i2);
 #endif
 
   return true;
@@ -288,7 +299,7 @@ bool Cluster_Splitter::CheckKinematics() {
 
 double Cluster_Splitter::FragmentationFunctionProb(double z, double zmin, double zmax,
 						   double gamma, double kt02) {
-  if(zmax - zmin < 0.10) {
+  if(zmax - zmin < 0.001) {
     // std::cout << "Rejected: " << zmin << " " << zmax << " " << zmax - zmin
     // 	      << " " << m_accepted << " " << m_rejected
     // 	      << std::endl;
@@ -353,6 +364,7 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
   value /= 10.;
   return value;
 # endif
+
 #if AHADIC_FRAGMENTATION_FUNCTION == 1
   auto f = [](double _z, double arg, double zmax) -> double {
     return (1-_z) * exp(-arg*((zmax-_z)/(_z*zmax)));

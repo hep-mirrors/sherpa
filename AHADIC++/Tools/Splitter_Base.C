@@ -39,7 +39,6 @@ void Splitter_Base::Init() {
 
   m_ktorder  = (hadpars->Switch("KT_Ordering")>0);
   m_ktmax    = hadpars->Get("kT_max");
-  m_zselector.Init(this);
   m_minmass  = p_flavourselector->MinimalMass();
 }
 
@@ -221,6 +220,21 @@ void Splitter_Base::MakeTransverseMomentum() {
   m_kt2   = m_kt*m_kt;
   const double phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(phi),sin(phi),0.);
+}
+
+double Splitter_Base::select_z(const double zmin, const double zmax,
+			       const unsigned int cnt) {
+  double z, z_range {zmax-zmin};
+  do {
+    z = zmin+ran->Get()*z_range;
+    auto sel_wgt = WeightFunction(z,zmin,zmax,cnt);
+    if(ran->Get() < sel_wgt) {
+      z_accepted(sel_wgt, z,zmin,zmax,cnt);
+      break;
+    }
+    z_rejected(sel_wgt, z,zmin,zmax,cnt);
+  } while (true);
+  return z;
 }
 
 void Splitter_Base::reset_var_weights() {};

@@ -18,7 +18,6 @@ void Trivial_Splitter::Init() {
   // minmass is the mass of the lightest constituent (usually u/d quark)
   m_kt2max       = sqr(hadpars->Get("kT_max"));
   m_minmass      = p_constituents->MinMass();
-  m_zselector.Init();
 }
 
 bool Trivial_Splitter::operator()(Proto_Particle * part1,
@@ -107,10 +106,9 @@ bool Trivial_Splitter::FixBetaAndZ() {
 	       <<m_popped_mass<<" + "<<m_kt<<"\n";
     return false;
   }
-  double zmin = Max(1+R2/m_Q2-sqrt(arg2), 1.-sqrt(arg1))/2.;
-  double zmax = Min(1-R2/m_Q2+sqrt(arg2), 1.+sqrt(arg1))/2.;
-  // Include!
-  m_z    = m_zselector(zmin,zmax);
+  const double zmin = Max(1+R2/m_Q2-sqrt(arg2), 1.-sqrt(arg1))/2.;
+  const double zmax = Min(1-R2/m_Q2+sqrt(arg2), 1.+sqrt(arg1))/2.;
+  m_z    = zmin+ran->Get()*(zmax-zmin);;
   m_beta = 1.-mt2/(m_Q2*m_z*(1.-m_z));
   return true;
 }

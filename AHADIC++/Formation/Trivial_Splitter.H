@@ -4,7 +4,6 @@
 #include "AHADIC++/Tools/Singlet_Tools.H"
 #include "AHADIC++/Tools/Flavour_Selector.H"
 #include "AHADIC++/Tools/KT_Selector.H"
-#include "AHADIC++/Tools/Z_Selector.H"
 #include "AHADIC++/Tools/Constituents.H"
 #include "AHADIC++/Tools/Proto_Particle.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -16,7 +15,6 @@ namespace AHADIC {
     Constituents         * p_constituents;
     Flavour_Selector     * p_flavourselector;
     KT_Selector          * p_ktselector;
-    Z_Selector             m_zselector;
 
     double m_kt2max, m_minmass;
 
@@ -51,7 +49,6 @@ namespace AHADIC {
     bool operator()(Singlet * singlet);
     bool operator()(Proto_Particle * part1, Proto_Particle * part2);
 
-    double WeightFunction(const double & z) { return 1.; }
     inline const double & MinMass() const { return m_minmass; }
   };
 }

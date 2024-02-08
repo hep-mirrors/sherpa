@@ -141,7 +141,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	// for some events the hadronization is called twice, this happens
 	// mostly when the following hadron-decays choose splittings that
 	// are not in the pre-integrated tables
-	// continue;
+	continue;
 	const std::string base_name {"v"+std::to_string(i)};
 	DEBUG_VAR(wgt);
 	for(int e{2}; e<3; ++e) {

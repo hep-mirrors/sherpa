@@ -3,7 +3,6 @@
 
 #include "AHADIC++/Tools/Flavour_Selector.H"
 #include "AHADIC++/Tools/KT_Selector.H"
-#include "AHADIC++/Tools/Z_Selector.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -20,7 +19,6 @@ namespace AHADIC {
     Constituents         * p_constituents;
     Flavour_Selector     * p_flavourselector;
     KT_Selector          * p_ktselector;
-    Z_Selector             m_zselector;
 
     bool   m_ktorder;
     size_t m_attempts;
@@ -77,10 +75,13 @@ namespace AHADIC {
 				  const double & zmin,const double & zmax,
 				  const unsigned int & cnt)=0;
 
+    virtual double select_z(const double, const double, const unsigned int);
+
     virtual void z_rejected(const double wgt, const double &, const double &,
 			    const double &, const unsigned int &) = 0;
     virtual void z_accepted(const double wgt, const double &, const double &,
 			    const double &, const unsigned int &) = 0;
+
   };
 
 }
