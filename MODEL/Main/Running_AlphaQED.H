@@ -32,6 +32,8 @@ namespace MODEL {
     vpmode::code m_mode;
 
     void PrintSummary();
+
+    inline vpmode::code RunningMode() {return m_mode;}
   };
 
   extern Running_AlphaQED * aqed;

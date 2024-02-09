@@ -142,7 +142,8 @@ namespace MODEL {
     virtual std::string             MappedLorentzName(const std::string& label) const {return label;}
 
     int MaxNumber() const;
-
+    bool IsQEDRunning();
+    
     const std::vector<Single_Vertex> &Vertices() const;
     const std::vector<Single_Vertex> &OriginalVertices() const;
 

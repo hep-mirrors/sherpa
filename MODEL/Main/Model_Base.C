@@ -578,3 +578,8 @@ size_t Model_Base::IndexOfOrderKey(const std::string& key) const
     return 1;
   THROW(fatal_error, "Unknown Orders key '" + key + "'.");
 }
+
+bool Model_Base::IsQEDRunning(){
+  if(aqed->RunningMode()==vpmode::off) return 0;
+  else return 1;
+}

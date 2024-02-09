@@ -23,27 +23,27 @@ namespace MODEL {
   const double Running_AlphaQED::m_A[4]={0.0,0.0,0.00165,0.00221};
   const double Running_AlphaQED::m_B[4]={0.00835,0.00238,0.00299,0.00293};
   const double Running_AlphaQED::m_C[4]={1.0,3.927,1.0,1.0};
- #ifdef USING__HADALPHAQED
+  #ifdef USING__HADALPHAQED
     extern "C"{
       void hadr5x_(double *e, double *st2,
                   double *der, double *errdersta,
                   double *errdersys, double *deg,
                   double *errdegsta, double *errdegsys);
     }
-    #endif
-
+  #endif
 }
 
 
 
-Running_AlphaQED::Running_AlphaQED(const double _alpha0) :
-  m_alpha0(_alpha0)
+Running_AlphaQED::Running_AlphaQED(const double _alpha)
 {
   m_type = std::string("Running Coupling");
   m_name  = "Alpha_QED";
-  m_defval = _alpha0;
-  Scoped_Settings s{ Settings::GetMainSettings()[m_name] };
-  m_mode     = s["VPMODE"].SetDefault(vpmode::off).Get<vpmode::code>();
+  m_defval = _alpha;
+  Settings& s = Settings::GetMainSettings();
+  m_alpha0   = 1./s["1/ALPHAQED(0)"].Get<double>();
+  Scoped_Settings sc{ Settings::GetMainSettings()[m_name] };
+  m_mode     = sc["VPMODE"].SetDefault(vpmode::off).Get<vpmode::code>();
 }
 
 
@@ -57,7 +57,7 @@ double Running_AlphaQED::operator()(double t)
   else if (Q2<3.0)   i=1;
   else if (Q2<100.0) i=2;
 
-  if(IsZero(t) || m_mode==vpmode::off) return m_alpha0;
+  if(IsZero(t) || m_mode==vpmode::off) return m_defval;
 
   double sig_lep_gg = m_alpha0/(3.*M_PI) * 
     (PiGamma(Flavour(kf_e),Q2)+PiGamma(Flavour(kf_mu),Q2)+PiGamma(Flavour(kf_tau),Q2));
@@ -68,7 +68,7 @@ double Running_AlphaQED::operator()(double t)
   #ifdef USING__HADALPHAQED
     t=-t;
     double delta_r,errdersta, errdersys,deg,errdegsta,errdegsys;
-    double sin2 = 0.23153;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
+    double sin2 = 0.223043;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
     if(m_mode!=vpmode::off){
       if(m_mode !=vpmode::lp){
         hadr5x_(&t, &sin2, &delta_r, &errdersta, 
