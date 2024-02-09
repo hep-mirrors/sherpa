@@ -595,3 +595,8 @@ void Model_Base::CheckForNegativeCouplingOrders()
     }
   }
 }
+  
+bool Model_Base::IsQEDRunning(){
+  if(aqed->RunningMode()==vpmode::off) return 0;
+  else return 1;
+}
