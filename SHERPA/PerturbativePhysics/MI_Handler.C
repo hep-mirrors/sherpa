@@ -26,20 +26,19 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   m_type(typeID::none), m_name("None")
 {
   Settings& s = Settings::GetMainSettings();
-  m_name      = s["MI_HANDLER"].SetDefault("Amisic").UseNoneReplacements().Get<string>();
-  string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
+  m_name      = s["MI_HANDLER"].Get<string>();
+  string scm  = s["SOFT_COLLISIONS"].Get<string>();
   if (m_id==PDF::isr::bunch_rescatter) {
     string resc = s["BEAM_RESCATTERING"].Get<string>();
     scm = m_name = resc;
   }
-  if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name=="None") {
+  // Pomerons are hadrons, but don't have Multiple Interactions
+  if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name == "None" ||
+      isr->Flav(0).Kfcode() == kf_pomeron ||
+      isr->Flav(1).Kfcode() == kf_pomeron) {
     m_name = "None";
     m_on   = false;
-  }
-  // Pomerons are hadrons, but don't have Multiple Interactions
-  else if (isr->Flav(0).Kfcode() == kf_pomeron || isr->Flav(1).Kfcode() == kf_pomeron)
-    m_name = "None";
-  else {
+  } else {
     if (m_name==string("Amisic"))  InitAmisic(model);
     if ((scm==string("Shrimps") && p_amisic==NULL) ||
 	m_name==string("Shrimps")) InitShrimps(model);
