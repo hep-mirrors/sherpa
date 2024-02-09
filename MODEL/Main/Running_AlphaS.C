@@ -549,7 +549,7 @@ void Running_AlphaS::SetActiveAs(PDF::isr::id id)
 {
   AlphasMap::iterator it=m_alphas.find(id);
   if (it==m_alphas.end()) {
-    THROW(fatal_error, "Internal Error");
+    THROW(fatal_error, "Internal Error in Running_AlphaS::SetActiveAs");
   }
   else {
     p_active=it->second;

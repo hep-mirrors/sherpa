@@ -103,6 +103,7 @@ void Initialization_Handler::RegisterDefaults()
   s["EVENT_TYPE"].SetDefault("StandardPerturbative");
   s["SOFT_COLLISIONS"].UseNoneReplacements().SetDefault("None");
   s["BEAM_RESCATTERING"].UseNoneReplacements().SetDefault("None");
+  s["MI_HANDLER"].UseNoneReplacements().SetDefault("Amisic");
   s["EVT_FILE_PATH"].SetDefault(".");
   s["ANALYSIS_OUTPUT"].SetDefault("Analysis/");
   s["RESULT_DIRECTORY"].SetDefault("Results");
@@ -727,35 +728,26 @@ bool Initialization_Handler::InitializeThePDFs()
   // Define bunch flavours
   DefineBunchFlavours(settings);
   // Initialisation of PDF sets
-  for (size_t i=1;i<4;++i) InitISRHandler((isr::id)(i),settings);
-  msg_Info()<<"Initializing PDFs ..."<<endl;
-  bool needs_resc = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
-  for (size_t pid=1;pid<4;pid++) {
-    PDF::isr::id pc;
-    if (pid==1) {
-      msg_Info()<<"  Hard scattering:    "; pc = PDF::isr::hard_process;
+  for (size_t i = 1; i < 4; ++i) InitISRHandler((isr::id)(i), settings);
+  msg_Info() << "Initializing PDFs ..." << endl;
+  for (const auto& it : m_isrhandlers) {
+    size_t pid      = it.first;
+    PDF::isr::id pc = it.second->Id();
+    if (pid == 1) {
+      msg_Info() << "  Hard scattering:    ";
     }
-    if (pid==2) {
-      msg_Info()<<"  MPI:                "; pc = PDF::isr::hard_subprocess;
+    if (pid == 2) {
+      msg_Info() << "  MPI:                ";
     }
-    if (pid==3 && needs_resc) {
-      msg_Info()<<"  Beam re-scattering: "; pc = PDF::isr::bunch_rescatter;
+    if (pid == 3) {
+      msg_Info() << "  Beam re-scattering: ";
     }
-    if (pid!=3 || (pid==3 && needs_resc)) {
-      for (size_t beam=0;beam<2;beam++) {
-        if (m_isrhandlers[pc]->Type(beam)==PDF::isrtype::lepton ||
-            m_isrhandlers[pc]->Type(beam)==PDF::isrtype::hadron) {
-          msg_Info() << m_isrhandlers[pc]->PDF(beam)->Set();
-        } else {
-          msg_Info() << "None";
-        }
-        if (beam==0 && (m_isrhandlers[pc]->Type(1)==PDF::isrtype::lepton ||
-			m_isrhandlers[pc]->Type(1)==PDF::isrtype::hadron)) msg_Info()<<" + ";
-      }
-      msg_Info()<<"\n";
-    }
+    msg_Info() << (it.second->PDF(0) ? it.second->PDF(0)->Set() : "None")
+               << " + "
+               << (it.second->PDF(1) ? it.second->PDF(1)->Set() : "None")
+               << "\n";
   }
-  return 1;
+  return true;
 }
 
 void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
@@ -885,12 +877,12 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     m_bunchtags[pid] = {0, 0};
     if (pid != PDF::isr::bunch_rescatter) flav = m_bunch_particles[beam];
     else {
-      // use a mode to select which beam/bunch combination is used for rescattering
-      // defaults to 0, i.e. beam-beam rescattering
-      int bbrmode = settings["BBR_MODE"].SetDefault(0).Get<int>();
-      flav = bbrmode&(beam+1) ? m_bunch_particles[beam]
-                                  : p_beamspectra->GetBeam(beam)->Beam();
-      m_bunchtags[pid][beam] = bbrmode&(beam+1) ? 0 : 1;
+      // use a mode to select which beam/bunch combination is used for
+      // rescattering defaults to 0, i.e. beam-beam rescattering
+      int bbrmode            = settings["BBR_MODE"].SetDefault(0).Get<int>();
+      flav                   = bbrmode & (beam + 1) ? m_bunch_particles[beam]
+                                                    : p_beamspectra->GetBeam(beam)->Beam();
+      m_bunchtags[pid][beam] = bbrmode & (beam + 1) ? 0 : 1;
     }
     PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
     if (pid!=PDF::isr::bunch_rescatter) {
@@ -1046,6 +1038,9 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   ///////////////////////////////////////////////////////////
   // define up to three multiple interaction handlers ...
   ///////////////////////////////////////////////////////////
+  if (m_isrhandlers[isr::hard_process]->Mode() != PDF::isrmode::hadron_hadron)
+    Settings::GetMainSettings()["MI_HANDLER"].OverrideScalar<std::string>(
+            "None");
   std::vector<isr::id> isrtypes;
   isrtypes.push_back(isr::hard_subprocess);
   if (m_isrhandlers.find(isr::bunch_rescatter)!=m_isrhandlers.end())
