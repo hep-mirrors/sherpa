@@ -57,9 +57,8 @@ namespace PDF {
 
   class PDF_Base {
   public:
-
-    typedef ATOOLS::Getter_Function<PDF_Base,PDF_Arguments> 
-    PDF_Getter_Function;
+    typedef ATOOLS::Getter_Function<PDF_Base, PDF_Arguments>
+            PDF_Getter_Function;
 
   protected:
 
@@ -74,7 +73,7 @@ namespace PDF {
     double m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
     bool   m_rescX;
-    
+
     PDF_AS_Info m_asinfo;
 
     virtual void CalculateSpec(const double& x,const double& Q2) = 0;
@@ -92,7 +91,7 @@ namespace PDF {
     virtual double GetXPDF(const kf_code& kf, bool anti) = 0;
     virtual double AlphaSPDF(const double &q2);
     inline  double GetXPDF(const int& id) { return GetXPDF(abs(id),id<0); }
-    
+
     virtual PDF_Base *GetCopy() = 0;
     virtual PDF_Base *GetBasicPDF();
 
@@ -103,15 +102,18 @@ namespace PDF {
     virtual double GetDefaultAlpha();
     virtual double GetDefaultScale();
     virtual int GetFlavourScheme();
-    
+
     static void ShowSyntax(size_t i);
 
-    inline const std::string &Type() const            { return m_type;     }  
+    inline const std::string& Type() const { return m_type; }
     inline std::string Set() const                    { return m_set; }
     inline ATOOLS::Flavour      Bunch() const   { return m_bunch;   }
     inline const ATOOLS::Flavour_Set &Partons() const { return m_partons; }
     inline bool Contains(const ATOOLS::Flavour & flav) const {
-      return m_partons.find(flav)!=m_partons.end();
+      if (m_partons.find(flav) != m_partons.end()) return true;
+      for (size_t i(0); i < flav.Size(); ++i)
+        if (m_partons.find(flav[i]) == m_partons.end()) return false;
+      return true;
     }
     inline int Member() const         { return m_member; }
     inline int LHEFNumber() const     { return m_lhef_number; }
@@ -127,25 +129,27 @@ namespace PDF {
     inline void SetRescaling(const bool & resc=true) { m_rescX   = resc; }
     inline double RescaleFactor() const              { return m_rescale; }
   };
-  
+
   /*!
     \class PDF_Base
     \brief is the base class for parton distributions and structure functions.
 
-    This class is the base class for both parton distributions and structure functions
-    (e.g. of leptons). It hosts some information about both the incoming bunch particle 
-    and the partons that constitute it. Furthermore, the corresponding weights for 
-    given energy fractions and scales are calculated and made available through this class.
+    This class is the base class for both parton distributions and structure
+    functions (e.g. of leptons). It hosts some information about both the
+    incoming bunch particle and the partons that constitute it. Furthermore, the
+    corresponding weights for given energy fractions and scales are calculated
+    and made available through this class.
   */
   /*!
-    \var std::vector<ATOOLS::Flavour> PDF_Base::m_partons    
-    The vector listing the constituents. for protons this list has usually eleven members,
-    one gluon and the five lightest quarks and anti-quarks. For leptons, due to the very nature
-    of the structure function, only the lepton in question is included as legitimate parton.
+    \var std::vector<ATOOLS::Flavour> PDF_Base::m_partons
+    The vector listing the constituents. for protons this list has usually
+    eleven members, one gluon and the five lightest quarks and anti-quarks. For
+    leptons, due to the very nature of the structure function, only the lepton
+    in question is included as legitimate parton.
   */
   /*!
     \var ATOOLS::Flavour PDF_Base::m_bunch
-    The incoming particle. 
+    The incoming particle.
   */
   /*!
     \var std::string PDF_Base::m_type
@@ -158,17 +162,19 @@ namespace PDF {
   */
   /*!
     \fn void PDF_Base::Calculate(const double, const double)
-    This calculates all parton densities inside a hadron or the structure function
-    depending on the energy fraction \f$x\f$ and the scale squared \f$Q^2\f$. It should
-    be noted that the result will be given - as usual - as \f$x\f$ times the function. 
+    This calculates all parton densities inside a hadron or the structure
+    function depending on the energy fraction \f$x\f$ and the scale squared
+    \f$Q^2\f$. It should be noted that the result will be given - as usual - as
+    \f$x\f$ times the function.
   */
   /*!
     \fn double PDF_Base::GetXPDF(const ATOOLS::Flavour &)
-    This returns x times one specific pdf out of the set of all calculated ones - it checks 
-    whether the flavour passed over as argument is included in the list of legitimate constituents, 
-    PDF_Base::m_partons and selects the appropriate one.
+    This returns x times one specific pdf out of the set of all calculated ones
+    - it checks whether the flavour passed over as argument is included in the
+    list of legitimate constituents, PDF_Base::m_partons and selects the
+    appropriate one.
   */
-} 
+}
 
 #define DECLARE_PDF_GETTER(NAME)					\
   									\
