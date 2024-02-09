@@ -8,7 +8,7 @@ namespace ATOOLS {
   bool ToBeClustered(const ATOOLS::Flavour& flav, int bmode)
   {
     return
-      (bmode==0 && Flavour(kf_jet).Includes(flav)) ||
+      (bmode==0 && (flav.Kfcode()<kf_t || flav.IsGluon())) ||
       (bmode>0 && (Flavour(kf_jet).Includes(flav) || flav.Kfcode()==kf_b));
   }
 
