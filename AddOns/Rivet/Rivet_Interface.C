@@ -53,7 +53,8 @@ namespace SHERPARIVET {
 #endif
 
     Rivet::AnalysisHandler* GetRivet(std::string proc,
-                                     int jetcont);
+                                     int jetcont,
+                                     HepMC3::GenEvent* dummyevent=nullptr);
     std::string             GetCoreProc(const std::string& proc);
     std::string             OutputPath(const Rivet_Map::key_type& key);
 
@@ -112,7 +113,8 @@ Rivet_Interface::~Rivet_Interface()
 }
 
 AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
-                                           int jetcont)
+                                           int jetcont,
+                                           HepMC3::GenEvent* dummyevent)
 {
   DEBUG_FUNC(proc<<" "<<jetcont);
   RivetMapKey key = std::make_pair(proc, jetcont);
@@ -136,6 +138,8 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
     m_rivet[key]->setNominalWeightName(m_nomweight);
     m_rivet[key]->setWeightCap(m_weightcap);
     m_rivet[key]->setNLOSmearing(m_nlosmearing);
+    if (dummyevent)
+      m_rivet[key]->init(*dummyevent);
     Log::setLevel("Rivet", m_loglevel);
   }
   return m_rivet[key];
@@ -288,6 +292,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 #if defined(USING__MPI) && defined(USING__YODA2)
   if (m_lastevent.vertices().empty()) {
     m_lastevent=event;
+    m_lastevent.set_run_info(event.run_info());
     for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
   }
   m_hepmc.AddCrossSection(m_lastevent, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
@@ -376,8 +381,8 @@ bool Rivet_Interface::Finish()
   int len(mynames.length()+1);
   mpi->Allreduce(&len,1,MPI_INT,MPI_MAX);
   std::string allnames;
-  mynames.reserve(len);
-  allnames.reserve(len*mpi->Size()+1);
+  mynames.resize(len);
+  allnames.resize(len*mpi->Size()+1);
   mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
   char *catname = new char[len+1];
   for (size_t i(0);i<mpi->Size();++i) {
@@ -407,17 +412,7 @@ bool Rivet_Interface::Finish()
         }
       }
       if (jets=="") jets="0";
-      AnalysisHandler* rivet {GetRivet(proc,ToType<int>(jets))};
-      RivetMapKey key = std::make_pair(proc,ToType<int>(jets));
-      Rivet_Map::iterator it=m_rivet.find(key);
-      if (it==m_rivet.end()) {
-        AnalysisHandler* rivet(new AnalysisHandler());
-        rivet->addAnalyses(m_analyses);
-        rivet->setCheckBeams(!m_ignorebeams);
-        rivet->skipMultiWeights(m_skipweights);
-        rivet->init(m_lastevent);
-        m_rivet.insert(std::make_pair(key, rivet));
-      }
+      GetRivet(proc,ToType<int>(jets),&m_lastevent);
     }
   }
   delete [] catname;
