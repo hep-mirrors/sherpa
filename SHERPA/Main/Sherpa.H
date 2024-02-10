@@ -11,11 +11,6 @@ namespace ATOOLS {
   class Cluster_Amplitude;
 }
 
-#ifdef USING__HEPMC2
-namespace HepMC{ class GenEvent; }
-namespace SHERPA { class HepMC2_Interface; }
-#endif
-
 #ifdef USING__HEPMC3
 namespace HepMC3{ class GenEvent; }
 namespace SHERPA { class HepMC3_Interface; }
@@ -35,9 +30,6 @@ namespace SHERPA {
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
-#ifdef USING__HEPMC2
-    HepMC2_Interface       * p_hepmc2;
-#endif
 #ifdef USING__HEPMC3
     HepMC3_Interface       * p_hepmc3;
 #endif
@@ -57,9 +49,6 @@ namespace SHERPA {
     bool InitializeTheEventHandler();
 
     bool GenerateOneEvent(bool reset=true);
-#ifdef USING__HEPMC2
-    void FillHepMCEvent(HepMC::GenEvent&);
-#endif
 #ifdef USING__HEPMC3
     void FillHepMCEvent(HepMC3::GenEvent&);
 #endif

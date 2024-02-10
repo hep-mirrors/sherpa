@@ -1170,15 +1170,12 @@ bool Initialization_Handler::InitializeTheAnalyses()
         THROW(missing_module,"Cannot load Analysis library (-DSHERPA_ENABLE_ANALYSIS=ON).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
       bool hepmc_loaded {false};
-#ifdef USING__HEPMC2
-      hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMCOutput") != nullptr);
-#endif
 #ifdef USING__HEPMC3
       hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMC3Output") != nullptr);
 #endif
       if (!hepmc_loaded) {
         THROW(missing_module,
-              "Cannot load HepMC library (-DSHERPA_ENABLE_HEPMC2=ON and/or -DSHERPA_ENABLE_HEPMC3=ON).");
+              "Cannot load HepMC library (-DSHERPA_ENABLE_HEPMC3=ON).");
       }
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis"))
         THROW(missing_module,"Cannot load RivetAnalysis library (-DSHERPA_ENABLE_RIVET=ON).");
