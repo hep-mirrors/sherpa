@@ -481,6 +481,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 }
 
 void Event_Handler::Finish() {
+  MPISyncXSAndErrMaps();
   msg_Info()<<"In Event_Handler::Finish : "
 	    <<"Summarizing the run may take some time.\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -501,7 +502,6 @@ void Event_Handler::Finish() {
   }
   Blob::Reset();
   // Obtain absolute (variation) weights.
-  MPISyncXSAndErrMaps();
   Weights_Map xs_wgtmap = TotalXSMPI();
   Weights_Map err_wgtmap = TotalErrMPI();
   std::map<std::string, double> xs_wgts;
