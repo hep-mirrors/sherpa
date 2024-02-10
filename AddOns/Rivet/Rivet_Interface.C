@@ -238,6 +238,17 @@ bool Rivet_Interface::Init()
     m_splitSH = s["SPLITSH"].SetDefault(0).Get<int>();
     m_splitpm = s["SPLITPM"].SetDefault(0).Get<int>();
     m_splitcoreprocs = s["SPLITCOREPROCS"].SetDefault(0).Get<int>();
+#if !defined(USING__YODA2)
+    if ((m_splitjetconts || m_splitSH || m_splitpm || m_splitcoreprocs)
+      && s_variations->HasVariations()) {
+      msg_Error()<<"WARNING in "<<METHOD<<":\n"
+        <<"   Analysis splitting is combined with on-the-fly variations. Cross\n"
+        <<"   sections of variations in split analyses, and hence their\n"
+        <<"   normalizations, will not be correct. To fix this, upgrade your\n"
+        <<"   Rivet installation to v3.2.0 or later.\n";
+    }
+#endif
+
     m_usehepmcshort = s["USE_HEPMC_SHORT"].SetDefault(0).Get<int>();
     if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
       THROW(fatal_error, "Internal error.");
@@ -429,9 +440,45 @@ bool Rivet_Interface::Finish()
 
 #ifdef USING__YODA2
   GetRivet("",0)->collapseEventGroup();
+  // determine weight sums and cross sections when Rivet allows us to properly
+  // scale variations in split analyses
+
+  const std::vector<double> sumw = GetRivet("", 0)->allSumW();
+  const std::vector<std::string> wgtnames = GetRivet("", 0)->weightNames();
+#if defined(USING__MPI)
+  const auto& xs = p_eventhandler->TotalXSMPI();
+  const auto& err = p_eventhandler->TotalErrMPI();
+#else
+  const auto& xs = p_eventhandler->TotalXS() 
+  const auto& err = p_eventhandler->TotalErr()
+#endif
+  std::map<std::string, double> xs_wgts;
+  std::map<std::string, double> err_wgts;
+  xs.FillVariations(xs_wgts);
+  err.FillVariations(err_wgts);
+  // At this point, we have a "Nominal" entry (but the Rivet weight name might
+  // be different, e.g. an empty string ""), and we might have additional
+  // unphysical weights in the Rivet weight sums obtained above. Hence, we make
+  // sure that every weight name Rivet reports is filled in our cross section
+  // lists. For auxiliary weights, we fill -1.0.
+  for (int i {0}; i < wgtnames.size(); i++) {
+    if (i == GetRivet("", 0)->defaultWeightIndex()) {
+      xs_wgts[wgtnames[i]] = xs.Nominal();
+      err_wgts[wgtnames[i]] = err.Nominal();
+    }
+    else {
+      auto it = xs_wgts.find(wgtnames[i]);
+      if (it == xs_wgts.end()) {
+        xs_wgts[wgtnames[i]] = -1.0;
+        err_wgts[wgtnames[i]] = -1.0;
+      }
+    }
+  }
+
 #else
   GetRivet("",0)->finalize();
-#endif
+  // determine the nominal weight sum and the nominal cross section when Rivet
+  // does not allow us to properly scale variations in split analyses
 
   const double nomsumw = GetRivet("",0)->sumW();
 #if defined(USING__MPI)
@@ -440,6 +487,8 @@ bool Rivet_Interface::Finish()
 #else
   const double nomxsec = p_eventhandler->TotalXS().Nominal();
   const double nomxerr = p_eventhandler->TotalErr().Nominal();
+#endif
+
 #endif
 
   // in case additional Rivet instances are used,
@@ -452,18 +501,32 @@ bool Rivet_Interface::Finish()
       // first collapse the event group,
       // then scale the cross-section
       // before finalizing
-      #ifdef USING__YODA2
+#ifdef USING__YODA2
       it.second->collapseEventGroup();
-      #else
+      // determine the weight sums seen by this Rivet run
+      const std::vector<double> thissumw = it.second->allSumW();
+      // calculate and set rescaled cross sections
+      std::vector<std::pair<double, double>> this_xs_and_errs (wgtnames.size());
+      for (int i {0}; i < wgtnames.size(); i++) {
+        if (xs_wgts[wgtnames[i]] == -1.0) {
+          // do not rescale unphysical cross sections
+          this_xs_and_errs[i] = {-1.0, -1.0};
+          continue;
+        }
+        const double wgtfrac = thissumw[i]/sumw[i];
+        this_xs_and_errs[i] = {xs_wgts[wgtnames[i]] * wgtfrac,
+          err_wgts[wgtnames[i]] * wgtfrac};
+      }
+      it.second->setCrossSection(this_xs_and_errs);
+#else
       it.second->finalize();
-      #endif
-
       // determine the weight fraction seen by this Rivet run
       const double wgtfrac = it.second->sumW()/nomsumw;
       // rescale nominal cross-section
       const double thisxs  = nomxsec*wgtfrac;
       const double thiserr = nomxerr*wgtfrac;
       it.second->setCrossSection(thisxs, thiserr);
+#endif
     }
     it.second->finalize();
 
