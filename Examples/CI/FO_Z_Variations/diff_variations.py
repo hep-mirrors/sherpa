@@ -5,9 +5,11 @@ import sys
 # histogram patterns
 nominal_patterns = [r"^/MC_XS/XS$"]
 var_patterns = [r"^/MC_XS/XS\[.*\]"]
+unpatterns = [r"^/MC_XS/XS\[EXTRA.*\]"]
 
 # read all variation histograms from the on-the-fly run results
-dfs = yoda.readYODA("OTF.yoda.gz", patterns=var_patterns)
+dfs = yoda.readYODA("OTF.yoda.gz",
+                    patterns=var_patterns, unpatterns=unpatterns)
 
 # run yodadiff for each variation
 n_diffs_found = 0
@@ -21,7 +23,9 @@ for name, df in dfs.items():
     # write explicit variation result into file "b"
     variation_name = name.split('[')[-1][:-1]
     df = yoda.readYODA("Explicit__{}.yoda.gz".format(variation_name),
-                       patterns=nominal_patterns, asdict=False)[0]
+                       patterns=nominal_patterns,
+                       unpatterns=unpatterns,
+                       asdict=False)[0]
     yoda.writeYODA([df], "b.yoda")
 
     # now we can simply use yodadiff
