@@ -52,9 +52,12 @@ if(SHERPA_ENABLE_RIVET)
     PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
 
   # run rivet-mkhtml (part 2/3)
+  if(NOT YODA2)
+    set(EXTRA_RIVETMKHTML_ARGS --mc-errs)
+  endif()
   add_test(
     NAME Main${test}part2
-    COMMAND ${Python_EXECUTABLE} ${RIVET_MKHTML_EXE} --mc-errs
+    COMMAND ${Python_EXECUTABLE} ${RIVET_MKHTML_EXE} ${EXTRA_RIVETMKHTML_ARGS}
       ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Reference.yoda.gz
       ${CMAKE_CURRENT_BINARY_DIR}/${test}/Analysis.yoda.gz
       PLOT:RatioPlotMode=deviation
