@@ -1,8 +1,11 @@
 #include "SHERPA/Tools/Analysis_Interface.H"
 
-#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+
+#ifdef USING__RIVET
+
+#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -13,15 +16,12 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
+#include "SHERPA/Tools/HepMC3_Interface.H"
 
-#ifdef USING__RIVET
 #include "Rivet/Config/RivetConfig.hh"
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
-#include "YODA/Config/BuildConfig.h"
-#include "YODA/AnalysisObject.h"
 
-#include "SHERPA/Tools/HepMC3_Interface.H"
 #include "HepMC3/GenEvent.h"
 #include "HepMC3/GenCrossSection.h"
 
@@ -234,6 +234,7 @@ bool Rivet_Interface::Init()
 {
   if (m_nevt==0) {
     Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
+
     m_splitjetconts = s["JETCONTS"].SetDefault(0).Get<int>();
     m_splitSH = s["SPLITSH"].SetDefault(0).Get<int>();
     m_splitpm = s["SPLITPM"].SetDefault(0).Get<int>();
@@ -253,6 +254,7 @@ bool Rivet_Interface::Init()
     if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
       THROW(fatal_error, "Internal error.");
     }
+
     m_loglevel = s["-l"].SetDefault(1000000).Get<int>();
     m_histointerval = s["HISTO_INTERVAL"].SetSynonyms({"--histo-interval"}).SetDefault(0).Get<size_t>();
     m_ignorebeams = s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>();
