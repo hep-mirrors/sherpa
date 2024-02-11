@@ -80,8 +80,14 @@ double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2,  double Kmax, double MasPho
 double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2, double omega) {
   double R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
   double V =  BVV_full(p1, p2, m_photonMass, omega, 0);
-  return exp(R+V);
+  return (R+V);
 }
+
+double YFS_Form_Factor::BR_full(Vec4D p1, Vec4D p2, double omega) {
+  double R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
+  return exp(R);
+}
+
 
 double YFS_Form_Factor::BVR_cru(double p1p2, double E1, double E2,
                                 double Mas1, double Mas2, double Kmax, double MasPhot) {
@@ -552,12 +558,13 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
   // PRINT_VAR( (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1));
   // test = (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)); 
   TBvirt = m_alpi*(
-    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)) 
-       // (log(ta/(m1*m2)) + log(zeta)-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-       // +0.5*zeta*log(ta*zeta/(m*M))
-       // -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-       // -log(M/m)*(log(ta/m/M)+log(zeta)+0.5*(zeta-3))
-       // -log(zeta)*(log(ta/m/M)+0.5*log(zeta))+DiLog(1/zeta) -1.0
+    // (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)) 
+       (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
+       +0.5*zeta*log(ta*zeta/(m1*m2))
+        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      +DiLog(1./zeta) -1.0
+      +0.5*(zeta -1.0)*log(m1/m2)
+      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
        );
   return TBvirt;
 }
@@ -565,7 +572,7 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
 double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
   double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,0);
   double V = BVirtT(p1, p2);
-  return exp(R+V);
+  return R+V;
 }
 
 

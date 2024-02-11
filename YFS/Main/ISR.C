@@ -24,6 +24,7 @@ using namespace MODEL;
 using namespace std;
 // #define YFS_DEBUG
 
+
 ISR::ISR()
 {
   m_Kmin = sqrt(m_s) * (m_vmin) / 2.;
@@ -46,7 +47,7 @@ void ISR::SetIncoming(YFS::Dipole *p_dipole) {
   m_beam1 = p_dipole->GetBornMomenta(0);
   m_beam2 = p_dipole->GetBornMomenta(1);
   m_b1 = CalculateBeta(m_beam1);
-  m_b2 = CalculateBeta(m_beam1);
+  m_b2 = CalculateBeta(m_beam2);
   m_mass = p_dipole->Mass();
   m_mass2 = m_mass * m_mass;
   m_am2 = sqr(m_beam1.Mass()+m_beam2.Mass()) / m_s;
@@ -62,7 +63,7 @@ void ISR::NPhotons() {
     m_n = 0;
     return;
   }
-  else m_nbar = m_gp * log(m_v / m_vmin);
+  m_nbar = m_gp * log(m_v / m_vmin);
   if(m_fixed_photons!=-1) {
     m_n = m_fixed_photons;
   }
@@ -89,26 +90,25 @@ void ISR::GenerateAngles()
   if (m_kkmcAngles == 0) {
     double P = log((1.+m_b1)/(1.-m_b1))
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
-    // while (true) {
+    while (true) {
       if (ran->Get() < P) {
         double rnd = ran->Get();
-        double a   = log((1.+m_b1)/(1.-m_b1));
+        double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));
         m_c        = 1./m_b1*(1.-(1.+m_b1)*exp(-a*m_b1*rnd));
         // m_c        = 1./m_b1*(pow(1+m_b1,rnd)/pow(1-m_b1,rnd-1)-1);
       }
       else {
         double rnd = ran->Get();
-        double a   = log((1.-m_b2)/(1.+m_b2));
-        m_c        = 1./m_b2*((1.-m_b2)*exp(-a*m_b2*rnd)-1.);
+        double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
+        m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
         // m_c        = 1./m_b1*(pow(1-m_b2,rnd)/pow(1+m_b2,rnd-1)-1);
       }
       weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
                         +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
                        /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
-    //   if (ran->Get() < weight) break;
-    // }
-    // m_weight *= weight;
-    // PRINT_VAR(m_c);
+      if (ran->Get() < weight) break;
+    }
+    m_angleWeight *= weight;
     m_theta = acos(m_c);
     m_sin = sin(m_theta);
     m_phi = 2.*M_PI * ran->Get();
@@ -119,8 +119,7 @@ void ISR::GenerateAngles()
   else {
     m_beta  = sqrt(1. - m_am2);
     double eps  = m_am2 / (1. + m_beta);
-    // while(true){
-    double rn = ran->Get();                    // 1-beta
+    double rn = ran->Get();
     double del1 = (2. - eps) * pow((eps / (2 - eps)), rn); // 1-beta*cos
     double del2 = 2. - del1;  // 1+beta*cos
     double costhg = (del2 - del1) / (2.*m_beta);
@@ -135,7 +134,7 @@ void ISR::GenerateAngles()
     m_theta = acos(costhg);
     m_phi = 2.*M_PI * ran->Get();
     m_c = costhg;
-    m_sin = sinthg;
+    m_sin = sin(m_theta);
     m_del1.push_back(del1);
     m_del2.push_back(del2);
     m_cos.push_back(m_c);
@@ -150,6 +149,7 @@ void ISR::GeneratePhotonMomentum() {
   if(m_v < m_vmin && m_n!=0){
     msg_Error()<<"Warning: Generating real photon emissions below IR cut-off\n";
   }
+  if(m_v > 1) msg_Error()<<"m_v > 1 = "<<m_v<<std::endl;
   if (m_n != 0) {
     Vec4D_Vector photons;
     GenerateAngles();
@@ -169,14 +169,12 @@ void ISR::GeneratePhotonMomentum() {
     // m_fbar = m_alpi * (1. / ((del1) * (del2)));
     m_f = Eikonal(m_photon,m_beam1,m_beam2);
     m_fbar = EikonalMassless(m_photon,m_beam1,m_beam2);
-    m_massW *= m_f / m_fbar;
+    m_massW = m_f / m_fbar;
     m_yini.push_back(m_w * del1 / 2);
     m_zini.push_back(m_w * del2 / 2);
     for (int i = 1; i < m_n; i++) {
       GenerateAngles();
-      double r1 = ran->Get();
-      // r1 = m_random[i-1];
-      m_w       = m_isrcut * pow(m_v / m_isrcut, r1);
+      m_w  = m_vmin * pow(m_v / m_vmin, ran->Get());
       del1 = 1. - m_b1 * m_c;
       del2 = 1. + m_b2 * m_c;
       // m_phi = 2.*M_PI * ran->Get();
@@ -214,7 +212,7 @@ void ISR::MapPhotonMomentun() {
     double K2 = m_photonSum.Abs2();
     m_K2.push_back(K2);
     m_PTK.push_back(m_photonSum.PPerp());
-    A = K2 * P2 / pow(PK, 2.);
+    A = K2 * P2 /PK / PK;
     m_AA.push_back(A);
     m_lam0 = (m_v) * P2 / (PK) / (1. + sqrt(1. - A * m_v));
     m_lam  = m_lam0;
@@ -222,6 +220,7 @@ void ISR::MapPhotonMomentun() {
     m_scale.push_back(m_lam);
     m_diljac  = 0.5 * (1. + 1. / sqrt(1. - m_v * A));
   }
+  
   m_diljac0 = 0.5 * (1. + pow(1. - m_v, -0.5));
   m_jacW = m_diljac / m_diljac0;
   m_jacvec.push_back(m_jacW);
@@ -229,11 +228,20 @@ void ISR::MapPhotonMomentun() {
 
   for (size_t i = 0; i < m_photons.size(); ++i)
   {
-    // if(m_photons[i][0]*m_lam < m_vmin) m_cut = 0.;
+    if(m_photons[i][0]*m_lam <= m_vmin) m_cut = 0.;
     m_photons[i] *= m_lam * sqrt(m_s) / 2.;
-    m_yini[i] /= m_lam0;
-    m_zini[i] /= m_lam0;
-    if (m_photons[i][0] < m_Kmin) m_cut = 0.;
+    m_yini[i] /= m_lam;
+    m_zini[i] /= m_lam;
+    // if (m_photons[i][0] < m_Kmin) m_cut = 0.;
+    // if(!IsZero(m_photons[i]*m_photons[i])){
+    //   msg_Error()<<"Photon is not massless!"<<std::endl
+    //              <<"m_photons[i].Mass() = "<< m_photons[i].Mass()<<std::endl;
+    // }
+  }
+  if(m_photons.size()!=m_n){
+    msg_Error()<<"Missmatch in Photon Multiplicity for ISR"<<std::endl
+               <<" Poisson N = "<<m_n<<std::endl
+               <<" Actual Photons = "<<m_photons.size()<<std::endl;
   }
 }
 
@@ -242,21 +250,19 @@ void ISR::MapPhotonMomentun() {
 void ISR::Weight() {
   m_ntotal += 1;
   double corrW = 1;
-  if (m_v > m_isrcut && m_n != 0 ) {
-    m_weight *= m_gp * pow(m_v, m_gp - 1) * m_diljac0 * pow(m_isrcut, m_g - m_gp);
+  if (m_v >= m_isrcut && m_n != 0 ) {
+    m_weight = m_gp * pow(m_v, m_gp - 1) * m_diljac0 * pow(m_isrcut, m_g - m_gp);
   }
   else {
     m_massW = 1.0;
     m_jacW = 1.0;
-    m_photonSum *= 0;
-    m_photons.clear();
-    m_weight *= m_g * pow(m_v, m_g - 1);
+    m_weight = m_g * pow(m_v, m_g - 1);
     double B = pow(m_isrcut, m_g) * (-m_g * m_isrcut + m_g + 1.) / (m_g + 1.);
     double D = pow(m_deltacut, m_g) * (-m_g * m_deltacut + m_g + 1.) / (m_g + 1.);
     corrW = 1. / (1. - D / B);
     m_weight *= corrW;
   }
-  m_weight *= m_cut * m_massW * m_jacW * (1. - m_v);
+  m_weight *= m_cut * m_massW * m_jacW * m_angleWeight * (1. - m_v);
   // if (m_weight == 0) {
   //   // m_photons.clear();
   //   // m_photonSum *= 0;
@@ -309,6 +315,7 @@ void ISR::Clean() {
   m_photons.clear();
   m_photonSum = Vec4D(0, 0, 0, 0);
   m_weight = 1.0;
+  m_angleWeight = 1.0;
   m_massW = 1.0;
   m_jacW  = 1.0;
   m_cut   = 1.0;

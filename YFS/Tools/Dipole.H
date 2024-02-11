@@ -26,7 +26,7 @@ namespace YFS{
         Dipole(Flavour_Vector const &fl, Vec4D_Vector const &mom,  Vec4D_Vector const &born, dipoletype::code d);
         ~Dipole();
 
-        std::vector<double> m_masses, m_charges;
+        std::vector<double> m_masses, m_charges, m_theta, m_Q;
         Vec4D_Vector m_dipolePhotons;
         std::vector<std::string> m_names;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
@@ -65,6 +65,7 @@ namespace YFS{
         inline int size() {return m_momenta.size();}
         inline Vec4D GetBornMomenta(int i) { return m_bornmomenta[i];}
         inline Vec4D GetMomenta(int i) { return m_momenta[i];}
+        inline Vec4D_Vector GetMomenta() { return m_momenta;}
         inline Vec4D GetNewMomenta(int i) { return m_newmomenta[i];}
         inline Vec4D GetOldMomenta(int i) { return m_oldmomenta[i];}
         inline Vec4D GetEikMomenta(int i) { return m_eikmomentum[i];}

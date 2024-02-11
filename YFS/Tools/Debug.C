@@ -31,10 +31,10 @@ void Debug::InitializeHist() {
 		m_histograms_ISR["A"]  = new Histogram(0, -1., 3, 50);
 		m_histograms_ISR["K2"]  = new Histogram(0, -1., 20., 50);
 		m_histograms_ISR["ptk"]  = new Histogram(0, -1., 5., 50);
-		m_histograms_ISR["cos(theta)"]  = new Histogram(0, -1.2, 1.2, 20);
+		m_histograms_ISR["cos(theta)"]  = new Histogram(0, -1., 1., 20);
 		m_histograms_ISR["lam"]  = new Histogram(0, 0, 2, 40);
 		m_histograms_ISR["NGamma"]  = new Histogram(0, -1, 20, 21);
-		m_histograms_ISR["Cutflow"]  = new Histogram(0, 0, 5, 5);
+		m_histograms_ISR["Cutflow"]  = new Histogram(0, -1, 4, 5);
 		m_histograms_ISR["nbar"]  = new Histogram(0, -2, 2, 40);
 		m_histograms_ISR["weight"]  = new Histogram(0, -50, 50, 200);
 		m_histograms_ISR["massweight"]  = new Histogram(0, 0, 2, 100);
@@ -244,8 +244,10 @@ void Debug::FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr,
 		m_histograms_ISR["weight"]->Insert(p_isr->m_weight,W);
 		m_histograms_ISR["massweight"]->Insert(p_isr->m_massW,W);
 		m_histograms_ISR["jacweight"]->Insert(p_isr->m_jacW,W);
-		if (p_isr->m_cut == 0) m_histograms_ISR["Cutflow"]->Insert(0,W);
-		else m_histograms_ISR["Cutflow"]->Insert(1,W);
+		// m_histograms_ISR["Cutflow"]->Insert(p_isr->m_cut,W);
+		// PRINT_VAR(p_isr->m_cut);
+		if (p_isr->m_cut == 0) m_histograms_ISR["Cutflow"]->Insert(0.1,W);
+		else m_histograms_ISR["Cutflow"]->Insert(1.1,W);
 		std::vector<double> cos   = p_isr->m_cos;
 		std::vector<double> jac   = p_isr->m_jacvec;
 		std::vector<double> scale = p_isr->m_scale;

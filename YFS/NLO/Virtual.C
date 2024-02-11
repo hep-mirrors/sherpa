@@ -59,12 +59,14 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double B,
            const double mur)
   {
-    double V(0.0), tfac(1.0);
-    if(m_tchannel) {
+    double V(0.0), run_corr(0.0);
+    if(s_model->IsQEDRunning()) {
      double t = (p[0]-p[2]).Abs2();  
-     tfac=(*aqed)(-t)/(*aqed)(0);
+     double dalpha = ((*aqed)(t)- aqed->AqedThomson());
+     // PRINT_VAR(dalpha);
+     run_corr = 4.*dalpha*B;
     }
     p_loop_me->Calc(p,B);
-    V = p_loop_me->ME_Finite();
-    return V*m_rescale_alpha*m_factor*p_loop_me->ME_Born();
+    V = p_loop_me->ME_Finite()*B-run_corr;
+    return V*m_rescale_alpha*m_factor;
   }

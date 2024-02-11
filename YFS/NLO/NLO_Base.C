@@ -66,6 +66,9 @@ NLO_Base::~NLO_Base() {
 			delete histo1d;
 		}
 	}
+	if(p_yfsFormFact) delete p_yfsFormFact;
+	if(p_global_dipoles) delete p_global_dipoles;
+	if(p_nlodipoles) delete p_nlodipoles;
 	// msg_Out()<<"Percentage of Recola events = "<<m_recola_evts/m_evts*100.<<"% "<<std::endl;
 	// if(p_nlodipoles) delete p_nlodipoles;
 }
@@ -160,7 +163,7 @@ double NLO_Base::CalculateReal() {
 		}
 		real+=CalculateReal(k);
 	}
- 	return real;
+	return real;
 }
 
 
@@ -179,11 +182,11 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	double sp = (p[0]+p[1]-kk).Abs2();
 	double spp = (p[0]+p[1]).Abs2();
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
-	p_nlodipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
+	p_nlodipoles->MakeDipolesII(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
-	p_global_dipoles->MakeDipolesII(m_flavs,p,m_bornMomenta);
-	p_global_dipoles->MakeDipolesIF(m_flavs,p,m_bornMomenta);
-	p_global_dipoles->MakeDipoles(m_flavs,m_plab,m_bornMomenta);
+	p_global_dipoles->MakeDipolesII(m_flavs,p,m_plab);
+	p_global_dipoles->MakeDipolesIF(m_flavs,p,m_plab);
+	p_global_dipoles->MakeDipoles(m_flavs,p,m_plab);
 	double flux;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
@@ -192,14 +195,14 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	// flux = sp/sq;
 	double tot,colltot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_dipoles->CalculateRealSubEEX(kk);
+	double subb   = p_dipoles->CalculateRealSubEEX(k);
 	rcoll = p_dipoles->CalculateEEXReal(kk)*m_born;
 	if (!CheckPhotonForReal(k)) { 
+		subb   = p_dipoles->CalculateRealSubEEX(kk);
 		if(m_no_subtraction) return rcoll/subb;
 		return ( rcoll/subb - m_born);
 	}
 	double eex = rcoll/subb - m_born;
-	Complex MBar = (91.1876*91.1876, 2.4952*91.1876);
 	double mz = Flavour(kf_Z).Mass();
 	double gz = Flavour(kf_Z).Width();
 	if(m_fsrmode==1 || m_noflux!=0){
@@ -211,18 +214,21 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 			sq = (Q).Abs2();
 			sx = (Q+k).Abs2();
 			double shifdiff = fabs(Q.Mass()-mz);
-			double sqq = (m_plab[0]+m_plab[1]).Abs2();
-			double sxx = (m_plab[2]+m_plab[3]+k).Abs2();	
+			double sqq = (m_plab[2]+m_plab[3]).Abs2();
+			double sxx = (m_plab[2]+m_plab[3]+kk).Abs2();	
 			subflux = (sq*sq)/(sx*sx)-1;
 			if(m_noflux==3) {
-				// flux=sqq/sxx;
+				flux=sqq/sxx;
 				// PRINT_VAR(flux);
 				// flux=(sqr(sq-mz*mz)+sq*sqr(gz)/sqr(mz))/(sqr(sx-mz*mz)+sx*sqr(gz)/sqr(mz));
-				flux=sqr(sq/sx)*(sqr(sq-mz*mz)+sqr(gz)*sqr(mz))/(sqr(sx-mz*mz)+sqr(gz)*sqr(mz));
+				// flux=sqr(sq/sx)*(sqr(sq-mz*mz)+sqr(gz)*sqr(mz))/(sqr(sx-mz*mz)+sqr(gz)*sqr(mz));
 				// flux = (sqq/sxx)*(sqr(sqq-91.1876*91.1876)+sqr(2.4952*sqq)/sqr(91.1876))/(sqr(sxx-91.1876*91.1876)+sqr(2.4952*sxx)/sqr(91.1876));
      	  // if(shifdiff < m_pole_fac*gz) flux = 1;
 			}
-			if(m_ifisub==1 && shifdiff > m_pole_fac) subloc+=p_nlodipoles->CalculateRealSubIF(k);
+			if(m_ifisub==1) {
+				subloc+= p_nlodipoles->CalculateRealSubIF(k);
+				// subb  += p_dipoles->CalculateRealSubIF(kk);
+			}
 			if(m_ifisub==2 && shifdiff > m_pole_fac) subloc+=p_nlodipoles->CalculateRealSubIF(k)*subflux;
 			if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	}
@@ -402,10 +408,10 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i) {
-		pRot.Rotate(p[i]);
+		// pRot.Rotate(p[i]);
 		boostQ.Boost(p[i]);
 	}
-	pRot.Rotate(k);
+	// pRot.Rotate(k);
 	boostQ.Boost(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
@@ -452,7 +458,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		boostLab.Boost(p[i]);
 	}
 	// pRot2.Rotate(k);
-	boostLab.Boost(k);
+	// boostLab.Boost(k);
 }
 
 
