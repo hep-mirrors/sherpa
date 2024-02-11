@@ -76,13 +76,12 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
       }
       out_ps<<"    ]"<<std::endl;
   }
-    double tfac(1.0);
-    if(m_tchannel) {
-     double t = (p[0]-p[2]).Abs2();  
-     tfac=(*aqed)(t)/(*aqed)(0);
-    }
+    // double tfac(1.0);
+    // if(m_tchannel) {
+    //  double t = (p[0]-p[2]).Abs2();  
+    //  tfac=(*aqed)(-t)/(*aqed)(0);
+    // }
     double R = p_real_me->Calc(p);
     if(m_check_real) real_out<<std::setprecision(15)<<R/m_sym<<std::endl;
-    return m_factor*R*tfac;
-    // return m_factor*R;
+    return m_factor*R;
   }

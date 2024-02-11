@@ -38,6 +38,7 @@ void YFS_Base::RegisterDefaults(){
   s["VMAX"].SetDefault(1);
   s["VMIN"].SetDefault(1e-6);
   s["ISR_CUT"].SetDefault(1e-6);
+  s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
   s["LOOP_TOOL"].SetDefault(false);
   s["RS"].SetDefault(false);
@@ -99,9 +100,8 @@ void YFS_Base::RegisterSettings(){
   m_betaorder = s["BETA"].Get<int>();
   m_mode = s["ISR_MODE"].Get<int>();
   m_isrcut   = s["ISR_CUT"].Get<double>();
-  s["DELTA"].SetDefault(1e-2);
-  m_vmin1 = s["VMIN1"].Get<double>();
   m_vmin = s["VMIN"].Get<double>();
+  m_vmin1 = s["VMIN1"].Get<double>();
   m_vmax = s["VMAX"].Get<double>();
   m_nmax  = s["PHOTON_MAX"].Get<int>();
   m_fillblob  = s["FILL_BLOB"].Get<bool>();
@@ -165,9 +165,9 @@ void YFS_Base::RegisterSettings(){
   m_g = 0;
   m_gp = 0;
   if(m_use_model_alpha) m_alpha = s_model->ScalarConstant("alpha_QED");
-  else m_alpha  = (*aqed)(0); 
+  else m_alpha  = 1./s["1/ALPHAQED(0)"].SetDefault(137.03599976).Get<double>(); 
   if (m_use_model_alpha) m_rescale_alpha = 1;
-  else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
+  else m_rescale_alpha = m_alpha / s_model->ScalarConstant("alpha_QED");
   m_alpi = m_alpha/M_PI;
   m_beam_sigx*=sqrt(m_s)/2.;
   m_beam_sigy*=sqrt(m_s)/2.;

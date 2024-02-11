@@ -20,6 +20,7 @@ using namespace METOOLS;
 
 double evtcount = 0;
 double failed = 0;
+double maxv = 0;
 
 YFS_Handler::YFS_Handler():
   p_realff(NULL), p_virtff(NULL)
@@ -80,7 +81,7 @@ void YFS_Handler::SetSprimeLimits(std::vector<double> &splimits) {
     msg_Error() << "Warning: vmax to large in YFS integration reseting to " << maxV << std::endl;
     m_vmax = maxV;
   }
-  splimits[0] = 0;
+  splimits[0] = m_smin;
   splimits[1] = s;
   splimits[2] = s;
   if(sqrt(m_smin) > 91.2+10 ) m_resonance_mode = 0;
@@ -183,7 +184,7 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
     return false;
   }
   p_isr->SetV(m_v);
-  if (m_v <= m_deltacut && m_fsrmode != 2  ) { // correction weight included in Generate photon
+  if (m_v < m_deltacut && m_fsrmode != 2  ) { // correction weight included in Generate photon
     m_yfsweight = 0.0;
     return false;
   }
@@ -238,12 +239,10 @@ bool YFS_Handler::CalculateISR() {
   p_isr->Weight();
   m_g=p_dipoles->GetDipoleII()->m_gamma;
   m_gp=p_dipoles->GetDipoleII()->m_gamma;
-  if (m_isrWeight == 0) return false;
   m_photonSumISR = p_isr->GetPhotonSum();
   m_ISRPhotons   = p_isr->GetPhotons();
   m_isrWeight = p_isr->GetWeight();
-  if(m_v < m_vmin) return true;
-  if(m_isrWeight==0) return 0;
+  // if(m_isrWeight==0) return 0;
   p_dipoles->GetDipoleII()->AddPhotonsToDipole(m_ISRPhotons);
   p_dipoles->GetDipoleII()->Boost();
   for (int i = 0; i < 2; ++i) m_plab[i] = p_dipoles->GetDipoleII()->GetNewMomenta(i);
@@ -259,6 +258,19 @@ bool YFS_Handler::CalculateISR() {
                 << "ISR NPHotons = " << p_isr->m_N << std::endl;
   }
   m_isrinital = false;
+  YFSDebug(1.0);
+  if(m_photonSumISR.E() > sqrt(m_s)){
+    return false;
+  //   // PRINT_VAR(1-m_sp/m_s);
+  //   // PRINT_VAR(p_isr->m_v);
+  //   // PRINT_VAR(p_isr->m_v*sqrt(m_s)/2.);
+  //   // msg_Error()<<"ISR photons are too energetic!" << std::endl;
+  //   //            // <<"Photons "<< m_ISRPhotons<< std::endl
+  //   //            // <<"Photon sum is "<< m_photonSumISR<< std::endl;
+  //   // PRINT_VAR(m_ISRPhotons);
+  //   // PRINT_VAR(m_photonSumISR);
+  //   // PRINT_VAR(m_plab);
+  }
   return true;
 
 }
@@ -271,7 +283,9 @@ void YFS_Handler::AddFormFactor() {
   if (m_fullform == 1) {
     // m_formfactor = p_yfsFormFact->BVV_full(m_bornMomenta[0], m_bornMomenta[1], m_photonMass, sqrt(m_s) / 2., 0);
     if(m_tchannel) m_formfactor = p_dipoles->TFormFactor();
-    else m_formfactor = p_dipoles->FormFactor();
+    else {
+      m_formfactor = p_dipoles->FormFactor();
+    }
   }
   else if (m_fullform == 2) {
     m_formfactor = exp(m_g / 4.);//-m_alpha*M_PI);
@@ -289,7 +303,7 @@ void YFS_Handler::AddFormFactor() {
 
 bool YFS_Handler::CalculateFSR(){
   // CheckMasses();
-  CheckMomentumConservation();
+  // CheckMomentumConservation();
   return CalculateFSR(m_plab);
 }
 
@@ -307,6 +321,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   m_plab=p;
   
   p_dipoles->MakeDipoles(m_flavs, m_plab, m_plab);
+  if(m_fsrmode==1)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
 
   for (int i = 2; i < m_momeikonal.size(); ++i)
   {
@@ -346,15 +361,17 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
         return false;
       } 
 
-      m_fsrphotonsforME = m_FSRPhotons;
+      p_fsr->YFS_FORM();
       if (m_hidephotons) p_fsr->HidePhotons();
       m_FSRPhotons   = p_fsr->GetPhotons();
       // p_fsr->HidePhotons(m_fsrphotonsforME);
       Dip->AddPhotonsToDipole(m_FSRPhotons);
-      p_fsr->YFS_FORM();
       Dip->Boost();
       m_FSRPhotons  = Dip->GetPhotons();
       m_photonSumFSR = Dip->GetPhotonSum();
+      m_fsrphotonsforME = m_FSRPhotons;
+      // p_fsr->HidePhotons(m_FSRPhotons);
+      // Dip->AddPhotonsToDipole(m_FSRPhotons);
       // m_fsrphotonsforME = Dip->GetPhotons();
       // if(m_photonSumFSR.E() > sqrt(m_s)/2) {
       //   // PRINT_VAR(m_photonSumFSR);
@@ -382,9 +399,8 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   m_FSRPhotons.clear();
   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
-    for(auto k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
+    for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
   }
-  if(m_fsrmode==1)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, oldplab);
   CheckMasses();
   CheckMomentumConservation();
   return true;
@@ -453,7 +469,7 @@ void YFS_Handler::CalculateBeta() {
       p_realff->SetMode(m_fsrmode);
       for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
            Dip != p_dipoles->GetDipoleFF()->end(); ++Dip)  {
-        p_realff->SetIncoming(Dip, m_bornMomenta, m_fsrphotonsforME, p_fsr->m_yini, p_fsr->m_zini);
+        p_realff->SetIncoming(Dip, m_reallab, m_FSRPhotons, p_fsr->m_yini, p_fsr->m_zini);
         p_realff->CalculateVirt();
         p_realff->Calculate();
         realFSR += p_realff->GetReal();// - p_realff->m_beta01; // Subtract common virtual correction
