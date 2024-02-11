@@ -12,7 +12,13 @@ from scipy.optimize import curve_fit
 files = sys.argv[1:]
 print(files)
 
-yodadiff_cmd = ["yodadiff", "--ignore-type", "-d", "deviations.yoda", "-M", '/_.*,/RAW/.*'] + files
+# build yodadiff command
+yodadiff_cmd = ["yodadiff"]
+is_yoda2_or_later = int(yoda.version().split('.')[0]) >= 2
+if is_yoda2_or_later:
+    yodadiff_cmd += ["--ignore-type"]
+yodadiff_cmd += ["-d", "deviations.yoda", "-M", '/_.*,/RAW/.*'] + files
+
 popen = subprocess.Popen(yodadiff_cmd)
 popen.wait()
 
@@ -24,7 +30,7 @@ deviations_x = []
 deviations_y = []
 sum_of_weights = 0
 for bin in deviations_histo:
-    if np.isinf(bin.xMin()) or np.isnan(bin.xMean()):
+    if bin.sumW() == 0 or np.isinf(bin.xMin()):
         continue
     deviations_x.append(bin.xMean())
     deviations_y.append(bin.sumW() / bin.xWidth())
