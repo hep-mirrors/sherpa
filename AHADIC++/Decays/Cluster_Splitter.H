@@ -45,8 +45,7 @@ namespace AHADIC {
     bool   CheckKinematics();
     Cluster * MakeCluster(size_t i);
     double FragmentationFunction(double z, double zmin, double zmax,
-				 double alpha, double beta, double gamma,
-				 double kt02);
+				 int cnt, int i_var);
 
   public:
     int m_nsplit {0};
@@ -110,7 +109,7 @@ namespace AHADIC {
     void z_accepted(const double wgt, const double & z,
 		    const double & zmin,const double & zmax,
 		    const unsigned int & cnt) override;
-    double analytic_weight(double, double, double, double, double);
+
     double FragmentationFunctionProb(double, double, double, double, double);
   };
 }

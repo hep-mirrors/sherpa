@@ -154,11 +154,17 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       } else {
 	const std::string base_name {"v"+std::to_string(i)};
 	DEBUG_VAR(wgt);
-	for(int e{2}; e<3; ++e) {
+	for(int e{3}; e<5; ++e) {
 	  const std::string name = base_name + "." + std::to_string(e);
-	  const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
-	  DEBUG_VAR(clipped_wgt);
-	  wgtmap["AHADIC"][name] = clipped_wgt;
+	  if(e < 4) {
+	    const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
+	    DEBUG_VAR(clipped_wgt);
+	    wgtmap["AHADIC"][name] = clipped_wgt;
+	  } else {
+	    const auto clipped_wgt {wgt};
+	    DEBUG_VAR(clipped_wgt);
+	    wgtmap["AHADIC"][name] = clipped_wgt;
+	  }
 	}
       }
     }

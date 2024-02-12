@@ -225,6 +225,7 @@ void Splitter_Base::MakeTransverseMomentum() {
 double Splitter_Base::select_z(const double zmin, const double zmax,
 			       const unsigned int cnt) {
   double z, z_range {zmax-zmin};
+  int it {0};
   do {
     z = zmin+ran->Get()*z_range;
     auto sel_wgt = WeightFunction(z,zmin,zmax,cnt);
@@ -232,6 +233,9 @@ double Splitter_Base::select_z(const double zmin, const double zmax,
       z_accepted(sel_wgt, z,zmin,zmax,cnt);
       break;
     }
+    ++it;
+    if(it % 10000 == 0)
+      std::cout << "Z selection requires many iterations: " << it << " already." << std::endl;
     z_rejected(sel_wgt, z,zmin,zmax,cnt);
   } while (true);
   return z;
