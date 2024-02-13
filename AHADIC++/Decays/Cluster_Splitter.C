@@ -335,15 +335,23 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
 
 #if AHADIC_FRAGMENTATION_FUNCTION == 0
   double arg, norm {1.}, value {1.};
+  // if (alpha>=0.)
+  //   norm *= pow(zmax,m_alpha_max[type]);
+  // else
+  //   norm *= pow(zmin,m_alpha_max[type]);
   if (alpha>=0.)
-    norm *= pow(zmax,m_alpha_max[type]);
+    norm *= pow(zmax,alpha);
   else
-    norm *= pow(zmin,m_alpha_max[type]);
+    norm *= pow(zmin,alpha);
 
+  // if (beta>=0.)
+  //   norm *= pow(1.-zmin,m_beta_max[type]);
+  // else
+  //   norm *= pow(1.-zmax,m_beta_max[type]);
   if (beta>=0.)
-    norm *= pow(1.-zmin,m_beta_max[type]);
+    norm *= pow(1.-zmin,beta);
   else
-    norm *= pow(1.-zmax,m_beta_max[type]);
+    norm *= pow(1.-zmax,beta);
 
   double wt = pow(z,alpha) * pow(1.-z,beta);
   value = wt/norm;

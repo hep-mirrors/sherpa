@@ -154,7 +154,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       } else {
 	const std::string base_name {"v"+std::to_string(i)};
 	DEBUG_VAR(wgt);
-	for(int e{3}; e<5; ++e) {
+	for(int e{3}; e<4; ++e) {
 	  const std::string name = base_name + "." + std::to_string(e);
 	  if(e < 4) {
 	    const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
