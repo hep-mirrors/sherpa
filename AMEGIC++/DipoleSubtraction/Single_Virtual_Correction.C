@@ -1001,6 +1001,10 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
   if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     cms=Poincare(_mom[0]+_mom[1]);
     for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
+    _mom[0][1] = _mom[0][2] = _mom[1][1] = _mom[1][2] = 0.0;
+    _mom[1][3] = -_mom[0][3];
+    if (m_flavs[0].Mass() == 0.0) _mom[0][0] = std::abs(_mom[0][3]);
+    if (m_flavs[1].Mass() == 0.0) _mom[1][0] = std::abs(_mom[1][3]);
   }
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);
@@ -1075,6 +1079,13 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
                        <<"\n  norm = "<<m_Norm<<std::endl;
     for (size_t i=0;i<m_nin+m_nout;i++)
       msg_Error()<<"  "<<i<<": "<<mom[i]<<std::endl;
+    //Vec4D sum;
+    //for (size_t i=0;i<m_nin+m_nout;i++) {
+    //  msg_Error()<<"  "<<i<<": "<<mom[i]<<", "<<mom[i].Abs2()<<std::endl;
+    //  sum += mom[i];
+    //}
+    //msg_Error()<<"  sum: "<<sum<<std::endl;
+
     msg_Error()<<"}\n";
     msg->SetPrecision(precision);
   }

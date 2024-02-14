@@ -12,6 +12,7 @@ using namespace ATOOLS;
 using namespace std;
 
 #define SQRT_05 0.70710678118654757
+//#define DEBUG__BS 1
 
 std::ostream& AMEGIC::operator<<(std::ostream& os, const Momfunc& mf) {
   os<<mf.type<<";"<<mf.argnum;
@@ -445,9 +446,13 @@ void Basic_Sfuncs::CalcMomlist()
       for (int i=1;i<Momlist[j].argnum;i++) {
 	Momlist[j].mom += b[Momlist[j].arg[i]]*p[Momlist[j].arg[i]];
       }
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       break;
     case mt::cmprop :
       Momlist[j].mom = p[0]+p[1]; 
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       break;
     case mt::p_m : {
       mom=Momlist[Momlist[j].arg[1]].mom;
@@ -465,7 +470,11 @@ void Basic_Sfuncs::CalcMomlist()
        }
       Momlist[j+1].mom = Momlist[j].mom;
       Momlist[j+1].mom_img = (-1.)*Momlist[j].mom_img;
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       j++;
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       break;
     }
     case mt::p_l0 : {
@@ -484,12 +493,18 @@ void Basic_Sfuncs::CalcMomlist()
        }
       Momlist[j].mom = ::cos(Momlist[j].angle)*vh1+::sin(Momlist[j].angle)*vh2;
       Momlist[j+1].mom = ::sin(Momlist[j].angle)*vh1-::cos(Momlist[j].angle)*vh2;
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       j++;
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       break;
     }
     case mt::p_lh : {
       mom=Momlist[Momlist[j].arg[1]].mom;
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
+      DEBUG_VAR(mom);
+      DEBUG_VAR(ps);
       double mom1=C1(mom), mom2=C2(mom), mom3=C3(mom);
       pt=sqrt(sqr(mom1)+sqr(mom2));
       if(pt!=0.0){
@@ -503,7 +518,11 @@ void Basic_Sfuncs::CalcMomlist()
       }
       Momlist[j].mom = vh1;
       Momlist[j+1].mom = vh2;      
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       j++;
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       break;
     }
     case mt::p_l :     
@@ -519,6 +538,8 @@ void Basic_Sfuncs::CalcMomlist()
 	Momlist[j].mom_img = Momlist[j].mom;
 	Momlist[j].mom = Vec4D(0.,0.,0.,0.);
       }
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       break;
     case mt::p_s :
       mom=Momlist[Momlist[j].arg[1]].mom;
@@ -534,16 +555,22 @@ void Basic_Sfuncs::CalcMomlist()
 	  Momlist[j].mom=real(help)*mom;
 	  Momlist[j].mom_img=imag(help)*mom;
       }
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       break;
     case mt::p_si :
       mom                = Momlist[Momlist[j].arg[1]].mom;
       help               = csqrt(-1./mom.Abs2());
       Momlist[j].mom     = real(help)*mom;
       Momlist[j].mom_img = imag(help)*mom;
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       break;
     case mt::p_spec:
       if (p_epol) Momlist[j].mom = (*p_epol)[Momlist[j].arg[0]-90];
       else msg_Error()<<"Error in Basic_Sfuncs::CalcMomlist(): no external polarization array!!!"<<endl;
+      DEBUG_VAR(j);
+      DEBUG_VAR(Momlist[j].mom);
       break;
     default : break;
     }
@@ -820,6 +847,11 @@ void Basic_Sfuncs::PrecalcS()
 #ifdef DEBUG__BS
 	msg_Debugging()<<" - _S0["<<i<<"]["<<j<<"] = "<<-_S0[i][j]<<" (["<<i<<","<<j<<"])\n";
 	msg_Debugging()<<" - _S1["<<j<<"]["<<i<<"] = "<<-_S1[j][i]<<" (<"<<j<<","<<i<<">)\n";
+        msg_Debugging()<<" - m->mom = "<<m->mom << '\n';
+        msg_Debugging()<<" - m->mom = "<<m->mom_img << '\n';
+        msg_Debugging()<<" - m->mom = "<<m1->mom << '\n';
+        msg_Debugging()<<" - m->mom = "<<m1->mom_img << '\n';
+        msg_Debugging()<<" - k0_n = "<<k0_n<<'\n';
 #endif
       } 
 }

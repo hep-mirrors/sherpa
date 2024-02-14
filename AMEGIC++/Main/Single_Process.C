@@ -786,6 +786,13 @@ double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool loo
     }
     /////////////////////////////////////
     /////////////////////////////////////
+    //if (m_flavs[0].Mass() == 0.0 && m_flavs[1].Mass() == 0.0) {
+    //  mom[0][3] = (mom[0][3] < 0.0 ? -1.0 : 1.0) * mom[0][0];
+    //}
+    mom[0][1] = mom[0][2] = mom[1][1] = mom[1][2] = 0.0;
+    mom[1][3] = -mom[0][3];
+    if (m_flavs[0].Mass() == 0.0) mom[0][0] = std::abs(mom[0][3]);
+    if (m_flavs[1].Mass() == 0.0) mom[1][0] = std::abs(mom[1][3]);
   }
   if (p_partner == this) {
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&mom.front());
