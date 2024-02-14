@@ -451,7 +451,7 @@ double NonPerturbative_XSecs::RhoMassModifier(const double & M2) {
 	   <<" --> wt = "<<(BWrho * A + Complex(A_nr, 0.))<<" ["<<rel<<"].\n";
   // *
   //			      (sqr(M2-m_mrho2) + m_mrho2*m_Grho2)/(m_mrho2*m_Grho2))<<"\n";
-  return sqr(std::abs(BWrho * A + Complex(A_nr, 0.) )); // - sqr(A_nr);
+  return qrhoratio * sqr(std::abs(BWrho * A + Complex(A_nr, 0.) )); // - sqr(A_nr);
   // * (sqr(M2-m_mrho2) + m_mrho2*m_Grho2)/(m_mrho2*m_Grho2);
 }
 
