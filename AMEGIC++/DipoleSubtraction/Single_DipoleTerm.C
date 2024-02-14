@@ -613,6 +613,15 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms,
   if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     cms=Poincare(pp[0]+pp[1]);
     for (size_t i(0);i<pp.size();++i) cms.Boost(pp[i]);
+    // The following assumes, that the beams are oriented along the z axis;
+    // They reset the transverse momentum components to be exactly zero to
+    // remove numerical artifacts; This is important because later we will check
+    // against 0.0 exactly during the construction of the external states, and
+    // this check might fail if we allow numerical inaccuracies to remain here.
+    pp[0][1] = pp[0][2] = pp[1][1] = pp[1][2] = 0.0;
+    pp[1][3] = -pp[0][3];
+    if (m_flavs[0].Mass() == 0.0) pp[0][0] = std::abs(pp[0][3]);
+    if (m_flavs[1].Mass() == 0.0) pp[1][0] = std::abs(pp[1][3]);
   }
   SetLOMomenta(&pp.front(),cms);
   return m_mewgtinfo.m_B=operator()(&pp.front(),cms,mode);

@@ -786,6 +786,15 @@ double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool loo
     }
     /////////////////////////////////////
     /////////////////////////////////////
+    // The following assumes, that the beams are oriented along the z axis;
+    // They reset the transverse momentum components to be exactly zero to
+    // remove numerical artifacts; This is important because later we will check
+    // against 0.0 exactly during the construction of the external states, and
+    // this check might fail if we allow numerical inaccuracies to remain here.
+    mom[0][1] = mom[0][2] = mom[1][1] = mom[1][2] = 0.0;
+    mom[1][3] = -mom[0][3];
+    if (m_flavs[0].Mass() == 0.0) mom[0][0] = std::abs(mom[0][3]);
+    if (m_flavs[1].Mass() == 0.0) mom[1][0] = std::abs(mom[1][3]);
   }
   if (p_partner == this) {
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&mom.front());
