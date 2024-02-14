@@ -75,13 +75,6 @@ namespace METOOLS {
 
     // Tests
     bool Test_WF_Properties(const ATOOLS::Vec4D &p, const bool &anti, const int &dir);
-
-    // TODO: Necessary or only for test purpose?
-    inline CRaScType Get_RSPP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0)
-    { return RSPP(p, r, s, b);};
-    inline CRaScType Get_RSMM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0) const
-    { return RSMM(p, r, s, b);};
-
   };
 
 // end of class CV
@@ -111,7 +104,11 @@ CRS<SType>::CRS(const Current_Key &key):
     m_cmass=sqrt(m_cmass2=Complex(sqr(this->m_mass),0.0));
 }
 
-// FUNKTIONS TO CALCULATE THE RARITA-SCHWINGER-WAVEFUNKTION
+// FUNCTIONS TO CALCULATE THE RARITA-SCHWINGER-WAVE-FUNCTION
+// Polarisation vectors
+// Representations are slightly changed compared to Spin-1 particles since calculation helicity basis is necessary
+// to fit poalrisation vectors to Comix Dirac spinors (i.e. change reference vector m_k from constant default
+// to -\vec{p}/|p|
 template <typename SType> CVec4<SType>
 CRS<SType>::VT(const SpinorType &a,const SpinorType &b)
 {
@@ -156,9 +153,10 @@ CRS<SType>::EMM(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
   Vec4D m_k_mod;
   if (hel)
+    // explicit four vector form of polarisation vector for particles at rest (helicity basis not defined then)
     if (p.PSpat()==0) return CVec4Type(0., 1./ sqrt(2.), -std::complex<SType>(0., -1.)/ sqrt(2.), 0., cr, ca, 0);
-    else m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
-  else m_k_mod = m_k;
+    else m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat()); // helicity basis
+  else m_k_mod = m_k; // standard setting for reference vector
   return EM(p-p.Abs2()/(2.0*m_k_mod*p)*m_k_mod,cr,ca,m_k_mod);
 }
 
@@ -166,10 +164,11 @@ template <typename SType> CVec4<SType>
 CRS<SType>::EMP(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
   Vec4D m_k_mod;
+  // explicit four vector form of polarisation vector for particles at rest (helicity basis not defined then)
   if (hel)
     if (p.PSpat()==0) return CVec4Type(0., 1./ sqrt(2.), -std::complex<SType>(0., 1.)/ sqrt(2.), 0., cr, ca, 0);
-    else m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
-  else m_k_mod = m_k;
+    else m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());  // helicity basis
+  else m_k_mod = m_k; // standard setting for reference vector
   return EP(p-p.Abs2()/(2.0*m_k_mod*p)*m_k_mod,cr,ca,m_k_mod);
 }
 
@@ -177,11 +176,12 @@ template <typename SType> CVec4<SType>
 CRS<SType>::EML(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
   Vec4D m_k_mod;
-  if (hel && p.PSpat()!=0) m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());
-  else m_k_mod = m_k;
+  if (hel && p.PSpat()!=0) m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat()); // helicity basis
+  else m_k_mod = m_k; // standard setting for reference vector
   double p2(p.Abs2()), a(p2/(2.0*m_k_mod*p));
   Vec4D b(p-a*m_k_mod);
   SpinorType bm(-1,b), bp(1,b), am(-1,m_k_mod), ap(1,m_k_mod);
+  // if true, implement concrete four representation of Spin 1 particle at rest (helicity basis not defined then)
   CVec4Type e((hel && p.PSpat()==0.)?CVec4Type(0., 0., 0., (p[0]/fabs(p[0]))*sqrt(SComplex(4.0*p2))):VT(bp,bm)-SType(a)*VT(ap,am));
   e(0)=cr; e(1)=ca;
   e.SetH(2);
@@ -190,12 +190,14 @@ CRS<SType>::EML(const Vec4D &p,const int cr,const int ca, const bool hel)
 }
 
 // TODO: PLUS AND MINUS EXCHANGED
-// TODO: GENAUE DEFINITION BESCHREIBEN!!!
-// TODO: Nach HELAS paper brauchen wir s, cr, ca, hh, ms nicht...
 // TODO: Im HELAS-Paper hat die Wellenfunktion 18 Komponenten, wobei die letzten bei den Komponenten den Viererimpuls
 //       entlang des Fermionzahlflusses enthalten -> brauchen wir das auch?
-// - Füllungsreihenfolge wie in MadGraph /HELAS paper arXiv: 1010.4255
-// - Form wie in S.F.Novaes & D.Spehler Nuclear Physics B 371 (1992), 618-636 Eq.(13) mit Phase theta = 0
+// RARITA-SCHWINGER WAVE FUNCTIONS
+// - Order of indices same as in MadGraph / HELAS paper arXiv: 1010.4255 ("Four vector of Dirac spinors",
+//   first four entries have same Lorentz index and ascending spinor index, fifth entry has spinor index 0 and Lorentz
+//     index 1) ...
+// - Reconstruction from polarisation vectors and spinors similar to
+//   S.F.Novaes & D.Spehler Nuclear Physics B 371 (1992), 618-636 Eq.(13) mit Phase theta = 0
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, const int cr, const int ca,
                  const int hh, const int ms) {
@@ -287,11 +289,6 @@ CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType s
   int vector_h = polvector.H();
   DEBUG_VAR(spinor);
   DEBUG_VAR(polvector);
-  // convert in more approriate numbering, h=0 : longitudial, h=2: right, h=-2: left
-  // TODO: ADJUST IF +- AND -SWITCH IS SOLVED!!!
-  /*if (vector_h==2) vector_h=0;  // long
-  else if (vector_h==1) vector_h=2; // right
-  else if (vector_h==0) vector_h=-2; // left*/
   METOOLS::CRS<SType>::CRaScType RaSc(spinor.R(), spinor.B(), cr, ca, 0, s);
   RaSc(0) = cr;
   RaSc(1) = ca;
@@ -317,14 +314,13 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     this->m_p[0]=this->m_p[0]<0.0?
       -std::abs(this->m_p[3]):std::abs(this->m_p[3]);
   bool anti(this->m_fl.IsAnti());
-  if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
   this->ResetJ();
   //TODO: Stimmit das hier?
   int r(anti?-1:1);
   // m_dir>0: originally incoming, m_dir<0: outgoing; for calculation all particles are handled as outcoming
   int b((anti^(this->m_dir>0))?1:-1);
   //TODO: Was bedeutet ch? Was für Werte kann ch für RaSc annehmen?
-  // TODO: !!!Was ist nun der richtige Wert für SetH() 0 und 1 im masselosen Fall oder ganzzahlige Spinwerte (+-1, +-3)!!!
+  // TODO: !!!Richtige H-Werte?!!!
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
       //CRaScType j(anti^(this->m_dir>0)? RSP(p, -1, 0, -this->m_dir, cr, ca): RSP(p, 1, 0, this->m_dir, cr, ca));
@@ -339,7 +335,7 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"+ "<<this->m_id<<" "<<j
 		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
-      j.Test_Properties(p, j.R(), j.B(), this->m_dir);
+      j.Test_Properties(p, this->m_dir);
 #endif
     }
     if (ch!=3){
@@ -351,7 +347,7 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"++ "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
-      j.Test_Properties(p, j.R(), j.B(), this->m_dir);
+      j.Test_Properties(p, this->m_dir);
 #endif
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
@@ -372,7 +368,7 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"- "<<this->m_id<<" "<<j
 		     <<" "<<this->m_fl<<", m = "<<m_cmass<<"\n";
-      j.Test_Properties(p, j.R(), j.B(), this->m_dir);
+      j.Test_Properties(p, this->m_dir);
 #endif
     }
     if (ch!=-3){
@@ -384,7 +380,7 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"-- "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
-      j.Test_Properties(p, j.R(), j.B(), this->m_dir);
+      j.Test_Properties(p, this->m_dir);
 #endif
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
@@ -408,7 +404,7 @@ void CRS<SType>::SetGauge(const ATOOLS::Vec4D &k)
 
 // TODO: Stimmt der Rest des Propagators so? Also Nenner, i im Zähler, Vorzeichen?
 // TODO: Stimmt das mit unterschiedlichen Vorzeichen der Props bei pos/neg masse und B<0, B>0 Unterscheidung? (einfach
-//       nur Contranktion von anderer Seite?) Ist noch etwas anderes zu beachten, stimmt Form so?
+//       nur Contranktion von anderer Seite?) Ist noch etwas anderes zu beachten?
 // TODO: Zählerkomponenten mit Mathematica vereinfachen, dafür mit Pythonskript (**jit) durch normalen String ohne *,
 //       M_I durch i ersetzen und dann erst Mathematica übergeben; resultierender Ausdruck kann weiter vereinfacht
 //       werden, minimaler Test: Vergleich mit Ergebnis des langen Ausdrucks für ein oder mehrere
