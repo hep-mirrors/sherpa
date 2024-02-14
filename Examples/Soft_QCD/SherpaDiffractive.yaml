@@ -30,7 +30,7 @@ AMISIC:
   phi_omega:             -0.53
   f_nr:                   0.189
   Lambda_nr:              0.18
-  delta_nr:               0.8   # 0.76
+  delta_nr:               0.76
 YFS:
   MODE:              None
 
