@@ -54,7 +54,7 @@ void CRaritaSchwinger<Scalar>::Add(const CObject *c) {
 }
 template<class Scalar>
 void CRaritaSchwinger<Scalar>::Multiply(const Complex &c) {
-  /*if (m_on&1) {
+  if (m_on&1) {
     m_x[0]*=SComplex(c) ; m_x[1]*=SComplex(c); m_x[4]*=SComplex(c); m_x[5]*=SComplex(c); m_x[8]*=SComplex(c);
     m_x[9]*=SComplex(c); m_x[12]*=SComplex(c); m_x[13]*=SComplex(c);
   }
@@ -62,12 +62,6 @@ void CRaritaSchwinger<Scalar>::Multiply(const Complex &c) {
     m_x[2]*=SComplex(c); m_x[3]*=SComplex(c); m_x[6]*=SComplex(c); m_x[7]*=SComplex(c); m_x[10]*=SComplex(c);
     m_x[11]*=SComplex(c); m_x[14]*=SComplex(c); m_x[15]*=SComplex(c);
   }
-  else{*/
-    m_x[0]*=SComplex(c) ; m_x[1]*=SComplex(c);  m_x[2]*=SComplex(c); m_x[3]*=SComplex(c); m_x[4]*=SComplex(c);
-    m_x[5]*=SComplex(c); m_x[6]*=SComplex(c); m_x[7]*=SComplex(c); m_x[8]*=SComplex(c);
-    m_x[9]*=SComplex(c); m_x[10]*=SComplex(c); m_x[11]*=SComplex(c); m_x[12]*=SComplex(c); m_x[13]*=SComplex(c);
-    m_x[14]*=SComplex(c); m_x[15]*=SComplex(c);
-  //}
 }
 
 template<class Scalar>
@@ -165,7 +159,6 @@ CRaritaSchwinger<Scalar> *CRaritaSchwinger<Scalar>::New(const CRaritaSchwinger &
   return v;
 }
 
-// TODO: dieses new anpassen, wenn wir verstehen, was die einzelnen Parameter bedeuten...
 template<class Scalar>
 CRaritaSchwinger<Scalar> *CRaritaSchwinger<Scalar>::New(const int r, const int b, const Scalar &x0, const Scalar &x1,
                                                         const Scalar &x2, const Scalar &x3, const Scalar &x4,
@@ -233,8 +226,8 @@ template <class Scalar> bool CRaritaSchwinger<Scalar>::SetOn()
 }
 
 template<class Scalar>
-bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r, int b, int dir) {
-  // Dirac equation (gamma_mu * p_mu -m)^A_B RS^B, nu -> auch +m? für V statt U?
+bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int dir) {
+  // Dirac equation (gamma_mu * p_mu -m)^A_B RS^B, nu -> +m for V
   msg_Debugging()<<METHOD<<": Testing Dirac equation..."<<"\n";
   METOOLS::Gamma gammavec = Gamma<Scalar>();
   bool testresult(true);
@@ -243,13 +236,13 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r, in
   ATOOLS::TCMatrix<Scalar> intermediate = ATOOLS::TCMatrix<Scalar>(gammavec * p);
   // TODO: Stimmt das mit dem dir hier?
   if (p.Mass()>1e-6) {
-    intermediate += ATOOLS::TCMatrix<Scalar>(SComplex(-r) * SComplex(-dir) * SComplex(p.Mass()) * ATOOLS::TCMatrix<Scalar>(4, true));
+    intermediate += ATOOLS::TCMatrix<Scalar>(SComplex(-m_r) * SComplex(-dir) * SComplex(p.Mass()) * ATOOLS::TCMatrix<Scalar>(4, true));
   }
   std::vector<SComplex> result1(16);
   // TODO: Sollte man die exakten ZEROS auch hier explizit implementieren?
   for (int i(0); i<4; ++i){
     for (size_t j(0); j<4; ++j){
-        if (b>0){
+        if (m_b>0){
           result1[i] += intermediate[i][j] * (*this)[j];
           result1[i+4] += intermediate[i][j] * (*this)[j+4];
           result1[i+8] += intermediate[i][j] * (*this)[j+8];
@@ -268,7 +261,6 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r, in
     if (std::abs(result1[j].real())>1e-8 || std::abs(result1[j].imag())>1e-8) {
       msg_Debugging()<<"Component " << j << " of resulting Rarita-Schwinger wave function is " << result1[j] << " instead of zero!"
       << "\n";
-      //exit(1);
       testresult =false;
       single_testresult=false;
     }
@@ -281,7 +273,7 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int r, in
   std::vector<SComplex> result2(4);
   for (size_t i(0); i<4; ++i){
     for (size_t j(0); j<4; ++j){
-      if (b>0) result2[i] += gammavec[0][i][j] * (*this)[j] - gammavec[1][i][j] * (*this)[j+4] -
+      if (m_b>0) result2[i] += gammavec[0][i][j] * (*this)[j] - gammavec[1][i][j] * (*this)[j+4] -
                              gammavec[2][i][j] * (*this)[j+8] - gammavec[3][i][j] * (*this)[j+12];
       else{
         for (size_t k(0); k<4; ++k){
