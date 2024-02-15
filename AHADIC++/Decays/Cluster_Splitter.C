@@ -363,7 +363,7 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
 
     // irrelevant
     norm  *= exp(-arg*gamma_min/zmax);
-    wt    *= exp(-arg/z);
+    wt    *= exp(-arg*gamma_min/z);
   }
 
   if (wt>norm) {
