@@ -85,7 +85,7 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  if (mom[0] < flav.HadMass()) {
+  if (mom[0] < flav.Mass(true)) {
     msg_Debugging() << METHOD << ": parton too soft, mass = " << flav.HadMass()
                     << " and energy = " << mom[0] << "\n";
     return false;
@@ -94,8 +94,8 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   // the energy of the extracted parton and potentially the mass of its antiflavour.
   // For the case of gluons, this is not necessary, but its HadMass() is zero anyway.
   double required_energy =
-      EstimateRequiredEnergy(!flav.IsQuark() && !m_valence)
-      + mom[0] + Max(flav.HadMass(), m_LambdaQCD);
+          EstimateRequiredEnergy(!flav.IsQuark() && !m_valence) + mom[0] +
+          flav.HadMass();
   if (m_residualE < required_energy) {
     msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
     return false;
@@ -249,9 +249,7 @@ double Photon_Remnant::EstimateRequiredEnergy(bool needs_valence_quarks) const
   for (Particle const * pit : m_spectators) {
     masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
   }
-  if (needs_valence_quarks) {
-    masses += 2 * Flavour(kf_s).HadMass();
-  }
+  if (needs_valence_quarks) { masses += 2 * Flavour(kf_d).HadMass(); }
   // Adding lambda_QCD for the gluon that might be added later in CompensateColours()
   return masses + m_LambdaQCD;
 }

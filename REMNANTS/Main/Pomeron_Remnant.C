@@ -67,14 +67,14 @@ bool Pomeron_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  if (mom[0] < flav.HadMass()) {
+  if (mom[0] < flav.Mass(true)) {
     msg_Debugging() << METHOD << ": parton too soft, mass = " << flav.HadMass()
                     << " and energy = " << mom[0] << "\n";
     return false;
   }
-  double required_energy =
-      flav.IsGluon() ? m_LambdaQCD + mom[0]
-                     : Max(flav.HadMass(),m_LambdaQCD) + mom[0] + m_LambdaQCD;
+  double required_energy = flav.IsGluon()
+                                   ? m_LambdaQCD + mom[0]
+                                   : flav.HadMass() + mom[0] + m_LambdaQCD;
   if (m_residualE < required_energy) {
     msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
     return false;
