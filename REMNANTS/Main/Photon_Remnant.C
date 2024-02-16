@@ -239,4 +239,3 @@ void Photon_Remnant::FindRecoiler() {
       p_recoiler = part;
   }
 }
-

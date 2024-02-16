@@ -36,7 +36,10 @@ bool Pomeron_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
                   << m_extracted << ", \n and spectators = " << m_spectators
                   << "\n";
   // Assume all remnant bases already produced a beam blob = p_beamblob
-  MakeLongitudinalMomenta(ktmap, copy);
+  if (!MakeLongitudinalMomenta(ktmap, copy)) {
+    msg_Debugging() << METHOD << ": Cannot put all particles on mass-shell, returning false.\n";
+    return false;
+  }
   return true;
 }
 
@@ -67,18 +70,6 @@ bool Pomeron_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  if (mom[0] < flav.HadMass()) {
-    msg_Debugging() << METHOD << ": parton too soft, mass = " << flav.HadMass()
-                    << " and energy = " << mom[0] << "\n";
-    return false;
-  }
-  double required_energy =
-      flav.IsGluon() ? m_LambdaQCD + mom[0]
-                     : Max(flav.HadMass(),m_LambdaQCD) + mom[0] + m_LambdaQCD;
-  if (m_residualE < required_energy) {
-    msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
-    return false;
-  }
   double x = mom[0] / m_residualE;
   // Still in range?
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
@@ -88,7 +79,7 @@ bool Pomeron_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   return true;
 }
 
-void Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
+bool Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
                                              const bool &copy) {
   // Calculate the total momentum that so far has been extracted through
   // the shower initiators and use it to determine the still available
@@ -111,9 +102,11 @@ void Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   for (Particle  const * pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
   }
-  if (remnant_masses > m_residualE)
+  if (remnant_masses > availMom[0]) {
     msg_Error() << METHOD << ": Warning, HadMasses of remnants = "
                 << remnant_masses << " vs. residual energy = " << m_residualE << "\n";
+    return false;
+  }
   for (auto part : m_spectators) {
     if (availMom[0] < 0)
       msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
@@ -135,6 +128,7 @@ void Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
     p_beamblob->AddToOutParticles(part);
   (*ktmap)[part] = Vec4D();
   }
+  return true;
 }
 
 void Pomeron_Remnant::MakeRemnants() {

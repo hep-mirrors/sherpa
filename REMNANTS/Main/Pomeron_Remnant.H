@@ -15,7 +15,7 @@ private:
 
 
   void MakeRemnants();
-  void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap, const bool &copy);
+  bool MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap, const bool &copy);
   ATOOLS::Particle *MakeParticle(const ATOOLS::Flavour &flav);
   double SelectZ(const ATOOLS::Flavour &flav, double restmom, double remnant_masses) const;
   void Output() const;
