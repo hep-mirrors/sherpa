@@ -427,9 +427,9 @@ double Define_Dipoles::FormFactor(){
     form+=-D.m_thetaij*D.m_QiQj*p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
   }
   // Calculated in FSR.C
-  // for(auto &D: m_dipolesFF){
-  //   form*=p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
-  // // }
+  for(auto &D: m_dipolesFF){
+    form+=p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
+  }
   // if(m_ifisub!=0){
   //   // For inital-final we take the t-channel corrections
     for(auto &D: m_dipolesIF){
