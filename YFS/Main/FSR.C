@@ -42,8 +42,8 @@ FSR::FSR()
   s["FSR_FCUT"].SetDefault(0);
   s["FSR_NBAR"].SetDefault(0);
   s["MASSIVE_NBAR"].SetDefault(0);
-  s["FSR_EIK"].SetDefault(1);
-  s["FSR_CRU"].SetDefault(0);
+  s["FSR_EIK"].SetDefault(0);
+  s["FSR_CRU"].SetDefault(1);
   s["FSR_NGAMMA"].SetDefault(-1);
   p_yfsFormFact = new YFS::YFS_Form_Factor();
   s["FSR_CUT"].SetDefault(1e-2*m_vmin);
@@ -57,8 +57,6 @@ FSR::FSR()
   m_eikonal_mode = s["FSR_EIK"].Get<int>();
   m_fixed_ngamma = s["FSR_NGAMMA"].Get<int>();
   p_fsrFormFact = new YFS::YFS_Form_Factor();
-  m_omegaMin = m_fsrcut;
-  m_omegaMax = std::numeric_limits<double>::max();
 }
 
 FSR::~FSR() {
@@ -66,14 +64,16 @@ FSR::~FSR() {
   delete p_fsrFormFact;
 }
 
-bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
-  p_dipole = &dipole[0];
+bool FSR::Initialize(YFS::Dipole &dipole) {
+  p_dipole = &dipole;
   m_fsrWeight = 1.;
   m_mass.clear();
   m_dipole.clear();
   m_dipoleFl.clear();
   m_dipole.push_back(p_dipole->GetOldMomenta(0));
   m_dipole.push_back(p_dipole->GetOldMomenta(1));
+  m_bornmomenta.push_back(p_dipole->GetBornMomenta(0));
+  m_bornmomenta.push_back(p_dipole->GetBornMomenta(1));
   m_dipoleFl.push_back(p_dipole->GetFlav(0));
   m_dipoleFl.push_back(p_dipole->GetFlav(1));
   m_QFrame = m_dipole[0] + m_dipole[1];
@@ -89,7 +89,6 @@ bool FSR::Initialize(YFS::Dipole_Vector::iterator dipole) {
   MakePair(sqrt(m_dip_sp), m_bornQ1, m_bornQ2);
   m_EQ = sqrt(m_dip_sp) / 2.;
   m_Emin = 0.5 * sqrt(m_s) * m_vmin;
-  m_Kmin = 0.5 * m_fsrcut * sqrt(m_dip_sp);
   m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
   if (m_dipole.size() != 2) {
@@ -132,7 +131,6 @@ void FSR::CalculateBetaBar() {
   m_betaBar = sqrt(m_betaBar) / m_dip_sp;
   m_betaBar1 = CalculateBeta(m_dipole[0]);
   m_betaBar2 = CalculateBeta(m_dipole[1]);
-  m_betaBar1 = m_betaBar2 = m_betaBar;
   double t1 = (1. + m_betaBar1 * m_betaBar2) / (m_betaBar1 + m_betaBar2);
   double logarg =  2.*(1. + m_betaBar1) * (1. + m_betaBar2) / ((1. - m_betaBar1) * (1. - m_betaBar2));
   m_gBar  = -m_QF2 * m_alpi * t1 * (log(logarg / 2.) - 1.); // See Mareks phd thesis A.2.1
@@ -150,39 +148,31 @@ void FSR::GenerateAngles() {
   double del1, del2;
   double am2 = sqr((m_mass[0]+m_mass[1])) / m_dip_sp;
   double weight = 1;
-  // double P  = log((1. + m_beta1) / (1. - m_beta1))
-  //             / (log((1. + m_beta1) / (1. - m_beta1)) + log((1. + m_beta2) / (1. - m_beta2)));
   if (!m_kkmcAngles) {
- double P = log((1.+m_beta1)/(1.-m_beta1))
+    double P = log((1.+m_beta1)/(1.-m_beta1))
                 /(log((1.+m_beta1)/(1.-m_beta1))+log((1.+m_beta2)/(1.-m_beta2)));
     while (true) {
-      if (ran->Get() < P) {
+      if (ran->Get() <= P) {
         double rnd = ran->Get();
         double a   = 1./m_beta1*log((1.+m_beta1)/(1.-m_beta1));;
         m_c        = 1./m_beta1*(1.-(1.+m_beta1)*exp(-a*m_beta1*rnd));
-        // m_c        = 1./m_beta1*(pow(1+m_beta1,rnd)/pow(1-m_beta1,rnd-1)-1);
-
       }
       else {
         double rnd = ran->Get();
         double a   = 1./m_beta2*log((1.+m_beta2)/(1.-m_beta2));
         m_c        = 1./m_beta2*((1.-m_beta2)*exp(a*m_beta2*rnd)-1.);
-        // m_c        = 1./m_beta2*(pow(1-m_beta2,rnd)/pow(1+m_beta2,rnd-1)-1);
-
       }
       weight = 1.-((1.-m_beta1*m_beta1)/((1.-m_beta1*m_c)*(1.-m_beta1*m_c))
                         +(1.-m_beta2*m_beta2)/((1.+m_beta2*m_c)*(1.+m_beta2*m_c)))
                        /(2.*(1.+m_beta1*m_beta2)/((1.-m_beta1*m_c)*(1.+m_beta2*m_c)));
-      if (ran->Get() <= weight) break;
+      if (ran->Get() < weight) break;
     }
-    m_fsrWeight*=weight;
+    m_MassWls.push_back(weight);
     m_theta = acos(m_c);
     m_st = sin(m_theta);
-    m_sin.push_back(m_st);
     m_phi   = 2.*M_PI * ran->Get();
-    m_del1.push_back(1-m_beta1*m_c);
-    m_del2.push_back(1+m_beta2*m_c);
-    m_cos.push_back(m_c);
+    del1 = 1-m_beta1*m_c;
+    del2 = 1+m_beta2*m_c;
   }
   else {
     double beta  = sqrt(1. - am2);
@@ -200,19 +190,20 @@ void FSR::GenerateAngles() {
       del2 = a;
       costhg = -costhg;
     }
-    // double weight = 1. - ((1. - m_beta1 * m_beta1) / sqr(1. - m_beta1 * m_c)
-    //                       + (1. - m_beta2 * m_beta2) / sqr(1. + m_beta2 * m_c))
-    //                 / (2.*(1. + m_beta1 * m_beta2) / ((1. - m_beta1 * m_c) * (1. + m_beta2 * m_c)));
     m_theta = acos(costhg);
     m_phi = 2.*M_PI * ran->Get();
     m_c = costhg;
     m_st = sinthg;
     del1 = 1 - m_beta1 * m_c;
     del2 = 1 + m_beta2 * m_c;
+    m_MassWls.push_back(1.0);
   }
   m_cos.push_back(m_c);
   m_sin.push_back(m_st);
-  m_fbarvec.push_back(1. / (del1 * del2) * (1. - am2 / 2.));
+  m_fbarvec.push_back(1. / (del1 * del2) * (1. + m_beta1*m_beta2)/(m_beta1+m_beta2));
+  if(abs(m_c)>1){
+      msg_Error()<<"Photon angel out of bounds with cos(theta) = "<<m_c<<std::endl;
+  }
 }
 
 
@@ -254,7 +245,6 @@ void FSR::GeneratePhotonMomentum() {
   m_zini.clear();
   m_k0.clear();
   m_fbarvec.clear();
-  m_rand.clear();
   m_phi_vec.clear();
   for (int i = 0; i < m_n; i++) {
     GenerateAngles();
@@ -282,7 +272,7 @@ bool FSR::MakeFSR() {
   m_yy = 1.0;
   m_xfact = 1.0;
   m_sQ = m_dip_sp;
-  double smin = (m_mass[0] + m_mass[1]);
+  double smin = sqr(m_mass[0] + m_mass[1]);
   NPhotons();
   GeneratePhotonMomentum(); // Run this even if no photons to clear previous event
   if (m_photons.size() == 0) {
@@ -296,23 +286,12 @@ bool FSR::MakeFSR() {
       return false;
     }
     RescalePhotons();
-    // for (auto k : m_photons) {
-    //   if(k.E() < m_fsrcut*sqrt(m_dip_sp)/2){
-    //     RejectEvent();
-    //     return false;
-    //   }
-    // }
     m_sQ = m_dip_sp * m_yy;
-    if ( sqrt(m_sQ) < smin ) {
+    if ( (m_sQ) < smin ) {
       RejectEvent();
       m_cut = 3;
       return false;
     }
-    // if(m_photonSum.E() > sqrt(m_dip_sp)){
-    //   RejectEvent();
-    //   return false;
-    //   // msg_Error()<<"FSR Photons too hard!"<<std::endl;
-    // }
   }
   if (m_n == 0 && m_wt2 != 1) {
     msg_Error() << METHOD << "Incorrect jacobian in YFS FSR" << std::endl;
@@ -322,6 +301,7 @@ bool FSR::MakeFSR() {
   m_px = m_dipole[0] + m_dipole[1] + m_photonSum;
   m_sX = m_px.Abs2();
   m_Q = m_dipole[0] + m_dipole[1];
+
   double masc1 = m_mass[0] * sqrt(m_sQ / m_dip_sp);
   double masc2 = m_mass[1] * sqrt(m_sQ / m_dip_sp);
   CE.Isotropic2Momenta(m_Q, sqr(masc1), sqr(masc2), m_r1, m_r2, ran->Get(), ran->Get(), -1, -1);
@@ -344,7 +324,6 @@ void FSR::RescalePhotons() {
   m_yy = 1. / (1. + m_photonSum[0] + 0.25 * m_photonSum.Abs2());
   m_wt2 = m_yy * (1. + m_photonSum[0]);
   m_sprim = m_dip_sp * m_yy;
-  m_sqtest = m_sprim;
 
   // Rescale all photons
   double ener = sqrt(m_sprim) / 2.;
@@ -361,22 +340,18 @@ void FSR::RescalePhotons() {
 
 bool FSR::F(ATOOLS::Vec4D_Vector &k) {
   double del1, del2;
-  m_sqtest = m_dip_sp;
-  m_sX = (m_dipole[0] + m_dipole[1] + m_photonSum).Abs2();
   double ener = sqrt(m_sprim) / 2.;
-  double am1 = sqr(m_dipole[0].Mass() / ener);
-  double am2 = sqr(m_dipole[1].Mass() / ener);
+  double am1 = 1-m_betaBar1*m_betaBar1;
+  double am2 = 1-m_betaBar2*m_betaBar2;
   m_eta1 = (m_sprim + m_dipole[0].Abs2() - m_dipole[1].Abs2()) / m_sprim;
   m_eta2 = (m_sprim - m_dipole[0].Abs2() + m_dipole[1].Abs2()) / m_sprim;
   Vec4D p1 = m_dipole[0];
   Vec4D p2 = m_dipole[1];
-  double eta1(0), eta2(0);
   double betan = sqrt((m_sprim - pow(m_mass[0] - m_mass[1], 2)) * (m_sprim - pow(m_mass[0] + m_mass[1], 2))) / m_sprim;
-  MakePair(sqrt(m_sprim), p1, p2, p1.Mass(), p2.Mass() , eta1, eta2);
   CalculateBetaBar();
   for (size_t i = 0; i < k.size(); ++i)
   {
-    if (m_cos[i] <= 0.) {
+    if (m_cos[i] > 0.) {
       del1 = am1 / (m_eta1 + betan) + betan * sqr(m_sin[i]) / (1. + m_cos[i]);
       del2 = m_eta2 + betan * m_cos[i];
     }
@@ -387,8 +362,11 @@ bool FSR::F(ATOOLS::Vec4D_Vector &k) {
     m_del1.push_back(del1);
     m_del2.push_back(del2);
     if (m_eikonal_mode == 1) {
-      m_f = Eikonal(k[i]);
-      m_fbar = EikonalInterferance(k[i]);
+      m_f    = p_dipole->Eikonal(k[i]);
+      m_fbar = p_dipole->EikonalInterferance(k[i]);
+      m_fbar *= m_dip_sp/m_sprim;
+      // m_fbar = m_alpi / (2  * M_PI) * m_fbarvec[i];
+
     }
     else {
       m_f = 1. - (am1 + am2) / 4 - am1 / 4.*del2 / del1 - am2 / 4.*del1 / del2;
@@ -403,7 +381,7 @@ bool FSR::F(ATOOLS::Vec4D_Vector &k) {
       PRINT_VAR(sqrt(m_sQ));
       m_f = 0;
     }
-    m_MassWls.push_back(m_f / m_fbar);
+    m_MassWls[i] *= m_f / m_fbar;
     m_dist1.push_back(m_f);
     m_dist2.push_back(m_fbar);
     if (IsBad(m_massW)) {
@@ -417,36 +395,30 @@ bool FSR::F(ATOOLS::Vec4D_Vector &k) {
   return true;
 }
 
-void FSR::YFS_FORM(){
-  // if(m_failed) return;
-
+bool FSR::YFS_FORM(){
   // r1, r2 are the corresponding q* vectors defined pg 46 arxiv  9912214
   // they are created such that sqr(r_i) = sqr(m_i)sQ/sX
-  // create back to back 
+  m_photonSum*=0;
+  m_photons = p_dipole->GetPhotons();
+  for(auto k: m_photons) m_photonSum+=k;
+  m_dipole  = p_dipole->GetNewMomenta();
   m_Q = m_dipole[0]+m_dipole[1];
-  // Poincare boostCMS(m_Q);
-  // boostCMS.Boost(m_dipole[0]);
-  // boostCMS.Boost(m_dipole[1]);
-  // boostCMS.Boost(m_r1);
-  // boostCMS.Boost(m_r2);
+  m_sX = (m_Q+m_photonSum).Abs2();
+  m_r1 = p_dipole->GetGhost(0);
+  m_r2 = p_dipole->GetGhost(1);
+  m_sQ = m_Q*m_Q;
+  CalculateBetaBar();
   m_q1q2 = m_dipole[0]*m_dipole[1];
   double Eqq = 0.5*sqrt(m_sQ);
   double Delta1 = m_fsrcut*(1.+2.*m_Q*m_photonSum/m_sQ);
-  m_delta1 = Delta1;
-  // m_delta1 = m_fsrcut*(1.+2*m_photonSum.E()/sqrt(m_sQ));
-  // PRINT_VAR(abs(m_delta1 - Delta1));
-  // m_EminQ  = Eqq*m_fsrcut*(1.+2*m_photonSum.E()/sqrt(m_sQ));
-  m_EminQ = Eqq*m_fsrcut;
-  // m_volmc = m_gBar*log(m_fsrcut*(1.+2.*m_Q*m_photonSum/m_sQ))-m_gpBar*log(m_fsrcut); // Eq 76 arxiv-9912214
-  m_expf = exp(m_volmc);
-  double mass1sc = m_mass[0]*sqrt(m_sQ/m_sX);
-  double mass2sc = m_mass[1]*sqrt(m_sQ/m_sX);
+  m_EminQ = Eqq*Delta1;
   double Eq1   = (m_sQ +m_mass[0]*m_mass[0] -m_mass[1]*m_mass[1])/(2*sqrt(m_sQ));
   double Eq2   = (m_sQ +m_mass[1]*m_mass[1] -m_mass[0]*m_mass[0])/(2*sqrt(m_sQ));
-  // m_delta1 = m_EminQ*(1.+2.*P*m_photonSum/m_sQ);
+
   double EQQ = sqrt(m_sQ)/2.;
   m_bvrA = p_fsrFormFact->A(m_q1q2,m_mass[0],m_mass[1]);
-  double YFS_IR = -2.*m_alpi*abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_q1q2,m_mass[0],m_mass[1])-1.)*log(1/m_fsrcut);
+  double YFS_IR = -2.*m_alpi*abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta1);
+
   if (m_use_crude) {
     m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass);
     m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass);
@@ -461,28 +433,35 @@ void FSR::YFS_FORM(){
       m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
     }
   }
-  m_btilStar = p_fsrFormFact->BVR_full(m_q1q2,m_dipole[0][0], m_dipole[1][0],m_mass[0],m_mass[1], m_Emin, 1e-60, 0);
-  m_btil     = p_fsrFormFact->BVR_full(m_q1q2,Eq1, Eq2,m_mass[0],m_mass[1], m_EminQ, 1e-60, 0);
+  m_btilStar = p_fsrFormFact->BVR_full(m_q1q2,m_dipole[0][0], m_dipole[1][0],m_mass[0],m_mass[1], m_Emin, m_photonMass, 0);
+  m_btil     = p_fsrFormFact->BVR_full(m_q1q2,Eq1,Eq2,m_mass[0],m_mass[1], m_EminQ, m_photonMass,0);
   
-  // m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1*m_r2, m_r1[0], m_r2[0], m_r1.Mass(),m_r2.Mass(), m_Emin, 1e-60);
-  // m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1*m_r2, Eqq, Eqq, m_r1.Mass(),m_r2.Mass(), m_EminQ, 1e-60);
-  // m_A4 = p_fsrFormFact->A4(m_r1*m_r2, m_r1.E(), m_r2.E(), m_r1.Mass(),m_r2.Mass());
-  // m_A = p_fsrFormFact->A(m_r1*m_r2, m_r1.Mass(),m_r2.Mass());
-  // double vol = m_volmc-BtiXexa+BtiQexa;
   m_DelYFS = m_btilStar - m_btil;
   m_delvol = m_BtiXcru  - m_BtiQcru;
-  m_volmc = m_gp*log(1./m_fsrcut) - m_delvol;
+
+  m_volmc = m_gp*log(1./m_fsrcut);
+
    if(m_hidephotons==1){
-    m_hideW = exp(YFS_IR + m_DelYFS + m_volmc);
+    m_hideW = exp(YFS_IR + m_DelYFS + m_volmc - m_delvol);
   }
-  else m_hideW=1;
-  // m_hideW = exp(m_DelYFS-m_delvol);
-  // if(m_NRemoved==0) m_hideW=1;
+  else m_hideW=1;//exp(YFS_IR  +  m_volmc);
   m_YFS_IR = exp(YFS_IR+m_DelYFS);
+  return true;
 }
 
 void FSR::HidePhotons() {
   if(m_photons.size()==0) {
+    m_massW =1;// m_MassWls[0];
+    return;
+  }
+  std::vector<double> y, z, del1, del2;
+  if(!m_hidephotons){
+    for (int i = 0; i < m_photons.size(); ++i)
+    {
+      m_massW *= m_MassWls[i];
+      del1.push_back(m_del1[i]);
+      del2.push_back(m_del2[i]);
+    }
     return;
   }
   m_NRemoved  = 0;
@@ -490,11 +469,8 @@ void FSR::HidePhotons() {
   m_yini.clear();
   m_zini.clear();
   Vec4D_Vector ph;
-  // ph.push_back(m_photons[0]);
   std::vector<int> mark;
-  std::vector<double> y, z, del1, del2;
   m_photonSum *= 0;
-
   // mark photons for removal
   for (size_t i = 0; i < m_photons.size(); ++i) {
     if (m_photons[i].E() < m_Emin) {
@@ -518,6 +494,7 @@ void FSR::HidePhotons() {
   }
   p_dipole->SetNPhoton(ph.size());
   m_photons = ph;
+  p_dipole->AddPhotonsToDipole(m_photons);
 }
 
 void FSR::HidePhotons(Vec4D_Vector &k){
@@ -572,8 +549,8 @@ void FSR::MakePair(double cms, Vec4D &p1, Vec4D &p2, double mass1, double mass2,
 void FSR::MakePair(double cms, Vec4D &p1, Vec4D &p2) {
   double E = cms / 2.;
   double s = sqr(cms);
-  double mass1 = m_mass[0];
-  double mass2 = m_mass[1];
+  double mass1 = p1.Mass();
+  double mass2 = p2.Mass();
   double beta2 = (s - sqr(mass1 - mass2)) * (s - sqr(mass1 + mass2)) / (s * s);
   double beta =  sqrt(beta2);
   double eta1 = (s + sqr(mass1) - sqr(mass2)) / s;
@@ -742,7 +719,7 @@ void FSR::RejectEvent() {
 
 void FSR::Reset() {
   m_f = m_fbar = 0.0;
-  m_fsrWeight  = 0.0;
+  m_fsrWeight  = 1.0;
   m_hideW = 0.0;
   m_photonSum *= 0;
   m_photons.clear();
@@ -764,12 +741,12 @@ double FSR::Eikonal(Vec4D k) {
 }
 
 double FSR::EikonalInterferance(Vec4D k) {
+  if(!IsEqual((m_dipole[0] + m_dipole[1]).Abs2(),m_sprim)){
+    msg_Error()<<"Wrong dipoles called for Eikonal Weight";
+  }
   return m_alpi / (4.*M_PI) * 2.*m_dipole[0] * m_dipole[1] / ((k * m_dipole[0]) * (k * m_dipole[1]));
 }
 double SqLam(double x,double y,double z)
 {
   return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
-  // double arg(sqr(s-s1-s2)-4.*s1*s2);
-  // if (arg>0.) return sqrt(arg)/s;
-  // return 0.;
 }
