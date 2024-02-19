@@ -93,13 +93,13 @@ void ISR::GenerateAngles()
     while (true) {
       if (ran->Get() < P) {
         double rnd = ran->Get();
-        double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));
+        double a   = log((1.+m_b1)/(1.-m_b1));
         m_c        = 1./m_b1*(1.-(1.+m_b1)*exp(-a*m_b1*rnd));
         // m_c        = 1./m_b1*(pow(1+m_b1,rnd)/pow(1-m_b1,rnd-1)-1);
       }
       else {
         double rnd = ran->Get();
-        double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
+        double a   = log((1.+m_b2)/(1.-m_b2));
         m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
         // m_c        = 1./m_b1*(pow(1-m_b2,rnd)/pow(1+m_b2,rnd-1)-1);
       }
@@ -138,6 +138,9 @@ void ISR::GenerateAngles()
     m_del1.push_back(del1);
     m_del2.push_back(del2);
     m_cos.push_back(m_c);
+  }
+  if(abs(m_c)>1){
+      msg_Error()<<"Photon angel out of bounds with cos(theta) = "<<m_c<<std::endl;
   }
 }
 
@@ -228,7 +231,7 @@ void ISR::MapPhotonMomentun() {
 
   for (size_t i = 0; i < m_photons.size(); ++i)
   {
-    if(m_photons[i][0]*m_lam <= m_vmin) m_cut = 0.;
+    if(m_photons[i][0]*m_lam < m_vmin) m_cut = 0.;
     m_photons[i] *= m_lam * sqrt(m_s) / 2.;
     m_yini[i] /= m_lam;
     m_zini[i] /= m_lam;

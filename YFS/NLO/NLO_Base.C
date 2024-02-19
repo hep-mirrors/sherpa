@@ -171,71 +171,35 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	double norm = 2.*pow(2 * M_PI, 3);
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
 	Vec4D kk = k;
-	// CheckMasses(p);
 	MapMomenta(p, k);
-	// if( k.E() > 10 ) return 0;
 	m_evts+=1;
-	double subflux = 0;
-	double totflux = 1;
-	double sx = (m_bornMomenta[0]+m_bornMomenta[1]-kk).Abs2();
-	double sq = (m_bornMomenta[2]+m_bornMomenta[3]).Abs2();
-	double sp = (p[0]+p[1]-kk).Abs2();
-	double spp = (p[0]+p[1]).Abs2();
+
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesII(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
-	p_global_dipoles->MakeDipolesII(m_flavs,p,m_plab);
-	p_global_dipoles->MakeDipolesIF(m_flavs,p,m_plab);
-	p_global_dipoles->MakeDipoles(m_flavs,p,m_plab);
+
 	double flux;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	else flux = p_dipoles->CalculateFlux(kk);
-	Vec4D Q = p[0]+p[1];
-	// flux = sp/sq;
 	double tot,colltot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_dipoles->CalculateRealSubEEX(k);
+	double subb   = p_dipoles->CalculateRealSubEEX(kk);
+	
 	rcoll = p_dipoles->CalculateEEXReal(kk)*m_born;
 	if (!CheckPhotonForReal(k)) { 
 		subb   = p_dipoles->CalculateRealSubEEX(kk);
 		if(m_no_subtraction) return rcoll/subb;
 		return ( rcoll/subb - m_born);
 	}
-	double eex = rcoll/subb - m_born;
-	double mz = Flavour(kf_Z).Mass();
-	double gz = Flavour(kf_Z).Width();
-	if(m_fsrmode==1 || m_noflux!=0){
-			Q*=0;
-			for (int i = 2; i < m_plab.size(); ++i)
-			{
-				Q += m_plab[i];
-			}
-			sq = (Q).Abs2();
-			sx = (Q+k).Abs2();
-			double shifdiff = fabs(Q.Mass()-mz);
-			double sqq = (m_plab[2]+m_plab[3]).Abs2();
-			double sxx = (m_plab[2]+m_plab[3]+kk).Abs2();	
-			subflux = (sq*sq)/(sx*sx)-1;
-			if(m_noflux==3) {
-				flux=sqq/sxx;
-				// PRINT_VAR(flux);
-				// flux=(sqr(sq-mz*mz)+sq*sqr(gz)/sqr(mz))/(sqr(sx-mz*mz)+sx*sqr(gz)/sqr(mz));
-				// flux=sqr(sq/sx)*(sqr(sq-mz*mz)+sqr(gz)*sqr(mz))/(sqr(sx-mz*mz)+sqr(gz)*sqr(mz));
-				// flux = (sqq/sxx)*(sqr(sqq-91.1876*91.1876)+sqr(2.4952*sqq)/sqr(91.1876))/(sqr(sxx-91.1876*91.1876)+sqr(2.4952*sxx)/sqr(91.1876));
-     	  // if(shifdiff < m_pole_fac*gz) flux = 1;
-			}
-			if(m_ifisub==1) {
-				subloc+= p_nlodipoles->CalculateRealSubIF(k);
-				// subb  += p_dipoles->CalculateRealSubIF(kk);
-			}
-			if(m_ifisub==2 && shifdiff > m_pole_fac) subloc+=p_nlodipoles->CalculateRealSubIF(k)*subflux;
-			if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
+	if(m_ifisub==1) {
+		subloc+= p_nlodipoles->CalculateRealSubIF(k);
+		subb  += p_dipoles->CalculateRealSubIF(kk);
 	}
+	if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	p.push_back(k);
-	// CheckMasses(p,1);
 	CheckMomentumConservation(p);
-	double r = p_real->Calc_R(p) / norm * flux;///p_yfsFormFact->BVirtT(p[0],p[2]);;
+	double r = p_real->Calc_R(p) / norm * flux;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
 							 <<"Real ME is : "<<r<<std::endl
@@ -244,14 +208,14 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	}
 	m_recola_evts+=1;
 	if(submode) tot = r-subloc*m_born;
-	else tot =  (r-subloc*m_born)/subloc;
+	else tot =  (r-subloc*m_born)/subb;
   if(m_isr_debug || m_fsr_debug){
 		double diff = ((r/subloc - m_born)-( rcoll/subb - m_born))/((r/subloc - m_born)+( rcoll/subb - m_born));
 		m_histograms1d["Real_diff"]->Insert(diff);
 		m_histograms1d["Real_Flux"]->Insert(flux);
   }
   if(m_no_subtraction) return r/subloc;
-	return tot;//*exp(-2*intcorr);///m_rescale_alpha;
+	return tot;
 }
 
 double NLO_Base::CalculateRealVirtual() {
@@ -619,7 +583,7 @@ void NLO_Base::CheckMassReg(){
 		out_finite<< setprecision(15) << m_photonMass << "," << virt - sub*m_born << std::endl;
 		out_sub.close();
 		out_recola.close();
-		exit(1);
+		exit(0);
 	}
 }
 
