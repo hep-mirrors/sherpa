@@ -33,8 +33,9 @@ namespace REMNANTS {
     bool MustEmit(ATOOLS::Particle * pi, ATOOLS::Particle * pj);
     bool SoftEmission();
     void InitSoftEmission();
-    bool DefineKinematics();
-    bool MakeKinematics();
+    bool DefineKinematics(ATOOLS::Vec4D & pi,ATOOLS::Vec4D & pj,ATOOLS::Vec4D & pk);
+    bool MakeKinematics(ATOOLS::Vec4D & pi,ATOOLS::Vec4D & pj,ATOOLS::Vec4D & pk);
+    bool FillSoftEmission(ATOOLS::Vec4D & pi,ATOOLS::Vec4D & pj,ATOOLS::Vec4D & pk);
   public:
     Beam_Decorrelator();
     ~Beam_Decorrelator();

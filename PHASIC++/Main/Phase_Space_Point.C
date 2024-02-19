@@ -9,8 +9,9 @@ using namespace ATOOLS;
 
 Phase_Space_Point::Phase_Space_Point(Phase_Space_Handler * psh)
     : p_pshandler(psh), p_beamhandler(NULL), p_isrhandler(NULL),
-      p_moms(p_pshandler->Momenta()), p_cuts(NULL), p_beamchannels(NULL), p_isrchannels(NULL),
-      p_fsrchannels(NULL), m_Ecms(ATOOLS::rpa->gen.Ecms()), m_smin(0.),
+      p_moms(p_pshandler->Momenta()), p_cuts(NULL),
+      p_beamchannels(NULL), p_isrchannels(NULL), p_fsrchannels(NULL),
+      m_Ecms(ATOOLS::rpa->gen.Ecms()), m_smin(0.),
       m_weight(0.), m_ISsymmetryfactor(1.) {}
 
 Phase_Space_Point::~Phase_Space_Point() {

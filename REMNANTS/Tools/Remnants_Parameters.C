@@ -48,7 +48,7 @@ void Remnants_Parameters::Initialize() {
   proton->m_params["REFERENCE_ENERGY"]        = 7000.0;
   proton->m_params["ENERGY_SCALING_EXPO"]     = 0.08;
   proton->m_params["BEAM_SPECTATOR_MEAN"]     = 0.0;
-  proton->m_params["BEAM_SPECTATOR_SIGMA"]    = 1.1;
+  proton->m_params["BEAM_SPECTATOR_SIGMA"]    = 0.25;
   proton->m_params["BEAM_SPECTATOR_Q2"]       = 0.77;
   proton->m_params["BEAM_SPECTATOR_KTMAX"]    = 1.0;
   proton->m_params["BEAM_SPECTATOR_KTEXPO"]   = 5.0;

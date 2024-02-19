@@ -15,7 +15,7 @@ Reconnect_Statistical::~Reconnect_Statistical() {
 
 void Reconnect_Statistical::SetParameters() {
   // Pmode is the mode for the distance measure in momentum space,
-  // based on the notion of the string are law, cf. hep-ph/9812423, where the
+  // based on the notion of the string area law, cf. hep-ph/9812423, where the
   // area of a "string" made up of two coloured particles i and j is given by
   // pi*pj-mi*mj (note we assume the gluons to distribute their momentum equally
   // between the two colours).

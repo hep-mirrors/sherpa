@@ -40,7 +40,7 @@ namespace REMNANTS {
     void Initialize(Remnant_Handler * rhandler);
     bool CreateBreakupKinematics(const size_t & beam,ATOOLS::ParticleMomMap * ktmap,
 				 const double & scale);
-    ATOOLS::Vec4D KT(const ATOOLS::Particle * part);
+    ATOOLS::Vec4D KT(const ATOOLS::Particle * part,const double & ktext=-1.);
   };
 }
 
