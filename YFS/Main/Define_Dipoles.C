@@ -360,7 +360,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     // if(m_massless_sub) sub += D.EikonalMassless(k, D.GetMomenta(0), D.GetMomenta(1));
     // else sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
     // for(auto &p: D.GetMomenta()){
-    for (int i = 0; i < D.GetMomenta().size(); ++i)
+    for (int i = 0; i < D.GetBornMomenta().size(); ++i)
     {
       Vec4D p = D.GetMomenta(i);
       eik += D.m_theta[i]*D.m_Q[i]*p/(p*k);
@@ -382,7 +382,6 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     }
   }
   sub = -m_alpha / (4 * M_PI * M_PI)*eik*eik;
-  // double sub2 =  -m_alpha / (4 * M_PI * M_PI)*eik*eik;
   return sub;
 }
 
@@ -428,14 +427,11 @@ double Define_Dipoles::FormFactor(){
   }
   // Calculated in FSR.C
   for(auto &D: m_dipolesFF){
-    form+=p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
+    form+=-D.m_thetaij*D.m_QiQj*p_yfsFormFact->BVR_full(D.GetMomenta(0), D.GetMomenta(1), sqrt(m_s) / 2.);
   }
-  // if(m_ifisub!=0){
-  //   // For inital-final we take the t-channel corrections
     for(auto &D: m_dipolesIF){
-      form+=-D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+      form+=D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
     }
-  // }
   return exp(form); 
 }
 
@@ -574,7 +570,7 @@ double Define_Dipoles::CalculateEEXVirtual(){
 double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
   double sub(0);
   for (auto &D : m_dipolesII) {
-    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+    sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   for (auto &D : m_dipolesFF) {
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
