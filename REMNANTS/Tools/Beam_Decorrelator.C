@@ -20,7 +20,7 @@ Initialize(Remnant_Handler * const rhandler) {
   Scoped_Settings s = Settings::GetMainSettings()["REMNANTS"];
   m_on   = s["BEAM_DECORRELATOR"].SetDefault(0).Get<bool>();
   if (m_on &&
-      (true || p_rhandler->Type()==strat::DIS1 || p_rhandler->Type()==strat::DIS2)) {
+      (p_rhandler->Type()==strat::DIS1 || p_rhandler->Type()==strat::DIS2)) {
     // TODO: do the same for hh collisions?
     p_kperpGenerator = p_rhandler->GetKPerp();
     m_expo    = s["SOFT_X_EXPONENT"].SetDefault(-2.0).Get<double>();
