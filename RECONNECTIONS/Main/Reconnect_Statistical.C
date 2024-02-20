@@ -81,8 +81,8 @@ bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
   }
   double dist0  = Distance(part[0],part[2]), dist1  = Distance(part[1],part[3]);
   double ndist0 = Distance(part[0],part[3]), ndist1 = Distance(part[1],part[2]);
-  double prob   = m_reshuffle * exp(-m_etaQ*((ndist0+ndist1)-(dist0+dist1)));
-  if (prob>ran->Get()) {
+  double prob   = m_reshuffle * exp(m_etaQ*((ndist0+ndist1)-(dist0+dist1)));
+  if (ran->Get()>prob) {
     m_cols[1][col[0]] = part[3];
     m_cols[1][col[1]] = part[2];
   }
