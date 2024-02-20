@@ -23,16 +23,26 @@ namespace REMNANTS {
       undefined      = 99
     };
   };
+  
+  struct mform {
+    enum code {
+      Single_Gaussian = 1,
+      Double_Gaussian = 2,
+      undefined       = -1
+    };
+  };
 
   struct pkparams {
     pkform::code   m_form;
     pkrecoil::code m_recoil;
+    mform::code    m_mform;
     std::map<std::string, double> m_params;
 
     pkparams() {}
     pkparams(const pkparams & pkp) {
       m_form   = pkp.m_form;
       m_recoil = pkp.m_recoil;
+      m_mform  = pkp.m_mform;
       for (std::map<std::string, double>::const_iterator it=pkp.m_params.begin();
 	   it!=pkp.m_params.end();it++)
 	m_params[it->first] = it->second;
@@ -44,9 +54,11 @@ namespace REMNANTS {
   private:
     std::map<long unsigned int, pkparams * > m_params;
     
-    void Initialize();
+    void SetNucleonDefaults();
+    void SetPhotonDefaults();
     pkform::code   SelectForm(const std::string & form=std::string("dipole_limited"));
     pkrecoil::code SelectRecoil(const std::string & form=std::string("beam_vs_shower"));
+    mform::code    SelectMForm(const std::string & form=std::string("Single_Gaussian"));
   public:
     Remnants_Parameters();
     ~Remnants_Parameters();
@@ -54,7 +66,9 @@ namespace REMNANTS {
     void ReadParameters();
     const pkform::code   & GetForm(const ATOOLS::Flavour & beamflav);
     const pkrecoil::code & GetRecoil(const ATOOLS::Flavour & beamflav);
-    const double         & operator()(const ATOOLS::Flavour & beamflav,const std::string & tag);
+    const mform::code    & GetMatterForm(const ATOOLS::Flavour & beamflav);
+    const double         & operator()(const ATOOLS::Flavour & beamflav,
+				      const std::string & tag);
   };
 
   extern Remnants_Parameters * rempars;

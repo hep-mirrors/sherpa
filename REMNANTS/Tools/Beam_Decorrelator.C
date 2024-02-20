@@ -63,11 +63,12 @@ bool Beam_Decorrelator::operator()(Blob * softblob) {
 bool Beam_Decorrelator::MustEmit(Particle * pi, Particle * pj) {
   // Checks if the partons must emit a soft gluon, for conditions see above.
   //msg_Out()<<METHOD<<": "<<pi->Number()<<" & "<<pj->Number()<<"\n";
-  if (pi->Beam()<0 && pj->Beam()<0) return false;
+  if (pi->Beam()<0 && pj->Beam()<0 ||
+      pi->Info()=='I' || pj->Info()=='I') return false;
   // Ignore parton pairs that are not colour-correlated
   if (!((pi->GetFlow(1)==pj->GetFlow(2) && pi->GetFlow(1)!=0) ||
 	(pi->GetFlow(2)==pj->GetFlow(1) && pi->GetFlow(2)!=0))) return false;
-  if ((pi->Info()=='B' && pj->Info()=='I') || pj->Info()=='F' ||      
+  if (pi->Info()=='B' || pj->Info()=='F' ||      
       pi->Momentum()[0]>pj->Momentum()[0]) { p_beam = pi; p_spect = pj; }
   else {p_beam = pj; p_spect = pi; }
   m_pbeam  = p_beam->Momentum();
@@ -185,12 +186,14 @@ FillSoftEmission(ATOOLS::Vec4D & pi,ATOOLS::Vec4D & pj,ATOOLS::Vec4D & pk) {
   p_beam->SetMomentum(pi);
   p_spect->SetMomentum(pk);
   size_t index = (p_beam->GetFlow(1)>0 && p_spect->GetFlow(2)>0)?1:2;
+  //msg_Out()<<METHOD<<":\n"<<(*p_beam)<<"\n"<<(*p_spect)<<"\n";
   p_beam->SetFlow(index,-1);
   // adding a soft gluon, adjusting its number and colours
   Particle * gluon = new Particle(-1,Flavour(kf_gluon),pj,'B');
   gluon->SetFlow(3-index,p_beam->GetFlow(index));
   gluon->SetFlow(index,p_spect->GetFlow(3-index));
   gluon->SetNumber();
+  //msg_Out()<<"Now:\n"<<(*p_beam)<<"\n"<<(*p_spect)<<"\n"<<(*gluon)<<"\n";
   m_softgluons.push_back(gluon);
   return true;
 }

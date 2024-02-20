@@ -47,11 +47,11 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
   unsigned int col[2];
   for (size_t i=0;i<sqr(N);i++) {
     if (!SelectColourPair(N,col[0],col[1])) break;
-    if (!AttemptSwap(col)) return false;;
+    if (!AttemptSwap(col)) return 0;
   }
   UpdateColours();
   m_collist.clear();
-  return true;
+  return 1;
 }
 
 bool Reconnect_Statistical::
