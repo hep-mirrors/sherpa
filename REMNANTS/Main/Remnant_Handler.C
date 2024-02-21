@@ -15,9 +15,11 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Remnant_Handler::
-Remnant_Handler(PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler *beam,const std::array<size_t, 2> & tags) :
-  p_softblob(nullptr), m_check(true), m_output(false), m_fails(0) {
+Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr,
+                                 YFS::YFS_Handler *yfs,BEAM::Beam_Spectra_Handler* beam,
+                                 const std::array<size_t, 2>& tags)
+    : p_softblob(nullptr), m_check(true), m_output(false), m_fails(0)
+{
   rempars = new Remnants_Parameters();
   rempars->Init();
   InitializeRemnants(isr, yfs, beam,tags);
@@ -30,17 +32,20 @@ Remnant_Handler::~Remnant_Handler() {
     if (p_remnants[i]!=nullptr) delete p_remnants[i];
   }
   if (m_fails>0)
-    msg_Out()<<"Remnant handling yields "<<m_fails<<" fails in creating good beam breakups.\n";
+    msg_Out() << "Remnant handling yields " << m_fails
+              << " fails in creating good beam  breakups.\n";
 }
 
-void Remnant_Handler::
-InitializeRemnants(PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler *beam,
-		   const std::array<size_t, 2> & tags) {
-  for (size_t i = 0; i < 2; ++i) {
+void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
+                                         YFS::YFS_Handler *yfs,BEAM::Beam_Spectra_Handler* beam,
+                                         const std::array<size_t, 2>& tags)
+{
+  for (int i = 0; i < 2; ++i) {
     m_tags[i]     = tags[i];
     p_remnants[i] = nullptr;
     Flavour flav = isr->Flav(i);
-    if (isr->PDF(i) != nullptr && Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
+    if (isr->PDF(i) != nullptr &&
+        Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
       if (flav.IsHadron() && flav.Kfcode() != kf_pomeron)
         p_remnants[i] = new Hadron_Remnant(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsLepton())
@@ -136,14 +141,14 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
       m_treatedshowerblobs.find(showerblob) != m_treatedshowerblobs.end())
     return true;
   size_t countIn = 0;
-  for (size_t i = 0; i < showerblob->NInP(); ++i) {
+  for (int i = 0; i < showerblob->NInP(); ++i) {
     if (!showerblob->InParticle(i)->ProductionBlob()) countIn++;
   }
   if (countIn!=2) return true;
   // Now extract the shower initiators from the remnants - they will get added
   // to the lists of extracted particles for each remnant and their colour will
   // be added to the Colour_Generator in each beam.
-  for (size_t i = 0; i < showerblob->NInP(); ++i) {
+  for (int i = 0; i < showerblob->NInP(); ++i) {
     Particle *part = showerblob->InParticle(i);
     if (part->ProductionBlob() != nullptr) continue;
     // Make sure extraction works out - mainly subject to energy conservation
@@ -166,9 +171,9 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
   m_colours.ConnectColours(showerblob);
 }
 
-Return_Value::code
-Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
-                               Particle_List *const particlelist,const bool & isrescatter) {
+Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
+                                                  const bool& isrescatter)
+{
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   InitBeamAndSoftBlobs(bloblist,isrescatter);
@@ -180,7 +185,7 @@ Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
   if (!m_kinematics.FillBlobs(bloblist)) {
     msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
     rv = Return_Value::New_Event;
-  } else if (!CheckBeamBreakup(bloblist) || !m_decorrelator(p_softblob)) {
+  } else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
     msg_Error() << METHOD << " failed. Will return new event\n";
     rv = Return_Value::New_Event;
   }
@@ -188,7 +193,9 @@ Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
   return rv;
 }
 
-void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist,const bool & isrescatter) {
+void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List* const bloblist,
+                                           const bool& isrescatter)
+{
   // Making a new blob (softblob) to locally compensate 4 momentum.
   // Ultimately, it will reflect different strategies of how to compensate
   // intrinsic kperp: hadron colliders vs. DIS
@@ -205,14 +212,18 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist,const bool 
   // coloured FS particles and then shuffle their momenta together with the
   // beam remnants.  To visualise this better, here the soft blob is
   // inserted after both beam and shower blobs.
-  Blob_List::iterator pos=FindInsertPositionForRescatter(bloblist,isrescatter);
   if (!(m_type == strat::simple || m_type == strat::ll)) {
     p_softblob = m_kinematics.MakeSoftBlob();
     if (m_type == strat::DIS1 || m_type == strat::DIS2)
       bloblist->push_back(p_softblob);
     else {
-      if (isrescatter) bloblist->insert(pos,p_softblob);
-      else bloblist->push_front(p_softblob);
+      if (isrescatter) {
+        Blob_List::iterator pos =
+                bloblist->begin() +
+                FindInsertPositionForRescatter(bloblist, isrescatter);
+        bloblist->insert(pos, p_softblob);
+      } else
+        bloblist->push_front(p_softblob);
     }
   }
   // Look for shower blobs that need beams and unset the flag
@@ -225,30 +236,31 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist,const bool 
   // four-momenta and make the two beam blobs
   m_colours.ResetFlags();
   for (size_t beam = 0; beam < 2; beam++) {
-    if (isrescatter) bloblist->insert(pos,p_remnants[beam]->MakeBlob());
-    else bloblist->push_front(p_remnants[beam]->MakeBlob());
+    if (isrescatter) {
+      Blob_List::iterator pos =
+              bloblist->begin() +
+              FindInsertPositionForRescatter(bloblist, isrescatter);
+      bloblist->insert(pos, p_remnants[beam]->MakeBlob());
+    } else
+      bloblist->push_front(p_remnants[beam]->MakeBlob());
   }
 }
 
-Blob_List::iterator Remnant_Handler::
-FindInsertPositionForRescatter(Blob_List *const bloblist,const bool & isrescatter) {
-  Blob_List::iterator pos=bloblist->begin();
-  if (!isrescatter) return pos;
-  bool found = false;
-  do {
-    if ((*pos)->Type()==btp::Shower) {
-      for (size_t i=0;i<(*pos)->NInP();i++) {
-	if ((*pos)->InParticle(i)->ProductionBlob()==NULL) { found = true; break; }
-      }
-    }
-    pos++;
-  } while (!found && pos!=bloblist->end());
-  if (pos!=bloblist->begin()) { pos--; if (pos!=bloblist->begin()) pos--;}
-  return pos;
+int Remnant_Handler::FindInsertPositionForRescatter(Blob_List* const bloblist,
+                                                    const bool& isrescatter)
+{
+  if (!isrescatter) return 0;
+  for (Blob_List::iterator pos = bloblist->begin(); pos != bloblist->end();
+       ++pos)
+    if ((*pos)->Type() == btp::Shower &&
+        std::any_of((*pos)->InParticles()->begin(), (*pos)->InParticles()->end(),
+                    [](Particle* part) { return part->ProductionBlob() == nullptr; }))
+      return std::max(0, static_cast<int>(pos - bloblist->begin()) - 2);
+  return bloblist->size() - 2;
 }
 
-
-bool Remnant_Handler::CheckBeamBreakup(Blob_List *bloblist) {
+bool Remnant_Handler::CheckBeamBreakup()
+{
   // Final checks on beam breakup: four-momentum and colour conservation
   if (m_type == strat::simple || !m_check)
     return true;
@@ -291,9 +303,8 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
 }
 
 void Remnant_Handler::Reset() {
-  bool DIS = m_type == strat::DIS1 || m_type == strat::DIS2;
-  for (size_t beam = 0; beam < 2; beam++)
-    p_remnants[beam]->Reset(false,DIS);
+  const bool DIS = m_type == strat::DIS1 || m_type == strat::DIS2;
+  for (size_t beam = 0; beam < 2; ++beam) p_remnants[beam]->Reset(false, DIS);
   m_treatedshowerblobs.clear();
   m_kinematics.Reset();
   m_colours.Reset();

@@ -30,34 +30,35 @@ namespace REMNANTS {
 
   class Remnant_Handler {
   private:
-    PDF::isr::id         m_id;
-    Remnant_Base       * p_remnants[2];
-    size_t               m_tags[2];
-    strat::code          m_type;
-    Kinematics_Generator m_kinematics;
-    Colour_Generator     m_colours;
-    Beam_Decorrelator    m_decorrelator;
-    ATOOLS::Blob       * p_softblob;
+    PDF::isr::id                 m_id;
+    std::array<Remnant_Base*, 2> p_remnants;
+    std::array<size_t, 2>        m_tags;
+    strat::code                  m_type;
+    Kinematics_Generator         m_kinematics;
+    Colour_Generator             m_colours;
+    Beam_Decorrelator            m_decorrelator;
+    ATOOLS::Blob*                p_softblob;
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
     bool m_check, m_output;
     long int m_fails;
 
-    void InitializeRemnants(PDF::ISR_Handler * isr,
+    void       InitializeRemnants(PDF::ISR_Handler*            isr,
                             YFS::YFS_Handler *yfs,
-			    BEAM::Beam_Spectra_Handler * beam,
-			    const std::array<size_t, 2> & tags);
+                                  BEAM::Beam_Spectra_Handler*  beam,
+                                  const std::array<size_t, 2>& tags);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
-    bool CheckBeamBreakup(ATOOLS::Blob_List * bloblist);
-    void InitBeamAndSoftBlobs(ATOOLS::Blob_List *const blobs,
-			      const bool & isrescatter);
-    ATOOLS::Blob_List::iterator FindInsertPositionForRescatter(ATOOLS::Blob_List *const bloblist,
-							       const bool & isrescatter);
- public:
+    bool       CheckBeamBreakup();
+    void       InitBeamAndSoftBlobs(ATOOLS::Blob_List* const blobs,
+                                    const bool&              isrescatter);
+    int        FindInsertPositionForRescatter(ATOOLS::Blob_List* const bloblist,
+                                              const bool&              isrescatter);
+
+  public:
     Remnant_Handler(PDF::ISR_Handler * isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler * beam,
-		    const std::array<size_t, 2> & tags);
+                    const std::array<size_t, 2>& tags);
     ~Remnant_Handler();
 
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
@@ -65,20 +66,20 @@ namespace REMNANTS {
     void ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
 
-    ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List *const blobs,
-					     ATOOLS::Particle_List *const=nullptr,
-					     const bool & isrescatter=false);
+    ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List* const blobs,
+                                             const bool& isrescatter = false);
 
     void SetImpactParameter(const double & b);
 
-    inline bool NeedsToMakeBeamBlobs() {
-      return (m_colours.HasColours(0) || m_colours.HasColours(0));
+    inline bool NeedsToMakeBeamBlobs() const
+    {
+      return (m_colours.HasColours(0) || m_colours.HasColours(1));
     }
     inline void SetScale2(const double & scale2) {
       for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
     }
-    inline const PDF::isr::id Id()  const { return m_id; }
-    inline const strat::code Type() const { return m_type; }
+    inline PDF::isr::id Id() const { return m_id; }
+    inline strat::code  Type() const { return m_type; }
 
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
       return (beam<2)?p_remnants[beam]:nullptr;
