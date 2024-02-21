@@ -445,7 +445,7 @@ bool Rivet_Interface::Finish()
   // determine weight sums and cross sections when Rivet allows us to properly
   // scale variations in split analyses
 
-  const std::vector<double> sumw = GetRivet("", 0)->allSumW();
+  const std::vector<double> sumw = GetRivet("", 0)->weightSumWs();
   const std::vector<std::string> wgtnames = GetRivet("", 0)->weightNames();
 #if defined(USING__MPI)
   const auto& xs = p_eventhandler->TotalXSMPI();
@@ -506,7 +506,7 @@ bool Rivet_Interface::Finish()
 #ifdef USING__YODA2
       it.second->collapseEventGroup();
       // determine the weight sums seen by this Rivet run
-      const std::vector<double> thissumw = it.second->allSumW();
+      const std::vector<double> thissumw = it.second->weightSumWs();
       // calculate and set rescaled cross sections
       std::vector<std::pair<double, double>> this_xs_and_errs (wgtnames.size());
       for (int i {0}; i < wgtnames.size(); i++) {
