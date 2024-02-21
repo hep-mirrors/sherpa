@@ -52,11 +52,14 @@ namespace YFS{
         double Eikonal(Vec4D k, Vec4D p1, Vec4D p2);
         double EikonalMassless(Vec4D k, Vec4D p1, Vec4D p2);
         double Eikonal(Vec4D k);
+        double EikonalInterferance(const Vec4D &k);
         double EEX(const Vec4D & k);
         void Boost();
+        void BoostLab();
         void Boost(Vec4D &p);
         void RandomRotate(Vec4D &p);
         void BoostToQFM(bool boostback);
+        void BoostToCMS(Vec4D_Vector &k, bool boostback=false);
         void CalculateBeta();
         void CalculateGamma();
         void Clean();
@@ -64,9 +67,11 @@ namespace YFS{
         Vec4D Sum();
         inline int size() {return m_momenta.size();}
         inline Vec4D GetBornMomenta(int i) { return m_bornmomenta[i];}
+        inline Vec4D_Vector GetBornMomenta() { return m_bornmomenta;}
         inline Vec4D GetMomenta(int i) { return m_momenta[i];}
         inline Vec4D_Vector GetMomenta() { return m_momenta;}
         inline Vec4D GetNewMomenta(int i) { return m_newmomenta[i];}
+        inline Vec4D_Vector GetNewMomenta() { return m_newmomenta;}
         inline Vec4D GetOldMomenta(int i) { return m_oldmomenta[i];}
         inline Vec4D GetEikMomenta(int i) { return m_eikmomentum[i];}
         inline Flavour GetFlav(int i) { return m_flavs[i];}
