@@ -51,7 +51,7 @@ operator()(const Enhance_Arguments &args) const
 
 void ATOOLS::Getter<Enhance_Observable_Base,Enhance_Arguments,Variable_Enhance_Observable>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"variable enhance observable";
 }
 
@@ -61,7 +61,7 @@ Variable_Enhance_Observable::Variable_Enhance_Observable
   std::string arg(args.m_enhance);
   size_t bpos(arg.find("VAR{")), epos(arg.find("}",bpos));
   if (bpos!=0 || epos==std::string::npos)
-    THROW(fatal_error,"Invalid input");
+    THROW(fatal_error, "Invalid input in Variable_Enhance_Observable");
   arg=arg.substr(4,arg.length()-5);
   m_calc.SetTagReplacer(this);
   m_n=p_proc->NIn()+p_proc->NOut();

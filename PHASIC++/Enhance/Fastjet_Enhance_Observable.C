@@ -59,7 +59,7 @@ operator()(const Enhance_Arguments &args) const
 void ATOOLS::Getter<Enhance_Observable_Base,Enhance_Arguments,
 		    Fastjet_Enhance_Observable>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"fastjet enhance observable";
 }
 
@@ -103,7 +103,7 @@ Fastjet_Enhance_Observable::Fastjet_Enhance_Observable
   std::string arg(args.m_enhance);
   size_t bpos(arg.find("{")), epos(arg.find("}",bpos));
   if (bpos==std::string::npos || epos==std::string::npos)
-    THROW(fatal_error,"Invalid input");
+    THROW(fatal_error, "Invalid input in Fastjet_Enhance_Observable");
   arg=arg.substr(bpos+1,arg.length()-bpos-2);
   m_calc.SetTagReplacer(this);
   for (int i(0);i<m_p.size();++i)
