@@ -59,7 +59,7 @@ void PDF_Electron::CalculateSpec(const double& x, const double& Q2)
 
   m_xpdf  = 0.;
   m_alpha = (*aqed)(Q2);
-  if (x>=1-m_eps) return;
+  if (x>=1.-m_eps) return;
 
   double L       = 2.*log(sqrt(Q2)/m_mass);
   double beta_e  = 2.*m_alpha/M_PI*(L-1.);
@@ -107,7 +107,7 @@ void PDF_Electron::CalculateSpec(const double& x, const double& Q2)
   } 
 
   m_xpdf = x * (S*pow(1.-x,m_beta/2.-1.)+(h0+h1+h2));  
-  if (x>1-m_delta) m_xpdf *= pow(m_delta/m_eps,m_beta/2)/(pow(m_delta/m_eps,m_beta/2)-1.);
+  if (x>1.-m_delta) m_xpdf *= pow(m_delta/m_eps,m_beta/2)/(pow(m_delta/m_eps,m_beta/2)-1.);
 }
 
 DECLARE_PDF_GETTER(PDFE_Getter);
