@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "ATOOLS/Org/Run_Parameter.H" 
 
 
 
@@ -203,6 +204,22 @@ void Dipole::Boost(ATOOLS::Vec4D &p) {
   p_boost->BoostBack(p);
 }
 
+void Dipole::BoostLab(){
+  Poincare p_boost(m_beams[0] + m_beams[1]);
+  p_boost.BoostBack(m_newmomenta[0]);
+  p_boost.BoostBack(m_newmomenta[1]);
+  for(auto &k : m_dipolePhotons) p_boost.BoostBack(k);
+  // if (p_boost) delete p_boost;
+}
+
+void Dipole::BoostToCMS(Vec4D_Vector &k, bool boostback){
+  Vec4D CMSFrame=m_bornmomenta[0] + m_bornmomenta[1];
+  ATOOLS::Poincare poin(m_QFrame);
+  for (auto &p : k) {
+    if(boostback) poin.BoostBack(p);
+    else poin.Boost(p);
+  }
+}
 
 
 void Dipole::BoostToQFM(bool boostback) {
@@ -344,6 +361,13 @@ double Dipole::Eikonal(Vec4D k) {
 }
 
 
+double Dipole::EikonalInterferance(const Vec4D &k) {
+  Vec4D p1 = m_bornmomenta[0];
+  Vec4D p2 = m_bornmomenta[1];
+  return -m_QiQj*m_thetaij*m_alp / (2 * M_PI * M_PI) * (p1*p2 / (p1 * k)/(p2 * k));
+}
+
+
 
 std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
   out << " Dipole Type is "<<Dip.m_type
@@ -355,7 +379,11 @@ std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
         << "Charge of " << Dip.m_names[i] << " = " << Dip.m_charges[i] << std::endl
         << "Momentum of " << Dip.m_names[i] << " = " << Dip.m_momenta[i] << std::endl;
   }
-  out << "Invarinat mass " << " = " << (Dip.m_momenta[0]+Dip.m_momenta[1]).Mass() << std::endl;
+  out << "Invarinat mass " << " = " << (Dip.m_momenta[0]+Dip.m_momenta[1]).Mass() << std::endl
+      <<"Sum of Photons = "<< Dip.m_photonSum << std::endl
+      << "Q+sum_i K_i = "<< Dip.m_photonSum+Dip.m_momenta[0]+Dip.m_momenta[1]<<std::endl
+      << "Mass of photon-fermion system = "
+      << (Dip.m_photonSum+Dip.m_newmomenta[0]+Dip.m_newmomenta[1]).Mass()<<std::endl;
   if(Dip.m_type==dipoletype::final){
     std::string isres = (Dip.m_resonance)?"Yes":"No";
     out << "Is Resonance: "<< isres << std::endl;
