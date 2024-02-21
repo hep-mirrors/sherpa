@@ -527,16 +527,18 @@ void YFS_Handler::GenerateWeight() {
   else {
     m_yfsweight = SY->Weight(m_v, m_alpha, m_semiyfs);
   }
-  if (IsBad(m_yfsweight)) {
-    msg_Error() << METHOD << "\n YFS weight is NaN\n"
-                << "ISR Weight = " << m_isrWeight
-                << "\n FSR Weight = " << m_fsrWeight << "\n";
-  }
   if (m_coulomb) m_yfsweight *= p_coulomb->GetWeight();
   if (m_formWW) m_yfsweight *= m_ww_formfact; //*exp(m_coulSub);
   CalculateBeta();
   m_yfsweight*=m_real;
   m_yfsweight *= m_formfactor;
+  if (IsBad(m_yfsweight) || abs(m_yfsweight) > 1e12) {
+    msg_Error() << METHOD << "\n YFS weight is "<<m_yfsweight<<std::endl
+                << "ISR Weight = " << m_isrWeight
+                << "\n FSR Weight = " << m_fsrWeight
+                << "\n Form Factor Weight = " << m_formfactor
+                << "\n NLO Weight = " << m_formfactor << "\n";
+  }
   DEBUG_FUNC("\nISR Weight = " << m_isrWeight << "\n" <<
              "  FSR Weight = " << m_fsrWeight << "\n" <<
              "  WW form Weight = " << m_ww_formfact << "\n" <<
