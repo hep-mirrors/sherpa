@@ -231,6 +231,7 @@ namespace EXTRAXS {
     XS_instanton(const External_ME_Args& args);
     ~XS_instanton() {} // if (p_data) { delete p_data; p_data = NULL; }}
     double operator()(const ATOOLS::Vec4D_Vector& mom);
+    double RelativeRenormalisationScaleWeight(const double & scalefactor);
     bool   SetColours(const Vec4D_Vector& mom);
     bool   FillFinalState(const std::vector<ATOOLS::Vec4D> & mom);
   };
@@ -312,6 +313,16 @@ double XS_instanton::AlphaSModification() {
   if (dabs(m_alphaS_factor-1.)<1.e-3) return 1.;
   return pow(m_alphaS_factor,2.*p_alphaS->Beta0(sqr(m_data.Rho())));
 }
+
+double XS_instanton::RelativeRenormalisationScaleWeight(const double & scalefactor) {
+  // This is based on the dominant scale dependence of the instanton cross section,
+  // cf. Eq. (2.30) of 1911.09726
+  if (dabs(scalefactor-1.)<1.e-3) return 1.;
+  double scale2 = sqr(m_data.Rho());
+  return ( exp(-4.*M_PI * (1./(*p_alphaS)(scalefactor*scale2)-1./(*p_alphaS)(scale2))) *
+	   pow(scalefactor/m_alphaS_factor,2.*p_alphaS->Beta0(scale2)) );
+}
+
 
 bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
   m_Ehat = sqrt(mom[2].Abs2());
