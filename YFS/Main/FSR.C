@@ -444,7 +444,7 @@ bool FSR::YFS_FORM(){
    if(m_hidephotons==1){
     m_hideW = exp(YFS_IR + m_DelYFS + m_volmc - m_delvol);
   }
-  else m_hideW=1;//exp(YFS_IR  +  m_volmc);
+  else m_hideW=exp(YFS_IR  +  m_volmc);
   m_YFS_IR = exp(YFS_IR+m_DelYFS);
   return true;
 }
@@ -595,8 +595,8 @@ void FSR::Weight() {
   if (m_photons.size() == 0) m_sprim = m_sX;
 
   m_fsrWeight *= m_massW * m_hideW * m_wt2;// * exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
-  if (IsBad(m_fsrWeight)) {
-    msg_Error() << METHOD << "\n FSR weight is NaN\n"
+  if (IsBad(m_fsrWeight) || m_fsrWeight < 0) {
+    msg_Error() << METHOD << "\n FSR weight is "<<m_fsrWeight
                 << "\n Eprime = " << sqrt(m_dip_sp)
                 << "\n Eq = " << sqrt(m_sQ)
                 << "\n EminQ = " << m_EminQ
@@ -614,6 +614,7 @@ void FSR::Weight() {
                 << "\n mass r2 = " << m_r2.Mass()
                 << "\n Hidden Photon Weight = " << m_hideW
                 << "\n Photon Scale Weight =  " << m_wt2 << "\n";
+    m_fsrWeight = 0;
   }
   DEBUG_FUNC("FSR for Dipole  = " << m_dipoleFl
              << "\n N Photons = " << m_N
