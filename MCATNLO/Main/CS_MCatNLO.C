@@ -306,15 +306,14 @@ double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
     // initial-state emitter
     if (sub.m_k>=2) {
       // final-state spectator
-      kt2 = p_mcatnlo->KinIF()->GetKT2(Q2,y,x,mk2,mi2,mj2,
-            sub.p_real->p_fl[sub.m_i],sub.p_real->p_fl[sub.m_j]);
+      kt2 = p_mcatnlo->KinIF()->GetKT2(Q2,y,x,mi2,mj2,mk2,
+            sub.p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
     }
     else {
       // initial-state spectator
-      kt2 = p_mcatnlo->KinII()->GetKT2(Q2,y,x,mk2,mi2,mj2,
-            sub.p_real->p_fl[sub.m_i],sub.p_real->p_fl[sub.m_j]);
+      kt2 = p_mcatnlo->KinII()->GetKT2(Q2,y,x,mi2,mj2,mk2,
+		       sub.p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
     }
-
     return kt2;
   }
   THROW(fatal_error,"Implement me");
