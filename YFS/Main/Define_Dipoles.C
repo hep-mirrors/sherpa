@@ -424,7 +424,7 @@ double Define_Dipoles::FormFactor(){
     }
   }
     for(auto &D: m_dipolesIF){
-      form+= -D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
+      form+= D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
     }
   return exp(form); 
 }
@@ -442,7 +442,7 @@ double Define_Dipoles::TFormFactor(){
     }
   }
   for(auto &D: m_dipolesIF){
-    form+=-D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
+    form+=D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
   }
   return exp(form); 
 }
