@@ -156,11 +156,12 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zi   = (m_pi*m_pk)/(m_pi*m_pk+m_pj*m_pk);
   m_zj   = 1.-m_zi;
 
+  m_Q2 = (m_pi+m_pj+m_pk).Abs2();
   m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
     2.0*m_pi*m_pj*m_zi*m_zj-sqr(m_zi)*m_mj2-sqr(m_zj)*m_mi2;
 
   m_vijk = Vrel(m_pi+m_pj,m_pk);
-  
+
   m_zim  = m_zi-0.5*(1.-m_vijk);
   m_zjm  = m_zj-0.5*(1.-m_vijk);
   m_zpm  = 0.;
