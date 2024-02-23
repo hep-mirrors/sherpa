@@ -360,25 +360,17 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     // if(m_massless_sub) sub += D.EikonalMassless(k, D.GetMomenta(0), D.GetMomenta(1));
     // else sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
     // for(auto &p: D.GetMomenta()){
-    for (int i = 0; i < D.GetBornMomenta().size(); ++i)
+    for (int i = 0; i < D.GetMomenta().size(); ++i)
     {
       Vec4D p = D.GetMomenta(i);
       eik += D.m_theta[i]*D.m_Q[i]*p/(p*k);
     }
   }
   for (auto &D : m_dipolesFF) {
-    if(m_fsrmode==2) {
-      if(m_massless_sub) sub += D.EikonalMassless(k,  D.GetBornMomenta(0), D.GetBornMomenta(1));
-      else sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-    }
-    else {
-      // if(m_massless_sub) sub += D.EikonalMassless(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
-      // else sub += D.Eikonal(k,  D.GetMomenta(0), D.GetMomenta(1));
-      for (int i = 0; i < D.GetMomenta().size(); ++i)
-      {
-        Vec4D p = D.GetMomenta(i);
-        eik += D.m_theta[i]*D.m_Q[i]*p/(p*k);
-      }
+    for (int i = 0; i < D.GetMomenta().size(); ++i)
+    {
+      Vec4D p = D.GetMomenta(i);
+      eik += D.m_theta[i]*D.m_Q[i]*p/(p*k);
     }
   }
   sub = -m_alpha / (4 * M_PI * M_PI)*eik*eik;
@@ -401,11 +393,11 @@ double Define_Dipoles::CalculateVirtualSub() {
   double sub(0);
   if(m_tchannel) return CalculateVirtualSubTchannel();
   for (auto &D : m_dipolesII) {
-    sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    sub += -D.m_thetaij*D.m_QiQj*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
   for (auto &D : m_dipolesFF) {
     if(m_fsrmode==2) sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
-    else sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    else sub += -D.m_thetaij*D.m_QiQj*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
 
   }
 
@@ -413,7 +405,7 @@ double Define_Dipoles::CalculateVirtualSub() {
     // change to + for IFI terms
     // Note Born momenta are redifined
     // for IFI terms.
-    sub += D.m_QiQj*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    sub += -D.m_thetaij*D.m_QiQj*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
   return sub;
 }
@@ -430,7 +422,7 @@ double Define_Dipoles::FormFactor(){
     form+=-D.m_thetaij*D.m_QiQj*p_yfsFormFact->BVR_full(D.GetMomenta(0), D.GetMomenta(1), sqrt(m_s) / 2.);
   }
     for(auto &D: m_dipolesIF){
-      form+=D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+      form+= -D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
     }
   return exp(form); 
 }
@@ -440,16 +432,13 @@ double Define_Dipoles::TFormFactor(){
   double form = 0;
 
   for(auto &D: m_dipolesII){
-  //   // form+=p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), D.IsSame(), D.m_QiQj, D.m_thetai, D.m_thetai);
     form+=D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
-  // for(auto &D: m_dipolesFF){
-  // //   // form+=p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), D.IsSame(), D.m_QiQj, D.m_thetai, D.m_thetai);
-  //   form*=-D.m_QiQj*D.m_thetaij*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
-  // }
+  for(auto &D: m_dipolesFF){
+    form+=-D.m_QiQj*D.m_thetaij*p_yfsFormFact->R1(D.GetMomenta(0), D.GetMomenta(1));
+  }
   for(auto &D: m_dipolesIF){
-  //   // form+=p_yfsFormFact->tsub(D.GetBornMomenta(0), D.GetBornMomenta(1), D.IsSame(), D.m_QiQj, D.m_thetai, D.m_thetai);
-    form+=D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+    form+=-D.m_thetaij*D.m_QiQj*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
   }
   return exp(form); 
 }
@@ -570,13 +559,13 @@ double Define_Dipoles::CalculateEEXVirtual(){
 double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
   double sub(0);
   for (auto &D : m_dipolesII) {
-    sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   for (auto &D : m_dipolesFF) {
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   // for (auto &D : m_dipolesIF) {
-  //   sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+  //   sub += D.Eikonal(k, D.GetMomenta(0), D.GetBornMomenta(1));
   // }
 
   return sub;
@@ -615,8 +604,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
 
-      sq = (QX).Abs2(); 
-      sx = (QX-k).Abs2();
+      sq = (Q).Abs2(); 
+      sx = (Q-k).Abs2();
       // flux = Propagator(sx,1)/Propagator(sq,1);
       flux = (sx/sq);
       return flux;
@@ -632,7 +621,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       // if(k.E()<5){
       sq = (Q).Abs2();
       sx = (Q+k).Abs2();
-      // flux *= Propagator(sx,1)/Propagator(sq,0);
+      // flux = Propagator(sq,0)/Propagator(sx,0);
       } 
     // if(m_noflux==2) flux = Propagator(sx)/Propagator(sq);///(Propagator(sx)+Propagator(sq));
 
