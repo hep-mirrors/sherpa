@@ -77,7 +77,7 @@ void YFS_Handler::SetSprimeLimits(std::vector<double> &splimits) {
   p_yfsFormFact->SetCharge(1);
   p_coulomb->SetAlphaQED(m_alpha);
   double maxV = 1. - m_smin / s;
-  if (m_vmax > maxV) {
+  if (m_vmax > maxV && !m_asymbeams) {
     msg_Error() << "Warning: vmax to large in YFS integration reseting to " << maxV << std::endl;
     m_vmax = maxV;
   }
