@@ -539,8 +539,8 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
 double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
   double m1 = p1.Mass();
   double m2 = p2.Mass();
-  double M = m1>m2 ? m1 : m2;
-  double m = m1>m2 ? m2 : m1;
+  double M = m1>=m2 ? m1 : m2;
+  double m = m1>=m2 ? m2 : m1;
   double p1p2 = p1*p2;
   double t  = (p1-p2).Abs2();
   double ta = fabs(t);
@@ -560,11 +560,11 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
   TBvirt = m_alpi*(
     // (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)) 
        (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-       +0.5*zeta*log(ta*zeta/(m1*m2))
-        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      +DiLog(1./zeta) -1.0
-      +0.5*(zeta -1.0)*log(m1/m2)
-      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+      //  +0.5*zeta*log(ta*zeta/(m1*m2))
+      //   -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      // +DiLog(1./zeta) -1.0
+      // +0.5*(zeta -1.0)*log(m1/m2)
+      // -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
        );
   return TBvirt;
 }
