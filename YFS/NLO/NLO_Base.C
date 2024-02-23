@@ -184,17 +184,13 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	else flux = p_dipoles->CalculateFlux(kk);
 	double tot,colltot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_dipoles->CalculateRealSubEEX(kk);
+	double subb   = p_dipoles->CalculateRealSubEEX(k);
 	
 	rcoll = p_dipoles->CalculateEEXReal(kk)*m_born;
 	if (!CheckPhotonForReal(k)) { 
 		subb   = p_dipoles->CalculateRealSubEEX(kk);
 		if(m_no_subtraction) return rcoll/subb;
 		return ( rcoll/subb - m_born);
-	}
-	if(m_ifisub==1) {
-		subloc+= p_nlodipoles->CalculateRealSubIF(k);
-		subb  += p_dipoles->CalculateRealSubIF(kk);
 	}
 	if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	p.push_back(k);
