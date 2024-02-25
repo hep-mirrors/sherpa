@@ -50,7 +50,7 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha)
 double Running_AlphaQED::operator()(double t)
 {
   double Q2    = t;
-  if (t<0.) Q2 = -t; 
+  if (t<0. && (m_mode!=vpmode::full && m_mode!=vpmode::hp)) Q2 = -t; 
 
   int i = 3;
   if (Q2<0.3)        i=0;
