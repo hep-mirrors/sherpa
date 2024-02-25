@@ -68,7 +68,7 @@ double Running_AlphaQED::operator()(double t)
   #ifdef USING__HADALPHAQED
     t=-t;
     double delta_r,errdersta, errdersys,deg,errdegsta,errdegsys;
-    double sin2 = 0.223043;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
+    double sin2 = 0.2322;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
     if(m_mode!=vpmode::off){
       if(m_mode !=vpmode::lp){
         hadr5x_(&t, &sin2, &delta_r, &errdersta, 
@@ -76,13 +76,13 @@ double Running_AlphaQED::operator()(double t)
      }
     switch(m_mode){
       case vpmode::full:
-        sigma_gg = sig_lep_gg+delta_r+sig_top_gg;
+        sigma_gg = sig_lep_gg+delta_r+sig_top_gg+sig_ha_gg;
         break;
       case vpmode::lp:
         sigma_gg = sig_lep_gg;
         break;
       case vpmode::hp:
-        sigma_gg = delta_r;
+        sigma_gg = delta_r+sig_ha_gg;
         break;
       default:
         sigma_gg = sig_lep_gg+sig_ha_gg+sig_top_gg;
