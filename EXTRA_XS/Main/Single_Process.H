@@ -43,6 +43,8 @@ namespace EXTRAXS {
                     ATOOLS::Variations_Mode varmode,
                     int mode);
 
+    double RelativeRenormalisationScaleWeight(double scalefactor) const;
+
     bool Combinable(const size_t &idi, const size_t &idj);
 
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);

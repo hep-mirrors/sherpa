@@ -1021,10 +1021,15 @@ Single_Process::ReweightBornLike(ATOOLS::QCD_Variation_Params& varparams,
   if (csi.m_pdfwgt == 0.0) {
     return 0.0;
   }
-  const double alphasratio(AlphaSRatio(info.m_muR2, muR2new, varparams.p_alphas));
-  const double alphasfac(pow(alphasratio, info.m_orderqcd));
-  const double newweight(info.m_wgt * alphasfac * csi.m_pdfwgt);
-  return newweight;
+  if (info.m_orderqcd == 98) {
+    return info.m_wgt * RelativeRenormalisationScaleWeight(muR2new / info.m_muR2) * csi.m_pdfwgt;
+  }
+  else {
+    const double alphasratio(AlphaSRatio(info.m_muR2, muR2new, varparams.p_alphas));
+    const double alphasfac(pow(alphasratio, info.m_orderqcd));
+    const double newweight(info.m_wgt * alphasfac * csi.m_pdfwgt);
+    return newweight;
+  }
 }
 
 ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
