@@ -6,31 +6,31 @@
 #include <map>
 
 namespace REMNANTS {
-class Photon_Remnant : public Remnant_Base {
-private:
-  PDF::PDF_Base *p_pdf;
-  const ATOOLS::Flavour_Set *p_partons;
+  class Photon_Remnant final : public Remnant_Base {
+  private:
+    PDF::PDF_Base*             p_pdf;
+    const ATOOLS::Flavour_Set* p_partons;
 
-  const double m_LambdaQCD, m_beta_quark, m_beta_gluon;
-  bool m_valence;
+    const double m_LambdaQCD, m_beta_quark, m_beta_gluon;
+    bool         m_valence;
 
-  ATOOLS::Particle * p_spectator, * p_recoiler;
+    ATOOLS::Particle *p_spectator, *p_recoiler;
 
-  void MakeSpectator(ATOOLS::Particle *parton) override;
-  void MakeRemnants();
-  bool MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap, const bool &copy);
-  double SelectZ(const ATOOLS::Flavour &flav, double restmom, double remnant_masses) const;
-  ATOOLS::Particle *MakeParticle(const ATOOLS::Flavour &flav);
-  void FindRecoiler();
-  void Output() const;
-public:
-  // constructor
+    void   MakeSpectator(ATOOLS::Particle* parton, Colour_Generator* colours) override;
+    void   MakeRemnants(Colour_Generator* colours);
+    bool   MakeLongitudinalMomenta(ATOOLS::ParticleMomMap* ktmap, const bool& copy);
+    double SelectZ(const ATOOLS::Flavour& flav, double restmom, double remnant_masses) const;
+    void   FindRecoiler();
+    void   Output() const;
+
+  public:
+    // constructor
   Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag=0);
 
   // member functions
   bool TestExtract(const ATOOLS::Flavour &flav, const ATOOLS::Vec4D &mom) override;
-  bool FillBlob(ATOOLS::ParticleMomMap *ktmap, const bool &copy) override;
-  void CompensateColours();
+  bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap,
+                const bool& copy) override;
 
   void Reset(const bool & resc=false, const bool &DIS=false) override;
 

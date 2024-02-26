@@ -10,7 +10,8 @@ No_Remnant::No_Remnant(const size_t & beam,const size_t & tag):
   m_type = rtp::intact;
 }
 
-bool No_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
+bool No_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, const bool& copy)
+{
   if (m_extracted.size()==0) {
     THROW(critical_error,"No particles extracted from intact beam.");
   }

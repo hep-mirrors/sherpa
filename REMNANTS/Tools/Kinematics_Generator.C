@@ -14,10 +14,9 @@ Kinematics_Generator::Kinematics_Generator() :
 
 Kinematics_Generator::~Kinematics_Generator() {
   if (m_warns>0 || m_errors>0) {
-    msg_Info()<<"Remnant Kinematics: "
-	      <<m_errors<<" errors (no kinematics found) and\n"
-	      <<"                    "
-	      <<m_warns<<" warnings (scale kt down by factor of 10).\n";
+    msg_Info() << "Remnant Kinematics: " << m_errors << " errors (no kinematics found) and\n"<<"                    "
+               <<  m_warns
+               << " warnings (scale kt down by factor of 10).\n";
   }
 }
 
@@ -30,26 +29,18 @@ void Kinematics_Generator::Initialize(Remnant_Handler *const rhandler) {
   }
   if (p_rhandler->Type() != strat::simple)
     m_kperpGenerator.Initialize(rhandler);
-  SetKinType(rhandler);
+  SetKinType();
 }
 
-void Kinematics_Generator::SetKinType(Remnant_Handler *const rhandler) {
-  switch (size_t(p_rhandler->Type())) {
-  case size_t(strat::simple):
-    m_kintype = kin_type::intact;
-    break;
-  case size_t(strat::ll):
-    m_kintype = kin_type::coll;
-    break;
-  case size_t(strat::DIS1):
-    m_kintype = kin_type::DIS1;
-    break;
-  case size_t(strat::DIS2):
-    m_kintype = kin_type::DIS2;
-    break;
-  case size_t(strat::hh):
-    m_kintype = kin_type::hh;
-    break;
+void Kinematics_Generator::SetKinType()
+{
+  switch (p_rhandler->Type()) {
+    case strat::simple: m_kintype = kin_type::intact; break;
+    case strat::ll: m_kintype = kin_type::coll; break;
+    case strat::DIS1: m_kintype = kin_type::DIS1; break;
+    case strat::DIS2: m_kintype = kin_type::DIS2; break;
+    case strat::hh: m_kintype = kin_type::hh; break;
+    default: break;
   }
 }
 
@@ -91,8 +82,7 @@ bool Kinematics_Generator::CollinearKinematics() {
     // By far and large here we have a fixed spectator, if necessary, and assign
     // the four-momentum difference between incoming beam particle and outgoing
     // shower initiator to it.
-    if (!p_remnants[beam]->FillBlob())
-      return false;
+    if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen())) return false;
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }
   return true;
@@ -107,7 +97,8 @@ bool Kinematics_Generator::TransverseKinematics() {
   case kin_type::hh:
     return TransverseKinematicsHH();
   default:
-    THROW(fatal_error, "no meaningful kinematics strategy " +ToString(m_kintype)+"\n");
+    THROW(fatal_error,
+          "no meaningful kinematics strategy " + std::to_string(int(m_kintype)) + "\n");
   }
 }
 
@@ -117,8 +108,7 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
   // copies of the spectators). if beam blobs cannot be filled return false and
   // trigger retrial Fill the beam remnant blob with the original particles and
   // put them also into the ktmaps.
-  if (!p_remnants[beam]->FillBlob(&m_ktmap[beam], false))
-    return false;
+  if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(), &m_ktmap[beam], false)) return false;
   for (size_t i = 0; i < 2; i++)
     m_inmom[i] = p_remnants[i]->InMomentum();
   // Initialise particle-momentum maps to track the transverse momenta
@@ -167,7 +157,7 @@ bool Kinematics_Generator::AdjustFinalStateDIS(const size_t &beam) {
   //    the soft blob.
   // 3. Add the originals, with the original momenta, as incoming particles to
   //    the soft blob. Erase them from the specators.
-  p_remnants[1 - beam]->FillBlob();
+  p_remnants[1 - beam]->FillBlob(p_rhandler->GetColourGen());
   for (ParticleMomMap::iterator pit = m_shuffledmap.begin();
        pit != m_shuffledmap.end(); pit++) {
     Particle *part = new Particle(*pit->first);
@@ -191,8 +181,7 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     // Fill the beam remnant blobs with copies of the spectators and the
     // extracted shower initiators and keep the original particles in the
     // ktmaps.
-    if (!p_remnants[beam]->FillBlob(&m_ktmap[beam], true))
-      return false;
+    if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(), &m_ktmap[beam], true)) return false;
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }
   // Initialise particle-momentum maps to track the transverse momenta
@@ -222,14 +211,12 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
       scale *= 0.1;
     }
     if (scale < 1.e-3) {
-      if (m_errors<5) {
-      msg_Error()<<"Warning: "
-		 <<METHOD<<" unable to create the breakup kinematics";
+      if (m_errors < 5) {
+        msg_Error() << "Warning: "  << METHOD<<" unable to create the breakup kinematics";
       msg_Debugging()<<" for "
-		     << p_remnants[0]->GetExtracted()[0] << " and "
-		     << p_remnants[1]->GetExtracted()[0]
-		     << " and the corresponding remnants are "
-		     << p_remnants[0]->GetSpectators()[0] << " and "
+                    << p_remnants[0]->GetExtracted()[0] << " and "
+                    << p_remnants[1]->GetExtracted()[0] << " and the corresponding remnants are "
+                    << p_remnants[0]->GetSpectators()[0] << " and "
 		     << p_remnants[1]->GetSpectators()[0];
       msg_Error()<<".\n";
       }

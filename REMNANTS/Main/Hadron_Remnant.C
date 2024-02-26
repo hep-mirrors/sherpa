@@ -56,7 +56,8 @@ bool Hadron_Remnant::IsValence(Particle * part) {
   return false;
 }
 
-void Hadron_Remnant::MakeSpectator(Particle * parton) {
+void Hadron_Remnant::MakeSpectator(Particle* parton, Colour_Generator* colours)
+{
   // If a shower initiator is a sea-quark or antiquark, a corresponding
   // antiflavour has to be added to the spectators.
   p_spectator = nullptr;
@@ -66,24 +67,17 @@ void Hadron_Remnant::MakeSpectator(Particle * parton) {
   p_spectator = MakeParticle(flav.Bar());
   p_spectator->SetFlow((flav.Bar().IsAnti()?2:1),-1);
   p_spectator->SetPosition(parton->XProd());
-  p_colours->AddColour(m_beam,(flav.Bar().IsAnti()?1:0),p_spectator);
+  colours->AddColour(m_beam, (flav.IsAnti() ? 0 : 1), p_spectator);
   m_spectators.push_front(p_spectator);
 }
 
-Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
-  Particle * part = new Particle(-1,flav,Vec4D(0.,0.,0.,0.),'B');
-  part->SetNumber();
-  part->SetBeam(m_beam);
-  part->SetPosition(m_position+(*p_ff)());
-  return part;
-}
-
-bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
+bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, const bool& copy)
+{
   // Add remnants, diquark and quark, if necessary.
-  if (!p_valence || !p_remnant) MakeRemnants();
+  if (!p_valence || !p_remnant) MakeRemnants(colours);
   // Possibly adjust final pending colours with extra gluons - in prinicple one may have
   // to check that they are not singlets ....
-  CompensateColours();
+  CompensateColours(colours);
   msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
                   << m_extracted << ", \n and spectators = " << m_spectators
                   << "\n";
@@ -97,20 +91,10 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   bool colourconserved = p_beamblob->CheckColour(true);
   if (!colourconserved) {
     msg_Error()<<"Error in "<<METHOD<<" for \n"<<(*p_beamblob)<<"\n";
-    p_colours->Output();
+    colours->Output();
     return false;
   }
   return true;
-}
-
-void Hadron_Remnant::CompensateColours() {
-  while (!p_colours->Colours(m_beam,0).empty() &&
-         !p_colours->Colours(m_beam,1).empty() &&
-	 p_colours->Colours(m_beam,0)!=p_colours->Colours(m_beam,1)) {
-    Particle * gluon = MakeParticle(Flavour(kf_gluon));
-    for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
-    m_spectators.push_back(gluon);
-  }
 }
 
 void Hadron_Remnant::SquashColourSinglets() {
@@ -228,7 +212,8 @@ void Hadron_Remnant::SquashFlavourSinglets() {
   }
 }
 
-bool Hadron_Remnant::MakeRemnants() {
+bool Hadron_Remnant::MakeRemnants(Colour_Generator* colours)
+{
   // If no valence quark has been extracted to date, a quark-diquark
   // pair must be constructed.  the idea is to pick one of the three flavours
   // at random for the quark, add it to the spectators, then construct the
@@ -243,7 +228,7 @@ bool Hadron_Remnant::MakeRemnants() {
     p_valence  = MakeParticle(valflav);
     index      = ((valflav.IsQuark() && !valflav.IsAnti()) ||
 		 (valflav.IsDiQuark() && valflav.IsAnti()))?0:1;
-    p_valence->SetFlow(index+1,p_colours->NextColour(m_beam,index));
+    p_valence->SetFlow(index + 1, colours->NextColour(m_beam, index));
     m_spectators.push_back(p_valence);
   }
   else {
@@ -252,7 +237,7 @@ bool Hadron_Remnant::MakeRemnants() {
 		  (valflav.IsDiQuark() && valflav.IsAnti()))?0:1;
   }
   p_remnant    = p_recoiler = MakeParticle(RemnantFlavour(valflav));
-  p_remnant->SetFlow(2-index,p_colours->NextColour(m_beam,1-index));
+  p_remnant->SetFlow(2 - index, colours->NextColour(m_beam, 1 - index));
   m_spectators.push_front(p_recoiler);
   return true;
 }

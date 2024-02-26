@@ -42,24 +42,26 @@ namespace REMNANTS {
     ATOOLS::Blob     * p_beamblob;
     ATOOLS::Vec4D      m_position;
     ATOOLS::Part_List  m_extracted, m_spectators;
-    Colour_Generator * p_colours;
 
     double m_residualE, m_scale2;
 
-    rtp::code FixType(ATOOLS::Flavour & flav);
+    rtp::code                 FixType(ATOOLS::Flavour& flav);
+    virtual ATOOLS::Particle* MakeParticle(const ATOOLS::Flavour& flav);
+    virtual void              CompensateColours(Colour_Generator* colours);
+
   public:
     Remnant_Base(const ATOOLS::Flavour & flav,const size_t & beam,
 		 const size_t & tag=0);
     virtual ~Remnant_Base();
 
-    virtual bool Extract(ATOOLS::Particle *parton);
-    virtual bool TestExtract(ATOOLS::Particle *parton);
-    virtual bool TestExtract(const ATOOLS::Flavour &flav,
-			     const ATOOLS::Vec4D &mom)=0;
-    virtual ATOOLS::Blob * MakeBlob();
-    virtual bool FillBlob(ATOOLS::ParticleMomMap *ktmap=nullptr,
-			  const bool & copy=true)=0;
-    virtual void MakeSpectator(ATOOLS::Particle * parton) {}
+    virtual bool Extract(ATOOLS::Particle* parton, Colour_Generator* colours);
+    virtual bool TestExtract(ATOOLS::Particle* parton);
+    virtual bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom) = 0;
+
+    virtual ATOOLS::Blob* MakeBlob();
+    virtual bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap = nullptr,
+                          const bool& copy = true) = 0;
+    virtual void MakeSpectator(ATOOLS::Particle* parton, Colour_Generator* colours) {}
     virtual ATOOLS::Vec4D IncomingMomentum();
 
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
@@ -81,7 +83,6 @@ namespace REMNANTS {
     inline virtual ATOOLS::Particle * GetSpectator()     { return nullptr; }
     inline void SetBeam(BEAM::Beam_Base * beam)          { p_beam = beam; }
     inline void SetScale2(const double & scale2)         { m_scale2 = scale2; }
-    inline void SetColours(Colour_Generator * cgen)      { p_colours = cgen; }
     inline void SetPosition(const ATOOLS::Vec4D & pos)   { m_position = pos; }
   };
 }

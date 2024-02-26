@@ -44,20 +44,19 @@ namespace REMNANTS {
     bool m_check, m_output;
     long int m_fails;
 
-    void       InitializeRemnants(PDF::ISR_Handler*            isr,
-                            YFS::YFS_Handler *yfs,
-                                  BEAM::Beam_Spectra_Handler*  beam,
-                                  const std::array<size_t, 2>& tags);
+    void InitializeRemnants(PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler* beam);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
-    bool       CheckBeamBreakup();
-    void       InitBeamAndSoftBlobs(ATOOLS::Blob_List* const blobs,
-                                    const bool&              isrescatter);
-    int        FindInsertPositionForRescatter(ATOOLS::Blob_List* const bloblist,
-                                              const bool&              isrescatter);
+    bool CheckBeamBreakup();
+    void InitBeamAndSoftBlobs(ATOOLS::Blob_List* const blobs, const bool& isrescatter);
+    int  FindInsertPositionForRescatter(ATOOLS::Blob_List* const bloblist, const bool& isrescatter);
 
   public:
-    Remnant_Handler(PDF::ISR_Handler * isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler * beam,
+    Remnant_Handler(PDF::ISR_Handler * isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler * beam_handler,
+                    const std::array<size_t, 2>& tags);
+    Remnant_Handler(std::array<Remnant_Base*, 2> remnants, PDF::ISR_Handler* isr,
+                    YFS::YFS_Handler *yfs,
+                    BEAM::Beam_Spectra_Handler* beam_handler,
                     const std::array<size_t, 2>& tags);
     ~Remnant_Handler();
 
@@ -84,7 +83,8 @@ namespace REMNANTS {
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
       return (beam<2)?p_remnants[beam]:nullptr;
     }
-    inline Primordial_KPerp * GetKPerp() { return m_kinematics.GetKPerp(); }
+    inline Primordial_KPerp* GetKPerp() { return m_kinematics.GetKPerp(); }
+    inline Colour_Generator* GetColourGen() { return &m_colours; }
   };
 
   typedef std::map<PDF::isr::id, Remnant_Handler*> Remnant_Handler_Map;

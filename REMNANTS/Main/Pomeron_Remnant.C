@@ -14,14 +14,8 @@ Pomeron_Remnant::Pomeron_Remnant(PDF::PDF_Base *pdf, const size_t& beam, const s
   p_ff = new Form_Factor(pdf->Bunch());
 }
 
-Particle *Pomeron_Remnant::MakeParticle(const ATOOLS::Flavour &flav) {
-  Particle *part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
-  part->SetNumber();
-  part->SetBeam(m_beam);
-  return part;
-}
-
-bool Pomeron_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
+bool Pomeron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, const bool& copy)
+{
   if (m_extracted.empty()) {
     msg_Error() << METHOD
                 << ": No remnants have been extracted, please check. \n";
@@ -31,7 +25,7 @@ bool Pomeron_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
     msg_Error()<<METHOD<<": Too many remnants have been extracted, please check.\n";
     return false;
   }
-  MakeRemnants();
+  MakeRemnants(colours);
   msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
                   << m_extracted << ", \n and spectators = " << m_spectators
                   << "\n";
@@ -131,7 +125,8 @@ bool Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   return true;
 }
 
-void Pomeron_Remnant::MakeRemnants() {
+void Pomeron_Remnant::MakeRemnants(Colour_Generator* colours)
+{
   Particle * part;
   if (m_extracted.front()->Flav()==Flavour(kf_gluon)){
     part = p_recoiler = MakeParticle(Flavour(kf_gluon));

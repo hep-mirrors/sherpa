@@ -882,8 +882,16 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     if (pid != PDF::isr::bunch_rescatter) flav = m_bunch_particles[beam];
     else {
       // use a mode to select which beam/bunch combination is used for
-      // rescattering defaults to 0, i.e. beam-beam rescattering
+      // rescattering defaults to 0. The modes are
+      // Mode | Beam1 - Beam2
+      // -----|--------------
+      // 0    | beam  - beam
+      // 1    | bunch - beam
+      // 2    | beam  - bunch
+      // 3    | bunch - bunch (disabled, because that would be normal MPI)
       int bbrmode            = settings["BBR_MODE"].SetDefault(0).Get<int>();
+      if (bbrmode < 0 || bbrmode > 2)
+        THROW(fatal_error, "BBR_Mode: Invalid mode, use MPI settings instead. ")
       flav                   = bbrmode & (beam + 1) ? m_bunch_particles[beam]
                                                     : p_beamspectra->GetBeam(beam)->Beam();
       m_bunchtags[pid][beam] = bbrmode & (beam + 1) ? 0 : 1;
@@ -961,10 +969,24 @@ bool Initialization_Handler::InitializeTheRemnants() {
     new Remnant_Handler(m_isrhandlers[isr::hard_process],p_yfshandler,p_beamspectra,
 			m_bunchtags[isr::hard_process]);
   m_remnanthandlers[isr::hard_subprocess] = m_remnanthandlers[isr::hard_process];
+  // Set up the correct combination of remnant handlers for the bunch rescattering, depending on the
+  // mode
   if (m_isrhandlers.find(isr::bunch_rescatter)!=m_isrhandlers.end()) {
-    m_remnanthandlers[isr::bunch_rescatter] =
+    int bbrmode = Settings::GetMainSettings()["BBR_MODE"].Get<int>();
+    if (bbrmode == 0)
+      m_remnanthandlers[isr::bunch_rescatter] =
       new Remnant_Handler(m_isrhandlers[isr::bunch_rescatter],p_yfshandler,p_beamspectra,
-			  m_bunchtags[isr::bunch_rescatter]);
+                                  m_bunchtags[isr::bunch_rescatter]);
+    else {
+      std::array<REMNANTS::Remnant_Base*, 2> remnants = {nullptr, nullptr};
+      // For mixed beam-bunch rescattering, the remnant for the bunch has already been created for
+      // the hard process; we need to get it from there and hand it over
+      remnants[bbrmode - 1] = m_remnanthandlers[PDF::isr::hard_process]->GetRemnant(bbrmode - 1);
+      m_remnanthandlers[isr::bunch_rescatter] =
+              new Remnant_Handler(remnants, m_isrhandlers[isr::bunch_rescatter],
+                                  p_yfshandler, p_beamspectra,
+                                  m_bunchtags[isr::bunch_rescatter]);
+    }
   }
   msg_Info()<<"Initializing remnants ...\n"
 	    <<"  Hard process: "
@@ -972,7 +994,7 @@ bool Initialization_Handler::InitializeTheRemnants() {
 	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(0)->Type()<<") + "
 	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(1)->GetBeam()->Bunch(0)<<" ("
 	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(1)->Type()<<")\n";
-  if (m_remnanthandlers.find(isr::bunch_rescatter)!=m_remnanthandlers.end())
+  if (m_remnanthandlers.find(isr::bunch_rescatter) != m_remnanthandlers.end())
     msg_Info()<<"  Rescattering: "
 	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->GetBeam()->Bunch(m_bunchtags[isr::bunch_rescatter][0])<<" ("
 	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->Type()<<") + "

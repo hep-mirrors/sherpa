@@ -15,34 +15,15 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr,
-                                 YFS::YFS_Handler *yfs,BEAM::Beam_Spectra_Handler* beam,
+Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
+                                 BEAM::Beam_Spectra_Handler* beam_handler,
                                  const std::array<size_t, 2>& tags)
-    : p_softblob(nullptr), m_check(true), m_output(false), m_fails(0)
+    : m_id(isr->Id()), m_tags(tags), p_softblob(nullptr), m_check(true), m_output(false), m_fails(0)
 {
   rempars = new Remnants_Parameters();
   rempars->Init();
-  InitializeRemnants(isr, yfs, beam,tags);
-  DefineRemnantStrategy();
-  InitializeKinematicsAndColours();
-}
-
-Remnant_Handler::~Remnant_Handler() {
-  for (size_t i(0); i < 2; ++i) {
-    if (p_remnants[i]!=nullptr) delete p_remnants[i];
-  }
-  if (m_fails>0)
-    msg_Out() << "Remnant handling yields " << m_fails
-              << " fails in creating good beam  breakups.\n";
-}
-
-void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
-                                         YFS::YFS_Handler *yfs,BEAM::Beam_Spectra_Handler* beam,
-                                         const std::array<size_t, 2>& tags)
-{
+  p_remnants = {nullptr, nullptr};
   for (int i = 0; i < 2; ++i) {
-    m_tags[i]     = tags[i];
-    p_remnants[i] = nullptr;
     Flavour flav = isr->Flav(i);
     if (isr->PDF(i) != nullptr &&
         Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
@@ -62,17 +43,63 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
     if (p_remnants[i] == nullptr)
       p_remnants[i] = new No_Remnant(i, m_tags[i]);
   }
+  InitializeRemnants(isr, yfs, beam_handler);
+  DefineRemnantStrategy();
+  InitializeKinematicsAndColours();
+}
+
+Remnant_Handler::Remnant_Handler(std::array<Remnant_Base*, 2> remnants,
+                                 PDF::ISR_Handler* isr,
+                                 YFS::YFS_Handler *yfs,
+                                 BEAM::Beam_Spectra_Handler*  beam_handler,
+                                 const std::array<size_t, 2>& tags)
+    : m_id(isr->Id()), p_remnants(remnants), m_tags(tags), p_softblob(nullptr), m_check(true),
+      m_output(false), m_fails(0)
+{
+  // this constructor is to create remnants, where one of the remnants has already been created;
+  // needed for the beam rescatterings
+  int beam = 0;
+  if (p_remnants[1] == nullptr) beam = 1;
+  Flavour flav = isr->Flav(beam);
+  if (isr->PDF(beam) != nullptr && Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
+    if (flav.IsHadron() && flav.Kfcode() != kf_pomeron)
+      p_remnants[beam] = new Hadron_Remnant(isr->PDF(beam), beam, m_tags[beam]);
+    else if (flav.IsLepton())
+      p_remnants[beam] = new Electron_Remnant(isr->PDF(beam), beam, m_tags[beam]);
+    else if (flav.IsPhoton())
+      p_remnants[beam] = new Photon_Remnant(isr->PDF(beam), beam, m_tags[beam]);
+    else if (flav.Kfcode() == kf_pomeron)
+      p_remnants[beam] = new Pomeron_Remnant(isr->PDF(beam), beam);
+  }
+  if (p_remnants[beam] == nullptr) p_remnants[beam] = new No_Remnant(beam, m_tags[beam]);
+  InitializeRemnants(isr, yfs, beam_handler);
+  DefineRemnantStrategy();
+  InitializeKinematicsAndColours();
+}
+
+Remnant_Handler::~Remnant_Handler()
+{
+  for (size_t i(0); i < 2; ++i) {
+    if (p_remnants[i] != nullptr) delete p_remnants[i];
+  }
+  if (m_fails > 0)
+    msg_Out() << "Remnant handling yields " << m_fails
+              << " fails in creating good beam  breakups.\n";
+}
+
+void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
+                                         YFS::YFS_Handler *yfs,
+                                         BEAM::Beam_Spectra_Handler* beam)
+{
   // Finish the initialisation of the Remnant_Bases: make sure they know
   // each other, their beam, the Colour_Generator, and hand them also to
   // the ISR_Handler.
   // TODO: this latter part may become obsolete - I will have to check this.
   for (size_t i = 0; i < 2; ++i) {
     p_remnants[i]->SetBeam(beam->GetBeam(i));
-    p_remnants[i]->SetColours(&m_colours);
     p_remnants[i]->Reset();
     isr->SetRemnant(p_remnants[i], i);
   }
-  m_id = isr->Id();
 }
 
 void Remnant_Handler::DefineRemnantStrategy() {
@@ -299,7 +326,7 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
                 << (*part->DecayBlob()) << "\n";
     return false;
   }
-  return p_remnants[beam]->Extract(part);
+  return p_remnants[beam]->Extract(part, &m_colours);
 }
 
 void Remnant_Handler::Reset() {
