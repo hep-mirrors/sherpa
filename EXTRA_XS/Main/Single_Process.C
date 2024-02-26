@@ -142,6 +142,11 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
   return m_lastxs;
 }
 
+double Single_Process::RelativeRenormalisationScaleWeight(double scalefactor) const
+{
+  return p_born_me2->RelativeRenormalisationScaleWeight(scalefactor);
+}
+
 bool EXTRAXS::Single_Process::FillIntegrator(PHASIC::Phase_Space_Handler *const psh)
 {
   msg_Out()<<METHOD<<".\n";
