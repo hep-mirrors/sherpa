@@ -1245,6 +1245,8 @@ void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
             Hard_Process_Variation_Generator_Getter_Function::
             GetObject(name, Hard_Process_Variation_Generator_Arguments{this})
             );
+        if (m_hard_process_variation_generators.back() == nullptr)
+          THROW(fatal_error, "Variation generator \"" + name + "\" not found");
       }
     }
   }
