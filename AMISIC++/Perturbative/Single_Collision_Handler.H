@@ -24,7 +24,7 @@ namespace AMISIC {
     double           m_muf2, m_mur2;
 
     bool m_ana;
-    std::map<std::string,ATOOLS::Histogram *> m_histos; 
+    std::map<std::string, ATOOLS::Histogram*> m_histos;
     void InitAnalysis();
     void FinishAnalysis();
     void AnalyseWeight(const double & weight);
@@ -45,19 +45,15 @@ namespace AMISIC {
     ATOOLS::Blob * NextScatter();
     bool TestRemnants() const;
 
-    
     inline void SetResidualX(const double & E1, const double & E2) {
       m_residualx1 = E1/InMomentum(0)[0];
       m_residualx2 = E2/InMomentum(1)[0];
     }
     inline void SetLastPT2(const double pt2=-1.) {
-      m_lastpt2 = pt2<0.?m_S/4.:pt2; 
+      m_lastpt2 = pt2 < 0. ? m_S / 4. : pt2;
     }
     inline void SetPosition(const size_t & beam,const ATOOLS::Vec4D & pos) {
       p_remnants->GetRemnant(beam)->SetPosition(pos);
-    }
-    inline REMNANTS::Remnant_Base * GetRemnant(const size_t & beam) const {
-      return p_remnants->GetRemnant(beam);
     }
     inline ATOOLS::Vec4D Position(const size_t & beam) const {
       return p_remnants->GetRemnant(beam)->Position();
@@ -70,13 +66,12 @@ namespace AMISIC {
 				p_remnants->GetRemnant(1)->Position()).Abs2()));
     }
     inline const double & muF2()    const { return m_muf2; }
-    inline const double & muR2()    const { return m_mur2; }    
+    inline const double&  muR2() const { return m_mur2; }
     inline const double & LastPT2() const { return m_lastpt2; }
     inline const double & PT2()     const { return m_pt2; }
     inline const double & Y3()      const { return m_y3; }
     inline const double & Y4()      const { return m_y4; }
 
-    
     void Test(const double & Q2,const long int & n);
   };
 }
