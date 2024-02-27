@@ -86,6 +86,7 @@ namespace YFS{
         inline bool IsResonance() {return m_resonance;}
         inline void SetResonance(bool res) { m_resonance=res;}
         inline bool IsSame() {return m_sameflav;}
+        inline double ChargeNorm() {return -m_QiQj*m_thetaij;}
 
     };
 
