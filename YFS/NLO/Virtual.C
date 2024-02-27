@@ -43,7 +43,7 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
 
 Virtual::~Virtual()
 {
- // if(p_loop_me) delete p_loop_me;
+ if(p_loop_me) delete p_loop_me;
  // if(p_scale)   delete p_scale;
 }
 
@@ -61,7 +61,7 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
   {
     double V(0.0), run_corr(0.0);
     if(s_model->IsQEDRunning()) {
-     double t = (p[0]-p[2]).Abs2();  
+     double t = -(p[0]-p[2]).Abs2();  
      double dalpha = ((*aqed)(t) - aqed->AqedThomson());
      // PRINT_VAR(dalpha);
      run_corr = 4.*dalpha*B;

@@ -71,6 +71,9 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
     else m_thetai = 1;
     if(fl[1].IsAnti()) m_thetaj = 1;
       else m_thetaj = -1;
+    if(IsEqual(m_Qi,m_Qj)){
+      m_thetai = m_thetaj = -1;
+    }
     // m_thetai = m_thetaj = -1;
     for (int i = 0; i < 2; ++i) m_beams.push_back(m_bornmomenta[i]);
   }
@@ -79,6 +82,9 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
     else m_thetai = -1;
     if(fl[1].IsAnti()) m_thetaj = -1;
       else m_thetaj = 1;
+    if(IsEqual(m_Qi,m_Qj)){
+      m_thetai = m_thetaj = 1;
+    }
     // m_thetai = m_thetaj = 1;
 
   }
@@ -243,8 +249,8 @@ void Dipole::CalculateBeta(){
   m_gamma  = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg)-2);
   m_gammap = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg));
 
-  m_gamma  *= m_alpi*m_Qj*m_Qj*m_thetaij;
-  m_gammap *= m_alpi*m_Qj*m_Qj*m_thetaij;
+  m_gamma  *= m_alpi*abs(ChargeNorm());
+  m_gammap *= m_alpi*abs(ChargeNorm());
 }
 
 void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D_Vector &Photons) {
