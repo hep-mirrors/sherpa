@@ -80,6 +80,7 @@ namespace REMNANTS {
     inline PDF::isr::id Id() const { return m_id; }
     inline strat::code  Type() const { return m_type; }
 
+    inline std::array<Remnant_Base*, 2> GetRemnants() const { return p_remnants; }
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
       return (beam<2)?p_remnants[beam]:nullptr;
     }
