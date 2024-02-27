@@ -158,9 +158,9 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
   if (p_isrhandler->On() && p_isrchannels != NULL &&
       m_mode != psmode::no_gen_isr) {
     if (m_smin > m_sprime * p_isrhandler->Upper1() * p_isrhandler->Upper2()) {
-      msg_Out() << METHOD << ": Event rejected due to insufficient s' \n"
-                << "    Upper limits for x are " << p_isrhandler->Upper1()
-                << " and " << p_isrhandler->Upper2() << "\n";
+      msg_Tracking() << METHOD << ": Event rejected due to insufficient s' \n"
+                     << "    Upper limits for x are " << p_isrhandler->Upper1()
+                     << " and " << p_isrhandler->Upper2() << "\n";
       return false;
     }
     p_isrhandler->Reset();
