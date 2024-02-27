@@ -46,10 +46,9 @@ std::ostream &PDF::operator<<(std::ostream &s, const PDF::isrmode::code mode) {
 }
 
 ISR_Handler::ISR_Handler(std::array<ISR_Base *, 2> isrbase, const isr::id &id)
-    : m_id(id), m_rmode(0), m_swap(0), m_info_lab(8), m_info_cms(8),
-      m_freezePDFforLowQ(false) {
-  p_isrbase[0] = isrbase[0];
-  p_isrbase[1] = isrbase[1];
+    : p_isrbase(isrbase), m_id(id), m_rmode(0), m_swap(0), m_info_lab(8),
+      m_info_cms(8), m_freezePDFforLowQ(false)
+{
   Settings &s = Settings::GetMainSettings();
   m_freezePDFforLowQ = s["FREEZE_PDF_FOR_LOW_Q"].SetDefault(false).Get<bool>();
   if (s_nozeropdf < 0) {
@@ -473,10 +472,6 @@ bool ISR_Handler::BoostInLab(Vec4D *p, const size_t n) {
     m_cmsboost.BoostBack(p[i]);
   }
   return true;
-}
-
-REMNANTS::Remnant_Base *ISR_Handler::GetRemnant(const size_t beam) const {
-  return beam < 2 ? p_remnants[beam] : nullptr;
 }
 
 void ISR_Handler::Reset(const size_t i) const {}

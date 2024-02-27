@@ -20,7 +20,7 @@ namespace REMNANTS {
   class Kinematics_Generator {
   private:
     Remnant_Handler*                  p_rhandler;
-    std::array<Remnant_Base*, 2>      p_remnants;
+    std::array<std::shared_ptr<Remnant_Base>, 2> p_remnants;
     std::array<ATOOLS::Part_List*, 2> p_extracted, p_spectators;
     ATOOLS::Blob*                     p_softblob;
 

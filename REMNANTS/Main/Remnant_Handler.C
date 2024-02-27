@@ -28,31 +28,33 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
     if (isr->PDF(i) != nullptr &&
         Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
       if (flav.IsHadron() && flav.Kfcode() != kf_pomeron)
-        p_remnants[i] = new Hadron_Remnant(isr->PDF(i), i, m_tags[i]);
+        p_remnants[i] =
+                std::make_shared<Hadron_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsLepton())
-        p_remnants[i] = new Electron_Remnant(isr->PDF(i), i, m_tags[i]);
+        p_remnants[i] =
+                std::make_shared<Electron_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsPhoton())
-        p_remnants[i] = new Photon_Remnant(isr->PDF(i), i, m_tags[i]);
+        p_remnants[i] =
+                std::make_shared<Photon_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.Kfcode() == kf_pomeron)
-        p_remnants[i] = new Pomeron_Remnant(isr->PDF(i), i);
+        p_remnants[i] = std::make_shared<Pomeron_Remnant>(isr->PDF(i), i);
     }
     if(yfs->Mode()!=YFS::yfsmode::off){
       // Should always be a lepton
-      p_remnants[i] = new Electron_Remnant(yfs,i,m_tags[i]);
+      p_remnants[i] = std::make_shared<Electron_Remnant>(yfs,i,m_tags[i]);
     }
     if (p_remnants[i] == nullptr)
-      p_remnants[i] = new No_Remnant(i, m_tags[i]);
+      p_remnants[i] = std::make_shared<No_Remnant>(i, m_tags[i]);
   }
   InitializeRemnants(isr, yfs, beam_handler);
   DefineRemnantStrategy();
   InitializeKinematicsAndColours();
 }
 
-Remnant_Handler::Remnant_Handler(std::array<Remnant_Base*, 2> remnants,
-                                 PDF::ISR_Handler* isr,
-                                 YFS::YFS_Handler *yfs,
-                                 BEAM::Beam_Spectra_Handler*  beam_handler,
-                                 const std::array<size_t, 2>& tags)
+Remnant_Handler::Remnant_Handler(
+        std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
+        PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler* beam_handler,
+        const std::array<size_t, 2>& tags)
     : m_id(isr->Id()), p_remnants(remnants), m_tags(tags), p_softblob(nullptr), m_check(true),
       m_output(false), m_fails(0)
 {
@@ -63,15 +65,20 @@ Remnant_Handler::Remnant_Handler(std::array<Remnant_Base*, 2> remnants,
   Flavour flav = isr->Flav(beam);
   if (isr->PDF(beam) != nullptr && Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
     if (flav.IsHadron() && flav.Kfcode() != kf_pomeron)
-      p_remnants[beam] = new Hadron_Remnant(isr->PDF(beam), beam, m_tags[beam]);
+      p_remnants[beam] = std::make_shared<Hadron_Remnant>(isr->PDF(beam), beam,
+                                                          m_tags[beam]);
     else if (flav.IsLepton())
-      p_remnants[beam] = new Electron_Remnant(isr->PDF(beam), beam, m_tags[beam]);
+      p_remnants[beam] = std::make_shared<Electron_Remnant>(isr->PDF(beam),
+                                                            beam, m_tags[beam]);
     else if (flav.IsPhoton())
-      p_remnants[beam] = new Photon_Remnant(isr->PDF(beam), beam, m_tags[beam]);
+      p_remnants[beam] = std::make_shared<Photon_Remnant>(isr->PDF(beam), beam,
+                                                          m_tags[beam]);
     else if (flav.Kfcode() == kf_pomeron)
-      p_remnants[beam] = new Pomeron_Remnant(isr->PDF(beam), beam);
+      p_remnants[beam] =
+              std::make_shared<Pomeron_Remnant>(isr->PDF(beam), beam);
   }
-  if (p_remnants[beam] == nullptr) p_remnants[beam] = new No_Remnant(beam, m_tags[beam]);
+  if (p_remnants[beam] == nullptr)
+    p_remnants[beam] = std::make_shared<No_Remnant>(beam, m_tags[beam]);
   InitializeRemnants(isr, yfs, beam_handler);
   DefineRemnantStrategy();
   InitializeKinematicsAndColours();
@@ -79,9 +86,6 @@ Remnant_Handler::Remnant_Handler(std::array<Remnant_Base*, 2> remnants,
 
 Remnant_Handler::~Remnant_Handler()
 {
-  for (size_t i(0); i < 2; ++i) {
-    if (p_remnants[i] != nullptr) delete p_remnants[i];
-  }
   if (m_fails > 0)
     msg_Out() << "Remnant handling yields " << m_fails
               << " fails in creating good beam  breakups.\n";
@@ -98,8 +102,8 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
   for (size_t i = 0; i < 2; ++i) {
     p_remnants[i]->SetBeam(beam->GetBeam(i));
     p_remnants[i]->Reset();
-    isr->SetRemnant(p_remnants[i], i);
   }
+  isr->SetRemnants(p_remnants);
 }
 
 void Remnant_Handler::DefineRemnantStrategy() {

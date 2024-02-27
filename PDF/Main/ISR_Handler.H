@@ -41,7 +41,7 @@ namespace PDF {
   class ISR_Handler {
 
   protected:
-    ISR_Base *p_isrbase[2];
+    std::array<ISR_Base*, 2> p_isrbase;
 
     isr::id       m_id;
     std::string   m_name;
@@ -58,8 +58,8 @@ namespace PDF {
 
     std::vector<double> m_info_lab, m_info_cms;
 
-    BEAM::Beam_Base        * p_beam[2];
-    REMNANTS::Remnant_Base * p_remnants[2];
+    std::array<BEAM::Beam_Base*, 2>                        p_beam;
+    std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> p_remnants;
 
     double m_xf1, m_xf2;
 
@@ -100,7 +100,14 @@ namespace PDF {
     void Reset();
     void Reset(size_t i) const;
 
-    REMNANTS::Remnant_Base* GetRemnant(const size_t beam) const;
+    std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> GetRemnants() const
+    {
+      return p_remnants;
+    }
+    std::shared_ptr<REMNANTS::Remnant_Base> GetRemnant(const size_t& beam) const
+    {
+      return beam < 2 ? p_remnants[beam] : nullptr;
+    }
     ATOOLS::Blob_Data_Base* Info(int frame) const;
 
     inline void SetSprimeMin(const double spmin) { m_splimits[0]=ATOOLS::Max(m_fixed_smin,spmin); }
@@ -153,8 +160,10 @@ namespace PDF {
     inline ATOOLS::Flavour  Flav(const size_t beam) {
       return p_isrbase[beam]->Flavour();
     }
-    inline void SetRemnant(REMNANTS::Remnant_Base * remnant,const size_t beam) {
-      if (beam<2) p_remnants[beam] = remnant;
+    inline void SetRemnants(
+            std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants)
+    {
+      p_remnants = remnants;
     }
     inline void SetRescaleFactor(const double & rescale,const size_t beam) {
       p_isrbase[beam]->SetRescaleFactor(rescale);

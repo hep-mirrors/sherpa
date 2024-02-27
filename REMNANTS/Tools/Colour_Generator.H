@@ -26,7 +26,7 @@ namespace REMNANTS {
   private:
     std::list<int>     m_cols[2][2];
     std::set<int>      m_vetoed[2][2];
-    std::array<Remnant_Base*, 2>     p_remnants;
+    std::array<std::shared_ptr<Remnant_Base>, 2> p_remnants;
     std::array<ATOOLS::Particle*, 2> p_inparts;
 
     bool   TChannelColourFlows();

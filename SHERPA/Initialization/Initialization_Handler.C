@@ -975,7 +975,8 @@ bool Initialization_Handler::InitializeTheRemnants() {
       new Remnant_Handler(m_isrhandlers[isr::bunch_rescatter],p_yfshandler,p_beamspectra,
                                   m_bunchtags[isr::bunch_rescatter]);
     else {
-      std::array<REMNANTS::Remnant_Base*, 2> remnants = {nullptr, nullptr};
+      std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants = {
+              nullptr, nullptr};
       // For mixed beam-bunch rescattering, the remnant for the bunch has already been created for
       // the hard process; we need to get it from there and hand it over
       remnants[bbrmode - 1] = m_remnanthandlers[PDF::isr::hard_process]->GetRemnant(bbrmode - 1);
@@ -1046,9 +1047,7 @@ bool Initialization_Handler::InitializeTheShowers()
       delete m_showerhandlers[id];
     m_showerhandlers[id] = new Shower_Handler(p_model, m_isrhandlers[id], id);
     m_showerhandlers[id]->SetRemnants(m_remnanthandlers[id]);
-    for (size_t beam=0;beam<2;beam++) {
-      m_isrhandlers[id]->SetRemnant(m_remnanthandlers[id]->GetRemnant(beam),beam);
-    }
+    m_isrhandlers[id]->SetRemnants(m_remnanthandlers[id]->GetRemnants());
   }
   as->SetActiveAs(isr::hard_process);
   return true;

@@ -24,12 +24,11 @@ using namespace PHASIC;
 using namespace std;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler* mehandler)
-    : p_mehandler(mehandler), m_overweight(0.0)
+    : p_mehandler(mehandler), p_remnants(mehandler->GetISR()->GetRemnants()),
+      m_overweight(0.0)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
-  p_remnants[0]=mehandler->GetISR()->GetRemnant(0);
-  p_remnants[1]=mehandler->GetISR()->GetRemnant(1);
   p_yfshandler = mehandler->GetYFS();
   if (p_remnants[0]==NULL || p_remnants[1]==NULL)
     THROW(critical_error,"No beam remnant handler found.");
@@ -58,11 +57,11 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
           THROW(fatal_error,"Internal error");
         (*blob)["Trials"]->Set(0.0);
         m_overweight=Max(overweight,0.0);
-        return Return_Value::Success; 
+        return Return_Value::Success;
       }
       if (p_mehandler->GenerateOneEvent() &&
           FillBlob(bloblist,blob)) {
-        return Return_Value::Success; 
+        return Return_Value::Success;
       }
       else return Return_Value::New_Event;
     }
@@ -304,11 +303,9 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   return success;
 }
 
-void Signal_Processes::CleanUp(const size_t & mode) 
-{ 
+void Signal_Processes::CleanUp(const size_t& mode)
+{
   if (m_overweight>0.0) return;
 }
 
-void Signal_Processes::Finish(const std::string &) 
-{
-}
+void Signal_Processes::Finish(const std::string&) {}

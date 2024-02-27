@@ -31,7 +31,7 @@ namespace REMNANTS {
   class Remnant_Handler {
   private:
     PDF::isr::id                 m_id;
-    std::array<Remnant_Base*, 2> p_remnants;
+    std::array<std::shared_ptr<Remnant_Base>, 2> p_remnants;
     std::array<size_t, 2>        m_tags;
     strat::code                  m_type;
     Kinematics_Generator         m_kinematics;
@@ -54,7 +54,8 @@ namespace REMNANTS {
   public:
     Remnant_Handler(PDF::ISR_Handler * isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler * beam_handler,
                     const std::array<size_t, 2>& tags);
-    Remnant_Handler(std::array<Remnant_Base*, 2> remnants, PDF::ISR_Handler* isr,
+    Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
+                    PDF::ISR_Handler*                            isr,
                     YFS::YFS_Handler *yfs,
                     BEAM::Beam_Spectra_Handler* beam_handler,
                     const std::array<size_t, 2>& tags);
@@ -80,8 +81,13 @@ namespace REMNANTS {
     inline PDF::isr::id Id() const { return m_id; }
     inline strat::code  Type() const { return m_type; }
 
-    inline std::array<Remnant_Base*, 2> GetRemnants() const { return p_remnants; }
-    inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
+    inline std::array<std::shared_ptr<Remnant_Base>, 2> GetRemnants() const
+    {
+      return p_remnants;
+    }
+    inline std::shared_ptr<Remnant_Base> GetRemnant(
+            const unsigned short int& beam) const
+    {
       return (beam<2)?p_remnants[beam]:nullptr;
     }
     inline Primordial_KPerp* GetKPerp() { return m_kinematics.GetKPerp(); }
