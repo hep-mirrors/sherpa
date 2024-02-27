@@ -350,9 +350,6 @@ Initialization_Handler::~Initialization_Handler()
       PRINT_INFO("Error: Cannot unload PDF library "+*pdflib);
     else ((PDF_Exit_Function)exit)();
   }
-  //delete m_defsets[PDF::isr::hard_process];    //    = new std::string[2];
-  //delete m_defsets[PDF::isr::hard_subprocess]; // = new std::string[2];
-  //delete m_defsets[PDF::isr::bunch_rescatter]; // = new std::string[2];
 }
 
 void Initialization_Handler::CheckVersion()
@@ -774,6 +771,9 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     else if (p_beamspectra->GetBeam(beam)->Bunch(0).IsPhoton()) {
       deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_photon);
       defset = PDF::pdfdefs->DefaultPDFSet(kf_photon);
+    } else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode() == kf_pomeron) {
+      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_pomeron);
+      defset = PDF::pdfdefs->DefaultPDFSet(kf_pomeron);
     }
     // fix PDFs and default sets for the hard_process here
     if (pdflibs.empty()) m_pdflibs.insert(deflib);
@@ -784,28 +784,25 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     if (!mpilibs.empty()) {
       std::string libname = mpilibs[Min(beam,mpilibs.size()-1)];
       if (m_pdflibs.find(libname)==m_pdflibs.end()) m_pdflibs.insert(libname);
-      m_defsets[PDF::isr::hard_subprocess][beam] = defset;
     }
-    else m_defsets[PDF::isr::hard_subprocess][beam] = defset;
+    m_defsets[PDF::isr::hard_subprocess][beam] = defset;
     // fix PDFs and default sets for the beam rescattering here
-    // EPA is the only configuration at the moment where we allow additional
-    // scattering/interactions of the incoming beams
-    if (m_mode==eventtype::StandardPerturbative &&
-        settings["BEAM_RESCATTERING"].Get<string>()!=string("None") &&
-	p_beamspectra->GetBeam(beam)->Beam().IsHadron() &&
-	p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_photon &&
-	p_beamspectra->GetBeam(beam)->Bunch(1)==p_beamspectra->GetBeam(beam)->Beam()) {
+    // EPA is the only configuration at the moment where we allow
+    // additional// scattering/interactions of the incoming beams.
+    // we default to beam-beam rescatterings
+    if (m_mode == eventtype::StandardPerturbative &&
+        settings["BEAM_RESCATTERING"].Get<string>() == string("Amisic") &&
+        p_beamspectra->GetBeam(beam)->Type() == BEAM::beamspectrum::EPA) {
+      kf_code kfbeam = p_beamspectra->GetBeam(beam)->Beam().Kfcode();
       if (!bbrlibs.empty()) {
-        std::string libname = bbrlibs[Min(beam,bbrlibs.size()-1)];
-	if (m_pdflibs.find(libname)==m_pdflibs.end()) m_pdflibs.insert(libname);
-	m_defsets[PDF::isr::bunch_rescatter][beam] = std::string("None");
-      }
-      else {
-	m_pdflibs.insert(PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus));
-	m_defsets[PDF::isr::bunch_rescatter][beam] = PDF::pdfdefs->DefaultPDFSet(kf_p_plus);
-      }
+        std::string libname = bbrlibs[Min(beam, bbrlibs.size() - 1)];
+        if (m_pdflibs.find(libname) == m_pdflibs.end())
+          m_pdflibs.insert(libname);
+      } else
+        m_pdflibs.insert(PDF::pdfdefs->DefaultPDFLibrary(kfbeam));
+      defset = PDF::pdfdefs->DefaultPDFSet(kfbeam);
     }
-    else m_defsets[PDF::isr::bunch_rescatter][beam] = string("");
+    m_defsets[PDF::isr::bunch_rescatter][beam] = defset;
   }
   // add LHAPDF if necessary and load the relevant libraries
   if (Variations::NeedsLHAPDF6Interface()) {
