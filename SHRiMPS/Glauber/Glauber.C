@@ -42,8 +42,8 @@ Glauber::Glauber(Cross_Sections * xsecs, int N1, int N2) :
     m_nucleus2.push_back(Glauber::distributeNucleon(m_radius2,m_nucleus_2_position));
   }
   Glauber::DoCollision(xsecs,m_nucleus1,m_nucleus2);
-  //Glauber::SaveXSs(xsecs,0.,maxB,500);
-  //Glauber::SaveNucleonPositions();
+  Glauber::SaveXSs(xsecs,0.,maxB,500);
+  Glauber::SaveNucleonPositions();
 }
 
 Glauber::~Glauber() {}

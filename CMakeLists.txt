@@ -681,7 +681,7 @@ add_library(SHERPA::All ALIAS SHERPAAll)
 set_target_properties(SHERPAAll PROPERTIES EXPORT_NAME SHERPA::All)
 target_link_libraries(SHERPAAll INTERFACE
 SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
-ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsXsecs ShrimpsEikonals ShrimpsTools
+ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsXsecs ShrimpsEikonals ShrimpsTools ShrimpsGlauber
 HadronsMain HadronsMEs HadronsCurrents HadronsPSs
 Reconnections
 AhadicMain AhadicTools AhadicFormation AhadicDecays
