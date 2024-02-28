@@ -45,7 +45,6 @@ FSR::FSR()
   s["FSR_EIK"].SetDefault(0);
   s["FSR_CRU"].SetDefault(1);
   s["FSR_NGAMMA"].SetDefault(-1);
-  p_yfsFormFact = new YFS::YFS_Form_Factor();
   s["FSR_CUT"].SetDefault(1e-2*m_vmin);
   m_Edelta = s["FSR_EMIN"].Get<double>();
   m_kkmcAngles = s["KKMC_ANG"].Get<bool>();
@@ -60,7 +59,6 @@ FSR::FSR()
 }
 
 FSR::~FSR() {
-  if(p_yfsFormFact) delete p_yfsFormFact;
   delete p_fsrFormFact;
 }
 

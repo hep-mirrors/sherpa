@@ -58,7 +58,7 @@ namespace YFS {
       inline void SetDipole(Vec4D_Vector dip) {m_dipole = dip;}
       inline void SetV(double v) {m_v = v;}
       inline Vec4D_Vector GetDipole() {return m_dipole;}
-    YFS::YFS_Form_Factor *p_isrFormFact, *p_fsrFormFact, *p_yfsFormFact;
+    YFS::YFS_Form_Factor *p_isrFormFact, *p_fsrFormFact;
       void HidePhotons();
       void HidePhotons(Vec4D_Vector &k);
       // void MakePair(double cms, Vec4D &p1, Vec4D &p2, double mass1, double mass2);
