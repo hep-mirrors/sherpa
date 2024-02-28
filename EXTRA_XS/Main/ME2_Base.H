@@ -28,10 +28,6 @@ namespace EXTRAXS {
     double Calc(const ATOOLS::Vec4D_Vector &p);
 
     virtual double operator()(const ATOOLS::Vec4D_Vector& momenta) = 0;
-    virtual double
-    RelativeRenormalisationScaleWeight(double scalefactor) const {
-      return 1.0;
-    }
     virtual bool SetColours(const ATOOLS::Vec4D_Vector& momenta);
     virtual bool FillFinalState(const ATOOLS::Vec4D_Vector &p) { return true; }
 
@@ -40,9 +36,20 @@ namespace EXTRAXS {
     inline const ATOOLS::Vec4D_Vector   & Momenta()     const { return m_momenta; }
     inline const ATOOLS::Flavour_Vector * GetFlavours() const { return &m_flavours; }
     inline const ATOOLS::Vec4D_Vector   * GetMomenta()  const { return &m_momenta; }
-    
+
     int OrderQCD(const int &id=-1) const;
     int OrderEW(const int &id=-1) const;
+
+    // Override in subclasses if the matrix element has a non-trivial dependence
+    // on the renormalization scale (e.g. because the strong coupling is not a
+    // simple prefactor), and you still want to do on-the-fly renormalization
+    // scale variations. Make sure to return
+    // ATOOLS::NonfactorizingCoupling::WithCustomVariationWeight
+    // from the OrderQCD() member function, in order to opt in to this custom
+    // reweighting.
+    virtual double CustomRelativeVariationWeightForRenormalizationScaleFactor(double) const {
+      return 1.0;
+    }
 
     inline std::vector<std::vector<int> > & Colours() { return m_colours; }
     inline size_t SIntType() const { return m_sintt; }

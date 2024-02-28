@@ -27,8 +27,7 @@ namespace PHASIC {
     //! Override in a subclass as a fallback if the underlying ME returns the
     //! special QCD order of 98, thus indicating that it would like to report
     //! its own renormalization scale reweighting factor.
-    virtual double
-    RelativeRenormalisationScaleWeight(double scalefactor) const {
+    virtual double CustomRelativeVariationWeightForRenormalizationScaleFactor(double) const {
       THROW(not_implemented, "This must be implemented in a subclass.");
     }
 

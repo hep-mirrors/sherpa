@@ -229,15 +229,17 @@ namespace EXTRAXS {
     void   Test();
   public:
     XS_instanton(const External_ME_Args& args);
-    ~XS_instanton() {} // if (p_data) { delete p_data; p_data = NULL; }}
+    ~XS_instanton() {}
     double operator()(const ATOOLS::Vec4D_Vector& mom) override;
-    double RelativeRenormalisationScaleWeight(double scalefactor) const override;
     bool   SetColours(const Vec4D_Vector& mom) override;
     bool   FillFinalState(const std::vector<ATOOLS::Vec4D> & mom) override;
 
     // Report that this class has a non-standard AlphaS dependency, but offers
-    // RelativeRenormalisationScaleWeight to calculate it.
-    int OrderQCD(const int&) const override { return 98; };
+    // CustomRelativeVariationWeightForRenormalizationScaleFactor to calculate
+    // it.
+    int OrderQCD(const int&) const override { return NonfactorizingCoupling::WithCustomVariationWeight; };
+
+    double CustomRelativeVariationWeightForRenormalizationScaleFactor(double scalefactor) const override;
   };
 }
 
@@ -318,16 +320,6 @@ double XS_instanton::AlphaSModification() {
   return pow(m_alphaS_factor,2.*p_alphaS->Beta0(sqr(m_data.Rho())));
 }
 
-double XS_instanton::RelativeRenormalisationScaleWeight(double scalefactor) const {
-  // This is based on the dominant scale dependence of the instanton cross section,
-  // cf. Eq. (2.30) of 1911.09726
-  if (dabs(scalefactor-1.)<1.e-3) return 1.;
-  double scale2 = sqr(FixScale());
-  return ( exp(-4.*M_PI * (1./(*p_alphaS)(scalefactor*scale2)-1./(*p_alphaS)(scale2))) *
-	   pow(sqrt(scalefactor)/m_alphaS_factor,2.*4.*p_alphaS->Beta0(scalefactor*scale2)) );
-}
-
-
 bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
   m_Ehat = sqrt(mom[2].Abs2());
   if (m_Ehat<m_Ehatmin || m_Ehat>m_Ehatmax ||
@@ -351,6 +343,15 @@ bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
     }
   }
   return false;
+}
+
+double XS_instanton::CustomRelativeVariationWeightForRenormalizationScaleFactor(double fac) const {
+  // This is based on the dominant scale dependence of the instanton cross section,
+  // cf. Eq. (2.30) of 1911.09726
+  if (dabs(fac-1.)<1.e-3) return 1.;
+  double scale2 = sqr(FixScale());
+  return ( exp(-4.*M_PI * (1./(*p_alphaS)(fac*scale2)-1./(*p_alphaS)(scale2))) *
+	   pow(sqrt(fac)/m_alphaS_factor,2.*4.*p_alphaS->Beta0(fac*scale2)) );
 }
 
 bool XS_instanton::DefineFlavours() {
