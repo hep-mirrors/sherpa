@@ -142,11 +142,6 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
   return m_lastxs;
 }
 
-double Single_Process::RelativeRenormalisationScaleWeight(double scalefactor) const
-{
-  return p_born_me2->RelativeRenormalisationScaleWeight(scalefactor);
-}
-
 bool EXTRAXS::Single_Process::FillIntegrator(PHASIC::Phase_Space_Handler *const psh)
 {
   msg_Out()<<METHOD<<".\n";
@@ -204,6 +199,10 @@ const Flavour_Vector &Single_Process::CombinedFlavour(const size_t &idij)
 
 bool Single_Process::FillFinalState(const ATOOLS::Vec4D_Vector &p) {
   return true;
+}
+
+double Single_Process::CustomRelativeVariationWeightForRenormalizationScaleFactor(double fac) const {
+  return p_born_me2->CustomRelativeVariationWeightForRenormalizationScaleFactor(fac);
 }
 
 std::vector<std::vector<int> > * Single_Process::Colours() const {
