@@ -629,7 +629,7 @@ PrintInfo(std::ostream &str,const size_t width) const
   --------------------------------------------------------------------*/
 
 E_Lab_Selector::E_Lab_Selector(Process_Base *const proc):
-  Selector_Base("E_Lab_Selector",proc), m_elabmin(0.), m_elabmax(0.),
+  Selector_Base("E_Lab",proc), m_elabmin(0.), m_elabmax(0.),
   m_flav(Flavour(kf_none))
 {
 }
@@ -644,8 +644,7 @@ bool E_Lab_Selector::Trigger(Selector_List &sl)
   for (size_t i=m_nin;i<sl.size();i++) {
     if (m_flav.Includes(sl[i].Flavour())) {
       //need to boost back to lab frame
-      Vec4D com = sl[i].Momentum();
-      Vec4D lab = com;
+      Vec4D lab = sl[i].Momentum();
       p_proc->Integrator()->Beam()->BoostBackLab(lab);
       double Elab = lab.E();
       if (m_sel_log->Hit( ((Elab<m_elabmin) || (Elab>m_elabmax)) )) return false;
@@ -890,7 +889,7 @@ void Polar_Angle_Lab_Selector::SetRange(Flavour flav,double min,double max)
   }
 }
 
-DECLARE_GETTER(Polar_Angle_Lab_Selector,"Polar_Angel_Lab",Selector_Base,Selector_Key);
+DECLARE_GETTER(Polar_Angle_Lab_Selector,"Polar_Angle_Lab",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Polar_Angle_Lab_Selector>::
 operator()(const Selector_Key &key) const
