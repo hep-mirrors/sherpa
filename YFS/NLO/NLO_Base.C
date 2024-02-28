@@ -69,6 +69,11 @@ NLO_Base::~NLO_Base() {
 	if(p_yfsFormFact) delete p_yfsFormFact;
 	if(p_global_dipoles) delete p_global_dipoles;
 	if(p_nlodipoles) delete p_nlodipoles;
+	if(p_griffin) delete p_griffin;
+	if(p_real) delete p_real;
+	if(p_virt) delete p_virt;
+	if(p_realvirt) delete p_realvirt;
+	if(p_realreal) delete p_realreal;
 	// msg_Out()<<"Percentage of Recola events = "<<m_recola_evts/m_evts*100.<<"% "<<std::endl;
 	// if(p_nlodipoles) delete p_nlodipoles;
 }
@@ -186,8 +191,8 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb   = p_dipoles->CalculateRealSubEEX(k);
 	
-	rcoll = p_dipoles->CalculateEEXReal(kk)*m_born;
 	if (!CheckPhotonForReal(k)) { 
+		rcoll = p_dipoles->CalculateEEXReal(kk)*m_born;
 		subb   = p_dipoles->CalculateRealSubEEX(kk);
 		if(m_no_subtraction) return rcoll/subb;
 		return ( rcoll/subb - m_born);
