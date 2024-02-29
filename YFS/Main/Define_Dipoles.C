@@ -417,13 +417,13 @@ double Define_Dipoles::FormFactor(){
   for(auto &D: m_dipolesII){
     form+= D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
   }
-  //   for(auto &D: m_dipolesFF){
-  //     form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetMomenta(0), D.GetMomenta(1), sqrt(m_s) / 2.);
-  //   }
+    // for(auto &D: m_dipolesFF){
+    //   form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetMomenta(0), D.GetMomenta(1), sqrt(m_s) / 2.);
+    // }
 
   if(m_ifisub==1){
     for(auto &D: m_dipolesIF){
-      form += p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
+      form +=  D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
     }
   }
   return exp(form); 
