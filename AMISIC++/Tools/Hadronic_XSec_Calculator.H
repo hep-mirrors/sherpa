@@ -8,15 +8,13 @@
 namespace MODEL{ class Model_Base; }
 
 namespace AMISIC {
-  struct xsec_type {
-    enum code {
-      nucleon_nucleon = 0,
-      photon_nucleon  = 1,
-      nucleon_photon  = 2,
-      photon_photon   = 3,
-      hadron_hadron   = 1,
-      none            = 99
-    };
+  enum class xsec_type {
+    nucleon_nucleon = 0,
+    photon_nucleon  = 1,
+    nucleon_photon  = 2,
+    photon_photon   = 3,
+    hadron_hadron   = 1,
+    none            = 99
   };
 
   class Hadronic_XSec_Calculator {
@@ -30,7 +28,7 @@ namespace AMISIC {
     void   FixTables();
 
     std::array<ATOOLS::Flavour,2> m_flavs;
-    xsec_type::code m_type;
+    xsec_type                      m_type;
     double m_mass_proton, m_mass_proton2, m_mass_pi;
     std::array<double, 2> m_masses, m_masses2;
     double m_mres, m_cres, m_s1, m_Ypp, m_c0, m_c1, m_prefElastic, m_prefSD, m_prefDD;

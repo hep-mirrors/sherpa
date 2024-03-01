@@ -5,20 +5,15 @@
 #include <vector>
 
 namespace AMISIC {
-  struct axis_mode {
-    enum code {
-      linear  = 1,
-      log     = 2
-    };
-  };
+  enum class axis_mode { linear = 1, log = 2 };
 
   class axis {
   public:
     size_t m_nbins;
     double m_xmin, m_xmax, m_xstep;
-    axis_mode::code m_mode;
+    axis_mode m_mode;
     axis(const size_t & nbins,const double & xmin,const double & xmax,
-	 const axis_mode::code & mode=axis_mode::linear);
+         const axis_mode& mode = axis_mode::linear);
     axis(const axis & old)
         : axis(old.m_nbins, old.m_xmin, old.m_xmax, old.m_mode) {}
     ~axis() = default;

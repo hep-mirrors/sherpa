@@ -54,7 +54,7 @@ namespace AMISIC {
     Impact_Parameter           m_impact;
     Single_Collision_Handler   m_singlecollision;
 
-    mitype::code m_type;
+    mitype m_type;
     bool         m_variable_s;
     double       m_sigmaND_norm;
     double       m_b, m_bfac, m_S, m_Y, m_pt2;

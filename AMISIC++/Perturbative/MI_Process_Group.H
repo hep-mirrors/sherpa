@@ -15,7 +15,7 @@ namespace AMISIC {
   class MI_Process_Group {
   protected:
     std::string        m_name;
-    scale_scheme::code m_muR_scheme;
+    scale_scheme       m_muR_scheme;
     double             m_muR_fac, m_muF_fac;
     double             m_lastxs, m_pt02, m_scale, m_pref;
 
