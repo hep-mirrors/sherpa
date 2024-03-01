@@ -84,6 +84,7 @@ void YFS_Base::RegisterDefaults(){
   s["BES_rho"].SetDefault(-0.745e0);
   s["No_Born"].SetDefault(0);
   s["No_Sub"].SetDefault(0);
+  s["Sub_Mode"].SetDefault(submode::local);
   s["Resonance_Mode"].SetDefault(0);
   s["No_Flux"].SetDefault(0);
   s["Flux_Mode"].SetDefault(1);
@@ -147,6 +148,7 @@ void YFS_Base::RegisterSettings(){
   m_beam_sigy = s["BES_SIG_Y"].Get<double>();
   m_no_born = s["No_Born"].Get<int>();
   m_no_subtraction = s["No_Sub"].Get<int>();
+  m_submode = s["Sub_Mode"].Get<submode::code>();
   m_resonance_mode = s["Resonance_Mode"].Get<int>();
   m_tchannel = s["TChannel"].Get<int>();
   m_noflux = s["No_Flux"].Get<int>();
@@ -175,6 +177,19 @@ void YFS_Base::RegisterSettings(){
 
 }
 
+std::istream &YFS::operator>>(std::istream &str,submode::code &sub)
+{
+  std::string tag;
+  str>>tag;
+  sub=submode::local;
+  if      (tag.find("Off")!=std::string::npos)  sub=submode::off;
+  else if (tag.find("0")!=std::string::npos)    sub=submode::off;
+  else if (tag.find("Local")!=std::string::npos)sub=submode::local;
+  else if (tag.find("1")!=std::string::npos)   sub=submode::local;
+  else if (tag.find("Global")!=std::string::npos) sub=submode::global;
+  else if (tag.find("2")!=std::string::npos)    sub=submode::global;
+  return str;
+}
 
 
 double YFS_Base::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {

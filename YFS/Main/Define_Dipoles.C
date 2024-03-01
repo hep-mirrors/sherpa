@@ -417,13 +417,14 @@ double Define_Dipoles::FormFactor(){
   for(auto &D: m_dipolesII){
     form+= D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
   }
-    // for(auto &D: m_dipolesFF){
-    //   form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetMomenta(0), D.GetMomenta(1), sqrt(m_s) / 2.);
-    // }
-
+    if(!m_hidephotons){
+      for(auto &D: m_dipolesFF){
+        form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetMomenta(0), D.GetMomenta(1), sqrt(m_s) / 2.);
+      }
+    }
   if(m_ifisub==1){
     for(auto &D: m_dipolesIF){
-      form +=  D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
+      form += D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
     }
   }
   return exp(form); 
@@ -434,15 +435,17 @@ double Define_Dipoles::TFormFactor(){
   double form = 0;
 
   for(auto &D: m_dipolesII){
-    form+=D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+    form+= D.ChargeNorm()*p_yfsFormFact->R1(D.GetMomenta(0), D.GetMomenta(1));
+  }
+  // if(!m_hidephotons){
+    for(auto &D: m_dipolesFF){
+      form += -D.ChargeNorm()*p_yfsFormFact->R1(D.GetMomenta(0), D.GetMomenta(1));
+    // }
   }
   if(m_ifisub==1){
-    for(auto &D: m_dipolesFF){
-      form+= D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+    for(auto &D: m_dipolesIF){
+      form+= D.ChargeNorm()*p_yfsFormFact->R1(D.GetMomenta(0), D.GetMomenta(1));
     }
-  }
-  for(auto &D: m_dipolesIF){
-    form+= D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   return exp(form); 
 }
@@ -603,11 +606,11 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   if(m_noflux==1) return 1;
   if(m_fsrmode!=2){
     for (auto &D : m_dipolesII) {
-      QX = D.GetMomenta(0)+D.GetMomenta(1);
+      QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
 
-      sq = (QX).Abs2(); 
-      sx = (QX-k).Abs2();
+      sq = (Q+k).Abs2(); 
+      sx = (Q).Abs2();
       // flux = Propagator(sx,1)/Propagator(sq,1);
       flux = (sx/sq);
       return flux;
@@ -623,6 +626,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       // if(k.E()<5){
       sq = (Q).Abs2();
       sx = (Q+k).Abs2();
+      flux = sq/sx;
+      return flux;
       // flux = Propagator(sq,0)/Propagator(sx,0);
       } 
     // if(m_noflux==2) flux = Propagator(sx)/Propagator(sq);///(Propagator(sx)+Propagator(sq));

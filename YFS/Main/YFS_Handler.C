@@ -46,7 +46,7 @@ YFS_Handler::~YFS_Handler()
   if (p_coulomb) delete p_coulomb;
   if (p_debug)   delete p_debug;
   if (p_yfsFormFact) delete p_yfsFormFact;
-  if (p_nlo) delete p_nlo;
+  // if (p_nlo) delete p_nlo;
   if (p_dipoles) delete p_dipoles;
   for (auto &p: m_particles){
     if(p) delete p;
@@ -361,6 +361,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       } 
 
       m_FSRPhotons  =  p_fsr->GetPhotons();
+      m_fsrphotonsforME = m_FSRPhotons;
       Dip->AddPhotonsToDipole(m_FSRPhotons);
       Dip->Boost();
       if(!p_fsr->YFS_FORM()) return false;
@@ -370,7 +371,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       
       // Dip->BoostLab();
       // p_fsr->HidePhotons();
-      // m_fsrphotonsforME = m_FSRPhotons;
       // p_fsr->HidePhotons(m_FSRPhotons);
       // Dip->AddPhotonsToDipole(m_FSRPhotons);
       // m_fsrphotonsforME = Dip->GetPhotons();
