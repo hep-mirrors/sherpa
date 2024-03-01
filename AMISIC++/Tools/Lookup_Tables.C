@@ -9,7 +9,7 @@ axis::axis(const size_t & nbins,const double & xmin,const double & xmax,
 	   const axis_mode::code & mode) :
   m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), m_mode(mode)
 {
-  if (m_nbins==1) m_xstep = 0.;
+  if (m_nbins == 1) m_xstep = 1.;
   else if (m_mode==axis_mode::linear) {
     m_xstep = (m_xmax-m_xmin)/double(m_nbins-1);
   }
@@ -30,8 +30,10 @@ double axis::x(const size_t & bin) const {
 
 size_t axis::bin(const double & x) const {
   if (x>=m_xmin && x<=m_xmax) {
-    if (m_mode==axis_mode::linear)   return size_t((x-m_xmin)/m_xstep);
-    else if (m_mode==axis_mode::log) return size_t(log(x/m_xmin)/m_xstep);
+    if (m_mode == axis_mode::linear)
+      return static_cast<size_t>((x - m_xmin) / m_xstep);
+    else if (m_mode == axis_mode::log)
+      return static_cast<size_t>(log(x / m_xmin) / m_xstep);
   }
   if (x<m_xmin) return 0;
   return m_nbins-1;
