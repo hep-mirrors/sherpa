@@ -10,6 +10,16 @@
 using namespace ATOOLS;
 
 namespace YFS {
+  struct submode {
+    enum code {
+      off        = 0,
+      local       = 1,
+      global       = 2
+    };
+  };
+
+  std::istream &operator>>(std::istream &str,submode::code &sm);
+
   class YFS_Base { 
   protected:
 
@@ -41,6 +51,7 @@ namespace YFS {
     Vec4D m_beam1, m_beam2;
     // beam energy spread values
     double m_beam_sigx, m_beam_sigy, m_beam_rho;
+    submode::code m_submode;
 
 
     void RegisterSettings();

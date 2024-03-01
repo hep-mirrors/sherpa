@@ -189,7 +189,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	else flux = p_dipoles->CalculateFlux(kk);
 	double tot,colltot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_dipoles->CalculateRealSubEEX(k);
+	double subb   = p_dipoles->CalculateRealSubEEX(kk);
 	
 	if (!CheckPhotonForReal(k)) { 
 		rcoll = p_dipoles->CalculateEEXReal(kk)*m_born;
@@ -208,8 +208,12 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 		return 0;
 	}
 	m_recola_evts+=1;
-	if(submode) tot = r-subloc*m_born;
-	else tot =  (r-subloc*m_born)/subb;
+	// if(submode) tot = r-subloc*m_born;
+	// else tot =  (r-subloc*m_born)/subloc;
+	if(m_submode==submode::local) tot =  (r-subloc*m_born)/subloc;
+	else if(m_submode==submode::global) tot =  (r-subloc*m_born)/subb;
+	else if(m_submode==submode::off) tot =  (r)/subb;
+	else msg_Error()<<METHOD<<" Unknown YFS Subtraction Mode "<<m_submode<<std::endl;
   if(m_isr_debug || m_fsr_debug){
 		double diff = ((r/subloc - m_born)-( rcoll/subb - m_born))/((r/subloc - m_born)+( rcoll/subb - m_born));
 		m_histograms1d["Real_diff"]->Insert(diff);
