@@ -83,6 +83,7 @@ namespace ATOOLS {
 
     Cluster_Leg *IdLeg(const size_t &id) const;
     size_t       IdIndex(const size_t &id) const;
+    size_t       Index(const Cluster_Leg *l) const;
 
     void OrderLegs();
 
@@ -109,34 +110,21 @@ namespace ATOOLS {
     Vec4D_Vector Momenta() const;
     void SetMomenta(const Vec4D_Vector &p);
 
+    Flavour_Vector Flavs() const;
+
     // inline functions
     inline const ClusterLeg_Vector &Legs() const { return m_legs; }
     inline ClusterLeg_Vector       &Legs()       { return m_legs; }
 
     inline Cluster_Leg *Leg(const size_t &i) const { return m_legs[i]; }
 
-    Vec4D Mom(size_t i) const
-    {
-      return (i < NIn() ? -1.0 : 1.0) * Leg(i)->Mom();
-    }
-    void SetMom(const size_t& i, const Vec4D& p) const
-    {
-      Leg(i)->SetMom(i < NIn() ? -p : p);
-    }
-    Flavour_Vector Flavs() const
-    {
-      Flavour_Vector flavs;
-      const auto size = m_legs.size();
-      flavs.reserve(size);
-      for (size_t i {0}; i < size; ++i) {
-        flavs.push_back(Flav(i));
-      }
-      return flavs;
-    }
-    Flavour Flav(size_t i) const
-    {
-      return (i < NIn() ? Leg(i)->Flav().Bar() : Leg(i)->Flav());
-    }
+    inline Vec4D Mom(const size_t &i) const
+    { return i<m_nin?-m_legs[i]->Mom():m_legs[i]->Mom(); }
+    inline void SetMom(const size_t &i,const Vec4D &p) const
+    { m_legs[i]->SetMom(i<m_nin?-p:p); }
+
+    inline Flavour Flav(const size_t &i) const
+    { return i<m_nin?m_legs[i]->Flav().Bar():m_legs[i]->Flav(); }
 
     inline Cluster_Amplitude *Prev() const { return p_prev; }
     inline Cluster_Amplitude *Next() const { return p_next; }
