@@ -22,7 +22,7 @@ Double_Transitions::Double_Transitions(Single_Transitions * singles) :
 void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 {
   //Constituents * constituents     = hadpars->GetConstituents();
-  Constituents * constituents = new Constituents(true, true);
+  Constituents * constituents = new Constituents(true, false);
   Single_Transition_Map * singles = singletransitions->GetMap();
   for (Single_Transition_Map::iterator stmit1=singles->begin();
        stmit1!=singles->end();stmit1++) {
@@ -39,13 +39,13 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
       n_variations = (*constituents).Weights(popped.Bar()).size();
       for(const auto wgt : (*constituents).Weights(popped.Bar()))
 	weights.push_back(wgt);
-      double weight = 1.;
+      double weight {1.};
       //double weight      = constituents->TotWeight(popped.Bar());
       if (weights[0]<m_wtthres) continue;
       if (2.*constituents->Mass(popped)+0.1<
 	  constituents->Mass(pair.first)+constituents->Mass(pair.second)) {
 	std::fill(weights.begin(), weights.end(), 1);
-	// // This does happen quite regularly
+	// This does happen quite regularly
 	// std::cout << "resetting weight" << std::endl;
       }
       if (popped.IsDiQuark()) {
@@ -77,7 +77,7 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	  std::vector<double> _weights;
 	  for(int i{0}; i<weights.size(); ++i)
 	    _weights.push_back(weights[i] * wt);
-	  if (_weights[0]<m_wtthres) continue;
+	  //if (_weights[0]<m_wtthres) continue;
 	  (*m_transitions[pair])[hads] = _weights;
 	}
       }

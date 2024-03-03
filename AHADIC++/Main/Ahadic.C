@@ -50,6 +50,9 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
   // Always make sure, all weights are unset
   // m_singletchecker.reset_variationweights();
+  if(sum_weights.size() != n_vars) {
+    sum_weights.resize(n_vars,0);
+  }
   m_softclusters.reset_variationweights(n_vars);
   m_clusterdecayer.reset_variationweights(n_vars);
   m_gluondecayer.reset_variationweights(n_vars);
@@ -123,6 +126,8 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
      wgts_soft.size() == wgts_flavs.size()
      && wgts_cluster.size() == wgts_kt.size()) {
     DEBUG_VAR(wgts_cluster.size());
+    if(!found)
+      n_hads += 1;
     for(int i{0}; i<wgts_cluster.size(); i++) {
       DEBUG_VAR(i);
       double wgt = 1;
@@ -142,31 +147,28 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	// mostly when the following hadron-decays choose splittings that
 	// are not in the pre-integrated tables
 	continue;
-	const std::string base_name {"v"+std::to_string(i)};
-	DEBUG_VAR(wgt);
-	for(int e{2}; e<3; ++e) {
-	  const std::string name = base_name + "." + std::to_string(e);
-	  const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
-	  DEBUG_VAR(clipped_wgt);
-	  wgtmap["AHADIC"][name] *= clipped_wgt;
-	}
-
       } else {
 	const std::string base_name {"v"+std::to_string(i)};
-	DEBUG_VAR(wgt);
-	for(int e{3}; e<4; ++e) {
-	  const std::string name = base_name + "." + std::to_string(e);
-	  if(e < 4) {
-	    // const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
-	    const auto clipped_wgt {std::min(wgt,pow(10,e))};
-	    DEBUG_VAR(clipped_wgt);
-	    wgtmap["AHADIC"][name] = clipped_wgt;
-	  } else {
-	    const auto clipped_wgt {wgt};
-	    DEBUG_VAR(clipped_wgt);
-	    wgtmap["AHADIC"][name] = clipped_wgt;
-	  }
-	}
+	const auto clipped_wgt {std::min(wgt,pow(10,3))};
+	const std::string name = base_name + "." + std::to_string(4);
+	sum_weights[i] += clipped_wgt;
+	if(n_hads > 100)
+	  wgtmap["AHADIC"][name] = clipped_wgt / (sum_weights[i] / n_hads);
+	else
+	  wgtmap["AHADIC"][name] = clipped_wgt;
+	// for(int e{3}; e<4; ++e) {
+	//   const std::string name = base_name + "." + std::to_string(e);
+	//   if(e < 4) {
+	//     // const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
+	//     const auto clipped_wgt {std::min(wgt,pow(10,e))};
+	//     DEBUG_VAR(clipped_wgt);
+	//     wgtmap["AHADIC"][name] = clipped_wgt;
+	//   } else {
+	//     const auto clipped_wgt {wgt};
+	//     DEBUG_VAR(clipped_wgt);
+	//     wgtmap["AHADIC"][name] = clipped_wgt;
+	//   }
+	// }
       }
     }
     DEBUG_VAR(wgtmap);
