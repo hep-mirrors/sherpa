@@ -56,7 +56,7 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     if (fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"pure QCD like\n";
       muq2=muf2=mur2=(campl->Leg(2)->Mom().PPerp2()+
-		      campl->Leg(3)->Mom().PPerp2())/4.;
+		      campl->Leg(3)->Mom().PPerp2())/8.;
     }
     else if (!fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"DY like\n";
