@@ -341,7 +341,9 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       split->SetKScheme((almap[split]->Stat()&4)?1:0);
       if (split->KScheme()) split->SetMass2(split->Momentum().Abs2());
       CS_Parameters cp(p_cluster->KT2
-		       (campl->Prev(),almap[l],almap[r],almap[s],
+		       (campl->Prev(),campl->Prev()->Index(almap[l]),
+			campl->Prev()->Index(almap[r]),
+			campl->Prev()->Index(almap[s]),
 			split->GetType()==pst::FS?split->GetFlavour():
 			split->GetFlavour().Bar(),p_ms,
 			split->Kin(),split->KScheme(),1));
@@ -363,7 +365,9 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       CS_Parameters ncp(p_cluster->KT2
-			(campl->Prev(),almap[l],almap[r],almap[s],
+			(campl->Prev(),campl->Prev()->Index(almap[l]),
+			 campl->Prev()->Index(almap[r]),
+			 campl->Prev()->Index(almap[s]),
 			 split->GetType()==pst::FS?split->GetFlavour():
 			 split->GetFlavour().Bar(),p_ms,
 			 split->Kin(),split->KScheme(),1));

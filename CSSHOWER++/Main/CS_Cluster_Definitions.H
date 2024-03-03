@@ -56,9 +56,7 @@ namespace CSSHOWER {
 		Splitting_Function_Base* const) const;
     PDF::Cluster_Param Cluster(const PDF::Cluster_Config &ca);
     CS_Parameters KT2(const ATOOLS::Cluster_Amplitude *ampl,
-		      const ATOOLS::Cluster_Leg *i,
-		      const ATOOLS::Cluster_Leg *j,
-		      const ATOOLS::Cluster_Leg *k,
+		      const int ii,const int ij,const int ik,
 		      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
 		      const ATOOLS::Mass_Selector *const ms=NULL,
 		      const int kin=-1,const int mode=0,const int force=0);

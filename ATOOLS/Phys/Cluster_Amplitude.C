@@ -558,10 +558,24 @@ void Cluster_Amplitude::SetMomenta(const Vec4D_Vector &p)
   for (size_t i(0);i<m_legs.size();++i) m_legs[i]->SetMom(p[i]);
 }
 
+Flavour_Vector Cluster_Amplitude::Flavs() const
+{
+  Flavour_Vector flavs(m_legs.size());
+  for (size_t i(0);i<m_legs.size();++i) flavs.push_back(Flav(i));
+  return flavs;
+}
+
 size_t Cluster_Amplitude::IdIndex(const size_t &id) const
 {
   for (size_t i(0);i<m_legs.size();i++)
     if (m_legs[i]->Id()==id) return i;
+  return std::string::npos;
+}
+
+size_t Cluster_Amplitude::Index(const Cluster_Leg *l) const
+{
+  for (size_t i(0);i<m_legs.size();i++)
+    if (m_legs[i]==l) return i;
   return std::string::npos;
 }
 
