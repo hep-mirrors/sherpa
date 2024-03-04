@@ -221,7 +221,7 @@ namespace EXTRAXS {
     std::vector<double>     m_masses;
     void   Initialise();
     bool   DefineFlavours();
-    double FixScale();
+    double FixScale() const;
     double AlphaSModification();
     size_t NumberOfGluons();
     bool   DistributeMomenta();
@@ -306,7 +306,7 @@ double XS_instanton::operator()(const Vec4D_Vector& momenta) {
   return AlphaSModification() * xsec;
 }
 
-double XS_instanton::FixScale() {
+double XS_instanton::FixScale() const {
   return m_scale_factor *
     (m_scalechoice==instantonScale::Ehat?m_Ehat:
      (m_scalechoice==instantonScale::Ehat_by_sqrtN)?m_Ehat/sqrt(m_data.Ngluons()):
@@ -322,9 +322,9 @@ double XS_instanton::RelativeRenormalisationScaleWeight(double scalefactor) cons
   // This is based on the dominant scale dependence of the instanton cross section,
   // cf. Eq. (2.30) of 1911.09726
   if (dabs(scalefactor-1.)<1.e-3) return 1.;
-  double scale2 = sqr(m_data.Rho());
+  double scale2 = sqr(FixScale());
   return ( exp(-4.*M_PI * (1./(*p_alphaS)(scalefactor*scale2)-1./(*p_alphaS)(scale2))) *
-	   pow(scalefactor/m_alphaS_factor,2.*p_alphaS->Beta0(scale2)) );
+	   pow(sqrt(scalefactor)/m_alphaS_factor,2.*4.*p_alphaS->Beta0(scalefactor*scale2)) );
 }
 
 
