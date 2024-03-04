@@ -7,7 +7,10 @@ using namespace RECONNECTIONS;
 using namespace ATOOLS;
 using namespace std;
 
-Reconnect_Statistical::Reconnect_Statistical() : Reconnection_Base() {}
+Reconnect_Statistical::Reconnect_Statistical() :
+  Reconnection_Base(),
+  m_Pmode(0), m_Q02(1.), m_etaQ(0.16), m_reshuffle(1./9.), m_kappa(1.) {}
+
 
 Reconnect_Statistical::~Reconnect_Statistical() {
   m_collist.clear();
@@ -19,22 +22,32 @@ void Reconnect_Statistical::SetParameters() {
   // area of a "string" made up of two coloured particles i and j is given by
   // pi*pj-mi*mj (note we assume the gluons to distribute their momentum equally
   // between the two colours).
-  // 0 - mode is "linear":    dist = etaQ * (pipj-mimj)/norm
-  // 1 - mode is "power law": dist = log[1+etaQ * (pipj-mimj)/norm]
+  // 1 - mode is "power law":   dist = ((pipj-mimj)/norm)^kappa
+  // 0 - mode is "logarithmic": dist = log[1+(pipj-mimj)/m_Q02]
   // where norm is the total area of the ordered ensemble
   auto s = Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
   m_Pmode     = s["PMODE"].SetDefault(0).Get<int>();
   m_Q02       = sqr(s["Q_0"].SetDefault(1.00).Get<double>());
-  m_etaQ      = sqr(s["etaQ"].SetDefault(0.1).Get<double>());
+  m_etaQ      = sqr(s["ETA_Q"].SetDefault(0.1).Get<double>());
   m_R02       = sqr(s["R_0"].SetDefault(100.).Get<double>());
-  m_etaR      = sqr(s["etaR"].SetDefault(0.16).Get<double>());
-  m_reshuffle = s["Reshuffle"].SetDefault(1./9.).Get<double>();
-  m_kappa     = s["kappa"].SetDefault(2.).Get<double>();
+  m_etaR      = sqr(s["ETA_R"].SetDefault(0.16).Get<double>());
+  m_reshuffle = s["RESHUFFLE"].SetDefault(1./9.).Get<double>();
+  m_kappa     = s["KAPPA"].SetDefault(1.).Get<double>();
 }
 
 void Reconnect_Statistical::Reset() {
   m_collist.clear();
   Reconnection_Base::Reset();
+}
+
+void Reconnect_Statistical::FixPMode(const string & pm) {
+  if      (pm=="power" || pm=="Power") m_Pmode=1;
+  else if (pm=="log"   || pm=="Log")   m_Pmode=0;
+  else {
+    msg_Error()<<"Error in "<<METHOD<<"("<<pm<<") is unknown tag.\n"
+	       <<"   Will use log-scaling and hope for the best.\n";
+    m_Pmode = 0;
+  }
 }
 
 int Reconnect_Statistical::operator()(Blob_List *const blobs) {
@@ -81,8 +94,8 @@ bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
   }
   double dist0  = Distance(part[0],part[2]), dist1  = Distance(part[1],part[3]);
   double ndist0 = Distance(part[0],part[3]), ndist1 = Distance(part[1],part[2]);
-  double prob   = m_reshuffle * exp(m_etaQ*((ndist0+ndist1)-(dist0+dist1)));
-  if (ran->Get()>prob) {
+  double prob   = m_reshuffle*(1.-exp(-m_etaQ*((dist0+dist1)-(ndist0+ndist1))));
+  if (ran->Get()<prob) {
     m_cols[1][col[0]] = part[3];
     m_cols[1][col[1]] = part[2];
   }
@@ -107,7 +120,9 @@ double Reconnect_Statistical::MomDistance(Particle * trip,Particle * anti) {
   if (trip->Flav().IsGluon()) p1p2 /= 2.;
   if (anti->Flav().IsGluon()) p1p2 /= 2.;
   double m1m2 = trip->Flav().HadMass() * anti->Flav().HadMass();
-  return p1p2-m1m2;
+  return (m_Pmode==1?
+	  pow((p1p2-m1m2)/m_norm,m_kappa) :
+	  log(1+(p1p2-m1m2)/m_Q02) );
 }
 
 double Reconnect_Statistical::PosDistance(Particle * trip,Particle * anti) {

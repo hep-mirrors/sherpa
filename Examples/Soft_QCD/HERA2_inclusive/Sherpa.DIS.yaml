@@ -1,0 +1,33 @@
+# Sherpa configuration for DIS production
+
+# set up beams for HERA
+BEAM_1: -11
+BEAM_ENERGY_1: 27.6
+BEAM_2: 2212
+BEAM_ENERGY_2: 920
+
+PDF_SET_1:  None
+CORE_SCALE: VAR{Abs2(p[0]-p[2])}
+ME_QED:     Off
+
+ANALYSIS_OUTPUT: bd_10_7.5
+
+# ep -> e+jets
+PROCESSES:
+- -11 93 -> -11 93:
+    Order: {QCD: 0, EW: 2}
+
+# minimum constraint for Q2
+SELECTORS:
+- [Q2, -11, -11, 1., 20000.]
+
+ANALYSIS: Rivet
+RIVET:
+  IGNORE_BEAMS: 1
+  ANALYSES:
+  - ZEUS_1999_I500267
+  - ZEUS_2010_I875006
+  - ZEUS_2011_I945935
+  - H1_1994_S2919893
+  - H1_2000_S4129130
+  - H1_2013_I1217865
