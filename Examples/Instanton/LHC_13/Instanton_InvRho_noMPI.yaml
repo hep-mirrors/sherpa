@@ -1,9 +1,10 @@
 # pp -> instanton
 
-# general setting
-EVENTS: 10000
-SCALES: Democratic
-MI_HANDLER: None # multiple interaction switch
+# general settings
+EVENTS:                 10000
+SCALES:                 Democratic
+SCALE_VARIATIONS:       4.0*
+MI_HANDLER:             None # multiple interaction switch
 #EVENT_GENERATION_MODE: Weighted
 #BEAM_REMNANTS: false  #Turn off if SHOWER_GENERATOR is None
 #SHOWER_GENERATOR: None #Set None to turn off all the showers, instanton does not decay 
