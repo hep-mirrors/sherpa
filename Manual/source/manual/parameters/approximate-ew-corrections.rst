@@ -49,7 +49,7 @@ EWvirt correction will then be directly applied to the nominal event weight.
 
 The second option, which is only available for MEPSatNLO, applies the EWvirt
 correction (and optionally subleading LO corrections) to all QCD NLO
-multiplities. For this to work, one must use the the following syntax:
+multiplicities. For this to work, one must use the the following syntax:
 
 .. index:: ASSOCIATED_CONTRIBUTIONS_VARIATIONS
 
