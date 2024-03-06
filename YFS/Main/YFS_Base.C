@@ -84,7 +84,7 @@ void YFS_Base::RegisterDefaults(){
   s["BES_rho"].SetDefault(-0.745e0);
   s["No_Born"].SetDefault(0);
   s["No_Sub"].SetDefault(0);
-  s["Sub_Mode"].SetDefault(submode::local);
+  s["Sub_Mode"].SetDefault(submode::global);
   s["Resonance_Mode"].SetDefault(0);
   s["No_Flux"].SetDefault(0);
   s["Flux_Mode"].SetDefault(1);
