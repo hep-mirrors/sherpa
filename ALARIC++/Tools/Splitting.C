@@ -17,7 +17,8 @@ namespace ALARIC {
   std::ostream &operator<<(std::ostream &s,const Splitting &p)
   {
     s<<"["<<(p.p_c?p.p_c->Id():0)<<"<->"<<(p.p_s?p.p_s->Id():0)
-     <<"](c="<<p.m_cm<<",kfac="<<p.m_kfac<<",soft="<<p.m_soft
+     <<"](c="<<p.m_cm<<",kfac="<<p.m_kfac
+     <<",soft="<<p.m_soft<<",mec="<<p.m_mec
      <<"){t="<<p.m_t<<",z="<<p.m_z<<",phi="<<p.m_phi
      <<",s2="<<p.m_s<<",z2="<<p.m_z2<<",phi2="<<p.m_phi2<<"|";
     if (p.m_ci.size()) s<<p.m_ci[0]<<p.m_cj[0];

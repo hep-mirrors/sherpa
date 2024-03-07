@@ -11,6 +11,7 @@ namespace ALARIC {
   private:
 
     Splitting m_s;
+    int       m_mec;
     double    m_t, m_t0;
 
     ATOOLS::Cluster_Amplitude *p_ampl;
@@ -42,6 +43,9 @@ namespace ALARIC {
 
     inline double T() const  { return m_t;  }
     inline double T0() const { return m_t0; }
+
+    inline void SetMEC(const int mec) { m_mec=mec;    }
+    inline int  MEC() const           { return m_mec; }
 
     inline void SetJF(void *const jf) { p_ampl->SetJF(jf); }
     template <class Type> inline Type *JF() const 

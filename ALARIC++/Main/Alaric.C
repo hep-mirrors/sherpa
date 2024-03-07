@@ -186,6 +186,13 @@ Amplitude *Alaric::Convert
     if (i<campl->NIn()) p->SetBeam(1+(cl->Mom()[3]>0.0));
     lmap[cl]=p;
   }
+  if (campl->Legs().size()==4) {
+    if (campl->Leg(0)->Flav().IsQuark() &&
+	campl->Leg(1)->Flav().IsQuark() &&
+	campl->Leg(2)->Flav().IsLepton() &&
+	campl->Leg(3)->Flav().IsLepton())
+      ampl->SetMEC(1);
+  }
   msg_Debugging()<<*ampl<<"\n";
   return ampl;
 }

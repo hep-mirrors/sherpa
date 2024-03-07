@@ -78,6 +78,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_cpl=s["CSS_COUPLING_SCHEME"].Get<int>();
   m_muf=s["CSS_FACSCALE_SCHEME"].Get<int>();
   m_mec=s["CSS_ME_CORRECTION"].Get<int>();
+  m_sfs=s["CSS_KERNEL_SCHEME"].Get<int>();
   m_pdfmin[0]=s["CSS_PDF_MIN"].Get<double>();
   m_pdfmin[1]=s["CSS_PDF_MIN_X"].Get<double>();
   m_maxem=s["CSS_MAXEM"].Get<size_t>();
@@ -172,7 +173,7 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
 		 <<" ("<<m_weightsmap["PS"].Nominal()<<"), v = "<<cv<<"\n";
 }
 
-int Shower::Evolve(Amplitude& a, unsigned int& nem)
+int Shower::Evolve(Amplitude &a, unsigned int &nem)
 {
   DEBUG_FUNC(this);
   m_weightsmap.Clear();
@@ -306,6 +307,7 @@ int Shower::Evolve(Amplitude& a, unsigned int& nem)
       return 0;
     AddWeight(a,s.m_t);
     a.SetJF(NULL);
+    a.SetMEC(0);
     if (++nem>=m_maxem) break;
     if (a.size()-a.ClusterAmplitude()->NIn()>m_maxpart) {
       if (s.p_l) a.Remove(s.p_l);
@@ -381,6 +383,7 @@ Splitting Shower::GeneratePoint
 	  Splitting cur(&p,(*p.Ampl())[i]);
 	  cur.SetType();
 	  cur.m_rcl=rcl;
+	  cur.m_mec=p.Ampl()->MEC()&m_mec;
 	  cur.m_kfac=m_kfac;
 	  cur.m_cpl=m_cpl;
 	  cur.m_t1=ct;
@@ -407,6 +410,7 @@ Splitting Shower::GeneratePoint
 	    win.p_s=(*p.Ampl())[m_sums.Spect(j, i)];
 	    win.SetType();
 	    win.m_rcl=rcl;
+	    win.m_mec=p.Ampl()->MEC()&m_mec;
 	    win.m_kfac=m_kfac;
 	    win.m_cpl=m_cpl;
 	    win.m_t1=ct;

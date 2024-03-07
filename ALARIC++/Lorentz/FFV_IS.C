@@ -57,7 +57,9 @@ namespace ALARIC {
 
     double Value(const Splitting &s) const
     {
-      double xi=s.m_x+s.m_y-s.m_x*s.m_y*(1.0+s.m_kap);
+      double xi(s.m_x);
+      if (p_sk->PS()->KernelScheme()&1)
+	xi=s.m_x+s.m_y-s.m_x*s.m_y*(1.0+s.m_kap);
       double B=2.0*(1.0-xi)/s.m_x+s.m_x;
       return B;
     }
@@ -96,6 +98,7 @@ namespace ALARIC {
     double Value(const Splitting &s) const
     {
       double B=1.0-2.0*s.m_x*(1.0-s.m_x);
+      if (s.m_mec&1) B+=s.m_y*(s.m_y+2.*s.m_x);
       return B;
     }
 
