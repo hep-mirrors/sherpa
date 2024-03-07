@@ -6,55 +6,61 @@
 #include <string>
 
 namespace REMNANTS {
-  struct pkform {
-    enum code {
-      none           = 0,
-      gauss          = 1,
-      gauss_limited  = 2,
-      dipole         = 3,
-      dipole_limited = 4,
-      undefined      = 99
-    };
+  enum class primkT_form {
+    none           = 0,
+    gauss          = 1,
+    gauss_limited  = 2,
+    dipole         = 3,
+    dipole_limited = 4,
+    undefined      = 99
   };
-  struct pkrecoil {
-    enum code {
-      democratic     = 1,
-      beam_vs_shower = 2,
-      undefined      = 99
-    };
+  enum class primkT_recoil { democratic = 1, beam_vs_shower = 2, undefined = 99 };
+
+  enum class matter_form {
+    none            = 0,
+    single_gaussian = 1,
+    double_gaussian = 2,
+    unknown         = 99
   };
 
-  struct pkparams {
-    pkform::code   m_form;
-    pkrecoil::code m_recoil;
-    std::map<std::string, double> m_params;
+  std::ostream& operator<<(std::ostream& os, const primkT_form & form);
+  std::ostream& operator<<(std::ostream& os, const primkT_recoil & recoil);
+  std::ostream &operator<<(std::ostream& os, const matter_form & matter);
+  std::istream& operator>>(std::istream& is, primkT_form& form);
+  std::istream& operator>>(std::istream& is, primkT_recoil& recoil);
+  std::istream &operator>>(std::istream& is, matter_form & matter);
 
-    pkparams() {}
-    pkparams(const pkparams & pkp) {
-      m_form   = pkp.m_form;
-      m_recoil = pkp.m_recoil;
-      for (std::map<std::string, double>::const_iterator it=pkp.m_params.begin();
-	   it!=pkp.m_params.end();it++)
-	m_params[it->first] = it->second;
-    }
-    void Output();
+  struct remnant_parameters {
+  public:
+    primkT_form   kT_form;
+    primkT_recoil kT_recoil;
+    matter_form   m_form;
+    std::map<std::string,double> params;
+
+    remnant_parameters() :
+      kT_form(primkT_form::undefined), kT_recoil(primkT_recoil::undefined),
+      m_form(matter_form::unknown) {}
+    remnant_parameters(const remnant_parameters & parms);
   };
-  
+
+  std::ostream& operator<<(std::ostream& os, const remnant_parameters & parms);
+
   class Remnants_Parameters {
-  private:
-    std::map<long unsigned int, pkparams * > m_params;
-    
-    void Initialize();
-    pkform::code   SelectForm(const std::string & form=std::string("dipole_limited"));
-    pkrecoil::code SelectRecoil(const std::string & form=std::string("beam_vs_shower"));
+    std::map<ATOOLS::Flavour, remnant_parameters *> m_defaults, m_actuals;
+
+    void SetNucleonDefaults();
+    void SetMesonDefaults();
+    void SetPhotonDefaults();
+    void SetLeptonDefaults();
   public:
     Remnants_Parameters();
     ~Remnants_Parameters();
-
-    void ReadParameters();
-    const pkform::code   & GetForm(const ATOOLS::Flavour & beamflav);
-    const pkrecoil::code & GetRecoil(const ATOOLS::Flavour & beamflav);
-    const double         & operator()(const ATOOLS::Flavour & beamflav,const std::string & tag);
+    void Init();
+    double Get(const ATOOLS::Flavour & flav, std::string keyword);
+    primkT_form   KT_Form(const ATOOLS::Flavour & flav);
+    primkT_recoil KT_Recoil(const ATOOLS::Flavour & flav);
+    matter_form   Matter_Form(const ATOOLS::Flavour & flav);
+    void Output();
   };
 
   extern Remnants_Parameters * rempars;

@@ -7,74 +7,77 @@
 
 using namespace REMNANTS;
 using namespace ATOOLS;
-using namespace std;
-
 
 Beam_Decorrelator::Beam_Decorrelator() : m_on(false) {}
 
-Beam_Decorrelator::~Beam_Decorrelator() {}
-
 void Beam_Decorrelator::
 Initialize(Remnant_Handler * const rhandler) {
+  // Registering defaults
   p_rhandler = rhandler;
   if (p_rhandler->Type()==strat::DIS1 || p_rhandler->Type()==strat::DIS2) {
     p_kperpGenerator = p_rhandler->GetKPerp();
-    auto s = Settings::GetMainSettings()["REMNANTS"];
-    m_expo    = s["SOFT_X_EXPONENT"].SetDefault(-2.0).Get<double>();
-    m_xiP     = m_expo+1;
-    m_invxiP  = 1./m_xiP;
-    m_maxeta  = dabs(s["SOFT_ETA_RANGE"].SetDefault(7.5).Get<double>());
-    m_mass2   = sqr(s["SOFT_MASS"].SetDefault(5.0).Get<double>());
-    m_deltaM  = s["DELTA_MASS"].SetDefault(1.5).Get<double>();
-    m_on      = (m_maxeta>0. && m_mass2>0.);
+
+    auto s   = Settings::GetMainSettings()["REMNANTS"]["2212"];
+    m_expo   = s["SOFT_X_EXPONENT"].SetDefault(-2.0).Get<double>();
+    m_xiP    = m_expo + 1;
+    m_invxiP = 1. / m_xiP;
+    m_maxeta = s["SOFT_ETA_RANGE"].SetDefault(7.5).Get<double>();
+    m_mass2  = sqr(s["SOFT_MASS"].SetDefault(5.0).Get<double>());
+    m_deltaM = s["DELTA_MASS"].SetDefault(1.5).Get<double>();
+    m_on     = (m_maxeta > 0. && m_mass2 > 0.);
   }
 }
 
 bool Beam_Decorrelator::operator()(Blob * softblob) {
   if (!m_on) return true;
   p_softblob = softblob;
-  // Check for pairs of partons; if they are colour-correlated and involve either
+  // Check for pairs of partons; if they are colour-correlated and involve
+  // either
   // * one beam parton and one "proper" shower parton with |eta| < maxeta, or
   // * two beam partons from different beams
-  // and if their mass is larger than the minimal mass m_mass2, they will emit a soft
-  // gluon to be decorrelated in colour.
-  for (size_t i=0;i<p_softblob->NOutP()-1;i++) {
-    for (size_t j=i+1;j<p_softblob->NOutP();j++) {
-      if (MustEmit(p_softblob->OutParticle(i),p_softblob->OutParticle(j))) SoftEmission();
+  // and if their mass is larger than the minimal mass m_mass2, they will emit a
+  // soft gluon to be decorrelated in colour.
+  for (int i = 0; i < p_softblob->NOutP() - 1; i++) {
+    for (int j = i + 1; j < p_softblob->NOutP(); j++) {
+      if (MustEmit(p_softblob->OutParticle(i), p_softblob->OutParticle(j)))
+        SoftEmission();
     }
   }
   // Add the produced soft gluons to the blob.
-  bool out=!m_softgluons.empty();
   while (!m_softgluons.empty()) {
     p_softblob->AddToOutParticles(m_softgluons.back());
     m_softgluons.pop_back();
   }
-  //if (out) msg_Out()<<(*p_softblob)<<"\n";
   return true;
 }
 
 bool Beam_Decorrelator::MustEmit(Particle * pi, Particle * pj) {
-  //return false;
   // Checks if the partons must emit a soft gluon, for conditions see above.
   // Ignore parton pairs from shower or from the same beam breakup
-  if (pi->Info()=='I' || pj->Info()=='I' ||
-      (pi->Beam()<=0 && pj->Beam()<=0) ||
-      (pi->Beam()==pj->Beam() && pi->Beam()!=0)) return false;
+  if (pi->Info() == 'I' || pj->Info() == 'I' ||
+      (pi->Beam() <= 0 && pj->Beam() <= 0) ||
+      (pi->Beam() == pj->Beam() && pi->Beam() != 0))
+    return false;
   // Ignore parton pairs that are not colour-correlated
-  if (!((pi->GetFlow(1)==pj->GetFlow(2) && pi->GetFlow(1)!=0) ||
-	(pi->GetFlow(2)==pj->GetFlow(1) && pi->GetFlow(2)!=0))) return false;
-  if (pi->Beam()>0 &&
-      ((pj->Beam()>0 && pi->Momentum()[0]>pj->Momentum()[0]) || pj->Beam()<=0)) {
-    p_beam = pi; p_spect = pj;
+  if (!((pi->GetFlow(1) == pj->GetFlow(2) && pi->GetFlow(1) != 0) ||
+        (pi->GetFlow(2) == pj->GetFlow(1) && pi->GetFlow(2) != 0)))
+    return false;
+  if (pi->Beam() > 0 &&
+      ((pj->Beam() > 0 && pi->Momentum()[0] > pj->Momentum()[0]) ||
+       pj->Beam() <= 0)) {
+    p_beam  = pi;
+    p_spect = pj;
+  } else {
+    p_beam  = pj;
+    p_spect = pi;
   }
-  else {p_beam = pj; p_spect = pi; }
   m_pbeam  = p_beam->Momentum();
   m_pspect = p_spect->Momentum();
   m_Q2     = (m_pspect+m_pbeam).Abs2();
   // Spectator parton must be from final state and inside eta-range or from other beam,
   // and invariant mass of pair must be above threshold
-  return ((p_spect->Beam()<0 || dabs(m_pspect.Eta())<m_maxeta) &&
-	  m_Q2 > m_mass2);
+  return ((p_spect->Beam() < 0 || dabs(m_pspect.Eta()) < m_maxeta) &&
+          m_Q2 > m_mass2);
 }
 
 bool Beam_Decorrelator::SoftEmission() {
@@ -108,7 +111,8 @@ bool Beam_Decorrelator::DefineKinematics() {
   do {
     m_x     = pow(ran->Get()*(1-poweps)+poweps,m_invxiP);
     m_ktvec = p_kperpGenerator->KT(p_beam);
-  } while (!MakeKinematics() && (trials--)>0);
+    trials--;
+  } while (!MakeKinematics() && trials > 0);
   if (trials<=0)
     msg_Tracking()<<METHOD<<": couldn't construct Primordial_KPerp kinematics.\n";
   return (trials>0);

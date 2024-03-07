@@ -1,24 +1,27 @@
 #ifndef REMNANTS_Tools_Primordial_KPerp_H
 #define REMNANTS_Tools_Primordial_KPerp_H
 
-#include "REMNANTS/Tools/Remnants_Parameters.H"
-#include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Histogram.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "REMNANTS/Tools/Remnants_Parameters.H"
+#include <array>
 #include <map>
 #include <string>
 
 namespace REMNANTS {
   class Remnant_Handler;
-  
+
   class Primordial_KPerp {
   private:
-    pkform::code   m_form[2];
-    pkrecoil::code m_recoil[2];
-    double m_SIMean[2], m_SISigma[2], m_SIQ2[2], m_SpecMean[2], m_SpecSigma[2], m_SpecQ2[2];
-    double m_SIKtmax[2], m_SIEta[2], m_SpecKtmax[2], m_SpecEta[2];
-    double m_mean, m_sigma, m_Q2, m_ktmax, m_eta;
-    size_t m_beam;
-    ATOOLS::ParticleMomMap * p_ktmap;
+    ATOOLS::Flavour m_beamflav;
+    std::array<primkT_form, 2>   m_form;
+    std::array<primkT_recoil, 2> m_recoil;
+    std::array<double, 2> m_SIMean, m_SISigma, m_SIQ2, m_SpecMean, m_SpecSigma,
+            m_SpecQ2;
+    std::array<double, 2>   m_SIKtmax, m_SIEta, m_SpecKtmax, m_SpecEta;
+    double                  m_mean, m_sigma, m_Q2, m_ktmax, m_eta;
+    size_t                  m_beam;
+    ATOOLS::ParticleMomMap* p_ktmap;
 
     double KT_Gauss(const double & ktmax) const;
     double KT_Gauss_Limited(const double & ktmax) const;
@@ -29,7 +32,7 @@ namespace REMNANTS {
     double DipoleWeight(const double & kt) const;
     double LimitedWeight(const double & kt) const;
 
-    bool m_analysis;    
+    bool                                      m_analysis;
     std::map<std::string, ATOOLS::Histogram * >m_histos;
     void InitAnalysis();
     void FinishAnalysis();
