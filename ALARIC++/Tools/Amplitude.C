@@ -10,7 +10,7 @@ using namespace ATOOLS;
 
 Amplitude::Amplitude(Cluster_Amplitude *const a,
 		     std::vector<Amplitude*> *const all):
-  m_t(0.0), m_t0(0.0), p_ampl(a), p_all(all)
+  m_mec(0), m_t(0.0), m_t0(0.0), p_ampl(a), p_all(all)
 {
 }
 
@@ -75,6 +75,7 @@ namespace ALARIC {
     s<<"("<<&a<<"): t = "<<a.T()<<", t0 = "<<a.T0()
      <<", nlo = "<<ID(a.ClusterAmplitude()->NLO())
      <<", flag = "<<ID(a.ClusterAmplitude()->Flag())
+     <<", mec = "<<a.MEC()
      <<" {\n  "<<a.Split()<<"\n";
     for (Amplitude::const_iterator
 	   it(a.begin());it!=a.end();++it) {
