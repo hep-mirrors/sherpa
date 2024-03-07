@@ -48,7 +48,7 @@ namespace SHERPARIVET {
     SHERPA::HepMC3_Interface      m_hepmc;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
-#if defined(USING__MPI) && defined(USING__YODA2)
+#if defined(USING__MPI) && defined(USING__RIVET4)
     HepMC3::GenEvent m_lastevent;
 #endif
 
@@ -96,7 +96,7 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
     MakeDir(m_outpath.substr(0,m_outpath.rfind('/')), true);
 
   // add a MPI rank specific suffix if necessary
-#if defined(USING__MPI) && !defined(USING__YODA2)
+#if defined(USING__MPI) && !defined(USING__RIVET4)
   if (mpi->Size()>1)
     m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
 #endif
@@ -123,7 +123,7 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
     msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
     m_rivet[key] = new AnalysisHandler();
     m_rivet[key]->addAnalyses(m_analyses);
-#ifdef USING__YODA2
+#ifdef USING__RIVET4
     m_rivet[key]->setCheckBeams(!m_ignorebeams);
     m_rivet[key]->matchWeightNames(m_matchweights);
     m_rivet[key]->unmatchWeightNames(m_unmatchweights);
@@ -239,7 +239,7 @@ bool Rivet_Interface::Init()
     m_splitSH = s["SPLITSH"].SetDefault(0).Get<int>();
     m_splitpm = s["SPLITPM"].SetDefault(0).Get<int>();
     m_splitcoreprocs = s["SPLITCOREPROCS"].SetDefault(0).Get<int>();
-#if !defined(USING__YODA2)
+#if !defined(USING__RIVET4)
     if ((m_splitjetconts || m_splitSH || m_splitpm || m_splitcoreprocs)
       && s_variations->HasVariations()) {
       msg_Error()<<"WARNING in "<<METHOD<<":\n"
@@ -302,7 +302,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   std::vector<HepMC3::GenEvent*> subevents(m_hepmc.GenSubEventList());
   m_hepmc.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
 
-#if defined(USING__MPI) && defined(USING__YODA2)
+#if defined(USING__MPI) && defined(USING__RIVET4)
   if (m_lastevent.vertices().empty()) {
     m_lastevent=event;
     m_lastevent.set_run_info(event.run_info());
@@ -380,7 +380,7 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
 
 bool Rivet_Interface::Finish()
 {
-#if defined(USING__MPI) && defined(USING__YODA2)
+#if defined(USING__MPI) && defined(USING__RIVET4)
   // synchronize analyses among MPI processes to ensure that all processes
   // have the same analyses set; this is otherwise not guaranteed since we create
   // analyses lazily
@@ -440,7 +440,7 @@ bool Rivet_Interface::Finish()
   if (mpi->Rank()==0) {
 #endif
 
-#ifdef USING__YODA2
+#ifdef USING__RIVET4
   GetRivet("",0)->collapseEventGroup();
   // determine weight sums and cross sections when Rivet allows us to properly
   // scale variations in split analyses
@@ -503,7 +503,7 @@ bool Rivet_Interface::Finish()
       // first collapse the event group,
       // then scale the cross-section
       // before finalizing
-#ifdef USING__YODA2
+#ifdef USING__RIVET4
       it.second->collapseEventGroup();
       // determine the weight sums seen by this Rivet run
       const std::vector<double> thissumw = it.second->weightSumWs();
@@ -534,7 +534,7 @@ bool Rivet_Interface::Finish()
 
     it.second->writeData(OutputPath(it.first));
   }
-#if defined(USING__MPI) && defined(USING__YODA2)
+#if defined(USING__MPI) && defined(USING__RIVET4)
   } // end of if mpi_rank = 0
 #endif
   m_finished=true;
