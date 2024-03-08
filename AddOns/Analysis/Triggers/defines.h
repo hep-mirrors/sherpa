@@ -21,8 +21,8 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA //
 //                                                                           //
-// $Revision:: 219                                                          $//
-// $Date:: 2008-04-03 15:21:00 +0200 (Thu, 03 Apr 2008)                     $//
+// $Revision::                                                              $//
+// $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
 //! \file defines.h
@@ -34,15 +34,15 @@
 //  siscone::siscone_package_name
 // defined in siscone.h
 // Otherwise, config.h
-// It is also defined as "PACKAGE_NAME" in config.h but this method 
+// It is also defined as "SISCONE_PACKAGE_NAME" in config.h but this method 
 // might lead to conflicts
-//#define PROGRAM   PACKAGE_NAME 
+//#define PROGRAM   SISCONE_PACKAGE_NAME 
 
 // program version
 // we get it from
 //   siscone::siscone_version
 // defined in siscone.h
-// It is also defined as "VERSION" in config.h but this method 
+// It is also defined as "SISCONE_VERSION" in config.h but this method 
 // might lead to conflicts
 
 /// perform final stability check using the quadtree
@@ -114,7 +114,7 @@
 const double twopi = 6.283185307179586476925286766559005768394;
 
 /// debugging information
-//#define DEBUG_STABLE_CONES   ///< debug messages in stable cones search (not implemented yet)
+//#define DEBUG_STABLE_CONES   ///< debug messages in stable cones search
 //#define DEBUG_SPLIT_MERGE    ///< debug messages in split-merge
 //#define DEBUG                ///< all debug messages !
 

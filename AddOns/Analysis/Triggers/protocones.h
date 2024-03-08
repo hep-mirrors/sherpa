@@ -21,8 +21,8 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA //
 //                                                                           //
-// $Revision:: 123                                                          $//
-// $Date:: 2007-03-01 02:52:16 +0100 (Thu, 01 Mar 2007)                     $//
+// $Revision::                                                              $//
+// $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef __PROTOCONES_H__
@@ -35,7 +35,7 @@
 #include <list>
 #include "hash.h"
 
-
+#include "defines.h"
 
 namespace siscone{
 
@@ -113,6 +113,9 @@ class Cstable_cones : public Cvicinity{
 
   /// total number of tested cones
   int nb_tot;
+#ifdef DEBUG_STABLE_CONES
+  int nb_hash_cones, nb_hash_occupied;
+#endif
 
  protected:
   /// cone radius

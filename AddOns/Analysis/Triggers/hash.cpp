@@ -20,8 +20,8 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA //
 //                                                                           //
-// $Revision:: 123                                                          $//
-// $Date:: 2007-03-01 02:52:16 +0100 (Thu, 01 Mar 2007)                     $//
+// $Revision::                                                              $//
+// $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <math.h>
@@ -48,10 +48,17 @@ hash_cones::hash_cones(int _Np, double _R2){
   int i;
 
   n_cones = 0;
+#ifdef DEBUG_STABLE_CONES
+  n_occupied_cells = 0;
+#endif
 
   // determine hash size
-  mask = 1 << (int) (2*log(double(_Np))/log(2.0));
-  if (mask<=1) mask=2;
+  // for a ymax=5 and R=0.7, we observed an occupancy around 1/8 N^2 ~ N2 R2/4
+  //mask = 1 << (int) (2*log(double(_Np))/log(2.0));
+  //if (mask<=1) mask=2;
+  int nbits = (int) (log(_Np*_R2*_Np/4.0)/log(2.0));
+  if (nbits<1) nbits=1;
+  mask = 1 << nbits;
 
   // create hash
   hash_array = new hash_element*[mask];
@@ -98,6 +105,12 @@ int hash_cones::insert(Cmomentum *v, Cmomentum *parent, Cmomentum *child, bool p
 
   // check the array cell corresponding to our reference
   elm = hash_array[index];
+
+#ifdef DEBUG_STABLE_CONES
+  if (elm==NULL)
+    n_occupied_cells++;
+#endif
+
   do{
     // if it is not present, add it
     if (elm==NULL){
