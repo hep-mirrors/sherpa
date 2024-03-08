@@ -14,7 +14,7 @@ using namespace std;
 
 Ladder_Generator_Base::Ladder_Generator_Base() :
   m_colourgenerator(Colour_Generator()),
-  m_partonic(Sigma_Partonic(xs_mode::perturbative)),
+  m_partonic(Sigma_Partonic(xs_mode::perturbative)), // xs_mode::Regge doesn't work yet
   m_Ymax(MBpars.GetEikonalParameters().Ymax),
   m_deltaY(MBpars.GetEikonalParameters().cutoffY),
   m_beamY(m_Ymax+m_deltaY),
