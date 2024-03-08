@@ -18,7 +18,7 @@ Sigma_Partonic::Sigma_Partonic(const xs_mode::code & mode) :
   m_eta(0.08), m_smin(1.), m_tmin(1.),
   m_accu(0.01), m_sigma(0.), m_maxdsigma(0.),
   m_Nmaxtrials(100), m_kinX_fails(0),
-  m_ana(true)
+  m_ana(false)
 {
   if (m_ana) {
     m_histos[string("Yhat_sigma")]      = new Histogram(0, -12.5,  12.5, 50);
@@ -51,8 +51,8 @@ const double Sigma_Partonic::MakeEvent() {
     if (m_dsigma>m_maxdsigma*ran->Get()) {
       m_phi = 2.*M_PI*ran->Get();
       SelectFlavours(m_fixflavour); 
+      //msg_Out()<<"   - "<<METHOD<<"(y1, 2 = "<<m_y[0]<<", "<<m_y[1]<<", pt = "<<sqrt(m_pt2)<<")\n";
       if (m_ana) {
-	msg_Out()<<"   - "<<METHOD<<"(yhat = "<<m_yhat<<")\n";
 	m_histos[string("Yhat_sigma")]->Insert(m_yhat);
 	m_histos[string("Yhat_asym_sigma")]->Insert(dabs(m_yhat),(m_yhat>0.?1.:-1.));
 	m_histos[string("Y1_sigma")]->Insert(m_y[0]);
@@ -64,6 +64,87 @@ const double Sigma_Partonic::MakeEvent() {
   return -1.;
 }
 
+const double Sigma_Partonic::MakePoint() {
+  double cosh2, pt2min, pt2max, ymax, rand = ran->Get();
+  //switch (m_mode) {
+  //case xs_mode::perturbative:
+  for (size_t i=0;i<2;i++) { m_y[i] = m_Ymax*(-1.+2.*ran->Get()); }
+  if (m_y[0]==m_y[1])      { m_y[0]+=1.e-6; m_y[1]-=1.e-6; }
+  else if (m_y[0]<m_y[1])  { double ysave = m_y[1]; m_y[1] = m_y[0]; m_y[0] = ysave;}
+  m_yhat   = (m_y[0]+m_y[1])/2.;
+  m_dy     = (m_y[0]-m_y[1])/2.;
+  m_coshdy = cosh(m_dy);
+  cosh2    = sqr(m_coshdy);
+  pt2min   = m_smin/(4.*cosh2);
+  pt2max   = m_S/(4.*cosh2);
+  //m_pt2    = 1./(rand/pt2max + (1.-rand)/pt2min);
+  m_pt2    = (pt2min+m_tmin)*pow((pt2max+m_tmin)/(pt2min+m_tmin),rand)-pt2min;
+  m_shat   = 4.*cosh2*m_pt2;
+  m_that   = -m_pt2*(1.+exp(-m_dy));
+  //return sqr(2.*m_Ymax) * (1./pt2min-1./pt2max) / (8.*M_PI*m_shat);
+  return sqr(2.*m_Ymax) * log((pt2max+m_tmin)/(pt2min+m_tmin)) / (8.*M_PI*m_shat);
+  //case xs_mode::integrated:
+  //case xs_mode::Regge:
+  //m_shat   = m_smin * pow(m_S/m_smin,ran->Get());
+  //ymax     = 1./2.*log(m_S/m_shat);
+  //m_yhat   = ymax * (-1. + 2.*rand);
+  //return  log(m_S/m_smin) * (2.*ymax);
+  //default:
+  //break;
+  //}
+  //return 0.;
+}
+
+const double Sigma_Partonic::dSigma() {
+  double flux = 1/(2.*m_shat), Enorm = sqrt(m_shat/m_S), scale = m_that;
+  for (size_t i=0;i<2;i++) {
+    m_x[i]    = Enorm * (i==0 ? exp(m_yhat) : exp(-m_yhat));
+    if (m_x[i]<p_pdf[i]->XMin() || m_x[i]>0.9999999) {
+      m_kinX_fails++;
+      return 0.;
+    }
+    m_xpdf[i] = 0.;
+    p_pdf[i]->Calculate(m_x[i],scale);
+    for (list<Flavour>::const_iterator flit=p_pdf[i]->GetFlavours().begin();
+	 flit!=p_pdf[i]->GetFlavours().end();flit++) {
+      if (p_pdf[i]->XPDF((*flit))>1.e-4) 
+	m_xpdf[i] += p_pdf[i]->XPDF((*flit)) * ColourFactor((*flit));
+    }
+  }
+  return flux * m_xpdf[0]*m_xpdf[1] * ME2(m_shat,m_that,scale);
+}
+
+const double Sigma_Partonic::dSigma(const double & shat,const double & yhat) {
+  double flux = 1/(2.*m_shat), Enorm = sqrt(m_shat/m_S), scale = 0.;
+  for (size_t i=0;i<2;i++) {
+    m_x[i]    = Enorm * (i==0 ? exp(m_yhat) : exp(-m_yhat));
+    if (m_x[i]<1.e-6 || m_x[i]>0.9999999) return 0.;
+    m_xpdf[i] = 0.;
+    p_pdf[i]->Calculate(m_x[i],scale);
+    for (list<Flavour>::const_iterator flit=p_pdf[i]->GetFlavours().begin();
+	 flit!=p_pdf[i]->GetFlavours().end();flit++) {
+      if (p_pdf[i]->XPDF((*flit))<1.e-4) continue;
+      m_xpdf[i] += p_pdf[i]->XPDF((*flit)) * ColourFactor((*flit));
+    }
+  }
+  return flux * m_xpdf[0]*m_xpdf[1] * ME2(m_shat,m_that,scale);
+}
+
+const double Sigma_Partonic::ME2(const double & shat,const double & that,const double & scale) {
+  switch (m_mode) {
+  case xs_mode::perturbative:
+    return sqr(4.*M_PI*(*p_alphaS)(scale))*(sqr(shat)+sqr(shat+that))/sqr(-that+m_tmin);
+  case xs_mode::integrated:
+    return pow( (shat/m_smin), 1.+m_eta);
+  case xs_mode::Regge:
+    return ( sqr(4.*M_PI*(*p_alphaS)(scale)) *
+	     (sqr(shat)+sqr(shat+that))/sqr(-that+m_tmin) *
+	     exp(-3.*(*p_alphaS)(scale)/M_PI * log(1.-that/m_tmin)*dabs(m_y[0]-m_y[1])) );
+  default:
+    break;
+  }
+  return 0.;
+}
 void Sigma_Partonic::SelectFlavours(const bool & fixflavour) {
   m_flavs[0] = m_flavs[1] = Flavour(kf_gluon);
   if (fixflavour) return;
@@ -125,84 +206,3 @@ const bool Sigma_Partonic::Calculate() {
   return false;
 }
 
-const double Sigma_Partonic::MakePoint() {
-  double cosh2, pt2min, pt2max, ymax, rand = ran->Get();
-  switch (m_mode) {
-  case xs_mode::perturbative:
-    for (size_t i=0;i<2;i++) {
-      m_y[i] = m_Ymax*(-1.+2.*ran->Get());
-    }
-    if (m_y[0]==m_y[1])     { m_y[0]+=1.e-6; m_y[1]-=1.e-6; }
-    else if (m_y[0]<m_y[1]) { double ysave = m_y[1]; m_y[1] = m_y[0]; m_y[0] = ysave;}
-    m_yhat   = (m_y[0]+m_y[1])/2.;
-    m_dy     = (m_y[0]-m_y[1])/2.;
-    m_coshdy = cosh(m_dy);
-    cosh2    = sqr(m_coshdy);
-    pt2min   = m_smin/(4.*cosh2);
-    pt2max   = m_S/(4.*cosh2);
-    //m_pt2    = 1./(rand/pt2max + (1.-rand)/pt2min);
-    m_pt2    = (pt2min+m_tmin)*pow((pt2max+m_tmin)/(pt2min+m_tmin),rand)-pt2min;
-    m_shat   = 4.*cosh2*m_pt2;
-    m_that   = -m_pt2*(1.+exp(-m_dy));
-    //return sqr(2.*m_Ymax) * (1./pt2min-1./pt2max) / (8.*M_PI*m_shat);
-    return sqr(2.*m_Ymax) * log((pt2max+m_tmin)/(pt2min+m_tmin)) / (8.*M_PI*m_shat);
-  case xs_mode::integrated:
-  case xs_mode::Regge:
-    m_shat   = m_smin * pow(m_S/m_smin,ran->Get());
-    ymax     = 1./2.*log(m_S/m_shat);
-    m_yhat   = ymax * (-1. + 2.*rand);
-    return  log(m_S/m_smin) * (2.*ymax);
-  default:
-    break;
-  }
-  return 0.;
-}
-
-const double Sigma_Partonic::dSigma() {
-  double flux = 1/(2.*m_shat), Enorm = sqrt(m_shat/m_S), scale = m_that;
-  for (size_t i=0;i<2;i++) {
-    m_x[i]    = Enorm * (i==0 ? exp(m_yhat) : exp(-m_yhat));
-    if (m_x[i]<p_pdf[i]->XMin() || m_x[i]>0.9999999) {
-      m_kinX_fails++;
-      return 0.;
-    }
-    m_xpdf[i] = 0.;
-    p_pdf[i]->Calculate(m_x[i],scale);
-    for (list<Flavour>::const_iterator flit=p_pdf[i]->GetFlavours().begin();
-	 flit!=p_pdf[i]->GetFlavours().end();flit++) {
-      if (p_pdf[i]->XPDF((*flit))>1.e-4) 
-	m_xpdf[i] += p_pdf[i]->XPDF((*flit)) * ColourFactor((*flit));
-    }
-  }
-  return flux * m_xpdf[0]*m_xpdf[1] * ME2(m_shat,m_that,scale);
-}
-
-const double Sigma_Partonic::dSigma(const double & shat,const double & yhat) {
-  double flux = 1/(2.*m_shat), Enorm = sqrt(m_shat/m_S), scale = 0.;
-  for (size_t i=0;i<2;i++) {
-    m_x[i]    = Enorm * (i==0 ? exp(m_yhat) : exp(-m_yhat));
-    if (m_x[i]<1.e-6 || m_x[i]>0.9999999) return 0.;
-    m_xpdf[i] = 0.;
-    p_pdf[i]->Calculate(m_x[i],scale);
-    for (list<Flavour>::const_iterator flit=p_pdf[i]->GetFlavours().begin();
-	 flit!=p_pdf[i]->GetFlavours().end();flit++) {
-      if (p_pdf[i]->XPDF((*flit))<1.e-4) continue;
-      m_xpdf[i] += p_pdf[i]->XPDF((*flit)) * ColourFactor((*flit));
-    }
-  }
-  return flux * m_xpdf[0]*m_xpdf[1] * ME2(m_shat,m_that,scale);
-}
-
-const double Sigma_Partonic::ME2(const double & shat,const double & that,const double & scale) {
-  switch (m_mode) {
-  case xs_mode::perturbative:
-    return sqr(4.*M_PI*(*p_alphaS)(scale))*(sqr(shat)+sqr(shat+that))/sqr(-that+m_tmin);
-  case xs_mode::integrated:
-    return 4.*M_PI*sqr((*p_alphaS)(scale))*sqr(shat)/(m_tmin*(shat+m_tmin));
-  case xs_mode::Regge:
-    return pow( (shat/m_smin), 1.+m_eta);
-  default:
-    break;
-  }
-  return 0.;
-}

@@ -8,13 +8,11 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
 
 using namespace SHRIMPS;
 using namespace ATOOLS;
 
-Primary_Ladders::Primary_Ladders(Sigma_Elastic * sigma_el,Sigma_D * sigma_sd) :
-  p_sigma_el(sigma_el), p_sigma_sd(sigma_sd),
+Primary_Ladders::Primary_Ladders() :
   p_laddergenerator(new Ladder_Generator_Eik()),
   m_Ecms(rpa->gen.Ecms()/2.),
   m_test(true),
@@ -70,7 +68,7 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
     p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
-    Ladder * ladder = (*p_laddergenerator)(position,p_sigma_el,p_sigma_sd);
+    Ladder * ladder = (*p_laddergenerator)(position);
     if (m_test && ladder) FillAnalysis(ladder,"trial");
     if (IsAllowed(ladder)) {
       p_laddergenerator->FixLadderType();
@@ -81,8 +79,9 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
       if (m_test) FillAnalysis(ladder,"accept");
     }
     else {
+      //msg_Out()<<METHOD<<": not allowed!\n";
       if (ladder) delete ladder;
-      if (Ngen>0 && (trials++)>100) break;
+      if (Ngen>0 /* && (trials++)>100*/) break;
     }
   }
   if (m_test) {
@@ -90,6 +89,7 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     m_histos[std::string("N_start")]->Insert(N);
     m_histos[std::string("N_gen")]->Insert(Ngen);
   }
+  msg_Out()<<METHOD<<" has produced "<<Ngen<<" ladders for "<<N<<" needed.\n";
   return true;
 }
  

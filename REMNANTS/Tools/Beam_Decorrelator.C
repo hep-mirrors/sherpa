@@ -20,13 +20,14 @@ Initialize(Remnant_Handler * const rhandler) {
   if (p_rhandler->Type()==strat::DIS1 || p_rhandler->Type()==strat::DIS2) {
     p_kperpGenerator = p_rhandler->GetKPerp();
     auto s = Settings::GetMainSettings()["REMNANTS"];
+    m_on      = s["DECORRELATOR"].SetDefault(false).Get<bool>();
+    if (!m_on) return;
     m_expo    = s["SOFT_X_EXPONENT"].SetDefault(-2.0).Get<double>();
     m_xiP     = m_expo+1;
     m_invxiP  = 1./m_xiP;
     m_maxeta  = dabs(s["SOFT_ETA_RANGE"].SetDefault(7.5).Get<double>());
     m_mass2   = sqr(s["SOFT_MASS"].SetDefault(5.0).Get<double>());
     m_deltaM  = s["DELTA_MASS"].SetDefault(1.5).Get<double>();
-    m_on      = (m_maxeta>0. && m_mass2>0.);
   }
 }
 
