@@ -1,0 +1,410 @@
+This software is released under Version 3 of the GNU  General Public Licence (see ./COPYING) or any later version.
+
+Copyright (C) 2024 SHERPA-MC Authors
+
+The third party codes are distributed under their own licenses or are in public domain.
+
+
+
+1) PDF/NNPDF
+
+ * NNPDF C++ Driver
+ *
+ * Stefano Carrazza for the NNPDF Collaboration
+ * email: stefano.carrazza@mi.infn.it
+ *
+ * October 2014
+
+
+2) PDF/CJK
+
+
+*********************************************************************
+****     The same parametrization as in cjk1grid.f but for       ****
+****    calculations according to the "ACOT2(chi)" approach      ****
+****        described in "application.ps" available at           ****
+****          http//www.fuw.edu.pl/~pjank/param.html             ****
+****            (part of P.Jankowski's PhD thesis)               ****
+****                                                             ****
+****   LO parametrization of the parton densities in the real    ****
+****             photon for the CJK 1 fit based on               ****
+****                                                             ****
+****            F.Cornet, P.Jankowski and M.Krawczyk             ****
+****     "CJK - Improved LO Parton Distributions in the Real     ****
+****      Photon and Their Experimental Uncertainties"           ****
+****          Nucl. Phys. Proc. Suppl. 126: 28, 2004             ****
+****                     hep-ph/0310029                          ****
+****                                                             ****
+****     with additional parametrizations of the test parton     ****
+****  densities which allow for calculation of uncertainties of  ****
+****            any observable X(parton densities).              ****
+****     To read about the method used to obtain them see        ****
+****                                                             ****
+****                       P.Jankowski                           ****
+**** "Uncertainties of the CJK 5 Flavour LO Parton Distributions ****
+****                   in the Real Photon"                       ****
+****                     hep-ph/0312056                          ****
+*********************************************************************
+
+
+3) PDF/CT14
+
+C============================================================================
+C                CTEQ-TEA Parton Distribution Functions: version 2014
+C                       December 31, 2014
+C
+C   When using these PDFs, please cite the references below
+C   
+C
+C   This package provides a standard interface for CT10, CT12
+C   (unpublished), and CT14 parton distribution functions. 
+C
+C   The following sets of CTEQ PDF table files can be computed 
+C    with this program: 
+C               PDF                             References         
+C   (1) 1+50 sets of CT10 NNLO PDF's;             [1]
+C   (2' ) 1+52 sets of CT10 NLO PDF's;            [2]
+C   (2'') 1+52 sets of CT10W NLO PDF's;           [2]
+C   (3) 4 sets of CT10W NNLO and NLO PDF's        [2]
+C       with alternative alpha_s values; 
+C   (4) 1+56 sets of CT14 NNLO PDF's;             [3]
+C   (5) 1+56 sets of CT14 NLO PDF's;              [3]
+C   (6) 2 sets of CT14 LO PDF's;                  [3]
+C   (7) 11 CT14 NNLO sets and 11 CT14 NLO sets    [3]
+C       with alternative alpha_s values         
+C   (8) 3 CT14 NNLO and 3 CT14 NLO sets           [3]
+C       with up to 3, 4, and 6 active quark flavors
+C   (9) 4 CT14 NNLO sets with intrinsic charm     [X]
+
+C   References
+C   [1] J. Gao, M. Guzzi, J. Huston, H.-L. Lai, Z. Li, P. M. Nadolsky, 
+C       J. Pumplin, D. Stump, C.-P. Yuan,  arXiv:1302.6246 [hep-ph]
+C   [2] H.-L. Lai, M. Guzzi, J. Huston, Z. Li, P. M. Nadolsky,
+C       J. Pumplin, and C.-P. Yuan, arXiv: 1007.2241 [hep-ph]
+C   [3] S. Dulat, T.-J. Hou, J. Gao, M. Guzzi, J. Huston, 
+C       P. M. Nadolsky, J. Pumplin, C. Schmidt, D. Stump, and
+C       C.-P. Yuan, arXiv:1506.XXXX
+C 
+C ===========================================================================
+
+
+4) PDF/GRS
+
+
+*********************************************************************
+*                                                                   *
+*            LO AND NLO (REAL) PHOTON - PARAMETRIZATIONS            *
+*                                                                   *
+*                 FOR A DETAILED EXPLANATION SEE :                  *
+*                 M. GLUECK, E.REYA, I. Schienbein                  *
+*                    Phys. Rev. D60(1999)054019                     *
+*                                                                   *
+*        PROBLEMS/QUESTIONS TO schien@lpsc.in2p3.fr                 *  
+
+
+5) PDF/GRV
+
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+*                                                                 *
+*      G R V - P H O T O N - P A R A M E T R I Z A T I O N S      *
+*                                                                 *
+*                 FOR A DETAILED EXPLANATION SEE :                *
+*              M. GLUECK, E.REYA, A.VOGT: DO-TH 91/31             *
+*             PUBLISHED IN PHYS. REV. D46 (1992) 1973             *
+*                                                                 *
+*    THE OUTPUT IS ALWAYS   1./ ALPHA(EM) * X * PARTON DENSITY    *
+*                                                                 *
+*   THE PARAMETRIZATIONS ARE FITTED TO THE PARTON DISTRIBUTIONS   *
+*   FOR Q ** 2 BETWEEN MU ** 2 (=  0.25 / 0.30  GEV ** 2  IN LO   *
+*   / HO) AND  1.E6 GEV ** 2  AND FOR X BETWEEN  1.E-5  AND  1.   *
+*                                                                 *
+*              HEAVY QUARK THRESHOLDS  Q(H) = M(H) :              *
+*         M(C)  =  1.5,  M(B)  =  4.5,  M(T)  =  100  GEV         *
+*                                                                 *
+*      CORRESPONDING LAMBDA(F) VALUES FOR F ACTIVE FLAVOURS :     *
+*      LO :   LAMBDA(3)  =  0.232,   LAMBDA(4)  =  0.200,         *
+*             LAMBDA(5)  =  0.153,   LAMBDA(6)  =  0.082  GEV     *
+*      HO :   LAMBDA(3)  =  0.248,   LAMBDA(4)  =  0.200,         *
+*             LAMBDA(5)  =  0.131,   LAMBDA(6)  =  0.053  GEV     *
+*                                                                 *
+*      HO DISTRIBUTIONS REFER TO THE DIS(GAMMA) SCHEME, SEE :     *
+*              M. GLUECK, E.REYA, A.VOGT: DO-TH 91/26             *
+*              PUBLISHED IN PHYS. REV. D45 (1992) 3986            *
+*                                                                 *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+6) PDF/SASG
+
+C...SaSgam version 2 - parton distributions of the photon
+C...by Gerhard A. Schuler and Torbjorn Sjostrand
+C...For further information see Z. Phys. C68 (1995) 607
+C...and Phys. Lett. B376 (1996) 193.
+
+
+7) ATOOLS/YAML/yaml-cpp
+yaml-cpp is a YAML parser and emitter in C++ matching the YAML 1.2 spec.
+
+Copyright (c) 2008-2015 Jesse Beder.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+
+8) AddOns/Analysis/Triggers/
+
+SISCone is a Seedless Infrared Safe Cone jet algorithm.
+
+This program was written by Gregory Soyez(1) and Gavin Salam(2)
+
+Address: (1) IPhT, CEA Saclay
+	     Orme des Merisiers, Bat 774
+	     F-91191 Gif-sur-Yvette Cedex
+	     France
+
+	 (2) Rudolf Peierls Centre for Theoretical Physics, Parks Road, Oxford OX1 3PU, UK;
+             PH-TH, CERN, CH-1211 Geneva 23, Switzerland;
+             LPTHE, UPMC (Univ. Paris 6), 75252 Paris cedex 05, France.
+
+email  : soyez@fastjet.fr
+         gavin.salam@physics.ox.ac.uk
+
+
+8) AOOLS/Org/binreloc.c, AOOLS/Org/binreloc.h
+
+
+/*
+ * BinReloc - a library for creating relocatable executables
+ * Written by: Hongli Lai <h.lai@chello.nl>
+ * http://autopackage.org/
+ *
+ * This source code is public domain. You can relicense this code
+ * under whatever license you want.
+ *
+ * See http://autopackage.org/docs/binreloc/ for
+ * more information and how to use this.
+ */
+
+
+10) ATOOLS/Org/libzippp.h, ATOOLS/Org/libzippp.cpp
+
+/*
+  libzippp.h -- exported declarations.
+  Copyright (C) 2013 Cédric Tabin
+
+  This file is part of libzippp, a library that wraps libzip for manipulating easily
+  ZIP files in C++.
+  The author can be contacted on http://www.astorm.ch/blog/index.php?contact
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
+     the documentation and/or other materials provided with the
+     distribution.
+  3. The names of the authors may not be used to endorse or promote
+     products derived from this software without specific prior
+     written permission.
+ 
+  THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS
+  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
+  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+
+11) ATOOLS/Org/Gzip_Stream.H
+
+// adapted for Sherpa by Frank Siegert from: ==================================
+// gzstream, C++ iostream classes wrapping the zlib compression library.
+// Copyright (C) 2001  Deepak Bandyopadhyay, Lutz Kettner
+// (http://www.cs.unc.edu/Research/compgeom/gzstream)
+// ============================================================================
+
+
+12) ATOOLS/Phys/fjcore.cc, ATOOLS/Phys/fjcore.hh
+
+
+//
+// Copyright (c) 2005-2018, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
+//
+//----------------------------------------------------------------------
+// This file is part of FastJet (fjcore).
+//
+//  FastJet is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  The algorithms that underlie FastJet have required considerable
+//  development. They are described in the original FastJet paper,
+//  hep-ph/0512210 and in the manual, arXiv:1111.6097. If you use
+//  FastJet as part of work towards a scientific publication, please
+//  quote the version you use and include a citation to the manual and
+//  optionally also to hep-ph/0512210.
+//
+//  FastJet is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with FastJet. If not, see <http://www.gnu.org/licenses/>.
+//----------------------------------------------------------------------
+
+
+
+13) ATOOLS/Math/Sobol.C
+
+
+// Frances Y. Kuo
+//
+// Email: <f.kuo@unsw.edu.au>
+// School of Mathematics and Statistics
+// University of New South Wales
+// Sydney NSW 2052, Australia
+// 
+// Last updated: 21 October 2008
+//
+//   You may incorporate this source code into your own program 
+//   provided that you
+//   1) acknowledge the copyright owner in your program and publication
+//   2) notify the copyright owner by email
+//   3) offer feedback regarding your experience with different direction numbers
+//
+//
+// -----------------------------------------------------------------------------
+// Licence pertaining to sobol.cc and the accompanying sets of direction numbers
+// -----------------------------------------------------------------------------
+// Copyright (c) 2008, Frances Y. Kuo and Stephen Joe
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+// 
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+// 
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+// 
+//     * Neither the names of the copyright holders nor the names of the
+//       University of New South Wales and the University of Waikato
+//       and its contributors may be used to endorse or promote products derived
+//       from this software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
+// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// -----------------------------------------------------------------------------
+
+// Adapted for Sherpa by Stefan Hoeche
+
+
+
+14) ATOOLS/Org/Option_Parser.H
+
+
+/*
+ * The Lean Mean C++ Option Parser
+ *
+ * Copyright (C) 2012 Matthias S. Benkmann
+ *
+ * The "Software" in the following 2 paragraphs refers to this file containing
+ * the code to The Lean Mean C++ Option Parser.
+ * The "Software" does NOT refer to any other files which you
+ * may have received alongside this file (e.g. as part of a larger project that
+ * incorporates The Lean Mean C++ Option Parser).
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software, to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following
+ * conditions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/*
+ * NOTE: It is recommended that you read the processed HTML doxygen documentation
+ * rather than this source. If you don't know doxygen, it's like javadoc for C++.
+ * If you don't want to install doxygen you can find a copy of the processed
+ * documentation at
+ *
+ * http://optionparser.sourceforge.net/
+ *
+ */
+
+
+
+
+15) ATOOLS/Org/RUsage.C
+
+
+/*
+ * Author:  David Robert Nadeau
+ * Site:    http://NadeauSoftware.com/
+ * License: Creative Commons Attribution 3.0 Unported License
+ *          http://creativecommons.org/licenses/by/3.0/deed.en_US
+ */
+
+
+
+16) Examples/BSM/UFO_*/function_library.py
+
+
+# This file is part of the UFO.
+#
+# This file contains definitions for functions that
+# are extensions of the cmath library, and correspond
+# either to functions that are in cmath, but inconvenient
+# to access from there (e.g. z.conjugate()),
+# or functions that are simply not defined.
+#
+#
+
+__date__ = "22 July 2010"
+__author__ = "claude.duhr@durham.ac.uk"
+
