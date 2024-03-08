@@ -9,8 +9,8 @@ Beam_Remnants::Beam_Remnants(Beam_Remnant_Handler * _beamremnant) :
   p_beamremnanthandler(_beamremnant),
   m_ana(false)
 {
-  m_name = "Beam_Remnants:"+(p_beamremnanthandler->Fill()==1?
-			     p_beamremnanthandler->Name():string("None"));
+  m_name = "Beam_Remnants: "+(p_beamremnanthandler->Fill()==1?
+			      p_beamremnanthandler->Name():string("None"));
   m_type = eph::Hadronization;
   if (m_ana) InitHistos();
 }

@@ -18,8 +18,10 @@ Primordial_KPerp::~Primordial_KPerp() {
 }
 
 void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
+  msg_Out()<<METHOD<<"\n";
   for (size_t beam=0;beam<2;beam++) {
     m_beamflav          = rhandler->GetRemnant(beam)->Flav();
+    msg_Out()<<METHOD<<"("<<beam<<"): flav = "<<m_beamflav<<", "<<m_beamflav.Kfcode()<<"\n";
     m_form[beam]        = rempars->KT_Form(m_beamflav);
     m_recoil[beam]      = rempars->KT_Recoil(m_beamflav);
     if (m_form[beam]==primkT_form::none) continue;
@@ -32,12 +34,12 @@ void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
       m_SpecSigma[beam] = rempars->Get(m_beamflav,"BEAM_SPECTATOR_SIGMA");
     } else if (m_form[beam]==primkT_form::dipole || m_form[beam]==primkT_form::dipole_limited) {
       m_SIQ2[beam]      = rempars->Get(m_beamflav,"SHOWER_INITIATOR_Q2") * escale;
-      m_SpecQ2[beam]    = rempars->Get(m_beamflav,"BEAM_SPECTATOR_Q2") * escale;
+      m_SpecQ2[beam]    = rempars->Get(m_beamflav,"BEAM_SPECTATOR_Q2");
     }
     if (m_form[beam]==primkT_form::gauss_limited || m_form[beam]==primkT_form::dipole_limited) {
       m_SIKtmax[beam]   = Max(0.0, rempars->Get(m_beamflav,"SHOWER_INITIATOR_KTMAX") * escale);
       m_SIEta[beam]     = rempars->Get(m_beamflav,"SHOWER_INITIATOR_KTEXPO");
-      m_SpecKtmax[beam] = Max(0.0, rempars->Get(m_beamflav,"BEAM_SPECTATOR_KTMAX") * escale);
+      m_SpecKtmax[beam] = Max(0.0, rempars->Get(m_beamflav,"BEAM_SPECTATOR_KTMAX"));
       m_SpecEta[beam]   = rempars->Get(m_beamflav,"BEAM_SPECTATOR_KTEXPO");
     } else {
 	m_SIKtmax[beam]    = m_SpecKtmax[beam] = 1000.;
@@ -90,7 +92,7 @@ void Primordial_KPerp::BalanceKT(const Vec4D & kt_Show,const double & E_Show,
       pmmit->second = pmmit->second - pmmit->first->Momentum()[0]/E_tot * kt_tot;
     }
   }
-  else {
+  else if (m_recoil[m_beam]==primkT_recoil::beam_vs_shower) {
     for (ParticleMomMap::iterator pmmit=p_ktmap->begin();
 	 pmmit!=p_ktmap->end();pmmit++) {
       if (pmmit->first->Info()=='I') {
@@ -109,7 +111,7 @@ void Primordial_KPerp::BalanceKT(const Vec4D & kt_Show,const double & E_Show,
   }
 }
 
-Vec4D Primordial_KPerp::KT(const Particle * part) {
+Vec4D Primordial_KPerp::KT(const Particle * part,const double & ktext) {
   if (m_form[m_beam]==primkT_form::none) return Vec4D(0.,0.,0.,0.);
   if (part->Info()=='I') {
     m_mean  = m_SIMean[m_beam];  m_sigma = m_SISigma[m_beam]; m_Q2 = m_SIQ2[m_beam];
@@ -121,6 +123,7 @@ Vec4D Primordial_KPerp::KT(const Particle * part) {
   }
   if (m_ktmax<=0.) return Vec4D(0.,0.,0.,0.);
   double ktmax = Min(m_ktmax,part->Momentum()[0]), kt = 0.;
+  if (ktext>0.) ktmax = Min(ktmax,ktext);
   do {
     switch (m_form[m_beam]) {
     case primkT_form::none:           kt = 0.;                       break;

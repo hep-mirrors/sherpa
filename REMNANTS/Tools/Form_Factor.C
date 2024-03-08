@@ -17,13 +17,13 @@ Form_Factor::Form_Factor(const Flavour & flav) :
 void Form_Factor::Initialise()
 {
   m_form        = rempars->Matter_Form(m_flav);
-  m_radius1     = rempars->Get(m_flav,"RADIUS_1");
+  m_radius1     = rempars->Get(m_flav,"MATTER_RADIUS_1");
   if (m_form==matter_form::single_gaussian) {
     m_fraction1 = 1.;
   }
   if (m_form==matter_form::double_gaussian) {
-    m_radius2   = rempars->Get(m_flav,"RADIUS_2");
-    m_fraction1 = rempars->Get(m_flav,"FRACTION_1");
+    m_radius2   = rempars->Get(m_flav,"MATTER_RADIUS_2");
+    m_fraction1 = rempars->Get(m_flav,"MATTER_FRACTION_1");
   }
 }
 

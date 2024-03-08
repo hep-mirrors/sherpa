@@ -14,7 +14,12 @@ namespace REMNANTS {
     dipole_limited = 4,
     undefined      = 99
   };
-  enum class primkT_recoil { democratic = 1, beam_vs_shower = 2, undefined = 99 };
+  enum class primkT_recoil {
+    none           = 0,
+    democratic     = 1,
+    beam_vs_shower = 2,
+    undefined      = 99
+  };
 
   enum class matter_form {
     none            = 0,

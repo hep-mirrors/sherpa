@@ -62,11 +62,13 @@ void Remnants_Parameters::SetNucleonDefaults()
   parmsP->params["REFERENCE_ENERGY"]        = 7000.;
   parmsP->params["ENERGY_SCALING_EXPO"]     = 0.08;
   parmsP->m_form                            = matter_form::single_gaussian;
-  parmsP->params["RADIUS_1"]                = 0.86;
-  parmsP->params["RADIUS_2"]                = 0.00;
-  parmsP->params["FRACTION_1"]              = 1.00;
+  parmsP->params["MATTER_RADIUS_1"]         = 0.86;
+  parmsP->params["MATTER_RADIUS_2"]         = 0.00;
+  parmsP->params["MATTER_FRACTION_1"]       = 1.00;
   m_defaults[Flavour(kf_p_plus)]            = parmsP;
+  m_defaults[Flavour(kf_p_plus).Bar()]      = new remnant_parameters(*parmsP);
   m_defaults[Flavour(kf_n)]                 = new remnant_parameters(*parmsP);
+  m_defaults[Flavour(kf_n).Bar()]           = new remnant_parameters(*parmsP);
 }
 
 void Remnants_Parameters::SetMesonDefaults()
@@ -87,11 +89,12 @@ void Remnants_Parameters::SetMesonDefaults()
   parmsP->params["REFERENCE_ENERGY"]        = 7000.;
   parmsP->params["ENERGY_SCALING_EXPO"]     = 0.08;
   parmsP->m_form                            = matter_form::single_gaussian;
-  parmsP->params["RADIUS_1"]                = 0.75;
-  parmsP->params["RADIUS_2"]                = 0.00;
-  parmsP->params["FRACTION_1"]              = 1.00;
+  parmsP->params["MATTER_RADIUS_1"]         = 0.75;
+  parmsP->params["MATTER_RADIUS_2"]         = 0.00;
+  parmsP->params["MATTER_FRACTION_1"]       = 1.00;
   m_defaults[Flavour(kf_pi)]                = parmsP;
   m_defaults[Flavour(kf_pi_plus)]           = new remnant_parameters(*parmsP);
+  m_defaults[Flavour(kf_pi_plus).Bar()]     = new remnant_parameters(*parmsP);
 }
 
 void Remnants_Parameters::SetPhotonDefaults()
@@ -113,9 +116,9 @@ void Remnants_Parameters::SetPhotonDefaults()
   parmsP->params["REFERENCE_ENERGY"]        = 7000.;
   parmsP->params["ENERGY_SCALING_EXPO"]     = 0.08;
   parmsP->m_form                            = matter_form::single_gaussian;
-  parmsP->params["RADIUS_1"]                = 0.75;
-  parmsP->params["RADIUS_2"]                = 0.00;
-  parmsP->params["FRACTION_1"]              = 1.00;
+  parmsP->params["MATTER_RADIUS_1"]         = 0.75;
+  parmsP->params["MATTER_RADIUS_2"]         = 0.00;
+  parmsP->params["MATTER_FRACTION_1"]       = 1.00;
   m_defaults[Flavour(kf_photon)]            = parmsP;
 }
 
@@ -138,11 +141,13 @@ void Remnants_Parameters::SetLeptonDefaults()
   parmsE->params["REFERENCE_ENERGY"]        = 0.00;
   parmsE->params["ENERGY_SCALING_EXPO"]     = 0.00;
   parmsE->m_form                            = matter_form::none;
-  parmsE->params["RADIUS_1"]                = 1.e-12;
-  parmsE->params["RADIUS_2"]                = 0.;
-  parmsE->params["FRACTION_1"]              = 1.00;
+  parmsE->params["MATTER_RADIUS_1"]         = 1.e-12;
+  parmsE->params["MATTER_RADIUS_2"]         = 0.;
+  parmsE->params["MATTER_FRACTION_1"]       = 1.00;
   m_defaults[Flavour(kf_e)]                 = parmsE;
+  m_defaults[Flavour(kf_e).Bar()]           = new remnant_parameters(*parmsE);
   m_defaults[Flavour(kf_mu)]                = new remnant_parameters(*parmsE);
+  m_defaults[Flavour(kf_mu).Bar()]          = new remnant_parameters(*parmsE);
 }
 
 void Remnants_Parameters::Init()
@@ -228,17 +233,17 @@ void Remnants_Parameters::Init()
       (data[pid]["MATTER_FORM"]
        .SetDefault(defaults->m_form)
        .Get<matter_form>());
-    actuals->params["RADIUS_1"] =
-      (data[pid]["RADIUS_1"]
-       .SetDefault(defaults->params["RADIUS_1"])
+    actuals->params["MATTER_RADIUS_1"] =
+      (data[pid]["MATTER_RADIUS_1"]
+       .SetDefault(defaults->params["MATTER_RADIUS_1"])
        .Get<double>());
-    actuals->params["RADIUS_2"] =
-      (data[pid]["RADIUS_2"]
-       .SetDefault(defaults->params["RADIUS_2"])
+    actuals->params["MATTER_RADIUS_2"] =
+      (data[pid]["MATTER_RADIUS_2"]
+       .SetDefault(defaults->params["MATTER_RADIUS_2"])
        .Get<double>());
-    actuals->params["FRACTION_1"] =
-      (data[pid]["FRACTION_1"]
-       .SetDefault(defaults->params["FRACTION_1"])
+    actuals->params["MATTER_FRACTION_1"] =
+      (data[pid]["MATTER_FRACTION_1"]
+       .SetDefault(defaults->params["MATTER_FRACTION_1"])
        .Get<double>());
     m_actuals[flav] = actuals;
     msg_Out() << "Reading in parameters for " << flav << " yields:\n"
@@ -263,9 +268,12 @@ double Remnants_Parameters::Get(const ATOOLS::Flavour& flav,
 
 primkT_form Remnants_Parameters::KT_Form(const ATOOLS::Flavour& flav)
 {
-  if (m_actuals.find(flav) != m_actuals.end()) return m_actuals[flav]->kT_form;
+  if (m_actuals.find(flav) != m_actuals.end())
+    return m_actuals[flav]->kT_form;
   else if (m_defaults.find(flav) != m_defaults.end())
     return m_defaults[flav]->kT_form;
+  else if (flav==Flavour(kf_none))
+    return primkT_form::none;
   THROW(fatal_error, "Keyword kT_form not found for " + flav.IDName());
   return primkT_form::undefined;
 }
@@ -276,15 +284,20 @@ primkT_recoil Remnants_Parameters::KT_Recoil(const ATOOLS::Flavour& flav)
     return m_actuals[flav]->kT_recoil;
   else if (m_defaults.find(flav) != m_defaults.end())
     return m_defaults[flav]->kT_recoil;
+  else if (flav==Flavour(kf_none))
+    return primkT_recoil::none;
   THROW(fatal_error, "Keyword kT_recoil not found for " + flav.IDName());
   return primkT_recoil::undefined;
 }
 
 matter_form Remnants_Parameters::Matter_Form(const ATOOLS::Flavour& flav)
 {
-  if (m_actuals.find(flav) != m_actuals.end()) return m_actuals[flav]->m_form;
+  if (m_actuals.find(flav) != m_actuals.end())
+    return m_actuals[flav]->m_form;
   else if (m_defaults.find(flav) != m_defaults.end())
     return m_defaults[flav]->m_form;
+  else if (flav==Flavour(kf_none))
+    return matter_form::none;
   THROW(fatal_error, "Keyword matter_form not found for " + flav.IDName());
   return matter_form::unknown;
 }
