@@ -23,6 +23,8 @@ replacements may be performed in all inputs, see :ref:`Tags`.
    parameters/hard-decays
    parameters/parton-showers
    parameters/multiple-interactions
+   parameters/beam-remnants
+   parameters/colour-reconnections
    parameters/hadronization
    parameters/qed-corrections
    parameters/approximate-ew-corrections
