@@ -41,16 +41,16 @@ void Remnants_Parameters::Initialize() {
   proton->m_form    = pkform::gauss_limited;
   proton->m_recoil  = pkrecoil::beam_vs_shower; //pkrecoil::democratic;
   proton->m_params["SHOWER_INITIATOR_MEAN"]   = 1.0;
-  proton->m_params["SHOWER_INITIATOR_SIGMA"]  = 1.0;
+  proton->m_params["SHOWER_INITIATOR_SIGMA"]  = 1.1;
   proton->m_params["SHOWER_INITIATOR_Q2"]     = 0.77;
-  proton->m_params["SHOWER_INITIATOR_KTMAX"]  = 3.0;
-  proton->m_params["SHOWER_INITIATOR_KTEXPO"] = 5.0;
+  proton->m_params["SHOWER_INITIATOR_KTMAX"]  = 2.7;
+  proton->m_params["SHOWER_INITIATOR_KTEXPO"] = 5.12;
   proton->m_params["REFERENCE_ENERGY"]        = 7000.0;
   proton->m_params["ENERGY_SCALING_EXPO"]     = 0.08;
-  proton->m_params["BEAM_SPECTATOR_MEAN"]     = 0.0;   //1.0;
-  proton->m_params["BEAM_SPECTATOR_SIGMA"]    = 0.250; //1.0;
+  proton->m_params["BEAM_SPECTATOR_MEAN"]     = 0.0;
+  proton->m_params["BEAM_SPECTATOR_SIGMA"]    = 1.1;
   proton->m_params["BEAM_SPECTATOR_Q2"]       = 0.77;
-  proton->m_params["BEAM_SPECTATOR_KTMAX"]    = 1.0;   // 3.0
+  proton->m_params["BEAM_SPECTATOR_KTMAX"]    = 1.0;
   proton->m_params["BEAM_SPECTATOR_KTEXPO"]   = 5.0;
   // As default settings copy the proton defaults
   m_params[0]        = new pkparams(*proton);

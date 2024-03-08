@@ -50,12 +50,12 @@ double ME2_Base::CouplingFactor(const int oqcd,const int oew) const
   return fac;
 }
 
-int ME2_Base::OrderQCD(const int &id)
+int ME2_Base::OrderQCD(const int &id) const
 {
   return m_oqcd;
 }
 
-int ME2_Base::OrderEW(const int &id)
+int ME2_Base::OrderEW(const int &id) const
 {
   return m_oew;
 }
