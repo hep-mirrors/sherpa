@@ -61,8 +61,7 @@ namespace SHRIMPS {
 
     virtual void Initialise(PDF::ISR_Handler * isr);
     virtual void Test();
-    virtual Ladder * operator()(const ATOOLS::Vec4D & pos,Sigma_Elastic * sigma_el,
-				Sigma_D * sigma_sd) = 0;
+    virtual Ladder * operator()(const ATOOLS::Vec4D & pos) = 0;
     virtual void QuarkReplace();
     inline virtual void FixLadderType() {
       m_Yrange = 1.;

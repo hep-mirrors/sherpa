@@ -72,8 +72,8 @@ void MinBias_Parameters::RegisterDefaults() const
   s["bsteps_FF"].SetDefault(64);
   s["Absorption"].SetDefault("exponential");
   s["FF_Form"].SetDefault("dipole");
-  //s["deltaY"].SetDefault(1.5);
-  s["deltaY"].SetDefault(0.05);
+  s["deltaY"].SetDefault(0.1);
+  //s["deltaY"].SetDefault(0.05);
   s["beta02(mb)"].SetDefault(20.0);
   s["Lambda2"].SetDefault(1.2);
   s["kappa"].SetDefault(0.55);

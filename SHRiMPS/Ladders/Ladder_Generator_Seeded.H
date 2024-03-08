@@ -10,19 +10,18 @@
 namespace SHRIMPS {
   class Ladder_Generator_Seeded : public Ladder_Generator_Base {
   private:
-    ATOOLS::Vec4D     m_pbeam[2], m_ktsum;
-    double            m_kt2max, m_phi, m_yseed[4];
+    ATOOLS::Vec4D     m_ktsum;
+    double            m_kt2max, m_phi, m_yseed[4], m_xbeam[2];
     size_t            m_emissions[3];
     colour_type::code m_cols[3];
     
 
     void   SeedLadder(const ATOOLS::Vec4D & pos);
-    void   AddBeamPartons();
     void   FillIntervals();
     void   CompensateKTs();
     void   ConstructFSMomenta();
     void   FillPropagators();
-    ATOOLS::Vec4D SelectKT(const double & y);
+    ATOOLS::Vec4D SelectKT(const double & y, const double & kt2min, const double & kt2max);
     void   CalculateWeight();
   public:
     Ladder_Generator_Seeded();
