@@ -15,8 +15,10 @@ Kinematics_Generator::Kinematics_Generator() :
 
 Kinematics_Generator::~Kinematics_Generator() {
   if (m_warns>0 || m_errors>0) {
-    msg_Info()<<"Remnant Kinematics: "<<m_errors<<" errors (no kinematics found) and\n"
-	      <<"                    "<<m_warns<<" warnings (scale kt down by factor of 10).\n";
+    msg_Info()<<"Remnant Kinematics: "
+	      <<m_errors<<" errors (no kinematics found) and\n"
+	      <<"                    "
+	      <<m_warns<<" warnings (scale kt down by factor of 10).\n";
   }
 }
 
@@ -220,13 +222,15 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     }
     if (scale < 1.e-3) {
       if (m_errors<5) {
-      msg_Error() << "Warning: " << METHOD
-		  << ": Not able to create the breakup kinematics for "
-		  << p_remnants[0]->GetExtracted()[0] << " and "
-		  << p_remnants[1]->GetExtracted()[0]
-		  << " and the corresponding remnants are "
-		  << p_remnants[0]->GetSpectators()[0] << " and "
-		  << p_remnants[1]->GetSpectators()[0] << "\n";
+      msg_Error()<<"Warning: "
+		 <<METHOD<<"unable to create the breakup kinematics";
+      msg_Debugging()<<" for "
+		     << p_remnants[0]->GetExtracted()[0] << " and "
+		     << p_remnants[1]->GetExtracted()[0]
+		     << " and the corresponding remnants are "
+		     << p_remnants[0]->GetSpectators()[0] << " and "
+		     << p_remnants[1]->GetSpectators()[0];
+      msg_Error()<<".\n";
       }
       m_errors++;
       return false;

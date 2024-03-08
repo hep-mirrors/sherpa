@@ -13,12 +13,12 @@ ME_GENERATORS:
   - Amegic
 
 
-INTRINSIC_KPERP:
+REMNANTS:
   2212:
-    FORM:   gauss_limited     # gauss_limited none
-    RECOIL: beam_vs_shower    # democratic 
+    KT_FORM:   Gauss_Limited     # Gauss, Gauss_Limited None
+    KT_RECOIL: Democratic        # Beam_vs_Shower, Democratic 
     REFERENCE_ENERGY:         7000.0; 
-    ENERGY_SCALING_EXPO:      0.08; 
+    ENERGY_SCALING_EXPO:      0.16; 
     SHOWER_INITIATOR_MEAN:    1.0; 
     SHOWER_INITIATOR_SIGMA:   1.0; 
     SHOWER_INITIATOR_Q2:      0.77; 
@@ -29,7 +29,10 @@ INTRINSIC_KPERP:
     BEAM_SPECTATOR_Q2:        0.77; 
     BEAM_SPECTATOR_KTMAX:     1.0;
     BEAM_SPECTATOR_KTEXPO:    5.0;
-
+    MATTER_FORM: Double_Gaussian # Single or Double
+    RADIUS_1:   0.75
+    RADIUS_2:   1.5
+    FRACTION_1: 0.7
 
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1

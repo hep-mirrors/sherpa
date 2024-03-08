@@ -8,6 +8,7 @@
 #include "REMNANTS/Main/No_Remnant.H"
 #include "REMNANTS/Main/Photon_Remnant.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
+#include "REMNANTS/Tools/Remnants_Parameters.H"
 
 
 using namespace REMNANTS;
@@ -17,7 +18,9 @@ using namespace std;
 Remnant_Handler::
 Remnant_Handler(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,const vector<size_t> & tags) :
   p_softblob(nullptr), m_check(true), m_output(false), m_fails(0) {
-  InitializeRemnants(isr, beam, tags);
+  rempars = new Remnants_Parameters();
+  rempars->Init();
+  InitializeRemnants(isr, beam,tags);
   DefineRemnantStrategy();
   InitializeKinematicsAndColours();
 }

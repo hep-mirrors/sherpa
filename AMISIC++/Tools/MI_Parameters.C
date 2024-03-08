@@ -43,15 +43,6 @@ MI_Parameters::MI_Parameters() :
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("SigmaND_Norm")]
     = s["SIGMA_ND_NORM"].SetDefault(1.02).Get<double>();
-  m_parameters[string("Matter_Fraction1")]
-    = s["MATTER_FRACTION1"].SetDefault(0.5).Get<double>();
-  m_parameters[string("Matter_Radius1")]
-    = s["MATTER_RADIUS1"].SetDefault(1.0).Get<double>();
-  m_parameters[string("Matter_Radius2")]
-    = s["MATTER_RADIUS2"].SetDefault(2.0).Get<double>();
-  m_overlapform = s["MATTER_FORM"]
-	  .SetDefault(overlap_form::code::Single_Gaussian)
-	  .Get<overlap_form::code>();
   m_parameters[string("nPT_bins")]
     = s["nPT_bins"].SetDefault(200).Get<size_t>();
   m_parameters[string("nMC_points")]
