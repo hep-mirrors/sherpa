@@ -8,7 +8,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 using namespace std;
 
-Colour_Generator::Colour_Generator() : m_mode(lcolours::fix_all) {}
+Colour_Generator::Colour_Generator() : m_mode(lcolours::random) {}
 
 Colour_Generator::~Colour_Generator() {}
 

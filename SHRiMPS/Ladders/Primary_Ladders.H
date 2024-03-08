@@ -4,8 +4,6 @@
 #include "SHRiMPS/Ladders/Ladder_Generator_Base.H"
 #include "SHRiMPS/Ladders/Colour_Generator.H"
 #include "ATOOLS/Math/Histogram.H"
-#include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
-#include "SHRiMPS/Cross_Sections/Sigma_D.H"
 
 namespace SHRIMPS {
   class Primary_Ladders {
@@ -22,11 +20,8 @@ namespace SHRIMPS {
     bool   IsAllowed(Ladder * ladder);
     void   Add(Ladder * ladder);
     void   FillAnalysis(Ladder * ladder,const std::string & tag);
-
-    Sigma_Elastic * p_sigma_el;
-    Sigma_D * p_sigma_sd;
   public:
-    Primary_Ladders(Sigma_Elastic * sigma_el,Sigma_D * sigma_sd);
+    Primary_Ladders();
     ~Primary_Ladders();
     
     bool operator()(Omega_ik * eikonal,const double & B,const size_t & N);
