@@ -358,7 +358,7 @@ class Csplit_merge{
 
   // jet information
   /// list of jet candidates
-  std::auto_ptr<std::multiset<Cjet,Csplit_merge_ptcomparison> > candidates;
+  std::unique_ptr<std::multiset<Cjet,Csplit_merge_ptcomparison> > candidates;
 
   /// minimal pt2
   double pt_min2;

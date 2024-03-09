@@ -149,7 +149,11 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
   else {
     msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
     AnalysisHandler* rivet(new AnalysisHandler());
+    #if RIVET_VERSION_CODE >= 40000
+    rivet->setCheckBeams(!m_ignorebeams);
+    #else
     rivet->setIgnoreBeams(m_ignorebeams);
+    #endif
     rivet->skipMultiWeights(m_skipweights);
     rivet->addAnalyses(m_analyses);
     m_rivet.insert(std::make_pair(key, rivet));
