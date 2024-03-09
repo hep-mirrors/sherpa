@@ -52,7 +52,7 @@ if(SHERPA_ENABLE_RIVET)
     PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
 
   # run rivet-mkhtml (part 2/3)
-  if(NOT YODA2)
+  if(NOT RIVET4)
     set(EXTRA_RIVETMKHTML_ARGS --mc-errs)
   endif()
   add_test(
