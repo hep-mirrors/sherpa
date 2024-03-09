@@ -10,7 +10,6 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 files = sys.argv[1:]
-print(files)
 
 # build yodadiff command
 yodadiff_cmd = ["yodadiff"]
@@ -23,7 +22,6 @@ popen = subprocess.Popen(yodadiff_cmd)
 popen.wait()
 
 deviations_histo = list(yoda.read("deviations.yoda").values())[0]
-print(deviations_histo)
 
 # collect all deviations
 deviations_x = []
