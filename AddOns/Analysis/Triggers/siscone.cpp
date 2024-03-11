@@ -24,7 +24,6 @@
 // $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "config.h"
 #include "ranlux.h"
 #include "momentum.h"
 #include "defines.h"
