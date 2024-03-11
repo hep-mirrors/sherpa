@@ -19,29 +19,24 @@ Pomeron::Pomeron(const Flavour _beam, const double _energy, const double _pol,
   m_vecouts[1] = Vec4D(0.,0.,0.,0.);
   m_on = true;
 
-  std::vector<double> tMax{s["Pomeron"]["tMax"].GetVector<double>()};
-  if (tMax.size() != 1 && tMax.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `Pomeron:tMax'.");
+  std::vector<double> tMax{s["Pomeron"]["tMax"].GetTwoVector<double>()};
   m_tMax = (_dir > 0) ? tMax.front() : tMax.back();
 
-  std::vector<double> xMax{s["Pomeron"]["xMax"].GetVector<double>()};
-  if (xMax.size() != 1 && xMax.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `Pomeron:xMax'.");
+  std::vector<double> xMax{s["Pomeron"]["xMax"].GetTwoVector<double>()};
   m_xMax = (_dir > 0) ? xMax.front() : xMax.back();
 
-  std::vector<double> B{s["Pomeron"]["B"].GetVector<double>()};
-  if (B.size() != 1 && B.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `Pomeron:B'.");
+  std::vector<double> xMin{s["Pomeron"]["xMin"].GetTwoVector<double>()};
+  m_xMin = (_dir > 0) ? xMin.front() : xMin.back();
+
+  std::vector<double> B{s["Pomeron"]["B"].GetTwoVector<double>()};
   m_B = (_dir > 0) ? B.front() : B.back();
 
-  std::vector<double> alpha_i{s["Pomeron"]["Alpha_intercept"].GetVector<double>()};
-  if (alpha_i.size() != 1 && alpha_i.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `Pomeron:Alpha_intercept'.");
+  std::vector<double> alpha_i{
+          s["Pomeron"]["Alpha_intercept"].GetTwoVector<double>()};
   m_alpha_intercept = (_dir > 0) ? alpha_i.front() : alpha_i.back();
 
-  std::vector<double> alpha_s{s["Pomeron"]["Alpha_slope"].GetVector<double>()};
-  if (alpha_s.size() != 1 && alpha_s.size() != 2)
-    THROW(fatal_error, "Specify either one or two values for `Pomeron:Alpha_slope'.");
+  std::vector<double> alpha_s{
+          s["Pomeron"]["Alpha_slope"].GetTwoVector<double>()};
   m_alpha_slope = (_dir > 0) ? alpha_s.front() : alpha_s.back();
 
   FixNormalisation();
@@ -51,7 +46,7 @@ bool Pomeron::CalculateWeight(double x, double q2)
 {
   m_x = x;
   m_Q2 = q2;
-  if (x > 1. - m_proton_mass / 2. / m_energy || x > m_xMax) {
+  if (x > 1. - m_proton_mass / 2. / m_energy || x > m_xMax || x < m_xMin) {
     m_weight = 0.;
     return true;
   }
