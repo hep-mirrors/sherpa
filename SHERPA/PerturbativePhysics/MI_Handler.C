@@ -32,10 +32,12 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
     string resc = s["BEAM_RESCATTERING"].Get<string>();
     scm = m_name = resc;
   }
-  // Pomerons are hadrons, but don't have Multiple Interactions
+  // Pomerons and Reggeons are hadrons, but don't have Multiple Interactions
   if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name == "None" ||
       isr->Flav(0).Kfcode() == kf_pomeron ||
-      isr->Flav(1).Kfcode() == kf_pomeron) {
+      isr->Flav(1).Kfcode() == kf_pomeron ||
+      isr->Flav(0).Kfcode() == kf_reggeon ||
+      isr->Flav(1).Kfcode() == kf_reggeon) {
     m_name = "None";
     m_on   = false;
   } else {

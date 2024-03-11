@@ -106,9 +106,11 @@ bool Beam_Channels::DefineColliderChannels() {
   // one or two EPA/Pomeron spectra with monochromatic beams.
   // currently our EPA is completely collinear, with real photons.
   bool beam0_is_on = m_beamtype[0] == beamspectrum::EPA ||
-                     m_beamtype[0] == beamspectrum::Pomeron;
+                     m_beamtype[0] == beamspectrum::Pomeron ||
+                     m_beamtype[0] == beamspectrum::Reggeon;
   bool beam1_is_on = m_beamtype[1] == beamspectrum::EPA ||
-                     m_beamtype[1] == beamspectrum::Pomeron;
+                     m_beamtype[1] == beamspectrum::Pomeron ||
+                     m_beamtype[1] == beamspectrum::Reggeon;
   if (beam0_is_on || beam1_is_on) {
     double exponent = (int(beam0_is_on) +
                        int(beam1_is_on)) * 0.5;

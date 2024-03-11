@@ -21,6 +21,7 @@ std::ostream &REMNANTS::operator<<(std::ostream &ostr, const rtp::code code) {
     return ostr << "Lepton";
   case rtp::pomeron:
     return ostr << "Pomeron";
+  case rtp::reggeon: return ostr << "Reggeon";
   }
   return ostr;
 }
@@ -36,7 +37,8 @@ Remnant_Base::~Remnant_Base() {
 }
 
 rtp::code Remnant_Base::FixType(ATOOLS::Flavour & flav) {
-  if (flav==Flavour(kf_pomeron)) return rtp::pomeron;
+  if (flav.Kfcode() == kf_pomeron) return rtp::pomeron;
+  if (flav.Kfcode() == kf_reggeon) return rtp::reggeon;
   if (flav.IsLepton()) return rtp::lepton;
   if (flav.IsHadron()) return rtp::hadron;
   if (flav.IsPhoton()) return rtp::photon;

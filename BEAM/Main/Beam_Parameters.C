@@ -9,6 +9,7 @@
 #include "BEAM/Spectra/Laser_Backscattering.H"
 #include "BEAM/Spectra/Monochromatic.H"
 #include "BEAM/Spectra/Pomeron.H"
+#include "BEAM/Spectra/Reggeon.H"
 
 using namespace ATOOLS;
 using namespace BEAM;
@@ -55,6 +56,8 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect) {
     return ostr<<"Equivalent Photons";
   case beamspectrum::Pomeron:
     return ostr<<"Pomeron";
+  case beamspectrum::Reggeon:
+    return ostr << "Reggeon";
   case beamspectrum::laser_backscattering:
     return ostr<<"Laser Backscattering";
   case beamspectrum::DM:
@@ -82,6 +85,7 @@ void Beam_Parameters::RegisterDefaults()
   RegisterLaserDefaults();
   RegisterEPADefaults();
   RegisterPomeronDefaults();
+  RegisterReggeonDefaults();
 }
 
 Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
@@ -98,6 +102,7 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
     return InitializeEPA(num);
   case beamspectrum::Pomeron :
     return InitializePomeron(num);
+  case beamspectrum::Reggeon: return InitializeReggeon(num);
   case beamspectrum::DM :
     return InitializeDM_beam(num);
   case beamspectrum::Fixed_Target :
@@ -188,6 +193,20 @@ Beam_Base * Beam_Parameters::InitializePomeron(int num)
   }
   double beam_energy = (*this)("BEAM_ENERGIES",num);
   return new Pomeron(beam_particle,beam_energy,0.,1-2*num);
+}
+
+Beam_Base* Beam_Parameters::InitializeReggeon(int num)
+{
+  Flavour beam_particle = GetFlavour("BEAMS", num);
+  if (beam_particle.Kfcode() != kf_p_plus) {
+    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
+                << "   Tried to initialize Reggeon for " << beam_particle
+                << ".\n"
+                << "   This option is not available.\n";
+    return nullptr;
+  }
+  double beam_energy = (*this)("BEAM_ENERGIES", num);
+  return new Reggeon(beam_particle, beam_energy, 0., 1 - 2 * num);
 }
 
 Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
@@ -298,11 +317,22 @@ void Beam_Parameters::RegisterEPADefaults() {
 void Beam_Parameters::RegisterPomeronDefaults() {
   m_settings["Pomeron"]["tMax"].SetDefault(1.);
   m_settings["Pomeron"]["xMax"].SetDefault(1.);
-  m_settings["Pomeron"]["xMin"].SetDefault(0.);
   // taken from H1 2006 Fit B, hep-ex/0606004
   m_settings["Pomeron"]["B"].SetDefault(5.5);
   m_settings["Pomeron"]["Alpha_intercept"].SetDefault(1.111);
   m_settings["Pomeron"]["Alpha_slope"].SetDefault(0.06);
+}
+
+void Beam_Parameters::RegisterReggeonDefaults()
+{
+  m_settings["Reggeon"]["tMax"].SetDefault(1.);
+  m_settings["Reggeon"]["xMax"].SetDefault(1.);
+  m_settings["Reggeon"]["xMin"].SetDefault(0.);
+  // taken from H1 2006 Fit B, hep-ex/0606004
+  m_settings["Reggeon"]["B"].SetDefault(1.6);
+  m_settings["Reggeon"]["Alpha_intercept"].SetDefault(0.5);
+  m_settings["Reggeon"]["Alpha_slope"].SetDefault(0.3);
+  m_settings["Reggeon"]["n"].SetDefault(1.4e-3);
 }
 
 void Beam_Parameters::RegisterLaserDefaults() {
@@ -347,6 +377,8 @@ bool Beam_Parameters::SpecifySpectra() {
       m_beamspec[num] = beamspectrum::EPA;
     else if (bs == "Pomeron")
       m_beamspec[num] = beamspectrum::Pomeron;
+    else if (bs == "Reggeon")
+      m_beamspec[num] = beamspectrum::Reggeon;
     else if (bs == "DM_beam")
       m_beamspec[num] = beamspectrum::DM;
     else if (bs == "Fixed_Target")

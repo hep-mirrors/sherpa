@@ -774,6 +774,9 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     } else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode() == kf_pomeron) {
       deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_pomeron);
       defset = PDF::pdfdefs->DefaultPDFSet(kf_pomeron);
+    } else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode() == kf_reggeon) {
+      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_reggeon);
+      defset = PDF::pdfdefs->DefaultPDFSet(kf_reggeon);
     }
     // fix PDFs and default sets for the hard_process here
     if (pdflibs.empty()) m_pdflibs.insert(deflib);

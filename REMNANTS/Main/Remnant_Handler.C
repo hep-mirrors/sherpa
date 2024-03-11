@@ -1,5 +1,5 @@
-#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
@@ -8,9 +8,9 @@
 #include "REMNANTS/Main/No_Remnant.H"
 #include "REMNANTS/Main/Photon_Remnant.H"
 #include "REMNANTS/Main/Pomeron_Remnant.H"
+#include "REMNANTS/Main/Reggeon_Remnant.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "REMNANTS/Tools/Remnants_Parameters.H"
-
 
 using namespace REMNANTS;
 using namespace ATOOLS;
@@ -27,7 +27,8 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
     Flavour flav = isr->Flav(i);
     if (isr->PDF(i) != nullptr &&
         Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
-      if (flav.IsHadron() && flav.Kfcode() != kf_pomeron)
+      if (flav.IsHadron() && flav.Kfcode() != kf_pomeron &&
+          flav.Kfcode() != kf_reggeon)
         p_remnants[i] =
                 std::make_shared<Hadron_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsLepton())
@@ -38,6 +39,8 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
                 std::make_shared<Photon_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.Kfcode() == kf_pomeron)
         p_remnants[i] = std::make_shared<Pomeron_Remnant>(isr->PDF(i), i);
+      else if (flav.Kfcode() == kf_reggeon)
+        p_remnants[i] = std::make_shared<Reggeon_Remnant>(isr->PDF(i), i);
     }
     if(yfs->Mode()!=YFS::yfsmode::off){
       // Should always be a lepton
@@ -76,6 +79,9 @@ Remnant_Handler::Remnant_Handler(
     else if (flav.Kfcode() == kf_pomeron)
       p_remnants[beam] =
               std::make_shared<Pomeron_Remnant>(isr->PDF(beam), beam);
+    else if (flav.Kfcode() == kf_reggeon)
+      p_remnants[beam] =
+              std::make_shared<Reggeon_Remnant>(isr->PDF(beam), beam);
   }
   if (p_remnants[beam] == nullptr)
     p_remnants[beam] = std::make_shared<No_Remnant>(beam, m_tags[beam]);
@@ -121,30 +127,27 @@ void Remnant_Handler::DefineRemnantStrategy() {
   // For the latter two we will realize four-momentum conservation through
   // insertion of a "soft" blob, mainly a garbage collection where we collect
   // particles and shuffle them in a pretty minimal fashion.
+  std::array<bool, 2> hadron_like;
+  for (int i = 0; i < 2; ++i) {
+    hadron_like[i] = (p_remnants[i]->Type() == rtp::hadron ||
+                      p_remnants[i]->Type() == rtp::photon ||
+                      p_remnants[i]->Type() == rtp::pomeron ||
+                      p_remnants[i]->Type() == rtp::reggeon);
+  }
   if (p_remnants[0]->Type() == rtp::intact &&
       p_remnants[1]->Type() == rtp::intact)
     m_type = strat::simple;
   else if (p_remnants[0]->Type() == rtp::lepton &&
            p_remnants[1]->Type() == rtp::lepton)
     m_type = strat::ll;
-  else if ((p_remnants[0]->Type() == rtp::hadron ||
-            p_remnants[0]->Type() == rtp::photon ||
-            p_remnants[0]->Type() == rtp::pomeron) &&
-           (p_remnants[1]->Type() == rtp::lepton ||
+  else if (hadron_like[0] && (p_remnants[1]->Type() == rtp::lepton ||
             p_remnants[1]->Type() == rtp::intact))
     m_type = strat::DIS1;
   else if ((p_remnants[0]->Type() == rtp::lepton ||
             p_remnants[0]->Type() == rtp::intact) &&
-           (p_remnants[1]->Type() == rtp::hadron ||
-            p_remnants[1]->Type() == rtp::photon ||
-            p_remnants[1]->Type() == rtp::pomeron))
+           hadron_like[1])
     m_type = strat::DIS2;
-  else if ((p_remnants[0]->Type() == rtp::hadron ||
-            p_remnants[0]->Type() == rtp::photon ||
-            p_remnants[0]->Type() == rtp::pomeron) &&
-           (p_remnants[1]->Type() == rtp::hadron ||
-            p_remnants[1]->Type() == rtp::photon ||
-            p_remnants[1]->Type() == rtp::pomeron))
+  else if (hadron_like[0] && hadron_like[1])
     m_type = strat::hh;
   else if ((p_remnants[0]->Type() == rtp::lepton &&
             p_remnants[1]->Type() == rtp::intact) ||
