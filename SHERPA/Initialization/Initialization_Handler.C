@@ -220,6 +220,7 @@ void Initialization_Handler::RegisterDefaults()
   // Sherpa section on master for details
   s["CSS_FS_PT2MIN"].SetDefault(1.0);
   s["CSS_IS_PT2MIN"].SetDefault(2.0);
+  s["CSS_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   s["CSS_FS_AS_FAC"].SetDefault(1.0);
   s["CSS_IS_AS_FAC"].SetDefault(0.5);
   s["CSS_PDF_FAC"].SetDefault(1.0);
@@ -263,6 +264,7 @@ void Initialization_Handler::RegisterDefaults()
   s["MI_CSS_KFACTOR_SCHEME"].SetDefault(0);
   s["MI_CSS_IS_PT2MIN"].SetDefault(4.0);
   s["MI_CSS_FS_PT2MIN"].SetDefault(1.0);
+  s["MI_CSS_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   s["MI_CSS_IS_AS_FAC"].SetDefault(0.66);
   s["MI_CSS_FS_AS_FAC"].SetDefault(0.66);
   s["MI_CSS_KIN_SCHEME"].SetDefault(1);
@@ -936,8 +938,7 @@ bool Initialization_Handler::InitializeTheRemnants() {
   // the MPI related to the hard process - are the same.
   // I have the feeling we will have to communicate the mode to the Remnant_Handler in question
   ///////////////////////////////////////////////////////////
-  REMNANTS::rempars = new REMNANTS::Remnants_Parameters();
-  REMNANTS::rempars->ReadParameters();
+  REMNANTS::Remnants_Parameters();
   m_remnanthandlers[isr::hard_process] =
     new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra,
 			m_bunchtags[isr::hard_process]);

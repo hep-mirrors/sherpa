@@ -1003,3 +1003,5 @@ endif()
 if (SHERPA_ENABLE_EXAMPLES)
   add_subdirectory(Examples)
 endif()
+
+include(ConfigLogger)

@@ -362,7 +362,8 @@ bool SHERPA::HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
     Blob* blob=*blit;
     if (m_ignoreblobs.count(blob->Type())) continue;
     for (int i=0;i<blob->NInP();i++) {
-      if (blob->InParticle(i)->ProductionBlob()==NULL) {
+      if (blob->InParticle(i)->ProductionBlob()==NULL &&
+          blob->InParticle(i)->Status()!=part_status::documentation) {
         Particle* parton=blob->InParticle(i);
         auto flav = parton->Flav();
         if (flav.Kfcode() == kf_lepton) {

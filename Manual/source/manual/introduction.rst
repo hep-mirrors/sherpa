@@ -270,12 +270,18 @@ AMISIC++
   parton interactions according to :cite:`Sjostrand1987su`. In Sherpa
   the treatment of multiple interactions has been extended by allowing
   for the simultaneous evolution of an independent parton shower in
-  each of the subsequent (semi-)hard collisions. The beam--beam
-  remnants are organized such that partons which are adjacent in
-  colour space are also adjacent in momentum space. The corresponding
-  classes for beam remnant handling reside in the PDF and SHERPA
-  modules.
+  each of the subsequent (semi-)hard collisions. 
 
+REMNANTS:
+  REMNANTS contains classes for the simulation of the beam remnants,
+  including in particular the spatial form of the matter distribution
+  which is relevant for the underlying event, and the treatment of
+  the intrinsic transverse momentum.
+
+RECONNECTIONS:
+  RECONNECTIONS handles the colour reconnections preceding the hadronization.
+  This module will experience future refinements.
+  
 AHADIC++
   AHADIC++ is Sherpa's hadronization package, for translating
   the partons (quarks and gluons) into primordial hadrons, to be
@@ -283,9 +289,8 @@ AHADIC++
   fragmentation ideas presented in :cite:`Gottschalk1982yt`,
   :cite:`Gottschalk1983fm`, :cite:`Webber1983if`,
   :cite:`Gottschalk1986bv` and implemented in the Herwig family of
-  event generators.  The actual Sherpa implementation, based on
-  :cite:`Winter2003tt`, differs from the original model in several
-  respects.
+  event generators.  The actual Sherpa implementation is based on
+  :cite:`Chahal2022rid`.
 
 HADRONS++
   HADRONS++ is the module for simulating hadron and tau-lepton

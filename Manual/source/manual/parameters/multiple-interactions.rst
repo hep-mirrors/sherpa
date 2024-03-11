@@ -41,10 +41,6 @@ AMISIC
 .. index:: Amisic:MU_R_FACTOR
 .. index:: Amisic:MU_F_FACTOR
 .. index:: Amisic:SIGMA_ND_NORM
-.. index:: Amisic:MATTER_FRACTION1
-.. index:: Amisic:MATTER_RADIUS1
-.. index:: Amisic:MATTER_RADIUS2
-.. index:: Amisic:MATTER_FORM
 .. index:: Amisic:nPT_bins
 .. index:: Amisic:nMC_points
 .. index:: Amisic:nS_bins
@@ -113,23 +109,6 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 :option:`SIGMA_ND_NORM`
     Specifies the factor to scale the non-diffractive cross section calculated in the MPI initialisation.
     Defaults to ``0.4``.
-
-:option:`MATTER_FRACTION1`
-    Only to be used for double-gaussian matter form, where it will control the distribution of matter over the two
-    gaussians. It assumes that a fraction :math:`f^2` is distributed by the inner gaussian :math:`r_1`, another fraction
-    :math:`(1-f)^2` is distributed by the outer gaussian :math:`r_2`, and the remaining fraction :math:`2f(1-f)` is distributed by
-    the combined radius :math:`r_\text{tot} = \sqrt{\frac{r_1^2+r_2^2}{2}}`. Defaults to ``0.5``.
-
-:option:`MATTER_RADIUS1`
-    Defaults to ``0.4``. Is used to control the radius of the (inner) gaussian. If used with the
-    double-gaussian matter form, this value must be smaller than `MATTER_RADIUS2`.
-
-:option:`MATTER_RADIUS2`
-    Defaults to ``1.0``. It is only used for the case of a double-gaussian overlap, see below.
-
-:option:`MATTER_FORM`
-    Defaults to ``Single_Gaussian``. Alternatively, ``Double_Gaussian`` can be used to model the overlap between
-    the colliding particles, however, it has not been tested yet.
 
 :option:`nPT_bins`
     Controls the number of bins for the numerical integration of

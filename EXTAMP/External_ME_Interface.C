@@ -55,22 +55,22 @@ namespace EXTAMP{
        of the group. Within
        PHASIC::Process_Group::ConstructProcesses(), several pure
        virtuals of PHASIC::Process_Group are used for that purpose:
-       
+
        - Process_Base* PHASIC::Process_Group::GetProcess(const PHASIC::Process_Info &pi)
        - bool          PHASIC::Process_Group::Initialize(Process_Base *const proc)
-       
+
        The former must be implemented by EXTAMP::Process_Group in such
        a way as to instantiate the PARTONIC (i.e. non-group type)
        process corresponding to the Process_Info, and return a valid
        pointer to it. Does not make any sense structurally, so just
        implemented it as a wrapper around
        External_ME_Interface::InstantiatePartonicProcess(PHASIC::Process_Info). */
-    
+
     EXTAMP::Process_Group *newproc = new EXTAMP::Process_Group();
     newproc->Init(pi,p_beam,p_isr);
     newproc->ConstructProcesses();
     newproc->SetGenerator(this);
-    
+
     /* In case no valid partonic channels are found, return NULL so the
        Matrix_Element_Hanlder knows and throws a 'No hard process found' */
     return  (newproc->Size()>0) ? newproc : NULL;
@@ -91,9 +91,10 @@ namespace EXTAMP{
           THROW(fatal_error,"Inconsistent order input.");
     }
     std::vector<double> orders = pi.m_maxcpl;
+
     if ( pi.m_fi.m_nlotype&ATOOLS::nlo_type::vsub ) orders[0] -= 1;
 
-    PHASIC::External_ME_Args args(pi.m_ii.GetExternal(), 
+    PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
 				  pi.m_fi.GetExternal(),
 				  orders);
 
@@ -115,7 +116,7 @@ namespace EXTAMP{
     return me2;
   }
 
-  
+
   /* Instantiate a partonic (i.e. non-group type) EXTAMP::Single_Process. */
   PHASIC::Process_Base* External_ME_Interface::InstantiatePartonicProcess
   (const PHASIC::Process_Info &pi)
@@ -124,7 +125,7 @@ namespace EXTAMP{
 
     if( nlotype==ATOOLS::nlo_type::lo || nlotype==ATOOLS::nlo_type::born )
       return new Born_Process(pi);
-    
+
     if ( nlotype&ATOOLS::nlo_type::vsub )
     {
       ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
@@ -135,7 +136,7 @@ namespace EXTAMP{
 	    msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " << virtfrac << std::endl;
 	  return new BVI_Process(pi, virtfrac, subtractiontype);
     }
-    
+
     if ( nlotype&ATOOLS::nlo_type::rsub )
       return new RS_Process(pi);
 
@@ -151,7 +152,7 @@ namespace EXTAMP{
   {
     /* Simple ad-hoc prescription good enough for reconstructing one
        splitting */
-    DEBUG_FUNC(pinfo); assert(flavs.size()>0); Combinable_Map ret; 
+    DEBUG_FUNC(pinfo); assert(flavs.size()>0); Combinable_Map ret;
     for(size_t i(0); i<flavs.size()-1; i++){
       for(size_t j=std::max(nin,i+1); j<flavs.size(); j++){
 
@@ -162,10 +163,10 @@ namespace EXTAMP{
 
 	/* Combined flavour */
 	ATOOLS::Flavour fl_ij;
-	
+
 	/* Combined id used to lookup this combination */
 	size_t ij  = (1<<i)|(1<<j);
-	
+
 	/* g->gg or g->qqbar splitting */
 	if(fl_i.Bar()==fl_j && (fl_i.IsQuark() || fl_i.IsGluon()))
 	  fl_ij = ATOOLS::Flavour(kf_gluon);
@@ -178,14 +179,14 @@ namespace EXTAMP{
 	/* No valid SM QCD splitting ij -> i,j */
 	if(fl_ij.Kfcode()==kf_none)
 	  continue;
-	
+
 	/* Check if this clustering yields a valid partonic process */
 	PHASIC::Process_Info cpi(pinfo);
 	/* Need to reverse the flavour of incoming particles yet again
 	   because convention for PHASIC::Process_Info is different */
 	cpi.Combine(i,j, i<nin ? fl_ij.Bar() : fl_ij);
 
-	std::vector<double> orders = cpi.m_maxcpl;
+	std::vector<double> orders = cpi.m_maxcpl; orders[0]-=1;
 	if (!(cpi.m_fi.m_nlotype&ATOOLS::nlo_type::rsub)) orders[0] -= 1;
 	PHASIC::External_ME_Args args(cpi.m_ii.GetExternal(),
 				      cpi.m_fi.GetExternal(),
@@ -226,7 +227,7 @@ void ATOOLS::Getter<PHASIC::ME_Generator_Base,
 		    PHASIC::ME_Generator_Key,
 		    External_ME_Interface>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"Generic ME interface"; 
+{
+  str<<"Generic ME interface";
 }
 

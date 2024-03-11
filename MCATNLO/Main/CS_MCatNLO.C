@@ -19,7 +19,7 @@ using namespace std;
 
 CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
                        MODEL::Model_Base *const model) :
-  NLOMC_Base("MC@NLO_CSS"), p_isr(_isr), 
+  NLOMC_Base("MC@NLO_CSS"), p_isr(_isr),
   p_mcatnlo(NULL), p_cluster(NULL), p_gamma(NULL)
 {
   Settings& s = Settings::GetMainSettings();
@@ -40,7 +40,7 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   m_kt2min[0]=p_mcatnlo->GetSudakov()->FSPT2Min();
 }
 
-CS_MCatNLO::~CS_MCatNLO() 
+CS_MCatNLO::~CS_MCatNLO()
 {
   CleanUp();
   if (p_mcatnlo) delete p_mcatnlo;
@@ -51,14 +51,14 @@ CS_MCatNLO::~CS_MCatNLO()
 
 void CS_MCatNLO::CleanUp()
 {
-  for (All_Singlets::const_iterator 
+  for (All_Singlets::const_iterator
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     if (*sit) delete *sit;
   }
   m_allsinglets.clear();
 }
 
-int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl) 
+int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC("");
   for (double qfac(1.0);;qfac*=10.0) {
@@ -130,7 +130,7 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfa
     msg_Debugging()<<"-> "<<(*cit)->Specs().size()<<" dipole(s)\n";
   }
   p_gamma->SetOn(1);
-  for (All_Singlets::const_iterator 
+  for (All_Singlets::const_iterator
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     msg_Debugging()<<"before mc@nlo step\n";
     msg_Debugging()<<**sit;
@@ -163,7 +163,7 @@ bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl)
   m_allsinglets.push_back(sing);
   p_next->push_back(sing);
   msg_Debugging()<<"\nSinglet lists:\n\n";
-  for (All_Singlets::const_iterator 
+  for (All_Singlets::const_iterator
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     (*sit)->SetJF(ampl->JF<PHASIC::Jet_Finder>());
     (*sit)->SetShower(p_shower);
@@ -226,7 +226,7 @@ Singlet *CS_MCatNLO::TranslateAmplitude
       if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
 	parton->SetBeam(0);
       }
-      else { 
+      else {
 	parton->SetBeam(1);
       }
     }
@@ -287,32 +287,34 @@ double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
   double mj2(sqr(sub.p_real->p_fl[sub.m_j].Mass()));
   double mk2(sqr(sub.p_real->p_fl[sub.m_k].Mass()));
   double mij2(sqr(sub.p_fl[sub.m_ijt].Mass()));
+  double kt2;
   if (sub.m_ijt>=2) {
-    int evol(p_mcatnlo->KinFF()->EvolScheme());
-    double kt2=(Q2-mi2-mj2-mk2)*y;
-    if (sub.m_kt<2) kt2=(-Q2+mij2+mk2)*(1.0-y)/y;
-    if (evol==0) kt2=kt2*x*(1.0-x)-x*x*mj2-sqr(1.0-x)*mi2;
+    // final-state emitter
+    if (sub.m_k>=2) {
+      // final-state spectator
+      kt2 = p_mcatnlo->KinFF()->GetKT2(Q2,y,x,mi2,mj2,mk2,
+            sub.p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
+    }
     else {
-      if (sub.p_real->p_fl[sub.m_i].IsQuark()) {
-	if (sub.p_real->p_fl[sub.m_j].IsGluon()) kt2*=(1.0-x);
-      }
-      else {
-	if (sub.p_real->p_fl[sub.m_j].IsQuark()) kt2*=x;
-	else kt2*=x*(1.0-x);
-      }
+      // initial-state spectator
+      kt2 = p_mcatnlo->KinFI()->GetKT2(Q2,y,x,mi2,mj2,mk2,
+            sub.p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
     }
     return kt2;
   }
   else {
-    int evol(p_mcatnlo->KinFF()->EvolScheme());
-    double kt2=-Q2*y/x;
-    if (sub.m_kt<2) kt2=Q2*y/x;
-    if (evol==0) kt2=kt2*(1.0-x);
-    else {
-      if (sub.p_real->p_fl[sub.m_j].IsGluon()) {
-	kt2*=(1.0-x);
-      }
+    // initial-state emitter
+    if (sub.m_k>=2) {
+      // final-state spectator
+      kt2 = p_mcatnlo->KinIF()->GetKT2(Q2,y,x,mk2,mi2,mj2,
+            sub.p_real->p_fl[sub.m_i],sub.p_real->p_fl[sub.m_j]);
     }
+    else {
+      // initial-state spectator
+      kt2 = p_mcatnlo->KinII()->GetKT2(Q2,y,x,mk2,mi2,mj2,
+            sub.p_real->p_fl[sub.m_i],sub.p_real->p_fl[sub.m_j]);
+    }
+
     return kt2;
   }
   THROW(fatal_error,"Implement me");
@@ -328,6 +330,6 @@ operator()(const NLOMC_Key &key) const
 
 void ATOOLS::Getter<NLOMC_Base,NLOMC_Key,CS_MCatNLO>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"The CSS MC@NLO generator"; 
+{
+  str<<"The CSS MC@NLO generator";
 }
