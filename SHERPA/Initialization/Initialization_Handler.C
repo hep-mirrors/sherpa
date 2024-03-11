@@ -787,7 +787,8 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     if (!mpilibs.empty()) {
       std::string libname = mpilibs[Min(beam,mpilibs.size()-1)];
       if (m_pdflibs.find(libname)==m_pdflibs.end()) m_pdflibs.insert(libname);
-    }
+    } else if (!p_beamspectra->GetBeam(beam)->Bunch(0).IsLepton())
+      m_pdflibs.insert(deflib);
     m_defsets[PDF::isr::hard_subprocess][beam] = defset;
     // fix PDFs and default sets for the beam rescattering here
     // EPA is the only configuration at the moment where we allow
