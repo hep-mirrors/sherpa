@@ -317,6 +317,7 @@ void Beam_Parameters::RegisterEPADefaults() {
 void Beam_Parameters::RegisterPomeronDefaults() {
   m_settings["Pomeron"]["tMax"].SetDefault(1.);
   m_settings["Pomeron"]["xMax"].SetDefault(1.);
+  m_settings["Pomeron"]["xMin"].SetDefault(0.);
   // taken from H1 2006 Fit B, hep-ex/0606004
   m_settings["Pomeron"]["B"].SetDefault(5.5);
   m_settings["Pomeron"]["Alpha_intercept"].SetDefault(1.111);

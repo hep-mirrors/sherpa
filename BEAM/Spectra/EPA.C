@@ -35,6 +35,12 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
     THROW(fatal_error, "Specify either one or two values for `EPA:Q2Max'.");
   m_q2Max = (_dir > 0) ? q2Max.front() : q2Max.back();
 
+  std::vector<double> xmin{s["EPA"]["xMin"].GetTwoVector<double>()};
+  m_xmin = (_dir > 0) ? xmin.front() : xmin.back();
+
+  std::vector<double> xmax{s["EPA"]["xMax"].GetTwoVector<double>()};
+  m_xmax = (_dir > 0) ? xmax.front() : xmax.back();
+
   std::vector<double> pt_min{s["EPA"]["PTMin"].GetVector<double>()};
   if (pt_min.size() != 1 && pt_min.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `EPA:PTMin'.");
@@ -73,6 +79,8 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
 void EPA::RegisterDefaults() const {
   Settings &s = Settings::GetMainSettings();
   s["EPA"]["Q2Max"].SetDefault(3.0);
+  s["EPA"]["xMax"].SetDefault(1.);
+  s["EPA"]["xMin"].SetDefault(0.);
   s["EPA"]["PTMin"].SetDefault(0.0);
   s["EPA"]["Form_Factor"].SetDefault(m_beam.FormFactor());
   s["EPA"]["AlphaQED"].SetDefault(0.0072992701);
@@ -236,7 +244,7 @@ bool EPA::CalculateWeight(double x, double q2) {
   const double alpha = m_aqed;
   m_x = x;
   m_Q2 = q2;
-  if (x > 1. - m_mass / 2. / m_energy) {
+  if (x > 1. - m_mass / 2. / m_energy || x > m_xmax || x < m_xmin) {
     m_weight = 0.0;
     return true;
   }
