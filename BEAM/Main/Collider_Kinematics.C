@@ -135,8 +135,10 @@ void Collider_Kinematics::SetLimits() {
     m_xkey[i] =
         (IsZero(m_m[i], 1.e-13) ? -0.5 * std::numeric_limits<double>::max()
                                 : 2. * log(m_m[i] / p));
-    m_xkey[i + 2] = log(
-        Min(p_beams[i]->Xmax(), (e / p * (1.0 + sqrt(1.0 - sqr(m_m[i] / e))))));
+    if (p_beams[i]->Xmin() > 0.)
+      m_xkey[i] = Max(m_xkey[i], log(p_beams[i]->Xmin()));
+    m_xkey[i + 2] = log(Min(p_beams[i]->Xmax(),
+                            (e / p * (1.0 + sqrt(1.0 - sqr(m_m[i] / e))))));
     m_xkey[i + 4] = 0.;
   }
   // sprime's with masses - still need to check for masses

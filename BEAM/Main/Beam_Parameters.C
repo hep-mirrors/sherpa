@@ -1,14 +1,14 @@
-#include "BEAM/Main/Beam_Parameters.H"
-#include "BEAM/Main/Beam_Base.H"
-#include "BEAM/Spectra/Monochromatic.H"
-#include "BEAM/Spectra/Laser_Backscattering.H"
-#include "BEAM/Spectra/Fixed_Target.H"
-#include "BEAM/Spectra/EPA.H"
-#include "BEAM/Spectra/Pomeron.H"
-#include "BEAM/Spectra/DM_beam.H"
-#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/KF_Table.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "BEAM/Main/Beam_Parameters.H"
+#include "BEAM/Spectra/DM_beam.H"
+#include "BEAM/Spectra/Fixed_Target.H"
+#include "BEAM/Spectra/EPA.H"
+#include "BEAM/Spectra/Laser_Backscattering.H"
+#include "BEAM/Spectra/Monochromatic.H"
+#include "BEAM/Spectra/Pomeron.H"
 
 using namespace ATOOLS;
 using namespace BEAM;
@@ -202,7 +202,7 @@ Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
 
 Beam_Base * Beam_Parameters::InitializeFixed_Target(int num)
 {
-  double beam_energy        = (*this)("BEAM_ENERGIES",num); 
+  double beam_energy        = (*this)("BEAM_ENERGIES",num);
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
   Flavour beam_particle    = GetFlavour("BEAMS",num);
   return new Fixed_Target(beam_particle,beam_energy,beam_polarization,1-2*num);
@@ -296,12 +296,13 @@ void Beam_Parameters::RegisterEPADefaults() {
 }
 
 void Beam_Parameters::RegisterPomeronDefaults() {
-  m_settings["Pomeron"]["tMax"].SetDefault(1.e12);
+  m_settings["Pomeron"]["tMax"].SetDefault(1.);
   m_settings["Pomeron"]["xMax"].SetDefault(1.);
-  // taken from Goharipour:2018yov
-  m_settings["Pomeron"]["B"].SetDefault(7.0);
-  m_settings["Pomeron"]["Alpha_intercept"].SetDefault(1.0938);
-  m_settings["Pomeron"]["Alpha_slope"].SetDefault(0.);
+  m_settings["Pomeron"]["xMin"].SetDefault(0.);
+  // taken from H1 2006 Fit B, hep-ex/0606004
+  m_settings["Pomeron"]["B"].SetDefault(5.5);
+  m_settings["Pomeron"]["Alpha_intercept"].SetDefault(1.111);
+  m_settings["Pomeron"]["Alpha_slope"].SetDefault(0.06);
 }
 
 void Beam_Parameters::RegisterLaserDefaults() {
