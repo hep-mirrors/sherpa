@@ -171,15 +171,16 @@ Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
   // Check for colour connected parton-pairs including beam partons and
   // add soft gluons in between them if their invariant mass is too large.
   // This still needs debugging - therefore it is commented out.
-  if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist) ||
-      !m_decorrelator(p_softblob)) {
-    Reset();
-    m_fails++;
-    if (m_fails<=5) msg_Error()<<METHOD<<" failed. Will return new event\n";
-    return Return_Value::New_Event;
+  Return_Value::code rv = Return_Value::Success;
+  if (!m_kinematics.FillBlobs(bloblist)) {
+    msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
+    rv = Return_Value::New_Event;
+  } else if (!CheckBeamBreakup(bloblist) || !m_decorrelator(p_softblob)) {
+    msg_Error() << METHOD << " failed. Will return new event\n";
+    rv = Return_Value::New_Event;
   }
   Reset();
-  return Return_Value::Success;
+  return rv;
 }
 
 void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist,const bool & isrescatter) {

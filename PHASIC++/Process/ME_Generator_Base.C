@@ -336,6 +336,11 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
     p[0]=sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
     ampl->Leg(i)->SetMom(boost*p);
   }
+  for (int i = 0; i < 2; i++) {
+    if (rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0] <
+        -ampl->Leg(i)->Mom()[0])
+      return -1;
+  }
   msg_Debugging()<<"After shift: "<<*ampl<<"\n";
   return 1;
 }
