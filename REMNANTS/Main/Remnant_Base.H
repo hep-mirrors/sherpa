@@ -17,7 +17,8 @@ namespace REMNANTS {
       lepton = 2,
       hadron = 3,
       photon = 4,
-      pomeron = 5
+      pomeron = 5,
+      reggeon = 6
     };
   };
 

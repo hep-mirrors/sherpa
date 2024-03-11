@@ -24,6 +24,7 @@ namespace BEAM {
     simple_Compton       = 3,
     EPA                  = 4,
     Pomeron              = 5,
+    Reggeon              = 6,
     DM                   = 10,
     unknown              = 99
   };
@@ -52,8 +53,10 @@ namespace BEAM {
     void RegisterLaserDefaults();
     void RegisterEPADefaults();
     void RegisterPomeronDefaults();
+    void RegisterReggeonDefaults();
     void RegisterDarkMatterDefaults();
     void InitializeFlav(kf_code flav);
+
     Beam_Base * InitializeSimpleCompton(int);
     /*!
       Characteristic parameters for laser back scattering are read in and the spectrum is
@@ -72,6 +75,7 @@ namespace BEAM {
     Beam_Base * InitializeMonochromatic(int);
     Beam_Base * InitializeEPA(int);
     Beam_Base * InitializePomeron(int);
+    Beam_Base*  InitializeReggeon(int);
     Beam_Base * InitializeDM_beam(int);
   public:
     Beam_Parameters();

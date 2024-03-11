@@ -2,12 +2,14 @@ set(Spectra_SOURCES Monochromatic.C
                     Laser_Backscattering.C
                     EPA.C
                     Pomeron.C
+                    Reggeon.C
                     DM_beam.C)
 
 set(Spectra_HEADERS Monochromatic.H
                     Laser_Backscattering.H
                     EPA.H
                     Pomeron.H
+                    Reggeon.H
                     DM_beam.H)
 
 sherpa_create_git_info(Spectra)
