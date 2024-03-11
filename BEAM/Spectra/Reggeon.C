@@ -25,6 +25,9 @@ Reggeon::Reggeon(const Flavour _beam, const double _energy, const double _pol,
   std::vector<double> xMax{s["xMax"].GetTwoVector<double>()};
   m_xMax = (_dir > 0) ? xMax.front() : xMax.back();
 
+  std::vector<double> xMin{s["xMin"].GetTwoVector<double>()};
+  m_xMin = (_dir > 0) ? xMin.front() : xMin.back();
+
   std::vector<double> B{s["B"].GetTwoVector<double>()};
   m_B = (_dir > 0) ? B.front() : B.back();
 
@@ -44,7 +47,7 @@ bool Reggeon::CalculateWeight(double x, double q2)
 {
   m_x = x;
   m_Q2 = q2;
-  if (x > 1. - m_proton_mass / 2. / m_energy || x > m_xMax) {
+  if (x > 1. - m_proton_mass / 2. / m_energy || x > m_xMax || x < m_xMin) {
     m_weight = 0.;
     return true;
   }
