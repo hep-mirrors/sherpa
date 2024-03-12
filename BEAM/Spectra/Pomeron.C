@@ -84,7 +84,7 @@ void Pomeron::FixNormalisation()
   // according to Vadim Guzey, in Goharipour:2018yov they normalized the flux as
   // in hep-ex/0606004, after eq. 14
   double x    = 0.003;
-  double tmax = Min(2. * m_energy * (m_energy - m_proton_mass), m_tMax);
+  double tmax = 1.;
   double tmin = sqr(m_proton_mass * x) / (1 - x);
   m_A         = (m_B - 2. * m_alpha_slope * std::log(x)) /
         (std::pow(x, 2. - 2. * m_alpha_intercept) *
