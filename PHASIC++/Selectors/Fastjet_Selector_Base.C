@@ -45,8 +45,8 @@ Fastjet_Selector_Base::Fastjet_Selector_Base(const std::string& name,
   if (ee) {
     p_jdef=new fjcore::JetDefinition(fjcore::ee_kt_algorithm);
     m_eekt=1;
-  }
-  else p_jdef=new fjcore::JetDefinition(ja,m_delta_r);
+  } else
+    p_jdef = new fjcore::JetDefinition(ja, m_delta_r, recom);
 
   m_smin = Max(sqr(m_nj*m_ptmin),sqr(m_nj*m_etmin));
 }
