@@ -57,8 +57,8 @@ int Lorentz_IS::Construct(Splitting &s,const int mode) const
     if (a[i]==s.p_s) k=i;
   }
   double gam(2.*qa*Kt), t(s.m_t/gam);
-  s.m_y=t/(1.0-1.0/s.m_z+t);
-  s.m_J=(1.-1./s.m_z)/(1.-1./s.m_z+t);
+  s.m_y=t/(1.0-1.0/s.m_z);
+  s.m_J=1.;
   s.m_x=s.m_z;
   Ant_Args ff(s.m_y,s.m_x,s.m_phi,1);
   ff.m_b=s.m_rcl;
@@ -95,10 +95,11 @@ bool Lorentz_IS::Cluster
   ClusterAntenna(ff,i,j,k,s.m_mij2);
   if (ff.m_stat<0) return false;
   SetParams(s);
+  Vec4D n(K+s.m_pj);
   double gam(2.*ff.m_pijt*ff.m_Kt);
-  s.m_t=2.*(s.m_pi*s.m_pj)*(s.m_pj*K)/(s.m_pi*K);
+  s.m_t=2.*(s.m_pi*s.m_pj)*(s.m_pj*n)/(s.m_pi*n);
   s.m_x=s.m_z=ff.m_z;
-  s.m_J=(1.-1./s.m_z)/(1.-1./s.m_z+s.m_t/gam);
+  s.m_J=1.;
   s.m_phi=ff.m_phi;
   s.m_kap=K.Abs2()/gam;
   s.m_kt2=s.m_t;
