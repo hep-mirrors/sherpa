@@ -232,15 +232,13 @@ The scale setter options which are currently available are
   Therein the parameters of the jet algorithm to be used to define the
   jets are given as a comma separated list of
 
-  * the jet algorithm ``A:kt,antikt,cambridge,siscone`` (default
-    ``antikt``)
+  * the jet algorithm ``A:kt,antikt,cambridge`` (default
+    ``kt``)
 
   * phase space restrictions, i.e. ``PT:<min-pt>``, ``ET:<min-et>``,
     ``Eta:<max-eta>``, ``Y:<max-rap>`` (otherwise unrestricted)
 
   * radial parameter ``R:<rad-param>`` (default ``0.4``)
-
-  * f-parameter for Siscone ``f:<f-param>`` (default ``0.75``)
 
   * recombination scheme ``C:E,pt,pt2,Et,Et2,BIpt,BIpt2``
     (default ``E``)
@@ -303,10 +301,10 @@ The scale setter options which are currently available are
      during clustering and the lowest invariant mass in the core process.
 
 
-:option:`VBF`                                                                                                                                                                                                                                                                                                                
+:option:`VBF`
   Very similar to the :option:`METS` scale setter and thus also applicable in multi-leg merged setups, but
   catering specifically to topologies with two colour-separated parton lines like in VBF/VBS
-  processes for the incoming quarks. 
+  processes for the incoming quarks.
 
 
 
@@ -365,7 +363,7 @@ The definition of ``MU_F2`` and ``MU_Q2`` are passed directly on from the core s
 
 The functional form of the core scale can be defined by the user in the ``MEPS``
 settings block as follows:
-  
+
 .. code-block:: yaml
 
    MEPS:
@@ -411,7 +409,7 @@ Possible choices for the core scale setter are:
 Unordered cluster histories are by default not allowed. Instead, if during
 clustering a new smaller scale is encountered, the previous maximal scale
 will be used, or alternatively a user-defined scale specified, e.g.
-  
+
 .. code-block:: yaml
 
    MEPS:

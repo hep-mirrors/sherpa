@@ -57,7 +57,7 @@ event.  Their respective keywords are
   NJettiness from :cite:`Stewart2010tn`, where ``<algo>`` specifies
   the jet finding algorithm to determine the hard jet directions and
   ``<N>`` is their multiplicity.
-  ``algo=kt|antikt|cambridge|siscone,PT:<ptmin>,R:<dR>[,[ETA:<etamax>,Y:<ymax>]]``
+  ``algo=kt|antikt|cambridge,PT:<ptmin>,R:<dR>[,[ETA:<etamax>,Y:<ymax>]]``
 
 .. _One particle selectors:
 
@@ -238,7 +238,6 @@ Their respective syntax and defaults are
        PTMin: 0.0
        ETMin: 0.0
        DR: 0.4
-       f: 0.75        # Siscone f parameter
        EtaMax: None
        YMax: None
        Nb: -1
@@ -262,11 +261,10 @@ b-quarks which shall nonetheless satisfy jet criteria.
 The second option :option:`FastjetFinder` allows to use the `FastJet
 <http://www.fastjet.fr>`_ plugin, through fjcore.
 It takes the following arguments: ``<Algorithm>`` can take the values
-``kt,antikt,cambridge,siscone,eecambridge,jade``, ``<N>`` is the
+``kt,antikt,cambridge,eecambridge``, ``<N>`` is the
 minimum number of jets to be found, ``<PTMin>`` and ``<ETMin>`` are
 the minimum transverse momentum and/or energy, ``<DR>`` is the radial
-parameter.  Optional arguments are: ``<f>`` (default 0.75, only
-relevant for the Siscone algorithm), ``<EtaMax>`` and ``<YMax>`` as
+parameter.  Optional arguments are: ``<EtaMax>`` and ``<YMax>`` as
 maximal absolute (pseudo-)rapidity, ``<Nb>`` and ``<Nb2>`` set the
 number of required b-jets, where for the former both b and anti-b
 quarks are counted equally towards b-jets, while for the latter they
@@ -293,13 +291,12 @@ selector is
        PTMin: 0.0
        ETMin: 0.0
        DR: 0.4
-       f: 0.75
        EtaMax: None
        YMax: None
        BMode: 0
 
 wherein ``Algorithm`` can take the values
-``kt,antikt,cambridge,siscone,eecambridge,jade``.  In the algebraic
+``kt,antikt,cambridge,eecambridge``.  In the algebraic
 ``<expression>``, ``MU_n2`` (n=2..njet+1) signify the nodal values of
 the jets found and ``p[i]`` are their momenta. For details see
 :ref:`Scale setters`. For example, in lepton pair production in
