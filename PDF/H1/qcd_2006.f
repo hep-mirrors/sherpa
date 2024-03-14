@@ -9,7 +9,7 @@
 * Frank-Peter Schilling (frank-peter.schilling@cern.ch)               *
 * Paul Newman (newmanpr@mail.desy.de)                                 *
 * ------------------------------------------------------------------- *
-* This routine returns the pomeron dpdf's (z*pdf(z,Q^2)) and the      * 
+* This routine returns the pomeron dpdf's (z*pdf(z,Q^2)) and the      *
 * pomeron and reggeon structure functions F2_{IP,IR}(beta,Q^2),       *
 * FL_{IP,IR}(beta,Q^2), F2c_{IP,IR}(beta,Q^2), FLc_{IP,IR}(beta,Q^2)  *
 * Range of validity: 0.0043 < z < 0.8 ; 8.5 < Q^2 < 1600 GeV^2        *
@@ -70,11 +70,11 @@
 C     Initialise Parameterisation from data statements
 
       IF(IFIT.GT.0) THEN
-         IF(IFIT.EQ.1) THEN 
-           WRITE(6,*)'[QCD_2006] Initialising H1 2006 DPDF Fit A'
+         IF(IFIT.EQ.1) THEN
+c           WRITE(6,*)'[QCD_2006] Initialising H1 2006 DPDF Fit A'
            CALL I_2006_FITA
-         ELSEIF(IFIT.EQ.2) THEN 
-           WRITE(6,*)'[QCD_2006] Initialising H1 2006 DPDF Fit B'
+         ELSEIF(IFIT.EQ.2) THEN
+c           WRITE(6,*)'[QCD_2006] Initialising H1 2006 DPDF Fit B'
            CALL I_2006_FITB
          ELSE
            WRITE(6,*)'[QCD_2006] Error: Unknown ifit=',ifit
@@ -86,14 +86,14 @@ c     health warning
 
       if (z<0.0043d0.or.z>0.8d0
      &    .or.q2.lt.8.5d0.or.q2.gt.1600.d0) then
-         if (iwarn.lt.maxwarn) then
-            write(6,*)'[QCD_2006] Warning: using DPDFs outside range '//
-     &        ' of validity: z,q2:',z,q2
-            iwarn=iwarn+1
-            if (iwarn.eq.maxwarn) then
-              write(6,*)'[QCD_2006] Last warning.'
-            endif
-         endif
+c         if (iwarn.lt.maxwarn) then
+c            write(6,*)'[QCD_2006] Warning: using DPDFs outside range '//
+c     &        ' of validity: z,q2:',z,q2
+c            iwarn=iwarn+1
+c            if (iwarn.eq.maxwarn) then
+c              write(6,*)'[QCD_2006] Last warning.'
+c            endif
+c         endif
       endif
 
 C     Initialise xpq
