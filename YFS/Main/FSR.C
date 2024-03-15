@@ -362,7 +362,7 @@ bool FSR::F(ATOOLS::Vec4D_Vector &k) {
     if (m_eikonal_mode == 1) {
       m_f    = Eikonal(k[i]);
       m_fbar = EikonalInterferance(k[i]);
-      // m_fbar *= m_dip_sp/m_sprim;
+      m_fbar *= m_dip_sp/m_sprim;
       // m_fbar = m_alpi / (2  * M_PI) * m_fbarvec[i];
 
     }
