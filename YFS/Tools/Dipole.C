@@ -1,4 +1,4 @@
-YFS/Tools/Dipole.C#include "YFS/Tools/Dipole.H"
+#include "YFS/Tools/Dipole.H"
 
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
