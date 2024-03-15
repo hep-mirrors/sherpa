@@ -43,7 +43,7 @@ FSR::FSR()
   s["FSR_NBAR"].SetDefault(0);
   s["MASSIVE_NBAR"].SetDefault(0);
   s["FSR_EIK"].SetDefault(0);
-  s["FSR_CRU"].SetDefault(1);
+  s["FSR_CRU"].SetDefault(0);
   s["FSR_NGAMMA"].SetDefault(-1);
   s["FSR_CUT"].SetDefault(1e-2*m_vmin);
   m_Edelta = s["FSR_EMIN"].Get<double>();
@@ -360,9 +360,9 @@ bool FSR::F(ATOOLS::Vec4D_Vector &k) {
     m_del1.push_back(del1);
     m_del2.push_back(del2);
     if (m_eikonal_mode == 1) {
-      m_f    = p_dipole->Eikonal(k[i]);
-      m_fbar = p_dipole->EikonalInterferance(k[i]);
-      m_fbar *= m_dip_sp/m_sprim;
+      m_f    = Eikonal(k[i]);
+      m_fbar = EikonalInterferance(k[i]);
+      // m_fbar *= m_dip_sp/m_sprim;
       // m_fbar = m_alpi / (2  * M_PI) * m_fbarvec[i];
 
     }

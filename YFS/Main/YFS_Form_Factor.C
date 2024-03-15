@@ -560,11 +560,11 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
   TBvirt = m_alpi*(
     (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)) 
        // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-      //  +0.5*zeta*log(ta*zeta/(m1*m2))
-      //   -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      // +DiLog(1./zeta) -1.0
-      // +0.5*(zeta -1.0)*log(m1/m2)
-      // -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+       +0.5*zeta*log(ta*zeta/(m1*m2))
+        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      +DiLog(1./zeta) -1.0
+      +0.5*(zeta -1.0)*log(m1/m2)
+      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
        );
   return TBvirt;
 }

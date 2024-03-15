@@ -127,7 +127,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
     m_flav_label[fl[2]] = 2;
     m_flav_label[fl[3]] = 3;
     for (int i = 2; i < fl.size(); i++) {
-      if(fl[i].IsChargedLepton()){
+      if(fl[i].IntCharge()!=0){
         ff.push_back(fl[i]);
         mm.push_back(mom[i]);
         bm.push_back(m_bornmomenta[i]);
@@ -419,12 +419,12 @@ double Define_Dipoles::FormFactor(){
   }
     if(!m_hidephotons){
       for(auto &D: m_dipolesFF){
-        form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetMomenta(0), D.GetMomenta(1), sqrt(m_s) / 2.);
+        form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
       }
     }
   if(m_ifisub==1){
     for(auto &D: m_dipolesIF){
-      form += D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetMomenta(1));
+      form += D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
     }
   }
   return exp(form); 
@@ -609,20 +609,18 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
 
-      sq = (Q+k).Abs2(); 
-      sx = (Q).Abs2();
+      sq = (Q).Abs2(); 
+      sx = (Q-k).Abs2();
       // flux = Propagator(sx,1)/Propagator(sq,1);
       flux = (sx/sq);
-      return flux;
+      // return flux;
     }
 
   }
   if(m_fsrmode==1){
     for (auto &D : m_dipolesFF) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
-      QX = D.GetMomenta(0)+D.GetMomenta(1);
-
-      double mshiff = fabs(QX.Mass()-91.2);
+      QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       // if(k.E()<5){
       sq = (Q).Abs2();
       sx = (Q+k).Abs2();

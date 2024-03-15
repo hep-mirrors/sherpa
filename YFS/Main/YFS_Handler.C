@@ -369,8 +369,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       p_fsr->HidePhotons();
       m_FSRPhotons   = p_fsr->GetPhotons();
       Dip->AddPhotonsToDipole(m_FSRPhotons);
-      
-      // Dip->BoostLab();
+      // Dip->Boost();
       // p_fsr->HidePhotons();
       // p_fsr->HidePhotons(m_FSRPhotons);
       // Dip->AddPhotonsToDipole(m_FSRPhotons);
@@ -464,8 +463,11 @@ void YFS_Handler::CalculateBeta() {
       p_realff->SetMode(0);
       p_realff->SetIncoming(p_dipoles->GetDipoleII());
       p_realff->CalculateVirt();
-      p_realff->Calculate();
-      realISR = p_realff->GetReal();
+      // p_realff->Calculate();
+      // realISR = p_realff->GetReal();
+      for(auto const &k: p_dipoles->GetDipoleII()->GetPhotons()){
+          realISR += p_dipoles->GetDipoleII()->EEX(k)*m_born/p_dipoles->GetDipoleII()->Eikonal(k)-m_born;
+        }
     }
     if (m_fsrmode >= 1) {
       p_realff->SetMode(m_fsrmode);
@@ -473,8 +475,12 @@ void YFS_Handler::CalculateBeta() {
            Dip != p_dipoles->GetDipoleFF()->end(); ++Dip)  {
         p_realff->SetIncoming(Dip, m_reallab, m_FSRPhotons, p_fsr->m_yini, p_fsr->m_zini);
         p_realff->CalculateVirt();
-        p_realff->Calculate();
-        realFSR += p_realff->GetReal();// - p_realff->m_beta01; // Subtract common virtual correction
+        // p_realff->Calculate();
+        for(auto const &k: Dip->GetPhotons()){
+          realFSR += Dip->EEX(k)*m_born/Dip->Eikonal(k)-m_born;
+        }
+        // PRINT_VAR(realFSR);
+        // PRINT_VAR(p_realff->GetReal());
       }
       if (m_use_fsr_beta == 0) realFSR = 0;
     }
@@ -508,7 +514,7 @@ double YFS_Handler::CalculateNLO(){
   p_nlo->m_eikmom = m_plab;
   p_nlo->SetBorn(m_born);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  p_nlo->m_FSRPhotons = m_FSRPhotons;
+  p_nlo->m_FSRPhotons = m_fsrphotonsforME;
   return p_nlo->CalculateNLO();
 }
 
@@ -533,7 +539,7 @@ void YFS_Handler::GenerateWeight() {
   CalculateBeta();
   m_yfsweight*=m_real;
   m_yfsweight *= m_formfactor;
-  if (IsBad(m_yfsweight) || abs(m_yfsweight) > 1e12) {
+  if (IsBad(m_yfsweight)) {
     msg_Error() << METHOD << "\n YFS weight is "<<m_yfsweight<<std::endl
                 << "ISR Weight = " << m_isrWeight
                 << "\n FSR Weight = " << m_fsrWeight
