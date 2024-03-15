@@ -26,7 +26,8 @@ set(Phys_SOURCES Fragmentation_Base.C
                  Weight_Info.C
                  Variations.C
                  Weights.C
-                 Hard_Process_Variation_Generator.C)
+                 Hard_Process_Variation_Generator.C
+                 Pion_FormFactor.C)
 
 set(Phys_HEADERS fjcore.hh
                  Fragmentation_Base.H
@@ -57,7 +58,8 @@ set(Phys_HEADERS fjcore.hh
                  Weight_Info.H
                  Variations.H
                  Weights.H
-                 Hard_Process_Variation_Generator.H)
+                 Hard_Process_Variation_Generator.H
+                 Pion_FormFactor.H)
 
 sherpa_create_git_info(Phys)
  
