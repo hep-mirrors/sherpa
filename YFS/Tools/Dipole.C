@@ -1,4 +1,4 @@
-#include "YFS/Tools/Dipole.H"
+YFS/Tools/Dipole.C#include "YFS/Tools/Dipole.H"
 
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
@@ -170,14 +170,14 @@ void Dipole::Boost() {
     // Check that the final state fermions
     // are in their own restframe;
     Vec4D Q = m_momenta[0]+m_momenta[1];
-    if(!IsEqual(0,Q.PSpat())){
-      msg_Error()<<"Dipole is in the wrong frame\n";
-    }
+    // if(!IsEqual(0,Q.PSpat())){
+    //   msg_Error()<<"Dipole is in the wrong frame\n";
+    // }
     if(m_ghost.size()!=0){
       Q = m_ghost[0]+m_ghost[1];
-      if(!IsEqual(0,Q.PSpat())){
-        msg_Error()<<"Dipole ghost is in the wrong frame";
-      }
+      // if(!IsEqual(0,Q.PSpat())){
+        // msg_Error()<<"Dipole ghost is in the wrong frame";
+      // }
     }
 
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
@@ -292,9 +292,9 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
 }
 
 double Dipole::EEX(const Vec4D &k){
-  double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
-  double a = k*m_bornmomenta[0]/p1p2;
-  double b = k*m_bornmomenta[1]/p1p2;
+  double p1p2 = m_momenta[0]*m_momenta[1];
+  double a = k*m_momenta[0]/p1p2;
+  double b = k*m_momenta[1]/p1p2;
   double ap = a/(1.+a+b);
   double bp = b/(1.+a+b);
     // double V = 1+m_gamma/2.;
@@ -361,8 +361,8 @@ double Dipole::EikonalMassless(Vec4D k, Vec4D p1, Vec4D p2) {
 
 
 double Dipole::Eikonal(Vec4D k) {
-  Vec4D p1 = m_bornmomenta[0];
-  Vec4D p2 = m_bornmomenta[1];
+  Vec4D p1 = m_momenta[0];
+  Vec4D p2 = m_momenta[1];
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 

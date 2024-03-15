@@ -190,9 +190,9 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	double tot,colltot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb   = p_dipoles->CalculateRealSubEEX(kk);
-	
+
 	if (!CheckPhotonForReal(k)) { 
-		rcoll = p_dipoles->CalculateEEXReal(kk)*m_born;
+		rcoll  = p_dipoles->CalculateEEXReal(kk)*m_born;
 		subb   = p_dipoles->CalculateRealSubEEX(kk);
 		if(m_no_subtraction) return rcoll/subb;
 		return ( rcoll/subb - m_born);
@@ -220,7 +220,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 		m_histograms1d["Real_Flux"]->Insert(flux);
   }
   if(m_no_subtraction) return r/subloc;
-	return tot;
+	return tot;// / flux;
 }
 
 double NLO_Base::CalculateRealVirtual() {
@@ -423,11 +423,11 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		// pRot2.Rotate(p[i]);
+		pRot2.Rotate(p[i]);
 		boostLab.Boost(p[i]);
 	}
-	// pRot2.Rotate(k);
-	// boostLab.Boost(k);
+	pRot2.Rotate(k);
+	boostLab.Boost(k);
 }
 
 
