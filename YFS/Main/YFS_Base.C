@@ -62,7 +62,7 @@ void YFS_Base::RegisterDefaults(){
   s["CHECK_POLES"].SetDefault(0);
   s["CHECK_REAL"].SetDefault(0);
   s["CHECK_REAL_REAL"].SetDefault(0);
-  s["CHECK_VIRT_BORN"].SetDefault(1);
+  s["CHECK_VIRT_BORN"].SetDefault(0);
   s["VIRTUAL_ONLY"].SetDefault(0);
   s["REAL_ONLY"].SetDefault(0);
   s["USE_MODEL_ALPHA"].SetDefault(0);
