@@ -20,9 +20,12 @@ namespace ALARIC {
 
     double Value(const Splitting &s) const
     {
-      double B=1.0-s.m_x;
+      double xi(s.m_x);
+      if (p_sk->PS()->KernelScheme()&1)
+	xi=s.m_x+s.m_y-s.m_x*s.m_y*(1.0+s.m_kap);
+      double B=1.0-xi;
+      if (s.m_mec&1) B=1.-s.m_x-2.*s.m_y*(1.-s.m_y/(1.-s.m_x));
       B*=1.0+p_sk->GF()->K(s);
-      if (s.m_mec&1) B-=2.*s.m_y*(1.-s.m_y/(1.-s.m_x));
       return B;
     }
 
@@ -62,7 +65,7 @@ namespace ALARIC {
       double xi(s.m_x);
       if (p_sk->PS()->KernelScheme()&1)
 	xi=s.m_x+s.m_y-s.m_x*s.m_y*(1.0+s.m_kap);
-      double B=2.0*(1.0-xi)/s.m_x+s.m_x;
+      double B=2.0*(1.0-xi)/xi+xi;
       return B;
     }
 
@@ -99,8 +102,12 @@ namespace ALARIC {
 
     double Value(const Splitting &s) const
     {
-      double B=1.0-2.0*s.m_x*(1.0-s.m_x);
-      if (s.m_mec&1) B+=s.m_y*(s.m_y+2.*s.m_x);
+      double xi(s.m_x);
+      if (p_sk->PS()->KernelScheme()&1)
+	xi=s.m_x+s.m_y-s.m_x*s.m_y*(1.0+s.m_kap);
+      double B=1.0-2.0*xi*(1.0-xi);
+      if (s.m_mec&1) B=1.0-2.0*s.m_x*(1.0-s.m_x)
+		       +s.m_y*(s.m_y+2.*s.m_x);
       return B;
     }
 

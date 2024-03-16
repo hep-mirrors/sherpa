@@ -1,7 +1,7 @@
 #include "ALARIC++/Shower/Lorentz_FS.H"
 
 #include "MODEL/Main/Single_Vertex.H"
-#include "ALARIC++/Shower/Kernel.H"
+#include "ALARIC++/Shower/Shower.H"
 #include "ATOOLS/Math/Random.H"
 
 using namespace ATOOLS;
@@ -20,7 +20,7 @@ namespace ALARIC {
 
     double Value(const Splitting &s) const
     {
-      double B(1.0-s.m_z);
+      double B(1.0-s.m_x);
       B*=1.0+p_sk->GF()->K(s);
       return (s.m_clu?1.0:(m_swap?1.0-s.m_z:s.m_z))*B;
     }
@@ -57,7 +57,7 @@ namespace ALARIC {
     double Value(const Splitting &s) const
     {
       if (s.m_t<2.*sqr(m_fl[1].Mass(true))) return 0.;
-      double B(1.0-2.0*s.m_z*(1.0-s.m_z));
+      double B(1.0-2.0*s.m_x*(1.0-s.m_x));
       return (s.m_clu?1.0:(m_swap?1.0-s.m_z:s.m_z))*B;
     }
 
