@@ -79,6 +79,8 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_muf=s["CSS_FACSCALE_SCHEME"].Get<int>();
   m_mec=s["CSS_ME_CORRECTION"].Get<int>();
   m_sfs=s["CSS_KERNEL_SCHEME"].Get<int>();
+  m_es[0]=s["CSS_FS_EVOL_SCHEME"].Get<int>();
+  m_es[1]=s["CSS_IS_EVOL_SCHEME"].Get<int>();
   m_pdfmin[0]=s["CSS_PDF_MIN"].Get<double>();
   m_pdfmin[1]=s["CSS_PDF_MIN_X"].Get<double>();
   m_maxem=s["CSS_MAXEM"].Get<size_t>();

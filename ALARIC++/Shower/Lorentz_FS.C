@@ -21,21 +21,25 @@ double Lorentz_FS_Rad::Jacobian(const Splitting &s) const
 int Lorentz_FS_Rad::Construct(Splitting &s,const int mode) const
 {
   if (mode&1) return Update(s,mode);
-  size_t ij, k, iinK(0);
-  Vec4D qa(s.p_c->Mom()), Kt;
+  size_t ij, k;
+  Vec4D qa(s.p_c->Mom()), Kt(s.m_Kt);
   const Amplitude &a(*s.p_c->Ampl());
   for (size_t i(0);i<a.size();++i) {
-    if (s.m_rcl[i]&2) {
-      Kt+=a[i]->Mom();
-      if (a[i]==s.p_c) iinK=1;
-    }
     if (a[i]==s.p_c) ij=i;
     if (a[i]==s.p_s) k=i;
   }
-  if (iinK) { Kt=-Kt; }
   double gam(2.*qa*Kt), t(s.m_t/gam);
-  s.m_y=t/(1.-s.m_z+t);
-  s.m_J=(1.-s.m_z)/(1.-s.m_z+t);
+  if (p_sk->PS()->EvolScheme(0)==0) {
+    s.m_y=t/(1.-s.m_z);
+    s.m_J=1.;
+  }
+  else if (p_sk->PS()->EvolScheme(0)==1) {
+    s.m_y=t/(1.-s.m_z+t);
+    s.m_J=(1.-s.m_z)/(1.-s.m_z+t);
+  }
+  else {
+    THROW(not_implemented,"Unknown evolution scheme");
+  }
   s.m_x=s.m_z;
   Ant_Args ff(s.m_y,s.m_x,s.m_phi);
   ff.m_b=s.m_rcl;
@@ -58,6 +62,10 @@ int Lorentz_FS_Rad::Construct(Splitting &s,const int mode) const
   s.m_kap=Kt.Abs2()/gam;
   s.m_p=ff.m_p;
   s.m_kt2=s.m_t;
+  s.m_K=Vec4D();
+  for (size_t i(0);i<a.size();++i)
+    if (s.m_rcl[i]&2 && a[i]!=s.p_c) s.m_K+=s.m_p[i];
+  if (s.m_iink) s.m_K=-s.m_K-s.m_pi-s.m_pj;
   if (s.m_kt2<s.m_t0) return -1;
   return 1;
 }
@@ -69,23 +77,38 @@ bool Lorentz_FS_Rad::Cluster
 {
   Ant_Args ff;
   ff.m_b=s.m_rcl;
-  Vec4D K;
+  s.m_K=Vec4D();
   for (size_t l(0);l<a->Legs().size();++l) {
-    if ((s.m_rcl[l]&2) && l!=j) K+=a->Leg(l)->Mom();
+    if (s.m_rcl[l]&2) {
+      if (l!=j) s.m_K+=a->Leg(l)->Mom();
+      if (l==i) s.m_iink=1;
+    }
     ff.m_p.push_back(a->Leg(l)->Mom());
   }
+  if (s.m_iink) s.m_K=-s.m_K-s.m_pj;
   ClusterAntenna(ff,i,j,k,s.m_mij2);
   if (ff.m_stat<0) return false;
   SetParams(s);
   double gam(2.*ff.m_pijt*ff.m_Kt);
-  s.m_t=2.*(s.m_pi*s.m_pj)*(s.m_pj*K)/(s.m_pi*K);
   s.m_x=s.m_z=ff.m_z;
-  s.m_J=(1.-s.m_z)/(1.-s.m_z+s.m_t/gam);
+  if (p_sk->PS()->EvolScheme(0)==0) {
+    Vec4D n(s.m_K+s.m_pj);
+    s.m_t=2.*(s.m_pi*s.m_pj)*(s.m_pj*n)/(s.m_pi*n);
+    s.m_J=1.;
+  }
+  else if (p_sk->PS()->EvolScheme(0)==1) {
+    s.m_t=2.*(s.m_pi*s.m_pj)*(s.m_pj*s.m_K)/(s.m_pi*s.m_K);
+    s.m_J=(1.-s.m_z)/(1.-s.m_z+s.m_t/gam);
+  }
+  else {
+    THROW(not_implemented,"Unknown evolution scheme");
+  }
   s.m_phi=ff.m_phi;
-  s.m_kap=K.Abs2()/gam;
-  s.m_kt2=s.m_t;
+  s.m_kap=s.m_K.Abs2()/gam;
   s.m_p=ff.m_p;
   s.m_Kt=ff.m_Kt;
+  s.m_kt2=s.m_t;
+  if (s.m_kt2<s.m_t0) return false;
   return true;
 }
 

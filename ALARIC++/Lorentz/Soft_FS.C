@@ -36,9 +36,8 @@ namespace ALARIC {
 
     double Value(const Splitting &s) const
     {
-      Vec4D pi(s.m_pi), pk(s.m_pk), pj(s.m_pj);
+      Vec4D pi(s.m_pi), pk(s.m_pk), pj(s.m_pj), n(s.m_K+s.m_pj);
       if (pk[0]<0.0) pk=-pk;
-      Vec4D n(s.m_Kt+s.p_c->Mom()-s.m_pi);
       double sij(pi*pj), sik(pi*pk), skj(pj*pk);
       double D(sij*(pk*n)+skj*(pi*n));
       if (D==0.0) return 0.0;
