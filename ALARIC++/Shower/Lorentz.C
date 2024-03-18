@@ -105,9 +105,14 @@ bool Lorentz::SetLimits(Splitting &s) const
   s.m_Q2=dabs(s.m_q2-s.m_mi2-s.m_ml2-s.m_mj2-s.m_mk2);
   if (!s.m_clu) {
     s.m_Kt=Vec4D();
+    s.m_iink=0;
     const Amplitude &a(*s.p_c->Ampl());
     for (size_t i(0);i<a.size();++i)
-      if (s.m_rcl[i]&2) s.m_Kt+=a[i]->Mom();
+      if (s.m_rcl[i]&2) {
+	s.m_Kt+=a[i]->Mom();
+	if (a[i]==s.p_c) s.m_iink=1;
+      }
+    if (s.m_iink) s.m_Kt=-s.m_Kt;
   }
   s.m_eta=s.p_c->GetXB();
   return true;

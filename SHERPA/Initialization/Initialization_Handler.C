@@ -258,9 +258,11 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_TC_ENHANCE"].SetDefault(1.0);
   s["CSS_COUPLING_SCHEME"].SetDefault(1);
   s["CSS_FACSCALE_SCHEME"].SetDefault(0);
-  s["CSS_ME_CORRECTION"].SetDefault(1);
+  s["CSS_ME_CORRECTION"].SetDefault(0);
   s["CSS_KERNEL_TYPE"].SetDefault(15);
   s["CSS_KERNEL_SCHEME"].SetDefault(1);
+  s["CSS_IS_EVOL_SCHEME"].SetDefault(0);
+  s["CSS_FS_EVOL_SCHEME"].SetDefault(0);
   s["NLO_CSS_RECALC_FACTOR"].SetDefault(2.0);
   s["NLO_CSS_PSMODE"].SetDefault(0);
   s["NLO_CSS_WEIGHT_CHECK"].SetDefault(0);
