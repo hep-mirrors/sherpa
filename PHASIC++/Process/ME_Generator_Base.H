@@ -30,6 +30,9 @@ namespace PHASIC {
     template <typename T>
     void SetParameter(const std::string& param, const T& def);
 
+    int ShiftMassesDefault(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
+    int ShiftMassesDIS(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
+
   protected:
 
     int  m_massmode;
