@@ -475,7 +475,7 @@ void YFS_Handler::CalculateBeta() {
         p_realff->SetIncoming(Dip, m_reallab, m_FSRPhotons, p_fsr->m_yini, p_fsr->m_zini);
         p_realff->CalculateVirt();
         // p_realff->Calculate();
-        for(auto const &k: Dip->GetPhotons()){
+        for(auto const &k: m_fsrphotonsforME){
           realFSR += Dip->EEX(k)*m_born/Dip->Eikonal(k)-m_born;
         }
         // PRINT_VAR(realFSR);
