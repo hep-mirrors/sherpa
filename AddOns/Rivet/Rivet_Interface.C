@@ -451,8 +451,8 @@ bool Rivet_Interface::Finish()
   const auto& xs = p_eventhandler->TotalXSMPI();
   const auto& err = p_eventhandler->TotalErrMPI();
 #else
-  const auto& xs = p_eventhandler->TotalXS() 
-  const auto& err = p_eventhandler->TotalErr()
+  const auto& xs = p_eventhandler->TotalXS();
+  const auto& err = p_eventhandler->TotalErr();
 #endif
   std::map<std::string, double> xs_wgts;
   std::map<std::string, double> err_wgts;
