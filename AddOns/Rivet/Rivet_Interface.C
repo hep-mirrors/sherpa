@@ -39,7 +39,7 @@ namespace SHERPARIVET {
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
 
-    int m_loglevel, m_ignorebeams, m_skipweights;
+    int m_loglevel, m_ignorebeams, m_skipmerge, m_skipweights;
     double m_weightcap, m_nlosmearing;
     std::string m_matchweights, m_unmatchweights, m_nomweight;
     std::vector<std::string> m_analyses;
@@ -95,11 +95,6 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   if (m_outpath.rfind('/')!=std::string::npos)
     MakeDir(m_outpath.substr(0,m_outpath.rfind('/')), true);
 
-  // add a MPI rank specific suffix if necessary
-#if defined(USING__MPI) && !defined(USING__RIVET4)
-  if (mpi->Size()>1)
-    m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
-#endif
 }
 
 Rivet_Interface::~Rivet_Interface()
@@ -258,6 +253,7 @@ bool Rivet_Interface::Init()
     m_loglevel = s["-l"].SetDefault(1000000).Get<int>();
     m_histointerval = s["HISTO_INTERVAL"].SetSynonyms({"--histo-interval"}).SetDefault(0).Get<size_t>();
     m_ignorebeams = s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>();
+    m_skipmerge = s["SKIP_MERGE"].SetSynonyms({"SKIPMERGE", "--skip-merge"}).SetDefault(0).Get<int>();
     m_skipweights = s["SKIP_WEIGHTS"].SetSynonyms({"SKIPWEIGHTS", "--skip-weights"}).SetDefault(0).Get<int>();
     m_weightcap = s["WEIGHT_CAP"].SetSynonyms({"--weight-cap"}).SetDefault(0.0).Get<double>();
     m_nlosmearing = s["NLO_SMEARING"].SetSynonyms({"--nlo-smearing"}).SetDefault(0.0).Get<double>();
@@ -267,6 +263,14 @@ bool Rivet_Interface::Init()
     m_analyses = s["ANALYSES"].SetSynonyms({"ANALYSIS", "-a", "--analyses"})
                               .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
 
+    // add a MPI rank specific suffix if necessary
+#if defined(USING__MPI) && defined(USING__RIVET4)
+    if (m_skipmerge && mpi->Size()>1)
+      m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
+#elif defined(USING__MPI)
+    if (mpi->Size()>1)
+      m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
+#endif
     // configure HepMC interface
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
       m_hepmc.Ignore(m_ignoreblobs[i]);
@@ -303,12 +307,14 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   m_hepmc.AddCrossSection(event, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
 
 #if defined(USING__MPI) && defined(USING__RIVET4)
-  if (m_lastevent.vertices().empty()) {
-    m_lastevent=event;
-    m_lastevent.set_run_info(event.run_info());
-    for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
+  if (!m_skipmerge) {
+    if (m_lastevent.vertices().empty()) {
+      m_lastevent=event;
+      m_lastevent.set_run_info(event.run_info());
+      for (size_t i(0);i<m_lastevent.weights().size();++i) m_lastevent.weights()[i]=0;
+    }
+    m_hepmc.AddCrossSection(m_lastevent, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
   }
-  m_hepmc.AddCrossSection(m_lastevent, p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
 #endif
 
   // dispatch the events to the main & partial (= split) analysis handlers
@@ -381,63 +387,66 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
 bool Rivet_Interface::Finish()
 {
 #if defined(USING__MPI) && defined(USING__RIVET4)
-  // synchronize analyses among MPI processes to ensure that all processes
-  // have the same analyses set; this is otherwise not guaranteed since we create
-  // analyses lazily
-  std::string mynames;
-  for (auto& it : m_rivet) {
-    std::string out;
-    if (it.first.first!="") out+="."+it.first.first;
-    if (it.first.second!=0) out+=".j"+ToString(it.first.second);
-    mynames+=out+"|";
-  }
-  int len(mynames.length()+1);
-  mpi->Allreduce(&len,1,MPI_INT,MPI_MAX);
-  std::string allnames;
-  mynames.resize(len);
-  allnames.resize(len*mpi->Size()+1);
-  mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
-  char *catname = new char[len+1];
-  for (size_t i(0);i<mpi->Size();++i) {
-    snprintf(catname, sizeof(catname),"%s",&allnames[len*i]);
-    std::string curname(catname);
-    for (size_t epos(curname.find('|'));
-         epos<curname.length();epos=curname.find('|')) {
-      std::string cur(curname.substr(0,epos)), proc, jets;
-      curname=curname.substr(epos+1,curname.length()-epos-1);
-      size_t dpos(cur.find('.'));
-      if (dpos<cur.length()) {
-        proc=cur.substr(dpos+1,cur.length()-dpos-1);
-        cur=cur.substr(0,dpos);
-        size_t jpos(proc.find(".j"));
-        if (jpos<proc.length()) {
-          jets=proc.substr(jpos+2,proc.length()-jpos-1);
-          proc=proc.substr(0,jpos);
-        }
-        else if (proc[0]=='j' && proc.length()>1) {
-          bool isnumber(true);
-          for (size_t j(1);j<proc.length();++j)
-            if (!isdigit(proc[j])) isnumber=false;
-          if (isnumber) {
-            jets=proc.substr(1,proc.length()-1);
-            proc="";
+  if (!m_skipmerge) {
+    // synchronize analyses among MPI processes to ensure that all processes
+    // have the same analyses set; this is otherwise not guaranteed since we create
+    // analyses lazily
+    std::string mynames;
+    for (auto& it : m_rivet) {
+      std::string out;
+      if (it.first.first!="") out+="."+it.first.first;
+      if (it.first.second!=0) out+=".j"+ToString(it.first.second);
+      mynames+=out+"|";
+    }
+    int len(mynames.length()+1);
+    mpi->Allreduce(&len,1,MPI_INT,MPI_MAX);
+    std::string allnames;
+    mynames.resize(len);
+    allnames.resize(len*mpi->Size()+1);
+    mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
+    char *catname = new char[len+1];
+    for (size_t i(0);i<mpi->Size();++i) {
+      snprintf(catname, sizeof(catname),"%s",&allnames[len*i]);
+      std::string curname(catname);
+      for (size_t epos(curname.find('|'));
+           epos<curname.length();epos=curname.find('|')) {
+        std::string cur(curname.substr(0,epos)), proc, jets;
+        curname=curname.substr(epos+1,curname.length()-epos-1);
+        size_t dpos(cur.find('.'));
+        if (dpos<cur.length()) {
+          proc=cur.substr(dpos+1,cur.length()-dpos-1);
+          cur=cur.substr(0,dpos);
+          size_t jpos(proc.find(".j"));
+          if (jpos<proc.length()) {
+            jets=proc.substr(jpos+2,proc.length()-jpos-1);
+            proc=proc.substr(0,jpos);
+          }
+          else if (proc[0]=='j' && proc.length()>1) {
+            bool isnumber(true);
+            for (size_t j(1);j<proc.length();++j)
+              if (!isdigit(proc[j])) isnumber=false;
+            if (isnumber) {
+              jets=proc.substr(1,proc.length()-1);
+              proc="";
+            }
           }
         }
+        if (jets=="") jets="0";
+        GetRivet(proc,ToType<int>(jets),&m_lastevent);
       }
-      if (jets=="") jets="0";
-      GetRivet(proc,ToType<int>(jets),&m_lastevent);
+    }
+    delete [] catname;
+
+    // merge Rivet::AnalysisHandlers before finalising
+    for (auto& it : m_rivet) {
+      std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
+      mpi->Reduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
+      if (mpi->Rank()==0) {
+        it.second->deserializeContent(data,(size_t)mpi->Size());
+      }
     }
   }
-  delete [] catname;
-
-  // merge Rivet::AnalysisHandlers before finalising
-  for (auto& it : m_rivet) {
-    std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
-    mpi->Reduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
-    if (mpi->Rank()==0)
-      it.second->deserializeContent(data,(size_t)mpi->Size());
-  }
-  if (mpi->Rank()==0) {
+  if (m_skipmerge || mpi->Rank()==0) {
 #endif
 
 #ifdef USING__RIVET4
@@ -476,7 +485,6 @@ bool Rivet_Interface::Finish()
       }
     }
   }
-
 #else
   GetRivet("",0)->finalize();
   // determine the nominal weight sum and the nominal cross section when Rivet
@@ -499,7 +507,7 @@ bool Rivet_Interface::Finish()
   // and need to be re-scaled to full cross-section
   const bool needs_rescaling = m_rivet.size() > 1;
   for (auto& it : m_rivet) {
-    if (needs_rescaling) {
+    if (!m_skipmerge || needs_rescaling) {
       // first collapse the event group,
       // then scale the cross-section
       // before finalizing
@@ -535,7 +543,7 @@ bool Rivet_Interface::Finish()
     it.second->writeData(OutputPath(it.first));
   }
 #if defined(USING__MPI) && defined(USING__RIVET4)
-  } // end of if mpi_rank = 0
+  } // end of if (m_skipmerge || mpi_rank = 0)
 #endif
   m_finished=true;
   return true;
