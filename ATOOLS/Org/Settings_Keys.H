@@ -28,6 +28,11 @@ namespace ATOOLS {
     size_t GetIndex() const;
 
     bool operator==(const Setting_Key&) const;
+    bool operator!=(const Setting_Key &rhs) const { return !(*this == rhs); }
+    bool operator<(const Setting_Key&) const;
+    bool operator>(const Setting_Key&) const;
+
+    friend std::ostream& operator<<(std::ostream&, const Setting_Key&);
 
   private:
 
@@ -51,8 +56,14 @@ namespace ATOOLS {
     std::vector<std::string> IndizesRemoved() const;
     bool ContainsNoIndizes() const;
 
+    bool IsBeginningOf(const Settings_Keys&) const;
+
+    friend std::ostream& operator<<(std::ostream&, const Settings_Keys&);
+
   };
 
+  std::ostream& operator<<(std::ostream&, const Setting_Key&);
+  std::ostream& operator<<(std::ostream&, const Settings_Keys&);
 }
 
 #endif

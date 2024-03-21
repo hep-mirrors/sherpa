@@ -33,6 +33,35 @@ bool Setting_Key::operator==(const Setting_Key& rhs) const
     return name == rhs.name;
 }
 
+bool Setting_Key::operator<(const Setting_Key& rhs) const
+{
+  if (IsIndex() != rhs.IsIndex())
+    return !IsIndex();
+  if (IsIndex())
+    return index < rhs.index;
+  else
+    return name < rhs.name;
+}
+
+bool Setting_Key::operator>(const Setting_Key& rhs) const
+{
+  if (IsIndex() != rhs.IsIndex())
+    return IsIndex();
+  if (IsIndex())
+    return index > rhs.index;
+  else
+    return name > rhs.name;
+}
+
+std::ostream& ATOOLS::operator<<(std::ostream& s, const Setting_Key& k)
+{
+  if (k.IsIndex())
+    return s << k.index;
+  else
+    s << k.name;
+  return s;
+}
+
 Settings_Keys::Settings_Keys(const std::vector<std::string>& strings)
 {
   reserve(strings.size());
@@ -69,4 +98,26 @@ bool Settings_Keys::ContainsNoIndizes() const
   const_iterator it{ std::find_if(begin(), end(),
       [](const Setting_Key& k) { return k.IsIndex(); }) };
   return (it == end());
+}
+
+bool Settings_Keys::IsBeginningOf(const Settings_Keys& other) const
+{
+  if (size() > other.size())
+    return false;
+  for (size_t i {0}; i < size(); i++) {
+    if ((*this)[i] != other[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+std::ostream& ATOOLS::operator<<(std::ostream& s, const Settings_Keys& k)
+{
+  for (size_t i{0}; i < k.size(); i++) {
+    s << k[i];
+    if (i < k.size() - 1)
+      s << ":";
+  }
+  return s;
 }

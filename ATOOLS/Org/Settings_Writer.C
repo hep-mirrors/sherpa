@@ -4,8 +4,10 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
+#include <set>
+#include <utility>
 
 using namespace ATOOLS;
 
@@ -23,7 +25,13 @@ void Settings_Writer::WriteSettings(Settings& s)
     bool did_print_file_header {false};
     auto keys_vec = reader->AllSettingsKeys();
     for (const auto& keys : keys_vec) {
-      const auto it = s.m_usedvalues.find(keys.IndizesRemoved());
+      // if a used key is a prefix of `keys`, we consider `keys` to have been
+      // used, too
+      const auto it = std::find_if(
+          s.m_usedvalues.begin(), s.m_usedvalues.end(),
+          [&keys](
+              const std::pair<Settings_Keys, std::set<Settings::Defaults_Value>>
+                  &pair) { return pair.first.IsBeginningOf(keys); });
       if (it == s.m_usedvalues.end()) {
         did_find_unused = true;
         if (!did_print_file_header) {
@@ -56,22 +64,56 @@ void Settings_Writer::WriteSettings(Settings& s)
   MyStrStream customised, uncustomised;
   for (const auto& keysetpair : s.m_usedvalues) {
     std::vector<String_Matrix> vals;
+    const Settings_Keys keys {keysetpair.first};
     const auto finalvals = keysetpair.second;
     assert(!finalvals.empty());
 
     // put all values for the table rows in `vals`, if a value has multiple
-    // entries, then these are separated by "-- AND --"
-    vals.push_back(s.m_defaults[keysetpair.first]);
-    const auto otherdefaultsit = s.m_otherscalardefaults.find(keysetpair.first);
-    for (const auto& v : s.m_otherscalardefaults[keysetpair.first]) {
+    // entries, then these are separated by "-- AND --"; begin with the defaults
+    vals.push_back(s.m_defaults[keysetpair.first.IndizesRemoved()]);
+
+    // replace defaults with file provided defaults in the case of
+    // Decaydata.yaml, which is outside of user control
+    bool is_set_by_decaydata {false};
+    for (const auto& reader : s.m_yamlreaders) {
+      if (reader->Name().rfind("Decaydata.yaml") == std::string::npos)
+        continue;
+      if (!reader->IsParameterCustomised(keys))
+        break;
+      is_set_by_decaydata = true;
+      vals.back() = reader->GetMatrix<std::string>(keys);
+      break;
+    }
+
+    // take into account other alternative defaults
+    const auto otherdefaultsit = s.m_otherscalardefaults.find(keysetpair.first.IndizesRemoved());
+    for (const auto& v : s.m_otherscalardefaults[keysetpair.first.IndizesRemoved()]) {
       if (!vals.back().empty())
         vals.back().push_back({"-- AND --"});
       vals.back().push_back({v});
     }
-    const auto iscustomised
-      = !(finalvals.size() == 1 && (*finalvals.begin() == vals[0]));
+
+    // figure out if the setting has been customized by the user
+    bool iscustomised {false};
+    if (is_set_by_decaydata) {
+      for (const auto& reader : s.m_yamlreaders) {
+        if (reader->Name().rfind("Decaydata.yaml") != std::string::npos)
+          continue;
+        Settings_Keys keys{ keysetpair.first };
+        if (!reader->IsParameterCustomised(keys))
+          continue;
+        iscustomised = true;
+      }
+      if (iscustomised)
+        iscustomised = (s.GetMatrix<std::string>(keysetpair.first) != vals[0]);
+    }
+    else {
+      iscustomised =
+          !(finalvals.size() == 1 && (*finalvals.begin() == vals[0]));
+    }
+
     if (iscustomised) {
-      vals.push_back(s.m_overrides[keysetpair.first]);
+      vals.push_back(s.m_overrides[keysetpair.first.IndizesRemoved()]);
       Settings_Keys keys{ keysetpair.first };
       for (auto it = s.m_yamlreaders.rbegin();
            it != s.m_yamlreaders.rend();
@@ -113,6 +155,10 @@ void Settings_Writer::WriteSettings(Settings& s)
           std::copy(it->begin(), it->end(), std::back_inserter(vals.back()));
         }
       }
+    } else if (keysetpair.first[0] == "HADRON_DECAYS") {
+      // if a HADRON_DECAYS setting is not customised, we omit its output
+      // entirely, otherwise our Settings Report becomes very lengthy
+      continue;
     }
 
     // write table body in the appropriate section
