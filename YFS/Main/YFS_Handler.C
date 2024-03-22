@@ -360,7 +360,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
         return false;
       } 
 
-      m_FSRPhotons  =  p_fsr->GetPhotons();
       m_fsrphotonsforME = m_FSRPhotons;
       Dip->AddPhotonsToDipole(m_FSRPhotons);
       Dip->Boost();
