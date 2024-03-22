@@ -4,9 +4,14 @@
 
 using namespace ATOOLS;
 
+BreitBoost::BreitBoost(const Vec4D& Q,
+                       const Vec4D& hadin) {
+  _init(Q,hadin);
+}
+
 BreitBoost::BreitBoost(const Vec4D& lepin, const Vec4D& lepout,
                        const Vec4D& hadin) {
-  _init(lepin,lepout,hadin);
+  _init(lepin-lepout,hadin);
 }
 
 BreitBoost::BreitBoost(Cluster_Amplitude *const ampl) {
@@ -23,7 +28,7 @@ BreitBoost::BreitBoost(Cluster_Amplitude *const ampl) {
   }
   /// construct from momenta, with
   /// incoming hadron projected to zero mass
-  _init(lepin,lepout,{hadin.PSpat(),Vec3D(hadin)});
+  _init(lepin-lepout,{hadin.PSpat(),Vec3D(hadin)});
 }
 
 
@@ -34,9 +39,8 @@ void BreitBoost::Apply(Cluster_Amplitude *const ampl) const {
   }
 }
 
-void BreitBoost::_init(const Vec4D& lepin, const Vec4D& lepout,
+void BreitBoost::_init(const Vec4D& Q,
                        const Vec4D& hadin) {
-  const Vec4D Q = lepin-lepout;
   m_Q2 = Q.Abs2();
   m_x = Min(-m_Q2/(2.*hadin*Q),1.);
   const double E = sqrt(-m_Q2)/(2.*m_x);

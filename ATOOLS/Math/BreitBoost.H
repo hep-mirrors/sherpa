@@ -9,7 +9,7 @@ namespace ATOOLS {
   class BreitBoost : public Poincare_Sequence {
   private:
     /// helper doing the actual work in the constructors
-    void _init(const Vec4D& lepin, const Vec4D& lepout, const Vec4D& hadin);
+    void _init(const Vec4D& Q, const Vec4D& hadin);
 
     /// save dis variables
     double m_Q2, m_x;
@@ -18,8 +18,17 @@ namespace ATOOLS {
     /*
       Construct a boost into the Breit frame.
 
-      The breit frame is defined by the incoming \p lepin and outgoing \p lepout
-      lepton momenta, and the incoming hadron momentum \p hadin.
+      The breit frame is defined by the virtual photon momentum \p Q, and the
+      incoming hadron momentum \p hadin.
+
+      Incoming momenta are assumed incoming, i.e. with positive energies. The
+      hadron momentum should be projected to zero mass if necessary beforehand.
+    */
+    BreitBoost(const Vec4D& Q, const Vec4D& hadin);
+
+
+    /*
+      Constructor using incoming and outgoing lepton momenta to obtain Q.
 
       Incoming momenta are assumed incoming, i.e. with positive energies. The
       hadron momentum should be projected to zero mass if necessary beforehand.

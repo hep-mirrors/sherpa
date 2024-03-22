@@ -5,7 +5,6 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Math/BreitBoost.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Model_Base.H"
@@ -93,14 +92,14 @@ void ME_Generator_Base::SetPSMasses()
     defpsmassless.push_back(kf_s);
     defpsmassless.push_back(kf_gluon);
     defpsmassless.push_back(kf_photon);
-    // in a DIS-like setup, always respect massive flag of electron (or singlet)
-    if(rpa->gen.Beam1().IsHadron() != rpa->gen.Beam2().IsHadron()) {
-      if(rpa->gen.Beam1().IsHadron() && !rpa->gen.Beam2().IsMassive()) {
+    // in a DIS-like setup, always respect massive flag of lepton
+    if(rpa->gen.Beam2().IsLepton() && !rpa->gen.Beam2().IsMassive()
+       && rpa->gen.Beam1().IsHadron()) {
         defpsmassless.push_back(rpa->gen.Beam2().Kfcode());
-      }
-      else if(!rpa->gen.Beam1().IsMassive()) {
+    }
+    else if(rpa->gen.Beam1().IsLepton() && !rpa->gen.Beam1().IsMassive()
+            && rpa->gen.Beam2().IsHadron()) {
         defpsmassless.push_back(rpa->gen.Beam1().Kfcode());
-      }
     }
     for (size_t i(0);i<allflavs.size();++i) {
       if (allflavs[i].IsDummy()) continue;
@@ -294,7 +293,9 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
   }
   if (!run) return 1;
   /// if so treat DIS as special case
-  if(ampl->NIn() <= 1 || ampl->Leg(0)->Flav().Strong() == ampl->Leg(1)->Flav().Strong()) {
+  if(ampl->NIn() <= 1 ||
+     (!(ampl->Leg(0)->Flav().IsLepton() && ampl->Leg(1)->Flav().Strong()) &&
+      !(ampl->Leg(0)->Flav().Strong() && ampl->Leg(1)->Flav().IsLepton()) ) ) {
     return ShiftMassesDefault(ampl, cms);
   }
   else {
