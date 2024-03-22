@@ -570,7 +570,7 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2){
 }
 
 double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
-  double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,0);
+  double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,1);
   double V = BVirtT(p1, p2);
   return R+V;
 }

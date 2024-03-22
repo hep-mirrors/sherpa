@@ -185,8 +185,8 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 
 	double flux;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
-	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
-	else flux = p_dipoles->CalculateFlux(kk);
+	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(k)+p_nlodipoles->CalculateFlux(k));
+	else flux = p_dipoles->CalculateFlux(k);
 	double tot,colltot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb   = p_dipoles->CalculateRealSubEEX(kk);
@@ -199,8 +199,10 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	}
 	if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	p.push_back(k);
+	CheckMasses(p,1);
 	CheckMomentumConservation(p);
 	double r = p_real->Calc_R(p) / norm * flux;
+	if(IsZero(r)) return 0;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
 							 <<"Real ME is : "<<r<<std::endl
@@ -423,10 +425,10 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		pRot2.Rotate(p[i]);
+		// pRot2.Rotate(p[i]);
 		boostLab.Boost(p[i]);
 	}
-	pRot2.Rotate(k);
+	// pRot2.Rotate(k);
 	boostLab.Boost(k);
 }
 
@@ -559,7 +561,7 @@ bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p){
   }
   Vec4D diff = incoming - outgoing;
   if(!IsEqual(incoming,outgoing, 1e-5)){
-    msg_Error()<<"Momentum not conserverd in YFS"<<std::endl
+    msg_Error()<<METHOD<<std::endl<<"Momentum not conserverd in YFS"<<std::endl
                <<"Incoming momentum = "<<incoming<<std::endl
                <<"Outgoing momentum = "<<outgoing<<std::endl
                <<"Difference = "<<diff<<std::endl
