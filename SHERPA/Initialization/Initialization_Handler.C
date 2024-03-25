@@ -284,6 +284,9 @@ void Initialization_Handler::RegisterDefaults()
   s["EXTRAXS_CSS_APPROX_ME"].SetDefault(false);
 
   s["RESPECT_MASSIVE_FLAG"].SetDefault(false);
+
+  s["BBR_MODE"].SetDefault(0);
+  s["BBR_VETO"].SetDefault(false);
 }
 
 Initialization_Handler::~Initialization_Handler()
@@ -792,11 +795,11 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     m_defsets[PDF::isr::hard_subprocess][beam] = defset;
     // fix PDFs and default sets for the beam rescattering here
     // EPA is the only configuration at the moment where we allow
-    // additional// scattering/interactions of the incoming beams.
+    // additional scattering/interactions of the incoming beams.
     // we default to beam-beam rescatterings
     if (m_mode == eventtype::StandardPerturbative &&
         settings["BEAM_RESCATTERING"].Get<string>() == string("Amisic") &&
-        p_beamspectra->GetBeam(beam)->Type() == BEAM::beamspectrum::EPA) {
+        p_beamspectra->On()) {
       kf_code kfbeam = p_beamspectra->GetBeam(beam)->Beam().Kfcode();
       if (!bbrlibs.empty()) {
         std::string libname = bbrlibs[Min(beam, bbrlibs.size() - 1)];
@@ -890,7 +893,7 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
       // 1    | bunch - beam
       // 2    | beam  - bunch
       // 3    | bunch - bunch (disabled, because that would be normal MPI)
-      int bbrmode            = settings["BBR_MODE"].SetDefault(0).Get<int>();
+      int bbrmode = settings["BBR_MODE"].Get<int>();
       if (bbrmode < 0 || bbrmode > 2)
         THROW(fatal_error, "BBR_Mode: Invalid mode, use MPI settings instead. ")
       flav                   = bbrmode & (beam + 1) ? m_bunch_particles[beam]
@@ -920,8 +923,7 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
         THROW(critical_error,
               "PDF '" + set +
                       "' for rescattering does not exist in any of the loaded" +
-                      " libraries for " + ToString(m_bunch_particles[beam]) +
-                      " bunch.");
+                      " libraries for " + ToString(flav) + " bunch.");
       pdfbase->SetBounds();
       isrbases[beam] = new Structure_Function(pdfbase, flav);
     }

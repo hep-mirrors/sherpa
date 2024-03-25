@@ -64,11 +64,7 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr) {
   // as fixed, for the former, the energies may vary (we have to check the spectrum):
   // - if EPA is used the energies entering the ISR will vary,
   // - otherwise the energy is fixed.
-  //
-  // TODO: fix things up for pomerons - another interesting case
-  m_variable_s = ( isr->Id()!=PDF::isr::bunch_rescatter &&
-		   ( isr->GetBeam(0)->Type() == BEAM::beamspectrum::EPA ||
-		     isr->GetBeam(1)->Type() == BEAM::beamspectrum::EPA ) );
+  m_variable_s = isr->GetBeam(0)->On() || isr->GetBeam(1)->On();
   if (isr->Flav(0).IsHadron() && isr->Flav(1).IsHadron())
     m_type = mitype::hadron_hadron;
   else if ((isr->Flav(0).IsHadron() && isr->Flav(1).IsPhoton()) ||
@@ -144,6 +140,7 @@ int Amisic::InitRescatterEvent() {
   if (m_isFirst) {
     m_isFirst   = false;
     m_isMinBias = true;
+    if (m_variable_s) UpdateForNewS();
     SetB(m_singlecollision.B());
     m_singlecollision.SetLastPT2();
     return 1;
