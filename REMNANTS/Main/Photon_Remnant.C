@@ -91,7 +91,7 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   // Still in range?
   double x = mom[0] / m_residualE;
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
-    msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
+    msg_Tracking() << METHOD << ": out of limits, x = " << x << ".\n";
     return false;
   }
   return true;

@@ -385,13 +385,6 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
   // cmode & 1 -> include first PDF; cmode & 2 -> include second PDF
   if ((cmode == 1 && PDF(0) == nullptr) || (cmode == 2 && PDF(1) == nullptr))
     return 1.0;
-  const auto include_both_pdfs = (cmode == 3);
-  // Checking remnant kinematics only makes sense when both PDFs are included;
-  // NOTE: the check is done here because CheckRemnantKinematics internally
-  // calls the PDF’s CalculateSpec, which overwrites its m_Q member; we don't
-  // want this to happen after the following switch-statement, where this is
-  // set in preparation of the p_isrbase[i]->Weight(fl) calls that get the PDF
-  // values below
   switch (cmode) {
   case 3:
     if (x1 > p_isrbase[0]->PDF()->RescaleFactor() ||
@@ -439,12 +432,6 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
     return 0.0;
   if (s_nozeropdf && f1 * f2 == 0.0)
     return pow(std::numeric_limits<double>::min(), 0.25);
-  if (mode & 8) {
-    if (mode & 2)
-      return f1;
-    if (mode & 4)
-      return f2;
-  }
   return f1 * f2;
 }
 
@@ -490,22 +477,6 @@ bool ISR_Handler::BoostInLab(Vec4D *p, const size_t n) {
 
 REMNANTS::Remnant_Base *ISR_Handler::GetRemnant(const size_t beam) const {
   return beam < 2 ? p_remnants[beam] : nullptr;
-}
-
-bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl, double &x,
-                                         int beam, bool swapped) {
-  if (x > p_isrbase[beam]->PDF()->RescaleFactor())
-    return false;
-  if (m_rmode == 0)
-    return true;
-  p_remnants[beam]->Reset();
-  double pp(beam == 0 ? x * p_beam[0]->OutMomentum().PPlus()
-                      : x * p_beam[1]->OutMomentum().PMinus());
-  double pm(sqr(fl.Mass()));
-  pm /= pp;
-  Vec4D mom((pp + pm) / 2.0, 0.0, 0.0,
-            beam == 0 ? (pp - pm) / 2.0 : (pm - pp) / 2.0);
-  return p_remnants[beam]->TestExtract(fl, mom);
 }
 
 void ISR_Handler::Reset(const size_t i) const {}

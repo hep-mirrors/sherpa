@@ -184,8 +184,8 @@ bool MCatNLO_Process::InitSubtermInfo()
       NLO_subevt *sub((*subs)[j]);
       for (size_t ij(0);ij<sub->m_n;++ij)
 	for (size_t k(0);k<sub->m_n;++k)
-	  if (k!=ij && sub->p_fl[k]==sub->p_fl[sub->m_kt] && 
-	      sub->p_fl[ij]==sub->p_fl[sub->m_ijt]) {
+          if (k != ij && sub->p_fl[k] == sub->p_fl[sub->m_kt] &&
+              sub->p_fl[ij]==sub->p_fl[sub->m_ijt]) {
 	    m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
 	  }
       m_dinfo[subs->back()->m_pname].insert(*sub);
@@ -406,7 +406,7 @@ Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
   int mm(gen->SetMassMode(1));
   int stat(gen->ShiftMasses(ampl));
   if (stat<0) {
-    msg_Error()<<METHOD<<"(): Mass shift failed."<<std::endl;
+    msg_Tracking() << METHOD << "(): Mass shift failed." << std::endl;
     gen->SetMassMode(mm);
     return NULL;
   }
@@ -684,8 +684,8 @@ void MCatNLO_Process::InitPSHandler
 }
 
 bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
-					const bool create) 
-{ 
+                                         const bool         create)
+{
   Vec4D_Vector p(p_rsproc->NIn()+p_rsproc->NOut());
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i(0);i<p.size();++i)

@@ -66,8 +66,6 @@ namespace PDF {
     bool m_freezePDFforLowQ;
 
     void FixType();
-    bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
-				double &x,int beam,bool swaped);
 
   public:
     ISR_Handler(std::array<ISR_Base *, 2> isrbase,const isr::id & id=isr::hard_process);
