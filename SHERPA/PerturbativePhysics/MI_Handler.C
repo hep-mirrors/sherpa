@@ -26,8 +26,8 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   m_type(typeID::none), m_name("None")
 {
   Settings& s = Settings::GetMainSettings();
-  m_name      = s["MI_HANDLER"].SetDefault("Amisic").UseNoneReplacements().Get<string>();
-  string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
+  m_name      = s["MI_HANDLER"].Get<string>();
+  string scm  = s["SOFT_COLLISIONS"].Get<string>();
   if (m_id==PDF::isr::bunch_rescatter) {
     string resc = s["BEAM_RESCATTERING"].Get<string>();
     scm = m_name = resc;
@@ -44,7 +44,7 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   msg_Out()<<METHOD<<"(id = "<<m_id<<", name = "<<m_name<<", type = "<<m_type<<")\n";
 }
 
-MI_Handler::~MI_Handler() 
+MI_Handler::~MI_Handler()
 {
   if (p_amisic!=NULL)  { delete p_amisic;  p_amisic  = NULL; }
   if (p_shrimps!=NULL) { delete p_shrimps; p_shrimps = NULL; }
@@ -68,7 +68,7 @@ void MI_Handler::InitShrimps(MODEL::Model_Base *model)
   m_type = typeID::shrimps;
 }
 
-bool MI_Handler::InitialiseMPIs(const double & scale) 
+bool MI_Handler::InitialiseMPIs(const double & scale)
 {
   if (m_type==typeID::amisic) return p_amisic->InitMPIs(p_isr, scale);
   return true;

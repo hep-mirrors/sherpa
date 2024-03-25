@@ -550,7 +550,7 @@ void Running_AlphaS::SetActiveAs(PDF::isr::id id)
 {
   AlphasMap::iterator it=m_alphas.find(id);
   if (it==m_alphas.end()) {
-    THROW(fatal_error, "Internal Error");
+    THROW(fatal_error, "Internal Error, alpha_S not found in SetActiveAs");
   }
   else {
     p_active=it->second;
@@ -561,7 +561,7 @@ One_Running_AlphaS * Running_AlphaS::GetAs(PDF::isr::id id)
 {
   AlphasMap::iterator it=m_alphas.find(id);
   if (it==m_alphas.end()) {
-    THROW(fatal_error, "Internal Error");
+    THROW(fatal_error, "Internal Error, alpha_S not found in GetAs");
   }
   else {
     return it->second;

@@ -102,6 +102,7 @@ void Initialization_Handler::RegisterDefaults()
   s["BEAM_REMNANTS"].SetDefault(true);
   s["EVENT_GENERATION_MODE"].SetDefault("PartiallyUnweighted");
   s["EVENT_TYPE"].SetDefault("StandardPerturbative");
+  s["MI_HANDLER"].UseNoneReplacements().SetDefault("Amisic");
   s["SOFT_COLLISIONS"].UseNoneReplacements().SetDefault("None");
   s["BEAM_RESCATTERING"].UseNoneReplacements().SetDefault("None");
   s["EVT_FILE_PATH"].SetDefault(".");
@@ -706,35 +707,35 @@ bool Initialization_Handler::InitializeThePDFs()
   // Define bunch flavours
   DefineBunchFlavours(settings);
   // Initialisation of PDF sets
-  for (size_t i=1;i<4;++i) InitISRHandler((isr::id)(i),settings);
-  msg_Info()<<"ISR handling:"<<endl;
-  bool needs_resc = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
-  for (size_t pid=1;pid<4;pid++) {
-    PDF::isr::id pc;
-    if (pid==1) {
-      msg_Info()<<"    PDFs for hard scattering:              "; pc = PDF::isr::hard_process;
+  for (size_t i = 1; i < 4; ++i) InitISRHandler((isr::id)(i), settings);
+  msg_Info() << "ISR handling:" << endl;
+  for (const auto& it : m_isrhandlers) {
+    switch (it.first) {
+      case PDF::isr::id::hard_process:
+        msg_Info() << "    PDFs for hard scattering:              ";
+        break;
+      case PDF::isr::id::hard_subprocess:
+        msg_Info() << "    PDFs for multiple parton interactions: ";
+        break;
+      case PDF::isr::id::bunch_rescatter:
+        msg_Info() << "    PDFs for beam re-scattering:           ";
+        break;
+      default: break;
     }
-    if (pid==2) {
-      msg_Info()<<"    PDFs for multiple parton interactions: "; pc = PDF::isr::hard_subprocess;
-    }
-    if (pid==3 && needs_resc) {
-      msg_Info()<<"    PDFs for beam re-scattering:           "; pc = PDF::isr::bunch_rescatter;
-    }
-    if (pid!=3 || (pid==3 && needs_resc)) {
-      for (size_t beam=0;beam<2;beam++) {
-        if (m_isrhandlers[pc]->Type(beam)==PDF::isrtype::lepton ||
-            m_isrhandlers[pc]->Type(beam)==PDF::isrtype::hadron) {
-          msg_Info() << m_isrhandlers[pc]->PDF(beam)->Set();
-        } else {
-          msg_Info() << "None";
-        }
-        if (beam==0 && (m_isrhandlers[pc]->Type(1)==PDF::isrtype::lepton ||
-			m_isrhandlers[pc]->Type(1)==PDF::isrtype::hadron)) msg_Info()<<" + ";
+    for (size_t beam = 0; beam < 2; beam++) {
+      if (it.second->Type(beam) == PDF::isrtype::lepton ||
+          it.second->Type(beam) == PDF::isrtype::hadron) {
+        msg_Info() << it.second->PDF(beam)->Set();
+      } else {
+        msg_Info() << "None";
       }
-      msg_Info()<<"\n";
+      if (beam == 0 && (it.second->Type(1) == PDF::isrtype::lepton ||
+                        it.second->Type(1) == PDF::isrtype::hadron))
+        msg_Info() << " + ";
     }
+    msg_Info() << "\n";
   }
-  return 1;
+  return true;
 }
 
 void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
@@ -825,10 +826,12 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
 void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
   if (m_isrhandlers.find(pid)!=m_isrhandlers.end()) delete m_isrhandlers[pid];
   bool needs_resc  = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
+  bool needs_mpi = settings["MI_HANDLER"].Get<string>() == string("Amisic");
   /////////////////////////////////////////////////////////////
   // make sure rescatter ISR bases are only initialised if necessary
   /////////////////////////////////////////////////////////////
   if (pid==PDF::isr::bunch_rescatter && !needs_resc) return;
+  if (pid == PDF::isr::hard_subprocess && !needs_mpi) return;
   std::string tag  = ( pid==PDF::isr::hard_process ? string("PDF_SET") :
 		       pid==PDF::isr::hard_subprocess ? string("MPI_PDF_SET") :
 		       string("BBR_PDF_SET") );
@@ -999,18 +1002,12 @@ bool Initialization_Handler::InitializeTheShowers()
   ///////////////////////////////////////////////////////////
   // define up to three shower handlers ...
   ///////////////////////////////////////////////////////////
-  std::vector<isr::id> isrtypes;
-  isrtypes.push_back(isr::hard_process);
-  isrtypes.push_back(isr::hard_subprocess);
-  if (m_isrhandlers.find(isr::bunch_rescatter)!=m_isrhandlers.end())
-    isrtypes.push_back(isr::bunch_rescatter);
-  for (size_t i=0; i<isrtypes.size(); ++i) {
-    isr::id id = isrtypes[i];
+  for (const auto& it : m_isrhandlers) {
+    PDF::isr::id id = it.first;
     as->SetActiveAs(id);
-    Shower_Handler_Map::iterator it=m_showerhandlers.find(id);
-    if (it!=m_showerhandlers.end()) delete it->second;
+    if (m_showerhandlers.find(id)!=m_showerhandlers.end()) delete m_showerhandlers.find(id)->second;
     m_showerhandlers[id] =
-      new Shower_Handler(p_model, m_isrhandlers[id], i);
+      new Shower_Handler(p_model, it.second, static_cast<int>(id)-1);
     m_showerhandlers[id]->SetRemnants(m_remnanthandlers[id]);
     for (size_t beam=0;beam<2;beam++) {
       m_isrhandlers[id]->SetRemnant(m_remnanthandlers[id]->GetRemnant(beam),beam);
@@ -1027,22 +1024,16 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   ///////////////////////////////////////////////////////////
   // define up to three multiple interaction handlers ...
   ///////////////////////////////////////////////////////////
-  std::vector<isr::id> isrtypes;
-  isrtypes.push_back(isr::hard_subprocess);
-  if (m_isrhandlers.find(isr::bunch_rescatter)!=m_isrhandlers.end())
-    isrtypes.push_back(isr::bunch_rescatter);
-  for (size_t i=0; i<isrtypes.size(); ++i) {
-    isr::id id = isrtypes[i];
+  msg_Info()<<"Underlying event/multiple interactions handler:\n";
+  for (const auto& it : m_isrhandlers) {
+    isr::id id = it.first;
+    if (id == isr::id::hard_process) continue;
     as->SetActiveAs(isr::hard_subprocess);
     MI_Handler * mih = new MI_Handler(p_model,m_isrhandlers[id],m_remnanthandlers[id]);
     mih->SetShowerHandler(m_showerhandlers[id]);
     as->SetActiveAs(isr::hard_process);
     m_mihandlers[id] = mih;
-  }
-  msg_Info()<<"Underlying event/multiple interactions handler:\n";
-  for (size_t i=0; i<isrtypes.size(); ++i) {
-    MI_Handler * mih = m_mihandlers[isrtypes[i]];
-    msg_Info()<<"    MI["<<isrtypes[i]<<"]: on = "<<mih->On()<<" "
+    msg_Info()<<"    MI["<<id<<"]: on = "<<mih->On()<<" "
 	      <<"(type = "<<mih->Type()<<", "<<mih->Name()<<")\n";
   }
   return true;
@@ -1056,12 +1047,10 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
   // they will have to differ in how they fill blobs.
   // modify the beam remnants to take care of the rescatter
   ///////////////////////////////////////////////////////////
-  std::vector<isr::id> isrtypes;
-  isrtypes.push_back(isr::hard_subprocess);
-  if (m_isrhandlers.find(isr::bunch_rescatter)!=m_isrhandlers.end())
-    isrtypes.push_back(isr::bunch_rescatter);
-  for (size_t i=0; i<isrtypes.size();++i) {
-    isr::id id = isrtypes[i];
+  msg_Info()<<"Soft-collision handlers:\n";
+  for (const auto& it : m_isrhandlers) {
+    isr::id id = it.first;
+    if (id == isr::id::hard_process) continue;
     if (m_schandlers.find(id)!=m_schandlers.end()) delete m_schandlers[id];
     MI_Handler * mih = m_mihandlers[id];
     m_schandlers[id] = ( mih->On() ?
@@ -1072,12 +1061,9 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
       p_beamremnants->AddBunchRescattering(m_remnanthandlers[isr::bunch_rescatter],
 					   m_schandlers[isr::bunch_rescatter]);
     }
-  }
-  msg_Info()<<"Soft-collision handlers:\n";
-  for (size_t i=0;i<isrtypes.size();i++) {
-    if (m_schandlers[isrtypes[i]]!=NULL)
-      msg_Info()<<"    Type["<<isrtypes[i]<<"]: "
-		<<m_schandlers[isrtypes[i]]->Soft_CollisionModel()<<"\n";
+    if (m_schandlers[id]!=NULL)
+      msg_Info()<<"    Type["<<id<<"]: "
+		<<m_schandlers[id]->Soft_CollisionModel()<<"\n";
   }
   return true;
 }
