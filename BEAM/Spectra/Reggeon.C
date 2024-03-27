@@ -74,8 +74,10 @@ void Reggeon::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {
 }
 
 void Reggeon::FixPosition() {
-  // Sample the position of the Reggeon uniformly across the proton
-  double radius = Flavour(kf_p_plus).Radius() * ran->Get();
+  // Assuming t = - p_T^2, and neglecting the t-dependence in the denominator,
+  // we can Fourier-transform the resulting Gaussian into impact parameter space
+  // which again give as Gaussian with sigma = sqrt(2 B)
+  double radius = sqrt(2*m_B) * ran->GetGaussian();
   double phi = 2*M_PI*ran->Get();
   m_position = Vec4D(0., radius*std::cos(phi), radius*std::sin(phi), 0.);
 }
