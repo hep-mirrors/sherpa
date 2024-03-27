@@ -23,11 +23,6 @@ namespace PDF {
     \brief An interface to the H1 DPDF fit of parton distributions in the
     pomeron.
   */
-  /*!
-    \var std::string H1_Fortran_Interface::m_path
-    The path from where the initial pdfs and grids are to be loaded in. This
-    will be handed over to the corresponding Fortran subroutine as a char*.
-  */
 }
 
 #endif
