@@ -90,25 +90,25 @@ void ISR::GenerateAngles()
   if (m_kkmcAngles == 0) {
     double P = log((1.+m_b1)/(1.-m_b1))
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
-    while (true) {
+    // while (true) {
       if (ran->Get() < P) {
         double rnd = ran->Get();
-        double a   = log((1.+m_b1)/(1.-m_b1));
+        double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));
         m_c        = 1./m_b1*(1.-(1.+m_b1)*exp(-a*m_b1*rnd));
         // m_c        = 1./m_b1*(pow(1+m_b1,rnd)/pow(1-m_b1,rnd-1)-1);
       }
       else {
         double rnd = ran->Get();
-        double a   = log((1.+m_b2)/(1.-m_b2));
+        double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
         m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
         // m_c        = 1./m_b1*(pow(1-m_b2,rnd)/pow(1+m_b2,rnd-1)-1);
       }
-      weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
-                        +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
-                       /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
-      if (ran->Get() < weight) break;
-    }
-    m_angleWeight *= weight;
+      // weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
+      //                   +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
+      //                  /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
+    //   if (ran->Get() < weight) break;
+    // }
+    // m_angleWeight *= weight;
     m_theta = acos(m_c);
     m_sin = sin(m_theta);
     m_phi = 2.*M_PI * ran->Get();
@@ -159,9 +159,9 @@ void ISR::GeneratePhotonMomentum() {
     double ms = m_mass2 / m_s;
     m_w = m_v;
     m_photon = {m_w,
-                m_w * m_sin * cos(m_phi) ,
-                m_w * m_sin * sin(m_phi) ,
-                m_w * m_c
+                m_w * sin(m_theta) * cos(m_phi) ,
+                m_w * sin(m_theta) * sin(m_phi) ,
+                m_w * cos(m_theta)
                };
     m_photonSum += m_photon;
     m_photons.push_back(m_photon);
@@ -182,9 +182,9 @@ void ISR::GeneratePhotonMomentum() {
       del2 = 1. + m_b2 * m_c;
       // m_phi = 2.*M_PI * ran->Get();
       m_photon = { m_w,
-                   m_w * m_sin * cos(m_phi) ,
-                   m_w * m_sin * sin(m_phi) ,
-                   m_w * m_c
+                  m_w * sin(m_theta) * cos(m_phi) ,
+                  m_w * sin(m_theta) * sin(m_phi) ,
+                  m_w * cos(m_theta)
                  };
       m_photonSum += m_photon;
       m_photons.push_back(m_photon);
@@ -235,7 +235,7 @@ void ISR::MapPhotonMomentun() {
     m_photons[i] *= m_lam * sqrt(m_s) / 2.;
     m_yini[i] /= m_lam;
     m_zini[i] /= m_lam;
-    // if (m_photons[i][0] < m_Kmin) m_cut = 0.;
+    if (m_photons[i][0] < m_Kmin) m_cut = 0.;
     // if(!IsZero(m_photons[i]*m_photons[i])){
     //   msg_Error()<<"Photon is not massless!"<<std::endl
     //              <<"m_photons[i].Mass() = "<< m_photons[i].Mass()<<std::endl;
