@@ -3,7 +3,6 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Histogram.H"
-//#include <string>
 
 using namespace RECONNECTIONS;
 
@@ -11,7 +10,7 @@ Reconnect_Gluon::Reconnect_Gluon() : Reconnection_Base()
 {
 	//need to determine correct parameters to pass to Histogram ...
 	//this->m_histomap[std::string("total_stringlength")] = new ATOOLS::Histogram();
-	this->m_stringlength_totals.clear();
+	this->stringlength_totals.clear();
 }
 
 Reconnect_Gluon::~Reconnect_Gluon()
@@ -20,32 +19,25 @@ Reconnect_Gluon::~Reconnect_Gluon()
 //	msg_Info() << std::endl << "Min. total stringlength: " << this->find_min_totalLength(this->m_stringlength_totals) << std::endl;
 //	msg_Info() << std::endl << "Max. total stringlength: " << this->find_max_totalLength(this->m_stringlength_totals) << std::endl;
 	write_stringLengths_to_file(m_stringlength_totals);
-	m_stringlength_totals.clear();
+	m_stringlength_totals->clear();
 }
 
 void Reconnect_Gluon::SetParameters()
 {
-	auto s       = ATOOLS::Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
-	m_Pmode      = s["PMODE"].SetDefault(0).Get<int>();
-	m_Q02        = std::sqrt(s["Q_0"].SetDefault(1.00).Get<double>());
-	m_etaQ       = std::sqrt(s["eta0"].SetDefault(0.1).Get<double>());
-	m_R02        = std::sqrt(s["R_0"].SetDefault(100.).Get<double>());
-	m_etaR       = std::sqrt(s["etaR"].SetDefault(0.16).Get<double>());
-	m_reshuffle  = s["Reshuffle"].SetDefault(1./9.).Get<double>();
-	m_kappa      = s["kappa"].SetDefault(2.).Get<double>();
-	//m_mom_dist   = s["mom_dist"].SetDefault(true).Get<bool>();
-	//m_pos_dist   = s["pos_dist"].SetDefault(false).Get<bool>();
-	//m_col_dist   = s["col_dist"].SetDefault(false).Get<bool>();
-	//m_dist_type  = s["dist_type"].SetDefault("mom").Get<std::string>();
-//	m_dist_type  = s["dist_type"].SetDefault("mom").Get<string>();
-	m_dist_type  = s["dist_type"].SetDefault(1).Get<int>();
+	auto s      = Settings::getMainSettings()["COLOUR_RECONNECTIONS"];
+	m_Pmode     = s["PMODE"].SetDefault(0).Get<int>();
+	m_Q02       = std::sqr(s["Q_0"].SetDefault(1.00).Get<double>());
+	m_etaQ      = std::sqr(s["eta0"].SetDefault(0.1).Get<double>());
+	m_R02       = std::sqr(s["R_0"].SetDefault(100.).Get<double>());
+	m_etaR      = std::sqr(s["etaR"].SetDefault(0.16).Get<double>());
+	m_reshuffle = s["Reshuffle"].SetDefault(1./9.).Get<double>();
+	m_kappa     = s["kappa"].SetDefault(2.).Get<double>();
 	// add new field in runcard settings to specify type of CR to be performed
 }
 
 void Reconnect_Gluon::Reset()
 {
 	m_collist.clear();
-	m_gluon_collist.clear();
 	Reconnection_Base::Reset();
 }
 
@@ -58,26 +50,16 @@ int Reconnect_Gluon::operator()(ATOOLS::Blob_List *const blobs)
 	m_norm = this->TotalLength();
 	this->PlotTotalLength(this->TotalLength());
 
-	for(std::map<unsigned int, ATOOLS::Particle *>::iterator cit = m_cols[0].begin(); cit != m_cols[0].end(); cit++)
-	{
+	for(std::map<unsigned int, Particle *>::iterator cit = m_cols[0].begin(); cit != m_cols[0].end(); cit++)
 		m_collist.push_back(cit->first);
 		// if gluon, populate gluon list. Use this list downstream 	
-		if(cit->second->Flav().IsGluon()) m_gluon_collist.push_back(cit->first);
-	}
+		if(cit->second->GetFlav()->IsGluon()) m_gluon_collist.push_back(cit->first);
 	std::size_t N = m_gluon_collist.size();
 	unsigned int col[2];
-	for(std::size_t i=0; i<std::sqrt(N); i++)
+	for(std::size_t i=0; i<std::sqr(N); i++)
 	{
-		// store copy of original col pair here for before mass plot ...
 		if(!this->SelectColourPair(N, col[0], col[1])) break;
-		auto copy_cols = m_cols;
 		if(!this->AttemptSwap(col)) return false;
-		else
-		{
-			//FillMassesInHistogram(m_histomap[std::string("Reconn_MassBefore")], copy_cols);
-			//FillMassesInHistogram(m_histomap[std::string("Reconn_MassAfter")], m_cols);
-			// come back and fix...
-		}
 	}
 	this->UpdateColours();
 	m_collist.clear();
@@ -88,12 +70,11 @@ int Reconnect_Gluon::operator()(ATOOLS::Blob_List *const blobs)
 
 bool Reconnect_Gluon::SelectColourPair(const size_t &N, unsigned int &g1, unsigned int &g2)
 {
-	msg_Info() << "\n Reconnect_Gluon::SelectColourPair() called...\n";
 	unsigned int trials = 0;
 	do
 	{
-		g1 = m_gluon_collist[int(ATOOLS::ran->Get()*N)];
-		g2 = m_gluon_collist[int(ATOOLS::ran->Get()*N)];
+		g1 = m_gluon_collist[int(ran->Get()*N)];
+		g2 = m_gluon_collist[int(ran->Get()*N)];
 		if((trials++)==100)
 		{
 			g1 = g2 = 0;
@@ -110,7 +91,6 @@ bool Reconnect_Gluon::SelectColourPair(const size_t &N, unsigned int &g1, unsign
 // attempt swap method ...
 bool Reconnect_Gluon::AttemptSwap(const unsigned int gluons[2])
 {
-	msg_Info() << "\n Reconnect_Gluon::AttemptSwap() called...\n";
 	if (m_cols[0].find(gluons[0]) == m_cols[0].end() || 
 	    m_cols[0].find(gluons[1]) == m_cols[0].end() ||
 	    m_cols[1].find(gluons[0]) == m_cols[1].end() ||
@@ -123,7 +103,7 @@ bool Reconnect_Gluon::AttemptSwap(const unsigned int gluons[2])
 	ATOOLS::Particle *part[4];
 	for (std::size_t i=0; i<2; i++)
 	{
-		for(std::size_t j=0; j<2; j++) part[2*i+j] = m_cols[i][gluons[j]];
+		for(std::size_t j=0; j<2; j++) part[2*i+j] = m_cols[i][gluon[j]];
 	}
 
 	double dist0  = Distance(part[0], part[2]), dist1  = Distance(part[1], part[3]);
@@ -132,7 +112,7 @@ bool Reconnect_Gluon::AttemptSwap(const unsigned int gluons[2])
 	// later, try deterministic approach by computing total stringlength before and after swap, and keep swap if 
 	// it reduces.
 	double prob = m_reshuffle * std::exp(-m_etaQ * ((ndist0+ndist1)-(dist0+dist1)));
-	if (prob > ATOOLS::ran->Get())
+	if (prob>ran->Get())
 	{
 		m_cols[1][gluons[0]] = part[3];
 		m_cols[1][gluons[1]] = part[2];
@@ -143,10 +123,9 @@ bool Reconnect_Gluon::AttemptSwap(const unsigned int gluons[2])
 
 void Reconnect_Gluon::UpdateColours()
 {
-	msg_Info() << "Reconnect_Gluon::UpdateColours() called...";
 	for(std::size_t i=0; i<2; i++)
 	{
-		for(std::map<unsigned int, ATOOLS::Particle*>::iterator cit = m_cols[i].begin();
+		for(std::map<unsigned int, Particle *>::iterator cit = m_cols[i].begin();
 		   cit != m_cols[i].end(); cit++)
 		{
 			cit->second->SetFlow(i+1, cit->first);
@@ -157,43 +136,7 @@ void Reconnect_Gluon::UpdateColours()
 
 double Reconnect_Gluon::Distance(ATOOLS::Particle *trip, ATOOLS::Particle *anti)
 {
-	// can't switch on a string
-	/*switch(m_dist_type)
-	{
-		case "mom":
-			return MomDistance(trip, anti);
-			break; // don't really neee presumably, because return statement
-		case "pos":
-			return PosDistance(trip, anti);
-			break;
-		case "col":
-			return ColDistance(trip, anti);
-			break;
-
-		default:
-			return MomDistance(trip, anti);
-	}*/
-	
-	/*if     (m_dist_type == "mom") return MomDistance(trip, anti);
-	else if(m_dist_type == "pos") return PosDistance(trip, anti);
-	else if(m_dist_type == "col") return ColDistance(trip, anti);
-	else			      return MomDistance(trip, anti);*/
-
-	switch(m_dist_type)
-        {
-                case 1:
-                        return MomDistance(trip, anti);
-                        break; // don't really neee presumably, because return statement
-                case 2:
-                        return PosDistance(trip, anti);
-                        break;
-                case 3:
-                        return ColDistance(trip, anti);
-                        break;
-
-                default:
-                        return MomDistance(trip, anti);
-        }
+	return MomDistance(trip, anti);
 }
 
 double Reconnect_Gluon::MomDistance(ATOOLS::Particle *trip, ATOOLS::Particle *anti)
@@ -207,7 +150,7 @@ double Reconnect_Gluon::MomDistance(ATOOLS::Particle *trip, ATOOLS::Particle *an
 
 double Reconnect_Gluon::PosDistance(ATOOLS::Particle *trip, ATOOLS::Particle *anti)
 {
-	double xdist2 = std::abs((trip->XProd()-anti->XProd()).Abs2());
+	double xdist2 = dabs((trip->XProd()-anti->XProd()).Abs2());
 	return xdist2<m_R02 ? 1. : std::pow(xdist2/m_R02, m_etaR);
 }
 
@@ -238,7 +181,7 @@ void Reconnect_Gluon::PlotTotalLength(double total_length)
 	m_stringlength_totals.push_back(total_length);
 }
 
-void Reconnect_Gluon::write_stringLengths_to_file(std::vector<double> total_vec)
+void Reconnect_Gluon::write_stringlengths_to_file(std::vector<double> total_vec)
 {
 	std::ofstream output_file("./Reconnection_Analysis/gluonOnly_stringlength_vec.txt");
 	std::ostream_iterator<double> output_iterator(output_file, "\n");

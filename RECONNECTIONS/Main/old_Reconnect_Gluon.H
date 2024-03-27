@@ -2,7 +2,6 @@
 #define RECONNECTIONS_Main_Reconnect_Gluon_H
 
 #include "RECONNECTIONS/Main/Reconnection_Base.H"
-//#include <string>
 
 namespace RECONNECTIONS
 {
@@ -13,9 +12,6 @@ namespace RECONNECTIONS
 			std::vector<unsigned int> m_gluon_collist;
 			int m_Pmode;
 			double m_Q02, m_etaQ, m_R02, m_etaR, m_reshuffle, m_kappa, m_norm;
-			//bool m_mom_dist, m_pos_dist, m_col_dist;
-			//std::string m_dist_type; // could define in parent class instead so that the handler can include dist type in filename write
-			int m_dist_type;
 			std::vector<double> m_stringlength_totals;
 			
 			void SetParameters();
