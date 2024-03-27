@@ -11,7 +11,7 @@
 
 namespace PHASIC {
 
-  class Variable_KFactor_Setter: 
+  class Variable_KFactor_Setter:
     public KFactor_Setter_Base,
     public ATOOLS::Tag_Replacer {
   private:
@@ -34,9 +34,9 @@ namespace PHASIC {
     double KFactor(const int mode=0);
     double KFactor(const ATOOLS::NLO_subevt &evt);
 
-    std::string   ReplaceTags(std::string &expr) const;    
-    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
-    
+    std::string   ReplaceTags(std::string &expr) const;
+    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
+
     void AssignId(ATOOLS::Term *term);
 
   };// end of class KFactor_Setter_Base
@@ -59,7 +59,7 @@ operator()(const KFactor_Setter_Arguments &args) const
 void ATOOLS::Getter<KFactor_Setter_Base,KFactor_Setter_Arguments,
 		    Variable_KFactor_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"Variable kfactor scheme\n";
 }
 
@@ -87,7 +87,7 @@ Variable_KFactor_Setter::~Variable_KFactor_Setter()
   delete p_calc;
 }
 
-double Variable_KFactor_Setter::KFactor(const int mode) 
+double Variable_KFactor_Setter::KFactor(const int mode)
 {
   if (!m_on) return 1.0;
   m_p=p_proc->ScaleSetter()->Momenta();
@@ -161,7 +161,7 @@ void Variable_KFactor_Setter::AssignId(Term *term)
 }
 
 void Variable_KFactor_Setter::SetKFactor(const std::string &kftag)
-{ 
+{
   if (kftag=="" || kftag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): coupling '"<<kftag<<"' {\n";
   msg_Indent();
