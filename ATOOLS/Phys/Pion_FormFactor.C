@@ -93,17 +93,17 @@ double Pion_FormFactor::ppi(const double &q2){
   double Pion_FormFactor::Eval(const double &q2){
     if(m_form_mode==0) return 1;
     // https://gitlab.com/strong2020/monte-carlo-results/-/tree/root/pion-formfactor?ref_type=heads
-    Particle_Info rhoi(kf_rho_770,  0.77456, 0.14832,3,0,0,0,"rho","rho");
+    Particle_Info rhoi(kf_rho_770,  0.77456, 0.14832,0,3,0,0,0,"rho","rho");
     
-    Particle_Info rhopi(kf_rho_770, 1.4859,  0.37360, -3,0,0,1,"rho pp","rho");
+    Particle_Info rhopi(kf_rho_770, 1.4859,  0.37360,0,3,0,0,1,"rho pp","rho");
     
-    Particle_Info rhoppi(kf_rho_770, 1.8668, 0.30334, -3,0,0,1,"rho ppp","rho");
+    Particle_Info rhoppi(kf_rho_770, 1.8668, 0.30334,0,3,0,0,1,"rho ppp","rho");
     
-    Particle_Info rhopppi(kf_rho_770, 2.2645, 0.11327, -3,0,0,1,"rho ppp","rho");
+    Particle_Info rhopppi(kf_rho_770, 2.2645, 0.11327, 0,3,0,0,1,"rho ppp","rho");
     
-    Particle_Info omegapi(kf_omega_782, 0.78248, 0.00855, -3,0,0,1,"omega","omega");
+    Particle_Info omegapi(kf_omega_782, 0.78248, 0.00855,0,3,0,0,1,"omega","omega");
     
-    Particle_Info phipi(kf_phi_1020, 1.01947, 0.00425, -3,0,0,1,"phi","phi");
+    Particle_Info phipi(kf_phi_1020, 1.01947, 0.00425,0,3,0,0,1,"phi","phi");
     
     m_rho   = Flavour(rhoi);
     m_rhop  = Flavour(rhopi);
