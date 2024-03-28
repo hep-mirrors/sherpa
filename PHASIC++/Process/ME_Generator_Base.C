@@ -356,7 +356,6 @@ Vec4D MomSum(Cluster_Amplitude *const ampl) {
 int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) {
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
-
   /// currently assume leg 0 is the electron/QCD siglet
   /// is this ever wrong?
   const Vec4D pLepIn = ampl->Leg(0)->Mom();
@@ -387,12 +386,20 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
                       sqr(etot.scaledZ(ampl->Leg(i)->Mom()[3],0)));
     }
   }
-  if(Ein < EoutMin) {
+  if(!IsEqual(Ein,EoutMin) && Ein < EoutMin) {
     msg_Debugging()<<"Not enough energy, Ein = "<<Ein
                    <<" vs "<<EoutMin<<".\n";
     return -1;
   }
   double xi(etot.WDBSolve(Ein,0.0,1.0));
+  if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
+      if (m_massmode==0) xi=etot.WDBSolve(Ein,1.0,2.0);
+      if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
+        msg_Error()<<"No solution found for mass shift "
+                   <<etot(xi)<<" vs. "<<Ein<<".\n";
+        return -1;
+      }
+  }
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
     Vec4D p = ampl->Leg(i)->Mom();
     if(ampl->Leg(i)->Flav().Strong()) {
