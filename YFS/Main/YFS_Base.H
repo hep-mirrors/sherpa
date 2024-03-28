@@ -44,7 +44,7 @@ namespace YFS {
     int m_fsrmode, m_useint, m_check_mass_reg, m_check_poles, m_check_real,m_check_rr, m_use_fsr_beta;
     int m_mode, m_rmode, m_semiyfs, m_NReal, m_qedmode,m_kkmcAngles, m_griff, m_fixed_photons; 
     int m_no_born, m_check_real_sub, m_no_subtraction,m_tchannel, m_resonance_mode, m_check_virt_born,m_noflux, m_massless_sub;
-    bool m_looptool, m_setmass, m_YFS_RS, m_RealPhotons, m_virtual_only, m_real_only, m_use_model_alpha;
+    bool m_looptool, m_setmass, m_coll_real, m_RealPhotons, m_virtual_only, m_real_only, m_use_model_alpha;
     bool m_beamspread, m_isrinital,m_realtool,m_realvirt,m_useceex,m_realrealtool, m_check_rr_sub;
     int m_flux_mode, m_hidephotons;
     std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR, m_debugDIR_NLO;

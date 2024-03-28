@@ -41,7 +41,7 @@ void YFS_Base::RegisterDefaults(){
   s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
   s["LOOP_TOOL"].SetDefault(false);
-  s["RS"].SetDefault(false);
+  s["Collinear_Approx"].SetDefault(false);
   s["FSR"].SetDefault(0);
   s["SET_MASSES"].SetDefault(false);
   s["FILL_BLOB"].SetDefault(true);
@@ -105,7 +105,7 @@ void YFS_Base::RegisterSettings(){
   m_nmax  = s["PHOTON_MAX"].Get<int>();
   m_fillblob  = s["FILL_BLOB"].Get<bool>();
   m_looptool  = s["LOOP_TOOL"].Get<bool>();
-  m_YFS_RS  = s["RS"].Get<bool>();
+  m_coll_real  = s["Collinear_Approx"].Get<bool>();
   m_setmass = s["SET_MASSES"].Get<bool>();
   m_RealPhotons = s["NO_PHOTONS"].SetDefault(false).Get<bool>();
   m_NReal       = s["REAL_PHOTONS"].SetDefault(-1).Get<int>();

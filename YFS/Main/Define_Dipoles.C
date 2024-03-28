@@ -593,13 +593,14 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   Vec4D Q,QX;
 
   if(m_noflux==1) return 1;
-  if(m_fsrmode!=2){
+  if(m_fsrmode==0){
     for (auto &D : m_dipolesII) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetMomenta(0)+D.GetMomenta(1);
       sq = (Q).Abs2(); 
       sx = (Q-k).Abs2();
       flux = (sx/sq);
+      return flux;
     }
 
   }

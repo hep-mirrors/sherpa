@@ -106,7 +106,6 @@ public:
     inline int  NPhoton()   const {return m_N; }
     inline bool UsingLoopTool()   const {return m_looptool; }
     inline bool FillBlob()   const {return m_fillblob; }
-    inline bool CalculatingReal()   const {return m_YFS_RS; }
     inline Vec4D_Vector GetMomenta() { return m_plab; }
     inline Vec4D GetMomenta(int i) { return m_plab[i]; }
     inline Vec4D_Vector BornMomenta() { return m_bornMomenta; }
