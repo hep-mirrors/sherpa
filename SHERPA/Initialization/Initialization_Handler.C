@@ -701,14 +701,18 @@ bool Initialization_Handler::InitializeTheBeams()
 }
 
 bool Initialization_Handler::InitializeTheYFS(){
-  Settings& s = Settings::GetMainSettings();
-  p_yfshandler = new YFS::YFS_Handler();
-  if(p_yfshandler->GetMode()!=0) msg_Info()<<"Initialized YFS for Soft Photon Resummation"<<std::endl;
-  if(p_yfshandler->GetMode()==1){
-    //YFS + Remnants not yet working
-    //The no remnants case misses photons
-    // and complains about Mom conservation.
-    // Here we set the remnant type to be YFS
+  Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
+  int yfsmode = s["ISR_MODE"].SetDefault(0).Get<int>();
+  if(yfsmode!=0){
+    p_yfshandler = new YFS::YFS_Handler();
+    if(p_yfshandler->GetMode()!=0) msg_Info()<<"Initialized YFS for Soft Photon Resummation"<<std::endl;
+    if(p_yfshandler->GetMode()==1){
+      //YFS + Remnants not yet working
+      //The no remnants case misses photons
+      // and complains about Mom conservation.
+      // Here we set the remnant type to be YFS
+    }
+    return true;
   }
   return true;
 }
