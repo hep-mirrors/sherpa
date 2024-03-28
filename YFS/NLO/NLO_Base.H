@@ -49,9 +49,6 @@ public:
   double CalculateReal(Vec4D k, int submode=0);
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
-  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k, ATOOLS::Vec4D &kk);
-  void MapInitial(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
-  void MapFinal(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   void CheckMassReg();
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
