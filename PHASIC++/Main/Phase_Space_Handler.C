@@ -33,7 +33,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
                                          const std::string eobs,
                                          const std::string efunc): m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
       p_integrator(NULL), p_beamhandler(proc->Beam()), m_pspoint(Phase_Space_Point(this)),
-      p_isrhandler(proc->ISR()), p_flavours(proc->Process()->Flavours()),
+      p_isrhandler(proc->ISR()), p_yfshandler(proc->YFS()), p_flavours(proc->Process()->Flavours()),
       m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout),
       m_initialized(false), m_sintegrator(0), m_killedpoints(0),
       m_printpspoint(false), m_enhanceObs(eobs), m_enhanceFunc(efunc) {
@@ -180,6 +180,10 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,
   int fl1(0), fl2(0);
   double x1(0.0), x2(0.0), xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
   dxs=p_active->Process()->Get<PHASIC::Single_Process>()->LastXS();
+  // if(p_yfshandler->GetMode()==1){
+  //   p_yfshandler->CalculateBeta();
+  //   wgtmap*=p_yfshandler->m_real;
+  // }
   const int swap(p_isrhandler->Swap());
   fl1=(long int)p_active->Process()->Flavours()[swap];
   fl2=(long int)p_active->Process()->Flavours()[1-swap];

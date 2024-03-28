@@ -59,7 +59,9 @@ MCatNLO_Process::~MCatNLO_Process()
 
 void MCatNLO_Process::Init(const Process_Info &pi,
 			  BEAM::Beam_Spectra_Handler *const beam,
-			   PDF::ISR_Handler *const isr,const int mode)
+			   PDF::ISR_Handler *const isr,
+			   YFS::YFS_Handler *const yfs,
+			   const int mode)
 {
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
@@ -71,7 +73,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.)
     cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
   else THROW(not_implemented,"Cannot do NLO QCD+EW yet.");
-  Process_Base::Init(cpi,beam,isr);
+  Process_Base::Init(cpi,beam,isr,yfs);
   m_pinfo.m_fi.SetNLOType(pi.m_fi.NLOType());
   Process_Info npi(m_pinfo);
   npi.m_fi.m_ps.pop_back();

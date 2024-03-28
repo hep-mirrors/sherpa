@@ -7,6 +7,7 @@
 namespace ATOOLS { class Cluster_Amplitude; }
 namespace BEAM { class Beam_Spectra_Handler; }
 namespace PDF { class ISR_Handler; }
+namespace YFS { class YFS_Handler; }
 namespace MODEL { class Model_Base; }
 namespace REMNANTS { class Remnant_Handler; }
 
@@ -45,7 +46,8 @@ namespace PHASIC {
     // member functions
     virtual bool Initialize(MODEL::Model_Base* const,
 			    BEAM::Beam_Spectra_Handler* const,
-			    PDF::ISR_Handler* const) = 0;
+			    PDF::ISR_Handler* const,
+			    YFS::YFS_Handler* const) = 0;
 
     virtual Process_Base *InitializeProcess(const Process_Info &pi,
                                             bool add)=0;

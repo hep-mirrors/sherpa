@@ -20,6 +20,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
+#include "PHASIC++/Process/YFS_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -343,6 +344,13 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 {
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
+    if(p_yfs->GetMode()!=0){
+      YFS_Process *proc = new YFS_Process(m_gens,pmap);
+      proc->Init(pi,p_beam,p_isr, p_yfs,1);
+      m_procs.push_back(proc);
+      procs.push_back(proc);
+      return procs;
+    }
     Process_Base *proc(m_gens.InitializeProcess(pi, true));
     if (proc) {
       m_procs.push_back(proc);
@@ -364,7 +372,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	pmap=m_pmaps.back();
       }
       MCatNLO_Process *proc=new MCatNLO_Process(m_gens,pmap);
-      proc->Init(pi,p_beam,p_isr);
+      proc->Init(pi,p_beam,p_isr,p_yfs);
       if ((*proc)[0]==NULL) {
 	delete proc;
 	return procs;
@@ -373,6 +381,18 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
         THROW(fatal_error,"Shower needs to be set for MC@NLO");
       proc->SetShower(p_shower->GetShower());
       proc->SetNLOMC(p_nlomc);
+      m_procs.push_back(proc);
+      procs.push_back(proc);
+      return procs;
+    }
+    else if (m_nlomode==nlo_mode::yfs){
+      m_hasnlo=4;
+      if (pmap==NULL) {
+         m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
+         pmap=m_pmaps.back();
+      }
+      YFS_Process *proc = new YFS_Process(m_gens,pmap);
+      proc->Init(pi,p_beam,p_isr, p_yfs,1);
       m_procs.push_back(proc);
       procs.push_back(proc);
       return procs;
@@ -509,11 +529,13 @@ void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
 }
 
 int Matrix_Element_Handler::InitializeProcesses(
-  BEAM::Beam_Spectra_Handler* beam, PDF::ISR_Handler* isr)
+  BEAM::Beam_Spectra_Handler* beam, PDF::ISR_Handler* isr,
+  YFS::YFS_Handler *yfs)
 {
   p_beam=beam;
   p_isr=isr;
-  if (!m_gens.InitializeGenerators(p_model,beam,isr)) return false;
+  p_yfs=yfs;
+  if (!m_gens.InitializeGenerators(p_model,beam,isr,yfs)) return false;
   m_gens.SetRemnant(p_remnants);
   Settings& s = Settings::GetMainSettings();
   int initonly=s["INIT_ONLY"].Get<int>();

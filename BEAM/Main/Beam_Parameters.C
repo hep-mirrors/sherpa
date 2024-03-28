@@ -2,6 +2,7 @@
 #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Spectra/Monochromatic.H"
 #include "BEAM/Spectra/Laser_Backscattering.H"
+#include "BEAM/Spectra/Fixed_Target.H"
 #include "BEAM/Spectra/EPA.H"
 #include "BEAM/Spectra/DM_beam.H"
 #include "ATOOLS/Phys/KF_Table.H"
@@ -21,6 +22,8 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode::code bmode) {
     return ostr<<"Collider";
   case beammode::DM_annihilation:
     return ostr<<"Dark Matter annihilation";
+  case beammode::Fixed_Target:
+    return ostr<<"Fixed Target annihilation";
   default:
     break;
   }
@@ -53,6 +56,8 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum::code spec
     return ostr<<"Laser Backscattering";
   case beamspectrum::DM:
     return ostr<<"Dark Matter";
+  case beamspectrum::Fixed_Target:
+    return ostr<<"Fixed Target";
   default:
     break;
   }
@@ -76,6 +81,7 @@ void Beam_Parameters::RegisterDefaults()
 }
 
 Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
+  PRINT_VAR(GetSpectrum(num));
   switch (GetSpectrum(num)) {
   case beamspectrum::monochromatic :
     return InitializeMonochromatic(num);
@@ -89,6 +95,8 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
     return InitializeEPA(num);
   case beamspectrum::DM :
     return InitializeDM_beam(num);
+  case beamspectrum::Fixed_Target :
+    return InitializeFixed_Target(num);
   default :
     break;
   }
@@ -173,6 +181,17 @@ Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
   return new DM_beam(beam_particle,temperature,
 		     formfactor,relativistic,1-2*num);
 }
+
+Beam_Base * Beam_Parameters::InitializeFixed_Target(int num)
+{
+  double beam_energy        = (*this)("BEAM_ENERGIES",num); 
+  double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
+  Flavour beam_particle    = GetFlavour("BEAMS",num);
+  PRINT_VAR(num);
+  return new Fixed_Target(beam_particle,beam_energy,beam_polarization,1-2*num);
+}
+
+
 
 const Flavour Beam_Parameters::GetFlavour(const std::string & tag,const size_t & pos) {
   vector<int> beam{ m_settings[tag].GetVector<int>() };
@@ -275,6 +294,8 @@ bool Beam_Parameters::SpecifyMode() {
     m_beammode = beammode::collider;
   else if (mode==string("DM_Annihilation"))
     m_beammode = beammode::DM_annihilation;
+  else if (mode==string("Fixed_Target"))
+    m_beammode = beammode::Fixed_Target;
   else
     m_beammode = beammode::unknown;
   return (m_beammode!=beammode::unknown);
@@ -298,6 +319,8 @@ bool Beam_Parameters::SpecifySpectra() {
       m_beamspec[num] = beamspectrum::EPA;
     else if (bs == "DM_beam")
       m_beamspec[num] = beamspectrum::DM;
+    else if (bs == "Fixed_Target")
+      m_beamspec[num] = beamspectrum::Fixed_Target;
     else
       m_beamspec[num] = beamspectrum::unknown;
   }

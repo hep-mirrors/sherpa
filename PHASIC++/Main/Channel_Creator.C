@@ -5,6 +5,7 @@
 #include "PHASIC++/Channels/FSR_Channels.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "YFS/Main/YFS_Handler.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
@@ -46,6 +47,14 @@ bool Channel_Creator::CreateBeamIntegrator() {
 bool Channel_Creator::CreateISRIntegrator() {
   if (p_psh->Process()->NIn()!=2) return true;
   PDF::ISR_Handler * isrhandler = p_psh->GetISRHandler();
+  YFS::YFS_Handler * yfshandler = p_psh->GetYFSHandler();
+  if(yfshandler->GetMode()==1 && yfshandler->GetFSRMode()!=2){
+    ISR_Channels * isrchannels =
+    new ISR_Channels(p_psh,"isr_"+p_psh->Process()->Process()->Name());
+  p_psh->SetISRIntegrator(isrchannels);
+  return isrchannels != NULL;
+
+  }
   if (!isrhandler || isrhandler->On()==0) return true;
   ISR_Channels * isrchannels =
     new ISR_Channels(p_psh,"isr_"+p_psh->Process()->Process()->Name());

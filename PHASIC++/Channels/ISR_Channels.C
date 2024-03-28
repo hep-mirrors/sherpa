@@ -8,7 +8,6 @@
 #include "PHASIC++/Channels/Threshold_Channels.H"
 #include "PHASIC++/Channels/Leading_Log_Channels.H"
 #include "PHASIC++/Channels/LBS_Compton_Peak_Channels.H"
-#include "PDF/Main/ISR_Handler.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -17,12 +16,21 @@ ISR_Channels::ISR_Channels(Phase_Space_Handler *const psh,
 			     const std::string &name) :
   Multi_Channel(name), p_psh(psh), m_keyid("ISR"),
   p_isrhandler(p_psh->GetISRHandler()),
+  p_yfshandler(p_psh->GetYFSHandler()),
   m_isrmode(p_isrhandler->Mode())
 {
-  for (size_t i=0;i<2;i++)
-    m_isrtype[i] = (p_isrhandler?p_isrhandler->Type(i):PDF::isrtype::intact);
-  for (double yexp=-.999;yexp<=1.0;yexp+=.999) m_yexponents.insert(yexp);
-  for (double spexp=0.5;spexp<=1.5;spexp+=0.5) m_spexponents.insert(spexp);
+  if(p_yfshandler->GetMode()==1){
+    m_isrmode = PDF::isrmode::lepton_lepton;
+    for (size_t i=0;i<2;i++) m_isrtype[i] = PDF::isrtype::yfs;
+    for (double spexp=0.5;spexp<=1.5;spexp+=0.5) m_spexponents.insert(spexp);
+
+  }
+  else{
+    for (size_t i=0;i<2;i++)
+      m_isrtype[i] = (p_isrhandler?p_isrhandler->Type(i):PDF::isrtype::intact);
+    for (double yexp=-.999;yexp<=1.0;yexp+=.999) m_yexponents.insert(yexp);
+    for (double spexp=0.5;spexp<=1.5;spexp+=0.5) m_spexponents.insert(spexp);
+  }
 }
 
 bool ISR_Channels::MakeChannels()
@@ -88,6 +96,9 @@ void ISR_Channels::CheckForStructuresFromME() {
 	   yit!=m_yexponents.end();yit++) {
 	m_isrparams.push_back(Channel_Info(type,masses[i],2.,(*yit)));
       }
+      if(p_yfshandler->GetMode()){
+        m_isrparams.push_back(Channel_Info(type,masses[i],2.));
+      }
       break;
     case channel_type::resonance:
       if (ATOOLS::IsZero(masses[i])) continue;
@@ -100,6 +111,9 @@ void ISR_Channels::CheckForStructuresFromME() {
       for (std::set<double>::iterator yit=m_yexponents.begin();
 	   yit!=m_yexponents.end();yit++) {
 	m_isrparams.push_back(Channel_Info(type,masses[i],widths[i],(*yit)));
+      }
+      if(p_yfshandler->GetMode()){
+        m_isrparams.push_back(Channel_Info(type,masses[i],widths[i]));
       }
       break;
     case channel_type::simple:
@@ -134,6 +148,8 @@ bool ISR_Channels::CreateChannels()
 	     m_isrtype[0]!=PDF::isrtype::unknown) +
     2*size_t(m_isrtype[1]!=PDF::isrtype::intact &&
 	     m_isrtype[1]!=PDF::isrtype::unknown);
+  if(m_isrtype[0]==PDF::isrtype::yfs) collmode = 4;
+  if(p_yfshandler->GetMode()) collmode = 4;
   if (m_isrparams.size() < 1 || collmode==0) return 0;
   for (size_t i=0;i<m_isrparams.size();i++) {
     switch (m_isrparams[i].type) {
@@ -183,6 +199,10 @@ void ISR_Channels::AddSimplePole(const size_t & chno,const size_t & mode) {
     Add(new Simple_Pole_Uniform(spexp,m_keyid,p_psh->GetInfo(),mode));
     Add(new Simple_Pole_Backward(spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
   }
+  else if (mode==4){
+    // YFS Channels
+    Add(new Simple_Pole_YFS(spexp, m_keyid, p_psh->GetInfo()));
+  }
   else {
     Add(new Simple_Pole_Central(spexp,m_keyid,p_psh->GetInfo(),mode));
   }
@@ -213,6 +233,9 @@ void ISR_Channels::AddResonance(const size_t & chno,const size_t & mode) {
     Add(new Resonance_Uniform(mass,width,m_keyid,p_psh->GetInfo(),mode));
     Add(new Resonance_Backward(mass,width,yexp,m_keyid,p_psh->GetInfo(),mode));
   }
+  else if (mode==4 && m_isrmode==PDF::isrmode::lepton_lepton) {
+    Add(new Resonance_YFS(mass,width,m_keyid,p_psh->GetInfo()));
+  }
   else {
     Add(new Resonance_Central(mass,width,m_keyid,p_psh->GetInfo(),mode));
   }
@@ -241,6 +264,9 @@ void ISR_Channels::AddThreshold(const size_t & chno,const size_t & mode) {
     Add(new Threshold_Uniform(mass,spexp,m_keyid,p_psh->GetInfo(),mode));
     Add(new Threshold_Backward(mass,spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
   }
+  else if (mode==4 && m_isrmode==PDF::isrmode::lepton_lepton) {
+    Add(new Threshold_YFS(mass,spexp,m_keyid,p_psh->GetInfo()));
+  }
   else {
     Add(new Threshold_Central(mass,spexp,m_keyid,p_psh->GetInfo(),mode));
   }
@@ -267,6 +293,9 @@ void ISR_Channels::AddLeadingLog(const size_t & chno,const size_t & mode) {
   else if (mode==3 && m_isrmode==PDF::isrmode::hadron_lepton) {
     Add(new Leading_Log_Uniform(beta,factor,m_keyid,p_psh->GetInfo(),mode));
     Add(new Leading_Log_Backward(beta,factor,yexp,m_keyid,p_psh->GetInfo(),mode));
+  }
+  else if (mode==4 && m_isrmode==PDF::isrmode::lepton_lepton) {
+    Add(new Leading_Log_YFS(beta,factor,m_keyid,p_psh->GetInfo()));
   }
   else {
     Add(new Leading_Log_Uniform(beta,factor,m_keyid,p_psh->GetInfo(),mode));

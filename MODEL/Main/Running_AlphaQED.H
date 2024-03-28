@@ -5,18 +5,35 @@
 #include "ATOOLS/Math/Function_Base.H"
 
 namespace MODEL {
+
+
+    struct vpmode {
+    enum code {
+      off        = 0,
+      full       = 1,
+      hp         = 2,
+      lp         = 3
+      };
+    };
+
+    std::istream &operator>>(std::istream &str,vpmode::code &ym);
+
+
+
   class Running_AlphaQED : public ATOOLS::Function_Base {
     const static double m_A[4],m_B[4],m_C[4];
     double m_alpha0;
-
     double  PiGamma(const ATOOLS::Flavour &, double);
   public:
     Running_AlphaQED(const double);
 
     double operator()(double); 
     double AqedThomson()  { return m_alpha0; }
+    vpmode::code m_mode;
 
     void PrintSummary();
+
+    inline vpmode::code RunningMode() {return m_mode;}
   };
 
   extern Running_AlphaQED * aqed;

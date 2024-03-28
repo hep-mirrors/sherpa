@@ -7,6 +7,7 @@
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "YFS/Main/YFS_Handler.H"
 #include <list>
 #include <array>
 

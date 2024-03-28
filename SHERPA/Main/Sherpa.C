@@ -14,6 +14,7 @@
 #include "SHERPA/Single_Events/Beam_Remnants.H"
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
+#include "SHERPA/Single_Events/Soft_Photons.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "PHASIC++/Decays/Decay_Channel.H"

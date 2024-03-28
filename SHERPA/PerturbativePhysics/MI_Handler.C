@@ -17,9 +17,9 @@ using namespace ATOOLS;
 using namespace std;
 
 MI_Handler::MI_Handler(MODEL::Model_Base *model,
-		       PDF::ISR_Handler *isr,
+		       PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs,
                        REMNANTS::Remnant_Handler * remnant_handler) :
-  p_isr(isr), m_id(p_isr->Id()), p_remnants(remnant_handler),
+  p_isr(isr),p_yfs(yfs),m_id(p_isr->Id()), p_remnants(remnant_handler),
   p_amisic(NULL), p_shrimps(NULL), p_ampl(NULL),
   p_proc(NULL), p_shower(NULL), m_on(true), m_stop(false),
   m_firstrescatter((m_id==PDF::isr::bunch_rescatter) ? true : false),
@@ -54,7 +54,7 @@ void MI_Handler::InitAmisic(MODEL::Model_Base *model)
 {
   p_amisic    = new AMISIC::Amisic();
   p_amisic->SetOutputPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
-  if (!p_amisic->Initialize(model,p_isr,p_remnants)) {
+  if (!p_amisic->Initialize(model,p_isr,p_yfs,p_remnants)) {
     msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. \n"
 	       <<"Continue without MPIs and hope for the best.\n";
     delete p_amisic; p_amisic=NULL;
