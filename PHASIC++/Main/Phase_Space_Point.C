@@ -207,13 +207,13 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     if(!p_yfshandler->MakeYFS(p_moms)) return 0;
     DefineFSRKinematics();
     p_yfshandler->SetMomenta(p_moms);
-    return(p_yfshandler->CalculateFSR(p_moms));
+    return(p_yfshandler->CalculateFSR());
   }
   else if(p_yfshandler->GetFSRMode()==2){
     p_yfshandler->SetSprimeLimits(m_isrspkey.Doubles());
     DefineFSRKinematics();
     p_yfshandler->SetBornMomenta(p_moms);
-    return(p_yfshandler->CalculateFSR(p_moms));
+    return(p_yfshandler->CalculateFSR());
 
   }
   return p_isrhandler->MakeISR(m_sprime, m_isrykey[2], p_moms,
