@@ -41,6 +41,8 @@ namespace BEAM {
     bool CalculateWeight(double, double) override;
     void FixPosition() override;
     void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0) override;
+    inline double Xmax() const override { return m_xmax; }
+    inline double Xmin() const override { return m_xmin; }
   };// end of class EPA
 
 }// end of namespace BEAM
