@@ -601,7 +601,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   double gz = Flavour(kf_Z).Width();
 
   if(m_noflux==1) return 1;
-  if(m_fsrmode!=2){
+  if(m_fsrmode==0){
     for (auto &D : m_dipolesII) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetMomenta(0)+D.GetMomenta(1);
@@ -610,7 +610,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       sx = (Q-k).Abs2();
       // flux = Propagator(sx,1)/Propagator(sq,1);
       flux = (sx/sq);
-      // return flux;
+      return flux;
     }
 
   }
