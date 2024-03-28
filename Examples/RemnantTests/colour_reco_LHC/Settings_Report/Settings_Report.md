@@ -1,6 +1,6 @@
 ---
 title: Sherpa run-time settings
-date: Wed Oct 11 18:42:29 2023
+date: Thu Mar 28 12:41:21 2024
 ...
 
 Unused settings
@@ -19,7 +19,7 @@ In some cases, an alternative default value is being used. These alternatives wi
 
 Note that parameters that can take on different values because they are set within a list, for example `param: [{x: 1}, {x: 2}, ...]`, will not appear in the config-file or command-line columns. They will be listed in the final-value column, with each different value separated by an "`-- AND --`" line.
 
-| parameter | default value | override by SHERPA | /Applications/sherpa/sherpa/build/share/SHERPA-MC//Decaydata.yaml | Sherpa.yaml | command line | final value |
+| parameter | default value | override by SHERPA | /Applications/sherpa/clang_sherpa/sherpa/build/share/SHERPA-MC//Decaydata.yaml | Sherpa.yaml | command line | final value |
 |-|-|-|-|-|-|-|
 BEAMS| 0, 0 |  |  | 2212 |  | 2212 |  |
 BEAM\_ENERGIES| 0, 0 |  |  | 6500 |  | 6500 |  |
@@ -9522,7 +9522,8 @@ COLOUR\_RECONNECTIONS:PMODE| 0 |  |
 COLOUR\_RECONNECTIONS:Q\_0| 1 |  |
 COLOUR\_RECONNECTIONS:R\_0| 100 |  |
 COLOUR\_RECONNECTIONS:Reshuffle| 0\.111111111111 |  |
-COLOUR\_RECONNECTIONS:etaQ| 0\.1 |  |
+COLOUR\_RECONNECTIONS:dist\_type| 1 |  |
+COLOUR\_RECONNECTIONS:eta0| 0\.1 |  |
 COLOUR\_RECONNECTIONS:etaR| 0\.16 |  |
 COLOUR\_RECONNECTIONS:kappa| 2 |  |
 COLOUR\_SCHEME| 0 |  |

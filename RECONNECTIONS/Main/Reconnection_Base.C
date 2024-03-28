@@ -99,10 +99,17 @@ double Reconnection_Base::get_total_hadMass(std::map<unsigned int, ATOOLS::Parti
 	return total_hadMass;
 }
 
-///     histo->Insert(/*what should i be?*/, this.get_total_hadMass(m_cols),/*what should ncounts be?*/);
-
-/*void Reconnection_Base::FillMassesInHistogram(Histogram * histo, std::map<unsigned int, ATOOLS::Particle*> m_cols[2])
+void Reconnection_Base::FillMassesInHistogram(std::map<unsigned int, ATOOLS::Particle *> col_pairs[2], std::string hist_name)
 {
 
+	ATOOLS::Histogram *mass_hist = new ATOOLS::Histogram(0, 100.0, 10.0e18, 200.00); // binning likely needs fixing... (also, maybe pass min/maxd as arg)
+	for(std::map<unsigned int, ATOOLS::Particle*>::iterator cit = m_cols[0].begin(); cit != m_cols[0].end(); cit++)
+	{
+		double m = cit->second->Flav().HadMass() * m_cols[1].find(cit->first)->second->Flav().HadMass();
+		mass_hist->Insert(m);
+	}
+	
+	m_histomap[hist_name] = mass_hist;
+
 }
-*/
+

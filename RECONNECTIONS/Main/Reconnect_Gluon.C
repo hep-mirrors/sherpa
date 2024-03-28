@@ -74,9 +74,8 @@ int Reconnect_Gluon::operator()(ATOOLS::Blob_List *const blobs)
 		if(!this->AttemptSwap(col)) return false;
 		else
 		{
-			//FillMassesInHistogram(m_histomap[std::string("Reconn_MassBefore")], copy_cols);
-			//FillMassesInHistogram(m_histomap[std::string("Reconn_MassAfter")], m_cols);
-			// come back and fix...
+			FillMassesInHistogram(copy_cols, "Mass_beforeGluonMove");
+			FillMassesInHistogram(m_cols, "Mass_afterGluonMove");
 		}
 	}
 	this->UpdateColours();
@@ -236,6 +235,7 @@ double Reconnect_Gluon::TotalLength()
 void Reconnect_Gluon::PlotTotalLength(double total_length)
 {
 	m_stringlength_totals.push_back(total_length);
+	// plot this ...
 }
 
 void Reconnect_Gluon::write_stringLengths_to_file(std::vector<double> total_vec)
