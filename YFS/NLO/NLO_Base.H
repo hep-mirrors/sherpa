@@ -60,9 +60,6 @@ public:
   // double CalculateRealReal(Vec4D k,Vec4D kk);
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
-  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k, ATOOLS::Vec4D &kk);
-  void MapInitial(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
-  void MapFinal(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   void CheckMassReg();
   void CheckMassRegRV(const ATOOLS::Vec4D_Vector &p);
   double CalculateNLO();
