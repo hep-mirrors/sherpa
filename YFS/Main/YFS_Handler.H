@@ -123,7 +123,7 @@ public:
 //
     bool On();
     bool MakeYFS(ATOOLS::Vec4D_Vector &p);
-    void MakeYFS();
+    bool MakeYFS();
     void SetSprimeLimits(std::vector<double> &splimits);
     void SetFlavours(const Flavour_Vector &fl);
     void SetMomenta(const ATOOLS::Vec4D_Vector &plab);

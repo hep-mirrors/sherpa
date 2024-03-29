@@ -122,10 +122,9 @@ void YFS_Process::Init(const Process_Info &pi,
 
   // p_bornproc->FillProcessMap(p_apmap);
   p_bornproc->SetLookUp(false);
-  p_bornproc->SetParent(this);
+  // p_bornproc->SetParent(p_bornproc);
   p_bornproc->SetSelected(this);
   FindResonances();
-  PRINT_INFO("YFS Process Initalized");
 }
 
 
