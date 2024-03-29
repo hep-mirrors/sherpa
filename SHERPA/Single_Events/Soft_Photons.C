@@ -31,14 +31,14 @@ using namespace std;
 
 Soft_Photons::Soft_Photons(
   Matrix_Element_Handler *_mehandler) :
-  m_on(true),
   p_mehandler(_mehandler), p_yfshandler(p_mehandler->GetYFS())
 {
 
   DEBUG_FUNC("");
+  m_on = p_yfshandler->GetMode();
   m_name      = string("YFS_Lepton_QED_Corrections:");
   m_type      = eph::Perturbative;
-  if (m_on) m_name += "YFS++";
+  if (m_on) m_name += "YFS";
   else               m_name += "None";
 }
 
@@ -48,7 +48,6 @@ Soft_Photons::~Soft_Photons(){
 
 
 ATOOLS::Return_Value::code  Soft_Photons::Treat(Blob_List* bloblist) {
-  return Return_Value::Success;
   if (!m_on) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg_Error() << METHOD
@@ -58,6 +57,7 @@ ATOOLS::Return_Value::code  Soft_Photons::Treat(Blob_List* bloblist) {
     return Return_Value::Error;
   }
   Blob * QEDblob;
+
   if(bloblist->FindFirst(btp::QED_Radiation)){
     // QEDblob = bloblist->FindFirst(btp::QED_Radiation);
     bloblist->Delete(bloblist->FindFirst(btp::QED_Radiation));
@@ -65,12 +65,12 @@ ATOOLS::Return_Value::code  Soft_Photons::Treat(Blob_List* bloblist) {
   QEDblob = bloblist->AddBlob(btp::QED_Radiation);
   QEDblob->Reset();
   QEDblob->SetTypeSpec("YFS-type_QED_Corrections_for_Lepton_collision");
-  Blob * sigblob(bloblist->FindLast(btp::Shower));
-  sigblob = bloblist->FindFirst(btp::Signal_Process);
+  Blob * sigblob(bloblist->FindFirst(btp::Signal_Process));
   if (!sigblob) return Return_Value::Nothing;
+  // sigblob->AddStatus(blob_status::needs_yfs);
+  // sigblob->AddStatus(blob_status::needs_beams);
   // sigblob->AddStatus(blob_status::needs_extraQED);
-  p_yfshandler->MakeYFS();
-  // blob->AddStatus(blob_status::needs_yfs);
+  // if(!p_yfshandler->MakeYFS()) return Return_Value::New_Event;
   Particle_Vector islep(sigblob->GetInParticles());
   Particle_Vector fslep(sigblob->GetOutParticles());
   Particle_Vector mfslep, mislep;
@@ -107,21 +107,34 @@ ATOOLS::Return_Value::code  Soft_Photons::Treat(Blob_List* bloblist) {
     }
   }
 
-  // for (Particle_Vector::iterator it=mislep.begin();it!=mislep.end();++it) {
-  //   // check for momentum conservation does not work
-  //   (*it)->SetInfo('H');
-  //   (*it)->SetStatus(part_status::active);
-  //   QEDblob->AddToInParticles(*it);
-  // }
+  for (Particle_Vector::iterator it=mislep.begin();it!=mislep.end();++it) {
+    // check for momentum conservation does not work
+    (*it)->SetInfo('H');
+    (*it)->SetStatus(part_status::active);
+    QEDblob->AddToInParticles(*it);
+  }
 
-
-  // for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
+  for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
   //   // check for momentum conservation does not work
-  //   (*it)->SetInfo('H');
-  //   (*it)->SetStatus(part_status::active);
-  //   QEDblob->AddToOutParticles(*it);
-  // }
+    (*it)->SetInfo('H');
+    (*it)->SetStatus(part_status::active);
+    QEDblob->AddToOutParticles(*it);
+  }
   
+  if(p_yfshandler->GetFSRMode()!=0){
+    // Add the fsr corrected final states
+      Particle_Vector out = sigblob->GetOutParticles();
+      Particle_Vector yfsout = p_yfshandler->m_particles;
+      ATOOLS::ParticleMomMap yfsoutMap = p_yfshandler->m_outparticles;
+      if(out.size()!=(yfsout.size()-2)){
+        msg_Error()<<METHOD<<" Missmatch in outparitcles for YFS"<<std::endl
+                            <<"Born Out size = "<< out.size()<<std::endl
+                            <<"YFS Out size = "<< yfsout.size()<<std::endl;
+      }
+      for(int i=0; i<out.size(); i++){
+        sigblob->OutParticle(i)->SetMomentum(yfsoutMap[yfsout[i+2]]); // remove born momenta
+      }
+    }
   if (p_yfshandler->GetMode() != 0) {
     // blob->SetStatus(blob_status::needs_yfs);
     ATOOLS::Vec4D_Vector isrphotons = p_yfshandler->GetISRPhotons();
@@ -130,9 +143,6 @@ ATOOLS::Return_Value::code  Soft_Photons::Treat(Blob_List* bloblist) {
     if (p_yfshandler->GetFSRMode() != 0) {
       fsrphotons = p_yfshandler->GetFSRPhotons();
     }
-    if(isrphotons.size()==0 && fsrphotons.size()==0){
-      return Return_Value::Nothing;
-    }
     if (p_yfshandler->FillBlob()) {
       for (int i = 0; i < isrphotons.size(); ++i)
       {
@@ -140,7 +150,7 @@ ATOOLS::Return_Value::code  Soft_Photons::Treat(Blob_List* bloblist) {
                                 isrphotons[i]);
         particle->SetNumber(0);
         particle->SetInfo('S');
-        QEDblob->AddToOutParticles(particle);
+        sigblob->AddToOutParticles(particle);
       }
       for (int i = 0; i < fsrphotons.size(); ++i)
       {
@@ -148,16 +158,14 @@ ATOOLS::Return_Value::code  Soft_Photons::Treat(Blob_List* bloblist) {
                                 fsrphotons[i]);
         particle->SetNumber(0);
         particle->SetInfo('S');
-        QEDblob->AddToOutParticles(particle);
+        sigblob->AddToOutParticles(particle);
       }
     }
   }
-  if (QEDblob->Has(blob_status::needs_extraQED))
-      QEDblob->UnsetStatus(blob_status::needs_extraQED);
-  // PRINT_VAR(sigblob);
-  // if(bloblist->Delete(QEDblob))  return Return_Value::Success;
-    return Return_Value::Success;
+  QEDblob->SetStatus(blob_status::needs_reconnections | blob_status::needs_hadronization);
+  return Return_Value::Nothing;
 }
+
 
 
 void Soft_Photons::CleanUp(const size_t & mode) {}

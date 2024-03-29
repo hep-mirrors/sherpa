@@ -27,6 +27,7 @@ YFS_Handler::YFS_Handler()
   p_isr = new YFS::ISR();
   p_nlo = new YFS::NLO_Base();
   m_formfactor = 1;
+  m_isrinital = true;
 }
 
 YFS_Handler::~YFS_Handler()
@@ -147,8 +148,8 @@ void YFS_Handler::InitializeCEEX(const ATOOLS::Flavour_Vector &fl) {
 }
 
 
-void YFS_Handler::MakeYFS(){
-  MakeYFS(m_bornMomenta);
+bool YFS_Handler::MakeYFS(){
+  return MakeYFS(m_bornMomenta);
 }
 
 bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
@@ -175,7 +176,7 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
   m_FSRPhotons.clear();
   CalculateWWForm();
   CalculateCoulomb();
-  p = m_plab;
+  p = m_plab; 
   return true;
 }
 
@@ -213,6 +214,7 @@ bool YFS_Handler::CalculateISR() {
     THROW(fatal_error, "Wrong dipole size for ISR");
   }
   if (m_isrinital) p_isr->SetIncoming(p_dipoles->GetDipoleII());
+  m_isrinital = false;
   p_isr->NPhotons();
   m_N = p_isr->GetN();
   p_isr->GeneratePhotonMomentum();

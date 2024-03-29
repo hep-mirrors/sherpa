@@ -96,10 +96,9 @@ void YFS_Process::Init(const Process_Info &pi,
     p_yfs->SetNLOType(nlo_type::loop);
   }
   p_bornproc->SetLookUp(false);
-  p_bornproc->SetParent(this);
+  // p_bornproc->SetParent(p_bornproc);
   p_bornproc->SetSelected(this);
   FindResonances();
-  PRINT_INFO("YFS Process Initalized");
 }
 
 

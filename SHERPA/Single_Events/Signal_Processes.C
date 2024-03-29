@@ -130,13 +130,14 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   const DecayInfo_Vector &decs(proc->DecayInfos());
   blob->AddData("Decay_Info",new Blob_Data<DecayInfo_Vector>(decs));
   for (unsigned int i=0;i<proc->NIn();i++) {
-    if(p_yfshandler->GetMode()==0){
-    particle = new Particle(0,proc->Flavours()[i],
-			    proc->Integrator()->Momenta()[i]);
+    // Pass born momenta to in if using YFS
+    if(p_yfshandler->GetMode()!=0){
+      particle = new Particle(0,proc->Flavours()[i],
+  			    p_yfshandler->BornMomenta()[i]);
     }
     else{
-     particle = new Particle(0,proc->Flavours()[i],
-			     p_yfshandler->BornMomenta()[i]);
+      particle = new Particle(0,proc->Flavours()[i],
+              proc->Integrator()->Momenta()[i]);
     }
     particle->SetNumber(0);
     particle->SetStatus(part_status::decayed);
@@ -273,40 +274,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   if(p_yfshandler->GetMode()!=0){
     p_yfshandler->YFSDebug(p_mehandler->Sum()*rpa->Picobarn());
     blob->SetStatus(blob_status::needs_yfs);
-    ATOOLS::Vec4D_Vector isrphotons = p_yfshandler->GetISRPhotons();
-    ATOOLS::Vec4D_Vector fsrphotons;
-    if(    p_yfshandler->GetFSRMode()!=0){
-      fsrphotons = p_yfshandler->GetFSRPhotons();
-      Particle_Vector out = blob->GetOutParticles();
-      Particle_Vector yfsout = p_yfshandler->m_particles;
-      ATOOLS::ParticleMomMap yfsoutMap = p_yfshandler->m_outparticles;
-      if(out.size()!=(yfsout.size()-2)){
-        msg_Error()<<METHOD<<" Missmatch in outparitcles for YFS"<<std::endl
-                            <<"Born Out size = "<< out.size()<<std::endl
-                            <<"YFS Out size = "<< yfsout.size()<<std::endl;
-      }
-      for(int i=0; i<out.size(); i++){
-        blob->OutParticle(i)->SetMomentum(yfsoutMap[yfsout[i+2]]); // remove born momenta
-      }
-    }
-    if(p_yfshandler->FillBlob()){
-      for (int i = 0; i < isrphotons.size(); ++i)
-          {
-            particle = new Particle(blob->NOutP()+blob->NInP()+1,Flavour(22),
-                            isrphotons[i]);
-            particle->SetStatus(part_status::active);
-            particle->SetInfo('S');
-            blob->AddToOutParticles(particle);
-          }
-      for (int i = 0; i < fsrphotons.size(); ++i)
-          {
-            particle = new Particle(blob->NOutP()+blob->NInP()+1,Flavour(22),
-                            fsrphotons[i]);
-            particle->SetStatus(part_status::active);
-            particle->SetInfo('S');
-            blob->AddToOutParticles(particle);
-          }
-    }
   }
   return success;
 }
