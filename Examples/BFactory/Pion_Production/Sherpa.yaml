@@ -6,7 +6,6 @@ BEAM_ENERGIES: 0.7/2
 ALPHAS(MZ): 0.115
 ORDER_ALPHAS: 1
 PARTICLE_DATA:
-  211: {Mass: 0.1395699}
   11:
     Massive: 1
     Mass: 0.0005109989500
@@ -19,36 +18,21 @@ SHOWER_GENERATOR: None
 ME_GENERATORS: Internal
 SCALES: VAR{sqr(91.2)}
 PDF_LIBRARY: None
-
+FRAGMENTATION: None
+BEAM_REMNANTS: 0
 EW_SCHEME: 1
 1/ALPHAQED(0): 137.035999084
 
 SCALES: VAR{1.02*1.02}
 
-ME_QED: None
+ME_QED: 
+  ENABLED: 0
 
 YFS:
   MODE: 0
-  # ISR_MODE: 1
 PROCESSES:
-# electron positron -> pi+ pi-
 - 11 -11 -> 211 -211:
     Order: {QCD: 0, EW: 0}
-
-
-# PROCESSES:
-# #
-# # electron positron -> Y(4S) -> B+ B-
-# #
-# - 11 -11 -> 300553[a]:
-#     Decay: "300553[a] -> 521 -521"
-#     Order: {QCD: 0, EW: 0}
-# #
-# # electron positron -> Y(4S) -> B0 B0bar
-# #
-# - 11 -11 -> 300553[a]:
-#     Decay: "300553[a] -> 511 -511"
-#     Order: {QCD: 0, EW: 0}
 
 
 SELECTORS:
