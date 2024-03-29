@@ -22,9 +22,6 @@ bool No_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
 }
 
 bool No_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
-  // Does not take into account YFS Photons,
-  // and will nearly always fail.
-  if(m_type==rtp::yfs) return true;
   if ((mom[0]-p_beam->OutMomentum(m_tag)[0])/p_beam->OutMomentum(m_tag)[0]>1.e-6)
     return false;
   return true;

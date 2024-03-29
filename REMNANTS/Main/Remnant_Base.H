@@ -16,8 +16,7 @@ namespace REMNANTS {
       intact = 1,
       lepton = 2,
       hadron = 3,
-      photon = 4,
-      yfs    = 5
+      photon = 4 
     };
   };
 
@@ -83,8 +82,6 @@ namespace REMNANTS {
     inline void SetScale2(const double & scale2)         { m_scale2 = scale2; }
     inline void SetColours(Colour_Generator * cgen)      { p_colours = cgen; }
     inline void SetPosition(const ATOOLS::Vec4D & pos)   { m_position = pos; }
-    inline void SetType(rtp::code & type)   { m_type = type; }
-    inline void SetYFSType()   { m_type = rtp::yfs; }
   };
 }
 

@@ -19,8 +19,6 @@ std::ostream &REMNANTS::operator<<(std::ostream &ostr, const rtp::code code) {
     return ostr << "Photon";
   case rtp::lepton:
     return ostr << "Lepton";
-  case rtp::yfs:
-    return ostr << "Special YFS";
   }
   return ostr;
 }
