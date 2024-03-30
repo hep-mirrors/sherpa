@@ -66,7 +66,7 @@ double delrho2a2(const inval* ival)   // yt^4 corrections to \Delta\rho
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
          MHs = sqr(ival->get(MH)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          AL = ival->get(al) * DRHOSCHEME,
          ALS = ival->get(als);
   return(3*sqr(AL/(1-MWs/MZs) * MTs/(16*PI*MWs)) * Rmt4(MHs/MTs));
@@ -76,7 +76,7 @@ double delrho2aas(const inval* ival)  // yt^2*as corrections to \Delta\rho
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          AL = ival->get(al) * DRHOSCHEME,
          ALS = ival->get(als);
   return(-3*AL/(1-MWs/MZs) * MTs/(16*PI*MWs) *
@@ -87,8 +87,8 @@ double delrho3a2as(const inval* ival) // yt^4*as corrections to \Delta\rho
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
-	 r = ival->get(MH)/ival->get(MT),
+         MTs = sqr(ival->get(Griff_MT)),
+	 r = ival->get(MH)/ival->get(Griff_MT),
          AL = ival->get(al) * DRHOSCHEME,
          ALS = ival->get(als);
 // use asymptotic formulas from hep-ph/0302275 and Pade approximant for 
@@ -109,8 +109,8 @@ double delrho3a3(const inval* ival)   // yt^6 corrections to \Delta\rho
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
-	 r = ival->get(MH)/ival->get(MT),
+         MTs = sqr(ival->get(Griff_MT)),
+	 r = ival->get(MH)/ival->get(Griff_MT),
          AL = ival->get(al) * DRHOSCHEME;
   double lr = log(sqr(r)), rr;
 // use asymptotic formulas from hep-ph/0302275 and Pade approximant for 
@@ -130,7 +130,7 @@ double delrho3aas2(const inval* ival) // yt^2*as^2 corrections to \Delta\rho
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          AL = ival->get(al) * DRHOSCHEME,
          ALS = ival->get(als);
   return(3*AL/(1-MWs/MZs) * MTs/(16*PI*MWs) *
@@ -141,7 +141,7 @@ double delrho4aas3(const inval* ival) // yt^2*as^3 corrections to \Delta\rho
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          AL = ival->get(al) * DRHOSCHEME,
          ALS = ival->get(als);
   return(3*AL/(1-MWs/MZs) * MTs/(16*PI*MWs) *

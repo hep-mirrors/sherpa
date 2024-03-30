@@ -553,11 +553,12 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
-  okay = okay && InitializeTheRemnants();
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
   p_model->InitializeInteractionModel();
   okay = okay && InitializeTheYFS();
+  // need to initalize yfs before remnants
+  okay = okay && InitializeTheRemnants();
   if (!CheckBeamISRConsistency()) return 0.;
   if (m_mode==eventtype::EventReader) {
     std::string infile;
@@ -953,12 +954,12 @@ bool Initialization_Handler::InitializeTheRemnants() {
   ///////////////////////////////////////////////////////////
   REMNANTS::Remnants_Parameters();
   m_remnanthandlers[isr::hard_process] =
-    new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra,
+    new Remnant_Handler(m_isrhandlers[isr::hard_process],p_yfshandler,p_beamspectra,
 			m_bunchtags[isr::hard_process]);
   m_remnanthandlers[isr::hard_subprocess] = m_remnanthandlers[isr::hard_process];
   if (m_isrhandlers.find(isr::bunch_rescatter)!=m_isrhandlers.end()) {
     m_remnanthandlers[isr::bunch_rescatter] =
-      new Remnant_Handler(m_isrhandlers[isr::bunch_rescatter],p_beamspectra,
+      new Remnant_Handler(m_isrhandlers[isr::bunch_rescatter],p_yfshandler,p_beamspectra,
 			  m_bunchtags[isr::bunch_rescatter]);
   }
   msg_Info()<<"Remnant_Handlers:\n"

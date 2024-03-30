@@ -3,7 +3,7 @@ Cplx B1s(int it, int ot, int if1, int of1, double s, double cost, const inval& i
 {
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          AL = input.get(al),
          MIs, MFs;
   Cplx res;

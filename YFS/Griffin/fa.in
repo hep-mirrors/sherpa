@@ -2,7 +2,7 @@ double FA_SMNNLO::res2ff(void) const
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          AL = ival->get(al),
          deltaAlpha = ival->get(Delal);
   double cw = MWs/MZs, ct = MTs/MZs;

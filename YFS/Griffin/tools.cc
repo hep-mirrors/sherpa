@@ -16,7 +16,7 @@ double partzwidth(FA_SMLO& fa, FV_SMLO& fv, const int type,
 {
   double alp = input.get(al)/PI * (1+ input.get(Delal)), 
          alsp = input.get(als)/PI;
-  double x = sqr(input.get(MZ)/input.get(MT));
+  double x = sqr(input.get(MZ)/input.get(Griff_MT));
   double mf, fac, y, RV, RA;
   switch(type)
   {

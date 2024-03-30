@@ -1,4 +1,4 @@
-/* classes.h: header file for classes in classes.cc */
+ /* classes.h: header file for classes in classes.cc */
 
 #ifndef __classes__
 #define __classes__
@@ -27,7 +27,7 @@ using namespace Griffin;
 #define MB 8
 #define MU 9
 #define MC 10
-#define MT 11
+#define Griff_MT 11
 #define al 12
 #define als 13
 #define Delal 14

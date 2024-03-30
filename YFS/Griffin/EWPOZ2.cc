@@ -20,7 +20,7 @@ double SW_SMNNLO::res2aas(void) const
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          MBs = sqr(ival->get(MB)),
          ALS = ival->get(als);
   double z = linex3d(axis1kpaas, sizeof(axis1kpaas)/sizeof(double), 
@@ -45,7 +45,7 @@ double SW_SMNNLO::res2fb(void) const
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          MHs = sqr(ival->get(MH)),
          ALS = ival->get(als),
          deltaAlpha = ival->get(Delal);
@@ -99,7 +99,7 @@ double SW_SMNNLO::res2bb(void) const
   double mz = ival->get(MZ),
          mw = ival->get(MW),
          mh = ival->get(MH),
-         mt = ival->get(MT),
+         mt = ival->get(Griff_MT),
          deltaAlpha = ival->get(Delal);
   double r=0;
   switch(ftyp) {
@@ -149,7 +149,7 @@ double SW_SMNNLO::res3ffa2as(void) const
 	 ALS = ival->get(als),
 	 mz = ival->get(MZ),
 	 mw = ival->get(MW),
-	 mt = ival->get(MT),
+	 mt = ival->get(Griff_MT),
 	 deltaAlpha = ival->get(Delal),
 	 r1, r2;
 
@@ -196,7 +196,7 @@ double FA_SMNNLO::res2aas(void) const
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          MBs = sqr(ival->get(MB)),
          ALS = ival->get(als);
   double z = linex3d(axis1fa2aas, sizeof(axis1fa2aas)/sizeof(double), 
@@ -222,7 +222,7 @@ double FA_SMNNLO::res2fb(void) const
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          MHs = sqr(ival->get(MH)),
          ALS = ival->get(als),
          deltaAlpha = ival->get(Delal);
@@ -279,7 +279,7 @@ double FA_SMNNLO::res2bb(void) const
   double mz = ival->get(MZ),
          mw = ival->get(MW),
          mh = ival->get(MH),
-         mt = ival->get(MT),
+         mt = ival->get(Griff_MT),
          deltaAlpha = ival->get(Delal);
   double r=0;
   switch(ftyp) {
@@ -347,7 +347,7 @@ double FA_SMNNLO::res3ffa2as(void) const
 	 ALS = ival->get(als),
 	 mz = ival->get(MZ),
 	 mw = ival->get(MW),
-	 mt = ival->get(MT),
+	 mt = ival->get(Griff_MT),
 	 deltaAlpha = ival->get(Delal),
 	 r1, r2;
 

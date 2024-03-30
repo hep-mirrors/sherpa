@@ -21,7 +21,7 @@ double dr_SMNNLO::res2aas(void) const
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          MBs = sqr(ival->get(MB)),
          ALS = ival->get(als);
 // compute O(al als) correction via linear interpolation of a numerical grid
@@ -36,7 +36,7 @@ double dr_SMNNLO::res3aas2(void) const
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          AL = ival->get(al) * DRHOSCHEME,
          ALS = ival->get(als);
   // expansion formula from hep-ph/9504413:
@@ -56,7 +56,7 @@ double dr_SMNNLO::res2fb(void) const
 {
   double MZs = sqr(ival->get(MZ)),
          MWs = sqr(ival->get(MW)),
-         MTs = sqr(ival->get(MT)),
+         MTs = sqr(ival->get(Griff_MT)),
          MHs = sqr(ival->get(MH)),
          deltaAlpha = ival->get(Delal);
 // compute O(al_f al_b) correction via linear interpolation of a numerical grid
@@ -90,7 +90,7 @@ double dr_SMNNLO::res3ffa2as(void) const
 	 ALS = ival->get(als),
 	 mz = ival->get(MZ),
 	 mw = ival->get(MW),
-	 mt = ival->get(MT),
+	 mt = ival->get(Griff_MT),
 	 deltaAlpha = ival->get(Delal),
 	 r1, r2;
 
@@ -112,7 +112,7 @@ void invalGmu::compute(void)
   double MZs = sqr(data[MZ]), GF = data[Gmu], alpha = data[al];
   dr_SMNNLO dr(*this);
     
-  if(isfinite(data[MZ]*data[MH]*data[MT]*data[MB]*data[al]*data[als]
+  if(isfinite(data[MZ]*data[MH]*data[Griff_MT]*data[MB]*data[al]*data[als]
               *data[Delal]*data[Gmu])) // only proceed if all parameters needed
 	                               // for Delta_r are set
   {

@@ -2,7 +2,7 @@ double zaas(int type, int form, const inval& input)
 {
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          AL = input.get(al),
          AlphaSMZ = input.get(als),          res;
   switch(form) {

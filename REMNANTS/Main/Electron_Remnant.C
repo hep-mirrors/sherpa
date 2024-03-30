@@ -16,6 +16,17 @@ Electron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,const unsigned in
   m_constituents.push_back(Flavour(kf_photon));
 }
 
+Electron_Remnant::
+Electron_Remnant(YFS::YFS_Handler * yfs,const unsigned int & beam,const unsigned int & tag):
+Remnant_Base(Flavour(beam?-kf_e:kf_e),beam,tag),p_yfs(yfs)
+{
+  // this is a *** very *** specific ordering - lepton at front, photon at back.
+  // And we assume that we do not do anything with the photon, really.
+  // This will be used explicitly in methods TestExtract and Fillblob
+  m_constituents.push_back(Flavour(beam?-kf_e:kf_e));
+  m_constituents.push_back(Flavour(kf_photon));
+}
+
 bool Electron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy)
 {
   if (m_extracted.size()==0) {
@@ -40,7 +51,7 @@ bool Electron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
 	       <<"   "<<(**m_extracted.begin())<<"\n"
 	       <<"   will ignore it.\n";
   }
-  if (flav!=m_constituents.front() || (p_beam->OutMomentum()[0]-mom[0])<0.) {
+  if (flav!=m_constituents.front() || ((p_beam->OutMomentum()[0]-mom[0])<0. && mom.PPerp()>1e-3)) {
     msg_Error()<<"Error in "<<METHOD<<": "<<mom<<" vs. "<<p_beam->OutMomentum()<<", "
 	       <<m_constituents.front()<<" vs. " << flav << ".\n";
     return false;

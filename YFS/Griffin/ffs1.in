@@ -4,7 +4,7 @@ double rsz1fs(double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al);
   return((AL*s*real(B0fin(MZs,0,0))*(-98*MWs*MZs + 76*sqr(MWs) + 49*sqr(MZs)))/(36.*MWs*(MWs - MZs)*PI) - (AL*s*real(B0fin(s,0,0))*(-98*MWs*MZs + 76*sqr(MWs) + 49*sqr(MZs)))/(36.*MWs*(MWs - MZs)*PI) + (AL*(MZs - s)*A0fin(MBs)*(MBs*(-8*MWs*MZs + 16*sqr(MWs) - 17*sqr(MZs)) + MZs*(-4*MWs*MZs + 8*sqr(MWs) + 5*sqr(MZs))))/(36.*MWs*(MWs - MZs)*MZs*(-4*MBs + MZs)*PI) + (AL*real(B0fin(s,MBs,MBs))*(s*(4*MWs*MZs - 8*sqr(MWs) - 5*sqr(MZs)) + MBs*(8*MWs*MZs - 16*sqr(MWs) + 17*sqr(MZs))))/(72.*MWs*(MWs - MZs)*PI) + (AL*(MZs - s)*A0fin(MTs)*(MTs*(-80*MWs*MZs + 64*sqr(MWs) + 7*sqr(MZs)) + MZs*(-40*MWs*MZs + 32*sqr(MWs) + 17*sqr(MZs))))/(36.*MWs*(MWs - MZs)*MZs*(-4*MTs + MZs)*PI) - (AL*real(B0fin(s,MTs,MTs))*(MTs*(-80*MWs*MZs + 64*sqr(MWs) + 7*sqr(MZs)) + s*(-40*MWs*MZs + 32*sqr(MWs) + 17*sqr(MZs))))/(72.*MWs*(MWs - MZs)*PI) + (AL*(MZs - s)*(-2*(4*MTs - MZs)*sqr(MBs)*(8*MWs*MZs - 16*sqr(MWs) + 17*sqr(MZs)) + MZs*(MTs*MZs*(800*MWs*MZs - 640*sqr(MWs) - 439*sqr(MZs)) + 24*sqr(MZs)*(-10*MWs*MZs + 8*sqr(MWs) + 5*sqr(MZs)) - 2*sqr(MTs)*(-80*MWs*MZs + 64*sqr(MWs) + 7*sqr(MZs))) + MBs*((944*MWs*MZs - 736*sqr(MWs) - 487*sqr(MZs))*sqr(MZs) + 8*sqr(MTs)*(-80*MWs*MZs + 64*sqr(MWs) + 7*sqr(MZs)) + 8*MTs*MZs*(-392*MWs*MZs + 304*sqr(MWs) + 223*sqr(MZs)))))/(72.*MWs*(MWs - MZs)*MZs*(-4*MBs + MZs)*(-4*MTs + MZs)*PI) - (AL*real(B0fin(MZs,MBs,MBs))*(2*(3*MZs - s)*sqr(MBs)*(-8*MWs*MZs + 16*sqr(MWs) - 17*sqr(MZs)) + s*(4*MWs*MZs - 8*sqr(MWs) - 5*sqr(MZs))*sqr(MZs) + MBs*MZs*(-8*MWs*MZs*s + 16*s*sqr(MWs) + 10*s*sqr(MZs) + 27*trip(MZs))))/(72.*MWs*(MWs - MZs)*MZs*(-4*MBs + MZs)*PI) - (AL*real(B0fin(MZs,MTs,MTs))*(s*(40*MWs*MZs - 32*sqr(MWs) - 17*sqr(MZs))*sqr(MZs) + 2*(3*MZs - s)*sqr(MTs)*(-80*MWs*MZs + 64*sqr(MWs) + 7*sqr(MZs)) + MTs*MZs*(-80*MWs*MZs*s + 64*s*sqr(MWs) + 34*s*sqr(MZs) + 27*trip(MZs))))/(72.*MWs*(MWs - MZs)*MZs*(-4*MTs + MZs)*PI));
@@ -16,7 +16,7 @@ double isz1fs(double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al);
   return(-(AL*s*imag(B0fin(s,0,0))*(-98*MWs*MZs + 76*sqr(MWs) + 49*sqr(MZs)))/(36.*MWs*(MWs - MZs)*PI) - (AL*imag(B0fin(s,MBs,MBs))*(MBs*(-8*MWs*MZs + 16*sqr(MWs) - 17*sqr(MZs)) + s*(-4*MWs*MZs + 8*sqr(MWs) + 5*sqr(MZs))))/(72.*MWs*(MWs - MZs)*PI) - (AL*imag(B0fin(s,MTs,MTs))*(MTs*(-80*MWs*MZs + 64*sqr(MWs) + 7*sqr(MZs)) + s*(-40*MWs*MZs + 32*sqr(MWs) + 17*sqr(MZs))))/(72.*MWs*(MWs - MZs)*PI));
@@ -28,7 +28,7 @@ double rsz1bs(double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al);
   return((AL*(MZs - s)*A0fin(MWs)*(20*MWs*MZs + 12*sqr(MWs) + sqr(MZs)))/(24.*MWs*(MWs - MZs)*MZs*PI) - (AL*(MZs - s)*A0fin(MZs)*(MHs*MZs*(-5*MZs + 9*s) + (MZs - 2*s)*sqr(MHs) + 4*(MZs - 4*s)*sqr(MZs)))/(48.*MWs*(MHs - 4*MZs)*(MWs - MZs)*PI*s) - (AL*real(B0fin(s,MHs,MZs))*sqr(MZs)*(10*MZs*s - 2*MHs*(MZs + s) + sqr(MHs) + sqr(MZs) + sqr(s)))/(48.*MWs*(MWs - MZs)*PI*s) + (AL*real(B0fin(s,MWs,MWs))*(4*MWs*MZs*(-5*MZs + s) + 4*(8*MZs + 9*s)*sqr(MWs) - s*sqr(MZs) + 48*trip(MWs)))/(48.*MWs*(MWs - MZs)*PI) + (AL*real(B0fin(MZs,MWs,MWs))*(4*MZs*(-18*MZs + s)*sqr(MWs) + 2*MWs*(9*MZs - s)*sqr(MZs) + 24*(-3*MZs + s)*trip(MWs) + s*trip(MZs)))/(48.*MWs*(MWs - MZs)*MZs*PI) + (AL*A0fin(MHs)*(MZs*sqr(MHs)*(16*MZs*s - 5*sqr(MZs) - 11*sqr(s)) + 4*MHs*sqr(MZs)*(-7*MZs*s + sqr(MZs) + 6*sqr(s)) + (-3*MZs*s + sqr(MZs) + 2*sqr(s))*trip(MHs) + 24*(MZs - s)*s*trip(MZs)))/(48.*MHs*MWs*(MHs - 4*MZs)*(MWs - MZs)*PI*s) + (AL*real(B0fin(MZs,MHs,MZs))*(MZs*(-21*MZs + 13*s)*sqr(MHs) + 4*MHs*(15*MZs - 8*s)*sqr(MZs) + (3*MZs - 2*s)*trip(MHs) + 12*(-7*MZs + 3*s)*trip(MZs)))/(48.*MWs*(MHs - 4*MZs)*(MWs - MZs)*PI) + (AL*(MZs - s)*(sqr(MHs)*sqr(MZs) + MHs*(28*MZs*sqr(MWs) - 18*MWs*sqr(MZs) + 24*trip(MWs) - 5*trip(MZs)) + 8*MZs*(-14*MZs*sqr(MWs) + 9*MWs*sqr(MZs) - 12*trip(MWs) + 2*trip(MZs))))/(48.*MWs*(MWs - MZs)*MZs*(-MHs + 4*MZs)*PI));
@@ -40,7 +40,7 @@ double isz1bs(double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al);
   return(-(AL*imag(B0fin(s,MHs,MZs))*sqr(MZs)*(10*MZs*s - 2*MHs*(MZs + s) + sqr(MHs) + sqr(MZs) + sqr(s)))/(48.*MWs*(MWs - MZs)*PI*s) + (AL*imag(B0fin(s,MWs,MWs))*(4*MWs*MZs*(-5*MZs + s) + 4*(8*MZs + 9*s)*sqr(MWs) - s*sqr(MZs) + 48*trip(MWs)))/(48.*MWs*(MWs - MZs)*PI));
@@ -52,7 +52,7 @@ double rsg1fs(double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al);
   double deltaAlpha = input.get(Delal);
@@ -65,7 +65,7 @@ double isg1fs(double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al);
   return((19*AL*s*imag(B0fin(s,0,0)))/(9.*PI) + (AL*(2*MBs + s)*imag(B0fin(s,MBs,MBs)))/(9.*PI) + (4*AL*(2*MTs + s)*imag(B0fin(s,MTs,MTs)))/(9.*PI));
@@ -77,7 +77,7 @@ double rsg1bs(double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al);
   return(-(AL*(12*MWs + 7*s))/(12.*PI) + (AL*(4*MWs + 3*s)*A0fin(MWs))/(4.*MWs*PI) - (AL*(4*MWs + 3*s)*real(B0fin(s,MWs,MWs)))/(4.*PI));
@@ -89,7 +89,7 @@ double isg1bs(double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al);
   return(-(AL*(4*MWs + 3*s)*imag(B0fin(s,MWs,MWs)))/(4.*PI));
@@ -101,7 +101,7 @@ double rz1fs(int type, int form, double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al),
          deltaAlpha = input.get(Delal),
@@ -167,7 +167,7 @@ double iz1fs(int type, int form, double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al),
          res;
@@ -232,7 +232,7 @@ double rz1bs(int type, int form, double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al),
          res;
@@ -297,7 +297,7 @@ double iz1bs(int type, int form, double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al),
          res;
@@ -362,7 +362,7 @@ double rg1fs(int type, int form, double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al),
          res;
@@ -427,7 +427,7 @@ double ig1fs(int type, int form, double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al),
          res;
@@ -492,7 +492,7 @@ double rg1bs(int type, int form, double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al),
          res;
@@ -557,7 +557,7 @@ double ig1bs(int type, int form, double s, const inval& input)
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
          MHs = sqr(input.get(MH)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          MBs = sqr(input.get(MB)),
          AL = input.get(al),
          res;

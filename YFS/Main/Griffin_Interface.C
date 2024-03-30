@@ -58,7 +58,7 @@ bool Griffin_Interface::Initialize(const Process_Info& pi)
   griffin_input.set(gamZ, Flavour(kf_Z).Width());
   griffin_input.set(GamW, Flavour(kf_Wplus).Width());
   griffin_input.set(MH, Flavour(kf_h0).Mass());
-  griffin_input.set(MT, Flavour(kf_t).Mass());
+  griffin_input.set(Griff_MT, Flavour(kf_t).Mass());
   griffin_input.set(MB, Flavour(kf_b).Mass()); // MSbar mass at scale mu=MZ for mb(mb)=4.20
   griffin_input.set(MC, Flavour(kf_c).Mass()); // MSbar mass at scale mu=MZ
   griffin_input.set(G_MS, Flavour(kf_s).Mass());

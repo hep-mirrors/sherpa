@@ -3,7 +3,7 @@ Cplx B1(int it, int ot, int if1, int of1, double s, double cost, const inval& in
 {
   double MZs = sqr(input.get(MZ)),
          MWs = sqr(input.get(MW)),
-         MTs = sqr(input.get(MT)),
+         MTs = sqr(input.get(Griff_MT)),
          AL = input.get(al),
          MIs, MFs;
   Cplx s0 = MZs - gzflag*I*input.get(MZ)*input.get(gamZ),

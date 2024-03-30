@@ -140,7 +140,7 @@ public:
     inline ATOOLS::Vec4D GetPhotonSumFSR() const      { return m_photonSumFSR;  }
     inline ATOOLS::Vec4D_Vector GetISRPhotons() const      { return m_ISRPhotons;  }
     inline ATOOLS::Vec4D_Vector GetFSRPhotons() const      { return m_FSRPhotons;  }
-    // inline YFS::Real_ff GetNLO() {return p_realff;}
+    inline ATOOLS::Flavour GetFlavour(const int i) const { return m_flavs[i];  }
     inline void SetBorn(double b) { m_born = b; }
     inline double GetBorn() { return m_born; }
     inline double GetBeta1() const { return m_beta1; }
