@@ -205,7 +205,47 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       if (nlos) (*nlos) *= weightfactor;
     }
   }
-
+  if(p_yfshandler->GetFSRMode()!=0){
+    // Add the fsr corrected final states
+      Particle_Vector out = blob->GetOutParticles();
+      Particle_Vector yfsout = p_yfshandler->m_particles;
+      ATOOLS::ParticleMomMap yfsoutMap = p_yfshandler->m_outparticles;
+      if(out.size()!=(yfsout.size()-2)){
+        msg_Error()<<METHOD<<" Missmatch in outparitcles for YFS"<<std::endl
+                            <<"Born Out size = "<< out.size()<<std::endl
+                            <<"YFS Out size = "<< yfsout.size()<<std::endl;
+      }
+      for(int i=0; i<out.size(); i++){
+        blob->OutParticle(i)->SetMomentum(yfsoutMap[yfsout[i+2]]); // remove born momenta
+      }
+    }
+  if (p_yfshandler->GetMode() != 0) {
+    // blob->SetStatus(blob_status::needs_yfs);
+    ATOOLS::Vec4D_Vector isrphotons = p_yfshandler->GetISRPhotons();
+    ATOOLS::Vec4D_Vector fsrphotons;
+    Particle *particle;
+    if (p_yfshandler->GetFSRMode() != 0) {
+      fsrphotons = p_yfshandler->GetFSRPhotons();
+    }
+    if (p_yfshandler->FillBlob()) {
+      for (int i = 0; i < isrphotons.size(); ++i)
+      {
+        particle = new Particle(-1, Flavour(22),
+                                isrphotons[i]);
+        particle->SetNumber(0);
+        particle->SetInfo('S');
+        blob->AddToOutParticles(particle);
+      }
+      for (int i = 0; i < fsrphotons.size(); ++i)
+      {
+        particle = new Particle(-1, Flavour(22),
+                                fsrphotons[i]);
+        particle->SetNumber(0);
+        particle->SetInfo('S');
+        blob->AddToOutParticles(particle);
+      }
+    }
+  }
 
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>(winfo.m_weightsmap));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
@@ -273,7 +313,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   }
   if(p_yfshandler->GetMode()!=0){
     p_yfshandler->YFSDebug(p_mehandler->Sum()*rpa->Picobarn());
-    blob->SetStatus(blob_status::needs_yfs);
   }
   return success;
 }

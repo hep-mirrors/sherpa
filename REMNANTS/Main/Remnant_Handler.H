@@ -6,6 +6,7 @@
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include "REMNANTS/Tools/Beam_Decorrelator.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "YFS/Main/YFS_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Return_Value.H"
@@ -44,6 +45,7 @@ namespace REMNANTS {
     long int m_fails;
     
     void InitializeRemnants(PDF::ISR_Handler * isr,
+          YFS::YFS_Handler *yfs,
 			    BEAM::Beam_Spectra_Handler * beam,
 			    const std::vector<size_t> & tags);
     void DefineRemnantStrategy();
@@ -54,7 +56,7 @@ namespace REMNANTS {
     ATOOLS::Blob_List::iterator FindInsertPositionForRescatter(ATOOLS::Blob_List *const bloblist,
 							       const bool & isrescatter);
  public:
-    Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
+    Remnant_Handler(PDF::ISR_Handler * isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler * beam,
 		    const std::vector<size_t> & tags);
     ~Remnant_Handler();
     

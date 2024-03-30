@@ -49,7 +49,6 @@ public:
     // std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR;
     ATOOLS::Poincare m_cmsboost;
     ATOOLS::Vec4D   m_Wm, m_Wp;
-    ATOOLS::Flavour m_bunch;
     Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_beams;
     ATOOLS::Flavour_Vector m_flavs;
     std::vector<double> m_mass;
@@ -93,6 +92,7 @@ public:
     inline ATOOLS::Vec4D GetPhotonSumFSR() const      { return m_photonSumFSR;  }
     inline ATOOLS::Vec4D_Vector GetISRPhotons() const      { return m_ISRPhotons;  }
     inline ATOOLS::Vec4D_Vector GetFSRPhotons() const      { return m_FSRPhotons;  }
+    inline ATOOLS::Flavour GetFlavour(const int i) const { return m_flavs[i];  }
     inline void SetBorn(double b) { m_born = b; }
     inline double GetBorn() { return m_born; }
 

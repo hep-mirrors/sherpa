@@ -56,70 +56,72 @@ ATOOLS::Return_Value::code  Soft_Photons::Treat(Blob_List* bloblist) {
                 << "   Continue and hope for the best." << endl;
     return Return_Value::Error;
   }
-  Blob * QEDblob;
+  // Blob * QEDblob;
 
-  if(bloblist->FindFirst(btp::QED_Radiation)){
-    // QEDblob = bloblist->FindFirst(btp::QED_Radiation);
-    bloblist->Delete(bloblist->FindFirst(btp::QED_Radiation));
-  }
-  QEDblob = bloblist->AddBlob(btp::QED_Radiation);
-  QEDblob->Reset();
-  QEDblob->SetTypeSpec("YFS-type_QED_Corrections_for_Lepton_collision");
+  // if(bloblist->FindFirst(btp::QED_Radiation)){
+  //   // QEDblob = bloblist->FindFirst(btp::QED_Radiation);
+  //   bloblist->Delete(bloblist->FindFirst(btp::QED_Radiation));
+  // }
+  // QEDblob = bloblist->AddBlob(btp::QED_Radiation);
+  // QEDblob->Reset();
+  // QEDblob->SetTypeSpec("YFS-type_QED_Corrections_for_Lepton_collision");
   Blob * sigblob(bloblist->FindFirst(btp::Signal_Process));
   if (!sigblob) return Return_Value::Nothing;
-  // sigblob->AddStatus(blob_status::needs_yfs);
-  // sigblob->AddStatus(blob_status::needs_beams);
+  sigblob->AddStatus(blob_status::needs_yfs);
+  // sigblob->SetStatus(blob_status::needs_reconnections | blob_status::needs_hadronization);
+
+  // sigblob->AddStatus(blob_status::needs_showers);
   // sigblob->AddStatus(blob_status::needs_extraQED);
   // if(!p_yfshandler->MakeYFS()) return Return_Value::New_Event;
-  Particle_Vector islep(sigblob->GetInParticles());
-  Particle_Vector fslep(sigblob->GetOutParticles());
-  Particle_Vector mfslep, mislep;
+  // Particle_Vector islep(sigblob->GetInParticles());
+  // Particle_Vector fslep(sigblob->GetOutParticles());
+  // Particle_Vector mfslep, mislep;
 
-  for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();) {
-      mfslep.push_back(new Particle(-1,(*it)->Flav(),(*it)->Momentum(),'F'));
-      (*mfslep.rbegin())->SetNumber(0);
-      (*mfslep.rbegin())->SetOriginalPart(*it);
-      // (*mfslep.rbegin())->SetFinalMass((*it)->FinalMass());
-      ++it;
-  }
+  // for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();) {
+  //     mfslep.push_back(new Particle(-1,(*it)->Flav(),(*it)->Momentum(),'F'));
+  //     (*mfslep.rbegin())->SetNumber(0);
+  //     (*mfslep.rbegin())->SetOriginalPart(*it);
+  //     // (*mfslep.rbegin())->SetFinalMass((*it)->FinalMass());
+  //     ++it;
+  // }
 
-  for (Particle_Vector::iterator it=islep.begin();it!=islep.end();) {
-      mislep.push_back(new Particle(-1,(*it)->Flav(),(*it)->Momentum(),'I'));
-      (*mislep.rbegin())->SetNumber(0);
-      (*mislep.rbegin())->SetOriginalPart(*it);
-      // (*mislep.rbegin())->SetFinalMass((*it)->FinalMass());
-      ++it;
-  }
+  // for (Particle_Vector::iterator it=islep.begin();it!=islep.end();) {
+  //     mislep.push_back(new Particle(-1,(*it)->Flav(),(*it)->Momentum(),'I'));
+  //     (*mislep.rbegin())->SetNumber(0);
+  //     (*mislep.rbegin())->SetOriginalPart(*it);
+  //     // (*mislep.rbegin())->SetFinalMass((*it)->FinalMass());
+  //     ++it;
+  // }
 
   int Nin=2;
   int Nout = p_mehandler->Process()->NOut();
   int N=Nin+Nout;
-  if(QEDblob->GetOutParticles().size()>Nout){
-    for (int i = Nout; i < QEDblob->GetOutParticles().size(); ++i)
-    {
-     QEDblob->RemoveOutParticle(QEDblob->GetOutParticles()[i]);
-    }
-  }
-  if(QEDblob->GetInParticles().size()>Nin){
-    for (int i = Nin; i < QEDblob->GetInParticles().size(); ++i)
-    {
-      QEDblob->RemoveInParticle(QEDblob->GetInParticles()[i]);
-    }
-  }
+  // if(QEDblob->GetOutParticles().size()>Nout){
+  //   for (int i = Nout; i < QEDblob->GetOutParticles().size(); ++i)
+  //   {
+  //    QEDblob->RemoveOutParticle(QEDblob->GetOutParticles()[i]);
+  //   }
+  // }
+  // if(QEDblob->GetInParticles().size()>Nin){
+  //   for (int i = Nin; i < QEDblob->GetInParticles().size(); ++i)
+  //   {
+  //     QEDblob->RemoveInParticle(QEDblob->GetInParticles()[i]);
+  //   }
+  // }
 
-  for (Particle_Vector::iterator it=mislep.begin();it!=mislep.end();++it) {
-    // check for momentum conservation does not work
-    (*it)->SetInfo('H');
-    (*it)->SetStatus(part_status::active);
-    QEDblob->AddToInParticles(*it);
-  }
-
-  for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
+  // for (Particle_Vector::iterator it=mislep.begin();it!=mislep.end();++it) {
   //   // check for momentum conservation does not work
-    (*it)->SetInfo('H');
-    (*it)->SetStatus(part_status::active);
-    QEDblob->AddToOutParticles(*it);
-  }
+  //   (*it)->SetInfo('H');
+  //   (*it)->SetStatus(part_status::active);
+  //   QEDblob->AddToInParticles(*it);
+  // }
+
+  // for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
+  // //   // check for momentum conservation does not work
+  //   (*it)->SetInfo('H');
+  //   (*it)->SetStatus(part_status::active);
+  //   QEDblob->AddToOutParticles(*it);
+  // }
   
   if(p_yfshandler->GetFSRMode()!=0){
     // Add the fsr corrected final states
@@ -162,7 +164,8 @@ ATOOLS::Return_Value::code  Soft_Photons::Treat(Blob_List* bloblist) {
       }
     }
   }
-  QEDblob->SetStatus(blob_status::needs_reconnections | blob_status::needs_hadronization);
+  sigblob->CheckMomentumConservation();
+  // QEDblob->SetStatus(blob_status::needs_reconnections | blob_status::needs_hadronization);
   return Return_Value::Nothing;
 }
 
