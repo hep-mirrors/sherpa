@@ -313,8 +313,8 @@ double Dipole::EEX(){
         double eik1 = Eikonal(k1);
         double eik2 = Eikonal(k2);
         real += Hard(k1,k2)/eik1/eik2
-                -Hard(k2)/eik2
-                -Hard(k1)/eik1
+                -(Hard(k2)-eik2)/eik2
+                -(Hard(k1)-eik1)/eik1
                 -1;
       }
     }
@@ -349,9 +349,9 @@ double Dipole::Hard(const Vec4D &k1, const Vec4D &k2){
   double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
   
   double a1 = k1*m_bornmomenta[0]/p1p2;
-  double b1 = k1*m_bornmomenta[1]/p1p2;
+  double a2 = k1*m_bornmomenta[1]/p1p2;
   
-  double a2 = k2*m_bornmomenta[0]/p1p2;
+  double b1 = k2*m_bornmomenta[0]/p1p2;
   double b2 = k2*m_bornmomenta[1]/p1p2;
   
   double eta1 = a1/(1+a1+b1);
@@ -366,11 +366,11 @@ double Dipole::Hard(const Vec4D &k1, const Vec4D &k2){
   double zetap1 = zeta1/(1+zeta2);
   double zetap2 = zeta2/(1+zeta1);
 
-  double ap1 = a1/(1.+a1+b1);
-  double bp1 = b1/(1.+a1+b1);
+  double ap1 = a1/(1.-a2);
+  double bp1 = b1/(1.-b2);
 
-  double ap2 = a2/(1.+a2+b2);
-  double bp2 = b2/(1.+a2+b2);
+  double ap2 = a2/(1.-a1);
+  double bp2 = b2/(1.-b1);
   
   double v1 = a1+b1;
   double v2 = a1+b1;
