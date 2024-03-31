@@ -18,12 +18,12 @@ Electron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,const unsigned in
 
 Electron_Remnant::
 Electron_Remnant(YFS::YFS_Handler * yfs,const unsigned int & beam,const unsigned int & tag):
-Remnant_Base(Flavour(beam?-kf_e:kf_e),beam,tag),p_yfs(yfs)
+Remnant_Base(yfs->GetInFlav(beam),beam,tag),p_yfs(yfs)
 {
   // this is a *** very *** specific ordering - lepton at front, photon at back.
   // And we assume that we do not do anything with the photon, really.
   // This will be used explicitly in methods TestExtract and Fillblob
-  m_constituents.push_back(Flavour(beam?-kf_e:kf_e));
+  m_constituents.push_back(yfs->GetInFlav(beam));
   m_constituents.push_back(Flavour(kf_photon));
 }
 

@@ -167,7 +167,8 @@ public:
     inline void SetQedMode(int qed)  {m_qedmode = qed;}
     inline int  GetQedMode()  {return m_qedmode;}
     inline void SetSprimeMin(double sp) {m_smin = sp;}
-    inline void SetCouplings(MODEL::Coupling_Map &cpls)   { m_cpls = cpls; }
+    inline void SetInFlav(Flavour &fl) {m_inflav.push_back(fl);}
+    inline Flavour GetInFlav(int i) {return m_inflav[i];}
     inline void SetNLOType(ATOOLS::nlo_type::code nlo_type) {m_nlotype = nlo_type;}
     inline NLO_Base *NLO() {return p_nlo; }
     // inline void SetFSRMomenta(ATOOLS::Vec4D_Vector f) { m_FSRMomentaME = f;}
