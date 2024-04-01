@@ -36,7 +36,7 @@ public:
     double BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Vec4D_Vector k, const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax);
     double WW_t(double t, double m, double M, double k);
     double WW_s(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
-    double BVirtT(const Vec4D &p1, const Vec4D &p2 );
+    double BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax=0);
     double R1(const Vec4D &p1, const Vec4D &p2);
     double R2(const Vec4D &p1, const Vec4D &p2);
     // double C0(double p1, double p2, double p3);

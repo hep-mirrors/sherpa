@@ -427,15 +427,19 @@ bool FSR::YFS_FORM(){
       m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
     }
   }
-  m_btilStar = p_fsrFormFact->BVR_full(m_q1q2,m_dipole[0][0], m_dipole[1][0],m_mass[0],m_mass[1], m_Emin, m_photonMass, 0);
-  m_btil     = p_fsrFormFact->BVR_full(m_q1q2,Eq1,Eq2,m_mass[0],m_mass[1], m_EminQ, m_photonMass,0);
-  
-  m_DelYFS = m_btilStar - m_btil;
-  m_delvol = m_BtiXcru  - m_BtiQcru;
-
   m_volmc = m_gp*log(1./m_fsrcut);
-
    if(m_hidephotons==1){
+    if(m_tchannel){
+      m_btilStar = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_Emin*m_Emin);
+      m_btil     = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_EminQ*m_EminQ);
+    }
+    else{
+      m_btilStar = p_fsrFormFact->BVR_full(m_q1q2,m_dipole[0][0], m_dipole[1][0],m_mass[0],m_mass[1], m_Emin, m_photonMass, 0);
+      m_btil     = p_fsrFormFact->BVR_full(m_q1q2,Eq1,Eq2,m_mass[0],m_mass[1], m_EminQ, m_photonMass,0);
+    }
+    m_DelYFS = m_btilStar - m_btil;
+    m_delvol = m_BtiXcru  - m_BtiQcru;
+
     m_hideW = exp(YFS_IR + m_DelYFS + m_volmc - m_delvol);
   }
   else m_hideW=exp(YFS_IR  +  m_volmc);
