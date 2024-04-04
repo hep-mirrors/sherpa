@@ -105,8 +105,8 @@ namespace Recola {
 
 using namespace Recola;
 
-DECLARE_VIRTUALME2_GETTER(Recola_Real,"Recola_Real")
-Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,Recola_Real>::
+DECLARE_VIRTUALME2_GETTER(Recola::Recola_Real,"Recola_Real")
+PHASIC::Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,Recola::Recola_Real>::
 operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
