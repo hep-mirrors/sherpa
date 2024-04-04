@@ -27,6 +27,9 @@ SCALES: VAR{1.02*1.02}
 
 ME_QED: 
   ENABLED: 0
+Pion:
+  Form_Factor: 1
+
 
 YFS:
   MODE: 0
@@ -36,10 +39,15 @@ PROCESSES:
 
 
 SELECTORS:
-  - [Polar_Angle, 211, 1, M_PI-1]
-  - [Polar_Angle, -211, 1, M_PI-1]
   - [Acoplanarity, 211, -211, 0, 0.15]
   - VariableSelector:
       Variable: Calc(abs(Theta(p[0])+Theta(p[1]) - 3.14159265359 ) < 0.25)
       Flavs: [-211, 211]
       Ranges: [1, 1]
+
+  - VariableSelector:
+      Variable: Calc((Theta(p[1])-Theta(p[0]) + 3.14159265359 )/2.)
+      Flavs: [-211, 211]
+      Ranges: [1, 3.14159265359-1]
+
+
