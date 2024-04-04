@@ -108,7 +108,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
-  m_psmode   = s["PSMODE"].Get<int>();
+  m_psmode   = Settings::GetMainSettings()["NLO_CSS_PSMODE"].Get<int>();
   m_hpsmode  = s["HPSMODE"].Get<int>();
   if (m_hpsmode == -1) {
     if (m_pinfo.m_ckkw&1) m_hpsmode=0;
@@ -151,7 +151,6 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 void MCatNLO_Process::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
-  s["PSMODE"].SetDefault(1);  // shower mode
   s["HPSMODE"].SetDefault(-1);  // H event shower mode
   s["KFACTOR_MODE"].SetDefault(14);  // K-factor mode
   s["FOMODE"].SetDefault(0);  // fixed order mode
@@ -362,6 +361,8 @@ Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
           ampl.SetNLO(m_hpsmode);
         kfacs[key][i] = kfac;
       }
+      for (Cluster_Amplitude *campl(&ampl);campl;
+	   campl=campl->Next()) msg_Debugging()<<*campl<<"\n";
     }
   }
   kfacs.MakeRelative();
@@ -478,6 +479,9 @@ Weights_Map MCatNLO_Process::OneHEvent(const int wmode)
       wgtmap["QCUT"][i] = (stat ? 1.0 : 0.0);
     }
   }
+  msg_Debugging()<<"R selected via NLO "<<*p_ampl<<"\n";
+  for (Cluster_Amplitude *campl(p_ampl->Next());campl;
+       campl=campl->Next()) msg_Debugging()<<*campl<<"\n";
   return wgtmap;
 }
 
@@ -589,9 +593,12 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
   p_selected=p_bproc;
   ampl=p_ampl;
   if (!(m_psmode&2)) ampl->SetNLO(4);
+  else ampl->SetNLO(0);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->WeightsMap().Nominal()<<" )\n";
+  for (Cluster_Amplitude *campl(p_ampl->Next());campl;
+       campl=campl->Next()) msg_Debugging()<<*campl<<"\n";
   p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
   if (m_psmode&2) return Weights_Map{1.0};
   return stat ? p_nlomc->WeightsMap() : Weights_Map{0.0};
