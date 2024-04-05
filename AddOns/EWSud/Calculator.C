@@ -74,7 +74,6 @@ Calculator::Calculator(Process_Base* proc):
   for (const auto& l : disabled_log_list) {
     m_activelogtypes.erase(EWSudakovLogTypeFromString(l));
   }
-  msg_Out() << "\n ";
   m_c_coeff_ignores_vector_bosons =
       s["C_COEFF_IGNORES_VECTOR_BOSONS"].SetDefault(false).Get<bool>();
   if(Settings::GetMainSettings()["EWSUDAKOV_C_COEFF_IGNORES_VECTOR_BOSONS"].IsSetExplicitly()){
