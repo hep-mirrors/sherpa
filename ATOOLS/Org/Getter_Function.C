@@ -20,6 +20,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include <algorithm>
 #include <typeinfo>
 #include <cstdlib>
 
@@ -130,19 +131,30 @@ template<class ObjectType,class ParameterType,class SortCriterion>
 ObjectType *Getter_Function<ObjectType,ParameterType,SortCriterion>::
 GetObject(const std::string &name,const Parameter_Type &parameters)
 {
-  if (s_getters==NULL) return NULL;
+  if (s_getters==nullptr) return nullptr;
   if (!s_exactmatch) {
     for (typename String_Getter_Map::reverse_iterator git=s_getters->rbegin();
-	 git!=s_getters->rend();++git) {
+         git!=s_getters->rend();++git) {
       if ((name.length()==0 && git->first.length()==0) ||
-	  (git->first.length()>0 && name.find(git->first)==0))
-	return (*git->second)(parameters);
+          (git->first.length()>0 && name.find(git->first)==0))
+        return (*git->second)(parameters);
     }
-    return NULL;
+    return nullptr;
   }
-  typename String_Getter_Map::iterator git=s_getters->find(name);
-  if (git!=s_getters->end()) return (*git->second)(parameters);
-  return NULL;
+
+  /// make getter name search case insensitive
+  for(auto& it: *s_getters){
+    std::string it_upper = it.first;
+    std::string name_upper = name;
+    std::transform(it_upper.begin(),it_upper.end(),it_upper.begin(),
+                   [](char c){return std::toupper(c);});
+    std::transform(name_upper.begin(),name_upper.end(),name_upper.begin(),
+                   [](char c){return std::toupper(c);});
+    if(it_upper == name_upper) {
+      return (*it.second)(parameters);
+    }
+  }
+  return nullptr;
 }
 
 template<class ObjectType,class ParameterType,class SortCriterion>
