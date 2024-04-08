@@ -1,8 +1,9 @@
-import sys
-import re
-import os
-import yaml
+#!/usr/bin/env python3
+
 import argparse
+import re
+
+import yaml
 
 print('WARNING : This is intended as a first step to reduce manual work in the conversion.')
 print('WARNING : The conversion will be incomplete in most cases, so use with care.')
@@ -55,7 +56,7 @@ class runcard():
         '''
         uniformed_text = ''
         for l in open(self.datafile):
-            if(l[l.find(';')+1] is not ' '):
+            if(l[l.find(';')+1] != ' '):
                 l = l.replace(';','; ')
             endendline = l.replace('; ',';\n').strip(' ')
             uniformed_text = uniformed_text+endendline
