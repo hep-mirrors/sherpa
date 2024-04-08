@@ -1,6 +1,6 @@
 ---
 title: Sherpa run-time settings
-date: Thu Mar 28 12:41:21 2024
+date: Mon Apr  8 12:05:40 2024
 ...
 
 Unused settings
@@ -9522,9 +9522,9 @@ COLOUR\_RECONNECTIONS:PMODE| 0 |  |
 COLOUR\_RECONNECTIONS:Q\_0| 1 |  |
 COLOUR\_RECONNECTIONS:R\_0| 100 |  |
 COLOUR\_RECONNECTIONS:Reshuffle| 0\.111111111111 |  |
-COLOUR\_RECONNECTIONS:dist\_type| 1 |  |
-COLOUR\_RECONNECTIONS:eta0| 0\.1 |  |
+COLOUR\_RECONNECTIONS:etaQ| 0\.1 |  |
 COLOUR\_RECONNECTIONS:etaR| 0\.16 |  |
+COLOUR\_RECONNECTIONS:g\_only| 0 |  |
 COLOUR\_RECONNECTIONS:kappa| 2 |  |
 COLOUR\_SCHEME| 0 |  |
 COMIX:AEXP| 0\.9 |  |

@@ -182,7 +182,7 @@ double Reconnect_Gluon::Distance(ATOOLS::Particle *trip, ATOOLS::Particle *anti)
         {
                 case 1:
                         return MomDistance(trip, anti);
-                        break; // don't really neee presumably, because return statement
+                        break; // don't really need presumably, because return statement
                 case 2:
                         return PosDistance(trip, anti);
                         break;

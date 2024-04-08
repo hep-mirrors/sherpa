@@ -31,6 +31,8 @@ namespace RECONNECTIONS {
     virtual void   Reset();
     virtual int    operator()(ATOOLS::Blob_List *const blobs) = 0;
     virtual double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) = 0;
+    void 	   FillMassesInHistogram(std::map<unsigned int, ATOOLS::Particle *> col_pairs[2], std::string hist_name);
+    void	   FillLengthInHistogram(float total_length, std::string hist_name);
 
     ATOOLS::Part_List              * GetParticles()               { return &m_particles; }
     ATOOLS::ParticleSet            * GetParts(const size_t & pos) { return &m_parts[pos]; }

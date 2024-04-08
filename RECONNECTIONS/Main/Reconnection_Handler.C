@@ -13,7 +13,7 @@ using namespace std;
 
 Reconnection_Handler::Reconnection_Handler(const bool & on) :
   m_on(on),
-  p_reconnector(new Reconnect_Gluon()),
+  p_reconnector(new Reconnect_Statistical()),
   m_nfails(0)
 {}
 

@@ -73,12 +73,14 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
 		msg_Info() << std::endl << "Particle->Number(): " << cit->second->Number() << std::endl;
 	}
   }
+  FillMassesInHistogram(m_cols, "Mass_beforeStatistical");
   size_t N = m_collist.size();
   unsigned int col[2];
   for (size_t i=0;i<sqr(N);i++) {
     if (!SelectColourPair(N,col[0],col[1])) break;
     if (!AttemptSwap(col)) return false;;
   }
+  FillMassesInHistogram(m_cols, "Mass_afterStatistical");
   UpdateColours();
   m_collist.clear();
   return true;
@@ -160,8 +162,10 @@ double Reconnect_Statistical::TotalLength() {
     msg_Info() << "Distance: " << Distance(part1, part2) << std::endl;
     msg_Info() << "Total" << total << std::endl;
   }
-  return total/pow(m_parts[0].size(),m_kappa);
-  //const double norm_total = total/pow(m_parts[0].size(),m_kappa);
+  //return total/pow(m_parts[0].size(),m_kappa);
+  const double return_value = total/pow(m_parts[0].size(),m_kappa);
+  FillLengthInHistogram(return_value, "stringlength_statistical");
+  return return_value;
   //this.m_stringlength_totals.push_back(norm_total);
   //return norm_total;
 }
