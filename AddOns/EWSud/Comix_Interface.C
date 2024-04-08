@@ -1,3 +1,5 @@
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
 #include "AddOns/EWSud/Comix_Interface.H"
 
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -5,6 +7,7 @@
 #include "PHASIC++/Process/ME_Generators.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "COMIX/Main/Single_Process.H"
+#include <algorithm>
 
 using namespace PHASIC;
 using namespace COMIX;
@@ -117,6 +120,16 @@ void Comix_Interface::InitializeProcesses(const Cluster_Amplitude_PM& ampls)
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: PRINT_GRAPHS");
   }
 
+  auto toup = [](const std::string& str) {
+    std::string temp = str;
+    std::transform(temp.begin(), temp.end(), temp.begin(), [](const char c) {
+        return toupper(c);});
+    return temp;
+  };
+
+  if(toup(s["MODEL"].Get<std::string>()) != "SMGOLD"){
+    THROW(fatal_error, "EWSudakov corrections only make sense if Goldstone bosons are present, make sure to set MODEL: SMGold");
+  }
   for (const auto& kv : ampls) {
     const auto& ampl = kv.second;
     PHASIC::Process_Base* proc = GetProcess(*ampl);
@@ -154,10 +167,17 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
   pi.m_mincpl = p_proc->Info().m_mincpl;
   pi.m_maxacpl = p_proc->Info().m_maxacpl;
   pi.m_minacpl = p_proc->Info().m_minacpl;
+
+  /// resize coupling to allow for smgold vertices
+  pi.m_maxcpl.resize(3);
   pi.m_maxcpl[2] = 99;
+  pi.m_mincpl.resize(3);
   pi.m_mincpl[2] = 0;
+  pi.m_maxacpl.resize(3);
   pi.m_maxacpl[2] = 99;
+  pi.m_minacpl.resize(3);
   pi.m_minacpl[2] = 0;
+
 
   // subtract 1 from the QCD order if we are dealing with V and/or I events
   if (p_proc->Info().Has(nlo_type::loop) || p_proc->Info().Has(nlo_type::vsub)) {
