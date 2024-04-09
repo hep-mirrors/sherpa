@@ -304,35 +304,34 @@ matter_form Remnants_Parameters::Matter_Form(const ATOOLS::Flavour& flav)
 
 void Remnants_Parameters::Output()
 {
-  if (!msg->LevelIsInfo()) return;
-  msg_Out() << "==============================================================="
+  msg_Debugging() << "==============================================================="
                "========\n";
   for (std::map<Flavour, remnant_parameters*>::iterator flrpit =
                m_defaults.begin();
        flrpit != m_defaults.end(); flrpit++) {
     bool act = (m_actuals.find(flrpit->first) != m_actuals.end());
-    msg_Out() << "-------------------------------------------------------------"
+    msg_Debugging() << "-------------------------------------------------------------"
                  "----------\n"
               << "Remnant default (actuals) for " << flrpit->first << ":\n";
-    msg_Out() << "   Primordial KT Form:   " << flrpit->second->kT_form;
-    if (act) msg_Out() << " (" << m_actuals[flrpit->first]->kT_form << ")";
-    msg_Out() << "\n";
-    msg_Out() << "   Primordial KT Recoil: " << flrpit->second->kT_recoil;
-    if (act) msg_Out() << " (" << m_actuals[flrpit->first]->kT_recoil << ")";
-    msg_Out() << "\n";
-    msg_Out() << "   Matter Form:          " << flrpit->second->m_form;
-    if (act) msg_Out() << " (" << m_actuals[flrpit->first]->m_form << ")";
-    msg_Out() << "\n";
+    msg_Debugging() << "   Primordial KT Form:   " << flrpit->second->kT_form;
+    if (act) msg_Debugging() << " (" << m_actuals[flrpit->first]->kT_form << ")";
+    msg_Debugging() << "\n";
+    msg_Debugging() << "   Primordial KT Recoil: " << flrpit->second->kT_recoil;
+    if (act) msg_Debugging() << " (" << m_actuals[flrpit->first]->kT_recoil << ")";
+    msg_Debugging() << "\n";
+    msg_Debugging() << "   Matter Form:          " << flrpit->second->m_form;
+    if (act) msg_Debugging() << " (" << m_actuals[flrpit->first]->m_form << ")";
+    msg_Debugging() << "\n";
     for (std::map<std::string, double>::iterator pit =
                  m_defaults[flrpit->first]->params.begin();
          pit != m_defaults[flrpit->first]->params.end(); pit++) {
-      msg_Out() << "   " << pit->first << ": " << pit->second;
+      msg_Debugging() << "   " << pit->first << ": " << pit->second;
       if (act)
-        msg_Out() << " (" << m_actuals[flrpit->first]->params[pit->first]
+        msg_Debugging() << " (" << m_actuals[flrpit->first]->params[pit->first]
                   << ")";
-      msg_Out() << "\n";
+      msg_Debugging() << "\n";
     }
-    msg_Out() << "-------------------------------------------------------------"
+    msg_Debugging() << "-------------------------------------------------------------"
                  "----------\n";
   }
 }
