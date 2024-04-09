@@ -9,16 +9,16 @@ namespace ATOOLS {
   class Exception;
 
   class Terminator_Object {
-    
+
   protected:
-    
+
     virtual bool ReadInStatus(const std::string &path)
     {return true;}
-    
+
     virtual void PrepareTerminate() {}
-    
+
     friend class Terminator_Object_Handler;
-    
+
   public:
 
     virtual ~Terminator_Object() {}
@@ -30,8 +30,8 @@ namespace ATOOLS {
   private:
 
     bool m_noremove;
-    
-    unsigned int m_nbus, m_nsegv;
+
+    unsigned int m_nbus, m_nsegv, m_stacktraces;
 
     typedef void (*Terminator_Function)(void);
 
@@ -39,7 +39,7 @@ namespace ATOOLS {
     std::vector<Terminator_Object*>  m_terminatorobjects;
 
     friend class Exception;
-    
+
   public:
 
     Terminator_Object_Handler();
@@ -48,7 +48,7 @@ namespace ATOOLS {
 
     bool ReadInStatus(const std::string &path);
     void PrepareTerminate();
-    
+
     void HandleSignal(int signal);
     void Terminate(unsigned int excode);
 
@@ -57,14 +57,14 @@ namespace ATOOLS {
 
     void RemoveTerminatorFunction(void (*function)(void));
     void RemoveTerminatorObject(Terminator_Object *const object);
-    
+
   };
 
   extern Terminator_Object_Handler *exh;
 
-  void HandleSignal(int signal); 
+  void HandleSignal(int signal);
   void Terminate();
-  
+
 }
 
 #endif
