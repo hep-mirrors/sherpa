@@ -115,6 +115,9 @@ double NLO_Base::CalculateVirtual() {
 	}	
 	sub = p_dipoles->CalculateVirtualSub();
 	m_oneloop = (virt - sub * m_born);
+	if(IsBad(m_oneloop)){
+		msg_Error()<<"YFS Virtual is NaN"<<std::endl;
+	}
 	return m_oneloop;
 }
 
@@ -140,6 +143,9 @@ double NLO_Base::CalculateReal() {
 		}
 		real+=CalculateReal(k);
 	}
+	if(IsBad(real)){
+		msg_Error()<<"YFS Real is NaN"<<std::endl;
+	}
 	return real;
 }
 
@@ -162,7 +168,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	double tot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb   = p_dipoles->CalculateRealSubEEX(kk);
-
+	if(IsZero(subb)) return 0;
 	if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	p.push_back(k);
 	CheckMasses(p,1);
@@ -188,6 +194,12 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 		m_histograms1d["Real_Flux"]->Insert(flux);
   }
   if(m_no_subtraction) return r/subloc;
+  if(IsBad(tot)){
+  	msg_Error()<<"NLO real is NaN"<<std::endl
+  							<<"R = "<<r<<std::endl
+  							<<"Local  S = "<<subloc*m_born<<std::endl
+  							<<"GLobal S = "<<subb<<std::endl;
+  }
 	return tot;// / flux;
 }
 

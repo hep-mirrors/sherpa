@@ -1,4 +1,5 @@
 
+
 #include "YFS/Main/FSR.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -38,14 +39,14 @@ double MySqLam(double x,double y,double z)
 FSR::FSR()
 {
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
-  s["FSR_EMIN"].SetDefault(1e-2*m_vmin);
+  s["FSR_EMIN"].SetDefault(1e-2*m_isrcut);
   s["FSR_FCUT"].SetDefault(0);
   s["FSR_NBAR"].SetDefault(0);
   s["MASSIVE_NBAR"].SetDefault(0);
   s["FSR_EIK"].SetDefault(0);
   s["FSR_CRU"].SetDefault(0);
   s["FSR_NGAMMA"].SetDefault(-1);
-  s["FSR_CUT"].SetDefault(1e-2*m_vmin);
+  s["FSR_CUT"].SetDefault(1e-2*m_isrcut);
   m_Edelta = s["FSR_EMIN"].Get<double>();
   m_kkmcAngles = s["KKMC_ANG"].Get<bool>();
   m_fsrcut = s["FSR_CUT"].Get<double>();
@@ -86,7 +87,7 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   if(IsBad(m_dip_sp)) return false;
   MakePair(sqrt(m_dip_sp), m_bornQ1, m_bornQ2);
   m_EQ = sqrt(m_dip_sp) / 2.;
-  m_Emin = 0.5 * sqrt(m_s) * m_vmin;
+  m_Emin = 0.5 * sqrt(m_s) * m_isrcut;
   m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
   if (m_dipole.size() != 2) {

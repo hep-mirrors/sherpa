@@ -27,8 +27,8 @@ using namespace std;
 
 ISR::ISR()
 {
-  m_Kmin = sqrt(m_s) * (m_vmin) / 2.;
-  m_Kmax = sqrt(m_s * (1. - m_vmin));
+  m_Kmin = sqrt(m_s) * (m_isrcut) / 2.;
+  m_Kmax = sqrt(m_s * (1. - m_isrcut));
   m_cut = 1.; // set to 0 if anything fails to pass cuts
   m_nsuccess = 0;
   m_nfail = 0;
@@ -59,11 +59,11 @@ void ISR::SetIncoming(YFS::Dipole *p_dipole) {
 }
 
 void ISR::NPhotons() {
-  if (m_v < m_vmin){
+  if (m_v < m_isrcut){
     m_n = 0;
     return;
   }
-  m_nbar = m_gp * log(m_v / m_vmin);
+  m_nbar = m_gp * log(m_v / m_isrcut);
   if(m_fixed_photons!=-1) {
     m_n = m_fixed_photons;
   }
@@ -89,7 +89,7 @@ void ISR::GenerateAngles()
   if (m_kkmcAngles == 0) {
     double P = log((1.+m_b1)/(1.-m_b1))
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
-    // while (true) {
+    while (true) {
       if (ran->Get() < P) {
         double rnd = ran->Get();
         double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));
@@ -102,11 +102,13 @@ void ISR::GenerateAngles()
         m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
         // m_c        = 1./m_b1*(pow(1-m_b2,rnd)/pow(1+m_b2,rnd-1)-1);
       }
-      // weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
-      //                   +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
-      //                  /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
-    //   if (ran->Get() < weight) break;
-    // }
+      double weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
+                        +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
+                       /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
+      if (ran->Get() < weight) break;
+    }
+    // std::cout<<setprecision(12)<<m_b1<<std::endl;
+    // std::cout<<setprecision(12)<<m_b2<<std::endl;
     // m_angleWeight *= weight;
     m_theta = acos(m_c);
     m_sin = sin(m_theta);
@@ -147,7 +149,7 @@ void ISR::GenerateAngles()
 void ISR::GeneratePhotonMomentum() {
   DEBUG_FUNC(METHOD << "# of soft photons to be generated: " << m_n << std::endl);
   Clean();
-  if(m_v < m_vmin && m_n!=0){
+  if(m_v < m_isrcut && m_n!=0){
     msg_Error()<<"Warning: Generating real photon emissions below IR cut-off\n";
   }
   if(m_v > 1) msg_Error()<<"m_v > 1 = "<<m_v<<std::endl;
@@ -174,7 +176,7 @@ void ISR::GeneratePhotonMomentum() {
     m_zini.push_back(m_w * del2 / 2);
     for (int i = 1; i < m_n; i++) {
       GenerateAngles();
-      m_w  = m_vmin * pow(m_v / m_vmin, ran->Get());
+      m_w  = m_isrcut * pow(m_v / m_isrcut, ran->Get());
       del1 = 1. - m_b1 * m_c;
       del2 = 1. + m_b2 * m_c;
       // m_phi = 2.*M_PI * ran->Get();
@@ -214,8 +216,17 @@ void ISR::MapPhotonMomentun() {
     m_PTK.push_back(m_photonSum.PPerp());
     A = K2 * P2 /PK / PK;
     m_AA.push_back(A);
-    m_lam0 = (m_v) * P2 / (PK) / (1. + sqrt(1. - A * m_v));
-    m_lam  = m_lam0;
+    m_lam  =  (m_v) * P2 / (PK) / (1. + sqrt(1. - A * m_v));
+    if(IsBad(m_lam)){
+      PRINT_VAR(m_v);
+      PRINT_VAR(P2);
+      PRINT_VAR(PK);
+      PRINT_VAR(K2);
+      PRINT_VAR(A);
+      PRINT_VAR(m_photonSum);
+      PRINT_VAR(m_b1);
+      PRINT_VAR(m_b2);
+    }
     m_lam0 = PK / P2 / m_v * (1. + sqrt(1. - m_v * A));
     m_scale.push_back(m_lam);
     m_diljac  = 0.5 * (1. + 1. / sqrt(1. - m_v * A));
@@ -228,7 +239,7 @@ void ISR::MapPhotonMomentun() {
 
   for (size_t i = 0; i < m_photons.size(); ++i)
   {
-    if(m_photons[i][0]*m_lam < m_vmin) m_cut = 0.;
+    if(m_photons[i][0]*m_lam < m_isrcut) m_cut = 0.;
     m_photons[i] *= m_lam * sqrt(m_s) / 2.;
     m_yini[i] /= m_lam;
     m_zini[i] /= m_lam;
@@ -270,7 +281,7 @@ void ISR::Weight() {
   if (m_cut == 0) m_nfail += 1;
   else m_nsuccess += 1;
   DEBUG_FUNC("v = " << m_v << std::endl <<
-             "vmin = " << m_vmin << std::endl <<
+             "vmin = " << m_isrcut << std::endl <<
              "vmax = " << m_vmax << std::endl <<
              "Kmin = " << m_Kmin << std::endl <<
              "Kmax = " << m_Kmax << std::endl <<
@@ -288,13 +299,13 @@ void ISR::Weight() {
              << "Weight = " << m_weight << std::endl);
   for (size_t i = 0; i < m_photons.size(); ++i) msg_Debugging() << "k[" << i << "] = " << m_photons[i] << std::endl;
   if (IsBad(m_weight)) {
-    msg_Error() << "YFS Weight is: " << m_weight << std::endl <<
+    msg_Error()<<METHOD<<std::endl << "YFS Weight is: " << m_weight << std::endl <<
                 "v = " << m_v << std::endl <<
-                "E = " << sqrt(m_sp) << std::endl <<
-                "vmin = " << m_vmin << std::endl <<
+                "sqrt(m_sp) = " << sqrt(m_s*(1-m_v)) << std::endl <<
+                "vmin = " << m_isrcut << std::endl <<
                 "vmax = " << m_vmax << std::endl <<
                 "weight = " << m_weight << std::endl <<
-                "eps  = " << m_vmin << std::endl <<
+                "eps  = " << m_isrcut << std::endl <<
                 "Nphotons  = " << m_n << std::endl <<
                 "Gamma = " << m_g << std::endl <<
                 "Gamma prime = " << m_gp << std::endl <<

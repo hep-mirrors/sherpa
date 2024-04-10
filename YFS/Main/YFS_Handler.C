@@ -28,6 +28,7 @@ YFS_Handler::YFS_Handler()
   p_nlo = new YFS::NLO_Base();
   m_formfactor = 1;
   m_isrinital = true;
+  p_splitter = new PHOTONS::Photon_Splitter(m_photon_split);
 }
 
 YFS_Handler::~YFS_Handler()
@@ -54,10 +55,10 @@ YFS_Handler::~YFS_Handler()
 
 void YFS_Handler::SetBeam(BEAM::Beam_Spectra_Handler *beam)
 {
-  m_beams.clear();
-  for(size_t i = 0; i < 2; ++i) m_beams.push_back(beam->GetBeam(i)->OutMomentum());
-  m_beam1 = m_beams[0];
-  m_beam2 = m_beams[1];
+  p_beams = beam;
+  // for(size_t i = 0; i < 2; ++i) m_beams.push_back(beam->GetBeam(i));
+  m_beam1 = p_beams->GetBeam(0)->OutMomentum();
+  m_beam2 = p_beams->GetBeam(1)->OutMomentum();
   if(m_beam1 != -m_beam2) m_asymbeams = true;
     else m_asymbeams = false;
 }
@@ -236,7 +237,7 @@ bool YFS_Handler::CalculateISR() {
                 m_sp - sp << std::endl << " Event with "
                 << " N=" << p_dipoles->GetDipoleII()->GetPhotons().size() << " photons" << std::endl
                 << " V = " << m_v << std::endl
-                << " Vmin = " << m_vmin << std::endl
+                << " Vmin = " << m_isrcut << std::endl
                 << "ISR NPHotons = " << p_isr->m_N << std::endl;
   }
   return true;
@@ -432,12 +433,16 @@ void YFS_Handler::GenerateWeight() {
   CalculateBeta();
   m_yfsweight*=m_real;
   m_yfsweight *= m_formfactor;
-  if (IsBad(m_yfsweight)) {
-    msg_Error() << METHOD << "\n YFS weight is "<<m_yfsweight<<std::endl
-                << "ISR Weight = " << m_isrWeight
-                << "\n FSR Weight = " << m_fsrWeight
-                << "\n Form Factor Weight = " << m_formfactor
-                << "\n NLO Weight = " << m_formfactor << "\n";
+  if(m_isr_debug) {
+    Vec4D ele;
+    for (int i = 2; i < m_flavs.size(); ++i)
+    {
+      if(IsEqual(m_flavs[i],kf_e)) {
+        ele = m_plab[p_dipoles->m_flav_label[m_flavs[i]]];
+        p_beams->BoostBackLab(ele);
+        p_debug->FillHist("Form_Factor_FS_Angle", ele.Theta()*1000,m_formfactor,1);
+      }
+    }
   }
   DEBUG_FUNC("\nISR Weight = " << m_isrWeight << "\n" <<
              "  FSR Weight = " << m_fsrWeight << "\n" <<
@@ -452,6 +457,7 @@ void YFS_Handler::GenerateWeight() {
              "  Form Factor = " << m_formfactor << "\n" <<
              "  NLO  Correction = " << m_real << "\n" <<
              "Total Weight = " << m_yfsweight << "\n";
+    m_yfsweight = 0;
   }
 }
 
@@ -545,6 +551,11 @@ void YFS_Handler::CheckMasses(){
       m_plab[i] = p[i];
     }
   }
+}
+
+void YFS_Handler::SplitPhotons(ATOOLS::Blob * blob){
+  if(IsEqual(m_photon_split,0)) return;
+  p_splitter->SplitPhotons(blob);
 }
 
 Vec4D_Vector YFS_Handler::GetPhotons(){
