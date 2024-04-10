@@ -89,22 +89,24 @@ Calculator::Calculator(Process_Base* proc):
   if(Settings::GetMainSettings()["EWSUDAKOV_INCLUDE_SUBLEADING"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: INCLUDE_SUBLEADING");
   }
-
+  m_monitorkfactor = s["MONITOR_K_FACTOR"].SetDefault(false).Get<bool>();
 }
 
 Calculator::~Calculator()
 {
-  static bool did_output{false};
-  if (!did_output) {
-    Calculator::m_kfachisto.MPISync();
-    Calculator::m_kfachisto.Finalize();
-    MyStrStream s;
-    s << "kfacs_" << m_threshold;
-    Calculator::m_kfachisto.Output(s.str());
-    msg_Error() << "Set " << m_numonshellwarning
-                << " amplitudes to 0.0, because there was not enough energy to "
-                   "fulfil on-shell conditions\n";
-    did_output = true;
+  if(m_monitorkfactor){
+    static bool did_output{false};
+    if (!did_output) {
+      Calculator::m_kfachisto.MPISync();
+      Calculator::m_kfachisto.Finalize();
+      MyStrStream s;
+      s << "kfacs_" << m_threshold;
+      Calculator::m_kfachisto.Output(s.str());
+      msg_Error() << "Set " << m_numonshellwarning
+                  << " amplitudes to 0.0, because there was not enough energy to "
+        "fulfil on-shell conditions\n";
+      did_output = true;
+    }
   }
 }
 
@@ -254,7 +256,7 @@ EWSudakov_Log_Corrections_Map Calculator::CorrectionsMap()
     kfacs[coeffkv.first.first] += delta_c;
     kfac += delta_c;
   }
-  Calculator::m_kfachisto.Insert(kfac);
+  if(m_monitorkfactor) Calculator::m_kfachisto.Insert(kfac);
   if (m_checkkfac) {
     KFactor_Checker checker(p_proc->Name());
     checker.SetLogFileName(m_checklogfile);
