@@ -1,0 +1,29 @@
+# Sherpa configuration for Z[ee]+Jets production
+EVENT_GENERATION_MODE: W
+
+# set up beams for LHC run 2
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# matrix-element calculation
+ME_GENERATORS: [Comix]
+
+CORE_SCALE: VAR{sqr(91.2)}{sqr(91.2)}{sqr(91.2)}
+
+VARIATIONS:
+  - EWsud
+
+MODEL: SMGold
+
+PROCESSES:
+- 93 93 -> 11 -11 93:
+    Order: {QCD: 1, EW: 2, SMGold: 0}
+
+SELECTORS:
+- [Mass, 11, -11, 66, E_CMS]
+- NJetFinder:
+    N: 1
+    PTMin: 20.0
+    ETMin: 0.0
+    R: 0.4
+    Exp: -1

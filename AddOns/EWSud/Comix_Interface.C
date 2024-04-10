@@ -169,13 +169,13 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
   pi.m_minacpl = p_proc->Info().m_minacpl;
 
   /// resize coupling to allow for smgold vertices
-  pi.m_maxcpl.resize(3);
+  pi.m_maxcpl.resize(pi.m_maxcpl.size() + 1);
   pi.m_maxcpl[2] = 99;
-  pi.m_mincpl.resize(3);
+  pi.m_mincpl.resize(pi.m_mincpl.size() + 1);
   pi.m_mincpl[2] = 0;
-  pi.m_maxacpl.resize(3);
+  pi.m_maxacpl.resize(pi.m_maxacpl.size() + 1);
   pi.m_maxacpl[2] = 99;
-  pi.m_minacpl.resize(3);
+  pi.m_minacpl.resize(pi.m_minacpl.size() + 1);
   pi.m_minacpl[2] = 0;
 
 
