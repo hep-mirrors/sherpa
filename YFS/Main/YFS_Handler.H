@@ -18,6 +18,7 @@
 #include "YFS/CEEX/Ceex_Base.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
+#include "PHOTONS++/PhotonSplitter/Photon_Splitter.H"
 
 
 
@@ -75,6 +76,8 @@ public:
     ATOOLS::Flavour_Vector m_flavs;
     std::vector<double> m_mass;
     ATOOLS::Momenta_Stretcher m_stretcher;
+    BEAM::Beam_Spectra_Handler *p_beams;
+    PHOTONS::Photon_Splitter *p_splitter;
 
 
     double m_f;
@@ -91,7 +94,6 @@ public:
     ATOOLS::Vec4D_Vector m_p, m_beams;
     ATOOLS::nlo_type::code m_nlotype;
     std::vector<double> m_MEorder;
-    BEAM::Beam_Base *p_beams[2];
     // YFS::Weight *p_yfsweight;
     YFS::Define_Dipoles *p_dipole;
     Vec4D m_photonSumISR, m_photonSumFSR, m_kboostVec, m_K, m_QN, m_beamP, m_beamM;
@@ -211,6 +213,7 @@ public:
     void CalculateCoulomb();
     void CalculateWWForm();
     void YFSDebug(double W);
+    void SplitPhotons(ATOOLS::Blob * blob);
 };// end of class YFS_Handler
 
 

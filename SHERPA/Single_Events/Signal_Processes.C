@@ -245,6 +245,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
         blob->AddToOutParticles(particle);
       }
     }
+    p_yfshandler->SplitPhotons(blob);
   }
 
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>(winfo.m_weightsmap));

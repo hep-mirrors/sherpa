@@ -39,6 +39,7 @@ void Debug::InitializeHist() {
 		m_histograms_ISR["weight"]  = new Histogram(0, -50, 50, 200);
 		m_histograms_ISR["massweight"]  = new Histogram(0, 0, 2, 100);
 		m_histograms_ISR["jacweight"]  = new Histogram(0, 0, 2, 100);
+  		m_histograms2d["Form_Factor_FS_Angle"] = new Histogram_2D(0, 0, 30., 60 , 0.99, 1.01, 60 );
 	}
 	if (m_fsr_debug && m_fsrmode != 0) {
 
@@ -263,6 +264,33 @@ void Debug::FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr,
 	}
 }
 
+void Debug::FillHist(const std::string &name, const double &x, double weight){
+	std::map<string, Histogram *>::iterator itisr  = m_histograms_ISR.find(name);
+	if(m_fsr_debug) std::map<string, Histogram *>::iterator itfsr  = m_histograms_FSR.find(name);
+	if(m_isr_debug){
+		if(itisr != m_histograms_ISR.end()) {
+			m_histograms_ISR[name]->Insert(x,weight);
+			return;
+		}
+	}
+	if(m_fsr_debug){
+		if(itisr != m_histograms_FSR.end()){
+			m_histograms_FSR[name]->Insert(x,weight);
+			return;
+		}
+	}
+	THROW(fatal_error, "Histogram with key: "+name+" not found in YFS Debug");
+}
+
+
+void Debug::FillHist(const std::string &name, const double &x, const double &y, double weight){
+	std::map<string, Histogram_2D *>::iterator it  = m_histograms2d.find(name);
+	if(it != m_histograms2d.end()) m_histograms2d[name]->Insert(x,y,weight);
+	else THROW(fatal_error, "Histogram2D with key: "+name+" not found in YFS Debug");
+
+}
+
+
 void Debug::WriteHistograms() {
 	Histogram * histo;
 	string name;
@@ -287,6 +315,17 @@ void Debug::WriteHistograms() {
 			histo->Finalize();
 			histo->Output(name);
 			delete histo;
+		}
+		Histogram_2D * histo2d;
+		string name;
+		for (map<string, Histogram_2D *>::iterator hit = m_histograms2d.begin();
+		        hit != m_histograms2d.end(); hit++) {
+			histo2d = hit->second;
+			name  = string(m_debugDIR_ISR) + "/" + hit->first + string(".dat");
+			// histo2d->MPISync();
+			histo2d->Finalize();
+			histo2d->Output(name);
+			delete histo2d;
 		}
 	}
 }

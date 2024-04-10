@@ -34,10 +34,8 @@ void YFS_Base::RegisterDefaults(){
   s["ISR_MODE"].SetDefault(0);
   s["BETA"].SetDefault(0);
   s["SEMI"].SetDefault(0);
-  s["VMIN1"].SetDefault(1e-9);
   s["VMAX"].SetDefault(1);
-  s["VMIN"].SetDefault(1e-6);
-  s["ISR_CUT"].SetDefault(1e-6);
+  s["ISR_CUT"].SetDefault(1e-3);
   s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
   s["LOOP_TOOL"].SetDefault(false);
@@ -67,7 +65,7 @@ void YFS_Base::RegisterDefaults(){
   s["REAL_ONLY"].SetDefault(0);
   s["USE_MODEL_ALPHA"].SetDefault(0);
   s["FSR_BETA"].SetDefault(1);
-  s["KKMC_ANG"].SetDefault(1);
+  s["KKMC_ANG"].SetDefault(0);
   s["FIXED_WEIGHT"].SetDefault(0);
   s["GRIFFIN_MODE"].SetDefault(0);
   s["GRIFFIN_ORDER"].SetDefault(2);
@@ -100,9 +98,7 @@ void YFS_Base::RegisterSettings(){
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   m_betaorder = s["BETA"].Get<int>();
   m_mode = s["ISR_MODE"].Get<int>();
-  m_isrcut   = s["ISR_CUT"].Get<double>();
-  m_vmin = s["VMIN"].Get<double>();
-  m_vmin1 = s["VMIN1"].Get<double>();
+  m_isrcut   = s["ISR_CUT"].Get<double>()/m_s;
   m_vmax = s["VMAX"].Get<double>();
   m_nmax  = s["PHOTON_MAX"].Get<int>();
   m_fillblob  = s["FILL_BLOB"].Get<bool>();
@@ -159,6 +155,7 @@ void YFS_Base::RegisterSettings(){
   m_massless_sub = s["Massless_Sub"].Get<int>();
   m_check_real_sub = s["Check_Real_Sub"].Get<bool>();
   m_check_rr_sub = s["Check_RR_Sub"].Get<bool>();
+  m_photon_split = s["PHOTON_SPLITTER_MODE"].SetDefault(15).Get<bool>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
