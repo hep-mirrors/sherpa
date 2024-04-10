@@ -117,6 +117,10 @@ void ISR_Channels::CheckForStructuresFromME() {
       }
       break;
     case channel_type::simple:
+      if(p_yfshandler->GetMode()){
+        m_isrparams.push_back(Channel_Info(type,1,1));
+      }
+      break;
     case channel_type::leadinglog:
     case channel_type::laserback:
     default:
@@ -149,7 +153,7 @@ bool ISR_Channels::CreateChannels()
     2*size_t(m_isrtype[1]!=PDF::isrtype::intact &&
 	     m_isrtype[1]!=PDF::isrtype::unknown);
   if(m_isrtype[0]==PDF::isrtype::yfs) collmode = 4;
-  if(p_yfshandler->GetMode()) collmode = 4;
+  if(p_yfshandler->GetMode()==1) collmode = 4;
   if (m_isrparams.size() < 1 || collmode==0) return 0;
   for (size_t i=0;i<m_isrparams.size();i++) {
     switch (m_isrparams[i].type) {
@@ -211,7 +215,7 @@ void ISR_Channels::AddSimplePole(const size_t & chno,const size_t & mode) {
 void ISR_Channels::AddResonance(const size_t & chno,const size_t & mode) {
   double mass  = m_isrparams[chno].parameters[0];
   double width = m_isrparams[chno].parameters[1];
-  double yexp  = m_isrparams[chno].parameters.size()>1?m_isrparams[chno].parameters[2]:0.;
+  double yexp  = m_isrparams[chno].parameters.size()>2?m_isrparams[chno].parameters[2]:0.;
   if (mode==3 && (m_isrmode==PDF::isrmode::hadron_hadron ||
 		  m_isrmode==PDF::isrmode::lepton_lepton)) {
     if (dabs(yexp)<1.e-3) {
@@ -244,7 +248,7 @@ void ISR_Channels::AddResonance(const size_t & chno,const size_t & mode) {
 void ISR_Channels::AddThreshold(const size_t & chno,const size_t & mode) {
   double mass  = m_isrparams[chno].parameters[0];
   double spexp = m_isrparams[chno].parameters[1];
-  double yexp  = m_isrparams[chno].parameters.size()>1?m_isrparams[chno].parameters[2]:0.;
+  double yexp  = m_isrparams[chno].parameters.size()>2?m_isrparams[chno].parameters[2]:0.;
   if (mode==3 && (m_isrmode==PDF::isrmode::hadron_hadron ||
 	       m_isrmode==PDF::isrmode::lepton_lepton)) {
     if (yexp==0.0) {
@@ -275,7 +279,7 @@ void ISR_Channels::AddThreshold(const size_t & chno,const size_t & mode) {
 void ISR_Channels::AddLeadingLog(const size_t & chno,const size_t & mode) {
   double beta   = m_isrparams[chno].parameters[0];
   double factor = m_isrparams[chno].parameters[1];
-  double yexp   = m_isrparams[chno].parameters.size()>1?m_isrparams[chno].parameters[2]:0.;
+  double yexp   = m_isrparams[chno].parameters.size()>2?m_isrparams[chno].parameters[2]:0.;
   if (mode==3 && m_isrmode==PDF::isrmode::lepton_lepton) {
     if (yexp==0.0) {
       Add(new Leading_Log_Uniform(beta,factor,m_keyid,p_psh->GetInfo(),mode));
