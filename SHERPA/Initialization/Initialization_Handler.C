@@ -712,6 +712,7 @@ bool Initialization_Handler::InitializeTheYFS(){
     msg_Info()<<"Initialized YFS for Soft Photon Resummation"<<std::endl;
     for (size_t beam=0;beam<2;++beam) {
       p_yfshandler->SetInFlav(m_bunch_particles[beam]);
+      p_yfshandler->SetBeam(p_beamspectra);
     }
   }
   return true;
