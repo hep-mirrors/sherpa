@@ -24,7 +24,8 @@ namespace ALARIC {
     bool   m_wcheck;
     double m_maxweight;
 
-    void RecoCheck(Amplitude *const a,int swap) const;
+    void RecoCheck(Amplitude *const a,int swap,
+		   int ic, int jc, int kc) const;
 
     Amplitude *Convert(ATOOLS::Cluster_Amplitude *const campl,
 		       std::map<ATOOLS::Cluster_Leg*,Parton*> &lmap);
@@ -260,31 +261,36 @@ bool Alaric::PrepareShower
       s.p_s=lmap[lampl->IdLeg(lij->K())];
       s.p_c=lmap[lij];
       (*----m_ampls.end())->SetSplit(s);
-      if (!flip || swap) RecoCheck(*----m_ampls.end(),swap);
+      RecoCheck(*----m_ampls.end(),swap,ic,jc,kc);
     }
   }
   m_ampls.front()->SetT(Q2);
   return true;
 }
 
-void Alaric::RecoCheck(Amplitude *const a,int swap) const
+void Alaric::RecoCheck(Amplitude *const a,int swap,
+		       int ic, int jc, int kc) const
 {
   if (!(m_reco&1) || a->Split().p_c==NULL) return;
   DEBUG_FUNC(a);
-  Amplitude *next(a->Split().p_c->Out(0)->Ampl());
-  int ic=-1, jc=-1, kc=-1;
-  Vec4D pi, pj, pk;
-  for (size_t i(0);i<next->size();++i) {
-    if ((*next)[i]==a->Split().p_c->Out(0)) { ic=i; pi=(*next)[i]->Mom(); }
-    if ((*next)[i]==a->Split().p_c->Out(1)) { jc=i; pj=(*next)[i]->Mom(); }
-    if ((*next)[i]==a->Split().p_s->Out(0)) { kc=i; pk=(*next)[i]->Mom(); }
-  }
-  Cluster_Amplitude *ampl(next->GetAmplitude());
+  Splitting c(a->Split());
+  Cluster_Amplitude *ampl(c.p_c->Out(0)->Ampl()->GetAmplitude());
+  Vec4D pi(ampl->Leg(ic)->Mom());
+  Vec4D pj(ampl->Leg(jc)->Mom());
+  Vec4D pk(ampl->Leg(kc)->Mom());
+  if (a->Split().p_sk->LF()->Construct(c,0)!=1) return;
+  if (c.m_lam.size())
+    for (size_t i(0);i<ampl->Legs().size();++i)
+      ampl->Leg(i)->SetMom(c.m_lam*ampl->Leg(i)->Mom());
+  if (c.m_p.size())
+    for (size_t i(0);i<c.m_p.size();++i)
+      if (c.m_p[i]!=Vec4D()) ampl->Leg(i)->SetMom(c.m_p[i]);
+  ampl->Leg(ic)->SetMom(c.m_pi);
+  ampl->Leg(jc)->SetMom(c.m_pj);
   double ws, mu2;
   Splitting s=p_clus->KT2
     (*ampl,ic,jc,kc,a->Split().p_c->Flav(),a->ClusterAmplitude()->Kin(),
      a->Split().m_type,1|(swap?2:0)|(ampl->NLO()?16<<2:0),ws,mu2);
-  ampl->Delete();
   msg_Debugging()<<"New reco params: t = "<<s.m_t
 		 <<", z = "<<s.m_z<<", phi = "<<s.m_phi<<"\n";
   msg_Debugging()<<"            vs.: t = "<<a->Split().m_t<<", z = "
@@ -298,13 +304,15 @@ void Alaric::RecoCheck(Amplitude *const a,int swap) const
     msg_Error()<<"Faulty reco params: t = "<<s.m_t
 	       <<", z = "<<s.m_z<<", phi = "<<s.m_phi<<"\n";
     msg_Error()<<"               vs.: t = "<<a->Split().m_t<<", z = "
-	       <<a->Split().m_z<<", phi = "<<a->Split().m_phi<<"\n\n";
+	       <<a->Split().m_z<<", phi = "<<a->Split().m_phi
+	       <<"\n  Kernel "<<a->Split().p_sk->Class()<<"\n";
     msg_Error()<<"  "<<pi<<" "<<pj<<" "<<pk<<"\n";
     msg_Error()<<"  "<<ampl->Leg(ic)->Mom()
 	       <<" "<<ampl->Leg(jc)->Mom()
 	       <<" "<<ampl->Leg(kc)->Mom()<<"\n";
     if (m_reco&2) Abort();
   }
+  ampl->Delete();
 }
 
 DECLARE_GETTER(Alaric,"Alaric",Shower_Base,Shower_Key);
