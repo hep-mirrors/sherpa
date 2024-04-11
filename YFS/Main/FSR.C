@@ -169,7 +169,7 @@ void FSR::GenerateAngles() {
     m_MassWls.push_back(weight);
     m_theta = acos(m_c);
     m_st = sin(m_theta);
-    m_phi   = 2.*M_PI * ran->Get();
+    m_phi = 2.*M_PI * ran->Get();
     del1 = 1-m_beta1*m_c;
     del2 = 1+m_beta2*m_c;
   }
@@ -286,6 +286,7 @@ bool FSR::MakeFSR() {
     }
     RescalePhotons();
     m_sQ = m_dip_sp * m_yy;
+    m_sX = m_sQ*(1.+m_photonSum[0]+0.25*m_photonSum*m_photonSum);
     if ( (m_sQ) < smin ) {
       RejectEvent();
       m_cut = 3;
@@ -298,7 +299,6 @@ bool FSR::MakeFSR() {
   m_u = 1 - m_sprim / m_dip_sp;
   MakePair(sqrt(m_sprim), m_dipole[0], m_dipole[1]);
   m_px = m_dipole[0] + m_dipole[1] + m_photonSum;
-  m_sX = m_px.Abs2();
   m_Q = m_dipole[0] + m_dipole[1];
 
   double masc1 = m_mass[0] * sqrt(m_sQ / m_dip_sp);
@@ -363,7 +363,7 @@ bool FSR::F(ATOOLS::Vec4D_Vector &k) {
     if (m_eikonal_mode == 1) {
       m_f    = Eikonal(k[i]);
       m_fbar = EikonalInterferance(k[i]);
-      // m_fbar *= m_dip_sp/m_sprim;
+      // m_fbar *= m_sprim/m_sX;
       // m_fbar = m_alpi / (2  * M_PI) * m_fbarvec[i];
 
     }
@@ -402,10 +402,9 @@ bool FSR::YFS_FORM(){
   for(auto k: m_photons) m_photonSum+=k;
   m_dipole  = p_dipole->GetNewMomenta();
   m_Q = m_dipole[0]+m_dipole[1];
-  m_sX = (m_Q+m_photonSum).Abs2();
   m_r1 = p_dipole->GetGhost(0);
   m_r2 = p_dipole->GetGhost(1);
-  m_sQ = m_Q*m_Q;
+  // m_sQ = m_Q*m_Q;
   CalculateBetaBar();
   m_q1q2 = m_dipole[0]*m_dipole[1];
   double Eqq = 0.5*sqrt(m_sQ);
@@ -740,15 +739,16 @@ void FSR::Reset() {
 
 
 
-double FSR::Eikonal(Vec4D k) {
-  return -m_alpi / (4.*M_PI) * (m_dipole[0] / (m_dipole[0] * k) - m_dipole[1] / (m_dipole[1] * k)).Abs2();
+double FSR::Eikonal(const Vec4D &k) {
+  Vec4D p1, p2;
+  MakePair(sqrt(m_sQ),p1,p2);
+  return -m_alpi / (4.*M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 
-double FSR::EikonalInterferance(Vec4D k) {
-  if(!IsEqual((m_dipole[0] + m_dipole[1]).Abs2(),m_sprim)){
-    msg_Error()<<"Wrong dipoles called for Eikonal Weight";
-  }
-  return m_alpi / (4.*M_PI) * 2.*m_dipole[0] * m_dipole[1] / ((k * m_dipole[0]) * (k * m_dipole[1]));
+double FSR::EikonalInterferance(const Vec4D &k) {
+  Vec4D p1, p2;
+  MakePair(sqrt(m_sQ),p1,p2);
+  return m_alpi / (4.*M_PI) * 2.*p1 * p2 / ((k * p1) * (k * p2));
 }
 double SqLam(double x,double y,double z)
 {

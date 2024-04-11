@@ -47,8 +47,8 @@ namespace YFS {
       double LI(double x);
       double YEta(double eta,double y1, double y2, double y3, double y4);
       double BVR_A(Vec4D p1, Vec4D p2);
-      double Eikonal(Vec4D);
-      double EikonalInterferance(Vec4D);
+      double Eikonal(const Vec4D &k);
+      double EikonalInterferance(const Vec4D &k);
       inline double GetWeight() {return m_fsrWeight;}
       inline double GetSQ() {return m_sQ;}
       inline Vec4D GetPhotonSum() {return m_photonSum; }
