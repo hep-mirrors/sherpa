@@ -13,7 +13,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders() :
-  p_laddergenerator(new Ladder_Generator_Eik()),
+  p_laddergenerator(new Ladder_Generator_QT()),
   m_Ecms(rpa->gen.Ecms()/2.),
   m_test(true),
   n_calls(0), n_start(0), n_gen(0)
@@ -63,8 +63,9 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
   size_t Ngen = 0, trials = 0;
   double b1, b2;
   bool   contains_one_inelastic = false;
-  //msg_Out()<<"--------------------------------------------------------------\n";
+  //msg_Out()<<"==============================================================\n";
   while (Ngen<N) {
+    //msg_Out()<<"   "<<Ngen<<" ("<<N<<"): "<<m_E[0]<<" & "<<m_E[1]<<"\n";
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
     p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
@@ -81,7 +82,7 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     else {
       //msg_Out()<<METHOD<<": not allowed!\n";
       if (ladder) delete ladder;
-      if (Ngen>0 /* && (trials++)>100*/) break;
+      if (Ngen>0 && (trials++)>100) break;
     }
   }
   if (m_test) {
@@ -89,12 +90,12 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     m_histos[std::string("N_start")]->Insert(N);
     m_histos[std::string("N_gen")]->Insert(Ngen);
   }
-  msg_Out()<<METHOD<<" has produced "<<Ngen<<" ladders for "<<N<<" needed.\n";
+  //msg_Out()<<METHOD<<" has produced "<<Ngen<<" ladders for "<<N<<" needed.\n";
   return true;
 }
  
 void Primary_Ladders::Reset() {
-  m_E[0] = m_E[1] = m_Ecms/2.;
+  m_E[0] = m_E[1] = m_Ecms;
   while (!m_ladders.empty()) {
     delete (m_ladders.back());
     m_ladders.pop_back();
@@ -106,8 +107,7 @@ bool Primary_Ladders::IsAllowed(Ladder * ladder) {
   if (ladder==NULL) return false;
   for (size_t i=0;i<2;i++) {
     if (m_E[i]-ladder->InPart(i)->Momentum()[0] < 5.) {
-      //msg_Out() << "here 1: " << m_E[i] << "\t" <<ladder->InPart(i)->Momentum()[0] << "\n";
-      //msg_Out() << "here 2: " << m_E[1] << "\t" <<ladder->InPart(1)->Momentum()[0] << "\n";
+      //msg_Out()<<"here["<<i<<"]: "<<m_E[i]<<"\t"<<ladder->InPart(i)->Momentum()[0]<<"\n";
       return false;
     }
   }

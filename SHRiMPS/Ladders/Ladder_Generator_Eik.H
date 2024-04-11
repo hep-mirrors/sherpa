@@ -10,6 +10,7 @@
 namespace SHRIMPS {
   class Ladder_Generator_Eik : public Ladder_Generator_Base {
   private:
+    double          m_y[2][2];
     ATOOLS::Vec4D   m_lastk;
     void   FillGluons();
     void   SelectPropagatorColours();

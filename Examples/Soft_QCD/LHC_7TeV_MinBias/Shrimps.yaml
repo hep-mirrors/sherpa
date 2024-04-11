@@ -10,12 +10,51 @@ FRAGMENTATION:       Ahadic
 YFS:
   MODE:              None
 
-SHRIMPS:
-  Delta:    0.5
-  lambda:   0.25
+REMNANTS:
+  2212:
+    MATTER_FORM:      Single_Gaussian
+    MATTER_RADIUS1:   1.
+    MATTER_RADIUS2:   0.
+    MATTER_FRACTION1: 1.
 
-ANALYSIS: Rivet
-ANALYSIS_OUTPUT: Shrimps_Seeded2
+COLOUR_RECONNECTIONS:
+  MODE:        On
+  PMODE:       Log  # Log or Power (-law)
+  Q_0:         1.
+  ETA_Q:       0.1
+  RESHUFFLE:   0.1111
+  KAPPA:       1.
+
+AHADIC:
+  KT_0:             1.2
+  PT_MAX:           0.68
+  ALPHA_G:          1.
+  ALPHA_L:          3.9
+  BETA_L:           0.18
+  GAMMA_L:          0.48
+  ALPHA_D:          3.4
+  BETA_D:           0.72
+  GAMMA_D:          0.77
+  ALPHA_H:         -0.6
+  BETA_H:           1.8
+  GAMMA_H:          0.024
+  ALPHA_B:         14.2
+  BETA_B:           1.8
+  GAMMA_B:          8.1
+  DECAY_THRESHOLD:  0.02
+  STRANGE_FRACTION: 0.46
+  BARYON_FRACTION:  0.17
+  P_QS_by_PQQ_norm: 0.56
+  P_QS_by_PQQ_norm: 0.056
+  P_QQ1_by_PQQ0:    0.60
+
+SHRIMPS:
+  Delta:      0.5
+  lambda:     0.25
+  Absorption: exponential
+
+%ANALYSIS: Rivet
+%ANALYSIS_OUTPUT: QT_CR_log2
 
 RIVET:
   --analyses: [ATLAS_2010_S8918562, ATLAS_2010_S8894728, ATLAS_2011_S8994773, ATLAS_2012_I1084540, TOTEM_2012_I1115294, CMS_2011_S8978280, CMS_2011_S9120041, CMS_2011_S9215166]

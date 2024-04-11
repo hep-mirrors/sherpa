@@ -52,13 +52,6 @@ PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const
 {
   if (dabs(pi.Y())>m_Ymax) return pi.PPerp2();
   return Min(pi.PPerp2(),pj.PPerp2())*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
-  
-  //double pti2  = pi.PPerp2(), ptj2  = pj.PPerp2();
-  //if      (dabs(pi.Y())>m_Ymax && dabs(pj.Y())>m_Ymax) return Max(m_minkt2, pti2);
-  //else if (dabs(pi.Y())>m_Ymax)                        return Max(4.*m_minkt2, pti2);
-  //double ptij2 = Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-
-  //				 cos(pi.Phi()-pj.Phi()));
-  //return Max(4.*m_minkt2,ptij2);
 }
 
 void Cluster_Algorithm::InitLeg(Cluster_Leg * leg,const double & kt2,
@@ -118,6 +111,7 @@ double Cluster_Algorithm::SetShowerScales() {
     for (size_t j=0;j<2;j++) legs[i]->SetKT2(j,kt2);
     kt2max = Max(kt2max,kt2);
   }
+  return Max(4.*m_minkt2,sijmax);
   return kt2max; //Max(4.*m_minkt2,sijmax);
 }
 

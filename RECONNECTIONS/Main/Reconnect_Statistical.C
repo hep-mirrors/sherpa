@@ -54,7 +54,7 @@ void Reconnect_Statistical::FixPMode(const string & pm) {
 int Reconnect_Statistical::operator()(Blob_List *const blobs) {
   if (!HarvestParticles(blobs))               return -1;
   if (m_cols[0].empty() && m_cols[1].empty()) return 0;
-  m_norm = TotalLength();
+  m_norm = m_Pmode==1 ? TotalLength() : 0.;
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
        cit!=m_cols[0].end();cit++) m_collist.push_back(cit->first);
   size_t N = m_collist.size();

@@ -65,6 +65,7 @@ namespace PDF {
     void   Calculate(const double & x,const double & Q2);
     double AllPartons(const double & x,const double & Q2);
     double XPDF(const ATOOLS::Flavour & flav,const bool & defmax=false);
+    double SelectX(const ATOOLS::Flavour & flav,const double & Q2=0.);
 
     inline const std::list<ATOOLS::Flavour> & GetFlavours() const { return m_pdfpartons; } 
     inline const double &          XMin()  const { return m_xmin; }

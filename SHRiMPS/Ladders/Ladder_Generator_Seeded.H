@@ -12,6 +12,7 @@ namespace SHRIMPS {
   private:
     ATOOLS::Vec4D     m_ktsum;
     double            m_kt2max, m_phi, m_yseed[4], m_xbeam[2];
+    double            m_oldxpdf[2], m_newxpdf[2];
     size_t            m_emissions[3];
     colour_type::code m_cols[3];
     

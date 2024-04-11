@@ -43,6 +43,8 @@ void Colour_Generator::
 IterateColours(LadderMap::iterator lmit,TPropList::iterator tpit) {
   Ladder_Particle * outpart = &lmit->second;
   T_Prop          * prop    = &*tpit;
+  //msg_Out()<<METHOD<<": "<<&lmit->first<<" "
+  //	   <<"("<<prop->Col()<<": ["<<m_propcolours[0]<<" "<<m_propcolours[1]<<"])\n";
   if (outpart==&p_ladder->GetEmissions()->rbegin()->second) return;
   if (m_mode==lcolours::no_singlets) prop->SetCol(colour_type::octet);
   if (prop->Col()==colour_type::singlet) {
@@ -51,29 +53,34 @@ IterateColours(LadderMap::iterator lmit,TPropList::iterator tpit) {
       m_propcolours[i] = 0;
     }
   }
-  else if (outpart->Flavour().IsGluon()) {
-    if (m_propcolours[0]!=0 && m_propcolours[1]!=0) {
-      size_t keep = ((m_mode==lcolours::fix_emissions ||
-		      m_mode==lcolours::fix_all) ? 
-		     m_keepindex : (ran->Get()>0.5 ? 0 : 1 ));
-      outpart->SetFlow(keep+1,m_propcolours[keep]);
-      outpart->SetFlow(2-keep);
-      m_propcolours[keep] = outpart->GetFlow(2-keep);
+  else if (prop->Col()==colour_type::octet) {
+    if (outpart->Flavour().IsGluon()) {
+      if (m_propcolours[0]!=0 && m_propcolours[1]!=0) {
+	size_t keep = ((m_mode==lcolours::fix_emissions ||
+			m_mode==lcolours::fix_all) ? 
+		       m_keepindex : (ran->Get()>0.5 ? 0 : 1 ));
+	outpart->SetFlow(keep+1,m_propcolours[keep]);
+	outpart->SetFlow(2-keep,-1);
+	m_propcolours[keep] = outpart->GetFlow(2-keep);
+      }
+      else if (m_propcolours[0]==0 && m_propcolours[1]==0) {
+	//msg_Out()<<"                           --> have to fill zeros.\n";
+	for (size_t i=0;i<2;i++) {
+	  outpart->SetFlow(i+1,-1);
+	  m_propcolours[1-i] = outpart->GetFlow(i+1);
+	}
+      }
     }
-    else if (m_propcolours[0]==0 && m_propcolours[1]==0) {
-      for (size_t i=0;i<2;i++) {
-	outpart->SetFlow(i+1);
-	m_propcolours[1-i] = outpart->GetFlow(i+1);
+    else if (outpart->Flavour().IsQuark()) {
+      size_t keep = outpart->Flavour().IsAnti() ? 0 : 1;
+      if (m_propcolours[keep]!=0 && m_propcolours[1-keep]==0) {
+	outpart->SetFlow(2-keep);
+	m_propcolours[keep] = outpart->GetFlow(2-keep);
       }
     }
   }
-  else if (outpart->Flavour().IsQuark()) {
-    size_t keep = outpart->Flavour().IsAnti() ? 0 : 1;
-    if (m_propcolours[keep]!=0 && m_propcolours[1-keep]==0) {
-      outpart->SetFlow(2-keep);
-      m_propcolours[keep] = outpart->GetFlow(2-keep);
-    }
-  }
+  //msg_Out()<<"                           --> "<<&lmit->first<<" "
+  //	   <<"("<<prop->Col()<<": ["<<m_propcolours[0]<<" "<<m_propcolours[1]<<"])\n";
   lmit++; tpit++;
   IterateColours(lmit,tpit);
 }

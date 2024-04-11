@@ -29,7 +29,7 @@ namespace SHRIMPS {
     TPropList              * p_props;
     size_t                   m_dir;
     double                   m_B, m_b1, m_b2, m_E[2], m_weight;
-    double                   m_shat, m_qt2, m_ylimits[2], m_y[2][2];
+    double                   m_shat, m_qt2, m_ylimits[2];
     double                   m_qt2prev[2];
     ATOOLS::Vec4D            m_eqt, m_qt, m_qtprev[2];
 

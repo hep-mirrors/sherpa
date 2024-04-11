@@ -53,10 +53,10 @@ void Inelastic_Event_Generator::Reset() {
 }
 
 int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
-  msg_Out()<<"\n\n\n\n\n\n"
-  	   <<"   ---------------------------------------------------------------------\n"
-  	   <<"   ---------------------------------------------------------------------\n"
-  	   <<"   - "<<METHOD<<"\n";
+  //msg_Out()<<"\n\n\n\n\n\n"
+  //	   <<"   ---------------------------------------------------------------------\n"
+  //	   <<"   ---------------------------------------------------------------------\n"
+  //	   <<"   - "<<METHOD<<"\n";
   Blob * blob = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
   //msg_Out()<<"   found soft blob: "<<*blob<<"\n";
   if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return -1;
@@ -114,6 +114,7 @@ Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
   delete ladder;
   m_primaries.GetLadders()->pop_front();
   //return p_collemgen->GenerateEmissions(blobs);
+  //msg_Out()<<"------------------------------------------------------------\n"<<(*blob)<<"\n";
   return blob;
 }
 

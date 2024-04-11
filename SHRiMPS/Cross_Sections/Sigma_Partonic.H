@@ -60,17 +60,21 @@ namespace SHRIMPS {
     void SetSmin(const double & smin=1.) { m_smin = smin; }
     const double          & SigmaTot() const { return m_sigma; }
     const double          & SigmaHat() const { return m_dsigma; }
+    const double          & MaxSigma() const { return m_maxdsigma; }
     const double          & SHat()     const { return m_shat; }
+    const double          & THat()     const { return m_that; }
     const double          & YHat()     const { return m_yhat; }
     const double          & Smin()     const { return m_smin; }
     const double          & Tmin()     const { return m_tmin; }
     const double          & PT2()      const { return m_pt2; }
     const double          & Phi()      const { return m_phi; }
-    const double          & Y(const size_t & beam)    const { return m_y[beam]; }
-    const double          & X(const size_t & beam)    const { return m_x[beam]; }
-    const double          & MinX(const size_t & beam)    const { return p_pdf[beam]->XMin(); }
-    const double          & MaxX(const size_t & beam)    const { return p_pdf[beam]->XMax(); }
-    const ATOOLS::Flavour & Flav(const size_t & beam) const { return m_flavs[beam]; }
+    const double          & XPDF(const size_t & beam)   const { return m_xpdf[beam]; }
+    const double          & Y(const size_t & beam)      const { return m_y[beam]; }
+    const double          & X(const size_t & beam)      const { return m_x[beam]; }
+    const double          & MinX(const size_t & beam)   const { return p_pdf[beam]->XMin(); }
+    const double          & MaxX(const size_t & beam)   const { return p_pdf[beam]->XMax(); }
+    const ATOOLS::Flavour & Flav(const size_t & beam)   const { return m_flavs[beam]; }
+    PDF::Continued_PDF    * GetPDF(const size_t & beam) const { return p_pdf[beam]; }
   };
 }
 #endif

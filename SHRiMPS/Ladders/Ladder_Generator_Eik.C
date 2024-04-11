@@ -152,7 +152,7 @@ bool Ladder_Generator_Eik::SelectPropagatorQT(const size_t dir,T_Prop & prop) {
 		AlphaSWeight((m_qtprev[dir]-sqrt(m_qt2)*m_eqt).PPerp2()) :
 		sqr(AlphaSWeight((m_qtprev[dir]-sqrt(m_qt2)*m_eqt).PPerp2()) ));
     }
-    weight *= ReggeWeight(m_qt2,m_y[dir][0],m_y[1-dir][1]);
+    //weight *= ReggeWeight(m_qt2,m_y[dir][0],m_y[1-dir][1]);
   } while (weight < ran->Get());
   prop.SetQ(m_qt = sqrt(m_qt2)*m_eqt);
   prop.SetQT2(m_qt2);

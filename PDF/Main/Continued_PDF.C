@@ -10,7 +10,7 @@ using namespace ATOOLS;
 Continued_PDF::Continued_PDF(PDF_Base * pdf) :
   p_pdf(pdf), m_bunch(p_pdf->Bunch()), 
   m_xmin(p_pdf->XMin()), m_xmax(p_pdf->XMax()), m_Q02(p_pdf->Q2Min()),
-  m_geta(1.), m_glambda(0.25)
+  m_geta(1.), m_glambda(-1.)//m_glambda(0.25)
 {
   m_pdfpartons.push_back(Flavour(kf_u));
   m_pdfpartons.push_back(Flavour(kf_d));
@@ -46,11 +46,13 @@ void Continued_PDF::CalculateNorms() {
   Gauss_Integrator vintegrator(&val);
   m_Vnorm = vintegrator.Integrate(m_xmin,m_xmax,0.0001,1);
   // this assumes xg(x) = (1-x)^eta x^lambda
-  m_gnorm = 
-    exp(Gammln(m_geta+1.))*exp(Gammln(m_glambda+1.))/
-    exp(Gammln(m_geta+m_glambda+2.));
+  //m_gnorm = 
+  //  exp(Gammln(m_geta+1.))*exp(Gammln(m_glambda+1.))/
+  //  exp(Gammln(m_geta+m_glambda+2.));
   // this assumes xg(x) = (x+x_0)^lambda
-  //m_gnorm = (pow(1.+m_x0,1.+m_glambda)-pow(m_x0,1.+m_glambda))/(1.+m_glambda);  
+  m_gnorm = ( (dabs(m_glambda+1.)<1.e-3) ?
+	      log((m_xmax+m_x0)/(m_xmin+m_x0)) :
+	      (pow(m_xmax+m_x0,1.+m_glambda)-pow(m_xmin+m_x0,1.+m_glambda))/(1.+m_glambda));
 }
 
 
@@ -70,7 +72,7 @@ void Continued_PDF::Test()  {
 void Continued_PDF::Scan()  {
   for (size_t i=0;i<2000;i++) {
     if (i==0 || i==1000) continue;
-    double x = (i<1000?double(i)/1000.:0.001*double(i-1000)/1000.);
+    double x = m_xmin + (m_xmax-m_xmin) * (i<1000?double(i)/1000.:0.001*double(i-1000)/1000.);
     for (size_t beam=0;beam<2;beam++) AllPartons(x,0.);
   }
   Calculate(m_xmaxpdf[Flavour(kf_gluon)],0.);
@@ -126,6 +128,8 @@ double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
     }
     total = seapart * m_Q2/m_Q02 + valpart * (1.+m_Snorm*(1.-m_Q2/m_Q02));
   }
+  //if (flav==Flavour(kf_gluon))
+  //msg_Out()<<METHOD<<"(x = "<<m_x<<"): val = "<<valpart<<" (norm = "<<m_gnorm<<"), sea = "<<seapart<<"\n";
   if (defmax && total>m_xpdfmax[flav]) {
     m_xmaxpdf[flav] = m_x;
     m_xpdfmax[flav] = total;
@@ -133,11 +137,26 @@ double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
   return total;
 }
 
+double Continued_PDF::SelectX(const ATOOLS::Flavour & flav,const double & Q2) {
+  double x, wt, rand;
+  do {
+    x    = m_xmin + ran->Get() * (m_xmax-m_xmin);
+    Calculate(x,Q2);
+    wt   = XPDF(flav)/m_xpdfmax[flav];
+    rand = ran->Get();
+    if (wt>1.)
+      msg_Error()<<METHOD<<" throws and oopsie: wt = "<<wt<<" "
+		 <<"for x = "<<x<<", max = "<<m_xpdfmax[flav]<<", "
+		 <<"norm = "<<m_gnorm<<" ["<<m_xmin<<", "<<m_xmax<<"], "<<m_x0<<".\n";
+  } while (wt<rand);
+  return x;
+}
+
 double Continued_PDF::GluonAtZero(const double & x) {
   // this assumes xg(x) = (1-x)^eta x^lambda
-  return pow(1-x,m_geta) * + pow(x,m_glambda) * (1.-m_Vnorm)/m_gnorm;
+  //return pow(1-x,m_geta) * + pow(x,m_glambda) * (1.-m_Vnorm)/m_gnorm;
   // this assumes xg(x) = (x+x_0)^lambda
-  //return pow(x+m_x0,m_glambda) * (1.-m_Vnorm)/m_gnorm;
+  return pow(x+m_x0,m_glambda) * (1.-m_Vnorm)/m_gnorm;
 }
 
 double Continued_PDF_Test::operator()(double x) {

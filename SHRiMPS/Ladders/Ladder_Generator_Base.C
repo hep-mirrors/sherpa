@@ -91,27 +91,40 @@ void Ladder_Generator_Base::ConstructISKinematics() {
 }
 
 double Ladder_Generator_Base::RescaleLadder(Ladder * ladder,const Vec4D & P_in) {
-  Vec4D  P_out  = ladder->FSMomentum();
-  double factor = sqrt(P_in.Abs2()/P_out.Abs2()), weight = 1.;
-  Poincare out  = Poincare(P_out), in = Poincare(P_in);
-  for (LadderMap::iterator lit=ladder->GetEmissions()->begin();
-       lit!=ladder->GetEmissions()->end();lit++) {
-    Vec4D oldp = lit->second.Momentum();
+  Vec4D    P_out  = ladder->FSMomentum();
+  double   factor = sqrt(P_in.Abs2()/P_out.Abs2());
+  Poincare out    = Poincare(P_out), in = Poincare(P_in);
+  msg_Out()<<"=========================================================\n"
+	   <<"In "<<METHOD<<": ("<<ladder->GetEmissions()->size()<<" with "
+	   <<P_out<<" --> "<<P_in<<")\n"<<(*ladder)<<"\n";
+  LadderMap::iterator lit1=ladder->GetEmissions()->begin(), lit2;
+  double weight = 1.;
+  do {
+    Vec4D oldp = lit1->second.Momentum();
     out.Boost(oldp);
     in.BoostBack(oldp);
     Vec4D newp = factor * oldp;
-    lit->second.SetMomentum(newp);
-    if (dabs(newp.Y())<m_Ymax)
-      weight  *= AlphaSWeight(newp.PPerp2())/AlphaSWeight(oldp.PPerp2());
-  }
-  for (TPropList::iterator pit=ladder->GetProps()->begin();
-       pit!=ladder->GetProps()->end();pit++) {
-    Vec4D oldq    = pit->Q(),   newq   = factor*oldq;
-    double oldqt2 = pit->QT2(), newqt2 = sqr(factor)*oldqt2;
+    if (dabs(newp.Y())<m_Ymax) {
+      weight *= AlphaSWeight(newp.PPerp2())/AlphaSWeight(oldp.PPerp2());
+      weight *= (oldp.PPerp2()+m_kt2min)/(newp.PPerp2()+m_kt2min);
+    }
+    lit1->second.SetMomentum(newp);
+    lit1++; 
+  } while (lit1!=ladder->GetEmissions()->end());
+  TPropList::iterator pit=ladder->GetProps()->begin();
+  lit1=ladder->GetEmissions()->begin();
+  lit2=ladder->GetEmissions()->begin();lit2++;
+  do {
+    Vec4D  oldq   = pit->Q(),   newq   = factor*oldq;
+    double oldqt2 = pit->QT2(), newqt2 = sqr(factor)*oldqt2, q02 = pit->Q02();
     pit->SetQ(newq);
     pit->SetQT2(newqt2);
-    weight *= oldqt2/newqt2;
-  }
+    double deltay = dabs(lit1->first-lit2->first);
+    weight *= ( exp(-3.*AlphaS(newqt2+q02)/M_PI*deltay*log(1.+newqt2/q02))/
+		exp(-3.*AlphaS(oldqt2+q02)/M_PI*deltay*log(1.+oldqt2/q02)) );
+    pit++; lit1++; lit2++;
+  } while (pit!=ladder->GetProps()->end());
+  msg_Out()<<"Out "<<METHOD<<": ("<<P_in<<" --> "<<P_out<<")\n"<<(*ladder)<<"\n";
   return weight;
 }
 
