@@ -227,7 +227,7 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_SCALE_FACTOR"].SetDefault(1.);
   s["CSS_MASS_THRESHOLD"].SetDefault(0.0);
   s["CSS_FORCED_IS_QUARK_SPLITTING"].SetDefault(true);
-  s["CSS_FORCED_GLUON_SCALING"].SetDefault(-3./2.);
+  s["CSS_FORCED_GLUON_SCALING"].SetDefault(3./2.);
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   s["CSS_RECO_CHECK"].SetDefault(0);
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());

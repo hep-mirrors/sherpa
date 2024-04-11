@@ -53,9 +53,9 @@ namespace CSSHOWER {
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
-    void SetForcedHQSplittings(bool on=true,double expo=-3./2.) {
+    void SetForcedHQSplittings(bool on=true,double expo=3./2.) {
       m_forced_splittings                   = on;
-      m_gluon_xscaling_in_forced_splittings = -expo;
+      m_gluon_xscaling_in_forced_splittings = expo;
     }
     bool   Generate(Parton *,double);
     int    Generate(Parton *,Parton *,double,double,double&,double&,double&,double&);
