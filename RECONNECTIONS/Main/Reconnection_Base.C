@@ -57,7 +57,37 @@ bool Reconnection_Base::HarvestParticles(Blob_List * blobs) {
   //	   <<m_cols[0].size()<<" colours and "
   //	   <<m_cols[1].size()<<" anti-colours.\n"
   //	   <<(*blob)<<"\n";
-  return (m_cols[0].size()==m_cols[1].size());
+  return (BalanceColours());
+}
+
+bool Reconnection_Base::BalanceColours() {
+  if (m_cols[0].size()!=m_cols[1].size()) return false;
+  list<unsigned int> replacers[2];
+  for (size_t i=0;i<2;i++) {
+    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();cit!=m_cols[i].end();cit++) {
+      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end()) 
+	replacers[i].push_back(cit->first);
+    }
+  }
+  if (replacers[0].size()==0 && replacers[1].size()==0) return true;
+  if (replacers[0].size()!=replacers[1].size())         return false;
+  while (!replacers[0].empty()) {
+    unsigned int col0 = replacers[0].front(), col1 = replacers[1].front();
+    map<unsigned int, Particle * >::iterator cit=m_cols[0].find(col0);
+    if (cit!=m_cols[0].end()) {
+      Particle * part = cit->second;
+      m_cols[0].erase(cit);
+      m_cols[0][col1] = part;
+    }
+    for (size_t i=0;i<2;i++) replacers[i].pop_front();
+  }
+  for (size_t i=0;i<2;i++) {
+    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();cit!=m_cols[i].end();cit++) {
+      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end()) 
+	replacers[i].push_back(cit->first);
+    }
+  }
+  return (replacers[0].size()==0 && replacers[1].size()==0);
 }
 
 void Reconnection_Base::HarvestParticleInfo(ATOOLS::Particle * part) {
