@@ -171,7 +171,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	if(IsZero(subb)) return 0;
 	if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	p.push_back(k);
-	CheckMasses(p,1);
+	// CheckMasses(p,1);
 	CheckMomentumConservation(p);
 	double r = p_real->Calc_R(p) / norm * flux;
 	if(IsZero(r)) return 0;

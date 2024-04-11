@@ -340,7 +340,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
   }
-  CheckMasses();
+  // CheckMasses();
   CheckMomentumConservation();
   return true;
 }

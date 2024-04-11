@@ -86,6 +86,7 @@ void ISR::NPhotons() {
 void ISR::GenerateAngles()
 {
   // Generation of theta for two massive particles
+  double weight = 1;
   if (m_kkmcAngles == 0) {
     double P = log((1.+m_b1)/(1.-m_b1))
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
@@ -102,14 +103,14 @@ void ISR::GenerateAngles()
         m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
         // m_c        = 1./m_b1*(pow(1-m_b2,rnd)/pow(1+m_b2,rnd-1)-1);
       }
-      double weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
+      weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
                         +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
                        /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
       if (ran->Get() < weight) break;
     }
     // std::cout<<setprecision(12)<<m_b1<<std::endl;
     // std::cout<<setprecision(12)<<m_b2<<std::endl;
-    // m_angleWeight *= weight;
+    m_angleWeight *= weight;
     m_theta = acos(m_c);
     m_sin = sin(m_theta);
     m_phi = 2.*M_PI * ran->Get();
