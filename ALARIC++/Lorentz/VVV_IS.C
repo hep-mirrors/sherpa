@@ -22,11 +22,8 @@ namespace ALARIC {
 
     double Value(const Splitting &s) const
     {
-      double xi(s.m_x);
-      if (p_sk->PS()->KernelScheme()&1)
-	xi=s.m_x+s.m_y-s.m_x*s.m_y*(1.0+s.m_kap);
-      double B=(1.0-xi)/xi;
-      if (m_mode) B+=2.0*xi*(1.0-xi);
+      double B=(1.0-s.m_zi)/s.m_zi;
+      if (m_mode) B+=2.0*s.m_zi*(1.0-s.m_zi);
       return B*(1.0+p_sk->GF()->K(s));
     }
 

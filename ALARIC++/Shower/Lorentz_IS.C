@@ -82,6 +82,9 @@ int Lorentz_IS::Construct(Splitting &s,const int mode) const
   s.m_pj=ff.m_pj;
   s.m_pk=ff.m_pk;
   s.m_kap=Kt.Abs2()/gam;
+  s.m_zi=s.m_x;
+  if (p_sk->PS()->KernelScheme()&1)
+    s.m_zi=1.+(s.m_pj*ff.m_nb)/(s.m_pi*ff.m_nb);
   s.m_p=ff.m_p;
   s.m_kt2=s.m_t;
   if (s.m_kt2<s.m_t0) return -1;
@@ -118,11 +121,16 @@ bool Lorentz_IS::Cluster
   else {
     THROW(not_implemented,"Unknown evolution scheme");
   }
+  s.m_y=ff.m_y;
   s.m_phi=ff.m_phi;
   s.m_kap=K.Abs2()/gam;
   s.m_p=ff.m_p;
   s.m_Kt=ff.m_Kt;
   s.m_kt2=s.m_t;
+  s.m_zi=s.m_x;
+  if (p_sk->PS()->KernelScheme()&1)
+    s.m_zi=1.+(s.m_pj*ff.m_nb)/(s.m_pi*ff.m_nb);
+  s.m_p.erase(s.m_p.begin()+j);
   if (s.m_kt2<s.m_t0) return false;
   return true;
 }

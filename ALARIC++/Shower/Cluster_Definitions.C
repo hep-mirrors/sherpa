@@ -68,7 +68,7 @@ Splitting Cluster_Definitions::KT2
 	sks[i]->LF()->Flav(2)==lj->Flav() &&
 	sks[i]->GF()->Allowed(sp)) {
       if (n++==id) {
-	sk=sks[i];
+	sp.p_sk=sk=sks[i];
 	break;
       }
     }
