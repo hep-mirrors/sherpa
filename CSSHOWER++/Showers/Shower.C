@@ -30,8 +30,8 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
   double is_pdf_fac{ s["CSS_PDF_FAC"].Get<double>() };
   const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
-  bool   forced_decays{ s["CSS_FORCED_DECAYS"].Get<bool>() };
-  double forced_decays_gluon_scaling{ s["CSS_FORCED_GLUON_SCALING"].Get<double>() };
+  bool   forced_splittings{ s["CSS_FORCED_IS_QUARK_SPLITTING"].Get<bool>() };
+  double forced_splittings_gluon_scaling{ s["CSS_FORCED_GLUON_SCALING"].Get<double>() };
   m_reweight          = s["CSS_REWEIGHT"].Get<bool>();
   m_maxreweightfactor = s["CSS_MAX_REWEIGHT_FACTOR"].Get<double>();
   m_kscheme           = s["CSS_KIN_SCHEME"].Get<int>();
@@ -65,7 +65,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac,gsplit_fac);
   m_sudakov.SetReweightScaleCutoff(
       s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>());
-  m_sudakov.SetForcedHQDecays(forced_decays,forced_decays_gluon_scaling);
+  m_sudakov.SetForcedHQSplittings(forced_splittings,forced_splittings_gluon_scaling);
   m_kinFF.SetEvolScheme(evol-100*(evol/100));
   m_kinFI.SetEvolScheme(evol-100*(evol/100));
   m_kinIF.SetEvolScheme(evol/100);

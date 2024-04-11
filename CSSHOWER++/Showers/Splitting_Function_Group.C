@@ -33,8 +33,9 @@ void Splitting_Function_Group::Add(Splitting_Function_Base * split) {
 }
 
 
-bool Splitting_Function_Group::FixOne(const ATOOLS::Flavour & flavA,const ATOOLS::Flavour & flavB,
-				      const cstp::code & type) {
+bool Splitting_Function_Group::FixOne(const ATOOLS::Flavour & flavA,
+                                      const ATOOLS::Flavour & flavB,
+                                      const cstp::code & type) {
   for (size_t i(0);i<m_splittings.size();++i) {
     if (type==m_splittings[i]->GetType() &&
 	flavA==m_splittings[i]->GetFlavourA() && flavB==m_splittings[i]->GetFlavourB()) {
