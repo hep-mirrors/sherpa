@@ -66,7 +66,7 @@ double Running_AlphaQED::operator()(double t)
   double sigma_gg   = sig_lep_gg+sig_ha_gg+sig_top_gg;
 
   #ifdef USING__HADALPHAQED
-    t=-t;
+    // t=-t;
     double delta_r,errdersta, errdersys,deg,errdegsta,errdegsys;
     double sin2 = 0.2322;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
     if(m_mode!=vpmode::off){
@@ -76,7 +76,7 @@ double Running_AlphaQED::operator()(double t)
      }
     switch(m_mode){
       case vpmode::full:
-        sigma_gg = sig_lep_gg+delta_r+sig_top_gg+sig_ha_gg;
+        sigma_gg = sig_lep_gg+delta_r+sig_top_gg;//+sig_ha_gg;
         break;
       case vpmode::lp:
         sigma_gg = sig_lep_gg;
