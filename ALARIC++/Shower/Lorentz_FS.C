@@ -60,6 +60,9 @@ int Lorentz_FS_Rad::Construct(Splitting &s,const int mode) const
   s.m_pj=ff.m_pj;
   s.m_pk=ff.m_pk;
   s.m_kap=Kt.Abs2()/gam;
+  s.m_zi=s.m_x;
+  if (p_sk->PS()->KernelScheme()&1)
+    s.m_zi=(s.m_pi*ff.m_nb)/((s.m_pi+s.m_pj)*ff.m_nb);
   s.m_p=ff.m_p;
   s.m_kt2=s.m_t;
   s.m_K=Vec4D();
@@ -103,11 +106,17 @@ bool Lorentz_FS_Rad::Cluster
   else {
     THROW(not_implemented,"Unknown evolution scheme");
   }
+  s.m_y=ff.m_y;
   s.m_phi=ff.m_phi;
   s.m_kap=s.m_K.Abs2()/gam;
   s.m_p=ff.m_p;
   s.m_Kt=ff.m_Kt;
   s.m_kt2=s.m_t;
+  s.m_zi=s.m_x;
+  if (p_sk->PS()->KernelScheme()&1)
+    s.m_zi=(s.m_x*s.m_p[i]*ff.m_nb)/
+      ((s.m_x*s.m_p[i]+s.m_p[j])*ff.m_nb);
+  s.m_p.erase(s.m_p.begin()+j);
   if (s.m_kt2<s.m_t0) return false;
   return true;
 }
@@ -129,7 +138,7 @@ int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
   Vec4D qa(s.p_c->Mom()), Kt;
   const Amplitude &a(*s.p_c->Ampl());
   for (size_t i(0);i<a.size();++i)
-    if (a[i]->Mom()[0]>=0.0 && s.p_c!=a[i]) {
+    if ((s.m_rcl[i]&2) && s.p_c!=a[i]) {
       Kt+=a[i]->Mom();
       ++nk;
     }
@@ -146,6 +155,9 @@ int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
   s.m_pj=ff.m_pj;
   s.m_pk=ff.m_pk;
   s.m_q2=(qa+Kt).Abs2();
+  s.m_zi=s.m_x;
+  if (p_sk->PS()->KernelScheme()&1)
+    s.m_zi=(ff.m_pi*ff.m_nb)/((ff.m_pi+ff.m_pj)*ff.m_nb);
   s.m_mk2=p_ms->Mass2(s.p_s->Flav());
   if (nk>1) {
     Poincare oldcms(Kt), newcms(ff.m_pk);
@@ -154,7 +166,7 @@ int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
     s.m_p.clear();
     s.m_p.reserve(a.size());
     for (size_t i(0);i<a.size();++i) {
-      if (a[i]->Mom()[0]<0.0) s.m_p.push_back(a[i]->Mom());
+      if ((s.m_rcl[i]&2)==0) s.m_p.push_back(a[i]->Mom());
       else s.m_p.push_back(newcms*(oldcms*a[i]->Mom()));
     }
     s.m_mk2=ff.m_pk.Abs2();
@@ -174,8 +186,8 @@ bool Lorentz_FS_Split::Cluster
 {
   int nk(0);
   Vec4D pij(s.p_c->Mom()+s.p_n->Mom()), K;
-  for (size_t l(a->NIn());l<a->Legs().size();++l)
-    if (l!=i && l!=j) {
+  for (size_t l(0);l<a->Legs().size();++l)
+    if ((s.m_rcl[l]&2) && l!=i && l!=j) {
       K+=a->Leg(l)->Mom();
       ++nk;
     }
@@ -185,21 +197,25 @@ bool Lorentz_FS_Split::Cluster
      s.p_c->Mom(),s.p_n->Mom(),K,mode);
   if (ff.m_stat<0) return false;
   SetParams(s);
-  s.m_t=Q2*s.m_y;
-  s.m_z=s.m_x;
-  s.m_J=1.0;
+  s.m_z=s.m_x=ff.m_z;
   s.m_y=ff.m_y;
+  s.m_J=1.0;
+  s.m_t=s.m_y*(Q2-s.m_mi2-s.m_mj2-K2);
   s.m_phi=ff.m_phi;
   s.m_p=a->Momenta();
-  s.m_p[i]=ff.m_pi;
-  s.m_p[k]=ff.m_pk;
   if (nk>1) {
     Poincare oldcms(K), newcms(ff.m_pk);
     newcms.Invert();
-    for (size_t l(a->NIn());l<s.m_p.size();++l)
-      s.m_p[l]=newcms*(oldcms*s.m_p[l]);
+    for (size_t l(0);l<s.m_p.size();++l)
+      if ((s.m_rcl[l]&2) && l!=i && l!=j)
+	s.m_p[l]=newcms*(oldcms*s.m_p[l]);
   }
+  s.m_p[i]=ff.m_pi;
+  s.m_pk=s.m_p[k];
   s.m_kt2=s.m_t;
+  s.m_zi=s.m_x;
+  if (p_sk->PS()->KernelScheme()&1)
+    s.m_zi=(s.m_pi*ff.m_nb)/((s.m_pi+s.m_pj)*ff.m_nb);
   s.m_p.erase(s.m_p.begin()+j);
   return true;
 }

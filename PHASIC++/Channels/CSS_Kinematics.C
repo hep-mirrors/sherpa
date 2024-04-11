@@ -34,6 +34,8 @@ Kin_Args PHASIC::ClusterFFDipole
     return Kin_Args();
   }
   if (mode&1) res.m_phi=ComputePhi(res.m_pi,res.m_pk,pi);
+  pn=Sign(Q2-sij-mk2)*sqrt(pn);
+  res.m_nb=((Q2-sij+mk2+pn)/2.*pk-mk2*Q)/pn;
   return res;
 }
 
@@ -76,6 +78,7 @@ int PHASIC::ConstructFFDipole
   ffp.m_pi+=ktt*cos(ffp.m_phi)*n_perp+zt/pn*(gam*ffp.m_pj-sij*ffp.m_pk)+
     (mi2+ktt*ktt)/zt/pn*(ffp.m_pk-mk2/gam*ffp.m_pj);
   ffp.m_pj=Q-ffp.m_pk-ffp.m_pi;
+  ffp.m_nb=(((ecm+pn)/2.+mk2)*ffp.m_pk-mk2*Q)/pn;
   return 1;
 }
 

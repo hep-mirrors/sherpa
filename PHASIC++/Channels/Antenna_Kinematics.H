@@ -8,7 +8,7 @@ namespace PHASIC {
 
   struct Ant_Args {
     double m_y, m_z, m_phi;
-    ATOOLS::Vec4D m_pi, m_pj, m_pk, m_pijt, m_Kt;
+    ATOOLS::Vec4D m_pi, m_pj, m_pk, m_pijt, m_Kt, m_nb;
     ATOOLS::Vec4D_Vector m_p;
     std::vector<int> m_b;
     int m_mode, m_stat, m_ij, m_k;

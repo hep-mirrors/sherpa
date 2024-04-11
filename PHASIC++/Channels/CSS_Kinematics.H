@@ -8,7 +8,7 @@ namespace PHASIC {
 
   struct Kin_Args {
     double m_y, m_z, m_phi, m_mk2, m_x;
-    ATOOLS::Vec4D m_pi, m_pj, m_pk;
+    ATOOLS::Vec4D m_pi, m_pj, m_pk, m_nb;
     ATOOLS::Poincare_Sequence m_lam;
     int m_mode, m_stat;
     static double s_uxeps;

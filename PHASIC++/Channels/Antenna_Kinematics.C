@@ -18,6 +18,7 @@ int PHASIC::ClusterAntenna
     if (ffp.m_b[l]&2) {
       if (l!=j) K+=ffp.m_p[l];
       if (l==i) ffp.m_mode|=2;
+      if (l==j) ffp.m_mode|=8;
       if (l==k) ffp.m_mode|=4;
     }
   if (ffp.m_mode&2) { K+=pj; K=-K; }
@@ -25,10 +26,11 @@ int PHASIC::ClusterAntenna
   double z((pi*n)/((pi+pj)*n));
   ffp.m_pijt=pi/z;
   ffp.m_Kt=n-(1.0-z)*ffp.m_pijt;
+  ffp.m_nb=n-n.Abs2()/(2.*n*pi)*pi;
   ffp.m_z=(ffp.m_mode&1)?1.0/z:z;
-  ffp.m_y=dabs((pi*pj)/(pi*n));
-  ffp.m_phi=ComputePhi(pi,n,pj);
+  ffp.m_y=(pi*pj)/(pi*n);
   ffp.m_pk=pk;
+  ffp.m_pj=pj;
   Vec4D Kt(K-ffp.m_pijt+pi+pj);
   Poincare oldcm, newcm;
   if (ffp.m_mode&2) {
@@ -36,8 +38,12 @@ int PHASIC::ClusterAntenna
     newcm=Poincare(-K);
     oldcm.Boost(ffp.m_Kt);
     newcm.BoostBack(ffp.m_Kt);
+    oldcm.Boost(ffp.m_nb);
+    newcm.BoostBack(ffp.m_nb);
     oldcm.Boost(ffp.m_pijt);
     newcm.BoostBack(ffp.m_pijt);
+    oldcm.Boost(n);
+    newcm.BoostBack(n);
   }
   else {
     newcm=Poincare(Kt);
@@ -52,8 +58,31 @@ int PHASIC::ClusterAntenna
     oldcm.Boost(ffp.m_pk);
     newcm.BoostBack(ffp.m_pk);
   }
+  if (ffp.m_mode&8) {
+    oldcm.Boost(ffp.m_pj);
+    newcm.BoostBack(ffp.m_pj);
+  }
   ffp.m_p[i]=ffp.m_pijt;
-  ffp.m_p.erase(ffp.m_p.begin()+j);
+  pk=ffp.m_pk;
+  Kt=ffp.m_Kt;
+  Vec4D pij(ffp.m_pijt);
+  LN_Pair ln(GetLN(pij,Kt));
+  double gam(2.*pij*Kt);
+  Vec4D n_perp(pk);
+  n_perp-=((pk*ln.m_n)*ln.m_l+(pk*ln.m_l)*ln.m_n)/(gam/2.0);
+  if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
+    msg_IODebugging()<<METHOD<<"(): Set fixed n_perp\n";
+    n_perp=LT(pij,Kt,Vec4D::ZVEC);
+    if (n_perp.PSpat2()<=rpa->gen.SqrtAccu())
+      n_perp=LT(pij,Kt,Vec4D::YVEC);
+    if (n_perp.PSpat2()<=rpa->gen.SqrtAccu())
+      n_perp=LT(pij,Kt,Vec4D::XVEC);
+  }
+  n_perp*=1.0/sqrt(dabs(n_perp.Abs2()));
+  Vec4D l_perp(LT(n,pij,n_perp));
+  l_perp*=1.0/sqrt(dabs(l_perp.Abs2()));
+  double cp(-ffp.m_pj*n_perp), sp(-ffp.m_pj*l_perp);
+  ffp.m_phi=atan2(sp,cp);
   ffp.m_stat=1;
   return 1;
 }
@@ -117,6 +146,7 @@ int PHASIC::ConstructAntenna
   ffp.m_pj+=(1.0-z+muit2-mui2+muj2)/(vo*zeta)*(pij-muitb2*Kt);
   ffp.m_pj+=vb*(1.0+vo)/(2.0*vo)*
     ((Kt-kapb*pij)-(1.0-zb+kapb)/zeta*(pij-muitb2*Kt));
+  ffp.m_nb=Kt-kapb*pij;
 #ifdef DEBUG__Kinematics
   {
     DEBUG_FUNC("pi-nb frame");
@@ -236,6 +266,8 @@ int PHASIC::ConstructAntenna
     newcm.BoostBack(ffp.m_pj);
     oldcm.Boost(ffp.m_Kt);
     newcm.BoostBack(ffp.m_Kt);
+    oldcm.Boost(ffp.m_nb);
+    newcm.BoostBack(ffp.m_nb);
     oldcm.Boost(ffp.m_pijt);
     newcm.BoostBack(ffp.m_pijt);
   }
