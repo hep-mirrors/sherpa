@@ -59,10 +59,11 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double B,
            const double mur)
   {
-    double V(0.0), run_corr(0.0);
+    double V(0.0), run_corr(0.0), scale(0.0);
     if(s_model->IsQEDRunning()) {
-     double t = -(p[0]-p[2]).Abs2();  
-     double dalpha = ((*aqed)(t) - aqed->AqedThomson());
+     if(m_tchannel) scale = -(p[0]-p[2]).Abs2();  
+     else scale = (p[0]+p[1]).Abs2();
+     double dalpha = ((*aqed)(scale) - aqed->AqedThomson());
      // PRINT_VAR(dalpha);
      run_corr = 4.*dalpha*B;
     }
