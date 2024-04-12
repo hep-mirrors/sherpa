@@ -50,7 +50,7 @@ Calculator::Calculator(Process_Base* proc):
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CHECK_EWSUDAKOV_LOG_FILE");
   }
 
-  m_threshold = s["THRESHOLD"].SetDefault(5.0).Get<double>();
+  m_threshold = s["THRESHOLD"].SetDefault(1.0).Get<double>();
   if(Settings::GetMainSettings()["EWSUDAKOV_THRESHOLD"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD:EWSUDAKOV_THRESHOLD");
   }
@@ -85,7 +85,7 @@ Calculator::Calculator(Process_Base* proc):
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: HIGH_ENERGY_SCHEME");
   }
 
-  m_includesubleading = s["INCLUDE_SUBLEADING"].SetDefault(false).Get<bool>();
+  m_includesubleading = s["INCLUDE_SUBLEADING"].SetDefault(true).Get<bool>();
   if(Settings::GetMainSettings()["EWSUDAKOV_INCLUDE_SUBLEADING"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: INCLUDE_SUBLEADING");
   }

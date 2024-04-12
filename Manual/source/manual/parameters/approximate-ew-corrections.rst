@@ -124,23 +124,37 @@ calculation, along with their default values:
 .. code-block:: yaml
 
    EWSUD:
-     THRESHOLD: 5.0
-     INCLUDE_SUBLEADING: false
+     THRESHOLD: 1.0
+     INCLUDE_SUBLEADING: true
      CLUSTERING_THRESHOLD: 10.0
 
 .. index:: THRESHOLD
 
-* :option:`THRESHOLD` gives the minimal invariant mass (in units of the W mass)
-  for each external pair of particles :math:`k` and :math:`l`, :math:`r_{kl}`,
-  defining the high energy limit. If any of the invariant masses is below this
-  value for a given event, then no EWsud correction is calculated.
+* :option:`THRESHOLD` . Strictly speaking the EWSudakov corrections are only
+  valid in the high-energy limit, that is where all possible invariant masses,
+  formed by pairing external particles, are much larger
+  than the W mass. In practice, we need to define how much is much larger.
+  The :option:`THRESHOLD` option, gives the minimal invariant mass (in units of
+  :math:m_W) that each
+  pairing of external particles can have to respect the high energy limit, and
+  below which no EWSudakov correction is computed. To clarify, a large
+  threshold, say for example 10 (10 times the W mass), would result in little to
+  no corrections at all, except for regions of phase-space truly in the
+  high-energy limit. This result is thus only expected to match exact EW
+  corrections only when all invariants are larger than this
+  threshold. Conversely a lower value, say 1, would apply the correction more
+  uniformily at the price of violating the thretically sound region where these
+  corrections are derived, but is seen to better reproduce the effect of exact
+  EW corrections across kinematical distributions.
 
 .. index:: INCLUDE_SUBLEADING
 
 * :option:`INCLUDE_SUBLEADING` determines whether a formally subleading term
   proportional to :math:`\log^2(r_{kl} / \hat s)` is included,
   where :math:`\hat s` is the Mandelstam variable for the partonic process,
-  see :cite:`Bothmann2021led`.
+  see :cite:`Bothmann2021led`. Note that depending on the value of
+  :option:`THRESHOLD` these may become numerically significant. For lower threshold
+  values, it is reccomended to leave this option `true`, as default.
 
 .. index:: CLUSTERING_THRESHOLD
 
