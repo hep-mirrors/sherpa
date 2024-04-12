@@ -16,13 +16,8 @@ namespace METOOLS {
     typedef std::vector<SComplex> SComplex_Vector;
 
     typedef ATOOLS::Spinor<SType> SpinorType;
-    typedef ATOOLS::Vec4<SType>   Vec4Type;
-
     typedef CSpinor<SType> CSpinorType;
-    typedef std::vector<CSpinorType*> CSpinorType_Vector;
-
     typedef CVec4<SType> CVec4Type;
-    typedef std::vector<CVec4Type*> CVec4Type_Vector;
 
     typedef CRaritaSchwinger<SType> CRaScType;
     typedef std::vector<CRaScType*> CRaScType_Vector;
@@ -49,6 +44,8 @@ namespace METOOLS {
     CVec4Type EML(const ATOOLS::Vec4D &p,const int cr,const int ca, const bool hel= true);
 
     // different polarization states
+    CRaScType RS(const ATOOLS::Vec4D &p, const int r, const int h, const int s, const int b, const int cr=0,
+                 const int ca=0, const int hh=0, const int ms=0);
     CRaScType RSMM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
     CRaScType RSPP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
     CRaScType RSP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr=0, int ca=0, int hh=0, int ms=0);
@@ -56,7 +53,6 @@ namespace METOOLS {
 
     CRaScType SpinorVectorProduct(const CSpinorType spinor, const CVec4Type polvector, int spinor_h, int cr=0, int ca=0,
                                   int s=0);
-
   public:
     CRS(const Current_Key &key);
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
@@ -189,6 +185,21 @@ CRS<SType>::EML(const Vec4D &p,const int cr,const int ca, const bool hel)
   return e/sqrt(SComplex(4.0*p2));
 }
 
+template<typename SType> CRaritaSchwinger<SType>
+CRS<SType>::RS(const ATOOLS::Vec4D &p, const int r, const int h, const int s, const int b, const int cr, const int ca,
+                 const int hh, const int ms) {
+  CRaritaSchwinger<SType> wf;
+  switch (h) {
+    case 0: wf = RSPP(p, r, s, b, cr, ca, hh, ms); break;
+    case 1: wf = RSMM(p, r, s, b, cr, ca, hh, ms); break;
+    case 2: wf = RSP(p, r, s, b, cr, ca, hh, ms); break;
+    case 3: wf = RSM(p, r, s, b, cr, ca, hh, ms); break;
+    default:
+      THROW(fatal_error,"Rarita-Schwinger particle has only four spin degrees of freedom!");
+  }
+  return wf;
+}
+
 // TODO: PLUS AND MINUS EXCHANGED
 // TODO: Im HELAS-Paper hat die Wellenfunktion 18 Komponenten, wobei die letzten bei den Komponenten den Viererimpuls
 //       entlang des Fermionzahlflusses enthalten -> brauchen wir das auch?
@@ -289,6 +300,7 @@ CRaritaSchwinger<SType> CRS<SType>::SpinorVectorProduct(const CRS::CSpinorType s
   int vector_h = polvector.H();
   DEBUG_VAR(spinor);
   DEBUG_VAR(polvector);
+  // TODO: Check, whether m_r=0 for Majorana-Particles (should be inherited from spinor)
   METOOLS::CRS<SType>::CRaScType RaSc(spinor.R(), spinor.B(), cr, ca, 0, s);
   RaSc(0) = cr;
   RaSc(1) = ca;
@@ -308,23 +320,23 @@ template <typename SType>
 void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
-            this->m_p=p;
-  // TODO: Tests in RSPP, RSMM, und hier in DEBUG-Options sinnvoll einbauen
+  this->m_p=p;
   if (this->m_fl.Mass()==0.0 && p[1]==0.0 && p[2]==0.0)
-    this->m_p[0]=this->m_p[0]<0.0?
-      -std::abs(this->m_p[3]):std::abs(this->m_p[3]);
-  bool anti(this->m_fl.IsAnti());
+    this->m_p[0]=this->m_p[0]<0.0?-std::abs(this->m_p[3]):std::abs(this->m_p[3]);
   this->ResetJ();
-  //TODO: Stimmit das hier?
-  int r(anti?-1:1);
-  // m_dir>0: originally incoming, m_dir<0: outgoing; for calculation all particles are handled as outcoming
-  int b((anti^(this->m_dir>0))?1:-1);
-  //TODO: Was bedeutet ch? Was für Werte kann ch für RaSc annehmen?
+  bool anti(this->m_fl.IsAnti());
+  // mode describes whether Majorana particles are formally handled as Dirac particles or anti particles
+  // should lead to the same result, mode only for consistency test purposes
+  if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
+  // m_dir>0: originally incoming, m_dir<0: outgoing; for calculation all particles are handled as outgoing
+  // hence: for incoming anti-particles, particle spinors are calculated and for incoming particles, anti-particle spinors
+  // (anti^(this->m_dir>0))
   // TODO: !!!Richtige H-Werte?!!!
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
-      //CRaScType j(anti^(this->m_dir>0)? RSP(p, -1, 0, -this->m_dir, cr, ca): RSP(p, 1, 0, this->m_dir, cr, ca));
-      CRaScType j(RSP(p, r, 0, b, cr, ca));
+      CRaScType j(anti^(this->m_dir>0)?
+                  RS(p, this->m_fl.Majorana()?-2:-1, this->m_fl.Majorana()?(mode?2:3):2, 0, -this->m_dir, cr, ca):
+                  RS(p, this->m_fl.Majorana()?2:1, this->m_fl.Majorana()?(mode?3:2):2, 0, this->m_dir, cr, ca));
       AddJ(CRaScType::New(j));
       // h=3 for bar vector-spinor
       //j.SetH(anti^(this->m_dir>0)?2:3);
@@ -339,8 +351,9 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 #endif
     }
     if (ch!=3){
-      //CRaScType j(anti^(this->m_dir>0)? RSPP(p, -1, 0, -this->m_dir, cr, ca): RSPP(p, 1, 0, this->m_dir, cr, ca));
-      CRaScType j(RSPP(p, r, 0, b, cr, ca));
+      CRaScType j(anti^(this->m_dir>0)?
+      RS(p, this->m_fl.Majorana()?-2:-1, this->m_fl.Majorana()?(mode?0:1):0, 0, -this->m_dir, cr, ca):
+                  RS(p, this->m_fl.Majorana()?2:1, this->m_fl.Majorana()?(mode?1:0):0, 0, this->m_dir, cr, ca));
       //j.SetH(anti^(this->m_dir>0)?0:1);
       j.SetH(0);
 #ifdef DEBUG__BG
@@ -357,8 +370,9 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   }
   if (ch<=0) {
     if (this->m_msv && (ch==0 || ch==-3)) {
-      //CRaScType j(anti^(this->m_dir>0)? RSM(p, -1, 0, -this->m_dir, cr, ca): RSM(p, 1, 0, this->m_dir, cr, ca));
-      CRaScType j(RSM(p, r, 0, b, cr, ca));
+      CRaScType j(anti^(this->m_dir>0)?
+                  RS(p, this->m_fl.Majorana()?-2:-1, this->m_fl.Majorana()?(mode?3:2):3, 0, -this->m_dir, cr, ca):
+                  RS(p, this->m_fl.Majorana()?2:1, this->m_fl.Majorana()?(mode?2:3):3, 0, this->m_dir, cr, ca));
       AddJ(CRaScType::New(j));
       //j.SetH(anti^(this->m_dir>0)?3:2);
       j.SetH(3);
@@ -372,8 +386,9 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 #endif
     }
     if (ch!=-3){
-      //CRaScType j(anti^(this->m_dir>0) ? RSMM(p, -1, 0, -this->m_dir, cr, ca) : RSMM(p, 1, 0, this->m_dir, cr, ca));
-      CRaScType j(RSMM(p, r, 0, b, cr, ca));
+      CRaScType j(anti^(this->m_dir>0)?
+                  RS(p, this->m_fl.Majorana()?-2:-1, this->m_fl.Majorana()?(mode?1:0):1, 0, -this->m_dir, cr, ca):
+                  RS(p, this->m_fl.Majorana()?2:1, this->m_fl.Majorana()?(mode?0:1):1, 0, this->m_dir, cr, ca));
       //j.SetH(anti^(this->m_dir>0)?1:0);
       j.SetH(1);
 #ifdef DEBUG__BG
