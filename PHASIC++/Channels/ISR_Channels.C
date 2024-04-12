@@ -118,7 +118,7 @@ void ISR_Channels::CheckForStructuresFromME() {
       break;
     case channel_type::simple:
       if(p_yfshandler->GetMode()){
-        m_isrparams.push_back(Channel_Info(type,1,1));
+        m_isrparams.push_back(Channel_Info(type,0.999,1));
       }
       break;
     case channel_type::leadinglog:
