@@ -573,6 +573,11 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax){
 double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
   double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,1);
   double V = BVirtT(p1, p2);
+  if(m_tchannel!=2){
+    // add s channel 
+    double Vs = BVV_full(p1, p2, m_photonMass, sqrt(m_s)/2., 0);
+    return R+V+Vs;
+  }
   return R+V;
 }
 
