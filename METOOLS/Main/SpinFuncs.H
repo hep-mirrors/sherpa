@@ -31,6 +31,8 @@ namespace METOOLS{
     Gamma();
     ATOOLS::TCMatrix<Scalar> operator[](int i) const;
     ATOOLS::TCMatrix<Scalar> operator*(const ATOOLS::Vec4<double> &p);
+
+    static std::vector<unsigned int> GetGauge();
   };
 }
 #endif
