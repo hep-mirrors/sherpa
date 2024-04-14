@@ -74,7 +74,6 @@ std::vector<unsigned int> METOOLS::Gamma<Scalar>::GetGauge() {
   // The gauge of the Weyl spinors in Sherpa can be understood as a rotation of the coordinate system for the
   // gamma matrices.
   std::vector<unsigned int> gauge_vec{0, ATOOLS::Spinor<Scalar>::R1(), ATOOLS::Spinor<Scalar>::R2(), ATOOLS::Spinor<Scalar>::R3()};
-  DEBUG_VAR(gauge_vec);
   if (gauge_vec[1]==2 && gauge_vec[2]==3 && gauge_vec[3]==1){
     gauge_vec[1] = 3; gauge_vec[2] = 1; gauge_vec[3] = 2;
   }
