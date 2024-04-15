@@ -19,8 +19,13 @@ Reconnect_Gluon::~Reconnect_Gluon()
 	m_collist.clear();
 //	msg_Info() << std::endl << "Min. total stringlength: " << this->find_min_totalLength(this->m_stringlength_totals) << std::endl;
 //	msg_Info() << std::endl << "Max. total stringlength: " << this->find_max_totalLength(this->m_stringlength_totals) << std::endl;
-	write_stringLengths_to_file(m_stringlength_totals);
+//	write_stringLengths_to_file(m_stringlength_totals);
+	write_to_file(m_stringlength_totals, "stringlength");
 	m_stringlength_totals.clear();
+	write_to_file(m_hadmasses_before, "mass_beforeCR");
+	m_hadmasses_before.clear();
+	write_to_file(m_hadmasses_after, "mass_afterCR");
+	m_hadmasses_after.clear();
 }
 
 void Reconnect_Gluon::SetParameters()
@@ -56,7 +61,8 @@ int Reconnect_Gluon::operator()(ATOOLS::Blob_List *const blobs)
 	
 	// inefficient to call twice, come back and store the result somewhere...
 	m_norm = this->TotalLength();
-	this->PlotTotalLength(this->TotalLength());
+	//this->SaveTotalLength(this->TotalLength());
+	this->SaveTotalLength(m_norm);
 
 	for(std::map<unsigned int, ATOOLS::Particle *>::iterator cit = m_cols[0].begin(); cit != m_cols[0].end(); cit++)
 	{
@@ -74,8 +80,10 @@ int Reconnect_Gluon::operator()(ATOOLS::Blob_List *const blobs)
 		if(!this->AttemptSwap(col)) return false;
 		else
 		{
-			FillMassesInHistogram(copy_cols, "Mass_beforeGluonMove");
+			FillMassesInHistogram(copy_cols, "Mass_beforeGluonMove"); 
+			this->save_masses_before(copy_cols);
 			FillMassesInHistogram(m_cols, "Mass_afterGluonMove");
+			this->save_masses_after(m_cols);
 		}
 	}
 	this->UpdateColours();
@@ -87,7 +95,7 @@ int Reconnect_Gluon::operator()(ATOOLS::Blob_List *const blobs)
 
 bool Reconnect_Gluon::SelectColourPair(const size_t &N, unsigned int &g1, unsigned int &g2)
 {
-	msg_Info() << "\n Reconnect_Gluon::SelectColourPair() called...\n";
+	//msg_Info() << "\n Reconnect_Gluon::SelectColourPair() called...\n";
 	unsigned int trials = 0;
 	do
 	{
@@ -229,13 +237,27 @@ double Reconnect_Gluon::TotalLength()
 		total *= Distance(part1, part2);
 	}
 
-	return total / std::pow(m_parts[0].size(), m_kappa);
+	//return total / std::pow(m_parts[0].size(), m_kappa);
+	const double return_value = total / std::pow(m_parts[0].size(), m_kappa);
+	FillLengthInHistogram(return_value, "stringlength_gluon");
+	return return_value;
 }
 
-void Reconnect_Gluon::PlotTotalLength(double total_length)
+// tmeporary functions to write masses and stringlengths to file for plotting until I fix histogramming issues ...
+
+void Reconnect_Gluon::SaveTotalLength(double total_length)
 {
 	m_stringlength_totals.push_back(total_length);
-	// plot this ...
+}
+
+void Reconnect_Gluon::save_masses_before(std::map<unsigned int, ATOOLS::Particle*> cols_before[2])
+{
+	m_hadmasses_before.push_back(get_total_hadMass(cols_before));
+}
+
+void Reconnect_Gluon::save_masses_after(std::map<unsigned int, ATOOLS::Particle*> cols_after[2])
+{
+	m_hadmasses_after.push_back(get_total_hadMass(cols_after));
 }
 
 void Reconnect_Gluon::write_stringLengths_to_file(std::vector<double> total_vec)
@@ -243,6 +265,18 @@ void Reconnect_Gluon::write_stringLengths_to_file(std::vector<double> total_vec)
 	std::ofstream output_file("./Reconnection_Analysis/gluonOnly_stringlength_vec.txt");
 	std::ostream_iterator<double> output_iterator(output_file, "\n");
 	std::copy(total_vec.begin(), total_vec.end(), output_iterator);
+}
+
+void Reconnect_Gluon::write_to_file(std::vector<double> data, std::string file_name)
+{
+	std::string file_string = "./Reconnection_Analysis/gluon_NAME.txt";
+	file_string = file_string.replace(file_string.find("NAME"), 4, file_name);
+	std::cout << "\nWriting " << file_name << "..." << std::endl;
+//	std::cout << "\nTEST: filestring is " << file_string << std::endl;
+
+	std::ofstream output_file(file_string);
+	std::ostream_iterator<double> output_iterator(output_file, "\n");
+	std::copy(data.begin(), data.end(), output_iterator);
 }
 
 // -------

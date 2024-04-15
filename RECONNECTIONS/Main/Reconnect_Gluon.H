@@ -17,6 +17,7 @@ namespace RECONNECTIONS
 			//std::string m_dist_type; // could define in parent class instead so that the handler can include dist type in filename write
 			int m_dist_type;
 			std::vector<double> m_stringlength_totals;
+			std::vector<double> m_hadmasses_before, m_hadmasses_after;
 			
 			void SetParameters();
 			//bool SelectGluonList();
@@ -28,10 +29,13 @@ namespace RECONNECTIONS
 			double PosDistance(ATOOLS::Particle *trip, ATOOLS::Particle *anti);
 			double ColDistance(ATOOLS::Particle *trip, ATOOLS::Particle *anti);
 			double TotalLength();
-			void   PlotTotalLength(double total_length);
+			void   SaveTotalLength(double total_length);
 //			double find_min_totalLength(std::vector<double> total_vec);
 //			double find_max_totalLength(std::vector<double> total_vec);
 			void   write_stringLengths_to_file(std::vector<double> total_vec);
+			void   write_to_file(std::vector<double> data, std::string file_name);
+			void   save_masses_before(std::map<unsigned int, ATOOLS::Particle*> cols_before[2]);
+			void   save_masses_after(std::map<unsigned int, ATOOLS::Particle*> cols_after[2]);
 		
 		public:
 			Reconnect_Gluon();

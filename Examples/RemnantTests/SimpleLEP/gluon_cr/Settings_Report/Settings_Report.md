@@ -1,16 +1,7 @@
 ---
 title: Sherpa run-time settings
-date: Mon Apr  8 14:29:40 2024
+date: Mon Apr 15 15:37:50 2024
 ...
-
-Unused settings
--------------------
-Parameters that have never been read by Sherpa during its run are listed here. If you did expect the setting to be used, check its spelling, and note that Sherpa setting names are case-sensitive.
-
-### Sherpa.yaml
-- COLOUR_RECONNECTIONS:g_only
-- CORE_SCALE
-
 
 Customised settings
 -------------------
@@ -22,12 +13,11 @@ Note that parameters that can take on different values because they are set with
 
 | parameter | default value | override by SHERPA | /Applications/sherpa/clang_sherpa/sherpa/build/share/SHERPA-MC//Decaydata.yaml | Sherpa.yaml | command line | final value |
 |-|-|-|-|-|-|-|
-BEAMS| 0, 0 |  |  | 2212 |  | 2212 |  |
-BEAM\_ENERGIES| 0, 0 |  |  | 6500 |  | 6500 |  |
+ALPHAS\(MZ\)| 0\.118 |  |  | 0\.1188 |  | 0\.1188 |  |
+BEAMS| 0, 0 |  |  | 11, \-11 |  | 11, \-11 |  |
+BEAM\_ENERGIES| 0, 0 |  |  | 45\.6 |  | 45\.6 |  |
 COLOUR\_RECONNECTIONS:MODE| 0 |  |  | true |  | 1 |  |
-ERROR| 0\.01 |  |  | 0\.99 |  | 0\.99 |  |
-EVENTS| 100 |  |  | 1000 |  | 1000 |  |
-EVENT\_GENERATION\_MODE| PartiallyUnweighted |  |  | Weighted |  | Weighted |  |
+EVENTS| 100 |  |  | 50k |  | 50000 |  |
 HADRON\_DECAYS:Channels:100113:111,111,111,111:BR| \-1 |  | 0\.042, 0\.042 |  |  | 0\.042 |  |
 HADRON\_DECAYS:Channels:100113:111,111,111,111:IntResults| \-1 |  | 3\.712e\-09, 8\.334e\-12, 1\.531e\-08 |  |  | 1\.531e\-08<br />\-\- AND \-\-<br />3\.712e\-09<br />\-\- AND \-\-<br />8\.334e\-12 |  |
 HADRON\_DECAYS:Channels:100113:111,111,111,111:Origin|  |  | FS |  |  | FS |  |
@@ -9409,12 +9399,9 @@ HADRON\_DECAYS:Partonics:c:Channels:3, \-11, 12:BR| \-1 |  | 0\.104, 0 |  |  | 0
 HADRON\_DECAYS:Partonics:c:Channels:3, \-13, 14:BR| \-1 |  | 0\.101, 0 |  |  | 0<br />\-\- AND \-\-<br />0\.101 |  |
 HADRON\_DECAYS:Partonics:c:Channels:3, \-3, 2:BR| \-1 |  | 0\.033, 0 |  |  | 0<br />\-\- AND \-\-<br />0\.033 |  |
 HADRON\_DECAYS:Partonics:c:Width| \-1 |  | 4\.1397e\-14 |  |  | 4\.1397e\-14 |  |
-ME\_GENERATORS| Comix, Amegic, Internal |  |  | Comix |  | Comix |  |
-MI\_HANDLER| Amisic |  |  | None |  | None |  |
-PROCESSES:93 93 \-\> 13 \-13:Integration\_Error|  |  |  |  |  | 0\.05 |  |
-PROCESSES:93 93 \-\> 13 \-13:Order:EW| \-1 |  |  |  |  | 2 |  |
-PROCESSES:93 93 \-\> 13 \-13:Order:QCD| \-1 |  |  |  |  | 0 |  |
-SELECTORS|  |  |  | Mass, 13, \-13, 66, 116\. |  | Mass, 13, \-13, 66, 116\. |  |
+PDF\_LIBRARY|  |  |  | None |  | None |  |
+PROCESSES:11 \-11 \-\> 93 93:Order:EW| \-1 |  |  |  |  | 2 |  |
+PROCESSES:11 \-11 \-\> 93 93:Order:QCD| \-1 |  |  |  |  | 0 |  |
 Settings kept at their default value
 -------------------
 The parameter listed here have not been customised, but they have been read by Sherpa during its run.
@@ -9492,7 +9479,8 @@ AHADIC:TRANSITION\_THRESHOLD| 0\.51 |  |
 ALPHAS:FREEZE\_VALUE| 1 |  |
 ALPHAS:PDF\_SET\_VERSION| 0 |  |
 ALPHAS:USE\_PDF| 1 |  |
-ALPHAS\(MZ\)| 0\.118 |  |
+AMEGIC:DEFAULT\_GAUGE| 1 |  |
+AMEGIC:PARTIAL\_COMMIT| 0 |  |
 ANALYSIS|  |  |
 ANALYSIS\_OUTPUT| Analysis/ |  |
 ASSOCIATED\_CONTRIBUTIONS\_VARIATIONS|  |  |
@@ -9597,7 +9585,7 @@ DIPOLES:ALPHA\_IF| 1 |  |
 DIPOLES:ALPHA\_II| 1 |  |
 DIPOLES:AMIN| 1e\-08 |  |
 DIPOLES:KAPPA| 0\.666666666667 |  |
-DIPOLES:KT2MAX| 169000000 |  |
+DIPOLES:KT2MAX| 8317\.44 |  |
 DIPOLES:NF\_GSPLIT| 5 |  |
 DIPOLES:SCHEME| CSS |  |
 DM\_ENERGY\_DISTRIBUTION| 1 |  |
@@ -9605,7 +9593,9 @@ DM\_RELATIVISTIC| 1 |  |
 DM\_TEMPERATURE| 1 |  |
 DM\_beam\_weighted| 1 |  |
 ENHANCE\_XS| 0 |  |
+ERROR| 0\.01 |  |
 EVENT\_DISPLAY\_INTERVAL| 100 |  |
+EVENT\_GENERATION\_MODE| PartiallyUnweighted |  |
 EVENT\_INPUT|  |  |
 EVENT\_OUTPUT|  |  |
 EVENT\_SEED\_FILE| ran\.stat\.1234 |  |
@@ -20240,23 +20230,14 @@ HISTOGRAM\_OUTPUT\_PRECISION| 6 |  |
 IB\_THRESHOLD\_KILL| \-1e\+12 |  |
 IB\_WHBINS| 100 |  |
 INIT\_ONLY| 0 |  |
-INTEGRATION\_ERROR| 0\.99 |  |
+INTEGRATION\_ERROR| 0\.01 |  |
 INTEGRATOR| Default |  |
-INTRINSIC\_KPERP:CUT\_EXPO| 5 |  |
-INTRINSIC\_KPERP:FORM| gauss\_limited |  |
-INTRINSIC\_KPERP:MAX| 3 |  |
-INTRINSIC\_KPERP:MEAN| 0 |  |
-INTRINSIC\_KPERP:Q2| 0\.77 |  |
-INTRINSIC\_KPERP:REFE| 7000 |  |
-INTRINSIC\_KPERP:SCALE\_EXPO| 0\.08 |  |
-INTRINSIC\_KPERP:SIGMA| 1\.5 |  |
 INT\_MINSIJ\_FACTOR| 0 |  |
+ISR\_E\_ORDER| 1 |  |
+ISR\_E\_SCHEME| 2 |  |
 JET\_MASS\_THRESHOLD| 10 |  |
 KFACTOR| None |  |
 KFACTOR\_ALLOW\_MAPPING| 1 |  |
-LHAPDF:DISALLOW\_FLAVOUR|  |  |
-LHAPDF:USE\_Q2LIMIT| 1 |  |
-LHEF\_PDF\_NUMBER| \-1 |  |
 LOG\_FILE|  |  |
 MASSIVE\_PS|  |  |
 MASSLESS\_PS|  |  |
@@ -20277,6 +20258,7 @@ MEPS:UNORDERED\_SCALE| None |  |
 MEPSNLO\_PDFCT| 1 |  |
 METS:CLUSTER\_MODE| 0 |  |
 METS\_BBAR\_MODE| EnabledExclCluster |  |
+ME\_GENERATORS| Comix, Amegic, Internal |  |
 ME\_QED:CLUSTERING\_ENABLED| 1 |  |
 ME\_QED:CLUSTERING\_THRESHOLD| 10 |  |
 ME\_QED:ENABLED| 1 |  |
@@ -20287,6 +20269,7 @@ MI\_CSS\_IS\_AS\_FAC| 0\.66 |  |
 MI\_CSS\_IS\_PT2MIN| 4 |  |
 MI\_CSS\_KFACTOR\_SCHEME| 0 |  |
 MI\_CSS\_KIN\_SCHEME| 1 |  |
+MI\_HANDLER| Amisic |  |
 MODEL| SM |  |
 MPI\_OUTPUT| 0 |  |
 MPI\_PDF\_LIBRARY|  |  |
@@ -20307,26 +20290,17 @@ OUTPUT| 2 |  |
 OUTPUT\_ME\_ONLY\_VARIATIONS| 1 |  |
 OVERWEIGHT\_THRESHOLD| 1e\+12 |  |
 PB\_USE\_FMM| 0 |  |
-PDF\_LIBRARY|  |  |
 PDF\_SET|  |  |
 PDF\_SET\_VERSIONS|  |  |
 PRETTY\_PRINT| On |  |
 PRINT\_PS\_POINTS| 0 |  |
 PRINT\_VERSION\_INFO| 0 |  |
-PROCESSES:93 93 \-\> 13 \-13:CKKW|  |  |
-PROCESSES:93 93 \-\> 13 \-13:Cut\_Core| 0 |  |
-PROCESSES:93 93 \-\> 13 \-13:Decay|  |  |
-PROCESSES:93 93 \-\> 13 \-13:DecayOS|  |  |
-PROCESSES:93 93 \-\> 13 \-13:No\_Decay|  |  |
-PROCESSES:93 93 \-\> 13 \-13:Sort\_Flavors| 3 |  |
-PSI:ITMIN| 5000 |  |
-PSI:MAXOPT| 1 |  |
-PSI:NOPT| 10 |  |
-PSI:NPOWER| 0\.5 |  |
-PSI:NRAWMAX| 18446744073709551615 |  |
-PSI:STOPOPT| 0 |  |
-PSI:TIMESTEP\_OFFSET| 0 |  |
-PSI:TIMESTEP\_SLOPE| 0 |  |
+PROCESSES:11 \-11 \-\> 93 93:CKKW|  |  |
+PROCESSES:11 \-11 \-\> 93 93:Cut\_Core| 0 |  |
+PROCESSES:11 \-11 \-\> 93 93:Decay|  |  |
+PROCESSES:11 \-11 \-\> 93 93:DecayOS|  |  |
+PROCESSES:11 \-11 \-\> 93 93:No\_Decay|  |  |
+PROCESSES:11 \-11 \-\> 93 93:Sort\_Flavors| 3 |  |
 PS\_PT\_FILE|  |  |
 Q2\_AS| 1 |  |
 RANDOM\_SEED| \-1, \-1, \-1, \-1 |  |
@@ -20335,10 +20309,6 @@ RANDOM\_SEED2| \-1 |  |
 RANDOM\_SEED3| \-1 |  |
 RANDOM\_SEED4| \-1 |  |
 RELIC\_DENSITY\_EMAX| 1000000 |  |
-REMNANTS:DELTA\_MASS| 1\.5 |  |
-REMNANTS:SOFT\_ETA\_RANGE| 7\.5 |  |
-REMNANTS:SOFT\_MASS| 5 |  |
-REMNANTS:SOFT\_X\_EXPONENT| \-2 |  |
 RENORMALIZATION\_SCALE\_FACTOR| 1 |  |
 RESPECT\_MASSIVE\_FLAG| 0 |  |
 RESULT\_DIRECTORY| Results |  |
