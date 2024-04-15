@@ -135,6 +135,7 @@ void Event_Handler::ResetNonPerturbativePhases()
 
 bool Event_Handler::GenerateEvent(eventtype::code mode)
 {
+  msg_Out()<<"\n================================================================\n";
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
   ATOOLS::ran->SaveStatus();
   if (m_checkweight&4 && rpa->gen.NumberOfGeneratedEvents()==0)
@@ -232,7 +233,9 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       }
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
+    //msg_Out()<<METHOD<<": into   "<<(*pit)->Name()<<"\n";
     Return_Value::code rv((*pit)->Treat(&m_blobs));
+    //msg_Out()<<METHOD<<": out of "<<(*pit)->Name()<<"\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;

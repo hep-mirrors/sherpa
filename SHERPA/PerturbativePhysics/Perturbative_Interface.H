@@ -78,6 +78,9 @@ namespace SHERPA {
     long int m_fails_Moms, m_fails_Ampls, m_fails_Masses;
     bool LocalKFactor(ATOOLS::Cluster_Amplitude* ampl);
 
+    ATOOLS::Return_Value::code DefineInitialConditionsForMI(ATOOLS::Blob*);
+    ATOOLS::Return_Value::code DefineInitialConditionsForDecay(ATOOLS::Blob*);
+    ATOOLS::Return_Value::code DefineInitialConditionsForSoft(ATOOLS::Blob*);
   public :
 
     Perturbative_Interface(Matrix_Element_Handler* const,

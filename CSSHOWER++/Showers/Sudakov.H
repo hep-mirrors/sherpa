@@ -32,15 +32,23 @@ namespace CSSHOWER {
     double m_reweightscalecutoff, m_gluon_xscaling_in_forced_splittings;
     std::pair<double, double> m_pdfmin;
     static bool s_init;
+    
+    int    Generate(Parton *,double,double,double&,double&,double&,double&);
     double ProduceT(double t);
-    bool Veto(double,double,double,double,double);
-    bool Splitting(double,double,double,double,double);
-    bool DefineFFBoundaries(double,double);
-    bool DefineFIBoundaries(double,double,int);
-    bool DefineIFBoundaries(double,double,int);
-    bool DefineIIBoundaries(double,double,int);
-    void Add(Splitting_Function_Base * split);
-    void AddToMaps(Splitting_Function_Base * split,const int mode=1);
+    bool   MakeSpectatorList(std::list<Parton*> & slist);
+    bool   DefineStartingPoint(Parton * spect,double & Q2,int & beam);
+    bool   ValidT(const double & t,const double & t0);
+    bool   MakeForcedSplitting(Parton * spect,double & t,double & z,double & phi);
+    int    FixKinematics(Parton * spect,const double & t,const double & z,
+			 double & Q2,double & x,double & y);
+    bool   Veto(double,double,double,double,double);
+    bool   Splitting(double,double,double,double,double);
+    bool   DefineFFBoundaries(double,double);
+    bool   DefineFIBoundaries(double,double,int);
+    bool   DefineIFBoundaries(double,double,int);
+    bool   DefineIIBoundaries(double,double,int);
+    void   Add(Splitting_Function_Base * split);
+    void   AddToMaps(Splitting_Function_Base * split,const int mode=1);
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed);
     ~Sudakov();
@@ -58,7 +66,6 @@ namespace CSSHOWER {
       m_gluon_xscaling_in_forced_splittings = -expo;
     }
     bool   Generate(Parton *,double);
-    int    Generate(Parton *,Parton *,double,double,double&,double&,double&,double&);
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1);
 

@@ -2,6 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -113,7 +114,6 @@ bool Splitter_Base::MakeSplitting() {
 }
 
 void Splitter_Base::PopFlavours() {
-  // Here we should set vetodi = false -- but no heavy baryons (yet)
   Flavour flav    = m_flavourselector(m_Emax/2.,false);
   // m_barrd = true  if part1 = AntiQuark or DiQuark
   // m_barrd = false if part1 = Quark or AntiDiQuark
@@ -168,18 +168,10 @@ bool Splitter_Base::MakeKinematics() {
 void Splitter_Base::MakeTransverseMomentum() {
   m_ktfac  = Max(1.,m_Q2/(4.*m_minQ[0]*m_minQ[1]));
   m_kt2max = Min(p_part[0]->KT2_Max(),p_part[1]->KT2_Max());
-  double ktmax  = Min(m_ktmax,
-		      (m_ktorder?
-		       Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
-		       (m_Emax-2.*m_popped_mass)/2.));
-  // have to make this a parameter for the beam breakup?
-  //if (p_part[0]->IsBeam() || p_part[1]->IsBeam()) ktmax = Min(5.0,m_ktmax);
-  if (ktmax<0.) {
-    msg_Error()<<METHOD<<" yields error ktmax = "<<ktmax
-	       <<" from "<<m_Emax<<", "<<m_popped_mass<<" vs. "
-	       <<" min = "<<m_minmass<<".\n";
-    abort();
-  }
+  double ktmax  = Min(m_ktmax,(m_ktorder?
+			       Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
+			       (m_Emax-2.*m_popped_mass)/2.));
+  if (ktmax<0.) THROW(fatal_error,"Negative ktmax.");
   m_ktfac = 1.;
   bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
   m_kt    = m_ktselector(ktmax,m_ktfac);

@@ -16,10 +16,7 @@ Cluster_Decayer::Cluster_Decayer(list<Cluster *> * cluster_list,
 
 Cluster_Decayer::~Cluster_Decayer() {}
 
-void Cluster_Decayer::Init() {
-  m_splitter.Init();
-  //Test(10.,Flavour(kf_c),true);
-}
+void Cluster_Decayer::Init() { m_splitter.Init(); }
 
 void Cluster_Decayer::Reset() {}
 
@@ -58,7 +55,6 @@ bool Cluster_Decayer::Treat(Cluster * cluster) {
     //cluster should have decayed into clusters - throw error
     break;
   }
-  msg_Tracking()<<METHOD<<" throws error for:\n"<<(*cluster)<<"\n";
   return false;
 }
 

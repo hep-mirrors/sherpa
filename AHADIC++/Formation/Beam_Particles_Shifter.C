@@ -29,7 +29,6 @@ bool Beam_Particles_Shifter::operator()() {
 }
 
 void Beam_Particles_Shifter::ExtractBeamParticles() {
-  //msg_Out()<<"      --- "<<METHOD<<" for "<<p_singlets->size()<<" singlets.\n";
   m_beamparts.clear();
   Singlet * singlet, * bsinglet;
   Vec4D  mom(0.,0.,0.,0.);
@@ -64,7 +63,6 @@ void Beam_Particles_Shifter::ExtractBeamParticles() {
 }
 
 bool Beam_Particles_Shifter::ShiftBeamParticles() {
-  //msg_Out()<<"     --- "<<METHOD<<" for "<<m_beamparts.size()<<" particles.\n";
   size_t n = m_beamparts.size(), i(0);
   if (n<=1) return true;
   Vec4D  * moms   = new Vec4D[n];
@@ -89,7 +87,6 @@ bool Beam_Particles_Shifter::ShiftBeamParticles() {
 }
 
 void Beam_Particles_Shifter::RescueLightClusters() {
-  //msg_Out()<<"    --- "<<METHOD<<" for "<<p_singlets->size()<<" singlets.\n";
   Singlet * sing;
   Flavour flav, trip, anti;
   bool    beam, decayed;

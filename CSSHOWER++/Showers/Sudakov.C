@@ -168,330 +168,362 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     m_addsplittings.push_back(split);
     msg_Debugging()<<"\n";
   }
+  Flavour flavA = split->GetFlavourA();
+  Flavour flavB = split->GetFlavourB();
+  Flavour flavC = split->GetFlavourC();
   if (split->GetCol()<0) {
     switch(split->GetType()) {
-    case cstp::IF:
-      m_fifmap[split->GetFlavourA()]
-	[split->GetFlavourC()]
-	[split->GetFlavourB()]=split;
-      break;
-    case cstp::II:
-      m_fiimap[split->GetFlavourA()]
-	[split->GetFlavourC()]
-	[split->GetFlavourB()]=split;
-      break;
+    case cstp::IF: m_fifmap[flavA][flavC][flavB]=split; break;
+    case cstp::II: m_fiimap[flavA][flavC][flavB]=split; break;
     default: break;
     }
-    if (split->GetCol()<0) return;
+    return;
   }
   switch(split->GetType()) {
   case cstp::FF:
-    m_fffmap[split->GetFlavourB()]
-      [split->GetFlavourC()]
-      [split->GetFlavourA()]=split;
-    if (split->On())
-      m_sffmap[split->GetFlavourB()]
-	[split->GetFlavourC()]
-	[split->GetFlavourA()]=split;
+    m_fffmap[flavB][flavC][flavA]=split;
+    if (split->On()) m_sffmap[flavB][flavC][flavA]=split;
     break;
   case cstp::FI:
-    m_ffimap[split->GetFlavourB()]
-      [split->GetFlavourC()]
-      [split->GetFlavourA()]=split;
-    if (split->On())
-      m_sfimap[split->GetFlavourB()]
-	[split->GetFlavourC()]
-	[split->GetFlavourA()]=split;
+    m_ffimap[flavB][flavC][flavA]=split;
+    if (split->On()) m_sfimap[flavB][flavC][flavA]=split;
     break;
   case cstp::IF:
-    m_iffmap[split->GetFlavourA()]
-      [split->GetFlavourC()]
-      [split->GetFlavourB()]=split;
-    if (split->On())
-      m_sifmap[split->GetFlavourA()]
-	[split->GetFlavourC()]
-	[split->GetFlavourB()]=split;
+    m_iffmap[flavA][flavC][flavB]=split;
+    if (split->On()) m_sifmap[flavA][flavC][flavB]=split;
     break;
   case cstp::II:
-    m_ifimap[split->GetFlavourA()]
-      [split->GetFlavourC()]
-      [split->GetFlavourB()]=split;
-    if (split->On())
-      m_siimap[split->GetFlavourA()]
-	[split->GetFlavourC()]
-	[split->GetFlavourB()]=split;
+    m_ifimap[flavA][flavC][flavB]=split;
+    if (split->On()) m_siimap[flavA][flavC][flavB]=split;
     break;
   case cstp::none: break;
   }
 }
 
-bool Sudakov::Generate(Parton* split, double kt2win)
+bool Sudakov::Generate(Parton * split, double kt2win)
 {
-  m_weight=1.0;
-  int cc(split->GetFlavour().StrongCharge());
-  if (((cc==8 || (split->GetType()==pst::FS?cc:-cc)==3) &&
-       split->GetLeft()==NULL) ||
-      ((cc==8 || (split->GetType()==pst::FS?cc:-cc)==-3) &&
-       split->GetRight()==NULL)) {
-    msg_Out()<<METHOD<<":\n"<<(*split)<<".\n";
-    THROW(fatal_error,"Invalid color flow.");
-  }
-  m_cfl  = split->GetFlavour();
-  m_type = cstp::none;
-  std::vector<Parton*> slist;
-  msg_IODebugging()<<"---- "<<METHOD<<":\n"
-	   <<"   Check spectators for [type = "<<split->GetType()<<"]"
-	   <<" ("<<split->GetFlow(1)<<", "<<split->GetFlow(2)<<").\n";
-  if (split->GetLeft() && split!=split->GetLeft())  {
-    slist.push_back(split->GetLeft());
-    msg_IODebugging()<<"   --> add left: "<<split->GetLeft()->GetType()
-	     <<" ("<<split->GetLeft()->GetFlow(1)<<", "
-	     <<split->GetLeft()->GetFlow(2)<<").\n";
-  }
-  if (split->GetRight() && split!=split->GetRight()) {
-    slist.push_back(split->GetRight());
-    msg_IODebugging()<<"   --> add right: "<<split->GetRight()->GetType()
-	     <<" ("<<split->GetRight()->GetFlow(1)<<", "
-	     <<split->GetRight()->GetFlow(2)<<").\n";
-  }
-  msg_IODebugging()<<"   ===> found "<<slist.size()<<" spectator(s).\n";
-  int sc=split->GetFlavour().IntCharge();
-  if (split->GetType()==pst::IS) sc=-sc;
-  if (sc!=0 || split->GetFlavour().IsPhoton() ||
-      split->GetFlavour().Kfcode()==kf_Z) {
-    Singlet *sing(split->GetSing());
-    for (PLiter pit(sing->begin());pit!=sing->end();++pit) {
-      int cc=(*pit)->GetFlavour().IntCharge();
-      if ((*pit)->GetType()==pst::IS) cc=-cc;
-      if (*pit!=split->GetLeft() && *pit!=split->GetRight() &&
-	  cc!=0 && (sc==0 || sc*cc<0))
-	slist.push_back(*pit);
-    }
-  }
-  double t0(Min(m_k0sqi,m_k0sqf)), t, y, z, phi;
-  Parton *spect(NULL);
-  Splitting_Function_Base *selected(NULL);
-  for (size_t i(0);i<slist.size();++i) {
-    int success(Generate(split,slist[i],t0,kt2win,t,y,z,phi));
+  p_split  = split;
+  m_cfl    = p_split->GetFlavour();
+  std::list<Parton*> slist;
+  // No spectators means that the parton cannot be split.
+  if (!MakeSpectatorList(slist)) return false;
+  // Initialise trial run.
+  p_split->SetForcedDecay(false);
+  m_weight = 1.0;
+  m_type   = cstp::none;
+  double t, z, t0 = Min(m_k0sqi,m_k0sqf), y, phi;
+  Parton * spect  = NULL;
+  Splitting_Function_Base * selected = NULL;
+  for (list<Parton *>::iterator pit=slist.begin();pit!=slist.end();pit++) {
+    spect = (*pit);
+    //msg_Out()<<"--- "<<METHOD<<" checks colours ("<<spect<<"/ size ="<<slist.size()<<"): "
+    //	     <<"["<<p_split->GetFlow(1)<<" "<<p_split->GetFlow(2)<<"] "
+    //	     <<"["<<spect->GetFlow(1)<<" "<<spect->GetFlow(2)<<"]\n";			 
+    if (p_split->ForcedDecay()) break;
+    int success = Generate(spect,t0,kt2win,t,y,z,phi);
+    //if (success==-1)
+    //msg_Out()<<"--- "<<METHOD<<" results in forced splitting for "<<p_split<<", t = "<<t<<")\n";
     if (success!=0) {
-      msg_IODebugging()<<"shrink evolution window "<<t0<<" -> "<<t<<"\n";
+      //msg_IODebugging()<<"shrink evolution window "<<t0<<" -> "<<t<<"\n";
+      //msg_Out()<<"--- "<<METHOD<<" shrink evolution window "<<t0<<" -> "<<t<<", "
+      //	       <<"spect = "<<spect<<", selected = "<<p_selected<<".\n";
       m_sy     = y;
       m_sz     = z;
       m_sphi   = phi;
       m_st     = t0 = t;
-      spect    = slist[i];
       selected = p_selected;
+      //if (success==-1) msg_Out()<<"--- "<<METHOD<<" forced successful. "
+      //			<<"Spectator = "<<spect<<", "
+      //			<<"split = "<<p_split<<" ["<<p_split->ForcedDecay()<<"]\n";
     }
   }
-  p_spect=NULL;
-  p_selected=NULL;
-  if (spect) {
-    p_spect=spect;
-    p_split->SetSpect(p_spect);
-    p_selected=selected;
-    msg_IODebugging()<<"selected "<<p_spect<<", t = "<<m_st
-		     <<", y = "<<m_sy<<", z = "<<m_sz<<", phi = "<<m_sphi<<"\n";
+  //if (p_split->ForcedDecay()) msg_Out()<<"--> forced, split = "<<p_split<<", spect = "<<spect<<"\n";
+  p_spect    = NULL;
+  p_selected = NULL;
+  if (selected) {
+    p_split->SetSpect(spect);
+    p_spect    = spect;
+    p_selected = selected;
+    //msg_Out()<<"--- "<<METHOD<<" selected "<<p_spect<<", t = "<<m_st
+    //	     <<", y = "<<m_sy<<", z = "<<m_sz<<", phi = "<<m_sphi<<", "
+    //	     <<"forced = "<<p_split->ForcedDecay()<<"\n";
   }
   ClearSpecs();
   ResetLastInt();
   return (p_spect!=NULL);
 }
 
-int Sudakov::Generate(Parton *split,Parton *spect,
-		      double t0,double kt2win,double &t,double &y,double &z,double &phi)
+bool Sudakov::MakeSpectatorList(list<Parton*> & slist) {
+  int colourcharge = m_cfl.StrongCharge();
+  if (((colourcharge==8 || (p_split->GetType()==pst::FS?colourcharge:-colourcharge)==3) &&
+       p_split->GetLeft()==NULL) ||
+      ((colourcharge==8 || (p_split->GetType()==pst::FS?colourcharge:-colourcharge)==-3) &&
+       p_split->GetRight()==NULL)) {
+    msg_Error()<<METHOD<<" throws an error exception:\n"<<(*p_split)<<".\n";
+    THROW(fatal_error,"Invalid color flow.");
+  }
+  msg_IODebugging()<<"--- "<<METHOD<<":\n"
+		   <<"   adds spectators for [type = "<<p_split->GetType()<<"]"
+		   <<" ("<<p_split->GetFlow(1)<<", "<<p_split->GetFlow(2)<<").\n";
+  // Adding colour spectators under the assumption that the left and right partons are
+  // correctly colour-connected to the splitter.
+  if (p_split->GetLeft() && p_split!=p_split->GetLeft())  {
+    slist.push_back(p_split->GetLeft());
+    msg_IODebugging()<<"    --> add left: "<<p_split->GetLeft()->GetType()
+		     <<" ("<<p_split->GetLeft()->GetFlow(1)<<", "
+		     <<p_split->GetLeft()->GetFlow(2)<<").\n";
+  }
+  if (p_split->GetRight() && p_split!=p_split->GetRight()) {
+    slist.push_back(p_split->GetRight());
+    msg_IODebugging()<<"   --> add right: "<<p_split->GetRight()->GetType()
+		     <<" ("<<p_split->GetRight()->GetFlow(1)<<", "
+		     <<p_split->GetRight()->GetFlow(2)<<").\n";
+  }
+  msg_IODebugging()<<"    ===> found "<<slist.size()<<" spectator(s). for "<<m_cfl<<"\n";
+  // Adding additional (EW) charge spectators under the assumption that they may be
+  // different from the left and right partons, which are correctly colour-connected to the
+  // splitter and already in the spectator list.  Condition is that the splitter and spectator
+  // either have opposite charges or that the splitter is a photon or Z and the spectator is
+  // charged.
+  int splitcharge = (p_split->GetType()==pst::IS?-1:1) * m_cfl.IntCharge();
+  if (splitcharge!=0 || m_cfl.IsPhoton() || m_cfl.Kfcode()==kf_Z) {
+    Singlet *sing(p_split->GetSing());
+    for (PLiter pit(sing->begin());pit!=sing->end();++pit) {
+      int spectcharge = ((*pit)->GetType()==pst::IS?-1:1) * (*pit)->GetFlavour().IntCharge();
+      if (*pit!=p_split->GetLeft() && *pit!=p_split->GetRight() &&
+	  spectcharge!=0 && (splitcharge==0 || splitcharge*spectcharge<0))
+	slist.push_back(*pit);
+    }
+  }
+  return (slist.size()>0);
+}
+
+int Sudakov::Generate(Parton *spect,double t0,double kt2win,double &t,double &y,double &z,double &phi)
 {
   ClearSpecs();
   ResetLastInt();
-  p_split=split;
-  p_spect=spect;
-  double Q2(0.);
-  int beam = -1;
-  m_flspec = spect->GetFlavour();
-  switch (split->GetType()) {
-  case pst::FS:
-    if (spect->GetType()==pst::FS) {
-      Q2    = (split->Momentum()+spect->Momentum()).Abs2();
-      if (!DefineFFBoundaries(Q2,1.)) return false;
-      break;
-    }
-    if (spect->GetType()==pst::IS) {
-      Q2       = -(split->Momentum()-spect->Momentum()).Abs2();
-      beam     = spect->Beam();
-      if (!DefineFIBoundaries(Q2,spect->Xbj(),beam)) return false;
-      break;
-    }
-  case pst::IS:
-    if (spect->GetType()==pst::FS) {
-      Q2       = -(split->Momentum()-spect->Momentum()).Abs2();
-      beam     = split->Beam();
-      if (IsNan(Q2)) {
-	msg_Error()<<METHOD<<" has no meaningful Q2 from:\n"
-		   <<"   "<<split->Momentum()<<" - "<<spect->Momentum()<<"\n"<<(*split)<<(*spect)
-		   <<"   will return false and hope for the best.\n";
-	return false;
-      }
-      if (!DefineIFBoundaries(Q2,split->Xbj(),beam)) return false;
-      break;
-    }
-    if (spect->GetType()==pst::IS) {
-      Q2 = (split->Momentum()+spect->Momentum()).Abs2();
-      beam = split->Beam();
-      if (!DefineIIBoundaries(Q2,split->Xbj(),beam)) return false;
-      break;
-    }
-  case pst::none:
-    msg_Error()<<"Error in Sudakov::Generate : No pst-type for splitter.\n"
-	       <<(*split);
-    return false;
-    Abort();
-  }
-  if (m_type==cstp::none) {
-    msg_Error()<<"Error in Sudakov::Generate : No type for splitter.\n"
-	       <<(*split);
-    return false;
-    Abort();
-  }
-  if (m_lastint<=0.0 || IsBad(m_lastint)) return false;
+  p_spect   = spect;
+  double Q2 = 0.;
+  int beam  = -1;
+  m_flspec  = spect->GetFlavour();
+  if (!DefineStartingPoint(spect,Q2,beam)) return false;
   double last=0.0;
   for (size_t i(0);i<m_splittings.size();++i)
-    m_partint[i]=last+=m_splittings[i]->Last();
+    m_partint[i] = last += m_splittings[i]->Last();
   if (!IsEqual(m_partint.back(),m_lastint))
     msg_Error()<<METHOD<<"(): Error, last = "<<m_lastint
 	       <<" vs. "<<m_partint.back()<<"."<<std::endl;
-  m_lastint=m_partint.back();
+  m_lastint = m_partint.back();
 
-  t = split->KtStart();
+  t = p_split->KtStart();
   msg_IODebugging()<<"starting scale "<<t<<", cutoff scale "<<t0<<"\n";
   if (p_spect==p_split->GetLeft() && t>p_split->KtSoft(0)) {
-    msg_IODebugging()<<"reset starting scale "<<t<<" -> "<<split->KtSoft(0)<<"\n";
-    t=split->KtSoft(0);
+    msg_IODebugging()<<"reset starting scale "<<t<<" -> "<<p_split->KtSoft(0)<<"\n";
+    t=p_split->KtSoft(0);
   }
   if (p_spect==p_split->GetRight() && t>p_split->KtSoft(1)) {
-    msg_IODebugging()<<"reset starting scale "<<t<<" -> "<<split->KtSoft(1)<<"\n";
-    t=split->KtSoft(1);
+    msg_IODebugging()<<"reset starting scale "<<t<<" -> "<<p_split->KtSoft(1)<<"\n";
+    t=p_split->KtSoft(1);
   }
   double x = 0.0;
-
+  //msg_Out()<<"--- "<<METHOD<<" starting trials for "<<p_split<<" ["<<p_split->ForcedDecay()<<"] & "
+  //	   <<spect<<", t = "<<t<<"\n";
   while (t>=Max(t0,kt2win)) {
-    t=ProduceT(t);
-    p_split->SetForcedDecay(false);
+    t = ProduceT(t);
+    //if (p_split->GetType()==pst::IS && p_split->GetFlavour().HadMass()>3.)
+    //msg_Out()<<"------ new t = "<<t<<" vs. "
+    //	       <<sqr(p_split->GetFlavour().HadMass())<<" and "<<Max(t0,kt2win)<<"\n";
     if (m_forced_splittings &&
 	p_split->GetType()==pst::IS &&
-	t<sqr(p_split->GetFlavour().HadMass()) && t>Max(t0,kt2win)) {
-      if (FixOne(Flavour(kf_gluon),p_split->GetFlavour(),
-		 p_spect->GetType()==pst::IS ? cstp::II : cstp::IF)) {
-	t     = sqr(p_split->GetFlavour().HadMass());
-	do {
-	  z   = Z();
-	} while (pow(z/m_zmax,m_gluon_xscaling_in_forced_splittings)<ran->Get());
-	phi   = 2.*M_PI*ran->Get();
-	split->SetSpect(p_spect);
-	split->SetForcedDecay(true);
-	return -1;
+	t<sqr(p_split->GetFlavour().HadMass()) && t>t0) {
+      if (!((p_split->GetFlow(1)!=0 && p_split->GetFlow(1)==spect->GetFlow(2)) ||
+	    (p_split->GetFlow(2)!=0 && p_split->GetFlow(2)==spect->GetFlow(1)))) {
+	t = t0;
+	return 0;
       }
+      if (MakeForcedSplitting(spect,t,z,phi)) return -1;
     }
+    else p_split->SetForcedDecay(false);
     SelectOne();
-    split->SetSpect(p_spect=p_selected->SelectSpec());
-    z = Z();
-    double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
-    if (t<Max(t0,k0sq))  return false;
-    if (p_selected->GetFlavourA().IsGluon() &&
-      p_selected->GetFlavourB().IsQuark() &&
-      t<k0sq*m_k0sq_gsplit_fac) return false;
-    m_flspec  = p_spect->GetFlavour();
-    double Q2 = 0.;
-    m_type=split->GetType()==pst::FS?
-      (split->GetSpect()->GetType()==pst::FS?cstp::FF:cstp::FI):
-      (split->GetSpect()->GetType()==pst::FS?cstp::IF:cstp::II);
-    const Mass_Selector *ms(p_selected->Lorentz()->MS());
-    switch (m_type) {
-    case (cstp::FF) : {
-      double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
-      double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
-      double mk2 = sqr(ms->Mass(m_flspec));
-      Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
-      if (Q2<=mi2+mj2+mk2) return false;
-      y = p_shower->KinFF()->GetY(Q2,t,z,mi2,mj2,mk2,
-				  (*m_splitter)->GetFlavourA(),
-				  (*m_splitter)->GetFlavourC());
-      x = 0.;
-      if (y<0.0 || y>1.0) continue;
+    if (!ValidT(t,t0)) return false;
+    p_split->SetSpect(p_spect=p_selected->SelectSpec());
+    z         = Z();
+    m_flspec   = p_spect->GetFlavour();
+    switch (FixKinematics(spect,t,z,Q2,x,y)) {
+    case -1: return false;
+    case 0:  continue;
+    case 1:
+    default: break;
     }
-      break;
-    case (cstp::FI) : {
-      double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
-      double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
-      double ma2 = sqr(ms->Mass(m_flspec));
-      double mij2= sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
-      Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
-      y = p_shower->KinFI()->GetY(-Q2,t,z,mi2,mj2,ma2,
-				  (*m_splitter)->GetFlavourA(),
-				  (*m_splitter)->GetFlavourC());
-      y = 1.0-y*(-Q2-mij2-ma2)/(-Q2-mi2-mj2-ma2);
-      x = split->GetSpect()->Xbj();
-      if (y<0.0 || y>1.0-x) continue;
-    }
-      break;
-    case (cstp::IF) : {
-      double ma2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
-      double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
-      double mk2 = sqr(ms->Mass(m_flspec));
-      Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
-      y = p_shower->KinIF()->GetY(-Q2,t,z,ma2,mi2,mk2,
-				  (*m_splitter)->GetFlavourB(),
-				  (*m_splitter)->GetFlavourC());
-      x = split->Xbj();
-      if (y<0.0 || y>1.0 || z<x) continue;
-    }
-      break;
-    case (cstp::II) : {
-      double ma2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
-      double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
-      double mb2 = sqr(ms->Mass(m_flspec));
-      Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
-      y = p_shower->KinII()->GetY(Q2,t,z,ma2,mi2,mb2,
-				  (*m_splitter)->GetFlavourB(),
-				  (*m_splitter)->GetFlavourC());
-      x   = split->Xbj();
-      if (y<0.0 || y>1.0-z || z<x) continue;
-    }
-      break;
-    default:
-      msg_Error()<<"Error in Sudakov::Generate!"<<std::endl;
-      Abort();
-    }
-    const bool veto(Veto(Q2, x,t,y,z));
+    const bool veto(Veto(Q2,x,t,y,z));
     if (m_keeprewinfo) {
       const double accwgt(Selected()->LastAcceptanceWeight());
       const double lastscale(Selected()->LastScale());
       if (accwgt < 1.0 && accwgt > 0.0 && lastscale > m_reweightscalecutoff) {
         Sudakov_Reweighting_Info info;
         info.accepted = veto;
-        info.scale = lastscale;
-        info.accwgt = accwgt;
-        info.lastj = Selected()->Lorentz()->LastJ();
-        info.lastcpl = Selected()->Coupling()->Last();
-        info.sf = Selected();
-        info.x = x;
-        info.y = y;
-        info.z = z;
-        info.flspec = Selected()->Lorentz()->FlSpec();
+        info.scale    = lastscale;
+        info.accwgt   = accwgt;
+        info.lastj    = Selected()->Lorentz()->LastJ();
+        info.lastcpl  = Selected()->Coupling()->Last();
+        info.sf       = Selected();
+        info.x        = x;
+        info.y        = y;
+        info.z        = z;
+        info.flspec   = Selected()->Lorentz()->FlSpec();
         p_split->SudakovReweightingInfos().push_back(info);
       }
     }
     if (veto) {
       phi = 2.0*M_PI*ran->Get();
+      //msg_Out()<<"--- "<<METHOD<<" yields normal splitting with t = "<<t<<", z = "<<z<<", "
+      //       <<"colours = ["<<p_spect->GetFlow(1)<<" "<<p_spect->GetFlow(2)<<"]\n";
       return 1;
     }
   }
   return 0;
 }
 
+bool Sudakov::MakeForcedSplitting(Parton * spect,double & t,double & z,double & phi) {
+  if (!FixOne(Flavour(kf_gluon),p_split->GetFlavour(),
+	      spect->GetType()==pst::IS ? cstp::II : cstp::IF)) return false;
+  t      = sqr(p_split->GetFlavour().HadMass());
+  do { z = Z(); } while (pow(z/m_zmax,m_gluon_xscaling_in_forced_splittings)<ran->Get());
+  phi    = 2.*M_PI*ran->Get();
+  p_split->SetSpect(spect);
+  p_split->SetForcedDecay(true);
+  //msg_Out()<<"--- "<<METHOD<<" tries a forced decay t = "<<t<<" "
+  //	   <<"[forced = "<<p_split->ForcedDecay()<<"], "
+  //	   <<"spect = "<<p_split->GetSpect()<<"\n";
+  return true;
+}
+
+int Sudakov::FixKinematics(Parton * spect,const double & t,const double & z,
+			   double & Q2,double & x,double & y) {
+  m_type=p_split->GetType()==pst::FS?
+    (p_split->GetSpect()->GetType()==pst::FS?cstp::FF:cstp::FI):
+    (p_split->GetSpect()->GetType()==pst::FS?cstp::IF:cstp::II);
+  const Mass_Selector *ms(p_selected->Lorentz()->MS());
+  switch (m_type) {
+  case (cstp::FF) : {
+    double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
+    double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
+    double mk2 = sqr(ms->Mass(m_flspec));
+    Q2 = (p_split->Momentum()+p_split->GetSpect()->Momentum()).Abs2();
+    if (Q2<=mi2+mj2+mk2) return -1;
+    y  = p_shower->KinFF()->GetY(Q2,t,z,mi2,mj2,mk2,
+				 (*m_splitter)->GetFlavourA(),
+				 (*m_splitter)->GetFlavourC());
+    x  = 0.;
+    if (y<0.0 || y>1.0) return 0;
+    break;
+  }
+  case (cstp::FI) : {
+    double mi2  = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
+    double mj2  = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
+    double ma2  = sqr(ms->Mass(m_flspec));
+    double mij2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
+    Q2 = -(p_split->Momentum()-p_split->GetSpect()->Momentum()).Abs2();
+    y  = p_shower->KinFI()->GetY(-Q2,t,z,mi2,mj2,ma2,
+				 (*m_splitter)->GetFlavourA(),
+				 (*m_splitter)->GetFlavourC());
+    y  = 1.0-y*(-Q2-mij2-ma2)/(-Q2-mi2-mj2-ma2);
+    x  = p_split->GetSpect()->Xbj();
+    if (y<0.0 || y>1.0-x) return 0;
+    break;
+  }
+  case (cstp::IF) : {
+    double ma2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
+    double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
+    double mk2 = sqr(ms->Mass(m_flspec));
+    Q2 = -(p_split->Momentum()-p_split->GetSpect()->Momentum()).Abs2();
+    y  = p_shower->KinIF()->GetY(-Q2,t,z,ma2,mi2,mk2,
+				 (*m_splitter)->GetFlavourB(),
+				 (*m_splitter)->GetFlavourC());
+    x  = p_split->Xbj();
+    if (y<0.0 || y>1.0 || z<x) return 0;
+    break;
+  }
+  case (cstp::II) : {
+    double ma2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
+    double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
+    double mb2 = sqr(ms->Mass(m_flspec));
+    Q2 = (p_split->Momentum()+p_split->GetSpect()->Momentum()).Abs2();
+    y  = p_shower->KinII()->GetY(Q2,t,z,ma2,mi2,mb2,
+				 (*m_splitter)->GetFlavourB(),
+				 (*m_splitter)->GetFlavourC());
+    x  = p_split->Xbj();
+    if (y<0.0 || y>1.0-z || z<x) return 0;
+    break;
+  }
+  default:
+    THROW(fatal_error,"Undefined kinematics type");
+  }
+  return 1;
+}
+
+ bool Sudakov::ValidT(const double & t,const double & t0) {
+  double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
+  if (t<Max(t0,k0sq) ||
+      (p_selected->GetFlavourA().IsGluon() &&
+       p_selected->GetFlavourB().IsQuark() &&
+       t<k0sq*m_k0sq_gsplit_fac)) return false;
+  return true;
+}
+
+bool Sudakov::DefineStartingPoint(Parton * spect,double & Q2, int & beam) {
+  switch (p_split->GetType()) {
+  case pst::FS:
+    if (spect->GetType()==pst::FS) {
+      Q2   = (p_split->Momentum()+spect->Momentum()).Abs2();
+      beam = -1;
+      if (!DefineFFBoundaries(Q2,1.)) return false;
+    }
+    if (spect->GetType()==pst::IS) {
+      Q2   = -(p_split->Momentum()-spect->Momentum()).Abs2();
+      beam = spect->Beam();
+      if (!DefineFIBoundaries(Q2,spect->Xbj(),beam)) return false;
+    }
+    break;
+  case pst::IS:
+    if (spect->GetType()==pst::FS) {
+      Q2   = -(p_split->Momentum()-spect->Momentum()).Abs2();
+      beam = p_split->Beam();
+      if (IsNan(Q2)) {
+	msg_Out()<<METHOD<<" has no meaningful Q2 from:\n"
+		 <<"   "<<p_split->Momentum()<<" - "<<spect->Momentum()<<"\n"<<(*p_split)<<(*spect)
+		 <<"   will return false and hope for the best.\n";
+	exit(1);
+	return false;
+      }
+      if (!DefineIFBoundaries(Q2,p_split->Xbj(),beam)) return false;
+    }
+    if (spect->GetType()==pst::IS) {
+      Q2   = (p_split->Momentum()+spect->Momentum()).Abs2();
+      beam = p_split->Beam();
+      if (!DefineIIBoundaries(Q2,p_split->Xbj(),beam)) return false;
+    }
+    break;
+  case pst::none:
+    msg_Out()<<"Error in "<<METHOD<<": No pst-type for splitter.\n"
+	     <<(*p_split);
+    //return false;
+    Abort();
+  }
+  if (m_type==cstp::none) {
+    msg_Out()<<"Error in "<<METHOD<<": No type for splitter.\n"<<(*p_split);
+    //return false;
+    Abort();
+  }
+  if (m_lastint<=0.0 || IsBad(m_lastint)) return false;
+  return true;
+}
+
 bool Sudakov::DefineFFBoundaries(double Q2,double x)
 {
   if (4.*m_k0sqf>Q2) return false;
 
-  m_type=cstp::FF;
+  m_type   = cstp::FF;
   double deltaz(sqrt(1.-4.*m_k0sqf/Q2));
   m_zmin   = 0.5*(1.-deltaz);
   m_zmax   = 0.5*(1.+deltaz);
@@ -515,7 +547,7 @@ bool Sudakov::DefineFIBoundaries(double Q2,double x,int beam)
   if (m_k0sqf*x>Q2*(1.-x))                                   return false;
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
 
-  m_type=cstp::FI;
+  m_type = cstp::FI;
   double deltaz(1.0-4.0*Min(1.0,x/(1.0-x))*(m_k0sqf/Q2));
   if (deltaz<0.0) return false;
   deltaz=sqrt(deltaz);
@@ -541,7 +573,7 @@ bool Sudakov::DefineIFBoundaries(double Q2,double x,int beam)
   if (m_k0sqi>Q2)                                           return false;
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
 
-  m_type=cstp::IF;
+  m_type   = cstp::IF;
   m_zmin   = x/xmax;
   m_zmax   = Q2/(Q2+m_k0sqi);
   if (m_zmin>m_zmax) return false;
@@ -616,29 +648,24 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
 
 double Sudakov::ProduceT(double t)
 {
-  double ne=2.*M_PI/m_lastint;
+  double ne = 2.*M_PI/m_lastint;
   return t * exp(log(ran->Get())*Max(ne,1.0e-3));
 }
 
 bool Sudakov::Veto(double Q2,double x,double t,double y,double z) {
-  if (!Splitting(Q2,x,t,y,z))          return false;
-  return true;
+  return Splitting(Q2,x,t,y,z);
 }
 
 bool Sudakov::Splitting(double Q2,double x,double t,double y,double z) {
-  double wt(RejectionWeight(z,y,x,t,Q2));
-  double efac=p_selected->EFac();
+  double wt = RejectionWeight(z,y,x,t,Q2), efac = p_selected->EFac();
   if (ran->Get()>wt) {
     if (efac!=1.0) {
       m_weight*=(1.0-wt/efac)/(1.0-wt);
-      p_split->Weights().push_back
-	(std::make_pair(t,(1.0-wt/efac)/(1.0-wt)));
+      p_split->Weights().push_back(std::make_pair(t,(1.0-wt/efac)/(1.0-wt)));
     }
     return false;
   }
-  else {
-    m_weight*=1.0/efac;
-  }
+  m_weight*=1.0/efac;
   return true;
 }
 

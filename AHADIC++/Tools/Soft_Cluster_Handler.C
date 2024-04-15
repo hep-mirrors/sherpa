@@ -57,7 +57,6 @@ bool Soft_Cluster_Handler::PromptTransit(Cluster * cluster,ATOOLS::Flavour & had
   if (m_mass>TransitionThreshold(m_flavs.first,m_flavs.second) ||
       m_mass<p_singletransitions->GetLightestMass(m_flavs)) return false;
   if (RadiationWeight(false)>0.) had = m_hads[0];
-  //msg_Out()<<"\n\nSelected transition "<<m_mass<<" --> "<<m_hads[0]<<"\n";
   return true;
 }
 
@@ -116,15 +115,14 @@ int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
 }
 
 int Soft_Cluster_Handler::CheckOutsideRange() {
-  // we may want to check if we want to take the full range of possible
+  // Todo: We may want to check if we want to take the full range of possible
   // cluster decays into two hadrons
   double mass_single = p_singletransitions->GetLightestMass(m_flavs);
   double mass_double = p_doubletransitions->GetLightestMass(m_flavs);
   // no transition -- check if it can decay regularly.
   // this can go wrong for diquark-diquark objects
   if (mass_single<0. && m_mass<mass_double) return -1;
-  // cluster too light for transition and decay --
-  // maybe just force off-shell hadron?
+  // cluster too light for transition and decay -- maybe just force off-shell hadron?
   // at the moment this leads to hadronization throwing a new event.
   if (m_mass<=0.999999*Min(mass_single,mass_double)) return -1;
   if (m_mass>TransitionThreshold(m_flavs.first,m_flavs.second) &&
@@ -259,17 +257,8 @@ bool Soft_Cluster_Handler::FixKinematics() {
 			      Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
 					      (*p_cluster)[1]->KT2_Max()))):p1));
   double pt, pl;
-  //bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
-  //if (true || lead) {
   pt = m_ktselector(ktmax,1.);
   pl = sqrt(p1*p1-pt*pt);
-  //}
-  //else {
-  //double cost = 1.-2.*ran->Get();
-  //double sint = (ran->Get()>0.5?-1:1.)*sqrt(1.-cost*cost);
-  //pt = p1*sint;
-  //pl = p1*cost;
-  // }
   double phi   = 2.*M_PI*ran->Get();
   m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
   m_moms[1]    = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);

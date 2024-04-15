@@ -105,9 +105,6 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
       break;
     case -1:
     default:
-      msg_Out()<<METHOD<<" failed at intermediate step:\n"
-	       <<(*part1)<<"\n"
-	       <<(*part2)<<"\n";
       return false;
     }
   }

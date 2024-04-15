@@ -125,50 +125,10 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   }
   p_shower->CleanUp();
   msg_Indent();
-  if (p_mi) {
-    p_ampl=p_mi->ClusterConfiguration(blob);
-    if (p_ampl==NULL) return Return_Value::Retry_Event;
-    if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
-      m_fails_Moms++;
-      return Return_Value::Retry_Event;
-    }
-    p_mi->SetMassMode(1);
-    int stat(p_mi->ShiftMasses(p_ampl));
-    if (stat<0) {
-      m_fails_Masses++;
-      return Return_Value::Retry_Event;
-    }
-    if (stat==1) {
-      stat=p_mi->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(p_ampl);
-      if (stat!=1) {
-	m_fails_Ampls++;
-	return Return_Value::Retry_Event;
-      }
-    }
-    if (!p_shower->GetShower()->PrepareShower(p_ampl))
-      return Return_Value::New_Event;
-    return Return_Value::Success;
-  }
-  if (p_hd) {
-    p_ampl=p_hd->ClusterConfiguration(blob);
-    if (!p_shower->GetShower()->PrepareShower(p_ampl)) {
-      m_fails_Ampls++;
-      return Return_Value::New_Event;
-    }
-    return Return_Value::Success;
-  }
-  if (p_sc) {
-    p_ampl=p_sc->ClusterConfiguration(blob);
-    if (p_ampl==NULL) {
-      m_fails_Ampls++;
-      return Return_Value::New_Event;
-    }
-    if (!p_shower->GetShower()->PrepareShower(p_ampl,true)) {
-      m_fails_Ampls++;
-      return Return_Value::New_Event;
-    }
-    return Return_Value::Success;
-  }
+  if (p_mi) return DefineInitialConditionsForMI(blob);
+  if (p_hd) return DefineInitialConditionsForDecay(blob);
+  if (p_sc) return DefineInitialConditionsForSoft(blob);
+  
   assert(p_me != NULL);
   p_ampl=p_me->Process()->Get<Single_Process>()->Cluster
     (p_me->Process()->Integrator()->Momenta());
@@ -218,6 +178,42 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
   }
   if (!p_shower->GetShower()->PrepareShower(p_ampl)) {
+    m_fails_Ampls++;
+    return Return_Value::New_Event;
+  }
+  return Return_Value::Success;
+}
+
+Return_Value::code Perturbative_Interface::DefineInitialConditionsForMI(Blob* blob) {
+  p_ampl=p_mi->ClusterConfiguration(blob);
+  if (p_ampl==NULL) return Return_Value::Retry_Event;
+  if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
+    m_fails_Moms++; return Return_Value::Retry_Event;
+  }
+  p_mi->SetMassMode(1);
+  int stat(p_mi->ShiftMasses(p_ampl));
+  if (stat<0) { m_fails_Masses++; return Return_Value::Retry_Event; }
+  if (stat==1) {
+    stat=p_mi->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(p_ampl);
+    if (stat!=1) { m_fails_Ampls++; return Return_Value::Retry_Event; }
+  }
+  if (!p_shower->GetShower()->PrepareShower(p_ampl)) return Return_Value::New_Event;
+  return Return_Value::Success;
+}
+
+Return_Value::code Perturbative_Interface::DefineInitialConditionsForDecay(Blob* blob) {
+  p_ampl=p_hd->ClusterConfiguration(blob);
+  if (!p_shower->GetShower()->PrepareShower(p_ampl)) {
+    m_fails_Ampls++;
+    return Return_Value::New_Event;
+  }
+  return Return_Value::Success;
+}
+
+Return_Value::code Perturbative_Interface::DefineInitialConditionsForSoft(Blob* blob) {
+  p_ampl=p_sc->ClusterConfiguration(blob);
+  if (p_ampl==NULL) { m_fails_Ampls++; return Return_Value::New_Event; }
+  if (!p_shower->GetShower()->PrepareShower(p_ampl,true)) {
     m_fails_Ampls++;
     return Return_Value::New_Event;
   }
