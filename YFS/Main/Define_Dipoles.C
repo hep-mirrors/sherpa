@@ -611,6 +611,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       sq = (Q).Abs2();
       sx = (Q+k).Abs2();
+      // if(sq > m_s/2) return 1;
       flux *= sq/sx;
     } 
     return flux;

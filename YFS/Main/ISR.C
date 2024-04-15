@@ -75,7 +75,7 @@ void ISR::NPhotons() {
   while (true) {
     N += 1;
     sum += log(ran->Get());
-    if (sum < -m_nbar) break;
+    if (sum <= -m_nbar) break;
   }
   m_n = N;
   if (m_n < 0) msg_Error() << METHOD << std::endl << "Nphotons < 0!!" << std::endl;
@@ -108,8 +108,6 @@ void ISR::GenerateAngles()
                        /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
       if (ran->Get() < weight) break;
     }
-    // std::cout<<setprecision(12)<<m_b1<<std::endl;
-    // std::cout<<setprecision(12)<<m_b2<<std::endl;
     m_angleWeight *= weight;
     m_theta = acos(m_c);
     m_sin = sin(m_theta);
