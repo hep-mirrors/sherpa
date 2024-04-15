@@ -174,7 +174,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	// if(submode!=1) flux = 1;
 	// CheckMasses(p,1);
 	CheckMomentumConservation(p);
-	double r = p_real->Calc_R(p) / norm * sqrt(flux);
+	double r = p_real->Calc_R(p) / norm * flux;
 	if(IsZero(r)) return 0;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
