@@ -242,10 +242,6 @@ int Shower::MakeKinematics
     }
   }
   else {
-    if (split->GetFlavour()==Flavour(kf_b)||split->GetFlavour()==Flavour(kf_b).Bar()) {
-      msg_Out()<<METHOD<<" for spect = "<<spect->GetFlavour()<<" ["<<spect->GetType()<<"], "
-	       <<"fla = "<<fla<<" ["<<split->GetFlavour()<<"]\n";
-    }
     mi2=m_kinFF.MS()->Mass2(fla);
     if (spect->GetType()==pst::FS) {
       stype=1;
@@ -532,22 +528,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 
 Parton *Shower::SelectSplitting(double & kt2win) {
   Parton * winner(NULL);
-  //msg_Out()<<"\n"<<METHOD<<" starts looking for kt2win = "<<kt2win<<"\n";
-  //for (PLiter splitter = p_actual->begin();
-  //     splitter!=p_actual->end();splitter++) {
-  //  msg_Out()<<(*splitter)->GetType()<<"["<<(*splitter)<<"]: "
-  //	     <<(*splitter)->GetFlavour()<<" "<<(*splitter)->Momentum()<<"\n";
-  //}
   for (PLiter splitter = p_actual->begin();
        splitter!=p_actual->end();splitter++) {
     if (TrialEmission(kt2win,*splitter)) winner = *splitter;
   }
-  //  if (winner) {
-  //   if  (winner->ForcedDecay()) msg_Out()<<METHOD<<" selects forced decay: ";
-  //  else                        msg_Out()<<METHOD<<" selects normal decay: ";
-  //  msg_Out()<<winner<<" ["<<winner->GetType()<<", "<<winner->GetFlavour()<<"], "
-  //	     <<"kt2win = "<<kt2win<<"\n";
-  //}
   return winner;
 }
 
@@ -556,14 +540,8 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
   if (split->KtStart()==0.0 ||
       split->KtStart()<split->GetSing()->KtNext()) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
-  //msg_Out()<<METHOD<<": "<<split<<" ("<<split->GetType()<<", "<<split->GetFlavour()<<") "
-  //	   <<split->Momentum()<<" and "<<split->KtStart()<<"\n";
   while (true) {
     if (m_sudakov.Generate(split,kt2win)) {
-      //if (split->ForcedDecay())
-      //msg_Out()<<METHOD<<" forces splitting of "<<split<<", "<<m_sudakov.Selected()<<".\n";
-      //else
-      //	msg_Out()<<METHOD<<" normally splits "<<split<<", "<<m_sudakov.Selected()<<".\n";
       m_sudakov.GetSplittingParameters(kt2,z,y,phi);
       split->SetWeight(m_sudakov.Weight());
       if (kt2>kt2win) {
@@ -575,9 +553,6 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
 	split->SetCol(m_sudakov.GetCol());
 	split->SetTest(kt2,z,y,phi);
 	if (split->ForcedDecay()) {
-	  //msg_Out()<<METHOD<<" forcibly splits "<<split<<", "
-	  //	   <<"kt2 = "<<kt2<<", z = "<<z<<" for "<<m_flavB<<" <-- "<<m_flavA<<", "
-	  //	   <<"kt2win = "<<kt2win<<"\n";
 	  split->IncForcedTrials();
 	  if (split->ForcedTrials()>10) {
 	    split->SetKtStart(0.0);

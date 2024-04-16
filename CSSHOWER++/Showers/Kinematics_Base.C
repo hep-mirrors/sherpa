@@ -230,9 +230,6 @@ int Kinematics_IF::MakeKinematics
     Kin_Args args(0,split->ZTest(),split->Phi(),split->Kin());
     return MakeForcedDecayKinematics(split,pc,args,mode);
   }
-  if (split->GetFlavour()==Flavour(kf_b) || split->GetFlavour()==Flavour(kf_b).Bar())
-    msg_Out()<<"Entering "<<METHOD<<"["<<split->GetFlavour()<<"]: "
-	     <<split->Momentum()<<" ["<<split->Momentum().Abs2()<<" vs. "<<ma2<<"]\n";
   Parton *b(NULL);
   for (PLiter pit(split->GetSing()->begin());pit!=split->GetSing()->end();++pit)
     if ((*pit)->GetType()==pst::IS && *pit!=split) {
@@ -266,9 +263,6 @@ int Kinematics_IF::MakeKinematics
   else {
     pc->SetMomentum(ifp.m_lam*ifp.m_pj);
   }
-  if (split->GetFlavour()==Flavour(kf_b) || split->GetFlavour()==Flavour(kf_b).Bar())
-    msg_Out()<<"Exiting "<<METHOD<<"["<<fli<<"]: "
-	     <<pc->Momentum()<<" ["<<pc->Momentum().Abs2()<<" vs "<<mi2<<"]\n";
   return 1;
 }
 
@@ -331,9 +325,6 @@ int Kinematics_II::MakeKinematics
     Kin_Args args(0,split->ZTest(),split->Phi(),split->Kin());
     return MakeForcedDecayKinematics(split,pc,args,mode);
   }
-  if (split->GetFlavour()==Flavour(kf_b) || split->GetFlavour()==Flavour(kf_b).Bar())
-    msg_Out()<<"Entering "<<METHOD<<"["<<split->GetFlavour()<<"]: "
-	     <<split->Momentum()<<" ["<<split->Momentum().Abs2()<<"]\n";
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
 
@@ -357,8 +348,6 @@ int Kinematics_II::MakeKinematics
   else {
     pc->SetMomentum(ii.m_lam*ii.m_pj);
   }
-  if (split->GetFlavour()==Flavour(kf_b) || split->GetFlavour()==Flavour(kf_b).Bar())
-    msg_Out()<<"Exiting "<<METHOD<<"["<<newfl<<"]: "<<pc->Momentum()<<" ["<<pc->Momentum().Abs2()<<"]\n";
   return 1;
 }
 
@@ -412,9 +401,6 @@ MakeForcedDecayKinematics(Parton *const split,Parton *&pnew,Kin_Args & args,cons
       test += args.m_lam*tmp;
     }
   }
-  msg_Out()<<"\n"<<METHOD<<": "<<p1_t<<" ["<<p1_t.Abs2()<<"] --> "
-	   <<p1<<" ["<<p1.Abs2()<<"] + "<<pj<<" ["<<pj.Abs2()<<"]\n"
-	   <<"  total: "<<tot<<" vs. "<<(test+p1+pj)<<"\n";
   split->SetMomentum(p1);
   split->SetLT(args.m_lam);
   pnew = new Parton(split->GetFlavour().Bar(),pj,pst::FS);

@@ -177,6 +177,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     case cstp::II: m_fiimap[flavA][flavC][flavB]=split; break;
     default: break;
     }
+    if (split->GetCol()<0) return;
     return;
   }
   switch(split->GetType()) {
@@ -216,37 +217,23 @@ bool Sudakov::Generate(Parton * split, double kt2win)
   Splitting_Function_Base * selected = NULL;
   for (list<Parton *>::iterator pit=slist.begin();pit!=slist.end();pit++) {
     spect = (*pit);
-    //msg_Out()<<"--- "<<METHOD<<" checks colours ("<<spect<<"/ size ="<<slist.size()<<"): "
-    //	     <<"["<<p_split->GetFlow(1)<<" "<<p_split->GetFlow(2)<<"] "
-    //	     <<"["<<spect->GetFlow(1)<<" "<<spect->GetFlow(2)<<"]\n";			 
     if (p_split->ForcedDecay()) break;
-    int success = Generate(spect,t0,kt2win,t,y,z,phi);
-    //if (success==-1)
-    //msg_Out()<<"--- "<<METHOD<<" results in forced splitting for "<<p_split<<", t = "<<t<<")\n";
+    int success = Generate(*pit,t0,kt2win,t,y,z,phi);
     if (success!=0) {
-      //msg_IODebugging()<<"shrink evolution window "<<t0<<" -> "<<t<<"\n";
-      //msg_Out()<<"--- "<<METHOD<<" shrink evolution window "<<t0<<" -> "<<t<<", "
-      //	       <<"spect = "<<spect<<", selected = "<<p_selected<<".\n";
       m_sy     = y;
       m_sz     = z;
       m_sphi   = phi;
       m_st     = t0 = t;
+      spect    = (*pit);
       selected = p_selected;
-      //if (success==-1) msg_Out()<<"--- "<<METHOD<<" forced successful. "
-      //			<<"Spectator = "<<spect<<", "
-      //			<<"split = "<<p_split<<" ["<<p_split->ForcedDecay()<<"]\n";
     }
   }
-  //if (p_split->ForcedDecay()) msg_Out()<<"--> forced, split = "<<p_split<<", spect = "<<spect<<"\n";
   p_spect    = NULL;
   p_selected = NULL;
   if (selected) {
     p_split->SetSpect(spect);
     p_spect    = spect;
     p_selected = selected;
-    //msg_Out()<<"--- "<<METHOD<<" selected "<<p_spect<<", t = "<<m_st
-    //	     <<", y = "<<m_sy<<", z = "<<m_sz<<", phi = "<<m_sphi<<", "
-    //	     <<"forced = "<<p_split->ForcedDecay()<<"\n";
   }
   ClearSpecs();
   ResetLastInt();
@@ -255,18 +242,21 @@ bool Sudakov::Generate(Parton * split, double kt2win)
 
 bool Sudakov::MakeSpectatorList(list<Parton*> & slist) {
   int colourcharge = m_cfl.StrongCharge();
-  if (((colourcharge==8 || (p_split->GetType()==pst::FS?colourcharge:-colourcharge)==3) &&
+  if (((colourcharge==8 ||
+	(p_split->GetType()==pst::FS?colourcharge:-colourcharge)==3) &&
        p_split->GetLeft()==NULL) ||
-      ((colourcharge==8 || (p_split->GetType()==pst::FS?colourcharge:-colourcharge)==-3) &&
+      ((colourcharge==8 ||
+	(p_split->GetType()==pst::FS?colourcharge:-colourcharge)==-3) &&
        p_split->GetRight()==NULL)) {
     msg_Error()<<METHOD<<" throws an error exception:\n"<<(*p_split)<<".\n";
     THROW(fatal_error,"Invalid color flow.");
   }
   msg_IODebugging()<<"--- "<<METHOD<<":\n"
 		   <<"   adds spectators for [type = "<<p_split->GetType()<<"]"
-		   <<" ("<<p_split->GetFlow(1)<<", "<<p_split->GetFlow(2)<<").\n";
-  // Adding colour spectators under the assumption that the left and right partons are
-  // correctly colour-connected to the splitter.
+		   <<" ("<<p_split->GetFlow(1)<<", "
+		   <<p_split->GetFlow(2)<<").\n";
+  // Adding colour spectators under the assumption that the left 
+  // and right partons are correctly colour-connected to the splitter.
   if (p_split->GetLeft() && p_split!=p_split->GetLeft())  {
     slist.push_back(p_split->GetLeft());
     msg_IODebugging()<<"    --> add left: "<<p_split->GetLeft()->GetType()
@@ -280,6 +270,7 @@ bool Sudakov::MakeSpectatorList(list<Parton*> & slist) {
 		     <<p_split->GetRight()->GetFlow(2)<<").\n";
   }
   msg_IODebugging()<<"    ===> found "<<slist.size()<<" spectator(s). for "<<m_cfl<<"\n";
+  return (slist.size()>0);
   // Adding additional (EW) charge spectators under the assumption that they may be
   // different from the left and right partons, which are correctly colour-connected to the
   // splitter and already in the spectator list.  Condition is that the splitter and spectator

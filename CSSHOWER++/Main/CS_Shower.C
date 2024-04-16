@@ -70,7 +70,6 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
   for (All_Singlets::const_iterator sit(m_allsinglets.begin());
        sit!=m_allsinglets.end();++sit) {
     msg_Debugging()<<"before shower step\n";
-    msg_Out()<<METHOD<<":\n"<<(**sit)<<"\n";
     for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
       if ((*it)->GetPrev()) {
 	if (((*it)->GetPrev()->Stat()&2) &&

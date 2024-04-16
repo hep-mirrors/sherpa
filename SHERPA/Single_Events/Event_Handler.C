@@ -135,7 +135,7 @@ void Event_Handler::ResetNonPerturbativePhases()
 
 bool Event_Handler::GenerateEvent(eventtype::code mode)
 {
-  msg_Out()<<"\n================================================================\n";
+  //msg_Out()<<"\n================================================================\n";
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
   ATOOLS::ran->SaveStatus();
   if (m_checkweight&4 && rpa->gen.NumberOfGeneratedEvents()==0)
