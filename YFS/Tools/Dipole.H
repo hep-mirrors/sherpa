@@ -23,7 +23,8 @@ namespace YFS{
     class Dipole
     {
     public:
-        Dipole(Flavour_Vector const &fl, Vec4D_Vector const &mom,  Vec4D_Vector const &born, dipoletype::code d);
+        Dipole(Flavour_Vector const &fl, Vec4D_Vector const &mom,  
+                Vec4D_Vector const &born, dipoletype::code d, const double alpha);
         ~Dipole();
 
         std::vector<double> m_masses, m_charges, m_theta, m_Q;

@@ -24,8 +24,9 @@ double SqLam(double x,double y,double z)
 }
 
 
-Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born, dipoletype::code ty):
-  m_type(ty)
+Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, 
+              ATOOLS::Vec4D_Vector const &born, dipoletype::code ty, const double alpha):
+  m_type(ty), m_alp(alpha)
 {
   if ((mom.size() != fl.size()) || fl.size() != 2 || mom.size() != 2 || born.size()!=2) {
     msg_Out()<<"Dipole type is  =  "<<ty<<std::endl
@@ -36,14 +37,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   }
   Clean();
   // todo get alpha from YFS_BASE
-  Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
-  bool use_model_alpha = s["USE_MODEL_ALPHA"].Get<bool>();
-  if(use_model_alpha) m_alp = s_model->ScalarConstant("alpha_QED");
-  else m_alp  = 1./s["1/ALPHAQED(0)"].Get<double>(); 
   m_alpi = m_alp/M_PI;
-  if (use_model_alpha) m_rescale_alpha = 1;
-  else m_rescale_alpha = (*aqed)(0) / s_model->ScalarConstant("alpha_QED");
-  // m_QiQj = 1;
   m_sp = (mom[0]+mom[1]).Abs2();
   m_Qi = fl[0].Charge();
   m_Qj = fl[1].Charge();
