@@ -134,7 +134,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       }
     }
     if(ff.size()==0) return;
-    Dipole D(ff, mm, bm, dipoletype::final);
+    Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
     D.SetResonance(true);
     // IsResonant(D);
     Dipole_FF(ff, mm);
@@ -170,7 +170,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
         }
         // i+=1;
       }
-      Dipole D(ff, mm, bm, dipoletype::final);
+      Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
       Dipole_FF(ff, mm);
       IsResonant(D);
       m_dipolesFF.push_back(D);
@@ -199,7 +199,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
           bm.push_back(m_bornmomenta[i]);
         }
       }
-      Dipole D(ff, mm, bm, dipoletype::final);
+      Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
       Dipole_FF(ff, mm);
       m_dipolesFF.push_back(D);
       return;
@@ -228,7 +228,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
             mm.push_back(mom[d2]);
             bm.push_back(m_bornmomenta[d1]);
             bm.push_back(m_bornmomenta[d2]);
-            Dipole D(ff, mm, bm, dipoletype::final);
+            Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
             Dipole_FF(ff, mm);
             IsResonant(D);
             // if(D.IsResonance()) PRINT_VAR(D);
@@ -288,7 +288,7 @@ void Define_Dipoles::Dipole_II(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
     mm.push_back(mom[i]);
     bm.push_back(m_bornmomenta[i]);
   }
-  Dipole D(ff, mm, bm, dipoletype::initial);
+  Dipole D(ff, mm, bm, dipoletype::initial,m_alpha);
   m_olddipoles.push_back(D);
   m_dipolesII.push_back(D);
   m_g=D.m_gamma;
@@ -342,7 +342,7 @@ void Define_Dipoles::Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
 
         bm.push_back(born[i]);
         bm.push_back(born[j]);
-        Dipole D(ff, mm, bm, dipoletype::ifi);
+        Dipole D(ff, mm, bm, dipoletype::ifi,m_alpha);
         D.SetResonance(true);
         m_dipolesIF.push_back(D);
       }
