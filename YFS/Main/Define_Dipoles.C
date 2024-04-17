@@ -536,10 +536,10 @@ double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
 double Define_Dipoles::CalculateEEXReal(const Vec4D & k){
   double eex=0;
   for (auto &D: m_dipolesII){
-    eex += D.EEX(k);
+    eex += D.EEX(m_betaorder);
   }
   for (auto &D: m_dipolesFF){
-    eex += D.EEX(k);
+    eex += D.EEX(m_betaorder);
   }
   // for (auto &D: m_dipolesIF){
   //   eex += D.EEX(k);
@@ -550,10 +550,10 @@ double Define_Dipoles::CalculateEEXReal(const Vec4D & k){
 double Define_Dipoles::CalculateEEXVirtual(){
   double v{0.};
   for (auto &D: m_dipolesII){
-    v+=0.5*D.m_gamma;
+    v+=D.VirtualEEX(m_betaorder);
   }
   for (auto &D: m_dipolesFF){
-    v+=0.5*D.m_gamma;
+    v+=D.VirtualEEX(m_betaorder);
   }
   return v;
 }

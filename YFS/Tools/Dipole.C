@@ -285,7 +285,40 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
   m_ghost.push_back(p);
 }
 
-double Dipole::EEX(const Vec4D &k){
+double Dipole::EEX(const int betaorder){
+  double real=0;
+  if(betaorder >= 1 ) {
+    for(auto &k: m_dipolePhotons ){
+     real += Hard(k)/Eikonal(k)-1;
+     // real /= Eikonal(k);
+    }
+  }
+  if(betaorder >= 2 ) {
+    for (int j = 1; j < m_dipolePhotons.size(); j++) {
+      for (int i = 0; i < j; i++) {
+        Vec4D k1 = m_dipolePhotons[j];
+        Vec4D k2 = m_dipolePhotons[i];
+        double eik1 = Eikonal(k1);
+        double eik2 = Eikonal(k2);
+        real += Hard(k1,k2)/eik1/eik2
+                -(Hard(k2)-eik2)/eik2
+                -(Hard(k1)-eik1)/eik1
+                -1;
+      }
+    }
+  }
+  // if(m_betaorder > 2 ) real += Beta13(k);
+  return real;//+virt;
+}
+
+double Dipole::VirtualEEX(const int betaorder){
+  if(betaorder==1)  return 0.5*m_gamma;
+  else if(betaorder==2) return 0.5*m_gamma + 0.125*m_gamma*m_gamma;
+  else if(betaorder==3) return 0.5*m_gamma + 0.125*m_gamma*m_gamma + pow(m_gamma,3)/48;
+  return 0;
+}
+
+double Dipole::Hard(const Vec4D &k){
   double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
   double a = k*m_bornmomenta[0]/p1p2;
   double b = k*m_bornmomenta[1]/p1p2;

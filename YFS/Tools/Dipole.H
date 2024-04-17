@@ -54,7 +54,11 @@ namespace YFS{
         double EikonalMassless(Vec4D k, Vec4D p1, Vec4D p2);
         double Eikonal(Vec4D k);
         double EikonalInterferance(const Vec4D &k);
-        double EEX(const Vec4D & k);
+        double EEX(const int betaorder);
+        double VirtualEEX(const int betaorder);
+        double Hard(const Vec4D & k);
+        double Hard(const Vec4D & k1, const Vec4D & k2);
+        double xi(const double &alp, const double &beta, const double &gamma);
         void Boost();
         void BoostLab();
         void Boost(Vec4D &p);

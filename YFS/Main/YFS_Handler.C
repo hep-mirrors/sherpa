@@ -467,7 +467,7 @@ void YFS_Handler::CalculateBeta() {
       // p_realff->Calculate();
       // realISR = p_realff->GetReal();
       for(auto const &k: p_dipoles->GetDipoleII()->GetPhotons()){
-          realISR += p_dipoles->GetDipoleII()->EEX(k)*m_born/p_dipoles->GetDipoleII()->Eikonal(k)-m_born;
+          realISR += p_dipoles->GetDipoleII()->EEX(m_betaorder)*m_born/p_dipoles->GetDipoleII()->Eikonal(k)-m_born;
         }
     }
     if (m_fsrmode >= 1) {
@@ -478,7 +478,7 @@ void YFS_Handler::CalculateBeta() {
         p_realff->CalculateVirt();
         // p_realff->Calculate();
         for(auto const &k: m_fsrphotonsforME){
-          realFSR += Dip->EEX(k)*m_born/Dip->Eikonal(k)-m_born;
+          realFSR += Dip->EEX(m_betaorder)*m_born/Dip->Eikonal(k)-m_born;
         }
         // PRINT_VAR(realFSR);
         // PRINT_VAR(p_realff->GetReal());
