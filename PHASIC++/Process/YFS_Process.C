@@ -93,8 +93,6 @@ void YFS_Process::Init(const Process_Info &pi,
 
     p_yfs->p_nlo->InitializeReal(rpi);
     p_yfs->SetNLOType(nlo_type::real);
-
-
   }
   if (pi.Has(nlo_type::loop)) {
     vpi.m_fi.SetNLOType(nlo_type::born);
