@@ -174,6 +174,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
   p_isrhandler->SetRunMode(1);
+  if(p_yfshandler) p_yfshandler->SetRunMode(1);
   auto wgtmap = Differential(cur, varmode, (psmode::code)mode);
   if (wgtmap.IsZero() || IsBad(wgtmap.Nominal()))
     return NULL;
