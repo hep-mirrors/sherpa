@@ -1,0 +1,52 @@
+# general settings
+EVENTS: 100
+EVENT_GENERATION_MODE: Weighted
+
+# ME generator setup
+ME_GENERATORS: Comix
+CORE_SCALE: VAR{Abs2(p[0]+p[1])};
+
+# model setup
+MODEL: ${model_name}
+
+# Uncomment to disable underlying event simulation:
+# MI_HANDLER: None
+
+# Uncomment to disable hadronization:
+# FRAGMENTATION: Off
+
+# Uncomment to disable shower:
+# SHOWER_GENERATOR: None
+
+# set quarks and leptons massless in ME
+PARTICLE_DATA:
+  1: {Massive: false}
+  2: {Massive: false}
+  3: {Massive: false}
+  4: {Massive: false}
+  5: {Massive: false}
+  11: {Massive: false}
+  13: {Massive: false}
+  15: {Massive: false}
+
+# LHC beam setup:
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+PROCESSES:
+# The statement below generates all 2->2
+# scattering processes PP initial states
+- "93 93 -> (${all_particles}) (${all_particles})":
+    ${order_statement}
+
+    # Generate feynman diagrans in directory 'diagrams'.
+    # Run './plot_graphs diagrams'
+    # to plot graphs. Use web browser to view diagrams/index.html
+    Print_Graphs: diagrams
+
+SELECTORS: [
+  # Insert phase space cuts here
+]
+
+UFO_PARAMS: |
+${ufo_params}

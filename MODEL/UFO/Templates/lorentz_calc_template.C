@@ -2,7 +2,9 @@
 #include "METOOLS/Currents/C_Scalar.H"
 #include "METOOLS/Currents/C_Spinor.H"
 #include "METOOLS/Currents/C_Vector.H"
+#include "METOOLS/Currents/C_RaritaSchwinger.H"
 #include "METOOLS/Explicit/Vertex.H"
+#include "METOOLS/Explicit/Form_Factor.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -20,7 +22,9 @@ namespace METOOLS {
     const SComplex I = SComplex(0.0,1.0);
     
     ${vertex_name}_Calculator(const Vertex_Key &key):
-      Lorentz_Calculator(key) {}
+      Lorentz_Calculator(key) {
+${form_factor_impl}
+    }
 
     std::string Label() const { return "${vertex_name}"; }
 
@@ -31,6 +35,7 @@ ${implementation}
       return NULL;
     }
 
+${form_factor_decl}
   };// end of class ${vertex_name}_Calculator
 
   template class ${vertex_name}_Calculator<double>;
