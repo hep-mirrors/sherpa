@@ -346,7 +346,7 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   msg_Debugging()<<"process string = "<<process2Recola(args.Flavours())<<"\n";
   
   string procstring(process2Recola(args.Flavours()));
-  define_process_rcl(procIndex, procstring.c_str(), "NLO");
+  define_process_rcl(procIndex, procstring.c_str(), "LO");
   
   
   Settings& s = Settings::GetMainSettings();
@@ -363,7 +363,6 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   }
   else
     select_gs_power_BornAmpl_rcl(procIndex,args.m_orders[0]);
-      
   return procIndex;
 }
     
