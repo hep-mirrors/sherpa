@@ -6,6 +6,7 @@ CMakeCache.txt
 build/
 outputs/
 /.*
+compile_commands.json
 
 # make targets and intermediate files
 /AMEGIC++/Main/make2scons
