@@ -60,7 +60,7 @@ FSR::FSR()
 }
 
 FSR::~FSR() {
-  delete p_fsrFormFact;
+  if(p_fsrFormFact) delete p_fsrFormFact;
 }
 
 bool FSR::Initialize(YFS::Dipole &dipole) {
@@ -71,8 +71,7 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_dipoleFl.clear();
   m_dipole.push_back(p_dipole->GetOldMomenta(0));
   m_dipole.push_back(p_dipole->GetOldMomenta(1));
-  m_bornmomenta.push_back(p_dipole->GetBornMomenta(0));
-  m_bornmomenta.push_back(p_dipole->GetBornMomenta(1));
+  BoostToXFM();
   m_dipoleFl.push_back(p_dipole->GetFlav(0));
   m_dipoleFl.push_back(p_dipole->GetFlav(1));
   m_QFrame = m_dipole[0] + m_dipole[1];
@@ -85,7 +84,6 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_QF2 = m_Q1 * m_Q2;
   m_dip_sp = p_dipole->Sprime();
   if(IsBad(m_dip_sp)) return false;
-  MakePair(sqrt(m_dip_sp), m_bornQ1, m_bornQ2);
   m_EQ = sqrt(m_dip_sp) / 2.;
   m_Emin = 0.5 * sqrt(m_s) * m_isrcut;
   m_Kmax = sqrt(m_dip_sp) / 2.;
@@ -151,7 +149,7 @@ void FSR::GenerateAngles() {
     double P = log((1.+m_beta1)/(1.-m_beta1))
                 /(log((1.+m_beta1)/(1.-m_beta1))+log((1.+m_beta2)/(1.-m_beta2)));
     while (true) {
-      if (ran->Get() <= P) {
+      if (ran->Get() < P) {
         double rnd = ran->Get();
         double a   = 1./m_beta1*log((1.+m_beta1)/(1.-m_beta1));;
         m_c        = 1./m_beta1*(1.-(1.+m_beta1)*exp(-a*m_beta1*rnd));
@@ -164,9 +162,9 @@ void FSR::GenerateAngles() {
       weight = 1.-((1.-m_beta1*m_beta1)/((1.-m_beta1*m_c)*(1.-m_beta1*m_c))
                         +(1.-m_beta2*m_beta2)/((1.+m_beta2*m_c)*(1.+m_beta2*m_c)))
                        /(2.*(1.+m_beta1*m_beta2)/((1.-m_beta1*m_c)*(1.+m_beta2*m_c)));
-      if (ran->Get() < weight) break;
+      if (ran->Get() < weight || m_kkmcAngles!=2) break;
     }
-    m_MassWls.push_back(weight);
+    m_MassWls.push_back(m_kkmcAngles!=2?1:weight);
     m_theta = acos(m_c);
     m_st = sin(m_theta);
     m_phi = 2.*M_PI * ran->Get();
@@ -221,7 +219,6 @@ void FSR::NPhotons() {
   while (true) {
     N += 1;
     sum += log(ran->Get());
-    m_rand.push_back(sum / (-m_nbar));
     if (sum <= -m_nbar) break;
   }
   m_n = N - 1;
@@ -287,7 +284,7 @@ bool FSR::MakeFSR() {
     RescalePhotons();
     m_sQ = m_dip_sp * m_yy;
     m_sX = m_sQ*(1.+m_photonSum[0]+0.25*m_photonSum*m_photonSum);
-    if ( (m_sQ) < smin ) {
+    if ( (m_sQ) < smin || m_sX < smin ) {
       RejectEvent();
       m_cut = 3;
       return false;
@@ -649,7 +646,7 @@ void FSR::Weight() {
 
 void FSR::BoostToXFM() {
   // p_rot   = new Poincare(m_dipole[0],Vec4D(0.,0.,0.,1.));
-  Vec4D Q = m_dipole[0] + m_dipole[1] + m_photonSum;
+  Vec4D Q = m_dipole[0] + m_dipole[1];
   ATOOLS::Poincare poin(Q);
   ATOOLS::Poincare prot1(m_dipole[0], Vec4D::ZVEC);
   ATOOLS::Poincare prot2(m_dipole[1], -Vec4D::ZVEC);
@@ -657,15 +654,6 @@ void FSR::BoostToXFM() {
   rotate = Poincare(m_dipole[0], Vec4D(0., 0., 0., 1.));
   for (auto &p : m_dipole) {
     poin.Boost(p);
-  }
-  for (auto &p : m_photons) {
-    poin.Boost(p);
-  }
-  poin.Boost(m_photonSum);
-  Q = {sqrt(m_s), 0, 0, 0};
-  ATOOLS::Poincare poin2(Q);
-  for (auto &p : m_dipole) {
-    poin.BoostBack(p);
   }
 }
 

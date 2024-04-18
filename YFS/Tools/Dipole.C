@@ -164,14 +164,14 @@ void Dipole::Boost() {
     // Check that the final state fermions
     // are in their own restframe;
     Vec4D Q = m_momenta[0]+m_momenta[1];
-    // if(!IsEqual(0,Q.PSpat())){
-    //   msg_Error()<<"Dipole is in the wrong frame\n";
-    // }
+    if(!IsEqual(0,Q.PSpat())){
+      msg_Error()<<"Dipole is in the wrong frame\n";
+    }
     if(m_ghost.size()!=0){
       Q = m_ghost[0]+m_ghost[1];
-      // if(!IsEqual(0,Q.PSpat())){
-        // msg_Error()<<"Dipole ghost is in the wrong frame";
-      // }
+      if(!IsEqual(0,Q.PSpat())){
+        msg_Error()<<"Dipole ghost is in the wrong frame";
+      }
     }
 
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
@@ -346,6 +346,7 @@ void Dipole::Clean(){
   m_oldmomenta.clear();
   m_newmomenta.clear();
   m_bornmomenta.clear();
+  m_eikmomentum.clear();
   m_beams.clear();
   m_ghost.clear();
   m_dipolePhotons.clear();

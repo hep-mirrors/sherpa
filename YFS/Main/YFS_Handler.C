@@ -38,6 +38,7 @@ YFS_Handler::YFS_Handler():
   m_formfactor = 1;
   m_isrinital = true;
   p_splitter = new PHOTONS::Photon_Splitter(m_photon_split);
+  m_rmode = 0;
 }
 
 YFS_Handler::~YFS_Handler()
@@ -48,8 +49,9 @@ YFS_Handler::~YFS_Handler()
   if (p_coulomb) delete p_coulomb;
   if (p_debug)   delete p_debug;
   if (p_yfsFormFact) delete p_yfsFormFact;
-  // if (p_nlo) delete p_nlo;
   if (p_dipoles) delete p_dipoles;
+  if (p_nlo) delete p_nlo;
+  if (p_splitter) delete p_splitter;
   for (auto &p: m_particles){
     if(p) delete p;
   }
@@ -402,6 +404,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
+      Dip->Clean();
   }
   // CheckMasses();
   CheckMomentumConservation();
@@ -456,6 +459,7 @@ void YFS_Handler::CalculateCoulomb() {
 
 void YFS_Handler::CalculateBeta() {
   m_real=1;
+  if(!m_rmode && !m_int_nlo) return;
   double realISR(0), realFSR(0);
   if (m_betaorder > 0) {
     p_realff->SetBorn(m_born);
@@ -539,7 +543,7 @@ void YFS_Handler::GenerateWeight() {
   if (m_formWW) m_yfsweight *= m_ww_formfact; //*exp(m_coulSub);
   CalculateBeta();
   m_yfsweight*=m_real;
-  m_yfsweight *= m_formfactor;
+  m_yfsweight *= m_formfactor*(1-m_v);
   if(m_isr_debug) {
     Vec4D ele;
     for (int i = 2; i < m_flavs.size(); ++i)

@@ -18,15 +18,9 @@ std::ofstream real_out, out_ps;
 
 Real::Real(const PHASIC::Process_Info& pi)  {
    /* Load Real ME */
-   // PHASIC::Process_Info real_pi(pi);
-   // real_pi.m_mincpl[0] = pi.m_mincpl[0];
-   // real_pi.m_maxcpl[0] = pi.m_maxcpl[0];
-   // real_pi.m_mincpl[1] = pi.m_mincpl[1];
-   // real_pi.m_maxcpl[1] = pi.m_maxcpl[1];
    p_real_me =  PHASIC::Tree_ME2_Base::GetME2(pi);
    if (!p_real_me)  THROW(not_implemented, "Couldn't find real ME for this process.");
    MODEL::s_model->GetCouplings(m_cpls);
-   /* Load color-correlated ME. TODO: orders */
    PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
                                  pi.m_fi.GetExternal(),
                                  pi.m_maxcpl);
@@ -72,11 +66,6 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
       }
       out_ps<<"    ]"<<std::endl;
   }
-    // double tfac(1.0);
-    // if(m_tchannel) {
-    //  double t = (p[0]-p[2]).Abs2();  
-    //  tfac=(*aqed)(-t)/(*aqed)(0);
-    // }
     double R = p_real_me->Calc(p);
     if(m_check_real) real_out<<std::setprecision(15)<<R/m_sym<<std::endl;
     return m_factor*R;
