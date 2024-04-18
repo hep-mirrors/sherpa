@@ -213,7 +213,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     p_yfshandler->SetSprimeLimits(m_isrspkey.Doubles());
     DefineFSRKinematics();
     p_yfshandler->SetBornMomenta(p_moms);
-    return(p_yfshandler->CalculateFSR());
+    return(p_yfshandler->CalculateFSR(p_moms));
 
   }
   return p_isrhandler->MakeISR(m_sprime, m_isrykey[2], p_moms,
