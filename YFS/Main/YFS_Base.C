@@ -32,9 +32,9 @@ void YFS_Base::RegisterDefaults(){
   m_s = sqr(rpa->gen.Ecms());
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   s["ISR_MODE"].SetDefault(0);
-  s["BETA"].SetDefault(0);
+  s["BETA"].SetDefault(3);
   s["SEMI"].SetDefault(0);
-  s["VMAX"].SetDefault(1);
+  s["VMAX"].SetDefault(0);
   s["ISR_CUT"].SetDefault(1e-6);
   s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
@@ -90,6 +90,7 @@ void YFS_Base::RegisterDefaults(){
   s["Check_Real_Sub"].SetDefault(0);
   s["Check_RR_Sub"].SetDefault(0);
   s["Min_Photon_Energy"].SetDefault(0);
+  s["Integrate_NLO"].SetDefault(0);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -98,6 +99,7 @@ void YFS_Base::RegisterSettings(){
   m_mode = s["ISR_MODE"].Get<int>();
   m_isrcut   = s["ISR_CUT"].Get<double>();
   m_vmax = s["VMAX"].Get<double>();
+  m_vmax = 1.-sqr(m_vmax)/m_s;
   m_nmax  = s["PHOTON_MAX"].Get<int>();
   m_fillblob  = s["FILL_BLOB"].Get<bool>();
   m_looptool  = s["LOOP_TOOL"].Get<bool>();
@@ -153,6 +155,7 @@ void YFS_Base::RegisterSettings(){
   m_check_real_sub = s["Check_Real_Sub"].Get<bool>();
   m_check_rr_sub = s["Check_RR_Sub"].Get<bool>();
   m_photon_split = s["PHOTON_SPLITTER_MODE"].SetDefault(15).Get<bool>();
+  m_int_nlo = s["Integrate_NLO"].SetDefault(0).Get<bool>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added

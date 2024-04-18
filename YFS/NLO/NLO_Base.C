@@ -19,7 +19,6 @@ double SqLam(double x,double y,double z)
 NLO_Base::NLO_Base() {
   p_yfsFormFact = new YFS::YFS_Form_Factor();
   p_nlodipoles = new YFS::Define_Dipoles();
-  p_global_dipoles = new YFS::Define_Dipoles();
   m_evts = 0;
   m_recola_evts = 0;
   m_realrealtool = 0;
@@ -62,7 +61,6 @@ NLO_Base::~NLO_Base() {
 		}
 	}
 	if(p_yfsFormFact) delete p_yfsFormFact;
-	if(p_global_dipoles) delete p_global_dipoles;
 	if(p_nlodipoles) delete p_nlodipoles;
 	if(p_real) delete p_real;
 	if(p_virt) delete p_virt;
@@ -99,18 +97,17 @@ double NLO_Base::CalculateVirtual() {
 	double virt;
 	double sub;
 	Vec4D_Vector p = m_plab;
-	// CheckMasses(p);
 	CheckMassReg();
 	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
 	if(m_fsrmode==2) virt = p_virt->Calc(m_bornMomenta, m_born);
-	else virt = p_virt->Calc(m_plab, m_born);
+	else virt = p_virt->Calc(p, m_born);
 	if(m_check_virt_born) {
 			if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
 			msg_Error() << METHOD << "\n Warning! Loop provider's born is different! YFS Subtraction likely fails\n"
 									<< "Loop Provider " << ":  "<<p_virt->p_loop_me->ME_Born()
 									<< "\nSherpa" << ":  "<<m_born<<std::endl
 									<<"PhaseSpace Point = ";
-			for(auto p: m_plab) msg_Error()<<p<<std::endl;
+			for(auto _p: m_plab) msg_Error()<<_p<<std::endl;
 		}
 	}	
 	sub = p_dipoles->CalculateVirtualSub();
@@ -156,7 +153,6 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	Vec4D kk = k;
 	MapMomenta(p, k);
 	m_evts+=1;
-
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesII(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
@@ -219,12 +215,12 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	double sq = Q.Abs2();
 	Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
-	for (int i = 0; i < p.size(); ++i) {
-		// pRot.Rotate(p[i]);
+	for (int i = 2; i < p.size(); ++i) {
 		boostQ.Boost(p[i]);
+		pRot.Rotate(p[i]);
 	}
-	// pRot.Rotate(k);
 	boostQ.Boost(k);
+	pRot.Rotate(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
 	{
@@ -233,7 +229,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		qz += p[i][3];
 	}
 	if (!IsEqual(k[1], -qx, 1e-5) || !IsEqual(k[2], -qy, 1e-5) || !IsEqual(k[3], -qz, 1e-5) ) {
-		if( k[1]> 1e-8 && k[2]> 1e-8 && k[3]> 1e-8 ){
+		if( k[1]> 1e-6 && k[2]> 1e-6 && k[3]> 1e-6 ){
 			msg_Error() << "YFS Mapping has failed for ISR\n";
 			msg_Error() << " Photons px = " << k[1] << "\n Qx = " << -qx << std::endl;
 			msg_Error() << " Photons py = " << k[2] << "\n Qy = " << -qy << std::endl;
@@ -253,7 +249,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	// if(m_is_isr) QQ = p[0]+p[1];
   // double zz = sqrt(sqq) / 2.;
 	// double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) * (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
-	// double sign_z = (p[0][3] < 0 ? -1 : 1);
+	double sign_z = (p[0][3] < 0 ? -1 : 1);
 	// p[0] = {zz, 0, 0, z};
 	// p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();
@@ -261,8 +257,8 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
   double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
- 	p[0] = {E1, 0, 0, lamCM};
-  p[1] = {E2, 0, 0, -lamCM};
+ 	p[0] = {E1, 0, 0, sign_z*lamCM};
+  p[1] = {E2, 0, 0, -sign_z*lamCM};
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{

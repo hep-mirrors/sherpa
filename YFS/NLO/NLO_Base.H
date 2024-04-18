@@ -30,7 +30,7 @@ public:
   YFS::Define_Dipoles *p_nlodipoles;
   YFS::YFS_Form_Factor *p_yfsFormFact;
   PHASIC::Single_Process *p_born;
-  YFS::Define_Dipoles *p_dipoles, *p_global_dipoles;
+  YFS::Define_Dipoles *p_dipoles;
   Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom;
   Vec4D m_nvec;
   ATOOLS::Flavour_Vector m_flavs;

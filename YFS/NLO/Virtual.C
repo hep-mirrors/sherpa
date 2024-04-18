@@ -34,11 +34,9 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
 
     double sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
     sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
-    /* Load color-correlated ME. TODO: orders */
     p_corr_me = PHASIC::Color_Correlated_ME2::GetME2(args);  
     p_loop_me->SetCouplings(m_cpls);
     m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
-    // m_factor = 1./2.0/M_PI/137.036;
   }
 
 Virtual::~Virtual()
@@ -64,7 +62,6 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
      if(m_tchannel) scale = -(p[0]-p[2]).Abs2();  
      else scale = (p[0]+p[1]).Abs2();
      double dalpha = ((*aqed)(scale) - aqed->AqedThomson());
-     // PRINT_VAR(dalpha);
      run_corr = 4.*dalpha*B;
     }
     p_loop_me->Calc(p,B);

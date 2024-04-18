@@ -106,9 +106,9 @@ void ISR::GenerateAngles()
       weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
                         +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
                        /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
-      if (ran->Get() < weight) break;
-    }
-    m_angleWeight *= weight;
+        if (ran->Get() < weight || m_kkmcAngles!=2) break;
+      }
+    if(m_kkmcAngles==2) m_angleWeight *= weight;
     m_theta = acos(m_c);
     m_sin = sin(m_theta);
     m_phi = 2.*M_PI * ran->Get();
@@ -118,6 +118,12 @@ void ISR::GenerateAngles()
   }
   else {
     m_beta  = sqrt(1. - m_am2);
+    if(!IsEqual(m_beta/m_b1,1,1e-6)){
+      cout<<std::setprecision(12)<<(m_beta/m_b1)<<std::endl;
+      PRINT_VAR((m_beam1+m_beam2).Mass());
+      PRINT_VAR((m_beam1).Mass());
+      PRINT_VAR((m_beam2).Mass());
+    }
     double eps  = m_am2 / (1. + m_beta);
     double rn = ran->Get();
     double del1 = (2. - eps) * pow((eps / (2 - eps)), rn); // 1-beta*cos
@@ -238,15 +244,10 @@ void ISR::MapPhotonMomentun() {
 
   for (size_t i = 0; i < m_photons.size(); ++i)
   {
-    if(m_photons[i][0]*m_lam < m_isrcut) m_cut = 0.;
     m_photons[i] *= m_lam * sqrt(m_s) / 2.;
     m_yini[i] /= m_lam;
     m_zini[i] /= m_lam;
     if (m_photons[i][0] < m_Kmin) m_cut = 0.;
-    // if(!IsZero(m_photons[i]*m_photons[i])){
-    //   msg_Error()<<"Photon is not massless!"<<std::endl
-    //              <<"m_photons[i].Mass() = "<< m_photons[i].Mass()<<std::endl;
-    // }
   }
   if(m_photons.size()!=m_n){
     msg_Error()<<"Missmatch in Photon Multiplicity for ISR"<<std::endl
@@ -272,11 +273,7 @@ void ISR::Weight() {
     corrW = 1. / (1. - D / B);
     m_weight *= corrW;
   }
-  m_weight *= m_cut * m_massW * m_jacW * m_angleWeight * (1. - m_v);
-  // if (m_weight == 0) {
-  //   // m_photons.clear();
-  //   // m_photonSum *= 0;
-  // }
+  m_weight *= m_cut * m_massW * m_jacW * m_angleWeight;
   if (m_cut == 0) m_nfail += 1;
   else m_nsuccess += 1;
   DEBUG_FUNC("v = " << m_v << std::endl <<
