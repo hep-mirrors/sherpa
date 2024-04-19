@@ -906,7 +906,7 @@ void Initialization_Handler::SetGlobalVariables()
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
 		 <<"  fac scale: "<<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
 		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
-  int subtype=dr.GetValue<int>("NLO_SUBTRACTION_SCHEME",2);
+  int subtype=dr.GetValue<int>("NLO_SUBTRACTION_SCHEME",0);
   rpa->gen.SetVariable("NLO_SUBTRACTION_SCHEME",ToString(subtype));
   if (subtype!=0) msg_Info()<<METHOD<<"(): Set subtraction scheme "<<subtype<<".\n";
   int cmode=dr.GetValue<int>("METS_CLUSTER_MODE",0);
