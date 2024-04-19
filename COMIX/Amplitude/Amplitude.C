@@ -1363,7 +1363,8 @@ bool Amplitude::Evaluate(const Int_Vector &chirs)
 
 bool Amplitude::EvaluateAll(const bool& mode)
 {
-  Complex total(Complex(0,0));
+  // TODO: Remove in finalise RS version
+  //Complex total(Complex(0,0));
   if (p_loop) p_dinfo->SetDRMode(p_loop->DRMode());
   for (size_t i(0);i<m_subs.size();++i) m_subs[i]->Reset(0);
   for (size_t j(0);j<m_n;++j) m_ch[j]=0;
@@ -1453,17 +1454,19 @@ bool Amplitude::EvaluateAll(const bool& mode)
 		       <<(m_ress[i][k]*std::conj(m_ress[j][k])).real()<<"\n";
 #endif
 	csum+=(m_ress[i][k]*std::conj(m_ress[j][k])).real();
+        // TODO: Remove in finalise RS version
         //std::cout << "Component " << k << " is non-zero: " << m_ress[i][k] << std::endl;
-        total += m_ress[i][k] * conj(m_ress[i][k]);
+        //total += m_ress[i][k] * conj(m_ress[i][k]);
       }
 #ifdef DEBUG__BG
     msg_Debugging()<<"}\n";
 #endif
   }
+  //TODO: Remove tests of single XS
   //std::cout << "Total-Sherpa" << total << std::endl;
   // Helizitätsmittelung
   //std::cout << "Total-Sherpa" << total/m_sf << std::endl;
-  Complex s = (m_p[0]+m_p[1])*(m_p[0]+m_p[1]);
+  /*Complex s = (m_p[0]+m_p[1])*(m_p[0]+m_p[1]);
   Complex beta = sqrt(1.0-((4*m_p[2].Abs2())/s));
   Vec4<Complex> x = (1.0 / (4.0*beta))*((1.0-sqr(beta))*m_p[3]-sqr(1.0-beta)*m_p[2]);
   Vec4<Complex> y = (1.0 / (4.0*beta))*((1.0-sqr(beta))*m_p[2]-sqr(1.0-beta)*m_p[3]);
@@ -1472,7 +1475,8 @@ bool Amplitude::EvaluateAll(const bool& mode)
                               + (s /(8.0*sqr(m_p[2].Abs2())))*(1.0-4.0*(m_p[2].Abs2()/s)+10.0*(sqr(m_p[2].Abs2())/sqr(s))) * ((m_p[0] * y)*(m_p[1] * x) + (m_p[0]*x)*(m_p[1]*y));
   if ((m_res - m_squared_massive).real() > 1e-12 || (m_res - m_squared_massive).imag() > 1e-12)
     std::cout << "Large diff between literature " << m_squared_massive << " and Sherpa " << total/m_sf << std::endl;
-  else std::cout << "passed" << std::endl;
+  else std::cout << "passed" << std::endl;*/
+
   m_born=m_res=csum/m_sf;
   m_cmur[1]=m_cmur[0]=csum=0.0;
   if (p_dinfo->Mode()) {
@@ -1638,25 +1642,27 @@ double Amplitude::Differential
     Evaluate(p_helint->Chiralities());
     return m_res;
   }
+  //TODO: Remove tests of single XS
+/*// Literature comparison to S.F.Novaes & D.Spehler Nuclear Physics B 371 (1992) with SMRaSc SM extension to RS
   Spinor<double> p(1, m_p[0]);
   Spinor<double> q(1, m_p[1]);
   Spinor<double> k(1, m_p[2]);
   Spinor<double> l(1, m_p[3]);
   Spinor<double> g(1, Vec4D(1.0,0.0,1.0,0.0));
   Spinor<double> h(1, Vec4D(1.0,0.0,1.0,0.0));
-  /*Spinor<double> p(1, -(m_p[0][1]+Complex(0, -1)*m_p[0][2]) / (sqrt(m_p[0][0]+m_p[0][3])), sqrt(m_p[0][0]+m_p[0][3]));
+  *//*Spinor<double> p(1, -(m_p[0][1]+Complex(0, -1)*m_p[0][2]) / (sqrt(m_p[0][0]+m_p[0][3])), sqrt(m_p[0][0]+m_p[0][3]));
   Spinor<double> q(1, -(m_p[1][1]+Complex(0, -1)*m_p[1][2]) / (sqrt(m_p[1][0]+m_p[1][3])), sqrt(m_p[1][0]+m_p[1][3]));
   Spinor<double> k(1, -(m_p[2][1]+Complex(0, -1)*m_p[2][2]) / (sqrt(m_p[2][0]+m_p[2][3])), sqrt(m_p[2][0]+m_p[2][3]));
   Spinor<double> l(1, -(m_p[3][1]+Complex(0, -1)*m_p[3][2]) / (sqrt(m_p[3][0]+m_p[3][3])), sqrt(m_p[3][0]+m_p[3][3]));
   Vec4D gauge = Vec4D(1.0,0.0,invsqrttwo,invsqrttwo);
   Spinor<double> g(1, -(gauge[1]+Complex(0, -1)*gauge[2]) / (sqrt(gauge[0]+gauge[3])), sqrt(gauge[0]+gauge[3]));
-  Spinor<double> h(1, -(gauge[1]+Complex(0, -1)*gauge[2]) / (sqrt(gauge[0]+gauge[3])), sqrt(gauge[0]+gauge[3]));*/
+  Spinor<double> h(1, -(gauge[1]+Complex(0, -1)*gauge[2]) / (sqrt(gauge[0]+gauge[3])), sqrt(gauge[0]+gauge[3]));*//*
   Spinor<double> p_up(1, p[1], -p[0]);
   Spinor<double> q_up(1, q[1], -q[0]);
   Spinor<double> k_up(1, k[1], -k[0]);
   Spinor<double> l_up(1, l[1], -l[0]);
   Spinor<double> g_up(1, g[1], -g[0]);
-  Spinor<double> h_up(1, h[1], -h[0]);
+  Spinor<double> h_up(1, h[1], -h[0]);*/
   //Complex m_ppmm = (2.0*Complex(0, 1)*0.00756234/((m_p[0]+m_p[1])*(m_p[0]+m_p[1])) * (conj(k*p)*(l*q)*conj(h*k)*(l*g)) / (conj(g*l)*(h*k)));
   //Complex m_mmpp = (2.0*Complex(0, 1)*0.00756234/((m_p[0]+m_p[1])*(m_p[0]+m_p[1]))) * ((k*q)*conj(l*p)*(h*k)*conj(l*g)) / ((g*l)*conj(h*k));
   //std::cout << "Literature +,-,++,-- / (-,+,--,++)^dagger matrix element" << m_ppmm << std::endl;
@@ -1666,6 +1672,7 @@ double Amplitude::Differential
   //std::cout << "Total-2 " << ((32.0*sqr(0.30827124008247381)*sqr(0.30827124008247381))/(sqr((m_p[0]+m_p[1])*(m_p[0]+m_p[1])))) * ((m_p[0]*m_p[3])*(m_p[1]*m_p[2])+(m_p[0]*m_p[2])*(m_p[1]*m_p[3])) << std::endl;
   EvaluateAll();
   //std::cout << m_res << std::endl;
+/*
   std::cout << METHOD << "Compare literature and Comix result: " << std::endl;
   if (m_p[2].Mass()<1e-6){
     Complex m_ppmm = ((2.0*Complex(0, 1)*Complex(0.30827124008247381, 0)*Complex(0.30827124008247381, 0))/((m_p[0]+m_p[1])*(m_p[0]+m_p[1])) * (conj(k_up*p)*(l_up*q)*conj(h_up*k)*(l_up*g)) / (conj(h_up*k)*(l_up*g)));
@@ -1687,7 +1694,7 @@ double Amplitude::Differential
     if ((m_res - m_squared_massive).real() > 1e-12 || (m_res - m_squared_massive).imag() > 1e-12)
       std::cout << "Large diff between literature " << m_squared_massive << " and Sherpa " << m_res << std::endl;
     else std::cout << "passed" << std::endl;
-  }
+  }*/
 
   return m_res;
 }
@@ -1939,11 +1946,10 @@ void Amplitude::SetGauge(const size_t &n)
   for (size_t i(0);i<m_scur.size();++i) m_scur[i]->SetGauge(k);
 }
 
-//TODO: Include Gauge(1) into calculations to enable gauge test -> Ask Stefan which gamma matrices he has used
-//      Fail of gauge test and different cross section expected because only one gamma matrix implemented
+//TODO: Remove tests of single RS-XS
 bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
 {
-  Spinor<double> p(1, moms[0]);
+  /*Spinor<double> p(1, moms[0]);
   Spinor<double> q(1, moms[1]);
   Spinor<double> k(1, moms[2]);
   Spinor<double> l(1, moms[3]);
@@ -1955,7 +1961,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
   Spinor<double> l(1, -(moms[3][1]+Complex(0, -1)*moms[3][2]) / (sqrt(moms[3][0]+moms[3][3])), sqrt(moms[3][0]+moms[3][3]));
   Vec4D gauge = Vec4D(1.0,0.0,invsqrttwo,invsqrttwo);
   Spinor<double> g(1, -(gauge[1]+Complex(0, -1)*gauge[2]) / (sqrt(gauge[0]+gauge[3])), sqrt(gauge[0]+gauge[3]));
-  Spinor<double> h(1, -(gauge[1]+Complex(0, -1)*gauge[2]) / (sqrt(gauge[0]+gauge[3])), sqrt(gauge[0]+gauge[3]));*/
+  Spinor<double> h(1, -(gauge[1]+Complex(0, -1)*gauge[2]) / (sqrt(gauge[0]+gauge[3])), sqrt(gauge[0]+gauge[3]));
   Spinor<double> p_up(1, p[1], -p[0]);
   Spinor<double> q_up(1, q[1], -q[0]);
   Spinor<double> k_up(1, k[1], -k[0]);
@@ -1973,7 +1979,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
     // zwei Komponenten sind gleich modulo dagger, daher Faktor 2, aber 1/4 wegen Helizitätsmittelung, daher nur 1/2
     std::cout << "Total " << std::complex<double>(0.5,0)*(m_ppmm*conj(m_ppmm)+m_mmpp*conj(m_mmpp))  << std::endl;
     std::cout << "Total-2 " << ((32.0*sqr(0.30827124008247381)*sqr(0.30827124008247381))/(sqr((moms[0]+moms[1])*(moms[0]+moms[1])))) * ((moms[0]*moms[3])*(moms[1]*moms[2])+(moms[0]*moms[2])*(moms[1]*moms[3])) << std::endl;
-  }
+  }*/
   if (mode==0) {
     size_t nt(0);
     bool cnt(true);
