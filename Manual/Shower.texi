@@ -136,8 +136,9 @@ should therefore not be used when comparing particle-level predictions to data.
 
 In order to improve the behavior of the parton shower in processes with large
 higher-order contributions from t-channel gluon exchange, the splitting kernels
-can be modified using @option{NLO_SUBTRACTION_SCHEME}. The default option
-is 0, corresponding to the standard Catani-Seymour kernels, while option 2
-replaces the 1/x terms in initial-initial dipole operators by 1/(x+v).
-This change is made consistently in both the parton shower, the NLO
-fixed-order and NLO matched calculation.
+can be modified using @option{NLO_SUBTRACTION_SCHEME}.
+Setting it to 0 corresponds to the standard Catani-Seymour kernels,
+while the default option 2 replaces the 1/x terms
+in initial-initial dipole operators by 1/(x+v).
+The kernels are set consistently in both the parton shower
+and the fixed-order parts of the calculation.
