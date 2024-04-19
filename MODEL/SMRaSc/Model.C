@@ -828,17 +828,17 @@ void Standard_Model_RaSc::InitRaScVertices()
       m_v.back().order[1] = 1;
     }
   }
-  if (Flavour(kf_N).IsOn() && Flavour(kf_pi_p).IsOn() && Flavour(kf_RaSc).IsOn()) {
+  /*if (Flavour(kf_N).IsOn() && Flavour(kf_pi_p).IsOn() && Flavour(kf_RaSc).IsOn()) {
       // TODO: Brauchen wir das YukawaScheme?
-       /*double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
-                 ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));*/
+       *//*double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
+                 ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));*//*
         Kabbala M;
         double m = Flavour(kf_pi_p).Mass(true);
         // TODO: Was ist hier richtig?
-       /* if (ScalarNumber("WidthScheme")!=0)
+       *//* if (ScalarNumber("WidthScheme")!=0)
           M=Kabbala("M_{"+Flavour(kf_pi_p).TexName()+"}(m_pi^2)",
                     sqrt(m*m-Complex(0.0,m*Flavour(kf_pi_p).Width())));
-        else M=Kabbala("M_{"+Flavour(kf_pi_p).TexName()+"}(m_pi^2)",m);*/
+        else M=Kabbala("M_{"+Flavour(kf_pi_p).TexName()+"}(m_pi^2)",m);*//*
         M=Kabbala("M_{"+Flavour(kf_pi_p).TexName()+"}(m_pi^2)",m);
         m_v.push_back(Single_Vertex());
         m_v.back().AddParticle(Flavour(kf_N));
@@ -850,6 +850,6 @@ void Standard_Model_RaSc::InitRaScVertices()
         //       RS Teilchen im Vertex geben aber die gleiche Zerfallsbreite
         m_v.back().cpl.push_back(sqrt(1./3.)*cpl/M);
         m_v.back().order[1]=1;
-      }
+      }*/
 }
 
