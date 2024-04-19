@@ -8,7 +8,6 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 
-
 #include <cmath>
 
 namespace UFO{

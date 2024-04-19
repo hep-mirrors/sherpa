@@ -1,7 +1,11 @@
 from __future__ import division 
-from ufo_interface.templates import color_calc_template
-from ufo_interface.color_structures import T, replacer_T, f, Identity, IdentityG
-from ufo_interface.tensor import color_key
+from .color_structures import T, replacer_T, f, Identity, IdentityG
+from .tensor import color_key
+from string import Template
+import pkgutil
+
+color_calc_template = Template(pkgutil.get_data(__name__,
+                                                "Templates/color_calc_template.C").decode("utf-8"))
 
 class s_color(object):
 

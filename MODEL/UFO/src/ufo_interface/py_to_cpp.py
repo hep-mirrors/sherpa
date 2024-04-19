@@ -9,7 +9,7 @@ Does not support complex atan function (C++11 feature)
 
 from __future__ import division 
 import ast
-from ufo_interface.ufo_exception import ufo_exception
+from .ufo_exception import ufo_exception
 
 # how to translate cmath python names 
 # into names appropriate for C++

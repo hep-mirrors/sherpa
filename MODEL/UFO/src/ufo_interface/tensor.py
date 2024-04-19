@@ -1,7 +1,7 @@
 from __future__ import division 
 from copy import deepcopy, copy
-from ufo_interface.ufo_exception import ufo_exception
-from ufo_interface.py_to_cpp import c_string_from_num
+from .ufo_exception import ufo_exception
+from .py_to_cpp import c_string_from_num
 from operator import ne
 
 
