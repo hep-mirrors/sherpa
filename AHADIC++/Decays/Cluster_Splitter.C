@@ -32,7 +32,7 @@ void Cluster_Splitter::Init(const bool & isgluon) {
   m_beta[3]  = hadpars->Get("betaB");
   m_gamma[3] = hadpars->Get("gammaB");
   m_kt02     = sqr(hadpars->Get("kT_0"));
-  m_analyse  = false; 
+  m_analyse  = false; //hadpars->Switch("Analysis");
   if (m_analyse) {
     m_histograms[string("kt")]      = new Histogram(0,0.,5.,100);
     m_histograms[string("z1")]      = new Histogram(0,0.,1.,100);
@@ -85,7 +85,7 @@ void Cluster_Splitter::FixCoefficients() {
       flcnt  = 3;
       m_mode = m_beammode;
     }
-    m_a[i] = m_alpha[flcnt]; 
+    m_a[i] = m_alpha[flcnt]; // * m_Q/threshold
     m_b[i] = m_beta[flcnt]  * threshold/m_Q;
     m_c[i] = m_gamma[flcnt];
     sum_mass += massfac * p_constituents->Mass(flav);
@@ -135,14 +135,16 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
   for (size_t i=0;i<2;i++) {
     m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
-    //This is a difference w.r.t. original publication
-    if (m_R2[i]<m_mdec2[i]+m_kt2) {
-      m_R2[i] = m_mdec2[i]+m_kt2;  
-      mustrecalc = true;
-    }
+    //This is a difference w.r.t. master
+    //if (m_R2[i]<m_mdec2[i]+m_kt2) {
+    //  m_R2[i] = m_mdec2[i]+m_kt2;  //(ran->Get()>0.5?m_mdec2[i]:m_m2min[i])+m_kt2;
+    //  mustrecalc = true;
+    //}
   }
-  bool ok = (m_R2[0]>=m_mdec2[0]+m_kt2) && (m_R2[1]>=m_mdec2[1]+m_kt2);
-  return (ok && (mustrecalc?RecalculateZs():true));
+  // another check: bool allowed = (m_R12>m_minQ_12 && m_R21>m_minQ_22);
+  //bool ok =
+  return (m_R2[0]>=m_mdec2[0]+m_kt2) && (m_R2[1]>=m_mdec2[1]+m_kt2);
+  //return (ok && (mustrecalc?RecalculateZs():true));
 }
 
 double Cluster_Splitter::
@@ -181,10 +183,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 bool Cluster_Splitter::RecalculateZs() {
   double e12  = (m_R2[0]+m_kt2)/m_Q2, e21 = (m_R2[1]+m_kt2)/m_Q2;
   double disc = sqr(1-e12-e21)-4.*e12*e21;
-  if (disc<0.) {
-    e12 = m_R2[0]/m_Q2; e21 = m_R2[1]/m_Q2; 
-    return false;
-  }
+  if (disc<0.) return false;
   disc = sqrt(disc);
   m_z[0] = (1.+e12-e21+disc)/2.;
   m_z[1] = (1.-e12+e21+disc)/2.;
@@ -197,7 +196,9 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
   do {
     for (size_t i=0;i<2;i++) {
       m_R2[i] = sqr(m_minQ[i] + DeltaM(i));
-      if (m_R2[i]<=m_mdec2[i]+m_kt2) { m_R2[i] = m_minQ2[i]+m_kt2; }
+      if (m_R2[i]<=m_mdec2[i]+m_kt2) {
+	m_R2[i] = m_minQ2[i]+m_kt2; //Min(m_minQ2[i],m_mdec2[i])+m_kt2;
+      }
     }
     success = m_R2[0]+m_R2[1]<m_Q2 && RecalculateZs();
   } while ((trials--)>0 && !success);
@@ -299,12 +300,14 @@ void Cluster_Splitter::FillHadronAndDeleteCluster(size_t i) {
 void Cluster_Splitter::UpdateAndFillCluster(size_t i) {
   Poincare BoostIn(m_mom[i]);
   Poincare BoostOut(m_newmom[i]);
+  //Vec4D check(0.,0.,0.,0.);
   for (size_t j=0;j<2;j++) {
     Vec4D partmom = (*p_out[i])[j]->Momentum();
     BoostIn.Boost(partmom);
     BoostOut.BoostBack(partmom);
     m_rotat.RotateBack(partmom);
     m_boost.BoostBack(partmom);
+    //check += partmom;
     (*p_out[i])[j]->SetMomentum(partmom);
   }
   m_rotat.RotateBack(m_newmom[i]);

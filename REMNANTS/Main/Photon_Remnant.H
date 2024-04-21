@@ -35,6 +35,10 @@ public:
   void CompensateColours();
 
   void Reset(const bool & resc=false, const bool &DIS=false) override;
+  inline double MinRequiredEnergy(const ATOOLS::Flavour &flav) {
+    return ( EstimateRequiredEnergy(!flav.IsQuark() && !m_valence) +
+	     ATOOLS::Max(flav.HadMass(), m_LambdaQCD) );
+  }
   
   inline ATOOLS::Particle *GetRecoiler() override { return p_recoiler; }
   inline ATOOLS::Particle *GetSpectator() override { return p_spectator; }

@@ -124,9 +124,7 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
   // Make sure only shower blobs with exactly two initiators are treated,
   // and only once.
   // (Shower blob with more initiators are typically from hadron decays.)
-  //msg_Out()<<METHOD<<"["<<this<<"]("<<showerblob<<") with "
-  //	   <<m_treatedshowerblobs.size()<<" blobs already take into account.\n";
-  if (!showerblob || showerblob->Type() != btp::Shower ||
+  if (showerblob->Type() != btp::Shower ||
       m_treatedshowerblobs.find(showerblob) != m_treatedshowerblobs.end())
     return true;
   size_t countIn = 0;
