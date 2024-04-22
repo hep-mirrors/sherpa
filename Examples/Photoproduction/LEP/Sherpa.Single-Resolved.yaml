@@ -1,0 +1,65 @@
+# Unweighted events
+EVENT_GENERATION_MODE: W
+
+# fix alpha_S and scales
+ALPHAS(MZ): 0.118
+ORDER_ALPHAS: 2
+ALPHAS: {USE_PDF: 0}
+SCALES: METS{max(16.,H_T2/4)}{max(16.,H_T2/4)}{max(16.,H_T2/4)}
+SCALE_VARIATIONS: 4.0*
+OUTPUT_ME_ONLY_VARIATIONS: false
+
+# set up matrix elements generators and subtraction
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
+NLO_SUBTRACTION_MODE: QCD+QED
+
+# set up beams, spectrum and PDF settings
+BEAMS: [-11, 11]
+BEAM_ENERGIES: 99
+BEAM_SPECTRA: EPA
+PDF_LIBRARY: [None, SASGSherpa]
+PDF_SET: [None, SAS1M]
+
+EPA:
+  Q2Max: 4.5
+
+# analysis
+ANALYSIS: Rivet
+RIVET:
+  --analyses: OPAL_2003_I611415
+
+# process specification: set c-/b-quarks massive,
+# specify phase space cut and define process
+PARTICLE_DATA: {5: {Massive: true}, 4: {Massive: true}}
+PARTICLE_CONTAINERS:
+  996:
+    Name: C
+    Flavours: [4, -4]
+  997:
+    Name: B
+    Flavours: [5, -5]
+
+SELECTORS:
+  - NJetFinder:
+      N: 2
+      ETMin: 2.5
+      R: 1.0
+      Exp: 1
+      EtaMax: 2.5
+      MassMax: 5.0
+  - NJetFinder:
+      N: 1
+      ETMin: 4.5
+      R: 1.0
+      Exp: 1
+      EtaMax: 2.5
+      MassMax: 5.0
+
+PROCESSES:
+  - 22 93 -> (93,996,997) (93,996,997):
+      Order: {QCD: 1, EW: 1} #< for leading order, delete all following lines
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
