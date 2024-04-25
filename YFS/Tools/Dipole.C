@@ -69,7 +69,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
       m_thetai = m_thetaj = -1;
     }
     // m_thetai = m_thetaj = -1;
-    for (int i = 0; i < 2; ++i) m_beams.push_back(m_bornmomenta[i]);
+    // for (int i = 0; i < 2; ++i) m_beams.push_back(m_bornmomenta[i]);
   }
   else if (ty == dipoletype::code::final) {
     if(fl[0].IsAnti()) m_thetai = 1;
@@ -157,7 +157,7 @@ void Dipole::Boost() {
     ATOOLS::Poincare poin(Q);
     Poincare pRot(m_bornmomenta[0], Vec4D(0., 0., 0., 1.));
     for (int i = 0; i < 2; ++i) {
-      pRot.Rotate(m_newmomenta[i]);
+      pRot.RotateBack(m_newmomenta[i]);
       poin.BoostBack(m_newmomenta[i]);
     }
   }
@@ -178,12 +178,19 @@ void Dipole::Boost() {
         msg_Error()<<"Dipole ghost is in the wrong frame";
       }
     }
-
+    m_ranPhi = ran->Get()*2.*M_PI;
+    // sqr(1.+2.*t/s)
+    double s = (m_bornmomenta[0]+m_bornmomenta[1]).Abs2();
+    double t = (m_beams[0]-m_bornmomenta[0]).Abs2();
+    m_ranTheta = acos(1.+2.*t/s);
+    // m_ranTheta = m_beams[0].Theta();
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
-    p_boost  = new Poincare(m_beams[0] + m_beams[1]);
+    p_boost  = new Poincare(m_bornmomenta[0] + m_bornmomenta[1]);
 
-    p_rotate = new Poincare(m_beams[0], Vec4D(0., 0., 0., 1.));
+    p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0.,  0., 1.));
+    p_rotatey = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 1., 0.));
+    p_rotatex = new Poincare(m_bornmomenta[0], Vec4D(0., 1., 0., 0.));
     for (size_t i = 0; i < 2; ++i)
     {
       Boost(m_momenta[i]);
@@ -198,6 +205,8 @@ void Dipole::Boost() {
       m_photonSum+=k;
     }
     if (p_rotate) delete p_rotate;
+    if (p_rotatex) delete p_rotatey;
+    if (p_rotatey) delete p_rotatex;
     if (p_Pboost) delete p_Pboost;
     if (p_boost) delete p_boost;
   }
@@ -205,8 +214,23 @@ void Dipole::Boost() {
 
 void Dipole::Boost(ATOOLS::Vec4D &p) {
   p_Pboost->Boost(p);
-  p_rotate->RotateBack(p);
+  RandomRotate(p);
+  // p_rotatex->Rotate(p);
+    // PRINT_VAR(p);
+  // p_rotate->Rotate(p);
+    // PRINT_VAR(p);
+  // p_rotate->Rotate(p);
   p_boost->BoostBack(p);
+}
+
+void Dipole::RandomRotate(Vec4D &p){
+  Vec4D t1 = p;
+  // rotate around x
+  p[2] = cos(m_ranTheta)*t1[2] - sin(m_ranTheta)*t1[3];
+  p[3] = sin(m_ranTheta)*t1[2] + cos(m_ranTheta)*t1[3];
+  t1 = p;
+  p[1] = cos(m_ranPhi)*t1[1]-sin(m_ranPhi)*t1[2];
+  p[2] = sin(m_ranPhi)*t1[1]+cos(m_ranPhi)*t1[2];
 }
 
 void Dipole::BoostLab(){
