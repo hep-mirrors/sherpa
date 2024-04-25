@@ -72,6 +72,7 @@ void YFS_Base::RegisterDefaults(){
   s["HARD_MIN"].SetDefault(0.);
   s["PHOTON_MASS"].SetDefault(0.1);
   s["CEEX"].SetDefault(0);
+  s["EEX_Real"].SetDefault(0);
   s["Resonance_Max"].SetDefault(10);
   s["N_Photons"].SetDefault(-1);
   s["TChannel"].SetDefault(0);
@@ -139,6 +140,7 @@ void YFS_Base::RegisterSettings(){
   m_hardmin = s["HARD_MIN"].Get<double>();
   m_photonMass = s["PHOTON_MASS"].Get<double>();
   m_useceex = s["CEEX"].Get<int>();
+  m_realeex = s["EEX_Real"].Get<bool>();
   m_resonace_max = s["Resonance_Max"].Get<double>();
   m_fixed_photons = s["N_Photons"].Get<int>();
   m_beam_rho = s["BES_rho"].Get<double>();
