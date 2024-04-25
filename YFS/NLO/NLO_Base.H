@@ -38,7 +38,7 @@ public:
   histograms1d m_histograms1d;
   ATOOLS::Momenta_Stretcher m_stretcher;
 
-  double m_evts, m_recola_evts;
+  double m_evts, m_recola_evts, m_ranTheta, m_ranPhi;
   int m_is_isr;
 
   void Init(Flavour_Vector &flav, Vec4D_Vector &plab, Vec4D_Vector &born);
@@ -55,6 +55,7 @@ public:
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
   void CheckRealSub(Vec4D k);
+  void RandomRotate(Vec4D &k);
 
   inline void SetBorn(double b) { m_born = b;}
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}

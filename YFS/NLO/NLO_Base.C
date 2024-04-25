@@ -122,6 +122,7 @@ double NLO_Base::CalculateVirtual() {
 double NLO_Base::CalculateReal() {
 	if (!m_realtool) return 0;
 	double real(0);
+	if(m_realeex) return p_dipoles->CalculateEEX()*m_born;
 	if (m_coll_real) { 
 		real  = p_dipoles->CalculateEEX()*m_born;
 		return real;///subb - m_born);
@@ -159,7 +160,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 
 	double flux;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
-	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(k)+p_nlodipoles->CalculateFlux(k));
+	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	else flux = p_dipoles->CalculateFlux(kk);
 	double tot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
@@ -200,12 +201,25 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	return tot;// / flux;
 }
 
-
+void NLO_Base::RandomRotate(Vec4D &p){
+  Vec4D t1 = p;
+  // rotate around x
+  p[2] = cos(m_ranTheta)*t1[2] - sin(m_ranTheta)*t1[3];
+  p[3] = sin(m_ranTheta)*t1[2] + cos(m_ranTheta)*t1[3];
+  t1 = p;
+  // rotate around z
+  p[1] = cos(m_ranPhi)*t1[1]-sin(m_ranPhi)*t1[2];
+  p[2] = sin(m_ranPhi)*t1[1]+cos(m_ranPhi)*t1[2];
+}
 
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Vec4D Q;
 	Vec4D QQ, PP;
 	Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
+  double s = (m_plab[0]+m_plab[1]).Abs2();
+  double t = (m_plab[0]-m_plab[2]).Abs2();
+  m_ranTheta = acos(1.+2.*t/s);
+	m_ranPhi = ran->Get()*2.*M_PI;
 	// Poincare boostLab(p[0] + p[1]);
 	for (int i = 2; i < p.size(); ++i)
 	{
@@ -217,10 +231,12 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 2; i < p.size(); ++i) {
 		boostQ.Boost(p[i]);
-		pRot.Rotate(p[i]);
+		// pRot.Rotate(p[i]);
+		// RandomRotate(p[i]);
 	}
 	boostQ.Boost(k);
-	pRot.Rotate(k);
+	// pRot.Rotate(k);
+	// RandomRotate(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
 	{
@@ -259,7 +275,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
  	p[0] = {E1, 0, 0, sign_z*lamCM};
   p[1] = {E2, 0, 0, -sign_z*lamCM};
-  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0., 1.));
+  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 1., 0.));
 	for (int i = 0; i < p.size(); ++i)
 	{
 		// pRot2.Rotate(p[i]);
