@@ -45,7 +45,7 @@ namespace YFS {
     int m_mode, m_rmode, m_semiyfs, m_NReal, m_qedmode,m_kkmcAngles, m_griff, m_fixed_photons; 
     int m_no_born, m_check_real_sub, m_no_subtraction,m_tchannel, m_resonance_mode, m_check_virt_born,m_noflux, m_massless_sub;
     bool m_looptool, m_setmass, m_coll_real, m_RealPhotons, m_virtual_only, m_real_only, m_use_model_alpha;
-    bool m_beamspread, m_isrinital,m_realtool,m_realvirt,m_useceex,m_realrealtool, m_check_rr_sub;
+    bool m_beamspread, m_isrinital,m_realtool,m_realvirt,m_useceex,m_realrealtool, m_check_rr_sub, m_realeex;
     int m_flux_mode, m_hidephotons, m_photon_split, m_int_nlo;
     std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR, m_debugDIR_NLO;
     Vec4D m_beam1, m_beam2;
