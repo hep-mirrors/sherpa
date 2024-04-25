@@ -347,6 +347,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       if(!Dip->IsResonance()) continue;
       p_fsr->Reset();
       Dip->BoostToQFM(0);
+      Dip->SetBeams(0, m_plab[0]);
       p_fsr->SetV(m_v);
       if (!p_fsr->Initialize(*Dip)) {
         Reset();
