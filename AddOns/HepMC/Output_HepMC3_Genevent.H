@@ -22,17 +22,19 @@ namespace SHERPA {
 
   class Output_HepMC3_Genevent : public Output_Base {
     HepMC3_Interface m_hepmc3;
-    HepMC::Writer *p_writer=0;
-    std::shared_ptr<HepMC::GenRunInfo> m_run_info;
+    HepMC::Writer *p_writer = nullptr;
+    std::shared_ptr<HepMC::GenRunInfo> m_run_info = nullptr;
     std::string m_basename, m_ext;
 #ifdef USING__GZIP
     ATOOLS::ogzstream m_outstream;
 #else
-    std::ofstream     m_outstream;
+    std::ofstream  m_outstream;
 #endif
-    int m_iotype;
+    int m_iotype = 0;
     ATOOLS::Weights_Map m_xs;
     ATOOLS::Weights_Map m_err;
+    std::string m_pluginlibrary;
+    std::string m_pluginfunction;
   public:
     Output_HepMC3_Genevent(const Output_Arguments &args);
     ~Output_HepMC3_Genevent();

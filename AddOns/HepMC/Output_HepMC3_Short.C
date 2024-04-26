@@ -20,9 +20,8 @@ Output_HepMC3_Short::Output_HepMC3_Short(const Output_Arguments &args) :
   Output_Base{ "HepMC3S" }
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
-  m_iotype
-    = Settings::GetMainSettings()["HEPMC3_IO_TYPE"].SetDefault(0).Get<int>();
-  int precision       = Settings::GetMainSettings()["HEPMC3_OUTPUT_PRECISION"].SetDefault(12).Get<int>();
+  m_iotype = Settings::GetMainSettings()["HEPMC3_IO_TYPE"].SetDefault(0).Get<int>();
+  int precision = Settings::GetMainSettings()["HEPMC3_OUTPUT_PRECISION"].SetDefault(12).Get<int>();
 #ifdef USING__GZIP
   m_ext += ".gz";
 #endif
@@ -109,8 +108,7 @@ void Output_HepMC3_Short::ChangeFile()
   /*This should be implemented in HepMC3 library.*/
 }
 
-DECLARE_GETTER(Output_HepMC3_Short,"HepMC3_Short",
-	       Output_Base,Output_Arguments);
+DECLARE_GETTER(Output_HepMC3_Short,"HepMC3_Short", Output_Base,Output_Arguments);
 
 Output_Base *ATOOLS::Getter<Output_Base,Output_Arguments,Output_HepMC3_Short>::
 operator()(const Output_Arguments &args) const

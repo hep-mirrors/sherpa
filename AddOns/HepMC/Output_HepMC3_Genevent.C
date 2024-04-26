@@ -11,6 +11,7 @@
 #include "HepMC3/WriterAscii.h"
 #include "HepMC3/WriterAsciiHepMC2.h"
 #include "HepMC3/WriterHEPEVT.h"
+#include "HepMC3/WriterPlugin.h"
 #ifdef USING__HEPMC3__ROOT
 #include "HepMC3/WriterRootTree.h"
 #include "HepMC3/WriterRoot.h"
@@ -23,10 +24,11 @@ using namespace std;
 Output_HepMC3_Genevent::Output_HepMC3_Genevent(const Output_Arguments &args) :
   Output_Base("HepMC3")
 {
-  m_basename=args.m_outpath+"/"+args.m_outfile;
-  m_iotype
-    = Settings::GetMainSettings()["HEPMC3_IO_TYPE"].SetDefault(0).Get<int>();
-  int precision       = Settings::GetMainSettings()["HEPMC3_OUTPUT_PRECISION"].SetDefault(12).Get<int>();
+  m_basename = args.m_outpath + "/" + args.m_outfile;
+  m_iotype = Settings::GetMainSettings()["HEPMC3_IO_TYPE"].SetDefault(0).Get<int>();
+  int precision = Settings::GetMainSettings()["HEPMC3_OUTPUT_PRECISION"].SetDefault(12).Get<int>();
+  m_pluginfunction = Settings::GetMainSettings()["HEPMC3_OUTPUT_PLUGIN"].SetDefault("").Get<int>();
+  m_pluginfunction = Settings::GetMainSettings()["HEPMC3_OUTPUT_FUNCTION"].SetDefault("").Get<int>();
 #ifdef USING__GZIP
   m_ext += ".gz";
 #endif
@@ -40,41 +42,51 @@ switch (m_iotype)
     {
     case 0:
     {
-        m_outstream.open((m_basename+m_ext).c_str());
+        m_outstream.open((m_basename + m_ext).c_str());
         if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-        HepMC::WriterAscii* t_writer=new HepMC::WriterAscii(m_outstream);
+        HepMC::WriterAscii* t_writer = new HepMC::WriterAscii(m_outstream);
         t_writer->set_precision(precision);
-        p_writer=t_writer;
+        p_writer = t_writer;
     }
     break;
     case 1:
-        m_outstream.open((m_basename+m_ext).c_str());
+        m_outstream.open((m_basename + m_ext).c_str());
         if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-        p_writer=new HepMC::WriterHEPEVT(m_outstream);
+        p_writer = new HepMC::WriterHEPEVT(m_outstream);
         break;
     case 2:
     {
-        m_outstream.open((m_basename+m_ext).c_str());
+        m_outstream.open((m_basename + m_ext).c_str());
         if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-        HepMC::WriterAsciiHepMC2* t_writer=new HepMC::WriterAsciiHepMC2(m_outstream);
+        HepMC::WriterAsciiHepMC2* t_writer = new HepMC::WriterAsciiHepMC2(m_outstream);
         t_writer->set_precision(precision);
-        p_writer=t_writer;
+        p_writer = t_writer;
     }
     break;
     case 3:
 #ifdef USING__HEPMC3__ROOT
-        p_writer=new HepMC::WriterRoot(m_basename);
+        p_writer = new HepMC::WriterRoot(m_basename);
 #else
         THROW(fatal_error,"Asked for Root output, but Sherpa/HepMC3 was compiled without Root output support.");
 #endif
         break;
     case 4:
 #ifdef USING__HEPMC3__ROOT
-        p_writer=new HepMC::WriterRootTree(m_basename);
+        p_writer = new HepMC::WriterRootTree(m_basename);
 #else
         THROW(fatal_error,"Asked for RootTree output, but Sherpa/HepMC3 was compiled without RootTree output support.");
 #endif
         break;
+    case 5:
+    {
+        if (m_pluginlibrary.empty() || m_pluginfunction.empty()) THROW(fatal_error, "To use HepMC3 Writer plugin please set  HEPMC3_OUTPUT_PLUGIN and HEPMC3_OUTPUT_FUNCTION.");
+        m_outstream.open((m_basename + m_ext).c_str());
+        if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
+        HepMC::WriterAsciiHepMC2* t_writer = new HepMC::WriterPlugin(m_outstream,m_pluginlibrary,m_pluginfunction);
+        p_writer = t_writer;
+    }
+    break;
+
     default:
         THROW(fatal_error, "Output format HEPMC3_IO_TYPE is undefined.");
         break;
@@ -101,7 +113,7 @@ void Output_HepMC3_Genevent::SetXS(const Weights_Map& xs,
 void Output_HepMC3_Genevent::Output(Blob_List* blobs) 
 {
   m_hepmc3.Sherpa2HepMC(blobs);
-  HepMC::GenEvent* q=m_hepmc3.GenEvent();
+  HepMC::GenEvent* q = m_hepmc3.GenEvent();
   if (q) {
     m_hepmc3.AddCrossSection(*q, m_xs, m_err);
     if (p_writer)
@@ -114,8 +126,7 @@ void Output_HepMC3_Genevent::ChangeFile()
   /*This should be implemented in HepMC3 library.*/
 }
 
-DECLARE_GETTER(Output_HepMC3_Genevent,"HepMC3_GenEvent",
-	       Output_Base,Output_Arguments);
+DECLARE_GETTER(Output_HepMC3_Genevent,"HepMC3_GenEvent", Output_Base,Output_Arguments);
 
 Output_Base *ATOOLS::Getter<Output_Base,Output_Arguments,Output_HepMC3_Genevent>::
 operator()(const Output_Arguments &args) const

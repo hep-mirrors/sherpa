@@ -324,7 +324,7 @@ HepMC3_Interface::HepMC3_Interface() :
   m_runinfo = std::make_shared<HepMC::GenRunInfo>();
   HepMC::GenRunInfo::ToolInfo generator;
   generator.name = std::string("SHERPA");
-  generator.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
+  generator.version = std::string(SHERPA_VERSION) + "." + std::string(SHERPA_SUBVERSION);
   generator.description = "Used generator";
   m_runinfo->tools().push_back(generator);
 }
@@ -341,8 +341,7 @@ bool SHERPA::HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                                          HepMC3::GenEvent& event)
 {
   const auto weight(blobs->Weight());
-  event.set_units(HepMC::Units::GEV,
-                  HepMC::Units::MM);
+  event.set_units(HepMC::Units::GEV, HepMC::Units::MM);
   event.set_run_info(m_runinfo);
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
