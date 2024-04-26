@@ -11,7 +11,7 @@ Hadronization::Hadronization(Colour_Reconnection_Handler * reconnections,
   p_reconnectionhandler(reconnections),
   p_fragmentationhandler(fragmentation)
 {
-  m_name = std::string("Hadronization:")+p_fragmentationhandler->Name();
+  m_name = std::string("Hadronization: ")+p_fragmentationhandler->Name();
   m_type = eph::Hadronization;
 }
 

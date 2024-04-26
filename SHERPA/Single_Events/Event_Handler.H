@@ -54,10 +54,6 @@ namespace SHERPA {
     // only after a successful run).
     void MPISyncXSAndErrMaps();
 
-    // These are only valid after calling MPISyncXSAndErrMaps().
-    ATOOLS::Weights_Map TotalXSMPI();
-    ATOOLS::Weights_Map TotalErrMPI();
-
   public:
 
     Event_Handler();
@@ -85,6 +81,10 @@ namespace SHERPA {
     ATOOLS::Weights_Map TotalErr();
     ATOOLS::Uncertain<double> TotalNominalXS();
     ATOOLS::Uncertain<double> TotalNominalXSMPI();
+
+    // These are only valid after calling MPISyncXSAndErrMaps().
+    ATOOLS::Weights_Map TotalXSMPI();
+    ATOOLS::Weights_Map TotalErrMPI();
 
     std::string CurrentProcess() const;
 

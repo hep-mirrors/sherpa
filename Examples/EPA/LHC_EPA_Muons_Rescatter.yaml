@@ -5,11 +5,12 @@ BEAM_ENERGIES:     3500
 BEAM_SPECTRA:      EPA
 BEAM_RESCATTERING: Amisic
 MI_HANDLER:        None
+PDF_SET:           None
 
-INTRINSIC_KPERP:
+REMNANTS:
   2212:
-    FORM:   none              # gauss_limited     # none
-    RECOIL: beam_vs_shower    # democratic 
+    FORM:   None
+    RECOIL: Beam_vs_shower
     REFERENCE_ENERGY:         7000.0; 
     ENERGY_SCALING_EXPO:      0.08; 
     SHOWER_INITIATOR_MEAN:    0.0; 

@@ -51,6 +51,18 @@ namespace ATOOLS {
   };
   DEFINE_SHERPA_ENUM_FLAG_OPERATORS(ScaleFactorExpansions::code)
 
+  struct NonfactorizingCoupling {
+    enum code {
+      WithCustomVariationWeight =
+          98, // coupling it is not factorizing, but
+              // a custom calculator function for a variation weight is provided
+      WithoutCustomVariationWeight =
+          99, // coupling is not factorizing, and there is no calculator
+              // function for a variation weight provided, i.e. no on-the-fly
+              // reweighting can not be done
+    };
+  };
+
   struct Qcut_Variation_Params {
     Qcut_Variation_Params(double scale_factor):
       m_scale_factor{scale_factor}

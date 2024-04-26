@@ -201,6 +201,10 @@ bool Single_Process::FillFinalState(const ATOOLS::Vec4D_Vector &p) {
   return true;
 }
 
+double Single_Process::CustomRelativeVariationWeightForRenormalizationScaleFactor(double fac) const {
+  return p_born_me2->CustomRelativeVariationWeightForRenormalizationScaleFactor(fac);
+}
+
 std::vector<std::vector<int> > * Single_Process::Colours() const {
   return m_localFS?(&p_born_me2->Colours()):NULL;
 }

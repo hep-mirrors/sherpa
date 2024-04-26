@@ -35,7 +35,8 @@ void Matter_Overlap::Initialize(REMNANTS::Remnant_Handler * remnant_handler) {
 double Matter_Overlap::operator()(double b) {
   // Matter overlap in two forms available: Single_Gaussian and Double_Gaussian
   double result = 0., b2 = b*b;
-  for (size_t i=0;i<4;i++) result += (m_rnorm[i]>0) ? m_rnorm[i] * exp(-b2/m_radius2[i]) : 0.;
+  for (size_t i=0;i<4;i++)
+    result += (m_rnorm[i]>0) ? m_rnorm[i] * exp(-b2/m_radius2[i]) : 0.;
   return m_norm * result;
 }
 
@@ -57,7 +58,8 @@ double Matter_Overlap::SelectB(const bool & mode) const {
 }
 
 
-void Matter_Overlap::InitializeFormFactors(REMNANTS::Remnant_Handler * remnant_handler) {
+void Matter_Overlap::
+InitializeFormFactors(REMNANTS::Remnant_Handler * remnant_handler) {
   /////////////////////////////////////////////////////////////////////////////////
   // Initialise matter overlap from the form factors: 
   // could be single- or double Gaussians
@@ -77,7 +79,8 @@ void Matter_Overlap::InitializeFormFactors(REMNANTS::Remnant_Handler * remnant_h
       m_fraction[2*i+j] = ( (i==0 ? fraction[i] : 1.-fraction[i] ) *
 			    (j==0 ? fraction[j] : 1.-fraction[j] ) );
       m_radius2[2*i+j]  = sqr(radius[0][i]) + sqr(radius[1][j]);
-      m_rnorm[2*i+j]    = ( radius[0][i] > 0. && radius[1][j]>0. ? m_fraction[2*i+j]/m_radius2[2*i+j] : 0. );
+      m_rnorm[2*i+j]    = ( radius[0][i] > 0. && radius[1][j]>0. ?
+			    m_fraction[2*i+j]/m_radius2[2*i+j] : 0. );
       m_radius[2*i+j]   = sqrt(m_radius2[2*i+j]);
       if (m_radius[2*i+j] < minR && m_radius[2*i+j]>0.) minR = m_radius[2*i+j];
     }

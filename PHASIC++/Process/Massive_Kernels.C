@@ -800,6 +800,21 @@ double Massive_Kernels::KbM4(int type,double muak2,double x)
   return 0.;
 }
 
+double Massive_Kernels::Kbc3(int type,double muq2,double x)
+{
+  double me(0.0);
+  // factor 2 due to sum over IF & FI dipoles
+  if (m_subtype==subscheme::CSS)
+    me=2.*log((2.-x+muq2)/(1.-x+muq2))-2.*log((2.-x)/(1.-x));
+  switch(type) {
+  case 1:
+    return 2.*me;
+  case 4:
+    return 2.*me;
+  }
+  return 0.;
+}
+
 double Massive_Kernels::Kt1(int type,double x)
 {
   if (m_stype==sbt::qed && type==4) return 0.;

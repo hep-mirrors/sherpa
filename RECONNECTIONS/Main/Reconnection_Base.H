@@ -21,6 +21,7 @@ namespace RECONNECTIONS {
     virtual void SetParameters() = 0;
     bool HarvestParticles(ATOOLS::Blob_List * blobs);
     void HarvestParticleInfo(ATOOLS::Particle * part);
+    bool BalanceColours();
     void FillMassesInHistogram(ATOOLS::Histogram * histo);
   public:
     Reconnection_Base();

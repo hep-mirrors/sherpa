@@ -31,6 +31,7 @@ namespace ATOOLS {
   class Selector_List : public std::vector<Selector_Particle> {
   private:
     size_t m_nin;
+    bool m_real;
   public:
     Selector_List();
     Selector_List(const ATOOLS::Flavour_Vector &fl,
@@ -47,6 +48,9 @@ namespace ATOOLS {
 
     inline void SetNIn(const size_t& nin) { m_nin=nin; }
     inline const size_t& NIn() const      { return m_nin; }
+
+    inline void SetReal(bool real) { m_real=real; }
+    inline bool Real() const       { return m_real; }
   };
 
   std::ostream &operator<<(std::ostream &ostr,const Selector_List &p);

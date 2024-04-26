@@ -22,7 +22,7 @@ void ATOOLS::Terminate()
 
 Terminator_Object_Handler::Terminator_Object_Handler():
   m_noremove(false),
-  m_nbus(0), m_nsegv(0)
+  m_nbus(0), m_nsegv(0), m_stacktraces(0)
 {
   std::set_terminate(ATOOLS::Terminate);
   signal(SIGSEGV,ATOOLS::HandleSignal);
@@ -133,6 +133,11 @@ void Terminator_Object_Handler::HandleSignal(int signal)
 
   if (signal!=SIGINT)
     {
+      ++m_stacktraces;
+      if(m_stacktraces > 2) {
+	msg_Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
+	Abort(1);
+      }
       GenerateStackTrace(msg->Error());
       rpa->gen.SetVariable
 	("SHERPA_STATUS_PATH",rpa->gen.Variable("SHERPA_RUN_PATH")+

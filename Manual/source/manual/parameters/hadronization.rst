@@ -33,10 +33,9 @@ The ``FRAGMENTATION`` parameter sets the fragmentation module to be
 employed during event generation.
 
 * The default is :option:`Ahadic`, enabling Sherpa's native
-  hadronization model AHADIC++, based on the cluster fragmentation
-  model introduced in :cite:`Field1982dg`, :cite:`Webber1983if`,
-  :cite:`Gottschalk1986bv`, and :cite:`Marchesini1987cf` and
-  implementing some modifications discussed in :cite:`Winter2003tt`.
+  hadronization model AHADIC++ :cite:`Chahal2022rid`, based on
+  the cluster fragmentation model introduced in :cite:`Field1982dg`,
+  :cite:`Webber1983if`, :cite:`Gottschalk1986bv`, and :cite:`Marchesini1987cf`.
 
 * The hadronization can be disabled with the value :option:`None`.
 
@@ -44,7 +43,7 @@ employed during event generation.
   also provides an interface to the Lund string fragmentation in
   Pythia 8.3 :cite:`Sjostrand2015` by using the setting
   :option:`Pythia8`.  In this case, the standard Pythia settings
-  can be used to steer the behaviour  of the Lund string,
+  can be used to steer the behaviour of the Lund string,
   see :cite:`Sjostrand2015`. They are specified in their usual
   form in Pythia in a dedicated settings block. Additionally
   a choice can be made to let Pythia directly handle hadron

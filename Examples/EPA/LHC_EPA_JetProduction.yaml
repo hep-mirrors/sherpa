@@ -10,7 +10,7 @@ MPI_PDF_LIBRARY: SASGSherpa
 MPI_PDF_SET: SAS2D
 BEAM_RESCATTERING: None
 
-INTRINSIC_KPERP:
+REMNANTS:
   2212:
     FORM:   gauss_limited     # none
     RECOIL: beam_vs_shower    # democratic 

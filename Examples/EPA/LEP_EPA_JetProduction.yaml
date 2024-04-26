@@ -12,10 +12,10 @@ BEAM_RESCATTERING: None
 
 REMNANTS:
   22:
-    FORM:      Double_Gaussian
-    FRACTION1: 0.5
-    RADIUS1:   0.75
-    RADIUS2:   0.5
+    MATTER_FORM: Double_Gaussian
+    FRACTION_1:  0.5
+    RADIUS_1:    0.75
+    RADIUS_2:    0.5
 
 AMISIC:
   nS_bins:       20

@@ -214,7 +214,7 @@ void Initialization_Handler::RegisterDefaults()
   s["NLOMC_GENERATOR"].SetDefault(showergen);
   s["CSS_EVOLUTION_SCHEME"].SetDefault(30+30*100);
   s["CSS_KFACTOR_SCHEME"].SetDefault(1);
-  s["CSS_SCALE_SCHEME"].SetDefault(0);
+  s["CSS_SCALE_SCHEME"].SetDefault(14);
   s["CSS_SCALE_VARIATION_SCHEME"].SetDefault(1);
   // TODO: Should this be set to 3.0 for the new Dire default? See the manual
   // Sherpa section on master for details
@@ -222,7 +222,7 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_IS_PT2MIN"].SetDefault(2.0);
   s["CSS_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   s["CSS_FS_AS_FAC"].SetDefault(1.0);
-  s["CSS_IS_AS_FAC"].SetDefault(0.5);
+  s["CSS_IS_AS_FAC"].SetDefault(0.25);
   s["CSS_PDF_FAC"].SetDefault(1.0);
   s["CSS_SCALE_FACTOR"].SetDefault(1.);
   s["CSS_MASS_THRESHOLD"].SetDefault(0.0);
@@ -236,8 +236,8 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
   s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
-  s["CSS_KIN_SCHEME"].SetDefault(0);
-  s["NLO_CSS_KIN_SCHEME"].SetDefault(0);
+  s["CSS_KIN_SCHEME"].SetDefault(1);
+  s["NLO_CSS_KIN_SCHEME"].SetDefault(1);
   s["CSS_OEF"].SetDefault(3.0);
   s["CSS_KMODE"].SetDefault(2);
   s["CSS_RESPECT_Q2"].SetDefault(false);
@@ -938,8 +938,7 @@ bool Initialization_Handler::InitializeTheRemnants() {
   // the MPI related to the hard process - are the same.
   // I have the feeling we will have to communicate the mode to the Remnant_Handler in question
   ///////////////////////////////////////////////////////////
-  REMNANTS::rempars = new REMNANTS::Remnants_Parameters();
-  REMNANTS::rempars->ReadParameters();
+  REMNANTS::Remnants_Parameters();
   m_remnanthandlers[isr::hard_process] =
     new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra,
 			m_bunchtags[isr::hard_process]);
@@ -1171,15 +1170,12 @@ bool Initialization_Handler::InitializeTheAnalyses()
         THROW(missing_module,"Cannot load Analysis library (-DSHERPA_ENABLE_ANALYSIS=ON).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
       bool hepmc_loaded {false};
-#ifdef USING__HEPMC2
-      hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMCOutput") != nullptr);
-#endif
 #ifdef USING__HEPMC3
       hepmc_loaded |= (s_loader->LoadLibrary("SherpaHepMC3Output") != nullptr);
 #endif
       if (!hepmc_loaded) {
         THROW(missing_module,
-              "Cannot load HepMC library (-DSHERPA_ENABLE_HEPMC2=ON and/or -DSHERPA_ENABLE_HEPMC3=ON).");
+              "Cannot load HepMC library (-DSHERPA_ENABLE_HEPMC3=ON).");
       }
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis"))
         THROW(missing_module,"Cannot load RivetAnalysis library (-DSHERPA_ENABLE_RIVET=ON).");

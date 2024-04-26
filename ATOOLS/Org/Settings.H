@@ -123,7 +123,7 @@ namespace ATOOLS {
     Defaults m_overrides;
 
     // keep records for writing out settings
-    std::map<Defaults_Key, std::set<Defaults_Value>> m_usedvalues;
+    std::map<Settings_Keys, std::set<Defaults_Value>> m_usedvalues;
     std::map<Defaults_Key, std::unordered_set<std::string>> m_otherscalardefaults;
 
     std::map<Defaults_Key, String_Map> m_replacements;
@@ -350,9 +350,9 @@ namespace ATOOLS {
     }
     const auto convertedvalue = Convert<T>(settings_keys, value);
     if (value.empty())
-      m_usedvalues[keys].insert(String_Matrix{{""}});
+      m_usedvalues[settings_keys].insert(String_Matrix{{""}});
     else
-      m_usedvalues[keys].insert(String_Matrix{{ToString<T>(convertedvalue)}});
+      m_usedvalues[settings_keys].insert(String_Matrix{{ToString<T>(convertedvalue)}});
     return Convert<T>(settings_keys, value);
   }
 
@@ -395,9 +395,9 @@ namespace ATOOLS {
       convertedstringvalues.push_back(ToString<T>(convertedvalues.back()));
     }
     if (values.empty())
-      m_usedvalues[keys].insert(String_Matrix{{}});
+      m_usedvalues[settings_keys].insert(String_Matrix{{}});
     else
-      m_usedvalues[keys].insert(String_Matrix{convertedstringvalues});
+      m_usedvalues[settings_keys].insert(String_Matrix{convertedstringvalues});
     return convertedvalues;
   }
 
@@ -444,7 +444,7 @@ namespace ATOOLS {
       convertedvalues.push_back(convertedvaluerow);
       convertedstringvalues.push_back(convertedstringvaluerow);
     }
-    m_usedvalues[keys].insert(convertedstringvalues);
+    m_usedvalues[settings_keys].insert(convertedstringvalues);
     return convertedvalues;
   }
 

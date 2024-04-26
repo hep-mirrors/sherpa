@@ -76,7 +76,9 @@ void Yaml_Reader::AddSettingsKeys(
     case SHERPA_YAML::NodeType::Sequence:
       for (auto it = node.begin(); it != node.end(); ++it) {
         auto element = *it;
+        current_keys.push_back(std::distance(node.begin(), it));
         AddSettingsKeys(keys_vec, current_keys, element);
+        current_keys.pop_back();
       }
       break;
     case SHERPA_YAML::NodeType::Map:

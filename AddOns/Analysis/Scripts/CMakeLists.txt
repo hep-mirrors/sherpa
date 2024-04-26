@@ -38,7 +38,3 @@ if (SHERPA_ENABLE_HEPMC3)
     target_link_libraries(Combine_Analysis PRIVATE SherpaHepMC3Output  ${HEPMC3_ROOTIO_LIB} )
   endif()
 endif()
-if (SHERPA_ENABLE_HEPMC2)
-  target_link_libraries(Combine_Analysis PRIVATE SherpaHepMCOutput  ${HEPMC2_LIBRARIES} )
-endif()
-

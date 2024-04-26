@@ -24,6 +24,13 @@ namespace PHASIC {
     //! Override in a subclass that calculates KP terms to enable their reweighting
     virtual double KPTerms(int mode, double scalefac2=1.0) { return 0.; };
 
+    //! Override in a subclass as a fallback if the underlying ME returns the
+    //! special QCD order of 98, thus indicating that it would like to report
+    //! its own renormalization scale reweighting factor.
+    virtual double CustomRelativeVariationWeightForRenormalizationScaleFactor(double) const {
+      THROW(not_implemented, "This must be implemented in a subclass.");
+    }
+
   public:
 
     Single_Process();

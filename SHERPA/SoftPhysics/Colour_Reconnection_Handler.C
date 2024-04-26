@@ -19,7 +19,8 @@ Colour_Reconnection_Handler::~Colour_Reconnection_Handler() {
   if (p_reconnections) delete p_reconnections;
 }
 
-Return_Value::code Colour_Reconnection_Handler::operator()(Blob_List *const blobs) {
+Return_Value::code
+Colour_Reconnection_Handler::operator()(Blob_List *const blobs) {
   if (!m_on) return Return_Value::Nothing;
   return (*p_reconnections)(blobs);
 }

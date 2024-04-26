@@ -1001,6 +1001,15 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
   if (m_nin==2 && ((p_int->ISR() && p_int->ISR()->On()) || p_int->Beam()->On())) {
     cms=Poincare(_mom[0]+_mom[1]);
     for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
+    // The following assumes, that the beams are oriented along the z axis;
+    // They reset the transverse momentum components to be exactly zero to
+    // remove numerical artifacts; This is important because later we will check
+    // against 0.0 exactly during the construction of the external states, and
+    // this check might fail if we allow numerical inaccuracies to remain here.
+    _mom[0][1] = _mom[0][2] = _mom[1][1] = _mom[1][2] = 0.0;
+    _mom[1][3] = -_mom[0][3];
+    if (m_flavs[0].Mass() == 0.0) _mom[0][0] = std::abs(_mom[0][3]);
+    if (m_flavs[1].Mass() == 0.0) _mom[1][0] = std::abs(_mom[1][3]);
   }
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);

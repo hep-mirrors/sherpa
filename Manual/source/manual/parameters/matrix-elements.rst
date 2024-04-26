@@ -655,7 +655,6 @@ Dipole subtraction
 ==================
 
 .. index:: NLO_SUBTRACTION_MODE
-.. index:: NLO_SUBTRACTION_SCHEME
 .. index:: ALPHA
 .. index:: ALPHA_FF
 .. index:: ALPHA_FI

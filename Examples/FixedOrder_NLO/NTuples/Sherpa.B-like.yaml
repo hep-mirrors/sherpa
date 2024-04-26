@@ -3,7 +3,7 @@ EVENT_GENERATION_MODE: Weighted
 TAGS:
   LGEN: BlackHat
 ME_GENERATORS: [Amegic, $(LGEN)]
-# Analysis (please configure with -DSHERPA_ENABLE_RIVET=ON & -DSHERPA_ENABLE_HEPMC2=ON)
+# Analysis (please configure with -DSHERPA_ENABLE_RIVET=ON & -DSHERPA_ENABLE_HEPMC3=ON)
 ANALYSIS: Rivet
 ANALYSIS_OUTPUT: Analysis/HTp/BVI/
 # NTuple output (please configure with '-DSHERPA_ENABLE_ROOT=ON')

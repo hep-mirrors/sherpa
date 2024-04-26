@@ -9,9 +9,9 @@ BEAM_ENERGIES:   3500
 MI_HANDLER:      Amisic
 SOFT_COLLISIONS: Amisic
 
-INTRINSIC_KPERP:
+REMNANTS:
   2212:
-    FORM:   gauss_limited     # none
+    FORM: Gauss_Limited     # none
     RECOIL: beam_vs_shower    # democratic 
     REFERENCE_ENERGY:         7000.0; 
     ENERGY_SCALING_EXPO:      0.08; 
@@ -39,7 +39,6 @@ AMISIC:
   nS_bins: 10
   PT_Min: 1.
   SIGMA_ND_NORM: 0.4
-
 
 ANALYSIS: Rivet
 ANALYSIS_OUTPUT: MinBias_Enhanced

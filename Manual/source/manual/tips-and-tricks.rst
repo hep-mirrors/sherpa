@@ -124,12 +124,9 @@ MCFM interface
 
 Sherpa is equipped with an interface to the NLO library of `MCFM
 <http://mcfm.fnal.gov/>`_ for decdicated processes.  To enable it,
-MCFM has to be installed and compiled into a single library,
-libMCFM.a. To this end, an installation script is provided in
-``AddOns/MCFM/install_mcfm.sh``. Please note, due to some process
-specific changes that are made by the installation script to the MCFM
-code, only few selected processes of MCFM-6.3 are available through
-the interface.
+To enable it, MCFM has to be installed and compiled into a single
+library @code{libmcfm.so} by using the ``-Dwith_library=ON``
+flag when configuring MCFM using CMake.
 
 Finally, your Sherpa compilation has to be configured with the
 following option:
@@ -151,8 +148,12 @@ To use the interface, specify
    Loop_Generator: MCFM
 
 in the process section of the run card and add it to the list of
-generators in :ref:`ME_GENERATORS`. Of course, MCFM's process.DAT file
-has to be copied to the current run directory.
+generators in :ref:`ME_GENERATORS`. MCFM's process.DAT file should
+automatically be copied to the current run directory during intitialisation.
+
+Note that for unweighted event generation, there is also an option to
+choose different loop-amplitude providers for the pilot run and the
+accepted events via the ``Pilot_Loop_Generator`` option.
 
 .. _Debugging a crashing/stalled event:
 

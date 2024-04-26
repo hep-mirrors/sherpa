@@ -683,11 +683,17 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   // perform on-the-fly QCD reweighting of BVI or RS events
   m_last *= nominal;
   if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
-    if (m_mewgtinfo.m_oqcd == 99) {
+    if (m_mewgtinfo.m_oqcd == NonfactorizingCoupling::WithoutCustomVariationWeight) {
       THROW(not_implemented,
-            "O(AlphaS)=99 detected when calculating variations.\n"
-            "This is likely due to the ME generator/hard process\n"
+            "Non-factorizing strong coupling detected when calculating\n"
+            "variations. This is likely due to the ME generator/hard process\n"
             "not supporting on-the-fly reweighting.");
+    } else if (m_mewgtinfo.m_oqcd == NonfactorizingCoupling::WithCustomVariationWeight &&
+               m_mewgtinfo.m_type != mewgttype::none) {
+      THROW(not_implemented,
+            "Non-factorizing strong coupling detected when calculating\n"
+            "variations. A custom reweighting calculator is provided, but\n"
+            "this is only support at the moment for LO(PS) calculations.");
     }
     if (GetSubevtList() == nullptr) {
       ReweightBVI(scales->Amplitudes());
@@ -1021,6 +1027,13 @@ Single_Process::ReweightBornLike(ATOOLS::QCD_Variation_Params& varparams,
   if (csi.m_pdfwgt == 0.0) {
     return 0.0;
   }
+  if (info.m_orderqcd == NonfactorizingCoupling::WithCustomVariationWeight) {
+    double newweight {info.m_wgt};
+    const double scalefac {muR2new / info.m_muR2};
+    newweight *= CustomRelativeVariationWeightForRenormalizationScaleFactor(scalefac);
+    newweight *= csi.m_pdfwgt;
+    return newweight;
+  }
   const double alphasratio(AlphaSRatio(info.m_muR2, muR2new, varparams.p_alphas));
   const double alphasfac(pow(alphasratio, info.m_orderqcd));
   const double newweight(info.m_wgt * alphasfac * csi.m_pdfwgt);
@@ -1232,6 +1245,8 @@ void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
             Hard_Process_Variation_Generator_Getter_Function::
             GetObject(name, Hard_Process_Variation_Generator_Arguments{this})
             );
+        if (m_hard_process_variation_generators.back() == nullptr)
+          THROW(fatal_error, "Variation generator \"" + name + "\" not found");
       }
     }
   }

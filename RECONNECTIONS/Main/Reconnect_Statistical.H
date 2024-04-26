@@ -11,6 +11,7 @@ namespace RECONNECTIONS {
     double m_Q02, m_etaQ, m_R02, m_etaR, m_reshuffle, m_kappa, m_norm;
 
     void   SetParameters();
+    void   FixPMode(const std::string & pm);
     bool   SelectColourPair(const size_t & N,unsigned int & col1, unsigned int & col2);
     bool   AttemptSwap(const unsigned int col[2]);
     void   UpdateColours();

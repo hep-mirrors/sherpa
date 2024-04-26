@@ -15,7 +15,6 @@
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
-#include "SHERPA/Tools/HepMC2_Interface.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "PHASIC++/Decays/Decay_Channel.H"
 #include "ATOOLS/Math/Random.H"
@@ -40,9 +39,6 @@ using namespace std;
 Sherpa::Sherpa(int argc, char* argv[]) :
   p_inithandler(nullptr),
   p_eventhandler(nullptr)
-#ifdef USING__HEPMC2
-  , p_hepmc2(nullptr)
-#endif
 #ifdef USING__HEPMC3
   , p_hepmc3(nullptr)
 #endif
@@ -81,9 +77,6 @@ Sherpa::~Sherpa()
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }
-#ifdef USING__HEPMC2
-  if (p_hepmc2)       { delete p_hepmc2;       p_hepmc2       = nullptr; }
-#endif
 #ifdef USING__HEPMC3
   if (p_hepmc3)       { delete p_hepmc3;       p_hepmc3       = NULL; }
 #endif
@@ -311,16 +304,6 @@ bool Sherpa::GenerateOneEvent(bool reset)
   }
   return 0;
 }
-
-#ifdef USING__HEPMC2
-void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)
-{
-  if (!p_hepmc2) p_hepmc2 = new SHERPA::HepMC2_Interface();
-  ATOOLS::Blob_List* blobs = GetEventHandler()->GetBlobs();
-  p_hepmc2->Sherpa2HepMC(blobs, event);
-  p_hepmc2->AddCrossSection(event, p_eventhandler->TotalNominalXS());
-}
-#endif
 
 #ifdef USING__HEPMC3
 void Sherpa::FillHepMCEvent(HepMC3::GenEvent& event)

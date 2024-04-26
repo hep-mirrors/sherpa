@@ -91,6 +91,7 @@ bool Combined_Selector::RSTrigger(NLO_subevtlist *const subs)
       if (mom[i][0]<0.0) mom[i]=-mom[i];
     Selector_List sl=Selector_List
       (p_sub->p_fl,p_sub->m_n,mom,m_nin);
+    sl.SetReal(p_sub->IsReal());
     p_sub->m_trig=Trigger(sl);
     if (p_sub->m_trig) pass=1;
     p_sub=NULL;

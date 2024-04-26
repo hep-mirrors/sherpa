@@ -387,7 +387,7 @@ int Higgs_Tree::OrderQCD(const int &id) const
     // mixed case, can not return a well-defined value; for reweighting you
     // have to generate the contributions separately, in particular
     // interference terms are not supported yet
-    return 99;
+    return NonfactorizingCoupling::WithoutCustomVariationWeight;
   }
 }
 

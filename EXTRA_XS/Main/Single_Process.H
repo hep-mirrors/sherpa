@@ -48,6 +48,8 @@ namespace EXTRAXS {
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
     bool FillFinalState(const ATOOLS::Vec4D_Vector &p);
 
+    double CustomRelativeVariationWeightForRenormalizationScaleFactor(double) const;
+
     // functions overwritten here
     std::vector<std::vector<int> > * Colours() const;
 

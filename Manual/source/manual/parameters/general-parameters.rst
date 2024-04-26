@@ -366,8 +366,8 @@ previously created C++ source code, cf. :ref:`SHERPA_CPP_PATH`.
 Event output formats
 ====================
 
-.. index:: HepMC_GenEvent
-.. index:: HepMC_Short
+.. index:: HepMC3_GenEvent
+.. index:: HepMC3_Short
 .. index:: LHEF
 .. index:: Root
 .. index:: FILE_SIZE
@@ -383,21 +383,27 @@ these formats when selecting them.
 
 If the events are to be written to file, the parameter
 :option:`EVENT_OUTPUT` must be specified together with a file name. An
-example would be ``EVENT_OUTPUT: HepMC_GenEvent[MyFile]``, where
+example would be ``EVENT_OUTPUT: HepMC3_GenEvent[MyFile]``, where
 ``MyFile`` stands for the desired file base name. More than one output
 can also be specified:
 
 .. code-block:: yaml
 
    EVENT_OUTPUT:
-     - HepMC_GenEvent[MyFile]
+     - HepMC3_GenEvent[MyFile]
      - Root[MyFile]
 
 The following formats are currently available:
 
-:option:`HepMC_GenEvent`
-  Generates output in HepMC::IO_GenEvent
-  format. The HepMC::GenEvent::m_weights weight vector stores the
+:option:`HepMC3_GenEvent`
+  Generates output using HepMC3 library. The format of the output is
+  set with ``HEPMC3_IO_TYPE: <0|1|2|3|4>`` tag.  The default value is
+  0 and corresponds to ASCII GenEvent. Other available options are 1:
+  HepEvt 2: ROOT file with every event written as an object of class
+  GenEvent. 3: ROOT file with GenEvent objects writen into TTree.
+  Otherwise similar to ``HepMC3_GenEvent``.
+
+  The HepMC::GenEvent::m_weights weight vector stores the
   following items: ``[0]`` event weight, ``[1]`` combined matrix
   element and PDF weight (missing only phase space weight information,
   thus directly suitable for evaluating the matrix element value of
@@ -412,50 +418,37 @@ The following formats are currently available:
   file.  Note that Sherpa conforms to the Les Houches 2013 suggestion
   (http://phystev.in2p3.fr/wiki/2013:groups:tools:hepmc) of indicating
   interaction types through the GenVertex type-flag.  Multiple event
-  weights can also be enabled with HepMC versions >=2.06, cf.
+  weights can also be used, cf.
   :ref:`On-the-fly event weight variations`. The following additional
-  customisations can be used
+  customisations can be used.
 
   ``HEPMC_USE_NAMED_WEIGHTS: <true|false>`` Enable filling weights
   with an associated name. The nominal event weight has the key
   ``Weight``. ``MEWeight``, ``WeightNormalisation`` and ``NTrials``
   provide additional information for each event as described
-  above. Needs HepMC version >=2.06.
+  above. The default value is ``true``.
 
   ``HEPMC_EXTENDED_WEIGHTS: <false|true>`` Write additional event
   weight information needed for a posteriori reweighting into the
   WeightContainer, cf. :ref:`A posteriori scale and PDF variations
   using the HepMC GenEvent Output`. Necessitates the use of
-  ``HEPMC_USE_NAMED_WEIGHTS``.
+  ``HEPMC_USE_NAMED_WEIGHTS``. The default value is ``false``.
 
   ``HEPMC_TREE_LIKE: <false|true>`` Force the event record to be
   stricly tree-like. Please note that this removes some information
   from the matrix-element-parton-shower interplay which would be
   otherwise stored.
+  Requires ``-DHepMC3_DIR=/path/to/hepmc3``
+  (or ``-DSHERPA_ENABLE_HEPMC3=ON``, if HepMC3 is installed in a
+  standard location). The default value is ``false``.
 
-  Requires ``-DHepMC2_DIR=/path/to/hepmc2``
-  (or ``-DSHERPA_ENABLE_HEPMC2=ON``, if HepMC2 is installed in a
-  standard location).
-
-:option:`HepMC_Short`
+:option:`HepMC3_Short`
 
   Generates output in HepMC::IO_GenEvent format, however, only
   incoming beams and outgoing particles are stored. Intermediate and
   decayed particles are not listed. The event weights stored as the
   same as above, and ``HEPMC_USE_NAMED_WEIGHTS`` and
   ``HEPMC_EXTENDED_WEIGHTS`` can be used to customise.
-
-  Requires ``-DHepMC2_DIR=/path/to/hepmc2``
-  (or ``-DSHERPA_ENABLE_HEPMC2=ON``, if HepMC2 is installed in a
-  standard location).
-
-:option:`HepMC3_GenEvent`
-  Generates output using HepMC3 library. The format of the output is
-  set with ``HEPMC3_IO_TYPE: <0|1|2|3|4>`` tag.  The default value is
-  0 and corresponds to ASCII GenEvent. Other available options are 1:
-  HepEvt 2: ROOT file with every event written as an object of class
-  GenEvent. 3: ROOT file with GenEvent objects writen into TTree.
-  Otherwise similar to ``HepMC_GenEvent``.
 
   Requires ``-DHepMC3_DIR=/path/to/hepmc3``
   (or ``-DSHERPA_ENABLE_HEPMC3=ON``, if HepMC3 is installed in a
@@ -721,9 +714,8 @@ The total cross section for all variations along with the nominal cross section
 are written to the standard output after the event generation has finalized.
 Additionally, some event output (see :ref:`Event output formats`) and analysis methods
 (see :ref:`ANALYSIS`) are able to process alternate event weights.
-Currently, the supported event output methods are ``HepMC_GenEvent``
-and ``HepMC_Short`` (when configured with HepMC version 2.06 or later),
-and ``HepMC3_GenEvent`` (when configured with HepMC version 3 or later).
+Currently, the only supported event output method is
+``HepMC3_GenEvent`` (requires configuration with HepMC version 3 or later).
 The supported analysis methods are ``Rivet`` and ``Internal``.
 
 The alternative event weight names follow the MC naming convention, i.e. they
