@@ -16,38 +16,38 @@ Sudakov-type logarithms of the form :cite:`Sudakov1954sw,Ciafaloni1998xg`.
   \frac{\alpha}{4\pi \sin^2\theta_W}\log^2\left(\frac{Q^2}{M^2_W}\right)\quad\text{and}\quad
   \frac{\alpha}{4\pi \sin^2\theta_W}\log\left(\frac{Q^2}{M^2_W}\right)\,.
 
-The one-loop EW Sudakov approximation, dubbed EWsud, has been developed for general processes
+The one-loop EW Sudakov approximation, dubbed EWSud, has been developed for general processes
 in :cite:`Denner2000jv,Denner2001gw`. A corresponding automated implementation in the
 Sherpa framework, applicable to all common event generation modes of Sherpa,
 including multijet-merged calculations, has been presented
 in :cite:`Bothmann2020sxm` and :cite:`Bothmann2021led`.
 
-Another available approximation, dubbed EWvirt, was devised in :cite:`Kallweit2015dum`.
+Another available approximation, dubbed EWVirt, was devised in :cite:`Kallweit2015dum`.
 It comprises exact renormalised NLO EW virtual corrections and integrated
 approximate real-emission subtraction terms, thereby neglecting in particular hard
 real-emission contributions. However, both methods qualify for a rather straightforward
 inclusion of the dominant EW corrections in state-of-the-art matrix-element plus
 parton-shower simulations.
 
-In the following we will discuss how to enable the calculation of thew EWsud
-and EWvirt corrections, and what options are available to steer their
-evaluation, beginning with EWvirt.
+In the following we will discuss how to enable the calculation of thew EWSud
+and EWVirt corrections, and what options are available to steer their
+evaluation, beginning with EWVirt.
 
 .. contents::
    :local:
 
 .. _EWVirt:
 
-EWvirt
+EWVirt
 ======
 
-One option to enable EWvirt corrections is to use ``KFACTOR: EWvirt``.  Note
+One option to enable EWVirt corrections is to use ``KFACTOR: EWVirt``.  Note
 that this only works for LO calculations (both with and without the shower,
 including MEPSatLO).  The EW virtual matrix element must be made available (for
 all process multiplicities) using a suitable :ref:`Loop_Generator`.  The
-EWvirt correction will then be directly applied to the nominal event weight.
+EWVirt correction will then be directly applied to the nominal event weight.
 
-The second option, which is only available for MEPSatNLO, applies the EWvirt
+The second option, which is only available for MEPSatNLO, applies the EWVirt
 correction (and optionally subleading LO corrections) to all QCD NLO
 multiplicities. For this to work, one must use the the following syntax:
 
@@ -70,21 +70,23 @@ in the process setting :ref:`Associated_Contributions`.
 The additional event weights can then be written into the event
 output.  However, this is currently only supported for
 ``HepMC_GenEvent`` and ``HepMC_Short`` with versions >=2.06 and
-``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weight
-names are either ``ASS<contrib>``, ``MULTIASS<contrib>``, or ``EXPASS<contrib>``
+``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weight names
+are either ``ASSOCIATED_CONTRIBUTIONS.<contrib>``,
+``ASSOCIATED_CONTRIBUTIONS.MULTI<contrib>``,
+or ``ASSOCIATED_CONTRIBUTIONS.EXP<contrib>``
 for additive, multiplicative, and exponentiated combinations, correspondingly.
 See :ref:`On-the-fly event weight variations` for more information
 on variation weights and the variation weight naming scheme.
 
 .. _EWSud:
 
-EWsud
+EWSud
 =====
 
-The EWsud module must be enabled during configuration of Sherpa using the
+The EWSud module must be enabled during configuration of Sherpa using the
 ``-DSHERPA_ENABLE_EWSUD=ON`` switch.
 
-Similar to EWvirt, also with the EWsud corrections there is the option to use
+Similar to EWVirt, also with the EWSud corrections there is the option to use
 it via ``KFACTOR: EWSud``, which will apply the corrections directly to the
 nominal event weight, or as on-the-fly variations adding the following entry to
 the list of variations (also cf. :ref:`On-the-fly event weight variations`):
@@ -92,12 +94,13 @@ the list of variations (also cf. :ref:`On-the-fly event weight variations`):
 .. code-block:: yaml
 
    VARIATIONS:
-   - EWsud
+   - EWSud
 
 Using the latter, corrections are provided as alternative event weights.
 The most useful entries of the event weight list are accessed using the keys
-`EWsud` and `EWsud_Exp`. The first is the nominal event weight corrected by the
-NLL EWsud corrections, while the latter first exponentiates the corrections
+`EWSud.KFactor` and `EWSud.KFactorExp`.
+The first is the nominal event weight corrected by the
+NLL EWSud corrections, while the latter first exponentiates the corrections
 prior to applying it to the nominal event weight, thus giving a resummed NLL
 result.
 
@@ -118,7 +121,7 @@ couplings for this model, see :ref:`Processes` for more details
      Order{QCD:xx, EW:yy, SMGold: 0}
      ...
 
-The following configuration snippet shows the options steering the EWsud
+The following configuration snippet shows the options steering the EWSud
 calculation, along with their default values:
 
 .. code-block:: yaml
@@ -160,7 +163,7 @@ calculation, along with their default values:
 
 * :option:`CLUSTERING_THRESHOLD` determines the number of vector boson decay widths,
   for which a given lepton pair with the right quantum numbers is still allowed
-  to be clustered prior to the calculation of the EWsud correction.
+  to be clustered prior to the calculation of the EWSud correction.
   For reasoning, see again :cite:`Bothmann2021led`.
 
 We next list all possible technical parameters under the scope of `EWSUD`. They
