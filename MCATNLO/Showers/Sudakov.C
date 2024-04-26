@@ -305,7 +305,7 @@ bool Sudakov::Generate(Parton * split)
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
     m_flspec = p_spect->GetFlavour();
-    p_selected->ColorPoint(split);
+    // p_selected->ColorPoint(split);
     m_z = Z();
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
     if (p_selected->GetFlavourA().IsGluon() &&
