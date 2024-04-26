@@ -59,6 +59,8 @@ namespace BEAM {
     void RegisterEPADefaults();
     void RegisterDarkMatterDefaults();
     void InitializeFlav(kf_code flav);
+    void InitializeNucleons();
+    void InitializeDiQuarks();
     void SetBeamMode();
     Beam_Base * InitializeSimpleCompton(int);
     /*!

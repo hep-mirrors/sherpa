@@ -11,6 +11,7 @@ Beam_Base::Beam_Base(beamspectrum::code _type, const ATOOLS::Flavour& _beam,
   m_type(_type), m_Nbunches(1), m_beam(_beam), m_position(ATOOLS::Vec4D(0.,0.,0.,0.)),
   m_dir(_dir), m_energy(_energy), m_polarisation(_polarisation),
   m_x(1.), m_Q2(0.), m_weight(1.), m_on(false) {
+  msg_Out()<<METHOD<<" for "<<m_beam<<": E = "<<m_energy<<".\n";
   double disc = mode ? 1.0 : 1.0 - ATOOLS::sqr(m_beam.Mass() / m_energy);
   if (disc < 0.) {
     msg_Error() << "Error in Beam_Base :" << m_type << std::endl
@@ -23,4 +24,8 @@ Beam_Base::Beam_Base(beamspectrum::code _type, const ATOOLS::Flavour& _beam,
   m_lab     = ATOOLS::Vec4D(m_energy, 0., 0., pz);
   m_bunches.resize(m_Nbunches, m_beam);
   m_vecouts.resize(m_Nbunches, m_lab);
+  if (m_beam.IsIon()) {
+    msg_Out()<<METHOD<<" for an ion: "<<m_beam<<"\n";
+    exit(1);
+  }
 }
