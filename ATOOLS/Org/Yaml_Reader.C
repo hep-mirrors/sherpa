@@ -5,6 +5,21 @@
 
 #include <cassert>
 
+#include <cctype>    // std::tolower
+#include <algorithm> // std::equal
+
+bool ichar_equals(char a, char b)
+{
+    return std::tolower(static_cast<unsigned char>(a)) ==
+           std::tolower(static_cast<unsigned char>(b));
+}
+
+bool iequals(const std::string& a, const std::string& b)
+{
+    return a.size() == b.size() &&
+           std::equal(a.begin(), a.end(), b.begin(), ichar_equals);
+}
+
 using namespace ATOOLS;
 
 Yaml_Reader::Yaml_Reader(const std::string& name)
@@ -210,11 +225,19 @@ SHERPA_YAML::Node Yaml_Reader::NodeForKeysInNode(const Settings_Keys& keys,
     } else {
       if (!currentnode.IsMap())
         return NullNode;
-      const auto child = currentnode[key.GetName()];
-      if (child)
-        currentnode.reset(child);
-      else
+      std::string name {key.GetName()};
+      std::string resolved_name;
+      for (const auto& subnode : currentnode) {
+        std::string subkey {subnode.first.as<std::string>()};
+        if (iequals(subkey, name)) {
+          resolved_name = subkey;
+          break;
+        }
+      }
+      if (resolved_name.empty())
         return NullNode;
+      else
+        currentnode.reset(currentnode[resolved_name]);
     }
   }
   return currentnode;
