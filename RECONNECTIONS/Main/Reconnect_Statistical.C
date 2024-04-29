@@ -21,7 +21,14 @@ Reconnect_Statistical::~Reconnect_Statistical() {
   m_collist.clear();
   //msg_Info() << std::endl << "Min. total stringlength: " << this->find_min_totalLength(this->m_stringlength_totals) << std::endl;
   //msg_Info() << std::endl << "Max. total stringlength: " << this->find_max_totalLength(this->m_stringlength_totals) << std::endl;
-  write_stringLengths_to_file(this->m_stringlength_totals);
+  //write_stringLengths_to_file(this->m_stringlength_totals);
+  write_to_file(m_stringlength_totals, "stringlength");
+  m_stringlength_totals.clear();
+  write_to_file(m_hadmasses_before, "mass_beforeCR");
+  m_hadmasses_before.clear();
+  write_to_file(m_hadmasses_after, "mass_afterCR");
+  m_hadmasses_after.clear();
+  // the fact so much of this code is duplicated between statistical and gluon means we can probs abstract it to the reconn_base parent...
 }
 
 void Reconnect_Statistical::SetParameters() {
@@ -53,7 +60,8 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
   if (!HarvestParticles(blobs))               return -1;
   if (m_cols[0].empty() && m_cols[1].empty()) return 0;
   m_norm = TotalLength();
-  PlotTotalLength(TotalLength()); // don't call twice, put in var ...
+  //PlotTotalLength(TotalLength()); // don't call twice, put in var ...
+  save_total_length(m_norm);
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
        cit!=m_cols[0].end();cit++) 
   {
@@ -74,6 +82,7 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
 	}
   }
   FillMassesInHistogram(m_cols, "Mass_beforeStatistical");
+  this->save_masses_before(m_cols);
   size_t N = m_collist.size();
   unsigned int col[2];
   for (size_t i=0;i<sqr(N);i++) {
@@ -81,6 +90,7 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
     if (!AttemptSwap(col)) return false;;
   }
   FillMassesInHistogram(m_cols, "Mass_afterStatistical");
+  this->save_masses_after(m_cols);
   UpdateColours();
   m_collist.clear();
   return true;
@@ -171,13 +181,28 @@ double Reconnect_Statistical::TotalLength() {
 }
 
 
-void Reconnect_Statistical::PlotTotalLength(double total_length)
+/*void Reconnect_Statistical::PlotTotalLength(double total_length)
 {
 	// define and fill histogram of total string length ...
 	//std::cout << std::endl << "total string length: " << total_length << std::endl;
 	msg_Info() << std::endl << "total string length: " << total_length << std::endl;
 	m_histomap[string("total_stringlength")]->Insert(total_length);
 	this->m_stringlength_totals.push_back(total_length);
+}*/
+
+void Reconnect_Statistical::save_total_length(double total_length)
+{
+        m_stringlength_totals.push_back(total_length);
+}
+
+void Reconnect_Statistical::save_masses_before(std::map<unsigned int, ATOOLS::Particle*> cols_before[2])
+{
+        m_hadmasses_before.push_back(get_total_hadMass(cols_before));
+}
+
+void Reconnect_Statistical::save_masses_after(std::map<unsigned int, ATOOLS::Particle*> cols_after[2])
+{
+        m_hadmasses_after.push_back(get_total_hadMass(cols_after));
 }
 
 /*double Reconnect_Statistical::find_min_totalLength(std::vector<double> total_vec)
@@ -204,3 +229,14 @@ void Reconnect_Statistical::write_stringLengths_to_file(std::vector<double> tota
 	std::copy(total_vec.begin(), total_vec.end(), output_iterator);
 }
 
+void Reconnect_Statistical::write_to_file(std::vector<double> data, std::string file_name)
+{
+        std::string file_string = "./Reconnection_Analysis/stat_NAME.txt";
+        file_string = file_string.replace(file_string.find("NAME"), 4, file_name);
+        std::cout << "\nWriting " << file_name << "..." << std::endl;
+//      std::cout << "\nTEST: filestring is " << file_string << std::endl;
+
+        std::ofstream output_file(file_string);
+        std::ostream_iterator<double> output_iterator(output_file, "\n");
+        std::copy(data.begin(), data.end(), output_iterator);
+}

@@ -62,7 +62,7 @@ int Reconnect_Gluon::operator()(ATOOLS::Blob_List *const blobs)
 	// inefficient to call twice, come back and store the result somewhere...
 	m_norm = this->TotalLength();
 	//this->SaveTotalLength(this->TotalLength());
-	this->SaveTotalLength(m_norm);
+	this->save_total_length(m_norm);
 
 	for(std::map<unsigned int, ATOOLS::Particle *>::iterator cit = m_cols[0].begin(); cit != m_cols[0].end(); cit++)
 	{
@@ -245,7 +245,7 @@ double Reconnect_Gluon::TotalLength()
 
 // tmeporary functions to write masses and stringlengths to file for plotting until I fix histogramming issues ...
 
-void Reconnect_Gluon::SaveTotalLength(double total_length)
+void Reconnect_Gluon::save_total_length(double total_length)
 {
 	m_stringlength_totals.push_back(total_length);
 }

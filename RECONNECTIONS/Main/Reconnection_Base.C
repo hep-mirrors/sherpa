@@ -119,8 +119,21 @@ void Reconnection_Base::FillLengthInHistogram(float total_length, std::string hi
 {
 	std::cout << std::endl << "Filling string-length histograms..." << std::endl; // replace eith proper messaging / logger function
 	ATOOLS::Histogram *length_hist = new ATOOLS::Histogram(0, 0.0, 100.0, 200); // what should correct binning be?
+	// hist with max 20, max 100, max 1,000, then maybe one between say 900 and 1000 (i.e. not starting from zero)
+	ATOOLS::Histogram *length_hist_20   = new ATOOLS::Histogram(0,0.0,20.0,10);
+	ATOOLS::Histogram *length_hist_100  = new ATOOLS::Histogram(0,0.0,100.0,10);
+	ATOOLS::Histogram *length_hist_1000 = new ATOOLS::Histogram(0,0.0,1000.0,10);
 	length_hist->Insert(total_length);
+	length_hist_20->Insert(total_length);
+	length_hist_100->Insert(total_length);
+	length_hist_1000->Insert(total_length);
 	std::cout << "\n fill value: " << total_length << std::endl;
 	m_histomap[hist_name] = length_hist;
+	std::string name = hist_name; name.append("_20");
+	m_histomap[name] = length_hist_20;
+	name = hist_name; name.append("_100");
+	m_histomap[name] = length_hist_100;
+	name = hist_name; name.append("_1000");
+	m_histomap[name] = length_hist_1000;
 }
 

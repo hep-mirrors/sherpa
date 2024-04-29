@@ -12,6 +12,7 @@ namespace RECONNECTIONS {
     bool m_gOnly;
     //double m_min_stringlength, m_max_stringlength; // temp ivars, will help inform appropriate hist. binning
     std::vector<double> m_stringlength_totals;
+    std::vector<double> m_hadmasses_before, m_hadmasses_after;
 
     void   SetParameters();
     bool   SelectColourPair(const size_t & N,unsigned int & col1, unsigned int & col2);
@@ -22,10 +23,13 @@ namespace RECONNECTIONS {
     double PosDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
     double ColDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
     double TotalLength();
-    void   PlotTotalLength(double total_length);
+    void   save_total_length(double total_length);
 //    double find_min_totalLength(std::vector<double> total_vec);
 //    double find_max_totalLength(std::vector<double> total_vec);
     void   write_stringLengths_to_file(std::vector<double> total_vec);
+    void   write_to_file(std::vector<double> data, std::string file_name);
+    void   save_masses_before(std::map<unsigned int, ATOOLS::Particle*> cols_before[2]);
+    void   save_masses_after(std::map<unsigned int, ATOOLS::Particle*> cols_after[2]);
   public:
     Reconnect_Statistical();
     ~Reconnect_Statistical();

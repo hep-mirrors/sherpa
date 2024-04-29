@@ -29,7 +29,7 @@ namespace RECONNECTIONS
 			double PosDistance(ATOOLS::Particle *trip, ATOOLS::Particle *anti);
 			double ColDistance(ATOOLS::Particle *trip, ATOOLS::Particle *anti);
 			double TotalLength();
-			void   SaveTotalLength(double total_length);
+			void   save_total_length(double total_length);
 //			double find_min_totalLength(std::vector<double> total_vec);
 //			double find_max_totalLength(std::vector<double> total_vec);
 			void   write_stringLengths_to_file(std::vector<double> total_vec);
