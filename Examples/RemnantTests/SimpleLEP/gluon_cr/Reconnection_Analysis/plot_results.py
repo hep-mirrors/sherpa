@@ -6,7 +6,6 @@ import statistics as stats
 
 np.random.seed(42)
 n_points = 10000
-#n_bins   = 100000
 n_bins = 10
 
 #filenames = ["stat_mass_beforeCR.txt", "stat_mass_afterCR.txt", "gluon_mass_beforeCR.txt",
