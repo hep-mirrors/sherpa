@@ -106,10 +106,6 @@ bool Reconnect_Gluon::SelectColourPair(const size_t &N, unsigned int &g1, unsign
 			g1 = g2 = 0;
 			return false;
 		}
-	// does the logic below still hold? Should I have a list of m_cols only gluons instead?
-	// index in gluon_collist does not match index in collist, g1/2 is essentially the key/index, so need to do via 'find' rather than via index.
-// but this is m_cols, so why do we care?
-// this looks fine as it is...
 	} while(g1 == g2 || m_cols[0][g1] == m_cols[1][g2] || m_cols[0][g2] == m_cols[1][g1]);
 	return true;
 }
@@ -223,7 +219,6 @@ double Reconnect_Gluon::ColDistance(ATOOLS::Particle *trip, ATOOLS::Particle *an
 	return trip->GetFlow(1)==anti->GetFlow(2) ? 1. : m_reshuffle;
 }
 
-// add different distance metrics ...
 
 double Reconnect_Gluon::TotalLength()
 {
@@ -281,15 +276,3 @@ void Reconnect_Gluon::write_to_file(std::vector<double> data, std::string file_n
 
 // -------
 
-/*
- * idea: take one coloured particle, if it != gluon: skip
- * 	 iterate over each possible alternative partner particle:
- *		check it's a gluon. else: skip
- *		if both gluons: compute new stringlength
- * 		if > previous string-length: discard
- *		... keep swaps that reduce string length
- *		... do we want to keep iterating until we find the minimum stringlength?
- * break down into new functions as appropriate ...
- */
-
-// draw out each data structure and label ...

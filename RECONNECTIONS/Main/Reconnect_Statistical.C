@@ -10,9 +10,6 @@ using namespace std;
 
 Reconnect_Statistical::Reconnect_Statistical() : Reconnection_Base() 
 {
-	// define histogram for the total stringlength and add to histogram map
-	// (no idea what appropriate maximum / binning is yet)
-	m_histomap[string("total_stringlength")] = new Histogram(0, 100.0, 10.0e18, 200.);
 	this->m_stringlength_totals.clear();
 }
 
@@ -28,7 +25,6 @@ Reconnect_Statistical::~Reconnect_Statistical() {
   m_hadmasses_before.clear();
   write_to_file(m_hadmasses_after, "mass_afterCR");
   m_hadmasses_after.clear();
-  // the fact so much of this code is duplicated between statistical and gluon means we can probs abstract it to the reconn_base parent...
 }
 
 void Reconnect_Statistical::SetParameters() {
