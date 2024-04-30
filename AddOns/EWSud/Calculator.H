@@ -92,6 +92,7 @@ namespace EWSud {
     bool m_checkcoeff, m_checkkfac;
     std::string m_checklogfile;
     bool m_includesubleading;
+    bool m_monitorkfactor {false};
 
     // intermediate results
     mutable Coeff_Map m_coeffs;

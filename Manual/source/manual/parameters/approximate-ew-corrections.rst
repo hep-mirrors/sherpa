@@ -16,38 +16,38 @@ Sudakov-type logarithms of the form :cite:`Sudakov1954sw,Ciafaloni1998xg`.
   \frac{\alpha}{4\pi \sin^2\theta_W}\log^2\left(\frac{Q^2}{M^2_W}\right)\quad\text{and}\quad
   \frac{\alpha}{4\pi \sin^2\theta_W}\log\left(\frac{Q^2}{M^2_W}\right)\,.
 
-The one-loop EW Sudakov approximation, dubbed EWsud, has been developed for general processes
+The one-loop EW Sudakov approximation, dubbed EWSud, has been developed for general processes
 in :cite:`Denner2000jv,Denner2001gw`. A corresponding automated implementation in the
 Sherpa framework, applicable to all common event generation modes of Sherpa,
 including multijet-merged calculations, has been presented
 in :cite:`Bothmann2020sxm` and :cite:`Bothmann2021led`.
 
-Another available approximation, dubbed EWvirt, was devised in :cite:`Kallweit2015dum`.
+Another available approximation, dubbed EWVirt, was devised in :cite:`Kallweit2015dum`.
 It comprises exact renormalised NLO EW virtual corrections and integrated
 approximate real-emission subtraction terms, thereby neglecting in particular hard
 real-emission contributions. However, both methods qualify for a rather straightforward
 inclusion of the dominant EW corrections in state-of-the-art matrix-element plus
 parton-shower simulations.
 
-In the following we will discuss how to enable the calculation of thew EWsud
-and EWvirt corrections, and what options are available to steer their
-evaluation, beginning with EWvirt.
+In the following we will discuss how to enable the calculation of thew EWSud
+and EWVirt corrections, and what options are available to steer their
+evaluation, beginning with EWVirt.
 
 .. contents::
    :local:
 
 .. _EWVirt:
 
-EWvirt
+EWVirt
 ======
 
-One option to enable EWvirt corrections is to use ``KFACTOR: EWvirt``.  Note
+One option to enable EWVirt corrections is to use ``KFACTOR: EWVirt``.  Note
 that this only works for LO calculations (both with and without the shower,
 including MEPSatLO).  The EW virtual matrix element must be made available (for
 all process multiplicities) using a suitable :ref:`Loop_Generator`.  The
-EWvirt correction will then be directly applied to the nominal event weight.
+EWVirt correction will then be directly applied to the nominal event weight.
 
-The second option, which is only available for MEPSatNLO, applies the EWvirt
+The second option, which is only available for MEPSatNLO, applies the EWVirt
 correction (and optionally subleading LO corrections) to all QCD NLO
 multiplicities. For this to work, one must use the the following syntax:
 
@@ -70,66 +70,100 @@ in the process setting :ref:`Associated_Contributions`.
 The additional event weights can then be written into the event
 output.  However, this is currently only supported for
 ``HepMC_GenEvent`` and ``HepMC_Short`` with versions >=2.06 and
-``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weight
-names are either ``ASS<contrib>``, ``MULTIASS<contrib>``, or ``EXPASS<contrib>``
+``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weight names
+are either ``ASSOCIATED_CONTRIBUTIONS.<contrib>``,
+``ASSOCIATED_CONTRIBUTIONS.MULTI<contrib>``,
+or ``ASSOCIATED_CONTRIBUTIONS.EXP<contrib>``
 for additive, multiplicative, and exponentiated combinations, correspondingly.
 See :ref:`On-the-fly event weight variations` for more information
 on variation weights and the variation weight naming scheme.
 
 .. _EWSud:
 
-EWsud
+EWSud
 =====
 
-The EWsud module must be enabled during configuration of Sherpa using the
+The EWSud module must be enabled during configuration of Sherpa using the
 ``-DSHERPA_ENABLE_EWSUD=ON`` switch.
 
-Similar to EWvirt, also with the EWsud corrections there is the option to use
-it via ``KFACTOR: EWsud``, which will apply the corrections directly to the
+Similar to EWVirt, also with the EWSud corrections there is the option to use
+it via ``KFACTOR: EWSud``, which will apply the corrections directly to the
 nominal event weight, or as on-the-fly variations adding the following entry to
 the list of variations (also cf. :ref:`On-the-fly event weight variations`):
 
 .. code-block:: yaml
 
    VARIATIONS:
-   - EWsud
+   - EWSud
 
 Using the latter, corrections are provided as alternative event weights.
 The most useful entries of the event weight list are accessed using the keys
-`EWsud` and `EWsud_Exp`. The first is the nominal event weight corrected by the
-NLL EWsud corrections, while the latter first exponentiates the corrections
+`EWSud.KFactor` and `EWSud.KFactorExp`.
+The first is the nominal event weight corrected by the
+NLL EWSud corrections, while the latter first exponentiates the corrections
 prior to applying it to the nominal event weight, thus giving a resummed NLL
 result.
 
-The following configuration snippet shows the options steering the EWsud
+In order for the ``EWSud`` corrections to make sense, goldstone bosons need
+to be made available. This is achieved by ensuring that the following is set
+
+.. code-block:: yaml
+
+   MODEL: SMGold
+
+Additionally, a coupling order must be set to correctly initialize the
+couplings for this model, see :ref:`Processes` for more details
+
+.. code-block:: yaml
+
+   PROCESSES:
+     ...
+     Order{QCD:xx, EW:yy, SMGold: 0}
+     ...
+
+The following configuration snippet shows the options steering the EWSud
 calculation, along with their default values:
 
 .. code-block:: yaml
 
    EWSUD:
-     THRESHOLD: 5.0
-     INCLUDE_SUBLEADING: false
+     THRESHOLD: 1.0
+     INCLUDE_SUBLEADING: true
      CLUSTERING_THRESHOLD: 10.0
 
 .. index:: THRESHOLD
 
-* :option:`THRESHOLD` gives the minimal invariant mass (in units of the W mass)
-  for each external pair of particles :math:`k` and :math:`l`, :math:`r_{kl}`,
-  defining the high energy limit. If any of the invariant masses is below this
-  value for a given event, then no EWsud correction is calculated.
+* :option:`THRESHOLD` . Strictly speaking the EWSudakov corrections are only
+  valid in the high-energy limit, that is where all possible invariant masses,
+  formed by pairing external particles, are much larger
+  than the W mass. In practice, we need to define how much is much larger.
+  The :option:`THRESHOLD` option, gives the minimal invariant mass (in units of
+  :math:m_W) that each
+  pairing of external particles can have to respect the high energy limit, and
+  below which no EWSudakov correction is computed. To clarify, a large
+  threshold, say for example 10 (10 times the W mass), would result in little to
+  no corrections at all, except for regions of phase-space truly in the
+  high-energy limit. This result is thus only expected to match exact EW
+  corrections only when all invariants are larger than this
+  threshold. Conversely a lower value, say 1, would apply the correction more
+  uniformily at the price of violating the thretically sound region where these
+  corrections are derived, but is seen to better reproduce the effect of exact
+  EW corrections across kinematical distributions.
 
 .. index:: INCLUDE_SUBLEADING
 
 * :option:`INCLUDE_SUBLEADING` determines whether a formally subleading term
   proportional to :math:`\log^2(r_{kl} / \hat s)` is included,
   where :math:`\hat s` is the Mandelstam variable for the partonic process,
-  see :cite:`Bothmann2021led`.
+  see :cite:`Bothmann2021led`. Note that depending on the value of
+  :option:`THRESHOLD` these may become numerically significant. For lower threshold
+  values, it is reccomended to leave this option `true`, as default.
 
 .. index:: CLUSTERING_THRESHOLD
 
 * :option:`CLUSTERING_THRESHOLD` determines the number of vector boson decay widths,
   for which a given lepton pair with the right quantum numbers is still allowed
-  to be clustered prior to the calculation of the EWsud correction.
+  to be clustered prior to the calculation of the EWSud correction.
   For reasoning, see again :cite:`Bothmann2021led`.
 
 We next list all possible technical parameters under the scope of `EWSUD`. They
@@ -190,3 +224,6 @@ expert users.
 * :option:`PRINT_GRAPHS` sets the name of the directory where to save graphs
   associated to processes generated by the `EWSudakov` calculation. Same as
   :ref:`Print_Graphs`.
+
+**NOTE**
+that at the moment EW Sudakov corrections do not work for processes that feature a four-vector boson vertex, such as a four-gluon vertex.

@@ -981,7 +981,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   // in case that KFACTOR=EWSud is used we need to be ready when the ME handler
   // sets up the KFactor setters
   if (!s_loader->LoadLibrary("SherpaEWSud"))
-    THROW(missing_module,"Cannot load EWsud library.");
+    THROW(missing_module,"Cannot load EWSud library.");
 #endif
   if (p_mehandler) delete p_mehandler;
   p_mehandler = new Matrix_Element_Handler(p_model);

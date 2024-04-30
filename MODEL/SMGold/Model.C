@@ -72,6 +72,7 @@ namespace MODEL{
       s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.379,.0,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
       s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.09,.0,0.0041,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
       s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
+      s_kftable[kf_instanton] = new Particle_Info(kf_instanton,0.0,0.0,0.0,0,8,0,-1,1,0,0,"Instanton","Instanton","Instanton","Instanton");
 
       s_kftable[kf_phiplus]   = new Particle_Info(kf_phiplus,80.385,0.0,2.085,3,0,0,0,1,0,1,"phi+","phi-","\\phi^{+}","\\phi^{-}");
       s_kftable[kf_chi]       = new Particle_Info(kf_chi,91.1876,0.0,2.4952,0,0,0,-1,1,0,1,"chi","chi","\\chi","\\chi");
@@ -349,23 +350,6 @@ namespace MODEL{
       }
       default:
 	THROW(not_implemented, "Unknown EW_SCHEME="+ToString(ewscheme));
-	break;
-      }
-      switch (ewrenscheme) {
-      case 1:
-	ewrenschemename="alpha(0)";
-	break;
-      case 2:
-	ewrenschemename="alpha(m_Z)";
-	break;
-      case 3:
-	ewrenschemename="alpha(Gmu)";
-	break;
-      default:
-	msg_Info()<<"Unknown EW_REN_SCHEME="<<ewrenscheme<<", resetting to Gmu."
-		  <<std::endl;
-	ewrenscheme=ew_scheme::Gmu;
-	ewrenschemename="alpha(Gmu)";
 	break;
       }
 
@@ -2025,9 +2009,8 @@ namespace MODEL{
 
     size_t IndexOfOrderKey(const std::string& key) const
     {
-      PRINT_VAR(key);
       if(key == "SMGold")
-	return 2;
+        return 2;
       else return Model_Base::IndexOfOrderKey(key);
     }
 

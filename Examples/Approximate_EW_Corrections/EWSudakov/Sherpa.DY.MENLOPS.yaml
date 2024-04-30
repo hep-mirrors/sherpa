@@ -1,0 +1,40 @@
+# Sherpa configuration for Z[ee]+Jets production
+EVENT_GENERATION_MODE: W
+
+# set up beams for LHC run 2
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# matrix-element calculation
+ME_GENERATORS: [Amegic, Comix, OpenLoops]
+
+CORE_SCALE: VAR{sqr(91.2)}{sqr(91.2)}{sqr(91.2)}
+
+VARIATIONS:
+  - EWsud
+
+EWSUD:
+  THRESHOLD: 1
+  INCLUDE_SUBLEADING: false
+  CLUSTERING_THRESHOLD: 10.0
+
+MODEL: SMGold
+
+# requires ppll, ppllj and pplljj libraries in openloops
+OL_IGNORE_MODEL: true
+
+PROCESSES:
+- 93 93 -> 11 -11 93{3}:
+    Order: {QCD: 0, EW: 2, SMGold: 0}
+    Loop_Generator: OpenLoops
+    CKKW: 20
+    2->2-3: # 0 and 1j at NLO
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+    2->4-5: # 2nd and 3rd jets at LO only
+      ME_Generator: Comix
+
+SELECTORS:
+- [Mass, 11, -11, 66, E_CMS]
