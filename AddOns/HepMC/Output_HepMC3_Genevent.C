@@ -27,7 +27,7 @@ Output_HepMC3_Genevent::Output_HepMC3_Genevent(const Output_Arguments &args) :
   m_basename = args.m_outpath + "/" + args.m_outfile;
   m_iotype = Settings::GetMainSettings()["HEPMC3_IO_TYPE"].SetDefault(0).Get<int>();
   int precision = Settings::GetMainSettings()["HEPMC3_OUTPUT_PRECISION"].SetDefault(12).Get<int>();
-  m_pluginfunction = Settings::GetMainSettings()["HEPMC3_OUTPUT_PLUGIN"].SetDefault("").Get<int>();
+  m_pluginlibrary = Settings::GetMainSettings()["HEPMC3_OUTPUT_PLUGIN"].SetDefault("").Get<int>();
   m_pluginfunction = Settings::GetMainSettings()["HEPMC3_OUTPUT_FUNCTION"].SetDefault("").Get<int>();
 #ifdef USING__GZIP
   m_ext += ".gz";
