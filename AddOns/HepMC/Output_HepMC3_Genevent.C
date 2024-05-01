@@ -100,8 +100,7 @@ Output_HepMC3_Genevent::~Output_HepMC3_Genevent()
   m_outstream.close();
 }
 
-void Output_HepMC3_Genevent::SetXS(const Weights_Map& xs,
-                                   const Weights_Map& err)
+void Output_HepMC3_Genevent::SetXS(const Weights_Map& xs, const Weights_Map& err)
 {
   // Only copy for now, we have to wait until the event weights have been
   // added (when Output()), otherwise HepMC3::GenCrossSection will not be
