@@ -62,7 +62,7 @@ public:
 
   ~Fusing_Fragmentation_Hook() {}
 
-  ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs/*, double &weight*/) {
+  ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs) {
     DEBUG_FUNC(blobs->size());
 
     auto bdmap = blobs->FindFirst(ATOOLS::btp::Shower)->GetData();
@@ -99,16 +99,9 @@ public:
 
     if (m_store) {
       // if m_store: store additional weight (zero) in bloblist and skip veto
-      // TODO fusing: check with Eno how to store these weights
-      auto bdmap_signal = blobs->FindFirst(btp::Signal_Process)->GetData();
-      auto search_weight = bdmap_signal.find("Weight");
-      if (search_weight==bdmap_signal.end()) {
-        THROW(fatal_error,"No Weight found in signal blob!");
-      }
-      double new_weight = search_weight->second->Get<double>();
-      if (veto) new_weight=0;
-
-      blobs->FindFirst(ATOOLS::btp::Signal_Process)->AddData("UserHook",new ATOOLS::Blob_Data<double>(new_weight));
+      Weights_Map& wmap = (*blobs->FindFirst(btp::Signal_Process))["WeightsMap"]->Get<Weights_Map>();
+      wmap["Fusing"]["Nominal"] = 1.0;
+      wmap["Fusing"]["Fragmentation"] = veto ? 0.0 : 1.0;
       return Return_Value::Nothing;
     }
     else {
