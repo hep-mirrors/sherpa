@@ -118,12 +118,6 @@ void ISR::GenerateAngles()
   }
   else {
     m_beta  = sqrt(1. - m_am2);
-    if(!IsEqual(m_beta/m_b1,1,1e-6)){
-      cout<<std::setprecision(12)<<(m_beta/m_b1)<<std::endl;
-      PRINT_VAR((m_beam1+m_beam2).Mass());
-      PRINT_VAR((m_beam1).Mass());
-      PRINT_VAR((m_beam2).Mass());
-    }
     double eps  = m_am2 / (1. + m_beta);
     double rn = ran->Get();
     double del1 = (2. - eps) * pow((eps / (2 - eps)), rn); // 1-beta*cos
