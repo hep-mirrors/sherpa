@@ -396,7 +396,10 @@ Vertex *Amplitude::AddCurrent
       cid|=vkey.m_j[i]->CId();
       if (vkey.m_j[i]->Sub()) {
 	if ((vkey.m_j[i]->Id().size()==1 &&
-	     p_dinfo->Mode()==1) || sub) return NULL;
+	     p_dinfo->Mode()==1) || sub) {
+	  delete v;
+	  return NULL;
+	}
 	sub=vkey.m_j[i]->Sub();
       }
     }
