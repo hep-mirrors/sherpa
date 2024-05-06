@@ -342,7 +342,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
-      Dip->Clean();
+      // Dip->Clean();
   }
   // CheckMasses();
   CheckMomentumConservation();
@@ -400,7 +400,9 @@ void YFS_Handler::CalculateBeta() {
   if(!m_rmode && !m_int_nlo) return;
   double realISR(0), realFSR(0);
   if (m_betaorder > 0) {
-    m_real = p_dipoles->CalculateEEX()+(1+p_dipoles->CalculateEEXVirtual());
+    if(m_real_only) m_real = p_dipoles->CalculateEEX();
+    else if (m_virtual_only) m_real = 1+p_dipoles->CalculateEEXVirtual();
+    else m_real = p_dipoles->CalculateEEX()+(1+p_dipoles->CalculateEEXVirtual());
   }
   if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
     if(m_no_born) m_real=CalculateNLO()/m_born;
