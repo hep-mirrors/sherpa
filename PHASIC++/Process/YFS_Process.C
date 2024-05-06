@@ -40,7 +40,6 @@ YFS_Process::YFS_Process
   Scoped_Settings s{ Settings::GetMainSettings()["ISR_YFS"] };
   m_qedmode = s["QEDMODE"].Get<int>();
   static bool ref(false);
-  // m_gens.LoadGenerator(m_name);
   p_apmap = pmap;
   if (!ref) {
     ref = true;
@@ -86,15 +85,14 @@ void YFS_Process::Init(const Process_Info &pi,
     p_yfs->SetNLOType(nlo_type::real);
   }
   if (pi.Has(nlo_type::loop)) {
-    vpi.m_fi.SetNLOType(nlo_type::born);
+    vpi.m_fi.SetNLOType(nlo_type::loop);
     Process_Base::Init(vpi, beam, isr, yfs);
-    p_virtproc = InitProcess(vpi, nlo_type::born, false);
+    p_virtproc = InitProcess(vpi, nlo_type::loop, false);
     p_virtproc->FillProcessMap(p_apmap);
     p_yfs->p_nlo->InitializeVirtual(vpi);
     p_yfs->SetNLOType(nlo_type::loop);
   }
   p_bornproc->SetLookUp(false);
-  // p_bornproc->SetParent(p_bornproc);
   p_bornproc->SetSelected(this);
   FindResonances();
 }
