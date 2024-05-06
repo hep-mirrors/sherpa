@@ -2,6 +2,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "PHASIC++/Channels/Channel_Elements.H"
 
 
 using namespace YFS;
@@ -62,8 +63,8 @@ NLO_Base::~NLO_Base() {
 	}
 	if(p_yfsFormFact) delete p_yfsFormFact;
 	if(p_nlodipoles) delete p_nlodipoles;
-	if(p_real) delete p_real;
-	if(p_virt) delete p_virt;
+	// if(p_real) delete p_real;
+	// if(p_virt) delete p_virt;
 }
 
 
@@ -168,8 +169,6 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	if(IsZero(subb)) return 0;
 	if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	p.push_back(k);
-	// if(submode!=1) flux = 1;
-	// CheckMasses(p,1);
 	CheckMomentumConservation(p);
 	double r = p_real->Calc_R(p) / norm * flux;
 	if(IsZero(r)) return 0;
@@ -220,7 +219,6 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   double t = (m_plab[0]-m_plab[2]).Abs2();
   m_ranTheta = acos(1.+2.*t/s);
 	m_ranPhi = ran->Get()*2.*M_PI;
-	// Poincare boostLab(p[0] + p[1]);
 	for (int i = 2; i < p.size(); ++i)
 	{
 		Q += p[i];
@@ -231,11 +229,11 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 2; i < p.size(); ++i) {
 		boostQ.Boost(p[i]);
-		// pRot.Rotate(p[i]);
+		pRot.Rotate(p[i]);
 		// RandomRotate(p[i]);
 	}
 	boostQ.Boost(k);
-	// pRot.Rotate(k);
+	pRot.Rotate(k);
 	// RandomRotate(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
@@ -262,27 +260,20 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	{
 		msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD << std::endl;
 	}
-	// if(m_is_isr) QQ = p[0]+p[1];
-  // double zz = sqrt(sqq) / 2.;
-	// double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) * (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
-	double sign_z = (p[0][3] < 0 ? -1 : 1);
-	// p[0] = {zz, 0, 0, z};
-	// p[1] = {zz, 0, 0, -z};
+	double sign_z = (p[0][3] > 0 ? -1 : 1);
   double m1 = m_flavs[0].Mass();
   double m2 = m_flavs[1].Mass();
   double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
   double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
- 	p[0] = {E1, 0, 0, sign_z*lamCM};
-  p[1] = {E2, 0, 0, -sign_z*lamCM};
-  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 1., 0.));
-	for (int i = 0; i < p.size(); ++i)
-	{
-		// pRot2.Rotate(p[i]);
-		boostLab.Boost(p[i]);
-	}
-	// pRot2.Rotate(k);
-	boostLab.Boost(k);
+  Poincare pRot2(p[0], Vec4D(0., 	0., 0., 1.));
+ 	p[0] = {E1, 0, 0, -sign_z*lamCM};
+  p[1] = {E2, 0, 0, sign_z*lamCM};
+	double pzfin = p[3][3]/fabs(p[3][3]);
+	// if(!IsEqual(pzinit,pzfin)){
+	Vec4D_Vector tmp = p;
+	tmp.push_back(k);
+	CheckMomentumConservation(tmp);	
 }
 
 
@@ -320,7 +311,7 @@ bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
 }
 
 
-bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p){
+bool NLO_Base::CheckMomentumConservation(const Vec4D_Vector p){
   Vec4D incoming = p[0]+p[1];
   Vec4D outgoing;
   for (int i = 2; i < p.size(); ++i)

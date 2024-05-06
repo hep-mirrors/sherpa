@@ -53,7 +53,7 @@ public:
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
-  bool CheckMomentumConservation(Vec4D_Vector p);
+  bool CheckMomentumConservation(const Vec4D_Vector p);
   void CheckRealSub(Vec4D k);
   void RandomRotate(Vec4D &k);
 
