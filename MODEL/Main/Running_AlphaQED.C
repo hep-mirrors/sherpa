@@ -50,7 +50,7 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha)
 double Running_AlphaQED::operator()(double t)
 {
   double Q2    = t;
-  if (t<0. && (m_mode!=vpmode::full && m_mode!=vpmode::hp)) Q2 = -t; 
+  if (t<0.) Q2 = -t; 
 
   int i = 3;
   if (Q2<0.3)        i=0;
@@ -70,13 +70,13 @@ double Running_AlphaQED::operator()(double t)
     double delta_r,errdersta, errdersys,deg,errdegsta,errdegsys;
     double sin2 = 0.2322;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
     if(m_mode!=vpmode::off){
-      if(m_mode !=vpmode::lp){
-        hadr5x_(&t, &sin2, &delta_r, &errdersta, 
+      if(m_mode!=vpmode::lp && m_mode!=vpmode::def){
+        hadr5x_(&Q2, &sin2, &delta_r, &errdersta, 
           &errdersys, &deg, &errdegsta, &errdegsys); 
      }
     switch(m_mode){
       case vpmode::full:
-        sigma_gg = sig_lep_gg+delta_r+sig_top_gg;//+sig_ha_gg;
+        sigma_gg = sig_lep_gg+delta_r+sig_top_gg+sig_ha_gg;
         break;
       case vpmode::lp:
         sigma_gg = sig_lep_gg;
@@ -128,5 +128,6 @@ std::istream &MODEL::operator>>(std::istream &str,vpmode::code &vp)
   else if (tag.find("2")!=std::string::npos)    vp=vpmode::hp;
   else if (tag.find("LP")!=std::string::npos)   vp=vpmode::lp;
   else if (tag.find("3")!=std::string::npos)    vp=vpmode::lp;
+  else vp=vpmode::def;
   return str;
 }

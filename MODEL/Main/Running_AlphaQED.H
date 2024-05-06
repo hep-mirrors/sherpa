@@ -12,7 +12,8 @@ namespace MODEL {
       off        = 0,
       full       = 1,
       hp         = 2,
-      lp         = 3
+      lp         = 3,
+      def        = 4
       };
     };
 
