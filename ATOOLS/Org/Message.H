@@ -124,7 +124,8 @@ namespace ATOOLS {
 
     std::map<std::string,unsigned int> m_log_stats;
 
-    int m_modifiable, m_mpimode, m_limit;
+    int m_modifiable, m_mpimode;
+    int m_limit{1};
 
   public:
 
