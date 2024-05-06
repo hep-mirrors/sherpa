@@ -188,7 +188,7 @@ void Dipole::Boost() {
     p_Pboost = new Poincare(qqk);
     p_boost  = new Poincare(m_bornmomenta[0] + m_bornmomenta[1]);
 
-    p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0.,  0., 1.));
+    p_rotate = new Poincare(m_momenta[0],Vec4D(0,0,0,1.));
     p_rotatey = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 1., 0.));
     p_rotatex = new Poincare(m_bornmomenta[0], Vec4D(0., 1., 0., 0.));
     for (size_t i = 0; i < 2; ++i)
@@ -202,6 +202,8 @@ void Dipole::Boost() {
     m_photonSum*=0.;
     for (auto &k : m_dipolePhotons) {
       Boost(k);
+       // p_Pboost->Boost(k);
+       // p_boost->BoostBack(k);
       m_photonSum+=k;
     }
     if (p_rotate) delete p_rotate;
@@ -214,13 +216,10 @@ void Dipole::Boost() {
 
 void Dipole::Boost(ATOOLS::Vec4D &p) {
   p_Pboost->Boost(p);
-  RandomRotate(p);
-  // p_rotatex->Rotate(p);
-    // PRINT_VAR(p);
-  // p_rotate->Rotate(p);
-    // PRINT_VAR(p);
-  // p_rotate->Rotate(p);
+  // p_boost->Boost(p);
+  p_rotate->Rotate(p);
   p_boost->BoostBack(p);
+  // RandomRotate(p);
 }
 
 void Dipole::RandomRotate(Vec4D &p){
@@ -348,9 +347,9 @@ double Dipole::VirtualEEX(const int betaorder){
 }
 
 double Dipole::Hard(const Vec4D &k){
-  double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
-  double a = k*m_bornmomenta[0]/p1p2;
-  double b = k*m_bornmomenta[1]/p1p2;
+  double p1p2 = m_momenta[0]*m_momenta[1];
+  double a = k*m_momenta[0]/p1p2;
+  double b = k*m_momenta[1]/p1p2;
   double ap = a/(1.+a+b);
   double bp = b/(1.+a+b);
   if (Type() == dipoletype::initial) {
@@ -363,13 +362,13 @@ double Dipole::Hard(const Vec4D &k){
 }
 
 double Dipole::Hard(const Vec4D &k1, const Vec4D &k2){
-  double p1p2 = m_bornmomenta[0]*m_bornmomenta[1];
+  double p1p2 = m_momenta[0]*m_momenta[1];
   
-  double a1 = k1*m_bornmomenta[0]/p1p2;
-  double a2 = k1*m_bornmomenta[1]/p1p2;
+  double a1 = k1*m_momenta[0]/p1p2;
+  double a2 = k1*m_momenta[1]/p1p2;
   
-  double b1 = k2*m_bornmomenta[0]/p1p2;
-  double b2 = k2*m_bornmomenta[1]/p1p2;
+  double b1 = k2*m_momenta[0]/p1p2;
+  double b2 = k2*m_momenta[1]/p1p2;
   
   double eta1 = a1/(1+a1+b1);
   double eta2 = a2/(1+a2+b2);
@@ -469,8 +468,8 @@ double Dipole::EikonalMassless(Vec4D k, Vec4D p1, Vec4D p2) {
 
 
 double Dipole::Eikonal(Vec4D k) {
-  Vec4D p1 = m_bornmomenta[0];
-  Vec4D p2 = m_bornmomenta[1];
+  Vec4D p1 = m_momenta[0];
+  Vec4D p2 = m_momenta[1];
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 
