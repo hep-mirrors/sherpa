@@ -553,21 +553,14 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax){
   double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;
   double xden = sqrt(1-4*m12/(s-sqr(m1-m2)))+1;
   double xs = (xnum/xden);
-  // if(xs < 0 || xs==1 || IsBad(xs)) return 0;   
-  // double test = log(xs)*xs/(m1*m2*(1-xs*xs))*(log(m_photonMass*m_photonMass/(m1*m2)));
-  // PRINT_VAR(log(1./xs)*xs/(m1*m2*(1-xs*xs)));
-  // PRINT_VAR( (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1));
-  // test = (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)); 
-  TBvirt = m_alpi*(
-    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
-       // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-       +0.5*zeta*log(ta*zeta/(m1*m2))
-        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+  // TBvirt = (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
+  TBvirt= (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax))
+      +0.5*zeta*log(ta*zeta/(m1*m2))
+      -0.5*log(ta/m1/m1)*log(ta/m2/m2)
       +DiLog(1./zeta) -1.0
       +0.5*(zeta -1.0)*log(m1/m2)
-      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
-       );
-  return TBvirt;
+      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta));
+  return m_alpi*TBvirt;
 }
 
 double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
