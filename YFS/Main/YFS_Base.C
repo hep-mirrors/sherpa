@@ -35,7 +35,7 @@ void YFS_Base::RegisterDefaults(){
   s["BETA"].SetDefault(3);
   s["SEMI"].SetDefault(0);
   s["VMAX"].SetDefault(0);
-  s["ISR_CUT"].SetDefault(1e-6);
+  s["ISR_CUT"].SetDefault(1e-3);
   s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
   s["LOOP_TOOL"].SetDefault(false);
@@ -99,6 +99,7 @@ void YFS_Base::RegisterSettings(){
   m_betaorder = s["BETA"].Get<int>();
   m_mode = s["ISR_MODE"].Get<int>();
   m_isrcut   = s["ISR_CUT"].Get<double>();
+  m_isrcut /= sqrt(m_s); // Dimensionless units 
   m_vmax = s["VMAX"].Get<double>();
   m_vmax = 1.-sqr(m_vmax)/m_s;
   m_nmax  = s["PHOTON_MAX"].Get<int>();
