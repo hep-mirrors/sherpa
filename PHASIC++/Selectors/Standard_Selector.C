@@ -729,7 +729,7 @@ operator()(const Selector_Key &key) const
   const auto min = s.Interprete<double>(parameters[2]);
   const auto max = s.Interprete<double>(parameters[3]);
   auto radians = 1;
-  if(parameters.size()==5){
+  if(parameters.size()>=5){
     radians = s.Interprete<int>(parameters[4]);
   }
   bool labframe;
