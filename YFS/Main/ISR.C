@@ -108,7 +108,7 @@ void ISR::GenerateAngles()
                        /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
         if (ran->Get() < weight || m_kkmcAngles!=2) break;
       }
-    if(m_kkmcAngles==2) m_angleWeight *= weight;
+    m_angleWeight *= m_kkmcAngles!=2?1:weight;
     m_theta = acos(m_c);
     m_sin = sin(m_theta);
     m_phi = 2.*M_PI * ran->Get();
