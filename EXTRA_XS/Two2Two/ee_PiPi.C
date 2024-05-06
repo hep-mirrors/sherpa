@@ -46,14 +46,17 @@ namespace EXTRAXS {
   double ee_PiPi::operator()(const ATOOLS::Vec4D_Vector& momenta)
   {
     // Eq 90 in 0912.0749
-    double s((momenta[0]+momenta[1]).Abs2());
-    double t((momenta[0]-momenta[3]).Abs2());
+    double s((momenta[2]+momenta[3]).Abs2());
+    double t((momenta[0]-momenta[2]).Abs2());
     double masspi = m_flv.Mass();
     double beta = sqrt(1.-4*sqr(masspi)/s);
-    double sinth2 = 1.-sqr(1.+2.*t/s);
+    double scatang = (momenta[3]).Theta();
+    double sinth2 = sqr(sin(scatang));
     // double sinth2 = sqr(sin(theta));
     if(sinth2 < 0) msg_Error()<<METHOD<<" Sin^2 less than zero: "<<sinth2<<std::endl;
-    return sqr(4*M_PI*(*aqed)(s)) / 2. * sinth2 * pow(beta,3) * p_formfactor->Eval(s);
+    // Normalized 
+    // return  4.*M_PI/2*(*aqed)(s)*sinth2 * pow(beta,3) * p_formfactor->Eval(s)/8.;
+    return sqr(4.*M_PI*(*aqed)(s))/3. * CouplingFactor(0,2)*sinth2 * pow(beta,3) * p_formfactor->Eval(s)/8.;
   }
 }
 
