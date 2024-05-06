@@ -489,6 +489,9 @@ void Recola::Recola_Interface::GenerateProcesses(const double& alpha, const doub
   switch (ewscheme) {
     case 1:
       // use_alpha0_scheme_and_set_alpha_rcl(AlphaQED());
+      if(s_mass_reg){
+        THROW(fatal_error, "Massive Regularization is not supported in alpha0 scheme. Please use M_Z or GFermi (EW_SCHEME: Gmu/alphamZ)")
+      }
       use_alpha0_scheme_rcl(alpha);
       break;
     case 2:
