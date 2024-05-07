@@ -60,8 +60,8 @@ NLO_Base::~NLO_Base() {
 	}
 	if(p_yfsFormFact) delete p_yfsFormFact;
 	if(p_nlodipoles) delete p_nlodipoles;
-	if(p_real) delete p_real;
-	if(p_virt) delete p_virt;
+	// if(p_real) delete p_real;
+	// if(p_virt) delete p_virt;
 }
 
 
