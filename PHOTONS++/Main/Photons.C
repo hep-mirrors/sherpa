@@ -188,7 +188,7 @@ Photons::~Photons()
 void Photons::RegisterDefaults()
 {
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
-  s["MODE"].SetDefault(yfsmode::full).UseNoneReplacements();
+  s["MODE"].ResetDefault().SetDefault(yfsmode::full).UseNoneReplacements();
   s["PHOTON_SPLITTER_MODE"].SetDefault(15);
   s["USE_ME"].SetDefault(1);
   s["IR_CUTOFF"].SetDefault(1E-3);
