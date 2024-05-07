@@ -14,7 +14,6 @@
 #include "SHERPA/Single_Events/Beam_Remnants.H"
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
-#include "SHERPA/Single_Events/Soft_Photons.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "PHASIC++/Decays/Decay_Channel.H"
@@ -173,7 +172,6 @@ bool Sherpa::InitializeTheEventHandler()
   }
   else {
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
-    // p_eventhandler->AddEventPhase(new Soft_Photons(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandlers()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),

@@ -49,7 +49,7 @@ InitializeRemnants(PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spec
         p_remnants[i] = new Photon_Remnant(isr->PDF(i), i, m_tags[i]);
       }
     }
-    if(yfs->GetMode()!=0){
+    if(yfs->Mode()!=YFS::yfsmode::off){
       // Should always be a lepton
       p_remnants[i] = new Electron_Remnant(yfs,i,m_tags[i]);
     }

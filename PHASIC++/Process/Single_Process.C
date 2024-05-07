@@ -272,7 +272,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
   DEBUG_FUNC(Name());
-  if(p_int->YFS()->GetMode()!=0){
+  if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
     //need to set born for YFS subtraction
     p_int->YFS()->SetBorn(m_lastxs);
     p_int->YFS()->GenerateWeight();
@@ -1184,7 +1184,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
       }
     }
   }
-  if(p_int->YFS()->GetMode() != 0){
+  if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
     p_int->YFS()->SetFlavours(m_flavs);
   }
   psh->CreateIntegrators();

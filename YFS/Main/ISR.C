@@ -64,9 +64,6 @@ void ISR::NPhotons() {
     return;
   }
   m_nbar = m_gp * log(m_v / m_isrcut);
-  if(m_fixed_photons!=-1) {
-    m_n = m_fixed_photons;
-  }
   if (m_nbar < 0 ) {
     msg_Error() << METHOD << "Warning: ISR photon average is less than 0" << std::endl;
   }

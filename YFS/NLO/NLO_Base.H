@@ -60,7 +60,6 @@ public:
   inline void SetBorn(double b) { m_born = b;}
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
   inline void SetBornProc(PHASIC::Single_Process *p) {p_born = p;}
-  inline void SetResonanceMode(int &mode) {m_resonance_mode = mode;}
 
 };
 

@@ -39,7 +39,7 @@ Define_Dipoles::~Define_Dipoles() {
 
 
 void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born) {
-  if(m_fsrmode==2) return;
+  if(m_mode==yfsmode::fsr) return;
   if ((mom.size() < 2 || fl.size() < 2) ) {
     msg_Out()<<"Dipole type is  =  "<<dipoletype::initial<<std::endl
              <<" mom.size() =  "<<mom.size()<<std::endl
@@ -62,7 +62,7 @@ void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
 
 
 void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born) {
-  if(m_fsrmode==2) return;
+  if(m_mode==yfsmode::fsr) return;
   if ((mom.size() != fl.size())) {
     msg_Out()<<"Dipole type is  =  "<<dipoletype::ifi<<std::endl
              <<" mom.size() =  "<<mom.size()<<std::endl
@@ -70,7 +70,7 @@ void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
              <<" born.size() =  "<<born.size()<<std::endl;
     THROW(fatal_error, "Incorrect dipole size in YFS for dipoletype");
   }
-  if (m_fsrmode == 0 ) return;
+  if (!HasFSR()) return;
   ATOOLS::Flavour_Vector dipoleFlav;
   ATOOLS::Vec4D_Vector dipoleMom;
   Dipole_Vector dipoles;
@@ -120,7 +120,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
   {
     m_flav_label[fl[i]] = i;
   }
-  if (m_fsrmode == 0 ) return;
+  if (!HasFSR()) return;
   if (fl.size() == 4) {
     Flavour_Vector ff;
     Vec4D_Vector mm, bm;
@@ -391,7 +391,7 @@ double Define_Dipoles::CalculateVirtualSub() {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
   for (auto &D : m_dipolesFF) {
-    if(m_fsrmode==2) sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
     else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
 
   }
@@ -543,12 +543,12 @@ double Define_Dipoles::CalculateEEX(){
 }
 
 double Define_Dipoles::CalculateEEXVirtual(){
-  double v{0.};
+  double v{1.};
   for (auto &D: m_dipolesII){
-    v+=D.VirtualEEX(m_betaorder);
+    v*=D.VirtualEEX(m_betaorder);
   }
   for (auto &D: m_dipolesFF){
-    v+=D.VirtualEEX(m_betaorder);
+    v*=D.VirtualEEX(m_betaorder);
   }
   return v;
 }
@@ -593,7 +593,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   Vec4D Q,QX;
 
   if(m_noflux==1) return 1;
-  if(m_fsrmode==0){
+  if(!HasFSR()){
     for (auto &D : m_dipolesII) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetMomenta(0)+D.GetMomenta(1);
@@ -604,7 +604,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
     }
 
   }
-  if(m_fsrmode==1){
+  if(m_mode==yfsmode::isrfsr){
     flux=1;
     for (auto &D : m_dipolesFF) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
@@ -615,11 +615,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       flux *= sq/sx;
     } 
     return flux;
-    // if(m_noflux==2) flux = Propagator(sx)/Propagator(sq);///(Propagator(sx)+Propagator(sq));
-
-    // }
   }
-  else if (m_fsrmode==2){
+  else if (m_mode==yfsmode::fsr){
     for (auto &D : m_dipolesFF) {
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
@@ -640,7 +637,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
   double sq, sx;
   double flux = 1;
   Vec4D Q,QX;
-  if(m_fsrmode==0){
+  if(!HasFSR()){
     for (auto &D : m_dipolesII) {
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
@@ -649,7 +646,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
     sx = (QX-k-kk).Abs2();
     flux = sx/sq;
   }
-  else if(m_fsrmode==1){
+  else if(m_mode==yfsmode::isrfsr){
     for (auto &D : m_dipolesFF) {
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
@@ -658,13 +655,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
     sq = (Q).Abs2();
     sx = (Q+k+kk).Abs2();
     flux = sx/sq*Propagator(sq)/Propagator(sx);
-
-    // if(abs(shifdiff)<4*gz){
-    //   sq = (Q).Abs2();
-    //   sx = (Q+k).Abs2();
-    // }
   }
-  else if (m_fsrmode==2){
+  else if (m_mode==yfsmode::fsr){
     for (auto &D : m_dipolesFF) {
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);

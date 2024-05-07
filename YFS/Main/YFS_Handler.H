@@ -101,20 +101,19 @@ public:
     // inline void SetMode(int mode)    { m_mode = mode;}
     // inline void SetOrder(int order)  { m_order = order;}
     // inline void SetISRPhotons(Vec4D_Vector &k) {m_ISRPhotons = k;}
-    inline int  GetMode()   const {return m_mode; }
+    inline yfsmode::code  Mode()   const {return m_mode; }
     // inline int  GetBetaOrder()   const {return m_betaorder; }
     // inline int  GetOrder()   const {return m_order; }
-    inline int  GetFSRMode()   const {return m_fsrmode; }
-    inline int  NPhoton()   const {return m_N; }
+    // inline int  GetFSRMode()   const {return m_fsrmode; }
+    // inline bool  HasISR()   const {return (m_mode!=yfsmode::off&&m_mode!=yfsmode::fsr); }
+    // inline bool  HasFSR()   const {return (m_mode!=yfsmode::off&&m_mode!=yfsmode::isr); }
+
     inline bool UsingLoopTool()   const {return m_looptool; }
     inline bool FillBlob()   const {return m_fillblob; }
     inline Vec4D_Vector GetMomenta() { return m_plab; }
     inline Vec4D GetMomenta(int i) { return m_plab[i]; }
     inline Vec4D_Vector BornMomenta() { return m_bornMomenta; }
-    inline int  GetRealPhotonN()    const {return m_NReal;}
-    inline void SetRealPhotonN(int n)  {m_NReal = n;}
-    inline void SetQedMode(int qed)  {m_qedmode = qed;}
-    inline int  GetQedMode()  {return m_qedmode;}
+
     inline void SetSprimeMin(double sp) {m_smin = sp;}
     inline void SetInFlav(Flavour &fl) {m_inflav.push_back(fl);}
     inline Flavour GetInFlav(int i) {return m_inflav[i];}
@@ -127,15 +126,12 @@ public:
 
     double Eikonal(Vec4D k);
     double CalculateNLO();
-    double MasslessEikonal(Vec4D k, Vec4D p1, Vec4D p2);
     bool CalculateFSR();
     bool CalculateISR();
     bool CalculateFSR(Vec4D_Vector &k);
     bool CheckMomentumConservation();
     void CheckMasses();
     void Reset();
-    int NHardPhotons(const Vec4D_Vector &k);
-    double Flux();
     void AddFormFactor();
     void MakeWWVecs(ATOOLS::Vec4D_Vector p);
     void CalculateCoulomb();

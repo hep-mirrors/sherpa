@@ -34,7 +34,6 @@ public:
   double  m_L, m_am2, m_mass, m_mass2, m_x;
   double m_massW;
   double m_W, m_W0; // for beta1
-  bool m_setmass;
   double m_nsuccess, m_nfail, m_ntotal;
   // ATOOLS::Particle *p_photon;
   std::vector<double> m_yini, m_AA, m_K2, m_PTK, m_del1, m_del2;
@@ -77,9 +76,7 @@ public:
   inline ATOOLS::Vec4D_Vector GetPhotons() { return m_photons; }
   inline double  GetTheta() { return m_theta; }
   inline double  GetPhi() { return m_phi; }
-  inline double  GetN() { return m_n; }
   inline void  SetV(double v) { m_v = v; }
-  inline void  Setmass(bool setmass) { m_setmass = setmass; }
   inline double  GetGamma() { return m_g; }
   inline double  GetGammaPrime() { return m_gp; }
   inline int  GetCut() { return m_cut; }

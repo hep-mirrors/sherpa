@@ -21,10 +21,8 @@ NLO_Base::NLO_Base() {
   p_nlodipoles = new YFS::Define_Dipoles();
   m_evts = 0;
   m_recola_evts = 0;
-  m_realrealtool = 0;
   m_realtool = 0;
   m_looptool = 0;
-  m_realvirt = 0;
   if(m_isr_debug || m_fsr_debug){
   	m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20 );
   	m_histograms1d["Real_diff"] = new Histogram(0, -1, 1, 100);
@@ -99,7 +97,7 @@ double NLO_Base::CalculateVirtual() {
 	Vec4D_Vector p = m_plab;
 	CheckMassReg();
 	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
-	if(m_fsrmode==2) virt = p_virt->Calc(m_bornMomenta, m_born);
+	if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
 	else virt = p_virt->Calc(p, m_born);
 	if(m_check_virt_born) {
 			if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
@@ -122,11 +120,7 @@ double NLO_Base::CalculateVirtual() {
 double NLO_Base::CalculateReal() {
 	if (!m_realtool) return 0;
 	double real(0);
-	if(m_realeex) return p_dipoles->CalculateEEX()*m_born;
-	if (m_coll_real) { 
-		real  = p_dipoles->CalculateEEX()*m_born;
-		return real;///subb - m_born);
-	}
+	if(m_coll_real) return p_dipoles->CalculateEEX()*m_born;
 	for (auto k : m_ISRPhotons) {
 		if(m_check_real_sub) {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
@@ -344,7 +338,7 @@ void NLO_Base::CheckMassReg(){
 		out_sub.open("yfs-sub.txt", std::ios_base::app);
 		out_recola.open("recola-res.txt", std::ios_base::app); // append instead of overwrite
 		out_finite.open("yfs-finite.txt", std::ios_base::app);
-		if(m_fsrmode==2) virt = p_virt->Calc(m_bornMomenta, m_born);
+		if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
 		else virt = p_virt->Calc(m_plab, m_born);
 		if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
 			msg_Error() << METHOD << "\n Warning! Loop provider's born is different! YFS Subtraction likely fails\n"

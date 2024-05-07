@@ -59,7 +59,12 @@ namespace YFS{
         double VirtualEEX(const int betaorder);
         double Hard(const Vec4D & k);
         double Hard(const Vec4D & k1, const Vec4D & k2);
+        double Hard(const Vec4D & k1, const Vec4D & k2, const Vec4D & k3);
+        double Beta1(const Vec4D & k1);
+        double Beta2(const Vec4D & k1, const Vec4D & k2);
+        double Beta3(const Vec4D & k1, const Vec4D & k2,const Vec4D & k3);
         double xi(const double &alp, const double &beta, const double &gamma);
+        double xi(const double &alp, const double &a1, const double &b1, const double &a2, const double &b2);
         void Boost();
         void BoostLab();
         void Boost(Vec4D &p);

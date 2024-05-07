@@ -344,7 +344,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 {
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
-    if(p_yfs->GetMode()!=0){
+    if(p_yfs->Mode()!=YFS::yfsmode::off){
       p_yfs->SetFlavours(pi.ExtractFlavours());
     }
     Process_Base *proc(m_gens.InitializeProcess(pi, true));

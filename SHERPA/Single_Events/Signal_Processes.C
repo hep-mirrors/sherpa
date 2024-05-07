@@ -131,7 +131,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("Decay_Info",new Blob_Data<DecayInfo_Vector>(decs));
   for (unsigned int i=0;i<proc->NIn();i++) {
     // Pass born momenta to in if using YFS
-    if(p_yfshandler->GetMode()!=0){
+    if(p_yfshandler->Mode()!=YFS::yfsmode::off){
       particle = new Particle(0,proc->Flavours()[i],
   			    p_yfshandler->BornMomenta()[i]);
     }
@@ -205,7 +205,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       if (nlos) (*nlos) *= weightfactor;
     }
   }
-  if(p_yfshandler->GetFSRMode()!=0){
+  if(p_yfshandler->HasFSR()){
     // Add the fsr corrected final states
       Particle_Vector out = blob->GetOutParticles();
       Particle_Vector yfsout = p_yfshandler->m_particles;
@@ -219,12 +219,12 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
         blob->OutParticle(i)->SetMomentum(yfsoutMap[yfsout[i+2]]); // remove born momenta
       }
     }
-  if (p_yfshandler->GetMode() != 0) {
+  if (p_yfshandler->Mode()!=YFS::yfsmode::off) {
     // blob->SetStatus(blob_status::needs_yfs);
     ATOOLS::Vec4D_Vector isrphotons = p_yfshandler->GetISRPhotons();
     ATOOLS::Vec4D_Vector fsrphotons;
     Particle *particle;
-    if (p_yfshandler->GetFSRMode() != 0) {
+    if (p_yfshandler->HasFSR()) {
       fsrphotons = p_yfshandler->GetFSRPhotons();
     }
     if (p_yfshandler->FillBlob()) {
@@ -312,7 +312,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     blob->AddData("ATensor",
                   new Blob_Data<METOOLS::Amplitude2_Tensor_SP>(atensor));
   }
-  if(p_yfshandler->GetMode()!=0){
+  if(p_yfshandler->Mode()!=YFS::yfsmode::off){
     p_yfshandler->YFSDebug(p_mehandler->Sum()*rpa->Picobarn());
   }
   return success;

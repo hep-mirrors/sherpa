@@ -13,7 +13,6 @@ set(Single_Events_SOURCES Event_Handler.C
                           Analysis_Phase.C
                           Output_Phase.C
                           EvtReadin_Phase.C
-                          Soft_Photons.C
                           Decay_Handler_Base.C)
 
 set(Single_Events_HEADERS Event_Handler.H
@@ -31,7 +30,6 @@ set(Single_Events_HEADERS Event_Handler.H
                           Analysis_Phase.H
                           Output_Phase.H
                           EvtReadin_Phase.H
-                          Soft_Photons.H
                           Decay_Handler_Base.H)
 
 sherpa_create_git_info(Single_Events)
