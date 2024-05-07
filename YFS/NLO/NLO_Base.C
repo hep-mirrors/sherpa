@@ -1,4 +1,4 @@
-// #include "PHASIC++/Channels/Channel_Elements.H"
+YFS/NLO/NLO_Base.C// #include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -67,13 +67,6 @@ NLO_Base::~NLO_Base() {
 	}
 	if(p_yfsFormFact) delete p_yfsFormFact;
 	if(p_nlodipoles) delete p_nlodipoles;
-	if(p_griffin) delete p_griffin;
-	if(p_real) delete p_real;
-	if(p_virt) delete p_virt;
-	if(p_realvirt) delete p_realvirt;
-	if(p_realreal) delete p_realreal;
-	// msg_Out()<<"Percentage of Recola events = "<<m_recola_evts/m_evts*100.<<"% "<<std::endl;
-	// if(p_nlodipoles) delete p_nlodipoles;
 }
 
 
