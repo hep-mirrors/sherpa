@@ -543,14 +543,14 @@ double Define_Dipoles::CalculateEEX(){
 }
 
 double Define_Dipoles::CalculateEEXVirtual(){
-  double v{1.};
+  double vint{1.}, vfin{1};
   for (auto &D: m_dipolesII){
-    v*=D.VirtualEEX(m_betaorder);
+    vint*=1+D.VirtualEEX(m_betaorder);
   }
   for (auto &D: m_dipolesFF){
-    v*=D.VirtualEEX(m_betaorder);
+    vfin*=1+D.VirtualEEX(m_betaorder);
   }
-  return v;
+  return vint*vfin;
 }
 
 double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {

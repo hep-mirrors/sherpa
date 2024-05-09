@@ -356,7 +356,7 @@ bool FSR::F(ATOOLS::Vec4D_Vector &k) {
     if (m_eikonal_mode == 1) {
       m_f    = Eikonal(k[i]);
       m_fbar = EikonalInterferance(k[i]);
-      // m_fbar *= m_sprim/m_sX;
+      m_fbar *= m_sprim/m_sX;
       // m_fbar = m_alpi / (2  * M_PI) * m_fbarvec[i];
 
     }
@@ -621,6 +621,7 @@ void FSR::BoostToXFM() {
   rotate = Poincare(m_dipole[0], Vec4D(0., 0., 0., 1.));
   for (auto &p : m_dipole) {
     poin.Boost(p);
+    rotate.Rotate(p);
   }
 }
 

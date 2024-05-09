@@ -111,7 +111,9 @@ double NLO_Base::CalculateVirtual() {
 	sub = p_dipoles->CalculateVirtualSub();
 	m_oneloop = (virt - sub * m_born);
 	if(IsBad(m_oneloop)){
-		msg_Error()<<"YFS Virtual is NaN"<<std::endl;
+		msg_Error()<<"YFS Virtual is NaN"<<std::endl
+							 <<"Virtual:  "<<m_oneloop<<std::endl
+							 <<"Subtraction: "<<sub*m_born<<std::endl;
 	}
 	return m_oneloop;
 }

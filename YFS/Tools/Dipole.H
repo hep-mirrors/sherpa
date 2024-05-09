@@ -28,7 +28,7 @@ namespace YFS{
         ~Dipole();
 
         std::vector<double> m_masses, m_charges, m_theta, m_Q;
-        Vec4D_Vector m_dipolePhotons;
+        Vec4D_Vector m_dipolePhotons, m_dipolePhotonsEEX;
         std::vector<std::string> m_names;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
         bool m_setBorn, m_setbeams=1,m_sameflav;
@@ -41,19 +41,19 @@ namespace YFS{
         Poincare *p_boost, *p_rotate, *p_rotatex, *p_rotatey, *p_Pboost, *p_Qboost;
         void PrintInfo();
         void AddPhotonsToDipole(Vec4D_Vector &Photons);
-        void AddPhotonsToDipole(Vec4D &Photon);
+        void AddPhotonToDipole(Vec4D &Photon);
         inline void ClearPhotons() { m_dipolePhotons.clear(); };
         inline Vec4D Momentum(int i) { return m_momenta[i]; }
         inline void SetMomentum(int i, Vec4D mom) { m_momenta[i] = mom; }
         inline void SetNewMomentum(int i, Vec4D mom) { m_newmomenta[i] = mom; }
         inline void SetEikMomentum(int i, Vec4D mom) { m_eikmomentum[i] = mom; }
+        inline void SetBornMomentum(int i, Vec4D mom) {m_bornmomenta[i] = mom; }
         inline void SetBeams(int i, Vec4D mom) { m_beams[i] = mom; }
         void AddToGhosts(Vec4D &p);
-        void SetBornMomentum(Vec4D_Vector k);
         double Mass();
-        double Eikonal(Vec4D k, Vec4D p1, Vec4D p2);
-        double EikonalMassless(Vec4D k, Vec4D p1, Vec4D p2);
-        double Eikonal(Vec4D k);
+        double Eikonal(const Vec4D &k,const Vec4D &p1,const Vec4D &p2);
+        double EikonalMassless(const Vec4D &k,const Vec4D &p1,const Vec4D &p2);
+        double Eikonal(const Vec4D &k);
         double EikonalInterferance(const Vec4D &k);
         double EEX(const int betaorder);
         double VirtualEEX(const int betaorder);
