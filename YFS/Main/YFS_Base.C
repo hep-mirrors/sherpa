@@ -82,7 +82,7 @@ void YFS_Base::RegisterSettings(){
   m_betaorder = s["BETA"].Get<int>();
   m_mode = s["MODE"].Get<yfsmode::code>();
   m_isrcut   = s["IR_CUTOFF"].Get<double>();
-  m_isrcut = m_isrcut*m_isrcut/(m_s); // dimensionless units
+  m_isrcut = m_isrcut/sqrt(m_s); // dimensionless units
   m_vmax = s["VMAX"].Get<double>();
   m_vmax = 1.-sqr(m_vmax)/m_s;
   m_fillblob  = s["FILL_BLOB"].Get<bool>();
