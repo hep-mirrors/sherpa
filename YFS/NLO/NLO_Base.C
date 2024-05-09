@@ -1,4 +1,4 @@
-YFS/NLO/NLO_Base.C// #include "PHASIC++/Channels/Channel_Elements.H"
+#include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
