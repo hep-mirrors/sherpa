@@ -35,7 +35,7 @@ void YFS_Base::RegisterDefaults(){
   s["BETA"].SetDefault(3);
   s["SEMI"].SetDefault(0);
   s["VMAX"].SetDefault(0);
-  s["ISR_CUT"].SetDefault(1e-6);
+  s["IR_CUTOFF"].SetDefault(1e-3);
   s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
   s["LOOP_TOOL"].SetDefault(false);
@@ -72,9 +72,8 @@ void YFS_Base::RegisterDefaults(){
   s["HARD_MIN"].SetDefault(0.);
   s["PHOTON_MASS"].SetDefault(0.1);
   s["CEEX"].SetDefault(0);
-  s["EEX_Real"].SetDefault(0);
-  s["Resonance_Max"].SetDefault(10);
-  s["N_Photons"].SetDefault(-1);
+  s["Collinear_Real"].SetDefault(0);
+  s["CLUSTERING_THRESHOLD"].SetDefault(10);
   s["TChannel"].SetDefault(0);
   //fcc defaults
   s["BES"].SetDefault(0);
@@ -84,7 +83,6 @@ void YFS_Base::RegisterDefaults(){
   s["No_Born"].SetDefault(0);
   s["No_Sub"].SetDefault(0);
   s["Sub_Mode"].SetDefault(submode::global);
-  s["Resonance_Mode"].SetDefault(0);
   s["No_Flux"].SetDefault(0);
   s["Flux_Mode"].SetDefault(1);
   s["Pole_Flux"].SetDefault(10);
@@ -99,8 +97,9 @@ void YFS_Base::RegisterDefaults(){
 void YFS_Base::RegisterSettings(){
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   m_betaorder = s["BETA"].Get<int>();
-  m_mode = s["ISR_MODE"].Get<int>();
-  m_isrcut   = s["ISR_CUT"].Get<double>();
+  m_mode = s["MODE"].Get<int>();
+  m_isrcut   = s["IR_CUTOFF"].Get<double>();
+  m_isrcut = m_isrcut*m_isrcut/(m_s); // dimensionless units
   m_vmax = s["VMAX"].Get<double>();
   m_vmax = 1.-sqr(m_vmax)/m_s;
   m_nmax  = s["PHOTON_MAX"].Get<int>();
@@ -140,12 +139,8 @@ void YFS_Base::RegisterSettings(){
   m_hardmin = s["HARD_MIN"].Get<double>();
   m_photonMass = s["PHOTON_MASS"].Get<double>();
   m_useceex = s["CEEX"].Get<int>();
-  m_realeex = s["EEX_Real"].Get<bool>();
-  m_resonace_max = s["Resonance_Max"].Get<double>();
-  m_fixed_photons = s["N_Photons"].Get<int>();
-  m_beam_rho = s["BES_rho"].Get<double>();
-  m_beam_sigx = s["BES_SIG_X"].Get<double>();
-  m_beam_sigy = s["BES_SIG_Y"].Get<double>();
+  m_coll_real = s["Collinear_Real"].Get<bool>();
+  m_resonace_max = s["CLUSTERING_THRESHOLD"].Get<double>();
   m_no_born = s["No_Born"].Get<int>();
   m_no_subtraction = s["No_Sub"].Get<int>();
   m_submode = s["Sub_Mode"].Get<submode::code>();
