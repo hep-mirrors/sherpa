@@ -723,7 +723,7 @@ operator()(const Selector_Key &key) const
 {
   Scoped_Settings s{ key.m_settings };
   const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
-  if (parameters.size() != 4 && parameters.size() != 5 && parameters.size() != 6)
+  if (parameters.size() < 4 || parameters.size() > 6)
     THROW(critical_error, "Invalid syntax");
   const auto kf = s.Interprete<int>(parameters[1]);
   const auto min = s.Interprete<double>(parameters[2]);
@@ -732,9 +732,8 @@ operator()(const Selector_Key &key) const
   if(parameters.size()==5){
     radians = s.Interprete<int>(parameters[4]);
   }
-  bool labframe;
+  bool labframe = false;
   if(parameters.size()==6) labframe = s.Interprete<int>(parameters[5]);
-  else labframe = false;
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   Polar_Angle_Selector *sel = new Polar_Angle_Selector(key.p_proc);
   sel->SetRange(flav,min,max);
