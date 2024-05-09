@@ -262,8 +262,8 @@ void Dipole::BoostToQFM(bool boostback) {
 
 void Dipole::CalculateBeta(){
 
-  m_b1 = (Vec3D(m_bornmomenta[0]).Abs() / m_bornmomenta[0].E());
-  m_b2 = (Vec3D(m_bornmomenta[1]).Abs() / m_bornmomenta[1].E());
+  m_b1 = (Vec3D(m_eikmomentum[0]).Abs() / m_eikmomentum[0].E());
+  m_b2 = (Vec3D(m_eikmomentum[1]).Abs() / m_eikmomentum[1].E());
   double logarg = (1+m_b1)*(1+m_b2);
   logarg /= (1-m_b1)*(1-m_b2);
   m_gamma  = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg)-2);
