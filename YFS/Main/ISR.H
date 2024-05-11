@@ -42,6 +42,7 @@ public:
   Vec4D_Vector m_photons;
   void GeneratePhotonAngleMassless();
   BEAM::Beam_Base **p_beam;
+  YFS::Dipole *p_dipole;
 
 
 public:
