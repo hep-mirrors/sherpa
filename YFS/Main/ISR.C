@@ -43,7 +43,8 @@ double ISR::CalculateBeta(const Vec4D& p) {
   return (Vec3D(p).Abs() / p[0]);
 }
 
-void ISR::SetIncoming(YFS::Dipole *p_dipole) {
+void ISR::SetIncoming(YFS::Dipole *dipole) {
+  p_dipole = dipole;
   m_beam1 = p_dipole->GetBornMomenta(0);
   m_beam2 = p_dipole->GetBornMomenta(1);
   m_b1 = CalculateBeta(m_beam1);
