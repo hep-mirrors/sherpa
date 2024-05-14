@@ -345,10 +345,18 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
     if(p_yfs->Mode()!=YFS::yfsmode::off){
-      YFS_Process *proc = new YFS_Process(m_gens,pmap);
-      proc->Init(pi,p_beam,p_isr, p_yfs,1);
-      m_procs.push_back(proc);
-      procs.push_back(proc);
+      // else Process_Base *proc(m_gens.InitializeProcess(pi, true));
+      if(!pi.m_fi.IsGroup()) {
+        YFS_Process *proc = new YFS_Process(m_gens,pmap);
+        proc->Init(pi,p_beam,p_isr, p_yfs,1);
+        m_procs.push_back(proc);
+        procs.push_back(proc);
+      }
+      else{
+        Process_Base *proc(m_gens.InitializeProcess(pi, true));
+        m_procs.push_back(proc);
+        procs.push_back(proc);
+      }
       p_yfs->SetFlavours(pi.ExtractFlavours());
     }
     else{

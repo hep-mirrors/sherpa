@@ -36,6 +36,7 @@ YFS_Process::YFS_Process
 (ME_Generators& gens, NLOTypeStringProcessMap_Map *pmap):
   m_gens(gens), p_bornproc(NULL), p_realproc(NULL)
 {
+  m_lastxs= 0.0;
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["ISR_YFS"] };
   m_qedmode = s["QEDMODE"].Get<int>();
@@ -64,6 +65,7 @@ void YFS_Process::Init(const Process_Info &pi,
                        PDF::ISR_Handler *const isr,
                        YFS::YFS_Handler *const yfs, const int mode)
 {
+  m_gens.InitializeProcess(pi, true);
   p_yfs = yfs;
   p_yfs->m_setparticles = false;
   p_yfs->SetFlavours(pi.ExtractFlavours());
@@ -200,6 +202,7 @@ Weight_Info *YFS_Process::OneEvent(const int wmode,ATOOLS::Variations_Mode varmo
                                    const int mode)
 {
   auto psh = p_int->PSHandler();
+  psh->InitCuts();
   p_yfs->SetFlavours(psh->Flavs());
   p_selected = p_bornproc;
   Weight_Info *winfo(NULL);
