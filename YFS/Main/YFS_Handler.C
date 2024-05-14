@@ -196,7 +196,7 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
   m_FSRPhotons.clear();
   CalculateWWForm();
   CalculateCoulomb();
-  p = m_plab; 
+  p = m_plab;
   return true;
 }
 
@@ -325,8 +325,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   m_plab=p;
   
   p_dipoles->MakeDipoles(m_flavs, m_plab, m_plab);
-  if(m_fsrmode==1)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
-
+  if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   for (int i = 2; i < m_momeikonal.size(); ++i)
   {
     m_momeikonal[i] = m_plab[i];
