@@ -7,7 +7,6 @@ Does not support custom functions other than the ones in the cmath_dictionary de
 Does not support complex atan function (C++11 feature)
 """
 
-from __future__ import division 
 import ast
 from ufo_interface.ufo_exception import ufo_exception
 

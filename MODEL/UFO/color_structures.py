@@ -1,4 +1,3 @@
-from __future__ import division 
 from math import sqrt
 from ufo_interface.tensor import tensor, multiply, new, color_key
 

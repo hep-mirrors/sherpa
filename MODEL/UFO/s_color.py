@@ -1,4 +1,3 @@
-from __future__ import division 
 from ufo_interface.templates import color_calc_template
 from ufo_interface.color_structures import T, replacer_T, f, Identity, IdentityG
 from ufo_interface.tensor import color_key

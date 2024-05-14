@@ -1,6 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
-from __future__ import division 
 from .tensor import tensor
 from .sym_var import sym_var
 from .lorentz_structures import mink_metric, gamma_0, Gamma, ProjP, ProjM, gamma_5, four_identity

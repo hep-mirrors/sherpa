@@ -1,4 +1,3 @@
-from __future__ import division 
 from ufo_interface.tensor import tensor, new, lorentz_key
 from sympy.parsing.sympy_parser import parse_expr
 from itertools import permutations

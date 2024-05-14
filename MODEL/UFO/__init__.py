@@ -1,4 +1,3 @@
-from __future__ import division
 from ufo_interface.s_particle import s_particle
 from ufo_interface.s_parameter import s_parameter
 from ufo_interface.s_coupling import s_coupling

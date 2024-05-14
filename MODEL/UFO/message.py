@@ -1,20 +1,9 @@
-from __future__ import division 
 
-try:
-    import colorama
-    colorama.init()
-    reset  = colorama.Fore.RESET
-    green  = colorama.Fore.GREEN
-    yellow = colorama.Fore.YELLOW
-    blue   = colorama.Fore.BLUE
-    red    = colorama.Fore.RED
-    colorama.deinit()
-except ImportError as e:
-    reset  = "\033[0m"
-    green  = "\033[32m"
-    yellow = "\033[33m"
-    blue   = "\033[34m"
-    red    = "\033[31m"
+reset  = "\033[0m"
+green  = "\033[32m"
+yellow = "\033[33m"
+blue   = "\033[34m"
+red    = "\033[31m"
 
 from sys import argv
 from os import path

@@ -1,4 +1,3 @@
-from __future__ import division 
 from ufo_interface import s_parameter, s_particle
 from ufo_interface.templates import run_card_template
 

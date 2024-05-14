@@ -1,4 +1,3 @@
-from __future__ import division 
 #from parameters import ZERO
 from ufo_interface.s_parameter import s_parameter
 from ufo_interface.ufo_exception import ufo_exception

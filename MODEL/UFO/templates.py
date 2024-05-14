@@ -1,4 +1,3 @@
-from __future__ import division 
 import pkg_resources
 from string import Template
 

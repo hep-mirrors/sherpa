@@ -3,7 +3,6 @@
 # into the lorentz calculator source code or tensors
 # with symbolic string-like expressions.
 
-from __future__ import division 
 from ufo_interface.tensor import tensor
 from ufo_interface.lorentz_structures import mink_metric
 from ufo_interface.sym_var import sym_var

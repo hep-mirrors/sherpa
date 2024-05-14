@@ -1,4 +1,3 @@
-from __future__ import division 
 from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, split_by_orders, vertex_collection
 from ufo_interface.tensor import tensor
 from ufo_interface.templates import model_template

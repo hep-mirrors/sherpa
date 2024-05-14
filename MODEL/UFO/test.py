@@ -1,5 +1,4 @@
-#!/bin/env python2 
-from __future__ import division 
+#!/bin/env python3 
 
 def require(test, message):
     if not test:
