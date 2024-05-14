@@ -34,7 +34,7 @@ void YFS_Base::RegisterDefaults(){
   s["MODE"].ResetDefault().SetDefault(yfsmode::off);
   s["BETA"].SetDefault(3);
   s["VMAX"].SetDefault(0);
-  s["IR_CUTOFF"].SetDefault(1e-3);
+  s["IR_CUTOFF"].ResetDefault().SetDefault(1e-4);
   s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
   s["LOOP_TOOL"].SetDefault(false);
@@ -47,7 +47,7 @@ void YFS_Base::RegisterDefaults(){
   s["TChannel-Cut"].SetDefault(0);
   s["COULOMB"].SetDefault(false);
   s["HIDE_PHOTONS"].SetDefault(1);
-  s["FULL_FORM"].SetDefault(1);
+  s["FULL_FORM"].SetDefault(0);
   s["WW_FORM"].SetDefault(0);
   s["WW_BETAT"].SetDefault(0.382);
   s["CHECK_MASS_REG"].SetDefault(0);
