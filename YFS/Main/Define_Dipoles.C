@@ -62,7 +62,8 @@ void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
 
 
 void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born) {
-  if(m_fsrmode==2) return;
+  if(m_mode==yfsmode::fsr) return;
+  if(m_ifisub==0) return;
   if ((mom.size() != fl.size())) {
     msg_Out()<<"Dipole type is  =  "<<dipoletype::ifi<<std::endl
              <<" mom.size() =  "<<mom.size()<<std::endl
@@ -126,8 +127,8 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
     Vec4D_Vector mm, bm;
     m_flav_label[fl[2]] = 2;
     m_flav_label[fl[3]] = 3;
-    for (int i = 2; i < fl.size(); i++) {
-      if(fl[i].IntCharge()!=0){
+    for(size_t i = 2; i < fl.size(); i++) {
+      if(fl[i].IntCharge()!=0 && !fl[i].IsQCD()){
         ff.push_back(fl[i]);
         mm.push_back(mom[i]);
         bm.push_back(m_bornmomenta[i]);
@@ -331,7 +332,7 @@ void Define_Dipoles::Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
     {
       for (int j = 2; j < fl.size(); ++j)
       {
-        if(!fl[j].IsChargedLepton()) continue;
+        if(fl[i].IntCharge()==0 || fl[i].IsQCD()) continue;
         ff.clear();
         mm.clear();
         bm.clear();
@@ -345,7 +346,7 @@ void Define_Dipoles::Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
         bm.push_back(born[i]);
         bm.push_back(born[j]);
         Dipole D(ff, mm, bm, dipoletype::ifi,m_alpha);
-        D.SetResonance(true);
+        D.SetResonance(false);
         m_dipolesIF.push_back(D);
       }
     }
