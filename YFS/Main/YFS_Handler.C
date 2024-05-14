@@ -175,7 +175,7 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
   m_FSRPhotons.clear();
   CalculateWWForm();
   CalculateCoulomb();
-  p = m_plab; 
+  p = m_plab;
   return true;
 }
 
@@ -280,7 +280,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   m_FSRPhotons.clear();
   if (p_dipoles->GetDipoleFF()->size() == 0) {
-    msg_Error() << "No dipoles found for YFS FSR " << std::endl;
+    THROW(fatal_error,"No dipoles found for YFS FSR");
     return true;
   }
   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
