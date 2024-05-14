@@ -710,6 +710,9 @@ bool Initialization_Handler::InitializeTheYFS(){
   p_yfshandler = new YFS::YFS_Handler();
   if(p_yfshandler->GetMode()!=0) {
     msg_Info()<<"Initialized YFS for Soft Photon Resummation"<<std::endl;
+    for (const auto &pdf: m_pdflibs) {
+      if(pdf!="None") THROW(fatal_error,"Cannot use PDFs with initial state YFS. Disable the PDF (PDF_LIBRARY: None) or YFS (YFS: MODE: OFF)");
+    }
     for (size_t beam=0;beam<2;++beam) {
       p_yfshandler->SetInFlav(m_bunch_particles[beam]);
       p_yfshandler->SetBeam(p_beamspectra);
