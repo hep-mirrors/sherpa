@@ -351,11 +351,19 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
     if (proc) {
       m_procs.push_back(proc);
       procs.push_back(proc);
-      if (pmap==NULL) {
-	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
-	pmap=m_pmaps.back();
+      p_yfs->SetFlavours(pi.ExtractFlavours());
+    }
+    else{
+      Process_Base *proc(m_gens.InitializeProcess(pi, true));
+      if (proc) {
+        m_procs.push_back(proc);
+        procs.push_back(proc);
+        if (pmap==NULL) {
+  	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
+  	pmap=m_pmaps.back();
+        }
+        m_procs.back()->FillProcessMap(pmap);
       }
-      m_procs.back()->FillProcessMap(pmap);
     }
     return procs;
   }
