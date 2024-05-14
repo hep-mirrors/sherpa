@@ -1,0 +1,45 @@
+EVENT_GENERATION_MODE: 'Weighted'
+BEAMS:
+- 11
+- -11
+
+BEAM_ENERGIES: 161.2/2
+# BEAM_REMNANTS: false
+# FRAGMENTATION: None
+# MI_HANDLER: None
+
+ME_GENERATORS: 
+  - Comix
+
+PARTICLE_DATA:
+  11:
+    Massive: 1
+  13:
+    Massive: 1
+  15:
+    Massive: 1
+
+
+PROCESSES:
+- 11 -11 -> 13 -14 -11 12:
+    Order:
+      EW: 4
+      QCD: 0
+    
+
+SCALES: VAR{91.2*91.2}
+# SHOWER_GENERATOR: None
+CS_EW_MODE: 1
+
+
+# ME_QED:
+#   ENABLED: 0
+
+YFS:
+  MODE: Full
+
+ANALYSIS: Rivet
+
+
+RIVET:
+  ANALYSES: MC_WWINC:PTEMIN=5
