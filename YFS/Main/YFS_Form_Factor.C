@@ -366,7 +366,6 @@ DivArrC YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4
   t3 -= DiLog(zeta1) + DiLog(zeta2);
   t3 += sqr(M_PI);
   t3 /= rho;
-  PRINT_VAR(t1.GetEpsilon());
   return m_alpi * (t1 + t2 + t3);
 }
 
@@ -623,9 +622,7 @@ double YFS_Form_Factor::C0(double p12, double p22, double p23,
                           double m1, double m2, double m3){
 
   // Eq B5 in https://arxiv.org/pdf/hep-ph/0308246.pdf
-  PRINT_VAR(m1);
   DivArrC t2 = Master_Triangle(p12,p22,p23,m1,m2,m3,0);
-  PRINT_VAR(t2);
   // double m12 = m1*m2;
   // // double s=(p1-p2).Abs2();
   // double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;

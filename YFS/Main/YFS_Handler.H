@@ -149,7 +149,6 @@ public:
     inline double GetReal() const { return m_real; }
     inline double GetVirtual() const { return m_virt; }
     inline double GetV()   const { return m_v;}
-    inline void SetMode(int mode)    { m_mode = mode;}
     inline void SetModel(MODEL::Model_Base *model)    { p_model = model;}
     inline void SetOrder(int order)  { m_order = order;}
     inline void SetProcessInfo(PHASIC::Process_Info &pi) {p_pi = pi;}
@@ -196,7 +195,7 @@ public:
     inline void SetRunMode(const int &rmode) { m_rmode = rmode; }
     inline bool UseCEEX() {return m_useceex;}
     inline YFS::Ceex_Base *CEEX() {return p_ceex;}
-
+    inline yfsmode::code  Mode()   const {return m_mode; }
     double Eikonal(Vec4D k);
     double CalculateNLO();
     double MasslessEikonal(Vec4D k, Vec4D p1, Vec4D p2);

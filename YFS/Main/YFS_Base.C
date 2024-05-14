@@ -97,7 +97,7 @@ void YFS_Base::RegisterDefaults(){
 void YFS_Base::RegisterSettings(){
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   m_betaorder = s["BETA"].Get<int>();
-  m_mode = s["MODE"].Get<int>();
+  m_mode = s["MODE"].Get<yfsmode::code>();
   m_isrcut   = s["IR_CUTOFF"].Get<double>();
   m_isrcut = m_isrcut/sqrt(m_s); // dimensionless units
   m_vmax = s["VMAX"].Get<double>();
@@ -174,19 +174,43 @@ void YFS_Base::RegisterSettings(){
 
 }
 
+
 std::istream &YFS::operator>>(std::istream &str,submode::code &sub)
 {
   std::string tag;
   str>>tag;
   sub=submode::local;
-  if      (tag.find("Off")!=std::string::npos)  sub=submode::off;
-  else if (tag.find("0")!=std::string::npos)    sub=submode::off;
-  else if (tag.find("Local")!=std::string::npos)sub=submode::local;
-  else if (tag.find("1")!=std::string::npos)   sub=submode::local;
+  if      (tag.find("Off")!=std::string::npos)    sub=submode::off;
+  else if (tag.find("0")!=std::string::npos)      sub=submode::off;
+  else if (tag.find("Local")!=std::string::npos)  sub=submode::local;
+  else if (tag.find("1")!=std::string::npos)      sub=submode::local;
   else if (tag.find("Global")!=std::string::npos) sub=submode::global;
-  else if (tag.find("2")!=std::string::npos)    sub=submode::global;
+  else if (tag.find("2")!=std::string::npos)      sub=submode::global;
   return str;
 }
+
+std::istream &YFS::operator>>(std::istream &str, yfsmode::code &mode)
+{
+  std::string tag;
+  str>>tag;
+  mode=yfsmode::off;
+  if      (tag.find("Off")!=std::string::npos)    mode=yfsmode::off;
+  else if (tag.find("ISRFSR")!=std::string::npos) mode=yfsmode::isrfsr;
+  else if (tag.find("ISR")!=std::string::npos)    mode=yfsmode::isr;
+  else if (tag.find("FSR")!=std::string::npos)    mode=yfsmode::fsr;
+  // else THROW(fatal_error, "Unknown YFS: MODE for Lepton Colliders")
+  return str;
+}
+
+std::ostream &YFS::operator<<(std::ostream &str,const yfsmode::code &ym)
+{
+  if      (ym==yfsmode::off)    return str<<"Off";
+  else if (ym==yfsmode::isr)    return str<<"ISR";
+  else if (ym==yfsmode::isrfsr) return str<<"ISR+FSR";
+  else if (ym==yfsmode::fsr)    return str<<"FSR";
+  return str<<"unknown";
+}
+
 
 
 double YFS_Base::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {

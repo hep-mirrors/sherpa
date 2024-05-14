@@ -18,7 +18,20 @@ namespace YFS {
     };
   };
 
+  struct yfsmode {
+  enum code {
+    off       = 0,
+    isr       = 1,
+    isrfsr    = 2,
+    fsr       = 3,
+  };
+};
+
+
+
   std::istream &operator>>(std::istream &str,submode::code &sm);
+  std::istream &operator>>(std::istream &str, yfsmode::code &sm);
+  std::ostream &operator<<(std::ostream &str, const yfsmode::code &sm);
 
   class YFS_Base { 
   protected:
@@ -42,7 +55,7 @@ namespace YFS {
     double m_nbar, m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
     int m_yfsmode, m_N, m_order, m_nmax, m_betaorder, m_N_FSR, m_fullform, m_formWW, m_ifisub;
     int m_fsrmode, m_useint, m_check_mass_reg, m_check_poles, m_check_real,m_check_rr, m_use_fsr_beta;
-    int m_mode, m_rmode, m_semiyfs, m_NReal, m_qedmode,m_kkmcAngles, m_griff, m_fixed_photons; 
+    int m_rmode, m_semiyfs, m_NReal, m_qedmode,m_kkmcAngles, m_griff, m_fixed_photons; 
     int m_no_born, m_check_real_sub, m_no_subtraction,m_tchannel, m_resonance_mode, m_check_virt_born,m_noflux, m_massless_sub;
     bool m_looptool, m_setmass, m_coll_real, m_RealPhotons, m_virtual_only, m_real_only, m_use_model_alpha;
     bool m_beamspread, m_isrinital,m_realtool,m_realvirt,m_useceex,m_realrealtool, m_check_rr_sub, m_realeex;
@@ -52,7 +65,7 @@ namespace YFS {
     // beam energy spread values
     double m_beam_sigx, m_beam_sigy, m_beam_rho;
     submode::code m_submode;
-
+    yfsmode::code m_mode;
 
     void RegisterSettings();
     void RegisterDefaults();
