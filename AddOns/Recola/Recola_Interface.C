@@ -164,13 +164,8 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_VMODE"].SetDefault(0);
   s["RECOLA_AMPTYPE"].SetDefault(1);
   s["RECOLA_PHOTON_MASS"].SetDefault(0.1);
-  s["RECOLA_USE_DECAY"].SetDefault(1);
   s["RECOLA_MASS_REG"].SetDefault(false);
-  s["RECOLA_NO_SELF_ENERGY"].SetDefault(false);
-  s["RECOLA_CMS"].SetDefault(true);
-  s["RECOLA_USE_DECAY"].SetDefault(false);
-  s["RECOLA_QED_ONLY"].SetDefault(false);
-  s["RECOLA_EW_ONLY"].SetDefault(false);
+  s["RECOLA_USE_DECAY"].SetDefault(1);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -251,9 +246,22 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   if(MODEL::s_model->Name() != "SM")
     THROW(not_implemented, "ONLY Standard Model so far supported in RECOLA");
   
+  s_mass_reg = s["RECOLA_MASS_REG"].Get<bool>();
+  if(!s_mass_reg && yfs->Mode()!=YFS::yfsmode::off){ 
+    THROW(fatal_error, "Dimensional regularization is not supported for YFS. Use RECOLA_MASS_REG: 1");
+  }
+  if(s_mass_reg){
+    // use massive reg for YFS
+    s_photon_mass = s["RECOLA_PHOTON_MASS"].Get<double>();
+    if(s_photon_mass != yfs->m_photonMass){
+        msg_Error()<<"Mismatch between YFS and Recola photon mass"
+                   <<"\n mass in YFS = "<<yfs->m_photonMass
+                   <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
+        THROW(fatal_error,"Mismatch in photon mass regulator");
+    }
+    use_mass_reg_soft_rcl(s_photon_mass);
+  }
   bool recolaOnShellZW = s["RECOLA_ONSHELLZW"].Get<bool>();
-  bool recolaCMS = s["RECOLA_CMS"].Get<bool>();
-  if(!recolaCMS) set_on_shell_scheme_rcl();
   // set particle masses/widths
   if(recolaOnShellZW != 0){
     set_onshell_mass_z_rcl(Flavour(kf_Z).Mass(),Flavour(kf_Z).Width());
@@ -327,7 +335,7 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
                         Flavour(kf_c).Width(),Flavour(kf_b).Width(),
                         Flavour(kf_t).Width()); 
   
-  s_fixed_flav=Recola_Interface::GetDefaultFlav()+10; 
+  s_fixed_flav=Recola_Interface::GetDefaultFlav()+10;
   return true;
 }
 
@@ -346,7 +354,7 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   msg_Debugging()<<"process string = "<<process2Recola(args.Flavours())<<"\n";
   
   string procstring(process2Recola(args.Flavours()));
-  define_process_rcl(procIndex, procstring.c_str(), "LO");
+  define_process_rcl(procIndex, procstring.c_str(), "NLO");
   
   
   Settings& s = Settings::GetMainSettings();
@@ -357,7 +365,7 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   if (amptype==12)
   {
     // set collier caching level
-    int cc=s["COLLIER_CACHE"].Get<int>();
+    int cc=s["RECOLA_COLLIER_CACHE"].Get<int>();
     if (cc>=0) split_collier_cache_rcl(procIndex,cc);
     select_gs_power_LoopAmpl_rcl(procIndex,args.m_orders[0]);
   }
