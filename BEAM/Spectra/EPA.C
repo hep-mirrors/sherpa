@@ -35,6 +35,11 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
     THROW(fatal_error, "Specify either one or two values for `EPA:Q2Max'.");
   m_q2Max = (_dir > 0) ? q2Max.front() : q2Max.back();
 
+  std::vector<double> q2Min{s["EPA"]["Q2Min"].GetVector<double>()};
+  if (q2Min.size() != 1 && q2Min.size() != 2)
+    THROW(fatal_error, "Specify either one or two values for `EPA:Q2Min'.");
+  m_q2Min = (_dir > 0) ? q2Min.front() : q2Min.back();
+
   std::vector<double> xmin{s["EPA"]["xMin"].GetTwoVector<double>()};
   m_xmin = (_dir > 0) ? xmin.front() : xmin.back();
 
@@ -79,6 +84,7 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
 void EPA::RegisterDefaults() const {
   Settings &s = Settings::GetMainSettings();
   s["EPA"]["Q2Max"].SetDefault(3.0);
+  s["EPA"]["Q2Min"].SetDefault(-1.);
   s["EPA"]["xMax"].SetDefault(1.);
   s["EPA"]["xMin"].SetDefault(0.);
   s["EPA"]["PTMin"].SetDefault(0.0);
@@ -253,6 +259,7 @@ bool EPA::CalculateWeight(double x, double q2) {
     // compare hep-ph/9610406 and hep-ph/9310350
     double q2min = sqr(m_mass * m_x) / (1 - m_x);
     double q2max = Min(q2min + sqr(m_energy) * (1 - m_x) * sqr(m_theta_max),m_q2Max);
+    q2min = Max(sqr(m_mass * m_x) / (1 - m_x), m_q2Min);
     double f = alpha / M_PI / 2 / m_x *
                ((1 + sqr(1 - m_x)) * log(q2max / q2min) -
                 2 * sqr(m_mass * m_x) * (1 / q2min - 1 / q2max));
