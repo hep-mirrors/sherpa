@@ -20,12 +20,12 @@ Recola::Recola_Virtual::Recola_Virtual(const Process_Info& pi,
   m_modebackup(m_mode), m_ismapped(false)
 {
   m_procmap[m_recola_id]=pi;
-  Scoped_Settings s{ Settings::GetMainSettings()["Recola"] };
+  Settings& s = Settings::GetMainSettings();
   m_providespoles=false;
   m_fixedIRscale=true;
 
-  m_IRscale=s["IR_SCALE"].Get<double>();
-  m_UVscale=s["UV_SCALE"].Get<double>();
+  m_IRscale=s["RECOLA_IR_SCALE"].Get<double>();
+  m_UVscale=s["RECOLA_UV_SCALE"].Get<double>();
   m_modebackup=m_mode=Recola_Interface::s_vmode;
   m_voqcd = pi.m_maxcpl[0];
   m_boqcd = pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0];
