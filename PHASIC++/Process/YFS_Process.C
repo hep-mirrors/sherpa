@@ -67,7 +67,6 @@ void YFS_Process::Init(const Process_Info &pi,
 {
   m_gens.InitializeProcess(pi, true);
   p_yfs = yfs;
-  p_yfs->m_setparticles = false;
   p_yfs->SetFlavours(pi.ExtractFlavours());
   Process_Info ypi(pi), vpi(pi);
   if (pi.m_fi.m_nlocpl[0] != 0) THROW(not_implemented, "YFS cannot do NLO QCD.");
@@ -125,7 +124,6 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int = p_bornproc->Integrator();
   p_int->Reset();
   auto psh = p_int->PSHandler();
-  p_yfs->m_setparticles = false;
   p_yfs->SetFlavours(psh->Flavs());
   psh->InitCuts();
   psh->CreateIntegrators();
