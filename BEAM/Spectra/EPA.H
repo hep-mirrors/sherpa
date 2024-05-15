@@ -17,7 +17,7 @@ namespace BEAM {
     };
 
     double m_mass, m_charge, m_gamma, m_minR, m_maxR;
-    double m_q2Max, m_pt_min, m_aqed, m_theta_max;
+    double m_q2Max, m_q2Min, m_pt_min, m_aqed, m_theta_max;
     double m_xmin, m_xmax;
 
     bool m_lo_epa;
