@@ -272,6 +272,16 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
   DEBUG_FUNC(Name());
+  if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
+    //need to set born for YFS subtraction
+    p_int->YFS()->SetBorn(m_lastxs);
+    p_int->YFS()->GenerateWeight();
+    double yfsW = p_int->YFS()->GetWeight();
+    if(IsBad(yfsW)){
+      msg_Error()<<"YFS Weight is "<<yfsW<<std::endl;
+    } 
+    csi.AddWeight(yfsW);
+  }
   if (p_int->ISR()) {
     // add external PDF weight (before clustering)
     double pdfext(p_int->ISR()->PDFWeight(0,
@@ -539,7 +549,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   Scale_Setter_Base* scales {ScaleSetter(1)};
 
   Partonic(p, varmode);
-
   double nominal {0.0};
   double facscale {0.0};
 
@@ -555,7 +564,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     m_csi = ClusterSequenceInfo(scales->Amplitudes(), facscale);
     m_csi.AddFlux(m_lastflux);
 
-    // update results
     nominal = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
     m_lastb = m_lastbxs;
     if (m_use_biweight) {
@@ -564,6 +572,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       m_lastb *= prefac;
     }
 
+    // update results
     if (p_mc != nullptr && m_dsweight && m_pinfo.Has(nlo_type::vsub)) {
       // calculate DADS term for MC@NLO: one PS point, many dipoles
       m_mewgtinfo.m_type |= mewgttype::DADS;
@@ -610,7 +619,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
 
   } else {
-
     const auto triggers = Selector()->CombinedResults();
 
     for (int i {0}; i < GetSubevtList()->size(); ++i) {
@@ -1175,6 +1183,9 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
         p_int->ISR()->SetPartonMasses(m_flavs);
       }
     }
+  }
+  if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
+    p_int->YFS()->SetFlavours(m_flavs);
   }
   psh->CreateIntegrators();
   psh->InitCuts();

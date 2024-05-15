@@ -43,7 +43,8 @@ namespace COMIX {
     // member functions
     bool Initialize(MODEL::Model_Base *const model,
                     BEAM::Beam_Spectra_Handler *const beamhandler,
-                    PDF::ISR_Handler *const isrhandler) override;
+                    PDF::ISR_Handler *const isrhandler,
+                    YFS::YFS_Handler *const yfshandler) override;
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
                                             bool add) override;
     int PerformTests() override;
@@ -160,13 +161,15 @@ void Comix::PrintVertices()
 
 bool Comix::Initialize(MODEL::Model_Base *const model,
 		       BEAM::Beam_Spectra_Handler *const beamhandler,
-		       PDF::ISR_Handler *const isrhandler)
+		       PDF::ISR_Handler *const isrhandler,
+		       YFS::YFS_Handler *const yfshandler)
 {
   RegisterDefaults();
 
   p_model=model;
   p_int->SetBeam(beamhandler); 
   p_int->SetISR(isrhandler);
+  p_int->SetYFS(yfshandler);
   SetPSMasses();
 
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
@@ -226,7 +229,7 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   if (oneisgroup) {
     newxs = new Process_Group();
     newxs->SetGenerator(this);
-    newxs->Init(pi,p_int->Beam(),p_int->ISR());
+    newxs->Init(pi,p_int->Beam(),p_int->ISR(),p_int->YFS());
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
     newxs->Get<COMIX::Process_Base>()->SetCTS(p_cts);
     if (!newxs->Get<Process_Group>()->Initialize(&pmap,&m_umprocs.back())) {
@@ -248,7 +251,7 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   else {
     newxs = new Single_Process();
     newxs->SetGenerator(this);
-    newxs->Init(pi,p_int->Beam(),p_int->ISR());
+    newxs->Init(pi,p_int->Beam(),p_int->ISR(),p_int->YFS());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
     newxs->Get<COMIX::Process_Base>()->SetCTS(p_cts);

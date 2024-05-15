@@ -12,6 +12,7 @@ namespace PHASIC   { class Process_Base; }
 namespace MODEL    { class Model_Base; }
 namespace AMISIC   { class Amisic; }
 namespace SHRIMPS  { class Shrimps; }
+namespace YFS      { class YFS_Handler; }
 
 namespace SHERPA {
   class Matrix_Element_Handler;
@@ -30,6 +31,7 @@ namespace SHERPA {
   private:
     PDF::ISR_Handler          * p_isr;
     PDF::isr::id                m_id;   
+    YFS::YFS_Handler          * p_yfs;
     REMNANTS::Remnant_Handler * p_remnants;
     AMISIC::Amisic            * p_amisic;
     SHRIMPS::Shrimps          * p_shrimps;
@@ -47,7 +49,7 @@ namespace SHERPA {
     void InitShrimps(MODEL::Model_Base *model);
   public:
     MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr,
-               REMNANTS::Remnant_Handler * remnant_handler);
+               YFS::YFS_Handler *yfs, REMNANTS::Remnant_Handler * remnant_handler);
     ~MI_Handler();
     
     bool InitialiseMPIs(const double & scale);

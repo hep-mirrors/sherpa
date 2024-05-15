@@ -21,6 +21,7 @@ namespace ATOOLS {
     bool StretchBlob(Blob* blob);
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<Vec4D>& moms);
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<double>& masses);
+    bool StretchMomenta( std::vector<Vec4D>& moms, std::vector<double>& masses);
 
     //inline void Reset() { s_fails = 0; }
   };

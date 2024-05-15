@@ -50,7 +50,8 @@ namespace EXTAMP {
        processes are initialized as well */
     void Init(const PHASIC::Process_Info &pi,
 	      BEAM::Beam_Spectra_Handler *const beamhandler,
-	      PDF::ISR_Handler *const isrhandler,const int mode=0);
+	      PDF::ISR_Handler *const isrhandler,
+	      YFS::YFS_Handler *const yfshandler, const int mode=0);
 
     /* Overload the following methods of PHASIC::Process_Base in such
        a way as to forward calls to dipole wrappers as well. */

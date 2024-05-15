@@ -50,7 +50,7 @@ Recola::Recola_Virtual::Recola_Virtual(const Process_Info& pi,
     THROW(fatal_error,"Associated contribs only implemented for NLO QCD.");
 
 }
-  
+
 void Recola::Recola_Virtual::Calc(const Vec4D_Vector& momenta) {
   m_mode=m_modebackup;
   if (!Recola_Interface::checkProcGeneration()){
@@ -78,12 +78,12 @@ void Recola::Recola_Virtual::Calc(const Vec4D_Vector& momenta) {
     <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
   }
 
-  
+
   double coupling(1.);
   if (m_stype&sbt::qcd) coupling=AlphaQCD();
   else if (m_stype&sbt::qed) coupling=AlphaQED();
   else THROW(fatal_error,"Unknown coupling.");
-  
+
 
   // if Born vanishes, do not divide by it, reset mode for this event
   if(!(m_mode&1) && m_born==0.) {
@@ -121,7 +121,7 @@ operator()(const PHASIC::Process_Info &pi) const
   if (pi.m_fi.m_nlotype!=nlo_type::loop) return NULL;
 
   int procIndex=Recola_Interface::RegisterProcess(pi, 11);
-  
+
   if (procIndex>0) {
     Flavour_Vector flavs = pi.ExtractFlavours();
     return new Recola_Virtual(pi, flavs, procIndex);

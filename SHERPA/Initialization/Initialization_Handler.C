@@ -301,6 +301,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_variations)    { delete p_variations;    p_variations    = NULL; }
   if (p_filter)        { delete p_filter;        p_filter        = NULL; }
+  if (p_yfshandler)    { delete p_yfshandler;    p_yfshandler    = NULL; }
   while (m_analyses.size()>0) {
     delete m_analyses.back();
     m_analyses.pop_back();
@@ -547,10 +548,12 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
-  okay = okay && InitializeTheRemnants();
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
   p_model->InitializeInteractionModel();
+  okay = okay && InitializeTheYFS();
+  // need to initalize yfs before remnants
+  okay = okay && InitializeTheRemnants();
   if (!CheckBeamISRConsistency()) return 0.;
   if (m_mode==eventtype::EventReader) {
     std::string infile;
@@ -696,6 +699,21 @@ bool Initialization_Handler::InitializeTheBeams()
   p_beamspectra = new Beam_Spectra_Handler();
   p_beamspectra->Output();
   return 1;
+}
+
+bool Initialization_Handler::InitializeTheYFS(){
+  p_yfshandler = new YFS::YFS_Handler();
+  if(p_yfshandler->Mode()!=YFS::yfsmode::off) {
+    msg_Info()<<"Initialized YFS for Soft Photon Resummation"<<std::endl;
+    for (const auto &pdf: m_pdflibs) {
+      if(pdf!="None") THROW(fatal_error,"Cannot use PDFs with initial state YFS. Disable the PDF (PDF_LIBRARY: None) or YFS (YFS: MODE: OFF)");
+    }
+    for (size_t beam=0;beam<2;++beam) {
+      p_yfshandler->SetInFlav(m_bunch_particles[beam]);
+      p_yfshandler->SetBeam(p_beamspectra);
+    }
+  }
+  return true;
 }
 
 bool Initialization_Handler::InitializeThePDFs()
@@ -940,12 +958,12 @@ bool Initialization_Handler::InitializeTheRemnants() {
   ///////////////////////////////////////////////////////////
   REMNANTS::Remnants_Parameters();
   m_remnanthandlers[isr::hard_process] =
-    new Remnant_Handler(m_isrhandlers[isr::hard_process],p_beamspectra,
+    new Remnant_Handler(m_isrhandlers[isr::hard_process],p_yfshandler,p_beamspectra,
 			m_bunchtags[isr::hard_process]);
   m_remnanthandlers[isr::hard_subprocess] = m_remnanthandlers[isr::hard_process];
   if (m_isrhandlers.find(isr::bunch_rescatter)!=m_isrhandlers.end()) {
     m_remnanthandlers[isr::bunch_rescatter] =
-      new Remnant_Handler(m_isrhandlers[isr::bunch_rescatter],p_beamspectra,
+      new Remnant_Handler(m_isrhandlers[isr::bunch_rescatter],p_yfshandler,p_beamspectra,
 			  m_bunchtags[isr::bunch_rescatter]);
   }
   msg_Info()<<"Remnant_Handlers:\n"
@@ -988,7 +1006,8 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
   p_mehandler->SetRemnantHandler(m_remnanthandlers[isr::hard_process]);
   auto ret = p_mehandler->InitializeProcesses(p_beamspectra,
-                                              m_isrhandlers[isr::hard_process]);
+                                              m_isrhandlers[isr::hard_process],
+                                              p_yfshandler);
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
   return ret==1;
@@ -1034,7 +1053,7 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   for (size_t i=0; i<isrtypes.size(); ++i) {
     isr::id id = isrtypes[i];
     as->SetActiveAs(isr::hard_subprocess);
-    MI_Handler * mih = new MI_Handler(p_model,m_isrhandlers[id],m_remnanthandlers[id]);
+    MI_Handler * mih = new MI_Handler(p_model,m_isrhandlers[id],p_yfshandler,m_remnanthandlers[id]);
     mih->SetShowerHandler(m_showerhandlers[id]);
     as->SetActiveAs(isr::hard_process);
     m_mihandlers[id] = mih;

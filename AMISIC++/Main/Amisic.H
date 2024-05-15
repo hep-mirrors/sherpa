@@ -8,6 +8,7 @@
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "YFS/Main/YFS_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/File_IO_Base.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -76,6 +77,7 @@ namespace AMISIC {
 
     bool Initialize(MODEL::Model_Base *const model,
 		    PDF::ISR_Handler *const isr,
+		    YFS::YFS_Handler *const yfs,
                     REMNANTS::Remnant_Handler * remnant_handler);
 
     bool InitMPIs(PDF::ISR_Handler *const isr, const double & scale);

@@ -18,6 +18,7 @@ Amisic::~Amisic() {
 
 bool Amisic::Initialize(MODEL::Model_Base *const model,
 			PDF::ISR_Handler *const isr,
+			YFS::YFS_Handler *const yfs,
                         REMNANTS::Remnant_Handler * remnant_handler)
 {
   InitParametersAndType(isr);
@@ -39,7 +40,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   //   where x_1 and x_2 are identical
   p_processes = new MI_Processes(m_variable_s);
   p_processes->SetXSecCalculator(p_xsecs);
-  p_processes->Initialize(model,nullptr,isr);
+  p_processes->Initialize(model,nullptr,isr,yfs);
   // Initialize the Over_Estimator - mainly fixing an effective prefactor to allow
   // for a quick'n'dirty fix to create fast estimates of the next scatter's pT^2.
   m_overestimator.Initialize(p_processes);

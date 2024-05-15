@@ -16,11 +16,11 @@ using namespace ATOOLS;
 using namespace std;
 
 Remnant_Handler::
-Remnant_Handler(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,const vector<size_t> & tags) :
+Remnant_Handler(PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler *beam,const vector<size_t> & tags) :
   p_softblob(nullptr), m_check(true), m_output(false), m_fails(0) {
   rempars = new Remnants_Parameters();
   rempars->Init();
-  InitializeRemnants(isr, beam,tags);
+  InitializeRemnants(isr, yfs, beam,tags);
   DefineRemnantStrategy();
   InitializeKinematicsAndColours();
 }
@@ -34,7 +34,7 @@ Remnant_Handler::~Remnant_Handler() {
 }
 
 void Remnant_Handler::
-InitializeRemnants(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,
+InitializeRemnants(PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler *beam,
 		   const vector<size_t> & tags) {
   for (size_t i = 0; i < 2; ++i) {
     m_tags[i]     = tags[i];
@@ -48,6 +48,10 @@ InitializeRemnants(PDF::ISR_Handler *isr,BEAM::Beam_Spectra_Handler *beam,
       else if (flav.IsPhoton()) {
         p_remnants[i] = new Photon_Remnant(isr->PDF(i), i, m_tags[i]);
       }
+    }
+    if(yfs->Mode()!=YFS::yfsmode::off){
+      // Should always be a lepton
+      p_remnants[i] = new Electron_Remnant(yfs,i,m_tags[i]);
     }
     if (p_remnants[i] == nullptr)
       p_remnants[i] = new No_Remnant(i, m_tags[i]);
@@ -120,7 +124,6 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
   // This method is called after each successful parton shower off a hard
   // scatter.  It extracts the two initial particles from the shower and
   // extracts them from the corresponding beam remnant.
-
   // Make sure only shower blobs with exactly two initiators are treated,
   // and only once.
   // (Shower blob with more initiators are typically from hadron decays.)

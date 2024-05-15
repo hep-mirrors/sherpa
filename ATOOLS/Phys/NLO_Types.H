@@ -73,6 +73,7 @@ namespace ATOOLS {
       fixedorder = 1,
       powheg     = 2,
       mcatnlo    = 3,
+      yfs        = 4,
       unknown    = 99
     };
   };// end of struct nlo_type
