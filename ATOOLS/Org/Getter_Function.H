@@ -84,7 +84,7 @@ namespace ATOOLS {
       void PrintInfo(std::ostream &str,const size_t width) const;	\
       Object_Type *operator()(const Parameter_Type &parameters) const;	\
     public:								\
-      Getter<OBJECT,PARAMETER,NAME,SORT>(const bool &d=true):		\
+      Getter(const bool &d=true):		\
 	Getter_Function<OBJECT,PARAMETER,SORT>(TAG)			\
 	{ SetDisplay(d); }						\
     };									\
@@ -107,8 +107,7 @@ namespace ATOOLS {
       void PrintInfo(std::ostream &str,const size_t width) const;	\
       Object_Type *operator()(const Parameter_Type &parameters) const;	\
     public:								\
-      Getter<OBJECT,PARAMETER,NAME,SORT>				\
-	(const std::string &name,const bool d=true):			\
+      Getter(const std::string &name,const bool d=true):			\
 	Getter_Function<OBJECT,PARAMETER,SORT>(name)			\
 	{ SetDisplay(d); }						\
     };									\
