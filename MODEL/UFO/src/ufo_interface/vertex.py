@@ -1,5 +1,5 @@
 from itertools import groupby
-from .calculators import calc_color
+from .s_color import s_color
 
 
 def _filter_vertex(vertex):
@@ -49,13 +49,17 @@ def vertex_implementation(vertex_list, hierachy):
             for coupling_info in coupling_type:
                 color_idx, lorentz_idx = coupling_info[0]
                 lorentz = vert.lorentz[lorentz_idx]
-                color = calc_color(vert.color[color_idx])
+                # TODO: Use internal color functions when available
+                # color = calc_color(vert.color[color_idx])
+                color = s_color(vert.color[color_idx]).unique_id
+                if color == '1':
+                    color = 'None'
                 coupling = coupling_info[1]
                 func_impl += (indent +
                               'm_v.back().cpl.push_back(ATOOLS::Kabbala("{0}",'
                               + ' ComplexConstant(std::string("{0}"))));').format(coupling.name)
                 func_impl += (indent +
-                              'm_v.back().Color.push_back({0});').format(color)
+                              'm_v.back().Color.push_back(UFO::UFO_CF("{0}"));').format(color)
                 func_impl += (indent +
                               f'm_v.back().Lorentz.push_back("{lorentz}");')
 
