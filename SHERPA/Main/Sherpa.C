@@ -375,62 +375,42 @@ double Sherpa::GetMEWeight(const Cluster_Amplitude &ampl,const int mode) const
 
 void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
 {
-  msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl;
-  if (msg->Level()>0) msg_Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
-  msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl
-	    <<"................................................ |       +                   "<<std::endl
-	    <<"................................................ ||  |       +  +            "<<std::endl
-	    <<"...................................        ....  | |         /   +           "<<std::endl
-	    <<"................. ................   _,_ |  ....  ||         +|  +  +        "<<std::endl
-	    <<"...............................  __.'  ,\\|  ...  ||    /    +|          +    "<<std::endl
-	    <<".............................. (  \\    \\   ...  | |  |   + + \\         +   "<<std::endl
-	    <<".............................  (    \\   -/  .... ||       +    |          +  "<<std::endl
-	    <<"........ ...................  <S   /()))))~~~~~~~~##     +     /\\    +       "<<std::endl
-	    <<"............................ (!H   (~~)))))~~~~~~#/     +  +    |  +         "<<std::endl
-	    <<"................ ........... (!E   (~~~)))))     /|/    +         +          "<<std::endl
-	    <<"............................ (!R   (~~~)))))   |||   + +            +        "<<std::endl
-	    <<"..... ...................... (!P    (~~~~)))   /|  + +          +            "<<std::endl
-	    <<"............................ (!A>    (~~~~~~~~~##        + +        +        "<<std::endl
-	    <<"............................. ~~(!    '~~~~~~~ \\       +     + +      +      "<<std::endl
-	    <<"...............................  `~~~QQQQQDb //   |         + + +        +   "<<std::endl
-	    <<"........................ ..........   IDDDDP||     \\  + + + + +             +"<<std::endl
-	    <<"....................................  IDDDI||       \\                      + "<<std::endl
-	    <<".................................... IHD HD||         \\ + +  + + + + +      +"<<std::endl
-	    <<"...................................  IHD ##|            :-) + +\\          +  "<<std::endl
-	    <<"......... ............... ......... IHI ## /      /   +  + + + +\\       +    "<<std::endl
-	    <<"................................... IHI/ /       /      + + + +        +     "<<std::endl
-	    <<"................................... ## | | /    / + +      + + /      +      "<<std::endl
-	    <<"....................... /TT\\ .....  ##/ ///  / + + + + + + +/       +        "<<std::endl
-	    <<"......................./TTT/T\\ ... /TT\\/\\\\\\ / + + + + + + +/   \\         +   "<<std::endl
-	    <<"....................../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /              "<<std::endl
-	    <<"-----------------------------------------------------------------------------"<<std::endl
-	    <<std::endl
-	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ("<<SHERPA_NAME<<")"<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     Authors:        Enrico Bothmann, Lois Flower, Christian Gutschow,       "<<std::endl
-	    <<"                     Stefan Hoeche, Mareen Hoppe, Max Knobbe, Frank Krauss,  "<<std::endl
-	    <<"                     Peter Meinzinger, Davide Napoletano, Alan Price,        "<<std::endl
-	    <<"                     Daniel Reichelt, Marek Schoenherr, Steffen Schumann,    "<<std::endl
-	    <<"                     Frank Siegert                                           "<<std::endl  
-	    <<"     Former Authors: Gurpreet Singh Chahal, Timo Fischer, Tanju Gleisberg,   "<<std::endl
-	    <<"                     Hendrik Hoeth, Johannes Krause, Silvan Kuttimalai,      "<<std::endl
-	    <<"                     Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,       "<<std::endl
-	    <<"                     Andreas Schaelicke, Holger Schulz, Jan Winter           "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     This program uses a lot of genuine and original research work           "<<std::endl
-	    <<"     by other people. Users are encouraged to refer to                       "<<std::endl
-	    <<"     the various original publications.                                      "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     Users are kindly asked to refer to the documentation                    "<<std::endl
-	    <<"     published under SciPost Phys 7 (2019) 3, 034                            "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     Please visit also our homepage                                          "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"       http://sherpa.hepforge.org                                            "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     for news, bugreports, updates and new releases.                         "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"-----------------------------------------------------------------------------"<<std::endl;
+  MyStrStream version;
+  version << "SHERPA v" << SHERPA_VERSION << "." << SHERPA_SUBVERSION
+          << " (" << SHERPA_NAME << ")";
+  msg_Info()<<"┌──────────────────────────────────────────────────────────────────────────┐\n"
+	    <<"│                                                                          │\n";
+  msg_Info()<<"│              "<<om::green<<"/"<<om::red<<"\\"<<om::reset<<"    /                                                    │\n";
+  msg_Info()<<"│      O    "<<om::blue<<"/"<<om::red<<"\\"<<om::green<<"/  "<<om::red<<"\\"<<om::reset<<"  /                                                     │\n";
+  msg_Info()<<"│    (//-| ~~~~~~~~o        " << std::left << std::setw(42) << version.str() << "    │\n";
+  msg_Info()<<"│     /\\ |          \\                                                     │\n";
+  msg_Info()<<"│    / / |           \\                                                    │\n";
+  msg_Info()<<"│                                                                         │\n"
+            <<"│                                                                         │\n"
+	    <<"│  Authors:        Enrico Bothmann, Lois Flower, Christian Gutschow,      │\n"
+	    <<"│                  Stefan Hoeche, Mareen Hoppe, Max Knobbe, Frank Krauss, │\n"
+	    <<"│                  Peter Meinzinger, Davide Napoletano, Alan Price,       │\n"
+	    <<"│                  Daniel Reichelt, Marek Schoenherr, Steffen Schumann,   │\n"
+	    <<"│                  Frank Siegert                                          │\n"
+	    <<"│  Former Authors: Gurpreet Singh Chahal, Timo Fischer, Tanju Gleisberg,  │\n"
+	    <<"│                  Hendrik Hoeth, Johannes Krause, Silvan Kuttimalai,     │\n"
+	    <<"│                  Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,      │\n"
+	    <<"│                  Andreas Schaelicke, Holger Schulz, Jan Winter          │\n"
+	    <<"│                                                                         │\n"
+	    <<"│  This program uses a lot of genuine and original research work          │\n"
+	    <<"│  by other people. Users are encouraged to refer to                      │\n"
+	    <<"│  the various original publications.                                     │\n"
+	    <<"│                                                                         │\n"
+	    <<"│  Users are kindly asked to refer to the documentation                   │\n"
+	    <<"│  published under SciPost Phys 7 (2019) 3, 034                           │\n"
+	    <<"│                                                                         │\n"
+	    <<"│  Please visit also our homepage                                         │\n"
+	    <<"│                                                                         │\n"
+	    <<"│    http://sherpa.hepforge.org                                           │\n"
+	    <<"│                                                                         │\n"
+	    <<"│  for news, bugreports, updates and new releases.                        │\n"
+	    <<"│                                                                         │\n"
+            <<"└─────────────────────────────────────────────────────────────────────────┘\n";
   rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Sherpa:2019gpd}.");
