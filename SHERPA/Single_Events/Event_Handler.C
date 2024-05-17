@@ -528,26 +528,31 @@ void Event_Handler::Finish() {
 			   abserr_size + relerr_size};
 
   // Print cross section table header.
-  msg_Out() << std::string(table_size, '-') << '\n';
-  msg_Out() << std::left << std::setw(max_weight_name_size)
+  msg_Out() << "\u250C";
+  for (int i {0}; i < table_size + 2; ++i) msg_Out() << "\u2500";
+  msg_Out() << "\u2510\n";
+  msg_Out() << "\u2502 " << std::left << std::setw(max_weight_name_size)
 	    << "Nominal or variation name";
   msg_Out() << std::right << std::setw(12) << "XS [pb]";
   msg_Out() << std::right << std::setw(12) << "RelDev";
   msg_Out() << std::right << std::setw(13) << "AbsErr [pb]";
-  msg_Out() << std::right << std::setw(12) << "RelErr" << '\n';
-  msg_Out() << std::string(table_size, '-') << '\n';
+  msg_Out() << std::right << std::setw(12) << "RelErr" << " \u2502\n";
+  msg_Out() << "\u251C";
+  for (int i {0}; i < table_size + 2; ++i) msg_Out() << "\u2500";
+  msg_Out() << "\u2524\n";
   // Define table row printer.
   auto printxs = [max_weight_name_size, xs_size, reldev_size, abserr_size,
 		  relerr_size](const std::string& name, double xs, double nom,
 			       double err) {
-    msg_Out() << om::bold << std::left << std::setw(max_weight_name_size)
+    msg_Out() << "\u2502 "
+	      << om::bold << std::left << std::setw(max_weight_name_size)
 	      << name << om::reset << std::right << om::blue << om::bold
 	      << std::setw(xs_size) << xs << om::reset << om::brown
 	      << std::setw(reldev_size - 2)
 	      << ((int((xs - nom) / nom * 10000)) / 100.0) << " %" << om::red
 	      << std::setw(abserr_size) << err << std::setw(relerr_size - 2)
 	      << ((int(err / xs * 10000)) / 100.0) << " %" << om::reset
-	      << std::endl;
+	      << " \u2502\n";
   };
 
   // Print nominal cross section and variations.
@@ -560,7 +565,9 @@ void Event_Handler::Finish() {
   }
 
   // Print cross section table footer.
-  msg_Out()<<std::string(table_size,'-')<<'\n';
+  msg_Out() << "\u2514";
+  for (int i {0}; i < table_size + 2; ++i) msg_Out() << "\u2500";
+  msg_Out() << "\u2518\n";
 }
 
 void Event_Handler::MPISync()
