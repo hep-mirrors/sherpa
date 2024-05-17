@@ -160,6 +160,7 @@ bool Sherpa::InitializeTheEventHandler()
 {
   eventtype::code mode = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
+  p_eventhandler->SetVariations(p_inithandler->GetVariations());
   Analysis_Vector *anas(p_inithandler->GetAnalyses());
   for (Analysis_Vector::iterator it=anas->begin(); it!=anas->end(); ++it) {
     (*it)->SetEventHandler(p_eventhandler);
