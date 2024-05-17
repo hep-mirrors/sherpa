@@ -112,6 +112,19 @@ bool Settings_Keys::IsBeginningOf(const Settings_Keys& other) const
   return true;
 }
 
+bool Settings_Keys::EndsWithParentIndexFor(const Settings_Keys& other) const
+{
+  if (size() < 1)
+    return false;
+  if (size() + 1 != other.size())
+    return false;
+  if (!IsBeginningOf(other))
+    return false;
+  if (!back().IsIndex() || !other.back().IsIndex() || !((other.end()-2)->IsIndex()))
+    return false;
+  return back().GetIndex() == (other.end()-2)->GetIndex();
+}
+
 std::ostream& ATOOLS::operator<<(std::ostream& s, const Settings_Keys& k)
 {
   for (size_t i{0}; i < k.size(); i++) {

@@ -57,6 +57,7 @@ namespace ATOOLS {
     bool ContainsNoIndizes() const;
 
     bool IsBeginningOf(const Settings_Keys&) const;
+    bool EndsWithParentIndexFor(const Settings_Keys&) const;
 
     friend std::ostream& operator<<(std::ostream&, const Settings_Keys&);
 

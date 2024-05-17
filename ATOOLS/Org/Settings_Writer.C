@@ -16,6 +16,7 @@ void Settings_Writer::WriteSettings(Settings& s)
   // check for settings that have not been used
   MyStrStream unused;
   bool did_find_unused {false};
+  std::map<std::string, std::set<std::string>> unused_toplevel_keys;
   for (const auto& reader : s.m_yamlreaders) {
     // Ignore Decaydata.yaml, which is not under the control of the user,
     // and would just clutter the not-used section of the Settings report,
@@ -29,9 +30,12 @@ void Settings_Writer::WriteSettings(Settings& s)
       // used, too
       const auto it = std::find_if(
           s.m_usedvalues.begin(), s.m_usedvalues.end(),
-          [&keys](
-              const std::pair<Settings_Keys, std::set<Settings::Defaults_Value>>
-                  &pair) { return pair.first.IsBeginningOf(keys); });
+          [&keys](const std::pair<Settings_Keys,
+                                  std::set<Settings::Defaults_Value>> &pair) {
+            return keys.IsBeginningOf(pair.first) ||
+                   pair.first.EndsWithParentIndexFor(keys);
+          });
+
       if (it == s.m_usedvalues.end()) {
         did_find_unused = true;
         if (!did_print_file_header) {
@@ -39,14 +43,14 @@ void Settings_Writer::WriteSettings(Settings& s)
           did_print_file_header = true;
         }
         unused << "- ";
-        for (int i {0}; i < keys.size(); i++) {
-          if (!keys[i].IsIndex()) {
-            if (i != 0)
-              unused << ':';
-            unused << keys[i].GetName();
-          }
-        }
+        unused << keys << " = ";
+        const auto vals = reader->GetFlattenedStringVectorWithDelimiters(keys);
+        if (vals.size() == 1)
+          unused << vals[0];
+        else
+          unused << vals;
         unused << '\n';
+        unused_toplevel_keys[reader->Name()].insert(keys[0].GetName());
       }
     }
     if (did_print_file_header)
@@ -54,9 +58,21 @@ void Settings_Writer::WriteSettings(Settings& s)
   }
   unused << '\n';
   if (did_find_unused) {
-    msg_Error() << "WARNING: Some settings that have been defined in the input\n"
-                << "files and/or the command line have not been used. For more\n"
-                << "details, see the Settings Report.\n";
+    msg_Info()
+        << om::brown << om::bold << "WARNING" << om::reset
+        << ": Some settings that have been defined in the input files and/or\n"
+        << "  the command line have not been used. The following top-level settings\n"
+        << "  have not been used or include subsettings that have not been used:\n";
+    for (const auto &kv : unused_toplevel_keys) {
+      msg_Out() << "  - " << kv.first << ": ";
+      for (const auto &key : kv.second)
+        msg_Out() << key << " ";
+      msg_Out() << "\n";
+    }
+    msg_Out()
+        << "  For more details, inspect the Settings Report: Run `make` within\n"
+        << "  the Settings_Report directory (requires `pandoc` to be installed),\n"
+        << "  then open 'Settings_Report.html' with your browser.\n";
   }
 
 
@@ -119,7 +135,7 @@ void Settings_Writer::WriteSettings(Settings& s)
            it != s.m_yamlreaders.rend();
            ++it) {
         auto new_vals =
-          (*it)->GetFlattenedStringVectorWithDelimiters(keys, "{{", "}}");
+          (*it)->GetFlattenedStringVectorWithDelimiters(keys);
         int maxdim = 0, curdim = 0;
         for (const auto& val : new_vals) {
           if (val == "{{") {
