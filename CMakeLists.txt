@@ -82,7 +82,7 @@ if (HEPMC3_DIR AND HepMC3_DIR)
   endif()
 elseif (HEPMC3_DIR)
   message(WARNING "Please use -DHepMC3_DIR instead of -DHEPMC3_DIR. Will use the value found in HEPMC3_DIR to set HepMC3_DIR.")
-  set(HepMC3_DIR "${HEPMC3_DIR}" CACHE)
+  set(HepMC3_DIR "${HEPMC3_DIR}" CACHE FILEPATH "HepMC3 installation directory" FORCE)
 endif()
 unset(HEPMC3_DIR CACHE)
 ########################################################################
