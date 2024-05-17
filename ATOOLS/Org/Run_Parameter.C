@@ -465,7 +465,7 @@ void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,
   else str<<"."<<std::endl;
   for (std::map<const std::string,const Git_Info*>::const_iterator
 	 iit(info.begin());iit!=info.end();++iit) {
-    if (shouldprintversioninfo) str<<prefix<<" "<<iit->second->Checksum()
+    if (shouldprintversioninfo) str<<prefix<<"  "<<iit->second->Checksum()
                                    <<"  "<<iit->second->Name()<<"\n";
     if (iit->second->Revision()!=revision) str<<prefix
       <<"  -> "<<iit->second->Name()<<" has local modifications: "
