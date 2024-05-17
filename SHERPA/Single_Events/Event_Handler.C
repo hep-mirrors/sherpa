@@ -75,34 +75,43 @@ void Event_Handler::EmptyEventPhases()
 void Event_Handler::PrintGenericEventStructure()
 {
   if (!msg_LevelIsInfo()) return;
-  msg_Info()<<"----------------------------------------------------------\n"
-	    <<"-- SHERPA generates events with the following structure --\n"
-	    <<"----------------------------------------------------------\n";
-  msg_Info()<<"Event generation   : ";
+
+  msg_Info()<<"┌──────────────────────────────────────────────────────────────────────┐\n"
+            <<"│ " << om::bold << om::green << "SHERPA generates events with the following structure:"
+                   << om::reset << "                │\n";
+
+  msg_Info()<<"│ " << std::left << std::setw(24) << "Event generation"
+            <<"  " << std::left << std::setw(42);
   switch (ToType<size_t>(rpa->gen.Variable("EVENT_GENERATION_MODE"))) {
   case 0:
-    msg_Info()<<"Weighted"<<std::endl;
+    msg_Info()<<"Weighted";
     break;
   case 1:
-    msg_Info()<<"Unweighted"<<std::endl;
+    msg_Info()<<"Unweighted";
     break;
   case 2:
-    msg_Info()<<"Partially unweighted"<<std::endl;
+    msg_Info()<<"Partially unweighted";
     break;
   default:
-    msg_Info()<<"Unknown"<<std::endl;
+    msg_Info()<<"Unknown";
     break;
   }
-  if (!p_phases->empty()) {
-    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      msg_Info()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
-    }
+  msg_Info()<<" │\n";
+
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+    msg_Info() << "│ " << std::left << std::setw(24) << (*pit)->Type() << "  "
+               << std::left << std::setw(42) << (*pit)->Name() << " │\n";
   }
   if (p_variations && !p_variations->GetParametersVector()->empty()) {
-    msg_Info()<<"Reweighting        : "
-	     <<p_variations->GetParametersVector()->size()<<" variations.\n";
+    msg_Info() << "│ " << std::left << std::setw(24) << "Reweighting"
+               << "  " << std::left << std::setw(42)
+               << (ToString<size_t>(
+                       p_variations->GetParametersVector()->size()) +
+                   " variations")
+               << " │\n";
   }
-  msg_Info()<<"---------------------------------------------------------\n";
+
+  msg_Info()<<"└──────────────────────────────────────────────────────────────────────┘\n";
 }
 
 void Event_Handler::Reset()
