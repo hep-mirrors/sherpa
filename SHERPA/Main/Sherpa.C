@@ -70,11 +70,10 @@ Sherpa::~Sherpa()
     if (p_inithandler->GetVariations()) {
       p_inithandler->GetVariations()->PrintStatistics(msg->Out());
     }
+    Blob_List::PrintMomFailStatistics(msg->Out());
+    msg->PrintRates();
+    PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
   }
-  Blob_List::PrintMomFailStatistics(msg->Out());
-  msg->PrintRates();
-  PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
-  rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }
 #ifdef USING__HEPMC3
@@ -83,6 +82,7 @@ Sherpa::~Sherpa()
   Settings& s = Settings::GetMainSettings();
   if (s["CHECK_SETTINGS"].SetDefault(true).Get<bool>())
     Settings::FinalizeMainSettings();
+  rpa->gen.WriteCitationInfo();
   exh->RemoveTerminatorObject(this);
   delete ATOOLS::s_loader;
   delete PDF::pdfdefs;

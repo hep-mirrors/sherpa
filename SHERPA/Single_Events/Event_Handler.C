@@ -483,8 +483,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 
 void Event_Handler::Finish() {
   MPISyncXSAndErrMaps();
-  msg_Info()<<"In Event_Handler::Finish : "
-	    <<"Summarizing the run may take some time.\n";
+  msg_Info()<<"Summarizing the run may take some time ...\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
     (*pit)->CleanUp();

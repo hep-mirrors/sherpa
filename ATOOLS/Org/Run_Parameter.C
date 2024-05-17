@@ -307,12 +307,12 @@ void Run_Parameter::Init()
     gen.m_nevents = (gen.m_nevents%size == 0) ? (gen.m_nevents/size) : (gen.m_nevents/size+1);
   }
   if (s["MPI_SEED_MODE"].Get<int>()==0) {
-    msg_Info()<<METHOD<<"(): Seed mode '*'\n";
+    msg_Info()<<"Seed mode: '*'\n";
     for (int i(0);i<4;++i)
       if (gen.m_seeds[i]>0) gen.m_seeds[i]*=rank+1;
   }
   else {
-    msg_Info()<<METHOD<<"(): Seed mode '+'\n";
+    msg_Info()<<"Seed mode: '+'\n";
     for (int i(0);i<4;++i)
       if (gen.m_seeds[i]>0) gen.m_seeds[i]+=rank;
   }
@@ -343,11 +343,13 @@ void Run_Parameter::Init()
     .Get<double>();
   lims.rlim_cur = rlim_t(rawrlim < 1.0 ? slim * rawrlim : rawrlim);
   if (s["RLIMIT_BY_CPU"].Get<bool>()) lims.rlim_cur/=(double)ncpus;
-  if (setrlimit(RLIMIT_AS,&lims)!=0)
-    msg_Error()<<METHOD<<"(): Cannot set memory limit."<<std::endl;
+  if (setrlimit(RLIMIT_AS, &lims) != 0) {
+    msg_Error() << om::brown << om::bold << "WARNING" << om::reset
+                << ": Memory limit can not be set." << std::endl;
+  }
   getrlimit(RLIMIT_AS,&lims);
-  msg_Info()<<METHOD<<"(): Setting memory limit to "
-	    <<lims.rlim_cur/double(1<<30)<<" GB."<<std::endl;
+  msg_Info() << "Memory limit: " << lims.rlim_cur / double(1 << 30) << " GB"
+             << std::endl;
 #endif
   gen.m_accu = s["NUM_ACCURACY"].Get<double>();
   gen.m_sqrtaccu = sqrt(gen.m_accu);
@@ -456,8 +458,9 @@ void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,
   std::string branch(info.begin()->second->Branch());
   std::string revision(info.begin()->second->Revision());
   if (branch.find("rel-")!=0)
-    msg_Info()<<"WARNING: You are using an unsupported development branch."<<endl;
-  str<<prefix<<"Git branch "<<branch<<", revision "<<revision;
+    msg_Info() << om::bold << om::brown << "WARNING" << om::reset
+               << ": You are using an unsupported development branch.\n";
+  str<<prefix<<"Git branch: "<<branch<<"\nRevision: "<<revision;
   if (shouldprintversioninfo) str<<" {\n";
   else str<<"."<<std::endl;
   for (std::map<const std::string,const Git_Info*>::const_iterator
@@ -465,8 +468,8 @@ void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,
     if (shouldprintversioninfo) str<<prefix<<" "<<iit->second->Checksum()
                                    <<"  "<<iit->second->Name()<<"\n";
     if (iit->second->Revision()!=revision) str<<prefix
-      <<"===> "<<iit->second->Name()<<" has local modifications "
-      <<iit->second->Checksum()<<" <===\n";
+      <<"  -> "<<iit->second->Name()<<" has local modifications: "
+      <<iit->second->Checksum()<<"\n";
   }
   if (shouldprintversioninfo) str<<prefix<<"}\n";
   Git_Info::SetCheck(true);
