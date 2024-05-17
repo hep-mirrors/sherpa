@@ -411,12 +411,12 @@ void Run_Parameter::Gen::WriteCitationInfo()
 #ifdef USING__MPI
   if (mpi->Rank()==0)
 #endif
-  std::cout<<std::string(72,'-')<<"\n"
-	   <<om::bold<<"Please cite the publications listed in '"
-	   <<om::red<<refname<<om::reset<<om::bold<<"'."<<om::reset
-	   <<"\n  Extract the bibtex list by running 'get_bibtex "
-	   <<refname<<"'\n  or email the file to 'slaclib2@slac.stanford.edu'"
-	   <<", subject 'generate'.\n"<<std::string(72,'-')<<std::endl;
+  msg_Out()<<"┌──────────────────────────────────────────────────────────────────────┐\n"
+	   <<"│ "<<om::bold<<om::green<<"Please cite the publications listed in '"
+	   <<                               refname<<"'."<<om::reset <<"             │\n"
+	   <<"│ Extract the bibtex list by running 'get_bibtex "<<refname<< "' or    │\n"
+	   <<"│ email the file to 'slaclib2@slac.stanford.edu' , subject 'generate'. │\n"
+           <<"└──────────────────────────────────────────────────────────────────────┘\n";
 }
 
 void  Run_Parameter::Gen::SetEcms(double _ecms) {
