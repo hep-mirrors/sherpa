@@ -39,7 +39,7 @@ if ( NOT LibZip_INCLUDE_DIR OR NOT LibZip_INCLUDE_CONF_DIR OR NOT LibZip_LIBRARI
     if (LibZip_DIR)
       list (APPEND LibZip_SEARCH_DIRS "${LibZip_DIR}" )
     endif()
-    if (DEFINED EVN{LibZip_ROOT_DIR})
+    if (DEFINED ENV{LibZip_ROOT_DIR})
       list (APPEND LibZip_SEARCH_DIRS "$ENV{LibZip_ROOT_DIR}" )
     endif()
     if (DEFINED ENV{LibZip_DIR})
