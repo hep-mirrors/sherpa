@@ -238,10 +238,8 @@ void Run_Parameter::Init()
 
   // print welcome message
   if (msg->LevelIsInfo())  {
-    msg_Out()
-      <<"Welcome to Sherpa, "<<gen.m_username
-      <<" on "<<gen.m_hostname
-      <<". Initialization of framework underway."<<std::endl;
+    msg_Out() << "Welcome to Sherpa, " << gen.m_username << " on "
+              << gen.m_hostname << ".\nInitialization of framework underway.\n";
   }
   msg_Info()
     <<"The local time is "<<rpa->gen.Timer().TimeString(0)<<"."<<std::endl;
