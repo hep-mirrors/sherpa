@@ -29,7 +29,9 @@ namespace ATOOLS {
     bool IsZero() const;
 
     // content getters/setters to access individual weights, by index or name
-    std::string Name(size_t, Variations_Source source=Variations_Source::all) const;
+    std::string Name(size_t, Variations_Source source = Variations_Source::all,
+                     Variations_Name_Type name_type =
+                         Variations_Name_Type::weight_name_convention) const;
     double& Nominal();
     double Nominal() const;
     double& Variation(size_t i);
@@ -138,7 +140,9 @@ namespace ATOOLS {
     // Variations_Source::all fill all variation (including custom one).
     template <typename T>
     void FillVariations(
-        T&, Variations_Source source = ATOOLS::Variations_Source::all) const;
+        T &, Variations_Source source = ATOOLS::Variations_Source::all,
+        Variations_Name_Type name_type =
+            ATOOLS::Variations_Name_Type::weight_name_convention) const;
 
     // calculate nominal values, either including all entries, for a single
     // entry `k`, or excluding those that have a certain variation type
@@ -295,8 +299,8 @@ namespace ATOOLS {
       std::function<double(double, size_t varindex, Qcut_Variation_Params*)>);
 
   template <typename T>
-  void Weights_Map::FillVariations(T& map, Variations_Source source) const
-  {
+  void Weights_Map::FillVariations(T &map, Variations_Source source,
+                                   Variations_Name_Type name_type) const {
     DEBUG_FUNC(source);
 
     // Fill "managed" QCD variations, which might need to be combined first,
@@ -327,7 +331,7 @@ namespace ATOOLS {
       // do remaining combination and store resulting weights
       size_t num_vars = weights.Size() - 1;
       for (size_t i(0); i < num_vars; ++i) {
-        const std::string varname {weights.Name(i + 1, source)};
+        const std::string varname {weights.Name(i + 1, source, name_type)};
         map[varname] = weights.Variation(i) * relfac;
         msg_Debugging() << varname << " (" << varname
           << "): " << weights.Variation(i) * relfac << '\n';
