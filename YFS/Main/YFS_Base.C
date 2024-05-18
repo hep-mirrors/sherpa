@@ -121,7 +121,7 @@ void YFS_Base::RegisterSettings(){
   m_ifisub = s["IFI_Sub"].Get<int>();
   m_massless_sub = s["Massless_Sub"].Get<int>();
   m_check_real_sub = s["Check_Real_Sub"].Get<bool>();
-  m_photon_split = s["PHOTON_SPLITTER_MODE"].SetDefault(15).Get<bool>();
+  m_photon_split = s["PHOTON_SPLITTER_MODE"].ResetDefault().SetDefault(0).Get<bool>();
   m_int_nlo = s["Integrate_NLO"].SetDefault(0).Get<bool>();
   m_CalForm = false;
   m_realtool = false;
