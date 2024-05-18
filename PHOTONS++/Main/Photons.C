@@ -189,7 +189,7 @@ void Photons::RegisterDefaults()
 {
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   s["MODE"].ResetDefault().SetDefault(yfsmode::full).UseNoneReplacements();
-  s["PHOTON_SPLITTER_MODE"].SetDefault(15);
+  s["PHOTON_SPLITTER_MODE"].ResetDefault().SetDefault(15);
   s["USE_ME"].SetDefault(1);
   s["IR_CUTOFF"].ResetDefault().SetDefault(1E-3);
   s["UV_CUTOFF"].SetDefault(std::numeric_limits<double>::max());
