@@ -1,0 +1,25 @@
+# general settings
+EVENT_GENERATION_MODE: Weighted
+EVENTS: 100k
+EVENT_DISPLAY_INTERVAL: 100
+BATCH_MODE: 7
+
+# collider setup
+BEAMS:         [11, -11]
+BEAM_ENERGIES: 45.6
+PDF_LIBRARY:   None
+
+PARTICLE_DATA:
+  15:
+    Massive: true
+
+HADRON_DECAYS:
+  Spin_Correlations: 1
+
+PROCESSES:
+- 11 -11 -> 15 -15:
+    Order: {QCD: 0, EW: 2}
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses: [ALEPH_2001_I555653]
