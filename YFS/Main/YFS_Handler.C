@@ -244,6 +244,7 @@ bool YFS_Handler::CalculateISR() {
   p_isr->Weight();
   m_g=p_dipoles->GetDipoleII()->m_gamma;
   m_gp=p_dipoles->GetDipoleII()->m_gamma;
+  p_dipoles->GetDipoleII()->SetBorn(m_born);
   m_photonSumISR = p_isr->GetPhotonSum();
   m_ISRPhotons   = p_isr->GetPhotons();
   m_isrWeight = p_isr->GetWeight();
@@ -336,10 +337,21 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   m_real = 1;
   Vec4D_Vector oldplab = m_plab;
   m_FSRPhotons.clear();
-  if (m_fsrmode >= 1) {
-    if (p_dipoles->GetDipoleFF()->size() == 0) {
-      msg_Error() << "No dipoles found for YFS FSR " << std::endl;
-      return true;
+  if (p_dipoles->GetDipoleFF()->size() == 0) {
+    THROW(fatal_error,"No dipoles found for YFS FSR");
+    return true;
+  }
+  for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
+       Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
+    if(!Dip->IsResonance()) continue;
+    p_fsr->Reset();
+    Dip->BoostToQFM(0);
+    Dip->SetBeams(0, m_plab[0]);
+    Dip->SetBorn(m_born);
+    p_fsr->SetV(m_v);
+    if (!p_fsr->Initialize(*Dip)) {
+      Reset();
+      return false;
     }
     for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
@@ -406,8 +418,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
       Dip->Clean();
   }
-  // CheckMasses();
-  CheckMomentumConservation();
+  // CheckMomentumConservation();
   return true;
 }
 
@@ -462,48 +473,8 @@ void YFS_Handler::CalculateBeta() {
   if(!m_rmode && !m_int_nlo) return;
   double realISR(0), realFSR(0);
   if (m_betaorder > 0) {
-    p_realff->SetBorn(m_born);
-    p_realff->SetMode(m_fsrmode);
-    if (m_fsrmode != 2) {
-      p_realff->SetMode(0);
-      p_realff->SetIncoming(p_dipoles->GetDipoleII());
-      p_realff->CalculateVirt();
-      // p_realff->Calculate();
-      // realISR = p_realff->GetReal();
-      for(auto const &k: p_dipoles->GetDipoleII()->GetPhotons()){
-          realISR += p_dipoles->GetDipoleII()->EEX(m_betaorder)*m_born/p_dipoles->GetDipoleII()->Eikonal(k)-m_born;
-        }
-    }
-    if (m_fsrmode >= 1) {
-      p_realff->SetMode(m_fsrmode);
-      for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
-           Dip != p_dipoles->GetDipoleFF()->end(); ++Dip)  {
-        p_realff->SetIncoming(Dip, m_reallab, m_FSRPhotons, p_fsr->m_yini, p_fsr->m_zini);
-        p_realff->CalculateVirt();
-        // p_realff->Calculate();
-        for(auto const &k: m_fsrphotonsforME){
-          realFSR += Dip->EEX(m_betaorder)*m_born/Dip->Eikonal(k)-m_born;
-        }
-        // PRINT_VAR(realFSR);
-        // PRINT_VAR(p_realff->GetReal());
-      }
-      if (m_use_fsr_beta == 0) realFSR = 0;
-    }
-    m_real = (realISR + realFSR + p_realff->AddVirtual())/m_born;
-    if (m_virtual_only) {
-      if(m_no_born) m_real = p_realff->AddVirtual()/m_born-1;
-      else m_real = p_realff->AddVirtual()/m_born;
-    }
-    if (m_real_only) {
-      if (m_looptool) m_real = realISR + realFSR + ((m_betaorder > 1 ? p_realff->AddVirtual(m_betaorder) - p_realff->AddVirtual(1) : 0));
-      else {
-        if(m_no_born) m_real = (realISR + realFSR)/m_born;
-        else m_real = (m_born+realISR + realFSR)/m_born;
-      }
-    }
-    if (m_useint) m_real += p_realff->IntIF(m_ISRPhotons, m_fsrphotonsforME, p_isr->m_yini, p_isr->m_zini, p_fsr->m_yini, p_fsr->m_zini);
+    m_real = p_dipoles->CalculateEEX()+p_dipoles->CalculateEEXVirtual();
   }
-  // PRINT_VAR(m_nlotype);
   if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
     if(m_no_born) m_real=CalculateNLO()/m_born;
     else m_real=(m_born+CalculateNLO())/m_born;

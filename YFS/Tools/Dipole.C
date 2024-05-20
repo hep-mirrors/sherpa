@@ -15,6 +15,11 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace YFS;
 
+
+// for IFI corrections
+double delf = 0;
+double deli = 0;
+int order = 0;
 double SqLam(double x,double y,double z)
 {
   return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
@@ -149,10 +154,16 @@ void Dipole::Boost() {
     double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
     m_newmomenta[0] = {E1, 0, 0, lamCM};
     m_newmomenta[1] = {E2, 0, 0, -lamCM};
+    m_ranPhi = ran->Get()*2.*M_PI;
+    // sqr(1.+2.*t/s)
+    double s = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
+    double t = (m_newmomenta[0]-m_newmomenta[0]).Abs2();
+    m_ranTheta = acos(1.+2.*t/s);
     ATOOLS::Poincare poin(Q);
     Poincare pRot(m_bornmomenta[0], Vec4D(0., 0., 0., 1.));
     for (int i = 0; i < 2; ++i) {
-      pRot.RotateBack(m_newmomenta[i]);
+      // pRot.RotateBack(m_newmomenta[i]);
+      RandomRotate(m_newmomenta[i]);
       poin.BoostBack(m_newmomenta[i]);
     }
   }
@@ -269,6 +280,8 @@ void Dipole::CalculateBeta(){
 
   m_gamma  *= m_alpi*abs(ChargeNorm());
   m_gammap *= m_alpi*abs(ChargeNorm());
+  if(Type()==dipoletype::final)   delf = 0.5*m_gamma;
+  if(Type()==dipoletype::initial) deli = 0.5*m_gamma;
 }
 
 void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D_Vector &Photons) {
@@ -311,6 +324,7 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
 
 double Dipole::EEX(const int betaorder){
   double real=0;
+  m_betaorder = betaorder;
   if(betaorder >= 1 ) {
     for(auto &k: m_dipolePhotons ){
      real += Hard(k)/Eikonal(k)-1;
@@ -330,6 +344,9 @@ double Dipole::EEX(const int betaorder){
                 -1;
       }
     }
+  }
+  if(IsNan(real)){
+    msg_Error()<<"YFS EEX is NaN at order "<<betaorder<<std::endl;
   }
   // if(m_betaorder > 2 ) real += Beta13(k);
   return real;//+virt;
