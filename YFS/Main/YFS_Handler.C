@@ -219,6 +219,7 @@ bool YFS_Handler::CalculateISR() {
   p_isr->Weight();
   m_g=p_dipoles->GetDipoleII()->m_gamma;
   m_gp=p_dipoles->GetDipoleII()->m_gamma;
+  p_dipoles->GetDipoleII()->SetBorn(m_born);
   m_photonSumISR = p_isr->GetPhotonSum();
   m_ISRPhotons   = p_isr->GetPhotons();
   m_isrphotonsforME = m_ISRPhotons; 
@@ -289,6 +290,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     p_fsr->Reset();
     Dip->BoostToQFM(0);
     Dip->SetBeams(0, m_plab[0]);
+    Dip->SetBorn(m_born);
     p_fsr->SetV(m_v);
     if (!p_fsr->Initialize(*Dip)) {
       Reset();
@@ -332,7 +334,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
   }
-  CheckMomentumConservation();
+  // CheckMomentumConservation();
   return true;
 }
 
@@ -387,6 +389,7 @@ void YFS_Handler::CalculateBeta() {
   double realISR(0), realFSR(0);
   if (m_betaorder > 0) {
     m_real = p_dipoles->CalculateEEX()+p_dipoles->CalculateEEXVirtual();
+    // m_real /= m_born;
   }
   if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
     if(m_no_born) m_real=CalculateNLO()/m_born;

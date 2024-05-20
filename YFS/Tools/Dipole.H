@@ -33,7 +33,7 @@ namespace YFS{
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
         bool m_setBorn, m_setbeams=1,m_sameflav;
         int m_Nphotons, m_resonance, m_betaorder;
-        double m_ranPhi, m_ranTheta;
+        double m_ranPhi, m_ranTheta, m_born;
         dipoletype::code m_type;
         Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum;
         Flavour_Vector m_flavs;
@@ -94,6 +94,7 @@ namespace YFS{
         inline double Sprime() {return m_sp;}
         inline void SetAlpha(double alp) { m_alp=alp; m_alpi=alp/M_PI;}
         inline void SetNPhoton(int N) {m_Nphotons = N; }
+        inline void SetBorn(double B) {m_born = B; }
         inline bool IsResonance() {return m_resonance;}
         inline void SetResonance(bool res) { m_resonance=res;}
         inline bool IsSame() {return m_sameflav;}
