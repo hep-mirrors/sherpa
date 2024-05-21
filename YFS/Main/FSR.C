@@ -1,5 +1,3 @@
-
-
 #include "YFS/Main/FSR.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "MODEL/Main/Running_AlphaQED.H"
