@@ -294,8 +294,6 @@ bool Beam_Parameters::SpecifyMode() {
     m_beammode = beammode::collider;
   else if (mode==string("DM_Annihilation"))
     m_beammode = beammode::DM_annihilation;
-  else if (mode==string("Fixed_Target"))
-    m_beammode = beammode::Fixed_Target;
   else
     m_beammode = beammode::unknown;
   return (m_beammode!=beammode::unknown);
