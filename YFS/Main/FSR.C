@@ -68,7 +68,6 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_dipoleFl.clear();
   m_dipole.push_back(p_dipole->GetOldMomenta(0));
   m_dipole.push_back(p_dipole->GetOldMomenta(1));
-  BoostToXFM();
   m_dipoleFl.push_back(p_dipole->GetFlav(0));
   m_dipoleFl.push_back(p_dipole->GetFlav(1));
   m_QFrame = m_dipole[0] + m_dipole[1];
@@ -324,7 +323,7 @@ void FSR::RescalePhotons() {
     m_photons[i] *= ener;
     m_photonspreboost.push_back(m_photons[i]);
   }
-  p_dipole->AddPhotonsToDipole(m_photons);
+  // p_dipole->AddPhotonsToDipole(m_photons);
   m_photonSum *= ener;
   for (auto k : m_photons) {
     msg_Debugging() << k << std::endl;
@@ -594,12 +593,21 @@ void FSR::BoostDipole(Vec4D_Vector &dipole) {
 
 void FSR::Weight() {
   CalculateBetaBar();
-  // m_fsrWeight=m_massW*m_hideW*m_wt2;
-  double spp = m_sprim * m_sX / m_dip_sp;
   if (m_photons.size() == 0) m_sprim = m_sX;
-
-  m_fsrWeight *= m_massW * m_hideW * m_wt2;// * exp(m_gBar / 4 + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
-  if (IsBad(m_fsrWeight) || m_fsrWeight < 0) {
+  
+  if(m_fixed_weight==wgt::full){
+      m_fsrWeight *= m_massW * m_hideW * m_wt2;
+    }
+  else if(m_fixed_weight==wgt::mass){
+      m_fsrWeight *= m_massW;
+    }
+  else if(m_fixed_weight==wgt::jacob){
+      m_fsrWeight *= m_wt2;
+    }
+  else if(m_fixed_weight==wgt::hide){
+      m_fsrWeight *= m_hideW;
+    }
+  if (IsBad(m_fsrWeight)) {
     msg_Error() << METHOD << "\n FSR weight is "<<m_fsrWeight
                 << "\n Eprime = " << sqrt(m_dip_sp)
                 << "\n Eq = " << sqrt(m_sQ)

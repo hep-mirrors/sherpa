@@ -66,9 +66,7 @@ void YFS_Base::RegisterDefaults(){
   s["USE_MODEL_ALPHA"].SetDefault(0);
   s["FSR_BETA"].SetDefault(1);
   s["KKMC_ANG"].SetDefault(0);
-  s["FIXED_WEIGHT"].SetDefault(0);
-  s["GRIFFIN_MODE"].SetDefault(0);
-  s["GRIFFIN_ORDER"].SetDefault(2);
+  s["WEIGHT_MODE"].SetDefault(wgt::full);
   s["HARD_MIN"].SetDefault(0.);
   s["PHOTON_MASS"].SetDefault(0.1);
   s["CEEX"].SetDefault(0);
@@ -134,8 +132,7 @@ void YFS_Base::RegisterSettings(){
   m_use_fsr_beta = s["FSR_BETA"].Get<int>();
   m_semiyfs = s["SEMI"].Get<int>();
   m_kkmcAngles =  s["KKMC_ANG"].Get<int>();
-  m_fixed_weight = s["FIXED_WEIGHT"].Get<double>();
-  m_griff = s["GRIFFIN_MODE"].Get<int>();
+  m_fixed_weight = s["WEIGHT_MODE"].Get<wgt::code>();
   m_hardmin = s["HARD_MIN"].Get<double>();
   m_photonMass = s["PHOTON_MASS"].Get<double>();
   m_useceex = s["CEEX"].Get<int>();
@@ -210,7 +207,29 @@ std::ostream &YFS::operator<<(std::ostream &str,const yfsmode::code &ym)
   return str<<"unknown";
 }
 
+std::ostream &YFS::operator<<(std::ostream &str,const wgt::code &wm)
+{
+  if      (wm==wgt::off)    return str<<"Off";
+  else if (wm==wgt::full)   return str<<"Full";
+  else if (wm==wgt::mass)   return str<<"Mass";
+  else if (wm==wgt::hide)   return str<<"Hidden";
+  else if (wm==wgt::jacob)  return str<<"Jacobian";
+  return str<<"unknown";
+}
 
+std::istream &YFS::operator>>(std::istream &str, wgt::code &mode)
+{
+  std::string tag;
+  str>>tag;
+  // mode=wgt::off;
+  if      (tag.find("Off")!=std::string::npos)    mode=wgt::off;
+  else if (tag.find("Full")!=std::string::npos)   mode=wgt::full;
+  else if (tag.find("Mass")!=std::string::npos)   mode=wgt::mass;
+  else if (tag.find("Hidden")!=std::string::npos) mode=wgt::hide;
+  else if (tag.find("Jacobian")!=std::string::npos) mode=wgt::jacob;
+  else THROW(fatal_error, "Unknown YFS: WEIGHT_MODE")
+  return str;
+}
 
 double YFS_Base::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {
   return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();

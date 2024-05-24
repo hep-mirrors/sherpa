@@ -177,7 +177,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesII(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
-
+	
 	double flux;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));

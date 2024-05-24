@@ -376,35 +376,20 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
         if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
         return false;
       } 
-
-      m_fsrphotonsforME = m_FSRPhotons;
-      Dip->AddPhotonsToDipole(m_FSRPhotons);
-      Dip->Boost();
-      if(!p_fsr->YFS_FORM()) return false;
-      p_fsr->HidePhotons();
-      m_FSRPhotons   = p_fsr->GetPhotons();
-      Dip->AddPhotonsToDipole(m_FSRPhotons);
-      // Dip->Boost();
-      // p_fsr->HidePhotons();
-      // p_fsr->HidePhotons(m_FSRPhotons);
-      // Dip->AddPhotonsToDipole(m_FSRPhotons);
-      // m_fsrphotonsforME = Dip->GetPhotons();
-      // if(m_photonSumFSR.E() > sqrt(m_s)/2) {
-      //   // PRINT_VAR(m_photonSumFSR);
-      //   m_fsrWeight = 0;
-      //   return false;
-      // }
-      p_fsr->Weight();
-      m_fsrWeight = p_fsr->GetWeight();
-      int i(0);
-      for (auto f : Dip->m_flavs) {
-        m_plab[p_dipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
-        i++;
-      }
-    }
-    Vec4D_Vector oldplab = m_plab;
-    for (int i = 2; i < m_plab.size(); ++i) {
-      m_outparticles[m_particles[i]] = m_plab[i];
+    m_fsrphotonsforME = m_FSRPhotons;
+    Dip->AddPhotonsToDipole(m_FSRPhotons);
+    Dip->Boost();
+    if(!p_fsr->YFS_FORM()) return false;
+    p_fsr->HidePhotons();
+    m_FSRPhotons = p_fsr->GetPhotons();
+    Dip->AddPhotonsToDipole(m_FSRPhotons);
+    p_fsr->Weight();
+    Dip->m_dipolePhotonsEEX = m_fsrphotonsforME;
+    m_fsrWeight = p_fsr->GetWeight();
+    int i(0);
+    for (auto f : Dip->m_flavs) {
+      m_plab[p_dipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
+      i++;
     }
   }
   // if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
@@ -497,19 +482,9 @@ double YFS_Handler::CalculateNLO(){
 
 void YFS_Handler::GenerateWeight() {
   AddFormFactor();
-  if (m_fixed_weight != 0) {
-    m_yfsweight = m_fixed_weight;
-    return;
-  }
-  if (m_semiyfs == 0) {
-    if (m_constfsrW) m_fsrWeight = 1.;
-    if (m_fsrmode == 1) m_yfsweight = m_isrWeight * m_fsrWeight;
-    else if (m_fsrmode == 2) m_yfsweight = m_fsrWeight;
-    else m_yfsweight = m_isrWeight;
-  }
-  else {
-    m_yfsweight = SY->Weight(m_v, m_alpha, m_semiyfs);
-  }
+  if (m_mode == yfsmode::isrfsr) m_yfsweight = m_isrWeight * m_fsrWeight;
+  else if (m_mode == yfsmode::fsr) m_yfsweight = m_fsrWeight;
+  else m_yfsweight = m_isrWeight;
   if (m_coulomb) m_yfsweight *= p_coulomb->GetWeight();
   if (m_formWW) m_yfsweight *= m_ww_formfact; //*exp(m_coulSub);
   CalculateBeta();
