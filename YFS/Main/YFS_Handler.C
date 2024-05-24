@@ -314,7 +314,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     Dip->Boost();
     if(!p_fsr->YFS_FORM()) return false;
     p_fsr->HidePhotons();
-    m_FSRPhotons   = p_fsr->GetPhotons();
+    m_FSRPhotons = p_fsr->GetPhotons();
     Dip->AddPhotonsToDipole(m_FSRPhotons);
     p_fsr->Weight();
     Dip->m_dipolePhotonsEEX = m_fsrphotonsforME;
@@ -389,6 +389,7 @@ void YFS_Handler::CalculateBeta() {
   double realISR(0), realFSR(0);
   if (m_betaorder > 0) {
     m_real = p_dipoles->CalculateEEX()+p_dipoles->CalculateEEXVirtual();
+    // if(m_real < 0) m_real = 0;
     // m_real /= m_born;
   }
   if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
@@ -414,10 +415,6 @@ double YFS_Handler::CalculateNLO(){
 
 void YFS_Handler::GenerateWeight() {
   AddFormFactor();
-  if (m_fixed_weight != 0) {
-    m_yfsweight = m_fixed_weight;
-    return;
-  }
   if (m_mode == yfsmode::isrfsr) m_yfsweight = m_isrWeight * m_fsrWeight;
   else if (m_mode == yfsmode::fsr) m_yfsweight = m_fsrWeight;
   else m_yfsweight = m_isrWeight;

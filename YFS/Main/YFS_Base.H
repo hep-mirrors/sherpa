@@ -26,9 +26,22 @@ struct yfsmode {
   };
 };
 
+struct wgt {
+  enum code {
+    off       = 0,
+    full      = 1,
+    mass      = 2,
+    hide      = 3,
+    jacob     = 4,
+  };
+};
+
+
 std::istream &operator>>(std::istream &str, submode::code &sm);
 std::istream &operator>>(std::istream &str, yfsmode::code &sm);
+std::istream &operator>>(std::istream &str, wgt::code &sm);
 std::ostream &operator<<(std::ostream &str, const yfsmode::code &sm);
+std::ostream &operator<<(std::ostream &str, const wgt::code &sm);
 
 class YFS_Base {
 protected:
