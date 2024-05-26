@@ -16,7 +16,7 @@ on the command line.
 
 EVENTS
 ======
-
+OUTPUT
 .. index:: EVENTS
 
 This parameter specifies the number of events to be generated.
@@ -37,7 +37,7 @@ see :ref:`Command line`.
 
 * The default event type is ``StandardPerturbative``, which will
   generate a hard event through exact matrix elements matched and/or
-  merged with the parton shower, eventually including hadronisation,
+  merged with the parton shower, eventually including hadronization,
   hadron decays, etc..
 
 Alternatively there are two more specialised modes, namely:
@@ -469,8 +469,17 @@ The following formats are currently available:
   strictly tree-like. Please note that this removes some information
   from the matrix-element-parton-shower interplay which would be
   otherwise stored.
-  The default value is ``false``.
-  Has no effect if ``HEPMC3_SHORT`` is used.
+  Requires ``-DHepMC3_DIR=/path/to/hepmc3``
+  (or ``-DSHERPA_ENABLE_HEPMC3=ON``, if HepMC3 is installed in a
+  standard location). The default value is ``false``.
+
+:option:`HepMC3_Short`
+
+  Generates output in HepMC::IO_GenEvent format, however, only
+  incoming beams and outgoing particles are stored. Intermediate and
+  decayed particles are not listed. The event weights stored are the
+  same as above, and ``HEPMC_USE_NAMED_WEIGHTS`` and
+  ``HEPMC_EXTENDED_WEIGHTS`` can be used to customise.
 
   Requires ``-DHepMC3_DIR=/path/to/hepmc3``
   (or ``-DSHERPA_ENABLE_HEPMC3=ON``,
