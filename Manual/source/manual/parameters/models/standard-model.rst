@@ -33,7 +33,7 @@ Standard Model
 The SM inputs for the electroweak sector can be given in nine
 different schemes, that correspond to different choices of which SM
 physics parameters are considered fixed and which are derived from the
-given quantities. The electro-weak coupling is by default fixed, unless its
+given quantities. The electroweak coupling is by default fixed, unless its
 running has been enabled (cf. :ref:`COUPLINGS`).
 The input schemes are selected through the ``EW_SCHEME`` parameter, whose
 default is :option:`Gmu`. The following options are provided:

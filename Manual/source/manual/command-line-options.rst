@@ -4,7 +4,7 @@
 Command Line Options
 ####################
 
-The available command line options for Sherpa.
+The available command line options for Sherpa (given either in long form (starting with two hyphen) or, alternatively in a short-hand form) include:
 
 .. option:: --run-data, -f <file>
 
@@ -44,7 +44,7 @@ The available command line options for Sherpa.
 .. option:: --me-generators, -m <generators>
 
    Set the matrix element generator list to ``<generators>``, see
-   :REF:`ME_GENERATORS`. If you specify more than on generator, use the
+   :REF:`ME_GENERATORS`. If you specify more than one generator, use the
    YAML sequence syntax, e.g. :option:`-m '[Amegic, Comix]'`.
 
 .. option:: --mi-handler, -M <handler>
@@ -88,7 +88,7 @@ The available command line options for Sherpa.
 
 .. option:: --event-output, -o <level>
 
-   Set output level for event generation ``<level>``, see
+   Set output level used during event generation ``<level>``, see
    :REF:`OUTPUT`.
 
 .. option:: --log-file, -l <logfile>

@@ -253,7 +253,7 @@ CKKW
 
 Sets up multijet merging according to :cite:`Hoeche2009rj`.  The
 additional argument specifies the parton separation criterion
-("merging cut") Q_{cut} in GeV.  It can be given in any form which is
+("merging cut") :math:`Q_{\text{cut}}` in GeV.  It can be given in any form which is
 understood by the internal interpreter, see
 :ref:`Interpreter`. Examples are
 
@@ -274,7 +274,7 @@ Process_Selectors
 
 Using ``Selectors: [<selector 1>, <selector 2>]`` in a process
 definition sets up process-specific selectors. They use the same
-syntax as describes in :ref:`Selectors`.
+syntax as described in :ref:`Selectors`.
 
 .. _Order:
 
@@ -283,8 +283,8 @@ Order
 
 Restricts the coupling order of the process calculation at the
 **squared**-amplitude level.
-For example, the process 1 -1 -> 2 -2 could have
-orders ``{QCD: 2, EW: 0``}, ``{QCD: 1, EW: 1}`` and ``{QCD: 0,
+For example, the process 1 -1 -> 2 -2, i.e. :math:`d\bar{d}\to u\bar{u}`,
+could have orders ``{QCD: 2, EW: 0``}, ``{QCD: 1, EW: 1}`` and ``{QCD: 0,
 EW: 2}``. There can also be further entries with different names, that are
 model specific (e.g. for EFT couplings).
 Half-integer orders are so far supported only by Comix, e.g. ``{EW: 4.5, NP: 0.5}``.
@@ -534,7 +534,7 @@ Valid values are ``EW`` (approximate EW corrections),
 ``LO1`` (first subleading leading-order correction),
 ``LO2`` (second subleading leading-order correction),
 ``LO3`` (third subleading leading-order correction).
-They can be combined, eg. @code{[EW, LO1, LO2, LO3]}.
+They can be combined, e.g. ``{[EW, LO1, LO2, LO3]}``.
 Please note, the associated contributions will not be
 added to the nominal event weight but instead are available to
 be included in the on-the-fly calculation of alternative event
@@ -646,7 +646,7 @@ enhancement on top of the normal matrix element shape. Example:
      2->3:
        Enhance_Function: VAR{PPerp2(p[2]+p[3])/400}
 
-In this example, Z+1-jet events with :math:`p_\perp(Z)=20` GeV and Z+0-jet
+In this example, Z+1-jet events with :math:`p_\perp(Z)\leq 20` GeV and Z+0-jet
 events will come with no enhancement, while other Z+1-jet events will be
 enhanced with :math:`(p_\perp(Z)/20)^2`.
 Note: if you would define the enhancement function without the normalisation
@@ -665,8 +665,8 @@ the effective enhancement is frozen to its value at the boundaries. Example:
        Enhance_Function: VAR{PPerp2(p[2]+p[3])/400}|1.0|100.0
 
 This implements again an enhancement with :math:`(p_\perp(Z)/20)^2` but only
-in the range of 20-200 GeV. As you can see, you have to be take into account
-the normalisation also in the range specification.
+in the range of 20-2000 GeV. As you can see, you have to take into account
+the normalisation, here the factor :math:`1/20`, also in the range specification.
 
 .. _Enhance_Observable:
 

@@ -121,7 +121,7 @@ resonance.
 An example to set (/add) the partial widths of the ``H->ff``,
 ``H->gg`` and ``H->yy`` channels can be seen in the following. The
 values have been taken from `LHC Higgs WG
-<https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWG/Higgs_XSBR_YR4_update.xlsx>`_):
+<https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWG/Higgs_XSBR_YR4_update.xlsx>`_:
 
 .. code-block:: yaml
 
@@ -283,7 +283,7 @@ kinematic mass of the unstable propagator is distributed according to
 a Breit-Wigner shape a posteriori. All matrix elements are still
 calculated in the narrow-width approximation with onshell
 particles. Only the kinematics are affected.  To keep all intermediate
-particles onshell :option:`{HARD_DECAYS: { Mass_Smearing: 0 }`.
+particles onshell :option:`HARD_DECAYS: { Mass_Smearing: 0 }`.
 
 .. _Resolve_Decays:
 

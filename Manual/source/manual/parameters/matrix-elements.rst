@@ -197,7 +197,7 @@ The scale setter options which are currently available are
   that final state partons are replaced with jets, if applicable (a
   parton might not pass the jet criteria and get "lost"). In
   particular, the indices of the initial state partons and all EW
-  particles are uneffected. Jet momenta can then be accessed as
+  particles are unaffected. Jet momenta can then be accessed as
   described in :ref:`Predefined scale tags` through the identifiers
   ``p[i]``, and the nodal values of the clustering sequence can be
   used through ``MU_n2``.  The syntax is
@@ -378,7 +378,7 @@ Possible choices for the core scale setter are:
 
 :option:`Photons`
   Core scale setter for photon(s)+jets production.
-  Sets the following scales for the possible core process:
+  Sets the following scales for the possible core processes:
 
     - :math:`\gamma\gamma`: :math:`\mu_f=\mu_r=\mu_q=m_{\gamma\gamma}`
     - :math:`\gamma j`: :math:`\mu_f=\mu_r=\mu_q=p_{\perp,\gamma}`
@@ -531,10 +531,7 @@ infrared safe w.r.t. to the radiation of an extra parton. Infrared safe
 Not infrared safe are
 
 * any function of momenta of specific partons
-* for processes with hadrons in the initial state:
-
-any quantity that depends on parton momenta along the beam axis,
-including the initial state partons itself
+* for processes with hadrons in the initial state: any quantity that depends on parton momenta along the beam axis, including the initial state partons itself.
 
 Since the total number of partons is different for different pieces of
 the NLO calculation any explicit reference to a parton momentum will
@@ -622,13 +619,13 @@ on the command line. Currently available options are
   If for example the process ``g g -> h g`` in effective theory is computed,
   one could think of evaluating two powers of the strong coupling at the Higgs mass scale
   and one power at the transverse momentum squared of the gluon.
-  Assuming the Higgs mass to be 120 GeV, the corresponding reweighting would read
+  Assuming the Higgs mass to be 125 GeV, the corresponding reweighting would read
 
   .. code-block:: yaml
 
      SCALES:    VAR{...}{PPerp2(p[3])}
      COUPLINGS: "Alpha_QCD 1"
-     KFACTOR:   VAR{sqr(Alpha_QCD(sqr(120))/Alpha_QCD(MU_12))}
+     KFACTOR:   VAR{sqr(Alpha_QCD(sqr(125))/Alpha_QCD(MU_12))}
 
   As can be seen from this example, scales are referred to as :kbd:`MU_<i>2`,
   where :kbd:`<i>` is replaced with the appropriate number.
@@ -733,7 +730,7 @@ The following parameters can be customised:
   Specifies the above dipole alpha only for FF, FI, IF, or II dipoles, respectively.
 
 :option:`AMIN`
-  Specifies the cutoff of real correction terms in the infrared reagion
+  Specifies the cutoff of real correction terms in the infrared region
   to avoid numerical problems with the subtraction. The default is 1.e-8.
 
 :option:`NF_GSPLIT`

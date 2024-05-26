@@ -16,7 +16,7 @@ on the command line.
 
 EVENTS
 ======
-
+OUTPUT
 .. index:: EVENTS
 
 This parameter specifies the number of events to be generated.
@@ -37,7 +37,7 @@ see :ref:`Command line`.
 
 * The default event type is ``StandardPerturbative``, which will
   generate a hard event through exact matrix elements matched and/or
-  merged with the paerton shower, eventually including hadronization,
+  merged with the parton shower, eventually including hadronization,
   hadron decays, etc..
 
 Alternatively there are two more specialised modes, namely:
@@ -134,7 +134,7 @@ where the function signature is given by the value of
 ``__PRETTY_FUNCTION__`` in the function block.  Another expert
 parameter is :option:`EVT_OUTPUT_START`, with which the first event
 affected by :option:`EVT_OUTPUT` can be specified. This can be useful
-to generate debugging output only for events affected by a some issue.
+to generate debugging output only for events affected by a certain issue.
 
 .. _LOG_FILE:
 
@@ -446,7 +446,7 @@ The following formats are currently available:
 
   Generates output in HepMC::IO_GenEvent format, however, only
   incoming beams and outgoing particles are stored. Intermediate and
-  decayed particles are not listed. The event weights stored as the
+  decayed particles are not listed. The event weights stored are the
   same as above, and ``HEPMC_USE_NAMED_WEIGHTS`` and
   ``HEPMC_EXTENDED_WEIGHTS`` can be used to customise.
 
@@ -501,7 +501,8 @@ this feature.
 On-the-fly event weight variations
 ==================================
 
-Sherpa can compute alternative event weights on-the-fly, resulting in
+Sherpa can compute alternative event weights on-the-fly
+:cite:`Bothmann2016nao`, resulting in
 alternative weights for the generated event.
 An important example is the variation of QCD scales and input PDF.
 There are also on-the-fly variations for approximate electroweak corrections,
@@ -562,7 +563,7 @@ it defaults to the nominal one. Specific PDF members can be specified by
 appending the PDF set name with ``/<member-id>``.
 
 It can be painful to write every variation explicitly, e.g. for 7-point scale
-factor variations or if one want variations for all members of a PDF set.
+factor variations or if one wants variations for all members of a PDF set.
 Therefore an asterisk can be appended to some values, which results in an
 *expansion*.  For PDF sets, this means that the variation is repeated for each
 member of that set.  For scale factors, ``4.0*`` is expanded to itself, unity,
@@ -855,7 +856,7 @@ parallelization first. Therefore, first run
    $ Sherpa INIT_ONLY=1 <Sherpa.yaml>
 
 and, in case of using Amegic, compile the libraries. Then start your
-parallized integration, e.g.
+parallelized integration, e.g.
 
 .. code-block:: shell-session
 

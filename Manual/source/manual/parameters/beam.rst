@@ -154,12 +154,12 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
     Q^2_{max,kin} = \frac{(m_e x)^2}{1-x} + E_e^2 (1-x) \theta^2_{max}
 
-  with :math:`m_e` is the electron mass, :math:`E_e` the electron energy,
+  with :math:`m_e` the electron mass, :math:`E_e` the electron energy,
   :math:`x` the energy fraction that the photon carries and
   :math:`\theta_{max}` the maximum electron deflection angle, see below.
 
 :option:`ThetaMax`
-  Parameter of the EPA spectrum of an electron beam, c.f. :cite:`Frixione:1993yw`.
+  Parameter of the EPA spectrum of an electron beam, cf. :cite:`Frixione:1993yw`.
   Describes the maximum angle of the electron deflection, which
   translates to the maximum virtuality in the photon spectrum. It defaults to ``0.3``.
 
@@ -196,7 +196,7 @@ Beam Polarization
 
 Sherpa can also provide cross-sections for polarized beams.
 These calculations can only be provided using the  ``AMEGIC`` ME generator.
-The value for the beam polarization can be given as a percenatage e.g. 80 or in decimal form e.g. 0.8 .
+The value for the beam polarization can be given as a percentage e.g. 80 or in decimal form e.g. 0.8 .
 The flavour of :option:`BEAM_1/BEAM_2` follows the definition given to  :option:`BEAMS`.
 
 .. code-block:: yaml

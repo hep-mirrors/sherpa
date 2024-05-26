@@ -39,10 +39,9 @@ Rivet analyses
 .. index:: ANALYSIS_OUTPUT
 
 Sherpa is equipped with an interface to the analysis tool `Rivet
-<http://projects.hepforge.org/rivet/>`_. To enable it, Rivet and
-`HepMC <http://lcgapp.cern.ch/project/simu/HepMC/>`_ have to be
-installed (e.g. using the Rivet bootstrap script) and your Sherpa
-compilation has to be configured with the following options:
+<http://projects.hepforge.org/rivet/>`_ :cite:`Bierlich:2019rhm`.
+To enable it, Rivet and `HepMC <http://lcgapp.cern.ch/project/simu/HepMC/>`_
+:cite:`Dobbs:2001ck` have to be installed (e.g. using the Rivet bootstrap script) and your Sherpa compilation has to be configured with the following options:
 
 .. code-block:: shell-session
 
@@ -123,8 +122,8 @@ MCFM interface
 .. index:: Loop_Generator
 
 Sherpa is equipped with an interface to the NLO library of `MCFM
-<http://mcfm.fnal.gov/>`_ for decdicated processes.  To enable it,
-To enable it, MCFM has to be installed and compiled into a single
+<http://mcfm.fnal.gov/>`_ for dedicated processes.  To enable it,
+MCFM has to be installed and compiled into a single
 library @code{libmcfm.so} by using the ``-Dwith_library=ON``
 flag when configuring MCFM using CMake.
 

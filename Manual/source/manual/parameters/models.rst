@@ -13,7 +13,8 @@ option to use the Universal FeynRules Output Format (UFO)
 :cite:`Degrande2011ua`.
 
 Please note: AMEGIC can only be used for the built-in models (SM and
-HEFT). For anything else, please use Comix.
+HEFT). For anything else, please use Comix. For more details on the
+Sherpa capabilities to simulate BSM physics see :cite:`Hoeche2014kca`.
 
 .. contents::
    :local:

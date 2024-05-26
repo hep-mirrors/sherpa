@@ -102,7 +102,9 @@ are encouraged to cite them accordingly.
 The `MCnet Guidelines
 <http://www.montecarlonet.org/index.php?p=Publications/Guidelines>`_
 apply to Sherpa. You are kindly asked to cite :cite:`Bothmann:2019yzt`
-if you have used the program in your work.
+if you have used the program in your work. Should your application of
+Sherpa furthermore involve specific non-trivial aspects of the simulation
+chain we urge you to also cite the relevant publications explicitly.
 
 The Sherpa authors strongly recommend the study of the manuals and
 many excellent publications on different aspects of event generation
@@ -135,7 +137,7 @@ Basic structure
 
 
 Sherpa is a modular program. This reflects the paradigm of Monte Carlo
-event generation, with the full simulation is split into well defined
+event generation, with the full simulation split into well defined
 event phases, based on QCD factorization theorems. Accordingly, each
 module encapsulates a different aspect of event generation for
 high-energy particle reactions. It resides within its own namespace
@@ -155,11 +157,11 @@ ATOOLS
 METOOLS
   In this module some general methods for the evaluation of helicity
   amplitudes have been accumulated.  They are used in AMEGIC++, the
-  EXTRA_XS module, and the new matrix-element generator Comix.  This
+  EXTRA_XS module, and the matrix-element generator Comix.  This
   module also contains helicity amplitudes for some generic matrix
   elements, that are, e.g., used by HADRONS++. Further, METOOLS also
   contains a simple library of tensor integrals which are used in the
-  PHOTONS++ matrix element corrections.
+  PHOTONS++ QED matrix element corrections.
 
 BEAM
   This module manages the treatment of the initial beam spectra
@@ -187,7 +189,7 @@ MODEL
   Supersymmetric extension (MSSM), the ADD model of large extra
   dimensions, and a comprehensive set of operators parametrizing
   anomalous triple and quartic electroweak gauge boson couplings. An
-  Interface to `FeynRules`_ is also
+  interface to `FeynRules`_, i.e. the UFO model input is also
   available.
 
 EXTRA_XS
@@ -212,11 +214,13 @@ AMEGIC++
   cross sections and to generate weighted or unweighted events.
   AMEGIC++ has been tested for multi-particle production in the
   Standard Model :cite:`Gleisberg2003bi`. Its MSSM implementation has
-  been validated in :cite:`Hagiwara2005wg`.
+  been validated in :cite:`Hagiwara2005wg`. An extensive validation for
+  models invoked via FeynRules package has been presented in
+  :cite:`Christensen2009jx`.
 
 COMIX
   `Comix <http://comix.freacafe.de>`_ is a multi-leg tree-level
-  matrix element generator, based on the color dressed Berends-Giele
+  matrix element generator, based on the colour dressed Berends-Giele
   recursive relations :cite:`Duhr2006iq`.  It employs a new algorithm
   to recursively compute phase-space weights.  The module is a useful
   supplement to older matrix element generators like AMEGIC++ in
@@ -224,7 +228,7 @@ COMIX
   is particularly suited for an interface with parton shower
   simulations and can hence be easily employed for the ME-PS merging
   within Sherpa. It is Sherpa's default large multiplicity matrix
-  element generator for the Standard Model.
+  element generator for Standard Model production processes.
 
 PHASIC++
   All base classes dealing with the Monte Carlo phase-space
@@ -242,7 +246,7 @@ CSSHOWER++
   which was published in :cite:`Schumann2007mg`.  The corresponding
   shower model was originally proposed in :cite:`Nagy2005aa`,
   :cite:`Nagy2006kb`.  It relies on the factorisation of real-emission
-  matrix elements in the CS subtraction framework
+  matrix elements in the Catani--Seymour (CS) subtraction framework
   :cite:`Catani1996vz`, :cite:`Catani2002hc`.  There exist four
   general types of CS dipole terms that capture the complete infrared
   singularity structure of next-to-leading order QCD amplitudes.  In
@@ -258,7 +262,7 @@ DIRE
   dipole-like picture of the evolution can be re-interpreted as a
   dipole picture in the soft limit. At the same time, the splitting
   functions are regularized in the soft anti-collinear region using
-  partial fractioning of the soft eikonal in the Catani-Seymour
+  partial fractioning of the soft eikonal in the Catani--Seymour
   approach :cite:`Catani1996vz`, :cite:`Catani2002hc`. They are then
   modified to satisfy the sum rules in the collinear limit. This leads
   to an invariant formulation of the parton-shower algorithm, which is
@@ -304,8 +308,9 @@ HADRONS++
 PHOTONS++
   The PHOTONS++ module holds routines to add QED
   radiation to hadron and tau-lepton decays. This has been achieved by
-  an implementation of the YFS algorithm :cite:`Yennie1961ad`. The
-  structure of PHOTONS++ is such that the formalism can be
+  an implementation of the YFS algorithm :cite:`Yennie1961ad`, described
+  in :cite:`Schonherr2008av`, :cite:`Krauss2018djz` and :cite:`Flower2022iew`.
+  The structure of PHOTONS++ is such that the formalism can be
   extended to scattering processes and to a systematic improvement to
   higher orders of perturbation theory :cite:`Schonherr2008av`.  The
   application of PHOTONS++ therefore accounts for corrections

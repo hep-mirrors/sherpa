@@ -139,9 +139,9 @@ variables e.g. with export (bash) or setenv (csh).  Examples:
 
 .. code-block:: bash
 
-   export CXX=g++-11
-   export CC=gcc-11
-   export CPP=cpp-11
+   export CXX=g++-13
+   export CC=gcc-13
+   export CPP=cpp-13
 
 
 Installation on Cray XE6 / XK7
@@ -290,9 +290,10 @@ information on and examples of how to run Sherpa using AMEGIC++, see
 
 If the internal hard-coded matrix elements or Comix are used, and
 AMEGIC++ is not, an initialization run is not needed, and Sherpa will
-calculate the cross sections and generate events during the first run.
+calculate the cross sections and generate events during the first run
+already.
 
-As the cross sections are integrated, the integration over phase space
+As the cross sections get integrated, the integration over phase space
 is optimized to arrive at an efficient event generation.  Subsequently
 events are generated if a number of events is passed to the optional
 argument :option:`--events` or set in the :file:`Sherpa.yaml` file with the
@@ -403,7 +404,7 @@ In the ``PROCESSES`` list of the steering file this translates into
 
 Fixing the order of electroweak
 couplings to :option:`2`, matrix elements of all partonic subprocesses
-for Drell-Yan production without any and with up to two extra QCD
+for Drell-Yan production without any and with up to five extra QCD
 parton emissions will be generated.  Proton--proton collisions are
 considered at beam energies of 6.5 TeV.
 Model parameters and couplings can all be defined in
@@ -452,20 +453,19 @@ generator(s). The Sherpa output will look like:
    [...]
    Random::SetSeed(): Seed set to 1234
    [...]
-   Beam_Spectra_Handler :
-      type = Monochromatic*Monochromatic
-      for    P+  ((4000,0,0,4000))
-      and    P+  ((4000,0,0,-4000))
-   PDF set 'ct14nn' loaded for beam 1 (P+).
-   PDF set 'ct14nn' loaded for beam 2 (P+).
-   Initialized the ISR.
+   Beam_Spectra_Handler: type = Collider Setup
+    for P+ (on = 0, p = (6500,0,0,6500))
+    and P+ (on = 0, p = (6500,0,0,-6500)).
+   ISR handling:
+    PDFs for hard scattering:              PDF4LHC21_40_pdfas + PDF4LHC21_40_pdfas
+    PDFs for multiple parton interactions: PDF4LHC21_40_pdfas + PDF4LHC21_40_pdfas
    Standard_Model::FixEWParameters() {
-     Input scheme: 2
-                   alpha(m_Z) scheme, input: 1/\alphaQED(m_Z), m_W, m_Z, m_h, widths
-     Ren. scheme:  2
-                   alpha(m_Z)
-     Parameters:   sin^2(\theta_W) = 0.222928 - 0.00110708 i
-                   vev              = 243.034 - 3.75492 i
+    Input scheme: alphamZsW
+                  alpha(mZ)-mZ-sin(theta_W) scheme, input: 1/\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths
+    Ren. scheme:  alphamZsW
+
+    Parameters:   sin^2(\theta_W) = 0.23113
+                  vev             = 246.16 - 3.36725 i
    }
    Running_AlphaQED::PrintSummary() {
      Setting \alpha according to EW scheme
@@ -496,19 +496,20 @@ generator(s). The Sherpa output will look like:
    Hadron_Decay_Map::Read:   Initializing HadronDecays.dat. This may take some time.
    Initialized the Hadron_Decay_Handler, Decay model = Hadrons
    [...]
-   R
 
+   
 Then Sherpa will start to integrate the cross sections. The output
 will look like:
 
 .. code-block:: console
 
    Process_Group::CalculateTotalXSec(): Calculate xs for '2_2__j__j__e-__e+' (Comix)
-   Starting the calculation at 11:58:56. Lean back and enjoy ... .
-   822.035 pb +- ( 16.9011 pb = 2.05601 % ) 5000 ( 11437 -> 43.7 % )
-   full optimization:  ( 0s elapsed / 22s left ) [11:58:56]
-   841.859 pb +- ( 11.6106 pb = 1.37916 % ) 10000 ( 18153 -> 74.4 % )
-   full optimization:  ( 0s elapsed / 21s left ) [11:58:57]
+   Integration parameters: n_{min} = 5000, N_{opt} = 10, N_{max} = 1, exponent = 0.5
+   Starting the calculation at 11:57:37. Lean back and enjoy ... .
+   1630.48 pb +- ( 54.9451 pb = 3.36988 % ) 5000 ( 5029 -> 99.4 % )
+   full optimization:  ( 0s elapsed / 8s left ) [11:57:38]
+   1720.96 pb +- ( 87.5796 pb = 5.089 % ) 7071 ( 7113 -> 99.3 % )
+   full optimization:  ( 0s elapsed / 9s left ) [11:57:38]
    ...
 
 The first line here displays the process which is being calculated. In
@@ -517,23 +518,24 @@ this example, the integration is for the 2->2 process, parton, parton
 after the process.  As the integration progresses, summary lines are
 displayed, like the one shown above. The current estimate of the cross
 section is displayed, along with its statistical error estimate. The
-number of phase space points calculated is displayed after this
-(:option:`10000` in this example), and the efficiency is displayed
-after that. On the line below, the time elapsed is shown, and an
-estimate of the total time till the optimisation is complete.  In
-square brackets is an output of the system clock.
+number of phase space points calculated is displayed after this,
+and the efficiency is displayed after that. On the line below, the time
+elapsed is shown, and an estimate of the total time till the optimisation
+is complete.  In square brackets is an output of the system clock.
 
 When the integration is complete, the output will look like:
 
 .. code-block:: console
 
    ...
-   852.77 pb +- ( 0.337249 pb = 0.0395475 % ) 300000 ( 313178 -> 98.8 % )
-   integration time:  ( 19s elapsed / 0s left ) [12:01:35]
-   852.636 pb +- ( 0.330831 pb = 0.038801 % ) 310000 ( 323289 -> 98.8 % )
-   integration time:  ( 19s elapsed / 0s left ) [12:01:35]
-   2_2__j__j__e-__e+ : 852.636 pb +- ( 0.330831 pb = 0.038801 % )  exp. eff: 13.4945 %
-     reduce max for 2_2__j__j__e-__e+ to 0.607545 ( eps = 0.001 )
+   1681.34 pb +- ( 4.26194 pb = 0.253485 % ) 79980 ( 80030 -> 100 % )
+   full optimization:  ( 1s elapsed / 8s left ) [11:57:39]
+   1680.89 pb +- ( 3.27672 pb = 0.194939 % ) 113108 ( 113158 -> 100 % )
+   full optimization:  ( 1s elapsed / 8s left ) [11:57:39]
+   1680.34 pb +- ( 2.56818 pb = 0.152838 % ) 159958 ( 160008 -> 100 % )
+   integration time:   ( 2s elapsed / 7s left ) [11:57:40]
+   2_2__j__j__e-__e+ : 1680.34 pb +- ( 2.56818 pb = 0.152838 % )  exp. eff: 21.5474 %
+     reduce max for 2_2__j__j__e-__e+ to 1 ( eps = 0.001 -> exp. eff 0.215474 ) 
 
 with the final cross section result and its statistical error displayed.
 
@@ -548,16 +550,17 @@ output looks like:
 
 .. code-block:: console
 
-   Event 10000 ( 72 s total ) = 1.20418e+07 evts/day
+   Event 10000 ( 195 s total ) = 4.42918e+06 evts/day                    
    In Event_Handler::Finish : Summarizing the run may take some time.
-   +----------------------------------------------------+
-   |                                                    |
-   |  Total XS is 900.147 pb +- ( 8.9259 pb = 0.99 % )  |
-   |                                                    |
-   +----------------------------------------------------+
+   -------------------------------------------------------------------------------------
+   Nominal or variation name                XS [pb]      RelDev  AbsErr [pb]      RelErr
+   -------------------------------------------------------------------------------------
+   Nominal                                  1747.73         0 %      17.1963      0.98 %
+   [...]
 
 A summary of the number of events generated is displayed, with the
-total cross section for the process.
+total cross section for the process and possible systematic variations
+:cite:`Bothmann2016nao` and :ref:`Input structure`.
 
 The generated events are not stored into a file by default; for
 details on how to store the events see :ref:`Event output formats`.
