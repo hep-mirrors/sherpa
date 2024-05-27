@@ -270,7 +270,7 @@ void ISR::Weight() {
     corrW = 1. / (1. - D / B);
     m_weight *= corrW;
   }
-  m_weight *= m_cut * m_massW * m_jacW * m_angleWeight*(1-m_v);
+  m_weight *= m_cut * m_massW * m_jacW * m_angleWeight;
   if (m_cut == 0) m_nfail += 1;
   else m_nsuccess += 1;
   DEBUG_FUNC("v = " << m_v << std::endl <<
