@@ -387,6 +387,11 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 	phi   = 2.*M_PI*ran->Get();
 	split->SetSpect(p_spect);
 	split->SetForcedDecay(true);
+	split->IncForcedTrials();
+	if (split->ForcedTrials()>10) {
+	  split->SetKtStart(0.0);
+	  return false;
+	}
 	return -1;
       }
     }

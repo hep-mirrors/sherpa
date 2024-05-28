@@ -552,13 +552,6 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
 	m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
 	split->SetCol(m_sudakov.GetCol());
 	split->SetTest(kt2,z,y,phi);
-	if (split->ForcedDecay()) {
-	  split->IncForcedTrials();
-	  if (split->ForcedTrials()>10) {
-	    split->SetKtStart(0.0);
-	    return false;
-	  }
-	}
 	return true;
       }
     }
