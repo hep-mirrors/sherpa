@@ -1,5 +1,4 @@
 #include "AMISIC++/Main/Amisic.H"
-#include "AMISIC++/Perturbative/MI_Processes.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -8,12 +7,14 @@ using namespace ATOOLS;
 using namespace std;
 
 Amisic::Amisic() :
-  p_processes(nullptr), p_soft(nullptr), m_sigmaND_norm(1.),
-  m_isMinBias(false), m_ana(false)
+  m_processes(MI_Processes()), p_soft(nullptr),
+  m_sudakovarg(Sudakov_Argument(&m_processes)),
+  m_sigmaND_norm(1.),
+  m_isMinBias(false), m_ana(true)
 {}
 
 Amisic::~Amisic() {
-  if (p_processes) delete p_processes;
+  if (mipars) delete mipars;
   if (p_soft)      delete p_soft;
   if (m_ana) FinishAnalysis();
 }
@@ -23,59 +24,76 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 			YFS::YFS_Handler *const yfs,
                         REMNANTS::Remnant_Handler * remnant_handler)
 {
-  InitParametersAndType(isr);
+  InitParametersAndType(isr,remnant_handler);
   Vec4D P = isr->GetBeam(0)->OutMomentum()+isr->GetBeam(1)->OutMomentum();
   m_S     = P.Abs2();
   m_Y     = P.Y();
-  // Calculate hadronic non-diffractive cross sections, the normalization for the
-  // multiple scattering probability.
-  p_xsecs     = new Hadronic_XSec_Calculator(model,isr->Flav(0),isr->Flav(1));
-  // Initialize the parton-level processes - currently only 2->2 scatters.  Even for
-  // soft processes we need the Mass_Selector for the construction of the amplitudes
-  // in the parton shower.
-  p_processes = new MI_Processes(m_variable_s);
-  p_processes->SetXSecCalculator(p_xsecs);
-  if (mipars->GetEvtType()==evt_type::Perturbative) {
-    // Initialize the hard processes (i.e. the 2->2 scatters)
-    p_processes->Initialize(model,nullptr,isr,yfs);
-    // Initialize the Over_Estimator - mainly fixing an effective prefactor to allow
-    // for a quick'n'dirty fix to create fast estimates of the next scatter's pT^2.
-    // This follows closely the algorithm in the original Sjostrand - van Zijl
-    // publication.  The logic for the overestimator is based on
-    // - t-channel dominance allowing to approximate differential cross sections as
-    //   dsigma ~ dp_T dy f(x_1) f_(x_2) C_1 C_2 as(t)^2/(t+t_0)^2
-    //   where C_1/2 are the colour factors of the incoming partons, x_1/2 are the
-    //   Bjorken-x.
-    // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
-    //   where x_1 and x_2 are identical
-    m_overestimator.Initialize(p_processes);
-    // Initializing the Single_Collision_Handler which creates the next scatter: it needs
-    // the remnants, processes, and the overestimator
-    m_singlecollision.Init(remnant_handler,p_processes,&m_overestimator);
+  ///////////////////////////////////////////////////////////////////////////
+  // Calculate hadronic non-diffractive cross sections, the normalization
+  // for the multiple scattering probability.
+  ///////////////////////////////////////////////////////////////////////////
+  m_xsecs.Initialize(isr->Flav(0),isr->Flav(1),model);
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialize the parton-level processes - currently only 2->2 scatters.
+  ///////////////////////////////////////////////////////////////////////////
+  m_processes.SetXSecCalculator(&m_xsecs);
+  m_processes.SetMatterOverlap(&m_mo);
+    if (mipars->GetEvtType()==evt_type::Perturbative) {
+    m_processes.Initialize(model,nullptr,isr,yfs);
+    ///////////////////////////////////////////////////////////////////////////
+    // Calculate the ratios of hard and non-diffractive cross sections.
+    ///////////////////////////////////////////////////////////////////////////
+    m_xsecs.CalculateXSratios(&m_processes,p_sbins);
+    ///////////////////////////////////////////////////////////////////////////
+    // Prepare the integral for the "Sudakov form factor", Eq. (SZ, 37)
+    ///////////////////////////////////////////////////////////////////////////
+    m_sudakovarg.Initialize(p_sbins,m_mo.GetBBins());
+    ///////////////////////////////////////////////////////////////////////////
     // Initialize everything to do with the inpact parameter dependence.
-    m_impact.Initialize(remnant_handler,p_processes);
+    // For dynamic matter overlaps this includes fixing the effective radius
+    ///////////////////////////////////////////////////////////////////////////
+    m_impact.Initialize(&m_mo,&m_sudakovarg,p_sbins);
+    ///////////////////////////////////////////////////////////////////////////
+    // Initialize the Over_Estimator - mainly fixing an effective prefactor
+    // to allow for a quick'n'dirty fix to create fast estimates of the next
+    // scatter's pT^2.  The logic for the overestimator is based on
+    // - t-channel dominance allowing to approximate differential cross
+    //   sections as
+    //          dsigma ~ dp_T dy f(x_1) f_(x_2) C_1 C_2 as(t)^2/(t+t_0)^2
+    //   where C_1/2 are the colour factors of the incoming partons, x_1/2
+    //   are the Bjorken-x;
+    // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for
+    //   mid-rapidity where x_1 and x_2 are identical
+    ///////////////////////////////////////////////////////////////////////////
+    m_overestimator.Initialize(isr,&m_processes,
+                               p_sbins,m_sudakovarg.GetPT2Bins());
+    ///////////////////////////////////////////////////////////////////////////
+    // Initializing the Single_Collision_Handler which creates the next
+    // scatter: it needs the remnants, processes, and the overestimator
+    ///////////////////////////////////////////////////////////////////////////
+    m_singlecollision.Init(&m_processes,&m_overestimator);
+  } else {
+      p_soft = new NonPerturbative_XSecs(remnant_handler,p_xsecs);
+      p_soft->SetBeams(isr->GetBeam(0),isr->GetBeam(1));
+      p_soft->CalculateSDependentCrossSections();
+      // Initializing the Single_Collision_Handler which creates the next scatter: it needs
+      // the remnants, processes, and the overestimator
+      m_singlecollision.Init(remnant_handler,p_soft);
+      remnant_handler->SetType(REMNANTS::strat::simple);
   }
-  else {
-    p_soft = new NonPerturbative_XSecs(remnant_handler,p_xsecs);
-    p_soft->SetBeams(isr->GetBeam(0),isr->GetBeam(1));
-    p_soft->CalculateSDependentCrossSections();
-    // Initializing the Single_Collision_Handler which creates the next scatter: it needs
-    // the remnants, processes, and the overestimator
-    m_singlecollision.Init(remnant_handler,p_soft);
-    remnant_handler->SetType(REMNANTS::strat::simple);
-  }
-
   if (m_ana) InitAnalysis();
   m_isFirst   = true;
   m_isMinBias = false;
   return true;
 }
 
-void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr) {
+void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
+				   REMNANTS::Remnant_Handler * remnants) {
   mipars = new MI_Parameters();
   bool shown = false;
-  // Must distinguish the hard and rescatter process.  For the latter, we take energies
-  // as fixed, for the former, the energies may vary (we have to check the spectrum):
+  // Must distinguish the hard and rescatter process.  For the latter, we
+  // take energies as fixed, for the former, the energies may vary (we have
+  // to check the spectrum):
   // - if EPA is used the energies entering the ISR will vary,
   // - otherwise the energy is fixed.
   m_variable_s = isr->GetBeam(0)->On() || isr->GetBeam(1)->On();
@@ -86,9 +104,41 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr) {
     m_type = mitype::gamma_hadron;
   else if (isr->Flav(0).IsPhoton() && isr->Flav(1).IsPhoton())
     m_type = mitype::gamma_gamma;
-  else
-    msg_Error() << METHOD <<": unknown multiple interaction model for " <<
-            isr->Flav(0) << " and " << isr->Flav(1) << "\n";
+  else {
+    msg_Error() <<METHOD<<": unknown multiple interaction model for "
+		<<isr->Flav(0) << " and " << isr->Flav(1) << "\n"
+		<<"   Will terminate the run.\n";
+    THROW(normal_exit,"Inconsistent set-up in AMISIC.");
+  }
+  Vec4D P = isr->GetBeam(0)->OutMomentum()+isr->GetBeam(1)->OutMomentum();
+  m_S     = P.Abs2();
+  m_Y     = P.Y();
+  size_t nbins = size_t((*mipars)("nS_bins"));
+  p_sbins      = (m_variable_s ?
+		  new axis(nbins, 4.*m_processes.PT2Min(), m_S,
+			   axis_mode::linear) :
+		  new axis(1, m_S, (1.+1.e-6)*m_S, axis_mode::linear));
+
+  size_t nspace = 15;
+  if (m_variable_s) {
+    msg_Info()<<"   | Variable centre-of mass energies for "; nspace-=3;
+  }
+  else { msg_Info()<<"   | Fixed centre-of mass energies for "; }
+  switch (m_type) {
+  case mitype::hadron_hadron: msg_Info()<<"hadron-hadron collisions."; break;
+  case mitype::gamma_hadron:  msg_Info()<<"photon-hadron collisions."; break;
+  case mitype::gamma_gamma:   msg_Info()<<"photon-photon collisions."; break;
+  default:                    msg_Info()<<"unknown particles.       "; break;
+  }
+  msg_Info()<<std::string(nspace,' ')<<"|\n"<<"   "
+	    <<std::string(77,'=')<<"\n\n";
+  ///////////////////////////////////////////////////////////////////////////
+  // Initializing the matter overlap, specific for the UE/MB model, cf.
+  // Eqs. (SZ, 21-22) and (CS, 11), respectively.
+  ///////////////////////////////////////////////////////////////////////////
+  m_mo.Initialize(remnants,isr);
+  m_variable_b = m_mo.IsDynamic();
+
   for (size_t beam=0;beam<2;beam++) {
     if(!shown && sqr((*mipars)("pt_0"))<isr->PDF(beam)->Q2Min()) {
       msg_Error()<<"Potential error in "<<METHOD<<":\n"
@@ -101,25 +151,71 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr) {
   }
 }
 
-bool Amisic::InitMPIs(PDF::ISR_Handler *const isr, const double & scale) {
-  // Initialise the MPI simulation: fixing the maximal scale for the downward evolution
-  // and determining an impact parameter in SetB().
+bool Amisic::InitMPIs(const double & ptmax,const double & x1,const double & x2,
+		      const double & scale) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialise the MPI simulation: fixing the maximal scale, take from the
+  // hard event, for the downward evolution and determining a
+  // kinematics-dependent impact parameter in SetB().
+  ///////////////////////////////////////////////////////////////////////////
   if (m_isFirst) {
     m_isFirst = false;
     if (m_variable_s) UpdateForNewS();
     SetMassMode(1);
-    SetMaxScale(scale);
-    SetB();
+    SetMaxScale(ptmax);
+    SetB(x1,x2,scale);
   }
   if (!VetoEvent(scale)) return true;
   return false;
 }
 
+int Amisic::InitMinBiasEvent() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialise the MinBias simulation: fixing the maximal scale = S/4, the
+  // kinematic limit, for the downward evolution and choose impact parameter
+  // in SetFirstB().
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_isFirst) {
+    m_isFirst   = false;
+    m_producedSoft = false;
+    m_isMinBias = true;
+    if (m_variable_s) UpdateForNewS();
+    SetMaxScale(rpa->gen.Ecms()/2.);
+    if (!p_soft) SetFirstB();
+    if (m_mo.IsDynamic()) m_singlecollision.PrefabricateBlob();
+    return 1;
+  }
+  return 0;
+}
+
+int Amisic::InitRescatterEvent() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialise the MinBias simulation: fixing the maximal scale = S/4, the
+  // kinematic limit, for the downward evolution and take the impact parameter
+  // from the already existing scatter.
+  // TODO: we may have to check the logical flow here.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_isFirst) {
+    m_isFirst   = false;
+    m_isMinBias = true;
+    if (m_variable_s) UpdateForNewS();
+    SetFirstB(m_singlecollision.B());
+    SetMaxScale(rpa->gen.Ecms()/2.);
+    m_singlecollision.SetLastPT2();
+    return 1;
+  }
+  return 0;
+}
+
 void Amisic::UpdateForNewS() {
-  // Update if first scatter with variable c.m. energy (e.g. collisions with pomerons
-  // or resolved photons): update c.m. energy in processes, re-calculate non-diffractive
-  // cross sections for normalisation, adjust prefactors for overestimators, etc..
-  // TODO: will have to check if we need another longitudinal boost (hence the Y)
+  ///////////////////////////////////////////////////////////////////////////
+  // Update if first scatter with variable c.m. energy (e.g. collisions with
+  // pomerons or resolved photons): update c.m. energy in processes,
+  // re-calculate non-diffractive cross sections for normalisation, adjust
+  // prefactors for overestimators, etc..
+  // TODO: will have to check if we need another longitudinal boost (hence
+  //       the Y)
+  ///////////////////////////////////////////////////////////////////////////
   Vec4D P(0.,0.,0.,0.);
   for (size_t beam=0;beam<2;beam++) {
     P += m_singlecollision.InMomentum(beam);
@@ -129,47 +225,46 @@ void Amisic::UpdateForNewS() {
   m_singlecollision.UpdateSandY(m_S, m_Y);
 }
 
-void Amisic::SetB(const double & b) {
-  // Generation of the next sctter in the Single_Collision_Handler depends on the
-  // impact-parameter enhancement, f(b), Eq. (28), here named m_bfac.
-  // It is obtained by interpolation from a look-up table in the Interaction_Probability,
-  // accessed through the Impact_Parameter class.
-  m_b    = (b<0.) ? m_impact.CalculateB(m_S,m_pt2) : b;
-  m_bfac = ATOOLS::Max(0.,m_impact(m_S,m_b));
+void Amisic::SetFirstB(const double & b) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Generation of the overall impact parameter for MinBias-type events.
+  // For "rescatter" events, the impact parameter must already be fixed by
+  // the primary collision, otherwise it will be generated, as follows.
+  // For static form-factors, impact parameter is given according to the
+  // b-dependent interaction probability, Eq. (SZ, 24); the following
+  // scatters generated by the Single_Collision_Handler depend on the
+  // impact-parameter enhancement, f(b), Eq. (SZ, 28), here named m_bfac.
+  // It is obtained by interpolation from a look-up table in the
+  // Interaction_Probability, accessed through the Impact_Parameter class.
+  ///////////////////////////////////////////////////////////////////////////
+  m_b = ( b>=0. ? b : m_impact(m_S) );
+  m_bfac = ATOOLS::Max(0.,m_impact.BEnhancement(m_S,m_b));
+  m_processes.SetB(m_b);
   m_overestimator.SetBFac(m_bfac);
 }
 
-
-int Amisic::InitMinBiasEvent() {
-  if (m_isFirst) {
-    m_isFirst      = false;
-    m_producedSoft = false;
-    m_isMinBias    = true;
-    if (m_variable_s) UpdateForNewS();
-    if (!p_soft) SetB();
-    return 1;
-  }
-  return 0;
+void Amisic::SetB(const double & x1,const double & x2,const double & scale) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Generation of the next scatter in the Single_Collision_Handler depends
+  // on the impact-parameter enhancement, f(b), Eq. (SZ, 28), m_bfac.
+  // It is obtained by interpolation from a look-up table in the
+  // Interaction_Probability, accessed through the Impact_Parameter class.
+  ///////////////////////////////////////////////////////////////////////////
+  m_b    = m_impact(m_S,m_pt2);
+  m_bfac = ATOOLS::Max(0.,m_impact.BEnhancement(m_S,m_b));
+  m_overestimator.SetBFac(m_bfac);
 }
 
-int Amisic::InitRescatterEvent() {
-  if (m_isFirst) {
-    m_isFirst   = false;
-    m_isMinBias = true;
-    if (m_variable_s) UpdateForNewS();
-    SetB(m_singlecollision.B());
-    m_singlecollision.SetLastPT2();
-    return 1;
-  }
-  return 0;
-}
-
-Blob * Amisic::GenerateScatter() {
-  // If a next (perturbative) scatter event has been found, the pointer to the respective
-  // blob is returned.
-  // TODO: we may want to think about something for rescatter events - but this is for
-  //       future work.
-  Blob * blob = m_singlecollision.NextScatter();
+Blob * Amisic::GenerateScatter(const bool & force) {
+  ///////////////////////////////////////////////////////////////////////////
+  // If a next (perturbative) scatter event has been found, the pointer to
+  // the respective blob is returned.
+  // TODO: we may want to think about something for rescatter events -
+  //       but this is for future work.
+  ///////////////////////////////////////////////////////////////////////////
+  Blob * blob = nullptr;
+  if (force) m_singlecollision.UpdateSandY(m_S, m_Y);
+  blob = m_singlecollision.NextScatter(force);
   if (blob) {
     if (mipars->GetEvtType()==evt_type::Perturbative) {
       m_pt2 = m_singlecollision.LastPT2();
@@ -181,6 +276,7 @@ Blob * Amisic::GenerateScatter() {
       m_producedSoft = true;
     }
     blob->SetTypeSpec("AMISIC++ 1.1");
+    blob->UnsetStatus(blob_status::needs_minBias);
     return blob;
   }
   if (m_ana && mipars->GetEvtType()==evt_type::Perturbative) AnalysePerturbative(true);
@@ -188,11 +284,20 @@ Blob * Amisic::GenerateScatter() {
 }
 
 bool Amisic::VetoEvent(const double & scale) const {
+  ///////////////////////////////////////////////////////////////////////////
+  // So far this has not been properly filled.
+  // TODO: maybe we need to add another weight in the spirit of
+  //       the (1-x1-y1-...) seen in the double-parton scattering formalism.
+  ///////////////////////////////////////////////////////////////////////////
   if (scale<0.) return true;
   return false;
 }
 
 Cluster_Amplitude * Amisic::ClusterConfiguration(Blob * blob) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Simplified version of cluster amplitude generation (only 2->2 scatter
+  // so far) to connect with the parton shower.
+  ///////////////////////////////////////////////////////////////////////////
   Cluster_Amplitude * ampl = Cluster_Amplitude::New();
   CreateAmplitudeLegs(ampl,blob);
   FillAmplitudeSettings(ampl);
@@ -225,7 +330,7 @@ void Amisic::FillAmplitudeSettings(Cluster_Amplitude * ampl) {
   ampl->SetMu2(mur2);
   ampl->SetOrderEW(0);
   ampl->SetOrderQCD(2);
-  ampl->SetMS(p_processes);
+  ampl->SetMS(&m_processes);
 }
 
 void Amisic::CleanUpMinBias() {
@@ -238,19 +343,29 @@ void Amisic::CleanUpMinBias() {
 void Amisic::Reset() {}
 
 void Amisic::InitAnalysis() {
-  m_nscatters = 0;
-  m_histos[string("N_scatters")] = new Histogram(0,0,20,20);
+  m_Nev = m_nscatters = m_Nscat = 0;
+  m_f   = 0.;
+  m_histos[string("N_scatters")] = new Histogram(0,0,50,50);
+  m_histos[string("N_B0_1")]     = new Histogram(0,0,50,50);
+  m_histos[string("N_B1_2")]     = new Histogram(0,0,50,50);
+  m_histos[string("N_B2_4")]     = new Histogram(0,0,50,50);
+  m_histos[string("N_B4_8")]     = new Histogram(0,0,50,50);
   m_histos[string("B")]          = new Histogram(0,0,10,100);
   m_histos[string("Bfac")]       = new Histogram(0,0,10,100);
-  m_histos[string("P_T(1)")]     = new Histogram(0,0,100,100);
-  m_histos[string("Y(1)")]       = new Histogram(0,-10,10,10);
-  m_histos[string("Delta_Y(1)")] = new Histogram(0,0,10,10);
-  m_histos[string("P_T(2)")]     = new Histogram(0,0,100,100);
-  m_histos[string("Y(2)")]       = new Histogram(0,-10,10,10);
-  m_histos[string("Delta_Y(2)")] = new Histogram(0,0,10,10);
+  m_histos[string("P_T1")]       = new Histogram(0,0,100,100);
+  m_histos[string("Y1")]         = new Histogram(0,-10,10,10);
+  m_histos[string("Delta_Y1")]   = new Histogram(0,0,10,10);
+  m_histos[string("P_T2")]       = new Histogram(0,0,100,100);
+  m_histos[string("Y2")]         = new Histogram(0,-10,10,10);
+  m_histos[string("Delta_Y2")]   = new Histogram(0,0,10,10);
 }
 
 void Amisic::FinishAnalysis() {
+  msg_Info()<<METHOD<<": <nscatters> = "
+	    <<double(m_Nscat)/double(m_Nev)<<" vs. "
+	    <<m_xsecs.XSratio()<<".\n"
+	    <<"                        <f> = "<<(m_f/double(m_Nev))
+	    <<" (should be 1.)\n";
   Histogram * histo;
   string name;
   for (map<string,Histogram *>::iterator
@@ -267,25 +382,35 @@ void Amisic::FinishAnalysis() {
 void Amisic::AnalysePerturbative(const bool & last) {
   if (!last) {
     if (m_nscatters==0) {
-      m_histos[string("P_T(1)")]->Insert(sqrt(m_singlecollision.PT2()));
-      m_histos[string("Y(1)")]->Insert(m_singlecollision.Y3());
-      m_histos[string("Y(1)")]->Insert(m_singlecollision.Y4());
-      m_histos[string("Delta_Y(1)")]->Insert(dabs(m_singlecollision.Y3()-
-						  m_singlecollision.Y4()));
+      m_histos[string("P_T1")]->Insert(sqrt(m_singlecollision.PT2()));
+      m_histos[string("Y1")]->Insert(m_singlecollision.Y3());
+      m_histos[string("Y1")]->Insert(m_singlecollision.Y4());
+      m_histos[string("Delta_Y1")]->Insert(dabs(m_singlecollision.Y3()-
+						m_singlecollision.Y4()));
     }
     if (m_nscatters==1) {
-      m_histos[string("P_T(2)")]->Insert(sqrt(m_singlecollision.PT2()));
-      m_histos[string("Y(2)")]->Insert(m_singlecollision.Y3());
-      m_histos[string("Y(2)")]->Insert(m_singlecollision.Y4());
-      m_histos[string("Delta_Y(2)")]->Insert(dabs(m_singlecollision.Y3()-
+      m_histos[string("P_T2")]->Insert(sqrt(m_singlecollision.PT2()));
+      m_histos[string("Y2")]->Insert(m_singlecollision.Y3());
+      m_histos[string("Y2")]->Insert(m_singlecollision.Y4());
+      m_histos[string("Delta_Y2")]->Insert(dabs(m_singlecollision.Y3()-
 						  m_singlecollision.Y4()));
     }
+    m_nscatters++;
   }
-  m_nscatters++;
   if (last) {
+    m_Nscat += int(m_nscatters);  m_Nev++;
+    m_f     += m_impact.fb(m_S,m_b);
     m_histos[string("N_scatters")]->Insert(double(m_nscatters)+0.5);
     m_histos[string("B")]->Insert(m_b);
     m_histos[string("Bfac")]->Insert(m_bfac);
+    if (m_b<=1.)
+      m_histos[string("N_B0_1")]->Insert(double(m_nscatters)+0.5);
+    else if (m_b<=2.)
+      m_histos[string("N_B1_2")]->Insert(double(m_nscatters)+0.5);
+    else if (m_b<=4.)
+      m_histos[string("N_B2_4")]->Insert(double(m_nscatters)+0.5);
+    else if (m_b<=8.)
+      m_histos[string("N_B4_8")]->Insert(double(m_nscatters)+0.5);
     m_nscatters = 0;
   }
 }

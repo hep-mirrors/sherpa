@@ -54,10 +54,10 @@ bool Multiple_Interactions::CheckMIHandlers() {
 }
 
 bool Multiple_Interactions::CheckForMinBias() {
-  ///////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // Min Bias events are initialised by having an empty Soft_Collsion blob
   // which needs_minBias.
-  ///////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   if (p_bloblist->empty()) THROW(fatal_error, "Empty bloblist - this is odd.");
   if (p_bloblist->size()==1) {
     Blob * signal = (*p_bloblist)[0];
@@ -68,29 +68,30 @@ bool Multiple_Interactions::CheckForMinBias() {
 }
 
 Return_Value::code Multiple_Interactions::InitMinBias() {
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // No new_event flag or no meaningful MI_Handler - this is somewhat odd.
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   if (!m_newevent[0] ||
       p_mihandlers->find(PDF::isr::hard_subprocess)==p_mihandlers->end() ||
       !(*p_mihandlers)[PDF::isr::hard_subprocess]->IsMinBias() ||
       !(*p_mihandlers)[PDF::isr::hard_subprocess]->On()) {
     return Return_Value::Nothing;
   }
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // Setup the MI_Handler: select the right one, fix initial hadron energies
-  // and switch to the right perturbative parameters (including x-rescaling of the
-  // PDFs in the MPIs, which depend on the hadron energies)
-  /////////////////////////////////////////////////////////////////////////////////
+  // and switch to the right perturbative parameters (including x-rescaling
+  // of the PDFs in the MPIs, which depend on the hadron energies)
+  ////////////////////////////////////////////////////////////////////////////
   p_activeMI = (*p_mihandlers)[PDF::isr::hard_subprocess];
   FixMaxEnergies();
   SwitchPerturbativeInputsToMIs();
-  /////////////////////////////////////////////////////////////////////////////////
-  // Generate a first hard scatter - if successful move particles from scatter blob
-  // into signal blob, add required information to the latter, delete the former,
-  // and inform the remnants about the impact parameter of the collision
-  /////////////////////////////////////////////////////////////////////////////////
-  p_lastblob = p_activeMI->GenerateHardProcess();
+  ////////////////////////////////////////////////////////////////////////////
+  // Generate a first hard scatter - if successful move particles from
+  // scatter blob into signal blob, add required information to the latter,
+  // delete the former, and inform the remnants about the impact parameter
+  // of the collision
+  ////////////////////////////////////////////////////////////////////////////
+  p_lastblob = p_activeMI->GenerateHardProcess(true);
   if (p_lastblob) {
     Blob * signal         = (*p_bloblist)[0];
     Particle_Vector * ins = p_lastblob->InParticles();
@@ -108,27 +109,30 @@ Return_Value::code Multiple_Interactions::InitMinBias() {
     signal->AddData("WeightsMap",
                     new Blob_Data<Weights_Map>((*p_lastblob)["WeightsMap"]->Get<Weights_Map>()));
     signal->AddData("Renormalization_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]->Get<double>()));
+		    new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]
+					  ->Get<double>()));
     signal->AddData("Factorization_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]->Get<double>()));
+		    new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]
+					  ->Get<double>()));
     signal->AddData("Resummation_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]->Get<double>()));
+		    new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]
+					  ->Get<double>()));
     delete p_lastblob;
     p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
     m_newevent[0] = false;
     return Return_Value::Success;
   }
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // No meaningful first scatter in MinBias event produced - ask for new event
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   return Return_Value::New_Event;
 }
 
 bool Multiple_Interactions::CheckForMPIs() {
-  ///////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // In MPI events we need a signal event that has already been filled.
   // We check for stray blobs that need still need showering later.
-  ///////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   if (p_bloblist->empty()) THROW(fatal_error,"Empty bloblist - this is odd.");
   if (!m_newevent[0]) return false;
   Blob * blob = p_bloblist->FindFirst(btp::Signal_Process);
@@ -136,26 +140,26 @@ bool Multiple_Interactions::CheckForMPIs() {
 }
 
 bool Multiple_Interactions::InitMPIs() {
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // No new_event flag or no meaningful MI_Handler - this is somewhat odd.
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   if (!m_newevent[0] ||
       p_mihandlers->find(PDF::isr::hard_subprocess)==p_mihandlers->end() ||
       !(*p_mihandlers)[PDF::isr::hard_subprocess]->On()) {
     m_newevent[0] = false;
     return false;
   }
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // Setup the MI_Handler: select the right one, fix initial hadron energies
-  // and switch to the right perturbative parameters (including x-rescaling of the
-  // PDFs in the MPIs, which depend on the hadron energies)
-  /////////////////////////////////////////////////////////////////////////////////
+  // and switch to the right perturbative parameters (including x-rescaling
+  // of the PDFs in the MPIs, which depend on the hadron energies)
+  ////////////////////////////////////////////////////////////////////////////
   p_activeMI = (*p_mihandlers)[PDF::isr::hard_subprocess];
   FixMaxEnergies();
   SwitchPerturbativeInputsToMIs();
   Blob * blob = p_bloblist->FindFirst(btp::Signal_Process);
-  m_ptmax     = ExtractMPIStartingScale(blob);
-  p_activeMI->InitialiseMPIs(m_ptmax_fac*m_ptmax);
+  ExtractMPIStartingConditions(blob);
+  p_activeMI->InitialiseMPIs(m_ptmax_fac*m_ptmax,m_x[0],m_x[1],m_scale);
   blob->SetPosition(p_activeMI->SelectPositionForScatter());
   Blob * showerblob = blob->OutParticle(0)->DecayBlob();
   if (showerblob) showerblob->SetPosition(p_activeMI->SelectPositionForScatter());
@@ -164,26 +168,38 @@ bool Multiple_Interactions::InitMPIs() {
   return true;
 }
 
-double Multiple_Interactions::ExtractMPIStartingScale(ATOOLS::Blob * blob) {
-  /////////////////////////////////////////////////////////////////////////////////
-  // Trivially the factorization scale - plus the renormalization scale if the two
-  // do not coincide.
-  /////////////////////////////////////////////////////////////////////////////////
+void Multiple_Interactions::ExtractMPIStartingConditions(ATOOLS::Blob * blob) {
+  ////////////////////////////////////////////////////////////////////////////
+  // Extracting relevant information to start MPIs from the *** first ***
+  // signal blob in the event (I assume we will be able to produce hard DPIs):
+  // m_ptmax  = maximal pt allowed for the MPIs (possibly modified by external
+  //            factor): Trivially the factorization scale - plus the
+  //	        renormalization scale if the two do not coincide.
+  // m_x[0,1] = Bjorken-x of the two incoming particles.
+  // m_scale  = factorisation scale of the process.
+  // The latter two are used if we have x (and scale)-dependent hadron radii.
+  ////////////////////////////////////////////////////////////////////////////
   Blob_Data_Base * facinfo = (*blob)["Factorization_Scale"];
   Blob_Data_Base * reninfo = (*blob)["Renormalization_Scale"];
-  if (facinfo==NULL || reninfo==NULL) THROW(fatal_error,"No starting scale info in signal blob");
-  double ptmax = sqrt(facinfo->Get<double>());
+  if (facinfo==NULL || reninfo==NULL)
+    THROW(fatal_error,"No starting scale info in signal blob");
+  double ptfac = sqrt(facinfo->Get<double>());
   double ptren = sqrt(reninfo->Get<double>());
-  if (!IsZero(ptmax-ptren)) ptmax += ptren;
-  return ptmax;
+  m_ptmax = ptfac+(!IsZero(ptfac-ptren)?ptren:0.);
+  m_scale = ptfac;
+  for (size_t i=0;i<2;i++) {
+    m_x[i] = ( blob->InParticle(i)->Momentum()[0]/
+	       p_activeMI->Remnants()->GetRemnant(i)->GetBeam()
+	       ->InMomentum()[0] );
+  }
 }
 
 
 bool Multiple_Interactions::CheckForRescatter() {
-  ///////////////////////////////////////////////////////////////////////////////
-  // In rescatter events - similar to MinBias - we look for a soft collision blob
-  // that still needs to be filled with MinBias methods.
-  ///////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+  // In rescatter events - similar to MinBias - we look for a soft collision
+  // blob that still needs to be filled with MinBias methods.
+  ////////////////////////////////////////////////////////////////////////////
   if (p_bloblist->empty()) THROW(fatal_error, "Empty bloblist - this is odd.");
   if (!m_newevent[1]) return false;
   Blob * blob = p_bloblist->FindLast(ATOOLS::btp::Soft_Collision);
@@ -197,19 +213,19 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
       !(*p_mihandlers)[PDF::isr::bunch_rescatter]->On()) {
     return Return_Value::Nothing;
   }
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // Setup the MI_Handler: select the right one, fix initial hadron energies
-  // and switch to the right perturbative parameters (including x-rescaling of the
-  // PDFs in the MPIs, which depend on the hadron energies)
-  /////////////////////////////////////////////////////////////////////////////////
+  // and switch to the right perturbative parameters (including x-rescaling
+  // of the PDFs in the MPIs, which depend on the hadron energies)
+  ////////////////////////////////////////////////////////////////////////////
   p_activeMI = (*p_mihandlers)[PDF::isr::bunch_rescatter];
   FixMaxEnergies(true);
   SwitchPerturbativeInputsToMIs();
-  /////////////////////////////////////////////////////////////////////////////////
-  // Generate a first hard scatter - if successful move particles from scatter blob
-  // into soft collision blob, add required information to the latter, delete the
-  // former.  If no scatter found, delete soft blob.
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+  // Generate a first hard scatter - if successful move particles from
+  // scatter blob into soft collision blob, add required information to the
+  // latter, delete the former.  If no scatter found, delete soft blob.
+  ////////////////////////////////////////////////////////////////////////////
   Blob * blob = p_bloblist->FindLast(ATOOLS::btp::Soft_Collision);
   p_lastblob  = p_activeMI->GenerateHardProcess();
   if (p_lastblob && m_bbr_veto) {
@@ -225,97 +241,107 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
     while (!outs->empty()) {
       blob->AddToOutParticles(p_lastblob->RemoveOutParticle(outs->back()));
     }
-    blob->SetStatus(blob_status::code(p_lastblob->Status()) | blob_status::needs_beamRescatter);
+    blob->SetStatus(blob_status::code(p_lastblob->Status()) |
+		    blob_status::needs_beamRescatter);
     blob->SetType(p_lastblob->Type());
     blob->SetId(p_lastblob->Id());
     blob->SetTypeSpec(p_lastblob->TypeSpec());
     blob->SetPosition(p_lastblob->Position());
     blob->AddData("Renormalization_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]->Get<double>()));
+		    new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]
+					  ->Get<double>()));
     blob->AddData("Factorization_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]->Get<double>()));
+		    new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]
+					  ->Get<double>()));
     blob->AddData("Resummation_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]->Get<double>()));
+		    new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]
+					  ->Get<double>()));
     delete p_lastblob;
     m_newevent[0] = m_newevent[1] = false;
     return Return_Value::Success;
   }
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // No meaningful first scatter in MinBias event produced - ask for new event
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   p_bloblist->Delete(blob);
   return Return_Value::Nothing;
 }
 
 void Multiple_Interactions::FixMaxEnergies(const bool & updateResidualE) {
-  ///////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // The emax has to be set here (instead of e.g. the CleanUp()) to ensure
   // that the correct energy is taken in case of EPA-approximated beams.
-  ///////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   for (short unsigned int i = 0; i < 2; ++i) {
-    m_emax[i] = ( (p_activeMI->Remnants()->Id()==PDF::isr::bunch_rescatter) ?
-		  (p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->InMomentum()-
-		   p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum())[0] :
-		  p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0]);
-    if (updateResidualE) p_activeMI->Remnants()->GetRemnant(i)->SetResidualEnergy();
+    m_emax[i] =
+      ( (p_activeMI->Remnants()->Id()==PDF::isr::bunch_rescatter) ?
+	(p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->InMomentum()-
+	 p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum())[0] :
+	p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0]);
+    if (updateResidualE)
+      p_activeMI->Remnants()->GetRemnant(i)->SetResidualEnergy();
   }
   p_activeMI->SetMaxEnergies(m_emax[0],m_emax[1]);
 }
 
 void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // Use the right alphaS and initialise the x-rescaling of the beams, i.e. by
   // multiplying them with a ratio of the energies.
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
   for (size_t i=0;i<2;i++) {
-    double x_resc = ((p_activeMI->Remnants()->Id()!=PDF::isr::bunch_rescatter) ?
-		     m_emax[i]/p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0] :
-		     m_emax[i]/(p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->InMomentum()[0]-
-				p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0]) );
+    double x_resc =
+      ((p_activeMI->Remnants()->Id()!=PDF::isr::bunch_rescatter) ?
+       m_emax[i]/
+       p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0] :
+       m_emax[i]/
+       (p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->InMomentum()[0]-
+	p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0]));
     p_activeMI->ISRHandler()->SetRescaleFactor(x_resc,i);
   }
 }
 
 Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // Check for - and if necessary initialise - Minimum Bias, bunch rescattering,
   // and MPIs.  Return nothing if there is no suitable MI_Handler left.
   // The initialisation will either lead to a first blob to be copied into the
   // signal (MinBias) or the definition of suitable starting conditions, impact
   // parameters etc. (MPIs and Rescattering).
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   p_bloblist = bloblist;
   if (CheckForMinBias())                 return InitMinBias();
   if (CheckForRescatter())               return InitRescatter();
   if (CheckForMPIs() && !InitMPIs())     return Return_Value::Nothing;
   if (!p_activeMI || p_activeMI->Done()) return Return_Value::Nothing;
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // Sanity checks on blob_list: four-momentum is conserved, no blob in there
   // that needs to parton shower, beams are viable.
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   m_result = Return_Value::Nothing;
   if (!p_bloblist->FourMomentumConservation()) return Return_Value::Retry_Event;
   if (!CheckBlobList())                        return Return_Value::Nothing;
   if (!BeamsViable())                          return m_result;
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // Try to colour-connect the last interaction with the remnants, if necessary:
-  // this is the case only,  if the shower_blob has the "needs_beams" tag still attached.
-  /////////////////////////////////////////////////////////////////////////////////
+  // this is the case only,  if the shower_blob has the "needs_beams" tag still
+  // attached.
+  ////////////////////////////////////////////////////////////////////////////
   Blob * lastShower = p_bloblist->FindLast(btp::Shower);
   if (lastShower && lastShower->Has(blob_status::needs_beams)) {
     p_activeMI->ConnectColours(p_bloblist->FindLast(btp::Shower));
   }
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   // Try to produce a hard scattering blob and test if this works.
-  /////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
   p_lastblob = p_activeMI->GenerateHardProcess();
   if (p_lastblob) {
-    ///////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     // Check that the partons can be extracted from remnant - mainly a
     // confirmation that the remnant has enough energy to accommodate
     // the extra parton.
-    ///////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     if (!TestHardScatter()) {
       delete p_lastblob;
       return Return_Value::Retry_Event;
@@ -325,18 +351,23 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
     p_bloblist->push_back(p_lastblob);
     return Return_Value::Success;
   }
+  //////////////////////////////////////////////////////////////////////////
   // If we have reached the end of MPI production with a meaningful event,
   // we can stop here.
+  //////////////////////////////////////////////////////////////////////////
   if (p_activeMI->Done()) return Return_Value::Nothing;
+  //////////////////////////////////////////////////////////////////////////
   // If it is a MinBias event where the event handler didn't manage to produce a
   // first scatter (i.e. the first blob still needs a signal) then we have to
   // produce a new event.
+  //////////////////////////////////////////////////////////////////////////
   return Return_Value::New_Event;
 }
 
 bool Multiple_Interactions::TestHardScatter() {
   for (size_t i=0;i<(size_t)p_lastblob->NInP();++i) {
-    if (!p_activeMI->Remnants()->GetRemnant(i)->TestExtract(p_lastblob->InParticle(i))) {
+    if (!p_activeMI->Remnants()->GetRemnant(i)->
+	TestExtract(p_lastblob->InParticle(i))) {
       return false;
     }
   }
@@ -345,7 +376,9 @@ bool Multiple_Interactions::TestHardScatter() {
 
 bool Multiple_Interactions::CheckBlobList()
 {
+  //////////////////////////////////////////////////////////////////////////
   // check if there is a blob that must shower first.
+  //////////////////////////////////////////////////////////////////////////
   for (Blob_List::const_iterator bit=p_bloblist->begin();
        bit!=p_bloblist->end();++bit) {
     if (((*bit)->Type()==btp::Hard_Collision ||
@@ -358,6 +391,7 @@ bool Multiple_Interactions::CheckBlobList()
 }
 
 bool Multiple_Interactions::BeamsViable() {
+  //////////////////////////////////////////////////////////////////////////
   // Checking if the total energy in shower initiators exceeds the
   // energies of the incoming beams.  If yes, undo showering and
   // start with the signal process (if this happens after first shower)
@@ -367,6 +401,7 @@ bool Multiple_Interactions::BeamsViable() {
   // MI interaction) gives rise to last shower blob, while the Signal
   // Process comes first.  It also knows that the shower initiators
   // in the In-state of the shower blobs are sorted ....
+  //////////////////////////////////////////////////////////////////////////
   Blob_List isr=p_bloblist->Find(btp::Shower);
   for (Blob_List::iterator bit=isr.begin();bit!=isr.end();++bit) {
     if (m_ISblobs.find((*bit))!=m_ISblobs.end()) continue;

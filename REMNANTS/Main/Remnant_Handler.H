@@ -95,6 +95,9 @@ namespace REMNANTS {
     {
       return (beam<2)?p_remnants[beam]:nullptr;
     }
+    inline Form_Factor * GetFormFactor(const unsigned short int & beam) const {
+      return (beam<2)?p_remnants[beam]->GetFF():nullptr;
+    }
     inline Primordial_KPerp* GetKPerp() { return m_kinematics.GetKPerp(); }
     inline Colour_Generator* GetColourGen() { return &m_colours; }
   };

@@ -72,9 +72,13 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   PROFILE_HERE;
   int outcome(-1);
   switch (m_mode) {
-    case scmode::shrimps: outcome = p_shrimps->InitMinBiasEvent(blobs); break;
-    case scmode::amisic: outcome = p_amisic->InitMinBiasEvent(); break;
-    case scmode::none:
+  case scmode::shrimps:
+    outcome = p_shrimps->InitMinBiasEvent(blobs);
+    break;
+  case scmode::amisic:
+    outcome = p_amisic->InitMinBiasEvent();
+    break;
+  case scmode::none:
     outcome = 0;
     break;
   default:
@@ -85,8 +89,9 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   case 0:  return Return_Value::Nothing;
   default: break;
   }
-  msg_Error()<<"Error in "<<METHOD<<":\n"
-	     <<"   Did not manage to produce a Minimum Bias event with "<<m_scmodel<<".\n";
+  msg_Tracking() << "Error in "<<METHOD<< ":\n"
+                 <<"   Did not manage to produce a Minimum Bias event with "
+                 << m_scmodel << ".\n";
   return Return_Value::New_Event;
 }
 
