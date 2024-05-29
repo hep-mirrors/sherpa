@@ -89,7 +89,7 @@ Return_Value::code Multiple_Interactions::InitMinBias() {
   // into signal blob, add required information to the latter, delete the former,
   // and inform the remnants about the impact parameter of the collision
   /////////////////////////////////////////////////////////////////////////////////
-  p_lastblob = p_activeMI->GenerateHardProcess();
+  p_lastblob = p_activeMI->GenerateHardProcess(true);
   if (p_lastblob) {  
     Blob * signal         = (*p_bloblist)[0];
     Particle_Vector * ins = p_lastblob->InParticles();
@@ -151,8 +151,8 @@ bool Multiple_Interactions::InitMPIs() {
   FixMaxEnergies();
   SwitchPerturbativeInputsToMIs();
   Blob * blob = p_bloblist->FindFirst(btp::Signal_Process);
-  m_ptmax     = ExtractMPIStartingScale(blob);
-  p_activeMI->InitialiseMPIs(m_ptmax_fac*m_ptmax);
+  ExtractMPIStartingConditions(blob);
+  p_activeMI->InitialiseMPIs(m_ptmax_fac*m_ptmax,m_x[0],m_x[1],m_scale);
   blob->SetPosition(p_activeMI->SelectPositionForScatter());
   Blob * showerblob = blob->OutParticle(0)->DecayBlob();
   if (showerblob) showerblob->SetPosition(p_activeMI->SelectPositionForScatter());
@@ -161,18 +161,28 @@ bool Multiple_Interactions::InitMPIs() {
   return true;
 }
 
-double Multiple_Interactions::ExtractMPIStartingScale(ATOOLS::Blob * blob) {
+void Multiple_Interactions::ExtractMPIStartingConditions(ATOOLS::Blob * blob) {
   /////////////////////////////////////////////////////////////////////////////////
-  // Trivially the factorization scale - plus the renormalization scale if the two
-  // do not coincide.
+  // Extracting relevant information to start MPIs from the *** first *** signal 
+  // blob in the event (I assume we will be able to produce hard DPIs):
+  // m_ptmax  = maximal pt allowed for the MPIs (possibly modified by external 
+  //            factor): Trivially the factorization scale - plus the 
+  //	        renormalization scale if the two do not coincide.
+  // m_x[0,1] = Bjorken-x of the two incoming particles.
+  // m_scale  = factorisation scale of the process.
+  // The latter two are used if we have x (and scale)-dependent hadron radii.
   /////////////////////////////////////////////////////////////////////////////////
   Blob_Data_Base * facinfo = (*blob)["Factorization_Scale"];
   Blob_Data_Base * reninfo = (*blob)["Renormalization_Scale"];
   if (facinfo==NULL || reninfo==NULL) THROW(fatal_error,"No starting scale info in signal blob");
-  double ptmax = sqrt(facinfo->Get<double>());
+  double ptfac = sqrt(facinfo->Get<double>());
   double ptren = sqrt(reninfo->Get<double>());
-  if (!IsZero(ptmax-ptren)) ptmax += ptren;
-  return ptmax;
+  m_ptmax = ptfac+(!IsZero(ptfac-ptren)?ptren:0.);
+  m_scale = ptfac;
+  for (size_t i=0;i<2;i++) {
+    m_x[i] = ( blob->InParticle(i)->Momentum()[0]/
+	       p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->InMomentum()[0] );
+  }
 }
 
 
@@ -265,7 +275,7 @@ void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
     double x_resc = ((p_activeMI->Remnants()->Id()!=PDF::isr::bunch_rescatter) ?
 		     m_emax[i]/p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0] :
 		     m_emax[i]/(p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->InMomentum()[0]-
-				p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0]) );
+				p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0]));
     p_activeMI->ISRHandler()->SetRescaleFactor(x_resc,i);
   }
 }

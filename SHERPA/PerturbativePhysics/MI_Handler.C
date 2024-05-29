@@ -68,9 +68,10 @@ void MI_Handler::InitShrimps(MODEL::Model_Base *model)
   m_type = typeID::shrimps;
 }
 
-bool MI_Handler::InitialiseMPIs(const double & scale) 
+bool MI_Handler::InitialiseMPIs(const double & ptmax,const double & x1,const double & x2,
+				const double & scale) 
 {
-  if (m_type==typeID::amisic) return p_amisic->InitMPIs(p_isr, scale);
+  if (m_type==typeID::amisic) return p_amisic->InitMPIs(ptmax,x1,x2,scale);
   return true;
 }
 
@@ -88,10 +89,10 @@ void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
   if (!m_firstrescatter && showerblob) p_remnants->ConnectColours(showerblob);
 }
 
-Blob * MI_Handler::GenerateHardProcess()
+Blob * MI_Handler::GenerateHardProcess(const bool & force)
 {
   Blob * blob = NULL;
-  if (m_type==typeID::amisic)  blob = p_amisic->GenerateScatter();
+  if (m_type==typeID::amisic)  blob = p_amisic->GenerateScatter(force);
   if (m_type==typeID::shrimps) blob = p_shrimps->GenerateEvent();
   if (blob==NULL) m_stop = true;
   m_firstrescatter = false;

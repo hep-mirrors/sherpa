@@ -2,6 +2,7 @@
 #define AMISIC_Tools_Hadronic_XSec_Calculator_H
 
 #include "AMISIC++/Tools/MI_Parameters.H"
+#include "AMISIC++/Tools/Lookup_Tables.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include <array>
 
@@ -19,6 +20,8 @@ namespace AMISIC {
     };
   };
 
+  class MI_Processes;
+  
   class Hadronic_XSec_Calculator {
   public:
     static double s_slopes[4], s_X[4][4], s_Y[4][4], s_c[4][4][8], s_d[4][4][9];
@@ -37,6 +40,8 @@ namespace AMISIC {
     double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_eta_reggeon;
     double m_alphaQED;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
+    double m_GeV2mb;
+    OneDim_Table * p_xsratio, * p_xshard; 
     size_t m_testmode;
 
     void   FixType();
@@ -46,21 +51,41 @@ namespace AMISIC {
     void   CalculatePhotonPhotonXSecs();
     double TotalXSec(const size_t hadtags[2]) const;
     double IntElXSec(const size_t hadtags[2], const double & xstot) const;
-    double IntSDXSec(const size_t hadtags[2], const size_t & diff,const double masses[2]) const;
+    double IntSDXSec(const size_t hadtags[2], const size_t & diff,
+		     const double masses[2]) const;
     double IntDDXSec(const size_t hadtags[2], const double masses[2]) const;
     double CalculateDoubleDXSec() const;
-  public:
-    explicit Hadronic_XSec_Calculator(MODEL::Model_Base *model,
-				      const ATOOLS::Flavour & fl1,
-				      const ATOOLS::Flavour & fl2);
-    ~Hadronic_XSec_Calculator() = default;
 
+    void OutputXSratios(axis * sbins);
+  public:
+    explicit Hadronic_XSec_Calculator();
+    ~Hadronic_XSec_Calculator();
+
+    void Initialize(const ATOOLS::Flavour & fl1,const ATOOLS::Flavour & fl2,
+		    MODEL::Model_Base * model);
     void operator()(double s);
+    void CalculateXSratios(MI_Processes * processes,axis * sbins);
     void Output() const;
-    inline double XSnd(const double & s=-1.) {
-      if (s>0.) (*this)(s);
-      return m_xsnd;
-    }
+    //////////////////////////////////////////////////////////////////////////////////
+    // The ratio of parton-level cross section obtained by integration over the
+    // partonioc phase space and the (renormalised) non-diffractive cross section
+    //////////////////////////////////////////////////////////////////////////////////
+    inline double XSratio(const double & s=-1.) { return (*p_xsratio)(s); }
+    //////////////////////////////////////////////////////////////////////////////////
+    // Hard cross section
+    //////////////////////////////////////////////////////////////////////////////////
+    inline double XShard(const double & s=-1.)  { return (*p_xshard)(s); }
+    //////////////////////////////////////////////////////////////////////////////////
+    // Non-diffractive cross section, given in GeV^-2
+    //////////////////////////////////////////////////////////////////////////////////
+    inline double XSnd(const double & s=-1.) { if (s>0.) (*this)(s); return m_xsnd; }
+    //////////////////////////////////////////////////////////////////////////////////
+    // Total cross section, given in mb
+    //////////////////////////////////////////////////////////////////////////////////
+    inline double XStot(const double & s=-1.) { if (s>0.) (*this)(s); return m_xstot; }
+    //////////////////////////////////////////////////////////////////////////////////
+    // Tuning value to (re-)normalise the non-diffractive cross section, default is 1
+    //////////////////////////////////////////////////////////////////////////////////
     inline const double & XSndNorm() const { return m_xsnd_norm; }
   };
 }

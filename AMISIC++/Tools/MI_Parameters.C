@@ -1,4 +1,5 @@
 #include "AMISIC++/Tools/MI_Parameters.H"
+#include "AMISIC++/Tools/Lookup_Tables.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -36,19 +37,22 @@ MI_Parameters::MI_Parameters() :
     = s["PT_Min"].SetDefault(m_parameters[string("pt_min(ref)")]).Get<double>();
   m_parameters[string("pt_0")]
     = s["PT_0"].SetDefault(pt_0).Get<double>();
-  m_scalescheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme::code>();
+  m_scaleRscheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme::code>();
+  m_scaleFscheme = s["MU_F_SCHEME"].SetDefault("PT").Get<scale_scheme::code>();
   m_parameters[string("RenScale_Factor")]
-    = s["MU_R_FACTOR"].SetDefault(0.5).Get<double>();
+    = s["MU_R_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("FacScale_Factor")]
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("SigmaND_Norm")]
     = s["SIGMA_ND_NORM"].SetDefault(1.02).Get<double>();
   m_parameters[string("nPT_bins")]
-    = s["nPT_bins"].SetDefault(200).Get<size_t>();
+    = s["nPT_bins"].SetDefault(200).Get<size_t>(); 
   m_parameters[string("nMC_points")]
     = s["nMC_points"].SetDefault(1000).Get<size_t>();
   m_parameters[string("nS_bins")]
     = s["nS_bins"].SetDefault(40).Get<size_t>();
+  m_parameters[string("nB_bins")]
+    = s["nB_bins"].SetDefault(20).Get<size_t>(); 
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]
@@ -58,7 +62,7 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("ReggeonIntercept")]
     = s["ReggeonIntercept"].SetDefault(-0.4525).Get<double>();
 }
-
+  
 double MI_Parameters::CalculatePT02(const double & s) const {
   return Max(m_pt02IR, m_pt02ref * pow((s<0 ? m_Scms : s)/m_Sref,m_eta));
 }
@@ -69,29 +73,6 @@ double MI_Parameters::operator()(const string& keyword) const
   map<string,double>::const_iterator piter = m_parameters.find(keyword);
   if (piter!=m_parameters.end()) return piter->second;
   THROW(fatal_error,"Keyword not found in MI_Parameters.");
-}
-
-std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form::code& f)
-{
-  switch (f) {
-    case overlap_form::code::Single_Gaussian: return s << "Single_Gaussian";
-    case overlap_form::code::Double_Gaussian: return s << "Double_Gaussian";
-    case overlap_form::code::unknown: return s << "Unknown";
-    }
-  return s;
-}
-
-std::istream& AMISIC::operator>>(std::istream& s, overlap_form::code& f)
-{
-  std::string tag;
-  s >> tag;
-  if (tag == "Single_Gaussian")
-    f = overlap_form::code::Single_Gaussian;
-  else if (tag == "Double_Gaussian")
-    f = overlap_form::code::Double_Gaussian;
-  else
-    THROW(fatal_error, "Unknown overlap form \"" + tag + "\"");
-  return s;
 }
 
 std::ostream& AMISIC::operator<<(std::ostream& os, const scale_scheme::code& sc)

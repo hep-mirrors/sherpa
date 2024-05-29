@@ -47,11 +47,13 @@ XS_Base::~XS_Base() = default;
 // MI_Process
 ///////////////////////////////////////////////////////////////////////////////
 
-// This is the base class for the parton-level processes with the matrix elements
-// only externally set.  This makes sure we calculate the cross section for every
-// generic ME only once and do not iterate over flavour permutations unless necessary.
-// The MI_Process class knows the flavours and is mainly used as container and to
-// construct scattering kinematics, i.e. the four-vector of the outgoing particles.
+// The base class for the parton-level processes with the matrix elements
+// only externally set.  This makes sure we calculate the cross section
+// for every generic ME only once and do not iterate over flavour
+// permutations unless necessary.
+// The MI_Process class knows the flavours and is mainly used as container
+// and to construct scattering kinematics, i.e. the four-vectors of the
+// outgoing particles.
 
 MI_Process::MI_Process(const vector<Flavour> & flavs) :
   m_name(flavs[0].IDName()+" "+flavs[1].IDName()+" --> "+
@@ -65,7 +67,8 @@ MI_Process::MI_Process(const vector<Flavour> & flavs) :
     msg_Error()<<"Error in "<<METHOD<<":\n"
 	       <<"   Tried to initialize MPI process with wrong number of "
 	       <<"flavours = "<<m_flavs.size()<<" --> "<<m_name<<".\n";
-    THROW(fatal_error,"Tried to initialize MPI process with wrong number of flavours.");
+    THROW(fatal_error,
+	  "Tried to initialize MPI process with wrong number of flavours.");
   }
   m_flavs.resize(flavs.size());
   m_momenta.resize(m_flavs.size());
@@ -85,14 +88,18 @@ bool MI_Process::MakeKinematics(const double & pt2,
 				const double & Ehat) {
   if (!AllowedKinematics(Ehat)) return false;
   double phi = 2.*M_PI*ran->Get();
-  // Until now we only have massless initial state partons.
+  ///////////////////////////////////////////////////////////////////////////
+  // Until now only have massless initial state partons.
+  ///////////////////////////////////////////////////////////////////////////
   if (m_masslessIS) MasslessKinematics(pt2,phi,y3,y4);
   else return false;
-  if (m_momenta[0][0] < m_flavs[0].HadMass() || m_momenta[1][0] < m_flavs[1].HadMass())
-    return false;
+  if (m_momenta[0][0]<m_flavs[0].HadMass() ||
+      m_momenta[1][0]<m_flavs[1].HadMass()) return false;
+  ///////////////////////////////////////////////////////////////////////////
   // If the final state is massive, we use the momenta stretcher to push
   // particles onto their mass shells.  The logic is to go to the c.m. system
   // of the scatter, rescale momenta there, and boost back.
+  ///////////////////////////////////////////////////////////////////////////
   if (m_flavs[2].Kfcode()==5 || m_flavs[2].Kfcode()==4) {
     Vec4D cms = m_momenta[0]+m_momenta[1];
     Poincare scattercms(cms);
@@ -109,16 +116,20 @@ bool MI_Process::MakeKinematics(const double & pt2,
 }
 
 bool MI_Process::AllowedKinematics(const double & Ehat) {
-  // making sure that the c.m. energy of the scatter is larger than the
+  ///////////////////////////////////////////////////////////////////////////
+  // Making sure that the c.m. energy of the scatter is larger than the
   // IS or FS sum of masses.
+  ///////////////////////////////////////////////////////////////////////////
   return (m_flavs[0].HadMass()+m_flavs[1].HadMass()<Ehat &&
 	  m_flavs[2].HadMass()+m_flavs[3].HadMass()<Ehat);
 }
 
 void MI_Process::MasslessKinematics(const double & pt2,const double & phi,
 				    const double & y3,const double & y4) {
-  // reconstruct kinematics from transverse momentum of outgoing particles and
-  // their individual rapidities
+  ///////////////////////////////////////////////////////////////////////////
+  // Reconstruct kinematics from transverse momentum of outgoing particles 
+  // and their individual rapidities
+  ///////////////////////////////////////////////////////////////////////////
   double mt2 = sqrt(pt2+m_masses2[2]);
   double mt3 = sqrt(pt2+m_masses2[3]);
   double pt  = sqrt(pt2);
@@ -127,11 +138,13 @@ void MI_Process::MasslessKinematics(const double & pt2,const double & phi,
   m_momenta[3] = Vec4D(mt3*cosh(y4),-pt*cosphi,-pt*sinphi, mt3*sinh(y4));
   double E = m_momenta[2][0]+m_momenta[3][0];
   double p = m_momenta[2][3]+m_momenta[3][3];
-  m_momenta[0] = (E+p)/2. * Vec4D(1, 0, 0, 1);
-  m_momenta[1] = (E-p)/2. * Vec4D(1, 0, 0,-1);
+  ///////////////////////////////////////////////////////////////////////////
   // correspond to momenta
   // p0 = (mt2*exp(y3)+mt3*exp(y4))/2 * (1, 0, 0, 1) and
   // p1 = (mt2*exp(-y3)+mt3*exp(-y4))/2 * (1, 0, 0, -1)
+  ///////////////////////////////////////////////////////////////////////////
+  m_momenta[0] = (E+p)/2. * Vec4D(1, 0, 0, 1);
+  m_momenta[1] = (E-p)/2. * Vec4D(1, 0, 0,-1);
 }
 
 Particle * MI_Process::GetParticle(const size_t & i) {
