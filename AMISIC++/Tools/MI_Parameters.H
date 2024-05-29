@@ -5,32 +5,32 @@
 #include <string>
 
 namespace AMISIC {
+  class axis;
+}
+
+namespace AMISIC {
   enum class mitype {
     none          = 0,
     hadron_hadron = 1,
     gamma_hadron  = 2,
     gamma_gamma   = 3
   };
-  enum class overlap_form {
-    Single_Gaussian = 1,
-    Double_Gaussian = 2,
-    unknown         = -1
+
+  enum class scale_scheme {
+    PT           = 1,
+    PT_with_Raps = 2
   };
-  std::ostream& operator<<(std::ostream&, const overlap_form&);
-  std::istream& operator>>(std::istream&, overlap_form&);
-  enum class scale_scheme { PT, PT_with_Raps };
-  std::ostream& operator<<(std::ostream&, const scale_scheme&);
-  std::istream& operator>>(std::istream&, scale_scheme&);
+  std::ostream &operator<<(std::ostream&, const scale_scheme&);
+  std::istream &operator>>(std::istream&, scale_scheme&);
 
   class MI_Parameters {
   private:
     double m_pt02ref, m_pt02IR, m_ptmin2ref, m_ptmin2IR;
     double m_Eref, m_Sref, m_Ecms, m_Scms, m_eta;
-    overlap_form m_overlapform;
-    scale_scheme m_scalescheme;
-
+    scale_scheme m_scaleRscheme, m_scaleFscheme;
     std::map<std::string,double> m_parameters;
 
+    axis * p_sbins;
   public:
     MI_Parameters();
     ~MI_Parameters() = default;
@@ -38,8 +38,8 @@ namespace AMISIC {
     double operator()(const std::string& keyword) const;
     double CalculatePT02(const double & s=-1) const;
 
-    const overlap_form& GetOverlapForm() const { return m_overlapform; }
-    const scale_scheme& GetScaleScheme() const { return m_scalescheme; }
+    const scale_scheme & GetScaleRScheme() const { return m_scaleRscheme; }
+    const scale_scheme & GetScaleFScheme() const { return m_scaleFscheme; }
   };
 
   extern const MI_Parameters * mipars;

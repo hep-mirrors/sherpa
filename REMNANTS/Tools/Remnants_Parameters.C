@@ -61,10 +61,11 @@ void Remnants_Parameters::SetNucleonDefaults()
   parmsP->params["BEAM_SPECTATOR_KTEXPO"]   = 5.00;
   parmsP->params["REFERENCE_ENERGY"]        = 7000.;
   parmsP->params["ENERGY_SCALING_EXPO"]     = 0.08;
-  parmsP->m_form                            = matter_form::single_gaussian;
+  parmsP->m_form                            = matter_form::double_gaussian;
   parmsP->params["MATTER_RADIUS_1"]         = 0.86;
   parmsP->params["MATTER_RADIUS_2"]         = 0.00;
   parmsP->params["MATTER_FRACTION_1"]       = 1.00;
+  parmsP->params["SOFT_EXPONENT"]           = 0.08;
   m_defaults[Flavour(kf_p_plus)]            = parmsP;
   m_defaults[Flavour(kf_p_plus).Bar()]      = new remnant_parameters(*parmsP);
   m_defaults[Flavour(kf_n)]                 = new remnant_parameters(*parmsP);
@@ -368,11 +369,11 @@ std::ostream& REMNANTS::operator<<(std::ostream&                os,
                                    const REMNANTS::matter_form& f)
 {
   switch (f) {
-    case matter_form::none: return os << "None";
-    case matter_form::single_gaussian: return os << "Single_Gaussian";
-    case matter_form::double_gaussian: return os << "Double_Gaussian";
-    case matter_form::unknown: return os << "Unknown";
-    default: break;
+    case matter_form::none:                 return os << "None";
+    case matter_form::single_gaussian:      return os << "Single_Gaussian";
+    case matter_form::double_gaussian:      return os << "Double_Gaussian";
+    case matter_form::x_dependent_gaussian: return os << "X-Dependent_Gaussian";
+    case matter_form::unknown:              return os << "Unknown";default: break;
   }
   return os << "Undefined";
 }
@@ -428,6 +429,8 @@ std::istream& REMNANTS::operator>>(std::istream& is, REMNANTS::matter_form& f)
   if (tag == "Single_Gaussian") f = matter_form::single_gaussian;
   else if (tag == "Double_Gaussian")
     f = matter_form::double_gaussian;
+  else if (tag == "x_Dependent_Gaussian")
+    f = matter_form::x_dependent_gaussian;
   else
     THROW(fatal_error, "Unknown matter form \"" + tag + "\"");
   return is;

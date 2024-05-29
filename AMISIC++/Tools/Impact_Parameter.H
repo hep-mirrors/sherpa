@@ -8,20 +8,23 @@
 
 namespace AMISIC {
   class MI_Processes;
+  class MI_Integrator;
   class Sudakov_Argument;
   
   class Impact_Parameter {
     Interaction_Probability m_pint;
     Matter_Overlap        * p_mo;
-    Sudakov_Argument      * p_sudakov;
+    Sudakov_Argument      * p_sudarg;
+    MI_Integrator         * p_integrator;
 
-    double m_b, m_bmax;
+    double FirstB(const double & s);
+    double CalculateB(const double & s,const double & scale=-1.);
+
     bool   m_test, m_ana;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
-
     void InitAnalysis();
     void BAnalyse(const double & pt2,const double & b);
-    void Analyse(const double & pt2,const double & sudakov,
+    void Analyse(const double & pt2,const double & sudarg,
 		 const double & softpart, const double & hardpart);
     void FinishAnalysis();
     void Test();
@@ -29,16 +32,20 @@ namespace AMISIC {
     Impact_Parameter();
     ~Impact_Parameter();
 
-    void   Initialize(REMNANTS::Remnant_Handler * remnant_handler,
-		      MI_Processes * processes);
-    double CalculateB(const double & s,const double & pt2=-1.);
-    double operator()(const double & s,const double & b);
+    void   Initialize(Matter_Overlap * mo,Sudakov_Argument * sud,axis * sbins);
+    double operator()(const double & s,const double & scale=-1.);
+    double BEnhancement(const double & s,const double & b);
 
+    //////////////////////////////////////////////////////////////////////////
+    // Selecting a position for the parton-parton scattering to take place in
+    // impact parameter space, once the overall impact parameter has been
+    // chosen.
+    //////////////////////////////////////////////////////////////////////////
     inline ATOOLS::Vec4D  SelectPositionForScatter(const double & b) const {
       return p_mo->SelectPositionForScatter(b);
     }
-    inline ATOOLS::Vec4D  SelectRelativePositionForParton() const {
-      return p_mo->SelectRelativePositionForParton();
+    inline const double fb(const double & s,const double & b) {
+      return m_pint.fb(s,b);
     }
   };
 }

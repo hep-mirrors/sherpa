@@ -17,9 +17,6 @@ using namespace std;
 MI_Process_Group::MI_Process_Group(const std::string & name) :
   m_name(name), m_lastxs(0.), m_pref(M_PI)
 {
-  m_muR_scheme = mipars->GetScaleScheme();
-  m_muR_fac    = sqr((*mipars)("RenScale_Factor"));
-  m_muF_fac    = sqr((*mipars)("FacScale_Factor"));
   m_pt02       = sqr((*mipars)("pt_0"));
 }
 
@@ -47,14 +44,12 @@ operator()(const double & shat,const double & that,const double & uhat) {
   double tot  = 0.;
   for (list<MI_Process * >::iterator mit=m_processes.begin();
        mit!=m_processes.end();mit++) {
-    tot += ( p_pdf[0]->GetXPDF((*mit)->Flav(0)) *
-		  p_pdf[1]->GetXPDF((*mit)->Flav(1)) ) * (**mit)();
-    if (std::isnan(tot))
-      tot = 0.;
+    tot += ( ATOOLS::Max(0.,p_pdf[0]->GetXPDF((*mit)->Flav(0))) *
+	     ATOOLS::Max(0.,p_pdf[1]->GetXPDF((*mit)->Flav(1))) ) * (**mit)();
   }
-  m_lastxs = m_pref/sqr(shat) *
-             Coupling(Scale(m_scale)) *
-             SoftCorrection(m_scale) * tot;
+  if (std::isnan(tot)) tot = 0.;
+  m_lastxs = ( m_pref/sqr(shat) * Coupling() *
+	       SoftCorrection(that*uhat/shat) * tot );
   return m_lastxs;
 }
 
@@ -70,17 +65,6 @@ PreCalculate(const double & shat,const double & that,const double & uhat) {
 double MI_Process_Group::SoftCorrection(const double & pt2) const {
   // Getting rid of the t/u-channel singularities
   return sqr(pt2/(pt2+m_pt02));
-}
-
-double MI_Process_Group::Scale(const double & pt2) const {
-  // Default scale, including an IR regularisation - maybe we should get more choices.
-  switch (m_muR_scheme) {
-  case scale_scheme::PT_with_Raps:
-    THROW(fatal_error,"Scale scheme PT_with_Rapidities not implemented yet.");
-  case scale_scheme::PT:
-  default:
-    return (pt2+m_pt02);
-  }
 }
 
 void MI_Process_Group::Output() const {
@@ -134,8 +118,8 @@ MI_GG_Processes::MI_GG_Processes() :
   }
 }
 
-double MI_GG_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
+double MI_GG_Processes::Coupling() const {
+  return sqr((*p_alphaS)(Max(m_pt02,m_scale)));
 }
 
 MI_Process * MI_GG_Processes::SelectProcess() {
@@ -210,8 +194,8 @@ MI_QQB_Processes::MI_QQB_Processes():
   }
 }
 
-double MI_QQB_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
+double MI_QQB_Processes::Coupling() const {
+  return sqr((*p_alphaS)(Max(m_pt02,m_scale)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -236,8 +220,8 @@ MI_QQ_Processes::MI_QQ_Processes():
   }
 }
 
-double MI_QQ_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
+double MI_QQ_Processes::Coupling() const {
+  return sqr((*p_alphaS)(Max(m_pt02,m_scale)));
 }
 
 MI_Process * MI_QQ_Processes::SelectProcess() {
@@ -288,8 +272,8 @@ MI_QG_Processes::MI_QG_Processes():
   }
 }
 
-double MI_QG_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
+double MI_QG_Processes::Coupling() const {
+  return sqr((*p_alphaS)(Max(m_pt02,m_scale)));
 }
 
 MI_Process * MI_QG_Processes::SelectProcess() {
@@ -343,8 +327,8 @@ MI_Q1Q2_Processes::MI_Q1Q2_Processes():
   }
 }
 
-double MI_Q1Q2_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*Scale(m_scale))));
+double MI_Q1Q2_Processes::Coupling() const {
+  return sqr((*p_alphaS)(Max(m_pt02,m_scale)));
 }
 
 MI_Process * MI_Q1Q2_Processes::SelectProcess() {
@@ -396,9 +380,8 @@ MI_QG_QGamma_Processes::MI_QG_QGamma_Processes() :
   }
 }
 
-double MI_QG_QGamma_Processes::Coupling(const double & scale) const {
-  return ( (*p_alphaS)(m_muR_fac*Scale(Max(m_pt02,m_scale))) *
-	   (*p_alpha)(Max(m_pt02,Scale(m_scale)) ));
+double MI_QG_QGamma_Processes::Coupling() const {
+  return ( (*p_alphaS)(Max(m_pt02,m_scale)) * (*p_alpha)(Max(m_pt02,m_scale)) );
 }
 
 MI_Process * MI_QG_QGamma_Processes::SelectProcess() {
@@ -446,8 +429,8 @@ MI_QQ_GGamma_Processes::MI_QQ_GGamma_Processes() :
   }
 }
 
-double MI_QQ_GGamma_Processes::Coupling(const double & scale) const {
-  return sqr((*p_alpha)(Scale(m_scale)));
+double MI_QQ_GGamma_Processes::Coupling() const {
+  return ( (*p_alphaS)(Max(m_pt02,m_scale)) * (*p_alpha)(Max(m_pt02,m_scale)) );
 }
 
 MI_Process * MI_QQ_GGamma_Processes::SelectProcess() {
@@ -455,14 +438,13 @@ MI_Process * MI_QQ_GGamma_Processes::SelectProcess() {
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
        mipit!=m_processes.end();mipit++) {
     MI_Process * mip = (*mipit);
-    pdf += p_pdf[0]->GetXPDF(mip->Flav(0))*p_pdf[1]->GetXPDF(mip->Flav(1)) *
-      sqr(mip->Flav(0).Charge());
+    pdf += ( p_pdf[0]->GetXPDF(mip->Flav(0))*p_pdf[1]->GetXPDF(mip->Flav(1)) *
+	     sqr(mip->Flav(0).Charge()) );
   }
   pdf *= ran->Get();
   for (auto mipit : m_processes) {
-    pdf -= p_pdf[0]->GetXPDF(mipit->Flav(0)) *
-           p_pdf[1]->GetXPDF(mipit->Flav(1)) *
-           sqr(mipit->Flav(0).Charge());
+    pdf -= ( p_pdf[0]->GetXPDF(mipit->Flav(0)) * p_pdf[1]->GetXPDF(mipit->Flav(1)) *
+	     sqr(mipit->Flav(0).Charge()) );
     if (pdf<=0.) return mipit;
   }
   return m_processes.back();

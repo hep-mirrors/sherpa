@@ -1,4 +1,5 @@
 #include "AMISIC++/Tools/MI_Parameters.H"
+#include "AMISIC++/Tools/Lookup_Tables.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -36,11 +37,13 @@ MI_Parameters::MI_Parameters() :
     = s["PT_Min"].SetDefault(m_parameters[string("pt_min(ref)")]).Get<double>();
   m_parameters[string("pt_0")]
     = s["PT_0"].SetDefault(pt_0).Get<double>();
-  m_scalescheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme>();
+  m_scaleRscheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme>();
+  m_scaleFscheme = s["MU_F_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_parameters[string("RenScale_Factor")]
-    = s["MU_R_FACTOR"].SetDefault(0.5).Get<double>();
+    = s["MU_R_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("FacScale_Factor")]
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
+  m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
   m_parameters[string("SigmaND_Norm")]
     = s["SIGMA_ND_NORM"].SetDefault(1.02).Get<double>();
   m_parameters[string("nPT_bins")]
@@ -49,6 +52,8 @@ MI_Parameters::MI_Parameters() :
     = s["nMC_points"].SetDefault(1000).Get<size_t>();
   m_parameters[string("nS_bins")]
     = s["nS_bins"].SetDefault(40).Get<size_t>();
+  m_parameters[string("nB_bins")]
+    = s["nB_bins"].SetDefault(20).Get<size_t>();
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]
@@ -69,28 +74,6 @@ double MI_Parameters::operator()(const string& keyword) const
   map<string,double>::const_iterator piter = m_parameters.find(keyword);
   if (piter!=m_parameters.end()) return piter->second;
   THROW(fatal_error,"Keyword not found in MI_Parameters.");
-}
-
-std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form& f)
-{
-  switch (f) {
-    case overlap_form::Single_Gaussian: return s << "Single_Gaussian";
-    case overlap_form::Double_Gaussian: return s << "Double_Gaussian";
-    case overlap_form::unknown: return s << "Unknown";
-  }
-  return s;
-}
-
-std::istream& AMISIC::operator>>(std::istream& s, overlap_form& f)
-{
-  std::string tag;
-  s >> tag;
-  if (tag == "Single_Gaussian") f = overlap_form::Single_Gaussian;
-  else if (tag == "Double_Gaussian")
-    f = overlap_form::Double_Gaussian;
-  else
-    THROW(fatal_error, "Unknown overlap form \"" + tag + "\"");
-  return s;
 }
 
 std::ostream& AMISIC::operator<<(std::ostream& os, const scale_scheme& sc)

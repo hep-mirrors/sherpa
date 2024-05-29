@@ -52,11 +52,12 @@ namespace SHERPA {
                YFS::YFS_Handler *yfs, REMNANTS::Remnant_Handler * remnant_handler);
     ~MI_Handler();
     
-    bool InitialiseMPIs(const double & scale);
+    bool InitialiseMPIs(const double & ptmax,const double & x1,const double & x2,
+			const double & scale);
     void SetMaxEnergies(const double & E1,const double & E2);
     void ConnectColours(ATOOLS::Blob * showerblob);
     
-    ATOOLS::Blob              * GenerateHardProcess();
+    ATOOLS::Blob              * GenerateHardProcess(const bool & force=false);
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
     void Reset();
     void CleanUp();

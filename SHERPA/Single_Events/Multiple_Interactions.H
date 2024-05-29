@@ -9,7 +9,7 @@ namespace SHERPA {
   class Multiple_Interactions: public Event_Phase_Handler {
   private:
     double m_hardveto, m_ptmax_fac;
-    double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_emax[2];
+    double m_ecms, m_ptmax, m_x[2], m_scale, m_lastptmax, m_ecmsmax, m_emax[2];
     double m_defaultptmax;
     double m_weight, m_ntrials;
 
@@ -23,15 +23,13 @@ namespace SHERPA {
     bool m_bbr_veto;
 
     ATOOLS::Return_Value::code m_result;
-    void   Reset();
-    bool   CheckBlobList();
-    bool   BeamsViable();
-    bool   ExtractISInfo(ATOOLS::Blob * blob);
-    void   SwitchPerturbativeInputsToMIs();
-    double ExtractMPIStartingScale(ATOOLS::Blob * blob);
-
     std::string MakeNameSpec();
-
+    void Reset();
+    bool CheckBlobList();
+    bool BeamsViable();
+    bool ExtractISInfo(ATOOLS::Blob * blob);
+    void SwitchPerturbativeInputsToMIs();
+    void ExtractMPIStartingConditions(ATOOLS::Blob * blob);
     bool CheckMIHandlers();
     bool CheckForMinBias();
     bool CheckForMPIs();
