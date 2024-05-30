@@ -77,7 +77,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 }
 
 void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
-				   REMNANTS::Remnant_Handler * remnant_handler) {
+				   REMNANTS::Remnant_Handler * remnants) {
   mipars = new MI_Parameters();
   bool shown = false;
   ///////////////////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
   // Initializing the matter overlap, specific for the UE/MB model, cf. 
   // Eqs. (SZ, 21-22) and (CS, 11), respectively.
   ///////////////////////////////////////////////////////////////////////////
-  m_mo.Initialize(remnant_handler,isr);
+  m_mo.Initialize(remnants,isr);
   m_variable_b = m_mo.IsDynamic();
   
   for (size_t beam=0;beam<2;beam++) {
@@ -334,19 +334,24 @@ void Amisic::CleanUpMinBias() {
 void Amisic::Reset() {}
 
 void Amisic::InitAnalysis() {
-  m_nscatters = 0;
-  m_histos[string("N_scatters")] = new Histogram(0,0,20,20);
+  m_nscatters = m_Nscat = m_Nev = 0;
+  m_histos[string("N_scatters")] = new Histogram(0,0,50,50);
+  m_histos[string("N_B0_1")]     = new Histogram(0,0,50,50);
+  m_histos[string("N_B1_2")]     = new Histogram(0,0,50,50);
+  m_histos[string("N_B2_4")]     = new Histogram(0,0,50,50);
+  m_histos[string("N_B4_8")]     = new Histogram(0,0,50,50);
   m_histos[string("B")]          = new Histogram(0,0,10,100);
   m_histos[string("Bfac")]       = new Histogram(0,0,10,100);
-  m_histos[string("P_T(1)")]     = new Histogram(0,0,100,100);
-  m_histos[string("Y(1)")]       = new Histogram(0,-10,10,10);
-  m_histos[string("Delta_Y(1)")] = new Histogram(0,0,10,10);
-  m_histos[string("P_T(2)")]     = new Histogram(0,0,100,100);
-  m_histos[string("Y(2)")]       = new Histogram(0,-10,10,10);
-  m_histos[string("Delta_Y(2)")] = new Histogram(0,0,10,10);
+  m_histos[string("P_T1")]       = new Histogram(0,0,100,100);
+  m_histos[string("Y1")]         = new Histogram(0,-10,10,10);
+  m_histos[string("Delta_Y1")]   = new Histogram(0,0,10,10);
+  m_histos[string("P_T2")]       = new Histogram(0,0,100,100);
+  m_histos[string("Y2")]         = new Histogram(0,-10,10,10);
+  m_histos[string("Delta_Y2")]   = new Histogram(0,0,10,10);
 }
 
 void Amisic::FinishAnalysis() {
+  msg_Info()<<METHOD<<": <nscatters> = "<<double(m_Nscat)/double(m_Nev)<<".\n";
   Histogram * histo;
   string name;
   for (map<string,Histogram *>::iterator
@@ -363,25 +368,34 @@ void Amisic::FinishAnalysis() {
 void Amisic::Analyse(const bool & last) {
   if (!last) {
     if (m_nscatters==0) {
-      m_histos[string("P_T(1)")]->Insert(sqrt(m_singlecollision.PT2()));
-      m_histos[string("Y(1)")]->Insert(m_singlecollision.Y3());
-      m_histos[string("Y(1)")]->Insert(m_singlecollision.Y4());
-      m_histos[string("Delta_Y(1)")]->Insert(dabs(m_singlecollision.Y3()-
-						  m_singlecollision.Y4()));
+      m_histos[string("P_T1")]->Insert(sqrt(m_singlecollision.PT2()));
+      m_histos[string("Y1")]->Insert(m_singlecollision.Y3());
+      m_histos[string("Y1")]->Insert(m_singlecollision.Y4());
+      m_histos[string("Delta_Y1")]->Insert(dabs(m_singlecollision.Y3()-
+						m_singlecollision.Y4()));
     }
     if (m_nscatters==1) {
-      m_histos[string("P_T(2)")]->Insert(sqrt(m_singlecollision.PT2()));
-      m_histos[string("Y(2)")]->Insert(m_singlecollision.Y3());
-      m_histos[string("Y(2)")]->Insert(m_singlecollision.Y4());
-      m_histos[string("Delta_Y(2)")]->Insert(dabs(m_singlecollision.Y3()-
+      m_histos[string("P_T2")]->Insert(sqrt(m_singlecollision.PT2()));
+      m_histos[string("Y2")]->Insert(m_singlecollision.Y3());
+      m_histos[string("Y2")]->Insert(m_singlecollision.Y4());
+      m_histos[string("Delta_Y2")]->Insert(dabs(m_singlecollision.Y3()-
 						  m_singlecollision.Y4()));
     }
     m_nscatters++;
   }
   if (last) {
+    m_Nscat += int(m_nscatters);  m_Nev++;
     m_histos[string("N_scatters")]->Insert(double(m_nscatters)+0.5);
     m_histos[string("B")]->Insert(m_b);
     m_histos[string("Bfac")]->Insert(m_bfac);
+    if (m_b<=1.)
+      m_histos[string("N_B0_1")]->Insert(double(m_nscatters)+0.5);
+    else if (m_b<=2.)
+      m_histos[string("N_B1_2")]->Insert(double(m_nscatters)+0.5);
+    else if (m_b<=4.)
+      m_histos[string("N_B2_4")]->Insert(double(m_nscatters)+0.5);
+    else if (m_b<=8.)
+      m_histos[string("N_B4_8")]->Insert(double(m_nscatters)+0.5);
     m_nscatters = 0;
   }
 }

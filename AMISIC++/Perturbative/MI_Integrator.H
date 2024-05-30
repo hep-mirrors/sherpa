@@ -14,7 +14,7 @@ namespace AMISIC {
   class MI_Integrator {
   private:
     MI_Processes * p_procs;
-    double         m_pt2min, m_xmin[2], m_xmax[2];
+    double         m_pt2min, m_xmin[2], m_xmax[2], m_Emin;
     unsigned int   m_MCpoints;
     double         m_xt, m_ymax, m_yvol, m_y[2], m_x[2];
     double         m_bmax, m_bvol, m_b;
@@ -36,6 +36,7 @@ namespace AMISIC {
     inline const double & SHat() const { return m_shat; }
     inline const double & THat() const { return m_that; }
     inline const double & UHat() const { return m_uhat; }
+    inline const double & Yvol() const { return m_yvol; }
     inline const double & PT2()  const { return m_pt2; }
     inline const double & X(unsigned short int i) const { return m_x[i]; }
     inline const double & Y(unsigned short int i) const { return m_y[i]; }

@@ -1,4 +1,5 @@
 #include "AMISIC++/Perturbative/MI_Process.H"
+#include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -59,7 +60,7 @@ MI_Process::MI_Process(const vector<Flavour> & flavs) :
   m_name(flavs[0].IDName()+" "+flavs[1].IDName()+" --> "+
 	 flavs[2].IDName()+" "+flavs[3].IDName()),
   m_stretcher(Momenta_Stretcher(string("AMISIC: ")+m_name)),
-  p_me2(NULL), m_emin(0.),
+  p_me2(NULL), m_Emin((*mipars)("E_min")),
   m_masslessIS((flavs[0].Kfcode()<4 || flavs[0].Kfcode()==21) &&
 	       (flavs[1].Kfcode()<4 || flavs[1].Kfcode()==21))
 {
@@ -95,6 +96,8 @@ bool MI_Process::MakeKinematics(const double & pt2,
   else return false;
   if (m_momenta[0][0]<m_flavs[0].HadMass() ||
       m_momenta[1][0]<m_flavs[1].HadMass()) return false;
+  if (m_momenta[0][0]<0.25 ||
+      m_momenta[1][0]<0.25) return false;
   ///////////////////////////////////////////////////////////////////////////
   // If the final state is massive, we use the momenta stretcher to push
   // particles onto their mass shells.  The logic is to go to the c.m. system
@@ -112,7 +115,7 @@ bool MI_Process::MakeKinematics(const double & pt2,
       scattercms.BoostBack(m_momenta[i]);
     }
   }
-  return (m_momenta[0][0] > m_emin && m_momenta[1][0] > m_emin);
+  return (m_momenta[0][0] > m_Emin && m_momenta[1][0] > m_Emin);
 }
 
 bool MI_Process::AllowedKinematics(const double & Ehat) {

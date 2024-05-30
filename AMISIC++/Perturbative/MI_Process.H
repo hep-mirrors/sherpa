@@ -48,7 +48,7 @@ namespace AMISIC {
     std::vector<double>          m_masses, m_masses2;
     std::vector<ATOOLS::Vec4D>   m_momenta;
     XS_Base   * p_me2;
-    double      m_emin;
+    double      m_Emin;
     bool        m_masslessIS;
 
     bool AllowedKinematics(const double & Ehat);

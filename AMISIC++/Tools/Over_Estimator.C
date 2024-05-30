@@ -105,17 +105,6 @@ FixMaximum(MI_Processes * procs,axis * sbins,axis * pt2bins) {
   }
 }
 
-double Over_Estimator::operator()(const double & pt2,const double & yvol) {
-  ///////////////////////////////////////////////////////////////////////////
-  // Overestimator for differential cross section.
-  // Have to divide out the volume of the rapidity integration which is also
-  // not present in the true differential cross section calculated by the
-  // MI_Processes.
-  //////////////////////////////////////////////////////////////////////////
-  return m_pref/(yvol * sqr(pt2+m_pt02/4.));
-}
-
-
 double Over_Estimator::ApproxME(const double & pt2,const double & xt) {
   ///////////////////////////////////////////////////////////////////////////
   // Approximate differential cross section is given by
@@ -148,18 +137,26 @@ double Over_Estimator::ApproxME(const double & pt2,const double & xt) {
   return est;
 }
 
+double Over_Estimator::operator()(const double & pt2,const double & yvol) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Overestimator for differential cross section.
+  // Have to divide out the volume of the rapidity integration which is also
+  // not present in the true differential cross section calculated by the
+  // MI_Processes.
+  //////////////////////////////////////////////////////////////////////////
+  return m_pref/(yvol * sqr(pt2+m_pt02/4.));
+}
+
 double Over_Estimator::TrialPT2(const double & Q2) {
   ///////////////////////////////////////////////////////////////////////////
   // Produce an overestimated q2 by solving for q2
-  // random * exp[-int_{pt02}^{Q2} dpt2 prefb/(pt2+pt02/4)^2] =
-  //          exp[-int_{q2}^{Q2}   dpt2 prefb/(pt2+pt02/4)^2]
+  // random * exp[-int_{ptmin^2}^{Q2} dpt2 prefb/(pt2+pt02/4)^2] =
+  //          exp[-int_{ptmin2}^{pt2} dpt2 prefb/(pt2+pt02/4)^2]
   ///////////////////////////////////////////////////////////////////////////
   double Q2tilde = Q2+m_pt02/4.;
   double prefb   = m_pref*m_bfac/m_xsnd;
-  double pt2     = ( prefb*
-		     Q2tilde/(prefb-Q2tilde*log(Max(1.e-12,ran->Get()))) -
-		     m_pt02/4. );
-  return pt2;
+  return ( prefb * Q2tilde/(prefb-Q2tilde*log(Max(1.e-12,ran->Get()))) -
+	   m_pt02/4. );
 }
 
 void Over_Estimator::Output() {

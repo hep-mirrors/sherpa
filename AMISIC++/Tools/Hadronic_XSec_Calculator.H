@@ -24,7 +24,8 @@ namespace AMISIC {
   
   class Hadronic_XSec_Calculator {
   public:
-    static double s_slopes[4], s_X[4][4], s_Y[4][4], s_c[4][4][8], s_d[4][4][9];
+    static double s_slopes[4], s_X[4][4], s_Y[4][4];
+    static double s_c[4][4][8], s_d[4][4][9];
   private:
     // all cross sections in mb.
     std::map<ATOOLS::Flavour, size_t> m_indexmap;
@@ -36,7 +37,8 @@ namespace AMISIC {
     xsec_type::code m_type;
     double m_mass_proton, m_mass_proton2, m_mass_pi;
     std::array<double, 2> m_masses, m_masses2;
-    double m_mres, m_cres, m_s1, m_Ypp, m_c0, m_c1, m_prefElastic, m_prefSD, m_prefDD;
+    double m_mres, m_cres, m_s1, m_Ypp, m_c0, m_c1;
+    double m_prefElastic, m_prefSD, m_prefDD;
     double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_eta_reggeon;
     double m_alphaQED;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
@@ -66,26 +68,32 @@ namespace AMISIC {
     void operator()(double s);
     void CalculateXSratios(MI_Processes * processes,axis * sbins);
     void Output() const;
-    //////////////////////////////////////////////////////////////////////////////////
-    // The ratio of parton-level cross section obtained by integration over the
-    // partonioc phase space and the (renormalised) non-diffractive cross section
-    //////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // The ratio of parton-level cross section obtained by integration over 
+    // the partonic phase space and the (renormalised) non-diffractive cross
+    // section
+    //////////////////////////////////////////////////////////////////////////
     inline double XSratio(const double & s=-1.) { return (*p_xsratio)(s); }
-    //////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     // Hard cross section
-    //////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     inline double XShard(const double & s=-1.)  { return (*p_xshard)(s); }
-    //////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     // Non-diffractive cross section, given in GeV^-2
-    //////////////////////////////////////////////////////////////////////////////////
-    inline double XSnd(const double & s=-1.) { if (s>0.) (*this)(s); return m_xsnd; }
-    //////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    inline double XSnd(const double & s=-1.) {
+      if (s>0.) (*this)(s); return m_xsnd;
+    }
+    //////////////////////////////////////////////////////////////////////////
     // Total cross section, given in mb
-    //////////////////////////////////////////////////////////////////////////////////
-    inline double XStot(const double & s=-1.) { if (s>0.) (*this)(s); return m_xstot; }
-    //////////////////////////////////////////////////////////////////////////////////
-    // Tuning value to (re-)normalise the non-diffractive cross section, default is 1
-    //////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    inline double XStot(const double & s=-1.) {
+      if (s>0.) (*this)(s); return m_xstot;
+    }
+    //////////////////////////////////////////////////////////////////////////
+    // Tuning value to (re-)normalise the non-diffractive cross section,
+    // default is 1.
+    //////////////////////////////////////////////////////////////////////////
     inline const double & XSndNorm() const { return m_xsnd_norm; }
   };
 }

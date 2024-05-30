@@ -26,8 +26,8 @@ namespace AMISIC {
     scale_scheme::code    m_muR_scheme, m_muF_scheme;
     std::string           m_scale_scheme, m_kfactor_scheme;
     double                m_muR_fac, m_muF_fac, m_muR2, m_muF2;
-    double                m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2;
-    std::array<double, 2> m_xmin, m_xmax;
+    double                m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2, m_Emin;
+    std::array<double, 2> m_xmin, m_xmax, m_resx;
     double                m_ecms, m_S, m_S_lab, m_b, m_lastxs;
     double                m_xshard;
     bool                  m_dynamic;
@@ -89,6 +89,7 @@ namespace AMISIC {
     inline const double  & PT02()   const { return m_pt02; }
     inline const double  & PTMin()  const { return m_ptmin; }
     inline const double  & PT2Min() const { return m_ptmin2; }
+    inline const double  & EMin()   const { return m_Emin; }
     inline const double  & MuR2()   const { return m_muR2; }
     inline const double  & MuF2()   const { return m_muF2; }
     inline const size_t    Size()   const { return m_groups.size(); }
@@ -110,7 +111,9 @@ namespace AMISIC {
       p_overlap = mo;
       m_dynamic = p_overlap->IsDynamic();
     }
-
+    inline void SetResidualX(const double & r1,const double & r2) {
+      m_resx[0] = r1; m_resx[1] = r2;
+    }
     
     inline int  PerformTests() { return 0; }
     inline bool NewLibraries() { return false; }

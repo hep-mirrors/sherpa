@@ -16,7 +16,7 @@ using namespace std;
 MI_Processes::MI_Processes() :
   ME_Generator_Base("Amisic::Processes"),
   m_integrator(MI_Integrator(this)),
-  p_xsecs(NULL), p_overlap(NULL), 
+  p_xsecs(NULL), p_overlap(NULL),
   m_dynamic(false) {}
 
 MI_Processes::~MI_Processes() {
@@ -41,6 +41,7 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
     p_pdf[i]    = isr->PDF(i);
     m_xmin[i]   = p_pdf[i]->XMin();
     m_xmax[i]   = p_pdf[i]->XMax();
+    m_resx[i]   = 1.;
   }
   m_muR_scheme  = mipars->GetScaleRScheme();
   m_muR_fac     = sqr((*mipars)("RenScale_Factor"));
@@ -57,6 +58,7 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   m_pt02        = sqr((*mipars)("pt_0"));
   m_ptmin2      = sqr((*mipars)("pt_min"));
   m_ecms        = rpa->gen.Ecms();
+  m_Emin        = (*mipars)("E_min");
   m_S = m_S_lab = m_ecms*m_ecms;
   m_ptmax2      = m_S/4.;
   ///////////////////////////////////////////////////////////////////////////
@@ -149,7 +151,8 @@ operator()(const double & shat,const double & that,const double & uhat,
   // already been set.
   ///////////////////////////////////////////////////////////////////////////
   m_lastxs   = 0.;
-  if (x1>m_xmin[0] && x1<m_xmax[0] && x2>m_xmin[1] && x2<m_xmax[1]) {
+  if (x1>m_xmin[0]/m_resx[0] && x1<m_xmax[0] &&
+      x2>m_xmin[1]/m_resx[1] && x2<m_xmax[1]) {
     CalcScales(shat,that,uhat);
     CalcPDFs(x1,x2);
     /////////////////////////////////////////////////////////////////////////

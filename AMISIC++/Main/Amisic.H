@@ -69,6 +69,7 @@ namespace AMISIC {
 
     bool         m_isMinBias, m_isFirst, m_ana;
     size_t       m_nscatters;
+    unsigned long int m_Nscat, m_Nev;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,

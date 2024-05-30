@@ -2,6 +2,7 @@
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Impact_Parameter.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -14,7 +15,7 @@ using namespace ATOOLS;
 /////////////////////////////////////////////////////////////////////////////
 
 Impact_Parameter::Impact_Parameter() :
-  p_integrator(nullptr), m_test(false), m_ana(false) {}
+  p_integrator(nullptr), m_test(false), m_ana(true) {}
 
 Impact_Parameter::~Impact_Parameter() {
   if (m_ana) FinishAnalysis();
@@ -29,7 +30,7 @@ void Impact_Parameter::Initialize(Matter_Overlap * mo,Sudakov_Argument * sud,
   m_pint.Initialize(p_mo,p_sudarg->GetProcesses(),sbins);
   
   if (!p_mo->IsDynamic() && m_test) Test();
-  if (m_ana)  InitAnalysis();
+  if (m_ana) InitAnalysis();
 }
 
 double Impact_Parameter::operator()(const double & s,const double & scale) {
@@ -71,6 +72,7 @@ double Impact_Parameter::FirstB(const double & s) {
       wt = m_pint(s,b)/(*p_mo)(b);
     }
   } while (wt<ran->Get());
+  if (m_ana) BAnalyse(-1.,b);
   return b;
 }
 
@@ -119,15 +121,16 @@ double Impact_Parameter::BEnhancement(const double & s,const double & b) {
   // Eq. (SZ, 28), taken from the appropriate look-up table in the
   // Interaction_Probability.
   ///////////////////////////////////////////////////////////////////////////
-  return (b<p_mo->Bmax() ? m_pint.fb(s,b) : 0.);
+  return (b<p_mo->Bmax() ? m_pint.fc(s)*m_pint.fb(s,b) : 0.);
 }
 
 
 void Impact_Parameter::InitAnalysis() {
-  m_histos[std::string("B_tot")]       = new Histogram(0, 0.,  2., 100);
   m_histos[std::string("Hard_tot")]    = new Histogram(0, 0.,  1., 100);
   m_histos[std::string("Soft_tot")]    = new Histogram(0, 0., 10., 100);
   m_histos[std::string("Sud")]         = new Histogram(0, 0.,  1., 100);
+  m_histos[std::string("B_init")]      = new Histogram(0, 0., 10., 100);
+  m_histos[std::string("B_tot")]       = new Histogram(0, 0., 10., 100);
   m_histos[std::string("B_25")]        = new Histogram(0, 0.,  5.,  10);
   m_histos[std::string("B_40")]        = new Histogram(0, 0.,  5.,  10);
   m_histos[std::string("B_100")]       = new Histogram(0, 0.,  5.,  10);
@@ -140,6 +143,12 @@ void Impact_Parameter::InitAnalysis() {
   m_histos[std::string("Sud_25")]      = new Histogram(0, 0.,  1., 100);
   m_histos[std::string("Sud_40")]      = new Histogram(0, 0.,  1., 100);
   m_histos[std::string("Sud_100")]     = new Histogram(0, 0.,  1., 100);
+
+  m_histos[std::string("B_Pint")]      = new Histogram(0, 0.,  10., 100);
+  for (size_t i=0;i<100;i++) {
+    double b = double(i)*0.1+0.05, s = sqr(rpa->gen.Ecms());
+    m_histos[std::string("B_Pint")]->Insert(b,2.*M_PI*b*m_pint(s,b));
+  }
 }
 
 void Impact_Parameter::FinishAnalysis() {
@@ -158,10 +167,13 @@ void Impact_Parameter::FinishAnalysis() {
 
 
 void Impact_Parameter::BAnalyse(const double & pt2,const double & b) {
-  m_histos[std::string("B_tot")]->Insert(b);
-  if (sqrt(pt2)<25.)       m_histos[std::string("B_25")]->Insert(b);
-  else if (sqrt(pt2)<40.)  m_histos[std::string("B_40")]->Insert(b);
-  else if (sqrt(pt2)<100.) m_histos[std::string("B_100")]->Insert(b);
+  if (pt2<0.) m_histos[std::string("B_init")]->Insert(b);
+  else {
+    m_histos[std::string("B_tot")]->Insert(b);
+    if (sqrt(pt2)<25.)       m_histos[std::string("B_25")]->Insert(b);
+    else if (sqrt(pt2)<40.)  m_histos[std::string("B_40")]->Insert(b);
+    else if (sqrt(pt2)<100.) m_histos[std::string("B_100")]->Insert(b);
+  }
 }
 
 void Impact_Parameter::Analyse(const double & pt2,const double & sudakov,

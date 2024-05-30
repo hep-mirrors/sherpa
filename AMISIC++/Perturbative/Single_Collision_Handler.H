@@ -52,6 +52,7 @@ namespace AMISIC {
     inline void SetResidualX(const double & E1, const double & E2) {
       m_residualx1 = E1/InMomentum(0)[0];
       m_residualx2 = E2/InMomentum(1)[0];
+      p_processes->SetResidualX(m_residualx1,m_residualx2);
     }
     inline void SetLastPT2(const double pt2=-1.) {
       m_lastpt2 = pt2<0.?m_S/4.:pt2; 

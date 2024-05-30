@@ -37,7 +37,11 @@ Init(REMNANTS::Remnant_Handler * remnant_handler,
 
 void Single_Collision_Handler::PrefabricateBlob() {
   ///////////////////////////////////////////////////////////////////////////
-  // 
+  // Current use is in x-dependent matter overlap, which mix the generation
+  // of a scatter with fixing the impact parameter.  Assuming the integrator
+  // has produced a successful trial event, triggered by the "FirstB" method
+  // in the Impact class, we select the specific process, create the
+  // kinematics, and fill the blob.
   ///////////////////////////////////////////////////////////////////////////
   double pt2 = p_integrator->PT2();
   double y3  = p_integrator->Y(0);
@@ -45,6 +49,7 @@ void Single_Collision_Handler::PrefabricateBlob() {
   m_shat     = p_integrator->SHat();
   m_that     = p_integrator->THat(); 
   m_uhat     = p_integrator->UHat();
+  msg_Out()<<METHOD<<"(pt^2 = "<<pt2<<", y = "<<y3<<" & "<<y4<<"):\n";
   do {
     p_proc = p_processes->SelectProcess();
   } while (!p_proc ||
@@ -68,6 +73,7 @@ Blob * Single_Collision_Handler::NextScatter() {
     m_prefabs.pop_front();
     return blob;
   }
+  double lastpt2 = m_lastpt2;
   do {
     if (!SelectPT2(m_lastpt2)) return NULL;
     p_proc = p_processes->SelectProcess();
@@ -81,6 +87,7 @@ bool Single_Collision_Handler::TestRemnants() const {
   ///////////////////////////////////////////////////////////////////////////
   // Make sure there is enough energy left in the remnants
   ///////////////////////////////////////////////////////////////////////////
+  msg_Out()<<METHOD<<"\n";
   return ( p_remnants->GetRemnant(0)->TestExtract(p_proc->Flav(0),
 						  p_proc->Momentum(0)) &&
 	   p_remnants->GetRemnant(1)->TestExtract(p_proc->Flav(1),
@@ -104,13 +111,12 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
   m_pt2 = pt2;
   double wt;
   do {
-    m_pt2     = p_overestimator->TrialPT2(m_pt2);
+    m_pt2 = p_overestimator->TrialPT2(m_pt2);
     if (m_pt2<=m_pt2min) return false;
-    double xt = 4.*m_pt2/m_S;
     if (!p_integrator->MakeKinematics(m_pt2,m_S)) continue;
-    wt     = (*p_processes)() / (*p_overestimator)(m_pt2, m_yvol);
+    wt    = (*p_processes)() / (*p_overestimator)(m_pt2, p_integrator->Yvol());
     if (m_ana) AnalyseWeight(wt);
-  } while (wt>ran->Get());
+  } while (wt<ran->Get());
   SetLastPT2(m_pt2);
   m_y3   = p_integrator->Y(0);
   m_y4   = p_integrator->Y(1);

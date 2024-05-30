@@ -17,6 +17,7 @@ void MI_Integrator::Initialize(PDF::ISR_Handler * isr) {
   // Minimal pt2, maximal b, and minimal and maximal x from the PDFs
   ////////////////////////////////////////////////////////////////////////////
   m_pt2min    = p_procs->PT2Min();
+  m_Emin      = p_procs->EMin();
   m_bmax      = p_procs->Bmax();
   for (size_t i=0;i<2;i++) {
     m_xmin[i] = Max(   1.e-6,isr->PDF(i)->XMin());
@@ -174,7 +175,8 @@ bool MI_Integrator::MakeKinematics(const double & pt2,const double & s)
   //       treating them as massless - that could be improved in the future.
   ////////////////////////////////////////////////////////////////////////////
   if (m_x[0]<=m_xmin[0] || m_x[0]>=m_xmax[0] ||
-      m_x[1]<=m_xmin[1] || m_x[1]>=m_xmax[1]) return false;
+      m_x[1]<=m_xmin[1] || m_x[1]>=m_xmax[1])                 return false; 
+  if (m_x[0]*sqrt(s)/2.<=m_Emin || m_x[1]*sqrt(s)/2.<=m_Emin) return false;
   ////////////////////////////////////////////////////////////////////////////
   // Mandelstams for the exact matrix element.
   ////////////////////////////////////////////////////////////////////////////
@@ -182,9 +184,5 @@ bool MI_Integrator::MakeKinematics(const double & pt2,const double & s)
   m_shat = m_x[0] * m_x[1] * s;
   m_that = -0.5 * m_shat * (1.-m_cost);
   m_uhat = -0.5 * m_shat * (1.+m_cost);
-  //msg_Out()<<METHOD<<"(pt2 = "<<pt2<<", s = "<<s<<") --> "
-  //	   <<m_x[0]<<" & "<<m_x[1]<<" --> "
-  //	   <<m_shat<<", "<<m_that<<", "<<m_uhat<<" "
-  //	   <<"from cost = "<<m_cost<<"\n";
   return true;
 }
