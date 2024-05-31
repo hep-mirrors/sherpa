@@ -68,9 +68,7 @@ Note that the respective associated contribution must be listed
 in the process setting :ref:`Associated_Contributions`.
 
 The additional event weights can then be written into the event
-output.  However, this is currently only supported for
-``HepMC_GenEvent`` and ``HepMC_Short`` with versions >=2.06 and
-``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weight names
+output. The alternative event weight names
 are either ``ASSOCIATED_CONTRIBUTIONS.<contrib>``,
 ``ASSOCIATED_CONTRIBUTIONS.MULTI<contrib>``,
 or ``ASSOCIATED_CONTRIBUTIONS.EXP<contrib>``

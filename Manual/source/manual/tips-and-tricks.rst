@@ -70,7 +70,7 @@ The analyses list specifies which Rivet analyses to run and the
 histogram output file can be changed with the normal ``ANALYSIS_OUTPUT``
 switch.
 
-Further Rivet options (especially for Rivet v3) can be passed through
+Further Rivet options can be passed through
 the interface. The following ones are currently implemented:
 
 .. code-block:: yaml
@@ -106,11 +106,11 @@ need to set the corresponding Rivet path variable, for example via
    $ export RIVET_ANALYSIS_PATH=$RIVET_ANALYSIS_PATH:<path to custom analysis lib>
 
 
-The `RIVET:` block can be used with further options especially suitable for detailed
-studies. Adding `JETCONTS: 1` will create separate histograms split by jet multiplicity as
-created by the hard process. `SPLITSH: 1` creates histograms split by soft and
-hard events, and `SPLITPM: 1` creates histograms split by events with positive and
-negative event weights. Finally, `SPLITCOREPROCS: 1` will split by different
+The ``RIVET:`` block can be used with further options especially suitable for detailed
+studies. Adding ``JETCONTS: 1`` will create separate histograms split by jet multiplicity as
+created by the hard process. ``SPLITSH: 1`` creates histograms split by soft and
+hard events, and ``SPLITPM: 1`` creates histograms split by events with positive and
+negative event weights. Finally, ``SPLITCOREPROCS: 1`` will split by different
 processes if multiple ones are specified in the runcard.
 
 .. _MCFM interface:
@@ -147,7 +147,7 @@ To use the interface, specify
    Loop_Generator: MCFM
 
 in the process section of the run card and add it to the list of
-generators in :ref:`ME_GENERATORS`. MCFM's process.DAT file should
+generators in :ref:`ME_GENERATORS`. MCFM's `process.DAT` file should
 automatically be copied to the current run directory during intitialisation.
 
 Note that for unweighted event generation, there is also an option to

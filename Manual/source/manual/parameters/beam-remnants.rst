@@ -22,7 +22,7 @@ The following parameters are used to steer the beam remnant handling:
 .. _BEAM_REMNANTS:
 
 BEAM_REMNANTS
-==========
+=============
 
 .. index:: BEAM_REMNANTS
 
@@ -32,7 +32,7 @@ values 'On' and 'Off'.
 .. _Remnants:
 
 REMNANTS
-======
+========
 
 .. index:: REMNANTS:KT_FORM
 .. index:: REMNANTS:KT_RECOIL

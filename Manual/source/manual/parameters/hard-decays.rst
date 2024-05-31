@@ -594,7 +594,7 @@ e.g. PolWeight_refsystem1.W+.+_W+.-.
 .. _Transversely polarized cross sections:
 
 Transversely polarized cross sections
---------------------------------
+-------------------------------------
 
 .. index:: Transversely polarized cross sections
 

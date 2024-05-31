@@ -706,6 +706,8 @@ reweighting is enabled (see below).
 The rest of this section applies to both the combined ``VARIATIONS``
 and the individual ``SCALE_VARIATIONS`` etc. syntaxes.
 
+.. _Variation output:
+
 Variation output
 ----------------
 
@@ -721,14 +723,9 @@ The supported analysis methods are ``Rivet`` and ``Internal``.
 
 The alternative event weight names follow the MC naming convention, i.e. they
 are named ``MUR=<fac>__MUF=<fac>__LHAPDF=<id>``.  When using Sherpa's
-interface to Rivet 2, :ref:`Rivet analyses`, separate instances of
-Rivet, one for each alternative event weight in addition to the
-nominal one, are instantiated leading to one set of histograms each.
-They are again named using the ``MUR=<fac>__MUF=<fac>__LHAPDF=<id>``
-convention.
-For Rivet 3, the internal multi-weight handling capabilities are used instead,
-such that there are no alternate histogram files, just one containing
-histograms for all variations.
+interface to Rivet, :ref:`Rivet analyses`, the internal multi-weight handling
+capabilities are used, such that there is only one histogram file
+containing histograms all variations.
 Extending the naming convention, for pure strong coupling variations, an additional
 tag ``ASMZ=<val>`` is appended.
 If shower scale variations are disabled (either implicitly, because ``SHOWER_GENERATOR: None``,
