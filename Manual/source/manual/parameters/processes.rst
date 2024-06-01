@@ -163,7 +163,7 @@ Curly brackets
 The curly bracket notation when specifying a process allows up to a
 certain number of jets to be included in the final state. This is
 easily seen from an example, ``11 -11 -> 93 93 93{3}`` sets
-up jet production in e+e- collisions. The matix element final state
+up jet production in e+e- collisions. The matrix element final state
 may be 2, 3, 4 or 5 light partons or gluons.
 
 .. _Decay:

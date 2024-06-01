@@ -7,7 +7,7 @@ Beam Remnants
 Details for the handling of the beam remnants in Sherpa will be described
 in our forthcoming publication.
 
-Broadly speaking, the beam remnants include the parametrization of the
+Broadly speaking, the beam remnants include the parameterisation of the
 form factors for hadrons or the hadronic components of photons and the
 treatment of the beam break-up, most importantly the intrinsic
 transverse momentum distribution of the partons and how the recoils
@@ -65,7 +65,7 @@ tag-line.
 
 The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 Longitudinal momenta for sea partons in hadrons are distributed according
-to a probablity distribution in their light-cone momentum :math:`x` given by
+to a probability distribution in their light-cone momentum :math:`x` given by
 :math:`P(x)=x^{-1.5}`. If there are two valence partons left in the beam remnant
 after the shower initiators have been treated, the first of the two (usually the
 quark) will have a longitudinal momentum with :math:`P(x)=\exp(-1/x)`, while
@@ -83,13 +83,13 @@ two sets of partons per beam, see below (``KT_RECOIL``).
   momentum of partons within beams.  Available options are:
   
   * ``Gauss``: a simple Gaussian with mean and width;
-  * ``Dipole``: a dipole form parametrised by :math:`Q^2`;
-  * ``Gauss_Limited``, ``dipole_Limited``: as above but further modifed by a polynomial function of the form :math:`1-(k_{T}/k_{T,\rm{max}})^\eta`, where :math:`k_{T,\rm{max}}` and :math:`\eta` are given by the ``KTMAX`` and ``KTEXPO`` tags;
+  * ``Dipole``: a dipole form parameterised by :math:`Q^2`;
+  * ``Gauss_Limited``, ``dipole_Limited``: as above but further modified by a polynomial function of the form :math:`1-(k_{T}/k_{T,\rm{max}})^\eta`, where :math:`k_{T,\rm{max}}` and :math:`\eta` are given by the ``KTMAX`` and ``KTEXPO`` tags;
   * ``None``: no intrinsic transverse momentum is assigned.
 
 :option:`KT_RECOIL (default: Beam_vs_Shower)`
   Transverse momenta for all partons inside the beam are generated
-  independently from each other according to the form and parametrization
+  independently from each other according to the form and parameterisation
   specified for them in ``KT_FORM`` and ``SHOWER_INITIATOR_MEAN`` etc., or
   ``BEAM_SPECTATOR_MEAN`` etc..  This will lead to a net residual transverse
   momentum of partons that needs to be compensated within the beams, to

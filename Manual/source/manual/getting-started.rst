@@ -631,7 +631,7 @@ tree-level, detailed in :cite:`Hoeche2009rj`, :cite:`Hoeche2009xc`,
 :cite:`Carli2009cg`, is implemented in Sherpa.
 
 How to setup a multijet merged calculation is detailed in most
-:ref:`Examples`, eg. :ref:`LHC_WJets`, :ref:`LHC_ZJets` or
+:ref:`Examples`, e.g. :ref:`LHC_WJets`, :ref:`LHC_ZJets` or
 :ref:`TopsJets`.
 
 

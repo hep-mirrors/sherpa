@@ -148,7 +148,7 @@ To use the interface, specify
 
 in the process section of the run card and add it to the list of
 generators in :ref:`ME_GENERATORS`. MCFM's `process.DAT` file should
-automatically be copied to the current run directory during intitialisation.
+automatically be copied to the current run directory during initialisation.
 
 Note that for unweighted event generation, there is also an option to
 choose different loop-amplitude providers for the pilot run and the
@@ -366,14 +366,14 @@ alpha and thus interpretation of the threshold can be chosen by its
 sign (positive: relative dipole kT in GeV, negative: dipole alpha).
 In addition, the exponent n can be set by ``NLO_SMEAR_POWER: <n>``.
 
-.. _Enforcing the renormalization scheme:
+.. _Enforcing the renormalisation scheme:
 
-Enforcing the renormalization scheme
+Enforcing the renormalisation scheme
 ====================================
 
 .. index:: LOOP_ME_INIT
 
-Sherpa takes information about the renormalization scheme from the
+Sherpa takes information about the renormalisation scheme from the
 loop ME generator.  The default scheme is MSbar, and this is assumed
 if no loop ME is provided, for example when integrated subtraction
 terms are computed by themselves.  This can lead to inconsistencies
@@ -564,10 +564,10 @@ The total cross section weight is given by:
 Loop piece and integrated subtraction terms
 -------------------------------------------
 
-The weights here have an explicit dependence on the renormalization
+The weights here have an explicit dependence on the renormalisation
 and factorization scales.
 
-To take care of the renormalization scale dependence (other than via
+To take care of the renormalisation scale dependence (other than via
 ``alpha_S``) the weight ``w_0`` is defined as
 
 
@@ -602,7 +602,7 @@ where
 
 The scale dependence coefficients ``usr_wgts[0]`` and ``usr_wgts[1]``
 are normally obtained from the finite part of the virtual correction
-by removing renormalization terms and universal terms from dipole
+by removing renormalisation terms and universal terms from dipole
 subtraction.  This may be undesirable, especially when the loop
 provider splits up the calculation of the virtual correction into
 several pieces, like leading and sub-leading color. In this case the

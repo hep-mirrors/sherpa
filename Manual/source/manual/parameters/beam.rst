@@ -63,8 +63,8 @@ If desired, you can also specify spectra for beamstrahlung through
   This can be used to describe the
   backscattering of a laser beam off initial leptons. The energy
   distribution of the emerging photon beams is modelled by the CompAZ
-  parametrization, see :cite:`Zarnecki2002qr`.  Note that this
-  parametrization is valid only for the proposed TESLA photon
+  parameterisation, see :cite:`Zarnecki2002qr`.  Note that this
+  parameterisation is valid only for the proposed TESLA photon
   collider, as various assumptions about the laser parameters and the
   initial lepton beam energy have been made. See details below.
 
@@ -76,7 +76,7 @@ If desired, you can also specify spectra for beamstrahlung through
 :option:`EPA`
   This enables the equivalent photon approximation for colliding
   protons, see :cite:`Archibald2008aa`. The resulting beam particles
-  are photons that follow a dipole form factor parametrization,
+  are photons that follow a dipole form factor parameterisation,
   cf. :cite:`Budnev1974de`.  The authors would like to
   thank T. Pierzchala for his help in implementing and testing the
   corresponding code. See details below.
@@ -106,7 +106,7 @@ Laser Backscattering
 .. index:: LASER_NONLINEARITY
 
 The energy distribution of the photon beams is modelled by the CompAZ
-parametrisation, see :cite:`Zarnecki2002qr`, with various assumptions
+parameterisation, see :cite:`Zarnecki2002qr`, with various assumptions
 valid only for the proposed TESLA photon collider. The laser energies
 can be set by ``E_LASER``. ``P_LASER`` sets their polarisations,
 defaulting to ``0.``.  Both settings can either be set to a single

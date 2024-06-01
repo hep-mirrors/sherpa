@@ -16,7 +16,7 @@ on the command line.
 
 EVENTS
 ======
-OUTPUT
+
 .. index:: EVENTS
 
 This parameter specifies the number of events to be generated.
@@ -37,7 +37,7 @@ see :ref:`Command line`.
 
 * The default event type is ``StandardPerturbative``, which will
   generate a hard event through exact matrix elements matched and/or
-  merged with the parton shower, eventually including hadronization,
+  merged with the parton shower, eventually including hadronisation,
   hadron decays, etc..
 
 Alternatively there are two more specialised modes, namely:
@@ -118,10 +118,10 @@ The value can be any sum of the following:
 
 E.g. :option:`OUTPUT=3` would display information, events and
 errors. Use :option:`OUTPUT_PRECISION` to set the default output
-precision (default ``6``).  Note: this may be overriden in specific
+precision (default ``6``).  Note: this may be overridden in specific
 functions' output.
 
-For expert users: The output level can be overriden for individual
+For expert users: The output level can be overridden for individual
 functions, e.g. like this
 
 .. code-block:: yaml
@@ -295,7 +295,7 @@ are:
       analysis results when catching an exception.
 
 :samp:`{2}`
-      Sherpa outputs the event counter continously, instead of
+      Sherpa outputs the event counter continuously, instead of
       overwriting the previous one (default when using
       :ref:`LOG_FILE`).
 
@@ -400,7 +400,7 @@ The following formats are currently available:
   set with ``HEPMC3_IO_TYPE: <0|1|2|3|4>`` tag.  The default value is
   0 and corresponds to ASCII GenEvent. Other available options are 1:
   HepEvt 2: ROOT file with every event written as an object of class
-  GenEvent. 3: ROOT file with GenEvent objects writen into TTree.
+  GenEvent. 3: ROOT file with GenEvent objects written into TTree.
   Otherwise similar to ``HepMC3_GenEvent``.
 
   The HepMC::GenEvent::m_weights weight vector stores the
@@ -435,7 +435,7 @@ The following formats are currently available:
   ``HEPMC_USE_NAMED_WEIGHTS``. The default value is ``false``.
 
   ``HEPMC_TREE_LIKE: <false|true>`` Force the event record to be
-  stricly tree-like. Please note that this removes some information
+  strictly tree-like. Please note that this removes some information
   from the matrix-element-parton-shower interplay which would be
   otherwise stored.
   Requires ``-DHepMC3_DIR=/path/to/hepmc3``
@@ -551,7 +551,7 @@ This example specifies a total of seven on-the-fly variations.
 
 Scale factors in ``SCALE_VARIATIONS`` can be given
 as a list of two numbers, or as a single number.
-When two numbers are given, they are applied to the factorisation and the renomalisation scale, respectively.
+When two numbers are given, they are applied to the factorisation and the renormalisation scale, respectively.
 If only a single number is given, it is applied to both scales at the same time.
 The factors for the renormalisation and factorisation scales
 must be given in their quadratic form, i.e. a "4.0" in the settings means that the
@@ -598,7 +598,7 @@ Such expansions may include trivial scale variations and the central
 PDF set, resulting
 in the specification of a completely trivial variation,
 which would just repeat the nominal calculation.
-Per default, these trivial variations are automically omitted during the
+Per default, these trivial variations are automatically omitted during the
 calculation, since the nominal calculation is anyway included in the Sherpa
 output. If required (e.g. for debugging), this filtering
 can be explicitly disabled using

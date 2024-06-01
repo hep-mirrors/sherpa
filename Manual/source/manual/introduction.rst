@@ -187,7 +187,7 @@ MODEL
   vertices (Feynman rules). By now, there exist explicit
   implementations of the Standard Model (SM), its Minimal
   Supersymmetric extension (MSSM), the ADD model of large extra
-  dimensions, and a comprehensive set of operators parametrizing
+  dimensions, and a comprehensive set of operators parameterising
   anomalous triple and quartic electroweak gauge boson couplings. An
   interface to `FeynRules`_, i.e. the UFO model input is also
   available.
@@ -283,11 +283,11 @@ REMNANTS:
   the intrinsic transverse momentum.
 
 RECONNECTIONS:
-  RECONNECTIONS handles the colour reconnections preceding the hadronization.
+  RECONNECTIONS handles the colour reconnections preceding the hadronisation.
   This module will experience future refinements.
   
 AHADIC++
-  AHADIC++ is Sherpa's hadronization package, for translating
+  AHADIC++ is Sherpa's hadronisation package, for translating
   the partons (quarks and gluons) into primordial hadrons, to be
   further decayed in HADRONS++.  The algorithm bases on the cluster
   fragmentation ideas presented in :cite:`Gottschalk1982yt`,
@@ -301,7 +301,7 @@ HADRONS++
   decays.  The resulting decay products respect full spin correlations
   (if desired).  Several matrix elements and form-factor models have
   been implemented, such as the Kühn-Santamaría model, form-factor
-  parametrizations from Resonance Chiral Theory for the tau and form
+  parameterisation from Resonance Chiral Theory for the tau and form
   factors from heavy quark effective theory or light cone sum rules
   for hadron decays.
 

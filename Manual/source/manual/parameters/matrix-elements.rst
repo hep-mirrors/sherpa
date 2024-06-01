@@ -48,7 +48,7 @@ RESULT_DIRECTORY
 .. index:: RESULT_DIRECTORY
 
 This parameter specifies the name of the directory which is used by
-Sherpa to store integration results and phasespace mappings. The
+Sherpa to store integration results and phase-space mappings. The
 default is ``Results/``.  It can also be set using the command line
 parameter :option:`-r`, see :ref:`Command line`. The directory will be
 created automatically, unless the option
@@ -103,8 +103,8 @@ SCALES
 
 .. index:: SCALES
 
-This parameter specifies how to compute the renormalization and
-factorization scale and potential additional scales.
+This parameter specifies how to compute the renormalisation and
+factorisation scale and potential additional scales.
 
 .. note::
 
@@ -179,7 +179,7 @@ The scale setter options which are currently available are
 
      SCALES: VAR{Abs2(p[2]+p[3])}
 
-  Renormalization and factorization scales can be chosen differently.
+  Renormalisation and factorisation scales can be chosen differently.
   For example in Drell-Yan + jet production one could set
 
   .. code-block:: yaml
@@ -326,7 +326,7 @@ by the parton shower:
    two subsequent branchings are unordered in terms of the parton shower
    evolution parameter. That defines the core process.
 
-2. A freely choosable scale in the core process, ``CORE_SCALE``.
+2. A freely selectable scale in the core process, ``CORE_SCALE``.
 
 These are then defined to calculate ``MU_R2`` from the core scale and the
 individual clustering scales such that:
@@ -448,7 +448,7 @@ choices or easily implement a user defined scale.
   these parton momenta will be replaced by the jet momenta ordered in
   transverse momenta. For example the process u ub -> e- e+ G G will
   have the electron and the positron at positions ``p[2]`` and
-  ``p[3]`` and the gluons on postions ``p[4]`` and ``p[5]``. However,
+  ``p[3]`` and the gluons on positions ``p[4]`` and ``p[5]``. However,
   when finding jets first, the electrons will still be at ``p[2]`` and
   ``p[3]`` while the harder jet will be at ``p[4]`` and the softer one
   at ``p[5]``.
@@ -485,7 +485,7 @@ choices or easily implement a user defined scale.
   Implements a version of ``H_Tp2`` which dresses charged particles first.
   The parameter ``<recombination-method>`` can take the following values:
   ``Cone``, ``kt``, ``CA`` or ``antikt``, while ``<dR>`` is
-  the respecitve algorithm's angular distance parameter.
+  the respective algorithm's angular distance parameter.
 
 :option:`TAU_B2`
   Square of the beam thrust.
@@ -524,7 +524,7 @@ infrared safe w.r.t. to the radiation of an extra parton. Infrared safe
 
 * sum of transverse quantities of all partons (e.g. ``H_T2``)
 
-* any quantity refering to jets, constructed by an IR safe
+* any quantity referring to jets, constructed by an IR safe
   jet algorithm, see below.
 
 
@@ -672,7 +672,7 @@ Options are:
 :option:`QCD`
   Only QCD infrared divergences will be subtracted.
   This is the default as most users will be familiar with this
-  setting corresponding to the abililities of older Sherpa
+  setting corresponding to the abilities of older Sherpa
   versions.
 
 :option:`QED`

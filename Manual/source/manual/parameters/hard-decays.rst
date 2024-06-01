@@ -246,7 +246,7 @@ from the particle widths specified by
 the core process and should be set to zero for all unstable particles
 appearing in the core-process final state. This guarantees
 on-shellness and gauge invariance of the core process, and subsequent
-decays can be handled by the afterburner.  In constrast,
+decays can be handled by the afterburner.  In contrast,
 :option:`PARTICLE_DATA:<id>:Width` should be set to the physical width
 when unstable particles appear (only) as intermediate states in the
 core process, i.e. when production and decay are handled as a full
@@ -396,7 +396,7 @@ the weight name becomes PolWeight.W+.+_W+.-. The sequence of the particles
 in the weight name corresponds to Sherpa's internal particle ordering
 which can be obtained from the ordering in the process printed out
 when Sherpa starts running. The ``ReferenceSystem`` denotes the reference system
-which needs to be specified for an unambitious polarization defintion 
+which needs to be specified for an unambitious polarization definition 
 (cf. section :ref:`Reference system`). The totaled interference contribution is 
 called ``PolWeight_ReferenceSystem.int``.
 
@@ -424,7 +424,7 @@ General procedure
 .. index:: General procedure
 
 The definition of polarization for particles in intermediate states is only 
-possible for processes which can be factorized into a production and decay of them. 
+possible for processes which can be factorised into a production and decay of them. 
 To neglect possible not-fully-resonant diagrams (i.e. diagrams where not each final state
 decay product particle comes from the decay of a resonant intermediate particle), 
 for which this factorization and the definition of polarization for intermediate particles
