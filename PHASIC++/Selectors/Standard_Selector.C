@@ -691,7 +691,7 @@ bool Polar_Angle_Selector::Trigger(Selector_List &sl)
     if (m_flav.Includes(sl[i].Flavour())) {
       Vec4D mom = sl[i].Momentum();
       if(m_labframe) p_proc->Integrator()->Beam()->BoostBackLab(mom);
-      double ang = mom.Theta();
+      double ang = mom.Theta(Vec4D::ZVEC);
       if(!m_use_radians) ang *= 180./M_PI;
       if (m_sel_log->Hit( ((ang<m_angmin) || (ang>m_angmax)) )) return false;
     }
