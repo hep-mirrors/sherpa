@@ -58,8 +58,8 @@ The list of physics processes that can be simulated with Sherpa covers
 all reactions in the Standard Model. Other models can be implemented
 either using Sherpa's own model syntax, or by using the generic
 interface :cite:`Hoeche2014kca` to the UFO output
-:cite:`Degrande2011ua` :cite:`Darme:2023jdn` of `FeynRules`_
-:cite:`Christensen2008py`, :cite:`Christensen2009jx`.  The Sherpa
+:cite:`Degrande2011ua,Darme:2023jdn` of `FeynRules`_
+:cite:`Christensen2008py,Christensen2009jx`.  The Sherpa
 program owes this versatility to the two inbuilt matrix-element
 generators, AMEGIC++ and `Comix <http://comix.freacafe.de>`_, and to
 it's phase-space generator Phasic :cite:`Krauss2001iv`, which
@@ -67,25 +67,25 @@ automatically calculate and integrate tree-level amplitudes for the
 implemented models.  This feature enables Sherpa to be used as a
 cross-section integrator and parton-level event generator as well.
 This aspect has been extensively tested, see e.g.
-:cite:`Gleisberg2003bi`, :cite:`Hagiwara2005wg`.
+:cite:`Gleisberg2003bi,Hagiwara2005wg`.
 
 
 As a second key feature of Sherpa the program provides an
 implementation of the merging approaches of :cite:`Hoeche2009rj` and
-:cite:`Gehrmann2012yg`, :cite:`Hoeche2012yf`.  These algorithms yield
+:cite:`Gehrmann2012yg,Hoeche2012yf`.  These algorithms yield
 improved descriptions of multijet production processes, which
 copiously appear at lepton-hadron colliders like HERA
 :cite:`Carli2009cg`, or hadron-hadron colliders like the Tevatron and
-the LHC, :cite:`Krauss2004bs`, :cite:`Krauss2005nu`,
-:cite:`Gleisberg2005qq`, :cite:`Hoeche2009xc`.  An older approach,
+the LHC, :cite:`Krauss2004bs,Krauss2005nu,Gleisberg2005qq,Hoeche2009xc`.
+An older approach,
 implemented in previous versions of Sherpa and known as the CKKW
-technique :cite:`Catani2001cc`, :cite:`Krauss2002up`, has been
+technique :cite:`Catani2001cc,Krauss2002up`, has been
 compared in great detail in :cite:`Alwall2007fs` with other
 approaches, such as the MLM merging prescription :cite:`Mangano2001xp`
 as implemented in Alpgen :cite:`Mangano2002ea`, Madevent
-:cite:`Stelzer1994ta`, :cite:`Maltoni2002qb`, or Helac
-:cite:`Kanaki2000ey`, :cite:`Papadopoulos2005ky` and the CKKW-L
-prescription :cite:`Lonnblad2001iq`, :cite:`Lavesson2005xu` of Ariadne
+:cite:`Stelzer1994ta,Maltoni2002qb`, or Helac
+:cite:`Kanaki2000ey,Papadopoulos2005ky` and the CKKW-L
+prescription :cite:`Lonnblad2001iq,Lavesson2005xu` of Ariadne
 :cite:`Lonnblad1992tz`.
 
 This manual contains all information necessary to get started with
@@ -100,7 +100,7 @@ referenced in the text. If you use external programs with Sherpa, you
 are encouraged to cite them accordingly.
 
 The `MCnet Guidelines
-<http://www.montecarlonet.org/index.php?p=Publications/Guidelines>`_
+<https://www.montecarlonet.org/publications_guidelines/>`_
 apply to Sherpa. You are kindly asked to cite :cite:`Bothmann:2019yzt`
 if you have used the program in your work. Should your application of
 Sherpa furthermore involve specific non-trivial aspects of the simulation
@@ -142,14 +142,13 @@ event phases, based on QCD factorization theorems. Accordingly, each
 module encapsulates a different aspect of event generation for
 high-energy particle reactions. It resides within its own namespace
 and is located in its own subdirectory of the same name. The main
-module called ``SHERPA`` steers the interplay of all modules -- or
-phases -- and the actual generation of the events.
+module called ``SHERPA`` steers the interplay of all modules---or
+phases---and the actual generation of the events.
 Altogether, the following modules are currently distributed with the
 Sherpa framework:
 
 ATOOLS
-  This is the toolbox for all other modules. Since the Sherpa
-  framework does not rely on CLHEP etc., the ATOOLS contain classes
+  This is the general toolbox for all other modules. It contains classes
   with mathematical tools like vectors and matrices, organization
   tools such as read-in or write-out devices, and physics tools like
   particle data or classes for the event record.
@@ -168,7 +167,7 @@ BEAM
   for different colliders. The three options which are currently
   available include a monochromatic beam, which requires no extra
   treatment, photon emission in the Equivalent Photon Approximation
-  (EPA) and - for the case of an electron collider - laser
+  (EPA) and---for the case of an electron collider---laser
   backscattering off the electrons, leading to photonic initial
   states.
 
@@ -194,11 +193,11 @@ MODEL
 
 EXTRA_XS
   In this module a (limited) collection of analytic expressions
-  for simple 2->2 processes within the SM are provided together with
-  classes embedding them into the Sherpa framework. This also includes
-  methods used for the definition of the starting conditions for
-  parton-shower evolution, such as colour connections and the hard
-  scale of the process.
+  for simple :math:`2 \rightarrow 2` processes within the SM
+  are provided together with classes embedding them into the Sherpa framework.
+  This also includes methods used for the definition
+  of the starting conditions for parton-shower evolution,
+  such as colour connections and the hard scale of the process.
 
 AMEGIC++
   AMEGIC++ :cite:`Krauss2001iv` is Sherpa's original
@@ -250,7 +249,7 @@ CSSHOWER++
   :cite:`Catani1996vz`, :cite:`Catani2002hc`.  There exist four
   general types of CS dipole terms that capture the complete infrared
   singularity structure of next-to-leading order QCD amplitudes.  In
-  the large-N_C limit, the corresponding splitter and spectator
+  the large-:math:`N_C` limit, the corresponding splitter and spectator
   partons are always adjacent in colour space. The dipole functions
   for the various cases, taken in four dimensions and averaged over
   spins, are used as shower splitting kernels.
@@ -276,13 +275,13 @@ AMISIC++
   for the simultaneous evolution of an independent parton shower in
   each of the subsequent (semi-)hard collisions. 
 
-REMNANTS:
+REMNANTS
   REMNANTS contains classes for the simulation of the beam remnants,
   including in particular the spatial form of the matter distribution
   which is relevant for the underlying event, and the treatment of
   the intrinsic transverse momentum.
 
-RECONNECTIONS:
+RECONNECTIONS
   RECONNECTIONS handles the colour reconnections preceding the hadronisation.
   This module will experience future refinements.
   
@@ -327,8 +326,8 @@ SHERPA
 
 
 The actual executable of the Sherpa generator can be found in the
-subdirectory ``<prefix>/bin/`` and is called ``Sherpa``. To run the
-program, input files have to be provided in the current working
+subdirectory ``<prefix>/bin/`` after installation and is called ``Sherpa``.
+To run the program, input files have to be provided in the current working
 directory or elsewhere by specifying the corresponding path, see
 :ref:`Input structure`. All output files are then written to this
 directory as well.
