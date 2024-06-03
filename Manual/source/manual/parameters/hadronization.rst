@@ -41,10 +41,10 @@ employed during event generation.
 
 * To evaluate uncertainties stemming from the hadronisation, Sherpa
   also provides an interface to the Lund string fragmentation in
-  Pythia 8.3 :cite:`Sjostrand2015` by using the setting
+  Pythia 8.3 :cite:`Bierlich:2022pfr` by using the setting
   :option:`Pythia8`.  In this case, the standard Pythia settings
   can be used to steer the behaviour of the Lund string,
-  see :cite:`Sjostrand2015`. They are specified in their usual
+  see :cite:`Bierlich:2022pfr`. They are specified in their usual
   form in Pythia in a dedicated settings block. Additionally
   a choice can be made to let Pythia directly handle hadron
   decays via the :option:`DECAYS` setting (separate from the
