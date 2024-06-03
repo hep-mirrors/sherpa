@@ -126,6 +126,23 @@ Note that we have used flow style here,
 because block style would require line breaks,
 which are difficult to deal with on the command line.
 
+For scalar (i.e. single-valued) settings, you can use a more convenient
+syntax on the command line, where the levels are separated with a colon:
+
+.. code-block:: shell-session
+
+   $ <prefix>/bin/Sherpa KEYWORD1:value1 KEYWORD2:value2 ...
+   $ <prefix>/bin/Sherpa HARD_DECAYS:Enabled:false
+
+As this syntax needs no space after the colon,
+you can normally suppress quotation marks as we did here.
+For non-nested scalar settings, there is yet another possibility,
+using an equal sign instead of a colon:
+
+.. code-block:: shell-session
+
+   $ <prefix>/bin/Sherpa KEYWORD1=value1 KEYWORD2=value2 ...
+
 All over Sherpa, particles are defined by the particle code proposed
 by the PDG. These codes and the particle properties will be listed
 during each run with ``OUTPUT: 2`` for the elementary particles and

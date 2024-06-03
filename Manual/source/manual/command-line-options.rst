@@ -125,7 +125,16 @@ The available command line options for Sherpa (given either in long form (starti
 .. option:: 'PARAMETER: Value'
 
    Set the value of a parameter, see :ref:`Parameters`.
+   Equivalent input forms are ``PARAMETER:Value`` (without a space)
+   and ``PARAMETER=Value``; these forms can normally be used
+   without quotation marks.
+   Just as for any other command line option, the setting takes precedence
+   over corresponding settings defined in runcards.
+   You can also set nested settings or settings that expect lists of values;
+   see :ref:`Input structure` for more details.
 
 .. option:: 'Tags: {TAG: Value}'
 
    Set the value of a tag, see :ref:`Tags`.
+   More than one tag can be specified using
+   ``'Tags: {TAG1: Value1, TAG2: Value2, ...}'``.
