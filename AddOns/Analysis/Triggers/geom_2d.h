@@ -21,8 +21,8 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA //
 //                                                                           //
-// $Revision:: 195                                                          $//
-// $Date:: 2008-01-15 21:30:58 +0100 (Tue, 15 Jan 2008)                     $//
+// $Revision::                                                              $//
+// $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef __GEOM_2D_H__
@@ -145,19 +145,19 @@ public:
   /// phi range as a binary coding of covered cells
   unsigned int phi_range;     
 
-  /// maximal value for eta
-  static double eta_min;
-  static double eta_max;
+  // extremal value for eta
+  static double eta_min;  ///< minimal value for eta
+  static double eta_max;  ///< maximal value for eta
 
 private:
   /// return the cell index corrsponding to an eta value
   inline unsigned int get_eta_cell(double eta){
-    return (unsigned int) (1 << ((int) (32*((eta-eta_min)/(eta_max-eta_min)))));
+    return (unsigned int) (1u << ((int) (32*((eta-eta_min)/(eta_max-eta_min)))));
   }
 
   /// return the cell index corrsponding to a phi value
   inline unsigned int get_phi_cell(double phi){
-    return (unsigned int) (1 << ((int) (32*phi/twopi+16)%32));
+    return (unsigned int) (1u << ((int) (32*phi/twopi+16)%32));
   }
 };
 

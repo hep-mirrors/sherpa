@@ -21,8 +21,8 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA //
 //                                                                           //
-// $Revision:: 123                                                          $//
-// $Date:: 2007-03-01 02:52:16 +0100 (Thu, 01 Mar 2007)                     $//
+// $Revision::                                                              $//
+// $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef __SISCONE_ERROR_H__
@@ -33,24 +33,31 @@
 
 namespace siscone{
 
+/// \class Csiscone_error
 /// class corresponding to errors that will be thrown by siscone
 class Csiscone_error {
 public:
-  // constructors
+  /// default ctor
   Csiscone_error() {;};
-  Csiscone_error(const std::string & message) {
-    m_message = message; 
-    if (m_print_errors) std::cerr << "siscone::Csiscone_error: "<<message << std::endl;
+
+  /// ctor with a given error message
+  ///  \param message_in   the error message to be printed
+  Csiscone_error(const std::string & message_in) {
+    m_message = message_in; 
+    if (m_print_errors) std::cerr << "siscone::Csiscone_error: "<< message_in << std::endl;
   };
 
+  /// access to the error message
   std::string message() const {return m_message;};
 
+  /// switch on/off the error message printing
+  ///  \param print_errors   errors will be printed when true
   static void setm_print_errors(bool print_errors) {
     m_print_errors = print_errors;};
 
 private:
-  std::string m_message;
-  static bool m_print_errors;
+  std::string m_message;       ///< the error message
+  static bool m_print_errors;  ///< do we print error messages?
 };
 
 }

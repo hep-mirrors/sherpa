@@ -20,8 +20,8 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA //
 //                                                                           //
-// $Revision:: 123                                                          $//
-// $Date:: 2007-03-01 02:52:16 +0100 (Thu, 01 Mar 2007)                     $//
+// $Revision::                                                              $//
+// $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "quadtree.h"
@@ -264,7 +264,7 @@ int Cquadtree::save(FILE *flux){
     return 1;
 
   if (has_child){
-    fprintf(flux, "%le\t%le\t%le\t%le\n", centre_x, centre_y, half_size_x, half_size_y);
+    fprintf(flux, "%e\t%e\t%e\t%e\n", centre_x, centre_y, half_size_x, half_size_y);
     children[0][0]->save(flux);
     children[0][1]->save(flux);
     children[1][0]->save(flux);
@@ -295,7 +295,7 @@ int Cquadtree::save_leaves(FILE *flux){
     if (children[1][0]!=NULL) children[1][0]->save_leaves(flux);
     if (children[1][1]!=NULL) children[1][1]->save_leaves(flux);
   } else {
-    fprintf(flux, "%le\t%le\t%le\t%le\n", centre_x, centre_y, half_size_x, half_size_y);
+    fprintf(flux, "%e\t%e\t%e\t%e\n", centre_x, centre_y, half_size_x, half_size_y);
   }
 
   return 0;
