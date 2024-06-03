@@ -819,9 +819,13 @@ void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
 
   // Translate weight maps into ordinary string->double maps.
   std::map<std::string, double> xs_wgts;
-  xs.FillVariations(xs_wgts);
   std::map<std::string, double> err_wgts;
+  xs.FillVariations(xs_wgts);
   err.FillVariations(err_wgts);
+  if (m_includemeonlyweights) {
+    xs.FillVariations(xs_wgts, Variations_Source::main);
+    err.FillVariations(err_wgts, Variations_Source::main);
+  }
 
   // Fill nominal values.
   cross_section->set_xsec("Weight", xs.Nominal());
