@@ -325,6 +325,31 @@ at the same time.
    The command line option :option:`-b` should therefore not be used
    in this case, see :ref:`Command line`.
 
+.. _INIT_ONLY:
+
+INIT_ONLY
+==========
+
+.. index:: INIT_ONLY
+
+This can be used to skip cross section integration and event generation phases.
+Note that these phases are always skipped if Sherpa detects that libraries
+are missing and need to be compiled first, see :ref:`Running Sherpa`.
+The following values can be used for :option:`INIT_ONLY`:
+
+:samp:`{0}`
+      The default. Sherpa will normally attempt to proceed after initialisation
+      to integrate cross sections (or read in cached results) and generate events.
+
+:samp:`{1}`
+      Sherpa will always exit after initialisation, skipping integration
+      and event generation.
+
+:samp:`{2}`
+      Sherpa skips cross section integration. This is useful when Sherpa
+      is used to calculate specific matrix element values, see
+      :ref:`MEvalues`.
+
 .. _NUM_ACCURACY:
 
 NUM_ACCURACY
