@@ -121,9 +121,10 @@ For a complete list of possible configuration options
 (and their correct capitalisation),
 run ``cmake -LA``.
 
-The Sherpa package has successfully been compiled, installed and
-tested on Arch, SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux/ Mac OS X
-systems using the GNU compilers collection, clang and Intel OneAPI 2022.
+The Sherpa package has successfully been compiled, installed and tested
+on various Linux distributions
+(Arch Linux, SUSE Linux, RHEL, Scientific Linux, Debian, Ubuntu) and on macOS,
+using the GNU Compiler Collection (GCC), Clang and Intel OneAPI 2022.
 
 If you have multiple compilers installed on your system, you can use
 shell environment variables to specify which of these are to be
@@ -135,7 +136,9 @@ used. A list of the available variables is printed with
 
 in the Sherpa top level directory and looking at the last
 lines. Depending on the shell you are using, you can set these
-variables e.g. with export (bash) or setenv (csh).  Examples:
+variables e.g. with export (bash) or setenv (csh). For example,
+to use a specific versioned GCC installation, you could run
+before calling ``cmake``:
 
 .. code-block:: bash
 
@@ -148,7 +151,7 @@ Installation on Cray XE6 / XK7
 ==============================
 
 Sherpa has been installed successfully on Cray XE6 and Cray XK7.  The
-following configure command should be used
+following configure command should be used:
 
 .. code-block:: shell-session
 
@@ -179,26 +182,15 @@ Sherpa can then be run with
 
    $ qsub -A <account> -n <nofcores> -t 60 --mode c16 <prefix>/bin/Sherpa -lrun.log
 
-MacOS Installation
+macOS Installation
 ==================
 
-Installation on macOS has been tested with the native clang compiler and the native ``make``, installed through the Xcode Command Line Tools,
-and the package ``cmake``, installed through `Homebrew <https://brew.sh/>`_. With this setup it runs analogously to the usual installation procedure.
-
-Please be aware of the following
-issues which have come up on Mac installations before:
-
-* On 10.4 and 10.5 only gfortran is supported, and you will have
-  to install it e.g. from HPC
-
-* Make sure that you don’t have two versions of g++ and libstdc++
-  installed and being used inconsistently. This appeared e.g. when the
-  gcc suite was installed through Fink to get gfortran. This caused
-  Sherpa to use the native MacOS compilers but link the libstdc++ from
-  Fink (which is located in /sw/lib). You can find out which libraries
-  are used by Sherpa by running ``otool -L bin/Sherpa``
-
-* Depending on your setup, it might be necessary to set the ``DYLD_LIBRARY_PATH`` to include ``$INSTALL_PREFIX/lib/SHERPA-MC``.
+The installation on macOS works analogously to an installation
+on a GNU/Linux system.
+You might need to ensure first that the Xcode Command Line Tools are installed.
+Other missing command line tools
+can be installed through a package manager like `Homebrew <https://brew.sh/>`_
+or `MacPorts <https://www.macports.org>`_.
 
 .. _Running Sherpa:
 
@@ -213,10 +205,10 @@ defined by several parameters, which can all be listed in a common
 file, or data card (Parameters can be alternatively specified on the
 command line; more details are given in :ref:`Input structure`).  This
 steering file is called ``Sherpa.yaml`` and some example setups
-(i.e. ``Sherpa.yaml`` files) are distributed with the current version
-of Sherpa. They can be found in the directory
-``<prefix>/share/SHERPA-MC/Examples/``, and descriptions of some of
-their key features can be found in the section :ref:`Examples`.
+(i.e. ``Sherpa.yaml`` files) are distributed with Sherpa.
+They can be found in the directory ``<prefix>/share/SHERPA-MC/Examples/``,
+and descriptions of some of their key features can be found
+in the section :ref:`Examples`.
 
 .. note:: It is not in general possible to reuse steering files from
    previous Sherpa versions. Often there are small changes in the
