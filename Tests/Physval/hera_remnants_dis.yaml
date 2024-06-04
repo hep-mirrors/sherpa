@@ -26,7 +26,8 @@ PDF_SET: [None,NNPDF30_nnlo_as_0118]
 
 ## shower specifics
 SCALES: METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2}
-CORE_SCALE: VAR{Abs2(p[0]-p[2])}
+MEPS:
+  CORE_SCALE: VAR{Abs2(p[0]-p[2])}
 
 HADRON_DECAYS:
   Max_Proper_Lifetime: 10

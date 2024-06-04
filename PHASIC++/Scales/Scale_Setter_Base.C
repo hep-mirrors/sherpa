@@ -28,7 +28,7 @@ Scale_Setter_Base::Scale_Setter_Base
   m_l1(0), m_l2(0)
 {
   Settings& s = Settings::GetMainSettings();
-  s["CORE_SCALE"].SetDefault("Default");
+  s["MEPS"]["CORE_SCALE"].SetDefault("Default");
   for (size_t i(0);i<stp::size;++i) m_scale[i]=sqr(rpa->gen.Ecms());
   if (p_proc) {
     m_nin=p_proc->NIn();
