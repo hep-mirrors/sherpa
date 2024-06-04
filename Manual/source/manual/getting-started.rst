@@ -16,12 +16,12 @@ Installation
 
 
 Sherpa is distributed as a tarred and gzipped file named
-:samp:`SHERPA-MC-{<VERSION>}.tar.gz`, and can be unpacked in the
+:samp:`sherpa-{<VERSION>}.tar.gz`, and can be unpacked in the
 current working directory with
 
 .. code-block:: shell-session
 
-   $ tar -zxf SHERPA-MC-<VERSION>.tar.gz
+   $ tar -zxf sherpa-<VERSION>.tar.gz
 
 Alternatively, it can also be accessed via Git through the location
 specified on the download page.
@@ -44,7 +44,7 @@ you use the distribution tarball:
 
 .. code-block:: shell-session
 
-   $ cd SHERPA-MC-<VERSION>/
+   $ cd sherpa-<VERSION>/
    $ cmake -S . -B <builddir> [+ optional configuration options described below]
    $ cmake --build <builddir> [other build options, e.g. -j 8]
    $ cmake --install <builddir>
