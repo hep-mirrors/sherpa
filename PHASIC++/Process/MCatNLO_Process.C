@@ -372,8 +372,6 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     }
   rproc->Integrator()->SetMax
     (p_rsproc->Selected()->Integrator()->Max());
-  rproc->Integrator()->SetEnhanceFactor
-        (p_rsproc->Selected()->Integrator()->EnhanceFactor());
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
   rproc->Integrator()->SetMomenta(p);
   rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
@@ -590,6 +588,9 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       const double RSsel(p_rsproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Rsel / RSsel);
       const double wgtfac(Hwgt * selwgtratio);
+      msg_Debugging()<<"wgt_{RS} = "<<Hwgt<<"\n"
+                     <<"Rsel = "<<Rsel<<" ,  RSsel = "<<RSsel<<"\n"
+                     <<"=> wgtfac = "<<wgtfac<<std::endl;
       winfo->m_weight *= wgtfac;
       *p_selected->Selected()->GetMEwgtinfo() *= wgtfac;
       if (p_variationweights)
