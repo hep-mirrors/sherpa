@@ -542,9 +542,9 @@ double Define_Dipoles::CalculateEEXReal(const Vec4D & k){
   for (auto &D: m_dipolesFF){
     eex += D.EEX(m_betaorder);
   }
-  // for (auto &D: m_dipolesIF){
-  //   eex += D.EEX(k);
-  // }
+  for (auto &D: m_dipolesIF){
+    eex += D.EEX(m_betaorder);
+  }
   return eex;
 }
 

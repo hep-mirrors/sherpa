@@ -45,7 +45,6 @@ namespace YFS{
         inline void ClearPhotons() { m_dipolePhotons.clear(); };
         inline Vec4D Momentum(int i) { return m_momenta[i]; }
         inline void SetMomentum(int i, Vec4D mom) { m_momenta[i] = mom; }
-        inline void SetNewMomentum(int i, Vec4D mom) { m_newmomenta[i] = mom; }
         inline void SetEikMomentum(int i, Vec4D mom) { m_eikmomentum[i] = mom; }
         inline void SetBeams(int i, Vec4D mom) { m_beams[i] = mom; }
         void AddToGhosts(Vec4D &p);
@@ -66,7 +65,6 @@ namespace YFS{
         void RandomRotate(Vec4D &p);
         void BoostToQFM(bool boostback);
         void BoostToCMS(Vec4D_Vector &k, bool boostback=false);
-        void CalculateBeta();
         void CalculateGamma();
         void Clean();
         bool IsDecayAllowed();

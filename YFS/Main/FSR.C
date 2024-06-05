@@ -47,6 +47,7 @@ FSR::FSR()
   s["FSR_CUT"].SetDefault(1e-2*m_isrcut);
   m_Edelta = s["FSR_EMIN"].Get<double>();
   m_fsrcut = s["FSR_CUT"].Get<double>();
+  // m_fsrcut /= sqrt(m_s);
   m_fsrcutF = s["FSR_FCUT"].Get<double>();
   m_nbar = s["FSR_NBAR"].Get<double>();
   m_use_massive_nbar = s["MASSIVE_NBAR"].Get<bool>();
@@ -71,6 +72,10 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_dipoleFl.push_back(p_dipole->GetFlav(0));
   m_dipoleFl.push_back(p_dipole->GetFlav(1));
   m_QFrame = m_dipole[0] + m_dipole[1];
+  BoostToXFM();
+  p_dipole->SetEikMomentum(0, m_dipole[0]);
+  p_dipole->SetEikMomentum(1, m_dipole[1]);
+
   for (size_t i = 0; i < m_dipole.size(); ++i) m_mass.push_back(p_dipole->m_masses[i]);
   if (IsZero(m_mass[0]) || IsZero(m_mass[1])) {
     THROW(fatal_error, "Charged particles must be massive for YFS");
@@ -302,7 +307,7 @@ bool FSR::MakeFSR() {
   p_dipole->AddToGhosts(m_r2);
   for (int i = 0; i < 2; ++i) {
     p_dipole->SetMomentum(i, m_dipole[i]);
-    p_dipole->SetEikMomentum(i, m_dipole[i]);
+    // p_dipole->SetEikMomentum(i, m_dipole[i]);
   }
   m_photonSumPreBoost = m_photonSum;
   if (m_cut != 0) return true;
@@ -330,7 +335,7 @@ void FSR::RescalePhotons() {
   }
 }
 
-bool FSR::F(ATOOLS::Vec4D_Vector &k) {
+bool FSR::F() {
   double del1, del2;
   double ener = sqrt(m_sprim) / 2.;
   double am1 = 1-m_betaBar1*m_betaBar1;
@@ -341,7 +346,7 @@ bool FSR::F(ATOOLS::Vec4D_Vector &k) {
   Vec4D p2 = m_dipole[1];
   double betan = sqrt((m_sprim - pow(m_mass[0] - m_mass[1], 2)) * (m_sprim - pow(m_mass[0] + m_mass[1], 2))) / m_sprim;
   CalculateBetaBar();
-  for (size_t i = 0; i < k.size(); ++i)
+  for (size_t i = 0; i < m_photons.size(); ++i)
   {
     if (m_cos[i] > 0.) {
       del1 = am1 / (m_eta1 + betan) + betan * sqr(m_sin[i]) / (1. + m_cos[i]);
@@ -354,9 +359,9 @@ bool FSR::F(ATOOLS::Vec4D_Vector &k) {
     m_del1.push_back(del1);
     m_del2.push_back(del2);
     if (m_eikonal_mode == 1) {
-      m_f    = Eikonal(k[i]);
-      m_fbar = EikonalInterferance(k[i]);
-      // m_fbar *= m_sprim/m_sX;
+      m_f    = Eikonal(m_photons[i]);
+      m_fbar = EikonalInterferance(m_photons[i]);
+      // m_fbar *= m_sprim/m_sQ;
       // m_fbar = m_alpi / (2  * M_PI) * m_fbarvec[i];
 
     }
@@ -397,55 +402,45 @@ bool FSR::YFS_FORM(){
   m_Q = m_dipole[0]+m_dipole[1];
   m_r1 = p_dipole->GetGhost(0);
   m_r2 = p_dipole->GetGhost(1);
-  // m_sQ = m_Q*m_Q;
+  m_sQ = m_Q*m_Q;
   CalculateBetaBar();
   m_q1q2 = m_dipole[0]*m_dipole[1];
   double Eqq = 0.5*sqrt(m_sQ);
-  // for (int i = 0; i < 15; ++i)
-  // {
-  //     /* code */
-  //   m_fsrcut = pow(10,-i);
-    double Delta1 = m_fsrcut*(1.+2.*m_Q*m_photonSum/m_sQ);
-    m_EminQ = Eqq*Delta1;
-    double Eq1   = (m_sQ +m_mass[0]*m_mass[0] -m_mass[1]*m_mass[1])/(2*sqrt(m_sQ));
-    double Eq2   = (m_sQ +m_mass[1]*m_mass[1] -m_mass[0]*m_mass[0])/(2*sqrt(m_sQ));
+  double Delta = m_fsrcut*(1.+2.*m_Q*m_photonSum/m_sQ);
+  m_EminQ = Eqq*Delta;
+  double Eq1   = (m_sQ +m_mass[0]*m_mass[0] -m_mass[1]*m_mass[1])/(2*sqrt(m_sQ));
+  double Eq2   = (m_sQ +m_mass[1]*m_mass[1] -m_mass[0]*m_mass[0])/(2*sqrt(m_sQ));
 
-    m_bvrA = p_fsrFormFact->A(m_q1q2,m_mass[0],m_mass[1]);
-    double YFS_IR = -2.*m_alpi*abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta1);
+  m_bvrA = p_fsrFormFact->A(m_q1q2,m_mass[0],m_mass[1]);
+  double YFS_IR = -2.*m_alpi*abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta);
 
-    if (m_use_crude) {
-      m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass);
-      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass);
+  if (m_use_crude) {
+    m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass);
+    m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass);
+  }
+  else {
+     if(m_tchannel){
+      m_BtiXcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
+      m_BtiQcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
     }
-    else {
-       if(m_tchannel){
-        m_BtiXcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
-        m_BtiQcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
-      }
-      else{
-        m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
-        m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
-      }
+    else{
+      m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
+      m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
     }
-    // m_volmc = -2.*m_alpi*abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1./m_fsrcut);
-    m_volmc = m_gp*log(1./m_fsrcut);
-     if(m_hidephotons==1){
-      if(m_tchannel){
-        m_btilStar = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_Emin*m_Emin);
-        m_btil     = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_EminQ*m_EminQ);
-      }
-      else{
-        m_btilStar = p_fsrFormFact->BVR_full(m_q1q2,m_dipole[0][0], m_dipole[1][0],m_mass[0],m_mass[1], m_Emin, m_photonMass, 0);
-        m_btil     = p_fsrFormFact->BVR_full(m_q1q2,Eq1,Eq2,m_mass[0],m_mass[1], m_EminQ, m_photonMass,0);
-      }
-      m_DelYFS = m_btilStar - m_btil;
-      m_delvol = m_BtiXcru  - m_BtiQcru;
-      // PRINT_VAR(i);
-      m_hideW = exp(YFS_IR + m_DelYFS + m_volmc - m_delvol);
-      // PRINT_VAR(m_hideW);
-      // PRINT_VAR(YFS_IR-m_btil);
-      // PRINT_VAR(m_volmc+m_DelYFS);
-    // }
+  }
+  m_volmc = m_gp*log(1./m_fsrcut);
+   if(m_hidephotons==1){
+    if(m_tchannel){
+      m_btilStar = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_Emin*m_Emin);
+      m_btil     = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_EminQ*m_EminQ);
+    }
+    else{
+      m_btilStar = p_fsrFormFact->BVR_full(m_q1q2,m_dipole[0][0], m_dipole[1][0],m_mass[0],m_mass[1], m_Emin, m_photonMass, 0);
+      m_btil     = p_fsrFormFact->BVR_full(m_q1q2,Eq1,Eq2,m_mass[0],m_mass[1], m_EminQ, m_photonMass,0);
+    }
+    m_DelYFS = m_btilStar - m_btil;
+    m_delvol = m_BtiXcru  - m_BtiQcru;
+    m_hideW = exp(YFS_IR + m_DelYFS + m_volmc - m_delvol);
   }
   else m_hideW=exp(YFS_IR  +  m_volmc);
   m_YFS_IR = exp(YFS_IR+m_DelYFS);
@@ -511,7 +506,6 @@ void FSR::HidePhotons(Vec4D_Vector &k){
       m_massW*=m_MassWls[i];
     }
   }
-  p_dipole->SetNPhoton(k.size());
   m_photons = k;
 }
 
@@ -661,10 +655,6 @@ void FSR::BoostToXFM() {
   // p_rot   = new Poincare(m_dipole[0],Vec4D(0.,0.,0.,1.));
   Vec4D Q = m_dipole[0] + m_dipole[1];
   ATOOLS::Poincare poin(Q);
-  ATOOLS::Poincare prot1(m_dipole[0], Vec4D::ZVEC);
-  ATOOLS::Poincare prot2(m_dipole[1], -Vec4D::ZVEC);
-  Poincare rotate;
-  rotate = Poincare(m_dipole[0], Vec4D(0., 0., 0., 1.));
   for (auto &p : m_dipole) {
     poin.Boost(p);
   }
@@ -741,15 +731,14 @@ void FSR::Reset() {
 
 
 double FSR::Eikonal(const Vec4D &k) {
-  Vec4D p1, p2;
-  MakePair(sqrt(m_sQ),p1,p2);
-  return -m_alpi / (4.*M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
+  return -m_alpi / (4.*M_PI) * (m_dipole[0] / (m_dipole[0] * k) - m_dipole[1] / (m_dipole[1] * k)).Abs2();
 }
 
 double FSR::EikonalInterferance(const Vec4D &k) {
-  Vec4D p1, p2;
-  MakePair(sqrt(m_sQ),p1,p2);
-  return m_alpi / (4.*M_PI) * 2.*p1 * p2 / ((k * p1) * (k * p2));
+  Vec4D p1=m_dipole[0];
+  Vec4D p2 = m_dipole[1];
+  MakePair(sqrt(m_dip_sp),p1,p2);
+  return m_alpi / (4.*M_PI) * 2.*p1 * p2  / ((k * p1) * (k * p2));
 }
 double SqLam(double x,double y,double z)
 {

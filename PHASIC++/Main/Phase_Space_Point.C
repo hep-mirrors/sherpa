@@ -194,10 +194,9 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
                              ? 2.0
                              : 1.0;
   }
-  if(p_yfshandler->GetMode() && p_yfshandler->GetFSRMode()!=2){
-    p_yfshandler->SetSprimeMin(sqr(process->ISRThreshold()));
+  if(p_yfshandler->HasISR()){
     p_isrchannels->GeneratePoint();
-    p_yfshandler->SetSprimeLimits(m_isrspkey.Doubles());
+    p_yfshandler->SetLimits(m_smin);
     DefineFSRKinematics();
     p_yfshandler->SetBornMomenta(p_moms);
     // p_yfshandler->SetFlavours(p_pshandler->Active()->Process()->Flavours());
@@ -209,8 +208,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     p_yfshandler->SetMomenta(p_moms);
     return(p_yfshandler->CalculateFSR());
   }
-  else if(p_yfshandler->GetFSRMode()==2){
-    p_yfshandler->SetSprimeLimits(m_isrspkey.Doubles());
+  else if(p_yfshandler->Mode()==YFS::yfsmode::fsr){
     DefineFSRKinematics();
     p_yfshandler->SetBornMomenta(p_moms);
     return(p_yfshandler->CalculateFSR(p_moms));

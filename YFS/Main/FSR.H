@@ -67,7 +67,7 @@ namespace YFS {
                     double &eta1, double &eta2);
       void BoostDipole(Vec4D_Vector &dip);
       void Weight();
-      bool F(ATOOLS::Vec4D_Vector &k);
+      bool F();
       bool Initialize(Dipole &dipole);
       void BoostToXFM();
       void RejectEvent();

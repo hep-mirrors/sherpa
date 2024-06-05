@@ -96,13 +96,11 @@ void ISR::GenerateAngles()
         double rnd = ran->Get();
         double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));
         m_c        = 1./m_b1*(1.-(1.+m_b1)*exp(-a*m_b1*rnd));
-        // m_c        = 1./m_b1*(pow(1+m_b1,rnd)/pow(1-m_b1,rnd-1)-1);
       }
       else {
         double rnd = ran->Get();
         double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
         m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
-        // m_c        = 1./m_b1*(pow(1-m_b2,rnd)/pow(1+m_b2,rnd-1)-1);
       }
       weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
                         +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
@@ -166,11 +164,8 @@ void ISR::GeneratePhotonMomentum() {
                };
     m_photonSum += m_photon;
     m_photons.push_back(m_photon);
-
     double del1 = 1. - m_b1 * m_c;
     double del2 = 1. + m_b2 * m_c;
-    // m_f    = m_alpi * (1 / ((del1) * (del2)) - ms / (del2 * del2) - ms / (del1 * del1));
-    // m_fbar = m_alpi * (1. / ((del1) * (del2)));
     m_f = Eikonal(m_photon,m_beam1,m_beam2);
     m_fbar = EikonalMassless(m_photon,m_beam1,m_beam2);
     m_massW = m_f / m_fbar;
@@ -189,8 +184,6 @@ void ISR::GeneratePhotonMomentum() {
                  };
       m_photonSum += m_photon;
       m_photons.push_back(m_photon);
-      // m_f    = m_alpi * (1. / ((del1) * (del2)) - ms / (del2 * del2) - ms / (del1 * del1));
-      // m_fbar = m_alpi * (1. / ((del1) * (del2)));
       m_f = Eikonal(m_photon,m_beam1,m_beam2);
       m_fbar = EikonalMassless(m_photon,m_beam1,m_beam2);
       m_massW *= m_f / m_fbar;
@@ -244,7 +237,7 @@ void ISR::MapPhotonMomentun() {
     m_photons[i] *= m_lam * sqrt(m_s) / 2.;
     m_yini[i] /= m_lam;
     m_zini[i] /= m_lam;
-    if (m_photons[i][0] < m_Kmin) m_cut = 0.;
+    if(m_photons[i].E() <= m_Kmin) m_cut = 0.;
   }
   if(m_photons.size()!=m_n){
     msg_Error()<<"Missmatch in Photon Multiplicity for ISR"<<std::endl
@@ -262,8 +255,8 @@ void ISR::Weight() {
     m_weight = m_gp * pow(m_v, m_gp - 1) * m_diljac0 * pow(m_isrcut, m_g - m_gp);
   }
   else {
-    m_massW = 1.0;
-    m_jacW = 1.0;
+    // m_massW = 1.0;
+    // m_jacW = 1.0;
     m_weight = m_g * pow(m_v, m_g - 1);
     double B = pow(m_isrcut, m_g) * (-m_g * m_isrcut + m_g + 1.) / (m_g + 1.);
     double D = pow(m_deltacut, m_g) * (-m_g * m_deltacut + m_g + 1.) / (m_g + 1.);
@@ -338,33 +331,6 @@ void ISR::Clean() {
 
 void ISR::MakeYFS() {
   GeneratePhotonMomentum();
-}
-
-double ISR::Flux() {
-  double m_f = (m_beam1 + m_beam2).Abs2() / (m_qvec1 + m_qvec2).Abs2();
-  return m_f;
-}
-
-void ISR::Sort(Vec4D_Vector & p) {
-  struct {
-    bool operator()(Vec4D a, Vec4D b) const
-    {
-      return a.PPerp() > b.PPerp();
-    }
-  } cmp;
-
-  std::sort(p.begin(), p.end(), cmp);
-}
-
-void ISR::Sort(std::vector<double> &p) {
-  struct {
-    bool operator()(double a, double b) const
-    {
-      return a < b;
-    }
-  } cmp;
-
-  std::sort(p.begin(), p.end(), cmp);
 }
 
 double ISR::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {

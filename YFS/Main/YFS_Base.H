@@ -58,7 +58,6 @@ std::ostream &operator<<(std::ostream &str, const wgt::code &sm);
     bool On() const   { return m_on;   }
 
   double m_mass2[2];
-  double m_smin;
   double m_s;
   double m_v, m_vmin, m_vmax, m_isrcut, m_sp;
   double m_alpha, m_alpi, m_hardmin, m_gp, m_g;

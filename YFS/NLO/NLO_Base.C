@@ -638,7 +638,7 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		if(ATOOLS::FileExists(filename))  ATOOLS::Remove(filename);
 		out_sub.open(filename, std::ios_base::app);
 		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
-		for (double i = 1; i < 20 ; i+=0.25)
+		for (double i = 1; i < 20 ; i+=0.005)
 		{
 			k=k/i;
 			real=CalculateReal(k);
