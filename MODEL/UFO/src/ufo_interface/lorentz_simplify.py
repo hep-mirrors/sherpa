@@ -3,7 +3,7 @@ from sympy.tensor.array.expressions import ArrayTensorProduct, ArraySymbol, \
 import sympy
 from sympy.tensor.array.expressions import convert_indexed_to_array
 import numpy as np
-import opt_einsum as oe
+from .contract import object_einsum as contract
 from .lorentz_algebra import all_indices
 
 Identity = np.diag([1, 1, 1, 1]).astype(np.float32)
@@ -85,7 +85,7 @@ def simplify_tensor(arg, **kwargs):
         contraction, letters_free = _get_einsum_string(ranks, indices)
         letters_free = "".join(sorted(letters_free))
         contraction = contraction + "->" + letters_free
-        result = oe.contract(contraction, *tensors, backend='object')
+        result = contract(contraction, *tensors)
         return result
     elif isinstance(arg, ArrayTensorProduct):
         tensors = [simplify_tensor(arg, **kwargs) for arg in arg.args]
@@ -116,7 +116,9 @@ def simplify_tensor(arg, **kwargs):
         return float(arg)
     elif isinstance(arg, sympy.core.numbers.ImaginaryUnit):
         return 1j
-    elif isinstance(arg, (float, sympy.Symbol, complex)):
+    elif isinstance(arg, sympy.Symbol):
+        return np.array([arg], dtype=object)
+    elif isinstance(arg, (float, complex)):
         return arg
     else:
         print(arg)
