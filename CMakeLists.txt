@@ -957,8 +957,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt @ONLY)
 
 if (SHERPA_ENABLE_UFO)
-  SET(SHERPA_CMAKE_CONFIG_DIR ${PROJECT_BINARY_DIR}/outputs/share/SHERPA-MC/)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/src/ufo_interface/parser.py.in ${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/src/ufo_interface/parser.py @ONLY)
+SET(SHERPA_CMAKE_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/share/SHERPA-MC/)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/src/ufo_interface/parser.py.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/src/ufo_interface/parser.py @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/bin/Sherpa-generate-model.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/bin/Sherpa-generate-model @ONLY)
 endif()
 install(EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC)
 
