@@ -30,8 +30,8 @@ PROCESSES:
     Loop_Generator:  Internal
 
 # speed and neg weight fraction improvements
-NLO_CSS_PSMODE: 2
 MC@NLO:
+  PSMODE: 2
   RS_SCALE: METS{H_Tp2/4}
 
 SELECTORS:

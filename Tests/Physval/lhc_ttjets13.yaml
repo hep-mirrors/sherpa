@@ -31,8 +31,8 @@ PARTICLE_DATA:
   6: {Width: 0}
 
 # speed and neg weight fraction improvements
-NLO_CSS_PSMODE: 2
 MC@NLO:
+  PSMODE: 2
   RS_SCALE: METS{H_TM2/4}
 
 # on-the-fly variations

@@ -89,14 +89,15 @@ DIS_KFactor::DIS_KFactor
   KFactor_Setter_Base(args), p_fsmc(NULL)
 {
   Settings& s = Settings::GetMainSettings();
+  auto pss = s["SHOWER"];
   if (s_pdf==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
-    s_pdfmin[0] = s["CSS_PDF_MIN"].Get<double>();
-    s_pdfmin[1] = s["CSS_PDF_MIN_X"].Get<double>();
+    s_pdfmin[0] = pss["PDF_MIN"].Get<double>();
+    s_pdfmin[1] = pss["PDF_MIN_X"].Get<double>();
   }
-  m_k0sq[0] = s["CSS_FS_PT2MIN"].Get<double>();
-  m_k0sq[1] = s["CSS_IS_PT2MIN"].Get<double>();
+  m_k0sq[0] = pss["FS_PT2MIN"].Get<double>();
+  m_k0sq[1] = pss["IS_PT2MIN"].Get<double>();
   m_fomode = s["DISNNLO_FOMODE"].SetDefault(0).Get<int>();
   m_M2=sqr(Flavour(2212).Mass());
   int beam1(p_proc->Flavours()[0].Kfcode());

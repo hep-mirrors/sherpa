@@ -142,7 +142,7 @@ If the final state of your hard scattering process contains QCD
 partons, their kinematics fix the resummation scale for subsequent
 emissions (cf. the description of the :option:`METS` scale setter
 below).  With the CS Shower, you can instead specify your own
-resummation scale also in such a case: Set ``CSS_RESPECT_Q2: true``
+resummation scale also in such a case: Set ``SHOWER:RESPECT_Q2: true``
 and use the third argument to specify your resummation scale as above.
 
 .. note::

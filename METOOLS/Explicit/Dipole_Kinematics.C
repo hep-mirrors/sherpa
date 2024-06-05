@@ -181,9 +181,9 @@ void Dipole_Kinematics::CheckKT2Min()
   static double kt2c[2];
   static bool didsetkt2c{ false };
   if (!didsetkt2c) {
-    Settings& s = Settings::GetMainSettings();
-    kt2c[0] = s["CSS_FS_PT2MIN"].Get<double>();
-    kt2c[1] = s["CSS_IS_PT2MIN"].Get<double>();
+    auto pss = Settings::GetMainSettings()["SHOWER"];
+    kt2c[0] = pss["FS_PT2MIN"].Get<double>();
+    kt2c[1] = pss["IS_PT2MIN"].Get<double>();
     didsetkt2c = true;
   }
   if (m_kt2<kt2c[m_type&1]) m_a=1.0;

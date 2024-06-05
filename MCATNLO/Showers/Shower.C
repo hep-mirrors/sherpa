@@ -19,35 +19,36 @@ using namespace std;
 Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
-  Settings& s = Settings::GetMainSettings();
-  const int evol{ s["CSS_EVOLUTION_SCHEME"].Get<int>() };
-  const int kfmode{ s["CSS_KFACTOR_SCHEME"].Get<int>() };
-  const int scs{ s["CSS_SCALE_SCHEME"].Get<int>() };
-  const double k0sqf{ s["CSS_FS_PT2MIN"].Get<double>() };
-  const double k0sqi{ s["CSS_IS_PT2MIN"].Get<double>() };
-  const double gsplit_fac{ s["CSS_PT2MIN_GSPLIT_FACTOR"].Get<double>() };
-  const double fs_as_fac{ s["CSS_FS_AS_FAC"].Get<double>() };
-  const double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
-  const double is_pdf_fac{ s["CSS_PDF_FAC"].Get<double>() };
-  const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
-  m_reweight = s["CSS_REWEIGHT"].Get<bool>();
-  m_maxreweightfactor = s["CSS_MAX_REWEIGHT_FACTOR"].Get<double>();
-  m_kscheme = s["NLO_CSS_KIN_SCHEME"].Get<int>();
+  auto pss = Settings::GetMainSettings()["SHOWER"];
+  auto nlopss = Settings::GetMainSettings()["MC@NLO"];
+  const int evol{ pss["EVOLUTION_SCHEME"].Get<int>() };
+  const int kfmode{ pss["KFACTOR_SCHEME"].Get<int>() };
+  const int scs{ pss["SCALE_SCHEME"].Get<int>() };
+  const double k0sqf{ pss["FS_PT2MIN"].Get<double>() };
+  const double k0sqi{ pss["IS_PT2MIN"].Get<double>() };
+  const double gsplit_fac{ pss["PT2MIN_GSPLIT_FACTOR"].Get<double>() };
+  const double fs_as_fac{ pss["FS_AS_FAC"].Get<double>() };
+  const double is_as_fac{ pss["IS_AS_FAC"].Get<double>() };
+  const double is_pdf_fac{ pss["PDF_FAC"].Get<double>() };
+  const double mth{ pss["MASS_THRESHOLD"].Get<double>() };
+  m_reweight = pss["REWEIGHT"].Get<bool>();
+  m_maxreweightfactor = pss["MAX_REWEIGHT_FACTOR"].Get<double>();
+  m_kscheme = nlopss["KIN_SCHEME"].Get<int>();
   std::vector<size_t> disallowflavs{
-    s["NLO_CSS_DISALLOW_FLAVOUR"].GetVector<size_t>() };
+    nlopss["DISALLOW_FLAVOUR"].GetVector<size_t>() };
   m_sudakov.SetShower(this);
   m_sudakov.SetMassThreshold(mth);
   m_sudakov.SetScaleScheme(scs);
   m_sudakov.SetFacScaleFactor(is_pdf_fac);
   std::pair<double, double> pdfmin;
-  pdfmin.first = s["CSS_PDF_MIN"].Get<double>();
-  pdfmin.second = s["CSS_PDF_MIN_X"].Get<double>();
+  pdfmin.first = pss["PDF_MIN"].Get<double>();
+  pdfmin.second = pss["PDF_MIN_X"].Get<double>();
   m_sudakov.SetPDFMin(pdfmin);
   m_sudakov.SetDisallowFlavour(disallowflavs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac,gsplit_fac);
   m_sudakov.SetReweightScaleCutoff(
-      s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>());
+      pss["REWEIGHT_SCALE_CUTOFF"].Get<double>());
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);

@@ -69,12 +69,12 @@ u-, d- and s-quarks are to be treated as massless.
 Sherpa Shower options
 =====================
 
-.. index:: CSS_KIN_SCHEME
-.. index:: CSS_IS_PT2MIN
-.. index:: CSS_FS_PT2MIN
-.. index:: CSS_IS_AS_FAC
-.. index:: CSS_FS_AS_FAC
-.. index:: CSS_MAXEM
+.. index:: KIN_SCHEME
+.. index:: IS_PT2MIN
+.. index:: FS_PT2MIN
+.. index:: IS_AS_FAC
+.. index:: FS_AS_FAC
+.. index:: MAXEM
 
 Sherpa's default shower module is based on :cite:`Schumann2007mg`.  A
 new ordering parameter for initial state splitters was introduced in
@@ -82,18 +82,18 @@ new ordering parameter for initial state splitters was introduced in
 splittings was proposed in :cite:`Hoeche2009xc`.  While the ordering
 variable is fixed, the recoil strategy for dipoles with initial-state
 emitter and final-state spectator can be changed for systematics
-studies. Setting :option:`CSS_KIN_SCHEME: 0` corresponds to using the
+studies. Setting :option:`SHOWER:KIN_SCHEME: 0` corresponds to using the
 recoil scheme proposed in :cite:`Hoeche2009xc`, while
-:option:`CSS_KIN_SCHEME: 1` (default) enables the original recoil
+:option:`SHOWER:KIN_SCHEME: 1` (default) enables the original recoil
 strategy.  The lower cutoff of the shower evolution can be set via
-:option:`CSS_FS_PT2MIN` and :option:`CSS_IS_PT2MIN` for final and
+:option:`SHOWER:FS_PT2MIN` and :option:`SHOWER:IS_PT2MIN` for final and
 initial state shower, respectively.  Note that this value is specified
 in GeV^2. Scale factors for the evaluation of the strong coupling in
-the parton shower are given by :option:`CSS_FS_AS_FAC` and
-:option:`CSS_IS_AS_FAC`. They multiply the ordering parameter, which
+the parton shower are given by :option:`SHOWER:FS_AS_FAC` and
+:option:`SHOWER:IS_AS_FAC`. They multiply the ordering parameter, which
 is given in units of GeV^2.
 
-Setting :option:`CSS_MAXEM: <N>` forces the CS Shower to truncate its
+Setting :option:`SHOWER:MAXEM: <N>` forces the CS Shower to truncate its
 evolution at the Nth emission. Note that in this case not all of the
 Sudakov weights might be computed correctly. On the other hand, the
 use of CS Shower in the METS scale setter is not affected,
@@ -106,26 +106,45 @@ See :ref:`On-the-fly event weight variations`
 to find out how specify the variations
 and enable them in the shower.
 
+Most parton showers available in Sherpa allow the same options.
+These options are specified as follows:
+
+.. code-block:: yaml
+
+   SHOWER:
+     KIN_SCHEME: <scheme>
+     IS_AS_FAC: <factor>
+     # other shower settings ...
+
+When the parton shower is used for MC@NLO matching, the options
+can be set differently. They are then specified as follows:
+
+.. code-block:: yaml
+
+   MC@NLO:
+     IS_AS_FAC: <factor>
+     # other shower settings ...
+
 .. _CS Shower options:
 
 CS Shower options
 =================
 
-.. index:: CSS_EW_MODE
-.. index:: CSS_MASS_THRESHOLD
-.. index:: CSS_EVOLUTION_SCHEME
-.. index:: CSS_SCALE_SCHEME
+.. index:: EW_MODE
+.. index:: MASS_THRESHOLD
+.. index:: EVOLUTION_SCHEME
+.. index:: SCALE_SCHEME
 
 By default, only QCD splitting functions are enabled in the CS shower.
 If you also want to allow for photon splittings, you can enable them
-by using :option:`CSS_EW_MODE: true`. Note, that if you have leptons
+by using :option:`SHOWER:EW_MODE: true`. Note, that if you have leptons
 in your matrix-element final state, they are by default treated by a
 soft photon resummation as explained in :ref:`QED Corrections`. To
 avoid double counting, this has to be disabled as explained in that
 section.
 
 The evolution variable of the CS shower can be changed using
-:option:`CSS_EVOLUTION_SCHEME`. Several options are currently implemented:
+:option:`SHOWER:EVOLUTION_SCHEME`. Several options are currently implemented:
 
 :option:`0`
   transverse momentum ordering
@@ -150,7 +169,7 @@ The two values are combined as `FS+100*IS`, where `FS` is the choice
 for the final state, and `IS` is the choice for the initial state.
 The scale at which the strong coupling for shower splittings
 is evaluated can be chosen with
-:option:`CSS_SCALE_SCHEME`:
+:option:`SHOWER:SCALE_SCHEME`:
 
 The default is to evaluate the strong coupling at the transverse momentum
 in the parton splitting. Gluon splittings into quarks in the final state
@@ -172,4 +191,4 @@ a soft t-channel gluon in the initial state. Options are additive.
 Additionally,
 the CS shower allows to disable splittings at scales below the
 on-shell mass of heavy quarks. The upper limit for the corresponding
-heavy quark mass is set using :option:`CSS_MASS_THRESHOLD`.
+heavy quark mass is set using :option:`SHOWER:MASS_THRESHOLD`.

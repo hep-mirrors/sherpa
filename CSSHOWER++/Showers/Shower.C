@@ -19,35 +19,35 @@ using namespace std;
 Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
     : p_actual(NULL), m_sudakov(isr, qcd, qed), p_isr(isr)
 {
-  Settings& s = Settings::GetMainSettings();
-  const int evol{ s["CSS_EVOLUTION_SCHEME"].Get<int>() };
-  int kfmode{ s["CSS_KFACTOR_SCHEME"].Get<int>() };
-  const int scs{ s["CSS_SCALE_SCHEME"].Get<int>() };
-  double k0sqf{ s["CSS_FS_PT2MIN"].Get<double>() };
-  double k0sqi{ s["CSS_IS_PT2MIN"].Get<double>() };
-  double gsplit_fac{ s["CSS_PT2MIN_GSPLIT_FACTOR"].Get<double>() };
-  double fs_as_fac{ s["CSS_FS_AS_FAC"].Get<double>() };
-  double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
-  double is_pdf_fac{ s["CSS_PDF_FAC"].Get<double>() };
-  const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
-  bool   forced_decays{ s["CSS_FORCED_DECAYS"].Get<bool>() };
-  double forced_decays_gluon_scaling{ s["CSS_FORCED_GLUON_SCALING"].Get<double>() };
-  m_reweight          = s["CSS_REWEIGHT"].Get<bool>();
-  m_maxreweightfactor = s["CSS_MAX_REWEIGHT_FACTOR"].Get<double>();
-  m_kscheme           = s["CSS_KIN_SCHEME"].Get<int>();
-  m_recdec            = s["CSS_RECO_DECAYS"].Get<int>();
-  m_maxpart           = s["CSS_MAXPART"].Get<int>();
+  auto pss = Settings::GetMainSettings()["SHOWER"];
+  const int evol{ pss["EVOLUTION_SCHEME"].Get<int>() };
+  int kfmode{ pss["KFACTOR_SCHEME"].Get<int>() };
+  const int scs{ pss["SCALE_SCHEME"].Get<int>() };
+  double k0sqf{ pss["FS_PT2MIN"].Get<double>() };
+  double k0sqi{ pss["IS_PT2MIN"].Get<double>() };
+  double gsplit_fac{ pss["PT2MIN_GSPLIT_FACTOR"].Get<double>() };
+  double fs_as_fac{ pss["FS_AS_FAC"].Get<double>() };
+  double is_as_fac{ pss["IS_AS_FAC"].Get<double>() };
+  double is_pdf_fac{ pss["PDF_FAC"].Get<double>() };
+  const double mth{ pss["MASS_THRESHOLD"].Get<double>() };
+  bool   forced_decays{ pss["FORCED_DECAYS"].Get<bool>() };
+  double forced_decays_gluon_scaling{ pss["FORCED_GLUON_SCALING"].Get<double>() };
+  m_reweight          = pss["REWEIGHT"].Get<bool>();
+  m_maxreweightfactor = pss["MAX_REWEIGHT_FACTOR"].Get<double>();
+  m_kscheme           = pss["KIN_SCHEME"].Get<int>();
+  m_recdec            = pss["RECO_DECAYS"].Get<int>();
+  m_maxpart           = pss["MAXPART"].Get<int>();
   if (type) {
-    kfmode=s["MI_CSS_KFACTOR_SCHEME"].Get<int>();
-    k0sqf=s["MI_CSS_FS_PT2MIN"].Get<double>();
-    k0sqi=s["MI_CSS_IS_PT2MIN"].Get<double>();
-    gsplit_fac=s["MI_CSS_PT2MIN_GSPLIT_FACTOR"].Get<double>();
-    fs_as_fac=s["MI_CSS_FS_AS_FAC"].Get<double>();
-    is_as_fac=s["MI_CSS_IS_AS_FAC"].Get<double>();
-    m_kscheme = s["MI_CSS_KIN_SCHEME"].Get<int>();
+    kfmode=pss["MI_KFACTOR_SCHEME"].Get<int>();
+    k0sqf=pss["MI_FS_PT2MIN"].Get<double>();
+    k0sqi=pss["MI_IS_PT2MIN"].Get<double>();
+    gsplit_fac=pss["MI_PT2MIN_GSPLIT_FACTOR"].Get<double>();
+    fs_as_fac=pss["MI_FS_AS_FAC"].Get<double>();
+    is_as_fac=pss["MI_IS_AS_FAC"].Get<double>();
+    m_kscheme = pss["MI_KIN_SCHEME"].Get<int>();
   }
   std::vector<std::vector<std::string> > helpsvv{
-    s["CSS_ENHANCE"].GetMatrix<std::string>() };
+    pss["ENHANCE"].GetMatrix<std::string>() };
   m_efac.clear();
   for (size_t i(0);i<helpsvv.size();++i)
     if (helpsvv[i].size()==2) {
@@ -58,13 +58,13 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_sudakov.SetScaleScheme(scs);
   m_sudakov.SetFacScaleFactor(is_pdf_fac);
   std::pair<double, double> pdfmin;
-  pdfmin.first = s["CSS_PDF_MIN"].Get<double>();
-  pdfmin.second = s["CSS_PDF_MIN_X"].Get<double>();
+  pdfmin.first = pss["PDF_MIN"].Get<double>();
+  pdfmin.second = pss["PDF_MIN_X"].Get<double>();
   m_sudakov.SetPDFMin(pdfmin);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac,gsplit_fac);
   m_sudakov.SetReweightScaleCutoff(
-      s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>());
+      pss["REWEIGHT_SCALE_CUTOFF"].Get<double>());
   m_sudakov.SetForcedHQDecays(forced_decays,forced_decays_gluon_scaling);
   m_kinFF.SetEvolScheme(evol-100*(evol/100));
   m_kinFI.SetEvolScheme(evol-100*(evol/100));

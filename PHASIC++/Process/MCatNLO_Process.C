@@ -108,7 +108,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
-  m_psmode   = Settings::GetMainSettings()["NLO_CSS_PSMODE"].Get<int>();
+  m_psmode   = s["PSMODE"].Get<int>();
   m_hpsmode  = s["HPSMODE"].Get<int>();
   if (m_hpsmode == -1) {
     if (m_pinfo.m_ckkw&1) m_hpsmode=0;

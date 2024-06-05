@@ -115,11 +115,11 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 			 const double &isfac,const double &fsfac)
 {
   // obtain global variables
-  Settings& s = Settings::GetMainSettings();
+  auto pss = Settings::GetMainSettings()["SHOWER"];
   MODEL::Running_AlphaS * cpl = (MODEL::Running_AlphaS *)(md->GetScalarFunction("alpha_S"));
   double rsf = ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-  rsf *= s["CSS_SCALE_FACTOR"].Get<double>();
-  m_scvmode = s["CSS_SCALE_VARIATION_SCHEME"].Get<int>();
+  rsf *= pss["SCALE_FACTOR"].Get<double>();
+  m_scvmode = pss["SCALE_VARIATION_SCHEME"].Get<int>();
 
   // determine prefactors before calling CplMax below
   m_cplfac=((m_type/10==1)?fsfac:isfac);

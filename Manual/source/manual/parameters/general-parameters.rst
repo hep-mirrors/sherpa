@@ -758,7 +758,7 @@ or explicitly, see below),
 you will find ``ME.MUR``/``ME.MUF`` tags instead of the simple ones
 to make explicit that the parton-shower scales are not varied with the ME scales.
 
-If parton-shower variations are enabled, ``CSS_REWEIGHT: true``
+If parton-shower variations are enabled, ``SHOWER:REWEIGHT: true``
 (the default if parton showering is enabled),
 then pure ME-only variations are included along with the full variations in the
 HepMC/Rivet output by default. This can be disabled using
@@ -834,20 +834,20 @@ only the UV renormalisation term pole coefficient is considered in the scale var
 Parton shower emissions
 ```````````````````````
 
-.. index:: CSS_REWEIGHT
-.. index:: CSS_REWEIGHT_SCALE_CUTOFF
-.. index:: CSS_MAX_REWEIGHT_FACTOR
+.. index:: REWEIGHT
+.. index:: REWEIGHT_SCALE_CUTOFF
+.. index:: MAX_REWEIGHT_FACTOR
 
 By default, the reweighting of parton shower emissions is included in the variations.
 It can be disabled explicitly,
-using :option:`CSS_REWEIGHT: false`.  This should work out of the box for all
+using :option:`SHOWER:REWEIGHT: false`.  This should work out of the box for all
 types of variations. However, parton-shower reweighting (even though formally
 exact), tends to be numerically less stable than the reweighting of the hard
 process. If numerical issues are encountered, one can try to
-increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 5, measured in GeV).
+increase :option:`SHOWER:REWEIGHT_SCALE_CUTOFF` (default: 5, measured in GeV).
 This disables shower variations for emissions at scales below the value.
 An additional safeguard against rare spuriously large shower variation
-weights is implemented as :option:`CSS_MAX_REWEIGHT_FACTOR` (default: 1e3).
+weights is implemented as :option:`SHOWER:MAX_REWEIGHT_FACTOR` (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
 will be ignored and reset to 1.
 

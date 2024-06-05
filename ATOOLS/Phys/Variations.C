@@ -156,7 +156,7 @@ void Variations::ReadDefaults()
   Settings& s = Settings::GetMainSettings();
   m_includecentralvaluevariation =
     s["VARIATIONS_INCLUDE_CV"].SetDefault(false).Get<bool>();
-  const bool cssreweight = s["CSS_REWEIGHT"].Get<bool>();
+  const bool cssreweight = s["SHOWER"]["REWEIGHT"].Get<bool>();
   m_reweightsplittingalphasscales =
     s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(cssreweight).Get<bool>();
   m_reweightsplittingpdfsscales =

@@ -22,8 +22,8 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   m_ewmode=qed;
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
-  Settings& s = Settings::GetMainSettings();
-  m_scalescheme = s["CSS_SCALE_SCHEME"].Get<int>();
+  auto pss = Settings::GetMainSettings()["SHOWER"];
+  m_scalescheme = pss["SCALE_SCHEME"].Get<int>();
 }
 
 Sudakov::~Sudakov() 

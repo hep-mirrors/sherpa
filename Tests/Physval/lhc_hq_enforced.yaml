@@ -18,8 +18,9 @@ PROCESSES:
     Order: {QCD: 0, EW: 2}
     ME_Generator: Comix
 
-CSS_EW_MODE: 0
-CSS_FORCED_DECAYS: true
+SHOWER:
+  EW_MODE: 0
+  FORCED_DECAYS: true
 
 YFS:
   MODE: 0

@@ -130,7 +130,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     s_allowuo=s["ALLOW_SCALE_UNORDERING"].GetScalarWithOtherDefault<int>(0);
     s_uoscale=s["UNORDERED_SCALE"].GetScalarWithOtherDefault<std::string>("None");
     s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
-    s_kfac = Settings::GetMainSettings()["CSS_KFACTOR_SCHEME"].Get<int>();
+    s_kfac = Settings::GetMainSettings()["SHOWER"]["KFACTOR_SCHEME"].Get<int>();
   }
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core(s_core), uoscale(s_uoscale);
