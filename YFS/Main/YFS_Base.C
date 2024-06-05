@@ -31,9 +31,8 @@ YFS_Base::~YFS_Base()
 void YFS_Base::RegisterDefaults(){
   m_s = sqr(rpa->gen.Ecms());
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
-  s["ISR_MODE"].SetDefault(0);
-  s["BETA"].SetDefault(3);
-  s["SEMI"].SetDefault(0);
+  s["MODE"].ResetDefault().SetDefault(yfsmode::off);
+  s["BETA"].SetDefault(2);
   s["VMAX"].SetDefault(0);
   s["IR_CUTOFF"].ResetDefault().SetDefault(1e-4);
   s["DELTA"].SetDefault(1e-2);
@@ -87,9 +86,7 @@ void YFS_Base::RegisterDefaults(){
   s["IFI_Sub"].SetDefault(0);
   s["Massless_Sub"].SetDefault(0);
   s["Check_Real_Sub"].SetDefault(0);
-  s["Check_RR_Sub"].SetDefault(0);
-  s["Min_Photon_Energy"].SetDefault(0);
-  s["Integrate_NLO"].SetDefault(0);
+  s["Integrate_NLO"].SetDefault(1);
 }
 
 void YFS_Base::RegisterSettings(){
