@@ -130,6 +130,7 @@ void SMEHC::ParticleInit()
   s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.1876,.0,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
   s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.379,.0,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
   s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.09,.0,0.0041,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
+  s_kftable[kf_shgluon] = new Particle_Info(kf_shgluon,0.0,.0,0.0,0,8,2,-1,1,1,0,"GS","GS","G_{S}","G_{S}",1);
   s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
   ReadParticleData();
 }
@@ -678,7 +679,10 @@ void SMEHC::InitEWVertices()
     for (short int i=1;i<17;++i) {
       if (i==7) i=11;
       Flavour flav((kf_code)i);
-      if (!flav.IsOn() || flav.Yuk()==0.0) continue;
+      if (!flav.IsOn() || flav.Yuk()==0.0) {
+	p_complexconstants->insert(make_pair("yuk("+ToString(i)+")",0.));
+	continue;
+      }
       double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
 	ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));
       Kabbala M;
@@ -686,6 +690,8 @@ void SMEHC::InitEWVertices()
         M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",
 		  sqrt(m*m-Complex(0.0,m*flav.Width())));
       else M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",m);
+      p_complexconstants->insert
+	(make_pair("yuk("+ToString(i)+")",M.Value()));
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle(flav.Bar());
       m_v.back().AddParticle(flav);
