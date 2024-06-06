@@ -379,7 +379,7 @@ double Dipole::Beta1(const Vec4D &k){
   else if(Type()==dipoletype::final) {
     // if(m_betaorder==2) b1 = Hard(k)*(1+0.5*deli-0.25*deli)*(1+delf)-Eikonal(k);
     if(m_betaorder==2) b1 = Hard(k)*(1+deli)-Eikonal(k)*(1.+deli)*(1+delf);
-    else if(m_betaorder==3) b1 = (1+deli+0.5*deli*deli)*(Hard(k)-Eikonal(k)*(1+delf+0.5*delf*delf)*(1+deli+0.5*deli*deli));
+    else if(m_betaorder==3) b1 = Hard(k)*(1+deli+0.5*deli*deli)-Eikonal(k)*(1+delf+0.5*delf*delf)*(1+deli+0.5*deli*deli);
     else b1 = (Hard(k)-Eikonal(k))*(1+deli);
   }
   else{
@@ -391,7 +391,7 @@ double Dipole::Beta1(const Vec4D &k){
 double Dipole::Beta2(const Vec4D &k1, const Vec4D &k2){
   double eik1 = Eikonal(k1);
   double eik2 = Eikonal(k2);
-  m_betaorder-=1;
+  // m_betaorder-=1;
   return Hard(k1,k2)
                 -eik1*(Beta1(k2))
                 -eik2*(Beta1(k1))
@@ -409,28 +409,28 @@ double Dipole::Beta3(const Vec4D &k1, const Vec4D &k2, const Vec4D &k3){
   else del = delf;
   //reset the order to calculate 
   // one order lower
-  b3+=Hard(k1,k2,k3);
-  b3+=-eik2*eik3*Beta1(k1);
-  m_betaorder=3;
-  b3+=-eik1*eik3*Beta1(k2);
-  m_betaorder=3;
-  b3+=-eik1*eik2*Beta1(k3);
-  m_betaorder=2;
-  b3+=-eik1*Beta2(k3,k2);
-  m_betaorder=2;
-  b3+=-eik2*Beta2(k3,k1);
-  m_betaorder=2;
-  b3+=-eik3*Beta2(k1,k2);
-  b3+=-eik1*eik2*eik3;
-  return b3;
-  // return Hard(k1,k2,k3)
-  //               -eik2*eik3*Beta1(k1)
-  //               -eik1*eik3*Beta1(k2)
-  //               -eik1*eik2*Beta1(k3)
-  //               -eik1*Beta2(k3,k2)
-  //               -eik2*Beta2(k3,k1)
-  //               -eik3*Beta2(k1,k2)
-  //               -eik1*eik2*eik3;
+  // b3+=Hard(k1,k2,k3);
+  // b3+=-eik2*eik3*Beta1(k1);
+  // // m_betaorder=2;
+  // b3+=-eik1*eik3*Beta1(k2);
+  // // m_betaorder=2;
+  // b3+=-eik1*eik2*Beta1(k3);
+  // // m_betaorder=3;
+  // b3+=-eik1*Beta2(k3,k2);
+  // m_betaorder=3;
+  // b3+=-eik2*Beta2(k3,k1);
+  // m_betaorder=3;
+  // b3+=-eik3*Beta2(k1,k2);
+  // b3+=-eik1*eik2*eik3;
+  // return b3;
+  return Hard(k1,k2,k3)
+                -eik2*eik3*Beta1(k1)
+                -eik1*eik3*Beta1(k2)
+                -eik1*eik2*Beta1(k3)
+                -eik1*Beta2(k3,k2)
+                -eik2*Beta2(k3,k1)
+                -eik3*Beta2(k1,k2)
+                -eik1*eik2*eik3;
 }
 
 double Dipole::VirtualEEX(const int betaorder){
@@ -449,8 +449,8 @@ double Dipole::Hard(const Vec4D &k){
   double delta = 0;
   if (Type() == dipoletype::initial) {
     double z = (1-a)*(1-b);
-    if(m_betaorder==2){
-      delta = 0.5*m_gamma
+    if(m_betaorder>=2){
+      delta += 0.5*m_gamma
               +m_alpi*(log(a)*log(1-b)+log(b)*log(1-a)
                       +DiLog(a) + DiLog(b)
                       -0.5*sqr(log(1-a))-0.5*sqr(log(1-b))
@@ -458,16 +458,16 @@ double Dipole::Hard(const Vec4D &k){
                       +0.5*a*(1-a)/(1+sqr(1-a))
                       +0.5*b*(1-b)/(1+sqr(1-b)));
     }
-    else if(m_betaorder==3){
-      delta = 0.125*sqr(m_gamma)*(1-log(z))
+    if(m_betaorder>=3){
+      delta += 0.125*sqr(m_gamma)*(1-log(z))
              +sqr(m_gamma)/24 *sqr(log(z));
     } 
     return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b))*(1+delta);
   }
   else if (Type() == dipoletype::final) {
     double z = (1-ap)*(1-bp);
-    if(m_betaorder==2){
-      delta = 0.5*m_gamma+0.25*m_gamma*log(z);
+    if(m_betaorder>=2){
+      delta += 0.5*m_gamma+0.25*m_gamma*log(z);
     }
     return 0.5*Eikonal(k)*(sqr(1-ap)+sqr(1-bp))*(1+delta);
   }
@@ -566,7 +566,7 @@ double Dipole::Hard(const Vec4D &k1, const Vec4D &k2, const Vec4D &k3){
   double bp3 = b3/(1-b1-b2);
   
   double v1 = a1+b1;
-  double v2 = a1+b1;
+  double v2 = a2+b2;
   double hard;
   if (Type() == dipoletype::initial) {
     if(v1 > v2){

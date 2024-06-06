@@ -434,13 +434,13 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
  	p[0] = {E1, 0, 0, sign_z*lamCM};
   p[1] = {E2, 0, 0, -sign_z*lamCM};
-  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 1., 0.));
+  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0, 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		// pRot2.Rotate(p[i]);
+		pRot2.Rotate(p[i]);
 		boostLab.Boost(p[i]);
 	}
-	// pRot2.Rotate(k);
+	pRot2.Rotate(k);
 	boostLab.Boost(k);
 }
 
