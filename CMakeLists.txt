@@ -615,8 +615,6 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*EXTAMP/Example*" EXCLUDE
                              PATTERN "*MODEL/AQGC*" EXCLUDE
                              PATTERN "*MODEL/MUED*" EXCLUDE
-                             PATTERN "*MODEL/SM/*" EXCLUDE
-                             PATTERN "*MODEL/SM" EXCLUDE
                              PATTERN "*MODEL/SMDM*" EXCLUDE
                              PATTERN "*MODEL/SMGold*" EXCLUDE
                              PATTERN "*MODEL/TauPi*" EXCLUDE
