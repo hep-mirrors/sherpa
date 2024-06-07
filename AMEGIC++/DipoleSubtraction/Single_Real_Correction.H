@@ -1,6 +1,7 @@
 #ifndef AMEGIC_DipoleSubtraction_Single_Real_Correction_H
 #define AMEGIC_DipoleSubtraction_Single_Real_Correction_H
 
+#include "ATOOLS/Phys/Recoil_Definition.H"
 #include "AMEGIC++/Main/Process_Base.H"
 
 #include "AMEGIC++/DipoleSubtraction/Single_DipoleTerm.H"
@@ -33,6 +34,7 @@ namespace AMEGIC {
     ATOOLS::sbt::subtype    m_user_stype;
     size_t                  m_pspisrecscheme,m_pspfsrecscheme;
 
+    ATOOLS::Recoil_Definition  * p_recoil;
     Single_Real_Correction     * p_partner;
 
     Process_Base          * p_tree_process;
@@ -60,7 +62,7 @@ namespace AMEGIC {
 
     Single_Real_Correction();
     ~Single_Real_Correction();
- 
+
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     bool Combinable(const size_t &idi,const size_t &idj);
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
@@ -84,8 +86,8 @@ namespace AMEGIC {
 				      std::vector<Process_Base *> &);
     bool                SetUpIntegrator();
     Amplitude_Handler * GetAmplitudeHandler()          { return p_tree_process->GetAmplitudeHandler();}
-    Helicity *          GetHelicity()                  { return p_tree_process->GetHelicity(); }    
-    double              Result()                       { return m_iresult; } 
+    Helicity *          GetHelicity()                  { return p_tree_process->GetHelicity(); }
+    double              Result()                       { return m_iresult; }
 
     /*------------------------------------------------------------------------------
 
@@ -112,7 +114,7 @@ namespace AMEGIC {
 
     int Type() { return 100; }
 
-    inline void SetNoTree(const int notree) { m_no_tree=notree; }    
+    inline void SetNoTree(const int notree) { m_no_tree=notree; }
     /*------------------------------------------------------------------------------
 
       Calculating total cross sections
@@ -139,12 +141,12 @@ namespace AMEGIC {
    /*------------------------------------------------------------------------------
 
       Helpers
-      
+
       ------------------------------------------------------------------------------*/
   public:
-    void           PrintProcessSummary(int=0); 
+    void           PrintProcessSummary(int=0);
     void           PrintSubevtSummary();
-    size_t         NumberOfDipoles() {return m_subtermlist.size();} 
+    size_t         NumberOfDipoles() {return m_subtermlist.size();}
     Process_Base *GetReal();
 
   };

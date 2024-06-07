@@ -31,6 +31,9 @@ int PHASIC::ClusterAntenna
   ffp.m_y=(pi*pj)/(pi*n);
   ffp.m_pk=pk;
   ffp.m_pj=pj;
+  ffp.m_pi=pi;
+  ffp.m_n=n;
+  ffp.m_K=K;
   Vec4D Kt(K-ffp.m_pijt+pi+pj);
   Poincare oldcm, newcm;
   if (ffp.m_mode&2) {

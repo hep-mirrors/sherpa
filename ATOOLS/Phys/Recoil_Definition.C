@@ -31,11 +31,12 @@ namespace ATOOLS {
 
     std::vector<int> RecoilTags(const Cluster_Amplitude *ampl)
     {
+      if (!ampl) return std::vector<int>(4);
       std::vector<int> tags(ampl->Legs().size(),0);
-      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) tags[i]=3;
+      for (size_t i(2);i<ampl->Legs().size();++i) tags[i]=3;
       return tags;
     }
-    
+
   };// end of class Recoil_FinalState
 
   class Recoil_EWFinalState: public Recoil_Definition {
@@ -56,7 +57,7 @@ namespace ATOOLS {
 	if (!ampl->Leg(i)->Flav().Strong()) tags[i]=3;
       return tags;
     }
-    
+
   };// end of class Recoil_EWFinalState
 
 }

@@ -114,6 +114,8 @@ double DipoleSplitting_Base::GetR(const Vec4D* mom,const Vec4D* LOmom)
 
 bool DipoleSplitting_Base::Reject(const double &alpha)
 {
+  // m_alpha needs to be changed to a higher value
+  return false;
   if (IsBad(m_av))
     msg_Error()<<METHOD<<"(): Average is "<<m_av<<" in "
 	       <<Demangle(typeid(*this).name())
