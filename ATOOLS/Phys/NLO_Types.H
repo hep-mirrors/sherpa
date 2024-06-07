@@ -183,7 +183,8 @@ namespace ATOOLS {
     enum code {
       CS        = 0,
       Dire      = 1,
-      CSS       = 2
+      CSS       = 2,
+      Alaric    = 3
     };
   };// end of struct subtraction_variant
 

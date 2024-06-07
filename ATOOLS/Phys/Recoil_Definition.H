@@ -17,7 +17,7 @@ namespace ATOOLS {
 
     virtual std::vector<int> RecoilTags
     (const Cluster_Amplitude *ampl) = 0;
-    
+
   };// end of class Recoil_Definition
 
   typedef ATOOLS::Getter_Function

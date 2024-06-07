@@ -1,6 +1,7 @@
 #ifndef AMEGIC_DipoleSubtraction_Single_DipoleTerm_H
 #define AMEGIC_DipoleSubtraction_Single_DipoleTerm_H
 
+#include "ATOOLS/Phys/Recoil_Definition.H"
 #include "AMEGIC++/DipoleSubtraction/Single_LOProcess.H"
 
 #include "AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.H"
@@ -25,6 +26,8 @@ namespace AMEGIC {
     Single_LOProcess      * p_LO_process;
     ATOOLS::Vec4D         * p_LO_mom;
     ATOOLS::Vec4D_Vector    p_LO_labmom;
+
+    ATOOLS::Recoil_Definition * p_recoil;
 
     ATOOLS::sbt::subtype        m_stype;
     ATOOLS::dpt::dipoletype     m_dtype;
@@ -92,8 +95,8 @@ namespace AMEGIC {
     bool                Trigger(const ATOOLS::Vec4D_Vector &p);
     String_Handler    * GetStringHandler()             { return p_partner->GetLOProcess()->GetStringHandler();}
     Amplitude_Handler * GetAmplitudeHandler()          { return p_partner->GetLOProcess()->GetAmplitudeHandler();}
-    Helicity *          GetHelicity()                  { return p_partner->GetLOProcess()->GetHelicity(); }    
-    double              Result()                       { return m_iresult; } 
+    Helicity *          GetHelicity()                  { return p_partner->GetLOProcess()->GetHelicity(); }
+    double              Result()                       { return m_iresult; }
     bool                IsValid()                      { return m_valid; }
 //     Vec4D*              GetLOMomenta()                 { return m_LO_mom; }
 //     Flavour*            GetLOFlavs()                   { return m_LO_process->Flavour(); }
@@ -134,7 +137,8 @@ namespace AMEGIC {
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 
     void SetRealSubevt(ATOOLS::NLO_subevt *real) { m_subevt.p_real=real; }
-    
+    void SetRecoil(ATOOLS::Recoil_Definition* recoil) { p_recoil=recoil; }
+
     /*------------------------------------------------------------------------------
 
       Calculating total cross sections

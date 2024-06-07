@@ -1,10 +1,11 @@
 #include "AMEGIC++/DipoleSubtraction/FF_DipoleSplitting.H"
 #include "AMEGIC++/Main/ColorSC.H"
 
-#include "ATOOLS/Org/My_Limits.H"
-#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "PHASIC++/Channels/Antenna_Kinematics.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -31,6 +32,13 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pi = mom[m_i];
   m_pj = mom[m_j];
   m_pk = mom[m_k];
+  /* hack for ps point test*/
+  m_pi = mom[m_j];
+  m_pj = mom[m_i];
+  // end hack
+
+  if (m_subtype==subscheme::Alaric)
+    return SetMomentaAlaric(mom);
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
   m_a = m_yijk;
@@ -57,11 +65,11 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
 
   switch (m_ftype) {
   case spt::q2qg:
-    m_sff = 2./(1.-m_zi*(1.-m_yijk))-(1.+zi);
+    m_sff = 2./(1.-m_zi*(1.-m_yijk))-(1.+zi); //< CS eq. 5.7
     m_av  = m_sff;
     break;
   case spt::q2gq:
-    m_sff = 2./(1.-m_zj*(1.-m_yijk))-(1.+zj);
+    m_sff = 2./(1.-m_zj*(1.-m_yijk))-(1.+zj); //< CS eq. 5.7
     m_av  = m_sff;
     break;
   case spt::g2qq:
@@ -70,7 +78,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
     break;
   case spt::g2gg:
     m_sff = 1./(1.-m_zi*(1.-m_yijk))+1./(1.-m_zj*(1.-m_yijk))-2.;
-    m_av  = m_sff + ( zi*(1.-zi) + zj*(1.-zj) ) / 2.;
+    m_av  = m_sff + ( zi*(1.-zi) + zj*(1.-zj) ) / 2.; //< CS eq. 5.9
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -84,6 +92,71 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
         + ToString(m_ftype) + ".");
   }
   if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
+}
+
+void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
+  PHASIC::Ant_Args ff;
+  auto* ampl = Cluster_Amplitude::New();
+  for (int i = 0; i <= m_m; ++i) {
+    ff.m_p.push_back(mom[i]);
+    ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_fl[i].Bar():p_subevt->p_fl[i]);
+  }
+  ff.m_b=p_recoil->RecoilTags(ampl);
+  ampl->Delete();
+  PHASIC::ClusterAntenna(ff, m_j, m_i, m_k, 0.);
+  DEBUG_VAR(ff.m_p);
+
+  m_yijk = (m_pi*m_pk)/(m_pj*(m_pi+m_pk)); //< corresponds to v_{i,ab} in CS, eq. 5.169
+  m_a = m_yijk;
+  DEBUG_VAR(m_yijk);
+  DEBUG_VAR(m_pi[0]/m_pj[0]);
+  DEBUG_VAR(ff.m_z/(1.-ff.m_z));
+
+  m_ptk  = ff.m_p[m_k];
+  m_ptij = ff.m_pijt;
+
+  m_Q2 = (m_pi+m_pj+m_pk).Abs2();
+  // für Fixed_Order erstmal egal // wird mittels Getter gelöst, später
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
+                  m_Q2*m_yijk*m_zi*m_zj;
+
+  m_pt1   =     m_zi*m_pi-m_zj*m_pj;
+  m_pt2   =     m_ptij;
+
+  switch (m_ftype) {
+    case spt::q2qg:
+      m_sff = 2.*m_yijk/ff.m_z-(1.+ff.m_z); //< CS eq. 5.183
+      m_av  = m_sff;
+      break;
+    case spt::q2gq:
+      m_sff = 2.*m_yijk/ff.m_z-(1.+ff.m_z); //< CS eq. 5.183
+      m_av  = m_sff;
+      break;
+    case spt::g2qq:
+      m_sff = 1.; //< CS eq. 5.185
+      m_av  = m_sff - 4.*ff.m_z*(1.-ff.m_z);
+      break;
+    case spt::g2gg:
+      m_sff = m_yijk/ff.m_z-1.+(1.-ff.m_z)/ff.m_z; //< CS eq. 5.186
+      m_av  = m_sff + ff.m_z*(1-ff.m_z);
+      break;
+    case spt::none:
+      THROW(fatal_error, "Splitting type not set.");
+    case spt::s2sg:
+    case spt::s2gs:
+    case spt::G2Gg:
+    case spt::G2gG:
+    case spt::V2Vg:
+    case spt::V2gV:
+      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+                                 + ToString(m_ftype) + ".");
+  }
+  if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
+  m_mom = ff.m_p;
+  /* hack for ps point test*/
+  m_pi = m_mom[m_i];
+  m_pj = m_mom[m_j];
+  // end hack
 }
 
 double FF_DipoleSplitting::GetValue()
@@ -131,7 +204,7 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pi = mom[m_i];
   m_pj = mom[m_j];
   m_pk = mom[m_k];
-  
+
   m_Q = m_pi+m_pj+m_pk;
   m_Q2 = m_Q.Abs2();
 
@@ -160,7 +233,7 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
     2.0*m_pi*m_pj*m_zi*m_zj-sqr(m_zi)*m_mj2-sqr(m_zj)*m_mi2;
 
   m_vijk = Vrel(m_pi+m_pj,m_pk);
-  
+
   m_zim  = m_zi-0.5*(1.-m_vijk);
   m_zjm  = m_zj-0.5*(1.-m_vijk);
   m_zpm  = 0.;

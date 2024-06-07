@@ -12,6 +12,8 @@ namespace AMEGIC {
   class FF_DipoleSplitting : public DipoleSplitting_Base {
     double m_yijk;
     double m_zi,m_zj;
+
+    void SetMomentaAlaric(const ATOOLS::Vec4D *);
   public:
     FF_DipoleSplitting(ATOOLS::sbt::subtype st,
                        ATOOLS::spt::splittingtype ft,
@@ -19,7 +21,7 @@ namespace AMEGIC {
       DipoleSplitting_Base(st,ft,ATOOLS::dpt::f_f,m,i,j,k),
       m_yijk(0.), m_zi(0.), m_zj(0.)
     {}
-    
+
     void SetMomenta(const ATOOLS::Vec4D*);
     double GetValue();
     double GetDPSF()   {return m_yijk;}
@@ -43,7 +45,7 @@ namespace AMEGIC {
       m_mi2(mi*mi), m_mj2(mj*mj), m_mk2(mk*mk), m_mij2(mij*mij),
       m_Q2(0.), m_vijk(0.), m_zpm(0.), m_Q(ATOOLS::Vec4D(0.,0.,0.,0.))
     {}
-    
+
     void SetMomenta(const ATOOLS::Vec4D*);
     double GetValue();
     double GetDPSF()   {return m_yijk;}

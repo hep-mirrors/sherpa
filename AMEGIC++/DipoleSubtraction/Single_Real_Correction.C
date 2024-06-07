@@ -111,6 +111,10 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   p_tree_process->SetTestMoms(p_testmoms);
   p_tree_process->SetPrintGraphs(rinfo.m_gpath);
 
+  p_recoil=RecoilDefinition_Getter::GetObject
+          (Settings::GetMainSettings()["RECOIL_DEFINITION"]
+                   .Get<std::string>(),RecoilDefinition_Key());
+
   // build tree process
   if (m_no_tree) {
     p_tree_process->Init();
@@ -237,6 +241,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 	    pdummy->SetRealSubevt(&m_realevt);
             pdummy->SetTestMoms(p_testmoms);
             pdummy->SetNPhotonSplittings(1); // TODO: fix me
+            pdummy->SetRecoil(p_recoil);
             int st=pdummy->InitAmplitude(model,top,links,errs);
             if (!pdummy->IsValid()) msg_Debugging()<<" -> invalid";
             if (pdummy->IsValid()) {

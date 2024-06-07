@@ -150,7 +150,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   if (!(m_valid=p_LO_process->IsValid())) return;
 
   p_LO_mom = new Vec4D[m_nin+m_nout-1];
-  p_LO_labmom.resize(m_nin+m_nout-1); 
+  p_LO_labmom.resize(m_nin+m_nout-1);
   p_LO_process->SetTestMoms(p_LO_mom);
 
   m_lofl=p_LO_process->Flavours();
@@ -444,7 +444,7 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,
     if (cnt<0) continue;
     p_LO_labmom[cnt] = p_LO_mom[cnt] = (*(p_dipole->GetMomenta()))[i];
   }
-  
+
   p_LO_labmom[em] = p_LO_mom[em] = p_dipole->Getptij();
   p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getptk();
 
@@ -483,35 +483,35 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
   p_LO_process->SetSubevtList(p_subevtlist);
   DEBUG_FUNC("");
   switch (m_dtype) {
-  case dpt::f_f: 
+  case dpt::f_f:
     p_dipole = new FF_DipoleSplitting(m_stype,m_ftype,m_nin+m_nout-1,
                                       m_pi,m_pj,m_pk);
     break;
-  case dpt::f_i: 
+  case dpt::f_i:
     p_dipole = new FI_DipoleSplitting(m_stype,m_ftype,m_nin+m_nout-1,
                                       m_pi,m_pj,m_pk);
     break;
-  case dpt::i_f: 
+  case dpt::i_f:
     p_dipole = new IF_DipoleSplitting(m_stype,m_ftype,m_nin+m_nout-1,
                                       m_pi,m_pj,m_pk);
     break;
-  case dpt::i_i: 
+  case dpt::i_i:
     p_dipole = new II_DipoleSplitting(m_stype,m_ftype,m_nin+m_nout-1,
                                       m_pi,m_pj,m_pk);
     break;
-  case dpt::f_fm: 
+  case dpt::f_fm:
     p_dipole = new FF_MassiveDipoleSplitting(m_stype,m_ftype,m_nin+m_nout-1,
                                              m_pi,m_pj,m_pk,
                                              m_fli.Mass(),m_flj.Mass(),
                                              m_flk.Mass(),m_flij.Mass());
     break;
-  case dpt::f_im: 
+  case dpt::f_im:
     p_dipole = new FI_MassiveDipoleSplitting(m_stype,m_ftype,m_nin+m_nout-1,
                                              m_pi,m_pj,m_pk,
                                              m_fli.Mass(),m_flj.Mass(),
                                              m_flij.Mass());
     break;
-  case dpt::i_fm: 
+  case dpt::i_fm:
     p_dipole = new IF_MassiveDipoleSplitting(m_stype,m_ftype,m_nin+m_nout-1,
                                              m_pi,m_pj,m_pk);
     break;
@@ -524,6 +524,7 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
     stream << " (" << m_pi << "," << m_pj << "," << m_pk << ")" << std::endl;
     THROW(not_implemented, stream.str());
   }
+  p_dipole->SetRecoil(p_recoil);
   p_dipole->SetSubevt(&m_subevt);
   msg_Debugging()<<"Initialised dipole "<<*p_dipole<<std::endl;
   Poincare cms;
@@ -535,7 +536,7 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
                                          p_dipole->GetDiPolarizations(),
                                          p_dipole->GetFactors());
   SetLOMomenta(p_testmoms,cms);
-  if (status<=0) { 
+  if (status<=0) {
     m_valid=false;
     return status;
   }
@@ -564,14 +565,14 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
 
 
 /*----------------------------------------------------------------------------
-  
+
   Phase space initialization
-  
+
   ----------------------------------------------------------------------------*/
 
 
-bool Single_DipoleTerm::SetUpIntegrator() 
-{  
+bool Single_DipoleTerm::SetUpIntegrator()
+{
   bool res=p_LO_process->SetUpIntegrator();
   if (res) return res;
   return true;
@@ -579,13 +580,13 @@ bool Single_DipoleTerm::SetUpIntegrator()
 
 
 /*------------------------------------------------------------------------------
-  
+
   Process management
-  
+
   ------------------------------------------------------------------------------*/
 void Single_DipoleTerm::SetLookUp(const bool lookup)
 {
-  m_lookup=lookup; 
+  m_lookup=lookup;
   if (p_LO_process) p_LO_process->SetLookUp(lookup);
   if (p_partner!=this) p_partner->SetLookUp(lookup);
 }
@@ -735,15 +736,15 @@ void Single_DipoleTerm::SetNLOMC(PDF::NLOMC_Base *const mc)
   if (p_dipole) p_dipole->SetNLOMC(mc);
 }
 
-int Single_DipoleTerm::NumberOfDiagrams() { 
-  if (p_partner==this) return p_LO_process->NumberOfDiagrams(); 
+int Single_DipoleTerm::NumberOfDiagrams() {
+  if (p_partner==this) return p_LO_process->NumberOfDiagrams();
   return p_partner->NumberOfDiagrams();
 }
 
-Point * Single_DipoleTerm::Diagram(int i) { 
-  if (p_partner==this) return p_LO_process->Diagram(i); 
+Point * Single_DipoleTerm::Diagram(int i) {
+  if (p_partner==this) return p_LO_process->Diagram(i);
   return p_partner->Diagram(i);
-} 
+}
 
 void Single_DipoleTerm::AddChannels(std::list<std::string>*psln)
 {
@@ -761,7 +762,7 @@ void Single_DipoleTerm::PrintProcessSummary(int it)
     return;
   }
   cout<<endl;
-} 
+}
 
 void Single_DipoleTerm::SetScale(const Scale_Setter_Arguments &args)
 {
