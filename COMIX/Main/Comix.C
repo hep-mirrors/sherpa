@@ -174,7 +174,7 @@ bool Comix::Initialize(MODEL::Model_Base *const model,
 
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
   s_partcommit = s["PARTIAL_COMMIT"].Get<int>();
-  PrintLogo(msg->Info());
+  rpa->gen.AddCitation(1, "Comix is published under \\cite{Gleisberg:2008fv}.");
   PrintVertices();
 
   int helpi;

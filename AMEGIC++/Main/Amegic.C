@@ -69,15 +69,13 @@ void Amegic::DrawLogo(std::ostream &ostr)
   ostr<<"+-----------------------------------------+\n";
   ostr<<"| please cite: JHEP 0202:044,2002         |\n";
   ostr<<"+-----------------------------------------+\n";
-  rpa->gen.AddCitation
-    (1,"Amegic is published under \\cite{Krauss:2001iv}.");
 }
 
 Amegic::Amegic():
   ME_Generator_Base("Amegic"),
   p_mmodel(NULL), p_amodel(NULL)
 {
-  DrawLogo(msg->Info());
+  rpa->gen.AddCitation(1, "Amegic is published under \\cite{Krauss:2001iv}.");
   p_testmoms=NULL;
   p_gen=this;
 }
