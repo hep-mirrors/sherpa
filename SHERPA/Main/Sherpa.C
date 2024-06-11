@@ -378,39 +378,42 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
   MyStrStream version;
   version << "SHERPA v" << SHERPA_VERSION << "." << SHERPA_SUBVERSION
           << " (" << SHERPA_NAME << ")";
-  msg_Info()<<"┌──────────────────────────────────────────────────────────────────────────┐\n"
-	    <<"│                                                                          │\n";
-  msg_Info()<<"│              "<<om::green<<"/"<<om::red<<"\\"<<om::reset<<"    /                                                    │\n";
-  msg_Info()<<"│      O    "<<om::blue<<"/"<<om::red<<"\\"<<om::green<<"/  "<<om::red<<"\\"<<om::reset<<"  /                                                     │\n";
-  msg_Info()<<"│    (//-| ~~~~~~~~o        " << std::left << std::setw(42) << version.str() << "    │\n";
-  msg_Info()<<"│     /\\ |          \\                                                     │\n";
-  msg_Info()<<"│    / / |           \\                                                    │\n";
-  msg_Info()<<"│                                                                         │\n"
-            <<"│                                                                         │\n"
-	    <<"│  Authors:        Enrico Bothmann, Lois Flower, Christian Gutschow,      │\n"
-	    <<"│                  Stefan Hoeche, Mareen Hoppe, Max Knobbe, Frank Krauss, │\n"
-	    <<"│                  Peter Meinzinger, Davide Napoletano, Alan Price,       │\n"
-	    <<"│                  Daniel Reichelt, Marek Schoenherr, Steffen Schumann,   │\n"
-	    <<"│                  Frank Siegert                                          │\n"
-	    <<"│  Former Authors: Gurpreet Singh Chahal, Timo Fischer, Tanju Gleisberg,  │\n"
-	    <<"│                  Hendrik Hoeth, Johannes Krause, Silvan Kuttimalai,     │\n"
-	    <<"│                  Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,      │\n"
-	    <<"│                  Andreas Schaelicke, Holger Schulz, Jan Winter          │\n"
-	    <<"│                                                                         │\n"
-	    <<"│  This program uses a lot of genuine and original research work          │\n"
-	    <<"│  by other people. Users are encouraged to refer to                      │\n"
-	    <<"│  the various original publications.                                     │\n"
-	    <<"│                                                                         │\n"
-	    <<"│  Users are kindly asked to refer to the documentation                   │\n"
-	    <<"│  published under SciPost Phys 7 (2019) 3, 034                           │\n"
-	    <<"│                                                                         │\n"
-	    <<"│  Please visit also our homepage                                         │\n"
-	    <<"│                                                                         │\n"
-	    <<"│    http://sherpa.hepforge.org                                           │\n"
-	    <<"│                                                                         │\n"
-	    <<"│  for news, bugreports, updates and new releases.                        │\n"
-	    <<"│                                                                         │\n"
-            <<"└─────────────────────────────────────────────────────────────────────────┘\n";
+  msg_Info() << Frame_Header{};
+  msg_Info() << Frame_Line{""};
+  msg_Info() << Frame_Line{MyStrStream{} << "       " << om::green << "/"
+                                         << om::reset << "\\"};
+  msg_Info() << Frame_Line{MyStrStream{}
+                           << "    " << om::blue << "/" << om::reset << "\\"
+                           << om::green << "/  " << om::reset << "\\" << om::red
+                           << "/" << om::reset << "\\"};
+  msg_Info() << Frame_Line{MyStrStream{} << "   " << om::blue << "/_"
+                                         << om::green << "/___" << om::red
+                                         << "/__" << om::reset << "\\   "
+                                         << version.str()};
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Line{"Authors:        Enrico Bothmann, Lois Flower, Christian Gutschow,           "};
+  msg_Info() << Frame_Line{"                Stefan Hoeche, Mareen Hoppe, Max Knobbe, Frank Krauss,      "};
+  msg_Info() << Frame_Line{"                Peter Meinzinger, Davide Napoletano, Alan Price,            "};
+  msg_Info() << Frame_Line{"                Daniel Reichelt, Marek Schoenherr, Steffen Schumann,        "};
+  msg_Info() << Frame_Line{"                Frank Siegert                                               "};
+  msg_Info() << Frame_Line{"Former Authors: Gurpreet Singh Chahal, Timo Fischer, Tanju Gleisberg,       "};
+  msg_Info() << Frame_Line{"                Hendrik Hoeth, Johannes Krause, Silvan Kuttimalai,          "};
+  msg_Info() << Frame_Line{"                Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,           "};
+  msg_Info() << Frame_Line{"                Andreas Schaelicke, Holger Schulz, Jan Winter               "};
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Line{"This program uses a lot of genuine and original research work by other      "};
+  msg_Info() << Frame_Line{"people. Users are encouraged to refer to the various original publications. "};
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Line{"Users are kindly asked to refer to the documentation published under        "};
+  msg_Info() << Frame_Line{"SciPost Phys 7 (2019) 3, 034                                                "};
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Line{"Please visit also our homepage                                              "};
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Line{"  http://sherpa.hepforge.org                                                "};
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Line{"for news, bugreports, updates and new releases.                             "};
+  msg_Info() << Frame_Footer{};
   rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Sherpa:2019gpd}.");
