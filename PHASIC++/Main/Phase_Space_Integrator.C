@@ -218,7 +218,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     bool optimized=false;
     bool fotime = false;
     msg_Tracking()<<" n="<<m_ncontrib<<"  iter="<<m_iter<<endl;
-    if (p_psh->Stats().size()<m_nopt) {
+    if (p_psh->Stats().size()<m_nopt-1) {
       p_psh->Optimize();
       p_psh->Process()->OptimizeResult();
       if ((p_psh->Process())->SPoints()==0)
@@ -227,7 +227,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       optimized = true;
       m_iter*=pow(2.,m_npower);
     }
-    else if (p_psh->Stats().size()==m_nopt) {
+    else if (p_psh->Stats().size()==m_nopt-1) {
       p_psh->Process()->ResetMax(0);
       p_psh->EndOptimize();
       p_psh->Process()->ResetMax(1);
