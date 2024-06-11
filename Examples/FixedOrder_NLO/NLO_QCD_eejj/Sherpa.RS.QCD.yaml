@@ -1,0 +1,22 @@
+EVENTS: 500k
+MI_HANDLER: None
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+DIPOLES:
+  SCHEME: Alaric
+BEAM_REMNANTS: false
+EVENT_GENERATION_MODE: W
+ME_GENERATORS: Amegic
+BEAMS: [ 11, -11 ]
+BEAM_ENERGIES: 45.6
+PDF_SET: None
+TAGS:
+  SCF: 1.0
+SCALES: VAR{$(SCF)*sqr(91.2)}
+PROCESSES:
+- 11 -11 -> 93 93:
+    NLO_Mode: Fixed_Order
+    NLO_Part: RS
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 0, EW: 2}
+    Print_Graphs: Graphs

@@ -174,9 +174,8 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   cinfo.m_fi.m_nlotype=nlo_type::rsub;
   size_t nPFFsplittings(0);
   for (size_t i=0;i<m_flavs.size();i++) {
-    for (size_t j=i+1;j<m_flavs.size();j++) {
+    for (size_t j=1;j<m_flavs.size();j++) {
       for (size_t k=0;k<m_flavs.size();k++) if (k!=i&&k!=j&&i!=j) {
-        if (j<m_nin) continue;
         std::vector<sbt::subtype> stypes;
         bool isPFFsplitting(false);
         if (cinfo.m_maxcpl[0]>=1.) {
@@ -232,10 +231,11 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 	  if ((m_pinfo.m_ckkw || m_pinfo.m_nlomode==nlo_mode::mcatnlo) &&
               m_pinfo.m_special.find("EnforceQEDRealSubtraction")==std::string::npos &&
 	      stypes[s]==sbt::qed) continue;
+	  for (int spintype(0);;++spintype) {
           Single_DipoleTerm *pdummy
-            = new Single_DipoleTerm(cinfo,i,j,k,stypes[s],p_int);
+            = new Single_DipoleTerm(cinfo,i,j,k,stypes[s],spintype,p_int);
           msg_Debugging()<<stypes[s]<<"[("<<i<<","<<j<<");"<<k<<"]("
-                         <<stypes[s]<<") -> "
+                         <<stypes[s]<<") -"<<spintype<<"-> "
                          <<(pdummy->IsValid()?"":"in")<<"valid";
 	  if (pdummy->IsValid()) {
 	    pdummy->SetRealSubevt(&m_realevt);
@@ -262,7 +262,9 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
           else {
             if (links.size() && links.back()==pdummy->GetLOProcess()) links.pop_back();
             delete pdummy;
+	    break;
           }
+	  }
           msg_Debugging()<<"\n";
         }
         msg_Debugging()<<"---------------------------------------------\n";
@@ -286,7 +288,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
                  <<"[("<<dt->Li()<<","<<dt->Lj()<<");"<<dt->Lk()<<"] "
                  <<dt->GetDipoleType()
                  <<"[("<<dt->Flavours()[dt->Li()]<<","<<dt->Flavours()[dt->Lj()]
-                 <<");"<<dt->Flavours()[dt->Lk()]<<"]"<<std::endl;
+                 <<");"<<dt->Flavours()[dt->Lk()]<<"] "<<dt->GetSplittingType()<<std::endl;
       }
     }
   }
