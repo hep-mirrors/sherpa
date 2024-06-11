@@ -212,7 +212,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
   if (m_timeslope<0.0) targettime*=p_psh->Process()->Process()->Size();
   if (m_timestep>0.0) deltat = ATOOLS::rpa->gen.Timer().RealTime()-m_stepstart;
   if ((m_timestep==0.0 && m_ncontrib!=m_nlo && m_ncontrib>0 &&
-       ((m_ncontrib%m_iter)==0)) ||
+       (((m_ncontrib-m_nlo)%m_iter)==0)) ||
       (m_timestep>0.0 && deltat>=targettime)) {
     MPISync();
     bool optimized=false;
