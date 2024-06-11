@@ -39,10 +39,9 @@ Rivet analyses
 .. index:: ANALYSIS_OUTPUT
 
 Sherpa is equipped with an interface to the analysis tool `Rivet
-<http://projects.hepforge.org/rivet/>`_. To enable it, Rivet and
-`HepMC <http://lcgapp.cern.ch/project/simu/HepMC/>`_ have to be
-installed (e.g. using the Rivet bootstrap script) and your Sherpa
-compilation has to be configured with the following options:
+<http://projects.hepforge.org/rivet/>`_ :cite:`Bierlich:2019rhm`.
+To enable it, Rivet and `HepMC <http://lcgapp.cern.ch/project/simu/HepMC/>`_
+:cite:`Dobbs:2001ck` have to be installed (e.g. using the Rivet bootstrap script) and your Sherpa compilation has to be configured with the following options:
 
 .. code-block:: shell-session
 
@@ -71,7 +70,7 @@ The analyses list specifies which Rivet analyses to run and the
 histogram output file can be changed with the normal ``ANALYSIS_OUTPUT``
 switch.
 
-Further Rivet options (especially for Rivet v3) can be passed through
+Further Rivet options can be passed through
 the interface. The following ones are currently implemented:
 
 .. code-block:: yaml
@@ -107,11 +106,11 @@ need to set the corresponding Rivet path variable, for example via
    $ export RIVET_ANALYSIS_PATH=$RIVET_ANALYSIS_PATH:<path to custom analysis lib>
 
 
-The `RIVET:` block can be used with further options especially suitable for detailed
-studies. Adding `JETCONTS: 1` will create separate histograms split by jet multiplicity as
-created by the hard process. `SPLITSH: 1` creates histograms split by soft and
-hard events, and `SPLITPM: 1` creates histograms split by events with positive and
-negative event weights. Finally, `SPLITCOREPROCS: 1` will split by different
+The ``RIVET:`` block can be used with further options especially suitable for detailed
+studies. Adding ``JETCONTS: 1`` will create separate histograms split by jet multiplicity as
+created by the hard process. ``SPLITSH: 1`` creates histograms split by soft and
+hard events, and ``SPLITPM: 1`` creates histograms split by events with positive and
+negative event weights. Finally, ``SPLITCOREPROCS: 1`` will split by different
 processes if multiple ones are specified in the runcard.
 
 .. _MCFM interface:
@@ -123,8 +122,8 @@ MCFM interface
 .. index:: Loop_Generator
 
 Sherpa is equipped with an interface to the NLO library of `MCFM
-<http://mcfm.fnal.gov/>`_ for decdicated processes.  To enable it,
-To enable it, MCFM has to be installed and compiled into a single
+<http://mcfm.fnal.gov/>`_ for dedicated processes.  To enable it,
+MCFM has to be installed and compiled into a single
 library @code{libmcfm.so} by using the ``-Dwith_library=ON``
 flag when configuring MCFM using CMake.
 
@@ -148,8 +147,8 @@ To use the interface, specify
    Loop_Generator: MCFM
 
 in the process section of the run card and add it to the list of
-generators in :ref:`ME_GENERATORS`. MCFM's process.DAT file should
-automatically be copied to the current run directory during intitialisation.
+generators in :ref:`ME_GENERATORS`. MCFM's `process.DAT` file should
+automatically be copied to the current run directory during initialisation.
 
 Note that for unweighted event generation, there is also an option to
 choose different loop-amplitude providers for the pilot run and the
@@ -367,14 +366,14 @@ alpha and thus interpretation of the threshold can be chosen by its
 sign (positive: relative dipole kT in GeV, negative: dipole alpha).
 In addition, the exponent n can be set by ``NLO_SMEAR_POWER: <n>``.
 
-.. _Enforcing the renormalization scheme:
+.. _Enforcing the renormalisation scheme:
 
-Enforcing the renormalization scheme
+Enforcing the renormalisation scheme
 ====================================
 
 .. index:: LOOP_ME_INIT
 
-Sherpa takes information about the renormalization scheme from the
+Sherpa takes information about the renormalisation scheme from the
 loop ME generator.  The default scheme is MSbar, and this is assumed
 if no loop ME is provided, for example when integrated subtraction
 terms are computed by themselves.  This can lead to inconsistencies
@@ -565,10 +564,10 @@ The total cross section weight is given by:
 Loop piece and integrated subtraction terms
 -------------------------------------------
 
-The weights here have an explicit dependence on the renormalization
+The weights here have an explicit dependence on the renormalisation
 and factorization scales.
 
-To take care of the renormalization scale dependence (other than via
+To take care of the renormalisation scale dependence (other than via
 ``alpha_S``) the weight ``w_0`` is defined as
 
 
@@ -603,7 +602,7 @@ where
 
 The scale dependence coefficients ``usr_wgts[0]`` and ``usr_wgts[1]``
 are normally obtained from the finite part of the virtual correction
-by removing renormalization terms and universal terms from dipole
+by removing renormalisation terms and universal terms from dipole
 subtraction.  This may be undesirable, especially when the loop
 provider splits up the calculation of the virtual correction into
 several pieces, like leading and sub-leading color. In this case the

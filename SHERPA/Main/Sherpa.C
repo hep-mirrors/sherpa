@@ -406,19 +406,22 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
 	    <<std::endl
 	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ("<<SHERPA_NAME<<")"<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"     Authors:        Enrico Bothmann, Stefan Hoeche, Frank Krauss,           "<<std::endl
-	    <<"                     Silvan Kuttimalai, Marek Schoenherr, Holger Schulz,     "<<std::endl
-	    <<"                     Steffen Schumann, Frank Siegert, Korinna Zapp           "<<std::endl
-	    <<"     Former Authors: Timo Fischer, Tanju Gleisberg, Hendrik Hoeth,           "<<std::endl
-	    <<"                     Ralf Kuhn, Thomas Laubrich, Andreas Schaelicke,         "<<std::endl
-	    <<"                     Jan Winter                                              "<<std::endl
+	    <<"     Authors:        Enrico Bothmann, Lois Flower, Christian Gutschow,       "<<std::endl
+	    <<"                     Stefan Hoeche, Mareen Hoppe, Max Knobbe, Frank Krauss,  "<<std::endl
+	    <<"                     Peter Meinzinger, Davide Napoletano, Alan Price,        "<<std::endl
+	    <<"                     Daniel Reichelt, Marek Schoenherr, Steffen Schumann,    "<<std::endl
+	    <<"                     Frank Siegert                                           "<<std::endl  
+	    <<"     Former Authors: Gurpreet Singh Chahal, Timo Fischer, Tanju Gleisberg,   "<<std::endl
+	    <<"                     Hendrik Hoeth, Johannes Krause, Silvan Kuttimalai,      "<<std::endl
+	    <<"                     Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,       "<<std::endl
+	    <<"                     Andreas Schaelicke, Holger Schulz, Jan Winter           "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     This program uses a lot of genuine and original research work           "<<std::endl
 	    <<"     by other people. Users are encouraged to refer to                       "<<std::endl
 	    <<"     the various original publications.                                      "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     Users are kindly asked to refer to the documentation                    "<<std::endl
-	    <<"     published under JHEP 02(2009)007                                        "<<std::endl
+	    <<"     published under SciPost Phys 7 (2019) 3, 034                            "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     Please visit also our homepage                                          "<<std::endl
 	    <<"                                                                             "<<std::endl
@@ -429,5 +432,5 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
 	    <<"-----------------------------------------------------------------------------"<<std::endl;
   rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
-    (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");
+    (0,"The complete Sherpa package is published under \\cite{Sherpa:2019gpd}.");
 }

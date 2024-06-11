@@ -121,7 +121,7 @@ resonance.
 An example to set (/add) the partial widths of the ``H->ff``,
 ``H->gg`` and ``H->yy`` channels can be seen in the following. The
 values have been taken from `LHC Higgs WG
-<https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWG/Higgs_XSBR_YR4_update.xlsx>`_):
+<https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWG/Higgs_XSBR_YR4_update.xlsx>`_:
 
 .. code-block:: yaml
 
@@ -246,7 +246,7 @@ from the particle widths specified by
 the core process and should be set to zero for all unstable particles
 appearing in the core-process final state. This guarantees
 on-shellness and gauge invariance of the core process, and subsequent
-decays can be handled by the afterburner.  In constrast,
+decays can be handled by the afterburner.  In contrast,
 :option:`PARTICLE_DATA:<id>:Width` should be set to the physical width
 when unstable particles appear (only) as intermediate states in the
 core process, i.e. when production and decay are handled as a full
@@ -283,7 +283,7 @@ kinematic mass of the unstable propagator is distributed according to
 a Breit-Wigner shape a posteriori. All matrix elements are still
 calculated in the narrow-width approximation with onshell
 particles. Only the kinematics are affected.  To keep all intermediate
-particles onshell :option:`{HARD_DECAYS: { Mass_Smearing: 0 }`.
+particles onshell :option:`HARD_DECAYS: { Mass_Smearing: 0 }`.
 
 .. _Resolve_Decays:
 
@@ -396,7 +396,7 @@ the weight name becomes PolWeight.W+.+_W+.-. The sequence of the particles
 in the weight name corresponds to Sherpa's internal particle ordering
 which can be obtained from the ordering in the process printed out
 when Sherpa starts running. The ``ReferenceSystem`` denotes the reference system
-which needs to be specified for an unambitious polarization defintion 
+which needs to be specified for an unambitious polarization definition 
 (cf. section :ref:`Reference system`). The totaled interference contribution is 
 called ``PolWeight_ReferenceSystem.int``.
 
@@ -424,7 +424,7 @@ General procedure
 .. index:: General procedure
 
 The definition of polarization for particles in intermediate states is only 
-possible for processes which can be factorized into a production and decay of them. 
+possible for processes which can be factorised into a production and decay of them. 
 To neglect possible not-fully-resonant diagrams (i.e. diagrams where not each final state
 decay product particle comes from the decay of a resonant intermediate particle), 
 for which this factorization and the definition of polarization for intermediate particles
@@ -594,7 +594,7 @@ e.g. PolWeight_refsystem1.W+.+_W+.-.
 .. _Transversely polarized cross sections:
 
 Transversely polarized cross sections
---------------------------------
+-------------------------------------
 
 .. index:: Transversely polarized cross sections
 

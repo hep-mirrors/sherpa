@@ -28,7 +28,7 @@ bool Photon_Splitter::SplitPhotons(ATOOLS::Blob * blob)
     if (blob->GetParticle(i)->Flav().Charge() != 0) {
       m_sudakov.AddChargedParticle(blob->GetParticle(i),i);
     }
-    else if (i > blob->NInP() && blob->GetParticle(i)->Info() == 'S' && blob->GetParticle(i)->Flav().Kfcode() == 22) {
+    else if (i > blob->NInP() && blob->GetParticle(i)->Info() == 'S' && blob->GetParticle(i)->Flav().IsPhoton()) {
       m_sudakov.AddSplitter(blob->GetParticle(i),i);
     }
   }

@@ -149,13 +149,17 @@ void Initialization_Handler::RegisterDefaults()
       "PDF_VARIATIONS",
       "QCUT_VARIATIONS",
       "BUNCHES",
-      "NLO_CSS_DISALLOW_FLAVOUR",
       "MASSIVE_PS",
       "MASSLESS_PS"
       });
+  s["MC@NLO"].DeclareVectorSettingsWithEmptyDefault({
+      "DISALLOW_FLAVOUR",
+      });
   s.DeclareMatrixSettingsWithEmptyDefault({
-      "CSS_ENHANCE",
       "ASSOCIATED_CONTRIBUTIONS_VARIATIONS"
+      });
+  s["SHOWER"].DeclareMatrixSettingsWithEmptyDefault({
+      "ENHANCE",
       });
   s["EVENT_OUTPUT"].UseNoneReplacements();
   s["VARIATIONS"].UseNoneReplacements();
@@ -212,62 +216,63 @@ void Initialization_Handler::RegisterDefaults()
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
-  s["CSS_EVOLUTION_SCHEME"].SetDefault(30+30*100);
-  s["CSS_KFACTOR_SCHEME"].SetDefault(1);
-  s["CSS_SCALE_SCHEME"].SetDefault(14);
-  s["CSS_SCALE_VARIATION_SCHEME"].SetDefault(1);
+  auto pss = s["SHOWER"], nlopss = s["MC@NLO"];
+  pss["EVOLUTION_SCHEME"].SetDefault(30+30*100);
+  pss["KFACTOR_SCHEME"].SetDefault(1);
+  pss["SCALE_SCHEME"].SetDefault(14);
+  pss["SCALE_VARIATION_SCHEME"].SetDefault(1);
   // TODO: Should this be set to 3.0 for the new Dire default? See the manual
   // Sherpa section on master for details
-  s["CSS_FS_PT2MIN"].SetDefault(1.0);
-  s["CSS_IS_PT2MIN"].SetDefault(2.0);
-  s["CSS_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
-  s["CSS_FS_AS_FAC"].SetDefault(1.0);
-  s["CSS_IS_AS_FAC"].SetDefault(0.25);
-  s["CSS_PDF_FAC"].SetDefault(1.0);
-  s["CSS_SCALE_FACTOR"].SetDefault(1.);
-  s["CSS_MASS_THRESHOLD"].SetDefault(0.0);
-  s["CSS_FORCED_DECAYS"].SetDefault(true);
-  s["CSS_FORCED_GLUON_SCALING"].SetDefault(-3./2.);
+  pss["FS_PT2MIN"].SetDefault(1.0);
+  pss["IS_PT2MIN"].SetDefault(2.0);
+  pss["PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
+  pss["FS_AS_FAC"].SetDefault(1.0);
+  pss["IS_AS_FAC"].SetDefault(0.25);
+  pss["PDF_FAC"].SetDefault(1.0);
+  pss["SCALE_FACTOR"].SetDefault(1.);
+  pss["MASS_THRESHOLD"].SetDefault(0.0);
+  pss["FORCED_DECAYS"].SetDefault(true);
+  pss["FORCED_GLUON_SCALING"].SetDefault(-3./2.);
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
-  s["CSS_RECO_CHECK"].SetDefault(0);
-  s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
-  s["CSS_REWEIGHT"].SetDefault(showergen != "None");
+  pss["RECO_CHECK"].SetDefault(0);
+  pss["MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
+  pss["REWEIGHT"].SetDefault(showergen != "None");
   s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(showergen != "None");
-  s["CSS_MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
-  s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
-  s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
-  s["CSS_KIN_SCHEME"].SetDefault(1);
-  s["NLO_CSS_KIN_SCHEME"].SetDefault(1);
-  s["CSS_OEF"].SetDefault(3.0);
-  s["CSS_KMODE"].SetDefault(2);
-  s["CSS_RESPECT_Q2"].SetDefault(false);
-  s["CSS_CKFMODE"].SetDefault(1);
-  s["CSS_PDFCHECK"].SetDefault(1);
-  s["CSS_QCD_MODE"].SetDefault(1);
-  s["CSS_EW_MODE"].SetDefault(false);
-  s["CSS_RECO_DECAYS"].SetDefault(0);
-  s["CSS_MAXPART"].SetDefault(std::numeric_limits<int>::max());
-  s["CSS_PDF_MIN"].SetDefault(1.0e-4);
-  s["CSS_PDF_MIN_X"].SetDefault(1.0e-2);
-  s["CSS_WEIGHT_CHECK"].SetDefault(false);
-  s["CSS_CMODE"].SetDefault(1);
-  s["CSS_NCOL"].SetDefault(3);
-  s["CSS_RECALC_FACTOR"].SetDefault(4.0);
-  s["CSS_TC_ENHANCE"].SetDefault(1.0);
-  s["CSS_COUPLING_SCHEME"].SetDefault(1);
-  s["CSS_ME_CORRECTION"].SetDefault(0);
-  s["CSS_KERNEL_TYPE"].SetDefault(15);
-  s["NLO_CSS_RECALC_FACTOR"].SetDefault(2.0);
-  s["NLO_CSS_PSMODE"].SetDefault(0);
-  s["NLO_CSS_WEIGHT_CHECK"].SetDefault(0);
-  s["NLO_CSS_MAXEM"].SetDefault(1);
-  s["MI_CSS_KFACTOR_SCHEME"].SetDefault(0);
-  s["MI_CSS_IS_PT2MIN"].SetDefault(4.0);
-  s["MI_CSS_FS_PT2MIN"].SetDefault(1.0);
-  s["MI_CSS_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
-  s["MI_CSS_IS_AS_FAC"].SetDefault(0.66);
-  s["MI_CSS_FS_AS_FAC"].SetDefault(0.66);
-  s["MI_CSS_KIN_SCHEME"].SetDefault(1);
+  pss["MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
+  nlopss["REWEIGHT_EM"].SetDefault(1);
+  pss["REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
+  pss["KIN_SCHEME"].SetDefault(1);
+  nlopss["KIN_SCHEME"].SetDefault(1);
+  pss["OEF"].SetDefault(3.0);
+  pss["KMODE"].SetDefault(2);
+  pss["RESPECT_Q2"].SetDefault(false);
+  pss["CKFMODE"].SetDefault(1);
+  pss["PDFCHECK"].SetDefault(1);
+  pss["QCD_MODE"].SetDefault(1);
+  pss["EW_MODE"].SetDefault(false);
+  pss["RECO_DECAYS"].SetDefault(0);
+  pss["MAXPART"].SetDefault(std::numeric_limits<int>::max());
+  pss["PDF_MIN"].SetDefault(1.0e-4);
+  pss["PDF_MIN_X"].SetDefault(1.0e-2);
+  pss["WEIGHT_CHECK"].SetDefault(false);
+  pss["CMODE"].SetDefault(1);
+  pss["NCOL"].SetDefault(3);
+  pss["RECALC_FACTOR"].SetDefault(4.0);
+  pss["TC_ENHANCE"].SetDefault(1.0);
+  pss["COUPLING_SCHEME"].SetDefault(1);
+  pss["ME_CORRECTION"].SetDefault(0);
+  pss["KERNEL_TYPE"].SetDefault(15);
+  nlopss["RECALC_FACTOR"].SetDefault(2.0);
+  nlopss["PSMODE"].SetDefault(0);
+  nlopss["WEIGHT_CHECK"].SetDefault(0);
+  nlopss["MAXEM"].SetDefault(1);
+  pss["MI_KFACTOR_SCHEME"].SetDefault(0);
+  pss["MI_IS_PT2MIN"].SetDefault(4.0);
+  pss["MI_FS_PT2MIN"].SetDefault(1.0);
+  pss["MI_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
+  pss["MI_IS_AS_FAC"].SetDefault(0.66);
+  pss["MI_FS_AS_FAC"].SetDefault(0.66);
+  pss["MI_KIN_SCHEME"].SetDefault(1);
 
   s["COMIX_DEFAULT_GAUGE"].SetDefault(1);
 

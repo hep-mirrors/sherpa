@@ -13,7 +13,8 @@ ME_GENERATORS:
   - Amegic
   - $(LGEN)
 RESPECT_MASSIVE_FLAG: true
-CSS_KIN_SCHEME: 1
+SHOWER:
+  KIN_SCHEME: 1
 
 # hadronization tune
 PARJ:

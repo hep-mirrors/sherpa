@@ -8,7 +8,8 @@ ME_GENERATORS: [Comix, Amegic, OpenLoops]
 PARTICLE_CONTAINERS:
   900: {Name: W, Flavs: [24, -24]}
   901: {Name: lightflavs, Flavs: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
-NLO_CSS_DISALLOW_FLAVOUR: 5
+MC@NLO:
+  DISALLOW_FLAVOUR: 5
 
 # particle properties (ME widths need to be zero if external)
 PARTICLE_DATA:

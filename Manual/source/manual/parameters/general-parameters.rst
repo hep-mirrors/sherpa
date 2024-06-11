@@ -37,7 +37,7 @@ see :ref:`Command line`.
 
 * The default event type is ``StandardPerturbative``, which will
   generate a hard event through exact matrix elements matched and/or
-  merged with the paerton shower, eventually including hadronization,
+  merged with the parton shower, eventually including hadronisation,
   hadron decays, etc..
 
 Alternatively there are two more specialised modes, namely:
@@ -118,10 +118,10 @@ The value can be any sum of the following:
 
 E.g. :option:`OUTPUT=3` would display information, events and
 errors. Use :option:`OUTPUT_PRECISION` to set the default output
-precision (default ``6``).  Note: this may be overriden in specific
+precision (default ``6``).  Note: this may be overridden in specific
 functions' output.
 
-For expert users: The output level can be overriden for individual
+For expert users: The output level can be overridden for individual
 functions, e.g. like this
 
 .. code-block:: yaml
@@ -134,7 +134,7 @@ where the function signature is given by the value of
 ``__PRETTY_FUNCTION__`` in the function block.  Another expert
 parameter is :option:`EVT_OUTPUT_START`, with which the first event
 affected by :option:`EVT_OUTPUT` can be specified. This can be useful
-to generate debugging output only for events affected by a some issue.
+to generate debugging output only for events affected by a certain issue.
 
 .. _LOG_FILE:
 
@@ -295,7 +295,7 @@ are:
       analysis results when catching an exception.
 
 :samp:`{2}`
-      Sherpa outputs the event counter continously, instead of
+      Sherpa outputs the event counter continuously, instead of
       overwriting the previous one (default when using
       :ref:`LOG_FILE`).
 
@@ -324,6 +324,31 @@ at the same time.
 
    The command line option :option:`-b` should therefore not be used
    in this case, see :ref:`Command line`.
+
+.. _INIT_ONLY:
+
+INIT_ONLY
+==========
+
+.. index:: INIT_ONLY
+
+This can be used to skip cross section integration and event generation phases.
+Note that these phases are always skipped if Sherpa detects that libraries
+are missing and need to be compiled first, see :ref:`Running Sherpa`.
+The following values can be used for :option:`INIT_ONLY`:
+
+:samp:`{0}`
+      The default. Sherpa will normally attempt to proceed after initialisation
+      to integrate cross sections (or read in cached results) and generate events.
+
+:samp:`{1}`
+      Sherpa will always exit after initialisation, skipping integration
+      and event generation.
+
+:samp:`{2}`
+      Sherpa skips cross section integration. This is useful when Sherpa
+      is used to calculate specific matrix element values, see
+      :ref:`MEvalues`.
 
 .. _NUM_ACCURACY:
 
@@ -366,6 +391,7 @@ previously created C++ source code, cf. :ref:`SHERPA_CPP_PATH`.
 Event output formats
 ====================
 
+.. index:: HepMC3
 .. index:: HepMC3_GenEvent
 .. index:: HepMC3_Short
 .. index:: LHEF
@@ -383,25 +409,25 @@ these formats when selecting them.
 
 If the events are to be written to file, the parameter
 :option:`EVENT_OUTPUT` must be specified together with a file name. An
-example would be ``EVENT_OUTPUT: HepMC3_GenEvent[MyFile]``, where
+example would be ``EVENT_OUTPUT: HepMC3[MyFile]``, where
 ``MyFile`` stands for the desired file base name. More than one output
 can also be specified:
 
 .. code-block:: yaml
 
    EVENT_OUTPUT:
-     - HepMC3_GenEvent[MyFile]
+     - HepMC3[MyFile]
      - Root[MyFile]
 
 The following formats are currently available:
 
-:option:`HepMC3_GenEvent`
+:option:`HepMC3`
   Generates output using HepMC3 library. The format of the output is
-  set with ``HEPMC3_IO_TYPE: <0|1|2|3|4>`` tag.  The default value is
-  0 and corresponds to ASCII GenEvent. Other available options are 1:
-  HepEvt 2: ROOT file with every event written as an object of class
-  GenEvent. 3: ROOT file with GenEvent objects writen into TTree.
-  Otherwise similar to ``HepMC3_GenEvent``.
+  controlled with the :option:`HEPMC3_IO_TYPE` setting.  The default value is
+  ``0`` and corresponds to ASCII GenEvent output. Other available options are:
+  ``1`` (HepEvt output), ``2`` (HepMC2 ASCII output),
+  ``3`` (ROOT file output with every event written as an object of class GenEvent),
+  and ``4`` (ROOT file output with GenEvent objects written into TTree).
 
   The HepMC::GenEvent::m_weights weight vector stores the
   following items: ``[0]`` event weight, ``[1]`` combined matrix
@@ -434,25 +460,21 @@ The following formats are currently available:
   using the HepMC GenEvent Output`. Necessitates the use of
   ``HEPMC_USE_NAMED_WEIGHTS``. The default value is ``false``.
 
+  ``HEPMC3_SHORT: <false|true>`` Generates output in HepMC::IO_GenEvent format,
+  however, only incoming beams and outgoing particles are stored.
+  Intermediate and decayed particles are not listed.
+  The default value is ``false``.
+
   ``HEPMC_TREE_LIKE: <false|true>`` Force the event record to be
-  stricly tree-like. Please note that this removes some information
+  strictly tree-like. Please note that this removes some information
   from the matrix-element-parton-shower interplay which would be
   otherwise stored.
-  Requires ``-DHepMC3_DIR=/path/to/hepmc3``
-  (or ``-DSHERPA_ENABLE_HEPMC3=ON``, if HepMC3 is installed in a
-  standard location). The default value is ``false``.
-
-:option:`HepMC3_Short`
-
-  Generates output in HepMC::IO_GenEvent format, however, only
-  incoming beams and outgoing particles are stored. Intermediate and
-  decayed particles are not listed. The event weights stored as the
-  same as above, and ``HEPMC_USE_NAMED_WEIGHTS`` and
-  ``HEPMC_EXTENDED_WEIGHTS`` can be used to customise.
+  The default value is ``false``.
+  Has no effect if ``HEPMC3_SHORT`` is used.
 
   Requires ``-DHepMC3_DIR=/path/to/hepmc3``
-  (or ``-DSHERPA_ENABLE_HEPMC3=ON``, if HepMC3 is installed in a
-  standard location).
+  (or ``-DSHERPA_ENABLE_HEPMC3=ON``,
+  if HepMC3 is installed in a standard location).
 
 :option:`LHEF`
   Generates output in Les Houches Event File format. This output
@@ -501,7 +523,8 @@ this feature.
 On-the-fly event weight variations
 ==================================
 
-Sherpa can compute alternative event weights on-the-fly, resulting in
+Sherpa can compute alternative event weights on-the-fly
+:cite:`Bothmann2016nao`, resulting in
 alternative weights for the generated event.
 An important example is the variation of QCD scales and input PDF.
 There are also on-the-fly variations for approximate electroweak corrections,
@@ -550,7 +573,7 @@ This example specifies a total of seven on-the-fly variations.
 
 Scale factors in ``SCALE_VARIATIONS`` can be given
 as a list of two numbers, or as a single number.
-When two numbers are given, they are applied to the factorisation and the renomalisation scale, respectively.
+When two numbers are given, they are applied to the factorisation and the renormalisation scale, respectively.
 If only a single number is given, it is applied to both scales at the same time.
 The factors for the renormalisation and factorisation scales
 must be given in their quadratic form, i.e. a "4.0" in the settings means that the
@@ -562,7 +585,7 @@ it defaults to the nominal one. Specific PDF members can be specified by
 appending the PDF set name with ``/<member-id>``.
 
 It can be painful to write every variation explicitly, e.g. for 7-point scale
-factor variations or if one want variations for all members of a PDF set.
+factor variations or if one wants variations for all members of a PDF set.
 Therefore an asterisk can be appended to some values, which results in an
 *expansion*.  For PDF sets, this means that the variation is repeated for each
 member of that set.  For scale factors, ``4.0*`` is expanded to itself, unity,
@@ -597,7 +620,7 @@ Such expansions may include trivial scale variations and the central
 PDF set, resulting
 in the specification of a completely trivial variation,
 which would just repeat the nominal calculation.
-Per default, these trivial variations are automically omitted during the
+Per default, these trivial variations are automatically omitted during the
 calculation, since the nominal calculation is anyway included in the Sherpa
 output. If required (e.g. for debugging), this filtering
 can be explicitly disabled using
@@ -705,6 +728,8 @@ reweighting is enabled (see below).
 The rest of this section applies to both the combined ``VARIATIONS``
 and the individual ``SCALE_VARIATIONS`` etc. syntaxes.
 
+.. _Variation output:
+
 Variation output
 ----------------
 
@@ -715,19 +740,14 @@ are written to the standard output after the event generation has finalized.
 Additionally, some event output (see :ref:`Event output formats`) and analysis methods
 (see :ref:`ANALYSIS`) are able to process alternate event weights.
 Currently, the only supported event output method is
-``HepMC3_GenEvent`` (requires configuration with HepMC version 3 or later).
+``HepMC3`` (requires configuration with HepMC version 3 or later).
 The supported analysis methods are ``Rivet`` and ``Internal``.
 
 The alternative event weight names follow the MC naming convention, i.e. they
 are named ``MUR=<fac>__MUF=<fac>__LHAPDF=<id>``.  When using Sherpa's
-interface to Rivet 2, :ref:`Rivet analyses`, separate instances of
-Rivet, one for each alternative event weight in addition to the
-nominal one, are instantiated leading to one set of histograms each.
-They are again named using the ``MUR=<fac>__MUF=<fac>__LHAPDF=<id>``
-convention.
-For Rivet 3, the internal multi-weight handling capabilities are used instead,
-such that there are no alternate histogram files, just one containing
-histograms for all variations.
+interface to Rivet, :ref:`Rivet analyses`, the internal multi-weight handling
+capabilities are used, such that there is only one histogram file
+containing histograms all variations.
 Extending the naming convention, for pure strong coupling variations, an additional
 tag ``ASMZ=<val>`` is appended.
 If shower scale variations are disabled (either implicitly, because ``SHOWER_GENERATOR: None``,
@@ -735,7 +755,7 @@ or explicitly, see below),
 you will find ``ME.MUR``/``ME.MUF`` tags instead of the simple ones
 to make explicit that the parton-shower scales are not varied with the ME scales.
 
-If parton-shower variations are enabled, ``CSS_REWEIGHT: true``
+If parton-shower variations are enabled, ``SHOWER:REWEIGHT: true``
 (the default if parton showering is enabled),
 then pure ME-only variations are included along with the full variations in the
 HepMC/Rivet output by default. This can be disabled using
@@ -811,20 +831,20 @@ only the UV renormalisation term pole coefficient is considered in the scale var
 Parton shower emissions
 ```````````````````````
 
-.. index:: CSS_REWEIGHT
-.. index:: CSS_REWEIGHT_SCALE_CUTOFF
-.. index:: CSS_MAX_REWEIGHT_FACTOR
+.. index:: REWEIGHT
+.. index:: REWEIGHT_SCALE_CUTOFF
+.. index:: MAX_REWEIGHT_FACTOR
 
 By default, the reweighting of parton shower emissions is included in the variations.
 It can be disabled explicitly,
-using :option:`CSS_REWEIGHT: false`.  This should work out of the box for all
+using :option:`SHOWER:REWEIGHT: false`.  This should work out of the box for all
 types of variations. However, parton-shower reweighting (even though formally
 exact), tends to be numerically less stable than the reweighting of the hard
 process. If numerical issues are encountered, one can try to
-increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 5, measured in GeV).
+increase :option:`SHOWER:REWEIGHT_SCALE_CUTOFF` (default: 5, measured in GeV).
 This disables shower variations for emissions at scales below the value.
 An additional safeguard against rare spuriously large shower variation
-weights is implemented as :option:`CSS_MAX_REWEIGHT_FACTOR` (default: 1e3).
+weights is implemented as :option:`SHOWER:MAX_REWEIGHT_FACTOR` (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
 will be ignored and reset to 1.
 
@@ -855,7 +875,7 @@ parallelization first. Therefore, first run
    $ Sherpa INIT_ONLY=1 <Sherpa.yaml>
 
 and, in case of using Amegic, compile the libraries. Then start your
-parallized integration, e.g.
+parallelized integration, e.g.
 
 .. code-block:: shell-session
 

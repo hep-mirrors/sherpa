@@ -66,13 +66,13 @@ Dire::Dire(const Shower_Key &key):
   Shower_Base("Dire"), p_ms(NULL),
   m_maxweight(1.0)
 {
-  Settings& s = Settings::GetMainSettings();
+  auto pss = Settings::GetMainSettings()["SHOWER"];
   m_kttype=1;
   p_shower = new Shower();
   p_clus = new Cluster_Definitions(p_shower);
   p_shower->Init(key.p_model,key.p_isr);
-  m_reco = s["CSS_RECO_CHECK"].Get<int>();
-  m_wcheck = s["CSS_WEIGHT_CHECK"].Get<int>();
+  m_reco = pss["RECO_CHECK"].Get<int>();
+  m_wcheck = pss["WEIGHT_CHECK"].Get<int>();
 }
 
 Dire::~Dire()

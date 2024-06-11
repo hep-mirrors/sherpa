@@ -1,0 +1,113 @@
+# Sherpa configuration for DIS production
+
+# set up beams for HERA
+BEAMS: [-11,2212]
+BEAM_ENERGIES: [27.6,820]
+
+EVENTS: 10000
+EVENT_GENERATION_MODE: Weighted
+EVENT_DISPLAY_INTERVAL: 100
+BATCH_MODE: 7
+
+# matrix-element calculation
+ME_GENERATORS:
+  - Comix
+  - Amegic
+  - OpenLoops
+  - Internal
+
+TAGS: {QCUT: 5, NJET: 2, FSF: 1., RSF: 1., QSF: 1}
+
+# PDF
+ALPHAS:
+  USE_PDF: 1
+PDF_LIBRARY: LHAPDFSherpa
+PDF_SET: [None,NNPDF30_nnlo_as_0118]
+
+## shower specifics
+SCALES: METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2}
+CORE_SCALE: VAR{Abs2(p[0]-p[2])}
+
+HADRON_DECAYS:
+  Max_Proper_Lifetime: 10
+
+PARTICLE_DATA:
+  4: {Massive: true}
+  5: {Massive: true}
+
+PARTICLE_CONTAINERS:
+  993:
+    Name: qs
+    Flavours: [1,2,3,-1,-2,-3,21]
+  994:
+    Name: cs
+    Flavours: [4,-4]
+  995:
+    Name: bs
+    Flavours: [5,-5]
+
+# ep -> e+jets
+PROCESSES:
+- -11 93 -> -11 93 93{$(NJET)}:
+    Order: {QCD: 0, EW: 2}
+    CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT))/Abs2(p[2]-p[0]))
+    2->2-3:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: Internal
+    2->4-5:
+      ME_Generator: Comix
+
+- -11 4 -> -11 (994,995) 993{$(NJET)}:
+    Order: {QCD: 0, EW: 2}
+    CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT))/Abs2(p[2]-p[0]))
+
+- -11 -4 -> -11 (994,995) 993{$(NJET)}:
+    Order: {QCD: 0, EW: 2}
+    CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT))/Abs2(p[2]-p[0]))
+
+- -11 5 -> -11 (994,995) 993{$(NJET)}:
+    Order: {QCD: 0, EW: 2}
+    CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT))/Abs2(p[2]-p[0]))
+
+- -11 -5 -> -11 (994,995) 993{$(NJET)}:
+    Order: {QCD: 0, EW: 2}
+    CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT))/Abs2(p[2]-p[0]))
+
+- -11 93 -> -11 (994,995) (994,995) 93{$(NJET)}:
+    Cut_Core: 1
+    Order: {QCD: 1, EW: 2}
+    CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT))/Abs2(p[2]-p[0]))
+
+- -11 93 -> -11 (994,995) (994,995) (994,995) (994,995):
+    Cut_Core: 1
+    Order: {QCD: 2, EW: 2}
+    CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT))/Abs2(p[2]-p[0]))
+
+# minimum constraint for Q2
+SELECTORS:
+- [Q2, -11, -11, 2, 20000]
+
+ANALYSIS: Rivet
+RIVET:
+  IGNORE_BEAMS: 1
+  ANALYSES:
+  - H1_1994_I372350
+  - H1_1995_I394793
+  - H1_1996_I421105
+  - H1_1996_I422230
+  - H1_1996_I424463
+  - H1_1997_I445116
+  - H1_1999_I504022
+  - H1_2000_I503947
+  - H1_2002_I561885
+  - H1_2006_I699835
+  - ZEUS_1996_I420332
+  - ZEUS_1999_I500267
+  - ZEUS_2000_I524911
+  - ZEUS_1995_I392386
+  - ZEUS_1995_I395196
+
+

@@ -10,7 +10,8 @@ METS: { CLUSTER_MODE: 16 }
 # remove 0 processes with top contributions
 PARTICLE_CONTAINERS:
   901: {Name: lightflavs, Flavs: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
-NLO_CSS_DISALLOW_FLAVOUR: 5
+MC@NLO:
+  DISALLOW_FLAVOUR: 5
 
 PROCESSES:
 - 901 901 -> 90 91 90 91 901{3}:

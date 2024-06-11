@@ -29,21 +29,22 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   p_shower(NULL), p_cluster(NULL)
 {
   Settings& s = Settings::GetMainSettings();
+  auto pss = Settings::GetMainSettings()["SHOWER"];
   rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
 
-  m_maxem = s["CSS_MAXEM"].Get<size_t>();
+  m_maxem = pss["MAXEM"].Get<size_t>();
 
   SF_Lorentz::SetKappa(s["DIPOLES"]["KAPPA"].Get<double>());
 
-  m_kmode      = s["CSS_KMODE"].Get<int>();
-  m_recocheck  = s["CSS_RECO_CHECK"].Get<int>();
-  m_respectq2  = s["CSS_RESPECT_Q2"].Get<bool>();
+  m_kmode      = pss["KMODE"].Get<int>();
+  m_recocheck  = pss["RECO_CHECK"].Get<int>();
+  m_respectq2  = pss["RESPECT_Q2"].Get<bool>();
 
-  const int ckfmode { s["CSS_CKFMODE"].Get<bool>() };
-  const int pdfcheck{ s["CSS_PDFCHECK"].Get<bool>() };
-  const int _qcd    { s["CSS_QCD_MODE"].Get<bool>() };
-  const int _qed    { s["CSS_EW_MODE"].Get<bool>() };
+  const int ckfmode { pss["CKFMODE"].Get<bool>() };
+  const int pdfcheck{ pss["PDFCHECK"].Get<bool>() };
+  const int _qcd    { pss["QCD_MODE"].Get<bool>() };
+  const int _qed    { pss["EW_MODE"].Get<bool>() };
 
   if (_qed==1) {
     s_kftable[kf_photon]->SetResummed();

@@ -63,13 +63,13 @@ subsetting ``AMISIC``, like so
 The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
 :option:`PT_0(ref)`
-    Value :math:`p_\text{T,0}^\text{(ref)}` for the calculation of the IR regulator, see formula below. Defaults to ``2.2``.
+    Value :math:`p_\text{T,0}^\text{(ref)}` for the calculation of the IR regulator, see formula below. Defaults to ``2.05``.
 
 :option:`PT_0(IR)`
     The absolute minimum of the IR regulator, see formula below. Defaults to ``0.5``.
 
 :option:`PT_Min(ref)`
-    Value :math:`p_\text{T,min}^\text{(ref)}` for the calculation of the IR cutoff, see formula below. Defaults to ``3``.
+    Value :math:`p_\text{T,min}^\text{(ref)}` for the calculation of the IR cutoff, see formula below. Defaults to ``2.25``.
 
 :option:`Eta`
     The pseudorapidity :math:`\eta` used to calculate the IR cutoff and regulator, :math:`p_\text{T,min}` and :math:`p_\text{T,0}`.
@@ -108,7 +108,7 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
 :option:`SIGMA_ND_NORM`
     Specifies the factor to scale the non-diffractive cross section calculated in the MPI initialisation.
-    Defaults to ``0.4``.
+    Defaults to ``1.02``.
 
 :option:`nPT_bins`
     Controls the number of bins for the numerical integration of
@@ -123,7 +123,7 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
 :option:`nS_bins`
     Number of points to sample in the center-of-mass energy :math:`\sqrt{s}`. This is only used if the energy is not
-    fixed, i.e. in the case of EPA photons. Defaults to ``100``.
+    fixed, i.e. in the case of EPA photons. Defaults to ``40``.
 
 The total cross-section is calculated with
 

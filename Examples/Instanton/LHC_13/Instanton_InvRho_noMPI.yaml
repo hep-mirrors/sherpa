@@ -8,8 +8,6 @@ MI_HANDLER:             None # multiple interaction switch
 #EVENT_GENERATION_MODE: Weighted
 #BEAM_REMNANTS: false  #Turn off if SHOWER_GENERATOR is None
 #SHOWER_GENERATOR: None #Set None to turn off all the showers, instanton does not decay 
-#CSS_IS_PT2MIN: 1000000000000 #Set to very large value to disable all the showers except the instanton decay 
-#CSS_FS_PT2MIN: 1000000000000 #Set to very large value to disable all the showers except the instanton decay 
 #FRAGMENTATION: Off
 #FRAGMENTATION: Lund  #Hadronization switch
 #DECAYMODEL: Off
