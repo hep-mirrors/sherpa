@@ -76,42 +76,46 @@ void Event_Handler::PrintGenericEventStructure()
 {
   if (!msg_LevelIsInfo()) return;
 
-  msg_Info()<<"┌──────────────────────────────────────────────────────────────────────┐\n"
-            <<"│ " << om::bold << om::green << "SHERPA generates events with the following structure:"
-                   << om::reset << "                │\n";
-
-  msg_Info()<<"│ " << std::left << std::setw(24) << "Event generation"
-            <<"  " << std::left << std::setw(42);
+  msg_Info() << Frame_Header{}
+             << Frame_Line{
+                    MyStrStream{}
+                    << om::bold << om::green
+                    << "SHERPA generates events with the following structure:"
+                    << om::reset};
+  MyStrStream line;
+  line << std::left << std::setw(24) << "Event generation"
+       << "  " << std::left << std::setw(42);
   switch (ToType<size_t>(rpa->gen.Variable("EVENT_GENERATION_MODE"))) {
   case 0:
-    msg_Info()<<"Weighted";
+    line<<"Weighted";
     break;
   case 1:
-    msg_Info()<<"Unweighted";
+    line<<"Unweighted";
     break;
   case 2:
-    msg_Info()<<"Partially unweighted";
+    line<<"Partially unweighted";
     break;
   default:
-    msg_Info()<<"Unknown";
+    line<<"Unknown";
     break;
   }
-  msg_Info()<<" │\n";
+  msg_Info()<<Frame_Line{line};
 
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-    msg_Info() << "│ " << std::left << std::setw(24) << (*pit)->Type() << "  "
-               << std::left << std::setw(42) << (*pit)->Name() << " │\n";
+    msg_Info() << Frame_Line{
+        MyStrStream{} << std::left << std::setw(24) << (*pit)->Type() << "  "
+                      << std::left << std::setw(42) << (*pit)->Name()};
   }
   if (p_variations && !p_variations->GetParametersVector()->empty()) {
-    msg_Info() << "│ " << std::left << std::setw(24) << "Reweighting"
-               << "  " << std::left << std::setw(42)
-               << (ToString<size_t>(
-                       p_variations->GetParametersVector()->size()) +
-                   " variations")
-               << " │\n";
+    msg_Info() << Frame_Line{
+        MyStrStream{} << std::left << std::setw(24) << "Reweighting"
+                      << "  " << std::left << std::setw(42)
+                      << (ToString<size_t>(
+                              p_variations->GetParametersVector()->size()) +
+                          " variations")};
   }
 
-  msg_Info()<<"└──────────────────────────────────────────────────────────────────────┘\n";
+  msg_Info() << Frame_Footer{};
 }
 
 void Event_Handler::Reset()
@@ -533,39 +537,36 @@ void Event_Handler::Finish() {
     max_weight_name_size = std::max(max_weight_name_size, kv.first.size());
 
   // Calculate columns widths
-  const size_t xs_size {12};
-  const size_t reldev_size {12};
-  const size_t abserr_size {13};
-  const size_t relerr_size {12};
-  const size_t table_size {max_weight_name_size + xs_size + reldev_size +
-			   abserr_size + relerr_size};
+  const int xs_size {12};
+  const int reldev_size {12};
+  const int abserr_size {13};
+  const int relerr_size {12};
+  const int table_size{static_cast<int>(max_weight_name_size) + xs_size +
+                       reldev_size + abserr_size + relerr_size + 4};
 
   // Print cross section table header.
-  msg_Out() << "\u250C";
-  for (int i {0}; i < table_size + 2; ++i) msg_Out() << "\u2500";
-  msg_Out() << "\u2510\n";
-  msg_Out() << "\u2502 " << std::left << std::setw(max_weight_name_size)
-	    << "Nominal or variation name";
-  msg_Out() << std::right << std::setw(12) << "XS [pb]";
-  msg_Out() << std::right << std::setw(12) << "RelDev";
-  msg_Out() << std::right << std::setw(13) << "AbsErr [pb]";
-  msg_Out() << std::right << std::setw(12) << "RelErr" << " \u2502\n";
-  msg_Out() << "\u251C";
-  for (int i {0}; i < table_size + 2; ++i) msg_Out() << "\u2500";
-  msg_Out() << "\u2524\n";
+  msg_Out() << Frame_Header{table_size};
+  msg_Out() << Frame_Line{
+      MyStrStream{} << std::left << std::setw(max_weight_name_size)
+                    << "Nominal or variation name" << std::right
+                    << std::setw(12) << "XS [pb]" << std::right << std::setw(12)
+                    << "RelDev" << std::right << std::setw(13) << "AbsErr [pb]"
+                    << std::right << std::setw(12) << "RelErr",
+      table_size};
+  msg_Out() << Frame_Separator{table_size};
   // Define table row printer.
-  auto printxs = [max_weight_name_size, xs_size, reldev_size, abserr_size,
-		  relerr_size](const std::string& name, double xs, double nom,
-			       double err) {
-    msg_Out() << "\u2502 "
-	      << om::bold << std::left << std::setw(max_weight_name_size)
-	      << name << om::reset << std::right << om::blue << om::bold
-	      << std::setw(xs_size) << xs << om::reset << om::brown
-	      << std::setw(reldev_size - 2)
-	      << ((int((xs - nom) / nom * 10000)) / 100.0) << " %" << om::red
-	      << std::setw(abserr_size) << err << std::setw(relerr_size - 2)
-	      << ((int(err / xs * 10000)) / 100.0) << " %" << om::reset
-	      << " \u2502\n";
+  auto printxs = [table_size, max_weight_name_size, xs_size, reldev_size,
+                  abserr_size, relerr_size](const std::string &name, double xs,
+                                            double nom, double err) {
+    MyStrStream line;
+    line << om::bold << std::left << std::setw(max_weight_name_size)
+	 << name << om::reset << std::right << om::blue << om::bold
+	 << std::setw(xs_size) << xs << om::reset << om::brown
+	 << std::setw(reldev_size - 2)
+	 << ((int((xs - nom) / nom * 10000)) / 100.0) << " %" << om::red
+	 << std::setw(abserr_size) << err << std::setw(relerr_size - 2)
+	 << ((int(err / xs * 10000)) / 100.0) << " %" << om::reset;
+    msg_Out() << Frame_Line{line, table_size};
   };
 
   // Print nominal cross section and variations.
@@ -578,9 +579,7 @@ void Event_Handler::Finish() {
   }
 
   // Print cross section table footer.
-  msg_Out() << "\u2514";
-  for (int i {0}; i < table_size + 2; ++i) msg_Out() << "\u2500";
-  msg_Out() << "\u2518\n";
+  msg_Out() << Frame_Footer{table_size};
 }
 
 void Event_Handler::MPISync()
