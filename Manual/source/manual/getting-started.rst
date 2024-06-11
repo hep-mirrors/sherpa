@@ -544,11 +544,11 @@ output looks like:
 
    Event 10000 ( 72 s total ) = 1.20418e+07 evts/day
    Summarizing the run may take some time ...
-   ┌────────────────────────────────────────────────────────────────────────────┐
-   │ Nominal or variation name     XS [pb]      RelDev  AbsErr [pb]      RelErr │
-   ├────────────────────────────────────────────────────────────────────────────┤
-   │ Nominal                       1810.51         0 %      161.038      8.89 % │
-   └────────────────────────────────────────────────────────────────────────────┘
+   +----------------------------------------------------------------------------+
+   | Nominal or variation name     XS [pb]      RelDev  AbsErr [pb]      RelErr |
+   +----------------------------------------------------------------------------+
+   | Nominal                       1810.51         0 %      161.038      8.89 % |
+   +----------------------------------------------------------------------------+
 
 A summary of the number of events generated is displayed, with the
 total cross section for the process and possible systematic variations
