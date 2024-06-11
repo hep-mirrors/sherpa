@@ -124,8 +124,6 @@ namespace ATOOLS {
   struct Frame_Line {
     Frame_Line(const std::string &s, int width = 80)
         : m_textline{s}, m_width{width} {}
-    Frame_Line(const std::stringstream &s, int width = 80)
-        : m_textline{s.str()}, m_width{width} {}
     friend std::ostream &operator<<(std::ostream &str, const Frame_Line &f);
     std::string m_textline;
     int m_width;

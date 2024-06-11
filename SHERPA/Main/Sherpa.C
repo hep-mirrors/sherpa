@@ -380,16 +380,17 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
           << " (" << SHERPA_NAME << ")";
   msg_Info() << Frame_Header{};
   msg_Info() << Frame_Line{""};
-  msg_Info() << Frame_Line{MyStrStream{} << "       " << om::green << "/"
-                                         << om::reset << "\\"};
-  msg_Info() << Frame_Line{MyStrStream{}
-                           << "    " << om::blue << "/" << om::reset << "\\"
-                           << om::green << "/  " << om::reset << "\\" << om::red
-                           << "/" << om::reset << "\\"};
-  msg_Info() << Frame_Line{MyStrStream{} << "   " << om::blue << "/_"
-                                         << om::green << "/___" << om::red
-                                         << "/__" << om::reset << "\\   "
-                                         << version.str()};
+  MyStrStream logo;
+  logo << "       " << om::green << "/" << om::reset << "\\";
+  msg_Info() << Frame_Line{logo.str()};
+  logo.str("");
+  logo << "    " << om::blue << "/" << om::reset << "\\" << om::green << "/  "
+       << om::reset << "\\" << om::red << "/" << om::reset << "\\";
+  msg_Info() << Frame_Line{logo.str()};
+  logo.str("");
+  logo << "   " << om::blue << "/_" << om::green << "/___" << om::red << "/__"
+       << om::reset << "\\   " << version.str();
+  msg_Info() << Frame_Line{logo.str()};
   msg_Info() << Frame_Line{"                                                                            "};
   msg_Info() << Frame_Line{"                                                                            "};
   msg_Info() << Frame_Line{"Authors:        Enrico Bothmann, Lois Flower, Christian Gutschow,           "};

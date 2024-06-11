@@ -43,18 +43,19 @@ void ATOOLS::OutputHadrons(std::ostream &str) {
 void ATOOLS::OutputParticles(std::ostream &str) {
 
   static int tablewidth {91};
+  MyStrStream line;
 
   str<<"Particle data:\n";
   str<<Frame_Header(tablewidth);
-  str<<Frame_Line(MyStrStream{}
-     <<std::setw(9)<<"Name"
-     <<std::setw(9)<<"Kf-code"
-     <<std::setw(14)<<"Mass"
-     <<std::setw(14)<<"Width"
-     <<std::setw(9)<<"Stable"
-     <<std::setw(9)<<"Massive"
-     <<std::setw(9)<<"Active"
-     <<std::setw(14)<<"Yukawa", tablewidth);
+  line<<std::setw(9)<<"Name"
+      <<std::setw(9)<<"Kf-code"
+      <<std::setw(14)<<"Mass"
+      <<std::setw(14)<<"Width"
+      <<std::setw(9)<<"Stable"
+      <<std::setw(9)<<"Massive"
+      <<std::setw(9)<<"Active"
+      <<std::setw(14)<<"Yukawa";
+  str<<Frame_Line(line.str(), tablewidth);
   str<<Frame_Separator(tablewidth);
 
   KFCode_ParticleInfo_Map::const_iterator kfit = s_kftable.begin();
@@ -63,15 +64,16 @@ void ATOOLS::OutputParticles(std::ostream &str) {
     Flavour flav(kfit->first);
     if (flav.IsDiQuark() || flav.IsHadron()) continue;
     if (flav.Size()==1 && flav.Kfcode()!=0 && !flav.IsDummy()) {
-      str<<Frame_Line(MyStrStream{}
-         <<std::setw(9)<<flav.IDName()
-         <<std::setw(9)<<flav.Kfcode()
-         <<std::setw(14)<<flav.Mass(true)
-         <<std::setw(14)<<flav.Width()
-         <<std::setw(9)<<flav.Stable()
-         <<std::setw(9)<<flav.IsMassive()
-         <<std::setw(9)<<flav.IsOn()
-         <<std::setw(14)<<flav.Yuk(), tablewidth);
+      line.str("");
+      line<<std::setw(9)<<flav.IDName()
+          <<std::setw(9)<<flav.Kfcode()
+          <<std::setw(14)<<flav.Mass(true)
+          <<std::setw(14)<<flav.Width()
+          <<std::setw(9)<<flav.Stable()
+          <<std::setw(9)<<flav.IsMassive()
+          <<std::setw(9)<<flav.IsOn()
+          <<std::setw(14)<<flav.Yuk();
+      str<<Frame_Line(line.str(), tablewidth);
     }
   }
   str<<Frame_Footer(tablewidth);
@@ -80,15 +82,16 @@ void ATOOLS::OutputParticles(std::ostream &str) {
 void ATOOLS::OutputContainers(std::ostream &str) {
 
   static int tablewidth {91};
+  MyStrStream line;
   // There can be a lot of constituents, so we break the lines after a number
   // of constituents to prevent the output from becoming very wide.
   static int constituents_per_row {14};
   str<<"Particle containers:\n";
   str<<Frame_Header(tablewidth);
-  str<<Frame_Line(MyStrStream{}
-     <<std::setw(9)<<"Name"
-     <<std::setw(9)<<"Kf-code"
-     <<"  Constituents", tablewidth);
+  line<<std::setw(9)<<"Name"
+      <<std::setw(9)<<"Kf-code"
+      <<"  Constituents";
+  str<<Frame_Line(line.str(), tablewidth);
   str<<Frame_Separator(tablewidth);
 
   KFCode_ParticleInfo_Map::const_iterator kfit = s_kftable.begin();
@@ -97,7 +100,7 @@ void ATOOLS::OutputContainers(std::ostream &str) {
     Flavour flav(kfit->first);
     if (!flav.IsHadron() && flav.IsGroup() && flav.Kfcode()!=0) {
       for (int j=0; j < (flav.Size() - 1) / constituents_per_row + 1; j++) {
-        MyStrStream line;
+        line.str("");
         if (j==0) {
           line<<std::setw(9)<<flav.IDName();
           line<<std::setw(9)<<flav.Kfcode();
@@ -110,7 +113,7 @@ void ATOOLS::OutputContainers(std::ostream &str) {
           if (i!=flav.Size()-1) line<<flav[i].IDName()<<", ";
           if (i==flav.Size()-1) line<<flav[i].IDName();
         }
-        str<<Frame_Line(line, tablewidth);
+        str<<Frame_Line(line.str(), tablewidth);
       }
     }
   }

@@ -76,13 +76,13 @@ void Event_Handler::PrintGenericEventStructure()
 {
   if (!msg_LevelIsInfo()) return;
 
-  msg_Info() << Frame_Header{}
-             << Frame_Line{
-                    MyStrStream{}
-                    << om::bold << om::green
-                    << "SHERPA generates events with the following structure:"
-                    << om::reset};
   MyStrStream line;
+  line << om::bold << om::green
+                    << "SHERPA generates events with the following structure:"
+                    << om::reset;
+  msg_Info() << Frame_Header{}
+             << Frame_Line{line.str()};
+  line.str("");
   line << std::left << std::setw(24) << "Event generation"
        << "  " << std::left << std::setw(42);
   switch (ToType<size_t>(rpa->gen.Variable("EVENT_GENERATION_MODE"))) {
@@ -99,20 +99,21 @@ void Event_Handler::PrintGenericEventStructure()
     line<<"Unknown";
     break;
   }
-  msg_Info()<<Frame_Line{line};
+  msg_Info()<<Frame_Line{line.str()};
 
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-    msg_Info() << Frame_Line{
-        MyStrStream{} << std::left << std::setw(24) << (*pit)->Type() << "  "
-                      << std::left << std::setw(42) << (*pit)->Name()};
+    line.str("");
+    line << std::left << std::setw(24) << (*pit)->Type() << "  " << std::left
+         << std::setw(42) << (*pit)->Name();
+    msg_Info() << Frame_Line{line.str()};
   }
   if (p_variations && !p_variations->GetParametersVector()->empty()) {
-    msg_Info() << Frame_Line{
-        MyStrStream{} << std::left << std::setw(24) << "Reweighting"
-                      << "  " << std::left << std::setw(42)
-                      << (ToString<size_t>(
-                              p_variations->GetParametersVector()->size()) +
-                          " variations")};
+    line.str("");
+    line << std::left << std::setw(24) << "Reweighting"
+         << "  " << std::left << std::setw(42)
+         << (ToString<size_t>(p_variations->GetParametersVector()->size()) +
+             " variations");
+    msg_Info() << Frame_Line{line.str()};
   }
 
   msg_Info() << Frame_Footer{};
@@ -546,13 +547,13 @@ void Event_Handler::Finish() {
 
   // Print cross section table header.
   msg_Out() << Frame_Header{table_size};
-  msg_Out() << Frame_Line{
-      MyStrStream{} << std::left << std::setw(max_weight_name_size)
-                    << "Nominal or variation name" << std::right
-                    << std::setw(12) << "XS [pb]" << std::right << std::setw(12)
-                    << "RelDev" << std::right << std::setw(13) << "AbsErr [pb]"
-                    << std::right << std::setw(12) << "RelErr",
-      table_size};
+  MyStrStream line;
+  line << std::left << std::setw(max_weight_name_size)
+       << "Nominal or variation name" << std::right << std::setw(12)
+       << "XS [pb]" << std::right << std::setw(12) << "RelDev" << std::right
+       << std::setw(13) << "AbsErr [pb]" << std::right << std::setw(12)
+       << "RelErr";
+  msg_Out() << Frame_Line{line.str(), table_size};
   msg_Out() << Frame_Separator{table_size};
   // Define table row printer.
   auto printxs = [table_size, max_weight_name_size, xs_size, reldev_size,
@@ -566,7 +567,7 @@ void Event_Handler::Finish() {
 	 << ((int((xs - nom) / nom * 10000)) / 100.0) << " %" << om::red
 	 << std::setw(abserr_size) << err << std::setw(relerr_size - 2)
 	 << ((int(err / xs * 10000)) / 100.0) << " %" << om::reset;
-    msg_Out() << Frame_Line{line, table_size};
+    msg_Out() << Frame_Line{line.str(), table_size};
   };
 
   // Print nominal cross section and variations.

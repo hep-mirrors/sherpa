@@ -418,11 +418,11 @@ void Run_Parameter::Gen::WriteCitationInfo()
 #endif
     const int framewidth {60};
     msg_Out() << Frame_Header{framewidth};
-    msg_Out() << Frame_Line{MyStrStream{}
-                                << om::bold << om::green
-                                << "Please cite the publications listed in '"
-                                << refname << "'." << om::reset,
-                            framewidth};
+    MyStrStream citemsg;
+    citemsg << om::bold << om::green
+            << "Please cite the publications listed in '" << refname << "'."
+            << om::reset;
+    msg_Out() << Frame_Line{citemsg.str(), framewidth};
     msg_Out() << Frame_Footer{framewidth};
 #ifdef USING__MPI
   }
