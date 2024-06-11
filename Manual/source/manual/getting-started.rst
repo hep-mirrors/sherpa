@@ -422,10 +422,15 @@ a short and simple
 
    PROCESSES:
    - 93 93 -> 11 -11 93{1}:
-     Order: {QCD: 0, EW: 2}
-     CKKW: 20
+       Order: {QCD: 0, EW: 2}
+       CKKW: 20
 
-for now. Then you can go ahead and start Sherpa for the first time by running the
+for now.
+In addition, remove the :option:`ASSOCIATED_CONTRIBUTIONS_VARIATIONS` listing,
+since these can no longer be calculated after modifying :option:`PROCESSES`.
+You might also need to remove (or install) PDFs that are not available
+on your system from the :option:`PDF_VARIATIONS` listing.
+Then you can go ahead and start Sherpa for the first time by running the
 
 .. code-block:: shell-session
 
@@ -441,74 +446,63 @@ generator(s). The Sherpa output will look like:
 
 .. code-block:: console
 
-   Welcome to Sherpa, <user name> on <host name>. Initialization of framework underway.
+   Welcome to Sherpa, <user name> on <host name>.
+   Initialization of framework underway ...
    [...]
-   Random::SetSeed(): Seed set to 1234
+   Seed: 1234
    [...]
-   Beam_Spectra_Handler: type = Collider Setup
-    for P+ (on = 0, p = (6500,0,0,6500))
-    and P+ (on = 0, p = (6500,0,0,-6500)).
-   ISR handling:
-    PDFs for hard scattering:              PDF4LHC21_40_pdfas + PDF4LHC21_40_pdfas
-    PDFs for multiple parton interactions: PDF4LHC21_40_pdfas + PDF4LHC21_40_pdfas
-   Standard_Model::FixEWParameters() {
-    Input scheme: alphamZsW
-                  alpha(mZ)-mZ-sin(theta_W) scheme, input: 1/\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths
-    Ren. scheme:  alphamZsW
-
-    Parameters:   sin^2(\theta_W) = 0.23113
-                  vev             = 246.16 - 3.36725 i
-   }
-   Running_AlphaQED::PrintSummary() {
-     Setting \alpha according to EW scheme
+   Initializing beam spectra ...
+     Type: Collider Setup
+     Beam 1: P+ (enabled = 0, momentum = (6500,0,0,6500))
+     Beam 2: P+ (enabled = 0, momentum = (6500,0,0,-6500))
+   Initializing PDFs ...
+     Hard scattering:    PDF4LHC21_40_pdfas + PDF4LHC21_40_pdfas
+     MPI:                PDF4LHC21_40_pdfas + PDF4LHC21_40_pdfas
+   [...]
+   Fixed electroweak parameters
+     Input scheme: alpha(mZ)-mZ-sin(theta_W) scheme, input: 1/\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths
+     Ren. scheme:  alphamZsW
+     Parameters:   sin^2(\theta_W) = 0.23113
+                   vev              = 246.16 - 3.36725 i
+   Set \alpha according to EW scheme
      1/\alpha(0)   = 128.802
      1/\alpha(def) = 128.802
-   }
-   One_Running_AlphaS::PrintSummary() {
-     Setting \alpha_s according to PDF
-     perturbative order 2
+   Set \alpha_s according to PDF
+     Perturbative order: 2
      \alpha_s(M_Z) = 0.118
-   }
+   Set \alpha_s according to PDF
+     Perturbative order: 2
+     \alpha_s(M_Z) = 0.118
    [...]
-   Hadron_Init::Init(): Initializing kf table for hadrons.
-   Initialized the Fragmentation_Handler.
-   Initialized the Soft_Collision_Handler.
-   Initialized the Shower_Handler.
+   Initializing hadron particle information ...
+   Initialized fragmentation
+   Initialized hadron decays (model = HADRONS++)
+   Initialized soft photons
    [...]
-   Matrix_Element_Handler::BuildProcesses(): Looking for processes .. done
-   Matrix_Element_Handler::InitializeProcesses(): Performing tests .. done
-   Matrix_Element_Handler::InitializeProcesses(): Initializing scales  done
-   Initialized the Matrix_Element_Handler for the hard processes.
-   Primordial_KPerp::Primordial_KPerp() {
-     scheme = 0
-     beam 1: P+, mean = 1.1, sigma = 0.914775
-     beam 2: P+, mean = 1.1, sigma = 0.914775
-   }
-   Initialized the Beam_Remnant_Handler.
-   Hadron_Decay_Map::Read:   Initializing HadronDecays.dat. This may take some time.
-   Initialized the Hadron_Decay_Handler, Decay model = Hadrons
+   Building processes (3 ME generators, 1 process blocks) ...
+   Setting up processes ........ done (59 MB, 0s/0s)
+   Performing tests ........ done (60 MB, 0s/0s)
    [...]
 
-   
 Then Sherpa will start to integrate the cross sections. The output
 will look like:
 
 .. code-block:: console
 
-   Process_Group::CalculateTotalXSec(): Calculate xs for '2_2__j__j__e-__e+' (Comix)
+   Calculating xs for '2_2__j__j__e-__e+' (Comix) ...
    Integration parameters: n_{min} = 5000, N_{opt} = 10, N_{max} = 1, exponent = 0.5
-   Starting the calculation at 11:57:37. Lean back and enjoy ... .
+   Starting the calculation at 09:43:52. Lean back and enjoy ... .
    1630.48 pb +- ( 54.9451 pb = 3.36988 % ) 5000 ( 5029 -> 99.4 % )
-   full optimization:  ( 0s elapsed / 8s left ) [11:57:38]
-   1720.96 pb +- ( 87.5796 pb = 5.089 % ) 7071 ( 7113 -> 99.3 % )
-   full optimization:  ( 0s elapsed / 9s left ) [11:57:38]
-   ...
+   full optimization:  ( 0s elapsed / 5s left ) [09:43:52]
+   1692.37 pb +- ( 46.7001 pb = 2.75945 % ) 12071 ( 12133 -> 99.5 % )
+   full optimization:  ( 0s elapsed / 5s left ) [09:43:52]
+   [...]
 
 The first line here displays the process which is being calculated. In
-this example, the integration is for the 2->2 process, parton, parton
--> electron, positron. The matrix element generator used is displayed
+this example, the integration is for the :math:`2 \to 2` process, parton, parton
+:math:`\to` electron, positron. The matrix element generator used is displayed
 after the process.  As the integration progresses, summary lines are
-displayed, like the one shown above. The current estimate of the cross
+displayed, like the ones shown above. The current estimate of the cross
 section is displayed, along with its statistical error estimate. The
 number of phase space points calculated is displayed after this,
 and the efficiency is displayed after that. On the line below, the time
@@ -519,15 +513,13 @@ When the integration is complete, the output will look like:
 
 .. code-block:: console
 
-   ...
-   1681.34 pb +- ( 4.26194 pb = 0.253485 % ) 79980 ( 80030 -> 100 % )
-   full optimization:  ( 1s elapsed / 8s left ) [11:57:39]
-   1680.89 pb +- ( 3.27672 pb = 0.194939 % ) 113108 ( 113158 -> 100 % )
-   full optimization:  ( 1s elapsed / 8s left ) [11:57:39]
-   1680.34 pb +- ( 2.56818 pb = 0.152838 % ) 159958 ( 160008 -> 100 % )
-   integration time:   ( 2s elapsed / 7s left ) [11:57:40]
-   2_2__j__j__e-__e+ : 1680.34 pb +- ( 2.56818 pb = 0.152838 % )  exp. eff: 21.5474 %
-     reduce max for 2_2__j__j__e-__e+ to 1 ( eps = 0.001 -> exp. eff 0.215474 ) 
+   [...]
+   1677.75 pb +- ( 1.74538 pb = 0.104031 % ) 374118 ( 374198 -> 100 % )
+   full optimization:  ( 4s elapsed / 1s left ) [09:43:56]
+   1677.01 pb +- ( 1.36991 pb = 0.0816873 % ) 534076 ( 534157 -> 99.9 % )
+   integration time:   ( 5s elapsed / 0s left ) [09:43:58]
+   2_2__j__j__e-__e+ : 1677.01 pb +- ( 1.36991 pb = 0.0816873 % )  exp. eff: 20.6675 %
+     reduce max for 2_2__j__j__e-__e+ to 1 ( eps = 0.001 -> exp. eff 0.206675 ) 
 
 with the final cross section result and its statistical error displayed.
 
@@ -542,12 +534,16 @@ output looks like:
 
 .. code-block:: console
 
-   Event 10000 ( 72 s total ) = 1.20418e+07 evts/day
+   [...]
+     Event 100 ( 1 s total ) = 1.12208e+07 evts/day                    
    Summarizing the run may take some time ...
    +----------------------------------------------------------------------------+
    | Nominal or variation name     XS [pb]      RelDev  AbsErr [pb]      RelErr |
    +----------------------------------------------------------------------------+
-   | Nominal                       1810.51         0 %      161.038      8.89 % |
+   | Nominal                       1739.79         0 %      171.304      9.84 % |
+   | ME & PS: MUR=0.5 MUF=0.5      1635.61     -5.98 %      187.894     11.48 % |
+   | ME & PS: MUR=2 MUF=2          2261.57     29.99 %      387.031     17.11 % |
+   | [<results for other variations>]                                           |
    +----------------------------------------------------------------------------+
 
 A summary of the number of events generated is displayed, with the
@@ -686,11 +682,14 @@ run should be used, e.g.
 
 .. code-block:: console
 
-   +-----------------------------------------------------+
-   |                                                     |
-   |  Total XS is 1612.17 pb +- ( 8.48908 pb = 0.52 % )  |
-   |                                                     |
-   +-----------------------------------------------------+
+   +----------------------------------------------------------------------------+
+   | Nominal or variation name     XS [pb]      RelDev  AbsErr [pb]      RelErr |
+   +----------------------------------------------------------------------------+
+   | Nominal                       1739.79         0 %      171.304      9.84 % |
+   | ME & PS: MUR=0.5 MUF=0.5      1635.61     -5.98 %      187.894     11.48 % |
+   | ME & PS: MUR=2 MUF=2          2261.57     29.99 %      387.031     17.11 % |
+   | [<results for other variations>]                                           |
+   +----------------------------------------------------------------------------+
 
 Note that the Monte Carlo error quoted for the total cross section is
 determined during event generation. It, therefore, might differ
