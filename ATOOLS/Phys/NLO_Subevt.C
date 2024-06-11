@@ -137,7 +137,7 @@ namespace ATOOLS
       flavs.push_back(sevt.p_fl[i]);
       if (sevt.p_id) ids.push_back(sevt.p_id[i]);
     }
-    return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
+    ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
 	       <<", idx "<<sevt.m_idx
 	       <<", orders ("<<sevt.m_oqcd<<","<<sevt.m_oew<<")"
                <<", stype = "<<sevt.m_stype
@@ -148,7 +148,10 @@ namespace ATOOLS
 	       <<"\n  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
 	       <<", \\mu_R = "<<sqrt(sevt.m_mu2[stp::ren])
 	       <<", \\mu_Q = "<<sqrt(sevt.m_mu2[stp::res])
-	       <<", k_T = "<<sqrt(sevt.m_kt2)<<"\n}";
+	       <<", k_T = "<<sqrt(sevt.m_kt2)<<"\n";
+    for (size_t i(0);i<sevt.m_n;++i)
+      ostr<<"  p["<<i<<"] = "<<sevt.p_mom[i]<<"\n";
+    return ostr<<"}";
   }
   std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
   {

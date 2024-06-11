@@ -204,6 +204,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &ostr,const spt::splittingtype &st
   else if (st==spt::G2gG)  return ostr<<"G->gG";
   else if (st==spt::V2Vg)  return ostr<<"V->Vg";
   else if (st==spt::V2gV)  return ostr<<"V->gV";
+  else if (st==spt::soft)  return ostr<<"soft";
   return ostr<<"UNKNOWN";
 }
 

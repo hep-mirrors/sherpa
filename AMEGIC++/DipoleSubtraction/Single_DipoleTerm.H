@@ -54,7 +54,7 @@ namespace AMEGIC {
   public:
 
     Single_DipoleTerm(const PHASIC::Process_Info &,size_t,size_t,size_t,
-                      ATOOLS::sbt::subtype,PHASIC::Process_Integrator*);
+                      ATOOLS::sbt::subtype,int,PHASIC::Process_Integrator*);
     ~Single_DipoleTerm();
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
@@ -72,9 +72,9 @@ namespace AMEGIC {
 
     void           SetLOMomenta(const ATOOLS::Vec4D*,const ATOOLS::Poincare &);
   private:
-    bool           DetermineType();
-    bool           DetermineQCDType();
-    bool           DetermineEWType();
+    bool           DetermineType(int type);
+    bool           DetermineQCDType(int type);
+    bool           DetermineEWType(int type);
     bool           CompareLOmom(const ATOOLS::Vec4D*);
 
     /*------------------------------------------------------------------------------

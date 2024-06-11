@@ -219,7 +219,8 @@ namespace ATOOLS {
       G2Gg  = 7,
       G2gG  = 8,
       V2Vg  = 9,
-      V2gV  = 10
+      V2gV  = 10,
+      soft  = 11
     };
   };// end of struct spt
 

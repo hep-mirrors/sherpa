@@ -32,12 +32,8 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pi = mom[m_i];
   m_pj = mom[m_j];
   m_pk = mom[m_k];
-  /* hack for ps point test*/
-  m_pi = mom[m_j];
-  m_pj = mom[m_i];
-  // end hack
 
-  if (m_subtype==subscheme::Alaric)
+  if (m_subtype==subscheme::Alaric && m_ftype==spt::soft)
     return SetMomentaAlaric(mom);
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
@@ -66,10 +62,12 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   switch (m_ftype) {
   case spt::q2qg:
     m_sff = 2./(1.-m_zi*(1.-m_yijk))-(1.+zi); //< CS eq. 5.7
+    if (m_subtype==subscheme::Alaric) m_sff = zi*(1.-zi);
     m_av  = m_sff;
     break;
   case spt::q2gq:
     m_sff = 2./(1.-m_zj*(1.-m_yijk))-(1.+zj); //< CS eq. 5.7
+    if (m_subtype==subscheme::Alaric) m_sff = zi*zi;
     m_av  = m_sff;
     break;
   case spt::g2qq:
@@ -124,12 +122,23 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   m_pt2   =     m_ptij;
 
   switch (m_ftype) {
+  case spt::soft: {
+    Vec4D K(p_recoil->Recoil(ampl));
+    Vec4D pi(ff.m_pi), pk(ff.m_pk), pj(ff.m_pj), n(K+pj);
+    double sij(pi*pj), sik(pi*pk), skj(pj*pk);
+    double D(sij*(pk*n)+skj*(pi*n));
+    double A(2*sik/(sij*skj));
+    A*=sij*skj*(pi*n)/D;
+    m_sff = A;
+    m_av  = m_sff;
+    break;
+  }
     case spt::q2qg:
-      m_sff = 2.*m_yijk/ff.m_z-(1.+ff.m_z); //< CS eq. 5.183
+      m_sff = ff.m_z*(1.-ff.m_z); //< CS eq. 5.183
       m_av  = m_sff;
       break;
     case spt::q2gq:
-      m_sff = 2.*m_yijk/ff.m_z-(1.+ff.m_z); //< CS eq. 5.183
+      m_sff = ff.m_z*ff.m_z; //< CS eq. 5.183
       m_av  = m_sff;
       break;
     case spt::g2qq:
@@ -153,10 +162,6 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   }
   if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
   m_mom = ff.m_p;
-  /* hack for ps point test*/
-  m_pi = m_mom[m_i];
-  m_pj = m_mom[m_j];
-  // end hack
 }
 
 double FF_DipoleSplitting::GetValue()

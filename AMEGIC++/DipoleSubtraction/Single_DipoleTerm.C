@@ -37,8 +37,9 @@ using namespace std;
 Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
                                      size_t pi,size_t pj,size_t pk,
                                      ATOOLS::sbt::subtype stype,
+				     int spintype,
                                      Process_Integrator* pint) :
-  m_iresult(0.), m_valid(true), m_noISclustertolepton(true), m_dalpha(1.),
+  m_iresult(0.), m_valid(1), m_noISclustertolepton(true), m_dalpha(1.),
   m_dkt2max(std::numeric_limits<double>::max()),
   m_maxgsmass(0.), p_partner(this), p_LO_process(NULL), p_LO_mom(NULL),
   m_stype(stype), m_dtype(dpt::none), m_ftype(spt::none),
@@ -47,7 +48,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   m_pspissplitscheme(1), m_pspfssplitscheme(1),
   p_realint(pint)
 {
-  DEBUG_FUNC(m_stype<<"[("<<pi<<","<<pj<<");"<<pk<<"]");
+  DEBUG_FUNC(m_stype<<"[("<<pi<<","<<pj<<");"<<pk<<"],type="<<spintype);
   PHASIC::Process_Base::Init(pinfo, pint->Beam(), pint->ISR());
   AMEGIC::Process_Base::Init();
 
@@ -67,7 +68,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   m_pspfssplitscheme = dipolesettings["PFF_FS_SPLIT_SCHEME"].Get<size_t>();
   m_noISclustertolepton = dipolesettings["IS_CLUSTER_TO_LEPTONS"].Get<size_t>();
 
-  if (!DetermineType()) return;
+  if (!DetermineType(spintype)) return;
 
   // determine LO indices
   m_LOpij = m_pi;
@@ -138,7 +139,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
                                               p_int->Beam(),
                                               p_int->ISR(),
                                               m_stype);
-    if (lopi.m_amegicmhv==2) { m_valid=false; return; }
+    if (lopi.m_amegicmhv==2) { m_valid=0; return; }
   }
   if (!p_LO_process)
     p_LO_process = new Single_LOProcess(lopi,
@@ -226,18 +227,16 @@ Single_DipoleTerm::~Single_DipoleTerm()
   Generic stuff for initialization of Single_DipoleTermes
 
   ----------------------------------------------------------------------------*/
-bool Single_DipoleTerm::DetermineType() {
+bool Single_DipoleTerm::DetermineType(int type) {
   DEBUG_FUNC("");
-  if (m_pi>=m_pj) { msg_Debugging()<<"i>j\n"; m_valid=false; }
-  if (m_pj<m_nin) { msg_Debugging()<<"j in IS\n"; m_valid=false; }
-  if (!m_valid) return false;
+  if (!m_valid) return 0;
   bool massive(false);
   bool massiveini(false);
   m_fli=m_flavs[m_pi];
   m_flj=m_flavs[m_pj];
   m_flk=m_flavs[m_pk];
   // only allow massless emittees for now
-  if (m_flj.IsMassive()) return m_valid=false;
+  if (m_flj.IsMassive()) return m_valid=0;
   if (m_flk.IsMassive()) massive=true;
   if (massive && m_pk<m_nin) massiveini=true;
   if (m_pi>=m_nin) {
@@ -272,14 +271,15 @@ bool Single_DipoleTerm::DetermineType() {
   }
 
   msg_Debugging()<<"dtype: "<<m_dtype<<std::endl;
-  if      (m_stype==sbt::qcd) return DetermineQCDType();
-  else if (m_stype==sbt::qed) return DetermineEWType();
+  if      (m_stype==sbt::qcd) return DetermineQCDType(type);
+  else if (m_stype==sbt::qed) return DetermineEWType(type);
   return m_valid=false;
 }
 
-bool Single_DipoleTerm::DetermineQCDType()
+bool Single_DipoleTerm::DetermineQCDType(int type)
 {
-  DEBUG_FUNC(m_dtype<<"[("<<m_fli<<","<<m_flj<<");"<<m_flk<<"]");
+  DEBUG_FUNC(m_dtype<<"[("<<m_fli<<","<<m_flj<<");"<<m_flk<<"],type="<<type);
+  if (type>1) return m_valid=false;
   switch (m_dtype) {
   case dpt::f_f:
   case dpt::f_fm:
@@ -287,7 +287,7 @@ bool Single_DipoleTerm::DetermineQCDType()
   case dpt::f_im:
     if (m_fli==Flavour(kf_gluon)) {
       m_flij = m_flj;
-      if (m_flj==m_fli) m_ftype = spt::g2gg;
+      if (m_flj==m_fli) m_ftype = type==0?spt::g2gg:spt::soft;
       else if (!IsSusy(m_fli)) m_ftype = spt::q2gq;
       else if (IsGluino(m_fli)) m_ftype = spt::s2gs;
       else if (IsSquark(m_fli)) m_ftype = spt::G2gG;
@@ -296,10 +296,10 @@ bool Single_DipoleTerm::DetermineQCDType()
     }
     else if (m_flj==Flavour(kf_gluon)) {
       m_flij = m_fli;
-      if (m_flj==m_fli) m_ftype = spt::g2gg;
-      else if (!IsSusy(m_fli)) m_ftype = spt::q2qg;
-      else if (IsGluino(m_fli)) m_ftype = spt::s2sg;
-      else if (IsSquark(m_fli)) m_ftype = spt::G2Gg;
+      if (m_flj==m_fli) m_ftype = type==0?spt::g2gg:spt::soft;
+      else if (!IsSusy(m_fli)) m_ftype = type==0?spt::q2qg:spt::soft;
+      else if (IsGluino(m_fli)) m_ftype = type==0?spt::s2sg:spt::soft;
+      else if (IsSquark(m_fli)) m_ftype = type==0?spt::G2Gg:spt::soft;
       else THROW(fatal_error,"Unknown dipole for "+m_flij.IDName()
                              +" -> "+m_fli.IDName()+" "+m_flj.IDName());
     }
@@ -338,6 +338,7 @@ bool Single_DipoleTerm::DetermineQCDType()
     m_ftype = spt::none;
   }
   msg_Debugging()<<"ftype: "<<m_ftype<<std::endl;
+  if (type==1 && m_ftype!=spt::soft) return m_valid=false;
 
   // consistency check
   if (m_ftype==spt::none) {
@@ -355,8 +356,9 @@ bool Single_DipoleTerm::DetermineQCDType()
   return m_valid;
 }
 
-bool Single_DipoleTerm::DetermineEWType()
+bool Single_DipoleTerm::DetermineEWType(int type)
 {
+  if (type>0) return m_valid=false;
   DEBUG_FUNC(m_dtype<<"[("<<m_fli<<","<<m_flj<<");"<<m_flk<<"]");
   switch (m_dtype) {
   case dpt::f_f:
