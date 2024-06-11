@@ -21,7 +21,7 @@ from shared_conf import *
 
 # -- Project information -----------------------------------------------------
 
-project = 'Sherpa Manual'
+project = 'Manual'
 
 release = '[GIT]' # will be read from `configure.ac`
 
