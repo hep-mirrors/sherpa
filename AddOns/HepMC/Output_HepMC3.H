@@ -29,9 +29,9 @@ namespace SHERPA {
 #ifdef USING__GZIP
     ATOOLS::ogzstream m_outstream;
 #else
-    std::ofstream  m_outstream;
+    std::ofstream     m_outstream;
 #endif
-    int m_iotype = 0;
+    int m_iotype;
     ATOOLS::Weights_Map m_xs;
     ATOOLS::Weights_Map m_err;
     std::string m_pluginlibrary;

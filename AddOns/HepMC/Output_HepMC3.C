@@ -82,8 +82,7 @@ switch (m_iotype)
         if (m_pluginlibrary.empty() || m_pluginfunction.empty()) THROW(fatal_error, "To use HepMC3 Writer plugin please set  HEPMC3_OUTPUT_PLUGIN and HEPMC3_OUTPUT_FUNCTION.");
         m_outstream.open((m_basename + m_ext).c_str());
         if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-        HepMC::Writer* t_writer = new HepMC::WriterPlugin(m_outstream,m_pluginlibrary,m_pluginfunction);
-        p_writer = t_writer;
+        p_writer = new HepMC3::WriterPlugin(m_outstream,m_pluginlibrary,m_pluginfunction);
     }
     break;        
     default:
