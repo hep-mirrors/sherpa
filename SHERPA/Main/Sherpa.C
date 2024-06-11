@@ -379,21 +379,22 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
   version << "SHERPA v" << SHERPA_VERSION << "." << SHERPA_SUBVERSION
           << " (" << SHERPA_NAME << ")";
   msg_Info() << Frame_Header{};
-  msg_Info() << Frame_Line{""};
   MyStrStream logo;
   logo << "       " << om::green << "/" << om::reset << "\\";
   msg_Info() << Frame_Line{logo.str()};
   logo.str("");
-  logo << "    " << om::blue << "/" << om::reset << "\\" << om::green << "/  "
-       << om::reset << "\\" << om::red << "/" << om::reset << "\\";
+  logo << "      " << om::green << "/" << om::reset << "  \\" << om::red << "/" << om::reset << "\\";
   msg_Info() << Frame_Line{logo.str()};
   logo.str("");
-  logo << "   " << om::blue << "/_" << om::green << "/___" << om::red << "/__"
-       << om::reset << "\\   " << version.str();
+  logo << "   " << om::blue << "/" << om::reset << "\\" << om::green << "/"
+       << om::reset << "   " << om::red << "/" << om::reset << "  \\";
+  msg_Info() << Frame_Line{logo.str()};
+  logo.str("");
+  logo << "  " << om::blue << "/__" << om::reset << "\\" << om::green << "__" << om::red << "/____"
+       << om::reset << "\\  " << version.str();
   msg_Info() << Frame_Line{logo.str()};
   msg_Info() << Frame_Line{"                                                                            "};
-  msg_Info() << Frame_Line{"                                                                            "};
-  msg_Info() << Frame_Line{"Authors:        Enrico Bothmann, Lois Flower, Christian Gutschow,           "};
+  msg_Info() << Frame_Line{"       Authors: Enrico Bothmann, Lois Flower, Christian Gutschow,           "};
   msg_Info() << Frame_Line{"                Stefan Hoeche, Mareen Hoppe, Max Knobbe, Frank Krauss,      "};
   msg_Info() << Frame_Line{"                Peter Meinzinger, Davide Napoletano, Alan Price,            "};
   msg_Info() << Frame_Line{"                Daniel Reichelt, Marek Schoenherr, Steffen Schumann,        "};
@@ -407,7 +408,7 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
   msg_Info() << Frame_Line{"people. Users are encouraged to refer to the various original publications. "};
   msg_Info() << Frame_Line{"                                                                            "};
   msg_Info() << Frame_Line{"Users are kindly asked to refer to the documentation published under        "};
-  msg_Info() << Frame_Line{"SciPost Phys 7 (2019) 3, 034                                                "};
+  msg_Info() << Frame_Line{"SciPost Phys 7 (2019) 3, 034.                                               "};
   msg_Info() << Frame_Line{"                                                                            "};
   msg_Info() << Frame_Line{"Please visit also our homepage                                              "};
   msg_Info() << Frame_Line{"                                                                            "};
