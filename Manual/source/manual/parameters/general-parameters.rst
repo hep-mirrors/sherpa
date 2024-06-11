@@ -427,7 +427,12 @@ The following formats are currently available:
   ``0`` and corresponds to ASCII GenEvent output. Other available options are:
   ``1`` (HepEvt output), ``2`` (HepMC2 ASCII output),
   ``3`` (ROOT file output with every event written as an object of class GenEvent),
-  and ``4`` (ROOT file output with GenEvent objects written into TTree).
+  ``4`` (ROOT file output with GenEvent objects written into TTree) and
+  ``5`` (Output via custom HepMC3 plugin). For the later option one should also set 
+  the location of the plugin file :option:`HEPMC3_OUTPUT_PLUGIN` and the name of the 
+  output function :option:`HEPMC3_OUTPUT_FUNCTION`, which is called for the creation of 
+  the HepMC3::Writer.
+  
 
   The HepMC::GenEvent::m_weights weight vector stores the
   following items: ``[0]`` event weight, ``[1]`` combined matrix
