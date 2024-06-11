@@ -34,8 +34,8 @@ namespace SHERPA {
     int m_iotype;
     ATOOLS::Weights_Map m_xs;
     ATOOLS::Weights_Map m_err;
-    std::string m_pluginlibrary;
-    std::string m_pluginfunction;
+    std::string m_pluginlibrary{};
+    std::string m_pluginfunction{};
 
   protected:
     bool m_short;
