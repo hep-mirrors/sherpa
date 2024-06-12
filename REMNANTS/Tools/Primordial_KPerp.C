@@ -18,10 +18,10 @@ Primordial_KPerp::~Primordial_KPerp() {
 }
 
 void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
-  msg_Out()<<METHOD<<"\n";
+  msg_Out()<<"Initializing primordial transverse momentum ...\n";
   for (size_t beam=0;beam<2;beam++) {
     m_beamflav          = rhandler->GetRemnant(beam)->Flav();
-    msg_Out()<<METHOD<<"("<<beam<<"): flav = "<<m_beamflav<<", "<<m_beamflav.Kfcode()<<"\n";
+    msg_Debugging()<<METHOD<<"("<<beam<<"): flav = "<<m_beamflav<<", "<<m_beamflav.Kfcode()<<"\n";
     m_form[beam]        = rempars->KT_Form(m_beamflav);
     m_recoil[beam]      = rempars->KT_Recoil(m_beamflav);
     if (m_form[beam]==primkT_form::none) continue;
