@@ -32,8 +32,6 @@ int PHASIC::ClusterAntenna
   ffp.m_pk=pk;
   ffp.m_pj=pj;
   ffp.m_pi=pi;
-  ffp.m_n=n;
-  ffp.m_K=K;
   Vec4D Kt(K-ffp.m_pijt+pi+pj);
   Poincare oldcm, newcm;
   if (ffp.m_mode&2) {
@@ -57,6 +55,10 @@ int PHASIC::ClusterAntenna
       oldcm.Boost(ffp.m_p[l]);
       newcm.BoostBack(ffp.m_p[l]);
     }
+  if (ffp.m_mode&2) {
+    oldcm.Boost(ffp.m_pi);
+    newcm.BoostBack(ffp.m_pi);
+  }
   if (ffp.m_mode&4) {
     oldcm.Boost(ffp.m_pk);
     newcm.BoostBack(ffp.m_pk);
@@ -87,6 +89,8 @@ int PHASIC::ClusterAntenna
   double cp(-ffp.m_pj*n_perp), sp(-ffp.m_pj*l_perp);
   ffp.m_phi=atan2(sp,cp);
   ffp.m_stat=1;
+  ffp.m_n=n;
+  ffp.m_K=K;
   return 1;
 }
 

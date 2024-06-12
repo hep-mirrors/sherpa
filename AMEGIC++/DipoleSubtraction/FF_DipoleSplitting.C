@@ -107,8 +107,9 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_fl[i].Bar():p_subevt->p_fl[i]);
   }
   ff.m_b=p_recoil->RecoilTags(ampl);
+
   ampl->Delete();
-  PHASIC::ClusterAntenna(ff, m_j, m_i, m_k, 0.);
+  PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
   DEBUG_VAR(ff.m_p);
 
   m_yijk = (m_pi*m_pk)/(m_pj*(m_pi+m_pk)); //< corresponds to v_{i,ab} in CS, eq. 5.169
@@ -130,8 +131,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
 
   switch (m_ftype) {
   case spt::soft: {
-    Vec4D K(p_recoil->Recoil(ampl));
-    Vec4D pi(ff.m_pi), pk(ff.m_pk), pj(ff.m_pj), n(K+pj);
+    Vec4D pi(ff.m_pi), pk(ff.m_pk), pj(ff.m_pj), n(ff.m_n);
     double sij(pi*pj), sik(pi*pk), skj(pj*pk);
     double D(sij*(pk*n)+skj*(pi*n));
     double A(2*sik/(sij*skj));
