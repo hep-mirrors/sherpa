@@ -121,7 +121,7 @@ if(SHERPA_ENABLE_RIVET)
     macro(run_var NN a b c d)
       add_test(
         NAME Main${test}partC${NN} 
-        COMMAND Sherpa SCALE_VARIATIONS:None RSF:=${a} FSF:=${b} -A Explicit__ME.MUR=${c}__ME.MUF=${d}__LHAPDF=93300
+        COMMAND Sherpa SCALE_VARIATIONS:None RSF:=${a} FSF:=${b} -A Explicit__MUR=${c}__MUF=${d}__LHAPDF=93300
           ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml
           ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/${order}.yaml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
