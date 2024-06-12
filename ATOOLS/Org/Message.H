@@ -105,29 +105,30 @@ namespace ATOOLS {
 
   struct Frame_Header {
     Frame_Header(int width = 80) : m_width {width} {}
-    friend std::ostream &operator<<(std::ostream &str, Frame_Header f);
     int m_width;
-  };//end of struct Frame_Header
+  };
 
   struct Frame_Footer {
     Frame_Footer(int width = 80) : m_width {width} {}
-    friend std::ostream &operator<<(std::ostream &str, Frame_Footer f);
     int m_width;
-  };//end of struct Frame_Footer
+  };
 
   struct Frame_Separator {
     Frame_Separator(int width = 80) : m_width {width} {}
-    friend std::ostream &operator<<(std::ostream &str, Frame_Separator f);
     int m_width;
-  };//end of struct Frame_Footer
+  };
 
   struct Frame_Line {
     Frame_Line(const std::string &s, int width = 80)
         : m_textline{s}, m_width{width} {}
-    friend std::ostream &operator<<(std::ostream &str, const Frame_Line &f);
     std::string m_textline;
     int m_width;
-  };//end of struct Frame_Line
+  };
+
+  std::ostream &operator<<(std::ostream &str, Frame_Header f);
+  std::ostream &operator<<(std::ostream &str, Frame_Footer f);
+  std::ostream &operator<<(std::ostream &str, Frame_Separator f);
+  std::ostream &operator<<(std::ostream &str, const Frame_Line &f);
 
   class Indentation;
 
