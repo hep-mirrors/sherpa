@@ -383,26 +383,29 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
   logo << "       " << om::green << "/" << om::reset << "\\";
   msg_Info() << Frame_Line{logo.str()};
   logo.str("");
-  logo << "      " << om::green << "/" << om::reset << "  \\" << om::red << "/" << om::reset << "\\";
+  logo << "      " << om::green << "//" << om::reset << "\\\\" << om::red << "/" << om::reset << "\\";
   msg_Info() << Frame_Line{logo.str()};
   logo.str("");
-  logo << "   " << om::blue << "/" << om::reset << "\\" << om::green << "/"
-       << om::reset << "   " << om::red << "/" << om::reset << "  \\";
+  logo << "   " << om::blue << "/" << om::reset << "\\" << om::green << "////"
+       << om::reset << om::red << "//" << om::reset << "\\\\";
   msg_Info() << Frame_Line{logo.str()};
   logo.str("");
-  logo << "  " << om::blue << "/__" << om::reset << "\\" << om::green << "__" << om::red << "/____"
-       << om::reset << "\\  " << version.str();
+  logo << "  " << om::blue << "//" << om::reset << "\\\\" << om::green << "//" << om::red << "////"
+       << om::reset << "\\\\";
+  msg_Info() << Frame_Line{logo.str()};
+  logo.str("");
+  logo << "+~~~~~~~~~~~~~~+  " << version.str();
   msg_Info() << Frame_Line{logo.str()};
   msg_Info() << Frame_Line{"                                                                            "};
-  msg_Info() << Frame_Line{"       Authors: Enrico Bothmann, Lois Flower, Christian Gutschow,           "};
-  msg_Info() << Frame_Line{"                Stefan Hoeche, Mareen Hoppe, Max Knobbe, Frank Krauss,      "};
-  msg_Info() << Frame_Line{"                Peter Meinzinger, Davide Napoletano, Alan Price,            "};
-  msg_Info() << Frame_Line{"                Daniel Reichelt, Marek Schoenherr, Steffen Schumann,        "};
-  msg_Info() << Frame_Line{"                Frank Siegert                                               "};
-  msg_Info() << Frame_Line{"Former Authors: Gurpreet Singh Chahal, Timo Fischer, Tanju Gleisberg,       "};
-  msg_Info() << Frame_Line{"                Hendrik Hoeth, Johannes Krause, Silvan Kuttimalai,          "};
-  msg_Info() << Frame_Line{"                Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,           "};
-  msg_Info() << Frame_Line{"                Andreas Schaelicke, Holger Schulz, Jan Winter               "};
+  msg_Info() << Frame_Line{"        Authors:  Enrico Bothmann, Lois Flower, Christian Gutschow,         "};
+  msg_Info() << Frame_Line{"                  Stefan Hoeche, Mareen Hoppe, Max Knobbe, Frank Krauss,    "};
+  msg_Info() << Frame_Line{"                  Peter Meinzinger, Davide Napoletano, Alan Price,          "};
+  msg_Info() << Frame_Line{"                  Daniel Reichelt, Marek Schoenherr, Steffen Schumann,      "};
+  msg_Info() << Frame_Line{"                  Frank Siegert                                             "};
+  msg_Info() << Frame_Line{" Former Authors:  Gurpreet Singh Chahal, Timo Fischer, Tanju Gleisberg,     "};
+  msg_Info() << Frame_Line{"                  Hendrik Hoeth, Johannes Krause, Silvan Kuttimalai,        "};
+  msg_Info() << Frame_Line{"                  Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,         "};
+  msg_Info() << Frame_Line{"                  Andreas Schaelicke, Holger Schulz, Jan Winter             "};
   msg_Info() << Frame_Line{"                                                                            "};
   msg_Info() << Frame_Line{"This program uses a lot of genuine and original research work by other      "};
   msg_Info() << Frame_Line{"people. Users are encouraged to refer to the various original publications. "};
