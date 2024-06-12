@@ -60,13 +60,19 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pt2   =     m_ptij;
 
   switch (m_ftype) {
+  case spt::soft:
+    m_sff = 0;
+    m_av = 0;
+    break;
   case spt::q2qg:
     m_sff = 2./(1.-m_zi*(1.-m_yijk))-(1.+zi); //< CS eq. 5.7
+    m_sff *= zi;
     if (m_subtype==subscheme::Alaric) m_sff = zi*(1.-zi);
     m_av  = m_sff;
     break;
   case spt::q2gq:
     m_sff = 2./(1.-m_zj*(1.-m_yijk))-(1.+zj); //< CS eq. 5.7
+    m_sff *= zi;
     if (m_subtype==subscheme::Alaric) m_sff = zi*zi;
     m_av  = m_sff;
     break;
@@ -90,6 +96,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
         + ToString(m_ftype) + ".");
   }
   if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
+  DEBUG_VAR(m_ftype<<" "<<m_sff<<" "<<m_av);
 }
 
 void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
@@ -133,32 +140,32 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_av  = m_sff;
     break;
   }
-    case spt::q2qg:
-      m_sff = ff.m_z*(1.-ff.m_z); //< CS eq. 5.183
-      m_av  = m_sff;
-      break;
-    case spt::q2gq:
-      m_sff = ff.m_z*ff.m_z; //< CS eq. 5.183
-      m_av  = m_sff;
-      break;
-    case spt::g2qq:
-      m_sff = 1.; //< CS eq. 5.185
-      m_av  = m_sff - 4.*ff.m_z*(1.-ff.m_z);
-      break;
-    case spt::g2gg:
-      m_sff = m_yijk/ff.m_z-1.+(1.-ff.m_z)/ff.m_z; //< CS eq. 5.186
-      m_av  = m_sff + ff.m_z*(1-ff.m_z);
-      break;
-    case spt::none:
-      THROW(fatal_error, "Splitting type not set.");
-    case spt::s2sg:
-    case spt::s2gs:
-    case spt::G2Gg:
-    case spt::G2gG:
-    case spt::V2Vg:
-    case spt::V2gV:
-      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
-                                 + ToString(m_ftype) + ".");
+  case spt::q2qg:
+    m_sff = ff.m_z*(1.-ff.m_z); //< CS eq. 5.183
+    m_av  = m_sff;
+    break;
+  case spt::q2gq:
+    m_sff = ff.m_z*ff.m_z; //< CS eq. 5.183
+    m_av  = m_sff;
+    break;
+  case spt::g2qq:
+    m_sff = 1.; //< CS eq. 5.185
+    m_av  = m_sff - 4.*ff.m_z*(1.-ff.m_z);
+    break;
+  case spt::g2gg:
+    m_sff = m_yijk/ff.m_z-1.+(1.-ff.m_z)/ff.m_z; //< CS eq. 5.186
+    m_av  = m_sff + ff.m_z*(1-ff.m_z);
+    break;
+  case spt::none:
+    THROW(fatal_error, "Splitting type not set.");
+  case spt::s2sg:
+  case spt::s2gs:
+  case spt::G2Gg:
+  case spt::G2gG:
+  case spt::V2Vg:
+  case spt::V2gV:
+    THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+          + ToString(m_ftype) + ".");
   }
   if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
   m_mom = ff.m_p;

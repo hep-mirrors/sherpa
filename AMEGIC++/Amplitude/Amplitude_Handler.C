@@ -902,12 +902,12 @@ Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 
 Complex Amplitude_Handler::Zvalue(int ihel)
 { 
-  DEBUG_FUNC(ihel);
   // Called for actual calculation of the CS
 #ifdef DEBUG__BG
+  DEBUG_FUNC(ihel);
   msg_Debugging()<<METHOD<<"(): {\n";
-#endif
   msg_Debugging()<<"2: #graphs: "<<graphs.size()<<std::endl;
+#endif
   double gsfac(p_aqcd?sqrt(p_aqcd->Factor()):1.0);
   double gwfac(p_aqed?sqrt(p_aqed->Factor()):1.0);
   for (size_t i=0;i<graphs.size();i++) {
@@ -932,18 +932,26 @@ Complex Amplitude_Handler::Zvalue(int ihel)
     msg_Debugging()<<"  graph "<<i<<" -> "<<cplfac<<"\n";
 #endif
     Mi[i] = cplfac*(graphs[i]->Zvalue(ihel));
+#ifdef DEBUG__BG
     msg_Debugging()<<"  "<<i<<": O"<<order<<" "<<Mi[i]<<std::endl;
+#endif
   }
   Complex M(0.,0.);
   for (size_t i=0;i<graphs.size();i++) {
     for (size_t j=0;j<graphs.size();j++) {
+#ifdef DEBUG__BG
       msg_Debugging()<<(m_on.empty()?"m_on empty, ":"m_on")
                      <<"["<<i<<"]["<<j<<"]=";
+#endif
       if (m_on.empty() || m_on[i][j]) {
+#ifdef DEBUG__BG
         msg_Debugging()<<"  col="<<CFCol_Matrix->Mij(i,j);
+#endif
         M+= Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
       }
+#ifdef DEBUG__BG
       msg_Debugging()<<std::endl;
+#endif
     }
   }
 #ifdef DEBUG__BG
