@@ -354,7 +354,7 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   msg_Debugging()<<"process string = "<<process2Recola(args.Flavours())<<"\n";
   
   string procstring(process2Recola(args.Flavours()));
-  define_process_rcl(procIndex, procstring.c_str(), "NLO");
+  define_process_rcl(procIndex, procstring.c_str(), "LO");
   
   
   Settings& s = Settings::GetMainSettings();
@@ -531,7 +531,6 @@ void Recola::Recola_Interface::GenerateProcesses(const double& alpha, const doub
                                           const double& muR2)
 {
   DEBUG_FUNC("");
-  
   Settings& s = Settings::GetMainSettings();
   ew_scheme::code ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
   ew_scheme::code ewrenscheme = s["EW_REN_SCHEME"].Get<ew_scheme::code>();
