@@ -562,10 +562,10 @@ double Define_Dipoles::CalculateEEXVirtual(){
 double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
   double sub(0);
   for (auto &D : m_dipolesII) {
-    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+    sub += D.EikonalMassless(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   for (auto &D : m_dipolesFF) {
-    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+    sub += D.EikonalMassless(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   for (auto &D : m_dipolesIF) {
     // sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
@@ -609,14 +609,12 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
 
       sq = (Q).Abs2(); 
       sx = (Q-k).Abs2();
-      // flux = Propagator(sx,1)/Propagator(sq,1);
-      flux = (sx/sq);
+      flux *= (sx/sq);
       return flux;
     }
 
   }
-  if(HasFSR()){
-    flux=1;
+  else if(HasFSR()){
     for (auto &D : m_dipolesFF) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);

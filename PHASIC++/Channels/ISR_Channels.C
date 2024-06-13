@@ -112,7 +112,7 @@ void ISR_Channels::CheckForStructuresFromME() {
 	   yit!=m_yexponents.end();yit++) {
 	m_isrparams.push_back(Channel_Info(type,masses[i],widths[i],(*yit)));
       }
-      ifp_yfshandler->Mode()!=YFS::yfsmode::off{
+      if(p_yfshandler->Mode()!=YFS::yfsmode::off){
         m_isrparams.push_back(Channel_Info(type,masses[i],widths[i]));
       }
       break;
