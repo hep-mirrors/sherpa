@@ -48,7 +48,7 @@ bool Channel_Creator::CreateISRIntegrator() {
   if (p_psh->Process()->NIn()!=2) return true;
   PDF::ISR_Handler * isrhandler = p_psh->GetISRHandler();
   YFS::YFS_Handler * yfshandler = p_psh->GetYFSHandler();
-  if(yfshandler->GetMode()==1 && yfshandler->GetFSRMode()!=2){
+  if(yfshandler->HasISR()){
     ISR_Channels * isrchannels =
     new ISR_Channels(p_psh,"isr_"+p_psh->Process()->Process()->Name());
   p_psh->SetISRIntegrator(isrchannels);

@@ -19,7 +19,7 @@ ISR_Channels::ISR_Channels(Phase_Space_Handler *const psh,
   p_yfshandler(p_psh->GetYFSHandler()),
   m_isrmode(p_isrhandler->Mode())
 {
-  if(p_yfshandler->GetMode()==1){
+  if(p_yfshandler->Mode()==YFS::yfsmode::isr){
     m_isrmode = PDF::isrmode::lepton_lepton;
     for (size_t i=0;i<2;i++) m_isrtype[i] = PDF::isrtype::yfs;
     for (double spexp=0.5;spexp<=1.5;spexp+=0.5) m_spexponents.insert(spexp);
@@ -96,7 +96,7 @@ void ISR_Channels::CheckForStructuresFromME() {
 	   yit!=m_yexponents.end();yit++) {
 	m_isrparams.push_back(Channel_Info(type,masses[i],2.,(*yit)));
       }
-      if(p_yfshandler->GetMode()){
+      if(p_yfshandler->Mode()!=YFS::yfsmode::off){
         m_isrparams.push_back(Channel_Info(type,masses[i],2.));
       }
       break;
@@ -112,12 +112,12 @@ void ISR_Channels::CheckForStructuresFromME() {
 	   yit!=m_yexponents.end();yit++) {
 	m_isrparams.push_back(Channel_Info(type,masses[i],widths[i],(*yit)));
       }
-      if(p_yfshandler->GetMode()){
+      ifp_yfshandler->Mode()!=YFS::yfsmode::off{
         m_isrparams.push_back(Channel_Info(type,masses[i],widths[i]));
       }
       break;
     case channel_type::simple:
-      if(p_yfshandler->GetMode()){
+      ifp_yfshandler->Mode()!=YFS::yfsmode::off{
         m_isrparams.push_back(Channel_Info(type,1.,1));
       }
       break;
@@ -153,7 +153,7 @@ bool ISR_Channels::CreateChannels()
     2*size_t(m_isrtype[1]!=PDF::isrtype::intact &&
 	     m_isrtype[1]!=PDF::isrtype::unknown);
   if(m_isrtype[0]==PDF::isrtype::yfs) collmode = 4;
-  if(p_yfshandler->GetMode()==1) collmode = 4;
+  if(p_yfshandler->Mode()==YFS::yfsmode::isr) collmode = 4;
   if (m_isrparams.size() < 1 || collmode==0) return 0;
   for (size_t i=0;i<m_isrparams.size();i++) {
     switch (m_isrparams[i].type) {

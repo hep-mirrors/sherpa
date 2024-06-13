@@ -129,7 +129,7 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
       return false;
     }
   }
-  if(p_yfshandler->GetMode()==0) DefineFSRKinematics();
+  if(p_yfshandler->Mode()==YFS::yfsmode::off) DefineFSRKinematics();
   CorrectMomenta();
   return true;
 }
@@ -228,7 +228,7 @@ void Phase_Space_Point::CorrectMomenta() {
   if (m_nin!=2 || (m_nin==2 && m_nout==1 &&
        p_pshandler->Active()->Process()->Flavours()[2].Kfcode()==kf_instanton))
     return;
-  if(p_yfshandler->GetMode()==1) return;
+  if(p_yfshandler->Mode()==YFS::yfsmode::isr) return;
   Vec4D  momsum(0.,0.,0.,0.);
   size_t imax(0);
   double Emax(0.0);

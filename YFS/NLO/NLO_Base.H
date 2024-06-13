@@ -54,10 +54,7 @@ public:
   void InitializeRealVirtual(const PHASIC::Process_Info& pi);
   double CalculateVirtual();
   double CalculateReal();
-  double CalculateReal(Vec4D k, int submode=0);
-  double CalculateRealVirtual();
-  double CalculateRealReal();
-  // double CalculateRealReal(Vec4D k,Vec4D kk);
+  double CalculateReal(Vec4D k);
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   void MapInitial(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);

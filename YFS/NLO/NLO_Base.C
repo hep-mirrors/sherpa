@@ -1,4 +1,3 @@
-#include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -121,11 +120,9 @@ double NLO_Base::CalculateVirtual() {
 	}
 	double virt;
 	double sub;
-	Vec4D_Vector p = m_plab;
 	CheckMassReg();
-	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
-	if(m_fsrmode==2) virt = p_virt->Calc(m_bornMomenta, m_born);
-	else virt = p_virt->Calc(p, m_born);
+	if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
+	else virt = p_virt->Calc(m_plab, m_born);
 	if(m_check_virt_born) {
 			if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
 			msg_Error() << METHOD << "\n Warning! Loop provider's born is different! YFS Subtraction likely fails\n"
@@ -159,7 +156,7 @@ double NLO_Base::CalculateReal() {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealSub(k);
 		}
-		real+=CalculateReal(k,1);
+		real+=CalculateReal(k);
 	}
 	if(IsBad(real)){
 		msg_Error()<<"YFS Real is NaN"<<std::endl;
@@ -168,16 +165,16 @@ double NLO_Base::CalculateReal() {
 }
 
 
-double NLO_Base::CalculateReal(Vec4D k, int submode) {
+double NLO_Base::CalculateReal(Vec4D k) {
 	double norm = 2.*pow(2 * M_PI, 3);
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
 	Vec4D kk = k;
 	MapMomenta(p, k);
+	if(!CheckPhotonForReal(k)) return 0;
 	m_evts+=1;
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesII(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
-	
 	double flux;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
@@ -188,8 +185,7 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	if(IsZero(subb)) return 0;
 	if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	p.push_back(k);
-	// if(submode!=1) flux = 1;
-	// CheckMasses(p,1);
+	CheckMasses(p,1);
 	CheckMomentumConservation(p);
 	double r = p_real->Calc_R(p) / norm * flux;
 	if(IsZero(r)) return 0;
@@ -375,11 +371,6 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Vec4D Q;
 	Vec4D QQ, PP;
 	Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
-  double s = (m_plab[0]+m_plab[1]).Abs2();
-  double t = (m_plab[0]-m_plab[2]).Abs2();
-  m_ranTheta = acos(1.+2.*t/s);
-	m_ranPhi = ran->Get()*2.*M_PI;
-	// Poincare boostLab(p[0] + p[1]);
 	for (int i = 2; i < p.size(); ++i)
 	{
 		Q += p[i];

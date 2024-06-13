@@ -83,20 +83,8 @@ std::ostream &operator<<(std::ostream &str, const wgt::code &sm);
     void RegisterDefaults();
     double Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
     double EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
-    // YFS::Coulomb *p_coulomb;
-    // PHASIC::Process_Base *proc;
-    // ATOOLS::Particle_Vector m_particles,  dipoleISR, dipoleFSR;
-    // ATOOLS::ParticleMomMap m_inparticles, m_outparticles;
-
-    // std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR;
-    // ATOOLS::Poincare m_cmsboost;
-    // ATOOLS::Vec4D    m_fixvecs[2], p_cms[2], m_realPho, m_Q,m_P, m_PX, m_Wm, m_Wp;
-    // ATOOLS::Flavour m_bunch;
-    // ATOOLS::Flavour_Vector m_flavs;
-    // std::vector<double> m_info_lab, m_info_cms, m_dvir, m_y, m_z, m_eikonalsISR, m_eikonalsFSR;
-    // Remnant_Base    *p_remnants[2];
-
-    double m_f;
+    inline bool  HasISR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::fsr); }
+    inline bool  HasFSR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::isr); }
 
   };
 }
