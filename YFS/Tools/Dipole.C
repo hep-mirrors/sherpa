@@ -153,8 +153,8 @@ void Dipole::Boost() {
     double lamCM = 0.5*sqrt(SqLam(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
     double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
     double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
-    m_newmomenta[0] = {E1, 0, 0, lamCM};
-    m_newmomenta[1] = {E2, 0, 0, -lamCM};
+    m_newmomenta[0] = {E1, 0, 0, -lamCM};
+    m_newmomenta[1] = {E2, 0, 0, lamCM};
     m_ranPhi = ran->Get()*2.*M_PI;
     // sqr(1.+2.*t/s)
     double s = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
