@@ -13,9 +13,7 @@ namespace ATOOLS {
       loop = 2,
       vsub = 4,
       real = 8,
-      rsub = 16,
-      rvirt = 32,
-      realreal = 64
+      rsub = 16
     };
   };// end of struct nlo_type
 
